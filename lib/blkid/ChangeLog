@@ -1,5 +1,7 @@
 2005-01-26  Theodore Ts'o  <tytso@mit.edu>
 
+	* version.c: Add functions to query the version of the blkid library.
+
 	* blkid.pc.in: Add pkg-config files.
 
 2005-01-25  Theodore Ts'o  <tytso@mit.edu>

@@ -19,11 +19,12 @@ all::
 SMANPAGES=	libblkid.3
 
 OBJS= cache.o dev.o devname.o devno.o getsize.o llseek.o probe.o \
- read.o resolve.o save.o tag.o
+ read.o resolve.o save.o tag.o version.o 
 
 SRCS= $(srcdir)/cache.c $(srcdir)/dev.c $(srcdir)/devname.c $(srcdir)/devno.c \
  $(srcdir)/getsize.c $(srcdir)/llseek.c $(srcdir)/probe.c \
- $(srcdir)/read.c $(srcdir)/resolve.c $(srcdir)/save.c $(srcdir)/tag.c
+ $(srcdir)/read.c $(srcdir)/resolve.c $(srcdir)/save.c $(srcdir)/tag.c \
+ $(srcdir)/version.c
 
 HFILES=		blkid.h
 HFILES_IN=	blkid_types.h
@@ -194,3 +195,5 @@ save.o: $(srcdir)/save.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
  $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
 tag.o: $(srcdir)/tag.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
  $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
+version.o: $(srcdir)/version.c $(srcdir)/blkid.h \
+ $(top_builddir)/lib/blkid/blkid_types.h $(top_srcdir)/version.h
