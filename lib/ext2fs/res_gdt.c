@@ -91,7 +91,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 #ifdef RES_GDT_DEBUG
 		printf("reading GDT dindir %u\n", dindir_blk);
 #endif
-		retval = io_channel_read_blk(fs->io, dindir_blk, 1, dindir_buf);
+		retval = ext2fs_read_ind_block(fs, dindir_blk, dindir_buf);
 		if (retval)
 			goto out_inode;
 	} else {
@@ -154,7 +154,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 #ifdef RES_GDT_DEBUG
 			printf("reading primary GDT block %u\n", gdt_blk);
 #endif
-			retval = io_channel_read_blk(fs->io,gdt_blk,1,gdt_buf);
+			retval = ext2fs_read_ind_block(fs, gdt_blk, gdt_buf);
 			if (retval)
 				goto out_dindir;
 		} else {
@@ -192,7 +192,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 #ifdef RES_GDT_DEBUG
 			printf("writing primary GDT block %u\n", gdt_blk);
 #endif
-			retval = io_channel_write_blk(fs->io,gdt_blk,1,gdt_buf);
+			retval = ext2fs_write_ind_block(fs, gdt_blk, gdt_buf);
 			if (retval)
 				goto out_dindir;
 		}
@@ -200,7 +200,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 
 out_dindir:
 	if (dindir_dirty) {
-		retval2 = io_channel_write_blk(fs->io, dindir_blk,1,dindir_buf);
+		retval2 = ext2fs_write_ind_block(fs, dindir_blk, dindir_buf);
 		if (!retval)
 			retval = retval2;
 	}

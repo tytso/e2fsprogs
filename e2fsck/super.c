@@ -392,7 +392,7 @@ void check_resize_inode(e2fsck_t ctx)
 						    "resize dind buffer");
 	ind_buf = (__u32 *) ((char *) dind_buf + fs->blocksize);
 
-	retval = io_channel_read_blk(fs->io, blk, 1, dind_buf);
+	retval = ext2fs_read_ind_block(fs, blk, dind_buf);
 	if (retval)
 		goto resize_inode_invalid;
 
@@ -403,7 +403,7 @@ void check_resize_inode(e2fsck_t ctx)
 		gdt_off %= fs->blocksize/4;
 		if (dind_buf[gdt_off] != pblk)
 			goto resize_inode_invalid;
-		retval = io_channel_read_blk(fs->io, pblk, 1, ind_buf);
+		retval = ext2fs_read_ind_block(fs, pblk, ind_buf);
 		if (retval) 
 			goto resize_inode_invalid;
 		ind_off = 0;

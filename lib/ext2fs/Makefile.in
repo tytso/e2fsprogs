@@ -43,6 +43,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	getsize.o \
 	getsectsize.o \
 	icount.o \
+	ind_block.o \
 	initialize.o \
 	inline.o \
 	inode.o \
@@ -98,6 +99,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/getsize.c \
 	$(srcdir)/getsectsize.c \
 	$(srcdir)/icount.c \
+	$(srcdir)/ind_block.c \
 	$(srcdir)/initialize.c \
 	$(srcdir)/inline.c \
 	$(srcdir)/inode.c \

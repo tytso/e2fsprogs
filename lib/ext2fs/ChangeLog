@@ -1,5 +1,18 @@
 2005-01-05  Theodore Ts'o  <tytso@mit.edu>
 
+	* block.c (block_iterate_ind, block_iterate_dind,
+		block_iterate_tind): Move the code which byte swaps and
+		read/writes indirect blocks to ext2fs_{read,write}_ind_block.
+		This saves 400 bytes, and we need them for the
+		resize_inode handling. 
+
+	* ind_block.c (ext2fs_read_ind_block, ext2fs_write_ind_block): New
+		functions.
+
+	* res_gdt.c (ext2fs_create_resize_inode): Use 
+		ext2fs_{read,write}_ind_block so that byte swapping is
+		handled on big-endian systems.
+
 	* dupfs.c (ext2fs_dup_handle): Make sure the new filesystem handle
 		has its own copy of the orig_super data structure.  (This
 		is a better way of fixing a double-free problem in
