@@ -266,5 +266,8 @@ ec	EXT2_ET_NO_JOURNAL_SB,
 ec	EXT2_ET_JOURNAL_TOO_SMALL,
 	"Journal must be at least 1024 blocks"
 
+ec	EXT2_ET_JOURNAL_UNSUPP_VERSION,
+	"Unsupported journal version"
+
 	end
 
