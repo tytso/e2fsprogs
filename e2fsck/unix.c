@@ -572,11 +572,20 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		case 'N':
 			ctx->device_name = optarg;
 			break;
+#ifdef ENABLE_SWAPFS
 		case 's':
 			normalize_swapfs = 1;
 		case 'S':
 			swapfs = 1;
 			break;
+#else
+		case 's':
+		case 'S':
+			fprintf(stderr, _("Byte-swapping filesystems "
+					  "not compiled in this version "
+					  "of e2fsck\n"));
+			exit(1);
+#endif
 		default:
 			usage(ctx);
 		}
@@ -597,7 +606,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 				ctx->filesystem_name);
 			fatal_error(ctx, 0);
 		}
-		if ((retval == ext2fs_sync_device(fd, 1))) {
+		if ((retval = ext2fs_sync_device(fd, 1))) {
 			com_err("ext2fs_sync_device", retval,
 				_("while trying to flush %s"),
 				ctx->filesystem_name);
@@ -605,6 +614,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		}
 		close(fd);
 	}
+#ifdef ENABLE_SWAPFS
 	if (swapfs) {
 		if (cflag || bad_blocks_file) {
 			fprintf(stderr, _("Incompatible options not "
@@ -612,6 +622,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			exit(FSCK_USAGE);
 		}
 	}
+#endif
 #ifdef HAVE_SIGNAL_H
 	/*
 	 * Set up signal action
@@ -880,7 +891,7 @@ restart:
 		test_disk(ctx);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		fatal_error(ctx, 0);
-
+#ifdef ENABLE_SWAPFS
 	if (normalize_swapfs) {
 		if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ==
 		    ext2fs_native_flag()) {
@@ -894,6 +905,7 @@ restart:
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			fatal_error(ctx, 0);
 	}
+#endif
 
 	/*
 	 * Mark the system as valid, 'til proven otherwise

@@ -69,12 +69,14 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
+#ifdef EXT2FS_ENABLE_SWAPFS
 	if (ctx->fs->flags & (EXT2_FLAG_SWAP_BYTES |
 			      EXT2_FLAG_SWAP_BYTES_READ)) {
 		block_nr = (blk_t *) ctx->ind_buf;
 		for (i = 0; i < limit; i++, block_nr++)
 			*block_nr = ext2fs_swab32(*block_nr);
 	}
+#endif
 	block_nr = (blk_t *) ctx->ind_buf;
 	offset = 0;
 	if (ctx->flags & BLOCK_FLAG_APPEND) {
@@ -106,12 +108,14 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 	}
 	if (!(ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
 	    (changed & BLOCK_CHANGED)) {
+#ifdef EXT2FS_ENABLE_SWAPFS
 		if (ctx->fs->flags & (EXT2_FLAG_SWAP_BYTES |
 				      EXT2_FLAG_SWAP_BYTES_WRITE)) {
 			block_nr = (blk_t *) ctx->ind_buf;
 			for (i = 0; i < limit; i++, block_nr++)
 				*block_nr = ext2fs_swab32(*block_nr);
 		}
+#endif
 		ctx->errcode = io_channel_write_blk(ctx->fs->io, *ind_block,
 						    1, ctx->ind_buf);
 		if (ctx->errcode)
@@ -159,12 +163,14 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
+#ifdef EXT2FS_ENABLE_SWAPFS
 	if (ctx->fs->flags & (EXT2_FLAG_SWAP_BYTES |
 			      EXT2_FLAG_SWAP_BYTES_READ)) {
 		block_nr = (blk_t *) ctx->dind_buf;
 		for (i = 0; i < limit; i++, block_nr++)
 			*block_nr = ext2fs_swab32(*block_nr);
 	}
+#endif
 	block_nr = (blk_t *) ctx->dind_buf;
 	offset = 0;
 	if (ctx->flags & BLOCK_FLAG_APPEND) {
@@ -198,12 +204,14 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 	}
 	if (!(ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
 	    (changed & BLOCK_CHANGED)) {
+#ifdef EXT2FS_ENABLE_SWAPFS
 		if (ctx->fs->flags & (EXT2_FLAG_SWAP_BYTES |
 				      EXT2_FLAG_SWAP_BYTES_WRITE)) {
 			block_nr = (blk_t *) ctx->dind_buf;
 			for (i = 0; i < limit; i++, block_nr++)
 				*block_nr = ext2fs_swab32(*block_nr);
 		}
+#endif
 		ctx->errcode = io_channel_write_blk(ctx->fs->io, *dind_block,
 						    1, ctx->dind_buf);
 		if (ctx->errcode)
@@ -251,12 +259,14 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
+#ifdef EXT2FS_ENABLE_SWAPFS
 	if (ctx->fs->flags & (EXT2_FLAG_SWAP_BYTES |
 			      EXT2_FLAG_SWAP_BYTES_READ)) {
 		block_nr = (blk_t *) ctx->tind_buf;
 		for (i = 0; i < limit; i++, block_nr++)
 			*block_nr = ext2fs_swab32(*block_nr);
 	}
+#endif
 	block_nr = (blk_t *) ctx->tind_buf;
 	offset = 0;
 	if (ctx->flags & BLOCK_FLAG_APPEND) {
@@ -290,12 +300,14 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 	}
 	if (!(ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
 	    (changed & BLOCK_CHANGED)) {
+#ifdef EXT2FS_ENABLE_SWAPFS
 		if (ctx->fs->flags & (EXT2_FLAG_SWAP_BYTES |
 				      EXT2_FLAG_SWAP_BYTES_WRITE)) {
 			block_nr = (blk_t *) ctx->tind_buf;
 			for (i = 0; i < limit; i++, block_nr++)
 				*block_nr = ext2fs_swab32(*block_nr);
 		}
+#endif
 		ctx->errcode = io_channel_write_blk(ctx->fs->io, *tind_block,
 						    1, ctx->tind_buf);
 		if (ctx->errcode)

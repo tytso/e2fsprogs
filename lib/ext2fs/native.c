@@ -14,19 +14,13 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
-static int i386_byteorder(void)
-{
-	int one = 1;
-	char *cp = (char *) &one;
-
-	return (*cp == 1);
-}
-
 int ext2fs_native_flag(void)
 {
-	if (i386_byteorder())
-		return 0;
+#ifdef WORDS_BIGENDIAN
 	return EXT2_FLAG_SWAP_BYTES;
+#else
+	return 0;
+#endif
 }
 
 	

@@ -129,6 +129,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 
 	fs->super->s_wtime = time(NULL);
 	fs->super->s_block_group_nr = 0;
+#ifdef EXT2FS_ENABLE_SWAPFS
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		retval = EXT2_ET_NO_MEMORY;
 		retval = ext2fs_get_mem(SUPERBLOCK_SIZE,
@@ -157,6 +158,10 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		super_shadow = fs->super;
 		group_shadow = fs->group_desc;
 	}
+#else
+	super_shadow = fs->super;
+	group_shadow = fs->group_desc;
+#endif
 	
 	/*
 	 * Write out master superblock.  This has to be done
@@ -183,10 +188,12 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	 * we exit.)
 	 */
 	fs->super->s_state &= ~EXT2_VALID_FS;
+#ifdef EXT2FS_ENABLE_SWAPFS
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		*super_shadow = *fs->super;
 		ext2fs_swap_super(super_shadow);
 	}
+#endif
 
 	/*
 	 * Write out the master group descriptors, and the backup
@@ -202,9 +209,11 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		sgrp = i;
 		if (sgrp > ((1 << 16) - 1))
 			sgrp = (1 << 16) - 1;
+#ifdef EXT2FS_ENABLE_SWAPFS
 		if (fs->flags & EXT2_FLAG_SWAP_BYTES)
 			super_shadow->s_block_group_nr = ext2fs_swab16(sgrp);
 		else
+#endif
 			fs->super->s_block_group_nr = sgrp;
 
 		if (i !=0 ) {

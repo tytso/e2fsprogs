@@ -83,6 +83,8 @@ SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/dirinfo.c \
 	$(srcdir)/ehandler.c \
 	$(srcdir)/problem.c \
+	$(srcdir)/message.c \
+	$(srcdir)/swapfs.c \
 	$(MTRACE_SRC)
 
 all:: profiled $(PROGS) e2fsck.static e2fsck.shared $(MANPAGES)

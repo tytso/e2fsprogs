@@ -156,6 +156,7 @@ _INLINE_ int ext2fs_test_bit(int nr, const void * addr)
 	return oldbit;
 }
 
+#ifdef EXT2FS_ENABLE_SWAPFS
 _INLINE_ __u32 ext2fs_swab32(__u32 val)
 {
 #ifdef EXT2FS_REQUIRE_486
@@ -177,6 +178,7 @@ _INLINE_ __u16 ext2fs_swab16(__u16 val)
 		:  "0" (val)); \
 		return val;
 }
+#endif
 
 #undef EXT2FS_ADDR
 
@@ -337,7 +339,7 @@ _INLINE_ int ext2fs_test_bit(int nr, const void *addr)
 
 #endif /* __sparc__ */
 
-#ifndef _EXT2_HAVE_ASM_SWAB_
+#if !defined(_EXT2_HAVE_ASM_SWAB_) && defined(ENABLE_SWAPFS)
 
 _INLINE_ __u16 ext2fs_swab16(__u16 val)
 {

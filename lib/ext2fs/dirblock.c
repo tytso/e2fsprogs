@@ -31,17 +31,21 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
  	retval = io_channel_read_blk(fs->io, block, 1, buf);
 	if (retval)
 		return retval;
+#ifdef EXT2FS_ENABLE_SWAPFS
 	do_swap = (fs->flags & (EXT2_FLAG_SWAP_BYTES|
 				EXT2_FLAG_SWAP_BYTES_READ)) != 0;
+#endif
 	p = (char *) buf;
 	end = (char *) buf + fs->blocksize;
 	while (p < end-8) {
 		dirent = (struct ext2_dir_entry *) p;
+#ifdef EXT2FS_ENABLE_SWAPFS
 		if (do_swap) {
 			dirent->inode = ext2fs_swab32(dirent->inode);
 			dirent->rec_len = ext2fs_swab16(dirent->rec_len);
 			dirent->name_len = ext2fs_swab16(dirent->name_len);
 		}
+#endif
 		rec_len = dirent->rec_len;
 		if ((rec_len < 8) || (rec_len % 4)) {
 			rec_len = 8;
@@ -63,6 +67,7 @@ errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 	char		*buf = 0;
 	struct ext2_dir_entry *dirent;
 
+#ifdef EXT2FS_ENABLE_SWAPFS
 	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
 	    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)) {
 		retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
@@ -85,6 +90,7 @@ errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 			dirent->name_len = ext2fs_swab16(dirent->name_len);
 		}
 	} else
+#endif
 		write_buf = (char *) inbuf;
  	retval = io_channel_write_blk(fs->io, block, 1, write_buf);
 errout:

@@ -119,12 +119,14 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	if (fs->orig_super)
 		memcpy(fs->orig_super, fs->super, SUPERBLOCK_SIZE);
 
+#ifdef EXT2FS_ENABLE_SWAPFS
 	if ((fs->super->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC)) ||
 	    (fs->flags & EXT2_FLAG_SWAP_BYTES)) {
 		fs->flags |= EXT2_FLAG_SWAP_BYTES;
 
 		ext2fs_swap_super(fs->super);
 	}
+#endif
 	
 	if (fs->super->s_magic != EXT2_SUPER_MAGIC) {
 		retval = EXT2_ET_BAD_MAGIC;
@@ -216,6 +218,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		if (retval)
 			goto cleanup;
 		group_block++;
+#ifdef EXT2FS_ENABLE_SWAPFS
 		if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 			gdp = (struct ext2_group_desc *) dest;
 			groups_per_block = fs->blocksize /
@@ -223,6 +226,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			for (j=0; j < groups_per_block; j++)
 				ext2fs_swap_group_desc(gdp++);
 		}
+#endif
 		dest += fs->blocksize;
 	}
 

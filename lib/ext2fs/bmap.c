@@ -51,9 +51,11 @@ static errcode_t _BMAP_INLINE_ block_ind_bmap(ext2_filsys fs, int flags,
 
 	b = ((blk_t *) block_buf)[nr];
 
+#ifdef EXT2FS_ENABLE_SWAPFS
 	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
 	    (fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
 		b = ext2fs_swab32(b);
+#endif
 
 	if (!b && (flags & BMAP_ALLOC)) {
 		b = nr ? ((blk_t *) block_buf)[nr-1] : 0;
@@ -62,10 +64,12 @@ static errcode_t _BMAP_INLINE_ block_ind_bmap(ext2_filsys fs, int flags,
 		if (retval)
 			return retval;
 
+#ifdef EXT2FS_ENABLE_SWAPFS
 		if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
 		    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE))
 			((blk_t *) block_buf)[nr] = ext2fs_swab32(b);
 		else
+#endif
 			((blk_t *) block_buf)[nr] = b;
 
 		retval = io_channel_write_blk(fs->io, ind, 1, block_buf);

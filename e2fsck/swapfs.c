@@ -16,6 +16,8 @@
 #include <et/com_err.h>
 #include "e2fsck.h"
 
+#ifdef ENABLE_SWAPFS
+
 struct swap_block_struct {
 	ext2_ino_t	ino;
 	int		isdir;
@@ -228,4 +230,4 @@ void swap_filesys(e2fsck_t ctx)
 #endif
 }
 
-
+#endif

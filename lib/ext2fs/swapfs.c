@@ -18,6 +18,7 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
+#ifdef EXT2FS_ENABLE_SWAPFS
 void ext2fs_swap_super(struct ext2_super_block * sb)
 {
 	sb->s_inodes_count = ext2fs_swab32(sb->s_inodes_count);
@@ -141,4 +142,4 @@ void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
 		break;
 	}
 }
-	
+#endif

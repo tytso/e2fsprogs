@@ -77,7 +77,10 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
-	fs->flags = flags | EXT2_FLAG_RW | ext2fs_native_flag();
+	fs->flags = flags | EXT2_FLAG_RW;
+#ifdef WORDS_BIGENDIAN
+	fs->flags |= EXT2_FLAG_SWAP_BYTES;
+#endif
 	retval = manager->open(name, IO_FLAG_RW, &fs->io);
 	if (retval)
 		goto cleanup;
