@@ -1,7 +1,7 @@
 /*
  * dupfs.c --- duplicate a ext2 filesystem handle
  * 
- * Copyright (C) 1997 Theodore Ts'o.
+ * Copyright (C) 1997, 1998, 2001, 2003, 2005 by Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -33,6 +33,7 @@ errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)
 	*fs = *src;
 	fs->device_name = 0;
 	fs->super = 0;
+	fs->orig_super = 0;
 	fs->group_desc = 0;
 	fs->inode_map = 0;
 	fs->block_map = 0;
@@ -52,6 +53,11 @@ errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)
 	if (retval)
 		goto errout;
 	memcpy(fs->super, src->super, SUPERBLOCK_SIZE);
+
+	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, &fs->orig_super);
+	if (retval)
+		goto errout;
+	memcpy(fs->orig_super, src->orig_super, SUPERBLOCK_SIZE);
 
 	retval = ext2fs_get_mem((size_t) fs->desc_blocks * fs->blocksize,
 				&fs->group_desc);

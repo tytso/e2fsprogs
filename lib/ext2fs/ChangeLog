@@ -1,3 +1,12 @@
+2005-01-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* dupfs.c (ext2fs_dup_handle): Make sure the new filesystem handle
+		has its own copy of the orig_super data structure.  (This
+		is a better way of fixing a double-free problem in
+		resize2fs which Fedora attempted to fix in 
+		e2fsprogs-1.35-double_free.patch.   Addresses Red Hat
+		Bugzilla #132707.)
+	
 2004-12-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* inode.c (ext2fs_flush_icache): When flushing the icache, clear
