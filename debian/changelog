@@ -1,3 +1,46 @@
+e2fsprogs (1.36rc1-1) unstable; urgency=low
+
+  * Fix a FTBFS bug for amd64/gcc-3.0 (Closes: #289133)
+  * Minor man page clarifications.  (Closes: #273679)
+  * Add support for online resizing via the resize inode.
+  * Badblocks will now correctly display block numbers greater than
+        999,999,999 in its progress display.
+  * tune2fs will not allow the user from setting a ridiculous number of
+        reserved blocks which would cause e2fsck to assume the superblock
+        was corrupt.  E2fsck's standards for what is a ridiculous number
+        of reserved blocks has also been relaxed to 50% of the blocks in
+        the filesystem.
+  * The blkid library will return vfat in preference to msdos, and ext3 in
+        preference to ext2 (if the journalling flag is set) so that mount
+        will do the right thing.  (Closes: #287455)
+  * The fsck program will now accept an optional filedescriptor argument
+        to the -C option.
+  * Mke2fs will now use the -E option for extended options; the old -R
+        (raid options) option is still accepted for backwards compatibility.
+  * Fix a double-free problem in resize2fs.  (Red Hat Bugzilla #132707)
+  * Mke2fs will now accept a size in megabytes or gigabytes (via "32m" or
+        "4g" on the command line) if the user finds this more convenient
+        than specifying a block count.
+  * Fix an obscure, hard-to find bug in "e2fsck -S" caused by an inode
+        cache conherency problem.
+  * Debugfs now supports a new command, set_inode_field, which allows a
+        user to manually set a specific inode field more conveniently, as
+        well as set entries in the indirect block map.
+  * Debugfs's set_super_value command has been enhanced so that the user
+        can set most superblock fields, including the date/time fields and
+        some of the more newsly added superblock fields.
+  * E2fsprogs programs now accept an offset to be passed to the file
+        specifiers, via the syntax: "/tmp/test.img?offset=1024"
+  * E2fsprogs will now accept blocksizes up to 65536; kernel support on
+        the x86 doesn't exist, but it is useful on other architectures.
+  * Fix bug in debugfs where kill_file would lead to errors when deleting
+        devices and symlinks.  (Sourceforge Bugs #954741 and #957244)
+  * Fix bug in the blkid library when detecting the ocfs1 filesystem 
+  * Updated Italian translation file
+  * E2fsck will now recover from a journal containing illegal blocks.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri,  7 Jan 2005 20:22:36 -0500
+
 e2fsprogs (1.35-9) unstable; urgency=low
 
   * Minor man page clarifications.  (Closes: #273679)
