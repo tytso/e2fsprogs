@@ -1,5 +1,8 @@
 This package, the EXT2 filesystem utilities, are made available under
-the GNU Public License.
+the GNU Public License, with the exception of the lib/uuid directory
+which is made available under a BSD-style license.  Please see
+lib/uuid/COPYING for more details for the license for the files
+comprising the libuuid library.
 
 However, I request that if the version string in the file version.h
 contains the string "pre-", or "WIP" that this version of e2fsprogs be
