@@ -25,11 +25,7 @@
  * 94/03/06	- Added the checks interval from Uwe Ohse (uwe@tirka.gun.de)
  */
 
-#ifndef __sun__
-	/* Solaris for a strange reason drops struct 
-	   timeval if _XOPEN_SOURCE defined */
-#define _XOPEN_SOURCE /* for inclusion of strptime() */
-#endif
+#define _XOPEN_SOURCE 500 /* for inclusion of strptime() */
 #define _BSD_SOURCE /* for inclusion of strcasecmp() */
 #include <fcntl.h>
 #include <grp.h>

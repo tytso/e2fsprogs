@@ -9,11 +9,7 @@
  * %End-Header%
  */
 
-#ifndef __sun__
-       /* Solaris for some strange reason drops struct
-          timeval if _XOPEN_SOURCE defined */
-#define _XOPEN_SOURCE /* glibc2 needs this for strptime */
-#endif
+#define _XOPEN_SOURCE 500 /* for inclusion of strptime() */
 
 #include <stdio.h>
 #include <unistd.h>

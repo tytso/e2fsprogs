@@ -1,3 +1,8 @@
+2005-02-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* set_fields.c: Define _XOPEN_SOURCE to be 500 to fix compilation
+		problems on Solaris.
+
 2005-01-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* set_fields.c: Add support for the jnl_blocks[] for set_super_value
