@@ -1,5 +1,9 @@
 2001-08-15  Theodore Tso  <tytso@valinux.com>
 
+	* tune2fs.c: Make sure that error messages are sent to stderr, and
+		normal messages are sent to stdout.  (Addresses Debian bug
+		#108555.)
+
 	* fsck.8.in: Fixed error in synopsis of the man page.
 
 	* fsck.c (check_all): Don't bother to interpret a device where the

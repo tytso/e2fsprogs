@@ -118,7 +118,7 @@ static void remove_journal_device(ext2_filsys fs)
 		goto no_valid_journal;
 	}
 	if (!(jfs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
-		fprintf(stderr, "%s is not a journal device.\n",
+		fprintf(stderr, _("%s is not a journal device.\n"),
 			journal_device);
 		goto no_valid_journal;
 	}
@@ -145,7 +145,8 @@ static void remove_journal_device(ext2_filsys fs)
 			break;
 	}
 	if (i >= nr_users) {
-		fprintf(stderr, "Filesystem's UUID not found on journal device.\n");
+		fprintf(stderr,
+			_("Filesystem's UUID not found on journal device.\n"));
 		commit_remove_journal = 1;
 		goto no_valid_journal;
 	}
@@ -165,7 +166,7 @@ static void remove_journal_device(ext2_filsys fs)
 
 no_valid_journal:
 	if (commit_remove_journal == 0) {
-		printf(_("Journal NOT removed\n"));
+		fprintf(stderr, _("Journal NOT removed\n"));
 		exit(1);
 	}
 	fs->super->s_journal_dev = 0;
@@ -361,7 +362,7 @@ static void add_journal(ext2_filsys fs)
 		retval = ext2fs_add_journal_inode(fs, journal_blocks,
 						  journal_flags);
 		if (retval) {
-			printf("\n");
+			fprintf(stderr, "\n");
 			com_err(program_name, retval,
 				_("\n\twhile trying to create journal file"));
 			exit(1);
@@ -415,7 +416,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	struct group * gr;
 	struct passwd * pw;
 
-	fprintf (stderr, _("tune2fs %s, %s for EXT2 FS %s, %s\n"),
+	printf(_("tune2fs %s, %s for EXT2 FS %s, %s\n"),
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
 	while ((c = getopt (argc, argv, "c:e:fg:i:jlm:r:s:u:C:J:L:M:O:U:")) != EOF)
@@ -635,7 +636,8 @@ int main (int argc, char ** argv)
         if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
-		printf(_("Couldn't find valid filesystem superblock.\n"));
+		fprintf(stderr,
+			_("Couldn't find valid filesystem superblock.\n"));
 		exit(1);
 	}
 	sb = fs->super;
