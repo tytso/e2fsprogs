@@ -1,3 +1,9 @@
+Fri Feb 20 23:58:01 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dblist.c (ext2fs_get_num_dirs): Improve the estimation of the
+ 		number of directories when the block group information is
+ 		unreliable.
+
 1998-02-20  Theodore Y. Ts'o  <tytso@edt.mit.edu>
 
 	* inode.c (ext2fs_get_next_inode): Always do the check to see if the
