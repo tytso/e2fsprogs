@@ -1,3 +1,8 @@
+1998-05-01  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* initialize.c (ext2fs_initialize): Initialize s_inodes_count in a
+		way that avoids overflows on disk sizes greater than 4GB.
+
 1998-04-28  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* ext2fs.h: Define EXT2_QSORT_TYPE appropriately for the

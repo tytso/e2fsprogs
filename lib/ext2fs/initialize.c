@@ -157,7 +157,8 @@ retry:
 			   EXT2_DESC_PER_BLOCK(super) - 1)
 		/ EXT2_DESC_PER_BLOCK(super);
 
-	set_field(s_inodes_count, (super->s_blocks_count*fs->blocksize)/4096);
+	/* n.b., fs->blocksize is <= 4096 */
+	set_field(s_inodes_count, super->s_blocks_count/(4096/fs->blocksize));
 
 	/*
 	 * There should be at least as many inodes as the user
