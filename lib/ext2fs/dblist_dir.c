@@ -28,18 +28,17 @@
 static int db_dir_proc(ext2_filsys fs, struct ext2_db_entry *db_info,
 		       void *priv_data);
 
-extern errcode_t
-	ext2fs_dblist_dir_iterate(ext2_dblist dblist,
-				  int	flags,
-				  char	*block_buf,
-				  int (*func)(ino_t	dir,
-					      int	entry,
-					      struct ext2_dir_entry *dirent,
-					      int	offset,
-					      int	blocksize,
-					      char	*buf,
-					      void	*priv_data),
-				  void *priv_data)
+errcode_t ext2fs_dblist_dir_iterate(ext2_dblist dblist,
+				    int	flags,
+				    char	*block_buf,
+				    int (*func)(ino_t	dir,
+						int	entry,
+						struct ext2_dir_entry *dirent,
+						int	offset,
+						int	blocksize,
+						char	*buf,
+						void	*priv_data),
+				    void *priv_data)
 {
 	errcode_t		retval;
 	struct dir_context	ctx;

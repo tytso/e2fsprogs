@@ -330,7 +330,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 	if (flags & BLOCK_FLAG_NO_LARGE) {
 		ctx.errcode = ext2fs_read_inode(fs, ino, &inode);
 		if (ctx.errcode)
-			goto abort;
+			return ctx.errcode;
 		got_inode = 1;
 		if (!LINUX_S_ISDIR(inode.i_mode) &&
 		    (inode.i_size_high != 0))

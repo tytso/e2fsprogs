@@ -32,7 +32,7 @@
 
 #include "ext2fs.h"
 
-errcode_t ext2fs_allocate_group_table(ext2_filsys fs, int group,
+errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 				      ext2fs_block_bitmap bmap)
 {
 	errcode_t	retval;
@@ -113,7 +113,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, int group,
 errcode_t ext2fs_allocate_tables(ext2_filsys fs)
 {
 	errcode_t	retval;
-	int		i;
+	dgrp_t		i;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		retval = ext2fs_allocate_group_table(fs, i, fs->block_map);

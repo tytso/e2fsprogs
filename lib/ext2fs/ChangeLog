@@ -1,3 +1,38 @@
+1998-09-02  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* rw_bitmaps.c: Fixed signed/unsigned warnings.
+
+	* fileio.c (ext2fs_file_set_size): Remove unneeded extern from the
+		function declaration.
+
+	* dblist.c (make_dblist): Add safety check in case the dblist
+		pointer passed in is null (in which case, assign it to
+		fs->dblist).  Fixed some signed/unsigned warnings.
+
+	* bmap.c: Make addr_per_block be of type blk_t to avoid
+		signed/unsigned warnings.
+
+	* namei.c (ext2fs_follow_link): Remove uneeded extern from the
+		function declaration.
+
+	* get_pathname.c (get_pathname_proc): Use return value from
+		ext2fs_get_mem, instead of checking if &gp->name is
+		NULL.
+
+	* dir_iterate.c (ext2fs_process_dir_block): 
+	* dblist_dir.c (ext2fs_dblist_dir_iterate): Remove uneeded extern
+		from the function declaration.
+
+	* block.c (ext2fs_block_iterate2): If the read_inode call fails,
+		return the error directly instead of jumping to the
+		cleanup routine, since we don't need to do any cleanup.
+
+	* alloc_table.c (ext2fs_allocate_group_table): Make this
+		function take a dgrp_t for its group argument.
+
+	* ext2fs.h: Make dgrp_t an __u32 type, and make
+		fs->desc_group_count be of type dgrp_t.
+
 1998-07-27  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* badblocks.c (ext2fs_badblocks_list_add): Use a bigger increment

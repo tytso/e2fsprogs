@@ -189,7 +189,7 @@ errcode_t ext2fs_namei_follow(ext2_filsys fs, ino_t root, ino_t cwd,
 	return retval;
 }
 
-extern errcode_t ext2fs_follow_link(ext2_filsys fs, ino_t root, ino_t cwd,
+errcode_t ext2fs_follow_link(ext2_filsys fs, ino_t root, ino_t cwd,
 			ino_t inode, ino_t *res_inode)
 {
 	char *buf;

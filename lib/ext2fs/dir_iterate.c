@@ -72,12 +72,12 @@ errcode_t ext2fs_dir_iterate(ext2_filsys fs,
  * Helper function which is private to this module.  Used by
  * ext2fs_dir_iterate() and ext2fs_dblist_dir_iterate()
  */
-extern int ext2fs_process_dir_block(ext2_filsys  	fs,
-				    blk_t		*blocknr,
-				    e2_blkcnt_t		blockcnt,
-				    blk_t		ref_block,
-				    int			ref_offset,
-				    void		*priv_data)
+int ext2fs_process_dir_block(ext2_filsys  	fs,
+			     blk_t		*blocknr,
+			     e2_blkcnt_t		blockcnt,
+			     blk_t		ref_block,
+			     int			ref_offset,
+			     void		*priv_data)
 {
 	struct dir_context *ctx = (struct dir_context *) priv_data;
 	int		offset = 0;

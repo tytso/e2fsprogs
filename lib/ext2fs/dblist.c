@@ -34,7 +34,7 @@ static EXT2_QSORT_TYPE dir_block_cmp(const void *a, const void *b);
  */
 errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ino_t *ret_num_dirs)
 {
-	int	i;
+	dgrp_t	i;
 	ino_t	num_dirs, max_dirs;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
@@ -99,7 +99,10 @@ static errcode_t make_dblist(ext2_filsys fs, ino_t size, ino_t count,
 		memcpy(dblist->list, list, len);
 	else
 		memset(dblist->list, 0, len);
-	*ret_dblist = dblist;
+	if (ret_dblist)
+		*ret_dblist = dblist;
+	else
+		fs->dblist = dblist;
 	return 0;
 cleanup:
 	if (dblist)
@@ -191,7 +194,7 @@ errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 			       int blockcnt)
 {
-	int			i;
+	dgrp_t			i;
 	
 	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
 

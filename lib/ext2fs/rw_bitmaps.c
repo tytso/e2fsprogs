@@ -57,7 +57,7 @@ void ext2fs_swap_bitmap(ext2_filsys fs, char *bitmap, int nbytes)
 
 errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 {
-	int 		i;
+	dgrp_t 		i;
 	size_t		nbytes;
 	errcode_t	retval;
 	char * inode_bitmap = fs->inode_map->bitmap;
@@ -100,7 +100,7 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 
 errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 {
-	int 		i;
+	dgrp_t 		i;
 	int		j;
 	int		nbytes;
 	int		nbits;
@@ -153,7 +153,7 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 
 static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 {
-	int i;
+	dgrp_t i;
 	char *block_bitmap = 0, *inode_bitmap = 0;
 	char *buf;
 	errcode_t retval;

@@ -52,7 +52,7 @@ typedef unsigned long long __u64;
 #endif
 
 typedef __u32		blk_t;
-typedef unsigned int	dgrp_t;
+typedef __u32		dgrp_t;
 typedef __u32		ext2_off_t;
 typedef __s64		e2_blkcnt_t;
 
@@ -177,7 +177,7 @@ struct struct_ext2_filsys {
 	struct ext2_super_block	* 	super;
 	int				blocksize;
 	int				fragsize;
-	unsigned long			group_desc_count;
+	dgrp_t				group_desc_count;
 	unsigned long			desc_blocks;
 	struct ext2_group_desc *	group_desc;
 	int				inode_blocks_per_group;
@@ -480,7 +480,7 @@ extern errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 
 /* alloc_tables.c */
 extern errcode_t ext2fs_allocate_tables(ext2_filsys fs);
-extern errcode_t ext2fs_allocate_group_table(ext2_filsys fs, int group,
+extern errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 					     ext2fs_block_bitmap bmap);
 
 /* badblocks.c */
