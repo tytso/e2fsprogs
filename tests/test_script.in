@@ -4,12 +4,13 @@
 #
 
 if test "$1"x = x ; then
-  TESTS=$SRCDIR/[a-zA-Z]_*
+  TESTS=`ls -d $SRCDIR/[a-zA-Z]_* | egrep -v "\.failed|\.new"`
 else
   TESTS=
   for i 
   do
     case $i in
+	*.failed|*.new)	continue ;;
 	[a-zA-Z])	TESTS="$TESTS $SRCDIR/${i}_*" ;;
 	*)		TESTS="$TESTS $SRCDIR/$i" ;;
     esac
