@@ -61,8 +61,6 @@ UDEB_PRIORITY = $(shell grep '^Package: e2fsprogs-udeb' debian/control -A 10 | g
 BLKID_UDEB_NAME = libblkid1-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
 BLKID_UDEB_PRIORITY = $(shell grep '^Package: libblkid1-udeb' debian/control -A 10 | grep ^Priority: | cut -d ' ' -f 2)
 
-SUBPACKAGES_DIRS = tmp e2fslibs-dev comerr-dev ss-dev
-
 STAMPSDIR=debian/stampdir
 CFGSTDSTAMP=${STAMPSDIR}/configure-std-stamp
 CFGBFSTAMP=${STAMPSDIR}/configure-bf-stamp
@@ -275,106 +273,89 @@ binary-arch: install install-udeb
 	mkdir -p ${debdir}/e2fsck-static/usr/share/doc/
 	ln -sf e2fsprogs ${debdir}/e2fsck-static/usr/share/doc/e2fsck-static
 
-	mkdir -p ${debdir}/e2fslibs-dev/usr/share/doc/e2fsprogs
-	ln -sf e2fsprogs ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev
-
-	mkdir -p ${debdir}/uuid-dev/usr/share/doc/e2fsprogs
-	ln -sf e2fsprogs ${debdir}/uuid-dev/usr/share/doc/uuid-dev
-
-  # comerr and ss have their own copyright notices
-	mkdir -p ${maindir}/usr/share/doc/libcomerr${COMERR_SOVERSION}
-	mkdir -p ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}
-	ln -sf libcomerr${COMERR_SOVERSION} ${debdir}/comerr-dev/usr/share/doc/comerr-dev
-
-	mkdir -p ${maindir}/usr/share/doc/libss${SS_SOVERSION}
-	mkdir -p ${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}
-	ln -sf libss${SS_SOVERSION} ${debdir}/ss-dev/usr/share/doc/ss-dev
-
 	mkdir -p ${debdir}/libblkid${BLKID_SOVERSION}/usr/share/doc/libblkid${BLKID_SOVERSION}
 	mkdir -p ${debdir}/libblkid-dev/usr/share/doc
 	ln -sf libblkid${BLKID_SOVERSION} ${debdir}/libblkid-dev/usr/share/doc/libblkid-dev
 
-	for i in libcomerr${COMERR_SOVERSION} libss${SS_SOVERSION}; do \
-	  install -m 644 debian/$$i.copyright \
-	    ${maindir}/usr/share/doc/$$i/copyright ; \
-	done
+	mkdir -p ${debdir}/libss${SS_SOVERSION}/usr/share/doc/libss${SS_SOVERSION}
+	mkdir -p ${debdir}/ss-dev/usr/share/doc
+	ln -sf libss${SS_SOVERSION} ${debdir}/ss-dev/usr/share/doc/ss-dev
+
+	mkdir -p ${debdir}/libcomerr${COMERR_SOVERSION}/usr/share/doc/libcomerr${COMERR_SOVERSION}
+	mkdir -p ${debdir}/comerr-dev/usr/share/doc
+	ln -sf libcomerr${COMERR_SOVERSION} ${debdir}/comerr-dev/usr/share/doc/comerr-dev
+
+	mkdir -p ${debdir}/libuuid${UUID_SOVERSION}/usr/share/doc/libuuid${UUID_SOVERSION}
+	mkdir -p ${debdir}/uuid-dev/usr/share/doc
+	ln -sf libuuid${UUID_SOVERSION} ${debdir}/uuid-dev/usr/share/doc/uuid-dev
+
+	mkdir -p ${debdir}/e2fslibs/usr/share/doc/e2fslibs
+	mkdir -p ${debdir}/e2fslibs-dev/usr/share/doc
+	ln -sf e2fslibs ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev
 
 	install -m 644 debian/libblkid.copyright \
 		${debdir}/libblkid${BLKID_SOVERSION}/usr/share/doc/libblkid${BLKID_SOVERSION}/copyright
 
 	dh_installdocs -Ne2fsprogs-udeb -Nlibblkid1-udeb
 
-  # libblkid is under the the LGPL
-
   # HTML docs
-	install -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev/html-info/
+	install -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
 	install -p ${stdbuilddir}/doc/libext2fs_*.html \
-	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev/html-info/
-	install -d ${debdir}/comerr-dev/usr/share/doc/comerr-dev/html-info/
+	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
+	install -d ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
 	install -p ${stdbuilddir}/lib/et/com_err_*.html \
-	   ${debdir}/comerr-dev/usr/share/doc/comerr-dev/html-info/
+	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
 
   # texinfo docs
+	mkdir -p ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}
 	install -p ${topdir}/doc/libext2fs.texinfo \
-	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev/libext2fs.texi
+	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/libext2fs.texi
 	install -p ${topdir}/lib/et/com_err.texinfo \
 	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/com_err.texi
 
-	dh_installexamples
+	install -d ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/examples
+	install -p -m 0644 lib/ss/ss_err.et \
+		${stdbuilddir}/lib/ext2fs/ext2_err.et \
+		${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/examples
+	install -d ${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}/examples
+	install -p -m 0644 debugfs/debug_cmds.ct \
+		${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}/examples
+
+	install -d ${debdir}/uuid-dev/usr/share/doc/libuuid${UUID_SOVERSION}
+	install -p -m 0644 doc/draft-leach-uuids-guids-01.txt \
+		${debdir}/uuid-dev/usr/share/doc/libuuid${UUID_SOVERSION}
 
 	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
 	dh_installinfo -pe2fslibs-dev ${stdbuilddir}/doc/libext2fs.info
 
 	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibblkid${BLKID_SOVERSION}
-
-	for i in libcomerr${COMERR_SOVERSION} libss${SS_SOVERSION} ; do \
-	  mkdir -p ${maindir}/usr/share/doc/$$i ; \
-	  ln -s ../e2fsprogs/changelog.Debian.gz ${maindir}/usr/share/doc/$$i/ ; \
-	  ln -s ../e2fsprogs/changelog.gz ${maindir}/usr/share/doc/$$i/ ; \
-	done
+	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibcomerr${COMERR_SOVERSION}
+	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibss${SS_SOVERSION}
+	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibuuid${UUID_SOVERSION}
+	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -pe2fslibs
 
 	dh_strip
 
 	dh_compress
 	dh_fixperms
 
-	echo "libcdev:Depends=${LIBC-DEV}" > debian/comerr-dev.substvars
-	echo "libcdev:Depends=${LIBC-DEV}" > debian/ss-dev.substvars
-	echo "libcdev:Depends=${LIBC-DEV}" > debian/uuid-dev.substvars
-	echo "libcdev:Depends=${LIBC-DEV}" > debian/blkid-dev.substvars
-	echo "libcdev:Depends=${LIBC-DEV}" > debian/e2fslibs-dev.substvars
-
-# Call this mostly to get the maintainer-script snippets
-	dh_makeshlibs -pe2fsprogs
-# We overwrite the shlibs by hand because of virtual packages used
-	: > debian/e2fsprogs/DEBIAN/shlibs
-	echo "libext2fs ${EXT2FS_SOVERSION} libext2fs${EXT2FS_SOVERSION}" \
-		>> debian/e2fsprogs/DEBIAN/shlibs
-	echo "libe2p ${E2P_SOVERSION} libe2p${E2P_SOVERSION}" \
-		>> debian/e2fsprogs/DEBIAN/shlibs
-	echo "libuuid ${UUID_SOVERSION} libuuid${UUID_SOVERSION}" \
-		>> debian/e2fsprogs/DEBIAN/shlibs
-	echo "libcom_err ${COMERR_SOVERSION} libcomerr${COMERR_SOVERSION}, libcomerr-kth-compat" \
-		>> debian/e2fsprogs/DEBIAN/shlibs
-	echo "libss ${SS_SOVERSION} libss${SS_SOVERSION}" \
-		>> debian/e2fsprogs/DEBIAN/shlibs
-
-	dh_makeshlibs -plibblkid${BLKID_SOVERSION}
+	dh_makeshlibs
+	dh_makeshlibs -plibcomerr${COMERR_SOVERSION} \
+		-V 'libcomerr2 (>= 1.33-3)'
 
 	dh_installdeb
 	dh_shlibdeps -l${stdbuilddir}/lib
+	dh_shlibdeps -pe2fsprogs -l${stdbuilddir}/lib \
+		-u"-Ldebian/e2fsprogs.shlibs.local"
 
-	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev -Ne2fsprogs-udeb -Nlibblkid1-udeb
+	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev \
+		-Ne2fsprogs-udeb -Nlibblkid1-udeb
 	DH_OPTIONS= dh_gencontrol -pcomerr-dev \
 	  -u '-v${COMERR_VERSION}-${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -pss-dev \
 	  -u '-v${SS_VERSION}-${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -puuid-dev \
 	  -u '-v${UUID_VERSION}-${MAIN_VERSION}'
-	DH_OPTIONS= dh_gencontrol -plibblkid-dev \
-	  -u '-v${MAIN_VERSION}'
-	DH_OPTIONS= dh_gencontrol -plibblkid${BLKID_SOVERSION} \
-	  -u '-v${MAIN_VERSION}'
 
 	dh_md5sums -Ne2fsprogs-udeb -Nlibblkid1-udeb
 	dh_builddeb -Ne2fsprogs-udeb -Nlibblkid1-udeb

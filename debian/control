@@ -21,24 +21,49 @@ Description: A statically-linked version of the ext2 filesystem checker
  You may want to install a statically-linked shell as well, to be able
  to run this program if something like your C library gets corrupted.
 
-Package: comerr-dev
-Section: libdevel
-Priority: extra
-Depends: ${libcdev:Depends}, libcomerr2
-Suggests: doc-base
-Conflicts: e2fsprogs (<< 1.10-6)
-Replaces: e2fslibs-dev (<< 1.33-2), libkrb5-dev (<< 1.3)
+Package: libcomerr2
+Section: libs
+Priority: required
+Provides: libcomerr-kth-compat
+Depends: ${shlibs:Depends}
+Replaces: e2fsprogs (<< 1.34-1)
 Architecture: any
-Description: The Common Error Description library - headers and static libraries
+Description: The Common Error Description library
  libcomerr is an attempt to present a common error-handling mechanism to
  manipulate the most common form of error code in a fashion that does not
  have the problems identified with mechanisms commonly in use.
 
+Package: comerr-dev
+Section: libdevel
+Priority: extra
+Depends: libcomerr2
+Suggests: doc-base
+Replaces: e2fslibs-dev (<< 1.33-2), libkrb5-dev (<< 1.3)
+Architecture: any
+Description: The Common Error Description library - headers and static libraries
+ libcom_err is an attempt to present a common error-handling mechanism to
+ manipulate the most common form of error code in a fashion that does not
+ have the problems identified with mechanisms commonly in use.
+ .
+ This package contains the development environment for the com_err library.
+
+Package: libss2
+Section: libs
+Priority: required
+Depends: libcomerr2
+Replaces: e2fsprogs (<< 1.34-1)
+Architecture: any
+Description: Command-line interface parsing library
+ This package includes a tool that parses a command table to generate
+ a simple command-line interface parser, the include files needed to
+ compile and use it, and the static libs.
+ . 
+ It was originally inspired by the Multics SubSystem library.
+
 Package: ss-dev
 Section: libdevel
 Priority: extra
-Depends: ${libcdev:Depends}, libss2
-Conflicts: e2fsprogs (<< 1.10-6)
+Depends: libss2
 Architecture: any
 Description: Command-line interface parsing library - headers and static libraries
  This package includes a tool that parses a command table to generate
@@ -46,12 +71,28 @@ Description: Command-line interface parsing library - headers and static librari
  compile and use it, and the static libs.
  . 
  It was originally inspired by the Multics SubSystem library.
+ .
+ This package contains the development environment for the ss library.
+
+Package: libuuid1
+Section: libs
+Priority: required
+Depends: ${shlibs:Depends}
+Replaces: e2fsprogs (<< 1.34-1)
+Architecture: any
+Description: Universally unique id library
+ libuuid generates and parses 128-bit universally unique id's (UUID's),
+ using a standard which is blessed by both Microsoft and DCE, and is
+ being proposed as an internet standard.  See the internet-draft:
+ .
+                draft-leach-uuids-guids-01.txt
+ .
+ for more information.
 
 Package: uuid-dev
 Section: libdevel
 Priority: extra
-Depends: ${libcdev:Depends}, e2fsprogs (= ${Source-Version})
-Conflicts: e2fsprogs (<< 1.10-6)
+Depends: libuuid1 (= ${Source-Version})
 Replaces: e2fslibs-dev (<< 1.15)
 Architecture: any
 Description: Universally unique id library - headers and static libraries
@@ -62,6 +103,8 @@ Description: Universally unique id library - headers and static libraries
                 draft-leach-uuids-guids-01.txt
  .
  for more information.
+ .
+ This package contains the development environment for the uuid library.
 
 Package: libblkid1
 Section: libs
@@ -117,13 +160,44 @@ Description: A stripped-down versions of e2fsprogs, for debian-installer
  Don't attempt to install this package, it has no support for a couple of
  features you surely want.  Anyway it should refuse to install.
 
+Package: e2fslibs
+Section: libs
+Priority: required
+Depends: ${shlibs:Depends}
+Replaces: e2fsprogs (<< 1.34-1)
+Provides: libext2fs2, libe2p2
+Architecture: any
+Description: The EXT2 filesystem libraries
+ The ext2fs and e2p libraries are used by programs that directly access 
+ EXT2 filesystems from usermode programs.   The EXT2 filesystem is very often
+ used as the default filesystem on Linux systems.   Various system programs
+ that use libext2fs include e2fsck, mke2fs, tune2fs, etc.  Programs that use
+ libe2p include dumpe2fs, chattr, and lsattr.
+
+Package: e2fslibs-dev
+Section: libdevel
+Priority: extra
+Depends: comerr-dev, e2fslibs (= ${Source-Version})
+Suggests: doc-base
+Provides: ext2fs-dev, e2p-dev
+Replaces: libkrb5-dev (<< 1.3)
+Architecture: any
+Description: The EXT2 filesystem libraries - headers and static libraries
+ The ext2fs and e2p libraries are used by programs that directly access 
+ EXT2 filesystems from usermode programs.   The EXT2 filesystem is very often
+ used as the default filesystem on Linux systems.   Various system programs
+ that use libext2fs include e2fsck, mke2fs, tune2fs, etc.  Programs that use
+ libe2p include dumpe2fs, chattr, and lsattr.
+ .
+ This package contains the development environment for the ext2fs and e2p 
+ libraries.
+
 Package: e2fsprogs
 Essential: yes
 Pre-Depends: ${shlibs:Depends}
 Depends: 
 Suggests: gpart, parted, e2fsck-static
 Conflicts: dump (<< 0.4b4-4), quota (<< 1.55-8.1), initscripts (<< 2.85-4)
-Provides: libcomerr2, libcomerr-kth-compat, libss2, libext2fs2, libe2p2, libuuid1
 Architecture: any
 Description: The EXT2 file system utilities and libraries
  EXT2 stands for "Extended Filesystem", version 2. It's the main
@@ -131,34 +205,3 @@ Description: The EXT2 file system utilities and libraries
  .
  This package contains programs for creating, checking, and maintaining EXT2
  filesystems, and the generic `fsck' wrapper.
-
-Package: e2fslibs-dev
-Section: libdevel
-Priority: extra
-Depends: comerr-dev, e2fsprogs (= ${Source-Version})
-Suggests: doc-base
-Provides: ext2fs-dev, e2p-dev
-Conflicts: e2fsprogs (<< 1.10-6)
-Replaces: libkrb5-dev (<< 1.3)
-Architecture: any
-Description: The headers and static libraries for ext2fs-aware tools-development
- EXT2FS stands for "Extended Filesystem", version 2. It's the filesystem
- type used for hard disks on Debian and other Linux systems.
- .
- This package contains the headers and shared libraries needed to compile
- ext2fs-aware programs. Only programmers that really manipulate
- features specific to the ext2 filesystem will need this. Most
- programmers will use the generic filesystem-independent interface
- from libc.
- .
- It also contains dev files for the e2p lib used by
- the e2fsprogs, but which is not yet packaged all by itself
- because it lacks documentation. It may also lack some support
- files, by I can't really know until someone uses it...
- .
- libe2p is for user-level e2fsprogs commands.  It's used by dumpe2fs,
- chattr, and lsattr.  Functions in libe2p typically have two
- characteristics (a) don't require that block device containing the
- filesystem be opened directly (functions in libext2fs do), and (b)
- libe2p typically contains printf statements or parse user input, and so
- have more internationalization issues.

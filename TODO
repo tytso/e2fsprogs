@@ -190,3 +190,7 @@ TODO list.
 Debugfs's link command should set the file type information
 
 ---------------------------------------------------------------
+From e2fsprogs Debian TODO file as of 1.10-13.
+
+* Maybe make -dbg packages. Look at how others do it.
+
