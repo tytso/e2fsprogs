@@ -1,3 +1,12 @@
+2001-08-04  Andreas Dilger  <root@lynx.adilger.int>
+
+	* Makefile.in: Add "*.orig" to "make clean" target, change
+		explicit listing of ext2_types.h in "make distclean" to
+		$(SUBS).  Add $(SUBS) as a dependency to "make check"
+		target.  Add $(SUBS) as a dependency to "make check"
+		target.  Add -f flag to doc/Makefile $(RM) of files which
+		may not exist.
+
 2001-06-23  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.22
