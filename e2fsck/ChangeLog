@@ -1,3 +1,32 @@
+Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.02
+
+Wed Dec 15 21:24:26 1996    <tytso@rsts-11.mit.edu>
+
+	* pass1.c (process_block): Check to see if a file is "fragmented".
+		i.e., non-contiguous.  Note that any file which is larger
+		than the block group is guaranteed to be non-contiguous.
+		We may want to use a different hueristic for deciding
+		whether or not a file is "fragmented".
+
+	* e2fsck.c (show_stats): Print statistics of how many
+		non-contiguous files are on the system.
+
+Fri Dec 15 19:19:47 1995    <tytso@rsts-11.mit.edu>
+
+	* badblocks.c (read_bad_blocks_file, test_disk): Fold
+		functionality of test_disk() (which runs badblocks) into
+		read_bad_blocks_file(); test_disk() now calls
+		read_bad_blocks_file() with a NULL bad_blocks_file
+		argument.
+
+Mon Nov 20 18:30:10 1995    <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (check_mount): Use #if defined(__linux__) instead of
+		#if defined(linux).  The latter won't work if we're
+		compiling -ansi.
+
 Mon Oct 30 20:31:17 1995    <tytso@rsts-11.mit.edu>
 
 	* e2fsck.c (check_mount): For Linux systems, the check to see if

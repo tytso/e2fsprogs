@@ -85,7 +85,7 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 				% EXT2_BLOCKS_PER_GROUP(fs->super);
 			if (nbits)
 				for (j = nbits; j < fs->blocksize * 8; j++)
-					set_bit(j, bitmap_block);
+					ext2fs_set_bit(j, bitmap_block);
 		}
 		retval = io_channel_write_blk(fs->io,
 		      fs->group_desc[i].bg_block_bitmap, 1,

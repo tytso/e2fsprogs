@@ -59,6 +59,7 @@ int fs_sockets_count = 0;
 int fs_ind_count = 0;
 int fs_dind_count = 0;
 int fs_tind_count = 0;
+int fs_fragmented = 0;
 
 ext2fs_inode_bitmap inode_used_map = 0;	/* Inodes which are in use */
 ext2fs_inode_bitmap inode_bad_map = 0;	/* Inodes which are bad in some way */
@@ -92,11 +93,12 @@ static char *describe_illegal_block(ext2_filsys fs, blk_t block);
 
 struct process_block_struct {
 	ino_t	ino;
-	int	is_dir:1, clear:1, suppress:1;
+	int	is_dir:1, clear:1, suppress:1, fragmented:1;
 	int	num_blocks;
 	int	last_block;
 	int	num_illegal_blocks;
 	int	fix;
+	blk_t	previous_block;
 	struct ext2_inode *inode;
 };
 
@@ -157,6 +159,7 @@ static void unwind_pass1(ext2_filsys fs)
 	fs_ind_count = 0;
 	fs_dind_count = 0;
 	fs_tind_count = 0;
+	fs_fragmented = 0;
 }
 
 void pass1(ext2_filsys fs)
@@ -249,6 +252,7 @@ void pass1(ext2_filsys fs)
 			pb.num_blocks = pb.last_block = 0;
 			pb.num_illegal_blocks = 0;
 			pb.suppress = pb.clear = pb.is_dir = 0;
+			pb.fragmented = 0;
 			pb.fix = -1;
 			pb.inode = &inode;
 			retval = ext2fs_block_iterate(fs, ino, 0, block_buf,
@@ -593,6 +597,8 @@ static void check_blocks(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
 	pb.num_blocks = pb.last_block = 0;
 	pb.num_illegal_blocks = 0;
 	pb.suppress = pb.clear = 0;
+	pb.fragmented = 0;
+	pb.previous_block = 0;
 	pb.is_dir = LINUX_S_ISDIR(inode->i_mode);
 	pb.fix = -1;
 	pb.inode = inode;
@@ -602,6 +608,9 @@ static void check_blocks(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
 	if (retval)
 		com_err(program_name, retval,
 			"while calling ext2fs_block_iterate in check_blocks");
+
+	if (pb.fragmented && pb.num_blocks < fs->super->s_blocks_per_group)
+		fs_fragmented++;
 
 	if (pb.clear) {
 		e2fsck_read_inode(fs, ino, inode, "check_blocks");
@@ -755,6 +764,18 @@ int process_block(ext2_filsys fs,
 	printf("Process_block, inode %lu, block %u, #%d\n", p->ino, blk,
 	       blockcnt);
 #endif
+	
+	/*
+	 * Simplistic fragmentation check.  We merely require that the
+	 * file be contiguous.  (Which can never be true for really
+	 * big files that are greater than a block group.)
+	 */
+	if (p->previous_block) {
+		if (p->previous_block+1 != blk)
+			p->fragmented = 1;
+	}
+	p->previous_block = blk;
+	
 	
 	if (blk < fs->super->s_first_data_block ||
 	    blk >= fs->super->s_blocks_count ||

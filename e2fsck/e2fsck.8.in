@@ -2,13 +2,13 @@
 .\" Copyright 1993, 1994, 1995 by Theodore Ts'o.  All Rights Reserved.
 .\" This file may be copied under the terms of the GNU Public License.
 .\" 
-.TH E2FSCK 8 "October 1995" "Version 1.01"
+.TH E2FSCK 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 e2fsck \- check a Linux second extended file system
 .SH SYNOPSIS
 .B e2fsck
 [
-.B \-panyrdfvtFV
+.B \-pacnyrdfvtFV
 ]
 [
 .B \-b
@@ -51,6 +51,13 @@ search can be fooled in some cases.  This option forces e2fsck to only
 try locating the superblock at a particular blocksize.  If the
 superblock is not found, e2fsck will terminate with a fatal error.
 .TP
+.I -c
+This option causes e2fsck to run the 
+.BR badblocks (8)
+program to find any blocks 
+which are bad on the filesystem, and then marks them as bad by adding them 
+to the bad block inode.
+.TP
 .I -d
 Print debugging output (useless unless you are debugging
 .B e2fsck
@@ -81,7 +88,8 @@ Open the filesystem read-only, and assume an answer of ``no'' to all
 questions.  Allows
 .B e2fsck
 to be used non-interactively.  (Note: if the 
-.I -l
+.IR -c ,
+.IR -l ,
 or
 .I -L
 options are specified in addition to the 

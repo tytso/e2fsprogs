@@ -1,3 +1,17 @@
+Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.02
+
+Sat Dec  9 09:57:50 1995    <tytso@rsts-11.mit.edu>
+
+	* rw_bitops.c (ext2fs_write_block_bitmap):
+	* bitops.c (ext2fs_test_bit, ext2fs_clear_bit, ext2fs_set_bit):
+	* bitops.h (ext2fs_test_bit, ext2fs_clear_bit, ext2fs_set_bit):
+		Rename {test,set,clear}_bit to ext2fs_{test,set,clear}_bit, 
+		to avoid conflicts with with kernel include files.  Also
+		rename ADDR and CONST_ADDR to EXT2FS_ADDR and
+		EXT2FS_CONST_ADDR. 
+
 Thu Oct 26 12:09:16 1995    <tytso@rsts-11.mit.edu>
 
 	* ext2_err.et: Updated message in EXT2_ET_BASE to say version 0.5c

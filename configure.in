@@ -1,6 +1,86 @@
 AC_INIT(version.h)
 MCONFIG=./MCONFIG
 AC_SUBST_FILE(MCONFIG)
+BINARY_TYPE=bin
+dnl
+dnl This is to figure out the version number and the date....
+dnl
+E2FSPROGS_VERSION=`grep E2FSPROGS_VERSION ${srcdir}/version.h  \
+	| awk '{print $3}' | tr \" " " | awk '{print $1}'`
+DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
+	| tr \" " "`
+MONTH=`echo $DATE | awk -F- '{print $2}'`
+YEAR=`echo $DATE | awk -F- '{print $3}'`
+
+if expr $YEAR ">" 90 >/dev/null ; then
+	E2FSPROGS_YEAR=19$YEAR
+else
+	E2FSPROGS_YEAR=20$YEAR
+fi
+
+case $MONTH in
+Jan)	E2FSPROGS_MONTH="January" ;;
+Feb)	E2FSPROGS_MONTH="February" ;;
+Mar)	E2FSPROGS_MONTH="March" ;;
+Apr)	E2FSPROGS_MONTH="April" ;;
+May)	E2FSPROGS_MONTH="May" ;;
+Jun)	E2FSPROGS_MONTH="June" ;;
+Jul)	E2FSPROGS_MONTH="July" ;;
+Aug)	E2FSPROGS_MONTH="August" ;;
+Sep)	E2FSPROGS_MONTH="September" ;;
+Oct)	E2FSPROGS_MONTH="October" ;;
+Nov)	E2FSPROGS_MONTH="November" ;;
+Dec)	E2FSPROGS_MONTH="December" ;;
+*)	echo "Unknown month $MONTH??" ;;
+esac
+
+unset DATE MONTH YEAR
+echo "Generating configuration file for e2fsprogs version $E2FSPROGS_VERSION"
+echo "Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}"
+AC_SUBST(E2FSPROGS_YEAR)
+AC_SUBST(E2FSPROGS_MONTH)
+AC_SUBST(E2FSPROGS_VERSION)
+dnl
+dnl set $(CC) from --with-cc=value
+dnl
+AC_ARG_WITH([cc],
+[  --with-cc=COMPILER      select compiler to use],
+AC_MSG_RESULT(CC=$withval)
+CC=$withval,
+if test -z "$CC" ; then CC=cc; fi
+[AC_MSG_RESULT(CC defaults to $CC)])dnl
+export CC
+AC_SUBST([CC])
+dnl
+dnl set $(LD) from --with-linker=value
+dnl
+AC_ARG_WITH([linker],
+[  --with-linker=LINKER    select linker to use],
+AC_MSG_RESULT(LD=$withval)
+LD=$withval,
+if test -z "$LD" ; then LD=$CC; fi
+[AC_MSG_RESULT(LD defaults to $LD)])dnl
+export LD
+AC_SUBST([LD])
+dnl
+dnl set $(CCOPTS) from --with-ccopts=value
+dnl
+AC_ARG_WITH([ccopts],
+[  --with-ccopts=CCOPTS    select compiler command line options],
+AC_MSG_RESULT(CCOPTS is $withval)
+CCOPTS=$withval
+CFLAGS="$CFLAGS $withval",
+CCOPTS=)dnl
+AC_SUBST(CCOPTS)
+dnl
+dnl set $(LDFLAGS) from --with-ldopts=value
+dnl
+AC_ARG_WITH([ldopts],
+[  --with-ldopts=LDOPTS    select linker command line options],
+AC_MSG_RESULT(LDFLAGS is $withval)
+LDFLAGS=$withval,
+LDFLAGS=)dnl
+AC_SUBST(LDFLAGS)
 dnl
 dnl handle --enable-dll-shlibs
 dnl
@@ -14,6 +94,7 @@ then
 else
 	DLL_CMT=
 	MAKEFILE_DLL=$srcdir/lib/Makefile.dll-lib
+	BINARY_TYPE=dllbin
 	echo "Enabling DLL shared libraries"
 fi
 ,
@@ -36,6 +117,7 @@ then
 else
 	ELF_CMT=
 	MAKEFILE_ELF=$srcdir/lib/Makefile.elf-lib
+	BINARY_TYPE=elfbin
 	echo "Enabling ELF shared libraries"
 fi
 ,
@@ -136,6 +218,7 @@ AC_SUBST_FILE(MAKEFILE_LIBRARY)
 dnl
 dnl End of configuration options
 dnl
+AC_SUBST(BINARY_TYPE)
 AC_PROG_MAKE_SET
 AC_PATH_PROG(LN, ln, ln)
 AC_PATH_PROG(MV, mv, mv)
@@ -150,7 +233,7 @@ AC_CHECK_TOOL(STRIP, strip, :)
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_C_CROSS
-AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h mntent.h dirent.h getopt.h linux/fd.h sys/disklabel.h)
+AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h mntent.h dirent.h getopt.h linux/fd.h linux/major.h sys/disklabel.h)
 AC_FUNC_VPRINTF
 dnl
 dnl See if struct dirent has a d_namlen field (like bsd systems), implying
@@ -276,7 +359,7 @@ dnl See if -static works.
 dnl XXX for now, assume that only Linux systems support -static
 dnl
 AC_REQUIRE([AC_CANONICAL_HOST])
-LDFALG_STATIC=
+LDFLAG_STATIC=
 case "$host_os" in
 linux*)
 	LDFLAG_STATIC=-static
@@ -319,4 +402,7 @@ test -d include/linux || mkdir include/linux
 AC_OUTPUT(MCONFIG include/linux/types.h Makefile lib/et/Makefile 
 	lib/et/compile_et.sh lib/ss/Makefile lib/ss/mk_cmds.sh 
 	lib/ext2fs/Makefile lib/e2p/Makefile misc/Makefile 
-	e2fsck/Makefile debugfs/Makefile tests/Makefile)
+	e2fsck/Makefile debugfs/Makefile tests/Makefile lib/ext2fs/ext2_err.et 
+	debugfs/debugfs.8 e2fsck/e2fsck.8 misc/tune2fs.8 misc/lsattr.1
+	misc/chattr.1 misc/badblocks.8 misc/dumpe2fs.8 misc/mke2fs.8
+	misc/fsck.8 misc/mklost+found.8)

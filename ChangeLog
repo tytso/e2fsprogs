@@ -1,3 +1,7 @@
+Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.02
+
 Thu Oct 26 11:59:44 1995    <tytso@rsts-11.mit.edu>
 
 	* configure.in (LDFALG_STATIC): Add temporary kludge for

@@ -1,3 +1,7 @@
+Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.02
+
 Mon Sep  4 23:06:06 1995  Remy Card  <card@bbj>
 
 	* Makefile.in (clean, distclean): Use the -f option when removing

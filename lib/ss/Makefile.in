@@ -44,13 +44,13 @@ MK_CMDS=./mk_cmds
 XTRA_CFLAGS=-DPOSIX_SIGNALS -I$(srcdir)/../et
 
 .c.o:
-	$(CC) $(CFLAGS) -c $<
-@PROFILE_CMT@	$(CC) $(CFLAGS) -pg -o profiled/$*.o -c $<
-@CHECKER_CMT@	$(CC) $(CFLAGS) -checker -g -o checker/$*.o -c $<
-@DLL_CMT@	(export JUMP_DIR=`pwd`/jump; $(CC) -B$(JUMP_PREFIX) $(CFLAGS) \
-@DLL_CMT@		-o jump/$*.o -c $<)
-@ELF_CMT@	$(CC) $(CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(CC) $(CFLAGS) -fpic -o pic/$*.o -c $<
+	$(CC) $(ALL_CFLAGS) -c $<
+@PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -pg -o profiled/$*.o -c $<
+@CHECKER_CMT@	$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
+@DLL_CMT@	(export JUMP_DIR=`pwd`/jump; $(CC) -B$(JUMP_PREFIX) \
+@DLL_CMT@		$(ALL_CFLAGS) -o jump/$*.o -c $<)
+@ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) -fpic -o pic/$*.o -c $<
 
 # for the library
 

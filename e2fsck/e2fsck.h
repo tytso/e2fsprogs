@@ -138,6 +138,7 @@ extern int fs_sockets_count;
 extern int fs_ind_count;
 extern int fs_dind_count;
 extern int fs_tind_count;
+extern int fs_fragmented;
 
 extern struct resource_track	global_rtrack;
 

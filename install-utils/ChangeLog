@@ -1,3 +1,7 @@
+Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.02
+
 Sat Mar 11 18:26:33 1995  Theodore Y. Ts'o  <tytso@localhost>
 
 	* compile_manpages: Include an exit 0 at the end because some

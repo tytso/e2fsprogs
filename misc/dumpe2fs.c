@@ -32,7 +32,7 @@
 
 #include "../version.h"
 
-#define in_use(m, x)	(test_bit ((x), (m)))
+#define in_use(m, x)	(ext2fs_test_bit ((x), (m)))
 
 const char * program_name = "dumpe2fs";
 char * device_name = NULL;

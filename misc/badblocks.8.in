@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.TH BADBLOCKS 8 "October 1995" "Version 1.01"
+.TH BADBLOCKS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 badblocks \- search a device for bad blocks
 .SH SYNOPSIS

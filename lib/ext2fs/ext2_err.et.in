@@ -1,11 +1,11 @@
 #
-# Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be redistributed
-# under the terms of the GNU Public License.
+# Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.  This file may be 
+# redistributed under the terms of the GNU Public License.
 #
 	error_table ext2
 
 ec	EXT2_ET_BASE,
-	"EXT2FS Library version 0.5c"
+	"EXT2FS Library version @E2FSPROGS_VERSION@"
 
 ec	EXT2_ET_MAGIC_EXT2FS_FILSYS,
 	"Wrong magic number for ext2_filsys structure"

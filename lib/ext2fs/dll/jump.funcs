@@ -38,9 +38,9 @@
 00000000 T _ext2fs_new_block    		libext2fs       alloc
 00000000 T _ext2fs_get_free_blocks 		libext2fs       alloc
 00000000 T _ext2fs_expand_dir   		libext2fs       expanddir
-00000000 T _set_bit             		libext2fs       inline
-00000000 T _clear_bit           		libext2fs       inline
-00000000 T _test_bit            		libext2fs       inline
+00000000 T _ext2fs_set_bit             		libext2fs       inline
+00000000 T _ext2fs_clear_bit           		libext2fs       inline
+00000000 T _ext2fs_test_bit            		libext2fs       inline
 00000000 T _ext2fs_mark_block_bitmap 		libext2fs       inline
 00000000 T _ext2fs_unmark_block_bitmap 		libext2fs       inline
 00000000 T _ext2fs_test_block_bitmap 		libext2fs       inline

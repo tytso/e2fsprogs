@@ -35,12 +35,16 @@
 #include <malloc.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 
 #ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>
 #endif
 #include <linux/ext2_fs.h>
+#ifdef HAVE_LINUX_MAJOR_H
+#include <linux/major.h>
+#endif
 
 #include "et/com_err.h"
 #include "ext2fs/ext2fs.h"
@@ -59,6 +63,7 @@ int	cflag = 0;
 int	verbose = 0;
 int	quiet = 0;
 int	super_only = 0;
+int	force = 0;
 char	*bad_blocks_filename = 0;
 
 struct ext2_super_block param;
@@ -84,6 +89,38 @@ static int log2(int arg)
 		arg >>= 1;
 	}
 	return l;
+}
+
+static void check_plausibility(NOARGS)
+{
+#ifdef HAVE_LINUX_MAJOR_H
+	int val;
+	struct stat s;
+	
+	val = stat(device_name, &s);
+	
+	if(val == -1) {
+		perror("stat");
+		exit(1);
+	}
+	if(!S_ISBLK(s.st_mode)) {
+		printf("%s is not a block special device.\n", device_name);
+		printf("Proceed anyway? (y,n) ");
+		if (getchar() != 'y')
+			exit(1);
+		return;
+	}
+	if ((MAJOR(s.st_rdev) == HD_MAJOR && MINOR(s.st_rdev)%64 == 0) ||
+	    (MAJOR(s.st_rdev) == SCSI_DISK_MAJOR &&
+	     MINOR(s.st_rdev)%16 == 0)) {
+		printf("%s is entire device, not just one partition!\n", 
+		       device_name);
+		printf("Proceed anyway? (y,n) ");
+		if (getchar() != 'y')
+			exit(1);
+		return;
+	}
+#endif
 }
 
 static void check_mount(NOARGS)
@@ -495,7 +532,7 @@ static void PRS(int argc, char *argv[])
 		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:cf:g:i:l:m:qtvS")) != EOF)
+	while ((c = getopt (argc, argv, "b:cf:g:i:l:m:qtvSF")) != EOF)
 		switch (c) {
 		case 'b':
 			size = strtoul(optarg, &tmp, 0);
@@ -575,6 +612,9 @@ static void PRS(int argc, char *argv[])
 		case 'q':
 			quiet = 1;
 			break;
+		case 'F':
+			force = 1;
+			break;
 		case 'S':
 			super_only = 1;
 			break;
@@ -596,6 +636,8 @@ static void PRS(int argc, char *argv[])
 	if (optind < argc)
 		usage();
 
+	if (!force)
+		check_plausibility();
 	check_mount();
 
 	param.s_log_frag_size = param.s_log_block_size;

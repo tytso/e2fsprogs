@@ -9,9 +9,9 @@
  */
 
 
-extern int set_bit(int nr,void * addr);
-extern int clear_bit(int nr, void * addr);
-extern int test_bit(int nr, const void * addr);
+extern int ext2fs_set_bit(int nr,void * addr);
+extern int ext2fs_clear_bit(int nr, void * addr);
+extern int ext2fs_test_bit(int nr, const void * addr);
 extern __u16 ext2fs_swab16(__u16 val);
 extern __u32 ext2fs_swab32(__u32 val);
 
@@ -95,40 +95,40 @@ extern blk_t ext2fs_get_inode_bitmap_end(ext2fs_inode_bitmap bitmap);
  * Some hacks to defeat gcc over-optimizations..
  */
 struct __dummy_h { unsigned long a[100]; };
-#define ADDR (*(struct __dummy_h *) addr)
-#define CONST_ADDR (*(const struct __dummy_h *) addr)	
+#define EXT2FS_ADDR (*(struct __dummy_h *) addr)
+#define EXT2FS_CONST_ADDR (*(const struct __dummy_h *) addr)	
 
-_INLINE_ int set_bit(int nr, void * addr)
+_INLINE_ int ext2fs_set_bit(int nr, void * addr)
 {
 	int oldbit;
 
 	__asm__ __volatile__("btsl %2,%1\n\tsbbl %0,%0"
-		:"=r" (oldbit),"=m" (ADDR)
+		:"=r" (oldbit),"=m" (EXT2FS_ADDR)
 		:"r" (nr));
 	return oldbit;
 }
 
-_INLINE_ int clear_bit(int nr, void * addr)
+_INLINE_ int ext2fs_clear_bit(int nr, void * addr)
 {
 	int oldbit;
 
 	__asm__ __volatile__("btrl %2,%1\n\tsbbl %0,%0"
-		:"=r" (oldbit),"=m" (ADDR)
+		:"=r" (oldbit),"=m" (EXT2FS_ADDR)
 		:"r" (nr));
 	return oldbit;
 }
 
-_INLINE_ int test_bit(int nr, const void * addr)
+_INLINE_ int ext2fs_test_bit(int nr, const void * addr)
 {
 	int oldbit;
 
 	__asm__ __volatile__("btl %2,%1\n\tsbbl %0,%0"
 		:"=r" (oldbit)
-		:"m" (CONST_ADDR),"r" (nr));
+		:"m" (EXT2FS_CONST_ADDR),"r" (nr));
 	return oldbit;
 }
 
-#undef ADDR
+#undef EXT2FS_ADDR
 
 #endif	/* i386 */
 
@@ -136,7 +136,7 @@ _INLINE_ int test_bit(int nr, const void * addr)
 
 #define _EXT2_HAVE_ASM_BITOPS_
 
-_INLINE_ int set_bit(int nr,void * addr)
+_INLINE_ int ext2fs_set_bit(int nr,void * addr)
 {
 	char retval;
 
@@ -146,7 +146,7 @@ _INLINE_ int set_bit(int nr,void * addr)
 	return retval;
 }
 
-_INLINE_ int clear_bit(int nr, void * addr)
+_INLINE_ int ext2fs_clear_bit(int nr, void * addr)
 {
 	char retval;
 
@@ -156,7 +156,7 @@ _INLINE_ int clear_bit(int nr, void * addr)
 	return retval;
 }
 
-_INLINE_ int test_bit(int nr, const void * addr)
+_INLINE_ int ext2fs_test_bit(int nr, const void * addr)
 {
 	char retval;
 
@@ -172,7 +172,7 @@ _INLINE_ int test_bit(int nr, const void * addr)
 
 #define _EXT2_HAVE_ASM_BITOPS_
 
-_INLINE_ int set_bit(int nr, void *addr)
+_INLINE_ int ext2fs_set_bit(int nr, void *addr)
 {
 	int		mask, retval;
 	unsigned long	*ADDR = (unsigned long *) addr;
@@ -184,7 +184,7 @@ _INLINE_ int set_bit(int nr, void *addr)
 	return retval;
 }
 
-_INLINE_ int clear_bit(int nr, void *addr)
+_INLINE_ int ext2fs_clear_bit(int nr, void *addr)
 {
 	int		mask, retval;
 	unsigned long	*ADDR = (unsigned long *) addr;
@@ -196,7 +196,7 @@ _INLINE_ int clear_bit(int nr, void *addr)
 	return retval;
 }
 
-_INLINE_ int test_bit(int nr, const void *addr)
+_INLINE_ int ext2fs_test_bit(int nr, const void *addr)
 {
 	int			mask;
 	const unsigned long	*ADDR = (const unsigned long *) addr;
@@ -231,7 +231,7 @@ _INLINE_ void ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap,
 				   bitmap->description);
 		return;
 	}
-	set_bit(block - bitmap->start, bitmap->bitmap);
+	ext2fs_set_bit(block - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ void ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
@@ -242,7 +242,7 @@ _INLINE_ void ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
 				   block, bitmap->description);
 		return;
 	}
-	clear_bit(block - bitmap->start, bitmap->bitmap);
+	ext2fs_clear_bit(block - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap,
@@ -253,7 +253,7 @@ _INLINE_ int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap,
 				   block, bitmap->description);
 		return 0;
 	}
-	return test_bit(block - bitmap->start, bitmap->bitmap);
+	return ext2fs_test_bit(block - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ void ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
@@ -264,7 +264,7 @@ _INLINE_ void ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
 				   inode, bitmap->description);
 		return;
 	}
-	set_bit(inode - bitmap->start, bitmap->bitmap);
+	ext2fs_set_bit(inode - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ void ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
@@ -275,7 +275,7 @@ _INLINE_ void ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
 				   inode, bitmap->description);
 		return;
 	}
-	clear_bit(inode - bitmap->start, bitmap->bitmap);
+	ext2fs_clear_bit(inode - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
@@ -286,7 +286,7 @@ _INLINE_ int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
 				   inode, bitmap->description);
 		return 0;
 	}
-	return test_bit(inode - bitmap->start, bitmap->bitmap);
+	return ext2fs_test_bit(inode - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ void ext2fs_fast_mark_block_bitmap(ext2fs_block_bitmap bitmap,
@@ -299,7 +299,7 @@ _INLINE_ void ext2fs_fast_mark_block_bitmap(ext2fs_block_bitmap bitmap,
 		return;
 	}
 #endif	
-	set_bit(block - bitmap->start, bitmap->bitmap);
+	ext2fs_set_bit(block - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ void ext2fs_fast_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
@@ -312,7 +312,7 @@ _INLINE_ void ext2fs_fast_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
 		return;
 	}
 #endif
-	clear_bit(block - bitmap->start, bitmap->bitmap);
+	ext2fs_clear_bit(block - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ int ext2fs_fast_test_block_bitmap(ext2fs_block_bitmap bitmap,
@@ -325,7 +325,7 @@ _INLINE_ int ext2fs_fast_test_block_bitmap(ext2fs_block_bitmap bitmap,
 		return 0;
 	}
 #endif
-	return test_bit(block - bitmap->start, bitmap->bitmap);
+	return ext2fs_test_bit(block - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ void ext2fs_fast_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
@@ -338,7 +338,7 @@ _INLINE_ void ext2fs_fast_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
 		return;
 	}
 #endif
-	set_bit(inode - bitmap->start, bitmap->bitmap);
+	ext2fs_set_bit(inode - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ void ext2fs_fast_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
@@ -351,7 +351,7 @@ _INLINE_ void ext2fs_fast_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
 		return;
 	}
 #endif
-	clear_bit(inode - bitmap->start, bitmap->bitmap);
+	ext2fs_clear_bit(inode - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ int ext2fs_fast_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
@@ -364,7 +364,7 @@ _INLINE_ int ext2fs_fast_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
 		return 0;
 	}
 #endif
-	return test_bit(inode - bitmap->start, bitmap->bitmap);
+	return ext2fs_test_bit(inode - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ blk_t ext2fs_get_block_bitmap_start(ext2fs_block_bitmap bitmap)

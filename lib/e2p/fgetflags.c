@@ -59,7 +59,7 @@ int fgetflags (const char * name, unsigned long * flags)
 	int fd;
 	int r;
 
-	fd = open (name, O_RDONLY);
+	fd = open (name, O_RDONLY|O_NONBLOCK);
 	if (fd == -1)
 		return -1;
 	r = ioctl (fd, EXT2_IOC_GETFLAGS, flags);

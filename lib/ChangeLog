@@ -1,3 +1,7 @@
+Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.02
+
 Mon Oct 30 21:11:47 1995    <tytso@rsts-11.mit.edu>
 
 	* Makefile.elf-lib: Changes to pass -soname to the linker, so that

@@ -33,7 +33,7 @@ int fsetversion (const char * name, unsigned long version)
 	int fd;
 	int r;
 
-	fd = open (name, O_RDONLY);
+	fd = open (name, O_RDONLY|O_NONBLOCK);
 	if (fd == -1)
 		return -1;
 	r = ioctl (fd, EXT2_IOC_SETVERSION, &version);

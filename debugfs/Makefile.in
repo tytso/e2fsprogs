@@ -21,16 +21,16 @@ SRCS= debug_cmds.c $(srcdir)/debugfs.c $(srcdir)/util.c \
 	$(srcdir)/ncheck.c $(srcdir)/icheck.c $(srcdir)/lsdel.c \
 	$(srcdir)/dump.c
 
-LIBS= -L../lib -lss -lcom_err -lext2fs
-DEPLIBS= ../lib/libss.a ../lib/libcom_err.a ../lib/libext2fs.a
+LIBS= -L../lib -lext2fs -lss -lcom_err 
+DEPLIBS= ../lib/libext2fs.a ../lib/libss.a ../lib/libcom_err.a 
 
 .c.o:
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
 all:: $(PROGS)
 
 debugfs: $(DEBUG_OBJS) $(DEPLIBS)
-	$(CC) $(LDFLAGS) -o debugfs $(DEBUG_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o debugfs $(DEBUG_OBJS) $(LIBS)
 
 debug_cmds.c debug_cmds.h: debug_cmds.ct
 	$(MK_CMDS) $(srcdir)/debug_cmds.ct
@@ -45,7 +45,7 @@ install: $(PROGS) $(MANPAGES) installdirs
 		$(STRIP) $(DESTDIR)$(usbindir)/$$i; \
 	done
 	for i in $(MANPAGES); do \
-		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(man8dir)/$$i; \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
 	done
 
 uninstall:

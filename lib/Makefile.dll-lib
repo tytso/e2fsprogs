@@ -81,6 +81,7 @@ installdirs::
 install-shlibs install:: $(DLL_IMAGE).so.$(DLL_VERSION) installdirs
 	$(INSTALL_PROGRAM) $(DLL_IMAGE).so.$(DLL_VERSION) \
 		$(DESTDIR)$(DLL_INSTALL_DIR)/$(DLL_IMAGE).so.$(DLL_VERSION)
+	$(STRIP) $(DESTDIR)$(DLL_INSTALL_DIR)/$(DLL_IMAGE).so.$(DLL_VERSION)
 	-ldconfig
 
 install:: $(DLL_STUB).sa

@@ -12,6 +12,14 @@ ac_help=
 ac_default_prefix=/usr/local
 # Any additions from configure.in:
 ac_help="$ac_help
+  --with-cc=COMPILER      select compiler to use"
+ac_help="$ac_help
+  --with-linker=LINKER    select linker to use"
+ac_help="$ac_help
+  --with-ccopts=CCOPTS    select compiler command line options"
+ac_help="$ac_help
+  --with-ldopts=LDOPTS    select linker command line options"
+ac_help="$ac_help
   --enable-dll-shlibs	select DLL libraries"
 ac_help="$ac_help
   --enable-elf-shlibs	select ELF shared libraries"
@@ -412,6 +420,83 @@ fi
 
 MCONFIG=./MCONFIG
 
+BINARY_TYPE=bin
+E2FSPROGS_VERSION=`grep E2FSPROGS_VERSION ${srcdir}/version.h  \
+	| awk '{print $3}' | tr \" " " | awk '{print $1}'`
+DATE=`grep E2FSPROGS_DATE ${srcdir}/version.h | awk '{print $3}' \
+	| tr \" " "`
+MONTH=`echo $DATE | awk -F- '{print $2}'`
+YEAR=`echo $DATE | awk -F- '{print $3}'`
+
+if expr $YEAR ">" 90 >/dev/null ; then
+	E2FSPROGS_YEAR=19$YEAR
+else
+	E2FSPROGS_YEAR=20$YEAR
+fi
+
+case $MONTH in
+Jan)	E2FSPROGS_MONTH="January" ;;
+Feb)	E2FSPROGS_MONTH="February" ;;
+Mar)	E2FSPROGS_MONTH="March" ;;
+Apr)	E2FSPROGS_MONTH="April" ;;
+May)	E2FSPROGS_MONTH="May" ;;
+Jun)	E2FSPROGS_MONTH="June" ;;
+Jul)	E2FSPROGS_MONTH="July" ;;
+Aug)	E2FSPROGS_MONTH="August" ;;
+Sep)	E2FSPROGS_MONTH="September" ;;
+Oct)	E2FSPROGS_MONTH="October" ;;
+Nov)	E2FSPROGS_MONTH="November" ;;
+Dec)	E2FSPROGS_MONTH="December" ;;
+*)	echo "Unknown month $MONTH??" ;;
+esac
+
+unset DATE MONTH YEAR
+echo "Generating configuration file for e2fsprogs version $E2FSPROGS_VERSION"
+echo "Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}"
+
+
+
+# Check whether --with-cc or --without-cc was given.
+withval="$with_cc"
+if test -n "$withval"; then
+  echo "$ac_t""CC=$withval" 1>&6
+CC=$withval
+else
+  if test -z "$CC" ; then CC=cc; fi
+echo "$ac_t""CC defaults to $CC" 1>&6
+fi
+export CC
+
+# Check whether --with-linker or --without-linker was given.
+withval="$with_linker"
+if test -n "$withval"; then
+  echo "$ac_t""LD=$withval" 1>&6
+LD=$withval
+else
+  if test -z "$LD" ; then LD=$CC; fi
+echo "$ac_t""LD defaults to $LD" 1>&6
+fi
+export LD
+
+# Check whether --with-ccopts or --without-ccopts was given.
+withval="$with_ccopts"
+if test -n "$withval"; then
+  echo "$ac_t""CCOPTS is $withval" 1>&6
+CCOPTS=$withval
+CFLAGS="$CFLAGS $withval"
+else
+  CCOPTS=
+fi
+
+# Check whether --with-ldopts or --without-ldopts was given.
+withval="$with_ldopts"
+if test -n "$withval"; then
+  echo "$ac_t""LDFLAGS is $withval" 1>&6
+LDFLAGS=$withval
+else
+  LDFLAGS=
+fi
+
 # Check whether --enable-dll-shlibs or --disable-dll-shlibs was given.
 enableval="$enable_dll_shlibs"
 if test -n "$enableval"; then
@@ -423,6 +508,7 @@ then
 else
 	DLL_CMT=
 	MAKEFILE_DLL=$srcdir/lib/Makefile.dll-lib
+	BINARY_TYPE=dllbin
 	echo "Enabling DLL shared libraries"
 fi
 
@@ -446,6 +532,7 @@ then
 else
 	ELF_CMT=
 	MAKEFILE_ELF=$srcdir/lib/Makefile.elf-lib
+	BINARY_TYPE=elfbin
 	echo "Enabling ELF shared libraries"
 fi
 
@@ -547,6 +634,7 @@ fi
 
 
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
+
 
 echo $ac_n "checking whether ${MAKE-make} sets \${MAKE}""... $ac_c" 1>&6
 set dummy ${MAKE-make}; ac_make=$2
@@ -1182,7 +1270,7 @@ else
   ac_cv_c_cross=yes
 else
 cat > conftest.$ac_ext <<EOF
-#line 1186 "configure"
+#line 1274 "configure"
 #include "confdefs.h"
 main(){return(0);}
 EOF
@@ -1213,7 +1301,7 @@ else
   # On the NeXT, cc -E runs the code through the compiler's parser,
   # not just through cpp.
   cat > conftest.$ac_ext <<EOF
-#line 1217 "configure"
+#line 1305 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
@@ -1227,7 +1315,7 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -E -traditional-cpp"
   cat > conftest.$ac_ext <<EOF
-#line 1231 "configure"
+#line 1319 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
@@ -1252,7 +1340,7 @@ else
 fi
 echo "$ac_t""$CPP" 1>&6
 
-for ac_hdr in stdlib.h unistd.h stdarg.h errno.h mntent.h dirent.h getopt.h linux/fd.h sys/disklabel.h
+for ac_hdr in stdlib.h unistd.h stdarg.h errno.h mntent.h dirent.h getopt.h linux/fd.h linux/major.h sys/disklabel.h
 do
 ac_safe=`echo "$ac_hdr" | tr './\055' '___'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -1260,7 +1348,7 @@ if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1264 "configure"
+#line 1352 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
@@ -1293,7 +1381,7 @@ if eval "test \"`echo '$''{'ac_cv_func_vprintf'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1297 "configure"
+#line 1385 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char vprintf(); below.  */
@@ -1341,7 +1429,7 @@ if eval "test \"`echo '$''{'ac_cv_func__doprnt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1345 "configure"
+#line 1433 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char _doprnt(); below.  */
@@ -1390,7 +1478,7 @@ if eval "test \"`echo '$''{'e2fsprogs_cv_struct_d_namlen'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1394 "configure"
+#line 1482 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 #include <dirent.h>
@@ -1432,7 +1520,7 @@ else
     { echo "configure: error: can not run test program while cross compiling" 1>&2; exit 1; }
 else
 cat > conftest.$ac_ext <<EOF
-#line 1436 "configure"
+#line 1524 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 main()
@@ -1466,7 +1554,7 @@ else
     { echo "configure: error: can not run test program while cross compiling" 1>&2; exit 1; }
 else
 cat > conftest.$ac_ext <<EOF
-#line 1470 "configure"
+#line 1558 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 main()
@@ -1500,7 +1588,7 @@ else
     { echo "configure: error: can not run test program while cross compiling" 1>&2; exit 1; }
 else
 cat > conftest.$ac_ext <<EOF
-#line 1504 "configure"
+#line 1592 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 main()
@@ -1537,7 +1625,7 @@ if eval "test \"`echo '$''{'e2fsprogs_cv_struct_st_flags'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1541 "configure"
+#line 1629 "configure"
 #include "confdefs.h"
 #include <sys/stat.h>
 int main() { return 0; }
@@ -1570,7 +1658,7 @@ if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1574 "configure"
+#line 1662 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -1620,7 +1708,7 @@ if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1624 "configure"
+#line 1712 "configure"
 #include "confdefs.h"
 #include <linux/fs.h>
 EOF
@@ -1664,7 +1752,7 @@ if eval "test \"`echo '$''{'ac_cv_have_optreset'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1668 "configure"
+#line 1756 "configure"
 #include "confdefs.h"
 #include <unistd.h>
 EOF
@@ -1691,7 +1779,7 @@ if eval "test \"`echo '$''{'e2fsprogs_cv_struct_ext2_inode_frags'+set}'`\" = set
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1695 "configure"
+#line 1783 "configure"
 #include "confdefs.h"
 #include <linux/ext2_fs.h>
 int main() { return 0; }
@@ -1722,7 +1810,7 @@ if eval "test \"`echo '$''{'e2fsprogs_cv_ioctl_ext2'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1726 "configure"
+#line 1814 "configure"
 #include "confdefs.h"
 #include <linux/ext2_fs.h>
 #include <sys/ioctl.h>
@@ -1759,7 +1847,7 @@ linux*)
 ;;
 esac
 
-LDFALG_STATIC=
+LDFLAG_STATIC=
 case "$host_os" in
 linux*)
 	LDFLAG_STATIC=-static
@@ -1888,7 +1976,10 @@ ac_given_INSTALL="$INSTALL"
 trap 'rm -fr `echo "MCONFIG include/linux/types.h Makefile lib/et/Makefile 
 	lib/et/compile_et.sh lib/ss/Makefile lib/ss/mk_cmds.sh 
 	lib/ext2fs/Makefile lib/e2p/Makefile misc/Makefile 
-	e2fsck/Makefile debugfs/Makefile tests/Makefile" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+	e2fsck/Makefile debugfs/Makefile tests/Makefile lib/ext2fs/ext2_err.et 
+	debugfs/debugfs.8 e2fsck/e2fsck.8 misc/tune2fs.8 misc/lsattr.1
+	misc/chattr.1 misc/badblocks.8 misc/dumpe2fs.8 misc/mke2fs.8
+	misc/fsck.8 misc/mklost+found.8" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 
 # Protect against being on the right side of a sed subst in config.status. 
 sed 's/%@/@@/; s/@%/@@/; s/%g$/@g/; /@g$/s/[\\\\&%]/\\\\&/g; 
@@ -1906,6 +1997,12 @@ s%@prefix@%$prefix%g
 s%@program_transform_name@%$program_transform_name%g
 /@MCONFIG@/r $MCONFIG
 s%@MCONFIG@%%g
+s%@E2FSPROGS_YEAR@%$E2FSPROGS_YEAR%g
+s%@E2FSPROGS_MONTH@%$E2FSPROGS_MONTH%g
+s%@E2FSPROGS_VERSION@%$E2FSPROGS_VERSION%g
+s%@CC@%$CC%g
+s%@LD@%$LD%g
+s%@CCOPTS@%$CCOPTS%g
 s%@DLL_CMT@%$DLL_CMT%g
 /@MAKEFILE_DLL@/r $MAKEFILE_DLL
 s%@MAKEFILE_DLL@%%g
@@ -1924,6 +2021,7 @@ s%@MAKEFILE_CHECKER@%%g
 s%@W@%$W%g
 /@MAKEFILE_LIBRARY@/r $MAKEFILE_LIBRARY
 s%@MAKEFILE_LIBRARY@%%g
+s%@BINARY_TYPE@%$BINARY_TYPE%g
 s%@SET_MAKE@%$SET_MAKE%g
 s%@LN@%$LN%g
 s%@MV@%$MV%g
@@ -1945,7 +2043,6 @@ s%@build_os@%$build_os%g
 s%@AR@%$AR%g
 s%@RANLIB@%$RANLIB%g
 s%@STRIP@%$STRIP%g
-s%@CC@%$CC%g
 s%@INSTALL_PROGRAM@%$INSTALL_PROGRAM%g
 s%@INSTALL_DATA@%$INSTALL_DATA%g
 s%@CPP@%$CPP%g
@@ -1967,7 +2064,10 @@ cat >> $CONFIG_STATUS <<EOF
 CONFIG_FILES=\${CONFIG_FILES-"MCONFIG include/linux/types.h Makefile lib/et/Makefile 
 	lib/et/compile_et.sh lib/ss/Makefile lib/ss/mk_cmds.sh 
 	lib/ext2fs/Makefile lib/e2p/Makefile misc/Makefile 
-	e2fsck/Makefile debugfs/Makefile tests/Makefile"}
+	e2fsck/Makefile debugfs/Makefile tests/Makefile lib/ext2fs/ext2_err.et 
+	debugfs/debugfs.8 e2fsck/e2fsck.8 misc/tune2fs.8 misc/lsattr.1
+	misc/chattr.1 misc/badblocks.8 misc/dumpe2fs.8 misc/mke2fs.8
+	misc/fsck.8 misc/mklost+found.8"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then

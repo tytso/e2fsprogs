@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.TH CHATTR 1 "October 1995" "Version 1.01"
+.TH CHATTR 1 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 chattr \- change file attributes on a Linux second extended file system
 .SH SYNOPSIS

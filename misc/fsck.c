@@ -607,8 +607,11 @@ static int check_all(NOARGS)
 			fsck_device(fs->device);
 			fs->flags |= FLAG_DONE;
 
-			if (serialize)
+			if (serialize) {
+				pass_done = 0;
 				break; /* Only do one filesystem at a time */
+
+			}
 		}
 		inst = wait_one();
 		if (inst) {

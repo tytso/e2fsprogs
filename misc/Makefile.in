@@ -34,36 +34,36 @@ LIBS= -L../lib -lext2fs -le2p -lcom_err
 DEPLIBS= ../lib/libext2fs.a ../lib/libe2p.a ../lib/libcom_err.a 
 
 .c.o:
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
 all:: $(SPROGS) $(UPROGS) $(USPROGS)
 
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS)
-	$(CC) $(LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS)
 
 mklost+found: $(MKLPF_OBJS)
-	$(CC) $(LDFLAGS) -o mklost+found $(MKLPF_OBJS)
+	$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS)
 
 mke2fs: $(MKE2FS_OBJS) $(DEPLIBS)
-	$(CC) $(LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS)
 
 mke2fs.static: $(MKE2FS_OBJS) $(DEPLIBS)
-	$(CC) $(LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) $(LIBS)
 
 chattr: $(CHATTR_OBJS) $(DEPLIBS)
-	$(CC) $(LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS)
 
 lsattr: $(LSATTR_OBJS) $(DEPLIBS)
-	$(CC) $(LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS)
 
 dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS)
-	$(CC) $(LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS)
 
 fsck: $(FSCK_OBJS) $(DEPLIBS)
-	$(CC) $(LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS)
 
 badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
-	$(CC) $(LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS)
 
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(bindir) $(DESTDIR)$(sbindir) \
@@ -85,10 +85,10 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		$(STRIP) $(DESTDIR)$(ubindir)/$$i; \
 	done
 	for i in $(SMANPAGES); do \
-		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(man8dir)/$$i; \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
 	done
 	for i in $(UMANPAGES); do \
-		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(man1dir)/$$i; \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(man1dir)/$$i; \
 	done
 
 uninstall:

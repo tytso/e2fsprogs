@@ -25,9 +25,11 @@ INSTALL_DATA = @INSTALL_DATA@
 CC = @CC@
 DEFS = @DEFS@
 LIBS = @LIBS@
-CFLAGS = $(CPPFLAGS) $(DEFS) $(WFLAGS) @CFLAGS@ $(XTRA_CFLAGS) \
+CFLAGS = @CFLAGS@
+ALL_CFLAGS = $(CPPFLAGS) $(DEFS) $(WFLAGS) $(CFLAGS) $(XTRA_CFLAGS) \
 	-I$(top_builddir)/lib -I$(top_srcdir)/lib $(LINUX_INCLUDE) 
 LDFLAGS = @LDFLAGS@
+ALL_LDFLAGS = $(LDFLAGS)
 RM = @RM@
 LN = @LN@
 MV = @MV@
@@ -93,7 +95,7 @@ all::
 
 .depend: Makefile $(SRCS) $(top_srcdir)/depfix.sed
 	if test -n "$(SRCS)" ; then \
-		$(CC) -M $(CFLAGS) $(SRCS) | \
+		$(CC) -M $(ALL_CFLAGS) $(SRCS) | \
 			sed -f $(top_srcdir)/depfix.sed | \
 			sed -e 's; $(srcdir)/; $$(srcdir)/;g' | \
 			sed -e 's; $(top_srcdir)/; $$(top_srcdir)/;g' | \

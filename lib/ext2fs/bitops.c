@@ -27,7 +27,7 @@
  * systems, as well as non-32 bit systems.
  */
 
-int set_bit(int nr,void * addr)
+int ext2fs_set_bit(int nr,void * addr)
 {
 	int		mask, retval;
 	unsigned char	*ADDR = (unsigned char *) addr;
@@ -39,7 +39,7 @@ int set_bit(int nr,void * addr)
 	return retval;
 }
 
-int clear_bit(int nr, void * addr)
+int ext2fs_clear_bit(int nr, void * addr)
 {
 	int		mask, retval;
 	unsigned char	*ADDR = (unsigned char *) addr;
@@ -51,7 +51,7 @@ int clear_bit(int nr, void * addr)
 	return retval;
 }
 
-int test_bit(int nr, const void * addr)
+int ext2fs_test_bit(int nr, const void * addr)
 {
 	int			mask;
 	const unsigned char	*ADDR = (const unsigned char *) addr;

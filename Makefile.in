@@ -60,6 +60,16 @@ realclean-local: distclean-local
 check:
 	(cd tests; make check)
 
+distribution_tar_file:
+	rm -rf /tmp/dest
+	make DESTDIR=/tmp/dest install
+	cd ..
+	cp -r $(srcdir)/README $(srcdir)/install-utils /tmp/dest
+	cp $(srcdir)/INSTALL.@BINARY_TYPE@ /tmp/dest/INSTALL
+	(cd /tmp/dest; tar cf - . ) | gzip -9 \
+		> e2fsprogs-@E2FSPROGS_VERSION@-@BINARY_TYPE@.tar.gz
+
+
 Makefile: config.status $(srcdir)/Makefile.in
 	CONFIG_FILES=$@ CONFIG_HEADERS= ./config.status
 

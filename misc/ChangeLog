@@ -1,3 +1,26 @@
+Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.02
+
+Tue Oct 30 21:14:12 1995    <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (check_plausibility): Add check to warn user if they
+		are trying to mke2fs the whole disk.  (/dev/hda
+		vs. /dev/hda1)
+
+Fri Dec 15 19:09:56 1995    <tytso@rsts-11.mit.edu>
+
+	* fsck.c (check_all): If we break out of the loop because we are
+		serializing and have just started at fsck we haven't
+		finished the pass. We need to go round again in case there
+		are more filesystems to be done in this pass.  (Patch
+		submitted by Mike Jagdis)
+
+Sat Dec  9 10:07:16 1995    <tytso@rsts-11.mit.edu>
+
+	* dumpe2fs.c (in_use): test_bit() was renamed to
+	        ext2fs_test_bit().
+
 Mon Oct 30 20:21:18 1995    <tytso@rsts-11.mit.edu>
 
 	* fsck.c (fsck_device): Check fstype instead of type; this was a

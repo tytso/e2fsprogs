@@ -103,13 +103,17 @@ static void show_stats(ext2_filsys fs)
 		       fs->super->s_free_blocks_count);
 	
 	if (!verbose) {
-		printf("%s: %d/%d files, %d/%d blocks\n", device_name,
-		       inodes_used, inodes, blocks_used, blocks);
+		printf("%s: %d/%d files (%3.1f%% non-contiguous), %d/%d blocks\n",
+		       device_name, inodes_used, inodes,
+		       100.00 * fs_fragmented / inodes_used,
+		       blocks_used, blocks);
 		return;
 	}
 	printf ("\n%8d inode%s used (%d%%)\n", inodes_used,
 		(inodes_used != 1) ? "s" : "",
 		100 * inodes_used / inodes);
+	printf ("%8d non-contiguous inodes (%3.1f%%)\n",
+		fs_fragmented, 100.00 * fs_fragmented / inodes_used);
 	printf ("         # of inodes with ind/dind/tind blocks: %d/%d/%d\n",
 		fs_ind_count, fs_dind_count, fs_tind_count);
 	printf ("%8d block%s used (%d%%)\n"
@@ -156,7 +160,7 @@ static void check_mount(NOARGS)
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		return;
 
-#if (defined(linux) && defined(HAVE_MNTENT_H))
+#if (defined(__linux__) && defined(HAVE_MNTENT_H))
 	/*
 	 * If the root is mounted read-only, then /etc/mtab is
 	 * probably not correct; so we won't issue a warning based on

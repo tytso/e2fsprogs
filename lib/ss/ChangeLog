@@ -1,3 +1,7 @@
+Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.02
+
 Wed Oct 25 11:58:20 1995    <tytso@rsts-11.mit.edu>
 
 	* ss_internal.h: Removed malloc, realloc, free definitions, and
