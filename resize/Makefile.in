@@ -74,7 +74,7 @@ uninstall:
 	done
 
 test_extent.out: test_extent $(srcdir)/test_extent.in
-	LD_LIBRARY_PATH=$(LIB) ./test_extent < $(srcdir)/test_extent.in \
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./test_extent < $(srcdir)/test_extent.in \
 		> test_extent.out
 
 check:: test_extent.out

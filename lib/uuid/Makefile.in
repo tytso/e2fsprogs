@@ -156,7 +156,7 @@ clean::
 	$(RM) -f ../libuuid.a ../libuuid_p.a tst_uuid uuid_time $(SMANPAGES)
 
 check:: tst_uuid
-	LD_LIBRARY_PATH=$(LIB) ./tst_uuid
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_uuid
 
 mostlyclean:: clean
 distclean:: clean

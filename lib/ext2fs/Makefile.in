@@ -207,9 +207,9 @@ mkjournal: mkjournal.c $(STATIC_LIBEXT2FS)
 	$(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
 
 check:: tst_badblocks tst_iscan @SWAPFS_CMT@ tst_byteswap
-	LD_LIBRARY_PATH=$(LIB) ./tst_badblocks
-	LD_LIBRARY_PATH=$(LIB) ./tst_iscan
-@SWAPFS_CMT@	LD_LIBRARY_PATH=$(LIB) ./tst_byteswap
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_badblocks
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_iscan
+@SWAPFS_CMT@	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_byteswap
 
 installdirs::
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir) \
