@@ -137,6 +137,8 @@ struct mke2fs_defaults {
 	{ default_str, 512, 1024, 4096 },
 	{ default_str, 3, 1024, 8192 },
 	{ "news", 0, 4096, 4096 },
+	{ "largefile", 0, 4096, 1024 * 1024 },
+	{ "largefile4", 0, 4096, 4096 * 1024 },
 	{ 0, 0, 0, 0},
 };
 
@@ -725,7 +727,7 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'i':
 			inode_ratio = strtoul(optarg, &tmp, 0);
-			if (inode_ratio < 1024 || inode_ratio > 256 * 1024 ||
+			if (inode_ratio < 1024 || inode_ratio > 4096 * 1024 ||
 			    *tmp) {
 				com_err(program_name, 0,
 					_("bad inode ratio - %s"), optarg);
@@ -927,6 +929,7 @@ int main (int argc, char *argv[])
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
 	int		journal_blocks;
+	int		i, val;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -954,6 +957,15 @@ int main (int argc, char *argv[])
 	 * Generate a UUID for it...
 	 */
 	uuid_generate(fs->super->s_uuid);
+
+	/*
+	 * Add "jitter" to the superblock's check interval so that we
+	 * don't check all the filesystems at the same time.  We use a
+	 * kludgy hack of using the UUID to derive a random jitter value.
+	 */
+	for (i = 0, val = 0 ; i < sizeof(fs->super->s_uuid); i++)
+		val += fs->super->s_uuid[i];
+	fs->super->s_max_mnt_count += val % EXT2_DFL_MAX_MNT_COUNT;
 
 	/*
 	 * Override the creator OS, if applicable

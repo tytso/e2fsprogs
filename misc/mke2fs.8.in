@@ -268,8 +268,14 @@ is no guarantee that any data will be salvageable.
 .TP
 .BI \-T " fs-type"
 Specify how the filesystem is going to be used, so that mke2fs can 
-automatically determine the optimal filesystem parameters.  The only
-filesystem type which is currently supported is "news".
+chose optimal filesystem parameters for that use.  The only
+currently supported filesystem types are:
+.BR news ,
+which reserves space for  one inode per 4kb block,
+.BR largefile
+which allocates one inode per megabyte, and
+.BR largefile4
+which allocates one inode per 4 megabytes.  
 .TP
 .B \-V
 Print the version number of 

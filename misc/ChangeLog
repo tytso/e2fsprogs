@@ -1,5 +1,14 @@
 2001-01-14  Theodore Ts'o  <tytso@valinux.com>
 
+	* mke2fs.c: Add new filesystem types, largefile and largefile4,
+		for those filesystems whose average inode size is 1MB and
+		4MB, respectively.  Allow the inode ratio specified to be
+		has high as 4MB.   Make the s_max_mount_count vary between
+		20 and 40, to avoid needing to check all of the
+		filesystems at the same time.  Add some random jitter to
+		the s_max_mount_count value so that we avoid checking all
+		of the filesystems at the same time when we reboot.
+
 	* tune2fs.8.in: Add description of the -j option.
 
 	* tune2fs.c (add_journal): Minor fixes from Andreas Dilger. Flush
