@@ -1,5 +1,12 @@
 2000-08-14    <tytso@valinux.com>
 
+	* util.c (open_pager): If the PAGER environment variable is not
+		set, default to using "more".
+
+	* setsuper.c: New function which implements the set_super_value
+		command.  Allows the user to set arbitrary superblock
+		fields.
+
 	* debugfs.c (dump_inode): Cap the length when printing a fast
 		symbolic link to inode.i_size.
 		(list_blocks_proc): Print block ranges (4510-4533) to make

@@ -21,11 +21,12 @@ FILE *open_pager(void)
 	char *pager = getenv("PAGER");
 
 	if (!pager)
+		pager = "more";
+
+	outfile = popen(pager, "w");
+	if (!outfile)
 		outfile = stdout;
-	else {
-		outfile = popen(pager, "w");
-		if (!outfile) outfile = stdout;
-	}
+
 	return (outfile);
 }
 

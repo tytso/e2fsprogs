@@ -118,5 +118,8 @@ request do_lcd, "Change the current directory on your native filesystem",
 request do_rdump, "Recursively dump a directory to the native filesystem",
 	rdump;
 
+request do_set_super, "Set superblock value",
+	set_super_value, ssv;
+
 end;
 
