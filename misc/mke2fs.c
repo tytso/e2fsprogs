@@ -20,7 +20,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <time.h>
-#ifdef linux
+#ifdef __linux__
 #include <sys/utsname.h>
 #endif
 #ifdef HAVE_GETOPT_H
@@ -550,10 +550,16 @@ static void reserve_inodes(ext2_filsys fs)
 	ext2fs_mark_ib_dirty(fs);
 }
 
+#ifdef __alpha__
+#define BSD_DISKMAGIC   (0x82564557UL)  /* The disk magic number */
+#define BSD_LABEL_OFFSET        64
+#endif
+
 static void zap_sector(ext2_filsys fs, int sect, int nsect)
 {
 	char *buf;
 	int retval;
+	unsigned int *magic;
 
 	buf = malloc(512*nsect);
 	if (!buf) {
@@ -562,7 +568,20 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 		exit(1);
 	}
 	memset(buf, 0, 512*nsect);
-	
+
+#ifdef __alpha__
+	/* Check for a BSD disklabel, and don't erase it if so */
+	retval = io_channel_read_blk(fs->io, 0, -512, buf);
+	if (retval)
+		fprintf(stderr, _("Warning: could not read block 0: %s\n"),
+			error_message(retval));
+	else {
+		magic = (unsigned int *) (buf + BSD_LABEL_OFFSET);
+		if (*magic == BSD_DISKMAGIC)
+			return;
+	}
+#endif
+
 	io_channel_set_blksize(fs->io, 512);
 	retval = io_channel_write_blk(fs->io, sect, -512*nsect, buf);
 	io_channel_set_blksize(fs->io, fs->blocksize);
@@ -776,7 +795,7 @@ static void PRS(int argc, char *argv[])
 	const char *	fs_type = 0;
 	int		default_features = 1;
 	blk_t		dev_size;
-#ifdef linux
+#ifdef __linux__
 	struct 		utsname ut;
 #endif
 
@@ -804,7 +823,7 @@ static void PRS(int argc, char *argv[])
 	param.s_feature_incompat |= EXT2_FEATURE_INCOMPAT_FILETYPE;
 	param.s_feature_ro_compat |= EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 		
-#ifdef linux
+#ifdef __linux__
 	if (uname(&ut)) {
 		perror("uname");
 		exit(1);
