@@ -445,7 +445,7 @@ if test "$e2fsprogs_cv_struct_st_flags" = yes; then
 	  AC_DEFINE(HAVE_STAT_FLAGS)
   fi
 fi
-AC_CHECK_FUNCS(chflags getrusage llseek strdup getmntinfo strcasecmp srandom fchown mallinfo)
+AC_CHECK_FUNCS(chflags getrusage llseek strdup getmntinfo strcasecmp srandom fchown mallinfo fdatasync)
 dnl
 dnl Check to see if ino_t is defined
 dnl
