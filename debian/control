@@ -1,7 +1,7 @@
 Source: e2fsprogs
 Section: base
 Priority: required
-Maintainer: Yann Dirson <dirson@debian.org>
+Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
 Build-Depends: texi2html, texinfo, debhelper (>= 4)
 Standards-Version: 3.5.6
 

@@ -1,7 +1,8 @@
-e2fsprogs (1.32+1.33-WIP-0316-1) unstable; urgency=low
+e2fsprogs (1.32+1.33-WIP-2003.03.25-1) unstable; urgency=low
 
+  * New maintainer
   * New upstream release (Closes: #176814, #174766, #166048, #179671,
-    #173612, #175233, #175113, #170497)
+    #173612, #175233, #175113, #170497, #185945)
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 16 Mar 2003 18:05:08 -0500
 
