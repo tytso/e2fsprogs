@@ -554,6 +554,11 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 	int retval;
 
 	buf = malloc(512*nsect);
+	if (!buf) {
+		printf(_("Warning: out of memory erasing sectors %d-%d: %s\n"),
+		       sect, sect + nsect - 1, error_message(retval));
+		exit(1);
+	}
 	memset(buf, 0, 512*nsect);
 	
 	io_channel_set_blksize(fs->io, 512);
@@ -1199,8 +1204,7 @@ int main (int argc, char *argv[])
 	if (fs->super->s_feature_incompat &
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		create_journal_dev(fs);
-		ext2fs_close(fs);
-		exit(0);
+		exit(ext2fs_close(fs) ? 1 : 0);
 	}
 
 	if (bad_blocks_filename)
@@ -1323,6 +1327,6 @@ no_journal:
 		printf(_("done\n\n"));
 		print_check_message(fs);
 	}
-	ext2fs_close(fs);
-	return 0;
+	val = ext2fs_close(fs);
+	return (retval || val) ? 1 : 0;
 }
