@@ -156,6 +156,7 @@ struct resource_track {
 #define E2F_FLAG_JOURNAL_INODE	0x0080 /* Create a new ext3 journal inode */
 #define E2F_FLAG_SB_SPECIFIED	0x0100 /* The superblock was explicitly 
 					* specified by the user */
+#define E2F_FLAG_RESTARTED	0x0100 /* E2fsck has been restarted */
 
 /*
  * Defines for indicating the e2fsck pass number

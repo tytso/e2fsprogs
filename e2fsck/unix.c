@@ -933,6 +933,17 @@ restart:
 				 "check.\n"));
 			io_channel_flush(ctx->fs->io);
 		} else {
+			if (ctx->flags & E2F_FLAG_RESTARTED) {
+				/*
+				 * Whoops, we attempted to run the
+				 * journal twice.  This should never
+				 * happen, unless the hardware or
+				 * device driver is being bogus.
+				 */
+				com_err(ctx->program_name, 0,
+					_("unable to set superblock flags on %s\n"), ctx->device_name);
+				fatal_error(ctx, 0);
+			}
 			retval = e2fsck_run_ext3_journal(ctx);
 			if (retval) {
 				com_err(ctx->program_name, retval,
@@ -942,6 +953,7 @@ restart:
 			}
 			ext2fs_close(ctx->fs);
 			ctx->fs = 0;
+			ctx->flags |= E2F_FLAG_RESTARTED;
 			goto restart;
 		}
 	}
