@@ -1,3 +1,7 @@
+2001-11-30  Gabriel Paubert <paubert@iram.es>
+
+	* f_badorphan: Revert previous, erroneous change.
+
 2001-11-30  Theodore Tso  <tytso@valinux.com>
 
 	* f_badorphan, f_journal: Update expect files to reflect the fact
