@@ -1,3 +1,10 @@
+2005-01-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Make configure.in script check for prerequisite
+		headers when checking for the presence of sys/disk.h,
+		sys/mount.h, and net/if.h, to improve the configure script
+		on Solaris and *BSD systems. 
+
 2005-01-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Use AC_PROG_AWK instead of AC_PATH_PROG so that we
