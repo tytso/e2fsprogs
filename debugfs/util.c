@@ -186,12 +186,16 @@ int check_fs_bitmaps(char *name)
  */
 char *time_to_string(__u32 cl)
 {
-	time_t	t = (time_t) cl;
-	static int do_gmt = -1;
+	static int	do_gmt = -1;
+	time_t		t = (time_t) cl;
+	char *		tz;
 
 	if (do_gmt == -1) {
 		/* The diet libc doesn't respect the TZ environemnt variable */
-		do_gmt = !strcmp(getenv("TZ"), "GMT");
+		tz = getenv("TZ");
+		if (!tz)
+			tz = "";
+		do_gmt = !strcmp(tz, "GMT");
 	}
 
 	return asctime((do_gmt) ? gmtime(&t) : localtime(&t));

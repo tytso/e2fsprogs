@@ -273,7 +273,10 @@ static _INLINE_ void expand_inode_expression(char ch,
 	case 'M':
 		/* The diet libc doesn't respect the TZ environemnt variable */
 		if (do_gmt == -1) {
-			do_gmt = !strcmp(getenv("TZ"), "GMT");
+			time_str = getenv("TZ");
+			if (!time_str)
+				time_str = "";
+			do_gmt = !strcmp(time_str, "GMT");
 		}
 		t = inode->i_mtime;
 		time_str = asctime(do_gmt ? gmtime(&t) : localtime(&t));
