@@ -219,6 +219,7 @@ struct e2fsck_struct {
 	int progress_fd;
 	int progress_pos;
 	int progress_last_percent;
+	unsigned int progress_last_time;
 
 	/* File counts */
 	int fs_directory_count;

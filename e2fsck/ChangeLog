@@ -1,3 +1,9 @@
+2000-02-12    <tytso@snap.thunk.org>
+
+	* unix.c (e2fsck_update_progress): Limit the number of updates to
+		the progress bars to 8 times a second.  This allows a 9600
+		baud console link to keep up.
+
 2000-02-11    <tytso@snap.thunk.org>
 
 	* unix.c (main): If compression is enabled on the filesystem,

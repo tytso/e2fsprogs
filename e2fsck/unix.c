@@ -325,6 +325,8 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 	char buf[80];
 	int	i;
 	float percent;
+	int	tick;
+	struct timeval	tv;
 
 	if (pass == 0)
 		return 0;
@@ -335,6 +337,12 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 	} else {
 		if (ctx->flags & E2F_FLAG_PROG_SUPPRESS)
 			return 0;
+		gettimeofday(&tv, NULL);
+		tick = (tv.tv_sec << 3) + (tv.tv_usec / (1000000 / 8));
+		if ((tick == ctx->progress_last_time) &&
+		    (cur != max) && (cur != 0))
+			return 0;
+		ctx->progress_last_time = tick;
 		ctx->progress_pos = (ctx->progress_pos+1) & 3;
 		ctx->flags |= E2F_FLAG_PROG_BAR;
 		percent = calc_percent(&e2fsck_tbl, pass, cur, max);
