@@ -1,3 +1,8 @@
+2002-10-11  Theodore Ts'o  <tytso@mit.edu>
+
+	* mklost+found.c (main): Make sure the lost+found directory is
+		created with 0700 permissions.
+
 2002-10-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2image.c (write_raw_image_file): Handle a bad block in the

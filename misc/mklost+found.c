@@ -48,7 +48,7 @@ int main (int argc, char ** argv)
 		fprintf (stderr, _("Usage: mklost+found\n"));
 		exit(1);
 	}
-	if (mkdir (LPF, 0755) == -1) {
+	if (mkdir (LPF, 0700) == -1) {
 		perror ("mkdir");
 		exit(1);
 	}

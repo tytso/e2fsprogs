@@ -1,3 +1,8 @@
+2002-10-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass3.c (e2fsck_get_lost_and_found): Create the lost+found
+		directory with mode 0700.
+
 2002-10-02  Theodore Y. Ts'o  <tytso@mit.edu>
 	
 	* pass2.c (parse_int_node, check_dir_block): Add byte-swap
