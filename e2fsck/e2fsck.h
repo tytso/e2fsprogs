@@ -359,7 +359,6 @@ extern int e2fsck_run(e2fsck_t ctx);
 /* badblock.c */
 extern void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 				 int replace_bad_blocks);
-extern void test_disk(e2fsck_t ctx);
 
 /* dirinfo.c */
 extern void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent);

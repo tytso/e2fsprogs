@@ -1034,7 +1034,7 @@ restart:
 	if (bad_blocks_file)
 		read_bad_blocks_file(ctx, bad_blocks_file, replace_bad_blocks);
 	else if (cflag)
-		test_disk(ctx);
+		read_bad_blocks_file(ctx, 0, 1); /* Test disk */
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		fatal_error(ctx, 0);
 #ifdef ENABLE_SWAPFS

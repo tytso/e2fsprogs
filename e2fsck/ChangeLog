@@ -1,3 +1,14 @@
+2003-12-02  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (main): When testing a disk using e2fsck -c, use the list
+		of new bad blocks to replace the current list of bad
+		blocks.  This way "e2fsck -c" can be used to recover from
+		a corrupted bad block inode.
+
+	* badblocks.c (test_disk): Remove the test_disk() file; e2fsck
+		will just call read_bad_blocks_file() directly with the
+		file parameter set to NULL.
+
 2003-09-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (is_on_batt, check_if_skip): If running on battery, then
