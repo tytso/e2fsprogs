@@ -1,3 +1,7 @@
+2004-02-21  Matthias Andree  <matthias.andree@gmx.de>
+
+	* gen-tarball.in: Do not package autom4te.cache directory.
+
 2003-12-07  Theodore Ts'o  <tytso@mit.edu>
 
 	* subst.c: Fix gcc -Wall nitpicks.

@@ -79,7 +79,8 @@ mv ../e2fsprogs.spec $top_srcdir/e2fsprogs.spec
 (cd $top_srcdir/.. ; find $base_e2fsprogs \( -name \*~ -o -name \*.orig \
 		-o -name CVS -o -name \*.rej -o -name Makefile.pq \
 		-o -name TAGS -o -name \*.old -o -name \*.gmo -o -name SCCS \
-		-o -name changed-files -o -name .#\* -o -name \*.tar.gz \) \
+		-o -name changed-files -o -name .#\* -o -name \*.tar.gz \
+		-o -name autom4te.cache \) \
 		-print) | sed -e "s/^$base_e2fsprogs/$SRCROOT/" > $exclude
 sed -e "s;^;$SRCROOT/;" < $srcdir/$list.exclude >> $exclude
 
