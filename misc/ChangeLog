@@ -1,3 +1,11 @@
+2001-07-19  Theodore Tso  <tytso@valinux.com>
+
+	* fstype.c (identify_fs): New file which looks at the superblock
+		of the filesystem to determines its type.
+
+	* fsck.c (fsck_device, ignore, interpret_type): Call identify_fs
+		if the type specified in /etc/fstab is "auto".
+
 2001-06-23  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.22

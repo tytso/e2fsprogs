@@ -31,12 +31,12 @@ UUIDGEN_OBJS=	uuidgen.o
 DUMPE2FS_OBJS=	dumpe2fs.o
 BADBLOCKS_OBJS=	badblocks.o
 E2IMAGE_OBJS=	e2image.o
-FSCK_OBJS=	fsck.o get_device_by_label.o base_device.o
+FSCK_OBJS=	fsck.o get_device_by_label.o base_device.o fstype.o
 
 SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/chattr.c $(srcdir)/lsattr.c $(srcdir)/dumpe2fs.c \
 		$(srcdir)/badblocks.c $(srcdir)/fsck.c $(srcdir)/util.c \
-		$(srcdir)/uuidgen.c
+		$(srcdir)/uuidgen.c $(srcdir)/fstype.c
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
 DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 

@@ -252,6 +252,26 @@ static char *interpret_device(char *spec)
 }
 
 /*
+ * Interpret filesystem auto type if necessary
+ */
+static void interpret_type(struct fs_info *fs)
+{
+	const char	*type;
+	
+	if (strcmp(fs->type, "auto") == 0) {
+		type = identify_fs(fs->device);
+		if (type) {
+			free(fs->type);
+			fs->type = string_copy(type);
+		} else
+			fprintf(stderr, _("Could not determine "
+					  "filesystem type for %s\n"),
+				fs->device);
+	}
+}
+
+
+/*
  * Load the filesystem database from /etc/fstab
  */
 static void load_fs_info(const char *filename)
@@ -598,6 +618,7 @@ static void fsck_device(char *device, int interactive)
 
 	if ((fsent = lookup(device))) {
 		device = fsent->device;
+		interpret_type(fsent);
 		if (!type)
 			type = fsent->type;
 	}
@@ -763,6 +784,8 @@ static int ignore(struct fs_info *fs)
 	 */
 	if (fs->passno == 0)
 		return 1;
+
+	interpret_type(fs);
 
 	/*
 	 * If a specific fstype is specified, and it doesn't match,
