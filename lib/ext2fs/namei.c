@@ -26,7 +26,7 @@
 #include "ext2fs.h"
 
 static errcode_t open_namei(ext2_filsys fs, ino_t root, ino_t base,
-			    const char *pathname, int pathlen, int follow,
+			    const char *pathname, size_t pathlen, int follow,
 			    int link_count, char *buf, ino_t *res_inode);
 
 static errcode_t follow_link(ext2_filsys fs, ino_t root, ino_t dir,
@@ -115,7 +115,7 @@ static errcode_t dir_namei(ext2_filsys fs, ino_t root, ino_t dir,
 }
 
 static errcode_t open_namei(ext2_filsys fs, ino_t root, ino_t base,
-			    const char *pathname, int pathlen, int follow,
+			    const char *pathname, size_t pathlen, int follow,
 			    int link_count, char *buf, ino_t *res_inode)
 {
 	const char *basename;

@@ -48,7 +48,7 @@ struct ext2_icount_el {
 };
 
 struct ext2_icount {
-	int			magic;
+	errcode_t		magic;
 	ext2fs_inode_bitmap	single;
 	ext2fs_inode_bitmap	multiple;
 	ino_t			count;
@@ -84,7 +84,7 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
 	if (hint) {
 		EXT2_CHECK_MAGIC(hint, EXT2_ET_MAGIC_ICOUNT);
 		if (hint->size > size)
-			size = hint->size;
+			size = (size_t) hint->size;
 	}
 	
 	icount = malloc(sizeof(struct ext2_icount));
@@ -119,7 +119,7 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
 		icount->size += fs->super->s_inodes_count / 50;
 	}
 	
-	bytes = icount->size * sizeof(struct ext2_icount_el);
+	bytes = (size_t) (icount->size * sizeof(struct ext2_icount_el));
 #if 0
 	printf("Icount allocated %d entries, %d bytes.\n",
 	       icount->size, bytes);
@@ -172,7 +172,7 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 
 	if (icount->count >= icount->size) {
 		if (icount->count) {
-			new_size = icount->list[icount->count-1].ino;
+			new_size = icount->list[(unsigned)icount->count-1].ino;
 			new_size = icount->count * 
 				((float) new_size / icount->num_inodes);
 		}
@@ -181,14 +181,14 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 #if 0
 		printf("Reallocating icount %d entries...\n", new_size);
 #endif	
-		new_list = realloc(icount->list,
-			new_size * sizeof(struct ext2_icount_el));
+		new_list = realloc(icount->list, (size_t) new_size *
+				   sizeof(struct ext2_icount_el));
 		if (!new_list)
 			return 0;
 		icount->size = new_size;
 		icount->list = new_list;
 	}
-	num = icount->count - pos;
+	num = (int) icount->count - pos;
 	if (num < 0)
 		return 0;	/* should never happen */
 	if (num) {
@@ -218,8 +218,8 @@ static struct ext2_icount_el *get_icount_el(ext2_icount_t icount,
 		return 0;
 
 	if (create && ((icount->count == 0) ||
-		       (ino > icount->list[icount->count-1].ino))) {
-		return insert_icount_el(icount, ino, icount->count);
+		       (ino > icount->list[(unsigned)icount->count-1].ino))) {
+		return insert_icount_el(icount, ino, (unsigned) icount->count);
 	}
 	if (icount->count == 0)
 		return 0;
@@ -232,7 +232,7 @@ static struct ext2_icount_el *get_icount_el(ext2_icount_t icount,
 	printf("Non-cursor get_icount_el: %u\n", ino);
 #endif
 	low = 0;
-	high = icount->count-1;
+	high = (int) icount->count-1;
 	while (low <= high) {
 #if 0
 		mid = (low+high)/2;

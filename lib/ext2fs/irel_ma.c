@@ -91,19 +91,21 @@ errcode_t ext2fs_irel_memarray_create(char *name, ino_t max_inode,
 	memset(ma, 0, sizeof(struct irel_ma));
 	irel->private = ma;
 	
-	size = sizeof(ino_t) * (max_inode+1);
+	size = (size_t) (sizeof(ino_t) * (max_inode+1));
 	ma->orig_map = malloc(size);
 	if (!ma->orig_map)
 		goto errout;
 	memset(ma->orig_map, 0, size);
 
-	size = sizeof(struct ext2_inode_relocate_entry) * (max_inode+1);
+	size = (size_t) (sizeof(struct ext2_inode_relocate_entry) *
+			 (max_inode+1));
 	ma->entries = malloc(size);
 	if (!ma->entries)
 		goto errout;
 	memset(ma->entries, 0, size);
 
-	size = sizeof(struct inode_reference_entry) * (max_inode+1);
+	size = (size_t) (sizeof(struct inode_reference_entry) *
+			 (max_inode+1));
 	ma->ref_entries = malloc(size);
 	if (!ma->ref_entries)
 		goto errout;
@@ -149,16 +151,17 @@ static errcode_t ima_put(ext2_irel irel, ino_t old,
 	 * Force the orig field to the correct value; the application
 	 * program shouldn't be messing with this field.
 	 */
-	if (ma->entries[old].new == 0)
+	if (ma->entries[(unsigned) old].new == 0)
 		ent->orig = old;
 	else
-		ent->orig = ma->entries[old].orig;
+		ent->orig = ma->entries[(unsigned) old].orig;
 	
 	/*
 	 * If max_refs has changed, reallocate the refs array
 	 */
-	ref_ent = ma->ref_entries + old;
-	if (ref_ent->refs && ent->max_refs != ma->entries[old].max_refs) {
+	ref_ent = ma->ref_entries + (unsigned) old;
+	if (ref_ent->refs && ent->max_refs !=
+	    ma->entries[(unsigned) old].max_refs) {
 		size = (sizeof(struct ext2_inode_reference) * ent->max_refs);
 		new_refs = realloc(ref_ent->refs, size);
 		if (!new_refs)
@@ -166,8 +169,8 @@ static errcode_t ima_put(ext2_irel irel, ino_t old,
 		ref_ent->refs = new_refs;
 	}
 
-	ma->entries[old] = *ent;
-	ma->orig_map[ent->orig] = old;
+	ma->entries[(unsigned) old] = *ent;
+	ma->orig_map[(unsigned) ent->orig] = old;
 	return 0;
 }
 
@@ -179,9 +182,9 @@ static errcode_t ima_get(ext2_irel irel, ino_t old,
 	ma = irel->private;
 	if (old > ma->max_inode)
 		return EINVAL;
-	if (ma->entries[old].new == 0)
+	if (ma->entries[(unsigned) old].new == 0)
 		return ENOENT;
-	*ent = ma->entries[old];
+	*ent = ma->entries[(unsigned) old];
 	return 0;
 }
 
@@ -194,11 +197,11 @@ static errcode_t ima_get_by_orig(ext2_irel irel, ino_t orig, ino_t *old,
 	ma = irel->private;
 	if (orig > ma->max_inode)
 		return EINVAL;
-	ino = ma->orig_map[orig];
+	ino = ma->orig_map[(unsigned) orig];
 	if (ino == 0)
 		return ENOENT;
 	*old = ino;
-	*ent = ma->entries[ino];
+	*ent = ma->entries[(unsigned) ino];
 	return 0;
 }
 
@@ -215,10 +218,10 @@ static errcode_t ima_next(ext2_irel irel, ino_t *old,
 
 	ma = irel->private;
 	while (++irel->current < ma->max_inode) {
-		if (ma->entries[irel->current].new == 0)
+		if (ma->entries[(unsigned) irel->current].new == 0)
 			continue;
 		*old = irel->current;
-		*ent = ma->entries[irel->current];
+		*ent = ma->entries[(unsigned) irel->current];
 		return 0;
 	}
 	*old = 0;
@@ -237,14 +240,15 @@ static errcode_t ima_add_ref(ext2_irel irel, ino_t ino,
 	if (ino > ma->max_inode)
 		return EINVAL;
 
-	ref_ent = ma->ref_entries + ino;
-	ent = ma->entries + ino;
+	ref_ent = ma->ref_entries + (unsigned) ino;
+	ent = ma->entries + (unsigned) ino;
 	
 	/*
 	 * If the inode reference array doesn't exist, create it.
 	 */
 	if (ref_ent->refs == 0) {
-		size = (sizeof(struct ext2_inode_reference) * ent->max_refs);
+		size = (size_t) ((sizeof(struct ext2_inode_reference) * 
+				  ent->max_refs));
 		ref_ent->refs = malloc(size);
 		if (ref_ent->refs == 0)
 			return ENOMEM;
@@ -255,7 +259,7 @@ static errcode_t ima_add_ref(ext2_irel irel, ino_t ino,
 	if (ref_ent->num >= ent->max_refs)
 		return ENOSPC;
 
-	ref_ent->refs[ref_ent->num++] = *ref;
+	ref_ent->refs[(unsigned) ref_ent->num++] = *ref;
 	return 0;
 }
 
@@ -266,7 +270,7 @@ static errcode_t ima_start_iter_ref(ext2_irel irel, ino_t ino)
 	ma = irel->private;
 	if (ino > ma->max_inode)
 		return EINVAL;
-	if (ma->entries[ino].new == 0)
+	if (ma->entries[(unsigned) ino].new == 0)
 		return ENOENT;
 	ma->ref_current = ino;
 	ma->ref_iter = 0;
@@ -301,17 +305,17 @@ static errcode_t ima_move(ext2_irel irel, ino_t old, ino_t new)
 	ma = irel->private;
 	if ((old > ma->max_inode) || (new > ma->max_inode))
 		return EINVAL;
-	if (ma->entries[old].new == 0)
+	if (ma->entries[(unsigned) old].new == 0)
 		return ENOENT;
 	
-	ma->entries[new] = ma->entries[old];
-	if (ma->ref_entries[new].refs)
-		free(ma->ref_entries[new].refs);
-	ma->ref_entries[new] = ma->ref_entries[old];
+	ma->entries[(unsigned) new] = ma->entries[(unsigned) old];
+	if (ma->ref_entries[(unsigned) new].refs)
+		free(ma->ref_entries[(unsigned) new].refs);
+	ma->ref_entries[(unsigned) new] = ma->ref_entries[(unsigned) old];
 	
-	ma->entries[old].new = 0;
-	ma->ref_entries[old].num = 0;
-	ma->ref_entries[old].refs = 0;
+	ma->entries[(unsigned) old].new = 0;
+	ma->ref_entries[(unsigned) old].num = 0;
+	ma->ref_entries[(unsigned) old].refs = 0;
 
 	ma->orig_map[ma->entries[new].orig] = new;
 	return 0;
@@ -324,16 +328,16 @@ static errcode_t ima_delete(ext2_irel irel, ino_t old)
 	ma = irel->private;
 	if (old > ma->max_inode)
 		return EINVAL;
-	if (ma->entries[old].new == 0)
+	if (ma->entries[(unsigned) old].new == 0)
 		return ENOENT;
 	
 	ma->entries[old].new = 0;
-	if (ma->ref_entries[old].refs)
-		free(ma->ref_entries[old].refs);
-	ma->orig_map[ma->entries[old].orig] = 0;
+	if (ma->ref_entries[(unsigned) old].refs)
+		free(ma->ref_entries[(unsigned) old].refs);
+	ma->orig_map[ma->entries[(unsigned) old].orig] = 0;
 	
-	ma->ref_entries[old].num = 0;
-	ma->ref_entries[old].refs = 0;
+	ma->ref_entries[(unsinged) old].num = 0;
+	ma->ref_entries[(unsigned) old].refs = 0;
 	return 0;
 }
 
@@ -354,8 +358,8 @@ static errcode_t ima_free(ext2_irel irel)
 			free (ma->entries);
 		if (ma->ref_entries) {
 			for (ino = 0; ino <= ma->max_inode; ino++) {
-				if (ma->ref_entries[ino].refs)
-					free(ma->ref_entries[ino].refs);
+				if (ma->ref_entries[(unsigned) ino].refs)
+					free(ma->ref_entries[(unsigned) ino].refs);
 			}
 			free(ma->ref_entries);
 		}

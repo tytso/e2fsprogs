@@ -81,7 +81,7 @@ static errcode_t make_dblist(ext2_filsys fs, ino_t size, ino_t count,
 			goto cleanup;
 		dblist->size = (dblist->size * 2) + 12;
 	}
-	len = sizeof(struct ext2_db_entry) * dblist->size;
+	len = (size_t) sizeof(struct ext2_db_entry) * dblist->size;
 	dblist->count = count;
 	dblist->list = malloc(len);
 	if (dblist->list == NULL) {
@@ -157,15 +157,15 @@ errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 
 	if (dblist->count >= dblist->size) {
 		dblist->size += 100;
-		nlist = realloc(dblist->list,
-				dblist->size * sizeof(struct ext2_db_entry));
+		nlist = realloc(dblist->list, (size_t) dblist->size *
+				sizeof(struct ext2_db_entry));
 		if (nlist == 0) {
 			dblist->size -= 100;
 			return ENOMEM;
 		}
 		dblist->list = nlist;
 	}
-	new = dblist->list + dblist->count++;
+	new = dblist->list + ( (int) dblist->count++);
 	new->blk = blk;
 	new->ino = ino;
 	new->blockcnt = blockcnt;
@@ -211,12 +211,12 @@ errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
 
 	if (!dblist->sorted) {
-		qsort(dblist->list, dblist->count,
+		qsort(dblist->list, (size_t) dblist->count,
 		      sizeof(struct ext2_db_entry), dir_block_cmp);
 		dblist->sorted = 1;
 	}
 	for (i=0; i < dblist->count; i++) {
-		ret = (*func)(dblist->fs, &dblist->list[i], private);
+		ret = (*func)(dblist->fs, &dblist->list[(int)i], private);
 		if (ret & DBLIST_ABORT)
 			return 0;
 	}
@@ -232,12 +232,12 @@ static int dir_block_cmp(const void *a, const void *b)
 		(const struct ext2_db_entry *) b;
 
 	if (db_a->blk != db_b->blk)
-		return (db_a->blk - db_b->blk);
+		return (int) (db_a->blk - db_b->blk);
 	
 	if (db_a->ino != db_b->ino)
-		return (db_a->ino - db_b->ino);
+		return (int) (db_a->ino - db_b->ino);
 
-	return (db_a->blockcnt - db_b->blockcnt);
+	return (int) (db_a->blockcnt - db_b->blockcnt);
 }
 
 int ext2fs_dblist_count(ext2_dblist dblist)

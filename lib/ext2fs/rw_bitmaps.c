@@ -30,7 +30,7 @@
 errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 {
 	int 		i;
-	int		nbytes;
+	size_t		nbytes;
 	errcode_t	retval;
 	char * inode_bitmap = fs->inode_map->bitmap;
 	char * bitmap_block = NULL;
@@ -42,7 +42,7 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 		return EXT2_ET_RO_FILSYS;
 	if (!inode_bitmap)
 		return 0;
-	nbytes = (EXT2_INODES_PER_GROUP(fs->super)+7) / 8;
+	nbytes = (size_t) ((EXT2_INODES_PER_GROUP(fs->super)+7) / 8);
 	
 	bitmap_block = malloc(fs->blocksize);
 	if (!bitmap_block)
@@ -91,9 +91,9 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 		memcpy(bitmap_block, block_bitmap, nbytes);
 		if (i == fs->group_desc_count - 1) {
 			/* Force bitmap padding for the last group */
-			nbits = (fs->super->s_blocks_count
-				 - fs->super->s_first_data_block)
-				% EXT2_BLOCKS_PER_GROUP(fs->super);
+			nbits = (int) ((fs->super->s_blocks_count
+					- fs->super->s_first_data_block)
+				       % EXT2_BLOCKS_PER_GROUP(fs->super));
 			if (nbits)
 				for (j = nbits; j < fs->blocksize * 8; j++)
 					ext2fs_set_bit(j, bitmap_block);
@@ -119,8 +119,8 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	char *block_bitmap = 0, *inode_bitmap = 0;
 	char *buf;
 	errcode_t retval;
-	int block_nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
-	int inode_nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
+	int block_nbytes = (int) EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
+	int inode_nbytes = (int) EXT2_INODES_PER_GROUP(fs->super) / 8;
 	blk_t	blk;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);

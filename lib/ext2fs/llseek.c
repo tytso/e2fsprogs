@@ -12,8 +12,12 @@
 #include <sys/types.h>
 
 #include <errno.h>
+#include <stdlib.h>
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef __MSDOS__
+#include <io.h>
 #endif
 #include "et/com_err.h"
 #include "ext2fs/io.h"

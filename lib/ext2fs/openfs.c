@@ -44,7 +44,8 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 {
 	ext2_filsys	fs;
 	errcode_t	retval;
-	int		i, j, group_block, groups_per_block;
+	int		i, j, groups_per_block;
+	blk_t		group_block;
 	char		*dest;
 	struct ext2_group_desc *gdp;
 	struct ext2fs_sb	*s;
@@ -169,7 +170,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	fs->desc_blocks = (fs->group_desc_count +
 			   EXT2_DESC_PER_BLOCK(fs->super) - 1)
 		/ EXT2_DESC_PER_BLOCK(fs->super);
-	fs->group_desc = malloc(fs->desc_blocks * fs->blocksize);
+	fs->group_desc = malloc((size_t) (fs->desc_blocks * fs->blocksize));
 	if (!fs->group_desc) {
 		retval = ENOMEM;
 		goto cleanup;

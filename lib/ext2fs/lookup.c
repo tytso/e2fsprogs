@@ -30,6 +30,9 @@ struct lookup_struct  {
 	int		found;
 };	
 
+#ifdef __TURBOC__
+#pragma argsused
+#endif
 static int lookup_proc(struct ext2_dir_entry *dirent,
 		       int	offset,
 		       int	blocksize,

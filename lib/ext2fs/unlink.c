@@ -28,6 +28,9 @@ struct link_struct  {
 	int		done;
 };	
 
+#ifdef __TURBOC__
+#pragma argsused
+#endif
 static int unlink_proc(struct ext2_dir_entry *dirent,
 		     int	offset,
 		     int	blocksize,
@@ -48,6 +51,9 @@ static int unlink_proc(struct ext2_dir_entry *dirent,
 	return DIRENT_ABORT|DIRENT_CHANGED;
 }
 
+#ifdef __TURBOC__
+#pragma argsused
+#endif
 errcode_t ext2fs_unlink(ext2_filsys fs, ino_t dir, const char *name, ino_t ino,
 			int flags)
 {

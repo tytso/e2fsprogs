@@ -32,6 +32,9 @@ struct read_bb_record {
 /*
  * Helper function for ext2fs_read_bb_inode()
  */
+#ifdef __TURBOC__
+#pragma argsused
+#endif
 static int mark_bad_block(ext2_filsys fs, blk_t *block_nr,
 			     int blockcnt, void *private)
 {
@@ -54,7 +57,7 @@ errcode_t ext2fs_read_bb_inode(ext2_filsys fs, ext2_badblocks_list *bb_list)
 	errcode_t	retval;
 	struct read_bb_record rb;
 	struct ext2_inode inode;
-	int	numblocks;
+	blk_t	numblocks;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 

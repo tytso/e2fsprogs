@@ -25,7 +25,7 @@ typedef struct struct_io_manager *io_manager;
 typedef struct struct_io_channel *io_channel;
 
 struct struct_io_channel {
-	int		magic;
+	errcode_t	magic;
 	io_manager	manager;
 	char		*name;
 	int		block_size;
@@ -49,7 +49,7 @@ struct struct_io_channel {
 };
 
 struct struct_io_manager {
-	int magic;
+	errcode_t magic;
 	const char *name;
 	errcode_t (*open)(const char *name, int flags, io_channel *channel);
 	errcode_t (*close)(io_channel channel);

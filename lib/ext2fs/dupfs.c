@@ -59,11 +59,11 @@ errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)
 		goto errout;
 	memcpy(fs->super, src->super, SUPERBLOCK_SIZE);
 
-	fs->group_desc = malloc(fs->desc_blocks * fs->blocksize);
+	fs->group_desc = malloc((size_t) fs->desc_blocks * fs->blocksize);
 	if (!fs->group_desc)
 		goto errout;
 	memcpy(fs->group_desc, src->group_desc,
-	       fs->desc_blocks * fs->blocksize);
+	       (size_t) fs->desc_blocks * fs->blocksize);
 
 	if (src->inode_map) {
 		retval = ext2fs_copy_bitmap(src->inode_map, &fs->inode_map);

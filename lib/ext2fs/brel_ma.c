@@ -3,6 +3,9 @@
  * 
  * Copyright (C) 1996, 1997 Theodore Ts'o.
  *
+ * TODO: rewrite to not use a direct array!!!  (Fortunately this
+ * module isn't really used yet.)
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -72,7 +75,8 @@ errcode_t ext2fs_brel_memarray_create(char *name, blk_t max_block,
 	memset(ma, 0, sizeof(struct brel_ma));
 	brel->private = ma;
 	
-	size = sizeof(struct ext2_block_relocate_entry) * (max_block+1);
+	size = (size_t) (sizeof(struct ext2_block_relocate_entry) *
+			 (max_block+1));
 	ma->entries = malloc(size);
 	if (!ma->entries)
 		goto errout;
@@ -106,7 +110,7 @@ static errcode_t bma_put(ext2_brel brel, blk_t old,
 	ma = brel->private;
 	if (old > ma->max_block)
 		return EINVAL;
-	ma->entries[old] = *ent;
+	ma->entries[(unsigned)old] = *ent;
 	return 0;
 }
 
@@ -118,7 +122,7 @@ static errcode_t bma_get(ext2_brel brel, blk_t old,
 	ma = brel->private;
 	if (old > ma->max_block)
 		return EINVAL;
-	if (ma->entries[old].new == 0)
+	if (ma->entries[(unsigned)old].new == 0)
 		return ENOENT;
 	*ent = ma->entries[old];
 	return 0;
@@ -137,10 +141,10 @@ static errcode_t bma_next(ext2_brel brel, blk_t *old,
 
 	ma = brel->private;
 	while (++brel->current < ma->max_block) {
-		if (ma->entries[brel->current].new == 0)
+		if (ma->entries[(unsigned)brel->current].new == 0)
 			continue;
 		*old = brel->current;
-		*ent = ma->entries[brel->current];
+		*ent = ma->entries[(unsigned)brel->current];
 		return 0;
 	}
 	*old = 0;
@@ -154,10 +158,10 @@ static errcode_t bma_move(ext2_brel brel, blk_t old, blk_t new)
 	ma = brel->private;
 	if ((old > ma->max_block) || (new > ma->max_block))
 		return EINVAL;
-	if (ma->entries[old].new == 0)
+	if (ma->entries[(unsigned)old].new == 0)
 		return ENOENT;
-	ma->entries[new] = ma->entries[old];
-	ma->entries[old].new = 0;
+	ma->entries[(unsigned)new] = ma->entries[old];
+	ma->entries[(unsigned)old].new = 0;
 	return 0;
 }
 
@@ -168,9 +172,9 @@ static errcode_t bma_delete(ext2_brel brel, blk_t old)
 	ma = brel->private;
 	if (old > ma->max_block)
 		return EINVAL;
-	if (ma->entries[old].new == 0)
+	if (ma->entries[(unsigned)old].new == 0)
 		return ENOENT;
-	ma->entries[old].new = 0;
+	ma->entries[(unsigned)old].new = 0;
 	return 0;
 }
 

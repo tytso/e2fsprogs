@@ -51,7 +51,7 @@
 #ifdef EXT2_DFL_CHECKINTERVAL
 #undef EXT2_DFL_CHECKINTERVAL
 #endif
-#define EXT2_DFL_CHECKINTERVAL (86400 * 180)
+#define EXT2_DFL_CHECKINTERVAL (86400L * 180L)
 
 errcode_t ext2fs_initialize(const char *name, int flags,
 			    struct ext2_super_block *param,
@@ -65,7 +65,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	int		overhead = 0;
 	blk_t		group_block;
 	int		i, j;
-	int		numblocks;
+	blk_t		numblocks;
 	char		*buf;
 
 	if (!param || !param->s_blocks_count)
@@ -205,15 +205,15 @@ retry:
 	 * XXX Not all block groups need the descriptor blocks, but
 	 * being clever is tricky...
 	 */
-	overhead = 3 + fs->desc_blocks + fs->inode_blocks_per_group;
+	overhead = (int) (3 + fs->desc_blocks + fs->inode_blocks_per_group);
 	
 	/*
 	 * See if the last group is big enough to support the
 	 * necessary data structures.  If not, we need to get rid of
 	 * it.
 	 */
-	rem = (super->s_blocks_count - super->s_first_data_block) %
-		super->s_blocks_per_group;
+	rem = (int) ((super->s_blocks_count - super->s_first_data_block) %
+		     super->s_blocks_per_group);
 	if ((fs->group_desc_count == 1) && rem && (rem < overhead))
 		return EXT2_ET_TOOSMALL;
 	if (rem && (rem < overhead+50)) {
@@ -245,12 +245,12 @@ retry:
 
 	free(buf);
 
-	fs->group_desc = malloc(fs->desc_blocks * fs->blocksize);
+	fs->group_desc = malloc((size_t) fs->desc_blocks * fs->blocksize);
 	if (!fs->group_desc) {
 		retval = ENOMEM;
 		goto cleanup;
 	}
-	memset(fs->group_desc, 0, fs->desc_blocks * fs->blocksize);
+	memset(fs->group_desc, 0, (size_t) fs->desc_blocks * fs->blocksize);
 
 	/*
 	 * Reserve the superblock and group descriptors for each

@@ -30,14 +30,15 @@
 errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,
 				      ext2fs_block_bitmap bm2)
 {
-	int	i;
+	blk_t	i;
 	
 	EXT2_CHECK_MAGIC(bm1, EXT2_ET_MAGIC_BLOCK_BITMAP);
 	EXT2_CHECK_MAGIC(bm2, EXT2_ET_MAGIC_BLOCK_BITMAP);
 
 	if ((bm1->start != bm2->start) ||
 	    (bm1->end != bm2->end) ||
-	    (memcmp(bm1->bitmap, bm2->bitmap, (bm1->end - bm1->start)/8)))
+	    (memcmp(bm1->bitmap, bm2->bitmap,
+		    (size_t) (bm1->end - bm1->start)/8)))
 		return EXT2_ET_NEQ_BLOCK_BITMAP;
 
 	for (i = bm1->end - ((bm1->end - bm1->start) % 8); i <= bm1->end; i++)
@@ -51,14 +52,15 @@ errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,
 errcode_t ext2fs_compare_inode_bitmap(ext2fs_inode_bitmap bm1,
 				      ext2fs_inode_bitmap bm2)
 {
-	int	i;
+	ino_t	i;
 	
 	EXT2_CHECK_MAGIC(bm1, EXT2_ET_MAGIC_INODE_BITMAP);
 	EXT2_CHECK_MAGIC(bm2, EXT2_ET_MAGIC_INODE_BITMAP);
 
 	if ((bm1->start != bm2->start) ||
 	    (bm1->end != bm2->end) ||
-	    (memcmp(bm1->bitmap, bm2->bitmap, (bm1->end - bm1->start)/8)))
+	    (memcmp(bm1->bitmap, bm2->bitmap,
+		    (size_t) (bm1->end - bm1->start)/8)))
 		return EXT2_ET_NEQ_INODE_BITMAP;
 
 	for (i = bm1->end - ((bm1->end - bm1->start) % 8); i <= bm1->end; i++)

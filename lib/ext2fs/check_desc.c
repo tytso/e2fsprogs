@@ -30,8 +30,8 @@
 errcode_t ext2fs_check_desc(ext2_filsys fs)
 {
 	int i;
-	int block = fs->super->s_first_data_block;
-	int next;
+	blk_t block = fs->super->s_first_data_block;
+	blk_t next;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 

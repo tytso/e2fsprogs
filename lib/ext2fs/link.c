@@ -86,6 +86,9 @@ static int link_proc(struct ext2_dir_entry *dirent,
 	return DIRENT_ABORT|DIRENT_CHANGED;
 }
 
+#ifdef __TURBOC__
+#pragma argsused
+#endif
 errcode_t ext2fs_link(ext2_filsys fs, ino_t dir, const char *name, ino_t ino,
 		      int flags)
 {

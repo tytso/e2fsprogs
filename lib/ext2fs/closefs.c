@@ -58,8 +58,8 @@ int ext2fs_bg_has_super(ext2_filsys fs, int group_block)
 
 errcode_t ext2fs_flush(ext2_filsys fs)
 {
-	int		i,j,maxgroup;
-	int		group_block;
+	dgrp_t		i,j,maxgroup;
+	blk_t		group_block;
 	errcode_t	retval;
 	char		*group_ptr;
 	unsigned long	fs_state;
@@ -76,9 +76,11 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		retval = ENOMEM;
 		if (!(super_shadow = malloc(SUPERBLOCK_SIZE)))
 			goto errout;
-		if (!(group_shadow = malloc(fs->blocksize*fs->desc_blocks)))
+		if (!(group_shadow = malloc((size_t) fs->blocksize *
+					    fs->desc_blocks)))
 			goto errout;
-		memset(group_shadow, 0, fs->blocksize*fs->desc_blocks);
+		memset(group_shadow, 0, (size_t) fs->blocksize *
+		       fs->desc_blocks);
 
 		/* swap the superblock */
 		*super_shadow = *fs->super;

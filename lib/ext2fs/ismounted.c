@@ -110,6 +110,9 @@ static errcode_t check_getmntinfo(const char *file, int *mount_flags)
 /*
  * Is_mounted is set to 1 if the device is mounted, 0 otherwise
  */
+#ifdef __TURBOC__
+#pragma argsused
+#endif
 errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags)
 {
 #ifdef HAVE_MNTENT_H

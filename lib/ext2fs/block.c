@@ -419,6 +419,9 @@ struct xlate {
 	void *real_private;
 };
 
+#ifdef __TURBOC__
+#pragma argsused
+#endif
 static int xlate_func(ext2_filsys fs, blk_t *blocknr, int blockcnt,
 		      blk_t ref_block, int ref_offset, void *private)
 {

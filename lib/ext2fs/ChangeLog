@@ -1,3 +1,42 @@
+Mon Aug 11 03:30:48 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dosio.c: New file to do DOS/BIOS disk accesses.
+
+	* namei.c (open_namei): Make pathlen be of type size_t.
+
+	* llseek.c: Always #include stdlib.h since it's need to define
+		size_t.  
+
+	* io.h: Use errcode_t for magic numbers.
+
+	* icount.c (get_icount_el): Use size_t where appropriate
+	
+	* dupfs.c (ext2fs_dup_handle): 
+	* dblist.c (dir_block_cmp): Use size_t where appropriate.
+
+	* read_bb.c (ext2fs_read_bb_inode): 
+	* cmp_bitmaps.c (ext2fs_compare_inode_bitmap): Use blk_t, ino_t
+		and size_t where appropriate.
+
+	* closefs.c (ext2fs_flush): Use dgrp_t instead of int where
+		appropriate.
+
+	* openfs.c (ext2fs_open): 
+	* check_desc.c (ext2fs_check_desc): Use blk_t instead of int where
+		appropriate.
+
+	* rw_bitmaps.c (read_bitmaps): 
+	* irel_ma.c: 
+	* inode.c (ext2fs_write_inode): 
+	* initialize.c (ext2fs_initialize):
+	* brel_ma.c: Fix to make be 16-bit safe.
+
+	* link.c (ext2fs_link): 
+	* unlink.c (ext2fs_unlink):
+	* lookup.c (lookup_proc): 
+	* ismounted.c (ext2fs_check_if_mounted): 
+	* block.c (xlate_func): Add #pragma argsused for Turbo C.
+
 Sun Aug 10 10:05:22 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* block.c (ext2fs_block_iterate2): Use retval which is a errcode_t
