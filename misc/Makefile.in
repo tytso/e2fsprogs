@@ -109,23 +109,24 @@ lsattr.1: $(DEP_SUBSTITUTE) $(srcdir)/lsattr.1.in
 	$(SUBSTITUTE) $(srcdir)/lsattr.1.in lsattr.1 
 
 installdirs:
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(bindir) $(DESTDIR)$(sbindir) \
-		$(DESTDIR)$(ubindir) $(DESTDIR)$(man1dir) \
-		$(DESTDIR)$(cat1dir) $(DESTDIR)$(man8dir) $(DESTDIR)$(cat8dir)
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(sbindir) \
+		$(DESTDIR)$(root_sbindir) $(DESTDIR)$(bindir) \
+		$(DESTDIR)$(man1dir) $(DESTDIR)$(man8dir)
 
 install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	for i in $(SPROGS); do \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
+		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
+	done
+	for i in $(USPROGS); do \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(sbindir)/$$i; \
 		$(STRIP) $(DESTDIR)$(sbindir)/$$i; \
 	done
-	for i in $(USPROGS); do \
-		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(usbindir)/$$i; \
-		$(STRIP) $(DESTDIR)$(usbindir)/$$i; \
-	done
-	$(LN) -f $(DESTDIR)$(sbindir)/mke2fs $(DESTDIR)$(sbindir)/mkfs.ext2
+	$(LN) -f $(DESTDIR)$(root_sbindir)/mke2fs \
+		$(DESTDIR)$(root_sbindir)/mkfs.ext2
 	for i in $(UPROGS); do \
-		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(ubindir)/$$i; \
-		$(STRIP) $(DESTDIR)$(ubindir)/$$i; \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(bindir)/$$i; \
+		$(STRIP) $(DESTDIR)$(bindir)/$$i; \
 	done
 	for i in $(SMANPAGES); do \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
@@ -136,20 +137,20 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 
 uninstall:
 	for i in $(SPROGS); do \
-		$(RM) -f $(sbindir)/$$i; \
+		$(RM) -f $(DESTDIR)$(root_sbindir)/$$i; \
 	done
 	for i in $(USPROGS); do \
-		$(RM) -f $(usbindir)/$$i; \
+		$(RM) -f $(DESTDIR)$(sbindir)/$$i; \
 	done
-	$(RM) -f $(sbindir)/mkfs.ext2
+	$(RM) -f $(DESTDIR)$(root_sbindir)/mkfs.ext2
 	for i in $(UPROGS); do \
-		$(RM) -f $(ubindir)/$$i; \
+		$(RM) -f $(DESTDIR)$(bindir)/$$i; \
 	done
 	for i in $(SMANPAGES); do \
-		$(RM) -f $(man8dir)/$$i; \
+		$(RM) -f $(DESTDIR)$(man8dir)/$$i; \
 	done
 	for i in $(UMANPAGES); do \
-		$(RM) -f $(man1dir)/$$i; \
+		$(RM) -f $(DESTDIR)$(man1dir)/$$i; \
 	done
 
 clean:

@@ -114,26 +114,27 @@ e2fsck.8: $(DEP_SUBSTITUTE) $(srcdir)/e2fsck.8.in
 	$(SUBSTITUTE) $(srcdir)/e2fsck.8.in e2fsck.8
 
 installdirs:
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(sbindir) $(DESTDIR)$(man8dir) \
-		$(DESTDIR)$(cat8dir)
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(root_sbindir) \
+		$(DESTDIR)$(man8dir)
 
 install: $(PROGS) $(MANPAGES) installdirs
 	for i in $(PROGS); do \
-		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(sbindir)/$$i; \
-		$(STRIP) $(DESTDIR)$(sbindir)/$$i; \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
+		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
 	done
-	$(LN) -f $(DESTDIR)$(sbindir)/e2fsck $(DESTDIR)$(sbindir)/fsck.ext2
+	$(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
+			$(DESTDIR)$(root_sbindir)/fsck.ext2
 	for i in $(MANPAGES); do \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
 	done
 
 uninstall:
 	for i in $(PROGS); do \
-		$(RM) -f $(sbindir)/$$i; \
+		$(RM) -f $(DESTDIR)$(root_sbindir)/$$i; \
 	done
-	$(RM) -f $(sbindir)/fsck.ext2
+	$(RM) -f $(DESTDIR)$(root_sbindir)/fsck.ext2
 	for i in $(MANPAGES); do \
-		$(RM) -f $(man8dir)/$$i; \
+		$(RM) -f $(DESTDIR)$(man8dir)/$$i; \
 	done
 
 clean:

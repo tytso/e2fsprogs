@@ -1,3 +1,11 @@
+1998-03-31  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in: Change to use new installation directory variables
+		convention.  Fix installdirs and uninstall rules to reflect
+		the fact that debugfs has been installed in the root
+		filesystem.  Fix uninstall rules to take $(DESTDIR) into
+		account.
+
 1998-03-29  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* debugfs.h: Add declaration for do_dirty_filsys() to prevent
