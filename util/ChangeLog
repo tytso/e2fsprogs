@@ -1,3 +1,8 @@
+2005-01-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen-tarball.in: Remove the hyphen in 1.36-rc1, since Debian
+		version numbers can't have '-' in them.
+
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Use Linux-kernel-style makefile output to make it
