@@ -1,5 +1,10 @@
 2002-11-08    <tytso@snap.thunk.org>
 
+	* unix.c (PRS), journal.c: Set the default level of journal
+		debugging to be 0, and allow the user to set the level of
+		journal debugging by using the E2FSCK_JBD_DEBUG
+		environment variable.
+
 	* pass1.c (new_table_block), super.c (check_super_block), swapfs.c
 		(swap_filesys): Clear EXT2_FLAG_MASTER_SB_ONLY to make
 		sure the backup superblocks and group descriptors are

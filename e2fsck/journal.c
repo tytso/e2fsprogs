@@ -27,7 +27,6 @@
 
 #ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jfs-debug */
 static int bh_count = 0;
-int journal_enable_debug = 2;
 #endif
 
 /*

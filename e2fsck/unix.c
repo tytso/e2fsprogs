@@ -53,6 +53,10 @@ static char *bad_blocks_file = 0;
 
 e2fsck_t e2fsck_global_ctx;	/* Try your very best not to use this! */
 
+#ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jfs-debug */
+int journal_enable_debug = -1;
+#endif
+
 static void usage(e2fsck_t ctx)
 {
 	fprintf(stderr,
@@ -727,6 +731,10 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		} else
 			putenv (PATH_SET);
 	}
+#ifdef CONFIG_JBD_DEBUG
+	if (getenv("E2FSCK_JBD_DEBUG"))
+		journal_enable_debug = atoi(getenv("E2FSCK_JBD_DEBUG"));
+#endif
 	return 0;
 }
 
