@@ -198,6 +198,8 @@ static void check_if_skip(e2fsck_t ctx)
 	
 	if (fs->super->s_state & EXT2_ERROR_FS)
 		reason = "contains a file system with errors";
+	else if ((fs->super->s_state & EXT2_VALID_FS) == 0)
+		reason = "was not cleanly unmounted";
 	else if (fs->super->s_mnt_count >=
 		 (unsigned) fs->super->s_max_mnt_count)
 		reason = "has reached maximal mount count";
@@ -205,8 +207,6 @@ static void check_if_skip(e2fsck_t ctx)
 		 time(0) >= (fs->super->s_lastcheck +
 			     fs->super->s_checkinterval))
 		reason = "has gone too long without being checked";
-	else if ((fs->super->s_state & EXT2_VALID_FS) == 0)
-		reason = "was not cleanly unmounted";
 	if (reason) {
 		printf("%s %s, check forced.\n", ctx->device_name, reason);
 		return;
@@ -245,6 +245,18 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 }
 
 #define PATH_SET "PATH=/sbin"
+
+static void reserve_stdio_fds(NOARGS)
+{
+	int	fd;
+
+	while (1) {
+		fd = open("/dev/null", O_RDWR);
+		if (fd > 2)
+			break;
+	}
+	close(fd);
+}
 
 static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 {
@@ -456,7 +468,8 @@ int main (int argc, char *argv[])
 			"while trying to initialize program");
 		exit(1);
 	}
-
+	reserve_stdio_fds();
+	
 #ifdef RESOURCE_TRACK
 	init_resource_track(&ctx->global_rtrack);
 #endif

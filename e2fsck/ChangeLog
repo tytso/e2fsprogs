@@ -1,3 +1,11 @@
+1998-08-17  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* unix.c (check_if_skip): Move the "not cleanly mounted" check
+		ahead of the maximal mount and too long since checked tests.
+		(reserve_stdio_fds): Make sure 0,1,2 file descriptors are
+		open, so that we don't open the filesystem using the same
+		file descriptor as stdout or stderr.
+
 1998-08-01  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass2.c (e2fsck_pass2): Fix the progress accounting so that we
