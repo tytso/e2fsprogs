@@ -1,3 +1,8 @@
+2000-09-12    <tytso@valinux.com>
+
+	* fsck.c: Add base device definitions for hd[e-h], for those
+		systems with four IDE interfaces.
+
 2000-09-11    <tytso@valinux.com>
 
 	* mke2fs.c (zap_sector): Fix error message printed when zap_sector
