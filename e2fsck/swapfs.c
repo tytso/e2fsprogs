@@ -254,7 +254,9 @@ void swap_filesys(e2fsck_t ctx)
 	ext2fs_swap_bitmap(fs->block_map);
 	fs->flags |= EXT2_FLAG_BB_DIRTY | EXT2_FLAG_IB_DIRTY;
 #endif
+	fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 	ext2fs_flush(fs);
+	fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 	
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)

@@ -1732,6 +1732,7 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 		return;
 	}
 	ext2fs_mark_super_dirty(fs);
+	fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 	pctx.blk2 = *new_block;
 	fix_problem(ctx, (old_block ? PR_1_RELOC_FROM_TO :
 			  PR_1_RELOC_TO), &pctx);

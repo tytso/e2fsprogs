@@ -484,6 +484,7 @@ void check_super_block(e2fsck_t ctx)
 		if (fix_problem(ctx, PR_0_ADD_UUID, &pctx)) {
 			uuid_generate(sb->s_uuid);
 			ext2fs_mark_super_dirty(fs);
+			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 		}
 	}
 #endif

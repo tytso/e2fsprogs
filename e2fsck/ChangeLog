@@ -1,3 +1,13 @@
+2002-11-08    <tytso@snap.thunk.org>
+
+	* pass1.c (new_table_block), super.c (check_super_block), swapfs.c
+		(swap_filesys): Clear EXT2_FLAG_MASTER_SB_ONLY to make
+		sure the backup superblocks and group descriptors are
+		updated when we make an important change to the
+		superblocks and/or group descriptors.  (i.e., generating a
+		UUID, allocating filesystem metadata, or byte-swapping the
+		filesystem.)
+
 2002-11-07  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.h, unix.c (main, check_mount): Fix e2fsck so that it
