@@ -28,6 +28,7 @@
 #ifdef HAVE_SYS_SYSMACROS_H
 #include <sys/sysmacros.h>
 #endif
+#include <dirent.h>
 #include "nls-enable.h"
 #include "get_device_by_label.h"
 #include "fsck.h"
@@ -37,6 +38,7 @@ extern char *ext2fs_find_block_device(dev_t device);
 
 #define PROC_PARTITIONS "/proc/partitions"
 #define DEVLABELDIR	"/dev"
+#define VG_DIR          "/proc/lvm/VGs"
 
 #define EXT2_SUPER_MAGIC    0xEF53
 struct ext2_super_block {
@@ -134,6 +136,65 @@ uuidcache_addentry(char *device, char *label, char *uuid) {
 	memcpy(last->uuid, uuid, sizeof(last->uuid));
 }
 
+/*
+ * This function initializes the UUID cache with devices from the LVM
+ * proc hierarchy.  We currently depend on the names of the LVM
+ * hierarchy giving us the device structure in /dev.  (XXX is this a
+ * safe thing to do?)
+ */
+#ifdef VG_DIR
+static void init_lvm(void)
+{
+	DIR		*vg_dir, *lv_list;
+	char		*vdirname, *lvm_device;
+	char		uuid[16], *label, *vname, *lname;
+	struct dirent 	*vg_iter, *lv_iter;
+	
+	if ((vg_dir = opendir(VG_DIR)) == NULL)
+		return;
+
+	while ((vg_iter = readdir(vg_dir)) != 0) {
+		vname = vg_iter->d_name;
+		if (!strcmp(vname, ".") || !strcmp(vname, ".."))
+			continue;
+		vdirname = malloc(strlen(VG_DIR)+strlen(vname)+8);
+		if (!vdirname) {
+			closedir(vg_dir);
+			return;
+		}
+		sprintf(vdirname, "%s/%s/LVs", VG_DIR, vname);
+
+		if ((lv_list = opendir(vdirname)) != NULL)
+			return;
+		free(vdirname);
+		
+		while ((lv_iter = readdir(lv_list)) != 0) {
+			lname = lv_iter->d_name;
+			if (!strcmp(lname, ".") || !strcmp(lname, ".."))
+				continue;
+
+			lvm_device = malloc(strlen(DEVLABELDIR) +
+					    strlen(vname)+
+					    strlen(lname)+8);
+			if (!lvm_device) {
+				closedir(lv_list);
+				closedir(vg_dir);
+				return;
+			}
+			sprintf(lvm_device, "%s/%s/%s", DEVLABELDIR,
+				vname, lname);
+			if (!get_label_uuid(lvm_device, &label, uuid)) {
+				uuidcache_addentry(string_copy(lvm_device),
+						   label, uuid);
+			} else
+				free(lvm_device);
+		}
+		closedir(lv_list);
+	}
+	closedir( vg_dir );
+}
+#endif
+
 static void
 uuidcache_init(void) {
 	char line[100];
@@ -151,6 +212,10 @@ uuidcache_init(void) {
 	if (uuidCache)
 		return;
 
+#ifdef VG_DIR
+	init_lvm();
+#endif
+	
 	procpt = fopen(PROC_PARTITIONS, "r");
 	if (!procpt)
 		return;

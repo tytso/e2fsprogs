@@ -1,3 +1,10 @@
+2001-12-22  Theodore Tso  <tytso@valinux.com>
+
+	* get_device_by_label.c (init_lvm): Add support to read out
+		information from the LVM proc hierarchy, so that the UUID
+		cache can search the LVM logical volumes for UUID's,
+		labels, etc.
+
 2001-12-21  Theodore Tso  <tytso@valinux.com>
 
 	* dumpe2fs.c (list_bad_blocks): Change to not die if the listing
