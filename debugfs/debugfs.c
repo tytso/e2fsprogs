@@ -1117,7 +1117,7 @@ void do_write(int argc, char *argv[])
 		com_err(argv[0], 0, "Warning: inode already set");
 	ext2fs_inode_alloc_stats2(current_fs, newfile, +1, 0);
 	memset(&inode, 0, sizeof(inode));
-	inode.i_mode = statbuf.st_mode;
+	inode.i_mode = (statbuf.st_mode & ~LINUX_S_IFMT) | LINUX_S_IFREG;
 	inode.i_atime = inode.i_ctime = inode.i_mtime = time(NULL);
 	inode.i_links_count = 1;
 	inode.i_size = statbuf.st_size;
