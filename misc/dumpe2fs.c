@@ -47,6 +47,7 @@ extern int optind;
 const char * program_name = "dumpe2fs";
 char * device_name = NULL;
 const char *num_format = "%lu";
+char range_format[16];
 
 static void usage(void)
 {
@@ -108,18 +109,15 @@ static void list_desc (ext2_filsys fs)
 		if (next_blk > fs->super->s_blocks_count)
 			next_blk = fs->super->s_blocks_count;
 		printf (_("Group %lu: (Blocks "), i);
-		printf(num_format, group_blk);
-		fputc('-', stdout);
-		printf(num_format, next_blk - 1);
+		printf(range_format, group_blk, next_blk - 1);
 		fputs(")\n", stdout);
 		if (ext2fs_bg_has_super (fs, i)) {
 			printf (_("  %s Superblock at "),
 				i == 0 ? _("Primary") : _("Backup"));
 			printf(num_format, group_blk);
 			printf(_(",  Group Descriptors at "));
-			printf(num_format, group_blk+1);
-			fputc('-', stdout);
-			printf(num_format, group_blk + group_desc_blocks);
+			printf(range_format, group_blk+1,
+			       group_blk + group_desc_blocks);
 			fputc('\n', stdout);
 		}
 		fputs(_("  Block bitmap at "), stdout);
@@ -133,9 +131,8 @@ static void list_desc (ext2_filsys fs)
 		if (diff >= 0)
 			printf(" (+%ld)", diff);
 		fputs(_("\n  Inode table at "), stdout);
-		printf(num_format, fs->group_desc[i].bg_inode_table);
-		fputc('-', stdout);
-		printf(num_format, fs->group_desc[i].bg_inode_table +
+		printf(range_format, fs->group_desc[i].bg_inode_table,
+		       fs->group_desc[i].bg_inode_table +
 		       inode_blocks_per_group - 1);
 		diff = fs->group_desc[i].bg_inode_table - group_blk;
 		if (diff > 0)
@@ -156,53 +153,38 @@ static void list_desc (ext2_filsys fs)
 	}
 }
 
-static void list_bad_blocks(ext2_filsys fs)
+static void list_bad_blocks(ext2_filsys fs, int dump)
 {
 	badblocks_list		bb_list = 0;
 	badblocks_iterate	bb_iter;
 	blk_t			blk;
 	errcode_t		retval;
+	const char		*header, *fmt;
 
 	retval = ext2fs_read_bb_inode(fs, &bb_list);
 	if (retval) {
 		com_err("ext2fs_read_bb_inode", retval, "");
-		exit(1);
+		return;
 	}
 	retval = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
 	if (retval) {
 		com_err("ext2fs_badblocks_list_iterate_begin", retval,
 			_("while printing bad block list"));
-		exit(1);
+		return;
 	}
-	if (ext2fs_badblocks_list_iterate(bb_iter, &blk))
-		printf(_("Bad blocks: %d"), blk);
-	while (ext2fs_badblocks_list_iterate(bb_iter, &blk))
-		printf(", %d", blk);
+	if (dump) {
+		header = fmt = "%d\n";
+	} else {
+		header =  _("Bad blocks: %d");
+		fmt = ", %d";
+	}
+	while (ext2fs_badblocks_list_iterate(bb_iter, &blk)) {
+		printf(header ? header : fmt, blk);
+		header = 0;
+	}
 	ext2fs_badblocks_list_iterate_end(bb_iter);
-	fputc('\n', stdout);
-}
-
-static void dump_bad_blocks(ext2_filsys fs)
-{
-	badblocks_list		bb_list = 0;
-	badblocks_iterate	bb_iter;
-	blk_t			blk;
-	errcode_t		retval;
-
-	retval = ext2fs_read_bb_inode(fs, &bb_list);
-	if (retval) {
-		com_err("ext2fs_read_bb_inode", retval, "");
-		exit(1);
-	}
-	retval = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
-	if (retval) {
-		com_err("ext2fs_badblocks_list_iterate_begin", retval,
-			_("while printing bad block list"));
-		exit(1);
-	}
-	while (ext2fs_badblocks_list_iterate(bb_iter, &blk))
-		printf("%d\n", blk);
-	ext2fs_badblocks_list_iterate_end(bb_iter);
+	if (!dump)
+		fputc('\n', stdout);
 }
 
 static void print_journal_information(ext2_filsys fs)
@@ -307,6 +289,7 @@ int main (int argc, char ** argv)
 	}
 	if (optind > argc - 1)
 		usage();
+	sprintf(range_format, "%s-%s", num_format, num_format);
 	device_name = argv[optind++];
 	if (use_superblock && !use_blocksize)
 		use_blocksize = 1024;
@@ -325,7 +308,7 @@ int main (int argc, char ** argv)
 		exit (1);
 	}
 	if (print_badblocks) {
-		dump_bad_blocks(fs);
+		list_bad_blocks(fs, 1);
 	} else {
 		big_endian = ((fs->flags & EXT2_FLAG_SWAP_BYTES) != 0);
 #ifdef WORDS_BIGENDIAN
@@ -340,7 +323,7 @@ int main (int argc, char ** argv)
 			ext2fs_close(fs);
 			exit(0);
 		}
-		list_bad_blocks (fs);
+		list_bad_blocks(fs, 0);
 		if (header_only) {
 			ext2fs_close (fs);
 			exit (0);

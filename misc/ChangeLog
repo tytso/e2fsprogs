@@ -1,3 +1,9 @@
+2001-12-21  Theodore Tso  <tytso@valinux.com>
+
+	* dumpe2fs.c (list_bad_blocks): Change to not die if the listing
+		of the bad blocks can't be found.  Slimmed down dumpe2fs
+		by eliminating duplicate code paths.  
+
 2001-12-16  Theodore Tso  <tytso@valinux.com>
 
 	* dumpe2fs.c (list_desc), fsck.c (fs_match),
