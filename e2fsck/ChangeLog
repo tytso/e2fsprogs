@@ -1,5 +1,10 @@
 2002-11-08    <tytso@snap.thunk.org>
 
+	* unix.c (main): Fix a bug where e2fsck could erroneously mark a
+		filesystem as being valid if it was being checked and it
+		is interrupted with a ^C.  (Bug introduced in e2fsprogs
+		1.28.)
+
 	* unix.c (PRS), journal.c: Set the default level of journal
 		debugging to be 0, and allow the user to set the level of
 		journal debugging by using the E2FSCK_JBD_DEBUG

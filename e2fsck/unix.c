@@ -1073,21 +1073,22 @@ restart:
 		exit_value |= FSCK_UNCORRECTED;
 		exit_value &= ~FSCK_NONDESTRUCT;
 	}
-	if (!(ctx->options & E2F_OPT_READONLY)) {
-		if (ext2fs_test_valid(fs)) {
-			if (!(sb->s_state & EXT2_VALID_FS))
-				exit_value |= FSCK_NONDESTRUCT;
-			sb->s_state = EXT2_VALID_FS;
-		} else
-			sb->s_state &= ~EXT2_VALID_FS;
-		sb->s_mnt_count = 0;
-		sb->s_lastcheck = time(NULL);
-		ext2fs_mark_super_dirty(fs);
-	}
 	if (exit_value & FSCK_CANCELED)
 		exit_value &= ~FSCK_NONDESTRUCT;
-	else
+	else {
 		show_stats(ctx);
+		if (!(ctx->options & E2F_OPT_READONLY)) {
+			if (ext2fs_test_valid(fs)) {
+				if (!(sb->s_state & EXT2_VALID_FS))
+					exit_value |= FSCK_NONDESTRUCT;
+				sb->s_state = EXT2_VALID_FS;
+			} else
+				sb->s_state &= ~EXT2_VALID_FS;
+			sb->s_mnt_count = 0;
+			sb->s_lastcheck = time(NULL);
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
 
 	e2fsck_write_bitmaps(ctx);
 	
