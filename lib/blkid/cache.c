@@ -2,6 +2,7 @@
  * cache.c - allocation/initialization/free routines for cache
  *
  * Copyright (C) 2001 Andreas Dilger
+ * Copyright (C) 2003 Theodore Ts'o
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the
@@ -32,12 +33,15 @@ blkid_cache blkid_new_cache(void)
 	return cache;
 }
 
-void blkid_free_cache(blkid_cache cache)
+void blkid_put_cache(blkid_cache cache)
 {
 	if (!cache)
 		return;
 
+	(void) blkid_flush_cache(cache);
+
 	DBG(printf("freeing cache struct\n"));
+	
 	/* DEB_DUMP_CACHE(cache); */
 
 	while (!list_empty(&cache->bic_devs)) {
@@ -63,6 +67,9 @@ void blkid_free_cache(blkid_cache cache)
 		}
 		blkid_free_tag(tag);
 	}
+	if (cache->bic_filename)
+		free(cache->bic_filename);
+	
 	free(cache);
 }
 
@@ -77,16 +84,19 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 
-	if ((ret = blkid_read_cache(&cache, argv[1])) < 0)
+	if ((ret = blkid_get_cache(&cache, argv[1])) < 0) {
 		fprintf(stderr, "error %d parsing cache file %s\n", ret,
 			argv[1] ? argv[1] : BLKID_CACHE_FILE);
-	else if ((ret = blkid_probe_all(&cache) < 0))
+		exit(1);
+	}
+	if ((cache = blkid_new_cache()) == NULL) {
+		fprintf(stderr, "%s: error creating cache\n", argv[0]);
+		exit(1);
+	}
+	if ((ret = blkid_probe_all(cache) < 0))
 		fprintf(stderr, "error probing devices\n");
-	else if ((ret = blkid_save_cache(cache, argv[1])) < 0)
-		fprintf(stderr, "error %d saving cache to %s\n", ret,
-			argv[1] ? argv[1] : BLKID_CACHE_FILE);
 
-	blkid_free_cache(cache);
+	blkid_put_cache(cache);
 
 	return ret;
 }

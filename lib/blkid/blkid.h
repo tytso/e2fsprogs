@@ -13,34 +13,62 @@
 #ifndef _BLKID_BLKID_H
 #define _BLKID_BLKID_H
 
+#include <blkid/blkid_types.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define BLKID_VERSION	"1.2.0"
-#define BLKID_DATE	"22-Nov-2001"
+#define BLKID_VERSION	"1.0.0"
+#define BLKID_DATE	"12-Feb-2003"
 
 typedef struct blkid_struct_dev *blkid_dev;
-typedef struct blkid_struct_tag *blkid_tag;
 typedef struct blkid_struct_cache *blkid_cache;
+typedef __s64 blkid_loff_t;
+
+typedef struct blkid_struct_tag_iterate *blkid_tag_iterate;
+typedef struct blkid_struct_dev_iterate *blkid_dev_iterate;
+
+/*
+ * Flags for blkid_get_devname
+ *
+ * BLKID_DEV_CREATE	Create an empty device structure if not found
+ * 			in the cache.
+ * BLKID_DEV_VERIFY	Make sure the device structure corresponds
+ * 			with reality.
+ * BLKID_DEV_FIND	Just look up a device entry, and return NULL
+ * 			if it is not found.
+ * BLKID_DEV_NORMAL	Get a valid device structure, either from the
+ * 			cache or by probing the device.
+ */
+#define BLKID_DEV_FIND		0x0000
+#define BLKID_DEV_CREATE	0x0001
+#define BLKID_DEV_VERIFY	0x0002
+#define BLKID_DEV_NORMAL	(BLKID_DEV_CREATE | BLKID_DEV_VERIFY)
 
 /* cache.c */
-extern void blkid_free_cache(blkid_cache cache);
+extern void blkid_put_cache(blkid_cache cache);
 
 /* dev.c */
 extern const char *blkid_devname_name(blkid_dev dev);
 
-typedef struct blkid_struct_dev_iterate *blkid_dev_iterate;
 extern blkid_dev_iterate blkid_dev_iterate_begin(blkid_cache cache);
 extern int blkid_dev_next(blkid_dev_iterate iterate, blkid_dev *dev);
 extern void blkid_dev_iterate_end(blkid_dev_iterate iterate);
 
+/* devno.c */
+extern char *blkid_devno_to_devname(dev_t devno);
+
 /* devname.c */
-extern int blkid_probe_all(blkid_cache *cache);
-extern blkid_dev blkid_get_devname(blkid_cache cache, const char *devname);
+extern int blkid_probe_all(blkid_cache cache);
+extern blkid_dev blkid_get_devname(blkid_cache cache, const char *devname,
+				   int flags);
+
+/* getsize.c */
+extern blkid_loff_t blkid_get_dev_size(int fd);
 
 /* read.c */
-int blkid_read_cache(blkid_cache *cache, const char *filename);
+int blkid_get_cache(blkid_cache *cache, const char *filename);
 
 /* resolve.c */
 extern char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
@@ -48,15 +76,12 @@ extern char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
 extern char *blkid_get_token(blkid_cache cache, const char *token,
 			     const char *value);
 
-/* save.c */
-extern int blkid_save_cache(blkid_cache cache, const char *filename);
-
 /* tag.c */
-typedef struct blkid_struct_tag_iterate *blkid_tag_iterate;
 extern blkid_tag_iterate blkid_tag_iterate_begin(blkid_dev dev);
 extern int blkid_tag_next(blkid_tag_iterate iterate,
 			      const char **type, const char **value);
 extern void blkid_tag_iterate_end(blkid_tag_iterate iterate);
+
 extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache,
 					 const char *type,
 					 const char *value);

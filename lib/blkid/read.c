@@ -1,7 +1,7 @@
 /*
  * read.c - read the blkid cache from disk, to avoid scanning all devices
  *
- * Copyright (C) 2001 Theodore Y. Ts'o
+ * Copyright (C) 2001, 2003 Theodore Y. Ts'o
  * Copyright (C) 2001 Andreas Dilger
  *
  * %Begin-Header%
@@ -179,10 +179,9 @@ static int parse_end(char **cp)
  * <device foo=bar>devname</device>
  * <device>devname<foo>bar</foo></device>
  */
-static int parse_dev(blkid_dev *dev, char **cp)
+static int parse_dev(blkid_cache cache, blkid_dev *dev, char **cp)
 {
-	char **name;
-	char *start, *tmp, *end;
+	char *start, *tmp, *end, *name;
 	int ret;
 
 	if ((ret = parse_start(cp)) <= 0)
@@ -190,7 +189,7 @@ static int parse_dev(blkid_dev *dev, char **cp)
 
 	start = tmp = strchr(*cp, '>');
 	if (!start) {
-		fprintf(stderr, "blkid: short line parsing dev: %s\n", *cp);
+		DBG(printf("blkid: short line parsing dev: %s\n", *cp));
 		return -BLKID_ERR_CACHE;
 	}
 	start = skip_over_blank(start + 1);
@@ -206,30 +205,25 @@ static int parse_dev(blkid_dev *dev, char **cp)
 	*tmp = '\0';
 
 	if (!(tmp = strrchr(end, '<')) || parse_end(&tmp) < 0)
-		fprintf(stderr, "blkid: missing </device> ending: %s\n", end);
+		DBG(printf("blkid: missing </device> ending: %s\n", end));
 	else if (tmp)
 		*tmp = '\0';
 
 	if (end - start <= 1) {
-		fprintf(stderr, "blkid: empty device name: %s\n", *cp);
+		DBG(printf("blkid: empty device name: %s\n", *cp));
 		return -BLKID_ERR_CACHE;
 	}
 
-	if (!(*dev = blkid_new_dev()))
+	name = blkid_strndup(start, end-start);
+	if (name == NULL)
 		return -BLKID_ERR_MEM;
 
-	name = &(*dev)->bid_name;
-	*name = (char *)malloc(end - start + 1);
-	if (*name == NULL) {
-		blkid_free_dev(*dev);
+	DBG(printf("found dev %s\n", name));
+
+	if (!(*dev = blkid_get_devname(cache, name, BLKID_DEV_CREATE)))
 		return -BLKID_ERR_MEM;
-	}
 
-	memcpy(*name, start, end - start);
-	(*name)[end - start] = '\0';
-
-	DBG(printf("found dev %s\n", *name));
-
+	free(name);
 	return 1;
 }
 
@@ -253,7 +247,7 @@ static int parse_token(char **name, char **value, char **cp)
 	if (**value == '"') {
 		end = strchr(*value + 1, '"');
 		if (!end) {
-			fprintf(stderr, "unbalanced quotes at: %s\n", *value);
+			DBG(printf("unbalanced quotes at: %s\n", *value));
 			*cp = *value;
 			return -BLKID_ERR_CACHE;
 		}
@@ -319,13 +313,11 @@ static int parse_tag(blkid_cache cache, blkid_dev dev, char **cp)
 			cache->bic_idmax = dev->bid_id;
 	} else if (!strcmp(name, "DEVNO"))
 		dev->bid_devno = STRTOULL(value, 0, 0);
-	else if (!strcmp(name, "DEVSIZE"))
-		dev->bid_devno = STRTOULL(value, 0, 0);
 	else if (!strcmp(name, "TIME"))
 		/* FIXME: need to parse a long long eventually */
 		dev->bid_time = strtol(value, 0, 0);
 	else
-		ret = blkid_create_tag(dev, name, value, strlen(value));
+		ret = blkid_set_tag(dev, name, value, strlen(value), 0);
 
 	DBG(printf("    tag: %s=\"%s\"\n", name, value));
 
@@ -355,7 +347,7 @@ static int blkid_parse_line(blkid_cache cache, blkid_dev *dev_p, char *cp)
 
 	DBG(printf("line: %s\n", cp));
 
-	if ((ret = parse_dev(dev_p, &cp)) <= 0)
+	if ((ret = parse_dev(cache, dev_p, &cp)) <= 0)
 		return ret;
 
 	dev = *dev_p;
@@ -365,36 +357,53 @@ static int blkid_parse_line(blkid_cache cache, blkid_dev *dev_p, char *cp)
 	}
 
 	if (dev->bid_type == NULL) {
-		fprintf(stderr, "blkid: device %s has no TYPE\n",dev->bid_name);
+		DBG(printf("blkid: device %s has no TYPE\n",dev->bid_name));
 		blkid_free_dev(dev);
 	}
 
 	DEB_DUMP_DEV(dev);
 
-	*dev_p = blkid_add_dev_to_cache(cache, dev);
-
 	return ret;
 }
 
 /*
- * Read the given file stream for cached device data, and return it
- * in a newly allocated cache struct.
- *
- * Returns 0 on success, or -ve error value.
+ * Parse the specified filename, and return the data in the supplied or
+ * a newly allocated cache struct.  If the file doesn't exist, return a
+ * new empty cache struct.
  */
-int blkid_read_cache_file(blkid_cache *cache, FILE *file)
+int blkid_get_cache(blkid_cache *cache, const char *filename)
 {
+	FILE *file;
 	char buf[4096];
 	int lineno = 0;
 
-	if (!file || !cache)
+	if (!cache)
 		return -BLKID_ERR_PARAM;
 
-	if (!*cache)
-		*cache = blkid_new_cache();
-
-	if (!*cache)
+	if ((*cache = blkid_new_cache()) == NULL)
 		return -BLKID_ERR_MEM;
+
+	if (!filename || !strlen(filename))
+		filename = BLKID_CACHE_FILE;
+	else
+		(*cache)->bic_filename = blkid_strdup(filename);
+
+	DBG(printf("cache file %s\n", filename));
+
+	if (!strcmp(filename, "-"))
+		file = stdin;
+	else {
+		/*
+		 * If the file doesn't exist, then we just return an empty
+		 * struct so that the cache can be populated.
+		 */
+		if (access(filename, R_OK) < 0)
+			return 0;
+
+		file = fopen(filename, "r");
+		if (!file)
+			return errno; /* Should never happen */
+	}
 
 	while (fgets(buf, sizeof(buf), file)) {
 		blkid_dev dev;
@@ -410,77 +419,19 @@ int blkid_read_cache_file(blkid_cache *cache, FILE *file)
 		}
 
 		if (blkid_parse_line(*cache, &dev, buf) < 0) {
-			fprintf(stderr, "blkid: bad format on line %d\n",
-				lineno);
+			DBG(printf("blkid: bad format on line %d\n", lineno));
 			continue;
 		}
 	}
-
 	/*
-	 * Initially assume that we do not need to write out the cache file.
-	 * This would be incorrect if we probed first, and parsed the cache
-	 * afterwards, or parsed two caches and wanted to write it out, but
-	 * the alternative is to force manually marking the cache dirty when
-	 * any device is added, and that is also prone to error.
+	 * Initially we do not need to write out the cache file.
 	 */
 	(*cache)->bic_flags &= ~BLKID_BIC_FL_CHANGED;
-
-	return 0;
-}
-
-/*
- * Parse the specified filename, and return the data in the supplied or
- * a newly allocated cache struct.  If the file doesn't exist, return a
- * new empty cache struct.
- */
-int blkid_read_cache(blkid_cache *cache, const char *filename)
-{
-	FILE *file;
-	int ret;
-
-	if (!cache)
-		return -BLKID_ERR_PARAM;
-
-	if (!filename || !strlen(filename))
-		filename = BLKID_CACHE_FILE;
-
-	DBG(printf("cache file %s\n", filename));
-
-	/* If we read the standard cache file, do not do so again */
-	if (!strcmp(filename, BLKID_CACHE_FILE) && (*cache) &&
-	    ((*cache)->bic_flags & BLKID_BIC_FL_PARSED))
-		return 0;
-
-	if (!strcmp(filename, "-") || !strcmp(filename, "stdin"))
-		file = stdin;
-	else {
-		/*
-		 * If the file doesn't exist, then we just return an empty
-		 * struct so that the cache can be populated.
-		 */
-		if (access(filename, R_OK) < 0) {
-			*cache = blkid_new_cache();
-
-			return *cache ? 0 : -BLKID_ERR_MEM;
-		}
-
-		file = fopen(filename, "r");
-		if (!file) {
-			perror(filename);
-			return errno;
-		}
-	}
-
-	ret = blkid_read_cache_file(cache, file);
 
 	if (file != stdin)
 		fclose(file);
 
-	/* Mark us as having read the standard cache file */
-	if (!strcmp(filename, BLKID_CACHE_FILE))
-		(*cache)->bic_flags |= BLKID_BIC_FL_PARSED;
-
-	return ret;
+	return 0;
 }
 
 #ifdef TEST_PROGRAM
@@ -494,11 +445,11 @@ int main(int argc, char**argv)
 			"Test parsing of the cache (filename)\n", argv[0]);
 		exit(1);
 	}
-	if ((ret = blkid_read_cache(&cache, argv[1])) < 0)
+	if ((ret = blkid_get_cache(&cache, argv[1])) < 0)
 		fprintf(stderr, "error %d reading cache file %s\n", ret,
 			argv[1] ? argv[1] : BLKID_CACHE_FILE);
 
-	blkid_free_cache(cache);
+	blkid_put_cache(cache);
 
 	return ret;
 }

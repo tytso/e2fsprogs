@@ -19,9 +19,6 @@
 #include <blkid/blkid.h>
 
 #include <blkid/list.h>
-#include <blkid/blkid_types.h>
-
-typedef __s64 blkid_loff_t;
 
 /*
  * This describes the attributes of a specific device.
@@ -33,6 +30,7 @@ struct blkid_struct_dev
 {
 	struct list_head	bid_devs;	/* All devices in the cache */
 	struct list_head	bid_tags;	/* All tags for this device */
+	blkid_cache		bid_cache;	/* Dev belongs to this cache */
 	char			*bid_name;	/* Device inode pathname */
 	char			*bid_type;	/* Preferred device TYPE */
 	blkid_loff_t		bid_size;	/* Filesystem size in bytes */
@@ -47,6 +45,7 @@ struct blkid_struct_dev
 
 #define BLKID_BID_FL_VERIFIED	0x0001	/* Device data validated from disk */
 #define BLKID_BID_FL_MTYPE	0x0002	/* Device has multiple type matches */
+#define BLKID_BID_FL_INVALID	0x0004	/* Device is invalid */
 
 /*
  * Each tag defines a NAME=value pair for a particular device.  The tags
@@ -63,6 +62,7 @@ struct blkid_struct_tag
 	char			*bit_val;	/* value of tag */
 	blkid_dev		bit_dev;	/* pointer to device */
 };
+typedef struct blkid_struct_tag *blkid_tag;
 
 /*
  * Minimum number of seconds between device probes, even when reading
@@ -91,19 +91,18 @@ struct blkid_struct_cache
 	time_t			bic_time;	/* Last probe time */
 	unsigned int		bic_idmax;	/* Highest ID assigned */
 	unsigned int		bic_flags;	/* Status flags of the cache */
+	char			*bic_filename;	/* filename of cache */
 };
 
-#define BLKID_BIC_FL_PARSED	0x0001	/* We parsed a cache file */
 #define BLKID_BIC_FL_PROBED	0x0002	/* We probed /proc/partition devices */
 #define BLKID_BIC_FL_CHANGED	0x0004	/* Cache has changed from disk */
 
-extern char *string_copy(const char *s);
-extern char *stringn_copy(const char *s, const int length);
-extern void string_free(char *s);
+extern char *blkid_strdup(const char *s);
+extern char *blkid_strndup(const char *s, const int length);
 extern blkid_cache blkid_new_cache(void);
 
 #define BLKID_CACHE_FILE "/etc/blkid.tab"
-extern const char *devdirs[];
+extern const char *blkid_devdirs[];
 
 #define BLKID_ERR_IO	 5
 #define BLKID_ERR_PROC	 9
@@ -193,60 +192,28 @@ static inline void DEB_DUMP_CACHE(blkid_cache cache)
 #define DEB_DUMP_CACHE(cache) do {} while (0)
 #endif
 
-/*
- * Primitive disk functions: llseek.c, getsize.c
- */
+/* lseek.c */
 extern blkid_loff_t blkid_llseek(int fd, blkid_loff_t offset, int whence);
-extern blkid_loff_t blkid_get_dev_size(int fd);
 
-/*
- * Getting data from the cache file: read.c
- */
-int blkid_read_cache_line(blkid_cache cache, blkid_dev *dev_p, char *cp);
-int blkid_read_cache_file(blkid_cache *cache, FILE *file);
-
-/*
- * Save data to the cache file: save.c
- */
-int blkid_save_cache_file(blkid_cache cache, FILE *file);
-
-/*
- * Identify a device by inode name: probe.c
- */
-extern blkid_dev blkid_devname_to_dev(const char *devname,
-				       blkid_loff_t size);
-
-/*
- * Locate a device by inode name: devname.c
- */
-extern blkid_dev blkid_find_devname(blkid_cache cache, const char *devname);
+/* probe.c */
 extern blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev);
-extern blkid_dev blkid_get_devname(blkid_cache cache, const char *devname);
 
-/*
- * Locate a device by device major/minor number: devno.c
- */
-extern char *blkid_devno_to_devname(dev_t devno);
-extern blkid_dev blkid_find_devno(blkid_cache cache, dev_t devno);
-extern blkid_dev blkid_get_devno(blkid_cache cache, dev_t devno);
+/* save.c */
+extern int blkid_flush_cache(blkid_cache cache);
 
 /*
  * Functions to create and find a specific tag type: tag.c
  */
-extern blkid_tag blkid_new_tag(void);
 extern void blkid_free_tag(blkid_tag tag);
-extern int blkid_create_tag(blkid_dev dev, const char *name,
-			    const char *value, const int vlength);
-extern blkid_tag blkid_find_tag_dev(blkid_dev dev, const char *type,
-				    const char *value);
-extern blkid_tag blkid_find_head_cache(blkid_cache cache, const char *type);
+extern blkid_tag blkid_find_tag_dev(blkid_dev dev, const char *type);
+extern int blkid_set_tag(blkid_dev dev, const char *name,
+			 const char *value, const int vlength, int replace);
 
 /*
  * Functions to create and find a specific tag type: dev.c
  */
 extern blkid_dev blkid_new_dev(void);
 extern void blkid_free_dev(blkid_dev dev);
-extern blkid_dev blkid_add_dev_to_cache(blkid_cache cache, blkid_dev dev);
 
 #ifdef __cplusplus
 }

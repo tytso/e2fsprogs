@@ -80,11 +80,9 @@ or visit
 http://www.gnu.org/licenses/licenses.html#LGPL
 .UE
 .SH "SEE ALSO"
-.BR blkid_read_cache (3),
-.BR blkid_save_cache (3),
-.BR blkid_free_cache (3),
+.BR blkid_get_cache (3),
+.BR blkid_put_cache (3),
 .BR blkid_get_devname (3),
-.BR blkid_get_devno (3),
 .BR blkid_probe_all (3),
 .BR blkid_free_dev (3),
 .BR blkid_find_tag_dev (3),

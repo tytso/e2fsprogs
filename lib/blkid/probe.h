@@ -2,7 +2,7 @@
  * probe.h - constants and on-disk structures for extracting device data
  *
  * Copyright (C) 1999 by Andries Brouwer
- * Copyright (C) 1999, 2000 by Theodore Ts'o
+ * Copyright (C) 1999, 2000, 2003 by Theodore Ts'o
  * Copyright (C) 2001 by Andreas Dilger
  *
  * %Begin-Header%
@@ -18,9 +18,9 @@
 
 struct blkid_magic;
 
-typedef int (*blkid_probe_t)(int fd, blkid_dev *dev_p, const char *devname,
+typedef int (*blkid_probe_t)(int fd, blkid_cache cache, blkid_dev dev, 
 			     struct blkid_magic *id, unsigned char *buf,
-			     blkid_loff_t size);
+			     const char **ret_sectype);
 
 struct blkid_magic {
 	const char	*bim_type;	/* type name for this magic */
@@ -28,8 +28,6 @@ struct blkid_magic {
 	unsigned	bim_sboff;	/* byte offset within superblock */
 	unsigned	bim_len;	/* length of magic */
 	const char	*bim_magic;	/* magic string */
-	unsigned	bim_align;	/* byte alignment of superblock */
-	unsigned	bim_kbsize;	/* size of superblock in kilobytes */
 	blkid_probe_t	bim_probe;	/* probe function */
 };
 
@@ -201,6 +199,10 @@ struct hfs_super_block {
 #else				/* For Watcom C */
 #define _INLINE_ extern inline
 #endif
+
+extern __u16 blkid_swab16(__u16 val);
+extern __u32 blkid_swab32(__u32 val);
+extern __u64 blkid_swab64(__u64 val);
 
 #if ((defined __GNUC__) && \
      (defined(__i386__) || defined(__i486__) || defined(__i586__)))

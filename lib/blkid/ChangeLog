@@ -1,3 +1,10 @@
+2003-02-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid.h, blkidP.h, cache.c, dev.c, devname.c, devno.c, probe.c,
+		probe.h, read.c, resolve.c, save.c, tag.c: Wholesale
+		changes to library to simplify the implementation and
+		shrink its size.  Change library version to be 1.0.
+
 2003-01-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* read.c (parse_tag): Do not return that blkid_tag when parsing

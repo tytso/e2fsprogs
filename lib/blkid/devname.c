@@ -44,57 +44,66 @@
 
 /*
  * Find a dev struct in the cache by device name, if available.
+ *
+ * If there is no entry with the specified device name, and the create
+ * flag is set, then create an empty device entry.
  */
-blkid_dev blkid_find_devname(blkid_cache cache, const char *devname)
+blkid_dev blkid_get_devname(blkid_cache cache, const char *devname,
+			     int flags)
 {
-	blkid_dev dev = NULL;
+	blkid_dev dev = NULL, tmp;
 	struct list_head *p;
 
 	if (!cache || !devname)
 		return NULL;
 
 	list_for_each(p, &cache->bic_devs) {
-		blkid_dev tmp = list_entry(p, struct blkid_struct_dev, bid_devs);
-
+		tmp = list_entry(p, struct blkid_struct_dev, bid_devs);
 		if (strcmp(tmp->bid_name, devname))
 			continue;
 
 		DBG(printf("found devname %s in cache\n", tmp->bid_name));
-		dev = blkid_verify_devname(cache, tmp);
+		dev = tmp;
 		break;
 	}
 
+	if (!dev && (flags & BLKID_DEV_CREATE)) {
+		dev = blkid_new_dev();
+		if (!dev)
+			return NULL;
+		dev->bid_name = blkid_strdup(devname);
+		dev->bid_cache = cache;
+		dev->bid_id = ++(cache->bic_idmax);
+		list_add_tail(&dev->bid_devs, &cache->bic_devs);
+		cache->bic_flags |= BLKID_BIC_FL_CHANGED;
+	}
+
+	if (flags & BLKID_DEV_VERIFY)
+		dev = blkid_verify_devname(cache, dev);
 	return dev;
 }
 
 /*
- * Return a pointer to an dev struct, either from cache or by probing.
- */
-blkid_dev blkid_get_devname(blkid_cache cache, const char *devname)
-{
-	blkid_dev dev;
-
-	if ((dev = blkid_find_devname(cache, devname)))
-		return dev;
-
-	dev = blkid_devname_to_dev(devname, 0);
-	return blkid_add_dev_to_cache(cache, dev);
-}
-
-/*
  * Probe a single block device to add to the device cache.
- * If the size is not specified, it will be found in blkid_devname_to_dev().
  */
 static blkid_dev probe_one(blkid_cache cache, const char *ptname,
-			    int major, int minor, unsigned long long size)
+			    dev_t devno)
 {
-	dev_t devno = makedev(major, minor);
-	blkid_dev dev;
+	blkid_dev dev = NULL;
+	struct list_head *p;
 	const char **dir;
 	char *devname = NULL;
 
 	/* See if we already have this device number in the cache. */
-	if ((dev = blkid_find_devno(cache, devno)))
+	list_for_each(p, &cache->bic_devs) {
+		blkid_dev tmp = list_entry(p, struct blkid_struct_dev,
+					   bid_devs);
+		if (tmp->bid_devno == devno) {
+			dev = blkid_verify_devname(cache, tmp);
+			break;
+		}
+	}
+	if (dev && dev->bid_devno == devno)
 		return dev;
 
 	/*
@@ -103,17 +112,17 @@ static blkid_dev probe_one(blkid_cache cache, const char *ptname,
 	 * the stat information doesn't check out, use blkid_devno_to_devname()
 	 * to find it via an exhaustive search for the device major/minor.
 	 */
-	for (dir = devdirs; *dir; dir++) {
+	for (dir = blkid_devdirs; *dir; dir++) {
 		struct stat st;
 		char device[256];
 
 		sprintf(device, "%s/%s", *dir, ptname);
-		if ((dev = blkid_find_devname(cache, device)) &&
+		if ((dev = blkid_get_devname(cache, device, BLKID_DEV_FIND)) &&
 		    dev->bid_devno == devno)
 			return dev;
 
 		if (stat(device, &st) == 0 && st.st_rdev == devno) {
-			devname = string_copy(device);
+			devname = blkid_strdup(device);
 			break;
 		}
 	}
@@ -122,10 +131,10 @@ static blkid_dev probe_one(blkid_cache cache, const char *ptname,
 		if (!devname)
 			return NULL;
 	}
-	dev = blkid_devname_to_dev(devname, size);
-	string_free(devname);
+	dev = blkid_get_devname(cache, devname, BLKID_DEV_NORMAL);
+	free(devname);
 
-	return blkid_add_dev_to_cache(cache, dev);
+	return dev;
 }
 
 #define PROC_PARTITIONS "/proc/partitions"
@@ -139,29 +148,23 @@ static blkid_dev probe_one(blkid_cache cache, const char *ptname,
  */
 #ifdef VG_DIR
 #include <dirent.h>
-static int lvm_get_devno(const char *lvm_device, int *major, int *minor,
-			 blkid_loff_t *size)
+static dev_t lvm_get_devno(const char *lvm_device)
 {
 	FILE *lvf;
 	char buf[1024];
-	int ret = 1;
-
-	*major = *minor = 0;
-	*size = 0;
+	int ma, mi;
+	dev_t ret = 0;
 
 	DBG(printf("opening %s\n", lvm_device));
 	if ((lvf = fopen(lvm_device, "r")) == NULL) {
-		ret = errno;
-		DBG(printf("%s: (%d) %s\n", lvm_device, ret, strerror(ret)));
-		return -ret;
+		DBG(printf("%s: (%d) %s\n", lvm_device, errno,
+			   strerror(errno)));
+		return 0;
 	}
 
 	while (fgets(buf, sizeof(buf), lvf)) {
-		if (sscanf(buf, "size: %llu", size) == 1) { /* sectors */
-			*size <<= 9;
-		}
-		if (sscanf(buf, "device: %d:%d", major, minor) == 2) {
-			ret = 0;
+		if (sscanf(buf, "device: %d:%d", &ma, &mi) == 2) {
+			ret = makedev(ma, mi);
 			break;
 		}
 	}
@@ -170,11 +173,12 @@ static int lvm_get_devno(const char *lvm_device, int *major, int *minor,
 	return ret;
 }
 
-static void lvm_probe_all(blkid_cache *cache)
+static void lvm_probe_all(blkid_cache cache)
 {
 	DIR		*vg_list;
 	struct dirent	*vg_iter;
 	int		vg_len = strlen(VG_DIR);
+	dev_t		dev;
 
 	if ((vg_list = opendir(VG_DIR)) == NULL)
 		return;
@@ -202,8 +206,6 @@ static void lvm_probe_all(blkid_cache *cache)
 
 		while ((lv_iter = readdir(lv_list)) != NULL) {
 			char		*lv_name, *lvm_device;
-			int		major, minor;
-			blkid_loff_t	size;
 
 			lv_name = lv_iter->d_name;
 			if (!strcmp(lv_name, ".") || !strcmp(lv_name, ".."))
@@ -217,14 +219,11 @@ static void lvm_probe_all(blkid_cache *cache)
 			}
 			sprintf(lvm_device, "%s/%s/LVs/%s", VG_DIR, vg_name,
 				lv_name);
-			if (lvm_get_devno(lvm_device, &major, &minor, &size)) {
-				free(lvm_device);
-				continue;
-			}
+			dev = lvm_get_devno(lvm_device);
 			sprintf(lvm_device, "%s/%s", vg_name, lv_name);
-			DBG(printf("LVM dev %s: devno 0x%02X%02X, size %Ld\n",
-				   lvm_device, major, minor, size));
-			probe_one(*cache, lvm_device, major, minor, size);
+			DBG(printf("LVM dev %s: devno 0x%04X\n",
+				   lvm_device, dev));
+			probe_one(cache, lvm_device, dev);
 			free(lvm_device);
 		}
 		closedir(lv_list);
@@ -237,7 +236,7 @@ exit:
 #define PROC_EVMS_VOLUMES "/proc/evms/volumes"
 
 static int
-evms_probe_all(blkid_cache *cache)
+evms_probe_all(blkid_cache cache)
 {
 	char line[100];
 	int ma, mi, sz, num = 0;
@@ -255,7 +254,7 @@ evms_probe_all(blkid_cache *cache)
 		DBG(printf("Checking partition %s (%d, %d)\n",
 			   device, ma, mi));
 
-		probe_one(*cache, device, ma, mi, sz << 10);
+		probe_one(cache, device, makedev(ma, mi));
 		num++;
 	}
 	fclose(procpt);
@@ -265,7 +264,7 @@ evms_probe_all(blkid_cache *cache)
 /*
  * Read the device data for all available block devices in the system.
  */
-int blkid_probe_all(blkid_cache *cache)
+int blkid_probe_all(blkid_cache cache)
 {
 	FILE *proc;
 	int firstPass;
@@ -273,14 +272,8 @@ int blkid_probe_all(blkid_cache *cache)
 	if (!cache)
 		return -BLKID_ERR_PARAM;
 
-	if (!*cache)
-		*cache = blkid_new_cache();
-
-	if (!*cache)
-		return -BLKID_ERR_MEM;
-
-	if ((*cache)->bic_flags & BLKID_BIC_FL_PROBED &&
-	    time(0) - (*cache)->bic_time < BLKID_PROBE_INTERVAL)
+	if (cache->bic_flags & BLKID_BIC_FL_PROBED &&
+	    time(0) - cache->bic_time < BLKID_PROBE_INTERVAL)
 		return 0;
 
 	if (evms_probe_all(cache))
@@ -296,10 +289,11 @@ int blkid_probe_all(blkid_cache *cache)
 
 	for (firstPass = 1; firstPass >= 0; firstPass--) {
 		char line[1024];
-		char ptname0[128], ptname1[128];
+		char ptname0[128], ptname1[128], *ptname = 0;
 		char *ptnames[2] = { ptname0, ptname1 };
-		int majors[2], minors[2];
-		unsigned long long sizes[2];
+		dev_t devs[2];
+		int ma, mi;
+		unsigned long long sz;
 		int lens[2] = { 0, 0 };
 		int handleOnFirst;
 		int which = 0, last = 0;
@@ -309,16 +303,17 @@ int blkid_probe_all(blkid_cache *cache)
 		while (fgets(line, sizeof(line), proc)) {
 			last = which;
 			which ^= 1;
+			ptname = ptnames[which];
 
 			if (sscanf(line, " %d %d %lld %128[^\n ]",
-				   &majors[which], &minors[which],
-				   &sizes[which], ptnames[which]) != 4)
+				   &ma, &mi, &sz, ptname) != 4)
 				continue;
+			devs[which] = makedev(ma, mi);
 
-			DBG(printf("read partition name %s\n", ptnames[which]));
+			DBG(printf("read partition name %s\n", ptname));
 
 			/* look only at md devices on first pass */
-			handleOnFirst = !strncmp(ptnames[which], "md", 2);
+			handleOnFirst = !strncmp(ptname, "md", 2);
 			if (firstPass != handleOnFirst)
 				continue;
 
@@ -333,40 +328,34 @@ int blkid_probe_all(blkid_cache *cache)
 			 * FIXME: skip /dev/{ida,cciss,rd} whole-disk devs
 			 */
 
-			lens[which] = strlen(ptnames[which]);
-			if (isdigit(ptnames[which][lens[which] - 1])) {
-				DBG(printf("partition dev %s, devno 0x%02X%02X\n",
-					   ptnames[which], majors[which],
-					   minors[which]));
+			lens[which] = strlen(ptname);
+			if (isdigit(ptname[lens[which] - 1])) {
+				DBG(printf("partition dev %s, devno 0x%04X\n",
+					   ptname, devs[which]));
 
-				if (sizes[which] > 1)
-					probe_one(*cache, ptnames[which],
-						  majors[which], minors[which],
-						  sizes[which] << 10);
+				if (sz > 1)
+					probe_one(cache, ptname, devs[which]);
 				lens[which] = 0;
 				lens[last] = 0;
 			} else if (lens[last] &&
-				   strncmp(ptnames[last], ptnames[which],
+				   strncmp(ptnames[last], ptname,
 					   lens[last])) {
-				DBG(printf("whole dev %s, devno 0x%02X%02X\n",
-					   ptnames[last], majors[last],
-					   minors[last]));
-				probe_one(*cache, ptnames[last], majors[last],
-					  minors[last], sizes[last] << 10);
+				DBG(printf("whole dev %s, devno 0x%04X\n",
+					   ptname, devs[last]));
+				probe_one(cache, ptname, devs[last]);
 				lens[last] = 0;
 			}
 		}
 
 		/* Handle the last device if it wasn't partitioned */
 		if (lens[which])
-			probe_one(*cache, ptnames[which], majors[which],
-				  minors[which], sizes[which] << 10);
+			probe_one(cache, ptname, devs[which]);
 	}
 	fclose(proc);
 
 finish:
-	(*cache)->bic_time = time(0);
-	(*cache)->bic_flags |= BLKID_BIC_FL_PROBED;
+	cache->bic_time = time(0);
+	cache->bic_flags |= BLKID_BIC_FL_PROBED;
 
 	return 0;
 }
@@ -381,10 +370,14 @@ int main(int argc, char **argv)
 			"Probe all devices and exit\n", argv[0]);
 		exit(1);
 	}
-	if (blkid_probe_all(&cache) < 0)
+	if ((cache = blkid_new_cache()) == NULL) {
+		fprintf(stderr, "%s: error creating cache\n", argv[0]);
+		exit(1);
+	}
+	if (blkid_probe_all(cache) < 0)
 		printf("%s: error probing devices\n", argv[0]);
 
-	blkid_free_cache(cache);
+	blkid_put_cache(cache);
 	return (0);
 }
 #endif

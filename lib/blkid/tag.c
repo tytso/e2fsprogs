@@ -2,6 +2,7 @@
  * tag.c - allocation/initialization/free routines for tag structs
  *
  * Copyright (C) 2001 Andreas Dilger
+ * Copyright (C) 2003 Theodore Ts'o
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the
@@ -21,7 +22,7 @@
 #define DBG(x)
 #endif
 
-blkid_tag blkid_new_tag(void)
+static blkid_tag blkid_new_tag(void)
 {
 	blkid_tag tag;
 
@@ -39,16 +40,17 @@ void blkid_free_tag(blkid_tag tag)
 	if (!tag)
 		return;
 
-	DBG(printf("    freeing tag %s=%s\n", tag->bit_name, tag->bit_val));
+	DBG(printf("    freeing tag %s=%s\n", tag->bit_name,
+		   tag->bit_val ? tag->bit_val : "(NULL)"));
 	DEB_DUMP_TAG(tag);
 
 	list_del(&tag->bit_tags);	/* list of tags for this device */
 	list_del(&tag->bit_names);	/* list of tags with this type */
 
 	if (tag->bit_name)
-		string_free(tag->bit_name);
+		free(tag->bit_name);
 	if (tag->bit_val)
-		string_free(tag->bit_val);
+		free(tag->bit_val);
 
 	free(tag);
 }
@@ -57,122 +59,148 @@ void blkid_free_tag(blkid_tag tag)
  * Find the desired tag on a device.  If value is NULL, then the
  * first such tag is returned, otherwise return only exact tag if found.
  */
-blkid_tag blkid_find_tag_dev(blkid_dev dev, const char *type,
-			     const char *value)
+blkid_tag blkid_find_tag_dev(blkid_dev dev, const char *type)
 {
-	blkid_tag found = NULL;
 	struct list_head *p;
 
-	if (!dev || !type || !value)
+	if (!dev || !type)
 		return NULL;
 
 	list_for_each(p, &dev->bid_tags) {
 		blkid_tag tmp = list_entry(p, struct blkid_struct_tag,
 					   bit_tags);
 
-		if (!strcmp(tmp->bit_name, type) &&
-		    (!value || !strcmp(tmp->bit_val, value))){
-			found = tmp;
-			break;
-		}
+		if (!strcmp(tmp->bit_name, type))
+			return tmp;
 	}
-
-	return found;
+	return NULL;
 }
 
 /*
  * Find the desired tag type in the cache.
  * We return the head tag for this tag type.
  */
-blkid_tag blkid_find_head_cache(blkid_cache cache, const char *type)
+static blkid_tag blkid_find_head_cache(blkid_cache cache, const char *type)
 {
-	blkid_tag head = NULL;
+	blkid_tag head = NULL, tmp;
 	struct list_head *p;
 
 	if (!cache || !type)
 		return NULL;
 
 	list_for_each(p, &cache->bic_tags) {
-		blkid_tag tmp = list_entry(p, struct blkid_struct_tag, 
-					   bit_tags);
-
+		tmp = list_entry(p, struct blkid_struct_tag, bit_tags);
 		if (!strcmp(tmp->bit_name, type)) {
 			DBG(printf("    found cache tag head %s\n", type));
 			head = tmp;
 			break;
 		}
 	}
-
 	return head;
 }
 
 /*
- * Add a single tag to the given device.
- * This function is not currently exported because adding arbitrary tags to
- * a device will just get lost as soon as we verify the device (which
- * uses the dev struct returned from the device probe).  At some point in
- * the future it may be desirable to allow adding arbitrary tags to a device,
- * and ensure that verify keeps all such tags (maybe lower case tag names?)
+ * Set a tag on an existing device.
+ * 
+ * If replace is non-zero, blkid_set_tag() will replace the existing
+ * tag with the specified value.  Otherwise, it will add the specified
+ * tag to the device.
+ *
+ * If value is NULL, then delete all tags with that name from the
+ * device.
  */
-static void add_tag_to_dev(blkid_dev dev, blkid_tag tag)
+int blkid_set_tag(blkid_dev dev, const char *name,
+		  const char *value, const int vlength, int replace)
 {
-	if (!dev)
-		return;
+	blkid_tag	t = 0, head = 0;
+	char		*val = 0;
 
-	DBG(printf("adding tag %s=%s\n", tag->bit_name, tag->bit_val));
-
-	tag->bit_dev = dev;
-
-	list_add_tail(&tag->bit_tags, &dev->bid_tags);
-
-	/* Link common tags directly to the device struct */
-	if (!strcmp(tag->bit_name, "TYPE") && !dev->bid_type)
-		dev->bid_type = tag->bit_val;
-	else if (!strcmp(tag->bit_name, "LABEL"))
-		dev->bid_label = tag->bit_val;
-	else if (!strcmp(tag->bit_name, "UUID"))
-		dev->bid_uuid = tag->bit_val;
-}
-
-/*
- * Allocate and fill out a tag struct.
- * If dev is valid, the tag will be added to the tags for this device
- * if an identical tag does not already exist.
- * If tag is valid, the tag will be returned in this pointer.
- */
-int blkid_create_tag(blkid_dev dev, const char *name,
-		     const char *value, const int vlength)
-{
-	blkid_tag t, found;
-
-	if (!dev)
+	if (!dev || !name)
 		return -BLKID_ERR_PARAM;
 
-	if (!name)
-		return -BLKID_ERR_PARAM;
-
-	t = blkid_new_tag();
-	if (!t)
-		return -BLKID_ERR_MEM;
-
-	t->bit_name = string_copy(name);
-	t->bit_val = stringn_copy(value, vlength);
-
-	if ((found = blkid_find_tag_dev(dev, name, t->bit_val))) {
-		blkid_free_tag(t);
-		return 0;
+repeat:
+	t = blkid_find_tag_dev(dev, name);
+	val = blkid_strndup(value, vlength);
+	if (!value) {
+		if (t) {
+			blkid_free_tag(t);
+			goto repeat;
+		} else
+			goto link_tags;
+	}
+	if (!val)
+		goto errout;
+	if (t) {
+		if (!strcmp(t->bit_val, val)) {
+			/* Same thing, exit */
+			free(val);
+			return 0;
+		}
+		if (replace) {
+			free(t->bit_val);
+			t->bit_val = val;
+			goto link_tags;
+		}
+		dev->bid_flags |= BLKID_BID_FL_MTYPE;
 	}
 
-	add_tag_to_dev(dev, t);
+	/* Existing tag not present, add to device */
+	t = blkid_new_tag();
+	if (!t)
+		goto errout;
+	t->bit_name = blkid_strdup(name);
+	t->bit_val = val;
+	t->bit_dev = dev;
 
+	list_add_tail(&t->bit_tags, &dev->bid_tags);
+		
+	if (dev->bid_cache) {
+		head = blkid_find_head_cache(dev->bid_cache, t->bit_name);
+		if (!head) {
+			head = blkid_new_tag();
+			if (!head)
+				goto errout;
+
+			DBG(printf("    creating new cache tag head %s\n",
+				   name));
+			head->bit_name = blkid_strdup(name);
+			if (!head->bit_name)
+				goto errout;
+			list_add_tail(&head->bit_tags,
+				      &dev->bid_cache->bic_tags);
+		}
+		list_add_tail(&t->bit_names, &head->bit_names);
+	}
+	
+link_tags:
+	/* Link common tags directly to the device struct */
+	if (!strcmp(name, "TYPE") && (!val || !dev->bid_type))
+		dev->bid_type = val;
+	else if (!strcmp(name, "LABEL"))
+		dev->bid_label = val;
+	else if (!strcmp(name, "UUID"))
+		dev->bid_uuid = val;
+		
+	if (dev->bid_cache)
+		dev->bid_cache->bic_flags |= BLKID_BIC_FL_CHANGED;
 	return 0;
+
+errout:
+	if (t)
+		blkid_free_tag(t);
+	else if (val)
+		free(val);
+	if (head)
+		blkid_free_tag(head);
+	return -BLKID_ERR_MEM;
 }
+
 
 /*
  * Parse a "NAME=value" string.  This is slightly different than
  * parse_token, because that will end an unquoted value at a space, while
  * this will assume that an unquoted value is the rest of the token (e.g.
- * if we are passed al alreay quoted string from the command-line we don't
+ * if we are passed an already quoted string from the command-line we don't
  * have to both quote and escape quote so that the quotes make it to
  * us).
  *
@@ -187,7 +215,7 @@ int blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val)
 	if (!token || !(cp = strchr(token, '=')))
 		return -1;
 
-	name = string_copy(token);
+	name = blkid_strdup(token);
 	if (!name)
 		return -1;
 	value = name + (cp - token);
@@ -198,7 +226,7 @@ int blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val)
 			goto errout; /* missing closing quote */
 		*cp = '\0';
 	}
-	value = string_copy(value);
+	value = blkid_strdup(value);
 	if (!value)
 		goto errout;
 
@@ -208,7 +236,7 @@ int blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val)
 	return 0;
 
 errout:
-	string_free(name);
+	free(name);
 	return -1;
 }
 
@@ -291,7 +319,7 @@ extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache,
 					 const char *type,
 					 const char *value)
 {
-	blkid_tag head = 0, found;
+	blkid_tag head = 0, found = 0;
 	struct list_head *p;
 
 	if (!cache || !type || !value)
@@ -303,19 +331,20 @@ try_again:
 	if (!head)
 		head = blkid_find_head_cache(cache, type);
 
-	found = 0;
-	list_for_each(p, &head->bit_names) {
-		blkid_tag tmp = list_entry(p, struct blkid_struct_tag, 
-					   bit_names);
+	if (head) {
+		list_for_each(p, &head->bit_names) {
+			blkid_tag tmp = list_entry(p, struct blkid_struct_tag, 
+						   bit_names);
 
-		if (!strcmp(tmp->bit_val, value)) {
-			found = tmp;
-			break;
+			if (!strcmp(tmp->bit_val, value)) {
+				found = tmp;
+				break;
+			}
 		}
 	}
 
 	if ((!head || !found) && !(cache->bic_flags & BLKID_BIC_FL_PROBED)) {
-		blkid_probe_all(&cache);
+		blkid_probe_all(cache);
 		goto try_again;
 	}
 	return (found ? found->bit_dev : NULL);

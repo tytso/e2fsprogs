@@ -1,7 +1,7 @@
 /*
  * devno.c - find a particular device by its device number (major/minor)
  *
- * Copyright (C) 2000, 2001 Theodore Ts'o
+ * Copyright (C) 2000, 2001, 2003 Theodore Ts'o
  * Copyright (C) 2001 Andreas Dilger
  *
  * %Begin-Header%
@@ -44,12 +44,15 @@ struct dir_list {
 	struct dir_list *next;
 };
 
-char *stringn_copy(const char *s, const int length)
+char *blkid_strndup(const char *s, int length)
 {
 	char *ret;
 
 	if (!s)
 		return NULL;
+
+	if (!length)
+		length = strlen(s);
 
 	ret = malloc(length + 1);
 	if (ret) {
@@ -59,18 +62,9 @@ char *stringn_copy(const char *s, const int length)
 	return ret;
 }
 
-char *string_copy(const char *s)
+char *blkid_strdup(const char *s)
 {
-	if (!s)
-		return NULL;
-
-	return stringn_copy(s, strlen(s));
-}
-
-void string_free(char *s)
-{
-	if (s)
-		free(s);
+	return blkid_strndup(s, 0);
 }
 
 /*
@@ -83,7 +77,7 @@ static void add_to_dirlist(const char *name, struct dir_list **list)
 	dp = malloc(sizeof(struct dir_list));
 	if (!dp)
 		return;
-	dp->name = string_copy(name);
+	dp->name = blkid_strdup(name);
 	if (!dp->name) {
 		free(dp);
 		return;
@@ -101,58 +95,52 @@ static void free_dirlist(struct dir_list **list)
 
 	for (dp = *list; dp; dp = next) {
 		next = dp->next;
-		string_free(dp->name);
+		free(dp->name);
 		free(dp);
 	}
 	*list = NULL;
 }
 
-static int scan_dir(char *dirname, dev_t devno, struct dir_list **list,
-		    char **devname)
+static void scan_dir(char *dirname, dev_t devno, struct dir_list **list,
+			    char **devname)
 {
 	DIR	*dir;
 	struct dirent *dp;
 	char	path[1024];
 	int	dirlen;
 	struct stat st;
-	int	ret = 0;
 
-	dirlen = strlen(dirname);
 	if ((dir = opendir(dirname)) == NULL)
-		return errno;
-	dp = readdir(dir);
-	while (dp) {
-		if (dirlen + strlen(dp->d_name) + 2 >= sizeof(path))
-			goto skip_to_next;
+		return;
+	dirlen = strlen(dirname) + 2;
+	while ((dp = readdir(dir)) != 0) {
+		if (dirlen + strlen(dp->d_name) >= sizeof(path))
+			continue;
 
 		if (dp->d_name[0] == '.' &&
 		    ((dp->d_name[1] == 0) ||
 		     ((dp->d_name[1] == '.') && (dp->d_name[2] == 0))))
-			goto skip_to_next;
+			continue;
 
 		sprintf(path, "%s/%s", dirname, dp->d_name);
 		if (stat(path, &st) < 0)
-			goto skip_to_next;
+			continue;
 
 		if (S_ISDIR(st.st_mode))
 			add_to_dirlist(path, list);
 		else if (S_ISBLK(st.st_mode) && st.st_rdev == devno) {
-			*devname = string_copy(path);
+			*devname = blkid_strdup(path);
 			DBG(printf("found 0x%Lx at %s (%p)\n", devno,
-				   *devname, *devname));
-			if (!*devname)
-				ret = -BLKID_ERR_MEM;
+				   path, *devname));
 			break;
 		}
-	skip_to_next:
-		dp = readdir(dir);
 	}
 	closedir(dir);
-	return ret;
+	return;
 }
 
 /* Directories where we will try to search for device numbers */
-const char *devdirs[] = { "/dev", "/devfs", "/devices", NULL };
+const char *blkid_devdirs[] = { "/devices", "/devfs", "/dev", NULL };
 
 /*
  * This function finds the pathname to a block device with a given
@@ -169,13 +157,8 @@ char *blkid_devno_to_devname(dev_t devno)
 	 * Add the starting directories to search in reverse order of
 	 * importance, since we are using a stack...
 	 */
-	for (dir = devdirs; *dir; dir++)
-		/* go to end of list */;
-
-	do {
-		--dir;
+	for (dir = blkid_devdirs; *dir; dir++)
 		add_to_dirlist(*dir, &list);
-	} while (dir != devdirs);
 
 	while (list) {
 		struct dir_list *current = list;
@@ -183,7 +166,7 @@ char *blkid_devno_to_devname(dev_t devno)
 		list = list->next;
 		DBG(printf("directory %s\n", current->name));
 		scan_dir(current->name, devno, &new_list, &devname);
-		string_free(current->name);
+		free(current->name);
 		free(current);
 		if (devname)
 			break;
@@ -200,59 +183,12 @@ char *blkid_devno_to_devname(dev_t devno)
 	free_dirlist(&new_list);
 
 	if (!devname)
-		fprintf(stderr, "blkid: couldn't find devno 0x%04lx\n", 
-			(unsigned long) devno);
+		DBG(printf("blkid: couldn't find devno 0x%04lx\n", 
+			   (unsigned long) devno));
 	else
 		DBG(printf("found devno 0x%04Lx as %s\n", devno, devname));
 
 	return devname;
-}
-
-blkid_dev blkid_find_devno(blkid_cache cache, dev_t devno)
-{
-	blkid_dev dev = NULL;
-	struct list_head *p, *n;
-
-	if (!cache)
-		return NULL;
-
-	/* This cannot be a standard list_for_each() because we may be
-	 * deleting the referenced struct in blkid_verify_devname() and
-	 * pointing to another one that was probed from disk, and "p"
-	 * would point to freed memory.
-	 */
-	list_for_each_safe(p, n, &cache->bic_devs) {
-		blkid_dev tmp = list_entry(p, struct blkid_struct_dev, bid_devs);
-		if (tmp->bid_devno != devno)
-			continue;
-
-		tmp = blkid_verify_devname(cache, tmp);
-		if (!tmp || tmp->bid_devno != devno)
-			continue;
-
-		dev = tmp;
-		break;
-	}
-
-	if (dev)
-		DBG(printf("found devno 0x%04LX in cache as %s\n",
-			   devno, dev->bid_name));
-
-	return dev;
-}
-
-blkid_dev blkid_get_devno(blkid_cache cache, dev_t devno)
-{
-	char *devname;
-	blkid_dev dev;
-
-	if (!(dev = blkid_find_devno(cache, devno)) &&
-	    (devname = blkid_devno_to_devname(devno))) {
-		dev = blkid_get_devname(cache, devname);
-		string_free(devname);
-	}
-
-	return dev;
 }
 
 #ifdef TEST_PROGRAM
@@ -291,7 +227,7 @@ int main(int argc, char** argv)
 	printf("Looking for device 0x%04Lx\n", devno);
 	devname = blkid_devno_to_devname(devno);
 	if (devname)
-		string_free(devname);
+		free(devname);
 	return 0;
 }
 #endif

@@ -68,11 +68,6 @@ static void print_tags(blkid_dev dev, char *show[], int numtag)
 			printf("%s: ", blkid_devname_name(dev));
 			first = 0;
 		}
-		if (!strcmp(type, "TYPE")) {
-			if (printed_type)
-				return;
-			printed_type = 1;
-		}
 		printf("%s=\"%s\" ", type, value);
 	}
 	blkid_tag_iterate_end(iter);
@@ -156,7 +151,7 @@ int main(int argc, char **argv)
 		goto exit;
 	}
 
-	if (blkid_read_cache(&cache, read) < 0)
+	if (blkid_get_cache(&cache, read) < 0)
 		goto exit;
 
 	err = 2;
@@ -166,7 +161,7 @@ int main(int argc, char **argv)
 
 		/* Load any additional devices not in the cache */
 		for (i = 0; i < numdev; i++)
-			blkid_get_devname(cache, devices[i]);
+			blkid_get_devname(cache, devices[i], BLKID_DEV_NORMAL);
 
 		if ((dev = blkid_find_dev_with_tag(cache, search_type,
 						   search_value))) {
@@ -178,7 +173,7 @@ int main(int argc, char **argv)
 		blkid_dev_iterate	iter;
 		blkid_dev		dev;
 
-		blkid_probe_all(&cache);
+		blkid_probe_all(cache);
 
 		iter = blkid_dev_iterate_begin(cache);
 		while (blkid_dev_next(iter, &dev) == 0) {
@@ -188,7 +183,8 @@ int main(int argc, char **argv)
 		blkid_dev_iterate_end(iter);
 	/* Add all specified devices to cache (optionally display tags) */
 	} else for (i = 0; i < numdev; i++) {
-		blkid_dev dev = blkid_get_devname(cache, devices[i]);
+		blkid_dev dev = blkid_get_devname(cache, devices[i],
+						  BLKID_DEV_NORMAL);
 
 		if (dev) {
 			print_tags(dev, show, numtag);
@@ -201,7 +197,6 @@ exit:
 		free(search_type);
 	if (search_value)
 		free(search_value);
-	blkid_save_cache(cache, write);
-	blkid_free_cache(cache);
+	blkid_put_cache(cache);
 	return err;
 }

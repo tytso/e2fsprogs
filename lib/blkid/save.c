@@ -2,6 +2,7 @@
  * save.c - write the cache struct to disk
  *
  * Copyright (C) 2001 by Andreas Dilger
+ * Copyright (C) 2003 Theodore Ts'o
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the
@@ -54,41 +55,17 @@ static int save_dev(blkid_dev dev, FILE *file)
 	return 0;
 }
 
-int blkid_save_cache_file(blkid_cache cache, FILE *file)
-{
-	struct list_head *p;
-	int ret = 0;
-
-	if (!cache || !file)
-		return -BLKID_ERR_PARAM;
-
-	if (list_empty(&cache->bic_devs) ||
-	    !cache->bic_flags & BLKID_BIC_FL_CHANGED)
-		return 0;
-
-	list_for_each(p, &cache->bic_devs) {
-		blkid_dev dev = list_entry(p, struct blkid_struct_dev, bid_devs);
-		if ((ret = save_dev(dev, file)) < 0)
-			break;
-	}
-
-	if (ret >= 0) {
-		cache->bic_flags &= ~BLKID_BIC_FL_CHANGED;
-		ret = 1;
-	}
-
-	return ret;
-}
-
 /*
  * Write out the cache struct to the cache file on disk.
  */
-int blkid_save_cache(blkid_cache cache, const char *filename)
+int blkid_flush_cache(blkid_cache cache)
 {
+	struct list_head *p;
 	char *tmp = NULL;
 	const char *opened = NULL;
+	const char *filename;
 	FILE *file = NULL;
-	int fd, ret;
+	int fd, ret = 0;
 
 	if (!cache)
 		return -BLKID_ERR_PARAM;
@@ -99,10 +76,9 @@ int blkid_save_cache(blkid_cache cache, const char *filename)
 		return 0;
 	}
 
-	if (!filename || !strlen(filename))
-		filename = BLKID_CACHE_FILE;
+	filename = cache->bic_filename ? cache->bic_filename: BLKID_CACHE_FILE;
 
-	if (!strcmp(filename, "-") || !strcmp(filename, "stdout"))
+	if (!strcmp(filename, "-"))
 		file = stdout;
 	else {
 		struct stat st;
@@ -142,14 +118,23 @@ int blkid_save_cache(blkid_cache cache, const char *filename)
 		DBG(printf("cache file %s (really %s)\n", filename, opened));
 
 		if (!file) {
-			perror(opened);
-			if (tmp)
-				free(tmp);
-			return errno;
+			ret = errno;
+			goto errout;
 		}
 	}
 
-	ret = blkid_save_cache_file(cache, file);
+	list_for_each(p, &cache->bic_devs) {
+		blkid_dev dev = list_entry(p, struct blkid_struct_dev, bid_devs);
+		if (!dev->bid_type)
+			continue;
+		if ((ret = save_dev(dev, file)) < 0)
+			break;
+	}
+
+	if (ret >= 0) {
+		cache->bic_flags &= ~BLKID_BIC_FL_CHANGED;
+		ret = 1;
+	}
 
 	if (file != stdout) {
 		fclose(file);
@@ -173,6 +158,7 @@ int blkid_save_cache(blkid_cache cache, const char *filename)
 		}
 	}
 
+errout:
 	if (tmp)
 		free(tmp);
 	return ret;
@@ -189,13 +175,23 @@ int main(int argc, char **argv)
 			"Test loading/saving a cache (filename)\n", argv[0]);
 		exit(1);
 	}
-	if ((ret = blkid_probe_all(&cache) < 0))
-		fprintf(stderr, "error probing devices\n");
-	else if ((ret = blkid_save_cache(cache, argv[1])) < 0)
-		fprintf(stderr, "error %d saving cache to %s\n", ret,
-			argv[1] ? argv[1] : BLKID_CACHE_FILE);
 
-	blkid_free_cache(cache);
+	if ((cache = blkid_new_cache()) == NULL) {
+		fprintf(stderr, "%s: error creating cache\n", argv[0]);
+		exit(1);
+	}
+	if ((ret = blkid_probe_all(cache)) < 0) {
+		fprintf(stderr, "error (%d) probing devices\n", ret);
+		exit(1);
+	}
+	cache->bic_filename = blkid_strdup(argv[1]);
+	
+	if ((ret = blkid_flush_cache(cache)) < 0) {
+		fprintf(stderr, "error (%d) saving cache\n", ret);
+		exit(1);
+	}
+
+	blkid_put_cache(cache);
 
 	return ret;
 }

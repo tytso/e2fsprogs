@@ -1,7 +1,7 @@
 /*
  * resolve.c - resolve names and tags into specific devices
  *
- * Copyright (C) 2001 Theodore Ts'o.
+ * Copyright (C) 2001, 2003 Theodore Ts'o.
  * Copyright (C) 2001 Andreas Dilger
  *
  * %Begin-Header%
@@ -47,9 +47,9 @@ char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
 	if (!cache)
 		DBG(printf("no cache given, direct device probe\n"));
 
-	if ((dev = blkid_get_devname(cache, devname)) &&
-	    (found = blkid_find_tag_dev(dev, tagname, NULL)))
-		ret = string_copy(found->bit_val);
+	if ((dev = blkid_get_devname(cache, devname, BLKID_DEV_NORMAL)) &&
+	    (found = blkid_find_tag_dev(dev, tagname)))
+		ret = blkid_strdup(found->bit_val);
 
 	if (!cache)
 		blkid_free_dev(dev);
@@ -62,8 +62,6 @@ char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
  * pair.  In the case of a token, value is ignored.  If the "token" is not
  * of the form "NAME=value" and there is no value given, then it is assumed
  * to be the actual devname and a copy is returned.
- *
- * The string returned must be freed with string_free().
  */
 char *blkid_get_token(blkid_cache cache, const char *token,
 		      const char *value)
@@ -80,7 +78,7 @@ char *blkid_get_token(blkid_cache cache, const char *token,
 		   value ? value : "", cache ? "in cache" : "from disk"));
 
 	if (!cache) {
-		if (blkid_read_cache(&c, NULL) < 0)
+		if (blkid_get_cache(&c, NULL) < 0)
 			c = blkid_new_cache();
 		if (!c)
 			return NULL;
@@ -98,7 +96,7 @@ char *blkid_get_token(blkid_cache cache, const char *token,
 	if (!dev)
 		goto errout;
 
-	ret = string_copy(blkid_devname_name(dev));
+	ret = blkid_strdup(blkid_devname_name(dev));
 
 errout:
 	if (t)
@@ -106,8 +104,7 @@ errout:
 	if (v)
 		free(v);
 	if (!cache) {
-		blkid_save_cache(c, NULL);
-		blkid_free_cache(c);
+		blkid_put_cache(c);
 	}
 	return (ret);
 }
