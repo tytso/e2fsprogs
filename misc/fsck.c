@@ -1116,6 +1116,10 @@ int main(int argc, char *argv[])
 	if (doall)
 		return check_all();
 
+	if (num_devices == 0) {
+		fprintf(stderr, _("\nNo devices specified to be checked!\n"));
+		exit(EXIT_ERROR);
+	}
 	for (i = 0 ; i < num_devices; i++) {
 		fsck_device(devices[i], interactive);
 		if (serialize) {
