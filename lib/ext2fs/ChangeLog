@@ -1,3 +1,21 @@
+1998-03-29  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2fs.h: If __STRICT_ANSI__ is defined and we're on a platform
+		with 32 bit longs, then we need to manually define __s64
+		and __u64, since the current kernel header files don't
+		define these if __STRICT_ANSI__ is defined.  This is a
+		problem if we are compiling with full GCC warnings, since
+		we do need 64 bit support.
+	
+	* Makefile.in (OBJS): Remove bmove.o from files to be built,
+		since we're not using ext2fs_move_blocks() and there
+		is some question as to its usefulness in its current
+		form.
+
+	* bmap.c (block_bmap): Remove unused function.
+
+	* bmove.c (process_block): Fix -Wall warning.
+
 1998-03-23  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* block.c (ext2fs_block_iterate3): Make the ref_offset field

@@ -78,7 +78,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 		ext2fs_mark_block_bitmap(pb->alloc_map, block);
 		ret = BLOCK_CHANGED;
 		if (pb->flags & EXT2_BMOVE_DEBUG)
-			printf("ino=%ld, blockcnt=%ld, %d->%d\n", pb->ino,
+			printf("ino=%ld, blockcnt=%lld, %d->%d\n", pb->ino,
 			       blockcnt, orig, block);
 	}
 	if (pb->add_dir) {

@@ -69,7 +69,8 @@ static void dump_file(char *cmdname, ino_t ino, int fd, int preserve,
 	struct utimbuf	ut;
 	char 		buf[8192];
 	ext2_file_t	e2_file;
-	int		nbytes, got;
+	int		nbytes;
+	unsigned int	got;
 	
 	retval = ext2fs_read_inode(current_fs, ino, &inode);
 	if (retval) {

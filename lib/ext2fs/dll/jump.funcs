@@ -157,7 +157,8 @@
 00000000 T _ext2fs_allocate_group_table		libext2fs	alloc_tables
 00000000 T _ext2fs_set_bitmap_padding		libext2fs	bitmaps
 00000000 T _ext2fs_bmap				libext2fs	bmap
-00000000 T _ext2fs_move_blocks			libext2fs	bmove
+#00000000 T _ext2fs_move_blocks			libext2fs	bmove
+00000000 T __DUMMY__				libext2fs	bmove
 00000000 T _ext2fs_file_open			libext2fs	fileio
 00000000 T _ext2fs_file_get_fs			libext2fs	fileio
 00000000 T _ext2fs_file_close			libext2fs	fileio

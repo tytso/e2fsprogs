@@ -38,19 +38,6 @@ extern errcode_t ext2fs_bmap(ext2_filsys fs, ino_t ino,
 
 #define inode_bmap(inode, nr) ((inode)->i_block[(nr)])
 
-static blk_t _BMAP_INLINE_ block_bmap(ext2_filsys fs, char *buf, blk_t nr)
-{
-	blk_t tmp;
-
-	tmp = ((blk_t *) buf)[nr];
-
-	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
-	    (fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
-		return ext2fs_swab32(tmp);
-
-	return tmp;
-}
-
 static errcode_t _BMAP_INLINE_ block_ind_bmap(ext2_filsys fs, int flags, 
 					      blk_t ind, char *block_buf, 
 					      int *blocks_alloc,

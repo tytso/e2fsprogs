@@ -45,6 +45,10 @@
 #include "e2_types.h"
 #else
 #include <linux/types.h>
+#if (defined(__GNUC__) && defined(__STRICT_ANSI__) && ((~0UL) == 0xffffffff))
+typedef __signed__ long long __s64;
+typedef unsigned long long __u64;
+#endif
 #endif
 
 typedef __u32		blk_t;
@@ -245,11 +249,13 @@ struct struct_ext2_filsys {
 #define BLOCK_COUNT_TIND	(-3)
 #define BLOCK_COUNT_TRANSLATOR	(-4)
 
+#if 0
 /*
  * Flags for ext2fs_move_blocks
  */
 #define EXT2_BMOVE_GET_DBLIST	0x0001	
 #define EXT2_BMOVE_DEBUG	0x0002
+#endif
 
 /*
  * Return flags for the directory iterator functions
@@ -552,11 +558,13 @@ extern errcode_t ext2fs_bmap(ext2_filsys fs, ino_t ino,
 			     blk_t block, blk_t *phys_blk);
 
 
+#if 0
 /* bmove.c */
 extern errcode_t ext2fs_move_blocks(ext2_filsys fs,
 				    ext2fs_block_bitmap reserve,
 				    ext2fs_block_bitmap alloc_map,
 				    int flags);
+#endif
 
 /* check_desc.c */
 extern errcode_t ext2fs_check_desc(ext2_filsys fs);

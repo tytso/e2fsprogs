@@ -1,3 +1,12 @@
+1998-03-29  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* debugfs.h: Add declaration for do_dirty_filsys() to prevent
+		-Wall warnings.
+
+	* debugfs.c (copy_file): 
+	* dump.c (dump_file): Fix -Wall warning caused by
+		signed/unsigned mismatch. 
+
 1998-03-23  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* debugfs.c, ls.c, lsdel.c: Add support for large files.  (The

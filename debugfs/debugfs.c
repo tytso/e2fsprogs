@@ -248,7 +248,7 @@ void do_show_super_stats(int argc, char *argv[])
 	close_pager(out);
 }
 
-void do_dirty_filesys(int argc, char *argv[])
+void do_dirty_filesys(int argc, char **argv)
 {
 	if (check_fs_open(argv[0]))
 		return;
@@ -961,7 +961,7 @@ static errcode_t copy_file(int fd, ino_t newfile)
 {
 	ext2_file_t	e2_file;
 	errcode_t	retval;
-	int		got, written;
+	unsigned int	got, written;
 	char		buf[8192];
 	char		*ptr;
 
