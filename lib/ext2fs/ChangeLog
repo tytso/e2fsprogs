@@ -1,3 +1,8 @@
+2000-12-13  Theodore Ts'o  <tytso@valinux.com>
+
+	* swapfs.c (ext2fs_swap_super): Add byte swapping for the journal
+		fields.
+
 2000-12-09    <tytso@snap.thunk.org>
 
 	* ext2fs.h, mkjournal.c (ext2fs_add_journal_fs,
