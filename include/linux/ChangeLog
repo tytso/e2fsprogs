@@ -1,3 +1,7 @@
+1998-03-23  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2_fs.h: Update to latest 2.1.90+diffs version of ext2_fs.h
+
 Sun Oct 19 19:08:03 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* ext2_fs.h: #if 0 out the EXT2_DEBUG code, since it's only needed
