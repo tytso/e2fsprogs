@@ -32,14 +32,17 @@
  */
 #define EXT2_LIB_CURRENT_REV	0
 
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+
 #include <linux/types.h>
 
 typedef __u32		blk_t;
 typedef unsigned int	dgrp_t;
 
 #include "et/com_err.h"
-#include "ext2fs/io.h"
+#include "ext2fs/ext2_io.h"
 #include "ext2fs/ext2_err.h"
 
 typedef struct struct_ext2_filsys *ext2_filsys;
@@ -159,7 +162,7 @@ struct struct_ext2_filsys {
 };
 
 #include "ext2fs/bitops.h"
-	
+
 /*
  * Return flags for the block iterator functions
  */

@@ -22,7 +22,7 @@
 #include <io.h>
 #endif
 #include "et/com_err.h"
-#include "ext2fs/io.h"
+#include "ext2fs/ext2_io.h"
 
 #ifdef __linux__
 

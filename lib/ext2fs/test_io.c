@@ -29,7 +29,7 @@
 
 #include "et/com_err.h"
 #include "ext2fs/ext2_err.h"
-#include "io.h"
+#include "ext2fs/ext2_io.h"
 
 /*
  * For checking structure magic numbers...

@@ -42,7 +42,7 @@
 #endif
 
 #include "et/com_err.h"
-#include "ext2fs/io.h"
+#include "ext2fs/ext2_io.h"
 
 const char * program_name = "badblocks";
 
