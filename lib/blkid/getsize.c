@@ -27,6 +27,7 @@
 #ifdef HAVE_SYS_DISKLABEL_H
 #include <sys/ioctl.h>
 #include <sys/disklabel.h>
+#include <sys/stat.h>
 #endif /* HAVE_SYS_DISKLABEL_H */
 
 #include "blkidP.h"

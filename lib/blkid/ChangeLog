@@ -1,3 +1,7 @@
+2003-03-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* getsize.c: #include stat.h for the Apple Darwin port
+
 2003-03-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* cache.c: Initialize blkid_debug_mask to zero since some
