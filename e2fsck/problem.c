@@ -858,7 +858,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Final rec_len is wrong */
 	{ PR_2_FINAL_RECLEN,
-	  N_("@E has rec_len of %dr, should be %N.\n"),
+	  N_("@E has rec_len of %Dr, should be %N.\n"),
 	  PROMPT_FIX, 0 },
 		  
 	/* Error allocating icount structure */
@@ -913,7 +913,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Directory filetype incorrect */
 	{ PR_2_BAD_FILETYPE,
-	  N_("@E has an incorrect filetype (was %dt, should be %N).\n"),
+	  N_("@E has an incorrect filetype (was %Dt, should be %N).\n"),
 	  PROMPT_FIX, 0 },
 
 	/* Directory filetype set on filesystem */

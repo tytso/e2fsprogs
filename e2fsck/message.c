@@ -16,12 +16,12 @@
  * 	%b	<blk>			block number
  * 	%B	<blkcount>		integer
  * 	%c	<blk2>			block number
- * 	%di	<dirent>->ino		inode number
- * 	%dn	<dirent>->name		string
- * 	%dr	<dirent>->rec_len
- * 	%dl	<dirent>->name_len
- * 	%dt	<dirent>->filetype
- * 	%D	<dir> 			inode number
+ * 	%Di	<dirent>->ino		inode number
+ * 	%Dn	<dirent>->name		string
+ * 	%Dr	<dirent>->rec_len
+ * 	%Dl	<dirent>->name_len
+ * 	%Dt	<dirent>->filetype
+ * 	%d	<dir> 			inode number
  * 	%g	<group>			integer
  * 	%i	<ino>			inode number
  * 	%Is	<inode> -> i_size
