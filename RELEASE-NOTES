@@ -22,9 +22,15 @@ Added support for the EXT2_FEATURE_COMPAT_DIR_PREALLOC feature.
 Added new program "e2label", contributed by Andries Brouwer.  E2label
 provides an easy-to-use interface to modify the filesystem label.
 
+Fixed bug so that lsattr -v works instead of producing a core dump.
+
 Fixed a minor bug in mke2fs so that all groups with bad superblock
 backup blocks are printed (not just the first one).
- 
+
+Mke2fs will check the size of the device, and if the user specifies a
+filesystem size larger than the apparent size of the device it will
+print a warning message and ask if the user wants to proceed.
+
 Fixed a bug in e2fsck which could cause a core dump when it needs to
 expand the /lost+found directory, and sometimes the bitmaps haven't
 been merged in.  Also fixed a related bug where ext2fs_write_dir_block

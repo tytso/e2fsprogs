@@ -1,3 +1,33 @@
+1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* configure.in: Change how the installation directions are
+		selected.  Previously, we had prefix and usr_prefix, where
+		prefix was '' and usr_prefix was /usr, and we then defined
+		bindir, ubindir, libdir, ulibdir, etc. in terms of that.
+		In autoconf 2.12, it's possible to override bindir,
+		libdir, etc., and so in order to make our installation
+		directory makefile variables more in line with autoconf
+		2.12, I've changed all of the various makefiles to use
+		prefix and root_prefix, where the default Linux
+		definitions are /usr and '', respectively.  What used to
+		be bindir is now root_bindir, and what used to be ubindir,
+		is now bindir.
+
+	* MCONFIG.in: Change directories to match with new installation
+		directory convention (see above).  Add Makefile
+		dependencies for makefile fragments, and define
+		DEP_LIB_MAKEFILES which library makefiles can use to
+		define DEP_MAKEFILES, so that the library makefiles will
+		get regenerated when the makefile fragments change.
+		Remove the cat?dir variables, since we aren't creating
+		those directories any more.
+
+	* Makefile.in: Add top-level uninstall targets.
+
+	* e2fsprogs-1.12.spec: Add to the RPM package the e2label man
+		page, and to reflect that fact that we now compile_et and
+		mk_cmds for the development package.
+
 1998-03-28  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in: Use && after a cd command so that the right thing

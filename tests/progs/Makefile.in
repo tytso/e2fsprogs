@@ -47,6 +47,8 @@ clean:
 
 install:
 
+uninstall:
+
 check:
 
 mostlyclean: clean

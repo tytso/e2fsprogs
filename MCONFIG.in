@@ -3,22 +3,21 @@
 SHELL = /bin/sh
 
 prefix = @prefix@
+root_prefix = @root_prefix@
 exec_prefix = @exec_prefix@
-usr_prefix = @usr_prefix@
-bindir = $(exec_prefix)/bin
-ubindir = $(usr_prefix)/bin
-sbindir = $(exec_prefix)/sbin
-usbindir = $(usr_prefix)/sbin
-libdir = $(exec_prefix)/lib
-ulibdir = $(usr_prefix)/lib
-includedir = $(usr_prefix)/include
-mandir = $(usr_prefix)/man
-man1dir = $(usr_prefix)/man/man1
-man8dir = $(usr_prefix)/man/man8
-cat1dir = $(usr_prefix)/man/cat1
-cat8dir = $(usr_prefix)/man/cat8
-infodir = $(usr_prefix)/info
-sharedir = $(usr_prefix)/share
+root_bindir = $(root_prefix)/bin
+root_sbindir = $(root_prefix)/sbin
+root_libdir = $(root_prefix)/lib
+bindir = @bindir@
+sbindir = @sbindir@
+libdir = @libdir@
+includedir = @includedir@
+mandir = @mandir@
+man1dir = $(prefix)/man/man1
+man3dir = $(prefix)/man/man3
+man8dir = $(prefix)/man/man8
+infodir = @infodir@
+datadir = @datadir@
 
 @SET_MAKE@
 
@@ -124,6 +123,10 @@ all::
 # Autoconf magic...
 #
 
+DEP_LIB_MAKEFILES = $(top_srcdir)/lib/Makefile.elf-lib  \
+	$(top_srcdir)/lib/Makefile.dll-lib $(top_srcdir)/lib/Makefile.bsd-lib \
+	$(top_srcdir)/lib/Makefile.checker $(top_srcdir)/lib/Makefile.profile
+
 $(top_builddir)/config.status: $(top_srcdir)/configure
 	(cd $(top_builddir); ./config.status --recheck)
 
@@ -139,7 +142,7 @@ $(top_builddir)/util/subst.conf: $(top_srcdir)/util/subst.conf.in \
 	(cd $(top_builddir); CONFIG_FILES=util/subst.conf ./config.status)
 
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/MCONFIG \
-		$(top_builddir)/config.status
+		$(DEP_MAKEFILE) $(top_builddir)/config.status
 	(cd $(top_builddir); CONFIG_FILES=$(my_dir)/Makefile ./config.status)
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.in

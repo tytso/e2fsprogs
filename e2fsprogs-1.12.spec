@@ -65,6 +65,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(-, root, root) /usr/bin/chattr
 %attr(-, root, root) /usr/bin/lsattr
 %attr(-, root, root) /usr/man/man8/e2fsck.8
+%attr(-, root, root) /usr/man/man8/e2label.8
 %attr(-, root, root) /usr/man/man8/debugfs.8
 %attr(-, root, root) /usr/man/man8/tune2fs.8
 %attr(-, root, root) /usr/man/man8/mklost+found.8
@@ -91,3 +92,12 @@ rm -rf $RPM_BUILD_ROOT
 %attr(-, root, root) /usr/lib/libss.so
 %attr(-, root, root) /usr/lib/libcom_err.so
 %attr(-, root, root) /usr/lib/libuuid.so
+%attr(-, root, root) /usr/bin/mk_cmds
+%attr(-, root, root) /usr/bin/compile_et
+%attr(-, root, root) /usr/share/et/et_c.awk
+%attr(-, root, root) /usr/share/et/et_h.awk
+%attr(-, root, root) /usr/share/ss/ct_c.awk
+%attr(-, root, root) /usr/share/ss/ct_c.sed
+%attr(-, root, root) /usr/man/man1/compile_et.1
+%attr(-, root, root) /usr/man/man3/com_err.3
+
