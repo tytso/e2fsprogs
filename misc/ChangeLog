@@ -1,5 +1,12 @@
 2000-07-06  Theodore Ts'o  <tytso@valinux.com>
 
+	* fsck.c (lookup, load_fs_info, check_all): Use lazy evaluation
+		for calling interpret_device(), since this requires root
+		privileges if the partitions need to be scanned.
+		Otherwise, it's not possible to do non-proot fsck's for
+		removeable devices such as floppies if there are any
+		LABEL= or UUID= entries in /etc/fstab.
+
 	* badblocks.c (check_mount, main): Check to see if the filesystem
 		is mounted before doing a read/write or non-destructive
 		test.  This can be overriden using the new -f option.

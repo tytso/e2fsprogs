@@ -315,7 +315,6 @@ static void load_fs_info(const char *filename)
 		}
 		if (!fs)
 			continue;
-		fs->device = interpret_device(fs->device);
 		if (!filesys_info)
 			filesys_info = fs;
 		else
@@ -345,12 +344,25 @@ static void load_fs_info(const char *filename)
 static struct fs_info *lookup(char *filesys)
 {
 	struct fs_info *fs;
+	int	try_again = 0;
 
 	/* No filesys name given. */
 	if (filesys == NULL)
 		return NULL;
 
 	for (fs = filesys_info; fs; fs = fs->next) {
+		if (strchr(fs->device, '='))
+			try_again++;
+		if (!strcmp(filesys, fs->device) ||
+		    !strcmp(filesys, fs->mountpt))
+			break;
+	}
+
+	if (fs || !try_again)
+		return fs;
+
+	for (fs = filesys_info; fs; fs = fs->next) {
+		fs->device = interpret_device(fs->device);
 		if (!strcmp(filesys, fs->device) ||
 		    !strcmp(filesys, fs->mountpt))
 			break;
@@ -752,6 +764,7 @@ static int check_all(NOARGS)
 				break;
 		}
 		if (fs && !skip_root && !ignore(fs)) {
+			fs->device = interpret_device(fs->device);
 			fsck_device(fs->device, 1);
 			fs->flags |= FLAG_DONE;
 			status |= wait_all();
@@ -797,6 +810,7 @@ static int check_all(NOARGS)
 			/*
 			 * Spawn off the fsck process
 			 */
+			fs->device = interpret_device(fs->device);
 			fsck_device(fs->device, serialize);
 			fs->flags |= FLAG_DONE;
 
