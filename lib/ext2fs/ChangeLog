@@ -1,3 +1,9 @@
+2004-02-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* namei.c (follow_link): Correctly deal with symlinks that have
+		extended attribute information.  (Addresses Debian Bug
+		#232328)
+
 2004-01-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2_fs.h: Reserve an extra 4 bytes for the journal backup,

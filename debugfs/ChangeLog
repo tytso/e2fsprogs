@@ -1,3 +1,9 @@
+2004-02-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c (internal_dump_inode): Correctly deal with symlinks
+		that have extended attribute information.  (Addresses
+		Debian Bug #232328)
+
 2004-01-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.8.in: Document the PAGER and DEBUGFS_PAGER environment

@@ -456,7 +456,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	if (inode->i_dtime) 
 	  fprintf(out, "%sdtime: 0x%08x -- %s", prefix, inode->i_dtime,
 		  time_to_string(inode->i_dtime));
-	if (LINUX_S_ISLNK(inode->i_mode) && inode->i_blocks == 0)
+	if (LINUX_S_ISLNK(inode->i_mode) && ext2fs_inode_data_blocks(current_fs,inode) == 0)
 		fprintf(out, "%sFast_link_dest: %.*s\n", prefix,
 			(int) inode->i_size, (char *)inode->i_block);
 	else if (do_dump_blocks)
