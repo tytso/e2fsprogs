@@ -422,7 +422,7 @@ case $basic_machine in
 		# We don't have specific support for the Intel Pentium (p6) followon yet, so just call it a Pentium
 		basic_machine=i586-intel
 		;;
-	pentium-* | p5-* | p6-*)
+	pentium-* | p5-* | p6-* | i686-* )
 		# We don't have specific support for the Intel Pentium (p6) followon yet, so just call it a Pentium
 		basic_machine=i586-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;

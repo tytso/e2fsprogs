@@ -47,29 +47,19 @@
 /*
  * Inode count arrays
  */
-extern unsigned short * inode_count;
-extern unsigned short * inode_link_info;
+extern ext2_icount_t	inode_count;
+extern ext2_icount_t	inode_link_info;
 
 /*
  * The directory information structure; stores directory information
  * collected in earlier passes, to avoid disk i/o in fetching the
- * directoryt information.
+ * directory information.
  */
 struct dir_info {
 	ino_t			ino;	/* Inode number */
 	ino_t			dotdot;	/* Parent according to '..' */
 	ino_t			parent; /* Parent according to treewalk */
 };
-
-struct dir_block_struct {
-	ino_t	ino;
-	blk_t	blk;
-	int	blockcnt;
-};
-
-struct dir_block_struct *dir_blocks;
-int	dir_block_count;
-int	dir_block_size;
 
 /*
  * This structure is used for keeping track of how much resources have
@@ -91,6 +81,7 @@ extern const char * device_name;
 extern ext2fs_inode_bitmap inode_used_map; /* Inodes which are in use */
 extern ext2fs_inode_bitmap inode_bad_map; /* Inodes which are bad somehow */
 extern ext2fs_inode_bitmap inode_dir_map; /* Inodes which are directories */
+extern ext2fs_inode_bitmap inode_bb_map; /* Inodes which are in bad blocks */
 
 extern ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
 extern ext2fs_block_bitmap block_dup_map; /* Blocks which are used by more than once */
@@ -175,11 +166,11 @@ extern void read_bad_blocks_file(ext2_filsys fs, const char *bad_blocks_file,
 extern void test_disk(ext2_filsys fs);
 
 /* dirinfo.c */
-extern void add_dir_info(ext2_filsys fs, ino_t ino, ino_t parent,
-		       struct ext2_inode *inode);
+extern void add_dir_info(ext2_filsys fs, ino_t ino, ino_t parent);
 extern struct dir_info *get_dir_info(ino_t ino);
 extern void free_dir_info(ext2_filsys fs);
 extern int get_num_dirs(ext2_filsys fs);
+extern struct dir_info *dir_info_iter(int *control);
 
 /* ehandler.c */
 extern const char *ehandler_operation(const char *op);

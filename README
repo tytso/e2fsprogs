@@ -1,5 +1,5 @@
-	This is the new version (1.05) of the second extended file system
-management programs, otherwise known as the Monomonac Release.
+	This is the new version (1.07) of the second extended file system
+management programs.
 
 	See the file INSTALL for installation instructions.  This is
 important!  Note that your /etc/fstab file may need modifying before

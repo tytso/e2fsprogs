@@ -1,8 +1,12 @@
 /*
  * util.c --- miscellaneous utilities
  * 
- * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be
- * redistributed under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdlib.h>
@@ -17,7 +21,6 @@
 #include <sys/resource.h>
 
 const char * fix_msg[2] = { "IGNORED", "FIXED" };
-const char * clear_msg[2] = { "IGNORED", "CLEARED" };
 
 void fatal_error (const char *msg)
 {
@@ -189,8 +192,14 @@ void init_resource_track(struct resource_track *track)
 #endif
 }
 
-static __inline__ float timeval_subtract(struct timeval *tv1,
-					 struct timeval *tv2)
+#ifdef __GNUC__
+#define _INLINE_ __inline__
+#else
+#define _INLINE_
+#endif
+
+static _INLINE_ float timeval_subtract(struct timeval *tv1,
+				       struct timeval *tv2)
 {
 	return ((tv1->tv_sec - tv2->tv_sec) +
 		((float) (tv1->tv_usec - tv2->tv_usec)) / 1000000);
@@ -243,31 +252,6 @@ extern void e2fsck_write_inode(ext2_filsys fs, unsigned long ino,
 			"while writing inode %ld in %s", ino, proc);
 		fatal_error(0);
 	}
-}
-
-/*
- * This function returns 1 if the inode's block entries actually
- * contain block entries.
- */
-int inode_has_valid_blocks(struct ext2_inode *inode)
-{
-	/*
-	 * Only directories, regular files, and some symbolic links
-	 * have valid block entries.
-	 */
-	if (!LINUX_S_ISDIR(inode->i_mode) && !LINUX_S_ISREG(inode->i_mode) &&
-	    !LINUX_S_ISLNK(inode->i_mode))
-		return 0;
-	
-	/*
-	 * If the symbolic link is a "fast symlink", then the symlink
-	 * target is stored in the block entries.
-	 */
-	if (LINUX_S_ISLNK (inode->i_mode) && inode->i_blocks == 0 &&
-	    inode->i_size < EXT2_N_BLOCKS * sizeof (unsigned long))
-		return 0;
-
-	return 1;
 }
 
 #ifdef MTRACE

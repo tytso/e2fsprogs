@@ -505,4 +505,4 @@ test -d include/linux || mkdir include/linux
 AC_OUTPUT(MCONFIG lib/substitute_sh Makefile lib/et/Makefile 
 	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
 	misc/Makefile e2fsck/Makefile debugfs/Makefile tests/Makefile 
-	relocate/Makefile)
+	tests/progs/Makefile doc/Makefile)

@@ -1,8 +1,13 @@
 /*
  * alloc.c --- allocate new inodes, blocks for ext2fs
  *
- * Copyright (C) 1993 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
+ * 
  */
 
 #include <stdio.h>
@@ -84,24 +89,10 @@ errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
 			return 0;
 		}
 		i++;
-		if (i > fs->super->s_blocks_count)
+		if (i >= fs->super->s_blocks_count)
 			i = fs->super->s_first_data_block;
 	} while (i != goal);
 	return ENOSPC;
-}
-
-static int check_blocks_free(ext2_filsys fs, ext2fs_block_bitmap map,
-			     blk_t blk, int num)
-{
-	int	i;
-
-	for (i=0; i < num; i++) {
-		if ((blk+i) > fs->super->s_blocks_count)
-			return 0;
-		if (ext2fs_test_block_bitmap(map, blk+i))
-			return 0;
-	}
-	return 1;
 }
 
 errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start, blk_t finish,
@@ -122,13 +113,13 @@ errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start, blk_t finish,
 	if (!num)
 		num = 1;
 	do {
-		if (check_blocks_free(fs, map, b, num)) {
+		if (b+num-1 > fs->super->s_blocks_count)
+			b = fs->super->s_first_data_block;
+		if (ext2fs_fast_test_block_bitmap_range(map, b, num)) {
 			*ret = b;
 			return 0;
 		}
 		b++;
-		if (b > fs->super->s_blocks_count)
-			b = fs->super->s_first_data_block;
 	} while (b != finish);
 	return ENOSPC;
 }

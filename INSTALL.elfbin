@@ -9,7 +9,7 @@ system management programs, just follow the steps:
 
 1) Install this tar file using the following command:
 
-	gunzip < e2fsprogs-1.04-elfbin.tar.gz | (cd /; tar xvf - )
+	gunzip < e2fsprogs-1.04-elfbin.tar.gz | (cd /; tar Sxvpf - )
 
 2) Run ldconfig to update the shared library pointers.
 

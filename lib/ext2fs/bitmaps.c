@@ -2,8 +2,12 @@
  * bitmaps.c --- routines to read, write, and manipulate the inode and
  * block bitmaps.
  *
- * Copyright (C) 1993 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -166,4 +170,3 @@ void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap)
 	memset(bitmap->bitmap, 0,
 	       ((bitmap->real_end - bitmap->start) / 8) + 1);
 }
-

@@ -39,19 +39,6 @@
 #define EXT2FS_VERSION		"0.5b"
 
 /*
- * Debug code
- */
-#ifdef EXT2FS_DEBUG
-#	define ext2_debug(f, a...)	{ \
-					printk ("EXT2-fs DEBUG (%s, %d): %s:", \
-						__FILE__, __LINE__, __FUNCTION__); \
-				  	printk (f, ## a); \
-					}
-#else
-#	define ext2_debug(f, a...)	/**/
-#endif
-
-/*
  * Special inodes numbers
  */
 #define	EXT2_BAD_INO		 1	/* Bad blocks inode */

@@ -24,12 +24,11 @@ int get_num_dirs(ext2_filsys fs)
 }
 
 /*
- * This subroutine is called during pass1 to stash away the block
- * numbers for the directory, which we will need later.  The idea is
- * to avoid reading directory inodes twice.
+ * This subroutine is called during pass1 to create a directory info
+ * entry.  During pass1, the passed-in parent is 0; it will get filled
+ * in during pass2.  
  */
-void add_dir_info(ext2_filsys fs, ino_t ino, ino_t parent,
-		struct ext2_inode *inode)
+void add_dir_info(ext2_filsys fs, ino_t ino, ino_t parent)
 {
 	struct dir_info *dir;
 	int	i, j;
@@ -61,7 +60,7 @@ void add_dir_info(ext2_filsys fs, ino_t ino, ino_t parent,
 	 * the dir_info array needs to be sorted by inode number for
 	 * get_dir_info()'s sake.
 	 */
-	if (dir_info_count && dir_info[dir_info_count-1].ino > ino) {
+	if (dir_info_count && dir_info[dir_info_count-1].ino >= ino) {
 		for (i = dir_info_count-1; i > 0; i--)
 			if (dir_info[i-1].ino < ino)
 				break;
@@ -87,6 +86,8 @@ struct dir_info *get_dir_info(ino_t ino)
 
 	low = 0;
 	high = dir_info_count-1;
+	if (!dir_info)
+		return 0;
 	if (ino == dir_info[low].ino)
 		return &dir_info[low];
 	if  (ino == dir_info[high].ino)
@@ -117,4 +118,15 @@ void free_dir_info(ext2_filsys fs)
 	}
 	dir_info_size = 0;
 	dir_info_count = 0;
+}
+
+/*
+ * A simple interator function
+ */
+struct dir_info *dir_info_iter(int *control)
+{
+	if (*control >= dir_info_count)
+		return 0;
+
+	return(dir_info + (*control)++);
 }

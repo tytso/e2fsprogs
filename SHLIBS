@@ -25,3 +25,11 @@ Maintainer: Theodore Ts'o
 Email: tytso@mit.edu
 Start: 0x66980000
 End:   0x669fffff
+
+Library:libuuid.so
+Description: DCE Universally Unique ID (UUID) library
+Maintainer: Theodore Ts'o
+Email: tytso@mit.edu
+Start: 0x67900000
+End:   0x679fffff
+

@@ -1,8 +1,12 @@
 /*
  * e2fsck.c - a consistency checker for the new extended file system.
  * 
- * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be
- * redistributed under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 /* Usage: e2fsck [-dfpnsvy] device
@@ -42,6 +46,7 @@
 #include "et/com_err.h"
 #include "uuid/uuid.h"
 #include "e2fsck.h"
+#include "problem.h"
 #include "../version.h"
 
 extern int isatty(int);
@@ -60,6 +65,7 @@ int rwflag = 1;
 int swapfs = 0;
 int normalize_swapfs = 0;
 int inode_buffer_blocks = 0;
+blk_t use_superblock;
 blk_t superblock;
 int blocksize = 0;
 int verbose = 0;
@@ -236,8 +242,11 @@ static void relocate_hint(void)
 {
 	static hint_issued = 0;
 
-	/* Only issue the hint once */
-	if (hint_issued)
+	/*
+	 * Only issue the hint once, and only if we're using the
+	 * primary superblocks.
+	 */
+	if (hint_issued || superblock)
 		return;
 
 	printf("Note: if there is several inode or block bitmap blocks\n"
@@ -258,6 +267,9 @@ static void check_super_block(ext2_filsys fs)
 	int	i;
 	blk_t	should_be;
 	errcode_t retval;
+	struct problem_context	pctx;
+
+	clear_problem_context(&pctx);
 
 	/*
 	 * Verify the super block constants...
@@ -334,54 +346,51 @@ static void check_super_block(ext2_filsys fs)
 	last_block = first_block + blocks_per_group;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
+		pctx.group = i;
+		
 		if (i == fs->group_desc_count - 1)
 			last_block = fs->super->s_blocks_count;
 		if ((fs->group_desc[i].bg_block_bitmap < first_block) ||
 		    (fs->group_desc[i].bg_block_bitmap >= last_block)) {
 			relocate_hint();
-			printf("Block bitmap for group %d is not in group.  "
-			       "(block %u)\n",
-			       i, fs->group_desc[i].bg_block_bitmap);
-			preenhalt(fs);
-			if (!ask("Relocate", 1)) {
-				fatal_error("Block bitmap not in group");
+			pctx.blk = fs->group_desc[i].bg_block_bitmap;
+			if (fix_problem(fs, PR_0_BB_NOT_GROUP, &pctx)) {
+				fs->group_desc[i].bg_block_bitmap = 0;
+				invalid_block_bitmap[i]++;
+				invalid_bitmaps++;
 			}
-			fs->group_desc[i].bg_block_bitmap = 0;
-			invalid_block_bitmap[i]++;
-			invalid_bitmaps++;
 		}
 		if ((fs->group_desc[i].bg_inode_bitmap < first_block) ||
 		    (fs->group_desc[i].bg_inode_bitmap >= last_block)) {
 			relocate_hint();
-			printf("Inode bitmap group %d not in group.  "
-			       "(block %u)\n",
-			       i, fs->group_desc[i].bg_inode_bitmap);
-			preenhalt(fs);
-			if (!ask("Relocate", 1)) {
-				fatal_error("Inode bitmap not in group");
+			pctx.blk = fs->group_desc[i].bg_inode_bitmap;
+			if (fix_problem(fs, PR_0_IB_NOT_GROUP, &pctx)) {
+				fs->group_desc[i].bg_inode_bitmap = 0;
+				invalid_inode_bitmap[i]++;
+				invalid_bitmaps++;
 			}
-			fs->group_desc[i].bg_inode_bitmap = 0;
-			invalid_inode_bitmap[i]++;
-			invalid_bitmaps++;
 		}
 		if ((fs->group_desc[i].bg_inode_table < first_block) ||
 		    ((fs->group_desc[i].bg_inode_table +
 		      fs->inode_blocks_per_group - 1) >= last_block)) {
 			relocate_hint();
-			printf("Inode table for group %d not in group.  "
-			       "(block %u)\n",
-			       i, fs->group_desc[i].bg_inode_table);
-			printf("WARNING: SEVERE DATA LOSS POSSIBLE.\n");
-			preenhalt(fs);
-			if (!ask("Relocate", 1)) {
-				fatal_error("Inode table not in group");
+			pctx.blk = fs->group_desc[i].bg_inode_table;
+			if (fix_problem(fs, PR_0_ITABLE_NOT_GROUP, &pctx)) {
+				fs->group_desc[i].bg_inode_table = 0;
+				invalid_inode_table[i]++;
+				invalid_bitmaps++;
 			}
-			fs->group_desc[i].bg_inode_table = 0;
-			invalid_inode_table[i]++;
-			invalid_bitmaps++;
 		}
 		first_block += fs->super->s_blocks_per_group;
 		last_block += fs->super->s_blocks_per_group;
+	}
+	/*
+	 * If we have invalid bitmaps, set the error state of the
+	 * filesystem.
+	 */
+	if (invalid_bitmaps && rwflag) {
+		fs->super->s_state &= ~EXT2_VALID_FS;
+		ext2fs_mark_super_dirty(fs);
 	}
 
 	/*
@@ -492,7 +501,7 @@ static void PRS(int argc, char *argv[])
 			/* What we do by default, anyway! */
 			break;
 		case 'b':
-			superblock = atoi(optarg);
+			use_superblock = atoi(optarg);
 			break;
 		case 'B':
 			blocksize = atoi(optarg);
@@ -588,7 +597,9 @@ int main (int argc, char *argv[])
 	errcode_t	retval = 0;
 	int		exit_value = FSCK_OK;
 	int		i;
-	ext2_filsys	fs;
+	ext2_filsys	fs = 0;
+	io_manager	io_ptr;
+	struct ext2fs_sb *s;
 	
 #ifdef MTRACE
 	mtrace();
@@ -601,7 +612,7 @@ int main (int argc, char *argv[])
 
 	PRS(argc, argv);
 
-	if (!preen)
+	if (!preen || show_version_only)
 		fprintf (stderr, "e2fsck %s, %s for EXT2 FS %s, %s\n",
 			 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 			 EXT2FS_VERSION, EXT2FS_DATE);
@@ -618,27 +629,46 @@ int main (int argc, char *argv[])
 		if (!isatty (0) || !isatty (1))
 			die ("need terminal for interactive repairs");
 	}
+	superblock = use_superblock;
 restart:
+#if 1
+	io_ptr = unix_io_manager;
+#else
+	io_ptr = test_io_manager;
+	test_io_backing_manager = unix_io_manager;
+#endif
 	sync_disks();
 	if (superblock && blocksize) {
 		retval = ext2fs_open(filesystem_name,
 				     rwflag ? EXT2_FLAG_RW : 0,
-				     superblock, blocksize, unix_io_manager,
-				     &fs);
+				     superblock, blocksize, io_ptr, &fs);
 	} else if (superblock) {
 		for (i=0; possible_block_sizes[i]; i++) {
 			retval = ext2fs_open(filesystem_name,
 					     rwflag ? EXT2_FLAG_RW : 0,
 					     superblock,
 					     possible_block_sizes[i],
-					     unix_io_manager, &fs);
+					     io_ptr, &fs);
 			if (!retval)
 				break;
 		}
 	} else 
 		retval = ext2fs_open(filesystem_name,
 				     rwflag ? EXT2_FLAG_RW : 0,
-				     0, 0, unix_io_manager, &fs);
+				     0, 0, io_ptr, &fs);
+	if (!superblock && !preen && 
+	    ((retval == EXT2_ET_BAD_MAGIC) ||
+	     ((retval == 0) && ext2fs_check_desc(fs)))) {
+		if (!fs || (fs->group_desc_count > 1)) {
+			printf("%s trying backup blocks...\n",
+			       retval ? "Couldn't find ext2 superblock," :
+			       "Group descriptors look bad...");
+			superblock = 8193;
+			if (fs)
+				ext2fs_close(fs);
+			goto restart;
+		}
+	}
 	if (retval) {
 		com_err(program_name, retval, "while trying to open %s",
 			filesystem_name);
@@ -656,16 +686,28 @@ restart:
 			printf(corrupt_msg);
 		fatal_error(0);
 	}
-
 #ifdef	EXT2_CURRENT_REV
 	if (fs->super->s_rev_level > E2FSCK_CURRENT_REV) {
 		com_err(program_name, EXT2_ET_REV_TOO_HIGH,
 			"while trying to open %s",
 			filesystem_name);
+		goto get_newer;
+	}
+#endif
+	/*
+	 * Check for compatibility with the feature sets.  We have to
+	 * check because we need to be more stringent than ext2fs_open
+	 */
+	s = (struct ext2fs_sb *) fs->super;
+	if (s->s_feature_compat || s->s_feature_incompat ||
+	    s->s_feature_ro_compat) {
+		com_err(program_name, EXT2_ET_UNSUPP_FEATURE,
+			" (%s)", filesystem_name);
+	get_newer:
 		printf ("Get a newer version of e2fsck!\n");
 		fatal_error(0);
 	}
-#endif
+	
 	/*
 	 * If the user specified a specific superblock, presumably the
 	 * master superblock has been trashed.  So we mark the
@@ -715,6 +757,14 @@ restart:
 	 */
 	ext2fs_mark_valid(fs);
 
+	retval = ext2fs_read_bb_inode(fs, &fs->badblocks);
+	if (retval) {
+		com_err(program_name, retval,
+			"while reading bad blocks inode");
+		preenhalt(fs);
+		printf("This doesn't bode well, but we'll try to go on...\n");
+	}
+	
 	pass1(fs);
 	free(invalid_inode_bitmap);
 	free(invalid_block_bitmap);
@@ -723,6 +773,7 @@ restart:
 		ext2fs_close(fs);
 		printf("Restarting e2fsck from the beginning...\n");
 		restart_e2fsck = 0;
+		superblock = use_superblock;
 		goto restart;
 	}
 	pass2(fs);

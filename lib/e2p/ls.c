@@ -5,6 +5,8 @@
  *                                 Laboratoire MASI, Institut Blaise Pascal
  *                                 Universite Pierre et Marie Curie (Paris VI)
  *
+ * Copyright (C) 1995, 1996, 1997  Theodore Ts'o <tytso@mit.edu>
+ * 
  * This file can be redistributed under the terms of the GNU Library General
  * Public License
  */
@@ -104,12 +106,15 @@ static void print_group (unsigned short gid)
 #define HOUR_INT (60 * 60)
 #define MINUTE_INT (60)
 
-static char *interval_string(unsigned int secs)
+static const char *interval_string(unsigned int secs)
 {
 	static char buf[256], tmp[80];
 	int		hr, min, num;
 
 	buf[0] = 0;
+
+	if (secs == 0)
+		return "<none>";
 
 	if (secs >= MONTH_INT) {
 		num = secs / MONTH_INT;
@@ -153,6 +158,7 @@ void list_super (struct ext2_super_block * s)
 	struct ext2fs_sb *sb = (struct ext2fs_sb *) s;
 	char buf[80];
 	const char *os;
+	time_t	tm;
 
 	inode_blocks_per_group = (((s->s_inodes_per_group *
 				    EXT2_INODE_SIZE(s)) +
@@ -163,17 +169,20 @@ void list_super (struct ext2_super_block * s)
 	if (sb->s_volume_name[0]) {
 		memset(buf, 0, sizeof(buf));
 		strncpy(buf, sb->s_volume_name, sizeof(sb->s_volume_name));
-		printf("Filesystem volume name:   %s\n", buf);
-	}
+	} else
+		strcpy(buf, "<none>");
+	printf("Filesystem volume name:   %s\n", buf);
 	if (sb->s_last_mounted[0]) {
 		memset(buf, 0, sizeof(buf));
 		strncpy(buf, sb->s_last_mounted, sizeof(sb->s_last_mounted));
-		printf("Last mounted on:          %s\n", buf);
-	}
+	} else
+		strcpy(buf, "<not available>");
+	printf("Last mounted on:          %s\n", buf);
 	if (!e2p_is_null_uuid(sb->s_uuid)) {
 		e2p_uuid_to_str(sb->s_uuid, buf);
-		printf("Filesystem UUID:          %s\n", buf);
-	}
+	} else
+		strcpy(buf, "<none>");
+	printf("Filesystem UUID:          %s\n", buf);
 	printf ("Filesystem state:        ");
 	print_fs_state (stdout, s->s_state);
 	printf ("\n");
@@ -186,38 +195,41 @@ void list_super (struct ext2_super_block * s)
 	    case EXT2_OS_MASIX: os = "Masix"; break;
 	    default:		os = "unknown"; break;
 	}
-	printf ("Filesystem OS type:       %s\n", os);
-	printf ("Inode count:              %u\n", s->s_inodes_count);
-	printf ("Block count:              %u\n", s->s_blocks_count);
-	printf ("Reserved block count:     %u\n", s->s_r_blocks_count);
-	printf ("Free blocks:              %u\n", s->s_free_blocks_count);
-	printf ("Free inodes:              %u\n", s->s_free_inodes_count);
-	printf ("First block:              %u\n", s->s_first_data_block);
-	printf ("Block size:               %u\n", EXT2_BLOCK_SIZE(s));
-	printf ("Fragment size:            %u\n", EXT2_FRAG_SIZE(s));
-	printf ("Blocks per group:         %u\n", s->s_blocks_per_group);
-	printf ("Fragments per group:      %u\n", s->s_frags_per_group);
-	printf ("Inodes per group:         %u\n", s->s_inodes_per_group);
-	printf ("Inode blocks per group:   %u\n", inode_blocks_per_group);
-	printf ("Last mount time:          %s", ctime ((time_t *) &s->s_mtime));
-	printf ("Last write time:          %s", ctime ((time_t *) &s->s_wtime));
-	printf ("Mount count:              %u\n", s->s_mnt_count);
-	printf ("Maximum mount count:      %d\n", s->s_max_mnt_count);
-	printf ("Last checked:             %s", ctime ((time_t *) &s->s_lastcheck));
-	printf ("Check interval:           %u (%s)\n", s->s_checkinterval,
-		interval_string(s->s_checkinterval));
+	printf("Filesystem OS type:       %s\n", os);
+	printf("Inode count:              %u\n", s->s_inodes_count);
+	printf("Block count:              %u\n", s->s_blocks_count);
+	printf("Reserved block count:     %u\n", s->s_r_blocks_count);
+	printf("Free blocks:              %u\n", s->s_free_blocks_count);
+	printf("Free inodes:              %u\n", s->s_free_inodes_count);
+	printf("First block:              %u\n", s->s_first_data_block);
+	printf("Block size:               %u\n", EXT2_BLOCK_SIZE(s));
+	printf("Fragment size:            %u\n", EXT2_FRAG_SIZE(s));
+	printf("Blocks per group:         %u\n", s->s_blocks_per_group);
+	printf("Fragments per group:      %u\n", s->s_frags_per_group);
+	printf("Inodes per group:         %u\n", s->s_inodes_per_group);
+	printf("Inode blocks per group:   %u\n", inode_blocks_per_group);
+	tm = s->s_mtime;
+	printf("Last mount time:          %s", ctime(&tm));
+	tm = s->s_wtime;
+	printf("Last write time:          %s", ctime(&tm));
+	printf("Mount count:              %u\n", s->s_mnt_count);
+	printf("Maximum mount count:      %d\n", s->s_max_mnt_count);
+	tm = s->s_lastcheck;
+	printf("Last checked:             %s", ctime(&tm));
+	printf("Check interval:           %u (%s)\n", s->s_checkinterval,
+	       interval_string(s->s_checkinterval));
 	if (s->s_checkinterval)
 	{
 		time_t next;
 
 		next = s->s_lastcheck + s->s_checkinterval;
-		printf ("Next check after:         %s", ctime (&next));
+		printf("Next check after:         %s", ctime(&next));
 	}
 #ifdef	EXT2_DEF_RESUID
-	printf ("Reserved blocks uid:      ");
-	print_user (s->s_def_resuid);
-	printf ("Reserved blocks gid:      ");
-	print_group (s->s_def_resgid);
+	printf("Reserved blocks uid:      ");
+	print_user(s->s_def_resuid);
+	printf("Reserved blocks gid:      ");
+	print_group(s->s_def_resgid);
 #endif
 #ifdef EXT2_DYNAMIC_REV
 	if (s->s_rev_level >= EXT2_DYNAMIC_REV) {

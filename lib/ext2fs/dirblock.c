@@ -1,13 +1,18 @@
 /*
  * dirblock.c --- directory block routines.
  * 
- * Copyright (C) 1995 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #ifdef HAVE_ERRNO_H
 #include <errno.h>

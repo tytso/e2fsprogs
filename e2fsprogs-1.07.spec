@@ -1,43 +1,47 @@
-Description: Tools for the second extended (ext2) filesystem 
+Summary: Tools for the second extended (ext2) filesystem 
 Name: e2fsprogs
-Version: 1.06
+Version: 1.07
 Release: 0
 Copyright: GPL
 Group: Utilities/System
-Source: tsx-11.mit.edu:/pub/linux/packages/ext2fs/e2fsprogs-1.06.tar.gz
+Source: tsx-11.mit.edu:/pub/linux/packages/ext2fs/e2fsprogs-1.07.tar.gz
+BuildRoot: /tmp/e2fsprogs-root
+
+%description
+This package includes a number of utilities for creating, checking,
+and repairing ext2 filesystems.
 
 %package devel
-Description: e2fs static libs and headers
+Summary: e2fs static libs and headers
 Group: Development/Libraries
+
+%description devel 
+Libraries and header files needed to develop ext2 filesystem-specific
+programs.
 
 %prep
 %setup
 
 %build
+CFLAGS="$RPM_OPT_FLAGS" ./configure --enable-elf-shlibs
 
-%ifarch i386
-CFLAGS="$RPM_OPT_FLAGS" ./configure --enable-profile --enable-elf-shlibs
-%endif
-
-%ifarch axp
-CFLAGS="$RPM_OPT_FLAGS" ./configure --enable-profile
-%endif
-
-#make 
-make libs progs
+make libs progs docs
 
 %install
-rm -rf /usr/include/ss /usr/include/et /usr/include/ext2fs
 export PATH=/sbin:$PATH
-make install
-make install-libs
+make install DESTDIR="$RPM_BUILD_ROOT"
+make install-libs DESTDIR="$RPM_BUILD_ROOT"
 
-mv /usr/sbin/debugfs /sbin/debugfs
+mv $RPM_BUILD_ROOT/usr/sbin/debugfs $RPM_BUILD_ROOT/sbin/debugfs
 
-%ifarch i386
+%clean
+rm -rf $RPM_BUILD_ROOT
+
 %post
 /sbin/ldconfig
-%endif
+
+%postun
+/sbin/ldconfig
 
 %files
 /sbin/e2fsck
@@ -53,13 +57,11 @@ mv /usr/sbin/debugfs /sbin/debugfs
 /usr/sbin/mklost+found
 /sbin/mkfs.ext2
 
-%ifarch i386
 /lib/libe2p.so.2.2
-/lib/libext2fs.so.2.1
+/lib/libext2fs.so.2.2
 /lib/libss.so.2.0
 /lib/libcom_err.so.2.0
-/lib/libuuid.so.1.0
-%endif
+/lib/libuuid.so.1.1
 
 /usr/bin/chattr
 /usr/bin/lsattr
@@ -73,28 +75,19 @@ mv /usr/sbin/debugfs /sbin/debugfs
 /usr/man/man1/lsattr.1
 
 %files devel
+/usr/info/libext2fs.info*
 /usr/lib/libe2p.a
 /usr/lib/libext2fs.a
 /usr/lib/libss.a
 /usr/lib/libcom_err.a
-/usr/lib/libe2p_p.a
-/usr/lib/libext2fs_p.a
-/usr/lib/libss_p.a
-/usr/lib/libcom_err_p.a
 /usr/lib/libuuid.a
-/usr/lib/libuuid_p.a
 /usr/include/ss
 /usr/include/ext2fs
 /usr/include/et
 /usr/include/uuid
-
-%ifarch i386
 /usr/lib/libe2p.so
 /usr/lib/libext2fs.so
 /usr/lib/libss.so
 /usr/lib/libcom_err.so
 /usr/lib/libuuid.so
 
-%post
-rm -f /lib/libe2p.so /lib/libext2fs.so /lib/libss.so /lib/libcom_err.so
-%endif

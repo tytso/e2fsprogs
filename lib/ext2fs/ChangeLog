@@ -1,3 +1,154 @@
+Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs version 1.07
+
+Sun Mar  2 16:46:18 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (ELF_VERSION): Change version to be 2.2
+
+Tue Feb 11 14:54:02 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* alloc.c (ext2fs_get_free_blocks): Change routine to use
+	 	ext2fs_fast_test_block_bitmap_range().
+
+	* bitops.h (ext2fs_fast_test_block_bitmap_range,
+ 		ext2fs_test_block_bitmap_range: New inline functions which
+ 		test to see whether a contiguous range of blocks is
+ 		available.
+
+Thu Feb  6 10:00:13 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* badblocks.c (ext2fs_badblocks_list_create): Rename sybmols to use
+ 		use ext2fs_badblocks_* instead of badblocks_*
+
+	* bb_compat.c: New file which translates between old badblocks_*()
+		names to ext2fs_badblocks_*()
+
+	* unlink.c (ext2fs_unlink): New file, moved ext2fs_unlink() from
+	 	link.c (since e2fsck doesn't use ext2fs_unlink()).
+
+	* rs_bitmap.c (ext2fs_resize_generic_bitmap): New file, contains
+ 		bitmap resizing routine moved from bitmaps.c, since e2fsck
+ 		doesn't need to use this function.
+
+	* lookup.c (ext2fs_lookup): Moved ext2fs_lookup to its own file,
+		since e2fsck only needs ext2fs_lookup.
+
+Mon Feb  3 10:11:40 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_open_inode_scan): Set fs->badblocks if it is not
+		already set; this is needed so that programs like dump
+		which use the inode scan functions will deal with
+		filesystems that have bad blocks in the inode table.
+
+Sun Feb  2 00:17:36 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2fs.h (struct_badblocks_list, struct_badblocks_iterate): 
+		Moved to ext2fsP.h, since it doesn't need to be part of
+		the public interface.
+
+	* dir_iterate.c: Move ext2_dir_iterate out of namei.c.
+
+Sat Feb  1 10:14:55 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dblist.c (ext2fs_get_num_dirs): New file, which implements a
+ 		directory block list abstraction.  (Code moved from
+ 		e2fsck).
+
+	* ext2fs.h, inode.c: Moved definition of ext2_struct_inode_scan to
+		to inode.c (since no one else should be peeking inside it!)
+
+	* valid_blk.c (ext2_inode_has_valid_blocks): New function.
+
+	* openfs.c (ext2fs_open): Check the feature set in the ext2
+		superblock, and refuse to open filesystems if they contain
+		incompatible features.  (Can be overriden with the
+		EXT2_FLAG_FORCE 
+
+Sun Jan 12 11:31:46 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* block.c (ext2fs_block_iterate2): Added new function
+	 	ext2fs_block_iterate2 which changes the function
+	 	signature of the callback function to include the
+	 	referencing block and offset.
+
+	* inode.c (ext2fs_inode_scan_goto_blockgroup): Added new function
+	 	ext2fs_inode_scan_goto_blockgroup which allows an
+	 	application to jump to a particular block group while
+	 	doing an inode scan.
+
+Wed Jan  1 23:50:12 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dirblock.c: Include string.h, since we use memcpy().
+
+Tue Dec  3 12:27:29 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* getsize.c (ext2fs_get_device_size): The ioctl BLKGETSIZE returns
+		a long not an int; this doesn't matter on i386 machines,
+		but it does on Alpha's.
+	
+Fri Nov 29 20:57:37 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_write_inode, ext2fs_read_inode): If the inode
+ 		table pointer is NULL, then return an error indicating
+ 		that the inode table is missing.
+		(get_next_blockgroup, get_next_blocks,
+ 		ext2fs_get_next_inode): Don't treat a missing inode table
+ 		as permanent error.  Return MISSING_INODE_TABLE, but as an
+ 		advisory error code, much like BAD_BLOCK_IN_INODE_TABLE.
+
+	* rw_bitmaps.c (ext2fs_write_block_bitmap,
+ 	 	ext2fs_write_inode_bitmap): If the inode or block bitmap
+ 	 	block is zero, then don't write out the inode or block
+ 	 	bitmap.  The idea here is to avoid stomping on the
+ 	 	superblock.
+		(read_bitmaps): If the inode or block bitmap block is
+	 	zero, then fill in that portion of the inode or block
+	 	bitmap with all zeros.
+
+	* inode.c (ext2fs_get_next_inode): Fix bug in handling of bad
+ 		blocks in inode table when the inode table size is
+ 		non-standard (and can therefore span blocks).
+
+Tue Oct 29 20:13:14 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* alloc.c (ext2fs_new_block): Fix fencepost error in
+		ext2fs_new_block; make sure we don't try to allocate the
+		first block beyond the end of the filesystem.
+
+Mon Oct 14 11:00:48 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* inode.c (check_for_inode_bad_blocks): New function called by
+		get_next_blocks() to avoid reading in bad blocks marked in
+		fs->badblocks.  Inodes located in bad blocks are returned
+		by ext2fs_get_next_inode() returns the error code 
+		EXT2_ET_BAD_BLOCK_IN_INODE_TABLE.
+	
+	* alloc_tables.c (ext2fs_allocate_tables): New function which
+		performs the part of mke2fs's job of allocating the 
+		filesystem tables.
+
+	* test_io.c (test_close): IO manager which is used for testing
+	 	purposes.
+
+Sun Oct 13 04:31:57 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_get_next_inode): Separate out the function of
+ 		setting up for a new block group to get_next_blockgroup().
+		Separate out the function of reading in blocks of the
+		inode table to get_next_blocks().
+
+	* ext2fs.h: Add the badblocks list to the ext2_filsys entry
+
+	* badblocks.c (badblocks_list_add, badblocks_list_test): Add
+ 		blocks to the badblock list in sorted order.  This allows
+ 		badblocks_list_test to be coded using a binary search for
+ 		speed.
+
+Tue Oct  8 02:02:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.06
+
 Mon Oct  7 00:44:17 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* ext2fs.h, block.c, closefs.c, dirblock.c, inode.c, native.c,

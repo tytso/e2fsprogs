@@ -1,3 +1,21 @@
+Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs version 1.07
+
+Thu Jan  2 00:06:29 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* uuid.c: Include string.h, since we use memcpy().
+
+Wed Jan  1 23:47:22 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ls.c (list_super): Copy times from the superblock to a time_t
+ 		variable.  (The alpha has different sizes for time_t and
+ 		the time in the superblock.)
+
+Tue Oct  8 02:02:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.06
+
 Sun Sep 22 16:20:12 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pf.c: Add support for the 'A' (no atime) flag.

@@ -173,7 +173,7 @@ void do_lsdel(int argc, char **argv)
 		printf("%6lu %6d %6o %6lu %4d/%4d %s", delarray[i].ino,
 		       delarray[i].uid, delarray[i].mode, delarray[i].size,
 		       delarray[i].free_blocks, delarray[i].num_blocks, 
-		       ctime(&delarray[i].dtime));
+		       time_to_string(delarray[i].dtime));
 	}
 	
 error_out:

@@ -1,8 +1,12 @@
 /*
  * check_desc.c --- Check the group descriptors of an ext2 filesystem
  * 
- * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>

@@ -18,8 +18,12 @@
  * (so that the file gets a fresh copy of the duplicated blocks) or
  * simply to delete the file.
  * 
- * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be
- * redistributed under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  * 
  */
 
@@ -30,6 +34,8 @@
 
 #include <et/com_err.h>
 #include "e2fsck.h"
+
+#include "problem.h"
 
 /*
  * This is structure is allocated for each time that a block is
@@ -75,15 +81,11 @@ struct dup_block {
  * of multiply-claimed blocks.
  */
 struct dup_inode {
-	ino_t		ino;
-	time_t		mtime;
-	char		*pathname;
-	int		num_dupblocks;
-	int		flags;
+	ino_t			ino, dir;
+	int			num_dupblocks;
+	struct ext2_inode	inode;
 	struct dup_inode	*next;
 };
-
-#define DUP_INODE_DONT_FREE_PATHNAME	0x1
 
 static int process_pass1b_block(ext2_filsys fs, blk_t	*blocknr,
 				int	blockcnt, void	*private);
@@ -125,7 +127,7 @@ void pass1_dupblocks(ext2_filsys fs, char *block_buf)
 	 * Time to free all of the accumulated data structures that we
 	 * don't need anymore.
 	 */
-	ext2fs_free_inode_bitmap(inode_dup_map);   	inode_dup_map = 0;
+	ext2fs_free_inode_bitmap(inode_dup_map);    inode_dup_map = 0;
 	ext2fs_free_block_bitmap(block_dup_map);    block_dup_map = 0;
 	for (p = dup_blk; p; p = next_p) {
 		next_p = p->next_block;
@@ -136,8 +138,6 @@ void pass1_dupblocks(ext2_filsys fs, char *block_buf)
 	}
 	for (r = dup_ino; r; r = next_r) {
 		next_r = r->next;
-		if (r->pathname && !(r->flags & DUP_INODE_DONT_FREE_PATHNAME))
-			free(r->pathname);
 		free(r);
 	}
 }
@@ -176,7 +176,7 @@ void pass1b(ext2_filsys fs, char *block_buf)
 		stashed_ino = ino;
 		if ((ino != EXT2_BAD_INO) &&
 		    (!ext2fs_test_inode_bitmap(inode_used_map, ino) ||
-		     !inode_has_valid_blocks(&inode)))
+		     !ext2fs_inode_has_valid_blocks(&inode)))
 			goto next;
 
 		pb.ino = ino;
@@ -189,10 +189,9 @@ void pass1b(ext2_filsys fs, char *block_buf)
 			dp = allocate_memory(sizeof(struct dup_inode),
 					     "duplicate inode record");
 			dp->ino = ino;
-			dp->mtime = inode.i_mtime;
+			dp->dir = 0;
+			dp->inode = inode;
 			dp->num_dupblocks = pb.dup_blocks;
-			dp->pathname = 0;
-			dp->flags = 0;
 			dp->next = dup_ino;
 			dup_ino = dp;
 			if (ino != EXT2_BAD_INO)
@@ -271,112 +270,70 @@ int process_pass1b_block(ext2_filsys fs,
 }
 
 /*
- * Used by pass1c to name the "special" inodes.  They are declared as
- * writeable strings to prevent const problems.
- */
-#define num_special_inodes	7
-char special_inode_name[num_special_inodes][40] =
-{
-	"<The NULL inode>",			/* 0 */
-	"<The bad blocks inode>", 		/* 1 */
-	"/",					/* 2 */
-	"<The ACL index inode>",		/* 3 */
-	"<The ACL data inode>",			/* 4 */
-	"<The boot loader inode>",		/* 5 */
-	"<The undelete directory inode>"	/* 6 */
-};
-
-/*
  * Pass 1c: Scan directories for inodes with duplicate blocks.  This
  * is used so that we can print pathnames when prompting the user for
  * what to do.
  */
-struct process_dir_struct {
-	ext2_filsys	fs;
-	ino_t		dir_ino;
+struct search_dir_struct {
 	int		count;
+	ino_t		first_inode;
 };
+
+static int search_dirent_proc(ino_t dir, int entry,
+			      struct ext2_dir_entry *dirent,
+			      int offset, int blocksize,
+			      char *buf, void *private)
+{
+	struct search_dir_struct *sd = private;
+	struct dup_inode	*p;
+	
+	if (!dirent->inode || (entry < DIRENT_OTHER_FILE) ||
+	    !ext2fs_test_inode_bitmap(inode_dup_map, dirent->inode))
+		return 0;
+
+	for (p = dup_ino; p; p = p->next) {
+		if ((p->ino >= sd->first_inode) && 
+		    (p->ino == dirent->inode))
+			break;
+	}
+
+	if (!p || p->dir)
+		return 0;
+
+	p->dir = dir;
+	sd->count--;
+
+	return(sd->count ? 0 : DIRENT_ABORT);
+}
+
 
 void pass1c(ext2_filsys fs, char *block_buf)
 {
-	int	i;
 	struct dup_inode	*p;
-	errcode_t	retval;
-	char	buf[80];
 	int	inodes_left = dup_inode_count;
-	int	offset, entry;
-	struct ext2_dir_entry *dirent;
+	struct search_dir_struct sd;
 
 	printf("Pass 1C: Scan directories for inodes with dup blocks.\n");
 
 	/*
 	 * First check to see if any of the inodes with dup blocks is
-	 * the bad block inode or the root inode; handle them as
-	 * special cases.
+	 * a special inode.  (Note that the bad block inode isn't
+	 * counted.)
 	 */
 	for (p = dup_ino; p; p = p->next) {
-		if (p->ino < num_special_inodes) {
-			p->pathname = special_inode_name[p->ino];
-			p->flags |= DUP_INODE_DONT_FREE_PATHNAME;
+		if ((p->ino < EXT2_FIRST_INODE(fs->super)) &&
+		    (p->ino != EXT2_BAD_INO))
 			inodes_left--;
-		}
 	}
 
 	/*
 	 * Search through all directories to translate inodes to names
 	 * (by searching for the containing directory for that inode.)
 	 */
-	for (i=0; inodes_left && i < dir_block_count; i++) {
-		retval = ext2fs_read_dir_block(fs, dir_blocks[i].blk,
-					       block_buf);
-		entry = offset = 0;
-		while (offset < fs->blocksize) {
-			entry++;
-			dirent = (struct ext2_dir_entry *)
-				(block_buf + offset);
-			if (!dirent->inode ||
-			    ((dir_blocks[i].blockcnt == 0) && (entry <= 2)))
-				goto next;
-
-			if (!ext2fs_test_inode_bitmap(inode_dup_map,
-						      dirent->inode))
-				goto next;
-
-			for (p = dup_ino; p; p = p->next) {
-				if (p->ino == dirent->inode)
-					break;
-			}
-
-			if (!p || p->pathname)
-				goto next;
-			
-			(void) ext2fs_get_pathname(fs, dir_blocks[i].ino,
-						   p->ino, &p->pathname);
-			inodes_left--;
-			
-		next:
-			if (dirent->rec_len < 8)
-				break;
-			offset += dirent->rec_len;
-		}
-	}
-
-
-	/*
-	 * If we can't get a name, then put in a generic one.
-	 */
-	for (p = dup_ino; p; p = p->next) {
-		if (!p->pathname) {
-			sprintf(buf, "<Unknown inode #%lu>", p->ino);
-			p->pathname = malloc(strlen(buf)+1);
-			if (!p->pathname) {
-				fprintf(stderr,	"pass1c: couldn't malloc "
-					"generic pathname\n");
-				fatal_error(0);
-			}
-			strcpy(p->pathname, buf);
-		}
-	}
+	sd.count = inodes_left;
+	sd.first_inode = EXT2_FIRST_INODE(fs->super);
+	ext2fs_dblist_dir_iterate(fs->dblist, 0, block_buf,
+				  search_dirent_proc, &sd);
 }	
 
 static void pass1d(ext2_filsys fs, char *block_buf)
@@ -387,8 +344,8 @@ static void pass1d(ext2_filsys fs, char *block_buf)
 	int	shared_len;
 	int	i;
 	errcode_t	retval;
-	char	*time_str;
 	int	file_ok;
+	struct problem_context pctx;
 	
 	printf("Pass 1D: Reconciling duplicate blocks\n");
 	read_bitmaps(fs);
@@ -436,23 +393,33 @@ static void pass1d(ext2_filsys fs, char *block_buf)
 				}
 			}
 		}
-		time_str = ctime(&p->mtime);
-		time_str[24] = 0;
-		printf("File %s (inode #%lu, mod time %s) \n",
-		       p->pathname, p->ino, time_str);
-		printf("  has %d duplicate blocks, shared with %d file%s:\n",
-		       p->num_dupblocks, shared_len,
-		       (shared_len>1) ? "s" : "");
+
+		/*
+		 * Report the inode that we are working on
+		 */
+		clear_problem_context(&pctx);
+		pctx.inode = &p->inode;
+		pctx.ino = p->ino;
+		pctx.dir = p->dir;
+		pctx.blkcount = p->num_dupblocks;
+		pctx.num = shared_len;
+		fix_problem(fs, PR_1B_DUP_FILE, &pctx);
+		pctx.blkcount = 0;
+		pctx.num = 0;
+		
 		for (i = 0; i < shared_len; i++) {
 			for (s = dup_ino; s; s = s->next)
 				if (s->ino == shared[i])
 					break;
 			if (!s)
 				continue;
-			time_str = ctime(&s->mtime);
-			time_str[24] = 0;
-			printf("\t%s (inode #%lu, mod time %s)\n",
-			       s->pathname, s->ino, time_str);
+			/*
+			 * Report the inode that we are sharing with
+			 */
+			pctx.inode = &s->inode;
+			pctx.ino = s->ino;
+			pctx.dir = s->dir;
+			fix_problem(fs, PR_1B_DUP_FILE_LIST, &pctx);
 		}
 		if (file_ok) {
 			printf("Duplicated blocks already reassigned or cloned.\n\n");

@@ -1,3 +1,152 @@
+Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs version 1.07
+
+Tue Mar 11 10:31:47 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* icount.c: New file which implements an inode count abstraction.
+		This significantly reduces amount of memory needed to
+		check really large filesystems.
+
+	* pass1.c, pass2.c, pass3.c, pass4.c: Modified to use the icount
+	 	abstraction.
+
+Fri Mar  7 08:28:55 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dirinfo.c (dir_info_iter): New function which allows iteration
+		over the directories in the dir_info map.
+
+	* pass3.c (pass3, check_directory): Speed up pass 3 by iterating
+		over all directories in the dir_info structure, instead of
+		iterating all inodes looking for directories, and then
+		looking up the directories using get_dir_info().
+
+Sat Feb  1 11:33:43 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (pass1, process_block): 
+	* pass2.c (pass2): Use the ext2_dblist abstraction instead of
+		manual code to manage the directory block list information.
+
+	* pass1.c (check_blocks), pass1b.c (pass1b), pass2.c
+	 	(deallocate_inode): Call the ext2 library routine
+ 	 	ext2_inode_has_valid_blocks() instead of
+ 	 	inode_has_valid_blocks().
+
+	* swapfs.c (swap_inodes): Add check so that we don't try to call
+		swap_inode_blocks unless the inode has valid blocks.
+		(Otherwise a long fast symlink might cause
+		swap_inode_blocks to erroneously get called.)
+
+Wed Jan 22 14:42:53 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* problem.c, problem.h: Added entries for PR_2_DOT_NULL_TERM and
+ 	 	PR_2_DOT_DOT_NULL_TERM.
+
+	* pass2.c (check_dot, check_dot_dot): Make sure the new . and
+ 		.. entries are null-terminated, since the 2.0 kernel
+ 		requires this (for no good reason).
+
+Mon Jan 20 20:05:11 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (pass1): Set the EXT2_SF_SKIP_MISSING_ITABLE flag so
+		that we can recover from missing inode tables.
+
+	* dirinfo.c (get_dir_info): If there are no directories in the
+ 		dir_info abstraction, don't core dump (because dir_info is
+ 		NULL).
+
+	* e2fsck.c (main): Don't try using the backup superblocks if there
+		aren't any.
+		(check_super_block): If there are illegal inode table or
+		bitmaps, set the filesystem as being in error.
+
+Wed Jan 15 11:32:01 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass2.c (check_dir_block): Added check to make sure that rec_len
+ 		is a a multiple of 4 (so that the directory entries are
+ 		4-byte aligned).
+
+Sat Dec 28 12:16:32 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (uninstall): Uninstall all programs in the PROGS
+		line.
+		(PROGS): Don't build and install the extend program by
+		default. 
+	
+
+Sat Dec  7 16:41:02 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (process_inodes): Make sure the stashed_ino variable is
+ 		saved and restored as well.
+		(pass1): For fast sym links, skip the check_blocks
+		processing step altogether.
+
+Mon Dec  2 09:28:24 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* problem.c, message.c: New files, to completely refurbish how
+		filesystem problems are reported to the user.  The
+		diagnostic messages are now encoded out in an easily
+		customizable, extensible format.  The messages printed out
+		in preen mode are all on one line, and contain the device
+		name.
+
+Fri Nov 29 20:26:08 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* swapfs.c (swap_inodes): When swapping a filesystem, ignore
+		deleted files.
+
+	* pass1.c (pass1): Ignore missing inode table errors during the
+		scan, and just skip past those inodes.
+
+	* pass3.c (check_root): Remove root_ino argument, and assume that
+		the root inode must be EXT2_ROOT_INO.  Move responsibility
+		of setting the parent of the root inode in the directory
+		inode structure to pass2().
+
+	* pass2.c (check_dir_block): Don't allow links to the root
+		directory.  
+
+	* dirinfo.c (add_dir_info): Remove last argument to add_dir_info,
+		since the inode is no longer used.
+
+Tue Oct 15 00:06:49 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (main): If the superblock magic number is wrong, or the
+		block group fails a sanity check, then automatically
+		restart trying to use the backup superblocks.
+
+	* pass1.c (mark_table_blocks): Make the inode tables ahead of
+		everything else; in the case where a bitmap block overlays
+		the inode table, the inode table should take precedence.
+
+	* pass2.c (maybe_clear_entry): Make the deleted/unused error
+		message fit on one line, since the error can happen during
+		a preen pass.  (We eventually need to revamp the whole
+		e2fsck error reporting and prompting system, but that's a
+		job for another day.)
+
+Mon Oct 14 22:29:49 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (main): Read in the list badblocks into fs->badblocks
+		for the benefit of the inode scan functions. 
+
+	* pass1.c (pass1): If ext2fs_get_next_inode() returns an error
+		indicating that an inode is in a bad block, mark that
+		inode as being used, as well as in the inode "bb" map.
+
+	* pass2.c (maybe_clear_entry): New function which generalizes the
+ 		error cases when a directory entry needs to be cleared.
+		(check_dir_block): If an inode is in the "bb" map, offer
+ 		to clear the directory entry, since the inode is in a bad
+ 		block.
+
+	* pass4.c (pass4): If an inode is marked as used, but is is marked
+		in the "bb" map, don't process it as a disconnected inode.
+
+Tue Oct  8 02:02:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.06
+
 Mon Oct  7 00:45:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* e2fsck.c (main): Print out the version number of the shared

@@ -36,6 +36,7 @@ ELF_SO_VERSION = 2
 ELF_IMAGE = libcom_err
 ELF_MYDIR = et
 ELF_INSTALL_DIR = $(libdir)
+ELF_OTHER_LIBS = -lc
 
 BSDLIB_VERSION = 1.0
 BSDLIB_IMAGE = libcom_err
@@ -47,7 +48,7 @@ BSDLIB_INSTALL_DIR = $(libdir)
 #
 .c.o:
 	$(CC) $(ALL_CFLAGS) -c $< -o $@
-@PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -pg -o profiled/$*.o -c $<
+@PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 @CHECKER_CMT@	$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
 @DLL_CMT@	(export JUMP_DIR=`pwd`/jump; $(CC) -B$(JUMP_PREFIX) $(ALL_CFLAGS) \
 @DLL_CMT@		-o jump/$*.o -c $<)

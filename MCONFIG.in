@@ -17,6 +17,7 @@ man1dir = $(usr_prefix)/man/man1
 man8dir = $(usr_prefix)/man/man8
 cat1dir = $(usr_prefix)/man/cat1
 cat8dir = $(usr_prefix)/man/cat8
+infodir = $(usr_prefix)/info
 
 @SET_MAKE@
 

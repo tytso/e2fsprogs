@@ -2,10 +2,12 @@
  * bitops.c --- Bitmap frobbing code.  See bitops.h for the inlined
  * 	routines.
  * 
- * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be
- * redistributed under the terms of the GNU Public License.
- * 
- * Taken from <asm/bitops.h>, Copyright 1992, Linus Torvalds.
+ * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>

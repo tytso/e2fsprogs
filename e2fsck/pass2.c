@@ -1,8 +1,12 @@
 /*
  * pass2.c --- check directory structure
  * 
- * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be
- * redistributed under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  * 
  * Pass 2 of e2fsck iterates through all active directory inodes, and
  * applies to following tests to each directory entry in the directory
@@ -39,32 +43,41 @@
 #include "et/com_err.h"
 
 #include "e2fsck.h"
+#include "problem.h"
 
 /*
  * Keeps track of how many times an inode is referenced.
  */
-unsigned short * inode_count;
+ext2_icount_t inode_count = 0;	
 
 static void deallocate_inode(ext2_filsys fs, ino_t ino,
 			     char* block_buf);
 static int process_bad_inode(ext2_filsys fs, ino_t dir, ino_t ino);
 static int check_dir_block(ext2_filsys fs,
-			   struct dir_block_struct *dir_blocks_info,
-			   char *buf);
+			   struct ext2_db_entry *dir_blocks_info,
+			   void *private);
 static int allocate_dir_block(ext2_filsys fs,
-			      struct dir_block_struct *dir_blocks_info,
-			      char *buf);
+			      struct ext2_db_entry *dir_blocks_info,
+			      char *buf, struct problem_context *pctx);
 static int update_dir_block(ext2_filsys fs,
 			    blk_t	*block_nr,
 			    int blockcnt,
 			    void *private);
 
+struct check_dir_struct {
+	char *buf;
+	struct problem_context	pctx;
+};	
+
 void pass2(ext2_filsys fs)
 {
-	int	i;
 	char	*buf;
 	struct resource_track	rtrack;
-	
+	struct dir_info *dir;
+	errcode_t	retval;
+	ino_t		size;
+	struct check_dir_struct cd;
+		
 	init_resource_track(&rtrack);
 
 #ifdef MTRACE
@@ -73,17 +86,33 @@ void pass2(ext2_filsys fs)
 
 	if (!preen)
 		printf("Pass 2: Checking directory structure\n");
-	inode_count = allocate_memory((fs->super->s_inodes_count + 1) *
-				      sizeof(unsigned short),
-				      "buffer for inode count");
-
+	size = ext2fs_get_icount_size(inode_link_info) + 10;
+	retval = ext2fs_create_icount(fs, EXT2_ICOUNT_OPT_INCREMENT,
+				      size, &inode_count);
+	if (retval) {
+		com_err("ext2fs_create_icount", retval,
+			"while creating inode_count");
+		fatal_error(0);
+	}
 	buf = allocate_memory(fs->blocksize, "directory scan buffer");
 
-	for (i=0; i < dir_block_count; i++)
-		check_dir_block(fs, &dir_blocks[i], buf);
-	     
+	/*
+	 * Set up the parent pointer for the root directory, if
+	 * present.  (If the root directory is not present, we will
+	 * create it in pass 3.)
+	 */
+	dir = get_dir_info(EXT2_ROOT_INO);
+	if (dir)
+		dir->parent = EXT2_ROOT_INO;
+
+	cd.buf = buf;
+	clear_problem_context(&cd.pctx);
+	
+	retval = ext2fs_dblist_iterate(fs->dblist, check_dir_block, &cd);
+
 	free(buf);
-	free(dir_blocks);
+	ext2fs_free_dblist(fs->dblist);
+
 	if (inode_bad_map) {
 		ext2fs_free_inode_bitmap(inode_bad_map);
 		inode_bad_map = 0;
@@ -100,54 +129,39 @@ void pass2(ext2_filsys fs)
  */
 static int check_dot(ext2_filsys fs,
 		     struct ext2_dir_entry *dirent,
-		     ino_t ino)
+		     ino_t ino, struct problem_context *pctx)
 {
 	struct ext2_dir_entry *nextdir;
 	int	status = 0;
 	int	created = 0;
 	int	new_len;
-	const char 	*question = 0;
+	int	problem = 0;
 	
-	if (!dirent->inode) {
-		printf("Missing '.' in directory inode %lu.\n", ino);
-		question = "Fix";
-	} else if ((dirent->name_len != 1) ||
-		   strncmp(dirent->name, ".", dirent->name_len)) {
-		char *name = malloc(dirent->name_len + 1);
-		if (!name)
-			fatal_error("Couldn't allocate . name");
-		strncpy(name, dirent->name, dirent->name_len);
-		name[dirent->name_len] = '\0';
-		printf("First entry in directory inode %lu contains '%s' "
-		       "(inode=%u)\n", ino, name, dirent->inode);
-		printf("instead of '.'.\n");
-		free(name);
-		question = "Change to be '.'";
-	}
-	if (question) {
-		if (dirent->rec_len < 12)
-			fatal_error("Cannot fix, insufficient space to add '.'");
-		preenhalt(fs);
-		if (ask(question, 1)) {
+	if (!dirent->inode)
+		problem = PR_2_MISSING_DOT;
+	else if ((dirent->name_len != 1) ||
+		 (dirent->name[0] != '.'))
+		problem = PR_2_1ST_NOT_DOT;
+	else if (dirent->name[1] != '\0')
+		problem = PR_2_DOT_NULL_TERM;
+	
+	if (problem) {
+		if (fix_problem(fs, problem, pctx)) {
+			if (dirent->rec_len < 12)
+				dirent->rec_len = 12;
 			dirent->inode = ino;
 			dirent->name_len = 1;
 			dirent->name[0] = '.';
+			dirent->name[1] = '\0';
 			status = 1;
 			created = 1;
-		} else {
-			ext2fs_unmark_valid(fs);
-			return 0;
 		}
 	}
 	if (dirent->inode != ino) {
-		printf("Bad inode number for '.' in directory inode %lu.\n",
-		       ino);
-		preenhalt(fs);
-		if (ask("Fix", 1)) {
+		if (fix_problem(fs, PR_2_BAD_INODE_DOT, pctx)) {
 			dirent->inode = ino;
 			status = 1;
-		} else
-			ext2fs_unmark_valid(fs);
+		}
 	}
 	if (dirent->rec_len > 12) {
 		new_len = dirent->rec_len - 12;
@@ -175,32 +189,23 @@ static int check_dot(ext2_filsys fs,
  */
 static int check_dotdot(ext2_filsys fs,
 			struct ext2_dir_entry *dirent,
-			struct dir_info *dir)
+			struct dir_info *dir, struct problem_context *pctx)
 {
-	ino_t	ino = dir->ino;
-	const char	*question = 0;
+	int		problem = 0;
 	
-	if (!dirent->inode) {
-		printf("Missing '..' in directory inode %lu.\n", ino);
-		question = "Fix";
-	} else if ((dirent->name_len != 2) ||
-	    strncmp(dirent->name, "..", dirent->name_len)) {
-		char *name = malloc(dirent->name_len + 1);
-		if (!name)
-			fatal_error("Couldn't allocate bad .. name");
-		strncpy(name, dirent->name, dirent->name_len);
-		name[dirent->name_len] = '\0';
-		printf("Second entry in directory inode %lu contains '%s' "
-		       "(inode=%u)\n", ino, name, dirent->inode);
-		printf("instead of '..'.\n");
-		free(name);
-		question = "Change to be '..'";
-	}
-	if (question) {
-		if (dirent->rec_len < 12)
-			fatal_error("Cannot fix, insufficient space to add '..'");
-		preenhalt(fs);
-		if (ask(question, 1)) {
+	if (!dirent->inode)
+		problem = PR_2_MISSING_DOT_DOT;
+	else if ((dirent->name_len != 2) ||
+		 (dirent->name[0] != '.') ||
+		 (dirent->name[1] != '.'))
+		problem = PR_2_2ND_NOT_DOT_DOT;
+	else if (dirent->name[2] != '\0')
+		problem = PR_2_DOT_DOT_NULL_TERM;
+
+	if (problem) {
+		if (fix_problem(fs, problem, pctx)) {
+			if (dirent->rec_len < 12)
+				dirent->rec_len = 12;
 			/*
 			 * Note: we don't have the parent inode just
 			 * yet, so we will fill it in with the root
@@ -210,16 +215,14 @@ static int check_dotdot(ext2_filsys fs,
 			dirent->name_len = 2;
 			dirent->name[0] = '.';
 			dirent->name[1] = '.';
+			dirent->name[2] = '\0';
 			return 1;
-		} else
-			ext2fs_unmark_valid(fs);
+		} 
 		return 0;
 	}
 	dir->dotdot = dirent->inode;
 	return 0;
 }
-
-static char unknown_pathname[] = "???";
 
 /*
  * Check to make sure a directory entry doesn't contain any illegal
@@ -227,57 +230,42 @@ static char unknown_pathname[] = "???";
  */
 static int check_name(ext2_filsys fs,
 		      struct ext2_dir_entry *dirent,
-		      ino_t dir_ino,
-		      char *name)
+		      ino_t dir_ino, struct problem_context *pctx)
 {
 	int	i;
 	int	fixup = -1;
-	char	*pathname;
 	int	ret = 0;
-	errcode_t	retval;
 	
 	for ( i = 0; i < dirent->name_len; i++) {
 		if (dirent->name[i] == '/' || dirent->name[i] == '\0') {
 			if (fixup < 0) {
-				retval = ext2fs_get_pathname(fs, dir_ino,
-							     0, &pathname);
-				if (retval) {
-					com_err(program_name, retval, "while getting pathname in check_name");
-					pathname = unknown_pathname;
-				}
-				printf ("Bad file name '%s' (contains '/' or "
-					" null) in directory '%s' (%lu)\n",
-					name, pathname, dir_ino);
-				if (pathname != unknown_pathname)
-					free(pathname);
-				preenhalt(fs);
-				fixup = ask("Replace '/' or null by '.'", 1);
+				fixup = fix_problem(fs, PR_2_BAD_NAME, pctx);
 			}
 			if (fixup) {
 				dirent->name[i] = '.';
 				ret = 1;
-			} else
-				ext2fs_unmark_valid(fs);
+			}
 		}
 	}
 	return ret;
 }
 
 static int check_dir_block(ext2_filsys fs,
-			   struct dir_block_struct *db,
-			   char *buf)
+			   struct ext2_db_entry *db,
+			   void *private)
 {
 	struct dir_info		*subdir, *dir;
 	struct ext2_dir_entry 	*dirent;
 	int			offset = 0;
 	int			dir_modified = 0;
 	errcode_t		retval;
-	char			*path1, *path2;
-	int			dot_state, name_len;
+	int			dot_state;
 	blk_t			block_nr = db->blk;
 	ino_t 			ino = db->ino;
-	char			name[EXT2_NAME_LEN+1];
-
+	__u16			links;
+	struct check_dir_struct	*cd = private;
+	char 			*buf = cd->buf;
+	
 	/*
 	 * Make sure the inode is still in use (could have been 
 	 * deleted in the duplicate/bad blocks pass.
@@ -285,8 +273,15 @@ static int check_dir_block(ext2_filsys fs,
 	if (!(ext2fs_test_inode_bitmap(inode_used_map, ino))) 
 		return 0;
 
+	cd->pctx.ino = ino;
+	cd->pctx.blk = block_nr;
+	cd->pctx.blkcount = db->blockcnt;
+	cd->pctx.ino2 = 0;
+	cd->pctx.dirent = 0;
+	cd->pctx.num = 0;
+
 	if (db->blk == 0) {
-		if (allocate_dir_block(fs, db, buf))
+		if (allocate_dir_block(fs, db, buf, &cd->pctx))
 			return 0;
 		block_nr = db->blk;
 	}
@@ -310,40 +305,30 @@ static int check_dir_block(ext2_filsys fs,
 	do {
 		dot_state++;
 		dirent = (struct ext2_dir_entry *) (buf + offset);
+		cd->pctx.dirent = dirent;
+		cd->pctx.num = offset;
 		if (((offset + dirent->rec_len) > fs->blocksize) ||
 		    (dirent->rec_len < 8) ||
+		    ((dirent->rec_len % 4) != 0) ||
 		    ((dirent->name_len+8) > dirent->rec_len)) {
-			printf("Directory inode %lu, block %d, offset %d: directory corrupted\n",
-			       ino, db->blockcnt, offset);
-			preenhalt(fs);
-			if (ask("Salvage", 1)) {
+			if (fix_problem(fs, PR_2_DIR_CORRUPTED, &cd->pctx)) {
 				dirent->rec_len = fs->blocksize - offset;
 				dirent->name_len = 0;
 				dirent->inode = 0;
 				dir_modified++;
-			} else {
-				ext2fs_unmark_valid(fs);
+			} else
 				return DIRENT_ABORT;
-			}
 		}
 
-		name_len = dirent->name_len;
 		if (dirent->name_len > EXT2_NAME_LEN) {
-			printf("Directory inode %lu, block %d, offset %d: filename too long\n",
-			       ino, db->blockcnt, offset);
-			preenhalt(fs);
-			if (ask("Truncate filename", 1)) {
+			if (fix_problem(fs, PR_2_FILENAME_LONG, &cd->pctx)) {
 				dirent->name_len = EXT2_NAME_LEN;
 				dir_modified++;
 			}
-			name_len = EXT2_NAME_LEN;
 		}
 
-		strncpy(name, dirent->name, name_len);
-		name[name_len] = '\0';
-
 		if (dot_state == 1) {
-			if (check_dot(fs, dirent, ino))
+			if (check_dot(fs, dirent, ino, &cd->pctx))
 				dir_modified++;
 		} else if (dot_state == 2) {
 			dir = get_dir_info(ino);
@@ -352,30 +337,19 @@ static int check_dir_block(ext2_filsys fs,
 				       ino);
 				fatal_error(0);
 			}
-			if (check_dotdot(fs, dirent, dir))
+			if (check_dotdot(fs, dirent, dir, &cd->pctx))
 				dir_modified++;
 		} else if (dirent->inode == ino) {
-			retval = ext2fs_get_pathname(fs, ino, 0, &path1);
-			if (retval)
-				path1 = unknown_pathname;
-			printf("Entry '%s' in %s (%lu) is a link to '.'  ",
-			       name, path1, ino);
-			if (path1 != unknown_pathname)
-				free(path1);
-			preenhalt(fs);
-			if (ask("Clear", 1)) {
+			if (fix_problem(fs, PR_2_LINK_DOT, &cd->pctx)) {
 				dirent->inode = 0;
 				dir_modified++;
+				goto next;
 			}
 		}
 		if (!dirent->inode) 
 			goto next;
 		
-#if 0
-		printf("Entry '%s', name_len %d, rec_len %d, inode %lu... ",
-		       name, dirent->name_len, dirent->rec_len, dirent->inode);
-#endif
-		if (check_name(fs, dirent, ino, name))
+		if (check_name(fs, dirent, ino, &cd->pctx))
 			dir_modified++;
 
 		/*
@@ -384,40 +358,36 @@ static int check_dir_block(ext2_filsys fs,
 		if (((dirent->inode != EXT2_ROOT_INO) &&
 		     (dirent->inode < EXT2_FIRST_INODE(fs->super))) ||
 		    (dirent->inode > fs->super->s_inodes_count)) {
-			retval = ext2fs_get_pathname(fs, ino, 0, &path1);
-			if (retval)
-				path1 = unknown_pathname;
-			printf("Entry '%s' in %s (%lu) has bad inode #: %u.\n",
-			       name, path1, ino, dirent->inode);
-			if (path1 != unknown_pathname)
-				free(path1);
-			preenhalt(fs);
-			if (ask("Clear", 1)) {
+			if (fix_problem(fs, PR_2_BAD_INO, &cd->pctx)) {
 				dirent->inode = 0;
 				dir_modified++;
 				goto next;
-			} else
-				ext2fs_unmark_valid(fs);
+			}
 		}
 
 		/*
-		 * If the inode is unusued, offer to clear it.
+		 * If the inode is unused, offer to clear it.
 		 */
 		if (!(ext2fs_test_inode_bitmap(inode_used_map,
 					       dirent->inode))) {
-			retval = ext2fs_get_pathname(fs, ino, 0, &path1);
-			if (retval)
-				path1 = unknown_pathname;
-			printf("Entry '%s' in %s (%lu) has deleted/unused inode %u.\n",
-			       name, path1, ino, dirent->inode);
-			if (path1 != unknown_pathname)
-				free(path1);
-			if (ask("Clear", 1)) {
+			if (fix_problem(fs, PR_2_UNUSED_INODE, &cd->pctx)) {
 				dirent->inode = 0;
 				dir_modified++;
 				goto next;
-			} else
-				ext2fs_unmark_valid(fs);
+			}
+		}
+
+		/*
+		 * If the inode is in a bad block, offer to clear it.
+		 */
+		if (inode_bb_map &&
+		    (ext2fs_test_inode_bitmap(inode_bb_map,
+					      dirent->inode))) {
+			if (fix_problem(fs, PR_2_BB_INODE, &cd->pctx)) {
+				dirent->inode = 0;
+				dir_modified++;
+				goto next;
+			}
 		}
 
 		/*
@@ -437,6 +407,20 @@ static int check_dir_block(ext2_filsys fs,
 		}
 
 		/*
+		 * Don't allow links to the root directory.  We check
+		 * this specially to make sure we catch this error
+		 * case even if the root directory hasn't been created
+		 * yet.
+		 */
+		if ((dot_state > 2) && (dirent->inode == EXT2_ROOT_INO)) {
+			if (fix_problem(fs, PR_2_LINK_ROOT, &cd->pctx)) {
+				dirent->inode = 0;
+				dir_modified++;
+				goto next;
+			}
+		}
+		
+		/*
 		 * If this is a directory, then mark its parent in its
 		 * dir_info structure.  If the parent field is already
 		 * filled in, then this directory has more than one
@@ -453,34 +437,20 @@ static int check_dir_block(ext2_filsys fs,
 				fatal_error(0);
 			}
 			if (subdir->parent) {
-				retval = ext2fs_get_pathname(fs, ino,
-							     0, &path1);
-				if (retval)
-					path1 = unknown_pathname;
-				retval = ext2fs_get_pathname(fs,
-							     subdir->parent,
-							     dirent->inode,
-							     &path2);
-				if (retval)
-					path2 = unknown_pathname;
-				printf("Entry '%s' in %s (%lu) is a link to directory %s (%u).\n",
-				       name, path1, ino, path2, 
-				       dirent->inode);
-				if (path1 != unknown_pathname)
-					free(path1);
-				if (path2 != unknown_pathname)
-					free(path2);
-				if (ask("Clear", 1)) {
+				cd->pctx.ino2 = subdir->parent;
+				if (fix_problem(fs, PR_2_LINK_DIR,
+						&cd->pctx)) {
 					dirent->inode = 0;
 					dir_modified++;
 					goto next;
-				} else
-					ext2fs_unmark_valid(fs);
-			}
-			subdir->parent = ino;
+				}
+				cd->pctx.ino2 = 0;
+			} else
+				subdir->parent = ino;
 		}
 		
-		if (inode_count[dirent->inode]++ > 0)
+		ext2fs_icount_increment(inode_count, dirent->inode, &links);
+		if (links > 1)
 			fs_links_count++;
 		fs_total_count++;
 	next:
@@ -530,7 +500,7 @@ static void deallocate_inode(ext2_filsys fs, ino_t ino,
 	errcode_t		retval;
 	struct ext2_inode	inode;
 
-	inode_link_info[ino] = 0;
+	ext2fs_icount_store(inode_link_info, ino, 0);
 	e2fsck_read_inode(fs, ino, &inode, "deallocate_inode");
 	inode.i_links_count = 0;
 	inode.i_dtime = time(0);
@@ -547,7 +517,7 @@ static void deallocate_inode(ext2_filsys fs, ino_t ino,
 	ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
 	ext2fs_mark_ib_dirty(fs);
 
-	if (!inode_has_valid_blocks(&inode))
+	if (!ext2fs_inode_has_valid_blocks(&inode))
 		return;
 	
 	ext2fs_mark_bb_dirty(fs);
@@ -559,83 +529,34 @@ static void deallocate_inode(ext2_filsys fs, ino_t ino,
 			ino);
 }
 
-/*
- * These two subroutines are used by process_bad_inode; it is used to
- * make sure that certain reserved fields are really zero.  If not,
- * prompt the user if he/she wants us to zeroize them.
- */
-static void check_for_zero_u32(ext2_filsys fs, ino_t ino, char *pathname,
-				const char *name, __u32 *val,
-				int *modified)
-{
-	char prompt[80];
-	
-	if (*val) {
-		printf("%s for inode %lu (%s) is %u, should be zero.\n",
-		       name, ino, pathname, *val);
-		preenhalt(fs);
-		sprintf(prompt, "Clear %s", name);
-		if (ask(prompt, 1)) {
-			*val = 0;
-			*modified = 1;
-		} else
-			ext2fs_unmark_valid(fs);
-	}
-}
-
-static void check_for_zero_u8(ext2_filsys fs, ino_t ino, char *pathname,
-				const char *name, __u8 *val,
-				int *modified)
-{
-	char prompt[80];
-	
-	if (*val) {
-		printf("%s for inode %lu (%s) is %d, should be zero.\n",
-		       name, ino, pathname, *val);
-		preenhalt(fs);
-		sprintf(prompt, "Clear %s", name);
-		if (ask(prompt, 1)) {
-			*val = 0;
-			*modified = 1;
-		} else
-			ext2fs_unmark_valid(fs);
-	}
-}
-
-	
-
 static int process_bad_inode(ext2_filsys fs, ino_t dir, ino_t ino)
 {
 	struct ext2_inode	inode;
-	errcode_t		retval;
 	int			inode_modified = 0;
-	char			*pathname;
 	unsigned char		*frag, *fsize;
+	struct problem_context	pctx;
 
 	e2fsck_read_inode(fs, ino, &inode, "process_bad_inode");
-	retval = ext2fs_get_pathname(fs, dir, ino, &pathname);
-	if (retval) {
-		com_err("process_bad_inode", retval,
-			"while getting pathname for inode %d",
-			ino);
-		return 0;
-	}
+
+	clear_problem_context(&pctx);
+	pctx.ino = ino;
+	pctx.dir = dir;
+	pctx.inode = &inode;
+
 	if (!LINUX_S_ISDIR(inode.i_mode) && !LINUX_S_ISREG(inode.i_mode) &&
 	    !LINUX_S_ISCHR(inode.i_mode) && !LINUX_S_ISBLK(inode.i_mode) &&
 	    !LINUX_S_ISLNK(inode.i_mode) && !LINUX_S_ISFIFO(inode.i_mode) &&
 	    !(LINUX_S_ISSOCK(inode.i_mode))) {
-		printf("Inode %lu (%s) has a bad mode (0%o).\n",
-		       ino, pathname, inode.i_mode);
-		preenhalt(fs);
-		if (ask("Clear", 1)) {
+		if (fix_problem(fs, PR_2_BAD_MODE, &pctx)) {
 			deallocate_inode(fs, ino, 0);
-			free(pathname);
 			return 1;
-		} else
-			ext2fs_unmark_valid(fs);
+		}
 	}
-	check_for_zero_u32(fs, ino, pathname, "i_faddr", &inode.i_faddr,
-			    &inode_modified);
+	if (inode.i_faddr &&
+	    fix_problem(fs, PR_2_FADDR_ZERO, &pctx)) {
+		inode.i_faddr = 0;
+		inode_modified++;
+	}
 
 	switch (fs->super->s_creator_os) {
 	    case EXT2_OS_LINUX:
@@ -653,18 +574,33 @@ static int process_bad_inode(ext2_filsys fs, ino_t dir, ino_t ino)
 	    default:
 		frag = fsize = 0;
 	}
-	if (frag)
-		check_for_zero_u8(fs, ino, pathname, "i_frag", frag,
-				  &inode_modified);
-	if (fsize)
-		check_for_zero_u8(fs, ino, pathname, "i_fsize", fsize,
-				  &inode_modified);
+	if (frag && *frag) {
+		pctx.num = *frag;
+		if (fix_problem(fs, PR_2_FRAG_ZERO, &pctx)) {
+			*frag = 0;
+			inode_modified++;
+		}
+		pctx.num = 0;
+	}
+	if (fsize && *fsize) {
+		pctx.num = *fsize;
+		if (fix_problem(fs, PR_2_FSIZE_ZERO, &pctx)) {
+			*fsize = 0;
+			inode_modified++;
+		}
+		pctx.num = 0;
+	}
 
-	check_for_zero_u32(fs, ino, pathname, "i_file_acl", &inode.i_file_acl,
-			    &inode_modified);
-	check_for_zero_u32(fs, ino, pathname, "i_dir_acl", &inode.i_dir_acl,
-			    &inode_modified);
-	free(pathname);
+	if (inode.i_file_acl &&
+	    fix_problem(fs, PR_2_FILE_ACL_ZERO, &pctx)) {
+		inode.i_file_acl = 0;
+		inode_modified++;
+	}
+	if (inode.i_dir_acl &&
+	    fix_problem(fs, PR_2_DIR_ACL_ZERO, &pctx)) {
+		inode.i_dir_acl = 0;
+		inode_modified++;
+	}
 	if (inode_modified)
 		e2fsck_write_inode(fs, ino, &inode, "process_bad_inode");
 	return 0;
@@ -678,17 +614,15 @@ static int process_bad_inode(ext2_filsys fs, ino_t dir, ino_t ino)
  * 	that was zeroed out and now needs to be replaced.
  */
 static int allocate_dir_block(ext2_filsys fs,
-			      struct dir_block_struct *db,
-			      char *buf)
+			      struct ext2_db_entry *db,
+			      char *buf, struct problem_context *pctx)
 {
 	blk_t			blk;
 	char			*block;
 	struct ext2_inode	inode;
 	errcode_t		retval;
 
-	printf("Directory inode %lu has a hole at block #%d\n",
-	       db->ino, db->blockcnt);
-	if (ask("Allocate block", 1) == 0)
+	if (fix_problem(fs, PR_2_DIRECTORY_HOLE, pctx) == 0)
 		return 1;
 
 	/*
@@ -765,7 +699,7 @@ static int update_dir_block(ext2_filsys fs,
 			    int blockcnt,
 			    void *private)
 {
-	struct dir_block_struct *db = private;
+	struct ext2_db_entry *db = private;
 
 	if (db->blockcnt == blockcnt) {
 		*block_nr = db->blk;

@@ -1,3 +1,16 @@
+Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs version 1.07
+
+Wed Jan 15 11:37:36 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* config.sub (basic_machine): Added i686-* as another name for the
+ 		Pentium Pro.
+
+Tue Oct  8 02:02:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.06
+
 Mon Oct  7 08:22:31 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in (all): Don't run "make check" by default.  User

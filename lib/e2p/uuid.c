@@ -3,7 +3,10 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <linux/types.h>
+
+#include "e2p.h"
 
 struct uuid {
 	__u32	time_low;

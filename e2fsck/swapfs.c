@@ -1,5 +1,13 @@
 /*
  * swapfs.c --- byte-swap an ext2 filesystem
+ *
+ * Copyright 1996, 1997 by Theodore Ts'o
+ * 
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
+ * 
  */
 
 #ifdef HAVE_ERRNO_H
@@ -125,21 +133,29 @@ static void swap_inodes(ext2_filsys fs)
 			fatal_error(0);
 		}
 		inode = (struct ext2_inode *) buf;
-		for (i=0; i < fs->super->s_inodes_per_group; i++, ino++) {
-			if (fs->flags & EXT2_FLAG_SWAP_BYTES_READ)
-				ext2fs_swap_inode(fs, inode, inode, 0);
+		for (i=0; i < fs->super->s_inodes_per_group;
+		     i++, ino++, inode++) {
 			stashed_ino = ino;
 			stashed_inode = inode;
 			
-			if (inode->i_block[EXT2_IND_BLOCK] ||
-			    inode->i_block[EXT2_DIND_BLOCK] ||
-			    inode->i_block[EXT2_TIND_BLOCK] ||
-			    LINUX_S_ISDIR(inode->i_mode))
+			if (fs->flags & EXT2_FLAG_SWAP_BYTES_READ)
+				ext2fs_swap_inode(fs, inode, inode, 0);
+			
+			/*
+			 * Skip deleted files.
+			 */
+			if (inode->i_links_count == 0)
+				continue;
+			
+			if (LINUX_S_ISDIR(inode->i_mode) ||
+			    ((inode->i_block[EXT2_IND_BLOCK] ||
+			      inode->i_block[EXT2_DIND_BLOCK] ||
+			      inode->i_block[EXT2_TIND_BLOCK]) &&
+			     ext2fs_inode_has_valid_blocks(inode)))
 				swap_inode_blocks(fs, ino, block_buf, inode);
 			
 			if (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)
 				ext2fs_swap_inode(fs, inode, inode, 1);
-			inode++;
 		}
 		retval = io_channel_write_blk(fs->io,
 		      fs->group_desc[group].bg_inode_table,

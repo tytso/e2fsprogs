@@ -1,8 +1,12 @@
 /*
  * badblocks.c --- routines to manipulate the bad block structure
  * 
- * Copyright (C) 1994 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1994, 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -19,19 +23,19 @@
 
 #include <linux/ext2_fs.h>
 
-#include "ext2fs.h"
+#include "ext2fsP.h"
 
 /*
  * This procedure create an empty badblocks list.
  */
-errcode_t badblocks_list_create(badblocks_list *ret, int size)
+errcode_t ext2fs_badblocks_list_create(ext2_badblocks_list *ret, int size)
 {
-	badblocks_list	bb;
+	ext2_badblocks_list	bb;
 
-	bb = malloc(sizeof(struct struct_badblocks_list));
+	bb = malloc(sizeof(struct ext2_struct_badblocks_list));
 	if (!bb)
 		return ENOMEM;
-	memset(bb, 0, sizeof(struct struct_badblocks_list));
+	memset(bb, 0, sizeof(struct ext2_struct_badblocks_list));
 	bb->magic = EXT2_ET_MAGIC_BADBLOCKS_LIST;
 	bb->size = size ? size : 10;
 	bb->list = malloc(bb->size * sizeof(blk_t));
@@ -45,42 +49,42 @@ errcode_t badblocks_list_create(badblocks_list *ret, int size)
 
 /*
  * This procedure frees a badblocks list.
+ *
+ * (note: moved to closefs.c)
  */
-void badblocks_list_free(badblocks_list bb)
-{
-	if (bb->magic != EXT2_ET_MAGIC_BADBLOCKS_LIST)
-		return;
 
-	if (bb->list)
-		free(bb->list);
-	bb->list = 0;
-	free(bb);
-}
 
 /*
  * This procedure adds a block to a badblocks list.
  */
-errcode_t badblocks_list_add(badblocks_list bb, blk_t blk)
+errcode_t ext2fs_badblocks_list_add(ext2_badblocks_list bb, blk_t blk)
 {
-	int	i;
+	int	i, j;
+	blk_t	*new_list;
 
 	EXT2_CHECK_MAGIC(bb, EXT2_ET_MAGIC_BADBLOCKS_LIST);
 
-	for (i=0; i < bb->num; i++)
-		if (bb->list[i] == blk)
-			return 0;
-
 	if (bb->num >= bb->size) {
 		bb->size += 10;
-		bb->list = realloc(bb->list, bb->size * sizeof(blk_t));
-		if (!bb->list) {
-			bb->size = 0;
-			bb->num = 0;
+		new_list = realloc(bb->list, bb->size * sizeof(blk_t));
+		if (!new_list)
 			return ENOMEM;
-		}
+		bb->list = new_list;
 	}
 
-	bb->list[bb->num++] = blk;
+	j = bb->num;
+	for (i=0; i < bb->num; i++) {
+		if (bb->list[i] == blk)
+			return 0;
+		if (bb->list[i] > blk) {
+			j = i;
+			break;
+		}
+	}
+	for (i=bb->num; i > j; i--)
+		bb->list[i] = bb->list[i-1];
+	bb->list[j] = blk;
+	bb->num++;
 	return 0;
 }
 
@@ -88,27 +92,42 @@ errcode_t badblocks_list_add(badblocks_list bb, blk_t blk)
  * This procedure tests to see if a particular block is on a badblocks
  * list.
  */
-int badblocks_list_test(badblocks_list bb, blk_t blk)
+int ext2fs_badblocks_list_test(ext2_badblocks_list bb, blk_t blk)
 {
-	int	i;
+	int	low, high, mid;
 
-	EXT2_CHECK_MAGIC(bb, EXT2_ET_MAGIC_BADBLOCKS_LIST);
+	if (bb->magic != EXT2_ET_MAGIC_BADBLOCKS_LIST)
+		return 0;
 
-	for (i=0; i < bb->num; i++)
-		if (bb->list[i] == blk)
+	low = 0;
+	high = bb->num-1;
+	if (blk == bb->list[low])
+		return 1;
+	if (blk == bb->list[high])
+		return 1;
+
+	while (low < high) {
+		mid = (low+high)/2;
+		if (mid == low || mid == high)
+			break;
+		if (blk == bb->list[mid])
 			return 1;
-
+		if (blk < bb->list[mid])
+			high = mid;
+		else
+			low = mid;
+	}
 	return 0;
 }
 
-errcode_t badblocks_list_iterate_begin(badblocks_list bb,
-				       badblocks_iterate *ret)
+errcode_t ext2fs_badblocks_list_iterate_begin(ext2_badblocks_list bb,
+					      ext2_badblocks_iterate *ret)
 {
-	badblocks_iterate iter;
+	ext2_badblocks_iterate iter;
 
 	EXT2_CHECK_MAGIC(bb, EXT2_ET_MAGIC_BADBLOCKS_LIST);
 
-	iter = malloc(sizeof(struct struct_badblocks_iterate));
+	iter = malloc(sizeof(struct ext2_struct_badblocks_iterate));
 	if (!iter)
 		return ENOMEM;
 
@@ -119,9 +138,9 @@ errcode_t badblocks_list_iterate_begin(badblocks_list bb,
 	return 0;
 }
 
-int badblocks_list_iterate(badblocks_iterate iter, blk_t *blk)
+int ext2fs_badblocks_list_iterate(ext2_badblocks_iterate iter, blk_t *blk)
 {
-	badblocks_list	bb;
+	ext2_badblocks_list	bb;
 
 	if (iter->magic != EXT2_ET_MAGIC_BADBLOCKS_ITERATE)
 		return 0;
@@ -139,7 +158,7 @@ int badblocks_list_iterate(badblocks_iterate iter, blk_t *blk)
 	return 0;
 }
 
-void badblocks_list_iterate_end(badblocks_iterate iter)
+void ext2fs_badblocks_list_iterate_end(ext2_badblocks_iterate iter)
 {
 	if (!iter || (iter->magic != EXT2_ET_MAGIC_BADBLOCKS_ITERATE))
 		return;

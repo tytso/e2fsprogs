@@ -1,8 +1,12 @@
 /*
  * cmp_bitmaps.c --- routines to compare inode and block bitmaps.
  *
- * Copyright (C) 1995 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1995 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>

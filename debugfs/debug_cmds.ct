@@ -10,8 +10,11 @@ request do_show_debugfs_params, "Show debugfs parameters",
 request do_open_filesys, "Open a filesystem",
 	open_filesys, open;
 
-request do_close_filesys, "Close a filesystem",
+request do_close_filesys, "Close the filesystem",
 	close_filesys, close;
+
+request do_dirty_filesys, "Mark the filesystem as dirty",
+	dirty_filesys, dirty;
 
 request do_init_filesys, "Initalize a filesystem (DESTROYS DATA)",
 	init_filesys;

@@ -8,18 +8,26 @@ INSTALL = @INSTALL@
 @MCONFIG@
 
 LIB_SUBDIRS=lib/et lib/ss lib/ext2fs lib/e2p lib/uuid
-PROG_SUBDIRS=e2fsck debugfs misc
+PROG_SUBDIRS=e2fsck debugfs misc tests/progs 
 SUBDIRS=$(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
 SUBS= include/linux/types.h
 
-all:: $(SUBS) libs progs
+TAR=tar
+
+all:: $(SUBS) libs progs docs
 
 progs: $(SUBS) all-progs-recursive
 libs: $(SUBS) all-libs-recursive
 
+docs:
+	(cd doc; make libext2fs.info)
+
+install-doc-libs:
+	(cd doc; make install-doc-libs)
+
 install: all-libs-recursive install-progs-recursive \
-	install-shlibs-libs-recursive
+	install-shlibs-libs-recursive install-doc-libs
 	(export MANPATH=$(DESTDIR)$(mandir); $(srcdir)/install-utils/compile_manpages)
 
 install-libs: install-libs-recursive
@@ -64,7 +72,7 @@ mostlyclean-local:
 	$(RM) -f \#* *~ core MAKELOG 
 clean-local: mostlyclean-local
 distclean-local: clean-local
-	$(RM) -f include/linux/types.h
+	$(RM) -f include/linux/types.h $(SUBSTITUTE)
 	$(RM) -f config.status config.log config.cache MCONFIG Makefile
 realclean-local: distclean-local
 	$(RM) -f configure
@@ -78,7 +86,7 @@ distribution_tar_file:
 	cd ..
 	cp -r $(srcdir)/README $(srcdir)/install-utils /tmp/dest
 	cp $(srcdir)/INSTALL.@BINARY_TYPE@ /tmp/dest/INSTALL
-	(cd /tmp/dest; tar cf - . ) | gzip -9 \
+	(cd /tmp/dest; $(TAR) cf - . ) | gzip -9 \
 		> e2fsprogs-@E2FSPROGS_VERSION@-@BINARY_TYPE@.tar.gz
 
 SRCROOT = `echo e2fsprogs-@E2FSPROGS_VERSION@ | sed -e 's/-WIP//'`
@@ -87,14 +95,14 @@ $(srcdir)/.exclude-file:
 	(cd $(srcdir)/.. ; find $(SRCROOT) \( -name \*~ -o -name \*.orig \
 		-o -name \*.rej \) -print > $(SRCROOT)/.exclude-file)
 	echo "$(SRCROOT)/build" >> $(srcdir)/.exclude-file
-	echo "$(SRCROOT)/todo" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/rpm.log" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/.exclude-file" >> $(srcdir)/.exclude-file
 	echo $(SRCROOT)/e2fsprogs-@E2FSPROGS_VERSION@.tar.gz \
 		>> $(srcdir)/.exclude-file
 	
 
 source_tar_file: $(srcdir)/.exclude-file
-	(cd $(srcdir) ; tar -C .. -c -v -f - \
+	(cd $(srcdir) ; $(TAR) -C .. -c -v -f - \
 		-X .exclude-file $(SRCROOT) | \
 		gzip -9 > e2fsprogs-@E2FSPROGS_VERSION@.tar.gz)
 	rm -f $(srcdir)/.exclude-file

@@ -248,6 +248,14 @@ void do_show_super_stats(int argc, char *argv[])
 	close_pager(out);
 }
 
+void do_dirty_filesys(int argc, char *argv[])
+{
+	if (check_fs_open(argv[0]))
+		return;
+	
+	ext2fs_mark_super_dirty(current_fs);
+}
+
 struct list_blocks_struct {
 	FILE	*f;
 	int	total;
@@ -565,7 +573,7 @@ static void modify_u8(char *com, const char *prompt,
 		      const char *format, __u8 *val)
 {
 	char buf[200];
-	u_char v;
+	unsigned long v;
 	char *tmp;
 
 	sprintf(buf, format, *val);
@@ -575,7 +583,7 @@ static void modify_u8(char *com, const char *prompt,
 		buf[strlen (buf) - 1] = '\0';
 	if (!buf[0])
 		return;
-	v = strtol(buf, &tmp, 0);
+	v = strtoul(buf, &tmp, 0);
 	if (*tmp)
 		com_err(com, 0, "Bad value - %s", buf);
 	else
@@ -586,7 +594,7 @@ static void modify_u16(char *com, const char *prompt,
 		       const char *format, __u16 *val)
 {
 	char buf[200];
-	u_short v;
+	unsigned long v;
 	char *tmp;
 
 	sprintf(buf, format, *val);
@@ -596,7 +604,7 @@ static void modify_u16(char *com, const char *prompt,
 		buf[strlen (buf) - 1] = '\0';
 	if (!buf[0])
 		return;
-	v = strtol(buf, &tmp, 0);
+	v = strtoul(buf, &tmp, 0);
 	if (*tmp)
 		com_err(com, 0, "Bad value - %s", buf);
 	else
@@ -607,7 +615,7 @@ static void modify_u32(char *com, const char *prompt,
 		       const char *format, __u32 *val)
 {
 	char buf[200];
-	u_long v;
+	unsigned long v;
 	char *tmp;
 
 	sprintf(buf, format, *val);
@@ -617,7 +625,7 @@ static void modify_u32(char *com, const char *prompt,
 		buf[strlen (buf) - 1] = '\0';
 	if (!buf[0])
 		return;
-	v = strtol(buf, &tmp, 0);
+	v = strtoul(buf, &tmp, 0);
 	if (*tmp)
 		com_err(com, 0, "Bad value - %s", buf);
 	else

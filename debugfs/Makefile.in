@@ -73,8 +73,8 @@ distclean: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-debug_cmds.o: debug_cmds.c  $(top_builddir)/lib/ss/ss_err.h \
- $(top_srcdir)/lib/ss/ss.h $(top_srcdir)/lib/ss/copyright.h
+debug_cmds.o: debug_cmds.c $(top_srcdir)/lib/ss/ss.h \
+ $(top_srcdir)/lib/ss/copyright.h $(top_builddir)/lib/ss/ss_err.h
 debugfs.o: $(srcdir)/debugfs.c $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ss/ss.h $(top_srcdir)/lib/ss/copyright.h \
  $(top_builddir)/lib/ss/ss_err.h $(srcdir)/debugfs.h \
@@ -101,3 +101,4 @@ dump.o: $(srcdir)/dump.c $(srcdir)/debugfs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h
+

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FILES=`find . -name ChangeLog`
+FILES=`find . -name ChangeLog -print`
 
 header=/tmp/revheader
 

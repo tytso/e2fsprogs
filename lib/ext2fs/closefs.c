@@ -1,8 +1,12 @@
 /*
  * closefs.c --- close an ext2 filesystem
  * 
- * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -16,7 +20,7 @@
 
 #include <linux/ext2_fs.h>
 
-#include "ext2fs.h"
+#include "ext2fsP.h"
 
 errcode_t ext2fs_flush(ext2_filsys fs)
 {
@@ -118,7 +122,6 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		if (retval)
 			goto errout;
 	}
-
 	retval = 0;
 errout:
 	fs->super->s_state = fs_state;
@@ -142,6 +145,42 @@ errcode_t ext2fs_close(ext2_filsys fs)
 		if (retval)
 			return retval;
 	}
+	if (fs->write_bitmaps) {
+		retval = fs->write_bitmaps(fs);
+		if (retval)
+			return retval;
+	}
 	ext2fs_free(fs);
 	return 0;
+}
+
+/*
+ * This procedure frees a badblocks list.
+ */
+void ext2fs_badblocks_list_free(ext2_badblocks_list bb)
+{
+	if (bb->magic != EXT2_ET_MAGIC_BADBLOCKS_LIST)
+		return;
+
+	if (bb->list)
+		free(bb->list);
+	bb->list = 0;
+	free(bb);
+}
+
+/*
+ * Close a directory block list
+ */
+void ext2fs_free_dblist(ext2_dblist dblist)
+{
+	if (!dblist || (dblist->magic != EXT2_ET_MAGIC_DBLIST))
+		return;
+
+	if (dblist->list)
+		free(dblist->list);
+	dblist->list = 0;
+	if (dblist->fs && dblist->fs->dblist == dblist)
+		dblist->fs->dblist = 0;
+	dblist->magic = 0;
+	free(dblist);
 }
