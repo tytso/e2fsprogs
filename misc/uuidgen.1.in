@@ -1,0 +1,37 @@
+.\" Copyright 1999 Andreas Dilger (adilger@enel.ucalgary.ca)
+.\"
+.\" This man page was created for libuuid.so.1.1 from e2fsprogs-1.14.
+.\" 
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.\" Created  Wed Mar 10 17:42:12 1999, Andreas Dilger
+.TH UUIDGEN "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+uuidgen \- command\-line utility to create a new unique UUID value
+.SH SYNOPSIS
+.nf
+.B uuidgen
+.fi
+.SH DESCRIPTION
+The
+.B uuidgen
+program creates a new universally unique identifier using the
+.BR libuuid "(3) functions " uuid_generate "(3) and " uuid_unparse "(3)."
+The new UUID can reasonably be considered unique among all UUIDs created
+on the local system, and among UUIDs created on other systems in the past
+and in the future.
+.SH RETURN VALUE
+The UUID of the form 1b4e28ba\-2fa1\-11d2\-883f\-b9a761bde3fb (in
+.BR printf (3)
+format "%08x\-%04x\-%04x\-%04x\-%012x") is output to the standard output.
+.SH "CONFORMING TO"
+OSF DCE 1.1
+.SH AUTHOR
+.B uuidgen
+was written by Andreas Dilger for libuuid.
+.SH AVAILABILITY
+.B uuidgen
+is part of libuuid from the e2fsprogs package and is available for anonymous
+ftp from tsx\-11.mit.edu (and its mirrors) in /pub/linux/packages/ext2fs.
+.SH "SEE ALSO"
+.BR libuuid (3)

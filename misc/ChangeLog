@@ -1,3 +1,13 @@
+1999-03-11  Andreas Dilger <adilger@enel.ucalgary.ca>
+
+	* uuidgen.c, uuidgen.1.in: Created command-line utility to
+		generate UUIDs.
+
+1999-03-14  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* fsck.c (fsck_device, execute): Don't dereference a null pointer
+		when checking a filesystem not in /etc/fstab.
+
 1999-02-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* fsck.c (fsck_device): Print an error message if the user passes

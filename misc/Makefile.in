@@ -16,14 +16,15 @@ USPROGS=	mklost+found
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			e2label.8 @FSCK_MAN@
 
-UPROGS=		chattr lsattr
-UMANPAGES=	chattr.1 lsattr.1
+UPROGS=		chattr lsattr uuidgen
+UMANPAGES=	chattr.1 lsattr.1 uuidgen.1
 
 TUNE2FS_OBJS=	tune2fs.o
 MKLPF_OBJS=	mklost+found.o
 MKE2FS_OBJS=	mke2fs.o
 CHATTR_OBJS=	chattr.o
 LSATTR_OBJS=	lsattr.o
+UUIDGEN_OBJS=	uuidgen.o
 DUMPE2FS_OBJS=	dumpe2fs.o
 BADBLOCKS_OBJS=	badblocks.o
 E2LABEL_OBJS=	e2label.o
@@ -31,7 +32,7 @@ FSCK_OBJS=	fsck.o
 
 SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/chattr.c $(srcdir)/lsattr.c $(srcdir)/dumpe2fs.c \
-		$(srcdir)/badblocks.c $(srcdir)/fsck.c
+		$(srcdir)/badblocks.c $(srcdir)/fsck.c $(srcdir)/uuidgen.c
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
 DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
@@ -72,6 +73,9 @@ chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
 lsattr: $(LSATTR_OBJS) $(DEPLIBS_E2P)
 	$(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS_E2P)
 
+uuidgen: $(UUIDGEN_OBJS) $(LIBUUID)
+	$(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID)
+
 dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS_E2P)
 	$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS_E2P)
 
@@ -107,6 +111,9 @@ chattr.1: $(DEP_SUBSTITUTE) $(srcdir)/chattr.1.in
 
 lsattr.1: $(DEP_SUBSTITUTE) $(srcdir)/lsattr.1.in 
 	$(SUBSTITUTE) $(srcdir)/lsattr.1.in lsattr.1 
+
+uuidgen.1: $(DEP_SUBSTITUTE) $(srcdir)/uuidgen.1.in 
+	$(SUBSTITUTE) $(srcdir)/uuidgen.1.in uuidgen.1 
 
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(sbindir) \
@@ -180,6 +187,8 @@ chattr.o: $(srcdir)/chattr.c $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/../version.h
 lsattr.o: $(srcdir)/lsattr.c $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/../version.h
+uuidgen.o: $(srcdir)/uuidgen.c $(top_srcdir)/lib/uuid/uuid.h \
+ $(srcdir)/../version.h
 dumpe2fs.o: $(srcdir)/dumpe2fs.c \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \

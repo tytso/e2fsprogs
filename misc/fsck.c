@@ -362,7 +362,7 @@ static int execute(char *prog, char *device, char *mntpt)
 	}
 
 	if (verbose || noexecute) {
-		printf("[%s -- %s] ", s, mntpt);
+		printf("[%s -- %s] ", s, mntpt ? mntpt : device);
 		for (i=0; i < argc; i++)
 			printf("%s ", argv[i]);
 		printf("\n");
@@ -517,7 +517,7 @@ static void fsck_device(char *device)
 		type = DEFAULT_FSTYPE;
 
 	sprintf(prog, "fsck.%s", type);
-	retval = execute(prog, device, fsent->mountpt);
+	retval = execute(prog, device, fsent ? fsent->mountpt : 0);
 	if (retval) {
 		fprintf(stderr, "%s: Error %d while executing %s for %s\n",
 			progname, retval, prog, device);

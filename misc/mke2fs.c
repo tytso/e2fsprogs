@@ -957,8 +957,12 @@ int main (int argc, char *argv[])
 	if (!quiet)
 		printf("Writing superblocks and "
 		       "filesystem accounting information: ");
-	ext2fs_close(fs);
+	retval = ext2fs_flush(fs);
+	if (retval) {
+		printf("\nWarning, had trouble writing out superblocks.");
+	}
 	if (!quiet)
 		printf("done\n");
+	ext2fs_close(fs);
 	return 0;
 }
