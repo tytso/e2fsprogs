@@ -1,3 +1,9 @@
+1999-11-22    <tytso@valinux.com>
+
+	* mke2fs.c: Change log2() and log10() to int_log2() and
+		int_log10() to avoid namespace collisions.  Change #ifdef
+		sparc to #ifdef __sparc__.
+
 1999-11-19    <tytso@valinux.com>
 
 	* Makefile.in (distclean): Remove TAGS and Makefile.in.old from

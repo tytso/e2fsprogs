@@ -61,7 +61,7 @@
 
 #define STRIDE_LENGTH 8
 
-#ifndef sparc
+#ifndef __sparc__
 #define ZAP_BOOTBLOCK
 #endif
 
@@ -101,7 +101,7 @@ static void usage(NOARGS)
 	exit(1);
 }
 
-static int log2(int arg)
+static int int_log2(int arg)
 {
 	int	l = 0;
 
@@ -113,7 +113,7 @@ static int log2(int arg)
 	return l;
 }
 
-static int log10(unsigned int arg)
+static int int_log10(unsigned int arg)
 {
 	int	l;
 
@@ -237,7 +237,7 @@ static void set_fs_defaults(char *fs_type, struct ext2fs_sb *super,
 			*inode_ratio = p->inode_ratio;
 		if (blocksize == 0) {
 			super->s_log_frag_size = super->s_log_block_size =
-				log2(p->blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+				int_log2(p->blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 		}
 	}
 	if (blocksize == 0)
@@ -402,7 +402,7 @@ static void write_inode_tables(ext2_filsys fs)
 	/*
 	 * Figure out how many digits we need
 	 */
-	i = log10(fs->group_desc_count);
+	i = int_log10(fs->group_desc_count);
 	sprintf(format, "%%%dd/%%%dld", i, i);
 	memset(backup, '\b', sizeof(backup)-1);
 	backup[sizeof(backup)-1] = 0;
@@ -602,7 +602,7 @@ static void show_stats(ext2_filsys fs)
 			continue;
 		if (i != 1)
 			printf(", ");
-		need = log10(group_block) + 2;
+		need = int_log10(group_block) + 2;
 		if (need > col_left) {
 			printf("\n\t");
 			col_left = 72;
@@ -772,7 +772,7 @@ static void PRS(int argc, char *argv[])
 				exit(1);
 			}
 			param.s_log_block_size =
-				log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+				int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 			max = blocksize * 8;
 			break;
 		case 'c':
@@ -787,7 +787,7 @@ static void PRS(int argc, char *argv[])
 				exit(1);
 			}
 			param.s_log_frag_size =
-				log2(size >> EXT2_MIN_BLOCK_LOG_SIZE);
+				int_log2(size >> EXT2_MIN_BLOCK_LOG_SIZE);
 			printf("Warning: fragments not supported.  "
 			       "Ignoring -f option\n");
 			break;
