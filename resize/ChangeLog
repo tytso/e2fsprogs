@@ -1,5 +1,8 @@
 2001-01-11    <tytso@snap.thunk.org>
 
+	* main.c (main): Use ext2fs_sync_device() instead of calling the
+		BLKFLSBUF ioctl directly.
+
 	* extent.c, main.c, resize2fs.c: Change ino_t to ext2_ino_t.
 
 2001-01-01    <tytso@snap.thunk.org>

@@ -19,7 +19,6 @@ extern char *optarg;
 extern int optind;
 #endif
 #include <fcntl.h>
-#include <sys/ioctl.h>
 
 #include "resize2fs.h"
 
@@ -167,7 +166,6 @@ int main (int argc, char ** argv)
 	check_mount(device_name);
 	
 	if (flush) {
-#ifdef BLKFLSBUF
 		fd = open(device_name, O_RDONLY, 0);
 
 		if (fd < 0) {
@@ -176,17 +174,14 @@ int main (int argc, char ** argv)
 				device_name);
 			exit(1);
 		}
-		if (ioctl(fd, BLKFLSBUF, 0) < 0) {
-			com_err("BLKFLSBUF", errno,
+		retval = ext2fs_sync_device(fd, 1);
+		if (retval) {
+			com_err(argv[0], retval, 
 				_("while trying to flush %s"),
 				device_name);
 			exit(1);
 		}
 		close(fd);
-#else
-		fprintf(stderr, _("BLKFLSBUF not supported\n"));
-		exit(1);
-#endif /* BLKFLSBUF */
 	}
 
 	if (flags & RESIZE_DEBUG_IO) {
