@@ -1,3 +1,10 @@
+2001-11-26  Theodore Tso  <tytso@valinux.com>
+
+	* super.c (check_super_block): Make sure that if the inode table
+		or allocation bitmap is zero, that it is marked as
+		invalid, so that in pass #1, a new bitmap/inode table gets
+		properly allocated.  (Addresses Debian Bug #116975)
+
 2001-11-24  Theodore Tso  <tytso@valinux.com>
 
 	* e2fsck.8.in: Fix minor typo in man page and clarify device

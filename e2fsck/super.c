@@ -418,30 +418,33 @@ void check_super_block(e2fsck_t ctx)
 		if ((fs->group_desc[i].bg_block_bitmap < first_block) ||
 		    (fs->group_desc[i].bg_block_bitmap >= last_block)) {
 			pctx.blk = fs->group_desc[i].bg_block_bitmap;
-			if (fix_problem(ctx, PR_0_BB_NOT_GROUP, &pctx)) {
+			if (fix_problem(ctx, PR_0_BB_NOT_GROUP, &pctx))
 				fs->group_desc[i].bg_block_bitmap = 0;
-				ctx->invalid_block_bitmap_flag[i]++;
-				ctx->invalid_bitmaps++;
-			}
+		}
+		if (fs->group_desc[i].bg_block_bitmap == 0) {
+			ctx->invalid_block_bitmap_flag[i]++;
+			ctx->invalid_bitmaps++;
 		}
 		if ((fs->group_desc[i].bg_inode_bitmap < first_block) ||
 		    (fs->group_desc[i].bg_inode_bitmap >= last_block)) {
 			pctx.blk = fs->group_desc[i].bg_inode_bitmap;
-			if (fix_problem(ctx, PR_0_IB_NOT_GROUP, &pctx)) {
+			if (fix_problem(ctx, PR_0_IB_NOT_GROUP, &pctx))
 				fs->group_desc[i].bg_inode_bitmap = 0;
-				ctx->invalid_inode_bitmap_flag[i]++;
-				ctx->invalid_bitmaps++;
-			}
+		}
+		if (fs->group_desc[i].bg_inode_bitmap == 0) {
+			ctx->invalid_inode_bitmap_flag[i]++;
+			ctx->invalid_bitmaps++;
 		}
 		if ((fs->group_desc[i].bg_inode_table < first_block) ||
 		    ((fs->group_desc[i].bg_inode_table +
 		      fs->inode_blocks_per_group - 1) >= last_block)) {
 			pctx.blk = fs->group_desc[i].bg_inode_table;
-			if (fix_problem(ctx, PR_0_ITABLE_NOT_GROUP, &pctx)) {
+			if (fix_problem(ctx, PR_0_ITABLE_NOT_GROUP, &pctx))
 				fs->group_desc[i].bg_inode_table = 0;
-				ctx->invalid_inode_table_flag[i]++;
-				ctx->invalid_bitmaps++;
-			}
+		}
+		if (fs->group_desc[i].bg_inode_table == 0) {
+			ctx->invalid_inode_table_flag[i]++;
+			ctx->invalid_bitmaps++;
 		}
 		first_block += fs->super->s_blocks_per_group;
 		last_block += fs->super->s_blocks_per_group;
