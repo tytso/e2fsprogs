@@ -51,6 +51,7 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 {
 	ext2_inode_scan	scan;
 	errcode_t	retval;
+	errcode_t (*save_get_blocks)(ext2_filsys fs, ino_t ino, blk_t *blocks);
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -59,11 +60,18 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 	 * scanning functions require it.
 	 */
 	if (fs->badblocks == 0) {
+		/*
+		 * Temporarly save fs->get_blocks and set it to zero,
+		 * for compatibility with old e2fsck's.
+		 */
+		save_get_blocks = fs->get_blocks;
+		fs->get_blocks = 0;
 		retval = ext2fs_read_bb_inode(fs, &fs->badblocks);
 		if (retval && fs->badblocks) {
 			badblocks_list_free(fs->badblocks);
 			fs->badblocks = 0;
 		}
+		fs->get_blocks = save_get_blocks;
 	}
 
 	scan = (ext2_inode_scan) malloc(sizeof(struct ext2_struct_inode_scan));

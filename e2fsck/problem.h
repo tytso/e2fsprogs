@@ -125,6 +125,9 @@ struct e2fsck_problem {
 /* List of files sharing duplicate blocks */	
 #define PR_1B_DUP_FILE_LIST	0x011002
 
+/* File sharing blocks with filesystem metadata  */	
+#define PR_1B_SHARE_METADATA	0x011003
+
 /*
  * Pass 2 errors
  */

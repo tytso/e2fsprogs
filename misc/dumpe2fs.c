@@ -77,18 +77,27 @@ static void print_free (unsigned long group, char * bitmap,
 static void list_desc (ext2_filsys fs)
 {
 	unsigned long i;
+	blk_t	group_blk, next_blk;
 	char * block_bitmap = fs->block_map->bitmap;
 	char * inode_bitmap = fs->inode_map->bitmap;
 
 	printf ("\n");
-	for (i = 0; i < fs->group_desc_count; i++)
-	{
-		printf ("Group %lu:\n", i);
-		printf ("  Block bitmap at %u, Inode bitmap at %u, "
-			"Inode table at %u\n",
+	group_blk = fs->super->s_first_data_block;
+	for (i = 0; i < fs->group_desc_count; i++) {
+		next_blk = group_blk + fs->super->s_blocks_per_group;
+		if (next_blk > fs->super->s_blocks_count)
+			next_blk = fs->super->s_blocks_count;
+		printf ("Group %lu: (Blocks %u -- %u)\n", i,
+			group_blk, next_blk -1 );
+		printf ("  Block bitmap at %u (+%d), "
+			"Inode bitmap at %u (+%d)\n  "
+			"Inode table at %u (+%d)\n",
 			fs->group_desc[i].bg_block_bitmap,
+			fs->group_desc[i].bg_block_bitmap - group_blk,
 			fs->group_desc[i].bg_inode_bitmap,
-			fs->group_desc[i].bg_inode_table);
+			fs->group_desc[i].bg_inode_bitmap - group_blk,
+			fs->group_desc[i].bg_inode_table,
+			fs->group_desc[i].bg_inode_table - group_blk);
 		printf ("  %d free blocks, %d free inodes, %d directories\n",
 			fs->group_desc[i].bg_free_blocks_count,
 			fs->group_desc[i].bg_free_inodes_count,
@@ -102,6 +111,7 @@ static void list_desc (ext2_filsys fs)
 		print_free (i, inode_bitmap, fs->super->s_inodes_per_group, 1);
 		inode_bitmap += fs->super->s_inodes_per_group / 8;
 		printf ("\n");
+		group_blk = next_blk;
 	}
 }
 

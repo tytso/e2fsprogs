@@ -1,3 +1,73 @@
+Thu Apr 10 13:15:15 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dblist.c (ext2fs_set_dir_block): New function which sets the
+ 		block of a dblist entry, given the directory inode and
+ 		blockcnt.
+
+Sat Apr  5 12:42:42 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* alloc_tables.c (ext2fs_allocate_tables): Allocate the bitmap and
+		inode bitmaps at staggered locations across the block
+		groups, to avoid concentrating the bitmaps on a small
+		number of disks when using striped RAID arrays.
+
+	* initialize.c (ext2fs_initialize): By default, choose the maximum
+		possible number of blocks per group (based on the size of
+		the bitmaps in the blocksize).
+
+Fri Apr  4 11:28:16 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* initialize.c (ext2fs_initialize): Add support for
+		EXT2_COMPAT_SPARSE_SUPER feature.
+
+	* closefs.c (ext2fs_bg_has_super): New function to determine
+		whether or a particular block group should have a
+		superblock and block group descriptor.  Used for the
+		EXT2_COMPAT_SPARSE_SUPER feature is turned on.
+		(ext2fs_flush):  Check ext2fs_bg_has_super to see whether
+		or not the superblock should be written out for the block
+		group. 
+
+	* ext2fs.h (EXT2_COMPAT_SPARSE_SUPER): Define compatibility flag
+		for sparse duplicate superblocks.
+
+	* version.c (ext2fs_get_library_version): New function which
+		returns the library version.
+
+	* version.c (ext2fs_parse_version_string): New function which
+		parses a version string and returns a version number,
+		so application programs can compare version numbers as
+		integers.
+
+Wed Mar 26 00:43:52 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* icount.c (ext2fs_create_icount): Change function so that it also
+		takes a new argument which contains a "hint" icount
+		structure.  This "hint" icount allows the create function
+		to set up the sorted list in advance.  This reduces
+		significantly the amount of data moving needed to insert
+		these inodes into the list later.
+	
+	* icount.c (ext2fs_icount_validate): New function which validates
+		that the icount structure's rep invariant.
+
+	* icount.c (get_icount_el): Completely revamped implementation
+		to subsume put_icount_el().  Put_icount_el() used to
+		use an O(N) implementation to insert in the middle
+		of the icount list.  It now uses a O(ln N) to search
+		for where the icount should be inserted, and then uses
+		a memcpy to move the list down (instead of a for loop).
+	
+	* icount.c (ext2fs_icount_fetch, ext2fs_icount_store,
+ 		ext2fs_icount_increment, ext2fs_icount_decrement): Check
+ 		to see if the inode is within bounds; if it isn't, return
+ 		EINVAL.
+
+	* bitops.h (ext2fs_test_generic_bitmap): Fix error message given
+ 		when a bad inode number is passed to test_generic_bitmap
+ 		to be EXT2FS_TEST_ERROR instead of the wrong
+ 		EXT2FS_UNMARK_ERROR.
+
 Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs version 1.07

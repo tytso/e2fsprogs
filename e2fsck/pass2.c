@@ -86,9 +86,8 @@ void pass2(ext2_filsys fs)
 
 	if (!preen)
 		printf("Pass 2: Checking directory structure\n");
-	size = ext2fs_get_icount_size(inode_link_info) + 10;
-	retval = ext2fs_create_icount(fs, EXT2_ICOUNT_OPT_INCREMENT,
-				      size, &inode_count);
+	retval = ext2fs_create_icount2(fs, EXT2_ICOUNT_OPT_INCREMENT,
+				       0, inode_link_info, &inode_count);
 	if (retval) {
 		com_err("ext2fs_create_icount", retval,
 			"while creating inode_count");

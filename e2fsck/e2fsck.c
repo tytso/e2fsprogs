@@ -216,6 +216,13 @@ static void sync_disks(NOARGS)
 	sync();
 }
 
+static blk_t get_backup_sb(ext2_filsys fs)
+{
+	if (!fs || !fs->super)
+		return 8193;
+	return fs->super->s_blocks_per_group + 1;
+}
+
 #define MIN_CHECK 1
 #define MAX_CHECK 2
 
@@ -224,21 +231,22 @@ static const char *corrupt_msg =
 "filesystem.  If the device is valid and it really contains an ext2\n"
 "filesystem (and not swap or ufs or something else), then the superblock\n"
 "is corrupt, and you might try running e2fsck with an alternate superblock:\n"
-"    e2fsck -b 8193 <device>\n\n";
+"    e2fsck -b %d <device>\n\n";
 
-static void check_super_value(const char *descr, unsigned long value,
-			      int flags, unsigned long min, unsigned long max)
+static void check_super_value(ext2_filsys fs, const char *descr,
+			      unsigned long value, int flags,
+			      unsigned long min, unsigned long max)
 {
 	if (((flags & MIN_CHECK) && (value < min)) ||
 	    ((flags & MAX_CHECK) && (value > max))) {
 		printf("Corruption found in superblock.  (%s = %lu).\n",
 		       descr, value);
-		printf(corrupt_msg);
+		printf(corrupt_msg, get_backup_sb(fs));
 		fatal_error(0);
 	}
 }
 
-static void relocate_hint(void)
+static void relocate_hint(ext2_filsys fs)
 {
 	static hint_issued = 0;
 
@@ -252,9 +260,9 @@ static void relocate_hint(void)
 	printf("Note: if there is several inode or block bitmap blocks\n"
 	       "which require relocation, or one part of the inode table\n"
 	       "which must be moved, you may wish to try running e2fsck\n"
-	       "the '-b 8193' option first.  The problem may lie only with\n"
-	       "the primary block group descriptor, and the backup block\n"
-	       "group descriptor may be OK.\n\n");
+	       "with the '-b %d' option first.  The problem may lie only\n"
+	       "with the primary block group descriptor, and the backup\n"
+	       "block group descriptor may be OK.\n\n", get_backup_sb(fs));
 	hint_issued = 1;
 }
 
@@ -274,24 +282,24 @@ static void check_super_block(ext2_filsys fs)
 	/*
 	 * Verify the super block constants...
 	 */
-	check_super_value("inodes_count", s->s_inodes_count,
+	check_super_value(fs, "inodes_count", s->s_inodes_count,
 			  MIN_CHECK, 1, 0);
-	check_super_value("blocks_count", s->s_blocks_count,
+	check_super_value(fs, "blocks_count", s->s_blocks_count,
 			  MIN_CHECK, 1, 0);
-	check_super_value("first_data_block", s->s_first_data_block,
+	check_super_value(fs, "first_data_block", s->s_first_data_block,
 			  MAX_CHECK, 0, s->s_blocks_count);
-	check_super_value("log_frag_size", s->s_log_frag_size,
+	check_super_value(fs, "log_frag_size", s->s_log_frag_size,
 			  MAX_CHECK, 0, 2);
-	check_super_value("log_block_size", s->s_log_block_size,
+	check_super_value(fs, "log_block_size", s->s_log_block_size,
 			  MIN_CHECK | MAX_CHECK, s->s_log_frag_size,
 			  2);
-	check_super_value("frags_per_group", s->s_frags_per_group,
+	check_super_value(fs, "frags_per_group", s->s_frags_per_group,
 			  MIN_CHECK | MAX_CHECK, 1, 8 * EXT2_BLOCK_SIZE(s));
-	check_super_value("blocks_per_group", s->s_blocks_per_group,
+	check_super_value(fs, "blocks_per_group", s->s_blocks_per_group,
 			  MIN_CHECK | MAX_CHECK, 1, 8 * EXT2_BLOCK_SIZE(s));
-	check_super_value("inodes_per_group", s->s_inodes_per_group,
+	check_super_value(fs, "inodes_per_group", s->s_inodes_per_group,
 			  MIN_CHECK, 1, 0);
-	check_super_value("r_blocks_count", s->s_r_blocks_count,
+	check_super_value(fs, "r_blocks_count", s->s_r_blocks_count,
 			  MAX_CHECK, 0, s->s_blocks_count);
 
 	retval = ext2fs_get_device_size(filesystem_name, EXT2_BLOCK_SIZE(s),
@@ -326,7 +334,7 @@ static void check_super_block(ext2_filsys fs)
 		printf("Superblock blocks_per_group = %u, should "
 		       "have been %u\n", s->s_blocks_per_group,
 		       should_be);
-		printf(corrupt_msg);
+		printf(corrupt_msg, get_backup_sb(fs));
 		fatal_error(0);
 	}
 
@@ -335,7 +343,7 @@ static void check_super_block(ext2_filsys fs)
 		printf("Superblock first_data_block = %u, should "
 		       "have been %u\n", s->s_first_data_block,
 		       should_be);
-		printf(corrupt_msg);
+		printf(corrupt_msg, get_backup_sb(fs));
 		fatal_error(0);
 	}
 
@@ -352,7 +360,7 @@ static void check_super_block(ext2_filsys fs)
 			last_block = fs->super->s_blocks_count;
 		if ((fs->group_desc[i].bg_block_bitmap < first_block) ||
 		    (fs->group_desc[i].bg_block_bitmap >= last_block)) {
-			relocate_hint();
+			relocate_hint(fs);
 			pctx.blk = fs->group_desc[i].bg_block_bitmap;
 			if (fix_problem(fs, PR_0_BB_NOT_GROUP, &pctx)) {
 				fs->group_desc[i].bg_block_bitmap = 0;
@@ -362,7 +370,7 @@ static void check_super_block(ext2_filsys fs)
 		}
 		if ((fs->group_desc[i].bg_inode_bitmap < first_block) ||
 		    (fs->group_desc[i].bg_inode_bitmap >= last_block)) {
-			relocate_hint();
+			relocate_hint(fs);
 			pctx.blk = fs->group_desc[i].bg_inode_bitmap;
 			if (fix_problem(fs, PR_0_IB_NOT_GROUP, &pctx)) {
 				fs->group_desc[i].bg_inode_bitmap = 0;
@@ -373,7 +381,7 @@ static void check_super_block(ext2_filsys fs)
 		if ((fs->group_desc[i].bg_inode_table < first_block) ||
 		    ((fs->group_desc[i].bg_inode_table +
 		      fs->inode_blocks_per_group - 1) >= last_block)) {
-			relocate_hint();
+			relocate_hint(fs);
 			pctx.blk = fs->group_desc[i].bg_inode_table;
 			if (fix_problem(fs, PR_0_ITABLE_NOT_GROUP, &pctx)) {
 				fs->group_desc[i].bg_inode_table = 0;
@@ -591,6 +599,9 @@ static void PRS(int argc, char *argv[])
 		}
 	}
 }
+
+static const char *my_ver_string = E2FSPROGS_VERSION;
+static const char *my_ver_date = E2FSPROGS_DATE;
 					
 int main (int argc, char *argv[])
 {
@@ -600,6 +611,8 @@ int main (int argc, char *argv[])
 	ext2_filsys	fs = 0;
 	io_manager	io_ptr;
 	struct ext2fs_sb *s;
+	const char	*lib_ver_date;
+	int		my_ver, lib_ver;
 	
 #ifdef MTRACE
 	mtrace();
@@ -607,6 +620,13 @@ int main (int argc, char *argv[])
 #ifdef MCHECK
 	mcheck(0);
 #endif
+	my_ver = ext2fs_parse_version_string(my_ver_string);
+	lib_ver = ext2fs_get_library_version(0, &lib_ver_date);
+	if (my_ver > lib_ver) {
+		fprintf( stderr, "Error: ext2fs library version "
+			"out of date!\n");
+		show_version_only++;
+	}
 	
 	init_resource_track(&global_rtrack);
 
@@ -614,12 +634,12 @@ int main (int argc, char *argv[])
 
 	if (!preen || show_version_only)
 		fprintf (stderr, "e2fsck %s, %s for EXT2 FS %s, %s\n",
-			 E2FSPROGS_VERSION, E2FSPROGS_DATE,
-			 EXT2FS_VERSION, EXT2FS_DATE);
+			 my_ver_string, my_ver_date, EXT2FS_VERSION,
+			 EXT2FS_DATE);
 
 	if (show_version_only) {
-		fprintf(stderr, "\tUsing %s\n",
-			error_message(EXT2_ET_BASE));
+		fprintf(stderr, "\tUsing %s, %s\n",
+			error_message(EXT2_ET_BASE), lib_ver_date);
 		exit(0);
 	}
 	
@@ -663,7 +683,7 @@ restart:
 			printf("%s trying backup blocks...\n",
 			       retval ? "Couldn't find ext2 superblock," :
 			       "Group descriptors look bad...");
-			superblock = 8193;
+			superblock = get_backup_sb(fs);
 			if (fs)
 				ext2fs_close(fs);
 			goto restart;
@@ -683,7 +703,7 @@ restart:
 		else if (retval == ENXIO)
 			printf("Possibly non-existent or swap device?\n");
 		else
-			printf(corrupt_msg);
+			printf(corrupt_msg, get_backup_sb(fs));
 		fatal_error(0);
 	}
 #ifdef	EXT2_CURRENT_REV
@@ -695,17 +715,22 @@ restart:
 	}
 #endif
 	/*
-	 * Check for compatibility with the feature sets.  We have to
-	 * check because we need to be more stringent than ext2fs_open
+	 * Check for compatibility with the feature sets.  We need to
+	 * be more stringent than ext2fs_open().
 	 */
 	s = (struct ext2fs_sb *) fs->super;
-	if (s->s_feature_compat || s->s_feature_incompat ||
-	    s->s_feature_ro_compat) {
+	if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
+	    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
 		com_err(program_name, EXT2_ET_UNSUPP_FEATURE,
-			" (%s)", filesystem_name);
+			"(%s)", filesystem_name);
 	get_newer:
 		printf ("Get a newer version of e2fsck!\n");
 		fatal_error(0);
+	}
+	if (s->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP) {
+		com_err(program_name, EXT2_ET_RO_UNSUPP_FEATURE,
+			"(%s)", filesystem_name);
+		goto get_newer;
 	}
 	
 	/*

@@ -63,6 +63,7 @@ int L_flag = 0;
 int m_flag = 0;
 int M_flag = 0;
 int r_flag = 0;
+int s_flag = -1;
 int u_flag = 0;
 int U_flag = 0;
 int max_mount_count, mount_count;
@@ -93,7 +94,7 @@ static volatile void usage (void)
 {
 	fprintf (stderr, "Usage: %s [-c max-mounts-count] [-e errors-behavior] "
 		 "[-g group]\n"
-		 "\t[-i interval[d|m|w]] [-l] [-m reserved-blocks-percent]\n"
+		 "\t[-i interval[d|m|w]] [-l] [-s] [-m reserved-blocks-percent]\n"
 		 "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
 		 "\t[-L volume-label] [-M last-mounted-dir] [-U UUID] "
 		 "device\n", program_name);
@@ -117,7 +118,7 @@ void main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	initialize_ext2_error_table();
-	while ((c = getopt (argc, argv, "c:e:g:i:lm:r:u:C:L:M:U:")) != EOF)
+	while ((c = getopt (argc, argv, "c:e:g:i:lm:r:s:u:C:L:M:U:")) != EOF)
 		switch (c)
 		{
 			case 'c':
@@ -253,6 +254,10 @@ void main (int argc, char ** argv)
 				r_flag = 1;
 				open_flag = EXT2_FLAG_RW;
 				break;
+			case 's':
+				s_flag = atoi(optarg);
+				open_flag = EXT2_FLAG_RW;
+				break;
 			case 'u':
 				resuid = strtoul (optarg, &tmp, 0);
 				if (*tmp)
@@ -355,6 +360,48 @@ void main (int argc, char ** argv)
 		printf ("Setting reserved blocks count to %lu\n",
 			reserved_blocks);
 	}
+	if (s_flag == 1) {
+#ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+		if (sb->s_feature_ro_compat &
+		    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)
+			fprintf(stderr, "\nThe filesystem already "
+				" has spare superblocks.\n");
+		else {
+			sb->s_feature_ro_compat |=
+				EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+			fs->super->s_state &= ~EXT2_VALID_FS;
+			ext2fs_mark_super_dirty(fs);
+			printf("\nSparse superblock flag set.  "
+			       "Please run e2fsck on the filesystem.\n");
+		}
+#else /* !EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
+		com_err (program_name, 0,
+			 "The -s option is not supported by this version -- "
+			 "Recompile with a newer kernel");
+#endif /* EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
+	}
+	if (s_flag == 0) {
+#ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+		if (!(sb->s_feature_ro_compat &
+		      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
+			fprintf(stderr, "\nThe filesystem already "
+				" does not support spare superblocks.\n");
+		else {
+			sb->s_feature_ro_compat &=
+				~EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+			fs->super->s_state &= ~EXT2_VALID_FS;
+			fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
+			ext2fs_mark_super_dirty(fs);
+			printf("\nSparse superblock flag cleared.  "
+			       "Please run e2fsck on the filesystem.\n");
+		}
+#else /* !EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
+		com_err (program_name, 0,
+			 "The -s option is not supported by this version -- "
+			 "Recompile with a newer kernel");
+#endif /* EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
+	}
+	
 	if (u_flag)
 #ifdef	EXT2_DEF_RESUID
 	{

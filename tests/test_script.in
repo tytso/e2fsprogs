@@ -9,7 +9,10 @@ else
   TESTS=
   for i 
   do
-    TESTS="$TESTS $SRCDIR/$i"
+    case $i in
+	[a-zA-Z])	TESTS="$TESTS $SRCDIR/${i}_*" ;;
+	*)		TESTS="$TESTS $SRCDIR/$i" ;;
+    esac
   done
 fi
 

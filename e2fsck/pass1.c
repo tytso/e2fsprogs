@@ -217,7 +217,7 @@ void pass1(ext2_filsys fs)
 			"while allocating block_illegal_map");
 		fatal_error(0);
 	}
-	retval = ext2fs_create_icount(fs, 0, 0, &inode_link_info);
+	retval = ext2fs_create_icount2(fs, 0, 0, 0, &inode_link_info);
 	if (retval) {
 		com_err("ext2fs_create_icount", retval,
 			"while creating inode_link_info");
@@ -821,8 +821,11 @@ int process_block(ext2_filsys fs,
 	if (blk < fs->super->s_first_data_block ||
 	    blk >= fs->super->s_blocks_count)
 		problem = PR_1_ILLEGAL_BLOCK_NUM;
-	else if (ext2fs_test_block_bitmap(block_illegal_map, blk))
-		problem = PR_1_BLOCK_OVERLAPS_METADATA;
+#if 0
+	else
+		if (ext2fs_test_block_bitmap(block_illegal_map, blk))
+			problem = PR_1_BLOCK_OVERLAPS_METADATA;
+#endif
 
 	if (problem) {
 		p->num_illegal_blocks++;
@@ -1184,21 +1187,23 @@ static void mark_table_blocks(ext2_filsys fs)
 				     fs->group_desc[i].bg_inode_bitmap);
 			}
 		}
-		    
-		/*
-		 * Mark this group's copy of the superblock
-		 */
-		ext2fs_mark_block_bitmap(block_found_map, block);
-		ext2fs_mark_block_bitmap(block_illegal_map, block);
+
+		if (ext2fs_bg_has_super(fs, i)) {
+			/*
+			 * Mark this group's copy of the superblock
+			 */
+			ext2fs_mark_block_bitmap(block_found_map, block);
+			ext2fs_mark_block_bitmap(block_illegal_map, block);
 		
-		/*
-		 * Mark this group's copy of the descriptors
-		 */
-		for (j = 0; j < fs->desc_blocks; j++) {
-			ext2fs_mark_block_bitmap(block_found_map,
-						 block + j + 1);
-			ext2fs_mark_block_bitmap(block_illegal_map,
-						 block + j + 1);
+			/*
+			 * Mark this group's copy of the descriptors
+			 */
+			for (j = 0; j < fs->desc_blocks; j++) {
+				ext2fs_mark_block_bitmap(block_found_map,
+							 block + j + 1);
+				ext2fs_mark_block_bitmap(block_illegal_map,
+							 block + j + 1);
+			}
 		}
 		block += fs->super->s_blocks_per_group;
 	}
@@ -1214,15 +1219,12 @@ errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 {
 	int	i;
 	
-	if (ino == stashed_ino) {
-		for (i=0; i < EXT2_N_BLOCKS; i++)
-			blocks[i] = stashed_inode->i_block[i];
-		return 0;
-	}
-	printf("INTERNAL ERROR: pass1_get_blocks: unexpected inode #%lu\n",
-	       ino);
-	printf("\t(was expecting %lu)\n", stashed_ino);
-	exit(FSCK_ERROR);
+	if (ino != stashed_ino)
+		return EXT2_ET_CALLBACK_NOTHANDLED;
+
+	for (i=0; i < EXT2_N_BLOCKS; i++)
+		blocks[i] = stashed_inode->i_block[i];
+	return 0;
 }
 
 errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino, struct ext2_inode *inode)

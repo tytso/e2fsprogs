@@ -29,37 +29,17 @@
 errcode_t ext2fs_allocate_tables(ext2_filsys fs)
 {
 	errcode_t	retval;
-	blk_t		group_blk, last_blk, new_blk, blk;
+	blk_t		group_blk, start_blk, last_blk, new_blk, blk;
 	int		i, j;
 
 	group_blk = fs->super->s_first_data_block;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		last_blk = group_blk + fs->super->s_blocks_per_group;
-		
 		/*
-		 * Allocate the block bitmap
+		 * Allocate the inode table
 		 */
-		retval = ext2fs_get_free_blocks(fs, group_blk, last_blk,
-						1, fs->block_map, &new_blk);
-		if (retval)
-			return retval;
-		ext2fs_mark_block_bitmap(fs->block_map, new_blk);
-		fs->group_desc[i].bg_block_bitmap = new_blk;
-
-		/*
-		 * ... and the inode bitmap
-		 */
-		retval = ext2fs_get_free_blocks(fs, group_blk, last_blk,
-						1, fs->block_map, &new_blk);
-		if (retval)
-			return retval;
-		ext2fs_mark_block_bitmap(fs->block_map, new_blk);
-		fs->group_desc[i].bg_inode_bitmap = new_blk;
-
-		/*
-		 * Finally, allocate the inode table
-		 */
-		retval = ext2fs_get_free_blocks(fs, group_blk, last_blk,
+		start_blk = group_blk + 3 + fs->desc_blocks;
+		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
 						fs->inode_blocks_per_group,
 						fs->block_map, &new_blk);
 		if (retval)
@@ -69,6 +49,25 @@ errcode_t ext2fs_allocate_tables(ext2_filsys fs)
 		     j++, blk++)
 			ext2fs_mark_block_bitmap(fs->block_map, blk);
 		fs->group_desc[i].bg_inode_table = new_blk;
+
+		/*
+		 * Allocate the block and inode bitmaps
+		 */
+		start_blk += fs->inode_blocks_per_group +
+			((2 * i) % (last_blk - start_blk));
+		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
+						1, fs->block_map, &new_blk);
+		if (retval)
+			return retval;
+		ext2fs_mark_block_bitmap(fs->block_map, new_blk);
+		fs->group_desc[i].bg_block_bitmap = new_blk;
+
+		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
+						1, fs->block_map, &new_blk);
+		if (retval)
+			return retval;
+		ext2fs_mark_block_bitmap(fs->block_map, new_blk);
+		fs->group_desc[i].bg_inode_bitmap = new_blk;
 
 		/*
 		 * Increment the start of the block group

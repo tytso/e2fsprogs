@@ -727,78 +727,6 @@ void do_modify_inode(int argc, char *argv[])
 	}
 }
 
-/*
- * list directory
- */
-
-struct list_dir_struct {
-	FILE	*f;
-	int	col;
-};
-
-static int list_dir_proc(struct ext2_dir_entry *dirent,
-			 int	offset,
-			 int	blocksize,
-			 char	*buf,
-			 void	*private)
-{
-	char	name[EXT2_NAME_LEN];
-	char	tmp[EXT2_NAME_LEN + 16];
-
-	struct list_dir_struct *ls = (struct list_dir_struct *) private;
-	int	thislen;
-
-	thislen = (dirent->name_len < EXT2_NAME_LEN) ? dirent->name_len :
-		EXT2_NAME_LEN;
-	strncpy(name, dirent->name, thislen);
-	name[thislen] = '\0';
-
-	sprintf(tmp, "%d (%d) %s   ", dirent->inode, dirent->rec_len, name);
-	thislen = strlen(tmp);
-
-	if (ls->col + thislen > 80) {
-		fprintf(ls->f, "\n");
-		ls->col = 0;
-	}
-	fprintf(ls->f, "%s", tmp);
-	ls->col += thislen;
-		
-	return 0;
-}
-
-void do_list_dir(int argc, char *argv[])
-{
-	ino_t	inode;
-	int	retval;
-	struct list_dir_struct ls;
-	
-	if (argc > 2) {
-		com_err(argv[0], 0, "Usage: list_dir [pathname]");
-		return;
-	}
-	if (check_fs_open(argv[0]))
-		return;
-
-	if (argc == 2)
-		inode = string_to_inode(argv[1]);
-	else
-		inode = cwd;
-	if (!inode)
-		return;
-
-	ls.f = open_pager();
-	ls.col = 0;
-	retval = ext2fs_dir_iterate(current_fs, inode,
-				    DIRENT_FLAG_INCLUDE_EMPTY,
-				    0, list_dir_proc, &ls);
-	fprintf(ls.f, "\n");
-	close_pager(ls.f);
-	if (retval)
-		com_err(argv[1], retval, "");
-
-	return;
-}
-
 void do_change_working_dir(int argc, char *argv[])
 {
 	ino_t	inode;
@@ -1337,6 +1265,7 @@ static void kill_file_by_inode(ino_t inode)
 	printf("Kill file by inode %ld\n", inode);
 	ext2fs_block_iterate(current_fs, inode, 0, NULL,
 			     release_blocks_proc, NULL);
+	printf("\n");
 	ext2fs_unmark_inode_bitmap(current_fs->inode_map, inode);
 
 	ext2fs_mark_bb_dirty(current_fs);
@@ -1479,7 +1408,7 @@ void main(int argc, char **argv)
 {
 	int		retval;
 	int		sci_idx;
-	const char	*usage = "Usage: debugfs [-w] [device]";
+	const char	*usage = "Usage: debugfs [[-w] device]";
 	char		c;
 	int		open_flags = 0;
 	char		*request = 0;

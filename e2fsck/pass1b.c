@@ -277,6 +277,7 @@ int process_pass1b_block(ext2_filsys fs,
 struct search_dir_struct {
 	int		count;
 	ino_t		first_inode;
+	ino_t		max_inode;
 };
 
 static int search_dirent_proc(ino_t dir, int entry,
@@ -287,6 +288,10 @@ static int search_dirent_proc(ino_t dir, int entry,
 	struct search_dir_struct *sd = private;
 	struct dup_inode	*p;
 	
+	if (dirent->inode > sd->max_inode)
+		/* Should abort this inode, but not everything */
+		return 0;	
+
 	if (!dirent->inode || (entry < DIRENT_OTHER_FILE) ||
 	    !ext2fs_test_inode_bitmap(inode_dup_map, dirent->inode))
 		return 0;
@@ -332,6 +337,7 @@ void pass1c(ext2_filsys fs, char *block_buf)
 	 */
 	sd.count = inodes_left;
 	sd.first_inode = EXT2_FIRST_INODE(fs->super);
+	sd.max_inode = fs->super->s_inodes_count;
 	ext2fs_dblist_dir_iterate(fs->dblist, 0, block_buf,
 				  search_dirent_proc, &sd);
 }	
@@ -345,6 +351,7 @@ static void pass1d(ext2_filsys fs, char *block_buf)
 	int	i;
 	errcode_t	retval;
 	int	file_ok;
+	int	meta_data = 0;
 	struct problem_context pctx;
 	
 	printf("Pass 1D: Reconciling duplicate blocks\n");
@@ -376,6 +383,12 @@ static void pass1d(ext2_filsys fs, char *block_buf)
 				continue;
 			if (q->num_bad > 1)
 				file_ok = 0;
+			if (ext2fs_test_block_bitmap(block_illegal_map,
+						     q->block)) {
+				file_ok = 0;
+				meta_data = 1;
+			}
+			
 			/*
 			 * Add all inodes used by this block to the
 			 * shared[] --- which is a unique list, so
@@ -402,10 +415,13 @@ static void pass1d(ext2_filsys fs, char *block_buf)
 		pctx.ino = p->ino;
 		pctx.dir = p->dir;
 		pctx.blkcount = p->num_dupblocks;
-		pctx.num = shared_len;
+		pctx.num = meta_data ? shared_len+1 : shared_len;
 		fix_problem(fs, PR_1B_DUP_FILE, &pctx);
 		pctx.blkcount = 0;
 		pctx.num = 0;
+		
+		if (meta_data)
+			fix_problem(fs, PR_1B_SHARE_METADATA, &pctx);
 		
 		for (i = 0; i < shared_len; i++) {
 			for (s = dup_ino; s; s = s->next)
@@ -506,6 +522,7 @@ static void delete_file(ext2_filsys fs, struct dup_inode *dp, char* block_buf)
 
 struct clone_struct {
 	errcode_t	errcode;
+	ino_t		dir;
 	char	*buf;
 };
 
@@ -532,6 +549,14 @@ static int clone_file_block(ext2_filsys fs,
 			if (retval) {
 				cs->errcode = retval;
 				return BLOCK_ABORT;
+			}
+			if (cs->dir) {
+				retval = ext2fs_set_dir_block(fs->dblist,
+				      cs->dir, new_block, blockcnt);
+				if (retval) {
+					cs->errcode = retval;
+					return BLOCK_ABORT;
+				}
 			}
 			retval = io_channel_read_blk(fs->io, *block_nr, 1,
 						     cs->buf);
@@ -569,8 +594,12 @@ static int clone_file(ext2_filsys fs, struct dup_inode *dp, char* block_buf)
 
 	cs.errcode = 0;
 	cs.buf = malloc(fs->blocksize);
+	cs.dir = 0;
 	if (!cs.buf)
 		return ENOMEM;
+
+	if (ext2fs_test_inode_bitmap(inode_dir_map, dp->ino))
+		cs.dir = dp->ino;
 	
 	retval = ext2fs_block_iterate(fs, dp->ino, 0, block_buf,
 				      clone_file_block, &cs);

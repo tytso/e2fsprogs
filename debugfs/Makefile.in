@@ -16,9 +16,9 @@ MANPAGES=	debugfs.8
 
 MK_CMDS=	../lib/ss/mk_cmds
 
-DEBUG_OBJS= debug_cmds.o debugfs.o util.o ncheck.o icheck.o lsdel.o dump.o
+DEBUG_OBJS= debug_cmds.o debugfs.o util.o ncheck.o icheck.o ls.o lsdel.o dump.o
 
-SRCS= debug_cmds.c $(srcdir)/debugfs.c $(srcdir)/util.c \
+SRCS= debug_cmds.c $(srcdir)/debugfs.c $(srcdir)/util.c $(srcdir)/ls.c \
 	$(srcdir)/ncheck.c $(srcdir)/icheck.c $(srcdir)/lsdel.c \
 	$(srcdir)/dump.c
 

@@ -707,8 +707,6 @@ static int source_file(const char *cmd_file, int sci_idx)
 	return exit_status;
 }
 
-
-
 void main(int argc, char **argv)
 {
 	int		retval;

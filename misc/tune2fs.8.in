@@ -31,6 +31,9 @@ tune2fs \- adjust tunable filesystem parameters on second extended filesystems
 .I reserved-blocks-count
 ]
 [
+.B -s sparse-super-flag
+]
+[
 .B -u
 .I user
 ]
@@ -96,6 +99,10 @@ adjust the reserved blocks percentage on the given device.
 .TP
 .I -r reserved-blocks-count
 adjust the reserved blocks count on the given device.
+.TP
+.I -s sparse_super_flag
+sets and resets the sparse_superblock flag.  The sparse_superblock feature
+saves space on really big filesystems.
 .TP
 .I -u user
 set the user who can benefit from the reserved blocks.

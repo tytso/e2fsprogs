@@ -128,6 +128,28 @@ errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 }
 
 /*
+ * Change the directory block to the directory block list
+ */
+errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
+			       int blockcnt)
+{
+	struct ext2_db_entry 	*ent;
+	int			i;
+	
+	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
+
+	for (i=0; i < dblist->count; i++) {
+		if ((dblist->list[i].ino != ino) ||
+		    (dblist->list[i].blockcnt != blockcnt))
+			continue;
+		dblist->list[i].blk = blk;
+		dblist->sorted = 0;
+		return 0;
+	}
+	return ENOENT;
+}
+
+/*
  * This function iterates over the directory block list
  */
 errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
@@ -151,7 +173,6 @@ errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 		if (ret & DBLIST_ABORT)
 			return 0;
 	}
-	
 	return 0;
 }
 

@@ -1,7 +1,7 @@
 \input texinfo    @c -*-texinfo-*-
 @c %**start of header
 @setfilename libext2fs.info
-@settitle The EXT2FS Library (version 1.07)
+@settitle The EXT2FS Library (version 1.08)
 @synindex tp fn
 @comment %**end of header
 
@@ -60,8 +60,8 @@ by the author.
 
 @title The EXT2FS Library
 @subtitle The EXT2FS Library
-@subtitle Version 1.07
-@subtitle February 1997
+@subtitle Version 1.08
+@subtitle April 1997
 
 @author by Theodore Ts'o
 
@@ -101,7 +101,7 @@ by the Foundation.
 
 @top The EXT2FS Library
 
-This manual documents the EXT2FS Library, version 1.07.
+This manual documents the EXT2FS Library, version 1.08.
 
 @end ifinfo
 
@@ -130,8 +130,7 @@ manipulate an ext2 filesystem.
 * Inode Functions::             
 * Directory functions::         
 * Bitmap Functions::            
-* Badblocks list management::   
-* Directory-block list management::  
+* EXT2 data abstractions::      
 * Byte-swapping functions::     
 * Other functions::             
 @end menu
@@ -505,9 +504,21 @@ EXT2_ET_MISSING_INODE_TABLE.
 @subsection Convenience functions for Inodes
 
 @deftypefun errcode_t ext2fs_get_blocks (ext2_filsys @var{fs}, ino_t @var{ino}, blk_t *@var{blocks})
+
+Returns an array of blocks corresponding to the direct,
+indirect, doubly indirect, and triply indirect blocks as stored in the
+inode structure.
 @end deftypefun
 
 @deftypefun errcode_t ext2fs_check_directory (ext2_filsys @var{fs}, ino_t @var{ino})
+Returns 0 if @var{ino} is a directory, and @code{ENOTDIR} if it is not.
+@end deftypefun
+
+@deftypefun int ext2_inode_has_valid_blocks (struct ext2_inode *@var{inode})
+
+Returns 1 if the inode's block entries actually valid block entries, and
+0 if not.  Inodes which represent devices and fast symbolic links do not
+contain valid block entries.
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -603,7 +614,7 @@ EXT2_ET_MISSING_INODE_TABLE.
 
 @c ----------------------------------------------------------------------
 
-@node Bitmap Functions, Badblocks list management, Directory functions, EXT2FS Library Functions
+@node Bitmap Functions, EXT2 data abstractions, Directory functions, EXT2FS Library Functions
 @comment  node-name,  next,  previous,  up
 @section Bitmap Functions
 
@@ -786,9 +797,24 @@ Return the first inode or block which is stored in the bitmap.
 
 @c ----------------------------------------------------------------------
 
-@node Badblocks list management, Directory-block list management, Bitmap Functions, EXT2FS Library Functions
+@node EXT2 data abstractions, Byte-swapping functions, Bitmap Functions, EXT2FS Library Functions
 @comment  node-name,  next,  previous,  up
-@section Badblocks list management
+@section EXT2 data abstractions
+
+The ext2 library has a number of abstractions which are useful for ext2
+utility programs.  
+
+@menu
+* Badblocks list management::   
+* Directory-block list management::  
+* Inode count functions::       
+@end menu
+
+@c ----------------------------------------------------------------------
+
+@node Badblocks list management, Directory-block list management, EXT2 data abstractions, EXT2 data abstractions
+@comment  node-name,  next,  previous,  up
+@subsection Badblocks list management
 
 
 @deftypefun errcode_t ext2fs_badblocks_list_create (ext2_badblocks_list *@var{ret}, int @var{size})
@@ -824,29 +850,130 @@ Return the first inode or block which is stored in the bitmap.
 
 @c ----------------------------------------------------------------------
 
-@node Directory-block list management, Byte-swapping functions, Badblocks list management, EXT2FS Library Functions
+@node Directory-block list management, Inode count functions, Badblocks list management, EXT2 data abstractions
 @comment  node-name,  next,  previous,  up
-@section Directory-block list management
+@subsection Directory-block list management
+
+The dblist abstraction stores a list of blocks belonging to
+directories.  This list can be useful when a program needs to interate
+over all directory entries in a filesystem; @code{e2fsck} does this in
+pass 2 of its operations, and @code{debugfs} needs to do this when it is
+trying to turn an inode number into a pathname.
 
 @deftypefun errcode_t ext2fs_init_dblist (ext2_filsys @var{fs}, ext2_dblist *@var{ret_dblist})
+
+Creates a dblist data structure and return it in @var{ret_dblist}.
 @end deftypefun
 
 @deftypefun void ext2fs_free_dblist (ext2_dblist @var{dblist})
+
+Free a dblist data structure.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_add_dir_block (ext2_dblist dblist, ino_t @var{ino}, blk_t @var{blk}, int @var{blockcnt})
+@deftypefun errcode_t ext2fs_add_dir_block (ext2_dblist @var{dblist}, ino_t @var{ino}, blk_t @var{blk}, int @var{blockcnt})
+
+Add an entry to the dblist data structure.  This call records the fact
+that block number @var{blockcnt} of directory inode @var{ino} is stored
+in block @var{blk}.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_dblist_iterate (ext2_dblist dblist, int (*func)(ext2_filsys @var{fs}, struct ext2_db_entry *@var{db_info}, void *@var{private}), void *@var{private})
+@deftypefun errcode_t ext2fs_set_dir_block (ext2_dblist @var{dblist}, ino_t @var{ino}, blk_t @var{blk}, int @var{blockcnt})
+
+Change an entry in the dblist data structure; this changes the location
+of block number @var{blockcnt} of directory indoe @var{ino} to be block
+@var{blk}. 
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_dblist_dir_iterate
-(ext2_dblist dblist, int flags, char *@var{block_buf}, int (*func)(ino_t @var{dir}, int  @var{entry}, struct ext2_dir_entry *@var{dirent}, int @var{offset}, int @var{blocksize}, char *@var{buf}, void *@var{private}), void *@var{private})
+@deftypefun errcode_t ext2fs_dblist_iterate (ext2_dblist @var{dblist}, int (*func)(ext2_filsys @var{fs}, struct ext2_db_entry *@var{db_info}, void *@var{private}), void *@var{private})
+
+This iterator calls @var{func} for every entry in the dblist data structure.
+@end deftypefun
+
+@deftypefun errcode_t ext2fs_dblist_dir_iterate (ext2_dblist @var{dblist}, int flags, char *@var{block_buf}, int (*func)(ino_t @var{dir}, int  @var{entry}, struct ext2_dir_entry *@var{dirent}, int @var{offset}, int @var{blocksize}, char *@var{buf}, void *@var{private}), void *@var{private})
+
+This iterator takes reads in the directory block indicated in each
+dblist entry, and calls @var{func} for each directory entry in each
+directory block.  If @var{dblist} contains all the directory blocks in a
+filesystem, this function provides a convenient way to iterate over all
+directory entries for that filesystem.
 @end deftypefun
 
 @c ----------------------------------------------------------------------
 
-@node Byte-swapping functions, Other functions, Directory-block list management, EXT2FS Library Functions
+@node Inode count functions,  , Directory-block list management, EXT2 data abstractions
+@comment  node-name,  next,  previous,  up
+@subsection Inode count functions
+
+The icount abstraction is a specialized data type used by @code{e2fsck}
+to store how many times a particular inode is referenced by the
+filesystem.  This is used twice; once to store the actual number of times
+that the inode is reference; and once to store the claimed number of times
+the inode is referenced according to the inode structure.
+
+This abstraction is designed to be extremely efficient for storing this
+sort of information, by taking advantage of the following properties of
+inode counts, namely (1) inode counts are very often zero (because
+the inode is currrently not in use), and (2) many files have a inode
+count of 1 (because they are a file which has no additional hard links).
+
+@deftypefun errcode_t ext2fs_create_icount2(ext2_filsys @var{fs}, int @var{flags}, int @var{size}, ext2_icount_t @var{hint}, ext2_icount_t *@var{ret})
+
+Creates an icount stucture for a filesystem @var{fs}, with initial space
+for @var{size} inodes whose count is greater than 1.  The @var{flags}
+parameter is either 0 or @code{EXT2_ICOUNT_OPT_INCREMENT}, which
+indicates that icount structure should be able to increment inode counts
+quickly.  The icount structure is returned in @var{ret}.  The returned
+icount structure initially has a count of zero for all inodes.
+
+The @var{hint} parameter allows the caller to optionally pass in another
+icount structure which is used to initialize the array of inodes whose
+count is greater than 1.  It is used purely as a speed optimization so
+that the icount structure can determine in advance which inodes are
+likely to contain a count grater than 1.
+@end deftypefun
+
+@deftypefun void ext2fs_free_icount(ext2_icount_t @var{icount})
+
+Frees an icount structure.
+@end deftypefun
+
+@deftypefun errcode_t ext2fs_icount_fetch(ext2_icount_t @var{icount}, ino_t @var{ino}, __u16 *@var{ret})
+
+Returns in @var{ret} fetches the count for a particular inode @var{ino}.
+@end deftypefun
+
+@deftypefun errcode_t ext2fs_icount_increment(ext2_icount_t @var{icount}, ino_t @var{ino}, __u16 *@var{ret})
+
+Increments the ref count for inode @var{ino}.
+@end deftypefun
+
+@deftypefun errcode_t ext2fs_icount_decrement(ext2_icount_t @var{icount}, ino_t @var{ino}, __u16 *@var{ret})
+
+Decrements the ref count for inode @var{ino}.
+@end deftypefun
+
+@deftypefun errcode_t ext2fs_icount_store(ext2_icount_t @var{icount}, ino_t @var{ino}, __u16 @var{count})
+
+Sets the reference count for inode @var{ino} to be @var{count}.
+@end deftypefun
+
+@deftypefun ino_t ext2fs_get_icount_size(ext2_icount_t @var{icount})
+
+Returns the current number of inodes in @var{icount} which has a count
+greater than 1.
+@end deftypefun
+
+@deftypefun errcode_t ext2fs_icount_validate(ext2_icount_t @var{icount}, FILE *@var{f})
+
+Validates the internal rep invariant of @var{icount}; if there are any
+problems, print out debugging information to @var{f}.  This function is
+intended for debugging and testing use only.
+@end deftypefun
+
+
+@c ----------------------------------------------------------------------
+
+@node Byte-swapping functions, Other functions, EXT2 data abstractions, EXT2FS Library Functions
 @comment  node-name,  next,  previous,  up
 @section Byte-swapping functions
 
@@ -896,11 +1023,29 @@ Return the first inode or block which is stored in the bitmap.
 @deftypefun errcode_t ext2fs_check_if_mounted (const char *@var{file}, int *@var{mount_flags})
 @end deftypefun
 
+/* version.c */
 
-/* valid_blk.c */
-@deftypefun int ext2_inode_has_valid_blocks (struct ext2_inode *@var{inode})
+@deftypefun int ext2fs_get_library_version(const char **@var{ver_string}, const char **@var{date_string})
+
+This function returns the current version of the ext2 library.  The
+return value contains an integer version code, which consists of the
+major version number of the library multiplied by 100, plus the minor
+version number of the library.  Hence, if the library version is 1.08,
+the returned value will be 108.
+
+If @var{ver_string} and/or @var{date_string} are non-NULL, they will be
+set to point at a constant string containing the library version and/or
+release date, respectively.
 @end deftypefun
 
+@deftypefun int ext2fs_parse_version_string(const char *@var{ver_string})
+
+This function takes a version string which may included in an
+application and returns a version code using the same algorithm used by
+@code{ext2fs_get_library_version}.  It can be used by programs included
+in the @code{e2fsprogs} distribution to assure that they are using an
+up-to-date ext2 shared library.
+@end deftypefun
 
 /* inline functions */
 @deftypefun int ext2fs_group_of_blk (ext2_filsys @var{fs}, blk_t @var{blk})

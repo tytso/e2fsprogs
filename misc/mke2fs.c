@@ -486,6 +486,8 @@ static void show_stats(ext2_filsys fs)
 	col_left = 0;
 	for (i = 1; i < fs->group_desc_count; i++) {
 		group_block += s->s_blocks_per_group;
+		if (!ext2fs_bg_has_super(fs, i))
+			continue;
 		if (!col_left--) {
 			printf("\n\t");
 			col_left = 8;
@@ -539,11 +541,14 @@ static void PRS(int argc, char *argv[])
 	char	c;
 	int	size;
 	char	* tmp;
+	blk_t	max = 8192;
 	int	inode_ratio = 4096;
 	int	reserved_ratio = 5;
 	errcode_t	retval;
+	int	sparse_option = -1;
 	char	*oldpath = getenv("PATH");
-
+	struct ext2fs_sb *param_ext2 = (struct ext2fs_sb *) &param;
+	
 	/* Update our PATH to include /sbin  */
 	if (oldpath) {
 		char *newpath;
@@ -560,6 +565,9 @@ static void PRS(int argc, char *argv[])
 	setbuf(stderr, NULL);
 	initialize_ext2_error_table();
 	memset(&param, 0, sizeof(struct ext2_super_block));
+#ifdef EXT2_DYNAMIC_REV
+	param.s_rev_level = EXT2_DYNAMIC_REV;
+#endif
 	
 	fprintf (stderr, "mke2fs %s, %s for EXT2 FS %s, %s\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
@@ -567,7 +575,7 @@ static void PRS(int argc, char *argv[])
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv,
-			    "b:cf:g:i:l:m:o:qr:tvI:SFL:M:")) != EOF)
+			    "b:cf:g:i:l:m:o:qr:s:tvI:SFL:M:")) != EOF)
 		switch (c) {
 		case 'b':
 			size = strtoul(optarg, &tmp, 0);
@@ -578,6 +586,7 @@ static void PRS(int argc, char *argv[])
 			}
 			param.s_log_block_size =
 				log2(size >> EXT2_MIN_BLOCK_LOG_SIZE);
+			max = size * 8;
 			break;
 		case 'c':
 		case 't':	/* Check for bad blocks */
@@ -600,12 +609,6 @@ static void PRS(int argc, char *argv[])
 			if (*tmp) {
 				com_err(program_name, 0,
 					"Illegal number for blocks per group");
-				exit(1);
-			}
-			if (param.s_blocks_per_group < 256 ||
-			    param.s_blocks_per_group > 8192 || *tmp) {
-				com_err(program_name, 0,
-					"blocks per group count out of range");
 				exit(1);
 			}
 			if ((param.s_blocks_per_group % 8) != 0) {
@@ -646,6 +649,9 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'r':
 			param.s_rev_level = atoi(optarg);
+			break;
+		case 's':
+			sparse_option = atoi(optarg);
 			break;
 #ifdef EXT2_DYNAMIC_REV
 		case 'I':
@@ -705,6 +711,15 @@ static void PRS(int argc, char *argv[])
 		}
 	}
 
+	if (param.s_blocks_per_group) {
+		if (param.s_blocks_per_group < 256 ||
+		    param.s_blocks_per_group > max || *tmp) {
+			com_err(program_name, 0,
+				"blocks per group count out of range");
+			exit(1);
+		}
+	}
+
 	/*
 	 * Calculate number of inodes based on the inode ratio
 	 */
@@ -716,6 +731,20 @@ static void PRS(int argc, char *argv[])
 	 * Calculate number of blocks to reserve
 	 */
 	param.s_r_blocks_count = (param.s_blocks_count * reserved_ratio) / 100;
+
+	/*
+	 * If we are using revision #1, use the sparse super feature
+	 * by default
+	 */
+#ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+	if ((sparse_option == 1)
+#ifdef EXT2_DYNAMIC_REV
+	    || (param.s_rev_level >= EXT2_DYNAMIC_REV) && (!sparse_option)
+#endif
+	    ) 
+		param_ext2->s_feature_ro_compat |=
+			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+#endif
 }
 					
 int main (int argc, char *argv[])

@@ -58,6 +58,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	ext2_filsys	fs;
 	errcode_t	retval;
 	struct ext2_super_block *super;
+	struct ext2fs_sb	*s;
 	int		frags_per_block;
 	int		rem;
 	int		overhead = 0;
@@ -91,9 +92,12 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		goto cleanup;
 	}
 	memset(super, 0, SUPERBLOCK_SIZE);
+	s = (struct ext2fs_sb *) super;
 
 #define set_field(field, default) (super->field = param->field ? \
 				   param->field : (default))
+#define set_ext2_field(field, default) (s->field = param->field ? \
+					param->field : (default))
 
 	super->s_magic = EXT2_SUPER_MAGIC;
 	super->s_state = EXT2_VALID_FS;
@@ -103,7 +107,13 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_first_data_block, super->s_log_block_size ? 0 : 1);
 	set_field(s_max_mnt_count, EXT2_DFL_MAX_MNT_COUNT);
 	set_field(s_errors, EXT2_ERRORS_DEFAULT);
-
+	set_ext2_field(s_feature_compat, 0);
+	set_ext2_field(s_feature_incompat, 0);
+	set_ext2_field(s_feature_ro_compat, 0);
+	if (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)
+		return EXT2_ET_UNSUPP_FEATURE;
+	if (s->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)
+		return EXT2_ET_RO_UNSUPP_FEATURE;
 
 #ifdef EXT2_DYNAMIC_REV
 	set_field(s_rev_level, EXT2_GOOD_OLD_REV);
@@ -122,7 +132,8 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	fs->fragsize = EXT2_FRAG_SIZE(super);
 	frags_per_block = fs->blocksize / fs->fragsize;
 	
-	set_field(s_blocks_per_group, 8192); /* default: 8192 blocks/group */
+	/* default: (fs->blocksize*8) blocks/group */
+	set_field(s_blocks_per_group, fs->blocksize*8); 
 	super->s_frags_per_group = super->s_blocks_per_group * frags_per_block;
 	
 	super->s_blocks_count = param->s_blocks_count;
@@ -188,16 +199,6 @@ retry:
 	super->s_free_inodes_count = super->s_inodes_count;
 
 	/*
-	 * Overhead is the number of bookkeeping blocks per group.  It
-	 * includes the superblock backup, the group descriptor
-	 * backups, the inode bitmap, the block bitmap, and the inode
-	 * table.
-	 */
-	overhead = 3 + fs->desc_blocks + fs->inode_blocks_per_group;
-	super->s_free_blocks_count = super->s_blocks_count -
-		super->s_first_data_block - (overhead*fs->group_desc_count);
-	
-	/*
 	 * See if the last group is big enough to support the
 	 * necessary data structures.  If not, we need to get rid of
 	 * it.
@@ -250,11 +251,8 @@ retry:
 	 * by this routine), they are accounted for nevertheless.
 	 */
 	group_block = super->s_first_data_block;
+	super->s_free_blocks_count = 0;
 	for (i = 0; i < fs->group_desc_count; i++) {
-		for (j=0; j < fs->desc_blocks+1; j++)
-			ext2fs_mark_block_bitmap(fs->block_map,
-						 group_block + j);
-
 		if (i == fs->group_desc_count-1) {
 			numblocks = (fs->super->s_blocks_count -
 				     fs->super->s_first_data_block) %
@@ -263,8 +261,17 @@ retry:
 				numblocks = fs->super->s_blocks_per_group;
 		} else
 			numblocks = fs->super->s_blocks_per_group;
-		numblocks -= 3 + fs->desc_blocks + fs->inode_blocks_per_group;
+
+		if (ext2fs_bg_has_super(fs, i)) {
+			for (j=0; j < fs->desc_blocks+1; j++)
+				ext2fs_mark_block_bitmap(fs->block_map,
+							 group_block + j);
+			numblocks -= 1 + fs->desc_blocks;
+		}
 		
+		numblocks -= 2 + fs->inode_blocks_per_group;
+		
+		super->s_free_blocks_count += numblocks;
 		fs->group_desc[i].bg_free_blocks_count = numblocks;
 		fs->group_desc[i].bg_free_inodes_count =
 			fs->super->s_inodes_per_group;

@@ -341,7 +341,19 @@ struct ext2fs_sb {
 	char	s_last_mounted[64]; 	/* directory where last mounted */
 	__u32	s_reserved[206];	/* Padding to the end of the block */
 };
-  
+
+/*
+ * Feature set definitions (that might not be in ext2_fs.h
+ * (was EXT2_COMPAT_SPARSE_SUPER)
+ */
+#ifndef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+#define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
+#endif
+
+#define EXT2_LIB_FEATURE_COMPAT_SUPP	0
+#define EXT2_LIB_FEATURE_INCOMPAT_SUPP	0
+#define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+
 /*
  * function prototypes
  */
@@ -442,6 +454,7 @@ extern errcode_t ext2fs_check_desc(ext2_filsys fs);
 /* closefs.c */
 extern errcode_t ext2fs_close(ext2_filsys fs);
 extern errcode_t ext2fs_flush(ext2_filsys fs);
+extern int ext2fs_bg_has_super(ext2_filsys fs, int group_block);
 
 /* cmp_bitmaps.c */
 extern errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,
@@ -461,6 +474,8 @@ errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 					    struct ext2_db_entry *db_info,
 					    void	*private),
 				void *private);
+errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
+			       int blockcnt);
 
 /* dblist_dir.c */
 extern errcode_t
@@ -544,6 +559,8 @@ extern errcode_t ext2fs_check_directory(ext2_filsys fs, ino_t ino);
 
 /* icount.c */
 extern void ext2fs_free_icount(ext2_icount_t icount);
+extern errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
+				       ext2_icount_t hint, ext2_icount_t *ret);
 extern errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, int size,
 				      ext2_icount_t *ret);
 extern errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ino_t ino,
@@ -555,6 +572,7 @@ extern errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ino_t ino,
 extern errcode_t ext2fs_icount_store(ext2_icount_t icount, ino_t ino,
 				     __u16 count);
 extern ino_t ext2fs_get_icount_size(ext2_icount_t icount);
+errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *);
 
 /* ismounted.c */
 extern errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags);
@@ -621,7 +639,12 @@ extern void ext2fs_swap_inode(ext2_filsys fs,struct ext2_inode *t,
 			      struct ext2_inode *f, int hostorder);
 
 /* valid_blk.c */
-int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode);
+extern int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode);
+
+/* version.c */
+extern int ext2fs_parse_version_string(const char *ver_string);
+extern int ext2fs_get_library_version(const char **ver_string,
+				      const char **date_string);
 
 /* inline functions */
 extern void ext2fs_mark_super_dirty(ext2_filsys fs);

@@ -353,7 +353,7 @@ _INLINE_ int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					blk_t bitno)
 {
 	if ((bitno < bitmap->start) || (bitno > bitmap->end)) {
-		ext2fs_warn_bitmap2(bitmap, EXT2FS_UNMARK_ERROR, bitno);
+		ext2fs_warn_bitmap2(bitmap, EXT2FS_TEST_ERROR, bitno);
 		return 0;
 	}
 	return ext2fs_test_bit(bitno - bitmap->start, bitmap->bitmap);

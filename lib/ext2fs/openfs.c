@@ -126,12 +126,13 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	 */
 	if (!(flags & EXT2_FLAG_FORCE)) {
 		s = (struct ext2fs_sb *) fs->super;
-		if (s->s_feature_incompat) {
+		if (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
 			retval = EXT2_ET_UNSUPP_FEATURE;
 			goto cleanup;
 		}
 		if ((flags & EXT2_FLAG_RW) &&
-		    s->s_feature_ro_compat) {
+		    (s->s_feature_ro_compat &
+		     ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)) {
 			retval = EXT2_ET_RO_UNSUPP_FEATURE;
 			goto cleanup;
 		}

@@ -8,18 +8,28 @@ if [ -f $test_dir/setup ]; then
 fi
 
 if [ "$class"x = x ]; then
-	class=`echo $test_name | sed -e 's/r_\([^_]*\)_\(.*\)/\1/'`
-	instance=`echo $test_name | sed -e 's/r_\([^_]*\)_\(.*\)/\2/'`
+	class=`echo $test_name | sed -e 's/e_\([^_]*\)_\(.*\)/\1/'`
+	instance=`echo $test_name | sed -e 's/e_\([^_]*\)_\(.*\)/\2/'`
 fi
 if [ "$OUT"x = x ]; then
 	OUT=$test_name.log
 fi
 if [ "$EXPECT"x = x ]; then
-	EXPECT=$SRCDIR/progs/rel_test/expect.$class
+	EXPECT=$SRCDIR/progs/test_data/expect.$class
 fi
 
-cat $SRCDIR/progs/rel_test/$instance.setup $SRCDIR/progs/rel_test/test.$class \
-    | $TEST_REL -f - > $OUT 2>&1
+if [ "$class" = irel ]; then
+	TEST_PROG=$TEST_REL
+elif [ "$class" = brel ]; then
+	TEST_PROG=$TEST_REL
+elif [ "$class" = icount ]; then
+	TEST_PROG=$TEST_ICOUNT
+else
+	TEST_PROG=/bin/cat
+fi
+
+cat $SRCDIR/progs/test_data/$instance.setup $SRCDIR/progs/test_data/test.$class \
+    | $TEST_PROG -f - > $OUT 2>&1
 
 cmp -s $EXPECT $OUT
 status=$?

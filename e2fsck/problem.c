@@ -191,6 +191,10 @@ static struct e2fsck_problem problem_table[] = {
 	  "\t%Q (@i #%i, mod time %IM)\n",
 	  PROMPT_FIX, PR_MSG_ONLY },
 	  
+	/* File sharing blocks with filesystem metadata  */	
+	{ PR_1B_SHARE_METADATA,
+	  "\t<filesystem metadata>\n",
+	  PROMPT_FIX, PR_MSG_ONLY },
 
 	/* Pass 2 errors */
 

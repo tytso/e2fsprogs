@@ -1,3 +1,38 @@
+Thu Apr 10 13:51:16 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1b.c (clone_file_block): If we clone a directory, we need to
+		update the dblist entry so that we check (and correct) the
+		right directory block.
+
+Sun Apr  6 09:13:12 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (process_block): Don't clear blocks references to
+		filesystem metadata; let pass 1B handle this case.
+
+	* problem.c, problem.h: Add new problem, PR_1B_SHARE_METADATA.
+
+	* pass1b.c (pass1d): Deal with a block which is shared with
+ 		filesystem metadata.
+
+	* e2fsck.h: Make block_illegal_map be a global variable
+
+Sat Apr  5 11:51:58 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c, pass1.c (mark_table_blocks): Support the sparse_super
+	 	feature.
+		(get_backup_sb): New function which attempts to obtain the
+	 	correct backup superblock (if possible).
+
+Fri Apr  4 10:46:26 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (main): Check the version of the library, and warn if
+		the library is out of date; this happens generally due to
+		users who manually install e2fsprogs.
+
+	* pass1.c (pass1_get_blocks): If the passed in inode number for
+ 		get_blocks isn't what we're expecting pass back
+ 		EXT2_ET_CALLBACK_NOT_HANDLED.
+
 Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs version 1.07

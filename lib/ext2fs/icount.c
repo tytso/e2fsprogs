@@ -71,13 +71,20 @@ void ext2fs_free_icount(ext2_icount_t icount)
 	free(icount);
 }
 
-errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, int size,
-			       ext2_icount_t *ret)
+errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
+				ext2_icount_t hint, ext2_icount_t *ret)
 {
 	ext2_icount_t	icount;
 	errcode_t	retval;
 	size_t		bytes;
+	int		i;
 
+	if (hint) {
+		EXT2_CHECK_MAGIC(hint, EXT2_ET_MAGIC_ICOUNT);
+		if (hint->size > size)
+			size = hint->size;
+	}
+	
 	icount = malloc(sizeof(struct ext2_icount));
 	if (!icount)
 		return ENOMEM;
@@ -125,8 +132,18 @@ errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, int size,
 	icount->cursor = 0;
 	icount->num_inodes = fs->super->s_inodes_count;
 
-	*ret = icount;
+	/*
+	 * Populate the sorted list with those entries which were
+	 * found in the hint icount (since those are ones which will
+	 * likely need to be in the sorted list this time around).
+	 */
+	if (hint) {
+		for (i=0; i < hint->count; i++)
+			icount->list[i].ino = hint->list[i].ino;
+		icount->count = hint->count;
+	}
 
+	*ret = icount;
 	return 0;
 
 errout:
@@ -134,65 +151,22 @@ errout:
 	return(retval);
 }
 
-/*
- * get_icount_el() --- given an inode number, try to find icount
- * 	information in the sorted list.  We use a binary search...
- */
-static struct ext2_icount_el *get_icount_el(ext2_icount_t icount, ino_t ino)
+errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, int size,
+			       ext2_icount_t *ret)
 {
-	int	low, high, mid;
-
-	if (!icount || !icount->list || !icount->count)
-		return 0;
-
-	if (icount->multiple &&
-	    !ext2fs_test_inode_bitmap(icount->multiple, ino))
-		return 0;
-
-	low = 0;
-	high = icount->count-1;
-	if (ino == icount->list[low].ino) {
-		icount->cursor = low+1;
-		return &icount->list[low];
-	}
-	if  (ino == icount->list[high].ino) {
-		icount->cursor = 0;
-		return &icount->list[high];
-	}
-	if (icount->cursor >= icount->count)
-		icount->cursor = 0;
-	if (ino == icount->list[icount->cursor].ino)
-		return &icount->list[icount->cursor++];
-#if 0
-	printf("Non-cursor get_icount_el: %u\n", ino);
-#endif
-	
-	while (low < high) {
-		mid = (low+high)/2;
-		if (mid == low || mid == high)
-			break;
-		if (ino == icount->list[mid].ino) {
-			icount->cursor = mid;
-			return &icount->list[mid];
-		}
-		if (ino < icount->list[mid].ino)
-			high = mid;
-		else
-			low = mid;
-	}
-	return 0;
+	return ext2fs_create_icount2(fs, flags, size, 0, ret);
 }
 
 /*
- * put_icount_el() --- given an inode number, create a new entry in
- * 	the sorted list.  This function is optimized for adding values
- * 	in ascending order.
+ * insert_icount_el() --- Insert a new entry into the sorted list at a
+ * 	specified position.
  */
-static struct ext2_icount_el *put_icount_el(ext2_icount_t icount, ino_t ino)
+static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
+					    ino_t ino, int pos)
 {
 	struct ext2_icount_el *el, *new_list;
 	ino_t			new_size = 0;
-	int			i, j;
+	int			num;
 
 	if (icount->count >= icount->size) {
 		if (icount->count) {
@@ -212,31 +186,112 @@ static struct ext2_icount_el *put_icount_el(ext2_icount_t icount, ino_t ino)
 		icount->size = new_size;
 		icount->list = new_list;
 	}
-
-	/*
-	 * Normally, get_icount_el is called with each inode in
-	 * sequential order; but once in a while (like when pass 3
-	 * needs to recreate the root directory or lost+found
-	 * directory) it is called out of order.
-	 */
-	if (icount->count && icount->list[icount->count-1].ino >= ino) {
-		for (i = icount->count-1; i > 0; i--)
-			if (icount->list[i-1].ino < ino)
-				break;
-		el = &icount->list[i];
-		if (el->ino != ino) {
-			for (j = icount->count++; j > i; j--)
-				icount->list[j] = icount->list[j-1];
-			el->count = 0;
-		}
-	} else {
-		el = &icount->list[icount->count++];
-		el->count = 0;
+	num = icount->count - pos;
+	if (num < 0)
+		return 0;	/* should never happen */
+	if (num) {
+		memmove(&icount->list[pos+1], &icount->list[pos],
+			sizeof(struct ext2_icount_el) * num);
 	}
+	icount->count++;
+	el = &icount->list[pos];
+	el->count = 0;
 	el->ino = ino;
 	return el;
 }
+
+/*
+ * get_icount_el() --- given an inode number, try to find icount
+ * 	information in the sorted list.  If the create flag is set,
+ * 	and we can't find an entry, create one in the sorted list.
+ */
+static struct ext2_icount_el *get_icount_el(ext2_icount_t icount,
+					    ino_t ino, int create)
+{
+	float	range;
+	int	low, high, mid;
+	ino_t	lowval, highval;
+
+	if (!icount || !icount->list)
+		return 0;
+
+	if (create && ((icount->count == 0) ||
+		       (ino > icount->list[icount->count-1].ino))) {
+		return insert_icount_el(icount, ino, icount->count);
+	}
+	if (icount->count == 0)
+		return 0;
 	
+	if (icount->cursor >= icount->count)
+		icount->cursor = 0;
+	if (ino == icount->list[icount->cursor].ino)
+		return &icount->list[icount->cursor++];
+#if 0
+	printf("Non-cursor get_icount_el: %u\n", ino);
+#endif
+	low = 0;
+	high = icount->count-1;
+	while (low <= high) {
+#if 0
+		mid = (low+high)/2;
+#else
+		if (low == high)
+			mid = low;
+		else {
+			/* Interpolate for efficiency */
+			lowval = icount->list[low].ino;
+			highval = icount->list[high].ino;
+
+			if (ino < lowval)
+				range = 0;
+			else if (ino > highval)
+				range = 1;
+			else 
+				range = ((float) (ino - lowval)) /
+					(highval - lowval);
+			mid = low + ((int) (range * (high-low)));
+		}
+#endif
+		if (ino == icount->list[mid].ino) {
+			icount->cursor = mid+1;
+			return &icount->list[mid];
+		}
+		if (ino < icount->list[mid].ino)
+			high = mid-1;
+		else
+			low = mid+1;
+	}
+	/*
+	 * If we need to create a new entry, it should be right at
+	 * low (where high will be left at low-1).
+	 */
+	if (create)
+		return insert_icount_el(icount, ino, low);
+	return 0;
+}
+
+errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *out)
+{
+	errcode_t	ret = 0;
+	int		i;
+	const char *bad = "bad icount";
+	
+	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
+
+	if (icount->count > icount->size) {
+		fprintf(out, "%s: count > size\n", bad);
+		return EINVAL;
+	}
+	for (i=1; i < icount->count; i++) {
+		if (icount->list[i-1].ino >= icount->list[i].ino) {
+			fprintf(out, "%s: list[%d].ino=%u, list[%d].ino=%u\n",
+				bad, i-1, icount->list[i-1].ino,
+				i, icount->list[i].ino);
+			ret = EINVAL;
+		}
+	}
+	return ret;
+}
 
 errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ino_t ino, __u16 *ret)
 {
@@ -244,11 +299,19 @@ errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ino_t ino, __u16 *ret)
 	
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
+	if (!ino || (ino > icount->num_inodes))
+		return EINVAL;
+
 	if (ext2fs_test_inode_bitmap(icount->single, ino)) {
 		*ret = 1;
 		return 0;
 	}
-	el = get_icount_el(icount, ino);
+	if (icount->multiple &&
+	    !ext2fs_test_inode_bitmap(icount->multiple, ino)) {
+		*ret = 0;
+		return 0;
+	}
+	el = get_icount_el(icount, ino, 0);
 	if (!el) {
 		*ret = 0;
 		return 0;
@@ -264,14 +327,19 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ino_t ino,
 
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
+	if (!ino || (ino > icount->num_inodes))
+		return EINVAL;
+
 	if (ext2fs_test_inode_bitmap(icount->single, ino)) {
 		/*
 		 * If the existing count is 1, then we know there is
-		 * no entry in the list, so use put_icount_el().
+		 * no entry in the list.
 		 */
-		el = put_icount_el(icount, ino);
+		el = get_icount_el(icount, ino, 1);
 		if (!el)
 			return ENOMEM;
+		ext2fs_unmark_inode_bitmap(icount->single, ino);
+		el->count = 2;
 	} else if (icount->multiple) {
 		/*
 		 * The count is either zero or greater than 1; if the
@@ -280,13 +348,10 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ino_t ino,
 		 * get_icount_el().
 		 */
 		if (ext2fs_test_inode_bitmap(icount->multiple, ino)) {
-			el = get_icount_el(icount, ino);
-			if (!el) {
-				/* should never happen */
-				el = put_icount_el(icount, ino);
-				if (!el)
-					return ENOMEM;
-			}
+			el = get_icount_el(icount, ino, 1);
+			if (!el)
+				return ENOMEM;
+			el->count++;
 		} else {
 			/*
 			 * The count was zero; mark the single bitmap
@@ -303,20 +368,16 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ino_t ino,
 		 * The count is either zero or greater than 1; try to
 		 * find an entry in the list to determine which.
 		 */
-		el = get_icount_el(icount, ino);
+		el = get_icount_el(icount, ino, 0);
 		if (!el) {
 			/* No entry means the count was zero */
 			goto zero_count;
 		}
-		el = put_icount_el(icount, ino);
+		el = get_icount_el(icount, ino, 1);
 		if (!el)
 			return ENOMEM;
-	}
-	if (ext2fs_test_inode_bitmap(icount->single, ino)) {
-		ext2fs_unmark_inode_bitmap(icount->single, ino);
-		el->count = 2;
-	} else
 		el->count++;
+	}
 	if (icount->multiple)
 		ext2fs_mark_inode_bitmap(icount->multiple, ino);
 	if (ret)
@@ -329,6 +390,9 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ino_t ino,
 {
 	struct ext2_icount_el	*el;
 
+	if (!ino || (ino > icount->num_inodes))
+		return EINVAL;
+
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
 	if (ext2fs_test_inode_bitmap(icount->single, ino)) {
@@ -336,7 +400,7 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ino_t ino,
 		if (icount->multiple)
 			ext2fs_unmark_inode_bitmap(icount->multiple, ino);
 		else {
-			el = get_icount_el(icount, ino);
+			el = get_icount_el(icount, ino, 0);
 			if (el)
 				el->count = 0;
 		}
@@ -345,8 +409,12 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ino_t ino,
 		return 0;
 	}
 
-	el = get_icount_el(icount, ino);
-	if (!el)
+	if (icount->multiple &&
+	    !ext2fs_test_inode_bitmap(icount->multiple, ino))
+		return EINVAL;
+	
+	el = get_icount_el(icount, ino, 0);
+	if (!el || el->count == 0)
 		return EINVAL;
 
 	el->count--;
@@ -365,6 +433,9 @@ errcode_t ext2fs_icount_store(ext2_icount_t icount, ino_t ino,
 {
 	struct ext2_icount_el	*el;
 
+	if (!ino || (ino > icount->num_inodes))
+		return EINVAL;
+
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
 	if (count == 1) {
@@ -382,7 +453,7 @@ errcode_t ext2fs_icount_store(ext2_icount_t icount, ino_t ino,
 			 */
 			ext2fs_unmark_inode_bitmap(icount->multiple, ino);
 		} else {
-			el = get_icount_el(icount, ino);
+			el = get_icount_el(icount, ino, 0);
 			if (el)
 				el->count = 0;
 		}
@@ -392,7 +463,7 @@ errcode_t ext2fs_icount_store(ext2_icount_t icount, ino_t ino,
 	/*
 	 * Get the icount element
 	 */
-	el = put_icount_el(icount, ino);
+	el = get_icount_el(icount, ino, 1);
 	if (!el)
 		return ENOMEM;
 	el->count = count;

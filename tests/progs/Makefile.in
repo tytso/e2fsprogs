@@ -13,9 +13,11 @@ INSTALL = @INSTALL@
 
 MK_CMDS=	../../lib/ss/mk_cmds
 
-PROGS=		test_rel
+PROGS=		test_rel test_icount
 
 TEST_REL_OBJS=	test_rel.o test_rel_cmds.o
+
+TEST_ICOUNT_OBJS=	test_icount.o test_icount_cmds.o
 
 SRCS=	$(srcdir)/test_rel.c 
 
@@ -27,14 +29,21 @@ DEPLIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR)
 
 all:: $(PROGS)
 
-test_rel: $(TEST_REL_OBJS)
+test_rel: $(TEST_REL_OBJS) $(DEPLIBS)
 	$(LD) $(ALL_LDFLAGS) -o test_rel $(TEST_REL_OBJS) $(LIBS)
 
 test_rel_cmds.c: test_rel_cmds.ct
 	$(MK_CMDS) $(srcdir)/test_rel_cmds.ct
 
+test_icount: $(TEST_ICOUNT_OBJS) $(DEPLIBS)
+	$(LD) $(ALL_LDFLAGS) -o test_icount $(TEST_ICOUNT_OBJS) $(LIBS)
+
+test_icount_cmds.c: test_icount_cmds.ct
+	$(MK_CMDS) $(srcdir)/test_icount_cmds.ct
+
 clean:
-	$(RM) -f $(PROGS) test_rel_cmds.c \#* *.s *.o *.a *~ core
+	$(RM) -f $(PROGS) test_rel_cmds.c test_icount_cmds.c \
+		\#* *.s *.o *.a *~ core
 
 install:
 

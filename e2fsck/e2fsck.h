@@ -85,6 +85,7 @@ extern ext2fs_inode_bitmap inode_bb_map; /* Inodes which are in bad blocks */
 
 extern ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
 extern ext2fs_block_bitmap block_dup_map; /* Blocks which are used by more than once */
+extern ext2fs_block_bitmap block_illegal_map; /* Meta-data blocks */
 
 extern const char *fix_msg[2];	/* Fixed or ignored! */
 extern const char *clear_msg[2]; /* Cleared or ignored! */

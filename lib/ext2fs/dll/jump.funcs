@@ -138,3 +138,7 @@
 00000000 T _ext2fs_icount_decrement		libext2fs	icount
 00000000 T _ext2fs_icount_store			libext2fs	icount
 00000000 T _ext2fs_get_icount_size		libext2fs	icount
+00000000 T _ext2fs_create_icount2		libext2fs	icount
+00000000 T _ext2fs_get_library_version		libext2fs	version
+00000000 T _ext2fs_parse_version_string		libext2fs	version
+00000000 T _ext2fs_set_dir_block		libext2fs	dblist

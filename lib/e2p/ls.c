@@ -76,6 +76,10 @@ struct ext2fs_sb {
 	__u32	s_reserved[206];	/* Padding to the end of the block */
 };
 
+#ifndef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+#define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
+#endif
+
 static void print_user (unsigned short uid)
 {
 	struct passwd *pw;
@@ -164,8 +168,6 @@ void list_super (struct ext2_super_block * s)
 				    EXT2_INODE_SIZE(s)) +
 				   EXT2_BLOCK_SIZE(s) - 1) /
 				  EXT2_BLOCK_SIZE(s));
-	printf ("Filesystem magic number:  0x%04X\n", s->s_magic);
-	printf ("Filesystem revision #:    %d\n", s->s_rev_level);
 	if (sb->s_volume_name[0]) {
 		memset(buf, 0, sizeof(buf));
 		strncpy(buf, sb->s_volume_name, sizeof(sb->s_volume_name));
@@ -183,6 +185,22 @@ void list_super (struct ext2_super_block * s)
 	} else
 		strcpy(buf, "<none>");
 	printf("Filesystem UUID:          %s\n", buf);
+	printf ("Filesystem magic number:  0x%04X\n", s->s_magic);
+	printf ("Filesystem revision #:    %d", s->s_rev_level);
+	if (s->s_rev_level == EXT2_GOOD_OLD_REV) {
+		printf(" (original)\n");
+#ifdef EXT2_DYNAMIC_REV
+	} else if (s->s_rev_level == EXT2_DYNAMIC_REV) {
+		printf(" (dynamic)\n");
+#endif
+	} else
+		printf("\n");
+	printf ("Filesystem features:      ");
+	if (s->s_feature_ro_compat & EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)
+		printf("sparse_super");
+	else
+		printf("(none)");
+	printf("\n");
 	printf ("Filesystem state:        ");
 	print_fs_state (stdout, s->s_state);
 	printf ("\n");

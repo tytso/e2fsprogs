@@ -22,6 +22,38 @@
 
 #include "ext2fsP.h"
 
+static int test_root(int a, int b)
+{
+	if (a == 0)
+		return 1;
+	while (1) {
+		if (a == 1)
+			return 1;
+		if (a % b)
+			return 0;
+		a = a / b;
+	}
+}
+
+int ext2fs_bg_has_super(ext2_filsys fs, int group_block)
+{
+#ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+	struct ext2fs_sb	*s;
+
+	s = (struct ext2fs_sb *) fs->super;
+	if (!(s->s_feature_ro_compat & EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
+		return 1;
+
+	if (test_root(group_block, 3) || (test_root(group_block, 5)) ||
+	    test_root(group_block, 7))
+		return 1;
+	
+	return 0;
+#else
+	return 1;
+#endif
+}
+
 errcode_t ext2fs_flush(ext2_filsys fs)
 {
 	int		i,j,maxgroup;
@@ -92,6 +124,9 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	maxgroup = (fs->flags & EXT2_FLAG_MASTER_SB_ONLY) ? 1 :
 		fs->group_desc_count;
 	for (i = 0; i < maxgroup; i++) {
+		if (!ext2fs_bg_has_super(fs, i))
+			goto next_group;
+
 		if (i !=0 ) {
 			retval = io_channel_write_blk(fs->io, group_block,
 						      -SUPERBLOCK_SIZE,
@@ -108,6 +143,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 				goto errout;
 			group_ptr += fs->blocksize;
 		}
+	next_group:
 		group_block += EXT2_BLOCKS_PER_GROUP(fs->super);
 	}
 

@@ -1,3 +1,16 @@
+Wed Mar 26 09:29:25 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e_icount_normal, e_icount_opt: New tests which validate the
+		icount abstraction.
+
+	* test_script.in: New feature; an argument of a single character
+		means do all the tests in that series.
+
+Tue Mar 18 15:11:04 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* test_config (LANG): Set the language to be C so that the brel
+		and irel tests don't fail.
+
 Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs version 1.07

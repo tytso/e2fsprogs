@@ -1,3 +1,8 @@
+Thu Apr 10 14:36:05 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ls.c: New file which implements the ls command.  Added the -l
+		option. 
+
 Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs version 1.07

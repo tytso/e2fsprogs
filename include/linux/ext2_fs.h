@@ -39,6 +39,19 @@
 #define EXT2FS_VERSION		"0.5b"
 
 /*
+ * Debug code
+ */
+#ifdef EXT2FS_DEBUG
+#	define ext2_debug(f, a...)	{ \
+					printk ("EXT2-fs DEBUG (%s, %d): %s:", \
+						__FILE__, __LINE__, __FUNCTION__); \
+				  	printk (f, ## a); \
+					}
+#else
+#	define ext2_debug(f, a...)	/**/
+#endif
+
+/*
  * Special inodes numbers
  */
 #define	EXT2_BAD_INO		 1	/* Bad blocks inode */
@@ -47,7 +60,9 @@
 #define EXT2_ACL_DATA_INO	 4	/* ACL inode */
 #define EXT2_BOOT_LOADER_INO	 5	/* Boot loader inode */
 #define EXT2_UNDEL_DIR_INO	 6	/* Undelete directory inode */
-#define EXT2_FIRST_INO		11	/* First non reserved inode */
+
+/* First non-reserved inode for old ext2 filesystems */
+#define EXT2_GOOD_OLD_FIRST_INO	11
 
 /*
  * The second extended file system magic number
@@ -77,10 +92,17 @@
 #else
 # define EXT2_BLOCK_SIZE_BITS(s)	((s)->s_log_block_size + 10)
 #endif
-#define	EXT2_INODES_PER_BLOCK(s)	(EXT2_BLOCK_SIZE(s) / sizeof (struct ext2_inode))
 #ifdef __KERNEL__
 #define	EXT2_ADDR_PER_BLOCK_BITS(s)	((s)->u.ext2_sb.s_addr_per_block_bits)
-#define	EXT2_INODES_PER_BLOCK_BITS(s)	((s)->u.ext2_sb.s_inodes_per_block_bits)
+#define EXT2_INODE_SIZE(s)		((s)->u.ext2_sb.s_inode_size)
+#define EXT2_FIRST_INO(s)		((s)->u.ext2_sb.s_first_ino)
+#else
+#define EXT2_INODE_SIZE(s)	(((s)->s_rev_level == EXT2_GOOD_OLD_REV) ? \
+				 EXT2_GOOD_OLD_INODE_SIZE : \
+				 (s)->s_inode_size)
+#define EXT2_FIRST_INO(s)	(((s)->s_rev_level == EXT2_GOOD_OLD_REV) ? \
+				 EXT2_GOOD_OLD_FIRST_INO : \
+				 (s)->s_first_ino)
 #endif
 
 /*
@@ -167,7 +189,9 @@ struct ext2_group_desc
 #define EXT2_IMMUTABLE_FL		0x00000010 /* Immutable file */
 #define EXT2_APPEND_FL			0x00000020 /* writes to file may only append */
 #define EXT2_NODUMP_FL			0x00000040 /* do not dump file */
-
+#define EXT2_NOATIME_FL			0x00000080 /* do not update atime */
+#define EXT2_RESERVED_FL		0x80000000 /* reserved for ext2 lib */
+	
 /*
  * ioctl commands
  */
@@ -314,14 +338,36 @@ struct ext2_super_block {
 	__u16	s_magic;		/* Magic signature */
 	__u16	s_state;		/* File system state */
 	__u16	s_errors;		/* Behaviour when detecting errors */
-	__u16	s_pad;
+	__u16	s_minor_rev_level; 	/* minor revision level */
 	__u32	s_lastcheck;		/* time of last check */
 	__u32	s_checkinterval;	/* max. time between checks */
 	__u32	s_creator_os;		/* OS */
 	__u32	s_rev_level;		/* Revision level */
 	__u16	s_def_resuid;		/* Default uid for reserved blocks */
 	__u16	s_def_resgid;		/* Default gid for reserved blocks */
-	__u32	s_reserved[235];	/* Padding to the end of the block */
+	/*
+	 * These fields are for EXT2_DYNAMIC_REV superblocks only.
+	 *
+	 * Note: the difference between the compatible feature set and
+	 * the incompatible feature set is that if there is a bit set
+	 * in the incompatible feature set that the kernel doesn't
+	 * know about, it should refuse to mount the filesystem.
+	 * 
+	 * e2fsck's requirements are more strict; if it doesn't know
+	 * about a feature in either the compatible or incompatible
+	 * feature set, it must abort and not try to meddle with
+	 * things it doesn't understand...
+	 */
+	__u32	s_first_ino; 		/* First non-reserved inode */
+	__u16   s_inode_size; 		/* size of inode structure */
+	__u16	s_block_group_nr; 	/* block group # of this superblock */
+	__u32	s_feature_compat; 	/* compatible feature set */
+	__u32	s_feature_incompat; 	/* incompatible feature set */
+	__u32	s_feature_ro_compat; 	/* readonly-compatible feature set */
+	__u8	s_uuid[16];		/* 128-bit uuid for volume */
+	char	s_volume_name[16]; 	/* volume name */
+	char	s_last_mounted[64]; 	/* directory where last mounted */
+	__u32	s_reserved[206];	/* Padding to the end of the block */
 };
 
 /*
@@ -337,8 +383,22 @@ struct ext2_super_block {
  * Revision levels
  */
 #define EXT2_GOOD_OLD_REV	0	/* The good old (original) format */
+#define EXT2_DYNAMIC_REV	1 	/* V2 format w/ dynamic inode sizes */
 
 #define EXT2_CURRENT_REV	EXT2_GOOD_OLD_REV
+#define EXT2_MAX_SUPP_REV	EXT2_DYNAMIC_REV
+
+#define EXT2_GOOD_OLD_INODE_SIZE 128
+
+/*
+ * Feature set definitions
+ */
+
+#define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
+
+#define EXT2_FEATURE_COMPAT_SUPP	0
+#define EXT2_FEATURE_INCOMPAT_SUPP	0
+#define EXT2_FEATURE_RO_COMPAT_SUPP	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 
 /*
  * Default values for user and/or group using reserved blocks
@@ -391,9 +451,9 @@ struct ext2_dir_entry {
 extern int ext2_permission (struct inode *, int);
 
 /* balloc.c */
-extern int ext2_new_block (struct super_block *, unsigned long,
-			   __u32 *, __u32 *);
-extern void ext2_free_blocks (struct super_block *, unsigned long,
+extern int ext2_new_block (const struct inode *, unsigned long,
+			   __u32 *, __u32 *, int *);
+extern void ext2_free_blocks (const struct inode *, unsigned long,
 			      unsigned long);
 extern unsigned long ext2_count_free_blocks (struct super_block *);
 extern void ext2_check_blocks_bitmap (struct super_block *);
@@ -414,7 +474,7 @@ extern int ext2_write (struct inode *, struct file *, char *, int);
 extern int ext2_sync_file (struct inode *, struct file *);
 
 /* ialloc.c */
-extern struct inode * ext2_new_inode (const struct inode *, int);
+extern struct inode * ext2_new_inode (const struct inode *, int, int *);
 extern void ext2_free_inode (struct inode *);
 extern unsigned long ext2_count_free_inodes (struct super_block *);
 extern void ext2_check_inodes_bitmap (struct super_block *);
@@ -448,7 +508,7 @@ extern int ext2_symlink (struct inode *, const char *, int, const char *);
 extern int ext2_link (struct inode *, struct inode *, const char *, int);
 extern int ext2_mknod (struct inode *, const char *, int, int, int);
 extern int ext2_rename (struct inode *, const char *, int,
-			struct inode *, const char *, int);
+			struct inode *, const char *, int, int);
 
 /* super.c */
 extern void ext2_error (struct super_block *, const char *, const char *, ...)
@@ -462,6 +522,7 @@ extern void ext2_put_super (struct super_block *);
 extern void ext2_write_super (struct super_block *);
 extern int ext2_remount (struct super_block *, int *, char *);
 extern struct super_block * ext2_read_super (struct super_block *,void *,int);
+extern int init_ext2_fs(void);
 extern void ext2_statfs (struct super_block *, struct statfs *, int);
 
 /* truncate.c */

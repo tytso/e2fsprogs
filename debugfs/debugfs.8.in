@@ -150,7 +150,7 @@ which is a link to
 .IR filespec .
 Note this does not adjust the inode reference counts.
 .TP
-.I ls filespec
+.I ls [-l] filespec
 Print a listing of the files in the directory
 .IR filespec .
 .TP

@@ -40,6 +40,9 @@ mke2fs \- create a Linux second extended file system
 .B \-q
 ]
 [
+.B -s sparse-super-flag
+]
+[
 .B \-v
 ]
 [
@@ -113,6 +116,11 @@ of the mke2fs executable.
 .TP
 .I -q
 Quiet execution.  Useful if mke2fs is run in a script.
+.TP
+.I -s sparse-super-flag
+If sparse-super-flag is 1, then turn on the sparse superblock flag.  
+If 0, then turn off the sparse superblock flag.  (Currently, the sparse 
+superblock flag defaults to off.)
 .TP
 .I -v
 Verbose execution.
