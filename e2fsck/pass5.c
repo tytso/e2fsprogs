@@ -438,7 +438,7 @@ static void check_block_end(e2fsck_t ctx)
 	for (i = save_blocks_count + 1; i <= end; i++) {
 		if (!ext2fs_test_block_bitmap(fs->block_map, i)) {
 			if (fix_problem(ctx, PR_5_BLOCK_BMAP_PADDING, &pctx)) {
-				for (i = save_blocks_count + 1; i < end; i++)
+				for (i = save_blocks_count + 1; i <= end; i++)
 					ext2fs_mark_block_bitmap(fs->block_map,
 								 i);
 				ext2fs_mark_bb_dirty(fs);

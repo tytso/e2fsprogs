@@ -1,3 +1,9 @@
+1999-03-19    <tytso@rsts-11.mit.edu>
+
+	* pass5.c (check_block_end): Fix fencepost condition where when
+		clearing the block padding we were missing the last position
+		in the bitmap.
+
 1999-05-17    <tytso@rsts-11.mit.edu>
 
 	* unix.c (reserve_stdio_fds): Add safety check in case
