@@ -59,13 +59,13 @@ CFGBFSTAMP=${STAMPSDIR}/configure-bf-stamp
 BUILDSTDSTAMP=${STAMPSDIR}/build-std-stamp
 BUILDBFSTAMP=${STAMPSDIR}/build-bf-stamp
 
-CCOPTS = -O2 -fsigned-char
+CCOPTS = -g -fsigned-char
 
 INSTALL = install
 INSTALL_PROGRAM = $(INSTALL) -p -o root -g root  -m  755
 
-ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
-CCOPTS += -g -O1
+ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+CCOPTS += -O2
 endif
 ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
 INSTALL_PROGRAM += -s
@@ -255,9 +255,9 @@ binary-arch: install install-udeb
 	done
 
   # mkinitrd script
-	mkdir -p debian/e2fsprogs/etc/mkinitrd/scripts
+	mkdir -p debian/e2fsprogs/usr/share/initrd-tools/scripts
 	install -m755 debian/e2fsprogs.mkinitrd \
-		debian/e2fsprogs/etc/mkinitrd/scripts/e2fsprogs
+		debian/e2fsprogs/usr/share/initrd-tools/scripts
 
   # symlinks to prepare dh_installdocs run
 	mkdir -p ${debdir}/e2fsck-static/usr/share/doc/
