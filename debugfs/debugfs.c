@@ -1176,7 +1176,6 @@ void do_write(int argc, char *argv[])
 	inode.i_atime = inode.i_ctime = inode.i_mtime = time(NULL);
 	inode.i_links_count = 1;
 	inode.i_size = statbuf.st_size;
-	ext2fs_write_inode(current_fs, newfile, &inode);
 	retval = ext2fs_write_inode(current_fs, newfile, &inode);
 	if (retval) {
 		com_err(argv[0], retval, "while trying to write inode %d", 
@@ -1262,7 +1261,6 @@ void do_mknod(int argc, char *argv[])
 	inode.i_atime = inode.i_ctime = inode.i_mtime = time(NULL);
 	inode.i_block[0] = major*256+minor;
 	inode.i_links_count = 1;
-	ext2fs_write_inode(current_fs, newfile, &inode);
 	retval = ext2fs_write_inode(current_fs, newfile, &inode);
 	if (retval) {
 		com_err(argv[0], retval, "while trying to write inode %d", inode);
