@@ -346,11 +346,11 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	    (S_ISBLK(st.st_mode))) {
 		struct rlimit	rlim;
 		
-		rlim.rlim_cur = RLIM_INFINITY;
-		rlim.rlim_max = RLIM_INFINITY;
+		rlim.rlim_cur = rlim.rlim_max = ((unsigned long)(~0UL));
 		setrlimit(RLIMIT_FSIZE, &rlim);
 		getrlimit(RLIMIT_FSIZE, &rlim);
-		if (rlim.rlim_cur != rlim.rlim_max) {
+		if (((unsigned long) rlim.rlim_cur) <
+		    ((unsigned long) rlim.rlim_max)) {
 			rlim.rlim_cur = rlim.rlim_max;
 			setrlimit(RLIMIT_FSIZE, &rlim);
 		}
