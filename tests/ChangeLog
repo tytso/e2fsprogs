@@ -1,5 +1,9 @@
 1999-11-10    <tytso@valinux.com>
 
+	* Release of E2fsprogs 1.18
+
+1999-11-10    <tytso@valinux.com>
+
 	* f_imagic: New test case which tests handling of imagic inodes in
 		an non-imagic-enabled filessystem.
 

@@ -1,5 +1,9 @@
 1999-11-10    <tytso@valinux.com>
 
+	* Release of E2fsprogs 1.18
+
+1999-11-10    <tytso@valinux.com>
+
 	* problem.c (fix_problem): Support a new flag, PR_PREEN_NO which
 		means the answer is assumed to be no in preen mode.  This
 		is now used in the PR_1_SET_IMMUTABLE code, so that in
