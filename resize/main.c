@@ -18,7 +18,7 @@
 
 #include "./version.h"
 
-#define EXPIRE_TIME 905835600
+/* #define EXPIRE_TIME 905835600 */
 
 #ifdef EXPIRE_TIME
 static void check_expire_time(const char *progname);
