@@ -52,3 +52,11 @@ used anywhere else.
 fix up get_backup_sb, so that it doesn't choose something bogus if
 fs->super->.... is ridiculous
 
+----------------------------------
+
+Maybe a bug in debugfs v.1.14:
+if a file has more than one hardlink, only the first filename is shown when
+using command
+        ncheck <inode>
+
+------------------------------------

@@ -1,10 +1,10 @@
 Summary: Utilities for managing the second extended (ext2) filesystem.
 Name: e2fsprogs
-Version: 1.17
+Version: 1.18
 Release: 0
 Copyright: GPL
 Group: System Environment/Base
-Source: ftp://tsx-11.mit.edu/pub/linux/packages/ext2fs/e2fsprogs-1.17.tar.gz
+Source: ftp://tsx-11.mit.edu/pub/linux/packages/ext2fs/e2fsprogs-1.18.tar.gz
 BuildRoot: /tmp/e2fsprogs-root
 
 %description
