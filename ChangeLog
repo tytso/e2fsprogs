@@ -3,7 +3,8 @@
 	* configure.in: Move the code that checks for the presence of
 		Linux header files, to earlier in the config file, since
 		it adds a directory to the include path, and that needs to
-		happen before any compile tests are run.
+		happen before any compile tests are run.  Add termios.h to
+		the headers which are checked.
 
 1999-10-25    <tytso@valinux.com>
 

@@ -22,9 +22,8 @@
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #endif
-#else /* !HAVE_CONIO_H */
 #include <stdio.h>
-#define read_a_char	getchar()
+#define read_a_char()	getchar()
 #endif
 
 #ifdef HAVE_MALLOC_H
