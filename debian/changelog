@@ -1,3 +1,25 @@
+e2fsprogs (1.35-5) unstable; urgency=low
+
+  * Add uuid_unparse_upper() and uuid_unparse_lower() functions to the
+    uuid library.
+  * Address GNU/KFreeBSD portability issues (Closes: #239934)
+  * Use unsigned for 1 bit wide bitfields in header files to avoid
+    Intel C++ compiler warnings.
+  * Use C99 stdint.h types in the uuid library
+  * Fix up and cleanup uuid man pages
+  * Change the licensing of the uuid man pages to be 3-clause BSD.
+  * Fix the initrd scripts so that the automatic ext3 journal
+    conversion actually works correctly; also allow conversion of the root
+    filesystem from ext3 back to ext2  (Closes: #241183)
+  * Minor man page fixes (Closes: #241940, 242995)
+  * Use the DEBUGFS_PAGER environment variable in preference to PAGER
+    (Closes: #239547)
+  * Added French translation
+  * Be flexible about the name of the ACPI device that cooresponds to
+    the AC adapter (Closes: #242136)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 12 Apr 2004 12:38:34 -0400
+
 e2fsprogs (1.35-4) unstable; urgency=low
 
   * Fix bug in the blkid library (introduced in 1.35-3) which caused
