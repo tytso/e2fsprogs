@@ -264,7 +264,13 @@ binary-arch: install install-udeb
   # mkinitrd script
 	mkdir -p debian/e2fsprogs/usr/share/initrd-tools/scripts
 	install -m755 debian/e2fsprogs.mkinitrd \
-		debian/e2fsprogs/usr/share/initrd-tools/scripts
+		debian/e2fsprogs/usr/share/initrd-tools/scripts/e2fsprogs
+
+  # initrd script
+	mkdir -p debian/e2fsprogs/usr/share/e2fsprogs
+	install -m755 debian/e2fsprogs.initrd \
+		debian/e2fsprogs/usr/share/e2fsprogs/initrd.ext3-add-journal
+
 
   # symlinks to prepare dh_installdocs run
 	mkdir -p ${debdir}/e2fsck-static/usr/share/doc/

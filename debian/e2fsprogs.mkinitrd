@@ -1,5 +1,9 @@
 #!/bin/sh
-ext3root=`grep -v '^ *#' /etc/fstab | awk '{ if (($2 == "/") && ($3 == "ext3")) {print $1;}}'`
-if test -n "$ext3root" ; then
-    /sbin/tune2fs -O has_journal $ext3root > /dev/null
-fi
+cp /usr/share/e2fsprogs/initrd.ext3-add-journal \
+    $INITRDDIR/scripts/ext3-add-journal.sh
+cp /sbin/tune2fs $INITRDDIR/sbin
+cp /usr/bin/mawk $INITRDDIR/bin/awk
+for i in `ldd /sbin/tune2fs /usr/bin/mawk | sort -u | awk '{print $3}'` 
+do
+	cp $i $INITRDDIR/$i
+done
