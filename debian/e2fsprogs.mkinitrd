@@ -2,8 +2,17 @@
 cp /usr/share/e2fsprogs/initrd.ext3-add-journal \
     $INITRDDIR/scripts/ext3-add-journal.sh
 cp /sbin/tune2fs $INITRDDIR/sbin
-cp /usr/bin/mawk $INITRDDIR/bin/awk
-for i in `ldd /sbin/tune2fs /usr/bin/mawk | sort -u | awk '{print $3}'` 
+cp /usr/bin/awk $INITRDDIR/bin/awk
+
+case "$VERSION" in
+    2.4.*)
+    	LD_ASSUME_KERNEL=2.4
+	export LD_ASSUME_KERNEL
+	;;
+esac
+
+for i in `ldd /sbin/tune2fs /usr/bin/awk | sort -u | awk '{print $3}'` 
 do
+	mkdir -p `dirname $INITRDDIR/$i`
 	cp $i $INITRDDIR/$i
 done

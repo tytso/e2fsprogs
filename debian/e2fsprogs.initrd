@@ -10,8 +10,10 @@ if [ $rootdev != 256 ]; then
     mount -nt devfs devfs /devfs > /dev/null 2>&1
     get_device
     mount_device
-    ext3root=`awk '!/^ *#/ { if (($2 == "/") && ($3 == "ext3")) {print $1;}}' < /mnt/etc/fstab`
-    ext2root=`awk '!/^ *#/ { if (($2 == "/") && ($3 == "ext2")) {print $1;}}' < /mnt/etc/fstab`
+    if test -f /mnt/etc/fstab ; then
+        ext3root=`awk '!/^ *#/ { if (($2 == "/") && ($3 == "ext3")) {print $1;}}' < /mnt/etc/fstab`
+        ext2root=`awk '!/^ *#/ { if (($2 == "/") && ($3 == "ext2")) {print $1;}}' < /mnt/etc/fstab`
+    fi
     umount -n /devfs > /dev/null 2>&1
     umount -n /mnt > /dev/null 2>&1
     if test -n "$ext3root" -o -n "$ext2root" ; then

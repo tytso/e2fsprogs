@@ -1,3 +1,16 @@
+e2fsprogs (1.35-6) unstable; urgency=low
+
+  * In the mkinitrd script, make sure the directories exist before
+    trying to copy in the needed shared libraries.  (Closes: #244058, #246480)
+  * In the mkinitrd script, use LD_ASSUME_KERNEL=2.4 if necessary.  
+    (Closes: #245931)
+  * In the mkinitrd script copy in /usr/bin/awk instead of /usr/bin/mawk.  
+    (Closes: #245670)
+  * In the initrd script, fail quietly if /mnt/etc/fstab does not exist.
+    (Closes: #246917)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue,  4 May 2004 03:00:24 -0400
+
 e2fsprogs (1.35-5) unstable; urgency=low
 
   * Add uuid_unparse_upper() and uuid_unparse_lower() functions to the
