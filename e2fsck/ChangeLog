@@ -9,7 +9,7 @@
 
 	* problem.c: Modified problem table to use a new abbreviations.
 
-	* message.c: Add @j abbreviation for journal, and @d abbreviation
+	* message.c: Add @j abbreviation for journal, and @v abbreviation
 		for device.
 
 	* jfs_user.h: Moved contents of jfs_e2fsck.h into jfs_user.h.

@@ -55,10 +55,6 @@
  * 	@B	bitmap
  * 	@c	compress
  * 	@C	conflicts with some other fs block
- * 	@d	device
- * 	@i	inode
- * 	@I	illegal
- * 	@j	journal
  * 	@D	deleted
  * 	@d	directory
  * 	@e	entry
@@ -66,6 +62,9 @@
  * 	@f	filesystem
  * 	@F	for @i %i (%Q) is
  * 	@g	group
+ * 	@i	inode
+ * 	@I	illegal
+ * 	@j	journal
  * 	@l	lost+found
  * 	@L	is a link
  * 	@o	orphaned
@@ -73,6 +72,7 @@
  * 	@s	should be 
  * 	@S	superblock
  * 	@u	unattached
+ * 	@v	device
  * 	@z	zero-length
  */
 
@@ -104,7 +104,6 @@ static const char *abbrevs[] = {
 	N_("Bbitmap"),
 	N_("ccompress"),
 	N_("Cconflicts with some other fs @b"),
-	N_("ddevice"),
 	N_("iinode"),
 	N_("Iillegal"),
 	N_("jjournal"),
@@ -122,6 +121,7 @@ static const char *abbrevs[] = {
 	N_("sshould be"),
 	N_("Ssuper@b"),
 	N_("uunattached"),
+	N_("vdevice"),
 	N_("zzero-length"),
 	"@@",
 	0

@@ -110,16 +110,16 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Superblock corrupt */
 	{ PR_0_SB_CORRUPT,
 	  N_("\nThe @S could not be read or does not describe a correct ext2\n"
-	  "@f.  If the @d is valid and it really contains an ext2\n"
+	  "@f.  If the @v is valid and it really contains an ext2\n"
 	  "@f (and not swap or ufs or something else), then the @S\n"
   "is corrupt, and you might try running e2fsck with an alternate @S:\n"
-	  "    e2fsck -b %S <@d>\n\n"),
+	  "    e2fsck -b %S <@v>\n\n"),
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Filesystem size is wrong */
 	{ PR_0_FS_SIZE_WRONG,
 	  N_("The @f size (according to the @S) is %b @bs\n"
-	  "The physical size of the @d is %c @bs\n"
+	  "The physical size of the @v is %c @bs\n"
 	  "Either the @S or the partition table is likely to be corrupt!\n"),
 	  PROMPT_ABORT, 0 },
 
@@ -162,7 +162,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Error determing physical device size of filesystem */
 	{ PR_0_GETSIZE_ERROR,	  
-	  N_("Error determining size of the physical @d: %m\n"),
+	  N_("Error determining size of the physical @v: %m\n"),
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Inode count in superblock is incorrect */
@@ -181,12 +181,12 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Superblock has a journal device (which we can't handle yet) */
 	{ PR_0_JOURNAL_UNSUPP_DEV,
-	  N_("@S has external ext3 @j @d (unsupported).\n"),
+	  N_("@S has external ext3 @j @v (unsupported).\n"),
 	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_DEV },
 
 	/* Superblock has a bad journal device */
 	{ PR_0_JOURNAL_BAD_DEV,
-	  N_("@S has a bad ext3 @j (@d %X).\n"),
+	  N_("@S has a bad ext3 @j (@v %X).\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Superblock has a journal UUID (which we can't handle yet) */
@@ -509,7 +509,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Immutable flag set on a device or socket inode */
 	{ PR_1_SET_IMMUTABLE,
-	  N_("Special (@d/socket/fifo) @i %i has immutable or "
+	  N_("Special (@v/socket/fifo) @i %i has immutable or "
 	     "append-only flag set.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK | PR_PREEN_NO | PR_NO_OK },
 
@@ -520,7 +520,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Non-zero size for device, fifo or socket inode */
 	{ PR_1_SET_NONZSIZE,
-	  "Special (@d/socket/fifo) @i %i has non-zero size.  ",
+	  "Special (@v/socket/fifo) @i %i has non-zero size.  ",
 	  PROMPT_FIX, PR_PREEN_OK },
 
 	/* Filesystem revision is 0, but feature flags are set */
@@ -744,12 +744,12 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Illegal character device inode */
 	{ PR_2_BAD_CHAR_DEV,
-	  N_("@i %i (%Q) is an @I character @d.\n"),
+	  N_("@i %i (%Q) is an @I character @v.\n"),
 	  PROMPT_CLEAR, 0 },
 
 	/* Illegal block device inode */
 	{ PR_2_BAD_BLOCK_DEV,
-	  N_("@i %i (%Q) is an @I @b @d.\n"),
+	  N_("@i %i (%Q) is an @I @b @v.\n"),
 	  PROMPT_CLEAR, 0 },
 
 	/* Duplicate '.' entry */
