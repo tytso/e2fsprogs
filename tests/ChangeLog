@@ -1,3 +1,12 @@
+2001-08-04  Theodore Tso  <tytso@valinux.com>
+
+	* f_bad_inode, f_badsymlinks: Update expect files to reflect
+		changes in the problem code texts.
+
+	* f_swapfs: The image file used by f_swapfs had bugs which got
+		caught by Andreas' changes to be more strict about
+		symlinks.
+
 2001-07-26  Andreas Dilger  <adilger@turbolinux.com>
 
 	* f_symlinks: Add several fast symlink error cases to test.
