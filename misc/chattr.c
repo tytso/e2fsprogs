@@ -19,9 +19,6 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <fcntl.h>
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

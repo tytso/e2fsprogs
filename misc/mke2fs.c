@@ -593,7 +593,7 @@ static void parse_raid_opts(const char *opts)
 
 static void PRS(int argc, char *argv[])
 {
-	char	c;
+	int	c;
 	int	size;
 	char	* tmp;
 	blk_t	max = 8192;

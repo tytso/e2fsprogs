@@ -262,7 +262,7 @@ static void test_rw (int dev, unsigned long blocks_count,
 
 int main (int argc, char ** argv)
 {
-	char c;
+	int c;
 	char * tmp;
 	char * device_name;
 	char * output_file = NULL;

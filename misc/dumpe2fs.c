@@ -178,7 +178,7 @@ int main (int argc, char ** argv)
 	ext2_filsys	fs;
 	int		print_badblocks = 0;
 	int		big_endian;
-	char		c;
+	int		c;
 
 	initialize_ext2_error_table();
 	fprintf (stderr, "dumpe2fs %s, %s for EXT2 FS %s, %s\n",

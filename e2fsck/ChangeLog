@@ -1,5 +1,9 @@
 Fri Oct 24 00:12:39 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* unix.c (PRS): Make the variable which getopt returns into be
+		an int, so that it won't lose on platforms where char is
+		unsigned. 
+
 	* pass1b.c (clone_file): Fix bug in error reporting in the case
  		where cs.errcode is non-zero.
 

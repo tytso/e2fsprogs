@@ -49,9 +49,6 @@
 #include <errno.h>
 #endif
 #include <malloc.h>
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
 
 #include "../version.h"
 #include "fsck.h"

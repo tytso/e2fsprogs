@@ -103,7 +103,7 @@ static volatile void usage (void)
 
 int main (int argc, char ** argv)
 {
-	char c;
+	int c;
 	char * tmp;
 	errcode_t retval;
 	ext2_filsys fs;

@@ -236,7 +236,7 @@ static void check_if_skip(e2fsck_t ctx)
 static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 {
 	int		flush = 0;
-	char		c;
+	int		c;
 #ifdef MTRACE
 	extern void	*mallwatch;
 #endif

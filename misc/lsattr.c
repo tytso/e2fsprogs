@@ -121,7 +121,7 @@ static int lsattr_dir_proc (const char * dir_name, struct dirent * de, void * pr
 
 int main (int argc, char ** argv)
 {
-	char c;
+	int c;
 	int i;
 
 	fprintf (stderr, "lsattr %s, %s for EXT2 FS %s, %s\n",
