@@ -74,27 +74,30 @@ static int get_random_fd(void)
  */
 static void get_random_bytes(void *buf, int nbytes)
 {
-	int i, fd = get_random_fd();
+	int i, n = nbytes, fd = get_random_fd();
 	int lose_counter = 0;
-	char *cp = (char *) buf;
+	unsigned char *cp = (unsigned char *) buf;
 
 	if (fd >= 0) {
-		while (nbytes > 0) {
-			i = read(fd, cp, nbytes);
+		while (n > 0) {
+			i = read(fd, cp, n);
 			if (i <= 0) {
 				if (lose_counter++ > 16)
 					break;
 				continue;
 			}
-			nbytes -= i;
+			n -= i;
 			cp += i;
 			lose_counter = 0;
 		}
 	}
-
-	/* XXX put something better here if no /dev/random! */
-	for (i = 0; i < nbytes; i++)
-		*cp++ = rand() & 0xFF;
+	
+	/*
+	 * We do this all the time, but this is the only source of
+	 * randomness if /dev/random/urandom is out to lunch.
+	 */
+	for (cp = buf, i = 0; i < nbytes; i++)
+		*cp++ ^= (rand() >> 7) & 0xFF;
 	return;
 }
 

@@ -1,3 +1,11 @@
+2003-04-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen_uuid.c (get_random_bytes): Always xor in a stream of bytes
+		from the system PRNG (i.e., random/srandom, seeded from
+		the time, pid, and uid) in case /dev/random isn't doing
+		the right thing on a particular system.  It doesn't hurt,
+		and it can help, in the case of a buggy /dev/random.
+
 2003-03-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Add support for Apple Darwin
