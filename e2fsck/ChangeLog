@@ -1,5 +1,9 @@
 2001-01-12  Theodore Ts'o  <tytso@valinux.com>
 
+	* util.c (fatal_error): Check to make sure the io_manager data
+		structure is sane before trying to flush the io_channel.
+		(From Andreas Dilger)
+
 	* pass2.c: Minor whitespace cleanups, from Andreas Dilger.
 
 	* journal.c (e2fsck_journal_fix_bad_inode): Set pctx->ino to the

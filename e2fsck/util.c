@@ -41,6 +41,12 @@ void fatal_error(e2fsck_t ctx, const char *msg)
 		fprintf (stderr, "e2fsck: %s\n", msg);
 	if (ctx->fs && ctx->fs->io)
 		io_channel_flush(ctx->fs->io);
+	if (ctx->fs && ctx->fs->io) {
+		if (ctx->fs->io->magic == EXT2_ET_MAGIC_IO_MANAGER)
+			io_channel_flush(ctx->fs->io);
+		else
+			fprintf(stderr, "e2fsck: io manager magic bad!\n");
+	}
 	ctx->flags |= E2F_FLAG_ABORT;
 	if (ctx->flags & E2F_FLAG_SETJMP_OK)
 		longjmp(ctx->abort_loc, 1);
