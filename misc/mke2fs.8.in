@@ -161,7 +161,7 @@ Set the filesystem revision for the new filesystem.  Note that 1.2
 kernels only support revision 0 filesystems.
 .TP
 .I -R raid_options
-Set raid-related options for the filesystem.  Raid options are common
+Set raid-related options for the filesystem.  Raid options are comma
 separated, and may take an argument using the equals ('=')  sign.
 Currently the only supported argument is 
 .I stride
