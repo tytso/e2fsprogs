@@ -1,3 +1,8 @@
+Tue Oct 14 21:50:24 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* debugfs.c (main): When printing a usage message, have main
+		return 1 (instead of not specifying a return value, bad!)
+
 Mon Sep 15 22:03:36 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* debugfs.c (main): Fix declaration of main so that it returns an int.

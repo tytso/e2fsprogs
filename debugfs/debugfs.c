@@ -1430,7 +1430,7 @@ int main(int argc, char **argv)
 			break;
 		default:
 			com_err(argv[0], 0, usage);
-			return;
+			return 1;
 		}
 	}
 	if (optind < argc)
