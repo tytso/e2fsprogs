@@ -1,3 +1,8 @@
+2003-03-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* ls.c (list_super2): Display the superblock fields even if the
+		journal or the dir index feature is not enabled.
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32

@@ -240,19 +240,25 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "First inode:              %d\n", sb->s_first_ino);
 		fprintf(f, "Inode size:		  %d\n", sb->s_inode_size);
 	}
-	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
+	if (!e2p_is_null_uuid(sb->s_journal_uuid))
 		fprintf(f, "Journal UUID:             %s\n",
 			e2p_uuid2str(sb->s_journal_uuid));
-		fprintf(f, "Journal inode:            %u\n", sb->s_journal_inum);
-		fprintf(f, "Journal device:	          0x%04x\n", sb->s_journal_dev);
-		fprintf(f, "First orphan inode:       %u\n", sb->s_last_orphan);
-	}
-	if (sb->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) {
+	if (sb->s_journal_inum)
+		fprintf(f, "Journal inode:            %u\n",
+			sb->s_journal_inum);
+	if (sb->s_journal_dev)
+		fprintf(f, "Journal device:	          0x%04x\n",
+			sb->s_journal_dev);
+	if (sb->s_last_orphan)
+		fprintf(f, "First orphan inode:       %u\n",
+			sb->s_last_orphan);
+	if ((sb->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) ||
+	    sb->s_def_hash_version)
 		fprintf(f, "Default directory hash:   %s\n",
 			e2p_hash2string(sb->s_def_hash_version));
+	if (!e2p_is_null_uuid(sb->s_hash_seed))
 		fprintf(f, "Directory Hash Seed:      %s\n",
 			e2p_uuid2str(sb->s_hash_seed));
-	}
 }
 
 void list_super (struct ext2_super_block * s)
