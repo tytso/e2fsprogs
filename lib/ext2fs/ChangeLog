@@ -1,3 +1,13 @@
+Sat Aug 23 22:47:46 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (ELF_SO_VERSION): Bump version to be 2.4 since we've
+		added a new field to the io_channel (app_data).
+
+	* io.h: Add a new element to the io_channel structure, app_data.
+
+	* initialize.c, openfs.c: Set io->app_data to point at the
+	 	filesystem handle.
+
 Thu Aug 14 08:14:17 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* io.h: Change the prototype of ext2fs_llseek() to use int's

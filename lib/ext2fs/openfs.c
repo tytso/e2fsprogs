@@ -63,6 +63,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			       &fs->io);
 	if (retval)
 		goto cleanup;
+	fs->io->app_data = fs;
 	fs->device_name = malloc(strlen(name)+1);
 	if (!fs->device_name) {
 		retval = ENOMEM;

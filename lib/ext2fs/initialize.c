@@ -81,6 +81,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	retval = manager->open(name, IO_FLAG_RW, &fs->io);
 	if (retval)
 		goto cleanup;
+	fs->io->app_data = fs;
 	fs->device_name = malloc(strlen(name)+1);
 	if (!fs->device_name) {
 		retval = ENOMEM;

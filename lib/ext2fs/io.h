@@ -46,6 +46,7 @@ struct struct_io_channel {
 	int		refcount;
 	int		reserved[15];
 	void		*private_data;
+	void		*app_data;
 };
 
 struct struct_io_manager {
