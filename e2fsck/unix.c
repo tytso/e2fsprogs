@@ -209,6 +209,8 @@ static void check_if_skip(e2fsck_t ctx)
 	ext2_filsys fs = ctx->fs;
 	const char *reason = NULL;
 	unsigned int reason_arg = 0;
+	long next_check;
+	time_t now = time(0);
 	
 	if ((ctx->options & E2F_OPT_FORCE) || bad_blocks_file ||
 	    cflag || swapfs)
@@ -224,10 +226,10 @@ static void check_if_skip(e2fsck_t ctx)
 		reason = _(" has been mounted %u times without being checked");
 		reason_arg = fs->super->s_mnt_count;
 	} else if (fs->super->s_checkinterval &&
-		 time(0) >= (fs->super->s_lastcheck +
+		 now >= (fs->super->s_lastcheck +
 			     fs->super->s_checkinterval)) {
 		reason = _(" has gone %u days without being checked");
-		reason_arg = (time(0) - fs->super->s_lastcheck)/(3600*24);
+		reason_arg = (now - fs->super->s_lastcheck)/(3600*24);
 	}
 	if (reason) {
 		fputs(ctx->device_name, stdout);
@@ -235,11 +237,26 @@ static void check_if_skip(e2fsck_t ctx)
 		fputs(_(", check forced.\n"), stdout);
 		return;
 	}
-	printf(_("%s: clean, %d/%d files, %d/%d blocks\n"), ctx->device_name,
+	printf(_("%s: clean, %d/%d files, %d/%d blocks"), ctx->device_name,
 	       fs->super->s_inodes_count - fs->super->s_free_inodes_count,
 	       fs->super->s_inodes_count,
 	       fs->super->s_blocks_count - fs->super->s_free_blocks_count,
 	       fs->super->s_blocks_count);
+	next_check = 100000;
+	if (fs->super->s_max_mnt_count > 0) {
+		next_check = fs->super->s_max_mnt_count - fs->super->s_mnt_count;
+		if (next_check <= 0) 
+			next_check = 1;
+	}
+	if (now >= (fs->super->s_lastcheck + fs->super->s_checkinterval))
+		next_check = 1;
+	if (next_check <= 5) {
+		if (next_check == 1)
+			fputs(_(" (check after next mount)"), stdout);
+		else
+			printf(_(" (check in %d mounts)"), next_check);
+	}
+	fputc('\n', stdout);
 	ext2fs_close(fs);
 	ctx->fs = NULL;
 	e2fsck_free_context(ctx);

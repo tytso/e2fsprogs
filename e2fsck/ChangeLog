@@ -1,5 +1,9 @@
 2003-09-13  Theodore Ts'o  <tytso@mit.edu>
 
+	* unix.c (check_if_skip): If the number of mounts until the next
+		forced filesystem check is 5 or less, mention this to the
+		user.  (Addresses Debian bug #157194)
+
 	* pass1.c (e2fsck_pass1), problem.h (PR_1_BB_FS_BLOCK), 
 	  problem.c (PR_1_BB_FS_BLOCK, PR_1_BBINODE_BAD_METABLOCK_PROMPT): 
 		Fix up the handling of corrupted indirect blocks in the 
