@@ -39,8 +39,8 @@
 #if HAVE_ERRNO_H
 #include <errno.h>
 #endif
-#if HAVE_MNTENT_H
-#include <mntent.h>
+#if HAVE_PATHS_H
+#include <paths.h>
 #endif
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -52,6 +52,10 @@
 
 #include "../version.h"
 #include "fsck.h"
+
+#ifndef _PATH_MNTTAB
+#define	_PATH_MNTTAB	"/etc/fstab"
+#endif
 
 static const char *ignored_types[] = {
 	"ignore",
@@ -143,6 +147,49 @@ static char *string_copy(const char *s)
 	return ret;
 }
 
+static char *skip_over_blank(char *cp)
+{
+	while (*cp && isspace(*cp))
+		cp++;
+	return cp;
+}
+
+static char *skip_over_word(char *cp)
+{
+	while (*cp && !isspace(*cp))
+		cp++;
+	return cp;
+}
+
+static void strip_line(char *line)
+{
+	char	*p;
+
+	while (*line) {
+		p = line + strlen(line) - 1;
+		if ((*p == '\n') || (*p == '\r'))
+			*p = 0;
+		else
+			break;
+	}
+}
+
+static char *parse_word(char **buf)
+{
+	char *word, *next;
+
+	word = *buf;
+	if (*word == 0)
+		return 0;
+
+	word = skip_over_blank(word);
+	next = skip_over_word(word);
+	if (*next)
+		*next++ = 0;
+	*buf = next;
+	return word;
+}
+
 static void free_instance(struct fsck_instance *i)
 {
 	if (i->prog)
@@ -153,47 +200,77 @@ static void free_instance(struct fsck_instance *i)
 	return;
 }
 
+struct fs_info *parse_fstab_line(char *line)
+{
+	char	*device, *mntpnt, *type, *opts, *freq, *passno, *cp;
+	struct fs_info *fs;
+
+	strip_line(line);
+	cp = line;
+
+	device = parse_word(&cp);
+	mntpnt = parse_word(&cp);
+	type = parse_word(&cp);
+	opts = parse_word(&cp);
+	freq = parse_word(&cp);
+	passno = parse_word(&cp);
+
+	if (!device || !mntpnt || !type)
+		return 0;
+	
+	if (!(fs = malloc(sizeof(struct fs_info))))
+		return 0;
+
+	fs->device = string_copy(device);
+	fs->mountpt = string_copy(mntpnt);
+	fs->type = string_copy(type);
+	fs->opts = string_copy(opts ? opts : "");
+	fs->freq = freq ? atoi(freq) : -1;
+	fs->passno = passno ? atoi(passno) : -1;
+	fs->flags = 0;
+	fs->next = NULL;
+
+	return fs;
+}
+
 /*
  * Load the filesystem database from /etc/fstab
  */
-static void load_fs_info(NOARGS)
+static void load_fs_info(char *filename)
 {
-#if HAVE_MNTENT_H
-	FILE *mntfile;
-	struct mntent *mp;
-	struct fs_info *fs;
-	struct fs_info *fs_last = NULL;
+	FILE	*f;
+	char	buf[1024];
+	int	lineno = 0;
 	int	old_fstab = 1;
+	struct fs_info *fs, *fs_last = NULL;
 
 	filesys_info = NULL;
-	
-	/* Open the mount table. */
-	if ((mntfile = setmntent(MNTTAB, "r")) == NULL) {
-		perror(MNTTAB);
-		exit(EXIT_ERROR);
+	if ((f = fopen(filename, "r")) == NULL) {
+		fprintf(stderr, "WARNING: couldn't open %s: %s\n",
+			filename, strerror(errno));
+		return;
 	}
-
-	while ((mp = getmntent(mntfile)) != NULL) {
-		fs = malloc(sizeof(struct fs_info));
-		memset(fs, 0, sizeof(struct fs_info));
-		fs->device = string_copy(mp->mnt_fsname);
-		fs->mountpt = string_copy(mp->mnt_dir);
-		fs->type = string_copy(mp->mnt_type);
-		fs->opts = string_copy(mp->mnt_opts);
-		fs->freq = mp->mnt_freq;
-		fs->passno = mp->mnt_passno;
-		fs->next = NULL;
+	while (!feof(f)) {
+		lineno++;
+		if (!fgets(buf, sizeof(buf), f))
+			break;
+		buf[sizeof(buf)-1] = 0;
+		if ((fs = parse_fstab_line(buf)) == NULL) {
+			fprintf(stderr, "WARNING: bad format "
+				"on line %d of %s\n", lineno, filename);
+			continue;
+		}
 		if (!filesys_info)
 			filesys_info = fs;
 		else
 			fs_last->next = fs;
 		fs_last = fs;
-		if (fs->passno)
+		if (fs->passno >=0)
 			old_fstab = 0;
 	}
-
-	(void) endmntent(mntfile);
-
+	
+	fclose(f);
+	
 	if (old_fstab) {
 		fprintf(stderr, "\007\007\007"
 	"WARNING: Your /etc/fstab does not contain the fsck passno\n");
@@ -206,9 +283,6 @@ static void load_fs_info(NOARGS)
 			fs->passno = 1;
 		}
 	}
-#else
-	filesys_info = NULL;
-#endif /* HAVE_MNTENT_H */
 }
 	
 /* Lookup filesys in /etc/fstab and return the corresponding entry. */
@@ -642,8 +716,6 @@ static void PRS(int argc, char *argv[])
 
 	progname = argv[0];
 
-	load_fs_info();
-
 	for (i=1; i < argc; i++) {
 		arg = argv[i];
 		if (!arg)
@@ -743,6 +815,8 @@ int main(int argc, char *argv[])
 	if (!notitle)
 		printf("Parallelizing fsck version %s (%s)\n",
 			E2FSPROGS_VERSION, E2FSPROGS_DATE);
+
+	load_fs_info(_PATH_MNTTAB);
 
 	/* Update our search path to include uncommon directories. */
 	if (oldpath) {

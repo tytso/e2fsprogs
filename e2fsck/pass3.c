@@ -124,6 +124,12 @@ void e2fsck_pass3(e2fsck_t ctx)
 			check_directory(ctx, dir, &pctx);
 	}
 
+	/*
+	 * Force the creation of /lost+found if not present
+	 */
+	if ((ctx->flags & E2F_OPT_READONLY) == 0)
+		get_lost_and_found(ctx);
+
 abort_exit:
 	e2fsck_free_dir_info(ctx);
 	if (inode_loop_detect)

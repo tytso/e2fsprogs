@@ -316,7 +316,7 @@ AC_CHECK_TOOL(STRIP, strip, :)
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_C_CROSS
-AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h mntent.h dirent.h getopt.h setjmp.h linux/fd.h linux/major.h sys/disklabel.h sys/sockio.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h)
+AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h mntent.h paths.h dirent.h getopt.h setjmp.h linux/fd.h linux/major.h sys/disklabel.h sys/sockio.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h)
 AC_FUNC_VPRINTF
 dnl
 dnl See if struct dirent has a d_namlen field (like bsd systems), implying

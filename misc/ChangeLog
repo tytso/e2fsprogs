@@ -1,3 +1,13 @@
+1998-12-03  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in: Updated dependencies.
+
+1998-11-27  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* fsck.c (load_fs_info): Parse /etc/fstab ourselves, instead of
+		relying on getmntent().  This has the advantage of
+		allowing us to properly handle missing pass numbers correctly.
+
 1998-11-13  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* tune2fs.8.in: Fix minor display bug in the nroff.

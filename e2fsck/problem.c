@@ -710,7 +710,7 @@ static const struct e2fsck_problem problem_table[] = {
 	/* /lost+found not found */
 	{ PR_3_NO_LF_DIR,
 	  "/@l not found.  ",
-	  PROMPT_CREATE, 0 },
+	  PROMPT_CREATE, PR_PREEN_OK },
 
 	/* .. entry is incorrect */
 	{ PR_3_BAD_DOT_DOT,
