@@ -36,7 +36,7 @@ ELF_SO_VERSION = 1
 ELF_IMAGE = libblkid
 ELF_MYDIR = blkid
 ELF_INSTALL_DIR = $(root_libdir)
-ELF_OTHER_LIBS =
+ELF_OTHER_LIBS = -L../.. -luuid
 
 BSDLIB_VERSION = 2.0
 BSDLIB_IMAGE = libblkid
