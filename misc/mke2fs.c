@@ -774,7 +774,8 @@ static int set_os(struct ext2_super_block *sb, char *os)
 
 #define PATH_SET "PATH=/sbin"
 
-static void parse_r_opts(struct ext2_super_block *param, const char *opts)
+static void parse_extended_opts(struct ext2_super_block *param, 
+				const char *opts)
 {
 	char	*buf, *token, *next, *p, *arg;
 	int	len;
@@ -813,8 +814,10 @@ static void parse_r_opts(struct ext2_super_block *param, const char *opts)
 				continue;
 			}
 		} else if (!strcmp(token, "resize")) {
-			unsigned long resize = 1;
-			int tmp;
+			unsigned long resize, bpg, rsv_groups;
+			unsigned long group_desc_count, desc_blocks;
+			unsigned int gdpb, blocksize;
+			int rsv_gdb;
 
 			if (!arg) {
 				r_usage++;
@@ -831,21 +834,34 @@ static void parse_r_opts(struct ext2_super_block *param, const char *opts)
 				r_usage++;
 				continue;
 			}
-			param->s_feature_compat |=
-				EXT2_FEATURE_COMPAT_RESIZE_INODE;
-			tmp = param->s_blocks_per_group;
-			if (tmp > EXT2_MAX_BLOCKS_PER_GROUP(param))
-				tmp = EXT2_MAX_BLOCKS_PER_GROUP(param);
-			resize = (resize + tmp - 1) / tmp;
-			tmp = (1 << param->s_log_block_size) /
-				sizeof(struct ext2_group_desc);
-			resize = (resize + tmp - 1) / tmp;
-			/* XXX param->s_res_gdt_blocks = resize - existing
-			cur_groups = (resize - sb->s_first_data_block +
-				      EXT2_BLOCKS_PER_GROUP(super) - 1) /bpg;
-			cur_gdb = (cur_groups + gdpb - 1) / gdpb;
-			*/
+			if (resize <= param->s_blocks_count) {
+				fprintf(stderr, 
+					_("The resize maximum must be greater than the filesystem size.\n"));
+				r_usage++;
+				continue;
+			}
 
+			blocksize = EXT2_BLOCK_SIZE(param);
+			bpg = param->s_blocks_per_group;
+			if (!bpg)
+				bpg = blocksize * 8;
+			gdpb = blocksize / sizeof(struct ext2_group_desc);
+			group_desc_count = (param->s_blocks_count +
+					    bpg - 1) / bpg;
+			desc_blocks = (group_desc_count +
+				       gdpb - 1) / gdpb;
+			rsv_groups = (resize + bpg - 1) / bpg;
+			rsv_gdb = (rsv_groups + gdpb - 1) / gdpb - 
+				desc_blocks;
+			if (rsv_gdb > EXT2_ADDR_PER_BLOCK(param))
+				rsv_gdb = EXT2_ADDR_PER_BLOCK(param);
+
+			if (rsv_gdb > 0) {
+				param->s_feature_compat |=
+					EXT2_FEATURE_COMPAT_RESIZE_INODE;
+
+				param->s_reserved_gdt_blocks = rsv_gdb;
+			}
 		} else
 			r_usage++;
 	}
@@ -886,7 +902,7 @@ static void PRS(int argc, char *argv[])
 	ext2_ino_t	num_inodes = 0;
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
-	char *		r_opts = 0;
+	char *		extended_opts = 0;
 	const char *	fs_type = 0;
 	blk_t		dev_size;
 #ifdef __linux__
@@ -956,7 +972,7 @@ static void PRS(int argc, char *argv[])
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cf:g:i:jl:m:no:qr:R:s:tvI:J:ST:FL:M:N:O:V")) != EOF) {
+		    "b:cE:f:g:i:jl:m:no:qr:R:s:tvI:J:ST:FL:M:N:O:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = strtol(optarg, &tmp, 0);
@@ -1111,8 +1127,9 @@ static void PRS(int argc, char *argv[])
 				exit(1);
 			}
 			break;
+		case 'E':
 		case 'R':
-			r_opts = optarg;
+			extended_opts = optarg;
 			break;
 		case 'S':
 			super_only = 1;
@@ -1298,8 +1315,8 @@ static void PRS(int argc, char *argv[])
 	set_fs_defaults(fs_type, &param, blocksize, sector_size, &inode_ratio);
 	blocksize = EXT2_BLOCK_SIZE(&param);
 	
-	if (r_opts)
-		parse_r_opts(&param, r_opts);
+	if (extended_opts)
+		parse_extended_opts(&param, extended_opts);
 
 	/* Since sparse_super is the default, we would only have a problem
 	 * here if it was explicitly disabled.

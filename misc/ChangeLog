@@ -1,5 +1,11 @@
 2005-01-05  Theodore Ts'o  <tytso@mit.edu>
 
+	* mke2fs.c (parse_extended_opts): Rename the -R option to -E.  Fix
+		the resize= raid/extended option so it actually works.
+		(The patch from Fedora e2fsprogs-1.35-11.2 claimed it
+		worked, but it was a placebo option, despite the claim
+		that it worked in the usage message.)
+
 	* e2initrd_helper.c: Fix gcc -Wall nits.
 
 	* e2image.c (main): Fix gcc -Wall nits.  Fix e2image so that

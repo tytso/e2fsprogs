@@ -63,8 +63,8 @@ mke2fs \- create an ext2/ext3 filesystem
 .I fs-revision-level
 ]
 [
-.B \-R
-.I raid-options
+.B \-E
+.I extended-options
 ]
 [
 .B \-v
@@ -147,7 +147,9 @@ the expected usage of the filesystem (see the
 .B \-T
 option).  If 
 .I block-size
-is negative, then mke2fs will use heuristics to determine the
+is negative, then 
+.B mke2fs
+will use heuristics to determine the
 appropriate block size, with the constraint that the block size will be
 at least 
 .I block-size
@@ -158,6 +160,30 @@ the blocksize be a multiple of 2k.
 Check the device for bad blocks before creating the file system.  If
 this option is specified twice, then a slower, read-write
 test is used instead of a fast read-only test.
+.TP
+.BI \-E " extended-options"
+Set extended options for the filesystem.  Extended options are comma
+separated, and may take an argument using the equals ('=') sign.  The
+.B -E
+option used to be 
+.B -R
+in earlier versions of 
+.BR mke2fs .
+The 
+.B -R
+option is still accepted for backwards compatibility.   The 
+following extended options are supported:
+.RS 1.2i
+.TP
+.BI stride= stripe-size
+Configure the filesystem for a RAID array with
+.I stripe-size
+filesystem blocks per stripe.
+.TP
+.BI resize= max-online-resize
+Reserve enough space so that the block group descriptor table can grow
+to support a filesystem that has max-online-resize blocks.
+.RE
 .TP
 .BI \-f " fragment-size"
 Specify the size of fragments in bytes.
@@ -360,18 +386,6 @@ is run in a script.
 Set the filesystem revision for the new filesystem.  Note that 1.2
 kernels only support revision 0 filesystems.  The default is to 
 create revision 1 filesystems.
-.TP
-.BI \-R " raid-options"
-Set raid-related options for the filesystem.  Raid options are comma
-separated, and may take an argument using the equals ('=') sign.  The 
-following options are supported:
-.RS 1.2i
-.TP
-.BI stride= stripe-size
-Configure the filesystem for a RAID array with
-.I stripe-size
-filesystem blocks per stripe.
-.RE
 .TP
 .B \-S
 Write superblock and group descriptors only.  This is useful if all of
