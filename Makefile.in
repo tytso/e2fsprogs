@@ -11,7 +11,7 @@ LIB_SUBDIRS=lib/et lib/ss lib/ext2fs lib/e2p lib/uuid
 PROG_SUBDIRS=e2fsck debugfs misc resize tests/progs 
 SUBDIRS=$(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
-SUBS= include/linux/types.h
+SUBS= include/asm/types.h
 
 TAR=tar
 
@@ -76,15 +76,15 @@ distclean: distclean-recursive distclean-local
 
 realclean: realclean-recursive realclean-local
 
-include/linux/types.h: $(DEP_SUBSTITUTE) $(srcdir)/include/linux/types.h.in
-	$(SUBSTITUTE) $(srcdir)/include/linux/types.h.in \
-	> include/linux/types.h
+include/asm/types.h: $(DEP_SUBSTITUTE) $(srcdir)/include/asm/types.h.in
+	$(SUBSTITUTE) $(srcdir)/include/asm/types.h.in \
+	> include/asm/types.h
 
 mostlyclean-local:
 	$(RM) -f \#* *~ core MAKELOG 
 clean-local: mostlyclean-local
 distclean-local: clean-local
-	$(RM) -f include/linux/types.h $(SUBSTITUTE)
+	$(RM) -f include/asm/types.h $(SUBSTITUTE)
 	$(RM) -f config.status config.log config.cache MCONFIG Makefile
 realclean-local: distclean-local
 	$(RM) -f configure

@@ -488,6 +488,18 @@ AC_CACHE_VAL(ac_cv_e2fsprogs_use_static,
 AC_TRY_LINK([#include <stdio.h>],[fflush(stdout);],
  ac_cv_e2fsprogs_use_static=yes, ac_cv_e2fsprogs_use_static=no)
 LDFLAGS=$SAVE_LDFLAGS])
+dnl
+dnl Regardless of how the test turns out, Solaris doesn't handle -static
+dnl This is caused by the socket library requiring the nsl library, which
+dnl requires the -dl library, which only works for dynamically linked 
+dnl programs.  It basically means you can't have statically linked programs
+dnl which use the network under Solaris.  
+dnl
+case "$host_os" in
+solaris2.*)
+	ac_cv_e2fsprogs_use_static=no	
+;;
+esac
 AC_MSG_RESULT($ac_cv_e2fsprogs_use_static)
 LDFLAG_STATIC=
 if test $ac_cv_e2fsprogs_use_static = yes; then
@@ -522,6 +534,7 @@ dnl
 test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux
+test -d include/asm || mkdir include/asm
 rmakefile=
 if test -d ${srcdir}/resize ; then
    rmakefile=resize/Makefile

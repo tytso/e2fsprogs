@@ -2378,6 +2378,11 @@ rm -f conftest*
 LDFLAGS=$SAVE_LDFLAGS
 fi
 
+case "$host_os" in
+solaris2.*)
+	ac_cv_e2fsprogs_use_static=no	
+;;
+esac
 echo "$ac_t""$ac_cv_e2fsprogs_use_static" 1>&6
 LDFLAG_STATIC=
 if test $ac_cv_e2fsprogs_use_static = yes; then
@@ -2399,6 +2404,7 @@ DO_SUBSTITUTE_SCRIPT=$srcdir/lib/do_substitute
 test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux
+test -d include/asm || mkdir include/asm
 rmakefile=
 if test -d ${srcdir}/resize ; then
    rmakefile=resize/Makefile

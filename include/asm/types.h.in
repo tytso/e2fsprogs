@@ -11,7 +11,11 @@ typedef unsigned int	__u64;
 typedef long		__s64;
 typedef unsigned long	__u64;
 #elif (@SIZEOF_LONG_LONG@ == 8)
+#if defined(__GNUC__)
 typedef __signed__ long long 	__s64;
+#else
+typedef signed long long 	__s64;
+#endif
 typedef unsigned long long	__u64;
 #endif
 
