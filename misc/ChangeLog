@@ -1,5 +1,7 @@
 1998-03-29  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* e2label.8.in: New man page to document the e2label function.
+
 	* e2label.c: Fix -Wall warning by making functions static.
 
 1998-03-28  Theodore Ts'o  <tytso@rsts-11.mit.edu>
