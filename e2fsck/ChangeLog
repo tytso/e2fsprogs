@@ -13,7 +13,7 @@
 		abort, and then offer to clear the journal.
 
 	* Makefile.in: Move include/asm/types.h.in to
-		lib/ext2fs/ext2_fs.h.in.
+		lib/ext2fs/ext2_types.h.in.
 
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
