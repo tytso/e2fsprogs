@@ -325,7 +325,7 @@ binary-arch: install install-udeb
 	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
 	dh_installinfo -pe2fslibs-dev ${stdbuilddir}/doc/libext2fs.info
 
-	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibblkid${BLKID_SOVERSION} ChangeLog
+	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibblkid${BLKID_SOVERSION}
 
 	for i in libcomerr${COMERR_SOVERSION} libss${SS_SOVERSION} ; do \
 	  mkdir -p ${maindir}/usr/share/doc/$$i ; \
