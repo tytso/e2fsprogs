@@ -43,9 +43,11 @@
 static errcode_t check_mntent_file(const char *mtab_file, const char *file, 
 				   int *mount_flags, char *mtpt, int mtlen)
 {
-	FILE * f;
-	struct mntent * mnt;
-	int	fd;
+	struct mntent 	*mnt;
+	struct stat	st_mntpnt, st_file;
+	errcode_t	retval = 0;
+	FILE 		*f;
+	int		fd;
 
 	*mount_flags = 0;
 	if ((f = setmntent (mtab_file, "r")) == NULL)
@@ -56,16 +58,15 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 
 	if (mnt == 0) {
 #ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
-		struct stat st_root, st_file;
 		/*
 		 * Do an extra check to see if this is the root device.  We
-		 * can't trust /etc/fstab, and /proc/mounts will only list
+		 * can't trust /etc/mtab, and /proc/mounts will only list
 		 * /dev/root for the root filesystem.  Argh.  Instead we
 		 * check if the given device has the same major/minor number
 		 * as the device that the root directory is on.
 		 */
-		if (stat("/", &st_root) == 0 && stat(file, &st_file) == 0) {
-			if (st_root.st_dev == st_file.st_rdev) {
+		if (stat("/", &st_mntpnt) == 0 && stat(file, &st_file) == 0) {
+			if (st_mntpnt.st_dev == st_file.st_rdev) {
 				*mount_flags = EXT2_MF_MOUNTED;
 				if (mtpt)
 					strncpy(mtpt, "/", mtlen);
@@ -73,9 +74,36 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 			}
 		}
 #endif
-		endmntent (f);
-		return 0;
+		goto exit;
 	}
+#ifndef __GNU__ /* The GNU hurd is deficient; what else is new? */
+	/* Validate the entry in case /etc/mtab is out of date */
+	/* 
+	 * We need to be paranoid, because some broken distributions
+	 * (read: Slackware) don't initialize /etc/mtab before checking
+	 * all of the non-root filesystems on the disk.
+	 */
+	if (stat(mnt->mnt_dir, &st_mntpnt) < 0) {
+		retval = errno;
+		if (retval == ENOENT) {
+#ifdef DEBUG
+			printf("Bogus entry in %s!  (%s does not exist)\n",
+			       mtab_file, mnt->mnt_dir);
+#endif
+			retval = 0;
+		}
+		goto exit;
+	}
+	if (stat(file, &st_file) == 0) {
+		if (st_mntpnt.st_dev != st_file.st_rdev) {
+#ifdef DEBUG
+			printf("Bogus entry in %s!  (%s not mounted on %s)\n",
+			       mtab_file, file, mnt->mnt_dir);
+#endif
+			goto exit;
+		}
+	}
+#endif
 	*mount_flags = EXT2_MF_MOUNTED;
 	
 	/* Check to see if the ro option is set */
@@ -102,8 +130,10 @@ is_root:
 			close(fd);
 		(void) unlink(TEST_FILE);
 	}
+	retval = 0;
+exit:
 	endmntent (f);
-	return 0;
+	return retval;
 }
 
 static errcode_t check_mntent(const char *file, int *mount_flags,
@@ -111,6 +141,12 @@ static errcode_t check_mntent(const char *file, int *mount_flags,
 {
 	errcode_t	retval;
 
+#ifdef DEBUG
+	retval = check_mntent_file("/tmp/mtab", file, mount_flags,
+				   mtpt, mtlen);
+	if (retval == 0)
+		return 0;
+#endif
 #ifdef __linux__
 	retval = check_mntent_file("/proc/mounts", file, mount_flags,
 				   mtpt, mtlen);

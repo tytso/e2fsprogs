@@ -4,6 +4,17 @@
 		which was breaking the build on the Hurd.  (Addresses
 		Debian bug #112414).
 
+2001-09-13  Theodore Ts'o  <tytso@valinux.com>
+
+	* ismounted.c (check_mntent_file): We now validate the entry in
+		/etc/mtab to make sure the filesystem is really mounted,
+		since some broken distributions (read: Slackware) have
+		buggy boot scripts that don't initialize /etc/mtab before
+		checking non-root filesystems.  (Slackware also doesn't
+		check the root filesystem separately, and reboot if the
+		root filesystem had changes applied to it, which is
+		dangerous and broken.)   
+
 2001-09-02  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.24a
