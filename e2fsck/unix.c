@@ -436,6 +436,16 @@ static void signal_progress_off(int sig)
 	e2fsck_clear_progbar(ctx);
 	ctx->progress = 0;
 }
+
+static void signal_cancel(int sig)
+{
+	e2fsck_t ctx = e2fsck_global_ctx;
+
+	if (!ctx)
+		exit(FSCK_CANCELED);
+
+	ctx->flags |= E2F_FLAG_CANCEL;
+}
 #endif
 
 static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
@@ -632,6 +642,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	sigaction(SIGUSR1, &sa, 0);
 	sa.sa_handler = signal_progress_off;
 	sigaction(SIGUSR2, &sa, 0);
+	sa.sa_handler = signal_cancel;
+	sigaction(SIGINT, &sa, 0);
+	sigaction(SIGTERM, &sa, 0);
 #endif
 
 	/* Update our PATH to include /sbin if we need to run badblocks  */
@@ -958,23 +971,26 @@ restart:
 		ext2fs_close(fs);
 		goto restart;
 	}
-	if (run_result & E2F_FLAG_SIGNAL_MASK)
-		fatal_error(ctx, 0);
-	if (run_result & E2F_FLAG_CANCEL)
-		ext2fs_unmark_valid(fs);
+	if (run_result & E2F_FLAG_CANCEL) {
+		printf(_("%s: e2fsck canceled.\n"), ctx->device_name ?
+		       ctx->device_name : ctx->filesystem_name);
+		exit_value |= FSCK_CANCELED;
+	}
+	if (run_result & E2F_FLAG_ABORT)
+		fatal_error(ctx, _("aborted"));
 
 #ifdef MTRACE
 	mtrace_print("Cleanup");
 #endif
 	if (ext2fs_test_changed(fs)) {
-		exit_value = FSCK_NONDESTRUCT;
+		exit_value |= FSCK_NONDESTRUCT;
 		if (!(ctx->options & E2F_OPT_PREEN))
 		    printf(_("\n%s: ***** FILE SYSTEM WAS MODIFIED *****\n"),
 			       ctx->device_name);
 		if (root_filesystem && !read_only_root) {
 			printf(_("%s: ***** REBOOT LINUX *****\n"),
 			       ctx->device_name);
-			exit_value = FSCK_REBOOT;
+			exit_value |= FSCK_REBOOT;
 		}
 	}
 	if (ext2fs_test_valid(fs))
@@ -982,12 +998,13 @@ restart:
 	else {
 		printf(_("\n%s: ********** WARNING: Filesystem still has "
 			 "errors **********\n\n"), ctx->device_name);
-		exit_value = FSCK_UNCORRECTED;
+		exit_value |= FSCK_UNCORRECTED;
+		exit_value &= ~FSCK_NONDESTRUCT;
 	}
 	if (!(ctx->options & E2F_OPT_READONLY)) {
 		if (ext2fs_test_valid(fs)) {
 			if (!(sb->s_state & EXT2_VALID_FS))
-				exit_value = FSCK_NONDESTRUCT;
+				exit_value |= FSCK_NONDESTRUCT;
 			sb->s_state = EXT2_VALID_FS;
 		} else
 			sb->s_state &= ~EXT2_VALID_FS;
@@ -995,7 +1012,10 @@ restart:
 		sb->s_lastcheck = time(NULL);
 		ext2fs_mark_super_dirty(fs);
 	}
-	show_stats(ctx);
+	if (exit_value & FSCK_CANCELED)
+		exit_value &= ~FSCK_NONDESTRUCT;
+	else
+		show_stats(ctx);
 
 	e2fsck_write_bitmaps(ctx);
 	

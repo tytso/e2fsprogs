@@ -214,13 +214,15 @@ is the sum of the following conditions:
 .br
 \	2\	\-\ File system errors corrected, system should
 .br
-\	\	\ \ be rebooted if file system was mounted
+\	\	\ \ be rebooted
 .br
 \	4\	\-\ File system errors left uncorrected
 .br
 \	8\	\-\ Operational error
 .br
 \	16\	\-\ Usage or syntax error
+.br
+\	32\	\-\ E2fsck canceled by user request
 .br
 \	128\	\-\ Shared library error
 .br

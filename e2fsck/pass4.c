@@ -109,6 +109,8 @@ void e2fsck_pass4(e2fsck_t ctx)
 			return;
 	
 	for (i=1; i <= fs->super->s_inodes_count; i++) {
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+			return;
 		if ((i % fs->super->s_inodes_per_group) == 0) {
 			group++;
 			if (ctx->progress)

@@ -49,6 +49,8 @@ is the sum of the following conditions:
 .br
 \	16\	\-\ Usage or syntax error
 .br
+\	32\	\-\ Fsck canceled by user request
+.br
 \	128\	\-\ Shared library error
 .br
 The exit code returned when all file systems are checked using the

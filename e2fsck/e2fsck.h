@@ -58,6 +58,7 @@
 #define FSCK_UNCORRECTED 4	/* File system errors left uncorrected */
 #define FSCK_ERROR       8	/* Operational error */
 #define FSCK_USAGE       16	/* Usage or syntax error */
+#define FSCK_CANCELED	 32	/* Aborted with a signal or ^C */
 #define FSCK_LIBRARY     128	/* Shared library error */
 
 /*

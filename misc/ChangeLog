@@ -1,3 +1,10 @@
+2002-07-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.8.in: Document new fsck exit code, FSCK_CANCELED.
+
+	* fsck.c: Trap SIGINT and SIGTERM, and relay it to all of the
+		child fsck processes.
+
 2002-07-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (zap_sector): Clear the buffer *after* testing for the

@@ -148,6 +148,8 @@ void e2fsck_pass2(e2fsck_t ctx)
 
 #ifdef ENABLE_HTREE
 	for (i=0; (dx_dir = e2fsck_dx_dir_info_iter(ctx, &i)) != 0;) {
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+			return;
 		if (dx_dir->numblocks == 0)
 			continue;
 		clear_problem_context(&pctx);
@@ -565,9 +567,11 @@ static int check_dir_block(ext2_filsys fs,
 	buf = cd->buf;
 	ctx = cd->ctx;
 
-	if (ctx->progress)
-		if ((ctx->progress)(ctx, 2, cd->count++, cd->max))
-			return DIRENT_ABORT;
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		return DIRENT_ABORT;
+	
+	if (ctx->progress && (ctx->progress)(ctx, 2, cd->count++, cd->max))
+		return DIRENT_ABORT;
 	
 	/*
 	 * Make sure the inode is still in use (could have been 

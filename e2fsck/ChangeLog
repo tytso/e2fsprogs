@@ -1,3 +1,20 @@
+2002-07-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.8.in: Document new exit code FSCK_CANCELED
+
+	* unix.c (PRS, signal_cancel): Capture SIGINT and SIGTERM signals
+		and set a flag in the e2fsck context indicating that
+		cancellation has been requested, so that e2fsck will exit
+		only at safe points.
+		(main): Change the exit handling so that if a cancellation
+		is requested, return FSCK_CANCELED (a new exit code 32).
+		e2fsck can now return more than one exit code as part of a
+		bitmask (as had been documented in the man page).
+
+	* pass2.c (e2fsck_pass2, check_dir_block), pass3.c (e2fsck_pass3),
+		pass4.c (e2fsck_pass4): Check to see if a cancellation was
+		requested, and abort processing if necessary.
+
 2002-07-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* rehash.c, Makefile.in: New file which rewrites directories using

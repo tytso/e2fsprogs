@@ -100,6 +100,8 @@ int progress = 0;
 int force_all_parallel = 0;
 int num_running = 0;
 int max_running = 0;
+volatile int cancel_requested = 0;
+int kill_sent = 0;
 char *progname;
 char *fstype = NULL;
 struct fs_info *filesys_info;
@@ -468,6 +470,23 @@ static int execute(const char *type, char *device, char *mntpt,
 }
 
 /*
+ * Send a signal to all outstanding fsck child processes
+ */
+static int kill_all(int signal)
+{
+	struct fsck_instance *inst;
+	int	n = 0;
+
+	for (inst = instance_list; inst; inst = inst->next) {
+		if (inst->flags & FLAG_DONE)
+			continue;
+		kill(inst->pid, signal);
+		n++;
+	}
+	return n;
+}
+
+/*
  * Wait for one child process to exit; when it does, unlink it from
  * the list of executing child processes, and return it.
  */
@@ -502,6 +521,10 @@ static struct fsck_instance *wait_one(int flags)
 	
 	do {
 		pid = waitpid(-1, &status, flags);
+		if (cancel_requested && !kill_sent) {
+			kill_all(SIGTERM);
+			kill_sent++;
+		}
 		if ((pid == 0) && (flags & WNOHANG))
 			return NULL;
 		if (pid < 0) {
@@ -908,6 +931,8 @@ static int check_all(NOARGS)
 		pass_done = 1;
 
 		for (fs = filesys_info; fs; fs = fs->next) {
+			if (cancel_requested)
+				break;
 			if (fs->flags & FLAG_DONE)
 				continue;
 			/*
@@ -945,6 +970,8 @@ static int check_all(NOARGS)
 				break;
 			}
 		}
+		if (cancel_requested)
+			break;
 		if (verbose > 1)
 			printf(_("--waiting-- (pass %d)\n"), passno);
 		status |= wait_all(pass_done ? 0 : WNOHANG);
@@ -954,6 +981,10 @@ static int check_all(NOARGS)
 			passno++;
 		} else
 			not_done_yet++;
+	}
+	if (cancel_requested && !kill_sent) {
+		kill_all(SIGTERM);
+		kill_sent++;
 	}
 	status |= wait_all(0);
 	return status;
@@ -966,6 +997,13 @@ static void usage(NOARGS)
 	exit(EXIT_USAGE);
 }
 
+#ifdef HAVE_SIGNAL_H
+static void signal_cancel(int sig)
+{
+	cancel_requested++;
+}
+#endif
+
 static void PRS(int argc, char *argv[])
 {
 	int	i, j;
@@ -973,6 +1011,17 @@ static void PRS(int argc, char *argv[])
 	char	options[128];
 	int	opt = 0;
 	int     opts_for_fsck = 0;
+#ifdef HAVE_SIGNAL_H
+	struct sigaction	sa;
+
+	/*
+	 * Set up signal action
+	 */
+	memset(&sa, 0, sizeof(struct sigaction));
+	sa.sa_handler = signal_cancel;
+	sigaction(SIGINT, &sa, 0);
+	sigaction(SIGTERM, &sa, 0);
+#endif
 	
 	num_devices = 0;
 	num_args = 0;
@@ -1128,6 +1177,13 @@ int main(int argc, char *argv[])
 		exit(EXIT_ERROR);
 	}
 	for (i = 0 ; i < num_devices; i++) {
+		if (cancel_requested) {
+			if (!kill_sent) {
+				kill_all(SIGTERM);
+				kill_sent++;
+			}
+			break;
+		}
 		fsck_device(devices[i], interactive);
 		if (serialize || (num_running >= max_running)) {
 			struct fsck_instance *inst;
