@@ -11,8 +11,6 @@
 
 #include <errno.h>
 
-#include "et/com_err.h"
-
 #include "e2fsck.h"
 #include "problem.h"
 

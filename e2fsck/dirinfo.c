@@ -5,7 +5,6 @@
  * under the terms of the GNU Public License.
  */
 
-#include <et/com_err.h>
 #include "e2fsck.h"
 
 /*

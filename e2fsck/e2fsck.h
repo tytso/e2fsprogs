@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <time.h>
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif

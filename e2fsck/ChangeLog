@@ -1,3 +1,12 @@
+Sun Feb  1 07:57:14 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dirinfo.c, e2fsck.c: Don't include com_err.h; it isn't needed.
+
+	* e2fsck.h: Include <time.h> since it is needed
+
+	* super.c: If EXT2_SKIP_UUID is defined, then skip the UUID
+		processing. 
+
 Tue Jan 20 15:37:01 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* unix.c (main): In the case where the filesystem revision is too

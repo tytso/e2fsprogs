@@ -26,7 +26,9 @@
 #include <mntent.h>
 #endif
 
+#ifndef EXT2_SKIP_UUID
 #include "uuid/uuid.h"
+#endif
 #include "e2fsck.h"
 #include "problem.h"
 #include "../version.h"
@@ -189,6 +191,7 @@ void check_super_block(e2fsck_t ctx)
 		ext2fs_mark_super_dirty(fs);
 	}
 
+#ifndef EXT2_SKIP_UUID
 	/*
 	 * If the UUID field isn't assigned, assign it.
 	 */
@@ -199,6 +202,7 @@ void check_super_block(e2fsck_t ctx)
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
+#endif
 	return;
 }
 
