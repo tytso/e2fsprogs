@@ -1,3 +1,8 @@
+2005-01-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2image.c, e2image.8.in: Add support for the -s option which
+		scrambles directory entries for raw image files.
+
 2005-01-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.c: On Solaris, defining _XOPEN_SOURCE inexplicably

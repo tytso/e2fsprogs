@@ -8,7 +8,7 @@ e2image \- Save critical ext2/ext3 filesystem data to a file
 .SH SYNOPSIS
 .B e2image
 [
-.B \-rI
+.B \-rsI
 ]
 .I device
 .I image-file
@@ -45,38 +45,6 @@ requires random-access access to the file, which can not be done using a
 pipe.  This restriction will hopefully be lifted in a future version of
 .BR e2image .)
 .PP
-The 
-.B \-I 
-option will cause e2image to install the metadata stored in the image
-file to the device.    It can be used to restore the filesystem metadata
-back to the device in emergency situations.
-.PP
-.B WARNING!!!!
-The
-.B \-I 
-option should only be used as desperation measure when other
-alternatives have failed.  If the filesystem has changed since the image
-file was created, data
-.B will
-be lost.  In general, you should make a full image
-backup of the filesystem first, in case you wish to try other recovery
-strategies afterwards.
-.PP
-The 
-.B \-r
-option will create a raw image file instead of a normal image file.  
-A raw image file differs
-from a normal image file in two ways.  First, the filesystem metadata is
-placed in the proper position so that e2fsck, dumpe2fs, debugfs,
-etc. can be run directly on the raw image file.  In order to minimize
-the amount of disk space consumed by a raw image file, the file is
-created as a sparse file.  (Beware of copying or
-compressing/decompressing this file with utilities that don't understand
-how to create sparse files; the file will become as large as the
-filesystem itself!)  Secondly, the raw image file also includes indirect
-blocks and data blocks, which the current image file does not have,
-although this may change in the future.
-.PP
 It is a very good idea to periodically (at boot time and 
 every week or so) to create image files for all of
 filesystems on a system, as well as saving the partition
@@ -105,6 +73,58 @@ image file be approximately 35 megabytes; a 4 gigabyte filesystem with
 image file.  Image files tend to be quite
 compressible; an image file taking up 32 megabytes of space on
 disk will generally compress down to 3 or 4 megabytes.
+.PP
+.SH RESTORING FILESYSTEM METADATA USING AN IMAGE FILE
+.PP
+The 
+.B \-I 
+option will cause e2image to install the metadata stored in the image
+file back to the device.    It can be used to restore the filesystem metadata
+back to the device in emergency situations.
+.PP
+.B WARNING!!!!
+The
+.B \-I 
+option should only be used as desperation measure when other
+alternatives have failed.  If the filesystem has changed since the image
+file was created, data
+.B will
+be lost.  In general, you should make a full image
+backup of the filesystem first, in case you wish to try other recovery
+strategies afterwards.
+.PP
+.SH RAW IMAGE FILES
+The 
+.B \-r
+option will create a raw image file instead of a normal image file.  
+A raw image file differs
+from a normal image file in two ways.  First, the filesystem metadata is
+placed in the proper position so that e2fsck, dumpe2fs, debugfs,
+etc. can be run directly on the raw image file.  In order to minimize
+the amount of disk space consumed by a raw image file, the file is
+created as a sparse file.  (Beware of copying or
+compressing/decompressing this file with utilities that don't understand
+how to create sparse files; the file will become as large as the
+filesystem itself!)  Secondly, the raw image file also includes indirect
+blocks and directory blocks, which the standard image file does not have,
+although this may change in the future.
+.PP
+Raw image files are sometimes used when sending filesystems to as part
+of bug reports to e2fsprogs.  When used in this capacity, the
+recommended command is (replace hda1 with appropriate device):
+.PP
+.br
+\	\fBe2image -r /dev/hda1 - | bzip2 > hda1.e2i.bz2\fR
+.PP
+This will only send the metadata information, without any data blocks.  
+However, the filenames in the directory blocks can still reveal
+information about the contents of the filesystem that the bug reporter
+may wish to keep confidential.  To address this concern, the
+.B \-s
+option can be specified.  This will cause
+.B e2image 
+to scramble directory entries and zero out any unused portions
+of the directory blocks before writing them to the image file.
 .PP
 .SH AUTHOR
 .B e2image 

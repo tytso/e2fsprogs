@@ -47,7 +47,8 @@ char * device_name = NULL;
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-r] device image_file\n"), program_name);
+	fprintf(stderr, _("Usage: %s [-rsI] device image_file\n"), 
+		program_name);
 	exit (1);
 }
 
@@ -146,9 +147,11 @@ static void write_image_file(ext2_filsys fs, int fd)
  * These set of functions are used to write a RAW image file.
  */
 ext2fs_block_bitmap meta_block_map;
+ext2fs_block_bitmap scramble_block_map;	/* Directory blocks to be scrambled */
 
 struct process_block_struct {
 	ext2_ino_t	ino;
+	int		is_dir;
 };
 
 /*
@@ -216,7 +219,15 @@ static int process_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 			     int ref_offset EXT2FS_ATTR((unused)), 
 			     void *priv_data EXT2FS_ATTR((unused)))
 {
+	struct process_block_struct *p;
+
+	p = (struct process_block_struct *) priv_data;
+
+	printf("block %d, ino %d, is_dir=%d\n", *block_nr, p->ino, p->is_dir);
+
 	ext2fs_mark_block_bitmap(meta_block_map, *block_nr);
+	if (scramble_block_map && p->is_dir && blockcnt >= 0) 
+		ext2fs_mark_block_bitmap(scramble_block_map, *block_nr);
 	return 0;
 }
 
@@ -326,14 +337,83 @@ static void write_block(int fd, char *buf, int sparse_offset,
 	}
 }
 
+int name_id[256];
+
+static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
+{
+	char *p, *end, *cp;
+	struct ext2_dir_entry_2 *dirent;
+	int rec_len, id, len;
+
+	printf("Scrambling directory block %d\n", blk);
+
+	end = buf + fs->blocksize;
+	for (p = buf; p < end-8; p += rec_len) {
+		dirent = (struct ext2_dir_entry_2 *) p;
+		rec_len = dirent->rec_len;
+#ifdef EXT2FS_ENABLE_SWAPFS
+		if (fs->flags & EXT2_FLAG_SWAP_BYTES) 
+			rec_len = ext2fs_swab16(rec_len);
+#endif
+#if 0
+		printf("rec_len = %d, name_len = %d\n", rec_len, dirent->name_len);
+#endif
+		if (rec_len < 8 || (rec_len % 4) ||
+		    (p+rec_len > end)) {
+			printf("Corrupt directory block %lu: "
+			       "bad rec_len (%d)\n", blk, rec_len);
+			rec_len = end - p;
+#ifdef EXT2FS_ENABLE_SWAPFS
+			if (fs->flags & EXT2_FLAG_SWAP_BYTES) 
+				dirent->rec_len = ext2fs_swab16(rec_len);
+#endif
+			continue;
+		}
+		if (dirent->name_len + 8 > rec_len) {
+			printf("Corrupt directory block %lu: "
+			       "bad name_len (%d)\n", blk, dirent->name_len);
+			dirent->name_len = rec_len - 8;
+			continue;
+		}
+		if (dirent->name_len==1 && p[8] == '.')
+			continue;
+		if (dirent->name_len==2 && p[8] == '.' && p[9] == '.')
+			continue;
+
+		cp = p+8;
+		memset(cp, 'A', dirent->name_len);
+		len = rec_len - dirent->name_len - 8;
+		if (len > 0)
+			memset(cp+dirent->name_len, 0, len);
+		len = dirent->name_len;
+		id = name_id[len]++;
+		while ((len > 0) && (id > 0)) {
+			*cp += id % 26;
+			id = id / 26;
+			cp++;
+			len--;
+		}
+	}
+}
+
 static void output_meta_data_blocks(ext2_filsys fs, int fd)
 {
 	errcode_t	retval;
 	blk_t		blk;
-	char		buf[8192], zero_buf[8192];
+	char		*buf, *zero_buf;
 	int		sparse = 0;
 
-	memset(zero_buf, 0, sizeof(zero_buf));
+	buf = malloc(fs->blocksize);
+	if (!buf) {
+		com_err(program_name, ENOMEM, "while allocating buffer");
+		exit(1);
+	}
+	zero_buf = malloc(fs->blocksize);
+	if (!zero_buf) {
+		com_err(program_name, ENOMEM, "while allocating buffer");
+		exit(1);
+	}
+	memset(zero_buf, 0, fs->blocksize);
 	for (blk = 0; blk < fs->super->s_blocks_count; blk++) {
 		if ((blk >= fs->super->s_first_data_block) &&
 		    ext2fs_test_block_bitmap(meta_block_map, blk)) {
@@ -342,6 +422,9 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 				com_err(program_name, retval,
 					"error reading block %d", blk);
 			}
+			if (scramble_block_map && 
+			    ext2fs_test_block_bitmap(scramble_block_map, blk))
+				scramble_dir_block(fs, blk, buf);
 			if ((fd != 1) && check_zero_block(buf, fs->blocksize))
 				goto sparse_write;
 			write_block(fd, buf, sparse, fs->blocksize, blk);
@@ -363,7 +446,7 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 	write_block(fd, zero_buf, sparse, 1, -1);
 }
 
-static void write_raw_image_file(ext2_filsys fs, int fd)
+static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 {
 	struct process_block_struct	pb;
 	struct ext2_inode		inode;
@@ -377,6 +460,16 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 	if (retval) {
 		com_err(program_name, retval, "while allocating block bitmap");
 		exit(1);
+	}
+
+	if (scramble_flag) {
+		retval = ext2fs_allocate_block_bitmap(fs, "scramble block map",
+						      &scramble_block_map);
+		if (retval) {
+			com_err(program_name, retval, 
+				"while allocating scramble block bitmap");
+			exit(1);
+		}
 	}
 	
 	mark_table_blocks(fs);
@@ -416,6 +509,8 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 			continue;
 		
 		stashed_ino = ino;
+		pb.ino = ino;
+		pb.is_dir = LINUX_S_ISDIR(inode.i_mode);
 		if (LINUX_S_ISDIR(inode.i_mode) ||
 		    (LINUX_S_ISLNK(inode.i_mode) &&
 		     ext2fs_inode_has_valid_blocks(&inode)) ||
@@ -523,6 +618,7 @@ int main (int argc, char ** argv)
 	int open_flag = 0;
 	int raw_flag = 0;
 	int install_flag = 0;
+	int scramble_flag = 0;
 	int fd = 0;
 
 #ifdef ENABLE_NLS
@@ -536,10 +632,13 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	initialize_ext2_error_table();
-	while ((c = getopt (argc, argv, "rI")) != EOF)
+	while ((c = getopt (argc, argv, "rsI")) != EOF)
 		switch (c) {
 		case 'r':
 			raw_flag++;
+			break;
+		case 's':
+			scramble_flag++;
 			break;
 		case 'I':
 			install_flag++;
@@ -582,7 +681,7 @@ int main (int argc, char ** argv)
 	}
 
 	if (raw_flag)
-		write_raw_image_file(fs, fd);
+		write_raw_image_file(fs, fd, scramble_flag);
 	else
 		write_image_file(fs, fd);
 
