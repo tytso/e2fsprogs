@@ -1,5 +1,8 @@
 2000-10-24    <tytso@snap.thunk.org>
 
+	* get_device_by_label.c: Apply fix from Erik Troan to support 16
+		character labels.
+
 	* fsck.c (device_already_active): Add a special case check for MD
 		devices, so we don't try to check them in parallel with
 		other devices.

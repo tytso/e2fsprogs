@@ -75,7 +75,9 @@ get_label_uuid(const char *device, char **label, char *uuid) {
 
 	/* superblock is ext2 - now what is its label? */
 	memcpy(uuid, e2sb.s_uuid, sizeof(e2sb.s_uuid));
-	*label = strdup(e2sb.s_volume_name);
+
+	*label = calloc(sizeof(e2sb.s_volume_name) + 1, 1);
+	memcpy(*label, e2sb.s_volume_name, sizeof(e2sb.s_volume_name));
 
 	return 0;
 }
