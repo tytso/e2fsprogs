@@ -29,6 +29,7 @@ CC = @CC@
 BUILD_CC = @BUILD_CC@
 DEFS = @DEFS@
 CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
 ALL_CFLAGS = $(CPPFLAGS) $(DEFS) $(WFLAGS) $(CFLAGS) $(XTRA_CFLAGS) \
 	-I$(top_builddir)/lib -I$(top_srcdir)/lib \
 	-I$(top_srcdir)/include $(LINUX_INCLUDE) 
@@ -98,7 +99,7 @@ SUBSTITUTE= $(top_builddir)/util/subst -f $(SUBST_CONF)
 DEP_SUBSTITUTE= $(top_builddir)/util/subst $(SUBST_CONF)
 
 $(top_builddir)/util/subst:
-	(cd $(top_builddir)/util ; $(MAKE) subst)
+	cd $(top_builddir)/util ; $(MAKE) subst
 
 #
 # Warning flags
@@ -137,22 +138,22 @@ DEP_LIB_MAKEFILES = $(top_srcdir)/lib/Makefile.elf-lib  \
 	$(top_srcdir)/lib/Makefile.checker $(top_srcdir)/lib/Makefile.profile
 
 $(top_builddir)/config.status: $(top_srcdir)/configure
-	(cd $(top_builddir); ./config.status --recheck)
+	cd $(top_builddir); ./config.status --recheck
 
 $(top_builddir)/MCONFIG: $(top_srcdir)/MCONFIG.in $(top_builddir)/config.status
-	(cd $(top_builddir); CONFIG_FILES=MCONFIG ./config.status)
+	cd $(top_builddir); CONFIG_FILES=MCONFIG ./config.status
 
 $(top_builddir)/lib/substitute_sh: $(top_srcdir)/lib/substitute_sh.in \
 		$(top_builddir)/config.status
-	(cd $(top_builddir); CONFIG_FILES=lib/substitute_sh ./config.status)
+	cd $(top_builddir); CONFIG_FILES=lib/substitute_sh ./config.status
 
 $(top_builddir)/util/subst.conf: $(top_srcdir)/util/subst.conf.in \
 		$(top_builddir)/config.status
-	(cd $(top_builddir); CONFIG_FILES=util/subst.conf ./config.status)
+	cd $(top_builddir); CONFIG_FILES=util/subst.conf ./config.status
 
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/MCONFIG \
 		$(DEP_MAKEFILE) $(top_builddir)/config.status
-	(cd $(top_builddir); CONFIG_FILES=$(my_dir)/Makefile ./config.status)
+	cd $(top_builddir); CONFIG_FILES=$(my_dir)/Makefile ./config.status
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.in
 	cd $(top_srcdir) && autoconf

@@ -1,3 +1,9 @@
+2000-04-02  Theodore Ts'o  <tytso@valinux.com>
+
+	* MCONFIG.in (CPPFLAGS): Add define of CPPFLAGS from @CPPFLAGS@.
+		Remove uneeded parenthesis around shell pipelines
+		containing a "cd" command.
+
 2000-02-11    <tytso@snap.thunk.org>
 
 	* Makefile.in: Exclude the internationalization files from being
