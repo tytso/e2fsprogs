@@ -243,8 +243,10 @@ static void update_feature_set(ext2_filsys fs, char *features)
 				exit(1);
 			}
 		}
-		if (sb->s_journal_dev)
+		if (sb->s_journal_dev) {
 			remove_journal_device(fs);
+			journal = old_journal;
+		}
 	}
 	if (journal && !old_journal) {
 		/*
