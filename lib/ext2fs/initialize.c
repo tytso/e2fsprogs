@@ -84,6 +84,15 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_max_mnt_count, EXT2_DFL_MAX_MNT_COUNT);
 	set_field(s_errors, EXT2_ERRORS_DEFAULT);
 
+
+#ifdef EXT2_DYNAMIC_REV
+	set_field(s_rev_level, EXT2_GOOD_OLD_REV);
+	if (super->s_rev_level >= EXT2_DYNAMIC_REV) {
+		set_field(s_first_ino, EXT2_GOOD_OLD_FIRST_INO);
+		set_field(s_inode_size, EXT2_GOOD_OLD_INODE_SIZE);
+	}
+#endif
+
 	set_field(s_checkinterval, EXT2_DFL_CHECKINTERVAL);
 	super->s_lastcheck = time(NULL);
 
@@ -108,6 +117,8 @@ retry:
 				super->s_first_data_block +
 				EXT2_BLOCKS_PER_GROUP(super) - 1)
 		/ EXT2_BLOCKS_PER_GROUP(super);
+	if (fs->group_desc_count == 0)
+		return EXT2_ET_TOOSMALL;
 	fs->desc_blocks = (fs->group_desc_count +
 			   EXT2_DESC_PER_BLOCK(super) - 1)
 		/ EXT2_DESC_PER_BLOCK(super);
@@ -131,12 +142,24 @@ retry:
 	 * the inode table blocks in the descriptor.  If not, add some
 	 * additional inodes/group.  Waste not, want not...
 	 */
-	fs->inode_blocks_per_group = (super->s_inodes_per_group +
-				      EXT2_INODES_PER_BLOCK(super) - 1) /
-					      EXT2_INODES_PER_BLOCK(super);
-	super->s_inodes_per_group = fs->inode_blocks_per_group *
-		EXT2_INODES_PER_BLOCK(super);
-		
+	fs->inode_blocks_per_group = (((super->s_inodes_per_group *
+					EXT2_INODE_SIZE(super)) +
+				       EXT2_BLOCK_SIZE(super) - 1) /
+				      EXT2_BLOCK_SIZE(super));
+	super->s_inodes_per_group = ((fs->inode_blocks_per_group *
+				      EXT2_BLOCK_SIZE(super)) /
+				     EXT2_INODE_SIZE(super));
+	/*
+	 * Finally, make sure the number of inodes per group is a
+	 * multiple of 8.  This is needed to simplify the bitmap
+	 * splicing code.
+	 */
+	super->s_inodes_per_group &= ~7;
+	fs->inode_blocks_per_group = (((super->s_inodes_per_group *
+					EXT2_INODE_SIZE(super)) +
+				       EXT2_BLOCK_SIZE(super) - 1) /
+				      EXT2_BLOCK_SIZE(super));
+
 	/*
 	 * adjust inode count to reflect the adjusted inodes_per_group
 	 */

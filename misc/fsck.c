@@ -123,6 +123,7 @@ int serialize = 0;
 int skip_root = 0;
 int like_mount = 0;
 int notitle = 0;
+int parallel_root = 0;
 char *progname;
 char *fstype = NULL;
 struct fs_info *filesys_info;
@@ -555,16 +556,18 @@ static int check_all(NOARGS)
 	/*
 	 * Find and check the root filesystem first.
 	 */
-	for (fs = filesys_info; fs; fs = fs->next) {
-		if (!strcmp(fs->mountpt, "/"))
-			break;
-	}
-	if (fs && !skip_root && !ignore(fs)) {
-		fsck_device(fs->device);
-		fs->flags |= FLAG_DONE;
-		status |= wait_all();
-		if (status > EXIT_NONDESTRUCT)
-			return status;
+	if (!parallel_root) {
+		for (fs = filesys_info; fs; fs = fs->next) {
+			if (!strcmp(fs->mountpt, "/"))
+				break;
+		}
+		if (fs && !skip_root && !ignore(fs)) {
+			fsck_device(fs->device);
+			fs->flags |= FLAG_DONE;
+			status |= wait_all();
+			if (status > EXIT_NONDESTRUCT)
+				return status;
+		}
 	}
 	if (fs) fs->flags |= FLAG_DONE;
 
@@ -698,6 +701,9 @@ static void PRS(int argc, char *argv[])
 				break;
 			case 'M':
 				like_mount++;
+				break;
+			case 'P':
+				parallel_root++;
 				break;
 			case 's':
 				serialize++;

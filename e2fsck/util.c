@@ -36,7 +36,7 @@ void *allocate_memory(int size, const char *description)
 #endif
 	ret = malloc(size);
 	if (!ret) {
-		sprintf(buf, "%%s: Can't allocate %s\n", description);
+		sprintf(buf, "Can't allocate %s\n", description);
 		fatal_error(buf);
 	}
 	memset(ret, 0, size);

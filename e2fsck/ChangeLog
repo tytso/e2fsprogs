@@ -1,3 +1,34 @@
+Wed Mar 27 00:33:40 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.03
+
+Tue Mar 26 12:03:42 1996    <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (show_stats): Don't use floating point to display
+		percentage of non-contiguous files, as different libc
+		handle result truncation differently, and this causes the
+		test suite to bomb out depending on which libc you are
+		using.
+
+	* util.c (allocate_memory): Fix error message to omit extraneous
+		%%s.
+
+Tue Mar  5 03:50:40 1996    <tytso@rsts-11.mit.edu>
+
+	* pass4.c (pass4): 
+	* pass2.c (check_dir_block): 
+	* pass1.c (pass1): Add support for dynamic first inode revision.
+
+Wed Feb 14 16:27:30 1996    <tytso@rsts-11.mit.edu>
+
+	* pass3.c (check_root): Fix spelling typo
+
+Mon Feb  5 22:30:30 1996    <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (check_super_block): If the superblock fails certain
+		internal consistency checks, exit with a fatal error after
+		printing the "superblock is corrupt message".
+
 Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.02

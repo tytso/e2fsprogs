@@ -141,7 +141,7 @@ _INLINE_ int ext2fs_set_bit(int nr,void * addr)
 	char retval;
 
 	__asm__ __volatile__ ("bfset %2@{%1:#1}; sne %0"
-	     : "=d" (retval) : "d" (nr), "a" (addr));
+	     : "=d" (retval) : "d" (nr^7), "a" (addr));
 
 	return retval;
 }
@@ -151,7 +151,7 @@ _INLINE_ int ext2fs_clear_bit(int nr, void * addr)
 	char retval;
 
 	__asm__ __volatile__ ("bfclr %2@{%1:#1}; sne %0"
-	     : "=d" (retval) : "d" (nr), "a" (addr));
+	     : "=d" (retval) : "d" (nr^7), "a" (addr));
 
 	return retval;
 }
@@ -161,7 +161,7 @@ _INLINE_ int ext2fs_test_bit(int nr, const void * addr)
 	char retval;
 
 	__asm__ __volatile__ ("bftst %2@{%1:#1}; sne %0"
-	     : "=d" (retval) : "d" (nr), "a" (addr));
+	     : "=d" (retval) : "d" (nr^7), "a" (addr));
 
 	return retval;
 }

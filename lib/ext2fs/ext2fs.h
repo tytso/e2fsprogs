@@ -56,6 +56,13 @@ struct ext2fs_struct_block_bitmap {
 
 typedef struct ext2fs_struct_block_bitmap *ext2fs_block_bitmap;
 
+#ifdef EXT2_DYNAMIC_REV
+#define EXT2_FIRST_INODE(s)	EXT2_FIRST_INO(s)
+#else
+#define EXT2_FIRST_INODE(s)	EXT2_FIRST_INO
+#define EXT2_INODE_SIZE(s)	sizeof(struct ext2_inode)
+#endif
+
 /*
  * Flags for the ext2_filsys structure
  */
@@ -67,6 +74,12 @@ typedef struct ext2fs_struct_block_bitmap *ext2fs_block_bitmap;
 #define EXT2_FLAG_IB_DIRTY	0x10
 #define EXT2_FLAG_BB_DIRTY	0x20
 #define EXT2_SWAP_BYTES		0x40
+
+/*
+ * Special flag in the ext2 inode i_flag field that means that this is
+ * a new inode.  (So that ext2_write_inode() can clear extra fields.)
+ */
+#define EXT2_NEW_INODE_FL	0x80000000
 
 struct struct_ext2_filsys {
 	int				magic;
@@ -175,7 +188,10 @@ struct ext2_struct_inode_scan {
 	int			inodes_left, blocks_left, groups_left;
 	int			inode_buffer_blocks;
 	char *			inode_buffer;
-	struct ext2_inode *	inode_scan_ptr;
+	int			inode_size;
+	char *			ptr;
+	int			bytes_left;
+	char			*temp_buffer;
 	errcode_t		(*done_group)(ext2_filsys fs,
 					      ext2_inode_scan scan,
 					      dgrp_t group,

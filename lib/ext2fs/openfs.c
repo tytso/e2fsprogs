@@ -99,16 +99,25 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		retval = EXT2_ET_BAD_MAGIC;
 		goto cleanup;
 	}
+#ifdef EXT2_DYNAMIC_REV
+	if (fs->super->s_rev_level > EXT2_DYNAMIC_REV) {
+		retval = EXT2_ET_REV_TOO_HIGH;
+		goto cleanup;
+	}
+#else
 #ifdef	EXT2_CURRENT_REV
 	if (fs->super->s_rev_level > EXT2_LIB_CURRENT_REV) {
 		retval = EXT2_ET_REV_TOO_HIGH;
 		goto cleanup;
 	}
 #endif
+#endif
 	fs->blocksize = EXT2_BLOCK_SIZE(fs->super);
 	fs->fragsize = EXT2_FRAG_SIZE(fs->super);
-	fs->inode_blocks_per_group = (fs->super->s_inodes_per_group /
-				      EXT2_INODES_PER_BLOCK(fs->super));
+	fs->inode_blocks_per_group = ((fs->super->s_inodes_per_group *
+				       EXT2_INODE_SIZE(fs->super) +
+				       EXT2_BLOCK_SIZE(fs->super) - 1) /
+				      EXT2_BLOCK_SIZE(fs->super));
 	if (block_size) {
 		if (block_size != fs->blocksize) {
 			retval = EXT2_ET_UNEXPECTED_BLOCK_SIZE;

@@ -8,7 +8,7 @@ fsck \- check and repair a Linux file system
 .SH SYNOPSIS
 .B fsck
 [
-.B \-AVRTN
+.B \-AVRTNP
 ]
 [
 .B \-s
@@ -84,6 +84,16 @@ Don't show the title on startup.
 .TP
 .B -N
 Don't execute, just show what would be done.
+.TP
+.B -P
+When the 
+.B -A
+flag is set, check the root filesystem in parallel with the other filesystems.
+This is not the safest thing in the world to do,
+since if the root filesystem is in doubt things like
+the e2fsck executable might be corrupted!  This option is mainly provided
+for those sysadmins who don't want to repartition the root
+filesystem to be small and compact (which is really the right solution).
 .TP
 .B -s
 Serialize fsck operations.  This is a good idea if you checking multiple

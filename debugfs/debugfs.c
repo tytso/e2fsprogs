@@ -181,6 +181,7 @@ void do_show_super_stats(int argc, char *argv[])
 	fprintf(out, "Superblock size = %d\n", sizeof(struct ext2_super_block));
 	fprintf(out, "Block size = %d, fragment size = %d\n",
 		EXT2_BLOCK_SIZE(fs->super), EXT2_FRAG_SIZE(fs->super));
+	fprintf(out, "Inode size = %d\n", EXT2_INODE_SIZE(fs->super));
 	fprintf(out, "%d inodes, %d free\n", fs->super->s_inodes_count,
 	        fs->super->s_free_inodes_count);
 	fprintf(out, "%d blocks, %d free, %d reserved, first block = %d\n",
@@ -189,7 +190,6 @@ void do_show_super_stats(int argc, char *argv[])
 	fprintf(out, "%d blocks per group\n", fs->super->s_blocks_per_group);
 	fprintf(out, "%d fragments per group\n", fs->super->s_frags_per_group);
 	fprintf(out, "%d inodes per group\n", EXT2_INODES_PER_GROUP(fs->super));
-	fprintf(out, "%d inodes per block\n", EXT2_INODES_PER_BLOCK(fs->super));
 	fprintf(out, "%ld group%s (%ld descriptors block%s)\n",
 		fs->group_desc_count, (fs->group_desc_count != 1) ? "s" : "",
 		fs->desc_blocks, (fs->desc_blocks != 1) ? "s" : "");

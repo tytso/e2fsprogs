@@ -35,7 +35,8 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 		return EXT2_ET_RO_FILSYS;
 	if (!inode_bitmap)
 		return 0;
-	nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
+	nbytes = (EXT2_INODES_PER_GROUP(fs->super)+7) / 8;
+	
 	bitmap_block = malloc(fs->blocksize);
 	if (!bitmap_block)
 		return ENOMEM;

@@ -43,8 +43,8 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode,
 		dir_group = (dir - 1) / EXT2_INODES_PER_GROUP(fs->super);
 
 	start_inode = (dir_group * EXT2_INODES_PER_GROUP(fs->super)) + 1;
-	if (start_inode < EXT2_FIRST_INO)
-		start_inode = EXT2_FIRST_INO;
+	if (start_inode < EXT2_FIRST_INODE(fs->super))
+		start_inode = EXT2_FIRST_INODE(fs->super);
 	i = start_inode;
 
 	do {
@@ -52,7 +52,7 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode,
 			break;
 		i++;
 		if (i > fs->super->s_inodes_count)
-			i = EXT2_FIRST_INO;
+			i = EXT2_FIRST_INODE(fs->super);
 	} while (i != start_inode);
 	
 	if (ext2fs_test_inode_bitmap(map, i))

@@ -24,7 +24,7 @@ void pass4(ext2_filsys fs)
 		printf("Pass 4: Checking reference counts\n");
 	for (i=1; i <= fs->super->s_inodes_count; i++) {
 		if (i == EXT2_BAD_INO ||
-		    (i > EXT2_ROOT_INO && i < EXT2_FIRST_INO))
+		    (i > EXT2_ROOT_INO && i < EXT2_FIRST_INODE(fs->super)))
 			continue;
 		if (!(ext2fs_test_inode_bitmap(inode_used_map, i)))
 			continue;

@@ -428,7 +428,7 @@ static void reserve_inodes(ext2_filsys fs)
 	ino_t	i;
 	int	group;
 
-	for (i = EXT2_ROOT_INO + 1; i < EXT2_FIRST_INO; i++) {
+	for (i = EXT2_ROOT_INO + 1; i < EXT2_FIRST_INODE(fs->super); i++) {
 		ext2fs_mark_inode_bitmap(fs->inode_map, i);
 		group = ext2fs_group_of_ino(fs, i);
 		fs->group_desc[group].bg_free_inodes_count--;
@@ -532,7 +532,7 @@ static void PRS(int argc, char *argv[])
 		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:cf:g:i:l:m:qtvSF")) != EOF)
+	while ((c = getopt (argc, argv, "b:cf:g:i:l:m:qr:tvI:SF")) != EOF)
 		switch (c) {
 		case 'b':
 			size = strtoul(optarg, &tmp, 0);
@@ -606,6 +606,14 @@ static void PRS(int argc, char *argv[])
 				exit(1);
 			}
 			break;
+		case 'r':
+			param.s_rev_level = atoi(optarg);
+			break;
+#ifdef EXT2_DYNAMIC_REV
+		case 'I':
+			param.s_inode_size = atoi(optarg);
+			break;
+#endif
 		case 'v':
 			verbose = 1;
 			break;

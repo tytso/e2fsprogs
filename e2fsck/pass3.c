@@ -138,7 +138,7 @@ void check_root(ext2_filsys fs, ino_t root_ino)
 
 	printf("Root inode not allocated.  ");
 	preenhalt(fs);
-	if (!ask("Rellocate", 1)) {
+	if (!ask("Reallocate", 1)) {
 		ext2fs_unmark_valid(fs);
 		fatal_error("Cannot proceed without a root inode.");
 	}

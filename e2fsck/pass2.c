@@ -382,7 +382,7 @@ static int check_dir_block(ext2_filsys fs,
 		 * Make sure the inode listed is a legal one.
 		 */ 
 		if (((dirent->inode != EXT2_ROOT_INO) &&
-		     (dirent->inode < EXT2_FIRST_INO)) ||
+		     (dirent->inode < EXT2_FIRST_INODE(fs->super))) ||
 		    (dirent->inode > fs->super->s_inodes_count)) {
 			retval = ext2fs_get_pathname(fs, ino, 0, &path1);
 			if (retval)

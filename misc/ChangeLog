@@ -1,3 +1,31 @@
+Wed Mar 27 00:33:40 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.03
+
+Thu Mar  7 03:43:20 1996    <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (PRS): Add (for development only) support to
+		specify revision and inode size of the new filesystem.
+
+Tue Mar  5 03:51:35 1996    <tytso@rsts-11.mit.edu>
+
+	* mke2fs.8.in: Fix a few minor typo's in the man page.
+
+	* mke2fs.c (reserve_inodes): Add support for dynamic first inode
+	        revision.
+
+Mon Feb  5 22:19:49 1996    <tytso@rsts-11.mit.edu>
+
+	* fsck.c (check_all, PRS): Added new flag -P, which turns on the
+		parallel root option.  This allows you to check the root
+		filesystem in parallel with the other filesystems.  Note
+		that this is not the safest thing in the world to do,
+		since if the root filesystem is in doubt things like
+		the e2fsck executable might be corrupted!  But some
+		sysadmins, who don't want to repartition the root
+		filesystem to be small and compact, may really want this
+		option turned on.
+
 Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.02

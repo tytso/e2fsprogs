@@ -99,9 +99,10 @@ Quiet execution.  Useful if mke2fs is run in a script.
 .TP
 .I -v
 Verbose execution.
-.IP
+.TP
 .I -F
-Force mke2fs to run, even if the specified device 
+Force mke2fs to run, even if the specified device is not a 
+block special device.
 .TP
 .I -S
 Write superblock and group descriptors only.  This is useful if all of
@@ -111,7 +112,7 @@ superblock and group descriptors, while not touching the inode table
 and the block and inode bitmaps.  The
 .B e2fsck
 program should be run immediately after this option is used, and there
-is no gaurantee that any data will be salvageable.
+is no guarantee that any data will be salvageable.
 .SH AUTHOR
 This version of
 .B mke2fs

@@ -190,5 +190,8 @@ ec	EXT2_ET_NEQ_INODE_BITMAP,
 ec	EXT2_ET_BAD_DEVICE_NAME,
 	"Illegal or malformed device name"
 
+ec	EXT2_ET_MISSING_INODE_TABLE,
+	"A block group is missing an inode table."
+
 	end
 

@@ -307,7 +307,8 @@ void pass1(ext2_filsys fs)
 					ext2fs_unmark_valid(fs);
 			}
 		}
-		if ((ino != EXT2_ROOT_INO) && (ino < EXT2_FIRST_INO)) {
+		if ((ino != EXT2_ROOT_INO) &&
+		    (ino < EXT2_FIRST_INODE(fs->super))) {
 			ext2fs_mark_inode_bitmap(inode_used_map, ino);
 			if (inode.i_mode != 0) {
 				printf("Reserved inode %lu has bad mode.  ", ino);

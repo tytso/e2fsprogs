@@ -43,9 +43,21 @@ static void print_group (unsigned short gid)
 		printf ("(group %s)\n", gr->gr_name);
 }
 
+#ifndef EXT2_INODE_SIZE
+#define EXT2_INODE_SIZE(s) sizeof(struct ext2_inode)
+#endif
+
 void list_super (struct ext2_super_block * s)
 {
+	int inode_blocks_per_group;
+
+	inode_blocks_per_group = (((s->s_inodes_per_group *
+				    EXT2_INODE_SIZE(s)) +
+				   EXT2_BLOCK_SIZE(s) - 1) /
+				  EXT2_BLOCK_SIZE(s));
+	
 	printf ("Filesystem magic number:  0x%04X\n", s->s_magic);
+	printf ("Filesystem revision #:    %d\n", s->s_rev_level);
 	printf ("Filesystem state:        ");
 	print_fs_state (stdout, s->s_state);
 	printf ("\n");
@@ -63,6 +75,7 @@ void list_super (struct ext2_super_block * s)
 	printf ("Blocks per group:         %u\n", s->s_blocks_per_group);
 	printf ("Fragments per group:      %u\n", s->s_frags_per_group);
 	printf ("Inodes per group:         %u\n", s->s_inodes_per_group);
+	printf ("Inode blocks per group:   %u\n", inode_blocks_per_group);
 	printf ("Last mount time:          %s", ctime ((time_t *) &s->s_mtime));
 	printf ("Last write time:          %s", ctime ((time_t *) &s->s_wtime));
 	printf ("Mount count:              %u\n", s->s_mnt_count);
@@ -81,5 +94,11 @@ void list_super (struct ext2_super_block * s)
 	print_user (s->s_def_resuid);
 	printf ("Reserved blocks gid:      ");
 	print_group (s->s_def_resgid);
+#endif
+#ifdef EXT2_DYNAMIC_REV
+	if (s->s_rev_level >= EXT2_DYNAMIC_REV) {
+		printf("First inode:              %d\n", s->s_first_ino);
+		printf("Inode size:		  %d\n", s->s_inode_size);
+	}
 #endif
 }

@@ -25,12 +25,9 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 {
 	int i;
 	int block = fs->super->s_first_data_block;
-	int next, inode_blocks_per_group;
+	int next;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
-
-	inode_blocks_per_group = fs->super->s_inodes_per_group /
-		EXT2_INODES_PER_BLOCK (fs->super);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		next = block + fs->super->s_blocks_per_group;
@@ -53,8 +50,8 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 		 * within the group
 		 */
 		if (fs->group_desc[i].bg_inode_table < block ||
-		    fs->group_desc[i].bg_inode_table+inode_blocks_per_group >=
-		    next)
+		    ((fs->group_desc[i].bg_inode_table +
+		      fs->inode_blocks_per_group) >= next))
 			return EXT2_ET_GDESC_BAD_INODE_TABLE;
 		
 		block = next;

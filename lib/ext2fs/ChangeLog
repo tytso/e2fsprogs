@@ -1,3 +1,40 @@
+Wed Mar 27 00:33:40 1996    <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.03
+
+Tue Mar 26 12:06:32 1996    <tytso@rsts-11.mit.edu>
+
+	* bitops.h (ext2fs_set_bit, ext2fs_clear_bit, ext2fs_test_bit):
+		Change the m68k bit numbering for bitmasks to match with
+		the bit numbering used by all other ext2 implementations.
+
+Thu Mar  7 03:37:00 1996    <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_get_next_inode, ext2fs_close_inode_scan, 
+	ext2fs_open_inode_scan): Support dynamically-sized inodes.
+
+Wed Mar  6 12:26:29 1996    <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_read_inode, ext2fs_write_inode): Support
+		dynamically-sized inodes.
+
+	* openfs.c (ext2fs_open): Allow dynamic revision filesystem to be
+	        loaded.
+
+Tue Mar  5 03:49:37 1996    <tytso@rsts-11.mit.edu>
+
+	* initialize.c (ext2fs_initialize): Catch an error condition where
+		the passed in size is *really* too small.
+
+	* alloc.c (ext2fs_new_inode): 
+	* ext2fs.h (EXT2_FIRST_INODE): Add support for dynamic revision to
+		get first inode.
+
+Wed Feb 21 15:56:17 1996    <tytso@rsts-11.mit.edu>
+
+	* getsize.c (ext2fs_get_device_size): Open the device read-only
+		when trying to determine its size.
+
 Wed Jan 31 11:06:08 1996    <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.02

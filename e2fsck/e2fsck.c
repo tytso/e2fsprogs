@@ -91,6 +91,7 @@ static void show_stats(ext2_filsys fs)
 	int inodes, inodes_used, blocks, blocks_used;
 	int dir_links;
 	int num_files, num_links;
+	int frag_percent;
 
 	dir_links = 2 * fs_directory_count - 1;
 	num_files = fs_total_count - dir_links;
@@ -101,19 +102,22 @@ static void show_stats(ext2_filsys fs)
 	blocks = fs->super->s_blocks_count;
 	blocks_used = (fs->super->s_blocks_count -
 		       fs->super->s_free_blocks_count);
+
+	frag_percent = (10000 * fs_fragmented) / inodes_used;
+	frag_percent = (frag_percent + 5) / 10;
 	
 	if (!verbose) {
-		printf("%s: %d/%d files (%3.1f%% non-contiguous), %d/%d blocks\n",
+		printf("%s: %d/%d files (%0d.%d%% non-contiguous), %d/%d blocks\n",
 		       device_name, inodes_used, inodes,
-		       100.00 * fs_fragmented / inodes_used,
+		       frag_percent / 10, frag_percent % 10,
 		       blocks_used, blocks);
 		return;
 	}
 	printf ("\n%8d inode%s used (%d%%)\n", inodes_used,
 		(inodes_used != 1) ? "s" : "",
 		100 * inodes_used / inodes);
-	printf ("%8d non-contiguous inodes (%3.1f%%)\n",
-		fs_fragmented, 100.00 * fs_fragmented / inodes_used);
+	printf ("%8d non-contiguous inodes (%0d.%d%%)\n",
+		fs_fragmented, frag_percent / 10, frag_percent % 10);
 	printf ("         # of inodes with ind/dind/tind blocks: %d/%d/%d\n",
 		fs_ind_count, fs_dind_count, fs_tind_count);
 	printf ("%8d block%s used (%d%%)\n"
@@ -285,6 +289,7 @@ static void check_super_block(ext2_filsys fs)
 		       "have been %u\n", s->s_blocks_per_group,
 		       should_be);
 		printf(corrupt_msg);
+		fatal_error(0);
 	}
 
 	should_be = (s->s_log_block_size == 0) ? 1 : 0;
@@ -293,6 +298,7 @@ static void check_super_block(ext2_filsys fs)
 		       "have been %u\n", s->s_first_data_block,
 		       should_be);
 		printf(corrupt_msg);
+		fatal_error(0);
 	}
 
 	/*
@@ -601,7 +607,8 @@ restart:
 
 #ifdef	EXT2_CURRENT_REV
 	if (fs->super->s_rev_level > E2FSCK_CURRENT_REV) {
-		com_err(program_name, retval, "while trying to open %s",
+		com_err(program_name, EXT2_ET_REV_TOO_HIGH,
+			"while trying to open %s",
 			filesystem_name);
 		printf ("Get a newer version of e2fsck!\n");
 		fatal_error(0);
