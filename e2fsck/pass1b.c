@@ -88,7 +88,8 @@ struct dup_inode {
 };
 
 static int process_pass1b_block(ext2_filsys fs, blk_t	*blocknr,
-				int	blockcnt, void	*priv_data);
+				e2_blkcnt_t blockcnt, blk_t ref_blk, 
+				int ref_offset, void *priv_data);
 static void delete_file(e2fsck_t ctx, struct dup_inode *dp,
 			char *block_buf);
 static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf);
@@ -187,6 +188,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 	ctx->stashed_inode = &inode;
 	pb.ctx = ctx;
 	pb.pctx = &pctx;
+	pctx.str = "pass1b";
 	while (ino) {
 		pctx.ino = ctx->stashed_ino = ino;
 		if ((ino != EXT2_BAD_INO) &&
@@ -196,7 +198,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 
 		pb.ino = ino;
 		pb.dup_blocks = 0;
-		retval = ext2fs_block_iterate(fs, ino, 0, block_buf,
+		pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
 					      process_pass1b_block, &pb);
 		if (pb.dup_blocks) {
 			end_problem_latch(ctx, PR_LATCH_DBLOCK);
@@ -212,10 +214,8 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 			if (ino != EXT2_BAD_INO)
 				dup_inode_count++;
 		}
-		if (retval)
-			com_err(ctx->program_name, retval,
-			    _("while calling ext2fs_block_iterate in pass1b"));
-		
+		if (pctx.errcode)
+			fix_problem(ctx, PR_1B_BLOCK_ITERATE, &pctx);
 	next:
 		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
@@ -233,7 +233,9 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 
 int process_pass1b_block(ext2_filsys fs,
 			 blk_t	*block_nr,
-			 int blockcnt,
+			 e2_blkcnt_t blockcnt,
+			 blk_t ref_blk, 
+			 int ref_offset, 			 
 			 void *priv_data)
 {
 	struct process_block_struct *p;
@@ -483,7 +485,9 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 
 static int delete_file_block(ext2_filsys fs,
 			     blk_t	*block_nr,
-			     int blockcnt,
+			     e2_blkcnt_t blockcnt,
+			     blk_t ref_block,
+			     int ref_offset, 
 			     void *priv_data)
 {
 	struct process_block_struct *pb;
@@ -523,17 +527,18 @@ static void delete_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 	errcode_t	retval;
 	struct process_block_struct pb;
 	struct ext2_inode	inode;
+	struct problem_context	pctx;
 
-	pb.ino = dp->ino;
+	clear_problem_context(&pctx);
+	pctx.ino = pb.ino = dp->ino;
 	pb.dup_blocks = dp->num_dupblocks;
 	pb.ctx = ctx;
-	
-	retval = ext2fs_block_iterate(fs, dp->ino, 0, block_buf,
-				      delete_file_block, &pb);
-	if (retval)
-		com_err("delete_file", retval,
-			_("while calling ext2fs_block_iterate for inode %d"),
-			dp->ino);
+	pctx.str = "delete_file";
+
+	pctx.errcode = ext2fs_block_iterate2(fs, dp->ino, 0, block_buf,
+				       delete_file_block, &pb);
+	if (pctx.errcode)
+		fix_problem(ctx, PR_1B_BLOCK_ITERATE, &pctx);
 	ext2fs_unmark_inode_bitmap(ctx->inode_used_map, dp->ino);
 	ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, dp->ino);
 	if (ctx->inode_bad_map)
@@ -556,7 +561,9 @@ struct clone_struct {
 
 static int clone_file_block(ext2_filsys fs,
 			    blk_t	*block_nr,
-			    int blockcnt,
+			    e2_blkcnt_t blockcnt,
+			    blk_t ref_block,
+			    int ref_offset, 
 			    void *priv_data)
 {
 	struct dup_block *p;
@@ -624,7 +631,9 @@ static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
 	struct clone_struct cs;
+	struct problem_context	pctx;
 
+	clear_problem_context(&pctx);
 	cs.errcode = 0;
 	cs.dir = 0;
 	cs.ctx = ctx;
@@ -634,21 +643,21 @@ static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 
 	if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dp->ino))
 		cs.dir = dp->ino;
-	
-	retval = ext2fs_block_iterate(fs, dp->ino, 0, block_buf,
+
+	pctx.ino = dp->ino;
+	pctx.str = "clone_file";
+	pctx.errcode = ext2fs_block_iterate2(fs, dp->ino, 0, block_buf,
 				      clone_file_block, &cs);
 	ext2fs_mark_bb_dirty(fs);
 	ext2fs_free_mem((void **) &cs.buf);
-	if (retval) {
-		com_err("clone_file", retval,
-			_("while calling ext2fs_block_iterate for inode %d"),
-			dp->ino);
-		return retval;
+	if (pctx.errcode) {
+		fix_problem(ctx, PR_1B_BLOCK_ITERATE, &pctx);
+		return pctx.errcode;
 	}
 	if (cs.errcode) {
 		com_err("clone_file", cs.errcode,
 			_("returned from clone_file_block"));
-		return retval;
+		return cs.errcode;
 	}
 	return 0;
 }

@@ -680,7 +680,9 @@ struct expand_dir_struct {
 
 static int expand_dir_proc(ext2_filsys fs,
 			   blk_t	*blocknr,
-			   int	blockcnt,
+			   e2_blkcnt_t	blockcnt,
+			   blk_t ref_block,
+			   int ref_offset, 
 			   void	*priv_data)
 {
 	struct expand_dir_struct *es = (struct expand_dir_struct *) priv_data;
@@ -761,8 +763,8 @@ static errcode_t expand_directory(e2fsck_t ctx, ino_t dir)
 	es.newblocks = 0;
 	es.ctx = ctx;
 	
-	retval = ext2fs_block_iterate(fs, dir, BLOCK_FLAG_APPEND,
-				      0, expand_dir_proc, &es);
+	retval = ext2fs_block_iterate2(fs, dir, BLOCK_FLAG_APPEND,
+				       0, expand_dir_proc, &es);
 
 	if (es.err)
 		return es.err;

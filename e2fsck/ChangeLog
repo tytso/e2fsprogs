@@ -1,3 +1,19 @@
+2000-11-16  Theodore Ts'o  <tytso@valinux.com>
+
+	* pass1b.c: Change routines to use PR_1B_BLOCK_ITERATE when
+		reporting problems rather than using com_err directly.
+
+	* problem.c, problem.h (PR_1B_BLOCK_ITERATE): Add new problem code.
+
+	* message.c (expand_percent_expression): Add safety check.  If
+		ctx->str is NULL, print "NULL" instead of dereferencing
+		the null pointer.
+
+	* pass1b.c, pass2.c, pass3.c: Change calls to ext2fs_block_iterate
+		to ext2fs_block_iterate2, to support 64-bit filesizes and
+		to speed things up slightly by avoiding the use of the
+		ext2fs_block_iterate's compatibility shim layer.
+
 2000-10-30    <tytso@snap.thunk.org>
 
 	* util.c (get_backup_sb): Calculate backup superblock correctly

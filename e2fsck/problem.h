@@ -321,7 +321,10 @@ struct problem_context {
 /* Error allocating inode bitmap */
 #define PR_1B_ALLOCATE_IBITMAP_ERROR 0x011005
 
+/* Error while iterating over blocks */
+#define PR_1B_BLOCK_ITERATE	0x0110006
 
+	
 /* Pass 1C: Scan directories for inodes with dup blocks. */
 #define PR_1C_PASS_HEADER	0x012000
 

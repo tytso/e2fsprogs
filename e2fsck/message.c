@@ -389,7 +389,7 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		printf("%d", get_backup_sb(fs));
 		break;
 	case 's':
-		printf("%s", ctx->str);
+		printf("%s", ctx->str ? ctx->str : "NULL");
 		break;
 	case 'X':
 #ifdef EXT2_NO_64_TYPE

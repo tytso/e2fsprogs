@@ -63,7 +63,9 @@ static int allocate_dir_block(e2fsck_t ctx,
 			      char *buf, struct problem_context *pctx);
 static int update_dir_block(ext2_filsys fs,
 			    blk_t	*block_nr,
-			    int blockcnt,
+			    e2_blkcnt_t blockcnt,
+			    blk_t ref_block,
+			    int ref_offset, 
 			    void *priv_data);
 
 struct check_dir_struct {
@@ -599,9 +601,11 @@ static int check_dir_block(ext2_filsys fs,
  * functioned called by deallocate inode via ext2fs_iterate_block().
  */
 static int deallocate_inode_block(ext2_filsys fs,
-			     blk_t	*block_nr,
-			     int blockcnt,
-			     void *priv_data)
+				  blk_t	*block_nr,
+				  e2_blkcnt_t blockcnt,
+				  blk_t ref_block,
+				  int ref_offset, 
+				  void *priv_data)
 {
 	e2fsck_t	ctx = (e2fsck_t) priv_data;
 	
@@ -645,7 +649,7 @@ static void deallocate_inode(e2fsck_t ctx, ino_t ino,
 		return;
 	
 	ext2fs_mark_bb_dirty(fs);
-	pctx.errcode = ext2fs_block_iterate(fs, ino, 0, block_buf,
+	pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
 					    deallocate_inode_block, ctx);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_2_DEALLOC_INODE, &pctx);
@@ -831,7 +835,7 @@ static int allocate_dir_block(e2fsck_t ctx,
 	 * Finally, update the block pointers for the inode
 	 */
 	db->blk = blk;
-	pctx->errcode = ext2fs_block_iterate(fs, db->ino, BLOCK_FLAG_HOLE,
+	pctx->errcode = ext2fs_block_iterate2(fs, db->ino, BLOCK_FLAG_HOLE,
 				      0, update_dir_block, db);
 	if (pctx->errcode) {
 		pctx->str = "ext2fs_block_iterate";
@@ -847,13 +851,15 @@ static int allocate_dir_block(e2fsck_t ctx,
  */
 static int update_dir_block(ext2_filsys fs,
 			    blk_t	*block_nr,
-			    int blockcnt,
+			    e2_blkcnt_t blockcnt,
+			    blk_t ref_block,
+			    int ref_offset, 
 			    void *priv_data)
 {
 	struct ext2_db_entry *db;
 
 	db = (struct ext2_db_entry *) priv_data;
-	if (db->blockcnt == blockcnt) {
+	if (db->blockcnt == (int) blockcnt) {
 		*block_nr = db->blk;
 		return BLOCK_CHANGED;
 	}

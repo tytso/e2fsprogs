@@ -470,7 +470,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Error while iterating over blocks */
 	{ PR_1_BLOCK_ITERATE,
-	  N_("Error while iterating over blocks in @i %i: %m\n"),
+	  N_("Error while iterating over @bs in @i %i: %m\n"),
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error while storing inode count information */	  
@@ -551,7 +551,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@A @i @B (inode_dup_map): %m\n"),
 	  PROMPT_NONE, PR_FATAL },
 
-
+	/* Error while iterating over blocks */
+	{ PR_1B_BLOCK_ITERATE,
+	  N_("Error while iterating over @bs in @i %i (%s): %m\n"),
+	  PROMPT_NONE, 0 },
+		  
 	/* Pass 1C: Scan directories for inodes with dup blocks. */
 	{ PR_1C_PASS_HEADER,
 	  N_("Pass 1C: Scan directories for @is with dup @bs.\n"),
