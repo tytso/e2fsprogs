@@ -1,3 +1,9 @@
+2003-05-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* LINGUAS, de-utf.po: Remove de-utf.po; de.po is newer, and we
+		shouldn't have two versions using different charset
+		encodings anyway.
+
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* LINGUAS, cs.po: Add Czech translation file
