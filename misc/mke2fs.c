@@ -201,10 +201,10 @@ static void check_mount(NOARGS)
  */
 static char default_str[] = "default";
 struct mke2fs_defaults {
-	char	*type;
-	int	size;
-	int	blocksize;
-	int	inode_ratio;
+	const char	*type;
+	int		size;
+	int		blocksize;
+	int		inode_ratio;
 } settings[] = {
 	{ default_str, 0, 4096, 8192 },
 	{ default_str, 512, 1024, 4096 },
@@ -710,24 +710,24 @@ static __u32 ok_features[3] = {
 
 static void PRS(int argc, char *argv[])
 {
-	int	c;
-	int	size;
-	char	* tmp;
-	blk_t	max = 8192;
-	int	blocksize = 0;
-	int	inode_ratio = 0;
-	int	reserved_ratio = 5;
-	ino_t	num_inodes = 0;
+	int		c;
+	int		size;
+	char *		tmp;
+	blk_t		max = 8192;
+	int		blocksize = 0;
+	int		inode_ratio = 0;
+	int		reserved_ratio = 5;
+	ino_t		num_inodes = 0;
 	errcode_t	retval;
-	int	sparse_option = 0;
-	char	*oldpath = getenv("PATH");
+	int		sparse_option = 0;
+	char *		oldpath = getenv("PATH");
 	struct ext2fs_sb *param_ext2 = (struct ext2fs_sb *) &param;
-	char	*raid_opts = 0;
-	char	*fs_type = 0;
-	char	*feature_set = "filetype,sparse_super";
-	blk_t	dev_size;
+	char *		raid_opts = 0;
+	char *		fs_type = 0;
+	const char *	feature_set = "filetype,sparse_super";
+	blk_t		dev_size;
 #ifdef linux
-	struct utsname ut;
+	struct 		utsname ut;
 
 	if (uname(&ut)) {
 		perror("uname");
