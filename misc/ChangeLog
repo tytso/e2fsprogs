@@ -1,3 +1,9 @@
+2002-11-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* chattr.c, chattr.1.in: Add support for a new inode flag, which
+		is to be used for indicating the top of directory
+		hierarchies for the Orlov block allocator.
+
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* get_device_by_label.c (read_partitions): Pay attention to

@@ -1,3 +1,9 @@
+2002-11-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* pf.c: Add support for a new inode flag, which is to be used for
+		indicating the top of directory hierarchies for the Orlov
+		block allocator.
+
 2002-10-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* ls.c (list_super2): Print the s_mkfs_time field if it is

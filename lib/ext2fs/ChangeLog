@@ -1,5 +1,9 @@
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
+	* ext2_fs.h: Add support for a new inode flag, which is to be used
+		for indicating the top of directory hierarchies for the
+		Orlov block allocator.
+	
 	* ismounted.c (check_mntent, check_mntent_file): Add better
 		support for loopback-mounted filesystems.  Check /etc/mtab
 		if /proc/mounts doesn't turn up any mount flags, since
