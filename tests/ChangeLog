@@ -1,3 +1,12 @@
+2004-12-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_resize_inode, r_resize_inode: New tests to e2fsck and
+		resize2fs, which exercise their resize_inode handling and
+		code.
+
+	* test_config: Add support for calling debugfs from the testing
+		framework.
+ 
 2004-12-15  Theodore Ts'o  <tytso@mit.edu>
 
 	* m_meta_bg, m_no_opt, m_raid_opt: Adjust tests to take into
