@@ -1,5 +1,9 @@
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.32
+
+2002-11-09  Theodore Ts'o  <tytso@mit.edu>
+
 	* unix_io.c (find_cached_block, reuse_cache, unix_read_blk, 
 		unix_write_blk): Optimize routines so that we don't end up
 		searching the cache twice when a block isn't in the
