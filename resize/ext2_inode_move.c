@@ -19,9 +19,9 @@ struct callback_info {
 };
 		
 static errcode_t progress_callback(ext2_filsys fs, ext2_inode_scan scan,
-				   dgrp_t group, void * private)
+				   dgrp_t group, void * priv_data)
 {
-	struct callback_info *cb = private;
+	struct callback_info *cb = (struct callback_info *) priv_data;
 
 	if (!cb->progress)
 		return 0;
@@ -40,10 +40,10 @@ struct istruct {
 
 static int check_and_change_inodes(ino_t dir, int entry,
 				   struct ext2_dir_entry *dirent, int offset,
-				   int	blocksize, char *buf, void *private)
+				   int	blocksize, char *buf, void *priv_data)
 {
-	struct istruct *is = private;
-	ino_t	new;
+	struct istruct *is = (struct istruct *) priv_data;
+	ino_t	new_inode;
 
 	if (is->progress && offset == 0) {
 		ext2fs_progress_update(is->progress, ++is->num);
@@ -52,18 +52,18 @@ static int check_and_change_inodes(ino_t dir, int entry,
 	if (!dirent->inode)
 		return 0;
 
-	new = ext2fs_extent_translate(is->imap, dirent->inode);
+	new_inode = ext2fs_extent_translate(is->imap, dirent->inode);
 
-	if (!new)
+	if (!new_inode)
 		return 0;
 #ifdef RESIZE2FS_DEBUG
 	if (is->flags & RESIZE_DEBUG_INODEMAP)
 		printf("Inode translate (dir=%ld, name=%.*s, %u->%ld)\n",
 		       dir, dirent->name_len, dirent->name,
-		       dirent->inode, new);
+		       dirent->inode, new_inode);
 #endif
 
-	dirent->inode = new;
+	dirent->inode = new_inode;
 
 	return DIRENT_CHANGED;
 }
@@ -80,12 +80,13 @@ struct process_block_struct {
 
 static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			 int blockcnt, blk_t ref_block,
-			 int ref_offset, void *private)
+			 int ref_offset, void *priv_data)
 {
-	struct process_block_struct *pb = private;
+	struct process_block_struct *pb;
 	errcode_t	retval;
 	int		ret = 0;
 
+	pb = (struct process_block_struct *) priv_data;
 	retval = ext2fs_add_dir_block(fs->dblist, pb->ino,
 				      *block_nr, blockcnt);
 	if (retval) {
@@ -99,7 +100,7 @@ static errcode_t get_dblist(ext2_filsys fs, int flags)
 {
 	ext2_inode_scan		scan = 0;
 	errcode_t		retval;
-	char			*block_buf;
+	char			*block_buf = 0;
 	struct process_block_struct	pb;
 	ext2_sim_progmeter 	progress = 0; 
 	ino_t			ino;
@@ -110,11 +111,9 @@ static errcode_t get_dblist(ext2_filsys fs, int flags)
 
 	pb.error = 0;
 
-	block_buf = malloc(fs->blocksize * 3);
-	if (!block_buf) {
-		retval = ENOMEM;
+	retval = ext2fs_get_mem(fs->blocksize * 3, (void **) &block_buf);
+	if (retval)
 		goto errout;
-	}
 
 	/*
 	 * We're going to initialize the dblist while we're at it.
@@ -170,13 +169,15 @@ errout:
 		ext2fs_progress_close(progress);
 	if (scan)
 		ext2fs_close_inode_scan(scan);
+	if (block_buf)
+		ext2fs_free_mem((void **) &block_buf);
 	return retval;
 }
 
 
 errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 {
-	ino_t			ino, new;
+	ino_t			ino, new_inode;
 	struct ext2_inode 	inode;
 	ext2_inode_scan 	scan = NULL;
 	ext2_extent		imap;
@@ -217,7 +218,7 @@ errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 	}
 	callback_info.progress = progress;
 
-	new = EXT2_FIRST_INODE(rfs->new_fs->super);
+	new_inode = EXT2_FIRST_INODE(rfs->new_fs->super);
 	/*
 	 * First, copy all of the inodes that need to be moved
 	 * elsewhere in the inode table
@@ -237,28 +238,28 @@ errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 		 */
 		while (1) { 
 			if (!ext2fs_test_inode_bitmap(rfs->new_fs->inode_map, 
-						      new))
+						      new_inode))
 				break;
-			new++;
-			if (new > rfs->new_fs->super->s_inodes_count) {
+			new_inode++;
+			if (new_inode > rfs->new_fs->super->s_inodes_count) {
 				retval = ENOSPC;
 				goto errout;
 			}
 		}
-		ext2fs_mark_inode_bitmap(rfs->new_fs->inode_map, new);
-		retval = ext2fs_write_inode(rfs->old_fs, new, &inode);
+		ext2fs_mark_inode_bitmap(rfs->new_fs->inode_map, new_inode);
+		retval = ext2fs_write_inode(rfs->old_fs, new_inode, &inode);
 		if (retval) goto errout;
 
-		group = (new-1) / EXT2_INODES_PER_GROUP(rfs->new_fs->super);
+		group = (new_inode-1) / EXT2_INODES_PER_GROUP(rfs->new_fs->super);
 		if (LINUX_S_ISDIR(inode.i_mode))
 			rfs->new_fs->group_desc[group].bg_used_dirs_count++;
 		
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_INODEMAP)
-			printf("Inode moved %ld->%ld\n", ino, new);
+			printf("Inode moved %ld->%ld\n", ino, new_inode);
 #endif
 
-		ext2fs_add_extent_entry(imap, ino, new);
+		ext2fs_add_extent_entry(imap, ino, new_inode);
 	}
 	io_channel_flush(rfs->new_fs->io);
 	if (progress) {

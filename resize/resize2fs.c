@@ -34,7 +34,6 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk_t new_size)
 	ino_t		real_end;
 	blk_t		blk, group_block;
 	unsigned long	i, j;
-	struct ext2_group_desc *new;
 	int		old_numblocks, numblocks, adjblocks;
 	ext2_sim_progmeter progress = 0;
 	
@@ -124,11 +123,10 @@ retry:
 	 * Reallocate the group descriptors as necessary.
 	 */
 	if (rfs->old_fs->desc_blocks != fs->desc_blocks) {
-		new = realloc(fs->group_desc,
-			      fs->desc_blocks * fs->blocksize);
-		if (!new)
-			return ENOMEM;
-		fs->group_desc = new;
+		retval = ext2fs_resize_mem(fs->desc_blocks * fs->blocksize,
+					   (void **) &fs->group_desc);
+		if (retval)
+			return retval;
 	}
 
 	/*
@@ -161,11 +159,11 @@ retry:
 		retval = 0;
 		goto errout;
 	}
-	rfs->itable_buf = malloc(fs->blocksize * fs->inode_blocks_per_group);
-	if (!rfs->itable_buf) {
-		retval = ENOMEM;
+	retval = ext2fs_get_mem(fs->blocksize * fs->inode_blocks_per_group,
+				(void **) &rfs->itable_buf);
+	if (retval)
 		goto errout;
-	}
+
 	memset(rfs->itable_buf, 0, fs->blocksize * fs->inode_blocks_per_group);
 	group_block = fs->super->s_first_data_block +
 		rfs->old_fs->group_desc_count * fs->super->s_blocks_per_group;
@@ -534,7 +532,7 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	int		i, n, num, max, size, diff;
 	ext2_filsys	fs = rfs->new_fs;
 	char		*cp;
-	blk_t		old, new;
+	blk_t		old_blk, new_blk;
 	errcode_t	retval, err;
 	ext2_sim_progmeter progress = 0;
 	int		to_move, moved;
@@ -545,9 +543,9 @@ static errcode_t move_itables(ext2_resize_t rfs)
 
 	size = fs->blocksize * fs->inode_blocks_per_group;
 	if (!rfs->itable_buf) {
-		rfs->itable_buf = malloc(size);
-		if (!rfs->itable_buf)
-			return ENOMEM;
+		retval = ext2fs_get_mem(size, (void **) &rfs->itable_buf);
+		if (retval)
+			return retval;
 	}
 
 	/*
@@ -570,21 +568,21 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	}
 	
 	for (i=0; i < max; i++) {
-		old = rfs->old_fs->group_desc[i].bg_inode_table;
-		new = fs->group_desc[i].bg_inode_table;
-		diff = new - old;
+		old_blk = rfs->old_fs->group_desc[i].bg_inode_table;
+		new_blk = fs->group_desc[i].bg_inode_table;
+		diff = new_blk - old_blk;
 		
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
 			printf("Itable move group %d block "
 			       "%u->%u (diff %d)\n", 
-			       i, old, new, diff);
+			       i, old_blk, new_blk, diff);
 #endif
 		
 		if (!diff)
 			continue;
 
-		retval = io_channel_read_blk(fs->io, old,
+		retval = io_channel_read_blk(fs->io, old_blk,
 					     fs->inode_blocks_per_group,
 					     rfs->itable_buf);
 		if (retval) 
@@ -606,16 +604,16 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		if (n > diff)
 			num -= n;
 
-		retval = io_channel_write_blk(fs->io, new,
+		retval = io_channel_write_blk(fs->io, new_blk,
 					      num, rfs->itable_buf);
 		if (retval) {
-			io_channel_write_blk(fs->io, old,
+			io_channel_write_blk(fs->io, old_blk,
 					     num, rfs->itable_buf);
 			goto backout;
 		}
 		if (n > diff) {
 			retval = io_channel_write_blk(fs->io,
-			      old + fs->inode_blocks_per_group,
+			      old_blk + fs->inode_blocks_per_group,
 			      diff, rfs->itable_buf - fs->blocksize * diff);
 			if (retval)
 				goto backout;
@@ -644,17 +642,17 @@ backout:
 	while (--i >= 0) {
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
-			printf("Group %d block %u->%u\n", i, new, old);
+			printf("Group %d block %u->%u\n", i, new_blk, old_blk);
 #endif
-		old = rfs->old_fs->group_desc[i].bg_inode_table;
-		new = fs->group_desc[i].bg_inode_table;
+		old_blk = rfs->old_fs->group_desc[i].bg_inode_table;
+		new_blk = fs->group_desc[i].bg_inode_table;
 		
-		err = io_channel_read_blk(fs->io, new,
+		err = io_channel_read_blk(fs->io, new_blk,
 					  fs->inode_blocks_per_group,
 					  rfs->itable_buf);
 		if (err)
 			continue;
-		err = io_channel_write_blk(fs->io, old,
+		err = io_channel_write_blk(fs->io, old_blk,
 					   fs->inode_blocks_per_group,
 					   rfs->itable_buf);
 	}
@@ -736,9 +734,10 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags)
 	/*
 	 * Create the data structure
 	 */
-	rfs = malloc(sizeof(struct ext2_resize_struct));
-	if (!rfs)
-		return ENOMEM;
+	retval = ext2fs_get_mem(sizeof(struct ext2_resize_struct),
+				(void **) &rfs);
+	if (retval)
+		return retval;
 	memset(rfs, 0, sizeof(struct ext2_resize_struct));
 
 	rfs->old_fs = fs;
@@ -788,8 +787,8 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags)
 	
 	ext2fs_free(rfs->old_fs);
 	if (rfs->itable_buf)
-		free(rfs->itable_buf);
-	free(rfs);
+		ext2fs_free_mem((void **) &rfs->itable_buf);
+	ext2fs_free_mem((void **) &rfs);
 	
 	return 0;
 
@@ -797,7 +796,7 @@ errout:
 	if (rfs->new_fs)
 		ext2fs_free(rfs->new_fs);
 	if (rfs->itable_buf)
-		free(rfs->itable_buf);
-	free(rfs);
+		ext2fs_free_mem((void **) &rfs->itable_buf);
+	ext2fs_free_mem((void **) &rfs);
 	return retval;
 }

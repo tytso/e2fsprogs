@@ -13,18 +13,18 @@ struct ext2_inode_context {
 struct ext2_block_analyzer_funcs {
 	int (*pre_analyze)(ext2_filsys fs,
 			   struct ext2_inode_context *icontext,
-			   void *private);
+			   void *priv_data);
 	blk_t (*block_analyze)(ext2_filsys fs, blk_t blk,
 			       blk_t ref_block, int ref_offset, 
 			       struct ext2_inode_context *icontext,
-			       void *private);
+			       void *priv_data);
 	void (*post_analyze)(ext2_filsys fs,
 			     struct ext2_inode_context *icontext,
-			     void *private);
+			     void *priv_data);
 };
 
 errcode_t ext2_block_analyze(ext2_filsys fs,
 			     struct ext2_block_analyzer_funcs *funcs,
 			     ext2_brel block_relocation_table,
-			     void *private);
+			     void *priv_data);
 

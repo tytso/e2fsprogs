@@ -13,6 +13,9 @@ block-size
 output_file
 ]
 [
+.B \-s
+]
+[
 .B \-v
 ]
 [
@@ -38,6 +41,10 @@ Specify the size of blocks in bytes.
 Write the list of bad blocks to the specified file. Without this option,
 .B badblocks
 displays the list on its standard output.
+.TP
+.I -s
+Show the progress of the scan by writing out the block numbers as they
+are checked.
 .TP
 .I -v
 Verbose mode.

@@ -1,3 +1,7 @@
+Mon Dec  1 17:01:04 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* badblocks.8.in: Add documentation for the -s option.
+
 Fri Oct 24 23:37:52 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* fsck.c: 

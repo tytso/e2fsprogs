@@ -1,3 +1,26 @@
+Mon Jan 19 09:12:28 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* resize2fs.h: If EXT2_FLAT_INCLUDES is defined, then assume all
+ 		of the ext2-specific header files are in a flat directory.
+
+	* ext2_block_move.c, ext2_inode_move.c, extent.c, resize2fs.c,
+ 		resize2fs.h: Rename variables named "new" to "new_block",
+ 		"new_inode", or "new_loc" to avoid C++ reserved word
+ 		clash.
+	
+	* ext2_block_move.c, ext2_inode_move.c, extent.c, resize2fs.c,
+ 		sim_progress.c: Use ext2fs_get_memory(),
+ 		ext2fs_free_memory(), et. al., instead of malloc() and
+ 		free().
+	
+	* ext2_block_move.c, ext2_inode_move.c, extent.c: Explicitly cast
+	 	all assignments from void * to be compatible with C++.
+	
+Mon Dec 29 19:09:45 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* banalysis.c, banalysis.h, ext2_inode_move.c, ext2_block_move.c:
+		Change private to priv_data to avoid C++ namespace clash.
+
 Mon Nov  3 14:45:06 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* resize2fs.h: Remove STDC magic, since everyone is STDC these days.

@@ -21,23 +21,23 @@ struct process_block_struct {
 
 static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			 int blockcnt, blk_t ref_block,
-			 int ref_offset, void *private)
+			 int ref_offset, void *priv_data)
 {
-	struct process_block_struct *pb = private;
+	struct process_block_struct *pb;
 	errcode_t	retval;
-	blk_t		block, new;
+	blk_t		block, new_block;
 	int		ret = 0;
 
+	pb = (struct process_block_struct *) priv_data;
 	block = *block_nr;
-
-	new = ext2fs_extent_translate(pb->bmap, block);
-	if (new) {
-		*block_nr = new;
+	new_block = ext2fs_extent_translate(pb->bmap, block);
+	if (new_block) {
+		*block_nr = new_block;
 		ret |= BLOCK_CHANGED;
 #ifdef RESIZE2FS_DEBUG
 		if (pb->flags & RESIZE_DEBUG_BMOVE)
 			printf("ino=%ld, blockcnt=%d, %u->%u\n", pb->ino,
-			       blockcnt, block, new);
+			       blockcnt, block, new_block);
 #endif
 	}
 
@@ -56,7 +56,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 errcode_t ext2fs_block_move(ext2_resize_t rfs)
 {
 	ext2_extent		bmap;
-	blk_t			blk, old, new;
+	blk_t			blk, old_blk, new_blk;
 	ext2_filsys		fs = rfs->new_fs;
 	ext2_filsys		old_fs = rfs->old_fs;
 	ino_t			ino;
@@ -64,17 +64,18 @@ errcode_t ext2fs_block_move(ext2_resize_t rfs)
 	errcode_t		retval;
 	struct process_block_struct pb;
 	ext2_inode_scan		scan = 0;
-	char			*block_buf;
+	char			*block_buf = 0;
 	int			size, c;
 	int			to_move, moved;
 	ext2_sim_progmeter progress = 0;
 
-	new = fs->super->s_first_data_block;
+	new_blk = fs->super->s_first_data_block;
 	if (!rfs->itable_buf) {
-		rfs->itable_buf = malloc(fs->blocksize *
-					 fs->inode_blocks_per_group);
-		if (!rfs->itable_buf)
-			return ENOMEM;
+		retval = ext2fs_get_mem(fs->blocksize *
+					fs->inode_blocks_per_group,
+					(void **) &rfs->itable_buf);
+		if (retval)
+			return retval;
 	}
 	retval = ext2fs_create_extent_table(&bmap, 0);
 	if (retval)
@@ -93,18 +94,18 @@ errcode_t ext2fs_block_move(ext2_resize_t rfs)
 			continue;
 
 		while (1) {
-			if (new >= fs->super->s_blocks_count) {
+			if (new_blk >= fs->super->s_blocks_count) {
 				retval = ENOSPC;
 				goto errout;
 			}
-			if (!ext2fs_test_block_bitmap(fs->block_map, new) &&
+			if (!ext2fs_test_block_bitmap(fs->block_map, new_blk) &&
 			    !ext2fs_test_block_bitmap(rfs->reserve_blocks,
-						      new))
+						      new_blk))
 				break;
-			new++;
+			new_blk++;
 		}
-		ext2fs_mark_block_bitmap(fs->block_map, new);
-		ext2fs_add_extent_entry(bmap, blk, new);
+		ext2fs_mark_block_bitmap(fs->block_map, new_blk);
+		ext2fs_add_extent_entry(bmap, blk, new_blk);
 		to_move++;
 	}
 	if (to_move == 0)
@@ -123,28 +124,28 @@ errcode_t ext2fs_block_move(ext2_resize_t rfs)
 	}
 	
 	while (1) {
-		retval = ext2fs_iterate_extent(bmap, &old, &new, &size);
+		retval = ext2fs_iterate_extent(bmap, &old_blk, &new_blk, &size);
 		if (retval) goto errout;
 		if (!size)
 			break;
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_BMOVE)
 			printf("Moving %d blocks %u->%u\n", size,
-			       old, new);
+			       old_blk, new_blk);
 #endif
 		do {
 			c = size;
 			if (c > fs->inode_blocks_per_group)
 				c = fs->inode_blocks_per_group;
-			retval = io_channel_read_blk(fs->io, old, c,
+			retval = io_channel_read_blk(fs->io, old_blk, c,
 						     rfs->itable_buf);
 			if (retval) goto errout;
-			retval = io_channel_write_blk(fs->io, new, c,
+			retval = io_channel_write_blk(fs->io, new_blk, c,
 						      rfs->itable_buf);
 			if (retval) goto errout;
 			size -= c;
-			new += c;
-			old += c;
+			new_blk += c;
+			old_blk += c;
 			moved += c;
 			io_channel_flush(fs->io);
 			if (progress)
@@ -167,11 +168,9 @@ errcode_t ext2fs_block_move(ext2_resize_t rfs)
 	pb.bmap = bmap;	
 	pb.flags = rfs->flags;
 
-	block_buf = malloc(old_fs->blocksize * 3);
-	if (!block_buf) {
-		retval = ENOMEM;
+	retval = ext2fs_get_mem(old_fs->blocksize * 3, (void **) &block_buf);
+	if (retval)
 		goto errout;
-	}
 
 	/*
 	 * We're going to initialize the dblist while we're at it.
@@ -229,6 +228,8 @@ errout:
 	ext2fs_free_extent_table(bmap);
 	if (scan)
 		ext2fs_close_inode_scan(scan);
+	if (block_buf)
+		ext2fs_free_mem((void **) &block_buf);
 	return retval;
 }
 

@@ -25,9 +25,15 @@
 #ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>
 #endif
-#include <linux/ext2_fs.h>
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#include "ext2fs.h"
+#else
+#include <linux/ext2_fs.h>
 #include "ext2fs/ext2fs.h"
+#endif
+
 
 /*
  * For the extent map
@@ -76,11 +82,11 @@ extern errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent,
 					    int size);
 extern void ext2fs_free_extent_table(ext2_extent extent);
 extern errcode_t ext2fs_add_extent_entry(ext2_extent extent,
-					 __u32 old, __u32 new);
-extern __u32 ext2fs_extent_translate(ext2_extent extent, __u32 old);
+					 __u32 old_loc, __u32 new_loc);
+extern __u32 ext2fs_extent_translate(ext2_extent extent, __u32 old_loc);
 extern void ext2fs_extent_dump(ext2_extent extent, FILE *out);
-extern errcode_t ext2fs_iterate_extent(ext2_extent extent, __u32 *old,
-				       __u32 *new, int *size);
+extern errcode_t ext2fs_iterate_extent(ext2_extent extent, __u32 *old_loc,
+				       __u32 *new_loc, int *size);
 
 /* sim_progress.c */
 extern errcode_t ext2fs_progress_init(ext2_sim_progmeter *ret_prog,

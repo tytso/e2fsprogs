@@ -22,14 +22,14 @@
 struct process_block_struct {
 	struct ext2_block_analyzer_funcs *funcs;
 	struct ext2_inode_context *ctx;
-	void *private;
+	void *priv_data;
 };
 
 static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			 int blockcnt, blk_t ref_block,
-			 int ref_offset, void *private)
+			 int ref_offset, void *priv_data)
 {
-	struct process_block_struct *pb = private;
+	struct process_block_struct *pb = priv_data;
 	blk_t	new_block;
 	struct ext2_block_relocate_entry ent;
 
@@ -37,7 +37,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 		ref_offset = blockcnt;
 
 	new_block = pb->funcs->block_analyze(fs, *block_nr, ref_block,
-					     ref_offset, pb->ctx, pb->private);
+					     ref_offset, pb->ctx, pb->priv_data);
 	if (new_block) {
 		ent.new = new_block;
 		ent.offset = ref_offset;
@@ -56,7 +56,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 errcode_t ext2_block_analyze(ext2_filsys fs,
 			     struct ext2_block_analyzer_funcs *funcs,
 			     ext2_brel block_relocation_table,
-			     void *private)
+			     void *priv_data)
 {
 	ino_t	ino;
 	struct ext2_inode inode;
@@ -71,7 +71,7 @@ errcode_t ext2_block_analyze(ext2_filsys fs,
 		return retval;
 
 	pb.funcs = funcs;
-	pb.private = private;
+	pb.priv_data = priv_data;
 	pb.ctx = &ctx;
 	
 	block_buf = malloc(fs->blocksize * 3);
@@ -81,7 +81,7 @@ errcode_t ext2_block_analyze(ext2_filsys fs,
 	retval = ext2fs_get_next_inode(scan, &ino, &inode);
 	if (retval)
 		return retval;
-	ctx.ctx = private;
+	ctx.ctx = priv_data;
 	ctx.brel = block_relocation_table;
 	while (ino) {
 		if ((inode.i_links_count == 0) ||
@@ -93,7 +93,7 @@ errcode_t ext2_block_analyze(ext2_filsys fs,
 		ctx.error = 0;
 
 		if (funcs->pre_analyze &&
-		    !(*funcs->pre_analyze)(fs, &ctx, private))
+		    !(*funcs->pre_analyze)(fs, &ctx, priv_data))
 			goto next;
 
 		retval = ext2fs_block_iterate2(fs, ino, 0, block_buf,
@@ -102,7 +102,7 @@ errcode_t ext2_block_analyze(ext2_filsys fs,
 			return retval;
 
 		if (funcs->post_analyze) 
-			(funcs->post_analyze)(fs, &ctx, private);
+			(funcs->post_analyze)(fs, &ctx, priv_data);
 
 	next:
 		retval = ext2fs_get_next_inode(scan, &ino, &inode);

@@ -69,17 +69,19 @@ errcode_t ext2fs_progress_init(ext2_sim_progmeter *ret_prog,
 			       int labelwidth, int barwidth,
 			       __u32 maxdone, int flags)
 {
-	ext2_sim_progmeter prog;
+	ext2_sim_progmeter	prog;
+	errcode_t		retval;
 
-	prog = malloc(sizeof(struct ext2_sim_progress));
+	retval = ext2fs_get_mem(sizeof(struct ext2_sim_progress),
+				(void **) &prog);
 	if (!prog)
-		return ENOMEM;
+		return retval;
 	memset(prog, 0, sizeof(struct ext2_sim_progress));
 
-	prog->label = malloc(strlen(label)+1);
-	if (!prog->label) {
+	retval = ext2fs_get_mem(strlen(label)+1, (void **) &prog->label);
+	if (retval) {
 		free(prog);
-		return ENOMEM;
+		return retval;
 	}
 	strcpy(prog->label, label);
 	prog->labelwidth = labelwidth;
@@ -99,8 +101,8 @@ void ext2fs_progress_close(ext2_sim_progmeter prog)
 {
 
 	if (prog->label)
-		free(prog->label);
-	free(prog);
+		ext2fs_free_mem((void **) &prog->label);
+	ext2fs_free_mem((void **) &prog);
 	printf("\n");
 	return;
 }
