@@ -40,6 +40,9 @@ extern void do_icheck(int argc, char **argv);
 /* ncheck.c */
 extern void do_ncheck(int argc, char **argv);
 
+/* set_super.c */
+extern void do_set_super(int argc, char **);
+
 /* debugfs.c */
 extern void do_dirty_filesys(int argc, char **argv);
 extern void do_open_filesys(int argc, char **argv);

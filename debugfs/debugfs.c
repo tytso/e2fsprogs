@@ -289,17 +289,18 @@ void do_show_super_stats(int argc, char *argv[])
 		fprintf(out, " Group %2d: block bitmap at %d, "
 		        "inode bitmap at %d, "
 		        "inode table at %d\n"
-		        "           %d free block%s, "
-		        "%d free inode%s, "
-		        "%d used director%s\n",
+		        "           %d free %s, "
+		        "%d free %s, "
+		        "%d used %s\n",
 		        i, gdp->bg_block_bitmap,
 		        gdp->bg_inode_bitmap, gdp->bg_inode_table,
 		        gdp->bg_free_blocks_count,
-		        gdp->bg_free_blocks_count != 1 ? "s" : "",
+		        gdp->bg_free_blocks_count != 1 ? "blocks" : "block",
 		        gdp->bg_free_inodes_count,
-		        gdp->bg_free_inodes_count != 1 ? "s" : "",
+		        gdp->bg_free_inodes_count != 1 ? "inodes" : "inode",
 		        gdp->bg_used_dirs_count,
-		        gdp->bg_used_dirs_count != 1 ? "ies" : "y");
+		        gdp->bg_used_dirs_count != 1 ? "directories"
+				: "directory");
 	close_pager(out);
 }
 
@@ -470,7 +471,7 @@ static void dump_inode(ext2_ino_t inode_num, struct ext2_inode inode)
 		  time_to_string(inode.i_dtime));
 	if (LINUX_S_ISLNK(inode.i_mode) && inode.i_blocks == 0)
 		fprintf(out, "Fast_link_dest: %.*s\n",
-			inode.i_size, (char *)inode.i_block);
+			(int) inode.i_size, (char *)inode.i_block);
 	else
 		dump_blocks(out, inode_num);
 	close_pager(out);

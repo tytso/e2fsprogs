@@ -1,3 +1,9 @@
+2001-01-12  Theodore Ts'o  <tytso@valinux.com>
+
+	*  debugfs.h,  debugfs.c  (do_show_super_stats): Use  full words
+		instead of pluralism hack  to make I18N conversion easier.
+		Clean up gcc -Wall complaints.
+
 2001-01-11    <tytso@snap.thunk.org>
 
 	* debugfs.c, debugfs.h, dump.c, icheck.c, ls.c, lsdel.c, ncheck.c,
