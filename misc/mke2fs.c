@@ -229,7 +229,7 @@ struct mke2fs_defaults {
 	{ 0, 0, 0, 0},
 };
 
-static void set_fs_defaults(char *fs_type, struct ext2fs_sb *super,
+static void set_fs_defaults(char *fs_type, struct ext2_super_block *super,
 			    int blocksize, int *inode_ratio)
 {
 	int	megs;
@@ -571,7 +571,7 @@ static void zap_sector(ext2_filsys fs, int sect)
 
 static void show_stats(ext2_filsys fs)
 {
-	struct ext2fs_sb 	*s = (struct ext2fs_sb *) fs->super;
+	struct ext2_super_block *s = fs->super;
 	char 			buf[80];
 	blk_t			group_block;
 	int			i, need, col_left;
@@ -816,7 +816,7 @@ static void PRS(int argc, char *argv[])
 	errcode_t	retval;
 	int		sparse_option = 1;
 	char *		oldpath = getenv("PATH");
-	struct ext2fs_sb *param_ext2 = (struct ext2fs_sb *) &param;
+	struct ext2_super_block *param_ext2 = &param;
 	char *		raid_opts = 0;
 	char *		journal_opts = 0;
 	char *		fs_type = 0;
@@ -1105,7 +1105,6 @@ int main (int argc, char *argv[])
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
 	int		journal_blocks;
-	struct ext2fs_sb *s;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -1132,8 +1131,7 @@ int main (int argc, char *argv[])
 	/*
 	 * Generate a UUID for it...
 	 */
-	s = (struct ext2fs_sb *) fs->super;
-	uuid_generate(s->s_uuid);
+	uuid_generate(fs->super->s_uuid);
 
 	/*
 	 * Override the creator OS, if applicable
@@ -1155,18 +1153,20 @@ int main (int argc, char *argv[])
 	 * Set the volume label...
 	 */
 	if (volume_label) {
-		memset(s->s_volume_name, 0, sizeof(s->s_volume_name));
-		strncpy(s->s_volume_name, volume_label,
-			sizeof(s->s_volume_name));
+		memset(fs->super->s_volume_name, 0,
+		       sizeof(fs->super->s_volume_name));
+		strncpy(fs->super->s_volume_name, volume_label,
+			sizeof(fs->super->s_volume_name));
 	}
 
 	/*
 	 * Set the last mount directory
 	 */
 	if (mount_dir) {
-		memset(s->s_last_mounted, 0, sizeof(s->s_last_mounted));
-		strncpy(s->s_last_mounted, mount_dir,
-			sizeof(s->s_last_mounted));
+		memset(fs->super->s_last_mounted, 0,
+		       sizeof(fs->super->s_last_mounted));
+		strncpy(fs->super->s_last_mounted, mount_dir,
+			sizeof(fs->super->s_last_mounted));
 	}
 	
 	if (!quiet || noaction)

@@ -84,7 +84,6 @@ int main (int argc, char ** argv)
 	char * tmp;
 	errcode_t retval;
 	ext2_filsys fs;
-	struct ext2fs_sb *sb;
 	int open_flag = 0;
 	int raw_flag = 0;
 	int fd = 0;
@@ -121,7 +120,6 @@ int main (int argc, char ** argv)
 		printf(_("Couldn't find valid filesystem superblock.\n"));
 		exit(1);
 	}
-	sb = (struct ext2fs_sb *) fs->super;
 
 	fd = open(argv[optind+1], O_CREAT|O_TRUNC|O_RDWR, 0600);
 	if (fd < 0) {

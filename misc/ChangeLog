@@ -1,11 +1,14 @@
 2001-01-01    <tytso@snap.thunk.org>
 
+	* mke2fs.c, e2image.c: Removed references to struct ext2fs_sb to
+		struct ext2_super_block.
+
 	* tune2fs.c (main): Add support to allow HAS_JOURNAL flag to be
 		cleared, but only if the filesystem is unmounted or
 		mounted read-only.  Changed struct ext2fs_sb to struct
-		ext2_super, and cleaned up old code which was needed for
-		old versions of ext2_fs.h (not needed since we're using
-		our own version now).
+		ext2_super_block, and cleaned up old code which was needed
+		for old versions of ext2_fs.h (not needed since we're
+		using our own version now).
 
 2000-12-31    <tytso@snap.thunk.org>
 
