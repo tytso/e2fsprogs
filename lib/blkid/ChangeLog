@@ -1,3 +1,10 @@
+2003-02-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid.h, dev.c, devname.c, probe.c, read.c, resolve.c: Rename
+		blkid_get_devname() to blkid_get_dev().  Also rename
+		blkid_get_token() to blkid_get_devname().  This more
+		accurately describes what these functions do.
+
 2003-02-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkidP.h, devname.c (blkid_get_devname), read.c (parse_tag),

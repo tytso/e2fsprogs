@@ -457,7 +457,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	cache = blkid_new_cache();
-	dev = blkid_get_devname(cache, argv[1], BLKID_DEV_NORMAL);
+	dev = blkid_get_dev(cache, argv[1], BLKID_DEV_NORMAL);
 	if (!dev) {
 		printf("%s: %s has an unsupported type\n", argv[0], argv[1]);
 		return (1);

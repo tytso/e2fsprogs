@@ -82,7 +82,7 @@ http://www.gnu.org/licenses/licenses.html#LGPL
 .SH "SEE ALSO"
 .BR blkid_get_cache (3),
 .BR blkid_put_cache (3),
-.BR blkid_get_devname (3),
+.BR blkid_get_dev (3),
 .BR blkid_probe_all (3),
 .BR blkid_free_dev (3),
 .BR blkid_find_tag_dev (3),

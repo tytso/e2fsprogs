@@ -1,3 +1,9 @@
+2003-02-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid.c: Update to reflect renaming of blkid_get_devname() to
+		blkid_get_dev(), and blkid_get_token() to
+		blkid_get_devname().
+
 2003-01-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.8.in: Fix grammar nit.

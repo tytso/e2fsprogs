@@ -58,7 +58,7 @@ void blkid_free_dev(blkid_dev dev)
 /*
  * Given a blkid device, return its name
  */
-extern const char *blkid_devname_name(blkid_dev dev)
+extern const char *blkid_dev_devname(blkid_dev dev)
 {
 	return dev->bid_name;
 }

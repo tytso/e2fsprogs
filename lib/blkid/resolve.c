@@ -44,7 +44,7 @@ char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
 	if (!devname)
 		return NULL;
 
-	if ((dev = blkid_get_devname(cache, devname, BLKID_DEV_NORMAL)) &&
+	if ((dev = blkid_get_dev(cache, devname, BLKID_DEV_NORMAL)) &&
 	    (found = blkid_find_tag_dev(dev, tagname)))
 		ret = blkid_strdup(found->bit_val);
 
@@ -60,8 +60,8 @@ char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
  * of the form "NAME=value" and there is no value given, then it is assumed
  * to be the actual devname and a copy is returned.
  */
-char *blkid_get_token(blkid_cache cache, const char *token,
-		      const char *value)
+char *blkid_get_devname(blkid_cache cache, const char *token,
+			const char *value)
 {
 	blkid_dev dev;
 	blkid_cache c = cache;
@@ -93,7 +93,7 @@ char *blkid_get_token(blkid_cache cache, const char *token,
 	if (!dev)
 		goto errout;
 
-	ret = blkid_strdup(blkid_devname_name(dev));
+	ret = blkid_strdup(blkid_dev_devname(dev));
 
 errout:
 	if (t)
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 		printf("%s has tag %s=%s\n", argv[2], argv[1],
 		       value ? value : "<missing>");
 	} else {
-		value = blkid_get_token(cache, argv[1], NULL);
+		value = blkid_get_devname(cache, argv[1], NULL);
 		printf("%s has tag %s\n", value ? value : "<none>", argv[1]);
 	}
 	blkid_put_cache(cache);

@@ -48,8 +48,7 @@
  * If there is no entry with the specified device name, and the create
  * flag is set, then create an empty device entry.
  */
-blkid_dev blkid_get_devname(blkid_cache cache, const char *devname,
-			     int flags)
+blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
 {
 	blkid_dev dev = NULL, tmp;
 	struct list_head *p;
@@ -116,7 +115,7 @@ static void probe_one(blkid_cache cache, const char *ptname,
 		char device[256];
 
 		sprintf(device, "%s/%s", *dir, ptname);
-		if ((dev = blkid_get_devname(cache, device, BLKID_DEV_FIND)) &&
+		if ((dev = blkid_get_dev(cache, device, BLKID_DEV_FIND)) &&
 		    dev->bid_devno == devno)
 			goto set_pri;
 
@@ -130,7 +129,7 @@ static void probe_one(blkid_cache cache, const char *ptname,
 		if (!devname)
 			return;
 	}
-	dev = blkid_get_devname(cache, devname, BLKID_DEV_NORMAL);
+	dev = blkid_get_dev(cache, devname, BLKID_DEV_NORMAL);
 	free(devname);
 
 set_pri:
