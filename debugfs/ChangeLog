@@ -1,3 +1,11 @@
+2003-12-11  Theodore Ts'o  <tytso@thunk.org>
+
+	* debugfs.c (do_write, do_mkdir): If the directory is full,
+		automatically call ext2fs_expand_dir() and then retry to
+		add the link to the directory as a convenience to the
+		user.  (Addresses Debian Bug: #217892)
+		(do_mknod): Clean up expand_dir error handling.
+
 2003-12-07  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c (do_write): Mask off the file type bits, and OR in the

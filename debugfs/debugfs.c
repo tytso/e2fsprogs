@@ -1108,6 +1108,15 @@ void do_write(int argc, char *argv[])
 	printf("Allocated inode: %u\n", newfile);
 	retval = ext2fs_link(current_fs, cwd, argv[2], newfile,
 			     EXT2_FT_REG_FILE);
+	if (retval == EXT2_ET_DIR_NO_SPACE) {
+		retval = ext2fs_expand_dir(current_fs, cwd);
+		if (retval) {
+			com_err(argv[0], retval, "while expanding directory");
+			return;
+		}
+		retval = ext2fs_link(current_fs, cwd, argv[2], newfile,
+				     EXT2_FT_REG_FILE);
+	}
 	if (retval) {
 		com_err(argv[2], retval, "");
 		close(fd);
@@ -1186,18 +1195,18 @@ void do_mknod(int argc, char *argv[])
 	}
 	printf("Allocated inode: %u\n", newfile);
 	retval = ext2fs_link(current_fs, cwd, argv[1], newfile, filetype);
-	if (retval) {
-		if (retval == EXT2_ET_DIR_NO_SPACE) {
-			retval = ext2fs_expand_dir(current_fs, cwd);
-			if (!retval)
-				retval = ext2fs_link(current_fs, cwd,
-						     argv[1], newfile,
-						     filetype);
-		}
+	if (retval == EXT2_ET_DIR_NO_SPACE) {
+		retval = ext2fs_expand_dir(current_fs, cwd);
 		if (retval) {
-			com_err(argv[1], retval, "");
+			com_err(argv[0], retval, "while expanding directory");
 			return;
 		}
+		retval = ext2fs_link(current_fs, cwd, argv[1], newfile,
+				     filetype);
+	}
+	if (retval) {
+		com_err(argv[1], retval, "");
+		return;
 	}
         if (ext2fs_test_inode_bitmap(current_fs->inode_map,newfile))
 		com_err(argv[0], 0, "Warning: inode already set");
@@ -1237,8 +1246,16 @@ void do_mkdir(int argc, char *argv[])
 		name = argv[1];
 	}
 
-
+try_again:
 	retval = ext2fs_mkdir(current_fs, parent, 0, name);
+	if (retval == EXT2_ET_DIR_NO_SPACE) {
+		retval = ext2fs_expand_dir(current_fs, parent);
+		if (retval) {
+			com_err("argv[0]", retval, "while expanding directory");
+			return;
+		}
+		goto try_again;
+	}
 	if (retval) {
 		com_err("ext2fs_mkdir", retval, "");
 		return;
