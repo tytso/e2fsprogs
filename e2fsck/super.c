@@ -138,6 +138,16 @@ void check_super_block(e2fsck_t ctx)
 		return;
 	}
 
+	should_be = s->s_inodes_per_group * fs->group_desc_count;
+	if (s->s_inodes_count != should_be) {
+		pctx.ino = s->s_inodes_count;
+		pctx.ino2 = should_be;
+		if (fix_problem(ctx, PR_0_INODE_COUNT_WRONG, &pctx)) {
+			s->s_inodes_count = should_be;
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
+
 	/*
 	 * Verify the group descriptors....
 	 */

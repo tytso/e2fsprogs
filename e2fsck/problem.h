@@ -88,6 +88,9 @@ struct problem_context {
 /* Error determing physical device size of filesystem */
 #define PR_0_GETSIZE_ERROR	0x00000C
 
+/* Inode count in the superblock incorrect */
+#define PR_0_INODE_COUNT_WRONG	0x00000D
+
 /*
  * Pass 1 errors
  */

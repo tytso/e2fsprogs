@@ -164,6 +164,11 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_0_GETSIZE_ERROR,	  
 	  "Error determining size of the physical device: %m\n",
 	  PROMPT_NONE, PR_FATAL },
+
+	/* Inode count in superblock is incorrect */
+	{ PR_0_INODE_COUNT_WRONG,
+	  "@i count in @S is %i, should be %j\n",
+	  PROMPT_FIX, 0 },
 		  
 	/* Pass 1 errors */
 	

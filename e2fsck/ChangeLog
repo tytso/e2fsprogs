@@ -1,3 +1,13 @@
+1999-05-22    <tytso@rsts-11.mit.edu>
+
+	* problem.c, problem.h (PR_0_INODE_COUNT_WRONG): Add new problem
+		code. 
+	
+	* super.c (check_super_block): Add check to make sure the total
+		number of inodes is sane, since this can be calculated
+		from the number of groups times the number of inodes per
+		group.   Offer to correct it if it is incorrect.
+
 1999-03-19    <tytso@rsts-11.mit.edu>
 
 	* pass5.c (check_block_end): Fix fencepost condition where when
