@@ -443,7 +443,18 @@ static time_t parse_time(char *str)
 		return (time(0));
 	}
 	memset(&ts, 0, sizeof(ts));
+#ifdef HAVE_STRPTIME
 	strptime(optarg, "%Y%m%d%H%M%S", &ts);
+#else
+	sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &ts.tm_year, &ts.tm_mon,
+	       &ts.tm_mday, &ts.tm_hour, &ts.tm_min, &ts.tm_sec);
+	ts.tm_year -= 1900;
+	ts.tm_mon -= 1;
+	if (ts.tm_year < 0 || ts.tm_mon < 0 || ts.tm_mon > 11 ||
+	    ts.tm_mday < 0 || ts.tm_mday > 31 || ts.tm_hour > 23 ||
+	    ts.tm_min > 59 || ts.tm_sec > 61)
+		ts.tm_mday = 0;
+#endif
 	if (ts.tm_mday == 0) {
 		com_err(program_name, 0,
 			_("Couldn't parse date/time specifier: %s"),

@@ -1,5 +1,8 @@
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
+	* tune2fs.c (parse_time): Add portability code to work around lack
+		of strptime().
+
 	* Makefile.in: Add $(LIBINTL) to the link line so we can support
 		using the internal gettext library.
 
