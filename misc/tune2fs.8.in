@@ -340,7 +340,7 @@ is converted to a numerical uid before it is stored in the superblock.
 .BI \-U " UUID"
 Set the universally unique identifier (UUID) of the filesystem to
 .IR UUID .
-The format of the UUID is a series of hex digits separated by hypthens, 
+The format of the UUID is a series of hex digits separated by hyphens, 
 like this: 
 "c1b9d5a2-f162-11cf-9ece-0020afc76f16".  
 The 

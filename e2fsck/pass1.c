@@ -1179,6 +1179,7 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 	pctx->num = root->hash_version;
 	if ((root->hash_version != EXT2_HASH_LEGACY) &&
 	    (root->hash_version != EXT2_HASH_HALF_MD4) &&
+	    (root->hash_version != EXT2_HASH_TEA) &&
 	    fix_problem(ctx, PR_1_HTREE_HASHV, pctx))
 		return 1;
 		

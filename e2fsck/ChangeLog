@@ -1,5 +1,10 @@
 2002-08-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* e2fsck.8.in: Add clarifying text describing how e2fsck works
+		with ext3 filesytems.  (Addresses Debian bug #145044).
+
+	* pass1.c (handle_htree): Add support for EXT2_HASH_TEA
+
 	* e2fsck.h, e2fsck.c (e2fsck_allocate_context): Add new field to
 		the e2fsck context, ext_attr_ver, which specifies the EA
 		format version.

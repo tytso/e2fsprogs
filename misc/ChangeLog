@@ -1,3 +1,13 @@
+2002-08-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.8.in: Fix typo in man page, and clarified text regarding
+		options specifiers for -t option.  (Addresses Debian bug 
+		#145044)
+
+	* mke2fs.c (main): If there is a problem zeroing blocks at the end
+		of the filesystem, don't abort mke2fs.  Addresses Debian
+		bug #155007.
+
 2002-08-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2image.c (write_raw_image_file): Check for an extended

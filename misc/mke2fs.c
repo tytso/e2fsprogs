@@ -404,10 +404,9 @@ static errcode_t zero_blocks(ext2_filsys fs, blk_t blk, int num,
 	if (next_update_incr < 1)
 		next_update_incr = 1;
 	for (j=0; j < num; j += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
-		if (num-j > STRIDE_LENGTH)
+		count = num - j;
+		if (count > STRIDE_LENGTH)
 			count = STRIDE_LENGTH;
-		else
-			count = num - j;
 		retval = io_channel_write_blk(fs->io, blk, count, buf);
 		if (retval) {
 			if (ret_count)
@@ -1340,9 +1339,8 @@ int main (int argc, char *argv[])
 
 		if (retval) {
 			com_err(program_name, retval,
-				_("zeroing block %u at end of filesystem"),
+				_("while zeroing block %u at end of filesystem"),
 				ret_blk);
-			exit(1);
 		}
 		write_inode_tables(fs);
 		create_root_dir(fs);

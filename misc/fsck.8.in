@@ -16,11 +16,11 @@ fsck \- check and repair a Linux file system
 ] 
 .I filesys [ ... ]
 [\-\-] [
-.B fsck-options
+.B fs-specific-options
 ]
 .SH DESCRIPTION
 .B fsck
-is used to check and optionally repair a one or more Linux file systems.  
+is used to check and optionally repair one or more Linux file systems.  
 .I filesys
 can be a device name (e.g.
 .IR /dev/hdc1 ", " /dev/sdb2 ),
@@ -76,7 +76,7 @@ further details.
 .B \-s
 Serialize 
 .B fsck 
-operations.  This is a good idea if you checking multiple
+operations.  This is a good idea if you are checking multiple
 filesystems and the checkers are in an interactive mode.  (Note:
 .BR e2fsck (8)
 runs in an interactive mode by default.  To make 
@@ -115,16 +115,28 @@ will be checked.
 Options specifiers may be included in the comma separated
 .IR fslist .
 They must have the format 
-.BI opts= fs-option\fR,
-and may be prefixed by a negation operator.  If an options specifier is
-present, then only filesystems whose 
-.B /etc/fstab
-entry do (or do not, if the options specifier was prefixed by a negation
-operator) contain 
+.BI opts= fs-option\fR.
+If an options specifier is present, then only filesystems which contain
 .I fs-option
-in their options field of the
+in their mount options field of 
+.B /etc/fstab
+will be checked.  If the options specifier is prefixed by a negation
+operator, then only 
+those filesystems that do not have
+.I fs-option
+in their mount options field of
 .B /etc/fstab 
-file will be checked.
+will be checked.
+.sp
+For example, if
+.B opts=ro
+appears in
+.IR fslist ,
+then only filesystems listed in
+.B /etc/fstab 
+with the
+.B ro
+option will be checked.
 .sp
 For compatibility with Mandrake distributions whose boot scripts
 depend upon an unauthorized UI change to the
@@ -228,8 +240,8 @@ Don't show the title on startup.
 Produce verbose output, including all file system-specific commands
 that are executed.
 .TP
-.B fsck-options
-Options which which are not understood by 
+.B fs-specific-options
+Options which are not understood by 
 .B fsck 
 are passed to the filesystem-specific checker.  These arguments
 .B must
