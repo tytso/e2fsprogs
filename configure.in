@@ -587,6 +587,10 @@ linux* | gnu*)
 	if test "$prefix" = NONE ; then
 		prefix="/usr";
 		echo "On $host_os systems, prefix defaults to /usr"
+		if test "$mandir" = '${prefix}/man' ; then
+			echo "...and mandir defaults to /usr/share/man"
+			mandir=/usr/share/man
+		fi
 	fi
 ;;
 esac

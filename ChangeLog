@@ -1,3 +1,8 @@
+2002-05-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: On Linux systems, if the prefix is defaulted to
+		/usr, then default mandir to /usr/share/man
+
 2002-05-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* Remove check for asm/page.h, and add check for sysconf()

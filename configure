@@ -4765,6 +4765,10 @@ linux* | gnu*)
 	if test "$prefix" = NONE ; then
 		prefix="/usr";
 		echo "On $host_os systems, prefix defaults to /usr"
+		if test "$mandir" = '${prefix}/man' ; then
+			echo "...and mandir defaults to /usr/share/man"
+			mandir=/usr/share/man
+		fi
 	fi
 ;;
 esac
@@ -4790,20 +4794,20 @@ fi
 
 
 echo $ac_n "checking whether linker accepts -static""... $ac_c" 1>&6
-echo "configure:4794: checking whether linker accepts -static" >&5
+echo "configure:4798: checking whether linker accepts -static" >&5
 if eval "test \"`echo '$''{'ac_cv_e2fsprogs_use_static'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
 cat > conftest.$ac_ext <<EOF
-#line 4800 "configure"
+#line 4804 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 fflush(stdout);
 ; return 0; }
 EOF
-if { (eval echo configure:4807: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:4811: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_e2fsprogs_use_static=yes
 else
