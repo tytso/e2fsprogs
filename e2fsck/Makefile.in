@@ -56,14 +56,15 @@ PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR) \
 
 OBJS= unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o pass3.o pass4.o \
 	pass5.o journal.o swapfs.o badblocks.o util.o dirinfo.o ehandler.o \
-	problem.o message.o recovery.o $(MTRACE_OBJ)
+	problem.o message.o recovery.o revoke.o $(MTRACE_OBJ)
 
 PROFILED_OBJS= profiled/unix.o profiled/e2fsck.o profiled/super.o \
 	profiled/pass1.o profiled/pass1b.o \
 	profiled/pass2.o profiled/pass3.o profiled/pass4.o profiled/pass5.o \
 	profiled/journal.o profiled/badblocks.o profiled/util.o \
 	profiled/dirinfo.o profiled/ehandler.o profiled/message.o \
-	profiled/problem.o profiled/swapfs.o profiled/recovery.o
+	profiled/problem.o profiled/swapfs.o profiled/recovery.o \
+	profiled/revoke.o
 
 SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/super.c \
@@ -75,6 +76,7 @@ SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/pass5.c \
 	$(srcdir)/journal.c \
 	$(srcdir)/recovery.c \
+	$(srcdir)/revoke.c \
 	$(srcdir)/badblocks.c \
 	$(srcdir)/util.c \
 	$(srcdir)/unix.c \
@@ -198,17 +200,25 @@ pass5.o: $(srcdir)/pass5.c $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(srcdir)/problem.h
-journal.o: $(srcdir)/journal.c $(srcdir)/jfs.h $(srcdir)/jfs_compat.h \
- $(srcdir)/e2fsck.h $(top_srcdir)/include/linux/ext2_fs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/problem.h \
- $(top_srcdir)/lib/uuid/uuid.h
-recovery.o: $(srcdir)/recovery.c $(srcdir)/jfs.h $(srcdir)/jfs_compat.h \
- $(srcdir)/e2fsck.h $(top_srcdir)/include/linux/ext2_fs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h
+journal.o: $(srcdir)/journal.c $(srcdir)/jfs_user.h $(srcdir)/e2fsck.h \
+ $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(srcdir)/jfs_e2fsck.h $(top_srcdir)/include/linux/jfs.h \
+ $(top_srcdir)/include/linux/jfs_compat.h $(top_srcdir)/include/linux/list.h \
+ $(srcdir)/problem.h $(top_srcdir)/lib/uuid/uuid.h
+recovery.o: $(srcdir)/recovery.c $(srcdir)/jfs_user.h $(srcdir)/e2fsck.h \
+ $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(srcdir)/jfs_e2fsck.h $(top_srcdir)/include/linux/jfs.h \
+ $(top_srcdir)/include/linux/jfs_compat.h $(top_srcdir)/include/linux/list.h
+revoke.o: $(srcdir)/revoke.c $(srcdir)/jfs_user.h $(srcdir)/e2fsck.h \
+ $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(srcdir)/jfs_e2fsck.h $(top_srcdir)/include/linux/jfs.h \
+ $(top_srcdir)/include/linux/jfs_compat.h $(top_srcdir)/include/linux/list.h
 badblocks.o: $(srcdir)/badblocks.c $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/e2fsck.h $(top_srcdir)/include/linux/ext2_fs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
@@ -220,7 +230,8 @@ util.o: $(srcdir)/util.c $(srcdir)/e2fsck.h \
 unix.o: $(srcdir)/unix.c $(top_srcdir)/lib/et/com_err.h $(srcdir)/e2fsck.h \
  $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/problem.h $(srcdir)/../version.h
+ $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/problem.h \
+ $(top_srcdir)/version.h
 dirinfo.o: $(srcdir)/dirinfo.c $(srcdir)/e2fsck.h \
  $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \

@@ -20,13 +20,13 @@
 #include <sys/stat.h>
 #endif
 
-#include "jfs.h"
+#include "jfs_user.h"
 #include "problem.h"
 #include "uuid/uuid.h"
 
 #ifdef JFS_DEBUG
 static int bh_count = 0;
-int journal_enable_debug = 2;
+int journal_enable_debug = 0;
 #endif
 
 int bmap(struct inode *inode, int block)
@@ -63,36 +63,47 @@ struct buffer_head *getblk(e2fsck_t ctx, blk_t blocknr, int blocksize)
 	return bh;
 }
 
-void ll_rw_block(int rw, int dummy, struct buffer_head *bh)
+void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 {
 	int retval;
+	struct buffer_head *bh;
 
-	if (rw == READ && !bh->b_uptodate) {
-		jfs_debug(3, "reading block %lu/%p\n", bh->b_blocknr, bh);
-		retval = io_channel_read_blk(bh->b_ctx->fs->io, bh->b_blocknr,
-					     1, bh->b_data);
-		if (retval) {
-			com_err(bh->b_ctx->device_name, retval,
-				"while reading block %ld\n", bh->b_blocknr);
-			bh->b_err = retval;
-			return;
-		}
-		bh->b_uptodate = 1;
-	} else if (rw == WRITE && bh->b_dirty) {
-		jfs_debug(3, "writing block %lu/%p\n", bh->b_blocknr, bh);
-		retval = io_channel_write_blk(bh->b_ctx->fs->io, bh->b_blocknr,
-					      1, bh->b_data);
-		if (retval) {
-			com_err(bh->b_ctx->device_name, retval,
-				"while writing block %ld\n", bh->b_blocknr);
-			bh->b_err = retval;
-			return;
-		}
-		bh->b_dirty = 0;
-		bh->b_uptodate = 1;
-	} else
-		jfs_debug(3, "no-op %s for block %lu\n",
-			  rw == READ ? "read" : "write", bh->b_blocknr);
+	for (; nr > 0; --nr) {
+		bh = *bhp++;
+		if (rw == READ && !bh->b_uptodate) {
+			jfs_debug(3, "reading block %lu/%p\n", 
+				  bh->b_blocknr, bh);
+			retval = io_channel_read_blk(bh->b_ctx->fs->io, 
+						     bh->b_blocknr,
+						     1, bh->b_data);
+			if (retval) {
+				com_err(bh->b_ctx->device_name, retval,
+					"while reading block %ld\n", 
+					bh->b_blocknr);
+				bh->b_err = retval;
+				continue;
+			}
+			bh->b_uptodate = 1;
+		} else if (rw == WRITE && bh->b_dirty) {
+			jfs_debug(3, "writing block %lu/%p\n", 
+				  bh->b_blocknr, bh);
+			retval = io_channel_write_blk(bh->b_ctx->fs->io, 
+						      bh->b_blocknr,
+						      1, bh->b_data);
+			if (retval) {
+				com_err(bh->b_ctx->device_name, retval,
+					"while writing block %ld\n", 
+					bh->b_blocknr);
+				bh->b_err = retval;
+				continue;
+			}
+			bh->b_dirty = 0;
+			bh->b_uptodate = 1;
+		} else
+			jfs_debug(3, "no-op %s for block %lu\n",
+				  rw == READ ? "read" : "write", 
+				  bh->b_blocknr);
+	}
 }
 
 void mark_buffer_dirty(struct buffer_head *bh, int dummy)
@@ -103,7 +114,7 @@ void mark_buffer_dirty(struct buffer_head *bh, int dummy)
 void brelse(struct buffer_head *bh)
 {
 	if (bh->b_dirty)
-		ll_rw_block(WRITE, 1, bh);
+		ll_rw_block(WRITE, 1, &bh);
 	jfs_debug(3, "freeing block %lu/%p (total %d)\n",
 		  bh->b_blocknr, bh, --bh_count);
 	ext2fs_free_mem((void **) &bh);
@@ -117,7 +128,7 @@ int buffer_uptodate(struct buffer_head *bh)
 void wait_on_buffer(struct buffer_head *bh)
 {
 	if (!bh->b_uptodate)
-		ll_rw_block(READ, 1, bh);
+		ll_rw_block(READ, 1, &bh);
 }
 
 
@@ -306,7 +317,7 @@ static int e2fsck_journal_load(journal_t *journal)
 
 	clear_problem_context(&pctx);
 
-	ll_rw_block(READ, 1, jbh);
+	ll_rw_block(READ, 1, &jbh);
 	if (jbh->b_err) {
 		com_err(ctx->device_name, jbh->b_err,
 			_("reading journal superblock\n"));
@@ -318,23 +329,55 @@ static int e2fsck_journal_load(journal_t *journal)
 	if (jsb->s_header.h_magic != htonl(JFS_MAGIC_NUMBER))
 		return e2fsck_journal_fix_bad_inode(ctx, &pctx);
 
-	if (jsb->s_header.h_blocktype != htonl(JFS_SUPERBLOCK_V1) ||
-	    jsb->s_blocksize != htonl(journal->j_blocksize)) {
-		com_err(ctx->device_name, EXT2_ET_CORRUPT_SUPERBLOCK,
-			_("%s: no valid journal superblock found\n"));
-		return EXT2_ET_CORRUPT_SUPERBLOCK;
+	switch (ntohl(jsb->s_header.h_blocktype)) {
+	case JFS_SUPERBLOCK_V1:
+		journal->j_format_version = 1;
+		break;
+		
+	case JFS_SUPERBLOCK_V2:
+		journal->j_format_version = 2;
+		break;
+		
+	/* If we don't understand the superblock major type, but there
+	 * is a magic number, then it is likely to be a new format we
+	 * just don't understand, so leave it alone. */
+	default:
+		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
+			_("%s: journal has unrecognised format\n"),
+			ctx->device_name);
+		return EXT2_ET_UNSUPP_FEATURE;
 	}
 
-	if (jsb->s_header.h_blocktype != htonl(JFS_SUPERBLOCK_V1)) {
-		pctx.num = ntohl(jsb->s_header.h_blocktype);
-		return e2fsck_journal_fix_unsupported_super(ctx, &pctx);
+	if (JFS_HAS_INCOMPAT_FEATURE(journal, ~JFS_KNOWN_INCOMPAT_FEATURES)) {
+		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
+			_("%s: journal has incompatible features\n"),
+			ctx->device_name);
+		return EXT2_ET_UNSUPP_FEATURE;
+	}
+		
+	if (JFS_HAS_RO_COMPAT_FEATURE(journal, ~JFS_KNOWN_ROCOMPAT_FEATURES)) {
+		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
+			_("%s: journal has readonly-incompatible features\n"),
+			ctx->device_name);
+		return EXT2_ET_RO_UNSUPP_FEATURE;
+	}
+
+	/* We have now checked whether we know enough about the journal
+	 * format to be able to proceed safely, so any other checks that
+	 * fail we should attempt to recover from. */
+	if (jsb->s_blocksize != htonl(journal->j_blocksize)) {
+		com_err(ctx->program_name, EXT2_ET_CORRUPT_SUPERBLOCK,
+			_("%s: no valid journal superblock found\n"),
+			ctx->device_name);
+		return EXT2_ET_CORRUPT_SUPERBLOCK;
 	}
 
 	if (ntohl(jsb->s_maxlen) < journal->j_maxlen)
 		journal->j_maxlen = ntohl(jsb->s_maxlen);
 	else if (ntohl(jsb->s_maxlen) > journal->j_maxlen) {
-		com_err(ctx->device_name, EXT2_ET_CORRUPT_SUPERBLOCK,
-			_("%s: journal too short\n"));
+		com_err(ctx->program_name, EXT2_ET_CORRUPT_SUPERBLOCK,
+			_("%s: journal too short\n"),
+			ctx->device_name);
 		return EXT2_ET_CORRUPT_SUPERBLOCK;
 	}
 
@@ -348,14 +391,35 @@ static int e2fsck_journal_load(journal_t *journal)
 }
 
 void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
-				     blk_t size)
+				journal_t *journal)
 {
-	jsb->s_header.h_magic = htonl(JFS_MAGIC_NUMBER);
-	jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V1);
+	char *p;
+	
+	/* Leave a valid existing V1 superblock signature alone.
+	 * Anything unrecognisable we overwrite with a new V2
+	 * signature. */
+	
+	if (jsb->s_header.h_magic != htonl(JFS_MAGIC_NUMBER) ||
+	    jsb->s_header.h_blocktype != htonl(JFS_SUPERBLOCK_V1)) {
+		jsb->s_header.h_magic = htonl(JFS_MAGIC_NUMBER);
+		jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V2);
+	}
+
+	/* Zero out everything else beyond the superblock header */
+	
+	p = ((char *) jsb) + sizeof(journal_header_t);
+	memset (p, 0, ctx->fs->blocksize-sizeof(journal_header_t));
+
 	jsb->s_blocksize = htonl(ctx->fs->blocksize);
-	jsb->s_maxlen = htonl(size);
-	jsb->s_first = 1;
+	jsb->s_maxlen = htonl(journal->j_maxlen);
+	jsb->s_first = htonl(1);
 	jsb->s_sequence = htonl(1);
+
+	/* In theory we should also re-zero the entire journal here.
+	 * Initialising s_sequence to a random value would be a
+	 * reasonable compromise. */
+
+	ll_rw_block(WRITE, 1, &journal->j_sb_buffer);
 }
 
 static int e2fsck_journal_fix_corrupt_super(e2fsck_t ctx, journal_t *journal,
@@ -370,7 +434,7 @@ static int e2fsck_journal_fix_corrupt_super(e2fsck_t ctx, journal_t *journal,
 		if (fix_problem(ctx, PR_0_JOURNAL_BAD_SUPER, pctx)) {
 			journal_superblock_t *jsb = journal->j_superblock;
 
-			e2fsck_journal_reset_super(ctx, jsb, journal->j_maxlen);
+			e2fsck_journal_reset_super(ctx, jsb, journal);
 
 			journal->j_transaction_sequence = 1;
 			e2fsck_clear_recover(ctx, recover);
@@ -411,9 +475,7 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 	int retval;
 
 	/* If we don't have any journal features, don't do anything more */
-	if (!(s->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
-	    !recover && s->s_journal_inum == 0 && s->s_journal_dev == 0 &&
-	    uuid_is_null(s->s_journal_uuid))
+	if (!(s->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
 		return 0;
 
 	clear_problem_context(&pctx);
@@ -481,6 +543,10 @@ static int recover_ext3_journal(e2fsck_t ctx)
 	if (retval)
 		return retval;
 
+	retval = journal_init_revoke(journal, 1024);
+	if (retval)
+		return retval;
+	
 	retval = -journal_recover(journal);
 	e2fsck_journal_release(ctx, journal, 1);
 	return retval;

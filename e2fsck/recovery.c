@@ -3,7 +3,7 @@
  * 
  * Written by Stephen C. Tweedie <sct@redhat.com>, 1999
  *
- * Copyright 1999 Red Hat Software --- All Rights Reserved
+ * Copyright 1999-2000 Red Hat Software --- All Rights Reserved
  *
  * This file is part of the Linux kernel and is made available under
  * the terms of the GNU General Public License, version 2, or at your
@@ -14,7 +14,7 @@
  */
 
 #ifndef __KERNEL__
-#include "jfs.h"
+#include "jfs_user.h"
 #else
 #include <linux/sched.h>
 #include <linux/fs.h>
@@ -23,7 +23,27 @@
 #include <linux/malloc.h>
 #include <linux/locks.h>
 #include <linux/buffer.h>
+#endif
 
+/*
+ * Maintain information about the progress of the recovery job, so that
+ * the different passes can carry information between them. 
+ */
+struct recovery_info 
+{
+	tid_t		start_transaction;	
+	tid_t		end_transaction;
+	
+	int		nr_replays;
+	int		nr_revokes;
+	int		nr_revoke_hits;
+};
+
+enum passtype {PASS_SCAN, PASS_REVOKE, PASS_REPLAY};
+static int do_one_pass(journal_t *, struct recovery_info *, enum passtype);
+static int scan_revoke_records(journal_t *, struct buffer_head *, tid_t, struct recovery_info *);
+
+#ifdef __KERNEL__
 
 /* Release readahead buffers after use */
 static void brelse_array(struct buffer_head *b[], int n)
@@ -77,7 +97,6 @@ static int do_readahead(journal_t *journal, unsigned int start)
 		
 		bh = getblk(journal->j_dev, blocknr, journal->j_blocksize);
 		if (!bh) {
-			printk(KERN_ERR "JFS: readahead getblk failed\n");
 			err = -ENOMEM;
 			goto failed;
 		}
@@ -102,7 +121,9 @@ failed:
 		brelse_array(bufs, nbufs);
 	return err;
 }
-#endif
+
+#endif /* __KERNEL__ */
+
 
 /*
  * Read a block from the journal
@@ -116,8 +137,7 @@ static int jread(struct buffer_head **bhp, journal_t *journal,
 
 	*bhp = NULL;
 
-	if (offset >= journal->j_maxlen)
-		return -EINVAL;
+	J_ASSERT (offset < journal->j_maxlen);
 			
 	blocknr = offset;
 	if (journal->j_inode)
@@ -193,18 +213,70 @@ do {									\
  *
  * The primary function for recovering the log contents when mounting a
  * journaled device.  
+ * 
+ * Recovery is done in three passes.  In the first pass, we look for the
+ * end of the log.  In the second, we assemble the list of revoke
+ * blocks.  In the third and final pass, we replay any un-revoked blocks
+ * in the log.  
  */
 
 int journal_recover(journal_t *journal)
 {
+	int			err;
+	journal_superblock_t *	sb;
+
+	struct recovery_info	info = {};
+	
+	sb = journal->j_superblock;
+
+	/* 
+	 * The journal superblock's s_start field (the current log head)
+	 * is always zero if, and only if, the journal was cleanly
+	 * unmounted.  
+	 */
+
+	if (!sb->s_start) {
+		jfs_debug(1, "No recovery required, last transaction %d\n",
+			  ntohl(sb->s_sequence));
+		journal->j_transaction_sequence = ntohl(sb->s_sequence) + 1;
+		return 0;
+	}
+	
+
+	err = do_one_pass(journal, &info, PASS_SCAN);
+	if (!err)
+		err = do_one_pass(journal, &info, PASS_REVOKE);
+	if (!err)
+		err = do_one_pass(journal, &info, PASS_REPLAY);
+
+	jfs_debug(0, "JFS: recovery, exit status %d, "
+		  "recovered transactions %u to %u\n",
+		  err, info.start_transaction, info.end_transaction);
+	jfs_debug(0, "JFS: Replayed %d and revoked %d/%d blocks\n", 
+		  info.nr_replays, info.nr_revoke_hits, info.nr_revokes);
+
+	/* Restart the log at the next transaction ID, thus invalidating
+	 * any existing commit records in the log. */
+	journal->j_transaction_sequence = ++info.end_transaction;
+		
+	journal_clear_revoke(journal);
+	fsync_dev(journal->j_dev);
+	return err;
+}
+
+static int do_one_pass(journal_t *journal, struct recovery_info *info,
+		       enum passtype pass)
+{
+	
 	unsigned int		first_commit_ID, next_commit_ID;
 	unsigned long		next_log_block;
-	unsigned long		transaction_start;
 	int			err, success = 0;
-	journal_superblock_t *	jsb;
+	journal_superblock_t *	sb;
 	journal_header_t * 	tmp;
 	struct buffer_head *	bh;
-
+	unsigned int		sequence;
+	int			blocktype;
+	
 	/* Precompute the maximum metadata descriptors in a descriptor block */
 	int			MAX_BLOCKS_PER_DESC;
 	MAX_BLOCKS_PER_DESC = ((journal->j_blocksize-sizeof(journal_header_t))
@@ -216,26 +288,15 @@ int journal_recover(journal_t *journal)
 	 * block offsets): query the superblock.  
 	 */
 
-	jsb = journal->j_superblock;
-	next_commit_ID = ntohl(jsb->s_sequence);
-	next_log_block = ntohl(jsb->s_start);
+	sb = journal->j_superblock;
+	next_commit_ID = ntohl(sb->s_sequence);
+	next_log_block = ntohl(sb->s_start);
 
 	first_commit_ID = next_commit_ID;
+	if (pass == PASS_SCAN)
+		info->start_transaction = first_commit_ID;
 	
-	/* 
-	 * The journal superblock's s_start field (the current log head)
-	 * is always zero if, and only if, the journal was cleanly
-	 * unmounted.  
-	 */
-
-	if (!jsb->s_start) {
-		jfs_debug(1, "No recovery required, last transaction %d\n",
-			  ntohl(jsb->s_sequence));
-		journal->j_transaction_sequence = ++next_commit_ID;
-		return 0;
-	}
-	
-	jfs_debug(1, "Starting recovery\n");
+	jfs_debug(1, "Starting recovery pass %d\n", pass);
 	
 	/*
 	 * Now we walk through the log, transaction by transaction,
@@ -244,132 +305,118 @@ int journal_recover(journal_t *journal)
 	 * into the main filesystem. 
 	 */
 
-	while (1) { 
-		jfs_debug(2, "Looking for commit ID %u at %lu/%lu\n",
-			  next_commit_ID, next_log_block, journal->j_last);
- 		transaction_start = next_log_block;
-
-		while (next_log_block < journal->j_last) {
-			/* Skip over each chunk of the transaction
-			 * looking either the next descriptor block or
-			 * the final commit record. */
-
-			jfs_debug(3, "JFS: checking block %ld\n", 
-				  next_log_block);
-			err = jread(&bh, journal, next_log_block);
-			if (err)
-				goto failed;
-			
-			/* What kind of buffer is it? 
-			 * 
-			 * If it is a descriptor block, work out the
-			 * expected location of the next and skip to it.
-			 *
-			 * If it is the right commit block, end the
-			 * search and start recovering the transaction.
-			 *
-			 * Any non-control block, or an unexpected
-			 * control block is interpreted as old data from
-			 * a previous wrap of the log: stop recovery at
-			 * this point.  
-			 */
+	while (1) {
+		int			flags;
+		char *			tagp;
+		journal_block_tag_t *	tag;
+		struct buffer_head *	obh;
+		struct buffer_head *	nbh;
 		
-			tmp = (journal_header_t *) bh->b_data;
-			
-			if (tmp->h_magic == htonl(JFS_MAGIC_NUMBER)) {
-				int blocktype = ntohl(tmp->h_blocktype);
-				jfs_debug(3, "Found magic %d\n", blocktype);
-				
-				if (blocktype == JFS_DESCRIPTOR_BLOCK) {
-					/* Work out where the next descriptor
-					 * should be. */
-					next_log_block++;
-					next_log_block += count_tags(bh, journal->j_blocksize);
-					wrap(journal, next_log_block);
-					brelse(bh);
-					continue;
-				} else if (blocktype == JFS_COMMIT_BLOCK) {
-					unsigned int sequence = tmp->h_sequence;
-					brelse(bh);
-					if (sequence == htonl(next_commit_ID))
-						goto commit;
-					jfs_debug(2, "found sequence %d, "
-						  "expected %d.\n",
-						  ntohl(sequence),
-						  next_commit_ID);
-					goto finished;
-				}
-			}
+		/* If we already know where to stop the log traversal,
+		 * check right now that we haven't gone past the end of
+		 * the log. */
+		
+		if (pass != PASS_SCAN)
+			if (tid_geq(next_commit_ID, info->end_transaction))
+				break;
+		
+		jfs_debug(2, "Scanning for sequence ID %u at %lu/%lu\n",
+			  next_commit_ID, next_log_block, journal->j_last);
 
-			/* We didn't recognise it?  OK, we've gone off
-			 * the tail of the log in that case. */
+		/* Skip over each chunk of the transaction looking
+		 * either the next descriptor block or the final commit
+		 * record. */
+		
+		jfs_debug(3, "JFS: checking block %ld\n", next_log_block);
+		err = jread(&bh, journal, next_log_block);
+		if (err)
+			goto failed;
+		
+		next_log_block++;
+		wrap(journal, next_log_block);
+		
+		/* What kind of buffer is it? 
+		 * 
+		 * If it is a descriptor block, check that it has the
+		 * expected sequence number.  Otherwise, we're all done
+		 * here. */
+
+		tmp = (journal_header_t *) bh->b_data;
+		
+		if (tmp->h_magic != htonl(JFS_MAGIC_NUMBER)) {
 			brelse(bh);
 			break;
 		}
-
-		goto finished;
 		
-	commit:
-		jfs_debug(2, "Found transaction %d\n", next_commit_ID);
-
-		/* OK, we have a transaction to commit.  Rewind to the
-		 * start of it, gather up all of the buffers in each
-		 * transaction segment, and replay the segments one by
-		 * one. */
-
-		next_log_block = transaction_start;
+		blocktype = ntohl(tmp->h_blocktype);
+		sequence = ntohl(tmp->h_sequence);
+		jfs_debug(3, "Found magic %d, sequence %d\n", 
+			  blocktype, sequence);
 		
-		while (1) {
-			int			flags;
-			char *			tagp;
-			journal_block_tag_t *	tag;
-			struct buffer_head *	obh;
-			struct buffer_head *	nbh;
-			
-			err = jread(&bh, journal, next_log_block++);
-			wrap(journal, next_log_block);
-			if (err)
-				goto failed;
-
-			tmp = (journal_header_t *) bh->b_data;
-			/* should never happen - we just checked above - AED */
-			J_ASSERT(tmp->h_magic == htonl(JFS_MAGIC_NUMBER));
-
-			/* If it is the commit block, then we are all done! */
-			if (tmp->h_blocktype == htonl(JFS_COMMIT_BLOCK)) {
+		if (sequence != next_commit_ID) {
+			brelse(bh);
+			break;
+		}
+		
+		/* OK, we have a valid descriptor block which matches
+		 * all of the sequence number checks.  What are we going
+		 * to do with it?  That depends on the pass... */
+		
+		switch(blocktype) {
+		case JFS_DESCRIPTOR_BLOCK:
+			/* If it is a valid descriptor block, replay it
+			 * in pass REPLAY; otherwise, just skip over the
+			 * blocks it describes. */
+			if (pass != PASS_REPLAY) {
+				next_log_block += count_tags(bh, journal->j_blocksize);
+				wrap(journal, next_log_block);
 				brelse(bh);
-				break;
+				continue;
 			}
-			
+
 			/* A descriptor block: we can now write all of
 			 * the data blocks.  Yay, useful work is finally
 			 * getting done here! */
 
 			tagp = &bh->b_data[sizeof(journal_header_t)];
-			
 			while ((tagp - bh->b_data +sizeof(journal_block_tag_t))
 			       <= journal->j_blocksize) {
+				unsigned long io_block;
+				
 				tag = (journal_block_tag_t *) tagp;
 				flags = ntohl(tag->t_flags);
 				
-				err = jread(&obh, journal, next_log_block++);
+				io_block = next_log_block++;
 				wrap(journal, next_log_block);
+				err = jread(&obh, journal, io_block);
 				if (err) {
 					/* Recover what we can, but
 					 * report failure at the end. */
 					success = err;
 					printk (KERN_ERR 
-						"JFS: IO error recovering "
+						"JFS: IO error %d recovering "
 						"block %ld in log\n",
-						next_log_block-1);
+						err, io_block);
 				} else {
-					/* can never happen if jread OK - AED */
+					unsigned long blocknr;
+					
 					J_ASSERT(obh != NULL);
+					blocknr = ntohl(tag->t_blocknr);
 
-					/* And find a buffer for the new data
-					 * being restored */
-					nbh = getblk(journal->j_dev, 
-						     ntohl(tag->t_blocknr),
+					/* If the block has been
+					 * revoked, then we're all done
+					 * here. */
+					if (journal_test_revoke
+					    (journal, blocknr, 
+					     next_commit_ID)) {
+						brelse(obh);
+						++info->nr_revoke_hits;
+						goto skip_write;
+					}
+								
+					/* Find a buffer for the new
+					 * data being restored */
+					nbh = getblk(journal->j_dev, blocknr,
 						     journal->j_blocksize);
 					if (nbh == NULL) {
 						printk(KERN_ERR 
@@ -388,41 +435,105 @@ int journal_recover(journal_t *journal)
 					}
 					
 					mark_buffer_dirty(nbh, 1);
-					/* ll_rw_block(WRITE, 1, &nbh); */
+					++info->nr_replays;
+					// ll_rw_block(WRITE, 1, &nbh);
 					brelse(obh);
 					brelse(nbh);
 				}
 				
+			skip_write:
 				tagp += sizeof(journal_block_tag_t);
 				if (!(flags & JFS_FLAG_SAME_UUID))
 					tagp += 16;
 
 				if (flags & JFS_FLAG_LAST_TAG)
 					break;
-
-			} /* end of tag loop */
-
+			}
+			
 			brelse(bh);
-			
-		} /* end of descriptor block loop */
-			
-		/* We have now replayed that entire transaction: start
-		 * looking for the next transaction. */
-		next_commit_ID++;
+			continue;
+				
+		case JFS_COMMIT_BLOCK:
+			/* Found an expected commit block: not much to
+			 * do other than move on to the next sequence
+			 * number. */
+			brelse(bh);
+			next_commit_ID++;
+			continue;
+
+		case JFS_REVOKE_BLOCK:
+			/* If we aren't in the REVOKE pass, then we can
+			 * just skip over this block. */
+			if (pass != PASS_REVOKE) {
+				brelse(bh);
+				continue;
+			}
+
+			err = scan_revoke_records(journal, bh, 
+						  next_commit_ID, info);
+			brelse(bh);
+			if (err)
+				goto failed;
+			continue;
+
+		default:
+			jfs_debug(3, "Unrecognised magic %d, end of scan.\n",
+				  blocktype);
+			goto done;
+		}
 	}
-		
- finished:
-	err = success;
-	fsync_dev(journal->j_dev);
+
+ done:
+	/* 
+	 * We broke out of the log scan loop: either we came to the
+	 * known end of the log or we found an unexpected block in the
+	 * log.  If the latter happened, then we know that the "current"
+	 * transaction marks the end of the valid log.
+	 */
+	
+	if (pass == PASS_SCAN)
+		info->end_transaction = next_commit_ID;
+	else {
+		/* It's really bad news if different passes end up at
+		 * different places (but possible due to IO errors). */
+		if (info->end_transaction != next_commit_ID) {
+			printk (KERN_ERR "JFS: recovery pass %d ended at "
+				"transaction %u, expected %u\n",
+				pass, next_commit_ID, info->end_transaction);
+			if (!success)
+				success = -EIO;
+		}
+	}
+
+	return success;
 
  failed:
-	
-	/* Restart the log at the next transaction ID, thus invalidating
-	 * any existing commit records in the log. */
-	jfs_debug(0, "JFS: recovery, exit status %d, "
-		  "recovered transactions %u to %u\n", 
-		  err, first_commit_ID, next_commit_ID);
-	journal->j_transaction_sequence = ++next_commit_ID;
-
 	return err;
+}
+
+
+/* Scan a revoke record, marking all blocks mentioned as revoked. */
+
+static int scan_revoke_records(journal_t *journal, struct buffer_head *bh, 
+			       tid_t sequence, struct recovery_info *info)
+{
+	journal_revoke_header_t *header;
+	int offset, max;
+	
+	header = (journal_revoke_header_t *) bh->b_data;
+	offset = sizeof(journal_revoke_header_t);
+	max = ntohl(header->r_count);
+	
+	while (offset < max) {
+		unsigned long blocknr;
+		int err;
+		
+		blocknr = * ((unsigned int *) bh->b_data+offset);
+		offset += 4;
+		err = journal_set_revoke(journal, blocknr, sequence);
+		if (err)
+			return err;
+		++info->nr_revokes;
+	}
+	return 0;
 }

@@ -188,27 +188,36 @@ distclean: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-tune2fs.o: $(srcdir)/tune2fs.c $(top_srcdir)/lib/ext2fs/ext2fs.h \
- $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/uuid/uuid.h $(top_srcdir)/lib/e2p/e2p.h \
- $(srcdir)/../version.h
-mklost+found.o: $(srcdir)/mklost+found.c $(srcdir)/../version.h
-mke2fs.o: $(srcdir)/mke2fs.c $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/uuid/uuid.h $(top_srcdir)/lib/e2p/e2p.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/../version.h
-chattr.o: $(srcdir)/chattr.c $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/../version.h
-lsattr.o: $(srcdir)/lsattr.c $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/../version.h
-dumpe2fs.o: $(srcdir)/dumpe2fs.c $(top_srcdir)/lib/ext2fs/ext2fs.h \
- $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/../version.h
+tune2fs.o: $(srcdir)/tune2fs.c $(top_srcdir)/include/linux/ext2_fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/uuid/uuid.h \
+ $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/version.h $(srcdir)/nls-enable.h
+mklost+found.o: $(srcdir)/mklost+found.c \
+ $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/version.h \
+ $(srcdir)/nls-enable.h
+mke2fs.o: $(srcdir)/mke2fs.c $(top_srcdir)/include/linux/ext2_fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/uuid/uuid.h \
+ $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/version.h \
+ $(srcdir)/nls-enable.h
+chattr.o: $(srcdir)/chattr.c $(top_srcdir)/include/linux/ext2_fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/e2p/e2p.h \
+ $(top_srcdir)/version.h $(srcdir)/nls-enable.h
+lsattr.o: $(srcdir)/lsattr.c $(top_srcdir)/include/linux/ext2_fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/e2p/e2p.h \
+ $(top_srcdir)/version.h $(srcdir)/nls-enable.h
+dumpe2fs.o: $(srcdir)/dumpe2fs.c $(top_srcdir)/include/linux/ext2_fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h \
+ $(top_srcdir)/version.h $(srcdir)/nls-enable.h
 badblocks.o: $(srcdir)/badblocks.c $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h
-fsck.o: $(srcdir)/fsck.c $(srcdir)/../version.h $(srcdir)/fsck.h \
- $(srcdir)/get_device_by_label.h
-uuidgen.o: $(srcdir)/uuidgen.c $(top_srcdir)/lib/uuid/uuid.h
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_srcdir)/include/linux/ext2_fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/nls-enable.h
+fsck.o: $(srcdir)/fsck.c $(top_srcdir)/version.h $(srcdir)/nls-enable.h \
+ $(srcdir)/fsck.h $(srcdir)/get_device_by_label.h
+uuidgen.o: $(srcdir)/uuidgen.c $(top_srcdir)/lib/uuid/uuid.h \
+ $(srcdir)/nls-enable.h

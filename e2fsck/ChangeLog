@@ -1,3 +1,15 @@
+2000-12-09    <tytso@snap.thunk.org>
+
+	* jfs_e2fsck.h, jfs_user.h: Replaces jfs_compat.h.  The jfs.h file
+		has been moved to the include/linux directory.
+
+	* journal.c, revoke.c, recovery.c: Updated files from Stephen to
+		support the V2 superblock and revoke processing.  The
+		journal.c and revoke.c files are copies from the ext3
+		kernel source.
+
+	* Makefile.in: Added revoke.c to the list of source/object files.
+
 2000-11-16  Theodore Ts'o  <tytso@valinux.com>
 
 	* pass1b.c: Change routines to use PR_1B_BLOCK_ITERATE when

@@ -2,6 +2,10 @@
 
 	* jfs.h, jfs_compat.h, list.h: New files added to support ext3.
 
+	* jfs.h: Remove excess #include of JFS_DEBUG.  Not needed for
+		e2fsprogs, since we optioanlly define it in the
+		configuration file system.
+
 2000-10-24    <tytso@valinux.com>
 
 	* ext2_fs.h (EXT2_JOURNAL_INO): Add definition for
