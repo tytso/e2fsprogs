@@ -163,6 +163,10 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	/*
 	 * Read group descriptors
 	 */
+	if ((EXT2_BLOCKS_PER_GROUP(fs->super)) == 0) {
+		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
+		goto cleanup;
+	}
 	fs->group_desc_count = (fs->super->s_blocks_count -
 				fs->super->s_first_data_block +
 				EXT2_BLOCKS_PER_GROUP(fs->super) - 1)

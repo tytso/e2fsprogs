@@ -1,3 +1,9 @@
+1999-05-03    <tytso@rsts-11.mit.edu>
+
+	* openfs.c (ext2fs_open): Check to make sure that the number of
+		blocks per group is not zero --- if so, it must be a bad
+		superblock!
+
 1999-01-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.14
