@@ -9,23 +9,20 @@ pkgvers=`grep Version: e2fsprogs.spec | awk '{print $2;}'`
 builddir=${pkgname}-${pkgvers}
 
 cd ..
+tmpdir=`mktemp -d rpmtmp.XXXXXX`
 
 # We need to build a tarball for the SRPM using $builddir as the 
 # directory name (since that's what RPM will expect it to unpack
 # into).  That may require a symlink.
 
-if [ -L $builddir ] ; then
-  rm -f $builddir || exit 1
-elif [ -d $builddir ] ; then
-  rm -rf $builddir || exit 1
-fi
-
 # Make a recursive-symlink copy of the source dir
-cp -sR `pwd`/$currdir $builddir || exit 1
+cp -sR `pwd`/$currdir $tmpdir/$builddir || exit 1
 
 # Remove any build files from the temporary tarball directory
-[ -f $builddir/Makefile ] && make -C $builddir distclean
+[ -f $tmpdir/$builddir/Makefile ] && make -C $tmpdir/$builddir distclean
 
-tar czfh ${builddir}.tar.gz $builddir
+(cd $tmpdir && tar czfh ${builddir}.tar.gz $builddir)
 
-rpm --define "_sourcedir `pwd`" -ba $currdir/e2fsprogs.spec
+rpm --define "_sourcedir `pwd`/$tmpdir" -ba $currdir/e2fsprogs.spec || exit $?
+rm -rf $tmpdir
+
