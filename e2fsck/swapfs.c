@@ -177,9 +177,11 @@ static void swap_inodes(e2fsck_t ctx)
 void swap_filesys(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
+#ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
 
 	init_resource_track(&rtrack);
+#endif
 
 	if (!(ctx->options & E2F_OPT_PREEN))
 		printf("Pass 0: Doing byte-swap of filesystem\n");
@@ -210,8 +212,10 @@ void swap_filesys(e2fsck_t ctx)
 		       EXT2_FLAG_SWAP_BYTES_WRITE);
 	ext2fs_flush(fs);
 	
+#ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
 		print_resource_track("Byte swap", &rtrack);
+#endif
 }
 
 

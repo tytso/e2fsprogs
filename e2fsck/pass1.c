@@ -120,11 +120,15 @@ void pass1(e2fsck_t ctx)
 	struct ext2_inode inode;
 	ext2_inode_scan	scan;
 	char		*block_buf;
+#ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
+#endif
 	unsigned char	frag, fsize;
 	struct		problem_context pctx;
 	
+#ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
+#endif
 	clear_problem_context(&pctx);
 
 	if (!(ctx->options & E2F_OPT_PREEN))
@@ -435,8 +439,10 @@ endit:
 	ext2fs_free_block_bitmap(ctx->block_illegal_map);
 	ctx->block_illegal_map = 0;
 
+#ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
 		print_resource_track("Pass 1", &rtrack);
+#endif
 }
 
 /*

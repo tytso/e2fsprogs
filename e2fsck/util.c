@@ -175,6 +175,7 @@ void preenhalt(e2fsck_t ctx)
 	exit(FSCK_UNCORRECTED);
 }
 
+#ifdef RESOURCE_TRACK
 void init_resource_track(struct resource_track *track)
 {
 #ifdef HAVE_GETRUSAGE
@@ -235,6 +236,7 @@ void print_resource_track(const char *desc, struct resource_track *track)
 	       timeval_subtract(&time_end, &track->time_start));
 #endif
 }
+#endif /* RESOURCE_TRACK */
 
 void e2fsck_read_inode(ext2_filsys fs, unsigned long ino,
 			      struct ext2_inode * inode, const char *proc)

@@ -70,11 +70,15 @@ void pass2(e2fsck_t ctx)
 {
 	ext2_filsys 	fs = ctx->fs;
 	char	*buf;
+#ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
+#endif
 	struct dir_info *dir;
 	struct check_dir_struct cd;
 		
+#ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
+#endif
 
 	clear_problem_context(&cd.pctx);
 
@@ -120,8 +124,10 @@ void pass2(e2fsck_t ctx)
 		ext2fs_free_inode_bitmap(ctx->inode_bad_map);
 		ctx->inode_bad_map = 0;
 	}
+#ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
 		print_resource_track("Pass 2", &rtrack);
+#endif
 }
 
 /*

@@ -20,14 +20,18 @@ static void check_block_end(e2fsck_t ctx);
 
 void pass5(e2fsck_t ctx)
 {
+#ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
+#endif
 	struct problem_context	pctx;
 	
 #ifdef MTRACE
 	mtrace_print("Pass 5");
 #endif
 
+#ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
+#endif
 	
 	clear_problem_context(&pctx);
 
@@ -48,8 +52,10 @@ void pass5(e2fsck_t ctx)
 	ext2fs_free_block_bitmap(ctx->block_found_map);
 	ctx->block_found_map = 0;
 
+#ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
 		print_resource_track("Pass 5", &rtrack);
+#endif
 }
 
 static void check_block_bitmaps(e2fsck_t ctx)

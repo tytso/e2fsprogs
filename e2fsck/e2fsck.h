@@ -59,6 +59,7 @@ struct dir_info {
 	ino_t			parent; /* Parent according to treewalk */
 };
 
+#ifdef RESOURCE_TRACK
 /*
  * This structure is used for keeping track of how much resources have
  * been used for a particular pass of e2fsck.
@@ -69,6 +70,7 @@ struct resource_track {
 	struct timeval system_start;
 	void	*brk_start;
 };
+#endif
 
 /*
  * E2fsck options
@@ -130,10 +132,12 @@ struct e2fsck_struct {
 	int process_inode_size;
 	int inode_buffer_blocks;
 
+#ifdef RESOURCE_TRACK
 	/*
 	 * For timing purposes
 	 */
 	struct resource_track	global_rtrack;
+#endif
 
 	/* File counts */
 	int fs_directory_count;
@@ -215,9 +219,11 @@ extern void fatal_error (const char * fmt_string);
 extern void read_bitmaps(e2fsck_t ctx);
 extern void write_bitmaps(e2fsck_t ctx);
 extern void preenhalt(e2fsck_t ctx);
+#ifdef RESOURCE_TRACK
 extern void print_resource_track(const char *desc,
 				 struct resource_track *track);
 extern void init_resource_track(struct resource_track *track);
+#endif
 extern int inode_has_valid_blocks(struct ext2_inode *inode);
 extern void e2fsck_read_inode(ext2_filsys fs, unsigned long ino,
 			      struct ext2_inode * inode, const char * proc);

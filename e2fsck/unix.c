@@ -288,10 +288,15 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			ctx->options &= ~(E2F_OPT_PREEN|E2F_OPT_NO);
 			break;
 		case 't':
+#ifdef RESOURCE_TRACK
 			if (ctx->options & E2F_OPT_TIME)
 				ctx->options |= E2F_OPT_TIME2;
 			else
 				ctx->options |= E2F_OPT_TIME;
+#else
+			fprintf(stderr, "The -t option is not "
+				"supported on this version of e2fsck.\n");
+#endif
 			break;
 		case 'c':
 			cflag++;
@@ -433,7 +438,9 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
+#ifdef RESOURCE_TRACK
 	init_resource_track(&ctx->global_rtrack);
+#endif
 
 	if (!(ctx->options & E2F_OPT_PREEN) || show_version_only)
 		fprintf (stderr, "e2fsck %s, %s for EXT2 FS %s, %s\n",
@@ -642,8 +649,10 @@ restart:
 	ext2fs_close(fs);
 	sync_disks();
 	
+#ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME)
 		print_resource_track(NULL, &ctx->global_rtrack);
+#endif
 
 	e2fsck_free_context(ctx);
 	

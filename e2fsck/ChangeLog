@@ -1,5 +1,9 @@
 Sun Oct 19 21:12:11 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* pass*.c, super.c, unix.c, util.c, e2fsck.h: Place #ifdef
+		RESOURCE_TRACK around code which uses init_resource_track
+		and print_resource_track.  (Not all systems have timeval)
+
 	* super.c: Remove excess #includes which are not necessary.
 
 	* e2fsck.h: Add #ifdef's for HAVE_SYS_TYPES_H and HAVE_SYS_TIME_H

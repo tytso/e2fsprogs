@@ -80,11 +80,15 @@ void pass4(e2fsck_t ctx)
 	ext2_filsys fs = ctx->fs;
 	ino_t	i;
 	struct ext2_inode	inode;
+#ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
+#endif
 	struct problem_context	pctx;
 	__u16	link_count, link_counted;
 	
+#ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
+#endif
 
 #ifdef MTRACE
 	mtrace_print("Pass 4");
@@ -133,7 +137,9 @@ void pass4(e2fsck_t ctx)
 	ext2fs_free_icount(ctx->inode_count); ctx->inode_count = 0;
 	ext2fs_free_inode_bitmap(ctx->inode_bb_map);
 	ctx->inode_bb_map = 0;
+#ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
 		print_resource_track("Pass 4", &rtrack);
+#endif
 }
 

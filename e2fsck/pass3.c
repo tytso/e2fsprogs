@@ -59,11 +59,15 @@ void pass3(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	int		i;
+#ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
+#endif
 	struct problem_context	pctx;
 	struct dir_info	*dir;
 	
+#ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
+#endif
 
 	clear_problem_context(&pctx);
 
@@ -91,8 +95,10 @@ void pass3(e2fsck_t ctx)
 		fix_problem(ctx, PR_3_ALLOCATE_IBITMAP_ERROR, &pctx);
 		fatal_error(0);
 	}
+#ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME)
 		print_resource_track("Peak memory", &ctx->global_rtrack);
+#endif
 
 	check_root(ctx);
 	ext2fs_mark_inode_bitmap(inode_done_map, EXT2_ROOT_INO);
@@ -106,8 +112,10 @@ void pass3(e2fsck_t ctx)
 	free_dir_info(fs);
 	ext2fs_free_inode_bitmap(inode_loop_detect);
 	ext2fs_free_inode_bitmap(inode_done_map);
+#ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
 		print_resource_track("Pass 3", &rtrack);
+#endif
 }
 
 /*
