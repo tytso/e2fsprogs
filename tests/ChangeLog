@@ -1,3 +1,9 @@
+2005-01-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* r_resize_inode, m_dasd_bs, m_large_file, m_meta_bg, m_no_opt,
+		m_read_opt, m_std, run_mke2fs, filter_dumpe2fs: Make tests
+		portable so they pass correctly on a FreeBSD system.
+
 2005-01-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in, test_script.in: Use @EGREP@ instead of grep -E for
