@@ -283,6 +283,20 @@ void e2fsck_pass1(e2fsck_t ctx)
 		return;
 	}
 
+	/*
+	 * If the last orphan field is set, clear it, since the pass1
+	 * processing will automatically find and clear the orphans.
+	 * In the future, we may want to try using the last_orphan
+	 * linked list ourselves, but for now, we clear it so that the
+	 * ext3 mount code won't get confused.
+	 */
+	if (!(ctx->options & E2F_OPT_READONLY)) {
+		if (fs->super->s_last_orphan) {
+			fs->super->s_last_orphan = 0;
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
+
 	mark_table_blocks(ctx);
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
 						    "block interate buffer");

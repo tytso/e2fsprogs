@@ -1,3 +1,10 @@
+2000-07-04  Theodore Ts'o  <tytso@valinux.com>
+
+	* pass1.c (e2fsck_pass1): Check to see if the ext3 s_last_orphan
+		field is set; if so, clear it, so that ext3 mounting code
+		won't get confused by the fact that we've cleared out the
+		orphaned inodes.
+
 2000-06-10  Theodore Ts'o  <tytso@valinux.com>
 
 	* pass5.c (check_block_bitmaps, check_inode_bitmaps): Add error
