@@ -1,9 +1,0 @@
-build
-MCONFIG
-config.log
-config.status
-config.cache
-Makefile
-MAKELOG
-
-
