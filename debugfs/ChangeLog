@@ -1,3 +1,12 @@
+2004-01-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.8.in: Document the PAGER and DEBUGFS_PAGER environment
+		variables.
+
+	* util.c (open_pager): Use the "more" pager in preference to
+		"less", since "less" doesn't work terribly well for
+		debugfs's purpose.
+
 2003-12-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* util.c (open_pager): Try to use the DEBUGFS_PAGER environment

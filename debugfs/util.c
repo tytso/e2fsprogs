@@ -56,7 +56,7 @@ void reset_getopt(void)
 #endif
 }
 
-static const char *pager_search_list[] = { "pager", "less", "more", 0 };
+static const char *pager_search_list[] = { "pager", "more", "less", 0 };
 static const char *pager_dir_list[] = { "/usr/bin", "/bin", 0 };
 
 static const char *find_pager(char *buf)

@@ -434,6 +434,36 @@ Create a file in the filesystem named
 and copy the contents of
 .I source_file
 into the destination file.
+.SH ENVIRONMENT VARIABLES
+.TP
+.B DEBUGFS_PAGER, PAGER
+The
+.BR debugfs (8)
+program always pipes the output of the some commands through a
+pager program.  These commands include: 
+.IR show_super_stats ,
+.IR list_directory ,
+.IR show_inode_info ,
+.IR list_deleted_inodes ,
+and
+.IR htree_dump .
+The specific pager can explicitly specified by the
+.B DEBUGFS_PAGER
+environment variable, and if it is not set, by the
+.B PAGER
+environment variable.  
+.IP
+Note that since a pager is always used, the 
+.BR less (1)
+pager is not particularly appropriate, since it clears the screen before
+displaying the output of the command and clears the output the screen
+when the pager is exited.  Many users prefer to use the 
+.BR less (1)
+pager for most purposes, which is why the 
+.B DEBUGFS_PAGER 
+environment variable is available to override the more general
+.B PAGER
+environment variable.
 .SH AUTHOR
 .B debugfs
 was written by Theodore Ts'o <tytso@mit.edu>.

@@ -64,7 +64,7 @@ correct mode bits.  (Addresses Debian Bug: #217456)
  
 If the environment variables DEBUFS_PAGER and PAGER are not set,
 debugfs now searches for the appropriate pager to use, beginning with
-/usr/bin/pager, and then falling back to 'less' and 'more'.
+/usr/bin/pager, and then falling back to 'more' and 'less'.
 (Addresses Debian Bug: #221977)
 
 Fix regression tests so they work correctly when e2fsprogs is compiled
