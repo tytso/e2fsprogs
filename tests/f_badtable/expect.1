@@ -12,32 +12,31 @@ Entry 'lost+found' in / (2) points to inode (11) located in a bad block.
 Clear? yes
 
 Pass 3: Checking directory connectivity
+/lost+found not found.  Create? yes
+
 Pass 4: Checking reference counts
-Inode 2 ref count is 3, should be 2.  Fix? yes
+Inode 2 ref count is 4, should be 3.  Fix? yes
 
 Pass 5: Checking group summary information
-Block bitmap differences:  -11 -12 -13 -14 -15 -16 -17 -18 -19 -20
+Block bitmap differences:  -12 -13 -14 -15 -16 -17 -18 -19 -20
 Fix? yes
 
-Free blocks count wrong for group #0 (78, counted=88).
+Free blocks count wrong for group #0 (78, counted=87).
 Fix? yes
 
-Free blocks count wrong (78, counted=88).
+Free blocks count wrong (78, counted=87).
 Fix? yes
 
 Inode bitmap differences:  +12 +13 +14 +15 +16 +25 +26 +27 +28 +29 +30 +31 +32
 Fix? yes
 
-Free inodes count wrong for group #0 (21, counted=8).
+Free inodes count wrong for group #0 (21, counted=7).
 Fix? yes
 
-Directories count wrong for group #0 (2, counted=1).
-Fix? yes
-
-Free inodes count wrong (21, counted=8).
+Free inodes count wrong (21, counted=7).
 Fix? yes
 
 
 test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
-test_filesys: 24/32 files (0.0% non-contiguous), 12/100 blocks
+test_filesys: 25/32 files (0.0% non-contiguous), 13/100 blocks
 Exit status is 1
