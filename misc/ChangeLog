@@ -1,3 +1,8 @@
+1998-07-04  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* findsuper.c (main): Print the block group number which is now
+		being written by e2fsprogs.
+
 1998-06-25  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* fsck.c (ignore): Remove unused variable cp.

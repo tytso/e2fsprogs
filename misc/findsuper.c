@@ -78,7 +78,7 @@ main(int argc, char *argv[])
 	}
  
 	/* Now, go looking for the superblock ! */
-	printf("  thisoff     block fs_blk_sz  blksz last_mount\n");
+	printf("  thisoff     block fs_blk_sz  blksz grp last_mount\n");
 	for (;!feof(f) &&  (i=fseek(f,sk,SEEK_SET))!= -1; sk+=skiprate){
 		if (i=fread(&ext2,sizeof(ext2),1, f)!=1) {
 			perror("read failed");
@@ -86,7 +86,10 @@ main(int argc, char *argv[])
 			tm = ext2.s_mtime;
 			s=ctime(&tm);
 			s[24]=0;
-			printf("%9ld %9ld %9ld %5ld %s\n",sk,sk/1024,ext2.s_blocks_count,ext2.s_log_block_size,s);
+			printf("%9ld %9ld %9ld %5ld %4d %s\n", sk,
+			       sk/1024, ext2.s_blocks_count,
+			       ext2.s_log_block_size,
+			       ext2.s_block_group_nr, s);
 		}
 	}
 	printf("Failed on %d at %ld\n", i, sk);
