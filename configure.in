@@ -657,6 +657,11 @@ AC_SUBST(SIZEOF_LONG)
 AC_SUBST(SIZEOF_LONG_LONG)
 AC_C_BIGENDIAN
 dnl
+dnl See if we have inttypes.h and if intptr_t is defined
+dnl
+AC_CHECK_HEADERS([inttypes.h])
+AC_CHECK_TYPE(intptr_t,long)
+dnl
 dnl See if struct stat has a st_flags field, in which case we can get file
 dnl flags somewhat portably.  Also check for the analogous setter, chflags().
 dnl

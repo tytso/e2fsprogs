@@ -1,3 +1,7 @@
+2003-08-01  Philipp Thomas <pthomas@suse.de>
+
+	* configure.in: Add tests for inttypes.h and intptr_t.
+
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.34

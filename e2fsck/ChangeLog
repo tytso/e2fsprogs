@@ -1,5 +1,9 @@
 2003-08-01  Philipp Thomas <pthomas@suse.de>
 
+	* Include inttypes.h if present.  New macros INT_TO_VOIDPTR and
+		VOIDPTR_TO_INT.  Use them throughout for int<->void *
+		casts to fix 64-bit warnings.
+
 	* dirinfo.c, dx_dirinfo.c, e2fsck.c, ea_refcount.c, journal.c,
 		message.c, pass1.c, pass1b.c, pass2.c, pass3.c, pass4.c,
 		pass5.c, super.c, swapfs.c: ext2fs_getmem(),
