@@ -1,10 +1,10 @@
 /*
  * version.h --- controls the version number printed by the e2fs
  * programs.
- *
- * Copyright 1995, 1996, 1997 by Theodore Ts'o.  This file may be
- * redistributed under the GNU Public License.
+ * 
+ * Copyright 1995, 1996, 1997, 1998, 1999 by Theodore Ts'o.  This file
+ * may be redistributed under the GNU Public License.
  */
 
-#define E2FSPROGS_VERSION "1.14"
-#define E2FSPROGS_DATE "9-Jan-1999"
+#define E2FSPROGS_VERSION "1.15-WIP"
+#define E2FSPROGS_DATE "16-Jun-1999"
