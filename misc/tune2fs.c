@@ -58,10 +58,13 @@ char * device_name;
 char * new_label, *new_last_mounted, *new_UUID, *journal_opts;
 static int c_flag, C_flag, e_flag, g_flag, i_flag, l_flag, L_flag;
 static int m_flag, M_flag, r_flag, s_flag = -1, u_flag, U_flag;
+static int print_label;
 static int max_mount_count, mount_count, mount_flags;
 static unsigned long interval, reserved_ratio, reserved_blocks;
 static unsigned long resgid, resuid;
 static unsigned short errors;
+static int open_flag;
+static char *features_cmd;
 
 int journal_size, journal_flags;
 char *journal_device;
@@ -235,31 +238,47 @@ static void add_journal(ext2_filsys fs)
 	}
 }
 
+/*
+ * Given argv[0], return the program name.
+ */
+char *get_progname(char *argv_zero)
+{
+	char	*cp;
+
+	cp = strrchr(argv_zero, '/');
+	if (!cp )
+		return argv_zero;
+	else
+		return cp+1;
+}
 
 
-int main (int argc, char ** argv)
+void parse_e2label_options(int argc, char ** argv)
+{
+	if ((argc < 2) || (argc > 3)) {
+		fprintf(stderr, _("Usage: e2label device [newlabel]\n"));
+		exit(1);
+	}
+	device_name = argv[1];
+	if (argc == 3) {
+		open_flag = EXT2_FLAG_RW;
+		L_flag = 1;
+		new_label = argv[2];
+	} else 
+		print_label++;
+}
+
+
+void parse_tune2fs_options(int argc, char **argv)
 {
 	int c;
 	char * tmp;
-	errcode_t retval;
-	ext2_filsys fs;
-	struct ext2_super_block *sb;
 	struct group * gr;
 	struct passwd * pw;
-	int open_flag = 0;
-	char *features_cmd = 0;
 
-#ifdef ENABLE_NLS
-	setlocale(LC_MESSAGES, "");
-	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
-	textdomain(NLS_CAT_NAME);
-#endif
 	fprintf (stderr, _("tune2fs %s, %s for EXT2 FS %s, %s\n"),
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
-	if (argc && *argv)
-		program_name = *argv;
-	initialize_ext2_error_table();
 	while ((c = getopt (argc, argv, "c:e:g:i:j:lm:r:s:u:C:L:M:O:U:")) != EOF)
 		switch (c)
 		{
@@ -433,6 +452,30 @@ int main (int argc, char ** argv)
 	if (!open_flag && !l_flag)
 		usage();
 	device_name = argv[optind];
+}	
+
+
+
+int main (int argc, char ** argv)
+{
+	errcode_t retval;
+	ext2_filsys fs;
+	struct ext2_super_block *sb;
+
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
+	if (argc && *argv)
+		program_name = *argv;
+	initialize_ext2_error_table();
+
+	if (strcmp(get_progname(argv[0]), "e2label") == 0)
+		parse_e2label_options(argc, argv);
+	else
+		parse_tune2fs_options(argc, argv);
+	
 	retval = ext2fs_open (device_name, open_flag, 0, 0,
 			      unix_io_manager, &fs);
         if (retval) {
@@ -441,6 +484,12 @@ int main (int argc, char ** argv)
 		printf(_("Couldn't find valid filesystem superblock.\n"));
 		exit(1);
 	}
+	sb = fs->super;
+	if (print_label) {
+		/* For e2label emulation */
+		printf("%.*s\n", sizeof(sb->s_volume_name), sb->s_volume_name);
+		exit(0);
+	}
 	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
 	if (retval) {
 		com_err("ext2fs_check_if_mount", retval,
@@ -448,7 +497,6 @@ int main (int argc, char ** argv)
 			device_name);
 		return;
 	}
-	sb = fs->super;
 	/* Normally we only need to write out the superblock */
 	fs->flags |= EXT2_FLAG_SUPER_ONLY;
 

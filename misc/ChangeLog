@@ -1,3 +1,9 @@
+2001-01-08    <tytso@snap.thunk.org>
+
+	* Makefile.in, tune2fs.c: Move e2label functionality into tune2fs,
+		using argv[0] as a dispatch.  This allows e2label to be
+		(more) safely used on mounted filesystems.
+
 2001-01-05    <tytso@snap.thunk.org>
 
 	* get_device_by_label.h (get_volume_label_by_spec): Add function

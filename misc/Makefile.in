@@ -11,7 +11,7 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-SPROGS=		mke2fs badblocks tune2fs dumpe2fs e2label e2image @FSCK_PROG@
+SPROGS=		mke2fs badblocks tune2fs dumpe2fs e2image @FSCK_PROG@
 USPROGS=	mklost+found
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			e2label.8 @FSCK_MAN@
@@ -27,7 +27,6 @@ LSATTR_OBJS=	lsattr.o
 UUIDGEN_OBJS=	uuidgen.o
 DUMPE2FS_OBJS=	dumpe2fs.o
 BADBLOCKS_OBJS=	badblocks.o
-E2LABEL_OBJS=	e2label.o
 E2IMAGE_OBJS=	e2image.o
 FSCK_OBJS=	fsck.o get_device_by_label.o base_device.o
 
@@ -55,9 +54,6 @@ findsuper: findsuper.o
 
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS_E2P) $(DEPLIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS_E2P) $(LIBUUID)
-
-e2label: $(E2LABEL_OBJS) 
-	$(CC) $(ALL_LDFLAGS) -o e2label $(E2LABEL_OBJS) 
 
 e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS)
@@ -146,6 +142,8 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	done
 	$(LN) -f $(DESTDIR)$(root_sbindir)/mke2fs \
 		$(DESTDIR)$(root_sbindir)/mkfs.ext2
+	$(LN) -f $(DESTDIR)$(root_sbindir)/tune2fs \
+		$(DESTDIR)$(root_sbindir)/e2label
 	for i in $(UPROGS); do \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(bindir)/$$i; \
 		$(STRIP) $(DESTDIR)$(bindir)/$$i; \
