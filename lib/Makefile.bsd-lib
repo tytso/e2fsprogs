@@ -28,8 +28,12 @@ $(BSD_LIB): $(OBJS)
 	$(LN) $(BSD_LIB) ../$(BSD_LIB)
 
 install-shlibs install:: $(BSD_LIB)
-	$(INSTALL_PROGRAM) $(BSD_LIB) $(BSDLIB_INSTALL_DIR)/$(BSD_LIB)
+	$(INSTALL_PROGRAM) $(BSD_LIB) \
+		$(DESTDIR)$(BSDLIB_INSTALL_DIR)/$(BSD_LIB)
 	-ldconfig
+
+uninstall-shlibs uninstall::
+	$(RM) -f $(DESTDIR)$(BSDLIB_INSTALL_DIR)/$(BSD_LIB)
 
 clean::
 	$(RM) -rf pic

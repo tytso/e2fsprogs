@@ -84,11 +84,14 @@ install-shlibs install:: $(DLL_IMAGE).so.$(DLL_VERSION) installdirs
 	$(STRIP) $(DESTDIR)$(DLL_INSTALL_DIR)/$(DLL_IMAGE).so.$(DLL_VERSION)
 	-ldconfig
 
+uninstall-shlibs unistall::
+	$(RM) $(DESTDIR)$(DLL_INSTALL_DIR)/$(DLL_IMAGE).so.$(DLL_VERSION)
+
 install:: $(DLL_STUB).sa
-	$(INSTALL_DATA) $(DLL_STUB).sa $(DESTDIR)$(ulibdir)/$(DLL_STUB).sa
-	$(CHMOD) 644 $(DESTDIR)$(ulibdir)/$(DLL_STUB).sa
-	$(RANLIB) $(DESTDIR)$(ulibdir)/$(DLL_STUB).sa
-	$(CHMOD) $(LIBMODE) $(DESTDIR)$(ulibdir)/$(DLL_STUB).sa
+	$(INSTALL_DATA) $(DLL_STUB).sa $(DESTDIR)$(libdir)/$(DLL_STUB).sa
+	$(CHMOD) 644 $(DESTDIR)$(libdir)/$(DLL_STUB).sa
+	$(RANLIB) $(DESTDIR)$(libdir)/$(DLL_STUB).sa
+	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/$(DLL_STUB).sa
 
 clean::
 	$(RM) -f ../$(DLL_STUB).sa $(DLL_STUB).sa \

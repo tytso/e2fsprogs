@@ -34,7 +34,7 @@ $(ELF_LIB): $(OBJS)
 
 installdirs-elf-lib::
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(ELF_INSTALL_DIR) \
-		$(DESTDIR)$(ulibdir)
+		$(DESTDIR)$(libdir)
 
 installdirs:: installdirs-elf-lib
 
@@ -44,7 +44,13 @@ install-shlibs install:: $(ELF_LIB) installdirs-elf-lib
 		$(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
 	$(LN_S) -f $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_SONAME)
 	$(LN_S) -f $(ELF_INSTALL_DIR)/$(ELF_SONAME) \
-		$(DESTDIR)$(ulibdir)/$(ELF_IMAGE).so
+		$(DESTDIR)$(libdir)/$(ELF_IMAGE).so
+	-ldconfig
+
+uninstall-shlibs uninstall::
+	$(RM) -f $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB) \
+		$(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_SONAME) \
+		$(DESTDIR)$(libdir)/$(ELF_IMAGE).so
 	-ldconfig
 
 clean::
