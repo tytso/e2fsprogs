@@ -1,3 +1,65 @@
+e2fsprogs (1.20+1.21-WIP-0614-1) unstable; urgency=low
+
+  * New upstream pre-release (Closes: #100559, #100304).
+  * Fixed lib/ext2fs/Makefile.in for installation of new generated .h
+    file.
+
+ -- Yann Dirson <dirson@debian.org>  Thu, 14 Jun 2001 16:14:11 +0200
+
+e2fsprogs (1.20+1.21-WIP-0608-1) unstable; urgency=low
+
+  * New upstream pre-release (critical ext3 bugfix mostly).
+  * Correctly use dh_installinfo.
+  * Adjusted various things accordingly.
+
+ -- Yann Dirson <dirson@debian.org>  Sat,  9 Jun 2001 00:25:51 +0200
+
+e2fsprogs (1.20-4) unstable; urgency=low
+
+  * Cleanup generated substvars files now that debhelper uses other
+    names (may cause problems on other archs).  Build-dep on debhelper
+    3.0.30 or newer to be sure it won't cause broken uploads.  Allows to
+    get rid of hairy dep, but cannot build straightforwardly on potato any
+    more...
+
+ -- Yann Dirson <dirson@debian.org>  Wed,  6 Jun 2001 02:33:32 +0200
+
+e2fsprogs (1.20-3) unstable; urgency=low
+
+  * Create all symlinks to uuid-generate.3 (Closes: #99573).
+  * Somewhat modernized debian/rules (debhelper v2, etc.).
+  * Fixed libss2 copyright file.
+  * Fixed e2fslibs-pic short description.
+
+ -- Yann Dirson <dirson@debian.org>  Wed,  6 Jun 2001 01:19:19 +0200
+
+e2fsprogs (1.20-2) unstable; urgency=low
+
+  * Added support for building pic libs to Makefile.elf-lib.
+  * New package e2fslibs-pic for boot-floppies team (Closes: #99285).
+  * Use -N on dh_gencontrol instead of lots of -p.
+
+ -- Yann Dirson <dirson@debian.org>  Thu, 31 May 2001 23:59:51 +0200
+
+e2fsprogs (1.20-1) unstable; urgency=low
+
+  * Final 1.20 release.
+  * Added new zsh-static to the list of possible static shells recommended
+    by e2fsck-static.
+
+ -- Yann Dirson <dirson@debian.org>  Mon, 28 May 2001 21:39:06 +0200
+
+e2fsprogs (1.19+1.20-WIP-0520-1) unstable; urgency=low
+
+  * New upstream pre-release snapshot:
+  ** Extended "fsck -t" syntax (Closes: #89483).
+  ** Fix handling of devices for which fsck can't determine a physical
+    spindal, causing lockup when checking LVM volumes (Closes: #98103).
+  ** Fixed typo in e2fsck-static description - thanks Ted :).
+  * Fixed small compilation bug in fsck.c
+
+ -- Yann Dirson <dirson@debian.org>  Mon, 21 May 2001 20:47:10 +0200
+
 e2fsprogs (1.19+1.20-WIP-0514-2) unstable; urgency=low
 
   * Tighten dependency on dephelper.

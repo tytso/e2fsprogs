@@ -1,6 +1,7 @@
-This is the Debian GNU/Linux prepackaged version of the Common Error
-Description library. It is currently distributed together with the EXT2 file
-system utilities, which are otherwise packaged as "e2fsprogs".
+This is the Debian GNU/Linux prepackaged version of the ss
+command-line interface parsing library library. It is currently
+distributed together with the EXT2 file system utilities, which are
+otherwise packaged as "e2fsprogs".
 
 This package was put together by Yann Dirson <dirson@debian.org>,
 from sources obtained from a mirror of:

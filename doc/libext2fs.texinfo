@@ -31,7 +31,7 @@ END-INFO-DIR-ENTRY
 This file documents the ext2fs library, a library for manipulating the
 ext2 filesystem.
 
-Copyright (C) 1997, 1998, 1999 Theodore Ts'o
+Copyright (C) 1997, 1998, 1999, 2000, 2001 Theodore Ts'o
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
