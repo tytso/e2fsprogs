@@ -18,6 +18,9 @@
  * 98/12/29	- Display version info only when -V specified (G M Sipe)
  */
 
+#define _LARGEFILE64_SOURCE
+#define _FILE_OFFSET_BITS 64
+
 #include <sys/types.h>
 #include <dirent.h>
 #include <fcntl.h>
