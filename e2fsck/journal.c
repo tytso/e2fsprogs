@@ -594,9 +594,10 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 	io_manager io_ptr = ctx->fs->io->manager;
 	int blocksize = ctx->fs->blocksize;
 	errcode_t	retval, recover_retval;
-	
+
+	printf(_("%s: recovering journal\n"), ctx->device_name);
 	if (ctx->options & E2F_OPT_READONLY) {
-		printf("%s: won't do journal recovery while read-only\n",
+		printf(_("%s: won't do journal recovery while read-only\n"),
 		       ctx->device_name);
 		return EXT2_ET_FILE_RO;
 	}

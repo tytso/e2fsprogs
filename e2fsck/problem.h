@@ -128,7 +128,7 @@ struct problem_context {
 #define PR_0_JOURNAL_RESET_PROMPT 0x000019
 
 /* Clearing orphan inode */
-#define PR_0_CLEAR_ORPHAN_INODE			0x000020
+#define PR_0_ORPHAN_CLEAR_INODE			0x000020
 	
 /* Illegal block found in orphaned inode */
 #define PR_0_ORPHAN_ILLEGAL_BLOCK_NUM		0x000021
@@ -141,9 +141,6 @@ struct problem_context {
 
 /* Illegal inode in orphaned inode list */
 #define PR_0_ORPHAN_ILLEGAL_INODE 		0x000024
-
-/* Orphan inode has a non-zero link count */
-#define PR_0_ORPHAN_INODE_INUSE			0x000025
 
 /*
  * Pass 1 errors

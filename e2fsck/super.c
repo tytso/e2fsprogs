@@ -55,10 +55,15 @@ errcode_t e2fsck_get_device_size(e2fsck_t ctx)
  * helper function to release an inode
  */
 struct process_block_struct {
-	ino_t	ino;
-	e2fsck_t ctx;
+	e2fsck_t 	ctx;
+	char 		*buf;
 	struct problem_context *pctx;
-	int	abort;
+	int		truncating;
+	int		truncate_offset;
+	blk_t		truncate_block;
+	int		truncated_blocks;
+	int		abort;
+	errcode_t	errcode;
 };
 
 static int release_inode_block(ext2_filsys fs,
@@ -67,9 +72,10 @@ static int release_inode_block(ext2_filsys fs,
 			       void *priv_data)
 {
 	struct process_block_struct *pb;
-	e2fsck_t ctx;
-	struct problem_context *pctx;
-	blk_t	blk = *block_nr;
+	e2fsck_t 		ctx;
+	struct problem_context	*pctx;
+	blk_t			blk = *block_nr;
+	int			retval = 0;
 
 	pb = (struct process_block_struct *) priv_data;
 	ctx = pb->ctx;
@@ -84,48 +90,123 @@ static int release_inode_block(ext2_filsys fs,
 	if ((blk < fs->super->s_first_data_block) ||
 	    (blk >= fs->super->s_blocks_count)) {
 		fix_problem(ctx, PR_0_ORPHAN_ILLEGAL_BLOCK_NUM, pctx);
+	abort:
 		pb->abort = 1;
 		return BLOCK_ABORT;
 	}
 
 	if (!ext2fs_test_block_bitmap(fs->block_map, blk)) {
 		fix_problem(ctx, PR_0_ORPHAN_ALREADY_CLEARED_BLOCK, pctx);
-		pb->abort = 1;
-		return BLOCK_ABORT;
+		goto abort;
+	}
+
+	/*
+	 * If we are deleting an orphan, then we leave the fields alone.
+	 * If we are truncating an orphan, then update the inode fields
+	 * and clean up any partial block data.
+	 */
+	if (pb->truncating) {
+		/*
+		 * We only remove indirect blocks if they are
+		 * completely empty.
+		 */
+		if (blockcnt < 0) {
+			int	i, limit;
+			blk_t	*block_nr;
+			
+			pb->errcode = io_channel_read_blk(fs->io, blk, 1,
+							pb->buf);
+			if (pb->errcode)
+				goto abort;
+
+			limit = fs->blocksize >> 2;
+			for (i = 0, block_nr = (blk_t *) pb->buf;
+			     i < limit;	 i++, block_nr++)
+				if (*block_nr)
+					return 0;
+		}
+		/*
+		 * We don't remove direct blocks until we've reached
+		 * the truncation block.
+		 */
+		if (blockcnt >= 0 && blockcnt < pb->truncate_block)
+			return 0;
+		/*
+		 * If part of the last block needs truncating, we do
+		 * it here.
+		 */
+		if ((blockcnt == pb->truncate_block) && pb->truncate_offset) {
+			pb->errcode = io_channel_read_blk(fs->io, blk, 1,
+							pb->buf);
+			if (pb->errcode)
+				goto abort;
+			memset(pb->buf + pb->truncate_offset, 0,
+			       fs->blocksize - pb->truncate_offset);
+			pb->errcode = io_channel_write_blk(fs->io, blk, 1,
+							 pb->buf);
+			if (pb->errcode)
+				goto abort;
+		}
+		pb->truncated_blocks++;
+		*block_nr = 0;
+		retval |= BLOCK_CHANGED;
 	}
 	
 	ext2fs_unmark_block_bitmap(fs->block_map, blk);
 	fs->group_desc[ext2fs_group_of_blk(fs, blk)].bg_free_blocks_count++;
 	fs->super->s_free_blocks_count++;
 	
-	return 0;
+	return retval;
 }
 		
 /*
  * This function releases an inode.  Returns 1 if an inconsistency was
- * found.
+ * found.  If the inode has a link count, then it is being truncated and
+ * not deleted.
  */
-static int release_inode_blocks(e2fsck_t ctx, ino_t ino, char* block_buf,
+static int release_inode_blocks(e2fsck_t ctx, ino_t ino,
+				struct ext2_inode *inode, char* block_buf,
 				struct problem_context *pctx)
 {
-	ext2_filsys fs = ctx->fs;
+	ext2_filsys			fs = ctx->fs;
 	errcode_t			retval;
 	struct process_block_struct 	pb;
 
-	pb.ino = ino;
+	pb.buf = block_buf + 3 * ctx->fs->blocksize;
 	pb.ctx = ctx;
 	pb.abort = 0;
+	pb.errcode = 0;
 	pb.pctx = pctx;
-	retval = ext2fs_block_iterate(fs, ino, 0, block_buf,
-				      release_inode_block, &pb);
+	if (inode->i_links_count) {
+		pb.truncating = 1;
+		pb.truncate_block = (blk_t)
+			((((long long)inode->i_size_high << 32) +
+			  inode->i_size + fs->blocksize - 1) /
+			 fs->blocksize);
+		pb.truncate_offset = inode->i_size % fs->blocksize;
+	} else {
+		pb.truncating = 0;
+		pb.truncate_block = 0;
+		pb.truncate_offset = 0;
+	}
+	pb.truncated_blocks = 0;
+	retval = ext2fs_block_iterate(fs, ino, BLOCK_FLAG_DEPTH_TRAVERSE, 
+				      block_buf, release_inode_block, &pb);
 	if (retval) {
-		com_err("delete_file", retval,
+		com_err("release_inode_blocks", retval,
 			_("while calling ext2fs_block_iterate for inode %d"),
 			ino);
 		return 1;
 	}
 	if (pb.abort)
 		return 1;
+
+	/* Refresh the inode since ext2fs_block_iterate may have changed it */
+	e2fsck_read_inode(ctx, ino, inode, "release_inode_blocks");
+
+	if (pb.truncated_blocks)
+		inode->i_blocks -= pb.truncated_blocks *
+			(fs->blocksize / 512);
 
 	ext2fs_mark_bb_dirty(fs);
 	return 0;
@@ -162,22 +243,19 @@ static int release_orphan_inodes(e2fsck_t ctx)
 		return 1;
 	}
 
-	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
+	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 4,
 						    "block interate buffer");
 	e2fsck_read_bitmaps(ctx);
 	
 	while (ino) {
-		e2fsck_read_inode(ctx, ino, &inode, "delete_file");
+		e2fsck_read_inode(ctx, ino, &inode, "release_orphan_inodes");
 		clear_problem_context(&pctx);
 		pctx.ino = ino;
 		pctx.inode = &inode;
+		pctx.str = inode.i_links_count ? "Truncating" : "Clearing";
 
-		fix_problem(ctx, PR_0_CLEAR_ORPHAN_INODE, &pctx);
+		fix_problem(ctx, PR_0_ORPHAN_CLEAR_INODE, &pctx);
 
-		if (inode.i_links_count) {
-			fix_problem(ctx, PR_0_ORPHAN_INODE_INUSE, &pctx);
-			goto abort;
-		}
 		next_ino = inode.i_dtime;
 		if (next_ino &&
 		    ((next_ino < EXT2_FIRST_INODE(fs->super)) ||
@@ -187,20 +265,21 @@ static int release_orphan_inodes(e2fsck_t ctx)
 			goto abort;
 		}
 
-		if (release_inode_blocks(ctx, ino, block_buf, &pctx))
+		if (release_inode_blocks(ctx, ino, &inode, block_buf, &pctx))
 			goto abort;
-		
-		inode.i_dtime = time(0);
-		e2fsck_write_inode(ctx, ino, &inode, "delete_file");
 
-		ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
-		ext2fs_mark_ib_dirty(fs);
-		group = ext2fs_group_of_ino(fs, ino);
-		fs->group_desc[group].bg_free_inodes_count++;
-		fs->super->s_free_inodes_count++;
-		if (LINUX_S_ISDIR(inode.i_mode))
-			fs->group_desc[group].bg_used_dirs_count--;
-		
+		if (!inode.i_links_count) {
+			ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
+			ext2fs_mark_ib_dirty(fs);
+			group = ext2fs_group_of_ino(fs, ino);
+			fs->group_desc[group].bg_free_inodes_count++;
+			fs->super->s_free_inodes_count++;
+			if (LINUX_S_ISDIR(inode.i_mode))
+				fs->group_desc[group].bg_used_dirs_count--;
+			
+			inode.i_dtime = time(0);
+		}
+		e2fsck_write_inode(ctx, ino, &inode, "delete_file");
 		ino = next_ino;
 	}
 	return 0;

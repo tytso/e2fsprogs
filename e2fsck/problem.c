@@ -230,8 +230,8 @@ static const struct e2fsck_problem problem_table[] = {
 	  PROMPT_CLEAR, PR_PREEN_OK|PR_PREEN_NOMSG },
 
 	/* Clearing orphan inode */
-	{ PR_0_CLEAR_ORPHAN_INODE,
-	  N_("Clearing @o @i %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n"),
+	{ PR_0_ORPHAN_CLEAR_INODE,
+	  N_("%s @o @i %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n"),
 	  PROMPT_NONE, 0 },
 
 	/* Illegal block found in orphaned inode */
@@ -252,11 +252,6 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Illegal inode in orphaned inode list */
 	{ PR_0_ORPHAN_ILLEGAL_INODE,
 	  N_("@I @i %i in @o @i list.\n"),
-	  PROMPT_NONE, 0 },
-
-	/* Orphan inode has a non-zero link count */
-	{ PR_0_ORPHAN_INODE_INUSE,
-	  N_("@o @i %i has a non-zero link count.\n"),
 	  PROMPT_NONE, 0 },
 
 	/* Pass 1 errors */

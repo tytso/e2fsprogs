@@ -1,5 +1,17 @@
 2000-10-24    <tytso@snap.thunk.org>
 
+	* super.c (release_inode_block, release_inode_blocks,
+		release_orphan_inodes): Add code to deal with truncating
+		inodes which are still in use (but which are on the orphan
+		list because they need truncation).
+
+	* problem.c, problem.h: Rename PR_0_CLEAR_ORPHAN_INODE to
+		PR_0_ORPHAN_CLEAR_INODE, and remove
+		PR_0_ORPHAN_INODE_INUSE.
+	
+	* journal.c (e2fsck_run_ext3_journal): Add i18n support, and print
+		a message when the journal is being recovered.
+
 	* pass1.c (e2fsck_pass1): Don't check the i_mode field for the
 		journal inode, if it is in use.
 
