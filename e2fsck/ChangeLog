@@ -1,5 +1,17 @@
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
+	* problem.c, problem.h: Change PR_0_JOURNAL_UNSUPP_INCOMPAT and
+		PR_0_JOURNAL_UNSUPP_ROCOMPAT so they aren't fatal errors,
+		but prompt to see if the user should abort.  Removed the
+		PR_0_JOURNAL_RESET_COMPAT problem code.
+
+	* journal.c (e2fsck_journal_load): If there are incompatible
+		journal flags, just return an error code.
+		(e2fsck_check_ext3_journal): If e2fsck_journal_load
+		returns an error code indicating that there are
+		incompatible journal flag, check to see if we should
+		abort, and then offer to clear the journal.
+
 	* Makefile.in: Move include/asm/types.h.in to
 		lib/ext2fs/ext2_fs.h.in.
 

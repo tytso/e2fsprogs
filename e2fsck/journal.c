@@ -350,19 +350,11 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 		return EXT2_ET_JOURNAL_UNSUPP_VERSION;
 	}
 
-	if (JFS_HAS_INCOMPAT_FEATURE(journal, ~JFS_KNOWN_INCOMPAT_FEATURES)) {
-		if (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_INCOMPAT, &pctx))
-			return EXT2_ET_UNSUPP_FEATURE;
-		journal->j_superblock->s_feature_incompat &=
-			JFS_KNOWN_INCOMPAT_FEATURES;
-	}
+	if (JFS_HAS_INCOMPAT_FEATURE(journal, ~JFS_KNOWN_INCOMPAT_FEATURES))
+		return EXT2_ET_UNSUPP_FEATURE;
 	
-	if (JFS_HAS_RO_COMPAT_FEATURE(journal, ~JFS_KNOWN_ROCOMPAT_FEATURES)) {
-		if (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_ROCOMPAT, &pctx))
-			return EXT2_ET_RO_UNSUPP_FEATURE;
-		journal->j_superblock->s_feature_ro_compat &=
-			JFS_KNOWN_ROCOMPAT_FEATURES;
-	}
+	if (JFS_HAS_RO_COMPAT_FEATURE(journal, ~JFS_KNOWN_ROCOMPAT_FEATURES))
+		return EXT2_ET_RO_UNSUPP_FEATURE;
 
 	/* We have now checked whether we know enough about the journal
 	 * format to be able to proceed safely, so any other checks that
@@ -515,6 +507,12 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 	retval = e2fsck_journal_load(journal);
 	if (retval) {
 		if ((retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
+		    ((retval == EXT2_ET_UNSUPP_FEATURE) &&
+		    (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_INCOMPAT,
+				  &pctx))) ||
+		    ((retval == EXT2_ET_RO_UNSUPP_FEATURE) &&
+		    (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_ROCOMPAT,
+				  &pctx))) ||
 		    ((retval == EXT2_ET_JOURNAL_UNSUPP_VERSION) &&
 		    (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_VERSION, &pctx))))
 			retval = e2fsck_journal_fix_corrupt_super(ctx, journal,

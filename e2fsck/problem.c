@@ -265,17 +265,12 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Journal superblock has an unknown read-only feature flag set */
 	{ PR_0_JOURNAL_UNSUPP_ROCOMPAT,
 	  N_("Ext3 @j @S has an unknown read-only feature flag set.\n"),
-	  PROMPT_NONE, PR_FATAL, PR_0_JOURNAL_RESET_COMPAT },
+	  PROMPT_ABORT, 0 },
 
 	/* Journal superblock has an unknown incompatible feature flag set */
 	{ PR_0_JOURNAL_UNSUPP_INCOMPAT,
 	  N_("Ext3 @j @S has an unknown incompatible feature flag set.\n"),
-	  PROMPT_NONE, PR_FATAL, PR_0_JOURNAL_RESET_COMPAT },
-
-	/* Journal superblock has an unknown feature flag set */
-	{ PR_0_JOURNAL_RESET_COMPAT,
-	  N_("Ext3 @j @S has bad feature flag(s) set.\n"),
- 	  PROMPT_CLEAR, PR_PREEN_OK|PR_PREEN_NOMSG },
+	  PROMPT_ABORT, 0 },
 
 	/* Journal has unsupported version number */
 	{ PR_0_JOURNAL_UNSUPP_VERSION,
