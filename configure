@@ -4367,7 +4367,7 @@ EOF
 
   fi
 fi
-for ac_func in chflags getrusage llseek strdup getmntinfo strcasecmp srandom fchown mallinfo
+for ac_func in chflags getrusage llseek strdup getmntinfo strcasecmp srandom fchown mallinfo fdatasync
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:4374: checking for $ac_func" >&5
