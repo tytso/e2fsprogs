@@ -1,3 +1,7 @@
+2005-01-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.library (uninstall-shlibs): Fix "make uninstall"
+
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.elf-lib, Makefile.solaris-lib, Makefile.profile,

@@ -1,5 +1,8 @@
 2005-01-26  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in (uninstall): Make sure "make uninstall" removes
+		everything installed by the makefile.
+
 	* e2image.c (scramble_dir_block): Make sure the unused space
 		in the '.' and '..' directory entries are cleared when
 		e2image -rs is specified.

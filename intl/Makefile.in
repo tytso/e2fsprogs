@@ -376,6 +376,8 @@ installcheck:
 
 install-shlibs:
 
+uninstall-shlibs:
+
 install-shlibs-strip:
 
 uninstall:
