@@ -218,12 +218,12 @@ static _INLINE_ void expand_at_expression(e2fsck_t ctx, char ch,
 			break;
 	}
 	if (*cpp) {
-		str = (*cpp) + 1;
+		str = _(*cpp) + 1;
 		if (*first && islower(*str)) {
 			*first = 0;
 			fputc(toupper(*str++), stdout);
 		}
-		print_e2fsck_message(ctx, _(str), pctx, *first);
+		print_e2fsck_message(ctx, str, pctx, *first);
 	} else
 		printf("@%c", ch);
 }
