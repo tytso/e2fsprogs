@@ -1,3 +1,13 @@
+2000-07-06  Theodore Ts'o  <tytso@valinux.com>
+
+	* badblocks.8.in: Update manual page to reflect that the
+		blocks-count parameter is now optional.  Also properly
+		document the start-block parameter.
+
+	* badblocks.c (main): Allow the blocks-count parameter to be
+		optional.   If it's not specified, use the size of the
+		device as a default.
+
 2000-07-05  Theodore Ts'o  <tytso@valinux.com>
 
 	* badblocks.c (test_nd): Significantly simplify the logic so that

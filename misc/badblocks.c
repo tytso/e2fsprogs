@@ -70,7 +70,7 @@ static char *blkbuf;		/* Allocation array for bad block testing */
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwn]\n [-c blocks_at_once] [-p num_passes] device blocks_count [start_count]\n"),
+	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwn]\n [-c blocks_at_once] [-p num_passes] device [blocks_count] [start_count]\n"),
 		 program_name);
 	exit (1);
 }
@@ -624,7 +624,7 @@ int main (int argc, char ** argv)
 	FILE * in = NULL;
 	int block_size = 1024;
 	unsigned long blocks_at_once = 16;
-	unsigned long blocks_count, from_count;
+	blk_t blocks_count, from_count;
 	int num_passes = 0;
 	int passes_clean = 0;
 	int dev;
@@ -705,16 +705,31 @@ int main (int argc, char ** argv)
 	if (optind > argc - 1)
 		usage();
 	device_name = argv[optind++];
-	if (optind > argc - 1)
-		usage();
-	blocks_count = strtoul (argv[optind], &tmp, 0);
-	if (*tmp)
-	{
-		com_err (program_name, 0, _("bad blocks count - %s"),
-			 argv[optind]);
-		exit (1);
+	if (optind > argc - 1) {
+		errcode = ext2fs_get_device_size(device_name,
+						 block_size,
+						 &blocks_count);
+		if (errcode == EXT2_ET_UNIMPLEMENTED) {
+			com_err(program_name, 0,
+				_("Couldn't determine device size; you "
+				  "must specify\nthe size manually\n"));
+			exit(1);
+		}
+		if (errcode) {
+			com_err(program_name, errcode,
+				_("while trying to determine device size"));
+			exit(1);
+		}
+	} else {
+		blocks_count = strtoul (argv[optind], &tmp, 0);
+		if (*tmp) {
+			com_err (program_name, 0, _("bad blocks count - %s"),
+				 argv[optind]);
+			exit (1);
+		}
+		optind++;
 	}
-	if (++optind <= argc-1) {
+	if (optind <= argc-1) {
 		from_count = strtoul (argv[optind], &tmp, 0);
 	} else from_count = 0;
 	if (from_count >= blocks_count) {

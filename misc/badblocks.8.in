@@ -28,7 +28,11 @@ badblocks \- search a device for bad blocks
 .I num_passes
 ]
 .I device
-.IR blocks-count [ start-block ]
+[
+.I blocks-count
+] [
+.I start-block 
+]
 .SH DESCRIPTION
 .B badblocks
 is used to search for bad blocks on a device (usually a disk partition).
@@ -36,7 +40,10 @@ is used to search for bad blocks on a device (usually a disk partition).
 is the special file corresponding to the device (e.g
 .IR /dev/hdc1 ).
 .I blocks-count
-is the number of blocks on the device.
+is the number of blocks on the device; if it is not specified, the size
+of the device is used as a default.
+.I start-block is an optional parameter specifying the starting block number
+for the test, which allows the testing to start in the middle of the disk.
 .SH OPTIONS
 .TP
 .BI \-b " block-size"
