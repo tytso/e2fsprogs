@@ -428,14 +428,13 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		inode->i_mode & 0777, inode->i_flags, inode->i_generation);
 	fprintf(out, "%sUser: %5d   Group: %5d   Size: ",
 		prefix, inode->i_uid, inode->i_gid);
-	if (LINUX_S_ISDIR(inode->i_mode))
-		fprintf(out, "%d\n", inode->i_size);
-	else {
+	if (LINUX_S_ISREG(inode->i_mode)) {
 		__u64 i_size = (inode->i_size |
 				((unsigned long long)inode->i_size_high << 32));
-		
+
 		fprintf(out, "%lld\n", i_size);
-	}
+	} else
+		fprintf(out, "%d\n", inode->i_size);
 	if (current_fs->super->s_creator_os == EXT2_OS_HURD)
 		fprintf(out,
 			"%sFile ACL: %d    Directory ACL: %d Translator: %d\n",
