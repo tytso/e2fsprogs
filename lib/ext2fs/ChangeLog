@@ -1,3 +1,19 @@
+1999-11-08    <tytso@valinux.com>
+
+	* Makefile.in (tst_badblocks): Add freefs.o to the object list,
+		since ext2fs_badblocks_list_free was moved to freefs.c.
+
+	* tst_badblocks.c: Use the newer badblocks API names.  Add
+		duplicate blocks to the test inputs to test dealing with
+		adding blocks which are already in the badblocks list.
+
+	* badblocks.c (ext2fs_badblocks_list_add): If appending to the end
+		of the list, use a shortcut O(1) operations instead of an
+		O(n) operation.  (Idea suggested by David Beattie.)
+
+	* freefs.c (ext2fs_free): Use ext2fs_badblocks_list_free() instead
+		of badblocks_list_free(), to save a procedure call.
+
 1999-10-26    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.17

@@ -43,7 +43,7 @@ void ext2fs_free(ext2_filsys fs)
 		ext2fs_free_inode_bitmap(fs->inode_map);
 
 	if (fs->badblocks)
-		badblocks_list_free(fs->badblocks);
+		ext2fs_badblocks_list_free(fs->badblocks);
 	fs->badblocks = 0;
 
 	if (fs->dblist)

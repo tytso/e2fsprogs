@@ -31,8 +31,8 @@
 #include "ext2fs.h"
 
 blk_t test1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0 };
-blk_t test2[] = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
-blk_t test3[] = { 3, 1, 4, 5, 9, 2, 7, 10, 6, 8, 0 };
+blk_t test2[] = { 10, 9, 8, 7, 6, 5, 4, 3, 3, 2, 1, 0 };
+blk_t test3[] = { 3, 1, 4, 5, 9, 2, 7, 10, 5, 6, 10, 8, 0 };
 blk_t test4[] = { 20, 50, 12, 17, 13, 2, 66, 23, 56, 0 };
 blk_t test4a[] = {
  	20, 1,
@@ -58,17 +58,17 @@ static errcode_t create_test_list(blk_t *vec, badblocks_list *ret)
 	badblocks_list	bb;
 	int		i;
 	
-	retval = badblocks_list_create(&bb, 5);
+	retval = ext2fs_badblocks_list_create(&bb, 5);
 	if (retval) {
 		com_err("create_test_list", retval, "while creating list");
 		return retval;
 	}
 	for (i=0; vec[i]; i++) {
-		retval = badblocks_list_add(bb, vec[i]);
+		retval = ext2fs_badblocks_list_add(bb, vec[i]);
 		if (retval) {
 			com_err("create_test_list", retval,
 				"while adding test vector %d", i);
-			badblocks_list_free(bb);
+			ext2fs_badblocks_list_free(bb);
 			return retval;
 		}
 	}
@@ -83,18 +83,18 @@ static void print_list(badblocks_list bb, int verify)
 	blk_t			blk;
 	int			i, ok;
 	
-	retval = badblocks_list_iterate_begin(bb, &iter);
+	retval = ext2fs_badblocks_list_iterate_begin(bb, &iter);
 	if (retval) {
 		com_err("print_list", retval, "while setting up iterator");
 		return;
 	}
 	ok = i = 1;
-	while (badblocks_list_iterate(iter, &blk)) {
+	while (ext2fs_badblocks_list_iterate(iter, &blk)) {
 		printf("%d ", blk);
 		if (i++ != blk)
 			ok = 0;
 	}
-	badblocks_list_iterate_end(iter);
+	ext2fs_badblocks_list_iterate_end(iter);
 	if (verify) {
 		if (ok)
 			printf("--- OK");
@@ -110,7 +110,7 @@ static void validate_test_seq(badblocks_list bb, blk_t *vec)
 	int	i, match, ok;
 
 	for (i = 0; vec[i]; i += 2) {
-		match = badblocks_list_test(bb, vec[i]);
+		match = ext2fs_badblocks_list_test(bb, vec[i]);
 		if (match == vec[i+1])
 			ok = 1;
 		else {
@@ -132,7 +132,7 @@ int main(int argc, char *argv)
 	retval = create_test_list(test1, &bb);
 	if (retval == 0) {
 		print_list(bb, 1);
-		badblocks_list_free(bb);
+		ext2fs_badblocks_list_free(bb);
 	}
 	printf("\n");
 	
@@ -140,7 +140,7 @@ int main(int argc, char *argv)
 	retval = create_test_list(test2, &bb);
 	if (retval == 0) {
 		print_list(bb, 1);
-		badblocks_list_free(bb);
+		ext2fs_badblocks_list_free(bb);
 	}
 	printf("\n");
 
@@ -148,7 +148,7 @@ int main(int argc, char *argv)
 	retval = create_test_list(test3, &bb);
 	if (retval == 0) {
 		print_list(bb, 1);
-		badblocks_list_free(bb);
+		ext2fs_badblocks_list_free(bb);
 	}
 	printf("\n");
 	
@@ -158,7 +158,7 @@ int main(int argc, char *argv)
 		print_list(bb, 0);
 		printf("\n");
 		validate_test_seq(bb, test4a);
-		badblocks_list_free(bb);
+		ext2fs_badblocks_list_free(bb);
 	}
 	printf("\n");
 	if (test_fail == 0)

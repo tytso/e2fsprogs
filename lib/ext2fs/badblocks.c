@@ -116,6 +116,17 @@ errcode_t ext2fs_badblocks_list_add(ext2_badblocks_list bb, blk_t blk)
 		}
 	}
 
+	/*
+	 * Add special case code for appending to the end of the list
+	 */
+	i = bb->num-1;
+	if ((bb->num != 0) && (bb->list[i] == blk))
+		return 0;
+	if ((bb->num == 0) || (bb->list[i] < blk)) {
+		bb->list[bb->num++] = blk;
+		return 0;
+	}
+
 	j = bb->num;
 	for (i=0; i < bb->num; i++) {
 		if (bb->list[i] == blk)
