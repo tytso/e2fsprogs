@@ -149,6 +149,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	unsigned char	frag, fsize;
 	struct		problem_context pctx;
 	struct		scan_callback_struct scan_struct;
+	struct ext2fs_sb *sb;
 	
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
@@ -503,19 +504,20 @@ endit:
 	ext2fs_free_block_bitmap(ctx->block_illegal_map);
 	ctx->block_illegal_map = 0;
 
+	sb = (struct ext2fs_sb *) fs->super;
 	if (ctx->large_files && 
-	    !(fs->super->s_feature_ro_compat & 
+	    !(sb->s_feature_ro_compat & 
 	      EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
 		if (fix_problem(ctx, PR_1_FEATURE_LARGE_FILES, &pctx)) {
-			fs->super->s_feature_ro_compat |= 
+			sb->s_feature_ro_compat |= 
 				EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
 			ext2fs_mark_super_dirty(fs);
 		}
 	} else if (!ctx->large_files &&
-	    (fs->super->s_feature_ro_compat &
+	    (sb->s_feature_ro_compat &
 	      EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
 		if (fs->flags & EXT2_FLAG_RW) {
-			fs->super->s_feature_ro_compat &= 
+			sb->s_feature_ro_compat &= 
 				~EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
 			ext2fs_mark_super_dirty(fs);
 		}
