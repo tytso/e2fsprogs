@@ -26,7 +26,7 @@ static ext2_dirhash_t dx_hack_hash (const char *name, int len)
 		hash1 = hash0;
 		hash0 = hash;
 	}
-	return hash0;
+	return (hash0 << 1);
 }
 
 /*
