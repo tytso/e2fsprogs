@@ -463,50 +463,12 @@ struct ext2fs_sb {
 #define HOLE_BLKADDR(_b) ((_b) == 0 || (_b) == EXT2FS_COMPRESSED_BLKADDR)
 
 /*
- * Feature set definitions (that might not be in ext2_fs.h
+ * Features supprted by this version of the library
  */
-
-#ifndef EXT2_FEATURE_COMPAT_DIR_PREALLOC
-#define EXT2_FEATURE_COMPAT_DIR_PREALLOC	0x0001
-#endif
-
-#ifndef EXT2_FEATURE_COMPAT_IMAGIC_INODES /* for AFS, etc. */
-#define EXT2_FEATURE_COMPAT_IMAGIC_INODES		0x0002
-#define EXT2_IMAGIC_FL		0x00002000
-#endif
-
-#ifndef EXT3_FEATURE_COMPAT_HAS_JOURNAL
-#define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x0004
-#endif
-
-#ifndef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
-#define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
-#endif
-
-#ifndef EXT2_FEATURE_RO_COMPAT_LARGE_FILE
-#define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
-#define i_size_high i_dir_acl
-#endif
-
-#ifndef EXT2_FEATURE_RO_COMPAT_BTREE_DIR
-#define EXT2_FEATURE_RO_COMPAT_BTREE_DIR	0x0004
-#endif
-
-#ifndef EXT2_FEATURE_INCOMPAT_COMPRESSION
-#define EXT2_FEATURE_INCOMPAT_COMPRESSION	0x0001
-#endif
-
-#ifndef EXT2_FEATURE_INCOMPAT_FILETYPE
-#define EXT2_FEATURE_INCOMPAT_FILETYPE	0x0002
-#endif
-
-#ifndef EXT3_FEATURE_INCOMPAT_RECOVER 
-#define EXT3_FEATURE_INCOMPAT_RECOVER	0x0004 /* Needs recovery */
-#endif
-
 #define EXT2_LIB_FEATURE_COMPAT_SUPP	(EXT2_FEATURE_COMPAT_DIR_PREALLOC|\
 					 EXT2_FEATURE_COMPAT_IMAGIC_INODES|\
 					 EXT3_FEATURE_COMPAT_HAS_JOURNAL)
+
 /* This #ifdef is temporary until compression is fully supported */
 #ifdef ENABLE_COMPRESSION
 #ifndef I_KNOW_THAT_COMPRESSION_IS_EXPERIMENTAL

@@ -1,3 +1,12 @@
+2000-12-31    <tytso@snap.thunk.org>
+
+	* ext2fs.h: Cleaned up header file by removing definitions of
+		feature flags that might not have been defined in older
+		ext2 header files.  Now that we're using our own
+		include/linux/ext2fs.h header file, this can never happen.
+
+	* jfs_dat.h: Removed old header file which is no longer needed.
+
 2000-12-13  Theodore Ts'o  <tytso@valinux.com>
 
 	* closefs.c (ext2fs_update_dynamic_rev): New function suggested

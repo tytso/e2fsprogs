@@ -1,3 +1,7 @@
+2000-12-31    <tytso@snap.thunk.org>
+
+	* jfs_compat.h: Remove uneeded header file.
+
 2000-12-30    <tytso@snap.thunk.org>
 
 	* malloc.h, mtrace.c: Renamed malloc.h to mtrace.h to avoid
