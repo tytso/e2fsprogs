@@ -367,11 +367,11 @@ static int execute(char *prog, char *device, char *mntpt)
 			printf("%s ", argv[i]);
 		printf("\n");
 	}
-	if (noexecute)
-		return 0;
 	
 	/* Fork and execute the correct program. */
-	if ((pid = fork()) < 0) {
+	if (noexecute)
+		pid = -1;
+	else if ((pid = fork()) < 0) {
 		perror("fork");
 		return errno;
 	} else if (pid == 0) {
@@ -405,6 +405,13 @@ static struct fsck_instance *wait_one(NOARGS)
 
 	if (!instance_list)
 		return NULL;
+
+	if (noexecute) {
+		inst = instance_list;
+		instance_list = inst->next;
+		inst->exit_status = 0;
+		return(inst);
+	}
 
 retry:
 	pid = wait(&status);
@@ -621,7 +628,7 @@ static int check_all(NOARGS)
 	struct fsck_instance *inst;
 	int status = EXIT_OK;
 	int not_done_yet = 1;
-	int passno = 0;
+	int passno = 1;
 	int pass_done;
 
 	if (verbose)
@@ -690,6 +697,8 @@ static int check_all(NOARGS)
 
 			}
 		}
+		if (verbose > 1)
+			printf("--waiting-- (pass %d)\n", passno);
 		inst = wait_one();
 		if (inst) {
 			status |= inst->exit_status;
@@ -697,7 +706,7 @@ static int check_all(NOARGS)
 		}
 		if (pass_done) {
 			status |= wait_all();
-			if (verbose) 
+			if (verbose > 1) 
 				printf("----------------------------------\n");
 			passno++;
 		} else

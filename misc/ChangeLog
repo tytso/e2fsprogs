@@ -1,3 +1,13 @@
+1999-01-16  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* fsck.c (execute, wait_one): Modified routines so that they
+		accurately create an fsck_instance even when the noexecute
+		flag is set.  This allows for accurate debugging of the
+		fsck pass structure.
+		(check_all): When the verbose flag is given twice, print
+		debugging information about when fsck is waiting for jobs
+		to finish.
+
 1999-01-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.14
