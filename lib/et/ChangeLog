@@ -1,3 +1,7 @@
+2004-02-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.35
+
 2003-12-11  Theodore Ts'o  <tytso@thunk.org>
 
 	* com_err.3: Fix C syntax error pointed out by ESR.

@@ -1,3 +1,7 @@
+2004-02-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.35
+
 2003-08-01  Philipp Thomas <pthomas@suse.de>
 
 	* fs_ext2.c (fs_cleanup, fs_init_task, fs_set_volumes): Use an

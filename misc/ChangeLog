@@ -1,5 +1,9 @@
 2004-02-28  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.35
+
+2004-02-28  Theodore Ts'o  <tytso@mit.edu>
+
 	* badblocks.c (main): Change the default number of blocks tested
 		at once from 16 to 64.  (Addresses Debian bug #232240)
 

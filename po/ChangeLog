@@ -1,3 +1,7 @@
+2004-02-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.35
+
 2003-12-07  Theodore Ts'o  <tytso@mit.edu>
 
 	* cs.po: Fix mangled encoding in Czech locale file.  (Addresses

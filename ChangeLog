@@ -1,3 +1,7 @@
+2004-02-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.35
+
 2004-02-21  Matthias Andree <matthias.andree@gmx.de>
 
 	* configure.in: Add -mieee to CFLAGS if we're using GCC and the CPU is

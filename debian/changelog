@@ -1,3 +1,15 @@
+e2fsprogs (1.35-1) unstable; urgency=low
+
+  * New upstream version.
+  * Fix "badblocks -t random". (Closes: #234828)
+  * Fix "e2fsck -k".  (Closes: #234993)
+  * Change badblock's default number of blocks tested at once from 
+    16 to 64.  (Closes: #232240)
+  * ss-dev and comerr-dev now use a versioned dependency for libss2 and
+    libcomerr2, respectively.  (Closes: #235280)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 28 Feb 2004 10:14:19 -0500
+
 e2fsprogs (1.34+1.35-WIP-2004.01.31-2) unstable; urgency=low
 
   * Add a new -k option to e2fsck which keeps the existing badblocks 

@@ -1,3 +1,7 @@
+2004-02-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.35
+
 2004-02-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c (internal_dump_inode): Display the major/minor device

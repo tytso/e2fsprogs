@@ -1,5 +1,18 @@
-E2fsprogs 1.35-WIP (January 31, 2004) 
-=====================================
+E2fsprogs 1.35 (February 28, 2004) 
+==================================
+
+E2fsck has a new -k option, which in conjuction with the -c options,
+preserves the existing badblocks list.
+
+Cleaned up e2fsck's preem-mode messages during the passes 1b, 1c, and 1d.
+
+E2fsprogs will now deal correctly with symlinks that contain
+extended attribute information, which can be created using SE Linux.
+(Addresses Debian Bug #232328)
+                                                                               
+Remove a double longjump into an invalid stack frame bug in e2fsck.
+(This was during an abort sequence, which normally worked on Linux and
+caused a core dump on other operating systems.)
 
 Fix NLS bug in e2fsck, by avoiding trying to expand an empty string
 (the NLS library will replace "" with the .po header information).
@@ -14,7 +27,7 @@ directory.  (Addresses Debian bug #219640).
 Fixed a bug where e2fsck would bomb out if a journal needed to be
 replayed when using an alternate superblock.
  
-E2fsck will give an extra grace period before actually forcing a check
+2fsck will give an extra grace period before actually forcing a check
 if the laptop is running on battery.  The next time fsck runs while
 the system is on the AC mains, or after the grace period is exceeded,
 the filesystem will be checked.  (Addresses Debian bug #205177)
@@ -74,6 +87,9 @@ debugfs now searches for the appropriate pager to use, beginning with
 /usr/bin/pager, and then falling back to 'more' and 'less'.
 (Addresses Debian bug #221977)
 
+Debugfs will now support 2.6 device numbers where the major or minor
+number may be larger than 255.  (Addresses Sourceforge bug #865289)
+ 
 Chattr now stops processing options when it sees '--'.  (Addresses
 Debian bug #225188)
 
@@ -93,8 +109,11 @@ read-write tests, we try to recover after an error so that we can
 continue reading on page-aligned boundaries.  (Addresses Debian Bug
 #203713)
   
+Badblocks now checks 64 blocks at a time instead of 16.  (Addresses
+Debian bug #232240)
+ 
 Updated and clarified various man pages.  (Addresses Debian Bug
-#206845, #222606, #214920)
+#206845, #222606, #214920, #232406)
 
 Updated and fixed translations.   (Addresses Debian bugs #200086, #214633)
 
@@ -103,6 +122,13 @@ Fixed various Debian packaging issues (see debian/changelog).
 Programmer's notes: 
 -------------------
 
+Fixed a build problem so that e2fsprogs would compile with the
+--enable-profile option to configure selected.  (Addresses Sourceforge
+bug #811408)
+ 
+Fixed C++ problems with the ext2fs.h header.  (Addresses Red Hat
+Bugzilla Bug #112448)
+                                                                               
 Centralize code which calculates the location of the superblock
 and block group descriptors so that it is in a single library routine.
 

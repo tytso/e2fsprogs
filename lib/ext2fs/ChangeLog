@@ -1,3 +1,7 @@
+2004-02-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.35
+
 2004-02-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2fs.h (ext2fs_resize_mem): Fix C++ problem.  (Addresses Red

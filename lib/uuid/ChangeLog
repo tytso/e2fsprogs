@@ -1,3 +1,7 @@
+2004-02-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.35
+
 2004-01-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* gen_uuid.c (uuid_generate_time): Fix bug pointed out by Ralf
