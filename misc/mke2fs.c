@@ -791,7 +791,6 @@ static void PRS(int argc, char *argv[])
 	int		c;
 	int		size;
 	char *		tmp;
-	blk_t		group_blk_max = 8192;
 	int		blocksize = 0;
 	int		inode_ratio = 0;
 	int		inode_size = 0;
@@ -889,7 +888,6 @@ static void PRS(int argc, char *argv[])
 					blocksize);
 			param.s_log_block_size =
 				int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
-			group_blk_max = blocksize * 8;
 			break;
 		case 'c':	/* Check for bad blocks */
 		case 't':	/* deprecated */
@@ -1177,7 +1175,7 @@ static void PRS(int argc, char *argv[])
 
 	if (param.s_blocks_per_group) {
 		if (param.s_blocks_per_group < 256 ||
-		    param.s_blocks_per_group > group_blk_max) {
+		    param.s_blocks_per_group > 8 * EXT2_BLOCK_SIZE(&param)) {
 			com_err(program_name, 0,
 				_("blocks per group count out of range"));
 			exit(1);

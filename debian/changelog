@@ -7,8 +7,10 @@ e2fsprogs (1.32+1.33-WIP-2003.03.30-3) unstable; urgency=low
   * Add libblkid1-udeb package for the Debian Installer.
   * Use the SS_READLINE_PATH environment variable to control the search
     for a suitable readine library.
+  * Fix bug in mke2fs, which was was incorrectly checking the argument 
+    to the -g option if the default block size is used.  (Closes: #188319)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 11 Apr 2003 12:55:34 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 11 Apr 2003 13:45:18 -0400
 
 e2fsprogs (1.32+1.33-WIP-2003.03.30-2) unstable; urgency=low
 
