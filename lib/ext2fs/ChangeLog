@@ -1,3 +1,33 @@
+2004-12-15  Theodore Ts'o  <tytso@mit.edu>
+
+	* Applied resize inode patch from Andreas Dilger
+
+	* res_gdt.c (ext2fs_create_resize_inode): New function that
+		creates the resize inode.
+
+	* initialize.c (ext2fs_initialize): Reserve space for the resize
+		inode.
+
+	* ext2fs.h (EXT2_LIB_FEATURE_COMPAT_SUPP): Add
+		EXT2_FEATURE_COMPAT_RESIZE_INODE to the list of supported
+		capabilities.
+		Add function prototypes for res_gdt.c and sparse.c.
+
+	* closefs.c (ext2fs_super_and_bgd_loc): Take the reserved blocks
+		into account when calculating the number of overhead
+		blocks.
+
+	* closefs.c (ext2fs_bg_has_super, test_root), sparse.c: Move these
+		functions to the new file sparse.c
+
+	* alloc_sb.c (ext2fs_reserve_super_and_bgd): Reserve the blocks
+		saved in the resize inode as being in use.
+
+	* ext2_err.et.in (EXT2_ET_RES_GDT_BLOCKS): Add new error code.
+
+	* Makefile.in (srcdir): Add res_gdt.c and sparse.c to the ext2fs
+		library.
+
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Use Linux-kernel-style makefile output for "make

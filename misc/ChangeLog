@@ -1,3 +1,9 @@
+2004-12-15  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c: Applied resize inode patch from Andreas Dilger to add
+		support for creating filesystems with reserved space for
+		on-line expansion.
+
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Move strip command to install-strip target.

@@ -1,3 +1,8 @@
+2004-12-15  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (process_block): Applied resize inode patch.  Mark the
+		DIND block of the resize inode as being in use.
+	
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Move strip command to install-strip target.
