@@ -1,5 +1,5 @@
 #
-# This is a Makefile stub which handles the creation of Linux BSD shared
+# This is a Makefile stub which handles the creation of BSD shared
 # libraries.
 #
 # In order to use this stub, the following makefile variables must be defined.
@@ -30,7 +30,7 @@ $(BSD_LIB): $(OBJS)
 install-shlibs install:: $(BSD_LIB)
 	$(INSTALL_PROGRAM) $(BSD_LIB) \
 		$(DESTDIR)$(BSDLIB_INSTALL_DIR)/$(BSD_LIB)
-	-ldconfig
+	-$(LDCONFIG)
 
 uninstall-shlibs uninstall::
 	$(RM) -f $(DESTDIR)$(BSDLIB_INSTALL_DIR)/$(BSD_LIB)

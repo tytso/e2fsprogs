@@ -45,13 +45,13 @@ install-shlibs install:: $(ELF_LIB) installdirs-elf-lib
 	$(LN_S) -f $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_SONAME)
 	$(LN_S) -f $(ELF_INSTALL_DIR)/$(ELF_SONAME) \
 		$(DESTDIR)$(libdir)/$(ELF_IMAGE).so
-	-ldconfig
+	-$(LDCONFIG)
 
 uninstall-shlibs uninstall::
 	$(RM) -f $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB) \
 		$(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_SONAME) \
 		$(DESTDIR)$(libdir)/$(ELF_IMAGE).so
-	-ldconfig
+	-$(LDCONFIG)
 
 clean::
 	$(RM) -rf elfshared

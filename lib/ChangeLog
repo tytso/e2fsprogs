@@ -1,3 +1,8 @@
+2001-05-19  Theodore Tso  <tytso@valinux.com>
+
+	* Makefile.bsd-lib, Makefile.dll-lib, Makefile.elf-lib,
+		Makefile.solaris-lib: Use $(LDCONFIG) instead of -ldconfig.
+
 2000-07-13    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.19
