@@ -1,5 +1,10 @@
 2002-11-08  Theodore Ts'o  <tytso@mit.edu>
 
+	* fsimext2.c (set_mkfs_options): Synchronize with EVMS CVS rev
+		1.7 (2002/09/11): Add a hack to force mkfs won't a 
+		blocksize equal to the hardsector size if it is larger
+		than 512 bytes.
+
 	* fs_ext2.c (fs_expand, fs_shrink): Synchronize with EVMS CVS rev
 		1.13 (2002/09/03).  Add better error handling for child
 		processes that die unexpectedly.

@@ -172,6 +172,30 @@ void set_mkfs_options( option_array_t * options,
     /* 'quiet' option */
     argv[1] = "-q";
 
+    /* the following is a big hack to make sure that we don't use a block */
+    /* size smaller than hardsector size since this does not work. */
+    /* would be nice if the ext2/3 utilities (mkfs) handled this themselves */
+    /* also, eventually we will implement this as a user option to manually */
+    /* set block size */
+    if (volume->object->geometry.bytes_per_sector != EVMS_VSECTOR_SIZE) {
+	    switch (volume->object->geometry.bytes_per_sector) {
+	    case 1024:
+		    argv[2] = "-b1024";
+		    opt_count++;
+		    break;
+	    case 2048:
+		    argv[2] = "-b2048";
+		    opt_count++;
+		    break;
+	    case 4096:
+		    argv[2] = "-b4096";
+		    opt_count++;
+		    break;
+	    default:
+		    /* not one we expect, just skip it */
+	    }
+    }
+
     for ( i=0; i<options->count; i++ ) {
 
         if ( options->option[i].is_number_based ) {
