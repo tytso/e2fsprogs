@@ -631,7 +631,7 @@ dnl
 dnl See if we have inttypes.h and if intptr_t is defined
 dnl
 AC_CHECK_HEADERS([inttypes.h])
-AC_CHECK_TYPE(intptr_t,long)
+AC_CHECK_TYPES(intptr_t)
 dnl
 dnl See if struct stat has a st_flags field, in which case we can get file
 dnl flags somewhat portably.  Also check for the analogous setter, chflags().

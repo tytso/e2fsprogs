@@ -36,6 +36,10 @@
 #include <inttypes.h>
 #endif
 
+#ifndef HAVE_INTPTR_T
+typedef long intptr_t
+#endif
+
 /* Needed for architectures where sizeof(int) != sizeof(void *) */
 #define INT_TO_VOIDPTR(val)  ((void *)(intptr_t)(val))
 #define VOIDPTR_TO_INT(ptr)  ((int)(intptr_t)(ptr))

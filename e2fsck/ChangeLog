@@ -1,3 +1,10 @@
+2005-01-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1b.c: As part of converting configure.in from using the
+		"broken by design" 2.13 version of AC_CHECK_TYPE to
+		AC_CHECK_TYPES, if intptr_t isn't defined, manually
+		typedef it to long.  (Addresses Debian Bug #289133)
+
 2005-01-06  Theodore Ts'o  <tytso@mit.edu>
 
 	* super.c (check_resize_inode): Use ext2fs_{read,write}_ind_block
