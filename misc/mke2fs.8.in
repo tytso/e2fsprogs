@@ -249,11 +249,7 @@ and
 .B filetype
 features are turned on by default unless 
 .B mke2fs
-is run on a system with a pre-2.2 Linux kernel.
-.sp
-.B Warning:
-Linux kernels before 2.0.39 and many 2.1 series kernels do not support
-filesystems that use any of these features.  Filesystems that
+is run on a system with a pre-2.2 Linux kernel.  Filesystems that
 may need to mounted on pre-2.2 kernels should be created with 
 .B "\-O none"
 (or

@@ -1,3 +1,10 @@
+2001-08-10  Theodore Tso  <tytso@valinux.com>
+
+	* mke2fs.8.in: Slim down text describing the -O flag to remove
+		text that erroneously implied that all features
+		(including compatible flags) aren't compatible with older
+		kernels.
+
 2001-08-09  Theodore Tso  <tytso@valinux.com>
 
 	* mke2fs.c (PRS): Fix bug pointed out by Christopher Niessen; if
