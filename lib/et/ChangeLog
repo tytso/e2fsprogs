@@ -1,3 +1,7 @@
+1999-10-22    <tytso@valinux.com>
+
+	* com_err.3: Fix to have correct #include path for com_err.h
+
 1999-09-07    <tytso@rsts-11.mit.edu>
 
 	* Updated copyright statements with permission of the original
