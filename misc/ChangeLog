@@ -1,3 +1,8 @@
+2004-09-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Make sure /usr/lib is created for when we install
+		e2initrd_helper.
+
 2004-09-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.c: Use _() around done_string, so that it gets

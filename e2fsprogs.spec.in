@@ -110,6 +110,8 @@ exit 0
 %{_root_libdir}/libss.so.*
 %{_root_libdir}/libuuid.so.*
 
+%{_libdir}/e2initrd_helper
+
 %{_bindir}/chattr
 %{_bindir}/lsattr
 %{_bindir}/uuidgen

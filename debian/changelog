@@ -3,8 +3,10 @@ e2fsprogs (1.35-8) unstable; urgency=low
   * Make sure the configure files are newer than configure.in the
        debian/rules file so that a dpkg-source created patch won't
        trigger an attempt rebuild of the configure script.  (Closes: #272558)
+  * Make sure /usr/lib/e2initrd_helper is in the e2fsprogs package.  
+       (Closes: #272698)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 22 Sep 2004 00:50:20 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 24 Sep 2004 11:51:36 -0400
 
 e2fsprogs (1.35-7) unstable; urgency=low
 

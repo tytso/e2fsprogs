@@ -178,7 +178,7 @@ filefrag.8: $(DEP_SUBSTITUTE) $(srcdir)/filefrag.8.in
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(sbindir) \
 		$(DESTDIR)$(root_sbindir) $(DESTDIR)$(bindir) \
-		$(DESTDIR)$(man1dir) $(DESTDIR)$(man8dir)
+		$(DESTDIR)$(man1dir) $(DESTDIR)$(man8dir) $(DESTDIR)$(libdir)
 
 install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	for i in $(SPROGS); do \
