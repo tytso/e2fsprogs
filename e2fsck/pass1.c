@@ -588,7 +588,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ctx->fs_tind_count++;
 		if (inode.i_block[EXT2_IND_BLOCK] ||
 		    inode.i_block[EXT2_DIND_BLOCK] ||
-		    inode.i_block[EXT2_TIND_BLOCK]) {
+		    inode.i_block[EXT2_TIND_BLOCK] ||
+		    inode.i_file_acl) {
 			inodes_to_process[process_inode_count].ino = ino;
 			inodes_to_process[process_inode_count].inode = inode;
 			process_inode_count++;
@@ -776,9 +777,13 @@ static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b)
 		(const struct process_inode_block *) a;
 	const struct process_inode_block *ib_b =
 		(const struct process_inode_block *) b;
-
-	return (ib_a->inode.i_block[EXT2_IND_BLOCK] -
-		ib_b->inode.i_block[EXT2_IND_BLOCK]);
+	int	ret;
+	
+	ret = (ib_a->inode.i_block[EXT2_IND_BLOCK] -
+	       ib_b->inode.i_block[EXT2_IND_BLOCK]);
+	if (ret == 0)
+		ret = ib_a->inode.i_file_acl - ib_b->inode.i_file_acl;
+	return ret;
 }
 
 /*
@@ -978,6 +983,11 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			return 0;
 		}
 	}
+
+#if 0
+	/* Debugging text */
+	printf("Inode %u has EA block %u\n", ino, blk);
+#endif
 
 	/* Have we seen this EA block before? */
 	if (ext2fs_fast_test_block_bitmap(ctx->block_ea_map, blk)) {
