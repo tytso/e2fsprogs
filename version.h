@@ -6,5 +6,5 @@
  * Ts'o.  This file may be redistributed under the GNU Public License.
  */
 
-#define E2FSPROGS_VERSION "1.27"
-#define E2FSPROGS_DATE "8-Mar-2002"
+#define E2FSPROGS_VERSION "1.28-WIP"
+#define E2FSPROGS_DATE "26-Jun-2002"
