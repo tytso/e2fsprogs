@@ -145,6 +145,15 @@ struct problem_context {
 /* Illegal inode in orphaned inode list */
 #define PR_0_ORPHAN_ILLEGAL_INODE 		0x000024
 
+/* Journal has unsupported read-only feature - abort */
+#define PR_0_JOURNAL_UNSUPP_ROCOMPAT		0x000025
+
+/* Journal has unsupported incompatible feature - abort */
+#define PR_0_JOURNAL_UNSUPP_INCOMPAT		0x000026
+
+/* Journal has unsupported feature - reset */
+#define PR_0_JOURNAL_RESET_COMPAT		0x000027
+
 /*
  * Pass 1 errors
  */

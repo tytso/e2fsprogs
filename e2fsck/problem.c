@@ -112,7 +112,7 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("\nThe @S could not be read or does not describe a correct ext2\n"
 	  "@f.  If the @v is valid and it really contains an ext2\n"
 	  "@f (and not swap or ufs or something else), then the @S\n"
-  "is corrupt, and you might try running e2fsck with an alternate @S:\n"
+	  "is corrupt, and you might try running e2fsck with an alternate @S:\n"
 	  "    e2fsck -b %S <@v>\n\n"),
 	  PROMPT_NONE, PR_FATAL },
 
@@ -200,9 +200,12 @@ static const struct e2fsck_problem problem_table[] = {
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Journal has an unknown superblock type */
-	{ PR_0_JOURNAL_UNSUPP_SUPER,
-	  N_("Ext3 @j @S is unknown type %N (unsupported).\n"),
-	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_SUPER },
+        { PR_0_JOURNAL_UNSUPP_SUPER,
+          N_("Ext3 @j @S is unknown type %N (unsupported).\n"
+             "It is likely that your copy of e2fsck is old and/or doesn't "
+             "support this @j format.\n"
+             "It is also possible the @j @S is corrupt.\n"),
+          PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_SUPER },
 
 	/* Journal superblock is corrupt */
 	{ PR_0_JOURNAL_BAD_SUPER,
@@ -259,6 +262,21 @@ static const struct e2fsck_problem problem_table[] = {
 	  "@f has feature flag(s) set, but is a revision 0 @f.  ",
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
+	/* Journal superblock has an unknown read-only feature flag set */
+	{ PR_0_JOURNAL_UNSUPP_ROCOMPAT,
+	  N_("Ext3 @j @S has an unknown read-only feature flag set.\n"),
+	  PROMPT_NONE, PR_FATAL, PR_0_JOURNAL_RESET_COMPAT },
+
+	/* Journal superblock has an unknown incompatible feature flag set */
+	{ PR_0_JOURNAL_UNSUPP_INCOMPAT,
+	  N_("Ext3 @j @S has an unknown incompatible feature flag set.\n"),
+	  PROMPT_NONE, PR_FATAL, PR_0_JOURNAL_RESET_COMPAT },
+
+	/* Journal superblock has an unknown feature flag set */
+	{ PR_0_JOURNAL_RESET_COMPAT,
+	  N_("Ext3 @j @S has bad feature flag(s) set.\n"),
+ 	  PROMPT_CLEAR, PR_PREEN_OK|PR_PREEN_NOMSG },
+ 
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */

@@ -289,6 +289,7 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 				       "filesystem is now ext2 only ***\n\n");
 			sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 			sb->s_journal_inum = 0;
+			ctx->flags |= E2F_FLAG_JOURNAL_INODE; /* FIXME: todo */
 			e2fsck_clear_recover(ctx, 1);
 			return 0;
 		}
@@ -344,17 +345,17 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	}
 
 	if (JFS_HAS_INCOMPAT_FEATURE(journal, ~JFS_KNOWN_INCOMPAT_FEATURES)) {
-		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
-			_("%s: journal has incompatible features\n"),
-			ctx->device_name);
-		return EXT2_ET_UNSUPP_FEATURE;
+		if (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_INCOMPAT, &pctx))
+			return EXT2_ET_UNSUPP_FEATURE;
+		journal->j_superblock->s_feature_incompat &=
+			JFS_KNOWN_INCOMPAT_FEATURES;
 	}
-		
+	
 	if (JFS_HAS_RO_COMPAT_FEATURE(journal, ~JFS_KNOWN_ROCOMPAT_FEATURES)) {
-		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
-			_("%s: journal has readonly-incompatible features\n"),
-			ctx->device_name);
-		return EXT2_ET_RO_UNSUPP_FEATURE;
+		if (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_ROCOMPAT, &pctx))
+			return EXT2_ET_RO_UNSUPP_FEATURE;
+		journal->j_superblock->s_feature_ro_compat &=
+			JFS_KNOWN_ROCOMPAT_FEATURES;
 	}
 
 	/* We have now checked whether we know enough about the journal
@@ -389,7 +390,13 @@ static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 				       journal_t *journal)
 {
 	char *p;
-	
+	union {
+		uuid_t uuid;
+		__u32 val[4];
+	} u;
+	__u32 new_seq = 0;
+	int i;
+
 	/* Leave a valid existing V1 superblock signature alone.
 	 * Anything unrecognisable we overwrite with a new V2
 	 * signature. */
@@ -410,9 +417,15 @@ static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 	jsb->s_first = htonl(1);
 	jsb->s_sequence = htonl(1);
 
-	/* In theory we should also re-zero the entire journal here.
-	 * Initialising s_sequence to a random value would be a
-	 * reasonable compromise. */
+	/* Initialize the journal sequence number so that there is "no"
+	 * chance we will find old "valid" transactions in the journal.
+	 * This avoids the need to zero the whole journal (slow to do,
+	 * and risky when we are just recovering the filesystem).
+	 */
+	uuid_generate(u.uuid);
+	for (i = 0; i < 4; i ++)
+		new_seq ^= u.val[i];
+	jsb->s_sequence = htonl(new_seq);
 
 	ll_rw_block(WRITE, 1, &journal->j_sb_buffer);
 }

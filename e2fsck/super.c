@@ -336,7 +336,7 @@ void check_super_block(e2fsck_t ctx)
 			  MIN_CHECK | MAX_CHECK, inodes_per_block,
 			  inodes_per_block * (blocks_per_group-4));
 	check_super_value(ctx, "r_blocks_count", sb->s_r_blocks_count,
-			  MAX_CHECK, 0, sb->s_blocks_count);
+			  MAX_CHECK, 0, sb->s_blocks_count / 4);
 
 	if (!ctx->num_blocks) {
 		pctx.errcode = e2fsck_get_device_size(ctx);

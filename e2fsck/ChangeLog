@@ -1,3 +1,25 @@
+2001-05-14  Theodore Tso  <tytso@valinux.com>
+
+	* super.c (check_super_block): Be more strict on checking
+		s_r_blocks_count superblock field.
+
+2001-05-13  Theodore Tso  <tytso@valinux.com>
+
+	* problem.c, problem.h (PR_0_JOURNAL_UNSUPP_ROCOMPAT, 
+		PR_0_JOURNAL_UNSUPP_INCOMPAT, PR_0_JOURNAL_RESET_COMPAT):
+		New problem codes.	
+
+	* journal.c (e2fsck_journal_load): Use a problem code to
+		report unsupported feature flags.  There is code to
+		clear unsupported flags, but since this is dangerous,
+		it's not allowed in the problem code table.
+	
+2001-05-11  Andreas Dilger  <adilger@turbolinux.com>
+
+	* journal.c (e2fsck_journal_reset_super): initialize the journal
+		sequence number to a random value to avoid recovering
+		bad transactions from a corrupt journal.
+
 2001-05-13  Theodore Tso  <tytso@valinux.com>
 
 	* journal.c: Code cleanup; initialize journal_enable_debug using

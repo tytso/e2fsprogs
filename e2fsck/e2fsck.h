@@ -114,6 +114,7 @@ struct resource_track {
 
 #define E2F_FLAG_PROG_BAR	0x0020 /* Progress bar on screen */
 #define E2F_FLAG_PROG_SUPPRESS	0x0040 /* Progress suspended */
+#define E2F_FLAG_JOURNAL_INODE	0x0080 /* Create a new ext3 journal inode */
 
 /*
  * Defines for indicating the e2fsck pass number
