@@ -43,9 +43,8 @@ device
 .SH DESCRIPTION
 The 
 .B debugfs 
-program
-is a file system debugger. It can be used to examine and change the
-state of an ext2 file system.
+program is an interactive file system debugger. It can be used to
+examine and change the state of an ext2 file system.
 .br
 .I device
 is the special file corresponding to the device containing the ext2
@@ -113,9 +112,37 @@ and then exit.
 print the version number of 
 .B debugfs
 and exit.
-.SH COMMANDS
+.SH SPECIFYING FILES
+Many
 .B debugfs
-is an interactive debugger. It understands a number of commands.
+commands take a
+.I filespec
+as an argument to specify an inode (as opposed to a pathname) 
+in the filesystem which is currently opened by 
+.BR debugfs . 
+The
+.I filespec
+argument may be specified in two forms.  The first form is an inode 
+number surrounded by angle brackets, e.g., 
+.IR <2> .
+The second form is a pathname; if the pathname is prefixed by a forward slash
+('/'), then it is interpreted relative to the root of the filesystem 
+which is currently opened by 
+.BR debugfs .
+If not, the pathname is 
+interpreted relative to the current working directory as maintained by 
+.BR debugfs .  
+This may be modified by using the 
+.B debugfs
+command
+.IR cd .
+.\" 
+.\"
+.\"
+.SH COMMANDS
+This is a list of the commands which 
+.B debugfs
+supports.
 .TP
 .I cat filespec
 Dump the contents of the inode 
@@ -209,12 +236,22 @@ entries (if any) to this inode.  See the
 .BR rm (1)
 command if you wish to unlink a file.
 .TP
+.I lcd directory
+Change the current working directory of the
+.B debugfs
+process to
+.I directory
+on the native filesystem.
+.TP
 .I ln filespec dest_file
 Create a link named 
 .I dest_file
 which is a link to 
 .IR filespec .
 Note this does not adjust the inode reference counts.
+.TP
+.I logdump [-ac] [-b<block>] [-i<inode>] [-f<journal_file>] [output_file]
+Dump the contents of the ext3 journal.
 .TP
 .I ls [-l] filespec
 Print a listing of the files in the directory
@@ -259,6 +296,14 @@ Print the current working directory.
 Quit
 .B debugfs
 .TP
+.I rdump directory destination
+Recursively dump
+.I directory
+and all its contents (including regular files, symbolic links, and other
+directories) into the named
+.I destination
+which should be an existing directory on the native filesystem.
+.TP
 .I rm pathname
 Unlink 
 .IR pathname .
@@ -282,6 +327,15 @@ as allocated.
 Mark inode 
 .I filespec
 as in use in the inode bitmap.
+.TP
+.I set_super_value field value
+Set the superblock field
+.I field
+to 
+.I value.
+The list of valid superblock fields which can be set via this command 
+can be displayed by using the command:
+.B set_super_value -l
 .TP
 .I show_super_stats [-h]
 List the contents of the super block and the block group descriptors.  If the
@@ -313,45 +367,6 @@ Create a file in the filesystem named
 and copy the contents of
 .I source_file
 into the destination file.
-.TP
-.I lcd directory
-Change the current working directory of the
-.B debugfs
-process to
-.I directory
-on the native filesystem.
-.TP
-.I rdump directory destination
-Recursively dump
-.I directory
-and all its contents (including regular files, symbolic links, and other
-directories) into the named
-.I destination
-which should be an existing directory on the native filesystem.
-.SH SPECIFYING FILES
-Many
-.B debugfs
-commands take a
-.I filespec
-as an argument to specify an inode (as opposed to a pathname) 
-in the filesystem which is currently opened by 
-.BR debugfs . 
-The
-.I filespec
-argument may be specified in two forms.  The first form is an inode 
-number surrounded by angle brackets, e.g., 
-.IR <2> .
-The second form is a pathname; if the pathname is prefixed by a forward slash
-('/'), then it is interpreted relative to the root of the filesystem 
-which is currently opened by 
-.BR debugfs .
-If not, the pathname is 
-interpreted relative to the current working directory as maintained by 
-.BR debugfs .  
-This may be modified by using the 
-.B debugfs
-command
-.IR cd .
 .SH AUTHOR
 .B debugfs
 was written by Theodore Ts'o <tytso@mit.edu>.

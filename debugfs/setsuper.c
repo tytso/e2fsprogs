@@ -169,15 +169,42 @@ static errcode_t parse_string(struct super_set_info *info, char *arg)
 	return 0;
 }
 
+static void print_possible_fields()
+{
+	struct super_set_info *ss;
+	char	*type;
+
+	printf("Superblock fields supported by the set_super_value command:\n");
+	for (ss = super_fields ; ss->name ; ss++) {
+		type = "unknown";
+		if (ss->func == parse_string)
+			type = "string";
+		else if (ss->func == parse_int)
+			type = "integer";
+		else if (ss->func == parse_uint)
+			type = "unsigned integer";
+		printf("\t%-20s\t%s\n", ss->name, type);
+	}
+}
+
+
 void do_set_super(int argc, char *argv[])
 {
+	const char *usage = "Usage: set_super <field> <value>\n"
+		"\t\"set_super -l\" will list the names of superblock fields "
+		"which\n\tcan be set.";
 	static struct super_set_info *ss;
 	
+	if ((argc == 2) && !strcmp(argv[1], "-l")) {
+		print_possible_fields();
+		return;
+	}
+
 	if (check_fs_open(argv[0]))
 		return;
 
 	if (argc != 3) {
-		com_err(argv[0], 0, "Usage: set_super <field> <value>");
+		com_err(argv[0], 0, usage);
 		return;
 	}
 

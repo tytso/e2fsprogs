@@ -1,3 +1,14 @@
+2001-11-24  Theodore Tso  <tytso@valinux.com>
+
+	* debugfs.8.in: Update manual page to document the set_super_value
+		and logdump commands, and move the "specifying files"
+		section closer to the beginning of the man page so people
+		won't miss it.
+
+	* setsuper.c (print_possible_fields): "set_super_value -l" now
+		prints out the list of valid superblock fields which the
+		ssv command can set.
+
 2001-09-20  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.25
