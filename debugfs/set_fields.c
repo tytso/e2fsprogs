@@ -112,6 +112,8 @@ static struct field_set_info super_fields[] = {
 	{ "default_mount_opts", &set_sb.s_default_mount_opts, 4, parse_uint },
 	{ "first_meta_bg", &set_sb.s_first_meta_bg, 4, parse_uint },
 	{ "mkfs_time", &set_sb.s_mkfs_time, 4, parse_time },
+	{ "jnl_blocks", &set_sb.s_jnl_blocks[0], 4, parse_uint, FLAG_ARRAY, 
+	  17 },
 	{ 0, 0, 0, 0 }
 };
 
