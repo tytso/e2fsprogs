@@ -1,3 +1,11 @@
+1999-01-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* configure.in (YEAR): Allow a 4-digit year for the version date,
+		so we can be Y2K politically correct.  (The date isn't
+		used for anything except display purposes, but it should
+		make people more comfortable to not use a 2-digit date,
+		even though it doesn't matter.)
+
 Mon Jan  4 02:36:23 1999  Theodore Y. Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Move the generated types.h file from the linux/
