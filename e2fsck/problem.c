@@ -913,22 +913,22 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Directory filetype incorrect */
 	{ PR_2_BAD_FILETYPE,
-	  N_("@E has an incorrect filetype (was %dt, should be %N)\n"),
+	  N_("@E has an incorrect filetype (was %dt, should be %N).\n"),
 	  PROMPT_FIX, 0 },
 
 	/* Directory filetype set on filesystem */
 	{ PR_2_CLEAR_FILETYPE,
-	  N_("@E has filetype set\n"),
+	  N_("@E has filetype set.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Directory filename is null */
 	{ PR_2_NULL_NAME,
-	  N_("@E has a zero-length name\n"),
+	  N_("@E has a zero-length name.\n"),
 	  PROMPT_CLEAR, 0 },
 
 	/* Invalid fast symlink size */
 	{ PR_2_SYMLINK_SIZE,
-	  N_("@i %i (%Q) is a %ssymlink with a bad size (%Is)\n"),
+	  N_("Symlink %Q (@i #%i) has an invalid size (%Is).\n"),
 	  PROMPT_CLEAR, 0 },
 
   	/* i_file_acl (extended attribute block) is bad */
@@ -970,7 +970,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Bad or non-existent /lost+found.  Cannot reconnect */
 	{ PR_3_NO_LPF,
-	  N_("Bad or non-existent /@l.  Cannot reconnect\n"),
+	  N_("Bad or non-existent /@l.  Cannot reconnect.\n"),
 	  PROMPT_NONE, 0 },
 
 	/* Could not expand /lost+found */

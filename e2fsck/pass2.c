@@ -700,7 +700,6 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		problem = PR_2_BAD_SOCKET;
 	else if (LINUX_S_ISLNK(inode.i_mode)
 		 && !e2fsck_pass1_check_symlink(fs, &inode)) {
-		pctx.str = inode.i_blocks ? "" : "fast ";
 		problem = PR_2_SYMLINK_SIZE;
 	}
 

@@ -152,35 +152,31 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
  */
 int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode)
 {
-	if (inode->i_size_high || inode->i_size == 0)
-		return 0;
+	int i;
 
-	if (inode->i_flags & (EXT2_IMMUTABLE_FL |EXT2_APPEND_FL |EXT2_INDEX_FL))
+	if ((inode->i_size_high || inode->i_size == 0) ||
+	    (inode->i_flags & (EXT2_IMMUTABLE_FL | EXT2_APPEND_FL |
+			       EXT2_INDEX_FL)))
 		return 0;
 
 	if (inode->i_blocks) {
-		int i;
-
-		if (inode->i_blocks > fs->blocksize >> 9)
+		if ((inode->i_size > fs->blocksize) ||
+		    (inode->i_blocks != fs->blocksize >> 9) ||
+		    (inode->i_block[0] < fs->super->s_first_data_block) ||
+		    (inode->i_block[0] >= fs->super->s_blocks_count))
 			return 0;
 
 		for (i = 1; i < EXT2_N_BLOCKS; i++)
 			if (inode->i_block[i])
 				return 0;
-
-		if (inode->i_size > fs->blocksize)
-			return 0;
-
-		/* Defer check of i_size until block number validated  */
 	} else {
-		if (inode->i_size > EXT2_LINK_DIR - 1)
+		if (inode->i_size > sizeof(inode->i_block) - 1)
 			return 0;
 
 		if (inode->i_size !=
-		    strnlen((char *)inode->i_block, EXT2_LINK_DIR))
+		    strnlen((char *)inode->i_block, sizeof(inode->i_block)))
 			return 0;
 	}
-
 	return 1;
 }
 
@@ -1261,8 +1257,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pctx->num = pb.num_blocks;
 		if (fix_problem(ctx, PR_1_BAD_I_BLOCKS, pctx)) {
 			inode->i_blocks = pb.num_blocks;
-			if (LINUX_S_ISLNK(inode->i_mode))
-				mark_inode_bad(ctx, ino);
 			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 		}
 		pctx->num = 0;

@@ -1,3 +1,18 @@
+2001-08-04  Theodore Tso  <tytso@valinux.com>
+
+	* problem.c (PR_2_SYMLINK_SIZE): Change description to make it
+		more clear (and remove %s expansion).  Also add missing
+		periods to the end of a number of problem descriptions.
+
+	* pass2.c (e2fsck_process_bad_inode): Remove unneeded problem
+		context string set now that the problem description for
+		PR_2_SYMLINK_SIZE has been changed.
+
+	* pass1.c (e2fsck_pass1_check_symlink): Consolidate some checks,
+		and check the validity of the symlink block here (so that
+		we detect this case here instead of later).  Also use
+		sizeof(inode->i_block) instead EXT2_LINK_DIR.
+
 2001-07-30  Theodore Tso  <tytso@valinux.com>
 
 	* unix.c (check_mount): Remove the code which tested for the root
