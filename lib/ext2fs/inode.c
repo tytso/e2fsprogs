@@ -28,6 +28,7 @@
 #endif
 
 #include "ext2fsP.h"
+#include "e2image.h"
 
 struct ext2_struct_inode_scan {
 	errcode_t		magic;
@@ -486,7 +487,7 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
 	unsigned long 	group, block, block_nr, offset;
 	char 		*ptr;
 	errcode_t	retval;
-	int 		clen, length, i;
+	int 		clen, length, i, inodes_per_block;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -511,13 +512,22 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
 	}
 	if ((ino == 0) || (ino > fs->super->s_inodes_count))
 		return EXT2_ET_BAD_INODE_NUM;
-	group = (ino - 1) / EXT2_INODES_PER_GROUP(fs->super);
-	offset = ((ino - 1) % EXT2_INODES_PER_GROUP(fs->super)) *
-		EXT2_INODE_SIZE(fs->super);
-	block = offset >> EXT2_BLOCK_SIZE_BITS(fs->super);
-	if (!fs->group_desc[(unsigned)group].bg_inode_table)
-		return EXT2_ET_MISSING_INODE_TABLE;
-	block_nr = fs->group_desc[(unsigned)group].bg_inode_table + block;
+	if (fs->flags & EXT2_FLAG_IMAGE_FILE) {
+		inodes_per_block = fs->blocksize / EXT2_INODE_SIZE(fs->super);
+		block_nr = fs->image_header->offset_inode / fs->blocksize;
+		block_nr += (ino - 1) / inodes_per_block;
+		offset = ((ino - 1) % inodes_per_block) *
+			EXT2_INODE_SIZE(fs->super);
+	} else {
+		group = (ino - 1) / EXT2_INODES_PER_GROUP(fs->super);
+		offset = ((ino - 1) % EXT2_INODES_PER_GROUP(fs->super)) *
+			EXT2_INODE_SIZE(fs->super);
+		block = offset >> EXT2_BLOCK_SIZE_BITS(fs->super);
+		if (!fs->group_desc[(unsigned)group].bg_inode_table)
+			return EXT2_ET_MISSING_INODE_TABLE;
+		block_nr = fs->group_desc[(unsigned)group].bg_inode_table + 
+			block;
+	}
 	if (block_nr != fs->icache->buffer_blk) {
 		retval = io_channel_read_blk(fs->io, block_nr, 1,
 					     fs->icache->buffer);

@@ -1,4 +1,20 @@
+2001-05-02  Theodore Tso  <tytso@valinux.com>
+
+	* ext2fs.h (EXT2_FLAG_IMAGE_FILE): Add new flag, and add
+		image_header field in the ext2_filsys structure
+
+	* block.c (block_iterate_ind, block_iterate_dind, block_iterate_tind): 
+	* inode.c (ext2fs_read_inode): 
+	* rw_bitmaps.c (read_bitmaps): 
+	* openfs.c (ext2fs_open): Add support for EXT2_FLAG_IMAGE_FILE
+
+	* imager.c (ext2fs_image_bitmap_read): Fix bug in imager to make
+		sure the full bitmap is saved.
+
 2001-05-01  Theodore Tso  <tytso@valinux.com>
+
+	* e2image.h (struct ext2_image_hdr): Add space for the device name
+		in the image header.
 
 	* dir_iterate.c (ext2fs_process_dir_block): Add a double-check to
 		make sure the rec_len is a multiple of 4, to prevent

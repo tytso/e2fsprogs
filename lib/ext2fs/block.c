@@ -64,8 +64,12 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	ctx->errcode = io_channel_read_blk(ctx->fs->io, *ind_block,
-					   1, ctx->ind_buf);
+	if (ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) {
+		ctx->errcode = 0;
+		memset(ctx->ind_buf, 0, ctx->fs->blocksize);
+	} else
+		ctx->errcode = io_channel_read_blk(ctx->fs->io, *ind_block,
+						   1, ctx->ind_buf);
 	if (ctx->errcode) {
 		ret |= BLOCK_ERROR;
 		return ret;
@@ -105,7 +109,8 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 			offset += sizeof(blk_t);
 		}
 	}
-	if (changed & BLOCK_CHANGED) {
+	if (!(ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
+	    (changed & BLOCK_CHANGED)) {
 		if (ctx->fs->flags & (EXT2_FLAG_SWAP_BYTES |
 				      EXT2_FLAG_SWAP_BYTES_WRITE)) {
 			block_nr = (blk_t *) ctx->ind_buf;
@@ -149,8 +154,12 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	ctx->errcode = io_channel_read_blk(ctx->fs->io, *dind_block,
-					   1, ctx->dind_buf);
+	if (ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) {
+		ctx->errcode = 0;
+		memset(ctx->dind_buf, 0, ctx->fs->blocksize);
+	} else
+		ctx->errcode = io_channel_read_blk(ctx->fs->io, *dind_block,
+						   1, ctx->dind_buf);
 	if (ctx->errcode) {
 		ret |= BLOCK_ERROR;
 		return ret;
@@ -192,7 +201,8 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 			offset += sizeof(blk_t);
 		}
 	}
-	if (changed & BLOCK_CHANGED) {
+	if (!(ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
+	    (changed & BLOCK_CHANGED)) {
 		if (ctx->fs->flags & (EXT2_FLAG_SWAP_BYTES |
 				      EXT2_FLAG_SWAP_BYTES_WRITE)) {
 			block_nr = (blk_t *) ctx->dind_buf;
@@ -236,8 +246,12 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	ctx->errcode = io_channel_read_blk(ctx->fs->io, *tind_block,
-					   1, ctx->tind_buf);
+	if (ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) {
+		ctx->errcode = 0;
+		memset(ctx->tind_buf, 0, ctx->fs->blocksize);
+	} else
+		ctx->errcode = io_channel_read_blk(ctx->fs->io, *tind_block,
+						   1, ctx->tind_buf);
 	if (ctx->errcode) {
 		ret |= BLOCK_ERROR;
 		return ret;
@@ -279,7 +293,8 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 			offset += sizeof(blk_t);
 		}
 	}
-	if (changed & BLOCK_CHANGED) {
+	if (!(ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
+	    (changed & BLOCK_CHANGED)) {
 		if (ctx->fs->flags & (EXT2_FLAG_SWAP_BYTES |
 				      EXT2_FLAG_SWAP_BYTES_WRITE)) {
 			block_nr = (blk_t *) ctx->tind_buf;

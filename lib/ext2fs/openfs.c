@@ -30,6 +30,7 @@
 #endif
 
 #include "ext2fs.h"
+#include "e2image.h"
 
 /*
  *  Note: if superblock is non-zero, block-size must also be non-zero.
@@ -73,6 +74,21 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, (void **) &fs->super);
 	if (retval)
 		goto cleanup;
+	if (flags & EXT2_FLAG_IMAGE_FILE) {
+		retval = ext2fs_get_mem(sizeof(struct ext2_image_hdr),
+					(void **) &fs->image_header);
+		if (retval)
+			goto cleanup;
+		retval = io_channel_read_blk(fs->io, 0,
+					     -sizeof(struct ext2_image_hdr),
+					     fs->image_header);
+		if (retval)
+			goto cleanup;
+		if (fs->image_header->magic_number != EXT2_ET_MAGIC_E2IMAGE)
+			return EXT2_ET_MAGIC_E2IMAGE;
+		superblock = 1;
+		block_size = fs->image_header->fs_blocksize;
+	}
 
 	/*
 	 * If the user specifies a specific block # for the

@@ -174,6 +174,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_FORCE			0x400
 #define EXT2_FLAG_SUPER_ONLY		0x800
 #define EXT2_FLAG_JOURNAL_DEV_OK	0x1000
+#define EXT2_FLAG_IMAGE_FILE		0x2000
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is
@@ -213,10 +214,11 @@ struct struct_ext2_filsys {
 	ext2_dblist			dblist;
 	__u32				stride;	/* for mke2fs */
 	struct ext2_super_block *	orig_super;
+	struct ext2_image_hdr *		image_header;
 	/*
 	 * Reserved for future expansion
 	 */
-	__u32				reserved[10];
+	__u32				reserved[9];
 
 	/*
 	 * Reserved for the use of the calling application.

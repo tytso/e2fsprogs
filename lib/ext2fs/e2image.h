@@ -20,7 +20,9 @@ struct ext2_image_hdr {
 	char	fs_netaddr[32];	/* Network address */
 	__u32	fs_netaddr_type;/* 0 = IPV4, 1 = IPV6, etc. */
 	__u32	fs_device;	/* Device number of image */
+	char	fs_device_name[64]; /* Device name */
 	char	fs_uuid[16];	/* UUID of filesystem */
+	__u32	fs_blocksize;	/* Block size of the filesystem */
 	__u32	fs_reserved[8];
 	
 	__u32	image_device;	/* Device number of image file */

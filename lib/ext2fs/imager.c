@@ -286,7 +286,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 				return retval;
 		}
 		ptr = fs->inode_map->bitmap;
-		size = ((EXT2_INODES_PER_GROUP(fs->super)+7) / 8);
+		size = (EXT2_INODES_PER_GROUP(fs->super) / 8);
 	} else {
 		if (!fs->block_map) {
 			retval = ext2fs_read_block_bitmap(fs);
@@ -296,6 +296,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		ptr = fs->block_map->bitmap;
 		size = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
 	}
+	size = size * fs->group_desc_count;
 
 	actual = write(fd, ptr, size);
 	if (actual == -1) {
@@ -349,7 +350,7 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 				return retval;
 		}
 		ptr = fs->inode_map->bitmap;
-		size = ((EXT2_INODES_PER_GROUP(fs->super)+7) / 8);
+		size = (EXT2_INODES_PER_GROUP(fs->super) / 8);
 	} else {
 		if (!fs->block_map) {
 			retval = ext2fs_read_block_bitmap(fs);
@@ -359,6 +360,7 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 		ptr = fs->block_map->bitmap;
 		size = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
 	}
+	size = size * fs->group_desc_count;
 
 	buf = malloc(size);
 	if (!buf)
