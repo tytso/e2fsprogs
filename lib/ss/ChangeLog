@@ -1,3 +1,8 @@
+1998-07-10  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mk_cmds.sh.in: Fix error message so that it says mk_cmds's
+		template files instead of compile_et's template files.
+
 1998-07-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.12

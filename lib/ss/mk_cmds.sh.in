@@ -16,7 +16,7 @@ if test ! -f $DIR/ct_c.sed -o ! -f $DIR/ct_c.awk ; then
     DIR=$SS_DIR
 #    echo "Falling back to $DIR..."
     if test ! -f $DIR/ct_c.sed -o ! -f $DIR/ct_c.awk ; then
-	echo "compile_et: Couldn't find compile_et's template files."
+	echo "mk_cmds: Couldn't find mk_cmds's template files."
 	exit 1
     fi
 fi
