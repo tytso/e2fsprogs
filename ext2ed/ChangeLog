@@ -1,0 +1,14 @@
+2002-05-11    <tytso@snap.thunk.org>
+
+	* ext2ed.h: Remove VAR_DIR, and replace it with ETC_DIR.
+		(/var/lib is no longer a politically correct location for
+		application files according to the FHS).  Change include
+		file location of ncurses.h to be /usr/include/ncurses.h.
+
+	* init.c: Look for the configuration file in ETC_DIR/ext2ed.conf
+
+	* Makefile.in: Integrate into the e2fsprogs makefile structure
+
+	* ext2ed.conf.in, ext2ed.8.in: Change to be generated files, so
+		that the pathnames in the man page and config file match
+		the values chosen by the configure script.

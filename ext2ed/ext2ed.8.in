@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.TH EXT2ED 8 "August 1995" "Version 0.1"
+.TH EXT2ED 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 ext2ed \- ext2 file system editor
 .SH SYNOPSIS
@@ -42,25 +42,25 @@ Do not use ext2ed on a mounted filesystem.
 .I /usr/bin/ext2ed
 The program itself.
 .TP
-.I /var/lib/ext2ed/ext2ed.conf
+.I @root_sysconfdir@/ext2ed.conf
 ext2ed's configuration file.
 .TP
-.I /var/lib/ext2ed/ext2.descriptors
+.I @datadir@/ext2.descriptors
 Definition of the various objects for the ext2 filesystem.
 .TP
-.I /var/lib/ext2ed/ext2ed.log
+.I /var/log/ext2ed.log
 Log file of actual changes made to the filesystem.
 .TP
 .I /usr/man/man8/ext2ed.8
 The manual page.
 .TP
-.I /usr/doc/ext2ed/user-guide-0.1.ps
+.I @datadir@/doc/ext2ed/user-guide-0.1.ps
 The user's guide.
 .TP
-.I /usr/doc/ext2ed/Ext2fs-overview-0.1.ps
+.I @datadir@/doc/ext2ed/Ext2fs-overview-0.1.ps
 Technical overview of the ext2 filesystem.
 .TP
-.I /usr/doc/ext2ed/ext2ed-design-0.1.ps
+.I @datadir@/doc/ext2ed/ext2ed-design-0.1.ps
 EXT2ED design notes.
 
 .SH BUGS

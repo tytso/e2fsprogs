@@ -1,3 +1,7 @@
+2002-05-11    <tytso@snap.thunk.org>
+
+	* subst.conf.in: Add root_sysconfdir and $root_prefix
+
 2002-03-08  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.27

@@ -8,7 +8,7 @@
 # definitions.
 
 
-Ext2Descriptors		/var/lib/ext2ed/ext2.descriptors 
+Ext2Descriptors		@datadir@/ext2.descriptors 
 
 
 # Using AlternateDescriptors you can declare additional structures. Those
@@ -23,7 +23,7 @@ AlternateDescriptors
 # are logged there. See also LogChanges.
 
 
-LogFile			/var/lib/ext2ed/ext2ed.log
+LogFile			/var/log/ext2ed.log
 
 
 # The following selects the default behavior when changes are made to the

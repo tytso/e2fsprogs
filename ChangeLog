@@ -1,3 +1,15 @@
+2002-05-11    <tytso@snap.thunk.org>
+
+	* configure.in, MCONFIG.in: Add new makefile variables, $datadir
+		and $root_sysconfdir, which are normally /usr/share and
+		/etc, respectively, on Linux systems.  Also changed
+		root_bindir, root_sbindir, and root_libdir so that their
+		value is set by the configure script.  This allows the
+		right thing to happen on non-Linux systems when bindir,
+		et. al.  are manually set via the configure script's
+		--bindir switch.  Add ext2ed/Makefile.in as a generated
+		file by the configure script.
+
 2002-03-08  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.27

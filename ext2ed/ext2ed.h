@@ -28,8 +28,8 @@ Copyright (C) 1995 Gadi Oxman
 
 */
 
-#ifndef VAR_DIR
-	#define VAR_DIR	"/var/lib/ext2ed"		/* The configuration file will be searched here */
+#ifndef ETC_DIR
+#define ETC_DIR	"/etc"		/* Where to find the config file */
 #endif
 
 #define DEBUG						/* Activate self-sanity checks */
@@ -37,11 +37,7 @@ Copyright (C) 1995 Gadi Oxman
 #include <linux/ext2_fs.h>				/* Main kernel ext2 include file */
 #include <sys/stat.h>
 
-#ifdef OLD_NCURSES					/* The ncurses interface */
-	#include <ncurses/ncurses.h>
-#else
-	#include <ncurses/curses.h>
-#endif
+#include <ncurses.h>
 
 #define MAX_FIELDS 		400
 

@@ -4774,23 +4774,36 @@ if test "$root_prefix" = NONE ; then
 	else
 		root_prefix="$prefix"
 	fi
+	root_bindir=$bindir
+	root_sbindir=$sbindir
+	root_libdir=$libdir
+	root_sysconfdir=$sysconfdir
+else
+	root_bindir='${root_prefix}/bin'
+	root_sbindir='${root_prefix}/sbin'
+	root_libdir='${root_prefix}/lib'
+	root_sysconfdir='${root_prefix}/etc'
 fi
 
+
+
+
+
 echo $ac_n "checking whether linker accepts -static""... $ac_c" 1>&6
-echo "configure:4781: checking whether linker accepts -static" >&5
+echo "configure:4794: checking whether linker accepts -static" >&5
 if eval "test \"`echo '$''{'ac_cv_e2fsprogs_use_static'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
 cat > conftest.$ac_ext <<EOF
-#line 4787 "configure"
+#line 4800 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 fflush(stdout);
 ; return 0; }
 EOF
-if { (eval echo configure:4794: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:4807: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_e2fsprogs_use_static=yes
 else
@@ -4947,8 +4960,8 @@ ac_given_INSTALL="$INSTALL"
 
 trap 'rm -fr `echo "MCONFIG Makefile util/Makefile util/subst.conf lib/et/Makefile 
 	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
-	misc/Makefile e2fsck/Makefile debugfs/Makefile tests/Makefile 
-	tests/progs/Makefile $rmakefile doc/Makefile 
+	misc/Makefile ext2ed/Makefile e2fsck/Makefile debugfs/Makefile \
+	tests/Makefile tests/progs/Makefile $rmakefile doc/Makefile 
 	intl/Makefile po/Makefile.in" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
@@ -5075,6 +5088,10 @@ s%@SIZEOF_LONG@%$SIZEOF_LONG%g
 s%@SIZEOF_LONG_LONG@%$SIZEOF_LONG_LONG%g
 s%@SOCKET_LIB@%$SOCKET_LIB%g
 s%@root_prefix@%$root_prefix%g
+s%@root_bindir@%$root_bindir%g
+s%@root_sbindir@%$root_sbindir%g
+s%@root_libdir@%$root_libdir%g
+s%@root_sysconfdir@%$root_sysconfdir%g
 s%@LDFLAG_STATIC@%$LDFLAG_STATIC%g
 s%@SS_DIR@%$SS_DIR%g
 s%@ET_DIR@%$ET_DIR%g
@@ -5122,8 +5139,8 @@ cat >> $CONFIG_STATUS <<EOF
 
 CONFIG_FILES=\${CONFIG_FILES-"MCONFIG Makefile util/Makefile util/subst.conf lib/et/Makefile 
 	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
-	misc/Makefile e2fsck/Makefile debugfs/Makefile tests/Makefile 
-	tests/progs/Makefile $rmakefile doc/Makefile 
+	misc/Makefile ext2ed/Makefile e2fsck/Makefile debugfs/Makefile \
+	tests/Makefile tests/progs/Makefile $rmakefile doc/Makefile 
 	intl/Makefile po/Makefile.in"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF

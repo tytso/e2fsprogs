@@ -462,7 +462,7 @@ int process_configuration_file (void)
 	char option [80],value [80];
 	FILE *fp;
 
-	strcpy (buffer,VAR_DIR);
+	strcpy (buffer, ETC_DIR);
 	strcat (buffer,"/ext2ed.conf");
 		
 	if ((fp=fopen (buffer,"rt"))==NULL) {
