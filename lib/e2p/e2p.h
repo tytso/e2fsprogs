@@ -8,6 +8,12 @@
 #define E2P_FEATURE_INCOMPAT	1
 #define E2P_FEATURE_RO_INCOMPAT	2
 
+
+/* `options' for print_flags() */
+
+#define PFOPT_LONG  1 /* Must be 1 for compatibility with `int long_format'. */
+
+
 int fgetflags (const char * name, unsigned long * flags);
 int fgetversion (const char * name, unsigned long * version);
 int fsetflags (const char * name, unsigned long flags);
@@ -19,7 +25,7 @@ int iterate_on_dir (const char * dir_name,
 		    void * private);
 void list_super (struct ext2_super_block * s);
 void print_fs_errors (FILE * f, unsigned short errors);
-void print_flags (FILE * f, unsigned long flags, int long_format);
+void print_flags (FILE * f, unsigned long flags, unsigned options);
 void print_fs_state (FILE * f, unsigned short state);
 int setflags (int fd, unsigned long flags);
 int setversion (int fd, unsigned long version);

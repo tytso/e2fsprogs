@@ -28,6 +28,8 @@ SRCS=		$(srcdir)/feature.c $(srcdir)/fgetflags.c \
 		$(srcdir)/setflags.c $(srcdir)/setversion.c \
 		$(srcdir)/uuid.c
 
+HFILES= e2p.h
+
 LIBRARY= libe2p
 LIBDIR= e2p
 
@@ -69,16 +71,21 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) -fpic -o pic/$*.o -c $<
 
 installdirs::
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir)
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir) \
+		$(DESTDIR)$(includedir)/e2p
 
 install:: all installdirs 
 	$(INSTALL_DATA) libe2p.a $(DESTDIR)$(libdir)/libe2p.a
 	$(CHMOD) 644 $(DESTDIR)$(libdir)/libe2p.a
 	-$(RANLIB) $(DESTDIR)$(libdir)/libe2p.a
 	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libe2p.a
+	for i in $(HFILES); do \
+	  $(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/e2p/$$i; \
+	done
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libe2p.a
+	$(RM) -rf $(DESTDIR)$(includedir)/e2p
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/*

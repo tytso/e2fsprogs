@@ -18,78 +18,50 @@
 
 #include "e2p.h"
 
-static const unsigned long flags_array[] = {
-	EXT2_SECRM_FL,
-	EXT2_UNRM_FL,
-	EXT2_COMPR_FL,
-	EXT2_SYNC_FL,
-#ifdef	EXT2_IMMUTABLE_FL
-	EXT2_IMMUTABLE_FL,
-#endif
-#ifdef	EXT2_APPEND_FL
-	EXT2_APPEND_FL,
-#endif
-#ifdef	EXT2_NODUMP_FL
-	EXT2_NODUMP_FL,
-#endif
-#ifdef	EXT2_NOATIME_FL
-	EXT2_NOATIME_FL,
-#endif
-	0};
+struct flags_name {
+	unsigned long	flag;
+	char 		*short_name;
+	char 		*long_name;
+};
 
-static const char * short_flags[] = {
-	"s",
-	"u",
-	"c",
-	"S",
-#ifdef	EXT2_IMMUTABLE_FL
-	"i",
-#endif
-#ifdef	EXT2_APPEND_FL
-	"a",
-#endif
-#ifdef	EXT2_NODUMP_FL
-	"d",
-#endif
-#ifdef	EXT2_NOATIME_FL
-	"A",
-#endif
-	NULL};
+static struct flags_name flags_array[] = {
+	{ EXT2_SECRM_FL, "s", "Secure_Deletion" },
+	{ EXT2_UNRM_FL, "u" , "Undelete" },
+	{ EXT2_SYNC_FL, "S", "Synchronous_Updates" },
+	{ EXT2_IMMUTABLE_FL, "i", "Immutable" },
+	{ EXT2_APPEND_FL, "a", "Append_Only" },
+	{ EXT2_NODUMP_FL, "d", "No_Dump" },
+	{ EXT2_NOATIME_FL, "A", "No_Atime" },
+	{ EXT2_COMPR_FL, "c", "Compression_requested" },
+	{ EXT2_COMPRBLK_FL, "B", "Compressed_file" },
+	{ EXT2_DIRTY_FL, "D", "Compressed dirty file" },
+	{ EXT2_NOCOMP_FL, "X", "Raw_access" },
+	{ EXT2_ECOMPR_FL, "E", "Compression_Error" },
+	{ 0, NULL, NULL }
+};
 
-static const char * long_flags[] = {
-	"Secure_Deletion, ",
-	"Undelete, ",
-	"Compressed_File, ",
-	"Synchronous_Updates, ",
-#ifdef	EXT2_IMMUTABLE_FL
-	"Immutable, ",
-#endif
-#ifdef	EXT2_NODUMP_FL
-	"Append_Only, ",
-#endif
-#ifdef	EXT2_NODUMP_FL
-	"No_Dump, ",
-#endif
-#ifdef	EXT2_NOATIME_FL
-	"No_Atime, ",
-#endif
-	NULL};
-
-void print_flags (FILE * f, unsigned long flags, int long_format)
+void print_flags (FILE * f, unsigned long flags, unsigned options)
 {
-	int i;
-	const char ** flags_names;
+	int long_opt = (options & PFOPT_LONG);
+	struct flags_name *fp;
+	int	first = 1;
 
-	if (long_format)
-		flags_names = long_flags;
-	else
-		flags_names = short_flags;
-
-	for (i = 0; flags_array[i] != 0; i++)
-	{
-		if (flags & flags_array[i])
-			fprintf (f, flags_names[i]);
-		else
-			fprintf (f, "-");
+	for (fp = flags_array; fp->flag != 0; fp++) {
+		if (flags & fp->flag) {
+			if (long_opt) {
+				if (first)
+					first = 0;
+				else
+					fputs(", ", f);
+				fputs(fp->long_name, f);
+			} else
+				fputs(fp->short_name, f);
+		} else {
+			if (!long_opt)
+				fputs("-", f);
+		}
 	}
+	if (long_opt && first)
+		fputs("---", f);
 }
+

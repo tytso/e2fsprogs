@@ -1,3 +1,15 @@
+2000-02-10  Theodore Ts'o  <tytso@valinux.com>
+
+	* Makefile.in: Install the e2p.h header.
+	
+	* e2p.h, pf.c (print_flags): Change the third parameter of
+		print_flags() to be an option parameter, although we only
+		support one option at this point.
+
+	* pf.c (print_flags): Updated to use a more generic structure for
+		storing the ext2 inode flags.  Add support for the
+		(current) set of compression flags.  
+	
 1999-11-19    <tytso@valinux.com>
 
 	* Makefile.in (distclean): Remove TAGS and Makefile.in.old from
