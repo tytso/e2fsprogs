@@ -65,13 +65,13 @@ static void brelse_array(struct buffer_head *b[], int n)
  * fixed value.
  */
 
+#define MAXBUF 8
 static int do_readahead(journal_t *journal, unsigned int start)
 {
 	int err;
 	unsigned int max, nbufs, next, blocknr;
 	struct buffer_head *bh;
 	
-#define MAXBUF 8
 	struct buffer_head * bufs[MAXBUF];
 	
 	/* Do up to 128K of readahead */
@@ -226,11 +226,10 @@ int journal_recover(journal_t *journal)
 	journal_superblock_t *	sb;
 
 	struct recovery_info	info;
-
-	memset(&info, 0, sizeof(info));
 	
+	memset(&info, 0, sizeof(info));
 	sb = journal->j_superblock;
-
+	
 	/* 
 	 * The journal superblock's s_start field (the current log head)
 	 * is always zero if, and only if, the journal was cleanly
@@ -263,6 +262,47 @@ int journal_recover(journal_t *journal)
 		
 	journal_clear_revoke(journal);
 	fsync_dev(journal->j_dev);
+	return err;
+}
+
+/*
+ * journal_skip_recovery
+ *
+ * Locate any valid recovery information from the journal and set up the
+ * journal structures in memory to ignore it (presumably because the
+ * caller has evidence that it is out of date).  
+ *
+ * We perform one pass over the journal to allow us to tell the user how
+ * much recovery information is being erased, and to let us initialise
+ * the journal transaction sequence numbers to the next unused ID. 
+ */
+
+int journal_skip_recovery(journal_t *journal)
+{
+	int			err;
+	journal_superblock_t *	sb;
+
+	struct recovery_info	info;
+	
+	memset (&info, 0, sizeof(info));
+	sb = journal->j_superblock;
+	
+	err = do_one_pass(journal, &info, PASS_SCAN);
+
+	if (err) {
+		printk(KERN_ERR "JFS: error %d scanning journal\n", err);
+		++journal->j_transaction_sequence;
+	} else {
+		int dropped = info.end_transaction - ntohl(sb->s_sequence);
+		
+		jfs_debug(0, 
+			  "JFS: ignoring %d transaction%s from the journal.\n",
+			  dropped, (dropped == 1) ? "" : "s");
+		journal->j_transaction_sequence = ++info.end_transaction;
+	}
+
+	journal->j_tail = 0;
+	
 	return err;
 }
 
@@ -437,6 +477,7 @@ static int do_one_pass(journal_t *journal, struct recovery_info *info,
 					}
 					
 					mark_buffer_dirty(nbh, 1);
+					mark_buffer_uptodate(nbh, 1);
 					++info->nr_replays;
 					/* ll_rw_block(WRITE, 1, &nbh); */
 					brelse(obh);
@@ -530,7 +571,7 @@ static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
 		unsigned long blocknr;
 		int err;
 		
-		blocknr = * ((unsigned int *) bh->b_data+offset);
+		blocknr = * ((unsigned int *) (bh->b_data+offset));
 		offset += 4;
 		err = journal_set_revoke(journal, blocknr, sequence);
 		if (err)

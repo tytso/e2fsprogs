@@ -114,8 +114,7 @@ static inline int hash(journal_t *journal, unsigned long block)
 		(block << (hash_shift - 12))) & (table->hash_size - 1);
 }
 
-static int insert_revoke_hash(journal_t *journal, unsigned long blocknr, 
-			      tid_t seq)
+int insert_revoke_hash(journal_t *journal, unsigned long blocknr, tid_t seq)
 {
 	struct list_head *hash_list;
 	struct jfs_revoke_record_s *record;
@@ -259,8 +258,10 @@ int journal_revoke(handle_t *handle, unsigned long blocknr,
 	int err;
 
 	journal = handle->h_transaction->t_journal;
-	if (!journal_set_features(journal, 0, 0, JFS_FEATURE_INCOMPAT_REVOKE))
+	if (!journal_set_features(journal, 0, 0, JFS_FEATURE_INCOMPAT_REVOKE)){
+		J_ASSERT (!"Cannot set revoke feature!");
 		return -EINVAL;
+	}
 	
 	dev = journal->j_dev;
 	bh = bh_in;
@@ -350,10 +351,11 @@ void journal_write_revoke_records(journal_t *journal,
 	struct jfs_revoke_record_s *record;
 	struct jfs_revoke_table_s *revoke;
 	struct list_head *hash_list;
-	int i, offset;
+	int i, offset, count;
 	
 	descriptor = NULL; 
 	offset = 0;
+	count = 0;
 	revoke = journal->j_revoke;
 	
 	for (i = 0; i < revoke->hash_size; i++) {
@@ -365,12 +367,14 @@ void journal_write_revoke_records(journal_t *journal,
 			write_one_revoke_record(journal, transaction,
 						&descriptor, &offset, 
 						record);
+			count++;
 			list_del(&record->hash);
 			kmem_cache_free(revoke_record_cache, record);
 		}
 	}
 	if (descriptor) 
 		flush_descriptor(journal, descriptor, offset);
+	jfs_debug(1, "Wrote %d revoke records\n", count);
 }
 
 /* 
