@@ -4,7 +4,7 @@ Version: 1.12
 Release: 0
 Copyright: GPL
 Group: Utilities/System
-Source: tsx-11.mit.edu:/pub/linux/packages/ext2fs/e2fsprogs-1.12.tar.gz
+Source: ftp://tsx-11.mit.edu/pub/linux/packages/ext2fs/e2fsprogs-1.12.tar.gz
 BuildRoot: /tmp/e2fsprogs-root
 
 %description
@@ -14,6 +14,7 @@ and repairing ext2 filesystems.
 %package devel
 Summary: e2fs static libs and headers
 Group: Development/Libraries
+Requires: e2fsprogs
 
 %description devel 
 Libraries and header files needed to develop ext2 filesystem-specific
