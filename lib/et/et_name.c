@@ -4,6 +4,7 @@
  * For copyright info, see mit-sipb-copyright.h.
  */
 
+#include "com_err.h"
 #include "error_table.h"
 #include "mit-sipb-copyright.h"
 #include "internal.h"
@@ -14,7 +15,7 @@ static const char char_set[] =
 static char buf[6];
 
 const char * error_table_name(num)
-    int num;
+    errcode_t num;
 {
     int ch;
     int i;
@@ -24,10 +25,10 @@ const char * error_table_name(num)
     p = buf;
     num >>= ERRCODE_RANGE;
     /* num = ?? ??? ??? aaa aaa bbb bbb ccc ccc ddd ddd */
-    num &= 077777777;
+    num &= 077777777L;
     /* num = 00 000 000 aaa aaa bbb bbb ccc ccc ddd ddd */
     for (i = 4; i >= 0; i--) {
-	ch = (num >> BITS_PER_CHAR * i) & ((1 << BITS_PER_CHAR) - 1);
+	ch = (int)((num >> BITS_PER_CHAR * i) & ((1 << BITS_PER_CHAR) - 1));
 	if (ch != 0)
 	    *p++ = char_set[ch-1];
     }

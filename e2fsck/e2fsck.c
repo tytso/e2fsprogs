@@ -196,7 +196,9 @@ static void check_mount(NOARGS)
 		return;
 	}
 
-	printf ("%s is mounted.  ", device_name);
+	printf("%s is mounted.\n\n", device_name);
+	printf("\a\a\a\aWARNING!!!  Running e2fsck on a mounted filesystem "
+	       "may cause\nSEVERE filesystem damage.\a\a\a\n\n");
 	if (isatty (0) && isatty (1))
 		cont = ask_yn("Do you really want to continue", -1);
 	else

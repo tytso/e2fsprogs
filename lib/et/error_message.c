@@ -31,11 +31,11 @@ const char * error_message (code)
 {
     int offset;
     struct et_list *et;
-    int table_num;
+    errcode_t table_num;
     int started = 0;
     char *cp;
 
-    offset = code & ((1<<ERRCODE_RANGE)-1);
+    offset = (int) (code & ((1<<ERRCODE_RANGE)-1));
     table_num = code - offset;
     if (!table_num) {
 #ifdef HAS_SYS_ERRLIST

@@ -26,7 +26,7 @@ extern struct et_list * _et_list;
 #define	BITS_PER_CHAR	6	/* # bits to shift per character in name */
 
 #ifdef __STDC__
-extern const char *error_table_name(int num);
+extern const char *error_table_name(errcode_t num);
 #else
 extern const char *error_table_name();
 #endif

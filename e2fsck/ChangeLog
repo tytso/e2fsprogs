@@ -1,3 +1,8 @@
+Sun Aug 10 18:58:02 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (check_mount): Add stronger warning message about the
+		perils of running e2fsck on a mounted filesystem.
+
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.11

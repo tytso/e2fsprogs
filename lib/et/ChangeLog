@@ -1,3 +1,9 @@
+Sun Aug 10 09:40:54 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* error_table.h:
+	* et_name.c (error_table_name): 
+	* error_message.c (error_message.c): Make code be 16-bit safe.
+
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.11
