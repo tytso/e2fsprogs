@@ -1,3 +1,13 @@
+2003-04-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix_io.c (raw_read_blk): Add Cygwin support (the Windows block
+		device only accepts sector aligned read requests.
+
+	* ismounted.c (check_mntent_file): Deal with OS's that don't
+		define MNTOPT_RO.
+
+	* imager.c: If the OS doesn't define ssize_t, typedef it to int.
+
 2003-04-11  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2_fs.h (EXT2_FEATURE_RO_COMPAT_BTREE_DIR): Comment out unused

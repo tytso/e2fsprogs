@@ -1,7 +1,10 @@
 /*
- * unix_io.c --- This is the Unix I/O interface to the I/O manager.
+ * unix_io.c --- This is the Unix (well, really POSIX) implementation
+ * 	of the I/O manager.
  *
  * Implements a one-block write-through cache.
+ *
+ * Includes support for Windows NT support under Cygwin. 
  *
  * Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
  * 	2002 by Theodore Ts'o.
@@ -34,7 +37,9 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#if HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -89,7 +94,11 @@ static struct struct_io_manager struct_unix_manager = {
 	unix_read_blk,
 	unix_write_blk,
 	unix_flush,
+#ifdef CYGWIN
+	0
+#else
 	unix_write_byte
+#endif
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
@@ -97,6 +106,7 @@ io_manager unix_io_manager = &struct_unix_manager;
 /*
  * Here are the raw I/O functions
  */
+#ifndef CYGWIN
 static errcode_t raw_read_blk(io_channel channel,
 			      struct unix_private_data *data,
 			      unsigned long block,
@@ -129,6 +139,60 @@ error_out:
 					       size, actual, retval);
 	return retval;
 }
+#else /* CYGWIN */
+/*
+ * Windows block devices only allow sector alignment IO in offset and size
+ */
+static errcode_t raw_read_blk(io_channel channel,
+			      struct unix_private_data *data,
+			      unsigned long block,
+			      int count, void *buf)
+{
+	errcode_t	retval;
+	size_t		size, alignsize, fragment;
+	ext2_loff_t	location;
+	int		total = 0, actual;
+#define BLOCKALIGN 512
+	char		sector[BLOCKALIGN];
+
+	size = (count < 0) ? -count : count * channel->block_size;
+	location = (ext2_loff_t) block * channel->block_size;
+#ifdef DEBUG
+	printf("count=%d, size=%d, block=%d, blk_size=%d, location=%lx\n",
+	 		count, size, block, channel->block_size, location);
+#endif
+	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
+		goto error_out;
+	}
+	fragment = size % BLOCKALIGN;
+	alignsize = size - fragment;
+	if (alignsize) {
+		actual = read(data->dev, buf, alignsize);
+		if (actual != alignsize)
+			goto short_read;
+	}
+	if (fragment) {
+		actual = read(data->dev, sector, BLOCKALIGN);
+		if (actual != BLOCKALIGN)
+			goto short_read;
+		memcpy(buf+alignsize, sector, fragment);
+	}
+	return 0;
+
+short_read:
+	if (actual>0)
+		total += actual;
+	retval = EXT2_ET_SHORT_READ;
+
+error_out:
+	memset((char *) buf+total, 0, size-actual);
+	if (channel->read_error)
+		retval = (channel->read_error)(channel, block, count, buf,
+					       size, actual, retval);
+	return retval;
+}
+#endif
 
 static errcode_t raw_write_blk(io_channel channel,
 			       struct unix_private_data *data,
@@ -294,8 +358,6 @@ static errcode_t flush_cached_blocks(io_channel channel,
 	}
 	return retval2;
 }
-
-
 
 static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 {

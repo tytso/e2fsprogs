@@ -1,3 +1,7 @@
+2003-04-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c: Add #ifdef around #include <sys/ioctl.h>
+
 2003-04-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* super.c (check_super_block): Update the global free block and

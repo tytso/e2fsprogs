@@ -1,4 +1,8 @@
-2003-04-11  root  <tytso@mit.edu>
+2003-04-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* help.c: Add #ifdef protection around #include <sys/wait.h>
+
+2003-04-11  Theodore Ts'o  <tytso@mit.edu>
 
 	* get_readline.c (DEFAULT_LIBPATH): Use the SS_READLINE_PATH
 		environment variable to control the search for a suitable

@@ -33,6 +33,10 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
+#ifndef HAVE_TYPE_SSIZE_T
+typedef int ssize_t;
+#endif
+
 /*
  * This function returns 1 if the specified block is all zeros
  */

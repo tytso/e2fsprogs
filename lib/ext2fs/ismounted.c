@@ -129,9 +129,11 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 #endif /* __GNU__ */
 	*mount_flags = EXT2_MF_MOUNTED;
 	
+#ifdef MNTOPT_RO
 	/* Check to see if the ro option is set */
 	if (hasmntopt(mnt, MNTOPT_RO))
 		*mount_flags |= EXT2_MF_READONLY;
+#endif
 
 	if (mtpt)
 		strncpy(mtpt, mnt->mnt_dir, mtlen);

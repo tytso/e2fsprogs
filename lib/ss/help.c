@@ -30,7 +30,9 @@ extern int errno;
 /* just for O_* */
 #include <sys/fcntl.h>
 #endif
+#ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
+#endif
 #include "ss_internal.h"
 
 void ss_help (argc, argv, sci_idx, info_ptr)
