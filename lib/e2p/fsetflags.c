@@ -41,7 +41,7 @@
 int fsetflags (const char * name, unsigned long flags)
 {
 	struct stat buf;
-#if HAVE_CHFLAGS
+#if HAVE_CHFLAGS && !(APPLE_DARWIN && HAVE_EXT2_IOCTLS)
 	unsigned long bsd_flags = 0;
 
 #ifdef UF_IMMUTABLE
@@ -66,6 +66,7 @@ int fsetflags (const char * name, unsigned long flags)
 	    !S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
 		goto notsupp;
 	}
+#if !APPLE_DARWIN
 	fd = open (name, OPEN_FLAGS);
 	if (fd == -1)
 		return -1;
@@ -76,6 +77,10 @@ int fsetflags (const char * name, unsigned long flags)
 	close (fd);
 	if (save_errno)
 		errno = save_errno;
+#else
+   f = (int) flags;
+   return syscall(SYS_fsctl, name, EXT2_IOC_SETFLAGS, &f, 0);
+#endif
 	return r;
 #endif /* HAVE_EXT2_IOCTLS */
 #endif

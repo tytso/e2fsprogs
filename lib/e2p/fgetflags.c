@@ -41,7 +41,7 @@
 int fgetflags (const char * name, unsigned long * flags)
 {
 	struct stat buf;
-#if HAVE_STAT_FLAGS
+#if HAVE_STAT_FLAGS && !(APPLE_DARWIN && HAVE_EXT2_IOCTLS)
 
 	if (stat (name, &buf) == -1)
 		return -1;
@@ -69,6 +69,7 @@ int fgetflags (const char * name, unsigned long * flags)
 	    !S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
 		goto notsupp;
 	}
+#if !APPLE_DARWIN
 	fd = open (name, OPEN_FLAGS);
 	if (fd == -1)
 		return -1;
@@ -80,6 +81,12 @@ int fgetflags (const char * name, unsigned long * flags)
 	if (save_errno)
 		errno = save_errno;
 	return r;
+#else
+   f = -1;
+   save_errno = syscall(SYS_fsctl, name, EXT2_IOC_GETFLAGS, &f, 0);
+   *flags = f;
+   return (save_errno);
+#endif
 #endif /* HAVE_EXT2_IOCTLS */
 #endif
 notsupp:

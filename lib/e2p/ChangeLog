@@ -1,3 +1,9 @@
+2004-01-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* fgetflags.c, fgetversion.c, fsetflags.c, fsetversion.c: Apply
+		patch from Brian Bergstrand to support ext2_ioctl() in
+		Darwin.  This is implemented via the fsctl system call.
+
 2003-08-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* ls.c (list_super2): Display the journal backup type.
