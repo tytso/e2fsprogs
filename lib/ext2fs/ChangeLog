@@ -1,5 +1,10 @@
 2002-03-07  Theodore Tso  <tytso@mit.edu>
 
+	* ext2fs.h (ext2fs_inode_io_intern): Add missing function prototype.
+
+	* bmap.c, fileio.c, inode_io.c, tst_badblocks.c, 
+		tst_byteswap.c: Fix gcc -Wall complaints
+
 	* Makefile.in (check): Use LD_LIBRARY_PATH to run test programs.
 		(From Philipp Thomas <pthomas@suse.de>)
 

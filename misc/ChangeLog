@@ -1,5 +1,7 @@
 2002-03-07  Theodore Tso  <tytso@mit.edu>
 
+	* base_device.c (main): Fix gcc -Wall complaints in debug code.
+
 	* mke2fs.c (zap_sector): Don't erase BSD disklabels on Alpha.
 		(From Thorsten Kukuk <kukuk@suse.de>)
 

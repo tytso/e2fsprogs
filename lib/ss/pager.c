@@ -31,7 +31,7 @@ extern int errno;
 
 static char MORE[] = "more";
 extern char *_ss_pager_name;
-extern char *getenv();
+extern char *getenv PROTOTYPE((const char *));
 
 /*
  * this needs a *lot* of work....
@@ -42,7 +42,7 @@ extern char *getenv();
  */
 
 #ifndef NO_FORK
-int ss_pager_create() 
+int ss_pager_create(NOARGS) 
 {
 	int filedes[2];
      

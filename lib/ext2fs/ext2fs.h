@@ -723,6 +723,8 @@ extern errcode_t ext2fs_check_directory(ext2_filsys fs, ext2_ino_t ino);
 
 /* inode_io.c */
 extern io_manager inode_io_manager;
+extern errcode_t ext2fs_inode_io_intern(ext2_filsys fs, ext2_ino_t ino, 
+					char **name);
 	
 /* ismounted.c */
 extern errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags);

@@ -160,11 +160,11 @@ int file_test(badblocks_list bb)
 		printf("Block bitmap NOT matched.\n");
 		test_fail++;
 	}
-
+	return 0;
 }
 
 
-int main(int argc, char *argv)
+int main(int argc, char **argv)
 {
 	badblocks_list bb1, bb2, bb3, bb4;
 	int	equal;

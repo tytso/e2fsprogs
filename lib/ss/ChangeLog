@@ -1,3 +1,16 @@
+2002-03-07  Theodore Tso  <tytso@mit.edu>
+
+	* pager.c (ss_pager_create), list_rqs.c (ss_list_requests): Fix
+		function prototypes to avoid gcc -Wall complaints.
+
+	* listen.c (ss_listen): Make sure the signal handler for SIGCONT
+		is restored when we exit.  Also, make sure we don't
+		clubber any variables after setjmp/longjmp.  Also removed
+		some bogus, fairly dubious coude.
+
+	* ss.h, ss_internal.h, execute_cmd.c: Add function prototypes to
+		prevent gcc -Wall complaints.
+
 2002-02-12  Theodore Tso  <tytso@mit.edu>
 
 	* requests.c (DECLARE): Fix bug in non-STDC declaration --- we

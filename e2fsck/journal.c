@@ -184,7 +184,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 	struct buffer_head 	*bh;
 	struct inode		*j_inode = NULL;
 	struct kdev_s		*dev_fs = NULL, *dev_journal;
-	const char		*journal_name = 0;
+	char			*journal_name = 0;
 	journal_t		*journal = NULL;
 	errcode_t		retval;
 	io_manager		io_ptr;
@@ -792,7 +792,7 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
  * This function will move the journal inode from a visible file in
  * the filesystem directory hierarchy to the reserved inode if necessary.
  */
-const static char * const journal_names[] = {
+static const char * const journal_names[] = {
 	".journal", "journal", ".journal.dat", "journal.dat", 0 };
 
 void e2fsck_move_ext3_journal(e2fsck_t ctx)

@@ -34,6 +34,7 @@ typedef void sigret_t;
 
 static ss_data *current_info;
 static jmp_buf listen_jmpb;
+static sigret_t (*sig_cont)(int);
 
 static sigret_t print_prompt(int sig)
 {
@@ -62,10 +63,8 @@ int ss_listen (int sci_idx)
 {
     char *cp;
     ss_data *info;
-    sigret_t (*sig_int)(int), (*sig_cont)(int), (*old_sig_cont)(int);
+    sigret_t (*sig_int)(int), (*old_sig_cont)(int);
     char input[BUFSIZ];
-    char buffer[BUFSIZ];
-    char *end = buffer;
 #ifdef POSIX_SIGNALS
     sigset_t omask, igmask;
 #else
@@ -95,15 +94,17 @@ int ss_listen (int sci_idx)
 #endif
     while(!info->abort) {
 	print_prompt(0);
-	*end = '\0';
 	old_sig_cont = sig_cont;
 	sig_cont = signal(SIGCONT, print_prompt);
 	if (sig_cont == print_prompt)
 	    sig_cont = old_sig_cont;
 	if (fgets(input, BUFSIZ, stdin) != input) {
 	    code = SS_ET_EOF;
+	    (void) signal(SIGCONT, sig_cont);
 	    goto egress;
 	}
+	input[BUFSIZ-1] = 0;
+	
 	cp = strchr(input, '\n');
 	if (cp) {
 	    *cp = '\0';
@@ -111,8 +112,6 @@ int ss_listen (int sci_idx)
 		continue;
 	}
 	(void) signal(SIGCONT, sig_cont);
-	for (end = input; *end; end++)
-	    ;
 
 	code = ss_execute_line (sci_idx, input);
 	if (code == SS_ET_COMMAND_NOT_FOUND) {

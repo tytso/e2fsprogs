@@ -74,7 +74,7 @@ void e2fsck_pass5(e2fsck_t ctx)
 
 #define NO_BLK ((blk_t) -1)
 
-static print_bitmap_problem(e2fsck_t ctx, int problem,
+static void print_bitmap_problem(e2fsck_t ctx, int problem,
 			    struct problem_context *pctx)
 {
 	switch (problem) {

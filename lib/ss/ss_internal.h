@@ -105,12 +105,17 @@ typedef struct _ss_data {	/* init values */
 #define	ss_info(sci_idx)	(_ss_table[sci_idx])
 #define	ss_current_request(sci_idx,code_ptr)	\
      (*code_ptr=0,ss_info(sci_idx)->current_request)
+void ss_add_info_dir PROTOTYPE((int sci_idx, char *info_dir,
+				int *code_ptr));
 void ss_delete_info_dir PROTOTYPE((int sci_idx, char *info_dir,
 				   int *code_ptr));
 int ss_execute_line PROTOTYPE((int sci_idx, char *line_ptr));
 char **ss_parse PROTOTYPE((int sci_idx, char *line_ptr, int *argc_ptr));
 ss_abbrev_info *ss_abbrev_initialize PROTOTYPE((char *, int *));
 void ss_page_stdin(NOARGS);
+void ss_list_requests PROTOTYPE((int, char const * const *, int, pointer));
+int ss_execute_command PROTOTYPE((int sci_idx, char *argv[]));
+int ss_pager_create(NOARGS);
 
 extern ss_data **_ss_table;
 extern char *ss_et_msgs[];

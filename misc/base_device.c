@@ -147,8 +147,7 @@ errout:
 }
 
 #ifdef DEBUG
-
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
 	const char *base;
 	char  buf[256], *cp;
@@ -167,5 +166,4 @@ main(int argc, char** argv)
 	}
 	exit(0);
 }
-
 #endif

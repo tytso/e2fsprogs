@@ -78,7 +78,7 @@ errcode_t ext2fs_inode_io_intern(ext2_filsys fs, ext2_ino_t ino,
 				     (void **) &data)))
 		return retval;
 	data->magic = EXT2_ET_MAGIC_INODE_IO_CHANNEL;
-	sprintf(data->name, "%lu:%d", ino, ino_unique++);
+	sprintf(data->name, "%u:%d", ino, ino_unique++);
 	data->file = 0;
 	data->fs = fs;
 	data->ino = ino;
@@ -172,7 +172,6 @@ static errcode_t inode_close(io_channel channel)
 static errcode_t inode_set_blksize(io_channel channel, int blksize)
 {
 	struct inode_private_data *data;
-	errcode_t		retval;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct inode_private_data *) channel->private_data;
@@ -187,10 +186,7 @@ static errcode_t inode_read_blk(io_channel channel, unsigned long block,
 			       int count, void *buf)
 {
 	struct inode_private_data *data;
-	struct inode_cache *cache;
 	errcode_t	retval;
-	char		*cp;
-	int		i, j;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct inode_private_data *) channel->private_data;
@@ -210,10 +206,7 @@ static errcode_t inode_write_blk(io_channel channel, unsigned long block,
 				int count, const void *buf)
 {
 	struct inode_private_data *data;
-	struct inode_cache *cache;
-	errcode_t	retval = 0, retval2;
-	const char	*cp;
-	int		writethrough;
+	errcode_t	retval;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct inode_private_data *) channel->private_data;
@@ -234,7 +227,6 @@ static errcode_t inode_write_byte(io_channel channel, unsigned long offset,
 {
 	struct inode_private_data *data;
 	errcode_t	retval = 0;
-	size_t		actual;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct inode_private_data *) channel->private_data;
@@ -253,7 +245,6 @@ static errcode_t inode_write_byte(io_channel channel, unsigned long offset,
 static errcode_t inode_flush(io_channel channel)
 {
 	struct inode_private_data *data;
-	errcode_t retval = 0;
 	
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct inode_private_data *) channel->private_data;

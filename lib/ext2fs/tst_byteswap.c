@@ -44,7 +44,7 @@ __u32 test2[] = {
 	0x00000000, 0x00000000
 	};
 
-int main(int argc, char *argv)
+int main(int argc, char **argv)
 {
 	int	i;
 	int	errors = 0;

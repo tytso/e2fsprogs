@@ -17,6 +17,11 @@
 #include "ss_internal.h"
 #include <stdio.h>
 
+static int check_request_table PROTOTYPE((ss_request_table *rqtbl, int argc,
+					  char *argv[], int sci_idx));
+static int really_execute_command PROTOTYPE((int sci_idx, int argc,
+					     char **argv[]));
+
 /*
  * get_request(tbl, idx)
  *

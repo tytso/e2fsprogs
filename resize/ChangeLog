@@ -1,5 +1,9 @@
 2002-03-07  Theodore Tso  <tytso@mit.edu>
 
+	* resize2fs.c (process_block, inode_scan_and_fix, 
+		check_and_change_inodes): Fix gcc -Wall complaints in
+		debug code.
+
 	* Makefile.in (check): Use LD_LIBRARY_PATH to run test programs.
 		(From Philipp Thomas <pthomas@suse.de>)
 

@@ -29,7 +29,7 @@ static char const NL[2] = "\n";
 
 void ss_list_requests(argc, argv, sci_idx, info_ptr)
     int argc;
-    char **argv;
+    char const * const * argv;
     int sci_idx;
     pointer info_ptr;
 {
@@ -46,7 +46,7 @@ void ss_list_requests(argc, argv, sci_idx, info_ptr)
 #else
     int mask;
 #endif
-    sigret_t (*func)();
+    sigret_t (*func) PROTOTYPE((int));
 #ifndef NO_FORK
     int waitb;
 #endif

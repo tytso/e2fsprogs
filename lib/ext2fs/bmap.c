@@ -33,7 +33,7 @@ extern errcode_t ext2fs_bmap(ext2_filsys fs, ext2_ino_t ino,
 
 #define inode_bmap(inode, nr) ((inode)->i_block[(nr)])
 
-static errcode_t _BMAP_INLINE_ block_ind_bmap(ext2_filsys fs, int flags, 
+static _BMAP_INLINE_ errcode_t block_ind_bmap(ext2_filsys fs, int flags, 
 					      blk_t ind, char *block_buf, 
 					      int *blocks_alloc,
 					      blk_t nr, blk_t *ret_blk)
@@ -83,7 +83,7 @@ static errcode_t _BMAP_INLINE_ block_ind_bmap(ext2_filsys fs, int flags,
 	return 0;
 }
 
-static errcode_t _BMAP_INLINE_ block_dind_bmap(ext2_filsys fs, int flags,
+static _BMAP_INLINE_ errcode_t block_dind_bmap(ext2_filsys fs, int flags,
 					       blk_t dind, char *block_buf, 
 					       int *blocks_alloc,
 					       blk_t nr, blk_t *ret_blk)
@@ -103,7 +103,7 @@ static errcode_t _BMAP_INLINE_ block_dind_bmap(ext2_filsys fs, int flags,
 	return retval;
 }
 
-static errcode_t _BMAP_INLINE_ block_tind_bmap(ext2_filsys fs, int flags,
+static _BMAP_INLINE_ errcode_t block_tind_bmap(ext2_filsys fs, int flags,
 					       blk_t tind, char *block_buf, 
 					       int *blocks_alloc,
 					       blk_t nr, blk_t *ret_blk)

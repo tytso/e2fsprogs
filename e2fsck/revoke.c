@@ -122,7 +122,9 @@ int insert_revoke_hash(journal_t *journal, unsigned long blocknr, tid_t seq)
 	struct list_head *hash_list;
 	struct jbd_revoke_record_s *record;
 
+#ifdef __KERNEL__
 repeat:
+#endif
 	record = kmem_cache_alloc(revoke_record_cache, GFP_NOFS);
 	if (!record)
 		goto oom;

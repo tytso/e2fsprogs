@@ -241,7 +241,7 @@ errcode_t ext2fs_file_write(ext2_file_t file, const void *buf,
 	ext2_filsys	fs;
 	errcode_t	retval = 0;
 	unsigned int	start, c, count = 0;
-	char		*ptr = (char *) buf;
+	const char	*ptr = (const char *) buf;
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 	fs = file->fs;
