@@ -72,7 +72,8 @@ uninstall:
 	done
 
 test_extent.out: test_extent $(srcdir)/test_extent.in
-	./test_extent < $(srcdir)/test_extent.in > test_extent.out
+	LD_LIBRARY_PATH=$(LIB) ./test_extent < $(srcdir)/test_extent.in \
+		> test_extent.out
 
 check:: test_extent.out
 	@if cmp -s test_extent.out $(srcdir)/test_extent.in ; then \
