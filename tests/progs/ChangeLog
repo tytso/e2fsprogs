@@ -1,3 +1,14 @@
+2000-08-20    <tytso@valinux.com>
+
+	* random_exercise.c: New file which feeds a lot of file creations
+		and deletions (while leaving the file descriptor open, and
+		then closing the file descriptor later).  This generates
+		lots of fodder for the orphan list code, as well as for
+		the ext3 journal.
+
+	* hold_inode.c: New file which holds an inode or a directory open
+		(for testing orphan list code).
+
 2000-07-13    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.19
