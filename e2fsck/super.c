@@ -146,6 +146,13 @@ static int release_orphan_inodes(e2fsck_t ctx)
 	if ((ino = fs->super->s_last_orphan) == 0)
 		return 0;
 
+	/*
+	 * Win or lose, we won't be using the head of the orphan inode
+	 * list again.
+	 */
+	fs->super->s_last_orphan = 0;
+	ext2fs_mark_super_dirty(fs);
+	
 	if ((ino < EXT2_FIRST_INODE(fs->super)) ||
 	    (ino > fs->super->s_inodes_count)) {
 		clear_problem_context(&pctx);
