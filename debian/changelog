@@ -1,3 +1,13 @@
+e2fsprogs (1.36) unstable; urgency=low
+
+  * New upstream release.
+  * Make filefrag print the first and last blocks when in verbose mode.
+  * Drop sparc assembly bitops; it's less efficient than gcc 3.4's
+    generated code, and it triggers compiler warnings on sparc 64.
+    (Closes: #232326)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri,  4 Feb 2005 20:58:35 -0500
+
 e2fsprogs (1.36rc5-1) unstable; urgency=low
 
   * Make blkid -t work more consistently even when the cache file is not

@@ -1,3 +1,7 @@
+2006-02-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.36
+
 2005-02-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* set_fields.c: Define _XOPEN_SOURCE to be 500 to fix compilation

@@ -1,3 +1,7 @@
+2006-02-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.36
+
 2005-01-21    <tytso@snap.thunk.org>
 
 	* copy_sparse.c: Utility program which is very useful for dealing

@@ -1,5 +1,5 @@
-E2fsprogs 1.36-rc5 (January 27, 2005)
-=====================================
+E2fsprogs 1.36 (February 4, 2005)
+=================================
 
 All of the patches that were applied to Fedore Core 3's
 e2fsprogs-1.35-11.2 have been integrated, although sometimes with a
@@ -56,6 +56,8 @@ for dealing with large sparse files (such as e2image files).
 Add support for jnl_blocks[] for debugfs's set_super_value.
 
 Fix filefrag so that it works correctly with sparse files.
+
+Filefrag -v will print first and last blocks.
 
 Add interpretation of OS Creator values for FreeBSD and Lites in mke2fs
 and dumpe2fs.
@@ -265,6 +267,12 @@ Add support for the install-strip and install-shlibs-strip targets, as
 suggested by the GNU coding guielines.  "make install" no longer
 strips the binaries which are installed.
 
+Remove support for the --enable-old-bitops configure option which was
+only for very old sparc systems.
+
+Remove support for --enable-clear-htree; this was only needed during
+the early development of the htree patch.
+
 Use Linux-kernel-style makefile output so it is easier to see compiler
 warnings.
 
@@ -282,6 +290,15 @@ blkid_parse_version_string() functions to the blkid library.
 Add pkg-config files for e2fsprogs's libraries.
 
 Fix "make uninstall" to so that it removes everything that is installed.
+
+Add a configure --enable-maintainer-mode option which enables the
+makefile rules to rebuild the configure script from configure.in, and
+to reubuild the .gmo files in po directory.
+
+Drop the sparc assembly bitwise operations; it's less efficient
+than the GCC 3.4 compile code and triggers compiler warnings on
+sparc64.  Thanks to Matthias Andree for his analysis and suggestions.
+(Addresses Debian Bug #232326)
 
 
 E2fsprogs 1.35 (February 28, 2004) 

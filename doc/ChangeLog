@@ -1,3 +1,7 @@
+2006-02-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.36
+
 2005-01-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Fix the kernel compile-time echo commands to be
