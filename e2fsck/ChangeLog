@@ -1,5 +1,15 @@
 2003-03-14  Theodore Ts'o  <tytso@mit.edu>
 
+	* problem.c, problem.h (PR_2_REPORT_DUP_DIRENT): Add new problem code.
+
+	* pass2.c (check_dir_block): Check for duplicate filenames within
+		a single directory block (because this is the easy case;
+		we don't currently check for duplicates that span
+		directory blocks, for now.  Eventually for htree
+		directories we can do this by searching for all directory
+		blocks that have a hash overflow, and then searching the
+		adjacent blocks to find all other potential duplicates.)
+
 	* iscan.c, scantest.c, unix.c: And #ifdef protection around
 		#include of malloc.h
 

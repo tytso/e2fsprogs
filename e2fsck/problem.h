@@ -651,6 +651,9 @@ struct problem_context {
 /* Non-unique filename found */
 #define PR_2_NON_UNIQUE_FILE	0x020042
 
+/* Duplicate directory entry found */
+#define PR_2_REPORT_DUP_DIRENT	0x020043
+
 /*
  * Pass 3 errors
  */

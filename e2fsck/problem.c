@@ -1097,6 +1097,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@E has a non-unique filename.\nRename to %s"),
 	  PROMPT_NULL, 0 },
 	
+	/* Duplicate directory entry found */
+	{ PR_2_REPORT_DUP_DIRENT,
+	  N_("Duplicate @e '%Dn' found.\n\tMarking %p (%i) to be rebuilt.\n\n"),
+	  PROMPT_NONE, 0 },
+	
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

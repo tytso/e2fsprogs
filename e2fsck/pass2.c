@@ -43,6 +43,7 @@
 
 #include "e2fsck.h"
 #include "problem.h"
+#include "dict.h"
 
 #ifdef NO_INLINE_FUNCS
 #define _INLINE_
@@ -305,6 +306,21 @@ static int htree_depth(struct dx_dir_info *dx_dir,
 	return depth;
 }
 
+static int dict_de_cmp(const void *a, const void *b)
+{
+	struct ext2_dir_entry *de_a, *de_b;
+	int	a_len, b_len;
+
+	de_a = (struct ext2_dir_entry *) a;
+	a_len = de_a->name_len & 0xFF;
+	de_b = (struct ext2_dir_entry *) b;
+	b_len = de_b->name_len & 0xFF;
+
+	if (a_len != b_len)
+		return (a_len - b_len);
+
+	return strncmp(de_a->name, de_b->name, a_len);
+}
 
 /*
  * This is special sort function that makes sure that directory blocks
@@ -702,6 +718,9 @@ static int check_dir_block(ext2_filsys fs,
 	int			problem;
 	struct ext2_dx_root_info *root;
 	struct ext2_dx_countlimit *limit;
+	static dict_t de_dict;
+	struct problem_context	pctx;
+	int	dups_found = 0;
 
 	cd = (struct check_dir_struct *) priv_data;
 	buf = cd->buf;
@@ -737,6 +756,10 @@ static int check_dir_block(ext2_filsys fs,
 		dot_state = 2;
 	else
 		dot_state = 0;
+
+	if (ctx->dirs_to_hash &&
+	    ext2fs_u32_list_test(ctx->dirs_to_hash, ino))
+		dups_found++;
 
 #if 0
 	printf("In process_dir_block block %lu, #%d, inode %lu\n", block_nr,
@@ -792,6 +815,7 @@ static int check_dir_block(ext2_filsys fs,
 	}
 #endif /* ENABLE_HTREE */
 
+	dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
 	prev = 0;
 	do {
 		problem = 0;
@@ -807,7 +831,7 @@ static int check_dir_block(ext2_filsys fs,
 				dir_modified++;
 				continue;
 			} else
-				return DIRENT_ABORT;
+				goto abort_free_dict;
 		}
 		if ((dirent->name_len & 0xFF) > EXT2_NAME_LEN) {
 			if (fix_problem(ctx, PR_2_FILENAME_LONG, &cd->pctx)) {
@@ -823,8 +847,7 @@ static int check_dir_block(ext2_filsys fs,
 			dir = e2fsck_get_dir_info(ctx, ino);
 			if (!dir) {
 				fix_problem(ctx, PR_2_NO_DIRINFO, &cd->pctx);
-				ctx->flags |= E2F_FLAG_ABORT;
-				return DIRENT_ABORT;
+				goto abort_free_dict;
 			}
 			if (check_dotdot(ctx, dirent, dir, &cd->pctx))
 				dir_modified++;
@@ -960,8 +983,7 @@ static int check_dir_block(ext2_filsys fs,
 			if (!subdir) {
 				cd->pctx.ino = dirent->inode;
 				fix_problem(ctx, PR_2_NO_DIRINFO, &cd->pctx);
-				ctx->flags |= E2F_FLAG_ABORT;
-				return DIRENT_ABORT;
+				goto abort_free_dict;
 			}
 			if (subdir->parent) {
 				cd->pctx.ino2 = subdir->parent;
@@ -975,6 +997,21 @@ static int check_dir_block(ext2_filsys fs,
 			} else
 				subdir->parent = ino;
 		}
+
+		if (dups_found) {
+			;
+		} else if (dict_lookup(&de_dict, dirent)) {
+			clear_problem_context(&pctx);
+			pctx.ino = ino;
+			pctx.dirent = dirent;
+			fix_problem(ctx, PR_2_REPORT_DUP_DIRENT, &pctx);
+			if (!ctx->dirs_to_hash)
+				ext2fs_u32_list_create(&ctx->dirs_to_hash, 50);
+			if (ctx->dirs_to_hash)
+				ext2fs_u32_list_add(ctx->dirs_to_hash, ino);
+			dups_found++;
+		} else
+			dict_alloc_insert(&de_dict, dirent, dirent);
 		
 		ext2fs_icount_increment(ctx->inode_count, dirent->inode,
 					&links);
@@ -1013,14 +1050,17 @@ static int check_dir_block(ext2_filsys fs,
 		cd->pctx.errcode = ext2fs_write_dir_block(fs, block_nr, buf);
 		if (cd->pctx.errcode) {
 			if (!fix_problem(ctx, PR_2_WRITE_DIRBLOCK,
-					 &cd->pctx)) {
-				ctx->flags |= E2F_FLAG_ABORT;
-				return DIRENT_ABORT;
-			}
+					 &cd->pctx))
+				goto abort_free_dict;
 		}
 		ext2fs_mark_changed(fs);
 	}
+	dict_free_nodes(&de_dict);
 	return 0;
+abort_free_dict:
+	dict_free_nodes(&de_dict);
+	ctx->flags |= E2F_FLAG_ABORT;
+	return DIRENT_ABORT;
 }
 
 /*
