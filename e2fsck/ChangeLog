@@ -1,3 +1,12 @@
+2003-12-10  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.h (E2F_FLAG_RESTARTED): Assign a unique flag bitfield to
+		E2F_FLAG_RESTARTED.  This fixes a bug where if the user
+		specifies an alternate superblock, and the journal needs
+		to be replayed, e2fsck would erroneously assume that
+		journal had been run already without clearing the
+		NEEDS_RECOVERY flag, and bomb out with an error.
+
 2003-12-07  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.c, dict.c, ea_refcount.c, ehandler.c, journal.c,
