@@ -222,24 +222,25 @@ static int is_on_batt(void)
 		return (acflag != 1);
 	}
 	d = opendir("/proc/acpi/ac_adapter");
-	while (d && (de=readdir(d))) {
-		if (!strncmp(".", de->d_name, 1))
-			continue;
-		snprintf(fname, 80, "/proc/acpi/ac_adapter/%s/state", 
-			 de->d_name);
-		f = fopen(fname, "r");
-		if (!f)
-			continue;
-		if (fscanf(f, "%s %s", tmp2, tmp) != 2)
-			tmp[0] = 0;
-		fclose(f);
-		if (strncmp(tmp, "off-line", 8) == 0) {
-			closedir(d);
-			return 1;
+	if (d) {
+		while (de=readdir(d)) {
+			if (!strncmp(".", de->d_name, 1))
+				continue;
+			snprintf(fname, 80, "/proc/acpi/ac_adapter/%s/state", 
+				 de->d_name);
+			f = fopen(fname, "r");
+			if (!f)
+				continue;
+			if (fscanf(f, "%s %s", tmp2, tmp) != 2)
+				tmp[0] = 0;
+			fclose(f);
+			if (strncmp(tmp, "off-line", 8) == 0) {
+				closedir(d);
+				return 1;
+			}
 		}
-	}
-	if (d)
 		closedir(d);
+	}
 	return 0;
 }
 
