@@ -1,3 +1,7 @@
+1999-01-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs 1.14
+
 1999-01-07  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* inode.c (ext2fs_read_inode, ext2fs_write_inode): Check to see if

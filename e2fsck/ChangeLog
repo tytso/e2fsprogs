@@ -1,3 +1,10 @@
+1999-01-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* message.c (safe_print): New function which prints strings,
+		converting non-printable characters using the '^' and
+		M-notation.  This function is now used to print directory
+		name entries and pathnames.
+
 Mon Jan  4 02:28:59 1999  Theodore Y. Ts'o  <tytso@mit.edu>
 
 	* unix.c (main): Reset the context before calling ext2fs_close(),

@@ -131,6 +131,32 @@ static const char *special_inode_name[] =
 };
 
 /*
+ * This function does "safe" printing.  It will convert non-printable
+ * ASCII characters using '^' and M- notation.
+ */
+static void safe_print(const unsigned char *cp, int len)
+{
+	unsigned char	ch;
+
+	if (len < 0)
+		len = strlen(cp);
+
+	while (len--) {
+		ch = *cp++;
+		if (ch > 128) {
+			fputs("M-", stdout);
+			ch -= 128;
+		}
+		if (ch < 32) {
+			fputc('^', stdout);
+			ch += 32;
+		}
+		fputc(ch, stdout);
+	}
+}
+
+
+/*
  * This function prints a pathname, using the ext2fs_get_pathname
  * function
  */
@@ -148,7 +174,7 @@ static void print_pathname(ext2_filsys fs, ino_t dir, ino_t ino)
 	if (retval)
 		fputs("???", stdout);
 	else {
-		fputs(path, stdout);
+		safe_print(path, -1);
 		ext2fs_free_mem((void **) &path);
 	}
 }
@@ -267,7 +293,7 @@ static _INLINE_ void expand_dirent_expression(char ch,
 			len = EXT2_NAME_LEN;
 		if (len > dirent->rec_len)
 			len = dirent->rec_len;
-		printf("%.*s", len, dirent->name);
+		safe_print(dirent->name, len);
 		break;
 	case 'r':
 		printf("%u", dirent->rec_len);
