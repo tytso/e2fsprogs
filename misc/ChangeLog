@@ -1,3 +1,27 @@
+1998-03-29  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2label.c: Fix -Wall warning by making functions static.
+
+1998-03-28  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* chattr.1.in: Document that the append-only attribute may
+		only be set or cleared by the superuser.
+
+	* Update all manual pages to that the availability section is
+		up-to-date. 
+
+	* e2label.8.in, tune2fs.8.in: Update manual page to state that
+		labels must be no longer than 16 characters, or they will
+		be truncated.
+
+	* e2label.c (change_label), tune2fs.c (main): If the label is
+		longer than 16 characters, print a warning message stating
+		that the label will be truncated.
+
+	* mke2fs.c (PRS): If the user specifies a filesystem size, and
+		it's larger than the apparent size of the device, print a
+		warning message and ask if the user wants to proceed.
+
 1998-03-21  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* mke2fs.c (check_plausibility): Fixed spelling typo in warning

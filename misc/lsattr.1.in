@@ -34,7 +34,7 @@ of the ext2 fs.
 There are none :-).
 .SH AVAILABILITY
 .B lsattr
-is available for anonymous ftp from ftp.ibp.fr and tsx-11.mit.edu in
-/pub/linux/packages/ext2fs.
+is part of the e2fsprogs package and is available for anonymous 
+ftp from tsx-11.mit.edu in /pub/linux/packages/ext2fs.
 .SH SEE ALSO
 .BR chattr (1)

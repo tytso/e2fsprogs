@@ -108,6 +108,15 @@ static int log2(int arg)
 	return l;
 }
 
+static void proceed_question(NOARGS)
+{
+	fflush(stdout);
+	fflush(stderr);
+	printf("Proceed anyway? (y,n) ");
+	if (getchar() != 'y')
+		exit(1);
+}
+
 static void check_plausibility(NOARGS)
 {
 #ifdef HAVE_LINUX_MAJOR_H
@@ -117,29 +126,24 @@ static void check_plausibility(NOARGS)
 	val = stat(device_name, &s);
 	
 	if(val == -1) {
-		printf("Could not stat %s --- %s\n", device_name,
-		       error_message(errno));
+		fprintf(stderr, "Could not stat %s --- %s\n",
+			device_name, error_message(errno));
 		if (errno == ENOENT)
-			printf("\nThe device apparently does not exist; "
-			       "did you specify it correctly?\n");
+			fprintf(stderr, "\nThe device apparently does "
+			       "not exist; did you specify it correctly?\n");
 		exit(1);
 	}
 	if(!S_ISBLK(s.st_mode)) {
 		printf("%s is not a block special device.\n", device_name);
-		printf("Proceed anyway? (y,n) ");
-		if (getchar() != 'y')
-			exit(1);
+		proceed_question();
 		return;
-	}
-	if ((MAJOR(s.st_rdev) == HD_MAJOR && MINOR(s.st_rdev)%64 == 0) ||
-	    (MAJOR(s.st_rdev) == SCSI_DISK_MAJOR &&
-	     MINOR(s.st_rdev)%16 == 0)) {
+	} else if ((MAJOR(s.st_rdev) == HD_MAJOR &&
+		    MINOR(s.st_rdev)%64 == 0) ||
+		   (MAJOR(s.st_rdev) == SCSI_DISK_MAJOR &&
+		    MINOR(s.st_rdev)%16 == 0)) {
 		printf("%s is entire device, not just one partition!\n", 
 		       device_name);
-		printf("Proceed anyway? (y,n) ");
-		if (getchar() != 'y')
-			exit(1);
-		return;
+		proceed_question();
 	}
 #endif
 }
@@ -607,6 +611,7 @@ static void PRS(int argc, char *argv[])
 	char	*oldpath = getenv("PATH");
 	struct ext2fs_sb *param_ext2 = (struct ext2fs_sb *) &param;
 	char	*raid_opts = 0;
+	blk_t	dev_size;
 	
 	/* Update our PATH to include /sbin  */
 	if (oldpath) {
@@ -762,15 +767,27 @@ static void PRS(int argc, char *argv[])
 
 	param.s_log_frag_size = param.s_log_block_size;
 
+	retval = ext2fs_get_device_size(device_name,
+					EXT2_BLOCK_SIZE(&param),
+					&dev_size);
+	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {
+		com_err(program_name, retval,
+			"while trying to determine filesystem size");
+		exit(1);
+	}
 	if (!param.s_blocks_count) {
-		retval = ext2fs_get_device_size(device_name,
-						EXT2_BLOCK_SIZE(&param),
-						&param.s_blocks_count);
-		if (retval) {
-			com_err(program_name, retval,
-				"while trying to determine filesystem size");
+		if (retval == EXT2_ET_UNIMPLEMENTED) {
+			com_err(program_name, 0,
+				"Couldn't determine device size; you "
+				"must specify\nthe size of the "
+				"filesystem\n");
 			exit(1);
-		}
+		} else
+			param.s_blocks_count = dev_size;
+	} else if (!force && (param.s_blocks_count > dev_size)) {
+		com_err(program_name, 0,
+			"Filesystem larger than apparent filesystem size.");
+		proceed_question();
 	}
 
 	if (param.s_blocks_per_group) {

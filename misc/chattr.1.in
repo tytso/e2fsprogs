@@ -43,31 +43,32 @@ Set the files version.
 When a file with the 'A' attribute set is modified, its atime record is
 not modified.  This avoids a certain amount of disk I/O for laptop
 systems.
-
+.PP
 A file with the `a' attribute set can only be open in append mode for writing.
-
+Only the superuser can set or clear this attribute.
+.PP
 A file with the `c' attribute set is automatically compressed on the disk
 by the kernel. A read from this file returns uncompressed data. A write to
 this file compresses data before storing them on the disk.
-
+.PP
 A file with the `d' attribute set is not candidate for backup when the
 .BR dump (8)
 program is run.
-
+.PP
 A file with the `i' attribute cannot be modified: it cannot be deleted or
 renamed, no link can be created to this file and no data can be written
 to the file. Only the superuser can set or clear this attribute.
-
+.PP
 When a file with the `s' attribute set is deleted, its blocks are zeroed and
 written back to the disk.
-
+.PP
 When a file with the `S' attribute set is modified,
 the changes are written synchronously on the disk; this is equivalent to
 the `sync' mount option applied to a subset of the files.
-
+.PP
 When a file with the `u' attribute set is deleted, its contents are saved.
 This allows the user to ask for its undeletion.
-
+.PP
 .SH AUTHOR
 .B chattr
 was written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
@@ -80,7 +81,7 @@ the kernel code.  (The noatime code is still in testing.)
 These attributes will be implemented in a future ext2 fs version.
 .SH AVAILABILITY
 .B chattr
-is available for anonymous ftp from ftp.ibp.fr and tsx-11.mit.edu in
-/pub/linux/packages/ext2fs.
+is part of the e2fsprogs package and is available for anonymous 
+ftp from tsx-11.mit.edu in /pub/linux/packages/ext2fs.
 .SH SEE ALSO
 .BR lsattr (1)

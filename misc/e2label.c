@@ -1,8 +1,14 @@
 /*
  * e2label.c		- Print or change the volume label on an ext2 fs
  *
- * aeb, 970714
+ * Written by Andries Brouwer (aeb@cwi.nl), 970714
+ * 
+ * Copyright 1997, 1998 by Theodore Ts'o.
  *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -37,8 +43,8 @@ struct ext2_super_block {
 	char  s_dummy2[824];
 } sb;
 
-int
-open_e2fs (char *dev, int mode) {
+static int open_e2fs (char *dev, int mode)
+{
 	int fd;
 
 	fd = open(dev, mode);
@@ -65,23 +71,25 @@ open_e2fs (char *dev, int mode) {
 	return fd;
 }
 
-void
-print_label (char *dev) {
+static void print_label (char *dev)
+{
 	char label[VOLNAMSZ+1];
 
 	open_e2fs (dev, O_RDONLY);
-	label[VOLNAMSZ] = 0;
 	strncpy(label, sb.s_volume_name, VOLNAMSZ);
+	label[VOLNAMSZ] = 0;
 	printf("%s\n", label);
 }
 
-void
-change_label (char *dev, char *label) {
+static void change_label (char *dev, char *label)
+{
 	int fd;
 
 	fd = open_e2fs(dev, O_RDWR);
 	memset(sb.s_volume_name, 0, VOLNAMSZ);
 	strncpy(sb.s_volume_name, label, VOLNAMSZ);
+	if (strlen(label) > VOLNAMSZ)
+		fprintf(stderr, "Warning: label too long, truncating.\n");
 	if (lseek(fd, 1024, SEEK_SET) != 1024) {
 	     perror(dev);
 	     fprintf (stderr, "e2label: cannot seek to superblock again\n");
@@ -94,8 +102,8 @@ change_label (char *dev, char *label) {
 	}
 }
 
-int
-main (int argc, char ** argv) {
+int main (int argc, char ** argv)
+{
 	if (argc == 2)
 	     print_label(argv[1]);
 	else if (argc == 3)

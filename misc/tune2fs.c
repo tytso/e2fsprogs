@@ -415,6 +415,9 @@ int main (int argc, char ** argv)
 			 "Recompile with a newer kernel");
 #endif
 	if (L_flag) {
+		if (strlen(new_label) > sizeof(sb->s_volume_name))
+			fprintf(stderr, "Warning: label too "
+				"long, truncating.\n");
 		memset(sb->s_volume_name, 0, sizeof(sb->s_volume_name));
 		strncpy(sb->s_volume_name, new_label,
 			sizeof(sb->s_volume_name));

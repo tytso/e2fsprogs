@@ -117,7 +117,12 @@ can be a numerical uid or a user name.
 set the number of times the filesystem has been mounted.
 .TP
 .I -L volume-label
-set the volume label of the filesystem.
+set the volume label of the filesystem.  
+Ext2 filesystem labels can be at most 16 characters long; if
+.I volume-label 
+is longer than 16 characters, 
+.B tune2fs
+will truncate it and print a warning message.  
 .TP
 .I -M last-mounted-directory
 set the last-mounted directory for the filesystem.
@@ -146,8 +151,8 @@ This manual page was written by Christian Kuhtz <chk@data-hh.Hanse.DE>.
 Timedependent checking was added by Uwe Ohse <uwe@tirka.gun.de>.
 .SH AVAILABILITY
 .B tune2fs
-is available for anonymous ftp from ftp.ibp.fr and tsx-11.mit.edu in
-/pub/linux/packages/ext2fs.
+is part of the e2fsprogs package and is available for anonymous 
+ftp from tsx-11.mit.edu in /pub/linux/packages/ext2fs.
 .SH SEE ALSO
 .BR dumpe2fs (8),
 .BR e2fsck (8),

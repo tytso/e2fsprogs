@@ -187,8 +187,8 @@ extended file system does not support fragments yet.
 There may be some other ones.  Please, report them to the author.
 .SH AVAILABILITY
 .B mke2fs
-is available for anonymous ftp from ftp.ibp.fr and tsx-11.mit.edu in
-/pub/linux/packages/ext2fs.
+is part of the e2fsprogs package and is available for anonymous 
+ftp from tsx-11.mit.edu in /pub/linux/packages/ext2fs.
 .SH SEE ALSO
 .BT badblocks (8),
 .BR dumpe2fs (8),
