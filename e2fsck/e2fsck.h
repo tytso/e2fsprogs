@@ -250,6 +250,9 @@ struct e2fsck_struct {
 	void *priv_data;
 };
 
+/* Used by the region allocation code */
+typedef __u32 region_addr_t;
+typedef struct region_struct *region_t;
 
 /*
  * Procedure declarations
@@ -313,6 +316,11 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir, ext2_ino_t ino
 
 /* pass3.c */
 extern int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t inode);
+
+/* region.c */
+extern region_t region_create(region_addr_t min, region_addr_t max);
+extern void region_free(region_t region);
+extern int region_allocate(region_t region, region_addr_t start, int n);
 
 /* super.c */
 void check_super_block(e2fsck_t ctx);

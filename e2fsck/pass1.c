@@ -939,8 +939,11 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	ext2_ino_t	ino = pctx->ino;
 	struct ext2_inode *inode = pctx->inode;
 	blk_t		blk;
+	char *		end;
 	struct ext2_ext_attr_header *header;
+	struct ext2_ext_attr_entry *entry;
 	int		count;
+	region_t	region;
 	
 	blk = inode->i_file_acl;
 	if (blk == 0)
@@ -1001,7 +1004,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 				pctx->num = 2;
 				fix_problem(ctx, PR_1_ALLOCATE_REFCOUNT, pctx);
 				ctx->flags |= E2F_FLAG_ABORT;
-				return 1;
+				return 0;
 			}
 		}
 		ea_refcount_increment(ctx->refcount_extra, blk, 0);
@@ -1017,14 +1020,55 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	if (pctx->errcode && fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx))
 		goto clear_extattr;
 	header = (struct ext2_ext_attr_header *) block_buf;
-
+	pctx->blk = inode->i_file_acl;
 	if (header->h_magic != EXT2_EXT_ATTR_MAGIC) {
-		pctx->blk = inode->i_file_acl;
-		if (fix_problem, ctx, PR_1_BAD_EA_BLOCK, pctx)
+		if (fix_problem(ctx, PR_1_BAD_EA_BLOCK, pctx))
+			goto clear_extattr;
+	}
+	if (header->h_blocks != 1) {
+		if (fix_problem(ctx, PR_1_EA_MULTI_BLOCK, pctx))
+			goto clear_extattr;
+	}
+
+	region = region_create(0, fs->blocksize);
+	if (!region) {
+		fix_problem(ctx, PR_1_EA_ALLOC_REGION, pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return 0;
+	}
+	if (region_allocate(region, 0, sizeof(struct ext2_ext_attr_header))) {
+		if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION, pctx))
 			goto clear_extattr;
 	}
 	
-	/* @@@ validate the contents of the EA block */
+	entry = (struct ext2_ext_attr_entry *)(header+1);
+	end = block_buf + fs->blocksize;
+	while ((char *)entry < end && *(__u32 *)entry) {
+		if (region_allocate(region, (char *)entry - (char *)header,
+			           EXT2_EXT_ATTR_LEN(entry->e_name_len))) {
+			if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION, pctx))
+				goto clear_extattr;
+		}
+		if (entry->e_name_len == 0 || entry->e_name_index != 0) {
+			if (fix_problem(ctx, PR_1_EA_BAD_NAME, pctx))
+				goto clear_extattr;
+		}
+		if (entry->e_value_block != 0) {
+			if (fix_problem(ctx, PR_1_EA_BAD_VALUE, pctx))
+				goto clear_extattr;
+		}
+		if (region_allocate(region, entry->e_value_offs,
+			           EXT2_EXT_ATTR_SIZE(entry->e_value_size))) {
+			if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION, pctx))
+				goto clear_extattr;
+		}
+		entry = EXT2_EXT_ATTR_NEXT(entry);
+	}
+	if (region_allocate(region, (char *)entry - (char *)header, 4)) {
+		if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION, pctx))
+			goto clear_extattr;
+	}
+	region_free(region);
 
 	count = header->h_refcount - 1;
 	if (count)

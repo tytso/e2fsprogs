@@ -1,3 +1,16 @@
+2001-07-19  Theodore Tso  <tytso@valinux.com>
+
+	* pass1.c (check_ext_attr): The entire EA block is now checked to
+		make sure that parts of the EA block aren't being used for
+		multiple purposes.
+
+	* Makefile.in e2fsck.h, region.c: New file which is used to detect
+		collisions in extended attribute block.
+
+	* problem.h, problem.c (PR_1_EA_MULTI_BLOCK, PR_1_EA_ALLOC_REGION,
+		PR_1_EA_ALLOC_COLLISION, PR_1_EA_BAD_NAME,
+		PR_1_EA_BAD_VALUE): Add new problem codes.
+
 2001-07-10  Theodore Tso  <tytso@valinux.com>
 
 	* journal.c (e2fsck_run_ext3_journal): Only call ext3_flush() if

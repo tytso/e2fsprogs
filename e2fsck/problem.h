@@ -344,6 +344,21 @@ struct problem_context {
 
 /* Error writing Extended Attribute block while fixing refcount */ 
 #define PR_1_EXTATTR_WRITE		0x01003D
+
+/* Multiple EA blocks not supported */
+#define PR_1_EA_MULTI_BLOCK		0x01003E
+
+/* Error allocating EA region allocation structure */
+#define PR_1_EA_ALLOC_REGION		0x01003F
+	
+/* Error EA allocation collision */
+#define PR_1_EA_ALLOC_COLLISION		0x010040
+	
+/* Bad extended attribute name */
+#define PR_1_EA_BAD_NAME		0x010041
+
+/* Bad extended attribute value */
+#define PR_1_EA_BAD_VALUE		0x0100423
 	
 /*
  * Pass 1b errors

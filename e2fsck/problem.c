@@ -596,6 +596,31 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_1_EXTATTR_WRITE,
 	  N_("Error writing @a @b %b (%m).  "),
 	  PROMPT_ABORT, 0 },
+
+	/* Multiple EA blocks not supported */
+	{ PR_1_EA_MULTI_BLOCK,
+	  N_("@a @b %b has h_blocks > 1.  "),
+	  PROMPT_CLEAR, 0},	  
+
+	/* Error allocating EA region allocation structure */
+	{ PR_1_EA_ALLOC_REGION,
+	  N_("Error allocating @a @b %b.  "),
+	  PROMPT_ABORT, 0},
+	
+	/* Error EA allocation collision */
+	{ PR_1_EA_ALLOC_COLLISION,
+	  N_("@a @b %b is corrupt (allocation collision).  "),
+	  PROMPT_ABORT, 0},
+	
+	/* Bad extended attribute name */
+	{ PR_1_EA_BAD_NAME,
+	  N_("@a @b %b is corrupt (invalid name).  "),
+	  PROMPT_CLEAR, 0},	  
+
+	/* Bad extended attribute value */
+	{ PR_1_EA_BAD_VALUE,
+	  N_("@a @b %b is corrupt (invalid value).  "),
+	  PROMPT_CLEAR, 0},	  
 		  
 	/* Pass 1b errors */
 

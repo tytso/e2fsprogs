@@ -56,7 +56,8 @@ PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR) \
 
 OBJS= unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o pass3.o pass4.o \
 	pass5.o journal.o swapfs.o badblocks.o util.o dirinfo.o ehandler.o \
-	problem.o message.o recovery.o revoke.o ea_refcount.o $(MTRACE_OBJ)
+	problem.o message.o recovery.o region.o revoke.o ea_refcount.o \
+	$(MTRACE_OBJ)
 
 PROFILED_OBJS= profiled/unix.o profiled/e2fsck.o profiled/super.o \
 	profiled/pass1.o profiled/pass1b.o \
@@ -64,7 +65,7 @@ PROFILED_OBJS= profiled/unix.o profiled/e2fsck.o profiled/super.o \
 	profiled/journal.o profiled/badblocks.o profiled/util.o \
 	profiled/dirinfo.o profiled/ehandler.o profiled/message.o \
 	profiled/problem.o profiled/swapfs.o profiled/recovery.o \
-	profiled/revoke.o profiled/ea_refcount.o
+	profiled/region.o profiled/revoke.o profiled/ea_refcount.o
 
 SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/super.c \
@@ -86,6 +87,7 @@ SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/message.c \
 	$(srcdir)/swapfs.c \
 	$(srcdir)/ea_refcount.c \
+	$(srcdir)/region.c \
 	$(MTRACE_SRC)
 
 all:: profiled $(PROGS) e2fsck.static e2fsck.shared $(MANPAGES)
@@ -109,6 +111,10 @@ e2fsck.profiled: $(PROFILED_OBJS)  $(PROFILED_DEPLIBS)
 
 tst_refcount: ea_refcount.c
 	$(CC) -o tst_refcount $(srcdir)/ea_refcount.c \
+		$(ALL_CFLAGS) -DTEST_PROGRAM -lcom_err
+
+tst_region: region.c
+	$(CC) -o tst_region $(srcdir)/region.c \
 		$(ALL_CFLAGS) -DTEST_PROGRAM -lcom_err
 
 extend: extend.o
@@ -181,7 +187,8 @@ pass1.o: $(srcdir)/pass1.c $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/problem.h
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/ext2fs/ext2_ext_attr.h \
+ $(srcdir)/problem.h
 pass1b.o: $(srcdir)/pass1b.c $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
@@ -264,5 +271,15 @@ message.o: $(srcdir)/message.c $(srcdir)/e2fsck.h \
 swapfs.o: $(srcdir)/swapfs.c $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+ea_refcount.o: $(srcdir)/ea_refcount.c $(srcdir)/e2fsck.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+region.o: $(srcdir)/region.c $(srcdir)/e2fsck.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h
