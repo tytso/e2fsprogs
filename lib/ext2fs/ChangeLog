@@ -1,5 +1,9 @@
 2001-06-15  Theodore Tso  <tytso@valinux.com>
 
+	* Makefile.in: Fix bug in installation of ext2_types.h.  It is a
+		file which is generated and is therefore found in the
+		build directory, not source directory.
+
 	* ismounted.c (check_mntent_file): Use a test file in / to check
 		to see if the root filesystem is mounted read-only.  This
 		protects against the case where /etc might not be on /, as

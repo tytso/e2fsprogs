@@ -112,7 +112,8 @@ SRCS= ext2_err.c \
 	$(srcdir)/version.c \
 	$(srcdir)/write_bb_file.c
 
-HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h ext2_types.h
+HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h
+HFILES_IN=  ext2_err.h ext2_types.h
 
 LIBRARY= libext2fs
 LIBDIR= ext2fs
@@ -197,7 +198,7 @@ installdirs::
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/ext2fs
 
-install:: all $(HFILES) installdirs 
+install:: all $(HFILES) $(HFILES_IN) installdirs 
 	$(INSTALL_DATA) libext2fs.a $(DESTDIR)$(libdir)/libext2fs.a
 	$(CHMOD) 644 $(DESTDIR)$(libdir)/libext2fs.a
 	-$(RANLIB) $(DESTDIR)$(libdir)/libext2fs.a
@@ -205,7 +206,9 @@ install:: all $(HFILES) installdirs
 	for i in $(HFILES); do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/ext2fs/$$i; \
 	done
-	$(INSTALL_DATA) ext2_err.h  $(DESTDIR)$(includedir)/ext2fs/ext2_err.h
+	for i in $(HFILES_IN); do \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(includedir)/ext2fs/$$i; \
+	done
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libext2fs.a
