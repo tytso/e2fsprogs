@@ -31,13 +31,13 @@ static int add_subst(char *name, char *value)
 	int	retval;
 	
 	retval = ENOMEM;
-	ent = malloc(sizeof(struct subst_entry));
+	ent = (struct subst_entry *) malloc(sizeof(struct subst_entry));
 	if (!ent)
 		goto fail;
-	ent->name = malloc(strlen(name)+1);
+	ent->name = (char *) malloc(strlen(name)+1);
 	if (!ent->name)
 		goto fail;
-	ent->value = malloc(strlen(value)+1);
+	ent->value = (char *) malloc(strlen(value)+1);
 	if (!ent->value)
 		goto fail;
 	strcpy(ent->name, name);
@@ -168,20 +168,20 @@ static void parse_config_file(FILE *f)
  */
 static int compare_file(const char *outfn, const char *newfn)
 {
-	FILE	*old, *new;
+	FILE	*old_f, *new_f;
 	char	oldbuf[2048], newbuf[2048], *oldcp, *newcp;
 	int	retval;
 
-	old = fopen(outfn, "r");
-	if (!old)
+	old_f = fopen(outfn, "r");
+	if (!old_f)
 		return 0;
-	new = fopen(newfn, "r");
-	if (!new)
+	new_f = fopen(newfn, "r");
+	if (!new_f)
 		return 0;
 
 	while (1) {
-		oldcp = fgets(oldbuf, sizeof(oldbuf), old);
-		newcp = fgets(newbuf, sizeof(newbuf), new);
+		oldcp = fgets(oldbuf, sizeof(oldbuf), old_f);
+		newcp = fgets(newbuf, sizeof(newbuf), new_f);
 		if (!oldcp && !newcp) {
 			retval = 1;
 			break;
@@ -191,6 +191,8 @@ static int compare_file(const char *outfn, const char *newfn)
 			break;
 		}
 	}
+	fclose(old_f);
+	fclose(new_f);
 	return retval;
 }
 
@@ -237,7 +239,7 @@ int main(int argc, char **argv)
 	
 	if (optind < argc) {
 		outfn = argv[optind];
-		newfn = malloc(strlen(outfn)+20);
+		newfn = (char *) malloc(strlen(outfn)+20);
 		if (!newfn) {
 			fprintf(stderr, "Memory error!  Exiting.\n");
 			exit(1);
