@@ -20,6 +20,26 @@ extern int ext2fs_test_bit(int nr, const void * addr);
 extern __u16 ext2fs_swab16(__u16 val);
 extern __u32 ext2fs_swab32(__u32 val);
 
+#ifdef WORDS_BIGENDIAN
+#define ext2fs_cpu_to_le32(x) ext2fs_swab32((x))
+#define ext2fs_le32_to_cpu(x) ext2fs_swab32((x))
+#define ext2fs_cpu_to_le16(x) ext2fs_swab16((x))
+#define ext2fs_le16_to_cpu(x) ext2fs_swab16((x))
+#define ext2fs_cpu_to_be32(x) ((__u32)(x))
+#define ext2fs_be32_to_cpu(x) ((__u32)(x))
+#define ext2fs_cpu_to_be16(x) ((__u16)(x))
+#define ext2fs_be16_to_cpu(x) ((__u16)(x))
+#else
+#define ext2fs_cpu_to_le32(x) ((__u32)(x))
+#define ext2fs_le32_to_cpu(x) ((__u32)(x))
+#define ext2fs_cpu_to_le16(x) ((__u16)(x))
+#define ext2fs_le16_to_cpu(x) ((__u16)(x))
+#define ext2fs_cpu_to_be32(x) ext2fs_swab32((x))
+#define ext2fs_be32_to_cpu(x) ext2fs_swab32((x))
+#define ext2fs_cpu_to_be16(x) ext2fs_swab16((x))
+#define ext2fs_be16_to_cpu(x) ext2fs_swab16((x))
+#endif
+
 /*
  * EXT2FS bitmap manipulation routines.
  */

@@ -1,3 +1,8 @@
+2002-06-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* bitops.h: Add #define's for ext2fs_{l,b}e{32,16}_to_cpu and
+		ext2fs_cpu_to_{l,b}e{32,16}
+
 2002-06-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* ismounted.c (check_mntent): In AIX 4.3, MOUNTED isn't defined.
