@@ -4,7 +4,7 @@
  * Copyright (C) 1997, 1998 by Theodore Ts'o and
  * 	PowerQuest, Inc.
  *
- * Copyright (C) 1999, 2000 by Theosore Ts'o
+ * Copyright (C) 1999, 2000, 2001 by Theosore Ts'o
  * 
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -120,7 +120,6 @@ int main (int argc, char ** argv)
 	blk_t		max_size = 0;
 	io_manager	io_ptr;
 	char		*tmp;
-	struct ext2fs_sb *s;
 	
 	initialize_ext2_error_table();
 
@@ -208,9 +207,8 @@ int main (int argc, char ** argv)
 	 * Check for compatibility with the feature sets.  We need to
 	 * be more stringent than ext2fs_open().
 	 */
-	s = (struct ext2fs_sb *) fs->super;
-	if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
-	    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)) {
+	if ((fs->super->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
+	    (fs->super->s_feature_incompat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)) {
 		com_err(program_name, EXT2_ET_UNSUPP_FEATURE,
 			"(%s)", device_name);
 		exit(1);

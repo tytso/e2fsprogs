@@ -23,47 +23,43 @@
 
 #include "ext2fs.h"
 
-void ext2fs_swap_super(struct ext2_super_block * super)
+void ext2fs_swap_super(struct ext2_super_block * sb)
 {
-	struct ext2fs_sb *s = (struct ext2fs_sb *) super;
-	
-	super->s_inodes_count = ext2fs_swab32(super->s_inodes_count);
-	super->s_blocks_count = ext2fs_swab32(super->s_blocks_count);
-	super->s_r_blocks_count = ext2fs_swab32(super->s_r_blocks_count);
-	super->s_free_blocks_count = ext2fs_swab32(super->s_free_blocks_count);
-	super->s_free_inodes_count = ext2fs_swab32(super->s_free_inodes_count);
-	super->s_first_data_block = ext2fs_swab32(super->s_first_data_block);
-	super->s_log_block_size = ext2fs_swab32(super->s_log_block_size);
-	super->s_log_frag_size = ext2fs_swab32(super->s_log_frag_size);
-	super->s_blocks_per_group = ext2fs_swab32(super->s_blocks_per_group);
-	super->s_frags_per_group = ext2fs_swab32(super->s_frags_per_group);
-	super->s_inodes_per_group = ext2fs_swab32(super->s_inodes_per_group);
-	super->s_mtime = ext2fs_swab32(super->s_mtime);
-	super->s_wtime = ext2fs_swab32(super->s_wtime);
-	super->s_mnt_count = ext2fs_swab16(super->s_mnt_count);
-	super->s_max_mnt_count = ext2fs_swab16(super->s_max_mnt_count);
-	super->s_magic = ext2fs_swab16(super->s_magic);
-	super->s_state = ext2fs_swab16(super->s_state);
-	super->s_errors = ext2fs_swab16(super->s_errors);
-	s->s_minor_rev_level = ext2fs_swab16(s->s_minor_rev_level);
-	super->s_lastcheck = ext2fs_swab32(super->s_lastcheck);
-	super->s_checkinterval = ext2fs_swab32(super->s_checkinterval);
-	super->s_creator_os = ext2fs_swab32(super->s_creator_os);
-	super->s_rev_level = ext2fs_swab32(super->s_rev_level);
-#ifdef	EXT2_DEF_RESUID
-	super->s_def_resuid = ext2fs_swab16(super->s_def_resuid);
-	super->s_def_resgid = ext2fs_swab16(super->s_def_resgid);
-#endif
-	s->s_first_ino = ext2fs_swab32(s->s_first_ino);
-	s->s_inode_size = ext2fs_swab16(s->s_inode_size);
-	s->s_block_group_nr = ext2fs_swab16(s->s_block_group_nr);
-	s->s_feature_compat = ext2fs_swab32(s->s_feature_compat);
-	s->s_feature_incompat = ext2fs_swab32(s->s_feature_incompat);
-	s->s_feature_ro_compat = ext2fs_swab32(s->s_feature_ro_compat);
-	s->s_algorithm_usage_bitmap = ext2fs_swab32(s->s_algorithm_usage_bitmap);
-	s->s_journal_inum = ext2fs_swab32(s->s_journal_inum);
-	s->s_journal_dev = ext2fs_swab32(s->s_journal_dev);
-	s->s_last_orphan = ext2fs_swab32(s->s_last_orphan);
+	sb->s_inodes_count = ext2fs_swab32(sb->s_inodes_count);
+	sb->s_blocks_count = ext2fs_swab32(sb->s_blocks_count);
+	sb->s_r_blocks_count = ext2fs_swab32(sb->s_r_blocks_count);
+	sb->s_free_blocks_count = ext2fs_swab32(sb->s_free_blocks_count);
+	sb->s_free_inodes_count = ext2fs_swab32(sb->s_free_inodes_count);
+	sb->s_first_data_block = ext2fs_swab32(sb->s_first_data_block);
+	sb->s_log_block_size = ext2fs_swab32(sb->s_log_block_size);
+	sb->s_log_frag_size = ext2fs_swab32(sb->s_log_frag_size);
+	sb->s_blocks_per_group = ext2fs_swab32(sb->s_blocks_per_group);
+	sb->s_frags_per_group = ext2fs_swab32(sb->s_frags_per_group);
+	sb->s_inodes_per_group = ext2fs_swab32(sb->s_inodes_per_group);
+	sb->s_mtime = ext2fs_swab32(sb->s_mtime);
+	sb->s_wtime = ext2fs_swab32(sb->s_wtime);
+	sb->s_mnt_count = ext2fs_swab16(sb->s_mnt_count);
+	sb->s_max_mnt_count = ext2fs_swab16(sb->s_max_mnt_count);
+	sb->s_magic = ext2fs_swab16(sb->s_magic);
+	sb->s_state = ext2fs_swab16(sb->s_state);
+	sb->s_errors = ext2fs_swab16(sb->s_errors);
+	sb->s_minor_rev_level = ext2fs_swab16(sb->s_minor_rev_level);
+	sb->s_lastcheck = ext2fs_swab32(sb->s_lastcheck);
+	sb->s_checkinterval = ext2fs_swab32(sb->s_checkinterval);
+	sb->s_creator_os = ext2fs_swab32(sb->s_creator_os);
+	sb->s_rev_level = ext2fs_swab32(sb->s_rev_level);
+	sb->s_def_resuid = ext2fs_swab16(sb->s_def_resuid);
+	sb->s_def_resgid = ext2fs_swab16(sb->s_def_resgid);
+	sb->s_first_ino = ext2fs_swab32(sb->s_first_ino);
+	sb->s_inode_size = ext2fs_swab16(sb->s_inode_size);
+	sb->s_block_group_nr = ext2fs_swab16(sb->s_block_group_nr);
+	sb->s_feature_compat = ext2fs_swab32(sb->s_feature_compat);
+	sb->s_feature_incompat = ext2fs_swab32(sb->s_feature_incompat);
+	sb->s_feature_ro_compat = ext2fs_swab32(sb->s_feature_ro_compat);
+	sb->s_algorithm_usage_bitmap = ext2fs_swab32(sb->s_algorithm_usage_bitmap);
+	sb->s_journal_inum = ext2fs_swab32(sb->s_journal_inum);
+	sb->s_journal_dev = ext2fs_swab32(sb->s_journal_dev);
+	sb->s_last_orphan = ext2fs_swab32(sb->s_last_orphan);
 }
 
 void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)

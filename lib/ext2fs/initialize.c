@@ -110,7 +110,6 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_first_data_block, super->s_log_block_size ? 0 : 1);
 	set_field(s_max_mnt_count, EXT2_DFL_MAX_MNT_COUNT);
 	set_field(s_errors, EXT2_ERRORS_DEFAULT);
-#ifdef EXT2_DYNAMIC_REV
 	set_field(s_feature_compat, 0);
 	set_field(s_feature_incompat, 0);
 	set_field(s_feature_ro_compat, 0);
@@ -124,7 +123,6 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		set_field(s_first_ino, EXT2_GOOD_OLD_FIRST_INO);
 		set_field(s_inode_size, EXT2_GOOD_OLD_INODE_SIZE);
 	}
-#endif
 
 	set_field(s_checkinterval, EXT2_DFL_CHECKINTERVAL);
 	super->s_lastcheck = time(NULL);

@@ -29,7 +29,7 @@ struct link_struct  {
 	ino_t		inode;
 	int		flags;
 	int		done;
-	struct ext2fs_sb *sb;
+	struct ext2_super_block *sb;
 };	
 
 static int link_proc(struct ext2_dir_entry *dirent,
@@ -115,7 +115,7 @@ errcode_t ext2fs_link(ext2_filsys fs, ino_t dir, const char *name, ino_t ino,
 	ls.inode = ino;
 	ls.flags = flags;
 	ls.done = 0;
-	ls.sb = (struct ext2fs_sb *) fs->super;
+	ls.sb = fs->super;
 
 	retval = ext2fs_dir_iterate(fs, dir, DIRENT_FLAG_INCLUDE_EMPTY,
 				    0, link_proc, &ls);

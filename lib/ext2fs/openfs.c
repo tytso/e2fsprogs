@@ -50,7 +50,6 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	blk_t		group_block;
 	char		*dest;
 	struct ext2_group_desc *gdp;
-	struct ext2fs_sb	*s;
 	
 	EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
 
@@ -119,30 +118,22 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		retval = EXT2_ET_BAD_MAGIC;
 		goto cleanup;
 	}
-#ifdef EXT2_DYNAMIC_REV
-	if (fs->super->s_rev_level > EXT2_DYNAMIC_REV) {
-		retval = EXT2_ET_REV_TOO_HIGH;
-		goto cleanup;
-	}
-#else
-#ifdef	EXT2_CURRENT_REV
 	if (fs->super->s_rev_level > EXT2_LIB_CURRENT_REV) {
 		retval = EXT2_ET_REV_TOO_HIGH;
 		goto cleanup;
 	}
-#endif
-#endif
+
 	/*
 	 * Check for feature set incompatibility
 	 */
 	if (!(flags & EXT2_FLAG_FORCE)) {
-		s = (struct ext2fs_sb *) fs->super;
-		if (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
+		if (fs->super->s_feature_incompat &
+		    ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
 			retval = EXT2_ET_UNSUPP_FEATURE;
 			goto cleanup;
 		}
 		if ((flags & EXT2_FLAG_RW) &&
-		    (s->s_feature_ro_compat &
+		    (fs->super->s_feature_ro_compat &
 		     ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)) {
 			retval = EXT2_ET_RO_UNSUPP_FEATURE;
 			goto cleanup;

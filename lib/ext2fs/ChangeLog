@@ -1,3 +1,15 @@
+2001-01-01    <tytso@snap.thunk.org>
+
+	* ext2fs.h: Remove definition of ext2fs_sb.  Note: this may break
+		source (but not binary) compatibility of some users of the
+		ext2 library.  They should just simply do a global search
+		and replace of struct ext2fs_sb with struct
+		ext2_super_block, and use their own private copy of
+		ext2_fs.h if they aren't already.
+
+	* closefs.c, initialize.c, link.c, newdir.c, openfs.c, swapfs.c:
+		Replace use of ext2fs_sb with ext2_super_block.
+
 2000-12-31    <tytso@snap.thunk.org>
 
 	* ext2fs.h: Cleaned up header file by removing definitions of

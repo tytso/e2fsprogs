@@ -1,3 +1,8 @@
+2001-01-01    <tytso@snap.thunk.org>
+
+	* main.c (main): Replace use of struct ext2fs_sb with struct
+		ext2_super_block.
+
 2000-12-08    <tytso@snap.thunk.org>
 
 	* Makefile.in: Fix so that top-level "make check" works correctly.

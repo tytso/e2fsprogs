@@ -39,11 +39,8 @@ static int test_root(int a, int b)
 
 int ext2fs_bg_has_super(ext2_filsys fs, int group_block)
 {
-#ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
-	struct ext2fs_sb	*s;
-
-	s = (struct ext2fs_sb *) fs->super;
-	if (!(s->s_feature_ro_compat & EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
+	if (!(fs->super->s_feature_ro_compat &
+	      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
 		return 1;
 
 	if (test_root(group_block, 3) || (test_root(group_block, 5)) ||
@@ -51,9 +48,6 @@ int ext2fs_bg_has_super(ext2_filsys fs, int group_block)
 		return 1;
 	
 	return 0;
-#else
-	return 1;
-#endif
 }
 
 /*
@@ -133,15 +127,13 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	struct ext2_super_block *super_shadow = 0;
 	struct ext2_group_desc *group_shadow = 0;
 	struct ext2_group_desc *s, *t;
-	struct ext2fs_sb *sb, *sb_shadow;
 	
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	fs_state = fs->super->s_state;
 
 	fs->super->s_wtime = time(NULL);
-	sb = (struct ext2fs_sb *) fs->super;
-	sb->s_block_group_nr = 0;
+	fs->super->s_block_group_nr = 0;
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		retval = EXT2_ET_NO_MEMORY;
 		retval = ext2fs_get_mem(SUPERBLOCK_SIZE,
@@ -159,7 +151,6 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		/* swap the superblock */
 		*super_shadow = *fs->super;
 		ext2fs_swap_super(super_shadow);
-		sb_shadow = (struct ext2fs_sb *) super_shadow;
 
 		/* swap the group descriptors */
 		for (j=0, s=fs->group_desc, t=group_shadow;
@@ -169,7 +160,6 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		}
 	} else {
 		super_shadow = fs->super;
-		sb_shadow = (struct ext2fs_sb *) fs->super;
 		group_shadow = fs->group_desc;
 	}
 	
@@ -208,9 +198,9 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		if (sgrp > ((1 << 16) - 1))
 			sgrp = (1 << 16) - 1;
 		if (fs->flags & EXT2_FLAG_SWAP_BYTES)
-			sb_shadow->s_block_group_nr = ext2fs_swab16(sgrp);
+			super_shadow->s_block_group_nr = ext2fs_swab16(sgrp);
 		else
-			sb->s_block_group_nr = sgrp;
+			fs->super->s_block_group_nr = sgrp;
 
 		if (i !=0 ) {
 			retval = io_channel_write_blk(fs->io, group_block,
@@ -231,7 +221,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	next_group:
 		group_block += EXT2_BLOCKS_PER_GROUP(fs->super);
 	}
-	sb->s_block_group_nr = 0;
+	fs->super->s_block_group_nr = 0;
 
 	/*
 	 * If the write_bitmaps() function is present, call it to

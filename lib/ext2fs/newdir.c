@@ -38,7 +38,6 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ino_t dir_ino, ino_t parent_ino,
 	char			*buf;
 	int			rec_len;
 	int			filetype = 0;
-	struct ext2fs_sb	*sb;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -50,8 +49,8 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ino_t dir_ino, ino_t parent_ino,
 	dir->rec_len = fs->blocksize;
 
 	if (dir_ino) {
-		sb = (struct ext2fs_sb *) fs->super;
-		if (sb->s_feature_incompat & EXT2_FEATURE_INCOMPAT_FILETYPE)
+		if (fs->super->s_feature_incompat &
+		    EXT2_FEATURE_INCOMPAT_FILETYPE)
 			filetype = EXT2_FT_DIR << 8;
 		/*
 		 * Set up entry for '.'
