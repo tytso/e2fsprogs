@@ -339,7 +339,7 @@ _INLINE_ int ext2fs_test_bit(int nr, const void *addr)
 
 #endif /* __sparc__ */
 
-#if !defined(_EXT2_HAVE_ASM_SWAB_) && defined(ENABLE_SWAPFS)
+#if !defined(_EXT2_HAVE_ASM_SWAB_) && defined(EXT2FS_ENABLE_SWAPFS)
 
 _INLINE_ __u16 ext2fs_swab16(__u16 val)
 {

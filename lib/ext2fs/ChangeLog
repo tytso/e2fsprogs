@@ -1,5 +1,10 @@
 2001-06-22  Theodore Tso  <tytso@valinux.com>
 
+	* bitops.h: The C language versions of ext2fs_swab16/32 need to be
+		included if EXT2FS_ENABLE_SWAPFS is defined, since we need
+		to support byte swapping even if we don't support the
+		conversion functions.  (Fixes Debian bug #101686).
+
 	* dirblock.c (ext2fs_read_dir_block): Remove use of dir_entry_2
 		since the byte-swapping code all assumes the
 		ext2_dir_entry structure.  (It's a question of whether or
