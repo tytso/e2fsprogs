@@ -166,8 +166,8 @@ retry:
 			   EXT2_DESC_PER_BLOCK(super) - 1)
 		/ EXT2_DESC_PER_BLOCK(super);
 
-	/* n.b., fs->blocksize is <= 4096 */
-	set_field(s_inodes_count, super->s_blocks_count/(4096/fs->blocksize));
+	i = fs->blocksize >= 4096 ? 1 : 4096 / fs->blocksize;
+	set_field(s_inodes_count, super->s_blocks_count / i);
 
 	/*
 	 * Make sure we have at least EXT2_FIRST_INO + 1 inodes, so

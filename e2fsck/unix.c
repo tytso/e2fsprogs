@@ -51,8 +51,6 @@ static int verbose = 0;
 static int replace_bad_blocks = 0;
 static char *bad_blocks_file = 0;
 
-static int possible_block_sizes[] = { 1024, 2048, 4096, 8192, 0};
-
 static int root_filesystem = 0;
 static int read_only_root = 0;
 
@@ -663,7 +661,6 @@ int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
 	int		exit_value = FSCK_OK;
-	int		i;
 	ext2_filsys	fs = 0;
 	io_manager	io_ptr;
 	struct ext2_super_block *sb;
@@ -742,10 +739,11 @@ restart:
 				     ctx->superblock, ctx->blocksize,
 				     io_ptr, &fs);
 	} else if (ctx->superblock) {
-		for (i=0; possible_block_sizes[i]; i++) {
+		int blocksize;
+		for (blocksize = EXT2_MIN_BLOCK_SIZE;
+		     blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
 			retval = ext2fs_open(ctx->filesystem_name, flags,
-					     ctx->superblock,
-					     possible_block_sizes[i],
+					     ctx->superblock, blocksize,
 					     io_ptr, &fs);
 			if (!retval)
 				break;

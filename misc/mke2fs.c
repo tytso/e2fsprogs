@@ -44,6 +44,13 @@ extern int optind;
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
+#ifdef HAVE_ASM_PAGE_H
+#include <asm/page.h>
+#define SYS_MAX_BLOCKSIZE PAGE_SIZE
+#else
+#define SYS_MAX_BLOCKSIZE 4096
+#endif
+
 #include "ext2fs/ext2_fs.h"
 #include "et/com_err.h"
 #include "uuid/uuid.h"
@@ -137,8 +144,8 @@ struct mke2fs_defaults {
 	{ default_str, 3, 1024, 8192 },
 	{ "journal", 0, 4096, 8192 },
 	{ "news", 0, 4096, 4096 },
-	{ "largefile", 0, 4096, 1024 * 1024 },
-	{ "largefile4", 0, 4096, 4096 * 1024 },
+	{ "largefile", 0, SYS_MAX_BLOCKSIZE, 1024 * 1024 },
+	{ "largefile4", 0, SYS_MAX_BLOCKSIZE, 4096 * 1024 },
 	{ 0, 0, 0, 0},
 };
 
@@ -150,8 +157,7 @@ static void set_fs_defaults(const char *fs_type,
 	int	ratio = 0;
 	struct mke2fs_defaults *p;
 
-	megs = (super->s_blocks_count * (EXT2_BLOCK_SIZE(super) / 1024) /
-		1024);
+	megs = super->s_blocks_count * (EXT2_BLOCK_SIZE(super) / 1024) / 1024;
 	if (inode_ratio)
 		ratio = *inode_ratio;
 	if (!fs_type)
@@ -788,6 +794,7 @@ static void PRS(int argc, char *argv[])
 	blk_t		group_blk_max = 8192;
 	int		blocksize = 0;
 	int		inode_ratio = 0;
+	int		inode_size = 0;
 	int		reserved_ratio = 5;
 	ext2_ino_t	num_inodes = 0;
 	errcode_t	retval;
@@ -854,11 +861,16 @@ static void PRS(int argc, char *argv[])
 		switch (c) {
 		case 'b':
 			blocksize = strtoul(optarg, &tmp, 0);
-			if (blocksize < 1024 || blocksize > 4096 || *tmp) {
+			if (blocksize < EXT2_MIN_BLOCK_SIZE ||
+			    blocksize > EXT2_MAX_BLOCK_SIZE || *tmp) {
 				com_err(program_name, 0,
 					_("bad block size - %s"), optarg);
 				exit(1);
 			}
+			if (blocksize > 4096)
+				fprintf(stderr, _("Warning: blocksize %d not "
+						  "usable on most systems.\n"),
+					blocksize);
 			param.s_log_block_size =
 				int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 			group_blk_max = blocksize * 8;
@@ -869,7 +881,8 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'f':
 			size = strtoul(optarg, &tmp, 0);
-			if (size < 1024 || size > 4096 || *tmp) {
+			if (size < EXT2_MIN_BLOCK_SIZE ||
+			    size > EXT2_MAX_BLOCK_SIZE || *tmp) {
 				com_err(program_name, 0,
 					_("bad fragment size - %s"),
 					optarg);
@@ -895,10 +908,13 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'i':
 			inode_ratio = strtoul(optarg, &tmp, 0);
-			if (inode_ratio < 1024 || inode_ratio > 4096 * 1024 ||
+			if (inode_ratio < EXT2_MIN_BLOCK_SIZE ||
+			    inode_ratio > EXT2_MAX_BLOCK_SIZE * 1024 ||
 			    *tmp) {
 				com_err(program_name, 0,
-					_("bad inode ratio - %s"), optarg);
+					_("bad inode ratio %s (min %d/max %d"),
+					optarg, EXT2_MIN_BLOCK_SIZE,
+					EXT2_MAX_BLOCK_SIZE);
 				exit(1);
 			}
 			break;
@@ -953,7 +969,12 @@ static void PRS(int argc, char *argv[])
 			break;
 #ifdef EXT2_DYNAMIC_REV
 		case 'I':
-			param.s_inode_size = atoi(optarg);
+			inode_size = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(program_name, 0,
+					_("bad inode size - %s"), optarg);
+				exit(1);
+			}
 			break;
 #endif
 		case 'N':
@@ -1050,6 +1071,18 @@ static void PRS(int argc, char *argv[])
 		ext2fs_close(jfs);
 	}
 
+	if (blocksize > SYS_MAX_BLOCKSIZE) {
+		if (!force) {
+			com_err(program_name, 0,
+				_("%d-byte blocks too big for system (max %d)"),
+				blocksize, SYS_MAX_BLOCKSIZE);
+			proceed_question();
+		}
+		fprintf(stderr, _("Warning: %d-byte blocks too big for system "
+				  "(max %d), forced to continue\n"),
+			blocksize, SYS_MAX_BLOCKSIZE);
+	}
+
 	if (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		if (!fs_type)
 			fs_type = "journal";
@@ -1127,6 +1160,23 @@ static void PRS(int argc, char *argv[])
 				_("blocks per group count out of range"));
 			exit(1);
 		}
+	}
+
+	if (inode_size) {
+		if (inode_size < EXT2_GOOD_OLD_INODE_SIZE ||
+		    inode_size > EXT2_BLOCK_SIZE(&param) ||
+		    inode_size & (inode_size - 1)) {
+			com_err(program_name, 0,
+				_("bad inode size %d (min %d/max %d)"),
+				inode_size, EXT2_GOOD_OLD_INODE_SIZE,
+				EXT2_BLOCK_SIZE(&param));
+			exit(1);
+		}
+		if (inode_size != EXT2_GOOD_OLD_INODE_SIZE)
+			fprintf(stderr, _("Warning: %d-byte inodes not usable "
+				"on most systems\n"),
+				inode_size);
+		param.s_inode_size = inode_size;
 	}
 
 	/*

@@ -359,7 +359,8 @@ blk_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 		goto cleanup;
 	sb = (struct ext2_super_block *) buf;
 
-	for (blocksize=1024; blocksize <= 8192 ; blocksize = blocksize*2) {
+	for (blocksize = EXT2_MIN_BLOCK_SIZE;
+	     blocksize <= EXT2_MAX_BLOCK_SIZE ; blocksize *= 2) {
 		superblock = blocksize*8;
 		if (blocksize == 1024)
 			superblock++;

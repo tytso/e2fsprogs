@@ -67,9 +67,10 @@
 /*
  * Macro-instructions used to manage several block sizes
  */
-#define EXT2_MIN_BLOCK_SIZE		1024
-#define	EXT2_MAX_BLOCK_SIZE		4096
-#define EXT2_MIN_BLOCK_LOG_SIZE		  10
+#define EXT2_MIN_BLOCK_LOG_SIZE		10	/* 1024 */
+#define EXT2_MAX_BLOCK_LOG_SIZE		13	/* 8192 */
+#define EXT2_MIN_BLOCK_SIZE		(1 << EXT2_MIN_BLOCK_LOG_SIZE)
+#define	EXT2_MAX_BLOCK_SIZE		(1 << EXT2_MAX_BLOCK_LOG_SIZE)
 #ifdef __KERNEL__
 # define EXT2_BLOCK_SIZE(s)		((s)->s_blocksize)
 #else
@@ -98,9 +99,9 @@
 /*
  * Macro-instructions used to manage fragments
  */
-#define EXT2_MIN_FRAG_SIZE		1024
-#define	EXT2_MAX_FRAG_SIZE		4096
-#define EXT2_MIN_FRAG_LOG_SIZE		  10
+#define EXT2_MIN_FRAG_SIZE		EXT2_MIN_BLOCK_SIZE
+#define	EXT2_MAX_FRAG_SIZE		EXT2_MAX_BLOCK_SIZE
+#define EXT2_MIN_FRAG_LOG_SIZE		EXT2_MIN_BLOCK_LOG_SIZE
 #ifdef __KERNEL__
 # define EXT2_FRAG_SIZE(s)		((s)->u.ext2_sb.s_frag_size)
 # define EXT2_FRAGS_PER_BLOCK(s)	((s)->u.ext2_sb.s_frags_per_block)

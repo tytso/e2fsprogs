@@ -266,19 +266,17 @@ void e2fsck_pass1(e2fsck_t ctx)
 	mtrace_print("Pass 1");
 #endif
 
-#define EXT2_BPP(bits) (1UL << ((bits) - 2))
+#define EXT2_BPP(bits) (1ULL << ((bits) - 2))
 
-	for (i=0; i < 4; i++) {
-		max_sizes = EXT2_NDIR_BLOCKS + EXT2_BPP(10+i);
-		max_sizes = max_sizes + EXT2_BPP(10+i) * EXT2_BPP(10+i);
-		max_sizes = (max_sizes +
-			     (__u64) EXT2_BPP(10+i) * EXT2_BPP(10+i) *
-			     EXT2_BPP(10+i));
-		max_sizes = (max_sizes * (1UL << (10+i))) - 1;
-		max_sect_limit = 512ULL * ((1LL << 32) - (1 << (i+1)));
+	for (i = EXT2_MIN_BLOCK_LOG_SIZE; i <= EXT2_MAX_BLOCK_LOG_SIZE; i++) {
+		max_sizes = EXT2_NDIR_BLOCKS + EXT2_BPP(i);
+		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i);
+		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i) * EXT2_BPP(i);
+		max_sizes = (max_sizes * (1UL << i)) - 1;
+		max_sect_limit = 512ULL * ((1LL << 32) - (1 << i));
 		if (max_sizes > max_sect_limit)
 			max_sizes = max_sect_limit;
-		ext2_max_sizes[i] = max_sizes;
+		ext2_max_sizes[i - 10] = max_sizes;
 	}
 #undef EXT2_BPP
 
@@ -451,11 +449,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 		} else if (ino == EXT2_JOURNAL_INO) {
 			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
 			if (fs->super->s_journal_inum == EXT2_JOURNAL_INO) {
-				/*
-				 * XXX arguably this check should be
-				 * in journal.c, before we decide it's
-				 * safe to run the journal...
-				 */
 				if (!LINUX_S_ISREG(inode.i_mode) &&
 				    fix_problem(ctx, PR_1_JOURNAL_BAD_MODE,
 						&pctx)) {
