@@ -1,3 +1,8 @@
+2005-02-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Remove support for the (very old) sparc old-bitops
+		configure option.
+
 2005-01-19  Matthias Andree <matthias.andree@gmx.de>
 
 	* configure.in: Clean up checks for dirent.d_reclen, ssize_t,

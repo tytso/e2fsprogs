@@ -486,21 +486,6 @@ dnl
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
 AC_SUBST_FILE(MAKEFILE_LIBRARY)
 dnl
-dnl
-AC_ARG_ENABLE([old-bitops],
-[  --enable-old-bitops	  Use old (non-standard but native) bitmask operations],
-if test "$enableval" = "no"
-then
-	echo "Using new (standard) bitmask operations"
-else
-	AC_DEFINE(EXT2_OLD_BITOPS)
-	echo "Using old (native) bitmask operations"
-
-fi
-,
-echo "Using standard bitmask operations by default"
-)
-dnl
 dnl Add internationalization support, using gettext.
 dnl
 GETTEXT_PACKAGE=e2fsprogs

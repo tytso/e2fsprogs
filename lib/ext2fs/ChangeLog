@@ -1,3 +1,12 @@
+2005-02-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* bitops.c: Make the generic functions more efficient.
+
+	* bitops.h: Drop SPARC assembly code. It's less efficient than GCC
+		3.4 compiled code and also triggers nasty compiler
+		warnings on sparc64.  Thanks to Matthias Andree for his
+		analysis and suggestion.
+	
 2005-01-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* res_gdt.c (ext2fs_create_resize_inode): Create the resize inode

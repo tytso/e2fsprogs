@@ -861,7 +861,6 @@ Optional Features:
   --enable-dynamic-e2fsck build e2fsck dynamically
   --enable-fsck           build fsck wrapper program
   --enable-e2initrd-helper build e2initrd-helper program
-  --enable-old-bitops	  Use old (non-standard but native) bitmask operations
   --disable-nls           do not use Native Language Support
   --disable-rpath         do not hardcode runtime library paths
 
@@ -3457,25 +3456,6 @@ fi;
 
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
 
-# Check whether --enable-old-bitops or --disable-old-bitops was given.
-if test "${enable_old_bitops+set}" = set; then
-  enableval="$enable_old_bitops"
-  if test "$enableval" = "no"
-then
-	echo "Using new (standard) bitmask operations"
-else
-	cat >>confdefs.h <<\_ACEOF
-#define EXT2_OLD_BITOPS 1
-_ACEOF
-
-	echo "Using old (native) bitmask operations"
-
-fi
-
-else
-  echo "Using standard bitmask operations by default"
-
-fi;
 GETTEXT_PACKAGE=e2fsprogs
 PACKAGE=e2fsprogs
 VERSION="$E2FSPROGS_VERSION"
