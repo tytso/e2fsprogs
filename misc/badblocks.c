@@ -199,7 +199,7 @@ static void set_o_direct(int dev, unsigned char *buffer, size_t size)
 		new_flag = 0;
 
 	if (new_flag != current_O_DIRECT) {
-		printf("%s O_DIRECT\n", new_flag ? "Setting" : "Clearing");
+	     /* printf("%s O_DIRECT\n", new_flag ? "Setting" : "Clearing"); */
 		flag = fcntl(dev, F_GETFL);
 		if (flag > 0) {
 			flag = (flag & ~O_DIRECT) | new_flag;
