@@ -109,7 +109,7 @@ static void list_desc (ext2_filsys fs)
 		next_blk = group_blk + fs->super->s_blocks_per_group;
 		if (next_blk > fs->super->s_blocks_count)
 			next_blk = fs->super->s_blocks_count;
-		printf (opt_hex ? _("Group %lu: (Blocks %04x -- %04x)\n"):
+		printf (opt_hex ? _("Group %lu: (Blocks 0x%04x -- 0x%04x)\n"):
 			 _("Group %lu: (Blocks %u -- %u)\n"), i,
 			group_blk, next_blk -1 );
 		if (ext2fs_bg_has_super (fs, i))
@@ -120,9 +120,9 @@ static void list_desc (ext2_filsys fs)
 				i == 0 ? _("Primary") : _("Backup"),
 				group_blk, group_blk + 1,
 				group_blk + group_desc_blocks);
-		printf (opt_hex ? _("  Block bitmap at %04x (+%d), "
-			"Inode bitmap at %04x (+%d)\n  "
-			"Inode table at %04x-%04x (+%d)\n"):
+		printf (opt_hex ? _("  Block bitmap at 0x%04x (+%d), "
+			"Inode bitmap at 0x%04x (+%d)\n  "
+			"Inode table at 0x%04x-0x%04x (+%d)\n"):
 		        _("  Block bitmap at %u (+%d), "
 			"Inode bitmap at %u (+%d)\n  "
 			"Inode table at %u-%u (+%d)\n"),
@@ -132,7 +132,7 @@ static void list_desc (ext2_filsys fs)
 			fs->group_desc[i].bg_inode_bitmap - group_blk,
 			fs->group_desc[i].bg_inode_table,
 			fs->group_desc[i].bg_inode_table +
-				inode_blocks_per_group,
+				inode_blocks_per_group - 1,
 			fs->group_desc[i].bg_inode_table - group_blk);
 		printf (_("  %d free blocks, %d free inodes, %d directories\n"),
 			fs->group_desc[i].bg_free_blocks_count,

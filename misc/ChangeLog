@@ -1,5 +1,9 @@
 2001-02-07  Theodore Tso  <tytso@valinux.com>
 
+	* dumpe2fs.c (list_desc): Fix fencepost error when calculating the
+		range of inode table blocks.  Add '0x' to values printed
+		in hex.
+
 	* chattr.c, lsattr.c: Define the _LARGEFILE64_SOURCE to force the
 		use of the LFS so that lstat will work on large files.
 
