@@ -1,3 +1,8 @@
+2001-04-21  Theodore Tso  <tytso@valinux.com>
+
+	* subst.conf.in: Add definition of JDEV for mke2fs' and tune2fs'
+		man page. 
+
 2001-04-17  Theodore Tso  <tytso@valinux.com>
 
 	* subst.c (replace_string): Fix replace_string so that it

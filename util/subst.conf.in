@@ -11,3 +11,5 @@ SIZEOF_INT		@SIZEOF_INT@
 SIZEOF_SHORT		@SIZEOF_SHORT@
 datadir			@datadir@
 $prefix			@prefix@
+# Comment out the documentation for the journal device in mke2fs's man page
+JDEV			.\"
