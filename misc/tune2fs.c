@@ -96,18 +96,19 @@ static int strcasecmp (char *s1, char *s2)
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-c max-mounts-count] [-e errors-behavior] "
-		 "[-g group]\n"
-		 "\t[-i interval[d|m|w]] [-l] [-s sparse-flag] "
-		"[-m reserved-blocks-percent]\n"
-		 "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
-		 "\t[-L volume-label] [-M last-mounted-dir] [-U UUID]\n"
-		 "\t[-O [^]feature[,...]] device\n"), program_name);
+	fprintf(stderr,
+		_("Usage: %s [-c max-mounts-count] [-e errors-behavior] "
+		  "[-g group]\n"
+		  "\t[-i interval[d|m|w]] [-l] [-s sparse-flag] "
+		  "[-m reserved-blocks-percent]\n"
+		  "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
+		  "\t[-L volume-label] [-M last-mounted-dir] [-U UUID]\n"
+		  "\t[-O [^]feature[,...]] device\n"), program_name);
 	exit (1);
 }
 
 static __u32 ok_features[3] = {
-	0,					/* Compat */
+	EXT3_FEATURE_COMPAT_HAS_JOURNAL,	/* Compat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE,		/* Incompat */
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
 };
@@ -120,11 +121,12 @@ int main (int argc, char ** argv)
 	char * tmp;
 	errcode_t retval;
 	ext2_filsys fs;
-	struct ext2fs_sb *sb;
+	struct ext2_super_block *sb;
 	struct group * gr;
 	struct passwd * pw;
 	int open_flag = 0;
 	char *features_cmd = 0;
+	int mount_flags = 0;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -314,62 +316,61 @@ int main (int argc, char ** argv)
 		printf(_("Couldn't find valid filesystem superblock.\n"));
 		exit(1);
 	}
-	sb = (struct ext2fs_sb *) fs->super;
+	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+	if (retval) {
+		com_err("ext2fs_check_if_mount", retval,
+			_("while determining whether %s is mounted."),
+			device_name);
+		return;
+	}
+	sb = fs->super;
 
 	if (c_flag) {
-		fs->super->s_max_mnt_count = max_mount_count;
+		sb->s_max_mnt_count = max_mount_count;
 		ext2fs_mark_super_dirty(fs);
 		printf (_("Setting maximal mount count to %d\n"),
 			max_mount_count);
 	}
 	if (C_flag) {
-		fs->super->s_mnt_count = mount_count;
+		sb->s_mnt_count = mount_count;
 		ext2fs_mark_super_dirty(fs);
 		printf (_("Setting current mount count to %d\n"), mount_count);
 	}
 	if (e_flag) {
-		fs->super->s_errors = errors;
+		sb->s_errors = errors;
 		ext2fs_mark_super_dirty(fs);
 		printf (_("Setting error behavior to %d\n"), errors);
 	}
-	if (g_flag)
-#ifdef	EXT2_DEF_RESGID
-	{
-		fs->super->s_def_resgid = resgid;
+	if (g_flag) {
+		sb->s_def_resgid = resgid;
 		ext2fs_mark_super_dirty(fs);
 		printf (_("Setting reserved blocks gid to %lu\n"), resgid);
 	}
-#else
-		com_err (program_name, 0,
-			 _("The -g option is not supported by this version -- "
-			 "Recompile with a newer kernel"));
-#endif
 	if (i_flag) {
-		fs->super->s_checkinterval = interval;
+		sb->s_checkinterval = interval;
 		ext2fs_mark_super_dirty(fs);
 		printf (_("Setting interval between check %lu seconds\n"), interval);
 	}
 	if (m_flag) {
-		fs->super->s_r_blocks_count = (fs->super->s_blocks_count / 100)
+		sb->s_r_blocks_count = (sb->s_blocks_count / 100)
 			* reserved_ratio;
 		ext2fs_mark_super_dirty(fs);
 		printf (_("Setting reserved blocks percentage to %lu (%u blocks)\n"),
-			reserved_ratio, fs->super->s_r_blocks_count);
+			reserved_ratio, sb->s_r_blocks_count);
 	}
 	if (r_flag) {
-		if (reserved_blocks >= fs->super->s_blocks_count) {
+		if (reserved_blocks >= sb->s_blocks_count) {
 			com_err (program_name, 0,
 				 _("reserved blocks count is too big (%ul)"),
 				 reserved_blocks);
 			exit (1);
 		}
-		fs->super->s_r_blocks_count = reserved_blocks;
+		sb->s_r_blocks_count = reserved_blocks;
 		ext2fs_mark_super_dirty(fs);
 		printf (_("Setting reserved blocks count to %lu\n"),
 			reserved_blocks);
 	}
 	if (s_flag == 1) {
-#ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 		if (sb->s_feature_ro_compat &
 		    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)
 			fprintf(stderr, _("\nThe filesystem already"
@@ -377,19 +378,13 @@ int main (int argc, char ** argv)
 		else {
 			sb->s_feature_ro_compat |=
 				EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-			fs->super->s_state &= ~EXT2_VALID_FS;
+			sb->s_state &= ~EXT2_VALID_FS;
 			ext2fs_mark_super_dirty(fs);
 			printf(_("\nSparse superblock flag set.  %s"),
 			       _(please_fsck));
 		}
-#else /* !EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
-		com_err (program_name, 0,
-			 _("The -s option is not supported by this version -- "
-			 "Recompile with a newer kernel"));
-#endif /* EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
 	}
 	if (s_flag == 0) {
-#ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 		if (!(sb->s_feature_ro_compat &
 		      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
 			fprintf(stderr, _("\nThe filesystem already"
@@ -397,31 +392,18 @@ int main (int argc, char ** argv)
 		else {
 			sb->s_feature_ro_compat &=
 				~EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-			fs->super->s_state &= ~EXT2_VALID_FS;
+			sb->s_state &= ~EXT2_VALID_FS;
 			fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 			ext2fs_mark_super_dirty(fs);
 			printf(_("\nSparse superblock flag cleared.  %s"),
 			       _(please_fsck));
 		}
-#else /* !EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
-		com_err (program_name, 0,
-			 _("The -s option is not supported by this version -- "
-			 "Recompile with a newer kernel"));
-#endif /* EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
 	}
-	
-	if (u_flag)
-#ifdef	EXT2_DEF_RESUID
-	{
-		fs->super->s_def_resuid = resuid;
+	if (u_flag) {
+		sb->s_def_resuid = resuid;
 		ext2fs_mark_super_dirty(fs);
 		printf (_("Setting reserved blocks uid to %lu\n"), resuid);
 	}
-#else
-		com_err (program_name, 0,
-			 _("The -u option is not supported by this version -- "
-			 "Recompile with a newer kernel"));
-#endif
 	if (L_flag) {
 		if (strlen(new_label) > sizeof(sb->s_volume_name))
 			fprintf(stderr, _("Warning: label too "
@@ -439,11 +421,14 @@ int main (int argc, char ** argv)
 	}
 	if (features_cmd) {
 		int sparse, old_sparse, filetype, old_filetype;
+		int journal, old_journal;
 
 		old_sparse = sb->s_feature_ro_compat &
 			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 		old_filetype = sb->s_feature_incompat &
 			EXT2_FEATURE_INCOMPAT_FILETYPE;
+		old_journal = sb->s_feature_compat &
+			EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 		if (e2p_edit_feature(features_cmd,
 				     &sb->s_feature_compat,
 				     ok_features)) {
@@ -455,9 +440,21 @@ int main (int argc, char ** argv)
 			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 		filetype = sb->s_feature_incompat &
 			EXT2_FEATURE_INCOMPAT_FILETYPE;
+		journal = sb->s_feature_compat &
+			EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+		if (old_journal && !journal && 
+		    (mount_flags & EXT2_MF_MOUNTED) &&
+		    !(mount_flags & EXT2_MF_READONLY)) {
+			fprintf(stderr,
+				_("The HAS_JOURNAL flag may only be cleared "
+				  "the filesystem is unmounted\n"
+				  "or mounted read-only.\n"));
+			exit(1);
+		}	
 		if ((sparse != old_sparse) ||
-		    (filetype != old_filetype)) {
-			fs->super->s_state &= ~EXT2_VALID_FS;
+		    (filetype != old_filetype) ||
+		    (journal != old_journal)) {
+			sb->s_state &= ~EXT2_VALID_FS;
 			printf("\n%s\n", _(please_fsck));
 		}
 		ext2fs_mark_super_dirty(fs);
@@ -475,7 +472,7 @@ int main (int argc, char ** argv)
 	}
 
 	if (l_flag)
-		list_super (fs->super);
+		list_super (sb);
 	ext2fs_close (fs);
 	exit (0);
 }
