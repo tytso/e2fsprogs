@@ -1,3 +1,9 @@
+2005-03-02  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen_tarball.in: Don't remove the .gmo files from the generated
+		tarball; they are now treated as source files instead of
+		generated files.
+
 2006-02-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.36
