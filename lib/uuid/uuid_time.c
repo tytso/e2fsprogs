@@ -17,7 +17,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <time.h>
-#include <linux/ext2_fs.h>
 
 #include "uuidP.h"
 

@@ -2,7 +2,7 @@
  * debugfs.h --- header file for the debugfs program
  */
 
-#include <linux/ext2_fs.h>
+#include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 
 #ifdef __STDC__

@@ -1,3 +1,7 @@
+2001-05-14  Theodore Tso  <tytso@valinux.com>
+
+	* debugfs.h: Change location of ext2_fs.h to be ext2fs/ext2_fs.h
+
 2001-05-12  Theodore Tso  <tytso@valinux.com>
 
 	* debugfs.c (print_features): Use fputs instead of printf to

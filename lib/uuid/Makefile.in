@@ -172,5 +172,4 @@ pack.o: $(srcdir)/pack.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
 parse.o: $(srcdir)/parse.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
 unpack.o: $(srcdir)/unpack.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
 unparse.o: $(srcdir)/unparse.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
-uuid_time.o: $(srcdir)/uuid_time.c $(top_srcdir)/include/linux/ext2_fs.h \
- $(srcdir)/uuidP.h $(srcdir)/uuid.h
+uuid_time.o: $(srcdir)/uuid_time.c $(srcdir)/uuidP.h $(srcdir)/uuid.h

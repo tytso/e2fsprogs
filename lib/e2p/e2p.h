@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <dirent.h>
 
-#include <linux/ext2_fs.h>
+#include "ext2fs/ext2_fs.h"
 
 #define E2P_FEATURE_COMPAT	0
 #define E2P_FEATURE_INCOMPAT	1

@@ -14,7 +14,6 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
-#include <linux/ext2_fs.h>
 #ifdef HAVE_LINUX_MAJOR_H
 #include <linux/major.h>
 #endif
@@ -24,6 +23,7 @@
 
 #include "et/com_err.h"
 #include "e2p/e2p.h"
+#include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "nls-enable.h"
 #include "util.h"

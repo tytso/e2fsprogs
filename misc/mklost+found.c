@@ -22,8 +22,7 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 
-#include <linux/ext2_fs.h>
-
+#include "ext2fs/ext2_fs.h"
 #include "../version.h"
 #include "nls-enable.h"
 

@@ -32,7 +32,7 @@ extern int optind;
 #include <string.h>
 #include <unistd.h>
 
-#include <linux/ext2_fs.h>
+#include "ext2fs/ext2_fs.h"
 
 #include "ext2fs/ext2fs.h"
 #include "e2p/e2p.h"

@@ -49,7 +49,7 @@ extern int optind;
 
 #include "et/com_err.h"
 #include "ext2fs/ext2_io.h"
-#include <linux/ext2_fs.h>
+#include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "nls-enable.h"
 

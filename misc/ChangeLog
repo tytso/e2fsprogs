@@ -1,5 +1,9 @@
 2001-05-14  Theodore Tso  <tytso@valinux.com>
 
+	* badblocks.c, chattr.c, dumpe2fs.c, e2image.c, findsuper.c, 
+		lsattr.c, mke2fs.c, mklost+found.c, tune2fs.c, util.c:
+		Change location of ext2_fs.h to be ext2fs/ext2_fs.h
+
 	* tune2fs.8.in: Fix typo's and make other clarifications suggested
 		by Andreas Dilger.
 

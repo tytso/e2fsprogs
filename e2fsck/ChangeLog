@@ -1,5 +1,8 @@
 2001-05-14  Theodore Tso  <tytso@valinux.com>
 
+	* e2fsck.h, scantest.c: Change location of ext2_fs.h to be
+		ext2fs/ext2_fs.h
+
 	* super.c (check_super_block): Be more strict on checking
 		s_r_blocks_count superblock field.
 

@@ -18,7 +18,7 @@
 #endif
 #include <fcntl.h>
 
-#include <linux/ext2_fs.h>
+#include <ext2fs/ext2_fs.h>
 
 #include <et/com_err.h>
 #include <ss/ss.h>

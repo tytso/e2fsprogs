@@ -1,3 +1,7 @@
+2001-05-14  Theodore Tso  <tytso@valinux.com>
+
+	* tst_uuid.c, uuid_time.c: Remove unneeded #include of ext2_fs.h
+
 2001-05-12  Theodore Tso  <tytso@valinux.com>
 
 	* libuuid.3.in, uuid_clear.3.in, uuid_compare.3.in, uuid_copy.3.in,

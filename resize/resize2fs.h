@@ -32,7 +32,7 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 #else
-#include <linux/ext2_fs.h>
+#include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #endif
 

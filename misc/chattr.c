@@ -33,7 +33,7 @@
 #endif
 #include <sys/param.h>
 #include <sys/stat.h>
-#include <linux/ext2_fs.h>
+#include "ext2fs/ext2_fs.h"
 
 #ifndef S_ISLNK			/* So we can compile even with gcc-warn */
 # ifdef __S_IFLNK
