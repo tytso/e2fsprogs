@@ -34,6 +34,9 @@ request
 .B \-c
 ]
 [
+.B \-i
+]
+[
 device
 ]
 ]
@@ -49,15 +52,34 @@ is the special file corresponding to the device containing the ext2
 file system (e.g /dev/hdXX).
 .SH OPTIONS
 .TP
-.I -w
+.I \-w
 Specifies that the file system should be opened in read-write mode.
 Without this option, the file system is opened in read-only mode.
 .TP
-.I -c
+.I \-c
 Specifies that the file system should be opened in catastrophic mode, in
 which the inode and group bitmaps are not read initially.  This can be
 useful for filesystems with significant corruption, but because of this,
 catastrophic mode forces the filesystem to be opened read-only.
+.TP
+.I \-i
+Specifies that 
+.I device
+represents an ext2 image file created by the
+.B e2image
+program.  Since the ext2 image file only contains the superblock, block
+group descriptor, block and inode allocation bitmaps, and 
+the inode table, many
+.B debugfs
+commands will not function properly.  
+.B Warning:
+no safety checks are in place, and 
+.B debugfs 
+may fail in interesting ways if commands such as
+.IR ls ", " dump ", " 
+etc. are tried.  
+.B debugfs 
+is a debugging tool.  It has rough edges!
 .TP
 .I -b blocksize
 Forces the use of the given block size for the file system, rather than
@@ -217,7 +239,7 @@ device numbers must be specified.
 Take the requested list of inode numbers, and print a listing of pathnames
 to those inodes.
 .TP
-.I open [-w] [-f] [-c] [-b blocksize] [-s superblock] device
+.I open [-w] [-f] [-i] [-c] [-b blocksize] [-s superblock] device
 Open a filesystem for editing.  The 
 .I -w 
 flag causes the filesystem to be opened for writing.  The 
@@ -225,7 +247,7 @@ flag causes the filesystem to be opened for writing.  The
 flag forces the filesystem to be opened even if there are some unknown 
 or incompatible filesystem features which would normally 
 prevent the filesystem from being opened.  The
-.IR -c ", " -b ", and " -s
+.IR -c ", " -b ", " -i ", " and " -s
 options behave the same as those to
 .B debugfs
 itself.

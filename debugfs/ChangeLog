@@ -1,3 +1,8 @@
+2001-05-03  Theodore Tso  <tytso@valinux.com>
+
+	* debugfs.c (do_open_filesys, main): Add -i option which will
+		allow debugfs to examine ext2 image files.
+
 2001-03-29  Theodore Tso  <tytso@valinux.com>
 
 	* debugfs.c (dump_blocks, dump_inode, internal_dump_inode): Add

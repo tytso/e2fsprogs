@@ -106,8 +106,11 @@ void do_open_filesys(int argc, char **argv)
 #ifdef HAVE_OPTRESET
 	optreset = 1;		/* Makes BSD getopt happy */
 #endif
-	while ((c = getopt (argc, argv, "wfcb:s:")) != EOF) {
+	while ((c = getopt (argc, argv, "iwfcb:s:")) != EOF) {
 		switch (c) {
+		case 'i':
+			open_flags |= EXT2_FLAG_IMAGE_FILE;
+			break;
 		case 'w':
 			open_flags |= EXT2_FLAG_RW;
 			break;
@@ -1530,7 +1533,7 @@ int main(int argc, char **argv)
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
 
-	while ((c = getopt (argc, argv, "wcR:f:b:s:V")) != EOF) {
+	while ((c = getopt (argc, argv, "iwcR:f:b:s:V")) != EOF) {
 		switch (c) {
 		case 'R':
 			request = optarg;
@@ -1538,8 +1541,11 @@ int main(int argc, char **argv)
 		case 'f':
 			cmd_file = optarg;
 			break;
+		case 'i':
+			open_flags |= EXT2_FLAG_IMAGE_FILE;
+			break;
 		case 'w':
-			open_flags = EXT2_FLAG_RW;
+			open_flags |= EXT2_FLAG_RW;
 			break;
 		case 'b':
 			blocksize = strtoul(optarg, &tmp, 0);
