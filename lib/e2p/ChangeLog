@@ -1,3 +1,7 @@
+2001-05-11  Andreas Dilger  <adilger@turbolinux.com>
+
+	* feature.c: Add COMPAT_DIR_INDEX and RESIZE_INODE known features
+
 2001-05-13  Theodore Tso  <tytso@valinux.com>
 
 	* ls.c (print_features): Added missing space when printing (none)
