@@ -274,7 +274,16 @@ static char *interpret_device(char *spec)
 		fprintf(stderr, "Is /proc mounted?\n");
 		exit(1);
 	}
-	return spec;
+	/*
+	 * Check to see if this is because we're not running as root
+	 */
+	if (geteuid())
+		fprintf(stderr, "Must be root to scan for matching "
+			"filesystems: %s\n", spec);
+	else
+		fprintf(stderr, "Couldn't find matching filesystem: %s\n", 
+			spec);
+	exit(1);
 }
 
 /*

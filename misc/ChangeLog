@@ -1,5 +1,8 @@
 2000-05-08  Theodore Ts'o  <tytso@valinux.com>
 
+	* fsck.c (interpret_device): Add better error messages if a UUID=
+		or LABEL= specification is given.
+
 	* mke2fs.c (main): We forcibly turn off the filetype feature if
 		the OS is the hurd, since the hurd doesn't support it.
 		(And since the hurd allows the transmogrification of files
