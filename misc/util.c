@@ -109,8 +109,20 @@ void check_plausibility(const char *device)
 #define MINOR(dev)	((dev) & 0xff)
 #endif
 #ifndef SCSI_BLK_MAJOR
+#ifdef SCSI_DISK0_MAJOR
+#ifdef SCSI_DISK8_MAJOR
+#define SCSI_DISK_MAJOR(M) ((M) == SCSI_DISK0_MAJOR || \
+  ((M) >= SCSI_DISK1_MAJOR && (M) <= SCSI_DISK7_MAJOR) || \
+  ((M) >= SCSI_DISK8_MAJOR && (M) <= SCSI_DISK15_MAJOR))
+#else
+#define SCSI_DISK_MAJOR(M) ((M) == SCSI_DISK0_MAJOR || \
+  ((M) >= SCSI_DISK1_MAJOR && (M) <= SCSI_DISK7_MAJOR))
+#endif /* defined(SCSI_DISK8_MAJOR) */
+#define SCSI_BLK_MAJOR(M) (SCSI_DISK_MAJOR((M)) || (M) == SCSI_CDROM_MAJOR)
+#else
 #define SCSI_BLK_MAJOR(M)  ((M) == SCSI_DISK_MAJOR || (M) == SCSI_CDROM_MAJOR)
-#endif
+#endif /* defined(SCSI_DISK0_MAJOR) */
+#endif /* defined(SCSI_BLK_MAJOR) */
 	if (((MAJOR(s.st_rdev) == HD_MAJOR &&
 	      MINOR(s.st_rdev)%64 == 0) ||
 	     (SCSI_BLK_MAJOR(MAJOR(s.st_rdev)) &&

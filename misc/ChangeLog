@@ -1,3 +1,9 @@
+2003-11-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* util.c (check_plausibility): Support 2.6 kernel header files,
+		instead of having the build to crash.  (Addresses Debian
+		bug #221778)
+
 2003-09-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (progress_init, progress_update): If the environment
