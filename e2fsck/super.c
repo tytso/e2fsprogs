@@ -368,9 +368,6 @@ void check_resize_inode(e2fsck_t ctx)
 	 * only block in use is the double indirect block
 	 */
 	blk = inode.i_block[EXT2_DIND_BLOCK];
-	if (!blk && !fs->super->s_reserved_gdt_blocks)
-		/* No reserved gdt blocks; no need for dind block */
-		return;
 	for (i=0; i < EXT2_N_BLOCKS; i++) {
 		if (i != EXT2_DIND_BLOCK && inode.i_block[i])
 			break;
