@@ -1,3 +1,9 @@
+2003-03-06    <tytso@mit.edu>
+
+	* resize2fs.c (blocks_to_move): Bug fix; we were incorrectly
+		moving the block and inode bitmaps for sparse superblock
+		filesystems.  (Address Debian bug #174766)
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32

@@ -656,9 +656,12 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		if (!(fs->super->s_feature_incompat &
 		      EXT2_FEATURE_INCOMPAT_META_BG) ||
 		    (meta_bg < fs->super->s_first_meta_bg)) {
-			for (blk = group_blk+1;
-			     blk < group_blk + 1 + new_blocks; blk++)
-				mark_fs_metablock(rfs, meta_bmap, i, blk);
+			if (has_super) {
+				for (blk = group_blk+1;
+				     blk < group_blk + 1 + new_blocks; blk++)
+					mark_fs_metablock(rfs, meta_bmap, 
+							  i, blk);
+			}
 		} else {
 			if (has_super)
 				has_super = 1;
