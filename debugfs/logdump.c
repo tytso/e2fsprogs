@@ -332,8 +332,10 @@ static void dump_journal(char *cmdname, FILE *out_file,
 
 	jsb = (journal_superblock_t *) buf;
 	sb = (struct ext2_super_block *) (buf+1024);
+#ifdef ENABLE_SWAPFS
 	if (sb->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC)) 
 		ext2fs_swap_super(sb);
+#endif
 	
 	if ((be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) &&
 	    (sb->s_magic == EXT2_SUPER_MAGIC) &&
