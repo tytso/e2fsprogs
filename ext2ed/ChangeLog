@@ -1,5 +1,8 @@
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
+	* ext2ed.h: Use the ext2_fs.h header file from libext2fs, instead
+		from the kernel header files.
+
 	* Makefile.in: Update the modtime even if subst doesn't need to
 		update the ext2ed man page and conbfiguration, to avoid
 		always re-running subst, especially since there are no

@@ -34,7 +34,7 @@ Copyright (C) 1995 Gadi Oxman
 
 #define DEBUG						/* Activate self-sanity checks */
 
-#include <linux/ext2_fs.h>				/* Main kernel ext2 include file */
+#include <ext2fs/ext2_fs.h>				/* Main kernel ext2 include file */
 #include <sys/stat.h>
 
 #include <ncurses.h>
