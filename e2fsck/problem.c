@@ -38,6 +38,7 @@
 #define PROMPT_DELETE 	15
 #define PROMPT_SUPPRESS 16
 #define PROMPT_UNLINK	17
+#define PROMPT_NULL	18
 
 /*
  * These are the prompts which are used to ask the user if they want
@@ -62,6 +63,7 @@ static const char *prompt[] = {
 	N_("Delete file"),	/* 15 */
 	N_("Suppress messages"),/* 16 */
 	N_("Unlink"),		/* 17 */
+	"",			/* 18 */
 };
 
 /*
@@ -214,7 +216,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Superblock flag should be cleared */
 	{ PR_0_JOURNAL_HAS_JOURNAL,
-	  N_("@S doesn't have has_journal flag, but has ext3 @j %s.\n"),
+	  N_("@S doesn't have has_@j flag, but has ext3 @j %s.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Superblock flag is incorrect */
@@ -222,15 +224,25 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@S has ext3 needs_recovery flag set, but no @j.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
-	/* Journal should be reset */
-	{ PR_0_JOURNAL_RESET_JOURNAL,
-	  N_("*** WARNING *** leaving data in the @j may be DANGEROUS.\n"),
-	  PROMPT_NONE, PR_PREEN_NOMSG|PR_AFTER_CODE, PR_0_JOURNAL_RESET_PROMPT},
+	/* Journal has data, but recovery flag is clear */
+	{ PR_0_JOURNAL_RECOVERY_CLEAR,
+	  N_("ext3 recovery flag clear, but @j has data.\n"),
+	  PROMPT_NONE, 0 },
 
-	/* Journal should be reset */
-	{ PR_0_JOURNAL_RESET_PROMPT,
-	  N_("ext3 recovery flag clear, but journal has data.\n"),
-	  PROMPT_CLEAR, PR_PREEN_OK|PR_PREEN_NOMSG },
+	/* Ask if we should clear the journal */
+	{ PR_0_JOURNAL_RESET_JOURNAL,
+	  N_("Clear @j"),
+	  PROMPT_NULL, PR_PREEN_NOMSG },
+
+	/* Ask if we should run the journal anyway */
+	{ PR_0_JOURNAL_RUN,
+	  N_("Run @j anyway"),
+	  PROMPT_NULL, 0 },
+
+	/* Run the journal by default */
+	{ PR_0_JOURNAL_RUN_DEFAULT,
+	  N_("Recovery flag not set in backup @S, so running @j anyway.\n"),
+	  PROMPT_NONE, 0 },
 
 	/* Clearing orphan inode */
 	{ PR_0_ORPHAN_CLEAR_INODE,

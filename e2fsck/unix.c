@@ -47,7 +47,6 @@ static int swapfs = 0;
 static int normalize_swapfs = 0;
 static int cflag = 0;		/* check disk */
 static int show_version_only = 0;
-static int force = 0;
 static int verbose = 0;
 
 static int replace_bad_blocks = 0;
@@ -253,7 +252,8 @@ static void check_if_skip(e2fsck_t ctx)
 	const char *reason = NULL;
 	unsigned int reason_arg = 0;
 	
-	if (force || bad_blocks_file || cflag || swapfs)
+	if ((ctx->options & E2F_OPT_FORCE) || bad_blocks_file ||
+	    cflag || swapfs)
 		return;
 	
 	if (fs->super->s_state & EXT2_ERROR_FS)
@@ -547,7 +547,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			ctx->options |= E2F_OPT_DEBUG;
 			break;
 		case 'f':
-			force = 1;
+			ctx->options |= E2F_OPT_FORCE;
 			break;
 		case 'F':
 			flush = 1;

@@ -598,6 +598,7 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 	int recover = ctx->fs->super->s_feature_incompat &
 		EXT3_FEATURE_INCOMPAT_RECOVER;
 	struct problem_context pctx;
+	problem_t problem;
 	int reset = 0, force_fsck = 0;
 	int retval;
 
@@ -668,7 +669,19 @@ no_has_journal:
 	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL &&
 	    !(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) &&
 	    journal->j_superblock->s_start != 0) {
-		if (fix_problem(ctx, PR_0_JOURNAL_RESET_JOURNAL, &pctx)) {
+		/* Print status information */
+		fix_problem(ctx, PR_0_JOURNAL_RECOVERY_CLEAR, &pctx);
+		if (ctx->superblock)
+			problem = PR_0_JOURNAL_RUN_DEFAULT;
+		else
+			problem = PR_0_JOURNAL_RUN;
+		if (fix_problem(ctx, problem, &pctx)) {
+			ctx->options |= E2F_OPT_FORCE;
+			sb->s_feature_incompat |=
+				EXT3_FEATURE_INCOMPAT_RECOVER;
+			ext2fs_mark_super_dirty(ctx->fs);
+		} else if (fix_problem(ctx,
+				       PR_0_JOURNAL_RESET_JOURNAL, &pctx)) {
 			reset = 1;
 			sb->s_state &= ~EXT2_VALID_FS;
 			ext2fs_mark_super_dirty(ctx->fs);

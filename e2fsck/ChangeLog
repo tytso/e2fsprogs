@@ -1,3 +1,20 @@
+2001-12-21  Theodore Tso  <tytso@valinux.com>
+
+	* journal.c (e2fsck_check_ext3_journal): Give the opportunity to
+		run the journal even if recovery flag is cleared.  If
+		we're using a backup superblock, run the journal by
+		default.
+
+	* e2fsck.h (E2F_OPT_FORCE), unix.c (PRS, check_if_skip): Use a
+		bitfield in the e2fsck context flags word to indicate
+		whether or not a check should be forced.  This allows the
+		journal code to set the option if necessary to force a
+		filesystem check.
+
+	* problem.h, problem.c: Remove PR_0_JOURNAL_RESET_JOURNAL, and add
+		PR_0_JOURNAL_RUN and PR_0_JOURNAL_RUN_DEFAULT.  Update
+		problem decription texts.
+
 2001-12-16  Theodore Tso  <tytso@valinux.com>
 
 	* e2fsck.h (ext2fs_get_refcount_size), unix.c (check_mount, PRS), 

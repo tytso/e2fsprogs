@@ -122,11 +122,11 @@ struct problem_context {
 /* Superblock has recovery flag set but no journal */
 #define PR_0_JOURNAL_RECOVER_SET 0x000017
 
-/* Warning message about leaving data in the journal */
-#define PR_0_JOURNAL_RESET_JOURNAL 0x000018
+/* Journal has data, but recovery flag is clear */
+#define PR_0_JOURNAL_RECOVERY_CLEAR 0x000018
 
-/* Superblock recovery flag clear - journal needs to be reset */
-#define PR_0_JOURNAL_RESET_PROMPT 0x000019
+/* Ask if we should clear the journal */
+#define PR_0_JOURNAL_RESET_JOURNAL 0x000019
 
 /* Filesystem revision is 0, but feature flags are set */
 #define PR_0_FS_REV_LEVEL	0x00001A
@@ -163,6 +163,12 @@ struct problem_context {
 
 /* Clearing V2 journal superblock */
 #define PR_0_CLEAR_V2_JOURNAL			0x00002A
+
+/* Run journal anyway */
+#define PR_0_JOURNAL_RUN			0x00002B
+
+/* Run journal anyway by default */
+#define PR_0_JOURNAL_RUN_DEFAULT		0x00002C
 
 /*
  * Pass 1 errors
