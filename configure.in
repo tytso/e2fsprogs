@@ -811,6 +811,17 @@ if test $ac_cv_e2fsprogs_use_static = yes; then
 fi
 AC_SUBST(LDFLAG_STATIC)
 dnl
+dnl Work around mysterious Darwin / GNU libintl problem
+dnl (__asm__ redirection doesn't work for some mysterious reason.  Looks like
+dnl Apple hacked gcc somehow?)
+dnl
+case "$host_os" in
+darwin*)
+	echo "Using Apple Darwin / GNU libintl workaround"
+	AC_DEFINE(_INTL_REDIRECT_MACROS)
+	;;
+esac
+dnl
 dnl Make the ss and et directories work correctly.
 dnl
 SS_DIR=`cd ${srcdir}/lib/ss; pwd`
