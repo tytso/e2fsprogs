@@ -763,7 +763,8 @@ int main (int argc, char ** argv)
 		check_mount(device_name);
 	
 	dev = open (device_name, O_RDWR);
-	if ((dev == -1) && ((errno == EPERM) || (errno == EACCES)) &&
+	if ((dev == -1) && ((errno == EPERM) || (errno == EACCES) ||
+			    (errno == EROFS)) &&
 	    (w_flag == 0))
 		dev = open(device_name, O_RDONLY);
 	if (dev == -1) {

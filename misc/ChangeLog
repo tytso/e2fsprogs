@@ -1,3 +1,10 @@
+2002-09-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* badblocks.c (main): Appled sourceforge patch #600451, which
+		addresses sourceforge bug #600388, by AEF.  This allows
+		badblocks to work correctly on read-only devices such as
+		CD-ROM's, DVD's, etc.
+
 2002-09-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.8.in, tune2fs.8.in: Clarify manual pages about using the
