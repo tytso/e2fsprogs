@@ -109,7 +109,7 @@ static int get_node_id(unsigned char *node_id)
 	}
 	n = ifc.ifc_len;
 	for (i = 0; i < n; i+= ifreq_size(*ifr) ) {
-		ifrp = (struct ifreq *)((caddr_t) ifc.ifc_buf+i);
+		ifrp = (struct ifreq *)((char *) ifc.ifc_buf+i);
 		strncpy(ifr.ifr_name, ifrp->ifr_name, IFNAMSIZ);
 #ifdef SIOCGIFHWADDR
 		if (ioctl(sd, SIOCGIFHWADDR, &ifr) < 0)
