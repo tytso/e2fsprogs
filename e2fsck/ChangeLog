@@ -1,3 +1,9 @@
+2004-02-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.c (e2fsck_run): Clear the SETJMP_OK flag when returning
+		so we don't double longjump into an invalid stack frame.
+		(Thanks to Matthias Andree for providing this fix.)
+
 2004-01-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* problem.c (fix_problem): Don't call print_e2fsck_message if the

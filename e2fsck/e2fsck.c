@@ -180,8 +180,10 @@ int e2fsck_run(e2fsck_t ctx)
 	pass_t	e2fsck_pass;
 
 #ifdef HAVE_SETJMP_H
-	if (setjmp(ctx->abort_loc))
+	if (setjmp(ctx->abort_loc)) {
+		ctx->flags &= ~E2F_FLAG_SETJMP_OK;
 		return (ctx->flags & E2F_FLAG_RUN_RETURN);
+	}
 	ctx->flags |= E2F_FLAG_SETJMP_OK;
 #endif
 		
