@@ -1,0 +1,142 @@
+.\" Copyright 2000 Andreas Dilger (adilger@turbolinux.com)
+.\"
+.\" This man page was created for blkid from e2fsprogs-1.25.
+.\" 
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.\" Based on uuidgen, Mon Sep 17 10:42:12 2000, Andreas Dilger
+.TH BLKID 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+blkid \- command\-line utility to locate/print block device attributes
+.SH SYNOPSIS
+.B blkid 
+]...
+[
+.B \-h
+]
+[
+[
+.B \-c
+.I cachefile
+]
+.B \-s
+.I savecachefile
+]
+[
+.B \-p
+]
+[
+.B \-t
+.I token
+]...
+[
+.B \-v
+]
+[
+.I device ...
+]
+.SH DESCRIPTION
+The
+.B blkid
+program is the command-line interface to working with
+.BR libuuid (3)
+library.  It can determine the type of content (e.g. filesystem, swap) 
+a block device holds, and also attributes (tokens, NAME=value pairs)
+from the content metadata (e.g. LABEL or UUID fields).
+.PP
+.B blkid
+has two main forms of operation: either searching for a device with a
+specific NAME=value pair, or displaying NAME=value pairs for one or
+more devices.
+.SH OPTIONS
+.TP
+.B \-c
+.I <cachefile>
+Read from
+.I cachefile
+instead of reading from the default cache file
+.IR /etc/blkid.tab .
+If you want to start with a clean cache (i.e. don't report devices previously
+scanned but not necessarily available at this time), specify
+.IR /dev/null.
+.TP
+.B \-h
+Display a usage message and exit.
+.TP
+.B \-p
+Probe all available devices.  This is the default when displaying
+tokens.  When searching for a token normally the cache file is
+used to locate the device and only that device is probed (to ensure
+cache coherency) and all devices are probed only if the token cannot
+be found in the cache.
+.TP
+.B \-s
+.I tag
+.I tag
+is of the form
+.I NAME
+and the resulting token is shown for each (specified) device that has
+such a tag.  It is possible to specify multiple
+.I tag
+options.  If no tag is specified, then all tokens are shown for all
+(specified) devices.
+In order to just refresh the cache without showing any tokens use
+.B "-s none"
+with no other options.
+.TP
+.B \-t
+.I token
+.I token
+is of the form
+.IB NAME = value
+and that specific token is searched for in the cache or among all visible
+block devices and additionally any specified devices.  If that token is
+not found, no output is shown.  Common values for
+.I NAME
+include
+.BR TYPE ,
+.BR LABEL ,
+and
+.BR UUID .
+.TP
+.B \-v
+Display version number and exit.
+.SH RETURN VALUE
+The UUID of the form 1b4e28ba-2fa1-11d2-883f-b9a761bde3fb (in
+.BR printf (3)
+format "%08x-%04x-%04x-%04x-%012x") is output to the standard output.
+.TP
+.B \-w
+.I <writecachefile>
+Write the device cache to
+.I writecachefile
+instead of writing it to the default cache file
+.IR /etc/blkid.tab .
+If you don't want to save the cache to the default file, specify
+.IR /dev/null.
+If not specified it will be the same file as that given by the
+.B -c
+option.
+.TP
+.I <device>
+Display tokens from only the specified device.  It is possible to
+give multiple
+.I <device>
+options on the command line.  If none is given, all devices which
+appear in
+.I /proc/partitions
+are shown, if they are recognized.
+.SH "RETURN CODE"
+If the specified token was found, or if any tags were shown from (specified)
+devices 0 is returned.  If the specified token was not found, or no
+(specified) devices could be identified return 2.  For usage or other errors
+return 4.
+.SH AUTHOR
+.B blkid
+was written by Andreas Dilger for libblkid.
+.SH AVAILABILITY
+.B blkid
+is part the e2fsprogs package since version 1.26 and is available from
+http://e2fsprogs.sourceforge.net.
+.SH "SEE ALSO"
+.BR libblkid (3)

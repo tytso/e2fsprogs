@@ -595,7 +595,7 @@ if test "$e2fsprogs_cv_struct_st_flags" = yes; then
 	  AC_DEFINE(HAVE_STAT_FLAGS)
   fi
 fi
-AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 getmntinfo strcasecmp srandom fchown mallinfo fdatasync strnlen sysconf pathconf)
+AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 getmntinfo strtoull strcasecmp srandom fchown mallinfo fdatasync strnlen sysconf pathconf)
 dnl
 dnl Check to see if -lsocket is required (solaris) to make something
 dnl that uses socket() to compile; this is needed for the UUID library
@@ -736,7 +736,7 @@ if test -d ${srcdir}/resize ; then
 fi
 AC_OUTPUT(MCONFIG Makefile util/Makefile util/subst.conf lib/et/Makefile 
 	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
-	lib/evms/Makefile
+	lib/blkid/Makefile lib/blkid/blkid_types.h lib/evms/Makefile
 	misc/Makefile ext2ed/Makefile e2fsck/Makefile debugfs/Makefile \
 	tests/Makefile tests/progs/Makefile $rmakefile doc/Makefile 
 	intl/Makefile po/Makefile.in)

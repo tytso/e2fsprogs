@@ -1,3 +1,7 @@
+2003-01-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in, configure, configure.in: Integrate new blkid library.
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32

@@ -14,10 +14,10 @@ INSTALL = @INSTALL@
 @IMAGER_CMT@E2IMAGE_PROG= e2image
 @IMAGER_CMT@E2IMAGE_MAN= e2image.8
 
-SPROGS=		mke2fs badblocks tune2fs dumpe2fs $(E2IMAGE_PROG) @FSCK_PROG@
+SPROGS=		mke2fs badblocks tune2fs dumpe2fs blkid $(E2IMAGE_PROG) @FSCK_PROG@
 USPROGS=	mklost+found
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
-			e2label.8 findfs.8 $(E2IMAGE_MAN) @FSCK_MAN@
+			e2label.8 findfs.8 blkid.8 $(E2IMAGE_MAN) @FSCK_MAN@
 
 UPROGS=		chattr lsattr uuidgen
 UMANPAGES=	chattr.1 lsattr.1 uuidgen.1
@@ -32,17 +32,21 @@ DUMPE2FS_OBJS=	dumpe2fs.o
 BADBLOCKS_OBJS=	badblocks.o
 E2IMAGE_OBJS=	e2image.o
 FSCK_OBJS=	fsck.o get_device_by_label.o base_device.o fstype.o
+BLKID_OBJS=	blkid.o
 
 SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/chattr.c $(srcdir)/lsattr.c $(srcdir)/dumpe2fs.c \
 		$(srcdir)/badblocks.c $(srcdir)/fsck.c $(srcdir)/util.c \
-		$(srcdir)/uuidgen.c $(srcdir)/fstype.c
+		$(srcdir)/uuidgen.c $(srcdir)/fstype.c $(srcdir)/blkid.c
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
 DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
 
 STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
 STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
+
+LIBS_BLKID= $(LIBBLKID) $(LIBUUID)
+DEPLIBS_BLKID= $(LIBBLKID) $(LIBUUID)
 
 LIBS_E2P= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR) 
 DEPLIBS_E2P= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR) 
@@ -57,6 +61,9 @@ findsuper: findsuper.o
 
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS_E2P) $(DEPLIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS_E2P) $(LIBUUID)
+
+blkid: $(BLKID_OBJS) $(DEPLIBS_E2P) $(DEPLIBS_BLKID)
+	$(CC) $(ALL_LDFLAGS) -o blkid $(BLKID_OBJS) $(LIBS_E2P) $(LIBS_BLKID)
 
 e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS)
@@ -131,6 +138,9 @@ badblocks.8: $(DEP_SUBSTITUTE) $(srcdir)/badblocks.8.in
 fsck.8: $(DEP_SUBSTITUTE) $(srcdir)/fsck.8.in
 	$(SUBSTITUTE) $(srcdir)/fsck.8.in fsck.8 
 
+blkid.8: $(DEP_SUBSTITUTE) $(srcdir)/blkid.8.in
+	$(SUBSTITUTE) $(srcdir)/blkid.8.in blkid.8
+
 chattr.1: $(DEP_SUBSTITUTE) $(srcdir)/chattr.1.in
 	$(SUBSTITUTE) $(srcdir)/chattr.1.in chattr.1 
 
@@ -139,6 +149,9 @@ lsattr.1: $(DEP_SUBSTITUTE) $(srcdir)/lsattr.1.in
 
 uuidgen.1: $(DEP_SUBSTITUTE) $(srcdir)/uuidgen.1.in 
 	$(SUBSTITUTE) $(srcdir)/uuidgen.1.in uuidgen.1 
+
+blkid.1: $(DEP_SUBSTITUTE) $(srcdir)/blkid.1.in 
+	$(SUBSTITUTE) $(srcdir)/blkid.1.in blkid.1 
 
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(sbindir) \

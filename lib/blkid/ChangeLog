@@ -1,0 +1,7 @@
+2002-10-04  Jordan Breeding  <jordan.breeding@attbi.com>
+
+	* Forward port to e2fsprogs 1.30
+
+2001-09-20  Andreas Dilger  <adilger@turbolinux.com>
+
+	* Initial release of libblkid.
