@@ -305,7 +305,7 @@ static float calc_percent(struct percent_tbl *tbl, int pass, int curr,
 	
 	if (pass <= 0)
 		return 0.0;
-	if (pass > tbl->max_pass)
+	if (pass > tbl->max_pass || max == 0)
 		return 100.0;
 	percent = ((float) curr) / ((float) max);
 	return ((percent * (tbl->table[pass] - tbl->table[pass-1]))
