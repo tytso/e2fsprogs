@@ -39,10 +39,8 @@ void fatal_error(e2fsck_t ctx, const char *msg)
 {
 	if (msg) 
 		fprintf (stderr, "e2fsck: %s\n", msg);
-	if (ctx->fs && ctx->fs->io)
-		io_channel_flush(ctx->fs->io);
 	if (ctx->fs && ctx->fs->io) {
-		if (ctx->fs->io->magic == EXT2_ET_MAGIC_IO_MANAGER)
+		if (ctx->fs->io->magic == EXT2_ET_MAGIC_IO_CHANNEL)
 			io_channel_flush(ctx->fs->io);
 		else
 			fprintf(stderr, "e2fsck: io manager magic bad!\n");

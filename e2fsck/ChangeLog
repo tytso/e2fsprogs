@@ -1,5 +1,10 @@
 2001-05-05  Theodore Tso  <tytso@valinux.com>
 
+	* util.c (fatal_error): Use the correct magic number when checking
+		the magic number for the io_channel data structure.  Also
+		remove extraneous call to io_channel_flush() that was left
+		over from an editing session.
+
 	* pass2.c (check_dir_block): Ignore EXT2_ET_DIR_CORRUPTED errors
 		from ext2fs_read_dir_block().
 
