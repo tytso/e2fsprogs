@@ -9,9 +9,10 @@ INSTALL = @INSTALL@
 
 @RESIZER_CMT@RESIZE_DIR= resize
 @DEBUGFS_CMT@DEBUGFS_DIR= debugfs
+@LINUX_CMT@EVMS_DIR= lib/evms
 
 LIB_SUBDIRS=lib/et lib/ss lib/e2p lib/ext2fs lib/uuid # lib/finddev
-PROG_SUBDIRS=e2fsck $(DEBUGFS_DIR) misc $(RESIZE_DIR) tests/progs 
+PROG_SUBDIRS=e2fsck $(DEBUGFS_DIR) misc $(RESIZE_DIR) tests/progs $(EVMS_DIR)
 SUBDIRS=util $(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
 SUBS= lib/ext2fs/ext2_types.h

@@ -7,7 +7,7 @@ INSTALL = @INSTALL@
 
 MAJOR_VERSION	= 1
 MINOR_VERSION	= 1
-PATCH_LEVEL	= 0
+PATCH_LEVEL	= 1
 EXTRAVERSION	=
 
 XTRA_CFLAGS= -I@srcdir@ -DMAJOR_VERSION=$(MAJOR_VERSION) -DMINOR_VERSION=$(MINOR_VERSION) -DPATCH_LEVEL=$(PATCH_LEVEL)
@@ -26,15 +26,34 @@ ELF_VERSION = $(MAJOR_VERSION).$(MINOR_VERSION).$(PATCH_LEVEL)
 ELF_SO_VERSION = $(MAJOR_VERSION)
 ELF_IMAGE = libe2fsim
 ELF_MYDIR = evms
-ELF_INSTALL_DIR = $(root_libdir)
+ELF_INSTALL_DIR = $(root_libdir)/evms
 #ELF_OTHER_LIBS = -L../.. -lcom_err
 
-@MAKEFILE_LIBRARY@
-@MAKEFILE_ELF@
+ELF_LIB = $(ELF_IMAGE).$(ELF_VERSION).so
+ELF_SONAME = $(ELF_IMAGE).$(ELF_SO_VERSION).so
+
+all:: $(ELF_LIB)
+
+$(ELF_LIB): $(OBJS)
+	$(CC) --shared -o $(ELF_LIB) -Wl,-soname,$(ELF_SONAME) \
+		$(OBJS) $(ELF_OTHER_LIBS)
+
+installdirs:: 
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(ELF_INSTALL_DIR) 
+
+install:: $(ELF_LIB) installdirs
+	$(INSTALL_PROGRAM) $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
+	$(STRIP) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
+
+uninstall-shlibs uninstall::
+	$(RM) -f $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB) 
+
+clean::
+	$(RM) -f $(ELF_LIB)
+	$(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so ../$(ELF_SONAME)
 
 .c.o:
-	$(CC) $(ALL_CFLAGS) -c $< -o $@
-@ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+	$(CC) $(ALL_CFLAGS) -fPIC -c $< -o $@
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/* 

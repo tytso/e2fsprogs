@@ -1,5 +1,9 @@
 2002-08-18  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Revamp makefile so that it doesn't depend
+		--enable-elf-shlibs.  We always build the shared library,
+		since it's meant to be used as a plugin library.
+
 	* fs_ext2.c (fs_fsck, fs_shrink, fs_expand): Change to use new
 		calling convention of fsim_fsck.  Fixed bug in fs_shrink
 		and f_expand where the shrink or expand would get aborted

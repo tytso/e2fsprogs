@@ -606,6 +606,16 @@ linux*)
 	;;
 esac
 dnl
+dnl Uncomment only if Linux
+dnl
+LINUX_CMT="#"
+case "$host_os" in
+linux*)
+	LINUX_CMT=
+	;;
+esac
+AC_SUBST(LINUX_CMT)
+dnl
 dnl Linux and Hurd places root files in the / by default
 dnl
 case "$host_os" in

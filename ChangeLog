@@ -1,3 +1,11 @@
+2002-08-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in, configure: Add new substitution variable,
+		LINUX_CMT, which is '' on Linux systems, and '#' on
+		non-Linux systems.
+
+	* Makefile.in: On Linux systems, build lib/evms.
+
 2002-07-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in, configure: Remove test for the presence (or

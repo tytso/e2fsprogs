@@ -4791,6 +4791,13 @@ EOF
 
 	;;
 esac
+LINUX_CMT="#"
+case "$host_os" in
+linux*)
+	LINUX_CMT=
+	;;
+esac
+
 case "$host_os" in
 linux* | gnu*)
 	if test "$prefix" = NONE -a "$root_prefix" = NONE ; then
@@ -4833,20 +4840,20 @@ fi
 
 
 echo $ac_n "checking whether linker accepts -static""... $ac_c" 1>&6
-echo "configure:4837: checking whether linker accepts -static" >&5
+echo "configure:4844: checking whether linker accepts -static" >&5
 if eval "test \"`echo '$''{'ac_cv_e2fsprogs_use_static'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
 cat > conftest.$ac_ext <<EOF
-#line 4843 "configure"
+#line 4850 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 fflush(stdout);
 ; return 0; }
 EOF
-if { (eval echo configure:4850: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:4857: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_e2fsprogs_use_static=yes
 else
@@ -5133,6 +5140,7 @@ s%@SIZEOF_INT@%$SIZEOF_INT%g
 s%@SIZEOF_LONG@%$SIZEOF_LONG%g
 s%@SIZEOF_LONG_LONG@%$SIZEOF_LONG_LONG%g
 s%@SOCKET_LIB@%$SOCKET_LIB%g
+s%@LINUX_CMT@%$LINUX_CMT%g
 s%@root_prefix@%$root_prefix%g
 s%@root_bindir@%$root_bindir%g
 s%@root_sbindir@%$root_sbindir%g
