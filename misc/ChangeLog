@@ -1,5 +1,9 @@
 1999-10-26    <tytso@valinux.com>
 
+	* Release of E2fsprogs 1.17
+
+1999-10-26    <tytso@valinux.com>
+
 	* fsck.c (PRS, device_already_active): Add debugging hook; if the
 		environment variable FSCK_FORCE_ALL_PARALLEL is set, then
 		force all fsck runs to happen in parallel.

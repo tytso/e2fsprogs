@@ -1,5 +1,9 @@
 1999-10-26    <tytso@valinux.com>
 
+	* Release of E2fsprogs 1.17
+
+1999-10-26    <tytso@valinux.com>
+
 	* debugfs.h: Add declaration for do_features()
 
 	* debugfs.c: Add #incldue of e2p.h to fix gcc warnings.

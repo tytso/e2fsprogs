@@ -1,19 +1,19 @@
 Begin3
 Title:          EXT2 Filesystem utilities
-Version:        1.16
-Entered-date:   22Oct99
+Version:        1.17
+Entered-date:   25Oct99
 Description:    The filesystem utilities for the EXT2 filesystem, including 
 		e2fsck, mke2fs, dumpe2fs, fsck, and others.
 Keywords:       utilities, fsck, filesystem, Ext2fs
 Author:         tytso@mit.edu (Theodore Tso)
 Maintained-by:  tytso@mit.edu (Theodore Tso)
 Primary-site:   tsx-11.mit.edu /pub/linux/packages/ext2fs
-		810kB e2fsprogs-1.16.tar.gz
-		319kB e2fsprogs-1.16-elfbin.tar.gz
-		319kB e2fsprogs-1.16-0.i386.rpm
-		85kB  e2fsprogs-devel-1.16-0.i386.rpm
-		805kB e2fsprogs-1.16-0.src.rpm
-                1kB   e2fsprogs-1.16.lsm
+		813kB e2fsprogs-1.17.tar.gz
+		320kB e2fsprogs-1.17-elfbin.tar.gz
+		320kB e2fsprogs-1.17-0.i386.rpm
+		85kB  e2fsprogs-devel-1.17-0.i386.rpm
+		808kB e2fsprogs-1.17-0.src.rpm
+                1kB   e2fsprogs-1.17.lsm
 Alternate-site: 
 Platforms:	linux 1.2.x/1.3.x/2.0.x/2.1.x/2.2.x/2.3.x
 Copying-policy: GPL

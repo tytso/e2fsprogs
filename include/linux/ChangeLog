@@ -1,3 +1,7 @@
+1999-10-26    <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.17
+
 1999-10-25    <tytso@valinux.com>
 
 	* ext2_fs.h (i_reserved2): Use __GNU__ instead of __hurd__ to
