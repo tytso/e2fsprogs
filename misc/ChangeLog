@@ -1,3 +1,18 @@
+2001-01-15  Theodore Ts'o  <tytso@valinux.com>
+
+	* tune2fs.c: Changed the external journal code so that it simply
+		adds a filesystem to a journal; the journal must have bene
+		created via "mke2fs -O journal_dev /dev/XXX".
+
+	* mke2fs.c: Add support for creating an external journal device by
+		using the command "mke2fs -O journal_dev /dev/XXX".  Also
+		changed the external journal code so -j device=/dev/XXX it
+		simply adds a filesystem to that journal; the journal must
+		have been created via separate step.
+
+	* dumpe2fs.c (print_journal_information): Add support for dumping
+		information about an external journal device.
+
 2001-01-14  Theodore Ts'o  <tytso@valinux.com>
 
 	* mke2fs.c: Add new filesystem types, largefile and largefile4,

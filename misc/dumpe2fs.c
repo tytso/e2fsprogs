@@ -36,6 +36,7 @@ extern int optind;
 
 #include "ext2fs/ext2fs.h"
 #include "e2p/e2p.h"
+#include "jfs_user.h"
 
 #include "../version.h"
 #include "nls-enable.h"
@@ -207,6 +208,46 @@ static int i386_byteorder(void)
 	return (*cp == 1);
 }
 
+static void print_journal_information(ext2_filsys fs)
+{
+	errcode_t	retval;
+	char		buf[1024];
+	char		str[80];
+	int		i;
+	journal_superblock_t	*jsb;
+
+	/* Get the journal superblock */
+	if ((retval = io_channel_read_blk(fs->io, 1, -1024, buf))) {
+		com_err(program_name, retval,
+			_("while reading journal superblock"));
+		exit(1);
+	}
+	jsb = (journal_superblock_t *) buf;
+	if ((jsb->s_header.h_magic != (unsigned) ntohl(JFS_MAGIC_NUMBER)) ||
+	    (jsb->s_header.h_blocktype !=
+	     (unsigned) ntohl(JFS_SUPERBLOCK_V2))) {
+		com_err(program_name, 0,
+			_("Couldn't find journal superblock magic numbers"));
+		exit(1);
+	}
+
+	fputs("\n", stdout);
+	printf("Journal block size:       %d\n", ntohl(jsb->s_blocksize));
+	printf("Journal length:           %d\n", ntohl(jsb->s_maxlen));
+	printf("Journal first block:      %d\n", ntohl(jsb->s_first));
+	printf("Journal sequence:         0x%08x\n", ntohl(jsb->s_sequence));
+	printf("Journal start:            %d\n", ntohl(jsb->s_start));
+	printf("Journal number of users:  %d\n", ntohl(jsb->s_nr_users));
+	for (i=0; i < ntohl(jsb->s_nr_users); i++) {
+		if (i)
+			printf("                          ");
+		else
+			printf("Journal users:            ");
+		uuid_unparse(&jsb->s_users[i*16], str);
+		printf("%s\n", str);
+	}
+}
+
 int main (int argc, char ** argv)
 {
 	errcode_t	retval;
@@ -215,6 +256,7 @@ int main (int argc, char ** argv)
 	int		use_superblock = 0;
 	int		use_blocksize = 0;
 	int		force = 0;
+	int		flags;
 	int		header_only = 0;
 	int		big_endian;
 	int		c;
@@ -267,9 +309,11 @@ int main (int argc, char ** argv)
 	device_name = argv[optind++];
 	if (use_superblock && !use_blocksize)
 		use_blocksize = 1024;
-	retval = ext2fs_open (device_name, force ? EXT2_FLAG_FORCE : 0,
-			      use_superblock, use_blocksize,
-			      unix_io_manager, &fs);
+	flags = EXT2_FLAG_JOURNAL_DEV_OK;
+	if (force)
+		flags |= EXT2_FLAG_FORCE;
+	retval = ext2fs_open (device_name, flags, use_superblock,
+			      use_blocksize, unix_io_manager, &fs);
 	if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
@@ -285,6 +329,12 @@ int main (int argc, char ** argv)
 		if (big_endian)
 			printf(_("Note: This is a byte-swapped filesystem\n"));
 		list_super (fs->super);
+		if (fs->super->s_feature_incompat &
+		      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+			print_journal_information(fs);
+			ext2fs_close(fs);
+			exit(0);
+		}
 		list_bad_blocks (fs);
 		if (header_only) {
 			ext2fs_close (fs);

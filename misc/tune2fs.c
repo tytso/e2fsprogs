@@ -192,6 +192,7 @@ static void add_journal(ext2_filsys fs)
 {
 	unsigned long journal_blocks;
 	errcode_t	retval;
+	ext2_filsys	jfs;
 
 	if (fs->super->s_feature_compat &
 	    EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
@@ -203,12 +204,20 @@ static void add_journal(ext2_filsys fs)
 	if (journal_device) {
 		check_plausibility(journal_device);
 		check_mount(journal_device, 0, _("journal"));
+		retval = ext2fs_open(journal_device, EXT2_FLAG_RW|
+				     EXT2_FLAG_JOURNAL_DEV_OK, 0,
+				     fs->blocksize, unix_io_manager, &jfs);
+		if (retval) {
+			com_err(program_name, retval,
+				_("while trying to open journal device %s\n"),
+				journal_device);
+			exit(1);
+		}
 		printf(_("Creating journal on device %s: "),
 		       journal_device);
 		fflush(stdout);
-		retval = ext2fs_add_journal_device(fs, journal_device,
-						   journal_blocks,
-						   journal_flags);
+		
+		retval = ext2fs_add_journal_device(fs, jfs);
 		if (retval) {
 			com_err (program_name, retval,
 				 _("while trying to create journal on device %s"),
@@ -216,6 +225,7 @@ static void add_journal(ext2_filsys fs)
 			exit(1);
 		}
 		printf(_("done\n"));
+		ext2fs_close(jfs);
 	} else if (journal_size) {
 		printf(_("Creating journal inode: "));
 		fflush(stdout);

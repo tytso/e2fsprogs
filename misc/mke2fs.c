@@ -67,22 +67,23 @@ const char * program_name = "mke2fs";
 const char * device_name /* = NULL */;
 
 /* Command line options */
-int	cflag /* = 0 */ ;
-int	verbose /* = 0 */ ;
-int	quiet /* = 0 */ ;
-int	super_only /* = 0 */ ;
-int	force /* = 0 */ ;
-int	noaction /* = 0 */ ;
-int	journal_size /* = 0 */ ;
-int	journal_flags /* = 0 */ ;
-char	*bad_blocks_filename /* = 0 */ ;
-__u32	fs_stride /* = 0 */ ;
+int	cflag;
+int	verbose;
+int	quiet;
+int	super_only;
+int	force;
+int	noaction;
+int	journal_size;
+int	journal_flags;
+char	*bad_blocks_filename;
+__u32	fs_stride;
 
 struct ext2_super_block param;
-char *creator_os /* = NULL */ ;
-char *volume_label /* = NULL */ ;
-char *mount_dir /* = NULL */ ;
-char *journal_device /* = NULL */ ;
+char *creator_os;
+char *volume_label;
+char *mount_dir;
+char *journal_device;
+int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
 
 static void usage(void)
 {
@@ -307,60 +308,143 @@ _("Warning: the backup superblock/group descriptors at block %d contain\n"
 	badblocks_list_iterate_end(bb_iter);
 }
 
-static void write_inode_tables(ext2_filsys fs)
+/*
+ * These functions implement a generalized progress meter.
+ */
+struct progress_struct {
+	char		format[20];
+	char		backup[80];
+	__u32		max;
+};
+
+static void progress_init(struct progress_struct *progress,
+			  char *label,__u32 max)
 {
-	errcode_t	retval;
-	blk_t		blk;
-	int		i, j, num, count;
-	char		*buf;
-	char		format[20], backup[80];
-	int		sync_kludge = 0;
-	char		*mke2fs_sync;
+	int	i;
 
-	mke2fs_sync = getenv("MKE2FS_SYNC");
-	if (mke2fs_sync)
-		sync_kludge = atoi(mke2fs_sync);
-
-	buf = malloc(fs->blocksize * STRIDE_LENGTH);
-	if (!buf) {
-		com_err("malloc", ENOMEM,
-			_("while allocating zeroizing buffer"));
-		exit(1);
-	}
-	memset(buf, 0, fs->blocksize * STRIDE_LENGTH);
+	memset(progress, 0, sizeof(struct progress_struct));
+	if (quiet)
+		return;
 
 	/*
 	 * Figure out how many digits we need
 	 */
-	i = int_log10(fs->group_desc_count);
-	sprintf(format, "%%%dd/%%%dld", i, i);
-	memset(backup, '\b', sizeof(backup)-1);
-	backup[sizeof(backup)-1] = 0;
-	if ((2*i)+1 < sizeof(backup))
-		backup[(2*i)+1] = 0;
+	i = int_log10(max);
+	sprintf(progress->format, "%%%dd/%%%dld", i, i);
+	memset(progress->backup, '\b', sizeof(progress->backup)-1);
+	progress->backup[sizeof(progress->backup)-1] = 0;
+	if ((2*i)+1 < sizeof(progress->backup))
+		progress->backup[(2*i)+1] = 0;
+	progress->max = max;
 
-	if (!quiet)
-		printf(_("Writing inode tables: "));
+	fputs(label, stdout);
+	fflush(stdout);
+}
+
+static void progress_update(struct progress_struct *progress, __u32 val)
+{
+	if (progress->format[0] == 0)
+		return;
+	printf(progress->format, val, progress->max);
+	fputs(progress->backup, stdout);
+}
+
+static void progress_close(struct progress_struct *progress)
+{
+	if (progress->format[0] == 0)
+		return;
+	fputs(_("done                            \n"), stdout);
+}
+
+
+/*
+ * Helper function which zeros out _num_ blocks starting at _blk_.  In
+ * case of an error, the details of the error is returned via _ret_blk_
+ * and _ret_count_ if they are non-NULL pointers.  Returns 0 on
+ * success, and an error code on an error.
+ *
+ * As a special case, if the first argument is NULL, then it will
+ * attempt to free the static zeroizing buffer.  (This is to keep
+ * programs that check for memory leaks happy.)
+ */
+static errcode_t zero_blocks(ext2_filsys fs, blk_t blk, int num,
+			     struct progress_struct *progress,
+			     blk_t *ret_blk, int *ret_count)
+{
+	int		j, count, next_update, next_update_incr;
+	static char	*buf;
+	errcode_t	retval;
+
+	/* If fs is null, clean up the static buffer and return */
+	if (!fs) {
+		if (buf) {
+			free(buf);
+			buf = 0;
+		}
+		return 0;
+	}
+	/* Allocate the zeroizing buffer if necessary */
+	if (!buf) {
+		buf = malloc(fs->blocksize * STRIDE_LENGTH);
+		if (!buf) {
+			com_err("malloc", ENOMEM,
+				_("while allocating zeroizing buffer"));
+			exit(1);
+		}
+		memset(buf, 0, fs->blocksize * STRIDE_LENGTH);
+	}
+	/* OK, do the write loop */
+	next_update = 0;
+	next_update_incr = num / 100;
+	if (next_update_incr < 1)
+		next_update_incr = 1;
+	for (j=0; j < num; j += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
+		if (num-j > STRIDE_LENGTH)
+			count = STRIDE_LENGTH;
+		else
+			count = num - j;
+		retval = io_channel_write_blk(fs->io, blk, count, buf);
+		if (retval) {
+			if (ret_count)
+				*ret_count = count;
+			if (ret_blk)
+				*ret_blk = blk;
+			return retval;
+		}
+		if (progress && j > next_update) {
+			next_update += num / 100;
+			progress_update(progress, blk);
+		}
+	}
+	return 0;
+}	
+
+static void write_inode_tables(ext2_filsys fs)
+{
+	errcode_t	retval;
+	blk_t		blk;
+	int		i, num;
+	struct progress_struct progress;
+
+	if (quiet)
+		memset(&progress, 0, sizeof(progress));
+	else
+		progress_init(&progress, _("Writing inode tables: "),
+			      fs->group_desc_count);
+
 	for (i = 0; i < fs->group_desc_count; i++) {
-		if (!quiet)
-			printf(format, i, fs->group_desc_count);
+		progress_update(&progress, i);
 		
 		blk = fs->group_desc[i].bg_inode_table;
 		num = fs->inode_blocks_per_group;
-		
-		for (j=0; j < num; j += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
-			if (num-j > STRIDE_LENGTH)
-				count = STRIDE_LENGTH;
-			else
-				count = num - j;
-			retval = io_channel_write_blk(fs->io, blk, count, buf);
-			if (retval)
-				printf(_("Warning: could not write %d blocks "
-				       "in inode table starting at %d: %s\n"),
-				       count, blk, error_message(retval));
+
+		retval = zero_blocks(fs, blk, num, 0, &blk, &num);
+		if (retval) {
+			printf(_("\nCould not write %d blocks "
+				 "in inode table starting at %d: %s\n"),
+			       num, blk, error_message(retval));
+			exit(1);
 		}
-		if (!quiet) 
-			fputs(backup, stdout);
 		if (sync_kludge) {
 			if (sync_kludge == 1)
 				sync();
@@ -368,9 +452,8 @@ static void write_inode_tables(ext2_filsys fs)
 				sync();
 		}
 	}
-	free(buf);
-	if (!quiet)
-		fputs(_("done                            \n"), stdout);
+	zero_blocks(0, 0, 0, 0, 0, 0);
+	progress_close(&progress);
 }
 
 static void create_root_dir(ext2_filsys fs)
@@ -480,7 +563,45 @@ static void zap_sector(ext2_filsys fs, int sect)
 		printf(_("Warning: could not erase sector %d: %s\n"), sect,
 		       error_message(retval));
 }
-	
+
+static void create_journal_dev(ext2_filsys fs)
+{
+	struct progress_struct progress;
+	errcode_t		retval;
+	char			*buf;
+
+	if (quiet)
+		memset(&progress, 0, sizeof(progress));
+	else
+		progress_init(&progress, _("Zeroing journal device: "),
+			      fs->super->s_blocks_count);
+
+#if 0
+	retval = zero_blocks(fs, 0, fs->super->s_blocks_count,
+			     &progress, &blk, &count);
+	if (retval) {
+		com_err("create_journal_dev", retval,
+			"while zeroing journal device (block %u, count %d",
+			blk, count);
+		exit(1);
+	}
+	zero_blocks(0, 0, 0, 0, 0);
+#endif
+	retval = ext2fs_create_journal_superblock(fs,
+				  fs->super->s_blocks_count, 0, &buf);
+	if (retval) {
+		com_err("create_journal_dev", retval,
+			_("while initialization journal superblock"));
+		exit(1);
+	}
+	retval = io_channel_write_blk(fs->io, 1, 1, buf);
+	if (retval) {
+		com_err("create_journal_dev", retval,
+			_("while writing journal superblock"));
+		exit(1);
+	}
+	progress_close(&progress);
+}
 
 static void show_stats(ext2_filsys fs)
 {
@@ -622,7 +743,8 @@ static void parse_raid_opts(const char *opts)
 
 static __u32 ok_features[3] = {
 	0,					/* Compat */
-	EXT2_FEATURE_INCOMPAT_FILETYPE,		/* Incompat */
+	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
+		EXT3_FEATURE_INCOMPAT_JOURNAL_DEV,
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
 };
 
@@ -670,6 +792,10 @@ static void PRS(int argc, char *argv[])
 	} else
 		putenv (PATH_SET);
 
+	tmp = getenv("MKE2FS_SYNC");
+	if (tmp)
+		sync_kludge = atoi(tmp);
+	
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
 	initialize_ext2_error_table();
@@ -1009,6 +1135,13 @@ int main (int argc, char *argv[])
 	if (noaction)
 		exit(0);
 
+	if (fs->super->s_feature_incompat &
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+		create_journal_dev(fs);
+		ext2fs_close(fs);
+		exit(0);
+	}
+
 	if (bad_blocks_filename)
 		read_bb_file(fs, &bb_list, bad_blocks_filename);
 	if (cflag)
@@ -1037,25 +1170,35 @@ int main (int argc, char *argv[])
 	}
 
 	journal_blocks = journal_size * 1024 / (fs->blocksize 	/ 1024);
-	if (journal_device) { 
+	if (journal_device) {
+		ext2_filsys	jfs;
+		
 		if (!force)
 			check_plausibility(journal_device); 
 		check_mount(journal_device, force, _("journal"));
 
+		retval = ext2fs_open(journal_device, EXT2_FLAG_RW|
+				     EXT2_FLAG_JOURNAL_DEV_OK, 0,
+				     fs->blocksize, unix_io_manager, &jfs);
+		if (retval) {
+			com_err(program_name, retval,
+				_("while trying to open journal device %s\n"),
+				journal_device);
+			exit(1);
+		}
 		if (!quiet)
 			printf(_("Creating journal on device %s: "), 
 			       journal_device);
-		retval = ext2fs_add_journal_device(fs, journal_device,
-						   journal_blocks,
-						   journal_flags);
-		if(retval) { 
+		retval = ext2fs_add_journal_device(fs, jfs);
+		if(retval) {
 			com_err (program_name, retval, 
-				 _("while trying to create journal on device %s"), 
+				 _("while trying to add journal to device %s"), 
 				 journal_device);
 			exit(1);
 		}
 		if (!quiet)
 			printf(_("done\n"));
+		ext2fs_close(jfs);
 	} else if (journal_size) {
 		if (!quiet)
 			printf(_("Creating journal (%d blocks): "),

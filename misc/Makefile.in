@@ -87,8 +87,8 @@ lsattr: $(LSATTR_OBJS) $(DEPLIBS_E2P)
 uuidgen: $(UUIDGEN_OBJS) $(DEPLIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID)
 
-dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS_E2P)
-	$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS_E2P)
+dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS_E2P) $(DEPLIBUUID)
+	$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS_E2P) $(LIBUUID)
 
 fsck: $(FSCK_OBJS)
 	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS)
