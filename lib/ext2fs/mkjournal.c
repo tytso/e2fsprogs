@@ -25,6 +25,9 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#if HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
 #if HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
@@ -306,7 +309,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 	ext2_ino_t		journal_ino;
 	struct stat		st;
 	char			jfile[1024];
-	int			fd, mount_flags;
+	int			fd, mount_flags, f;
 
 	if ((retval = ext2fs_check_mount_point(fs->device_name, &mount_flags,
 					       jfile, sizeof(jfile)-10)))
@@ -324,13 +327,20 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 			return retval;
 
 		/* Get inode number of the journal file */
-		if (stat(jfile, &st) < 0)
+		if (fstat(fd, &st) < 0)
 			return errno;
 
-		if ((retval = fsetflags(jfile,
-					EXT2_NODUMP_FL | EXT2_IMMUTABLE_FL)))
+#if HAVE_CHFLAGS
+		retval = fchflags (fd, UF_NODUMP|UF_IMMUTABLE);
+#else
+#if HAVE_EXT2_IOCTLS
+		f = EXT2_NODUMP_FL | EXT2_IMMUTABLE_FL;;
+		retval = ioctl(fd, EXT2_IOC_SETFLAGS, &f);
+#endif
+#endif
+		if (retval)
 			return retval;
-		
+
 		journal_ino = st.st_ino;
 	} else {
 		journal_ino = EXT2_JOURNAL_INO;

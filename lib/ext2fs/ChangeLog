@@ -1,3 +1,11 @@
+2001-06-10  Theodore Tso  <tytso@valinux.com>
+
+	* Makefile.in: Remove the dependence on the libe2p library.
+
+	* mkjournal.c (ext2fs_add_journal_inode): Replace use of fsetflags
+		with direct usage of the ioctl/fchflags so that we don't
+		have to depend on the libe2p library.
+
 2001-06-08  Theodore Tso  <tytso@valinux.com>
 
 	* ext2_types.h.in: Use unsigned ints in favor of unsigned longs
