@@ -15,16 +15,6 @@ DLOPEN_LIB = @DLOPEN_LIB@
 LIBRARY= libss
 LIBDIR= ss
 
-DLL_ADDRESS = 0x66880000
-DLL_JUMPSIZE = 0x1000
-DLL_GOTSIZE  = 0x1000
-DLL_VERSION = 1.0
-DLL_IMAGE = libss
-DLL_STUB = libss
-DLL_LIBS = -L../.. -lcom_err $(DLOPEN_LIB)
-DLL_MYDIR = ss
-DLL_INSTALL_DIR = $(root_libdir)
-
 ELF_VERSION = 2.0
 ELF_SO_VERSION = 2
 ELF_IMAGE = libss
@@ -50,8 +40,6 @@ XTRA_CFLAGS= -I$(srcdir)/../et
 	$(CC) $(ALL_CFLAGS) -c $<
 @PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 @CHECKER_CMT@	$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@DLL_CMT@	(export JUMP_DIR=`pwd`/jump; $(CC) -B$(JUMP_PREFIX) \
-@DLL_CMT@		$(ALL_CFLAGS) -o jump/$*.o -c $<)
 @ELF_CMT@	$(CC) $(ALL_CFLAGS) -DSHARED_ELF_LIB -fPIC -o elfshared/$*.o -c $<
 @BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
@@ -77,7 +65,6 @@ SRCS=	$(srcdir)/invocation.c $(srcdir)/help.c \
 all:: mk_cmds
 
 @MAKEFILE_LIBRARY@
-@MAKEFILE_DLL@
 @MAKEFILE_ELF@
 @MAKEFILE_BSDLIB@
 @MAKEFILE_PROFILE@

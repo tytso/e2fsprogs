@@ -235,30 +235,6 @@ then
 fi
 AC_SUBST(EVMS_ABI_CODE)
 dnl
-dnl handle --enable-dll-shlibs
-dnl
-AC_ARG_ENABLE([dll-shlibs],
-[  --enable-dll-shlibs	  select DLL libraries],
-if test "$enableval" = "no"
-then
-	DLL_CMT=#
-	MAKEFILE_DLL=/dev/null
-	echo "Disabling DLL shared libraries"
-else
-	DLL_CMT=
-	MAKEFILE_DLL=$srcdir/lib/Makefile.dll-lib
-	BINARY_TYPE=dllbin
-	LIB_EXT=.sa
-	echo "Enabling DLL shared libraries"
-fi
-,
-MAKEFILE_DLL=/dev/null
-DLL_CMT=#
-echo "Disabling DLL shared libraries by default"
-)
-AC_SUBST(DLL_CMT)
-AC_SUBST_FILE(MAKEFILE_DLL)
-dnl
 dnl handle --enable-elf-shlibs
 dnl
 AC_ARG_ENABLE([elf-shlibs],

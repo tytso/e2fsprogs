@@ -134,16 +134,6 @@ HFILES_IN=  ext2_err.h ext2_types.h
 LIBRARY= libext2fs
 LIBDIR= ext2fs
 
-DLL_ADDRESS = 0x66900000
-DLL_JUMPSIZE = 0x1000
-DLL_GOTSIZE  = 0x1000
-DLL_VERSION = 1.2
-DLL_IMAGE = libe2fs
-DLL_STUB = libext2fs
-DLL_LIBS = -L../.. -lcom_err
-DLL_MYDIR = ext2fs
-DLL_INSTALL_DIR = $(root_libdir)
-
 ELF_VERSION = 2.4
 ELF_SO_VERSION = 2
 ELF_IMAGE = libext2fs
@@ -157,7 +147,6 @@ BSDLIB_MYDIR = ext2fs
 BSDLIB_INSTALL_DIR = $(root_libdir)
 
 @MAKEFILE_LIBRARY@
-@MAKEFILE_DLL@
 @MAKEFILE_ELF@
 @MAKEFILE_BSDLIB@
 @MAKEFILE_PROFILE@
@@ -167,8 +156,6 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 	$(CC) $(ALL_CFLAGS) -c $< -o $@
 @PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 @CHECKER_CMT@	$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@DLL_CMT@	(export JUMP_DIR=`pwd`/jump; $(CC) -B$(JUMP_PREFIX) $(ALL_CFLAGS) \
-@DLL_CMT@		-o jump/$*.o -c $<)
 @ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
 @BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 

@@ -88,18 +88,6 @@ PROFILED_LIBUUID = $(LIB)/libuuid@PROFILED_LIB_EXT@ @SOCKET_LIB@
 PROFILED_LIBBLKID = $(LIB)/libblkid@PROFILED_LIB_EXT@
 DEPPROFILED_LIBUUID = $(LIB)/libuuid@PROFILED_LIB_EXT@
 
-#
-# Use these definitions is you use tools 2.x, x < 16
-#
-#DLL_BIN=/usr/dll/bin
-#JUMP_PREFIX=/usr/dll/jump/
-
-#
-# Use these definitions if you use tools 2.16 or above
-#
-DLL_BIN=/usr/bin
-JUMP_PREFIX=/usr/bin/jump
-
 # An include directive pointing to a directory holding enough linux-like
 # include files to satisfy some programs here
 LINUX_INCLUDE=@LINUX_INCLUDE@
@@ -158,8 +146,9 @@ MANMODE=	444
 #
 
 DEP_LIB_MAKEFILES = $(top_srcdir)/lib/Makefile.elf-lib  \
-	$(top_srcdir)/lib/Makefile.dll-lib $(top_srcdir)/lib/Makefile.bsd-lib \
-	$(top_srcdir)/lib/Makefile.checker $(top_srcdir)/lib/Makefile.profile
+	$(top_srcdir)/lib/Makefile.bsd-lib $(top_srcdir)/lib/Makefile.darwin-lib \
+	$(top_srcdir)/lib/Makefile.solaris-lib $(top_srcdir)/lib/Makefile.checker \
+	$(top_srcdir)/lib/Makefile.profile
 
 $(top_builddir)/config.status: $(top_srcdir)/configure
 	cd $(top_builddir); ./config.status --recheck

@@ -11,10 +11,9 @@ just follow the steps:
 
 	../configure
 
-	If you wish to turn on DLL shared libraries, add the option
-flag --enable-dll-shlibs.  If you wish to turn on ELF shared
-libraries, add the option --enable-elf-shlibs.  If you wish to build
-profiling libraries, add the option --enable-profile.
+	If you wish to turn on ELF shared libraries, add the option
+--enable-elf-shlibs.  If you wish to build profiling libraries, add
+the option --enable-profile.
 
 4)  Compile the programs
 
