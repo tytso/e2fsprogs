@@ -9,7 +9,9 @@
  * %End-Header%
  */
 
+#if HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
 
 #include <errno.h>
 #include <stdlib.h>
