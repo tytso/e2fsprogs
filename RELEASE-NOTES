@@ -1,4 +1,4 @@
-E2fsprogs 1.26 (February 3, 2001)
+E2fsprogs 1.26 (February 3, 2002)
 =================================
 
 Dumpe2fs will keep going now if the bad block inode can't be read.
