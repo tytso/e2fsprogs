@@ -1,3 +1,8 @@
+2003-07-22  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c (probe_udf): Add specific UDF probing code, and probe
+		UDF before checking for ISO9660 filesystems.
+
 2003-07-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c (blkid_known_fstype): New function which returns true if

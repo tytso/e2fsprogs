@@ -209,6 +209,14 @@ struct hfs_super_block {
 	__u32	h_blksize;
 };
 
+#define ISODCL(from, to) (to - from + 1)
+struct iso_volume_descriptor {
+	char type[ISODCL(1,1)]; /* 711 */
+	char id[ISODCL(2,6)];
+	char version[ISODCL(7,7)];
+	char data[ISODCL(8,2048)];
+};
+
 /*
  * Byte swap functions
  */
