@@ -1,3 +1,7 @@
+1998-07-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs 1.12
+
 1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in: Install the ct_c.awk and ct_c.sed files in

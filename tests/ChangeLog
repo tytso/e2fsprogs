@@ -1,3 +1,7 @@
+1998-07-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs 1.12
+
 1998-07-05  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* f_swapfs: Fix script to ignore the version string header which
@@ -8,6 +12,16 @@
 	* f_messy_inode: Modify test to deal with changes to support
 		64-bit size files.  (/MAKEDEV had i_dir_acl, now
 		i_size_high, set.)
+
+1998-02-20  Theodore Y. Ts'o  <tytso@edt.mit.edu>
+
+	* f_badinode: Set the immutable flag on the block and
+		character device so that e2fsck notices them as bad
+		devices, and offers to fix them.  E2fsck currently
+		only checks devices with the immutable flag set, since
+		otherwise there might be some false positives --- the
+		kernel doesn't always clear the all of i_blocks[n],
+		n>=4, due to a race condition.
 
 Sat Oct 25 18:38:56 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 

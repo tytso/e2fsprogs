@@ -1,8 +1,0 @@
-1998-02-20  Theodore Y. Ts'o  <tytso@edt.mit.edu>
-
-	* Set the immutable flag on the block and character device so that
-		e2fsck notices them as bad devices, and offers to fix them.
-		E2fsck currently only checks devices with the immutable
-		flag set, since otherwise there might be some false
-		positives --- the kernel doesn't always clear the all of
-		i_blocks[n], n>=4, due to a race condition.

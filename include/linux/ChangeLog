@@ -1,3 +1,7 @@
+1998-07-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs 1.12
+
 1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* types.h.in: Add a signed keyword to the __s64 definition.

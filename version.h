@@ -7,4 +7,4 @@
  */
 
 #define E2FSPROGS_VERSION "1.12"
-#define E2FSPROGS_DATE "4-Jul-98"
+#define E2FSPROGS_DATE "9-Jul-98"
