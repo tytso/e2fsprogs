@@ -36,12 +36,6 @@ struct dir_list {
 	struct dir_list *next;
 };
 
-#ifdef sun
-#define DEVDIR	"/devices"
-#else
-#define DEVDIR	"/dev"
-#endif
-
 /*
  * This function adds an entry to the directory list
  */
@@ -99,7 +93,7 @@ static int scan_dir(char *dirname, dev_t device, struct dir_list **list,
 			goto skip_to_next;
 		sprintf(path, "%s/%s", dirname, dp->d_name);
 		if (stat(path, &st) < 0)
-			continue;
+			goto skip_to_next;
 		if (S_ISDIR(st.st_mode))
 			add_to_dirlist(path, list);
 		if (S_ISBLK(st.st_mode) && st.st_rdev == device) {
