@@ -426,7 +426,7 @@ static void parse_e2label_options(int argc, char ** argv)
 		fprintf(stderr, _("Usage: e2label device [newlabel]\n"));
 		exit(1);
 	}
-	device_name = argv[1];
+	device_name = blkid_get_devname(NULL, argv[1], NULL);
 	if (argc == 3) {
 		open_flag = EXT2_FLAG_RW | EXT2_FLAG_JOURNAL_DEV_OK;
 		L_flag = 1;
@@ -665,7 +665,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 		usage();
 	if (!open_flag && !l_flag)
 		usage();
-	device_name = argv[optind];
+	device_name = blkid_get_devname(NULL, argv[optind], NULL);
 }
 
 void do_findfs(int argc, char **argv)

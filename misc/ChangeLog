@@ -1,4 +1,9 @@
-2003-03-06    <tytso@snap.thunk.org>
+2003-03-06    <tytso@mit.edu>
+
+	* tune2fs.c (parse_tune2fs_options, parse_e2label_options): Allow
+		the device name to be specified using LABEL=xxx or
+		UUID=xxx, since we're including the blkid library anyway.
+		(Addresses Debian bugs #166048, #179671)
 
 	* tune2fs.8.in, chattr.1.in: Minor man page fixes (Addresses
 		Debian bugs #175233, #175113, and #170497)
