@@ -185,57 +185,74 @@ struct struct_descriptor *add_new_descriptor (char *name)
 {
 	struct struct_descriptor *ptr;
 	
+	ptr = malloc (sizeof (struct struct_descriptor));
+	if (ptr == NULL) {
+		printf ("Error - Can not allocate memory - Quitting\n");
+		exit (1);
+	}
+	memset(ptr, 0, sizeof(struct struct_descriptor));
+	ptr->prev = ptr->next = NULL;
+	strcpy (ptr->name,name);
+	ptr->length=0;
+	ptr->fields_num=0;
 	if (first_type==NULL) {
-		first_type=last_type=ptr=(struct struct_descriptor *) malloc (sizeof (struct struct_descriptor));
-		if (ptr==NULL) {
-			printf ("Error - Can not allocate memory - Quitting\n");
-			exit (1);
-		}
-		ptr->prev=ptr->next=NULL;
-		strcpy (ptr->name,name);
-		ptr->length=0;
-		ptr->fields_num=0;
-		ptr->type_commands.last_command=-1;
-		fill_type_commands (ptr);
+		first_type = last_type = ptr;
+	} else {
+		ptr->prev = last_type; last_type->next = ptr; last_type=ptr;
 	}
-	else {
-		ptr=(struct struct_descriptor *) malloc (sizeof (struct struct_descriptor));
-		if (ptr==NULL) {
-			printf ("Error - Can not allocate memory - Quitting\n");
-			exit (1);
-		}
-		ptr->prev=last_type;last_type->next=ptr;last_type=ptr;
-		strcpy (ptr->name,name);
-		ptr->length=0;
-		ptr->fields_num=0;
-		ptr->type_commands.last_command=-1;
-		fill_type_commands (ptr);
-	}
+	ptr->type_commands.last_command=-1;
+	fill_type_commands (ptr);
 	return (ptr);
 }
+
+struct type_table {
+	char 	*name;
+	int	field_type;
+	int	len;
+};
+
+struct type_table type_table[] = {
+	{ "long",   FIELD_TYPE_INT,	4 },
+	{ "short",  FIELD_TYPE_INT,	2 },
+	{ "char",   FIELD_TYPE_CHAR,	1 },
+	{ "__u32",  FIELD_TYPE_UINT,	4 },
+	{ "__s32",  FIELD_TYPE_INT,	4 },
+	{ "__u16",  FIELD_TYPE_UINT,	2 },
+	{ "__s16",  FIELD_TYPE_INT,	2 },
+	{ "__u8",   FIELD_TYPE_UINT,	1 },
+	{ "__s8",   FIELD_TYPE_INT,	1 },
+	{  0,       0,                  0 }
+};
 
 void add_new_variable (struct struct_descriptor *ptr,char *v_type,char *v_name)
 
 {
-	short len=1;
+	short	len=1;
+	char	field_type=FIELD_TYPE_INT;
+	struct type_table *p;
 	
 	strcpy (ptr->field_names [ptr->fields_num],v_name);
 	ptr->field_positions [ptr->fields_num]=ptr->length;
-	
-	if (strcasecmp (v_type,"long")==0)  len=4;
-	if (strcasecmp (v_type,"__u32")==0) len=4;
-	if (strcasecmp (v_type,"__s32")==0) len=4;
 
-	if (strcasecmp (v_type,"__u16")==0) len=2;
-	if (strcasecmp (v_type,"__s16")==0) len=2;
-	if (strcasecmp (v_type,"short")==0) len=2;
-	if (strcasecmp (v_type,"int")==0)   len=2;
+	for (p = type_table; p->name; p++) {
+		if (strcmp(v_type, p->name) == 0) {
+			len = p->len;
+			field_type = p->field_type;
+			break;
+		}
+	}
+	if (p->name == 0) {
+		if (strncmp(v_type, "char[", 5) == 0) {
+			len = atoi(v_type+5);
+			field_type = FIELD_TYPE_CHAR;
+		} else {
+			printf("Unknown type %s for field %s\n", v_type, v_name);
+			exit(1);
+		}
+	}
 
-	if (strcasecmp (v_type,"__u8")==0)  len=1;
-	if (strcasecmp (v_type,"__s8")==0)  len=1;
-	if (strcasecmp (v_type,"char")==0)  len=1;
-	
-	ptr->field_lengths [ptr->fields_num]=len;
+	ptr->field_lengths [ptr->fields_num] = len;
+	ptr->field_types [ptr->fields_num] = field_type;
 
 	ptr->length+=len;
 	ptr->fields_num++; 

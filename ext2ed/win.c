@@ -24,6 +24,7 @@ Copyright (C) 1995 Gadi Oxman
 #include <unistd.h>
 
 #include "ext2ed.h"
+#include "../version.h"
 
 struct struct_pad_info show_pad_info;
 WINDOW *title_win,*show_win,*command_win,*show_pad;
@@ -60,7 +61,7 @@ void init_windows (void)
 	}
 
 	box (title_win,0,0);
-	sprintf (title_string,"EXT2ED - Extended-2 File System editor ver %d.%d (%s)",version_major,version_minor,revision_date);
+	sprintf (title_string,"EXT2ED - Extended-2 File System editor ver %s (%s)", E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	wmove (title_win,TITLE_WIN_LINES/2,(COLS-strlen (title_string))/2);
 	wprintw (title_win,title_string);
 

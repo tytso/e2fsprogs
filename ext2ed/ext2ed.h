@@ -93,11 +93,16 @@ struct struct_descriptor {				/* Describes an object */
 	unsigned char name [60];
 	unsigned short fields_num;
 	unsigned char field_names [MAX_FIELDS][80];
+	unsigned char field_types [MAX_FIELDS];
 	unsigned short field_lengths [MAX_FIELDS];
 	unsigned short field_positions [MAX_FIELDS];
 	struct struct_commands type_commands;
 	struct struct_descriptor *prev,*next;
 };
+
+#define FIELD_TYPE_INT	  1
+#define FIELD_TYPE_UINT   2
+#define FIELD_TYPE_CHAR   3
 
 struct struct_type_data {				/* The object's data is usually here */
 	long offset_in_block;

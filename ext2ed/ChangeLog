@@ -1,4 +1,17 @@
-2002-05-11    <tytso@snap.thunk.org>
+2002-05-11    <tytso@mit.edu>
+
+	* win.c, main.c, general_com.c: Use e2fsprogs's version
+		information for the program banner.
+
+	* ext2ed.h, init.c, general_com.c: Add a field_type parameter, and
+		use specialized routines for showing and setting ints, uints,
+		and characeter strings.
+
+	* ext2.descriptors: Updated with newer superblock descriptor; use
+		__u32 and __u16 instead of unsigned long and unsigned
+		short.  Add data structures for direcctory indexing code.
+
+2002-05-11    <tytso@mit.edu>
 
 	* ext2ed.h: Remove VAR_DIR, and replace it with ETC_DIR.
 		(/var/lib is no longer a politically correct location for

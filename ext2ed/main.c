@@ -77,8 +77,6 @@ struct struct_inode_bitmap_info inode_bitmap_info;		/* Used by inodebitmap_com.c
 
 int redraw_request=0;						/* Is set by a signal handler to handle terminal */
 								/* screen size change. */
-int version_major=0,version_minor=2;			
-char revision_date [80]="April 5 2001";
 char email_address [80]="tgud@tochnapc2.technion.ac.il";
 
 int main (void)

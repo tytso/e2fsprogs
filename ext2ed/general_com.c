@@ -19,6 +19,7 @@ Copyright (C) 1995 Gadi Oxman
 #include <string.h>
 
 #include "ext2ed.h"
+#include "../version.h"
 
 void help (char *command_line)
 
@@ -85,7 +86,7 @@ void help (char *command_line)
 	
 	wprintw (show_pad,"\n\n");max_line+=2;
 	
-	wprintw (show_pad,"EXT2ED ver %d.%d (%s)\n",version_major,version_minor,revision_date);
+	wprintw (show_pad,"EXT2ED ver %s (%s)\n",E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	wprintw (show_pad,"Copyright (C) 1995 Gadi Oxman\n");
 	wprintw (show_pad,"Reviewed 2001 Christian Bac\n");
 	wprintw (show_pad,"EXT2ED is hereby placed under the terms of the GNU General Public License.\n\n");
@@ -275,13 +276,97 @@ void set_offset (char *command_line)
 	type_data.offset_in_block=0;
 }
 
+void set_int(short len, void *ptr, char *name, char *value)
+{
+	char	*char_ptr;
+	short	*short_ptr;
+	long	*long_ptr;
+	long	v;
+	char	*tmp;
+
+	v = strtol(value, &tmp, 0);
+	if (*tmp) {
+		wprintw( command_win, "Bad value - %s\n", value);
+		return;
+	}
+	switch (len) {
+	case 1:
+		char_ptr = (char *) ptr;
+		*char_ptr = v;
+		break;
+	case 2:
+		short_ptr = (short *) ptr;
+		*short_ptr = v;
+		break;
+	case 4:
+		long_ptr = (long *) ptr;
+		*long_ptr = v;
+		break;
+	default:
+		wprintw (command_win,
+			 "set_int: unsupported length: %d\n", len);
+		return;
+	}
+	wprintw (command_win, "Variable %s set to %s\n",
+		 name, value);
+}
+
+void set_uint(short len, void *ptr, char *name, char *value)
+{
+	unsigned char	*char_ptr;
+	unsigned short	*short_ptr;
+	unsigned long	*long_ptr;
+	unsigned long	v;
+	char		*tmp;
+
+	v = strtoul(value, &tmp, 0);
+	if (*tmp) {
+		wprintw( command_win, "Bad value - %s\n", value);
+		return;
+	}
+	switch (len) {
+	case 1:
+		char_ptr = (unsigned char *) ptr;
+		*char_ptr = v;
+		break;
+	case 2:
+		short_ptr = (unsigned short *) ptr;
+		*short_ptr = v;
+		break;
+	case 4:
+		long_ptr = (unsigned long *) ptr;
+		*long_ptr = v;
+		break;
+	default:
+		wprintw (command_win,
+			 "set_uint: unsupported length: %d\n", len);
+		return;
+	}
+	wprintw (command_win, "Variable %s set to %s\n",
+		 name, value);
+}
+
+void set_char(short len, void *ptr, char *name, char *value)
+{
+	if (strlen(value)+1 > len) {
+		wprintw( command_win, "Value %s too big for field\n",
+			name, len);
+		return;
+	}
+	memset(ptr, 0, len);
+	strcpy((char *) ptr, value);
+	wprintw (command_win, "Variable %s set to %s\n",
+		 name, value);
+}
+
+
 void set (char *command_line)
 
 {
 	unsigned short *int_ptr;
 	unsigned char *char_ptr;
 	unsigned long *long_ptr,offset=0;
-	int i,found=0;
+	int i,len, found=0;
 	char *ptr,buffer [80],variable [80],value [80];
 	
 	if (device_handle==NULL) {
@@ -315,24 +400,24 @@ void set (char *command_line)
 		if (strcmp (current_type->field_names [i],variable)==0) {
 			found=1;
 			ptr=type_data.u.buffer+offset;
-			switch (current_type->field_lengths [i]) {
-				case 1:
-					char_ptr=(unsigned char *) ptr;
-					*char_ptr=(char) atoi (value);
-					wprintw (command_win,"Variable %s set to %u\n",variable,*char_ptr);refresh_command_win ();
-					break;
-				case 2:
-					int_ptr=(unsigned short *) ptr;
-					*int_ptr=atoi (value);
-					wprintw (command_win,"Variable %s set to %u\n",variable,*int_ptr);refresh_command_win ();
-					break;
-
-				case 4:
-					long_ptr=(unsigned long *) ptr;
-					*long_ptr=atol (value);
-					wprintw (command_win,"Variable %s set to %lu\n",variable,*long_ptr);refresh_command_win ();
-					break;
+			len = current_type->field_lengths [i];
+			switch (current_type->field_types [i]) {
+			case FIELD_TYPE_INT:
+				set_int(len, ptr, variable, value);
+				break;
+			case FIELD_TYPE_UINT:
+				set_uint(len, ptr, variable, value);
+				break;
+			case FIELD_TYPE_CHAR:
+				set_char(len, ptr, variable, value);
+				break;
+			default:
+				wprintw (command_win,
+					 "set: unhandled type %d\n",
+					 current_type->field_types [i]);
+				break;
 			}
+			refresh_command_win ();
 		}
 		offset+=current_type->field_lengths [i];
 	}
@@ -446,11 +531,95 @@ void set_type (char *command_line)
 	}
 }    
 
+void show_int(short len, void *ptr)
+{
+	long	temp;
+	char	*format;
 
+	switch (len) {
+	case 1:
+		temp = *((char *) ptr);
+		format = "%3d (0x%02x)\n";
+		break;
+	case 2:
+		temp = *((short *) ptr);
+		format = "%d (0x%x)\n";
+		break;
+	case 4:
+		temp = *((long *) ptr);
+		format = "%d\n";
+		break;
+	default:
+		wprintw (show_pad, "unimplemented\n");
+		return;
+	}
+	wprintw(show_pad, format, temp, temp);
+}
+
+void show_uint(short len, void *ptr)
+{
+	unsigned long	temp;
+	char		*format;
+
+	switch (len) {
+	case 1:
+		temp = *((unsigned char *) ptr);
+		temp = temp & 0xFF;
+		format = "%3u (0x%02x)\n";
+		break;
+	case 2:
+		temp = *((unsigned short *) ptr);
+		temp = temp & 0xFFFF;
+		format = "%u (0x%x)\n";
+		break;
+	case 4:
+		temp = (unsigned long) *((unsigned long *) ptr);
+		format = "%u\n";
+		break;
+	default:
+		wprintw (show_pad, "unimplemented\n");
+		return;
+	}
+	wprintw(show_pad, format, temp, temp);
+}
+
+void show_char(short len, void *ptr)
+{
+	unsigned char	*cp = (unsigned char *) ptr;
+	unsigned char	ch;
+	int		i,j;
+
+	wprintw(show_pad, "\"");
+	
+	for (i=0; i < len; i++) {
+		ch = *cp++;
+		if (ch == 0) {
+			for (j=i+1; j < len; j++)
+				if (cp[j-i])
+					break;
+			if (j == len)
+				break;
+		}
+		if (ch > 128) {
+			wprintw(show_pad, "M-");
+			ch -= 128;
+		}
+		if ((ch < 32) || (ch == 0x7f)) {
+			wprintw(show_pad, "^");
+			ch ^= 0x40; /* ^@, ^A, ^B; ^? for DEL */
+		}
+		wprintw(show_pad, "%c", ch);
+	}
+	
+	wprintw(show_pad, "\"\n");
+}
+
+
+	
 void show (char *command_line)
 
 {
-	unsigned int i,l,temp_int;
+	unsigned int i,l,len,temp_int;
 	unsigned long offset=0,temp_long;	
 	unsigned char temp_char,*ch_ptr;
 	void *ptr;
@@ -502,29 +671,23 @@ void show (char *command_line)
 		for (i=0;i<current_type->fields_num;i++) {
 			wprintw (show_pad,"%-20s = ",current_type->field_names [i]);
 			ptr=type_data.u.buffer+offset;
-			switch (current_type->field_lengths [i]) {
-				case 1:
-					temp_char=*((unsigned char *) ptr);
-					wprintw (show_pad,"%3u (0x%02x",temp_char,temp_char);
-					if (temp_char>=' ' && temp_char<='z')
-						wprintw (show_pad," , %c)\n",temp_char);
-					else
-						wprintw (show_pad,")\n");
-
-					offset ++;l++;
-					break;
-				case 2:
-					temp_int=*((unsigned short *) ptr);
-					wprintw (show_pad,"%u (0x%x)\n",temp_int,temp_int);
-					offset +=2;l++;
-					break;
-				case 4:
-					temp_long=*((unsigned long *) ptr);
-					wprintw (show_pad,"%lu\n",temp_long);
-					offset +=4;l++;
-					break;
+			len = current_type->field_lengths[i];
+			switch (current_type->field_types[i]) {
+			case FIELD_TYPE_INT:
+				show_int(len, ptr);
+				break;
+			case FIELD_TYPE_UINT:
+				show_uint(len, ptr);
+				break;
+			case FIELD_TYPE_CHAR:
+				show_char(len, ptr);
+				break;
+			default:
+				wprintw (show_pad, "unimplemented\n");
+				break;
 			}
-/*			offset+=current_type->field_lengths [i]; */
+			offset+=len;
+			l++;
 		}
 		current_type->length=offset;
 		show_pad_info.max_line=l-1;

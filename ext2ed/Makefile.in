@@ -19,6 +19,12 @@ DOC_DIR		=	$datadir/doc/ext2ed
 XTRA_CFLAGS	=	$(FLAGS) -DETC_DIR=\"$(root_sysconfdir)\" -I/usr/include/readline
 LIBS		=	-lreadline -lncurses
 
+SRCS=	$(srcdir)/main.c $(srcdir)/init.c $(srcdir)/general_com.c       \
+	$(srcdir)/inode_com.c $(srcdir)/dir_com.c $(srcdir)/super_com.c \
+	$(srcdir)/disk.c $(srcdir)/win.c $(srcdir)/group_com.c          \
+	$(srcdir)/file_com.c $(srcdir)/blockbitmap_com.c                \
+	$(srcdir)/ext2_com.c $(srcdir)/inodebitmap_com.c
+
 OBJS=	main.o init.o general_com.o inode_com.o dir_com.o super_com.o    \
 	disk.o win.o group_com.o file_com.o blockbitmap_com.o ext2_com.o \
 	inodebitmap_com.o
@@ -75,3 +81,15 @@ install: ext2ed
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
+main.o: $(srcdir)/main.c $(srcdir)/ext2ed.h
+general_com.o: $(srcdir)/general_com.c $(srcdir)/ext2ed.h
+inode_com.o: $(srcdir)/inode_com.c $(srcdir)/ext2ed.h
+dir_com.o: $(srcdir)/dir_com.c $(srcdir)/ext2ed.h
+super_com.o: $(srcdir)/super_com.c $(srcdir)/ext2ed.h
+disk.o: $(srcdir)/disk.c $(srcdir)/ext2ed.h
+win.o: $(srcdir)/win.c $(srcdir)/ext2ed.h
+group_com.o: $(srcdir)/group_com.c $(srcdir)/ext2ed.h
+file_com.o: $(srcdir)/file_com.c $(srcdir)/ext2ed.h
+blockbitmap_com.o: $(srcdir)/blockbitmap_com.c $(srcdir)/ext2ed.h
+ext2_com.o: $(srcdir)/ext2_com.c $(srcdir)/ext2ed.h
+inodebitmap_com.o: $(srcdir)/inodebitmap_com.c $(srcdir)/ext2ed.h
