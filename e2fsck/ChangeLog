@@ -1,3 +1,9 @@
+2005-01-13  Matthias Andree  <matthias.andree@gmx.de>
+
+	* unix.c: Do not call closedir if the handle is zero, to avoid
+		crashes when the /proc/acpi/ac_adapter directory is
+		missing, for instance on non-ACPI or non-Linux systems.
+
 2005-01-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1b.c: As part of converting configure.in from using the

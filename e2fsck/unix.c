@@ -238,7 +238,8 @@ static int is_on_batt(void)
 			return 1;
 		}
 	}
-	closedir(d);
+	if (d)
+		closedir(d);
 	return 0;
 }
 
