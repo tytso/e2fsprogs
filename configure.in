@@ -559,11 +559,6 @@ else
 fi
 AC_SUBST(DO_TEST_SUITE)
 dnl
-dnl
-dnl
-DO_SUBSTITUTE_SCRIPT=$srcdir/lib/do_substitute
-AC_SUBST_FILE(DO_SUBSTITUTE_SCRIPT)
-dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
 dnl directories
 dnl

@@ -1,3 +1,9 @@
+2000-05-25  Theodore Ts'o  <tytso@valinux.com>
+
+	* configure.in (DO_SUBSTITUTE_SCRIPT): Remove unneeded
+		substitution.  (Left over from before we moved to use a C
+		program to do substitutions.)
+	
 2000-05-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* e2fsprogs.spec (fsck.ext3): Add /sbin/fsck.ext3 to the spec file.
