@@ -1,3 +1,8 @@
+2004-01-20  root  <tytso@mit.edu>
+
+	* chattr.c (main): Add support for '--' to stop options
+		processing.  (Addresses Debian bug #225188).
+
 2003-12-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* chattr.1.in: Update text indicating the 'c', 's', and 'u'

@@ -276,7 +276,11 @@ int main (int argc, char ** argv)
 		program_name = *argv;
 	i = 1;
 	while (i < argc && !end_arg) {
-		if (decode_arg (&i, argc, argv) == EOF)
+		/* '--' arg should end option processing */
+		if (strcmp(argv[i], "--") == 0) {
+			i++;
+			end_arg = 1;
+		} else if (decode_arg (&i, argc, argv) == EOF)
 			end_arg = 1;
 		else
 			i++;
