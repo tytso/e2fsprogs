@@ -1,3 +1,10 @@
+2004-11-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2_fs.h (EXT2_EXTENTS_FL, EXT3_FEATURE_INCOMPAT_EXTENTS, 
+		EXT2_MAX_BLOCK_LOG_SIZE): Add definition for extent
+		feature and inode flag.  Change maximum allowable block
+		size to be 65536.
+
 2004-10-08  Theodore Ts'o  <tytso@mit.edu>
 
 	* getsize.c (ext2fs_get_device_size): Add support for Windows

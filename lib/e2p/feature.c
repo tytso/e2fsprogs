@@ -47,6 +47,8 @@ static struct feature feature_list[] = {
 			"needs_recovery" },
 	{	E2P_FEATURE_INCOMPAT, EXT3_FEATURE_INCOMPAT_JOURNAL_DEV,
 			"journal_dev" },
+	{	E2P_FEATURE_INCOMPAT, EXT3_FEATURE_INCOMPAT_EXTENTS,
+			"extents" },
 	{	E2P_FEATURE_INCOMPAT, EXT2_FEATURE_INCOMPAT_META_BG,
 			"meta_bg" },
 	{	0, 0, 0 },

@@ -77,7 +77,7 @@
  * Macro-instructions used to manage several block sizes
  */
 #define EXT2_MIN_BLOCK_LOG_SIZE		10	/* 1024 */
-#define EXT2_MAX_BLOCK_LOG_SIZE		13	/* 8192 */
+#define EXT2_MAX_BLOCK_LOG_SIZE		16	/* 65536 */
 #define EXT2_MIN_BLOCK_SIZE	(1 << EXT2_MIN_BLOCK_LOG_SIZE)
 #define EXT2_MAX_BLOCK_SIZE	(1 << EXT2_MAX_BLOCK_LOG_SIZE)
 #ifdef __KERNEL__
@@ -233,6 +233,7 @@ struct ext2_dx_countlimit {
 #define EXT2_NOTAIL_FL			0x00008000 /* file tail should not be merged */
 #define EXT2_DIRSYNC_FL 		0x00010000 /* Synchronous directory modifications */
 #define EXT2_TOPDIR_FL			0x00020000 /* Top of directory hierarchies*/
+#define EXT3_EXTENTS_FL 		0x00080000 /* Inode uses extents */
 #define EXT2_RESERVED_FL		0x80000000 /* reserved for ext2 lib */
 
 #define EXT2_FL_USER_VISIBLE		0x0003DFFF /* User visible flags */
@@ -502,6 +503,8 @@ struct ext2_super_block {
 #define EXT3_FEATURE_INCOMPAT_RECOVER		0x0004 /* Needs recovery */
 #define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008 /* Journal device */
 #define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
+#define EXT3_FEATURE_INCOMPAT_EXTENTS		0x0040
+
 
 #define EXT2_FEATURE_COMPAT_SUPP	0
 #define EXT2_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE)
