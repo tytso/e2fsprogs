@@ -219,73 +219,73 @@ struct problem_context {
 #define PR_1_BBINODE_BAD_METABLOCK_PROMPT 0x010016
 	
 /* Bad primary block */
-#define PR_1_BAD_PRIMARY_BLOCK		0x0100017
+#define PR_1_BAD_PRIMARY_BLOCK		0x010017
 		  
 /* Bad primary block prompt */
-#define PR_1_BAD_PRIMARY_BLOCK_PROMPT	0x0100018
+#define PR_1_BAD_PRIMARY_BLOCK_PROMPT	0x010018
 
 /* Bad primary superblock */
-#define PR_1_BAD_PRIMARY_SUPERBLOCK	0x0100019
+#define PR_1_BAD_PRIMARY_SUPERBLOCK	0x010019
 
 /* Bad primary block group descriptors */
-#define PR_1_BAD_PRIMARY_GROUP_DESCRIPTOR 0x010001A
+#define PR_1_BAD_PRIMARY_GROUP_DESCRIPTOR 0x01001A
 
 /* Bad superblock in group */
-#define PR_1_BAD_SUPERBLOCK		0x010001B
+#define PR_1_BAD_SUPERBLOCK		0x01001B
 
 /* Bad block group descriptors in group */
-#define PR_1_BAD_GROUP_DESCRIPTORS	0x010001C
+#define PR_1_BAD_GROUP_DESCRIPTORS	0x01001C
 
 /* Block claimed for no reason */	  
-#define PR_1_PROGERR_CLAIMED_BLOCK	0x010001D
+#define PR_1_PROGERR_CLAIMED_BLOCK	0x01001D
 
 /* Error allocating blocks for relocating metadata */
-#define PR_1_RELOC_BLOCK_ALLOCATE	0x010001E
+#define PR_1_RELOC_BLOCK_ALLOCATE	0x01001E
 		
 /* Error allocating block buffer during relocation process */
-#define PR_1_RELOC_MEMORY_ALLOCATE	0x010001F
+#define PR_1_RELOC_MEMORY_ALLOCATE	0x01001F
 		
 /* Relocating metadata group information from X to Y */	
-#define PR_1_RELOC_FROM_TO		0x0100020
+#define PR_1_RELOC_FROM_TO		0x010020
 		
 /* Relocating metatdata group information to X */
-#define PR_1_RELOC_TO			0x0100021
+#define PR_1_RELOC_TO			0x010021
 		
 /* Block read error during relocation process */
-#define PR_1_RELOC_READ_ERR		0x0100022
+#define PR_1_RELOC_READ_ERR		0x010022
 		
 /* Block write error during relocation process */
-#define PR_1_RELOC_WRITE_ERR		0x0100023
+#define PR_1_RELOC_WRITE_ERR		0x010023
 
 /* Error allocating inode bitmap */
-#define PR_1_ALLOCATE_IBITMAP_ERROR	0x0100024
+#define PR_1_ALLOCATE_IBITMAP_ERROR	0x010024
 
 /* Error allocating block bitmap */
-#define PR_1_ALLOCATE_BBITMAP_ERROR	0x0100025
+#define PR_1_ALLOCATE_BBITMAP_ERROR	0x010025
 
 /* Error allocating icount structure */
-#define PR_1_ALLOCATE_ICOUNT		0x0100026
+#define PR_1_ALLOCATE_ICOUNT		0x010026
 	
 /* Error allocating dbcount */
-#define PR_1_ALLOCATE_DBCOUNT		0x0100027
+#define PR_1_ALLOCATE_DBCOUNT		0x010027
 
 /* Error while scanning inodes */
-#define PR_1_ISCAN_ERROR		0x0100028
+#define PR_1_ISCAN_ERROR		0x010028
 
 /* Error while iterating over blocks */
-#define PR_1_BLOCK_ITERATE		0x0100029
+#define PR_1_BLOCK_ITERATE		0x010029
 
 /* Error while storing inode count information */	  
-#define PR_1_ICOUNT_STORE		0x010002A
+#define PR_1_ICOUNT_STORE		0x01002A
 
 /* Error while storing directory block information */	  
-#define PR_1_ADD_DBLOCK			0x010002B
+#define PR_1_ADD_DBLOCK			0x01002B
 
 /* Error while reading inode (for clearing) */
-#define PR_1_READ_INODE			0x010002C
+#define PR_1_READ_INODE			0x01002C
 
 /* Suppress messages prompt */
-#define PR_1_SUPPRESS_MESSAGES		0x010002D
+#define PR_1_SUPPRESS_MESSAGES		0x01002D
 
 /* Filesystem contains large files, but has no such flag in sb */
 #define PR_1_FEATURE_LARGE_FILES 	0x01002E

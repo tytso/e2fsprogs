@@ -1,3 +1,14 @@
+2000-12-30    <tytso@snap.thunk.org>
+
+	* problem.h: Fixed numbering of pass1 error messages; an extra 0
+		had slipped into some of the numbers.  (Pointed out by
+		Andreas Dilger)
+
+	* journal.c (e2fsck_journal_fix_corrupt_super): Clean up
+		unnecessary automatic variable.  Add explanatory comment
+		about the kernel emulation routines.  (Suggested by
+		Andreas Dilger)
+
 2000-12-13  Theodore Ts'o  <tytso@valinux.com>
 
 	* journal.c (e2fsck_check_ext3_journal): Check to make sure the

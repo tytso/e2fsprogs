@@ -29,6 +29,10 @@ static int bh_count = 0;
 int journal_enable_debug = 0;
 #endif
 
+/* Kernel compatibility functions for handling the journal.  These allow us
+ * to use the recovery.c file virtually unchanged from the kernel, so we
+ * don't have to do much to keep kernel and user recovery in sync.
+ */
 int bmap(struct inode *inode, int block)
 {
 	int retval;
@@ -432,10 +436,8 @@ static int e2fsck_journal_fix_corrupt_super(e2fsck_t ctx, journal_t *journal,
 
 	if (s->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
 		if (fix_problem(ctx, PR_0_JOURNAL_BAD_SUPER, pctx)) {
-			journal_superblock_t *jsb = journal->j_superblock;
-
-			e2fsck_journal_reset_super(ctx, jsb, journal);
-
+			e2fsck_journal_reset_super(ctx, journal->j_superblock,
+						   journal);
 			journal->j_transaction_sequence = 1;
 			e2fsck_clear_recover(ctx, recover);
 			return 0;
