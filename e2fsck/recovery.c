@@ -71,7 +71,7 @@ static int do_readahead(journal_t *journal, unsigned int start)
 	unsigned int max, nbufs, next, blocknr;
 	struct buffer_head *bh;
 	
-	#define MAXBUF 8
+#define MAXBUF 8
 	struct buffer_head * bufs[MAXBUF];
 	
 	/* Do up to 128K of readahead */
@@ -177,7 +177,7 @@ static int jread(struct buffer_head **bhp, journal_t *journal,
  * Count the number of in-use tags in a journal descriptor block.
  */
 
-int count_tags(struct buffer_head *bh, int size)
+static int count_tags(struct buffer_head *bh, int size)
 {
 	char *			tagp;
 	journal_block_tag_t *	tag;
@@ -225,7 +225,9 @@ int journal_recover(journal_t *journal)
 	int			err;
 	journal_superblock_t *	sb;
 
-	struct recovery_info	info = {};
+	struct recovery_info	info;
+
+	memset(&info, 0, sizeof(info));
 	
 	sb = journal->j_superblock;
 
@@ -436,7 +438,7 @@ static int do_one_pass(journal_t *journal, struct recovery_info *info,
 					
 					mark_buffer_dirty(nbh, 1);
 					++info->nr_replays;
-					// ll_rw_block(WRITE, 1, &nbh);
+					/* ll_rw_block(WRITE, 1, &nbh); */
 					brelse(obh);
 					brelse(nbh);
 				}

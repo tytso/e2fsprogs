@@ -164,7 +164,6 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 	ino_t	ino;
 	struct ext2_inode inode;
 	ext2_inode_scan	scan;
-	errcode_t	retval;
 	struct process_block_struct pb;
 	struct dup_inode *dp;
 	struct problem_context pctx;
@@ -231,12 +230,12 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 	fs->check_directory = 0;
 }
 
-int process_pass1b_block(ext2_filsys fs,
-			 blk_t	*block_nr,
-			 e2_blkcnt_t blockcnt,
-			 blk_t ref_blk, 
-			 int ref_offset, 			 
-			 void *priv_data)
+static int process_pass1b_block(ext2_filsys fs,
+				blk_t	*block_nr,
+				e2_blkcnt_t blockcnt,
+				blk_t ref_blk, 
+				int ref_offset, 			 
+				void *priv_data)
 {
 	struct process_block_struct *p;
 	struct dup_block *dp, *q, *r;
@@ -524,7 +523,6 @@ static int delete_file_block(ext2_filsys fs,
 static void delete_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 {
 	ext2_filsys fs = ctx->fs;
-	errcode_t	retval;
 	struct process_block_struct pb;
 	struct ext2_inode	inode;
 	struct problem_context	pctx;

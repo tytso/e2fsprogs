@@ -90,14 +90,14 @@ static int release_inode_block(ext2_filsys fs,
 	if ((blk < fs->super->s_first_data_block) ||
 	    (blk >= fs->super->s_blocks_count)) {
 		fix_problem(ctx, PR_0_ORPHAN_ILLEGAL_BLOCK_NUM, pctx);
-	abort:
+	return_abort:
 		pb->abort = 1;
 		return BLOCK_ABORT;
 	}
 
 	if (!ext2fs_test_block_bitmap(fs->block_map, blk)) {
 		fix_problem(ctx, PR_0_ORPHAN_ALREADY_CLEARED_BLOCK, pctx);
-		goto abort;
+		goto return_abort;
 	}
 
 	/*
@@ -112,17 +112,17 @@ static int release_inode_block(ext2_filsys fs,
 		 */
 		if (blockcnt < 0) {
 			int	i, limit;
-			blk_t	*block_nr;
+			blk_t	*bp;
 			
 			pb->errcode = io_channel_read_blk(fs->io, blk, 1,
 							pb->buf);
 			if (pb->errcode)
-				goto abort;
+				goto return_abort;
 
 			limit = fs->blocksize >> 2;
-			for (i = 0, block_nr = (blk_t *) pb->buf;
-			     i < limit;	 i++, block_nr++)
-				if (*block_nr)
+			for (i = 0, bp = (blk_t *) pb->buf;
+			     i < limit;	 i++, bp++)
+				if (*bp)
 					return 0;
 		}
 		/*
@@ -139,13 +139,13 @@ static int release_inode_block(ext2_filsys fs,
 			pb->errcode = io_channel_read_blk(fs->io, blk, 1,
 							pb->buf);
 			if (pb->errcode)
-				goto abort;
+				goto return_abort;
 			memset(pb->buf + pb->truncate_offset, 0,
 			       fs->blocksize - pb->truncate_offset);
 			pb->errcode = io_channel_write_blk(fs->io, blk, 1,
 							 pb->buf);
 			if (pb->errcode)
-				goto abort;
+				goto return_abort;
 		}
 		pb->truncated_blocks++;
 		*block_nr = 0;
@@ -238,7 +238,7 @@ static int release_orphan_inodes(e2fsck_t ctx)
 	if ((ino < EXT2_FIRST_INODE(fs->super)) ||
 	    (ino > fs->super->s_inodes_count)) {
 		clear_problem_context(&pctx);
-		pctx.ino;
+		pctx.ino = ino;
 		fix_problem(ctx, PR_0_ORPHAN_ILLEGAL_HEAD_INODE, &pctx);
 		return 1;
 	}
@@ -262,11 +262,11 @@ static int release_orphan_inodes(e2fsck_t ctx)
 		     (next_ino > fs->super->s_inodes_count))) {
 			pctx.ino = next_ino;
 			fix_problem(ctx, PR_0_ORPHAN_ILLEGAL_INODE, &pctx);
-			goto abort;
+			goto return_abort;
 		}
 
 		if (release_inode_blocks(ctx, ino, &inode, block_buf, &pctx))
-			goto abort;
+			goto return_abort;
 
 		if (!inode.i_links_count) {
 			ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
@@ -283,7 +283,7 @@ static int release_orphan_inodes(e2fsck_t ctx)
 		ino = next_ino;
 	}
 	return 0;
-abort:
+return_abort:
 	ext2fs_free_mem((void **) &block_buf);
 	return 1;
 }

@@ -59,7 +59,24 @@ typedef struct {
 #define kmalloc(len,flags) malloc(len)
 #define kfree(p) free(p)
 
-static inline kmem_cache_t * do_cache_create(int len)
+/*
+ * We use the standard libext2fs portability tricks for inline
+ * functions.  
+ */
+extern kmem_cache_t * do_cache_create(int len);
+	
+#if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
+#ifdef E2FSCK_INCLUDE_INLINE_FUNCS
+#define _INLINE_ extern
+#else
+#ifdef __GNUC__
+#define _INLINE_ extern __inline__
+#else				/* For Watcom C */
+#define _INLINE_ extern inline
+#endif
+#endif
+
+_INLINE_ kmem_cache_t * do_cache_create(int len)
 {
 	kmem_cache_t *new_cache;
 	new_cache = malloc(sizeof(*new_cache));
@@ -67,6 +84,9 @@ static inline kmem_cache_t * do_cache_create(int len)
 		new_cache->object_length = len;
 	return new_cache;
 }
+
+#undef _INLINE_
+#endif
 
 /*
  * Now pull in the real linux/jfs.h definitions.

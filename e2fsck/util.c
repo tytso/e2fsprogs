@@ -69,8 +69,8 @@ int ask_yn(const char * string, int def)
 {
 	int		c;
 	const char	*defstr;
-	char		*short_yes = _("yY");
-	char		*short_no = _("nN");
+	const char	*short_yes = _("yY");
+	const char	*short_no = _("nN");
 
 #ifdef HAVE_TERMIOS_H
 	struct termios	termios, tmp;
@@ -212,8 +212,8 @@ void init_resource_track(struct resource_track *track)
 	track->brk_start = sbrk(0);
 	gettimeofday(&track->time_start, 0);
 #ifdef HAVE_GETRUSAGE
-#ifdef solaris
-	memcpy(&r, 0, sizeof(struct rusage));
+#ifdef sun
+	memset(&r, 0, sizeof(struct rusage));
 #endif
 	getrusage(RUSAGE_SELF, &r);
 	track->user_start = r.ru_utime;

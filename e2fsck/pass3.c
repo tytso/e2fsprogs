@@ -359,7 +359,7 @@ static int check_directory(e2fsck_t ctx, struct dir_info *dir,
  * This routine gets the lost_and_found inode, making it a directory
  * if necessary
  */
-ino_t get_lost_and_found(e2fsck_t ctx)
+static ino_t get_lost_and_found(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	ino_t			ino;
@@ -367,7 +367,7 @@ ino_t get_lost_and_found(e2fsck_t ctx)
 	errcode_t		retval;
 	struct ext2_inode	inode;
 	char *			block;
-	const char 		name[] = "lost+found";
+	static const char	name[] = "lost+found";
 	struct 	problem_context	pctx;
 	struct dir_info 	*dirinfo;
 
@@ -487,7 +487,7 @@ ino_t get_lost_and_found(e2fsck_t ctx)
 	 * Miscellaneous bookkeeping that needs to be kept straight.
 	 */
 	e2fsck_add_dir_info(ctx, ino, EXT2_ROOT_INO);
-	adjust_inode_count(ctx, EXT2_ROOT_INO, +1);
+	adjust_inode_count(ctx, EXT2_ROOT_INO, 1);
 	ext2fs_icount_store(ctx->inode_count, ino, 2);
 	ext2fs_icount_store(ctx->inode_link_info, ino, 2);
 #if 0
@@ -541,7 +541,7 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ino_t ino)
 		fix_problem(ctx, PR_3_CANT_RECONNECT, &pctx);
 		return 1;
 	}
-	adjust_inode_count(ctx, ino, +1);
+	adjust_inode_count(ctx, ino, 1);
 
 	return 0;
 }

@@ -1,3 +1,11 @@
+2001-01-06    <tytso@snap.thunk.org>
+
+	* journal.c, pass1.c, pass1b.c, pass3.c, recovery.c, revoke.c,
+		super.c, unix.c, util.c: Fix random gcc -Wall complaints.
+
+	* jfs_user.h: Use more sophisticated inline handling to allow
+		building with --enable-gcc-wall
+
 2001-01-03    <tytso@snap.thunk.org>
 
 	* pass1.c (e2fsck_pass1): Moved journal inode handling out to its

@@ -73,7 +73,8 @@ static void usage(e2fsck_t ctx)
 		" -n                   Make no changes to the filesystem\n"
 		" -y                   Assume \"yes\" to all questions\n"
 		" -c                   Check for bad blocks\n"
-		" -f                   Force checking even if filesystem is marked clean\n"
+		" -f                   Force checking even if filesystem is marked clean\n"));
+	fprintf(stderr, _(""
 		" -v                   Be verbose\n"
 		" -b superblock        Use alternative superblock\n"
 		" -B blocksize         Force blocksize when looking for superblock\n"
@@ -324,7 +325,7 @@ extern void e2fsck_clear_progbar(e2fsck_t ctx)
 static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 				  unsigned long cur, unsigned long max)
 {
-	const char spinner[] = "\\|/-";
+	static const char spinner[] = "\\|/-";
 	char buf[80];
 	int	i;
 	float percent;

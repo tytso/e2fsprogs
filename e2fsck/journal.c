@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #endif
 
+#define E2FSCK_INCLUDE_INLINE_FUNCS
 #include "jfs_user.h"
 #include "problem.h"
 #include "uuid/uuid.h"
@@ -58,7 +59,7 @@ struct buffer_head *getblk(e2fsck_t ctx, blk_t blocknr, int blocksize)
 		return NULL;
 
 	jfs_debug(4, "getblk for block %lu (%d bytes)(total %d)\n",
-		  blocknr, blocksize, ++bh_count);
+		  (unsigned long) blocknr, blocksize, ++bh_count);
 
 	bh->b_ctx = ctx;
 	bh->b_size = blocksize;
@@ -76,7 +77,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 		bh = *bhp++;
 		if (rw == READ && !bh->b_uptodate) {
 			jfs_debug(3, "reading block %lu/%p\n", 
-				  bh->b_blocknr, bh);
+				  (unsigned long) bh->b_blocknr, (void *) bh);
 			retval = io_channel_read_blk(bh->b_ctx->fs->io, 
 						     bh->b_blocknr,
 						     1, bh->b_data);
@@ -90,7 +91,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 			bh->b_uptodate = 1;
 		} else if (rw == WRITE && bh->b_dirty) {
 			jfs_debug(3, "writing block %lu/%p\n", 
-				  bh->b_blocknr, bh);
+				  (unsigned long) bh->b_blocknr, (void *) bh);
 			retval = io_channel_write_blk(bh->b_ctx->fs->io, 
 						      bh->b_blocknr,
 						      1, bh->b_data);
@@ -106,7 +107,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 		} else
 			jfs_debug(3, "no-op %s for block %lu\n",
 				  rw == READ ? "read" : "write", 
-				  bh->b_blocknr);
+				  (unsigned long) bh->b_blocknr);
 	}
 }
 
@@ -120,7 +121,7 @@ void brelse(struct buffer_head *bh)
 	if (bh->b_dirty)
 		ll_rw_block(WRITE, 1, &bh);
 	jfs_debug(3, "freeing block %lu/%p (total %d)\n",
-		  bh->b_blocknr, bh, --bh_count);
+		  (unsigned long) bh->b_blocknr, (void *) bh, --bh_count);
 	ext2fs_free_mem((void **) &bh);
 }
 
@@ -151,7 +152,6 @@ static int e2fsck_journal_init_inode(e2fsck_t ctx,
 				     ino_t journal_inum, journal_t **journal)
 {
 	struct inode *inode;
-	const char *cmdname = ctx->program_name;
 	struct buffer_head *bh;
 	blk_t start;
 	int retval;
@@ -210,8 +210,6 @@ static int e2fsck_get_journal(e2fsck_t ctx, journal_t **journal)
 	char uuid_str[40];
 	struct problem_context pctx;
 	struct ext2_super_block *sb = ctx->fs->super;
-	int recover = ctx->fs->super->s_feature_incompat &
-		EXT3_FEATURE_INCOMPAT_RECOVER;
 
 	clear_problem_context(&pctx);
 
@@ -394,7 +392,7 @@ static int e2fsck_journal_load(journal_t *journal)
 	return 0;
 }
 
-void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
+static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 				journal_t *journal)
 {
 	char *p;
@@ -567,7 +565,6 @@ no_has_journal:
 
 static int recover_ext3_journal(e2fsck_t ctx)
 {
-	ext2_filsys fs = ctx->fs;
 	journal_t *journal;
 	int retval;
 

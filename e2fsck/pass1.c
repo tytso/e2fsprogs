@@ -410,15 +410,12 @@ void e2fsck_pass1(e2fsck_t ctx)
 			int	problem = 0;
 			
 			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
-			switch (ino) {
-			case EXT2_BOOT_LOADER_INO:
+			if (ino == EXT2_BOOT_LOADER_INO) {
 				if (LINUX_S_ISDIR(inode.i_mode))
 					problem = PR_1_RESERVED_BAD_MODE;
-				break;
-			default:
+			} else {
 				if (inode.i_mode != 0)
 					problem = PR_1_RESERVED_BAD_MODE;
-				break;
 			}
 			if (problem) {
 				if (fix_problem(ctx, problem, &pctx)) {
@@ -1004,7 +1001,7 @@ static char *describe_illegal_block(ext2_filsys fs, blk_t block)
 /*
  * This is a helper function for check_blocks().
  */
-int process_block(ext2_filsys fs,
+static int process_block(ext2_filsys fs,
 		  blk_t	*block_nr,
 		  e2_blkcnt_t blockcnt,
 		  blk_t ref_block,
@@ -1146,7 +1143,7 @@ static void bad_block_indirect(e2fsck_t ctx, blk_t blk)
 		ctx->flags |= E2F_FLAG_ABORT;
 }
 
-int process_bad_block(ext2_filsys fs,
+static int process_bad_block(ext2_filsys fs,
 		      blk_t *block_nr,
 		      e2_blkcnt_t blockcnt,
 		      blk_t ref_block,
