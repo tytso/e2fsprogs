@@ -98,6 +98,7 @@ static const struct flags_char flags_array[] = {
 	{ EXT2_SECRM_FL, 's' },
 	{ EXT2_UNRM_FL, 'u' },
 	{ EXT2_NOTAIL_FL, 't' },
+	{ EXT2_TOPDIR_FL, 'T' },
 	{ 0, 0 }
 };
 

@@ -19,7 +19,7 @@ chattr \- change file attributes on a Linux second extended file system
 .B chattr
 changes the file attributes on a Linux second extended file system.
 .PP
-The format of a symbolic mode is +-=[ASacDdistu].
+The format of a symbolic mode is +-=[ASacDdisTtu].
 .PP
 The operator `+' causes the selected attributes to be added to the
 existing attributes of the files; `-' causes them to be removed; and
@@ -28,7 +28,8 @@ existing attributes of the files; `-' causes them to be removed; and
 The letters `ASacDdijsu' select the new attributes for the files: 
 don't update atime (A), synchronous updates (S), synchronous directory
 updates (D), append only (a), compressed (c), no dump (d), immutable (i),
-data journalling (j), secure deletion (s), and undeletable (u).
+data journalling (j), secure deletion (s), top of directory hierarchy
+(T), no tail-merging (t), and undeletable (u).
 .SH OPTIONS
 .TP
 .B \-R
@@ -84,6 +85,10 @@ written back to the disk.
 When a file with the `S' attribute set is modified,
 the changes are written synchronously on the disk; this is equivalent to
 the `sync' mount option applied to a subset of the files.
+.PP
+A directory with the 'T' attribute will be deemed to be the top of 
+directory hierarchies for the purposes of the Orlov block allocator
+(which is used in newer kernels).
 .PP
 A file with the 't' attribute will not have a partial block fragment at
 the of the file merged with other files (for those filesystems which
