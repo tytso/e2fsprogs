@@ -1,3 +1,8 @@
+2002-07-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* dirhash.c (halfMD4Transform): Shift the hash by one bit,
+		since that's required by the directory indexing code.
+
 2002-07-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2fs.h, read_bb_file.c: Change private to priv_data, to avoid

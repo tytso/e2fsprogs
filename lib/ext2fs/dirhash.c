@@ -75,7 +75,7 @@ static __u32 halfMD4Transform (__u32 buf[4], __u32 const in[])
 	buf[2] += c;
 	buf[3] += d;
 
-	return buf[1];	/* "most hashed" word */
+	return (buf[1] << 1);	/* "most hashed" word */
 	/* Alternative: return sum of all words? */
 }
 
