@@ -1,3 +1,11 @@
+1999-10-21    <tytso@valinux.com>
+
+	* badblocks.8.in, chattr.1.in, dumpe2fs.8.in, e2label.8.in,
+	  fsck.8.in, lsattr.1.in, mke2fs.8.in, mklost+found.8.in,
+	  tune2fs.8.in, uuidgen.1.in: Update man page to use a more standard
+		format (bold option flags and italicized variables), as
+		suggested by Andreas Dilger (adilger@enel.ucalgary.ca)
+
 1999-10-14    <tytso@valinux.com>
 
 	* tune2fs.c (main): Fix typo (double spaces) in messages regarding

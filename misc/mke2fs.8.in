@@ -11,7 +11,7 @@ mke2fs \- create a Linux second extended file system
 .B \-c
 | 
 .\" .B \-t
-.\" test
+.\" .I test
 .\" |
 .B \-l
 .I filename
@@ -47,13 +47,16 @@ mke2fs \- create a Linux second extended file system
 .B \-q
 ]
 [
-.B \-r fs-revision-level
+.B \-r
+.I fs-revision-level
 ]
 [
-.B -R raid_options
+.B \-R
+.I raid_options
 ]
 [
-.B -s sparse-super-flag
+.B \-s
+.I sparse-super-flag
 ]
 [
 .B \-v
@@ -87,78 +90,84 @@ mke2fs \- create a Linux second extended file system
 .B mke2fs
 is used to create a Linux second extended file system on a device (usually
 a disk partition).
-.br
 .I device
-is the special file corresponding to the device (e.g /dev/hdXX).
-.br
+is the special file corresponding to the device (e.g 
+.IR /dev/hdXX ).
 .I blocks-count
 is the number of blocks on the device.  If omitted,
 .B mke2fs
 automagically figures the file system size.
 .SH OPTIONS
 .TP
-.I -b block-size
+.BI \-b " block-size"
 Specify the size of blocks in bytes.  Valid block size vales are 1024, 
 2048 and 4096 bytes per block.
 .TP
-.I -c
+.B \-c
 Check the device for bad blocks before creating the file system, using a
 fast read-only test.
 .TP
-.I -f fragment-size
+.BI \-f " fragment-size"
 Specify the size of fragments in bytes.
 .TP
-.I -i bytes-per-inode
+.BI \-i " bytes-per-inode"
 Specify the bytes/inode ratio. 
 .B mke2fs
 creates an inode for every
 .I bytes-per-inode
 bytes of space on the disk.  
-The larger the bytes-per-inode ratio, the fewer inodes will be created.
+The larger the 
+.I bytes-per-inode
+ratio, the fewer inodes will be created.
 This value generally shouldn't be smaller than
 the blocksize of the filesystem, since then too many inodes will be made.  
 Be warned that is not possible to expand the number of inodes on a 
 filesystem after it is created, so be careful decided the correct
 value for this parameter. 
 .TP
-.I -n
+.B \-n
 causes mke2fs to not actually create a filesystem, but display what it 
 would do if it were to create a filesystem.
 .TP
-.I -N number-of-inodes
+.BI \-N " number-of-inodes"
 overrides the default calculation of the number of inodes that should be 
 reserved for the filesystem (which is based on the number of blocks and 
-the bytes-per-inode ratio).  This allows the user to specify the number 
+the 
+.I bytes-per-inode
+ratio).  This allows the user to specify the number 
 of desired inodes directly.
 .TP
-.I -l filename
+.BI \-l " filename"
 Read the bad blocks list from
 .I filename.
 \.
 .TP
-.I -m reserved-blocks-percentage
+.BI -m " reserved-blocks-percentage"
 Specify the percentage of reserved blocks for the super-user.  This value
 defaults to 5%.
 .\" .TP
-.\" .I -t test
+.\" .BI \-t " test"
 .\" Check the device for bad blocks before creating the file system
 .\" using the specified test.
 .TP
-.I -o
+.B \-o
 Manually override the default value of the "creator os" field of the 
 filesystem.  Normally the creator field is set by default to the native OS
 of the
 .B mke2fs
 executable.
 .TP
-.I -q
+.B \-q
 Quiet execution.  Useful if 
 .B mke2fs
 is run in a script.
 .TP
-.I -s sparse-super-flag
-If sparse-super-flag is 1, then turn on the sparse superblock flag.  
-If 0, then turn off the sparse superblock flag.  (Currently, the sparse 
+.BI \-s " sparse-super-flag"
+If 
+.I sparse-super-flag
+is 1, then turn on the sparse superblock flag in the superblock.  
+If 0, then turn off the sparse superblock flag in the superblock.  
+(Currently, the sparse 
 superblock flag is off by default if the kernel version is less than 
 2.2; otherwise it defaults to on.)  
 .B Warning:
@@ -167,35 +176,35 @@ support sparse superblocks.  Filesystems that may need to mounted
 on pre-2.2 kernels should not be created with the sparse superblocks 
 feature.
 .TP
-.I -v
+.B \-v
 Verbose execution.
 .TP
-.I -F
+.B \-F
 Force 
 .B mke2fs
 to run, even if the specified device is not a 
 block special device, or appears to be mounted.
 .TP
-.I -L
+.B \-L
 Set the volume label for the filesystem.
 .TP
-.I -M
+.B \-M
 Set the last mounted directory for the filesystem.  This might be useful 
 for the sake of utilities that key off of the last mounted directory to 
 determine where the filesytem should be mounted.
 .TP
-.I -r revision
+.BI -r " revision"
 Set the filesystem revision for the new filesystem.  Note that 1.2
 kernels only support revision 0 filesystems.
 .TP
-.I -R raid_options
+.BI \-R " raid_options"
 Set raid-related options for the filesystem.  Raid options are comma
 separated, and may take an argument using the equals ('=')  sign.
 Currently the only supported argument is 
 .I stride
 which takes as its argument the number of blocks in a RAID stripe.
 .TP
-.I -S
+.B \-S
 Write superblock and group descriptors only.  This is useful if all of
 the superblock and backup superblocks are corrupted, and a last-ditch
 recovery method is desired.  It causes 
@@ -207,12 +216,12 @@ and the block and inode bitmaps.  The
 program should be run immediately after this option is used, and there
 is no guarantee that any data will be salvageable.
 .TP
-.I -T fs-type
+.BI \-T " fs-type"
 Specify how the filesystem is going to be used, so that mke2fs can 
 automatically determine the optimal filesystem parameters.  The only
 filesystem type which is currently supported is "news".
 .TP
-.I -V
+.B \-V
 Print the version number of 
 .B mke2fs
 and exit.
@@ -222,7 +231,9 @@ This version of
 has been written by Theodore Ts'o <tytso@mit.edu>.
 .SH BUGS
 .B mke2fs
-accepts the -f option but currently ignores it because the second
+accepts the
+.B \-f
+option but currently ignores it because the second
 extended file system does not support fragments yet.
 .br
 There may be some other ones.  Please, report them to the author.

@@ -7,7 +7,7 @@
 .\" Created  Wed Mar 10 17:42:12 1999, Andreas Dilger
 .TH UUID_GENERATE 3 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-uuid_generate \- create a new unique UUID value
+uuid_generate, uuid_generate_random, uuid_generate_time \- create a new unique UUID value
 .SH SYNOPSIS
 .nf
 .B #include <uuid/uuid.h>

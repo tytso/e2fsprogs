@@ -8,50 +8,56 @@ dumpe2fs \- dump filesystem information
 .SH SYNOPSIS
 .B dumpe2fs
 [
-.B -bfhV
+.B \-bfhV
 ]
 [
-.B -ob superblock
+.B \-ob 
+.I superblock
 ]
 [
-.B -oB blocksize
+.B \-oB
+.I blocksize
 ]
-device
+.I device
 .SH DESCRIPTION
-.BI dumpe2fs
+.B dumpe2fs
 prints the super block and blocks group information for the filesystem
 present on
 .I device.
 .PP
-.BI dumpe2fs
+.B dumpe2fs
 is similar to Berkeley's
-.BI dumpfs
+.B dumpfs
 program for the BSD Fast File System.
 .SH OPTIONS
 .TP
-.I -b
+.B \-b
 print the blocks which are reserved as bad in the filesystem.
 .TP
-.I -ob superblock
-use the superblock specifed on the command line when examining the filesystem.
+.BI \-ob " superblock"
+use the block
+.I superblock
+when examining the filesystem.
 This option is not usually needed except by a filesystem wizard who 
 is examining the remains of a very badly corupted filesystem.
 .TP
-.I -oB blocksize
-use the blocksize specified on the command line when examining the filesystem.
+.BI \-oB " blocksize"
+use blocks of
+.I blocksize
+bytes when examining the filesystem.
 This option is not usually needed except by a filesystem wizard who 
 is examining the remains of a very badly corupted filesystem.
 .TP
-.I -f
+.B \-f
 force dumpe2fs to display a filesystem even though it may have some 
 filesystem feature flags which dumpe2fs may not understand (and which
 can cause some of dumpe2fs's display to be suspect).
 .TP 
-.I -h
+.B \-h
 only display the superblock information and not any of the block
 group descriptor detail information.
 .TP
-.I -V
+.B \-V
 print the version number of 
 .B dumpe2fs
 and exit.

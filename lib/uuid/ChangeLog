@@ -1,3 +1,9 @@
+1999-10-21    <tytso@valinux.com>
+
+	* uuid_generate.8.in: Update man page to use a more standard
+		format (bold option flags and italicized variables), as
+		suggested by Andreas Dilger (adilger@enel.ucalgary.ca)
+
 1999-09-24    <tytso@valinux.com>
 
 	* gen_uuid_nt.c: New file which creates a UUID under Windows NT.

@@ -8,26 +8,26 @@ lsattr \- list file attributes on a Linux second extended file system
 .B \-RVadv
 ]
 [
-files...
+.I files...
 ]
 .SH DESCRIPTION
 .B lsattr
 lists the file attributes on a second extended file system.
 .SH OPTIONS
 .TP
-.I -R
+.B \-R
 Recursively list attributes of directories and their contents.
 .TP
-.I -V
+.B \-V
 Display the program version.
 .TP
-.I -a
+.B \-a
 List all files in directories, including files that start with `.'.
 .TP
-.I -d
+.B \-d
 List directories like other files, rather than listing their contents.
 .TP
-.I -v
+.B \-v
 List the files version.
 .SH AUTHOR
 .B lsattr

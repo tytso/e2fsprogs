@@ -1,5 +1,9 @@
 1999-10-21    <tytso@valinux.com>
 
+	* e2fsck.8.in: Update man page to use a more standard format (bold
+		option flags and italicized variables), as suggested by
+		Andreas Dilger (adilger@enel.ucalgary.ca)
+
 	* pass4.c (e2fsck_pass4): If an inode is set in the
 		inode_imagic_map bitmap, don't check to see if it is
 		disconnected from the inode tree (because it almost

@@ -21,9 +21,12 @@ fsck \- check and repair a Linux file system
 .B fsck
 is used to check and optionally repair a one or more Linux file systems.  
 .I filesys
-can be a device name (e.g. /dev/hda1, /dev/sdb2), a
-mount point (e.g. /, /usr, /home), or an ext2 label or UUID specifier 
-(e.g., UUID=8868abf6-88c5-4a83-98b8-bfc24057f7bd or LABEL=root).  
+can be a device name (e.g.
+.IR /dev/hdc1 ", " /dev/sdb2 ),
+a mount point (e.g.
+.IR / ", " /usr ", " /home ),
+or an ext2 label or UUID specifier (e.g.
+UUID=8868abf6-88c5-4a83-98b8-bfc24057f7bd or LABEL=root).  
 The 
 .B fsck 
 program will try to run filesystems on different physical disk drives 
@@ -48,7 +51,7 @@ is the sum of the following conditions:
 \	128\	\-\ Shared library error
 .br
 The exit code returned when all file systems are checked using the
-.B -A
+.B \-A
 option is the bit-wise OR of the exit codes for each
 file system that is checked.
 .PP
@@ -56,13 +59,18 @@ In actuality,
 .B fsck
 is simply a front-end for the various file system checkers
 (\fBfsck\fR.\fIfstype\fR) available under Linux.  The file
-system-specific checker is searched for in /sbin first, then in /etc/fs
-and /etc, and finally in the directories listed in the PATH environment
+system-specific checker is searched for in
+.I /sbin
+first, then in
+.I /etc/fs
+and
+.IR /etc ,
+and finally in the directories listed in the PATH environment
 variable.  Please see the file system-specific checker manual pages for
 further details.
 .SH OPTIONS
 .TP
-.B -s
+.B \-s
 Serialize 
 .B fsck 
 operations.  This is a good idea if you checking multiple
@@ -71,15 +79,14 @@ filesystems and the checkers are in an interactive mode.  (Note:
 runs in an interactive mode by default.  To make 
 .BR e2fsck (8)
 run in a non-interactive mode, you must either specify the
-.B -p
+.B \-p
 or
-.B -a
-option, if you wish for errors to be corrected automatically, or
-the 
-.B -n
+.B \-a
+option, if you wish for errors to be corrected automatically, or the 
+.B \-n
 option if you do not.)
 .TP
-.BI -t \ fstype
+.BI \-t " fstype"
 Specifies the type of file system to be checked.  When the
 .B \-A 
 flag is specified, only filesystems that match 
@@ -87,7 +94,7 @@ flag is specified, only filesystems that match
 are checked.  If 
 .I fstype
 is prefixed with 
-.B no
+.I no
 then only filesystems whose type does not match
 .I fstype
 are checked.
@@ -104,7 +111,7 @@ will use the type specified by the
 option if it specifies a unique filesystem type.  If this type is not
 available, then the default file system type (currently ext2) is used. 
 .TP
-.B -A
+.B \-A
 Walk through the
 .I /etc/fstab
 file and try to check all file systems in one run.  This option is
@@ -114,7 +121,7 @@ system initalization file, instead of multiple commands for checking
 a single file system.
 .sp
 The root filesystem will be checked first unless the
-.B -P
+.B \-P
 option is specified (see below).  After that, 
 filesystems will be checked in the order specified by the 
 .I fs_passno 
@@ -139,17 +146,17 @@ checks running in parallel for some reason --- for example, if the
 machine in question is short on memory so that
 excessive paging is a concern.
 .TP
-.B -C
+.B \-C
 Display completion/progress bars for those filesystems checkers (currently
 only for ext2) which support them.   Fsck will manage the filesystem checkers
 so that only one of them will display a progress bar at a time.
 .TP
-.B -N
+.B \-N
 Don't execute, just show what would be done.
 .TP
-.B -P
+.B \-P
 When the 
-.B -A
+.B \-A
 flag is set, check the root filesystem in parallel with the other filesystems.
 This is not the safest thing in the world to do,
 since if the root filesystem is in doubt things like the 
@@ -158,15 +165,15 @@ executable might be corrupted!  This option is mainly provided
 for those sysadmins who don't want to repartition the root
 filesystem to be small and compact (which is really the right solution).
 .TP
-.B -R
+.B \-R
 When checking all file systems with the
 .B \-A
 flag, skip the root file system (in case it's already mounted read-write).
 .TP
-.B -T
+.B \-T
 Don't show the title on startup.
 .TP
-.B -V
+.B \-V
 Produce verbose output, including all file system-specific commands
 that are executed.
 .TP
@@ -174,7 +181,7 @@ that are executed.
 Any options which are not understood by 
 .BR fsck ,
 or which follow the
-.B --
+.B \-\-
 option are treated as file system-specific options to be passed to the
 file system-specific checker.
 .PP
@@ -182,20 +189,20 @@ Currently, standardized file system-specific options are somewhat in
 flux.  Although not guaranteed, the following options are supported
 by most file system checkers:
 .TP
-.B -a
+.B \-a
 Automatically repair the file system without any questions (use
 this option with caution).  Note that 
 .BR e2fsck (8)
 supports 
-.B -a
+.B \-a
 for backwards compatibility only.  This option is mapped to 
 .BR e2fsck 's
-.B -p
+.B \-p
 option which is safe to use, unlike the 
-.B -a 
+.B \-a 
 option that most file system checkers support.
 .TP
-.B -r
+.B \-r
 Interactively repair the filesystem (ask for confirmations).  Note: It
 is generally a bad idea to use this option if multiple fsck's are being
 run in parallel.  Also note that this is 
