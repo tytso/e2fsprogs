@@ -48,8 +48,8 @@ static void ls_l_file(struct list_dir_struct *ls, char *name, ino_t ino)
 	}
 	modtime = inode.i_mtime;
 	tm_p = localtime(&modtime);
-	sprintf(datestr, "%2d-%s-%2d %02d:%02d",
-		tm_p->tm_mday, monstr[tm_p->tm_mon], tm_p->tm_year,
+	sprintf(datestr, "%2d-%s-%4d %02d:%02d",
+		tm_p->tm_mday, monstr[tm_p->tm_mon], 1900 + tm_p->tm_year,
 		tm_p->tm_hour, tm_p->tm_min);
  	fprintf(ls->f, "%6ld %6o  %5d  %5d   ", ino, inode.i_mode,
  	       inode.i_uid, inode.i_gid);

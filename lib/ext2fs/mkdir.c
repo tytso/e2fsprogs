@@ -39,7 +39,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 		       const char *name)
 {
 	errcode_t		retval;
-	struct ext2_inode	inode;
+	struct ext2_inode	parent_inode, inode;
 	ino_t			ino = inum;
 	ino_t			scratch_ino;
 	blk_t			blk;
@@ -71,6 +71,16 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 	retval = ext2fs_new_dir_block(fs, ino, parent, &block);
 	if (retval)
 		goto cleanup;
+
+	/*
+	 * Get the parent's inode, if necessary
+	 */
+	if (parent != ino) {
+		retval = ext2fs_read_inode(fs, parent, &parent_inode);
+		if (retval)
+			goto cleanup;
+	} else
+		memset(&parent_inode, 0, sizeof(parent_inode));
 
 	/*
 	 * Create the inode structure....
@@ -116,11 +126,8 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 	 * Update parent inode's counts
 	 */
 	if (parent != ino) {
-		retval = ext2fs_read_inode(fs, parent, &inode);
-		if (retval)
-			goto cleanup;
-		inode.i_links_count++;
-		retval = ext2fs_write_inode(fs, parent, &inode);
+		parent_inode.i_links_count++;
+		retval = ext2fs_write_inode(fs, parent, &parent_inode);
 		if (retval)
 			goto cleanup;
 	}

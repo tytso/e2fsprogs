@@ -8,6 +8,14 @@ debugfs \- ext2 file system debugger
 .SH SYNOPSIS
 .B debugfs
 [
+.B \-b
+blocksize
+]
+[
+.B \-s
+superblock
+]
+[
 .B \-f 
 cmd_file
 ]
@@ -19,7 +27,12 @@ request
 .B \-V
 ]
 [
+[
 .B \-w
+]
+[
+.B \-c
+]
 [
 device
 ]
@@ -39,6 +52,24 @@ file system (e.g /dev/hdXX).
 .I -w
 Specifies that the file system should be opened in read-write mode.
 Without this option, the file system is opened in read-only mode.
+.TP
+.I -c
+Specifies that the file system should be opened in catastrophic mode, in
+which the inode and group bitmaps are not read initially.  This can be
+useful for filesystems with significant corruption, but because of this,
+catastrophic mode forces the filesystem to be opened read-only.
+.TP
+.I -b blocksize
+Forces the use of the given block size for the file system, rather than
+detecting the correct block size as normal.
+.TP
+.I -s superblock
+Causes the file system superblock to be read from the given block number,
+rather than the default (1).  If you give a
+.I -s
+option, you must also give a
+.I -b
+option.
 .TP
 .I -f cmd_file
 Causes 
@@ -186,14 +217,18 @@ device numbers must be specified.
 Take the requested list of inode numbers, and print a listing of pathnames
 to those inodes.
 .TP
-.I open [-w] [-f] device
+.I open [-w] [-f] [-c] [-b blocksize] [-s superblock] device
 Open a filesystem for editing.  The 
 .I -w 
 flag causes the filesystem to be opened for writing.  The 
 .I -f 
 flag forces the filesystem to be opened even if there are some unknown 
 or incompatible filesystem features which would normally 
-prevent the filesystem from being opened.
+prevent the filesystem from being opened.  The
+.IR -c ", " -b ", and " -s
+options behave the same as those to
+.B debugfs
+itself.
 .TP
 .I pwd
 Print the current working directory.
@@ -256,6 +291,21 @@ Create a file in the filesystem named
 and copy the contents of
 .I source_file
 into the destination file.
+.TP
+.I lcd directory
+Change the current working directory of the
+.B debugfs
+process to
+.I directory
+on the native filesystem.
+.TP
+.I rdump directory destination
+Recursively dump
+.I directory
+and all its contents (including regular files, symbolic links, and other
+directories) into the named
+.I destination
+which should be an existing directory on the native filesystem.
 .SH SPECIFYING FILES
 Many
 .B debugfs

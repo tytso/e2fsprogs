@@ -43,26 +43,44 @@ extern ss_request_table debug_cmds;
 ext2_filsys current_fs = NULL;
 ino_t	root, cwd;
 
-static void open_filesystem(char *device, int open_flags)
+static void open_filesystem(char *device, int open_flags, blk_t superblock,
+			    blk_t blocksize, int catastrophic)
 {
 	int	retval;
+
+	if (superblock != 0 && blocksize == 0) {
+		com_err(device, 0, "if you specify the superblock, you must also specify the block size");
+		current_fs = NULL;
+		return;
+	}
+
+	if (catastrophic && (open_flags & EXT2_FLAG_RW)) {
+		com_err(device, 0,
+			"opening read-only because of catastrophic mode");
+		open_flags &= ~EXT2_FLAG_RW;
+	}
 	
-	retval = ext2fs_open(device, open_flags, 0, 0,
+	retval = ext2fs_open(device, open_flags, superblock, blocksize,
 			     unix_io_manager, &current_fs);
 	if (retval) {
 		com_err(device, retval, "while opening filesystem");
 		current_fs = NULL;
 		return;
 	}
-	retval = ext2fs_read_inode_bitmap(current_fs);
-	if (retval) {
-		com_err(device, retval, "while reading inode bitmap");
-		goto errout;
-	}
-	retval = ext2fs_read_block_bitmap(current_fs);
-	if (retval) {
-		com_err(device, retval, "while reading block bitmap");
-		goto errout;
+
+	if (catastrophic)
+		com_err(device, 0, "catastrophic mode - not reading inode or group bitmaps");
+	else {
+		retval = ext2fs_read_inode_bitmap(current_fs);
+		if (retval) {
+			com_err(device, retval, "while reading inode bitmap");
+			goto errout;
+		}
+		retval = ext2fs_read_block_bitmap(current_fs);
+		if (retval) {
+			com_err(device, retval, "while reading block bitmap");
+			goto errout;
+		}
 	}
 	root = cwd = EXT2_ROOT_INO;
 	return;
@@ -76,21 +94,44 @@ errout:
 
 void do_open_filesys(int argc, char **argv)
 {
-	const char	*usage = "Usage: open [-w] <device>";
+	const char *usage = "Usage: open [-s superblock] [-b blocksize] [-c] [-w] <device>";
 	int	c;
+	int	catastrophic = 0;
+	blk_t	superblock = 0;
+	blk_t	blocksize = 0;
+	char	*tmp;
 	int open_flags = 0;
 	
 	optind = 0;
 #ifdef HAVE_OPTRESET
 	optreset = 1;		/* Makes BSD getopt happy */
 #endif
-	while ((c = getopt (argc, argv, "wf")) != EOF) {
+	while ((c = getopt (argc, argv, "wfcb:s:")) != EOF) {
 		switch (c) {
 		case 'w':
 			open_flags |= EXT2_FLAG_RW;
 			break;
 		case 'f':
 			open_flags |= EXT2_FLAG_FORCE;
+			break;
+		case 'c':
+			catastrophic = 1;
+			break;
+		case 'b':
+			blocksize = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(argv[0], 0,
+					"Bad block size - %s", optarg);
+				return;
+			}
+			break;
+		case 's':
+			superblock = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(argv[0], 0,
+					"Bad superblock number - %s", optarg);
+				return;
+			}
 			break;
 		default:
 			com_err(argv[0], 0, usage);
@@ -103,7 +144,25 @@ void do_open_filesys(int argc, char **argv)
 	}
 	if (check_fs_not_open(argv[0]))
 		return;
-	open_filesystem(argv[optind], open_flags);
+	open_filesystem(argv[optind], open_flags,
+			superblock, blocksize, catastrophic);
+}
+
+void do_lcd(int argc, char **argv)
+{
+	const char *usage = "Usage: lcd <native dir>";
+
+	if (argc != 2) {
+		com_err(argv[0], 0, usage);
+		return;
+	}
+
+	if (chdir(argv[1]) == -1) {
+		com_err(argv[0], errno,
+			"while trying to change native directory to %s",
+			argv[1]);
+		return;
+	}
 }
 
 static void close_filesystem(NOARGS)
@@ -1438,19 +1497,23 @@ int main(int argc, char **argv)
 {
 	int		retval;
 	int		sci_idx;
-	const char	*usage = "Usage: debugfs [-f cmd_file] [-R request] [-V] [[-w] device]";
+	const char	*usage = "Usage: debugfs [-b blocksize] [-s superblock] [-f cmd_file] [-R request] [-V] [[-w] [-c] device]";
 	int		c;
 	int		open_flags = 0;
 	char		*request = 0;
 	int		exit_status = 0;
 	char		*cmd_file = 0;
+	blk_t		superblock = 0;
+	blk_t		blocksize = 0;
+	int		catastrophic = 0;
+	char		*tmp;
 	
 	initialize_ext2_error_table();
 	fprintf (stderr, "debugfs %s, %s for EXT2 FS %s, %s\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
 
-	while ((c = getopt (argc, argv, "wR:f:V")) != EOF) {
+	while ((c = getopt (argc, argv, "wcR:f:b:s:V")) != EOF) {
 		switch (c) {
 		case 'R':
 			request = optarg;
@@ -1460,6 +1523,25 @@ int main(int argc, char **argv)
 			break;
 		case 'w':
 			open_flags = EXT2_FLAG_RW;
+			break;
+		case 'b':
+			blocksize = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(argv[0], 0,
+					"Bad block size - %s", optarg);
+				return 1;
+			}
+			break;
+		case 's':
+			superblock = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(argv[0], 0,
+					"Bad superblock number - %s", optarg);
+				return 1;
+			}
+			break;
+		case 'c':
+			catastrophic = 1;
 			break;
 		case 'V':
 			/* Print version number and exit */
@@ -1472,7 +1554,8 @@ int main(int argc, char **argv)
 		}
 	}
 	if (optind < argc)
-		open_filesystem(argv[optind], open_flags);
+		open_filesystem(argv[optind], open_flags,
+				superblock, blocksize, catastrophic);
 	
 	sci_idx = ss_create_invocation("debugfs", "0.0", (char *) NULL,
 				       &debug_cmds, &retval);

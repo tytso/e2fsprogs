@@ -112,5 +112,11 @@ request do_dump, "Dump an inode out to a file",
 request do_cat, "Dump an inode out to stdout",
 	cat;
 
+request do_lcd, "Change the current directory on your native filesystem",
+	lcd;
+
+request do_rdump, "Recursively dump a directory to the native filesystem",
+	rdump;
+
 end;
 

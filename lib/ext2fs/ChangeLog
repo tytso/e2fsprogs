@@ -1,3 +1,9 @@
+2000-05-27  Theodore Ts'o  <tytso@valinux.com>
+
+	* mkdir.c (ext2fs_mkdir): Read the parent directory's inode
+		earlier, so that if there's an error reading it, we can
+		more cleanly back out of the operation.
+
 2000-05-25    <tytso@snap.thunk.org>
 
 	* getsize.c (ext2fs_get_device_size): Use open64() instead of

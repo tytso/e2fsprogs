@@ -61,6 +61,39 @@ static mode_t mode_xlate(__u16 lmode)
 	return mode;
 }
 
+static void fix_perms(const char *cmd, const struct ext2_inode *inode,
+		      int fd, const char *name)
+{
+	struct utimbuf ut;
+	int i;
+
+	if (fd != -1)
+		i = fchmod(fd, mode_xlate(inode->i_mode));
+	else
+		i = chmod(name, mode_xlate(inode->i_mode));
+	if (i == -1)
+		com_err(cmd, errno, "while setting permissions of %s", name);
+
+#ifndef HAVE_FCHOWN
+	i = chmod(name, inode->i_uid, inode->i_gid);
+#else
+	if (fd != -1)
+		i = fchown(fd, inode->i_uid, inode->i_gid);
+	else
+		i = chown(name, inode->i_uid, inode->i_gid);
+#endif
+	if (i == -1)
+		com_err(cmd, errno, "while changing ownership of %s", name);
+
+	if (fd != -1)
+		close(fd);
+
+	ut.actime = inode->i_atime;
+	ut.modtime = inode->i_mtime;
+	if (utime(name, &ut) == -1)
+		com_err(cmd, errno, "while setting times of %s", name);
+}
+
 static void dump_file(char *cmdname, ino_t ino, int fd, int preserve,
 		      char *outname)
 {
@@ -100,27 +133,9 @@ static void dump_file(char *cmdname, ino_t ino, int fd, int preserve,
 		return;
 	}
 		
-	if (preserve) {
-#ifdef HAVE_FCHOWN
-		if (fchown(fd, inode.i_uid, inode.i_gid) < 0)
-			com_err("dump_file", errno,
-				"while changing ownership of %s", outname);
-#else
-		if (chown(outname, inode.i_uid, inode.i_gid) < 0)
-			com_err("dump_file", errno,
-				"while changing ownership of %s", outname);
-			
-#endif
-		if (fchmod(fd, mode_xlate(inode.i_mode)) < 0)
-			com_err("dump_file", errno,
-				"while setting permissions of %s", outname);
-		ut.actime = inode.i_atime;
-		ut.modtime = inode.i_mtime;
-		close(fd);
-		if (utime(outname, &ut) < 0)
-			com_err("dump_file", errno,
-				"while setting times on %s", outname);
-	} else if (fd != 1)
+	if (preserve)
+		fix_perms("dump_file", &inode, fd, outname);
+	else if (fd != 1)
 		close(fd);
 				    
 	return;
@@ -174,6 +189,182 @@ void do_dump(int argc, char **argv)
 	dump_file(argv[0], inode, fd, preserve, out_fn);
 
 	return;
+}
+
+static void rdump_symlink(ino_t ino, struct ext2_inode *inode,
+			  const char *fullname)
+{
+	ext2_file_t e2_file;
+	char *buf;
+	errcode_t retval;
+
+	buf = malloc(inode->i_size + 1);
+	if (!buf) {
+		com_err("rdump", errno, "while allocating for symlink");
+		goto errout;
+	}
+
+	/* Apparently, this is the right way to detect and handle fast
+	 * symlinks; see do_stat() in debugfs.c. */
+	if (inode->i_blocks == 0)
+		strcpy(buf, (char *) inode->i_block);
+	else {
+		unsigned bytes = inode->i_size;
+		char *p = buf;
+		retval = ext2fs_file_open(current_fs, ino, 0, &e2_file);
+		if (retval) {
+			com_err("rdump", retval, "while opening symlink");
+			goto errout;
+		}
+		for (;;) {
+			unsigned int got;
+			retval = ext2fs_file_read(e2_file, p, bytes, &got);
+			if (retval) {
+				com_err("rdump", retval, "while reading symlink");
+				goto errout;
+			}
+			bytes -= got;
+			p += got;
+			if (got == 0 || bytes == 0)
+				break;
+		}
+		buf[inode->i_size] = 0;
+		retval = ext2fs_file_close(e2_file);
+		if (retval)
+			com_err("rdump", retval, "while closing symlink");
+	}
+
+	if (symlink(buf, fullname) == -1) {
+		com_err("rdump", errno, "while creating symlink %s -> %s", buf, fullname);
+		goto errout;
+	}
+
+errout:
+	free(buf);
+}
+
+static int rdump_dirent(struct ext2_dir_entry *, int, int, char *, void *);
+
+static void rdump_inode(ino_t ino, struct ext2_inode *inode,
+			const char *name, const char *dumproot)
+{
+	char *fullname;
+	struct utimbuf ut;
+
+	/* There are more efficient ways to do this, but this method
+	 * requires only minimal debugging. */
+	fullname = malloc(strlen(dumproot) + strlen(name) + 2);
+	if (!fullname) {
+		com_err("rdump", errno, "while allocating memory");
+		return;
+	}
+	sprintf(fullname, "%s/%s", dumproot, name);
+
+	if (LINUX_S_ISLNK(inode->i_mode))
+		rdump_symlink(ino, inode, fullname);
+	else if (LINUX_S_ISREG(inode->i_mode)) {
+		int fd;
+		fd = open(fullname, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
+		if (fd == -1) {
+			com_err("rdump", errno, "while dumping %s", fullname);
+			goto errout;
+		}
+		dump_file("rdump", ino, fd, 1, fullname);
+	}
+	else if (LINUX_S_ISDIR(inode->i_mode) && strcmp(name, ".") && strcmp(name, "..")) {
+		errcode_t retval;
+
+		/* Create the directory with 0700 permissions, because we
+		 * expect to have to create entries it.  Then fix its perms
+		 * once we've done the traversal. */
+		if (mkdir(fullname, S_IRWXU) == -1) {
+			com_err("rdump", errno, "while making directory %s", fullname);
+			goto errout;
+		}
+
+		retval = ext2fs_dir_iterate(current_fs, ino, 0, 0,
+					    rdump_dirent, (void *) fullname);
+		if (retval)
+			com_err("rdump", retval, "while dumping %s", fullname);
+
+		fix_perms("rdump", inode, -1, fullname);
+	}
+	/* else do nothing (don't dump device files, sockets, fifos, etc.) */
+
+errout:
+	free(fullname);
+}
+
+static int rdump_dirent(struct ext2_dir_entry *dirent, int offset,
+			 int blocksize, char *buf, void *private)
+{
+	char name[EXT2_NAME_LEN];
+	int thislen;
+	const char *dumproot = private;
+	struct ext2_inode inode;
+	errcode_t retval;
+
+	thislen = ((dirent->name_len & 0xFF) < EXT2_NAME_LEN
+		   ? (dirent->name_len & 0xFF) : EXT2_NAME_LEN);
+	strncpy(name, dirent->name, thislen);
+	name[thislen] = 0;
+
+	retval = ext2fs_read_inode(current_fs, dirent->inode, &inode);
+	if (retval) {
+		com_err("rdump", retval, "while dumping %s/%s", dumproot, name);
+		return 0;
+	}
+
+	rdump_inode(dirent->inode, &inode, name, dumproot);
+
+	return 0;
+}
+
+void do_rdump(int argc, char **argv)
+{
+	ino_t ino;
+	struct ext2_inode inode;
+	errcode_t retval;
+	struct stat st;
+	int i;
+	char *p;
+
+	if (argc != 3) {
+		com_err(argv[0], 0, "Usage: rdump <directory> <native directory>");
+		return;
+	}
+
+	if (check_fs_open(argv[0]))
+		return;
+
+	ino = string_to_inode(argv[1]);
+	if (!ino)
+		return;
+
+	/* Ensure ARGV[2] is a directory. */
+	i = stat(argv[2], &st);
+	if (i == -1) {
+		com_err("rdump", errno, "while statting %s", argv[2]);
+		return;
+	}
+	if (!S_ISDIR(st.st_mode)) {
+		com_err("rdump", 0, "%s is not a directory", argv[2]);
+		return;
+	}
+
+	retval = ext2fs_read_inode(current_fs, ino, &inode);
+	if (retval) {
+		com_err("rdump", retval, "while dumping %s", argv[1]);
+		return;
+	}
+
+	p = strrchr(argv[1], '/');
+	if (p)
+		p++;
+	else
+		p = argv[1];
+
+	rdump_inode(ino, &inode, p, argv[2]);
 }
 
 void do_cat(int argc, char **argv)

@@ -1,3 +1,26 @@
+2000-05-23  Aaron Crane  <aaronc@pobox.com>
+
+	* debugfs.8.in: Documented new behaviour.
+
+	* ls.c (ls_l_file): Fix Y2K bug -- was printing 22-May-100 for
+	 	recent files.  Switched to 4-digit years.
+
+	* dump.c, debug_cmds.ct (do_rdump): Add new debugfs command
+	 	"rdump", which recursively dumps a directory and its
+		contents.
+		(fix_perms): New function.  Break permission-fixing
+		code out of dump_file() so it can be called by rdump
+		code as well.
+		(dump_file): Call fix_perms().
+
+	* debugfs.c, debug_cmds.ct (do_lcd): Add new debugfs command
+	 	"lcd", which changes the cwd on the native filesystem.
+
+	* debugfs.c (open_filesystem): Extra args for superblock,
+		blocksize, and catastrophic mode.  Changed callers.
+		(do_open_filesys, main): Accept new -b, -s, -c options
+		for open_filesystem.
+
 2000-02-02  Theodore Ts'o  <tytso@valinux.com>
 
 	* debugfs.c (dump_inode): Remove #ifdef for i_version
