@@ -1,3 +1,8 @@
+1999-07-01    <tytso@valinux.com>
+
+	* badblocks.c:  Make the "done" string include enough spaces to
+		clear out a large block number.
+
 1999-06-29    <tytso@valinux.com>
 
 	* mke2fs.c (check_mount): Allow a filesystem to be made even if it
