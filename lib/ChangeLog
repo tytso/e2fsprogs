@@ -1,3 +1,8 @@
+2004-12-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.elf-lib (installdirs-elf-lib), 
+		solaris-lib (installdirs-elf-lib): Use $(MKINSTALLDIRS) macro
+
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.elf-lib, Makefile.library, Makefile.profile,

@@ -30,8 +30,6 @@ datadir = @datadir@
 
 @SET_MAKE@
 
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
-INSTALL_DATA = @INSTALL_DATA@
 CC = @CC@
 BUILD_CC = @BUILD_CC@
 DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
@@ -59,6 +57,10 @@ LD = $(PURE) @CC@
 ARUPD = $(AR) r
 ARGEN = $(AR) rc
 LDCONFIG = @LDCONFIG@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+MKINSTALLDIRS = @MKINSTALLDIRS@
 
 #
 # Library definitions
@@ -184,6 +186,7 @@ $(top_srcdir)/configure: $(top_srcdir)/configure.in
 			    -e 's; $(top_srcdir)/; $$(top_srcdir)/;g' \
 			    -e 's; $(top_builddir)/; $$(top_builddir)/;g' \
 			    -e 's; \./; ;g' \
+			    -e '/^#/d' \
 			    -e '/^ *\\$$/d' | \
 			$(PERL) $(top_srcdir)/wordwrap.pl > .depend; \
 	else :; fi

@@ -1,3 +1,7 @@
+2004-12-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in (install-doc-libs): Use $(MKINSTALLDIRS) macro
+
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Use Linux-kernel-style makefile output to make it

@@ -34,7 +34,7 @@ $(ELF_LIB): $(OBJS)
 	@$(LN) ../$(ELF_LIB) ../$(ELF_SONAME)
 
 installdirs-elf-lib::
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(ELF_INSTALL_DIR) \
+	$(MKINSTALLDIRS) $(DESTDIR)$(ELF_INSTALL_DIR) \
 		$(DESTDIR)$(libdir)
 
 installdirs:: installdirs-elf-lib

@@ -60,7 +60,7 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 installdirs::
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir) \
+	$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/e2p
 
 install:: all installdirs 

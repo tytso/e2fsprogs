@@ -20,7 +20,7 @@ all:: libext2fs.info libext2fs.dvi
 
 install-doc-libs:
 	$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(infodir)
+	$(MKINSTALLDIRS) $(DESTDIR)$(infodir)
 	for i in libext2fs.info* ; do \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(infodir)/$$i ; \
 	done

@@ -70,7 +70,7 @@ TAGS:	$(SRCS)
 	$(TAGS) $(SRCS)
 
 installdirs::
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir) \
+	$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/et $(DESTDIR)$(datadir)/et \
 		$(DESTDIR)$(bindir) $(DESTDIR)$(man1dir) \
 		$(DESTDIR)$(man3dir)

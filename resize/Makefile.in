@@ -55,7 +55,7 @@ test_extent: $(TEST_EXTENT_OBJS)
 	@$(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS) 
 
 installdirs:
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(root_sbindir) \
+	$(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir)
 
 install: $(PROGS) $(MANPAGES) installdirs

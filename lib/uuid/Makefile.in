@@ -122,7 +122,7 @@ uuid_unparse.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_unparse.3.in
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_unparse.3.in uuid_unparse.3
 
 installdirs::
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir)  \
+	$(MKINSTALLDIRS) $(DESTDIR)$(libdir)  \
 		$(DESTDIR)$(includedir)/uuid $(DESTDIR)$(man3dir)
 
 install:: all installdirs 
@@ -170,23 +170,13 @@ distclean:: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-clear.o: $(srcdir)/clear.c $(srcdir)/uuidP.h \
- $(top_builddir)/lib/uuid/uuid_types.h $(srcdir)/uuid.h
-compare.o: $(srcdir)/compare.c $(srcdir)/uuidP.h \
- $(top_builddir)/lib/uuid/uuid_types.h $(srcdir)/uuid.h
-copy.o: $(srcdir)/copy.c $(srcdir)/uuidP.h \
- $(top_builddir)/lib/uuid/uuid_types.h $(srcdir)/uuid.h
-gen_uuid.o: $(srcdir)/gen_uuid.c $(srcdir)/uuidP.h \
- $(top_builddir)/lib/uuid/uuid_types.h $(srcdir)/uuid.h
-isnull.o: $(srcdir)/isnull.c $(srcdir)/uuidP.h \
- $(top_builddir)/lib/uuid/uuid_types.h $(srcdir)/uuid.h
-pack.o: $(srcdir)/pack.c $(srcdir)/uuidP.h \
- $(top_builddir)/lib/uuid/uuid_types.h $(srcdir)/uuid.h
-parse.o: $(srcdir)/parse.c $(srcdir)/uuidP.h \
- $(top_builddir)/lib/uuid/uuid_types.h $(srcdir)/uuid.h
-unpack.o: $(srcdir)/unpack.c $(srcdir)/uuidP.h \
- $(top_builddir)/lib/uuid/uuid_types.h $(srcdir)/uuid.h
-unparse.o: $(srcdir)/unparse.c $(srcdir)/uuidP.h \
- $(top_builddir)/lib/uuid/uuid_types.h $(srcdir)/uuid.h
-uuid_time.o: $(srcdir)/uuid_time.c $(srcdir)/uuidP.h \
- $(top_builddir)/lib/uuid/uuid_types.h $(srcdir)/uuid.h
+clear.o: $(srcdir)/clear.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+compare.o: $(srcdir)/compare.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+copy.o: $(srcdir)/copy.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+gen_uuid.o: $(srcdir)/gen_uuid.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+isnull.o: $(srcdir)/isnull.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+pack.o: $(srcdir)/pack.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+parse.o: $(srcdir)/parse.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+unpack.o: $(srcdir)/unpack.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+unparse.o: $(srcdir)/unparse.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+uuid_time.o: $(srcdir)/uuid_time.c $(srcdir)/uuidP.h $(srcdir)/uuid.h

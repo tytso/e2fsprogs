@@ -1,3 +1,7 @@
+2004-12-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in (installdirs): Use $(MKINSTALLDIRS) macro
+
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c, probe.h: Avoid using uint and uchar types, to allow

@@ -120,7 +120,7 @@ check:: all tst_cache tst_devname tst_devno tst_getsize tst_probe \
  tst_read tst_resolve tst_save
 
 installdirs::
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir) \
+	$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/blkid
 
 install:: all installdirs 
