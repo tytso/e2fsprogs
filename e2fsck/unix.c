@@ -333,11 +333,10 @@ extern void e2fsck_clear_progbar(e2fsck_t ctx)
 	ctx->flags &= ~E2F_FLAG_PROG_BAR;
 }
 
-int e2fsck_simple_progress(e2fsck_t ctx, char *label, float percent,
+int e2fsck_simple_progress(e2fsck_t ctx, const char *label, float percent,
 			   unsigned int dpynum)
 {
 	static const char spinner[] = "\\|/-";
-	char buf[80];
 	int	i;
 	int	tick;
 	struct timeval	tv;
@@ -401,13 +400,8 @@ int e2fsck_simple_progress(e2fsck_t ctx, char *label, float percent,
 static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 				  unsigned long cur, unsigned long max)
 {
-	static const char spinner[] = "\\|/-";
 	char buf[80];
-	int	i;
 	float percent;
-	int	tick;
-	struct timeval	tv;
-	static int dpywidth = 0;
 
 	if (pass == 0)
 		return 0;

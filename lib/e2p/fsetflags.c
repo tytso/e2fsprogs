@@ -64,7 +64,6 @@ int fsetflags (const char * name, unsigned long flags)
 
 	if (!stat(name, &buf) &&
 	    !S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
-		close(fd);
 		goto notsupp;
 	}
 	fd = open (name, OPEN_FLAGS);

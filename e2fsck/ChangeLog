@@ -1,3 +1,12 @@
+2003-04-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* rehash.c: Fix lint warnings by including string.h and ctype.h
+
+	* pass2.c (dict_de_cmp): Fix lint warnings by using const pointers.
+
+	* unix.c (e2fsck_simple_progress), e2fsck.h: Fix lint warnings by
+		using const pointers.  Remove unused variables.
+	
 2003-04-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* rehash.c (name_cmp): Sort the deleted inodes to the end of the

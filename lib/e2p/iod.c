@@ -18,6 +18,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <stdlib.h>
 
 int iterate_on_dir (const char * dir_name,
 		    int (*func) (const char *, struct dirent *, void *),

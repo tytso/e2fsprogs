@@ -45,6 +45,8 @@
  * require that e2fsck use VM first.
  */
 
+#include <string.h>
+#include <ctype.h>
 #include <errno.h>
 #include "e2fsck.h"
 #include "problem.h"

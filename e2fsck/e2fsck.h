@@ -458,5 +458,5 @@ extern int ext2_file_type(unsigned int mode);
 
 /* unix.c */
 extern void e2fsck_clear_progbar(e2fsck_t ctx);
-extern int e2fsck_simple_progress(e2fsck_t ctx, char *label,
+extern int e2fsck_simple_progress(e2fsck_t ctx, const char *label,
 				  float percent, unsigned int dpynum);

@@ -1,3 +1,12 @@
+2003-04-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* fgetflags.c (fgetflags), fsetflags.c (fsetflags): Remove unused
+		and useless close(fd).
+
+	* hashstr.c (e2p_hash2string): Remove unused variables.
+
+	* iod.c: Fix gcc -Wall warnings by including stdlib.h.
+
 2003-04-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* iod.c (iterate_on_dir): Support systems that don't have d_reclen

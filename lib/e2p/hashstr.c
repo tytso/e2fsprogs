@@ -32,8 +32,6 @@ const char *e2p_hash2string(int num)
 {
 	struct hash  *p;
 	static char buf[20];
-	char	fchar;
-	int	fnum;
 
 	for (p = hash_list; p->string; p++) {
 		if (num == p->num)

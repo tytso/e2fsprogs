@@ -1,3 +1,8 @@
+2003-04-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkidP.h: Fix gcc -Wall warnings by using __inline__ instead of
+		inline. 
+
 2003-04-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c, probe.h: Fix XFS superblock definition.  Add support to
