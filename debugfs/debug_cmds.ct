@@ -142,5 +142,8 @@ request do_bmap, "Calculate the logical->physical block mapping for an inode",
 request do_imap, "Calculate the location of an inode",
 	imap;
 
+request	do_dump_unused, "Dump unused blocks",
+	dump_unused;
+
 end;
 

@@ -1,3 +1,9 @@
+2003-05-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* unused.c (do_dump_unused): Add new command which dumps the
+		unused blocks.  (Initial implementation; currently only
+		dumps the output to stdout.)
+
 2003-05-13  root  <tytso@mit.edu>
 
 	* util.c (reset_getopt), debugfs.c (do_open_filesys,
