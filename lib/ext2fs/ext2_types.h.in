@@ -29,12 +29,12 @@ typedef	unsigned short	__u16;
   ?==error: undefined 16 bit type
 #endif
 
-#if (@SIZEOF_LONG@ == 4)
-typedef	long		__s32;
-typedef	unsigned long	__u32;
-#elif (@SIZEOF_INT@ == 4)
+#if (@SIZEOF_INT@ == 4)
 typedef	int		__s32;
 typedef	unsigned int	__u32;
+#elif (@SIZEOF_LONG@ == 4)
+typedef	long		__s32;
+typedef	unsigned long	__u32;
 #elif (@SIZEOF_SHORT@ == 4)
 typedef	short		__s32;
 typedef	unsigned short	__u32;

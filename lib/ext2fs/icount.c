@@ -170,7 +170,7 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 		if (icount->count) {
 			new_size = icount->list[(unsigned)icount->count-1].ino;
 			new_size = (ext2_ino_t) (icount->count * 
-				((float) new_size / icount->num_inodes));
+				((float) icount->num_inodes / new_size));
 		}
 		if (new_size < (icount->size + 100))
 			new_size = icount->size + 100;
