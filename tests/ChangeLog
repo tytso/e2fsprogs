@@ -1,5 +1,9 @@
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
+	* f_dup3: New test case which checks handling of blocks claimed
+		multiple times by one inode which weren't handled
+		correctly by e2fsck 1.20.
+
 	* d_loaddump: Fix test script to remove bash'isms, and make the
 		shell script more robust in cases where the user has
 		overridden CFLAGS so that the debugfs binary isn't
