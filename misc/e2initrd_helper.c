@@ -67,13 +67,12 @@ static void usage(void)
 	exit (1);
 }
 
-errcode_t get_file(ext2_filsys fs, const char * filename, 
+static errcode_t get_file(ext2_filsys fs, const char * filename, 
 		   struct mem_file *ret_file)
 {
 	errcode_t	retval;
 	char 		*buf;
 	ext2_file_t	e2_file;
-	int		nbytes;
 	unsigned int	got;
 	struct ext2_inode inode;
 	ext2_ino_t	ino;
@@ -119,7 +118,7 @@ errout:
 	return retval;
 }
 
-char *get_line(struct mem_file *file)
+static char *get_line(struct mem_file *file)
 {
 	char	*cp, *ret;
 	int	s = 0;
@@ -142,7 +141,7 @@ char *get_line(struct mem_file *file)
 	return ret;
 }
 
-int mem_file_eof(struct mem_file *file)
+static int mem_file_eof(struct mem_file *file)
 {
 	return (file->ptr >= file->size);
 }
@@ -280,7 +279,7 @@ static int parse_fstab_line(char *line, struct fs_info *fs)
 	return 0;
 }
 
-void free_fstab_line(struct fs_info *fs)
+static void free_fstab_line(struct fs_info *fs)
 {
 	if (fs->device)
 		fs->device = 0;
@@ -297,9 +296,6 @@ void free_fstab_line(struct fs_info *fs)
 static void PRS(int argc, char **argv)
 {
 	int c;
-	char * tmp;
-	struct group * gr;
-	struct passwd * pw;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -332,7 +328,7 @@ static void PRS(int argc, char **argv)
 	}
 }
 
-void get_root_type(ext2_filsys fs)
+static void get_root_type(ext2_filsys fs)
 {
 	errcode_t retval;
 	struct mem_file file;
@@ -366,9 +362,7 @@ int main (int argc, char ** argv)
 {
 	errcode_t retval;
 	ext2_filsys fs;
-	struct ext2_super_block *sb;
 	io_manager io_ptr;
-	int		got, ret;
 
 	initialize_ext2_error_table();
 

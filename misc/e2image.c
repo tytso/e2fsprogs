@@ -447,9 +447,8 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 	output_meta_data_blocks(fs, fd);
 }
 
-void install_image(char *device_name, char *image_fn, int raw_flag)
+static void install_image(char *device, char *image_fn, int raw_flag)
 {
-	int c;
 	errcode_t retval;
 	ext2_filsys fs;
 	int open_flag = EXT2_FLAG_IMAGE_FILE;
@@ -490,9 +489,9 @@ void install_image(char *device_name, char *image_fn, int raw_flag)
 		exit(1);
 	}
 
-	retval = io_ptr->open(device_name, IO_FLAG_RW, &io); 
+	retval = io_ptr->open(device, IO_FLAG_RW, &io); 
 	if (retval) {
-		com_err(device_name, 0, "while opening device file");
+		com_err(device, 0, "while opening device file");
 		exit(1);
 	}
 
@@ -555,7 +554,7 @@ int main (int argc, char ** argv)
 
 	if (install_flag) {
 		install_image(device_name, image_fn, raw_flag);
-		return;
+		exit (0);
 	}
 
 	retval = ext2fs_open (device_name, open_flag, 0, 0,

@@ -1,5 +1,10 @@
 2005-01-05  Theodore Ts'o  <tytso@mit.edu>
 
+	* e2initrd_helper.c: Fix gcc -Wall nits.
+
+	* e2image.c (main): Fix gcc -Wall nits.  Fix e2image so that
+		e2image -I has an exit code of 0 when it is successful.
+
 	* mke2fs.c (PRS, parse_r_opts): Use parse_num_blocks() from the
 		e2p library to parse the number of blocks from the command
 		line.
