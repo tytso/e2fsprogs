@@ -459,6 +459,23 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	if (LINUX_S_ISLNK(inode->i_mode) && ext2fs_inode_data_blocks(current_fs,inode) == 0)
 		fprintf(out, "%sFast_link_dest: %.*s\n", prefix,
 			(int) inode->i_size, (char *)inode->i_block);
+	else if (LINUX_S_ISBLK(inode->i_mode) || LINUX_S_ISCHR(inode->i_mode)) {
+		int major, minor;
+		const char *devnote;
+
+		if (inode->i_block[0]) {
+			major = (inode->i_block[0] >> 8) & 255;
+			minor = inode->i_block[0] & 255;
+			devnote = "";
+		} else {
+			major = (inode->i_block[1] & 0xfff00) >> 8;
+			minor = ((inode->i_block[1] & 0xff) | 
+				 ((inode->i_block[1] >> 12) & 0xfff00));
+			devnote = "(New-style) ";
+		}
+		fprintf(out, "%sDevice major/minor number: %02d:%02d (hex %02x:%02x)\n", 
+			devnote, major, minor, major, minor);
+	}
 	else if (do_dump_blocks)
 		dump_blocks(out, prefix, inode_num);
 }
@@ -1181,7 +1198,7 @@ void do_mknod(int argc, char *argv[])
 	if (nr == 5) {
 		major = strtoul(argv[3], argv+3, 0);
 		minor = strtoul(argv[4], argv+4, 0);
-		if (major > 255 || minor > 255 || argv[3][0] || argv[4][0])
+		if (major > 65535 || minor > 65535 || argv[3][0] || argv[4][0])
 			nr = 0;
 	}
 	if (argc != nr)
@@ -1215,7 +1232,13 @@ void do_mknod(int argc, char *argv[])
 	memset(&inode, 0, sizeof(inode));
 	inode.i_mode = mode;
 	inode.i_atime = inode.i_ctime = inode.i_mtime = time(NULL);
-	inode.i_block[0] = major*256+minor;
+	if ((major < 256) && (minor < 256)) {
+		inode.i_block[0] = major*256+minor;
+		inode.i_block[1] = 0;
+	} else {
+		inode.i_block[0] = 0;
+		inode.i_block[1] = (minor & 0xff) | (major << 8) | ((minor & ~0xff) << 12);
+	}
 	inode.i_links_count = 1;
 	if (debugfs_write_inode(newfile, &inode, argv[0]))
 		return;
