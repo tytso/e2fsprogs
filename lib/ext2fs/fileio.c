@@ -88,7 +88,7 @@ ext2_filsys ext2fs_file_get_fs(ext2_file_t file)
  * This function flushes the dirty block buffer out to disk if
  * necessary.
  */
-static errcode_t ext2fs_file_flush(ext2_file_t file)
+errcode_t ext2fs_file_flush(ext2_file_t file)
 {
 	errcode_t	retval;
 	ext2_filsys fs;
@@ -235,7 +235,7 @@ fail:
 }
 
 
-errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
+errcode_t ext2fs_file_write(ext2_file_t file, const void *buf,
 			    unsigned int nbytes, unsigned int *written)
 {
 	ext2_filsys	fs;

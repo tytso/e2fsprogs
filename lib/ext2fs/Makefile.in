@@ -43,6 +43,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	initialize.o \
 	inline.o \
 	inode.o \
+	inode_io.o \
 	ismounted.o \
 	link.o \
 	llseek.o \
@@ -94,6 +95,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/initialize.c \
 	$(srcdir)/inline.c \
 	$(srcdir)/inode.c \
+	$(srcdir)/inode_io.c \
 	$(srcdir)/ismounted.c \
 	$(srcdir)/link.c \
 	$(srcdir)/llseek.c \
@@ -377,6 +379,10 @@ inode.o: $(srcdir)/inode.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fsP.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h $(srcdir)/e2image.h
+inode_io.o: $(srcdir)/inode_io.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 ismounted.o: $(srcdir)/ismounted.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \

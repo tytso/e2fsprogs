@@ -638,9 +638,10 @@ extern errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 				  int flags, ext2_file_t *ret);
 extern ext2_filsys ext2fs_file_get_fs(ext2_file_t file);
 extern errcode_t ext2fs_file_close(ext2_file_t file);
+extern errcode_t ext2fs_file_flush(ext2_file_t file);
 extern errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
 				  unsigned int wanted, unsigned int *got);
-extern errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
+extern errcode_t ext2fs_file_write(ext2_file_t file, const void *buf,
 				   unsigned int nbytes, unsigned int *written);
 extern errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
 				   int whence, ext2_off_t *ret_pos);
@@ -678,6 +679,23 @@ extern errcode_t ext2fs_initialize(const char *name, int flags,
 				   struct ext2_super_block *param,
 				   io_manager manager, ext2_filsys *ret_fs);
 
+/* icount.c */
+extern void ext2fs_free_icount(ext2_icount_t icount);
+extern errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
+				       ext2_icount_t hint, ext2_icount_t *ret);
+extern errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, int size,
+				      ext2_icount_t *ret);
+extern errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ext2_ino_t ino,
+				     __u16 *ret);
+extern errcode_t ext2fs_icount_increment(ext2_icount_t icount, ext2_ino_t ino,
+					 __u16 *ret);
+extern errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ext2_ino_t ino,
+					 __u16 *ret);
+extern errcode_t ext2fs_icount_store(ext2_icount_t icount, ext2_ino_t ino,
+				     __u16 count);
+extern ext2_ino_t ext2fs_get_icount_size(ext2_icount_t icount);
+errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *);
+
 /* inode.c */
 extern errcode_t ext2fs_flush_icache(ext2_filsys fs);
 extern errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
@@ -703,23 +721,9 @@ extern errcode_t ext2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
 extern errcode_t ext2fs_get_blocks(ext2_filsys fs, ext2_ino_t ino, blk_t *blocks);
 extern errcode_t ext2fs_check_directory(ext2_filsys fs, ext2_ino_t ino);
 
-/* icount.c */
-extern void ext2fs_free_icount(ext2_icount_t icount);
-extern errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
-				       ext2_icount_t hint, ext2_icount_t *ret);
-extern errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, int size,
-				      ext2_icount_t *ret);
-extern errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ext2_ino_t ino,
-				     __u16 *ret);
-extern errcode_t ext2fs_icount_increment(ext2_icount_t icount, ext2_ino_t ino,
-					 __u16 *ret);
-extern errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ext2_ino_t ino,
-					 __u16 *ret);
-extern errcode_t ext2fs_icount_store(ext2_icount_t icount, ext2_ino_t ino,
-				     __u16 count);
-extern ext2_ino_t ext2fs_get_icount_size(ext2_icount_t icount);
-errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *);
-
+/* inode_io.c */
+extern io_manager inode_io_manager;
+	
 /* ismounted.c */
 extern errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags);
 extern errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,

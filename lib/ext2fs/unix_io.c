@@ -385,8 +385,8 @@ static errcode_t unix_close(io_channel channel)
 	if (close(data->dev) < 0)
 		retval = errno;
 	free_cache(channel, data);
-	if (channel->private_data)
-		ext2fs_free_mem((void **) &channel->private_data);
+
+	ext2fs_free_mem((void **) &channel->private_data);
 	if (channel->name)
 		ext2fs_free_mem((void **) &channel->name);
 	ext2fs_free_mem((void **) &channel);

@@ -59,8 +59,8 @@ ec	EXT2_ET_MAGIC_EXT2_FILE,
 ec	EXT2_ET_MAGIC_E2IMAGE,
 	"Wrong magic number for Ext2 Image Header"
 
-ec	EXT2_ET_MAGIC_RESERVED_8,
-	"Wrong magic number --- RESERVED_8"
+ec	EXT2_ET_MAGIC_INODE_IO_CHANNEL,
+	"Wrong magic number for inode io_channel structure"
 
 ec	EXT2_ET_MAGIC_RESERVED_9,
 	"Wrong magic number --- RESERVED_9"
@@ -271,6 +271,9 @@ ec	EXT2_ET_JOURNAL_UNSUPP_VERSION,
 
 ec	EXT2_ET_LOAD_EXT_JOURNAL,
 	"Error loading external journal"
+
+ec	EXT2_ET_NO_JOURNAL,
+	"Journal not found"
 
 	end
 

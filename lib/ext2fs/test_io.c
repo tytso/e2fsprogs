@@ -154,8 +154,7 @@ static errcode_t test_close(io_channel channel)
 	if (data->real)
 		retval = io_channel_close(data->real);
 	
-	if (channel->private_data)
-		ext2fs_free_mem((void **) &channel->private_data);
+	ext2fs_free_mem((void **) &channel->private_data);
 	if (channel->name)
 		ext2fs_free_mem((void **) &channel->name);
 	ext2fs_free_mem((void **) &channel);
