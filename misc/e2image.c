@@ -408,6 +408,8 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 		
 		stashed_ino = ino;
 		if (LINUX_S_ISDIR(inode.i_mode) ||
+		    (LINUX_S_ISLNK(inode.i_mode) &&
+		     ext2fs_inode_has_valid_blocks(&inode)) ||
 		    ino == fs->super->s_journal_inum) {
 			retval = ext2fs_block_iterate2(fs, ino, 0, 
 				       block_buf, process_dir_block, &pb);
