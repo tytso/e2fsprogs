@@ -13,6 +13,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <utime.h>
 
 #ifdef HAVE_GETOPT_H
