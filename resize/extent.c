@@ -194,11 +194,11 @@ void ext2fs_extent_dump(ext2_extent extent, FILE *out)
 	int	i;
 	struct ext2_extent_entry *ent;
 	
-	fputs("# Extent dump:\n", out);
-	fprintf(out, "#\tNum=%d, Size=%d, Cursor=%d, Sorted=%d\n",
+	fputs(_("# Extent dump:\n"), out);
+	fprintf(out, _("#\tNum=%d, Size=%d, Cursor=%d, Sorted=%d\n"),
 	       extent->num, extent->size, extent->cursor, extent->sorted);
 	for (i=0, ent=extent->list; i < extent->num; i++, ent++) {
-		fprintf(out, "#\t\t %u -> %u (%d)\n", ent->old_loc,
+		fprintf(out, _("#\t\t %u -> %u (%d)\n"), ent->old_loc,
 			ent->new_loc, ent->size);
 	}
 }

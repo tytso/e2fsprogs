@@ -105,7 +105,7 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags,
 
 #ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & RESIZE_DEBUG_BMOVE)
-		printf("Number of free blocks: %d/%d, Needed: %d\n",
+		printf(_("Number of free blocks: %d/%d, Needed: %d\n"),
 		       rfs->old_fs->super->s_free_blocks_count,
 		       rfs->new_fs->super->s_free_blocks_count,
 		       rfs->needed_blocks);
@@ -423,7 +423,8 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 	ext2fs_block_bitmap	bmap;
 	errcode_t		retval;
 
-	retval = ext2fs_allocate_block_bitmap(fs, "meta-data blocks", &bmap);
+	retval = ext2fs_allocate_block_bitmap(fs, _("meta-data blocks"), 
+					      &bmap);
 	if (retval)
 		return retval;
 	
@@ -485,12 +486,12 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	if (old_fs->super->s_blocks_count > fs->super->s_blocks_count)
 		fs = rfs->old_fs;
 	
-	retval = ext2fs_allocate_block_bitmap(fs, "reserved blocks",
+	retval = ext2fs_allocate_block_bitmap(fs, _("reserved blocks"),
 					      &rfs->reserve_blocks);
 	if (retval)
 		return retval;
 
-	retval = ext2fs_allocate_block_bitmap(fs, "blocks to be moved",
+	retval = ext2fs_allocate_block_bitmap(fs, _("blocks to be moved"),
 					      &rfs->move_blocks);
 	if (retval)
 		return retval;
@@ -721,8 +722,8 @@ static blk_t get_new_block(ext2_resize_t rfs)
 
 #ifdef RESIZE2FS_DEBUG
 			if (rfs->flags & RESIZE_DEBUG_BMOVE)
-				printf("Going into desperation "
-				       "mode for block allocations\n");
+				printf(_("Going into desperation "
+				       "mode for block allocations\n"));
 #endif			
 			rfs->alloc_state = DESPERATION;
 			rfs->new_blk = fs->super->s_first_data_block;
@@ -810,7 +811,7 @@ static errcode_t block_mover(ext2_resize_t rfs)
 			break;
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_BMOVE)
-			printf("Moving %d blocks %u->%u\n", size,
+			printf(_("Moving %d blocks %u->%u\n"), size,
 			       old_blk, new_blk);
 #endif
 		do {
@@ -880,7 +881,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			pb->changed = 1;
 #ifdef RESIZE2FS_DEBUG
 			if (pb->rfs->flags & RESIZE_DEBUG_BMOVE)
-				printf("ino=%ld, blockcnt=%ld, %u->%u\n", 
+				printf(_("ino=%ld, blockcnt=%ld, %u->%u\n"), 
 				       pb->ino, blockcnt, block, new_block);
 #endif
 			block = new_block;
@@ -1036,7 +1037,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_INODEMAP)
-			printf("Inode moved %ld->%ld\n", ino, new_inode);
+			printf(_("Inode moved %ld->%ld\n"), ino, new_inode);
 #endif
 		if (!rfs->imap) {
 			retval = ext2fs_create_extent_table(&rfs->imap, 0);
@@ -1099,7 +1100,7 @@ static int check_and_change_inodes(ino_t dir, int entry,
 		return 0;
 #ifdef RESIZE2FS_DEBUG
 	if (is->rfs->flags & RESIZE_DEBUG_INODEMAP)
-		printf("Inode translate (dir=%ld, name=%.*s, %u->%ld)\n",
+		printf(_("Inode translate (dir=%ld, name=%.*s, %u->%ld)\n"),
 		       dir, dirent->name_len, dirent->name,
 		       dirent->inode, new_inode);
 #endif
@@ -1218,8 +1219,8 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
-			printf("Itable move group %d block "
-			       "%u->%u (diff %d)\n", 
+			printf(_("Itable move group %d block "
+			       "%u->%u (diff %d)\n"), 
 			       i, old_blk, new_blk, diff);
 #endif
 		
@@ -1244,7 +1245,7 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		n = n >> EXT2_BLOCK_SIZE_BITS(fs->super);
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
-			printf("%d blocks of zeros...\n", n);
+			printf(_("%d blocks of zeros...\n"), n);
 #endif
 		num = fs->inode_blocks_per_group;
 		if (n > diff)
@@ -1279,7 +1280,7 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	ext2fs_flush(fs);
 #ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
-		printf("Inode table move finished.\n");
+		printf(_("Inode table move finished.\n"));
 #endif
 	return 0;
 	

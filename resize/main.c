@@ -29,7 +29,7 @@ char *program_name, *device_name;
 
 static volatile void usage (char *prog)
 {
-	fprintf (stderr, "usage: %s [-d debug_flags] [-f] [-F] [-p] device [new-size]\n\n", prog);
+	fprintf (stderr, _("usage: %s [-d debug_flags] [-f] [-F] [-p] device [new-size]\n\n"), prog);
 
 	exit (1);
 }
@@ -50,25 +50,25 @@ static errcode_t resize_progress_func(ext2_resize_t rfs, int pass,
 		progress = 0;
 		switch (pass) {
 		case E2_RSZ_EXTEND_ITABLE_PASS:
-			label = "Extending the inode table";
+			label = _("Extending the inode table");
 			break;
 		case E2_RSZ_BLOCK_RELOC_PASS:
-			label = "Relocating blocks";
+			label = _("Relocating blocks");
 			break;
 		case E2_RSZ_INODE_SCAN_PASS:
-			label = "Scanning inode table";
+			label = _("Scanning inode table");
 			break;
 		case E2_RSZ_INODE_REF_UPD_PASS:
-			label = "Updating inode references";
+			label = _("Updating inode references");
 			break;
 		case E2_RSZ_MOVE_ITABLE_PASS:
-			label = "Moving inode table";
+			label = _("Moving inode table");
 			break;
 		default:
-			label = "Unknown pass?!?";
+			label = _("Unknown pass?!?");
 			break;
 		}
-		printf("Begin pass %d (max = %lu)\n", pass, max);
+		printf(_("Begin pass %d (max = %lu)\n"), pass, max);
 		retval = ext2fs_progress_init(&progress, label, 30,
 					      40, max, 0);
 		if (retval)
@@ -93,16 +93,16 @@ static void check_mount(char *device)
 
 	retval = ext2fs_check_if_mounted(device, &mount_flags);
 	if (retval) {
-		com_err("ext2fs_check_if_mount", retval,
-			"while determining whether %s is mounted.",
+		com_err(_("ext2fs_check_if_mount"), retval,
+			_("while determining whether %s is mounted."),
 			device);
 		return;
 	}
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		return;
 	
-	fprintf(stderr, "%s is mounted; can't resize a "
-		"mounted filesystem!\n\n", device);
+	fprintf(stderr, _("%s is mounted; can't resize a "
+		"mounted filesystem!\n\n"), device);
 	exit(1);
 }
 
@@ -124,7 +124,7 @@ int main (int argc, char ** argv)
 	
 	initialize_ext2_error_table();
 
-	fprintf (stderr, "resize2fs %s (%s)\n",
+	fprintf (stderr, _("resize2fs %s (%s)\n"),
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
@@ -157,7 +157,7 @@ int main (int argc, char ** argv)
 	if (optind < argc) {
 		new_size = strtoul(argv[optind++], &tmp, 0);
 		if (*tmp) {
-			com_err(program_name, 0, "bad filesystem size - %s",
+			com_err(program_name, 0, _("bad filesystem size - %s"),
 				argv[optind - 1]);
 			exit(1);
 		}
@@ -172,18 +172,20 @@ int main (int argc, char ** argv)
 		fd = open(device_name, O_RDONLY, 0);
 
 		if (fd < 0) {
-			com_err("open", errno, "while opening %s for flushing",
+			com_err("open", errno,
+				_("while opening %s for flushing"),
 				device_name);
 			exit(1);
 		}
 		if (ioctl(fd, BLKFLSBUF, 0) < 0) {
-			com_err("BLKFLSBUF", errno, "while trying to flush %s",
+			com_err("BLKFLSBUF", errno,
+				_("while trying to flush %s"),
 				device_name);
 			exit(1);
 		}
 		close(fd);
 #else
-		fprintf(stderr, "BLKFLSBUF not supported");
+		fprintf(stderr, _("BLKFLSBUF not supported"));
 		exit(1);
 #endif /* BLKFLSBUF */
 	}
@@ -197,9 +199,9 @@ int main (int argc, char ** argv)
 	retval = ext2fs_open (device_name, EXT2_FLAG_RW, 0, 0,
 			      io_ptr, &fs);
 	if (retval) {
-		com_err (program_name, retval, "while trying to open %s",
+		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
-		printf ("Couldn't find valid filesystem superblock.\n");
+		printf (_("Couldn't find valid filesystem superblock.\n"));
 		exit (1);
 	}
 	/*
@@ -223,25 +225,25 @@ int main (int argc, char ** argv)
 					&max_size);
 	if (retval) {
 		com_err(program_name, retval,
-			"while trying to determine filesystem size");
+			_("while trying to determine filesystem size"));
 		exit(1);
 	}
 	if (!new_size)
 		new_size = max_size;
 	if (!force && (new_size > max_size)) {
-		fprintf(stderr, "The containing partition (or device)"
+		fprintf(stderr, _("The containing partition (or device)"
 			" is only %d blocks.\nYou requested a new size"
-			" of %d blocks.\n\n", max_size,
+			" of %d blocks.\n\n"), max_size,
 			new_size);
 		exit(1);
 	}
 	if (new_size == fs->super->s_blocks_count) {
-		fprintf(stderr, "The filesystem is already %d blocks "
-			"long.  Nothing to do!\n\n", new_size);
+		fprintf(stderr, _("The filesystem is already %d blocks "
+			"long.  Nothing to do!\n\n"), new_size);
 		exit(0);
 	}
 	if (!force && (fs->super->s_lastcheck < fs->super->s_mtime)) {
-		fprintf(stderr, "Please run 'e2fsck -f %s' first.\n\n",
+		fprintf(stderr, _("Please run 'e2fsck -f %s' first.\n\n"),
 			device_name);
 		exit(1);
 	}
@@ -249,11 +251,11 @@ int main (int argc, char ** argv)
 			   ((flags & RESIZE_PERCENT_COMPLETE) ?
 			    resize_progress_func : 0));
 	if (retval) {
-		com_err(program_name, retval, "while trying to resize %s",
+		com_err(program_name, retval, _("while trying to resize %s"),
 			device_name);
 		ext2fs_close (fs);
 	}
-	printf("The filesystem on %s is now %d blocks long.\n\n",
+	printf(_("The filesystem on %s is now %d blocks long.\n\n"),
 	       device_name, new_size);
 	return (0);
 }
