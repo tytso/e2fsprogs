@@ -103,6 +103,9 @@ request do_mknod, "Create a special file",
 request do_lsdel, "List deleted inodes",
 	list_deleted_inodes, lsdel;
 
+request do_undel, "Undelete file",
+	undelete, undel;
+
 request do_write, "Copy a file from your native filesystem",
 	write;
 

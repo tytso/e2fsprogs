@@ -12,6 +12,13 @@
 #define const
 #endif
 
+/*
+ * Flags used by the common argument processing functions
+ */
+#define CHECK_FS_RW		0x0001
+#define CHECK_FS_BITMAPS	0x0002
+#define CHECK_FS_NOTOPEN	0x0004
+
 extern ext2_filsys current_fs;
 extern ext2_ino_t	root, cwd;
 
@@ -23,6 +30,20 @@ extern int check_fs_read_write(char *name);
 extern int check_fs_bitmaps(char *name);
 extern ext2_ino_t string_to_inode(char *str);
 extern char *time_to_string(__u32);
+extern unsigned long parse_ulong(const char *str, const char *cmd,
+				 const char *descr, int *err);
+extern int strtoblk(const char *cmd, const char *str, blk_t *ret);
+extern int common_args_process(int argc, char *argv[], int min_argc,
+			       int max_argc, const char *cmd,
+			       const char *usage, int flags);
+extern int common_inode_args_process(int argc, char *argv[],
+				     ext2_ino_t *inode, int flags);
+extern int common_block_args_process(int argc, char *argv[],
+				     blk_t *block, int *count);
+extern int debugfs_read_inode(ext2_ino_t ino, struct ext2_inode * inode,
+			      const char *cmd);
+extern int debugfs_write_inode(ext2_ino_t ino, struct ext2_inode * inode,
+			       const char *cmd);
 
 /* ss command functions */
 

@@ -1,3 +1,29 @@
+2002-01-03  Theodore Tso  <tytso@valinux.com>
+
+	* lsdel.c (do_lsdel): New optional argument which allows the user
+		to only see the most recently deleted files.
+
+	* debugfs.c (do_undel, do_testb, do_freeb, do_setb, do_ffb): Add
+		new command, undelete, which automates undeleting a
+		deleted inode and linking it back to a directory.  Add a
+		count argument to the testb, freeb, setb, and ffb commands.
+
+	* ls.c (list_dir_proc, do_list_dir): Add support for -d option
+		which lists deleted directory entries.
+
+	* debug_cmds.ct: Add new command, undelete.
+
+	* dump.c, icheck.c, logdump.c, ls.c, lsdel.c, setsuper.c,
+		debugfs.c: Use new utility functions which factor out
+		commonly used code.
+
+	* util.c (debugfs_read_inode, debugfs_write_inode,
+		common_block_args_process, common_inode_args_process,
+		common_args_process, strtoblk, parse_ulong): New
+		functions which factor out commonly used code into
+		subroutines for ease of maintenance and to make the
+		executable size smaller.
+
 2001-12-23  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in, jfs_user.h: Move linux/jbd.h to

@@ -1,8 +1,9 @@
 /*
- * undelete.c --- routines to try to help a user recover a deleted file.
+ * lsdel.c --- routines to try to help a user recover a deleted file.
  * 
- * Copyright (C) 1994 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
+ * Theodore Ts'o.  This file may be redistributed under the terms of
+ * the GNU Public License.
  */
 
 #include <stdio.h>
@@ -78,13 +79,20 @@ void do_lsdel(int argc, char **argv)
 	errcode_t		retval;
 	char			*block_buf;
 	int			i;
+ 	long			secs = 0;
+ 	char			*tmp;
+	time_t			now = time(0);
 	
+	if (common_args_process(argc, argv, 1, 2, "ls_deleted_inodes",
+				"[secs]", 0))
+		return;
 	if (argc > 1) {
-		com_err(argv[0], 0, "Usage: ls_deleted_inodes\n");
-		return;
+		secs = strtol(argv[1],&tmp,0);
+		if (*tmp) {
+			com_err(argv[0], 0, "Bad time - %s",argv[1]);
+			return;
+		}
 	}
-	if (check_fs_open(argv[0]))
-		return;
 
 	max_delarray = 100;
 	num_delarray = 0;
@@ -118,7 +126,8 @@ void do_lsdel(int argc, char **argv)
 	}
 	
 	while (ino) {
-		if (inode.i_dtime == 0)
+		if ((inode.i_dtime == 0) ||
+		    (secs && ((now - secs) > inode.i_dtime)))
 			goto next;
 
 		lsd.inode = ino;
@@ -170,7 +179,6 @@ void do_lsdel(int argc, char **argv)
 		}
 	}
 
-	printf("%d deleted inodes found.\n", num_delarray);
 	printf(" Inode  Owner  Mode    Size    Blocks    Time deleted\n");
 	
 	qsort(delarray, num_delarray, sizeof(struct deleted_info),
@@ -182,6 +190,7 @@ void do_lsdel(int argc, char **argv)
 		       delarray[i].free_blocks, delarray[i].num_blocks, 
 		       time_to_string(delarray[i].dtime));
 	}
+	printf("%d deleted inodes found.\n", num_delarray);
 	
 error_out:
 	free(block_buf);

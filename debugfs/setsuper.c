@@ -169,7 +169,7 @@ static errcode_t parse_string(struct super_set_info *info, char *arg)
 	return 0;
 }
 
-static void print_possible_fields()
+static void print_possible_fields(void)
 {
 	struct super_set_info *ss;
 	const char	*type;
@@ -190,9 +190,9 @@ static void print_possible_fields()
 
 void do_set_super(int argc, char *argv[])
 {
-	const char *usage = "Usage: set_super <field> <value>\n"
-		"\t\"set_super -l\" will list the names of superblock fields "
-		"which\n\tcan be set.";
+	const char *usage = "<field> <value>\n"
+		"\t\"set_super_value -l\" will list the names of "
+		"superblock fields\n\twhich can be set.";
 	static struct super_set_info *ss;
 	
 	if ((argc == 2) && !strcmp(argv[1], "-l")) {
@@ -200,17 +200,10 @@ void do_set_super(int argc, char *argv[])
 		return;
 	}
 
-	if (check_fs_open(argv[0]))
+	if (common_args_process(argc, argv, 3, 3, "set_super_value",
+				usage, CHECK_FS_RW))
 		return;
 
-	if (argc != 3) {
-		com_err(argv[0], 0, usage);
-		return;
-	}
-
-	if (check_fs_read_write(argv[0]))
-		return;
-	
 	if ((ss = find_field(argv[1])) == 0) {
 		com_err(argv[0], 0, "invalid field specifier: %s", argv[1]);
 		return;

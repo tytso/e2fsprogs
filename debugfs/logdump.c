@@ -203,13 +203,8 @@ void do_logdump(int argc, char **argv)
 		journal_source.where = JOURNAL_IS_EXTERNAL;
 		journal_source.fd = journal_fd;
 	} else if ((journal_inum = current_fs->super->s_journal_inum)) {
-		retval = ext2fs_read_inode(current_fs, journal_inum, 
-					   &journal_inode);
-		if (retval) {
-			com_err(argv[0], retval,
-				"while reading inode %u", journal_inum);
+		if (debugfs_read_inode(journal_inum, &journal_inode, argv[0]))
 			return;
-		}
 
 		retval = ext2fs_file_open(current_fs, journal_inum,
 					  0, &journal_file);

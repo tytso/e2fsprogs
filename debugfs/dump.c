@@ -104,12 +104,8 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
 	int		nbytes;
 	unsigned int	got;
 	
-	retval = ext2fs_read_inode(current_fs, ino, &inode);
-	if (retval) {
-		com_err(cmdname, retval,
-			"while reading inode %u in dump_file", ino);
+	if (debugfs_read_inode(ino, &inode, cmdname))
 		return;
-	}
 
 	retval = ext2fs_file_open(current_fs, ino, 0, &e2_file);
 	if (retval) {
@@ -307,11 +303,8 @@ static int rdump_dirent(struct ext2_dir_entry *dirent, int offset,
 	strncpy(name, dirent->name, thislen);
 	name[thislen] = 0;
 
-	retval = ext2fs_read_inode(current_fs, dirent->inode, &inode);
-	if (retval) {
-		com_err("rdump", retval, "while dumping %s/%s", dumproot, name);
+	if (debugfs_read_inode(dirent->inode, &inode, name))
 		return 0;
-	}
 
 	rdump_inode(dirent->inode, &inode, name, dumproot);
 
@@ -327,12 +320,8 @@ void do_rdump(int argc, char **argv)
 	int i;
 	char *p;
 
-	if (argc != 3) {
-		com_err(argv[0], 0, "Usage: rdump <directory> <native directory>");
-		return;
-	}
-
-	if (check_fs_open(argv[0]))
+	if (common_args_process(argc, argv, 3, 3, "rdump",
+				"<directory> <native directory>", 0))
 		return;
 
 	ino = string_to_inode(argv[1]);
@@ -350,11 +339,8 @@ void do_rdump(int argc, char **argv)
 		return;
 	}
 
-	retval = ext2fs_read_inode(current_fs, ino, &inode);
-	if (retval) {
-		com_err("rdump", retval, "while dumping %s", argv[1]);
+	if (debugfs_read_inode(ino, &inode, argv[1]))
 		return;
-	}
 
 	p = strrchr(argv[1], '/');
 	if (p)
@@ -369,16 +355,7 @@ void do_cat(int argc, char **argv)
 {
 	ext2_ino_t	inode;
 
-	if (argc != 2) {
-		com_err(argv[0], 0, "Usage: cat <file>");
-		return;
-	}
-
-	if (check_fs_open(argv[0]))
-		return;
-
-	inode = string_to_inode(argv[1]);
-	if (!inode) 
+	if (common_inode_args_process(argc, argv, &inode, 0))
 		return;
 
 	fflush(stdout);

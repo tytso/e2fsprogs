@@ -132,6 +132,135 @@ char *time_to_string(__u32 cl)
 	return ctime(&t);
 }
 
-
+/*
+ * This function will convert a string to an unsigned long, printing
+ * an error message if it fails, and returning success or failure in err.
+ */
+unsigned long parse_ulong(const char *str, const char *cmd,
+			  const char *descr, int *err)
+{
+	char		*tmp;
+	unsigned long	ret;
 	
+	ret = strtoul(str, &tmp, 0);
+	if (*tmp == 0) {
+		if (*err)
+			*err = 0;
+		return ret;
+	}
+	com_err(cmd, 0, "Bad %s - %s", descr, str);
+	if (*err)
+		*err = 1;
+	else
+		exit(1);
+	return 0;
+}
+
+/*
+ * This function will convert a string to a block number.  It returns
+ * 0 on success, 1 on failure.
+ */
+int strtoblk(const char *cmd, const char *str, blk_t *ret)
+{
+	blk_t	blk;
+	int	err;
+
+	blk = parse_ulong(str, cmd, "block number", &err);
+	*ret = blk;
+	if (err == 0 && blk == 0) {
+		com_err(cmd, 0, "Invalid block number 0");
+		err = 1;
+	}
+	return err;
+}
+
+/*
+ * This is a common helper function used by the command processing
+ * routines
+ */
+int common_args_process(int argc, char *argv[], int min_argc, int max_argc,
+			const char *cmd, const char *usage, int flags)
+{
+	if (argc < min_argc || argc > max_argc) {
+		com_err(argv[0], 0, "Usage: %s %s", cmd, usage);
+		return 1;
+	}
+	if (flags & CHECK_FS_NOTOPEN) {
+		if (check_fs_not_open(argv[0]))
+			return 1;
+	} else {
+		if (check_fs_open(argv[0]))
+			return 1;
+	}
+	if ((flags & CHECK_FS_RW) && check_fs_read_write(argv[0]))
+		return 1;
+	if ((flags & CHECK_FS_BITMAPS) && check_fs_bitmaps(argv[0]))
+		return 1;
+	return 0;
+}
+
+/*
+ * This is a helper function used by do_stat, do_freei, do_seti, and
+ * do_testi, etc.  Basically, any command which takes a single
+ * argument which is a file/inode number specifier.
+ */
+int common_inode_args_process(int argc, char *argv[],
+			      ext2_ino_t *inode, int flags)
+{
+	if (common_args_process(argc, argv, 2, 2, argv[0], "<file>", flags))
+		return 1;
+	
+	*inode = string_to_inode(argv[1]);
+	if (!*inode) 
+		return 1;
+	return 0;
+}
+
+/*
+ * This is a helper function used by do_freeb, do_setb, and do_testb
+ */
+int common_block_args_process(int argc, char *argv[],
+			      blk_t *block, int *count)
+{
+	int	err;
+
+	if (common_args_process(argc, argv, 2, 3, argv[0],
+				"<block> [count]", CHECK_FS_BITMAPS))
+		return 1;
+
+	if (strtoblk(argv[0], argv[1], block))
+		return 1;
+	if (argc > 2) {
+		*count = parse_ulong(argv[0], argv[2], "count", &err);
+		if (err)
+			return 1;
+	}
+	return 0;
+}
+
+int debugfs_read_inode(ext2_ino_t ino, struct ext2_inode * inode,
+			const char *cmd)
+{
+	int retval;
+
+	retval = ext2fs_read_inode(current_fs, ino, inode);
+	if (retval) {
+		com_err(cmd, retval, "while reading inode %u", ino);
+		return 1;
+	}
+	return 0;
+}
+
+int debugfs_write_inode(ext2_ino_t ino, struct ext2_inode * inode,
+			const char *cmd)
+{
+	int retval;
+
+	retval = ext2fs_write_inode(current_fs, ino, inode);
+	if (retval) {
+		com_err(cmd, retval, "while writing inode %u", ino);
+		return 1;
+	}
+	return 0;
+}
 

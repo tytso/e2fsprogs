@@ -61,7 +61,6 @@ void do_icheck(int argc, char **argv)
 	ext2_ino_t		ino;
 	struct ext2_inode	inode;
 	errcode_t		retval;
-	char			*tmp;
 	char			*block_buf;
 	
 	if (argc < 2) {
@@ -86,11 +85,8 @@ void do_icheck(int argc, char **argv)
 	}
 
 	for (i=1; i < argc; i++) {
-		bw.barray[i-1].blk = strtoul(argv[i], &tmp, 0);
-		if (*tmp) {
-			com_err(argv[0], 0, "Bad block - %s", argv[i]);
+		if (strtoblk(argv[0], argv[i], &bw.barray[i-1].blk))
 			return;
-		}
 	}
 
 	bw.num_blocks = bw.blocks_left = argc-1;

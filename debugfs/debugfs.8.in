@@ -185,8 +185,10 @@ Set or clear various filesystem features in the superblock.  After setting
 or clearing any filesystem features that were requested, print the current
 state of the filesystem feature set.
 .TP
-.I find_free_block [goal]
-Find the first free block, starting from
+.I find_free_block [count [goal]]
+Find the first 
+.I count
+free blocks, starting from
 .I goal
 and allocate it.
 .TP
@@ -200,10 +202,17 @@ optional argument
 specifies the permissions of the new inode.  (If the directory bit is set
 on the mode, the allocation routine will function differently.)
 .TP
-.I freeb block
+.I freeb block [count]
 Mark the block number
 .I block
 as not allocated.
+If the optional argument 
+.I count 
+is present, then 
+.I count
+blocks starting at block number
+.I block
+will be marked as not allocated.
 .TP
 .I freei filespec
 Free the inode specified by 
@@ -253,9 +262,15 @@ Note this does not adjust the inode reference counts.
 .I logdump [-ac] [-b<block>] [-i<inode>] [-f<journal_file>] [output_file]
 Dump the contents of the ext3 journal.
 .TP
-.I ls [-l] filespec
+.I ls [-l] [-d] filespec
 Print a listing of the files in the directory
 .IR filespec .
+The 
+.I \-l
+flag will list files using a more verbose format.
+The
+.I \-d
+flag will list deleted entries in the directory.
 .TP
 .I modify_inode filespec
 Modify the contents of the inode structure in the inode
@@ -318,10 +333,17 @@ Remove the directory
 .IR filespec .
 This function is currently not implemented.
 .TP
-.I setb block
+.I setb block [count]
 Mark the block number
 .I block
 as allocated.
+If the optional argument 
+.I count 
+is present, then 
+.I count
+blocks starting at block number
+.I block
+will be marked as allocated.
 .TP
 .I seti filespec
 Mark inode 
@@ -346,10 +368,17 @@ flag is given, only print out the superblock contents.
 Display the contents of the inode structure of the inode
 .IR filespec .
 .TP
-.I testb block
+.I testb block [count]
 Test if the block number
 .I block
 is marked as allocated in the block bitmap.
+If the optional argument 
+.I count 
+is present, then 
+.I count
+blocks starting at block number
+.I block
+will be tested.
 .TP
 .I testi filespec
 Test if the inode 
