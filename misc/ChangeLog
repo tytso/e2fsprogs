@@ -1,3 +1,11 @@
+2002-10-28    <tytso@snap.thunk.org>
+
+	* fsck.c (main): Fix bug reported by Gregory Mutt.  Multiple
+		filesystems explicitly specified on the command line were
+		not being checked in parallel, due to a logic bug
+		introduced in to support the FSCK_MAX_INST environment
+		variable.
+
 2002-10-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* dumpe2fs.c (list_desc, main): Make dumpe2fs more robust so that

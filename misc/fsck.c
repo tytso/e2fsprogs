@@ -1193,7 +1193,8 @@ int main(int argc, char *argv[])
 			break;
 		}
 		fsck_device(devices[i], interactive);
-		if (serialize || (num_running >= max_running)) {
+		if (serialize ||
+		    (max_running && (num_running >= max_running))) {
 			struct fsck_instance *inst;
 
 			inst = wait_one(0);
@@ -1201,6 +1202,8 @@ int main(int argc, char *argv[])
 				status |= inst->exit_status;
 				free_instance(inst);
 			}
+			if (verbose > 1) 
+				printf("----------------------------------\n");
 		}
 	}
 	status |= wait_all(0);
