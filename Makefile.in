@@ -125,7 +125,6 @@ $(srcdir)/.exclude-file:
 		-print) | sed -e "s/e2fsprogs/$$a/" > $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/build" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/rpm.log" >> $(srcdir)/.exclude-file
-	echo "$(SRCROOT)/resize" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/powerquest" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/.exclude-file" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/po/stamp-cat-id" >> $(srcdir)/.exclude-file
