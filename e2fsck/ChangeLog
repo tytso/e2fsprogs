@@ -1,5 +1,8 @@
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Move strip command to install-strip target.
+		Use Linux-kernel-style makefile output for "make install"
+
 	* Makefile.in (installdirs): Use $(MKINSTALLDIRS) macro.
 		Remove sync in the "all" target.
 

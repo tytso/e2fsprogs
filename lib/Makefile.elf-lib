@@ -35,19 +35,32 @@ $(ELF_LIB): $(OBJS)
 	@$(LN) ../$(ELF_LIB) ../$(ELF_SONAME)
 
 installdirs-elf-lib::
-	$(MKINSTALLDIRS) $(DESTDIR)$(ELF_INSTALL_DIR) \
+	@echo "	MKINSTALLDIRS $(ELF_INSTALL_DIR) $(libdir)"
+	@$(MKINSTALLDIRS) $(DESTDIR)$(ELF_INSTALL_DIR) \
 		$(DESTDIR)$(libdir)
 
 installdirs:: installdirs-elf-lib
 
 install-shlibs install:: $(ELF_LIB) installdirs-elf-lib
-	$(INSTALL_PROGRAM) $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
-	$(STRIP) --strip-debug \
-		$(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
-	$(LN_S) -f $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_SONAME)
-	$(LN_S) -f $(ELF_INSTALL_DIR)/$(ELF_SONAME) \
+	@echo "	INSTALL-ELF-LIB $(ELF_INSTALL_DIR)/$(ELF_LIB)"
+	@$(INSTALL_PROGRAM) $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
+	@echo "	SYMLINK $(ELF_INSTALL_DIR)/$(ELF_SONAME)"
+	@$(LN_S) -f $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_SONAME)
+	@echo "	SYMLINK $(libdir)/$(ELF_IMAGE).so"
+	@$(LN_S) -f $(ELF_INSTALL_DIR)/$(ELF_SONAME) \
 		$(DESTDIR)$(libdir)/$(ELF_IMAGE).so
-	-$(LDCONFIG)
+	@echo "	LDCONFIG"
+	@-$(LDCONFIG)
+
+install-strip: install
+	@echo "	STRIP-LIB $(ELF_INSTALL_DIR)/$(ELF_LIB)"
+	@$(STRIP) --strip-unneeded --remove-section=.comment \
+		--remove-section=.note $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
+
+install-shlibs-strip: install-shlibs
+	@echo "	STRIP-LIB $(ELF_INSTALL_DIR)/$(ELF_LIB)"
+	@$(STRIP) --strip-unneeded --remove-section=.comment \
+		--remove-section=.note $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
 
 uninstall-shlibs uninstall::
 	$(RM) -f $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB) \

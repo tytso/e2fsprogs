@@ -1,5 +1,7 @@
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Add install-strip and install-shlibs-strip targets
+
 	* MCONFIG.in: Add configure-defined variables for MKINSTALLDIRS
 		and INSTALL_SCRIPT.  Filter out comments inserted by newer
 		versions of gcc when using -M in make depend.

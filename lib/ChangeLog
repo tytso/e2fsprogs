@@ -1,7 +1,15 @@
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.elf-lib, Makefile.solaris-lib, Makefile.profile,
+		Makefile.darwin-lib: Use Linux-kernel-style makefile
+		output for "make install".  
+
+	* Makefile.elf-lib, Makefile.solaris-lib: Move strip command to
+		install-strip and install-shlibs-strip.
+
 	* Makefile.elf-lib (installdirs-elf-lib), 
-		solaris-lib (installdirs-elf-lib): Use $(MKINSTALLDIRS) macro
+	  Makefile.solaris-lib (installdirs-elf-lib): Use $(MKINSTALLDIRS) 
+		macro
 
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 

@@ -55,19 +55,27 @@ test_extent: $(TEST_EXTENT_OBJS)
 	@$(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS) 
 
 installdirs:
-	$(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
+	@echo "	MKINSTALLDIRS $(root_sbindir) $(man8dir)"
+	@$(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir)
 
 install: $(PROGS) $(MANPAGES) installdirs
-	for i in $(PROGS); do \
+	@for i in $(PROGS); do \
+		echo "	INSTALL $(root_sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
-		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
 	done
-	for i in $(MANPAGES); do \
+	@for i in $(MANPAGES); do \
 		for j in $(COMPRESS_EXT); do \
 			$(RM) -f $(DESTDIR)$(man8dir)/$$i.$$j; \
 		done; \
+		echo "	INSTALL_DATA $(man8dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
+	done
+
+install-strip: install
+	@for i in $(PROGS); do \
+		echo "	STRIP $(root_sbindir)/$$i"; \
+		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
 	done
 
 uninstall:

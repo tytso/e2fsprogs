@@ -122,23 +122,28 @@ uuid_unparse.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_unparse.3.in
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_unparse.3.in uuid_unparse.3
 
 installdirs::
-	$(MKINSTALLDIRS) $(DESTDIR)$(libdir)  \
+	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/uuid $(man3dir)"
+	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir)  \
 		$(DESTDIR)$(includedir)/uuid $(DESTDIR)$(man3dir)
 
 install:: all installdirs 
-	$(INSTALL_DATA) libuuid.a $(DESTDIR)$(libdir)/libuuid.a
-	$(CHMOD) 644 $(DESTDIR)$(libdir)/libuuid.a
-	-$(RANLIB) $(DESTDIR)$(libdir)/libuuid.a
-	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libuuid.a
-	$(INSTALL_DATA) $(srcdir)/uuid.h $(DESTDIR)$(includedir)/uuid/uuid.h
-	for i in $(SMANPAGES); do \
+	@echo "	INSTALL_DATA $(libdir)/libuuid.a"
+	@$(INSTALL_DATA) libuuid.a $(DESTDIR)$(libdir)/libuuid.a
+	@-$(RANLIB) $(DESTDIR)$(libdir)/libuuid.a
+	@$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libuuid.a
+	@echo "	INSTALL_DATA $(includedir)/uuid/uuid.h"
+	@$(INSTALL_DATA) $(srcdir)/uuid.h $(DESTDIR)$(includedir)/uuid/uuid.h
+	@for i in $(SMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man3dir)/$$i.gz; \
+		echo "	INSTALL_DATA $(man3dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man3dir)/$$i; \
 	done
-	$(RM) -f $(DESTDIR)$(man3dir)/uuid_generate_random.3.gz \
+	@$(RM) -f $(DESTDIR)$(man3dir)/uuid_generate_random.3.gz \
 		$(DESTDIR)$(man3dir)/uuid_generate_time.3.gz
-	$(LN) -f $(DESTDIR)$(man3dir)/uuid_generate.3 $(DESTDIR)$(man3dir)/uuid_generate_random.3
-	$(LN) -f $(DESTDIR)$(man3dir)/uuid_generate.3 $(DESTDIR)$(man3dir)/uuid_generate_time.3
+	@echo "	LINK $(man3dir)/uuid_generate_random.3"
+	@$(LN) -f $(DESTDIR)$(man3dir)/uuid_generate.3 $(DESTDIR)$(man3dir)/uuid_generate_random.3
+	@echo "	LINK $(man3dir)/uuid_generate_time.3"
+	@$(LN) -f $(DESTDIR)$(man3dir)/uuid_generate.3 $(DESTDIR)$(man3dir)/uuid_generate_time.3
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libuuid.a

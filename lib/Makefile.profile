@@ -19,10 +19,10 @@ $(LIBRARY)_p.a: $(OBJS)
 	@$(LN) $@ ../$@
 
 install:: $(LIBRARY)_p.a installdirs
-	$(INSTALL_DATA) $(LIBRARY)_p.a $(DESTDIR)$(libdir)/$(LIBRARY)_p.a
-	$(CHMOD) 644 $(DESTDIR)$(libdir)/$(LIBRARY)_p.a
-	-$(RANLIB) $(DESTDIR)$(libdir)/$(LIBRARY)_p.a
-	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/$(LIBRARY)_p.a
+	@echo "	INSTALL_DATA $(libdir)/$(LIBRARY)_p.a"
+	@$(INSTALL_DATA) $(LIBRARY)_p.a $(DESTDIR)$(libdir)/$(LIBRARY)_p.a
+	@-$(RANLIB) $(DESTDIR)$(libdir)/$(LIBRARY)_p.a
+	@$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/$(LIBRARY)_p.a
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/$(LIBRARY)_p.a

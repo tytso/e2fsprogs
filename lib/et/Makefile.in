@@ -70,25 +70,31 @@ TAGS:	$(SRCS)
 	$(TAGS) $(SRCS)
 
 installdirs::
-	$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/et $(datadir)/et $(bindir) $(man1dir) $(man3dir)"
+	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/et $(DESTDIR)$(datadir)/et \
 		$(DESTDIR)$(bindir) $(DESTDIR)$(man1dir) \
 		$(DESTDIR)$(man3dir)
 
 install:: compile_et libcom_err.a $(HFILES) installdirs
-	$(INSTALL_DATA) libcom_err.a $(DESTDIR)$(libdir)/libcom_err.a
-	$(CHMOD) 644 $(DESTDIR)$(libdir)/libcom_err.a
-	-$(RANLIB) $(DESTDIR)$(libdir)/libcom_err.a
-	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libcom_err.a
-	for i in $(HFILES); do \
+	@echo "	INSTALL_DATA $(libdir)/libcom_err.a"
+	@$(INSTALL_DATA) libcom_err.a $(DESTDIR)$(libdir)/libcom_err.a
+	@-$(RANLIB) $(DESTDIR)$(libdir)/libcom_err.a
+	@$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libcom_err.a
+	@for i in $(HFILES); do \
+		echo "	INSTALL_DATA $(includedir)/et/$$i"; \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/et/$$i; \
 	done
-	for i in $(SHARE_FILES); do \
+	@for i in $(SHARE_FILES); do \
+		echo "	INSTALL_DATA $(datadir)/et/$$i"; \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(datadir)/et/$$i; \
 	done
-	$(INSTALL) compile_et $(DESTDIR)$(bindir)/compile_et
-	$(INSTALL_DATA) $(srcdir)/com_err.3 $(DESTDIR)$(man3dir)/com_err.3
-	$(INSTALL_DATA) $(srcdir)/compile_et.1 \
+	@echo "	INSTALL_SCRIPT $(bindir)/compile_et"
+	@$(INSTALL_SCRIPT) compile_et $(DESTDIR)$(bindir)/compile_et
+	@echo "	INSTALL_DATA $(man3dir)/com_err.3"
+	@$(INSTALL_DATA) $(srcdir)/com_err.3 $(DESTDIR)$(man3dir)/com_err.3
+	@echo "	INSTALL_DATA $(man1dir)/compile_et.1"
+	@$(INSTALL_DATA) $(srcdir)/compile_et.1 \
 			$(DESTDIR)$(man1dir)/compile_et.1
 
 uninstall::

@@ -143,34 +143,48 @@ iscan: iscan.o util.o ehandler.o $(DEPLIBS)
 	@$(LD) $(ALL_LDFLAGS) -o iscan iscan.o util.o ehandler.o $(LIBS)
 
 profiled:
-	@echo "	MKDIR $@"
-	@mkdir profiled
+@PROFILE_CMT@	@echo "	MKDIR $@"
+@PROFILE_CMT@	@mkdir profiled
 
 e2fsck.8: $(DEP_SUBSTITUTE) $(srcdir)/e2fsck.8.in
 	@echo "	SUBST $@"
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2fsck.8.in e2fsck.8
 
 installdirs:
-	$(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
+	@echo "	MKINSTALLDIRS $(root_sbindir) $(man8dir)"
+	@$(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir)
 
 install: $(PROGS) $(MANPAGES) installdirs
-	for i in $(PROGS); do \
+	@for i in $(PROGS); do \
+		echo "	INSTALL $(root_sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
-		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
 	done
-	$(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
+	@echo "	LINK $(root_sbindir)/fsck.ext2"
+	@$(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
 			$(DESTDIR)$(root_sbindir)/fsck.ext2
-	$(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
+	@echo "	LINK $(root_sbindir)/fsck.ext3"
+	@$(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
 			$(DESTDIR)$(root_sbindir)/fsck.ext3
-	for i in $(MANPAGES); do \
+	@for i in $(MANPAGES); do \
 		for j in $(COMPRESS_EXT); do \
 			$(RM) -f $(DESTDIR)$(man8dir)/$$i.$$j; \
 		done; \
+		echo "	INSTALL_DATA $(man8dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
 	done
-	$(LN) -f $(DESTDIR)$(man8dir)/e2fsck.8 $(DESTDIR)$(man8dir)/fsck.ext2.8
-	$(LN) -f $(DESTDIR)$(man8dir)/e2fsck.8 $(DESTDIR)$(man8dir)/fsck.ext3.8
+	@echo "	LINK $(man8dir)/fsck.ext2.8"
+	@$(LN) -f $(DESTDIR)$(man8dir)/e2fsck.8 \
+		$(DESTDIR)$(man8dir)/fsck.ext2.8
+	@echo "	LINK $(man8dir)/fsck.ext3.8"
+	@$(LN) -f $(DESTDIR)$(man8dir)/e2fsck.8 \
+		$(DESTDIR)$(man8dir)/fsck.ext3.8
+
+install-strip: install
+	@for i in $(PROGS); do \
+		echo "	STRIP $(root_sbindir)/$$i"; \
+		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
+	done
 
 uninstall:
 	for i in $(PROGS); do \

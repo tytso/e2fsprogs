@@ -60,15 +60,17 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 installdirs::
-	$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/e2p"
+	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/e2p
 
 install:: all installdirs 
-	$(INSTALL_DATA) libe2p.a $(DESTDIR)$(libdir)/libe2p.a
-	$(CHMOD) 644 $(DESTDIR)$(libdir)/libe2p.a
-	-$(RANLIB) $(DESTDIR)$(libdir)/libe2p.a
-	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libe2p.a
-	set -e; for i in $(HFILES); do \
+	@echo "	INSTALL_DATA $(libdir)/libe2p.a"
+	@$(INSTALL_DATA) libe2p.a $(DESTDIR)$(libdir)/libe2p.a
+	@-$(RANLIB) $(DESTDIR)$(libdir)/libe2p.a
+	@$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libe2p.a
+	@set -e; for i in $(HFILES); do \
+	  echo "	INSTALL_DATA $(includedir)/e2p/$$i"; \
 	  $(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/e2p/$$i; \
 	done
 

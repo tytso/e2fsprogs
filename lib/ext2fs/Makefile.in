@@ -220,18 +220,21 @@ check:: tst_badblocks tst_iscan @SWAPFS_CMT@ tst_byteswap
 @SWAPFS_CMT@	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_byteswap
 
 installdirs::
-	$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/ext2fs"
+	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/ext2fs
 
 install:: all $(HFILES) $(HFILES_IN) installdirs 
-	$(INSTALL_DATA) libext2fs.a $(DESTDIR)$(libdir)/libext2fs.a
-	$(CHMOD) 644 $(DESTDIR)$(libdir)/libext2fs.a
-	-$(RANLIB) $(DESTDIR)$(libdir)/libext2fs.a
-	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libext2fs.a
-	for i in $(HFILES); do \
+	@echo "	INSTALL_DATA $(libdir)/libext2fs.a"
+	@$(INSTALL_DATA) libext2fs.a $(DESTDIR)$(libdir)/libext2fs.a
+	@-$(RANLIB) $(DESTDIR)$(libdir)/libext2fs.a
+	@$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libext2fs.a
+	@for i in $(HFILES); do \
+		echo "	INSTALL_DATA $(includedir)/ext2fs/$$i"; \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/ext2fs/$$i; \
 	done
-	for i in $(HFILES_IN); do \
+	@for i in $(HFILES_IN); do \
+		echo "	INSTALL_DATA $(includedir)/ext2fs/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(includedir)/ext2fs/$$i; \
 	done
 

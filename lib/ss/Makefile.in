@@ -121,25 +121,31 @@ mk_cmds: $(DEP_SUBSTITUTE) $(srcdir)/mk_cmds.sh.in
 	@$(CHMOD) +x mk_cmds
 
 installdirs::
-	$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/ss $(datadir)/ss $(bindir)"
+	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/ss $(DESTDIR)$(datadir)/ss \
 		$(DESTDIR)$(bindir)
 
 install:: libss.a $(INSTALL_HFILES) installdirs ss_err.h mk_cmds
-	$(INSTALL_DATA) libss.a $(DESTDIR)$(libdir)/libss.a
-	$(CHMOD) 644 $(DESTDIR)$(libdir)/libss.a
-	-$(RANLIB) $(DESTDIR)$(libdir)/libss.a
-	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libss.a
-	$(RM) -f $(DESTDIR)$(includedir)/ss/*
-	for i in $(INSTALL_HFILES); do \
+	@echo "	INSTALL_DATA $(DESTDIR)$(libdir)/libss.a"
+	@$(INSTALL_DATA) libss.a $(DESTDIR)$(libdir)/libss.a
+	@-$(RANLIB) $(DESTDIR)$(libdir)/libss.a
+	@$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libss.a
+	@$(RM) -f $(DESTDIR)$(includedir)/ss/*
+	@for i in $(INSTALL_HFILES); do \
+		echo "	INSTALL_DATA $(DESTDIR)$(includedir)/ss/$$i"; \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/ss/$$i; \
 	done
-	$(INSTALL_DATA) ss_err.h $(DESTDIR)$(includedir)/ss/ss_err.h
-	for i in $(SHARE_FILES); do \
+	@echo "	INSTALL_DATA $(includedir)/ss/ss_err.h"
+	@$(INSTALL_DATA) ss_err.h $(DESTDIR)$(includedir)/ss/ss_err.h
+	@for i in $(SHARE_FILES); do \
+		echo "	INSTALL_DATA $(DESTDIR)$(datadir)/ss/$$i"; \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(datadir)/ss/$$i; \
 	done
-	$(INSTALL) mk_cmds $(DESTDIR)$(bindir)/mk_cmds
-	$(INSTALL_DATA) $(srcdir)/mk_cmds.1 $(DESTDIR)$(man1dir)/mk_cmds.1
+	@echo "	INSTALL $(bindir)/mk_cmds"
+	@$(INSTALL) mk_cmds $(DESTDIR)$(bindir)/mk_cmds
+	@echo "	INSTALL_DATA $(man1dir)/mk_cmds.1"
+	@$(INSTALL_DATA) $(srcdir)/mk_cmds.1 $(DESTDIR)$(man1dir)/mk_cmds.1
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libss.a $(DESTDIR)$(bindir)/mk_cmds

@@ -41,12 +41,16 @@ installdirs:: installdirs-elf-lib
 
 install-shlibs install:: $(ELF_LIB) installdirs-elf-lib
 	$(INSTALL_PROGRAM) $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
-	$(STRIP) -x \
-		$(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
 	$(LN_S) -f $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_SONAME)
 	$(LN_S) -f $(ELF_INSTALL_DIR)/$(ELF_SONAME) \
 		$(DESTDIR)$(libdir)/$(ELF_IMAGE).so
 	-$(LDCONFIG)
+
+install-strip: install
+	$(STRIP) -x $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
+
+install-shlibs-strip: install-shlibs
+	$(STRIP) -x $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
 
 uninstall-shlibs uninstall::
 	$(RM) -f $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB) \

@@ -45,9 +45,11 @@ distclean-doc:
 	-test -d doc && cd doc && $(MAKE) distclean
 
 install: subs all-libs-recursive install-progs-recursive \
-	install-shlibs-libs-recursive install-doc-libs
-#	export MANPATH=$(DESTDIR)$(mandir); $(srcdir)/install-utils/compile_manpages
+  install-shlibs-libs-recursive install-doc-libs
 	if test ! -d e2fsck && test ! -d debugfs && test ! -d misc && test ! -d ext2ed ; then $(MAKE) install-libs ; fi
+
+install-strip: subs all-libs-recursive install-strip-progs-recursive \
+  install-shlibs-strip-libs-recursive install-doc-libs
 
 uninstall: uninstall-progs-recursive uninstall-shlibs-libs-recursive uninstall-doc-libs
 
@@ -56,7 +58,7 @@ install-libs: install-libs-recursive
 uninstall-libs: uninstall-libs-recursive
 
 TAGS clean-recursive distclean-recursive depend-recursive check-recursive \
-	    mostlyclean-recursive realclean-recursive install-recursive:
+  mostlyclean-recursive realclean-recursive:
 	@for subdir in $(SUBDIRS); do \
 	  if test -d $$subdir ; then \
 	    target=`echo $@|$(SED) 's/-recursive//'`; \
@@ -65,7 +67,8 @@ TAGS clean-recursive distclean-recursive depend-recursive check-recursive \
 	  fi ; \
 	done
 
-all-progs-recursive install-progs-recursive uninstall-progs-recursive:
+all-progs-recursive install-progs-recursive install-strip-progs-recursive \
+  uninstall-progs-recursive:
 	@for subdir in $(PROG_SUBDIRS); do \
 	  if test -d $$subdir ; then \
 	    target=`echo $@|$(SED) 's/-progs-recursive//'`; \
@@ -74,7 +77,9 @@ all-progs-recursive install-progs-recursive uninstall-progs-recursive:
 	  fi ; \
 	done
 
-all-libs-recursive install-libs-recursive uninstall-libs-recursive install-shlibs-libs-recursive uninstall-shlibs-libs-recursive:
+all-libs-recursive install-libs-recursive install-strip-libs-recursive \
+  uninstall-libs-recursive install-shlibs-libs-recursive \
+  install-shlibs-strip-libs-recursive uninstall-shlibs-libs-recursive:
 	@for subdir in $(LIB_SUBDIRS); do \
 	  if test -d $$subdir ; then \
 	    target=`echo $@|$(SED) 's/-libs-recursive//'`; \

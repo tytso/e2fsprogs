@@ -1,3 +1,8 @@
+2004-12-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* Add install-shlib-strip target.  Update Makefile.in to version
+		from gettext 0.14.1
+
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Update to gettext version 0.14.1

@@ -120,21 +120,25 @@ check:: all tst_cache tst_devname tst_devno tst_getsize tst_probe \
  tst_read tst_resolve tst_save
 
 installdirs::
-	$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/blkid"
+	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/blkid
 
 install:: all installdirs 
-	$(INSTALL_DATA) libblkid.a $(DESTDIR)$(libdir)/libblkid.a
-	$(CHMOD) 644 $(DESTDIR)$(libdir)/libblkid.a
-	-$(RANLIB) $(DESTDIR)$(libdir)/libblkid.a
-	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libblkid.a
-	set -e; for i in $(HFILES); do \
+	@echo "	INSTALL_DATA $(libdir)/libblkid.a"
+	@$(INSTALL_DATA) libblkid.a $(DESTDIR)$(libdir)/libblkid.a
+	@-$(RANLIB) $(DESTDIR)$(libdir)/libblkid.a
+	@$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libblkid.a
+	@set -e; for i in $(HFILES); do \
+	  echo "	INSTALL_DATA $(includedir)/blkid/$$i"; \
 	  $(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/blkid/$$i; \
 	done
-	set -e; for i in $(HFILES_IN); do \
+	@set -e; for i in $(HFILES_IN); do \
+		echo "	INSTALL_DATA $(includedir)/blkid/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(includedir)/blkid/$$i; \
 	done
-	for i in $(SMANPAGES); do \
+	@for i in $(SMANPAGES); do \
+		echo "	INSTALL_DATA $(man3dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man3dir)/$$i; \
 	done
 
