@@ -183,8 +183,7 @@ listen.o: $(srcdir)/listen.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
 parse.o: $(srcdir)/parse.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
  $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 error.o: $(srcdir)/error.c $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/ss_internal.h $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h \
- $(top_srcdir)/lib/et/com_err.h
+ $(srcdir)/ss_internal.h $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
 prompt.o: $(srcdir)/prompt.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
  $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 request_tbl.o: $(srcdir)/request_tbl.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
