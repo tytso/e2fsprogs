@@ -3,3 +3,4 @@ sbin
 usr/bin
 usr/sbin
 usr/share/man
+usr/share/locale
