@@ -54,7 +54,7 @@ engine_functions_t *EngFncs;
 #define MESSAGE(msg, args...)		EngFncs->user_message(pMyPluginRecord, NULL, NULL, msg, ##args)
 #define LOGENTRY()			EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Enter.\n",         __FUNCTION__ )
 #define LOGEXIT()			EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Exit.\n",          __FUNCTION__ )
-#define LOGEXITRC()			EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Exit.  RC= %d.\n", __FUNCTION__ , rc)
+#define LOGEXITRC()			EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Exit. rc = %d.\n", __FUNCTION__ , rc)
 #define LOG_CRITICAL(msg, args...)	EngFncs->write_log_entry(CRITICAL,   pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)
 #define LOG_SERIOUS(msg, args...)	EngFncs->write_log_entry(SERIOUS,    pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)
 #define LOG_ERROR(msg, args...)		EngFncs->write_log_entry(ERROR,      pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)

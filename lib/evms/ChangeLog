@@ -1,3 +1,42 @@
+2003-04-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* fs_ext2.c (fs_setup): During FSIM setup, when the FSIM cannot be
+		loaded due to incompatible tool versions, just print a
+		message to the log instead of displaying a message to the
+		user.  (EVMS 2.0, rev 1.3, change to commented out code only)
+		(ext2_plugrec): fix long plug-in name to indicate support
+		for ext3 (EVMS 2.0, rev 1.4)
+		(fs_expand, fs_shrink): Don't save the return value from
+		waitpid().  Especially don't save it back to the same
+		variable that will be used to call waitpid() again.
+		(EVMS 2.0, rev 1.12)
+		(fs_mkfs, fs_init_task, fs_set_option): Make sure most
+		functions have entry/exit log macros.  (EVMS 2.0 rev 1.14)
+		(fs_expand, fs_shrink): Check for errors from
+		fsim_get_ext2_superblock().  (EVMS 2.0 rev 1.15)
+	
+	* fsimext2.c (set_mkfs_options):  Fix compile warnings.
+		gcc 3.2.1 doesn't like empty "default:" cases at the end
+		of "switch" statements (EVMS 2.0 rev 1.2)
+		(fsim_get_volume_limits): Remove unused varable (EVMS 2.0
+		rev 1.4)
+		(ext2fs_swap_super): Remove unnecessary "return" (EVMS 2.0
+		rev 1.7)
+		Make sure most functions have entry/exit log macros (EVMS
+		2.0 rev 1.8, 1.9)
+		(fsim_fsck, fsim_mkfs): Don't save the return value from
+		waitpid().  Especially don't save it back to the same
+		variable that will be used to call waitpid() again.  (EVMS
+		2.0 rev 1.5/partial).
+		(fsim_fsck): In fsim_fsck(), set the read pipe to
+		non-blocking before going into the loop waiting for data.
+		If there are no more data left, the function hangs waiting
+		for the read() to complete.  (EVMS 2.0 rev 1.5/partial)
+		(fsim_fsck): Fix file descriptor leak.
+
+	* fsimext2.h (LOGEXITRC): Synchronize text for exit macro with
+		EVMS 2.0 (rev 1.2).
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32

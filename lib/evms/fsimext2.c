@@ -60,15 +60,14 @@ int fsim_get_volume_limits( struct ext2_super_block * sb,
                          sector_count_t   * vol_max_size)
 {
 	int rc = 0;
-	sector_count_t fs_size;
 	int		blk_to_sect;
 
 	blk_to_sect = (1 + sb->s_log_block_size);
-	fs_size = sb->s_blocks_count << blk_to_sect;
 	*fs_min_size = (sb->s_blocks_count - sb->s_free_blocks_count) << blk_to_sect;
 	*fs_max_size = (sector_count_t) 1 << (32+blk_to_sect);
 	*vol_max_size = 0xffffffffff;
 
+	LOGEXITRC();
 	return rc;
 }
 
@@ -81,6 +80,8 @@ int fsim_unmkfs( logical_volume_t * volume )
     int  fd;
     int  rc = 0;
 
+    LOGENTRY();
+ 
     fd = open(EVMS_GET_DEVNAME(volume), O_RDWR|O_EXCL, 0);
     if (fd < 0) return -1;
 
@@ -96,6 +97,7 @@ int fsim_unmkfs( logical_volume_t * volume )
 
     fd = close(fd);
 
+    LOGEXITRC();
     return rc;
 }
 
@@ -111,12 +113,14 @@ int fsim_mkfs(logical_volume_t * volume, option_array_t * options )
 	pid_t	pidm;
 	int     status;
 
+	LOGENTRY();
+
 	/* Fork and execute the correct program. */
     switch (pidm = fork()) {
         
         /* error */
         case -1:
-        	return EIO;
+	    rc = EIO;
 
         /* child */
         case 0:  
@@ -135,7 +139,16 @@ int fsim_mkfs(logical_volume_t * volume, option_array_t * options )
         /* parent */
         default:
             /* wait for child to complete */
-            pidm = waitpid( pidm, &status, 0 );
+            while (1) {
+		    rc = waitpid( pidm, &status, 0 );
+		    if (rc == -1) {
+			    if (errno == EINTR)
+				    continue;
+			    rc = errno;
+			    goto reterr;
+		    } else
+			    break;
+	    } 
             if ( WIFEXITED(status) ) {
                 /* get mke2fs exit code */
                 rc = WEXITSTATUS(status);
@@ -149,6 +162,8 @@ int fsim_mkfs(logical_volume_t * volume, option_array_t * options )
 	    }
     }
 
+reterr:
+    LOGEXITRC();
     return rc;
 }
 
@@ -172,6 +187,8 @@ void set_mkfs_options( option_array_t * options,
     int i, bufsize, opt_count = 2;
     char *buf;
 
+    LOGENTRY();
+
     argv[0] = "mke2fs";
 
     /* 'quiet' option */
@@ -194,6 +211,7 @@ void set_mkfs_options( option_array_t * options,
 		    break;
 	    default:
 		    /* not one we expect, just skip it */
+		    break;
 	    }
     }
 
@@ -287,6 +305,7 @@ void set_mkfs_options( option_array_t * options,
 			     "mke2fs command: %s\n", buf);
     free(buf);
     
+    LOGEXIT();
     return;
 }
 
@@ -305,6 +324,8 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options,
 	int     fds2[2];
 	int	banner = 0;
 
+	LOGENTRY();
+
 	/* open pipe, alloc buffer for collecting fsck.jfs output */
 	rc = pipe(fds2);
 	if (rc) {
@@ -319,7 +340,7 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options,
         
         /* error */
         case -1:
-        	return EIO;
+        	rc = EIO;
 
         /* child */
         case 0:  
@@ -339,7 +360,8 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options,
 		close(fds2[1]);
 
 		/* wait for child to complete */
-		while (!(pidf = waitpid( pidf, &status, WNOHANG ))) {
+		fcntl(fds2[0], F_SETFL, fcntl(fds2[0], F_GETFL,0) | O_NONBLOCK);
+		while (!(waitpid( pidf, &status, WNOHANG ))) {
 			/* read e2fsck output */
 			bytes_read = read(fds2[0],buffer,MAX_USER_MESSAGE_LEN);
 			if (bytes_read > 0) {
@@ -378,7 +400,10 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options,
 		EngFncs->engine_free(buffer);
 	}
 
-    return rc;
+	close(fds2[0]);
+
+	LOGEXITRC();
+	return rc;
 }
 
 
@@ -398,6 +423,8 @@ void set_fsck_options( option_array_t * options, char ** argv, logical_volume_t 
     int i, bufsize, num_opts, opt_count = 1;
     int do_preen = 1;
     char *buf;
+
+    LOGENTRY();
 
     argv[0] = "e2fsck";
 
@@ -510,6 +537,7 @@ void set_fsck_options( option_array_t * options, char ** argv, logical_volume_t 
 			     "fsck command: %s\n", buf);
     free(buf);
     
+    LOGEXIT();
     return;
 }
 /*
@@ -525,6 +553,7 @@ void set_fsck_options( option_array_t * options, char ** argv, logical_volume_t 
  */                        
 static void ext2fs_swap_super(struct ext2_super_block * sb)
 {
+	LOGENTRY();
 	sb->s_inodes_count = DISK_TO_CPU32(sb->s_inodes_count);
 	sb->s_blocks_count = DISK_TO_CPU32(sb->s_blocks_count);
 	sb->s_r_blocks_count = DISK_TO_CPU32(sb->s_r_blocks_count);
@@ -560,8 +589,7 @@ static void ext2fs_swap_super(struct ext2_super_block * sb)
 	sb->s_journal_inum = DISK_TO_CPU32(sb->s_journal_inum);
 	sb->s_journal_dev = DISK_TO_CPU32(sb->s_journal_dev);
 	sb->s_last_orphan = DISK_TO_CPU32(sb->s_last_orphan);
-
-	return;
+	LOGEXIT();
 }
 
 
@@ -584,8 +612,14 @@ int fsim_get_ext2_superblock( logical_volume_t *volume, struct ext2_super_block 
     int  fd;
     int  rc = 0;
 
+    LOGENTRY();
+
     fd = open(EVMS_GET_DEVNAME(volume), O_RDONLY, 0);
-    if (fd < 0) return EIO;
+    if (fd < 0) {
+	    rc = EIO;
+	    LOGEXITRC();
+	    return rc;
+    }
 
     /* get primary superblock */
     rc = fsim_rw_diskblocks( fd, EXT2_SUPER_LOC, SIZE_OF_SUPER, sb_ptr, GET );
@@ -600,6 +634,7 @@ int fsim_get_ext2_superblock( logical_volume_t *volume, struct ext2_super_block 
 
     close(fd);
 
+    LOGEXITRC();
     return rc;
 }
 
@@ -633,7 +668,10 @@ int fsim_rw_diskblocks( int      dev_ptr,
 {
     off_t   Actual_Location;
     size_t  Bytes_Transferred;
+    int	    rc = 0;
 
+    LOGENTRY();
+    
     Actual_Location = lseek(dev_ptr,disk_offset, SEEK_SET);
     if ( ( Actual_Location < 0 ) || ( Actual_Location != disk_offset ) )
         return ERROR;
@@ -646,14 +684,19 @@ int fsim_rw_diskblocks( int      dev_ptr,
             Bytes_Transferred = write(dev_ptr,data_buffer,disk_count);
             break;
         default:
-            return EINVAL;
+	    rc = EINVAL;
+	    LOGEXITRC();
+            return rc;
             break;
     }
 
     if ( Bytes_Transferred != disk_count ) {
-        return EIO;
+        rc = EIO;
+	LOGEXITRC();
+        return rc;
     }
 
+    LOGEXIT();
     return FSIM_SUCCESS;
 }
 

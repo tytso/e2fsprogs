@@ -46,22 +46,22 @@ static int fs_setup( engine_functions_t *engine_function_table)
 static int fs_setup( engine_mode_t mode, engine_functions_t *engine_function_table)
 #endif
 {
-    int rc = 0;
+	int rc = 0;
 	EngFncs = engine_function_table;
 
 	LOGENTRY();
 
-    /*
-     * We don't really care about the e2fsprogs version, but we leave
-     * this here in case we do at a later date....
-     */
-    rc = fsim_test_version();
+	/*
+	 * We don't really care about the e2fsprogs version, but we leave
+	 * this here in case we do at a later date....
+	 */
+	rc = fsim_test_version();
 #if 0
-    if ( rc ) {
-        MESSAGE( "e2fsprogs must be version 1.XXX or later to function properly with this FSIM." );
-        MESSAGE( "Please get the current version of e2fsprogs from http://e2fsprogs.sourceforge.net" );
-        rc = ENOSYS;
-    }
+	if ( rc ) {
+		LOG_WARNING( "e2fsprogs must be version 1.XXX or later to function properly with this FSIM.\n" );
+		LOG_WARNING( "Please get the current version of e2fsprogs from http://e2fsprogs.sourceforge.net\n" );
+		rc = ENOSYS;
+	}
 #endif
 	LOGEXIT();
 	return rc;
@@ -280,6 +280,9 @@ static int fs_expand( logical_volume_t * volume,
 	/* get and validate current ext2/3 superblock */
 	sb = (struct ext2_super_block *) volume->private_data;	
 	rc = fsim_get_ext2_superblock( volume, sb );
+	if (rc) {
+		goto errout;
+	}
 	if ((sb->s_lastcheck < sb->s_mtime) ||
 	    (sb->s_state & EXT2_ERROR_FS) ||
 	    ((sb->s_state & EXT2_VALID_FS) == 0)) {
@@ -352,7 +355,7 @@ static int fs_expand( logical_volume_t * volume,
 
 		/* wait for child to complete */
 		fcntl(fds2[0], F_SETFL, fcntl(fds2[0], F_GETFL,0) | O_NONBLOCK);
-		while (!(pidf = waitpid( pidf, &status, WNOHANG ))) {
+		while (!(waitpid( pidf, &status, WNOHANG ))) {
 			bytes_read = read(fds2[0],buffer,MAX_USER_MESSAGE_LEN);
 			if (bytes_read > 0) {
 				if (!banner)
@@ -445,6 +448,10 @@ static int fs_shrink( logical_volume_t * volume,
 	/* get and validate current ext2/3 superblock */
 	sb = (struct ext2_super_block *) volume->private_data;	
 	rc = fsim_get_ext2_superblock( volume, sb );
+	if (rc) {
+		goto errout;
+	}
+
 	requested_size = requested_size >> (1 + sb->s_log_block_size);
 	if ((sb->s_lastcheck < sb->s_mtime) ||
 	    (sb->s_state & EXT2_ERROR_FS) ||
@@ -515,7 +522,7 @@ static int fs_shrink( logical_volume_t * volume,
 
 		fcntl(fds2[0], F_SETFL, fcntl(fds2[0], F_GETFL,0) | O_NONBLOCK);
 		/* wait for child to complete */
-		while (!(pidf = waitpid( pidf, &status, WNOHANG ))) {
+		while (!(waitpid( pidf, &status, WNOHANG ))) {
 			bytes_read = read(fds2[0],buffer,MAX_USER_MESSAGE_LEN);
 			if (bytes_read > 0) {
 				if (!banner)
@@ -567,18 +574,20 @@ static int fs_mkfs(logical_volume_t * volume, option_array_t * options )
 
 	LOGENTRY();
 
-    /* don't format if mounted */
+	/* don't format if mounted */
 	if (EVMS_IS_MOUNTED(volume)) {
-		return EBUSY;
+		rc = EBUSY;
+		goto errout;
 	}
 
-    rc = fsim_mkfs(volume, options);
+	rc = fsim_mkfs(volume, options);
 
-    /* probe to set up private data */
-    if ( !rc ) {
-        rc = fs_probe(volume);
-    }
+	/* probe to set up private data */
+	if (!rc) {
+		rc = fs_probe(volume);
+	}
 
+errout:
 	LOGEXITRC();
 	return rc;
 }
@@ -670,7 +679,8 @@ static int fs_init_task( task_context_t * context )
 
 	/* Parameter check */
 	if (!context) {
-		return EFAULT;
+		rc = EFAULT;
+		goto errout;
 	}
 
 	rc = EngFncs->get_volume_list(NULL, &global_volumes);
@@ -877,10 +887,9 @@ static int fs_init_task( task_context_t * context )
 		break;
 	}
 
+errout:
 	LOGEXITRC();
-
 	return rc;
-
 }
 
 
@@ -901,7 +910,8 @@ static int fs_set_option( task_context_t * context,
 
 	/* Parameter check */
 	if (!context || !value || !effect) {
-		return EFAULT;
+		rc = EFAULT;
+		goto errout;
 	}
 
 	*effect = 0;
@@ -1004,6 +1014,7 @@ static int fs_set_option( task_context_t * context,
         break;
     }
 
+errout:
 	LOGEXITRC();
 	return rc;
 }
@@ -1453,7 +1464,7 @@ plugin_record_t  ext2_plugrec = {
 					   ENGINE_FSIM_API_PATCH_LEVEL} },
 #endif
 	short_name:                       "Ext2/3",
-	long_name:                        "Ext2 File System Interface Module",
+	long_name:                        "Ext2/3 File System Interface Module",
 	oem_name:                         "IBM",
 	functions:                        {fsim: &fsim_ops},
 	container_functions:              NULL
