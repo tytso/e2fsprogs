@@ -1,3 +1,15 @@
+1998-02-20  Theodore Y. Ts'o  <tytso@edt.mit.edu>
+
+	* main.c (check_mount, main): Resize2fs now checks the size of the
+		partition, and uses this as a default new_size of the
+		partition if one is not specified.  Resize2fs will not let
+		you resize a mounted partition.
+
+	* resize2fs.c: Change how the progress function for the INODE_SCAN
+		pass is performed, so that the maximum size is never zero.
+
+	* resize2fs.8.in: Updated man page.
+	
 Mon Feb 16 17:13:01 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* resize2fs.c, resize2fs.h, main.c, ext2_block_move.c,

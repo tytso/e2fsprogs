@@ -882,16 +882,16 @@ static errcode_t progress_callback(ext2_filsys fs, ext2_inode_scan scan,
 	ext2_resize_t rfs = (ext2_resize_t) priv_data;
 
 	/*
-	 * The if (group+1) == 0 test is to protect against old ext2
-	 * libraries.  It shouldn't be needed against new libraries.
+	 * This check is to protect against old ext2 libraries.  It
+	 * shouldn't be needed against new libraries.
 	 */
-	if (group == 0 || (group+1) == 0)
+	if ((group+1) == 0)
 		return 0;
 
 	if (rfs->progress) {
 		io_channel_flush(fs->io);
 		(rfs->progress)(rfs, E2_RSZ_INODE_SCAN_PASS,
-				group, fs->group_desc_count-1);
+				group+1, fs->group_desc_count);
 	}
 	
 	return 0;
@@ -927,7 +927,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	
 	if (rfs->progress)
 		(rfs->progress)(rfs, E2_RSZ_INODE_SCAN_PASS,
-				0, rfs->old_fs->group_desc_count-1);
+				0, rfs->old_fs->group_desc_count);
 	
 	ext2fs_set_inode_callback(scan, progress_callback, (void *) rfs);
 	pb.rfs = rfs;
