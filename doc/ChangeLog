@@ -1,3 +1,8 @@
+2001-05-20  Theodore Tso  <tytso@valinux.com>
+
+	* libext2fs.texinfo: Added @dircategory line so that Debian
+		programs know which section to list the .info file.
+
 2001-01-11    <tytso@snap.thunk.org>
 
 	* libext2fs.texinfo: Change ino_t to ext2_ino_t
