@@ -1,10 +1,10 @@
 Summary: Tools for the second extended (ext2) filesystem 
 Name: e2fsprogs
-Version: 1.10
+Version: 1.11
 Release: 0
 Copyright: GPL
 Group: Utilities/System
-Source: tsx-11.mit.edu:/pub/linux/packages/ext2fs/e2fsprogs-1.10.tar.gz
+Source: tsx-11.mit.edu:/pub/linux/packages/ext2fs/e2fsprogs-1.11.tar.gz
 BuildRoot: /tmp/e2fsprogs-root
 
 %description
@@ -44,7 +44,7 @@ rm -rf $RPM_BUILD_ROOT
 /sbin/ldconfig
 
 %files
-%doc README RELEASE-NOTES
+%attr(-, root, root) %doc README RELEASE-NOTES
 %attr(-, root, root) /sbin/e2fsck
 %attr(-, root, root) /sbin/fsck.ext2
 %attr(-, root, root) /sbin/debugfs
@@ -91,4 +91,3 @@ rm -rf $RPM_BUILD_ROOT
 %attr(-, root, root) /usr/lib/libss.so
 %attr(-, root, root) /usr/lib/libcom_err.so
 %attr(-, root, root) /usr/lib/libuuid.so
-

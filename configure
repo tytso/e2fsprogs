@@ -2366,6 +2366,10 @@ DO_SUBSTITUTE_SCRIPT=$srcdir/lib/do_substitute
 test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux
+rmakefile=
+if test -d ${srcdir}/resize ; then
+   rmakefile=resize/Makefile
+fi
 trap '' 1 2 15
 cat > confcache <<\EOF
 # This file is a shell script that caches the results of configure
@@ -2482,7 +2486,7 @@ ac_given_INSTALL="$INSTALL"
 trap 'rm -fr `echo "MCONFIG lib/substitute_sh Makefile lib/et/Makefile 
 	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
 	misc/Makefile e2fsck/Makefile debugfs/Makefile tests/Makefile 
-	tests/progs/Makefile doc/Makefile" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+	tests/progs/Makefile $rmakefile doc/Makefile" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -2628,7 +2632,7 @@ cat >> $CONFIG_STATUS <<EOF
 CONFIG_FILES=\${CONFIG_FILES-"MCONFIG lib/substitute_sh Makefile lib/et/Makefile 
 	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
 	misc/Makefile e2fsck/Makefile debugfs/Makefile tests/Makefile 
-	tests/progs/Makefile doc/Makefile"}
+	tests/progs/Makefile $rmakefile doc/Makefile"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
