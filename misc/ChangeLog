@@ -1,5 +1,10 @@
 2005-01-06  Theodore Ts'o  <tytso@mit.edu>
 
+	* badblocks.c (alarm_intr): Increase the number of spaces reserved
+		for printing block numbers, so we can correctly display
+		block numbers numbers greater than 999,999,999.
+		(Addresses SourceForge bug #1016163)
+
 	* tune2fs.c (main): When specifying the number of reservered
 		blocks that can only be allocated by root, enforce a 50%
 		limit so that the user can't accidentally make a

@@ -141,8 +141,8 @@ static int bb_output (unsigned long bad)
 
 static void print_status(void)
 {
-	fprintf(stderr, "%9ld/%9ld", currently_testing, num_blocks);
-	fprintf(stderr, "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	fprintf(stderr, "%15ld/%15ld", currently_testing, num_blocks);
+	fputs("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", stderr);
 	fflush (stderr);
 }
 
@@ -152,9 +152,7 @@ static void alarm_intr(int alnum EXT2FS_ATTR((unused)))
 	alarm(1);
 	if (!num_blocks)
 		return;
-	fprintf(stderr, "%9ld/%9ld", currently_testing, num_blocks);
-	fprintf(stderr, "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	fflush (stderr);
+	print_status();
 }
 
 static void *terminate_addr = NULL;
