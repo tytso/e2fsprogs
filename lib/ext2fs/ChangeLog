@@ -1,5 +1,7 @@
 2004-09-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* getsize.c: Clean up header #include's.
+
 	* llseek.c (ext2fs_llseek): On non-linux systems, use lseek64() if
 		it is present.  (Addresses Debian bug #269044)
 

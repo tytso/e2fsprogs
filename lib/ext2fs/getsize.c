@@ -23,18 +23,21 @@
 #include <errno.h>
 #endif
 #include <fcntl.h>
-#ifdef HAVE_LINUX_FD_H
+#ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
+#endif
+#ifdef HAVE_LINUX_FD_H
 #include <linux/fd.h>
 #endif
 #ifdef HAVE_SYS_DISKLABEL_H
-#include <sys/ioctl.h>
 #include <sys/disklabel.h>
-#endif /* HAVE_SYS_DISKLABEL_H */
+#endif
 #ifdef HAVE_SYS_DISK_H
+#ifdef HAVE_SYS_QUEUE_H
 #include <sys/queue.h> /* for LIST_HEAD */
+#endif
 #include <sys/disk.h>
-#endif /* HAVE_SYS_DISK_H */
+#endif
 #ifdef __linux__
 #include <sys/utsname.h>
 #endif
@@ -48,9 +51,6 @@
 #endif
 
 #ifdef APPLE_DARWIN
-#include <sys/ioctl.h>
-#include <sys/disk.h>
-
 #define BLKGETSIZE DKIOCGETBLOCKCOUNT32
 #endif /* APPLE_DARWIN */
 

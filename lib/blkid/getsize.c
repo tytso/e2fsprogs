@@ -20,20 +20,28 @@
 #include <errno.h>
 #endif
 #include <fcntl.h>
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
 #ifdef HAVE_LINUX_FD_H
-#include <sys/ioctl.h>
 #include <linux/fd.h>
-#endif /* HAVE_LINUX_FD_H */
+#endif
 #ifdef HAVE_SYS_DISKLABEL_H
-#include <sys/ioctl.h>
 #include <sys/disklabel.h>
 #include <sys/stat.h>
-#endif /* HAVE_SYS_DISKLABEL_H */
+#endif
+#ifdef HAVE_SYS_DISK_H
+#ifdef HAVE_SYS_QUEUE_H
+#include <sys/queue.h> /* for LIST_HEAD */
+#endif
+#include <sys/disk.h>
+#endif
 #ifdef __linux__
 #include <sys/utsname.h>
 #endif
 
 #include "blkidP.h"
+
 
 #if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */
@@ -44,9 +52,6 @@
 #endif
 
 #ifdef APPLE_DARWIN
-#include <sys/ioctl.h>
-#include <sys/disk.h>
-
 #define BLKGETSIZE DKIOCGETBLOCKCOUNT32
 #endif /* APPLE_DARWIN */
 

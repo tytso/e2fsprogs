@@ -1,3 +1,10 @@
+2004-09-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* config.guess, config.sub: Update to newer version from the FSF
+		(2004-06-11)
+
+	* configure.in, configure: Add test for the sys/queue.h header file.
+
 2004-05-04  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsprogs.spec.in: Fix up e2fsprogs.spec file so it should work

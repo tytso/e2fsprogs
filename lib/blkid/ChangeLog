@@ -1,5 +1,10 @@
 2004-09-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* getsize.c: Clean up header #include's.  Include sys/disk.h if
+		present since this is the new place where the
+		DIOCGMEDIASIZE ioctl is defined on FreeBSD systems.
+		(Addresses Debian bug #264630)
+
 	* llseek.c (blkid_llseek): On non-linux systems, use lseek64() if
 		it is present.  (Addresses Debian bug #269044)
 

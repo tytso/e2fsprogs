@@ -5272,7 +5272,7 @@ test -n "$BUILD_CC" && break
 done
 
 fi
-for ac_hdr in stdlib.h unistd.h stdarg.h stdint.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h signal.h termios.h linux/fd.h linux/major.h sys/disk.h sys/disklabel.h sys/ioctl.h sys/mkdev.h sys/mount.h sys/sockio.h sys/socket.h sys/sysmacros.h sys/time.h sys/stat.h sys/types.h sys/wait.h sys/resource.h net/if.h net/if_dl.h netinet/in.h
+for ac_hdr in stdlib.h unistd.h stdarg.h stdint.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h signal.h termios.h linux/fd.h linux/major.h sys/disk.h sys/disklabel.h sys/ioctl.h sys/mkdev.h sys/mount.h sys/queue.h sys/sockio.h sys/socket.h sys/sysmacros.h sys/time.h sys/stat.h sys/types.h sys/wait.h sys/resource.h net/if.h net/if_dl.h netinet/in.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
