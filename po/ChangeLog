@@ -1,3 +1,8 @@
+2004-05-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* de.po: Minor updates to translation file, courtesy of Florian
+		Ernst (Addresses Debian bug #244105).
+
 2004-04-11  Theodore Ts'o  <tytso@mit.edu>
 
 	* fr.po: Added new French translation
