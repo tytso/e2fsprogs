@@ -1,3 +1,8 @@
+2001-09-13  Theodore Tso  <tytso@valinux.com>
+
+	* mke2fs.c (zap_sector): Allocate sufficient space for 
+		zero-filled buffer.
+
 2001-09-02  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.24a

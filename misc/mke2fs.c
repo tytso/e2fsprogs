@@ -550,14 +550,16 @@ static void reserve_inodes(ext2_filsys fs)
 
 static void zap_sector(ext2_filsys fs, int sect, int nsect)
 {
-	char buf[512];
+	char *buf;
 	int retval;
 
-	memset(buf, 0, 512);
+	buf = malloc(512*nsect);
+	memset(buf, 0, 512*nsect);
 	
 	io_channel_set_blksize(fs->io, 512);
 	retval = io_channel_write_blk(fs->io, sect, -512*nsect, buf);
 	io_channel_set_blksize(fs->io, fs->blocksize);
+	free(buf);
 	if (retval)
 		printf(_("Warning: could not erase sector %d: %s\n"), sect,
 		       error_message(retval));
