@@ -54,8 +54,20 @@ This option is normally used when the primary superblock has been
 corrupted.  The location of the backup superblock is dependent on the
 filesystem's blocksize.  For filesystems with 1k blocksizes, a backup
 superblock can be found at block 8193; for filesystems with 2k
-blocksizes, at block 16384; and for 4k blocksizes, at block 32768.  If
-an alternative superblock is specified and  
+blocksizes, at block 16384; and for 4k blocksizes, at block 32768.  
+.IP
+Additional backup superblocks can be determined by using the 
+.B mke2fs 
+program using the 
+.B \-n
+option to print out where the superblocks were created.   The 
+.B \-b 
+option to 
+.BR mke2fs ,
+which specifies blocksize of the filesystem must be specified in order
+for the superblock locations that are printed out to be accurate.
+.IP
+If an alternative superblock is specified and  
 the filesystem is not opened read-only, e2fsck will make sure that the
 primary superblock is updated appropriately upon completion of the 
 filesystem check.

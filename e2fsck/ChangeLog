@@ -1,3 +1,8 @@
+2001-05-01  Theodore Tso  <tytso@valinux.com>
+
+	* e2fsck.8.in: Add explanation that you can use mke2fs -n -b
+		blocksize to printout alternate superblock locations.
+
 2001-04-26  Theodore Tso  <tytso@valinux.com>
 
 	* unix.c (check_if_skip): If the max_mount_count is zero, treat it
