@@ -21,3 +21,4 @@ extern void proceed_question(void);
 extern void check_plausibility(const char *device);
 extern void parse_journal_opts(const char *opts);
 extern void check_mount(const char *device, int force, const char *type);
+extern int journal_default_size(const blk_t blocks_count);

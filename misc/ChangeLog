@@ -1,5 +1,12 @@
 2001-01-17  Theodore Ts'o  <tytso@valinux.com>
 
+	* util.h, util.c (journal_default_size): New function from Andreas
+		Dilger to calculate an appropriate default journal size
+		given a filesystem size.
+
+	* util.c (parse_journal_opts): Allow the creation of a journal as
+		small as 1MB.
+
 	* dumpe2fs.c (print_journal_information): Use s_first_data_block
 		to find the correct block to read the journal superblock.
 
