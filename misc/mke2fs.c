@@ -829,7 +829,7 @@ static void PRS(int argc, char *argv[])
 #endif
 #ifdef _SC_PAGESIZE
 	sysval = sysconf(_SC_PAGESIZE);
-	if (sysconf > 0)
+	if (sysval > 0)
 		sys_page_size = sysval;
 #endif /* _SC_PAGESIZE */
 #endif /* HAVE_SYSCONF */
