@@ -80,6 +80,21 @@ struct check_dir_struct {
 	e2fsck_t ctx;
 };	
 
+#ifndef HAVE_STRNLEN
+/*
+ * Incredibly, libc5 doesn't appear to have strnlen.  So we have to
+ * provide our own.
+ */
+static int strnlen(const char * s, int count)
+{
+	const char *cp = s;
+
+	while (count-- && *cp)
+		cp++;
+	return cp - s;
+}
+#endif
+
 void e2fsck_pass2(e2fsck_t ctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;

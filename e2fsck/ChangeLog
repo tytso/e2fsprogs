@@ -4,6 +4,10 @@
 		twice, and abort with an error if this is the case.
 		(Address IBM Bugzilla bug #1226)
 
+2002-12-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass2.c (strnlen): Provide strnlen if libc doesn't. 
+
 2003-11-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (PRS): Print an error if more than one of the -p/-a, -n
