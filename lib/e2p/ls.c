@@ -207,11 +207,16 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	fprintf(f, "Fragments per group:      %u\n", sb->s_frags_per_group);
 	fprintf(f, "Inodes per group:         %u\n", sb->s_inodes_per_group);
 	fprintf(f, "Inode blocks per group:   %u\n", inode_blocks_per_group);
-	tm = sb->s_mtime;
 	if (sb->s_first_meta_bg)
 		fprintf(f, "First meta block group:   %u\n",
 			sb->s_first_meta_bg);
-	fprintf(f, "Last mount time:          %s", ctime(&tm));
+	if (sb->s_mkfs_time) {
+		tm = sb->s_mkfs_time;
+		fprintf(f, "Filesystem created:       %s", ctime(&tm));
+	}
+	tm = sb->s_mtime;
+	fprintf(f, "Last mount time:          %s",
+		sb->s_mtime ? ctime(&tm) : "n/a\n");
 	tm = sb->s_wtime;
 	fprintf(f, "Last write time:          %s", ctime(&tm));
 	fprintf(f, "Mount count:              %u\n", sb->s_mnt_count);

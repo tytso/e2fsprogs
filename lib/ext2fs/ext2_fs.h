@@ -440,7 +440,8 @@ struct ext2_super_block {
 	__u16	s_reserved_word_pad;
 	__u32	s_default_mount_opts;
 	__u32	s_first_meta_bg;	/* First metablock group */
-	__u32	s_reserved[190];	/* Padding to the end of the block */
+	__u32	s_mkfs_time;		/* When the filesystem was created */
+	__u32	s_reserved[189];	/* Padding to the end of the block */
 };
 
 /*

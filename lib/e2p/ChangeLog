@@ -1,3 +1,9 @@
+2002-10-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* ls.c (list_super2): Print the s_mkfs_time field if it is
+		present.  If the last mount time (s_mtime) is zero, print
+		"n/a".
+
 2002-10-20  Theodore Ts'o  <tytso@valinux.com>
 
 	* e2p.h (e2p_string2mntopt), mntopts.c, ls.c (print_mntopts):
