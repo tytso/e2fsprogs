@@ -81,7 +81,7 @@ distclean: clean
 # the Makefile.in file
 #
 debug_cmds.o: debug_cmds.c $(top_srcdir)/lib/ss/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 debugfs.o: $(srcdir)/debugfs.c $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ss/ss.h $(top_builddir)/lib/ss/ss_err.h \
  $(srcdir)/debugfs.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
