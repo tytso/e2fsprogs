@@ -326,7 +326,7 @@ if test $cross_compiling = no; then
 else
   AC_CHECK_PROGS(BUILD_CC, gcc cc)
 fi
-AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h linux/fd.h linux/major.h sys/disklabel.h sys/sockio.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h)
+AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h signal.h linux/fd.h linux/major.h sys/disklabel.h sys/sockio.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h)
 AC_FUNC_VPRINTF
 dnl
 dnl See if struct dirent has a d_namlen field (like bsd systems), implying
@@ -397,7 +397,16 @@ AC_CACHE_VAL(e2fsprogs_cv_struct_st_flags,
 		[e2fsprogs_cv_struct_st_flags=no]))
 AC_MSG_RESULT($e2fsprogs_cv_struct_st_flags)
 if test "$e2fsprogs_cv_struct_st_flags" = yes; then
-  AC_DEFINE(HAVE_STAT_FLAGS)
+  AC_MSG_CHECKING(whether st_flags field is useful)
+  AC_CACHE_VAL(e2fsprogs_cv_struct_st_flags_immut,
+	AC_TRY_COMPILE([#include <sys/stat.h>],
+		[struct stat stat; stat.st_flags |= UF_IMMUTABLE;],
+		[e2fsprogs_cv_struct_st_flags_immut=yes],
+		[e2fsprogs_cv_struct_st_flags_immut=no]))
+  AC_MSG_RESULT($e2fsprogs_cv_struct_st_flags_immut)
+  if test "$e2fsprogs_cv_struct_st_flags_immut" = yes; then
+	  AC_DEFINE(HAVE_STAT_FLAGS)
+  fi
 fi
 AC_CHECK_FUNCS(chflags getrusage llseek strdup getmntinfo strcasecmp srandom fchown mallinfo)
 dnl

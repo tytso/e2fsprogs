@@ -1,4 +1,11 @@
-1999-07-18  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+1999-09-24    <tytso@valinux.com>
+
+	* configure.in (HAVE_STATE_FLAGS): Check to see if st_flags is
+		actually useful (since glibc 2.1 declares it on Alpha
+		without it being usable).  Add check for signal.h
+		header file, which doesn't exist on non-unix platforms.
+
+1999-07-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.15
 

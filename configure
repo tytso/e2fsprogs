@@ -1868,7 +1868,7 @@ else
 fi
 echo "$ac_t""$CPP" 1>&6
 
-for ac_hdr in stdlib.h unistd.h stdarg.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h linux/fd.h linux/major.h sys/disklabel.h sys/sockio.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h
+for ac_hdr in stdlib.h unistd.h stdarg.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h signal.h linux/fd.h linux/major.h sys/disklabel.h sys/sockio.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
@@ -2277,20 +2277,48 @@ fi
 
 echo "$ac_t""$e2fsprogs_cv_struct_st_flags" 1>&6
 if test "$e2fsprogs_cv_struct_st_flags" = yes; then
-  cat >> confdefs.h <<\EOF
+  echo $ac_n "checking whether st_flags field is useful""... $ac_c" 1>&6
+echo "configure:2282: checking whether st_flags field is useful" >&5
+  if eval "test \"`echo '$''{'e2fsprogs_cv_struct_st_flags_immut'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2287 "configure"
+#include "confdefs.h"
+#include <sys/stat.h>
+int main() {
+struct stat stat; stat.st_flags |= UF_IMMUTABLE;
+; return 0; }
+EOF
+if { (eval echo configure:2294: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  e2fsprogs_cv_struct_st_flags_immut=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  e2fsprogs_cv_struct_st_flags_immut=no
+fi
+rm -f conftest*
+fi
+
+  echo "$ac_t""$e2fsprogs_cv_struct_st_flags_immut" 1>&6
+  if test "$e2fsprogs_cv_struct_st_flags_immut" = yes; then
+	  cat >> confdefs.h <<\EOF
 #define HAVE_STAT_FLAGS 1
 EOF
 
+  fi
 fi
 for ac_func in chflags getrusage llseek strdup getmntinfo strcasecmp srandom fchown mallinfo
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:2289: checking for $ac_func" >&5
+echo "configure:2317: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2294 "configure"
+#line 2322 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -2313,7 +2341,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2317: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2345: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -2338,19 +2366,19 @@ fi
 done
 
 echo $ac_n "checking ino_t defined by sys/types.h""... $ac_c" 1>&6
-echo "configure:2342: checking ino_t defined by sys/types.h" >&5
+echo "configure:2370: checking ino_t defined by sys/types.h" >&5
 if eval "test \"`echo '$''{'e2fsprogs_cv_ino_t'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2347 "configure"
+#line 2375 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
 int main() {
 ino_t ino; ino = 0;
 ; return 0; }
 EOF
-if { (eval echo configure:2354: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2382: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   e2fsprogs_cv_ino_t=yes
 else
@@ -2371,17 +2399,17 @@ EOF
 fi
 ac_safe=`echo "linux/fs.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for linux/fs.h""... $ac_c" 1>&6
-echo "configure:2375: checking for linux/fs.h" >&5
+echo "configure:2403: checking for linux/fs.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2380 "configure"
+#line 2408 "configure"
 #include "confdefs.h"
 #include <linux/fs.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2385: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2413: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -2416,7 +2444,7 @@ fi
 
 SOCKET_LIB=''
 echo $ac_n "checking for socket in -lsocket""... $ac_c" 1>&6
-echo "configure:2420: checking for socket in -lsocket" >&5
+echo "configure:2448: checking for socket in -lsocket" >&5
 ac_lib_var=`echo socket'_'socket | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2424,7 +2452,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lsocket  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2428 "configure"
+#line 2456 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2435,7 +2463,7 @@ int main() {
 socket()
 ; return 0; }
 EOF
-if { (eval echo configure:2439: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2467: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2457,12 +2485,12 @@ fi
 
 
 echo $ac_n "checking for optreset""... $ac_c" 1>&6
-echo "configure:2461: checking for optreset" >&5
+echo "configure:2489: checking for optreset" >&5
 if eval "test \"`echo '$''{'ac_cv_have_optreset'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2466 "configure"
+#line 2494 "configure"
 #include "confdefs.h"
 #include <unistd.h>
 EOF
@@ -2485,12 +2513,12 @@ EOF
 
 fi
 echo $ac_n "checking whether the ext2 ioctls compile""... $ac_c" 1>&6
-echo "configure:2489: checking whether the ext2 ioctls compile" >&5
+echo "configure:2517: checking whether the ext2 ioctls compile" >&5
 if eval "test \"`echo '$''{'e2fsprogs_cv_ioctl_ext2'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2494 "configure"
+#line 2522 "configure"
 #include "confdefs.h"
 #include <linux/ext2_fs.h>
 #include <sys/ioctl.h>
@@ -2498,7 +2526,7 @@ int main() {
 ioctl (0, EXT2_IOC_SETVERSION, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:2502: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2530: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   e2fsprogs_cv_ioctl_ext2=yes
 else
@@ -2518,19 +2546,19 @@ EOF
 
 fi
 echo $ac_n "checking whether struct ext2_inode has an i_version field""... $ac_c" 1>&6
-echo "configure:2522: checking whether struct ext2_inode has an i_version field" >&5
+echo "configure:2550: checking whether struct ext2_inode has an i_version field" >&5
 if eval "test \"`echo '$''{'e2fsprogs_cv_ext2_inode_version'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2527 "configure"
+#line 2555 "configure"
 #include "confdefs.h"
 #include <linux/ext2_fs.h>
 int main() {
 struct ext2_inode e2i; e2i.i_version=0;
 ; return 0; }
 EOF
-if { (eval echo configure:2534: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2562: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   e2fsprogs_cv_ext2_inode_version=yes
 else
@@ -2574,20 +2602,20 @@ if test "$root_prefix" = NONE ; then
 fi
 
 echo $ac_n "checking whether linker accepts -static""... $ac_c" 1>&6
-echo "configure:2578: checking whether linker accepts -static" >&5
+echo "configure:2606: checking whether linker accepts -static" >&5
 if eval "test \"`echo '$''{'ac_cv_e2fsprogs_use_static'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
 cat > conftest.$ac_ext <<EOF
-#line 2584 "configure"
+#line 2612 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 fflush(stdout);
 ; return 0; }
 EOF
-if { (eval echo configure:2591: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2619: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_e2fsprogs_use_static=yes
 else
