@@ -300,7 +300,7 @@ int blkid_probe_all(blkid_cache cache)
 		which ^= 1;
 		ptname = ptnames[which];
 
-		if (sscanf(line, " %d %d %lld %128[^\n ]",
+		if (sscanf(line, " %d %d %llu %128[^\n ]",
 			   &ma, &mi, &sz, ptname) != 4)
 			continue;
 		devs[which] = makedev(ma, mi);
