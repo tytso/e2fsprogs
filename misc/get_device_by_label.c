@@ -289,9 +289,10 @@ read_partitions(void)
 		/* skip entire disk (minor 0, 64, ... on ide;
 		   0, 16, ... on sd) */
 		/* heuristic: partition name ends in a digit */
+		/* OR partition name starts with 'lvm' */
 
 		for(s = ptname; *s; s++);
-		if (isdigit(s[-1])) {
+		if (isdigit(s[-1]) || !strncmp(ptname, "lvm", 3)) {
 			/*
 			 * We first look in /dev for the device, but
 			 * if we don't find it, or if the stat
