@@ -1,3 +1,12 @@
+1998-03-24  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* main.c (main): Check to make sure we can really resize this
+		filesystem.  If there are compatible feature sets that we
+		don't support, we need to abort.
+
+	* resize2fs.c: Change to use the new prototype required by
+		block_iterate2 (which uses blkcnt_t for the blockcount).
+
 1998-03-20  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* resize2fs.c (inode_scan_and_fix): If we are expanding the

@@ -9,6 +9,16 @@ explicitly do a configure test to see if (a) llseek is in libc, and
 complaints about libc developers don't understand the concept of
 compatibility with previous versions of libc.)
 
+Added support for the EXT2_FEATURE_INCOMPAT_DIRNAME_SIZE feature,
+which means that e2fsprogs will ignore the high 8 bits of the
+directory entry's name_len field, so that it can be used for other
+purposes.
+
+Added support for the EXT2_FEATURE_RO_COMPAT_LARGE_FILE feature.
+E2fsprogs will now support filesystems with 64-bit sized files.
+
+Added support for the EXT2_FEATURE_COMPAT_DIR_PREALLOC feature.
+
 Added new program "e2label", contributed by Andries Brouwer.  E2label
 provides an easy-to-use interface to modify the filesystem label.
 

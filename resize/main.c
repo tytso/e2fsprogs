@@ -113,7 +113,8 @@ void main (int argc, char ** argv)
 	blk_t		max_size = 0;
 	io_manager	io_ptr;
 	char		*tmp;
-
+	struct ext2fs_sb *s;
+	
 	initialize_ext2_error_table();
 
 	fprintf (stderr, "resize2fs %s (%s)\n",
@@ -194,7 +195,18 @@ void main (int argc, char ** argv)
 		printf ("Couldn't find valid filesystem superblock.\n");
 		exit (1);
 	}
-
+	/*
+	 * Check for compatibility with the feature sets.  We need to
+	 * be more stringent than ext2fs_open().
+	 */
+	s = (struct ext2fs_sb *) fs->super;
+	if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
+	    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)) {
+		com_err(program_name, EXT2_ET_UNSUPP_FEATURE,
+			"(%s)", device_name);
+		exit(1);
+	}
+	
 	/*
 	 * Get the size of the containing partition, and use this for
 	 * defaults and for making sure the new filesystme doesn't

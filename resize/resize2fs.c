@@ -856,7 +856,7 @@ struct process_block_struct {
 };
 
 static int process_block(ext2_filsys fs, blk_t	*block_nr,
-			 int blockcnt, blk_t ref_block,
+			 blkcnt_t blockcnt, blk_t ref_block,
 			 int ref_offset, void *priv_data)
 {
 	struct process_block_struct *pb;
@@ -874,7 +874,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			pb->changed = 1;
 #ifdef RESIZE2FS_DEBUG
 			if (pb->rfs->flags & RESIZE_DEBUG_BMOVE)
-				printf("ino=%ld, blockcnt=%d, %u->%u\n", 
+				printf("ino=%ld, blockcnt=%ld, %u->%u\n", 
 				       pb->ino, blockcnt, block, new_block);
 #endif
 			block = new_block;
@@ -882,7 +882,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 	}
 	if (pb->is_dir) {
 		retval = ext2fs_add_dir_block(fs->dblist, pb->ino,
-					      block, blockcnt);
+					      block, (int) blockcnt);
 		if (retval) {
 			pb->error = retval;
 			ret |= BLOCK_ABORT;
