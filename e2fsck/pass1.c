@@ -158,6 +158,28 @@ static void check_immutable(e2fsck_t ctx, struct problem_context *pctx)
 	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
 }
 
+/*
+ * If device, fifo or socket, check size is zero -- if not offer to
+ * clear it
+ */
+static void check_size(e2fsck_t ctx, struct problem_context *pctx)
+{
+	struct ext2_inode *inode = pctx->inode;
+	
+	if ((LINUX_S_ISBLK(inode->i_mode) ||
+	     LINUX_S_ISCHR(inode->i_mode) ||
+	     LINUX_S_ISFIFO(inode->i_mode) ||
+	     LINUX_S_ISSOCK(inode->i_mode)) && 
+	    !inode->i_size)
+		return;
+	
+	if(!fix_problem(ctx, PR_1_SET_NONZSIZE, pctx))
+		return;
+	
+	inode->i_size = 0;
+	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
+}
+	
 
 void e2fsck_pass1(e2fsck_t ctx)
 {
@@ -455,10 +477,12 @@ void e2fsck_pass1(e2fsck_t ctx)
 		} else if (LINUX_S_ISCHR (inode.i_mode) &&
 			   e2fsck_pass1_check_device_inode(&inode)) {
 			check_immutable(ctx, &pctx);
+			check_size(ctx, &pctx);
 			ctx->fs_chardev_count++;
 		} else if (LINUX_S_ISBLK (inode.i_mode) &&
 			   e2fsck_pass1_check_device_inode(&inode)) {
 			check_immutable(ctx, &pctx);
+			check_size(ctx, &pctx);
 			ctx->fs_blockdev_count++;
 		} else if (LINUX_S_ISLNK (inode.i_mode)) {
 			ctx->fs_symlinks_count++;
@@ -470,11 +494,13 @@ void e2fsck_pass1(e2fsck_t ctx)
 		else if (LINUX_S_ISFIFO (inode.i_mode) &&
 			 e2fsck_pass1_check_device_inode(&inode)) {
 			check_immutable(ctx, &pctx);
+			check_size(ctx, &pctx);
 			ctx->fs_fifo_count++;
 		} else if ((LINUX_S_ISSOCK (inode.i_mode)) &&
 			   e2fsck_pass1_check_device_inode(&inode)) {
 			check_immutable(ctx, &pctx);
-		        ctx->fs_sockets_count++;
+			check_size(ctx, &pctx);
+			ctx->fs_sockets_count++;
 		} else {
 			if (!ctx->inode_bad_map)
 				alloc_bad_map(ctx);

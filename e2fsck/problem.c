@@ -433,6 +433,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has @cion flag set on @f without @cion support.  "),
 	  PROMPT_CLEAR, 0 },
 
+	/* Non-zero size for device, fifo or socket inode */
+	{ PR_1_SET_NONZSIZE,
+	  "Special (device/socket/fifo) @i %i has non-zero size.  ",
+	  PROMPT_FIX, PR_PREEN_OK },
+	  
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

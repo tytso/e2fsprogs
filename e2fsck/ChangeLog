@@ -1,3 +1,11 @@
+2000-05-27  Theodore Ts'o  <tytso@valinux.com>
+
+	* pass1.c (pass1, check_size): Apply patch from Chris Wedgewood
+		(cw@foof.org) which checks to see if special devices have
+		a non-zero size, and deals with it.
+
+	* problem.c, problem.h (PR1_SET_NONZSIZE): Add new problem code.
+
 2000-05-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* Makefile.in (install): Create a symbolic link for fsck.ext3 as
