@@ -121,12 +121,13 @@ $(top_builddir)/util/subst:
 #
 #
 WFLAGS=		-ansi -D_POSIX_SOURCE -pedantic $(WFLAGS_EXTRA) \
-			-Wall -Wwrite-strings -Wpointer-arith \
+			-Wall -W -Wwrite-strings -Wpointer-arith \
 			-Wcast-qual -Wcast-align  \
 			-Wstrict-prototypes -Wmissing-prototypes \
 			-Wformat-security  -Wformat-nonliteral \
 			-Wmissing-format-attribute \
-			-Wnested-externs -Winline -DNO_INLINE_FUNCS -Wshadow 
+			-Wnested-externs -Winline -DNO_INLINE_FUNCS -Wshadow \
+			-UENABLE_NLS
 
 gcc-wall-new:
 	(make USE_WFLAGS="$(WFLAGS)" > /dev/null) 2>&1 | sed -f $(top_srcdir)/util/gcc-wall-cleanup 

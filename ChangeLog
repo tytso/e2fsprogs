@@ -1,3 +1,8 @@
+2003-11-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* MCONFIG.in: Make the gcc-wall print more warnings to catch
+		signed vs. unsigned problems.
+
 2003-08-01  Philipp Thomas <pthomas@suse.de>
 
 	* configure.in: Add tests for inttypes.h and intptr_t.
