@@ -259,9 +259,9 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 	 */
 	group_block = fs->super->s_first_data_block +
 		fs->super->s_blocks_per_group;
-	group_bad = 0;
 	
 	for (i = 1; i < fs->group_desc_count; i++) {
+		group_bad = 0;
 		for (j=0; j < fs->desc_blocks+1; j++) {
 			if (badblocks_list_test(bb_list, group_block +
 						j)) {

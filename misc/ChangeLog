@@ -1,3 +1,13 @@
+Sun Feb  1 16:53:36 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* badblocks.8: Update documentation to note that output format
+		of badblocks is suitable for use with e2fsck -l or
+		mke2fs -l.
+
+	* mke2fs.c (handle_bad_blocks): Fix bug so that all groups with
+ 		bad superblock backup blocks are printed (not just the
+ 		first one).
+
 Mon Dec  1 17:01:04 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* badblocks.8.in: Add documentation for the -s option.

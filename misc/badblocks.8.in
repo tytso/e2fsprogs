@@ -40,7 +40,11 @@ Specify the size of blocks in bytes.
 .I -o output_file
 Write the list of bad blocks to the specified file. Without this option,
 .B badblocks
-displays the list on its standard output.
+displays the list on its standard output.  The format of this file is suitable
+for use by the -l option in 
+.BR e2fsck (8)
+or
+.BR mke2fs (8).
 .TP
 .I -s
 Show the progress of the scan by writing out the block numbers as they
