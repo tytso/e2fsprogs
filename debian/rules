@@ -39,6 +39,7 @@ debdir=${topdir}/debian
 tmpdir=${debdir}/tmp
 udebdir=${debdir}/e2fsprogs-udeb
 blkidudebdir=${debdir}/libblkid1-udeb
+uuidudebdir=${debdir}/libuuid1-udeb
 maindir=${debdir}/e2fsprogs
 stdbuilddir=${debdir}/BUILD-STD
 bfbuilddir=${debdir}/BUILD-BF
@@ -52,6 +53,9 @@ UDEB_PRIORITY = $(shell grep '^Package: e2fsprogs-udeb' debian/control -A 10 | g
 
 BLKID_UDEB_NAME = libblkid1-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
 BLKID_UDEB_PRIORITY = $(shell grep '^Package: libblkid1-udeb' debian/control -A 10 | grep ^Priority: | cut -d ' ' -f 2)
+
+UUID_UDEB_NAME = libuuid1-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
+UUID_UDEB_PRIORITY = $(shell grep '^Package: libuuid1-udeb' debian/control -A 10 | grep ^Priority: | cut -d ' ' -f 2)
 
 STAMPSDIR=debian/stampdir
 CFGSTDSTAMP=${STAMPSDIR}/configure-std-stamp
@@ -240,6 +244,9 @@ install-udeb: build
 	mkdir -p ${blkidudebdir}/lib
 	mv ${udebdir}/lib/libblkid.* ${blkidudebdir}/lib
 
+	mkdir -p ${uuidudebdir}/lib
+	mv ${udebdir}/lib/libuuid.* ${uuidudebdir}/lib
+
 binary-indep: 
   # no arch-independant debs.
 
@@ -286,7 +293,7 @@ binary-arch: install install-udeb
 	install -m 644 debian/libblkid.copyright \
 		${debdir}/libblkid${BLKID_SOVERSION}/usr/share/doc/libblkid${BLKID_SOVERSION}/copyright
 
-	dh_installdocs -Ne2fsprogs-udeb -Nlibblkid1-udeb
+	dh_installdocs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 
   # HTML docs
 	install -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
@@ -329,7 +336,7 @@ binary-arch: install install-udeb
 	dh_compress
 	dh_fixperms
 
-	dh_makeshlibs -Ne2fsprogs-udeb -Nlibblkid1-udeb
+	dh_makeshlibs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 	dh_makeshlibs -plibcomerr${COMERR_SOVERSION} \
 		-V 'libcomerr2 (>= 1.33-3)'
 
@@ -341,7 +348,7 @@ binary-arch: install install-udeb
 		-u"-Ldebian/e2fsprogs-udeb.shlibs.local"
 
 	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev \
-		-Ne2fsprogs-udeb -Nlibblkid1-udeb
+		-Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 	DH_OPTIONS= dh_gencontrol -pcomerr-dev \
 	  -u '-v${COMERR_VERSION}-${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -pss-dev \
@@ -349,8 +356,8 @@ binary-arch: install install-udeb
 	DH_OPTIONS= dh_gencontrol -puuid-dev \
 	  -u '-v${UUID_VERSION}-${MAIN_VERSION}'
 
-	dh_md5sums -Ne2fsprogs-udeb -Nlibblkid1-udeb
-	dh_builddeb -Ne2fsprogs-udeb -Nlibblkid1-udeb
+	dh_md5sums -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
+	dh_builddeb -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 
 	# udeb stuff
 	dh_gencontrol	-pe2fsprogs-udeb -- -fdebian/files~
@@ -360,6 +367,10 @@ binary-arch: install install-udeb
 	dh_gencontrol	-plibblkid1-udeb -- -fdebian/files~
 	dpkg-distaddfile $(BLKID_UDEB_NAME) debian-installer $(BLKID_UDEB_PRIORITY)
 	dh_builddeb -plibblkid1-udeb --filename=$(BLKID_UDEB_NAME)
+
+	dh_gencontrol	-plibuuid1-udeb -- -fdebian/files~
+	dpkg-distaddfile $(UUID_UDEB_NAME) debian-installer $(UUID_UDEB_PRIORITY)
+	dh_builddeb -plibuuid1-udeb --filename=$(UUID_UDEB_NAME)
 
 binary: binary-indep binary-arch
 

@@ -89,6 +89,23 @@ Description: Universally unique id library
  .
  for more information.
 
+Package: libuuid1-udeb
+Section: debian-installer
+Priority: required
+Depends: ${shlibs:Depends}
+Replaces: libuuid1
+Architecture: any
+Description: Universally unique id library
+ libuuid generates and parses 128-bit universally unique id's (UUID's),
+ using a standard which is blessed by both Microsoft and DCE, and is
+ being proposed as an internet standard.  See the internet-draft:
+ .
+                draft-leach-uuids-guids-01.txt
+ .
+ for more information.
+ .
+ This is a minimal package for debian-installer.
+
 Package: uuid-dev
 Section: libdevel
 Priority: extra
