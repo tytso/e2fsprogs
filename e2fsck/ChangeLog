@@ -1,3 +1,9 @@
+2001-09-19  Theodore Tso  <tytso@valinux.com>
+
+	* unix.c (main): If a superblock is specified explicitly by the
+		user, don't try to automatically fall back to an
+		alternate superblock.
+
 2001-09-02  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.24a

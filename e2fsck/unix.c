@@ -520,6 +520,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			break;
 		case 'b':
 			ctx->use_superblock = atoi(optarg);
+			ctx->flags |= E2F_FLAG_SB_SPECIFIED;
 			break;
 		case 'B':
 			blocksize = atoi(optarg);
@@ -746,7 +747,8 @@ restart:
 	} else 
 		retval = ext2fs_open(ctx->filesystem_name, flags, 
 				     0, 0, io_ptr, &fs);
-	if (!ctx->superblock && !(ctx->options & E2F_OPT_PREEN) && 
+	if (!ctx->superblock && !(ctx->options & E2F_OPT_PREEN) &&
+	    !(ctx->flags & E2F_FLAG_SB_SPECIFIED) &&
 	    ((retval == EXT2_ET_BAD_MAGIC) ||
 	     ((retval == 0) && ext2fs_check_desc(fs)))) {
 		if (!fs || (fs->group_desc_count > 1)) {
