@@ -95,13 +95,13 @@ void do_lsdel(int argc, char **argv)
 		exit(1);
 	}
 
-	block_buf = malloc(fs->blocksize * 3);
+	block_buf = malloc(current_fs->blocksize * 3);
 	if (!block_buf) {
 		com_err("ls_deleted_inodes", ENOMEM, "while allocating block buffer");
 		goto error_out;
 	}
 
-	retval = ext2fs_open_inode_scan(fs, 0, &scan);
+	retval = ext2fs_open_inode_scan(current_fs, 0, &scan);
 	if (retval) {
 		com_err("ls_deleted_inodes", retval,
 			"while opening inode scan");
@@ -124,7 +124,7 @@ void do_lsdel(int argc, char **argv)
 		lsd.free_blocks = 0;
 		lsd.bad_blocks = 0;
 		
-		retval = ext2fs_block_iterate(fs, ino, 0, block_buf,
+		retval = ext2fs_block_iterate(current_fs, ino, 0, block_buf,
 					      lsdel_proc, &lsd);
 		if (retval) {
 			com_err("ls_deleted_inodes", retval,

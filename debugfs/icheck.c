@@ -77,7 +77,7 @@ void do_icheck(int argc, char **argv)
 	}
 	memset(bw.barray, 0, sizeof(struct block_info) * argc);
 
-	block_buf = malloc(fs->blocksize * 3);
+	block_buf = malloc(current_fs->blocksize * 3);
 	if (!block_buf) {
 		com_err("icheck", ENOMEM, "while allocating block buffer");
 		goto error_out;
@@ -93,7 +93,7 @@ void do_icheck(int argc, char **argv)
 
 	bw.num_blocks = bw.blocks_left = argc-1;
 
-	retval = ext2fs_open_inode_scan(fs, 0, &scan);
+	retval = ext2fs_open_inode_scan(current_fs, 0, &scan);
 	if (retval) {
 		com_err("icheck", retval, "while opening inode scan");
 		goto error_out;
@@ -117,7 +117,7 @@ void do_icheck(int argc, char **argv)
 
 		bw.inode = ino;
 		
-		retval = ext2fs_block_iterate(fs, ino, 0, block_buf,
+		retval = ext2fs_block_iterate(current_fs, ino, 0, block_buf,
 					      icheck_proc, &bw);
 		if (retval) {
 			com_err("icheck", retval,
@@ -140,10 +140,10 @@ void do_icheck(int argc, char **argv)
 	printf("Block\tInode number\n");
 	for (i=0, binfo = bw.barray; i < bw.num_blocks; i++, binfo++) {
 		if (binfo->ino == 0) {
-			printf("%ld\t<block not found>\n", binfo->blk);
+			printf("%u\t<block not found>\n", binfo->blk);
 			continue;
 		}
-		printf("%ld\t%ld\n", binfo->blk, binfo->ino);
+		printf("%u\t%ld\n", binfo->blk, binfo->ino);
 	}
 
 error_out:
@@ -153,6 +153,3 @@ error_out:
 		ext2fs_close_inode_scan(scan);
 	return;
 }
-
-
-

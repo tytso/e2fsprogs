@@ -40,6 +40,7 @@ echo "Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}"
 AC_SUBST(E2FSPROGS_YEAR)
 AC_SUBST(E2FSPROGS_MONTH)
 AC_SUBST(E2FSPROGS_VERSION)
+AC_REQUIRE([AC_CANONICAL_HOST])
 dnl
 dnl set $(CC) from --with-cc=value
 dnl
@@ -88,6 +89,13 @@ AC_MSG_RESULT(LDFLAGS is $withval)
 LDFLAGS=$withval,
 LDFLAGS=)dnl
 AC_SUBST(LDFLAGS)
+dnl
+dnl Allow separate `usr_prefix' to be specified
+dnl
+AC_ARG_WITH([usr-prefix],
+[  --with-usr-prefx=PREFIX specify a prefix corresponding to /usr (default ${prefix})],
+usr_prefix=$withval,
+usr_prefix=NONE)dnl
 dnl
 dnl handle --enable-dll-shlibs
 dnl
@@ -244,15 +252,57 @@ echo "Building e2fsck statically by default"
 )
 AC_SUBST(E2FSCK_TYPE)
 dnl
+dnl See whether to install the `fsck' wrapper program (that calls e2fsck)
+dnl
+AC_ARG_ENABLE([fsck],
+[  --enable-fsck           build fsck wrapper program],
+[if test "$enableval" = "no"
+then
+	FSCK_PROG='' FSCK_MAN=''
+	echo "Not building fsck wrapper"
+else
+	FSCK_PROG=fsck FSCK_MAN=fsck.8
+	echo "Building fsck wrapper"
+fi]
+,
+[case "$host_os" in
+  gnu*)
+    FSCK_PROG='' FSCK_MAN=''
+    echo "Not building fsck wrapper by default"
+    ;;
+  *)
+    FSCK_PROG=fsck FSCK_MAN=fsck.8
+    echo "Building fsck wrapper by default"
+esac]
+)
+AC_SUBST(FSCK_PROG)
+AC_SUBST(FSCK_MAN)
+dnl
 dnl
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
 AC_SUBST_FILE(MAKEFILE_LIBRARY)
+dnl
+dnl
+AC_ARG_ENABLE([old-bitops],
+[  --enable-old-bitops	  Use old (non-standard but native) bitmask operations],
+if test "$enableval" = "no"
+then
+	echo "Using new (standard) bitmask operations"
+else
+	AC_DEFINE(EXT2_OLD_BITOPS)
+	echo "Using old (native) bitmask operations"
+
+fi
+,
+echo "Using standard bitmask operations by default"
+)
 dnl
 dnl End of configuration options
 dnl
 AC_SUBST(BINARY_TYPE)
 AC_PROG_MAKE_SET
 AC_PATH_PROG(LN, ln, ln)
+AC_PROG_LN_S
 AC_PATH_PROG(MV, mv, mv)
 AC_PATH_PROG(CP, cp, cp)
 AC_PATH_PROG(RM, rm, rm)
@@ -265,7 +315,7 @@ AC_CHECK_TOOL(STRIP, strip, :)
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_C_CROSS
-AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h mntent.h dirent.h getopt.h linux/fd.h linux/major.h sys/disklabel.h)
+AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h mntent.h dirent.h getopt.h linux/fd.h linux/major.h sys/disklabel.h sys/sockio.h net/if.h netinet/in.h)
 AC_FUNC_VPRINTF
 dnl
 dnl See if struct dirent has a d_namlen field (like bsd systems), implying
@@ -292,17 +342,21 @@ if test "$cross_compiling" = yes -a "$ac_cv_sizeof_long" = ""; then
   ac_cv_sizeof_short=2
   ac_cv_sizeof_int=4
   ac_cv_sizeof_long=4
+  ac_cv_sizeof_long_long=0
   AC_MSG_WARN([Cross-compiling, so cannot check type sizes; assuming short=2, int=4, long=4])
 fi
 AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(long long)
 SIZEOF_SHORT=$ac_cv_sizeof_short
 SIZEOF_INT=$ac_cv_sizeof_int
 SIZEOF_LONG=$ac_cv_sizeof_long
+SIZEOF_LONG_LONG=$ac_cv_sizeof_long_long
 AC_SUBST(SIZEOF_SHORT)
 AC_SUBST(SIZEOF_INT)
 AC_SUBST(SIZEOF_LONG)
+AC_SUBST(SIZEOF_LONG_LONG)
 dnl
 dnl See if struct stat has a st_flags field, in which case we can get file
 dnl flags somewhat portably.  Also check for the analogous setter, chflags().
@@ -317,7 +371,20 @@ AC_MSG_RESULT($e2fsprogs_cv_struct_st_flags)
 if test "$e2fsprogs_cv_struct_st_flags" = yes; then
   AC_DEFINE(HAVE_STAT_FLAGS)
 fi
-AC_CHECK_FUNCS(chflags getrusage llseek strdup getmntinfo)
+AC_CHECK_FUNCS(chflags getrusage llseek strdup getmntinfo strcasecmp srandom fchown)
+dnl
+dnl Check to see if ino_t is defined
+dnl
+AC_MSG_CHECKING(ino_t defined by sys/types.h)
+AC_CACHE_VAL(e2fsprogs_cv_ino_t,
+	AC_TRY_COMPILE([#include <sys/types.h>],
+	[ino_t ino; ino = 0;],
+	[e2fsprogs_cv_ino_t=yes],
+	[e2fsprogs_cv_ino_t=no]))
+AC_MSG_RESULT($e2fsprogs_cv_ino_t)
+if test "$e2fsprogs_cv_ino_t" = yes; then
+   AC_DEFINE(HAVE_INO_T)
+fi
 dnl
 dnl On systems without linux header files, we add an extra include directory
 dnl that holds enough to fake it (hopefully).  Note that the $(top_srcdir) here
@@ -337,6 +404,13 @@ else
 fi
 AC_SUBST(LINUX_INCLUDE)
 dnl
+dnl Check to see if -lsocket is required (solaris) to make something
+dnl that uses socket() to compile; this is needed for the UUID library
+dnl
+SOCKET_LIB=''
+AC_CHECK_LIB(socket, socket, [SOCKET_LIB=-lsocket])
+AC_SUBST(SOCKET_LIB)
+dnl
 dnl See if optreset exists
 dnl
 AC_MSG_CHECKING(for optreset)
@@ -346,19 +420,6 @@ AC_CACHE_VAL(ac_cv_have_optreset,
 AC_MSG_RESULT($ac_cv_have_optreset)
 if test $ac_cv_have_optreset = yes; then
   AC_DEFINE(HAVE_OPTRESET)
-fi
-dnl
-dnl See if our system has frags enabled (at least in the header file)
-dnl
-AC_MSG_CHECKING(whether struct ext2_inode has frags fields)
-AC_CACHE_VAL(e2fsprogs_cv_struct_ext2_inode_frags,
-	AC_TRY_COMPILE([#include <linux/ext2_fs.h>],
-		[struct ext2_inode i; i.i_frag = i.i_fsize = 0;],
-		[e2fsprogs_cv_struct_ext2_inode_frags=yes],
-		[e2fsprogs_cv_struct_ext2_inode_frags=no]))
-AC_MSG_RESULT($e2fsprogs_cv_struct_ext2_inode_frags)
-if test "$e2fsprogs_cv_struct_ext2_inode_frags" = yes; then
-  AC_DEFINE(HAVE_EXT2_FRAGS)
 fi
 dnl
 dnl See if using the EXT2 ioctls causes a compile-time barf (as on the hurd).
@@ -375,39 +436,44 @@ if test "$e2fsprogs_cv_ioctl_ext2" = yes; then
   AC_DEFINE(HAVE_EXT2_IOCTLS)
 fi
 dnl
-dnl On linux, force the prefix to be '/'
+dnl Linux uses a separate usr_prefix by default
 dnl
-AC_REQUIRE([AC_CANONICAL_HOST])
 case "$host_os" in
 linux*)
 	if test "$prefix" = NONE ; then
-		prefix='/';
-		echo "On Linux systems, prefix defaults to '/'"
+		usr_prefix="\${prefix}/usr";
+		echo "On $host_os systems, usr_prefix defaults to $usr_prefix"
+	fi
+	;;
+esac
+if test "$usr_prefix" = NONE ; then
+	usr_prefix="\${prefix}"
+fi
+AC_SUBST(usr_prefix)
+dnl
+dnl On Linux/hurd, force the prefix to be ''
+dnl
+case "$host_os" in
+linux* | gnu*)
+	if test "$prefix" = NONE ; then
+		prefix='';
+		echo "On $host_os systems, prefix defaults to ''"
 	fi
 ;;
 esac
 dnl
 dnl See if -static works.
-dnl XXX for now, assume that only Linux systems support -static
+dnl XXX for now, assume that only Linux/hurd systems support -static
 dnl
 AC_REQUIRE([AC_CANONICAL_HOST])
 LDFLAG_STATIC=
 case "$host_os" in
-linux*)
+linux* | gnu*)
 	LDFLAG_STATIC=-static
-	echo "On Linux systems, assume -static works"
+	echo "On $host_os systems, assume -static works"
 ;;
 esac
 AC_SUBST(LDFLAG_STATIC)
-dnl
-dnl Check to see if prefix is '/'
-dnl
-if test "$prefix" = / ; then
-	usr_prefix=/usr
-else
-	usr_prefix="\${prefix}"
-fi
-AC_SUBST(usr_prefix)
 dnl
 dnl Make the ss and et directories work correctly.
 dnl
@@ -437,5 +503,6 @@ test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux
 AC_OUTPUT(MCONFIG lib/substitute_sh Makefile lib/et/Makefile 
-	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile misc/Makefile 
-	e2fsck/Makefile debugfs/Makefile tests/Makefile)
+	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
+	misc/Makefile e2fsck/Makefile debugfs/Makefile tests/Makefile 
+	relocate/Makefile)

@@ -24,7 +24,6 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 CC = @CC@
 DEFS = @DEFS@
-LIBS = @LIBS@
 CFLAGS = @CFLAGS@
 ALL_CFLAGS = $(CPPFLAGS) $(DEFS) $(WFLAGS) $(CFLAGS) $(XTRA_CFLAGS) \
 	-I$(top_builddir)/lib -I$(top_srcdir)/lib $(LINUX_INCLUDE) 
@@ -32,6 +31,7 @@ LDFLAGS = @LDFLAGS@
 ALL_LDFLAGS = $(LDFLAGS)
 RM = @RM@
 LN = @LN@
+LN_S = @LN_S@
 MV = @MV@
 CP = @CP@
 CHMOD = @CHMOD@
@@ -51,16 +51,19 @@ LIBSS = $(LIB)/libss@LIB_EXT@
 LIBCOM_ERR = $(LIB)/libcom_err@LIB_EXT@
 LIBE2P = $(LIB)/libe2p@LIB_EXT@
 LIBEXT2FS = $(LIB)/libext2fs@LIB_EXT@
+LIBUUID = $(LIB)/libuuid@LIB_EXT@ @SOCKET_LIB@ 
 
 STATIC_LIBSS = $(LIB)/libss@STATIC_LIB_EXT@
 STATIC_LIBCOM_ERR = $(LIB)/libcom_err@STATIC_LIB_EXT@
 STATIC_LIBE2P = $(LIB)/libe2p@STATIC_LIB_EXT@
 STATIC_LIBEXT2FS = $(LIB)/libext2fs@STATIC_LIB_EXT@
+STATIC_LIBUUID = $(LIB)/libuuid@STATIC_LIB_EXT@ @SOCKET_LIB@ 
 
 PROFILED_LIBSS = $(LIB)/libss@PROFILED_LIB_EXT@
 PROFILED_LIBCOM_ERR = $(LIB)/libcom_err@PROFILED_LIB_EXT@
 PROFILED_LIBE2P = $(LIB)/libe2p@PROFILED_LIB_EXT@
 PROFILED_LIBEXT2FS = $(LIB)/libext2fs@PROFILED_LIB_EXT@
+PROFILED_LIBUUID = $(LIB)/libuuid@PROFILED_LIB_EXT@ @SOCKET_LIB@ 
 
 #
 # Use these definitions is you use tools 2.x, x < 16
@@ -91,7 +94,7 @@ SUBSTITUTE= $(top_builddir)/lib/substitute_sh
 #
 @W@WFLAGS=		-ansi -D_POSIX_SOURCE -pedantic \
 @W@			-Wall -Wwrite-strings -Wpointer-arith \
-@W@			-Wcast-qual -Wenum-clash -Wcast-align -Wtraditional \
+@W@			-Wcast-qual -Wcast-align -Wtraditional \
 @W@			-Wstrict-prototypes -Wmissing-prototypes \
 @W@			-Wnested-externs -Winline -DNO_INLINE_FUNCS -Wshadow 
 
@@ -114,18 +117,39 @@ MANMODE=	444
 all::
 
 #
+# Autoconf magic...
+#
+
+$(top_builddir)/config.status: $(top_srcdir)/configure
+	(cd $(top_builddir); ./config.status --recheck)
+
+$(top_builddir)/MCONFIG: $(top_srcdir)/MCONFIG.in $(top_builddir)/config.status
+	(cd $(top_builddir); CONFIG_FILES=MCONFIG ./config.status)
+
+$(top_builddir)/lib/substitute_sh: $(top_srcdir)/lib/substitute_sh.in \
+		$(top_builddir)/config.status
+	(cd $(top_builddir); CONFIG_FILES=lib/substitute_sh ./config.status)
+
+Makefile: $(srcdir)/Makefile.in $(top_builddir)/MCONFIG \
+		$(top_builddir)/config.status
+	(cd $(top_builddir); CONFIG_FILES=$(my_dir)/Makefile ./config.status)
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.in
+	cd $(top_srcdir) && autoconf
+
+#
 # Make depend magic...
 #
 
 .depend: Makefile $(SRCS) $(top_srcdir)/depfix.sed
 	if test -n "$(SRCS)" ; then \
 		$(CC) -M $(ALL_CFLAGS) $(SRCS) | \
-			sed -f $(top_srcdir)/depfix.sed | \
-			sed -e 's; $(srcdir)/; $$(srcdir)/;g' | \
-			sed -e 's; $(top_srcdir)/; $$(top_srcdir)/;g' | \
-			sed -e 's; $(top_builddir)/; $$(top_builddir)/;g' | \
-			sed -e 's; \./; ;g' | \
-		grep -v "  \\\\$$" > .depend; \
+			sed -f $(top_srcdir)/depfix.sed \
+			    -e 's; $(srcdir)/; $$(srcdir)/;g' \
+			    -e 's; $(top_srcdir)/; $$(top_srcdir)/;g' \
+			    -e 's; $(top_builddir)/; $$(top_builddir)/;g' \
+			    -e 's; \./; ;g' \
+			    -e '/^ *\\$$/d' > .depend; \
 	else :; fi
 
 depend:: .depend

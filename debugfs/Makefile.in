@@ -6,6 +6,7 @@ srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
 top_builddir = ..
+my_dir = debugfs
 INSTALL = @INSTALL@
 
 @MCONFIG@
@@ -21,8 +22,8 @@ SRCS= debug_cmds.c $(srcdir)/debugfs.c $(srcdir)/util.c \
 	$(srcdir)/ncheck.c $(srcdir)/icheck.c $(srcdir)/lsdel.c \
 	$(srcdir)/dump.c
 
-LIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR) 
-DEPLIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR) 
+LIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR)  $(LIBUUID)
+DEPLIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR)  $(LIBUUID)
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
@@ -72,13 +73,14 @@ distclean: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-debug_cmds.o: debug_cmds.c $(top_srcdir)/lib/ss/ss.h $(top_srcdir)/lib/ss/copyright.h \
- $(top_builddir)/lib/ss/ss_err.h
+debug_cmds.o: debug_cmds.c  $(top_builddir)/lib/ss/ss_err.h \
+ $(top_srcdir)/lib/ss/ss.h $(top_srcdir)/lib/ss/copyright.h
 debugfs.o: $(srcdir)/debugfs.c $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ss/ss.h $(top_srcdir)/lib/ss/copyright.h \
  $(top_builddir)/lib/ss/ss_err.h $(srcdir)/debugfs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(top_srcdir)/lib/uuid/uuid.h
 util.o: $(srcdir)/util.c $(srcdir)/debugfs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
@@ -99,4 +101,3 @@ dump.o: $(srcdir)/dump.c $(srcdir)/debugfs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h
-

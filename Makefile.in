@@ -2,11 +2,12 @@ srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
 top_builddir = .
+my_dir = .
 INSTALL = @INSTALL@
 
 @MCONFIG@
 
-LIB_SUBDIRS=lib/et lib/ss lib/ext2fs lib/e2p
+LIB_SUBDIRS=lib/et lib/ss lib/ext2fs lib/e2p lib/uuid
 PROG_SUBDIRS=e2fsck debugfs misc
 SUBDIRS=$(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
@@ -57,7 +58,7 @@ realclean: realclean-recursive realclean-local
 include/linux/types.h: $(SUBSTITUTE) $(srcdir)/include/linux/types.h.in
 	-chmod +x $(SUBSTITUTE)
 	$(SUBSTITUTE) $(srcdir)/include/linux/types.h.in \
-		include/linux/types.h.in
+		include/linux/types.h
 
 mostlyclean-local:
 	$(RM) -f \#* *~ core MAKELOG 
@@ -80,11 +81,20 @@ distribution_tar_file:
 	(cd /tmp/dest; tar cf - . ) | gzip -9 \
 		> e2fsprogs-@E2FSPROGS_VERSION@-@BINARY_TYPE@.tar.gz
 
+SRCROOT = `echo e2fsprogs-@E2FSPROGS_VERSION@ | sed -e 's/-WIP//'`
 
-Makefile: config.status $(srcdir)/Makefile.in
-	CONFIG_FILES=$@ CONFIG_HEADERS= ./config.status
+$(srcdir)/.exclude-file:
+	(cd $(srcdir)/.. ; find $(SRCROOT) \( -name \*~ -o -name \*.orig \
+		-o -name \*.rej \) -print > $(SRCROOT)/.exclude-file)
+	echo "$(SRCROOT)/build" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/todo" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/.exclude-file" >> $(srcdir)/.exclude-file
+	echo $(SRCROOT)/e2fsprogs-@E2FSPROGS_VERSION@.tar.gz \
+		>> $(srcdir)/.exclude-file
+	
 
-config.status: $(srcdir)/configure
-	./config.status --recheck
-$(srcdir)/configure: $(srcdir)/configure.in
-	cd $(srcdir) && autoconf
+source_tar_file: $(srcdir)/.exclude-file
+	(cd $(srcdir) ; tar -C .. -c -v -f - \
+		-X .exclude-file $(SRCROOT) | \
+		gzip -9 > e2fsprogs-@E2FSPROGS_VERSION@.tar.gz)
+	rm -f $(srcdir)/.exclude-file

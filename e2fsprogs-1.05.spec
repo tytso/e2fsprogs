@@ -1,10 +1,10 @@
 Description: Tools for the second extended (ext2) filesystem 
 Name: e2fsprogs
-Version: 1.04
+Version: 1.05
 Release: 0
 Copyright: GPL
 Group: Utilities/System
-Source: tsx-11.mit.edu:/pub/linux/packages/ext2fs/e2fsprogs-1.04.tar.gz
+Source: tsx-11.mit.edu:/pub/linux/packages/ext2fs/e2fsprogs-1.05.tar.gz
 
 %package devel
 Description: e2fs static libs and headers
@@ -54,10 +54,11 @@ mv /usr/sbin/debugfs /sbin/debugfs
 /sbin/mkfs.ext2
 
 %ifarch i386
-/lib/libe2p.so.2.1
-/lib/libext2fs.so.2.0
+/lib/libe2p.so.2.2
+/lib/libext2fs.so.2.1
 /lib/libss.so.2.0
 /lib/libcom_err.so.2.0
+/lib/libuuid.so.1.0
 %endif
 
 /usr/bin/chattr
@@ -80,13 +81,20 @@ mv /usr/sbin/debugfs /sbin/debugfs
 /usr/lib/libext2fs_p.a
 /usr/lib/libss_p.a
 /usr/lib/libcom_err_p.a
+/usr/lib/libuuid.a
+/usr/lib/libuuid_p.a
 /usr/include/ss
 /usr/include/ext2fs
 /usr/include/et
+/usr/include/uuid
 
 %ifarch i386
-/lib/libe2p.so
-/lib/libext2fs.so
-/lib/libss.so
-/lib/libcom_err.so
+/usr/lib/libe2p.so
+/usr/lib/libext2fs.so
+/usr/lib/libss.so
+/usr/lib/libcom_err.so
+/usr/lib/libuuid.so
+
+%post
+rm -f /lib/libe2p.so /lib/libext2fs.so /lib/libss.so /lib/libcom_err.so
 %endif
