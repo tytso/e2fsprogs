@@ -92,13 +92,15 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	 */
 	if (!strcmp(mnt->mnt_dir, "/")) {
 is_root:
+#define TEST_FILE "/.ismount-test-file"		
 		*mount_flags |= EXT2_MF_ISROOT;
-		fd = open(MOUNTED, O_RDWR);
+		fd = open(TEST_FILE, O_RDWR|O_CREAT);
 		if (fd < 0) {
 			if (errno == EROFS)
 				*mount_flags |= EXT2_MF_READONLY;
 		} else
 			close(fd);
+		(void) unlink(TEST_FILE);
 	}
 	endmntent (f);
 	return 0;

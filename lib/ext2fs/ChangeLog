@@ -1,3 +1,11 @@
+2001-06-15  Theodore Tso  <tytso@valinux.com>
+
+	* ismounted.c (check_mntent_file): Use a test file in / to check
+		to see if the root filesystem is mounted read-only.  This
+		protects against the case where /etc might not be on /, as
+		well as the case where /etc/mtab doesn't exist.  (Both are
+		should-never happen scenarios, but you never know...)
+
 2001-06-14  Theodore Tso  <tytso@valinux.com>
 
 	* ismounted.c (ext2fs_check_if_mounted): Fix grammer in comment.
