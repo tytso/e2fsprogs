@@ -9,6 +9,7 @@
 
 #include "e2p.h"
 #include <string.h>
+#include <stdlib.h>
 
 const char *os_tab[] =
 	{ "Linux", 
@@ -32,7 +33,8 @@ char *e2p_os2string(int os_type)
 		os = "(unknown os)";
 
         ret = malloc(strlen(os)+1);
-        strcpy(ret, os);
+	if (ret)
+		strcpy(ret, os);
         return ret;
 }
 

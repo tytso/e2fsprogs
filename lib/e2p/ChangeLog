@@ -1,3 +1,10 @@
+2005-03-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* ostype.c (e2p_os2string): Check to make sure malloc() is
+		successful before attempting to copy into it.  Add
+		#include of stdlib.h to fix a core dump bug on the IA64
+		architecture.  (Addresses Debian Bug #302200)
+
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.37
