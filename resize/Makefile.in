@@ -25,11 +25,11 @@ SRCS= $(srcdir)/extent.c \
 	$(srcdir)/main.c \
 	$(srcdir)/sim_progress.c
 
-LIBS= $(LIBEXT2FS) $(LIBCOM_ERR)  $(LIBUUID)
-DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR)  $(LIBUUID)
+LIBS= $(LIBEXT2FS) $(LIBCOM_ERR)  
+DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR)
 
-STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(STATIC_LIBUUID)
-STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(STATIC_LIBUUID)
+STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
+STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
@@ -105,15 +105,18 @@ $(top_srcdir)/.exclude-file:
 		| sed -e "s/e2fsprogs/$$a/" > $(top_srcdir)/.exclude-file
 	echo "$(SRCROOT)/build" >> $(top_srcdir)/.exclude-file
 	echo "$(SRCROOT)/rpm.log" >> $(top_srcdir)/.exclude-file
+	echo "$(SRCROOT)/powerquest" >> $(top_srcdir)/.exclude-file
 	echo "$(SRCROOT)/.exclude-file" >> $(top_srcdir)/.exclude-file
 	echo $(SRCROOT)/e2fsprogs-@E2FSPROGS_VERSION@.tar.gz \
+		>> $(top_srcdir)/.exclude-file
+	echo $(SRCROOT)/e2fsprogs-ALL-@E2FSPROGS_VERSION@.tar.gz \
 		>> $(top_srcdir)/.exclude-file
 	
 source_tar_file: $(top_srcdir)/.exclude-file
 	(cd $(top_srcdir)/..; a=$(SRCROOT); rm -f $$a ; ln -sf e2fsprogs $$a ; \
 		$(TAR) -c -h -v -f - \
 			-X $$a/.exclude-file $$a | \
-		gzip -9 > e2fsprogs-@E2FSPROGS_VERSION@.tar.gz)
+		gzip -9 > e2fsprogs-ALL-@E2FSPROGS_VERSION@.tar.gz)
 	rm -f $(top_srcdir)/.exclude-file
 
 # +++ Dependency line eater +++

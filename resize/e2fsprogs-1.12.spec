@@ -1,10 +1,10 @@
 Summary: Tools for the second extended (ext2) filesystem 
 Name: e2fsprogs
-Version: 1.11
+Version: 1.12
 Release: 0
 Copyright: GPL
 Group: Utilities/System
-Source: tsx-11.mit.edu:/pub/linux/packages/ext2fs/e2fsprogs-1.11.tar.gz
+Source: ftp://tsx-11.mit.edu/pub/linux/packages/ext2fs/e2fsprogs-1.12.tar.gz
 BuildRoot: /tmp/e2fsprogs-root
 
 %description
@@ -14,6 +14,7 @@ and repairing ext2 filesystems.
 %package devel
 Summary: e2fs static libs and headers
 Group: Development/Libraries
+Requires: e2fsprogs
 
 %description devel 
 Libraries and header files needed to develop ext2 filesystem-specific
@@ -35,12 +36,13 @@ CFLAGS="$RPM_OPT_FLAGS" ./configure --enable-elf-shlibs
 
 make libs progs docs
 
+rm -f resize/resize2fs
+mv resize/resize2fs.static resize/resize2fs
+
 %install
 export PATH=/sbin:$PATH
 make install DESTDIR="$RPM_BUILD_ROOT"
 make install-libs DESTDIR="$RPM_BUILD_ROOT"
-
-mv $RPM_BUILD_ROOT/usr/sbin/debugfs $RPM_BUILD_ROOT/sbin/debugfs
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -54,6 +56,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %attr(-, root, root) %doc README RELEASE-NOTES
 %attr(-, root, root) /sbin/e2fsck
+%attr(-, root, root) /sbin/e2label
 %attr(-, root, root) /sbin/fsck.ext2
 %attr(-, root, root) /sbin/debugfs
 %attr(-, root, root) /sbin/mke2fs
@@ -65,7 +68,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(-, root, root) /sbin/mkfs.ext2
 
 %attr(-, root, root) /lib/libe2p.so.2.3
-%attr(-, root, root) /lib/libext2fs.so.2.3
+%attr(-, root, root) /lib/libext2fs.so.2.4
 %attr(-, root, root) /lib/libss.so.2.0
 %attr(-, root, root) /lib/libcom_err.so.2.0
 %attr(-, root, root) /lib/libuuid.so.1.1
@@ -103,4 +106,3 @@ rm -rf $RPM_BUILD_ROOT
 %files -n resize2fs
 %attr(-, root, root) /usr/man/man8/resize2fs.8
 %attr(-, root, root) /usr/sbin/resize2fs
-

@@ -1,5 +1,10 @@
 Sat Mar  7 18:18:04 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* Makefile.in: Change the name of the complete source file that we
+	 	built (that includes resize2fs) to be
+	 	e2fsprogs-ALL-<version>.tar.gz.  Don't link with libuuid,
+	 	since it's not needed.
+
 	* main.c (main): Add copyright notice.
 
 	* resize2fs.c (blocks_to_move): Create the meta_bmap using the old

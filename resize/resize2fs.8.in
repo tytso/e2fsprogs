@@ -92,6 +92,15 @@ time trials.
 .SH AUTHOR
 .B resize2fs
 was written by Theodore Ts'o <tytso@mit.edu>.
+.SH COPYRIGHT
+Resize2fs is Copyright 1998 by Theodore Ts'o and PowerQuest, Inc.  All
+rights reserved.  
+.B Resize2fs
+may not be redistributed without the prior
+consent of PowerQuest.  This version of 
+.B resize2fs
+is available to licensed
+users of Partition Magic(tm).
 .SH SEE ALSO
 .BR fdisk (8),
 .BR e2fsck (8),
