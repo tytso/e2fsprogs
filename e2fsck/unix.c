@@ -58,6 +58,8 @@ static int possible_block_sizes[] = { 1024, 2048, 4096, 8192, 0};
 static int root_filesystem = 0;
 static int read_only_root = 0;
 
+e2fsck_t e2fsck_global_ctx;	/* Try your very best not to use this! */
+
 static void usage(e2fsck_t ctx)
 {
 	fprintf(stderr,
@@ -228,10 +230,8 @@ static void check_mount(e2fsck_t ctx)
 	}
 
 	printf(_("%s is mounted.  "), ctx->filesystem_name);
-	if (!isatty(0) || !isatty(1)) {
-		printf(_("Cannot continue, aborting.\n\n"));
-		exit(FSCK_ERROR);
-	}
+	if (!isatty(0) || !isatty(1))
+		fatal_error(ctx, _("Cannot continue, aborting.\n\n"));
 	printf(_("\n\n\007\007\007\007WARNING!!!  "
 	       "Running e2fsck on a mounted filesystem may cause\n"
 	       "SEVERE filesystem damage.\007\007\007\n\n"));
@@ -411,11 +411,9 @@ static void reserve_stdio_fds(NOARGS)
 }
 
 #ifdef HAVE_SIGNAL_H
-static e2fsck_t global_signal_ctx;
-
 static void signal_progress_on(int sig)
 {
-	e2fsck_t ctx = global_signal_ctx;
+	e2fsck_t ctx = e2fsck_global_ctx;
 
 	if (!ctx)
 		return;
@@ -426,7 +424,7 @@ static void signal_progress_on(int sig)
 
 static void signal_progress_off(int sig)
 {
-	e2fsck_t ctx = global_signal_ctx;
+	e2fsck_t ctx = e2fsck_global_ctx;
 
 	if (!ctx)
 		return;
@@ -588,19 +586,19 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			com_err("open", errno,
 				_("while opening %s for flushing"),
 				ctx->filesystem_name);
-			exit(FSCK_ERROR);
+			fatal_error(ctx, 0);
 		}
 		if (fsync(fd) < 0) {
 			com_err("fsync", errno,
 				_("while trying to flush %s"),
 				ctx->filesystem_name);
-			exit(FSCK_ERROR);
+			fatal_error(ctx, 0);
 		}
 		if (ioctl(fd, BLKFLSBUF, 0) < 0) {
 			com_err("BLKFLSBUF", errno,
 				_("while trying to flush %s"),
 				ctx->filesystem_name);
-			exit(FSCK_ERROR);
+			fatal_error(ctx, 0);
 		}
 		close(fd);
 	}
@@ -609,7 +607,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		if (cflag || bad_blocks_file) {
 			fprintf(stderr, _("Incompatible options not "
 				"allowed when byte-swapping.\n"));
-			exit(FSCK_ERROR);
+			exit(FSCK_USAGE);
 		}
 	}
 #ifdef HAVE_SIGNAL_H
@@ -620,7 +618,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #ifdef SA_RESTART
 	sa.sa_flags = SA_RESTART;
 #endif
-	global_signal_ctx = ctx;
+	e2fsck_global_ctx = ctx;
 	sa.sa_handler = signal_progress_on;
 	sigaction(SIGUSR1, &sa, 0);
 	sa.sa_handler = signal_progress_off;
@@ -670,7 +668,7 @@ int main (int argc, char *argv[])
 	if (retval) {
 		com_err("e2fsck", retval,
 			_("while trying to initialize program"));
-		exit(1);
+		exit(FSCK_ERROR);
 	}
 	reserve_stdio_fds();
 	
@@ -686,7 +684,7 @@ int main (int argc, char *argv[])
 	if (show_version_only) {
 		fprintf(stderr, _("\tUsing %s, %s\n"),
 			error_message(EXT2_ET_BASE), lib_ver_date);
-		exit(0);
+		exit(FSCK_OK);
 	}
 	
 	check_mount(ctx);
@@ -764,7 +762,7 @@ restart:
 #endif
 		else
 			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);
-		exit(FSCK_ERROR);
+		fatal_error(ctx, 0);
 	}
 	ctx->fs = fs;
 	fs->priv_data = ctx;
@@ -806,7 +804,7 @@ restart:
 			_("while checking ext3 journal for %s"),
 			ctx->device_name);
 		ext2fs_close(ctx->fs);
-		exit(FSCK_ERROR);
+		fatal_error(ctx, 0);
 	}
 
 	if (s->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) {
@@ -815,7 +813,7 @@ restart:
 			com_err(ctx->program_name, retval,
 				_("while recovering ext3 journal of %s"),
 				ctx->device_name);
-			exit(FSCK_ERROR);
+			fatal_error(ctx, 0);
 		}
 		ext2fs_close(ctx->fs);
 		ctx->fs = 0;
@@ -864,27 +862,27 @@ restart:
 		set_latch_flags(PR_LATCH_RELOC, PRL_LATCHED, 0);
 	check_super_block(ctx);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-		exit(FSCK_ERROR);
+		fatal_error(ctx, 0);
 	check_if_skip(ctx);
 	if (bad_blocks_file)
 		read_bad_blocks_file(ctx, bad_blocks_file, replace_bad_blocks);
 	else if (cflag)
 		test_disk(ctx);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-		exit(FSCK_ERROR);
+		fatal_error(ctx, 0);
 
 	if (normalize_swapfs) {
 		if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ==
 		    ext2fs_native_flag()) {
 			fprintf(stderr, _("%s: Filesystem byte order "
 				"already normalized.\n"), ctx->device_name);
-			exit(FSCK_ERROR);
+			fatal_error(ctx, 0);
 		}
 	}
 	if (swapfs) {
 		swap_filesys(ctx);
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-			exit(FSCK_ERROR);
+			fatal_error(ctx, 0);
 	}
 
 	/*
@@ -909,13 +907,13 @@ restart:
 		if (retval) {
 			com_err(ctx->program_name, retval,
 				_("while resetting context"));
-			exit(1);
+			fatal_error(ctx, 0);
 		}
 		ext2fs_close(fs);
 		goto restart;
 	}
 	if (run_result & E2F_FLAG_SIGNAL_MASK)
-		exit(FSCK_ERROR);
+		fatal_error(ctx, 0);
 	if (run_result & E2F_FLAG_CANCEL)
 		ext2fs_unmark_valid(fs);
 
