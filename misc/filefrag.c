@@ -9,7 +9,7 @@
  * %End-Header%
  */
 
-#ifndef __LINUX__
+#ifndef __linux__
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -1,3 +1,9 @@
+2004-02-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* filefrag.c: Use #ifdef __linux__ instead of __LINUX__ so that it
+		actually compiles on Linux.  (Addresses Debian bug
+		#230992)
+
 2004-01-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* chattr.1.in: Clarify man page.
