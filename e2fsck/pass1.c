@@ -78,7 +78,7 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 
 struct process_block_struct {
 	ext2_ino_t	ino;
-	int		is_dir:1, is_reg:1, clear:1, suppress:1,
+	unsigned	is_dir:1, is_reg:1, clear:1, suppress:1,
 				fragmented:1, compressed:1, bbcheck:1;
 	blk_t		num_blocks;
 	blk_t		max_blocks;
