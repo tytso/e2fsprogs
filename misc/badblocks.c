@@ -62,10 +62,14 @@ static int w_flag = 0;			/* do r/w test: 0=no, 1=yes,
 					 * 2=non-destructive */
 static int s_flag = 0;			/* show progress of test */
 static int force = 0;			/* force check of mounted device */
+static int t_flag = 0;			/* number of test patterns */
+static int t_max = 0;			/* allocated test patterns */
+static long *t_patts = NULL;		/* test patterns */
+#define T_INC 32
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] device [last_block [start_block]]\n"),
+	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n device [last_block [start_block]]\n"),
 		 program_name);
 	exit (1);
 }
@@ -155,6 +159,37 @@ static void uncapture_terminate(void)
 	signal (SIGUSR2, SIG_DFL);
 }
 
+static void pattern_fill(unsigned char *buffer, int pattern, size_t n)
+{
+	int	i, nb;
+	unsigned char	bpattern[4], *ptr;
+	
+	if (pattern == -1) {
+		for (ptr = buffer; ptr < buffer + n; ptr++) {
+			(*ptr) = random() % (1 << (8 * sizeof(char)));
+		}
+		if (s_flag | v_flag)
+			fprintf(stderr, _("Testing with random pattern: "));
+	} else {
+		bpattern[0] = 0;
+		for (i = 0; i < sizeof(bpattern); i++) {
+			if (pattern == 0)
+				break;
+			bpattern[i] = pattern & 0xFF;
+			pattern = pattern >> 8;
+		}
+		nb = i ? (i-1) : 0;
+		for (ptr = buffer, i = nb; ptr < buffer + n; ptr++) {
+			*ptr = bpattern[i--];
+			if (i < 0)
+				i = nb;
+		}
+		if (s_flag | v_flag)
+			fprintf(stderr, _("Testing with pattern 0x%02x%02x%02x%02x: "),
+				buffer[0], buffer[1], buffer[2], buffer[3]);
+	}
+}
+
 /*
  * Perform a read of a sequence of blocks; return the number of blocks
  *    successfully sequentially read.
@@ -241,22 +276,30 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
 	} while (next_bad && next_bad < from_count);
 
-	blkbuf = malloc (blocks_at_once * block_size);
+	if (t_flag) {
+		blkbuf = malloc ((blocks_at_once + 1) * block_size);
+	} else {
+		blkbuf = malloc (blocks_at_once * block_size);
+	}
 	if (!blkbuf)
 	{
 		com_err (program_name, ENOMEM, _("while allocating buffers"));
 		exit (1);
 	}
-	flush_bufs();
 	if (v_flag) {
-	    fprintf(stderr, _("Checking for bad blocks in read-only mode\n"));
-	    fprintf (stderr, _("From block %lu to %lu\n"), from_count,
+	    fprintf (stderr, _("Checking blocks %lu to %lu\n"), from_count,
 		     last_block);
 	}
+	if (t_flag) {
+		fprintf(stderr, _("Checking for bad blocks in read-only mode\n"));
+		pattern_fill(blkbuf + blocks_at_once * block_size,
+			     t_patts[0], block_size);
+	}
+	flush_bufs();
 	try = blocks_at_once;
 	currently_testing = from_count;
 	num_blocks = last_block;
-	if (s_flag || v_flag > 1) {
+	if (!t_flag && (s_flag || v_flag)) {
 		fprintf(stderr,
 			_("Checking for bad blocks (read-only test): "));
 		if (v_flag <= 1)
@@ -277,6 +320,16 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 		if (currently_testing + try > last_block)
 			try = last_block - currently_testing;
 		got = do_read (dev, blkbuf, try, block_size, currently_testing);
+		if (t_flag) {
+			/* test the comparison between all the
+			   blocks successfully read  */
+			int i;
+			for (i = 0; i < got; ++i)
+				if (memcmp (blkbuf+i*block_size,
+					    blkbuf+blocks_at_once*block_size,
+					    block_size))
+					bb_count += bb_output(currently_testing + i);
+		}
 		currently_testing += got;
 		if (got == try) {
 			try = blocks_at_once;
@@ -290,7 +343,7 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 	}
 	num_blocks = 0;
 	alarm(0);
-	if (s_flag || v_flag > 1)
+	if (s_flag || v_flag)
 		fprintf(stderr, _(done_string));
 
 	fflush (stderr);
@@ -305,9 +358,10 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 			     int block_size, unsigned long from_count,
 			     unsigned long blocks_at_once)
 {
-	int i;
 	char * buffer;
-	static unsigned char pattern[] = {0xaa, 0x55, 0xff, 0x00};
+	const long patterns[] = {0xaa, 0x55, 0xff, 0x00};
+	const long *pattern;
+	int nr_pattern, pat_idx;
 	unsigned int bb_count = 0;
 
 	buffer = malloc (2 * block_size);
@@ -325,11 +379,15 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 		fprintf(stderr, _("From block %lu to %lu\n"),
 			 from_count, last_block);
 	}
-	for (i = 0; i < sizeof (pattern); i++) {
-		memset (buffer, pattern[i], block_size);
-		if (s_flag | v_flag)
-			fprintf (stderr, _("Writing pattern 0x%08x: "),
-				 *((int *) buffer));
+	if (t_flag) {
+		pattern = t_patts;
+		nr_pattern = t_flag;
+	} else {
+		pattern = patterns;
+		nr_pattern = sizeof(patterns) / sizeof(patterns[0]);
+	}
+	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
+		pattern_fill(buffer, pattern[pat_idx], block_size);
 		num_blocks = last_block;
 		currently_testing = from_count;
 		if (s_flag && v_flag <= 1)
@@ -382,7 +440,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 			fprintf(stderr, _(done_string));
 		flush_bufs();
 	}
-
+	uncapture_terminate();
 	free(buffer);
 	return bb_count;
 }
@@ -397,8 +455,10 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 			     unsigned long blocks_at_once)
 {
 	char *blkbuf, *save_ptr, *test_ptr, *read_ptr;
-	char * ptr;
 	int try, i;
+	const long patterns[] = {-1};
+	const long *pattern;
+	int nr_pattern, pat_idx;
 	long got, used2, written, save_currently_testing;
 	struct saved_blk_record *test_record;
 	/* This is static to prevent being clobbered by the longjmp */
@@ -426,16 +486,6 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 	}
 	num_saved = 0;
 
-	/* inititalize the test data randomly: */
-	if (v_flag) {
-		fprintf (stderr, _("Initializing random test data\n"));
-	}
-	for(ptr = blkbuf + blocks_at_once * block_size;
-	    ptr < blkbuf + 2 * blocks_at_once * block_size;
-	    ++ptr) {
-		(*ptr) = random() % (1 << (8 * sizeof(char)));
-	}
-
 	flush_bufs();
 	if (v_flag) {
 	    fprintf (stderr,
@@ -443,9 +493,7 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 	    fprintf (stderr, _("From block %lu to %lu\n"), from_count, last_block);
 	}
 	if (s_flag || v_flag > 1) {
-		fprintf(stderr, _("Checking for bad blocks (non-destructive read-write test): "));
-		if (v_flag <= 1)
-			alarm_intr(SIGALRM);
+		fprintf(stderr, _("Checking for bad blocks (non-destructive read-write test)\n"));
 	}
 	if (setjmp(terminate_env)) {
 		/*
@@ -467,134 +515,149 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 	/* set up abend handler */
 	capture_terminate(terminate_env);
 
-	buf_used = 0;
-	bb_count = 0;
-	save_ptr = blkbuf;
-	test_ptr = blkbuf + (blocks_at_once * block_size);
-	currently_testing = from_count;
-	num_blocks = last_block;
+	if (t_flag) {
+		pattern = t_patts;
+		nr_pattern = t_flag;
+	} else {
+		pattern = patterns;
+		nr_pattern = sizeof(patterns) / sizeof(patterns[0]);
+	}
+	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
+		pattern_fill(blkbuf + blocks_at_once * block_size,
+			     pattern[pat_idx], blocks_at_once * block_size);
 
-	while (currently_testing < last_block) {
-		try = blocks_at_once - buf_used;
-		if (next_bad) {
-			if (currently_testing == next_bad) {
-				/* fprintf (out, "%lu\n", nextbad); */
-				ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
-				currently_testing++;
+		buf_used = 0;
+		bb_count = 0;
+		save_ptr = blkbuf;
+		test_ptr = blkbuf + (blocks_at_once * block_size);
+		currently_testing = from_count;
+		num_blocks = last_block;
+		if (s_flag && v_flag <= 1)
+			alarm_intr(SIGALRM);
+
+		while (currently_testing < last_block) {
+			try = blocks_at_once - buf_used;
+			if (next_bad) {
+				if (currently_testing == next_bad) {
+					/* fprintf (out, "%lu\n", nextbad); */
+					ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
+					currently_testing++;
+					goto check_for_more;
+				}
+				else if (currently_testing + try > next_bad)
+					try = next_bad - currently_testing;
+			}
+			if (currently_testing + try > last_block)
+				try = last_block - currently_testing;
+			got = do_read (dev, save_ptr, try, block_size,
+				       currently_testing);
+			if (got == 0) {
+				/* First block must have been bad. */
+				bb_count += bb_output(currently_testing++);
 				goto check_for_more;
 			}
-			else if (currently_testing + try > next_bad)
-				try = next_bad - currently_testing;
-		}
-		if (currently_testing + try > last_block)
-			try = last_block - currently_testing;
-		got = do_read (dev, save_ptr, try, block_size,
-			       currently_testing);
-		if (got == 0) {
-			/* First block must have been bad. */
-			bb_count += bb_output(currently_testing++);
-			goto check_for_more;
-		}
 
-		/*
-		 * Note the fact that we've saved this much data
-		 * *before* we overwrite it with test data
-		 */
-		test_record[num_saved].block = currently_testing;
-		test_record[num_saved].num = got;
-		num_saved++;
+			/*
+			 * Note the fact that we've saved this much data
+			 * *before* we overwrite it with test data
+			 */
+			test_record[num_saved].block = currently_testing;
+			test_record[num_saved].num = got;
+			num_saved++;
 
-		/* Write the test data */
-		written = do_write (dev, test_ptr, got, block_size,
-				    currently_testing);
-		if (written != got)
-			com_err (program_name, errno,
-				 _("during test data write, block %lu"),
-				 currently_testing + written);
+			/* Write the test data */
+			written = do_write (dev, test_ptr, got, block_size,
+					    currently_testing);
+			if (written != got)
+				com_err (program_name, errno,
+					 _("during test data write, block %lu"),
+					 currently_testing + written);
 
-		buf_used += got;
-		save_ptr += got * block_size;
-		test_ptr += got * block_size;
-		currently_testing += got;
-		if (got != try)
-			bb_count += bb_output(currently_testing++);
-
-	check_for_more:
-		/*
-		 * If there's room for more blocks to be tested this
-		 * around, and we're not done yet testing the disk, go
-		 * back and get some more blocks.
-		 */
-		if ((buf_used != blocks_at_once) &&
-		    (currently_testing < last_block))
-			continue;
-
-		flush_bufs();
-		save_currently_testing = currently_testing;
-
-		/*
-		 * for each contiguous block that we read into the
-		 * buffer (and wrote test data into afterwards), read
-		 * it back (looping if necessary, to get past newly
-		 * discovered unreadable blocks, of which there should
-		 * be none, but with a hard drive which is unreliable,
-		 * it has happened), and compare with the test data
-		 * that was written; output to the bad block list if
-		 * it doesn't match.
-		 */
-		used2 = 0;
-		save_ptr = blkbuf;
-		test_ptr = blkbuf + (blocks_at_once * block_size);
-		read_ptr = blkbuf + (2 * blocks_at_once * block_size);
-		try = 0;
-
-		while (1) {
-			if (try == 0) {
-				if (used2 >= num_saved)
-					break;
-				currently_testing = test_record[used2].block;
-				try = test_record[used2].num;
-				used2++;
-			}
-				
-			got = do_read (dev, read_ptr, try,
-				       block_size, currently_testing);
-
-			/* test the comparison between all the
-			   blocks successfully read  */
-			for (i = 0; i < got; ++i)
-				if (memcmp (test_ptr+i*block_size,
-					    read_ptr+i*block_size, block_size))
-					bb_count += bb_output(currently_testing + i);
-			if (got < try) {
-				bb_count += bb_output(currently_testing + got);
-				got++;
-			}
-					
-			/* when done, write back original data */
-			do_write (dev, save_ptr, got, block_size,
-				  currently_testing);
-
-			currently_testing += got;
+			buf_used += got;
 			save_ptr += got * block_size;
 			test_ptr += got * block_size;
-			read_ptr += got * block_size;
-			try -= got;
+			currently_testing += got;
+			if (got != try)
+				bb_count += bb_output(currently_testing++);
+
+		check_for_more:
+			/*
+			 * If there's room for more blocks to be tested this
+			 * around, and we're not done yet testing the disk, go
+			 * back and get some more blocks.
+			 */
+			if ((buf_used != blocks_at_once) &&
+			    (currently_testing < last_block))
+				continue;
+
+			flush_bufs();
+			save_currently_testing = currently_testing;
+
+			/*
+			 * for each contiguous block that we read into the
+			 * buffer (and wrote test data into afterwards), read
+			 * it back (looping if necessary, to get past newly
+			 * discovered unreadable blocks, of which there should
+			 * be none, but with a hard drive which is unreliable,
+			 * it has happened), and compare with the test data
+			 * that was written; output to the bad block list if
+			 * it doesn't match.
+			 */
+			used2 = 0;
+			save_ptr = blkbuf;
+			test_ptr = blkbuf + (blocks_at_once * block_size);
+			read_ptr = blkbuf + (2 * blocks_at_once * block_size);
+			try = 0;
+
+			while (1) {
+				if (try == 0) {
+					if (used2 >= num_saved)
+						break;
+					currently_testing = test_record[used2].block;
+					try = test_record[used2].num;
+					used2++;
+				}
+				
+				got = do_read (dev, read_ptr, try,
+					       block_size, currently_testing);
+
+				/* test the comparison between all the
+				   blocks successfully read  */
+				for (i = 0; i < got; ++i)
+					if (memcmp (test_ptr+i*block_size,
+						    read_ptr+i*block_size, block_size))
+						bb_count += bb_output(currently_testing + i);
+				if (got < try) {
+					bb_count += bb_output(currently_testing + got);
+					got++;
+				}
+					
+				/* when done, write back original data */
+				do_write (dev, save_ptr, got, block_size,
+					  currently_testing);
+
+				currently_testing += got;
+				save_ptr += got * block_size;
+				test_ptr += got * block_size;
+				read_ptr += got * block_size;
+				try -= got;
+			}
+
+			/* empty the buffer so it can be reused */
+			num_saved = 0;
+			buf_used = 0;
+			save_ptr = blkbuf;
+			test_ptr = blkbuf + (blocks_at_once * block_size);
+			currently_testing = save_currently_testing;
 		}
+		num_blocks = 0;
+		alarm(0);
+		if (s_flag || v_flag > 1)
+			fprintf(stderr, _(done_string));
 
-		/* empty the buffer so it can be reused */
-		num_saved = 0;
-		buf_used = 0;
-		save_ptr = blkbuf;
-		test_ptr = blkbuf + (blocks_at_once * block_size);
-		currently_testing = save_currently_testing;
+		flush_bufs();
 	}
-	num_blocks = 0;
-	alarm(0);
 	uncapture_terminate();
-	if (s_flag || v_flag > 1)
-		fprintf(stderr, _(done_string));
-
 	fflush(stderr);
 	free(blkbuf);
 	free(test_record);
@@ -646,6 +709,7 @@ int main (int argc, char ** argv)
 	int passes_clean = 0;
 	int dev;
 	errcode_t errcode;
+	long pattern;
 	unsigned int (*test_func)(int, unsigned long,
 				  int, unsigned long,
 				  unsigned long);
@@ -663,7 +727,7 @@ int main (int argc, char ** argv)
 
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:fi:o:svwnc:p:h:")) != EOF) {
+	while ((c = getopt (argc, argv, "b:fi:o:svwnc:p:h:t:")) != EOF) {
 		switch (c) {
 		case 'b':
 			block_size = strtoul (optarg, &tmp, 0);
@@ -719,8 +783,46 @@ int main (int argc, char ** argv)
 		case 'h':
 			host_device_name = optarg;
 			break;
+		case 't':
+			if (t_flag + 1 > t_max) {
+				long *t_patts_new;
+
+				t_patts_new = realloc(t_patts, t_max + T_INC);
+				if (!t_patts_new) {
+					com_err(program_name, ENOMEM,
+						_("can't allocate memory for "
+						  "test_pattern - %s"),
+						optarg);
+					exit(1);
+				}
+				t_patts = t_patts_new;
+				t_max += T_INC;
+			}
+			pattern = strtol(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(program_name, 0,
+					_("invalid test_pattern: %s\n"),
+					optarg);
+				exit(1);
+			}
+			t_patts[t_flag++] = pattern;
+			break;
 		default:
 			usage();
+		}
+	}
+	if (!w_flag) {
+		if (t_flag > 1) {
+			com_err(program_name, 0,
+			_("Maximum of one test_pattern may be specified "
+			  "in read-only mode"));
+			exit(1);
+		}
+		if (t_patts && (t_patts[0] == -1)) {
+			com_err(program_name, 0,
+			_("Random test_pattern is not allowed "
+			  "in read-only mode"));
+			exit(1);
 		}
 	}
 	if (optind > argc - 1)
@@ -867,6 +969,8 @@ int main (int argc, char ** argv)
 	close (dev);
 	if (out != stdout)
 		fclose (out);
+	if (t_patts)
+		free(t_patts);
 	return 0;
 }
 

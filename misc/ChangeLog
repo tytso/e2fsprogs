@@ -9,6 +9,12 @@
 		in main().  Thanks to Thayne Harbaugh for pointing out
 		these bugs.
 
+	* badblocks.c, badblocks.8.in: Functional enhancements contributed
+		by Thayne Harbaugh.  These patches allow the -t option to
+		control the test pattern(s) used when checking the disk.
+		Test patterns may be specified in all modes (r/w, r/o and
+		non-destructive).
+
 2003-05-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.c (main, add_journal_device, remove_journal_device): If

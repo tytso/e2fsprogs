@@ -27,6 +27,10 @@ badblocks \- search a device for bad blocks
 .B \-p
 .I num_passes
 ]
+[
+.B \-t
+.I test_pattern
+]
 .I device
 [
 .I last-block
@@ -136,6 +140,19 @@ num_passes consecutive scans of the disk.
 Default is 0, meaning
 .B badblocks
 will exit after the first pass.
+.TP
+.BI \-t " test_pattern"
+Specify a test pattern.  A value of -1 uses a random bit pattern.
+All other values are used to fill the test buffer.  
+For read/write (\fB-w\fR) and non-destructive (\fB-n\fR) modes,
+multiple test patterns may be specified. For
+read-only mode only a single byte pattern may be used and it may not be
+the random value -1.  Read-only testing with a pattern assumes that the
+same pattern has previously been written to the disk - if not, large
+numbers of blocks will fail verification.  
+If multiple patterns
+are specified then all blocks will be tested with an earlier pattern 
+before proceeding to the next pattern.
 .TP
 .B \-n
 Use non-destructive read-write mode.  By default only a non-destructive 
