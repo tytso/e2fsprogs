@@ -1,5 +1,15 @@
 /*
  * sim_progress.c --- simple progress meter
+ *
+ * Copyright (C) 1997, 1998 by Theodore Ts'o and
+ * 	PowerQuest, Inc.
+ *
+ * Copyright (C) 1999, 2000 by Theosore Ts'o
+ * 
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include "resize2fs.h"

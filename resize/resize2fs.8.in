@@ -2,7 +2,7 @@
 .\" Copyright 1997 by Theodore Ts'o.  All Rights Reserved.
 .\" 
 .\" .TH RESIZE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
-.TH RESIZE2FS 8 "September 1998" "Resize2fs version 1.03"
+.TH RESIZE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 resize2fs \- ext2 file system resizer
 .SH SYNOPSIS
@@ -96,12 +96,9 @@ was written by Theodore Ts'o <tytso@mit.edu>.
 .SH COPYRIGHT
 Resize2fs is Copyright 1998 by Theodore Ts'o and PowerQuest, Inc.  All
 rights reserved.  
+As of April, 2000
 .B Resize2fs
-may not be redistributed without the prior
-consent of PowerQuest.  This version of 
-.B resize2fs
-is available to licensed
-users of Partition Magic(tm).
+may be redistributed under the terms of the GPL.
 .SH SEE ALSO
 .BR fdisk (8),
 .BR e2fsck (8),

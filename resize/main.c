@@ -1,10 +1,14 @@
 /*
  * main.c --- ext2 resizer main program
  *
- * Copyright (C) 1997 Theodore Ts'o
+ * Copyright (C) 1997, 1998 by Theodore Ts'o and
+ * 	PowerQuest, Inc.
+ *
+ * Copyright (C) 1999, 2000 by Theosore Ts'o
  * 
  * %Begin-Header%
- * All rights reserved.
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
  * %End-Header%
  */
 
@@ -19,13 +23,7 @@ extern int optind;
 
 #include "resize2fs.h"
 
-#include "./version.h"
-
-/* #define EXPIRE_TIME 905835600 */
-
-#ifdef EXPIRE_TIME
-static void check_expire_time(const char *progname);
-#endif
+#include "../version.h"
 
 char *program_name, *device_name;
 
@@ -33,9 +31,6 @@ static volatile void usage (char *prog)
 {
 	fprintf (stderr, "usage: %s [-d debug_flags] [-f] [-F] [-p] device [new-size]\n\n", prog);
 
-#ifdef EXPIRE_TIME
-	check_expire_time(program_name);
-#endif
 	exit (1);
 }
 
@@ -111,27 +106,6 @@ static void check_mount(char *device)
 	exit(1);
 }
 
-#ifdef EXPIRE_TIME
-static void check_expire_time(const char *progname)
-{
-	time_t	timenow;
-
-	timenow = time(0);
-	
-	if (timenow > EXPIRE_TIME) {
-		fprintf(stderr, "This beta-test version of %s is expired.\n"
-			"Please contact PowerQuest to get an updated version "
-			"of this program.\n\n", progname);
-		exit(1);
-	} else {
-		fprintf(stderr, "Please note this is a beta-test version of "
-			"%s which will\nexpire in %d days.\n\n", progname,
-			(EXPIRE_TIME - timenow) / (60*60*24));
-	}
-}		
-#endif
-	
-
 
 int main (int argc, char ** argv)
 {
@@ -152,7 +126,6 @@ int main (int argc, char ** argv)
 
 	fprintf (stderr, "resize2fs %s (%s)\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
-	fprintf(stderr, "Copyright 1998 by Theodore Ts'o and PowerQuest, Inc.  All Rights Reserved.\n\n");
 	if (argc && *argv)
 		program_name = *argv;
 
@@ -180,10 +153,6 @@ int main (int argc, char ** argv)
 	if (optind == argc)
 		usage(program_name);
 
-#ifdef EXPIRE_TIME
-	check_expire_time(program_name);
-#endif
-	
 	device_name = argv[optind++];
 	if (optind < argc) {
 		new_size = strtoul(argv[optind++], &tmp, 0);

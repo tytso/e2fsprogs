@@ -1,10 +1,14 @@
 /*
  * resize2fs.c --- ext2 main routine
  *
- * Copyright (C) 1997 Theodore Ts'o
+ * Copyright (C) 1997, 1998 by Theodore Ts'o and
+ * 	PowerQuest, Inc.
+ *
+ * Copyright (C) 1999, 2000 by Theosore Ts'o
  * 
  * %Begin-Header%
- * All rights reserved.
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
  * %End-Header%
  */
 

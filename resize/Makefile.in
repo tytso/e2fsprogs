@@ -34,7 +34,7 @@ STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR)
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-all:: $(PROGS) $(TEST_PROGS) $(MANPAGES) resize2fs.static
+all:: $(PROGS) $(TEST_PROGS) $(MANPAGES) 
 
 resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS)
@@ -126,18 +126,19 @@ source_tar_file: $(top_srcdir)/.exclude-file
 # the Makefile.in file
 #
 extent.o: $(srcdir)/extent.c $(srcdir)/resize2fs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h
+ $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
 resize2fs.o: $(srcdir)/resize2fs.c $(srcdir)/resize2fs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h
+ $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
 main.o: $(srcdir)/main.c $(srcdir)/resize2fs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/version.h
+ $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(srcdir)/../version.h
 sim_progress.o: $(srcdir)/sim_progress.c $(srcdir)/resize2fs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h
+ $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h

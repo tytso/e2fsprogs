@@ -1,3 +1,13 @@
+2000-04-06  Theodore Ts'o  <tytso@valinux.com>
+
+	* Update copyright of files in preparation for release of
+		resize2fs.  Also removed the (obsolete) beta-test check
+		that had been in the code, as well as the old spec files
+		used to package the separate distribution of resize2fs.
+
+	* Makefile.in: No longer build resize2fs.static, since there's no
+		real point in it any more.
+
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
 	* main.c: For platforms that don't define optarg.h, manually
