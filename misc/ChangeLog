@@ -1,3 +1,10 @@
+2003-07-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (set_fs_defaults): If sector_size is 0, don't use it to
+		set the blocksize to zero.  This causes MD devices to fail
+		since they don't support the BLKSSZGET ioctl.  (Addresses
+		Debian bug #196734)
+
 2003-07-06  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (PRS, main): If CONFIG_TESTIO_DEBUG, then use the
