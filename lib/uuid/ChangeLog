@@ -1,3 +1,8 @@
+1999-11-19    <tytso@valinux.com>
+
+	* Makefile.in (distclean): Remove TAGS and Makefile.in.old from
+		the source directory.
+
 1999-11-10    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.18

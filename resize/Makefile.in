@@ -87,8 +87,9 @@ clean:
 		resize2fs.static test_extent.out
 
 mostlyclean: clean
+
 distclean: clean
-	$(RM) -f .depend Makefile
+	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
 #
 # Kludge to create a "special" e2fsprogs distribution file.

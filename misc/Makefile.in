@@ -169,7 +169,7 @@ clean:
 
 mostlyclean: clean
 distclean: clean
-	$(RM) -f .depend Makefile
+	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
 # +++ Dependency line eater +++
 # 

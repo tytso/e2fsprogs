@@ -85,7 +85,7 @@ clean::
 	$(RM) -f ../libe2p.a ../libe2p_p.a
 mostlyclean:: clean
 distclean:: clean
-	$(RM) -f .depend Makefile
+	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
 # +++ Dependency line eater +++
 # 

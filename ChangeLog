@@ -1,3 +1,9 @@
+1999-11-19    <tytso@valinux.com>
+
+	* Makefile.in (distclean): Remove TAGS and Makefile.in.old from
+		the source directory.  Also, when making the .exclude file
+		for the source_tar_file, exclude those two files as well.
+
 1999-11-10    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.18

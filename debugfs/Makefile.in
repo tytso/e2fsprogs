@@ -65,7 +65,8 @@ clean:
 
 mostlyclean: clean
 distclean: clean
-	$(RM) -f debug_cmds.c .depend Makefile
+	$(RM) -f debug_cmds.c .depend Makefile $(srcdir)/TAGS \
+		$(srcdir)/Makefile.in.old
 
 # +++ Dependency line eater +++
 # 
