@@ -1,3 +1,8 @@
+Sat Oct 25 18:38:56 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Add scripts to skip the e_brel_bma and e_irel_ima tests (since
+		they have been removed from the library for now)
+
 Thu Aug 14 11:25:23 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* f_badinode: Modify test to check for "bad" character and block
