@@ -1,3 +1,19 @@
+1998-03-28  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in: Use && after a cd command so that the right thing
+		happens if the directory is missing.  Don't compile man
+		pages upon installation any more, since modern Linux
+		systems don't have /usr/man/cat? anymore (they 
+		typically cache man pages in /var/catman and delete them
+		if they haven't been used in a while, to save on disk
+		space, and because CPU's are fast enough these days that
+		you can get away with this).
+
+	* MCONFIG.in: Add a new makefile variable for the share
+		directory (i.e., /usr/share).  Make an autoconf magic
+		make rule so that $(top_builddir)/util/subst.conf gets
+		rebuilt automatically when necessary.
+
 Mon Jan 19 10:01:39 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* e2fsprogs-1.12.spec: Update spec file in preparation for 1.12

@@ -21,14 +21,14 @@ progs: $(SUBS) all-progs-recursive
 libs: $(SUBS) all-libs-recursive
 
 docs:
-	(cd doc; make libext2fs.info)
+	(cd doc && make libext2fs.info)
 
 install-doc-libs:
-	(cd doc; make install-doc-libs)
+	(cd doc && make install-doc-libs)
 
 install: all-libs-recursive install-progs-recursive \
 	install-shlibs-libs-recursive install-doc-libs
-	(export MANPATH=$(DESTDIR)$(mandir); $(srcdir)/install-utils/compile_manpages)
+#	(export MANPATH=$(DESTDIR)$(mandir); $(srcdir)/install-utils/compile_manpages)
 
 install-libs: install-libs-recursive
 
@@ -109,7 +109,7 @@ $(srcdir)/.exclude-file:
 	echo "$(SRCROOT)/.exclude-file" >> $(srcdir)/.exclude-file
 	echo $(SRCROOT)/e2fsprogs-@E2FSPROGS_VERSION@.tar.gz \
 		>> $(srcdir)/.exclude-file
-	
+
 source_tar_file: $(srcdir)/.exclude-file
 	(cd $(srcdir)/..; a=$(SRCROOT); rm -f $$a ; ln -sf e2fsprogs $$a ; \
 		$(TAR) -c -h -v -f - \
