@@ -1221,6 +1221,10 @@ int main(int argc, char *argv[])
 	if (oldpath) {
 		fsck_path = malloc (strlen (fsck_prefix_path) + 1 +
 				    strlen (oldpath) + 1);
+		if (!fsck_path) {
+			fprintf(stderr, "%s: Unable to allocate memory for fsck_path\n", progname);
+			exit(EXIT_ERROR);
+		}
 		strcpy (fsck_path, fsck_prefix_path);
 		strcat (fsck_path, ":");
 		strcat (fsck_path, oldpath);

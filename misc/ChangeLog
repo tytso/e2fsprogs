@@ -1,3 +1,7 @@
+2004-12-22  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.c (main): Check return from malloc of fsck_path string.
+
 2004-12-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.c (parse_time): Fix minor buglet; the parse_time routine
