@@ -1,3 +1,8 @@
+2001-01-14  Theodore Ts'o  <tytso@valinux.com>
+
+	* feature.c: Remove backward compatibility #ifdef's for old
+		ext2_fs.h header files.
+
 2001-01-11  Theodore Ts'o  <tytso@valinux.com>
 
 	* pf.c: Clarified name of the Compression_Raw_Access flag, and
