@@ -5,23 +5,26 @@ rootdev=$(cat proc/sys/kernel/real-root-dev)
 cmdline=$(cat /proc/cmdline)
 umount -n proc
 if [ $rootdev != 256 ]; then
-    mount -nt proc proc /proc
     mount -nt tmpfs tmpfs /dev2
-    mount -nt devfs devfs /devfs > /dev2/null 2>&1
+    mount -nt proc proc /proc 
+    mount -nt devfs devfs /devfs > /dev/null 2>&1
     get_device
     mount_device
     ext3root=`awk '!/^ *#/ { if (($2 == "/") && ($3 == "ext3")) {print $1;}}' < /mnt/etc/fstab`
-    umount -n /devfs > /dev2/null 2>&1
-    umount -n /mnt > /dev2/null 2>&1
-    umount /mnt > /dev2/null 2>&1
-    if test -n "$ext3root" ; then
+    ext2root=`awk '!/^ *#/ { if (($2 == "/") && ($3 == "ext2")) {print $1;}}' < /mnt/etc/fstab`
+    umount -n /devfs > /dev/null 2>&1
+    umount -n /mnt > /dev/null 2>&1
+    if test -n "$ext3root" -o -n "$ext2root" ; then
 	mount -nt tmpfs tmpfs /etc
 	echo >> /etc/fstab
-	TUNE2FS_SKIP_MOUNT_CHECK=yes
-	export TUNE2FS_SKIP_MOUNT_CHECK
-	/sbin/tune2fs -O has_journal /dev2/root2 > /dev2/null 2>&1
+	echo >> /etc/mtab
+	if test -n "$ext3root" ; then
+	    /sbin/tune2fs -O has_journal /dev2/root2 > /dev/null 2>&1
+	else
+	    /sbin/tune2fs -O ^has_journal /dev2/root2 > /dev/null 2>&1
+	fi
 	umount -n /etc
     fi
     umount -n /dev2
-    umount -n /proc
+    umount -n /proc > /dev/null 2>&1
 fi
