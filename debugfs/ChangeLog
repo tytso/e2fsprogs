@@ -1,3 +1,10 @@
+1999-11-08    <tytso@valinux.com>
+
+	* icheck.c (do_icheck): 
+	* ncheck.c (do_ncheck): If ext2fs_open_inode_scan() returns 
+		EXT2_ET_BAD_BLOCK_IN_INODE_TABLE loop to skip over the bad
+		blocks in the inode table.
+
 1999-10-26    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.17

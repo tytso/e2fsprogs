@@ -99,7 +99,9 @@ void do_icheck(int argc, char **argv)
 		goto error_out;
 	}
 
-	retval = ext2fs_get_next_inode(scan, &ino, &inode);
+	do {
+		retval = ext2fs_get_next_inode(scan, &ino, &inode);
+	} while (retval == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE);
 	if (retval) {
 		com_err("icheck", retval, "while starting inode scan");
 		goto error_out;
@@ -131,7 +133,9 @@ void do_icheck(int argc, char **argv)
 			break;
 
 	next:
-		retval = ext2fs_get_next_inode(scan, &ino, &inode);
+		do {
+			retval = ext2fs_get_next_inode(scan, &ino, &inode);
+		} while (retval == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE);
 		if (retval) {
 			com_err("icheck", retval,
 				"while doing inode scan");
