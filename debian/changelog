@@ -1,3 +1,10 @@
+e2fsprogs (1.35-2) unstable; urgency=low
+
+  * Use 64-bit ioctl's if present to determine the 64-bit size of a device
+  * Add tune2fs to the e2fsprogs udeb package (Closes: #235639)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue,  2 Mar 2004 10:13:39 -0500
+
 e2fsprogs (1.35-1) unstable; urgency=low
 
   * New upstream version.

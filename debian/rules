@@ -235,7 +235,7 @@ install-udeb: build
 
 	rm -rf ${udebdir}/usr
 	find ${udebdir}/sbin -type f -a ! -name e2fsck \
-		-a ! -name mke2fs -print | xargs rm
+		-a ! -name mke2fs -a ! -name tune2fs -print | xargs rm
 
 	(cd ${udebdir}/sbin; ln -s e2fsck fsck.ext2 ; \
 		ln -s e2fsck fsck.ext3 ; ln -s mke2fs mkfs.ext2 ; \
