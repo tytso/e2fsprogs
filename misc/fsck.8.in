@@ -76,6 +76,32 @@ typically used from the
 .I /etc/rc
 system initalization file, instead of multiple commands for checking
 a single file system.
+.sp
+The root filesystem will be checked first unless the
+.B -P
+option is specified (see below).  After that, 
+filesystems will be checked in the order specified by the 
+.I fs_passno 
+(the sixth) field in the 
+.I /etc/fstab
+file.  If there are multiple filesystems with the same pass number, 
+e2fsck will attempt to check them in parallel, although it will avoid running 
+multiple filesystem checks on the same physical disk.  Hence, 
+a very common configuration in 
+.I /etc/fstab
+files is to set the root filesystem to have a 
+.I fs_passno
+value of 1
+and to set all filesystems to have a
+.I fs_passno
+value of 2.  This will allow
+.B fsck
+to automatically run filesystem checkers in parallel if it is advantageous
+to do so.  System administrators might choose
+not to use this configuration  if they need to avoid multiple filesystem
+checks running in parallel for some reason --- for example, if the
+machine in question is short on memory so that
+excessive paging is a concern.
 .TP
 .B -R
 When checking all file systems with the

@@ -1,3 +1,8 @@
+1999-01-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* fsck.8.in: Clarified and expanded the documentation for the -A
+		switch.
+
 1999-01-07  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* fsck.c (load_fs_info): If the pass number field is missing, it
