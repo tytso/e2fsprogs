@@ -96,6 +96,7 @@ static const struct flags_char flags_array[] = {
 	{ EXT3_JOURNAL_DATA_FL, 'j' },
 	{ EXT2_SECRM_FL, 's' },
 	{ EXT2_UNRM_FL, 'u' },
+	{ EXT2_NOTAIL_FL, 't' },
 	{ 0, 0 }
 };
 

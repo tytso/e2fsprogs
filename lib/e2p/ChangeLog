@@ -1,3 +1,7 @@
+2001-11-05  Theodore Tso  <tytso@valinux.com>
+
+	* pf.c: Add a new file attribute, EXT2_NOTAIL_FL
+
 2001-09-20  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.25

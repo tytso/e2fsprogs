@@ -1,5 +1,10 @@
 2001-11-05  Theodore Tso  <tytso@valinux.com>
 
+	* chattr.1.in: Update the man page to document the EXT2_NOTAIL_FL
+		flag.
+
+	* chattr.c: Add support for the EXT2_NOTAIL_FL flag.
+
 	* fsck.c (interpret_type): If the "auto" type is specified, make
 		sure interpet_device() is called so that device
 		specifications which use LABEL= or UUID= are translated

@@ -38,6 +38,7 @@ static struct flags_name flags_array[] = {
 	{ EXT2_NOCOMPR_FL, "X", "Compression_Raw_Access" },
 	{ EXT2_ECOMPR_FL, "E", "Compression_Error" },
 	{ EXT3_JOURNAL_DATA_FL, "j", "Journaled_Data" },
+	{ EXT2_NOTAIL_FL, "t", "No_Tailmerging" },
 	{ 0, NULL, NULL }
 };
 

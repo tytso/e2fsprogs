@@ -1,3 +1,10 @@
+2001-11-05  Theodore Tso  <tytso@valinux.com>
+
+	* ext2_fs.h: Define a new ext2 file attribute, EXT2_NOTAIL_FL,
+		which signals that a particular inode should not have the
+		last bits of data (the "tail") be merged with another
+		file.  This is necessary to keep LILO happy.
+
 2001-09-20  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.25

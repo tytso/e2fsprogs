@@ -19,7 +19,7 @@ chattr \- change file attributes on a Linux second extended file system
 .B chattr
 changes the file attributes on a Linux second extended file system.
 .PP
-The format of a symbolic mode is +-=[ASacdisu].
+The format of a symbolic mode is +-=[ASacdistu].
 .PP
 The operator `+' causes the selected attributes to be added to the
 existing attributes of the files; `-' causes them to be removed; and
@@ -73,6 +73,12 @@ written back to the disk.
 When a file with the `S' attribute set is modified,
 the changes are written synchronously on the disk; this is equivalent to
 the `sync' mount option applied to a subset of the files.
+.PP
+A file with the 't' attribute will not have a partial block fragment at
+the of the file merged with other files (for those filesystems which
+support tail-merging).  This is necessary for applications such as LILO 
+which read the filesystem directly, and who don't understand tail-merged
+files.
 .PP
 When a file with the `u' attribute set is deleted, its contents are saved.
 This allows the user to ask for its undeletion.
