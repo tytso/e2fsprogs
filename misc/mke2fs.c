@@ -583,7 +583,7 @@ static void create_journal_dev(ext2_filsys fs)
 			     &progress, &blk, &count);
 	if (retval) {
 		com_err("create_journal_dev", retval,
-			"while zeroing journal device (block %u, count %d",
+			"while zeroing journal device (block %u, count %d)",
 			blk, count);
 		exit(1);
 	}
@@ -1208,7 +1208,7 @@ int main (int argc, char *argv[])
 		retval = ext2fs_add_journal_device(fs, jfs);
 		if(retval) {
 			com_err (program_name, retval, 
-				 _("while trying to add journal to device %s"), 
+				 _("\n\twhile trying to add journal to device %s"), 
 				 journal_device);
 			exit(1);
 		}
@@ -1232,7 +1232,7 @@ int main (int argc, char *argv[])
 						  journal_flags);
 		if (retval) {
 			com_err (program_name, retval,
-				 _("while trying to create journal"));
+				 _("\n\twhile trying to create journal"));
 			exit(1);
 		}
 		if (!quiet)

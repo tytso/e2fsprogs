@@ -1,3 +1,8 @@
+2001-04-16  Theodore Tso  <tytso@valinux.com>
+
+	* mke2fs.c, tune2fs.c: Add newlines to error messages so that they
+		look nicer.
+
 2001-03-26  Theodore Tso  <tytso@valinux.com>
 
 	* mke2fs.8.in, tune2fs.8.in: Change man paegs to document that the

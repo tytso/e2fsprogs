@@ -283,7 +283,7 @@ static void add_journal(ext2_filsys fs)
 				     fs->blocksize, unix_io_manager, &jfs);
 		if (retval) {
 			com_err(program_name, retval,
-				_("while trying to open journal device %s\n"),
+				_("\n\twhile trying to open journal on %s\n"),
 				journal_device);
 			exit(1);
 		}
@@ -310,10 +310,10 @@ static void add_journal(ext2_filsys fs)
 		if (retval) {
 			printf("\n");
 			com_err(program_name, retval,
-				_("while trying to create journal"));
+				_("\n\twhile trying to create journal file"));
 			exit(1);
-		}
-		printf(_("done\n"));
+		} else
+			printf(_("done\n"));
 		/*
 		 * If the filesystem wasn't mounted, we need to force
 		 * the block group descriptors out.
