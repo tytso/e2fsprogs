@@ -1,3 +1,8 @@
+2000-01-19  Theodore Ts'o  <tytso@valinux.com>
+
+	* tune2fs.c (usage): Update the usage message to correctly
+		document the -s option.
+
 2000-01-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* badblocks.c: Folded in patches David Beattie <dbeattie@usa.net>.

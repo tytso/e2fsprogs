@@ -94,7 +94,8 @@ static void usage(void)
 {
 	fprintf(stderr, "Usage: %s [-c max-mounts-count] [-e errors-behavior] "
 		 "[-g group]\n"
-		 "\t[-i interval[d|m|w]] [-l] [-s] [-m reserved-blocks-percent]\n"
+		 "\t[-i interval[d|m|w]] [-l] [-s sparse-flag] "
+		"[-m reserved-blocks-percent]\n"
 		 "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
 		 "\t[-L volume-label] [-M last-mounted-dir] [-U UUID]\n"
 		 "\t[-O [^]feature[,...]] device\n", program_name);
