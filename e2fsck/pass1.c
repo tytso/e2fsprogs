@@ -196,7 +196,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	unsigned char	frag, fsize;
 	struct		problem_context pctx;
 	struct		scan_callback_struct scan_struct;
-	struct ext2fs_sb *sb;
+	struct ext2_super_block *sb = ctx->fs->super;
 	int		imagic_fs;
 	
 #ifdef RESOURCE_TRACK
@@ -224,7 +224,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 	}
 #undef EXT2_BPP
 
-	sb = (struct ext2fs_sb *) fs->super;
 	imagic_fs = (sb->s_feature_compat & EXT2_FEATURE_COMPAT_IMAGIC_INODES);
 
 	/*
@@ -823,7 +822,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	struct ext2_inode *inode = pctx->inode;
 	int		bad_size = 0;
 	__u64		size;
-	struct ext2fs_sb	*sb;
 	
 	if (!ext2fs_inode_has_valid_blocks(pctx->inode))
 		return;
@@ -909,9 +907,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		    ((inode->i_size & (fs->blocksize-1)) != 0))
 			bad_size = 1;
 		else if (nblock < (pb.last_block + 1)) {
-			sb = (struct ext2fs_sb *) fs->super;
 			if (((pb.last_block + 1) - nblock) >
-			    sb->s_prealloc_dir_blocks)
+			    fs->super->s_prealloc_dir_blocks)
 				bad_size = 2;
 		}
 	} else {

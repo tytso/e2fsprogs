@@ -228,9 +228,8 @@ void do_init_filesys(int argc, char **argv)
 	return;
 }
 
-static void print_features(struct ext2fs_sb * s, FILE *f)
+static void print_features(struct ext2_super_block * s, FILE *f)
 {
-#ifdef EXT2_DYNAMIC_REV
 	int	i, j, printed=0;
 __u32	*mask = &s->s_feature_compat, m;
 
@@ -246,14 +245,12 @@ __u32	*mask = &s->s_feature_compat, m;
 	if (printed == 0)
 		printf("(none)");
 	printf("\n");
-#endif
 }
 
 void do_show_super_stats(int argc, char *argv[])
 {
 	int	i;
 	FILE 	*out;
-	struct ext2fs_sb *sb;
 	struct ext2_group_desc *gdp;
 	int	c, header_only = 0;
 	char buf[80];
@@ -1464,7 +1461,7 @@ void do_features(int argc, char *argv[])
 		else
 			ext2fs_mark_super_dirty(current_fs);
 	}
-	print_features((struct ext2fs_sb *) current_fs->super, stdout);
+	print_features(current_fs->super, stdout);
 }
 
 static int source_file(const char *cmd_file, int sci_idx)

@@ -1,3 +1,8 @@
+2001-01-01    <tytso@snap.thunk.org>
+
+	* debugfs.c Replace use of struct ext2fs_sb with struct
+		ext2_super_block.
+
 2000-12-30    <tytso@snap.thunk.org>
 
 	* dump.c (fix_perms): Fix bug for systems which don't have fchown;

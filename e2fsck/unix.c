@@ -637,7 +637,7 @@ int main (int argc, char *argv[])
 	int		i;
 	ext2_filsys	fs = 0;
 	io_manager	io_ptr;
-	struct ext2fs_sb *s;
+	struct ext2_super_block *sb;
 	const char	*lib_ver_date;
 	int		my_ver, lib_ver;
 	e2fsck_t	ctx;
@@ -766,28 +766,26 @@ restart:
 	}
 	ctx->fs = fs;
 	fs->priv_data = ctx;
-#ifdef	EXT2_CURRENT_REV
-	if (fs->super->s_rev_level > E2FSCK_CURRENT_REV) {
+	sb = fs->super;
+	if (sb->s_rev_level > E2FSCK_CURRENT_REV) {
 		com_err(ctx->program_name, EXT2_ET_REV_TOO_HIGH,
 			_("while trying to open %s"),
 			ctx->filesystem_name);
 	get_newer:
 		fatal_error(ctx, _("Get a newer version of e2fsck!"));
 	}
-#endif
-	s = (struct ext2fs_sb *) fs->super;
 
 	/*
 	 * Set the device name, which is used whenever we print error
 	 * or informational messages to the user.
 	 */
 	if (ctx->device_name == 0 &&
-	    (s->s_volume_name[0] != 0)) {
-		char *cp = malloc(sizeof(s->s_volume_name)+1);
+	    (sb->s_volume_name[0] != 0)) {
+		char *cp = malloc(sizeof(sb->s_volume_name)+1);
 		if (cp) {
-			strncpy(cp, s->s_volume_name,
-				sizeof(s->s_volume_name));
-			cp[sizeof(s->s_volume_name)] = 0;
+			strncpy(cp, sb->s_volume_name,
+				sizeof(sb->s_volume_name));
+			cp[sizeof(sb->s_volume_name)] = 0;
 			ctx->device_name = cp;
 		}
 	}
@@ -810,7 +808,7 @@ restart:
 	 * Check to see if we need to do ext3-style recovery.  If so,
 	 * do it, and then restart the fsck.
 	 */
-	if (s->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) {
+	if (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) {
 		if (ctx->options & E2F_OPT_READONLY) {
 			printf(_("Warning: skipping journal recovery "
 				 "because doing a read-only filesystem "
@@ -834,19 +832,19 @@ restart:
 	 * Check for compatibility with the feature sets.  We need to
 	 * be more stringent than ext2fs_open().
 	 */
-	if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
-	    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
+	if ((sb->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
+	    (sb->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
 		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
 			"(%s)", ctx->device_name);
 		goto get_newer;
 	}
-	if (s->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP) {
+	if (sb->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP) {
 		com_err(ctx->program_name, EXT2_ET_RO_UNSUPP_FEATURE,
 			"(%s)", ctx->device_name);
 		goto get_newer;
 	}
 #ifdef ENABLE_COMPRESSION
-	if (s->s_feature_incompat & EXT2_FEATURE_INCOMPAT_COMPRESSION)
+	if (sb->s_feature_incompat & EXT2_FEATURE_INCOMPAT_COMPRESSION)
 		com_err(ctx->program_name, 0,
 			_("Warning: compression support is experimental.\n"));
 #endif
@@ -947,13 +945,13 @@ restart:
 		exit_value = FSCK_UNCORRECTED;
 	if (!(ctx->options & E2F_OPT_READONLY)) {
 		if (ext2fs_test_valid(fs)) {
-			if (!(fs->super->s_state & EXT2_VALID_FS))
+			if (!(sb->s_state & EXT2_VALID_FS))
 				exit_value = FSCK_NONDESTRUCT;
-			fs->super->s_state = EXT2_VALID_FS;
+			sb->s_state = EXT2_VALID_FS;
 		} else
-			fs->super->s_state &= ~EXT2_VALID_FS;
-		fs->super->s_mnt_count = 0;
-		fs->super->s_lastcheck = time(NULL);
+			sb->s_state &= ~EXT2_VALID_FS;
+		sb->s_mnt_count = 0;
+		sb->s_lastcheck = time(NULL);
 		ext2fs_mark_super_dirty(fs);
 	}
 	show_stats(ctx);

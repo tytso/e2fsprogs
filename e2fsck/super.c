@@ -293,7 +293,7 @@ void check_super_block(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	blk_t	first_block, last_block;
-	struct ext2fs_sb *s = (struct ext2fs_sb *) fs->super;
+	struct ext2_super_block *sb = fs->super;
 	blk_t	blocks_per_group = fs->super->s_blocks_per_group;
 	int	inodes_per_block;
 	dgrp_t	i;
@@ -316,26 +316,26 @@ void check_super_block(e2fsck_t ctx)
 	/*
 	 * Verify the super block constants...
 	 */
-	check_super_value(ctx, "inodes_count", s->s_inodes_count,
+	check_super_value(ctx, "inodes_count", sb->s_inodes_count,
 			  MIN_CHECK, 1, 0);
-	check_super_value(ctx, "blocks_count", s->s_blocks_count,
+	check_super_value(ctx, "blocks_count", sb->s_blocks_count,
 			  MIN_CHECK, 1, 0);
-	check_super_value(ctx, "first_data_block", s->s_first_data_block,
-			  MAX_CHECK, 0, s->s_blocks_count);
-	check_super_value(ctx, "log_frag_size", s->s_log_frag_size,
+	check_super_value(ctx, "first_data_block", sb->s_first_data_block,
+			  MAX_CHECK, 0, sb->s_blocks_count);
+	check_super_value(ctx, "log_frag_size", sb->s_log_frag_size,
 			  MAX_CHECK, 0, 2);
-	check_super_value(ctx, "log_block_size", s->s_log_block_size,
-			  MIN_CHECK | MAX_CHECK, s->s_log_frag_size,
+	check_super_value(ctx, "log_block_size", sb->s_log_block_size,
+			  MIN_CHECK | MAX_CHECK, sb->s_log_frag_size,
 			  2);
-	check_super_value(ctx, "frags_per_group", s->s_frags_per_group,
-			  MIN_CHECK | MAX_CHECK, 1, 8 * EXT2_BLOCK_SIZE(s));
-	check_super_value(ctx, "blocks_per_group", s->s_blocks_per_group,
-			  MIN_CHECK | MAX_CHECK, 1, 8 * EXT2_BLOCK_SIZE(s));
-	check_super_value(ctx, "inodes_per_group", s->s_inodes_per_group,
+	check_super_value(ctx, "frags_per_group", sb->s_frags_per_group,
+			  MIN_CHECK | MAX_CHECK, 1, 8 * EXT2_BLOCK_SIZE(sb));
+	check_super_value(ctx, "blocks_per_group", sb->s_blocks_per_group,
+			  MIN_CHECK | MAX_CHECK, 1, 8 * EXT2_BLOCK_SIZE(sb));
+	check_super_value(ctx, "inodes_per_group", sb->s_inodes_per_group,
 			  MIN_CHECK | MAX_CHECK, 1,
 			  inodes_per_block * blocks_per_group);
-	check_super_value(ctx, "r_blocks_count", s->s_r_blocks_count,
-			  MAX_CHECK, 0, s->s_blocks_count);
+	check_super_value(ctx, "r_blocks_count", sb->s_r_blocks_count,
+			  MAX_CHECK, 0, sb->s_blocks_count);
 
 	if (!ctx->num_blocks) {
 		pctx.errcode = e2fsck_get_device_size(ctx);
@@ -345,8 +345,8 @@ void check_super_block(e2fsck_t ctx)
 			return;
 		}
 		if ((pctx.errcode != EXT2_ET_UNIMPLEMENTED) &&
-		    (ctx->num_blocks < s->s_blocks_count)) {
-			pctx.blk = s->s_blocks_count;
+		    (ctx->num_blocks < sb->s_blocks_count)) {
+			pctx.blk = sb->s_blocks_count;
 			pctx.blk2 = ctx->num_blocks;
 			if (fix_problem(ctx, PR_0_FS_SIZE_WRONG, &pctx)) {
 				ctx->flags |= E2F_FLAG_ABORT;
@@ -355,39 +355,39 @@ void check_super_block(e2fsck_t ctx)
 		}
 	}
 
-	if (s->s_log_block_size != s->s_log_frag_size) {
-		pctx.blk = EXT2_BLOCK_SIZE(s);
-		pctx.blk2 = EXT2_FRAG_SIZE(s);
+	if (sb->s_log_block_size != sb->s_log_frag_size) {
+		pctx.blk = EXT2_BLOCK_SIZE(sb);
+		pctx.blk2 = EXT2_FRAG_SIZE(sb);
 		fix_problem(ctx, PR_0_NO_FRAGMENTS, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
 
-	should_be = s->s_frags_per_group >>
-		(s->s_log_block_size - s->s_log_frag_size);		
-	if (s->s_blocks_per_group != should_be) {
-		pctx.blk = s->s_blocks_per_group;
+	should_be = sb->s_frags_per_group >>
+		(sb->s_log_block_size - sb->s_log_frag_size);		
+	if (sb->s_blocks_per_group != should_be) {
+		pctx.blk = sb->s_blocks_per_group;
 		pctx.blk2 = should_be;
 		fix_problem(ctx, PR_0_BLOCKS_PER_GROUP, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
 
-	should_be = (s->s_log_block_size == 0) ? 1 : 0;
-	if (s->s_first_data_block != should_be) {
-		pctx.blk = s->s_first_data_block;
+	should_be = (sb->s_log_block_size == 0) ? 1 : 0;
+	if (sb->s_first_data_block != should_be) {
+		pctx.blk = sb->s_first_data_block;
 		pctx.blk2 = should_be;
 		fix_problem(ctx, PR_0_FIRST_DATA_BLOCK, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
 
-	should_be = s->s_inodes_per_group * fs->group_desc_count;
-	if (s->s_inodes_count != should_be) {
-		pctx.ino = s->s_inodes_count;
+	should_be = sb->s_inodes_per_group * fs->group_desc_count;
+	if (sb->s_inodes_count != should_be) {
+		pctx.ino = sb->s_inodes_count;
 		pctx.ino2 = should_be;
 		if (fix_problem(ctx, PR_0_INODE_COUNT_WRONG, &pctx)) {
-			s->s_inodes_count = should_be;
+			sb->s_inodes_count = should_be;
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
@@ -449,9 +449,9 @@ void check_super_block(e2fsck_t ctx)
 	/*
 	 * If the UUID field isn't assigned, assign it.
 	 */
-	if (!(ctx->options & E2F_OPT_READONLY) && uuid_is_null(s->s_uuid)) {
+	if (!(ctx->options & E2F_OPT_READONLY) && uuid_is_null(sb->s_uuid)) {
 		if (fix_problem(ctx, PR_0_ADD_UUID, &pctx)) {
-			uuid_generate(s->s_uuid);
+			uuid_generate(sb->s_uuid);
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
