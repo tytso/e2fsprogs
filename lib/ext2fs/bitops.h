@@ -157,7 +157,6 @@ _INLINE_ int ext2fs_test_bit(int nr, const void * addr)
 	return oldbit;
 }
 
-#ifndef C_VERSIONS
 _INLINE_ int ext2fs_find_first_bit_set(void * addr, unsigned size)
 {
 	int d0, d1, d2;
@@ -175,11 +174,11 @@ _INLINE_ int ext2fs_find_first_bit_set(void * addr, unsigned size)
 		"movl -4(%%edi),%%eax\n\t"
 		"subl $4,%%edi\n\t"
 		"bsfl %%eax,%%edx\n"
-		"1:\tsubl %%ebx,%%edi\n\t"
+		"1:\tsubl %%esi,%%edi\n\t"
 		"shll $3,%%edi\n\t"
 		"addl %%edi,%%edx"
 		:"=d" (res), "=&c" (d0), "=&D" (d1), "=&a" (d2)
-		:"1" ((size + 31) >> 5), "2" (addr), "b" (addr));
+		:"1" ((size + 31) >> 5), "2" (addr), "S" (addr));
 	return res;
 }
 
@@ -209,7 +208,6 @@ _INLINE_ int ext2fs_find_next_bit_set (void * addr, int size, int offset)
 	res = ext2fs_find_first_bit_set(p, size - 32 * (p - (unsigned long *) addr));
 	return (offset + set + res);
 }
-#endif
 
 #ifdef EXT2FS_ENABLE_SWAPFS
 _INLINE_ __u32 ext2fs_swab32(__u32 val)

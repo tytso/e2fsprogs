@@ -1,3 +1,8 @@
+2001-07-07  Theodore Tso  <tytso@valinux.com>
+
+	* bitops.h (ext2fs_find_first_bit_set): Use %esi instead of %ebx
+		to avoid register conflicts when compiling in PIC mode.
+
 2001-07-04  Theodore Tso  <tytso@valinux.com>
 
 	* bitops.h (ext2fs_find_first_bit_set, ext2fs_find_next_bit_set):
