@@ -1,3 +1,8 @@
+2001-07-20  Theodore Tso  <tytso@valinux.com>
+
+	* bitops.h (ext2fs_find_first_bit_set, ext2fs_find_next_bit_set):
+		Comment out these functions since we're not using them.
+
 2001-07-10  Theodore Tso  <tytso@valinux.com>
 
 	* closefs.c (write_primary_superblock): After writing changes to

@@ -157,6 +157,7 @@ _INLINE_ int ext2fs_test_bit(int nr, const void * addr)
 	return oldbit;
 }
 
+#if 0
 _INLINE_ int ext2fs_find_first_bit_set(void * addr, unsigned size)
 {
 	int d0, d1, d2;
@@ -208,6 +209,7 @@ _INLINE_ int ext2fs_find_next_bit_set (void * addr, int size, int offset)
 	res = ext2fs_find_first_bit_set(p, size - 32 * (p - (unsigned long *) addr));
 	return (offset + set + res);
 }
+#endif
 
 #ifdef EXT2FS_ENABLE_SWAPFS
 _INLINE_ __u32 ext2fs_swab32(__u32 val)
