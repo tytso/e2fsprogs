@@ -9,6 +9,9 @@
  * %End-Header%
  */
 
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+
 #include <stdio.h>
 #include <string.h>
 #ifdef HAVE_ERRNO_H
@@ -62,9 +65,15 @@ void proceed_question(void)
 void check_plausibility(const char *device)
 {
 	int val;
+#ifdef HAVE_OPEN64
+	struct stat64 s;
+	
+	val = stat64(device, &s);
+#else
 	struct stat s;
 	
 	val = stat(device, &s);
+#endif
 	
 	if(val == -1) {
 		fprintf(stderr, _("Could not stat %s --- %s\n"),

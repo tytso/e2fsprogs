@@ -1,3 +1,8 @@
+2001-11-13  Theodore Tso  <tytso@valinux.com>
+
+	* util.c (check_plausibility): Use stat64 if available so that
+		check_plausibility() works with files > 2GB.
+
 2001-11-05  Theodore Tso  <tytso@valinux.com>
 
 	* chattr.1.in: Update the man page to document the EXT2_NOTAIL_FL
