@@ -1,5 +1,9 @@
 2003-03-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* cache.c: Initialize blkid_debug_mask to zero since some
+		operating systems can't deal with variables in the common
+		section in shared libraries.
+ 
 	* getsize.c (blkid_get_dev_size): Fix Apple Darwin port.
 
 2003-03-06    <tytso@mit.edu>

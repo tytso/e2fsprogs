@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include "blkidP.h"
 
-int blkid_debug_mask;
+int blkid_debug_mask = 0;
 
 int blkid_get_cache(blkid_cache *ret_cache, const char *filename)
 {
