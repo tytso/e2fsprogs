@@ -1,3 +1,7 @@
+2003-06-8  Theodore Ts'o  <tytso@mit.edu>
+
+	* problem.c: Fix spelling error.
+
 2003-05-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (show_stats), e2fsck.h: Use ngettext (abbreivated with

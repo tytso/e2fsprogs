@@ -950,7 +950,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Error iterating over directory blocks */
 	{ PR_2_DBLIST_ITERATE,
-	  N_("Error interating over @d @bs: %m\n"),
+	  N_("Error iterating over @d @bs: %m\n"),
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error reading directory block */
