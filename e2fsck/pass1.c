@@ -1318,7 +1318,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 				bad_size = 2;
 		}
 	} else {
-		size = inode->i_size | ((__u64) inode->i_size_high << 32);
+		size = EXT2_I_SIZE(inode);
 		if ((pb.last_block >= 0) &&
 		    (size < pb.last_block * fs->blocksize))
 			bad_size = 3;

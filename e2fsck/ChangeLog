@@ -1,3 +1,7 @@
+2003-01-22  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (check_blocks): Use the EXT2_I_SIZE macro.
+
 2003-01-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (main): Detect if there is an attempt to run the journal
