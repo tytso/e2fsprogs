@@ -57,6 +57,7 @@
  * 	@C	conflicts with some other fs block
  * 	@i	inode
  * 	@I	illegal
+ * 	@j	journal
  * 	@D	deleted
  * 	@d	directory
  * 	@e	entry
@@ -104,6 +105,7 @@ static const char *abbrevs[] = {
 	N_("Cconflicts with some other fs @b"),
 	N_("iinode"),
 	N_("Iillegal"),
+	N_("jjournal"),
 	N_("Ddeleted"),
 	N_("ddirectory"),
 	N_("eentry"),

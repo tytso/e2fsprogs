@@ -1,5 +1,7 @@
 2001-01-03    <tytso@snap.thunk.org>
 
+	* message.c: Add @j abbreviation for journal.
+
 	* jfs_user.h: Moved contents of jfs_e2fsck.h into jfs_user.h.
 
 	* journal.c (e2fsck_check_ext3_journal): Force a fsck if we remove
