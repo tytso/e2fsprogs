@@ -1,5 +1,9 @@
 1999-11-19    <tytso@valinux.com>
 
+	* mkdir.c (ext2fs_mkdir): Only update the parent's inode link
+		counts if the link was successful.  Patch suggested by
+		jeremy@goop.org.
+
 	* Makefile.in (distclean): Remove TAGS and Makefile.in.old from
 		the source directory.
 

@@ -95,19 +95,6 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 		goto cleanup;
 
 	/*
-	 * Update parent inode's counts
-	 */
-	if (parent != ino) {
-		retval = ext2fs_read_inode(fs, parent, &inode);
-		if (retval)
-			goto cleanup;
-		inode.i_links_count++;
-		retval = ext2fs_write_inode(fs, parent, &inode);
-		if (retval)
-			goto cleanup;
-	}
-	
-	/*
 	 * Link the directory into the filesystem hierarchy
 	 */
 	if (name) {
@@ -125,6 +112,19 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 			goto cleanup;
 	}
 
+	/*
+	 * Update parent inode's counts
+	 */
+	if (parent != ino) {
+		retval = ext2fs_read_inode(fs, parent, &inode);
+		if (retval)
+			goto cleanup;
+		inode.i_links_count++;
+		retval = ext2fs_write_inode(fs, parent, &inode);
+		if (retval)
+			goto cleanup;
+	}
+	
 	/*
 	 * Update accounting....
 	 */
