@@ -188,14 +188,16 @@ static void uncapture_terminate(void)
 	signal (SIGUSR2, SIG_DFL);
 }
 
-static void set_o_direct(int dev, unsigned char *buffer, size_t size)
+static void set_o_direct(int dev, unsigned char *buffer, size_t size,
+			 unsigned long current_block)
 {
 #ifdef O_DIRECT
 	int new_flag = O_DIRECT;
 	int flag;
 	
 	if ((((unsigned long) buffer & (sys_page_size - 1)) != 0) ||
-	    ((size & (sys_page_size - 1)) != 0))
+	    ((size & (sys_page_size - 1)) != 0) ||
+	    ((current_block & ((sys_page_size >> 9)-1)) != 0))
 		new_flag = 0;
 
 	if (new_flag != current_O_DIRECT) {
@@ -255,7 +257,7 @@ static long do_read (int dev, unsigned char * buffer, int try, int block_size,
 {
 	long got;
 
-	set_o_direct(dev, buffer, try * block_size);
+	set_o_direct(dev, buffer, try * block_size, current_block);
 
 	if (v_flag > 1)
 		print_status();
@@ -284,7 +286,7 @@ static long do_write (int dev, unsigned char * buffer, int try, int block_size,
 {
 	long got;
 
-	set_o_direct(dev, buffer, try * block_size);
+	set_o_direct(dev, buffer, try * block_size, current_block);
 
 	if (v_flag > 1)
 		print_status();
@@ -393,6 +395,12 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 		currently_testing += got;
 		if (got == try) {
 			try = blocks_at_once;
+			/* recover page-aligned offset for O_DIRECT */
+			if ( blocks_at_once >= (sys_page_size >> 9)
+			     && (currently_testing % (sys_page_size >> 9)!= 0))
+				try -= (sys_page_size >> 9)
+					- (currently_testing 
+					   % (sys_page_size >> 9));
 			continue;
 		}
 		else
@@ -467,6 +475,13 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 			currently_testing += got;
 			if (got == try) {
 				try = blocks_at_once;
+				/* recover page-aligned offset for O_DIRECT */
+				if ( blocks_at_once >= (sys_page_size >> 9)
+				     && (currently_testing % 
+					 (sys_page_size >> 9)!= 0))
+					try -= (sys_page_size >> 9)
+						- (currently_testing 
+						   % (sys_page_size >> 9));
 				continue;
 			} else
 				try = 1;
@@ -504,6 +519,14 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 					bb_count += bb_output(currently_testing+i);
 			}
 			currently_testing += got;
+			/* recover page-aligned offset for O_DIRECT */
+			if ( blocks_at_once >= (sys_page_size >> 9)
+			     && (currently_testing % (sys_page_size >> 9)!= 0))
+				try = blocks_at_once - (sys_page_size >> 9)
+					- (currently_testing 
+					   % (sys_page_size >> 9));
+			else
+				try = blocks_at_once;
 			if (v_flag > 1)
 				print_status();
 		}

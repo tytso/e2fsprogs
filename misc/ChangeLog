@@ -1,3 +1,14 @@
+2003-08-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* badblocks.c (set_o_direct): Add check to make sure the file
+		offset of the device is page aligned.  (Addresses Debian
+		Bug #203713)
+
+	* badblocks.c (test_ro, test_rw): Add code to recover after an
+		error so that we continue reading on page-aligned
+		boundaries.  (Thanks to Philippe Troin <phil@fifi.org> for
+		the patch.)
+
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.34
