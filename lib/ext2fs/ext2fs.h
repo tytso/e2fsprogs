@@ -686,6 +686,9 @@ extern errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
 					   int adjust, __u32 *newcount);
 
 /* fileio.c */
+extern errcode_t ext2fs_file_open2(ext2_filsys fs, ext2_ino_t ino,
+				   struct ext2_inode *inode,
+				   int flags, ext2_file_t *ret);
 extern errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 				  int flags, ext2_file_t *ret);
 extern ext2_filsys ext2fs_file_get_fs(ext2_file_t file);
@@ -784,6 +787,9 @@ extern errcode_t ext2fs_check_directory(ext2_filsys fs, ext2_ino_t ino);
 extern io_manager inode_io_manager;
 extern errcode_t ext2fs_inode_io_intern(ext2_filsys fs, ext2_ino_t ino, 
 					char **name);
+extern errcode_t ext2fs_inode_io_intern2(ext2_filsys fs, ext2_ino_t ino,
+					 struct ext2_inode *inode,
+					 char **name);
 	
 /* ismounted.c */
 extern errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags);

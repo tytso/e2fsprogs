@@ -188,7 +188,10 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 	errcode_t		retval = 0;
 	io_manager		io_ptr = 0;
 	unsigned long		start = 0;
+	blk_t			blk;
 	int			ext_journal = 0;
+	int			tried_backup_jnl = 0;
+	int			i;
 		
 	clear_problem_context(&pctx);
 	
@@ -228,24 +231,50 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 		
 		if ((retval = ext2fs_read_inode(ctx->fs,
 						sb->s_journal_inum,
-						&j_inode->i_ext2)))
-			goto errout;
+						&j_inode->i_ext2))) {
+		try_backup_journal:
+			if (sb->s_jnl_backup_type != EXT3_JNL_BACKUP_BLOCKS ||
+			    tried_backup_jnl)
+				goto errout;
+			memset(&j_inode->i_ext2, 0, sizeof(struct ext2_inode));
+			memcpy(&j_inode->i_ext2.i_block[0], sb->s_jnl_blocks, 
+			       EXT2_N_BLOCKS*4);
+			j_inode->i_ext2.i_size = sb->s_jnl_blocks[16];
+			j_inode->i_ext2.i_links_count = 1;
+			j_inode->i_ext2.i_mode = LINUX_S_IFREG | 0600;
+			tried_backup_jnl++;
+		}
 		if (!j_inode->i_ext2.i_links_count ||
 		    !LINUX_S_ISREG(j_inode->i_ext2.i_mode)) {
 			retval = EXT2_ET_NO_JOURNAL;
-			goto errout;
+			goto try_backup_journal;
 		}
 		if (j_inode->i_ext2.i_size / journal->j_blocksize <
 		    JFS_MIN_JOURNAL_BLOCKS) {
 			retval = EXT2_ET_JOURNAL_TOO_SMALL;
-			goto errout;
+			goto try_backup_journal;
 		}
-
+		for (i=0; i < EXT2_N_BLOCKS; i++) {
+			blk = j_inode->i_ext2.i_block[i];
+			if (!blk) {
+				if (i < EXT2_NDIR_BLOCKS) {
+					retval = EXT2_ET_JOURNAL_TOO_SMALL;
+					goto try_backup_journal;
+				}
+				continue;
+			}
+			if (blk < sb->s_first_data_block ||
+			    blk >= sb->s_blocks_count) {
+				retval = EXT2_ET_BAD_BLOCK_NUM;
+				goto try_backup_journal;
+			}
+		}
 		journal->j_maxlen = j_inode->i_ext2.i_size / journal->j_blocksize;
 
 #ifdef USE_INODE_IO
-		retval = ext2fs_inode_io_intern(ctx->fs, sb->s_journal_inum,
-						&journal_name);
+		retval = ext2fs_inode_io_intern2(ctx->fs, sb->s_journal_inum,
+						 &j_inode->i_ext2,
+						 &journal_name);
 		if (retval)
 			goto errout;
 
@@ -439,7 +468,7 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	case JFS_SUPERBLOCK_V2:
 		journal->j_format_version = 2;
 		if (ntohl(jsb->s_nr_users) > 1 &&
-		    (ctx->fs->io == ctx->journal_io))
+		    uuid_is_null(ctx->fs->super->s_journal_uuid))
 			clear_v2_journal_fields(journal);
 		if (ntohl(jsb->s_nr_users) > 1) {
 			fix_problem(ctx, PR_0_JOURNAL_UNSUPP_MULTIFS, &pctx);
@@ -807,15 +836,48 @@ void e2fsck_move_ext3_journal(e2fsck_t ctx)
 	const char * const *	cpp;
 	int			group, mount_flags;
 	
+	clear_problem_context(&pctx);
+
 	/*
 	 * If the filesystem is opened read-only, or there is no
-	 * journal, or the journal is already in the hidden inode,
-	 * then do nothing.
+	 * journal, then do nothing.
 	 */
 	if ((ctx->options & E2F_OPT_READONLY) ||
 	    (sb->s_journal_inum == 0) ||
-	    (sb->s_journal_inum == EXT2_JOURNAL_INO) ||
 	    !(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+		return;
+
+	/*
+	 * Read in the journal inode
+	 */
+	if (ext2fs_read_inode(fs, sb->s_journal_inum, &inode) != 0)
+		return;
+
+	/*
+	 * If it's necessary to backup the journal inode, do so.
+	 */
+	if ((sb->s_jnl_backup_type == 0) ||
+	    ((sb->s_jnl_backup_type == EXT3_JNL_BACKUP_BLOCKS) &&
+	     memcmp(inode.i_block, sb->s_jnl_blocks, EXT2_N_BLOCKS*4))) {
+		if (fix_problem(ctx, PR_0_BACKUP_JNL, &pctx)) {
+			memcpy(sb->s_jnl_blocks, inode.i_block,
+			       EXT2_N_BLOCKS*4);
+			sb->s_jnl_blocks[16] = inode.i_size;
+			sb->s_jnl_backup_type = EXT3_JNL_BACKUP_BLOCKS;
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
+
+	/*
+	 * If the journal is already the hidden inode, then do nothing
+	 */
+	if (sb->s_journal_inum == EXT2_JOURNAL_INO)
+		return;
+	
+	/*
+	 * The journal inode had better have only one link and not be readable.
+	 */
+	if (inode.i_links_count != 1)
 		return;
 
 	/*
@@ -839,20 +901,11 @@ void e2fsck_move_ext3_journal(e2fsck_t ctx)
 	if (*cpp == 0)
 		return;
 
-	/*
-	 * The inode had better have only one link and not be readable.
-	 */
-	if (ext2fs_read_inode(fs, ino, &inode) != 0)
-		return;
-	if (inode.i_links_count != 1)
-		return;
-
 	/* We need the inode bitmap to be loaded */
 	retval = ext2fs_read_bitmaps(fs);
 	if (retval)
 		return;
 
-	clear_problem_context(&pctx);
 	pctx.str = *cpp;
 	if (!fix_problem(ctx, PR_0_MOVE_JOURNAL, &pctx))
 		return;

@@ -36,9 +36,12 @@ struct inode_private_data {
 	ext2_file_t			file;
 	ext2_filsys			fs;
 	ext2_ino_t 			ino;
+	struct ext2_inode		inode;
 	int				flags;
 	struct inode_private_data	*next;
 };
+
+#define CHANNEL_HAS_INODE	0x8000
 
 static struct inode_private_data *top_intern;
 static int ino_unique = 0;
@@ -68,8 +71,9 @@ static struct struct_io_manager struct_inode_manager = {
 
 io_manager inode_io_manager = &struct_inode_manager;
 
-errcode_t ext2fs_inode_io_intern(ext2_filsys fs, ext2_ino_t ino,
-				 char **name)
+errcode_t ext2fs_inode_io_intern2(ext2_filsys fs, ext2_ino_t ino,
+				  struct ext2_inode *inode,
+				  char **name)
 {
 	struct inode_private_data 	*data;
 	errcode_t			retval;
@@ -83,10 +87,20 @@ errcode_t ext2fs_inode_io_intern(ext2_filsys fs, ext2_ino_t ino,
 	data->fs = fs;
 	data->ino = ino;
 	data->flags = 0;
+	if (inode) {
+		memcpy(&data->inode, inode, sizeof(struct ext2_inode));
+		data->flags |= CHANNEL_HAS_INODE;
+	}
 	data->next = top_intern;
 	top_intern = data;
 	*name = data->name;
 	return 0;
+}
+
+errcode_t ext2fs_inode_io_intern(ext2_filsys fs, ext2_ino_t ino,
+				 char **name)
+{
+	return ext2fs_inode_io_intern2(fs, ino, NULL, name);
 }
 
 
@@ -130,8 +144,10 @@ static errcode_t inode_open(const char *name, int flags, io_channel *channel)
 	io->refcount = 1;
 
 	open_flags = (flags & IO_FLAG_RW) ? EXT2_FILE_WRITE : 0;
-	retval = ext2fs_file_open(data->fs, data->ino, open_flags,
-				  &data->file);
+	retval = ext2fs_file_open2(data->fs, data->ino,
+				   (data->flags & CHANNEL_HAS_INODE) ?
+				   &data->inode : 0, open_flags,
+				   &data->file);
 	if (retval)
 		goto cleanup;
 		

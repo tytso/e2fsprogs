@@ -1,3 +1,14 @@
+2003-08-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_bad_local_jnl, f_badorphan, f_h_badroot, f_h_reindex,
+		f_special_ea: Update tests to reflect that e2fsck will
+		backup the journal inode.
+
+	* f_journal: Change test to include a backed up journal location
+		in the superblock, and then corrupt the inode table so the
+		journal inode is trashed.  Make sure e2fsck can recover
+		from it.
+
 2003-08-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_salveage_dir: Remove HTREE flag from the test image's

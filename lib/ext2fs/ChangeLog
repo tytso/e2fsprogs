@@ -1,3 +1,18 @@
+2003-08-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* inode_io.c (ext2fs_inode_io_intern2), ext2fs.h: Add new function
+		allows the caller to pass in the inode data structure.
+
+	* fileio.c (ext2fs_file_open2), ext2fs.h: Add new function which
+		allows the caller to pass in the inode to be used in the
+		file I/O.
+
+	* ext2_fs.h: Add a backup of the location of the journal inode
+		blocks to the superblock.
+
+	* mkjournal.c (write_journal_inode): Save the location of the
+		journal inode to the backup location in the superblock.
+
 2003-08-01  Philipp Thomas <pthomas@suse.de>
 
 	* alloc.c, badblocks.c, bb_inode.c, bitmaps.c, block.c, bmap.c,

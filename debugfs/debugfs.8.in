@@ -270,8 +270,36 @@ which is a link to
 .IR filespec .
 Note this does not adjust the inode reference counts.
 .TP
-.I logdump [-ac] [-b<block>] [-i<inode>] [-f<journal_file>] [output_file]
-Dump the contents of the ext3 journal.
+.I logdump [-acs] [-b<block>] [-i<filespec>] [-f<journal_file>] [output_file]
+Dump the contents of the ext3 journal.  By default, the journal inode as
+specified in the superblock.  However, this can be overridden with the 
+.I \-i
+option, which uses an inode specifier to specify the journal to be
+used.  A file containing journal data can be specified using the
+.I \-f
+option.   Finally, the 
+.I \-s
+option utilizes the backup information in the superblock to locate the
+journal.
+.IP
+The 
+.I \-a
+option causes the 
+.I logdump
+program to print the contents of all of the descriptor blocks.
+The 
+.I \-b
+option causes 
+.I logdump
+to print all journal records that are refer to the specified block. 
+The 
+.I \-c
+option will print out the contents of all of the data blocks selected by
+the 
+.I \-a
+and 
+.I \-b
+options.
 .TP
 .I ls [-l] [-d] filespec
 Print a listing of the files in the directory

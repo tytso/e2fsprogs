@@ -79,6 +79,7 @@ void do_logdump(int argc, char **argv)
 	char		*inode_spec = NULL;
 	char		*journal_fn = NULL;
 	int		journal_fd = 0;
+	int		use_sb = 0;
 	ext2_ino_t	journal_inum;
 	struct ext2_inode journal_inode;
 	ext2_file_t 	journal_file;
@@ -101,7 +102,7 @@ void do_logdump(int argc, char **argv)
 	inode_to_dump = -1;
 	
 	reset_getopt();
-	while ((c = getopt (argc, argv, "ab:ci:f:")) != EOF) {
+	while ((c = getopt (argc, argv, "ab:ci:f:s")) != EOF) {
 		switch (c) {
 		case 'a':
 			dump_all++;
@@ -124,6 +125,9 @@ void do_logdump(int argc, char **argv)
 		case 'i':
 			inode_spec = optarg;
 			dump_descriptors = 0;
+			break;
+		case 's':
+			use_sb++;
 			break;
 		default:
 			com_err(argv[0], 0, logdump_usage);
@@ -199,11 +203,26 @@ void do_logdump(int argc, char **argv)
 		journal_source.where = JOURNAL_IS_EXTERNAL;
 		journal_source.fd = journal_fd;
 	} else if ((journal_inum = es->s_journal_inum)) {
-		if (debugfs_read_inode(journal_inum, &journal_inode, argv[0]))
-			return;
-
-		retval = ext2fs_file_open(current_fs, journal_inum,
-					  0, &journal_file);
+		if (use_sb) {
+			if (es->s_jnl_backup_type != EXT3_JNL_BACKUP_BLOCKS) {
+				com_err(argv[0], 0,
+					"no journal backup in super block\n");
+				return;
+			}
+			memset(&journal_inode, 0, sizeof(struct ext2_inode));
+			memcpy(&journal_inode.i_block[0], es->s_jnl_blocks, 
+			       EXT2_N_BLOCKS*4);
+			journal_inode.i_size = es->s_jnl_blocks[16];
+			journal_inode.i_links_count = 1;
+			journal_inode.i_mode = LINUX_S_IFREG | 0600;
+		} else {
+			if (debugfs_read_inode(journal_inum, &journal_inode, 
+					       argv[0]))
+				return;
+		}
+		
+		retval = ext2fs_file_open2(current_fs, journal_inum,
+					   &journal_inode, 0, &journal_file);
 		if (retval) {
 			com_err(argv[0], retval, "while opening ext2 file");
 			return;

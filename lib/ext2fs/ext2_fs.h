@@ -441,12 +441,13 @@ struct ext2_super_block {
 	__u32	s_last_orphan;		/* start of list of inodes to delete */
 	__u32	s_hash_seed[4];		/* HTREE hash seed */
 	__u8	s_def_hash_version;	/* Default hash version to use */
-	__u8	s_reserved_char_pad;
+	__u8	s_jnl_backup_type; 	/* Default type of journal backup */
 	__u16	s_reserved_word_pad;
 	__u32	s_default_mount_opts;
 	__u32	s_first_meta_bg;	/* First metablock group */
 	__u32	s_mkfs_time;		/* When the filesystem was created */
-	__u32	s_reserved[189];	/* Padding to the end of the block */
+	__u32	s_jnl_blocks[16]; 	/* Backup of the journal inode */
+	__u32	s_reserved[173];	/* Padding to the end of the block */
 };
 
 /*
@@ -468,6 +469,11 @@ struct ext2_super_block {
 #define EXT2_MAX_SUPP_REV	EXT2_DYNAMIC_REV
 
 #define EXT2_GOOD_OLD_INODE_SIZE 128
+
+/*
+ * Journal inode backup types
+ */
+#define EXT3_JNL_BACKUP_BLOCKS	1
 
 /*
  * Feature set definitions

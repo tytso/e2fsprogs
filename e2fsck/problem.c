@@ -309,6 +309,11 @@ static const struct e2fsck_problem problem_table[] = {
 	     "Clearing fields beyond the V1 @j @S...\n\n"),
 	  PROMPT_NONE, 0 },
 
+	/* Backup journal inode blocks */
+	{ PR_0_BACKUP_JNL,
+	  N_("Backing up @j @i @b information.\n\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */

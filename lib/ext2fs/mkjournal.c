@@ -236,6 +236,11 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 		goto errout;
 	retval = 0;
 
+	memcpy(fs->super->s_jnl_blocks, inode.i_block, EXT2_N_BLOCKS*4);
+	fs->super->s_jnl_blocks[16] = inode.i_size;
+	fs->super->s_jnl_backup_type = EXT3_JNL_BACKUP_BLOCKS;
+	ext2fs_mark_super_dirty(fs);
+
 errout:
 	ext2fs_free_mem(&buf);
 	return retval;

@@ -32,8 +32,9 @@ struct ext2_file {
 
 #define BMAP_BUFFER (file->buf + fs->blocksize)
 
-errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
-			   int flags, ext2_file_t *ret)
+errcode_t ext2fs_file_open2(ext2_filsys fs, ext2_ino_t ino,
+			    struct ext2_inode *inode,
+			    int flags, ext2_file_t *ret)
 {
 	ext2_file_t 	file;
 	errcode_t	retval;
@@ -56,9 +57,13 @@ errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 	file->ino = ino;
 	file->flags = flags & EXT2_FILE_MASK;
 
-	retval = ext2fs_read_inode(fs, ino, &file->inode);
-	if (retval)
-		goto fail;
+	if (inode) {
+		memcpy(&file->inode, inode, sizeof(struct ext2_inode));
+	} else {
+		retval = ext2fs_read_inode(fs, ino, &file->inode);
+		if (retval)
+			goto fail;
+	}
 	
 	retval = ext2fs_get_mem(fs->blocksize * 3, &file->buf);
 	if (retval)
@@ -72,6 +77,12 @@ fail:
 		ext2fs_free_mem(&file->buf);
 	ext2fs_free_mem(&file);
 	return retval;
+}
+
+errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
+			   int flags, ext2_file_t *ret)
+{
+	return ext2fs_file_open2(fs, ino, NULL, flags, ret);
 }
 
 /*
@@ -106,7 +117,7 @@ errcode_t ext2fs_file_flush(ext2_file_t file)
 	 */
 	if (!file->physblock) {
 		retval = ext2fs_bmap(fs, file->ino, &file->inode,
-				     BMAP_BUFFER, BMAP_ALLOC,
+				     BMAP_BUFFER, file->ino ? BMAP_ALLOC : 0,
 				     file->blockno, &file->physblock);
 		if (retval)
 			return retval;
@@ -353,9 +364,11 @@ errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size)
 	
 	file->inode.i_size = size;
 	file->inode.i_size_high = 0;
-	retval = ext2fs_write_inode(file->fs, file->ino, &file->inode);
-	if (retval)
-		return retval;
+	if (file->ino) {
+		retval = ext2fs_write_inode(file->fs, file->ino, &file->inode);
+		if (retval)
+			return retval;
+	}
 
 	/* 
 	 * XXX truncate inode if necessary

@@ -259,6 +259,16 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	if (!e2p_is_null_uuid(sb->s_hash_seed))
 		fprintf(f, "Directory Hash Seed:      %s\n",
 			e2p_uuid2str(sb->s_hash_seed));
+	if (sb->s_jnl_backup_type) {
+		fprintf(f, "Journal backup:           ");
+		switch (sb->s_jnl_backup_type) {
+		case 1:
+			fprintf(f, "inode blocks\n");
+			break;
+		default:
+			fprintf(f, "type %u\n", sb->s_jnl_backup_type);
+		}
+	}
 }
 
 void list_super (struct ext2_super_block * s)

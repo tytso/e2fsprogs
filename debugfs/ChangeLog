@@ -1,3 +1,11 @@
+2003-08-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.8.in: Fully document the logdump command in the debugfs
+		man page.
+
+	* logdump.c (do_logdump): Add -s option which will use the journal
+		inode information in the superblock.
+
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.34

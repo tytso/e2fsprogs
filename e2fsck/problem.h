@@ -172,6 +172,9 @@ struct problem_context {
 /* Run journal anyway by default */
 #define PR_0_JOURNAL_RUN_DEFAULT		0x00002C
 
+/* Backup journal inode blocks */
+#define PR_0_BACKUP_JNL				0x00002D
+
 /*
  * Pass 1 errors
  */

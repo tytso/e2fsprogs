@@ -1,3 +1,15 @@
+2003-08-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* journal.c (e2fsck_move_ext3_journal): If the superblock's backup
+		journal information is not set, copy the journal inode
+		information to the superblock.
+		(e2fsck_get_journal): If the journal inode is corrupted,
+		synthesize one from the backup information in the
+		superblock.
+
+	* problem.c, problem.h (PR_0_BACKUP_JNL): Add new problem code
+		which is used when we make a backup of the journal inode.
+
 2003-08-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.h, unix.c (PRS, e2fsck_clear_progbar, 
