@@ -1,3 +1,9 @@
+2003-06-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Adjust defaults for FreeBSD to no longer build the
+		fsck wrapper, and to not install into /usr/local by
+		default.  (Addresses Debian bug #195274)
+
 2003-05-17  Theodore Tso  <tytso@thunk.org>
 
 	* MCONFIG.in, configure.in: Only put the intl directory in the -I

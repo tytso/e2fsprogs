@@ -1587,7 +1587,7 @@ fi
 
 else
   case "$host_os" in
-  gnu*)
+  gnu* | freebsd*-gnu*)
     FSCK_PROG='' FSCK_MAN=''
     echo "Not building fsck wrapper by default"
     ;;
@@ -6057,7 +6057,7 @@ esac
 
 
 case "$host_os" in
-linux* | gnu*)
+linux* | gnu* | freebsd*-gnu*)
 	if test "$prefix" = NONE -a "$root_prefix" = NONE ; then
 		root_prefix="";
 		echo "On $host_os systems, root_prefix defaults to ''"
@@ -6065,7 +6065,7 @@ linux* | gnu*)
 	;;
 esac
 case "$host_os" in
-linux* | gnu*)
+linux* | gnu* | freebsd*-gnu*)
 	if test "$prefix" = NONE ; then
 		prefix="/usr";
 		echo "On $host_os systems, prefix defaults to /usr"

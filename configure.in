@@ -502,7 +502,7 @@ else
 fi]
 ,
 [case "$host_os" in
-  gnu*)
+  gnu* | freebsd*-gnu*)
     FSCK_PROG='' FSCK_MAN=''
     echo "Not building fsck wrapper by default"
     ;;
@@ -740,7 +740,7 @@ dnl
 dnl Linux and Hurd places root files in the / by default
 dnl
 case "$host_os" in
-linux* | gnu*)
+linux* | gnu* | freebsd*-gnu*)
 	if test "$prefix" = NONE -a "$root_prefix" = NONE ; then
 		root_prefix="";
 		echo "On $host_os systems, root_prefix defaults to ''"
@@ -751,7 +751,7 @@ dnl
 dnl On Linux/hurd, force the prefix to be /usr
 dnl
 case "$host_os" in
-linux* | gnu*)
+linux* | gnu* | freebsd*-gnu*)
 	if test "$prefix" = NONE ; then
 		prefix="/usr";
 		echo "On $host_os systems, prefix defaults to /usr"
