@@ -1,3 +1,8 @@
+2003-07-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* LINGUAS, sv.po: Added Sweedish translation from Göran Uddeborg
+		<goeran@uddeborg.se>
+
 2003-05-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* LINGUAS, de-utf.po: Remove de-utf.po; de.po is newer, and we
