@@ -26,8 +26,8 @@ rm -f $OUT.new
 echo ----------------------------------------------- >> $OUT
 
 echo " " >> $OUT
-echo "debugfs -R ''set_inode <7> block[2] 42'' -w $TMPFILE" > $OUT.new
-$DEBUGFS -R "set_inode <7> block[2] 42" -w $TMPFILE >> $OUT.new 2>&1
+echo "debugfs -R ''set_inode_field <7> block[2] 42'' -w $TMPFILE" > $OUT.new
+$DEBUGFS -R "set_inode_field <7> block[2] 42" -w $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
 sed -e '2d' $OUT.new >> $OUT
@@ -68,8 +68,8 @@ rm -f $OUT.new
 echo ----------------------------------------------- >> $OUT
 
 echo " " >> $OUT
-echo "debugfs -R ''set_inode <7> bmap[524] 57'' -w $TMPFILE" > $OUT.new
-$DEBUGFS -R "set_inode <7> bmap[524] 57" -w $TMPFILE >> $OUT.new 2>&1
+echo "debugfs -R ''set_inode_field <7> bmap[524] 57'' -w $TMPFILE" > $OUT.new
+$DEBUGFS -R "set_inode_field <7> bmap[524] 57" -w $TMPFILE >> $OUT.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT.new
 sed -e '2d' $OUT.new >> $OUT

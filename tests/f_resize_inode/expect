@@ -25,7 +25,7 @@ test_filesys: 11/4096 files (0.0% non-contiguous), 2107/16384 blocks
 Exit status is 0
 -----------------------------------------------
  
-debugfs -R ''set_inode <7> block[2] 42'' -w ./test.img
+debugfs -R ''set_inode_field <7> block[2] 42'' -w ./test.img
 Exit status is 0
 Resize inode not valid.  Recreate? yes
 
@@ -81,7 +81,7 @@ test_filesys: 11/4096 files (0.0% non-contiguous), 2107/16384 blocks
 Exit status is 0
 -----------------------------------------------
  
-debugfs -R ''set_inode <7> bmap[524] 57'' -w ./test.img
+debugfs -R ''set_inode_field <7> bmap[524] 57'' -w ./test.img
 Exit status is 0
 Resize inode not valid.  Recreate? yes
 
