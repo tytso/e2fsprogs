@@ -28,13 +28,14 @@ struct problem_context {
  * handled as a set.  The user answers once for a particular latch
  * group.
  */
-#define PR_LATCH_MASK	0x0070  /* Latch mask */
+#define PR_LATCH_MASK	0x0ff0  /* Latch mask */
 #define PR_LATCH_BLOCK	0x0010	/* Latch for illegal blocks (pass 1) */
 #define PR_LATCH_BBLOCK	0x0020	/* Latch for bad block inode blocks (pass 1) */
 #define PR_LATCH_IBITMAP 0x0030 /* Latch for pass 5 inode bitmap proc. */
 #define PR_LATCH_BBITMAP 0x0040 /* Latch for pass 5 inode bitmap proc. */
 #define PR_LATCH_RELOC	0x0050  /* Latch for superblock relocate hint */
 #define PR_LATCH_DBLOCK	0x0060	/* Latch for pass 1b dup block headers */
+#define PR_LATCH_LOW_DTIME 0x0070 /* Latch for pass1 orphaned list refugees */
 
 #define PR_LATCH(x)	((((x) & PR_LATCH_MASK) >> 4) - 1)
 
@@ -319,6 +320,12 @@ struct problem_context {
 
 /* Journal inode has wrong mode */
 #define PR_1_JOURNAL_BAD_MODE		0x010035
+
+/* Inode that was part of orphan linked list */
+#define PR_1_LOW_DTIME			0x010036
+
+/* Latch question which asks how to deal with low dtime inodes */
+#define PR_1_ORPHAN_LIST_REFUGEES	0x010037
 	
 /*
  * Pass 1b errors

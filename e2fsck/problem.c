@@ -556,6 +556,17 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@j is not regular file.  "),
 	  PROMPT_FIX, PR_PREEN_OK },
 
+	/* Deal with inodes that were part of orphan linked list */
+	{ PR_1_LOW_DTIME,
+	  N_("@i %i was part of the orphaned @i list.  "),
+	  PROMPT_FIX, PR_LATCH_LOW_DTIME, 0 },    
+
+	/* Deal with inodes that were part of corrupted orphan linked
+	   list (latch question) */
+	{ PR_1_ORPHAN_LIST_REFUGEES,
+	  N_("@is that were part of a corrupted orphan linked list found.  "),
+	  PROMPT_FIX, 0 },		  
+		  
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
@@ -1130,6 +1141,7 @@ static struct latch_descr pr_latch_info[] = {
 	{ PR_LATCH_BBITMAP, PR_5_BLOCK_BITMAP_HEADER, PR_5_BLOCK_BITMAP_END },
 	{ PR_LATCH_RELOC, PR_0_RELOCATE_HINT, 0 },
 	{ PR_LATCH_DBLOCK, PR_1B_DUP_BLOCK_HEADER, PR_1B_DUP_BLOCK_END },
+	{ PR_LATCH_LOW_DTIME, PR_1_ORPHAN_LIST_REFUGEES, 0 },
 	{ -1, 0, 0 },
 };
 

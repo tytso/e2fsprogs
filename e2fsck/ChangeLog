@@ -1,5 +1,16 @@
 2001-05-14  Theodore Tso  <tytso@valinux.com>
 
+	* pass1.c: Treat inodes with a low dtime (that were from a
+		corrupted orphan list) specially.
+
+	* problem.c, problem.h: Add new problem codes PR_1_LOW_DTIME and
+		PR_1_ORPHAN_LIST_REFUGEES, and a new latch group,
+		PR_LATCH_LOW_DTIME.
+
+	* problemP.h: Expand the size of the problem flag to be an int
+		instead of a short.  Expand space in the flag word which
+		is reserved for problem latch flags from 3 bits to 8 bits.
+
 	* e2fsck.h, scantest.c: Change location of ext2_fs.h to be
 		ext2fs/ext2_fs.h
 

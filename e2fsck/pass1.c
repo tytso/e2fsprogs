@@ -442,6 +442,33 @@ void e2fsck_pass1(e2fsck_t ctx)
 			goto next;
 		}
 		/*
+		 * Check for inodes who might have been part of the
+		 * orphaned list linked list.  They should have gotten
+		 * dealt with by now, unless the list had somehow been
+		 * corrupted.
+		 * 
+		 * FIXME: In the future, inodes which are still in use
+		 * (and which are therefore) pending truncation should
+		 * be handled specially.  Right now we just clear the
+		 * dtime field, and the normal e2fsck handling of
+		 * inodes where i_size and the inode blocks are
+		 * inconsistent is to fix i_size, instead of releasing
+		 * the extra blocks.  This won't catch the inodes that
+		 * was at the end of the orphan list, but it's better
+		 * than nothing.  The right answer is that there
+		 * shouldn't be any bugs in the orphan list handling.  :-)
+		 */
+		if (inode.i_dtime &&
+		    inode.i_dtime < ctx->fs->super->s_inodes_count) {
+			if (fix_problem(ctx, PR_1_LOW_DTIME, &pctx)) {
+				inode.i_dtime = inode.i_links_count ?
+					0 : time(0);
+				e2fsck_write_inode(ctx, ino, &inode,
+						   "pass1");
+			}
+		}
+		
+		/*
 		 * This code assumes that deleted inodes have
 		 * i_links_count set to 0.  
 		 */
