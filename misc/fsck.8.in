@@ -183,12 +183,32 @@ Produce verbose output, including all file system-specific commands
 that are executed.
 .TP
 .B fsck-options
-Any options which are not understood by 
-.BR fsck ,
-or which follow the
+Options which which are not understood by 
+.B fsck 
+are passed to the filesystem-specific checker.  These arguments
+.B must
+not take arguments, as there is no
+way for 
+.B fsck
+to be able to properly guess which arguments take options and which
+don't.
+.IP
+Options and arguments which follow the
 .B \-\-
-option are treated as file system-specific options to be passed to the
+are treated as file system-specific options to be passed to the
 file system-specific checker.
+.IP
+Please note that fsck is not
+designed to pass arbitrarily complicated options to filesystem-specific
+checkers.  If you're doing something complicated, please just
+execute the filesystem-specific checker directly.  If you pass 
+.B fsck
+some horribly complicated option and arguments, and it doesn't do
+what you expect, 
+.B don't bother reporting it as a bug.
+You're almost certainly doing something that you shouldn't be doing
+with 
+.BR fsck.
 .PP
 Currently, standardized file system-specific options are somewhat in
 flux.  Although not guaranteed, the following options are supported

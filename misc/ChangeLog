@@ -1,5 +1,8 @@
 2001-05-05  Theodore Tso  <tytso@valinux.com>
 
+	* fsck.8.in: Add explicit language to describe how options get
+		passed to filesystem-specific checkers.
+
 	* badblocks.8.in: Fixed man page to describe the first optional
 		parameter to badblocks as last_block, instead of
 		num_blocks.  (Debian bug #87216)
