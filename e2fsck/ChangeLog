@@ -1,3 +1,7 @@
+2001-05-25  Theodore Tso  <tytso@valinux.com>
+
+	* journal.c (e2fsck_journal_reset_super): Remove extraneous line
+
 2001-05-23  Theodore Tso  <tytso@valinux.com>
 
 	* journal.c (e2fsck_journal_reset_super): Fix bug; the reset

@@ -421,7 +421,6 @@ static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 	jsb->s_blocksize = htonl(ctx->fs->blocksize);
 	jsb->s_maxlen = htonl(journal->j_maxlen);
 	jsb->s_first = htonl(1);
-	jsb->s_sequence = htonl(1);
 
 	/* Initialize the journal sequence number so that there is "no"
 	 * chance we will find old "valid" transactions in the journal.
