@@ -41,7 +41,7 @@ int blkid_get_cache(blkid_cache *ret_cache, const char *filename)
 
 	if (filename && !strlen(filename))
 		filename = 0;
-	if (!filename)
+	if (!filename && (getuid() == geteuid()))
 		filename = getenv("BLKID_FILE");
 	if (!filename)
 		filename = BLKID_CACHE_FILE;
