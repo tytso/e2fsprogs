@@ -301,9 +301,8 @@ of the
 executable.
 .TP
 .B "\-O \fIfeature\fR[,...]"
-Create filesystem with given features (filesystem options).  Features
-which are normally turned on by default may be disabled by prefixing the
-feature with a caret ('^') symbol.
+Create filesystem with given features (filesystem options), overridding 
+the default filesystem options.
 Currently, the
 .B sparse_super
 and

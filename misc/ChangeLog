@@ -1,3 +1,8 @@
+2004-04-11  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.8.in: Clarify man page's description of the '-O' option.
+		(Addresses Debian Bug #241940)
+
 2004-04-07  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.c (main): If the environment variable
