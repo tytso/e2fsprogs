@@ -179,7 +179,7 @@ static void set_fs_defaults(const char *fs_type,
  */
 static void invalid_block(ext2_filsys fs, blk_t blk)
 {
-	printf(_("Bad block %u out of range; ignored.\n"), blk);
+	fprintf(stderr, _("Bad block %u out of range; ignored.\n"), blk);
 	return;
 }
 
@@ -440,9 +440,9 @@ static void write_inode_tables(ext2_filsys fs)
 
 		retval = zero_blocks(fs, blk, num, 0, &blk, &num);
 		if (retval) {
-			printf(_("\nCould not write %d blocks "
-				 "in inode table starting at %d: %s\n"),
-			       num, blk, error_message(retval));
+			fprintf(stderr, _("\nCould not write %d blocks "
+				"in inode table starting at %d: %s\n"),
+				num, blk, error_message(retval));
 			exit(1);
 		}
 		if (sync_kludge) {
@@ -587,8 +587,8 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 	io_channel_set_blksize(fs->io, fs->blocksize);
 	free(buf);
 	if (retval)
-		printf(_("Warning: could not erase sector %d: %s\n"), sect,
-		       error_message(retval));
+		fprintf(stderr, _("Warning: could not erase sector %d: %s\n"),
+			sect, error_message(retval));
 }
 
 static void create_journal_dev(ext2_filsys fs)
@@ -641,7 +641,7 @@ static void show_stats(ext2_filsys fs)
 	int			i, need, col_left;
 	
 	if (param.s_blocks_count != s->s_blocks_count)
-		printf(_("warning: %d blocks unused.\n\n"),
+		fprintf(stderr, _("warning: %d blocks unused.\n\n"),
 		       param.s_blocks_count - s->s_blocks_count);
 
 	memset(buf, 0, sizeof(buf));
@@ -876,7 +876,7 @@ static void PRS(int argc, char *argv[])
 			}
 			param.s_log_frag_size =
 				int_log2(size >> EXT2_MIN_BLOCK_LOG_SIZE);
-			printf(_("Warning: fragments not supported.  "
+			fprintf(stderr, _("Warning: fragments not supported.  "
 			       "Ignoring -f option\n"));
 			break;
 		case 'g':
@@ -1350,7 +1350,8 @@ no_journal:
 		       "filesystem accounting information: "));
 	retval = ext2fs_flush(fs);
 	if (retval) {
-		printf(_("\nWarning, had trouble writing out superblocks."));
+		fprintf(stderr,
+			_("\nWarning, had trouble writing out superblocks."));
 	}
 	if (!quiet) {
 		printf(_("done\n\n"));

@@ -1,5 +1,8 @@
 2002-03-07  Theodore Tso  <tytso@mit.edu>
 
+	* mke2fs.c: Output warnings to stderr 
+		(From Philipp Thomas <pthomas@suse.de>)
+
 	* base_device.c (main): Fix gcc -Wall complaints in debug code.
 
 	* mke2fs.c (zap_sector): Don't erase BSD disklabels on Alpha.
