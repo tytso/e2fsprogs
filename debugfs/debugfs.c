@@ -124,7 +124,7 @@ void do_open_filesys(int argc, char **argv)
 	blk_t	superblock = 0;
 	blk_t	blocksize = 0;
 	int	open_flags = 0;
-	char	*data_filename;
+	char	*data_filename = 0;
 	
 	reset_getopt();
 	while ((c = getopt (argc, argv, "iwfcb:s:d:")) != EOF) {

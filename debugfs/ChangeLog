@@ -1,3 +1,8 @@
+2004-11-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c (do_open_filesys): Fix obvious uninitialized variable
+		buglet.
+
 2004-11-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c (kill_file_by_inode): Only iterate over the inode to
