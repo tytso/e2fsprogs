@@ -77,6 +77,9 @@ static errcode_t unix_flush(io_channel channel);
 static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 				int size, const void *data);
 
+static void reuse_cache(io_channel channel, struct unix_private_data *data,
+		 struct unix_cache *cache, unsigned long block);
+
 static struct struct_io_manager struct_unix_manager = {
 	EXT2_ET_MAGIC_IO_MANAGER,
 	"Unix I/O Manager",
@@ -247,7 +250,7 @@ static struct unix_cache *find_cached_block(io_channel channel,
 /*
  * Reuse a particular cache entry for another block.
  */
-void reuse_cache(io_channel channel, struct unix_private_data *data,
+static void reuse_cache(io_channel channel, struct unix_private_data *data,
 		 struct unix_cache *cache, unsigned long block)
 {
 	if (cache->dirty && cache->in_use)
@@ -509,7 +512,7 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 {
 	struct unix_private_data *data;
 	struct unix_cache *cache, *reuse;
-	errcode_t	retval = 0, retval2;
+	errcode_t	retval = 0;
 	const char	*cp;
 	int		writethrough;
 
