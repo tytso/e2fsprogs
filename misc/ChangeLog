@@ -1,3 +1,10 @@
+2001-02-17  Theodore Tso  <tytso@valinux.com>
+
+	* mke2fs.c (main): Flush out the "creating journal" message.
+		Also handle the case where the default journal size
+		returns zero blocks == no journal.  Print out how often
+		the filesystem will be checked.
+
 2001-02-08  Theodore Tso  <tytso@valinux.com>
 
 	* e2image.c (main): Add code to write the e2image header.

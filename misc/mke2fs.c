@@ -1200,9 +1200,11 @@ int main (int argc, char *argv[])
 				journal_device);
 			exit(1);
 		}
-		if (!quiet)
+		if (!quiet) {
 			printf(_("Creating journal on device %s: "), 
 			       journal_device);
+			fflush(stdout);
+		}
 		retval = ext2fs_add_journal_device(fs, jfs);
 		if(retval) {
 			com_err (program_name, retval, 
@@ -1219,9 +1221,17 @@ int main (int argc, char *argv[])
 		else
 			journal_blocks = journal_size * 1024 /
 				(fs->blocksize	/ 1024);
-		if (!quiet)
+
+		if (!journal_blocks) {
+			fs->super->s_feature_compat &=
+				~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+			goto no_journal;
+		}
+		if (!quiet) {
 			printf(_("Creating journal (%d blocks): "),
 			       journal_blocks);
+			fflush(stdout);
+		}
 		retval = ext2fs_add_journal_inode(fs, journal_blocks,
 						  journal_flags);
 		if (retval) {
@@ -1232,7 +1242,8 @@ int main (int argc, char *argv[])
 		if (!quiet)
 			printf(_("done\n"));
 	}
-	
+no_journal:
+
 	if (!quiet)
 		printf(_("Writing superblocks and "
 		       "filesystem accounting information: "));
@@ -1240,8 +1251,12 @@ int main (int argc, char *argv[])
 	if (retval) {
 		printf(_("\nWarning, had trouble writing out superblocks."));
 	}
-	if (!quiet)
+	if (!quiet) {
 		printf(_("done\n"));
+		printf(_("e2fsck will be run every %d mounts or %4g days"),
+		       fs->super->s_max_mnt_count,
+		       (double)fs->super->s_checkinterval / (3600 * 24));
+	}
 	ext2fs_close(fs);
 	return 0;
 }
