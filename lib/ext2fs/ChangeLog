@@ -1,3 +1,9 @@
+1998-12-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* initialize.c (ext2fs_initialize): Use EXT2_FIRST_INODE instead
+		of EXT2_FIRST_INO to ensure compatibility with Linux 1.2
+		header files.
+
 Mon Jan  4 02:32:09 1999  Theodore Y. Ts'o  <tytso@mit.edu>
 
 	* llseek.c (ext2fs_llseek): Change ext2fs_llseek() in the

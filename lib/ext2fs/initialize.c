@@ -164,8 +164,8 @@ retry:
 	 * Make sure we have at least EXT2_FIRST_INO + 1 inodes, so
 	 * that we have enough inodes for the filesystem(!)
 	 */
-	if (super->s_inodes_count < EXT2_FIRST_INO(super)+1)
-		super->s_inodes_count = EXT2_FIRST_INO(super)+1;
+	if (super->s_inodes_count < EXT2_FIRST_INODE(super)+1)
+		super->s_inodes_count = EXT2_FIRST_INODE(super)+1;
 	
 	/*
 	 * There should be at least as many inodes as the user
