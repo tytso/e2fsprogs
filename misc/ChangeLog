@@ -1,5 +1,7 @@
 2004-04-11  Theodore Ts'o  <tytso@mit.edu>
 
+	* tune2fs.8.in: Fixed spelling error (Addresses Debian Bug #242995)
+
 	* mke2fs.8.in: Clarify man page's description of the '-O' option.
 		(Addresses Debian Bug #241940)
 

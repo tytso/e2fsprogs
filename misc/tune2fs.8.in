@@ -310,12 +310,12 @@ into the main filesystem.
 .TP
 .B journal_data_ordered
 When the filesystem is mounted with journalling enabled, all data is forced
-directly out to the main file system prior to its metadata being commutted 
+directly out to the main file system prior to its metadata being committed 
 to the journal.
 .TP
 .B journal_data_writeback
 When the filesystem is mounted with journalling enabled, data may be
-written into the main filesystem after its metadata has been commutted
+written into the main filesystem after its metadata has been committed
 to the journal.  This may increase throughput, however, it may allow old
 data to appear in files after a crash and journal recovery.
 .RE
