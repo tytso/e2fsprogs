@@ -1,5 +1,11 @@
 2000-12-31    <tytso@snap.thunk.org>
 
+	* fsck.c (check_all): Call interpet_device to resolve LABEL= and
+		UUID= right away so that the device_already_active() logic
+		can do the right thing.  Also cleaned up the the root
+		filesystem logic checking code; fixed up a logic bug with
+		the parallel_root option.
+
 	* lsattr.1.in: Add pointer to chattr man page for definition of
 		the file attributes.
 

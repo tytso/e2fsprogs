@@ -656,7 +656,7 @@ static int ignore(struct fs_info *fs)
 	
 	/* Are we ignoring this type? */
 	for(ip = ignored_types; *ip; ip++)
-		if (strcmp(fs->type, *ip) == 0) return(1);
+		if (strcmp(fs->type, *ip) == 0) return 1;
 
 	/* Do we really really want to check this fs? */
 	for(ip = really_wanted; *ip; ip++)
@@ -670,7 +670,7 @@ static int ignore(struct fs_info *fs)
 		if (wanted)
 			fprintf(stderr, _("fsck: cannot check %s: fsck.%s not found\n"),
 				fs->device, fs->type);
-		return(1);
+		return 1;
 	}
 
 	/* We can and want to check this file system type. */
@@ -724,32 +724,35 @@ static int check_all(NOARGS)
 		printf(_("Checking all file systems.\n"));
 
 	/*
-	 * Find and check the root filesystem first.
+	 * Do an initial scan over the filesystem; mark filesystems
+	 * which should be ignored as done, and resolve LABEL= and
+	 * UUID= specifications to the real device.
+	 */
+	for (fs = filesys_info; fs; fs = fs->next) {
+		if (ignore(fs))
+			fs->flags |= FLAG_DONE;
+		fs->device = interpret_device(fs->device);
+	}
+		
+	/*
+	 * Find and check the root filesystem.
 	 */
 	if (!parallel_root) {
 		for (fs = filesys_info; fs; fs = fs->next) {
 			if (!strcmp(fs->mountpt, "/"))
 				break;
 		}
-		if (fs && !skip_root && !ignore(fs)) {
-			fs->device = interpret_device(fs->device);
-			fsck_device(fs->device, 1);
+		if (fs) {
+			if (!skip_root && !ignore(fs)) {
+				fsck_device(fs->device, 1);
+				status |= wait_all();
+				if (status > EXIT_NONDESTRUCT)
+					return status;
+			}
 			fs->flags |= FLAG_DONE;
-			status |= wait_all();
-			if (status > EXIT_NONDESTRUCT)
-				return status;
 		}
 	}
-	if (fs) fs->flags |= FLAG_DONE;
 
-	/*
-	 * Mark filesystems that should be ignored as done.
-	 */
-	for (fs = filesys_info; fs; fs = fs->next) {
-		if (ignore(fs))
-			fs->flags |= FLAG_DONE;
-	}
-		
 	while (not_done_yet) {
 		not_done_yet = 0;
 		pass_done = 1;
@@ -778,7 +781,6 @@ static int check_all(NOARGS)
 			/*
 			 * Spawn off the fsck process
 			 */
-			fs->device = interpret_device(fs->device);
 			fsck_device(fs->device, serialize);
 			fs->flags |= FLAG_DONE;
 
