@@ -16,6 +16,7 @@
 #endif
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -100,29 +101,52 @@ errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
 }
 
 /*
- * This function uses fs->block_map, and updates the filesystem
- * accounting records appropriately.
+ * This function zeros out the allocated block, and updates all of the
+ * appropriate filesystem records.
  */
-errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal, blk_t *ret)
+errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
+			     char *block_buf, blk_t *ret)
 {
 	errcode_t	retval;
+	blk_t		block;
 	int		group;
+	char		*buf = 0;
 
-	if (!fs->block_map)
-		ext2fs_read_block_bitmap(fs);
+	if (!block_buf) {
+		buf = malloc(fs->blocksize);
+		if (!buf)
+			return EXT2_NO_MEMORY;
+		block_buf = buf;
+	}
+	memset(block_buf, 0, fs->blocksize);
 
-	retval = ext2fs_new_block(fs, goal, 0, ret);
+	if (!fs->block_map) {
+		retval = ext2fs_read_block_bitmap(fs);
+		if (retval)
+			goto fail;
+	}
+
+	retval = ext2fs_new_block(fs, goal, 0, &block);
 	if (retval)
-		return retval;
+		goto fail;
+
+	retval = io_channel_write_blk(fs->io, block, 1, block_buf);
+	if (retval)
+		goto fail;
 	
 	fs->super->s_free_blocks_count--;
-	group = ((*ret - fs->super->s_first_data_block) /
-		 fs->super->s_blocks_per_group);
+	group = ext2fs_group_of_blk(fs, block);
 	fs->group_desc[group].bg_free_blocks_count--;
-	ext2fs_mark_block_bitmap(fs->block_map, *ret);
+	ext2fs_mark_block_bitmap(fs->block_map, block);
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
+	*ret = block;
 	return 0;
+
+fail:
+	if (buf)
+		free(buf);
+	return retval;
 }
 
 errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start, blk_t finish,

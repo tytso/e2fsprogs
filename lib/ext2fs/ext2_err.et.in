@@ -53,8 +53,8 @@ ec	EXT2_ET_MAGIC_ICOUNT,
 ec	EXT2_ET_MAGIC_PQ_IO_CHANNEL,
 	"Wrong magic number for Powerquest io_channel structure"
 
-ec	EXT2_ET_MAGIC_RESERVED_6,
-	"Wrong magic number --- RESERVED_6"
+ec	EXT2_ET_MAGIC_EXT2_FILE,
+	"Wrong magic number for ext2 file structure"
 
 ec	EXT2_ET_MAGIC_RESERVED_7,
 	"Wrong magic number --- RESERVED_7"
@@ -247,5 +247,8 @@ ec	EXT2_TOO_MANY_REFS,
 
 ec	EXT2_FILE_NOT_FOUND,
 	"File not found by ext2_lookup"
+
+ec	EXT2_FILE_RO,
+	"File open read-only"
 
 	end

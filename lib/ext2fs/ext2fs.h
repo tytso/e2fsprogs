@@ -40,6 +40,7 @@
 
 typedef __u32		blk_t;
 typedef unsigned int	dgrp_t;
+typedef __u32		ext2_off_t;
 
 #include "et/com_err.h"
 #include "ext2fs/ext2_io.h"
@@ -98,6 +99,24 @@ struct ext2_db_entry {
 typedef struct ext2_struct_dblist *ext2_dblist;
 
 #define DBLIST_ABORT	1
+
+/*
+ * ext2_fileio definitions
+ */
+
+#define EXT2_FILE_WRITE		0x0001
+#define EXT2_FILE_CREATE	0x0002
+
+#define EXT2_FILE_MASK		0x00FF
+
+#define EXT2_FILE_BUF_DIRTY	0x4000
+#define EXT2_FILE_BUF_VALID	0x2000
+
+typedef struct ext2_file *ext2_file_t;
+
+#define EXT2_SEEK_SET	0
+#define EXT2_SEEK_CUR	1
+#define EXT2_SEEK_END	2
 
 /*
  * Flags for the ext2_filsys structure
@@ -293,6 +312,11 @@ typedef struct ext2_struct_inode_scan *ext2_inode_scan;
 typedef struct ext2_icount *ext2_icount_t;
 
 /*
+ * Flags for ext2fs_bmap
+ */
+#define BMAP_ALLOC	1
+
+/*
  * For checking structure magic numbers...
  */
 
@@ -381,7 +405,8 @@ extern errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start,
 					blk_t finish, int num,
 					ext2fs_block_bitmap map,
 					blk_t *ret);
-extern errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal, blk_t *ret);
+extern errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
+				    char *block_buf, blk_t *ret);
 
 /* alloc_tables.c */
 extern errcode_t ext2fs_allocate_tables(ext2_filsys fs);
@@ -466,6 +491,13 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 					    void	*private),
 				void *private);
 
+/* bmap.c */
+extern errcode_t ext2fs_bmap(ext2_filsys fs, ino_t ino,
+			     struct ext2_inode *inode, 
+			     char *block_buf, int bmap_flags,
+			     blk_t block, blk_t *phys_blk);
+
+
 /* bmove.c */
 extern errcode_t ext2fs_move_blocks(ext2_filsys fs,
 				    ext2fs_block_bitmap reserve,
@@ -544,6 +576,17 @@ extern errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest);
 
 /* expanddir.c */
 extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ino_t dir);
+
+/* fileio.c */
+extern errcode_t ext2fs_file_open(ext2_filsys fs, ino_t ino,
+				  int flags, ext2_file_t *ret);
+extern errcode_t ext2fs_file_close(ext2_file_t file);
+extern errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
+				  int wanted, int *got);
+extern errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
+				   int nbytes, int *written);
+extern errcode_t ext2fs_file_llseek(ext2_file_t file, ext2_off_t offset,
+				    int whence, ext2_off_t *ret_pos);
 
 /* freefs.c */
 extern void ext2fs_free(ext2_filsys fs);

@@ -1,8 +1,23 @@
 Sat Oct 25 00:06:58 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* ext2fs.h: Added function declarations and constants for bmap.c
+	 	and fileio.c.
+
+	* ext2_err.et.in: Added new error messages EXT2_FILE_RO and
+	 	EXT2_ET_MAGIC_EXT2_FILE
+
+	* Makefile.in: Added files bmap.c and fileio.c, and temporarily
+		commented out brel_ma.c and irel_ma.c
+
+	* bmap.c: New file which maps a file's logical block number to its
+		physical block number.
+
+	* fileio.c: New file which implements simple file reading and
+		writing primitives.
+
 	* alloc.c (ext2fs_alloc_block): New function which allocates a
-		block and updates the filesystem accounting records
-		appropriately. 
+ 		block, zeros it, and updates the filesystem accounting
+ 		records appropriately.
 
 Wed Oct 22 16:47:27 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 

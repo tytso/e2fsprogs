@@ -10,8 +10,8 @@ OBJS= 	alloc.obj \
 	bitmaps.obj \
 	bitops.obj \
 	block.obj \
+	bmap.obj \
 	bmove.obj \
-	brel_ma.obj \
 	check_desc.obj \
 	closefs.obj \
 	cmp_bitmaps.obj \
@@ -21,6 +21,7 @@ OBJS= 	alloc.obj \
 	dir_iterate.obj \
 	dupfs.obj \
 	expanddir.obj \
+	fileio.obj \
 	freefs.obj \
 	get_pathname.obj \
 	getsize.obj \
@@ -28,7 +29,6 @@ OBJS= 	alloc.obj \
 	initialize.obj \
 	inline.obj \
 	inode.obj \
-	irel_ma.obj \
 	ismounted.obj \
 	link.obj \
 	lookup.obj \
