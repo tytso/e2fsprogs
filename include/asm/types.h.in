@@ -42,8 +42,4 @@ typedef	unsigned short	__u32;
  ?== error: undefined 32 bit type
 #endif
 
-#ifndef HAVE_INO_T
-typedef __u32 ino_t;
-#endif
-
 #endif /* LINUX_TYPES_H */

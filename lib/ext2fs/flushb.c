@@ -1,0 +1,76 @@
+/*
+ * flushb.c --- Hides system-dependent information for both syncing a
+ * 	device to disk and to flush any buffers from disk cache.
+ * 
+ * Copyright (C) 2000 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
+ */
+
+#include <stdio.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#if HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
+
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
+#include <linux/ext2_fs.h>
+#endif
+
+#include "ext2fs.h"
+
+/*
+ * For Linux/i386, define BLKFLSBUF and FDFLUSH if necessary, since 
+ * no portable header file does so for us.  This really should be
+ * fixed in the glibc header files.  Until then....
+ */
+#if (defined(__i386__) && defined(__linux__))
+#ifndef BLKFLSBUF
+#define BLKFLSBUF	0x1261	/* flush buffer cache */
+#endif
+#ifndef FDFLUSH
+#define FDFLUSH		0x024b	/* flush floppy disk */
+#endif
+#endif
+
+/*
+ * This function will sync a device/file, and optionally attempt to
+ * flush the buffer cache.  The latter is basically only useful for
+ * system benchmarks and for torturing systems in burn-in tests.  :)
+ */
+errcode_t ext2fs_sync_device(int fd, int flushb)
+{
+	/*
+	 * We always sync the device in case we're running on old
+	 * kernels for which we can lose data if we don't.  (There
+	 * still is a race condition for those kernels, but this
+	 * reduces it greatly.)
+	 */
+	if (fsync (fd) == -1)
+		return errno;
+
+	if (flushb) {
+
+#ifdef BLKFLSBUF
+		ioctl (fd, BLKFLSBUF, 0);   /* In case this is a HD */
+#else
+ #warning BLKFLSBUF not defined
+#endif
+#ifdef FDFLUSH
+		ioctl (fd, FDFLUSH, 0);   /* In case this is floppy */
+#else
+ #warning FDFLUSH not defined
+#endif
+	}
+	return 0;
+}

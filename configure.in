@@ -281,23 +281,8 @@ AC_SUBST(LIB_EXT)
 AC_SUBST(STATIC_LIB_EXT)
 AC_SUBST(PROFILED_LIB_EXT)
 dnl
-dnl handle --enable-gcc-wall
+dnl handle --enable-dynamic-e2fsck
 dnl
-AC_ARG_ENABLE([gcc-wall],
-[  --enable-gcc-wall	  enable GCC anal warnings (DON'T USE IN PRODUCTION)],
-if test "$enableval" = "no"
-then
-	W=#
-	echo "Disabling GCC warnings"
-else
-	W=
-	echo "Enabling GCC warnings"
-fi
-,
-W=#
-echo "Disabling GCC warnings by default"
-)
-AC_SUBST(W)
 AC_ARG_ENABLE([dynamic-e2fsck],
 [  --enable-dynamic-e2fsck build e2fsck dynamically],
 if test "$enableval" = "no"
@@ -383,7 +368,7 @@ if test $cross_compiling = no; then
 else
   AC_CHECK_PROGS(BUILD_CC, gcc cc)
 fi
-AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h signal.h termios.h linux/fd.h linux/major.h sys/disklabel.h sys/mkdev.h sys/mount.h sys/sockio.h sys/sysmacros.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h)
+AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h signal.h termios.h linux/fd.h linux/major.h sys/disklabel.h sys/ioctl.h sys/mkdev.h sys/mount.h sys/sockio.h sys/sysmacros.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h)
 AC_FUNC_VPRINTF
 dnl
 dnl See if struct dirent has a d_namlen field (like bsd systems), implying
@@ -487,19 +472,6 @@ if test "$e2fsprogs_cv_struct_st_flags" = yes; then
   fi
 fi
 AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 strdup getmntinfo strcasecmp srandom fchown mallinfo fdatasync)
-dnl
-dnl Check to see if ino_t is defined
-dnl
-AC_MSG_CHECKING(ino_t defined by sys/types.h)
-AC_CACHE_VAL(e2fsprogs_cv_ino_t,
-	AC_TRY_COMPILE([#include <sys/types.h>],
-	[ino_t ino; ino = 0;],
-	[e2fsprogs_cv_ino_t=yes],
-	[e2fsprogs_cv_ino_t=no]))
-AC_MSG_RESULT($e2fsprogs_cv_ino_t)
-if test "$e2fsprogs_cv_ino_t" = yes; then
-   AC_DEFINE(HAVE_INO_T)
-fi
 dnl
 dnl Check to see if -lsocket is required (solaris) to make something
 dnl that uses socket() to compile; this is needed for the UUID library

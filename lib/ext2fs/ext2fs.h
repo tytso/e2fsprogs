@@ -620,6 +620,9 @@ extern errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size);
 /* finddev.c */
 extern char *ext2fs_find_block_device(dev_t device);
 
+/* flushb.c */
+extern errcode_t ext2fs_sync_device(int fd, int flushb);
+
 /* freefs.c */
 extern void ext2fs_free(ext2_filsys fs);
 extern void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap);

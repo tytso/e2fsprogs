@@ -32,7 +32,7 @@ BUILD_CC = @BUILD_CC@
 DEFS = @DEFS@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
-ALL_CFLAGS = $(CPPFLAGS) $(DEFS) $(WFLAGS) $(CFLAGS) $(XTRA_CFLAGS) \
+ALL_CFLAGS = $(CPPFLAGS) $(DEFS) $(USE_WFLAGS) $(CFLAGS) $(XTRA_CFLAGS) \
 	-I$(top_builddir)/lib -I$(top_srcdir)/lib \
 	-I$(top_srcdir)/include $(LINUX_INCLUDE) 
 LDFLAGS = @LDFLAGS@
@@ -106,14 +106,18 @@ $(top_builddir)/util/subst:
 #
 # Warning flags
 #
-# Uncomment WFLAGS if you want really anal GCC warning messages
+# Run make gcc-wall to do a build with warning messages.
 #
 #
-@W@WFLAGS=		-ansi -D_POSIX_SOURCE -pedantic \
-@W@			-Wall -Wwrite-strings -Wpointer-arith \
-@W@			-Wcast-qual -Wcast-align -Wtraditional \
-@W@			-Wstrict-prototypes -Wmissing-prototypes \
-@W@			-Wnested-externs -Winline -DNO_INLINE_FUNCS -Wshadow 
+WFLAGS=		-ansi -D_POSIX_SOURCE -pedantic \
+			-Wall -Wwrite-strings -Wpointer-arith \
+			-Wcast-qual -Wcast-align -Wtraditional \
+			-Wstrict-prototypes -Wmissing-prototypes \
+			-Wnested-externs -Winline -DNO_INLINE_FUNCS -Wshadow 
+
+gcc-wall:
+	make clean > /dev/null
+	(make USE_WFLAGS="$(WFLAGS)" > /dev/null) 2>&1 | sed -f $(top_srcdir)/util/gcc-wall-cleanup 
 
 #
 # Installation user and groups

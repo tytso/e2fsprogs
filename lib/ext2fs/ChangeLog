@@ -1,3 +1,12 @@
+2001-01-11    <tytso@snap.thunk.org>
+
+	* flushb.c (ext2fs_sync_device): New function which centralizes
+		all of the places which might try to use the BLKFLSBUF
+		or FDFLUSH ioctls (and usually failing to define them
+		since the system header files don't usually do this for
+		us, and we're trying to avoid usage of kernel include
+		files now).
+
 2001-01-10    <tytso@snap.thunk.org>
 
 	* alloc.c, bb_inode.c, bitmaps.c, bitops.h, block.c, bmap.c, 

@@ -1,3 +1,13 @@
+2001-01-11    <tytso@snap.thunk.org>
+
+	* MCONFIG.in: Change --enable-gcc-wall handling so that it's no
+		longer a configure option, but something which is done
+		when the developer uses the command "make gcc-wall".
+
+	* configure.in: Remove test for ino_t, since we don't use it any
+		more (we always use our own ext2_ino_t).  Remove
+		--enable-gcc-wall support.  Add test for sys/ioctl.h
+
 2001-01-05    <tytso@snap.thunk.org>
 
 	* configure.in: Add checks for the header files sys/mkdev.h and
