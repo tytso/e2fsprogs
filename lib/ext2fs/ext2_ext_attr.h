@@ -6,8 +6,6 @@
   (C) 2000 Andreas Gruenbacher, <a.gruenbacher@computer.org>
 */
 
-#include <linux/config.h>
-
 /* Magic value in attribute blocks */
 #define EXT2_EXT_ATTR_MAGIC		0xEA010000
 
