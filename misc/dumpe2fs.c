@@ -41,7 +41,7 @@
 const char * program_name = "dumpe2fs";
 char * device_name = NULL;
 
-static volatile void usage (void)
+static void usage(void)
 {
 	fprintf (stderr, "usage: %s [-bV] device\n", program_name);
 	exit (1);
@@ -198,11 +198,11 @@ int main (int argc, char ** argv)
 				error_message(EXT2_ET_BASE));
 			exit(0);
 		default:
-			usage ();
+			usage();
 		}
 	}
 	if (optind > argc - 1)
-		usage ();
+		usage();
 	device_name = argv[optind++];
 	retval = ext2fs_open (device_name, 0, 0, 0, unix_io_manager, &fs);
 	if (retval) {

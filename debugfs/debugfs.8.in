@@ -8,9 +8,6 @@ debugfs \- ext2 file system debugger
 .SH SYNOPSIS
 .B debugfs
 [
-.B \-w
-]
-[
 .B \-f 
 cmd_file
 ]
@@ -19,7 +16,13 @@ cmd_file
 request
 ]
 [
+.B \-V
+]
+[
+.B \-w
+[
 device
+]
 ]
 .SH DESCRIPTION
 The 
@@ -52,6 +55,11 @@ Causes
 to execute the single command 
 .IR request ,
 and then exit.
+.TP
+.I -V
+print the version number of 
+.B debugfs
+and exit.
 .SH COMMANDS
 .B debugfs
 is an interactive debugger. It understands a number of commands.

@@ -210,6 +210,9 @@ static errcode_t get_next_blockgroup(ext2_inode_scan scan)
 	scan->current_block = scan->fs->
 		group_desc[scan->current_group].bg_inode_table;
 
+	scan->current_inode = scan->current_group *
+		EXT2_INODES_PER_GROUP(scan->fs->super);
+
 	scan->bytes_left = 0;
 	scan->inodes_left = EXT2_INODES_PER_GROUP(scan->fs->super);
 	scan->blocks_left = scan->fs->inode_blocks_per_group;
@@ -221,7 +224,6 @@ errcode_t ext2fs_inode_scan_goto_blockgroup(ext2_inode_scan scan,
 {
 	scan->current_group = group - 1;
 	scan->groups_left = scan->fs->group_desc_count - group;
-	scan->current_inode = group * EXT2_INODES_PER_GROUP(scan->fs->super);
 	return get_next_blockgroup(scan);
 }
 
@@ -344,6 +346,27 @@ static errcode_t get_next_blocks(ext2_inode_scan scan)
 	return 0;
 }
 
+#if 0
+/*
+ * Returns 1 if the entire inode_buffer has a non-zero size and
+ * contains all zeros.  (Not just deleted inodes, since that means
+ * that part of the inode table was used at one point; we want all
+ * zeros, which means that the inode table is pristine.)
+ */
+static inline int is_empty_scan(ext2_inode_scan scan)
+{
+	int	i;
+	
+	if (scan->bytes_left == 0)
+		return 0;
+
+	for (i=0; i < scan->bytes_left; i++)
+		if (scan->ptr[i])
+			return 0;
+	return 1;
+}
+#endif
+
 errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 				struct ext2_inode *inode)
 {
@@ -356,7 +379,7 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 	 * Do we need to start reading a new block group?
 	 */
 	if (scan->inodes_left <= 0) {
-	retry:
+	force_new_group:
 		if (scan->done_group) {
 			retval = (scan->done_group)
 				(scan->fs, scan, scan->current_group,
@@ -378,7 +401,7 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 	 */
 	if (scan->current_block == 0) {
 		if (scan->scan_flags & EXT2_SF_SKIP_MISSING_ITABLE) {
-			goto retry;
+			goto force_new_group;
 		} else
 			return EXT2_ET_MISSING_INODE_TABLE;
 	}
@@ -395,6 +418,14 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 		retval = get_next_blocks(scan);
 		if (retval)
 			return retval;
+#if 0
+		/*
+		 * XXX test  Need check for used inode somehow.
+		 * (Note: this is hard.)
+		 */
+		if (is_empty_scan(scan))
+			goto force_new_group;
+#endif
 	}
 
 	retval = 0;

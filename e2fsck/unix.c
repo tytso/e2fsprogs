@@ -227,8 +227,6 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 				  unsigned long cur, unsigned long max)
 {
 	const char spinner[] = "\\|/-";
-	int percent;
-	struct e2_progress_struct *prog_struct;
 	char buf[80];
 	
 	if (ctx->progress_fd) {

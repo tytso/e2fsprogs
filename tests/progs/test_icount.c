@@ -290,7 +290,7 @@ static int source_file(const char *cmd_file, int sci_idx)
 	return exit_status;
 }
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int		retval;
 	int		sci_idx;
@@ -326,7 +326,7 @@ void main(int argc, char **argv)
 			break;
 		default:
 			com_err(argv[0], 0, usage);
-			return;
+			exit(1);
 		}
 	}
 	sci_idx = ss_create_invocation("test_icount", "0.0", (char *) NULL,
@@ -354,6 +354,5 @@ void main(int argc, char **argv)
 		ss_listen(sci_idx);
 	}
 
-	exit(exit_status);
+	return(exit_status);
 }
-

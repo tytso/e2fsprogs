@@ -51,13 +51,13 @@ unsigned long af;
 unsigned long rf;
 unsigned long sf;
 
-static void volatile fatal_error (const char * fmt_string, int errcode)
+static void fatal_error(const char * fmt_string, int errcode)
 {
 	fprintf (stderr, fmt_string, program_name);
 	exit (errcode);
 }
 
-#define usage() fatal_error ("usage: %s [-RV] [-+=AacdisSu] [-v version] files...\n", \
+#define usage() fatal_error("usage: %s [-RV] [-+=AacdisSu] [-v version] files...\n", \
 			     1)
 
 static int decode_arg (int * i, int argc, char ** argv)

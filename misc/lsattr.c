@@ -49,10 +49,10 @@ int l_opt = 0;
 int recursive = 0;
 int v_opt = 0;
 
-static void volatile usage (void)
+static void usage(void)
 {
-	fprintf (stderr, "Usage: %s [-Radlv] [files...]\n", program_name);
-	exit (1);
+	fprintf(stderr, "Usage: %s [-Radlv] [files...]\n", program_name);
+	exit(1);
 }
 
 static void list_attributes (const char * name)
@@ -148,7 +148,7 @@ int main (int argc, char ** argv)
 				v_opt = 1;
 				break;
 			default:
-				usage ();
+				usage();
 		}
 
 	if (optind > argc - 1)

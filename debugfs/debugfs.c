@@ -35,6 +35,8 @@ extern int optreset;		/* defined by BSD, but not others */
 #include "debugfs.h"
 #include "uuid/uuid.h"
 
+#include "../version.h"
+
 extern ss_request_table debug_cmds;
 
 ext2_filsys current_fs = NULL;
@@ -1353,7 +1355,7 @@ int main(int argc, char **argv)
 {
 	int		retval;
 	int		sci_idx;
-	const char	*usage = "Usage: debugfs [[-w] device]";
+	const char	*usage = "Usage: debugfs [-f cmd_file] [-R request] [-V] [[-w] device]";
 	int		c;
 	int		open_flags = 0;
 	char		*request = 0;
@@ -1361,8 +1363,11 @@ int main(int argc, char **argv)
 	char		*cmd_file = 0;
 	
 	initialize_ext2_error_table();
+	fprintf (stderr, "debugfs %s, %s for EXT2 FS %s, %s\n",
+		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
+		 EXT2FS_VERSION, EXT2FS_DATE);
 
-	while ((c = getopt (argc, argv, "wR:f:")) != EOF) {
+	while ((c = getopt (argc, argv, "wR:f:V")) != EOF) {
 		switch (c) {
 		case 'R':
 			request = optarg;
@@ -1373,6 +1378,11 @@ int main(int argc, char **argv)
 		case 'w':
 			open_flags = EXT2_FLAG_RW;
 			break;
+		case 'V':
+			/* Print version number and exit */
+			fprintf(stderr, "\tUsing %s\n",
+				error_message(EXT2_ET_BASE));
+			exit(0);
 		default:
 			com_err(argv[0], 0, usage);
 			return 1;

@@ -50,7 +50,7 @@ int v_flag = 0;			/* verbose */
 int w_flag = 0;			/* do r/w test */
 int s_flag = 0;			/* show progress of test */
 
-static volatile void usage (void)
+static void usage(void)
 {
 	fprintf (stderr, "Usage: %s [-b block_size] [-o output_file] [-svw] device blocks_count\n [start_count]\n",
 		 program_name);
@@ -298,14 +298,14 @@ int main (int argc, char ** argv)
 			w_flag = 1;
 			break;
 		default:
-			usage ();
+			usage();
 		}
 	}
 	if (optind > argc - 1)
-		usage ();
+		usage();
 	device_name = argv[optind++];
 	if (optind > argc - 1)
-		usage ();
+		usage();
 	blocks_count = strtoul (argv[optind], &tmp, 0);
 	if (*tmp)
 	{

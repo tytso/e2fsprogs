@@ -133,12 +133,7 @@ const char *fsck_prefix_path = "/sbin:/sbin/fs.d:/sbin/fs:/etc/fs:/etc";
 char *fsck_path = 0;
 static int ignore(struct fs_info *);
 
-#ifdef HAVE_STRDUP
-#ifdef _POSIX_SOURCE
-extern char *strdup(const char *s);
-#endif
-#else
-static char *strdup(const char *s)
+static char *string_copy(const char *s)
 {
 	char	*ret;
 
@@ -147,7 +142,6 @@ static char *strdup(const char *s)
 		strcpy(ret, s);
 	return ret;
 }
-#endif
 
 static void free_instance(struct fsck_instance *i)
 {
@@ -182,10 +176,10 @@ static void load_fs_info(NOARGS)
 	while ((mp = getmntent(mntfile)) != NULL) {
 		fs = malloc(sizeof(struct fs_info));
 		memset(fs, 0, sizeof(struct fs_info));
-		fs->device = strdup(mp->mnt_fsname);
-		fs->mountpt = strdup(mp->mnt_dir);
-		fs->type = strdup(mp->mnt_type);
-		fs->opts = strdup(mp->mnt_opts);
+		fs->device = string_copy(mp->mnt_fsname);
+		fs->mountpt = string_copy(mp->mnt_dir);
+		fs->type = string_copy(mp->mnt_type);
+		fs->opts = string_copy(mp->mnt_opts);
 		fs->freq = mp->mnt_freq;
 		fs->passno = mp->mnt_passno;
 		fs->next = NULL;
@@ -241,7 +235,7 @@ static char *find_fsck(char *type)
   char *s;
   const char *tpl;
   static char prog[256];
-  char *p = strdup(fsck_path);
+  char *p = string_copy(fsck_path);
   struct stat st;
 
   /* Are we looking for a program or just a type? */
@@ -266,13 +260,13 @@ static int execute(char *prog, char *device)
 	struct fsck_instance *inst;
 	pid_t	pid;
 
-	argv[0] = strdup(prog);
+	argv[0] = string_copy(prog);
 	argc = 1;
 	
 	for (i=0; i <num_args; i++)
-		argv[argc++] = strdup(args[i]);
+		argv[argc++] = string_copy(args[i]);
 
-	argv[argc++] = strdup(device);
+	argv[argc++] = string_copy(device);
 	argv[argc] = 0;
 
 	s = find_fsck(prog);
@@ -304,8 +298,8 @@ static int execute(char *prog, char *device)
 		return ENOMEM;
 	memset(inst, 0, sizeof(struct fsck_instance));
 	inst->pid = pid;
-	inst->prog = strdup(prog);
-	inst->device = strdup(device);
+	inst->prog = string_copy(prog);
+	inst->device = string_copy(device);
 	inst->next = instance_list;
 	instance_list = inst;
 	
@@ -460,7 +454,6 @@ static int fs_match(char *type, char *fs_type)
 /* Check if we should ignore this filesystem. */
 static int ignore(struct fs_info *fs)
 {
-	const char *cp;
 	const char **ip;
 	int wanted = 0;
 
@@ -661,7 +654,7 @@ static void PRS(int argc, char *argv[])
 					progname);
 				exit(1);
 			}
-			devices[num_devices++] = strdup(arg);
+			devices[num_devices++] = string_copy(arg);
 			continue;
 		}
 		if (arg[0] != '-') {
@@ -670,7 +663,7 @@ static void PRS(int argc, char *argv[])
 					progname);
 				exit(1);
 			}
-			args[num_args++] = strdup(arg);
+			args[num_args++] = string_copy(arg);
 			continue;
 		}
 		for (j=1; arg[j]; j++) {
@@ -705,12 +698,12 @@ static void PRS(int argc, char *argv[])
 				break;
 			case 't':
 				if (arg[j+1]) {
-					fstype = strdup(arg+j+1);
+					fstype = string_copy(arg+j+1);
 					goto next_arg;
 				}
 				if ((i+1) < argc) {
 					i++;
-					fstype = strdup(argv[i]);
+					fstype = string_copy(argv[i]);
 					goto next_arg;
 				}
 				usage();
@@ -733,7 +726,7 @@ static void PRS(int argc, char *argv[])
 					progname);
 				exit(1);
 			}
-			args[num_args++] = strdup(options);
+			args[num_args++] = string_copy(options);
 			opt = 0;
 		}
 	}
@@ -759,7 +752,7 @@ int main(int argc, char *argv[])
 		strcat (fsck_path, ":");
 		strcat (fsck_path, oldpath);
 	} else {
-		fsck_path = strdup(fsck_prefix_path);
+		fsck_path = string_copy(fsck_prefix_path);
 	}
 	
 	/* If -A was specified ("check all"), do that! */

@@ -15,7 +15,7 @@
 #include "uuid.h"
 
 int
-main(int argc, char *argv)
+main(int argc, char **argv)
 {
 	uuid_t		buf, tst;
 	char		str[100];

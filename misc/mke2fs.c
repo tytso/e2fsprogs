@@ -88,7 +88,7 @@ static void usage(NOARGS)
 {
 	fprintf(stderr, "Usage: %s [-c|-t|-l filename] [-b block-size] "
 	"[-f fragment-size]\n\t[-i bytes-per-inode] "
-	"[-m reserved-blocks-percentage] [-qvS]\n\t"
+	"[-m reserved-blocks-percentage] [-qvSV]\n\t"
 	"[-o creator-os] [-g blocks-per-group] [-L volume-label]\n\t"
 	"[-M last-mounted-directory] [-r fs-revision] [-R raid_opts]\n\t"
 	"device [blocks-count]\n",
@@ -636,7 +636,7 @@ static void PRS(int argc, char *argv[])
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv,
-			    "b:cf:g:i:l:m:o:qr:R:s:tvI:SFL:M:")) != EOF)
+			    "b:cf:g:i:l:m:o:qr:R:s:tvI:SFL:M:V")) != EOF)
 		switch (c) {
 		case 'b':
 			size = strtoul(optarg, &tmp, 0);
@@ -740,6 +740,11 @@ static void PRS(int argc, char *argv[])
 		case 'S':
 			super_only = 1;
 			break;
+		case 'V':
+			/* Print version number and exit */
+			fprintf(stderr, "\tUsing %s\n",
+				error_message(EXT2_ET_BASE));
+			exit(0);
 		default:
 			usage();
 		}

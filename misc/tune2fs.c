@@ -90,9 +90,9 @@ static int strcasecmp (char *s1, char *s2)
 }
 #endif
 
-static volatile void usage (void)
+static void usage(void)
 {
-	fprintf (stderr, "Usage: %s [-c max-mounts-count] [-e errors-behavior] "
+	fprintf(stderr, "Usage: %s [-c max-mounts-count] [-e errors-behavior] "
 		 "[-g group]\n"
 		 "\t[-i interval[d|m|w]] [-l] [-s] [-m reserved-blocks-percent]\n"
 		 "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
@@ -123,24 +123,22 @@ int main (int argc, char ** argv)
 		{
 			case 'c':
 				max_mount_count = strtoul (optarg, &tmp, 0);
-				if (*tmp || max_mount_count > 16000)
-				{
+				if (*tmp || max_mount_count > 16000) {
 					com_err (program_name, 0,
 						 "bad mounts count - %s",
 						 optarg);
-					usage ();
+					usage();
 				}
 				c_flag = 1;
 				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'C':
 				mount_count = strtoul (optarg, &tmp, 0);
-				if (*tmp || mount_count > 16000)
-				{
+				if (*tmp || mount_count > 16000) {
 					com_err (program_name, 0,
 						 "bad mounts count - %s",
 						 optarg);
-					usage ();
+					usage();
 				}
 				C_flag = 1;
 				open_flag = EXT2_FLAG_RW;
@@ -152,20 +150,18 @@ int main (int argc, char ** argv)
 					errors = EXT2_ERRORS_RO;
 				else if (strcmp (optarg, "panic") == 0)
 					errors = EXT2_ERRORS_PANIC;
-				else
-				{
+				else {
 					com_err (program_name, 0,
 						 "bad error behavior - %s",
 						 optarg);
-					usage ();
+					usage();
 				}
 				e_flag = 1;
 				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'g':
 				resgid = strtoul (optarg, &tmp, 0);
-				if (*tmp)
-				{
+				if (*tmp) {
 					gr = getgrnam (optarg);
 					if (gr == NULL)
 						tmp = optarg;
@@ -174,12 +170,11 @@ int main (int argc, char ** argv)
 						*tmp =0;
 					}
 				}
-				if (*tmp)
-				{
+				if (*tmp) {
 					com_err (program_name, 0,
 						 "bad gid/group name - %s",
 						 optarg);
-					usage ();
+					usage();
 				}
 				g_flag = 1;
 				open_flag = EXT2_FLAG_RW;
@@ -208,11 +203,10 @@ int main (int argc, char ** argv)
 					tmp++;
 					break;
 				}
-				if (*tmp || interval > (365 * 86400))
-				{
+				if (*tmp || interval > (365 * 86400)) {
 					com_err (program_name, 0,
 						 "bad interval - %s", optarg);
-					usage ();
+					usage();
 				}
 				i_flag = 1;
 				open_flag = EXT2_FLAG_RW;
@@ -227,12 +221,11 @@ int main (int argc, char ** argv)
 				break;
 			case 'm':
 				reserved_ratio = strtoul (optarg, &tmp, 0);
-				if (*tmp || reserved_ratio > 50)
-				{
+				if (*tmp || reserved_ratio > 50) {
 					com_err (program_name, 0,
 						 "bad reserved block ratio - %s",
 						 optarg);
-					usage ();
+					usage();
 				}
 				m_flag = 1;
 				open_flag = EXT2_FLAG_RW;
@@ -244,12 +237,11 @@ int main (int argc, char ** argv)
 				break;
 			case 'r':
 				reserved_blocks = strtoul (optarg, &tmp, 0);
-				if (*tmp)
-				{
+				if (*tmp) {
 					com_err (program_name, 0,
 						 "bad reserved blocks count - %s",
 						 optarg);
-					usage ();
+					usage();
 				}
 				r_flag = 1;
 				open_flag = EXT2_FLAG_RW;
@@ -260,8 +252,7 @@ int main (int argc, char ** argv)
 				break;
 			case 'u':
 				resuid = strtoul (optarg, &tmp, 0);
-				if (*tmp)
-				{
+				if (*tmp) {
 					pw = getpwnam (optarg);
 					if (pw == NULL)
 						tmp = optarg;
@@ -270,12 +261,11 @@ int main (int argc, char ** argv)
 						*tmp = 0;
 					}
 				}
-				if (*tmp)
-				{
+				if (*tmp) {
 					com_err (program_name, 0,
 						 "bad uid/user name - %s",
 						 optarg);
-					usage ();
+					usage();
 				}
 				u_flag = 1;
 				open_flag = EXT2_FLAG_RW;
@@ -286,17 +276,16 @@ int main (int argc, char ** argv)
 				open_flag = EXT2_FLAG_RW;
 				break;
 			default:
-				usage ();
+				usage();
 		}
 	if (optind < argc - 1 || optind == argc)
-		usage ();
+		usage();
 	if (!open_flag && !l_flag)
 		usage();
 	device_name = argv[optind];
 	retval = ext2fs_open (device_name, open_flag, 0, 0,
 			      unix_io_manager, &fs);
-        if (retval)
-	{
+        if (retval) {
 		com_err (program_name, retval, "while trying to open %s",
 			 device_name);
 		printf("Couldn't find valid filesystem superblock.\n");
@@ -332,24 +321,20 @@ int main (int argc, char ** argv)
 			 "The -g option is not supported by this version -- "
 			 "Recompile with a newer kernel");
 #endif
-	if (i_flag)
-	{
+	if (i_flag) {
 		fs->super->s_checkinterval = interval;
 		ext2fs_mark_super_dirty(fs);
 		printf ("Setting interval between check %lu seconds\n", interval);
 	}
-	if (m_flag)
-	{
+	if (m_flag) {
 		fs->super->s_r_blocks_count = (fs->super->s_blocks_count / 100)
 			* reserved_ratio;
 		ext2fs_mark_super_dirty(fs);
 		printf ("Setting reserved blocks percentage to %lu (%u blocks)\n",
 			reserved_ratio, fs->super->s_r_blocks_count);
 	}
-	if (r_flag)
-	{
-		if (reserved_blocks >= fs->super->s_blocks_count)
-		{
+	if (r_flag) {
+		if (reserved_blocks >= fs->super->s_blocks_count) {
 			com_err (program_name, 0,
 				 "reserved blocks count is too big (%ul)",
 				 reserved_blocks);

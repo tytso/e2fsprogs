@@ -1,3 +1,22 @@
+1998-06-25  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* fsck.c (ignore): Remove unused variable cp.
+
+	* chattr.c (fatal_error): 
+	* tune2fs.c (usage): 
+	* lsattr.c (usage): 
+	* dumpe2fs.c (usage): 
+	* badblocks.c (usage): Remove volatile from declaration.
+
+	* fsck.c: Change use of strdup to be string_copy, since we don't
+		trust what glibc is doing with strdup.  (Whatever it is,
+		it isn't pretty.)
+
+1998-06-19  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (PRS): Add a -V option which prints the version number
+		and exit.
+
 1998-05-14  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* fsck.c (ignore): Remove check for filesystems with the noauto 

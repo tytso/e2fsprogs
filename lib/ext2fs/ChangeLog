@@ -1,3 +1,10 @@
+1998-06-18  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* inode.c (get_next_blockgroup): Fix bug where if
+		get_next_blockgroup() is called early because of a missing
+		inode table in a block group, the current_inode counter
+		wasn't incremented correctly.
+
 1998-06-16  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* read_bb.c (ext2fs_read_bb_inode): Make function more robust

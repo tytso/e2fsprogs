@@ -65,6 +65,9 @@ mke2fs \- create a Linux second extended file system
 [
 .B \-S
 ]
+[
+.B \-V
+]
 .I device
 [
 .I blocks-count
@@ -175,6 +178,11 @@ and the block and inode bitmaps.  The
 .B e2fsck
 program should be run immediately after this option is used, and there
 is no guarantee that any data will be salvageable.
+.TP
+.I -V
+print the version number of 
+.B mke2fs
+and exit.
 .SH AUTHOR
 This version of
 .B mke2fs
