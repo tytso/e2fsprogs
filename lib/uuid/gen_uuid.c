@@ -41,23 +41,34 @@
 #define rand() 		random()
 #endif
 
+static int get_random_fd()
+{
+	static int fd = -2;
+	int	i;
+
+	if (fd == -2) {
+		fd = open("/dev/urandom", O_RDONLY);
+		if (fd == -1)
+			fd = open("/dev/random", O_RDONLY | O_NONBLOCK);
+		srand((getpid() << 16) ^ getuid() ^ time(0));
+	}
+	/* Crank the random number generator a few times */
+	for (i = time(0) & 0x1F; i > 0; i--)
+		rand();
+	return fd;
+}
+
+
 /*
  * Generate a series of random bytes.  Use /dev/urandom if possible,
  * and if not, use srandom/random.
  */
 static void get_random_bytes(void *buf, int nbytes)
 {
-	static int fd = -2;
-	int i;
+	int i, fd = get_random_fd();
 	int lose_counter = 0;
 	char *cp = (char *) buf;
 
-	if (fd == -2) {
-		fd = open("/dev/urandom", O_RDONLY);
-		if (fd == -1)
-			fd = open("/dev/random", O_RDONLY);
-		srand((getpid() << 16) ^ getuid() ^ time(0));
-	}
 	if (fd >= 0) {
 		while (nbytes > 0) {
 			i = read(fd, cp, nbytes);
@@ -252,15 +263,7 @@ void uuid_generate_random(uuid_t out)
  */
 void uuid_generate(uuid_t out)
 {
-	static int	has_random = -1;
-
-	if (has_random < 0) {
-		if (access("/dev/urandom", R_OK) == 0)
-			has_random = 1;
-		else
-			has_random = 0;
-	}
-	if (has_random)
+	if (get_random_fd() >= 0)
 		uuid_generate_random(out);
 	else
 		uuid_generate_time(out);

@@ -1,3 +1,11 @@
+2000-06-12  Theodore Ts'o  <tytso@valinux.com>
+
+	* gen_uuid.c (get_random_bytes): Use O_NONBLOCK when trying to
+		open /dev/random.  Break out the /dev/random
+		initialization code into a get_random_fd() function, and
+		use that function in uuid_generate() to determine whether
+		to use uuid_generate_random()  or uuid_generate_time().
+
 2000-05-25    <tytso@snap.thunk.org>
 
 	* Makefile: Add hack dependency rule so that parallel makes work
