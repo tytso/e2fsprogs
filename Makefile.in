@@ -9,7 +9,7 @@ INSTALL = @INSTALL@
 
 LIB_SUBDIRS=lib/et lib/ss lib/ext2fs lib/e2p lib/uuid
 PROG_SUBDIRS=e2fsck debugfs misc resize tests/progs 
-SUBDIRS=$(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
+SUBDIRS=util $(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
 SUBS= include/asm/types.h
 
@@ -86,7 +86,7 @@ mostlyclean-local:
 	$(RM) -f \#* *~ core MAKELOG 
 clean-local: mostlyclean-local
 distclean-local: clean-local
-	$(RM) -f include/asm/types.h $(SUBSTITUTE)
+	$(RM) -f include/asm/types.h $(SUBST_CONF)
 	$(RM) -f config.status config.log config.cache MCONFIG Makefile
 realclean-local: distclean-local
 	$(RM) -f configure
