@@ -1,5 +1,8 @@
 2000-10-26    <tytso@snap.thunk.org>
 
+	* mkjournal.c: Add #include of netinet/in.h, since Solaris
+		requires it for ntohl().
+
 	* ext2_io.h (io_channel_write_byte): Add new interface to allow
 		callers to write specific byte ranges.  This is an
 		optional interface, which not all IO channels may

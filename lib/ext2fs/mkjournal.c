@@ -25,6 +25,9 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#if HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
 
 #if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
