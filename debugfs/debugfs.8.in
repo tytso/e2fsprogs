@@ -393,7 +393,7 @@ Mark inode
 .I filespec
 as in use in the inode bitmap.
 .TP
-.I set_inode filespec field value
+.I set_inode_field filespec field value
 Modify the inode specified by 
 .I filespec
 so that the inode field
@@ -402,7 +402,7 @@ has value
 .I value.
 The list of valid inode fields which can be set via this command 
 can be displayed by using the command:
-.B set_inode -l
+.B set_inode_field -l
 .TP
 .I set_super_value field value
 Set the superblock field

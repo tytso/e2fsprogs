@@ -391,6 +391,8 @@ static void print_possible_fields(struct field_set_info *fields)
 			type = "hash algorithm";
 		else if (ss->func == parse_time)
 			type = "date/time";
+		else if (ss->func == parse_bmap)
+			type = "set physical->logical block map";
 		strcpy(name, ss->name);
 		if (ss->flags & FLAG_ARRAY) {
 			if (ss->max_idx > 0) 
@@ -435,7 +437,7 @@ void do_set_super(int argc, char *argv[])
 void do_set_inode(int argc, char *argv[])
 {
 	const char *usage = "<inode> <field> <value>\n"
-		"\t\"set_inode -l\" will list the names of "
+		"\t\"set_inode_field -l\" will list the names of "
 		"the fields in an ext2 inode\n\twhich can be set.";
 	static struct field_set_info *ss;
 	

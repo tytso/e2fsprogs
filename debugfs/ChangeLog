@@ -1,3 +1,12 @@
+2005-01-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* debug_cmds.ct: Make the official name of set_inode be
+		set_inode_field, since it is more intuitive.
+
+	* set_fields.c (print_possible_fields): Document bmap[] in
+		"set_inode_field -l" listing.  Change name of set_inode to
+		set_inode_field in usage message.
+
 2004-12-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* set_fields.c: Add support for array indexes, which we use for

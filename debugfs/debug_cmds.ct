@@ -125,7 +125,7 @@ request do_set_super, "Set superblock value",
 	set_super_value, ssv;
 
 request do_set_inode, "Set inode field",
-	set_inode, si;
+	set_inode_field, sif;
 
 request do_logdump, "Dump the contents of the journal",
 	logdump;
