@@ -12,21 +12,28 @@ INSTALL = @INSTALL@
 @MCONFIG@
 
 PROGS=		resize2fs
+TEST_PROGS=	test_extent
 MANPAGES=	resize2fs.8
 
-RESIZE_OBJS= inodemap.o resize2fs.o main.o
+RESIZE_OBJS= extent.o ext2_block_move.o ext2_inode_move.o resize2fs.o \
+	main.o sim_progress.o 
 
-SRCS= $(srcdir)/inodemap.c \
+TEST_EXTENT_OBJS= extent.o test_extent.o
+
+SRCS= $(srcdir)/extent.c \
+	$(srcdir)/ext2_block_move.c \
+	$(srcdir)/ext2_inode_move.c \
 	$(srcdir)/resize2fs.c \
-	$(srcdir)/main.c 
+	$(srcdir)/main.c \
+	$(srcdir)/sim_progress.c
 
-LIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR)  $(LIBUUID)
-DEPLIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR)  $(LIBUUID)
+LIBS= $(LIBEXT2FS) $(LIBCOM_ERR)  $(LIBUUID)
+DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR)  $(LIBUUID)
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-all:: $(PROGS) $(MANPAGES)
+all:: $(PROGS) $(TEST_PROGS) $(MANPAGES)
 
 resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS)
@@ -35,6 +42,9 @@ resize2fs.8: $(SUBSTITUTE) $(srcdir)/resize2fs.8.in
 	-$(CHMOD) +x $(SUBSTITUTE)
 	$(SUBSTITUTE) $(srcdir)/resize2fs.8.in resize2fs.8
 
+test_extent: $(TEST_EXTENT_OBJS)
+	$(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS)
+	
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(usbindir) \
 		$(DESTDIR)$(man8dir) $(DESTDIR)$(cat8dir)
@@ -56,12 +66,51 @@ uninstall:
 		$(RM) -f $(man8dir)/$$i; \
 	done
 
+test_extent.out: test_extent $(srcdir)/test_extent.in
+	./test_extent < $(srcdir)/test_extent.in > test_extent.out
+
+check: test_extent.out
+	@if cmp -s test_extent.out $(srcdir)/test_extent.in ; then \
+		echo "Test succeeded." ; \
+	else \
+		echo "Test failed!" ; \
+		diff test_extent.out $(srcdir)/test_extent.in ; \
+		exit 1 ; \
+	fi
+	
 clean:
-	$(RM) -f $(PROGS) $(MANPAGES) \#* *.s *.o *.a *~ core
+	$(RM) -f $(PROGS) $(TEST_PROGS) $(MANPAGES) \#* *.s *.o *.a *~ core \
+		test_extent.out
 
 mostlyclean: clean
 distclean: clean
 	$(RM) -f .depend Makefile
+
+#
+# Kludge to create a "special" e2fsprogs distribution file.
+#
+
+SRCROOT = `echo e2fsprogs-@E2FSPROGS_VERSION@ | sed -e 's/-WIP//' \
+			-e 's/pre-//' -e 's/-PLUS//'`
+TAR=tar
+
+$(top_srcdir)/.exclude-file:
+	(cd $(top_srcdir)/.. ; find e2fsprogs \( -name \*~ -o -name \*.orig \
+		-o -name CVS -o -name \*.rej \) -print \
+		> .exclude-file)
+	echo "$(SRCROOT)/build" >> $(top_srcdir)/.exclude-file
+	echo "$(SRCROOT)/rpm.log" >> $(top_srcdir)/.exclude-file
+	echo "$(SRCROOT)/.exclude-file" >> $(top_srcdir)/.exclude-file
+	echo $(SRCROOT)/e2fsprogs-@E2FSPROGS_VERSION@.tar.gz \
+		>> $(top_srcdir)/.exclude-file
+	
+source_tar_file: $(top_srcdir)/.exclude-file
+	(cd $(top_srcdir)/..; a=$(SRCROOT); rm -f $$a ; ln -sf e2fsprogs $$a ; \
+		$(TAR) -c -h -v -f - \
+			-X $$a/.exclude-file $$a | \
+		gzip -9 > e2fsprogs-@E2FSPROGS_VERSION@.tar.gz)
+	rm -f $(top_srcdir)/.exclude-file
+
 
 # +++ Dependency line eater +++
 # 

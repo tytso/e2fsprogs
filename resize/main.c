@@ -8,6 +8,13 @@
  * %End-Header%
  */
 
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
+#include <fcntl.h>
+#include <sys/ioctl.h>
+
+
 #include "resize2fs.h"
 
 #define E2FSPROGS_VERSION "1.10"
@@ -15,9 +22,9 @@
 
 char *program_name, *device_name;
 
-static volatile void usage (char *program_name)
+static volatile void usage (char *prog)
 {
-	fprintf (stderr, "usage: %s device new-size\n", program_name);
+	fprintf (stderr, "usage: %s [-d debug_flags] [-p] [-F] device new-size\n", prog);
 	exit (1);
 }
 
@@ -27,6 +34,8 @@ void main (int argc, char ** argv)
 	ext2_filsys	fs;
 	int		c;
 	int		flags = 0;
+	int		flush = 0;
+	int		fd;
 	blk_t		new_size;
 	io_manager	io_ptr;
 
@@ -36,10 +45,13 @@ void main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	
-	while ((c = getopt (argc, argv, "d:hp")) != EOF) {
+	while ((c = getopt (argc, argv, "d:Fhp")) != EOF) {
 		switch (c) {
 		case 'h':
 			usage(program_name);
+			break;
+		case 'F':
+			flush = 1;
 			break;
 		case 'd':
 			flags |= atoi(optarg);
@@ -56,6 +68,27 @@ void main (int argc, char ** argv)
 	device_name = argv[optind++];
 	new_size = atoi(argv[optind++]);
 	initialize_ext2_error_table();
+
+	if (flush) {
+#ifdef BLKFLSBUF
+		fd = open(device_name, O_RDONLY, 0);
+
+		if (fd < 0) {
+			com_err("open", errno, "while opening %s for flushing",
+				device_name);
+			exit(1);
+		}
+		if (ioctl(fd, BLKFLSBUF, 0) < 0) {
+			com_err("BLKFLSBUF", errno, "while trying to flush %s",
+				device_name);
+			exit(1);
+		}
+		close(fd);
+#else
+		fprintf(stderr, "BLKFLSBUF not supported");
+		exit(1);
+#endif /* BLKFLSBUF */
+	}
 
 	if (flags & RESIZE_DEBUG_IO) {
 		io_ptr = test_io_manager;

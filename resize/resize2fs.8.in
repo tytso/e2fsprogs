@@ -7,23 +7,56 @@ resize2fs \- ext2 file system resizer
 .SH SYNOPSIS
 .B resize2fs
 [
-device
+.B \-d 
+.I debug-flags
 ]
+[
+.B \-p
+]
+[
+.B \-F
+]
+.I device
+.I size
 .SH DESCRIPTION
 The 
-.B resize2fs
+.B resize2fs 
 program will resize ext2 file systems.  It can be used to enlarge or
-shrink an ext2 file system.
-.br
+shrink an ext2 file system so that it will have 
+.I size 
+blocks.
+The device containing the ext2 filesystem is specified by the 
 .I device
-is the special file corresponding to the device containing the ext2
-file system (e.g /dev/hdXX).
+parameter.
 .SH OPTIONS
 .TP
-.I -h
-Displays a help message.
+.I \-d debug-flags
+Turns on various resize2fs debugging features.  
+.I debug-flags
+should be computed by adding the numbers of the desired features 
+from the following list:
+.br
+\	1\	\-\ Print out all disk I/O 
+.br
+\	2\	\-\ Debug block relocations
+.br
+\	8\	\-\ Debug inode relocations
+.br
+\	16\	\-\ Debug moving the inode table
+.TP
+.I \-p
+Prints out a percentage completion bars for each 
+.B resize2fs
+operation, so that the user can keep track of what
+the program is doing.
+.TP 
+.I \-F
+Flush the filesystem device's buffer caches before beginning.  Only
+really useful for doing 
+.B resize2fs
+time trials.
 .SH AUTHOR
-.B debugfs
+.B resize2fs
 was written by Theodore Ts'o <tytso@mit.edu>.
 .SH SEE ALSO
 .BR dumpe2fs (8),
