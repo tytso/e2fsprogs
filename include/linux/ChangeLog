@@ -1,3 +1,9 @@
+2001-05-14  Theodore Tso  <tytso@valinux.com>
+
+	* ext2_fs.h: Moved file to lib/ext2fs
+
+	* ext2_fs.h: Define EXGT2_RESIZE_INO and EXT2_FEATURE_COMPAT_DIR_INDEX
+
 2001-05-12  Theodore Tso  <tytso@valinux.com>
 
 	* jfs.h (JFS_DEBUG): Don't define JFS_DEBUG for non-kernel builds;
