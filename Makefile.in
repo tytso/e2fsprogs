@@ -39,7 +39,7 @@ install-libs: install-libs-recursive
 
 uninstall-libs: uninstall-libs-recursive
 
-TAGS clean-recursive distclean-recursive \
+TAGS clean-recursive distclean-recursive depend-recursive \
 	    mostlyclean-recursive realclean-recursive install-recursive:
 	for subdir in $(SUBDIRS); do \
 	  if test -d $$subdir ; then \
@@ -75,6 +75,8 @@ clean: clean-recursive clean-local
 distclean: distclean-recursive distclean-local
 
 realclean: realclean-recursive realclean-local
+
+depend:: depend-recursive
 
 include/asm/types.h: $(DEP_SUBSTITUTE) $(srcdir)/include/asm/types.h.in
 	$(SUBSTITUTE) $(srcdir)/include/asm/types.h.in \

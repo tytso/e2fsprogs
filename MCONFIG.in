@@ -41,6 +41,7 @@ CHMOD = @CHMOD@
 AR = @AR@
 AWK = @AWK@
 SED = @SED@
+PERL = @PERL@
 RANLIB = @RANLIB@
 STRIP = @STRIP@
 LD = $(PURE) @CC@
@@ -155,15 +156,16 @@ $(top_srcdir)/configure: $(top_srcdir)/configure.in
 # Make depend magic...
 #
 
-.depend: Makefile $(SRCS) $(top_srcdir)/depfix.sed
+.depend: Makefile $(SRCS) $(top_srcdir)/depfix.sed $(top_srcdir)/wordwrap.pl
 	if test -n "$(SRCS)" ; then \
 		$(CC) -M $(ALL_CFLAGS) $(SRCS) | \
-			sed -f $(top_srcdir)/depfix.sed \
+			$(SED) -f $(top_srcdir)/depfix.sed \
 			    -e 's; $(srcdir)/; $$(srcdir)/;g' \
 			    -e 's; $(top_srcdir)/; $$(top_srcdir)/;g' \
 			    -e 's; $(top_builddir)/; $$(top_builddir)/;g' \
 			    -e 's; \./; ;g' \
-			    -e '/^ *\\$$/d' > .depend; \
+			    -e '/^ *\\$$/d' | \
+			$(PERL) $(top_srcdir)/wordwrap.pl > .depend; \
 	else :; fi
 
 depend:: .depend
@@ -171,8 +173,11 @@ depend:: .depend
 		sed -e '/^# +++ Dependency line eater +++/,$$d' \
 			< $(srcdir)/Makefile.in | cat - .depend \
 			> $(srcdir)/Makefile.in.new; \
-	$(MV) $(srcdir)/Makefile.in $(srcdir)/Makefile.in.old; \
-	$(MV) $(srcdir)/Makefile.in.new $(srcdir)/Makefile.in; \
-	else :; fi
+	if cmp -s $(srcdir)/Makefile.in $(srcdir)/Makefile.in.new ; then \
+		$(RM) $(srcdir)/Makefile.in.new ; \
+	else \
+		$(MV) $(srcdir)/Makefile.in $(srcdir)/Makefile.in.old; \
+		$(MV) $(srcdir)/Makefile.in.new $(srcdir)/Makefile.in; \
+	fi ; else :; fi
 
 # End of file MCONFIG

@@ -1,5 +1,18 @@
 1999-07-03    <tytso@valinux.com>
 
+	* Makefile.in (depend): Make "make depend" at the top-level
+		automatically recurse through all subdirectories.
+
+	* configure.in: Test for perl since it's needed by wordwrap.pl
+
+	* MCONFIG.in (depend): Fix make-depend so that it the dependencies
+		are automatically word-wrapped.  Added the makefile macro
+		$(PERL).
+
+	* wordwrap.pl: New file which does the word wrapping.
+
+1999-07-03    <tytso@valinux.com>
+
 	* MCONFIG.in (subst): Add rule to build the util/subst program if
 		necessary (by cd'ing to $(top_builddir)/util and making it.)
 
