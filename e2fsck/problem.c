@@ -256,7 +256,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Filesystem revision is 0, but feature flags are set */
 	{ PR_0_FS_REV_LEVEL,
-	  "@F has feature flag(s) set, but is a revision 0 @f.  ",
+	  "@f has feature flag(s) set, but is a revision 0 @f.  ",
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
 	/* Pass 1 errors */
