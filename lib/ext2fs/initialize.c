@@ -73,7 +73,6 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	int		i, j;
 	blk_t		numblocks;
 	char		*buf;
-	int		meta_bg_size, meta_bg, has_super, old_desc_blocks;
 
 	if (!param || !param->s_blocks_count)
 		return EXT2_ET_INVALID_ARGUMENT;
@@ -310,53 +309,9 @@ retry:
 	 */
 	group_block = super->s_first_data_block;
 	super->s_free_blocks_count = 0;
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
-		old_desc_blocks = fs->super->s_first_meta_bg;
-	else
-		old_desc_blocks = fs->desc_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
-		if (i == fs->group_desc_count-1) {
-			numblocks = (fs->super->s_blocks_count -
-				     fs->super->s_first_data_block) %
-					     fs->super->s_blocks_per_group;
-			if (!numblocks)
-				numblocks = fs->super->s_blocks_per_group;
-		} else
-			numblocks = fs->super->s_blocks_per_group;
+		numblocks = ext2fs_reserve_super_and_bgd(fs, i, fs->block_map);
 
-		has_super = ext2fs_bg_has_super(fs, i);
-
-		if (has_super) {
-			ext2fs_mark_block_bitmap(fs->block_map, group_block);
-			numblocks--;
-		}
-		meta_bg_size = (fs->blocksize /
-				sizeof (struct ext2_group_desc));
-		meta_bg = i / meta_bg_size;
-
-		if (!(fs->super->s_feature_incompat &
-		      EXT2_FEATURE_INCOMPAT_META_BG) ||
-		    (meta_bg < fs->super->s_first_meta_bg)) {
-			if (has_super) {
-				for (j=0; j < old_desc_blocks; j++)
-					ext2fs_mark_block_bitmap(fs->block_map,
-							 group_block + j + 1);
-				numblocks -= old_desc_blocks;
-			}
-		} else {
-			if (has_super)
-				has_super = 1;
-			if (((i % meta_bg_size) == 0) ||
-			    ((i % meta_bg_size) == 1) ||
-			    ((i % meta_bg_size) == (meta_bg_size-1))) {
-				ext2fs_mark_block_bitmap(fs->block_map,
-					 group_block + has_super);
-				numblocks--;
-			}
-		}
-		
-		numblocks -= 2 + fs->inode_blocks_per_group;
-		
 		super->s_free_blocks_count += numblocks;
 		fs->group_desc[i].bg_free_blocks_count = numblocks;
 		fs->group_desc[i].bg_free_inodes_count =

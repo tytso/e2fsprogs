@@ -45,6 +45,74 @@ int ext2fs_bg_has_super(ext2_filsys fs, int group_block)
 	return 0;
 }
 
+int ext2fs_super_and_bgd_loc(ext2_filsys fs, 
+			     dgrp_t group,
+			     blk_t *ret_super_blk,
+			     blk_t *ret_old_desc_blk,
+			     blk_t *ret_new_desc_blk,
+			     int *ret_meta_bg)
+{
+	blk_t	group_block, super_blk = 0, old_desc_blk = 0, new_desc_blk = 0;
+	int	numblocks, j, has_super, meta_bg_size, meta_bg;
+	int	old_desc_blocks;
+
+	group_block = fs->super->s_first_data_block +
+		(group * fs->super->s_blocks_per_group);
+
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = fs->super->s_first_meta_bg;
+	else
+		old_desc_blocks = fs->desc_blocks;
+
+	if (group == fs->group_desc_count-1) {
+		numblocks = (fs->super->s_blocks_count -
+			     fs->super->s_first_data_block) %
+			fs->super->s_blocks_per_group;
+		if (!numblocks)
+			numblocks = fs->super->s_blocks_per_group;
+	} else
+		numblocks = fs->super->s_blocks_per_group;
+
+	has_super = ext2fs_bg_has_super(fs, group);
+
+	if (has_super) {
+		super_blk = group_block;
+		numblocks--;
+	}
+	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
+	meta_bg = group / meta_bg_size;
+
+	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
+	    (meta_bg < fs->super->s_first_meta_bg)) {
+		if (has_super) {
+			old_desc_blk = group_block + 1;
+			numblocks -= old_desc_blocks;
+		}
+	} else {
+		if (((group % meta_bg_size) == 0) ||
+		    ((group % meta_bg_size) == 1) ||
+		    ((group % meta_bg_size) == (meta_bg_size-1))) {
+			if (has_super)
+				has_super = 1;
+			new_desc_blk = group_block + has_super;
+			numblocks--;
+		}
+	}
+		
+	numblocks -= 2 + fs->inode_blocks_per_group;
+
+	if (ret_super_blk)
+		*ret_super_blk = super_blk;
+	if (ret_old_desc_blk)
+		*ret_old_desc_blk = old_desc_blk;
+	if (ret_new_desc_blk)
+		*ret_new_desc_blk = new_desc_blk;
+	if (ret_meta_bg)
+		*ret_meta_bg = meta_bg;
+	return (numblocks);
+}
+
+
 /*
  * This function forces out the primary superblock.  We need to only
  * write out those fields which we have changed, since if the
@@ -113,53 +181,6 @@ void ext2fs_update_dynamic_rev(ext2_filsys fs)
 	/* other fields should be left alone */
 }
 
-/*
- * This writes out the block group descriptors the original,
- * old-fashioned way.
- */
-static errcode_t write_bgdesc(ext2_filsys fs, dgrp_t group, blk_t group_block,
-			      struct ext2_group_desc *group_shadow)
-{
-	errcode_t	retval;
-	char		*group_ptr = (char *) group_shadow;
-	int		j, old_desc_blocks, mod;
-	int		has_super = ext2fs_bg_has_super(fs, group);
-	dgrp_t		meta_bg_size, meta_bg;
-
-	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
-	meta_bg = group / meta_bg_size;
-	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
-		old_desc_blocks = fs->super->s_first_meta_bg;
-	else
-		old_desc_blocks = fs->desc_blocks;
-	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
-	    (meta_bg < fs->super->s_first_meta_bg)) {
-		if (!has_super ||
-		    ((fs->flags & EXT2_FLAG_MASTER_SB_ONLY) && (group != 0)))
-			return 0;
-		for (j=0; j < old_desc_blocks; j++) {
-			retval = io_channel_write_blk(fs->io,
-						      group_block+1+j, 1,
-						      group_ptr);
-			if (retval)
-				return retval;
-			group_ptr += fs->blocksize;
-		}
-	} else {
-		if (has_super)
-			group_block++;
-		mod = group % meta_bg_size;
-		if ((mod == 0) || (mod == 1) || (mod == (meta_bg_size-1))) {
-			if (mod && (fs->flags & EXT2_FLAG_MASTER_SB_ONLY))
-				return 0;
-			return io_channel_write_blk(fs->io, group_block,
-				1, group_ptr + (meta_bg*fs->blocksize));
-		}
-	}
-	return 0;
-}
-
-
 static errcode_t write_backup_super(ext2_filsys fs, dgrp_t group,
 				    blk_t group_block,
 				    struct ext2_super_block *super_shadow)
@@ -189,6 +210,8 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	struct ext2_super_block *super_shadow = 0;
 	struct ext2_group_desc *group_shadow = 0;
 	struct ext2_group_desc *s, *t;
+	char	*group_ptr;
+	int	old_desc_blocks;
 	
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -266,20 +289,40 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	 * superblocks and group descriptors.
 	 */
 	group_block = fs->super->s_first_data_block;
+	group_ptr = (char *) group_shadow;
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = fs->super->s_first_meta_bg;
+	else
+		old_desc_blocks = fs->desc_blocks;
+
 	for (i = 0; i < fs->group_desc_count; i++) {
-		if (!(fs->flags & EXT2_FLAG_MASTER_SB_ONLY) &&
-		    i && ext2fs_bg_has_super(fs, i)) {
-			retval = write_backup_super(fs, i, group_block,
+		blk_t	super_blk, old_desc_blk, new_desc_blk;
+		int	meta_bg;
+
+		ext2fs_super_and_bgd_loc(fs, i, &super_blk, &old_desc_blk, 
+					 &new_desc_blk, &meta_bg);
+
+		if (!(fs->flags & EXT2_FLAG_MASTER_SB_ONLY) &&i && super_blk) {
+			retval = write_backup_super(fs, i, super_blk,
 						    super_shadow);
 			if (retval)
 				goto errout;
 		}
-		if (!(fs->flags & EXT2_FLAG_SUPER_ONLY)) {
-			if ((retval = write_bgdesc(fs, i, group_block, 
-						   group_shadow)))
+		if (fs->flags & EXT2_FLAG_SUPER_ONLY)
+			continue;
+		if ((old_desc_blk) && 
+		    (!(fs->flags & EXT2_FLAG_MASTER_SB_ONLY) || (i == 0))) {
+			retval = io_channel_write_blk(fs->io,
+			      old_desc_blk, old_desc_blocks, group_ptr);
+			if (retval)
 				goto errout;
 		}
-		group_block += EXT2_BLOCKS_PER_GROUP(fs->super);
+		if (new_desc_blk) {
+			retval = io_channel_write_blk(fs->io, new_desc_blk,
+				1, group_ptr + (meta_bg*fs->blocksize));
+			if (retval)
+				goto errout;
+		}
 	}
 	fs->super->s_block_group_nr = 0;
 

@@ -86,9 +86,10 @@ static void list_desc (ext2_filsys fs)
 	unsigned long i;
 	long diff;
 	blk_t	group_blk, next_blk;
+	blk_t	super_blk, old_desc_blk, new_desc_blk;
 	char *block_bitmap=NULL, *inode_bitmap=NULL;
 	int inode_blocks_per_group, old_desc_blocks;
-	int meta_bg, meta_bg_size, has_super;
+	int has_super;
 
 	if (fs->block_map)
 		block_bitmap = fs->block_map->bitmap;
@@ -106,43 +107,32 @@ static void list_desc (ext2_filsys fs)
 	else
 		old_desc_blocks = fs->desc_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
+		ext2fs_super_and_bgd_loc(fs, i, &super_blk, 
+					 &old_desc_blk, &new_desc_blk, 0);
 		next_blk = group_blk + fs->super->s_blocks_per_group;
 		if (next_blk > fs->super->s_blocks_count)
 			next_blk = fs->super->s_blocks_count;
 		printf (_("Group %lu: (Blocks "), i);
 		printf(range_format, group_blk, next_blk - 1);
 		fputs(")\n", stdout);
-		has_super = ext2fs_bg_has_super(fs, i);
+		has_super = ((i==0) || super_blk);
 		if (has_super) {
 			printf (_("  %s superblock at "),
 				i == 0 ? _("Primary") : _("Backup"));
-			printf(num_format, group_blk);
+			printf(num_format, super_blk);
 		}
-		meta_bg_size = (fs->blocksize /
-				sizeof (struct ext2_group_desc));
-		meta_bg = i / meta_bg_size;
-		if (!(fs->super->s_feature_incompat &
-		      EXT2_FEATURE_INCOMPAT_META_BG) ||
-		    (meta_bg < fs->super->s_first_meta_bg)) {
-			if (has_super) {
-				printf(_(", Group descriptors at "));
-				printf(range_format, group_blk+1,
-				       group_blk + old_desc_blocks);
-				fputc('\n', stdout);
-			}
-		} else {
-			if (has_super)
-				has_super = 1;
-			if (((i % meta_bg_size) == 0) ||
-			    ((i % meta_bg_size) == 1) ||
-			    ((i % meta_bg_size) == (meta_bg_size-1))) {
-				fputc(has_super ? ',' : ' ', stdout);
-				printf(_(" Group descriptor at "));
-				printf(num_format, group_blk + has_super);
-				fputc('\n', stdout);
-			} else if (has_super)
-				fputc('\n', stdout);
+		if (old_desc_blk) {
+			printf(_(", Group descriptors at "));
+			printf(range_format, old_desc_blk,
+			       old_desc_blk + old_desc_blocks - 1);
+		} else if (new_desc_blk) {
+			fputc(has_super ? ',' : ' ', stdout);
+			printf(_(" Group descriptor at "));
+			printf(num_format, new_desc_blk);
+			has_super++;
 		}
+		if (has_super)
+			fputc('\n', stdout);
 		fputs(_("  Block bitmap at "), stdout);
 		printf(num_format, fs->group_desc[i].bg_block_bitmap);
 		diff = fs->group_desc[i].bg_block_bitmap - group_blk;

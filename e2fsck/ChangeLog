@@ -1,3 +1,9 @@
+2003-09-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (mark_table_blocks): Use the new function
+		ext2fs_reserve_super_and_bgd to calculate the blocks to be
+		reserved.
+
 2003-08-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* util.c (get_backup_sb): Check to make sure the context is passed

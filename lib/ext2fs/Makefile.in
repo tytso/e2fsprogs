@@ -17,6 +17,7 @@ INSTALL = @INSTALL@
 OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	ext2_err.o \
 	alloc.o \
+	alloc_sb.o \
 	alloc_stats.o \
 	alloc_tables.o \
 	badblocks.o \
@@ -65,6 +66,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 
 SRCS= ext2_err.c \
 	$(srcdir)/alloc.c \
+	$(srcdir)/alloc_sb.c \
 	$(srcdir)/alloc_stats.c \
 	$(srcdir)/alloc_tables.c \
 	$(srcdir)/badblocks.c \

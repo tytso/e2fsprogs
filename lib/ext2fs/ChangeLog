@@ -1,3 +1,19 @@
+2003-09-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* closefs.c (ext2fs_super_and_bgd_loc): New function which
+		centralizes the calculation of the superblock and block
+		group descriptors.
+		(ext2fs_flush): Use ext2fs_super_and_bgd_lock to figure
+		out where to write the superblock and block group
+		descriptors.
+
+	* alloc_sb.c (ext2fs_reserve_super_and_bgd): New function which
+		reserves space in the block bitmap using
+		ext2fs_super_and_bgd_loc.
+
+	* initialize.c (ext2fs_initialize): Use
+		ext2fs_reserve_super_and_bgd to initialize the block bitmap.
+
 2003-08-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* inode_io.c (ext2fs_inode_io_intern2), ext2fs.h: Add new function

@@ -463,6 +463,11 @@ extern errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start,
 extern errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 				    char *block_buf, blk_t *ret);
 
+/* alloc_sb.c */
+extern int ext2fs_reserve_super_and_bgd(ext2_filsys fs, 
+					dgrp_t group,
+					ext2fs_block_bitmap bmap);
+
 /* alloc_stats.c */
 void ext2fs_inode_alloc_stats(ext2_filsys fs, ext2_ino_t ino, int inuse);
 void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
@@ -588,6 +593,12 @@ extern errcode_t ext2fs_check_desc(ext2_filsys fs);
 extern errcode_t ext2fs_close(ext2_filsys fs);
 extern errcode_t ext2fs_flush(ext2_filsys fs);
 extern int ext2fs_bg_has_super(ext2_filsys fs, int group_block);
+extern int ext2fs_super_and_bgd_loc(ext2_filsys fs, 
+				    dgrp_t group,
+				    blk_t *ret_super_blk,
+				    blk_t *ret_old_desc_blk,
+				    blk_t *ret_new_desc_blk,
+				    int *ret_meta_bg);
 extern void ext2fs_update_dynamic_rev(ext2_filsys fs);
 
 /* cmp_bitmaps.c */
