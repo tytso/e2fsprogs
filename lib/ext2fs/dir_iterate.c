@@ -120,7 +120,7 @@ extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 next:		
 		if (((offset + dirent->rec_len) > fs->blocksize) ||
 		    (dirent->rec_len < 8) ||
-		    ((dirent->name_len+8) > dirent->rec_len)) {
+		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
 			ctx->errcode = EXT2_ET_DIR_CORRUPTED;
 			return BLOCK_ABORT;
 		}

@@ -275,8 +275,8 @@ fail:
 }
 
 
-errcode_t ext2fs_file_llseek(ext2_file_t file, ext2_off_t offset,
-			     int whence, ext2_off_t *ret_pos)
+errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
+			    int whence, ext2_off_t *ret_pos)
 {
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 

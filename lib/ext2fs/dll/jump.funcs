@@ -163,9 +163,10 @@
 00000000 T _ext2fs_file_close			libext2fs	fileio
 00000000 T _ext2fs_file_read			libext2fs	fileio
 00000000 T _ext2fs_file_write			libext2fs	fileio
-00000000 T _ext2fs_file_llseek			libext2fs	fileio
+00000000 T _ext2fs_file_lseek			libext2fs	fileio
 00000000 T _ext2fs_file_get_size		libext2fs	fileio
 00000000 T _ext2fs_file_set_size		libext2fs	fileio
 00000000 T _ext2fs_get_mem			libext2fs	inline
 00000000 T _ext2fs_free_mem			libext2fs	inline
 00000000 T _ext2fs_resize_mem			libext2fs	inline
+00000000 T _ext2fs_block_iterate3		libext2fs	block

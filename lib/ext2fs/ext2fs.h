@@ -50,6 +50,7 @@
 typedef __u32		blk_t;
 typedef unsigned int	dgrp_t;
 typedef __u32		ext2_off_t;
+typedef __s64		blkcnt_t;
 
 #if EXT2_FLAT_INCLUDES
 #include "com_err.h"
@@ -225,11 +226,16 @@ struct struct_ext2_filsys {
  *
  * BLOCK_FLAG_DATA_ONLY indicates that the iterator function should be
  * called for data blocks only.
+ *
+ * BLOCK_FLAG_NO_LARGE is for internal use only.  It informs
+ * ext2fs_block_iterate3 that large files won't be accepted.
  */
 #define BLOCK_FLAG_APPEND	1
 #define BLOCK_FLAG_HOLE		1
 #define BLOCK_FLAG_DEPTH_TRAVERSE	2
 #define BLOCK_FLAG_DATA_ONLY	4
+
+#define BLOCK_FLAG_NO_LARGE	0x1000
 
 /*
  * Magic "block count" return values for the block iterator function.
@@ -396,21 +402,51 @@ struct ext2fs_sb {
 	__u8	s_uuid[16];		/* 128-bit uuid for volume */
 	char	s_volume_name[16]; 	/* volume name */
 	char	s_last_mounted[64]; 	/* directory where last mounted */
-	__u32	s_reserved[206];	/* Padding to the end of the block */
+	__u32	s_algorithm_usage_bitmap; /* For compression */
+	/*
+	 * Performance hints.  Directory preallocation should only
+	 * happen if the EXT2_COMPAT_PREALLOC flag is on.
+	 */
+	__u8	s_prealloc_blocks;	/* Nr of blocks to try to preallocate*/
+	__u8	s_prealloc_dir_blocks;	/* Nr to preallocate for dirs */
+	__u16	s_padding1;
+	__u32	s_reserved[204];	/* Padding to the end of the block */
 };
 
 /*
  * Feature set definitions (that might not be in ext2_fs.h
  * (was EXT2_COMPAT_SPARSE_SUPER)
  */
+
+#ifndef EXT2_FEATURE_COMPAT_DIR_PREALLOC
+#define EXT2_FEATURE_COMPAT_DIR_PREALLOC	0x0001
+#endif
+
 #ifndef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 #define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
 #endif
 
-#define EXT2_LIB_FEATURE_COMPAT_SUPP	0
-#define EXT2_LIB_FEATURE_INCOMPAT_SUPP	0
-#define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+#ifndef EXT2_FEATURE_RO_COMPAT_LARGE_FILE
+#define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
+#define i_size_high i_dir_acl
+#endif
 
+#ifndef EXT2_FEATURE_RO_COMPAT_BTREE_DIR
+#define EXT2_FEATURE_RO_COMPAT_BTREE_DIR	0x0004
+#endif
+
+#ifndef EXT2_FEATURE_INCOMPAT_COMPRESSION
+#define EXT2_FEATURE_INCOMPAT_COMPRESSION	0x0001
+#endif
+
+#ifndef EXT2_FEATURE_INCOMPAT_DIRNAME_SIZE
+#define EXT2_FEATURE_INCOMPAT_DIRNAME_SIZE	0x0002
+#endif
+
+#define EXT2_LIB_FEATURE_COMPAT_SUPP	EXT2_FEATURE_COMPAT_DIR_PREALLOC
+#define EXT2_LIB_FEATURE_INCOMPAT_SUPP	EXT2_FEATURE_INCOMPAT_DIRNAME_SIZE
+#define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|\
+					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE)
 /*
  * function prototypes
  */
@@ -505,6 +541,17 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 				int (*func)(ext2_filsys fs,
 					    blk_t	*blocknr,
 					    int	blockcnt,
+					    blk_t	ref_blk,
+					    int		ref_offset,
+					    void	*priv_data),
+				void *priv_data);
+errcode_t ext2fs_block_iterate3(ext2_filsys fs,
+				ino_t	ino,
+				int	flags,
+				char *block_buf,
+				int (*func)(ext2_filsys fs,
+					    blk_t	*blocknr,
+					    blkcnt_t	blockcnt,
 					    blk_t	ref_blk,
 					    int		ref_offset,
 					    void	*priv_data),
@@ -605,8 +652,8 @@ extern errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
 				  unsigned int wanted, unsigned int *got);
 extern errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
 				   unsigned int nbytes, unsigned int *written);
-extern errcode_t ext2fs_file_llseek(ext2_file_t file, ext2_off_t offset,
-				    int whence, ext2_off_t *ret_pos);
+extern errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
+				   int whence, ext2_off_t *ret_pos);
 extern ext2_off_t ext2fs_file_get_size(ext2_file_t file);
 extern errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size);
 

@@ -42,9 +42,10 @@ static int unlink_proc(struct ext2_dir_entry *dirent,
 {
 	struct link_struct *ls = (struct link_struct *) priv_data;
 
-	if (ls->name && (dirent->name_len != ls->namelen))
+	if (ls->name && ((dirent->name_len & 0xFF) != ls->namelen))
 		return 0;
-	if (ls->name && strncmp(ls->name, dirent->name, dirent->name_len))
+	if (ls->name && strncmp(ls->name, dirent->name,
+				dirent->name_len & 0xFF))
 		return 0;
 	if (ls->inode && (dirent->inode != ls->inode))
 		return 0;

@@ -1,3 +1,45 @@
+1998-03-21  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2fs.h: Add new superblock fields (s_algorithm_usage_bitmap, 
+		s_prealloc_blocks, s_prealloc_dir_blocks).  Added
+		conditional defines of new features COMPAT_DIR_PREALLOC,
+		RO_COMPAT_LARGE_FILE RO_COMPAT_BTREE_DIR,
+		INCOMPAT_COMPRESSION, INCOMPAT_DIRNAME_SIZE.  Changed
+		the library to declare that we support COMPAT_DIR_PREALLOC, 
+		INCOMPAT_DIRNAME_SIZE, RO_COMPAT_LARGE_FILE.
+
+	* fileio.c: Rename function ext2fs_file_llseek to be
+		ext2fs_file_lseek, which is more accurate.
+
+	* block.c: Add new function ext2fs_block_iterate3 which calls
+		the iterator function with the blockcount argument of
+		type blkcnt_t.  This version of the function is
+		allowed to handle large files; the other fucntions are
+		not.
+
+	* ext2fs.h: Add new type blkcnt_t
+
+	* ext2_err.et.in: Add error code EXT2_ET_FILE_TOO_BIG
+
+	* block.c (ext2fs_block_iterate2): Fix bug where the block count
+		field wasn't getting correctly incremented for sparse
+		files when the indirect or doubly-indirect block
+		specified in the inode was zero.
+
+Sun Mar  8 22:42:47 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* unlink.c (unlink_proc): 
+	* lookup.c (lookup_proc): 
+	* link.c (link_proc): 
+	* get_pathname.c (get_pathname_proc): 
+	* dir_iterate.c (ext2fs_process_dir_block): Mask off high 8 bits
+		from dirent->name_len, so it can be used for other
+		purposes.
+
+	* ext2fs.h: Add definition of EXT2_FEATURE_INCOMPAT_DIRNAME_SIZE,
+		and indicate that we have support for this incompatible
+		option.
+
 Mon Feb 23 08:46:33 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* ext2_err.et.in: Added new error code, EXT2_ET_CANCEL_REQUESTED.

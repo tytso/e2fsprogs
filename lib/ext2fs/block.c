@@ -27,11 +27,11 @@ struct block_context {
 	ext2_filsys	fs;
 	int (*func)(ext2_filsys	fs,
 		    blk_t	*blocknr,
-		    int		bcount,
+		    blkcnt_t	bcount,
 		    blk_t	ref_blk,
 		    int		ref_offset,
 		    void	*priv_data);
-	int		bcount;
+	blkcnt_t	bcount;
 	int		bsize;
 	int		flags;
 	errcode_t	errcode;
@@ -301,13 +301,13 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 	return ret;
 }
 	
-errcode_t ext2fs_block_iterate2(ext2_filsys fs,
+errcode_t ext2fs_block_iterate3(ext2_filsys fs,
 				ino_t	ino,
 				int	flags,
 				char *block_buf,
 				int (*func)(ext2_filsys fs,
 					    blk_t	*blocknr,
-					    int	blockcnt,
+					    blkcnt_t	blockcnt,
 					    blk_t	ref_blk,
 					    int		ref_offset,
 					    void	*priv_data),
@@ -320,12 +320,28 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 	struct ext2_inode inode;
 	errcode_t	retval;
 	struct block_context ctx;
+	int	limit;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
+	/*
+	 * Check to see if we need to limit large files
+	 */
+	if (flags & BLOCK_FLAG_NO_LARGE) {
+		ctx.errcode = ext2fs_read_inode(fs, ino, &inode);
+		if (ctx.errcode)
+			goto abort;
+		got_inode = 1;
+		if (!LINUX_S_ISDIR(inode.i_mode) &&
+		    (inode.i_size_high != 0))
+			return EXT2_ET_FILE_TOO_BIG;
+	}
 
 	retval = ext2fs_get_blocks(fs, ino, blocks);
 	if (retval)
 		return retval;
+
+	limit = fs->blocksize >> 2;
 
 	ctx.fs = fs;
 	ctx.func = func;
@@ -378,13 +394,15 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 					 0, 0, &ctx);
 		if (ret & BLOCK_ABORT)
 			goto abort;
-	}
+	} else
+		ctx.bcount += limit;
 	if (*(blocks + EXT2_DIND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
 		ret |= block_iterate_dind(blocks + EXT2_DIND_BLOCK,
 					  0, 0, &ctx);
 		if (ret & BLOCK_ABORT)
 			goto abort;
-	}
+	} else
+		ctx.bcount += limit * limit;
 	if (*(blocks + EXT2_TIND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
 		ret |= block_iterate_tind(blocks + EXT2_TIND_BLOCK,
 					  0, 0, &ctx);
@@ -412,6 +430,10 @@ abort:
 	return (ret & BLOCK_ERROR) ? ctx.errcode : 0;
 }
 
+/*
+ * Emulate the old ext2fs_block_iterate function!
+ */
+
 struct xlate {
 	int (*func)(ext2_filsys	fs,
 		    blk_t	*blocknr,
@@ -423,12 +445,12 @@ struct xlate {
 #ifdef __TURBOC__
 #pragma argsused
 #endif
-static int xlate_func(ext2_filsys fs, blk_t *blocknr, int blockcnt,
+static int xlate_func(ext2_filsys fs, blk_t *blocknr, blkcnt_t blockcnt,
 		      blk_t ref_block, int ref_offset, void *priv_data)
 {
 	struct xlate *xl = (struct xlate *) priv_data;
 
-	return (*xl->func)(fs, blocknr, blockcnt, xl->real_private);
+	return (*xl->func)(fs, blocknr, (int) blockcnt, xl->real_private);
 }
 
 errcode_t ext2fs_block_iterate(ext2_filsys fs,
@@ -446,8 +468,54 @@ errcode_t ext2fs_block_iterate(ext2_filsys fs,
 	xl.real_private = priv_data;
 	xl.func = func;
 
-	return ext2fs_block_iterate2(fs, ino, flags, block_buf,
-				    xlate_func, &xl);
+	return ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_NO_LARGE | flags,
+				     block_buf, xlate_func, &xl);
 }
 
+/*
+ * Emulate the old ext2fs_block_iterate2 function!
+ */
+
+struct xlate2 {
+	int (*func)(ext2_filsys fs,
+		    blk_t	*blocknr,
+		    int		blockcnt,
+		    blk_t	ref_blk,
+		    int		ref_offset,
+		    void	*priv_data);
+	void *real_private;
+};
+
+#ifdef __TURBOC__
+#pragma argsused
+#endif
+static int xlate_func2(ext2_filsys fs, blk_t *blocknr, blkcnt_t blockcnt,
+		      blk_t ref_block, int ref_offset, void *priv_data)
+{
+	struct xlate2 *xl = (struct xlate2 *) priv_data;
+
+	return (*xl->func)(fs, blocknr, (int) blockcnt, ref_block,
+			   ref_offset, xl->real_private);
+}
+
+errcode_t ext2fs_block_iterate2(ext2_filsys fs,
+				ino_t	ino,
+				int	flags,
+				char *block_buf,
+				int (*func)(ext2_filsys fs,
+					    blk_t	*blocknr,
+					    int	blockcnt,
+					    blk_t	ref_blk,
+					    int		ref_offset,
+					    void	*priv_data),
+				void *priv_data)
+{
+	struct xlate2 xl;
+	
+	xl.real_private = priv_data;
+	xl.func = func;
+
+	return ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_NO_LARGE | flags,
+				     block_buf, xlate_func2, &xl);
+}
 

@@ -39,7 +39,7 @@ static int link_proc(struct ext2_dir_entry *dirent,
 {
 	struct link_struct *ls = (struct link_struct *) priv_data;
 	struct ext2_dir_entry *next;
-	int rec_len;
+	int rec_len, min_rec_len;
 	int ret = 0;
 
 	rec_len = EXT2_DIR_REC_LEN(ls->namelen);
@@ -62,11 +62,11 @@ static int link_proc(struct ext2_dir_entry *dirent,
 	 * truncate it and return.
 	 */
 	if (dirent->inode) {
-		if (dirent->rec_len < (EXT2_DIR_REC_LEN(dirent->name_len) +
-				       rec_len))
+		min_rec_len = EXT2_DIR_REC_LEN(dirent->name_len & 0xFF);
+		if (dirent->rec_len < (min_rec_len + rec_len))
 			return ret;
-		rec_len = dirent->rec_len - EXT2_DIR_REC_LEN(dirent->name_len);
-		dirent->rec_len = EXT2_DIR_REC_LEN(dirent->name_len);
+		rec_len = dirent->rec_len - min_rec_len;
+		dirent->rec_len = min_rec_len;
 		next = (struct ext2_dir_entry *) (buf + offset +
 						  dirent->rec_len);
 		next->inode = 0;

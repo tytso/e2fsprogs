@@ -254,5 +254,8 @@ ec	EXT2_ET_UNIMPLEMENTED,
 ec	EXT2_ET_CANCEL_REQUESTED,
 	"User cancel requested"
 
+ec	EXT2_ET_FILE_TOO_BIG,
+	"Ext2 file too big"
+
 	end
 

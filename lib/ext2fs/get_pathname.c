@@ -53,18 +53,18 @@ static int get_pathname_proc(struct ext2_dir_entry *dirent,
 
 	gp = (struct get_pathname_struct *) priv_data;
 
-	if ((dirent->name_len == 2) &&
+	if (((dirent->name_len & 0xFF) == 2) &&
 	    !strncmp(dirent->name, "..", 2))
 		gp->parent = dirent->inode;
 	if (dirent->inode == gp->search_ino) {
-		retval = ext2fs_get_mem(dirent->name_len + 1,
+		retval = ext2fs_get_mem((dirent->name_len & 0xFF) + 1,
 					(void **) &gp->name);
 		if (!gp->name) {
 			gp->errcode = EXT2_ET_NO_MEMORY;
 			return DIRENT_ABORT;
 		}
-		strncpy(gp->name, dirent->name, dirent->name_len);
-		gp->name[dirent->name_len] = '\0';
+		strncpy(gp->name, dirent->name, (dirent->name_len & 0xFF));
+		gp->name[dirent->name_len & 0xFF] = '\0';
 		return DIRENT_ABORT;
 	}
 	return 0;
