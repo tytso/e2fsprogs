@@ -60,15 +60,12 @@ void check_super_block(e2fsck_t ctx)
 	blk_t	should_be;
 	struct problem_context	pctx;
 
-	ctx->invalid_inode_bitmap_flag = allocate_memory(sizeof(int) *
-					       fs->group_desc_count,
-					       "invalid_inode_bitmap");
-	ctx->invalid_block_bitmap_flag = allocate_memory(sizeof(int) *
-					       fs->group_desc_count,
-					       "invalid_block_bitmap");
-	ctx->invalid_inode_table_flag = allocate_memory(sizeof(int) *
-					      fs->group_desc_count,
-					      "invalid_inode_table");
+	ctx->invalid_inode_bitmap_flag = e2fsck_allocate_memory(ctx,
+		 sizeof(int) * fs->group_desc_count, "invalid_inode_bitmap");
+	ctx->invalid_block_bitmap_flag = e2fsck_allocate_memory(ctx,
+		 sizeof(int) * fs->group_desc_count, "invalid_block_bitmap");
+	ctx->invalid_inode_table_flag = e2fsck_allocate_memory(ctx,
+		sizeof(int) * fs->group_desc_count, "invalid_inode_table");
 		
 	clear_problem_context(&pctx);
 
@@ -95,20 +92,22 @@ void check_super_block(e2fsck_t ctx)
 	check_super_value(ctx, "r_blocks_count", s->s_r_blocks_count,
 			  MAX_CHECK, 0, s->s_blocks_count);
 
-	pctx.errcode = ext2fs_get_device_size(ctx->filesystem_name,
-					      EXT2_BLOCK_SIZE(s),
-					      &should_be);
-	if (pctx.errcode) {
-		fix_problem(ctx, PR_0_GETSIZE_ERROR, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
-	if (should_be < s->s_blocks_count) {
-		pctx.blk = s->s_blocks_count;
-		pctx.blk2 = should_be;
-		if (fix_problem(ctx, PR_0_FS_SIZE_WRONG, &pctx)) {
+	if (!ctx->num_blocks) {
+		pctx.errcode = ext2fs_get_device_size(ctx->filesystem_name,
+			      EXT2_BLOCK_SIZE(s), &ctx->num_blocks);
+		if (pctx.errcode && pctx.errcode != EXT2_ET_UNIMPLEMENTED) {
+			fix_problem(ctx, PR_0_GETSIZE_ERROR, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
 			return;
+		}
+		if ((pctx.errcode != EXT2_ET_UNIMPLEMENTED) &&
+		    (ctx->num_blocks < s->s_blocks_count)) {
+			pctx.blk = s->s_blocks_count;
+			pctx.blk2 = ctx->num_blocks;
+			if (fix_problem(ctx, PR_0_FS_SIZE_WRONG, &pctx)) {
+				ctx->flags |= E2F_FLAG_ABORT;
+				return;
+			}
 		}
 	}
 

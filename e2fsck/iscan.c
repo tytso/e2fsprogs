@@ -66,7 +66,8 @@ static void PRS(int argc, char *argv[])
 #ifdef BLKFLSBUF
 			flush = 1;
 #else
-			fatal_error ("-F not supported");
+			fprintf(stderr, "-F not supported");
+			exit(1);
 #endif
 			break;
 		case 'I':
@@ -92,7 +93,8 @@ static void PRS(int argc, char *argv[])
 		}
 		close(fd);
 #else
-		fatal_error ("BLKFLSBUF not supported");
+		fprintf(stderr, "BLKFLSBUF not supported");
+		exit(1);
 #endif /* BLKFLSBUF */
 	}
 }
@@ -124,7 +126,7 @@ int main (int argc, char *argv[])
 	retval = ext2fs_open_inode_scan(fs, inode_buffer_blocks, &scan);
 	if (retval) {
 		com_err(program_name, retval, "while opening inode scan");
-		fatal_error(0);
+		exit(1);
 	}
 
 	while (1) {
@@ -132,7 +134,7 @@ int main (int argc, char *argv[])
 		if (retval) {
 			com_err(program_name, retval,
 				"while getting next inode");
-			fatal_error(0);
+			exit(1);
 		}
 		if (ino == 0)
 			break;

@@ -18,6 +18,7 @@
 #include "e2fsck.h"
 
 #include "problem.h"
+#include "problemP.h"
 
 #define PROMPT_NONE	0
 #define PROMPT_FIX	1
@@ -35,6 +36,7 @@
 #define PROMPT_CONTINUE	13
 #define PROMPT_CLONE	14
 #define PROMPT_DELETE 	15
+#define PROMPT_SUPPRESS 16
 
 /*
  * These are the prompts which are used to ask the user if they want
@@ -57,6 +59,7 @@ static const char *prompt[] = {
 	"Continue",		/* 13 */
 	"Clone duplicate/bad blocks", /* 14 */
 	"Delete file",		/* 15 */
+	"Suppress messages",	/* 16 */
 };
 
 /*
@@ -80,6 +83,7 @@ static const char *preen_msg[] = {
 	"CONTINUING",		/* 13 */
 	"DUPLICATE/BAD BLOCKS CLONED", /* 14 */
 	"FILE DELETED",		/* 15 */
+	"SUPPRESSED",		/* 16 */
 };
 
 static const struct e2fsck_problem problem_table[] = {
@@ -297,7 +301,7 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Bad primary block group descriptors */
 	{ PR_1_BAD_PRIMARY_GROUP_DESCRIPTOR,
 	  "Block %b in the primary @g descriptors "
-	  "is on the bad block list\n",
+	  "is on the bad @b list\n",
 	  PROMPT_NONE, PR_AFTER_CODE, PR_1_BAD_PRIMARY_BLOCK },
 		  
 	/* Bad superblock in group */
@@ -317,14 +321,14 @@ static const struct e2fsck_problem problem_table[] = {
 	  "process_bad_@b.\n",
 	  PROMPT_NONE, PR_PREEN_OK },
 
-	/* Could not allocate blocks for relocating metadata */
+	/* Error allocating blocks for relocating metadata */
 	{ PR_1_RELOC_BLOCK_ALLOCATE,
-	  "Could not allocate %N @b(s) for %s: %m\n",
+	  "@A %N @b(s) for %s: %m\n",
 	  PROMPT_NONE, PR_PREEN_OK },
 		
-	/* Could not allocate memory during relocation process */
+	/* Error allocating block buffer during relocation process */
 	{ PR_1_RELOC_MEMORY_ALLOCATE,
-	  "Could not allocate @b buffer for relocating %s\n",
+	  "@A @b buffer for relocating %s\n",
 	  PROMPT_NONE, PR_PREEN_OK },
 		
 	/* Relocating metadata group information from X to Y */	
@@ -349,49 +353,52 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Error allocating inode bitmap */
 	{ PR_1_ALLOCATE_IBITMAP_ERROR,
-	  "Error allocating @i @B (%N): %m\n",
+	  "@A @i @B (%N): %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error allocating block bitmap */
 	{ PR_1_ALLOCATE_BBITMAP_ERROR,
-	  "Error allocating @b @B (%N): %m\n",
+	  "@A @b @B (%N): %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error allocating icount structure */
 	{ PR_1_ALLOCATE_ICOUNT,
-	  "Error allocating icount link information: %m\n",
+	  "@A icount link information: %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error allocating dbcount */
 	{ PR_1_ALLOCATE_DBCOUNT,
-	  "Error allocating directory @b array: %m\n",
+	  "@A @d @b array: %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error while scanning inodes */
 	{ PR_1_ISCAN_ERROR,
-	  "Error while scanning inodes (%i): %m\n",
+	  "Error while scanning @is (%i): %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error while iterating over blocks */
 	{ PR_1_BLOCK_ITERATE,
-	  "Error while iterating over blocks in inode %i: %m\n",
+	  "Error while iterating over blocks in @i %i: %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error while storing inode count information */	  
 	{ PR_1_ICOUNT_STORE,
-	  "Error storing inode count information (inode=%i, count=%N): %m\n",
+	  "Error storing @i count information (inode=%i, count=%N): %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error while storing directory block information */	  
 	{ PR_1_ADD_DBLOCK,
-	  "Error storing dir block information "
+	  "Error storing @d @b information "
 	  "(inode=%i, block=%b, num=%N): %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error while reading inode (for clearing) */	  
 	{ PR_1_READ_INODE,
-	  "Error reading inode %i: %m\n",
+	  "Error reading @i %i: %m\n",
 	  PROMPT_NONE, PR_FATAL },
+
+	/* Suppress messages prompt */
+	{ PR_1_SUPPRESS_MESSAGES, "", PROMPT_SUPPRESS, PR_NO_OK },
 		  
 	/* Pass 1b errors */
 
@@ -423,7 +430,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Error allocating inode bitmap */
 	{ PR_1B_ALLOCATE_IBITMAP_ERROR,
-	  "Error allocating @i @B (inode_dup_map): %m\n",
+	  "@A @i @B (inode_dup_map): %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 
@@ -590,12 +597,12 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* '.' is not NULL terminated */
 	{ PR_2_DOT_NULL_TERM,
-	  "'.' directory entry in @d @i %i is not NULL terminated\n",
+	  "'.' @d @e in @d @i %i is not NULL terminated\n",
 	  PROMPT_FIX, 0 },
 
 	/* '..' is not NULL terminated */
 	{ PR_2_DOT_DOT_NULL_TERM,
-	  "'..' directory entry in @d @i %i is not NULL terminated\n",
+	  "'..' @d @e in @d @i %i is not NULL terminated\n",
 	  PROMPT_FIX, 0 },
 
 	/* Illegal character device inode */
@@ -630,34 +637,38 @@ static const struct e2fsck_problem problem_table[] = {
 		  
 	/* Error allocating icount structure */
 	{ PR_2_ALLOCATE_ICOUNT,
-	  "Error allocating icount structure: %m\n",
+	  "@A icount structure: %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error iterating over directory blocks */
 	{ PR_2_DBLIST_ITERATE,
-	  "Error interating over directory blocks: %m\n",
+	  "Error interating over @d @bs: %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error reading directory block */
 	{ PR_2_READ_DIRBLOCK,
-	  "Error reading directory block %b (inode %i): %m\n",
+	  "Error reading @d @b %b (@i %i): %m\n",
 	  PROMPT_CONTINUE, 0 },
 
 	/* Error writing directory block */
 	{ PR_2_WRITE_DIRBLOCK,
-	  "Error writing directory block %b (inode %i): %m\n",
+	  "Error writing @d @b %b (@i %i): %m\n",
 	  PROMPT_CONTINUE, 0 },
 
 	/* Error allocating new directory block */
 	{ PR_2_ALLOC_DIRBOCK,
-	  "Error allocating new directory block for inode %i (%s): %m\n",
+	  "@A new @d @b for @i %i (%s): %m\n",
 	  PROMPT_NONE, 0 },
 
 	/* Error deallocating inode */
 	{ PR_2_DEALLOC_INODE,
-	  "Error deallocating inode %i: %m\n",
+	  "Error deallocating @i %i: %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
+	/* Directory entry for '.' is big.  Split? */
+	{ PR_2_SPLIT_DOT,
+	  "@d @e for '.' is big.  ",
+	  PROMPT_SPLIT, PR_NO_OK },
 
 	/* Pass 3 errors */
 
@@ -748,7 +759,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Error allocating inode bitmap */
 	{ PR_3_ALLOCATE_IBITMAP_ERROR,
-	  "Error allocating @i @B (%N): %m\n",
+	  "@A @i @B (%N): %m\n",
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error creating root directory */
@@ -759,6 +770,16 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Error creating lost and found directory */
 	{ PR_3_CREATE_LPF_ERROR,
 	  "Error creating /@l @d (%s): %m\n",
+	  PROMPT_NONE, PR_FATAL },  
+
+	/* Root inode is not directory; aborting */
+	{ PR_3_ROOT_NOT_DIR_ABORT,
+	  "@r is not a @d; aborting.\n",
+	  PROMPT_NONE, PR_FATAL },  
+
+	/* Cannot proceed without a root inode. */
+	{ PR_3_NO_ROOT_INODE_ABORT,
+	  "Cannot proceed without a @r.\n",
 	  PROMPT_NONE, PR_FATAL },  
 
 	/* Pass 4 errors */
@@ -1021,7 +1042,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		preenhalt(ctx);
 
 	if (ptr->flags & PR_FATAL)
-		fatal_error(0);
+		fatal_error(ctx, 0);
 
 	if (ptr->prompt == PROMPT_NONE) {
 		if (ptr->flags & PR_NOCOLLATE)
@@ -1055,8 +1076,8 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	if (ptr->flags & PR_AFTER_CODE)
 		(void) fix_problem(ctx, ptr->second_code, pctx);
 
-	if (ptr->prompt == PROMPT_ABORT)
-		fatal_error(0);
+	if ((ptr->prompt == PROMPT_ABORT) && answer)
+		fatal_error(ctx, 0);
 
 	return answer;
 }

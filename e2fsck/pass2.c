@@ -63,6 +63,7 @@ static int update_dir_block(ext2_filsys fs,
 struct check_dir_struct {
 	char *buf;
 	struct problem_context	pctx;
+	int	count, max;
 	e2fsck_t ctx;
 };	
 
@@ -97,7 +98,8 @@ void e2fsck_pass2(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	buf = allocate_memory(fs->blocksize, "directory scan buffer");
+	buf = e2fsck_allocate_memory(ctx, fs->blocksize,
+				     "directory scan buffer");
 
 	/*
 	 * Set up the parent pointer for the root directory, if
@@ -110,6 +112,8 @@ void e2fsck_pass2(e2fsck_t ctx)
 
 	cd.buf = buf;
 	cd.ctx = ctx;
+	cd.count = 0;
+	cd.max = ext2fs_dblist_count(fs->dblist);
 	
 	cd.pctx.errcode = ext2fs_dblist_iterate(fs->dblist, check_dir_block,
 						&cd);
@@ -177,9 +181,8 @@ static int check_dot(e2fsck_t ctx,
 	if (dirent->rec_len > 12) {
 		new_len = dirent->rec_len - 12;
 		if (new_len > 12) {
-			preenhalt(ctx);
 			if (created ||
-			    ask(ctx, "Directory entry for '.' is big.  Split", 1)) {
+			    fix_problem(ctx, PR_2_SPLIT_DOT, pctx)) {
 				nextdir = (struct ext2_dir_entry *)
 					((char *) dirent + 12);
 				dirent->rec_len = 12;
@@ -280,6 +283,9 @@ static int check_dir_block(ext2_filsys fs,
 
 	buf = cd->buf;
 	ctx = cd->ctx;
+
+	if (ctx->progress)
+		(ctx->progress)(ctx, 2, cd->count++, cd->max);
 	
 	/*
 	 * Make sure the inode is still in use (could have been 
@@ -553,7 +559,7 @@ static void deallocate_inode(e2fsck_t ctx, ino_t ino,
 	/*
 	 * Fix up the bitmaps...
 	 */
-	read_bitmaps(ctx);
+	e2fsck_read_bitmaps(ctx);
 	ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
 	ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
 	if (ctx->inode_bad_map)
@@ -691,7 +697,7 @@ static int allocate_dir_block(e2fsck_t ctx,
 	 * Read the inode and block bitmaps in; we'll be messing with
 	 * them.
 	 */
-	read_bitmaps(ctx);
+	e2fsck_read_bitmaps(ctx);
 	
 	/*
 	 * First, find a free block

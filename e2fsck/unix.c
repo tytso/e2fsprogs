@@ -170,8 +170,8 @@ static void check_mount(e2fsck_t ctx)
 	}
 
 	printf("%s is mounted.\n\n", ctx->device_name);
-	printf("\a\a\a\aWARNING!!!  Running e2fsck on a mounted filesystem "
-	       "may cause\nSEVERE filesystem damage.\a\a\a\n\n");
+	printf("\007\007\007\007WARNING!!!  Running e2fsck on a mounted filesystem "
+	       "may cause\nSEVERE filesystem damage.\007\007\007\n\n");
 	if (isatty (0) && isatty (1))
 		cont = ask_yn("Do you really want to continue", -1);
 	else
@@ -254,7 +254,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 
 		newpath = malloc(sizeof (PATH_SET) + 1 + strlen (oldpath));
 		if (!newpath)
-			fatal_error("Couldn't malloc() newpath");
+			fatal_error(ctx, "Couldn't malloc() newpath");
 		strcpy (newpath, PATH_SET);
 		strcat (newpath, ":");
 		strcat (newpath, oldpath);
@@ -320,7 +320,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		case 'l':
 			bad_blocks_file = malloc(strlen(optarg)+1);
 			if (!bad_blocks_file)
-				fatal_error("Couldn't malloc bad_blocks_file");
+				fatal_error(ctx,
+					    "Couldn't malloc bad_blocks_file");
 			strcpy(bad_blocks_file, optarg);
 			break;
 		case 'd':
@@ -333,7 +334,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #ifdef BLKFLSBUF
 			flush = 1;
 #else
-			fatal_error ("-F not supported");
+			fatal_error(ctx, "-F not supported");
 #endif
 			break;
 		case 'v':
@@ -384,14 +385,14 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		}
 		close(fd);
 #else
-		fatal_error ("BLKFLSBUF not supported");
+		fatal_error(ctx, "BLKFLSBUF not supported");
 #endif /* BLKFLSBUF */
 	}
 	if (swapfs) {
 		if (cflag || bad_blocks_file) {
 			fprintf(stderr, "Incompatible options not "
 				"allowed when byte-swapping.\n");
-			fatal_error(0);
+			exit(FSCK_ERROR);
 		}
 	}
 	return 0;
@@ -457,7 +458,8 @@ int main (int argc, char *argv[])
 	    !(ctx->options & E2F_OPT_NO) &&
 	    !(ctx->options & E2F_OPT_YES)) {
 		if (!isatty (0) || !isatty (1))
-			fatal_error("need terminal for interactive repairs");
+			fatal_error(ctx,
+				    "need terminal for interactive repairs");
 	}
 	ctx->superblock = ctx->use_superblock;
 restart:
@@ -520,7 +522,7 @@ restart:
 #endif
 		else
 			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);
-		fatal_error(0);
+		exit(FSCK_ERROR);
 	}
 	ctx->fs = fs;
 	fs->private = ctx;
@@ -529,7 +531,8 @@ restart:
 		com_err(ctx->program_name, EXT2_ET_REV_TOO_HIGH,
 			"while trying to open %s",
 			ctx->filesystem_name);
-		goto get_newer;
+	get_newer:
+		fatal_error(ctx, "Get a newer version of e2fsck!");
 	}
 #endif
 	/*
@@ -541,9 +544,7 @@ restart:
 	    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
 		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
 			"(%s)", ctx->filesystem_name);
-	get_newer:
-		printf ("Get a newer version of e2fsck!\n");
-		fatal_error(0);
+		goto get_newer;
 	}
 	if (s->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP) {
 		com_err(ctx->program_name, EXT2_ET_RO_UNSUPP_FEATURE,
@@ -571,22 +572,29 @@ restart:
 	if (ctx->superblock)
 		set_latch_flags(PR_LATCH_RELOC, PRL_LATCHED, 0);
 	check_super_block(ctx);
+	if (ctx->flags & E2F_FLAG_ABORT)
+		exit(FSCK_ERROR);
 	check_if_skip(ctx);
 	if (bad_blocks_file)
 		read_bad_blocks_file(ctx, bad_blocks_file, replace_bad_blocks);
 	else if (cflag)
 		test_disk(ctx);
+	if (ctx->flags & E2F_FLAG_ABORT)
+		exit(FSCK_ERROR);
 
 	if (normalize_swapfs) {
 		if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ==
 		    ext2fs_native_flag()) {
 			fprintf(stderr, "%s: Filesystem byte order "
 				"already normalized.\n", ctx->device_name);
-			fatal_error(0);
+			exit(FSCK_ERROR);
 		}
 	}
-	if (swapfs)
+	if (swapfs) {
 		swap_filesys(ctx);
+		if (ctx->flags & E2F_FLAG_ABORT)
+			exit(FSCK_ERROR);
+	}
 
 	/*
 	 * Mark the system as valid, 'til proven otherwise
@@ -649,7 +657,7 @@ restart:
 	}
 	show_stats(ctx);
 
-	write_bitmaps(ctx);
+	e2fsck_write_bitmaps(ctx);
 	ext2fs_close(fs);
 	sync_disks();
 	

@@ -47,7 +47,7 @@ static int disconnect_inode(e2fsck_t ctx, ino_t i)
 			/*
 			 * Fix up the bitmaps...
 			 */
-			read_bitmaps(ctx);
+			e2fsck_read_bitmaps(ctx);
 			ext2fs_unmark_inode_bitmap(ctx->inode_used_map, i);
 			ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, i);
 			ext2fs_unmark_inode_bitmap(fs->inode_map, i);
@@ -85,6 +85,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 #endif
 	struct problem_context	pctx;
 	__u16	link_count, link_counted;
+	int	group, max, j;
 	
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
@@ -99,7 +100,17 @@ void e2fsck_pass4(e2fsck_t ctx)
 	if (!(ctx->options & E2F_OPT_PREEN))
 		fix_problem(ctx, PR_4_PASS_HEADER, &pctx);
 
+	group = 0;
+	max = fs->group_desc_count;
+	if (ctx->progress)
+		(ctx->progress)(ctx, 4, 0, max);
+	
 	for (i=1; i <= fs->super->s_inodes_count; i++) {
+		if ((i % fs->super->s_inodes_per_group) == 0) {
+			group++;
+			if (ctx->progress)
+				(ctx->progress)(ctx, 4, group, max);
+		}
 		if (i == EXT2_BAD_INO ||
 		    (i > EXT2_ROOT_INO && i < EXT2_FIRST_INODE(fs->super)))
 			continue;
@@ -137,6 +148,8 @@ void e2fsck_pass4(e2fsck_t ctx)
 	ext2fs_free_icount(ctx->inode_count); ctx->inode_count = 0;
 	ext2fs_free_inode_bitmap(ctx->inode_bb_map);
 	ctx->inode_bb_map = 0;
+	if (ctx->progress)
+		(ctx->progress)(ctx, 4, max, max);	
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
 		print_resource_track("Pass 4", &rtrack);

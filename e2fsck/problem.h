@@ -22,31 +22,6 @@ struct problem_context {
 	const char *str;
 };
 
-struct e2fsck_problem {
-	problem_t	e2p_code;
-	const char *	e2p_description;
-	char		prompt;
-	short		flags;
-	problem_t	second_code;
-};
-
-struct latch_descr {
-	int		latch_code;
-	problem_t	question;
-	problem_t	end_message;
-	int		flags;
-};
-
-#define PR_PREEN_OK	0x0001	/* Don't need to do preenhalt */
-#define PR_NO_OK	0x0002	/* If user answers no, don't make fs invalid */
-#define PR_NO_DEFAULT	0x0004	/* Default to no */
-#define PR_MSG_ONLY	0x0008	/* Print message only */
-#define PR_FATAL	0x0080	/* Fatal error */
-#define PR_AFTER_CODE	0x0100	/* After asking the first question, */
-				/* ask another */
-#define PR_PREEN_NOMSG	0x0200	/* Don't print a message if we're preening */
-#define PR_NOCOLLATE	0x0400	/* Don't collate answers for this latch */
-
 /*
  * We define a set of "latch groups"; these are problems which are
  * handled as a set.  The user answers once for a particular latch
@@ -206,10 +181,10 @@ struct latch_descr {
 /* Block claimed for no reason */	  
 #define PR_1_PROGERR_CLAIMED_BLOCK	0x010001D
 
-/* Could not allocate blocks for relocating metadata */
+/* Error allocating blocks for relocating metadata */
 #define PR_1_RELOC_BLOCK_ALLOCATE	0x010001E
 		
-/* Could not allocate memory during relocation process */
+/* Error allocating block buffer during relocation process */
 #define PR_1_RELOC_MEMORY_ALLOCATE	0x010001F
 		
 /* Relocating metadata group information from X to Y */	
@@ -251,6 +226,8 @@ struct latch_descr {
 /* Error while reading inode (for clearing) */
 #define PR_1_READ_INODE			0x010002C
 
+/* Suppress messages prompt */
+#define PR_1_SUPPRESS_MESSAGES		0x010002D
 
 /*
  * Pass 1b errors
@@ -418,6 +395,9 @@ struct latch_descr {
 /* Error deallocating inode */
 #define PR_2_DEALLOC_INODE	0x020023
 
+/* Directory entry for '.' is big.  Split? */
+#define PR_2_SPLIT_DOT		0x0200024
+
 /*
  * Pass 3 errors
  */
@@ -481,6 +461,12 @@ struct latch_descr {
 
 /* Error creating lost and found directory */
 #define PR_3_CREATE_LPF_ERROR		0x030013
+
+/* Root inode is not directory; aborting */
+#define PR_3_ROOT_NOT_DIR_ABORT		0x030014
+
+/* Cannot proceed without a root inode. */
+#define PR_3_NO_ROOT_INODE_ABORT	0x030015
 
 /*
  * Pass 4 errors

@@ -1,3 +1,36 @@
+Thu Nov  6 16:10:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c, pass2.c, pass3.c, pass4.c, pass5.c: Add calls to the 
+		progress indicator function.
+
+	* pass1.c (scan_callback): Add call to the progress feedback
+		function (if it exists).
+
+Tue Nov  4 09:45:36 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* super.c (check_super_block): Skip the device size check if the
+		get_device_size returns EXT2_EXT_UNIMPLEMENTED.
+
+	* iscan.c (main): Don't use fatal_error() anymore.
+
+	* pass1b.c, swapfs.c, badblocks.c: Set E2F_FLAG_ABORT instead of
+ 		calling fatal_error(0).
+
+	* problem.c, pass3.c (PR_3_ROOT_NOT_DIR_ABORT, 
+		PR_3_NO_ROOT_INODE_ABORT): New problem codes.
+	
+	* problem.c, pass2.c (PR_2_SPLIT_DOT): New problem code.
+
+	* problem.c, pass1.c (PR_1_SUPPRESS_MESSAGES): New problem code.
+	
+	* problemP.h: New file which separates out the private fix_problem
+		data structures.
+
+	* util.c, dirinfo.c, pass1.c, pass1b.c, pass2.c, pass5.c, super.c,
+ 		swapfs.c util.c: allocate_memory() now takes a e2fsck
+ 		context as its first argument, and rename it to be
+ 		e2fsck_allocate_memory().
+
 Mon Nov  3 14:35:29 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* unix.c (main): Add a special case check for the error code EROFS

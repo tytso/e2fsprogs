@@ -38,7 +38,13 @@ void e2fsck_pass5(e2fsck_t ctx)
 	if (!(ctx->options & E2F_OPT_PREEN))
 		fix_problem(ctx, PR_5_PASS_HEADER, &pctx);
 
-	read_bitmaps(ctx);
+	if (ctx->progress)
+		(ctx->progress)(ctx, 5, 0, 3);
+
+	e2fsck_read_bitmaps(ctx);
+
+	if (ctx->progress)
+		(ctx->progress)(ctx, 5, 2, 3);
 
 	check_block_bitmaps(ctx);
 	if (ctx->flags & E2F_FLAG_ABORT)
@@ -52,6 +58,9 @@ void e2fsck_pass5(e2fsck_t ctx)
 	check_block_end(ctx);
 	if (ctx->flags & E2F_FLAG_ABORT)
 		return;
+
+	if (ctx->progress)
+		(ctx->progress)(ctx, 5, 3, 3);
 
 	ext2fs_free_inode_bitmap(ctx->inode_used_map);
 	ctx->inode_used_map = 0;
@@ -81,8 +90,8 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	errcode_t	retval;
 	
 	clear_problem_context(&pctx);
-	free_array = allocate_memory(fs->group_desc_count * sizeof(int),
-				     "free block count array");
+	free_array = e2fsck_allocate_memory(ctx,
+	    fs->group_desc_count * sizeof(int), "free block count array");
 
 	if ((fs->super->s_first_data_block <
 	     ext2fs_get_block_bitmap_start(ctx->block_found_map)) ||
@@ -214,11 +223,11 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int	problem, fixit;
 	
 	clear_problem_context(&pctx);
-	free_array = allocate_memory(fs->group_desc_count * sizeof(int),
-				     "free inode count array");
+	free_array = e2fsck_allocate_memory(ctx,
+	    fs->group_desc_count * sizeof(int), "free inode count array");
 				     
-	dir_array = allocate_memory(fs->group_desc_count * sizeof(int),
-				    "directory count array");
+	dir_array = e2fsck_allocate_memory(ctx,
+	   fs->group_desc_count * sizeof(int), "directory count array");
 				     
 	if ((1 < ext2fs_get_inode_bitmap_start(ctx->inode_used_map)) ||
 	    (fs->super->s_inodes_count > 

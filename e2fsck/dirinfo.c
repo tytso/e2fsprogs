@@ -38,9 +38,9 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ino_t ino, ino_t parent)
 		ctx->dir_info_count = 0;
 		ctx->dir_info_size = e2fsck_get_num_dirs(ctx) + 10;
 
-		ctx->dir_info  = allocate_memory(ctx->dir_info_size *
-						 sizeof (struct dir_info),
-						 "directory map");
+		ctx->dir_info  = e2fsck_allocate_memory(ctx,
+			ctx->dir_info_size * sizeof (struct dir_info),
+			"directory map");
 	}
 	
 	if (ctx->dir_info_count >= ctx->dir_info_size) {
@@ -122,6 +122,14 @@ void e2fsck_free_dir_info(e2fsck_t ctx)
 	}
 	ctx->dir_info_size = 0;
 	ctx->dir_info_count = 0;
+}
+
+/*
+ * Return the count of number of directories in the dir_info structure
+ */
+int e2fsck_get_num_dirinfo(e2fsck_t ctx)
+{
+	return ctx->dir_info_count;
 }
 
 /*

@@ -84,6 +84,11 @@ struct process_inode_block {
 	struct ext2_inode inode;
 };
 
+struct scan_callback_struct {
+	e2fsck_t	ctx;
+	char		*block_buf;
+};
+
 /*
  * For the inodes to process list.
  */
@@ -126,6 +131,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 #endif
 	unsigned char	frag, fsize;
 	struct		problem_context pctx;
+	struct		scan_callback_struct scan_struct;
 	
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
@@ -181,9 +187,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	inodes_to_process = allocate_memory(ctx->process_inode_size *
-					    sizeof(struct process_inode_block),
-					    "array of inodes to process");
+	inodes_to_process = e2fsck_allocate_memory(ctx,
+	   ctx->process_inode_size * sizeof(struct process_inode_block),
+	   "array of inodes to process");
 	process_inode_count = 0;
 
 	pctx.errcode = ext2fs_init_dblist(fs, 0);
@@ -194,7 +200,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 	}
 
 	mark_table_blocks(ctx);
-	block_buf = allocate_memory(fs->blocksize * 3, "block interate buffer");
+	block_buf = e2fsck_allocate_memory(ctx, fs->blocksize * 3,
+					   "block interate buffer");
 	fs->get_blocks = pass1_get_blocks;
 	fs->check_directory = pass1_check_directory;
 	fs->read_inode = pass1_read_inode;
@@ -215,7 +222,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 		return;
 	}
 	ctx->stashed_inode = &inode;
-	ext2fs_set_inode_callback(scan, scan_callback, block_buf);
+	scan_struct.ctx = ctx;
+	scan_struct.block_buf = block_buf;
+	ext2fs_set_inode_callback(scan, scan_callback, &scan_struct);
+	if (ctx->progress)
+		(ctx->progress)(ctx, 1, 0, ctx->fs->group_desc_count);
 	while (ino) {
 		pctx.ino = ino;
 		pctx.inode = &inode;
@@ -471,7 +482,16 @@ endit:
 static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
 			       dgrp_t group, void * private)
 {
-	process_inodes((e2fsck_t) fs->private, (char *) private);
+	struct scan_callback_struct *scan_struct = private;
+	e2fsck_t ctx;
+
+	ctx = scan_struct->ctx;
+	
+	process_inodes((e2fsck_t) fs->private, scan_struct->block_buf);
+
+	if (ctx->progress)
+		(ctx->progress)(ctx, 1, group+1, ctx->fs->group_desc_count);
+
 	return 0;
 }
 
@@ -826,7 +846,7 @@ int process_block(ext2_filsys fs,
 				p->clear = 1;
 				return BLOCK_ABORT;
 			}
-			if (ask(ctx, "Suppress messages", 0)) {
+			if (fix_problem(ctx, PR_1_SUPPRESS_MESSAGES, pctx)) {
 				p->suppress = 1;
 				set_latch_flags(PR_LATCH_BLOCK,
 						PRL_SUPPRESS, 0);
@@ -897,6 +917,7 @@ int process_bad_block(ext2_filsys fs,
 	ctx = p->ctx;
 	pctx = p->pctx;
 	
+	pctx->ino = EXT2_BAD_INO;
 	pctx->blk = blk;
 	pctx->blkcount = blockcnt;
 

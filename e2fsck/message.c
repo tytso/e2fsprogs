@@ -46,6 +46,7 @@
  *
  * The following '@' expansions are supported:
  *
+ * 	@A	error allocating
  * 	@b	block
  * 	@B	bitmap
  * 	@C	conflicts with some other fs block
@@ -90,6 +91,7 @@
  * letter <i> in the table below.
  */
 static const char *abbrevs[] = {
+	"Aerror allocating",
 	"bblock",
 	"Bbitmap",
 	"Cconflicts with some other fs @b",

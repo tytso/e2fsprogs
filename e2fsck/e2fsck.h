@@ -117,10 +117,12 @@ struct e2fsck_struct {
 	int	options;
 	blk_t	use_superblock;	/* sb requested by user */
 	blk_t	superblock;	/* sb used to open fs */
+	blk_t	num_blocks;	/* Total number of blocks */
 
 #ifdef HAVE_SETJMP_H
 	jmp_buf	abort_loc;
 #endif
+	unsigned long abort_code;
 
 	void (*progress)(e2fsck_t ctx, int pass, unsigned long cur,
 			 unsigned long max);
@@ -236,6 +238,7 @@ extern void e2fsck_add_dir_info(e2fsck_t ctx, ino_t ino, ino_t parent);
 extern struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ino_t ino);
 extern void e2fsck_free_dir_info(e2fsck_t ctx);
 extern int e2fsck_get_num_dirs(e2fsck_t ctx);
+extern int e2fsck_get_num_dirinfo(e2fsck_t ctx);
 extern struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, int *control);
 
 /* ehandler.c */
@@ -249,12 +252,13 @@ void check_super_block(e2fsck_t ctx);
 void swap_filesys(e2fsck_t ctx);
 
 /* util.c */
-extern void *allocate_memory(int size, const char *description);
+extern void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
+				    const char *description);
 extern int ask(e2fsck_t ctx, const char * string, int def);
 extern int ask_yn(const char * string, int def);
-extern void fatal_error (const char * fmt_string);
-extern void read_bitmaps(e2fsck_t ctx);
-extern void write_bitmaps(e2fsck_t ctx);
+extern void fatal_error(e2fsck_t ctx, const char * fmt_string);
+extern void e2fsck_read_bitmaps(e2fsck_t ctx);
+extern void e2fsck_write_bitmaps(e2fsck_t ctx);
 extern void preenhalt(e2fsck_t ctx);
 #ifdef RESOURCE_TRACK
 extern void print_resource_track(const char *desc,

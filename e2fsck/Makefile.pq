@@ -7,6 +7,3 @@ OBJS= e2fsck.obj super.obj pass1.obj pass2.obj pass3.obj \
 
 !include $(TOPSRC)\powerquest\MCONFIG
 
-ALL:: $(OBJS)
-
-!include $(TOPSRC)\powerquest\MAKEFILE.STD

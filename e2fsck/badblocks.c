@@ -32,7 +32,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 	FILE		*f;
 	char		buf[1024];
 
-	read_bitmaps(ctx);
+	e2fsck_read_bitmaps(ctx);
 
 	/*
 	 * Make sure the bad block inode is sane.  If there are any
@@ -43,7 +43,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 	if (retval) {
 		com_err("ext2fs_block_iterate", retval,
 			"while sanity checking the bad blocks inode");
-		fatal_error(0);
+		goto fatal;
 	}
 	
 	/*
@@ -55,7 +55,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 		if (retval) {
 			com_err("ext2fs_read_bb_inode", retval,
 				"while reading the bad blocks inode");
-			fatal_error(0);
+			goto fatal;
 		}
 	}
 	
@@ -69,7 +69,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 		if (!f) {
 			com_err("read_bad_blocks_file", errno,
 				"while trying to open %s", bad_blocks_file);
-			fatal_error(0);
+			goto fatal;
 		}
 	} else {
 		sprintf(buf, "badblocks -b %d %s%s %d", fs->blocksize,
@@ -79,7 +79,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 		if (!f) {
 			com_err("read_bad_blocks_file", errno,
 				"while trying popen '%s'", buf);
-			fatal_error(0);
+			goto fatal;
 		}
 	}
 	retval = ext2fs_read_bb_FILE(fs, f, &bb_list, invalid_block);
@@ -90,7 +90,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 	if (retval) {
 		com_err("ext2fs_read_bb_FILE", retval,
 			"while reading in list of bad blocks from file");
-		fatal_error(0);
+		goto fatal;
 	}
 	
 	/*
@@ -100,11 +100,16 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 	if (retval) {
 		com_err("ext2fs_update_bb_inode", retval,
 			"while updating bad block inode");
-		fatal_error(0);
+		goto fatal;
 	}
 
 	badblocks_list_free(bb_list);
 	return;
+	
+fatal:
+	ctx->flags |= E2F_FLAG_ABORT;
+	return;
+	
 }
 
 void test_disk(e2fsck_t ctx)

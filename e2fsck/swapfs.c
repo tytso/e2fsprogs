@@ -75,7 +75,7 @@ static int swap_block(ext2_filsys fs, blk_t *block_nr, int blockcnt,
  * This function is responsible for byte-swapping all of the indirect,
  * block pointers.  It is also responsible for byte-swapping directories.
  */
-static void swap_inode_blocks(ext2_filsys fs, ino_t ino, char *block_buf,
+static void swap_inode_blocks(e2fsck_t ctx, ino_t ino, char *block_buf,
 			      struct ext2_inode *inode)
 {
 	errcode_t			retval;
@@ -83,22 +83,25 @@ static void swap_inode_blocks(ext2_filsys fs, ino_t ino, char *block_buf,
 
 	sb.ino = ino;
 	sb.inode = inode;
-	sb.dir_buf = block_buf + fs->blocksize*3;
+	sb.dir_buf = block_buf + ctx->fs->blocksize*3;
 	sb.errcode = 0;
 	sb.isdir = 0;
 	if (LINUX_S_ISDIR(inode->i_mode))
 		sb.isdir = 1;
 
-	retval = ext2fs_block_iterate(fs, ino, 0, block_buf, swap_block, &sb);
+	retval = ext2fs_block_iterate(ctx->fs, ino, 0, block_buf,
+				      swap_block, &sb);
 	if (retval) {
 		com_err("swap_inode_blocks", retval,
 			"while calling ext2fs_block_iterate");
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	if (sb.errcode) {
 		com_err("swap_inode_blocks", sb.errcode,
 			"while calling iterator function");
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 }
 
@@ -119,10 +122,11 @@ static void swap_inodes(e2fsck_t ctx)
 	if (retval) {
 		com_err("swap_inodes", retval,
 			"while allocating inode buffer");
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
-	block_buf = allocate_memory(fs->blocksize * 4,
-				    "block interate buffer");
+	block_buf = e2fsck_allocate_memory(ctx, fs->blocksize * 4,
+					   "block interate buffer");
 	for (group = 0; group < fs->group_desc_count; group++) {
 		retval = io_channel_read_blk(fs->io,
 		      fs->group_desc[group].bg_inode_table,
@@ -131,7 +135,8 @@ static void swap_inodes(e2fsck_t ctx)
 			com_err("swap_inodes", retval,
 				"while reading inode table (group %d)",
 				group);
-			fatal_error(0);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
 		}
 		inode = (struct ext2_inode *) buf;
 		for (i=0; i < fs->super->s_inodes_per_group;
@@ -153,7 +158,10 @@ static void swap_inodes(e2fsck_t ctx)
 			      inode->i_block[EXT2_DIND_BLOCK] ||
 			      inode->i_block[EXT2_TIND_BLOCK]) &&
 			     ext2fs_inode_has_valid_blocks(inode)))
-				swap_inode_blocks(fs, ino, block_buf, inode);
+				swap_inode_blocks(ctx, ino, block_buf, inode);
+
+			if (ctx->flags & E2F_FLAG_ABORT)
+				return;
 			
 			if (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)
 				ext2fs_swap_inode(fs, inode, inode, 1);
@@ -165,7 +173,8 @@ static void swap_inodes(e2fsck_t ctx)
 			com_err("swap_inodes", retval,
 				"while writing inode table (group %d)",
 				group);
-			fatal_error(0);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
 		}
 	}
 	ext2fs_free_mem((void **) &buf);
@@ -195,7 +204,8 @@ void swap_filesys(e2fsck_t ctx)
 			"checked using fsck\n"
 			"and not mounted before trying to "
 			"byte-swap it.\n", ctx->device_name);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		fs->flags &= ~(EXT2_FLAG_SWAP_BYTES|
@@ -206,6 +216,8 @@ void swap_filesys(e2fsck_t ctx)
 		fs->flags |= EXT2_FLAG_SWAP_BYTES_WRITE;
 	}
 	swap_inodes(ctx);
+	if (ctx->flags & E2F_FLAG_ABORT)
+		return;
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)
 		fs->flags |= EXT2_FLAG_SWAP_BYTES;
 	fs->flags &= ~(EXT2_FLAG_SWAP_BYTES_READ|

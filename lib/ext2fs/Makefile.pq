@@ -47,6 +47,3 @@ OBJS= 	alloc.obj \
 
 !include $(TOPSRC)\powerquest\MCONFIG
 
-ALL:: $(OBJS)
-
-!include $(TOPSRC)\powerquest\MAKEFILE.STD

@@ -118,7 +118,8 @@ void e2fsck_pass1_dupblocks(e2fsck_t ctx, char *block_buf)
 		      "multiply claimed inode map", &inode_dup_map);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1B_ALLOCATE_IBITMAP_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	
 	pass1b(ctx, block_buf);
@@ -172,12 +173,14 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 					      &scan);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1B_ISCAN_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1B_ISCAN_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	ctx->stashed_inode = &inode;
 	pb.ctx = ctx;
@@ -195,8 +198,9 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 					      process_pass1b_block, &pb);
 		if (pb.dup_blocks) {
 			end_problem_latch(ctx, PR_LATCH_DBLOCK);
-			dp = allocate_memory(sizeof(struct dup_inode),
-					     "duplicate inode record");
+			dp = e2fsck_allocate_memory(ctx,
+				    sizeof(struct dup_inode),
+				    "duplicate inode record");
 			dp->ino = ino;
 			dp->dir = 0;
 			dp->inode = inode;
@@ -216,7 +220,8 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 			goto next;
 		if (pctx.errcode) {
 			fix_problem(ctx, PR_1B_ISCAN_ERROR, &pctx);
-			fatal_error(0);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
 		}
 	}
 	ext2fs_close_inode_scan(scan);
@@ -248,8 +253,8 @@ int process_pass1b_block(ext2_filsys fs,
 		p->dup_blocks++;
 		ext2fs_mark_block_bitmap(ctx->block_dup_map, *block_nr);
 		ext2fs_mark_inode_bitmap(inode_dup_map, p->ino);
-		dp = allocate_memory(sizeof(struct dup_block),
-				      "duplicate block record");
+		dp = e2fsck_allocate_memory(ctx, sizeof(struct dup_block),
+					    "duplicate block record");
 		dp->block = *block_nr;
 		dp->ino = p->ino;
 		dp->num_bad = 0;
@@ -371,12 +376,12 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 	clear_problem_context(&pctx);
 	
 	fix_problem(ctx, PR_1D_PASS_HEADER, &pctx);
-	read_bitmaps(ctx);
+	e2fsck_read_bitmaps(ctx);
 
 	pctx.num = dup_inode_count;
 	fix_problem(ctx, PR_1D_NUM_DUP_INODES, &pctx);
-	shared = allocate_memory(sizeof(ino_t) * dup_inode_count,
-				 "Shared inode list");
+	shared = e2fsck_allocate_memory(ctx, sizeof(ino_t) * dup_inode_count,
+					"Shared inode list");
 	for (p = dup_ino; p; p = p->next) {
 		shared_len = 0;
 		file_ok = 1;

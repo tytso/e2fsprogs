@@ -64,7 +64,8 @@ void e2fsck_pass3(e2fsck_t ctx)
 #endif
 	struct problem_context	pctx;
 	struct dir_info	*dir;
-	
+	unsigned long max, count;
+
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
 #endif
@@ -108,11 +109,19 @@ void e2fsck_pass3(e2fsck_t ctx)
 
 	ext2fs_mark_inode_bitmap(inode_done_map, EXT2_ROOT_INO);
 
+	max = e2fsck_get_num_dirinfo(ctx);
+	count = 0;
+
+	if (ctx->progress)
+		(ctx->progress)(ctx, 3, 0, max);
 	for (i=0; (dir = e2fsck_dir_info_iter(ctx, &i)) != 0;) {
+		if (ctx->progress)
+			(ctx->progress)(ctx, 3, count++, max);
 		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dir->ino))
 			check_directory(ctx, dir, &pctx);
 	}
-	
+	if (ctx->progress)
+		(ctx->progress)(ctx, 3, max, max);
 	
 	e2fsck_free_dir_info(ctx);
 	ext2fs_free_inode_bitmap(inode_loop_detect);
@@ -144,15 +153,20 @@ static void check_root(e2fsck_t ctx)
 		 * offered to clear it.
 		 */
 		if (!(ext2fs_test_inode_bitmap(ctx->inode_dir_map,
-					       EXT2_ROOT_INO)))
-			fatal_error("Root inode not directory");
+					       EXT2_ROOT_INO))) {
+			fix_problem(ctx, PR_3_ROOT_NOT_DIR_ABORT, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+		}
 		return;
 	}
 
-	if (!fix_problem(ctx, PR_3_NO_ROOT_INODE, &pctx))
-		fatal_error("Cannot proceed without a root inode.");
+	if (!fix_problem(ctx, PR_3_NO_ROOT_INODE, &pctx)) {
+		fix_problem(ctx, PR_3_NO_ROOT_INODE_ABORT, &pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
 
-	read_bitmaps(ctx);
+	e2fsck_read_bitmaps(ctx);
 	
 	/*
 	 * First, find a free block
@@ -330,7 +344,7 @@ ino_t get_lost_and_found(e2fsck_t ctx)
 	 * Read the inode and block bitmaps in; we'll be messing with
 	 * them.
 	 */
-	read_bitmaps(ctx);
+	e2fsck_read_bitmaps(ctx);
 	
 	/*
 	 * First, find a free block
