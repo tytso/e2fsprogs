@@ -1,5 +1,9 @@
 2004-05-04  Theodore Ts'o  <tytso@mit.edu>
 
+	* configure.in, configure: Enable the fsck wrapper for the Debian
+		FreeBSD kernel / GNU userspace port.  (Addresses Debian
+		Bug #246738)
+
 	* config.guess, config.sub: Update to newer version from the FSF
 		(2004-01-05)
 

@@ -519,7 +519,7 @@ else
 fi]
 ,
 [case "$host_os" in
-  gnu* | k*bsd*-gnu)
+  gnu*)
     FSCK_PROG='' FSCK_MAN=''
     echo "Not building fsck wrapper by default"
     ;;
