@@ -1,3 +1,8 @@
+2000-12-09    <tytso@snap.thunk.org>
+
+	* mkjournal.c (init_journal_superblock): Sync Stephen's changes
+		which creates a V2 superblock instead of a V1 superblock.
+
 2000-11-21    <tytso@snap.thunk.org>
 
 	* test_io.c (test_write_blk, test_write_byte): Fix typos pointed

@@ -36,19 +36,19 @@
 #endif
 
 #include "ext2fs.h"
-#include "jfs_dat.h"
+#include "jfs_user.h"
 
 static void init_journal_superblock(journal_superblock_t *jsb,
 				    __u32 blocksize, __u32 size)
 {
+	memset (jsb, 0, sizeof(*jsb));
+
 	jsb->s_header.h_magic = htonl(JFS_MAGIC_NUMBER);
-	jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK);
-	jsb->s_header.h_sequence = 0;
+	jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V2);
 	jsb->s_blocksize = htonl(blocksize);
 	jsb->s_maxlen = htonl(size);
 	jsb->s_first = htonl(1);
 	jsb->s_sequence = htonl(1);
-	jsb->s_start = 0;
 }
 	
 /*
