@@ -1,3 +1,7 @@
+2000-07-13    <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.19
+
 2000-07-04  Theodore Ts'o  <tytso@valinux.com>
 
 	* Makefile.in: Remove explicit link of -lc in the shared library.

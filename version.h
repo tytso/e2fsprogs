@@ -6,5 +6,5 @@
  * may be redistributed under the GNU Public License.
  */
 
-#define E2FSPROGS_VERSION "1.19-WIP"
-#define E2FSPROGS_DATE "7-Jul-2000"
+#define E2FSPROGS_VERSION "1.19"
+#define E2FSPROGS_DATE "13-Jul-2000"

@@ -1,4 +1,4 @@
-	This is the new version (1.18) of the second extended file
+	This is the new version (1.19) of the second extended file
 system management programs.
 
 	From time to time, I release new versions of e2fsprogs, to fix
@@ -6,16 +6,11 @@ bugs and to make the utilities more robust.  You can always find
 information about the latest version at the the e2fsprogs web page,
 which is:
 
-	http://web.mit.edu/tytso/www/linux/e2fsprogs.html
+	http://e2fsprogs.sourceforge.net
 
-	Note: If you are using the RedHat RPM distributions of
-e2fsprogs, don't worry about the next paragraph; all others, please
-read on!
-
-	See the file INSTALL for instructions on building and
-installing e2fsprogs.  This is important!  Note that your /etc/fstab
-file may need modifying before you install the new fsck program.  See
-the INSTALL file for more details.
+	Note: If you are NOT using the RedHat RPM distributions of
+e2fsprogs, and are building e2fsprogs from source, please see the file
+INSTALL for instructions on building and installing e2fsprogs.  
 
 	In case of bugs in these programs, please contact Ted Ts'o at
 tytso@valinux.com or tytso@alum.mit.edu.  See the e2fsck man page for

@@ -1,3 +1,7 @@
+2000-07-13    <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.19
+
 2000-07-06  Theodore Ts'o  <tytso@valinux.com>
 
 	* ls.c (list_super): Display the journal information fields in the

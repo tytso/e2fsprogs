@@ -1,3 +1,7 @@
+2000-07-13    <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.19
+
 2000-07-04    <tytso@snap.thunk.org>
 
 	* Makefile.in: Use _SS_DIR_OVERRIDE to make sure we get the

@@ -1,3 +1,13 @@
+2000-07-13    <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.19
+
+2000-07-13    <tytso@snap.thunk.org>
+
+	* e2fsprogs.spec: Merge in a few changes from the Red Hat 6.2 spec
+		file, now that we're using a modern rpm to build
+		e2fsprogs.  Also updated version number to 1.19.
+
 2000-07-07  Theodore Ts'o  <tytso@valinux.com>
 
 	* e2fsprogs.spec (%post): Remove resize2fs from its old location

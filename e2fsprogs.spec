@@ -4,8 +4,9 @@ Version: 1.19
 Release: 0
 Copyright: GPL
 Group: System Environment/Base
-Source: ftp://tsx-11.mit.edu/pub/linux/packages/ext2fs/e2fsprogs-1.19.tar.gz
-BuildRoot: /tmp/e2fsprogs-root
+Buildroot: /var/tmp/%{name}-root
+Source: ftp://download.sourceforge.net/pub/sourceforge/e2fsprogs/e2fsprogs-1.19.tar.gz
+Prereq: /sbin/ldconfig
 
 %description
 The e2fsprogs package contains a number of utilities for creating,
@@ -27,12 +28,12 @@ Summary: Ext2 filesystem-specific static libraries and headers.
 Group: Development/Libraries
 Requires: e2fsprogs
 
-%description devel 
+%description devel
 E2fsprogs-devel contains the libraries and header files needed to
 develop second extended (ext2) filesystem-specific programs.
 
 You should install e2fsprogs-devel if you want to develop ext2
-filesystem-specific programs.  If you install e2fsprogs-devel, you will
+filesystem-specific programs.  If you install e2fsprogs-devel, you'll
 also need to install e2fsprogs.
 
 %prep
@@ -44,9 +45,9 @@ CFLAGS="$RPM_OPT_FLAGS" ./configure --enable-elf-shlibs
 make libs progs docs
 
 %install
+rm -rf $RPM_BUILD_ROOT
 export PATH=/sbin:$PATH
-make install DESTDIR="$RPM_BUILD_ROOT"
-make install-libs DESTDIR="$RPM_BUILD_ROOT"
+make install install-libs DESTDIR="$RPM_BUILD_ROOT"
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -56,70 +57,83 @@ rm -rf $RPM_BUILD_ROOT
 # Remove possibly old version
 /bin/rm -f /usr/sbin/resize2fs
 
-%postun
-/sbin/ldconfig
+%postun -p /sbin/ldconfig
+
+%post devel
+if [ -x /sbin/install-info ]; then
+   /sbin/install-info /usr/info/libext2fs.info.gz /usr/info/dir
+fi
+
+%postun devel
+if [ $1 = 0 -a -x /sbin/install-info ]; then
+   /sbin/install-info --delete /usr/info/libext2fs.info.gz /usr/info/dir
+fi
 
 %files
-%attr(-, root, root) %doc README RELEASE-NOTES
-%attr(-, root, root) /sbin/e2fsck
-%attr(-, root, root) /sbin/e2label
-%attr(-, root, root) /sbin/fsck.ext2
-%attr(-, root, root) /sbin/fsck.ext3
-%attr(-, root, root) /sbin/debugfs
-%attr(-, root, root) /sbin/mke2fs
-%attr(-, root, root) /sbin/badblocks
-%attr(-, root, root) /sbin/tune2fs
-%attr(-, root, root) /sbin/dumpe2fs
-%attr(-, root, root) /sbin/fsck
-%attr(-, root, root) /sbin/resize2fs
-%attr(-, root, root) /usr/sbin/mklost+found
-%attr(-, root, root) /sbin/mkfs.ext2
+%defattr(-,root,root)
+%doc README RELEASE-NOTES
 
-%attr(-, root, root) /lib/libe2p.so.2.3
-%attr(-, root, root) /lib/libext2fs.so.2.4
-%attr(-, root, root) /lib/libss.so.2.0
-%attr(-, root, root) /lib/libcom_err.so.2.0
-%attr(-, root, root) /lib/libuuid.so.1.2
+/sbin/badblocks
+/sbin/debugfs
+/sbin/dumpe2fs
+/sbin/e2fsck
+/sbin/e2label
+/sbin/fsck
+/sbin/fsck.ext2
+/sbin/fsck.ext3
+/sbin/mke2fs
+/sbin/mkfs.ext2
+/sbin/tune2fs
+/sbin/resize2fs
+/usr/sbin/mklost+found
 
-%attr(-, root, root) /usr/bin/chattr
-%attr(-, root, root) /usr/bin/lsattr
-%attr(-, root, root) /usr/bin/uuidgen
-%attr(-, root, root) /usr/man/man8/e2fsck.8
-%attr(-, root, root) /usr/man/man8/e2label.8
-%attr(-, root, root) /usr/man/man8/debugfs.8
-%attr(-, root, root) /usr/man/man8/tune2fs.8
-%attr(-, root, root) /usr/man/man8/mklost+found.8
-%attr(-, root, root) /usr/man/man8/mke2fs.8
-%attr(-, root, root) /usr/man/man8/dumpe2fs.8
-%attr(-, root, root) /usr/man/man8/badblocks.8
-%attr(-, root, root) /usr/man/man8/fsck.8
-%attr(-, root, root) /usr/man/man8/resize2fs.8
-%attr(-, root, root) /usr/man/man1/chattr.1
-%attr(-, root, root) /usr/man/man1/lsattr.1
-%attr(-, root, root) /usr/man/man1/uuidgen.1
+/lib/libcom_err.so.*
+/lib/libe2p.so.*
+/lib/libext2fs.so.*
+/lib/libss.so.*
+/lib/libuuid.so.*
+
+/usr/bin/chattr
+/usr/bin/lsattr
+/usr/bin/uuidgen
+/usr/man/man1/chattr.1*
+/usr/man/man1/lsattr.1*
+/usr/man/man1/uuidgen.1*
+
+/usr/man/man8/badblocks.8*
+/usr/man/man8/debugfs.8*
+/usr/man/man8/dumpe2fs.8*
+/usr/man/man8/e2fsck.8*
+/usr/man/man8/e2label.8*
+/usr/man/man8/fsck.8*
+/usr/man/man8/mke2fs.8*
+/usr/man/man8/mklost+found.8*
+/usr/man/man8/resize2fs.8*
+/usr/man/man8/tune2fs.8*
 
 %files devel
-%attr(-, root, root) /usr/info/libext2fs.info*
-%attr(-, root, root) /usr/lib/libe2p.a
-%attr(-, root, root) /usr/lib/libext2fs.a
-%attr(-, root, root) /usr/lib/libss.a
-%attr(-, root, root) /usr/lib/libcom_err.a
-%attr(-, root, root) /usr/lib/libuuid.a
-%attr(-, root, root) /usr/include/ss
-%attr(-, root, root) /usr/include/ext2fs
-%attr(-, root, root) /usr/include/et
-%attr(-, root, root) /usr/include/uuid
-%attr(-, root, root) /usr/lib/libe2p.so
-%attr(-, root, root) /usr/lib/libext2fs.so
-%attr(-, root, root) /usr/lib/libss.so
-%attr(-, root, root) /usr/lib/libcom_err.so
-%attr(-, root, root) /usr/lib/libuuid.so
-%attr(-, root, root) /usr/bin/mk_cmds
-%attr(-, root, root) /usr/bin/compile_et
-%attr(-, root, root) /usr/share/et/et_c.awk
-%attr(-, root, root) /usr/share/et/et_h.awk
-%attr(-, root, root) /usr/share/ss/ct_c.awk
-%attr(-, root, root) /usr/share/ss/ct_c.sed
-%attr(-, root, root) /usr/man/man1/compile_et.1
-%attr(-, root, root) /usr/man/man3/com_err.3
+%defattr(-,root,root)
+/usr/info/libext2fs.info*
+/usr/bin/compile_et
+/usr/bin/mk_cmds
+
+/usr/lib/libcom_err.a
+/usr/lib/libcom_err.so
+/usr/lib/libe2p.a
+/usr/lib/libe2p.so
+/usr/lib/libext2fs.a
+/usr/lib/libext2fs.so
+/usr/lib/libss.a
+/usr/lib/libss.so
+/usr/lib/libuuid.a
+/usr/lib/libuuid.so
+
+/usr/share/et
+/usr/share/ss
+/usr/include/et
+/usr/include/ext2fs
+/usr/include/ss
+/usr/include/uuid
+/usr/man/man1/compile_et.1*
+/usr/man/man3/com_err.3*
 

@@ -1,3 +1,7 @@
+2000-07-13    <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.19
+
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
 	* subst.c: For platforms that don't define optarg.h, manually

@@ -1,3 +1,7 @@
+2000-07-13    <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.19
+
 2000-05-25    <tytso@snap.thunk.org>
 
 	* test_script.in: Ignore files in the test directory (to avoid

@@ -1,3 +1,7 @@
+2000-07-13    <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.19
+
 2000-07-05    <tytso@snap.thunk.org>
 
 	* Makefile.in (install): Install resize2fs in /sbin, not /usr/sbin.
