@@ -4,6 +4,33 @@
 CC=		gcc
 
 #
+# Uncomment this line if you want to build shared DLL libraries, or
+# comment this line out if you don't want to build shared DLL libraries.
+#
+BUILD_DLL_SHLIBS = YES
+
+ifdef BUILD_DLL_SHLIBS
+#
+# Use these definitions is you use tools 2.x, x < 16
+#
+DLL_BIN=/usr/dll/bin
+JUMP_PREFIX=/usr/dll/jump/
+
+#
+# Use these definitions if you use tools 2.16 or above
+#
+#DLL_BIN=/usr/bin
+#JUMP_PREFIX=/usr/bin/jump
+
+endif
+
+#
+# Uncomment this line if you want to build profiled libraries, or
+# comment this line out if you don't want to build profiled libraries
+#
+BUILD_PROFILE_LIBS = YES
+
+#
 # Optimization flags
 #
 #OPT=	-g -O -fno-inline
@@ -12,11 +39,19 @@ OPT=	-O2 -fomit-frame-pointer
 #
 # Warning flags
 #
-WFLAGS=		-ansi -D_POSIX_SOURCE -pedantic \
-			-Wall -Wwrite-strings -Wpointer-arith \
-			-Wcast-qual -Wenum-clash -Wcast-align -Wtraditional \
-			-Wstrict-prototypes -Wmissing-prototypes \
-			-Wnested-externs -Winline -Wshadow 
+# Uncomment WFLAGS if you want really anal GCC warning messages
+#
+#WFLAGS=		-ansi -D_POSIX_SOURCE -pedantic \
+#			-Wall -Wwrite-strings -Wpointer-arith \
+#			-Wcast-qual -Wenum-clash -Wcast-align -Wtraditional \
+#			-Wstrict-prototypes -Wmissing-prototypes \
+#			-Wnested-externs -Winline -Wshadow 
+
+#
+# Binaries tools
+#
+ARCHIVE=	ar r
+RANLIB=		ranlib
 
 #
 # Installation user and groups
@@ -47,11 +82,14 @@ INSTALLMAN=	$(INSTALL) -o $(MANOWN) -g $(MANGRP) -m $(MANMODE)
 #
 # Destination directories
 #
-ETCDIR=		/etc
-INCLDIR=	/usr/include
-LIBDIR=		/usr/lib
-SBINDIR=	/sbin
-SMANDIR=	/usr/man/man8
-UMANDIR=	/usr/man/man1
-USRBINDIR=	/usr/bin
-USRSBINDIR=	/usr/sbin
+ETCDIR=		$(DESTDIR)/etc
+INCLDIR=	$(DESTDIR)/usr/include
+LIBDIR=		$(DESTDIR)/usr/lib
+SBINDIR=	$(DESTDIR)/sbin
+SHLIBDIR=	$(DESTDIR)/lib
+USRSHLIBDIR=	$(DESTDIR)/usr/lib
+SMANDIR=	$(DESTDIR)/usr/man/man8
+UMANDIR=	$(DESTDIR)/usr/man/man1
+FMANDIR=	$(DESTDIR)/usr/man/man5
+USRBINDIR=	$(DESTDIR)/usr/bin
+USRSBINDIR=	$(DESTDIR)/usr/sbin

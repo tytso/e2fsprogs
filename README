@@ -1,9 +1,13 @@
-	This is the new version (0.5) of the second extended file system
+	This is the new version (0.5b) of the second extended file system
 management programs.  You need to run Linux 1.0 or above to use it since
 some programs used some ext2fs features that where not available in
 previous kernel versions.
 
-	This version contains programs written by Theodore T'so and Remy Card.
+	See the file INSTALL for installation instructions.  This is
+important!  Note that your /etc/fstab file may need modifying before
+you install the new fsck program.  See the INSTALL file for more details.
+
+	This version contains programs written by Theodore Ts'o and Remy Card.
 This distribution was packaged by Ted and Remy with the help of Stephen Tweedie
 and Alexy Vovenko.
 
@@ -36,7 +40,7 @@ and Alexy Vovenko.
 
 	Manual pages are included in this package.
 
-	See the file INSTALL for installation instructions.
-
-	In case of bugs in these programs, please contact Ted <tytso@mit.edu>
-and Remy <card@masi.ibp.fr>.
+	In case of bugs in these programs, please contact Ted
+<tytso@mit.edu> and Remy <card@masi.ibp.fr>.  See the e2fsck man page
+for suggestions of what sort of information to include when submitting
+bug reports for e2fsck.

@@ -1,0 +1,6 @@
+Sat Mar 11 18:23:45 1995  Theodore Y. Ts'o  <tytso@localhost>
+
+	* Makefile (bin-tree): Add Makefile target which automatically
+		generates the binary distribution for e2fsprogs.
+
+

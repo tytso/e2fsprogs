@@ -1,0 +1,7 @@
+Thu Nov 24 17:46:23 1994  Theodore Y. Ts'o  (tytso@rt-11)
+
+	* dump.c: Added two new commands, "dump" and "cat", which allow
+		the user to dump the contents of an inode to a file or to
+		stdout, respectively.
+
+

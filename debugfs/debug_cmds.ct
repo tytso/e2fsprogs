@@ -91,6 +91,15 @@ request	do_print_working_directory, "Print current working directory",
 request	do_expand_dir, "Expand directory",
 	expand_dir, expand;
 
+request do_lsdel, "List deleted inodes",
+	list_deleted_inodes, lsdel;
+
+request do_dump, "Dump an inode out to a file",
+	dump_inode, dump;
+
+request do_cat, "Dump an inode out to stdout",
+	cat;
+
 end;
 
 

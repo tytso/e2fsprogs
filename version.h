@@ -6,5 +6,5 @@
  * under the GNU Public License.
  */
 
-#define E2FSPROGS_VERSION "0.5"
-#define E2FSPROGS_DATE "28-Mar-94"
+#define E2FSPROGS_VERSION "0.5b"
+#define E2FSPROGS_DATE "11-Mar-95"

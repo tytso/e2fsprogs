@@ -7,28 +7,55 @@ just follow the steps:
 definitions have reasonable default value but you may want to adjust them to 
 your system configuration.
 
-2) Create the dependencies files
+	In particular, if you don't have the tools to build shared
+libraries, you'll want to comment out the "BUILD_DLL_SHLIBS = YES"
+line.
 
-	Run `make depend' to create the dependencies files.  Note that this
-is not strictly necessary since the makefiles automagically recreates them
-if they do not exist.
+2) Compile the programs
 
-3) Compile the programs
+	Run `make world' to (a) create the dependencies files, (b)
+compile the libraries and the programs, and (c) run a test suite on
+e2fsck.  The test suite runs a series of tests; for each one, e2fsck
+should return an exit status of 1 on the first pass, and an exit
+status of 0 on the second pass.  The one exception to this is the
+"okgroup.img" test, which should return an exit status of 0 for both
+passes.
 
-	Run `make' to compile the libraries and the programs.
-
-4) Install the programs
+3) Install the programs
 
 	Run `make install'
 
-5) Install the include files and libraries
+4) Install the include files and libraries
 
 	You can run `make install-libs' to install the include files and
 libraries.  Please note that this installation is not needed for the
 programs to work.  It is only needed if you expect to develop other
-programs using the libraries.
+programs using the libraries or if you want to compile other program
+using these libraries (like the 4.4BSD dump and restore port).
 
+5) Remove any pre-formatted man pages.  Some distributions will have
+pre-formatted manual pages which will always be displayed in
+preference to newer man pages in /usr/man.  If this is the case, you
+may need to manually remove them in order to see the correct manual
+pages.  The shell script in install-utils/remove_preformat_manpages
+may be helpful in doing so.
 
-	You can run `make world' as an alternative to steps 2 and 3.  This
-will create the dependencies files, compile the programs and run e2fsck on
-a test suite contained in e2fsck/images.
+5) Make sure your /etc/fstab file is correct.
+
+	Some distributions install an /etc/fstab which is missing the
+fifth and sixth field of filesystem entry, which are the dump
+frequency, and the fsck pass number, respectively.  The problem with
+this is that the getmntent() library routine interprets those missing
+fields as "0", and a pass number of 0 is documented as meaning that
+fsck should not check that particular filesystem.  If your entries in
+your /etc/fstab file look liks this:
+
+/dev/hda4       /        ext2        defaults
+
+you should add "1 1" at the end of each line, so that they look like this:
+
+/dev/hda4       /        ext2        defaults	1	1
+
+	There is a script in insatll-utils/convfstab (donated by
+Michael Weller) that may help you correct your /etc/fstab file.
+
