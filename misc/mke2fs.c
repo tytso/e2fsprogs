@@ -513,9 +513,9 @@ static void show_stats(ext2_filsys fs)
 	       100.0 * s->s_r_blocks_count / s->s_blocks_count);
 	printf(_("First data block=%u\n"), s->s_first_data_block);
 	if (fs->group_desc_count > 1)
-		printf(_("%lu block groups\n"), fs->group_desc_count);
+		printf(_("%u block groups\n"), fs->group_desc_count);
 	else
-		printf(_("%lu block group\n"), fs->group_desc_count);
+		printf(_("%u block group\n"), fs->group_desc_count);
 	printf(_("%u blocks per group, %u fragments per group\n"),
 	       s->s_blocks_per_group, s->s_frags_per_group);
 	printf(_("%u inodes per group\n"), s->s_inodes_per_group);

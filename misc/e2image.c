@@ -49,8 +49,6 @@ static void usage(void)
 	exit (1);
 }
 
-static const char *please_fsck = N_("Please run e2fsck on the filesystem.\n");
-
 static void write_header(int fd, struct ext2_image_hdr *hdr)
 {
 	char header_buf[4096];
@@ -81,13 +79,11 @@ static void write_header(int fd, struct ext2_image_hdr *hdr)
 int main (int argc, char ** argv)
 {
 	int c;
-	char * tmp;
 	errcode_t retval;
 	ext2_filsys fs;
 	int open_flag = 0;
 	int raw_flag = 0;
 	int fd = 0;
-	char *features_cmd = 0;
 	struct ext2_image_hdr hdr;
 
 #ifdef ENABLE_NLS

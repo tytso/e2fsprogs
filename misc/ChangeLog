@@ -1,5 +1,11 @@
 2001-01-11    <tytso@snap.thunk.org>
 
+	* e2image.c, mke2fs.c, mklost+found.c, tune2fs.c, util.c,
+		uuidgen.c: Fix gcc -Wall complaints, including one bug in
+		tune2fs caused by a block automatic shadowing version of
+		the variable we really wanted to use, which broke the
+		logic testing to see if the filesystem was mounted.
+
 	* badblocks.c (flush_bufs): Use ext2fs_sync_device() to sync and
 		flush the device.
 

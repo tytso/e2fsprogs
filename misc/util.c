@@ -45,7 +45,7 @@ int strcasecmp (char *s1, char *s2)
 void proceed_question(void)
 {
 	char buf[256];
-	char *short_yes = _("yY");
+	const char *short_yes = _("yY");
 
 	fflush(stdout);
 	fflush(stderr);

@@ -115,9 +115,12 @@ WFLAGS=		-ansi -D_POSIX_SOURCE -pedantic \
 			-Wstrict-prototypes -Wmissing-prototypes \
 			-Wnested-externs -Winline -DNO_INLINE_FUNCS -Wshadow 
 
+gcc-wall-new:
+	(make USE_WFLAGS="$(WFLAGS)" > /dev/null) 2>&1 | sed -f $(top_srcdir)/util/gcc-wall-cleanup 
+
 gcc-wall:
 	make clean > /dev/null
-	(make USE_WFLAGS="$(WFLAGS)" > /dev/null) 2>&1 | sed -f $(top_srcdir)/util/gcc-wall-cleanup 
+	make gcc-wall-new
 
 #
 # Installation user and groups

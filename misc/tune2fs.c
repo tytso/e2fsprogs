@@ -55,7 +55,8 @@ extern int optind;
 
 const char * program_name = "tune2fs";
 char * device_name;
-char * new_label, *new_last_mounted, *new_UUID, *journal_opts;
+char * new_label, *new_last_mounted, *new_UUID;
+const char *journal_opts;
 static int c_flag, C_flag, e_flag, g_flag, i_flag, l_flag, L_flag;
 static int m_flag, M_flag, r_flag, s_flag = -1, u_flag, U_flag;
 static int print_label;
@@ -93,7 +94,7 @@ static __u32 ok_features[3] = {
 /*
  * Update the feature set as provided by the user.
  */
-static void update_feature_set(ext2_filsys fs, char *features_cmd)
+static void update_feature_set(ext2_filsys fs, char *features)
 {
 	int sparse, old_sparse, filetype, old_filetype;
 	int journal, old_journal;
@@ -107,10 +108,10 @@ static void update_feature_set(ext2_filsys fs, char *features_cmd)
 		EXT2_FEATURE_INCOMPAT_FILETYPE;
 	old_journal = sb->s_feature_compat &
 		EXT3_FEATURE_COMPAT_HAS_JOURNAL;
-	if (e2p_edit_feature(features_cmd, &sb->s_feature_compat,
+	if (e2p_edit_feature(features, &sb->s_feature_compat,
 			     ok_features)) {
 		fprintf(stderr, _("Invalid filesystem option set: %s\n"),
-			features_cmd);
+			features);
 		exit(1);
 	}
 	sparse = sb->s_feature_ro_compat &
@@ -215,9 +216,6 @@ static void add_journal(ext2_filsys fs)
 		}
 		printf(_("done\n"));
 	} else if (journal_size) {
-		errcode_t	retval;
-		int		mount_flags;
-
 		printf(_("Creating journal inode: "));
 		fflush(stdout);
 		retval = ext2fs_add_journal_inode(fs, journal_blocks,
@@ -241,7 +239,7 @@ static void add_journal(ext2_filsys fs)
 /*
  * Given argv[0], return the program name.
  */
-char *get_progname(char *argv_zero)
+static char *get_progname(char *argv_zero)
 {
 	char	*cp;
 
@@ -253,7 +251,7 @@ char *get_progname(char *argv_zero)
 }
 
 
-void parse_e2label_options(int argc, char ** argv)
+static void parse_e2label_options(int argc, char ** argv)
 {
 	if ((argc < 2) || (argc > 3)) {
 		fprintf(stderr, _("Usage: e2label device [newlabel]\n"));
@@ -269,7 +267,7 @@ void parse_e2label_options(int argc, char ** argv)
 }
 
 
-void parse_tune2fs_options(int argc, char **argv)
+static void parse_tune2fs_options(int argc, char **argv)
 {
 	int c;
 	char * tmp;
@@ -487,7 +485,8 @@ int main (int argc, char ** argv)
 	sb = fs->super;
 	if (print_label) {
 		/* For e2label emulation */
-		printf("%.*s\n", sizeof(sb->s_volume_name), sb->s_volume_name);
+		printf("%.*s\n", (int) sizeof(sb->s_volume_name),
+		       sb->s_volume_name);
 		exit(0);
 	}
 	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
@@ -495,7 +494,7 @@ int main (int argc, char ** argv)
 		com_err("ext2fs_check_if_mount", retval,
 			_("while determining whether %s is mounted."),
 			device_name);
-		return;
+		exit(0);
 	}
 	/* Normally we only need to write out the superblock */
 	fs->flags |= EXT2_FLAG_SUPER_ONLY;

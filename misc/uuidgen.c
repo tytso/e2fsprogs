@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
@@ -22,7 +23,7 @@ extern int optind;
 #define DO_TYPE_TIME	1
 #define DO_TYPE_RANDOM	2
 
-void usage(const char *progname)
+static void usage(const char *progname)
 {
 	fprintf(stderr, _("Usage: %s [-r] [-t]\n"), progname);
 	exit(1);
