@@ -1,3 +1,9 @@
+2005-01-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* super.c (check_resize_inode): If resize feature is set, but
+		s_reserved_gdt_blocks is zero, do not insist that resize
+		inode must have double indirect block.
+
 2005-01-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (e2fsck_simple_progress): Use fixed integer math
