@@ -55,10 +55,8 @@ mode.  If you set the number-of-blocks parameter to too high a value,
 .B badblocks
 will exit almost immediately with an out-of-memory error "while allocating
 buffers".  If you set it too low, however, for a non-destructive-write-mode
-test, then you are less likely to detect questionable blocks on an unreliable
-hard drive (i.e., one that holds its data for a while even in bad areas, but
-which loses the data in truely bad blocks, over time), since the
-read-and-compare stage of the test will occur sooner after the data is written.
+test, then it's possble for questionable blocks on an unreliable
+hard drive to be hidden by the effects of the hard disk track buffer.
 .TP
 .BI \-i " input_file"
 Read a list of already existing known bad blocks.
