@@ -1,3 +1,8 @@
+2005-03-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (create_root_dir): Call ext2fs_write_new_inode() instead of
+		ext2fs_write_inode().
+
 2005-03-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (show_stats): Use the new e2p_os2string() function

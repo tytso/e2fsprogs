@@ -524,7 +524,7 @@ static void create_root_dir(ext2_filsys fs)
 		inode.i_uid = getuid();
 		if (inode.i_uid)
 			inode.i_gid = getgid();
-		retval = ext2fs_write_inode(fs, EXT2_ROOT_INO, &inode);
+		retval = ext2fs_write_new_inode(fs, EXT2_ROOT_INO, &inode);
 		if (retval) {
 			com_err("ext2fs_write_inode", retval,
 				_("while setting root inode ownership"));
