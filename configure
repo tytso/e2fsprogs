@@ -2318,14 +2318,38 @@ linux* | gnu*)
 	fi
 ;;
 esac
+echo $ac_n "checking whether linker accepts -static""... $ac_c" 1>&6
+echo "configure:2323: checking whether linker accepts -static" >&5
+if eval "test \"`echo '$''{'ac_cv_e2fsprogs_use_static'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
+cat > conftest.$ac_ext <<EOF
+#line 2329 "configure"
+#include "confdefs.h"
+#include <stdio.h>
+int main() {
+fflush(stdout);
+; return 0; }
+EOF
+if { (eval echo configure:2336: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  ac_cv_e2fsprogs_use_static=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  ac_cv_e2fsprogs_use_static=no
+fi
+rm -f conftest*
+LDFLAGS=$SAVE_LDFLAGS
+fi
 
+echo "$ac_t""$ac_cv_e2fsprogs_use_static" 1>&6
 LDFLAG_STATIC=
-case "$host_os" in
-linux* | gnu*)
+if test $ac_cv_e2fsprogs_use_static = yes; then
 	LDFLAG_STATIC=-static
-	echo "On $host_os systems, assume -static works"
-;;
-esac
+fi
 
 SS_DIR=`cd ${srcdir}/lib/ss; pwd`
 ET_DIR=`cd ${srcdir}/lib/et; pwd`

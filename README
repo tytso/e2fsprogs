@@ -1,9 +1,14 @@
-	This is the new version (1.09) of the second extended file system
+	This is the new version (1.10) of the second extended file system
 management programs.
 
-	See the file INSTALL for installation instructions.  This is
-important!  Note that your /etc/fstab file may need modifying before
-you install the new fsck program.  See the INSTALL file for more details.
+	Note: If you are using the RedHat RPM distributions of
+e2fsprogs, don't worry about the next paragraph; all others, please
+read on!
+
+	See the file INSTALL for instructions on building and
+installing e2fsprogs.  This is important!  Note that your /etc/fstab
+file may need modifying before you install the new fsck program.  See
+the INSTALL file for more details.
 
 	This version contains programs written by Theodore Ts'o and Remy Card.
 This distribution was packaged by Ted and Remy with the help of Stephen Tweedie

@@ -463,16 +463,18 @@ linux* | gnu*)
 esac
 dnl
 dnl See if -static works.
-dnl XXX for now, assume that only Linux/hurd systems support -static
 dnl
-AC_REQUIRE([AC_CANONICAL_HOST])
+AC_MSG_CHECKING([whether linker accepts -static])
+AC_CACHE_VAL(ac_cv_e2fsprogs_use_static,
+[SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
+AC_TRY_LINK([#include <stdio.h>],[fflush(stdout);],
+ ac_cv_e2fsprogs_use_static=yes, ac_cv_e2fsprogs_use_static=no)
+LDFLAGS=$SAVE_LDFLAGS])
+AC_MSG_RESULT($ac_cv_e2fsprogs_use_static)
 LDFLAG_STATIC=
-case "$host_os" in
-linux* | gnu*)
+if test $ac_cv_e2fsprogs_use_static = yes; then
 	LDFLAG_STATIC=-static
-	echo "On $host_os systems, assume -static works"
-;;
-esac
+fi
 AC_SUBST(LDFLAG_STATIC)
 dnl
 dnl Make the ss and et directories work correctly.
