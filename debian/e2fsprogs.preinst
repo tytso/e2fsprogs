@@ -14,7 +14,7 @@ EOT
 esac
 
 # Old/erroneous conffile from early post-woody sid
-if [ -d /etc/mkinitrd/scripts/e2fsprogs ]
+if [ -f /etc/mkinitrd/scripts/e2fsprogs ]
 then
     rm -rf /etc/mkinitrd/scripts/e2fsprogs
 fi
