@@ -1,3 +1,9 @@
+2001-06-22  Theodore Tso  <tytso@valinux.com>
+
+	* run_e2fsck, defaults/e_script: Filter out CR characters from the
+		output, since BK filtered \r fromthe expect files.  This
+		is needed to make the regression test suite work again.
+
 2001-06-15  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.21
