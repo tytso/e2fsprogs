@@ -1352,7 +1352,8 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	if (!suppress) {
 		message = ptr->e2p_description;
 		if (ctx->options & E2F_OPT_PREEN) {
-			printf("%s: ", ctx->device_name);
+			printf("%s: ", ctx->device_name ?
+			       ctx->device_name : ctx->filesystem_name);
 #if 0
 			if (ptr->e2p_preen_msg)
 				message = ptr->e2p_preen_msg;

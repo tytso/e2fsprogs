@@ -1,5 +1,8 @@
 2001-12-21  Theodore Tso  <tytso@valinux.com>
 
+	* problem.c (fix_problem): Use ctx->filesystem_name if the
+		ctx->device_name is NULL.
+
 	* journal.c (e2fsck_check_ext3_journal): Give the opportunity to
 		run the journal even if recovery flag is cleared.  If
 		we're using a backup superblock, run the journal by
