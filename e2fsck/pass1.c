@@ -442,6 +442,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		}
 	next:
 		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+			return;
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE) {
 			if (!ctx->inode_bb_map)
 				alloc_bb_map(ctx);
@@ -545,9 +547,8 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 		sprintf(buf, "reading indirect blocks of inode %lu", pctx.ino);
 		ehandler_operation(buf);
 		check_blocks(ctx, &pctx, block_buf);
-
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-			return;
+			break;
 	}
 	ctx->stashed_inode = old_stashed_inode;
 	ctx->stashed_ino = old_stashed_ino;

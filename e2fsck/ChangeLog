@@ -1,3 +1,23 @@
+Fri Feb 27 00:01:39 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (e2fsck_run): Since E2F_FLAG_SIGNAL_MASK doesn't
+ 		include EXT2_FLAG_RESTART anymore, we need to adjust this
+ 		routine so that it *does* return in the case of it seeing
+ 		EXT2_FLAG_RESTART.
+
+	* pass1.c (e2fsck_pass1): ext2_get_next_inode() may call the group
+		done callback function, which may set context abort
+		flags.  So we need to test the context abort flags after
+		we call ext2_get_next_inode().
+		(process_inodes): If we abort due out of process_inodes,
+		do a clean exit by breaking out of the for loop instead of
+		just returning.
+
+	* e2fsck.h (E2F_FLAG_SIGNAL_MASK): EXT2_FLAG_RESTART shouldn't be
+		considered a SIGNAL mask (i.e., requiring an immediate
+		abort of processing to restart).  FLAG_RESTART just means
+		that we want to restart once pass 1 is complete.
+
 Tue Feb 24 15:19:40 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Change the progress function to return an integer; if returns 1,

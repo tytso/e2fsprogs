@@ -135,6 +135,8 @@ pass_t e2fsck_passes[] = {
 	e2fsck_pass1, e2fsck_pass2, e2fsck_pass3, e2fsck_pass4,
 	e2fsck_pass5, 0 };
 
+#define E2F_FLAG_RUN_RETURN	(E2F_FLAG_SIGNAL_MASK|E2F_FLAG_RESTART)
+
 int e2fsck_run(e2fsck_t ctx)
 {
 	int	i;
@@ -142,19 +144,19 @@ int e2fsck_run(e2fsck_t ctx)
 
 #ifdef HAVE_SETJMP_H
 	if (setjmp(ctx->abort_loc))
-		return (ctx->flags & E2F_FLAG_SIGNAL_MASK);
+		return (ctx->flags & E2F_FLAG_RUN_RETURN);
 	ctx->flags |= E2F_FLAG_SETJMP_OK;
 #endif
 		
 	for (i=0; (e2fsck_pass = e2fsck_passes[i]); i++) {
-		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		if (ctx->flags & E2F_FLAG_RUN_RETURN)
 			break;
 		e2fsck_pass(ctx);
 	}
 	ctx->flags &= ~E2F_FLAG_SETJMP_OK;
 	
-	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-		return (ctx->flags & E2F_FLAG_SIGNAL_MASK);
+	if (ctx->flags & E2F_FLAG_RUN_RETURN)
+		return (ctx->flags & E2F_FLAG_RUN_RETURN);
 	return 0;
 }
 
