@@ -31,13 +31,6 @@
 #include "uuid/uuid.h"
 #include "probe.h"
 
-/* #define DEBUG_PROBE */
-#ifdef DEBUG_PROBE
-#define DBG(x)	x
-#else
-#define DBG(x)
-#endif
-
 /*
  * This is a special case code to check for an MDRAID device.  We do
  * this special since it requires checking for a superblock at the end
@@ -93,7 +86,7 @@ static int probe_ext2(int fd, blkid_cache cache, blkid_dev dev,
 
 	es = (struct ext2_super_block *)buf;
 
-	DBG(printf("ext2_sb.compat = %08X:%08X:%08X\n", 
+	DBG(DEBUG_PROBE, printf("ext2_sb.compat = %08X:%08X:%08X\n", 
 		   blkid_le32(es->s_feature_compat),
 		   blkid_le32(es->s_feature_incompat),
 		   blkid_le32(es->s_feature_ro_compat)));
@@ -344,7 +337,8 @@ blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev)
 				       diff < BLKID_PROBE_INTERVAL))
 		return dev;
 
-	DBG(printf("need to revalidate %s (time since last check %lu)\n", 
+	DBG(DEBUG_PROBE,
+	    printf("need to revalidate %s (time since last check %lu)\n", 
 		   dev->bid_name, diff));
 
 	if (((fd = open(dev->bid_name, O_RDONLY)) < 0) ||
@@ -354,7 +348,9 @@ blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev)
 			return NULL;
 		}
 		/* We don't have read permission, just return cache data. */
-		DBG(printf("returning unverified data for %s\n", dev->bid_name));
+		DBG(DEBUG_PROBE,
+		    printf("returning unverified data for %s\n",
+			   dev->bid_name));
 		return dev;
 	}
 
@@ -436,7 +432,7 @@ found_type:
 		if (sec_type)
 			blkid_set_tag(dev, "TYPE", sec_type, 0, 0);
 				
-		DBG(printf("%s: devno 0x%04Lx, type %s\n",
+		DBG(DEBUG_PROBE, printf("%s: devno 0x%04Lx, type %s\n",
 			   dev->bid_name, st.st_rdev, type));
 	}
 
@@ -451,6 +447,7 @@ int main(int argc, char **argv)
 	blkid_dev dev;
 	blkid_cache cache;
 
+	blkid_debug_mask = DEBUG_ALL;
 	if (argc != 2) {
 		fprintf(stderr, "Usage: %s device\n"
 			"Probe a single device to determine type\n", argv[0]);

@@ -35,13 +35,6 @@
 
 #include "blkidP.h"
 
-/* #define DEBUG_DEVNAME */
-#ifdef DEBUG_DEVNAME
-#define DBG(x)	x
-#else
-#define DBG(x)
-#endif
-
 /*
  * Find a dev struct in the cache by device name, if available.
  *
@@ -61,7 +54,8 @@ blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
 		if (strcmp(tmp->bid_name, devname))
 			continue;
 
-		DBG(printf("found devname %s in cache\n", tmp->bid_name));
+		DBG(DEBUG_DEVNAME, 
+		    printf("found devname %s in cache\n", tmp->bid_name));
 		dev = tmp;
 		break;
 	}
@@ -157,10 +151,10 @@ static dev_t lvm_get_devno(const char *lvm_device)
 	int ma, mi;
 	dev_t ret = 0;
 
-	DBG(printf("opening %s\n", lvm_device));
+	DBG(DEBUG_DEVNAME, printf("opening %s\n", lvm_device));
 	if ((lvf = fopen(lvm_device, "r")) == NULL) {
-		DBG(printf("%s: (%d) %s\n", lvm_device, errno,
-			   strerror(errno)));
+		DBG(DEBUG_DEVNAME, printf("%s: (%d) %s\n", lvm_device, errno,
+					  strerror(errno)));
 		return 0;
 	}
 
@@ -185,7 +179,7 @@ static void lvm_probe_all(blkid_cache cache)
 	if ((vg_list = opendir(VG_DIR)) == NULL)
 		return;
 
-	DBG(printf("probing LVM devices under %s\n", VG_DIR));
+	DBG(DEBUG_DEVNAME, printf("probing LVM devices under %s\n", VG_DIR));
 
 	while ((vg_iter = readdir(vg_list)) != NULL) {
 		DIR		*lv_list;
@@ -223,8 +217,9 @@ static void lvm_probe_all(blkid_cache cache)
 				lv_name);
 			dev = lvm_get_devno(lvm_device);
 			sprintf(lvm_device, "%s/%s", vg_name, lv_name);
-			DBG(printf("LVM dev %s: devno 0x%04X\n",
-				   lvm_device, dev));
+			DBG(DEBUG_DEVNAME, printf("LVM dev %s: devno 0x%04X\n",
+						  lvm_device,
+						  (unsigned int) dev));
 			probe_one(cache, lvm_device, dev, BLKID_PRI_LVM);
 			free(lvm_device);
 		}
@@ -253,8 +248,8 @@ evms_probe_all(blkid_cache cache)
 			    &ma, &mi, &sz, device) != 4)
 			continue;
 
-		DBG(printf("Checking partition %s (%d, %d)\n",
-			   device, ma, mi));
+		DBG(DEBUG_DEVNAME, printf("Checking partition %s (%d, %d)\n",
+					  device, ma, mi));
 
 		probe_one(cache, device, makedev(ma, mi), BLKID_PRI_EVMS);
 		num++;
@@ -304,7 +299,7 @@ int blkid_probe_all(blkid_cache cache)
 			continue;
 		devs[which] = makedev(ma, mi);
 
-		DBG(printf("read partition name %s\n", ptname));
+		DBG(DEBUG_DEVNAME, printf("read partition name %s\n", ptname));
 
 		/* Skip whole disk devs unless they have no partitions
 		 * If we don't have a partition on this dev, also
@@ -319,8 +314,9 @@ int blkid_probe_all(blkid_cache cache)
 
 		lens[which] = strlen(ptname);
 		if (isdigit(ptname[lens[which] - 1])) {
-			DBG(printf("partition dev %s, devno 0x%04X\n",
-				   ptname, devs[which]));
+			DBG(DEBUG_DEVNAME,
+			    printf("partition dev %s, devno 0x%04X\n",
+				   ptname, (unsigned int) devs[which]));
 
 			if (sz > 1)
 				probe_one(cache, ptname, devs[which], 0);
@@ -328,8 +324,9 @@ int blkid_probe_all(blkid_cache cache)
 			lens[last] = 0;
 		} else if (lens[last] && strncmp(ptnames[last], ptname,
 						 lens[last])) {
-			DBG(printf("whole dev %s, devno 0x%04X\n",
-				   ptnames[last], devs[last]));
+			DBG(DEBUG_DEVNAME,
+			    printf("whole dev %s, devno 0x%04X\n",
+				   ptnames[last], (unsigned int) devs[last]));
 			probe_one(cache, ptnames[last], devs[last], 0);
 			lens[last] = 0;
 		}
@@ -351,6 +348,7 @@ int main(int argc, char **argv)
 {
 	blkid_cache cache = NULL;
 
+	blkid_debug_mask = DEBUG_ALL;
 	if (argc != 1) {
 		fprintf(stderr, "Usage: %s\n"
 			"Probe all devices and exit\n", argv[0]);

@@ -22,13 +22,6 @@
 #include "blkidP.h"
 #include "probe.h"
 
-#ifdef DEBUG_RESOLVE
-#define DBG(x)	x
-#else
-#define DBG(x)
-#endif
-
-
 /*
  * Find a tagname (e.g. LABEL or UUID) on a specific device.
  */
@@ -39,7 +32,7 @@ char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
 	blkid_dev dev;
 	char *ret = NULL;
 
-	DBG(printf("looking for %s on %s\n", tagname, devname));
+	DBG(DEBUG_RESOLVE, printf("looking for %s on %s\n", tagname, devname));
 
 	if (!devname)
 		return NULL;
@@ -71,7 +64,8 @@ char *blkid_get_devname(blkid_cache cache, const char *token,
 	if (!token)
 		return NULL;
 	
-	DBG(printf("looking for %s%c%s %s\n", token, value ? '=' : ' ',
+	DBG(DEBUG_RESOLVE,
+	    printf("looking for %s%c%s %s\n", token, value ? '=' : ' ',
 		   value ? value : "", cache ? "in cache" : "from disk"));
 
 	if (!cache) {
@@ -112,6 +106,7 @@ int main(int argc, char **argv)
 	char *value;
 	blkid_cache cache;
 
+	blkid_debug_mask = DEBUG_ALL;
 	if (argc != 2 && argc != 3) {
 		fprintf(stderr, "Usage:\t%s tagname=value\n"
 			"\t%s tagname devname\n"

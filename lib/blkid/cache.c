@@ -13,16 +13,23 @@
 #include <stdlib.h>
 #include "blkidP.h"
 
-#ifdef DEBUG_CACHE
-#include <stdio.h>
-#define DBG(x)	x
-#else
-#define DBG(x)
-#endif
+int blkid_debug_mask;
 
 blkid_cache blkid_new_cache(void)
 {
 	blkid_cache cache;
+
+#ifdef CONFIG_BLKID_DEBUG
+	if (!(blkid_debug_mask & DEBUG_INIT)) {
+		char *dstr = getenv("BLKID_DEBUG");
+
+		if (dstr)
+			blkid_debug_mask = strtoul(dstr, 0, 0);
+		blkid_debug_mask |= DEBUG_INIT;
+	}
+#endif
+
+	DBG(DEBUG_CACHE, printf("initializing empty cache\n"));
 
 	if (!(cache = (blkid_cache) calloc(1, sizeof(struct blkid_struct_cache))))
 		return NULL;
@@ -40,7 +47,7 @@ void blkid_put_cache(blkid_cache cache)
 
 	(void) blkid_flush_cache(cache);
 
-	DBG(printf("freeing cache struct\n"));
+	DBG(DEBUG_CACHE, printf("freeing cache struct\n"));
 	
 	/* DEB_DUMP_CACHE(cache); */
 
@@ -61,8 +68,8 @@ void blkid_put_cache(blkid_cache cache)
 						   struct blkid_struct_tag, 
 						   bit_names);
 
-			DBG(printf("warning: unfreed tag %s=%s\n",
-				   bad->bit_name, bad->bit_val));
+			DBG(DEBUG_CACHE, printf("warning: unfreed tag %s=%s\n",
+						bad->bit_name, bad->bit_val));
 			blkid_free_tag(bad);
 		}
 		blkid_free_tag(tag);
@@ -79,6 +86,7 @@ int main(int argc, char** argv)
 	blkid_cache cache = NULL;
 	int ret;
 
+	blkid_debug_mask = DEBUG_ALL;
 	if ((argc > 2)) {
 		fprintf(stderr, "Usage: %s [filename] \n", argv[0]);
 		exit(1);

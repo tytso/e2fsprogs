@@ -1,3 +1,8 @@
+2003-02-22  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in, configure: Add new configure option 
+		--enable-blkid-debug
+
 2003-01-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in, configure, configure.in: Integrate new blkid library.

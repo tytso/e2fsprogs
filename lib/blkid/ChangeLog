@@ -1,3 +1,10 @@
+2003-02-22  Theodore Ts'o  <tytso@mit.edu>
+
+	* cache.c, dev.c, devname.c, devno.c, probe.c, read.c, resolve.c,
+		save.c, tag.c, blkidP.h: Add dynamic debugging
+		capabilities, controlled by the environment variable
+		BLKID_DEBUG. 
+
 2003-02-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid.h, dev.c, devname.c, probe.c, read.c, resolve.c: Rename

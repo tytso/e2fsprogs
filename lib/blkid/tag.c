@@ -16,12 +16,6 @@
 
 #include "blkidP.h"
 
-#ifdef DEBUG_TAG
-#define DBG(x)	x
-#else
-#define DBG(x)
-#endif
-
 static blkid_tag blkid_new_tag(void)
 {
 	blkid_tag tag;
@@ -40,9 +34,9 @@ void blkid_free_tag(blkid_tag tag)
 	if (!tag)
 		return;
 
-	DBG(printf("    freeing tag %s=%s\n", tag->bit_name,
+	DBG(DEBUG_TAG, printf("    freeing tag %s=%s\n", tag->bit_name,
 		   tag->bit_val ? tag->bit_val : "(NULL)"));
-	DEB_DUMP_TAG(tag);
+	DEB_DUMP_TAG(DEBUG_TAG, tag);
 
 	list_del(&tag->bit_tags);	/* list of tags for this device */
 	list_del(&tag->bit_names);	/* list of tags with this type */
@@ -91,7 +85,8 @@ static blkid_tag blkid_find_head_cache(blkid_cache cache, const char *type)
 	list_for_each(p, &cache->bic_tags) {
 		tmp = list_entry(p, struct blkid_struct_tag, bit_tags);
 		if (!strcmp(tmp->bit_name, type)) {
-			DBG(printf("    found cache tag head %s\n", type));
+			DBG(DEBUG_TAG,
+			    printf("    found cache tag head %s\n", type));
 			head = tmp;
 			break;
 		}
@@ -161,7 +156,8 @@ repeat:
 			if (!head)
 				goto errout;
 
-			DBG(printf("    creating new cache tag head %s\n",
+			DBG(DEBUG_TAG,
+			    printf("    creating new cache tag head %s\n",
 				   name));
 			head->bit_name = blkid_strdup(name);
 			if (!head->bit_name)
@@ -210,7 +206,7 @@ int blkid_parse_tag_string(const char *token, char **ret_type, char **ret_val)
 {
 	char *name, *value, *cp;
 
-	DBG(printf("trying to parse '%s' as a tag\n", token));
+	DBG(DEBUG_TAG, printf("trying to parse '%s' as a tag\n", token));
 
 	if (!token || !(cp = strchr(token, '=')))
 		return -1;
@@ -325,11 +321,12 @@ extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache,
 	if (!cache || !type || !value)
 		return NULL;
 
-	DBG(printf("looking for %s=%s in cache\n", type, value));
+	DBG(DEBUG_TAG, printf("looking for %s=%s in cache\n", type, value));
 	
 try_again:
 	pri = -1;
 	found = 0;
+	dev = 0;
 	head = blkid_find_head_cache(cache, type);
 
 	if (head) {
@@ -349,7 +346,7 @@ try_again:
 	if (dev && strcmp(found->bit_val, value))
 		dev = 0;
 
-	if ((!head || !dev) && !(cache->bic_flags & BLKID_BIC_FL_PROBED)) {
+	if (!dev && !(cache->bic_flags & BLKID_BIC_FL_PROBED)) {
 		blkid_probe_all(cache);
 		goto try_again;
 	}

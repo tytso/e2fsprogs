@@ -26,12 +26,6 @@
 #endif
 #include "blkidP.h"
 
-#ifdef DEBUG_SAVE
-#define DBG(x)	x
-#else
-#define DBG(x)
-#endif
-
 static int save_dev(blkid_dev dev, FILE *file)
 {
 	struct list_head *p;
@@ -39,7 +33,8 @@ static int save_dev(blkid_dev dev, FILE *file)
 	if (!dev)
 		return 0;
 
-	DBG(printf("device %s, type %s\n", dev->bid_name, dev->bid_type));
+	DBG(DEBUG_SAVE,
+	    printf("device %s, type %s\n", dev->bid_name, dev->bid_type));
 
 	fprintf(file,
 		"<device TYPE=\"%s\" DEVNO=\"0x%04lx\" TIME=\"%lu\"",
@@ -73,7 +68,7 @@ int blkid_flush_cache(blkid_cache cache)
 
 	if (list_empty(&cache->bic_devs) ||
 	    !(cache->bic_flags & BLKID_BIC_FL_CHANGED)) {
-		DBG(printf("empty cache, not saving\n"));
+		DBG(DEBUG_SAVE, printf("empty cache, not saving\n"));
 		return 0;
 	}
 
@@ -87,7 +82,8 @@ int blkid_flush_cache(blkid_cache cache)
 		/* If we can't write to the cache file, then don't even try */
 		if (((ret = stat(filename, &st)) < 0 && errno != ENOENT) ||
 		    (ret == 0 && access(filename, W_OK) < 0)) {
-			DBG(printf("can't write to cache file %s\n", filename));
+			DBG(DEBUG_SAVE,
+			    printf("can't write to cache file %s\n", filename));
 			return 0;
 		}
 
@@ -116,7 +112,8 @@ int blkid_flush_cache(blkid_cache cache)
 			opened = filename;
 		}
 
-		DBG(printf("cache file %s (really %s)\n", filename, opened));
+		DBG(DEBUG_SAVE,
+		    printf("cache file %s (really %s)\n", filename, opened));
 
 		if (!file) {
 			ret = errno;
@@ -142,7 +139,8 @@ int blkid_flush_cache(blkid_cache cache)
 		if (opened != filename) {
 			if (ret < 0) {
 				unlink(opened);
-				DBG(printf("unlinked temp cache %s\n", opened));
+				DBG(DEBUG_SAVE,
+				    printf("unlinked temp cache %s\n", opened));
 			} else {
 				char *backup;
 
@@ -154,7 +152,8 @@ int blkid_flush_cache(blkid_cache cache)
 					free(backup);
 				}
 				rename(opened, filename);
-				DBG(printf("moved temp cache %s\n", opened));
+				DBG(DEBUG_SAVE,
+				    printf("moved temp cache %s\n", opened));
 			}
 		}
 	}
@@ -171,6 +170,7 @@ int main(int argc, char **argv)
 	blkid_cache cache = NULL;
 	int ret;
 
+	blkid_debug_mask = DEBUG_ALL;
 	if (argc > 2) {
 		fprintf(stderr, "Usage: %s [filename]\n"
 			"Test loading/saving a cache (filename)\n", argv[0]);

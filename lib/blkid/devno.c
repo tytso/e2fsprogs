@@ -33,12 +33,6 @@
 
 #include "blkidP.h"
 
-#ifdef DEBUG_DEVNO
-#define DBG(x)	x
-#else
-#define DBG(x)
-#endif
-
 struct dir_list {
 	char	*name;
 	struct dir_list *next;
@@ -130,7 +124,8 @@ static void scan_dir(char *dirname, dev_t devno, struct dir_list **list,
 			add_to_dirlist(path, list);
 		else if (S_ISBLK(st.st_mode) && st.st_rdev == devno) {
 			*devname = blkid_strdup(path);
-			DBG(printf("found 0x%Lx at %s (%p)\n", devno,
+			DBG(DEBUG_DEVNO,
+			    printf("found 0x%Lx at %s (%p)\n", devno,
 				   path, *devname));
 			break;
 		}
@@ -164,7 +159,7 @@ char *blkid_devno_to_devname(dev_t devno)
 		struct dir_list *current = list;
 
 		list = list->next;
-		DBG(printf("directory %s\n", current->name));
+		DBG(DEBUG_DEVNO, printf("directory %s\n", current->name));
 		scan_dir(current->name, devno, &new_list, &devname);
 		free(current->name);
 		free(current);
@@ -182,11 +177,15 @@ char *blkid_devno_to_devname(dev_t devno)
 	free_dirlist(&list);
 	free_dirlist(&new_list);
 
-	if (!devname)
-		DBG(printf("blkid: couldn't find devno 0x%04lx\n", 
+	if (!devname) {
+		DBG(DEBUG_DEVNO,
+		    printf("blkid: couldn't find devno 0x%04lx\n", 
 			   (unsigned long) devno));
-	else
-		DBG(printf("found devno 0x%04Lx as %s\n", devno, devname));
+	} else {
+		DBG(DEBUG_DEVNO,
+		    printf("found devno 0x%04Lx as %s\n", devno, devname));
+	}
+	
 
 	return devname;
 }
@@ -199,6 +198,7 @@ int main(int argc, char** argv)
 	dev_t	devno;
 	const char *errmsg = "Couldn't parse %s: %s\n";
 
+	blkid_debug_mask = DEBUG_ALL;
 	if ((argc != 2) && (argc != 3)) {
 		fprintf(stderr, "Usage:\t%s device_number\n\t%s major minor\n"
 			"Resolve a device number to a device name\n",

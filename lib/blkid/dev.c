@@ -15,13 +15,6 @@
 
 #include "blkidP.h"
 
-#ifdef DEBUG_DEV
-#include <stdio.h>
-#define DBG(x)	x
-#else
-#define DBG(x)
-#endif
-
 blkid_dev blkid_new_dev(void)
 {
 	blkid_dev dev;
@@ -40,8 +33,9 @@ void blkid_free_dev(blkid_dev dev)
 	if (!dev)
 		return;
 
-	DBG(printf("  freeing dev %s (%s)\n", dev->bid_name, dev->bid_type));
-	DEB_DUMP_DEV(dev);
+	DBG(DEBUG_DEV,
+	    printf("  freeing dev %s (%s)\n", dev->bid_name, dev->bid_type));
+	DEB_DUMP_DEV(DEBUG_DEV, dev);
 
 	list_del(&dev->bid_devs);
 	while (!list_empty(&dev->bid_tags)) {

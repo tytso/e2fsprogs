@@ -334,6 +334,21 @@ fi
 echo "Disabling journal debugging by default"
 )
 dnl
+dnl handle --enable-blkid-debug
+dnl
+AC_ARG_ENABLE([blkid-debug],
+[  --enable-blkid-debug  	  enable blkid debugging],
+if test "$enableval" = "no"
+then
+	echo "Disabling blkid debugging"
+else
+	AC_DEFINE(CONFIG_BLKID_DEBUG)
+	echo "Enabling blkid debugging"
+fi
+,
+echo "Disabling blkid debugging by default"
+)
+dnl
 dnl handle --enable-swapfs
 dnl
 AC_ARG_ENABLE([swapfs],

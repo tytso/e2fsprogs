@@ -116,31 +116,37 @@ extern const char *blkid_devdirs[];
 #define BLKID_PRI_LVM	20
 #define BLKID_PRI_MD	10
 
-#if defined(TEST_PROGRAM)
-#define DEBUG
+#if defined(TEST_PROGRAM) && !defined(CONFIG_BLKID_DEBUG)
+#define CONFIG_BLKID_DEBUG
 #endif
 
-#ifdef DEBUG
-#define DEBUG_CACHE
-#define DEBUG_DUMP
-#define DEBUG_DEV
-#define DEBUG_DEVNAME
-#define DEBUG_DEVNO
-#define DEBUG_PROBE
-#define DEBUG_READ
-#define DEBUG_RESOLVE
-#define DEBUG_SAVE
-#define DEBUG_TAG
-#define CHECK_TAG
+#define DEBUG_CACHE	0x0001
+#define DEBUG_DUMP	0x0002
+#define DEBUG_DEV	0x0004
+#define DEBUG_DEVNAME	0x0008
+#define DEBUG_DEVNO	0x0010
+#define DEBUG_PROBE	0x0020
+#define DEBUG_READ	0x0040
+#define DEBUG_RESOLVE	0x0080
+#define DEBUG_SAVE	0x0100
+#define DEBUG_TAG	0x0200
+#define DEBUG_INIT	0x8000
+#define DEBUG_ALL	0xFFFF
+
+#ifdef CONFIG_BLKID_DEBUG
+#include <stdio.h>
+extern int	blkid_debug_mask;
+#define DBG(m,x)	if ((m) & blkid_debug_mask) x;
+#else
+#define DBG(m,x)
 #endif
 
-#if defined(TEST_PROGRAM) && !defined(DEBUG_DUMP)
-#define DEBUG_DUMP
-#endif
-
-#ifdef DEBUG_DUMP
-static inline void DEB_DUMP_TAG(blkid_tag tag)
+#ifdef CONFIG_BLKID_DEBUG
+static inline void DEB_DUMP_TAG(int mask, blkid_tag tag)
 {
+	if (!(mask & blkid_debug_mask))
+		return;
+	
 	if (!tag) {
 		printf("    tag: NULL\n");
 		return;
@@ -149,10 +155,13 @@ static inline void DEB_DUMP_TAG(blkid_tag tag)
 	printf("    tag: %s=\"%s\"\n", tag->bit_name, tag->bit_val);
 }
 
-static inline void DEB_DUMP_DEV(blkid_dev dev)
+static inline void DEB_DUMP_DEV(int mask, blkid_dev dev)
 {
 	struct list_head *p;
 
+	if (!(mask & blkid_debug_mask))
+		return;
+	
 	if (!dev) {
 		printf("  dev: NULL\n");
 		return;
@@ -166,16 +175,16 @@ static inline void DEB_DUMP_DEV(blkid_dev dev)
 
 	list_for_each(p, &dev->bid_tags) {
 		blkid_tag tag = list_entry(p, struct blkid_struct_tag, bit_tags);
-		DEB_DUMP_TAG(tag);
+		DEB_DUMP_TAG(mask, tag);
 	}
 	printf("\n");
 }
 
-static inline void DEB_DUMP_CACHE(blkid_cache cache)
+static inline void DEB_DUMP_CACHE(int mask, blkid_cache cache)
 {
 	struct list_head *p;
 
-	if (!cache) {
+	if (!cache || !(mask & blkid_debug_mask)) {
 		printf("cache: NULL\n");
 		return;
 	}
@@ -185,13 +194,13 @@ static inline void DEB_DUMP_CACHE(blkid_cache cache)
 
 	list_for_each(p, &cache->bic_devs) {
 		blkid_dev dev = list_entry(p, struct blkid_struct_dev, bid_devs);
-		DEB_DUMP_DEV(dev);
+		DEB_DUMP_DEV(mask, dev);
 	}
 }
 #else
-#define DEB_DUMP_TAG(tag) do {} while (0)
-#define DEB_DUMP_DEV(dev) do {} while (0)
-#define DEB_DUMP_CACHE(cache) do {} while (0)
+#define DEB_DUMP_TAG(mask, tag) do {} while (0)
+#define DEB_DUMP_DEV(mask, dev) do {} while (0)
+#define DEB_DUMP_CACHE(mask, cache) do {} while (0)
 #endif
 
 /* lseek.c */
