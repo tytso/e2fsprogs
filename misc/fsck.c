@@ -52,6 +52,9 @@
 #if HAVE_MALLOC_H
 #include <malloc.h>
 #endif
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
 
 #include "../version.h"
 #include "nls-enable.h"
