@@ -1,5 +1,9 @@
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.30
+
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
 	* ext2_fs.h: Add support for a new inode flag, which is to be used
 		for indicating the top of directory hierarchies for the
 		Orlov block allocator.

@@ -1,5 +1,9 @@
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.30
+
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
 	* resize2fs.c (inode_scan_and_fix, check_and_change_inodes): When
 		moving an inode, set the ctime field so that people using
 		dump/restore will backup the changed inode.  Also update

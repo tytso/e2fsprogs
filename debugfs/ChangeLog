@@ -1,5 +1,9 @@
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.30
+
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
 	* debugfs.c (do_write): Check to see if the filename exists before
 		creating it, and give an error if so.  Addresses
 		Sourceforge bug #478195.

@@ -1,3 +1,7 @@
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.30
+
 2002-10-13  Theodore Ts'o  <tytso@mit.edu>
 
 	* libext2fs.texinfo: Add extra spaceing so that the info directory

@@ -1,7 +1,7 @@
 Begin3
 Title:          EXT2 Filesystem utilities
-Version:        1.29
-Entered-date:   24Sep2002
+Version:        1.30
+Entered-date:   31Oct2002
 Description:    The filesystem utilities for the EXT2 filesystem, including 
 		e2fsck, mke2fs, dumpe2fs, fsck, and others.
 Keywords:       utilities, fsck, filesystem, Ext2fs

@@ -1,5 +1,9 @@
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.30
+
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
 	* unix.c (usage), e2fsck.8.in: Add the -D option to the usage and
 		command synopsis.  (Addresses Debian bug #167108)
 

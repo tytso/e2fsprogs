@@ -1,3 +1,7 @@
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.30
+
 2002-10-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* MCONFIG.in (COMPRESS_EXT): Declare all compression extensions

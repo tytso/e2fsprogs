@@ -1,3 +1,7 @@
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.30
+
 2002-09-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* dir_com.c (search_dir_entries): If there is a directory entry of
