@@ -1,3 +1,8 @@
+2001-07-26  Theodore Tso  <tytso@valinux.com>
+
+	* mkjournal.c (ext2fs_add_journal_device): Use the correct block
+		to find the journal superblock if the blocksize is 1024.
+
 2001-07-21  Theodore Tso  <tytso@valinux.com>
 
 	* ext2_err.et.in (EXT2_ET_LOAD_EXT_JOURNAL): Add new error code

@@ -250,7 +250,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	errcode_t	retval;
 	char		buf[1024];
 	journal_superblock_t	*jsb;
-	int		i;
+	int		i, start;
 	__u32		nr_users;
 
 	/* Make sure the device exists and is a block device */
@@ -261,7 +261,10 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 		return EXT2_ET_JOURNAL_NOT_BLOCK; /* Must be a block device */
 
 	/* Get the journal superblock */
-	if ((retval = io_channel_read_blk(journal_dev->io, 1, -1024, buf)))
+	start = 1;
+	if (journal_dev->blocksize == 1024)
+		start++;
+	if ((retval = io_channel_read_blk(journal_dev->io, start, -1024, buf)))
 		return retval;
 
 	jsb = (journal_superblock_t *) buf;
