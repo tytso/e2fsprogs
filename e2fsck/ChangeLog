@@ -1,3 +1,9 @@
+2004-02-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (main, PRS), e2fsck.8.in: Add a new -k option which keeps
+		the existing badblocks list when using the -c option.
+		(Addresses Debian bug #229103)
+
 2004-02-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in (PROFILED_LIBS, PROFILED_DEPLIBS): Fix reference to

@@ -8,7 +8,7 @@ e2fsck \- check a Linux ext2/ext3 file system
 .SH SYNOPSIS
 .B e2fsck
 [
-.B \-pacnyrdfvstDFSV
+.B \-pacnyrdfkvstDFSV
 ]
 [
 .B \-b
@@ -159,6 +159,14 @@ time trials.
 @JDEV@.BI \-j " external-journal"
 @JDEV@Set the pathname where the external-journal for this filesystem can be
 @JDEV@found.
+.TP
+.BI \-k
+When combined with the 
+.B \-c
+option, any existing bad blocks in the bad blocks list are preserved,
+and any new bad blocks found by running
+.BR badblocks (8) 
+will be added to the existing bad blocks list.
 .TP
 .BI \-l " filename"
 Add the block numbers listed in the file specified by 

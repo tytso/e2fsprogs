@@ -53,6 +53,7 @@ static int show_version_only;
 static int verbose;
 
 static int replace_bad_blocks;
+static int keep_bad_blocks;
 static char *bad_blocks_file;
 
 e2fsck_t e2fsck_global_ctx;	/* Try your very best not to use this! */
@@ -554,7 +555,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		ctx->program_name = *argv;
 	else
 		ctx->program_name = "e2fsck";
-	while ((c = getopt (argc, argv, "panyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsD")) != EOF)
+	while ((c = getopt (argc, argv, "panyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsDk")) != EOF)
 		switch (c) {
 		case 'C':
 			ctx->progress = e2fsck_update_progress;
@@ -675,6 +676,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 					  "of e2fsck\n"));
 			exit(1);
 #endif
+		case 'k':
+			keep_bad_blocks++;
 		default:
 			usage(ctx);
 		}
@@ -1034,7 +1037,7 @@ restart:
 	if (bad_blocks_file)
 		read_bad_blocks_file(ctx, bad_blocks_file, replace_bad_blocks);
 	else if (cflag)
-		read_bad_blocks_file(ctx, 0, 1); /* Test disk */
+		read_bad_blocks_file(ctx, 0, !keep_bad_blocks); /* Test disk */
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		fatal_error(ctx, 0);
 #ifdef ENABLE_SWAPFS
