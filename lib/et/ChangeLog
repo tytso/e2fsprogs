@@ -1,3 +1,9 @@
+2003-08-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* et_h.awk: Fix wrong prototype for initialize_xxx_err_table_r.
+		(Thanks to Gombas Gabor for pointing this out, addresses
+		Debian bug #204332)
+
 2003-08-01  Philipp Thomas <pthomas@suse.de>
 
 	* et_c.awk, et_h.awk: Add Heimdal compile_et extensions

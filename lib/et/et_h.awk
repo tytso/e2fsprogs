@@ -183,7 +183,7 @@ END {
 	print "extern void initialize_" table_name "_error_table(void);" > outfile
 	print "" > outfile
 	print "/* For compatibility with Heimdal */" > outfile
-	print "extern void initialize_" table_name "_error_table_r(void);" > outfile
+	print "extern void initialize_" table_name "_error_table_r(struct et_list **list);" > outfile
 	print "" > outfile
 	if (tab_base_high == 0) {
 		print "#define ERROR_TABLE_BASE_" table_name " (" \
