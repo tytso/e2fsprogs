@@ -1,3 +1,8 @@
+2005-02-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in, MCONFIG.in: Add support for --enable-maintainer-mode;
+		only rebuild configure from configure.in if it is enabled.
+
 2005-02-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Remove support for the (very old) sparc old-bitops

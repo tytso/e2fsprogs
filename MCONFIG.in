@@ -170,8 +170,8 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/MCONFIG \
 		$(DEP_MAKEFILE) $(top_builddir)/config.status
 	cd $(top_builddir); CONFIG_FILES=$(my_dir)/Makefile ./config.status
 
-$(top_srcdir)/configure: $(top_srcdir)/configure.in
-	cd $(top_srcdir) && autoconf
+@MAINTAINER_CMT@$(top_srcdir)/configure: $(top_srcdir)/configure.in
+@MAINTAINER_CMT@	cd $(top_srcdir) && autoconf
 
 #
 # Make depend magic...

@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS E2FSPROGS_YEAR E2FSPROGS_MONTH E2FSPROGS_DAY E2FSPROGS_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT LD CPP EGREP LINUX_INCLUDE HTREE_CMT HTREE_CLR_CMT ELF_CMT BSDLIB_CMT PROFILE_CMT CHECKER_CMT LIB_EXT STATIC_LIB_EXT PROFILED_LIB_EXT SWAPFS_CMT DEBUGFS_CMT IMAGER_CMT RESIZER_CMT E2FSCK_TYPE FSCK_PROG FSCK_MAN E2INITRD_PROG E2INITRD_MAN GETTEXT_PACKAGE PACKAGE VERSION SET_MAKE INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MKINSTALLDIRS USE_NLS MSGFMT GMSGFMT XGETTEXT MSGMERGE RANLIB ac_ct_RANLIB ALLOCA GLIBC21 HAVE_POSIX_PRINTF HAVE_ASPRINTF HAVE_SNPRINTF HAVE_WPRINTF LIBICONV LTLIBICONV INTLBISON BUILD_INCLUDED_LIBINTL USE_INCLUDED_LIBINTL CATOBJEXT DATADIRNAME INSTOBJEXT GENCAT INTLOBJS INTL_LIBTOOL_SUFFIX_PREFIX INTLLIBS LIBINTL LTLIBINTL POSUB BINARY_TYPE LN LN_S MV CP RM CHMOD AWK SED PERL LDCONFIG AR ac_ct_AR STRIP ac_ct_STRIP BUILD_CC SIZEOF_SHORT SIZEOF_INT SIZEOF_LONG SIZEOF_LONG_LONG SOCKET_LIB DLOPEN_LIB LINUX_CMT CYGWIN_CMT UNIX_CMT root_prefix root_bindir root_sbindir root_libdir root_sysconfdir LDFLAG_STATIC SS_DIR ET_DIR DO_TEST_SUITE INTL_FLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS E2FSPROGS_YEAR E2FSPROGS_MONTH E2FSPROGS_DAY E2FSPROGS_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT LD CPP EGREP LINUX_INCLUDE MAINTAINER_CMT HTREE_CMT HTREE_CLR_CMT ELF_CMT BSDLIB_CMT PROFILE_CMT CHECKER_CMT LIB_EXT STATIC_LIB_EXT PROFILED_LIB_EXT SWAPFS_CMT DEBUGFS_CMT IMAGER_CMT RESIZER_CMT E2FSCK_TYPE FSCK_PROG FSCK_MAN E2INITRD_PROG E2INITRD_MAN GETTEXT_PACKAGE PACKAGE VERSION SET_MAKE INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MKINSTALLDIRS USE_NLS MSGFMT GMSGFMT XGETTEXT MSGMERGE RANLIB ac_ct_RANLIB ALLOCA GLIBC21 HAVE_POSIX_PRINTF HAVE_ASPRINTF HAVE_SNPRINTF HAVE_WPRINTF LIBICONV LTLIBICONV INTLBISON BUILD_INCLUDED_LIBINTL USE_INCLUDED_LIBINTL CATOBJEXT DATADIRNAME INSTOBJEXT GENCAT INTLOBJS INTL_LIBTOOL_SUFFIX_PREFIX INTLLIBS LIBINTL LTLIBINTL POSUB BINARY_TYPE LN LN_S MV CP RM CHMOD AWK SED PERL LDCONFIG AR ac_ct_AR STRIP ac_ct_STRIP BUILD_CC SIZEOF_SHORT SIZEOF_INT SIZEOF_LONG SIZEOF_LONG_LONG SOCKET_LIB DLOPEN_LIB LINUX_CMT CYGWIN_CMT UNIX_CMT root_prefix root_bindir root_sbindir root_libdir root_sysconfdir LDFLAG_STATIC SS_DIR ET_DIR DO_TEST_SUITE INTL_FLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files='MCONFIG MAKEFILE_ELF MAKEFILE_BSDLIB MAKEFILE_PROFILE MAKEFILE_CHECKER MAKEFILE_LIBRARY'
 
 # Initialize some variables set by options.
@@ -844,6 +844,7 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-maintainer-mode enable makefile rules useful for maintainers
   --enable-compression	  enable EXPERIMENTAL compression support
   --enable-htree      	  enable EXPERIMENTAL htree directory support
   --enable-htree-clear 	  clear htree because we don't trust e2fsck
@@ -3084,7 +3085,25 @@ if test "${with_root_prefix+set}" = set; then
   root_prefix=$withval
 else
   root_prefix=NONE
-fi; # Check whether --enable-compression or --disable-compression was given.
+fi; # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
+if test "${enable_maintainer_mode+set}" = set; then
+  enableval="$enable_maintainer_mode"
+  if test "$enableval" = "no"
+then
+	MAINTAINER_CMT=#
+	echo "Disabling maintainer mode"
+else
+	MAINTAINER_CMT=
+	echo "Enabling maintainer mode"
+fi
+
+else
+  MAINTAINER_CMT=#
+echo "Disabling maintainer mode by default"
+
+fi;
+
+# Check whether --enable-compression or --disable-compression was given.
 if test "${enable_compression+set}" = set; then
   enableval="$enable_compression"
   if test "$enableval" = "no"
@@ -14942,6 +14961,7 @@ s,@LD@,$LD,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@LINUX_INCLUDE@,$LINUX_INCLUDE,;t t
+s,@MAINTAINER_CMT@,$MAINTAINER_CMT,;t t
 s,@HTREE_CMT@,$HTREE_CMT,;t t
 s,@HTREE_CLR_CMT@,$HTREE_CLR_CMT,;t t
 s,@ELF_CMT@,$ELF_CMT,;t t
