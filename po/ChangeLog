@@ -1,5 +1,9 @@
 2003-11-21  Theodore Ts'o  <tytso@mit.edu>
 
+	* pl.po: Added new Polish translation.
+
+	* sv.po: Updated Sweedish translation
+
 	* de.po: Fixed and updated German translations from Marc Langer.
 		(Addresses Debian bug #200086)
 
