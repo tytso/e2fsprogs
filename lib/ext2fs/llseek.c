@@ -9,6 +9,9 @@
  * %End-Header%
  */
 
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -27,10 +30,11 @@
 
 #ifdef __linux__
 
-#ifdef HAVE_LLSEEK
-#if HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#if defined(HAVE_LSEEK64) && defined(HAVE_LSEEK64_PROTOTYPE)
+
+#define my_llseek lseek64
+
+#elif defined(HAVE_LLSEEK)
 #include <syscall.h>
 
 #ifndef HAVE_LLSEEK_PROTOTYPE
@@ -39,7 +43,7 @@ extern long long llseek (int fd, long long offset, int origin);
 
 #define my_llseek llseek
 
-#else	/* HAVE_LLSEEK */
+#else	/* ! HAVE_LLSEEK */
 
 #ifdef __alpha__
 
@@ -77,9 +81,9 @@ static ext2_loff_t my_llseek (int fd, ext2_loff_t offset, int origin)
 	return (retval == -1 ? (ext2_loff_t) retval : result);
 }
 
-#endif	/* HAVE_LLSEEK */
+#endif	/* __alpha__ */
 
-#endif /* __alpha__ */
+#endif /* HAVE_LLSEEK */
 
 ext2_loff_t ext2fs_llseek (int fd, ext2_loff_t offset, int origin)
 {

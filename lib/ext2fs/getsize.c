@@ -9,6 +9,9 @@
  * %End-Header%
  */
 
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+
 #include <stdio.h>
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -66,7 +69,11 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	char ch;
 #endif /* HAVE_SYS_DISKLABEL_H */
 
+#ifdef HAVE_OPEN64
+	fd = open64(file, O_RDONLY);
+#else
 	fd = open(file, O_RDONLY);
+#endif
 	if (fd < 0)
 		return errno;
 

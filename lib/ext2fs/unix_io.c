@@ -11,6 +11,9 @@
  * %End-Header%
  */
 
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+
 #include <stdio.h>
 #include <string.h>
 #if HAVE_UNISTD_H
@@ -78,6 +81,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	io_channel	io = NULL;
 	struct unix_private_data *data = NULL;
 	errcode_t	retval;
+	int		open_flags;
 
 	if (name == 0)
 		return EXT2_ET_BAD_DEVICE_NAME;
@@ -111,7 +115,12 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	if (retval)
 		goto cleanup;
 
-	data->dev = open(name, (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY);
+	open_flags = (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY;
+#ifdef HAVE_OPEN64
+	data->dev = open64(name, open_flags);
+#else
+	data->dev = open(name, open_flags);
+#endif
 	if (data->dev < 0) {
 		retval = errno;
 		goto cleanup;

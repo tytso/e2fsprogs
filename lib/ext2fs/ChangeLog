@@ -1,5 +1,15 @@
 2000-05-25    <tytso@snap.thunk.org>
 
+	* getsize.c (ext2fs_get_device_size): Use open64() instead of
+		open() if it exists.
+
+	* unix_io.c (unix_open): Use open64() instead of open() if it
+		exists. 
+
+	* llseek.c: Simplify header includes of unistd.h.  If lseek64 is
+		available (and prototypes are defined) use it in
+		preference to llseek.
+
 	* Makefile: Add hack dependency rule so that parallel makes work
 		correctly. 
 
