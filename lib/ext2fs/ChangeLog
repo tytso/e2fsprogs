@@ -1,5 +1,8 @@
 2002-10-20  Theodore Ts'o  <tytso@valinux.com>
 
+	* ext2_fs.h (EXT3_DEFM_JMODE): Add new default mount options for
+		the journal data mode.
+
 	* closefs.c (ext2fs_flush, write_bgdesc), ext2_fs.h, ext2fs.h,
 	openfs.c (ext2fs_descriptor_block_loc, ext2fs_open), initialize.c
 	(ext2fs_initialize), swapfs.c (ext2fs_swap_super): Add support for

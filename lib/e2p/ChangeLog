@@ -1,5 +1,10 @@
 2002-10-20  Theodore Ts'o  <tytso@valinux.com>
 
+	* e2p.h (e2p_string2mntopt), mntopts.c, ls.c (print_mntopts):
+		Remove unneeded "compat" argument to e2p_string2mntopt().
+		Add mount options for the journal data mode (journaled,
+		ordered, writeback).
+
 	* feature.c, ls.c (list_super2): Add support for the
 		meta_blockgroup filesystem format.
 

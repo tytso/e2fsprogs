@@ -27,10 +27,13 @@ static struct mntopt mntopt_list[] = {
 	{ EXT2_DEFM_XATTR_USER,	"user_xattr" },
 	{ EXT2_DEFM_ACL,	"acl" },
 	{ EXT2_DEFM_UID16,	"uid16" },
-	{	0, 0 },
+	{ EXT3_DEFM_JMODE_DATA, "journal_data" },
+	{ EXT3_DEFM_JMODE_ORDERED, "journal_data_ordered" },
+	{ EXT3_DEFM_JMODE_WBACK, "journal_data_writeback" },
+	{ 0, 0 },
 };
 
-const char *e2p_mntopt2string(int compat, unsigned int mask)
+const char *e2p_mntopt2string(unsigned int mask)
 {
 	struct mntopt  *f;
 	static char buf[20];
@@ -121,6 +124,8 @@ int e2p_edit_mntopts(const char *str, __u32 *mntopts, __u32 ok)
 			return 1;
 		if (ok && !(ok & mask))
 			return 1;
+		if (mask & EXT3_DEFM_JMODE)
+			*mntopts &= ~EXT3_DEFM_JMODE;
 		if (neg)
 			*mntopts &= ~mask;
 		else
