@@ -234,7 +234,7 @@ void do_init_filesys(int argc, char **argv)
 static void print_features(struct ext2_super_block * s, FILE *f)
 {
 	int	i, j, printed=0;
-__u32	*mask = &s->s_feature_compat, m;
+	__u32	*mask = &s->s_feature_compat, m;
 
 	fputs("Filesystem features:", f);
 	for (i=0; i <3; i++,mask++) {
