@@ -200,12 +200,12 @@ static const struct e2fsck_problem problem_table[] = {
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Journal has an unknown superblock type */
-        { PR_0_JOURNAL_UNSUPP_SUPER,
-          N_("Ext3 @j @S is unknown type %N (unsupported).\n"
-             "It is likely that your copy of e2fsck is old and/or doesn't "
-             "support this @j format.\n"
-             "It is also possible the @j @S is corrupt.\n"),
-          PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_SUPER },
+	{ PR_0_JOURNAL_UNSUPP_SUPER,
+	  N_("Ext3 @j @S is unknown type %N (unsupported).\n"
+	     "It is likely that your copy of e2fsck is old and/or doesn't "
+	     "support this @j format.\n"
+	     "It is also possible the @j @S is corrupt.\n"),
+	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_SUPER },
 
 	/* Journal superblock is corrupt */
 	{ PR_0_JOURNAL_BAD_SUPER,
