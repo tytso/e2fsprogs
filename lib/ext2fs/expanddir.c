@@ -53,6 +53,7 @@ static int expand_dir_proc(ext2_filsys fs,
 			return BLOCK_ABORT;
 		}
 		es->done = 1;
+		retval = ext2fs_write_dir_block(fs, new_blk, block);
 	} else {
 		retval = ext2fs_get_mem(fs->blocksize, (void **) &block);
 		if (retval) {
@@ -60,8 +61,8 @@ static int expand_dir_proc(ext2_filsys fs,
 			return BLOCK_ABORT;
 		}
 		memset(block, 0, fs->blocksize);
+		retval = io_channel_write_blk(fs->io, new_blk, 1, block);
 	}	
-	retval = ext2fs_write_dir_block(fs, new_blk, block);
 	if (retval) {
 		es->err = retval;
 		return BLOCK_ABORT;
@@ -90,6 +91,9 @@ errcode_t ext2fs_expand_dir(ext2_filsys fs, ino_t dir)
 
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
+
+	if (!fs->block_map)
+		return EXT2_ET_NO_BLOCK_BITMAP;
 
 	retval = ext2fs_check_directory(fs, dir);
 	if (retval)

@@ -1,3 +1,11 @@
+Thu Nov 20 16:07:38 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* expanddir.c (ext2fs_expand_dir): Check to make sure the block
+		bitmap is loaded, and return an error if it is not.
+		(expand_dir_proc): Only use ext2fs_write_dir_block when
+		writing a directory block, not when writing out a fresh
+		indirect block.
+
 Tue Nov 11 22:46:45 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in, tst_getsize.c: Added new file which is used to test
