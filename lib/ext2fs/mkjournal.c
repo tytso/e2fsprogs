@@ -289,7 +289,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	}
 
 	/* Writeback the journal superblock */
-	if ((retval = io_channel_write_blk(journal_dev->io, 1, -1024, buf)))
+	if ((retval = io_channel_write_blk(journal_dev->io, start, -1024, buf)))
 		return retval;
 	
 	fs->super->s_journal_inum = 0;
