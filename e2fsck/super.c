@@ -46,7 +46,7 @@ static void check_super_value(e2fsck_t ctx, const char *descr,
 		pctx.num = value;
 		pctx.str = descr;
 		fix_problem(ctx, PR_0_MISC_CORRUPT_SUPER, &pctx);
-		fatal_error(0);	/* never get here! */
+		ctx->flags |= E2F_FLAG_ABORT; /* never get here! */
 	}
 }
 
@@ -100,20 +100,24 @@ void check_super_block(e2fsck_t ctx)
 					      &should_be);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_0_GETSIZE_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	if (should_be < s->s_blocks_count) {
 		pctx.blk = s->s_blocks_count;
 		pctx.blk2 = should_be;
-		if (fix_problem(ctx, PR_0_FS_SIZE_WRONG, &pctx))
-			fatal_error(0);
+		if (fix_problem(ctx, PR_0_FS_SIZE_WRONG, &pctx)) {
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
+		}
 	}
 
 	if (s->s_log_block_size != s->s_log_frag_size) {
 		pctx.blk = EXT2_BLOCK_SIZE(s);
 		pctx.blk2 = EXT2_FRAG_SIZE(s);
 		fix_problem(ctx, PR_0_NO_FRAGMENTS, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 
 	should_be = s->s_frags_per_group /
@@ -122,7 +126,8 @@ void check_super_block(e2fsck_t ctx)
 		pctx.blk = s->s_blocks_per_group;
 		pctx.blk2 = should_be;
 		fix_problem(ctx, PR_0_BLOCKS_PER_GROUP, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 
 	should_be = (s->s_log_block_size == 0) ? 1 : 0;
@@ -130,7 +135,8 @@ void check_super_block(e2fsck_t ctx)
 		pctx.blk = s->s_first_data_block;
 		pctx.blk2 = should_be;
 		fix_problem(ctx, PR_0_FIRST_DATA_BLOCK, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 
 	/*

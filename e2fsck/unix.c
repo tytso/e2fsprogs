@@ -55,8 +55,6 @@ static int possible_block_sizes[] = { 1024, 2048, 4096, 8192, 0};
 static int root_filesystem = 0;
 static int read_only_root = 0;
 
-int restart_e2fsck = 0;
-
 static void usage(e2fsck_t ctx)
 {
 	fprintf(stderr,
@@ -414,7 +412,7 @@ int main (int argc, char *argv[])
 	int		my_ver, lib_ver;
 	e2fsck_t	ctx;
 	struct problem_context pctx;
-	int flags;
+	int flags, run_result;
 	
 	clear_problem_context(&pctx);
 #ifdef MTRACE
@@ -459,7 +457,7 @@ int main (int argc, char *argv[])
 	    !(ctx->options & E2F_OPT_NO) &&
 	    !(ctx->options & E2F_OPT_YES)) {
 		if (!isatty (0) || !isatty (1))
-			die ("need terminal for interactive repairs");
+			fatal_error("need terminal for interactive repairs");
 	}
 	ctx->superblock = ctx->use_superblock;
 restart:
@@ -595,12 +593,11 @@ restart:
 		preenhalt(ctx);
 		printf("This doesn't bode well, but we'll try to go on...\n");
 	}
-	
-	pass1(ctx);
-	if (restart_e2fsck) {
+
+	run_result = e2fsck_run(ctx);
+	if (run_result == E2F_FLAG_RESTART) {
 		ext2fs_close(fs);
 		printf("Restarting e2fsck from the beginning...\n");
-		restart_e2fsck = 0;
 		retval = e2fsck_reset_context(ctx);
 		if (retval) {
 			com_err(ctx->program_name, retval,
@@ -609,10 +606,10 @@ restart:
 		}
 		goto restart;
 	}
-	pass2(ctx);
-	pass3(ctx);
-	pass4(ctx);
-	pass5(ctx);
+	if (run_result & E2F_FLAG_ABORT)
+		exit(FSCK_ERROR);
+	if (run_result & E2F_FLAG_CANCEL)
+		ext2fs_unmark_valid(fs);
 
 #ifdef MTRACE
 	mtrace_print("Cleanup");

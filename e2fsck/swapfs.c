@@ -114,10 +114,10 @@ static void swap_inodes(e2fsck_t ctx)
 	fs->read_inode = pass1_read_inode;
 	fs->get_blocks = pass1_get_blocks;
 	
-
-	buf = malloc(fs->blocksize * fs->inode_blocks_per_group);
-	if (!buf) {
-		com_err("swap_inodes", ENOMEM,
+	retval = ext2fs_get_mem(fs->blocksize * fs->inode_blocks_per_group,
+				(void **) &buf);
+	if (retval) {
+		com_err("swap_inodes", retval,
 			"while allocating inode buffer");
 		fatal_error(0);
 	}
@@ -168,8 +168,8 @@ static void swap_inodes(e2fsck_t ctx)
 			fatal_error(0);
 		}
 	}
-	free(buf);
-	free(block_buf);
+	ext2fs_free_mem((void **) &buf);
+	ext2fs_free_mem((void **) &block_buf);
 	fs->read_inode = 0;
 	fs->get_blocks = 0;
 }

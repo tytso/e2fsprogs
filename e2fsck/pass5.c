@@ -18,7 +18,7 @@ static void check_inode_bitmaps(e2fsck_t ctx);
 static void check_inode_end(e2fsck_t ctx);
 static void check_block_end(e2fsck_t ctx);
 
-void pass5(e2fsck_t ctx)
+void e2fsck_pass5(e2fsck_t ctx)
 {
 #ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
@@ -41,9 +41,17 @@ void pass5(e2fsck_t ctx)
 	read_bitmaps(ctx);
 
 	check_block_bitmaps(ctx);
+	if (ctx->flags & E2F_FLAG_ABORT)
+		return;
 	check_inode_bitmaps(ctx);
+	if (ctx->flags & E2F_FLAG_ABORT)
+		return;
 	check_inode_end(ctx);
+	if (ctx->flags & E2F_FLAG_ABORT)
+		return;
 	check_block_end(ctx);
+	if (ctx->flags & E2F_FLAG_ABORT)
+		return;
 
 	ext2fs_free_inode_bitmap(ctx->inode_used_map);
 	ctx->inode_used_map = 0;
@@ -86,8 +94,9 @@ static void check_block_bitmaps(e2fsck_t ctx)
 		pctx.ino = ext2fs_get_block_bitmap_start(ctx->block_found_map);
 		pctx.ino2 = ext2fs_get_block_bitmap_end(ctx->block_found_map);
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
-		/* fatal */
-		fatal_error(0);
+
+		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
+		return;
 	}
 		       
 	if ((fs->super->s_first_data_block <
@@ -100,8 +109,9 @@ static void check_block_bitmaps(e2fsck_t ctx)
 		pctx.ino = ext2fs_get_block_bitmap_start(fs->block_map);
 		pctx.ino2 = ext2fs_get_block_bitmap_end(fs->block_map);
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
-		/* fatal */
-		fatal_error(0);
+
+		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
+		return;
 	}
 		       
 redo_counts:		       
@@ -184,7 +194,7 @@ redo_counts:
 		} else
 			ext2fs_unmark_valid(fs);
 	}
-	free(free_array);
+	ext2fs_free_mem((void **) &free_array);
 }
 			
 static void check_inode_bitmaps(e2fsck_t ctx)
@@ -219,8 +229,9 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 		pctx.ino = ext2fs_get_inode_bitmap_start(ctx->inode_used_map);
 		pctx.ino2 = ext2fs_get_inode_bitmap_end(ctx->inode_used_map);
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
-		/* fatal */
-		fatal_error(0);
+
+		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
+		return;
 	}
 	if ((1 < ext2fs_get_inode_bitmap_start(fs->inode_map)) ||
 	    (fs->super->s_inodes_count > 
@@ -231,8 +242,9 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 		pctx.ino = ext2fs_get_inode_bitmap_start(fs->inode_map);
 		pctx.ino2 = ext2fs_get_inode_bitmap_end(fs->inode_map);
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
-		/* fatal */
-		fatal_error(0);
+
+		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
+		return;
 	}
 
 redo_counts:
@@ -332,8 +344,8 @@ do_counts:
 		} else
 			ext2fs_unmark_valid(fs);
 	}
-	free(free_array);
-	free(dir_array);
+	ext2fs_free_mem((void **) &free_array);
+	ext2fs_free_mem((void **) &dir_array);
 }
 
 static void check_inode_end(e2fsck_t ctx)
@@ -350,7 +362,8 @@ static void check_inode_end(e2fsck_t ctx)
 	if (pctx.errcode) {
 		pctx.num = 1;
 		fix_problem(ctx, PR_5_FUDGE_BITMAP_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
+		return;
 	}
 	if (save_inodes_count == end)
 		return;
@@ -373,7 +386,8 @@ static void check_inode_end(e2fsck_t ctx)
 	if (pctx.errcode) {
 		pctx.num = 2;
 		fix_problem(ctx, PR_5_FUDGE_BITMAP_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
+		return;
 	}
 }
 
@@ -392,7 +406,8 @@ static void check_block_end(e2fsck_t ctx)
 	if (pctx.errcode) {
 		pctx.num = 3;
 		fix_problem(ctx, PR_5_FUDGE_BITMAP_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
+		return;
 	}
 	if (save_blocks_count == end)
 		return;
@@ -415,7 +430,8 @@ static void check_block_end(e2fsck_t ctx)
 	if (pctx.errcode) {
 		pctx.num = 4;
 		fix_problem(ctx, PR_5_FUDGE_BITMAP_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
+		return;
 	}
 }
 

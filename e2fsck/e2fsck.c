@@ -22,11 +22,13 @@
 errcode_t e2fsck_allocate_context(e2fsck_t *ret)
 {
 	e2fsck_t	context;
+	errcode_t	retval;
 
-	context = malloc(sizeof(struct e2fsck_struct));
-	if (!context)
-		return ENOMEM;
-
+	retval = ext2fs_get_mem(sizeof(struct e2fsck_struct),
+				(void **) &context);
+	if (retval)
+		return retval;
+	
 	memset(context, 0, sizeof(struct e2fsck_struct));
 
 	context->process_inode_size = 256;
@@ -41,6 +43,7 @@ errcode_t e2fsck_allocate_context(e2fsck_t *ret)
  */
 errcode_t e2fsck_reset_context(e2fsck_t ctx)
 {
+	ctx->flags = 0;
 	if (ctx->inode_used_map) {
 		ext2fs_free_inode_bitmap(ctx->inode_used_map);
 		ctx->inode_used_map = 0;
@@ -61,7 +64,7 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ext2fs_free_dblist(ctx->fs->dblist);
 		ctx->fs->dblist = 0;
 	}
-	free_dir_info(ctx->fs);
+	e2fsck_free_dir_info(ctx);
 	if (ctx->block_dup_map) {
 		ext2fs_free_block_bitmap(ctx->block_dup_map);
 		ctx->block_dup_map = 0;
@@ -79,15 +82,15 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 	 * Clear the array of invalid meta-data flags
 	 */
 	if (ctx->invalid_inode_bitmap_flag) {
-		free(ctx->invalid_inode_bitmap_flag);
+		ext2fs_free_mem((void **) &ctx->invalid_inode_bitmap_flag);
 		ctx->invalid_inode_bitmap_flag = 0;
 	}
 	if (ctx->invalid_block_bitmap_flag) {
-		free(ctx->invalid_block_bitmap_flag);
+		ext2fs_free_mem((void **) &ctx->invalid_block_bitmap_flag);
 		ctx->invalid_block_bitmap_flag = 0;
 	}
 	if (ctx->invalid_inode_table_flag) {
-		free(ctx->invalid_inode_table_flag);
+		ext2fs_free_mem((void **) &ctx->invalid_inode_table_flag);
 		ctx->invalid_inode_table_flag = 0;
 	}
 
@@ -121,5 +124,44 @@ void e2fsck_free_context(e2fsck_t ctx)
 	
 	e2fsck_reset_context(ctx);
 	
-	free(ctx);
+	ext2fs_free_mem((void **) &ctx);
 }
+
+/*
+ * This function runs through the e2fsck passes and calls them all,
+ * returning restart, abort, or cancel as necessary...
+ */
+typedef void (*pass_t)(e2fsck_t ctx);
+
+pass_t e2fsck_passes[] = {
+	e2fsck_pass1, e2fsck_pass2, e2fsck_pass3, e2fsck_pass4,
+	e2fsck_pass5, 0 };
+
+int e2fsck_run(e2fsck_t ctx)
+{
+	int	i;
+	pass_t	e2fsck_pass;
+
+#ifdef HAVE_SETJMP_H
+	if (setjmp(ctx->abort_loc))
+		return (ctx->flags & E2F_FLAG_SIGNAL_MASK);
+	ctx->flags |= E2F_FLAG_SETJMP_OK;
+#endif
+		
+	for (i=0; (e2fsck_pass = e2fsck_passes[i]); i++) {
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+			break;
+		e2fsck_pass(ctx);
+	}
+	ctx->flags &= ~E2F_FLAG_SETJMP_OK;
+	
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		return (ctx->flags & E2F_FLAG_SIGNAL_MASK);
+	return 0;
+}
+
+
+	
+
+	
+

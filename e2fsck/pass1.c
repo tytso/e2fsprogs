@@ -96,7 +96,8 @@ static int process_inode_count;
  */
 static void unwind_pass1(ext2_filsys fs)
 {
-	free(inodes_to_process);inodes_to_process = 0;
+	ext2fs_free_mem((void **) &inodes_to_process);
+	inodes_to_process = 0;
 }
 
 /*
@@ -113,7 +114,7 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 	return 1;
 }
 
-void pass1(e2fsck_t ctx)
+void e2fsck_pass1(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	ino_t	ino;
@@ -146,34 +147,39 @@ void pass1(e2fsck_t ctx)
 	if (pctx.errcode) {
 		pctx.num = 1;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	pctx.errcode = ext2fs_allocate_inode_bitmap(fs, "directory inode map",
 					      &ctx->inode_dir_map);
 	if (pctx.errcode) {
 		pctx.num = 2;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	pctx.errcode = ext2fs_allocate_block_bitmap(fs, "in-use block map",
 					      &ctx->block_found_map);
 	if (pctx.errcode) {
 		pctx.num = 1;
 		fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	pctx.errcode = ext2fs_allocate_block_bitmap(fs, "illegal block map",
 					      &ctx->block_illegal_map);
 	if (pctx.errcode) {
 		pctx.num = 2;
 		fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	pctx.errcode = ext2fs_create_icount2(fs, 0, 0, 0,
 					     &ctx->inode_link_info);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_ALLOCATE_ICOUNT, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	inodes_to_process = allocate_memory(ctx->process_inode_size *
 					    sizeof(struct process_inode_block),
@@ -183,7 +189,8 @@ void pass1(e2fsck_t ctx)
 	pctx.errcode = ext2fs_init_dblist(fs, 0);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_ALLOCATE_DBCOUNT, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 
 	mark_table_blocks(ctx);
@@ -197,13 +204,15 @@ void pass1(e2fsck_t ctx)
 					      &scan);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	ext2fs_inode_scan_flags(scan, EXT2_SF_SKIP_MISSING_ITABLE, 0);
 	pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 	ctx->stashed_inode = &inode;
 	ext2fs_set_inode_callback(scan, scan_callback, block_buf);
@@ -217,7 +226,8 @@ void pass1(e2fsck_t ctx)
 			if (pctx.errcode) {
 				pctx.num = inode.i_links_count;
 				fix_problem(ctx, PR_1_ICOUNT_STORE, &pctx);
-				fatal_error(0);
+				ctx->flags |= E2F_FLAG_ABORT;
+				return;
 			}
 		}
 		if (ino == EXT2_BAD_INO) {
@@ -235,7 +245,8 @@ void pass1(e2fsck_t ctx)
 				     block_buf, process_bad_block, &pb);
 			if (pctx.errcode) {
 				fix_problem(ctx, PR_1_BLOCK_ITERATE, &pctx);
-				fatal_error(0);
+				ctx->flags |= E2F_FLAG_ABORT;
+				return;
 			}
 			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
 			clear_problem_context(&pctx);
@@ -253,7 +264,7 @@ void pass1(e2fsck_t ctx)
 					inode.i_links_count = 0;
 					ext2fs_icount_store(ctx->inode_link_info,
 							    ino, 0);
-					e2fsck_write_inode(fs, ino, &inode,
+					e2fsck_write_inode(ctx, ino, &inode,
 							   "pass1");
 				}
 			}
@@ -269,7 +280,7 @@ void pass1(e2fsck_t ctx)
 			if (inode.i_dtime && inode.i_links_count) {
 				if (fix_problem(ctx, PR_1_ROOT_DTIME, &pctx)) {
 					inode.i_dtime = 0;
-					e2fsck_write_inode(fs, ino, &inode,
+					e2fsck_write_inode(ctx, ino, &inode,
 							   "pass1");
 				}
 			}
@@ -286,7 +297,7 @@ void pass1(e2fsck_t ctx)
 				if (fix_problem(ctx,
 					    PR_1_RESERVED_BAD_MODE, &pctx)) {
 					inode.i_mode = 0;
-					e2fsck_write_inode(fs, ino, &inode,
+					e2fsck_write_inode(ctx, ino, &inode,
 							   "pass1");
 				}
 			}
@@ -302,7 +313,7 @@ void pass1(e2fsck_t ctx)
 				if (fix_problem(ctx,
 					    PR_1_ZERO_DTIME, &pctx)) {
 					inode.i_dtime = time(0);
-					e2fsck_write_inode(fs, ino, &inode,
+					e2fsck_write_inode(ctx, ino, &inode,
 							   "pass1");
 				}
 			}
@@ -321,7 +332,7 @@ void pass1(e2fsck_t ctx)
 		if (inode.i_dtime) {
 			if (fix_problem(ctx, PR_1_SET_DTIME, &pctx)) {
 				inode.i_dtime = 0;
-				e2fsck_write_inode(fs, ino, &inode, "pass1");
+				e2fsck_write_inode(ctx, ino, &inode, "pass1");
 			}
 		}
 		
@@ -352,7 +363,7 @@ void pass1(e2fsck_t ctx)
 		
 		if (LINUX_S_ISDIR(inode.i_mode)) {
 			ext2fs_mark_inode_bitmap(ctx->inode_dir_map, ino);
-			add_dir_info(fs, ino, 0);
+			e2fsck_add_dir_info(ctx, ino, 0);
 			ctx->fs_directory_count++;
 		} else if (LINUX_S_ISREG (inode.i_mode))
 			ctx->fs_regular_count++;
@@ -393,8 +404,15 @@ void pass1(e2fsck_t ctx)
 		} else
 			check_blocks(ctx, &pctx, block_buf);
 
-		if (process_inode_count >= ctx->process_inode_size)
+		if (ctx->flags & E2F_FLAG_ABORT)
+			return;
+
+		if (process_inode_count >= ctx->process_inode_size) {
 			process_inodes(ctx, block_buf);
+
+			if (ctx->flags & E2F_FLAG_ABORT)
+				return;
+		}
 	next:
 		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE) {
@@ -406,7 +424,8 @@ void pass1(e2fsck_t ctx)
 		}
 		if (pctx.errcode) {
 			fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
-			fatal_error(0);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
 		}
 	}
 	process_inodes(ctx, block_buf);
@@ -416,7 +435,7 @@ void pass1(e2fsck_t ctx)
 	if (ctx->invalid_bitmaps)
 		handle_fs_bad_blocks(ctx);
 
-	if (restart_e2fsck) {
+	if (ctx->flags & E2F_FLAG_RESTART) {
 		unwind_pass1(fs);
 		goto endit;
 	}
@@ -426,16 +445,16 @@ void pass1(e2fsck_t ctx)
 			clear_problem_context(&pctx);
 			fix_problem(ctx, PR_1_DUP_BLOCKS_PREENSTOP, &pctx);
 		}
-		pass1_dupblocks(ctx, block_buf);
+		e2fsck_pass1_dupblocks(ctx, block_buf);
 	}
-	free(inodes_to_process);
+	ext2fs_free_mem((void **) &inodes_to_process);
 endit:
 	fs->get_blocks = 0;
 	fs->check_directory = 0;
 	fs->read_inode = 0;
 	fs->write_inode = 0;
 	
-	free(block_buf);
+	ext2fs_free_mem((void **) &block_buf);
 	ext2fs_free_block_bitmap(ctx->block_illegal_map);
 	ctx->block_illegal_map = 0;
 
@@ -487,6 +506,9 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 		sprintf(buf, "reading indirect blocks of inode %lu", pctx.ino);
 		ehandler_operation(buf);
 		check_blocks(ctx, &pctx, block_buf);
+
+		if (ctx->flags & E2F_FLAG_ABORT)
+			return;
 	}
 	ctx->stashed_inode = old_stashed_inode;
 	ctx->stashed_ino = old_stashed_ino;
@@ -522,7 +544,9 @@ static void alloc_bad_map(e2fsck_t ctx)
 	if (pctx.errcode) {
 		pctx.num = 3;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
-		fatal_error(0);
+		/* Should never get here */
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 }
 
@@ -540,7 +564,9 @@ static void alloc_bb_map(e2fsck_t ctx)
 	if (pctx.errcode) {
 		pctx.num = 4;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
-		fatal_error(0);
+		/* Should never get here */
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
 	}
 }
 
@@ -566,7 +592,9 @@ static _INLINE_ void mark_block_used(e2fsck_t ctx, blk_t block)
 				pctx.num = 3;
 				fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, 
 					    &pctx);
-				fatal_error(0);
+				/* Should never get here */
+				ctx->flags |= E2F_FLAG_ABORT;
+				return;
 			}
 		}
 		ext2fs_fast_mark_block_bitmap(ctx->block_dup_map, block);
@@ -604,6 +632,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pctx->errcode = ext2fs_block_iterate2(fs, ino,
 				       pb.is_dir ? BLOCK_FLAG_HOLE : 0,
 				       block_buf, process_block, &pb);
+	if (ctx->flags & E2F_FLAG_ABORT)
+		return;
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
 	if (pctx->errcode)
 		fix_problem(ctx, PR_1_BLOCK_ITERATE, pctx);
@@ -612,11 +642,11 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		ctx->fs_fragmented++;
 
 	if (pb.clear) {
-		e2fsck_read_inode(fs, ino, inode, "check_blocks");
+		e2fsck_read_inode(ctx, ino, inode, "check_blocks");
 		inode->i_links_count = 0;
 		ext2fs_icount_store(ctx->inode_link_info, ino, 0);
 		inode->i_dtime = time(0);
-		e2fsck_write_inode(fs, ino, inode, "check_blocks");
+		e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 		ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
 		ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
 		/*
@@ -624,7 +654,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		 * before processing was aborted, so we need to
 		 * restart the pass 1 scan.
 		 */
-		restart_e2fsck++;
+		ctx->flags |= E2F_FLAG_RESTART;
 		return;
 	}
 
@@ -639,7 +669,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			inode->i_links_count = 0;
 			ext2fs_icount_store(ctx->inode_link_info, ino, 0);
 			inode->i_dtime = time(0);
-			e2fsck_write_inode(fs, ino, inode, "check_blocks");
+			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 			ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
 			ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
 			ctx->fs_directory_count--;
@@ -652,7 +682,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pctx->num = (pb.last_block+1) * fs->blocksize;
 		if (fix_problem(ctx, PR_1_BAD_I_SIZE, pctx)) {
 			inode->i_size = pctx->num;
-			e2fsck_write_inode(fs, ino, inode, "check_blocks");
+			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 		}
 		pctx->num = 0;
 	}
@@ -660,7 +690,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pctx->num = pb.num_blocks;
 		if (fix_problem(ctx, PR_1_BAD_I_BLOCKS, pctx)) {
 			inode->i_blocks = pb.num_blocks;
-			e2fsck_write_inode(fs, ino, inode, "check_blocks");
+			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 		}
 		pctx->num = 0;
 	}
@@ -826,7 +856,9 @@ mark_dir:
 			pctx->blk = blk;
 			pctx->num = blockcnt;
 			fix_problem(ctx, PR_1_ADD_DBLOCK, pctx);
-			fatal_error(0);
+			/* Should never get here */
+			ctx->flags |= E2F_FLAG_ABORT;
+			return BLOCK_ABORT;
 		}
 	}
 	return ret_code;
@@ -841,7 +873,7 @@ static void bad_block_indirect(e2fsck_t ctx, blk_t blk)
 	 * Prompt to see if we should continue or not.
 	 */
 	if (!fix_problem(ctx, PR_1_BBINODE_BAD_METABLOCK, &pctx))
-		fatal_error(0);
+		ctx->flags |= E2F_FLAG_ABORT;
 }
 
 int process_bad_block(ext2_filsys fs,
@@ -878,9 +910,11 @@ int process_bad_block(ext2_filsys fs,
 	}
 
 	if (blockcnt < 0) {
-		if (ext2fs_test_block_bitmap(ctx->block_found_map, blk))
+		if (ext2fs_test_block_bitmap(ctx->block_found_map, blk)) {
 			bad_block_indirect(ctx, blk);
-		else
+			if (ctx->flags & E2F_FLAG_ABORT)
+				return BLOCK_ABORT;
+		} else
 			mark_block_used(ctx, blk);
 		return 0;
 	}
@@ -966,6 +1000,8 @@ int process_bad_block(ext2_filsys fs,
 	if ((blk == p->inode->i_block[EXT2_IND_BLOCK]) ||
 	    p->inode->i_block[EXT2_DIND_BLOCK]) {
 		bad_block_indirect(ctx, blk);
+		if (ctx->flags & E2F_FLAG_ABORT)
+			return BLOCK_ABORT;
 		return 0;
 	}
 
@@ -1001,8 +1037,8 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 		ext2fs_unmark_valid(fs);
 		return;
 	}
-	buf = malloc(fs->blocksize);
-	if (!buf) {
+	pctx.errcode = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_RELOC_MEMORY_ALLOCATE, &pctx);
 		ext2fs_unmark_valid(fs);
 		return;
@@ -1029,7 +1065,7 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 		if (pctx.errcode)
 			fix_problem(ctx, PR_1_RELOC_WRITE_ERR, &pctx);
 	}
-	free(buf);
+	ext2fs_free_mem((void **) &buf);
 }
 
 /*
@@ -1058,7 +1094,7 @@ static void handle_fs_bad_blocks(e2fsck_t ctx)
 			new_table_block(ctx, first_block, i, "inode table",
 					fs->inode_blocks_per_group, 
 					&fs->group_desc[i].bg_inode_table);
-			restart_e2fsck++;
+			ctx->flags |= E2F_FLAG_RESTART;
 		}
 		first_block += fs->super->s_blocks_per_group;
 	}

@@ -238,12 +238,12 @@ void print_resource_track(const char *desc, struct resource_track *track)
 }
 #endif /* RESOURCE_TRACK */
 
-void e2fsck_read_inode(ext2_filsys fs, unsigned long ino,
+void e2fsck_read_inode(e2fsck_t ctx, unsigned long ino,
 			      struct ext2_inode * inode, const char *proc)
 {
 	int retval;
 
-	retval = ext2fs_read_inode(fs, ino, inode);
+	retval = ext2fs_read_inode(ctx->fs, ino, inode);
 	if (retval) {
 		com_err("ext2fs_read_inode", retval,
 			"while reading inode %ld in %s", ino, proc);
@@ -251,12 +251,12 @@ void e2fsck_read_inode(ext2_filsys fs, unsigned long ino,
 	}
 }
 
-extern void e2fsck_write_inode(ext2_filsys fs, unsigned long ino,
+extern void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
 			       struct ext2_inode * inode, const char *proc)
 {
 	int retval;
 
-	retval = ext2fs_write_inode(fs, ino, inode);
+	retval = ext2fs_write_inode(ctx->fs, ino, inode);
 	if (retval) {
 		com_err("ext2fs_write_inode", retval,
 			"while writing inode %ld in %s", ino, proc);

@@ -1,3 +1,19 @@
+Mon Nov  3 14:35:29 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* [lots of files]:  Change ext2fs_read_inode, ext2fs_write_inode
+		to take the e2fsck context as their first argument.
+		Change dir_info.c routines to take an e2fsck_context,
+		renamed them to start with e2fsck_ to avoid namespace
+		issues, and changed them to store the directory
+		information inside the e2fsck context.
+		Added e2fsck_run() which calls all of the e2fsck passes in
+		the correct order, and which handles the return of abort
+		codes.  Added abort processing, both via setjmp/longjmp
+		and via flags in the e2fsck context.  Use a flag in the
+		e2fsck context instead of the restart_e2fsck global
+		variable.   Change uses of free and malloc to
+		ext2fs_free_mem and ext2fs_get_mem.
+	
 Fri Oct 31 01:12:43 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass1.c, pass3.c: Rename new error codes to _ET_ in them for

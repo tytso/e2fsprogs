@@ -28,7 +28,7 @@ static int disconnect_inode(e2fsck_t ctx, ino_t i)
 	struct ext2_inode	inode;
 	struct problem_context	pctx;
 
-	e2fsck_read_inode(fs, i, &inode, "pass4: disconnect_inode");
+	e2fsck_read_inode(ctx, i, &inode, "pass4: disconnect_inode");
 	clear_problem_context(&pctx);
 	pctx.ino = i;
 	pctx.inode = &inode;
@@ -42,7 +42,7 @@ static int disconnect_inode(e2fsck_t ctx, ino_t i)
 			ext2fs_icount_store(ctx->inode_link_info, i, 0);
 			inode.i_links_count = 0;
 			inode.i_dtime = time(0);
-			e2fsck_write_inode(fs, i, &inode,
+			e2fsck_write_inode(ctx, i, &inode,
 					   "disconnect_inode");
 			/*
 			 * Fix up the bitmaps...
@@ -60,7 +60,7 @@ static int disconnect_inode(e2fsck_t ctx, ino_t i)
 	 * Prompt to reconnect.
 	 */
 	if (fix_problem(ctx, PR_4_UNATTACHED_INODE, &pctx)) {
-		if (reconnect_file(ctx, i))
+		if (e2fsck_reconnect_file(ctx, i))
 			ext2fs_unmark_valid(fs);
 	} else {
 		/*
@@ -75,7 +75,7 @@ static int disconnect_inode(e2fsck_t ctx, ino_t i)
 }
 
 
-void pass4(e2fsck_t ctx)
+void e2fsck_pass4(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	ino_t	i;
@@ -118,7 +118,7 @@ void pass4(e2fsck_t ctx)
 					    &link_counted);
 		}
 		if (link_counted != link_count) {
-			e2fsck_read_inode(fs, i, &inode, "pass4");
+			e2fsck_read_inode(ctx, i, &inode, "pass4");
 			pctx.ino = i;
 			pctx.inode = &inode;
 			if (link_count != inode.i_links_count) {
@@ -129,7 +129,7 @@ void pass4(e2fsck_t ctx)
 			pctx.num = link_counted;
 			if (fix_problem(ctx, PR_4_BAD_REF_COUNT, &pctx)) {
 				inode.i_links_count = link_counted;
-				e2fsck_write_inode(fs, i, &inode, "pass4");
+				e2fsck_write_inode(ctx, i, &inode, "pass4");
 			}
 		}
 	}

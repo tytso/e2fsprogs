@@ -105,7 +105,7 @@ static ext2fs_inode_bitmap inode_dup_map;
 /*
  * Main procedure for handling duplicate blocks
  */
-void pass1_dupblocks(e2fsck_t ctx, char *block_buf)
+void e2fsck_pass1_dupblocks(e2fsck_t ctx, char *block_buf)
 {
 	ext2_filsys 		fs = ctx->fs;
 	struct dup_block	*p, *q, *next_p, *next_q;
@@ -135,12 +135,12 @@ void pass1_dupblocks(e2fsck_t ctx, char *block_buf)
 		next_p = p->next_block;
 		for (q = p; q; q = next_q) {
 			next_q = q->next_inode;
-			free(q);
+			ext2fs_free_mem((void **) &q);
 		}
 	}
 	for (r = dup_ino; r; r = next_r) {
 		next_r = r->next;
-		free(r);
+		ext2fs_free_mem((void **) &r);
 	}
 }
 
@@ -154,7 +154,7 @@ struct process_block_struct {
 	struct problem_context *pctx;
 };
 
-void pass1b(e2fsck_t ctx, char *block_buf)
+static void pass1b(e2fsck_t ctx, char *block_buf)
 {
 	ext2_filsys fs = ctx->fs;
 	ino_t	ino;
@@ -322,7 +322,7 @@ static int search_dirent_proc(ino_t dir, int entry,
 }
 
 
-void pass1c(e2fsck_t ctx, char *block_buf)
+static void pass1c(e2fsck_t ctx, char *block_buf)
 {
 	ext2_filsys fs = ctx->fs;
 	struct dup_inode	*p;
@@ -468,7 +468,7 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 		else
 			ext2fs_unmark_valid(fs);
 	}
-	free(shared);
+	ext2fs_free_mem((void **) &shared);
 }
 
 static int delete_file_block(ext2_filsys fs,
@@ -530,10 +530,10 @@ static void delete_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 	ext2fs_unmark_inode_bitmap(fs->inode_map, dp->ino);
 	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
-	e2fsck_read_inode(fs, dp->ino, &inode, "delete_file");
+	e2fsck_read_inode(ctx, dp->ino, &inode, "delete_file");
 	inode.i_links_count = 0;
 	inode.i_dtime = time(0);
-	e2fsck_write_inode(fs, dp->ino, &inode, "delete_file");
+	e2fsck_write_inode(ctx, dp->ino, &inode, "delete_file");
 }
 
 struct clone_struct {
@@ -616,9 +616,9 @@ static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 	cs.errcode = 0;
 	cs.dir = 0;
 	cs.ctx = ctx;
-	cs.buf = malloc(fs->blocksize);
-	if (!cs.buf)
-		return ENOMEM;
+	retval = ext2fs_get_mem(fs->blocksize, (void **) &cs.buf);
+	if (retval)
+		return retval;
 
 	if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dp->ino))
 		cs.dir = dp->ino;
@@ -626,7 +626,7 @@ static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 	retval = ext2fs_block_iterate(fs, dp->ino, 0, block_buf,
 				      clone_file_block, &cs);
 	ext2fs_mark_bb_dirty(fs);
-	free(cs.buf);
+	ext2fs_free_mem((void **) &cs.buf);
 	if (retval) {
 		com_err("clone_file", retval,
 			"while calling ext2fs_block_iterate for inode %d",
