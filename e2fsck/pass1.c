@@ -482,6 +482,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 			if (ino == EXT2_BOOT_LOADER_INO) {
 				if (LINUX_S_ISDIR(inode.i_mode))
 					problem = PR_1_RESERVED_BAD_MODE;
+			} else if (ino == EXT2_RESIZE_INO) {
+				if (inode.i_mode &&
+				    !LINUX_S_ISREG(inode.i_mode))
+					problem = PR_1_RESERVED_BAD_MODE;
 			} else {
 				if (inode.i_mode != 0)
 					problem = PR_1_RESERVED_BAD_MODE;
