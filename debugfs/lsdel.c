@@ -108,7 +108,9 @@ void do_lsdel(int argc, char **argv)
 		goto error_out;
 	}
 
-	retval = ext2fs_get_next_inode(scan, &ino, &inode);
+	do {
+		retval = ext2fs_get_next_inode(scan, &ino, &inode);
+	} while (retval == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE);
 	if (retval) {
 		com_err("ls_deleted_inodes", retval,
 			"while starting inode scan");
@@ -158,9 +160,9 @@ void do_lsdel(int argc, char **argv)
 		}
 		
 	next:
-		do 
+		do {
 			retval = ext2fs_get_next_inode(scan, &ino, &inode);
-		while (retval == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE);
+		} while (retval == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE);
 		if (retval) {
 			com_err("ls_deleted_inodes", retval,
 				"while doing inode scan");
