@@ -1,5 +1,9 @@
 2000-10-24    <tytso@snap.thunk.org>
 
+	* mke2fs.c (PRS): Applied Andreas Dilger's patch to make the -r -s
+		handling a bit more sane.  (Even though -s is deprecated
+		at this point.)
+
 	* get_device_by_label.c: Apply fix from Erik Troan to support 16
 		character labels.
 

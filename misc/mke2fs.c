@@ -737,12 +737,12 @@ static void PRS(int argc, char *argv[])
 	int		reserved_ratio = 5;
 	ino_t		num_inodes = 0;
 	errcode_t	retval;
-	int		sparse_option = 0;
+	int		sparse_option = 1;
 	char *		oldpath = getenv("PATH");
 	struct ext2fs_sb *param_ext2 = (struct ext2fs_sb *) &param;
 	char *		raid_opts = 0;
 	char *		fs_type = 0;
-	const char *	feature_set = "filetype,sparse_super";
+	const char *	feature_set = "filetype";
 	blk_t		dev_size;
 #ifdef linux
 	struct 		utsname ut;
@@ -1003,11 +1003,15 @@ static void PRS(int argc, char *argv[])
 	 */
 	param.s_r_blocks_count = (param.s_blocks_count * reserved_ratio) / 100;
 
-#ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+	/* Turn off features not supported by the earlier filesystem version */
+	if (param.s_rev_level == 0) {
+		sparse_option = 0;
+		feature_set = NULL;
+	}
 	if (sparse_option)
 		param_ext2->s_feature_ro_compat |=
 			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-#endif
+
 	if (feature_set && !strncasecmp(feature_set, "none", 4))
 		feature_set = NULL;
 	if (feature_set && e2p_edit_feature(feature_set,
