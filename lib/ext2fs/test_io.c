@@ -225,13 +225,18 @@ static errcode_t test_write_blk(io_channel channel, unsigned long block,
 static errcode_t test_flush(io_channel channel)
 {
 	struct test_private_data *data;
+	errcode_t	retval = 0;
 	
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct test_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_TEST_IO_CHANNEL);
 
 	if (data->real)
-		return io_channel_flush(data->real);
-	return 0;
+		retval = io_channel_flush(data->real);
+	
+	printf("Test_io: flush() returned %s\n",
+		       retval ? error_message(retval) : "OK");
+	
+	return retval;
 }
 

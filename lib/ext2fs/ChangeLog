@@ -1,3 +1,15 @@
+Mon Feb 16 16:16:00 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2_io.h, ext2fs.h: Protect against being included multiple times.
+
+	* bmove.c: #include ext2fsP.h instead of "ext2fs/ext2fs.h"
+
+	* test_io.c (test_flush): Add a debugging printf when the flush
+		method is called.
+
+	* rw_bitmaps.c (ext2fs_read_bitmaps): If the bitmaps are already
+		read in, return right away.
+
 Sun Feb  1 08:20:24 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* bitops.h: Don't try to do i386 inline asm functions if the

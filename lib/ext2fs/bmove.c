@@ -24,7 +24,7 @@
 #include <linux/ext2_fs.h>
 #endif
 
-#include "ext2fs/ext2fs.h"
+#include "ext2fsP.h"
 
 struct process_block_struct {
 	ino_t			ino;

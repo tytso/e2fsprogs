@@ -9,6 +9,9 @@
  * %End-Header%
  */
 
+#ifndef _EXT2FS_EXT2FS_H
+#define _EXT2FS_EXT2FS_H
+
 /*
  * Non-GNU C compilers won't necessarily understand inline
  */
@@ -905,3 +908,4 @@ _INLINE_ int ext2fs_group_of_ino(ext2_filsys fs, ino_t ino)
 #undef _INLINE_
 #endif
 
+#endif /* _EXT2FS_EXT2FS_H */
