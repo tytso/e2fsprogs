@@ -101,15 +101,18 @@ static int scan_dir(char *dirname, dev_t device, struct dir_list **list,
 			add_to_dirlist(path, list);
 		if (S_ISBLK(st.st_mode) && st.st_rdev == device) {
 			cp = malloc(strlen(path)+1);
-			if (!cp)
+			if (!cp) {
+				closedir(dir);
 				return ENOMEM;
+			}
 			strcpy(cp, path);
 			*ret_path = cp;
-			return 0;
+			goto success;
 		}
 	skip_to_next:
 		dp = readdir(dir);
 	}
+success:
 	closedir(dir);
 	return 0;
 }

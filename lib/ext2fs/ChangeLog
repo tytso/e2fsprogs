@@ -1,3 +1,8 @@
+2001-07-29  Theodore Tso  <tytso@valinux.com>
+
+	* finddev.c (scan_dir): Fix memory leak; we weren't calling
+		closedir() when exiting the function in all cases.
+
 2001-07-27  Theodore Tso  <tytso@valinux.com>
 
 	* mkjournal.c (ext2fs_create_journal_superblock): Set the first
