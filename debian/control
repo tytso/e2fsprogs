@@ -22,7 +22,7 @@ Description: A statically-linked version of the ext2 filesystem checker
  to run this program if something like your C library gets corrupted.
 
 Package: comerr-dev
-Section: devel
+Section: libdevel
 Priority: extra
 Depends: ${libcdev:Depends}, libcomerr2
 Suggests: doc-base
@@ -34,7 +34,7 @@ Description: The Common Error Description library - headers and static libraries
  have the problems identified with mechanisms commonly in use.
 
 Package: ss-dev
-Section: devel
+Section: libdevel
 Priority: extra
 Depends: ${libcdev:Depends}, libss2
 Conflicts: e2fsprogs (<< 1.10-6)
@@ -47,7 +47,7 @@ Description: Command-line interface parsing library - headers and static librari
  It was originally inspired by the Multics SubSystem library.
 
 Package: uuid-dev
-Section: devel
+Section: libdevel
 Priority: extra
 Depends: ${libcdev:Depends}, e2fsprogs (= ${Source-Version})
 Conflicts: e2fsprogs (<< 1.10-6)
@@ -75,7 +75,7 @@ Description: Block device id library
  system instead.
 
 Package: libblkid-dev
-Section: devel
+Section: libdevel
 Priority: extra
 Depends: libblkid1 (= ${Source-Version})
 Architecture: any
@@ -130,12 +130,13 @@ Description: The EXT2 file system utilities and libraries
  filesystems, and the generic `fsck' wrapper.
 
 Package: e2fslibs-dev
-Section: devel
+Section: libdevel
 Priority: extra
 Depends: comerr-dev, e2fsprogs (= ${Source-Version})
 Suggests: doc-base
 Provides: ext2fs-dev, e2p-dev
 Conflicts: e2fsprogs (<< 1.10-6)
+Replaces: libkrb5-dev (<< 1.3)
 Architecture: any
 Description: The headers and static libraries for ext2fs-aware tools-development
  EXT2FS stands for "Extended Filesystem", version 2. It's the filesystem

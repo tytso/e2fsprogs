@@ -217,6 +217,8 @@ install-std: build
 	${INSTALL_PROGRAM} ${stdbuilddir}/e2fsck/e2fsck.static ${tmpdir}/sbin
 	ln -s e2fsck.8.gz ${mandir}/man8/e2fsck.static.8.gz
 
+	ln -s et/com_err.h ${tmpdir}/usr/include
+
 	dh_movefiles
 	test -z `find ${tmpdir} -type f`
 

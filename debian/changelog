@@ -1,3 +1,33 @@
+e2fsprogs (1.32+1.33-WIP-2003.03.30-3) unstable; urgency=low
+
+  * Provide /usr/include/com_err.h, which was previously provided by the
+    libkrb5-dev package
+  * Change the sectoin of com_err-dev, ss-dev, uuid-dev, libblkid-dev,
+    e2fslibs-dev to libdevel
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed,  9 Apr 2003 23:26:52 -0400
+
+e2fsprogs (1.32+1.33-WIP-2003.03.30-2) unstable; urgency=low
+
+  * Fix XFS superblock definition.  Add support to extract UUID and
+    labels for JFS and ROMFS.
+  * Make the random number generator more paranoid about potentially buggy
+    /dev/random devices.
+  * The badblocks program now flushes its output as it discovers bad blocks.
+  * Imported bug fixes to EVMS driver from the EVMS 2.0 tree.  Fixed a 
+    few potential hangs, and eliminated a file descriptor leak.
+  * E2fsck now updates the global free block and inode counters from
+    the block group specific counters quietly.  This is needed for an
+    experimental kernel patch which improves SMP scalability by not 
+    locking the entire filesystem during block or inode allocation; if
+    the filesystem is not unmoutned cleanly, the global counts may not
+    be accurate.
+  * Fix a bug in fsck which can cause it to hang trying to access the
+    floppy disk if there the floppy drive has filesystem type of
+    'auto'.  (Closes: #187812)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun,  6 Apr 2003 23:13:50 -0400
+
 e2fsprogs (1.32+1.33-WIP-2003.03.30-1) unstable; urgency=low
 
   * Change compile_et to generate header files that use <et/com_err.h>
