@@ -1,3 +1,8 @@
+2005-01-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* r_resize_inode: Skip this test if resize2fs is not compiled (due
+		to configure's --disable-resizer option)
+
 2005-01-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* r_resize_inode, m_dasd_bs, m_large_file, m_meta_bg, m_no_opt,
