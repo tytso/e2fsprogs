@@ -1004,6 +1004,12 @@ static void PRS(int argc, char *argv[])
 		exit(1);
 	}
 
+	if (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+		if (!fs_type)
+			fs_type = "journal";
+		reserved_ratio = 0;
+		sparse_option = 0;
+	}
 	if (sparse_option)
 		param.s_feature_ro_compat |=
 			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
@@ -1067,11 +1073,6 @@ static void PRS(int argc, char *argv[])
 	if ((param.s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
 	    !journal_size)
 		journal_size = -1;
-	if (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
-		if (!fs_type)
-			fs_type = "journal";
-		reserved_ratio = 0;
-	}
 
 	set_fs_defaults(fs_type, &param, blocksize, &inode_ratio);
 
