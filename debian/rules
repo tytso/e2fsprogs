@@ -47,6 +47,7 @@ debdir=${topdir}/debian
 tmpdir=${debdir}/tmp
 bfdir=${debdir}/e2fsprogs-bf
 udebdir=${debdir}/e2fsprogs-udeb
+blkidudebdir=${debdir}/libblkid1-udeb
 maindir=${debdir}/e2fsprogs
 stdbuilddir=${debdir}/BUILD-STD
 bfbuilddir=${debdir}/BUILD-BF
@@ -57,6 +58,9 @@ mandir=${tmpdir}${MANDIR}
 
 UDEB_NAME = $(package)-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
 UDEB_PRIORITY = $(shell grep '^Package: e2fsprogs-udeb' debian/control -A 10 | grep ^Priority: | cut -d ' ' -f 2)
+
+BLKID_UDEB_NAME = libblkid1-udeb_$(MAIN_VERSION)_$(DEB_HOST_ARCH).udeb
+BLKID_UDEB_PRIORITY = $(shell grep '^Package: libblkid1-udeb' debian/control -A 10 | grep ^Priority: | cut -d ' ' -f 2)
 
 SUBPACKAGES_DIRS = tmp e2fslibs-dev comerr-dev ss-dev
 
@@ -257,6 +261,8 @@ install-udeb: install-bf
 	cp -a ${bfdir}/sbin/e2fsck ${udebdir}/sbin/
 	ln -s e2fsck ${udebdir}/sbin/fsck.ext2
 	ln -s e2fsck ${udebdir}/sbin/fsck.ext3
+	mkdir -p ${blkidudebdir}/lib
+	mv ${udebdir}/lib/libblkid.* ${blkidudebdir}/lib
 
 binary-indep: 
   # no arch-independant debs.
@@ -308,7 +314,7 @@ binary-arch: install install-udeb
 	install -m 644 debian/libblkid.copyright \
 		${debdir}/libblkid${BLKID_SOVERSION}/usr/share/doc/libblkid${BLKID_SOVERSION}/copyright
 
-	dh_installdocs -Ne2fsprogs-udeb
+	dh_installdocs -Ne2fsprogs-udeb -Nlibblkid1-udeb
 
 	install -m 644 debian/e2fsprogs.copyright \
 	  ${bfdir}/usr/share/doc/e2fsprogs-bf/copyright
@@ -375,7 +381,7 @@ binary-arch: install install-udeb
 	dh_installdeb
 	dh_shlibdeps -l${stdbuilddir}/lib
 
-	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev -Ne2fsprogs-udeb
+	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev -Ne2fsprogs-udeb -Nlibblkid1-udeb
 	DH_OPTIONS= dh_gencontrol -pcomerr-dev \
 	  -u '-v${COMERR_VERSION}-${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -pss-dev \
@@ -387,13 +393,17 @@ binary-arch: install install-udeb
 	DH_OPTIONS= dh_gencontrol -plibblkid${BLKID_SOVERSION} \
 	  -u '-v${MAIN_VERSION}'
 
-	dh_md5sums -Ne2fsprogs-udeb
-	dh_builddeb -Ne2fsprogs-udeb
+	dh_md5sums -Ne2fsprogs-udeb -Nlibblkid1-udeb
+	dh_builddeb -Ne2fsprogs-udeb -Nlibblkid1-udeb
 
 	# udeb stuff
 	dh_gencontrol	-pe2fsprogs-udeb -- -fdebian/files~
 	dpkg-distaddfile $(UDEB_NAME) debian-installer $(UDEB_PRIORITY)
 	dh_builddeb -pe2fsprogs-udeb --filename=$(UDEB_NAME)
+
+	dh_gencontrol	-plibblkid1-udeb -- -fdebian/files~
+	dpkg-distaddfile $(BLKID_UDEB_NAME) debian-installer $(BLKID_UDEB_PRIORITY)
+	dh_builddeb -plibblkid1-udeb --filename=$(BLKID_UDEB_NAME)
 
 binary: binary-indep binary-arch
 

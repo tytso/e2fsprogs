@@ -74,6 +74,21 @@ Description: Block device id library
  filesystems by hard-coded device names, but via a logical naming 
  system instead.
 
+Package: libblkid1-udeb
+Section: debian-installer
+Priority: required
+Depends: ${shlibs:Depends}
+Provides: libblkid1
+Architecture: any
+Description: Block device id library
+ The blkid library which allows system programs like fsck and 
+ mount to quickly and easily find block devices by filesystem UUID and 
+ LABEL.  This allows system administrators to avoid specifiying 
+ filesystems by hard-coded device names, but via a logical naming 
+ system instead.
+ .
+ This is a minimal package for debian-installer.
+
 Package: libblkid-dev
 Section: libdevel
 Priority: extra

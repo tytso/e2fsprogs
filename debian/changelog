@@ -4,8 +4,9 @@ e2fsprogs (1.32+1.33-WIP-2003.03.30-3) unstable; urgency=low
     libkrb5-dev package
   * Change the sectoin of com_err-dev, ss-dev, uuid-dev, libblkid-dev,
     e2fslibs-dev to libdevel
+  * Add libblkid1-udeb package for the Debian Installer.
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Wed,  9 Apr 2003 23:26:52 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 10 Apr 2003 00:15:08 -0400
 
 e2fsprogs (1.32+1.33-WIP-2003.03.30-2) unstable; urgency=low
 
