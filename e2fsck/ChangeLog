@@ -1,3 +1,8 @@
+1998-07-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* unix.c (main): Fix typo in checking the incompat feature set; it
+		should be checked against EXT2_LIB_FEATURE_INCOMPAT_SUPP.
+
 1998-07-07  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* badblocks.c (test_disk): Don't clear the existing bad blocks

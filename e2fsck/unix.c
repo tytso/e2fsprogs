@@ -560,7 +560,7 @@ restart:
 	 */
 	s = (struct ext2fs_sb *) fs->super;
 	if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
-	    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)) {
+	    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
 		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
 			"(%s)", ctx->filesystem_name);
 		goto get_newer;
