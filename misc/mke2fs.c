@@ -85,6 +85,7 @@ char *journal_device;
 int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
 
 int sys_page_size = 4096;
+int linux_version_code = 0;
 
 static void usage(void)
 {
@@ -118,6 +119,30 @@ static int int_log10(unsigned int arg)
 		arg = arg / 10;
 	return l;
 }
+
+static int parse_version_number(const char *s)
+{
+	int	major, minor, rev;
+	char	*endptr;
+	const char *cp = s;
+
+	if (!s)
+		return 0;
+	major = strtol(cp, &endptr, 10);
+	if (cp == endptr || *endptr != '.')
+		return 0;
+	cp = endptr + 1;
+	minor = strtol(cp, &endptr, 10);
+	if (cp == endptr || *endptr != '.')
+		return 0;
+	cp = endptr + 1;
+	rev = strtol(cp, &endptr, 10);
+	if (cp == endptr)
+		return 0;
+	return ((((major * 256) + minor) * 256) + rev);
+}
+
+
 
 /*
  * This function sets the default parameters for a filesystem
@@ -172,8 +197,12 @@ static void set_fs_defaults(const char *fs_type,
 		use_bsize = p->blocksize;
 	}
 	if (blocksize <= 0) {
-		if (use_bsize == DEF_MAX_BLOCKSIZE)
+		if (use_bsize == DEF_MAX_BLOCKSIZE) {
 			use_bsize = sys_page_size;
+			if ((linux_version_code < (2*65536 + 6*256)) &&
+			    (use_bsize > 4096))
+				use_bsize = 4096;
+		}
 		if (sector_size && use_bsize < sector_size)
 			use_bsize = sector_size;
 		if ((blocksize < 0) && (use_bsize < (-blocksize)))
@@ -868,9 +897,8 @@ static void PRS(int argc, char *argv[])
 		perror("uname");
 		exit(1);
 	}
-	if ((ut.release[0] == '1') ||
-	    (ut.release[0] == '2' && ut.release[1] == '.' &&
-	     ut.release[2] < '2' && ut.release[3] == '.')) {
+	linux_version_code = parse_version_number(ut.release);
+	if (linux_version_code && linux_version_code < (2*65536 + 2*256)) {
 		param.s_rev_level = 0;
 		param.s_feature_incompat = 0;
 		param.s_feature_compat = 0;

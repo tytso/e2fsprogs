@@ -1,3 +1,8 @@
+2004-09-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (set_fs_defaults): Only use blocksizes > 4k on Linux
+		2.6 and newer systems.  (Addresses Debian Bug #271064)
+
 2004-09-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* lsattr.c (lsattr_dir_proc): Avoid double // when listing the
