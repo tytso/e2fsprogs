@@ -44,6 +44,9 @@ extern void do_ncheck(int argc, char **argv);
 extern void do_set_super(int argc, char **);
 
 /* debugfs.c */
+extern void internal_dump_inode(FILE *, char *, ext2_ino_t, 
+				struct ext2_inode *, int);
+
 extern void do_dirty_filesys(int argc, char **argv);
 extern void do_open_filesys(int argc, char **argv);
 extern void do_close_filesys(int argc, char **argv);
@@ -77,3 +80,4 @@ extern void do_rmdir(int argc, char **argv);
 extern void do_show_debugfs_params(int argc, char **argv);
 extern void do_expand_dir(int argc, char **argv);
 extern void do_features(int argc, char *argv[]);
+

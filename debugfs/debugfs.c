@@ -385,11 +385,11 @@ static int list_blocks_proc(ext2_filsys fs, blk_t *blocknr, int blockcnt,
 }
 
 
-static void dump_blocks(FILE *f, ext2_ino_t inode)
+static void dump_blocks(FILE *f, char *prefix, ext2_ino_t inode)
 {
 	struct list_blocks_struct lb;
 
-	fprintf(f, "BLOCKS:\n");
+	fprintf(f, "%sBLOCKS:\n%s", prefix, prefix);
 	lb.total = 0;
 	lb.first_block = 0;
 	lb.f = f;
@@ -398,82 +398,93 @@ static void dump_blocks(FILE *f, ext2_ino_t inode)
 			     list_blocks_proc, (void *)&lb);
 	finish_range(&lb);
 	if (lb.total)
-		fprintf(f, "\nTOTAL: %d\n", lb.total);
+		fprintf(f, "\n%sTOTAL: %d\n", prefix, lb.total);
 	fprintf(f,"\n");
 }
 
 
-static void dump_inode(ext2_ino_t inode_num, struct ext2_inode inode)
+void internal_dump_inode(FILE *out, char *prefix,
+			 ext2_ino_t inode_num, struct ext2_inode *inode,
+			 int do_dump_blocks)
 {
 	const char *i_type;
-	FILE	*out;
 	char frag, fsize;
 	int os = current_fs->super->s_creator_os;
 	
-	out = open_pager();
-	if (LINUX_S_ISDIR(inode.i_mode)) i_type = "directory";
-	else if (LINUX_S_ISREG(inode.i_mode)) i_type = "regular";
-	else if (LINUX_S_ISLNK(inode.i_mode)) i_type = "symlink";
-	else if (LINUX_S_ISBLK(inode.i_mode)) i_type = "block special";
-	else if (LINUX_S_ISCHR(inode.i_mode)) i_type = "character special";
-	else if (LINUX_S_ISFIFO(inode.i_mode)) i_type = "FIFO";
-	else if (LINUX_S_ISSOCK(inode.i_mode)) i_type = "socket";
+	if (LINUX_S_ISDIR(inode->i_mode)) i_type = "directory";
+	else if (LINUX_S_ISREG(inode->i_mode)) i_type = "regular";
+	else if (LINUX_S_ISLNK(inode->i_mode)) i_type = "symlink";
+	else if (LINUX_S_ISBLK(inode->i_mode)) i_type = "block special";
+	else if (LINUX_S_ISCHR(inode->i_mode)) i_type = "character special";
+	else if (LINUX_S_ISFIFO(inode->i_mode)) i_type = "FIFO";
+	else if (LINUX_S_ISSOCK(inode->i_mode)) i_type = "socket";
 	else i_type = "bad type";
-	fprintf(out, "Inode: %u   Type: %s    ", inode_num, i_type);
-	fprintf(out, "Mode:  %04o   Flags: 0x%x   Generation: %u\n",
-		inode.i_mode & 0777, inode.i_flags, inode.i_generation);
-	fprintf(out, "User: %5d   Group: %5d   Size: ",
-		inode.i_uid, inode.i_gid);
-	if (LINUX_S_ISDIR(inode.i_mode))
-		fprintf(out, "%d\n", inode.i_size);
+	fprintf(out, "%sInode: %u   Type: %s    ", prefix, inode_num, i_type);
+	fprintf(out, "%sMode:  %04o   Flags: 0x%x   Generation: %u\n",
+		prefix, 
+		inode->i_mode & 0777, inode->i_flags, inode->i_generation);
+	fprintf(out, "%sUser: %5d   Group: %5d   Size: ",
+		prefix, inode->i_uid, inode->i_gid);
+	if (LINUX_S_ISDIR(inode->i_mode))
+		fprintf(out, "%d\n", inode->i_size);
 	else {
-		__u64 i_size = (inode.i_size |
-				((unsigned long long)inode.i_size_high << 32));
+		__u64 i_size = (inode->i_size |
+				((unsigned long long)inode->i_size_high << 32));
 		
 		fprintf(out, "%lld\n", i_size);
 	}
 	if (current_fs->super->s_creator_os == EXT2_OS_HURD)
 		fprintf(out,
-			"File ACL: %d    Directory ACL: %d Translator: %d\n",
-			inode.i_file_acl, LINUX_S_ISDIR(inode.i_mode) ? inode.i_dir_acl : 0,
-			inode.osd1.hurd1.h_i_translator);
+			"%sFile ACL: %d    Directory ACL: %d Translator: %d\n",
+			prefix,
+			inode->i_file_acl, LINUX_S_ISDIR(inode->i_mode) ? inode->i_dir_acl : 0,
+			inode->osd1.hurd1.h_i_translator);
 	else
-		fprintf(out, "File ACL: %d    Directory ACL: %d\n",
-			inode.i_file_acl, LINUX_S_ISDIR(inode.i_mode) ? inode.i_dir_acl : 0);
-	fprintf(out, "Links: %d   Blockcount: %d\n", inode.i_links_count,
-		inode.i_blocks);
+		fprintf(out, "%sFile ACL: %d    Directory ACL: %d\n",
+			prefix,
+			inode->i_file_acl, LINUX_S_ISDIR(inode->i_mode) ? inode->i_dir_acl : 0);
+	fprintf(out, "%sLinks: %d   Blockcount: %d\n", 
+		prefix, inode->i_links_count, inode->i_blocks);
 	switch (os) {
 	    case EXT2_OS_LINUX:
-		frag = inode.osd2.linux2.l_i_frag;
-		fsize = inode.osd2.linux2.l_i_fsize;
+		frag = inode->osd2.linux2.l_i_frag;
+		fsize = inode->osd2.linux2.l_i_fsize;
 		break;
 	    case EXT2_OS_HURD:
-		frag = inode.osd2.hurd2.h_i_frag;
-		fsize = inode.osd2.hurd2.h_i_fsize;
+		frag = inode->osd2.hurd2.h_i_frag;
+		fsize = inode->osd2.hurd2.h_i_fsize;
 		break;
 	    case EXT2_OS_MASIX:
-		frag = inode.osd2.masix2.m_i_frag;
-		fsize = inode.osd2.masix2.m_i_fsize;
+		frag = inode->osd2.masix2.m_i_frag;
+		fsize = inode->osd2.masix2.m_i_fsize;
 		break;
 	    default:
 		frag = fsize = 0;
 	}
-	fprintf(out, "Fragment:  Address: %d    Number: %d    Size: %d\n",
-		inode.i_faddr, frag, fsize);
-	fprintf(out, "ctime: 0x%08x -- %s", inode.i_ctime,
-		time_to_string(inode.i_ctime));
-	fprintf(out, "atime: 0x%08x -- %s", inode.i_atime,
-		time_to_string(inode.i_atime));
-	fprintf(out, "mtime: 0x%08x -- %s", inode.i_mtime,
-		time_to_string(inode.i_mtime));
-	if (inode.i_dtime) 
-	  fprintf(out, "dtime: 0x%08x -- %s", inode.i_dtime,
-		  time_to_string(inode.i_dtime));
-	if (LINUX_S_ISLNK(inode.i_mode) && inode.i_blocks == 0)
-		fprintf(out, "Fast_link_dest: %.*s\n",
-			(int) inode.i_size, (char *)inode.i_block);
-	else
-		dump_blocks(out, inode_num);
+	fprintf(out, "%sFragment:  Address: %d    Number: %d    Size: %d\n",
+		prefix, inode->i_faddr, frag, fsize);
+	fprintf(out, "%sctime: 0x%08x -- %s", prefix, inode->i_ctime,
+		time_to_string(inode->i_ctime));
+	fprintf(out, "%satime: 0x%08x -- %s", prefix, inode->i_atime,
+		time_to_string(inode->i_atime));
+	fprintf(out, "%smtime: 0x%08x -- %s", prefix, inode->i_mtime,
+		time_to_string(inode->i_mtime));
+	if (inode->i_dtime) 
+	  fprintf(out, "%sdtime: 0x%08x -- %s", prefix, inode->i_dtime,
+		  time_to_string(inode->i_dtime));
+	if (LINUX_S_ISLNK(inode->i_mode) && inode->i_blocks == 0)
+		fprintf(out, "%sFast_link_dest: %.*s\n", prefix,
+			(int) inode->i_size, (char *)inode->i_block);
+	else if (do_dump_blocks)
+		dump_blocks(out, prefix, inode_num);
+}
+
+static void dump_inode(ext2_ino_t inode_num, struct ext2_inode inode)
+{
+	FILE	*out;
+	
+	out = open_pager();
+	internal_dump_inode(out, "", inode_num, &inode, 1);
 	close_pager(out);
 }
 

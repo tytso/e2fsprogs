@@ -1,3 +1,11 @@
+2001-03-29  Theodore Tso  <tytso@valinux.com>
+
+	* debugfs.c (dump_blocks, dump_inode, internal_dump_inode): Add
+		internal_dump_inode() interface for the logdump command.
+
+	* logdump.c: Imported code from Stephen Tweedie to dump the ext3
+		journal.
+
 2001-03-18  Theodore Tso  <tytso@valinux.com>
 
 	* debugfs.c (do_write, do_mknod): Remove extra (useless) call to

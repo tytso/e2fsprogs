@@ -121,5 +121,8 @@ request do_rdump, "Recursively dump a directory to the native filesystem",
 request do_set_super, "Set superblock value",
 	set_super_value, ssv;
 
+request do_logdump, "Dump the contents of the journal",
+	logdump;
+
 end;
 
