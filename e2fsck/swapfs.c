@@ -182,6 +182,7 @@ static void swap_inodes(e2fsck_t ctx)
 	ext2fs_free_mem(&buf);
 	ext2fs_free_mem(&block_buf);
 	e2fsck_use_inode_shortcuts(ctx, 0);
+	ext2fs_flush_icache(fs);
 }
 
 #if defined(__powerpc__) && defined(EXT2FS_ENABLE_SWAPFS)

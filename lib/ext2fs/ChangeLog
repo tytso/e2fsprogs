@@ -1,5 +1,8 @@
 2004-12-23  Theodore Ts'o  <tytso@mit.edu>
 
+	* inode.c (ext2fs_flush_icache): When flushing the icache, clear
+		the last-read block information as well.
+
 	* ext2fs.h (BMAP_SET), bmap.c (ext2fs_bmap): Add support for new
 		flag, BMAP_SET, which allows the caller to set a
 		particular logical->physical block mapping.

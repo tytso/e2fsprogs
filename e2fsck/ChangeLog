@@ -1,3 +1,9 @@
+2004-12-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* swapfs.c (swap_inodes): Since swap_inodes bypasses the inode
+		cache for speed reasons, we must flush it to avoid cache
+		coherency problems.
+
 2004-12-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* super.c (check_super_block): If the resize_inode feature is not

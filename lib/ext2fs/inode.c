@@ -63,6 +63,7 @@ errcode_t ext2fs_flush_icache(ext2_filsys fs)
 	for (i=0; i < fs->icache->cache_size; i++)
 		fs->icache->cache[i].ino = 0;
 
+	fs->icache->buffer_blk = 0;
 	return 0;
 }
 
