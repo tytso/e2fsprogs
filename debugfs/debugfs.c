@@ -431,6 +431,7 @@ void internal_dump_inode_extra(FILE *out, const char *prefix,
 	int storage_size;
 	int i;
 
+	fprintf(out, "Size of extra inode fields: %d\n", inode->i_extra_isize);
 	if (inode->i_extra_isize > EXT2_INODE_SIZE(current_fs->super) -
 			EXT2_GOOD_OLD_INODE_SIZE) {
 		fprintf(stderr, "invalid inode->i_extra_isize (%u)\n",
