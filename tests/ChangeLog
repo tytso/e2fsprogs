@@ -1,3 +1,8 @@
+2001-07-27  Theodore Tso  <tytso@valinux.com>
+
+	* f_filetype: Update expect.1 to match changed problem message
+		text and the fact that symlinks shouldn't be immutable.
+
 2001-07-07  Theodore Tso  <tytso@valinux.com>
 
 	* f_badinode: Update expect.1 to match change in invalid symlink

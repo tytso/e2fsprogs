@@ -1,5 +1,7 @@
 2001-07-27  Theodore Tso  <tytso@valinux.com>
 
+	* problem.c (PR_1_SET_IMMUTABLE): Clarify problem message.
+
 	* pass1.c (e2fsck_pass1): Check for symlinks that have the
 		immutable flag set (and offer to clear them).
 
