@@ -51,6 +51,10 @@ static int mark_bad_block(ext2_filsys fs, blk_t *block_nr,
 	if (blockcnt < 0)
 		return 0;
 	
+	if ((*block_nr < fs->super->s_first_data_block) ||
+	    (*block_nr >= fs->super->s_blocks_count))
+		return 0;	/* Ignore illegal blocks */
+
 	rb->err = ext2fs_badblocks_list_add(rb->bb_list, *block_nr);
 	if (rb->err)
 		return BLOCK_ABORT;
@@ -73,7 +77,11 @@ errcode_t ext2fs_read_bb_inode(ext2_filsys fs, ext2_badblocks_list *bb_list)
 		retval = ext2fs_read_inode(fs, EXT2_BAD_INO, &inode);
 		if (retval)
 			return retval;
-		numblocks = (inode.i_blocks / (fs->blocksize / 512)) + 20;
+		if (inode.i_blocks < 500)
+			numblocks = (inode.i_blocks /
+				     (fs->blocksize / 512)) + 20;
+		else
+			numblocks = 500;
 		retval = ext2fs_badblocks_list_create(bb_list, numblocks);
 		if (retval)
 			return retval;

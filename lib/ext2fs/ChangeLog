@@ -1,3 +1,8 @@
+1998-06-16  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* read_bb.c (ext2fs_read_bb_inode): Make function more robust
+		against a completely trashed bad block inode.
+
 1998-06-10  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* alloc_tables.c (ext2fs_allocate_group_table): Fix bug so that if
