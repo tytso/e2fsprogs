@@ -1,3 +1,12 @@
+2003-06-24    <tytso@snap.thunk.org>
+
+	* resize2fs.c (block_mover): Don't move blocks associated with the
+		bad blocks inode.  Instead, just remove them from the
+		badblocks list.  (Note this means that shrinking and then
+		enlarging a filesystem is not a reversible operation;
+		information about bad blocks in the part of the filesystem
+		which is to be chopped off is discarded.)
+
 2003-06-08  Theodore Ts'o  <tytso@mit.edu>
 
 	* resize2fs.8.in: Make explicit that you need to run resize2fs

@@ -1,3 +1,11 @@
+2003-06-24    <tytso@snap.thunk.org>
+
+	* badblocks.c, ext2fs.h (ext2fs_u32_list_find,
+		ext2fs_u32_list_test, ext2fs_u32_list_del,
+		ext2fs_badblocks_list_del): Add functions to delete a
+		block from the badblocks list.
+	* tst_badblocks.c: Add test cases for ext2fs_badblocks_list_del().
+
 2003-05-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* getsectsize.c (ext2fs_get_device_sectsize): New function which

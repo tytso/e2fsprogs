@@ -25,6 +25,9 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
+#define ADD_BLK	0x0001
+#define DEL_BLK	0x0002
+
 blk_t test1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0 };
 blk_t test2[] = { 11, 10, 9, 8, 7, 6, 5, 4, 3, 3, 2, 1 };
 blk_t test3[] = { 3, 1, 4, 5, 9, 2, 7, 10, 5, 6, 10, 8, 0 };
@@ -44,6 +47,20 @@ blk_t test4a[] = {
 	45, 0,
 	66, 1,
 	0 };
+blk_t test5[] = { 31, 20, 17, 51, 23, 1, 56, 57, 0 };
+blk_t test5a[] = {
+	50, ADD_BLK,
+	51, DEL_BLK,
+	57, DEL_BLK,
+	66, ADD_BLK,
+	31, DEL_BLK,
+	12, ADD_BLK,
+	2, ADD_BLK,
+	13, ADD_BLK,
+	1, DEL_BLK,
+	0
+	};
+		
 
 static int test_fail = 0;
 
@@ -118,6 +135,38 @@ static void validate_test_seq(badblocks_list bb, blk_t *vec)
 	}
 }
 
+static void do_test_seq(badblocks_list bb, blk_t *vec)
+{
+	int	i, match;
+
+	for (i = 0; vec[i]; i += 2) {
+		switch (vec[i+1]) {
+		case ADD_BLK:
+			ext2fs_badblocks_list_add(bb, vec[i]);
+			match = ext2fs_badblocks_list_test(bb, vec[i]);
+			printf("Adding block %d --- now %s\n", vec[i], 
+			       match ? "present" : "absent");
+			if (!match) {
+				printf("FAILURE!\n");
+				test_fail++;
+			}
+			break;
+		case DEL_BLK:
+			ext2fs_badblocks_list_del(bb, vec[i]);
+			match = ext2fs_badblocks_list_test(bb, vec[i]);
+			printf("Removing block %d --- now %s\n", vec[i], 
+			       ext2fs_badblocks_list_test(bb, vec[i]) ? 
+			       "present" : "absent");
+			if (match) {
+				printf("FAILURE!\n");
+				test_fail++;
+			}
+			break;
+		}
+	}
+}
+
+
 int file_test(badblocks_list bb)
 {
 	badblocks_list new_bb = 0;
@@ -156,11 +205,11 @@ int file_test(badblocks_list bb)
 
 int main(int argc, char **argv)
 {
-	badblocks_list bb1, bb2, bb3, bb4;
+	badblocks_list bb1, bb2, bb3, bb4, bb5;
 	int	equal;
 	errcode_t	retval;
 
-	bb1 = bb2 = bb3 = bb4 = 0;
+	bb1 = bb2 = bb3 = bb4 = bb5 = 0;
 
 	printf("test1: ");
 	retval = create_test_list(test1, &bb1);
@@ -189,7 +238,19 @@ int main(int argc, char **argv)
 	}
 	printf("\n");
 
-	if (bb1 && bb2 && bb3 && bb4) {
+	printf("test5: ");
+	retval = create_test_list(test5, &bb5);
+	if (retval == 0) {
+		print_list(bb5, 0);
+		printf("\n");
+		do_test_seq(bb5, test5a);
+		printf("After test5 sequence: ");
+		print_list(bb5, 0);
+		printf("\n");
+	}
+	printf("\n");
+
+	if (bb1 && bb2 && bb3 && bb4 && bb5) {
 		printf("Comparison tests:\n");
 		equal = ext2fs_badblocks_equal(bb1, bb2);
 		printf("bb1 and bb2 are %sequal.\n", equal ? "" : "NOT "); 
@@ -205,14 +266,19 @@ int main(int argc, char **argv)
 		printf("bb1 and bb4 are %sequal.\n", equal ? "" : "NOT "); 
 		if (equal)
 			test_fail++;
+
+		equal = ext2fs_badblocks_equal(bb4, bb5);
+		printf("bb4 and bb5 are %sequal.\n", equal ? "" : "NOT "); 
+		if (!equal)
+			test_fail++;
 		printf("\n");
 	}
+	
+	file_test(bb4);
 	
 	if (test_fail == 0)
 		printf("ext2fs library badblocks tests checks out OK!\n");
 
-	file_test(bb4);
-	
 	if (bb1)
 		ext2fs_badblocks_list_free(bb1);
 	if (bb2)

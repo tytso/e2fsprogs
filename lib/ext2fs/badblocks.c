@@ -156,7 +156,40 @@ errcode_t ext2fs_badblocks_list_add(ext2_badblocks_list bb, blk_t blk)
 	return ext2fs_u32_list_add((ext2_u32_list) bb, (__u32) blk);
 }
 
+/*
+ * This procedure finds a particular block is on a badblocks
+ * list.
+ */
+int ext2fs_u32_list_find(ext2_u32_list bb, __u32 blk)
+{
+	int	low, high, mid;
 
+	if (bb->magic != EXT2_ET_MAGIC_BADBLOCKS_LIST)
+		return -1;
+
+	if (bb->num == 0)
+		return -1;
+
+	low = 0;
+	high = bb->num-1;
+	if (blk == bb->list[low])
+		return low;
+	if (blk == bb->list[high])
+		return high;
+
+	while (low < high) {
+		mid = (low+high)/2;
+		if (mid == low || mid == high)
+			break;
+		if (blk == bb->list[mid])
+			return mid;
+		if (blk < bb->list[mid])
+			high = mid;
+		else
+			low = mid;
+	}
+	return -1;
+}
 
 /*
  * This procedure tests to see if a particular block is on a badblocks
@@ -164,33 +197,10 @@ errcode_t ext2fs_badblocks_list_add(ext2_badblocks_list bb, blk_t blk)
  */
 int ext2fs_u32_list_test(ext2_u32_list bb, __u32 blk)
 {
-	int	low, high, mid;
-
-	if (bb->magic != EXT2_ET_MAGIC_BADBLOCKS_LIST)
+	if (ext2fs_u32_list_find(bb, blk) < 0)
 		return 0;
-
-	if (bb->num == 0)
-		return 0;
-
-	low = 0;
-	high = bb->num-1;
-	if (blk == bb->list[low])
+	else
 		return 1;
-	if (blk == bb->list[high])
-		return 1;
-
-	while (low < high) {
-		mid = (low+high)/2;
-		if (mid == low || mid == high)
-			break;
-		if (blk == bb->list[mid])
-			return 1;
-		if (blk < bb->list[mid])
-			high = mid;
-		else
-			low = mid;
-	}
-	return 0;
 }
 
 int ext2fs_badblocks_list_test(ext2_badblocks_list bb, blk_t blk)
@@ -198,6 +208,31 @@ int ext2fs_badblocks_list_test(ext2_badblocks_list bb, blk_t blk)
 	return ext2fs_u32_list_test((ext2_u32_list) bb, (__u32) blk);
 }
 
+
+/*
+ * Remove a block from the badblock list
+ */
+int ext2fs_u32_list_del(ext2_u32_list bb, __u32 blk)
+{
+	int	remloc, i;
+
+	if (bb->num == 0)
+		return -1;
+
+	remloc = ext2fs_u32_list_find(bb, blk);
+	if (remloc < 0)
+		return -1;
+
+	for (i = remloc ; i < bb->num-1; i++)
+		bb->list[i] = bb->list[i+1];
+	bb->num--;
+	return 0;
+}
+
+void ext2fs_badblocks_list_del(ext2_u32_list bb, __u32 blk)
+{
+	ext2fs_u32_list_del(bb, blk);
+}
 
 errcode_t ext2fs_u32_list_iterate_begin(ext2_u32_list bb,
 					ext2_u32_iterate *ret)

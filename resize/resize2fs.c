@@ -837,6 +837,12 @@ static errcode_t block_mover(ext2_resize_t rfs)
 	errcode_t		retval;
 	int			size, c;
 	int			to_move, moved;
+	ext2_badblocks_list	badblock_list = 0;
+	int			bb_modified = 0;
+	
+	retval = ext2fs_read_bb_inode(old_fs, &badblock_list);
+	if (retval)
+		return retval;
 
 	new_blk = fs->super->s_first_data_block;
 	if (!rfs->itable_buf) {
@@ -862,6 +868,11 @@ static errcode_t block_mover(ext2_resize_t rfs)
 			continue;
 		if (!ext2fs_test_block_bitmap(rfs->move_blocks, blk))
 			continue;
+		if (ext2fs_badblocks_list_test(badblock_list, blk)) {
+			ext2fs_badblocks_list_del(badblock_list, blk);
+			bb_modified++;
+			continue;
+		}
 
 		new_blk = get_new_block(rfs);
 		if (!new_blk) {
@@ -931,6 +942,12 @@ static errcode_t block_mover(ext2_resize_t rfs)
 	}
 
 errout:
+	if (badblock_list) {
+		if (!retval && bb_modified)
+			retval = ext2fs_update_bb_inode(old_fs,
+							badblock_list);
+		ext2fs_badblocks_list_free(badblock_list);
+	}
 	return retval;
 }
 
