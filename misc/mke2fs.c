@@ -1,7 +1,8 @@
 /*
  * mke2fs.c - Make a ext2fs filesystem.
  * 
- * Copyright (C) 1994, 1995, 1996, 1997 Theodore Ts'o.
+ * Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+ * 	2003, 2004, 2005 by Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -820,36 +821,13 @@ static void parse_r_opts(struct ext2_super_block *param, const char *opts)
 				continue;
 			}
 
-			p = &arg[strlen(arg) - 1];
-
-			switch(*p++) {
-			case 'T':
-			case 't': resize <<= 10; /* no break */
-			case 'G':
-			case 'g': resize <<= 10; /* no break */
-			case 'M':
-			case 'm': resize <<= 10; /* no break */
-			case 'K':
-			case 'k': resize >>= param->s_log_block_size -10; *p = 0; break;
-			case 'b': resize >>= param->s_log_block_size - 9; *p = 0; break;
-			case '0': break;
-			case '1': break;
-			case '2': break;
-			case '3': break;
-			case '4': break;
-			case '5': break;
-			case '6': break;
-			case '7': break;
-			case '8': break;
-			case '9': break;
-			default: r_usage++; continue;
-			}
-
-			resize *= strtoul(arg, NULL, 0);
+			resize = parse_num_blocks(arg, 
+						  param->s_log_block_size);
 
 			if (resize == 0) {
-				fprintf(stderr,
-					_("Invalid resize parameter.\n"));
+				fprintf(stderr, 
+					_("Invalid resize parameter: %s\n"),
+					arg);
 				r_usage++;
 				continue;
 			}
@@ -978,7 +956,7 @@ static void PRS(int argc, char *argv[])
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cf:g:i:jl:m:no:qr:R:s:tvI:J:ST:FL:M:N:O:V")) != EOF)
+		    "b:cf:g:i:jl:m:no:qr:R:s:tvI:J:ST:FL:M:N:O:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = strtol(optarg, &tmp, 0);
@@ -1149,22 +1127,10 @@ static void PRS(int argc, char *argv[])
 		default:
 			usage();
 		}
+	}
 	if ((optind == argc) && !show_version_only)
 		usage();
-	device_name = argv[optind];
-	optind++;
-	if (optind < argc) {
-		unsigned long long tmp2 = strtoull(argv[optind++], &tmp, 0);
-
-		if ((*tmp) || (tmp2 > 0xfffffffful)) {
-			com_err(program_name, 0, _("bad blocks count - %s"),
-				argv[optind - 1]);
-			exit(1);
-		}
-		param.s_blocks_count = tmp2;
-	}
-	if (optind < argc)
-		usage();
+	device_name = argv[optind++];
 
 	if (!quiet || show_version_only)
 		fprintf (stderr, "mke2fs %s (%s)\n", E2FSPROGS_VERSION, 
@@ -1228,6 +1194,18 @@ static void PRS(int argc, char *argv[])
 		fprintf(stderr, "\nWarning: some 2.4 kernels do not support "
 			"blocksizes greater than 4096 \n\tusing ext3."
 			"  Use -b 4096 if this is an issue for you.\n\n");
+
+	if (optind < argc) {
+		param.s_blocks_count = parse_num_blocks(argv[optind++], 
+				param.s_log_block_size);
+		if (!param.s_blocks_count) {
+			com_err(program_name, 0, _("bad blocks count - %s"),
+				argv[optind - 1]);
+			exit(1);
+		}
+	}
+	if (optind < argc)
+		usage();
 
 	if (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		if (!fs_type)

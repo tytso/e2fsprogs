@@ -1,3 +1,9 @@
+2005-01-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (PRS, parse_r_opts): Use parse_num_blocks() from the
+		e2p library to parse the number of blocks from the command
+		line.
+
 2004-12-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* dumpe2fs.c (list_desc): If reserved GDT blocks are present,

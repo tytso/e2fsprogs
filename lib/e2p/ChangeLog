@@ -1,3 +1,9 @@
+2005-01-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* parse_num.c (parse_num_blocks): New file which adds a standard
+		function for parsing the number of blocks by programs such
+		as mke2fs and resize2fs.
+
 2004-12-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* ls.c (list_super2): Print the s_reserved_gdt_blocks field if it

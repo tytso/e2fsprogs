@@ -1,3 +1,8 @@
+2005-01-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* main.c (main): Use parse_num_blocks() from the e2p library to
+		parse the number of blocks from the command line.
+
 2004-12-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* resize2fs.c (resize_fs): Call ext2fs_create_resize_inode to

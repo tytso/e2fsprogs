@@ -45,3 +45,5 @@ int e2p_string2hash(char *string);
 const char *e2p_mntopt2string(unsigned int mask);
 int e2p_string2mntopt(char *string, unsigned int *mask);
 int e2p_edit_mntopts(const char *str, __u32 *mntopts, __u32 ok);
+
+unsigned long parse_num_blocks(const char *arg, int log_block_size);
