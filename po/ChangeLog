@@ -1,5 +1,9 @@
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.34
+
+2003-07-25  Theodore Ts'o  <tytso@mit.edu>
+
 	* LINGUAS, sv.po: Added Sweedish translation from Göran Uddeborg
 		<goeran@uddeborg.se>
 

@@ -1,3 +1,7 @@
+2003-07-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.34
+
 2003-07-06  Theodore Ts'o  <tytso@mit.edu>
 
 	* kernel-jbd.h, flushb.c: Fix gcc -Wall nitpicks (indented cpp

@@ -1,3 +1,25 @@
+e2fsprogs (1.34-1) unstable; urgency=low
+
+  * New upstream version.
+  * Fixed bug in fsck which caused it to waste CPU by spinning while
+    waiting for a child fsck process under some circumstances.
+  * Fixed bug in blkid library which would cause it to spin forever if
+    /proc is not mounted and /etc/blkid.tab is not present.
+  * Improved the blkid library's UDF's probing functions.
+  * Fixed the blkid library so it will remove delete the LABEL
+    attribute from its cache when a filesystem that previously had a
+    label no longer has one.
+  * Added Swedish translation.
+  * Remove debugging printf in badblocks program (Closes: #201499)
+  * Split shared libraries out of the e2fsprogs package into separate
+    packages: libss2, libcomerr2, libuuid1, and e2fslibs.  (Closes: #201155,
+    #201164)
+  * Warn the user when creating a filesystem with a journal and a blocksize
+    greater than 4096, since some kernels don't support ext3 with large
+    block sizes.  (Closes:  #193773)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 26 Jul 2003 01:01:55 -0400
+
 e2fsprogs (1.33+1.34-WIP-2003.05.21-2) unstable; urgency=low
 
   * Set up FreeBSD configuration defaults (Closes: #195274)

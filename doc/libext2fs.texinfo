@@ -1,7 +1,7 @@
 \input texinfo    @c -*-texinfo-*-
 @c %**start of header
 @setfilename libext2fs.info
-@settitle The EXT2FS Library (version 1.33)
+@settitle The EXT2FS Library (version 1.34)
 @synindex tp fn
 @comment %**end of header
 
@@ -61,8 +61,8 @@ by the author.
 
 @title The EXT2FS Library
 @subtitle The EXT2FS Library
-@subtitle Version 1.33
-@subtitle April 2003
+@subtitle Version 1.34
+@subtitle July 2003
 
 @author by Theodore Ts'o
 
@@ -102,7 +102,7 @@ by the Foundation.
 
 @top The EXT2FS Library
 
-This manual documents the EXT2FS Library, version 1.33.
+This manual documents the EXT2FS Library, version 1.34.
 
 @end ifinfo
 

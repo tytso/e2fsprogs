@@ -1,4 +1,4 @@
-	This is the new version (1.33) of the second extended file
+	This is the new version (1.34) of the second extended file
 system management programs.
 
 	From time to time, I release new versions of e2fsprogs, to fix
@@ -8,9 +8,9 @@ which is:
 
 	http://e2fsprogs.sourceforge.net
 
-	Note: If you are NOT using the RedHat RPM distributions of
-e2fsprogs, and are building e2fsprogs from source, please see the file
-INSTALL for instructions on building and installing e2fsprogs.  
+	The INSTALL file has instructions on building and installing
+e2fsprogs.  Provisions for building Red Hat RPMs and Debian dpkg files
+are supplied as well.
 
 	In case of bugs in these programs, please contact Ted Ts'o at
 tytso@thunk.org or tytso@alum.mit.edu.  See the e2fsck man page for
