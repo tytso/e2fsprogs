@@ -1,3 +1,12 @@
+1999-10-25    <tytso@valinux.com>
+
+	* mke2fs.c (show_stats): Capitalized Hurd to make the GNU types
+		happy. 
+
+	* fsck.c (execute): Fix really stupid bug in the linked list
+		management which caused fsck in parallel mode to go into
+		an infinite loop.
+
 1999-10-22    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.16

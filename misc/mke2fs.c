@@ -567,7 +567,7 @@ static void show_stats(ext2_filsys fs)
 	printf("OS type: ");
 	switch (fs->super->s_creator_os) {
 	    case EXT2_OS_LINUX: printf ("Linux"); break;
-	    case EXT2_OS_HURD:  printf ("GNU/hurd");   break;
+	    case EXT2_OS_HURD:  printf ("GNU/Hurd");   break;
 	    case EXT2_OS_MASIX: printf ("Masix"); break;
 	    default:		printf ("(unknown os)");
         }

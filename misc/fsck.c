@@ -443,7 +443,7 @@ static int execute(char *type, char *device, char *mntpt, int interactive)
 	for (p = instance_list; p && p->next; p = p->next);
 
 	if (p)
-		p->next = instance_list;
+		p->next = inst;
 	else
 		instance_list = inst;
 	

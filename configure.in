@@ -455,7 +455,7 @@ if test $ac_cv_have_optreset = yes; then
   AC_DEFINE(HAVE_OPTRESET)
 fi
 dnl
-dnl See if using the EXT2 ioctls causes a compile-time barf (as on the hurd).
+dnl See if using the EXT2 ioctls causes a compile-time barf (as on the Hurd).
 dnl
 AC_MSG_CHECKING(whether the ext2 ioctls compile)
 AC_CACHE_VAL(e2fsprogs_cv_ioctl_ext2,
