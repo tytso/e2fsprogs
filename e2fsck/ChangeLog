@@ -1,3 +1,8 @@
+1999-07-19    <tytso@valinux.com>
+
+	* unix.c (usage): Add minimalist emergency help to the usage
+		message. 
+
 1999-07-18    <tytso@valinux.com>
 
 	* unix.c: Add support for calculating a progress bar if the -C0

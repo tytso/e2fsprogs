@@ -63,6 +63,20 @@ static void usage(e2fsck_t ctx)
 		"\t\t[-I inode_buffer_blocks] [-P process_inode_size]\n"
 		"\t\t[-l|-L bad_blocks_file] [-C fd] device\n",
 		ctx->program_name);
+
+	fprintf(stderr, "\nEmergency help:\n"
+		" -p                   Automatic repair (no questions)\n"
+		" -n                   Make no changes to the filesystem\n"
+		" -y                   Assume \"yes\" to all questions\n"
+		" -c                   Check for bad blocks\n"
+		" -f                   Force checking even if filesystem is marked clean\n"
+		" -v                   Be verbose\n"
+		" -b superblock        Use alternative superblock\n"
+		" -B blocksize         Force blocksize when looking for superblock\n"
+		" -l bad_blocks_file   Add to badblocks list\n"
+		" -L bad_blocks_file   Set badblocks list\n"
+		);
+
 	exit(FSCK_USAGE);
 }
 
