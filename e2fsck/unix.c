@@ -59,7 +59,7 @@ e2fsck_t e2fsck_global_ctx;	/* Try your very best not to use this! */
 static void usage(e2fsck_t ctx)
 {
 	fprintf(stderr,
-		_("Usage: %s [-panyrcdfvstFSV] [-b superblock] [-B blocksize]\n"
+		_("Usage: %s [-panyrcdfvstDFSV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-I inode_buffer_blocks] [-P process_inode_size]\n"
 		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j ext-journal]\n"
 		"\t\t[-E extended-options] device\n"),
