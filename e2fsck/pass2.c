@@ -69,6 +69,7 @@ static int update_dir_block(ext2_filsys fs,
 			    int		ref_offset, 
 			    void	*priv_data);
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino);
+static EXT2_QSORT_TYPE special_dir_block_cmp(const void *a, const void *b);
 
 struct check_dir_struct {
 	char *buf;
@@ -135,6 +136,9 @@ void e2fsck_pass2(e2fsck_t ctx)
 
 	if (ctx->progress)
 		(void) (ctx->progress)(ctx, 2, 0, cd.max);
+
+	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX)
+		ext2fs_dblist_sort(fs->dblist, special_dir_block_cmp);
 	
 	cd.pctx.errcode = ext2fs_dblist_iterate(fs->dblist, check_dir_block,
 						&cd);
@@ -277,6 +281,35 @@ void e2fsck_pass2(e2fsck_t ctx)
 	}
 #endif
 }
+
+/*
+ * This is special sort function that makes sure that directory blocks
+ * with a dirblock of zero are sorted to the beginning of the list.
+ * This guarantees that the root node of the htree directories are
+ * processed first, so we know what hash version to use.
+ */
+static EXT2_QSORT_TYPE special_dir_block_cmp(const void *a, const void *b)
+{
+	const struct ext2_db_entry *db_a =
+		(const struct ext2_db_entry *) a;
+	const struct ext2_db_entry *db_b =
+		(const struct ext2_db_entry *) b;
+
+	if (db_a->blockcnt && !db_b->blockcnt)
+		return 1;
+
+	if (!db_a->blockcnt && db_b->blockcnt)
+		return -1;
+	
+	if (db_a->blk != db_b->blk)
+		return (int) (db_a->blk - db_b->blk);
+	
+	if (db_a->ino != db_b->ino)
+		return (int) (db_a->ino - db_b->ino);
+
+	return (int) (db_a->blockcnt - db_b->blockcnt);
+}
+
 
 /*
  * Make sure the first entry in the directory is '.', and that the
@@ -562,6 +595,7 @@ static int check_dir_block(ext2_filsys fs,
 	char 			*buf;
 	e2fsck_t		ctx;
 	int			problem;
+	struct ext2_dx_root_info *root;
 
 	cd = (struct check_dir_struct *) priv_data;
 	buf = cd->buf;
@@ -627,13 +661,19 @@ static int check_dir_block(ext2_filsys fs,
 		dx_db->max_hash = 0;
 			
 		dirent = (struct ext2_dir_entry *) buf;
-		/*
-		 * XXX we need to check to make sure the root
-		 * directory block  is actually valid!
-		 */
 		if (db->blockcnt == 0) {
+			root = (struct ext2_dx_root_info *) (buf + 24);
 			dx_db->type = DX_DIRBLOCK_ROOT;
 			dx_db->flags |= DX_FLAG_FIRST | DX_FLAG_LAST;
+			if ((root->reserved_zero ||
+			     root->info_length < 8 ||
+			     root->indirect_levels > 1) &&
+			    fix_problem(ctx, PR_2_HTREE_BAD_ROOT, &cd->pctx)) {
+				clear_htree(ctx, ino);
+				dx_dir->numblocks = 0;
+				dx_db = 0;
+			} 
+			dx_dir->hashversion = root->hash_version;
 		} else if ((dirent->inode == 0) &&
 			 (dirent->rec_len == fs->blocksize))
 			dx_db->type = DX_DIRBLOCK_NODE;

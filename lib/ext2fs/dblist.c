@@ -204,6 +204,17 @@ errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ext2_ino_t ino, blk_t blk,
 	return EXT2_ET_DB_NOT_FOUND;
 }
 
+void ext2fs_dblist_sort(ext2_dblist dblist,
+			EXT2_QSORT_TYPE (*sortfunc)(const void *,
+						    const void *))
+{
+	if (!sortfunc)
+		sortfunc = dir_block_cmp;
+	qsort(dblist->list, (size_t) dblist->count,
+	      sizeof(struct ext2_db_entry), sortfunc);
+	dblist->sorted = 1;
+}
+
 /*
  * This function iterates over the directory block list
  */
@@ -218,11 +229,8 @@ errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 	
 	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
 
-	if (!dblist->sorted) {
-		qsort(dblist->list, (size_t) dblist->count,
-		      sizeof(struct ext2_db_entry), dir_block_cmp);
-		dblist->sorted = 1;
-	}
+	if (!dblist->sorted)
+		ext2fs_dblist_sort(dblist, 0);
 	for (i=0; i < dblist->count; i++) {
 		ret = (*func)(dblist->fs, &dblist->list[(int)i], priv_data);
 		if (ret & DBLIST_ABORT)
@@ -230,7 +238,6 @@ errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 	}
 	return 0;
 }
-
 
 static EXT2_QSORT_TYPE dir_block_cmp(const void *a, const void *b)
 {

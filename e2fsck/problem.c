@@ -1062,6 +1062,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("Error addjusting refcount for @a @b %b (@i %i): %m\n"),
 	  PROMPT_NONE, PR_FATAL },
 
+	/* Invalid HTREE root node */
+	{ PR_2_HTREE_BAD_ROOT,
+	  N_("@p @h %d: root node is invalid\n"),
+	  PROMPT_CLEAR_HTREE, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

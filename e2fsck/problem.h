@@ -630,6 +630,9 @@ struct problem_context {
 /* Error adjusting EA refcount */
 #define PR_2_ADJ_EA_REFCOUNT	0x02003B
 
+/* Invalid HTREE root node */
+#define PR_2_HTREE_BAD_ROOT	0x02003C
+
 /*
  * Pass 3 errors
  */

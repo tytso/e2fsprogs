@@ -1,3 +1,17 @@
+2002-08-31  Theodore Ts'o  <tytso@valinux.com>
+
+	* pass2.c (e2fsck_pass2): If this is a HTREE directory, sort the
+		dblist so that the first block of all of the directories
+		is handled first so we can read the hash version
+		information.
+		(check_dir_block): Examine the root node for correctness,
+		and offer to clear it if it is not correct.  Also copy the
+		hash version to the dx_dir structure, so that the proper
+		hash function can be used for other blocks in the
+		directory.
+
+	* problem.c, problem.h (PR_2_HTREE_BAD_ROOT): Add new problem code.
+
 2002-08-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* problem.c: Fix PR_1_RELOC_BLOCK_ALLOCATE message to explain that

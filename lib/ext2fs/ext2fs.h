@@ -589,6 +589,9 @@ extern errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ext2_ino_t *ret_num_dirs);
 extern errcode_t ext2fs_init_dblist(ext2_filsys fs, ext2_dblist *ret_dblist);
 extern errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ext2_ino_t ino,
 				      blk_t blk, int blockcnt);
+extern void ext2fs_dblist_sort(ext2_dblist dblist,
+			       EXT2_QSORT_TYPE (*sortfunc)(const void *,
+							   const void *));
 extern errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 	int (*func)(ext2_filsys fs, struct ext2_db_entry *db_info,
 		    void	*priv_data),
