@@ -1,5 +1,10 @@
 2001-06-22  Theodore Tso  <tytso@valinux.com>
 
+	* mkjournal.c (ext2fs_add_journal_inode): Only use fchflags if
+		HAVE_CHFLAGS and UF_NODUMP are defined, since the Hurd has
+		fchflags without defining UF_NODUMP.  (Addresses Debian
+		bug #101361)
+
 	* flushb.c: Use platform independent method of defining the
 		BLKFLSBUF and FDFLUSH ioctl's.  Also include sys/mount.h
 		since on newer glibc's BLKFLSBUF is defined there.

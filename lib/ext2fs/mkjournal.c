@@ -330,7 +330,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 		if (fstat(fd, &st) < 0)
 			return errno;
 
-#if HAVE_CHFLAGS
+#if defined(HAVE_CHFLAGS) && defined(UF_NODUMP)
 		retval = fchflags (fd, UF_NODUMP|UF_IMMUTABLE);
 #else
 #if HAVE_EXT2_IOCTLS
