@@ -1,5 +1,5 @@
-E2fsprogs 1.19 (work in progress)
-=================================
+E2fsprogs 1.19 (July 13, 2000)
+==============================
 
 Release the resize2fs program since the timeout before it could
 publish it under the GPL has finally expired.
