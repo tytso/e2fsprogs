@@ -29,6 +29,10 @@ mke2fs \- create a Linux second extended file system
 .I bytes-per-inode
 ]
 [
+.B \-N
+.I number-of-inodes
+]
+[
 .B \-m
 .I reserved-blocks-percentage
 ]
@@ -104,6 +108,12 @@ creates an inode for every
 bytes of space on the disk.  This value defaults to 4096 bytes.
 .I bytes-per-inode
 must be at least 1024.
+.TP
+.I -N number-of-inodes
+overrides the default calculation of the number of inodes that should be 
+reserved for the filesystem (which is based on the number of blocks and 
+the bytes-per-inode ratio).  This allows the user to specify the number 
+of desired inodes directly.
 .TP
 .I -l filename
 Read the bad blocks list from

@@ -88,10 +88,10 @@ static void usage(NOARGS)
 {
 	fprintf(stderr, "Usage: %s [-c|-t|-l filename] [-b block-size] "
 	"[-f fragment-size]\n\t[-i bytes-per-inode] "
-	"[-m reserved-blocks-percentage] [-qvSV]\n\t"
-	"[-o creator-os] [-g blocks-per-group] [-L volume-label]\n\t"
-	"[-M last-mounted-directory] [-r fs-revision] [-R raid_opts]\n\t"
-	"[-s sparse-super-flag] device [blocks-count]\n",
+	" [-N number-of-inodes]\n\t[-m reserved-blocks-percentage] "
+	"[-o creator-os] [-g blocks-per-group]\n\t[-L volume-label] "
+	"[-M last-mounted-directory] [-r fs-revision]\n\t[-R raid_opts]"
+	"[-s sparse-super-flag] [-qvSV] device [blocks-count]\n",
 		program_name);
 	exit(1);
 }
@@ -632,6 +632,7 @@ static void PRS(int argc, char *argv[])
 	blk_t	max = 8192;
 	int	inode_ratio = 4096;
 	int	reserved_ratio = 5;
+	ino_t	num_inodes = 0;
 	errcode_t	retval;
 	int	sparse_option = -1;
 	char	*oldpath = getenv("PATH");
@@ -662,7 +663,7 @@ static void PRS(int argc, char *argv[])
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv,
-			    "b:cf:g:i:l:m:o:qr:R:s:tvI:SFL:M:V")) != EOF)
+			    "b:cf:g:i:l:m:o:qr:R:s:tvI:SFL:M:N:V")) != EOF)
 		switch (c) {
 		case 'b':
 			size = strtoul(optarg, &tmp, 0);
@@ -745,6 +746,9 @@ static void PRS(int argc, char *argv[])
 			param.s_inode_size = atoi(optarg);
 			break;
 #endif
+		case 'N':
+			num_inodes = atoi(optarg);
+			break;
 		case 'v':
 			verbose = 1;
 			break;
@@ -833,7 +837,7 @@ static void PRS(int argc, char *argv[])
 	/*
 	 * Calculate number of inodes based on the inode ratio
 	 */
-	param.s_inodes_count =
+	param.s_inodes_count = num_inodes ? num_inodes : 
 		((long long) param.s_blocks_count * EXT2_BLOCK_SIZE(&param))
 			/ inode_ratio;
 

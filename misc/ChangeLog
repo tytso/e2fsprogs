@@ -1,5 +1,8 @@
 1999-01-05  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* mke2fs.c (PRS): Allow the user to specify exactly how many
+		inodes he/she wishes.
+
 	* chattr.c, lsattr.c: Only print the version information for the
 		program if the -V option is given.
 
