@@ -52,6 +52,7 @@
 
 #include "../version.h"
 #include "fsck.h"
+#include "get_device_by_label.h"
 
 #ifndef _PATH_MNTTAB
 #define	_PATH_MNTTAB	"/etc/fstab"
@@ -242,6 +243,24 @@ int parse_fstab_line(char *line, struct fs_info **ret_fs)
 }
 
 /*
+ * Interpret the device name if necessary 
+ */
+static char *interpret_device(char *spec)
+{
+	char *dev = NULL;
+	
+	if (!strncmp(spec, "UUID=", 5))
+		dev = get_spec_by_uuid(spec+5);
+	else if (!strncmp(spec, "LABEL=", 6))
+		dev = get_spec_by_volume_label(spec+6);
+	if (dev) {
+		free(spec);
+		spec = dev;
+	}
+	return spec;
+}
+
+/*
  * Load the filesystem database from /etc/fstab
  */
 static void load_fs_info(char *filename)
@@ -270,6 +289,7 @@ static void load_fs_info(char *filename)
 		}
 		if (!fs)
 			continue;
+		fs->device = interpret_device(fs->device);
 		if (!filesys_info)
 			filesys_info = fs;
 		else
@@ -339,7 +359,7 @@ static char *find_fsck(char *type)
  * Execute a particular fsck program, and link it into the list of
  * child processes we are waiting for.
  */
-static int execute(char *prog, char *device, char *mntpt)
+static int execute(char *prog, char *device, char *mntpt, int interactive)
 {
 	char *s, *argv[80];
 	int  argc, i;
@@ -375,6 +395,8 @@ static int execute(char *prog, char *device, char *mntpt)
 		perror("fork");
 		return errno;
 	} else if (pid == 0) {
+		if (!interactive)
+			close(0);
 		(void) execv(s, argv);
 		perror(argv[0]);
 		exit(EXIT_ERROR);
@@ -492,7 +514,7 @@ static int wait_all(NOARGS)
  * If the type isn't specified by the user, then use either the type
  * specified in /etc/fstab, or DEFAULT_FSTYPE.
  */
-static void fsck_device(char *device)
+static void fsck_device(char *device, int interactive)
 {
 	const char	*type = 0;
 	struct fs_info *fsent;
@@ -507,17 +529,12 @@ static void fsck_device(char *device)
 		if (!type)
 			type = fsent->type;
 	}
-	if (!fsent) {
-		fprintf(stderr,
-			"Error: no entry found the fstab file for %s.\n",
-			device);
-		exit(1);
-	}
 	if (!type)
 		type = DEFAULT_FSTYPE;
 
 	sprintf(prog, "fsck.%s", type);
-	retval = execute(prog, device, fsent ? fsent->mountpt : 0);
+	retval = execute(prog, device, fsent ? fsent->mountpt : 0,
+			 interactive);
 	if (retval) {
 		fprintf(stderr, "%s: Error %d while executing %s for %s\n",
 			progname, retval, prog, device);
@@ -649,7 +666,7 @@ static int check_all(NOARGS)
 				break;
 		}
 		if (fs && !skip_root && !ignore(fs)) {
-			fsck_device(fs->device);
+			fsck_device(fs->device, 0);
 			fs->flags |= FLAG_DONE;
 			status |= wait_all();
 			if (status > EXIT_NONDESTRUCT)
@@ -694,7 +711,7 @@ static int check_all(NOARGS)
 			/*
 			 * Spawn off the fsck process
 			 */
-			fsck_device(fs->device);
+			fsck_device(fs->device, 0);
 			fs->flags |= FLAG_DONE;
 
 			if (serialize) {
@@ -747,16 +764,19 @@ static void PRS(int argc, char *argv[])
 		arg = argv[i];
 		if (!arg)
 			continue;
-		if (arg[0] == '/') {
+		if ((arg[0] == '/' && !opts_for_fsck) ||
+		    (strncmp(arg, "LABEL=", 6) == 0) ||
+		    (strncmp(arg, "UUID=", 5) == 0)) {
 			if (num_devices >= MAX_DEVICES) {
 				fprintf(stderr, "%s: too many devices\n",
 					progname);
 				exit(1);
 			}
-			devices[num_devices++] = string_copy(arg);
+			devices[num_devices++] =
+				interpret_device(string_copy(arg));
 			continue;
 		}
-		if (arg[0] != '-') {
+		if (arg[0] != '-' || opts_for_fsck) {
 			if (num_args >= MAX_ARGS) {
 				fprintf(stderr, "%s: too many arguments\n",
 					progname);
@@ -835,6 +855,7 @@ int main(int argc, char *argv[])
 {
 	int i;
 	int status = 0;
+	int interactive = 0;
 	char *oldpath = getenv("PATH");
 	char *fstab;
 
@@ -864,8 +885,11 @@ int main(int argc, char *argv[])
 	if (doall)
 		return check_all();
 
+	if ((num_devices == 1) || (serialize))
+		interactive = 1;
+
 	for (i = 0 ; i < num_devices; i++) {
-		fsck_device(devices[i]);
+		fsck_device(devices[i], interactive);
 		if (serialize) {
 			struct fsck_instance *inst;
 

@@ -1,3 +1,15 @@
+1999-07-02    <tytso@rsts-11.mit.edu>
+
+	* fsck.c: Added support for LABEL= and UUID= specifications for
+		the filesystem's device, to match what recent mount
+		programs can support.  Also, close stdin when doing fsck
+		-A or when checking more than one filesystem at a time, so
+		that e2fsck doesn't try to ask interactive questions if
+		the filesystem appears to be mounted.
+
+	* get_device_by_label.c: New file added to support LABEL=foo and
+		UUID=bar type specifications.
+
 1999-07-01    <tytso@valinux.com>
 
 	* badblocks.c:  Make the "done" string include enough spaces to
