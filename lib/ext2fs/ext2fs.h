@@ -977,7 +977,7 @@ _INLINE_ errcode_t ext2fs_free_mem(void *ptr)
 /*
  *  Resize memory
  */
-_INLINE_ errcode_t ext2fs_resize_mem(unsigned long old_size EXT2FS_ATTR((unused)),
+_INLINE_ errcode_t ext2fs_resize_mem(unsigned long EXT2FS_ATTR((unused)) old_size,
 				     unsigned long size, void *ptr)
 {
 	void *p;
