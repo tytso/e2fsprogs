@@ -101,8 +101,8 @@ tst_save: $(srcdir)/save.c $(DEPLIBS_BLKID)
 	$(CC) -Wall $(ALL_CFLAGS) -c $(top_srcdir)/misc/blkid.c \
 		-o ../../misc/blkid.o
 
-blkid: ../../misc/blkid.o libblkid.a $(LIBBLKID) $(LIBUUID)
-	$(CC) -Wall -o blkid ../../misc/blkid.o libblkid.a $(LIBBLKID) $(LIBUUID)
+blkid: ../../misc/blkid.o libblkid.a $(LIBUUID)
+	$(CC) -Wall -o blkid ../../misc/blkid.o libblkid.a $(LIBUUID)
 
 check:: tst_cache tst_devname tst_devno tst_getsize tst_probe \
  tst_read tst_resolve tst_save

@@ -1,3 +1,36 @@
+2003-02-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in (blkid): When building the blkid, don't link against
+		the shared blkid library; link only against the static
+		blkid library.
+
+	* blkidP.h (struct blkid_struct_dev): Remove bid_size and
+		bid_devsize (since they aren't used any more) and add
+		bid_pri to the device structure.
+
+	* devname.c (probe_one, lvm_probe_all, evms_probe_all,
+		blkid_probe_all): Set the bid_pri filed in the device
+		structure depending on type of device so that EVMS, LVM,
+		and MD devices get priority over normal devices.
+
+	* tag.c (blkid_find_dev_with_tag): When looking for a device that
+		matches the search criteria, return the one with the
+		largest priority (bid_pri).
+
+	* save.c (save_dev): Write out the PRI tag from bid_pri.
+
+	* read.c (parse_tag): Parse the PRI tag and store its value in
+		bid_pri.
+
+	* probe.c (blkid_verify_devname): If the device does not exist
+		(open returns ENOENT), treat this as a fatal error and
+		release the device.  After verifying the device, set the
+		cache as being modified so the changes are written out.
+
+	* resolve.c (main): Change the test driver to get a blkid cache
+		and pass it to blkid_get_tagname_devname and
+		blkid_get_token, as the cache is no longer optional.
+
 2003-02-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid.h, blkidP.h, cache.c, dev.c, devname.c, devno.c, probe.c,

@@ -45,6 +45,8 @@ static int save_dev(blkid_dev dev, FILE *file)
 		"<device TYPE=\"%s\" DEVNO=\"0x%04lx\" ID=\"%d\" TIME=\"%lu\"",
 		dev->bid_type, (unsigned long) dev->bid_devno,
 		dev->bid_id, dev->bid_time);
+	if (dev->bid_pri)
+		fprintf(file, " PRI=\"%d\"", dev->bid_pri);
 	list_for_each(p, &dev->bid_tags) {
 		blkid_tag tag = list_entry(p, struct blkid_struct_tag, bit_tags);
 		if (strcmp(tag->bit_name, "TYPE"))

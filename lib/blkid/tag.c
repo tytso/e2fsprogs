@@ -306,11 +306,9 @@ extern void blkid_tag_iterate_end(blkid_tag_iterate iter)
 
 /*
  * This function returns a device which matches a particular
- * type/value pair.  Its behaviour is currently undefined if there is
- * more than one device which matches the search specification.
- * In the future we may have some kind of preference scheme so that if
- * there is more than one match for a given label/uuid (for example in
- * the case of snapshots) we return the preferred device.
+ * type/value pair.  If there is more than one device that matches the
+ * search specification, it returns the one with the highest priority
+ * value.  This allows us to give preference to EVMS or LVM devices.
  *
  * XXX there should also be an interface which uses an iterator so we
  * can get all of the devices which match a type/value search parameter.
@@ -319,7 +317,9 @@ extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache,
 					 const char *type,
 					 const char *value)
 {
-	blkid_tag head = 0, found = 0;
+	blkid_tag	head, found;
+	blkid_dev	dev;
+	int		pri;
 	struct list_head *p;
 
 	if (!cache || !type || !value)
@@ -328,24 +328,30 @@ extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache,
 	DBG(printf("looking for %s=%s in cache\n", type, value));
 	
 try_again:
-	if (!head)
-		head = blkid_find_head_cache(cache, type);
+	pri = -1;
+	found = 0;
+	head = blkid_find_head_cache(cache, type);
 
 	if (head) {
 		list_for_each(p, &head->bit_names) {
 			blkid_tag tmp = list_entry(p, struct blkid_struct_tag, 
 						   bit_names);
 
-			if (!strcmp(tmp->bit_val, value)) {
+			if (!strcmp(tmp->bit_val, value) &&
+			    tmp->bit_dev->bid_pri > pri) {
 				found = tmp;
-				break;
+				dev = found->bit_dev;
+				pri = dev->bid_pri;
 			}
 		}
 	}
+	dev = blkid_verify_devname(cache, dev);
+	if (dev && strcmp(found->bit_val, value))
+		dev = 0;
 
-	if ((!head || !found) && !(cache->bic_flags & BLKID_BIC_FL_PROBED)) {
+	if ((!head || !dev) && !(cache->bic_flags & BLKID_BIC_FL_PROBED)) {
 		blkid_probe_all(cache);
 		goto try_again;
 	}
-	return (found ? found->bit_dev : NULL);
+	return dev;
 }

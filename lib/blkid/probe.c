@@ -344,11 +344,12 @@ blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev)
 				       diff < BLKID_PROBE_INTERVAL))
 		return dev;
 
-	DBG(printf("need to revalidate %s\n", dev->bid_name));
+	DBG(printf("need to revalidate %s (time since last check %lu)\n", 
+		   dev->bid_name, diff));
 
 	if (((fd = open(dev->bid_name, O_RDONLY)) < 0) ||
 	    (fstat(fd, &st) < 0) || !S_ISBLK(st.st_mode)) {
-		if (errno == ENXIO || errno == ENODEV) {
+		if (errno == ENXIO || errno == ENODEV || errno == ENOENT) {
 			blkid_free_dev(dev);
 			return NULL;
 		}
@@ -429,6 +430,7 @@ found_type:
 		dev->bid_devno = st.st_rdev;
 		dev->bid_time = time(0);
 		dev->bid_flags |= BLKID_BID_FL_VERIFIED;
+		cache->bic_flags |= BLKID_BIC_FL_CHANGED;
 
 		blkid_set_tag(dev, "TYPE", type, 0, 1);
 		if (sec_type)

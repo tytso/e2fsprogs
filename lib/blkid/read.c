@@ -313,6 +313,8 @@ static int parse_tag(blkid_cache cache, blkid_dev dev, char **cp)
 			cache->bic_idmax = dev->bid_id;
 	} else if (!strcmp(name, "DEVNO"))
 		dev->bid_devno = STRTOULL(value, 0, 0);
+	else if (!strcmp(name, "PRI"))
+		dev->bid_pri = strtol(value, 0, 0);
 	else if (!strcmp(name, "TIME"))
 		/* FIXME: need to parse a long long eventually */
 		dev->bid_time = strtol(value, 0, 0);

@@ -33,8 +33,7 @@ struct blkid_struct_dev
 	blkid_cache		bid_cache;	/* Dev belongs to this cache */
 	char			*bid_name;	/* Device inode pathname */
 	char			*bid_type;	/* Preferred device TYPE */
-	blkid_loff_t		bid_size;	/* Filesystem size in bytes */
-	blkid_loff_t		bid_devsize;	/* Device size in bytes */
+	int			bid_pri;	/* Device priority */
 	dev_t			bid_devno;	/* Device major/minor number */
 	time_t			bid_time;	/* Last update time of device */
 	unsigned int		bid_id;		/* Unique cache id for device */
@@ -89,7 +88,7 @@ struct blkid_struct_cache
 	struct list_head	bic_devs;	/* List head of all devices */
 	struct list_head	bic_tags;	/* List head of all tag types */
 	time_t			bic_time;	/* Last probe time */
-	unsigned int		bic_idmax;	/* Highest ID assigned */
+p	unsigned int		bic_idmax;	/* Highest ID assigned */
 	unsigned int		bic_flags;	/* Status flags of the cache */
 	char			*bic_filename;	/* filename of cache */
 };
@@ -111,6 +110,13 @@ extern const char *blkid_devdirs[];
 #define BLKID_ERR_DEV	19
 #define BLKID_ERR_PARAM	22
 #define BLKID_ERR_BIG	27
+
+/*
+ * Priority settings for different types of devices
+ */
+#define BLKID_PRI_EVMS	30
+#define BLKID_PRI_LVM	20
+#define BLKID_PRI_MD	10
 
 #if defined(TEST_PROGRAM)
 #define DEBUG
@@ -158,7 +164,7 @@ static inline void DEB_DUMP_DEV(blkid_dev dev)
 	printf("  dev: DEVNO=\"0x%0Lx\"\n", dev->bid_devno);
 	printf("  dev: ID=\"%u\"\n", dev->bid_id);
 	printf("  dev: TIME=\"%lu\"\n", dev->bid_time);
-	printf("  dev: size = %Lu\n", dev->bid_size);
+	printf("  dev: PRI=\"%d\"\n", dev->bid_pri);
 	printf("  dev: flags = 0x%08X\n", dev->bid_flags);
 
 	list_for_each(p, &dev->bid_tags) {

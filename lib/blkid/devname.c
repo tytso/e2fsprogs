@@ -86,8 +86,8 @@ blkid_dev blkid_get_devname(blkid_cache cache, const char *devname,
 /*
  * Probe a single block device to add to the device cache.
  */
-static blkid_dev probe_one(blkid_cache cache, const char *ptname,
-			    dev_t devno)
+static void probe_one(blkid_cache cache, const char *ptname,
+		      dev_t devno, int pri)
 {
 	blkid_dev dev = NULL;
 	struct list_head *p;
@@ -104,7 +104,7 @@ static blkid_dev probe_one(blkid_cache cache, const char *ptname,
 		}
 	}
 	if (dev && dev->bid_devno == devno)
-		return dev;
+		goto set_pri;
 
 	/*
 	 * Take a quick look at /dev/ptname for the device number.  We check
@@ -119,7 +119,7 @@ static blkid_dev probe_one(blkid_cache cache, const char *ptname,
 		sprintf(device, "%s/%s", *dir, ptname);
 		if ((dev = blkid_get_devname(cache, device, BLKID_DEV_FIND)) &&
 		    dev->bid_devno == devno)
-			return dev;
+			goto set_pri;
 
 		if (stat(device, &st) == 0 && st.st_rdev == devno) {
 			devname = blkid_strdup(device);
@@ -129,12 +129,16 @@ static blkid_dev probe_one(blkid_cache cache, const char *ptname,
 	if (!devname) {
 		devname = blkid_devno_to_devname(devno);
 		if (!devname)
-			return NULL;
+			return;
 	}
 	dev = blkid_get_devname(cache, devname, BLKID_DEV_NORMAL);
 	free(devname);
 
-	return dev;
+set_pri:
+	if (!pri && !strncmp(ptname, "md", 2))
+		pri = BLKID_PRI_MD;
+	dev->bid_pri = pri;
+	return;
 }
 
 #define PROC_PARTITIONS "/proc/partitions"
@@ -223,7 +227,7 @@ static void lvm_probe_all(blkid_cache cache)
 			sprintf(lvm_device, "%s/%s", vg_name, lv_name);
 			DBG(printf("LVM dev %s: devno 0x%04X\n",
 				   lvm_device, dev));
-			probe_one(cache, lvm_device, dev);
+			probe_one(cache, lvm_device, dev, BLKID_PRI_LVM);
 			free(lvm_device);
 		}
 		closedir(lv_list);
@@ -254,7 +258,7 @@ evms_probe_all(blkid_cache cache)
 		DBG(printf("Checking partition %s (%d, %d)\n",
 			   device, ma, mi));
 
-		probe_one(cache, device, makedev(ma, mi));
+		probe_one(cache, device, makedev(ma, mi), BLKID_PRI_EVMS);
 		num++;
 	}
 	fclose(procpt);
@@ -267,7 +271,14 @@ evms_probe_all(blkid_cache cache)
 int blkid_probe_all(blkid_cache cache)
 {
 	FILE *proc;
-	int firstPass;
+	char line[1024];
+	char ptname0[128], ptname1[128], *ptname = 0;
+	char *ptnames[2] = { ptname0, ptname1 };
+	dev_t devs[2];
+	int ma, mi;
+	unsigned long long sz;
+	int lens[2] = { 0, 0 };
+	int which = 0, last = 0;
 
 	if (!cache)
 		return -BLKID_ERR_PARAM;
@@ -276,9 +287,7 @@ int blkid_probe_all(blkid_cache cache)
 	    time(0) - cache->bic_time < BLKID_PROBE_INTERVAL)
 		return 0;
 
-	if (evms_probe_all(cache))
-		goto finish;
-
+	evms_probe_all(cache);
 #ifdef VG_DIR
 	lvm_probe_all(cache);
 #endif
@@ -287,76 +296,55 @@ int blkid_probe_all(blkid_cache cache)
 	if (!proc)
 		return -BLKID_ERR_PROC;
 
-	for (firstPass = 1; firstPass >= 0; firstPass--) {
-		char line[1024];
-		char ptname0[128], ptname1[128], *ptname = 0;
-		char *ptnames[2] = { ptname0, ptname1 };
-		dev_t devs[2];
-		int ma, mi;
-		unsigned long long sz;
-		int lens[2] = { 0, 0 };
-		int handleOnFirst;
-		int which = 0, last = 0;
+	while (fgets(line, sizeof(line), proc)) {
+		last = which;
+		which ^= 1;
+		ptname = ptnames[which];
 
-		fseek(proc, 0, SEEK_SET);
+		if (sscanf(line, " %d %d %lld %128[^\n ]",
+			   &ma, &mi, &sz, ptname) != 4)
+			continue;
+		devs[which] = makedev(ma, mi);
 
-		while (fgets(line, sizeof(line), proc)) {
-			last = which;
-			which ^= 1;
-			ptname = ptnames[which];
+		DBG(printf("read partition name %s\n", ptname));
 
-			if (sscanf(line, " %d %d %lld %128[^\n ]",
-				   &ma, &mi, &sz, ptname) != 4)
-				continue;
-			devs[which] = makedev(ma, mi);
+		/* Skip whole disk devs unless they have no partitions
+		 * If we don't have a partition on this dev, also
+		 * check previous dev to see if it didn't have a partn.
+		 * heuristic: partition name ends in a digit.
+		 *
+		 * Skip extended partitions.
+		 * heuristic: size is 1
+		 *
+		 * FIXME: skip /dev/{ida,cciss,rd} whole-disk devs
+		 */
 
-			DBG(printf("read partition name %s\n", ptname));
+		lens[which] = strlen(ptname);
+		if (isdigit(ptname[lens[which] - 1])) {
+			DBG(printf("partition dev %s, devno 0x%04X\n",
+				   ptname, devs[which]));
 
-			/* look only at md devices on first pass */
-			handleOnFirst = !strncmp(ptname, "md", 2);
-			if (firstPass != handleOnFirst)
-				continue;
-
-			/* Skip whole disk devs unless they have no partitions
-			 * If we don't have a partition on this dev, also
-			 * check previous dev to see if it didn't have a partn.
-			 * heuristic: partition name ends in a digit.
-			 *
-			 * Skip extended partitions.
-			 * heuristic: size is 1
-			 *
-			 * FIXME: skip /dev/{ida,cciss,rd} whole-disk devs
-			 */
-
-			lens[which] = strlen(ptname);
-			if (isdigit(ptname[lens[which] - 1])) {
-				DBG(printf("partition dev %s, devno 0x%04X\n",
-					   ptname, devs[which]));
-
-				if (sz > 1)
-					probe_one(cache, ptname, devs[which]);
-				lens[which] = 0;
-				lens[last] = 0;
-			} else if (lens[last] &&
-				   strncmp(ptnames[last], ptname,
-					   lens[last])) {
-				DBG(printf("whole dev %s, devno 0x%04X\n",
-					   ptname, devs[last]));
-				probe_one(cache, ptname, devs[last]);
-				lens[last] = 0;
-			}
+			if (sz > 1)
+				probe_one(cache, ptname, devs[which], 0);
+			lens[which] = 0;
+			lens[last] = 0;
+		} else if (lens[last] && strncmp(ptnames[last], ptname,
+						 lens[last])) {
+			DBG(printf("whole dev %s, devno 0x%04X\n",
+				   ptnames[last], devs[last]));
+			probe_one(cache, ptnames[last], devs[last], 0);
+			lens[last] = 0;
 		}
-
-		/* Handle the last device if it wasn't partitioned */
-		if (lens[which])
-			probe_one(cache, ptname, devs[which]);
 	}
+
+	/* Handle the last device if it wasn't partitioned */
+	if (lens[which])
+		probe_one(cache, ptname, devs[which], 0);
+
 	fclose(proc);
 
-finish:
 	cache->bic_time = time(0);
 	cache->bic_flags |= BLKID_BIC_FL_PROBED;
-
 	return 0;
 }
 

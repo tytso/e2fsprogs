@@ -44,9 +44,6 @@ char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
 	if (!devname)
 		return NULL;
 
-	if (!cache)
-		DBG(printf("no cache given, direct device probe\n"));
-
 	if ((dev = blkid_get_devname(cache, devname, BLKID_DEV_NORMAL)) &&
 	    (found = blkid_find_tag_dev(dev, tagname)))
 		ret = blkid_strdup(found->bit_val);
@@ -113,6 +110,7 @@ errout:
 int main(int argc, char **argv)
 {
 	char *value;
+	blkid_cache cache;
 
 	if (argc != 2 && argc != 3) {
 		fprintf(stderr, "Usage:\t%s tagname=value\n"
@@ -122,14 +120,20 @@ int main(int argc, char **argv)
 			argv[0], argv[0]);
 		exit(1);
 	}
+	if (blkid_get_cache(&cache, 0) < 0) {
+		fprintf(stderr, "Couldn't get blkid cache\n");
+		exit(1);
+	}
+	
 	if (argv[2]) {
-		value = blkid_get_tagname_devname(NULL, argv[1], argv[2]);
+		value = blkid_get_tagname_devname(cache, argv[1], argv[2]);
 		printf("%s has tag %s=%s\n", argv[2], argv[1],
 		       value ? value : "<missing>");
 	} else {
-		value = blkid_get_token(NULL, argv[1], NULL);
+		value = blkid_get_token(cache, argv[1], NULL);
 		printf("%s has tag %s\n", value ? value : "<none>", argv[1]);
 	}
+	blkid_put_cache(cache);
 	return value ? 0 : 1;
 }
 #endif
