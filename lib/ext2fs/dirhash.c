@@ -16,6 +16,36 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
+/*
+ * Keyed 32-bit hash function using TEA in a Davis-Meyer function
+ *   H0 = Key
+ *   Hi = E Mi(Hi-1) + Hi-1
+ *
+ * (see Applied Cryptography, 2nd edition, p448).
+ *
+ * Jeremy Fitzhardinge <jeremy@zip.com.au> 1998
+ * 
+ * This code is made available under the terms of the GPL
+ */
+#define DELTA 0x9E3779B9
+
+static void TEA_transform(__u32 buf[4], __u32 const in[])
+{
+	__u32	sum = 0;
+	__u32	b0 = buf[0], b1 = buf[1];
+	__u32	a = in[0], b = in[1], c = in[2], d = in[3];
+	int	n = 16;
+
+	do {							
+		sum += DELTA;					
+		b0 += ((b1 << 4)+a) ^ (b1+sum) ^ ((b1 >> 5)+b);	
+		b1 += ((b0 << 4)+c) ^ (b0+sum) ^ ((b0 >> 5)+d);	
+	} while(--n);
+
+	buf[0] += b0;
+	buf[1] += b1;
+}
+
 /* F, G and H are basic MD4 functions: selection, majority, parity */
 #define F(x, y, z) ((z) ^ ((x) & ((y) ^ (z))))
 #define G(x, y, z) (((x) & (y)) + (((x) ^ (y)) & (z)))
@@ -36,7 +66,7 @@
 /*
  * Basic cut-down MD4 transform.  Returns only 32 bits of result.
  */
-static __u32 halfMD4Transform (__u32 buf[4], __u32 const in[])
+static void halfMD4Transform (__u32 buf[4], __u32 const in[])
 {
 	__u32	a = buf[0], b = buf[1], c = buf[2], d = buf[3];
 
@@ -74,9 +104,6 @@ static __u32 halfMD4Transform (__u32 buf[4], __u32 const in[])
 	buf[1] += b;
 	buf[2] += c;
 	buf[3] += d;
-
-	return ((buf[1] + b) & ~1);	/* "most hashed" word */
-	/* Alternative: return sum of all words? */
 }
 
 #undef ROUND
@@ -101,6 +128,33 @@ static ext2_dirhash_t dx_hack_hash (const char *name, int len)
 	return (hash0 << 1);
 }
 
+static void str2hashbuf(const char *msg, int len, __u32 *buf, int num)
+{
+	__u32	pad, val;
+	int	i;
+
+	pad = (__u32)len | ((__u32)len << 8);
+	pad |= pad << 16;
+
+	val = pad;
+	if (len > num*4)
+		len = num * 4;
+	for (i=0; i < len; i++) {
+		if ((i % 4) == 0)
+			val = pad;
+		val = msg[i] + (val << 8);
+		if ((i % 4) == 3) {
+			*buf++ = val;
+			val = pad;
+			num--;
+		}
+	}
+	if (--num >= 0)
+		*buf++ = val;
+	while (--num >= 0)
+		*buf++ = pad;
+}
+
 /*
  * Returns the hash of a filename.  If len is 0 and name is NULL, then
  * this function can be used to test whether or not a hash version is
@@ -115,60 +169,64 @@ static ext2_dirhash_t dx_hack_hash (const char *name, int len)
  * bits.  32 bit hashes will return 0 for the minor hash.
  */
 errcode_t ext2fs_dirhash(int version, const char *name, int len,
-			 const __u32 seed[4],
+			 const __u32 *seed,
 			 ext2_dirhash_t *ret_hash,
 			 ext2_dirhash_t *ret_minor_hash)
 {
 	__u32	hash;
 	__u32	minor_hash = 0;
 	const char	*p;
-	int	i;
+	int		i;
+	__u32 		in[8], buf[4];
+
+	/* Initialize the default seed for the hash checksum functions */
+	buf[0] = 0x67452301;
+	buf[1] = 0xefcdab89;
+	buf[2] = 0x98badcfe;
+	buf[3] = 0x10325476;
 
 	/* Check to see if the seed is all zero's */
-	for (i=0; i < 4; i++) {
-		if (seed[i])
-			break;
-	}
-	
-	if (version == EXT2_HASH_LEGACY)
-		hash = dx_hack_hash(name, len);
-	else if ((version == EXT2_HASH_HALF_MD4) ||
-		 (version == EXT2_HASH_HALF_MD4_SEED) ||
-		 (version == EXT2_HASH_HALF_MD4_64)) {
-		char in[32];
-		__u32 buf[4];
-
-		if ((i == 4) || (version == EXT2_HASH_HALF_MD4)) {
-			buf[0] = 0x67452301;
-			buf[1] = 0xefcdab89;
-			buf[2] = 0x98badcfe;
-			buf[3] = 0x10325476;
-		} else
-			memcpy(buf, seed, sizeof(buf));
-		p = name;
-		while (len) {
-			if (len < 32) {
-				memcpy(in, p, len);
-				memset(in+len, 0, 32-len);
-				hash = halfMD4Transform(buf, (__u32 *) in);
+	if (seed) {
+		for (i=0; i < 4; i++) {
+			if (seed[i])
 				break;
-			}
-			hash = halfMD4Transform(buf, (__u32 *) p);
+		}
+		if (i < 4)
+			memcpy(buf, seed, sizeof(buf));
+	}
+		
+	switch (version) {
+	case EXT2_HASH_LEGACY:
+		hash = dx_hack_hash(name, len);
+		break;
+	case EXT2_HASH_HALF_MD4:
+		p = name;
+		while (len > 0) {
+			str2hashbuf(p, len, in, 8);
+			halfMD4Transform(buf, in);
 			len -= 32;
 			p += 32;
 		}
-		if (version == EXT2_HASH_HALF_MD4_64)
-			minor_hash = buf[2];
-	} else {
+		minor_hash = buf[2];
+		hash = buf[1];
+		break;
+	case EXT2_HASH_TEA:
+		p = name;
+		while (len > 0) {
+			str2hashbuf(p, len, in, 4);
+			TEA_transform(buf, in);
+			len -= 16;
+			p += 16;
+		}
+		hash = buf[0];
+		minor_hash = buf[1];
+		break;
+	default:
 		*ret_hash = 0;
 		return EXT2_ET_DIRHASH_UNSUPP;
 	}
-	*ret_hash = hash;
+	*ret_hash = hash & ~1;
 	if (ret_minor_hash)
 		*ret_minor_hash = minor_hash;
 	return 0;
-		
 }
-
-
-

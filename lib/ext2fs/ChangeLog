@@ -1,3 +1,17 @@
+2002-08-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* dirhash.c (ext2fs_dirhash): Change the MD4 hash in a backwards
+		incompatible way so that it is no longer
+		endian-dependent.  Add the TEA hash.  Allow the seed
+		parameter to be optional.
+
+	* ext2_fs.h: Remove the HALF_MD4_SEED and HALF_MD4_64 hashes.
+		These features are all now in the HALF_MD4 hash.  Add
+		definition for EXT2_HASH_TEA.
+
+	* ext2fs.h (ext2fs_dirhash): Change function prototype so it takes
+		a pointer instead of an array.
+
 2002-08-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2_err.et.in (EXT2_ET_BAD_EA_BLOCK_NUM): New error code

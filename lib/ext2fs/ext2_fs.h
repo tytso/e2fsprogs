@@ -169,8 +169,7 @@ struct ext2_dx_root_info {
 
 #define EXT2_HASH_LEGACY	0
 #define EXT2_HASH_HALF_MD4	1
-#define EXT2_HASH_HALF_MD4_SEED	2
-#define EXT2_HASH_HALF_MD4_64	3 	/* SEED & 64 */
+#define EXT2_HASH_TEA		2
 
 #define EXT2_HASH_FLAG_INCOMPAT	0x1
 

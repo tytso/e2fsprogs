@@ -625,7 +625,7 @@ extern errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
 
 /* dirhash.c */
 extern errcode_t ext2fs_dirhash(int version, const char *name, int len,
-				const __u32 seed[4],
+				const __u32 *seed,
 				ext2_dirhash_t *ret_hash,
 				ext2_dirhash_t *ret_minor_hash);
 
