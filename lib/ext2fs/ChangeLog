@@ -1,3 +1,27 @@
+Mon Jun  9 10:45:48 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* bmove.c (ext2fs_move_blocks): New function which takes a bitmap
+		of blocks which need to be moved, and moves those blocks
+		to another location in the filesystem.
+
+	* rs_bitmap.c (ext2fs_resize_generic_bitmap): When expanding a
+		bitmap, make sure all of the new parts of the bitmap are
+		zero. 
+
+Sun Jun  8 16:24:39 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* bitmaps.c (ext2fs_copy_bitmap): Fix bug; the destination bitmap
+		wasn't being returned to the caller.
+
+	* alloc_tables.c (ext2fs_allocate_group_table): Add new function
+		ext2fs_allocate_group_table() which sets the group tables
+		for a particular block group.  The relevant code was
+		factored out of ext2fs_allocate_tables().
+
+	* dblist.c (make_dblist): Adjust the initial size of the directory
+ 		block list to be a bit more realize (ten plus twice the
+ 		number of directories in the filesystem).
+
 Thu May  8 22:19:09 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* badblocks.c (ext2fs_badblocks_list_test): Fix bug where

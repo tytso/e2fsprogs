@@ -16,6 +16,7 @@ OBJS= ext2_err.o \
 	bitmaps.o \
 	bitops.o \
 	block.o \
+	bmove.o \
 	brel_ma.o \
 	check_desc.o \
 	closefs.o \
@@ -64,6 +65,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/bitops.c \
 	$(srcdir)/block.c \
 	$(srcdir)/brel_ma.c \
+	$(srcdir)/bmove.c \
 	$(srcdir)/check_desc.c \
 	$(srcdir)/closefs.c \
 	$(srcdir)/cmp_bitmaps.c \

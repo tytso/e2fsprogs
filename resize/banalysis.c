@@ -1,5 +1,5 @@
 /*
- * banalysis.c --- Analyze a filesystem for a block struct
+ * banalysis.c --- Analyze a filesystem by block 
  *
  * Copyright (C) 1997 Theodore Ts'o.  This file may be redistributed
  * under the terms of the GNU Public License.
@@ -12,9 +12,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
-#ifdef HAVE_LINUX_FS_H
-#include <linux/fs.h>
-#endif
 #include <linux/ext2_fs.h>
 
 #include "ext2fs/ext2fs.h"
@@ -27,31 +24,6 @@ struct process_block_struct {
 	struct ext2_inode_context *ctx;
 	void *private;
 };
-
-/*
- * This function returns 1 if the inode's block entries actually
- * contain block entries.
- */
-static int inode_has_valid_blocks(struct ext2_inode *inode)
-{
-	/*
-	 * Only directories, regular files, and some symbolic links
-	 * have valid block entries.
-	 */
-	if (!LINUX_S_ISDIR(inode->i_mode) && !LINUX_S_ISREG(inode->i_mode) &&
-	    !LINUX_S_ISLNK(inode->i_mode))
-		return 0;
-	
-	/*
-	 * If the symbolic link is a "fast symlink", then the symlink
-	 * target is stored in the block entries.
-	 */
-	if (LINUX_S_ISLNK (inode->i_mode) && inode->i_blocks == 0 &&
-	    inode->i_size < EXT2_N_BLOCKS * sizeof (unsigned long))
-		return 0;
-
-	return 1;
-}
 
 static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			 int blockcnt, blk_t ref_block,
@@ -113,7 +85,7 @@ errcode_t ext2_block_analyze(ext2_filsys fs,
 	ctx.brel = block_relocation_table;
 	while (ino) {
 		if ((inode.i_links_count == 0) ||
-		    !inode_has_valid_blocks(&inode))
+		    !ext2fs_inode_has_valid_blocks(&inode))
 			goto next;
 		
 		ctx.ino = ino;
@@ -139,3 +111,4 @@ errcode_t ext2_block_analyze(ext2_filsys fs,
 	}
 	return 0;
 }
+

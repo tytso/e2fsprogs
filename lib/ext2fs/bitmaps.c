@@ -91,6 +91,7 @@ errcode_t ext2fs_copy_bitmap(ext2fs_generic_bitmap src,
 	new->magic = src->magic;
 	new->fs = src->fs;
 	new->base_error_code = src->base_error_code;
+	*dest = new;
 	return 0;
 }
 

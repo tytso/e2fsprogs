@@ -199,6 +199,11 @@ struct struct_ext2_filsys {
 #define BLOCK_COUNT_TRANSLATOR	(-4)
 
 /*
+ * Flags for ext2fs_move_blocks
+ */
+#define EXT2_BMOVE_GET_DBLIST	0x0001	
+
+/*
  * Return flags for the directory iterator functions
  */
 #define DIRENT_CHANGED	1
@@ -373,8 +378,10 @@ extern errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start,
 					ext2fs_block_bitmap map,
 					blk_t *ret);
 
-/* allocate_tables.c */
-errcode_t ext2fs_allocate_tables(ext2_filsys fs);
+/* alloc_tables.c */
+extern errcode_t ext2fs_allocate_tables(ext2_filsys fs);
+extern errcode_t ext2fs_allocate_group_table(ext2_filsys fs, int group,
+					     ext2fs_block_bitmap bmap);
 
 /* badblocks.c */
 extern errcode_t ext2fs_badblocks_list_create(ext2_badblocks_list *ret,
@@ -453,6 +460,11 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 					    int		ref_offset,
 					    void	*private),
 				void *private);
+
+/* bmove.c */
+extern errcode_t ext2fs_move_blocks(ext2_filsys fs,
+				    ext2fs_block_bitmap reserve,
+				    int flags);
 
 /* check_desc.c */
 extern errcode_t ext2fs_check_desc(ext2_filsys fs);

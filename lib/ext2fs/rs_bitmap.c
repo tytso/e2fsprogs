@@ -30,12 +30,24 @@ errcode_t ext2fs_resize_generic_bitmap(__u32 new_end, __u32 new_real_end,
 {
 	size_t	size, new_size;
 	char 	*new_bitmap;
+	__u32	bitno;
 
 	if (!bmap)
 		return EINVAL;
 
 	EXT2_CHECK_MAGIC(bmap, EXT2_ET_MAGIC_GENERIC_BITMAP);
-	
+
+	/*
+	 * If we're expanding the bitmap, make sure all of the new
+	 * parts of the bitmap are zero.
+	 */
+	if (new_end > bmap->end) {
+		bitno = bmap->real_end;
+		if (bitno > new_end)
+			bitno = new_end;
+		for (; bitno > bmap->end; bitno--)
+			ext2fs_clear_bit(bitno - bmap->start, bmap->bitmap);
+	}
 	if (new_real_end == bmap->real_end) {
 		bmap->end = new_end;
 		return 0;

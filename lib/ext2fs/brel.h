@@ -19,7 +19,9 @@ struct ext2_block_relocate_entry {
 	} owner;
 };
 
-#define RELOCATE_INODE_REF 0x0001
+#define RELOCATE_TYPE_REF  0x0007
+#define RELOCATE_BLOCK_REF 0x0001
+#define RELOCATE_INODE_REF 0x0002
 
 typedef struct ext2_block_relocation_table *ext2_brel;
 

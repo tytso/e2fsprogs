@@ -49,13 +49,13 @@ void main (int argc, char ** argv)
 	device_name = argv[optind++];
 	new_size = atoi(argv[optind++]);
 	initialize_ext2_error_table();
-#if 1
+#if 0
 	io_ptr = unix_io_manager;
 #else
 	io_ptr = test_io_manager;
 	test_io_backing_manager = unix_io_manager;
 #endif
-	retval = ext2fs_open (device_name, 0, 0, 0,
+	retval = ext2fs_open (device_name, EXT2_FLAG_RW, 0, 0,
 			      io_ptr, &fs);
 	if (retval) {
 		com_err (program_name, retval, "while trying to open %s",
@@ -70,7 +70,11 @@ void main (int argc, char ** argv)
 		ext2fs_close (fs);
 		exit (1);
 	}
-	resize_fs(fs, new_size);
-	ext2fs_close (fs);
+	retval = resize_fs(fs, new_size);
+	if (retval) {
+		com_err(program_name, retval, "while trying to resize %s",
+			device_name);
+		ext2fs_close (fs);
+	}
 	exit (0);
 }
