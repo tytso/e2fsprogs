@@ -84,7 +84,7 @@ endif
 BF_CCOPTS = -Os -fomit-frame-pointer
 
 COMMON_CONF_FLAGS =  \
-                --enable-elf-shlibs --enable-dynamic-e2fsck --disable-evms \
+                --enable-elf-shlibs --enable-dynamic-e2fsck \
                 --infodir=/usr/share/info --enable-fsck
 
 STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression 

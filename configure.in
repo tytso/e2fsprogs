@@ -47,17 +47,11 @@ AC_SUBST(E2FSPROGS_DAY)
 AC_SUBST(E2FSPROGS_VERSION)
 AC_CANONICAL_HOST
 dnl
-dnl Should we compile EVMS plugin or not.  Complicated logic, spread
-dnl over several different command-line options...
-dnl
-EVMS_CMT=
-dnl
 dnl Use diet libc
 dnl 
 AC_ARG_WITH([diet-libc],
 [  --with-diet-libc      Use diet libc],
 CC="diet cc -nostdinc"
-EVMS_CMT="#"
 AC_MSG_RESULT(CC=$CC))dnl
 dnl
 dnl set $(CC) from --with-cc=value
@@ -195,45 +189,6 @@ HTREE_CLR_CMT=#
 echo "Disabling htree clearing by default"
 )
 AC_SUBST(HTREE_CLR_CMT)
-dnl
-dnl handle --enable-evms
-dnl
-AC_ARG_ENABLE([evms],
-[  --disable-evms   	  don't build EVMS plugin],
-if test "$enableval" == "no"
-then
-	EVMS_CMT="#"
-	echo "Disabling EVMS plugin"
-fi
-)
-dnl
-dnl handle --enable-emvs-10
-dnl
-EVMS_ABI_CODE=120
-AC_ARG_ENABLE([evms-10],
-[  --enable-evms-10	  use EVMS 1.0 ABI (instead of EVMS 1.2)],
-if test "$enableval" != "no"
-then
-	EVMS_ABI_CODE=100
-	echo "Enabling EVMS 1.0.0 ABI"
-fi
-)
-dnl
-dnl handle --enable-emvs-11
-dnl
-AC_ARG_ENABLE([evms-11],
-[  --enable-evms-11	  use EVMS 1.1 ABI (instead of EVMS 1.2)],
-if test "$enableval" != "no"
-then
-	EVMS_ABI_CODE=110
-	echo "Enabling EVMS 1.1.0 ABI"
-fi
-)
-if test "$EVMS_ABI_CODE" = "120"
-then
-	echo "Using EVMS 1.2.0 ABI by default"
-fi
-AC_SUBST(EVMS_ABI_CODE)
 dnl
 dnl handle --enable-elf-shlibs
 dnl
@@ -760,15 +715,11 @@ linux*)
 cygwin)
 	CYGWIN_CMT=
 	UNIX_CMT="#"
-	EVMS_CMT="#"
 	;;
-*)
-	EVMS_CMT="#"
 esac
 AC_SUBST(LINUX_CMT)
 AC_SUBST(CYGWIN_CMT)
 AC_SUBST(UNIX_CMT)
-AC_SUBST([EVMS_CMT])
 dnl
 dnl Linux and Hurd places root files in the / by default
 dnl
@@ -891,7 +842,7 @@ for i in MCONFIG Makefile e2fsprogs.spec \
 	lib/et/Makefile lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile \
 	lib/uuid/Makefile lib/uuid/uuid_types.h \
 	lib/blkid/Makefile lib/blkid/blkid_types.h \
-	lib/evms/Makefile misc/Makefile ext2ed/Makefile e2fsck/Makefile \
+	misc/Makefile ext2ed/Makefile e2fsck/Makefile \
 	debugfs/Makefile tests/Makefile tests/progs/Makefile \
 	resize/Makefile doc/Makefile intl/Makefile po/Makefile.in ; do
 	if test -d `dirname ${srcdir}/$i` ; then
