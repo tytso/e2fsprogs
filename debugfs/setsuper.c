@@ -76,6 +76,8 @@ static struct super_set_info super_fields[] = {
 	{ "prealloc_blocks", &set_sb.s_prealloc_blocks, 1, parse_uint },
 	{ "prealloc_dir_blocks", &set_sb.s_prealloc_dir_blocks, 1,
 		  parse_uint },
+	{ "reserved_gdt_blocks", &set_sb.s_reserved_gdt_blocks, 2,
+		  parse_uint },
 	/* s_padding1 */
 	{ "journal_uuid", &set_sb.s_journal_uuid, 16, parse_uuid },
 	{ "journal_inum", &set_sb.s_journal_inum, 4, parse_uint },
@@ -83,6 +85,11 @@ static struct super_set_info super_fields[] = {
 	{ "last_orphan", &set_sb.s_last_orphan, 4, parse_uint },
 	{ "hash_seed", &set_sb.s_hash_seed, 16, parse_uuid },
 	{ "def_hash_version", &set_sb.s_def_hash_version, 1, parse_hashalg },
+	{ "jnl_backup_type", &set_sb.s_jnl_backup_type, 1, parse_uint },
+	/* s_reserved_word_pad */
+	{ "default_mount_opts", &set_sb.s_default_mount_opts, 4, parse_uint },
+	{ "first_meta_bg", &set_sb.s_first_meta_bg, 4, parse_uint },
+	{ "mkfs_time", &set_sb.s_mkfs_time, 4, parse_uint },
 	{ 0, 0, 0, 0 }
 };
 

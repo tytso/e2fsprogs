@@ -1,3 +1,9 @@
+2004-12-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* setsuper.c: Add definitions for newer superblock fields:
+		reserved_gdt_blocks, jnl_backup_type, default_mount_opts,
+		first_meta_bg, and mkfs_time.
+
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Move strip command to install-strip target.
