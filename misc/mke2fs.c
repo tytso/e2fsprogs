@@ -125,14 +125,15 @@ static int int_log10(unsigned int arg)
 
 static void proceed_question(NOARGS)
 {
-	int c;
+	char buf[256];
 	char *short_yes = _("yY");
 
 	fflush(stdout);
 	fflush(stderr);
 	printf(_("Proceed anyway? (y,n) "));
-	c = getchar();
-	if (strchr(short_yes, (char) c))
+	buf[0] = 0;
+	fgets(buf, sizeof(buf), stdin);
+	if (strchr(short_yes, buf[0]) == 0)
 		exit(1);
 }
 
@@ -1032,6 +1033,14 @@ int main (int argc, char *argv[])
 		com_err (program_name, 0, _("unknown os - %s"), creator_os);
 		exit(1);
 	}
+
+	/*
+	 * For the Hurd, we will turn off filetype since it doesn't
+	 * support it.
+	 */
+	if (fs->super->s_creator_os == EXT2_OS_HURD)
+		fs->super->s_feature_incompat &=
+			~EXT2_FEATURE_INCOMPAT_FILETYPE;
 
 	/*
 	 * Set the volume label...

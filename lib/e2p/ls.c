@@ -230,7 +230,7 @@ void list_super (struct ext2_super_block * s)
 	printf ("\n");
 	switch (s->s_creator_os) {
 	    case EXT2_OS_LINUX: os = "Linux"; break;
-	    case EXT2_OS_HURD:  os = "GNU"; break;
+	    case EXT2_OS_HURD:  os = "GNU/Hurd"; break;
 	    case EXT2_OS_MASIX: os = "Masix"; break;
 	    default:		os = "unknown"; break;
 	}

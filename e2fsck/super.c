@@ -205,18 +205,33 @@ void check_super_block(e2fsck_t ctx)
 		ext2fs_mark_super_dirty(fs);
 	}
 
+	clear_problem_context(&pctx);
+	
 #ifndef EXT2_SKIP_UUID
 	/*
 	 * If the UUID field isn't assigned, assign it.
 	 */
 	if (!(ctx->options & E2F_OPT_READONLY) && uuid_is_null(s->s_uuid)) {
-		clear_problem_context(&pctx);
 		if (fix_problem(ctx, PR_0_ADD_UUID, &pctx)) {
 			uuid_generate(s->s_uuid);
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
 #endif
+	
+	/*
+	 * For the Hurd, check to see if the filetype option is set,
+	 * since it doesn't support it.
+	 */
+	if (fs->super->s_creator_os == EXT2_OS_HURD &&
+	    (fs->super->s_feature_incompat &
+	     EXT2_FEATURE_INCOMPAT_FILETYPE)) {
+		if (fix_problem(ctx, PR_0_HURD_CLEAR_FILETYPE, &pctx)) {
+			fs->super->s_feature_incompat &=
+				~EXT2_FEATURE_INCOMPAT_FILETYPE;
+			ext2fs_mark_super_dirty(fs);
+
+		}
+	}
 	return;
 }
-

@@ -91,6 +91,9 @@ struct problem_context {
 /* Inode count in the superblock incorrect */
 #define PR_0_INODE_COUNT_WRONG	0x00000D
 
+/* The Hurd does not support the filetype feature */
+#define PR_0_HURD_CLEAR_FILETYPE 0x00000E
+	
 /*
  * Pass 1 errors
  */

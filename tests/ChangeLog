@@ -1,3 +1,8 @@
+2000-05-08  Theodore Ts'o  <tytso@valinux.com>
+
+	* f_hurd: Add test for Hurd-specific features (right now, just
+		checks to make sure the filetype feature is cleared)
+
 2000-04-06  Theodore Ts'o  <tytso@valinux.com>
 
 	* f_filetype: Updated expect script to match with new text for

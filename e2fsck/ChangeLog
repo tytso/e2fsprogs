@@ -1,3 +1,17 @@
+2000-05-08  Theodore Ts'o  <tytso@valinux.com>
+
+	* problem.c, problem.h (PR_0_HURD_CLEAR_FILETYPE): Add new problem
+		code. 
+
+	* super.c (check_super_block): If the OS type in the superblock is
+		the Hurd, check to see if the filetype feature is set, and
+		offer to clear it if so.   This needs to be done since the
+		Hurd doesn't properly support the filetype feature.
+		(And since the hurd allows the transmogrification of files
+		to special files and vice versa --- for no good reason
+		that I can understand --- it can't support the filetype
+		feature for the forseeable future, either.)
+
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
 	* unix.c: For platforms that don't define optarg.h, manually

@@ -1,3 +1,18 @@
+2000-05-08  Theodore Ts'o  <tytso@valinux.com>
+
+	* mke2fs.c (main): We forcibly turn off the filetype feature if
+		the OS is the hurd, since the hurd doesn't support it.
+		(And since the hurd allows the transmogrification of files
+		to special files and vice versa --- for no good reason
+		that I can understand --- it can't support the filetype
+		feature for the forseeable future, either.)
+
+	* mke2fs.c (proceed_question): Fix reversed sense of
+		proceed_question that was busted due to the
+		internationalization patch.  Fixed bug where if
+		proceed_question was called twice, the input buffer wasn't
+		cleared of the previous question's newline.
+	
 Thu Apr  6 17:50:25 2000  Theodore Y. Ts'o  <tytso@signal.thunk.org>
 
 	* badblocks.c (flush_bufs): Use fsync() if the system doesn't

@@ -167,9 +167,13 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Inode count in superblock is incorrect */
 	{ PR_0_INODE_COUNT_WRONG,
-	  N_("@i count in @S is %i, should be %j\n"),
+	  N_("@i count in @S is %i, should be %j.\n"),
 	  PROMPT_FIX, 0 },
-		  
+
+	{ PR_0_HURD_CLEAR_FILETYPE,
+	  N_("The Hurd does not support the filetype feature.\n"),
+	  PROMPT_CLEAR, 0 },	  
+
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */

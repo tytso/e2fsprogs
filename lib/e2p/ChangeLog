@@ -1,3 +1,8 @@
+2000-05-08  Theodore Ts'o  <tytso@valinux.com>
+
+	* ls.c (list_super): Change the string displayed for the Hurd to
+		be GNU/Hurd, instead of just "GNU".
+
 Thu Apr  6 17:38:00 2000  Theodore Y. Ts'o  <tytso@signal.thunk.org>
 
 	* feature.c: Make feature_list static; it shouldn't be exported.
