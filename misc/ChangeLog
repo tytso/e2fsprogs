@@ -1,3 +1,17 @@
+2001-01-03    <tytso@snap.thunk.org>
+
+	* tune2fs.c (update_feature_set, add_journal): Moved to separate
+		functions.  Added ability to add and remove the journal
+		while the filesystem is live.  Added support for setting
+		a time-based UUID.  Removed zero-initialized static variables.
+
+	* mke2fs.c, util.c, util.h (strcasecmp, proceed_question,
+		check_plausibility, parse_journal_opts, check_mount):
+		Moved functions to util.c so they can be used by tune2fs.
+
+	* mke2fs.c (main): Change ext2fs_add_journal_fs() to 
+		ext2fs_add_journal_inode() to reflect function renaming.
+
 2001-01-01    <tytso@snap.thunk.org>
 
 	* mke2fs.c, e2image.c: Removed references to struct ext2fs_sb to

@@ -154,11 +154,14 @@ e2fsck must be run on the filesystem.
 set the UUID of the filesystem.  A sample UUID looks like this: 
 "c1b9d5a2-f162-11cf-9ece-0020afc76f16".  The uuid may also be
 .IR null ,
-which will set the filesystem UUID to the null UUID.  The uuid may also be
+which will set the filesystem UUID to the null UUID (clearing it), 
 .IR random ,
-which will generate a new random UUID for the filesystem.
+which will generate a new random-based UUID for the filesystem, or
+.IR time ,
+which will generate a new time-based UUID for the filesystem (see
+.BR uuidgen (8)).
 .SH BUGS
-We haven't found any bugs yet. Perhaps there are bugs but it's unlikely.
+We haven't found any bugs yet.  That doesn't mean there aren't any...
 .SH WARNING
 Never use tune2fs to change parameters of a read/write mounted filesystem!
 .B Use this utility

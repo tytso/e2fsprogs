@@ -48,59 +48,33 @@ extern int optind;
 #include "et/com_err.h"
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
+#include "util.h"
 
 #include "../version.h"
 #include "nls-enable.h"
 
 const char * program_name = "tune2fs";
-char * device_name = NULL;
-char * new_label = NULL;
-char * new_last_mounted = NULL;
-char * new_UUID = NULL;
-int c_flag = 0;
-int C_flag = 0;
-int e_flag = 0;
-int g_flag = 0;
-int i_flag = 0;
-int l_flag = 0;
-int L_flag = 0;
-int m_flag = 0;
-int M_flag = 0;
-int r_flag = 0;
-int s_flag = -1;
-int u_flag = 0;
-int U_flag = 0;
-int max_mount_count, mount_count;
-unsigned long interval;
-unsigned long reserved_ratio = 0;
-unsigned long reserved_blocks = 0;
-unsigned short errors;
-unsigned long resgid = 0;
-unsigned long resuid = 0;
+char * device_name;
+char * new_label, *new_last_mounted, *new_UUID, *journal_opts;
+static int c_flag, C_flag, e_flag, g_flag, i_flag, l_flag, L_flag;
+static int m_flag, M_flag, r_flag, s_flag = -1, u_flag, U_flag;
+static int max_mount_count, mount_count, mount_flags;
+static unsigned long interval, reserved_ratio, reserved_blocks;
+static unsigned long resgid, resuid;
+static unsigned short errors;
 
-#ifndef HAVE_STRCASECMP
-static int strcasecmp (char *s1, char *s2)
-{
-	while (*s1 && *s2) {
-		int ch1 = *s1++, ch2 = *s2++;
-		if (isupper (ch1))
-			ch1 = tolower (ch1);
-		if (isupper (ch2))
-			ch2 = tolower (ch2);
-		if (ch1 != ch2)
-			return ch1 - ch2;
-	}
-	return *s1 ? 1 : *s2 ? -1 : 0;
-}
-#endif
+int journal_size, journal_flags;
+char *journal_device;
+
+static const char *please_fsck = N_("Please run e2fsck on the filesystem.\n");
 
 static void usage(void)
 {
 	fprintf(stderr,
 		_("Usage: %s [-c max-mounts-count] [-e errors-behavior] "
 		  "[-g group]\n"
-		  "\t[-i interval[d|m|w]] [-l] [-s sparse-flag] "
-		  "[-m reserved-blocks-percent]\n"
+		 "\t[-i interval[d|m|w]] [-j journal-options]\n"
+		 "\t[-l] [-s sparse-flag] [-m reserved-blocks-percent]\n"
 		  "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
 		  "\t[-L volume-label] [-M last-mounted-dir] [-U UUID]\n"
 		  "\t[-O [^]feature[,...]] device\n"), program_name);
@@ -113,7 +87,155 @@ static __u32 ok_features[3] = {
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
 };
 
-static const char *please_fsck = N_("Please run e2fsck on the filesystem.\n");
+/*
+ * Update the feature set as provided by the user.
+ */
+static void update_feature_set(ext2_filsys fs, char *features_cmd)
+{
+	int sparse, old_sparse, filetype, old_filetype;
+	int journal, old_journal;
+	struct ext2_inode	inode;
+	struct ext2_super_block *sb= fs->super;
+	errcode_t		retval;
+
+	old_sparse = sb->s_feature_ro_compat &
+		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+	old_filetype = sb->s_feature_incompat &
+		EXT2_FEATURE_INCOMPAT_FILETYPE;
+	old_journal = sb->s_feature_compat &
+		EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+	if (e2p_edit_feature(features_cmd, &sb->s_feature_compat,
+			     ok_features)) {
+		fprintf(stderr, _("Invalid filesystem option set: %s\n"),
+			features_cmd);
+		exit(1);
+	}
+	sparse = sb->s_feature_ro_compat &
+		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+	filetype = sb->s_feature_incompat &
+		EXT2_FEATURE_INCOMPAT_FILETYPE;
+	journal = sb->s_feature_compat &
+		EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+	if (old_journal && !journal) {
+		if ((mount_flags & EXT2_MF_MOUNTED) &&
+		    !(mount_flags & EXT2_MF_READONLY)) {
+			fprintf(stderr,
+				_("The HAS_JOURNAL flag may only be "
+				  "cleared when the filesystem is\n"
+				  "unmounted or mounted "
+				  "read-only.\n"));
+			exit(1);
+		}
+		if (sb->s_feature_incompat &
+		    EXT3_FEATURE_INCOMPAT_RECOVER) {
+			fprintf(stderr,
+				_("The NEEDS_RECOVERY flag is set.  "
+				  "Please run e2fsck before clearing\n"
+				  "the HAS_JOURNAL flag.\n"));
+			exit(1);
+		}
+		/*
+		 * Remove the immutable flag on the journal inode
+		 */
+		if (sb->s_journal_inum) {
+			retval = ext2fs_read_inode(fs, sb->s_journal_inum, 
+						   &inode);
+			if (retval) {
+				com_err(program_name, retval,
+					"while reading journal inode");
+				exit(1);
+			}
+			inode.i_flags &= ~EXT2_IMMUTABLE_FL;
+			retval = ext2fs_write_inode(fs, sb->s_journal_inum, 
+						    &inode);
+			if (retval) {
+				com_err(program_name, retval,
+					"while write journal inode");
+				exit(1);
+			}
+		}
+	}
+	if (journal && !old_journal) {
+		/*
+		 * If adding a journal flag, let the create journal
+		 * code below handle creating setting the flag and
+		 * creating the journal.  We supply a default size if
+		 * necessary.
+		 */
+		if (!journal_opts)
+			journal_opts = "size=16";
+		sb->s_feature_compat &=~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+		journal = old_journal;
+	}
+	
+	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
+	    (sb->s_feature_compat || sb->s_feature_ro_compat ||
+	     sb->s_feature_incompat))
+		ext2fs_update_dynamic_rev(fs);
+	if ((sparse != old_sparse) ||
+	    (filetype != old_filetype) ||
+	    (journal != old_journal)) {
+		sb->s_state &= ~EXT2_VALID_FS;
+		printf("\n%s\n", _(please_fsck));
+	}
+	ext2fs_mark_super_dirty(fs);
+}
+
+/*
+ * Add a journal to the filesystem.
+ */
+static void add_journal(ext2_filsys fs)
+{
+	unsigned long journal_blocks;
+	errcode_t	retval;
+
+	if (fs->super->s_feature_compat &
+	    EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
+		fprintf(stderr, _("The filesystem already has a journal.\n"));
+		exit(1);
+	}
+	parse_journal_opts(journal_opts);
+	journal_blocks = journal_size * 1024 / (fs->blocksize / 1024);
+	if (journal_device) {
+		check_plausibility(journal_device);
+		check_mount(journal_device, 0, _("journal"));
+		printf(_("Creating journal on device %s: "),
+		       journal_device);
+		retval = ext2fs_add_journal_device(fs, journal_device,
+						   journal_blocks,
+						   journal_flags);
+		if (retval) {
+			com_err (program_name, retval,
+				 _("while trying to create journal on device %s"),
+				 journal_device);
+			exit(1);
+		}
+		printf(_("done\n"));
+	} else if (journal_size) {
+		errcode_t	retval;
+		int		mount_flags;
+
+		printf(_("Creating journal inode: "));
+		fflush(stdout);
+		retval = ext2fs_add_journal_inode(fs, journal_blocks,
+						  journal_flags);
+		if (retval) {
+			printf("\n");
+			com_err(program_name, retval,
+				_("while trying to create journal"));
+			exit(1);
+		}
+		printf(_("done\n"));
+		/*
+		 * If the filesystem wasn't mounted, we need to force
+		 * the block group descriptors out.
+		 */
+		if ((mount_flags & EXT2_MF_MOUNTED) == 0)
+			fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+	}
+}
+
+
 
 int main (int argc, char ** argv)
 {
@@ -126,7 +248,6 @@ int main (int argc, char ** argv)
 	struct passwd * pw;
 	int open_flag = 0;
 	char *features_cmd = 0;
-	int mount_flags = 0;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -139,7 +260,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	initialize_ext2_error_table();
-	while ((c = getopt (argc, argv, "c:e:g:i:lm:r:s:u:C:L:M:O:U:")) != EOF)
+	while ((c = getopt (argc, argv, "c:e:g:i:j:lm:r:s:u:C:L:M:O:U:")) != EOF)
 		switch (c)
 		{
 			case 'c':
@@ -235,6 +356,10 @@ int main (int argc, char ** argv)
 			case 'l':
 				l_flag = 1;
 				break;
+			case 'j':
+				journal_opts = optarg;
+				open_flag = EXT2_FLAG_RW;
+				break;
 			case 'L':
 				new_label = optarg;
 				L_flag = 1;
@@ -324,6 +449,8 @@ int main (int argc, char ** argv)
 		return;
 	}
 	sb = fs->super;
+	/* Normally we only need to write out the superblock */
+	fs->flags |= EXT2_FLAG_SUPER_ONLY;
 
 	if (c_flag) {
 		sb->s_max_mnt_count = max_mount_count;
@@ -419,49 +546,16 @@ int main (int argc, char ** argv)
 			sizeof(sb->s_last_mounted));
 		ext2fs_mark_super_dirty(fs);
 	}
-	if (features_cmd) {
-		int sparse, old_sparse, filetype, old_filetype;
-		int journal, old_journal;
-
-		old_sparse = sb->s_feature_ro_compat &
-			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-		old_filetype = sb->s_feature_incompat &
-			EXT2_FEATURE_INCOMPAT_FILETYPE;
-		old_journal = sb->s_feature_compat &
-			EXT3_FEATURE_COMPAT_HAS_JOURNAL;
-		if (e2p_edit_feature(features_cmd,
-				     &sb->s_feature_compat,
-				     ok_features)) {
-			fprintf(stderr, _("Invalid filesystem option set: %s\n"),
-				features_cmd);
-			exit(1);
-		}
-		sparse = sb->s_feature_ro_compat &
-			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-		filetype = sb->s_feature_incompat &
-			EXT2_FEATURE_INCOMPAT_FILETYPE;
-		journal = sb->s_feature_compat &
-			EXT3_FEATURE_COMPAT_HAS_JOURNAL;
-		if (old_journal && !journal && 
-		    (mount_flags & EXT2_MF_MOUNTED) &&
-		    !(mount_flags & EXT2_MF_READONLY)) {
-			fprintf(stderr,
-				_("The HAS_JOURNAL flag may only be cleared "
-				  "the filesystem is unmounted\n"
-				  "or mounted read-only.\n"));
-			exit(1);
-		}	
-		if ((sparse != old_sparse) ||
-		    (filetype != old_filetype) ||
-		    (journal != old_journal)) {
-			sb->s_state &= ~EXT2_VALID_FS;
-			printf("\n%s\n", _(please_fsck));
-		}
-		ext2fs_mark_super_dirty(fs);
-	}
+	if (features_cmd)
+		update_feature_set(fs, features_cmd);
+	if (journal_opts)
+		add_journal(fs);
+	
 	if (U_flag) {
 		if (strcasecmp(new_UUID, "null") == 0) {
 			uuid_clear(sb->s_uuid);
+		} else if (strcasecmp(new_UUID, "time") == 0) {
+			uuid_generate_time(sb->s_uuid);
 		} else if (strcasecmp(new_UUID, "random") == 0) {
 			uuid_generate(sb->s_uuid);
 		} else if (uuid_parse(new_UUID, sb->s_uuid)) {
