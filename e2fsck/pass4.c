@@ -10,6 +10,7 @@
  *
  * Pass 4 frees the following data structures:
  * 	- A bitmap of which inodes are in bad blocks.	(inode_bb_map)
+ * 	- A bitmap of which inodes are imagic inodes.	(inode_imagic_map)
  */
 
 #include "e2fsck.h"
@@ -117,6 +118,8 @@ void e2fsck_pass4(e2fsck_t ctx)
 		    (i > EXT2_ROOT_INO && i < EXT2_FIRST_INODE(fs->super)))
 			continue;
 		if (!(ext2fs_test_inode_bitmap(ctx->inode_used_map, i)) ||
+		    (ctx->inode_imagic_map &&
+		     ext2fs_test_inode_bitmap(ctx->inode_imagic_map, i)) ||
 		    (ctx->inode_bb_map &&
 		     ext2fs_test_inode_bitmap(ctx->inode_bb_map, i)))
 			continue;
@@ -151,6 +154,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 	ext2fs_free_icount(ctx->inode_link_info); ctx->inode_link_info = 0;
 	ext2fs_free_icount(ctx->inode_count); ctx->inode_count = 0;
 	ext2fs_free_inode_bitmap(ctx->inode_bb_map);
+	ext2fs_free_inode_bitmap(ctx->inode_imagic_map);
 	ctx->inode_bb_map = 0;
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {

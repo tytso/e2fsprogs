@@ -1,3 +1,7 @@
+1999-09-24    <tytso@valinux.com>
+
+	* nt_io.c: New file which supports I/O under Windows NT.
+
 1999-09-07    <tytso@valinux.com>
 
 	* ext2fs.h: Add new fields for journalling and define new

@@ -19,8 +19,10 @@
  *
  * 	- A bitmap of which inodes are in use.		(inode_used_map)
  * 	- A bitmap of which inodes are directories.	(inode_dir_map)
+ * 	- A bitmap of which inodes are regular files.	(inode_reg_map)
  * 	- A bitmap of which inodes have bad fields.	(inode_bad_map)
  * 	- A bitmap of which inodes are in bad blocks.	(inode_bb_map)
+ * 	- A bitmap of which inodes are imagic inodes.	(inode_imagic_map)
  * 	- A bitmap of which blocks are in use.		(block_found_map)
  * 	- A bitmap of which blocks are in use by two inodes	(block_dup_map)
  * 	- The data blocks of the directory inodes.	(dir_map)
@@ -60,6 +62,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 static void mark_table_blocks(e2fsck_t ctx);
 static void alloc_bad_map(e2fsck_t ctx);
 static void alloc_bb_map(e2fsck_t ctx);
+static void alloc_imagic_map(e2fsck_t ctx);
 static void handle_fs_bad_blocks(e2fsck_t ctx);
 static void process_inodes(e2fsck_t ctx, char *block_buf);
 static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
@@ -195,6 +198,15 @@ void e2fsck_pass1(e2fsck_t ctx)
 					      &ctx->inode_dir_map);
 	if (pctx.errcode) {
 		pctx.num = 2;
+		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+	pctx.errcode = ext2fs_allocate_inode_bitmap(fs,
+						    "regular file inode map",
+					      &ctx->inode_reg_map);
+	if (pctx.errcode) {
+		pctx.num = 6;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
@@ -405,14 +417,20 @@ void e2fsck_pass1(e2fsck_t ctx)
 				alloc_bad_map(ctx);
 			ext2fs_mark_inode_bitmap(ctx->inode_bad_map, ino);
 		}
+		if (inode.i_flags & EXT2_IMAGIC_FL) {
+			if (!ctx->inode_imagic_map)
+				alloc_imagic_map(ctx);
+			ext2fs_mark_inode_bitmap(ctx->inode_imagic_map, ino);
+		}
 		
 		if (LINUX_S_ISDIR(inode.i_mode)) {
 			ext2fs_mark_inode_bitmap(ctx->inode_dir_map, ino);
 			e2fsck_add_dir_info(ctx, ino, 0);
 			ctx->fs_directory_count++;
-		} else if (LINUX_S_ISREG (inode.i_mode))
+		} else if (LINUX_S_ISREG (inode.i_mode)) {
+			ext2fs_mark_inode_bitmap(ctx->inode_reg_map, ino);
 			ctx->fs_regular_count++;
-		else if (LINUX_S_ISCHR (inode.i_mode) &&
+		} else if (LINUX_S_ISCHR (inode.i_mode) &&
 			 e2fsck_pass1_check_device_inode(&inode))
 			ctx->fs_chardev_count++;
 		else if (LINUX_S_ISBLK (inode.i_mode) &&
@@ -485,6 +503,13 @@ void e2fsck_pass1(e2fsck_t ctx)
 		handle_fs_bad_blocks(ctx);
 
 	if (ctx->flags & E2F_FLAG_RESTART) {
+		/*
+		 * Only the master copy of the superblock and block
+		 * group descriptors are going to be written during a
+		 * restart, so set the superblock to be used to be the
+		 * master superblock.
+		 */
+		ctx->use_superblock = 0;
 		unwind_pass1(fs);
 		goto endit;
 	}
@@ -649,6 +674,26 @@ static void alloc_bb_map(e2fsck_t ctx)
 }
 
 /*
+ * This procedure will allocate the inode imagic table
+ */
+static void alloc_imagic_map(e2fsck_t ctx)
+{
+	struct		problem_context pctx;
+	
+	clear_problem_context(&pctx);
+	pctx.errcode = ext2fs_allocate_inode_bitmap(ctx->fs,
+					      "imagic inode map",
+					      &ctx->inode_imagic_map);
+	if (pctx.errcode) {
+		pctx.num = 5;
+		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
+		/* Should never get here */
+		ctx->flags |= E2F_FLAG_ABORT;
+		return;
+	}
+}
+
+/*
  * Marks a block as in use, setting the dup_map if it's been set
  * already.  Called by process_block and process_bad_block.
  *
@@ -729,6 +774,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		inode->i_dtime = time(0);
 		e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 		ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
+		ext2fs_unmark_inode_bitmap(ctx->inode_reg_map, ino);
 		ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
 		/*
 		 * The inode was probably partially accounted for
@@ -752,6 +798,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			inode->i_dtime = time(0);
 			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 			ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
+			ext2fs_unmark_inode_bitmap(ctx->inode_reg_map, ino);
 			ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
 			ctx->fs_directory_count--;
 			pb.is_dir = 0;

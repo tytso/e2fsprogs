@@ -143,6 +143,8 @@ struct e2fsck_struct {
 	ext2fs_inode_bitmap inode_bad_map; /* Inodes which are bad somehow */
 	ext2fs_inode_bitmap inode_dir_map; /* Inodes which are directories */
 	ext2fs_inode_bitmap inode_bb_map; /* Inodes which are in bad blocks */
+	ext2fs_inode_bitmap inode_imagic_map; /* AFS inodes */
+	ext2fs_inode_bitmap inode_reg_map; /* Inodes which are regular files*/
 
 	ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
 	ext2fs_block_bitmap block_dup_map; /* Blks referenced more than once */

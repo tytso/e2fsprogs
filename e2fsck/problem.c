@@ -693,6 +693,16 @@ static const struct e2fsck_problem problem_table[] = {
 	  "@i %i (%Q) is an @I socket.\n",
 	  PROMPT_CLEAR, 0 },
 
+	/* Directory filetype not set */
+	{ PR_2_SET_FILETYPE,
+	  "Setting filetype for @E to %N.\n",
+	  PROMPT_NONE, PR_PREEN_OK | PR_NO_OK | PR_NO_NOMSG },
+
+	/* Directory filetype incorrect */
+	{ PR_2_BAD_FILETYPE,
+	  "@E has an incorrect filetype (was %dt, should be %N)\n",
+	  PROMPT_FIX, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */
@@ -1038,7 +1048,9 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		printf("Unhandled error code (%d)!\n", code);
 		return 0;
 	}
-	def_yn = (ptr->flags & PR_NO_DEFAULT) ? 0 : 1;
+	def_yn = 1;
+	if ((ptr->flags & PR_NO_DEFAULT) || (ctx->options & E2F_OPT_NO))
+		def_yn= 0;
 
 	/*
 	 * Do special latch processing.  This is where we ask the
@@ -1059,6 +1071,9 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	}
 	if ((ptr->flags & PR_PREEN_NOMSG) &&
 	    (ctx->options & E2F_OPT_PREEN))
+		suppress++;
+	if ((ptr->flags & PR_NO_NOMSG) &&
+	    (ctx->options & E2F_OPT_NO))
 		suppress++;
 	if (!suppress) {
 		message = ptr->e2p_description;

@@ -33,4 +33,5 @@ struct latch_descr {
 				/* ask another */
 #define PR_PREEN_NOMSG	0x0200	/* Don't print a message if we're preening */
 #define PR_NOCOLLATE	0x0400	/* Don't collate answers for this latch */
+#define PR_NO_NOMSG	0x0800	/* Don't print a message if e2fsck -n */
 

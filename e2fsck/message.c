@@ -20,6 +20,7 @@
  * 	%dn	<dirent>->name		string
  * 	%dr	<dirent>->rec_len
  * 	%dl	<dirent>->name_len
+ * 	%dt	<dirent>->filetype
  * 	%D	<dir> 			inode number
  * 	%g	<group>			integer
  * 	%i	<ino>			inode number
@@ -300,6 +301,9 @@ static _INLINE_ void expand_dirent_expression(char ch,
 		break;
 	case 'l':
 		printf("%u", dirent->name_len & 0xFF);
+		break;
+	case 't':
+		printf("%u", dirent->name_len >> 8);
 		break;
 	default:
 	no_dirent:

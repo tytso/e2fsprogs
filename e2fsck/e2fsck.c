@@ -50,6 +50,10 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ext2fs_free_inode_bitmap(ctx->inode_dir_map);
 		ctx->inode_dir_map = 0;
 	}
+	if (ctx->inode_reg_map) {
+		ext2fs_free_inode_bitmap(ctx->inode_reg_map);
+		ctx->inode_dir_map = 0;
+	}
 	if (ctx->block_found_map) {
 		ext2fs_free_block_bitmap(ctx->block_found_map);
 		ctx->block_found_map = 0;
@@ -74,6 +78,10 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 	if (ctx->inode_bad_map) {
 		ext2fs_free_inode_bitmap(ctx->inode_bad_map);
 		ctx->inode_bad_map = 0;
+	}
+	if (ctx->inode_imagic_map) {
+		ext2fs_free_inode_bitmap(ctx->inode_imagic_map);
+		ctx->inode_imagic_map = 0;
 	}
 
 	/*

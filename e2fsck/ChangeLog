@@ -1,3 +1,43 @@
+1999-10-21    <tytso@valinux.com>
+
+	* pass4.c (e2fsck_pass4): If an inode is set in the
+		inode_imagic_map bitmap, don't check to see if it is
+		disconnected from the inode tree (because it almost
+		certainly will be).  Free inode_imagic_map at the end of
+		pass 4.
+
+	* pass2.c (check_dir_block, check_filetype): If the FILETYPE
+		feature is set, check the directory entry's filetype
+		information field, and fix/set it if necessary.
+		(e2fsck_pass2): Free the inode_reg_map bitmap at the end
+		of pass 2.
+
+	* pass1.c (e2fsck_pass1, alloc_imagic_map): Allocate and fill in
+		information for inode_reg_map and inode_imagic_map, which
+		indicates which inodes are regular files and AFS inodes,
+		respectively.
+		Since only the master superblock is written during a
+		restart, force that superblock to be used after a restart;
+		otherwise changes to the block group descriptors end up
+		getting ignored.
+
+	* problem.c, problemP.h: If e2fsck is run -n, make def_yn variable
+		be 0 for "no".  Add support for a new flag, PR_NO_NOMSG,
+		which supresses the problem message if e2fsck is run with
+		the -n option.
+
+	* problem.c, problem.h (PR_2_SET_FILETYPE, PR_2_BAD_FILETYPE): Add
+		new problem codes.
+
+	* message.c (expand_dirent_expression): Add support for %dt which
+		prints the dirent type information.
+
+	* e2fsck.c (e2fsck_reset_context): Free new bitmaps (inode_reg_map
+		and inode_imagic_map).
+
+	* e2fsck.h (e2fsck_t): Add new inode_reg_map and inode_magic_map
+		to the context structure.
+	
 1999-09-24    <tytso@valinux.com>
 
 	* unix.c (PRS), util.c (ask_yn): Add #ifdef's to make

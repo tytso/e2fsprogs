@@ -411,6 +411,12 @@ struct problem_context {
 /* Illegal socket */
 #define PR_2_BAD_SOCKET		0x020026
 
+/* Directory filetype not set */
+#define PR_2_SET_FILETYPE	0x020027
+
+/* Directory filetype incorrect */
+#define PR_2_BAD_FILETYPE	0x020028
+
 /*
  * Pass 3 errors
  */

@@ -38,10 +38,17 @@
  *
  * Pass 2 frees the following data structures
  * 	- The inode_bad_map bitmap
+ * 	- The inode_reg_map bitmap
  */
 
 #include "e2fsck.h"
 #include "problem.h"
+
+#ifdef NO_INLINE_FUNCS
+#define _INLINE_
+#else
+#define _INLINE_ inline
+#endif
 
 /*
  * Keeps track of how many times an inode is referenced.
@@ -133,6 +140,10 @@ void e2fsck_pass2(e2fsck_t ctx)
 	if (ctx->inode_bad_map) {
 		ext2fs_free_inode_bitmap(ctx->inode_bad_map);
 		ctx->inode_bad_map = 0;
+	}
+	if (ctx->inode_reg_map) {
+		ext2fs_free_inode_bitmap(ctx->inode_reg_map);
+		ctx->inode_reg_map = 0;
 	}
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
@@ -267,6 +278,57 @@ static int check_name(e2fsck_t ctx,
 	}
 	return ret;
 }
+
+/*
+ * Check the directory filetype (if present)
+ */
+static _INLINE_ int check_filetype(e2fsck_t ctx,
+		      struct ext2_dir_entry *dirent,
+		      ino_t dir_ino, struct problem_context *pctx)
+{
+	int	filetype = dirent->name_len >> 8;
+	int	should_be = EXT2_FT_UNKNOWN;
+	struct ext2_inode	inode;
+
+	if (!(ctx->fs->super->s_feature_incompat &
+	      EXT2_FEATURE_INCOMPAT_FILETYPE))
+		return 0;
+
+	if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dirent->inode)) {
+		should_be = EXT2_FT_DIR;
+	} else if (ext2fs_test_inode_bitmap(ctx->inode_reg_map,
+					    dirent->inode)) {
+		should_be = EXT2_FT_REG_FILE;
+	} else if (ctx->inode_bad_map &&
+		   ext2fs_test_inode_bitmap(ctx->inode_bad_map,
+					    dirent->inode))
+		should_be = 0;
+	else {
+		e2fsck_read_inode(ctx, dirent->inode, &inode,
+				  "check_filetype");
+		if (LINUX_S_ISCHR (inode.i_mode))
+			should_be = EXT2_FT_CHRDEV;
+		else if (LINUX_S_ISBLK (inode.i_mode))
+			should_be = EXT2_FT_BLKDEV;
+		else if (LINUX_S_ISLNK (inode.i_mode))
+			should_be = EXT2_FT_SYMLINK;
+		else if (LINUX_S_ISFIFO (inode.i_mode))
+			should_be = EXT2_FT_FIFO;
+		else if (LINUX_S_ISSOCK (inode.i_mode))
+			should_be = EXT2_FT_SOCK;
+	}
+	if (filetype == should_be)
+		return 0;
+	pctx->num = should_be;
+
+	if (fix_problem(ctx, filetype ? PR_2_BAD_FILETYPE : PR_2_SET_FILETYPE,
+			pctx) == 0)
+		return 0;
+			
+	dirent->name_len = (dirent->name_len & 0xFF) | should_be << 8;
+	return 1;
+}
+
 
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry *db,
@@ -463,6 +525,9 @@ static int check_dir_block(ext2_filsys fs,
 		}
 
 		if (check_name(ctx, dirent, ino, &cd->pctx))
+			dir_modified++;
+
+		if (check_filetype(ctx, dirent, ino, &cd->pctx))
 			dir_modified++;
 
 		/*
