@@ -1,3 +1,17 @@
+1999-09-07    <tytso@rsts-11.mit.edu>
+
+	* f_expand: Make test case better by testing increasing the size
+		of lost+found where an indirect block must be created.
+		Also add checks to see what happens when directories are
+		disconnected because their containing directory is
+		destroyed (turned into a socket :-)
+
+1999-08-02    <tytso@rsts-11.mit.edu>
+
+	* f_dupfsblks: Add additional test cases where files share
+		duplicate blocks with both other files and filesystem
+		metadata.
+
 1999-07-30    <tytso@valinux.com>
 
 	* f_swapfs: Change to deal with new dump_inode command.
