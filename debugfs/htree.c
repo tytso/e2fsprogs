@@ -104,7 +104,7 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 {
 	struct ext2_dx_countlimit	limit;
 	struct ext2_dx_entry		e;
-	int				i;
+	int				hash, i;
 	
 
 	limit = *((struct ext2_dx_countlimit *) ent);
@@ -114,10 +114,12 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 	fprintf(pager, "Number of entries (count): %d\n", limit.count);
 	fprintf(pager, "Number of entries (limit): %d\n", limit.limit);
 
-	for (i=0; i < limit.count; i++)
-		fprintf(pager, "Entry #%d: Hash 0x%08x, block %d\n", i,
-		       i ? ext2fs_le32_to_cpu(ent[i].hash) : 0,
+	for (i=0; i < limit.count; i++) {
+		hash = i ? ext2fs_le32_to_cpu(ent[i].hash) : 0;
+		fprintf(pager, "Entry #%d: Hash 0x%08x%s, block %d\n", i,
+			hash, (hash & 1) ? " (**)" : "",
 			ext2fs_le32_to_cpu(ent[i].block));
+		}
 
 	fprintf(pager, "\n");
 
