@@ -1,3 +1,10 @@
+1999-05-20    <tytso@rsts-11.mit.edu>
+
+	* dumpe2fs.c, dumpe2fs.8.in: Added new command-line options which
+		allow a filesystem expert to specify the superblock and
+		blocksize when opening a filesystem.  This is mainly
+		useful when examining the remains of a toasted filesystem.
+
 1999-03-11  Andreas Dilger <adilger@enel.ucalgary.ca>
 
 	* uuidgen.c, uuidgen.1.in: Created command-line utility to

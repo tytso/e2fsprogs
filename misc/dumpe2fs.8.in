@@ -11,6 +11,12 @@ dumpe2fs \- dump filesystem information
 .B -b
 ]
 [
+.B -ob superblock
+]
+[
+.B -oB blocksize
+]
+[
 .B -V
 ]
 device
@@ -28,6 +34,16 @@ program for the BSD Fast File System.
 .TP
 .I -b
 print the blocks which are reserved as bad in the filesystem.
+.TP
+.I -ob superblock
+use the superblock specifed on the command line when examining the filesystem.
+This option is not usually needed except by a filesystem wizard who 
+is examining the remains of a very badly corupted filesystem.
+.TP
+.I -oB blocksize
+use the blocksize specified on the command line when examining the filesystem.
+This option is not usually needed except by a filesystem wizard who 
+is examining the remains of a very badly corupted filesystem.
 .TP
 .I -V
 print the version number of 

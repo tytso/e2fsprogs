@@ -43,7 +43,8 @@ char * device_name = NULL;
 
 static void usage(void)
 {
-	fprintf (stderr, "usage: %s [-bV] device\n", program_name);
+	fprintf (stderr, "usage: %s [-bV] [-ob superblock] "
+		 "[-oB blocksize] device\n", program_name);
 	exit (1);
 }
 
@@ -177,6 +178,8 @@ int main (int argc, char ** argv)
 	errcode_t	retval;
 	ext2_filsys	fs;
 	int		print_badblocks = 0;
+	int		use_superblock = 0;
+	int		use_blocksize = 0;
 	int		big_endian;
 	int		c;
 
@@ -187,10 +190,18 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	
-	while ((c = getopt (argc, argv, "bV")) != EOF) {
+	while ((c = getopt (argc, argv, "bVo:")) != EOF) {
 		switch (c) {
 		case 'b':
 			print_badblocks++;
+			break;
+		case 'o':
+			if (optarg[0] == 'b')
+				use_superblock = atoi(optarg+1);
+			else if (optarg[0] == 'B')
+				use_blocksize = atoi(optarg+1);
+			else
+				usage();
 			break;
 		case 'V':
 			/* Print version number and exit */
@@ -204,7 +215,10 @@ int main (int argc, char ** argv)
 	if (optind > argc - 1)
 		usage();
 	device_name = argv[optind++];
-	retval = ext2fs_open (device_name, 0, 0, 0, unix_io_manager, &fs);
+	if (use_superblock && !use_blocksize)
+		use_blocksize = 1024;
+	retval = ext2fs_open (device_name, 0, use_superblock,
+			      use_blocksize, unix_io_manager, &fs);
 	if (retval) {
 		com_err (program_name, retval, "while trying to open %s",
 			 device_name);
