@@ -1,4 +1,19 @@
-2002-04-30    <tytso@snap.thunk.org>
+2002-05-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (PRS): Determine the page size using sysconf() at
+		runtime, instead of using the Linux system header files.
+
+2002-05-16  Andreas Dilger <adilger@clusterfs.com>
+
+	* mke2fs.c (PRS): Allow blocksizes larger than 4k to be specified,
+		with warning printed and the user questioned if blocksize
+		is larger than the system's page size according to the
+		Linux kernel header files.  Added better checking for
+		valid inode sizes, and again print a warning message if
+		using a large inode size (since most kernels today don't
+		support this yet).
+	
+2002-04-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* fsck.8.in: Fix typo in man page.
 

@@ -44,13 +44,6 @@ extern int optind;
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
-#ifdef HAVE_ASM_PAGE_H
-#include <asm/page.h>
-#define SYS_MAX_BLOCKSIZE PAGE_SIZE
-#else
-#define SYS_MAX_BLOCKSIZE 4096
-#endif
-
 #include "ext2fs/ext2_fs.h"
 #include "et/com_err.h"
 #include "uuid/uuid.h"
@@ -90,6 +83,8 @@ char *volume_label;
 char *mount_dir;
 char *journal_device;
 int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
+
+int sys_page_size = 4096;
 
 static void usage(void)
 {
@@ -132,6 +127,7 @@ static int int_log10(unsigned int arg)
  * of zero meaning that it is the default parameter for the type.
  * Note that order is important in the table below.
  */
+#define DEF_MAX_BLOCKSIZE -1
 static char default_str[] = "default";
 struct mke2fs_defaults {
 	const char	*type;
@@ -144,8 +140,8 @@ struct mke2fs_defaults {
 	{ default_str, 3, 1024, 8192 },
 	{ "journal", 0, 4096, 8192 },
 	{ "news", 0, 4096, 4096 },
-	{ "largefile", 0, SYS_MAX_BLOCKSIZE, 1024 * 1024 },
-	{ "largefile4", 0, SYS_MAX_BLOCKSIZE, 4096 * 1024 },
+	{ "largefile", 0, DEF_MAX_BLOCKSIZE, 1024 * 1024 },
+	{ "largefile4", 0, DEF_MAX_BLOCKSIZE, 4096 * 1024 },
 	{ 0, 0, 0, 0},
 };
 
@@ -172,6 +168,8 @@ static void set_fs_defaults(const char *fs_type,
 		if (ratio == 0)
 			*inode_ratio = p->inode_ratio;
 		if (blocksize == 0) {
+			if (p->blocksize == DEF_MAX_BLOCKSIZE)
+				p->blocksize = sys_page_size;
 			super->s_log_frag_size = super->s_log_block_size =
 				int_log2(p->blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 		}
@@ -806,6 +804,7 @@ static void PRS(int argc, char *argv[])
 #ifdef __linux__
 	struct 		utsname ut;
 #endif
+	long		sysval;
 
 	/* Update our PATH to include /sbin  */
 	if (oldpath) {
@@ -822,6 +821,18 @@ static void PRS(int argc, char *argv[])
 	tmp = getenv("MKE2FS_SYNC");
 	if (tmp)
 		sync_kludge = atoi(tmp);
+
+	/* Determine the system page size if possible */
+#ifdef HAVE_SYSCONF
+#if (!defined(_SC_PAGESIZE) && defined(_SC_PAGE_SIZE))
+#define _SC_PAGESIZE _SC_PAGE_SIZE
+#endif
+#ifdef _SC_PAGESIZE
+	sysval = sysconf(_SC_PAGESIZE);
+	if (sysconf > 0)
+		sys_page_size = sysval;
+#endif /* _SC_PAGESIZE */
+#endif /* HAVE_SYSCONF */
 	
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
@@ -1071,16 +1082,16 @@ static void PRS(int argc, char *argv[])
 		ext2fs_close(jfs);
 	}
 
-	if (blocksize > SYS_MAX_BLOCKSIZE) {
+	if (blocksize > sys_page_size) {
 		if (!force) {
 			com_err(program_name, 0,
 				_("%d-byte blocks too big for system (max %d)"),
-				blocksize, SYS_MAX_BLOCKSIZE);
+				blocksize, sys_page_size);
 			proceed_question();
 		}
 		fprintf(stderr, _("Warning: %d-byte blocks too big for system "
 				  "(max %d), forced to continue\n"),
-			blocksize, SYS_MAX_BLOCKSIZE);
+			blocksize, sys_page_size);
 	}
 
 	if (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {

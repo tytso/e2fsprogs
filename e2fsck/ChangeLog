@@ -1,3 +1,30 @@
+2002-05-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (e2fsck_pass1): When calculating max_sizes, omit capping
+		this value by the calculated value of max_sect_sizes.
+		The inode may be a sparse inode, and the limit of
+		max_sect_sizes assumed a non-sparse inode and a limit
+		based on a 32-bit i_blocks field measured in 512 sectors.
+
+	* super.c (check_super_block): Fix check for s_log_block_size so
+		that takes into account fact that there is an offset of
+		EXT2_MIN_BLOCK_LOG_SIZE.
+
+	* pass1.c: Allocate max_sizes array to be big enough to support
+		the larger block sizes.
+
+2002-05-16  Andreas Dilger <adilger@clusterfs.com>
+
+	* unix.c (main), util.c (get_backup_sb): Use EXT2_MAX_BLOCK_SIZE
+		instead of using a hardcoded value of 4096.
+
+	* super.c (check_super_block): Change checks for s_log_block_size
+		s_log_frag_size so they support the larger block sizes.
+
+	* pass1.c (e2fsck_pass1): Calculate max_sizes array for block
+		sizes up to EXT2_MAX_BLOCK_SIZE (to support block sizes
+		greater than 4k).
+
 2002-03-08  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.27

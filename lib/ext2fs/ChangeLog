@@ -1,10 +1,17 @@
-2002-05-11    <tytso@snap.thunk.org>
+2002-05-16  Andreas Dilger <adilger@clusterfs.com>
+
+	* ext2_fs.h: Change limits to support filesystems with 8k blocks.
+
+	* initialize.c (ext2fs_initialize): Remove assumption that
+		blocksizes are always <= 4k.
+
+2002-05-11  Theodore Ts'o  <tytso@mit.edu>
 
 	* bmap.c (ext2fs_bmap): Fix bug which caused ext2fs_bmap to fail
 		silently if inode pointer is NULL (and ext2fs_bmap is
 		expected to read the inode itself).
 
-2002-04-27    <tytso@snap.thunk.org>
+2002-04-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* ismounted.c (check_mntent_file, is_swap_device): Verify that the
 		file we are checking is a block device file before looking

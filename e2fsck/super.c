@@ -335,7 +335,8 @@ void check_super_block(e2fsck_t ctx)
 	check_super_value(ctx, "first_data_block", sb->s_first_data_block,
 			  MAX_CHECK, 0, sb->s_blocks_count);
 	check_super_value(ctx, "log_block_size", sb->s_log_block_size,
-			  MIN_CHECK | MAX_CHECK, 0, EXT2_MAX_BLOCK_LOG_SIZE);
+			  MIN_CHECK | MAX_CHECK, 0,
+			  EXT2_MAX_BLOCK_LOG_SIZE - EXT2_MIN_BLOCK_LOG_SIZE);
 	check_super_value(ctx, "log_frag_size", sb->s_log_frag_size,
 			  MIN_CHECK | MAX_CHECK, 0, sb->s_log_block_size);
 	check_super_value(ctx, "frags_per_group", sb->s_frags_per_group,

@@ -1,4 +1,12 @@
-2002-05-11    <tytso@snap.thunk.org>
+2002-05-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* Remove check for asm/page.h, and add check for sysconf()
+
+2002-05-16  Andreas Dilger <adilger@clusterfs.com>
+
+	* Add check for asm/page.h
+
+2002-05-11  Theodore Tso <tytso@mit.edu>
 
 	* configure.in, MCONFIG.in: Add new makefile variables, $datadir
 		and $root_sysconfdir, which are normally /usr/share and

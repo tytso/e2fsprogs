@@ -103,7 +103,7 @@ struct scan_callback_struct {
 static struct process_inode_block *inodes_to_process;
 static int process_inode_count;
 
-static __u64 ext2_max_sizes[4];
+static __u64 ext2_max_sizes[EXT2_MAX_BLOCK_LOG_SIZE - EXT2_MIN_BLOCK_LOG_SIZE];
 
 /*
  * Free all memory allocated by pass1 in preparation for restarting
@@ -239,7 +239,7 @@ static void check_size(e2fsck_t ctx, struct problem_context *pctx)
 void e2fsck_pass1(e2fsck_t ctx)
 {
 	int	i;
-	__u64	max_sizes, max_sect_limit;
+	__u64	max_sizes;
 	ext2_filsys fs = ctx->fs;
 	ext2_ino_t	ino;
 	struct ext2_inode inode;
@@ -273,9 +273,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i);
 		max_sizes = max_sizes + EXT2_BPP(i) * EXT2_BPP(i) * EXT2_BPP(i);
 		max_sizes = (max_sizes * (1UL << i)) - 1;
-		max_sect_limit = 512ULL * ((1LL << 32) - (1 << i));
-		if (max_sizes > max_sect_limit)
-			max_sizes = max_sect_limit;
 		ext2_max_sizes[i - 10] = max_sizes;
 	}
 #undef EXT2_BPP
