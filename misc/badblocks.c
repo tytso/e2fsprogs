@@ -55,7 +55,7 @@
 #include "nls-enable.h"
 
 const char * program_name = "badblocks";
-const char * done_string = _("done                        \n");
+const char * done_string = N_("done                        \n");
 
 int v_flag = 0;			/* verbose */
 int w_flag = 0;			/* do r/w test: 0=no, 1=yes, 2=non-destructive */
@@ -288,7 +288,7 @@ static unsigned int test_ro (int dev, unsigned long blocks_count,
 	num_blocks = 0;
 	alarm(0);
 	if (s_flag || v_flag > 1)
-		fprintf(stderr, done_string);
+		fprintf(stderr, _(done_string));
 
 	fflush (stderr);
 	free (blkbuf);
@@ -348,7 +348,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
-			fprintf(stderr, done_string);
+			fprintf(stderr, _(done_string));
 		flush_bufs (dev, 1);
 		if (s_flag | v_flag)
 			fprintf (stderr, _("Reading and comparing: "));
@@ -376,7 +376,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
-			fprintf(stderr, done_string);
+			fprintf(stderr, _(done_string));
 		flush_bufs (dev, 0);
 	}
 
@@ -560,7 +560,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		num_blocks = 0;
 		alarm(0);
 		if (s_flag || v_flag > 1)
-			fprintf(stderr, done_string);
+			fprintf(stderr, _(done_string));
 
 	} else {
 		/* abnormal termination by a signal is handled here */
