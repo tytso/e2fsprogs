@@ -33,6 +33,7 @@ blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
 {
 	int	bg;
 	int	has_super = 0;
+	int	ret_blk;
 
 	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
 	    (i < fs->super->s_first_meta_bg))
@@ -41,8 +42,21 @@ blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
 	bg = (fs->blocksize / sizeof (struct ext2_group_desc)) * i;
 	if (ext2fs_bg_has_super(fs, bg))
 		has_super = 1;
-	return (fs->super->s_first_data_block + has_super + 
-		(bg * fs->super->s_blocks_per_group));
+	ret_blk = (fs->super->s_first_data_block + has_super + 
+		   (bg * fs->super->s_blocks_per_group));
+	/*
+	 * If group_block is not the normal value, we're trying to use
+	 * the backup group descriptors and superblock --- so use the
+	 * alternate location of the second block group in the
+	 * metablock group.  Ideally we should be testing each bg
+	 * descriptor block individually for correctness, but we don't
+	 * have the infrastructure in place to do that.
+	 */
+	if (group_block != fs->super->s_first_data_block &&
+	    ((ret_blk + fs->super->s_blocks_per_group) <
+	     fs->super->s_blocks_count))
+		ret_blk += fs->super->s_blocks_per_group;
+	return ret_blk;
 }
 
 /*
@@ -120,7 +134,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			goto cleanup;
 		}
 		io_channel_set_blksize(fs->io, block_size);
-		group_block = superblock + 1;
+		group_block = superblock;
 		fs->orig_super = 0;
 	} else {
 		io_channel_set_blksize(fs->io, SUPERBLOCK_OFFSET);

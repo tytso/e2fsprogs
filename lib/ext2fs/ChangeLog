@@ -1,3 +1,12 @@
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* openfs.c (ext2fs_open): Fix bug which caused us to pass the
+		wrong group_block to ext2fs_descriptor_block_loc if we're
+		using the backup superblock/block group descriptors.
+		(ext2fs_descriptor_block_loc): If we're using the backup
+		superblock descriptors, use the backup descriptor block in
+		the next block group.
+
 2002-10-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* alloc_tables.c (ext2fs_allocate_group_table): Allocate the inode
