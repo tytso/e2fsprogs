@@ -1,3 +1,9 @@
+2001-12-24  Theodore Tso  <tytso@valinux.com>
+
+	* MCONFIG.in (ALL_CFLAGS): No longer put $(top_srcdir)/include in
+		the -I search path, since we don't have any header files
+		there any more.
+
 2001-12-16  Theodore Tso  <tytso@valinux.com>
 
 	* configure.in: If journal debugging is enabled, define
