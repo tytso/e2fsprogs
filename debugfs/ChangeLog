@@ -1,7 +1,11 @@
 2000-12-30    <tytso@snap.thunk.org>
 
+	* dump.c (fix_perms): Fix bug for systems which don't have fchown;
+		was incorrectly using chmod instead of chown.
+
 	* setsuper.c (find_field): Strip the s_prefix if given for ssv
-		fields.   (Suggested by Andreas Dilger)
+		fields.  Remove hard-coded s_ from inode_size
+		field.  (Suggested by Andreas Dilger)
 
 	* debugfs.c (do_modify_inode): Add the ability to set the inode
 		generation number.  (Suggested by Andreas Dilger)

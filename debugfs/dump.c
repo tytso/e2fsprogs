@@ -75,7 +75,7 @@ static void fix_perms(const char *cmd, const struct ext2_inode *inode,
 		com_err(cmd, errno, "while setting permissions of %s", name);
 
 #ifndef HAVE_FCHOWN
-	i = chmod(name, inode->i_uid, inode->i_gid);
+	i = chown(name, inode->i_uid, inode->i_gid);
 #else
 	if (fd != -1)
 		i = fchown(fd, inode->i_uid, inode->i_gid);

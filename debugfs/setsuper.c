@@ -58,7 +58,7 @@ static struct super_set_info super_fields[] = {
 	{ "def_resuid", &set_sb.s_def_resuid, 2, parse_uint },
 	{ "def_resgid", &set_sb.s_def_resgid, 2, parse_uint },
 	{ "first_ino", &set_sb.s_first_ino, 4, parse_uint },
-	{ "s_inode_size", &set_sb.  s_inode_size, 2, parse_uint },
+	{ "inode_size", &set_sb.  s_inode_size, 2, parse_uint },
 	{ "block_group_nr", &set_sb.s_block_group_nr, 2, parse_uint },
 	{ "feature_compat", &set_sb.s_feature_compat, 4, parse_uint },
 	{ "feature_incompat", &set_sb.s_feature_incompat, 4, parse_uint },
