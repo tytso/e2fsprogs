@@ -165,7 +165,7 @@ static int release_inode_block(ext2_filsys fs,
  * not deleted.
  */
 static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
-				struct ext2_inode *inode, char* block_buf,
+				struct ext2_inode *inode, char *block_buf,
 				struct problem_context *pctx)
 {
 	ext2_filsys			fs = ctx->fs;

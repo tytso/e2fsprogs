@@ -130,7 +130,7 @@ static const char *abbrevs[] = {
 /*
  * Give more user friendly names to the "special" inodes.
  */
-#define num_special_inodes	7
+#define num_special_inodes	11
 static const char *special_inode_name[] =
 {
 	N_("<The NULL inode>"),			/* 0 */
@@ -139,7 +139,11 @@ static const char *special_inode_name[] =
 	N_("<The ACL index inode>"),		/* 3 */
 	N_("<The ACL data inode>"),		/* 4 */
 	N_("<The boot loader inode>"),		/* 5 */
-	N_("<The undelete directory inode>")	/* 6 */
+	N_("<The undelete directory inode>"),	/* 6 */
+	N_("<The group descriptor inode>"),	/* 7 */
+	N_("<The journal inode>"),		/* 8 */
+	N_("<Reserved inode 9>"),		/* 9 */
+	N_("<Reserved inode 10>"),		/* 10 */
 };
 
 /*

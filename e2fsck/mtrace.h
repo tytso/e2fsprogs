@@ -228,4 +228,4 @@ extern struct mstats mstats __P ((void));
 }
 #endif
 
-#endif /* malloc.h  */
+#endif /* mtrace.h  */
