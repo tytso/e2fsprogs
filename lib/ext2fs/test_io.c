@@ -39,6 +39,7 @@ struct test_private_data {
 	int flags;
 	FILE *outfile;
 	unsigned long block;
+	int read_abort_count, write_abort_count;
 	void (*read_blk)(unsigned long block, int count, errcode_t err);
 	void (*write_blk)(unsigned long block, int count, errcode_t err);
 	void (*set_blksize)(int blksize, errcode_t err);
@@ -92,6 +93,7 @@ void (*test_io_cb_write_byte)
 #define TEST_FLAG_WRITE			0x02
 #define TEST_FLAG_SET_BLKSIZE		0x04
 #define TEST_FLAG_FLUSH			0x08
+#define TEST_FLAG_DUMP			0x10
 
 static void test_dump_block(io_channel channel,
 			    struct test_private_data *data,
@@ -113,11 +115,26 @@ static void test_dump_block(io_channel channel,
 	}
 }
 
+static void test_abort(io_channel channel, unsigned long block)
+{
+	struct test_private_data *data;
+	FILE *f;
+
+	data = (struct test_private_data *) channel->private_data;
+	f = data->outfile;
+	test_flush(channel);
+
+	fprintf(f, "Aborting due to I/O to block %lu\n", block);
+	fflush(f);
+	abort();
+}
+
 static errcode_t test_open(const char *name, int flags, io_channel *channel)
 {
 	io_channel	io = NULL;
 	struct test_private_data *data = NULL;
 	errcode_t	retval;
+	char		*value;
 
 	if (name == 0)
 		return EXT2_ET_BAD_DEVICE_NAME;
@@ -158,18 +175,26 @@ static errcode_t test_open(const char *name, int flags, io_channel *channel)
 	data->write_byte = 	test_io_cb_write_byte;
 
 	data->outfile = NULL;
-	if (getenv("TEST_IO_LOGFILE"))
-		data->outfile = fopen(getenv("TEST_IO_LOGFILE"), "w");
+	if ((value = getenv("TEST_IO_LOGFILE")) != NULL)
+		data->outfile = fopen(value, "w");
 	if (!data->outfile)
 		data->outfile = stderr;
 
 	data->flags = 0;
-	if (getenv("TEST_IO_FLAGS"))
-		data->flags = strtoul(getenv("TEST_IO_FLAGS"), NULL, 0);
+	if ((value = getenv("TEST_IO_FLAGS")) != NULL)
+		data->flags = strtoul(value, NULL, 0);
 	
 	data->block = 0;
-	if (getenv("TEST_IO_BLOCK"))
-		data->block = strtoul(getenv("TEST_IO_BLOCK"), NULL, 0);
+	if ((value = getenv("TEST_IO_BLOCK")) != NULL)
+		data->block = strtoul(value, NULL, 0);
+
+	data->read_abort_count = 0;
+	if ((value = getenv("TEST_IO_READ_ABORT")) != NULL)
+		data->read_abort_count = strtoul(value, NULL, 0);
+
+	data->write_abort_count = 0;
+	if ((value = getenv("TEST_IO_WRITE_ABORT")) != NULL)
+		data->write_abort_count = strtoul(value, NULL, 0);
 	
 	*channel = io;
 	return 0;
@@ -247,8 +272,12 @@ static errcode_t test_read_blk(io_channel channel, unsigned long block,
 		fprintf(data->outfile,
 			"Test_io: read_blk(%lu, %d) returned %s\n",
 			block, count, retval ? error_message(retval) : "OK");
-	if (data->block && data->block == block)
-		test_dump_block(channel, data, block, buf);
+	if (data->block && data->block == block) {
+		if (data->flags & TEST_FLAG_DUMP)
+			test_dump_block(channel, data, block, buf);
+		if (--data->read_abort_count == 0)
+			test_abort(channel, block);
+	} 
 	return retval;
 }
 
@@ -270,8 +299,12 @@ static errcode_t test_write_blk(io_channel channel, unsigned long block,
 		fprintf(data->outfile,
 			"Test_io: write_blk(%lu, %d) returned %s\n",
 			block, count, retval ? error_message(retval) : "OK");
-	if (data->block && data->block == block)
-		test_dump_block(channel, data, block, buf);
+	if (data->block && data->block == block) {
+		if (data->flags & TEST_FLAG_DUMP)
+			test_dump_block(channel, data, block, buf);
+		if (--data->write_abort_count == 0)
+			test_abort(channel, block);
+	}
 	return retval;
 }
 

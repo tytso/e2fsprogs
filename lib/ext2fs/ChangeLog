@@ -1,3 +1,12 @@
+2004-05-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* test_io.c: Implement the ability to abort after n reads or
+		writes to a particular block.  The block is specified by
+		TEST_IO_BLOCK environment variable, and the read/write
+		count by the TEST_IO_READ_ABORT and TEST_IO_WRITE_ABORT
+		environment variables.  The block data is now only dumped
+		if the 0x10 bit is set in TEST_IO_FLAGS.
+
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2_types.h.in: Remove check for _UUID_TYPES since uuid_types.h
