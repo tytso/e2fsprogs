@@ -175,7 +175,7 @@ static EXT2_QSORT_TYPE name_cmp(const void *a, const void *b)
 		else if (he_a->dir->name_len < he_b->dir->name_len)
 			ret = -1;
 		else
-			ret = 0;
+			ret = he_b->dir->inode - he_a->dir->inode;
 	}
 	return ret;
 }

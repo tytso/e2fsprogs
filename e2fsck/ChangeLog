@@ -1,3 +1,9 @@
+2003-04-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* rehash.c (name_cmp): Sort the deleted inodes to the end of the
+		list, for portability to systems that whose qsort does not
+		perform a stable sort.
+
 2003-04-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c: Bracket progress bar output with control-A and control-B
@@ -6,7 +12,8 @@
 		progress bar.
 		(PRS): Use setvbuf instead of setbuf to force stdout and
 		stderr to be non-buffered when the stdout/stderr are a pipe.
-		This fixes a cosmetic problem when using e2fsck under logsave.
+		This fixes a cosmetic problem when using e2fsck under
+		logsave. 
 	
 2003-04-12  Theodore Ts'o  <tytso@mit.edu>
 
@@ -35,7 +42,8 @@
 
 2003-03-14  Theodore Ts'o  <tytso@mit.edu>
 
-	* problem.c, problem.h (PR_2_REPORT_DUP_DIRENT): Add new problem code.
+	* problem.c, problem.h (PR_2_REPORT_DUP_DIRENT): Add new problem
+		code. 
 
 	* pass2.c (check_dir_block): Check for duplicate filenames within
 		a single directory block (because this is the easy case;
