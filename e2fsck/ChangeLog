@@ -1,3 +1,8 @@
+2000-10-24    <tytso@snap.thunk.org>
+
+	* pass1.c (e2fsck_pass1): Don't check the i_mode field for the
+		journal inode, if it is in use.
+
 2000-09-12    <tytso@valinux.com>
 
 	* extend.c: 

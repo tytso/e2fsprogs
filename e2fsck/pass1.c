@@ -374,6 +374,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 					e2fsck_write_inode(ctx, ino, &inode,
 							   "pass1");
 				}
+
 			}
 			/*
 			 * If dtime is set, offer to clear it.  mke2fs
@@ -394,13 +395,25 @@ void e2fsck_pass1(e2fsck_t ctx)
 		}
 		if ((ino != EXT2_ROOT_INO) &&
 		    (ino < EXT2_FIRST_INODE(fs->super))) {
+			int	problem = 0;
+			
 			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
-			if (((ino == EXT2_BOOT_LOADER_INO) &&
-			     LINUX_S_ISDIR(inode.i_mode)) ||
-			    ((ino != EXT2_BOOT_LOADER_INO) &&
-			     (inode.i_mode != 0))) {
-				if (fix_problem(ctx,
-					    PR_1_RESERVED_BAD_MODE, &pctx)) {
+			switch (ino) {
+			case EXT2_BOOT_LOADER_INO:
+				if (LINUX_S_ISDIR(inode.i_mode))
+					problem = PR_1_RESERVED_BAD_MODE;
+				break;
+			case EXT2_JOURNAL_INO:
+				if (fs->super->s_journal_inum ==
+				    EXT2_JOURNAL_INO)
+					break;
+			default:
+				if (inode.i_mode != 0)
+					problem = PR_1_RESERVED_BAD_MODE;
+				break;
+			}
+			if (problem) {
+				if (fix_problem(ctx, problem, &pctx)) {
 					inode.i_mode = 0;
 					e2fsck_write_inode(ctx, ino, &inode,
 							   "pass1");
