@@ -23,6 +23,7 @@ struct link_struct  {
 	int		namelen;
 	ext2_ino_t	inode;
 	int		flags;
+	struct ext2_dir_entry *prev;
 	int		done;
 };	
 
@@ -36,16 +37,29 @@ static int unlink_proc(struct ext2_dir_entry *dirent,
 		     void	*priv_data)
 {
 	struct link_struct *ls = (struct link_struct *) priv_data;
+	struct ext2_dir_entry *prev;
 
-	if (ls->name && ((dirent->name_len & 0xFF) != ls->namelen))
-		return 0;
-	if (ls->name && strncmp(ls->name, dirent->name,
-				dirent->name_len & 0xFF))
-		return 0;
-	if (ls->inode && (dirent->inode != ls->inode))
-		return 0;
+	prev = ls->prev;
+	ls->prev = dirent;
 
-	dirent->inode = 0;
+	if (ls->name) {
+		if ((dirent->name_len & 0xFF) != ls->namelen)
+			return 0;
+		if (strncmp(ls->name, dirent->name, dirent->name_len & 0xFF))
+			return 0;
+	}
+	if (ls->inode) {
+		if (dirent->inode != ls->inode)
+			return 0;
+	} else {
+		if (!dirent->inode)
+			return 0;
+	}
+
+	if (prev) 
+		prev->rec_len += dirent->rec_len;
+	else
+		dirent->inode = 0;
 	ls->done++;
 	return DIRENT_ABORT|DIRENT_CHANGED;
 }
@@ -62,6 +76,9 @@ errcode_t ext2fs_unlink(ext2_filsys fs, ext2_ino_t dir,
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
+	if (!name && !ino)
+		return EXT2_ET_INVALID_ARGUMENT;
+
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
 
@@ -70,8 +87,10 @@ errcode_t ext2fs_unlink(ext2_filsys fs, ext2_ino_t dir,
 	ls.inode = ino;
 	ls.flags = 0;
 	ls.done = 0;
+	ls.prev = 0;
 
-	retval = ext2fs_dir_iterate(fs, dir, 0, 0, unlink_proc, &ls);
+	retval = ext2fs_dir_iterate(fs, dir, DIRENT_FLAG_INCLUDE_EMPTY, 
+				    0, unlink_proc, &ls);
 	if (retval)
 		return retval;
 
