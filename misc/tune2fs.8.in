@@ -19,6 +19,9 @@ tune2fs \- adjust tunable filesystem parameters on second extended filesystems
 .I errors-behavior
 ]
 [
+.B \-f
+]
+[
 .B \-i
 .I interval-between-checks
 ]
@@ -129,6 +132,20 @@ Remount filesystem read-only.
 .B panic
 Cause a kernel panic.
 .RE
+.TP
+.B \-f
+Force the tune2fs operation to complete even in the face of errors.  This 
+option is useful when removing the 
+.B has_journal
+filesystem feature from a filesystem which has 
+an external journal (or is corrupted
+such that it appears to have an external journal), but that 
+external journal is not available.   
+.sp
+.B WARNING:
+Removing an external journal from a filesystem which was not cleanly unmounted
+without first replaying the external journal can result in
+severe data loss and filesystem corruption.
 .TP
 .BI \-g " group"
 Set the group which can use reserved filesystem blocks.
