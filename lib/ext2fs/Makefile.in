@@ -7,11 +7,18 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-OBJS= ext2_err.o \
+@DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o cmp_bitmaps.o dupfs.o fileio.o \
+@DEBUGFS_CMT@	namei.o test_io.o write_bb_file.o 
+
+@RESIZER_CMT@RESIZE_LIB_OBJS = rs_bitmap.o
+
+@IMAGER_CMT@E2IMAGE_LIB_OBJS = imager.o
+
+OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
+	ext2_err.o \
 	alloc.o \
 	alloc_tables.o \
 	badblocks.o \
-	bb_compat.o \
 	bb_inode.o \
 	bitmaps.o \
 	bitops.o \
@@ -19,14 +26,11 @@ OBJS= ext2_err.o \
 	bmap.o \
 	check_desc.o \
 	closefs.o \
-	cmp_bitmaps.o \
 	dblist.o \
 	dblist_dir.o \
 	dirblock.o \
 	dir_iterate.o \
-	dupfs.o \
 	expanddir.o \
-	fileio.o \
 	finddev.o \
 	flushb.o \
 	freefs.o \
@@ -34,7 +38,6 @@ OBJS= ext2_err.o \
 	get_pathname.o \
 	getsize.o \
 	icount.o \
-	imager.o \
 	initialize.o \
 	inline.o \
 	inode.o \
@@ -44,21 +47,17 @@ OBJS= ext2_err.o \
 	lookup.o \
 	mkdir.o \
 	mkjournal.o \
-	namei.o \
 	native.o \
 	newdir.o \
 	openfs.o \
 	read_bb.o \
 	read_bb_file.o \
-	rs_bitmap.o \
 	rw_bitmaps.o \
 	swapfs.o \
-	test_io.o \
 	unix_io.o \
 	unlink.o \
 	valid_blk.o \
-	version.o \
-	write_bb_file.o 
+	version.o
 
 SRCS= ext2_err.c \
 	$(srcdir)/alloc.c \
@@ -83,7 +82,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/finddev.c \
 	$(srcdir)/flushb.c \
 	$(srcdir)/freefs.c \
-	$(srcdir/gen_bitmap.c \
+	$(srcdir)/gen_bitmap.c \
 	$(srcdir)/get_pathname.c \
 	$(srcdir)/getsize.c \
 	$(srcdir)/icount.c \
@@ -171,9 +170,9 @@ tst_badblocks: tst_badblocks.o freefs.o \
 	$(CC) -o tst_badblocks tst_badblocks.o freefs.o \
 		read_bb_file.o write_bb_file.o badblocks.o $(LIBCOM_ERR)
 
-tst_iscan: tst_iscan.o inode.o $(STATIC_LIBEXT2FS)
-	$(CC) -o tst_iscan tst_iscan.o inode.o $(STATIC_LIBEXT2FS) \
-		$(LIBCOM_ERR)
+tst_iscan: tst_iscan.o inode.o badblocks.o test_io.o $(STATIC_LIBEXT2FS)
+	$(CC) -o tst_iscan tst_iscan.o inode.o badblocks.o test_io.o \
+		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 tst_getsize: tst_getsize.o getsize.o $(STATIC_LIBEXT2FS)
 	$(CC) -o tst_getsize tst_getsize.o getsize.o $(STATIC_LIBEXT2FS) \
@@ -320,6 +319,10 @@ flushb.o: $(srcdir)/flushb.c $(srcdir)/ext2_fs.h \
 freefs.o: $(srcdir)/freefs.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fsP.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+gen_bitmap.o: $(srcdir)/gen_bitmap.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 get_pathname.o: $(srcdir)/get_pathname.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
