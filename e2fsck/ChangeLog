@@ -1,3 +1,9 @@
+2002-09-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* rehash.c (copy_dir_entries): Fix bug which caused corrupted
+		directories if there are 4 or 8 bytes left over in a
+		directory page when optimizing/reindexing a directory.
+
 2001-08-31  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.28

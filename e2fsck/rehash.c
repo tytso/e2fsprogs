@@ -309,6 +309,7 @@ static errcode_t copy_dir_entries(ext2_filsys fs,
 		if (left < 12) {
 			dirent->rec_len += left;
 			offset += left;
+			left = 0;
 		}
 		prev_hash = ent->hash;
 	}
