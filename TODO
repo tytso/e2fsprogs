@@ -202,3 +202,7 @@ From e2fsprogs Debian TODO file as of 1.10-13.
 
 * Maybe make -dbg packages. Look at how others do it.
 
+---------------------------------------------------------------
+
+Add --lba option to debian icheck command, and have ways of making it
+easier to translate LBA to filesystem block numbers.
