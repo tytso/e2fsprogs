@@ -97,7 +97,7 @@ void check_plausibility(const char *device)
 				"did you specify it correctly?\n"), stderr);
 		exit(1);
 	}
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 	/* On FreeBSD, all disk devices are character specials */
 	if (!S_ISBLK(s.st_mode) && !S_ISCHR(s.st_mode))
 #else

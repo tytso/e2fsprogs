@@ -85,7 +85,9 @@ static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 static void reuse_cache(io_channel channel, struct unix_private_data *data,
 		 struct unix_cache *cache, unsigned long block);
 
-#if defined(__CYGWIN__) || defined(__FreeBSD__)
+/* __FreeBSD_kernel__ is defined by GNU/kFreeBSD - the FreeBSD kernel
+ * does not know buffered block devices - everything is raw. */
+#if defined(__CYGWIN__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #define NEED_BOUNCE_BUFFER
 #else
 #undef NEED_BOUNCE_BUFFER

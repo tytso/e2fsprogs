@@ -28,7 +28,6 @@
 #include <linux/fd.h>
 #endif
 #ifdef HAVE_SYS_DISKLABEL_H
-#include <sys/param.h> /* for __FreeBSD_version */
 #include <sys/ioctl.h>
 #include <sys/disklabel.h>
 #endif /* HAVE_SYS_DISKLABEL_H */
@@ -191,8 +190,18 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 		return 0;
 	}
 #endif
+
 #ifdef HAVE_SYS_DISKLABEL_H
-#if (defined(__FreeBSD__) && __FreeBSD_version < 500040) || defined(APPLE_DARWIN) 
+#if defined(DIOCGMEDIASIZE)
+	{
+	    off_t ms;
+	    u_int bs;
+	    if (ioctl(fd, DIOCGMEDIASIZE, &ms) >= 0) {
+		*retblocks = ms / blocksize;
+		return 0;
+	    }
+	}
+#elif defined(DIOCGDINFO)
 	/* old disklabel interface */
 	part = strlen(file) - 1;
 	if (part >= 0) {
@@ -212,16 +221,7 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 			return 0;
 		}
 	}
-#else /* __FreeBSD_version < 500040 */
-	{
-	    off_t ms;
-	    u_int bs;
-	    if (ioctl(fd, DIOCGMEDIASIZE, &ms) >= 0) {
-		*retblocks = ms / blocksize;
-		return 0;
-	    }
-	}
-#endif /* __FreeBSD_version < 500040 */
+#endif /* defined(DIOCG*) */
 #endif /* HAVE_SYS_DISKLABEL_H */
 
 	/*
