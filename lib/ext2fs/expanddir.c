@@ -1,7 +1,7 @@
 /*
  * expand.c --- expand an ext2fs directory
  * 
- * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
+ * Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999  Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -24,7 +24,8 @@
 #include "ext2fs.h"
 
 struct expand_dir_struct {
-	int	done;
+	int		done;
+	int		newblocks;
 	errcode_t	err;
 };
 
@@ -80,6 +81,8 @@ static int expand_dir_proc(ext2_filsys		fs,
 	fs->group_desc[group].bg_free_blocks_count--;
 	fs->super->s_free_blocks_count--;
 	ext2fs_mark_super_dirty(fs);
+	es->newblocks++;
+
 	if (es->done)
 		return (BLOCK_CHANGED | BLOCK_ABORT);
 	else
@@ -106,6 +109,7 @@ errcode_t ext2fs_expand_dir(ext2_filsys fs, ino_t dir)
 	
 	es.done = 0;
 	es.err = 0;
+	es.newblocks = 0;
 	
 	retval = ext2fs_block_iterate2(fs, dir, BLOCK_FLAG_APPEND,
 				       0, expand_dir_proc, &es);
@@ -123,7 +127,7 @@ errcode_t ext2fs_expand_dir(ext2_filsys fs, ino_t dir)
 		return retval;
 	
 	inode.i_size += fs->blocksize;
-	inode.i_blocks += fs->blocksize / 512;
+	inode.i_blocks += (fs->blocksize / 512) * es.newblocks;
 
 	retval = ext2fs_write_inode(fs, dir, &inode);
 	if (retval)

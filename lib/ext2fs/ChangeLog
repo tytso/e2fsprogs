@@ -1,4 +1,15 @@
-1999-07-18  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+1999-09-07    <tytso@valinux.com>
+
+	* ext2fs.h: Add new fields for journalling and define new
+		feature bits used by newer filesystems: IMAGIC_INODES,
+		HAS_JOURNAL, RECOVER.
+
+	* expanddir.c (ext2fs_expand_dir, expand_dir_proc): Change where
+		we update the inode block count and size files so that the
+		block count field is updated correctly when we create an
+		indirect block.
+
+1999-07-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.15
 

@@ -425,12 +425,17 @@ struct ext2fs_sb {
 	__u8	s_prealloc_blocks;	/* Nr of blocks to try to preallocate*/
 	__u8	s_prealloc_dir_blocks;	/* Nr to preallocate for dirs */
 	__u16	s_padding1;
-	__u32	s_reserved[204];	/* Padding to the end of the block */
+	/* 
+	 * Journaling support.
+	 */
+	__u8	s_journal_uuid[16];	/* uuid of journal superblock */
+	__u32	s_journal_inum;		/* inode number of journal file */
+	
+	__u32	s_reserved[199];	/* Padding to the end of the block */
 };
 
 /*
  * Feature set definitions (that might not be in ext2_fs.h
- * (was EXT2_COMPAT_SPARSE_SUPER)
  */
 
 #ifndef EXT2_FEATURE_COMPAT_DIR_PREALLOC
@@ -439,6 +444,11 @@ struct ext2fs_sb {
 
 #ifndef EXT2_FEATURE_COMPAT_IMAGIC_INODES /* for AFS, etc. */
 #define EXT2_FEATURE_COMPAT_IMAGIC_INODES		0x0002
+#define EXT2_IMAGIC_FL		0x00002000
+#endif
+
+#ifndef EXT3_FEATURE_COMPAT_HAS_JOURNAL
+#define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x0004
 #endif
 
 #ifndef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
@@ -462,7 +472,13 @@ struct ext2fs_sb {
 #define EXT2_FEATURE_INCOMPAT_FILETYPE	0x0002
 #endif
 
-#define EXT2_LIB_FEATURE_COMPAT_SUPP	EXT2_FEATURE_COMPAT_DIR_PREALLOC
+#ifndef EXT3_FEATURE_INCOMPAT_RECOVER 
+#define EXT3_FEATURE_INCOMPAT_RECOVER	0x0004 /* Needs recovery */
+#endif
+
+#define EXT2_LIB_FEATURE_COMPAT_SUPP	(EXT2_FEATURE_COMPAT_DIR_PREALLOC|\
+					 EXT2_FEATURE_COMPAT_IMAGIC_INODES|\
+					 EXT3_FEATURE_COMPAT_HAS_JOURNAL)
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP	EXT2_FEATURE_INCOMPAT_FILETYPE
 #define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|\
 					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE)
