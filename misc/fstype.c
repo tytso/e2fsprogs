@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -25,8 +26,23 @@ struct fs_magic {
 	const char	*magic;
 };
 
+#define REISERFS_SUPER_MAGIC_STRING "ReIsErFs"
+#define REISER2FS_SUPER_MAGIC_STRING "ReIsEr2Fs"
+#define REISERFS_DISK_OFFSET_IN_BYTES ((64 * 1024) + 52)
+/* the spot for the super in versions 3.5 - 3.5.10 (inclusive) */
+#define REISERFS_OLD_DISK_OFFSET_IN_BYTES ((8 * 1024) + 52)
+
 struct fs_magic type_array[] = {
 	{ "ext2", 1024+56, 2, "\123\357" },
+	{ "ext3", 1024+56, 2, "\123\357" },
+	{ "reiserfs", REISERFS_DISK_OFFSET_IN_BYTES, 9,
+		  REISER2FS_SUPER_MAGIC_STRING },
+	{ "reiserfs", REISERFS_DISK_OFFSET_IN_BYTES, 8,
+		  REISERFS_SUPER_MAGIC_STRING },
+	{ "reiserfs", REISERFS_OLD_DISK_OFFSET_IN_BYTES, 9,
+		  REISER2FS_SUPER_MAGIC_STRING },
+	{ "reiserfs", REISERFS_OLD_DISK_OFFSET_IN_BYTES, 8,
+		  REISERFS_SUPER_MAGIC_STRING },
 	{ "minix", 1040, 2, "\177\023" },
 	{ "minix", 1040, 2, "\217\023" },
 	{ "minix", 1040, 2, "\150\044" },
@@ -35,9 +51,10 @@ struct fs_magic type_array[] = {
 	{ 0, 0, 0, 0 }
 };
 
-const char *identify_fs(const char *fs_name)
+const char *identify_fs(const char *fs_name, const char *fs_types)
 {
-	char	buf[2048];
+	char	buf[73728], *s;
+	const char *t;
 	struct fs_magic *p;
 	int	fd;
 
@@ -48,9 +65,26 @@ const char *identify_fs(const char *fs_name)
 		return NULL;
 	if (read(fd, buf, sizeof(buf)) != sizeof(buf))
 		return NULL;
-	for (p = type_array; p->fs_name; p++) {
-		if (memcmp(p->magic, buf+p->offset, p->len) == 0)
-			return p->fs_name;
+	close(fd);
+	if (!fs_types || !strcmp(fs_types, "auto")) {
+		for (p = type_array; p->fs_name; p++) {
+			if (memcmp(p->magic, buf+p->offset, p->len) == 0)
+				return p->fs_name;
+		}
+	} else {
+		s = string_copy(fs_types);
+		for (t = strtok(s, ","); t; t = strtok(NULL, ",")) {
+			for (p = type_array; p->fs_name; p++) {
+				if (strcmp(p->fs_name, t))
+					continue;
+				if (memcmp(p->magic, buf+p->offset,
+					   p->len) == 0) {
+					free(s);
+					return p->fs_name;
+				}
+			}
+		}
+		free(s);
 	}
 	return NULL;
 }
@@ -60,15 +94,17 @@ int main(int argc, char **argv)
 {
 	const char	*type;
 	
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s device\n", argv[0]);
+	if (argc < 2 || argc > 3) {
+		fprintf(stderr, "Usage: %s [type list] device\n", argv[0]);
 		exit(1);
 	}
-	type = identify_fs(argv[1]);
-	printf("%s is a %s filesystem\n", argv[1], type);
+	if (argc == 2) {
+		type = identify_fs(argv[1], NULL);
+		printf("%s is a %s filesystem\n", argv[1], type);
+	} else {
+		type = identify_fs(argv[2],argv[1]);
+		printf("%s is a %s filesystem\n", argv[2], type);
+	}
 	return (0);
 }
 #endif
-
-	
-	

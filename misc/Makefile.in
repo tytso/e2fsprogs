@@ -64,6 +64,10 @@ e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
 base_device: base_device.c
 	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $< -DDEBUG -o $@
 
+fstype: fstype.c
+	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM $(srcdir)/fstype.c \
+		get_device_by_label.o $(LIBUUID) $(LIBS) -o fstype
+
 check:: base_device
 	./base_device < $(srcdir)/base_device.tst > base_device.out
 	cmp $(srcdir)/base_device.tst base_device.out

@@ -1,3 +1,12 @@
+2002-02-03  Theodore Tso  <tytso@valinux.com>
+
+	* fsck.c (interpret_type): Allow filesystems types of the form
+		"ext3,ext2", etc.
+
+	* fstype.c (identify_fs): Add support for only searching for a
+		specified list of filesystems.  Also add support for
+		identifying reiserfs filesystems.
+
 2002-01-29  Theodore Tso  <tytso@valinux.com>
 
 	* fsck.c: Allow the number of outstanding processes fs-specific

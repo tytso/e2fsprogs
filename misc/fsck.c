@@ -244,10 +244,11 @@ static void interpret_type(struct fs_info *fs)
 {
 	const char	*type;
 	
-	if (strcmp(fs->type, "auto") == 0) {
+	if (strcmp(fs->type, "auto") == 0 ||
+	    (strchr(fs->type, ',') != 0)) {
 		if (fs && strchr(fs->device, '='))
 			fs->device = interpret_device(fs->device);
-		type = identify_fs(fs->device);
+		type = identify_fs(fs->device, fs->type);
 		if (type) {
 			free(fs->type);
 			fs->type = string_copy(type);
