@@ -4800,13 +4800,59 @@ else
 fi
 
 
+DLOPEN_LIB=''
+echo $ac_n "checking for dlopen in -ldl""... $ac_c" 1>&6
+echo "configure:4806: checking for dlopen in -ldl" >&5
+ac_lib_var=`echo dl'_'dlopen | sed 'y%./+-%__p_%'`
+if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  ac_save_LIBS="$LIBS"
+LIBS="-ldl  $LIBS"
+cat > conftest.$ac_ext <<EOF
+#line 4814 "configure"
+#include "confdefs.h"
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char dlopen();
+
+int main() {
+dlopen()
+; return 0; }
+EOF
+if { (eval echo configure:4825: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_lib_$ac_lib_var=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_lib_$ac_lib_var=no"
+fi
+rm -f conftest*
+LIBS="$ac_save_LIBS"
+
+fi
+if eval "test \"`echo '$ac_cv_lib_'$ac_lib_var`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+  DLOPEN_LIB=-ldl
+cat >> confdefs.h <<\EOF
+#define HAVE_DLOPEN 1
+EOF
+
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+
 echo $ac_n "checking for optreset""... $ac_c" 1>&6
-echo "configure:4805: checking for optreset" >&5
+echo "configure:4851: checking for optreset" >&5
 if eval "test \"`echo '$''{'ac_cv_have_optreset'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 4810 "configure"
+#line 4856 "configure"
 #include "confdefs.h"
 #include <unistd.h>
 EOF
@@ -4885,20 +4931,20 @@ fi
 
 
 echo $ac_n "checking whether linker accepts -static""... $ac_c" 1>&6
-echo "configure:4889: checking whether linker accepts -static" >&5
+echo "configure:4935: checking whether linker accepts -static" >&5
 if eval "test \"`echo '$''{'ac_cv_e2fsprogs_use_static'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
 cat > conftest.$ac_ext <<EOF
-#line 4895 "configure"
+#line 4941 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 fflush(stdout);
 ; return 0; }
 EOF
-if { (eval echo configure:4902: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:4948: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_e2fsprogs_use_static=yes
 else
@@ -5189,6 +5235,7 @@ s%@SIZEOF_INT@%$SIZEOF_INT%g
 s%@SIZEOF_LONG@%$SIZEOF_LONG%g
 s%@SIZEOF_LONG_LONG@%$SIZEOF_LONG_LONG%g
 s%@SOCKET_LIB@%$SOCKET_LIB%g
+s%@DLOPEN_LIB@%$DLOPEN_LIB%g
 s%@LINUX_CMT@%$LINUX_CMT%g
 s%@root_prefix@%$root_prefix%g
 s%@root_bindir@%$root_bindir%g
