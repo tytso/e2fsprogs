@@ -122,7 +122,7 @@ static errcode_t write_bgdesc(ext2_filsys fs, dgrp_t group, blk_t group_block,
 {
 	errcode_t	retval;
 	char		*group_ptr = (char *) group_shadow;
-	int		j, old_desc_blocks;
+	int		j, old_desc_blocks, mod;
 	int		has_super = ext2fs_bg_has_super(fs, group);
 	dgrp_t		meta_bg_size, meta_bg;
 
@@ -134,7 +134,8 @@ static errcode_t write_bgdesc(ext2_filsys fs, dgrp_t group, blk_t group_block,
 		old_desc_blocks = fs->desc_blocks;
 	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
 	    (meta_bg < fs->super->s_first_meta_bg)) {
-		if (!has_super)
+		if (!has_super ||
+		    ((fs->flags & EXT2_FLAG_MASTER_SB_ONLY) && (group != 0)))
 			return 0;
 		for (j=0; j < old_desc_blocks; j++) {
 			retval = io_channel_write_blk(fs->io,
@@ -147,9 +148,10 @@ static errcode_t write_bgdesc(ext2_filsys fs, dgrp_t group, blk_t group_block,
 	} else {
 		if (has_super)
 			group_block++;
-		if (((group % meta_bg_size) == 0) ||
-		    ((group % meta_bg_size) == 1) ||
-		    ((group % meta_bg_size) == (meta_bg_size-1))) {
+		mod = group % meta_bg_size;
+		if ((mod == 0) || (mod == 1) || (mod == (meta_bg_size-1))) {
+			if (mod && (fs->flags & EXT2_FLAG_MASTER_SB_ONLY))
+				return 0;
 			return io_channel_write_blk(fs->io, group_block,
 				1, group_ptr + (meta_bg*fs->blocksize));
 		}
@@ -180,7 +182,7 @@ static errcode_t write_backup_super(ext2_filsys fs, dgrp_t group,
 
 errcode_t ext2fs_flush(ext2_filsys fs)
 {
-	dgrp_t		i,j,maxgroup;
+	dgrp_t		i,j;
 	blk_t		group_block;
 	errcode_t	retval;
 	unsigned long	fs_state;
@@ -265,10 +267,9 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	 * superblocks and group descriptors.
 	 */
 	group_block = fs->super->s_first_data_block;
-	maxgroup = (fs->flags & EXT2_FLAG_MASTER_SB_ONLY) ? 1 :
-		fs->group_desc_count;
-	for (i = 0; i < maxgroup; i++) {
-		if (i && ext2fs_bg_has_super(fs, i)) {
+	for (i = 0; i < fs->group_desc_count; i++) {
+		if (!(fs->flags & EXT2_FLAG_MASTER_SB_ONLY) &&
+		    i && ext2fs_bg_has_super(fs, i)) {
 			retval = write_backup_super(fs, i, group_block,
 						    super_shadow);
 			if (retval)

@@ -1,3 +1,10 @@
+2002-11-07    <tytso@snap.thunk.org>
+
+	* closefs.c (write_bgdesc, ext2fs_flush): Fix bug in meta_bg
+		support when the MASTER_SB_ONLY flag is set.  Some of
+		the descriptor blocks that should have been written out
+		were getting skipped.
+
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.30
