@@ -84,6 +84,8 @@ errcode_t ext2fs_add_extent_entry(ext2_extent extent, __u32 old_loc, __u32 new_l
 	if (extent->num >= extent->size) {
 		newsize = extent->size + 100;
 		retval = ext2fs_resize_mem(sizeof(struct ext2_extent_entry) * 
+					   extent->size, 
+					   sizeof(struct ext2_extent_entry) * 
 					   newsize, (void **) &extent->list);
 		if (retval)
 			return retval;

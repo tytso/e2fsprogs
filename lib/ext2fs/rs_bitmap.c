@@ -62,9 +62,12 @@ errcode_t ext2fs_resize_generic_bitmap(__u32 new_end, __u32 new_real_end,
 	size = ((bmap->real_end - bmap->start) / 8) + 1;
 	new_size = ((new_real_end - bmap->start) / 8) + 1;
 
-	retval = ext2fs_resize_mem(new_size, (void **) &bmap->bitmap);
-	if (retval)
-		return retval;
+	if (size != new_size) {
+		retval = ext2fs_resize_mem(size, new_size,
+					   (void **) &bmap->bitmap);
+		if (retval)
+			return retval;
+	}
 	if (new_size > size)
 		memset(bmap->bitmap + size, 0, new_size - size);
 

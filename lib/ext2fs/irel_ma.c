@@ -144,7 +144,7 @@ static errcode_t ima_put(ext2_irel irel, ino_t old,
 	struct inode_reference_entry	*ref_ent;
 	struct irel_ma 			*ma;
 	errcode_t			retval;
-	int				size;
+	size_t				size, old_size;
 
 	ma = irel->priv_data;
 	if (old > ma->max_inode)
@@ -166,7 +166,10 @@ static errcode_t ima_put(ext2_irel irel, ino_t old,
 	if (ref_ent->refs && ent->max_refs !=
 	    ma->entries[(unsigned) old].max_refs) {
 		size = (sizeof(struct ext2_inode_reference) * ent->max_refs);
-		retval = ext2fs_resize_mem(size, (void **) &ref_ent->refs);
+		old_size = (sizeof(struct ext2_inode_reference) *
+			    ma->entries[(unsigned) old].max_refs);
+		retval = ext2fs_resize_mem(old_size, size,
+					   (void **) &ref_ent->refs);
 		if (retval)
 			return retval;
 	}

@@ -17,7 +17,7 @@
 #include <errno.h>
 #endif
 
-#include <linux/types.h>
+#include <asm/types.h>
 #include "utils.h"
 #include "dosio.h"
 #include "et/com_err.h"

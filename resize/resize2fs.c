@@ -261,7 +261,9 @@ retry:
 	 * Reallocate the group descriptors as necessary.
 	 */
 	if (rfs->old_fs->desc_blocks != fs->desc_blocks) {
-		retval = ext2fs_resize_mem(fs->desc_blocks * fs->blocksize,
+		retval = ext2fs_resize_mem(rfs->old_fs->desc_blocks *
+					   fs->blocksize,
+					   fs->desc_blocks * fs->blocksize,
 					   (void **) &fs->group_desc);
 		if (retval)
 			goto errout;

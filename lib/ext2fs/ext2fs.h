@@ -15,7 +15,7 @@
 /*
  * Non-GNU C compilers won't necessarily understand inline
  */
-#ifndef __GNUC__
+#if (!defined(__GNUC__) && !defined(__WATCOMC__))
 #define NO_INLINE_FUNCS
 #endif
 
@@ -44,7 +44,7 @@
 #if EXT2_FLAT_INCLUDES
 #include "e2_types.h"
 #else
-#include <linux/types.h>
+#include <asm/types.h>
 #if (defined(__GNUC__) && defined(__STRICT_ANSI__) && ((~0UL) == 0xffffffff))
 typedef __signed__ long long __s64;
 typedef unsigned long long __u64;
@@ -783,7 +783,8 @@ extern int ext2fs_get_library_version(const char **ver_string,
 /* inline functions */
 extern errcode_t ext2fs_get_mem(unsigned long size, void **ptr);
 extern errcode_t ext2fs_free_mem(void **ptr);
-extern errcode_t ext2fs_resize_mem(unsigned long size, void **ptr);
+extern errcode_t ext2fs_resize_mem(unsigned long old_size,
+				   unsigned long size, void **ptr);
 extern void ext2fs_mark_super_dirty(ext2_filsys fs);
 extern void ext2fs_mark_changed(ext2_filsys fs);
 extern int ext2fs_test_changed(ext2_filsys fs);
@@ -807,7 +808,11 @@ extern int ext2fs_group_of_ino(ext2_filsys fs, ino_t ino);
 #ifdef INCLUDE_INLINE_FUNCS
 #define _INLINE_ extern
 #else
+#ifdef __GNUC__
 #define _INLINE_ extern __inline__
+#else				/* For Watcom C */
+#define _INLINE_ extern inline
+#endif
 #endif
 
 #ifndef EXT2_CUSTOM_MEMORY_ROUTINES
@@ -835,7 +840,8 @@ _INLINE_ errcode_t ext2fs_free_mem(void **ptr)
 /*
  *  Resize memory
  */
-_INLINE_ errcode_t ext2fs_resize_mem(unsigned long size, void **ptr)
+_INLINE_ errcode_t ext2fs_resize_mem(unsigned long old_size,
+				     unsigned long size, void **ptr)
 {
 	void *p;
 

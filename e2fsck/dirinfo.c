@@ -18,6 +18,7 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ino_t ino, ino_t parent)
 	int		i, j;
 	ino_t		num_dirs;
 	errcode_t	retval;
+	unsigned long	old_size;
 
 #if 0
 	printf("add_dir_info for inode %lu...\n", ino);
@@ -35,8 +36,9 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ino_t ino, ino_t parent)
 	}
 	
 	if (ctx->dir_info_count >= ctx->dir_info_size) {
+		old_size = ctx->dir_info_size * sizeof(struct dir_info);
 		ctx->dir_info_size += 10;
-		retval = ext2fs_resize_mem(ctx->dir_info_size *
+		retval = ext2fs_resize_mem(old_size, ctx->dir_info_size *
 					   sizeof(struct dir_info),
 					   (void **) &ctx->dir_info);
 		if (retval) {

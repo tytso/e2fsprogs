@@ -160,12 +160,14 @@ errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 {
 	struct ext2_db_entry 	*new_entry;
 	errcode_t		retval;
+	unsigned long		old_size;
 	
 	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
 
 	if (dblist->count >= dblist->size) {
+		old_size = dblist->size * sizeof(struct ext2_db_entry);
 		dblist->size += 100;
-		retval = ext2fs_resize_mem((size_t) dblist->size *
+		retval = ext2fs_resize_mem(old_size, (size_t) dblist->size *
 					   sizeof(struct ext2_db_entry),
 					   (void **) &dblist->list);
 		if (retval) {

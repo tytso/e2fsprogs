@@ -98,7 +98,11 @@ extern void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map);
 #ifdef INCLUDE_INLINE_FUNCS
 #define _INLINE_ extern
 #else
+#ifdef __GNUC__
 #define _INLINE_ extern __inline__
+#else				/* For Watcom C */
+#define _INLINE_ extern inline
+#endif
 #endif
 
 #if ((defined __GNUC__) && (defined(__i386__) || defined(__i486__) || \

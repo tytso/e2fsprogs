@@ -1,3 +1,26 @@
+1998-04-26  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2fs.h, bitops.h: Add support for the Watcom C compiler to do
+		inline functions.
+
+	* ext2fs.h, dosio.c: Use asm/types.h instead of linux/types.h to
+		evade a potential problem with glibc's header files trying
+		to spike out linux/types.h.
+
+	* ext2fs.h (ext2fs_resize_mem): Change the function prototype to
+		include the old size of the memory, which is needed for
+		some braindamaged memory allocation systems that don't
+		support realloc().
+
+	* badblocks.c (ext2fs_badblocks_list_add):
+	  bb_inode.c (clear_bad_block_proc):
+	  dblist.c (ext2fs_add_dir_block):
+	  icount.c (insert_icount_el):
+	  irel_ma.c (ima_put):
+	  rs_bitmap.c (ext2fs_resize_generic_bitmap): Update functions to
+		  pass the old size of the memory to be resized to
+		  ext2fs_resize_mem(). 
+
 1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in: Change to use new installation directory variables

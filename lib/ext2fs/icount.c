@@ -182,7 +182,9 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 #if 0
 		printf("Reallocating icount %d entries...\n", new_size);
 #endif	
-		retval = ext2fs_resize_mem((size_t) new_size *
+		retval = ext2fs_resize_mem((size_t) icount->size *
+					   sizeof(struct ext2_icount_el),
+					   (size_t) new_size *
 					   sizeof(struct ext2_icount_el),
 					   (void **) &icount->list);
 		if (retval)

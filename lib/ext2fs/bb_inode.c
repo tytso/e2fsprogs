@@ -174,6 +174,7 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 		priv_data;
 	errcode_t	retval;
 	int		group;
+	unsigned long 	old_size;
 
 	if (!*block_nr)
 		return 0;
@@ -189,11 +190,13 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 
 	if (blockcnt < 0) {
 		if (rec->ind_blocks_size >= rec->max_ind_blocks) {
+			old_size = rec->max_ind_blocks * sizeof(blk_t);
 			rec->max_ind_blocks += 10;
-			retval = ext2fs_resize_mem(rec->max_ind_blocks
-						   * sizeof(blk_t),
-						   (void **) &rec->ind_blocks);
+			retval = ext2fs_resize_mem(old_size, 
+				   rec->max_ind_blocks * sizeof(blk_t),
+				   (void **) &rec->ind_blocks);
 			if (retval) {
+				rec->max_ind_blocks -= 10;
 				rec->err = retval;
 				return BLOCK_ABORT;
 			}

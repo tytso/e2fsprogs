@@ -1,3 +1,8 @@
+1998-04-26  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dirinfo.c (e2fsck_add_dir_info): Update function to pass the old
+		  size of the memory to be resized to ext2fs_resize_mem().
+
 1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in: Change to use new installation directory variables
