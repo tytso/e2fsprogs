@@ -53,9 +53,20 @@ A file with the `c' attribute set is automatically compressed on the disk
 by the kernel. A read from this file returns uncompressed data. A write to
 this file compresses data before storing them on the disk.
 .PP
+When a directory with the `D' attribute set is modified,
+the changes are written synchronously on the disk; this is equivalent to
+the `dirsync' mount option applied to a subset of the files.
+.PP
 A file with the `d' attribute set is not candidate for backup when the
 .BR dump (8)
 program is run.
+.PP
+The 'E' attribute is used by the experimental compression patches to 
+indicate that a compressed file has a compression error.  It may not be
+set or reset using 
+.BR chattr (1),
+although it can be displayed by
+.BR lsattr (1).
 .PP
 A file with the `i' attribute cannot be modified: it cannot be deleted or
 renamed, no link can be created to this file and no data can be written
@@ -74,10 +85,6 @@ When a file with the `S' attribute set is modified,
 the changes are written synchronously on the disk; this is equivalent to
 the `sync' mount option applied to a subset of the files.
 .PP
-When a directory with the `D' attribute set is modified,
-the changes are written synchronously on the disk; this is equivalent to
-the `dirsync' mount option applied to a subset of the files.
-.PP
 A file with the 't' attribute will not have a partial block fragment at
 the of the file merged with other files (for those filesystems which
 support tail-merging).  This is necessary for applications such as LILO 
@@ -86,6 +93,19 @@ files.
 .PP
 When a file with the `u' attribute set is deleted, its contents are saved.
 This allows the user to ask for its undeletion.
+.PP
+The 'X' attribute is used by the experimental compression patches to 
+indicate that a raw contents of a compressed file can be accessed
+directly.  It currently may not be set or reset using 
+.BR chattr (1),
+although it can be displayed by
+.BR lsattr (1).
+.PP
+The 'Z' attribute is used by the experimental compression patches to 
+indicate a compressed file is dirty.  It may not be set or reset using 
+.BR chattr (1),
+although it can be displayed by
+.BR lsattr (1).
 .PP
 .SH AUTHOR
 .B chattr

@@ -1,5 +1,9 @@
 2002-08-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* chattr.1.in: Document the compression attribute flags E, X, and
+		Z, and explain that chattr can't set or set these flags.
+		(Addresses Debian Bug #151990)
+
 	* fsck.8.in: Fix typo in man page, and clarified text regarding
 		options specifiers for -t option.  (Addresses Debian bug 
 		#145044)

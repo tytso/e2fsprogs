@@ -1,3 +1,11 @@
+2002-08-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsetflags.c (fsetflags), fgetflags.c (fgetflags.c), setflags.c
+		(setflags), getflags.c (getflags): Check to make sure the
+		file is a regular file or a directory before attempting to
+		use the ext2 ioctls.  Otherwise, return EOPNOTSUPP.
+		(Addresses Debian Bug #152029).
+
 2002-07-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* fsetflags.c (fsetflags), fgetflags.c (fgetflags,

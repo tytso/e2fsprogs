@@ -17,9 +17,9 @@
 #if HAVE_ERRNO_H
 #include <errno.h>
 #endif
-#if HAVE_STAT_FLAGS
+#include <sys/types.h>
 #include <sys/stat.h>
-#else
+#if HAVE_EXT2_IOCTLS
 #include <sys/ioctl.h>
 #endif
 
@@ -27,8 +27,8 @@
 
 int getflags (int fd, unsigned long * flags)
 {
-#if HAVE_STAT_FLAGS
 	struct stat buf;
+#if HAVE_STAT_FLAGS
 
 	if (fstat (fd, &buf) == -1)
 		return -1;
@@ -52,13 +52,15 @@ int getflags (int fd, unsigned long * flags)
 #if HAVE_EXT2_IOCTLS
 	int r, f;
 	
+	if (!fstat(fd, &buf) &&
+	    !S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode))
+		goto notsupp;
 	r = ioctl (fd, EXT2_IOC_GETFLAGS, &f);
 	*flags = f;
 	return r;
-#else /* ! HAVE_EXT2_IOCTLS */
-	extern int errno;
+#endif /* HAVE_EXT2_IOCTLS */
+#endif
+notsupp:
 	errno = EOPNOTSUPP;
 	return -1;
-#endif /* ! HAVE_EXT2_IOCTLS */
-#endif
 }

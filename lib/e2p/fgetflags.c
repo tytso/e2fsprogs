@@ -23,9 +23,9 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#if HAVE_STAT_FLAGS
+#include <sys/types.h>
 #include <sys/stat.h>
-#else
+#if HAVE_EXT2_IOCTLS
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #endif
@@ -40,8 +40,8 @@
 
 int fgetflags (const char * name, unsigned long * flags)
 {
-#if HAVE_STAT_FLAGS
 	struct stat buf;
+#if HAVE_STAT_FLAGS
 
 	if (stat (name, &buf) == -1)
 		return -1;
@@ -65,6 +65,11 @@ int fgetflags (const char * name, unsigned long * flags)
 #if HAVE_EXT2_IOCTLS
 	int fd, r, f, save_errno = 0;
 
+	if (!stat(name, &buf) &&
+	    !S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
+		close(fd);
+		goto notsupp;
+	}
 	fd = open (name, OPEN_FLAGS);
 	if (fd == -1)
 		return -1;
@@ -76,10 +81,9 @@ int fgetflags (const char * name, unsigned long * flags)
 	if (save_errno)
 		errno = save_errno;
 	return r;
-#else /* ! HAVE_EXT2_IOCTLS */
-	extern int errno;
+#endif /* HAVE_EXT2_IOCTLS */
+#endif
+notsupp:
 	errno = EOPNOTSUPP;
 	return -1;
-#endif /* ! HAVE_EXT2_IOCTLS */
-#endif
 }
