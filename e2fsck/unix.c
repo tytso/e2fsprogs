@@ -454,17 +454,10 @@ static void signal_cancel(int sig)
 static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 {
 	char	*buf, *token, *next, *p, *arg;
-	int	len, ea_ver;
+	int	ea_ver;
 	int	extended_usage = 0;
 
-	len = strlen(opts);
-	buf = malloc(len+1);
-	if (!buf) {
-		fprintf(stderr, _("Couldn't allocate memory to parse "
-			"extended options!\n"));
-		exit(1);
-	}
-	strcpy(buf, opts);
+	buf = string_copy(ctx, opts, 0);
 	for (token = buf; token && *token; token = next) {
 		p = strchr(token, ',');
 		next = 0;
@@ -528,6 +521,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
 	initialize_ext2_error_table();
+	blkid_get_cache(&ctx->blkid, NULL);
 	
 	if (argc && *argv)
 		ctx->program_name = *argv;
@@ -607,7 +601,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			ctx->inode_buffer_blocks = atoi(optarg);
 			break;
 		case 'j':
-			ctx->journal_name = optarg;
+			ctx->journal_name = string_copy(ctx, optarg, 0);
 			break;
 		case 'P':
 			ctx->process_inode_size = atoi(optarg);
@@ -615,11 +609,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		case 'L':
 			replace_bad_blocks++;
 		case 'l':
-			bad_blocks_file = (char *) malloc(strlen(optarg)+1);
-			if (!bad_blocks_file)
-				fatal_error(ctx,
-					    "Couldn't malloc bad_blocks_file");
-			strcpy(bad_blocks_file, optarg);
+			bad_blocks_file = string_copy(ctx, optarg, 0);
 			break;
 		case 'd':
 			ctx->options |= E2F_OPT_DEBUG;
@@ -668,7 +658,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	if ((ctx->options & E2F_OPT_NO) && !bad_blocks_file &&
 	    !cflag && !swapfs && !(ctx->options & E2F_OPT_COMPRESS_DIRS))
 		ctx->options |= E2F_OPT_READONLY;
-	ctx->filesystem_name = argv[optind];
+	ctx->filesystem_name = blkid_get_devname(ctx->blkid, argv[optind], 0);
 	if (extended_opts)
 		parse_extended_opts(ctx, extended_opts);
 	
@@ -900,13 +890,8 @@ restart:
 	 */
 	if (ctx->device_name == 0 &&
 	    (sb->s_volume_name[0] != 0)) {
-		char *cp = malloc(sizeof(sb->s_volume_name)+1);
-		if (cp) {
-			strncpy(cp, sb->s_volume_name,
-				sizeof(sb->s_volume_name));
-			cp[sizeof(sb->s_volume_name)] = 0;
-			ctx->device_name = cp;
-		}
+		ctx->device_name = string_copy(ctx, sb->s_volume_name,
+					       sizeof(sb->s_volume_name));
 	}
 	if (ctx->device_name == 0)
 		ctx->device_name = ctx->filesystem_name;
@@ -1112,6 +1097,8 @@ restart:
 	
 	ext2fs_close(fs);
 	ctx->fs = NULL;
+	free(ctx->filesystem_name);
+	free(ctx->journal_name);
 	e2fsck_free_context(ctx);
 	
 #ifdef RESOURCE_TRACK

@@ -1,3 +1,22 @@
+2003-03-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in, journal.c, unix.c: Use blkid functions to find the
+		journal from the UUID, and to interpret the device
+		specification.
+
+	* e2fsck.c: Free the blkid_cache when releasing the e2fsck context
+		structure.
+
+	* e2fsck.h: If strnlen is not present, define it as a macro which
+		calls e2fsck_strlen().  Add prototype for string_copy().
+		Add blkid_cache to e2fsck context, and make
+		filesystem_name, device_name, and journal_name be
+		non-const variables.
+	
+	* pass1.c, pass2.c: Remove static strnlen function
+
+	* util.c (string_copy, e2fsck_strnlen): New functions
+
 2003-01-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (usage): Make descripton -c be a bit more explicit

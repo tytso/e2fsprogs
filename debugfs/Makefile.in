@@ -24,8 +24,8 @@ SRCS= debug_cmds.c $(srcdir)/debugfs.c $(srcdir)/util.c $(srcdir)/ls.c \
 	$(srcdir)/dump.c $(srcdir)/setsuper.c ${srcdir}/logdump.c \
 	$(srcdir)/htree.c
 
-LIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR)  $(LIBUUID)
-DEPLIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR)  $(DEPLIBUUID)
+LIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(LIBBLKID) $(LIBUUID)
+DEPLIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(LIBBLKID) $(DEPLIBUUID)
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@

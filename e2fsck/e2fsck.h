@@ -26,9 +26,11 @@
 #if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
 #include "ext2fs.h"
+#include "blkid.h"
 #else
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
+#include "blkid/blkid.h"
 #endif
 
 #ifdef ENABLE_NLS
@@ -181,8 +183,8 @@ typedef struct e2fsck_struct *e2fsck_t;
 struct e2fsck_struct {
 	ext2_filsys fs;
 	const char *program_name;
-	const char *filesystem_name;
-	const char *device_name;
+	char *filesystem_name;
+	char *device_name;
 	int	flags;		/* E2fsck internal flags */
 	int	options;
 	blk_t	use_superblock;	/* sb requested by user */
@@ -190,6 +192,7 @@ struct e2fsck_struct {
 	int	blocksize;	/* blocksize */
 	blk_t	num_blocks;	/* Total number of blocks */
 	int	mount_flags;
+	blkid_cache blkid;	/* blkid cache */
 
 #ifdef HAVE_SETJMP_H
 	jmp_buf	abort_loc;
@@ -274,7 +277,7 @@ struct e2fsck_struct {
 	 * ext3 journal support
 	 */
 	io_channel	journal_io;
-	const char	*journal_name;
+	char	*journal_name;
 
 #ifdef RESOURCE_TRACK
 	/*
@@ -323,6 +326,11 @@ struct e2fsck_struct {
 /* Used by the region allocation code */
 typedef __u32 region_addr_t;
 typedef struct region_struct *region_t;
+
+#ifndef HAVE_STRNLEN
+#define strnlen(str, x) e2fsck_strnlen((str),(x))
+extern int e2fsck_strnlen(const char * s, int count);
+#endif
 
 /*
  * Procedure declarations
@@ -428,6 +436,7 @@ extern void fatal_error(e2fsck_t ctx, const char * fmt_string);
 extern void e2fsck_read_bitmaps(e2fsck_t ctx);
 extern void e2fsck_write_bitmaps(e2fsck_t ctx);
 extern void preenhalt(e2fsck_t ctx);
+extern char *string_copy(e2fsck_t ctx, const char *str, int len);
 #ifdef RESOURCE_TRACK
 extern void print_resource_track(const char *desc,
 				 struct resource_track *track);

@@ -33,6 +33,7 @@ extern int optreset;		/* defined by BSD, but not others */
 #endif
 
 #include "debugfs.h"
+#include "blkid/blkid.h"
 #include "jfs_user.h"
 #include <uuid/uuid.h>
 
@@ -84,15 +85,13 @@ void do_logdump(int argc, char **argv)
 	ext2_ino_t	journal_inum;
 	struct ext2_inode journal_inode;
 	ext2_file_t 	journal_file;
-	
 	char		*tmp;
-	
 	const char	*logdump_usage = ("Usage: logdump "
 					  "[-ac] [-b<block>] [-i<inode>] "
 					  "[-f<journal_file>] [output_file]");
-	
 	struct journal_source journal_source;
-
+	struct ext2_super_block *es = NULL;
+	
 	optind = 0;
 #ifdef HAVE_OPTRESET
 	optreset = 1;		/* Makes BSD getopt happy */
@@ -142,9 +141,12 @@ void do_logdump(int argc, char **argv)
 		return;
 	}
 
+	if (current_fs)
+		es = current_fs->super;
+
 	if (inode_spec) {
 		int inode_group, group_offset, inodes_per_block;
-		
+
 		if (check_fs_open(argv[0]))
 			return;
 
@@ -153,9 +155,9 @@ void do_logdump(int argc, char **argv)
 			return;
 
 		inode_group = ((inode_to_dump - 1)
-			       / current_fs->super->s_inodes_per_group);
+			       / es->s_inodes_per_group);
 		group_offset = ((inode_to_dump - 1)
-				% current_fs->super->s_inodes_per_group);
+				% es->s_inodes_per_group);
 		inodes_per_block = (current_fs->blocksize 
 				    / sizeof(struct ext2_inode));
 		
@@ -183,8 +185,8 @@ void do_logdump(int argc, char **argv)
 
 	if (block_to_dump != -1 && current_fs != NULL) {
 		group_to_dump = ((block_to_dump - 
-				  current_fs->super->s_first_data_block)
-				 / current_fs->super->s_blocks_per_group);
+				  es->s_first_data_block)
+				 / es->s_blocks_per_group);
 		bitmap_to_dump = current_fs->group_desc[group_to_dump].bg_block_bitmap;
 	}
 
@@ -202,7 +204,7 @@ void do_logdump(int argc, char **argv)
 		
 		journal_source.where = JOURNAL_IS_EXTERNAL;
 		journal_source.fd = journal_fd;
-	} else if ((journal_inum = current_fs->super->s_journal_inum)) {
+	} else if ((journal_inum = es->s_journal_inum)) {
 		if (debugfs_read_inode(journal_inum, &journal_inode, argv[0]))
 			return;
 
@@ -214,8 +216,17 @@ void do_logdump(int argc, char **argv)
 		}
 		journal_source.where = JOURNAL_IS_INTERNAL;
 		journal_source.file = journal_file;
-	} else if ((journal_fn =
-	    ext2fs_find_block_device(current_fs->super->s_journal_dev))) {
+	} else {
+		char uuid[37];
+		
+		uuid_unparse(es->s_journal_uuid, uuid);
+		journal_fn = blkid_get_devname(NULL, "UUID", uuid);
+		if (!journal_fn)
+				journal_fn = blkid_devno_to_devname(es->s_journal_dev);
+		if (!journal_fn) {
+			com_err(argv[0], 0, "filesystem has no journal");
+			return;
+		}
 		journal_fd = open(journal_fn, O_RDONLY, 0);
 		if (journal_fd < 0) {
 			com_err(argv[0], errno, "while opening %s for logdump",
@@ -228,9 +239,6 @@ void do_logdump(int argc, char **argv)
 		free(journal_fn);
 		journal_source.where = JOURNAL_IS_EXTERNAL;
 		journal_source.fd = journal_fd;
-	} else {
-		com_err(argv[0], 0, "filesystem has no journal");
-		return;
 	}
 
 	dump_journal(argv[0], out_file, &journal_source);

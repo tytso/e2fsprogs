@@ -157,21 +157,6 @@ int e2fsck_pass1_check_device_inode(ext2_filsys fs, struct ext2_inode *inode)
 	return 1;
 }
 
-#ifndef HAVE_STRNLEN
-/*
- * Incredibly, libc5 doesn't appear to have strnlen.  So we have to
- * provide our own.
- */
-static int strnlen(const char * s, int count)
-{
-	const char *cp = s;
-
-	while (count-- && *cp)
-		cp++;
-	return cp - s;
-}
-#endif
-
 /*
  * Check to make sure a symlink inode is real.  Returns 1 if the symlink
  * checks out, 0 if not.

@@ -188,7 +188,6 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 	errcode_t		retval = 0;
 	io_manager		io_ptr = 0;
 	unsigned long		start = 0;
-	int			free_journal_name = 0;
 	int			ext_journal = 0;
 		
 	clear_problem_context(&pctx);
@@ -259,11 +258,16 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 #endif
 	} else {
 		ext_journal = 1;
-		journal_name = ctx->journal_name;
-		if (!journal_name) {
-			journal_name = ext2fs_find_block_device(sb->s_journal_dev);
-			free_journal_name = 1;
+		if (!ctx->journal_name) {
+			char uuid[37];
+
+			uuid_unparse(sb->s_journal_uuid, uuid);
+			ctx->journal_name = blkid_get_devname(ctx->blkid,
+							      "UUID", uuid);
+			if (!ctx->journal_name)
+				ctx->journal_name = blkid_devno_to_devname(sb->s_journal_dev);
 		}
+		journal_name = ctx->journal_name;
 			
 		if (!journal_name) {
 			fix_problem(ctx, PR_0_CANT_FIND_JOURNAL, &pctx);
@@ -283,8 +287,6 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 #endif
 		retval = io_ptr->open(journal_name, IO_FLAG_RW,
 				      &ctx->journal_io);
-	if (free_journal_name)
-		free((void *) journal_name);
 	if (retval)
 		goto errout;
 

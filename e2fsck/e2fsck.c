@@ -157,7 +157,9 @@ void e2fsck_free_context(e2fsck_t ctx)
 		return;
 	
 	e2fsck_reset_context(ctx);
-	
+	if (ctx->blkid)
+		blkid_put_cache(ctx->blkid);
+			
 	ext2fs_free_mem((void **) &ctx);
 }
 
@@ -197,9 +199,3 @@ int e2fsck_run(e2fsck_t ctx)
 		return (ctx->flags & E2F_FLAG_RUN_RETURN);
 	return 0;
 }
-
-
-	
-
-	
-

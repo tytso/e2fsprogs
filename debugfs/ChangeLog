@@ -1,3 +1,8 @@
+2003-03-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in, logdump.c (do_logdump): Use the blkid functions to
+		find the external journal device.
+
 2003-01-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* dump.c (do_dump): Open the output file with O_LARGEFILE so we
