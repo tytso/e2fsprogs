@@ -252,7 +252,8 @@ static int release_orphan_inodes(e2fsck_t ctx)
 		clear_problem_context(&pctx);
 		pctx.ino = ino;
 		pctx.inode = &inode;
-		pctx.str = inode.i_links_count ? "Truncating" : "Clearing";
+		pctx.str = inode.i_links_count ? _("Truncating") :
+			_("Clearing");
 
 		fix_problem(ctx, PR_0_ORPHAN_CLEAR_INODE, &pctx);
 

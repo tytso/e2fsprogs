@@ -1,3 +1,8 @@
+2001-05-09  Theodore Tso  <tytso@valinux.com>
+
+	* super.c (release_orphan_inodes): Add gettext quoting around
+		"Truncating" and "Clearing" for i18n.
+
 2001-05-05  Theodore Tso  <tytso@valinux.com>
 
 	* util.c (fatal_error): Use the correct magic number when checking
