@@ -1,6 +1,13 @@
+2002-01-06  Andreas Dilger  <adilger@turbolinux.com>
+
+	* Makefile: Add new target "make testnew" which will create a new
+		testcase for e2fsck with an empty 8MB filesystem.  After
+		the test filesystem is appropriately "broken" the new
+		target "make testend" will create expect files for it.
+
 2001-12-16  Theodore Tso  <tytso@valinux.com>
 
-	* f_ext_journal: Addnew test which checks e2fsck's ability to use
+	* f_ext_journal: Add new test which checks e2fsck's ability to use
 		an external journal.
 
 2001-11-30  Gabriel Paubert <paubert@iram.es>
