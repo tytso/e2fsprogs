@@ -1,3 +1,12 @@
+2002-10-13  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass3.c (e2fsck_get_lost_and_found): Pass in mode 700 to
+		ext2fs_new_inode().
+
+	* unix.c (show_stats): Fix format bug if NLS is in use.
+
+	* journal.c, pass1.c, revoke.c, util.c: Fix gcc -Wall nits.
+
 2002-10-08  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass3.c (e2fsck_get_lost_and_found): Create the lost+found

@@ -1,3 +1,8 @@
+2002-10-13  Theodore Ts'o  <tytso@mit.edu>
+
+	* libext2fs.texinfo: Add extra spaceing so that the info directory
+		looks OK on Openwall. 
+
 2001-09-24  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.29

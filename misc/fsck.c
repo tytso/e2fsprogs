@@ -472,7 +472,7 @@ static int execute(const char *type, char *device, char *mntpt,
 /*
  * Send a signal to all outstanding fsck child processes
  */
-static int kill_all(int signal)
+static int kill_all(int signum)
 {
 	struct fsck_instance *inst;
 	int	n = 0;
@@ -480,7 +480,7 @@ static int kill_all(int signal)
 	for (inst = instance_list; inst; inst = inst->next) {
 		if (inst->flags & FLAG_DONE)
 			continue;
-		kill(inst->pid, signal);
+		kill(inst->pid, signum);
 		n++;
 	}
 	return n;
@@ -886,7 +886,6 @@ static int device_already_active(char *device)
 static int check_all(NOARGS)
 {
 	struct fs_info *fs = NULL;
-	struct fsck_instance *inst;
 	int status = EXIT_OK;
 	int not_done_yet = 1;
 	int passno = 1;

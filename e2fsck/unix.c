@@ -121,7 +121,7 @@ static void show_stats(e2fsck_t	ctx)
 	 */
 #ifdef ENABLE_NLS
 	printf (_("\n%8d inodes used (%d%%)\n"), inodes_used,
-		(inodes_used != 1), 100 * inodes_used / inodes);
+		100 * inodes_used / inodes);
 	printf (_("%8d non-contiguous inodes (%0d.%d%%)\n"),
 		ctx->fs_fragmented, frag_percent / 10, frag_percent % 10);
 	printf (_("         # of inodes with ind/dind/tind blocks: %d/%d/%d\n"),

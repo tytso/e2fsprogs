@@ -1,3 +1,11 @@
+2002-10-13  Theodore Ts'o  <tytso@mit.edu>
+
+	* get_device_by_label.c (read_partitions): Use a 16k buffer to
+		read in /proc/partitions in one go.
+
+	* badblocks.c, fsck.c, fstype.c, get_device_by_label.c, 
+		tune2fs.c: Fix gcc -Wall nits.
+
 2002-10-11  Theodore Ts'o  <tytso@mit.edu>
 
 	* mklost+found.c (main): Make sure the lost+found directory is

@@ -1,3 +1,8 @@
+2002-10-13  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2fs.h: Add #include of header files necessary for ext2fs.h to
+		compile cleanly.
+
 2002-10-02  Theodore Y. Ts'o  <tytso@mit.edu>
 
 	* rw_bitmaps.c (ext2fs_write_block_bitmap,

@@ -9,7 +9,7 @@
 @dircategory Development
 @format
 START-INFO-DIR-ENTRY
-* libext2fs: (libext2fs.info).   The EXT2FS library.
+* libext2fs: (libext2fs.info).                  The EXT2FS library.
 END-INFO-DIR-ENTRY
 @end format
 @end ifinfo

@@ -72,6 +72,8 @@ char *journal_device;
 
 static const char *please_fsck = N_("Please run e2fsck on the filesystem.\n");
 
+void do_findfs(int argc, char **argv);
+
 static void usage(void)
 {
 	fprintf(stderr,
@@ -640,7 +642,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	device_name = argv[optind];
 }
 
-do_findfs(int argc, char **argv)
+void do_findfs(int argc, char **argv)
 {
 	char	*dev;
 

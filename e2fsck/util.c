@@ -71,7 +71,7 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
 }
 
 #ifndef HAVE_CONIO_H
-int read_a_char(void)
+static int read_a_char(void)
 {
 	char	c;
 	int	r;

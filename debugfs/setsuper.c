@@ -17,6 +17,8 @@
 #include <utime.h>
 
 #include "debugfs.h"
+#include "uuid/uuid.h"
+#include "e2p/e2p.h"
 
 static struct ext2_super_block set_sb;
 
@@ -174,7 +176,7 @@ static errcode_t parse_string(struct super_set_info *info, char *arg)
 
 static errcode_t parse_uuid(struct super_set_info *info, char *arg)
 {
-	char *	p = (char *) info->ptr;
+	unsigned char *	p = (unsigned char *) info->ptr;
 	
 	if ((strcasecmp(arg, "null") == 0) ||
 	    (strcasecmp(arg, "clear") == 0)) {

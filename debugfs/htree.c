@@ -31,7 +31,7 @@ static FILE *pager;
 
 static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 				 struct ext2_inode *inode,
-				 struct ext2_dx_root_info * root,
+				 struct ext2_dx_root_info * rootnode,
 				 blk_t blk, char *buf)
 {
 	errcode_t	errcode;
@@ -69,8 +69,8 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 			(dirent->name_len & 0xFF) : EXT2_NAME_LEN;
 		strncpy(name, dirent->name, thislen);
 		name[thislen] = '\0';
-		errcode = ext2fs_dirhash(root->hash_version, name, thislen, 
-					 fs->super->s_hash_seed,
+		errcode = ext2fs_dirhash(rootnode->hash_version, name,
+					 thislen, fs->super->s_hash_seed,
 					 &hash, 0);
 		if (errcode)
 			com_err("htree_dump_leaf_node", errcode,
@@ -92,13 +92,13 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 
 static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 				 struct ext2_inode *inode,
-				 struct ext2_dx_root_info * root,
+				 struct ext2_dx_root_info * rootnode,
 				 blk_t blk, char *buf, int level);
 
 
 static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 				struct ext2_inode *inode,
-				struct ext2_dx_root_info * root,
+				struct ext2_dx_root_info * rootnode,
 				struct ext2_dx_entry *ent, 
 				char *buf, int level)
 {
@@ -129,10 +129,10 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 		fprintf(pager, "Entry #%d: Hash 0x%08x, block %d\n", i,
 		       i ? e.hash : 0, e.block);
 		if (level)
-			htree_dump_int_block(fs, ino, inode, root,
+			htree_dump_int_block(fs, ino, inode, rootnode,
 					     e.block, buf, level-1);
 		else
-			htree_dump_leaf_node(fs, ino, inode, root,
+			htree_dump_leaf_node(fs, ino, inode, rootnode,
 					     e.block, buf);
 	}
 
@@ -141,7 +141,7 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 
 static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 				 struct ext2_inode *inode,
-				 struct ext2_dx_root_info * root,
+				 struct ext2_dx_root_info * rootnode,
 				 blk_t blk, char *buf, int level)
 {
 	char		*cbuf;
@@ -168,7 +168,7 @@ static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 		return;
 	}
 
-	htree_dump_int_node(fs, ino, inode, root,
+	htree_dump_int_node(fs, ino, inode, rootnode,
 			    (struct ext2_dx_entry *) (buf+8),
 			    cbuf, level);
 	free(cbuf);
@@ -180,12 +180,10 @@ void do_htree_dump(int argc, char *argv[])
 {
 	ext2_ino_t	ino;
 	struct ext2_inode inode;
-	int		retval;
-	int		i, c;
-	int		flags;
+	int		c;
 	int		long_opt;
-	void		*buf = NULL;
-	struct 		ext2_dx_root_info  *root;
+	char		*buf = NULL;
+	struct 		ext2_dx_root_info  *rootnode;
 	struct 		ext2_dx_entry *ent;
 	struct		ext2_dx_countlimit *limit;
 	errcode_t	errcode;
@@ -245,21 +243,21 @@ void do_htree_dump(int argc, char *argv[])
 		goto errout;
 	}
 
-	root = (struct ext2_dx_root_info *) (buf + 24);
+	rootnode = (struct ext2_dx_root_info *) (buf + 24);
 
 	fprintf(pager, "Root node dump:\n");
-	fprintf(pager, "\t Reserved zero: %d\n", root->reserved_zero);
-	fprintf(pager, "\t Hash Version: %d\n", root->hash_version);
-	fprintf(pager, "\t Info length: %d\n", root->info_length);
-	fprintf(pager, "\t Indirect levels: %d\n", root->indirect_levels);
-	fprintf(pager, "\t Flags: %d\n", root->unused_flags);
+	fprintf(pager, "\t Reserved zero: %d\n", rootnode->reserved_zero);
+	fprintf(pager, "\t Hash Version: %d\n", rootnode->hash_version);
+	fprintf(pager, "\t Info length: %d\n", rootnode->info_length);
+	fprintf(pager, "\t Indirect levels: %d\n", rootnode->indirect_levels);
+	fprintf(pager, "\t Flags: %d\n", rootnode->unused_flags);
 
-	ent = (struct ext2_dx_entry *) (buf + 24 + root->info_length);
+	ent = (struct ext2_dx_entry *) (buf + 24 + rootnode->info_length);
 	limit = (struct ext2_dx_countlimit *) ent;
 
-	htree_dump_int_node(current_fs, ino, &inode, root, ent,
+	htree_dump_int_node(current_fs, ino, &inode, rootnode, ent,
 			    buf + current_fs->blocksize,
-			    root->indirect_levels);
+			    rootnode->indirect_levels);
 
 errout:
 	if (buf)
@@ -322,9 +320,6 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 void do_dirsearch(int argc, char *argv[])
 {
 	ext2_ino_t	inode;
-	int		retval;
-	int		c;
-	int		flags;
 	struct process_block_struct pb;
 	
 	if (check_fs_open(argv[0]))

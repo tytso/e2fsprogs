@@ -184,10 +184,10 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 	struct buffer_head 	*bh;
 	struct inode		*j_inode = NULL;
 	struct kdev_s		*dev_fs = NULL, *dev_journal;
-	char			*journal_name = 0;
+	const char		*journal_name = 0;
 	journal_t		*journal = NULL;
-	errcode_t		retval;
-	io_manager		io_ptr;
+	errcode_t		retval = 0;
+	io_manager		io_ptr = 0;
 	unsigned long		start = 0;
 	int			free_journal_name = 0;
 	int			ext_journal = 0;

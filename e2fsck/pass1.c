@@ -37,6 +37,7 @@
  * found.
  */
 
+#include <string.h>
 #include <time.h>
 #ifdef HAVE_ERRNO_H
 #include <errno.h>

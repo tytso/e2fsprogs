@@ -166,6 +166,8 @@ get_label_uuid(const char *device, char **label, char *uuid) {
 	return 0;
 }
 
+#define CBBUF  (16 * 1024)
+
 static void
 uuidcache_addentry(char *device, char *label, char *uuid) {
 	struct uuidCache_s *last;
@@ -257,10 +259,15 @@ read_partitions(void)
 	struct stat statbuf;
 	int firstPass;
 	int handleOnFirst;
+	char *iobuf;
 
 	procpt = fopen(PROC_PARTITIONS, "r");
 	if (!procpt)
 		return;
+
+	iobuf = (char *)malloc(CBBUF);
+	if (iobuf)
+		setvbuf(procpt, iobuf, _IOFBF, CBBUF);
 
 	for (firstPass = 1; firstPass >= 0; firstPass--) {
 	    fseek(procpt, 0, SEEK_SET);
@@ -313,13 +320,14 @@ read_partitions(void)
 	}
 
 	fclose(procpt);
+	if (iobuf)
+		free(iobuf);
 }
 
 static void
 read_evms(void)
 {
 	char line[100];
-	char *s;
 	int ma, mi, sz;
 	FILE *procpt;
 	char uuid[16], *label, *devname;

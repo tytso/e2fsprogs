@@ -52,6 +52,11 @@ extern void do_dump(int argc, char **argv);
 extern void do_cat(int argc, char **argv);
 extern void do_rdump(int argc, char **argv);
 
+/* htree.c */
+extern void do_htree_dump(int argc, char **argv);
+extern void do_dx_hash(int argc, char **argv);
+extern void do_dirsearch(int argc, char **argv);
+
 /* logdump.c */
 extern void do_logdump(int argc, char **argv);
 
@@ -104,5 +109,6 @@ extern void do_mkdir(int argc, char **argv);
 extern void do_rmdir(int argc, char **argv);
 extern void do_show_debugfs_params(int argc, char **argv);
 extern void do_expand_dir(int argc, char **argv);
-extern void do_features(int argc, char *argv[]);
+extern void do_features(int argc, char **argv);
+extern void do_bmap(int argc, char **argv);
 

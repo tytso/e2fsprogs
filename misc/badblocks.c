@@ -785,7 +785,7 @@ int main (int argc, char ** argv)
 		}
 	} else
 		host_dev = dev;
-	if (input_file)
+	if (input_file) {
 		if (strcmp (input_file, "-") == 0)
 			in = stdin;
 		else {
@@ -798,6 +798,7 @@ int main (int argc, char ** argv)
 				exit (1);
 			}
 		}
+	}
 	if (output_file && strcmp (output_file, "-") != 0)
 	{
 		out = fopen (output_file, "w");

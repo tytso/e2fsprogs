@@ -1,3 +1,7 @@
+2002-10-13  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.h, htree.c, setsuper.c: Fix gcc -Wall nits.
+
 2002-10-02  Theodore Y. Ts'o  <tytso@mit.edu>
 
 	* htree.c (htree_dump_leaf_node): Use ext2fs_read_dir_block2 so
