@@ -349,7 +349,7 @@ int main (int argc, char ** argv)
 #ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 		if (sb->s_feature_ro_compat &
 		    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)
-			fprintf(stderr, "\nThe filesystem already "
+			fprintf(stderr, "\nThe filesystem already"
 				" has spare superblocks.\n");
 		else {
 			sb->s_feature_ro_compat |=
@@ -369,7 +369,7 @@ int main (int argc, char ** argv)
 #ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 		if (!(sb->s_feature_ro_compat &
 		      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
-			fprintf(stderr, "\nThe filesystem already "
+			fprintf(stderr, "\nThe filesystem already"
 				" does not support spare superblocks.\n");
 		else {
 			sb->s_feature_ro_compat &=

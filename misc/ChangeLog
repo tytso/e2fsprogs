@@ -1,5 +1,8 @@
 1999-10-14    <tytso@valinux.com>
 
+	* tune2fs.c (main): Fix typo (double spaces) in messages regarding
+		changing the sparse superblock option
+
 	* fsck.c (wait_one): If the fsck process just started, wait a
 		second before sending a SIGUSR1, to give it a chance
 		to set the signal handler; otherwise, fsck will die on an
