@@ -7,18 +7,11 @@ com_err \- common error display routine
 .SH SYNOPSIS
 .nf
  #include <et/com_err.h>
+void (*\fIproc\fR) (const char *, long, const char *, va_list);
 .PP
-void com_err (whoami, code, format, ...);
-	const char *whoami;
-	long code;
-	const char *format;
+void com_err (const char *whoami, long code, const char *format, ...);
 .PP
 proc = set_com_err_hook (proc);
-.fi
-void (*
-.I proc
-) (const char *, long, const char *, va_list);
-.nf
 .PP
 proc = reset_com_err_hook ();
 .PP
