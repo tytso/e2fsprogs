@@ -371,16 +371,16 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 			dirent->name_len = rec_len - 8;
 			continue;
 		}
-		if (dirent->name_len==1 && p[8] == '.')
-			continue;
-		if (dirent->name_len==2 && p[8] == '.' && p[9] == '.')
-			continue;
-
 		cp = p+8;
-		memset(cp, 'A', dirent->name_len);
 		len = rec_len - dirent->name_len - 8;
 		if (len > 0)
 			memset(cp+dirent->name_len, 0, len);
+		if (dirent->name_len==1 && cp[0] == '.')
+			continue;
+		if (dirent->name_len==2 && cp[0] == '.' && cp[1] == '.')
+			continue;
+
+		memset(cp, 'A', dirent->name_len);
 		len = dirent->name_len;
 		id = name_id[len]++;
 		while ((len > 0) && (id > 0)) {

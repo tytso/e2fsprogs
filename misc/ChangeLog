@@ -1,3 +1,9 @@
+2005-01-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2image.c (scramble_dir_block): Make sure the unused space
+		in the '.' and '..' directory entries are cleared when
+		e2image -rs is specified.
+
 2005-01-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.8.in: Clarified man page about the -c option.
