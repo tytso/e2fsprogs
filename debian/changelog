@@ -1,3 +1,23 @@
+e2fsprogs (1.33+1.34-WIP-2003.05.21-2) unstable; urgency=low
+
+  * Set up FreeBSD configuration defaults (Closes: #195274)
+  * Clarify resize2fs man page (Closes: #195616)
+  * Fix resize2fs to deal with filesystem with bad blocks
+  * Fix spelling error in e2fsck
+  * Add workaround for intl library on Darwin
+  * Fix gcc -Wall nitpicks
+  * Round down the default size of the filesystem for mke2fs and 
+    resize2fs to be a multiple of the pagesize to work around a potential
+    Linux kernel bug
+  * Fix bug in mke2fs where it could die with a floating exception if
+    the device does not support the BLKSSZGET ioctl (Closes: #196734)
+  * Add conflicts against older versions of sysvinit that don't correctly
+    handle an exit code that has the bit #2 set.  (Closes: #183675)
+  * Badblocks will attempt to use O_DIRECT if it is safe to do so.  
+    (Closes: #198006)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 12 Jul 2003 03:16:08 -0400
+
 e2fsprogs (1.33+1.34-WIP-2003.05.21-1) unstable; urgency=low
 
   * Fix problems with compiling e2fsprogs with NLS support on woody 
