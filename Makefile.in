@@ -95,19 +95,19 @@ lib/ext2fs/ext2_types.h: $(DEP_SUBSTITUTE) $(srcdir)/lib/ext2fs/ext2_types.h.in
 	> lib/ext2fs/ext2_types.h
 
 mostlyclean-local:
-	$(RM) -f \#* *~ core MAKELOG 
+	$(RM) -f \#* *~ *.orig core MAKELOG 
 
 clean-local: mostlyclean-local
 
 distclean-local: clean-local
-	$(RM) -f lib/ext2fs/ext2_types.h $(SUBST_CONF) \
+	$(RM) -f $(SUBS) $(SUBST_CONF) \
 		config.status config.log config.cache MCONFIG Makefile \
 		$(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
 realclean-local: distclean-local
 	$(RM) -f configure
 
-check::	check-recursive
+check::	$(SUBS) check-recursive
 
 distribution_tar_file:
 	$(RM) -rf /tmp/dest
