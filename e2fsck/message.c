@@ -135,7 +135,7 @@ static const char *special_inode_name[] =
  * This function does "safe" printing.  It will convert non-printable
  * ASCII characters using '^' and M- notation.
  */
-static void safe_print(const unsigned char *cp, int len)
+static void safe_print(const char *cp, int len)
 {
 	unsigned char	ch;
 

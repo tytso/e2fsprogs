@@ -1,3 +1,9 @@
+1999-10-26    <tytso@valinux.com>
+
+	* debugfs.h: Add declaration for do_features()
+
+	* debugfs.c: Add #incldue of e2p.h to fix gcc warnings.
+
 1999-10-25    <tytso@valinux.com>
 
 	* debugfs.c (do_dirty_filesys): Make the "dirty" command clear the

@@ -34,6 +34,7 @@ extern int optreset;		/* defined by BSD, but not others */
 #include "ss/ss.h"
 #include "debugfs.h"
 #include "uuid/uuid.h"
+#include "e2p/e2p.h"
 
 #include "../version.h"
 
