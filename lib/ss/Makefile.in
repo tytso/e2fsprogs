@@ -173,28 +173,30 @@ $(top_builddir)/lib/ss/ss_err.h: ss_err.h
 # the Makefile.in file
 #
 invocation.o: $(srcdir)/invocation.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 help.o: $(srcdir)/help.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 execute_cmd.o: $(srcdir)/execute_cmd.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 listen.o: $(srcdir)/listen.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 parse.o: $(srcdir)/parse.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 error.o: $(srcdir)/error.c $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/ss_internal.h $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
+ $(srcdir)/ss_internal.h $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h \
+ $(top_srcdir)/lib/et/com_err.h
 prompt.o: $(srcdir)/prompt.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 request_tbl.o: $(srcdir)/request_tbl.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 list_rqs.o: $(srcdir)/list_rqs.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 pager.o: $(srcdir)/pager.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 requests.o: $(srcdir)/requests.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 data.o: $(srcdir)/data.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h $(top_srcdir)/lib/et/com_err.h
 get_readline.o: $(srcdir)/get_readline.c $(srcdir)/ss_internal.h \
- $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
+ $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h \
+ $(top_srcdir)/lib/et/com_err.h
