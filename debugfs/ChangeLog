@@ -1,3 +1,12 @@
+2004-12-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* setfields.c: Renamed from setsuper.c
+		Added support to set date/time fields.
+		Added support for setting superblock values wtime, mtime,
+			lastcheck, and mkfs_time as date/time fields.
+		Added support for the set_inode command.
+	* debugfs.h, debug_cmds.ct, debugfs.8.in: Added set_inode command
+
 2004-12-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* setsuper.c: Add definitions for newer superblock fields:

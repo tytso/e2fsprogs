@@ -1,5 +1,12 @@
 /*
- * setsuper.c --- set a superblock value
+ * set_fields.c --- set a superblock value
+ * 
+ * Copyright (C) 2000, 2001, 2002, 2003, 2004 by Theodore Ts'o.
+ * 
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -21,21 +28,23 @@
 #include "e2p/e2p.h"
 
 static struct ext2_super_block set_sb;
+static struct ext2_inode set_inode;
 
-struct super_set_info {
+struct field_set_info {
 	const char	*name;
 	void	*ptr;
 	unsigned int	size;
-	errcode_t (*func)(struct super_set_info *info, char *arg);
+	errcode_t (*func)(struct field_set_info *info, char *arg);
 };
 
-static errcode_t parse_uint(struct super_set_info *info, char *arg);
-static errcode_t parse_int(struct super_set_info *info, char *arg);
-static errcode_t parse_string(struct super_set_info *info, char *arg);
-static errcode_t parse_uuid(struct super_set_info *info, char *arg);
-static errcode_t parse_hashalg(struct super_set_info *info, char *arg);
+static errcode_t parse_uint(struct field_set_info *info, char *arg);
+static errcode_t parse_int(struct field_set_info *info, char *arg);
+static errcode_t parse_string(struct field_set_info *info, char *arg);
+static errcode_t parse_uuid(struct field_set_info *info, char *arg);
+static errcode_t parse_hashalg(struct field_set_info *info, char *arg);
+static errcode_t parse_time(struct field_set_info *info, char *arg);
 
-static struct super_set_info super_fields[] = {
+static struct field_set_info super_fields[] = {
 	{ "inodes_count", &set_sb.s_inodes_count, 4, parse_uint },
 	{ "blocks_count", &set_sb.s_blocks_count, 4, parse_uint },
 	{ "r_blocks_count", &set_sb.s_r_blocks_count, 4, parse_uint },
@@ -47,15 +56,15 @@ static struct super_set_info super_fields[] = {
 	{ "blocks_per_group", &set_sb.s_blocks_per_group, 4, parse_uint },
 	{ "frags_per_group", &set_sb.s_frags_per_group, 4, parse_uint },
 	{ "inodes_per_group", &set_sb.s_inodes_per_group, 4, parse_uint },
-	/* s_mtime (time_t) */
-	/* s_wtime (time_t) */
+	{ "mtime", &set_sb.s_mtime, 4, parse_time },
+	{ "wtime", &set_sb.s_wtime, 4, parse_time },
 	{ "mnt_count", &set_sb.s_mnt_count, 2, parse_uint },
 	{ "max_mnt_count", &set_sb.s_max_mnt_count, 2, parse_int },
 	/* s_magic */
 	{ "state", &set_sb.s_state, 2, parse_uint },
 	{ "errors", &set_sb.s_errors, 2, parse_uint },
 	{ "minor_rev_level", &set_sb.s_minor_rev_level, 2, parse_uint },
-	/* s_lastcheck (time_t) */
+	{ "lastcheck", &set_sb.s_lastcheck, 4, parse_time },
 	{ "checkinterval", &set_sb.s_checkinterval, 4, parse_uint },
 	{ "creator_os", &set_sb.s_creator_os, 4, parse_uint },
 	{ "rev_level", &set_sb.s_rev_level, 4, parse_uint },
@@ -89,24 +98,67 @@ static struct super_set_info super_fields[] = {
 	/* s_reserved_word_pad */
 	{ "default_mount_opts", &set_sb.s_default_mount_opts, 4, parse_uint },
 	{ "first_meta_bg", &set_sb.s_first_meta_bg, 4, parse_uint },
-	{ "mkfs_time", &set_sb.s_mkfs_time, 4, parse_uint },
+	{ "mkfs_time", &set_sb.s_mkfs_time, 4, parse_time },
 	{ 0, 0, 0, 0 }
 };
 
-static struct super_set_info *find_field(char *field)
+static struct field_set_info inode_fields[] = {
+	{ "inodes_count", &set_sb.s_inodes_count, 4, parse_uint },
+	{ "mode", &set_inode.i_mode, 2, parse_uint },
+	{ "uid", &set_inode.i_uid, 2, parse_uint },
+	{ "size", &set_inode.i_uid, 4, parse_uint },
+	{ "atime", &set_inode.i_atime, 4, parse_time },
+	{ "ctime", &set_inode.i_ctime, 4, parse_time },
+	{ "mtime", &set_inode.i_mtime, 4, parse_time },
+	{ "dtime", &set_inode.i_dtime, 4, parse_time },
+	{ "gid", &set_inode.i_gid, 2, parse_uint },
+	{ "links_count", &set_inode.i_links_count, 2, parse_uint },
+	{ "blocks", &set_inode.i_blocks, 4, parse_uint },
+	{ "flags", &set_inode.i_flags, 4, parse_uint },
+	{ "translator", &set_inode.osd1.hurd1.h_i_translator, 4, parse_uint },
+	{ "block[0]", &set_inode.i_block[0], 4, parse_uint },
+	{ "block[1]", &set_inode.i_block[1], 4, parse_uint },
+	{ "block[2]", &set_inode.i_block[2], 4, parse_uint },
+	{ "block[3]", &set_inode.i_block[3], 4, parse_uint },
+	{ "block[4]", &set_inode.i_block[4], 4, parse_uint },
+	{ "block[5]", &set_inode.i_block[5], 4, parse_uint },
+	{ "block[6]", &set_inode.i_block[6], 4, parse_uint },
+	{ "block[7]", &set_inode.i_block[7], 4, parse_uint },
+	{ "block[8]", &set_inode.i_block[8], 4, parse_uint },
+	{ "block[9]", &set_inode.i_block[9], 4, parse_uint },
+	{ "block[10]", &set_inode.i_block[10], 4, parse_uint },
+	{ "block[11]", &set_inode.i_block[11], 4, parse_uint },
+	{ "block[12]", &set_inode.i_block[12], 4, parse_uint },
+	{ "block[13]", &set_inode.i_block[13], 4, parse_uint },
+	{ "block[14]", &set_inode.i_block[14], 4, parse_uint },
+	{ "generation", &set_inode.i_generation, 4, parse_uint },
+	{ "file_acl", &set_inode.i_file_acl, 4, parse_uint },
+	{ "dir_acl", &set_inode.i_dir_acl, 4, parse_uint },
+	{ "faddr", &set_inode.i_faddr, 4, parse_uint },
+	{ "frag", &set_inode.osd2.linux2.l_i_frag, 8, parse_uint },
+	{ "fsize", &set_inode.osd2.linux2.l_i_fsize, 8, parse_uint },
+	{ "uid_high", &set_inode.osd2.linux2.l_i_uid_high, 8, parse_uint },
+	{ "gid_high", &set_inode.osd2.linux2.l_i_gid_high, 8, parse_uint },
+	{ "author", &set_inode.osd2.hurd2.h_i_author, 8, parse_uint },
+	{ 0, 0, 0, 0 }
+};
+
+
+static struct field_set_info *find_field(struct field_set_info *fields,
+					 char *field)
 {
-	struct super_set_info *ss;
+	struct field_set_info *ss;
 
 	if (strncmp(field, "s_", 2) == 0)
 		field += 2;
-	for (ss = super_fields ; ss->name ; ss++) {
+	for (ss = fields ; ss->name ; ss++) {
 		if (strcmp(ss->name, field) == 0)
 			return ss;
 	}
 	return NULL;
 }
 
-static errcode_t parse_uint(struct super_set_info *info, char *arg)
+static errcode_t parse_uint(struct field_set_info *info, char *arg)
 {
 	unsigned long	num;
 	char *tmp;
@@ -137,7 +189,7 @@ static errcode_t parse_uint(struct super_set_info *info, char *arg)
 	return 0;
 }
 
-static errcode_t parse_int(struct super_set_info *info, char *arg)
+static errcode_t parse_int(struct field_set_info *info, char *arg)
 {
 	long	num;
 	char *tmp;
@@ -168,7 +220,7 @@ static errcode_t parse_int(struct super_set_info *info, char *arg)
 	return 0;
 }
 
-static errcode_t parse_string(struct super_set_info *info, char *arg)
+static errcode_t parse_string(struct field_set_info *info, char *arg)
 {
 	char	*cp = (char *) info->ptr;
 
@@ -181,7 +233,39 @@ static errcode_t parse_string(struct super_set_info *info, char *arg)
 	return 0;
 }
 
-static errcode_t parse_uuid(struct super_set_info *info, char *arg)
+static errcode_t parse_time(struct field_set_info *info, char *arg)
+{
+	struct	tm	ts;
+	__u32		*ptr32;
+
+	ptr32 = (__u32 *) info->ptr;
+
+	if (strcmp(arg, "now") == 0) {
+		*ptr32 = time(0);
+		return 0;
+	}
+	memset(&ts, 0, sizeof(ts));
+#ifdef HAVE_STRPTIME
+	strptime(arg, "%Y%m%d%H%M%S", &ts);
+#else
+	sscanf(arg, "%4d%2d%2d%2d%2d%2d", &ts.tm_year, &ts.tm_mon,
+	       &ts.tm_mday, &ts.tm_hour, &ts.tm_min, &ts.tm_sec);
+	ts.tm_year -= 1900;
+	ts.tm_mon -= 1;
+	if (ts.tm_year < 0 || ts.tm_mon < 0 || ts.tm_mon > 11 ||
+	    ts.tm_mday < 0 || ts.tm_mday > 31 || ts.tm_hour > 23 ||
+	    ts.tm_min > 59 || ts.tm_sec > 61)
+		ts.tm_mday = 0;
+#endif
+	if (ts.tm_mday == 0) {
+		/* Try it as an integer... */
+		return parse_uint(info, arg);
+	}
+	*ptr32 = mktime(&ts);
+	return 0;
+}
+
+static errcode_t parse_uuid(struct field_set_info *info, char *arg)
 {
 	unsigned char *	p = (unsigned char *) info->ptr;
 	
@@ -199,7 +283,7 @@ static errcode_t parse_uuid(struct super_set_info *info, char *arg)
 	return 0;
 }
 
-static errcode_t parse_hashalg(struct super_set_info *info, char *arg)
+static errcode_t parse_hashalg(struct field_set_info *info, char *arg)
 {
 	int	hashv;
 	unsigned char	*p = (unsigned char *) info->ptr;
@@ -214,13 +298,24 @@ static errcode_t parse_hashalg(struct super_set_info *info, char *arg)
 }
 
 
-static void print_possible_fields(void)
+static void print_possible_fields(struct field_set_info *fields)
 {
-	struct super_set_info *ss;
-	const char	*type;
+	struct field_set_info *ss;
+	const char	*type, *cmd;
+	FILE *f;
 
-	printf("Superblock fields supported by the set_super_value command:\n");
-	for (ss = super_fields ; ss->name ; ss++) {
+	if (fields == super_fields) {
+		type = "Superblock";
+		cmd = "set_super_value";
+	} else {
+		type = "Inode";
+		cmd = "set_inode";
+	}
+	f = open_pager();
+
+	fprintf(f, "%s fields supported by the %s command:\n", type, cmd);
+
+	for (ss = fields ; ss->name ; ss++) {
 		type = "unknown";
 		if (ss->func == parse_string)
 			type = "string";
@@ -232,8 +327,11 @@ static void print_possible_fields(void)
 			type = "UUID";
 		else if (ss->func == parse_hashalg)
 			type = "hash algorithm";
-		printf("\t%-20s\t%s\n", ss->name, type);
+		else if (ss->func == parse_time)
+			type = "date/time";
+		fprintf(f, "\t%-20s\t%s\n", ss->name, type);
 	}
+	close_pager(f);
 }
 
 
@@ -242,10 +340,10 @@ void do_set_super(int argc, char *argv[])
 	const char *usage = "<field> <value>\n"
 		"\t\"set_super_value -l\" will list the names of "
 		"superblock fields\n\twhich can be set.";
-	static struct super_set_info *ss;
+	static struct field_set_info *ss;
 	
 	if ((argc == 2) && !strcmp(argv[1], "-l")) {
-		print_possible_fields();
+		print_possible_fields(super_fields);
 		return;
 	}
 
@@ -253,7 +351,7 @@ void do_set_super(int argc, char *argv[])
 				usage, CHECK_FS_RW))
 		return;
 
-	if ((ss = find_field(argv[1])) == 0) {
+	if ((ss = find_field(super_fields, argv[1])) == 0) {
 		com_err(argv[0], 0, "invalid field specifier: %s", argv[1]);
 		return;
 	}
@@ -261,5 +359,40 @@ void do_set_super(int argc, char *argv[])
 	if (ss->func(ss, argv[2]) == 0) {
 		*current_fs->super = set_sb;
 		ext2fs_mark_super_dirty(current_fs);
+	}
+}
+
+void do_set_inode(int argc, char *argv[])
+{
+	const char *usage = "<inode> <field> <value>\n"
+		"\t\"set_inode -l\" will list the names of "
+		"the fields in an ext2 inode\n\twhich can be set.";
+	static struct field_set_info *ss;
+	ext2_ino_t ino;
+	
+	if ((argc == 2) && !strcmp(argv[1], "-l")) {
+		print_possible_fields(inode_fields);
+		return;
+	}
+
+	if (common_args_process(argc, argv, 4, 4, "set_inode",
+				usage, CHECK_FS_RW))
+		return;
+
+	if ((ss = find_field(inode_fields, argv[2])) == 0) {
+		com_err(argv[0], 0, "invalid field specifier: %s", argv[2]);
+		return;
+	}
+
+	ino = string_to_inode(argv[1]);
+	if (!ino)
+		return;
+
+	if (debugfs_read_inode(ino, &set_inode, argv[1]))
+		return;
+
+	if (ss->func(ss, argv[3]) == 0) {
+		if (debugfs_write_inode(ino, &set_inode, argv[1]))
+			return;
 	}
 }
