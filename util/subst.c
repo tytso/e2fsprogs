@@ -113,10 +113,10 @@ static void replace_string(char *begin, char *end, char *newstr)
 
 static void substitute_line(char *line)
 {
-	char	*ptr, *name_ptr, *end_ptr, *cp, ch;
+	char	*ptr, *name_ptr, *end_ptr;
 	struct subst_entry *ent;
 	char	*replace_name;
-	int	len, replace_len;
+	int	len;
 
 	/*
 	 * Expand all @FOO@ substitutions

@@ -1,3 +1,7 @@
+1999-10-26    <tytso@valinux.com>
+
+	* subst.c (substitute_line): Removed some unused variables.
+
 1999-10-22    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.16
