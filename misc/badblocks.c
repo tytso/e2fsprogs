@@ -64,7 +64,7 @@ static int force = 0;			/* force check of mounted device */
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] device [blocks_count [start_count]]\n"),
+	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] device [last_block [start_count]]\n"),
 		 program_name);
 	exit (1);
 }
@@ -219,7 +219,7 @@ static void flush_bufs(void)
 		com_err(program_name, retval, _("during ext2fs_sync_device"));
 }
 
-static unsigned int test_ro (int dev, unsigned long blocks_count,
+static unsigned int test_ro (int dev, unsigned long last_block,
 			     int block_size, unsigned long from_count,
 			     unsigned long blocks_at_once)
 {
@@ -249,18 +249,18 @@ static unsigned int test_ro (int dev, unsigned long blocks_count,
 	if (v_flag) {
 	    fprintf(stderr, _("Checking for bad blocks in read-only mode\n"));
 	    fprintf (stderr, _("From block %lu to %lu\n"), from_count,
-		     blocks_count);
+		     last_block);
 	}
 	try = blocks_at_once;
 	currently_testing = from_count;
-	num_blocks = blocks_count;
+	num_blocks = last_block;
 	if (s_flag || v_flag > 1) {
 		fprintf(stderr,
 			_("Checking for bad blocks (read-only test): "));
 		if (v_flag <= 1)
 			alarm_intr(SIGALRM);
 	}
-	while (currently_testing < blocks_count)
+	while (currently_testing < last_block)
 	{
 		if (next_bad) {
 			if (currently_testing == next_bad) {
@@ -272,8 +272,8 @@ static unsigned int test_ro (int dev, unsigned long blocks_count,
 			else if (currently_testing + try > next_bad)
 				try = next_bad - currently_testing;
 		}
-		if (currently_testing + try > blocks_count)
-			try = blocks_count - currently_testing;
+		if (currently_testing + try > last_block)
+			try = last_block - currently_testing;
 		got = do_read (dev, blkbuf, try, block_size, currently_testing);
 		currently_testing += got;
 		if (got == try) {
@@ -299,7 +299,7 @@ static unsigned int test_ro (int dev, unsigned long blocks_count,
 	return bb_count;
 }
 
-static unsigned int test_rw (int dev, unsigned long blocks_count,
+static unsigned int test_rw (int dev, unsigned long last_block,
 			     int block_size, unsigned long from_count,
 			     unsigned long blocks_at_once)
 {
@@ -321,19 +321,19 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 		fprintf(stderr,
 			_("Checking for bad blocks in read-write mode\n"));
 		fprintf(stderr, _("From block %lu to %lu\n"),
-			 from_count, blocks_count);
+			 from_count, last_block);
 	}
 	for (i = 0; i < sizeof (pattern); i++) {
 		memset (buffer, pattern[i], block_size);
 		if (s_flag | v_flag)
 			fprintf (stderr, _("Writing pattern 0x%08x: "),
 				 *((int *) buffer));
-		num_blocks = blocks_count;
+		num_blocks = last_block;
 		currently_testing = from_count;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 		for (;
-		     currently_testing < blocks_count;
+		     currently_testing < last_block;
 		     currently_testing++)
 		{
 			if (ext2fs_llseek (dev, (ext2_loff_t) currently_testing *
@@ -353,12 +353,12 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 		flush_bufs();
 		if (s_flag | v_flag)
 			fprintf (stderr, _("Reading and comparing: "));
-		num_blocks = blocks_count;
+		num_blocks = last_block;
 		currently_testing = from_count;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 		for (;
-		     currently_testing < blocks_count;
+		     currently_testing < last_block;
 		     currently_testing++)
 		{
 			if (ext2fs_llseek (dev, (ext2_loff_t) currently_testing *
@@ -389,7 +389,7 @@ struct saved_blk_record {
 	int	num;
 };
 
-static unsigned int test_nd (int dev, unsigned long blocks_count,
+static unsigned int test_nd (int dev, unsigned long last_block,
 			     int block_size, unsigned long from_count,
 			     unsigned long blocks_at_once)
 {
@@ -437,7 +437,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	if (v_flag) {
 	    fprintf (stderr,
 		     _("Checking for bad blocks in non-destructive read-write mode\n"));
-	    fprintf (stderr, _("From block %lu to %lu\n"), from_count, blocks_count);
+	    fprintf (stderr, _("From block %lu to %lu\n"), from_count, last_block);
 	}
 	if (s_flag || v_flag > 1) {
 		fprintf(stderr, _("Checking for bad blocks (non-destructive read-write test): "));
@@ -469,9 +469,9 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	save_ptr = blkbuf;
 	test_ptr = blkbuf + (blocks_at_once * block_size);
 	currently_testing = from_count;
-	num_blocks = blocks_count;
+	num_blocks = last_block;
 
-	while (currently_testing < blocks_count) {
+	while (currently_testing < last_block) {
 		try = blocks_at_once - buf_used;
 		if (next_bad) {
 			if (currently_testing == next_bad) {
@@ -483,8 +483,8 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 			else if (currently_testing + try > next_bad)
 				try = next_bad - currently_testing;
 		}
-		if (currently_testing + try > blocks_count)
-			try = blocks_count - currently_testing;
+		if (currently_testing + try > last_block)
+			try = last_block - currently_testing;
 		got = do_read (dev, save_ptr, try, block_size,
 			       currently_testing);
 		if (got == 0) {
@@ -523,7 +523,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		 * back and get some more blocks.
 		 */
 		if ((buf_used != blocks_at_once) &&
-		    (currently_testing < blocks_count))
+		    (currently_testing < last_block))
 			continue;
 
 		flush_bufs();
@@ -638,7 +638,7 @@ int main (int argc, char ** argv)
 	FILE * in = NULL;
 	int block_size = 1024;
 	unsigned long blocks_at_once = 16;
-	blk_t blocks_count, from_count;
+	blk_t last_block, from_count;
 	int num_passes = 0;
 	int passes_clean = 0;
 	int dev;
@@ -724,7 +724,7 @@ int main (int argc, char ** argv)
 	if (optind > argc - 1) {
 		errcode = ext2fs_get_device_size(device_name,
 						 block_size,
-						 &blocks_count);
+						 &last_block);
 		if (errcode == EXT2_ET_UNIMPLEMENTED) {
 			com_err(program_name, 0,
 				_("Couldn't determine device size; you "
@@ -737,7 +737,7 @@ int main (int argc, char ** argv)
 			exit(1);
 		}
 	} else {
-		blocks_count = strtoul (argv[optind], &tmp, 0);
+		last_block = strtoul (argv[optind], &tmp, 0);
 		if (*tmp) {
 			com_err (program_name, 0, _("bad blocks count - %s"),
 				 argv[optind]);
@@ -753,9 +753,9 @@ int main (int argc, char ** argv)
 			exit (1);
 		}
 	} else from_count = 0;
-	if (from_count >= blocks_count) {
+	if (from_count >= last_block) {
 	    com_err (program_name, 0, _("bad blocks range: %lu-%lu"),
-		     from_count, blocks_count);
+		     from_count, last_block);
 	    exit (1);
 	}
 	if (w_flag)
@@ -839,7 +839,7 @@ int main (int argc, char ** argv)
 	do {
 		unsigned int bb_count;
 
-		bb_count = test_func(dev, blocks_count, block_size,
+		bb_count = test_func(dev, last_block, block_size,
 				     from_count, blocks_at_once);
 		if (bb_count)
 			passes_clean = 0;

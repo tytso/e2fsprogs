@@ -1,3 +1,12 @@
+2001-05-05  Theodore Tso  <tytso@valinux.com>
+
+	* badblocks.8.in: Fixed man page to describe the first optional
+		parameter to badblocks as last_block, instead of
+		num_blocks.  (Debian bug #87216)
+
+	* badblocks.c: Change the blocks_count variable to be last_count,
+		which is a more accurate description of the variable.
+
 2001-05-03  Theodore Tso  <tytso@valinux.com>
 
 	* e2image.8.in: New manual page

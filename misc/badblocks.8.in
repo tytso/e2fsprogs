@@ -29,7 +29,7 @@ badblocks \- search a device for bad blocks
 ]
 .I device
 [
-.I blocks-count
+.I last-block
 ] [
 .I start-block 
 ]
@@ -39,11 +39,13 @@ is used to search for bad blocks on a device (usually a disk partition).
 .I device
 is the special file corresponding to the device (e.g
 .IR /dev/hdc1 ).
-.I blocks-count
-is the number of blocks on the device; if it is not specified, the size
-of the device is used as a default.
-.I start-block is an optional parameter specifying the starting block number
-for the test, which allows the testing to start in the middle of the disk.
+.I last-block
+is the last block to be checked; if it is not specified, the last block
+on the device is used as a default.
+.I start-block
+is an optional parameter specifying the starting block number
+for the test, which allows the testing to start in the middle of the
+disk.  If it is not specified the first block on the disk is used as a default.
 .SH OPTIONS
 .TP
 .BI \-b " block-size"
