@@ -58,7 +58,7 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ext2fs_free_icount(ctx->inode_link_info);
 		ctx->inode_link_info = 0;
 	}
-	if (ctx->fs->dblist) {
+	if (ctx->fs && ctx->fs->dblist) {
 		ext2fs_free_dblist(ctx->fs->dblist);
 		ctx->fs->dblist = 0;
 	}

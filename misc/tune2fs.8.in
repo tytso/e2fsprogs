@@ -112,7 +112,7 @@ doing!
 set the user who can benefit from the reserved blocks.
 .I user
 can be a numerical uid or a user name.
-.IP
+.TP
 .I -C mount-count
 set the number of times the filesystem has been mounted.
 .TP

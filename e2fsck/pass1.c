@@ -110,6 +110,10 @@ static void unwind_pass1(ext2_filsys fs)
 /*
  * Check to make sure a device inode is real.  Returns 1 if the device
  * checks out, 0 if not.
+ *
+ * Note: this routine is now also used to check FIFO's and Sockets,
+ * since they have the same requirement; the i_block fields should be
+ * zero. 
  */
 int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 {
@@ -424,9 +428,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 				goto next;
 			}
 		}
-		else if (LINUX_S_ISFIFO (inode.i_mode))
+		else if (LINUX_S_ISFIFO (inode.i_mode) &&
+			  e2fsck_pass1_check_device_inode(&inode))
 			ctx->fs_fifo_count++;
-		else if (LINUX_S_ISSOCK (inode.i_mode))
+		else if ((LINUX_S_ISSOCK (inode.i_mode)) &&
+			 e2fsck_pass1_check_device_inode(&inode))
 		        ctx->fs_sockets_count++;
 		else {
 			if (!ctx->inode_bad_map)

@@ -675,6 +675,16 @@ static const struct e2fsck_problem problem_table[] = {
 	  "@d @e for '.' is big.  ",
 	  PROMPT_SPLIT, PR_NO_OK },
 
+	/* Illegal FIFO inode */
+	{ PR_2_BAD_FIFO,
+	  "@i %i (%Q) is an @I FIFO.\n",
+	  PROMPT_CLEAR, 0 },
+
+	/* Illegal socket inode */
+	{ PR_2_BAD_SOCKET,
+	  "@i %i (%Q) is an @I socket.\n",
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

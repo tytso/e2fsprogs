@@ -1,3 +1,16 @@
+1998-11-13  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* tune2fs.8.in: Fix minor display bug in the nroff.
+
+	* mke2fs.c (show_stats, write_inode_tables): Use the log10
+		function to calculate the display of block numbers so that
+		things look nice on an 80 character display.
+
+1998-10-12  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (usage): Add the sparse-super-flag to the usage
+		message. 
+
 1998-07-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.12

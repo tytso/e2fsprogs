@@ -402,6 +402,12 @@ struct problem_context {
 /* Directory entry for '.' is big.  Split? */
 #define PR_2_SPLIT_DOT		0x0200024
 
+/* Illegal FIFO */
+#define PR_2_BAD_FIFO		0x020025
+
+/* Illegal socket */
+#define PR_2_BAD_SOCKET		0x020026
+
 /*
  * Pass 3 errors
  */

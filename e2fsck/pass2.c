@@ -615,6 +615,14 @@ static int process_bad_inode(e2fsck_t ctx, ino_t dir, ino_t ino)
 	    && !e2fsck_pass1_check_device_inode(&inode))
 		problem = PR_2_BAD_BLOCK_DEV;
 
+	if (LINUX_S_ISFIFO(inode.i_mode)
+	    && !e2fsck_pass1_check_device_inode(&inode))
+		problem = PR_2_BAD_FIFO;
+		
+	if (LINUX_S_ISSOCK(inode.i_mode)
+	    && !e2fsck_pass1_check_device_inode(&inode))
+		problem = PR_2_BAD_SOCKET;
+
 	if (problem) {
 		if (fix_problem(ctx, problem, &pctx)) {
 			deallocate_inode(ctx, ino, 0);

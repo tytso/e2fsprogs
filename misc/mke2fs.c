@@ -91,7 +91,7 @@ static void usage(NOARGS)
 	"[-m reserved-blocks-percentage] [-qvSV]\n\t"
 	"[-o creator-os] [-g blocks-per-group] [-L volume-label]\n\t"
 	"[-M last-mounted-directory] [-r fs-revision] [-R raid_opts]\n\t"
-	"device [blocks-count]\n",
+	"[-s sparse-super-flag] device [blocks-count]\n",
 		program_name);
 	exit(1);
 }
@@ -105,6 +105,15 @@ static int log2(int arg)
 		l++;
 		arg >>= 1;
 	}
+	return l;
+}
+
+static int log10(unsigned int arg)
+{
+	int	l;
+
+	for (l=0; arg ; l++)
+		arg = arg / 10;
 	return l;
 }
 
@@ -139,8 +148,8 @@ static void check_plausibility(NOARGS)
 		return;
 	} else if ((MAJOR(s.st_rdev) == HD_MAJOR &&
 		    MINOR(s.st_rdev)%64 == 0) ||
-		   (MAJOR(s.st_rdev) == SCSI_DISK_MAJOR &&
-		    MINOR(s.st_rdev)%16 == 0)) {
+		   (SCSI_BLK_MAJOR(MAJOR(s.st_rdev)) &&
+		       MINOR(s.st_rdev)%16 == 0)) {
 		printf("%s is entire device, not just one partition!\n", 
 		       device_name);
 		proceed_question();
@@ -308,6 +317,7 @@ static void write_inode_tables(ext2_filsys fs)
 	blk_t		blk;
 	int		i, j, num, count;
 	char		*buf;
+	char		format[20], backup[80];
 
 	buf = malloc(fs->blocksize * STRIDE_LENGTH);
 	if (!buf) {
@@ -315,12 +325,22 @@ static void write_inode_tables(ext2_filsys fs)
 		exit(1);
 	}
 	memset(buf, 0, fs->blocksize * STRIDE_LENGTH);
-	
+
+	/*
+	 * Figure out how many digits we need
+	 */
+	i = log10(fs->group_desc_count);
+	sprintf(format, "%%%dd/%%%dld", i, i);
+	memset(backup, '\b', sizeof(backup)-1);
+	backup[sizeof(backup)-1] = 0;
+	if ((2*i)+1 < sizeof(backup))
+		backup[(2*i)+1] = 0;
+
 	if (!quiet)
 		printf("Writing inode tables: ");
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (!quiet)
-			printf("%4d/%4ld", i, fs->group_desc_count);
+			printf(format, i, fs->group_desc_count);
 		
 		blk = fs->group_desc[i].bg_inode_table;
 		num = fs->inode_blocks_per_group;
@@ -337,11 +357,11 @@ static void write_inode_tables(ext2_filsys fs)
 				       count, blk, error_message(retval));
 		}
 		if (!quiet) 
-			printf("\b\b\b\b\b\b\b\b\b");
+			fputs(backup, stdout);
 	}
 	free(buf);
 	if (!quiet)
-		printf("done     \n");
+		fputs("done                            \n", stdout);
 }
 
 static void create_root_dir(ext2_filsys fs)
@@ -453,7 +473,7 @@ static void show_stats(ext2_filsys fs)
 	struct ext2fs_sb 	*s = (struct ext2fs_sb *) fs->super;
 	char 			buf[80];
 	blk_t			group_block;
-	int			i, col_left;
+	int			i, need, col_left;
 	
 	if (param.s_blocks_count != s->s_blocks_count)
 		printf("warning: %d blocks unused.\n\n",
@@ -497,10 +517,12 @@ static void show_stats(ext2_filsys fs)
 		group_block += s->s_blocks_per_group;
 		if (!ext2fs_bg_has_super(fs, i))
 			continue;
-		if (!col_left--) {
+		need = log10(group_block) + 2;
+		if (need > col_left) {
 			printf("\n\t");
-			col_left = 6;
+			col_left = 72;
 		}
+		col_left -= need;
 		printf("%u", group_block);
 		if (i != fs->group_desc_count - 1)
 			printf(", ");

@@ -1,3 +1,21 @@
+1998-10-28  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* unix.c (main): Move ext2fs_close() after e2fsck_free_context()
+		since e2fsck_free_context may reference data in ctx->fs.
+
+	* e2fsck.c (e2fsck_reset_context): Make sure ctx->fs is non-NULL
+		before checking ctx->fs->dblist.
+
+1998-10-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (e2fsck_pass1): Use the device check subroutine on
+		FIFO's and Socket's, so that we catch bogus immutable inodes.
+
+	* pass2.c (process_bad_inode): Process bad socket and fifo's.
+
+	* problem.h, problem.c: Define new problem codes PR_2_BAD_FIFO and
+		PR_2_BAD_SOCKET.
+
 1998-09-02  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* problem.c: Add PR_3_NO_DIRINFO error code.

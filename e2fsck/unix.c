@@ -693,7 +693,6 @@ restart:
 	show_stats(ctx);
 
 	e2fsck_write_bitmaps(ctx);
-	ext2fs_close(fs);
 	
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME)
@@ -701,6 +700,7 @@ restart:
 #endif
 
 	e2fsck_free_context(ctx);
+	ext2fs_close(fs);
 	
 	return exit_value;
 }
