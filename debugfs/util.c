@@ -146,12 +146,12 @@ unsigned long parse_ulong(const char *str, const char *cmd,
 	
 	ret = strtoul(str, &tmp, 0);
 	if (*tmp == 0) {
-		if (*err)
+		if (err)
 			*err = 0;
 		return ret;
 	}
 	com_err(cmd, 0, "Bad %s - %s", descr, str);
-	if (*err)
+	if (err)
 		*err = 1;
 	else
 		exit(1);

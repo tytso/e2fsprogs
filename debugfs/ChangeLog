@@ -1,3 +1,10 @@
+2002-04-01    <tytso@snap.thunk.org>
+
+	* util.c (parse_ulong): Fix typo which cases parse_ulong to
+		coredump if the err variable is filled in (for example, if
+		the -b or -s options are passed to the debugfs's
+		command-line invocation).
+
 2002-03-11  Theodore Tso  <tytso@mit.edu>
 
 	* ls.c (list_dir_proc): Fix bug: ls -l fails to print the file
