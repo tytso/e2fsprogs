@@ -1,6 +1,9 @@
-E2fsprogs 1.35-WIP (December 26, 2003) 
-======================================
+E2fsprogs 1.35-WIP (January 31, 2004) 
+=====================================
 
+Fix NLS bug in e2fsck, by avoiding trying to expand an empty string
+(the NLS library will replace "" with the .po header information).
+ 
 Fix a bug in mke2fs which caused -T largefile or -T largefile4 to core
 dump due to a division by zero error.  (Addresses Debian bug #207082)
 
@@ -24,6 +27,10 @@ We now correctly handle the case where there is an overlap between a
 block group descriptor or a superblock and a bad block indirect block.
 In the case where the indirect block is corrupted, we now suggest
 "e2fsck -c".
+
+Fix byte swap bugs in e2fsck that caused the journal backup location 
+in the superblock and symlinks created by SE Linux to be cleared
+by e2fsck on big-endian machines.  (Addresses Debian bug #228723)
 
 E2fsck -c now replaces the current list of bad blocks with the ones
 found by badblocks.
@@ -65,11 +72,18 @@ correct mode bits.  (Addresses Debian Bug: #217456)
 If the environment variables DEBUFS_PAGER and PAGER are not set,
 debugfs now searches for the appropriate pager to use, beginning with
 /usr/bin/pager, and then falling back to 'more' and 'less'.
-(Addresses Debian Bug: #221977)
+(Addresses Debian bug #221977)
+
+Chattr now stops processing options when it sees '--'.  (Addresses
+Debian bug #225188)
 
 Fix regression tests so they work correctly when e2fsprogs is compiled
 with configure --disable-htree.
 
+Fix bug in uuid library when there is no network card and the library
+is generating a time-based uuid.  The random MAC address was not
+correctly generated to be a multicast address.
+ 
 Add compile_et extensions from Heimdall that were missed the first time
 arounded.
 
@@ -116,6 +130,11 @@ aid build process on systems can use invoke GNU make as "gmake".
 Added regression testing for mke2fs.
 
 Fixed gcc -Wall nitpicks.
+
+Fixed various compiler warnings.
+
+Add portability fixes for FreeBSD and for using fsctl under Darwin to
+support ext2 ioctl's.
 
 
 E2fsprogs 1.34 (July 25, 2003)
@@ -298,7 +317,7 @@ makefile to the util/gen-tarball script.
 
 Updated the Turkish .po translation file.
 
-Added heimdall and MIT krb5 extensions to the com_err library to make
+Added Heimdal and MIT krb5 extensions to the com_err library to make
 it more compatible with com_err libraries from those distributions.
 
 Changed dumpe2fs to always display the superblock fields relating to
