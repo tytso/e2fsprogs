@@ -48,6 +48,15 @@ struct ext2_super_block {
 };
 #define ext2magic(s)    ((unsigned int) s.s_magic[0] + (((unsigned int) s.s_magic[1]) << 8))
 
+#define XFS_SUPER_MAGIC "XFSB"
+struct xfs_super_block {
+	unsigned char	s_magic[4];
+	unsigned char	s_dummy[28];
+	unsigned char	s_uuid[16];
+	unsigned char	s_dummy2[60];
+	unsigned char	s_fname[12];
+};
+
 static struct uuidCache_s {
 	struct uuidCache_s *next;
 	char uuid[16];
@@ -55,34 +64,46 @@ static struct uuidCache_s {
 	char *device;
 } *uuidCache = NULL;
 
-/* for now, only ext2 is supported */
+/* for now, only ext2 and xfs are supported */
 static int
 get_label_uuid(const char *device, char **label, char *uuid) {
 
-	/* start with a test for ext2, taken from mount_guess_fstype */
+	/* start with ext2 and xfs tests, taken from mount_guess_fstype */
 	/* should merge these later */
 	int fd;
+	size_t label_size;
+	char *sb_uuid = 0, *sb_label = 0;
 	struct ext2_super_block e2sb;
+	struct xfs_super_block xfsb;
 
 	fd = open(device, O_RDONLY);
 	if (fd < 0)
 		return 1;
 
-	if (lseek(fd, 1024, SEEK_SET) != 1024
-	    || read(fd, (char *) &e2sb, sizeof(e2sb)) != sizeof(e2sb)
-	    || (ext2magic(e2sb) != EXT2_SUPER_MAGIC)) {
+	if (lseek(fd, 1024, SEEK_SET) == 1024
+	    && read(fd, (char *) &e2sb, sizeof(e2sb)) == sizeof(e2sb)
+	    && (ext2magic(e2sb) == EXT2_SUPER_MAGIC)) {
+		sb_uuid = e2sb.s_uuid;
+		sb_label = e2sb.s_volume_name;
+		label_size = sizeof(e2sb.s_volume_name);
+	} else if (lseek(fd, 0, SEEK_SET) == 0
+	    && read(fd, (char *) &xfsb, sizeof(xfsb)) == sizeof(xfsb)
+	    && strncmp((char *) &xfsb.s_magic, XFS_SUPER_MAGIC, 4) == 0) {
+		sb_uuid = xfsb.s_uuid;
+		sb_label = xfsb.s_fname;
+		label_size = sizeof(xfsb.s_fname);
+	} else {
 		close(fd);
 		return 1;
 	}
 
 	close(fd);
-
-	/* superblock is ext2 - now what is its label? */
-	memcpy(uuid, e2sb.s_uuid, sizeof(e2sb.s_uuid));
-
-	*label = calloc(sizeof(e2sb.s_volume_name) + 1, 1);
-	memcpy(*label, e2sb.s_volume_name, sizeof(e2sb.s_volume_name));
-
+	if (sb_uuid)
+		memcpy(uuid, sb_uuid, sizeof(e2sb.s_uuid));
+	if (sb_label) {
+		if ((*label = calloc(label_size + 1, 1)) != NULL)
+			memcpy(*label, sb_label, label_size);
+	}
 	return 0;
 }
 
