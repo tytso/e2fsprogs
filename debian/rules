@@ -42,8 +42,10 @@ package=e2fsprogs
 topdir=$(shell pwd)
 debdir=${topdir}/debian
 tmpdir=${debdir}/tmp
+bfdir=${debdir}/e2fsprogs-bf
 maindir=${debdir}/e2fsprogs
-builddir=${debdir}/BUILD
+stdbuilddir=${debdir}/BUILD-STD
+bfbuilddir=${debdir}/BUILD-BF
 # docdir=${maindir}/usr/share/doc/${package}
 MANDIR=/usr/share/man
 mandir=${tmpdir}${MANDIR}
@@ -70,62 +72,115 @@ else
 CCOPTS += -D__NO_STRING_INLINES
 endif
 
-build: build-stamp
-build-stamp: configure-stamp
-	dh_testdir
-	make -C ${builddir} all pic
-	( cd ${builddir}/doc && \
-	  texi2html -split_chapter ${topdir}/doc/libext2fs.texinfo )
-	( cd ${builddir}/lib/et && make com_err.info && \
-	  texi2html -split_chapter -expandinfo ${topdir}/lib/et/com_err.texinfo )
-	touch build-stamp
+# Try -Os
+BF_CCOPTS = -Os -fomit-frame-pointer
 
-configure-stamp:
+COMMON_CONF_FLAGS =  \
+                --enable-elf-shlibs --enable-dynamic-e2fsck \
+                --enable-nls \
+                --mandir=${MANDIR} --infodir=/usr/share/info
+
+STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression
+
+BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
+	--disable-swapfs --disable-imager \
+	--disable-resizer --disable-debugfs
+
+configure-std-stamp:
 	dh_testdir
-	mkdir -p ${builddir}
+	mkdir -p ${stdbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
-	cd ${builddir} && CFLAGS="${CFLAGS}" \
-		${topdir}/configure --with-ccopts="${CCOPTS}" \
-		--enable-elf-shlibs --enable-dynamic-e2fsck \
-		--enable-nls --enable-compression \
-		--mandir=${MANDIR} --infodir=/usr/share/info
+	cd ${stdbuilddir} && CFLAGS="${CFLAGS}" \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS}
 else
-	cd ${builddir} && CFLAGS="${CFLAGS}" CC="${DEB_HOST_GNU_TYPE}-gcc" \
-		${topdir}/configure --with-ccopts="${CCOPTS}" \
-		--enable-elf-shlibs --enable-dynamic-e2fsck \
-		--enable-nls --enable-compression \
-		--mandir=${MANDIR} --infodir=/usr/share/info \
+	cd ${stdbuilddir} && CFLAGS="${CFLAGS}" CC="${DEB_HOST_GNU_TYPE}-gcc" \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
 endif
-	touch configure-stamp
+	touch configure-std-stamp
+
+configure-bf-stamp:
+	dh_testdir
+	mkdir -p ${bfbuilddir}
+ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
+	cd ${bfbuilddir} && CFLAGS="${CFLAGS}" \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS}
+else
+	cd ${bfbuilddir} && CFLAGS="${CFLAGS}" CC="${DEB_HOST_GNU_TYPE}-gcc" \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
+		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
+endif
+	touch configure-bf-stamp
+
+build: build-std build-bf
+
+build-std: build-std-stamp
+build-std-stamp: configure-std-stamp
+	dh_testdir
+	make -C ${stdbuilddir} all
+	( cd ${stdbuilddir}/doc && \
+	  texi2html -split_chapter ${topdir}/doc/libext2fs.texinfo )
+	( cd ${stdbuilddir}/lib/et && make com_err.info && \
+	  texi2html -split_chapter -expandinfo ${topdir}/lib/et/com_err.texinfo )
+	touch build-std-stamp
+
+build-bf: build-bf-stamp
+build-bf-stamp: configure-bf-stamp
+	dh_testdir
+	make -C ${bfbuilddir} all
+	touch build-bf-stamp
 
 clean:
 	dh_testdir
-	rm -f build-stamp configure-stamp install
-	-make -C ${builddir} -i distclean
-	rm -rf ${builddir}
+	rm -f build-std-stamp configure-std-stamp build-bf-stamp configure-bf-stamp install
+	-make -C ${stdbuilddir} -i distclean
+	-make -C ${bfbuilddir} -i distclean
+	rm -rf ${stdbuilddir} ${bfbuilddir}
 	rm -f doc/libext2fs_*.html lib/et/com_err_*.html debian/*.substvars
 	dh_clean
 
-install: DH_OPTIONS=
-install: build
+install: cleanup install-std install-bf
+
+# This rule allows to factorize the dh_clean between the 2 install rules
+# This must be launched before install-* (if launching them by hand, for
+# exemple) or results are unpredictable
+cleanup:
 	dh_testdir
 	dh_testroot
 	dh_clean -k
+
+install-std: DH_OPTIONS=
+install-std: build
+	dh_testdir
+	dh_testroot
 	dh_installdirs
 
 	mkdir -p ${tmpdir}/sbin
-	make -C ${builddir} install DESTDIR=${tmpdir} INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-  # static libs, pic libs and .h files
-	make -C ${builddir} install-libs install-pic DESTDIR=${tmpdir} LDCONFIG=true
-	mv ${tmpdir}/lib/*.a ${tmpdir}/usr/lib
+	make -C ${stdbuilddir} install DESTDIR=${tmpdir} \
+		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
+  # static libs and .h files
+	make -C ${stdbuilddir} install-libs DESTDIR=${tmpdir} LDCONFIG=true
 
   # statically-linked fsck
-	${INSTALL_PROGRAM} ${builddir}/e2fsck/e2fsck.static ${tmpdir}/sbin
+	${INSTALL_PROGRAM} ${stdbuilddir}/e2fsck/e2fsck.static ${tmpdir}/sbin
 	ln -s e2fsck.8.gz ${mandir}/man8/e2fsck.static.8.gz
 
 	dh_movefiles
 	test -z `find ${tmpdir} -type f`
+
+install-bf: DH_OPTIONS=
+install-bf: build
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+
+	mkdir -p ${bfdir}/sbin
+	make -C ${bfbuilddir} install DESTDIR=${bfdir} \
+		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
+	rm -rf ${bfdir}/usr/share ${bfdir}/usr/lib
+	cd ${bfdir}/sbin && rm -f e2label
+	cd ${bfdir}/usr/bin && rm -f uuidgen
+
 
 binary-indep: 
   # no arch-independant debs.
@@ -135,12 +190,11 @@ binary-arch: install
 	dh_testdir
 	dh_testroot
 
+	rm -f debian/TODO debian/README.Debian
+
   # symlinks to prepare dh_installdocs run
 	mkdir -p ${debdir}/e2fsck-static/usr/share/doc/
 	ln -sf e2fsprogs ${debdir}/e2fsck-static/usr/share/doc/e2fsck-static
-
-	mkdir -p ${debdir}/e2fslibs-pic/usr/share/doc/
-	ln -sf e2fsprogs ${debdir}/e2fslibs-pic/usr/share/doc/e2fslibs-pic
 
 	mkdir -p ${debdir}/e2fslibs-dev/usr/share/doc/e2fsprogs
 	ln -sf e2fsprogs ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev
@@ -158,17 +212,21 @@ binary-arch: install
 	ln -sf libss${SS_MAJOR} ${debdir}/ss-dev/usr/share/doc/ss-dev
 
 	for i in libcomerr${COMERR_MAJOR} libss${SS_MAJOR}; do \
-	  install -m 644 debian/$$i.copyright ${maindir}/usr/share/doc/$$i/copyright ; \
+	  install -m 644 debian/$$i.copyright \
+	    ${maindir}/usr/share/doc/$$i/copyright ; \
 	done
 
 	dh_installdocs
 
+	install -m 644 debian/e2fsprogs.copyright \
+	  ${bfdir}/usr/share/doc/e2fsprogs-bf/copyright
+
   # HTML docs
 	install -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev/html-info/
-	install -p ${builddir}/doc/libext2fs_*.html \
+	install -p ${stdbuilddir}/doc/libext2fs_*.html \
 	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev/html-info/
 	install -d ${debdir}/comerr-dev/usr/share/doc/comerr-dev/html-info/
-	install -p ${builddir}/lib/et/com_err_*.html \
+	install -p ${stdbuilddir}/lib/et/com_err_*.html \
 	   ${debdir}/comerr-dev/usr/share/doc/comerr-dev/html-info/
 
   # texinfo docs
@@ -180,12 +238,12 @@ binary-arch: install
 	dh_installexamples
 	dh_installman
 
-#	dh_installinfo -pcomerr-dev ${builddir}/lib/et/com_err.info
-	dh_installinfo -pe2fslibs-dev ${builddir}/doc/libext2fs.info
+#	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
+	dh_installinfo -pe2fslibs-dev ${stdbuilddir}/doc/libext2fs.info
 
 	dh_undocumented
 
-	DH_OPTIONS= dh_installchangelogs -pe2fsprogs ChangeLog
+	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -pe2fsprogs-bf ChangeLog
 
 	for i in libcomerr${COMERR_MAJOR} libss${SS_MAJOR} ; do \
 	  mkdir -p ${maindir}/usr/share/doc/$$i ; \
@@ -214,7 +272,7 @@ binary-arch: install
 #	dh_makeshlibs
 
 	dh_installdeb
-	dh_shlibdeps -l${builddir}/lib
+	dh_shlibdeps -l${stdbuilddir}/lib
 
 	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev
 	DH_OPTIONS= dh_gencontrol -pcomerr-dev \

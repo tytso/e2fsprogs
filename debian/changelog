@@ -1,3 +1,29 @@
+e2fsprogs (1.21+1.22-WIP-0620-1) unstable; urgency=low
+
+  * New upstream pre-release, critical for big-endian platforms 
+    (Closes: #101752).
+  * Re-applied hurd fix again.
+  * Build e2fsprogs-bf with -Os to gain more space.
+
+ -- Yann Dirson <dirson@debian.org>  Fri, 22 Jun 2001 00:18:40 +0200
+
+e2fsprogs (1.21-1) unstable; urgency=low
+
+  * Final 1.21 release.
+  * Re-applied hurd fix that did not came quickly enough to make it in
+    1.21.
+  * Fixed name of copyright file in e2fsprogs-bf.
+
+ -- Yann Dirson <dirson@debian.org>  Wed, 20 Jun 2001 22:32:08 +0200
+
+e2fsprogs (1.20+1.21-WIP-0614-2) unstable; urgency=low
+
+  * Don't build PIC libs, build a reduced version of the libs instead, in
+    package e2fsprogs-bf.  Made this new package conflict with e2fsprogs.
+  * Compilation fix for the Hurd (Closes: #101361).
+
+ -- Yann Dirson <dirson@debian.org>  Tue, 19 Jun 2001 23:33:25 +0200
+
 e2fsprogs (1.20+1.21-WIP-0614-1) unstable; urgency=low
 
   * New upstream pre-release (Closes: #100559, #100304).

@@ -62,17 +62,18 @@ Description: Universally unique id library - headers and static libraries.
  .
  for more information.
 
-Package: e2fslibs-pic
+Package: e2fsprogs-bf
 Section: devel
 Priority: extra
-Depends: e2fsprogs
+Depends: ${shlibs:Depends}
+Conflicts: e2fsprogs
 Architecture: any
-Description: The PIC versions of ext2fs-related libraries.
- These are the Position-independant-code versions of the libraries
- shiped with e2fsprogs.
+Description: A stripped-down versions of e2fsprogs, for boot-floppies
+ This package is an e2fsprogs package built for a reduced size, so that
+ it can help to save space on installation boot-floppies.
  .
- If you don't know what it's about you don't need this - mostly people
- working on boot-floppies will need this package.
+ Don't attempt to install this package, it has no support for a couple of
+ features you surely want.  Anyway it should refuse to install.
 
 Package: e2fsprogs
 Essential: yes
