@@ -41,9 +41,6 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
-#ifdef HAVE_LINUX_FS_H
-#include <linux/fs.h>
-#endif
 #include <linux/ext2_fs.h>
 #ifdef HAVE_LINUX_MAJOR_H
 #include <linux/major.h>
@@ -138,6 +135,11 @@ static void proceed_question(NOARGS)
 static void check_plausibility(NOARGS)
 {
 #ifdef HAVE_LINUX_MAJOR_H
+#ifndef MAJOR
+#define MAJOR(dev)	((dev)>>8)
+#define MINOR(dev)	((dev) & 0xff)
+#endif
+
 	int val;
 	struct stat s;
 	

@@ -257,9 +257,21 @@ static char *interpret_device(char *spec)
 		dev = get_spec_by_uuid(spec+5);
 	else if (!strncmp(spec, "LABEL=", 6))
 		dev = get_spec_by_volume_label(spec+6);
+	else
+		return spec;
 	if (dev) {
 		free(spec);
-		spec = dev;
+		return (dev);
+	}
+	/*
+	 * Check to see if this was because /proc/partitions isn't
+	 * found.
+	 */
+	if (access("/proc/partitions", R_OK) < 0) {
+		fprintf(stderr, "Couldn't open /proc/partitions: %s\n",
+			strerror(errno));
+		fprintf(stderr, "Is /proc mounted?\n");
+		exit(1);
 	}
 	return spec;
 }

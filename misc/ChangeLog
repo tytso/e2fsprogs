@@ -1,3 +1,16 @@
+2000-02-02  Theodore Ts'o  <tytso@valinux.com>
+
+	* fsck.c (interpret_device): If there was an attempt to interpret
+		a device specification of the type "UUID=" or "LABEL=",
+		and it fails, check to see if /proc/partitions is
+		readable.  If not, print a warning message about /proc
+		perhaps not being mounted, and exit.
+
+	* mke2fs.c (check_plausibility): Remove unneeded #include of
+		linux/fs.h.  Add #define of MAJOR if necessary.
+
+	* partinfo.c: Remove unneeded #include of linux/fs.h
+
 2000-01-19  Theodore Ts'o  <tytso@valinux.com>
 
 	* tune2fs.c (usage): Update the usage message to correctly
