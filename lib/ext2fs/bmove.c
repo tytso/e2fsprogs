@@ -24,6 +24,7 @@ struct process_block_struct {
 	errcode_t		error;
 	char			*buf;
 	int			add_dir;
+	int			flags;
 };
 
 static int process_block(ext2_filsys fs, blk_t	*block_nr,
@@ -65,8 +66,9 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 		*block_nr = block;
 		ext2fs_mark_block_bitmap(pb->alloc_map, block);
 		ret = BLOCK_CHANGED;
-		printf("ino=%ld, blockcnt=%d, %ld->%ld\n", pb->ino,
-		       blockcnt, orig, block);
+		if (pb->flags & EXT2_BMOVE_DEBUG)
+			printf("ino=%ld, blockcnt=%d, %ld->%ld\n", pb->ino,
+			       blockcnt, orig, block);
 	}
 	if (pb->add_dir) {
 		retval = ext2fs_add_dir_block(fs->dblist, pb->ino,
@@ -98,6 +100,7 @@ errcode_t ext2fs_move_blocks(ext2_filsys fs,
 	pb.reserve = reserve;
 	pb.error = 0;
 	pb.alloc_map = alloc_map ? alloc_map : fs->block_map;
+	pb.flags = flags;
 	
 	block_buf = malloc(fs->blocksize * 4);
 	if (!block_buf)

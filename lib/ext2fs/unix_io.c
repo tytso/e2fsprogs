@@ -265,8 +265,7 @@ error_out:
 }
 
 /*
- * Flush data buffers to disk.  Since we are currently using a
- * write-through cache, this is a no-op.
+ * Flush data buffers to disk.  
  */
 static errcode_t unix_flush(io_channel channel)
 {
@@ -276,6 +275,7 @@ static errcode_t unix_flush(io_channel channel)
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 	
+	fsync(data->dev);
 	return 0;
 }
 

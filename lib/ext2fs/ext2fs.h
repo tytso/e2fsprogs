@@ -202,6 +202,7 @@ struct struct_ext2_filsys {
  * Flags for ext2fs_move_blocks
  */
 #define EXT2_BMOVE_GET_DBLIST	0x0001	
+#define EXT2_BMOVE_DEBUG	0x0002
 
 /*
  * Return flags for the directory iterator functions

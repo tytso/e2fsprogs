@@ -1,3 +1,8 @@
+Sat Jun 14 01:39:13 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* unix_io.c (unix_flush): Make the io_channel flush function do a
+		fsync to flush the kernel buffers to disk.
+
 Wed Jun 11 18:25:31 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* inode.c (ext2fs_inode_scan_goto_blockgroup): Fix bug; the
