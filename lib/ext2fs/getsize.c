@@ -61,6 +61,10 @@
 #include "windows.h"
 #include "winioctl.h"
 
+#if (_WIN32_WINNT >= 0x0500)
+#define HAVE_GET_FILE_SIZE_EX 1
+#endif
+
 errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 				 blk_t *retblocks)
 {
@@ -68,7 +72,11 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	PARTITION_INFORMATION pi;
 	DISK_GEOMETRY gi;
 	DWORD retbytes;
+#ifdef HAVE_GET_FILE_SIZE_EX
 	LARGE_INTEGER filesize;
+#else
+	DWORD filesize;
+#endif /* HAVE_GET_FILE_SIZE_EX */
 
 	dev = CreateFile(file, GENERIC_READ, 
 			 FILE_SHARE_READ | FILE_SHARE_WRITE ,
@@ -93,9 +101,18 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 			     gi.TracksPerCylinder *
 			     gi.Cylinders.QuadPart / blocksize;
 
+#ifdef HAVE_GET_FILE_SIZE_EX
 	} else if (GetFileSizeEx(dev, &filesize)) {
 		*retblocks = filesize.QuadPart / blocksize;
 	}
+#else
+	} else {
+		filesize = GetFileSize(dev, NULL);
+		if (INVALID_FILE_SIZE != filesize) {
+			*retblocks = filesize / blocksize;
+		}
+	}
+#endif /* HAVE_GET_FILE_SIZE_EX */
 
 	CloseHandle(dev);
 	return 0;

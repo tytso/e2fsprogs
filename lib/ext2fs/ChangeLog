@@ -1,3 +1,10 @@
+2004-10-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* getsize.c (ext2fs_get_device_size): Add support for Windows
+		9x/NT under Cygwin.  Thanks to Sam Robb
+		(samrobb@users.sourceforge.net) for pointing this and the
+		suggested code patch.
+
 2004-09-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* getsize.c: Clean up header #include's.
