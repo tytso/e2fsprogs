@@ -633,6 +633,18 @@ struct problem_context {
 /* Invalid HTREE root node */
 #define PR_2_HTREE_BAD_ROOT	0x02003C
 
+/* Invalid HTREE limit */
+#define PR_2_HTREE_BAD_LIMIT	0x02003D
+
+/* Invalid HTREE count */
+#define PR_2_HTREE_BAD_COUNT	0x02003E
+
+/* HTREE interior node has out-of-order hashes in table */
+#define PR_2_HTREE_HASH_ORDER	0x02003F
+
+/* Node in HTREE directory has bad depth */
+#define PR_2_HTREE_BAD_DEPTH	0x020040	
+
 /*
  * Pass 3 errors
  */

@@ -1067,6 +1067,26 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@p @h %d: root node is invalid\n"),
 	  PROMPT_CLEAR_HTREE, 0 },
 
+	/* Invalid HTREE limit */
+	{ PR_2_HTREE_BAD_LIMIT,
+	  N_("@p @h %d: node (%B) has bad limit (%N)\n"),
+	  PROMPT_CLEAR_HTREE, 0 },
+
+	/* Invalid HTREE count */
+	{ PR_2_HTREE_BAD_COUNT,
+	  N_("@p @h %d: node (%B) has bad count (%N)\n"),
+	  PROMPT_CLEAR_HTREE, 0 },
+
+	/* HTREE interior node has out-of-order hashes in table */
+	{ PR_2_HTREE_HASH_ORDER,
+	  N_("@p @h %d: node (%B) has an unordered hash table\n"),
+	  PROMPT_CLEAR_HTREE, 0 },
+
+	/* Node in HTREE directory has bad depth */
+	{ PR_2_HTREE_BAD_DEPTH,
+	  N_("@p @h %d: node (%B) has bad depth\n"),
+	  PROMPT_NONE, 0 },
+	
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

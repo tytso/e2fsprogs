@@ -50,7 +50,7 @@
 #define _INLINE_ inline
 #endif
 
-#undef DX_DEBUG
+/* #define DX_DEBUG */
 
 /*
  * Keeps track of how many times an inode is referenced.
@@ -69,6 +69,8 @@ static int update_dir_block(ext2_filsys fs,
 			    int		ref_offset, 
 			    void	*priv_data);
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino);
+static int htree_depth(struct dx_dir_info *dx_dir,
+		       struct dx_dirblock_info *dx_db);
 static EXT2_QSORT_TYPE special_dir_block_cmp(const void *a, const void *b);
 
 struct check_dir_struct {
@@ -92,7 +94,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	struct dx_dir_info	*dx_dir;
 	struct dx_dirblock_info	*dx_db, *dx_parent;
 	blk_t			b;
-	int			i;
+	int			i, depth;
 	problem_t		code;
 	int			bad_dir;
 
@@ -201,6 +203,14 @@ void e2fsck_pass2(e2fsck_t ctx)
 				fix_problem(ctx, code, &pctx);
 				bad_dir++;
 			}
+			if (dx_db->type == DX_DIRBLOCK_LEAF) {
+				depth = htree_depth(dx_dir, dx_db);
+				if (depth != dx_dir->depth) {
+					code = PR_2_HTREE_BAD_DEPTH;
+					fix_problem(ctx, code, &pctx);
+					bad_dir++;
+				}
+			}
 			/*
 			 * This test doesn't apply for the root block 
 			 * at block #0
@@ -281,6 +291,20 @@ void e2fsck_pass2(e2fsck_t ctx)
 	}
 #endif
 }
+
+#define MAX_DEPTH 32000
+static int htree_depth(struct dx_dir_info *dx_dir,
+		       struct dx_dirblock_info *dx_db)
+{
+	int	depth = 0;
+
+	while (dx_db->type != DX_DIRBLOCK_ROOT && depth < MAX_DEPTH) {
+		dx_db = &dx_dir->dx_block[dx_db->parent];
+		depth++;
+	}
+	return depth;
+}
+
 
 /*
  * This is special sort function that makes sure that directory blocks
@@ -494,11 +518,11 @@ static void parse_int_node(ext2_filsys fs,
 	struct 		ext2_dx_entry *ent;
 	struct		ext2_dx_countlimit *limit;
 	struct dx_dirblock_info	*dx_db;
-	int		i;
+	int		i, expect_limit, count;
 	blk_t		blk;
 	ext2_dirhash_t	min_hash = 0xffffffff;
 	ext2_dirhash_t	max_hash = 0;
-	ext2_dirhash_t	hash = 0;
+	ext2_dirhash_t	hash = 0, prev_hash;
 
 	if (db->blockcnt == 0) {
 		root = (struct ext2_dx_root_info *) (block_buf + 24);
@@ -523,11 +547,24 @@ static void parse_int_node(ext2_filsys fs,
 	printf("Number of entries (limit): %d\n", limit->limit);
 #endif
 
-	for (i=0; i < limit->count; i++) {
+	count = limit->count;
+	expect_limit = (fs->blocksize - ((char *) ent - block_buf)) /
+		sizeof(struct ext2_dx_entry);
+	if (limit->limit != expect_limit) {
+		cd->pctx.num = limit->limit;
+		if (fix_problem(cd->ctx, PR_2_HTREE_BAD_LIMIT, &cd->pctx))
+			goto clear_and_exit;
+	}
+	if (limit->count > expect_limit) {
+		cd->pctx.num = limit->count;
+		if (fix_problem(cd->ctx, PR_2_HTREE_BAD_COUNT, &cd->pctx))
+			goto clear_and_exit;
+		count = expect_limit;
+	}
+	
+	for (i=0; i < count; i++) {
+		prev_hash = hash;
 		hash = i ? (ent[i].hash & ~1) : 0;
-		/*
-		 * XXX  Check to make make sure the hash[i] < hash[i+1]
-		 */
 #ifdef DX_DEBUG
 		printf("Entry #%d: Hash 0x%08x, block %d\n", i,
 		       hash, ent[i].block);
@@ -537,12 +574,12 @@ static void parse_int_node(ext2_filsys fs,
 		if (blk > dx_dir->numblocks) {
 			cd->pctx.blk = blk;
 			if (fix_problem(cd->ctx, PR_2_HTREE_BADBLK,
-					&cd->pctx)) {
-				clear_htree(cd->ctx, cd->pctx.ino);
-				dx_dir->numblocks = 0;
-				return;
-			}
+					&cd->pctx))
+				goto clear_and_exit;
 		}
+		if (hash < prev_hash &&
+		    fix_problem(cd->ctx, PR_2_HTREE_HASH_ORDER, &cd->pctx))
+			goto clear_and_exit;
 		dx_db = &dx_dir->dx_block[blk];
 		if (dx_db->flags & DX_FLAG_REFERENCED) {
 			dx_db->flags |= DX_FLAG_DUP_REF;
@@ -571,6 +608,11 @@ static void parse_int_node(ext2_filsys fs,
 	dx_db = &dx_dir->dx_block[db->blockcnt];
 	dx_db->min_hash = min_hash;
 	dx_db->max_hash = max_hash;
+	return;
+
+clear_and_exit:
+	clear_htree(cd->ctx, cd->pctx.ino);
+	dx_dir->numblocks = 0;
 }
 #endif /* ENABLE_HTREE */
 
@@ -578,14 +620,14 @@ static void parse_int_node(ext2_filsys fs,
  * Given a busted directory, try to salvage it somehow.
  * 
  */
-static int salvage_directory(ext2_filsys fs,
+static void salvage_directory(ext2_filsys fs,
 			      struct ext2_dir_entry *dirent,
 			      struct ext2_dir_entry *prev,
-			      int offset)
+			      int *offset)
 {
 	char	*cp = (char *) dirent;
-	int left = fs->blocksize - offset - dirent->rec_len;
-	int prev_offset = offset - ((char *) dirent - (char *) prev);
+	int left = fs->blocksize - *offset - dirent->rec_len;
+	int name_len = dirent->name_len & 0xFF;
 
 	/*
 	 * Special case of directory entry of size 8: copy what's left
@@ -594,7 +636,19 @@ static int salvage_directory(ext2_filsys fs,
 	if ((left >= 12) && (dirent->rec_len == 8)) {
 		memmove(cp, cp+8, left);
 		memset(cp + left, 0, 8);
-		return offset;
+		return;
+	}
+	/*
+	 * If the directory entry overruns the end of the directory
+	 * block, and the name is small enough to fit, then adjust the
+	 * record length.
+	 */
+	if ((left < 0) &&
+	    (name_len + 8 <= dirent->rec_len + left) &&
+	    dirent->inode <= fs->super->s_inodes_count &&
+	    strnlen(dirent->name, name_len) == name_len) {
+		dirent->rec_len += left;
+		return;
 	}
 	/*
 	 * If the directory entry is a multiple of four, so it is
@@ -603,7 +657,8 @@ static int salvage_directory(ext2_filsys fs,
 	 */
 	if (prev && dirent->rec_len && (dirent->rec_len % 4) == 0) {
 		prev->rec_len += dirent->rec_len;
-		return prev_offset;
+		*offset += dirent->rec_len;
+		return;
 	}
 	/*
 	 * Default salvage method --- kill all of the directory
@@ -612,15 +667,13 @@ static int salvage_directory(ext2_filsys fs,
 	 * new empty directory entry the rest of the directory block.
 	 */
 	if (prev) {
-		prev->rec_len += fs->blocksize - offset;
-		return prev_offset;
+		prev->rec_len += fs->blocksize - *offset;
+		*offset = fs->blocksize;
 	} else {
-		dirent->rec_len = fs->blocksize - offset;
+		dirent->rec_len = fs->blocksize - *offset;
 		dirent->name_len = 0;
 		dirent->inode = 0;
-		return offset;
 	}
-	
 }
 
 static int check_dir_block(ext2_filsys fs,
@@ -725,6 +778,7 @@ static int check_dir_block(ext2_filsys fs,
 				dx_db = 0;
 			} 
 			dx_dir->hashversion = root->hash_version;
+			dx_dir->depth = root->indirect_levels + 1;
 		} else if ((dirent->inode == 0) &&
 			   (dirent->rec_len == fs->blocksize) &&
 			   (dirent->name_len == 0) &&
@@ -745,8 +799,7 @@ static int check_dir_block(ext2_filsys fs,
 		    ((dirent->rec_len % 4) != 0) ||
 		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
 			if (fix_problem(ctx, PR_2_DIR_CORRUPTED, &cd->pctx)) {
-				offset = salvage_directory(fs, dirent,
-							   prev, offset);
+				salvage_directory(fs, dirent, prev, &offset);
 				dir_modified++;
 				continue;
 			} else

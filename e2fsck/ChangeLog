@@ -1,3 +1,20 @@
+2002-09-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* problem.c, problem.h (PR_2_HTREE_BAD_LIMIT,
+		PR_2_HTREE_BAD_COUNT, PR_2_HTREE_HASH_ORDER, 
+		PR_2_HTREE_BAD_DEPTH): Add new problem codes.
+
+	* pass2.c (salvage_directory, check_dir_block): Avoid counting
+		directory entries twice during a directory salvage.  Make
+		the salvaging algorithm smarter about directory entry size
+		overruns.
+		(parse_int_node): Add check to make sure the limit and
+		count fields in the node headers are sane.  Also check
+		to make sure the hash table in ascending order.
+		(pass2, htree_depth): For all leaf nodes, determine their
+		depth in the tree, and make sure it matches with the depth
+		in the htree root information.
+
 2002-09-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass2.c (check_dir_block): Do a more paranoid check when trying

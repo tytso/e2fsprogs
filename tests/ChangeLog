@@ -1,3 +1,10 @@
+2002-09-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_h_badroot, f_h_badnode: Update test cases to deal with
+		additional HTREE checks in e2fsck.
+
+	* f_h_reindex, f_h_salvage_dir: New test cases.
+
 2001-09-24  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.29
