@@ -5,7 +5,7 @@ badblocks \- search a device for bad blocks
 .SH SYNOPSIS
 .B badblocks
 [
-.B \-svwn
+.B \-svwnf
 ]
 [
 .B \-b
@@ -64,6 +64,15 @@ will exit almost immediately with an out-of-memory error "while allocating
 buffers".  If you set it too low, however, for a non-destructive-write-mode
 test, then it's possble for questionable blocks on an unreliable
 hard drive to be hidden by the effects of the hard disk track buffer.
+.TP
+.B \-f
+Normally, badblocks will refuse to do a read/write or a non-destructive
+test on a device which is mounted, since this can cause the system to 
+potentially crash.  This can be overriden using the
+.B \-
+flag, but this should not be done under normal circumstances.  The only time
+when this option might be safe is if the /etc/mtab file is incorrect, and
+the device really isn't mounted.
 .TP
 .BI \-i " input_file"
 Read a list of already existing known bad blocks.

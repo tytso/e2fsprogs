@@ -64,13 +64,14 @@ static int v_flag = 0;			/* verbose */
 static int w_flag = 0;			/* do r/w test: 0=no, 1=yes,
 					 * 2=non-destructive */
 static int s_flag = 0;			/* show progress of test */
+static int force = 0;			/* force check of mounted device */
 
 static char *blkbuf;		/* Allocation array for bad block testing */
 
 
-static void usage(void)
+static void usage(NOARGS)
 {
-	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwn]\n [-c blocks_at_once] [-p num_passes] device [blocks_count] [start_count]\n"),
+	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] device [blocks_count] [start_count]\n"),
 		 program_name);
 	exit (1);
 }
@@ -81,6 +82,9 @@ static ext2_badblocks_list bb_list = NULL;
 static FILE *out;
 static blk_t next_bad = 0;
 static ext2_badblocks_iterate bb_iter = NULL;
+
+/* Everything is STDC, these days */
+#define NOARGS void
 
 /*
  * This routine reports a new bad block.  If the bad block has already
@@ -110,14 +114,14 @@ static int bb_output (unsigned long bad)
 	return 1;
 }
 
-static void print_status (void)
+static void print_status(NOARGS)
 {
 	fprintf(stderr, "%9ld/%9ld", currently_testing, num_blocks);
 	fprintf(stderr, "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	fflush (stderr);
 }
 
-static void alarm_intr (int alnum)
+static void alarm_intr(int alnum)
 {
 	signal (SIGALRM, alarm_intr);
 	alarm(1);
@@ -130,14 +134,14 @@ static void alarm_intr (int alnum)
 
 static void *terminate_addr = NULL;
 
-static void terminate_intr (int signo)
+static void terminate_intr(int signo)
 {
 	if (terminate_addr)
 		longjmp(terminate_addr,1);
 	exit(1);
 }
 
-static void capture_terminate (jmp_buf term_addr)
+static void capture_terminate(jmp_buf term_addr)
 {
 	terminate_addr = term_addr;
 	signal (SIGHUP, terminate_intr);
@@ -148,7 +152,7 @@ static void capture_terminate (jmp_buf term_addr)
 	signal (SIGUSR2, terminate_intr);
 }
 
-static void uncapture_terminate()
+static void uncapture_terminate(NOARGS)
 {
 	terminate_addr = NULL;
 	signal (SIGHUP, SIG_DFL);
@@ -613,6 +617,32 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	return bb_count;
 }
 
+static void check_mount(char *device_name)
+{
+	errcode_t	retval;
+	int		mount_flags;
+
+	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+	if (retval) {
+		com_err("ext2fs_check_if_mount", retval,
+			_("while determining whether %s is mounted."),
+			device_name);
+		return;
+	}
+	if (!(mount_flags & EXT2_MF_MOUNTED))
+		return;
+
+	fprintf(stderr, _("%s is mounted; "), device_name);
+	if (force) {
+		fprintf(stderr, _("badblocks forced anyway.  "
+			"Hope /etc/mtab is incorrect.\n"));
+		return;
+	}
+	fprintf(stderr, _("it's not safe to run badblocks!\n"));
+	exit(1);
+}
+
+
 int main (int argc, char ** argv)
 {
 	int c;
@@ -645,7 +675,7 @@ int main (int argc, char ** argv)
 	
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:i:o:svwnc:p:h:")) != EOF) {
+	while ((c = getopt (argc, argv, "bf:i:o:svwnc:p:h:")) != EOF) {
 		switch (c) {
 		case 'b':
 			block_size = strtoul (optarg, &tmp, 0);
@@ -654,6 +684,9 @@ int main (int argc, char ** argv)
 					 _("bad block size - %s"), optarg);
 				exit (1);
 			}
+			break;
+		case 'f':
+			force++;
 			break;
 		case 'i':
 			input_file = optarg;
@@ -737,6 +770,9 @@ int main (int argc, char ** argv)
 		     from_count, blocks_count);
 	    exit (1);
 	}
+	if (w_flag)
+		check_mount(device_name);
+	
 	dev = open (device_name, w_flag ? O_RDWR : O_RDONLY);
 	if (dev == -1)
 	{
