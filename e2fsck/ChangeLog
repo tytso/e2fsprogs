@@ -1,3 +1,8 @@
+2001-05-05  Theodore Tso  <tytso@valinux.com>
+
+	* pass2.c (check_dir_block): Ignore EXT2_ET_DIR_CORRUPTED errors
+		from ext2fs_read_dir_block().
+
 2001-05-01  Theodore Tso  <tytso@valinux.com>
 
 	* unix.c (PRS): Validate the completion information file

@@ -383,6 +383,8 @@ static int check_dir_block(ext2_filsys fs,
 #endif
 	
 	cd->pctx.errcode = ext2fs_read_dir_block(fs, block_nr, buf);
+	if (cd->pctx.errcode == EXT2_ET_DIR_CORRUPTED)
+		cd->pctx.errcode = 0; /* We'll handle this ourselves */
 	if (cd->pctx.errcode) {
 		if (!fix_problem(ctx, PR_2_READ_DIRBLOCK, &cd->pctx)) {
 			ctx->flags |= E2F_FLAG_ABORT;
