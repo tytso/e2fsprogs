@@ -220,7 +220,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **journal)
 	clear_problem_context(&pctx);
 
 	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
-		/* FIXME: check if UUID is valid block dev, has a journal */
+		/* FIXME: check if dev is valid block dev, has a journal */
 		if (sb->s_journal_dev) {
 			pctx.num = sb->s_journal_dev;
 			/* this problem aborts on -y, -p, unsupported on -n */
