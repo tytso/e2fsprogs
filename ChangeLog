@@ -1,3 +1,7 @@
+2003-04-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.33
+
 2003-04-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Remove CYGWIN definition; we will use the

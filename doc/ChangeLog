@@ -1,3 +1,7 @@
+2003-04-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.33
+
 2003-03-06  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in: Don't bomb out if makeinfo or texinfo aren't

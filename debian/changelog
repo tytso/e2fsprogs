@@ -1,3 +1,9 @@
+e2fsprogs (1.33-1) unstable; urgency=low
+
+  * New upstream version (Closes: #189687)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 21 Apr 2003 13:49:52 -0400
+
 e2fsprogs (1.32+1.33-WIP-2003.04.14-1) unstable; urgency=low
 
   * New upstream version

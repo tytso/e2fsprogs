@@ -1,5 +1,9 @@
 2003-04-21  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.33
+
+2003-04-21  Theodore Ts'o  <tytso@mit.edu>
+
 	* Makefile.in: Use DYLD_LIBRAY_PATH so that "make check" works on
 		Darwin systems when building with shared libraries.
 

@@ -1,4 +1,4 @@
-E2fsprogs 1.33-WIP (April 14, 2003)
+E2fsprogs 1.33 (April 21, 2003)
 ===================================
 
 Added a new utility program, logsave, which captures the output of a
@@ -136,6 +136,9 @@ EXT2_FEATURE_COMPAT_DIR_INDEX, which is in use.
 Updated debian files to fix a number of Lintian warnings.
 
 Updated config.guess and config.sub with newer versions from the FSF.
+
+Removed unnecessary libraries from being linked into the fsck, lsattr, 
+chattr, and blkid executables.
 
 E2fsprogs 1.32 (Nomvember 9, 2002)
 ==================================

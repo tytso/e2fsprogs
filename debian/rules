@@ -246,7 +246,7 @@ install-bf: build
 	cd ${bfdir}/usr/bin && rm -f uuidgen
 
   # remove FSIM for now.
-	rm ${bfdir}/lib/evms/libe2fsim.*.so
+	-rm ${bfdir}/lib/evms/libe2fsim.*.so
 
 install-udeb: install-bf
 	dh_testdir
