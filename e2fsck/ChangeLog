@@ -1,3 +1,12 @@
+Tue Jan 20 15:37:01 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* unix.c (main): In the case where the filesystem revision is too
+ 		high, print the message about the superblock possibly
+ 		being corrupt.
+
+	* e2fsck.8.in: Add expanded comments about how the -b option
+		works. 
+
 Sat Jan 17 13:02:16 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* e2fsck.h: If EXT2_FLAT_INCLUDES is defined, then assume all of

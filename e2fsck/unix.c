@@ -494,10 +494,14 @@ restart:
 	if (retval) {
 		com_err(ctx->program_name, retval, "while trying to open %s",
 			ctx->filesystem_name);
-		if (retval == EXT2_ET_REV_TOO_HIGH)
-			printf ("Get a newer version of e2fsck!\n");
-		else if (retval == EXT2_ET_SHORT_READ)
-			printf ("Could this be a zero-length partition?\n");
+		if (retval == EXT2_ET_REV_TOO_HIGH) {
+			printf("The filesystem revision is apparently "
+			       "too high for this version of e2fsck.\n"
+			       "(Or the filesystem superblock "
+			       "is corrupt)\n\n");
+			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);
+		} else if (retval == EXT2_ET_SHORT_READ)
+			printf("Could this be a zero-length partition?\n");
 		else if ((retval == EPERM) || (retval == EACCES))
 			printf("You must have %s access to the "
 			       "filesystem or be root\n",
@@ -510,7 +514,6 @@ restart:
 			printf("Disk write-protected; use the -n option"
 			       "to do a read-only\n"
 			       "check of the device.\n");
-
 #endif
 		else
 			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);

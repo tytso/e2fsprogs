@@ -40,9 +40,14 @@ suggested that people use
 option whenever possible.
 .TP
 .I -b superblock
-Instead of using the normal superblock, use the alternative superblock
+Instead of using the normal superblock, use an alternative superblock
 specified by 
-.IR superblock .
+.IR superblock .  This option is normally used when the primary superblock 
+has been corrupted; most filesystems have primary superblocks located at 
+blocks 8193, 16385, etc.  If an alternative superblock is specified and 
+the filesystem is not opened read-only, e2fsck will make sure that the
+primary superblock is updated appropriately upon completion of the 
+filesystem check.
 .TP
 .I -B blocksize
 Normally, 
