@@ -213,14 +213,14 @@ struct mke2fs_defaults {
 	{ 0, 0, 0, 0},
 };
 
-static void set_fs_defaults(char *fs_type, struct ext2fs_sb *param,
+static void set_fs_defaults(char *fs_type, struct ext2fs_sb *super,
 			    int blocksize, int *inode_ratio)
 {
 	int	megs;
 	int	ratio = 0;
 	struct mke2fs_defaults *p;
 
-	megs = (param->s_blocks_count * (EXT2_BLOCK_SIZE(param) / 1024) /
+	megs = (super->s_blocks_count * (EXT2_BLOCK_SIZE(super) / 1024) /
 		1024);
 	if (inode_ratio)
 		ratio = *inode_ratio;
@@ -236,12 +236,12 @@ static void set_fs_defaults(char *fs_type, struct ext2fs_sb *param,
 		if (ratio == 0)
 			*inode_ratio = p->inode_ratio;
 		if (blocksize == 0) {
-			param->s_log_frag_size = param->s_log_block_size =
+			super->s_log_frag_size = super->s_log_block_size =
 				log2(p->blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 		}
 	}
 	if (blocksize == 0)
-		param->s_blocks_count /= EXT2_BLOCK_SIZE(param) / 1024;
+		super->s_blocks_count /= EXT2_BLOCK_SIZE(super) / 1024;
 }
 
 /*

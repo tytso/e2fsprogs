@@ -79,7 +79,7 @@ debugfs.o: $(srcdir)/debugfs.c $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/debugfs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/uuid/uuid.h \
- $(srcdir)/../version.h
+ $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/../version.h
 util.o: $(srcdir)/util.c $(srcdir)/debugfs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
