@@ -17,7 +17,7 @@
 
 #include "resize2fs.h"
 
-#include "../version.h"
+#include "./version.h"
 
 char *program_name, *device_name;
 
@@ -116,9 +116,8 @@ void main (int argc, char ** argv)
 
 	initialize_ext2_error_table();
 
-	fprintf (stderr, "resize2fs %s, %s for EXT2 FS %s, %s\n",
-		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
-		 EXT2FS_VERSION, EXT2FS_DATE);
+	fprintf (stderr, "resize2fs %s (%s)\n",
+		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	fprintf(stderr, "Copyright 1998 by Theodore Ts'o and PowerQuest, Inc.  All Rights Reserved.\n\n");
 	if (argc && *argv)
 		program_name = *argv;

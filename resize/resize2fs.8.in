@@ -1,7 +1,8 @@
 .\" -*- nroff -*-
 .\" Copyright 1997 by Theodore Ts'o.  All Rights Reserved.
 .\" 
-.TH RESIZE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.\" .TH RESIZE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.TH RESIZE2FS 8 "March 1998" "Resize2fs version 1.00"
 .SH NAME
 resize2fs \- ext2 file system resizer
 .SH SYNOPSIS
