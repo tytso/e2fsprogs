@@ -1,5 +1,9 @@
 2000-02-11    <tytso@snap.thunk.org>
 
+	* ext2fs.h: Define EXT2FS_COMPRESSED_BLKADDR and HOLE_BLKADDR.
+		Conditionally include Compression as a supported type if
+		ENABLE_COMPRESSION (via --enable-compression) is turned on.
+
 	* swapfs.c (ext2fs_swap_super): Swap the compression usage bitmap.
 
 2000-02-08    <tytso@snap.thunk.org>

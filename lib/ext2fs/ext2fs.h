@@ -435,6 +435,9 @@ struct ext2fs_sb {
 	__u32	s_reserved[199];	/* Padding to the end of the block */
 };
 
+#define EXT2FS_COMPRESSED_BLKADDR ((blk_t) 0xffffffff)
+#define HOLE_BLKADDR(_b) ((_b) == 0 || (_b) == EXT2FS_COMPRESSED_BLKADDR)
+
 /*
  * Feature set definitions (that might not be in ext2_fs.h
  */
@@ -480,7 +483,14 @@ struct ext2fs_sb {
 #define EXT2_LIB_FEATURE_COMPAT_SUPP	(EXT2_FEATURE_COMPAT_DIR_PREALLOC|\
 					 EXT2_FEATURE_COMPAT_IMAGIC_INODES|\
 					 EXT3_FEATURE_COMPAT_HAS_JOURNAL)
+/* This #ifdef is temporary until compression is fully supported */
+#ifdef ENABLE_COMPRESSION
+#warning "Compression support is experimental"
+#define EXT2_LIB_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE|\
+					 EXT2_FEATURE_INCOMPAT_COMPRESSION)
+#else
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP	EXT2_FEATURE_INCOMPAT_FILETYPE
+#endif
 #define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|\
 					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE)
 /*
