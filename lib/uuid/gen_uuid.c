@@ -43,6 +43,9 @@
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
+#ifdef HAVE_NET_IF_DL_H
+#include <net/if_dl.h>
+#endif
 
 #include "uuidP.h"
 
@@ -117,7 +120,10 @@ static int get_node_id(unsigned char *node_id)
 	char buf[1024];
 	int		n, i;
 	unsigned char 	*a;
-	
+#if defined(HAVE_NET_IF_DL_H) && defined(AF_LINK)
+	struct sockaddr_dl *sdlp;
+#endif
+
 /*
  * BSD 4.4 defines the size of an ifreq to be
  * max(sizeof(ifreq), sizeof(ifreq.ifr_name)+ifreq.ifr_addr.sa_len
@@ -146,7 +152,7 @@ static int get_node_id(unsigned char *node_id)
 		return -1;
 	}
 	n = ifc.ifc_len;
-	for (i = 0; i < n; i+= ifreq_size(*ifr) ) {
+	for (i = 0; i < n; i+= ifreq_size(*ifrp) ) {
 		ifrp = (struct ifreq *)((char *) ifc.ifc_buf+i);
 		strncpy(ifr.ifr_name, ifrp->ifr_name, IFNAMSIZ);
 #ifdef SIOCGIFHWADDR
@@ -159,12 +165,19 @@ static int get_node_id(unsigned char *node_id)
 			continue;
 		a = (unsigned char *) ifr.ifr_enaddr;
 #else
+#if defined(HAVE_NET_IF_DL_H) && defined(AF_LINK)
+		sdlp = (struct sockaddr_dl *) &ifrp->ifr_addr;
+		if ((sdlp->sdl_family != AF_LINK) || (sdlp->sdl_alen < 6))
+			continue;
+		a = (unsigned char *) &sdlp->sdl_data[sdlp->sdl_nlen];
+#else
 		/*
 		 * XXX we don't have a way of getting the hardware
 		 * address
 		 */
 		close(sd);
 		return 0;
+#endif /* HAVE_NET_IF_DL_H && AF_LINK */
 #endif /* SIOCGENADDR */
 #endif /* SIOCGIFHWADDR */
 		if (!a[0] && !a[1] && !a[2] && !a[3] && !a[4] && !a[5])
