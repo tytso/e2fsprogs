@@ -550,6 +550,11 @@ static void parse_tune2fs_options(int argc, char **argv)
 				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'O':
+				if (features_cmd) {
+					com_err (program_name, 0,
+					 _("-O may only be specified once"));
+					usage();
+				}
 				features_cmd = optarg;
 				open_flag = EXT2_FLAG_RW;
 				break;
