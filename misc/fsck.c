@@ -635,22 +635,27 @@ ret_inst:
 	return inst;
 }
 
+#define FLAG_WAIT_ALL		0
+#define FLAG_WAIT_ATLEAST_ONE	1
 /*
  * Wait until all executing child processes have exited; return the
  * logical OR of all of their exit code values.
  */
-static int wait_all(int flags)
+static int wait_many(int flags)
 {
 	struct fsck_instance *inst;
 	int	global_status = 0;
+	int	wait_flags = 0;
 
-	while ((inst = wait_one(flags))) {
+	while ((inst = wait_one(wait_flags))) {
 		global_status |= inst->exit_status;
 		free_instance(inst);
 #ifdef RANDOM_DEBUG
 		if (noexecute && (flags & WNOHANG) && !(random() % 3))
 			break;
 #endif
+		if (flags & FLAG_WAIT_ATLEAST_ONE)
+			wait_flags = WNOHANG;
 	}
 	return global_status;
 }
@@ -943,7 +948,7 @@ static int check_all(NOARGS)
 		if (fs) {
 			if (!skip_root && !ignore(fs)) {
 				fsck_device(fs, 1);
-				status |= wait_all(0);
+				status |= wait_many(FLAG_WAIT_ALL);
 				if (status > EXIT_NONDESTRUCT)
 					return status;
 			}
@@ -1007,7 +1012,8 @@ static int check_all(NOARGS)
 			break;
 		if (verbose > 1)
 			printf(_("--waiting-- (pass %d)\n"), passno);
-		status |= wait_all(pass_done ? 0 : WNOHANG);
+		status |= wait_many(pass_done ? FLAG_WAIT_ALL :
+				    FLAG_WAIT_ATLEAST_ONE);
 		if (pass_done) {
 			if (verbose > 1) 
 				printf("----------------------------------\n");
@@ -1019,7 +1025,7 @@ static int check_all(NOARGS)
 		kill_all(SIGTERM);
 		kill_sent++;
 	}
-	status |= wait_all(0);
+	status |= wait_many(FLAG_WAIT_ATLEAST_ONE);
 	return status;
 }
 
@@ -1264,7 +1270,7 @@ int main(int argc, char *argv[])
 				printf("----------------------------------\n");
 		}
 	}
-	status |= wait_all(0);
+	status |= wait_many(FLAG_WAIT_ALL);
 	free(fsck_path);
 	blkid_put_cache(cache);
 	return status;

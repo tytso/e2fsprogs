@@ -1,3 +1,10 @@
+2003-07-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.c (wait_many): Rename wait_all() to wait_many(), and have
+		new semantics: WAIT_ALL vs. WAIT_ATLEAST_ONE.  This fixes
+		a bug where when fsck is waiting for another partition on
+		the same spindle, it spins wasting a lot of CPU.
+
 2003-07-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.c (do_read, do_write, test_rw): Change the read/write
