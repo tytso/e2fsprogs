@@ -1,3 +1,9 @@
+2002-01-02  Theodore Tso  <tytso@valinux.com>
+
+	* badblocks.c (main): Open the device as O_RDWR if possible, since
+		fsync() isn't guaranteed to work if the filesystem is
+		opened read-only.
+
 2001-12-26  Theodore Tso  <tytso@valinux.com>
 
 	* tune2fs.8.in, tune2fs.c (parse_tune2fs_options, main): Add

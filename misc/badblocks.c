@@ -761,17 +761,21 @@ int main (int argc, char ** argv)
 	if (w_flag)
 		check_mount(device_name);
 	
-	dev = open (device_name, w_flag ? O_RDWR : O_RDONLY);
-	if (dev == -1)
-	{
+	dev = open (device_name, O_RDWR);
+	if ((dev == -1) && ((errno == EPERM) || (errno == EACCES)) &&
+	    (w_flag == 0))
+		dev = open(device_name, O_RDONLY);
+	if (dev == -1) {
 		com_err (program_name, errno, _("while trying to open %s"),
 			 device_name);
 		exit (1);
 	}
 	if (host_device_name) {
-		host_dev = open (host_device_name, O_RDONLY);
-		if (host_dev == -1)
-		{
+		host_dev = open (host_device_name, O_RDWR);
+		if ((host_dev == -1) &&
+		    ((errno == EPERM) || (errno == EACCES)))
+			host_dev = open(host_device_name, O_RDONLY);
+		if (host_dev == -1) {
 			com_err (program_name, errno,
 				 _("while trying to open %s"),
 				 host_device_name);
