@@ -1,0 +1,7 @@
+Makefile
+test_script
+*.1.log
+*.2.log
+*.log
+*.ok
+*.failed
