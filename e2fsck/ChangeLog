@@ -1,3 +1,20 @@
+2002-09-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* rehash.c (write_directory): Clear the index flag if by
+		reoptimizing the directory, we bring it back into a
+		non-indexed state.
+		(e2fsck_rehash_dir): Allow directories that contain two
+		blocks to be indexed.  Otherwise when they grow, they
+		never will be indexed by the kernel.
+
+	* unix.c (main): Only update the master superblock; there's no
+		point updating the backup superblocks, and it speeds up
+		fsck slightly.
+
+	* pass2.c (salvage_directory): New function called by
+		check_dir_block() which is much more sophisticated about
+		how it salvages corrupted filesystems.
+
 2001-09-24  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.29

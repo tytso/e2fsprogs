@@ -574,6 +574,55 @@ static void parse_int_node(ext2_filsys fs,
 }
 #endif /* ENABLE_HTREE */
 
+/*
+ * Given a busted directory, try to salvage it somehow.
+ * 
+ */
+static int salvage_directory(ext2_filsys fs,
+			      struct ext2_dir_entry *dirent,
+			      struct ext2_dir_entry *prev,
+			      int offset)
+{
+	char	*cp = (char *) dirent;
+	int left = fs->blocksize - offset - dirent->rec_len;
+	int prev_offset = offset - ((char *) dirent - (char *) prev);
+
+	/*
+	 * Special case of directory entry of size 8: copy what's left
+	 * of the directory block up to cover up the invalid hole.
+	 */
+	if ((left >= 12) && (dirent->rec_len == 8)) {
+		memmove(cp, cp+8, left);
+		memset(cp + left, 0, 8);
+		return offset;
+	}
+	/*
+	 * If the directory entry is a multiple of four, so it is
+	 * valid, let the previous directory entry absorb the invalid
+	 * one. 
+	 */
+	if (prev && dirent->rec_len && (dirent->rec_len % 4) == 0) {
+		prev->rec_len += dirent->rec_len;
+		return prev_offset;
+	}
+	/*
+	 * Default salvage method --- kill all of the directory
+	 * entries for the rest of the block.  We will either try to
+	 * absorb it into the previous directory entry, or create a
+	 * new empty directory entry the rest of the directory block.
+	 */
+	if (prev) {
+		prev->rec_len += fs->blocksize - offset;
+		return prev_offset;
+	} else {
+		dirent->rec_len = fs->blocksize - offset;
+		dirent->name_len = 0;
+		dirent->inode = 0;
+		return offset;
+	}
+	
+}
+
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry *db,
 			   void *priv_data)
@@ -583,7 +632,7 @@ static int check_dir_block(ext2_filsys fs,
 #ifdef ENABLE_HTREE
 	struct dx_dirblock_info	*dx_db = 0;
 #endif /* ENABLE_HTREE */
-	struct ext2_dir_entry 	*dirent;
+	struct ext2_dir_entry 	*dirent, *prev;
 	ext2_dirhash_t		hash;
 	int			offset = 0;
 	int			dir_modified = 0;
@@ -680,8 +729,8 @@ static int check_dir_block(ext2_filsys fs,
 	}
 #endif /* ENABLE_HTREE */
 
+	prev = 0;
 	do {
-		dot_state++;
 		problem = 0;
 		dirent = (struct ext2_dir_entry *) (buf + offset);
 		cd->pctx.dirent = dirent;
@@ -691,10 +740,10 @@ static int check_dir_block(ext2_filsys fs,
 		    ((dirent->rec_len % 4) != 0) ||
 		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
 			if (fix_problem(ctx, PR_2_DIR_CORRUPTED, &cd->pctx)) {
-				dirent->rec_len = fs->blocksize - offset;
-				dirent->name_len = 0;
-				dirent->inode = 0;
+				offset = salvage_directory(fs, dirent,
+							   prev, offset);
 				dir_modified++;
+				continue;
 			} else
 				return DIRENT_ABORT;
 		}
@@ -705,10 +754,10 @@ static int check_dir_block(ext2_filsys fs,
 			}
 		}
 
-		if (dot_state == 1) {
+		if (dot_state == 0) {
 			if (check_dot(ctx, dirent, ino, &cd->pctx))
 				dir_modified++;
-		} else if (dot_state == 2) {
+		} else if (dot_state == 1) {
 			dir = e2fsck_get_dir_info(ctx, ino);
 			if (!dir) {
 				fix_problem(ctx, PR_2_NO_DIRINFO, &cd->pctx);
@@ -749,7 +798,7 @@ static int check_dir_block(ext2_filsys fs,
 			 * clear it.
 			 */
 			problem = PR_2_BB_INODE;
-		} else if ((dot_state > 2) &&
+		} else if ((dot_state > 1) &&
 			   ((dirent->name_len & 0xFF) == 1) &&
 			   (dirent->name[0] == '.')) {
 			/*
@@ -758,7 +807,7 @@ static int check_dir_block(ext2_filsys fs,
 			 * duplicate entry that should be removed.
 			 */
 			problem = PR_2_DUP_DOT;
-		} else if ((dot_state > 2) &&
+		} else if ((dot_state > 1) &&
 			   ((dirent->name_len & 0xFF) == 2) &&
 			   (dirent->name[0] == '.') && 
 			   (dirent->name[1] == '.')) {
@@ -768,7 +817,7 @@ static int check_dir_block(ext2_filsys fs,
 			 * duplicate entry that should be removed.
 			 */
 			problem = PR_2_DUP_DOT_DOT;
-		} else if ((dot_state > 2) &&
+		} else if ((dot_state > 1) &&
 			   (dirent->inode == EXT2_ROOT_INO)) {
 			/*
 			 * Don't allow links to the root directory.
@@ -777,7 +826,7 @@ static int check_dir_block(ext2_filsys fs,
 			 * directory hasn't been created yet.
 			 */
 			problem = PR_2_LINK_ROOT;
-		} else if ((dot_state > 2) &&
+		} else if ((dot_state > 1) &&
 			   (dirent->name_len & 0xFF) == 0) {
 			/*
 			 * Don't allow zero-length directory names.
@@ -842,7 +891,7 @@ static int check_dir_block(ext2_filsys fs,
 		 * hard link.  We assume the first link is correct,
 		 * and ask the user if he/she wants to clear this one.
 		 */
-		if ((dot_state > 2) &&
+		if ((dot_state > 1) &&
 		    (ext2fs_test_inode_bitmap(ctx->inode_dir_map,
 					      dirent->inode))) {
 			subdir = e2fsck_get_dir_info(ctx, dirent->inode);
@@ -871,7 +920,9 @@ static int check_dir_block(ext2_filsys fs,
 			ctx->fs_links_count++;
 		ctx->fs_total_count++;
 	next:
+		prev = dirent;
 		offset += dirent->rec_len;
+		dot_state++;
 	} while (offset < fs->blocksize);
 #if 0
 	printf("\n");

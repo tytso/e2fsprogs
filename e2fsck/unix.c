@@ -974,8 +974,11 @@ restart:
 		ext2fs_mark_super_dirty(fs);
 
 	/*
-	 * Don't overwrite the backup superblock and block
-	 * descriptors, until we're sure the filesystem is OK....
+	 * We only update the master superblock because (a) paranoia;
+	 * we don't want to corrupt the backup superblocks, and (b) we
+	 * don't need to update the mount count and last checked
+	 * fields in the backup superblock (the kernel doesn't
+	 * update the backup superblocks anyway).
 	 */
 	fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 
@@ -1058,9 +1061,7 @@ restart:
 			exit_value |= FSCK_REBOOT;
 		}
 	}
-	if (ext2fs_test_valid(fs))
-		fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
-	else {
+	if (!ext2fs_test_valid(fs)) {
 		printf(_("\n%s: ********** WARNING: Filesystem still has "
 			 "errors **********\n\n"), ctx->device_name);
 		exit_value |= FSCK_UNCORRECTED;

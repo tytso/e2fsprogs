@@ -522,7 +522,9 @@ static errcode_t write_directory(e2fsck_t ctx, ext2_filsys fs,
 		return wd.err;
 
 	e2fsck_read_inode(ctx, ino, &inode, "rehash_dir");
-	if (!compress)
+	if (compress)
+		inode.i_flags &= ~EXT2_INDEX_FL;
+	else
 		inode.i_flags |= EXT2_INDEX_FL;
 	inode.i_size = outdir->num * fs->blocksize;
 	inode.i_blocks -= (fs->blocksize / 512) * wd.cleared;
@@ -561,7 +563,7 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino)
 	fd.dir_size = 0;
 	fd.compress = 0;
 	if (!(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) ||
-	    (inode.i_size / fs->blocksize) < 3)
+	    (inode.i_size / fs->blocksize) < 2)
 		fd.compress = 1;
 	fd.parent = 0;
 
