@@ -1,3 +1,8 @@
+2000-07-26    <tytso@valinux.com>
+
+	* get_device_by_label.c: Improve /proc/partitions parsing in
+		fsck, and speed up fsck -a.
+
 2000-07-13    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.19
