@@ -139,7 +139,7 @@ uninstall:
 
 clean:
 	$(RM) -f $(PROGS) \#* *\# *.s *.o *.a *~ core e2fsck.static \
-		e2fsck.shared e2fsck.profiled e2fsck.8
+		e2fsck.shared e2fsck.profiled flushb e2fsck.8
 	$(RM) -rf profiled
 
 mostlyclean: clean

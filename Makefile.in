@@ -29,6 +29,12 @@ install-doc-libs:
 uninstall-doc-libs:
 	(cd doc && make uninstall-doc-libs)
 
+clean-doc:
+	(cd doc && make clean)
+
+distclean-doc:
+	(cd doc && make distclean)
+
 install: all-libs-recursive install-progs-recursive \
 	install-shlibs-libs-recursive install-doc-libs
 #	(export MANPATH=$(DESTDIR)$(mandir); $(srcdir)/install-utils/compile_manpages)
@@ -69,10 +75,10 @@ all-libs-recursive install-libs-recursive uninstall-libs-recursive install-shlib
 
 mostlyclean: mostlyclean-recursive mostlyclean-local
 
-clean: clean-recursive clean-local
+clean: clean-recursive clean-local clean-doc
 	$(RM) -f $(SUBS)
 
-distclean: distclean-recursive distclean-local
+distclean: distclean-doc distclean-recursive distclean-local 
 
 realclean: realclean-recursive realclean-local
 

@@ -36,6 +36,10 @@ libext2fs.info: $(srcdir)/libext2fs.texinfo
 libext2fs.dvi: $(srcdir)/libext2fs.texinfo
 	$(DVI) $(srcdir)/libext2fs.texinfo
 
+.PHONY: distclean
+distclean:: clean
+	$(RM) Makefile
+
 .PHONY: clean
 clean:: clean-all
 
