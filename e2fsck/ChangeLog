@@ -56,6 +56,7 @@
 		returns an error code indicating that there are
 		incompatible journal flag, check to see if we should
 		abort, and then offer to clear the journal.
+		(Addresses Debian bug #98527.)
 
 	* Makefile.in: Move include/asm/types.h.in to
 		lib/ext2fs/ext2_types.h.in.

@@ -20,7 +20,7 @@ handling to essentially not work.
 
 Fix e2fsck's handling of incompatible journal flags so that the user
 has chance to abort, and then has the option to clear out the journal
-entirely.
+entirely.  (Addresses Debian bug #98527.)
 
 Fixed a bug in debugfs which caused read errors when copying a file to
 not be noticed.
