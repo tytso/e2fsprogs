@@ -1,3 +1,9 @@
+2002-05-22  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (check_ext_attr): Update to support the V2 Bestbits EA
+		format.  We automatically determine from the first EA
+		block we visit whether we are using the V1 or V2 format.
+
 2002-05-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1.c (process_block): If an inode has too many blocks or

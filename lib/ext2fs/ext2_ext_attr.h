@@ -7,7 +7,8 @@
 */
 
 /* Magic value in attribute blocks */
-#define EXT2_EXT_ATTR_MAGIC		0xEA010000
+#define EXT2_EXT_ATTR_MAGIC_v1		0xEA010000
+#define EXT2_EXT_ATTR_MAGIC		0xEA020000
 
 /* Maximum number of references to one attribute block */
 #define EXT2_EXT_ATTR_REFCOUNT_MAX	1024
@@ -22,7 +23,7 @@ struct ext2_ext_attr_header {
 
 struct ext2_ext_attr_entry {
 	__u8	e_name_len;	/* length of name */
-	__u8	e_name_index;	/* index into table of names (n/i) */
+	__u8	e_name_index;	/* attribute name index */
 	__u16	e_value_offs;	/* offset in disk block of value */
 	__u32	e_value_block;	/* disk block attribute is stored on (n/i) */
 	__u32	e_value_size;	/* size of attribute value */

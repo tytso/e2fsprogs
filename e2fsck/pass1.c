@@ -984,6 +984,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	struct ext2_ext_attr_entry *entry;
 	int		count;
 	region_t	region;
+	int		ext_attr_ver;
 	
 	blk = inode->i_file_acl;
 	if (blk == 0)
@@ -1061,10 +1062,13 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 		goto clear_extattr;
 	header = (struct ext2_ext_attr_header *) block_buf;
 	pctx->blk = inode->i_file_acl;
-	if (header->h_magic != EXT2_EXT_ATTR_MAGIC) {
-		if (fix_problem(ctx, PR_1_BAD_EA_BLOCK, pctx))
-			goto clear_extattr;
-	}
+	if (header->h_magic != EXT2_EXT_ATTR_MAGIC_v1)
+		ext_attr_ver = 1;
+	if (header->h_magic != EXT2_EXT_ATTR_MAGIC)
+		ext_attr_ver = 2;
+	else if (fix_problem(ctx, PR_1_BAD_EA_BLOCK, pctx))
+		goto clear_extattr;
+
 	if (header->h_blocks != 1) {
 		if (fix_problem(ctx, PR_1_EA_MULTI_BLOCK, pctx))
 			goto clear_extattr;
@@ -1089,7 +1093,10 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION, pctx))
 				goto clear_extattr;
 		}
-		if (entry->e_name_len == 0 || entry->e_name_index != 0) {
+		if ((ext_attr_ver == 1 &&
+		     (entry->e_name_len == 0 || entry->e_name_index != 0)) ||
+		    (ext_attr_ver == 2 &&
+		     entry->e_name_index == 0)) {
 			if (fix_problem(ctx, PR_1_EA_BAD_NAME, pctx))
 				goto clear_extattr;
 		}

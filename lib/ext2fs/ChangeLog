@@ -1,3 +1,7 @@
+2002-05-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2_ext_attr.h: Update to V2 version of the Bestbits format.
+
 2002-05-16  Andreas Dilger <adilger@clusterfs.com>
 
 	* ext2_fs.h: Change limits to support filesystems with 8k blocks.
