@@ -529,10 +529,15 @@ static const struct e2fsck_problem problem_table[] = {
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
 	/* Journal inode is not in use, but contains data */	  
-	{ PR1_JOURNAL_INODE_NOT_CLEAR,
+	{ PR_1_JOURNAL_INODE_NOT_CLEAR,
 	  "@j @i is not in use, but contains data.  ",
 	  PROMPT_CLEAR, PR_PREEN_OK },	  
 	  
+	/* Journal has bad mode */
+	{ PR_1_JOURNAL_BAD_MODE,
+	  N_("Journal is not regular file.  "),
+	  PROMPT_FIX, PR_PREEN_OK },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

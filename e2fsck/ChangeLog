@@ -1,5 +1,19 @@
 2001-01-12  Theodore Ts'o  <tytso@valinux.com>
 
+	* journal.c (e2fsck_journal_fix_unsupported_super): Remove unused
+		function.  Add FIXME notes to e2fsck_get_journal(), from
+		Andreas Dilger.
+
+	* pass1.c (e2fsck_pass1): Cap the maximum legal size of a file by
+		the limit caused by the fact that i_blocks is in 512 byte
+		units, and that the Linux buffer cache also fundamentally
+		assumes 512 byte sectors.  
+		Make sure that the journal inode is a regular file, and
+		when clearing an unused journal inode, make sure the
+		icount db is updated.
+	
+	* problem.c, problem.h (PR_1_JOURNAL_BAD_MODE): Add new problem code.
+
 	* problem.c: For PR_1_RESERVED_BAD_MODE, print a description of
 		the reserved inode.  In PR_0_JOURNAL_HAS_JOURNAL, prompt
 		to clear the journal, rather than deleting it (which is

@@ -184,7 +184,7 @@ static void check_size(e2fsck_t ctx, struct problem_context *pctx)
 void e2fsck_pass1(e2fsck_t ctx)
 {
 	int	i;
-	__u64	max_sizes;
+	__u64	max_sizes, max_sect_limit;
 	ext2_filsys fs = ctx->fs;
 	ext2_ino_t	ino;
 	struct ext2_inode inode;
@@ -220,6 +220,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 			     (__u64) EXT2_BPP(10+i) * EXT2_BPP(10+i) *
 			     EXT2_BPP(10+i));
 		max_sizes = (max_sizes * (1UL << (10+i))) - 1;
+		max_sect_limit = 512ULL * ((1LL << 32) - (1 << (i+1)));
+		if (max_sizes > max_sect_limit)
+			max_sizes = max_sect_limit;
 		ext2_max_sizes[i] = max_sizes;
 	}
 #undef EXT2_BPP
@@ -357,8 +360,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
 			clear_problem_context(&pctx);
 			goto next;
-		}
-		if (ino == EXT2_ROOT_INO) {
+		} else if (ino == EXT2_ROOT_INO) {
 			/*
 			 * Make sure the root inode is a directory; if
 			 * not, offer to clear it.  It will be
@@ -391,22 +393,34 @@ void e2fsck_pass1(e2fsck_t ctx)
 							   "pass1");
 				}
 			}
-		}
-		if (ino == EXT2_JOURNAL_INO) {
+		} else if (ino == EXT2_JOURNAL_INO) {
 			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
 			if (fs->super->s_journal_inum == EXT2_JOURNAL_INO) {
+				/*
+				 * XXX arguably this check should be
+				 * in journal.c, before we decide it's
+				 * safe to run the journal...
+				 */
+				if (!LINUX_S_ISREG(inode.i_mode) &&
+				    fix_problem(ctx, PR_1_JOURNAL_BAD_MODE,
+						&pctx)) {
+					inode.i_mode = LINUX_S_IFREG;
+					e2fsck_write_inode(ctx, ino, &inode,
+							   "pass1");
+				}
 				check_blocks(ctx, &pctx, block_buf);
 				goto next;
 			}
-			if ((inode.i_blocks || inode.i_block[0]) &&
-			    fix_problem(ctx, PR1_JOURNAL_INODE_NOT_CLEAR, 
+			if ((inode.i_links_count || inode.i_blocks ||
+			     inode.i_blocks || inode.i_block[0]) &&
+			    fix_problem(ctx, PR_1_JOURNAL_INODE_NOT_CLEAR, 
 					&pctx)) {
 				memset(&inode, 0, sizeof(inode));
+				ext2fs_icount_store(ctx->inode_link_info,
+						    ino, 0);
 				e2fsck_write_inode(ctx, ino, &inode, "pass1");
 			}
-		}
-		if ((ino != EXT2_ROOT_INO) &&
-		    (ino < EXT2_FIRST_INODE(fs->super))) {
+		} else if (ino < EXT2_FIRST_INODE(fs->super)) {
 			int	problem = 0;
 			
 			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);

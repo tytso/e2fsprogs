@@ -220,6 +220,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **journal)
 	clear_problem_context(&pctx);
 
 	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
+		/* FIXME: check if UUID is valid block dev, has a journal */
 		if (sb->s_journal_dev) {
 			pctx.num = sb->s_journal_dev;
 			/* this problem aborts on -y, -p, unsupported on -n */
@@ -229,6 +230,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **journal)
 			sb->s_state &= ~EXT2_VALID_FS;
 			ext2fs_mark_super_dirty(ctx->fs);
 		}
+		/* FIXME: check if UUID is valid block dev, has a journal */
 		if (!uuid_is_null(sb->s_journal_uuid)) {
 			uuid_unparse(sb->s_journal_uuid, uuid_str);
 			pctx.str = uuid_str;
@@ -293,27 +295,6 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 		}
 		return EXT2_ET_UNSUPP_FEATURE;
 	}
-	return 0;
-}
-
-static errcode_t e2fsck_journal_fix_unsupported_super(e2fsck_t ctx,
-					      struct problem_context *pctx)
-{
-	struct ext2_super_block *sb = ctx->fs->super;
-
-	/* Unsupported journal superblock - first choice is abort.
-	 * Declining that gives the option to reset the superblock.
-	 *
-	 * Otherwise we get the chance to delete the journal, and
-	 * failing that we abort because we can't handle this.
-	 */
-	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL &&
-	    fix_problem(ctx, PR_0_JOURNAL_UNSUPP_SUPER, pctx))
-		return EXT2_ET_CORRUPT_SUPERBLOCK;
-
-	if (e2fsck_journal_fix_bad_inode(ctx, pctx))
-		return EXT2_ET_UNSUPP_FEATURE;
-
 	return 0;
 }
 
