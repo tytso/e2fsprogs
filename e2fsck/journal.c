@@ -478,6 +478,9 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 	if (!(s->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
 		return 0;
 
+#ifdef JFS_DEBUG
+	journal_enable_debug = 2;
+#endif
 	clear_problem_context(&pctx);
 	pctx.num = s->s_journal_inum;
 

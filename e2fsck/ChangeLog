@@ -1,5 +1,8 @@
 2000-12-09    <tytso@snap.thunk.org>
 
+	* journal.c (e2fsck_check_ext3_journal): If JFS_DEBUG is defined
+		at the top level, set the JFS debuging level to 2.
+
 	* jfs_e2fsck.h, jfs_user.h: Replaces jfs_compat.h.  The jfs.h file
 		has been moved to the include/linux directory.
 
