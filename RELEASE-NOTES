@@ -1,5 +1,5 @@
-E2fsprogs 1.36-rc3 (January 18, 2005)
-======================================
+E2fsprogs 1.36-rc4 (January 26, 2005)
+=====================================
 
 All of the patches that were applied to Fedore Core 3's
 e2fsprogs-1.35-11.2 have been integrated, although sometimes with a
@@ -28,7 +28,45 @@ to the -C option.  (The Fedora version of this patch would sometimes
 cause fsck to ignore a parameter on fsck's command line in some rare
 cases, sigh.)
 
+Make sure e2fsprogs doesn't write garbage into the reserved portion of
+large inodes.
+
+Make sure resize2fs releases the blocks belonging to the old inode
+table blocks when moving the inode table.  (Addresses Debian Bug:
+#290894)
+
+Skip the r_resize_inode test if resize2fs is not compiled (due to
+configure --disable-resizer)
+
+E2fsck now checks the summary filesystem accounting information, and
+if any of the information is obviously wrong, it will force a full
+filesystem check.  (Addresses Debian Bug #291571)
+
+Fix e2fsck to not complain when the resize_inode feature is enabled,
+s_reserved_gdt_blocks is zero, and there is no DIND block allocated in
+the resize inode.
+
+Add new utility program, copy_sparse.c, which is very useful
+for dealing with large sparse files (such as e2image files).
+
+Add support for jnl_blocks[] for debugfs's set_super_value.
+
+Fix filefrag so that it works correctly with sparse files.
+
+Add interpretation of OS Creator values for FreeBSD and Lites in mke2fs
+and dumpe2fs.
+
+Change blkid to test for NTFS first because Windows sometimes doesn't
+clear enough of the parition to confuse the probing routines into
+thinking the old filesystem type is still valid.  (Addresses Debian
+Bug #291990)
+
 Add support for swap partition label and uuid's in the blkid library.
+
+Add support to the blkid library to recognize Oracle ASM volumes.
+
+Make blkid -t display all devices that match the specified criteria,
+not just the first one.  (Addresses Debian Bug #290530)
 
 Badblocks will now correctly display block numbers greater than
 999,999,999 in its progress display.
@@ -198,6 +236,8 @@ Add support for version numbers of the form "1.36-rc1".
 
 Fix build of mke2fs.static.
 
+Add basic ext2fs library support for large (EA in inode) inodes.
+
 The test_io mechanism can now abort after n reads or writes to a
 particular block.  The block is specified by TEST_IO_BLOCK environment
 variable, and the read/write count by the TEST_IO_READ_ABORT and
@@ -222,6 +262,13 @@ Update to use autoconf 2.5x.
 Improved support for compiling e2fsprogs under dietlibc.
 
 Make e2fsprogs portable to Solaris and FreeBSD systems.
+
+Add blkid_get_library_version() and blkid_parse_version_string()
+functions to the blkid library.
+
+Add pkg-config files for e2fsprogs's libraries.
+
+Fix "make uninstall" to so that it removes everything that is installed.
 
 
 E2fsprogs 1.35 (February 28, 2004) 

@@ -1,3 +1,29 @@
+e2fsprogs (1.36rc4-1) unstable; urgency=low
+
+  * Fix a bug in resize2fs where we don't release the blocks belonging to
+    the old inode table blocks when we move the inode table.
+    (Closes: #290894)
+  * Make sure that we don't write garbage when writing a large inode.
+  * Check NTFS ahead of other filesystems since Windows doesn't always
+    clearing enough of the partition to avoid false positives with older
+    filesystems.  (Closes: #291990)
+  * E2fsck now checks the summary filesystem accounting information, and
+    if any of the information is obviously wrong, it will force a full
+    filesystem check.  (Closes: #291571)
+  * Clarified and updated tune2fs and blkid man pages
+  * Fix e2fsck to not complain when the resize_inode feature is enabled,
+    s_reserved_gdt_blocks is zero, and there is no DIND block allocated in
+    the resize inode.
+  * Fix blkid -t to display all devices that match the specified criteria,
+    not just the first one.  (Closes: #290530)
+  * Add support for the blkid library to recognize Oracle ASM volumes.
+  * Add set_super_value jnl_blocks[] in debugfs.
+  * Fix the filefrag program so that it works correctly with sparse files.
+  * Fix portability problems with FreeBSD, Solaris, and Intel C++ 8.1.
+  * Add support for FreeBSD and Lites as OS Creator values.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 26 Jan 2005 10:22:02 -0500
+
 e2fsprogs (1.36rc3-2) unstable; urgency=low
 
   * Remove debugging printf's from e2image's -s code.
