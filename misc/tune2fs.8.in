@@ -179,12 +179,11 @@ that size.
 @JDEV@.BI device= external-journal
 @JDEV@Attach the filesystem to the journal block device located on
 @JDEV@.IR external-journal .
-@JDEV@to the filesystem.
 @JDEV@The external 
 @JDEV@journal must have been already created using the command
 @JDEV@.IP
 @JDEV@.B mke2fs -O journal_dev 
-@JDEV@.IR external-journal.
+@JDEV@.I external-journal
 @JDEV@.IP
 @JDEV@Note that
 @JDEV@.I external-journal
