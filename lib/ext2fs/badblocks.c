@@ -107,11 +107,11 @@ errcode_t ext2fs_badblocks_list_add(ext2_badblocks_list bb, blk_t blk)
 
 	if (bb->num >= bb->size) {
 		old_size = bb->size * sizeof(blk_t);
-		bb->size += 10;
+		bb->size += 100;
 		retval = ext2fs_resize_mem(old_size, bb->size * sizeof(blk_t),
 					   (void **) &bb->list);
 		if (retval) {
-			bb->size -= 10;
+			bb->size -= 100;
 			return retval;
 		}
 	}
@@ -215,8 +215,3 @@ void ext2fs_badblocks_list_iterate_end(ext2_badblocks_iterate iter)
 	iter->bb = 0;
 	ext2fs_free_mem((void **) &iter);
 }
-
-
-
-
-		

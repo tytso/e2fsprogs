@@ -1,3 +1,18 @@
+1998-08-01  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass2.c (e2fsck_pass2): Fix the progress accounting so that we
+		get to 100%.
+
+	* pass3.c (e2fsck_pass3): Change progress accounting to be
+		consistent with the other e2fsck passes.		
+
+	* e2fsck.c (e2fsck_run): At the end of each pass, call the
+		progress function with the pass number set to zero. 
+
+	* unix.c (e2fsck_update_progress): If the pass number is zero,
+		ignore the call, since that indicates that we just want to
+		deallocate any progress structures.
+
 1998-07-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.12

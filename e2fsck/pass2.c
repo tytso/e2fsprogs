@@ -112,8 +112,11 @@ void e2fsck_pass2(e2fsck_t ctx)
 
 	cd.buf = buf;
 	cd.ctx = ctx;
-	cd.count = 0;
+	cd.count = 1;
 	cd.max = ext2fs_dblist_count(fs->dblist);
+
+	if (ctx->progress)
+		(void) (ctx->progress)(ctx, 2, 0, cd.max);
 	
 	cd.pctx.errcode = ext2fs_dblist_iterate(fs->dblist, check_dir_block,
 						&cd);

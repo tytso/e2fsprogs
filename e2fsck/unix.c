@@ -228,6 +228,9 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 {
 	const char spinner[] = "\\|/-";
 	char buf[80];
+
+	if (pass == 0)
+		return 0;
 	
 	if (ctx->progress_fd) {
 		sprintf(buf, "%d %lu %lu\n", pass, cur, max);

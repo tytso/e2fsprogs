@@ -1,3 +1,9 @@
+1998-07-27  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* badblocks.c (ext2fs_badblocks_list_add): Use a bigger increment
+		than 10 blocks when we need to expand the size of the
+		badblocks list.
+
 1998-07-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.12

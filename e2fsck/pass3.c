@@ -110,8 +110,12 @@ void e2fsck_pass3(e2fsck_t ctx)
 	ext2fs_mark_inode_bitmap(inode_done_map, EXT2_ROOT_INO);
 
 	max = e2fsck_get_num_dirinfo(ctx);
-	count = 0;
+	count = 1;
 
+	if (ctx->progress)
+		if ((ctx->progress)(ctx, 3, 0, max))
+			goto abort_exit;
+	
 	for (i=0; (dir = e2fsck_dir_info_iter(ctx, &i)) != 0;) {
 		if (ctx->progress)
 			if ((ctx->progress)(ctx, 3, count++, max))
@@ -119,9 +123,6 @@ void e2fsck_pass3(e2fsck_t ctx)
 		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dir->ino))
 			check_directory(ctx, dir, &pctx);
 	}
-	if (ctx->progress)
-		if ((ctx->progress)(ctx, 3, max, max))
-			goto abort_exit;
 
 abort_exit:
 	e2fsck_free_dir_info(ctx);

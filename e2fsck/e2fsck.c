@@ -153,6 +153,8 @@ int e2fsck_run(e2fsck_t ctx)
 		if (ctx->flags & E2F_FLAG_RUN_RETURN)
 			break;
 		e2fsck_pass(ctx);
+		if (ctx->progress)
+			(void) (ctx->progress)(ctx, 0, 0, 0);
 	}
 	ctx->flags &= ~E2F_FLAG_SETJMP_OK;
 	
