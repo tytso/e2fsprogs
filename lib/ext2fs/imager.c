@@ -106,7 +106,7 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 			skip_sparse:
 				actual = write(fd, cp, fs->blocksize * d);
 				if (actual == -1) {
-					errno = retval;
+					retval = errno;
 					goto errout;
 				}
 				if (actual != fs->blocksize * d) {
@@ -132,7 +132,7 @@ errout:
  */
 errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd, int flags)
 {
-	unsigned int	group, i, c, left;
+	unsigned int	group, c, left;
 	char		*buf;
 	blk_t		blk;
 	ssize_t		actual;
@@ -144,8 +144,10 @@ errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd, int flags)
 	
 	for (group = 0; group < fs->group_desc_count; group++) {
 		blk = fs->group_desc[(unsigned)group].bg_inode_table;
-		if (!blk)
-			return EXT2_ET_MISSING_INODE_TABLE;
+		if (!blk) {
+			retval = EXT2_ET_MISSING_INODE_TABLE;
+			goto errout;
+		}
 		left = fs->inode_blocks_per_group;
 		while (left) {
 			c = BUF_BLOCKS;
@@ -153,7 +155,7 @@ errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd, int flags)
 				c = left;
 			actual = read(fd, buf, fs->blocksize * c);
 			if (actual == -1) {
-				errno = retval;
+				retval = errno;
 				goto errout;
 			}
 			if (actual != fs->blocksize * c) {
@@ -180,9 +182,7 @@ errout:
  */
 errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd, int flags)
 {
-	unsigned int	i;
 	char		*buf, *cp;
-	blk_t		blk;
 	ssize_t		actual;
 	errcode_t	retval;
 
@@ -197,7 +197,7 @@ errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd, int flags)
 	memcpy(buf, fs->super, SUPERBLOCK_SIZE);
 	actual = write(fd, buf, fs->blocksize);
 	if (actual == -1) {
-		errno = retval;
+		retval = errno;
 		goto errout;
 	}
 	if (actual != fs->blocksize) {
@@ -211,7 +211,7 @@ errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd, int flags)
 	cp = (char *) fs->group_desc;
 	actual = write(fd, cp, fs->blocksize * fs->desc_blocks);
 	if (actual == -1) {
-		errno = retval;
+		retval = errno;
 		goto errout;
 	}
 	if (actual != fs->blocksize * fs->desc_blocks) {
@@ -231,9 +231,7 @@ errout:
  */
 errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd, int flags)
 {
-	unsigned int	i;
-	char		*buf, *cp;
-	blk_t		blk;
+	char		*buf;
 	ssize_t		actual, size;
 	errcode_t	retval;
 
@@ -247,7 +245,7 @@ errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd, int flags)
 	 */
 	actual = read(fd, buf, size);
 	if (actual == -1) {
-		errno = retval;
+		retval = errno;
 		goto errout;
 	}
 	if (actual != size) {
@@ -301,7 +299,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 
 	actual = write(fd, ptr, size);
 	if (actual == -1) {
-		errno = retval;
+		retval = errno;
 		goto errout;
 	}
 	if (actual != size) {
@@ -318,7 +316,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 				c = sizeof(zero_buf);
 			actual = write(fd, zero_buf, c);
 			if (actual == -1) {
-				errno = retval;
+				retval = errno;
 				goto errout;
 			}
 			if (actual != c) {
@@ -340,8 +338,7 @@ errout:
 errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 {
 	char		*ptr, *buf = 0;
-	int		c, size;
-	char		zero_buf[1024];
+	int		size;
 	ssize_t		actual;
 	errcode_t	retval;
 
@@ -369,7 +366,7 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 
 	actual = read(fd, buf, size);
 	if (actual == -1) {
-		errno = retval;
+		retval = errno;
 		goto errout;
 	}
 	if (actual != size) {
