@@ -1,3 +1,7 @@
+Mon Feb 23 08:46:33 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2_err.et.in: Added new error code, EXT2_ET_CANCEL_REQUESTED.
+
 Fri Feb 20 23:58:01 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* dblist.c (ext2fs_get_num_dirs): Improve the estimation of the

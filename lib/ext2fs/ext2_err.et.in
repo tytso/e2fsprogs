@@ -251,5 +251,8 @@ ec	EXT2_ET_DIR_EXISTS,
 ec	EXT2_ET_UNIMPLEMENTED,
 	"Unimplemented ext2 library function"
 
+ec	EXT2_ET_CANCEL_REQUESTED,
+	"User cancel requested"
+
 	end
 
