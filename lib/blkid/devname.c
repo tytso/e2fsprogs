@@ -71,7 +71,7 @@ blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
 	}
 
 	if (flags & BLKID_DEV_VERIFY)
-		dev = blkid_verify_devname(cache, dev);
+		dev = blkid_verify(cache, dev);
 	return dev;
 }
 
@@ -91,7 +91,7 @@ static void probe_one(blkid_cache cache, const char *ptname,
 		blkid_dev tmp = list_entry(p, struct blkid_struct_dev,
 					   bid_devs);
 		if (tmp->bid_devno == devno) {
-			dev = blkid_verify_devname(cache, tmp);
+			dev = blkid_verify(cache, tmp);
 			break;
 		}
 	}

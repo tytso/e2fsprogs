@@ -88,6 +88,26 @@ static void print_tags(blkid_dev dev, char *show[], int numtag, int output)
 		printf("\n");
 }
 
+int compare_search_type(blkid_dev dev, const char *search_type, 
+			const char *search_value)
+{
+	blkid_tag_iterate	tag_iter;
+	const char		*type, *value;
+	int			found = 0;
+
+	tag_iter = blkid_tag_iterate_begin(dev);
+	while (blkid_tag_next(tag_iter, &type, &value) == 0) {
+		if (!strcmp(type, search_type) &&
+		    !strcmp(value, search_value)) {
+			found++;
+			break;
+		}
+	}
+	blkid_tag_iterate_end(tag_iter);
+
+	return found;
+}
+
 int main(int argc, char **argv)
 {
 	blkid_cache cache = NULL;
@@ -172,43 +192,8 @@ int main(int argc, char **argv)
 		goto exit;
 
 	err = 2;
-	/* If looking for a specific NAME=value pair, print only that */
-	if (search_type) {
-		blkid_dev_iterate	dev_iter;
-		blkid_tag_iterate	tag_iter;
-		blkid_dev		dev;
-		int			found;
-		const char		*type, *value;
-
-		/* Load any additional devices not in the cache */
-		for (i = 0; i < numdev; i++)
-			blkid_get_dev(cache, devices[i], BLKID_DEV_NORMAL);
-
-		/* 
-		 * XXX We need better interfaces in the blkid library
-		 * so we don't need to open code as much stuff.
-		 */
-		dev_iter = blkid_dev_iterate_begin(cache);
-		while (blkid_dev_next(dev_iter, &dev) == 0) {
-			found = 0;
-
-			tag_iter = blkid_tag_iterate_begin(dev);
-			while (blkid_tag_next(tag_iter, &type, &value) == 0) {
-				if (!strcmp(type, search_type) &&
-				    !strcmp(value, search_value))
-					found++;
-			}
-			blkid_tag_iterate_end(tag_iter);
-			if (!found)
-				continue;
-			
-			print_tags(dev, show, numtag, output_format);
-			err = 0;
-		}
-		blkid_dev_iterate_end(dev_iter);
-
 	/* If we didn't specify a single device, show all available devices */
-	} else if (!numdev) {
+	if (!numdev) {
 		blkid_dev_iterate	iter;
 		blkid_dev		dev;
 
@@ -216,6 +201,13 @@ int main(int argc, char **argv)
 
 		iter = blkid_dev_iterate_begin(cache);
 		while (blkid_dev_next(iter, &dev) == 0) {
+			dev = blkid_verify(cache, dev);
+			if (!dev)
+				continue;
+			if (search_type &&
+			    !compare_search_type(dev, search_type, 
+						 search_value))
+				continue;
 			print_tags(dev, show, numtag, output_format);
 			err = 0;
 		}
@@ -226,6 +218,10 @@ int main(int argc, char **argv)
 						  BLKID_DEV_NORMAL);
 
 		if (dev) {
+			if (search_type &&
+			    !compare_search_type(dev, search_type, 
+						 search_value))
+				continue;
 			print_tags(dev, show, numtag, output_format);
 			err = 0;
 		}

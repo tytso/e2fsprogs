@@ -1,5 +1,9 @@
 2005-01-27  Theodore Ts'o  <tytso@mit.edu>
 
+	* blkid.c (main, compare_search_type): Make blkid -t work more
+		consistently when the blkid cache file is explicitly set
+		to /dev/null.  (Addresses Debian Bug #292425)
+
 	* mke2fs.c (PRS): Don't use a blocksize greater than 4k, even on
 		2.6 kernels, unless explicitly requested by the user; not
 		all 2.6 kernels (includeing stock 2.6 kernels as of this

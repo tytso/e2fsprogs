@@ -71,6 +71,7 @@ extern blkid_loff_t blkid_get_dev_size(int fd);
 
 /* probe.c */
 int blkid_known_fstype(const char *fstype);
+extern blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev);
 
 /* read.c */
 

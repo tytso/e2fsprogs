@@ -90,8 +90,7 @@ In order to just refresh the cache without showing any tokens use
 with no other options.
 .TP
 .B \-t
-Search the blkid cache (plus any devices specifed on the command line) 
-for all block devices with tokens named
+Search for block devices with tokens named
 .I NAME
 that have the value 
 .IR value ,
@@ -103,6 +102,8 @@ include
 .BR LABEL ,
 and
 .BR UUID .
+If there are no devices specified on the command line, all block devices 
+will be searched; otherwise, only search the devices specified by the user.
 .TP
 .B \-v
 Display version number and exit.

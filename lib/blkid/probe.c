@@ -532,7 +532,7 @@ static struct blkid_magic type_array[] = {
  * If we are unable to revalidate the data, we return the old data and
  * do not set the BLKID_BID_FL_VERIFIED flag on it.
  */
-blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev)
+blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 {
 	struct blkid_magic *id;
 	unsigned char *bufs[BLKID_BLK_OFFS + 1], *buf;

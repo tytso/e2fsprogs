@@ -212,9 +212,6 @@ static __inline__ void DEB_DUMP_CACHE(int mask, blkid_cache cache)
 /* lseek.c */
 extern blkid_loff_t blkid_llseek(int fd, blkid_loff_t offset, int whence);
 
-/* probe.c */
-extern blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev);
-
 /* read.c */
 extern void blkid_read_cache(blkid_cache cache);
 

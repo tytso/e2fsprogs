@@ -1,3 +1,9 @@
+2005-01-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid.h, blkidP.h: Rename blkid_verify_devname() to be
+		blkid_verify(), and make it be a publically exported
+		function.
+
 2005-01-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* version.c: Add functions to query the version of the blkid library.
