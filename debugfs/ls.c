@@ -90,7 +90,7 @@ static int list_dir_proc(ext2_ino_t dir,
 			strcpy(datestr, "                 ");
 			memset(&inode, 0, sizeof(struct ext2_inode));
 		}
-		d2 = (struct dir_entry_2 *) dirent;
+		d2 = (struct ext2_dir_entry_2 *) dirent;
 		fprintf(ls->f, "%c%6u%c %6o (%d)  %5d  %5d   ", lbr, ino, rbr,
 			inode.i_mode, d2->file_type, inode.i_uid, inode.i_gid);
 		if (LINUX_S_ISDIR(inode.i_mode))

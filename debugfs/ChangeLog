@@ -1,3 +1,8 @@
+2002-03-07    <tytso@snap.thunk.org>
+
+	* ls.c (list_dir_proc): Fix typo in debugfs which was causing a
+		compiler warning.
+
 2002-03-05  Theodore Tso  <tytso@mit.edu>
 
 	* lsdel.c (do_lsdel): lsdel uses the pager to print out the list
