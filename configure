@@ -1677,7 +1677,7 @@ else
 fi
 echo "$ac_t""$CPP" 1>&6
 
-for ac_hdr in stdlib.h unistd.h stdarg.h errno.h mntent.h dirent.h getopt.h linux/fd.h linux/major.h sys/disklabel.h sys/sockio.h net/if.h netinet/in.h
+for ac_hdr in stdlib.h unistd.h stdarg.h errno.h mntent.h dirent.h getopt.h linux/fd.h linux/major.h sys/disklabel.h sys/sockio.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6

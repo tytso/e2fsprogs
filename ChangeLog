@@ -1,3 +1,7 @@
+Sun Oct 19 19:09:30 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* configure.in: Add tests for sys/stat.h, sys/time.h, and sys/types.h
+
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.11
