@@ -7,7 +7,7 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-LIB_SUBDIRS=lib/et lib/ss lib/e2p lib/ext2fs lib/uuid
+LIB_SUBDIRS=lib/et lib/ss lib/e2p lib/ext2fs lib/uuid # lib/finddev
 PROG_SUBDIRS=e2fsck debugfs misc resize tests/progs 
 SUBDIRS=util $(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
