@@ -1,3 +1,10 @@
+2002-07-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* dirhash.c (ext2fs_dirhash): Fix bug which caused MD4
+		calculations for names > 32 characters to be completely
+		bogus.  Changed MD4 calculation to match what is currently
+		being used in the CVS gkernel tree.
+
 2002-07-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2_fs.h: Add s_hash_seed and s_def_hash_version to the

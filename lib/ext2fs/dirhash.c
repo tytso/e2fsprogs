@@ -75,7 +75,7 @@ static __u32 halfMD4Transform (__u32 buf[4], __u32 const in[])
 	buf[2] += c;
 	buf[3] += d;
 
-	return (buf[1] << 1);	/* "most hashed" word */
+	return ((buf[1] + b) & ~1);	/* "most hashed" word */
 	/* Alternative: return sum of all words? */
 }
 
@@ -121,7 +121,7 @@ errcode_t ext2fs_dirhash(int version, const char *name, int len,
 {
 	__u32	hash;
 	__u32	minor_hash = 0;
-	char	*p;
+	const char	*p;
 	int	i;
 
 	/* Check to see if the seed is all zero's */
@@ -144,10 +144,11 @@ errcode_t ext2fs_dirhash(int version, const char *name, int len,
 			buf[2] = 0x98badcfe;
 			buf[3] = 0x10325476;
 		} else
-			memcpy(buf, in, sizeof(buf));
+			memcpy(buf, seed, sizeof(buf));
+		p = name;
 		while (len) {
 			if (len < 32) {
-				memcpy(in, name, len);
+				memcpy(in, p, len);
 				memset(in+len, 0, 32-len);
 				hash = halfMD4Transform(buf, (__u32 *) in);
 				break;
