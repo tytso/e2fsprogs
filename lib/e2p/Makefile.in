@@ -68,7 +68,7 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @DLL_CMT@	(export JUMP_DIR=`pwd`/jump; $(CC) -B$(JUMP_PREFIX) $(ALL_CFLAGS) \
 @DLL_CMT@		-o jump/$*.o -c $<)
 @ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) -fpic -o pic/$*.o -c $<
+@BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 installdirs::
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir) \

@@ -53,7 +53,7 @@ XTRA_CFLAGS= -I$(srcdir)/../et
 @DLL_CMT@	(export JUMP_DIR=`pwd`/jump; $(CC) -B$(JUMP_PREFIX) \
 @DLL_CMT@		$(ALL_CFLAGS) -o jump/$*.o -c $<)
 @ELF_CMT@	$(CC) $(ALL_CFLAGS) -DSHARED_ELF_LIB -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) -fpic -o pic/$*.o -c $<
+@BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 # for the library
 

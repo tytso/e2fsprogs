@@ -18,6 +18,7 @@ pic:
 	mkdir pic
 
 BSD_LIB = $(BSDLIB_IMAGE).so.$(BSDLIB_VERSION)
+BSDLIB_PIC_FLAG = -fpic
 
 image:		$(BSD_LIB)
 
