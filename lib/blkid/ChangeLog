@@ -1,3 +1,8 @@
+2003-02-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* resolve.c (blkid_get_tag_value): Rename function (used to be
+		blkid_get_tagname_devname)
+
 2003-02-22  Theodore Ts'o  <tytso@mit.edu>
 
 	* devname.c (blkid_probe_all), tag.c (blkid_find_dev_with_tag): 

@@ -25,8 +25,8 @@
 /*
  * Find a tagname (e.g. LABEL or UUID) on a specific device.
  */
-char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
-				const char *devname)
+char *blkid_get_tag_value(blkid_cache cache, const char *tagname,
+			  const char *devname)
 {
 	blkid_tag found;
 	blkid_dev dev;

@@ -71,7 +71,7 @@ extern blkid_loff_t blkid_get_dev_size(int fd);
 /* read.c */
 
 /* resolve.c */
-extern char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
+extern char *blkid_get_tag_value(blkid_cache cache, const char *tagname,
 				       const char *devname);
 extern char *blkid_get_devname(blkid_cache cache, const char *token,
 			       const char *value);
