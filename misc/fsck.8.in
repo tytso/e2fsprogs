@@ -168,10 +168,16 @@ filesystems will be checked in the order specified by the
 file.  
 Filesystems with a 
 .I fs_passno
-value of 0 are skipped and are not checked at all.
+value of 0 are skipped and are not checked at all.  Filesystems with a
+.I fs_passno
+value of greater than zero will be checked in order, with filesystems
+with filesystems with the lowest
+.I fs_passno 
+number being checked first.
 If there are multiple filesystems with the same pass number, 
 fsck will attempt to check them in parallel, although it will avoid running 
 multiple filesystem checks on the same physical disk.  
+.sp
 Hence, a very common configuration in 
 .I /etc/fstab
 files is to set the root filesystem to have a 
