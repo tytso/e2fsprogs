@@ -1,3 +1,8 @@
+2001-08-09  Theodore Tso  <tytso@valinux.com>
+
+	* unix.c (show_stats): Print the number of large files in verbose
+		mode.
+
 2001-08-07  Theodore Tso  <tytso@valinux.com>
 
 	* journal.c (recover_ext3_journal): If s_errno is set in the
