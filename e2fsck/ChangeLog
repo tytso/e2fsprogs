@@ -1,3 +1,12 @@
+2003-04-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* super.c (check_super_block): Update the global free block and
+		inode counters from the block group specific counters
+		quietly.  This is needed for an experimental patch which
+		eliminates locking the entire filesystem when allocating
+		blocks or inodes; if the filesystem is not unmounted
+		cleanly, the global counts may not be accurate.
+
 2003-03-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* util.c: Explicitly declare e2fsck_global_ctx as extern for the

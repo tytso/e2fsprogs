@@ -323,6 +323,7 @@ void check_super_block(e2fsck_t ctx)
 	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
+	__u32	free_blocks = 0, free_inodes = 0;
 
 	inodes_per_block = EXT2_INODES_PER_BLOCK(fs->super);
 	ipg_max = inodes_per_block * (blocks_per_group - 4);
@@ -462,6 +463,8 @@ void check_super_block(e2fsck_t ctx)
 			ctx->invalid_inode_table_flag[i]++;
 			ctx->invalid_bitmaps++;
 		}
+		free_blocks += fs->group_desc[i].bg_free_blocks_count;
+		free_inodes += fs->group_desc[i].bg_free_inodes_count;
 		first_block += fs->super->s_blocks_per_group;
 		last_block += fs->super->s_blocks_per_group;
 	}
@@ -488,6 +491,21 @@ void check_super_block(e2fsck_t ctx)
 		}
 	}
 #endif
+
+	/*
+	 * Update the global counts from the block group counts.  This
+	 * is needed for an experimental patch which eliminates
+	 * locking the entire filesystem when allocating blocks or
+	 * inodes; if the filesystem is not unmounted cleanly, the
+	 * global counts may not be accurate.
+	 */
+	if (!(ctx->options & E2F_OPT_READONLY) &&
+	    ((free_blocks != fs->super->s_free_blocks_count) ||
+	     (free_inodes != fs->super->s_free_inodes_count))) {
+		fs->super->s_free_blocks_count = free_blocks;
+		fs->super->s_free_inodes_count = free_inodes;
+		ext2fs_mark_super_dirty(fs);
+	}
 	
 	/*
 	 * For the Hurd, check to see if the filetype option is set,

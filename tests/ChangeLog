@@ -1,3 +1,10 @@
+2003-04-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_baddir, f_dup, f_dup2, f_end-bitmap, f_lpf: Update test cases
+		to deal with changes to automatically calculate and update
+		the global inode and block counts at the beginning of the
+		e2fsck run.
+
 2003-03-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_h_badnode, f_h_badroot, f_h_reindex: Updated expect script to
