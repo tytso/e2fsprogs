@@ -134,7 +134,7 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 	 * you can't set or clear immutable flags for devices.)  Once
 	 * the kernel has been fixed we can change this...
 	 */
-	if (inode->i_flags & EXT2_IMMUTABLE_FL) {
+	if (inode->i_flags & (EXT2_IMMUTABLE_FL | EXT2_APPEND_FL)) {
 		for (i=4; i < EXT2_N_BLOCKS; i++) 
 			if (inode->i_block[i])
 				return 0;
@@ -143,17 +143,18 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 }
 
 /*
- * If the immutable flag is set on the inode, offer to clear it.
+ * If the immutable (or append-only) flag is set on the inode, offer
+ * to clear it.
  */
 static void check_immutable(e2fsck_t ctx, struct problem_context *pctx)
 {
-	if (!(pctx->inode->i_flags & EXT2_IMMUTABLE_FL))
+	if (!(pctx->inode->i_flags & (EXT2_IMMUTABLE_FL | EXT2_APPEND_FL)))
 		return;
 
 	if (!fix_problem(ctx, PR_1_SET_IMMUTABLE, pctx))
 		return;
 
-	pctx->inode->i_flags &= ~EXT2_IMMUTABLE_FL;
+	pctx->inode->i_flags &= ~((EXT2_IMMUTABLE_FL | EXT2_APPEND_FL));
 	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
 }
 

@@ -420,10 +420,11 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Immutable flag set on a device or socket inode */
 	{ PR_1_SET_IMMUTABLE,
-	  N_("Special (device/socket/fifo) @i %i has immutable flag set.  "),
+	  N_("Special (device/socket/fifo) @i %i has immutable or "
+	     "append-only flag set.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK | PR_PREEN_NO | PR_NO_OK },
 
-	/* Imagic flag set on an inode when filesystem doesn't support it */
+	/* Compression flag set on an inode when filesystem doesn't support it */
 	{ PR_1_COMPR_SET,
 	  N_("@i %i has @cion flag set on @f without @cion support.  "),
 	  PROMPT_CLEAR, 0 },

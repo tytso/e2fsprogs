@@ -1,3 +1,11 @@
+2000-03-20  Theodore Ts'o  <tytso@valinux.com>
+
+	* pass1.c (check_immutable, e2fsck_pass1_check_device_inode):
+		Check for the append-only as well as the immutable flag.
+
+	* problem.c (PR_1_SET_IMMUTABLE): Adjust message to include
+		append-only flag.   Fix comment for compression flag.
+	
 2000-02-12    <tytso@snap.thunk.org>
 
 	* unix.c (e2fsck_update_progress): Limit the number of updates to
