@@ -7,7 +7,7 @@
 .\" Created  Wed Mar 10 17:42:12 1999, Andreas Dilger
 .TH UUID_PARSE 3 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-uuid_parse \- convert an input UUID string into the libuuid internal format
+uuid_parse \- convert an input UUID string into binary representation
 .SH SYNOPSIS
 .nf
 .B #include <uuid/uuid.h>
@@ -19,9 +19,7 @@ The
 .B uuid_parse
 function converts the UUID string given by
 .I in
-into the internal
-.B uuid_t
-format.  The input UUID is a string of the form
+into the binary representation.  The input UUID is a string of the form
 1b4e28ba\-2fa1\-11d2\-883f\-b9a761bde3fb (in
 .BR printf (3)
 format "%08x\-%04x\-%04x\-%04x\-%012x", 36 bytes plus the trailing '\\0').

@@ -1,5 +1,8 @@
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
+	* uuid_parse.3.in, uuid_unparse.3.in: Change the use of the term
+		"internal format" to "binary representation".
+
 	* gen_uuid.c, pack.c, unpack.c, uuid_time.c, uuidP.h,
 		uuid_types.h.in: Use ANSI C99 types if stdint.h exists.
 
