@@ -8,7 +8,13 @@ fsck \- check and repair a Linux file system
 .SH SYNOPSIS
 .B fsck
 [
-.B \-sACVRTNP
+.B \-sAVRTNP
+]
+[
+.B \-C
+[
+.I fd
+]
 ]
 [
 .B \-t
@@ -218,10 +224,13 @@ checks running in parallel for some reason --- for example, if the
 machine in question is short on memory so that
 excessive paging is a concern.
 .TP
-.B \-C
-Display completion/progress bars for those filesystems checkers (currently
-only for ext2) which support them.   Fsck will manage the filesystem checkers
-so that only one of them will display a progress bar at a time.
+.B \-C\fR [ \fI "fd" \fR ]
+Display completion/progress bars for those filesystem checkers (currently 
+only for ext2 and ext3) which support them.   Fsck will manage the
+filesystem checkers so that only one of them will display  
+a progress bar at a time.  GUI front-ends may specify a file descriptor
+.IR fd ,
+in which case the progress bar information will be sent that file descriptor.
 .TP
 .B \-N
 Don't execute, just show what would be done.

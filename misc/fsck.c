@@ -8,8 +8,6 @@
  *
  * Written by Theodore Ts'o, <tytso@mit.edu>
  * 
- * Usage:	fsck [-ACVRNTM] [-s] [-t fstype] [fs-options] device
- * 
  * Miquel van Smoorenburg (miquels@drinkel.ow.org) 20-Oct-1994:
  *   o Changed -t fstype to behave like with mount when -A (all file
  *     systems) or -M (like mount) is specified.
@@ -18,7 +16,8 @@
  *     can be added without changing this front-end.
  *   o -R flag skip root file system.
  *
- * Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999 Theodore Ts'o.
+ * Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 
+ * 	2001, 2002, 2003, 2004, 2005 by  Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -104,6 +103,7 @@ int like_mount = 0;
 int notitle = 0;
 int parallel_root = 0;
 int progress = 0;
+int progress_fd = 0;
 int force_all_parallel = 0;
 int num_running = 0;
 int max_running = 0;
@@ -127,6 +127,18 @@ static char *string_copy(const char *s)
 	if (ret)
 		strcpy(ret, s);
 	return ret;
+}
+
+static int string_to_int(const char *s)
+{
+	long l;
+	char *p;
+
+	l = strtol(s, &p, 0);
+	if (*p || l == LONG_MIN || l == LONG_MAX || l < 0 || l > INT_MAX)
+		return -1;
+	else
+		return (int) l;
 }
 
 static int ignore(struct fs_info *);
@@ -442,7 +454,9 @@ static int execute(const char *type, const char *device, const char *mntpt,
 	if (progress && !progress_active()) {
 		if ((strcmp(type, "ext2") == 0) ||
 		    (strcmp(type, "ext3") == 0)) {
-			argv[argc++] = string_copy("-C0");
+			char tmp[80];
+			snprintf(tmp, 80, "-C%d", progress_fd);
+			argv[argc++] = string_copy(tmp);
 			inst->flags |= FLAG_PROGRESS;
 		}
 	}
@@ -1031,7 +1045,7 @@ static int check_all(NOARGS)
 
 static void usage(NOARGS)
 {
-	fputs(_("Usage: fsck [-ACNPRTV] [-t fstype] [fs-options] [filesys ...]\n"), stderr);
+	fputs(_("Usage: fsck [-ANPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"), stderr);
 	exit(EXIT_USAGE);
 }
 
@@ -1124,6 +1138,22 @@ static void PRS(int argc, char *argv[])
 				break;
 			case 'C':
 				progress++;
+				if (arg[j+1]) {
+					progress_fd = string_to_int(arg+j+1);
+					if (progress_fd < 0)
+						progress_fd = 0;
+					else
+						goto next_arg;
+				} else if ((i+1) < argc && 
+					   !strncmp(argv[i+1], "-", 1) == 0) {
+					progress_fd = string_to_int(argv[i]);
+					if (progress_fd < 0)
+						progress_fd = 0;
+					else {
+						goto next_arg;
+						i++;
+					}
+				}
 				break;
 			case 'V':
 				verbose++;
@@ -1147,6 +1177,7 @@ static void PRS(int argc, char *argv[])
 				serialize++;
 				break;
 			case 't':
+				tmp = 0;
 				if (fstype)
 					usage();
 				if (arg[j+1])

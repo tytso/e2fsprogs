@@ -1,5 +1,10 @@
 2005-01-05  Theodore Ts'o  <tytso@mit.edu>
 
+	* fsck.c (PRS): Apply Fedora's e2fsprogs-1.35-progress.patch from
+		e2fsprogs-1.35-11.2.  Fixed multiple command-line parsing
+		bugs so that backwards compatibility is maintained, and so
+		that certain command-line options wouldn't be ignored.
+
 	* mke2fs.c (parse_extended_opts): Rename the -R option to -E.  Fix
 		the resize= raid/extended option so it actually works.
 		(The patch from Fedora e2fsprogs-1.35-11.2 claimed it
