@@ -1,3 +1,10 @@
+2001-04-16  Theodore Tso  <tytso@valinux.com>
+
+	* super.c (check_super_block): Fix bad calculation of
+		inodes_per_block, and tighten min/max checks to be a bit
+		more paranoid.  Thanks to Andreas Dilger for pointing out
+		this bug.
+
 2001-03-29  Theodore Tso  <tytso@valinux.com>
 
 	* journal.c (mark_buffer_uptodate): Add emulation of kernel
