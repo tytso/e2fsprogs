@@ -1,5 +1,20 @@
-E2fsprogs 1.33-WIP (March 16, 2003)
+E2fsprogs 1.33-WIP (March 30, 2003)
 ===================================
+
+Update Debian files to reflect the fact that I am now the Debian
+maintainer of e2fsprogs.
+
+Move the source tarball generation functions from the top-level
+makefile to the util/gen-tarball script.  
+
+Updated the Turkish .po translation file.
+
+Added heimdall and MIT krb5 extensions to the com_err library to make
+it more compatible with com_err libraries from those distributions.
+
+Changed dumpe2fs to always display the superblock fields relating to
+the journalling and/or directory indexing feature even if those
+features are not enabled.
 
 Updated and clarify copyright statement vis-a-vis alpha releases of
 e2fsprogs.
