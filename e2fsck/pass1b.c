@@ -634,7 +634,7 @@ static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 		return retval;
 	}
 	if (cs.errcode) {
-		com_err("clone_file", retval,
+		com_err("clone_file", cs.errcode,
 			"returned from clone_file_block");
 		return retval;
 	}
