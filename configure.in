@@ -260,7 +260,7 @@ if test "$enableval" = "no"
 then
 	echo "Disabling journal debugging"
 else
-	AC_DEFINE(JFS_DEBUG)
+	AC_DEFINE(CONFIG_JBD_DEBUG)
 	echo "Enabling journal debugging"
 fi
 ,

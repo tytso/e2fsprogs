@@ -1,3 +1,8 @@
+2001-12-16  Theodore Tso  <tytso@valinux.com>
+
+	* f_ext_journal: Addnew test which checks e2fsck's ability to use
+		an external journal.
+
 2001-11-30  Gabriel Paubert <paubert@iram.es>
 
 	* f_badorphan: Revert previous, erroneous change.

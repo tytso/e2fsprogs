@@ -392,7 +392,7 @@ mkjournal.o: $(srcdir)/mkjournal.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/e2p/e2p.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h \
- $(srcdir)/jfs_user.h $(top_srcdir)/include/linux/jfs.h \
+ $(srcdir)/jfs_user.h $(top_srcdir)/include/linux/jbd.h \
  $(top_srcdir)/include/linux/jfs_compat.h \
  $(top_srcdir)/include/linux/linked_list.h
 namei.o: $(srcdir)/namei.c $(srcdir)/ext2_fs.h \

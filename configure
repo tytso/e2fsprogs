@@ -1196,7 +1196,7 @@ then
 	echo "Disabling journal debugging"
 else
 	cat >> confdefs.h <<\EOF
-#define JFS_DEBUG 1
+#define CONFIG_JBD_DEBUG 1
 EOF
 
 	echo "Enabling journal debugging"

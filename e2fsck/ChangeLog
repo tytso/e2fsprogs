@@ -1,7 +1,14 @@
+2001-12-16  Theodore Tso  <tytso@valinux.com>
+
+	* recovery.c, revoke.c: Update to versions from 2.4.17-pre8.
+
+	* journal.c, jfs_user.h: Update support code for new version of
+		recover.c and revoke.c.  Fix support for filesystems with
+		external journals.
+
 2001-11-30 Gabriel Paubert <paubert@iram.es>
 
 	* journal.c (e2fsck_journal_load): Fix an endianness bug.
-
 
 2001-11-26  Theodore Tso  <tytso@valinux.com>
 

@@ -36,6 +36,7 @@ struct journal_s
 	unsigned long		j_free;
 	unsigned long		j_first, j_last;
 	kdev_t			j_dev;
+	kdev_t			j_fs_dev;
 	int			j_blocksize;
 	unsigned int		j_blk_offset;
 	unsigned int		j_maxlen;
@@ -43,7 +44,7 @@ struct journal_s
 	tid_t			j_tail_sequence;
 	tid_t			j_transaction_sequence;
 	__u8			j_uuid[16];
-	struct jfs_revoke_table_s *j_revoke;
+	struct jbd_revoke_table_s *j_revoke;
 };
 
 #define J_ASSERT(assert)						\
@@ -55,6 +56,8 @@ struct journal_s
 	} } while (0)
 
 #define is_journal_abort(x) 0
+
+#define BUFFER_TRACE(bh, info)	do {} while (0)
 
 /* Need this so we can compile with configure --enable-gcc-wall */
 #ifdef NO_INLINE_FUNCS

@@ -198,7 +198,7 @@ tune2fs.o: $(srcdir)/tune2fs.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/lib/uuid/uuid.h $(top_srcdir)/lib/e2p/e2p.h \
- $(srcdir)/jfs_user.h $(top_srcdir)/include/linux/jfs.h \
+ $(srcdir)/jfs_user.h $(top_srcdir)/include/linux/jbd.h \
  $(top_srcdir)/include/linux/jfs_compat.h \
  $(top_srcdir)/include/linux/linked_list.h $(srcdir)/util.h \
  $(srcdir)/get_device_by_label.h $(top_srcdir)/version.h \
@@ -223,7 +223,7 @@ dumpe2fs.o: $(srcdir)/dumpe2fs.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/jfs_user.h \
- $(top_srcdir)/include/linux/jfs.h $(top_srcdir)/include/linux/jfs_compat.h \
+ $(top_srcdir)/include/linux/jbd.h $(top_srcdir)/include/linux/jfs_compat.h \
  $(top_srcdir)/include/linux/linked_list.h $(top_srcdir)/version.h \
  $(srcdir)/nls-enable.h
 badblocks.o: $(srcdir)/badblocks.c $(top_srcdir)/lib/et/com_err.h \

@@ -25,7 +25,7 @@
 #include "problem.h"
 #include "uuid/uuid.h"
 
-#ifdef JFS_DEBUG		/* Enabled by configure --enable-jfs-debug */
+#ifdef CONFIG_JBD_DEBUG		/* Enabled by configure --enable-jfs-debug */
 static int bh_count = 0;
 int journal_enable_debug = 2;
 #endif
@@ -34,34 +34,39 @@ int journal_enable_debug = 2;
  * to use the recovery.c file virtually unchanged from the kernel, so we
  * don't have to do much to keep kernel and user recovery in sync.
  */
-int bmap(struct inode *inode, int block)
+int journal_bmap(journal_t *journal, blk_t block, unsigned long *phys)
 {
-	int retval;
-	blk_t phys;
+	struct inode 	*inode = journal->j_inode;
+	errcode_t	retval;
+	blk_t		pblk;
 
-	retval = ext2fs_bmap(inode->i_ctx->fs, inode->i_ino, &inode->i_ext2,
-			     NULL, 0, block, &phys);
+	if (!inode) {
+		*phys = block;
+		return 0;
+	}
 
-	if (retval)
-		com_err(inode->i_ctx->device_name, retval,
-			_("bmap journal inode %ld, block %d\n"),
-			inode->i_ino, block);
-
-	return phys;
+	retval= ext2fs_bmap(inode->i_ctx->fs, inode->i_ino, 
+			    &inode->i_ext2, NULL, 0, block, &pblk);
+	*phys = pblk;
+	return (retval);
 }
 
-struct buffer_head *getblk(e2fsck_t ctx, blk_t blocknr, int blocksize)
+struct buffer_head *getblk(kdev_t kdev, blk_t blocknr, int blocksize)
 {
 	struct buffer_head *bh;
 
-	bh = e2fsck_allocate_memory(ctx, sizeof(*bh), "block buffer");
+	bh = e2fsck_allocate_memory(kdev->k_ctx, sizeof(*bh), "block buffer");
 	if (!bh)
 		return NULL;
 
 	jfs_debug(4, "getblk for block %lu (%d bytes)(total %d)\n",
 		  (unsigned long) blocknr, blocksize, ++bh_count);
 
-	bh->b_ctx = ctx;
+	bh->b_ctx = kdev->k_ctx;
+	if (kdev->k_dev == K_DEV_FS)
+		bh->b_io = kdev->k_ctx->fs->io;
+	else 
+		bh->b_io = kdev->k_ctx->journal_io;
 	bh->b_size = blocksize;
 	bh->b_blocknr = blocknr;
 
@@ -78,7 +83,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 		if (rw == READ && !bh->b_uptodate) {
 			jfs_debug(3, "reading block %lu/%p\n", 
 				  (unsigned long) bh->b_blocknr, (void *) bh);
-			retval = io_channel_read_blk(bh->b_ctx->journal_io, 
+			retval = io_channel_read_blk(bh->b_io, 
 						     bh->b_blocknr,
 						     1, bh->b_data);
 			if (retval) {
@@ -92,7 +97,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 		} else if (rw == WRITE && bh->b_dirty) {
 			jfs_debug(3, "writing block %lu/%p\n", 
 				  (unsigned long) bh->b_blocknr, (void *) bh);
-			retval = io_channel_write_blk(bh->b_ctx->journal_io, 
+			retval = io_channel_write_blk(bh->b_io, 
 						      bh->b_blocknr,
 						      1, bh->b_data);
 			if (retval) {
@@ -111,9 +116,9 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 	}
 }
 
-void mark_buffer_dirty(struct buffer_head *bh, int dummy)
+void mark_buffer_dirty(struct buffer_head *bh)
 {
-	bh->b_dirty = dummy | 1; /* use dummy to avoid unused variable */
+	bh->b_dirty = 1;
 }
 
 static void mark_buffer_clean(struct buffer_head * bh)
@@ -161,10 +166,11 @@ static errcode_t e2fsck_journal_init_inode(e2fsck_t ctx,
 					   struct ext2_super_block *s,
 					   journal_t **journal)
 {
-	struct inode *inode;
+	struct inode *inode = NULL;
 	struct buffer_head *bh;
-	blk_t start;
+	unsigned long start;
 	int retval;
+	struct kdev_s *dev_fs = NULL, *dev_journal;
 
 	jfs_debug(1, "Using journal inode %u\n", s->s_journal_inum);
 	*journal = e2fsck_allocate_memory(ctx, sizeof(journal_t), "journal");
@@ -172,19 +178,31 @@ static errcode_t e2fsck_journal_init_inode(e2fsck_t ctx,
 		return EXT2_ET_NO_MEMORY;
 	}
 
+	dev_fs = e2fsck_allocate_memory(ctx, 2*sizeof(struct kdev_s), "kdev");
+	if (!dev_fs) {
+		retval = EXT2_ET_NO_MEMORY;
+		goto errout;
+	}
+	dev_journal = dev_fs+1;
+	
 	inode = e2fsck_allocate_memory(ctx, sizeof(*inode), "journal inode");
 	if (!inode) {
 		retval = EXT2_ET_NO_MEMORY;
-		goto exit_journal;
+		goto errout;
 	}
 
 	inode->i_ctx = ctx;
 	inode->i_ino = s->s_journal_inum;
 	retval = ext2fs_read_inode(ctx->fs, s->s_journal_inum, &inode->i_ext2);
 	if (retval)
-		goto exit_inode;
+		goto errout;
 
-	(*journal)->j_dev = ctx;
+	dev_fs->k_ctx = dev_journal->k_ctx = ctx;
+	dev_fs->k_dev = K_DEV_FS;
+	dev_journal->k_dev = K_DEV_JOURNAL;
+	
+	(*journal)->j_dev = dev_journal;
+	(*journal)->j_fs_dev = dev_fs;
 	(*journal)->j_inode = inode;
 	(*journal)->j_blocksize = ctx->fs->blocksize;
 	(*journal)->j_maxlen = inode->i_ext2.i_size / (*journal)->j_blocksize;
@@ -193,26 +211,27 @@ static errcode_t e2fsck_journal_init_inode(e2fsck_t ctx,
 	if (!inode->i_ext2.i_links_count ||
 	    !LINUX_S_ISREG(inode->i_ext2.i_mode) ||
 	    (*journal)->j_maxlen < JFS_MIN_JOURNAL_BLOCKS ||
-	    (start = bmap(inode, 0)) == 0) {
-		retval = EXT2_ET_BAD_INODE_NUM;
-		goto exit_inode;
+	    (retval = journal_bmap(*journal, 0, &start)) != 0) {
+		goto errout;
 	}
 
-	bh = getblk(ctx, start, (*journal)->j_blocksize);
+	bh = getblk(dev_journal, start, (*journal)->j_blocksize);
 	if (!bh) {
 		retval = EXT2_ET_NO_MEMORY;
-		goto exit_inode;
+		goto errout;
 	}
 	(*journal)->j_sb_buffer = bh;
 	(*journal)->j_superblock = (journal_superblock_t *)bh->b_data;
 	
 	return 0;
 
-exit_inode:
-	ext2fs_free_mem((void **)&inode);
-exit_journal:
-	ext2fs_free_mem((void **)journal);
-
+errout:
+	if (dev_fs)
+		ext2fs_free_mem((void **)&dev_fs);
+	if (inode)
+		ext2fs_free_mem((void **)&inode);
+	if (journal)
+		ext2fs_free_mem((void **)journal);
 	return retval;
 }
 
@@ -228,7 +247,17 @@ static errcode_t e2fsck_journal_init_dev(e2fsck_t ctx,
 	struct ext2_super_block jsuper;
 	struct problem_context pctx;
 	const char	*journal_name;
+	struct kdev_s *dev_fs = NULL, *dev_journal;
 
+	dev_fs = e2fsck_allocate_memory(ctx, 2*sizeof(struct kdev_s), "kdev");
+	if (!dev_fs) {
+		return EXT2_ET_NO_MEMORY;
+	}
+	dev_journal = dev_fs+1;
+	dev_fs->k_ctx = dev_journal->k_ctx = ctx;
+	dev_fs->k_dev = K_DEV_FS;
+	dev_journal->k_dev = K_DEV_JOURNAL;
+	
 	clear_problem_context(&pctx);
 	journal_name = ctx->journal_name;
 	if (!journal_name)
@@ -255,7 +284,7 @@ static errcode_t e2fsck_journal_init_dev(e2fsck_t ctx,
 
 	io_channel_set_blksize(ctx->journal_io, blocksize);
 	start = (blocksize == 1024) ? 1 : 0;
-	bh = getblk(ctx, start, blocksize);
+	bh = getblk(dev_journal, start, blocksize);
 	if (!bh)
 		return EXT2_ET_NO_MEMORY;
 	ll_rw_block(READ, 1, &bh);
@@ -285,12 +314,13 @@ static errcode_t e2fsck_journal_init_dev(e2fsck_t ctx,
 		return EXT2_ET_NO_MEMORY;
 	}
 
-	(*journal)->j_dev = ctx;
+	(*journal)->j_dev = dev_journal;
+	(*journal)->j_fs_dev = dev_fs;
 	(*journal)->j_inode = NULL;
 	(*journal)->j_blocksize = ctx->fs->blocksize;
 	(*journal)->j_maxlen = jsuper.s_blocks_count;
 
-	bh = getblk(ctx, start+1, (*journal)->j_blocksize);
+	bh = getblk(dev_journal, start+1, (*journal)->j_blocksize);
 	if (!bh) {
 		retval = EXT2_ET_NO_MEMORY;
 		goto errout;
@@ -301,6 +331,7 @@ static errcode_t e2fsck_journal_init_dev(e2fsck_t ctx,
 	return 0;
 
 errout:
+	ext2fs_free_mem((void **)&dev_fs);
 	ext2fs_free_mem((void **)journal);
 	return retval;
 }
@@ -354,8 +385,7 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 #define V1_SB_SIZE	0x0024
 static void clear_v2_journal_fields(journal_t *journal)
 {
-	e2fsck_t ctx = journal->j_dev;
-	struct buffer_head *jbh = journal->j_sb_buffer;
+	e2fsck_t ctx = journal->j_dev->k_ctx;
 	struct problem_context pctx;
 
 	clear_problem_context(&pctx);
@@ -365,13 +395,13 @@ static void clear_v2_journal_fields(journal_t *journal)
 
 	memset(((char *) journal->j_superblock) + V1_SB_SIZE, 0,
 	       ctx->fs->blocksize-V1_SB_SIZE);
-	mark_buffer_dirty(journal->j_sb_buffer, 1);
+	mark_buffer_dirty(journal->j_sb_buffer);
 }
 
 
 static errcode_t e2fsck_journal_load(journal_t *journal)
 {
-	e2fsck_t ctx = journal->j_dev;
+	e2fsck_t ctx = journal->j_dev->k_ctx;
 	journal_superblock_t *jsb;
 	struct buffer_head *jbh = journal->j_sb_buffer;
 	struct problem_context pctx;
@@ -501,7 +531,7 @@ static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 		new_seq ^= u.val[i];
 	jsb->s_sequence = htonl(new_seq);
 
-	mark_buffer_dirty(journal->j_sb_buffer, 1);
+	mark_buffer_dirty(journal->j_sb_buffer);
 	ll_rw_block(WRITE, 1, &journal->j_sb_buffer);
 }
 
@@ -542,7 +572,7 @@ static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal,
 		jsb->s_sequence = htonl(journal->j_transaction_sequence);
 		if (reset)
 			jsb->s_start = 0; /* this marks the journal as empty */
-		mark_buffer_dirty(journal->j_sb_buffer, 1);
+		mark_buffer_dirty(journal->j_sb_buffer);
 	}
 	brelse(journal->j_sb_buffer);
 
@@ -665,6 +695,7 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 	journal_t *journal;
 	int retval;
 
+	journal_init_revoke_caches();
 	retval = e2fsck_get_journal(ctx, &journal);
 	if (retval)
 		return retval;
@@ -685,10 +716,11 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 		ctx->fs->super->s_state |= EXT2_ERROR_FS;
 		ext2fs_mark_super_dirty(ctx->fs);
 		journal->j_superblock->s_errno = 0;
-		mark_buffer_dirty(journal->j_sb_buffer, 1);
+		mark_buffer_dirty(journal->j_sb_buffer);
 	}
 		
 errout:
+	journal_destroy_revoke_caches();
 	e2fsck_journal_release(ctx, journal, 1, 0);
 	return retval;
 }

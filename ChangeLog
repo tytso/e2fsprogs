@@ -1,3 +1,8 @@
+2001-12-16  Theodore Tso  <tytso@valinux.com>
+
+	* configure.in: If journal debugging is enabled, define
+		CONFIG_JBD_DEBUG instead of JFS_DEBUG.
+
 2001-09-20  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.25

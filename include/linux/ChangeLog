@@ -1,3 +1,8 @@
+2001-12-16  Theodore Tso  <tytso@valinux.com>
+
+	* jfs.h, jfs_compat.h: Rename jfs.h to jbd.h, and update to
+		version from 2.4.17-pre8.
+
 2001-09-20  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.25

@@ -15,14 +15,14 @@
 #include "e2fsck.h"
 
 struct buffer_head {
-	char	 b_data[8192];
-	e2fsck_t b_ctx;
-	io_channel b_io;
-	int	 b_size;
-	blk_t	 b_blocknr;
-	int	 b_dirty;
-	int	 b_uptodate;
-	int	 b_err;
+	char		b_data[8192];
+	e2fsck_t	b_ctx;
+	io_channel 	b_io;
+	int	 	b_size;
+	blk_t	 	b_blocknr;
+	int	 	b_dirty;
+	int	 	b_uptodate;
+	int	 	b_err;
 };
 
 struct inode {
@@ -31,20 +31,17 @@ struct inode {
 	struct ext2_inode i_ext2;
 };
 
-typedef e2fsck_t kdev_t;
+struct kdev_s {
+	e2fsck_t	k_ctx;
+	int		k_dev;
+};
 
-/*
- * Kernel compatibility functions are defined in journal.c
- */
-int bmap(struct inode *inode, int block);
-struct buffer_head *getblk(e2fsck_t ctx, blk_t blocknr, int blocksize);
-void ll_rw_block(int rw, int dummy, struct buffer_head *bh[]);
-void mark_buffer_dirty(struct buffer_head *bh, int dummy);
-void mark_buffer_uptodate(struct buffer_head *bh, int val);
-void brelse(struct buffer_head *bh);
-int buffer_uptodate(struct buffer_head *bh);
-void wait_on_buffer(struct buffer_head *bh);
-#define fsync_dev(dev) do {} while(0)
+#define K_DEV_FS	1
+#define K_DEV_JOURNAL	2
+
+typedef struct kdev_s *kdev_t;
+
+#define fsync_no_super(dev) do {} while(0)
 #define buffer_req(bh) 1
 #define do_readahead(journal, start) do {} while(0)
 	
@@ -57,6 +54,7 @@ typedef struct {
 #define kmem_cache_alloc(cache,flags) malloc((cache)->object_length)
 #define kmem_cache_free(cache,obj) free(obj)
 #define kmem_cache_create(name,len,a,b,c,d) do_cache_create(len)
+#define kmem_cache_destroy(cache) do_cache_destroy(cache)
 #define kmalloc(len,flags) malloc(len)
 #define kfree(p) free(p)
 
@@ -65,6 +63,7 @@ typedef struct {
  * functions.  
  */
 extern kmem_cache_t * do_cache_create(int len);
+extern void do_cache_destroy(kmem_cache_t *cache);
 	
 #if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
 #ifdef E2FSCK_INCLUDE_INLINE_FUNCS
@@ -86,10 +85,28 @@ _INLINE_ kmem_cache_t * do_cache_create(int len)
 	return new_cache;
 }
 
+_INLINE_ void do_cache_destroy(kmem_cache_t *cache)
+{
+	free(cache);
+}
 #undef _INLINE_
 #endif
+
+#define __init
 
 /*
  * Now pull in the real linux/jfs.h definitions.
  */
-#include <linux/jfs.h>
+#include <linux/jbd.h>
+
+/*
+ * Kernel compatibility functions are defined in journal.c
+ */
+int journal_bmap(journal_t *journal, blk_t block, unsigned long *phys);
+struct buffer_head *getblk(kdev_t ctx, blk_t blocknr, int blocksize);
+void ll_rw_block(int rw, int dummy, struct buffer_head *bh[]);
+void mark_buffer_dirty(struct buffer_head *bh);
+void mark_buffer_uptodate(struct buffer_head *bh, int val);
+void brelse(struct buffer_head *bh);
+int buffer_uptodate(struct buffer_head *bh);
+void wait_on_buffer(struct buffer_head *bh);

@@ -3,7 +3,7 @@
 
 typedef unsigned short kdev_t;
 
-#include <linux/jfs.h>
+#include <linux/jbd.h>
 
 
 #endif /* _JFS_USER_H */
