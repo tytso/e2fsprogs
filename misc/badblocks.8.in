@@ -46,6 +46,28 @@ on the device is used as a default.
 is an optional parameter specifying the starting block number
 for the test, which allows the testing to start in the middle of the
 disk.  If it is not specified the first block on the disk is used as a default.
+.PP
+.B Important note:
+If the output of 
+.B badblocks
+is going to be fed to the
+.B e2fsck
+or 
+.B mke2fs
+programs, it is important that the block size is properly specified,
+since the block numbers which are generated is very dependent on the 
+block size in use.   For this reason, it is strongly recommended that
+users 
+.B not
+run 
+.B badblocks 
+directly, but rather use the 
+.B \-c
+option of the
+.B e2fsck
+and 
+.B mke2fs
+programs.
 .SH OPTIONS
 .TP
 .BI \-b " block-size"

@@ -511,7 +511,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #endif
 			break;
 		case 'c':
-			cflag++;
+			if (cflag++)
+				ctx->options |= E2F_OPT_WRITECHECK;
 			ctx->options |= E2F_OPT_CHECKBLOCKS;
 			break;
 		case 'r':
@@ -610,11 +611,16 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	if (swapfs) {
 		if (cflag || bad_blocks_file) {
 			fprintf(stderr, _("Incompatible options not "
-				"allowed when byte-swapping.\n"));
+					  "allowed when byte-swapping.\n"));
 			exit(FSCK_USAGE);
 		}
 	}
 #endif
+	if (cflag && bad_blocks_file) {
+		fprintf(stderr, _("The -c and the -l/-L options may "
+				  "not be both used at the same time.\n"));
+		exit(FSCK_USAGE);
+	}
 #ifdef HAVE_SIGNAL_H
 	/*
 	 * Set up signal action

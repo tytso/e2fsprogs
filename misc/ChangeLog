@@ -1,5 +1,16 @@
 2001-12-24  Theodore Tso  <tytso@valinux.com>
 
+	* mke2fs.c (main, test_disk): If two -c options are
+		specified, then perform a destructive read/write test
+		of the disk.
+
+	* mke2fs.8.in: Document the double -c option; also encourage users
+		to use -c instead of the -l/-L options since it's too hard
+		for users to get things like the blocksize parameter correct.
+
+	* badblocks.8.in: Encourage users to use the -c option in mke2fs
+		and e2fsck instead of running badblocks directly.
+
 	* mke2fs.c (create_lost_and_found): The lost+found directory is
 		now created with 0700 permissions, since files which get
 		dropped into that directory may have come from a protected

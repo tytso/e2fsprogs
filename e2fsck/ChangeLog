@@ -1,3 +1,17 @@
+2001-12-24  Theodore Tso  <tytso@valinux.com>
+
+	* unix.c (PRS): Don't allow the -c and -l/-L options to be
+		specified at the same time.
+
+	* e2fsck.h (E2F_OPT_WRITECHECK), unix.c (PRS), 
+		badblocks.c (read_bad_blocks_file): If two -c options are
+		specified, then perform a non-destructive read/write scan
+		of the disk.
+
+	* e2fsck.8.in: Document the double -c option; also encourage users
+		to use -c instead of the -l/-L options since it's too hard
+		for users to get things like the blocksize parameter correct.
+
 2001-12-23  Theodore Tso  <tytso@valinux.com>
 
 	* util.c (get_backup_sb): This function now searches for the

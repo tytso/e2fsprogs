@@ -141,8 +141,9 @@ of the filesystem (see the
 option).
 .TP
 .B \-c
-Check the device for bad blocks before creating the file system, using a
-fast read-only test.
+Check the device for bad blocks before creating the file system.  If
+this option is specified twice, then a slower, destructive, read-write
+test is used instead of a fast read-only test.
 .TP
 .BI \-f " fragment-size"
 Specify the size of fragments in bytes.
@@ -225,7 +226,18 @@ The journal must fit within the newly created filesystem.
 .TP
 .BI \-l " filename"
 Read the bad blocks list from
-.IR filename .
+.IR filename .  
+Note that the block numbers in the bad block list must be generated
+using the same block size as used by mke2fs.  As a result, the
+.B \-c
+option to 
+.B mke2fs
+is a much simpler and less error-prone method of checking a disk for bad
+blocks before formatting it, as 
+.B mke2fs
+will automatically pass the correct parameters to the
+.B badblocks
+program.
 .TP
 .B \-L
 Set the volume label for the filesystem.

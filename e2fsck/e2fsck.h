@@ -102,6 +102,7 @@ struct resource_track {
 #define E2F_OPT_CHECKBLOCKS	0x0040
 #define E2F_OPT_DEBUG		0x0080
 #define E2F_OPT_FORCE		0x0100
+#define E2F_OPT_WRITECHECK	0x0200
 
 /*
  * E2fsck flags

@@ -216,9 +216,9 @@ static void test_disk(ext2_filsys fs, badblocks_list *bb_list)
 	errcode_t	retval;
 	char		buf[1024];
 
-	sprintf(buf, "badblocks -b %d %s%s %d", fs->blocksize,
-		quiet ? "" : "-s ", fs->device_name,
-		fs->super->s_blocks_count);
+	sprintf(buf, "badblocks -b %d %s%s%s %d", fs->blocksize,
+		quiet ? "" : "-s ", (cflag > 1) ? "-w " : "",
+		fs->device_name, fs->super->s_blocks_count);
 	if (verbose)
 		printf(_("Running command: %s\n"), buf);
 	f = popen(buf, "r");
@@ -838,7 +838,7 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'c':	/* Check for bad blocks */
 		case 't':	/* deprecated */
-			cflag = 1;
+			cflag++;
 			break;
 		case 'f':
 			size = strtoul(optarg, &tmp, 0);
