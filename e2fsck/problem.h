@@ -98,14 +98,14 @@ struct problem_context {
 /* Journal inode is invalid */
 #define PR_0_JOURNAL_BAD_INODE	0x00000F
 
-/* Superblock has a journal device (which we can't handle yet) */
-#define PR_0_JOURNAL_UNSUPP_DEV	0x000010
+/* The external journal has multiple filesystems (which we can't handle yet) */
+#define PR_0_JOURNAL_UNSUPP_MULTIFS 0x000010
 
-/* Superblock has a bad journal device */
-#define PR_0_JOURNAL_BAD_DEV	0x000011
+/* Can't find external journal */
+#define PR_0_CANT_FIND_JOURNAL	0x000011
 
-/* Superblock has a journal UUID (which we can't handle yet) */
-#define PR_0_JOURNAL_UNSUPP_UUID 0x000012
+/* External journal has bad superblock */
+#define PR_0_EXT_JOURNAL_BAD_SUPER 0x000012
 
 /* Superblock has a bad journal UUID */
 #define PR_0_JOURNAL_BAD_UUID	0x000013

@@ -208,6 +208,12 @@ struct e2fsck_struct {
 	int process_inode_size;
 	int inode_buffer_blocks;
 
+	/*
+	 * ext3 journal support
+	 */
+	io_channel	journal_io;
+	const char	*journal_name;
+
 #ifdef RESOURCE_TRACK
 	/*
 	 * For timing purposes

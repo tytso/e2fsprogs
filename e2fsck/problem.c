@@ -179,25 +179,25 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@S has a bad ext3 @j (@i %i).\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
-	/* Superblock has a journal device (which we can't handle yet) */
-	{ PR_0_JOURNAL_UNSUPP_DEV,
-	  N_("@S has external ext3 @j @v (unsupported).\n"),
-	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_DEV },
+	/* The external journal has (unsupported) multiple filesystems */
+	{ PR_0_JOURNAL_UNSUPP_MULTIFS,
+	  N_("External @j has multiple @f users (unsupported).\n"),
+	  PROMPT_NONE, PR_FATAL },
 
-	/* Superblock has a bad journal device */
-	{ PR_0_JOURNAL_BAD_DEV,
-	  N_("@S has a bad ext3 @j (@v %X).\n"),
-	  PROMPT_CLEAR, PR_PREEN_OK },
+	/* Can't find external journal */
+	{ PR_0_CANT_FIND_JOURNAL,
+	  N_("Can't find external @j\n"),
+	  PROMPT_NONE, PR_FATAL },
 
-	/* Superblock has a journal UUID (which we can't handle yet) */
-	{ PR_0_JOURNAL_UNSUPP_UUID,
-	  N_("@S has an ext3 @j UUID (unsupported).\n"),
-	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_UUID },
+	/* External journal has bad superblock */
+	{ PR_0_EXT_JOURNAL_BAD_SUPER,
+	  N_("External @j has bad @S\n"),
+	  PROMPT_NONE, PR_FATAL },
 
 	/* Superblock has a bad journal UUID */
 	{ PR_0_JOURNAL_BAD_UUID,
-	  N_("@S has a bad ext3 @j (UUID %s).\n"),
-	  PROMPT_CLEAR, PR_PREEN_OK },
+	  N_("External @j does not support this @f\n"),
+	  PROMPT_NONE, PR_FATAL },
 
 	/* Journal has an unknown superblock type */
 	{ PR_0_JOURNAL_UNSUPP_SUPER,

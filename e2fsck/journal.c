@@ -78,7 +78,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 		if (rw == READ && !bh->b_uptodate) {
 			jfs_debug(3, "reading block %lu/%p\n", 
 				  (unsigned long) bh->b_blocknr, (void *) bh);
-			retval = io_channel_read_blk(bh->b_ctx->fs->io, 
+			retval = io_channel_read_blk(bh->b_ctx->journal_io, 
 						     bh->b_blocknr,
 						     1, bh->b_data);
 			if (retval) {
@@ -92,7 +92,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 		} else if (rw == WRITE && bh->b_dirty) {
 			jfs_debug(3, "writing block %lu/%p\n", 
 				  (unsigned long) bh->b_blocknr, (void *) bh);
-			retval = io_channel_write_blk(bh->b_ctx->fs->io, 
+			retval = io_channel_write_blk(bh->b_ctx->journal_io, 
 						      bh->b_blocknr,
 						      1, bh->b_data);
 			if (retval) {
@@ -159,7 +159,6 @@ static void e2fsck_clear_recover(e2fsck_t ctx, int error)
 
 static errcode_t e2fsck_journal_init_inode(e2fsck_t ctx,
 					   struct ext2_super_block *s,
-					   ext2_ino_t journal_inum,
 					   journal_t **journal)
 {
 	struct inode *inode;
@@ -167,7 +166,7 @@ static errcode_t e2fsck_journal_init_inode(e2fsck_t ctx,
 	blk_t start;
 	int retval;
 
-	jfs_debug(1, "Using journal inode %u\n", journal_inum);
+	jfs_debug(1, "Using journal inode %u\n", s->s_journal_inum);
 	*journal = e2fsck_allocate_memory(ctx, sizeof(journal_t), "journal");
 	if (!*journal) {
 		return EXT2_ET_NO_MEMORY;
@@ -180,8 +179,8 @@ static errcode_t e2fsck_journal_init_inode(e2fsck_t ctx,
 	}
 
 	inode->i_ctx = ctx;
-	inode->i_ino = journal_inum;
-	retval = ext2fs_read_inode(ctx->fs, journal_inum, &inode->i_ext2);
+	inode->i_ino = s->s_journal_inum;
+	retval = ext2fs_read_inode(ctx->fs, s->s_journal_inum, &inode->i_ext2);
 	if (retval)
 		goto exit_inode;
 
@@ -189,6 +188,7 @@ static errcode_t e2fsck_journal_init_inode(e2fsck_t ctx,
 	(*journal)->j_inode = inode;
 	(*journal)->j_blocksize = ctx->fs->blocksize;
 	(*journal)->j_maxlen = inode->i_ext2.i_size / (*journal)->j_blocksize;
+	ctx->journal_io = ctx->fs->io;
 
 	if (!inode->i_ext2.i_links_count ||
 	    !LINUX_S_ISREG(inode->i_ext2.i_mode) ||
@@ -205,7 +205,7 @@ static errcode_t e2fsck_journal_init_inode(e2fsck_t ctx,
 	}
 	(*journal)->j_sb_buffer = bh;
 	(*journal)->j_superblock = (journal_superblock_t *)bh->b_data;
-
+	
 	return 0;
 
 exit_inode:
@@ -216,59 +216,102 @@ exit_journal:
 	return retval;
 }
 
-static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **journal)
+static errcode_t e2fsck_journal_init_dev(e2fsck_t ctx,
+					 struct ext2_super_block *s,
+					 journal_t **journal)
 {
-	char uuid_str[40];
+	struct buffer_head *bh;
+	io_manager	io_ptr;
+	blk_t		start;
+	int		retval;
+	int		blocksize = ctx->fs->blocksize;
+	struct ext2_super_block jsuper;
 	struct problem_context pctx;
-	struct ext2_super_block *sb = ctx->fs->super;
 
 	clear_problem_context(&pctx);
+	if (!ctx->journal_name)
+		ctx->journal_name = ext2fs_find_block_device(s->s_journal_dev);
 
-	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
-		/* FIXME: check if dev is valid block dev, has a journal */
-		if (sb->s_journal_dev) {
-			pctx.num = sb->s_journal_dev;
-			/* this problem aborts on -y, -p, unsupported on -n */
-			if (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_DEV, &pctx))
-				return EXT2_ET_UNSUPP_FEATURE;
-			sb->s_journal_dev = 0;
-			sb->s_state &= ~EXT2_VALID_FS;
-			ext2fs_mark_super_dirty(ctx->fs);
-		}
-		/* FIXME: check if UUID is valid block dev, has a journal */
-		if (!uuid_is_null(sb->s_journal_uuid)) {
-			uuid_unparse(sb->s_journal_uuid, uuid_str);
-			pctx.str = uuid_str;
-			/* this problem aborts on -y, -p, unsupported on -n */
-			if (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_UUID, &pctx))
-				return EXT2_ET_UNSUPP_FEATURE;
-			uuid_clear(sb->s_journal_uuid);
-			sb->s_state &= ~EXT2_VALID_FS;
-			ext2fs_mark_super_dirty(ctx->fs);
-		}
+	if (!ctx->journal_name) {
+		fix_problem(ctx, PR_0_CANT_FIND_JOURNAL, &pctx);
+		return EXT2_ET_LOAD_EXT_JOURNAL;
+	}
+
+	jfs_debug(1, "Using journal file %s\n", ctx->journal_name);
+
+#if 1
+	io_ptr = unix_io_manager;
+#else
+	io_ptr = test_io_manager;
+	test_io_backing_manager = unix_io_manager;
+#endif
+	if ((retval = io_ptr->open(ctx->journal_name, IO_FLAG_RW,
+					    &ctx->journal_io)))
+		return retval;
+
+	io_channel_set_blksize(ctx->journal_io, blocksize);
+	start = (blocksize == 1024) ? 1 : 0;
+	bh = getblk(ctx, start, blocksize);
+	if (!bh)
+		return EXT2_ET_NO_MEMORY;
+	ll_rw_block(READ, 1, &bh);
+	if (bh->b_err)
+		return bh->b_err;
+	memcpy(&jsuper, start ? bh->b_data :  bh->b_data + 1024,
+	       sizeof(jsuper));
+	brelse(bh);
+#ifdef EXT2FS_ENABLE_SWAPFS
+	if (jsuper.s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC)) 
+		ext2fs_swap_super(&jsuper);
+#endif
+	if (jsuper.s_magic != EXT2_SUPER_MAGIC ||
+	    !(jsuper.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+		fix_problem(ctx, PR_0_EXT_JOURNAL_BAD_SUPER, &pctx);
+		return EXT2_ET_LOAD_EXT_JOURNAL;
+	}
+	/* Make sure the journal UUID is correct */
+	if (memcmp(jsuper.s_uuid, ctx->fs->super->s_journal_uuid,
+		   sizeof(jsuper.s_uuid))) {
+		fix_problem(ctx, PR_0_JOURNAL_BAD_UUID, &pctx);
+		return EXT2_ET_LOAD_EXT_JOURNAL;
+	}
+		
+	*journal = e2fsck_allocate_memory(ctx, sizeof(journal_t), "journal");
+	if (!*journal) {
+		return EXT2_ET_NO_MEMORY;
+	}
+
+	(*journal)->j_dev = ctx;
+	(*journal)->j_inode = NULL;
+	(*journal)->j_blocksize = ctx->fs->blocksize;
+	(*journal)->j_maxlen = jsuper.s_blocks_count;
+
+	bh = getblk(ctx, start+1, (*journal)->j_blocksize);
+	if (!bh) {
+		retval = EXT2_ET_NO_MEMORY;
+		goto errout;
+	}
+	(*journal)->j_sb_buffer = bh;
+	(*journal)->j_superblock = (journal_superblock_t *)bh->b_data;
+	
+	return 0;
+
+errout:
+	ext2fs_free_mem((void **)journal);
+	return retval;
+}
+
+static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **journal)
+{
+	struct ext2_super_block *sb = ctx->fs->super;
+
+	if (uuid_is_null(sb->s_journal_uuid)) {
 		if (!sb->s_journal_inum)
 			return EXT2_ET_BAD_INODE_NUM;
+		return e2fsck_journal_init_inode(ctx, sb, journal);
+	} else {
+		return e2fsck_journal_init_dev(ctx, sb, journal);
 	}
-
-	if (sb->s_journal_dev) {
-		pctx.num = sb->s_journal_dev;
-		if (!fix_problem(ctx, PR_0_JOURNAL_BAD_DEV, &pctx))
-			return EXT2_ET_UNSUPP_FEATURE;
-		sb->s_journal_dev = 0;
-		sb->s_state &= ~EXT2_VALID_FS;
-		ext2fs_mark_super_dirty(ctx->fs);
-	}
-	if (!uuid_is_null(sb->s_journal_uuid)) {
-		uuid_unparse(sb->s_journal_uuid, uuid_str);
-		pctx.str = uuid_str;
-		if (!fix_problem(ctx, PR_0_JOURNAL_BAD_UUID, &pctx))
-			return EXT2_ET_UNSUPP_FEATURE;
-		uuid_clear(sb->s_journal_uuid);
-		sb->s_state &= ~EXT2_VALID_FS;
-		ext2fs_mark_super_dirty(ctx->fs);
-	}
-
-	return e2fsck_journal_init_inode(ctx, sb, sb->s_journal_inum, journal);
 }
 
 static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
@@ -332,6 +375,10 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 		
 	case JFS_SUPERBLOCK_V2:
 		journal->j_format_version = 2;
+		if (ntohl(jsb->s_nr_users) > 1) {
+			fix_problem(ctx, PR_0_JOURNAL_UNSUPP_MULTIFS, &pctx);
+			return EXT2_ET_JOURNAL_UNSUPP_VERSION;
+		}
 		break;
 
 	/*
@@ -599,109 +646,6 @@ errout:
 	e2fsck_journal_release(ctx, journal, 1, 0);
 	return retval;
 }
-
-
-#if 0
-#define TEMPLATE "/tmp/ext3.XXXXXX"
-
-/*
- * This function attempts to mount and unmount an ext3 filesystem,
- * which is a cheap way to force the kernel to run the journal and
- * handle the recovery for us.
- */
-static errcode_t recover_ext3_journal_via_mount(e2fsck_t ctx)
-{
-	ext2_filsys fs = ctx->fs;
-	char	*dirlist[] = {"/mnt","/lost+found","/tmp","/root","/boot",0};
-	errcode_t	 retval, retval2;
-	int	 count = 0;
-	char	 template[] = TEMPLATE;
-	struct stat buf;
-	char	*tmpdir;
-
-	if (ctx->options & E2F_OPT_READONLY) {
-		printf("%s: won't do journal recovery while read-only\n",
-		       ctx->device_name);
-		return EXT2_ET_FILE_RO;
-	}
-
-	printf(_("%s: trying for ext3 kernel journal recovery\n"),
-	       ctx->device_name);
-	/*
-	 * First try to make a temporary directory.  This may fail if
-	 * the root partition is still mounted read-only.
-	 */
-newtemp:
-	tmpdir = mktemp(template);
-	if (tmpdir) {
-		jfs_debug(2, "trying %s as ext3 temp mount point\n", tmpdir);
-		if (mkdir(template, 0700)) {
-			if (errno == EROFS) {
-				tmpdir = NULL;
-				template[0] = '\0';
-			} else if (errno == EEXIST && count++ < 10) {
-				strcpy(template, TEMPLATE);
-				goto newtemp;
-			}
-			return errno;
-		}
-	}
-
-	/*
-	 * OK, creating a temporary directory didn't work.
-	 * Let's try a list of possible temporary mountpoints.
-	 */
-	if (!tmpdir) {
-		dev_t	rootdev;
-		char	**cpp, *dir;
-
-		if (stat("/", &buf))
-			return errno;
-
-		rootdev = buf.st_dev;
-
-		/*
-		 * Check that dir is on the same device as root (no other
-		 * filesystem is mounted there), and it's a directory.
-		 */
-		for (cpp = dirlist; (dir = *cpp); cpp++)
-			if (stat(dir, &buf) == 0 && buf.st_dev == rootdev &&
-			    S_ISDIR(buf.st_mode)) {
-				tmpdir = dir;
-				break;
-			}
-	}
-
-	if (tmpdir) {
-		io_manager	io_ptr = fs->io->manager;
-		int		blocksize = fs->blocksize;
-
-		jfs_debug(2, "using %s for ext3 mount\n", tmpdir);
-		/* FIXME - need to handle loop devices here */
-		if (mount(ctx->device_name, tmpdir, "ext3", MNT_FL, NULL)) {
-			retval = errno;
-			com_err(ctx->program_name, errno,
-				"when mounting %s", ctx->device_name);
-			if (template[0])
-				rmdir(tmpdir);
-			return retval;
-		}
-		/*
-		 * Now that it mounted cleanly, the filesystem will have been
-		 * recovered, so we can now unmount it.
-		 */
-		if (umount(tmpdir))
-			return errno;
-
-		/*
-		 * Remove the temporary directory, if it was created.
-		 */
-		if (template[0])
-			rmdir(tmpdir);
-		return 0;
-	}
-}
-#endif
 
 int e2fsck_run_ext3_journal(e2fsck_t ctx)
 {

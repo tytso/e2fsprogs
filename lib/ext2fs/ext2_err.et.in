@@ -269,5 +269,8 @@ ec	EXT2_ET_JOURNAL_TOO_SMALL,
 ec	EXT2_ET_JOURNAL_UNSUPP_VERSION,
 	"Unsupported journal version"
 
+ec	EXT2_ET_LOAD_EXT_JOURNAL,
+	"Error loading external journal"
+
 	end
 

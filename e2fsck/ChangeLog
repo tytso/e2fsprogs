@@ -1,3 +1,32 @@
+2001-07-22  Theodore Tso  <tytso@valinux.com>
+
+	* journal.c (ll_rw_block): Use ctx->journal_io instead of the
+		filesystem's io_channel.
+		(e2fsck_journal_init_dev): New function which supports 
+		initialization of the external journal.
+		(e2fsck_get_journal): Remove code which flagged an error
+		if the superblock reported the use of an external journal.
+		(ext3_journal_via_mount): Remove unsued, #ifdefed out function.
+
+	* problem.c, problem.h: Removed error codes no longer used
+		(PR_0_JOURNAL_UNSUPP_DEV, PR_0_JOURNAL_BAD_DEV,
+		PR_0_JOURNAL_UNSUPP_UUID) and replace them with new error
+		codes related with failures in loading the external
+		journal (PR_0_JOURNAL_UNSUPP_MULTIFS,
+		PR_0_CANT_FIND_JOURNAL, PR_0_EXT_JOURNAL_BAD_SUPER).
+		Also changed the text assocated with PR_0_JOURNAL_BAD_UUID
+		to reflect the case where the external journal isn't
+		correct for this filesystem.
+
+	* unix.c (PRS), e2fsck.8.in: Add new option -j which allows
+		the user to specify the pathname to find the external journal.
+
+	* e2fsck.c (e2fsck_reset_context): Close journal_io if it isn't
+		the same as the filesystem io_channel.
+
+	* e2fsck.h: Add new fields (journal_io and journal_name) in the
+		context structure to support external journals.
+
 2001-07-20  Theodore Tso  <tytso@valinux.com>
 
 	* unix.c (main): Add an explicit warning when the filesystem is

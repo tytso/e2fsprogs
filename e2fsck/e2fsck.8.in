@@ -26,6 +26,11 @@ e2fsck \- check a Linux second extended file system
 .B \-C
 .I fd
 ]
+@JDEV@[
+@JDEV@.B \-j
+@JDEV@.I external-journal
+@JDEV@]
+@JDEV@[
 .I device
 .SH DESCRIPTION
 .B e2fsck
@@ -117,6 +122,10 @@ Flush the filesystem device's buffer caches before beginning.  Only
 really useful for doing 
 .B e2fsck 
 time trials.
+@JDEV@.TP
+@JDEV@.BI \-j " external-journal"
+@JDEV@Set the pathname where the external-journal for this filesystem can be
+@JDEV@found.
 .TP
 .BI \-l " filename"
 Add the blocks listed in the file specified by 

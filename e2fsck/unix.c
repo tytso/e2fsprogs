@@ -65,7 +65,7 @@ static void usage(e2fsck_t ctx)
 	fprintf(stderr,
 		_("Usage: %s [-panyrcdfvstFSV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-I inode_buffer_blocks] [-P process_inode_size]\n"
-		"\t\t[-l|-L bad_blocks_file] [-C fd] device\n"),
+		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j ext-journal] device\n"),
 		ctx->program_name);
 
 	fprintf(stderr, _("\nEmergency help:\n"
@@ -78,6 +78,7 @@ static void usage(e2fsck_t ctx)
 		" -v                   Be verbose\n"
 		" -b superblock        Use alternative superblock\n"
 		" -B blocksize         Force blocksize when looking for superblock\n"
+		" -j external-journal  Set location of the external journal\n"
 		" -l bad_blocks_file   Add to badblocks list\n"
 		" -L bad_blocks_file   Set badblocks list\n"
 		));
@@ -485,7 +486,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		ctx->program_name = *argv;
 	else
 		ctx->program_name = "e2fsck";
-	while ((c = getopt (argc, argv, "panyrcC:B:dfvtFVM:b:I:P:l:L:N:Ss")) != EOF)
+	while ((c = getopt (argc, argv, "panyrcC:B:dfvtFVM:b:I:j:P:l:L:N:Ss")) != EOF)
 		switch (c) {
 		case 'C':
 			ctx->progress = e2fsck_update_progress;
@@ -543,6 +544,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			break;
 		case 'I':
 			ctx->inode_buffer_blocks = atoi(optarg);
+			break;
+		case 'j':
+			ctx->journal_name = optarg;
 			break;
 		case 'P':
 			ctx->process_inode_size = atoi(optarg);

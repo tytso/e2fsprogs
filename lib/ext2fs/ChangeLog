@@ -1,3 +1,7 @@
+2001-07-21  Theodore Tso  <tytso@valinux.com>
+
+	* ext2_err.et.in (EXT2_ET_LOAD_EXT_JOURNAL): Add new error code
+
 2001-07-20  Theodore Tso  <tytso@valinux.com>
 
 	* ext_attr.c (ext2fs_write_ext_attr): When writing the extended
