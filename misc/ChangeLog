@@ -1,3 +1,8 @@
+2001-08-04  Andreas Dilger  <root@lynx.adilger.int>
+
+	* mke2fs.c (PRS): Put check for JOURNAL_DEV before sparse_option,
+		so we don't set the sparse superblock flag on journal devices.
+
 2001-07-31  Theodore Tso  <tytso@valinux.com>
 
 	* tune2fs.c (update_feature_set, remove_journal_inode): If
