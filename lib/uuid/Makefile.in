@@ -132,14 +132,20 @@ install:: all installdirs
 	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libuuid.a
 	$(INSTALL_DATA) $(srcdir)/uuid.h $(DESTDIR)$(includedir)/uuid/uuid.h
 	for i in $(SMANPAGES); do \
+		$(RM) -f $(DESTDIR)$(man3dir)/$$i.gz; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man3dir)/$$i; \
 	done
+	$(RM) -f $(DESTDIR)$(man3dir)/uuid_generate_random.3.gz \
+		$(DESTDIR)$(man3dir)/uuid_generate_time.3.gz
+	$(LN) -f $(DESTDIR)$(man3dir)/uuid_generate.3 $(DESTDIR)$(man3dir)/uuid_generate_random.3
+	$(LN) -f $(DESTDIR)$(man3dir)/uuid_generate.3 $(DESTDIR)$(man3dir)/uuid_generate_time.3
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libuuid.a
 	for i in $(SMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man3dir)/$$i; \
 	done
+	$(RM) -f $(DESTDIR)$(man3dir)/uuid_generate_random.3 $(DESTDIR)$(man3dir)/uuid_generate_time.3
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/*

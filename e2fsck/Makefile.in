@@ -146,8 +146,11 @@ install: $(PROGS) $(MANPAGES) installdirs
 	$(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
 			$(DESTDIR)$(root_sbindir)/fsck.ext3
 	for i in $(MANPAGES); do \
+		$(RM) -f $(DESTDIR)$(man8dir)/$$i.gz; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
 	done
+	$(LN) -f $(DESTDIR)$(man8dir)/fsck.8 $(DESTDIR)$(man8dir)/fsck.ext2.8
+	$(LN) -f $(DESTDIR)$(man8dir)/fsck.8 $(DESTDIR)$(man8dir)/fsck.ext3.8
 
 uninstall:
 	for i in $(PROGS); do \
@@ -158,6 +161,8 @@ uninstall:
 	for i in $(MANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man8dir)/$$i; \
 	done
+	$(RM) -f $(DESTDIR)$(root_sbindir)/fsck.ext2 \
+			$(DESTDIR)$(root_sbindir)/fsck.ext3
 
 clean:
 	$(RM) -f $(PROGS) \#* *\# *.s *.o *.a *~ core e2fsck.static \

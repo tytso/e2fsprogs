@@ -271,13 +271,6 @@ binary-arch: install
 
 	dh_strip
 
-	dh_link -pe2fsprogs \
-	  /usr/share/man/man8/e2fsck.8.gz /usr/share/man/man8/fsck.ext2.8.gz \
-	  /usr/share/man/man8/mke2fs.8.gz /usr/share/man/man8/mkfs.ext2.8.gz
-	dh_link -puuid-dev \
-	  /usr/share/man/man3/uuid_generate.3.gz /usr/share/man/man3/uuid_generate_random.3.gz \
-	  /usr/share/man/man3/uuid_generate.3.gz /usr/share/man/man3/uuid_generate_time.3.gz
-
 	dh_compress
 	dh_fixperms
 

@@ -1,3 +1,9 @@
+2002-02-24  Theodore Tso  <tytso@valinux.com>
+
+	* Makefile.in (install): Install hard links to man pages for
+		uuid_generate_random and uuid_generate_time.  Remove
+		any compressed man pages before installing the man pages.
+
 2002-02-03  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.26

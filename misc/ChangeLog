@@ -1,3 +1,10 @@
+2002-02-24  Theodore Tso  <tytso@valinux.com>
+
+	* Makefile.in (install): Install hard links for man pages for
+		mkfs.ext2 and mkfs.ext3.  Also install hard link for
+		mkfs.ext3.  Remove any compressed man pages before
+		installing the man pages.
+
 2002-02-23  Theodore Tso  <tytso@valinux.com>
 
 	* badblocks.8.in: Clarify man page's description of the -f option

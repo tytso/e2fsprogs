@@ -59,6 +59,7 @@ install: $(PROGS) $(MANPAGES) installdirs
 		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
 	done
 	for i in $(MANPAGES); do \
+		$(RM) -f $(DESTDIR)$(man8dir)/$$i.gz; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
 	done
 
