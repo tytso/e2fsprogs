@@ -1,5 +1,8 @@
 2001-06-02  Theodore Tso  <tytso@valinux.com>
 
+	* recovery.c (scan_revoke_records): Fix bug in recovery code;
+		missing byte order conversion.
+
 	* pass1.c (mark_inode_bad): Replace alloc_bad_map with a function
 		which sets the bit in the bad inode bitmap.
 		(e2fsck_pass1): Check for fast symlinks with an invalid

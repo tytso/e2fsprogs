@@ -571,7 +571,7 @@ static int scan_revoke_records(journal_t *journal, struct buffer_head *bh,
 		unsigned long blocknr;
 		int err;
 		
-		blocknr = * ((unsigned int *) (bh->b_data+offset));
+		blocknr = ntohl(* ((unsigned int *) (bh->b_data+offset)));
 		offset += 4;
 		err = journal_set_revoke(journal, blocknr, sequence);
 		if (err)
