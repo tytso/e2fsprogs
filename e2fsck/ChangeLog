@@ -1,5 +1,9 @@
 1999-11-19    <tytso@valinux.com>
 
+	* pass1.c (process_inodes): Add shortcut handling; if
+		process_inodes_count is zero, return right away, to avoid
+		calling qsort with a non-positive count.
+
 	* message.c (safe_print): Fix to properly display ^A, ^B, etc. and
 		to print Delete as ^?
 
