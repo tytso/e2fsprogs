@@ -63,7 +63,7 @@ struct xfs_super_block {
 	__u32		xs_blocksize;
 	__u64		xs_dblocks;
 	__u64		xs_rblocks;
-	__u32		xs_dummy1[8];
+	__u32		xs_dummy1[2];
 	unsigned char	xs_uuid[16];
 	__u32		xs_dummy2[15];
 	char		xs_fname[12];
@@ -87,6 +87,25 @@ struct reiserfs_super_block {
 	__u32		rs_dummy4[5];
 	unsigned char	rs_uuid[16];
 	char		rs_label[16];
+};
+
+struct jfs_super_block {
+	unsigned char	js_magic[4];
+	__u32		js_version;
+	__u64		js_size;
+	__u32		js_bsize;
+	__u32		js_dummy1;
+	__u32		js_pbsize;
+	__u32		js_dummy2[27];
+	unsigned char	js_uuid[16];
+	unsigned char	js_label[16];
+	unsigned char	js_loguuid[16];
+};
+
+struct romfs_super_block {
+	unsigned char	ros_magic[8];
+	__u32		ros_dummy1[2];
+	unsigned char	ros_volume[16];
 };
 
 /* Yucky misaligned values */

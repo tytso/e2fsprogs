@@ -213,6 +213,35 @@ static int probe_reiserfs(int fd, blkid_cache cache, blkid_dev dev,
 	return 0;
 }
 
+static int probe_jfs(int fd, blkid_cache cache, blkid_dev dev,
+		     struct blkid_magic *id, unsigned char *buf)
+{
+	struct jfs_super_block *js;
+
+	js = (struct jfs_super_block *)buf;
+
+	if (strlen(js->js_label))
+		blkid_set_tag(dev, "LABEL", js->js_label,
+			      sizeof(js->js_label));
+	set_uuid(dev, js->js_uuid);
+	return 0;
+}
+
+static int probe_romfs(int fd, blkid_cache cache, blkid_dev dev,
+		       struct blkid_magic *id, unsigned char *buf)
+{
+	struct romfs_super_block *ros;
+
+	ros = (struct romfs_super_block *)buf;
+
+	/* can be longer, padded to a 16 bytes boundary */
+	if (strlen(ros->ros_volume)) {
+		blkid_set_tag(dev, "LABEL", ros->ros_volume,
+			      (strlen(ros->ros_volume)|15)+1);
+	}
+	return 0;
+}
+
 /*
  * BLKID_BLK_OFFS is at least as large as the highest bim_kboff defined
  * in the type_array table below + bim_kbalign.
@@ -248,7 +277,7 @@ static struct blkid_magic type_array[] = {
   { "minix",	 1,   0x10,  2, "\170\044",		0 },
   { "vxfs",	 1,	 0,  4, "\365\374\001\245",	0 },
   { "xfs",	 0,	 0,  4, "XFSB",			probe_xfs },
-  { "romfs",	 0,	 0,  8, "-rom1fs-",		0 },
+  { "romfs",	 0,	 0,  8, "-rom1fs-",		probe_romfs },
   { "bfs",	 0,	 0,  4, "\316\372\173\033",	0 },
   { "cramfs",	 0,	 0,  4, "E=\315\034",		0 },
   { "qnx4",	 0,	 4,  6, "QNX4FS",		0 },
@@ -261,7 +290,7 @@ static struct blkid_magic type_array[] = {
   { "udf",	32,	 1,  5, "NSR02",		0 },
   { "udf",	32,	 1,  5, "NSR03",		0 },
   { "udf",	32,	 1,  5, "TEA01",		0 },
-  { "jfs",	32,	 0,  4, "JFS1",			0 },
+  { "jfs",	32,	 0,  4, "JFS1",			probe_jfs },
   { "hfs",	 1,	 0,  2, "BD",			0 },
   { "ufs",	 8,  0x55c,  4, "T\031\001\000",	0 },
   { "hpfs",	 8,	 0,  4, "I\350\225\371",	0 },
