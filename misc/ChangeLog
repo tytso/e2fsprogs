@@ -1,3 +1,8 @@
+2001-05-23  Theodore Tso  <tytso@valinux.com>
+
+	* fsck.c (compile_fs_type): Fix I18N compilation bug: use N_()
+		instead of _() to initialize static variables.
+
 2001-05-20  Theodore Tso  <tytso@valinux.com>
 
 	* fsck.8.in, fsck.c (compile_fs_type, fs_type, ignore): Fix
