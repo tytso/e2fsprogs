@@ -213,7 +213,7 @@ Description: The EXT2 filesystem libraries - headers and static libraries
 Package: e2fsprogs
 Essential: yes
 Pre-Depends: ${shlibs:Depends}
-Depends: 
+Depends: awk
 Suggests: gpart, parted, e2fsck-static
 Conflicts: dump (<< 0.4b4-4), quota (<< 1.55-8.1), initscripts (<< 2.85-4), sysvinit (<< 2.85-4)
 Architecture: any
