@@ -1,3 +1,8 @@
+2003-04-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* badblocks.c (bb_output): Flush output to the badblocks
+		output file as bad blocks are discovered.
+
 2003-03-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* chattr.1.in: Clarified the description of the 't' (no tail) 

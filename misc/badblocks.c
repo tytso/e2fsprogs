@@ -87,7 +87,8 @@ static int bb_output (unsigned long bad)
 	if (ext2fs_badblocks_list_test(bb_list, bad))
 		return 0;
 
-	fprintf (out, "%lu\n", bad);
+	fprintf(out, "%lu\n", bad);
+	fflush(out);
 
 	errcode = ext2fs_badblocks_list_add (bb_list, bad);
 	if (errcode) {
