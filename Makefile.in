@@ -19,7 +19,7 @@ SUBS= lib/ext2fs/ext2_types.h lib/blkid/blkid_types.h lib/uuid/uuid_types.h
 
 TAR=tar
 
-all::
+all:: subs
 	$(MAKE) libs
 	$(MAKE) progs
 	$(MAKE) docs
