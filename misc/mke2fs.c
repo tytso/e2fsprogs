@@ -493,6 +493,7 @@ static void create_lost_and_found(ext2_filsys fs)
 	int			i;
 	int			lpf_size = 0;
 
+	fs->umask = 077;
 	retval = ext2fs_mkdir(fs, EXT2_ROOT_INO, 0, name);
 	if (retval) {
 		com_err("ext2fs_mkdir", retval,
@@ -516,7 +517,7 @@ static void create_lost_and_found(ext2_filsys fs)
 				_("while expanding /lost+found"));
 			exit(1);
 		}
-	}		
+	}
 }
 
 static void create_bad_block_inode(ext2_filsys fs, badblocks_list bb_list)

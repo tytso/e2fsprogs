@@ -58,6 +58,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
 	fs->flags = flags;
+	fs->umask = 022;
 	retval = manager->open(name, (flags & EXT2_FLAG_RW) ? IO_FLAG_RW : 0,
 			       &fs->io);
 	if (retval)

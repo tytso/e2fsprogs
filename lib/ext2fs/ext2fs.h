@@ -214,10 +214,11 @@ struct struct_ext2_filsys {
 	__u32				stride;	/* for mke2fs */
 	struct ext2_super_block *	orig_super;
 	struct ext2_image_hdr *		image_header;
+	__u32				umask;
 	/*
 	 * Reserved for future expansion
 	 */
-	__u32				reserved[9];
+	__u32				reserved[8];
 
 	/*
 	 * Reserved for the use of the calling application.

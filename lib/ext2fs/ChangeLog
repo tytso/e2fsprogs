@@ -1,5 +1,13 @@
 2001-12-24  Theodore Tso  <tytso@valinux.com>
 
+	* ext2fs.h, openfs.c (ext2fs_open), initialize.c
+		(ext2fs_initialize), mkdir.c (ext2fs_mkdir): Add a new
+		field to struct_ext2_filsys, umask.  This field is
+		initialize to 022, and affects ext2fs_mkdir in the obvious
+		way.  (In the future umask should also affect new file
+		creation routines, but the fileio functions don't
+		currently support this yes.)
+
 	* ismounted.c (check_mntent_file): Stat all of the entries in
 		/etc/mtab and/or /proc/mounts in order to catch dim-witted
 		system administrators who might have created alias

@@ -1,3 +1,11 @@
+2001-12-24  Theodore Tso  <tytso@valinux.com>
+
+	* mke2fs.c (create_lost_and_found): The lost+found directory is
+		now created with 0700 permissions, since files which get
+		dropped into that directory may have come from a protected
+		directory, and the system administrator may not deal with
+		immediately.  (Addresses Debian bug #118443)
+
 2001-12-23  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in, jfs_user.h: Move linux/jbd.h to
