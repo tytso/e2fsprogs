@@ -86,12 +86,13 @@ static char *get_subst_symbol(const char *begin, int len, char prefix)
 	start[len] = 0;
 	
 	/*
-	 * The substitution variable must all be in the of [A-Za-z_].
+	 * The substitution variable must all be in the of [0-9A-Za-z_].
 	 * If it isn't, this must be an invalid symbol name.
 	 */
 	for (cp = start; *cp; cp++) {
 		if (!(*cp >= 'a' && *cp <= 'z') &&
 		    !(*cp >= 'A' && *cp <= 'Z') &&
+		    !(*cp >= '0' && *cp <= '9') &&
 		    !(*cp == '_'))
 			return NULL;
 	}

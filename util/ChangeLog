@@ -1,3 +1,8 @@
+1998-12-15  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* subst.c (get_subst_symbol): Add [0-9] to the list of valid
+		characters for a substitution symbol.
+
 1998-08-01  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* subst.c: Add the ability to substitute apparent shell/make
