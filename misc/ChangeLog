@@ -1,3 +1,8 @@
+2002-08-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2image.c (write_raw_image_file): Check for an extended
+		attribute block before checking for has_valid_blocks.
+
 2002-07-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* fsck.8.in: Document new fsck exit code, FSCK_CANCELED.

@@ -41,7 +41,7 @@ static int icheck_proc(ext2_filsys fs,
 	e2_blkcnt_t	i;
 
 	for (i=0; i < bw->num_blocks; i++) {
-		if (bw->barray[i].blk == *block_nr) {
+		if (!bw->barray[i].ino && bw->barray[i].blk == *block_nr) {
 			bw->barray[i].ino = bw->inode;
 			bw->blocks_left--;
 		}
@@ -108,6 +108,13 @@ void do_icheck(int argc, char **argv)
 	while (ino) {
 		if (!inode.i_links_count)
 			goto next;
+
+		if (inode.i_file_acl) {
+			icheck_proc(fs, &inode.i_file_acl, 0, 0, 0, &bw);
+			if (bw.blocks_left == 0)
+				break;
+		}
+
 		if (!ext2fs_inode_has_valid_blocks(&inode))
 			goto next;
 		/*

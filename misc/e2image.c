@@ -395,8 +395,13 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 		}
 		if (ino == 0)
 			break;
-		if (!inode.i_links_count ||
-		    !ext2fs_inode_has_valid_blocks(&inode))
+		if (!inode.i_links_count)
+			continue;
+		if (inode.i_file_acl) {
+			ext2fs_mark_block_bitmap(meta_block_map,
+						 inode.i_file_acl);
+		}
+		if (!ext2fs_inode_has_valid_blocks(&inode))
 			continue;
 		
 		stashed_ino = ino;
@@ -422,10 +427,6 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 					"while iterating over %d", ino);
 					exit(1);
 				}
-			}
-			if (inode.i_file_acl) {
-				ext2fs_mark_block_bitmap(meta_block_map,
-							 inode.i_file_acl);
 			}
 		}
 	}

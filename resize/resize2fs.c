@@ -998,6 +998,17 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		pb.is_dir = LINUX_S_ISDIR(inode.i_mode);
 		pb.changed = 0;
 
+		if (inode.i_file.acl && rfs->bmap) {
+			new_block = ext2fs_extent_translate(pb->rfs->bmap, 
+							    inode.i_file_acl);
+			if (new_block) {
+				inode.i_file_acl = new_block;
+				retval = ext2fs_write_inode(rfs->old_fs, 
+							    ino, &inode);
+				if (retval) goto errout;
+			}
+		}
+		
 		if (ext2fs_inode_has_valid_blocks(&inode) &&
 		    (rfs->bmap || pb.is_dir)) {
 			pb.ino = ino;
