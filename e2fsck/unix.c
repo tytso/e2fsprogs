@@ -678,6 +678,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #endif
 		case 'k':
 			keep_bad_blocks++;
+			break;
 		default:
 			usage(ctx);
 		}
