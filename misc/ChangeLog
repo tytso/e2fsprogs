@@ -1,3 +1,8 @@
+2003-04-11  Theodore Ts'o  <tytso@mit.edu>
+
+	* tune2fs.8.in, mke2fs.8.in: Document the dir_index filesystem
+		feature which can be used with the -O option.
+
 2003-04-06  Theodore Ts'o  <tytso@mit.edu>
 
 	* fsck.c (parse_fstab_line, interpret_type, fsck_device, ignore,

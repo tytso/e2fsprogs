@@ -332,8 +332,8 @@ The following filesystem features can be set or cleared using
 .BR tune2fs :
 .RS 1.2i
 .TP
-.B sparse_super
-Limit the number of backup superblocks to save space on large filesystems.
+.B dir_index
+Use hashed b-trees to speed up lookups in large directories.
 .TP
 .B filetype
 Store file type information in directory entries.
@@ -343,6 +343,9 @@ Use a journal to ensure filesystem consistency even across unclean shutdowns.
 Setting the filesystem feature is equivalent to using the 
 .B \-j
 option.
+.TP
+.B sparse_super
+Limit the number of backup superblocks to save space on large filesystems.
 .RE
 .IP
 After setting or clearing 

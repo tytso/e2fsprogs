@@ -300,9 +300,8 @@ is run on a system which can support them.
 The following filesystem options are supported:
 .RS 1.2i
 .TP
-.B sparse_super
-Create a filesystem with fewer superblock backup copies
-(saves space on large filesystems).
+.B dir_index
+Use hashed b-trees to speed up lookups in large directories.
 .TP
 .B filetype
 Store file type information in directory entries.
@@ -319,6 +318,10 @@ option).
 @JDEV@.I external-journal
 @JDEV@must be created with the same
 @JDEV@block size as the filesystems that will be using it.
+.TP
+.B sparse_super
+Create a filesystem with fewer superblock backup copies
+(saves space on large filesystems).
 .RE
 .TP
 .B \-q
