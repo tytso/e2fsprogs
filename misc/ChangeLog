@@ -1,3 +1,29 @@
+2000-07-13    <tytso@snap.thunk.org>
+
+	* badblocks.8.in: Added text explaining that the -n and -w options
+		are mutually exclusive.
+
+	* badblocks.c (usage): Fix usage message to make it clear that the
+		block count must be specified if the starting block is to
+		be specified.  (The starting block should be a option, in
+		the long run.)
+
+	* badblocks.c (test_nd): Save and restore the currently_testing
+		variable before going into the write verification loop.
+		This avoids a loop termination problem if the last block
+		on the disk is bad.  Also, turn off the SIGALRM signal
+		while restoring blocks after the user types ^C.  The
+		num_saved variable is now static so that it won't get
+		clobbered by a longjmp.  buf_used and bb_count are no
+		longer static, since they aren't used by the cleanup
+		routines anymore.
+
+	* badblocks.c (main): Removed an unsued varaible (buf_size).
+		Fixed bad getopt argument that didn't allow the 'b' option
+		to take an argument.  Added error checking when parsing
+		the starting block number.  Fixed lint warning in fscanf
+		format string.
+
 2000-07-06  Theodore Ts'o  <tytso@valinux.com>
 
 	* fsck.c (execute, wait_one): Treat fsck.ext3 the same as

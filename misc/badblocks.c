@@ -66,12 +66,9 @@ static int w_flag = 0;			/* do r/w test: 0=no, 1=yes,
 static int s_flag = 0;			/* show progress of test */
 static int force = 0;			/* force check of mounted device */
 
-static char *blkbuf;		/* Allocation array for bad block testing */
-
-
 static void usage(NOARGS)
 {
-	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] device [blocks_count] [start_count]\n"),
+	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] device [blocks_count [start_count]]\n"),
 		 program_name);
 	exit (1);
 }
@@ -415,14 +412,14 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	char *blkbuf, *save_ptr, *test_ptr, *read_ptr;
 	char * ptr;
 	int try, i;
-	long got, used2, written;
+	long got, used2, written, save_currently_testing;
 	struct saved_blk_record *test_record;
-	int	num_saved;
+	/* This is static to prevent being clobbered by the longjmp */
+	static int num_saved;
 	jmp_buf terminate_env;
 	errcode_t errcode;
-	/* These are static to prevent being clobbered by the longjmp */
-	static long buf_used = 0;
-	static unsigned int bb_count = 0;
+	long buf_used;
+	unsigned int bb_count;
 
 	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
 	if (errcode) {
@@ -467,8 +464,8 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		/*
 		 * Abnormal termination by a signal is handled here.
 		 */
-
-		fprintf(stderr, _("Interrupt caught, cleaning up\n"));
+		signal (SIGALRM, SIG_IGN);
+		fprintf(stderr, _("\nInterrupt caught, cleaning up\n"));
 
 		save_ptr = blkbuf;
 		for (i=0; i < num_saved; i++) {
@@ -484,6 +481,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	capture_terminate(terminate_env);
 
 	buf_used = 0;
+	bb_count = 0;
 	save_ptr = blkbuf;
 	test_ptr = blkbuf + (blocks_at_once * block_size);
 	currently_testing = from_count;
@@ -545,6 +543,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 			continue;
 
 		flush_bufs(dev);
+		save_currently_testing = currently_testing;
 
 		/*
 		 * for each contiguous block that we read into the
@@ -601,6 +600,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		buf_used = 0;
 		save_ptr = blkbuf;
 		test_ptr = blkbuf + (blocks_at_once * block_size);
+		currently_testing = save_currently_testing;
 	}
 	num_blocks = 0;
 	alarm(0);
@@ -662,7 +662,6 @@ int main (int argc, char ** argv)
 	unsigned int (*test_func)(int dev, unsigned long blocks_count,
 				  int block_size, unsigned long from_count,
 				  unsigned long blocks_at_once);
-	size_t	buf_size;
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
@@ -675,7 +674,7 @@ int main (int argc, char ** argv)
 	
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "bf:i:o:svwnc:p:h:")) != EOF) {
+	while ((c = getopt (argc, argv, "b:fi:o:svwnc:p:h:")) != EOF) {
 		switch (c) {
 		case 'b':
 			block_size = strtoul (optarg, &tmp, 0);
@@ -764,6 +763,11 @@ int main (int argc, char ** argv)
 	}
 	if (optind <= argc-1) {
 		from_count = strtoul (argv[optind], &tmp, 0);
+		if (*tmp) {
+			com_err (program_name, 0, _("bad starting block - %s"),
+				 argv[optind]);
+			exit (1);
+		}
 	} else from_count = 0;
 	if (from_count >= blocks_count) {
 	    com_err (program_name, 0, _("bad blocks range: %lu-%lu"),
@@ -827,7 +831,7 @@ int main (int argc, char ** argv)
 
 	if (in) {
 		for(;;) {
-			switch(fscanf (in, "%lu\n", &next_bad)) {
+			switch(fscanf (in, "%u\n", &next_bad)) {
 				case 0:
 					com_err (program_name, 0, "input file - bad format");
 					exit (1);

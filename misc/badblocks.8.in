@@ -110,7 +110,10 @@ Default is 0, meaning
 will exit after the first pass.
 .TP
 .B \-n
-Use non-destructive read-write mode.
+Use non-destructive read-write mode.  By default only a non-destructive 
+read-only test is done.  This option must not be combined with the 
+.B \-w
+option, as they are mutually exclusive.
 .TP
 .B \-s
 Show the progress of the scan by writing out the block numbers as they
@@ -123,7 +126,10 @@ Verbose mode.
 Use write-mode test. With this option,
 .B badblocks
 scans for bad blocks by writing some patterns (0xaa, 0x55, 0xff, 0x00) on
-every block of the device, reading every block and comparing the contents.
+every block of the device, reading every block and comparing the contents.  
+This option may not be compiled with the 
+.B \-n 
+option, as they are mutually exclusive.
 .SH WARNING
 Never use the
 .B \-w
@@ -131,7 +137,7 @@ option on an device containing an existing file system.
 This option erases data!  If you want to do write-mode testing on
 an existing file system, use the
 .B \-n
-option.  It is slower, but it will preserve your data.
+option instead.  It is slower, but it will preserve your data.  
 .SH AUTHOR
 .B badblocks
 was written by Remy Card <Remy.Card@linux.org>.  Current maintainer is
