@@ -2089,7 +2089,7 @@ msgstr ""
 #: e2fsck/unix.c:690 misc/tune2fs.c:444 misc/tune2fs.c:699 misc/tune2fs.c:716
 #, c-format
 msgid "Unable to resolve '%s'"
-msgstr "Nicht möglich »%s« aufzulösen""
+msgstr "Nicht möglich »%s« aufzulösen"
 
 #: e2fsck/unix.c:716
 msgid "Incompatible options not allowed when byte-swapping.\n"
