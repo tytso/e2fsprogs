@@ -40,6 +40,7 @@ struct fs_info {
 };
 
 #define FLAG_DONE 1
+#define FLAG_PROGRESS 2
 
 /*
  * Structure to allow exit codes to be stored
@@ -49,6 +50,7 @@ struct fsck_instance {
 	int	flags;
 	int	exit_status;
 	char *	prog;
+	char *	type;
 	char *	device;
 	struct fsck_instance *next;
 };

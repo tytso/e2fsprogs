@@ -8,32 +8,26 @@ fsck \- check and repair a Linux file system
 .SH SYNOPSIS
 .B fsck
 [
-.B \-AVRTNP
-]
-[
-.B \-s
+.B \-sACVRTNP
 ]
 [
 .B \-t
 .I fstype
-]
-[
-.B fs-options
+] -- [
+.B fsck-options
 ]
 .I filesys [ ... ]
 .SH DESCRIPTION
 .B fsck
-is used to check and optionally repair a Linux file system.  
+is used to check and optionally repair a one or more Linux file systems.  
 .I filesys
-is either the device name (e.g. /dev/hda1, /dev/sdb2) or the mount point
-(e.g. /, /usr, /home) for the file system.  If this invocation of 
+can be a device name (e.g. /dev/hda1, /dev/sdb2), a
+mount point (e.g. /, /usr, /home), or an ext2 label or UUID specifier 
+(e.g., UUID=8868abf6-88c5-4a83-98b8-bfc24057f7bd or LABEL=root).  
+The 
 .B fsck 
-has several filesystems on different physical disk drives to check, then
-.B fsck 
-will try to run them in parallel.  This reduces the total amount time it
-takes to check all of the filesystems, since 
-.B fsck
-takes advantage of the parallelism of multiple disk spindles.
+program will try to run filesystems on different physical disk drives 
+in parallel to reduce total amount time to check all of the filesystems.
 .PP
 The exit code returned by
 .B fsck
@@ -67,6 +61,48 @@ and /etc, and finally in the directories listed in the PATH environment
 variable.  Please see the file system-specific checker manual pages for
 further details.
 .SH OPTIONS
+.TP
+.B -s
+Serialize 
+.B fsck 
+operations.  This is a good idea if you checking multiple
+filesystems and the checkers are in an interactive mode.  (Note:
+.BR e2fsck (8)
+runs in an interactive mode by default.  To make 
+.BR e2fsck (8)
+run in a non-interactive mode, you must either specify the
+.B -p
+or
+.B -a
+option, if you wish for errors to be corrected automatically, or
+the 
+.B -n
+option if you do not.)
+.TP
+.BI -t \ fstype
+Specifies the type of file system to be checked.  When the
+.B \-A 
+flag is specified, only filesystems that match 
+.I fstype
+are checked.  If 
+.I fstype
+is prefixed with 
+.B no
+then only filesystems whose type does not match
+.I fstype
+are checked.
+.sp
+Normally, the filesystem type is deduced by searching for
+.I filesys
+in the 
+.I /etc/fstab 
+file and using the corresponding entry.
+If the type can not be deduced, 
+.B fsck
+will use the type specified by the 
+.B \-t
+option if it specifies a unique filesystem type.  If this type is not
+available, then the default file system type (currently ext2) is used. 
 .TP
 .B -A
 Walk through the
@@ -103,13 +139,10 @@ checks running in parallel for some reason --- for example, if the
 machine in question is short on memory so that
 excessive paging is a concern.
 .TP
-.B -R
-When checking all file systems with the
-.B \-A
-flag, skip the root file system (in case it's already mounted read-write).
-.TP
-.B -T
-Don't show the title on startup.
+.B -C
+Display completion/progress bars for those filesystems checkers (currently
+only for ext2) which support them.   Fsck will manage the filesystem checkers
+so that only one of them will display a progress bar at a time.
 .TP
 .B -N
 Don't execute, just show what would be done.
@@ -125,53 +158,19 @@ executable might be corrupted!  This option is mainly provided
 for those sysadmins who don't want to repartition the root
 filesystem to be small and compact (which is really the right solution).
 .TP
-.B -s
-Serialize 
-.B fsck 
-operations.  This is a good idea if you checking multiple
-filesystems and the checkers are in an interactive mode.  (Note:
-.BR e2fsck (8)
-runs in an interactive mode by default.  To make 
-.BR e2fsck (8)
-run in a non-interactive mode, you must either specify the
-.B -p
-or
-.B -a
-option, if you wish for errors to be corrected automatically, or
-the 
-.B -n
-option if you do not.)
+.B -R
+When checking all file systems with the
+.B \-A
+flag, skip the root file system (in case it's already mounted read-write).
+.TP
+.B -T
+Don't show the title on startup.
 .TP
 .B -V
 Produce verbose output, including all file system-specific commands
 that are executed.
 .TP
-.BI -t \ fstype
-Specifies the type of file system to be checked.  When the
-.B \-A 
-flag is specified, only filesystems that match 
-.I fstype
-are checked.  If 
-.I fstype
-is prefixed with 
-.B no
-then only filesystems whose type does not match
-.I fstype
-are checked.
-.sp
-Normally, the filesystem type is deduced by searching for
-.I filesys
-in the 
-.I /etc/fstab 
-file and using the corresponding entry.
-If the type can not be deduced, 
-.B fsck
-will use the type specified by the 
-.B \-t
-option if it specifies a unique filesystem type.  If this type is not
-available, then the default file system type (currently ext2) is used. 
-.TP
-.B fs-options
+.B fsck-options
 Any options which are not understood by 
 .BR fsck ,
 or which follow the

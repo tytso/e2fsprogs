@@ -8,7 +8,7 @@
  *
  * Written by Theodore Ts'o, <tytso@mit.edu>
  * 
- * Usage:	fsck [-AVRNTM] [-s] [-t fstype] [fs-options] device
+ * Usage:	fsck [-ACVRNTM] [-s] [-t fstype] [fs-options] device
  * 
  * Miquel van Smoorenburg (miquels@drinkel.ow.org) 20-Oct-1994:
  *   o Changed -t fstype to behave like with mount when -A (all file
@@ -18,7 +18,7 @@
  *     can be added without changing this front-end.
  *   o -R flag skip root file system.
  *
- * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
+ * Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999 Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -130,6 +130,7 @@ int skip_root = 0;
 int like_mount = 0;
 int notitle = 0;
 int parallel_root = 0;
+int progress = 0;
 char *progname;
 char *fstype = NULL;
 struct fs_info *filesys_info;
@@ -355,22 +356,48 @@ static char *find_fsck(char *type)
   return(s ? prog : NULL);
 }
 
+static int progress_active()
+{
+	struct fsck_instance *inst;
+
+	for (inst = instance_list; inst; inst = inst->next) {
+		if (inst->flags & FLAG_DONE)
+			continue;
+		if (inst->flags & FLAG_PROGRESS)
+			return 1;
+	}
+	return 0;
+}
+
 /*
  * Execute a particular fsck program, and link it into the list of
  * child processes we are waiting for.
  */
-static int execute(char *prog, char *device, char *mntpt, int interactive)
+static int execute(char *type, char *device, char *mntpt, int interactive)
 {
-	char *s, *argv[80];
+	char *s, *argv[80], prog[80];
 	int  argc, i;
 	struct fsck_instance *inst;
 	pid_t	pid;
 
+	inst = malloc(sizeof(struct fsck_instance));
+	if (!inst)
+		return ENOMEM;
+	memset(inst, 0, sizeof(struct fsck_instance));
+
+	sprintf(prog, "fsck.%s", type);
 	argv[0] = string_copy(prog);
 	argc = 1;
 	
 	for (i=0; i <num_args; i++)
 		argv[argc++] = string_copy(args[i]);
+
+	if (progress & !progress_active()) {
+		if (strcmp(type, "ext2") == 0) {
+			argv[argc++] = "-C0";
+			inst->flags |= FLAG_PROGRESS;
+		}
+	}
 
 	argv[argc++] = string_copy(device);
 	argv[argc] = 0;
@@ -401,12 +428,10 @@ static int execute(char *prog, char *device, char *mntpt, int interactive)
 		perror(argv[0]);
 		exit(EXIT_ERROR);
 	}
-	inst = malloc(sizeof(struct fsck_instance));
-	if (!inst)
-		return ENOMEM;
-	memset(inst, 0, sizeof(struct fsck_instance));
+
 	inst->pid = pid;
 	inst->prog = string_copy(prog);
+	inst->type = string_copy(type);
 	inst->device = string_copy(device);
 	inst->next = instance_list;
 	instance_list = inst;
@@ -422,7 +447,7 @@ static struct fsck_instance *wait_one(NOARGS)
 {
 	int	status;
 	int	sig;
-	struct fsck_instance *inst, *prev;
+	struct fsck_instance *inst, *inst2, *prev;
 	pid_t	pid;
 
 	if (!instance_list)
@@ -482,6 +507,17 @@ retry:
 		prev->next = inst->next;
 	else
 		instance_list = inst->next;
+	if (progress && (inst->flags & FLAG_PROGRESS) &&
+	    !progress_active()) {
+		for (inst2 = instance_list; inst2; inst2 = inst2->next) {
+			if (inst2->flags & FLAG_DONE)
+				continue;
+			if (strcmp(inst2->type, "ext2"))
+				continue;
+			kill(inst2->pid, SIGUSR1);
+			break;
+		}
+	}
 	return inst;
 }
 
@@ -516,10 +552,9 @@ static int wait_all(NOARGS)
  */
 static void fsck_device(char *device, int interactive)
 {
-	const char	*type = 0;
+	char	*type = 0;
 	struct fs_info *fsent;
 	int retval;
-	char prog[80];
 
 	if (fstype && strncmp(fstype, "no", 2) && !strchr(fstype, ','))
 		type = fstype;
@@ -532,12 +567,11 @@ static void fsck_device(char *device, int interactive)
 	if (!type)
 		type = DEFAULT_FSTYPE;
 
-	sprintf(prog, "fsck.%s", type);
-	retval = execute(prog, device, fsent ? fsent->mountpt : 0,
+	retval = execute(type, device, fsent ? fsent->mountpt : 0,
 			 interactive);
 	if (retval) {
-		fprintf(stderr, "%s: Error %d while executing %s for %s\n",
-			progname, retval, prog, device);
+		fprintf(stderr, "%s: Error %d while executing fsck.%s "
+			"for %s\n", progname, retval, type, device);
 	}
 }
 
@@ -632,15 +666,12 @@ static const char *base_device(char *device)
 static int device_already_active(char *device)
 {
 	struct fsck_instance *inst;
-	const char *base;
-
-	base = base_device(device);
+	const char *base = base_device(device);
 
 	for (inst = instance_list; inst; inst = inst->next) {
 		if (!strcmp(base, base_device(inst->device)))
 			return 1;
 	}
-
 	return 0;
 }
 
@@ -742,7 +773,7 @@ static int check_all(NOARGS)
 static void usage(NOARGS)
 {
 	fprintf(stderr,
-		"Usage: fsck [-AV] [-t fstype] [fs-options] filesys\n");
+		"Usage: fsck [-ACNPRTV] [-t fstype] [fs-options] filesys\n");
 	exit(EXIT_USAGE);
 }
 
@@ -793,6 +824,9 @@ static void PRS(int argc, char *argv[])
 			switch (arg[j]) {
 			case 'A':
 				doall++;
+				break;
+			case 'C':
+				progress++;
 				break;
 			case 'V':
 				verbose++;

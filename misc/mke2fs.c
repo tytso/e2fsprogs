@@ -74,6 +74,7 @@ int	verbose = 0;
 int	quiet = 0;
 int	super_only = 0;
 int	force = 0;
+int	noaction = 0;
 char	*bad_blocks_filename = 0;
 __u32	fs_stride = 0;
 
@@ -184,6 +185,59 @@ static void check_mount(NOARGS)
 		fprintf(stderr, "will not make a filesystem here!\n");
 		exit(1);
 	}
+}
+
+/*
+ * This function sets the default parameters for a filesystem
+ *
+ * The type is specified by the user.  The size is minimum size for
+ * which a set of parameters applies, with a size of zero meaning that
+ * it is the default parameter for the type.  Note that order is
+ * important in the table below.
+ */
+static char default_str[] = "default";
+struct mke2fs_defaults {
+	char	*type;
+	int	size;
+	int	blocksize;
+	int	inode_ratio;
+} settings[] = {
+	{ default_str, 0, 4096, 8192 },
+	{ default_str, 512, 1024, 4096 },
+	{ default_str, 3, 1024, 8192 },
+	{ "news", 0, 4096, 4096 },
+	{ 0, 0, 0, 0},
+};
+
+static void set_fs_defaults(char *fs_type, struct ext2fs_sb *param,
+			    int blocksize, int *inode_ratio)
+{
+	int	megs;
+	int	ratio = 0;
+	struct mke2fs_defaults *p;
+
+	megs = (param->s_blocks_count * (EXT2_BLOCK_SIZE(param) / 1024) /
+		1024);
+	if (inode_ratio)
+		ratio = *inode_ratio;
+	if (!fs_type)
+		fs_type = default_str;
+	for (p = settings; p->type; p++) {
+		if ((strcmp(p->type, fs_type) != 0) &&
+		    (strcmp(p->type, default_str) != 0))
+			continue;
+		if ((p->size != 0) &&
+		    (megs > p->size))
+			continue;
+		if (ratio == 0)
+			*inode_ratio = p->inode_ratio;
+		if (blocksize == 0) {
+			param->s_log_frag_size = param->s_log_block_size =
+				log2(p->blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+		}
+	}
+	if (blocksize == 0)
+		param->s_blocks_count /= EXT2_BLOCK_SIZE(param) / 1024;
 }
 
 /*
@@ -420,6 +474,7 @@ static void create_lost_and_found(ext2_filsys fs)
 	ino_t			ino;
 	const char		*name = "lost+found";
 	int			i;
+	int			lpf_size = 0;
 
 	retval = ext2fs_mkdir(fs, EXT2_ROOT_INO, 0, name);
 	if (retval) {
@@ -434,6 +489,8 @@ static void create_lost_and_found(ext2_filsys fs)
 	}
 	
 	for (i=1; i < EXT2_NDIR_BLOCKS; i++) {
+		if ((lpf_size += fs->blocksize) >= 16*1024)
+			break;
 		retval = ext2fs_expand_dir(fs, ino);
 		if (retval) {
 			com_err("ext2fs_expand_dir", retval,
@@ -499,27 +556,28 @@ static void show_stats(ext2_filsys fs)
 	if (param.s_blocks_count != s->s_blocks_count)
 		printf("warning: %d blocks unused.\n\n",
 		       param.s_blocks_count - s->s_blocks_count);
-	
+
+	memset(buf, 0, sizeof(buf));
+	strncpy(buf, s->s_volume_name, sizeof(s->s_volume_name));
+	printf("Filesystem label=%s\n", buf);
+	printf("OS type: ");
 	switch (fs->super->s_creator_os) {
 	    case EXT2_OS_LINUX: printf ("Linux"); break;
 	    case EXT2_OS_HURD:  printf ("GNU/hurd");   break;
 	    case EXT2_OS_MASIX: printf ("Masix"); break;
 	    default:		printf ("(unknown os)");
         }
-	printf (" ext2 filesystem format\n");
-	memset(buf, 0, sizeof(buf));
-	strncpy(buf, s->s_volume_name, sizeof(s->s_volume_name));
-	printf("Filesystem label=%s\n", buf);
+	printf("\n");
+	printf("Block size=%u (log=%u)\n", fs->blocksize,
+		s->s_log_block_size);
+	printf("Fragment size=%u (log=%u)\n", fs->fragsize,
+		s->s_log_frag_size);
 	printf("%u inodes, %u blocks\n", s->s_inodes_count,
 	       s->s_blocks_count);
 	printf("%u blocks (%2.2f%%) reserved for the super user\n",
 		s->s_r_blocks_count,
 	       100.0 * s->s_r_blocks_count / s->s_blocks_count);
 	printf("First data block=%u\n", s->s_first_data_block);
-	printf("Block size=%u (log=%u)\n", fs->blocksize,
-		s->s_log_block_size);
-	printf("Fragment size=%u (log=%u)\n", fs->fragsize,
-		s->s_log_frag_size);
 	printf("%lu block group%s\n", fs->group_desc_count,
 		(fs->group_desc_count > 1) ? "s" : "");
 	printf("%u blocks per group, %u fragments per group\n",
@@ -647,14 +705,16 @@ static void PRS(int argc, char *argv[])
 	int	size;
 	char	* tmp;
 	blk_t	max = 8192;
-	int	inode_ratio = 4096;
+	int	blocksize = 0;
+	int	inode_ratio = 0;
 	int	reserved_ratio = 5;
 	ino_t	num_inodes = 0;
 	errcode_t	retval;
-	int	sparse_option = -1;
+	int	sparse_option = 1;
 	char	*oldpath = getenv("PATH");
 	struct ext2fs_sb *param_ext2 = (struct ext2fs_sb *) &param;
 	char	*raid_opts = 0;
+	char	*fs_type = 0;
 	blk_t	dev_size;
 	
 	/* Update our PATH to include /sbin  */
@@ -673,6 +733,7 @@ static void PRS(int argc, char *argv[])
 	setbuf(stderr, NULL);
 	initialize_ext2_error_table();
 	memset(&param, 0, sizeof(struct ext2_super_block));
+	param.s_rev_level = 1;  /* Create revision 1 filesystems now */
 	
 	fprintf (stderr, "mke2fs %s, %s for EXT2 FS %s, %s\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
@@ -680,18 +741,18 @@ static void PRS(int argc, char *argv[])
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv,
-			    "b:cf:g:i:l:m:o:qr:R:s:tvI:SFL:M:N:V")) != EOF)
+			    "b:cf:g:i:l:m:no:qr:R:s:tvI:ST:FL:M:N:V")) != EOF)
 		switch (c) {
 		case 'b':
-			size = strtoul(optarg, &tmp, 0);
-			if (size < 1024 || size > 4096 || *tmp) {
+			blocksize = strtoul(optarg, &tmp, 0);
+			if (blocksize < 1024 || blocksize > 4096 || *tmp) {
 				com_err(program_name, 0, "bad block size - %s",
 					optarg);
 				exit(1);
 			}
 			param.s_log_block_size =
-				log2(size >> EXT2_MIN_BLOCK_LOG_SIZE);
-			max = size * 8;
+				log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+			max = blocksize * 8;
 			break;
 		case 'c':
 		case 't':	/* Check for bad blocks */
@@ -749,6 +810,9 @@ static void PRS(int argc, char *argv[])
 				exit(1);
 			}
 			break;
+		case 'n':
+			noaction++;
+			break;
 		case 'o':
 			creator_os = optarg;
 			break;
@@ -787,6 +851,9 @@ static void PRS(int argc, char *argv[])
 		case 'S':
 			super_only = 1;
 			break;
+		case 'T':
+			fs_type = optarg;
+			break;
 		case 'V':
 			/* Print version number and exit */
 			fprintf(stderr, "\tUsing %s\n",
@@ -819,9 +886,13 @@ static void PRS(int argc, char *argv[])
 
 	param.s_log_frag_size = param.s_log_block_size;
 
-	retval = ext2fs_get_device_size(device_name,
-					EXT2_BLOCK_SIZE(&param),
-					&dev_size);
+	if (noaction && param.s_blocks_count) {
+		dev_size = param.s_blocks_count;
+		retval = 0;
+	} else
+		retval = ext2fs_get_device_size(device_name,
+						EXT2_BLOCK_SIZE(&param),
+						&dev_size);
 	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {
 		com_err(program_name, retval,
 			"while trying to determine filesystem size");
@@ -841,6 +912,8 @@ static void PRS(int argc, char *argv[])
 			"Filesystem larger than apparent filesystem size.");
 		proceed_question();
 	}
+
+	set_fs_defaults(fs_type, param_ext2, blocksize, &inode_ratio);
 
 	if (param.s_blocks_per_group) {
 		if (param.s_blocks_per_group < 256 ||
@@ -929,8 +1002,11 @@ int main (int argc, char *argv[])
 			sizeof(s->s_last_mounted));
 	}
 	
-	if (!quiet)
+	if (!quiet || noaction)
 		show_stats(fs);
+
+	if (noaction)
+		exit(0);
 
 	if (bad_blocks_filename)
 		read_bb_file(fs, &bb_list, bad_blocks_filename);

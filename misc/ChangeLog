@@ -1,4 +1,22 @@
-1999-07-08    <tytso@rsts-11.mit.edu>
+1999-07-18    <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (PRS, set_fs_defaults): Add new option -T which allows
+		the user to specify the how the filesystem is to be used.
+		Mke2fs now chooses the filesystem parameters automatically
+		based on the size of the filesystem and the intended use
+		of the filesystem.  Add new option -n which simply goes
+		through the calculations to determine the parameters of
+		the filesystem the system would make.
+
+1999-07-18    <tytso@valinux.com>
+
+	* fsck.c, fsck.h: Add support for new option -C.  This option will
+		automatically manage e2fsck processes so that they will
+		print completion/progress bars.  If multiple filesystems
+		are being checked, arrange to make sure that only one
+		e2fsck process is displaying a progress bar at a time.
+
+1999-07-08    <tytso@valinux.com>
 
 	* badblocks.c (do_test): Don't complain if the write error occurs
 		on a non-block boundary.  This is perfectly common when
