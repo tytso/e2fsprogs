@@ -3,5 +3,4 @@ Makefile
 POTFILES
 *.gmo
 stamp-cat-id
-e2fsprogs.pot
 cat-id-tbl.c

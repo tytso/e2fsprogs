@@ -1,17 +1,18 @@
-# Italian translation for e2fsprogs
-# Copyright (C) 2000 Marco d'Itri
-# Marco d'Itri <md@linux.it>, 2000.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.18\n"
-"POT-Creation-Date: 2000-07-07 01:28-0400\n"
-"PO-Revision-Date: 2000-01-15 14:21+01:00\n"
-"Last-Translator: Marco d'Itri <md@linux.it>\n"
-"Language-Team: Italian <it@li.org>\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2000-07-13 19:14-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
 
 #: e2fsck/badblocks.c:22 misc/mke2fs.c:263
 #, c-format
@@ -27,8 +28,8 @@ msgid "while reading the bad blocks inode"
 msgstr ""
 
 #: e2fsck/badblocks.c:71 e2fsck/iscan.c:119 e2fsck/scantest.c:108
-#: e2fsck/unix.c:742 e2fsck/unix.c:774 misc/badblocks.c:779
-#: misc/badblocks.c:788 misc/badblocks.c:802 misc/badblocks.c:813
+#: e2fsck/unix.c:742 e2fsck/unix.c:774 misc/badblocks.c:783
+#: misc/badblocks.c:792 misc/badblocks.c:806 misc/badblocks.c:817
 #: misc/dumpe2fs.c:241 misc/mke2fs.c:279 misc/tune2fs.c:312 resize/main.c:202
 #, c-format
 msgid "while trying to open %s"
@@ -1697,89 +1698,88 @@ msgstr ""
 msgid "done                        \n"
 msgstr ""
 
-#: misc/badblocks.c:74
+#: misc/badblocks.c:71
 #, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-" [-c blocks_at_once] [-p num_passes] device [blocks_count] [start_count]\n"
+" [-c blocks_at_once] [-p num_passes] device [blocks_count [start_count]]\n"
 msgstr ""
 
-#: misc/badblocks.c:181 misc/badblocks.c:208
+#: misc/badblocks.c:178 misc/badblocks.c:205
 msgid "during seek"
 msgstr ""
 
-#: misc/badblocks.c:188
+#: misc/badblocks.c:185
 #, c-format
 msgid "Weird value (%ld) in do_read\n"
 msgstr ""
 
-#: misc/badblocks.c:227
+#: misc/badblocks.c:224
 msgid "during fdatasync"
 msgstr ""
 
-#: misc/badblocks.c:230
+#: misc/badblocks.c:227
 msgid "during fsync"
 msgstr ""
 
-#: misc/badblocks.c:254 misc/badblocks.c:430
+#: misc/badblocks.c:251 misc/badblocks.c:427
 msgid "while beginning bad block list iteration"
 msgstr ""
 
-#: misc/badblocks.c:264 misc/badblocks.c:333 misc/badblocks.c:440
+#: misc/badblocks.c:261 misc/badblocks.c:330 misc/badblocks.c:437
 msgid "while allocating buffers"
 msgstr ""
 
-#: misc/badblocks.c:269
+#: misc/badblocks.c:266
 msgid "Checking for bad blocks in read-only mode\n"
 msgstr ""
 
-#: misc/badblocks.c:270 misc/badblocks.c:342 misc/badblocks.c:459
+#: misc/badblocks.c:267 misc/badblocks.c:339 misc/badblocks.c:456
 #, c-format
 msgid "From block %lu to %lu\n"
 msgstr ""
 
-#: misc/badblocks.c:278
+#: misc/badblocks.c:275
 msgid "Checking for bad blocks (read-only test): "
 msgstr ""
 
-#: misc/badblocks.c:341
+#: misc/badblocks.c:338
 msgid "Checking for bad blocks in read-write mode\n"
 msgstr ""
 
-#: misc/badblocks.c:348
+#: misc/badblocks.c:345
 #, c-format
 msgid "Writing pattern 0x%08x: "
 msgstr ""
 
-#: misc/badblocks.c:362 misc/badblocks.c:387
+#: misc/badblocks.c:359 misc/badblocks.c:384
 #, c-format
 msgid "during seek on block %d"
 msgstr ""
 
-#: misc/badblocks.c:374
+#: misc/badblocks.c:371
 msgid "Reading and comparing: "
 msgstr ""
 
-#: misc/badblocks.c:447
+#: misc/badblocks.c:444
 msgid "Initializing random test data\n"
 msgstr ""
 
-#: misc/badblocks.c:458
+#: misc/badblocks.c:455
 msgid "Checking for bad blocks in non-destructive read-write mode\n"
 msgstr ""
 
-#: misc/badblocks.c:462
+#: misc/badblocks.c:459
 msgid "Checking for bad blocks (non-destructive read-write test): "
 msgstr ""
 
-#.
-#. * Abnormal termination by a signal is handled here.
-#.
-#: misc/badblocks.c:471
-msgid "Interrupt caught, cleaning up\n"
+#: misc/badblocks.c:468
+msgid ""
+"\n"
+"Interrupt caught, cleaning up\n"
 msgstr ""
 
-#: misc/badblocks.c:527
+#: misc/badblocks.c:525
 #, c-format
 msgid "during test data write, block %lu"
 msgstr ""
@@ -1797,40 +1797,45 @@ msgstr ""
 msgid "it's not safe to run badblocks!\n"
 msgstr ""
 
-#: misc/badblocks.c:684 misc/mke2fs.c:788
+#: misc/badblocks.c:683 misc/mke2fs.c:788
 #, c-format
 msgid "bad block size - %s"
 msgstr ""
 
-#: misc/badblocks.c:747
+#: misc/badblocks.c:746
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size manually\n"
 msgstr ""
 
-#: misc/badblocks.c:753
+#: misc/badblocks.c:752
 msgid "while trying to determine device size"
 msgstr ""
 
-#: misc/badblocks.c:759 misc/mke2fs.c:915
+#: misc/badblocks.c:758 misc/mke2fs.c:915
 #, c-format
 msgid "bad blocks count - %s"
 msgstr ""
 
-#: misc/badblocks.c:769
+#: misc/badblocks.c:767
+#, c-format
+msgid "bad starting block - %s"
+msgstr ""
+
+#: misc/badblocks.c:773
 #, c-format
 msgid "bad blocks range: %lu-%lu"
 msgstr ""
 
-#: misc/badblocks.c:824
+#: misc/badblocks.c:828
 msgid "creating in-memory bad blocks list"
 msgstr ""
 
-#: misc/badblocks.c:839
+#: misc/badblocks.c:843
 msgid "adding to in-memory bad block list"
 msgstr ""
 
-#: misc/badblocks.c:863
+#: misc/badblocks.c:867
 #, c-format
 msgid "Pass completed, %u bad blocks found.\n"
 msgstr ""
