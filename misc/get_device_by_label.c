@@ -167,7 +167,7 @@ static void init_lvm(void)
 
 		lv_list = opendir(vdirname);
 		free(vdirname);
-		if (lv_list != NULL)
+		if (lv_list == NULL)
 			return;
 
 		while ((lv_iter = readdir(lv_list)) != 0) {

@@ -1,3 +1,9 @@
+2002-09-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* get_device_by_label.c (init_lvm): Fix bug which caused
+		LABEL='xxx' to not work correctly when using LVM.
+		(Reversed sense of error check reported by ateeq@hotpop.com)
+
 2001-08-31  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.28
