@@ -494,7 +494,7 @@ EXT2_ET_MISSING_INODE_TABLE.
 @deftypefun errcode_t ext2fs_block_iterate (ext2_filsys @var{fs}, ino_t @var{ino}, int @var{flags}, char *block_buf, int (*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, int @var{blockcnt}, void *@var{private}), void *@var{private})
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_block_iterate2 (ext2_filsys @var{fs}, ino_t @var{ino}, int @var{flags}, char *@var{block}_buf, int (*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, int @var{blockcnt}, blk_t @var{ref_blk}, int  @var{ref_offset}, void *@var{private}), void *@var{private})
+@deftypefun errcode_t ext2fs_block_iterate2 (ext2_filsys @var{fs}, ino_t @var{ino}, int @var{flags}, char *@var{block}_buf, int (*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, e2_blkcnt_t @var{blockcnt}, blk_t @var{ref_blk}, int  @var{ref_offset}, void *@var{private}), void *@var{private})
 @end deftypefun
 
 @c ----------------------------------------------------------------------
