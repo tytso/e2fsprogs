@@ -807,8 +807,9 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 			end_problem_latch(ctx, PR_LATCH_OPTIMIZE_DIR);
 			fix_problem(ctx, PR_3A_OPTIMIZE_DIR_ERR, &pctx);
 		}
-		e2fsck_simple_progress(ctx, "Rebuilding directory",
-				       (float) (++cur) / (float) max, ino);
+		if (ctx->progress && !ctx->progress_fd)
+			e2fsck_simple_progress(ctx, "Rebuilding directory",
+			       (float) (++cur) / (float) max, ino);
 	}
 	end_problem_latch(ctx, PR_LATCH_OPTIMIZE_DIR);
 	if (!all_dirs)
