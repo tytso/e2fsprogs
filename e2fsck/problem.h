@@ -479,7 +479,10 @@ struct problem_context {
 #define PR_3_NO_ROOT_INODE_ABORT	0x030015
 
 /* Internal error: couldn't find dir_info */
-#define PR_3_NO_DIRINFO			0x020016
+#define PR_3_NO_DIRINFO			0x030016
+
+/* Lost+found is not a directory */
+#define PR_3_LPF_NOTDIR			0x030017
 
 /*
  * Pass 4 errors

@@ -1,3 +1,23 @@
+1999-03-14  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* util.c (print_resource_track): Use mallinfo if present to get
+		more accurate malloc statistics.
+
+	* pass3.c (get_lost_and_found): Check to see if lost+found is a
+		plain fail; if so, offer to unlink it.
+
+	* problem.c, problem.h (PR_3_LPF_NOTDIR): Add new problem code.
+
+1999-03-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* problem.c: Fix problem message for PR_1_BAD_GROUP_DESCRIPTORS so
+		that the block group number is printed.  Add new prompt,
+		PROMPT_UNLINK.
+
+1999-01-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs 1.14
+
 1999-01-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* message.c (safe_print): New function which prints strings,

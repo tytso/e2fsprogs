@@ -14,6 +14,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <termios.h>
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
 
 #include "e2fsck.h"
 
@@ -219,24 +222,32 @@ void print_resource_track(const char *desc, struct resource_track *track)
 #ifdef HAVE_GETRUSAGE
 	struct rusage r;
 #endif
+#ifdef HAVE_MALLINFO
+	struct mallinfo	malloc_info;
+#endif
 	struct timeval time_end;
 
 	gettimeofday(&time_end, 0);
 
 	if (desc)
 		printf("%s: ", desc);
-	
+
+#ifdef HAVE_MALLINFO
+	malloc_info = mallinfo();
+	printf("Memory used: %d/%d, ", malloc_info.arena, malloc_info.hblkhd);
+#else
+	printf("Memory used: %d, ",
+	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)));
+#endif	
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
 
-	printf("Memory used: %d, elapsed time: %6.3f/%6.3f/%6.3f\n",
-	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)),
+	printf("elapsed time: %6.3f/%6.3f/%6.3f\n",
 	       timeval_subtract(&time_end, &track->time_start),
 	       timeval_subtract(&r.ru_utime, &track->user_start),
 	       timeval_subtract(&r.ru_stime, &track->system_start));
 #else
-	printf("Memory used: %d, elapsed time: %6.3f\n",
-	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)),
+	printf("elapsed time: %6.3f\n",
 	       timeval_subtract(&time_end, &track->time_start));
 #endif
 }

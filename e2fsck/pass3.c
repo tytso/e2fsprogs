@@ -340,14 +340,32 @@ ino_t get_lost_and_found(e2fsck_t ctx)
 	char *			block;
 	const char 		name[] = "lost+found";
 	struct 	problem_context	pctx;
+	struct dir_info 	*dirinfo;
 
 	clear_problem_context(&pctx);
 	
 	retval = ext2fs_lookup(fs, EXT2_ROOT_INO, name,
 			       sizeof(name)-1, 0, &ino);
-	if (!retval)
-		return ino;
-	if (retval != EXT2_ET_FILE_NOT_FOUND) {
+	if (!retval) {
+		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, ino))
+			return ino;
+		/* Lost+found isn't a directory! */
+		pctx.ino = ino;
+		if (!fix_problem(ctx, PR_3_LPF_NOTDIR, &pctx))
+			return 0;
+
+		/* OK, unlink the old /lost+found directory. */
+		pctx.errcode = ext2fs_unlink(fs, EXT2_ROOT_INO, name, ino, 0);
+		if (pctx.errcode) {
+			pctx.str = "ext2fs_unlink";
+			fix_problem(ctx, PR_3_CREATE_LPF_ERROR, &pctx);
+			return 0;
+		}
+		dirinfo = e2fsck_get_dir_info(ctx, ino);
+		if (dirinfo)
+			dirinfo->parent = 0;
+		adjust_inode_count(ctx, ino, -1);
+	} else if (retval != EXT2_ET_FILE_NOT_FOUND) {
 		pctx.errcode = retval;
 		fix_problem(ctx, PR_3_ERR_FIND_LPF, &pctx);
 	}

@@ -37,6 +37,7 @@
 #define PROMPT_CLONE	14
 #define PROMPT_DELETE 	15
 #define PROMPT_SUPPRESS 16
+#define PROMPT_UNLINK	17
 
 /*
  * These are the prompts which are used to ask the user if they want
@@ -60,6 +61,7 @@ static const char *prompt[] = {
 	"Clone duplicate/bad blocks", /* 14 */
 	"Delete file",		/* 15 */
 	"Suppress messages",	/* 16 */
+	"Unlink",		/* 17 */
 };
 
 /*
@@ -84,6 +86,7 @@ static const char *preen_msg[] = {
 	"DUPLICATE/BAD BLOCKS CLONED", /* 14 */
 	"FILE DELETED",		/* 15 */
 	"SUPPRESSED",		/* 16 */
+	"UNLINKED",		/* 17 */
 };
 
 static const struct e2fsck_problem problem_table[] = {
@@ -311,7 +314,7 @@ static const struct e2fsck_problem problem_table[] = {
 		  
 	/* Bad block group descriptors in group */
 	{ PR_1_BAD_GROUP_DESCRIPTORS,
-	  "Warning: Group %d's copy of the @g descriptors has a bad "
+	  "Warning: Group %g's copy of the @g descriptors has a bad "
 	  "@b (%b).\n",
 	  PROMPT_NONE, PR_PREEN_OK | PR_PREEN_NOMSG },
 
@@ -801,6 +804,11 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_3_NO_DIRINFO,
 	  "Internal error: couldn't find dir_info for %i.\n",
 	  PROMPT_NONE, PR_FATAL },
+
+	/* Lost+found not a directory */
+	{ PR_3_LPF_NOTDIR,
+	  "/@l is not a @d (ino=%i)\n",
+	  PROMPT_UNLINK, 0 }, 
 
 	/* Pass 4 errors */
 	
