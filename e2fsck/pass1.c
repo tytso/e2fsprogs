@@ -1126,6 +1126,25 @@ static void mark_table_blocks(ext2_filsys fs)
 	block = fs->super->s_first_data_block;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		pctx.group = i;
+
+		if (ext2fs_bg_has_super(fs, i)) {
+			/*
+			 * Mark this group's copy of the superblock
+			 */
+			ext2fs_mark_block_bitmap(block_found_map, block);
+			ext2fs_mark_block_bitmap(block_illegal_map, block);
+		
+			/*
+			 * Mark this group's copy of the descriptors
+			 */
+			for (j = 0; j < fs->desc_blocks; j++) {
+				ext2fs_mark_block_bitmap(block_found_map,
+							 block + j + 1);
+				ext2fs_mark_block_bitmap(block_illegal_map,
+							 block + j + 1);
+			}
+		}
+		
 		/*
 		 * Mark the blocks used for the inode table
 		 */
@@ -1185,24 +1204,6 @@ static void mark_table_blocks(ext2_filsys fs)
 				     fs->group_desc[i].bg_inode_bitmap);
 			    ext2fs_mark_block_bitmap(block_illegal_map,
 				     fs->group_desc[i].bg_inode_bitmap);
-			}
-		}
-
-		if (ext2fs_bg_has_super(fs, i)) {
-			/*
-			 * Mark this group's copy of the superblock
-			 */
-			ext2fs_mark_block_bitmap(block_found_map, block);
-			ext2fs_mark_block_bitmap(block_illegal_map, block);
-		
-			/*
-			 * Mark this group's copy of the descriptors
-			 */
-			for (j = 0; j < fs->desc_blocks; j++) {
-				ext2fs_mark_block_bitmap(block_found_map,
-							 block + j + 1);
-				ext2fs_mark_block_bitmap(block_illegal_map,
-							 block + j + 1);
 			}
 		}
 		block += fs->super->s_blocks_per_group;

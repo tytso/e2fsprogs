@@ -115,12 +115,12 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Block bitmap conflicts with some other fs block */
 	{ PR_1_BB_CONFLICT,
-	  "@g %N's @b @B at %b @C.\n",
+	  "@g %g's @b @B at %b @C.\n",
 	  PROMPT_RELOCATE, 0 },
 
 	/* Inode bitmap conflicts with some other fs block */
 	{ PR_1_IB_CONFLICT,
-	  "@g %N's @i @B at %b @C.\n",
+	  "@g %g's @i @B at %b @C.\n",
 	  PROMPT_RELOCATE, 0 },
 
 	/* Inode table conflicts with some other fs block */

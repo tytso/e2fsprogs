@@ -1,3 +1,13 @@
+Thu Jun 12 00:25:31 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (mark_table_blocks): Mark the superblock and group
+		descriptor blocks first, so that any conflicts between
+		these and the bitmap or inode table blocks is noticed.
+
+	* problem.c: Fix message printed out when a block or inode bitmap
+		conflicts with other fs data, has the correct group number
+		in it.
+
 Tue Jun 10 12:07:37 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass2.c (pass2): Check the error return from ext2fs_dblist_iterate.
