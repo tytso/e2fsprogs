@@ -1,3 +1,12 @@
+2004-01-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen_uuid.c (uuid_generate_time): Fix bug pointed out by Ralf
+		S. Engelshall; when generating a random ethernet address
+		because one is not available, set the least significant
+		bit of the first byte of the MAC address, since it is the
+		first bit to be transmitted, and is therefore the
+		multicast bit.
+
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.34

@@ -240,7 +240,7 @@ void uuid_generate_time(uuid_t out)
 			 * with IEEE 802 addresses obtained from
 			 * network cards
 			 */
-			node_id[0] |= 0x80;
+			node_id[0] |= 0x01;
 		}
 		has_init = 1;
 	}
