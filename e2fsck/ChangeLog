@@ -1,5 +1,7 @@
 2001-01-03    <tytso@snap.thunk.org>
 
+	* jfs_user.h: Moved contents of jfs_e2fsck.h into jfs_user.h.
+
 	* journal.c (e2fsck_check_ext3_journal): Force a fsck if we remove
 		the journal stored on a reserved inode.  Also force a fsck
 		if the journal appears to exist while !NEEDS_RECOVERY, and
