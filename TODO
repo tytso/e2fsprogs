@@ -40,11 +40,6 @@ Add chmod command to debugfs.
 
 ------------------------------------------
 
-fix up get_backup_sb, so that it doesn't choose something bogus if
-fs->super->.... is ridiculous
-
-----------------------------------
-
 Maybe a bug in debugfs v.1.14:
 if a file has more than one hardlink, only the first filename is shown when
 using command
@@ -199,12 +194,6 @@ TODO list.
 
 check_if_mounted() should check to see if the file is in /proc/swaps,
 to avoid mkfs's or checking a active swap partition.
-
-----------------------------------------------------------------
-
-Add a check in configure.in on Linux systems making sure that
-/usr/include/linux and /usr/include/asm exist.  Otherwise you can have
-some very obscure errors!
 
 -----------------------------------------------------------------
 

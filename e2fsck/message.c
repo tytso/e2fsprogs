@@ -396,7 +396,7 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		print_pathname(fs, ctx->dir, ctx->ino);
 		break;
 	case 'S':
-		printf("%d", get_backup_sb(fs));
+		printf("%d", get_backup_sb(NULL, fs, NULL, NULL));
 		break;
 	case 's':
 		printf("%s", ctx->str ? ctx->str : "NULL");

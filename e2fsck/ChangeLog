@@ -1,5 +1,19 @@
 2001-12-23  Theodore Tso  <tytso@valinux.com>
 
+	* util.c (get_backup_sb): This function now searches for the
+		backup superblock by iterating over possible blocksizes
+		instead of defaulting a guess of 8193 if the superblock
+		isn't available.
+
+	* message.c (expand_percent_expression), unix.c (main): Pass in
+		new parameters to get_backup_sb.  Also, in unix.c, use the
+		blocksize paramter in the e2fsck context structure instead
+		of using a static variable, since get_backup_sb wants to
+		be able to set the blocksize paramter.
+
+	* e2fsck.h: Update function prototype for get_backup_sb; also add
+		the blocksize parameter to the e2fsck context structure.
+
 	* Makefile.in, jfs_user.h: Move linux/jbd.h to
 		ext2fs/kernel-jbd.h, to avoid using the system header
 		file version of hbd.h when using diet glibc (since it

@@ -148,6 +148,7 @@ struct e2fsck_struct {
 	int	options;
 	blk_t	use_superblock;	/* sb requested by user */
 	blk_t	superblock;	/* sb used to open fs */
+	int	blocksize;	/* blocksize */
 	blk_t	num_blocks;	/* Total number of blocks */
 
 #ifdef HAVE_SETJMP_H
@@ -363,7 +364,8 @@ extern void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
 #ifdef MTRACE
 extern void mtrace_print(char *mesg);
 #endif
-extern blk_t get_backup_sb(ext2_filsys fs);
+extern blk_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs,
+			   const char *name, io_manager manager);
 extern int ext2_file_type(unsigned int mode);
 
 /* unix.c */

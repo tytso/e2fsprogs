@@ -42,7 +42,6 @@ extern int optind;
 #include "../version.h"
 
 /* Command line options */
-static int blocksize = 0;
 static int swapfs = 0;
 static int normalize_swapfs = 0;
 static int cflag = 0;		/* check disk */
@@ -523,7 +522,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			ctx->flags |= E2F_FLAG_SB_SPECIFIED;
 			break;
 		case 'B':
-			blocksize = atoi(optarg);
+			ctx->blocksize = atoi(optarg);
 			break;
 		case 'I':
 			ctx->inode_buffer_blocks = atoi(optarg);
@@ -731,9 +730,10 @@ restart:
 	if ((ctx->options & E2F_OPT_READONLY) == 0)
 		flags |= EXT2_FLAG_RW;
 
-	if (ctx->superblock && blocksize) {
+	if (ctx->superblock && ctx->blocksize) {
 		retval = ext2fs_open(ctx->filesystem_name, flags,
-				     ctx->superblock, blocksize, io_ptr, &fs);
+				     ctx->superblock, ctx->blocksize,
+				     io_ptr, &fs);
 	} else if (ctx->superblock) {
 		for (i=0; possible_block_sizes[i]; i++) {
 			retval = ext2fs_open(ctx->filesystem_name, flags,
@@ -754,7 +754,7 @@ restart:
 			printf(_("%s trying backup blocks...\n"),
 			       retval ? _("Couldn't find ext2 superblock,") :
 			       _("Group descriptors look bad..."));
-			ctx->superblock = get_backup_sb(fs);
+			get_backup_sb(ctx, fs, ctx->filesystem_name, io_ptr);
 			if (fs)
 				ext2fs_close(fs);
 			goto restart;

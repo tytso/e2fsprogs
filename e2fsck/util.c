@@ -318,11 +318,72 @@ void mtrace_print(char *mesg)
 }
 #endif
 
-blk_t get_backup_sb(ext2_filsys fs)
+blk_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
+		   io_manager manager)
 {
-	if (!fs || !fs->super)
-		return 8193;
-	return fs->super->s_blocks_per_group + fs->super->s_first_data_block;
+	struct ext2_super_block *sb;
+	io_channel		io = NULL;
+	void			*buf;
+	int			blocksize;
+	blk_t			superblock, ret_sb = 8193;
+	
+	if (fs && fs->super) {
+		ret_sb = (fs->super->s_blocks_per_group +
+			  fs->super->s_first_data_block);
+		if (ctx) {
+			ctx->superblock = ret_sb;
+			ctx->blocksize = fs->blocksize;
+		}
+		return ret_sb;
+	}
+		
+	if (ctx) {
+		if (ctx->blocksize) {
+			ret_sb = ctx->blocksize * 8;
+			if (ctx->blocksize == 1024)
+				ret_sb++;
+			ctx->superblock = ret_sb;
+			return ret_sb;
+		}
+		ctx->superblock = ret_sb;
+		ctx->blocksize = 1024;
+	}
+
+	if (!name || !manager)
+		goto cleanup;
+
+	if (manager->open(name, 0, &io) != 0)
+		goto cleanup;
+
+	if (ext2fs_get_mem(SUPERBLOCK_SIZE, &buf))
+		goto cleanup;
+	sb = (struct ext2_super_block *) buf;
+
+	for (blocksize=1024; blocksize <= 8192 ; blocksize = blocksize*2) {
+		superblock = blocksize*8;
+		if (blocksize == 1024)
+			superblock++;
+		io_channel_set_blksize(io, blocksize);
+		if (io_channel_read_blk(io, superblock,
+					-SUPERBLOCK_SIZE, buf))
+			continue;
+#ifdef EXT2FS_ENABLE_SWAPFS
+		if (sb->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC))
+			ext2fs_swap_super(sb);
+#endif
+		if (sb->s_magic == EXT2_SUPER_MAGIC) {
+			ret_sb = ctx->superblock = superblock;
+			ctx->blocksize = blocksize;
+			break;
+		}
+	}
+
+cleanup:
+	if (io)
+		io_channel_close(io);
+	if (buf)
+		ext2fs_free_mem(&buf);
+	return (ret_sb);
 }
 
 /*
