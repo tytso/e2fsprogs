@@ -400,6 +400,27 @@ if test "$e2fsprogs_cv_have_llseek_prototype" = yes; then
    AC_DEFINE(HAVE_LLSEEK_PROTOTYPE)
 fi
 dnl
+dnl Check to see if lseek64() is declared in unistd.h.  Glibc's header files
+dnl are so convoluted that I can't tell whether it will always be defined,
+dnl and if it isn't defined while lseek64 is defined in the library, 
+dnl disaster will strike.  
+dnl
+dnl Warning!  Use of --enable-gcc-wall may throw off this test.
+dnl
+dnl
+AC_MSG_CHECKING(whether lseek64 declared in unistd.h)
+AC_CACHE_VAL(e2fsprogs_cv_have_lseek64_prototype,
+	AC_TRY_COMPILE(
+[#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+#include <unistd.h>], [extern int lseek64(int);],
+	[e2fsprogs_cv_have_lseek64_prototype=no],
+	[e2fsprogs_cv_have_lseek64_prototype=yes]))
+AC_MSG_RESULT($e2fsprogs_cv_have_lseek64_prototype)
+if test "$e2fsprogs_cv_have_lseek64_prototype" = yes; then
+   AC_DEFINE(HAVE_LSEEK64_PROTOTYPE)
+fi
+dnl
 dnl Word sizes...
 dnl
 if test "$cross_compiling" = yes -a "$ac_cv_sizeof_long" = ""; then
@@ -445,7 +466,7 @@ if test "$e2fsprogs_cv_struct_st_flags" = yes; then
 	  AC_DEFINE(HAVE_STAT_FLAGS)
   fi
 fi
-AC_CHECK_FUNCS(chflags getrusage llseek strdup getmntinfo strcasecmp srandom fchown mallinfo fdatasync)
+AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 strdup getmntinfo strcasecmp srandom fchown mallinfo fdatasync)
 dnl
 dnl Check to see if ino_t is defined
 dnl

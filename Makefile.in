@@ -15,25 +15,28 @@ SUBS= include/asm/types.h
 
 TAR=tar
 
-all:: $(SUBS) libs progs docs
+all:: $(SUBS) 
+	$(MAKE) libs
+	$(MAKE) progs
+	$(MAKE) docs
 
 progs: $(SUBS) all-progs-recursive
 libs: $(SUBS) all-libs-recursive
 
 docs:
-	cd doc && make libext2fs.info
+	cd doc && $(MAKE) libext2fs.info
 
 install-doc-libs:
-	cd doc && make install-doc-libs
+	cd doc && $(MAKE) install-doc-libs
 
 uninstall-doc-libs:
-	cd doc && make uninstall-doc-libs
+	cd doc && $(MAKE) uninstall-doc-libs
 
 clean-doc:
-	cd doc && make clean
+	cd doc && $(MAKE) clean
 
 distclean-doc:
-	cd doc && make distclean
+	cd doc && $(MAKE) distclean
 
 install: all-libs-recursive install-progs-recursive \
 	install-shlibs-libs-recursive install-doc-libs
@@ -102,11 +105,11 @@ realclean-local: distclean-local
 	$(RM) -f configure
 
 check:
-	cd tests && make check
+	cd tests && $(MAKE) check
 
 distribution_tar_file:
 	$(RM) -rf /tmp/dest
-	make DESTDIR=/tmp/dest install
+	$(MAKE) DESTDIR=/tmp/dest install
 	cp -r $(srcdir)/README $(srcdir)/install-utils /tmp/dest
 	$(RM) -rf /tmp/dest/install-utils/CVS /tmp/dest/install-utils/ChangeLog
 	cp $(srcdir)/INSTALL.@BINARY_TYPE@ /tmp/dest/INSTALL

@@ -1,3 +1,9 @@
+2000-05-25    <tytso@snap.thunk.org>
+
+	* Makefile.in: Fix makefile so that it's safe to build in parallel.
+
+	* configure.in: Add test for lseek64 and open64.
+
 2000-05-25  Theodore Ts'o  <tytso@valinux.com>
 
 	* configure.in (DO_SUBSTITUTE_SCRIPT): Remove unneeded
