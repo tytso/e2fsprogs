@@ -1,5 +1,7 @@
 2001-08-15  Theodore Tso  <tytso@valinux.com>
 
+	* fsck.8.in: Fixed error in synopsis of the man page.
+
 	* fsck.c (check_all): Don't bother to interpret a device where the
 		pass number is zero.  (Addresses Debian bug #106696.)
 		(main): Print a warning message if there are no devices to
