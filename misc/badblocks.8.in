@@ -5,21 +5,27 @@ badblocks \- search a device for bad blocks
 .SH SYNOPSIS
 .B badblocks
 [
+.B \-svwn
+]
+[
 .B \-b
 .I block-size
+]
+[
+.B \-c
+.I blocks_at_once
+]
+[
+.B \-i
+.I input_file
 ]
 [
 .B \-o
 .I output_file
 ]
 [
-.B \-s
-]
-[
-.B \-v
-]
-[
-.B \-w
+.B \-p
+.I num_passes
 ]
 .I device
 .IR blocks-count [ start-block ]
@@ -36,16 +42,31 @@ is the number of blocks on the device.
 .BI \-b " block-size"
 Specify the size of blocks in bytes.
 .TP
+.BI \-c " number of blocks"
+is the number of blocks which are tested at a time.  The default is 16.
+.TP
+.BI \-i " input_file"
+Read a list of already existing known bad blocks.  Badblocks will skip 
+testing these blocks since they are known bad.
+.TP
 .BI \-o " output_file"
-Write the list of bad blocks to the specified file. Without this option,
+Write the list of bad blocks to the specified file.  Without this option,
 .B badblocks
 displays the list on its standard output.  The format of this file is suitable
 for use by the
+.
 .B \-l
 option in 
 .BR e2fsck (8)
 or
 .BR mke2fs (8).
+.TP
+.BI \-p " num_passes"
+Repeat scanning the disk until there are no new blocks discovered after
+num_passes scans of the disk.
+.TP
+.B \-n
+Use non-destructive read-write mode.
 .TP
 .B \-s
 Show the progress of the scan by writing out the block numbers as they
@@ -67,10 +88,9 @@ This option erases data!
 .SH AUTHOR
 .B badblocks
 was written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
-of the ext2 fs.
-.SH BUGS
-I had no chance to make real tests of this program since I use IDE drives,
-which remap bad blocks. I only made some tests on floppies.
+of the ext2 fs.  Current maintainer is Theodore Ts'o <tytso@alum.mit.edu>. 
+Non-destructive read/write test implemented 
+by David Beattie <dbeattie@usa.net>.
 .SH AVAILABILITY
 .B badblocks
 is part of the e2fsprogs package and is available for anonymous 
