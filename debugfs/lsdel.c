@@ -130,7 +130,7 @@ void do_lsdel(int argc, char **argv)
 					      lsdel_proc, &lsd);
 		if (retval) {
 			com_err("ls_deleted_inodes", retval,
-				"while calling ext2_block_iterate");
+				"while calling ext2fs_block_iterate");
 			goto next;
 		}
 		if (lsd.free_blocks && !lsd.bad_blocks) {

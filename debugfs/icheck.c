@@ -25,18 +25,20 @@ struct block_info {
 
 struct block_walk_struct {
 	struct block_info	*barray;
-	int			blocks_left;
-	int			num_blocks;
+	e2_blkcnt_t		blocks_left;
+	e2_blkcnt_t		num_blocks;
 	ext2_ino_t		inode;
 };
 
 static int icheck_proc(ext2_filsys fs,
 		       blk_t	*block_nr,
-		       int blockcnt,
+		       e2_blkcnt_t blockcnt,
+		       blk_t ref_block,
+		       int ref_offset,
 		       void *private)
 {
 	struct block_walk_struct *bw = (struct block_walk_struct *) private;
-	int	i;
+	e2_blkcnt_t	i;
 
 	for (i=0; i < bw->num_blocks; i++) {
 		if (bw->barray[i].blk == *block_nr) {
@@ -84,7 +86,7 @@ void do_icheck(int argc, char **argv)
 	}
 
 	for (i=1; i < argc; i++) {
-		bw.barray[i-1].blk = strtol(argv[i], &tmp, 0);
+		bw.barray[i-1].blk = strtoul(argv[i], &tmp, 0);
 		if (*tmp) {
 			com_err(argv[0], 0, "Bad block - %s", argv[i]);
 			return;
@@ -120,12 +122,12 @@ void do_icheck(int argc, char **argv)
 			goto next;
 
 		bw.inode = ino;
-		
-		retval = ext2fs_block_iterate(current_fs, ino, 0, block_buf,
-					      icheck_proc, &bw);
+
+		retval = ext2fs_block_iterate2(current_fs, ino, 0, block_buf,
+					       icheck_proc, &bw);
 		if (retval) {
 			com_err("icheck", retval,
-				"while calling ext2_block_iterate");
+				"while calling ext2fs_block_iterate");
 			goto next;
 		}
 

@@ -322,11 +322,11 @@ void do_dirty_filesys(int argc, char **argv)
 }
 
 struct list_blocks_struct {
-	FILE	*f;
-	int	total;
-	blk_t	first_block, last_block;
-	int	first_bcnt, last_bcnt;
-	int	first;
+	FILE		*f;
+	e2_blkcnt_t	total;
+	blk_t		first_block, last_block;
+	e2_blkcnt_t	first_bcnt, last_bcnt;
+	e2_blkcnt_t	first;
 };
 
 static void finish_range(struct list_blocks_struct *lb)
@@ -345,8 +345,9 @@ static void finish_range(struct list_blocks_struct *lb)
 	lb->first_block = 0;
 }
 
-static int list_blocks_proc(ext2_filsys fs, blk_t *blocknr, int blockcnt,
-			    void *private)
+static int list_blocks_proc(ext2_filsys fs, blk_t *blocknr,
+			    e2_blkcnt_t blockcnt, blk_t ref_block,
+			    int ref_offset, void *private)
 {
 	struct list_blocks_struct *lb = (struct list_blocks_struct *) private;
 
@@ -397,7 +398,7 @@ static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)
 	lb.first_block = 0;
 	lb.f = f;
 	lb.first = 1;
-	ext2fs_block_iterate(current_fs, inode, 0, NULL,
+	ext2fs_block_iterate2(current_fs, inode, 0, NULL,
 			     list_blocks_proc, (void *)&lb);
 	finish_range(&lb);
 	if (lb.total)
