@@ -3,7 +3,10 @@
 	* MCONFIG.in (BUILD_CC):
 	* configure.in (BUILD_CC): If cross compiling, find the native C
 		compiler and set it to BUILD_CC so that we can
-		successfully build util/subst.
+		successfully build util/subst.  Change default long long
+		size when cross compiling to be 8 (instead of 0).  Also
+		change the Hurd's defaults so that root files are placed
+		in / instead of /usr/local.
 
 1999-07-03    <tytso@valinux.com>
 
