@@ -10,7 +10,7 @@
  */
 
 #include <sys/types.h>
-#include <linux/types.h>
+#include <asm/types.h>
 
 #include "uuid.h"
 

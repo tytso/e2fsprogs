@@ -1,3 +1,9 @@
+1998-04-26  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* uuidP.h: Use asm/types.h instead of linux/types.h to avoid a
+		problem caused by glibc hack to prevent linux/types.h from
+		being included.
+
 1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in: Change to use new installation directory variables
