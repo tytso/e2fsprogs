@@ -480,7 +480,7 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 
-ALL_LINGUAS="it nyc tr"
+ALL_LINGUAS="it nyc tr de de-utf"
 AM_GNU_GETTEXT
 dnl
 dnl End of configuration options
