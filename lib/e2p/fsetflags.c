@@ -59,14 +59,18 @@ int fsetflags (const char * name, unsigned long flags)
 	return chflags (name, bsd_flags);
 #else
 #if HAVE_EXT2_IOCTLS
-	int fd, r, f;
+	int fd, r, f, save_errno = 0;
 
 	fd = open (name, OPEN_FLAGS);
 	if (fd == -1)
 		return -1;
 	f = (int) flags;
 	r = ioctl (fd, EXT2_IOC_SETFLAGS, &f);
+	if (r == -1)
+		save_errno = errno;
 	close (fd);
+	if (save_errno)
+		errno = save_errno;
 	return r;
 #else /* ! HAVE_EXT2_IOCTLS */
 	extern int errno;

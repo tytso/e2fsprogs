@@ -1,8 +1,9 @@
 2002-07-14  Theodore Ts'o  <tytso@mit.edu>
 
-	* fsetversion.c (fsetversion), fgetversion.c, fgetversion.c: Save
-		errno if the ioctl fails, and restore it just before we
-		return.
+	* fsetflags.c (fsetflags), fgetflags.c (fgetflags,
+		fsetversion.c (fsetversion), fgetversion.c,
+		fgetversion.c: Save errno if the ioctl fails, and
+		restore it just before we return.
 
 	* iod.c (iterate_on_dir): Rewrite function to make it more
 		portable.  We now make much fewer assumptions about nature
