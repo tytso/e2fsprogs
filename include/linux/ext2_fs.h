@@ -193,9 +193,10 @@ struct ext2_group_desc
 /* End compression flags --- maybe not all used */	
 #define EXT2_BTREE_FL			0x00001000 /* btree format dir */
 #define EXT2_IMAGIC_FL			0x00002000
+#define EXT3_JOURNAL_DATA_FL		0x00004000 /* file data should be journaled */
 #define EXT2_RESERVED_FL		0x80000000 /* reserved for ext2 lib */
 
-#define EXT2_FL_USER_VISIBLE		0x00001FFF /* User visible flags */
+#define EXT2_FL_USER_VISIBLE		0x00005FFF /* User visible flags */
 #define EXT2_FL_USER_MODIFIABLE		0x000000FF /* User modifiable flags */
 
 /*

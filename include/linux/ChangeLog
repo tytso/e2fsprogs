@@ -1,5 +1,7 @@
 2000-12-30    <tytso@snap.thunk.org>
 
+	* ext2_fs.h (EXT3_JOURNAL_DATA_FL): Add new inode flag definition.
+
 	* jfs.h: Update to 0.5e version
 
 2000-12-09    <tytso@snap.thunk.org>
