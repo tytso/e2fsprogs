@@ -1,3 +1,9 @@
+2001-12-02  Theodore Tso  <tytso@valinux.com>
+
+	* dumpe2fs.c: Don't print the offset to the bitmap and inode table
+		if it's negative.  Also did some generalized code clean up
+		to slim it down the support of the -x option.
+
 2001-11-24  Theodore Tso  <tytso@valinux.com>
 
 	* e2image.8.in: Fix cut-and-paste typo (Addresses Debian bug
