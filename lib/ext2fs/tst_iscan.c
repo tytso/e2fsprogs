@@ -111,13 +111,13 @@ static void setup(void)
 		exit(1);
 	}
 	
-	retval = badblocks_list_create(&test_badblocks, 5);
+	retval = ext2fs_badblocks_list_create(&test_badblocks, 5);
 	if (retval) {
 		com_err("setup", retval, "while creating badblocks list");
 		exit(1);
 	}
 	for (i=0; test_vec[i]; i++) {
-		retval = badblocks_list_add(test_badblocks, test_vec[i]);
+		retval = ext2fs_badblocks_list_add(test_badblocks, test_vec[i]);
 		if (retval) {
 			com_err("setup", retval,
 				"while adding test vector %d", i);

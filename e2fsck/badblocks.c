@@ -103,7 +103,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 		goto fatal;
 	}
 
-	badblocks_list_free(bb_list);
+	ext2fs_badblocks_list_free(bb_list);
 	return;
 	
 fatal:

@@ -1,5 +1,12 @@
 2001-06-12  Theodore Tso  <tytso@valinux.com>
 
+	* dumpe2fs.c: Use WORDS_BIGENDIAN to determine whether or not
+		we're (not) using i386 byte order.
+
+	* dumpe2fs.c, mke2fs.c: Stop using the compatibility badblocks
+		function, and use the ext2fs_badblocks_* functions
+		instead.
+
 	* fsck.c (device_already_active): Fixed bug which can cause fsck
 		to core dump if there are a mix of devices with standard
 		and non-standard names.

@@ -1,3 +1,8 @@
+2001-06-12  Theodore Tso  <tytso@valinux.com>
+
+	* badblocks.c: Stop using the compatibility badblocks function,
+		and use the ext2fs_badblocks_* functions instead.
+
 2001-06-11  Theodore Tso  <tytso@valinux.com>
 
 	* unix.c (PRS): Fix bug introduced in 1.20 which broke the -F

@@ -1,3 +1,9 @@
+2001-06-12  Theodore Tso  <tytso@valinux.com>
+
+	* inode.c, tst_iscan.c: Stop using the compatibility badblocks
+		function, and use the ext2fs_badblocks_* functions
+		instead.
+
 2001-06-11  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in, gen_bitmap.c, bitops.h: Move inline functions

@@ -255,7 +255,7 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 	 */
 	must_be_good = fs->super->s_first_data_block + 1 + fs->desc_blocks;
 	for (i = fs->super->s_first_data_block; i <= must_be_good; i++) {
-		if (badblocks_list_test(bb_list, i)) {
+		if (ext2fs_badblocks_list_test(bb_list, i)) {
 			fprintf(stderr, _("Block %d in primary "
 				"superblock/group descriptor area bad.\n"), i);
 			fprintf(stderr, _("Blocks %d through %d must be good "
@@ -277,8 +277,8 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 	for (i = 1; i < fs->group_desc_count; i++) {
 		group_bad = 0;
 		for (j=0; j < fs->desc_blocks+1; j++) {
-			if (badblocks_list_test(bb_list, group_block +
-						j)) {
+			if (ext2fs_badblocks_list_test(bb_list,
+						       group_block + j)) {
 				if (!group_bad) 
 					fprintf(stderr,
 _("Warning: the backup superblock/group descriptors at block %d contain\n"
@@ -296,15 +296,15 @@ _("Warning: the backup superblock/group descriptors at block %d contain\n"
 	/*
 	 * Mark all the bad blocks as used...
 	 */
-	retval = badblocks_list_iterate_begin(bb_list, &bb_iter);
+	retval = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
 	if (retval) {
-		com_err("badblocks_list_iterate_begin", retval,
+		com_err("ext2fs_badblocks_list_iterate_begin", retval,
 			_("while marking bad blocks as used"));
 		exit(1);
 	}
-	while (badblocks_list_iterate(bb_iter, &blk)) 
+	while (ext2fs_badblocks_list_iterate(bb_iter, &blk)) 
 		ext2fs_mark_block_bitmap(fs->block_map, blk);
-	badblocks_list_iterate_end(bb_iter);
+	ext2fs_badblocks_list_iterate_end(bb_iter);
 }
 
 /*

@@ -163,17 +163,17 @@ static void list_bad_blocks(ext2_filsys fs)
 		com_err("ext2fs_read_bb_inode", retval, "");
 		exit(1);
 	}
-	retval = badblocks_list_iterate_begin(bb_list, &bb_iter);
+	retval = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
 	if (retval) {
-		com_err("badblocks_list_iterate_begin", retval,
+		com_err("ext2fs_badblocks_list_iterate_begin", retval,
 			_("while printing bad block list"));
 		exit(1);
 	}
-	if (badblocks_list_iterate(bb_iter, &blk))
+	if (ext2fs_badblocks_list_iterate(bb_iter, &blk))
 		printf(_("Bad blocks: %d"), blk);
-	while (badblocks_list_iterate(bb_iter, &blk))
+	while (ext2fs_badblocks_list_iterate(bb_iter, &blk))
 		printf(", %d", blk);
-	badblocks_list_iterate_end(bb_iter);
+	ext2fs_badblocks_list_iterate_end(bb_iter);
 	printf("\n");
 }
 
@@ -189,23 +189,15 @@ static void dump_bad_blocks(ext2_filsys fs)
 		com_err("ext2fs_read_bb_inode", retval, "");
 		exit(1);
 	}
-	retval = badblocks_list_iterate_begin(bb_list, &bb_iter);
+	retval = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
 	if (retval) {
-		com_err("badblocks_list_iterate_begin", retval,
+		com_err("ext2fs_badblocks_list_iterate_begin", retval,
 			_("while printing bad block list"));
 		exit(1);
 	}
-	while (badblocks_list_iterate(bb_iter, &blk))
+	while (ext2fs_badblocks_list_iterate(bb_iter, &blk))
 		printf("%d\n", blk);
-	badblocks_list_iterate_end(bb_iter);
-}
-
-static int i386_byteorder(void)
-{
-	int one = 1;
-	char *cp = (char *) &one;
-
-	return (*cp == 1);
+	ext2fs_badblocks_list_iterate_end(bb_iter);
 }
 
 static void print_journal_information(ext2_filsys fs)
@@ -331,8 +323,9 @@ int main (int argc, char ** argv)
 		dump_bad_blocks(fs);
 	} else {
 		big_endian = ((fs->flags & EXT2_FLAG_SWAP_BYTES) != 0);
-		if (!i386_byteorder())
-			big_endian = !big_endian;
+#ifdef WORDS_BIGENDIAN
+		big_endian = !big_endian;
+#endif
 		if (big_endian)
 			printf(_("Note: This is a byte-swapped filesystem\n"));
 		list_super (fs->super);
