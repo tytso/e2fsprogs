@@ -1,3 +1,9 @@
+2003-01-22  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.c (parse_fstab_line, parse_escape): Add support for
+		backslash escaping in /etc/fstab.  (i.e., so that \040
+		will work.)
+
 2002-11-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (PRS): Don't enable the dir_index feature by default;

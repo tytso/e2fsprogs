@@ -153,6 +153,41 @@ static char *parse_word(char **buf)
 	return word;
 }
 
+static void parse_escape(char *word)
+{
+	char	*p, *q;
+	int	ac, i;
+
+	for (p = word, q = word; *p; p++, q++) {
+		*q = *p;
+		if (*p != '\\')
+			continue;
+		if (*++p == 0)
+			break;
+		if (*p == 't') {
+			*q = '\t';
+			continue;
+		}
+		if (*p == 'n') {
+			*q = '\n';
+			continue;
+		}
+		if (!isdigit(*p)) {
+			*q = *p;
+			continue;
+		}
+		ac = 0;
+		for (i = 0; i < 3; i++, p++) {
+			if (!isdigit(*p))
+				break;
+			ac = (ac * 8) + (*p - '0');
+		}
+		*q = ac;
+		p--;
+	}
+	*q = 0;
+}
+
 static void free_instance(struct fsck_instance *i)
 {
 	if (i->prog)
@@ -182,6 +217,13 @@ static int parse_fstab_line(char *line, struct fs_info **ret_fs)
 	opts = parse_word(&cp);
 	freq = parse_word(&cp);
 	passno = parse_word(&cp);
+
+	parse_escape(device);
+	parse_escape(mntpnt);
+	parse_escape(type);
+	parse_escape(opts);
+	parse_escape(freq);
+	parse_escape(passno);
 
 	if (!device)
 		return 0;	/* Allow blank lines */
