@@ -483,6 +483,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		case 'C':
 			ctx->progress = e2fsck_update_progress;
 			ctx->progress_fd = atoi(optarg);
+			if (!ctx->progress_fd)
+				break;
 			/* Validate the file descriptor to avoid disasters */
 			fd = dup(ctx->progress_fd);
 			if (fd < 0) {
