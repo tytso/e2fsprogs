@@ -147,6 +147,44 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 }
 
 /*
+ * Check to make sure a symlink inode is real.  Returns 1 if the symlink
+ * checks out, 0 if not.
+ */
+int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode)
+{
+	if (inode->i_size_high || inode->i_size == 0)
+		return 0;
+
+	if (inode->i_flags & (EXT2_IMMUTABLE_FL |EXT2_APPEND_FL |EXT2_INDEX_FL))
+		return 0;
+
+	if (inode->i_blocks) {
+		int i;
+
+		if (inode->i_blocks > fs->blocksize >> 9)
+			return 0;
+
+		for (i = 1; i < EXT2_N_BLOCKS; i++)
+			if (inode->i_block[i])
+				return 0;
+
+		if (inode->i_size > fs->blocksize)
+			return 0;
+
+		/* Defer check of i_size until block number validated  */
+	} else {
+		if (inode->i_size > EXT2_LINK_DIR - 1)
+			return 0;
+
+		if (inode->i_size !=
+		    strnlen((char *)inode->i_block, EXT2_LINK_DIR))
+			return 0;
+	}
+
+	return 1;
+}
+
+/*
  * If the immutable (or append-only) flag is set on the inode, offer
  * to clear it.
  */
@@ -561,10 +599,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 		} else if (LINUX_S_ISLNK (inode.i_mode)) {
 			check_immutable(ctx, &pctx);
 			ctx->fs_symlinks_count++;
+			if (!e2fsck_pass1_check_symlink(fs, &inode))
+				mark_inode_bad(ctx, ino);
 			if (!inode.i_blocks) {
-				if (inode.i_size_high ||
-				    (inode.i_size > EXT2_N_BLOCKS*4))
-					mark_inode_bad(ctx, ino);
 				ctx->fs_fast_symlinks_count++;
 				goto next;
 			}
@@ -1216,12 +1253,16 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		pctx->num = 0;
 	}
-	if (!pb.is_dir && (inode->i_size_high || inode->i_size & 0x80000000UL))
+	if (!pb.is_dir &&
+	    (inode->i_size_high || inode->i_size & 0x80000000UL) &&
+	    !ext2fs_test_inode_bitmap(ctx->inode_bad_map, ino))
 		ctx->large_files++;
 	if (pb.num_blocks != inode->i_blocks) {
 		pctx->num = pb.num_blocks;
 		if (fix_problem(ctx, PR_1_BAD_I_BLOCKS, pctx)) {
 			inode->i_blocks = pb.num_blocks;
+			if (LINUX_S_ISLNK(inode->i_mode))
+				mark_inode_bad(ctx, ino);
 			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 		}
 		pctx->num = 0;

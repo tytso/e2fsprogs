@@ -316,6 +316,7 @@ extern int e2fsck_run_ext3_journal(e2fsck_t ctx);
 /* pass1.c */
 extern void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool);
 extern int e2fsck_pass1_check_device_inode(struct ext2_inode *inode);
+extern int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode);
 
 /* pass2.c */
 extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir, ext2_ino_t ino);

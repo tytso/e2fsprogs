@@ -63,5 +63,6 @@ noroot.img		Filesystem with a deleted root directory
 okgroup.img		Filesystem that's exactly 8193 blocks long 
 				(otherwise OK)
 overfsblks.img		Filesystem with overlapping inode and block bitmaps
+symlinks.img		Filesystem with bad symlink sizes
 
 

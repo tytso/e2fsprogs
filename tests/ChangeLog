@@ -1,3 +1,7 @@
+2001-07-26  Andreas Dilger  <adilger@turbolinux.com>
+
+	* f_symlinks: Add several fast symlink error cases to test.
+
 2001-07-27  Theodore Tso  <tytso@valinux.com>
 
 	* f_filetype: Update expect.1 to match changed problem message

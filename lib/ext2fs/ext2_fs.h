@@ -169,6 +169,8 @@ struct ext2_group_desc
 #define	EXT2_TIND_BLOCK			(EXT2_DIND_BLOCK + 1)
 #define	EXT2_N_BLOCKS			(EXT2_TIND_BLOCK + 1)
 
+#define EXT2_LINK_DIR			(EXT2_N_BLOCKS * 4)
+
 /*
  * Inode flags
  */

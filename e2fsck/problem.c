@@ -928,7 +928,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Invalid fast symlink size */
 	{ PR_2_SYMLINK_SIZE,
-	  N_("@i %i (%Q) is a fast symlink with a bad size (%Is)\n"),
+	  N_("@i %i (%Q) is a %ssymlink with a bad size (%Is)\n"),
 	  PROMPT_CLEAR, 0 },
 
   	/* i_file_acl (extended attribute block) is bad */
