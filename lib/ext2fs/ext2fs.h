@@ -160,7 +160,6 @@ typedef struct ext2_file *ext2_file_t;
 /*
  * Flags for the ext2_filsys structure
  */
-
 #define EXT2_FLAG_RW			0x01
 #define EXT2_FLAG_CHANGED		0x02
 #define EXT2_FLAG_DIRTY			0x04
@@ -178,6 +177,13 @@ typedef struct ext2_file *ext2_file_t;
  * a new inode.  (So that ext2_write_inode() can clear extra fields.)
  */
 #define EXT2_NEW_INODE_FL	0x80000000
+
+/*
+ * Flags for mkjournal
+ *
+ * EXT2_MKJOURNAL_V1_SUPER	Make a (deprecated) V1 journal superblock
+ */
+#define EXT2_MKJOURNAL_V1_SUPER	0x0000001
 
 struct struct_ext2_filsys {
 	errcode_t			magic;
@@ -811,8 +817,9 @@ extern errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 
 /* mkjournal.c */
 extern errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
-					   blk_t size);
-extern errcode_t ext2fs_add_journal_fs(ext2_filsys fs, blk_t size);
+					   blk_t size, int flags);
+extern errcode_t ext2fs_add_journal_fs(ext2_filsys fs, blk_t size,
+				       int flags);
 
 /* openfs.c */
 extern errcode_t ext2fs_open(const char *name, int flags, int superblock,

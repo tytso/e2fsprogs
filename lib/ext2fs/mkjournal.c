@@ -39,12 +39,15 @@
 #include "jfs_user.h"
 
 static void init_journal_superblock(journal_superblock_t *jsb,
-				    __u32 blocksize, __u32 size)
+				    __u32 blocksize, __u32 size, int flags)
 {
 	memset (jsb, 0, sizeof(*jsb));
 
 	jsb->s_header.h_magic = htonl(JFS_MAGIC_NUMBER);
-	jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V2);
+	if (flags & EXT2_MKJOURNAL_V1_SUPER)
+		jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V1);
+	else
+		jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V2);
 	jsb->s_blocksize = htonl(blocksize);
 	jsb->s_maxlen = htonl(size);
 	jsb->s_first = htonl(1);
@@ -55,7 +58,7 @@ static void init_journal_superblock(journal_superblock_t *jsb,
  * This function adds a journal device to a filesystem
  */
 errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
-				    blk_t size)
+				    blk_t size, int flags)
 {
 	journal_superblock_t	jsb;
 	struct stat	st;
@@ -80,7 +83,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
 	else if (size > dev_size) 
 		return EINVAL;	/* Requested size bigger than device */
 
-	init_journal_superblock(&jsb, fs->blocksize, size);
+	init_journal_superblock(&jsb, fs->blocksize, size, flags);
 
 	/* Create a block buffer */
 	buf = malloc(fs->blocksize);
@@ -192,7 +195,7 @@ static int mkjournal_proc(ext2_filsys		fs,
 /*
  * This function adds a journal inode to a filesystem
  */
-errcode_t ext2fs_add_journal_fs(ext2_filsys fs, blk_t size)
+errcode_t ext2fs_add_journal_fs(ext2_filsys fs, blk_t size, int flags)
 {
 	journal_superblock_t	jsb;
 	errcode_t		retval;
@@ -200,7 +203,7 @@ errcode_t ext2fs_add_journal_fs(ext2_filsys fs, blk_t size)
 	struct mkjournal_struct	es;
 	char			*buf;
 
-	init_journal_superblock(&jsb, fs->blocksize, size);
+	init_journal_superblock(&jsb, fs->blocksize, size, flags);
 
 	if ((retval = ext2fs_read_bitmaps(fs)))
 		return retval;

@@ -1,5 +1,13 @@
 2000-12-09    <tytso@snap.thunk.org>
 
+	* ext2fs.h, mkjournal.c (ext2fs_add_journal_fs,
+		ext2fs_add_journal_device): Add a new argument to the APIs
+		of these function, which is a flags word.  This is used to
+		allow the creation of a V1 superblock for those folks who
+		are using ext3 0.3b in production.  Note, the user-land
+		interface for getting at this flag won't be documented, as
+		the V1 superblock is deprecated.
+
 	* mkjournal.c (init_journal_superblock): Sync Stephen's changes
 		which creates a V2 superblock instead of a V1 superblock.
 
