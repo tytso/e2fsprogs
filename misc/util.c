@@ -97,7 +97,13 @@ void check_plausibility(const char *device)
 				"did you specify it correctly?\n"), stderr);
 		exit(1);
 	}
-	if (!S_ISBLK(s.st_mode)) {
+#ifdef __FreeBSD__
+	/* On FreeBSD, all disk devices are character specials */
+	if (!S_ISBLK(s.st_mode) && !S_ISCHR(s.st_mode))
+#else
+	if (!S_ISBLK(s.st_mode))
+#endif
+	{
 		printf(_("%s is not a block special device.\n"), device);
 		proceed_question();
 		return;

@@ -13,6 +13,7 @@
  */
 
 #ifdef HAVE_SYS_MOUNT_H
+#include <sys/param.h>
 #include <sys/mount.h>
 #define MNT_FL (MS_MGC_VAL | MS_RDONLY)
 #endif

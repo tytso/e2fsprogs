@@ -9,6 +9,15 @@
  * %End-Header%
  */
 
+#ifndef __LINUX__
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+    fputs("This program is only supported on Linux!\n", stderr);
+    exit(EXIT_FAILURE);
+}
+#else
 #define _LARGEFILE64_SOURCE
 
 #include <stdio.h>
@@ -158,6 +167,4 @@ int main(int argc, char**argv)
 	}
 	return 0;
 }
-
-
-	
+#endif

@@ -85,6 +85,12 @@ static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 static void reuse_cache(io_channel channel, struct unix_private_data *data,
 		 struct unix_cache *cache, unsigned long block);
 
+#if defined(__CYGWIN__) || defined(__FreeBSD__)
+#define NEED_BOUNCE_BUFFER
+#else
+#undef NEED_BOUNCE_BUFFER
+#endif
+
 static struct struct_io_manager struct_unix_manager = {
 	EXT2_ET_MAGIC_IO_MANAGER,
 	"Unix I/O Manager",
@@ -94,7 +100,7 @@ static struct struct_io_manager struct_unix_manager = {
 	unix_read_blk,
 	unix_write_blk,
 	unix_flush,
-#ifdef __CYGWIN__
+#ifdef NEED_BOUNCE_BUFFER
 	0
 #else
 	unix_write_byte
@@ -106,7 +112,7 @@ io_manager unix_io_manager = &struct_unix_manager;
 /*
  * Here are the raw I/O functions
  */
-#ifndef __CYGWIN__
+#ifndef NEED_BOUNCE_BUFFER
 static errcode_t raw_read_blk(io_channel channel,
 			      struct unix_private_data *data,
 			      unsigned long block,
@@ -139,9 +145,9 @@ error_out:
 					       size, actual, retval);
 	return retval;
 }
-#else /* __CYGWIN__ */
+#else /* NEED_BOUNCE_BUFFER */
 /*
- * Windows block devices only allow sector alignment IO in offset and size
+ * Windows and FreeBSD block devices only allow sector alignment IO in offset and size
  */
 static errcode_t raw_read_blk(io_channel channel,
 			      struct unix_private_data *data,

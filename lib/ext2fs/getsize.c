@@ -28,9 +28,14 @@
 #include <linux/fd.h>
 #endif
 #ifdef HAVE_SYS_DISKLABEL_H
+#include <sys/param.h> /* for __FreeBSD_version */
 #include <sys/ioctl.h>
 #include <sys/disklabel.h>
 #endif /* HAVE_SYS_DISKLABEL_H */
+#ifdef HAVE_SYS_DISK_H
+#include <sys/queue.h> /* for LIST_HEAD */
+#include <sys/disk.h>
+#endif /* HAVE_SYS_DISK_H */
 
 #if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */
@@ -147,6 +152,8 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	}
 #endif
 #ifdef HAVE_SYS_DISKLABEL_H
+#if defined(__FreeBSD__) && __FreeBSD_version < 500040
+	/* old disklabel interface */
 	part = strlen(file) - 1;
 	if (part >= 0) {
 		ch = file[part];
@@ -165,6 +172,16 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 			return 0;
 		}
 	}
+#else /* __FreeBSD_version < 500040 */
+	{
+	    off_t ms;
+	    u_int bs;
+	    if (ioctl(fd, DIOCGMEDIASIZE, &ms) >= 0) {
+		*retblocks = ms / blocksize;
+		return 0;
+	    }
+	}
+#endif /* __FreeBSD_version < 500040 */
 #endif /* HAVE_SYS_DISKLABEL_H */
 
 	/*
