@@ -173,4 +173,4 @@
 00000000 T _ext2fs_read_bb_FILE2		libext2fs	read_bb_file
 00000000 T _ext2fs_write_bb_FILE		libext2fs	write_bb_file
 00000000 T _ext2fs_badblocks_equal		libext2fs	badblocks
-00000000 T _ext2fs_update_fs_dynamic_rev	libext2fs	closefs
+00000000 T _ext2fs_update_dynamic_rev	libext2fs	closefs

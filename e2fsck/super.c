@@ -485,7 +485,7 @@ void check_super_block(e2fsck_t ctx)
 	     fs->super->s_feature_ro_compat ||
 	     fs->super->s_feature_incompat) &&
 	    fix_problem(ctx, PR_0_FS_REV_LEVEL, &pctx)) {
-		ext2fs_update_fs_rev(fs);
+		ext2fs_update_dynamic_rev(fs);
 		ext2fs_mark_super_dirty(fs);
 	}
 

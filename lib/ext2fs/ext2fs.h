@@ -646,7 +646,7 @@ extern errcode_t ext2fs_check_desc(ext2_filsys fs);
 extern errcode_t ext2fs_close(ext2_filsys fs);
 extern errcode_t ext2fs_flush(ext2_filsys fs);
 extern int ext2fs_bg_has_super(ext2_filsys fs, int group_block);
-extern void ext2fs_update_fs_dynamic_rev(ext2_filsys fs);
+extern void ext2fs_update_dynamic_rev(ext2_filsys fs);
 
 /* cmp_bitmaps.c */
 extern errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,

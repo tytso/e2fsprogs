@@ -109,7 +109,7 @@ static errcode_t write_primary_superblock(ext2_filsys fs,
 /*
  * Updates the revision to EXT2_DYNAMIC_REV
  */
-void ext2fs_update_fs_dynamic_rev(ext2_filsys fs)
+void ext2fs_update_dynamic_rev(ext2_filsys fs)
 {
 	struct ext2_super_block *sb = fs->super;
 
