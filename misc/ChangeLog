@@ -1,3 +1,8 @@
+2001-05-11  Andreas Dilger  <adilger@turbolinux.com>
+
+	* mke2fs.c: don't zap the superblock if we are running with noaction!
+		Zap the end of the device to remove stale RAID superblocks.
+
 2001-05-14  Theodore Tso  <tytso@valinux.com>
 
 	* tune2fs.c (update_feature_set): Clean up some printf messages.

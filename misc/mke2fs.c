@@ -1105,7 +1105,10 @@ int main (int argc, char *argv[])
 	/*
 	 * Wipe out the old on-disk superblock
 	 */
-	zap_sector(fs, 2);
+	if (!noaction) {
+		zap_sector(fs, 2);
+		zap_sector(fs, 3);
+	}
 
 	/*
 	 * Generate a UUID for it...
@@ -1187,14 +1190,32 @@ int main (int argc, char *argv[])
 		fs->super->s_state |= EXT2_ERROR_FS;
 		fs->flags &= ~(EXT2_FLAG_IB_DIRTY|EXT2_FLAG_BB_DIRTY);
 	} else {
+		int rsv = 65536 / EXT2_BLOCK_SIZE(fs->super);
+		unsigned long blocks = fs->super->s_blocks_count;
+		unsigned long start = (blocks & ~(rsv - 1)) - rsv;
+		blk_t ret_blk;
+
+#ifdef ZAP_BOOTBLOCK
+		zap_sector(fs, 0);
+#endif
+		/*
+		 * Wipe out any old MD RAID (or other) metadata at the end
+		 * of the device.  This will also verify that the device is
+		 * as large as we think it is.
+		 */
+		retval = zero_blocks(fs, start, blocks - start,
+				     NULL, &ret_blk, NULL);
+		if (retval) {
+			com_err(program_name, retval,
+				_("zeroing block %u at end of filesystem"),
+				ret_blk);
+			exit(1);
+		}
 		write_inode_tables(fs);
 		create_root_dir(fs);
 		create_lost_and_found(fs);
 		reserve_inodes(fs);
 		create_bad_block_inode(fs, bb_list);
-#ifdef ZAP_BOOTBLOCK
-		zap_sector(fs, 0);
-#endif
 	}
 
 	if (journal_device) {
