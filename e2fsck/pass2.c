@@ -1194,6 +1194,21 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	    !(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR) &&
 	    fix_problem(ctx, PR_2_FILE_ACL_ZERO, &pctx)) {
 		inode.i_file_acl = 0;
+#ifdef EXT2FS_ENABLE_SWAPFS
+		/* 
+		 * This is a special kludge to deal with long symlinks
+		 * on big endian systems.  i_blocks had already been
+		 * decremented earlier in pass 1, but since i_file_acl
+		 * hadn't yet been cleared, ext2fs_read_inode()
+		 * assumed that the file was short symlink and would
+		 * not have byte swapped i_block[0].  Hence, we have
+		 * to byte-swap it here.
+		 */
+		if (LINUX_S_ISLNK(inode.i_mode) &&
+		    (fs->flags & EXT2_FLAG_SWAP_BYTES) &&
+		    (inode.i_blocks == fs->blocksize >> 9))
+			inode.i_block[0] = ext2fs_swab32(inode.i_block[0]);
+#endif
 		inode_modified++;
 	} else
 		not_fixed++;

@@ -1,5 +1,10 @@
 2005-01-28  Theodore Ts'o  <tytso@mit.edu>
 
+	* pass2.c (e2fsck_process_bad_inode): Fix a corner case involving
+		big-endian systems, long symlinks and i_file_acl set when
+		it shouldn't be.  Without this bugfix, f_clear_xattr will
+		fail on big-endian machines.
+
 	* super.c (check_resize_inode): Deal with the case where the
 		resize inode can't be read; don't try to recreate the
 		resize inode unless the resize feature is actually
