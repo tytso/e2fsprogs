@@ -84,7 +84,7 @@ check: test_extent.out
 	
 clean:
 	$(RM) -f $(PROGS) $(TEST_PROGS) $(MANPAGES) \#* *.s *.o *.a *~ core \
-		test_extent.out
+		resize2fs.static test_extent.out
 
 mostlyclean: clean
 distclean: clean
