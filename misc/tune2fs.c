@@ -102,7 +102,6 @@ static void remove_journal_device(ext2_filsys fs)
 	int		i, nr_users;
 	errcode_t	retval;
 	int		commit_remove_journal = 0;
-	int		check_uuid = 1;
 
 	if (f_flag)
 		commit_remove_journal = 1; /* force removal even if error */
