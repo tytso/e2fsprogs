@@ -110,7 +110,8 @@ void do_icheck(int argc, char **argv)
 			goto next;
 
 		if (inode.i_file_acl) {
-			icheck_proc(fs, &inode.i_file_acl, 0, 0, 0, &bw);
+			icheck_proc(current_fs, &inode.i_file_acl, 0,
+				    0, 0, &bw);
 			if (bw.blocks_left == 0)
 				break;
 		}

@@ -941,7 +941,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	int			group;
 	char			*block_buf = 0;
 	ext2_ino_t		start_to_move;
-	blk_t			orig_size;
+	blk_t			orig_size, new_block;
 	
 	if ((rfs->old_fs->group_desc_count <=
 	     rfs->new_fs->group_desc_count) &&
@@ -998,8 +998,8 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		pb.is_dir = LINUX_S_ISDIR(inode.i_mode);
 		pb.changed = 0;
 
-		if (inode.i_file.acl && rfs->bmap) {
-			new_block = ext2fs_extent_translate(pb->rfs->bmap, 
+		if (inode.i_file_acl && rfs->bmap) {
+			new_block = ext2fs_extent_translate(rfs->bmap, 
 							    inode.i_file_acl);
 			if (new_block) {
 				inode.i_file_acl = new_block;
