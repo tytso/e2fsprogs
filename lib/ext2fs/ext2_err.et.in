@@ -248,5 +248,8 @@ ec	EXT2_ET_DB_NOT_FOUND,
 ec	EXT2_ET_DIR_EXISTS,
 	"Ext2 directory already exists"
 
+ec	EXT2_ET_UNIMPLEMENTED,
+	"Unimplemented ext2 library function"
+
 	end
 

@@ -24,7 +24,6 @@ OBJS= 	alloc.obj \
 	fileio.obj \
 	freefs.obj \
 	get_pathname.obj \
-	getsize.obj \
 	icount.obj \
 	initialize.obj \
 	inline.obj \
