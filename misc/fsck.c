@@ -439,7 +439,7 @@ static int execute(const char *type, const char *device, const char *mntpt,
 	for (i=0; i <num_args; i++)
 		argv[argc++] = string_copy(args[i]);
 
-	if (progress & !progress_active()) {
+	if (progress && !progress_active()) {
 		if ((strcmp(type, "ext2") == 0) ||
 		    (strcmp(type, "ext3") == 0)) {
 			argv[argc++] = string_copy("-C0");

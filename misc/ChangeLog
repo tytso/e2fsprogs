@@ -1,3 +1,9 @@
+2004-02-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.c (execute): Use '&&' instead of '&'.  (It didn't cause a
+		problem because we got lucky, but let's do things right.
+		Fix from Thomas Woerner at Red Hat.)
+
 2004-02-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* filefrag.c: Use #ifdef __linux__ instead of __LINUX__ so that it
