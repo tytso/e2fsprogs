@@ -1,3 +1,12 @@
+1998-08-01  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* subst.c: Add the ability to substitute apparent shell/make
+		variables such as ${prefix}, since this is needed to make
+		the shell scripts work correctly.
+
+	* subst.conf.in: Add ${prefix} to the list of substitutions which
+		subst should make.
+
 1998-07-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.12

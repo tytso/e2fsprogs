@@ -10,3 +10,4 @@ SIZEOF_LONG		@SIZEOF_LONG@
 SIZEOF_INT		@SIZEOF_INT@
 SIZEOF_SHORT		@SIZEOF_SHORT@
 datadir			@datadir@
+$prefix			@prefix@

@@ -67,24 +67,81 @@ static struct subst_entry *fetch_subst_entry(char *name)
 	return ent;
 }
 
+/*
+ * Given the starting and ending position of the replacement name,
+ * check to see if it is valid, and pull it out if it is.
+ */
+static char *get_subst_symbol(const char *begin, int len, char prefix)
+{
+	static char replace_name[128];
+	char *cp, *start;
+
+	start = replace_name;
+	if (prefix)
+		*start++ = prefix;
+
+	if (len > sizeof(replace_name)-2)
+		return NULL;
+	memcpy(start, begin, len);
+	start[len] = 0;
+	
+	/*
+	 * The substitution variable must all be in the of [A-Za-z_].
+	 * If it isn't, this must be an invalid symbol name.
+	 */
+	for (cp = start; *cp; cp++) {
+		if (!(*cp >= 'a' && *cp <= 'z') &&
+		    !(*cp >= 'A' && *cp <= 'Z') &&
+		    !(*cp == '_'))
+			return NULL;
+	}
+	return (replace_name);
+}
+
+static void replace_string(char *begin, char *end, char *newstr)
+{
+	int	replace_len, len;
+
+	replace_len = strlen(newstr);
+	len = end - begin;
+	if (replace_len != len+1)
+		memmove(end+(replace_len-len-1), end,
+			strlen(end)+1);
+	memcpy(begin, newstr, replace_len);
+}
+
 static void substitute_line(char *line)
 {
-	char	*ptr, *name_ptr, *end_ptr;
+	char	*ptr, *name_ptr, *end_ptr, *cp, ch;
 	struct subst_entry *ent;
-	char	replace_name[128];
+	char	*replace_name;
 	int	len, replace_len;
 
+	/*
+	 * Expand all @FOO@ substitutions
+	 */
 	ptr = line;
 	while (ptr) {
 		name_ptr = strchr(ptr, '@');
 		if (!name_ptr)
-			break;
-		end_ptr = strchr(name_ptr+1, '@');
+			break;	/* No more */
+		if (*(++name_ptr) == '@') {
+			/*
+			 * Handle tytso@@mit.edu --> tytso@mit.edu
+			 */
+			memmove(name_ptr-1, name_ptr, strlen(name_ptr)+1);
+			ptr = name_ptr+1;
+			continue;
+		}
+		end_ptr = strchr(name_ptr, '@');
 		if (!end_ptr)
 			break;
-		len = end_ptr - name_ptr - 1;
-		memcpy(replace_name, name_ptr+1, len);
-		replace_name[len] = 0;
+		len = end_ptr - name_ptr;
+		replace_name = get_subst_symbol(name_ptr, len, 0);
+		if (!replace_name) {
+			ptr = name_ptr;
+			continue;
+		}
 		ent = fetch_subst_entry(replace_name);
 		if (!ent) {
 			fprintf(stderr, "Unfound expansion: '%s'\n", 
@@ -96,12 +153,42 @@ static void substitute_line(char *line)
 		fprintf(stderr, "Replace name = '%s' with '%s'\n",
 		       replace_name, ent->value);
 #endif
-		replace_len = strlen(ent->value);
-		if (replace_len != len+2)
-			memmove(end_ptr+(replace_len-len-2), end_ptr,
-				strlen(end_ptr)+1);
-		memcpy(name_ptr, ent->value, replace_len);
-		ptr = name_ptr;
+		ptr = name_ptr-1;
+		replace_string(ptr, end_ptr, ent->value);
+	}
+	/*
+	 * Now do a second pass to expand ${FOO}
+	 */
+	ptr = line;
+	while (ptr) {
+		name_ptr = strchr(ptr, '$');
+		if (!name_ptr)
+			break;	/* No more */
+		if (*(++name_ptr) != '{') {
+			ptr = name_ptr;
+			continue;
+		}
+		name_ptr++;
+		end_ptr = strchr(name_ptr, '}');
+		if (!end_ptr)
+			break;
+		len = end_ptr - name_ptr;
+		replace_name = get_subst_symbol(name_ptr, len, '$');
+		if (!replace_name) {
+			ptr = name_ptr;
+			continue;
+		}			
+		ent = fetch_subst_entry(replace_name);
+		if (!ent) {
+			ptr = end_ptr + 1;
+			continue;
+		}
+#if 0
+		fprintf(stderr, "Replace name = '%s' with '%s'\n",
+		       replace_name, ent->value);
+#endif
+		ptr = name_ptr-2;
+		replace_string(ptr, end_ptr, ent->value);
 	}
 }
 
@@ -144,7 +231,7 @@ static void parse_config_file(FILE *f)
 		/*
 		 * Ignore future extensions
 		 */
-		if (*ptr == '$')
+		if (*ptr == '@')
 			continue;
 		/*
 		 * Parse substitutions
