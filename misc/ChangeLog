@@ -1,5 +1,9 @@
 2000-12-02    <tytso@snap.thunk.org>
 
+	* fsck.8.in: Add clarification that filesystems with a fs_passno
+		of 0 are skipped with the -A option.  (Debian wishlist/bug
+		#63442)
+	
 	* fsck.c (wait_one): When we let a new fsck take control of the
 		console to display the progress bar, set FLAG_PROGRESS to
 		so that fsck knows not to start new processes during an

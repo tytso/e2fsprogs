@@ -127,9 +127,14 @@ filesystems will be checked in the order specified by the
 .I fs_passno 
 (the sixth) field in the 
 .I /etc/fstab
-file.  If there are multiple filesystems with the same pass number, 
+file.  
+Filesystems with a 
+.I fs_passno
+value of 0 are skipped and are not checked at all.
+If there are multiple filesystems with the same pass number, 
 e2fsck will attempt to check them in parallel, although it will avoid running 
-multiple filesystem checks on the same physical disk.  Hence, 
+multiple filesystem checks on the same physical disk.  
+Hence, 
 a very common configuration in 
 .I /etc/fstab
 files is to set the root filesystem to have a 
