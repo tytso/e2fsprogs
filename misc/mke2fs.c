@@ -702,7 +702,7 @@ static void show_stats(ext2_filsys fs)
 	    case EXT2_OS_LINUX: fputs("Linux", stdout); break;
 	    case EXT2_OS_HURD:  fputs("GNU/Hurd", stdout);   break;
 	    case EXT2_OS_MASIX: fputs ("Masix", stdout); break;
-	    case EXT2_OS_FREEBSD: fputs ("FerrBSD", stdout); break;
+	    case EXT2_OS_FREEBSD: fputs ("FreeBSD", stdout); break;
 	    case EXT2_OS_LITES: fputs ("Lites", stdout); break;
 	    default:		fputs(_("(unknown os)"), stdout);
         }
@@ -1252,10 +1252,20 @@ static void PRS(int argc, char *argv[])
 	if (noaction && param.s_blocks_count) {
 		dev_size = param.s_blocks_count;
 		retval = 0;
-	} else
+	} else {
+	retry:
 		retval = ext2fs_get_device_size(device_name,
 						EXT2_BLOCK_SIZE(&param),
 						&dev_size);
+		if ((retval == EFBIG) &&
+		    (blocksize == 0) && 
+		    (param.s_log_block_size == 0)) {
+			param.s_log_block_size = 2;
+			blocksize = 4096;
+			goto retry;
+		}
+	}
+			
 	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {
 		com_err(program_name, retval,
 			_("while trying to determine filesystem size"));
