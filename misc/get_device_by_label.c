@@ -60,6 +60,40 @@ struct xfs_super_block {
 	unsigned char	s_fname[12];
 };
 
+struct reiserfs_super_block
+{
+ 	/* Following entries are based on reiserfsutils 3.6.3 
+	 * (Copyright Hans Reiser) since Linux kernel headers
+	 * (2.4.18) seemed not up-to-date. */
+	unsigned char	s_dummy1[52];
+	unsigned char	s_magic[10];
+	unsigned char	s_dummy2[10];
+	unsigned char	s_version[2];
+	unsigned char	s_dummy3[10];
+	unsigned char	s_uuid[16];
+	unsigned char	s_label[16];
+	unsigned char	s_unused[88];
+};
+
+#define REISER2FS_SUPER_MAGIC_STRING "ReIsEr2Fs" /* v. 3.6 */
+#define REISER3FS_SUPER_MAGIC_STRING "ReIsEr3Fs" /* Journal Relocation */
+#define REISERFS_DISK_OFFSET_IN_BYTES (64 * 1024)
+/* the spot for the super in versions 3.5 - 3.5.10 (inclusive) - 
+ * We'll use it in case volume has been converted. */
+#define REISERFS_OLD_DISK_OFFSET_IN_BYTES (8 * 1024)
+#define reiserversion(s)	((unsigned) (s).s_version[0] + (((unsigned) (s).s_version[1]) << 8))
+
+/* We're checking for ReiserFS v. 3.6 and RJ 3.6 SB */
+static int
+reiser_supports_uuid (struct reiserfs_super_block *sb)
+{
+	return (strncmp(sb->s_magic, REISER2FS_SUPER_MAGIC_STRING,
+			    strlen (REISER2FS_SUPER_MAGIC_STRING)) == 0)
+		|| (strncmp(sb->s_magic, REISER3FS_SUPER_MAGIC_STRING,
+			    strlen (REISER3FS_SUPER_MAGIC_STRING)) == 0
+				&& reiserversion(*sb) == 2);
+}
+
 static struct uuidCache_s {
 	struct uuidCache_s *next;
 	char uuid[16];
@@ -77,17 +111,18 @@ char *string_copy(const char *s)
 	return ret;
 }
 
-/* for now, only ext2 and xfs are supported */
+/* for now, only ext2, ext3, xfs and ReiserFS are supported */
 static int
 get_label_uuid(const char *device, char **label, char *uuid) {
 
-	/* start with ext2 and xfs tests, taken from mount_guess_fstype */
+	/* start with ext2/3, xfs and ReiserFS tests, taken from mount_guess_fstype */
 	/* should merge these later */
 	int fd;
 	size_t label_size;
 	unsigned char *sb_uuid = 0, *sb_label = 0;
 	struct ext2_super_block e2sb;
 	struct xfs_super_block xfsb;
+	struct reiserfs_super_block rfsb;
 
 	fd = open(device, O_RDONLY);
 	if (fd < 0)
@@ -105,6 +140,17 @@ get_label_uuid(const char *device, char **label, char *uuid) {
 		sb_uuid = xfsb.s_uuid;
 		sb_label = xfsb.s_fname;
 		label_size = sizeof(xfsb.s_fname);
+	} else if ((lseek(fd, REISERFS_OLD_DISK_OFFSET_IN_BYTES, SEEK_SET)
+			    == REISERFS_OLD_DISK_OFFSET_IN_BYTES
+	    && read(fd, (char *) &rfsb, sizeof(rfsb)) == sizeof(rfsb)
+	    && (reiser_supports_uuid(&rfsb)))
+	    || (lseek(fd, REISERFS_DISK_OFFSET_IN_BYTES, SEEK_SET)
+			    == REISERFS_DISK_OFFSET_IN_BYTES
+	    && read(fd, (char *) &rfsb, sizeof(rfsb)) == sizeof(rfsb)
+	    && (reiser_supports_uuid(&rfsb)))) {
+		sb_uuid = rfsb.s_uuid;
+		sb_label = rfsb.s_label;
+		label_size = sizeof(rfsb.s_label);
 	} else {
 		close(fd);
 		return 1;
