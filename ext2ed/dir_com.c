@@ -99,8 +99,7 @@ struct struct_file_info search_dir_entries (int (*action) (struct struct_file_in
 {
 	struct struct_file_info info;						/* Temporary variables used to */
 	struct ext2_dir_entry_2 *dir_entry_ptr;					/* contain the current search entries */
-	
-	int return_code;
+	int return_code, next;
 	
 	info=first_file_info;							/* Start from the first entry - Read it */
 	low_read (info.buffer,file_system_info.block_size,info.global_block_offset);
@@ -118,8 +117,11 @@ struct struct_file_info search_dir_entries (int (*action) (struct struct_file_in
 		dir_entry_ptr=(struct ext2_dir_entry_2 *) (info.buffer+info.dir_entry_offset);
 
 		info.dir_entry_num++;
-		info.dir_entry_offset+=dir_entry_ptr->rec_len;
-		info.file_offset+=dir_entry_ptr->rec_len;
+		next = dir_entry_ptr->rec_len;
+		if (!next)
+			next = file_system_info.block_size - info.dir_entry_offset;
+		info.dir_entry_offset += next;
+		info.file_offset += next;
 
 		if (info.file_offset >= info.file_length) break;
 

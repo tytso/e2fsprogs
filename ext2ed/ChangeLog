@@ -1,3 +1,9 @@
+2002-09-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* dir_com.c (search_dir_entries): If there is a directory entry of
+		length 0, go to the next block, so we don't end up looping
+		forever.
+
 2001-09-24  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.29
