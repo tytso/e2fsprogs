@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include "../misc/nls-enable.h"
 
 #ifdef __STDC__
 #define NOARGS void

@@ -14,6 +14,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include "../misc/nls-enable.h"
 
 static void usage(char *progname)
 {

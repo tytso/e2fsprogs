@@ -1,3 +1,9 @@
+2000-09-12    <tytso@valinux.com>
+
+	* extend.c: 
+	* flushb.c: Add include of nls-enable.h which is necessary so that
+		they can compile correctly.
+
 2000-08-22    <tytso@valinux.com>
 
 	* unix.c (main): If we're doing a read-only check, skip the
