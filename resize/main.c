@@ -28,8 +28,8 @@ static volatile void usage (char *prog)
 	exit (1);
 }
 
-static void resize_progress_func(ext2_resize_t rfs, int pass,
-				 unsigned long cur, unsigned long max)
+static errcode_t resize_progress_func(ext2_resize_t rfs, int pass,
+				      unsigned long cur, unsigned long max)
 {
 	ext2_sim_progmeter progress;
 	const char	*label;
@@ -37,7 +37,7 @@ static void resize_progress_func(ext2_resize_t rfs, int pass,
 
 	progress = (ext2_sim_progmeter) rfs->prog_data;
 	if (max == 0)
-		return;
+		return 0;
 	if (cur == 0) {
 		if (progress)
 			ext2fs_progress_close(progress);
@@ -77,6 +77,7 @@ static void resize_progress_func(ext2_resize_t rfs, int pass,
 		progress = 0;
 		rfs->prog_data = 0;
 	}
+	return 0;
 }
 
 static void check_mount(char *device_name)

@@ -81,7 +81,7 @@ struct ext2_resize_struct {
 	/*
 	 * For the progress meter
 	 */
-	void		(*progress)(ext2_resize_t rfs, int pass,
+	errcode_t	(*progress)(ext2_resize_t rfs, int pass,
 				    unsigned long cur,
 				    unsigned long max);
 	void		*prog_data;
@@ -99,8 +99,8 @@ struct ext2_resize_struct {
 
 /* prototypes */
 extern errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags,
-			   void	(*progress)(ext2_resize_t rfs, int pass,
-					    unsigned long cur,
+			   errcode_t	(*progress)(ext2_resize_t rfs,
+					    int pass, unsigned long cur,
 					    unsigned long max));
 
 /* extent.c */

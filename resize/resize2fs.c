@@ -63,7 +63,7 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs);
  * This is the top-level routine which does the dirty deed....
  */
 errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags,
-		    void (*progress)(ext2_resize_t rfs, int pass,
+		    errcode_t (*progress)(ext2_resize_t rfs, int pass,
 				     unsigned long cur,
 				     unsigned long max))
 {
@@ -327,9 +327,12 @@ retry:
 
 	adj = rfs->old_fs->group_desc_count;
 	max_group = fs->group_desc_count - adj;
-	if (rfs->progress)
-		rfs->progress(rfs, E2_RSZ_EXTEND_ITABLE_PASS,
-			      0, max_group);
+	if (rfs->progress) {
+		retval = rfs->progress(rfs, E2_RSZ_EXTEND_ITABLE_PASS,
+				       0, max_group);
+		if (retval)
+			goto errout;
+	}
 	for (i = rfs->old_fs->group_desc_count;
 	     i < fs->group_desc_count; i++) {
 		memset(&fs->group_desc[i], 0,
@@ -375,10 +378,12 @@ retry:
 		if (retval) goto errout;
 
 		io_channel_flush(fs->io);
-		if (rfs->progress)
-			rfs->progress(rfs, E2_RSZ_EXTEND_ITABLE_PASS,
-				      i - adj + 1, max_group);
-		
+		if (rfs->progress) {
+			retval = rfs->progress(rfs, E2_RSZ_EXTEND_ITABLE_PASS,
+					       i - adj + 1, max_group);
+			if (retval)
+				goto errout;
+		}
 		group_block += fs->super->s_blocks_per_group;
 	}
 	io_channel_flush(fs->io);
@@ -779,9 +784,12 @@ static errcode_t block_mover(ext2_resize_t rfs)
 	retval =  ext2fs_iterate_extent(rfs->bmap, 0, 0, 0);
 	if (retval) goto errout;
 
-	if (rfs->progress)
-		(rfs->progress)(rfs, E2_RSZ_BLOCK_RELOC_PASS, 0, to_move);
-
+	if (rfs->progress) {
+		retval = (rfs->progress)(rfs, E2_RSZ_BLOCK_RELOC_PASS,
+					 0, to_move);
+		if (retval)
+			goto errout;
+	}
 	while (1) {
 		retval = ext2fs_iterate_extent(rfs->bmap, &old_blk, &new_blk, &size);
 		if (retval) goto errout;
@@ -808,8 +816,11 @@ static errcode_t block_mover(ext2_resize_t rfs)
 			moved += c;
 			if (rfs->progress) {
 				io_channel_flush(fs->io);
-				(rfs->progress)(rfs, E2_RSZ_BLOCK_RELOC_PASS, 
+				retval = (rfs->progress)(rfs,
+						E2_RSZ_BLOCK_RELOC_PASS,
 						moved, to_move);
+				if (retval)
+					goto errout;
 			}
 		} while (size > 0);
 		io_channel_flush(fs->io);
@@ -880,6 +891,7 @@ static errcode_t progress_callback(ext2_filsys fs, ext2_inode_scan scan,
 				   dgrp_t group, void * priv_data)
 {
 	ext2_resize_t rfs = (ext2_resize_t) priv_data;
+	errcode_t		retval;
 
 	/*
 	 * This check is to protect against old ext2 libraries.  It
@@ -890,8 +902,10 @@ static errcode_t progress_callback(ext2_filsys fs, ext2_inode_scan scan,
 
 	if (rfs->progress) {
 		io_channel_flush(fs->io);
-		(rfs->progress)(rfs, E2_RSZ_INODE_SCAN_PASS,
-				group+1, fs->group_desc_count);
+		retval = (rfs->progress)(rfs, E2_RSZ_INODE_SCAN_PASS,
+					 group+1, fs->group_desc_count);
+		if (retval)
+			return retval;
 	}
 	
 	return 0;
@@ -925,10 +939,12 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	start_to_move = (rfs->new_fs->group_desc_count *
 			 rfs->new_fs->super->s_inodes_per_group);
 	
-	if (rfs->progress)
-		(rfs->progress)(rfs, E2_RSZ_INODE_SCAN_PASS,
-				0, rfs->old_fs->group_desc_count);
-	
+	if (rfs->progress) {
+		retval = (rfs->progress)(rfs, E2_RSZ_INODE_SCAN_PASS,
+					 0, rfs->old_fs->group_desc_count);
+		if (retval)
+			goto errout;
+	}
 	ext2fs_set_inode_callback(scan, progress_callback, (void *) rfs);
 	pb.rfs = rfs;
 	pb.inode = &inode;
@@ -1027,6 +1043,7 @@ errout:
 
 struct istruct {
 	ext2_resize_t rfs;
+	errcode_t	err;
 	unsigned long	max;
 	int		num;
 };
@@ -1036,12 +1053,15 @@ static int check_and_change_inodes(ino_t dir, int entry,
 				   int	blocksize, char *buf, void *priv_data)
 {
 	struct istruct *is = (struct istruct *) priv_data;
-	ino_t	new_inode;
+	ino_t		new_inode;
 
 	if (is->rfs->progress && offset == 0) {
 		io_channel_flush(is->rfs->old_fs->io);
-		(is->rfs->progress)(is->rfs, E2_RSZ_INODE_REF_UPD_PASS,
-				++is->num, is->max);
+		is->err = (is->rfs->progress)(is->rfs,
+					      E2_RSZ_INODE_REF_UPD_PASS,
+					      ++is->num, is->max);
+		if (is->err)
+			return DIRENT_ABORT;
 	}
 
 	if (!dirent->inode)
@@ -1078,15 +1098,26 @@ static errcode_t inode_ref_fix(ext2_resize_t rfs)
 	is.num = 0;
 	is.max = ext2fs_dblist_count(rfs->old_fs->dblist);
 	is.rfs = rfs;
+	is.err = 0;
 
-	if (rfs->progress)
-		(rfs->progress)(rfs, E2_RSZ_INODE_REF_UPD_PASS,
-				0, is.max);
+	if (rfs->progress) {
+		retval = (rfs->progress)(rfs, E2_RSZ_INODE_REF_UPD_PASS,
+					 0, is.max);
+		if (retval)
+			goto errout;
+	}
 	
 	retval = ext2fs_dblist_dir_iterate(rfs->old_fs->dblist,
 					   DIRENT_FLAG_INCLUDE_EMPTY, 0,
 					   check_and_change_inodes, &is);
+	if (retval)
+		goto errout;
+	if (is.err) {
+		retval = is.err;
+		goto errout;
+	}
 
+errout:
 	ext2fs_free_extent_table(rfs->imap);
 	rfs->imap = 0;
 	return retval;
@@ -1145,8 +1176,12 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	if (to_move == 0)
 		return 0;
 
-	if (rfs->progress)
-		rfs->progress(rfs, E2_RSZ_MOVE_ITABLE_PASS, 0, to_move);
+	if (rfs->progress) {
+		retval = rfs->progress(rfs, E2_RSZ_MOVE_ITABLE_PASS,
+				       0, to_move);
+		if (retval)
+			goto errout;
+	}
 
 	rfs->old_fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 
@@ -1209,8 +1244,10 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		ext2fs_mark_super_dirty(rfs->old_fs);
 		if (rfs->progress) {
 			ext2fs_flush(rfs->old_fs);
-			rfs->progress(rfs, E2_RSZ_MOVE_ITABLE_PASS,
-				      ++moved, to_move);
+			retval = rfs->progress(rfs, E2_RSZ_MOVE_ITABLE_PASS,
+					       ++moved, to_move);
+			if (retval)
+				goto errout;
 		}
 	}
 	ext2fs_flush(fs);
