@@ -524,7 +524,7 @@ no_has_journal:
 				goto no_has_journal;
 			/*
 			 * Need a full fsck if we are releasing a
-			 * journal on a reserved inode.
+			 * journal stored on a reserved inode.
 			 */
 			force_fsck = recover ||
 				(sb->s_journal_inum < EXT2_FIRST_INODE(sb));
