@@ -160,7 +160,7 @@ static void swap_inodes(e2fsck_t ctx)
 			     ext2fs_inode_has_valid_blocks(inode)))
 				swap_inode_blocks(ctx, ino, block_buf, inode);
 
-			if (ctx->flags & E2F_FLAG_ABORT)
+			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 				return;
 			
 			if (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)
@@ -216,7 +216,7 @@ void swap_filesys(e2fsck_t ctx)
 		fs->flags |= EXT2_FLAG_SWAP_BYTES_WRITE;
 	}
 	swap_inodes(ctx);
-	if (ctx->flags & E2F_FLAG_ABORT)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		return;
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)
 		fs->flags |= EXT2_FLAG_SWAP_BYTES;

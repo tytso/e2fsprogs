@@ -1,3 +1,10 @@
+Tue Feb 24 15:19:40 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Change the progress function to return an integer; if returns 1,
+		then the progress function is expected to have set the
+		e2fsck context flag signalling a user abort, and the
+		caller should also initiate a user abort.
+
 Tue Feb 17 19:03:44 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass5.c (check_block_bitmaps, check_inode_bitmaps): Don't call

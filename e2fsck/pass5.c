@@ -39,28 +39,31 @@ void e2fsck_pass5(e2fsck_t ctx)
 		fix_problem(ctx, PR_5_PASS_HEADER, &pctx);
 
 	if (ctx->progress)
-		(ctx->progress)(ctx, 5, 0, 3);
+		if ((ctx->progress)(ctx, 5, 0, 3))
+			return;
 
 	e2fsck_read_bitmaps(ctx);
 
 	if (ctx->progress)
-		(ctx->progress)(ctx, 5, 2, 3);
+		if ((ctx->progress)(ctx, 5, 2, 3))
+			return;
 
 	check_block_bitmaps(ctx);
-	if (ctx->flags & E2F_FLAG_ABORT)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		return;
 	check_inode_bitmaps(ctx);
-	if (ctx->flags & E2F_FLAG_ABORT)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		return;
 	check_inode_end(ctx);
-	if (ctx->flags & E2F_FLAG_ABORT)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		return;
 	check_block_end(ctx);
-	if (ctx->flags & E2F_FLAG_ABORT)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		return;
 
 	if (ctx->progress)
-		(ctx->progress)(ctx, 5, 3, 3);
+		if ((ctx->progress)(ctx, 5, 3, 3))
+			return;
 
 	ext2fs_free_inode_bitmap(ctx->inode_used_map);
 	ctx->inode_used_map = 0;

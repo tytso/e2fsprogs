@@ -52,8 +52,8 @@ static errcode_t expand_directory(e2fsck_t ctx, ino_t dir);
 static ino_t lost_and_found = 0;
 static int bad_lost_and_found = 0;
 
-static ext2fs_inode_bitmap inode_loop_detect;
-static ext2fs_inode_bitmap inode_done_map;
+static ext2fs_inode_bitmap inode_loop_detect = 0;
+static ext2fs_inode_bitmap inode_done_map = 0;
 	
 void e2fsck_pass3(e2fsck_t ctx)
 {
@@ -88,7 +88,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 		pctx.num = 1;
 		fix_problem(ctx, PR_3_ALLOCATE_IBITMAP_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
-		return;
+		goto abort_exit;
 	}
 	pctx.errcode = ext2fs_allocate_inode_bitmap(fs, "inode done bitmap",
 						    &inode_done_map);
@@ -96,7 +96,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 		pctx.num = 2;
 		fix_problem(ctx, PR_3_ALLOCATE_IBITMAP_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
-		return;
+		goto abort_exit;
 	}
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME)
@@ -104,8 +104,8 @@ void e2fsck_pass3(e2fsck_t ctx)
 #endif
 
 	check_root(ctx);
-	if (ctx->flags & E2F_FLAG_ABORT)
-		return;
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+		goto abort_exit;
 
 	ext2fs_mark_inode_bitmap(inode_done_map, EXT2_ROOT_INO);
 
@@ -114,16 +114,21 @@ void e2fsck_pass3(e2fsck_t ctx)
 
 	for (i=0; (dir = e2fsck_dir_info_iter(ctx, &i)) != 0;) {
 		if (ctx->progress)
-			(ctx->progress)(ctx, 3, count++, max);
+			if ((ctx->progress)(ctx, 3, count++, max))
+				goto abort_exit;
 		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dir->ino))
 			check_directory(ctx, dir, &pctx);
 	}
 	if (ctx->progress)
-		(ctx->progress)(ctx, 3, max, max);
-	
+		if ((ctx->progress)(ctx, 3, max, max))
+			goto abort_exit;
+
+abort_exit:
 	e2fsck_free_dir_info(ctx);
-	ext2fs_free_inode_bitmap(inode_loop_detect);
-	ext2fs_free_inode_bitmap(inode_done_map);
+	if (inode_loop_detect)
+		ext2fs_free_inode_bitmap(inode_loop_detect);
+	if (inode_done_map)
+		ext2fs_free_inode_bitmap(inode_done_map);
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
 		print_resource_track("Pass 3", &rtrack);

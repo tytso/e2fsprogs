@@ -131,8 +131,8 @@ struct e2fsck_struct {
 #endif
 	unsigned long abort_code;
 
-	void (*progress)(e2fsck_t ctx, int pass, unsigned long cur,
-			 unsigned long max);
+	int (*progress)(e2fsck_t ctx, int pass, unsigned long cur,
+			unsigned long max);
 
 	ext2fs_inode_bitmap inode_used_map; /* Inodes which are in use */
 	ext2fs_inode_bitmap inode_bad_map; /* Inodes which are bad somehow */

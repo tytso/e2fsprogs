@@ -103,13 +103,15 @@ void e2fsck_pass4(e2fsck_t ctx)
 	group = 0;
 	max = fs->group_desc_count;
 	if (ctx->progress)
-		(ctx->progress)(ctx, 4, 0, max);
+		if ((ctx->progress)(ctx, 4, 0, max))
+			return;
 	
 	for (i=1; i <= fs->super->s_inodes_count; i++) {
 		if ((i % fs->super->s_inodes_per_group) == 0) {
 			group++;
 			if (ctx->progress)
-				(ctx->progress)(ctx, 4, group, max);
+				if ((ctx->progress)(ctx, 4, group, max))
+					return;
 		}
 		if (i == EXT2_BAD_INO ||
 		    (i > EXT2_ROOT_INO && i < EXT2_FIRST_INODE(fs->super)))

@@ -241,7 +241,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 	scan_struct.block_buf = block_buf;
 	ext2fs_set_inode_callback(scan, scan_callback, &scan_struct);
 	if (ctx->progress)
-		(ctx->progress)(ctx, 1, 0, ctx->fs->group_desc_count);
+		if ((ctx->progress)(ctx, 1, 0, ctx->fs->group_desc_count))
+			return;
 	while (ino) {
 		pctx.ino = ino;
 		pctx.inode = &inode;
@@ -430,13 +431,13 @@ void e2fsck_pass1(e2fsck_t ctx)
 		} else
 			check_blocks(ctx, &pctx, block_buf);
 
-		if (ctx->flags & E2F_FLAG_ABORT)
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return;
 
 		if (process_inode_count >= ctx->process_inode_size) {
 			process_inodes(ctx, block_buf);
 
-			if (ctx->flags & E2F_FLAG_ABORT)
+			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 				return;
 		}
 	next:
@@ -506,7 +507,9 @@ static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
 	process_inodes((e2fsck_t) fs->priv_data, scan_struct->block_buf);
 
 	if (ctx->progress)
-		(ctx->progress)(ctx, 1, group+1, ctx->fs->group_desc_count);
+		if ((ctx->progress)(ctx, 1, group+1,
+				    ctx->fs->group_desc_count))
+			return EXT2_ET_CANCEL_REQUESTED;
 
 	return 0;
 }
@@ -543,7 +546,7 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 		ehandler_operation(buf);
 		check_blocks(ctx, &pctx, block_buf);
 
-		if (ctx->flags & E2F_FLAG_ABORT)
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return;
 	}
 	ctx->stashed_inode = old_stashed_inode;
@@ -668,7 +671,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pctx->errcode = ext2fs_block_iterate2(fs, ino,
 				       pb.is_dir ? BLOCK_FLAG_HOLE : 0,
 				       block_buf, process_block, &pb);
-	if (ctx->flags & E2F_FLAG_ABORT)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		return;
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
 	if (pctx->errcode)
@@ -949,7 +952,7 @@ int process_bad_block(ext2_filsys fs,
 	if (blockcnt < 0) {
 		if (ext2fs_test_block_bitmap(ctx->block_found_map, blk)) {
 			bad_block_indirect(ctx, blk);
-			if (ctx->flags & E2F_FLAG_ABORT)
+			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 				return BLOCK_ABORT;
 		} else
 			mark_block_used(ctx, blk);
@@ -1041,7 +1044,7 @@ int process_bad_block(ext2_filsys fs,
 	if ((blk == p->inode->i_block[EXT2_IND_BLOCK]) ||
 	    p->inode->i_block[EXT2_DIND_BLOCK]) {
 		bad_block_indirect(ctx, blk);
-		if (ctx->flags & E2F_FLAG_ABORT)
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return BLOCK_ABORT;
 		return 0;
 	}

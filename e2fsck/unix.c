@@ -567,14 +567,14 @@ restart:
 	if (ctx->superblock)
 		set_latch_flags(PR_LATCH_RELOC, PRL_LATCHED, 0);
 	check_super_block(ctx);
-	if (ctx->flags & E2F_FLAG_ABORT)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		exit(FSCK_ERROR);
 	check_if_skip(ctx);
 	if (bad_blocks_file)
 		read_bad_blocks_file(ctx, bad_blocks_file, replace_bad_blocks);
 	else if (cflag)
 		test_disk(ctx);
-	if (ctx->flags & E2F_FLAG_ABORT)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		exit(FSCK_ERROR);
 
 	if (normalize_swapfs) {
@@ -587,7 +587,7 @@ restart:
 	}
 	if (swapfs) {
 		swap_filesys(ctx);
-		if (ctx->flags & E2F_FLAG_ABORT)
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			exit(FSCK_ERROR);
 	}
 
@@ -616,7 +616,7 @@ restart:
 		}
 		goto restart;
 	}
-	if (run_result & E2F_FLAG_ABORT)
+	if (run_result & E2F_FLAG_SIGNAL_MASK)
 		exit(FSCK_ERROR);
 	if (run_result & E2F_FLAG_CANCEL)
 		ext2fs_unmark_valid(fs);

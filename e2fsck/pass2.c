@@ -117,7 +117,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	
 	cd.pctx.errcode = ext2fs_dblist_iterate(fs->dblist, check_dir_block,
 						&cd);
-	if (ctx->flags & E2F_FLAG_ABORT)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		return;
 	if (cd.pctx.errcode) {
 		fix_problem(ctx, PR_2_DBLIST_ITERATE, &cd.pctx);
@@ -286,7 +286,8 @@ static int check_dir_block(ext2_filsys fs,
 	ctx = cd->ctx;
 
 	if (ctx->progress)
-		(ctx->progress)(ctx, 2, cd->count++, cd->max);
+		if ((ctx->progress)(ctx, 2, cd->count++, cd->max))
+			return DIRENT_ABORT;
 	
 	/*
 	 * Make sure the inode is still in use (could have been 
@@ -452,7 +453,7 @@ static int check_dir_block(ext2_filsys fs,
 				dir_modified++;
 				goto next;
 			}
-			if (ctx->flags & E2F_FLAG_ABORT)
+			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 				return DIRENT_ABORT;
 		}
 
@@ -614,7 +615,7 @@ static int process_bad_inode(e2fsck_t ctx, ino_t dir, ino_t ino)
 	if (problem) {
 		if (fix_problem(ctx, problem, &pctx)) {
 			deallocate_inode(ctx, ino, 0);
-			if (ctx->flags & E2F_FLAG_ABORT)
+			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 				return 0;
 			return 1;
 		}
