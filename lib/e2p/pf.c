@@ -34,11 +34,14 @@ static struct flags_name flags_array[] = {
 	{ EXT2_NODUMP_FL, "d", "No_Dump" },
 	{ EXT2_NOATIME_FL, "A", "No_Atime" },
 	{ EXT2_COMPR_FL, "c", "Compression_Requested" },
+#ifdef ENABLE_COMPRESSION
 	{ EXT2_COMPRBLK_FL, "B", "Compressed_File" },
 	{ EXT2_DIRTY_FL, "Z", "Compressed_Dirty_File" },
 	{ EXT2_NOCOMPR_FL, "X", "Compression_Raw_Access" },
 	{ EXT2_ECOMPR_FL, "E", "Compression_Error" },
+#endif
 	{ EXT3_JOURNAL_DATA_FL, "j", "Journaled_Data" },
+	{ EXT2_INDEX_FL, "I", "Indexed_direcctory" }, 
 	{ EXT2_NOTAIL_FL, "t", "No_Tailmerging" },
 	{ EXT2_TOPDIR_FL, "T", "Top_of_Directory_Hierarchies" },
 	{ 0, NULL, NULL }
