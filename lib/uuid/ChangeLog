@@ -1,3 +1,11 @@
+2000-03-12  Theodore Ts'o  <tytso@valinux.com>
+
+	* gen_uuid.c (get_random_bytes): Make more paranoid about
+		misbehaving /dev/urandom.  If we get a return of zero
+		without an error more than 8 times in a row, we break out
+		and return an error.  Also, if /dev/urandom doesn't exist,
+		try /dev/random.
+
 2000-01-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* Makefile.in: Since LIBUUID can sometimes include

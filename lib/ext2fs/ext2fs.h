@@ -45,12 +45,17 @@
 #include "e2_types.h"
 #else
 #include <asm/types.h>
-#if defined(__GNUC__) && defined(__STRICT_ANSI__) && \
-	(((~0UL) == 0xffffffff) || defined(__i386__))
+#if !defined(__GNUC__) || defined(__STRICT_ANSI__)  /* asm/types.h already defines __s64 and __u64 otherwise */
+#if SIZEOF_LONG == 8
+typedef __signed__ long __s64;
+typedef unsigned long __u64;
+#elif SIZEOF_LONG_LONG == 8 || \
+  defined(__GNUC__) && (((~0UL) == 0xffffffff) || defined(__i386__))
 typedef __signed__ long long __s64;
 typedef unsigned long long __u64;
+#endif /* SIZEOF_LONG == 8 */
 #endif
-#endif
+#endif /* EXT2_FLAT_INCLUDES */
 
 typedef __u32		blk_t;
 typedef __u32		dgrp_t;
@@ -485,7 +490,12 @@ struct ext2fs_sb {
 					 EXT3_FEATURE_COMPAT_HAS_JOURNAL)
 /* This #ifdef is temporary until compression is fully supported */
 #ifdef ENABLE_COMPRESSION
+#ifndef I_KNOW_THAT_COMPRESSION_IS_EXPERIMENTAL
+/* If the below warning bugs you, then have
+   `CPPFLAGS=-DI_KNOW_THAT_COMPRESSION_IS_EXPERIMENTAL' in your
+   environment at configure time. */
 #warning "Compression support is experimental"
+#endif
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE|\
 					 EXT2_FEATURE_INCOMPAT_COMPRESSION)
 #else

@@ -49,22 +49,29 @@ static void get_random_bytes(void *buf, int nbytes)
 {
 	static int fd = -2;
 	int i;
+	int lose_counter = 0;
 	char *cp = (char *) buf;
 
 	if (fd == -2) {
 		fd = open("/dev/urandom", O_RDONLY);
+		if (fd == -1)
+			fd = open("/dev/random", O_RDONLY);
 		srand((getpid() << 16) ^ getuid() ^ time(0));
 	}
 	if (fd >= 0) {
 		while (nbytes > 0) {
 			i = read(fd, cp, nbytes);
-			if (i < 0) {
-				if ((errno == EINTR) || (errno == EAGAIN))
-					continue;
-				break;
+			if ((i < 0) &&
+			    ((errno == EINTR) || (errno == EAGAIN)))
+				continue;
+			if (i <= 0) {
+				if (lose_counter++ == 8)
+					break;
+				continue;
 			}
 			nbytes -= i;
 			cp += i;
+			lose_counter = 0;
 		}
 	}
 	if (nbytes == 0)

@@ -1,3 +1,10 @@
+2000-04-03  Theodore Ts'o  <tytso@valinux.com>
+
+	* ext2fs.h: Use AUTOCONF SIZEOF_* macros if available to determine
+		how to define __s64 and __u64.  Turn off "compression is
+		experimental" warning if the cpp macro
+		I_KNOW_THAT_COMPRESSION_IS_EXPERIMENTAL is defined.
+
 2000-02-11    <tytso@snap.thunk.org>
 
 	* ext2fs.h: Define EXT2FS_COMPRESSED_BLKADDR and HOLE_BLKADDR.
