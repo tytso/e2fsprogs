@@ -36,7 +36,7 @@ errcode_t ext2fs_resize_generic_bitmap(__u32 new_end, __u32 new_real_end,
 	__u32		bitno;
 
 	if (!bmap)
-		return EXT2_INVALID_ARGUMENT;
+		return EXT2_ET_INVALID_ARGUMENT;
 
 	EXT2_CHECK_MAGIC(bmap, EXT2_ET_MAGIC_GENERIC_BITMAP);
 
@@ -76,7 +76,7 @@ errcode_t ext2fs_resize_inode_bitmap(__u32 new_end, __u32 new_real_end,
 	errcode_t	retval;
 	
 	if (!bmap)
-		return EXT2_INVALID_ARGUMENT;
+		return EXT2_ET_INVALID_ARGUMENT;
 
 	EXT2_CHECK_MAGIC(bmap, EXT2_ET_MAGIC_INODE_BITMAP);
 
@@ -93,7 +93,7 @@ errcode_t ext2fs_resize_block_bitmap(__u32 new_end, __u32 new_real_end,
 	errcode_t	retval;
 	
 	if (!bmap)
-		return EXT2_INVALID_ARGUMENT;
+		return EXT2_ET_INVALID_ARGUMENT;
 
 	EXT2_CHECK_MAGIC(bmap, EXT2_ET_MAGIC_BLOCK_BITMAP);
 

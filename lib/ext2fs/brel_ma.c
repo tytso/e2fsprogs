@@ -109,7 +109,7 @@ static errcode_t bma_put(ext2_brel brel, blk_t old,
 
 	ma = brel->private;
 	if (old > ma->max_block)
-		return EXT2_INVALID_ARGUMENT;
+		return EXT2_ET_INVALID_ARGUMENT;
 	ma->entries[(unsigned)old] = *ent;
 	return 0;
 }
@@ -121,7 +121,7 @@ static errcode_t bma_get(ext2_brel brel, blk_t old,
 
 	ma = brel->private;
 	if (old > ma->max_block)
-		return EXT2_INVALID_ARGUMENT;
+		return EXT2_ET_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned)old].new == 0)
 		return ENOENT;
 	*ent = ma->entries[old];
@@ -157,7 +157,7 @@ static errcode_t bma_move(ext2_brel brel, blk_t old, blk_t new)
 
 	ma = brel->private;
 	if ((old > ma->max_block) || (new > ma->max_block))
-		return EXT2_INVALID_ARGUMENT;
+		return EXT2_ET_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned)old].new == 0)
 		return ENOENT;
 	ma->entries[(unsigned)new] = ma->entries[old];
@@ -171,7 +171,7 @@ static errcode_t bma_delete(ext2_brel brel, blk_t old)
 
 	ma = brel->private;
 	if (old > ma->max_block)
-		return EXT2_INVALID_ARGUMENT;
+		return EXT2_ET_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned)old].new == 0)
 		return ENOENT;
 	ma->entries[(unsigned)old].new = 0;

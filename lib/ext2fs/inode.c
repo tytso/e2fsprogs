@@ -648,7 +648,7 @@ errcode_t ext2fs_check_directory(ext2_filsys fs, ino_t ino)
 	if (retval)
 		return retval;
 	if (!LINUX_S_ISDIR(inode.i_mode))
-		return EXT2_NO_DIRECTORY;
+		return EXT2_ET_NO_DIRECTORY;
 	return 0;
 }
 

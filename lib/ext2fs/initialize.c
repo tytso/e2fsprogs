@@ -70,7 +70,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	char		*buf;
 
 	if (!param || !param->s_blocks_count)
-		return EXT2_INVALID_ARGUMENT;
+		return EXT2_ET_INVALID_ARGUMENT;
 	
 	retval = ext2fs_get_mem(sizeof(struct struct_ext2_filsys),
 				(void **) &fs);
@@ -139,7 +139,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	super->s_blocks_count = param->s_blocks_count;
 	super->s_r_blocks_count = param->s_r_blocks_count;
 	if (super->s_r_blocks_count >= param->s_blocks_count) {
-		retval = EXT2_INVALID_ARGUMENT;
+		retval = EXT2_ET_INVALID_ARGUMENT;
 		goto cleanup;
 	}
 

@@ -57,7 +57,7 @@ static int get_pathname_proc(struct ext2_dir_entry *dirent,
 		retval = ext2fs_get_mem(dirent->name_len + 1,
 					(void **) &gp->name);
 		if (!gp->name) {
-			gp->errcode = EXT2_NO_MEMORY;
+			gp->errcode = EXT2_ET_NO_MEMORY;
 			return DIRENT_ABORT;
 		}
 		strncpy(gp->name, dirent->name, dirent->name_len);

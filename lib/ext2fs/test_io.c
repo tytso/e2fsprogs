@@ -94,7 +94,7 @@ static errcode_t test_open(const char *name, int flags, io_channel *channel)
 	retval = ext2fs_get_mem(sizeof(struct test_private_data),
 				(void **) &data);
 	if (retval) {
-		retval = EXT2_NO_MEMORY;
+		retval = EXT2_ET_NO_MEMORY;
 		goto cleanup;
 	}
 	io->manager = test_io_manager;

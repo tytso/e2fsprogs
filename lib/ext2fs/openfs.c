@@ -82,7 +82,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	 */
 	if (superblock) {
 		if (!block_size) {
-			retval = EXT2_INVALID_ARGUMENT;
+			retval = EXT2_ET_INVALID_ARGUMENT;
 			goto cleanup;
 		}
 		io_channel_set_blksize(fs->io, block_size);

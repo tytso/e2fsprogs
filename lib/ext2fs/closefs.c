@@ -70,7 +70,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 
 	fs->super->s_wtime = time(NULL);
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
-		retval = EXT2_NO_MEMORY;
+		retval = EXT2_ET_NO_MEMORY;
 		retval = ext2fs_get_mem(SUPERBLOCK_SIZE,
 					(void **) &super_shadow);
 		if (retval)

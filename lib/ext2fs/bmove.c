@@ -53,7 +53,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			if (++block >= fs->super->s_blocks_count)
 				block = fs->super->s_first_data_block;
 			if (block == orig) {
-				pb->error = EXT2_BLOCK_ALLOC_FAIL;
+				pb->error = EXT2_ET_BLOCK_ALLOC_FAIL;
 				return BLOCK_ABORT;
 			}
 		} while (ext2fs_test_block_bitmap(pb->reserve, block) ||

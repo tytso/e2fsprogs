@@ -212,7 +212,7 @@ errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
 	fs = file->fs;
 
 	if (!(file->flags & EXT2_FILE_WRITE))
-		return EXT2_FILE_RO;
+		return EXT2_ET_FILE_RO;
 
 again:
 	b = file->pos / fs->blocksize;
@@ -274,7 +274,7 @@ errcode_t ext2fs_file_llseek(ext2_file_t file, ext2_off_t offset,
 	else if (whence == EXT2_SEEK_END)
 		file->pos = file->inode.i_size + offset;
 	else
-		return EXT2_INVALID_ARGUMENT;
+		return EXT2_ET_INVALID_ARGUMENT;
 
 	if (ret_pos)
 		*ret_pos = file->pos;

@@ -191,7 +191,7 @@ errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 		dblist->sorted = 0;
 		return 0;
 	}
-	return EXT2_DB_NOT_FOUND;
+	return EXT2_ET_DB_NOT_FOUND;
 }
 
 /*

@@ -65,7 +65,7 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode,
 	} while (i != start_inode);
 	
 	if (ext2fs_test_inode_bitmap(map, i))
-		return EXT2_INODE_ALLOC_FAIL;
+		return EXT2_ET_INODE_ALLOC_FAIL;
 	*ret = i;
 	return 0;
 }
@@ -97,7 +97,7 @@ errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
 		if (i >= fs->super->s_blocks_count)
 			i = fs->super->s_first_data_block;
 	} while (i != goal);
-	return EXT2_BLOCK_ALLOC_FAIL;
+	return EXT2_ET_BLOCK_ALLOC_FAIL;
 }
 
 /*
@@ -175,6 +175,6 @@ errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start, blk_t finish,
 		}
 		b++;
 	} while (b != finish);
-	return EXT2_BLOCK_ALLOC_FAIL;
+	return EXT2_ET_BLOCK_ALLOC_FAIL;
 }
 
