@@ -876,7 +876,16 @@ restart:
 		com_err(ctx->program_name, 0,
 			_("Warning: compression support is experimental.\n"));
 #endif
-	
+#ifndef ENABLE_HTREE
+	if (sb->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) {
+		com_err(ctx->program_name, 0,
+			_("E2fsck not compiled with HTREE support,\n\t"
+			  "but filesystem %s has HTREE directories.\n"),
+			ctx->device_name);
+		goto get_newer;
+	}
+#endif
+
 	/*
 	 * If the user specified a specific superblock, presumably the
 	 * master superblock has been trashed.  So we mark the

@@ -1208,6 +1208,22 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		ctx->flags |= E2F_FLAG_RESTART;
 		return;
 	}
+	
+	if (inode->i_flags & EXT2_INDEX_FL) {
+		if (fs->super->s_feature_compat &
+		    EXT2_FEATURE_COMPAT_DIR_INDEX) {
+#ifdef ENABLE_HTREE
+			e2fsck_add_dx_dir(ctx, ino, pb.last_block+1);
+#endif
+		} else {
+			if (fix_problem(ctx, PR_1_HTREE_SET, pctx)) {
+				inode->i_flags &= ~EXT2_INDEX_FL;
+				e2fsck_write_inode(ctx, ino, inode,
+						   "check_blocks");
+			}
+		} 
+	}
+
 	if (inode->i_file_acl && check_ext_attr(ctx, pctx, block_buf))
 		pb.num_blocks++;
 

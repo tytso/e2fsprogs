@@ -125,6 +125,45 @@ fi
 echo "Disabling compression support by default"
 )
 dnl
+dnl handle --enable-htree
+dnl
+AC_ARG_ENABLE([htree],
+[  --enable-htree      	  enable EXPERIMENTAL htree directory support],
+if test "$enableval" = "no"
+then
+	HTREE_CMT=#
+	echo "Disabling htree directory support"
+else
+	HTREE_CMT=
+	AC_DEFINE(ENABLE_HTREE)
+	echo "Enabling htree directory support"
+	echo "WARNING: htree support is experimental"
+fi
+,
+HTREE_CMT=#
+echo "Disabling htree directory support by default"
+)
+AC_SUBST(HTREE_CMT)
+dnl
+dnl handle --enable-clear-htree
+dnl
+AC_ARG_ENABLE([htree-clear],
+[  --enable-htree-clear 	  clear htree because we don't trust e2fsck],
+if test "$enableval" = "no"
+then
+	HTREE_CLR_CMT=#
+	echo "Disabling htree clearing"
+else
+	HTREE_CLR_CMT=
+	AC_DEFINE(ENABLE_HTREE_CLEAR)
+	echo "Enabling htree clearing"
+fi
+,
+HTREE_CLR_CMT=#
+echo "Disabling htree clearing by default"
+)
+AC_SUBST(HTREE_CLR_CMT)
+dnl
 dnl handle --enable-old-evms
 dnl
 AC_ARG_ENABLE([old-evms],

@@ -665,6 +665,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@b #%B (%b) causes symlink to be too big.  "),
 	  PROMPT_CLEAR, PR_LATCH_TOOBIG },
 
+	/* INDEX_FL flag set on a non-HTREE filesystem */
+	{ PR_1_HTREE_SET,
+	  N_("@i %i has INDEX_FL flag set on @f without htree support.\n"),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
@@ -984,6 +989,40 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@f contains large files, but lacks LARGE_FILE flag in @S.\n"),
 	  PROMPT_FIX, 0 },
 	  
+	/* Node in HTREE directory not referenced */
+	{ PR_2_HTREE_NOTREF,
+	  N_("@p @h %d: node (%B) not referenced\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Node in HTREE directory referenced twice */
+	{ PR_2_HTREE_DUPREF,
+	  N_("@p @h %d: node (%B) referenced twice\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Node in HTREE directory has bad min hash */
+	{ PR_2_HTREE_MIN_HASH,
+	  N_("@p @h %d: node (%B) has bad min hash\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Node in HTREE directory has bad max hash */
+	{ PR_2_HTREE_MAX_HASH,
+	  N_("@p @h %d: node (%B) has bad max hash\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Clear invalid HTREE directory */
+	{ PR_2_HTREE_CLEAR,
+	  N_("Invalid @h %d (%q).  "), PROMPT_CLEAR, 0 },
+		  
+	/* Clear the htree flag forcibly */
+	{ PR_2_HTREE_FCLR,
+	  N_("Forcibly clearing HTREE flag on @i %d (%q).  (Beta test code)\n"),
+		  PROMPT_NONE, 0 },
+
+	/* Bad block in htree interior node */
+	{ PR_2_HTREE_BADBLK,
+	  N_("@p @h %d (%q): bad @b number %B.\n"),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

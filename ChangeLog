@@ -1,4 +1,8 @@
-2002-05-24    <tytso@snap.thunk.org>
+2002-06-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in, configure: Add --enable-htree and --enable-clear-htree
+
+2002-05-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Add makefile for lib/evms for the EVMS FSIM
 		plugin.  Add --enable-old-evms configure option which uses

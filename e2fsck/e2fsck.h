@@ -77,6 +77,40 @@ struct dir_info {
 	ext2_ino_t		parent; /* Parent according to treewalk */
 };
 
+
+/*
+ * The indexed directory information structure; stores information for
+ * directories which contain a hash tree index.
+ */
+struct dx_dir_info {
+	ext2_ino_t		ino; 		/* Inode number */
+	int			numblocks;	/* number of blocks */
+	int			hashversion;
+	struct dx_dirblock_info	*dx_block; 	/* Array of size numblocks */
+};
+
+#define DX_DIRBLOCK_ROOT	1
+#define DX_DIRBLOCK_LEAF	2
+#define DX_DIRBLOCK_NODE	3
+#define DX_DIRBLOCK_CORRUPT	4
+#define DX_DIRBLOCK_CLEARED	8
+
+struct dx_dirblock_info {
+	int		type;
+	blk_t		phys;
+	int		flags;
+	blk_t		parent;
+	ext2_dirhash_t	min_hash; 
+	ext2_dirhash_t	max_hash;
+	ext2_dirhash_t	node_min_hash; 
+	ext2_dirhash_t	node_max_hash;
+};
+
+#define DX_FLAG_REFERENCED	1
+#define DX_FLAG_DUP_REF		2
+#define DX_FLAG_FIRST		4
+#define DX_FLAG_LAST		8
+
 #ifdef RESOURCE_TRACK
 /*
  * This structure is used for keeping track of how much resources have
@@ -208,6 +242,13 @@ struct e2fsck_struct {
 	struct dir_info	*dir_info;
 
 	/*
+	 * Indexed directory information
+	 */
+	int		dx_dir_info_count;
+	int		dx_dir_info_size;
+	struct dx_dir_info *dx_dir_info;
+
+	/*
 	 * Tuning parameters
 	 */
 	int process_inode_size;
@@ -292,9 +333,15 @@ extern void test_disk(e2fsck_t ctx);
 extern void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent);
 extern struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ext2_ino_t ino);
 extern void e2fsck_free_dir_info(e2fsck_t ctx);
-extern int e2fsck_get_num_dirs(e2fsck_t ctx);
 extern int e2fsck_get_num_dirinfo(e2fsck_t ctx);
 extern struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, int *control);
+
+/* dx_dirinfo.c */
+extern void e2fsck_add_dx_dir(e2fsck_t ctx, ext2_ino_t ino, int num_blocks);
+extern struct dx_dir_info *e2fsck_get_dx_dir_info(e2fsck_t ctx, ext2_ino_t ino);
+extern void e2fsck_free_dx_dir_info(e2fsck_t ctx);
+extern int e2fsck_get_num_dx_dirinfo(e2fsck_t ctx);
+extern struct dx_dir_info *e2fsck_dx_dir_info_iter(e2fsck_t ctx, int *control);
 
 /* ea_refcount.c */
 extern errcode_t ea_refcount_create(int size, ext2_refcount_t *ret);

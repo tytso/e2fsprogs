@@ -63,12 +63,14 @@
  * 	@f	filesystem
  * 	@F	for @i %i (%Q) is
  * 	@g	group
+ * 	@h	HTREE directory inode
  * 	@i	inode
  * 	@I	illegal
  * 	@j	journal
  * 	@l	lost+found
  * 	@L	is a link
  * 	@o	orphaned
+ * 	@p	problem in
  * 	@r	root inode
  * 	@s	should be 
  * 	@S	superblock
@@ -116,9 +118,11 @@ static const char *abbrevs[] = {
 	N_("ffilesystem"),
 	N_("Ffor @i %i (%Q) is"),
 	N_("ggroup"),
+	N_("hHTREE @d @i"),
 	N_("llost+found"),
 	N_("Lis a link"),
 	N_("oorphaned"),
+	N_("pproblem in"),
 	N_("rroot @i"),
 	N_("sshould be"),
 	N_("Ssuper@b"),

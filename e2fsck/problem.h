@@ -385,6 +385,9 @@ struct problem_context {
 /* Symlink too big */
 #define PR_1_TOOBIG_SYMLINK		0x010046
 
+/* INDEX_FL flag set on a non-HTREE filesystem */
+#define PR_1_HTREE_SET			0x010047
+
 /*
  * Pass 1b errors
  */
@@ -583,6 +586,27 @@ struct problem_context {
 
 /* Filesystem contains large files, but has no such flag in sb */
 #define PR_2_FEATURE_LARGE_FILES 0x020033
+
+/* Node in HTREE directory not referenced */
+#define PR_2_HTREE_NOTREF	0x020034
+
+/* Node in HTREE directory referenced twice */
+#define PR_2_HTREE_DUPREF	0x020035
+
+/* Node in HTREE directory has bad min hash */
+#define PR_2_HTREE_MIN_HASH	0x020036
+
+/* Node in HTREE directory has bad max hash */
+#define PR_2_HTREE_MAX_HASH	0x020037
+
+/* Clear invalid HTREE directory */
+#define PR_2_HTREE_CLEAR	0x020038
+
+/* Clear the htree flag forcibly */
+#define PR_2_HTREE_FCLR		0x020039
+
+/* Bad block in htree interior node */
+#define PR_2_HTREE_BADBLK	0x02003A
 
 /*
  * Pass 3 errors

@@ -1,3 +1,30 @@
+2002-06-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.c (e2fsck_reset_context): Free the dx_dirinfo structure.
+
+	* message.c: Add new abbrevations @h and @p, "HTREE directory
+		inode" and "problem in".
+
+	* pass1.c (check_blocks): If the inode has the INDEX_FL flag,
+		register the block into the indexed directory data
+		structures.  Or if the filesystem doesn't have the
+		DIR_INDEX flag, offer to clear the INDEX_FL.
+
+	* pass2.c (e2fsck_pass2, parse_int_node): Add support check htree
+		directories (we don't check all possible corruptions yet).
+
+	* problem.h, problem.h (PR_1_HTREE_SET, PR_2_HTREE_NOTREF, 
+		PR_2_HTREE_DUPREF, PR_2_HTREE_MIN_HASH, PR_2_HTREE_MAX_HASH,
+		PR_2_HTREE_CLEAR, PR_2_HTREE_FCLR, PR_2_HTREE_BADBLK): Add
+		new problem codes.
+
+	* unix.c (main): If ENABLE_HTREE is not defined, complain if the
+		filesystem has the dir_index feature.
+
+	* Makefile.in, e2fsck.h, dx_dirinfo.c: New file (and group of
+		functions) which keeps track of blocks in HTREE directory
+		blocks.
+
 2002-05-22  Andreas Dilger <adilger@clusterfs.com>
 
 	* super.c (check_superblock): Check that the number of inodes and

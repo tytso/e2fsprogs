@@ -16,6 +16,8 @@ all:: @DO_TEST_SUITE@
 test_script: test_script.in Makefile
 	@echo "Creating test_script..."
 	@echo "#!/bin/sh" > test_script
+@HTREE_CMT@	@echo "HTREE=y" >> test_script
+@HTREE_CLR_CMT@	@echo "HTREE_CLR=y" >> test_script
 	@echo "SRCDIR=@srcdir@" >> test_script
 	@cat $(srcdir)/test_script.in >> test_script
 	@chmod +x test_script
