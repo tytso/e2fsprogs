@@ -59,8 +59,8 @@ errcode_t ext2fs_dir_iterate(ext2_filsys fs,
 	ctx.func2 = 0;
 	ctx.priv_data = priv_data;
 	ctx.errcode = 0;
-	retval = ext2fs_block_iterate(fs, dir, 0, 0,
-				      ext2fs_process_dir_block, &ctx);
+	retval = ext2fs_block_iterate2(fs, dir, 0, 0,
+				       ext2fs_process_dir_block, &ctx);
 	if (!block_buf)
 		ext2fs_free_mem((void **) &ctx.buf);
 	if (retval)
@@ -74,7 +74,9 @@ errcode_t ext2fs_dir_iterate(ext2_filsys fs,
  */
 extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 				    blk_t		*blocknr,
-				    int		blockcnt,
+				    blkcnt_t		blockcnt,
+				    blk_t		ref_block,
+				    int			ref_offset,
 				    void		*priv_data)
 {
 	struct dir_context *ctx = (struct dir_context *) priv_data;
@@ -88,12 +90,12 @@ extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 	if (blockcnt < 0)
 		return 0;
 
+	entry = blockcnt ? DIRENT_OTHER_FILE : DIRENT_DOT_FILE;
+	
 	ctx->errcode = ext2fs_read_dir_block(fs, *blocknr, ctx->buf);
 	if (ctx->errcode)
 		return BLOCK_ABORT;
 
-	entry = blockcnt ? DIRENT_OTHER_FILE : DIRENT_DOT_FILE;
-	
 	while (offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (ctx->buf + offset);
 		if (!dirent->inode &&

@@ -83,8 +83,11 @@ struct ext2_inode_cache_ent {
 
 /* Function prototypes */
 
-extern int ext2_process_dir_block(ext2_filsys fs,
-				  blk_t	*blocknr,
-				  int	blockcnt,
-				  void	*priv_data);
+extern int ext2fs_process_dir_block(ext2_filsys  	fs,
+				    blk_t		*blocknr,
+				    blkcnt_t		blockcnt,
+				    blk_t		ref_block,
+				    int			ref_offset,
+				    void		*priv_data);
+
 

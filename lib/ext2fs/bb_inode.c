@@ -46,10 +46,12 @@ struct set_badblock_record {
 	errcode_t	err;
 };
 
-static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
+static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
+			      blkcnt_t blockcnt,
 			      blk_t ref_block, int ref_offset,
 			      void *priv_data);
-static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
+static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
+				blkcnt_t blockcnt,
 				blk_t ref_block, int ref_offset,
 				void *priv_data);
 	
@@ -163,7 +165,8 @@ cleanup:
 #ifdef __TURBOC__
 #pragma argsused
 #endif
-static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
+static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
+				blkcnt_t blockcnt,
 				blk_t ref_block, int ref_offset,
 				void *priv_data)
 {
@@ -222,7 +225,7 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 #pragma argsused
 #endif
 static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
-			      int blockcnt, blk_t ref_block, 
+			      blkcnt_t blockcnt, blk_t ref_block, 
 			      int ref_offset, void *priv_data)
 {
 	struct set_badblock_record *rec = (struct set_badblock_record *)

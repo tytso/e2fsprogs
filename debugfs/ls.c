@@ -51,8 +51,14 @@ static void ls_l_file(struct list_dir_struct *ls, char *name, ino_t ino)
 	sprintf(datestr, "%2d-%s-%2d %02d:%02d",
 		tm_p->tm_mday, monstr[tm_p->tm_mon], tm_p->tm_year,
 		tm_p->tm_hour, tm_p->tm_min);
-	fprintf(ls->f, "%6ld %6o  %5d  %5d   %5d %s %s\n", ino, inode.i_mode,
-	       inode.i_uid, inode.i_gid, inode.i_size, datestr, name);
+ 	fprintf(ls->f, "%6ld %6o  %5d  %5d   ", ino, inode.i_mode,
+ 	       inode.i_uid, inode.i_gid);
+ 	if (LINUX_S_ISDIR(inode.i_mode))
+ 		fprintf(ls->f, "%5d", inode.i_size);
+ 	else
+ 		fprintf(ls->f, "%5lld", inode.i_size |
+			((__u64)inode.i_size_high << 32));
+ 	fprintf (ls->f, " %s %s\n", datestr, name);
 }
 
 static void ls_file(struct list_dir_struct *ls, char *name,

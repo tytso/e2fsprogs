@@ -79,5 +79,5 @@ static int db_dir_proc(ext2_filsys fs, struct ext2_db_entry *db_info,
 	ctx->dir = db_info->ino;
 	
 	return ext2fs_process_dir_block(fs, &db_info->blk,
-					db_info->blockcnt, priv_data);
+					db_info->blockcnt, 0, 0, priv_data);
 }

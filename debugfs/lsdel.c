@@ -23,7 +23,7 @@ struct deleted_info {
 	ino_t	ino;
 	unsigned short mode;
 	unsigned short uid;
-	unsigned long size;
+	__u64	size;
 	time_t	dtime;
 	int	num_blocks;
 	int	free_blocks;
@@ -148,6 +148,9 @@ void do_lsdel(int argc, char **argv)
 			delarray[num_delarray].mode = inode.i_mode;
 			delarray[num_delarray].uid = inode.i_uid;
 			delarray[num_delarray].size = inode.i_size;
+			if (!LINUX_S_ISDIR(inode.i_mode))
+				delarray[num_delarray].size |= 
+					((__u64) inode.i_size_high << 32);
 			delarray[num_delarray].dtime = inode.i_dtime;
 			delarray[num_delarray].num_blocks = lsd.num_blocks;
 			delarray[num_delarray].free_blocks = lsd.free_blocks;
@@ -170,7 +173,7 @@ void do_lsdel(int argc, char **argv)
 	      deleted_info_compare);
 	
 	for (i = 0; i < num_delarray; i++) {
-		printf("%6lu %6d %6o %6lu %4d/%4d %s", delarray[i].ino,
+		printf("%6lu %6d %6o %6llu %4d/%4d %s", delarray[i].ino,
 		       delarray[i].uid, delarray[i].mode, delarray[i].size,
 		       delarray[i].free_blocks, delarray[i].num_blocks, 
 		       time_to_string(delarray[i].dtime));

@@ -43,7 +43,8 @@ struct read_bb_record {
 #pragma argsused
 #endif
 static int mark_bad_block(ext2_filsys fs, blk_t *block_nr,
-			     int blockcnt, void *priv_data)
+			  blkcnt_t blockcnt, blk_t ref_block,
+			  int ref_offset, void *priv_data)
 {
 	struct read_bb_record *rb = (struct read_bb_record *) priv_data;
 	
@@ -80,7 +81,7 @@ errcode_t ext2fs_read_bb_inode(ext2_filsys fs, ext2_badblocks_list *bb_list)
 
 	rb.bb_list = *bb_list;
 	rb.err = 0;
-	retval = ext2fs_block_iterate(fs, EXT2_BAD_INO, 0, 0,
+	retval = ext2fs_block_iterate2(fs, EXT2_BAD_INO, 0, 0,
 				      mark_bad_block, &rb);
 	if (retval)
 		return retval;

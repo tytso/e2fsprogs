@@ -301,7 +301,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 	return ret;
 }
 	
-errcode_t ext2fs_block_iterate3(ext2_filsys fs,
+errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 				ino_t	ino,
 				int	flags,
 				char *block_buf,
@@ -384,28 +384,28 @@ errcode_t ext2fs_block_iterate3(ext2_filsys fs,
 	for (i = 0; i < EXT2_NDIR_BLOCKS ; i++, ctx.bcount++) {
 		if (blocks[i] || (flags & BLOCK_FLAG_APPEND)) {
 			ret |= (*ctx.func)(fs, &blocks[i],
-					    ctx.bcount, 0, 0, priv_data);
+					    ctx.bcount, 0, i, priv_data);
 			if (ret & BLOCK_ABORT)
 				goto abort;
 		}
 	}
 	if (*(blocks + EXT2_IND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
 		ret |= block_iterate_ind(blocks + EXT2_IND_BLOCK,
-					 0, 0, &ctx);
+					 0, EXT2_IND_BLOCK, &ctx);
 		if (ret & BLOCK_ABORT)
 			goto abort;
 	} else
 		ctx.bcount += limit;
 	if (*(blocks + EXT2_DIND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
 		ret |= block_iterate_dind(blocks + EXT2_DIND_BLOCK,
-					  0, 0, &ctx);
+					  0, EXT2_DIND_BLOCK, &ctx);
 		if (ret & BLOCK_ABORT)
 			goto abort;
 	} else
 		ctx.bcount += limit * limit;
 	if (*(blocks + EXT2_TIND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
 		ret |= block_iterate_tind(blocks + EXT2_TIND_BLOCK,
-					  0, 0, &ctx);
+					  0, EXT2_TIND_BLOCK, &ctx);
 		if (ret & BLOCK_ABORT)
 			goto abort;
 	}
@@ -468,54 +468,7 @@ errcode_t ext2fs_block_iterate(ext2_filsys fs,
 	xl.real_private = priv_data;
 	xl.func = func;
 
-	return ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_NO_LARGE | flags,
+	return ext2fs_block_iterate2(fs, ino, BLOCK_FLAG_NO_LARGE | flags,
 				     block_buf, xlate_func, &xl);
-}
-
-/*
- * Emulate the old ext2fs_block_iterate2 function!
- */
-
-struct xlate2 {
-	int (*func)(ext2_filsys fs,
-		    blk_t	*blocknr,
-		    int		blockcnt,
-		    blk_t	ref_blk,
-		    int		ref_offset,
-		    void	*priv_data);
-	void *real_private;
-};
-
-#ifdef __TURBOC__
-#pragma argsused
-#endif
-static int xlate_func2(ext2_filsys fs, blk_t *blocknr, blkcnt_t blockcnt,
-		      blk_t ref_block, int ref_offset, void *priv_data)
-{
-	struct xlate2 *xl = (struct xlate2 *) priv_data;
-
-	return (*xl->func)(fs, blocknr, (int) blockcnt, ref_block,
-			   ref_offset, xl->real_private);
-}
-
-errcode_t ext2fs_block_iterate2(ext2_filsys fs,
-				ino_t	ino,
-				int	flags,
-				char *block_buf,
-				int (*func)(ext2_filsys fs,
-					    blk_t	*blocknr,
-					    int	blockcnt,
-					    blk_t	ref_blk,
-					    int		ref_offset,
-					    void	*priv_data),
-				void *priv_data)
-{
-	struct xlate2 xl;
-	
-	xl.real_private = priv_data;
-	xl.func = func;
-
-	return ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_NO_LARGE | flags,
-				     block_buf, xlate_func2, &xl);
 }
 

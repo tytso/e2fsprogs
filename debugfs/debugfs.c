@@ -306,16 +306,24 @@ static void dump_inode(ino_t inode_num, struct ext2_inode inode)
 	fprintf(out, "Inode: %ld   Type: %s    ", inode_num, i_type);
 	fprintf(out, "Mode:  %04o   Flags: 0x%x   Version: %d\n",
 		inode.i_mode & 0777, inode.i_flags, inode.i_version);
-	fprintf(out, "User: %5d   Group: %5d   Size: %d\n",  
-		inode.i_uid, inode.i_gid, inode.i_size);
+	fprintf(out, "User: %5d   Group: %5d   Size: ",
+		inode.i_uid, inode.i_gid);
+	if (LINUX_S_ISDIR(inode.i_mode))
+		fprintf(out, "%d\n", inode.i_size);
+	else {
+		__u64 i_size = (inode.i_size |
+				((unsigned long long)inode.i_size_high << 32));
+		
+		fprintf(out, "%lld\n", i_size);
+	}
 	if (current_fs->super->s_creator_os == EXT2_OS_HURD)
 		fprintf(out,
 			"File ACL: %d    Directory ACL: %d Translator: %d\n",
-			inode.i_file_acl, inode.i_dir_acl,
+			inode.i_file_acl, LINUX_S_ISDIR(inode.i_mode) ? inode.i_dir_acl : 0,
 			inode.osd1.hurd1.h_i_translator);
 	else
 		fprintf(out, "File ACL: %d    Directory ACL: %d\n",
-			inode.i_file_acl, inode.i_dir_acl);
+			inode.i_file_acl, LINUX_S_ISDIR(inode.i_mode) ? inode.i_dir_acl : 0);
 	fprintf(out, "Links: %d   Blockcount: %d\n", inode.i_links_count,
 		inode.i_blocks);
 	switch (os) {
@@ -681,7 +689,10 @@ void do_modify_inode(int argc, char *argv[])
 	modify_u32(argv[0], "Reserved1", decimal_format, &inode.i_reserved1);
 #endif
 	modify_u32(argv[0], "File acl", decimal_format, &inode.i_file_acl);
-	modify_u32(argv[0], "Directory acl", decimal_format, &inode.i_dir_acl);
+	if (LINUX_S_ISDIR(inode.i_mode))
+		modify_u32(argv[0], "Directory acl", decimal_format, &inode.i_dir_acl);
+	else
+		modify_u32(argv[0], "High 32bits of size", decimal_format, &inode.i_size_high);
 
 	if (current_fs->super->s_creator_os == EXT2_OS_HURD)
 		modify_u32(argv[0], "Translator Block",

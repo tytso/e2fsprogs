@@ -38,7 +38,7 @@ struct process_block_struct {
 };
 
 static int process_block(ext2_filsys fs, blk_t	*block_nr,
-			 int blockcnt, blk_t ref_block,
+			 blkcnt_t blockcnt, blk_t ref_block,
 			 int ref_offset, void *priv_data)
 {
 	struct process_block_struct *pb;
@@ -78,12 +78,12 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 		ext2fs_mark_block_bitmap(pb->alloc_map, block);
 		ret = BLOCK_CHANGED;
 		if (pb->flags & EXT2_BMOVE_DEBUG)
-			printf("ino=%ld, blockcnt=%d, %d->%d\n", pb->ino,
+			printf("ino=%ld, blockcnt=%ld, %d->%d\n", pb->ino,
 			       blockcnt, orig, block);
 	}
 	if (pb->add_dir) {
 		retval = ext2fs_add_dir_block(fs->dblist, pb->ino,
-					      block, blockcnt);
+					      block, (int) blockcnt);
 		if (retval) {
 			pb->error = retval;
 			ret |= BLOCK_ABORT;

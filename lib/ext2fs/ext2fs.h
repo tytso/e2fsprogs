@@ -228,7 +228,7 @@ struct struct_ext2_filsys {
  * called for data blocks only.
  *
  * BLOCK_FLAG_NO_LARGE is for internal use only.  It informs
- * ext2fs_block_iterate3 that large files won't be accepted.
+ * ext2fs_block_iterate2 that large files won't be accepted.
  */
 #define BLOCK_FLAG_APPEND	1
 #define BLOCK_FLAG_HOLE		1
@@ -533,19 +533,7 @@ extern errcode_t ext2fs_block_iterate(ext2_filsys fs,
 						  int	blockcnt,
 						  void	*priv_data),
 				      void *priv_data);
-
 errcode_t ext2fs_block_iterate2(ext2_filsys fs,
-				ino_t	ino,
-				int	flags,
-				char *block_buf,
-				int (*func)(ext2_filsys fs,
-					    blk_t	*blocknr,
-					    int	blockcnt,
-					    blk_t	ref_blk,
-					    int		ref_offset,
-					    void	*priv_data),
-				void *priv_data);
-errcode_t ext2fs_block_iterate3(ext2_filsys fs,
 				ino_t	ino,
 				int	flags,
 				char *block_buf,
@@ -631,11 +619,6 @@ extern errcode_t ext2fs_dir_iterate(ext2_filsys fs,
 					  char	*buf,
 					  void	*priv_data),
 			      void *priv_data);
-	/* priv_data to library */
-extern int ext2fs_process_dir_block(ext2_filsys  	fs,
-				    blk_t		*blocknr,
-				    int		blockcnt,
-				    void		*priv_data);
 
 /* dupfs.c */
 extern errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest);

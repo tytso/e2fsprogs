@@ -169,4 +169,3 @@
 00000000 T _ext2fs_get_mem			libext2fs	inline
 00000000 T _ext2fs_free_mem			libext2fs	inline
 00000000 T _ext2fs_resize_mem			libext2fs	inline
-00000000 T _ext2fs_block_iterate3		libext2fs	block
