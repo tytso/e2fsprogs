@@ -1,4 +1,4 @@
-e2fsprogs (1.36) unstable; urgency=low
+e2fsprogs (1.36release-1) unstable; urgency=low
 
   * New upstream release.
   * Make filefrag print the first and last blocks when in verbose mode.
