@@ -476,12 +476,6 @@ static int ignore(struct fs_info *fs)
 	 */
 	if (!fs_match(fs->type, fstype)) return 1;
 	
-	/* Noauto never matches. */
-	for (cp = strtok(fs->opts, ","); cp != NULL; cp = strtok(NULL, ",")) {
-		if (!strcmp(cp, "noauto"))
-			return 1;
-	}
-
 	/* Are we ignoring this type? */
 	for(ip = ignored_types; *ip; ip++)
 		if (strcmp(fs->type, *ip) == 0) return(1);
