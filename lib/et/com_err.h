@@ -12,6 +12,12 @@
 
 typedef long errcode_t;
 
+struct error_table {
+	char const * const * msgs;
+	unsigned long base;
+	unsigned int n_msgs;
+};
+
 #ifdef __STDC__
 #include <stdarg.h>
 

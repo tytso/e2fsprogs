@@ -18,11 +18,6 @@
 #define const
 #endif
 
-struct error_table {
-    char const * const * msgs;
-    long base;
-    int n_msgs;
-};
 struct et_list {
     struct et_list *next;
     const struct error_table *table;

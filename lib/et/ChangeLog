@@ -1,3 +1,16 @@
+2003-03-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* com_err.h, error_table.h: Move definition of the error_table
+		structure from the internal error_table.h to com_err.h,
+		since it now needs to be public.
+
+	* et_c.awk, et_h.awk: Import changes from krb5's et library so
+		that the error_table structure is defined and available
+		publically.
+
+	* error_message.c: Import krb5 and heimdall com_err extensions to
+		the et library.
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32
