@@ -49,7 +49,7 @@ void main (int argc, char ** argv)
 	device_name = argv[optind++];
 	new_size = atoi(argv[optind++]);
 	initialize_ext2_error_table();
-#if 0
+#if 1
 	io_ptr = unix_io_manager;
 #else
 	io_ptr = test_io_manager;

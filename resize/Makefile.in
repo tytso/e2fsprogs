@@ -14,9 +14,10 @@ INSTALL = @INSTALL@
 PROGS=		resize2fs
 MANPAGES=	resize2fs.8
 
-RESIZE_OBJS= resize2fs.o main.o
+RESIZE_OBJS= inodemap.o resize2fs.o main.o
 
-SRCS= $(srcdir)/resize2fs.c \
+SRCS= $(srcdir)/inodemap.c \
+	$(srcdir)/resize2fs.c \
 	$(srcdir)/main.c 
 
 LIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR)  $(LIBUUID)

@@ -200,7 +200,7 @@ retry:
  */
 static errcode_t determine_relocations(ext2_resize_t rfs)
 {
-	int	i, j;
+	int	i, j, max, adj;
 	blk_t	blk, group_blk;
 	unsigned long old_blocks, new_blocks;
 	errcode_t	retval;
@@ -229,6 +229,9 @@ static errcode_t determine_relocations(ext2_resize_t rfs)
 	if (old_blocks == new_blocks)
 		return 0;
 
+	max = fs->group_desc_count;
+	if (max > rfs->old_fs->group_desc_count)
+		max = rfs->old_fs->group_desc_count;
 	group_blk = rfs->old_fs->super->s_first_data_block;
 	/*
 	 * If we're reducing the number of descriptor blocks, this
@@ -236,15 +239,17 @@ static errcode_t determine_relocations(ext2_resize_t rfs)
 	 * blocks as free.
 	 */
 	if (old_blocks > new_blocks) {
-		for (i = 0; i < fs->group_desc_count; i++) {
+		for (i = 0; i < max; i++) {
 			if (!ext2fs_bg_has_super(fs, i)) {
 				group_blk += fs->super->s_blocks_per_group;
 				continue;
 			}
 			for (blk = group_blk+1+old_blocks;
-			     blk < group_blk+1+new_blocks; blk++)
+			     blk < group_blk+1+new_blocks; blk++) {
 				ext2fs_unmark_block_bitmap(fs->block_map,
 							   blk);
+				rfs->needed_blocks--;
+			}
 			group_blk += fs->super->s_blocks_per_group;
 		}
 		return 0;
@@ -253,7 +258,7 @@ static errcode_t determine_relocations(ext2_resize_t rfs)
 	 * If we're increasing the number of descriptor blocks, life
 	 * gets interesting....  
 	 */
-	for (i = 0; i < fs->group_desc_count; i++) {
+	for (i = 0; i < max; i++) {
 		if (!ext2fs_bg_has_super(fs, i))
 			goto next_group;
 
@@ -266,11 +271,14 @@ static errcode_t determine_relocations(ext2_resize_t rfs)
 			 * Check to see if we overlap with the inode
 			 * or block bitmap
 			 */
-			if (blk == fs->group_desc[i].bg_inode_bitmap)
-				fs->group_desc[i].bg_block_bitmap = 0;	
-			if (blk == fs->group_desc[i].bg_inode_bitmap)
+			if (blk == fs->group_desc[i].bg_block_bitmap) {
+				fs->group_desc[i].bg_block_bitmap = 0;
+				rfs->needed_blocks++;
+			}
+			if (blk == fs->group_desc[i].bg_inode_bitmap) {
 				fs->group_desc[i].bg_inode_bitmap = 0;
-
+				rfs->needed_blocks++;
+			}
 			/*
 			 * Check to see if we overlap with the inode
 			 * table
@@ -320,25 +328,176 @@ static errcode_t determine_relocations(ext2_resize_t rfs)
 		ext2fs_mark_block_bitmap(fs->block_map,
 					 fs->group_desc[i].bg_inode_bitmap);
 
+		/*
+		 * The inode table, if we need to relocate it, is
+		 * handled specially.  We have to reserve the blocks
+		 * for both the old and the new inode table, since we
+		 * can't have the inode table be destroyed during the
+		 * block relocation phase.
+		 */
+		adj = fs->group_desc[i].bg_inode_table -
+			rfs->old_fs->group_desc[i].bg_inode_table;
+		if (!adj)
+			goto next_group; /* inode table not moved */
+
+		/*
+		 * Figure out how many blocks we need to have free.
+		 * This takes into account that we need to reserve
+		 * both inode tables, which may be overallping.
+		 */
+		if (adj < 0)
+			adj = -adj;
+		if (adj > fs->inode_blocks_per_group)
+			adj = fs->inode_blocks_per_group;
+		rfs->needed_blocks += fs->inode_blocks_per_group + adj;
+
+		/*
+		 * Mark the new inode table as in use in the new block
+		 * allocation bitmap.
+		 */
 		for (blk = fs->group_desc[i].bg_inode_table, j=0;
 		     j < fs->inode_blocks_per_group ; j++, blk++)
 			ext2fs_mark_block_bitmap(fs->block_map, blk);
-		
 		/*
-		 * Mark the inode tables which will need to move, and
-		 * restore the old inode table location (for now)
+		 * Make sure the old inode table is reserved in the
+		 * block reservation bitmap.
 		 */
-		if (fs->group_desc[i].bg_inode_table !=
-		    rfs->old_fs->group_desc[i].bg_inode_table) {
-			rfs->move_itable[i] = fs->group_desc[i].bg_inode_table;
-			fs->group_desc[i].bg_inode_table =
-				rfs->old_fs->group_desc[i].bg_inode_table;
-		}
+		for (blk = rfs->old_fs->group_desc[i].bg_inode_table, j=0;
+		     j < fs->inode_blocks_per_group ; j++, blk++)
+			ext2fs_mark_block_bitmap(rfs->reserve_blocks, blk);
 		
 	next_group:
 		group_blk += rfs->new_fs->super->s_blocks_per_group;
 	}
+	return 0;
 }
+
+
+/*
+ * A very scary routine --- this one moves the inode table around!!!
+ *
+ * After this you have to use the rfs->new_fs file handle to read and
+ * write inodes.
+ */
+errcode_t move_itables(ext2_resize_t rfs)
+{
+	int	i, max;
+	ext2_filsys	fs = rfs->new_fs;
+	char		*buf;
+	blk_t		old, new;
+	errcode_t	retval, err;
+
+	printf("Hide the women and children --- "
+	       "commencing inode table moves!!\n");
+	
+	max = fs->group_desc_count;
+	if (max > rfs->old_fs->group_desc_count)
+		max = rfs->old_fs->group_desc_count;
+
+	buf = malloc(fs->blocksize * fs->inode_blocks_per_group);
+	if (!buf)
+		return ENOMEM;
+	
+	for (i=0; i < max; i++) {
+		old = rfs->old_fs->group_desc[i].bg_inode_table;
+		new = fs->group_desc[i].bg_inode_table;
+		
+		printf("Group %d block %ld->%ld\n", i, old, new);
+		
+		if (old == new)
+			continue;
+
+		retval = io_channel_read_blk(fs->io, old,
+					     fs->inode_blocks_per_group, buf);
+		if (retval) 
+			goto backout;
+		retval = io_channel_write_blk(fs->io, new,
+					      fs->inode_blocks_per_group, buf);
+		if (retval) {
+			io_channel_write_blk(fs->io, old,
+					      fs->inode_blocks_per_group, buf);
+			goto backout;
+		}
+	}
+	ext2fs_flush(rfs->new_fs);
+	printf("Inode table move finished.\n");
+	return 0;
+	
+backout:
+	printf("Error: %s; now backing out!\n", error_message(retval));
+	while (--i >= 0) {
+		printf("Group %d block %ld->%ld\n", i, new, old);
+		old = rfs->old_fs->group_desc[i].bg_inode_table;
+		new = fs->group_desc[i].bg_inode_table;
+		
+		err = io_channel_read_blk(fs->io, new,
+					  fs->inode_blocks_per_group, buf);
+		if (err)
+			continue;
+		err = io_channel_write_blk(fs->io, old,
+					   fs->inode_blocks_per_group, buf);
+	}
+	return retval;
+}
+
+/*
+ * Finally, recalculate the summary information
+ */
+static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
+{
+	blk_t	blk;
+	ino_t	ino;
+	int	group = 0;
+	int	count = 0;
+	int	total_free = 0;
+	int	group_free = 0;
+
+	/*
+	 * First calculate the block statistics
+	 */
+	for (blk = fs->super->s_first_data_block;
+	     blk < fs->super->s_blocks_count; blk++) {
+		if (!ext2fs_fast_test_block_bitmap(fs->block_map, blk)) {
+			group_free++;
+			total_free++;
+		}
+		count++;
+		if ((count == fs->super->s_blocks_per_group) ||
+		    (blk == fs->super->s_blocks_count-1)) {
+			fs->group_desc[group++].bg_free_blocks_count =
+				group_free;
+			count = 0;
+			group_free = 0;
+		}
+	}
+	fs->super->s_free_blocks_count = total_free;
+	
+	/*
+	 * Next, calculate the inode statistics
+	 */
+	group_free = 0;
+	total_free = 0;
+	count = 0;
+	group = 0;
+	for (ino = 1; ino <= fs->super->s_inodes_count; ino++) {
+		if (!ext2fs_fast_test_inode_bitmap(fs->inode_map, ino)) {
+			group_free++;
+			total_free++;
+		}
+		count++;
+		if ((count == fs->super->s_inodes_per_group) ||
+		    (ino == fs->super->s_inodes_count)) {
+			fs->group_desc[group++].bg_free_inodes_count =
+				group_free;
+			count = 0;
+			group_free = 0;
+		}
+	}
+	fs->super->s_free_inodes_count = total_free;
+	ext2fs_mark_super_dirty(fs);
+	return 0;
+}
+
 
 
 /*
@@ -361,13 +520,6 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size)
 		return ENOMEM;
 	memset(rfs, 0, sizeof(struct ext2_resize_struct));
 
-	rfs->move_itable = malloc(sizeof(blk_t) * fs->group_desc_count);
-	if (!rfs->move_itable) {
-		retval = ENOMEM;
-		goto errout;
-	}
-	memset(rfs->move_itable, 0, sizeof(blk_t) * fs->group_desc_count);
-	
 	rfs->old_fs = fs;
 	retval = ext2fs_dup_handle(fs, &rfs->new_fs);
 	if (retval)
@@ -381,6 +533,14 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size)
 	if (retval)
 		goto errout;
 
+	printf("Number of free blocks: %d, Needed: %d\n",
+	       fs->super->s_free_blocks_count, rfs->needed_blocks);
+	
+	if (rfs->needed_blocks > fs->super->s_free_blocks_count) {
+		retval = ENOSPC;
+		goto errout;
+	}
+	
 	printf("\nOld superblock:\n");
 	list_super(rfs->old_fs->super);
 	printf("\n\nNew superblock:\n");
@@ -388,8 +548,23 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size)
 	printf("\n");
 
 	retval = ext2fs_move_blocks(rfs->old_fs, rfs->reserve_blocks,
+				    rfs->new_fs->block_map,
 				    EXT2_BMOVE_GET_DBLIST);
+	if (retval)
+		return retval;
 
+	retval = ext2fs_inode_move(rfs);
+	if (retval)
+		return retval;
+
+	retval = move_itables(rfs);
+	if (retval)
+		return retval;
+
+	retval = ext2fs_calculate_summary_stats(rfs->new_fs);
+	if (retval)
+		return retval;
+	
 	retval = ext2fs_close(rfs->new_fs);
 	if (retval)
 		return retval;
@@ -399,11 +574,8 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size)
 	return 0;
 
 errout:
-	if (rfs->move_itable)
-		free(rfs->move_itable);
 	if (rfs->new_fs)
 		ext2fs_free(rfs->new_fs);
 	free(rfs);
 	return retval;
 }
-

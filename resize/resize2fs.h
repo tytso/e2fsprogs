@@ -41,11 +41,6 @@ struct ext2_resize_struct {
 	ext2_brel	block_relocate;
 	ext2fs_block_bitmap reserve_blocks;
 	int		needed_blocks;
-	/*
-	 * This array contains the new location of the inode table for
-	 * those block groups where it has to be relocated.
-	 */
-	blk_t		*move_itable;
 };
 
 typedef struct ext2_resize_struct *ext2_resize_t;
