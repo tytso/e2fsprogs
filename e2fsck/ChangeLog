@@ -1,3 +1,12 @@
+2001-08-04  Andreas Dilger  <root@lynx.adilger.int>
+
+	* message.c:  Change comments for %D and %d expansion in e2fsck
+		problem codes.  It was not consistent which was for dirent
+		expansion, and which was for directory number expansion.
+
+	* problem.c (PR_2_FINAL_RECLEN, PR_2_BAD_FILETYPE): Fix problem
+		codes which got caught by the confusion between %D and %d.
+
 2001-08-04  Theodore Tso  <tytso@valinux.com>
 
 	* problem.c (PR_2_SYMLINK_SIZE): Change description to make it
