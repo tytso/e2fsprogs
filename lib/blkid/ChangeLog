@@ -1,5 +1,10 @@
 2003-03-01  Theodore Ts'o  <tytso@mit.edu>
 
+	* tag.c (blkid_set_tag): Fix bug; don't return an error when
+		deleting a tag by setting the value to NULL.  This
+		caused a failed device verification to loop forever in
+		blkid_verify_devname().
+
 	* resolve.c (main): Update debugging test program so that it
 		compiles with the latest blkid API changes.
 
