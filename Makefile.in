@@ -95,11 +95,11 @@ check:
 	(cd tests; make check)
 
 distribution_tar_file:
-	$(RM) -r /tmp/dest
+	$(RM) -rf /tmp/dest
 	make DESTDIR=/tmp/dest install
 	cd ..
 	cp -r $(srcdir)/README $(srcdir)/install-utils /tmp/dest
-	$(RM) -r /tmp/dest/install-utils/CVS /tmp/dest/install-utils/ChangeLog
+	$(RM) -rf /tmp/dest/install-utils/CVS /tmp/dest/install-utils/ChangeLog
 	cp $(srcdir)/INSTALL.@BINARY_TYPE@ /tmp/dest/INSTALL
 	(cd /tmp/dest; $(TAR) cf - . ) | gzip -9 \
 		> e2fsprogs-@E2FSPROGS_VERSION@-@BINARY_TYPE@.tar.gz
