@@ -1,3 +1,8 @@
+2002-10-02  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* htree.c (htree_dump_leaf_node): Use ext2fs_read_dir_block2 so
+		that the directory entries are appropriately byte-swapped.
+
 2001-09-24  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.29

@@ -41,7 +41,7 @@
 #endif
 
 #ifdef EXT2_BIG_ENDIAN_BITMAPS
-void ext2fs_swap_bitmap(ext2_filsys fs, char *bitmap, int nbytes)
+static void ext2fs_swap_bitmap(ext2_filsys fs, char *bitmap, int nbytes)
 {
 	__u32 *p = (__u32 *) bitmap;
 	int n;
@@ -88,7 +88,6 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 		}
 		inode_bitmap += nbytes;
 	}
-	fs->flags |= EXT2_FLAG_CHANGED;
 	fs->flags &= ~EXT2_FLAG_IB_DIRTY;
 	ext2fs_free_mem((void **) &bitmap_block);
 	return 0;
@@ -141,7 +140,6 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 		}
 		block_bitmap += nbytes;
 	}
-	fs->flags |= EXT2_FLAG_CHANGED;
 	fs->flags &= ~EXT2_FLAG_BB_DIRTY;
 	ext2fs_free_mem((void **) &bitmap_block);
 	return 0;

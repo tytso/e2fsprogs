@@ -1,3 +1,13 @@
+2002-10-02  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* rw_bitmaps.c (ext2fs_write_block_bitmap,
+		ext2fs_read_block_bitmap): Don't set the CHANGED bit just
+		because the bitmap is getting written to disk.  Make
+		ext2fs_swap_bitmap be a static function, since it's not
+		intended to be exported.
+
+	* swapfs.c (ext2fs_swap_super): Byte-swap the hash seed
+
 2001-09-24  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.29

@@ -1,3 +1,14 @@
+2002-10-02  Theodore Y. Ts'o  <tytso@mit.edu>
+	
+	* pass2.c (parse_int_node, check_dir_block): Add byte-swap
+		functions around the htree code, so that it works on
+		big-endian machines.
+
+	* swapfs.c (swap_filesys): For PPC machines, byte-swap the bitmap,
+		since PPC big-endian filesystems were historically wierd.
+		This is just for the regression test, since no one
+		actually uses them anymore...
+
 2002-09-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* problem.c, problem.h (PR_2_HTREE_BAD_LIMIT,

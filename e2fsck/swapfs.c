@@ -183,6 +183,31 @@ static void swap_inodes(e2fsck_t ctx)
 	e2fsck_use_inode_shortcuts(ctx, 0);
 }
 
+#if defined(__powerpc__) && defined(EXT2FS_ENABLE_SWAPFS)
+/*
+ * On the PowerPC, the big-endian variant of the ext2 filesystem
+ * has its bitmaps stored as 32-bit words with bit 0 as the LSB
+ * of each word.  Thus a bitmap with only bit 0 set would be, as
+ * a string of bytes, 00 00 00 01 00 ...
+ * To cope with this, we byte-reverse each word of a bitmap if
+ * we have a big-endian filesystem, that is, if we are *not*
+ * byte-swapping other word-sized numbers.
+ */
+#define EXT2_BIG_ENDIAN_BITMAPS
+#endif
+
+#ifdef EXT2_BIG_ENDIAN_BITMAPS
+static void ext2fs_swap_bitmap(ext2fs_generic_bitmap bmap)
+{
+	__u32 *p = (__u32 *) bmap->bitmap;
+	int n, nbytes = (bmap->end - bmap->start + 7) / 8;
+		
+	for (n = nbytes / sizeof(__u32); n > 0; --n, ++p)
+		*p = ext2fs_swab32(*p);
+}
+#endif
+
+
 void swap_filesys(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
@@ -222,6 +247,13 @@ void swap_filesys(e2fsck_t ctx)
 		fs->flags |= EXT2_FLAG_SWAP_BYTES;
 	fs->flags &= ~(EXT2_FLAG_SWAP_BYTES_READ|
 		       EXT2_FLAG_SWAP_BYTES_WRITE);
+
+#ifdef EXT2_BIG_ENDIAN_BITMAPS
+	e2fsck_read_bitmaps(ctx);
+	ext2fs_swap_bitmap(fs->inode_map);
+	ext2fs_swap_bitmap(fs->block_map);
+	fs->flags |= EXT2_FLAG_BB_DIRTY | EXT2_FLAG_IB_DIRTY;
+#endif
 	ext2fs_flush(fs);
 	
 #ifdef RESOURCE_TRACK

@@ -543,20 +543,22 @@ static void parse_int_node(ext2_filsys fs,
 	limit = (struct ext2_dx_countlimit *) ent;
 
 #ifdef DX_DEBUG
-	printf("Number of entries (count): %d\n", limit->count);
-	printf("Number of entries (limit): %d\n", limit->limit);
+	printf("Number of entries (count): %d\n", 
+	       ext2fs_le16_to_cpu(limit->count));
+	printf("Number of entries (limit): %d\n", 
+	       ext2fs_le16_to_cpu(limit->limit));
 #endif
 
-	count = limit->count;
+	count = ext2fs_le16_to_cpu(limit->count);
 	expect_limit = (fs->blocksize - ((char *) ent - block_buf)) /
 		sizeof(struct ext2_dx_entry);
-	if (limit->limit != expect_limit) {
-		cd->pctx.num = limit->limit;
+	if (ext2fs_le16_to_cpu(limit->limit) != expect_limit) {
+		cd->pctx.num = ext2fs_le16_to_cpu(limit->limit);
 		if (fix_problem(cd->ctx, PR_2_HTREE_BAD_LIMIT, &cd->pctx))
 			goto clear_and_exit;
 	}
-	if (limit->count > expect_limit) {
-		cd->pctx.num = limit->count;
+	if (count > expect_limit) {
+		cd->pctx.num = count;
 		if (fix_problem(cd->ctx, PR_2_HTREE_BAD_COUNT, &cd->pctx))
 			goto clear_and_exit;
 		count = expect_limit;
@@ -564,12 +566,12 @@ static void parse_int_node(ext2_filsys fs,
 	
 	for (i=0; i < count; i++) {
 		prev_hash = hash;
-		hash = i ? (ent[i].hash & ~1) : 0;
+		hash = i ? (ext2fs_le32_to_cpu(ent[i].hash) & ~1) : 0;
 #ifdef DX_DEBUG
 		printf("Entry #%d: Hash 0x%08x, block %d\n", i,
-		       hash, ent[i].block);
+		       hash, ext2fs_le32_to_cpu(ent[i].block));
 #endif
-		blk = ent[i].block & 0x0ffffff;
+		blk = ext2fs_le32_to_cpu(ent[i].block) & 0x0ffffff;
 		/* Check to make sure the block is valid */
 		if (blk > dx_dir->numblocks) {
 			cd->pctx.blk = blk;
@@ -592,8 +594,9 @@ static void parse_int_node(ext2_filsys fs,
 		if (hash > max_hash)
 			max_hash = hash;
 		dx_db->node_min_hash = hash;
-		if ((i+1) < limit->count)
-			dx_db->node_max_hash = (ent[i+1].hash & ~1);
+		if ((i+1) < count)
+			dx_db->node_max_hash = 
+			  ext2fs_le32_to_cpu(ent[i+1].hash) & ~1;
 		else {
 			dx_db->node_max_hash = 0xfffffffe;
 			dx_db->flags |= DX_FLAG_LAST;
@@ -782,8 +785,9 @@ static int check_dir_block(ext2_filsys fs,
 		} else if ((dirent->inode == 0) &&
 			   (dirent->rec_len == fs->blocksize) &&
 			   (dirent->name_len == 0) &&
-			   (limit->limit == ((fs->blocksize-8) /
-					     sizeof(struct ext2_dx_entry))))
+			   (ext2fs_le16_to_cpu(limit->limit) == 
+			    ((fs->blocksize-8) / 
+			     sizeof(struct ext2_dx_entry))))
 			dx_db->type = DX_DIRBLOCK_NODE;
 	}
 #endif /* ENABLE_HTREE */
