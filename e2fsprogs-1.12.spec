@@ -32,8 +32,6 @@ export PATH=/sbin:$PATH
 make install DESTDIR="$RPM_BUILD_ROOT"
 make install-libs DESTDIR="$RPM_BUILD_ROOT"
 
-mv $RPM_BUILD_ROOT/usr/sbin/debugfs $RPM_BUILD_ROOT/sbin/debugfs
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -46,6 +44,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %attr(-, root, root) %doc README RELEASE-NOTES
 %attr(-, root, root) /sbin/e2fsck
+%attr(-, root, root) /sbin/e2label
 %attr(-, root, root) /sbin/fsck.ext2
 %attr(-, root, root) /sbin/debugfs
 %attr(-, root, root) /sbin/mke2fs
@@ -57,7 +56,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(-, root, root) /sbin/mkfs.ext2
 
 %attr(-, root, root) /lib/libe2p.so.2.3
-%attr(-, root, root) /lib/libext2fs.so.2.3
+%attr(-, root, root) /lib/libext2fs.so.2.4
 %attr(-, root, root) /lib/libss.so.2.0
 %attr(-, root, root) /lib/libcom_err.so.2.0
 %attr(-, root, root) /lib/libuuid.so.1.1
