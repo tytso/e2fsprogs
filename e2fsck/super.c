@@ -312,6 +312,116 @@ return_abort:
 	return 1;
 }
 
+/*
+ * Check the resize inode to make sure it is sane.  We check both for
+ * the case where on-line resizing is not enabled (in which case the
+ * resize inode should be cleared) as well as the case where on-line
+ * resizing is enabled.
+ */
+void check_resize_inode(e2fsck_t ctx)
+{
+	ext2_filsys fs = ctx->fs;
+	struct ext2_inode inode;
+	struct problem_context	pctx;
+	int		i, j, gdt_off, ind_off;
+	blk_t		blk, pblk, expect;
+	__u32 		*dind_buf = 0, *ind_buf;
+	errcode_t	retval;
+
+	clear_problem_context(&pctx);
+	pctx.ino = EXT2_RESIZE_INO;
+	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);
+	if (retval) {
+		ctx->flags |= E2F_FLAG_RESIZE_INODE;
+		return;
+	}
+
+	/* 
+	 * If the resize inode feature isn't set, then
+	 * s_reserved_gdt_blocks must be zero, and the resize inode
+	 * must be cleared.
+	 */
+	if (!(fs->super->s_feature_compat & 
+	      EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
+		if (fs->super->s_reserved_gdt_blocks) {
+			pctx.num = fs->super->s_reserved_gdt_blocks;
+			if (fix_problem(ctx, PR_0_NONZERO_RESERVED_GDT_BLOCKS,
+					&pctx)) {
+				fs->super->s_reserved_gdt_blocks = 0;
+				ext2fs_mark_super_dirty(fs);
+			}
+		}
+		for (i=0; i < EXT2_N_BLOCKS; i++) {
+			if (inode.i_block[i])
+				break;
+		}
+		if ((i < EXT2_N_BLOCKS) &&
+		    fix_problem(ctx, PR_0_CLEAR_RESIZE_INODE, &pctx)) {
+			memset(&inode, 0, sizeof(inode));
+			e2fsck_write_inode(ctx, EXT2_RESIZE_INO, &inode,
+					   "clear_resize");
+		}
+		return;
+	}
+	/* 
+	 * The resize inode feature is enabled; check to make sure the
+	 * only block in use is the double indirect block
+	 */
+	blk = inode.i_block[EXT2_DIND_BLOCK];
+	for (i=0; i < EXT2_N_BLOCKS; i++) {
+		if (i != EXT2_DIND_BLOCK && inode.i_block[i])
+			break;
+	}
+	if ((i < EXT2_N_BLOCKS) || !blk ||
+	    (blk < fs->super->s_first_data_block ||
+	     blk >= fs->super->s_blocks_count)) {
+	resize_inode_invalid:
+		if (fix_problem(ctx, PR_0_RESIZE_INODE_INVALID, &pctx)) {
+			memset(&inode, 0, sizeof(inode));
+			e2fsck_write_inode(ctx, EXT2_RESIZE_INO, &inode,
+					   "clear_resize");
+			ctx->flags |= E2F_FLAG_RESIZE_INODE;
+		}
+		if (!(ctx->options & E2F_OPT_READONLY)) {
+			fs->super->s_state &= ~EXT2_VALID_FS;
+			ext2fs_mark_super_dirty(fs);
+		}
+		goto cleanup;
+	}
+	dind_buf = (__u32 *) e2fsck_allocate_memory(ctx, fs->blocksize * 2,
+						    "resize dind buffer");
+	ind_buf = (__u32 *) ((char *) dind_buf + fs->blocksize);
+
+	retval = io_channel_read_blk(fs->io, blk, 1, dind_buf);
+	if (retval)
+		goto resize_inode_invalid;
+
+	gdt_off = fs->desc_blocks;
+	pblk = fs->super->s_first_data_block + 1 + fs->desc_blocks;
+	for (i = 0; i < fs->super->s_reserved_gdt_blocks / 4; 
+	     i++, gdt_off++, pblk++) {
+		gdt_off %= fs->blocksize/4;
+		if (dind_buf[gdt_off] != pblk)
+			goto resize_inode_invalid;
+		retval = io_channel_read_blk(fs->io, pblk, 1, ind_buf);
+		if (retval) 
+			goto resize_inode_invalid;
+		ind_off = 0;
+		for (j = 1; j < fs->group_desc_count; j++) {
+			if (!ext2fs_bg_has_super(fs, j))
+				continue;
+			expect = pblk + (j * fs->super->s_blocks_per_group);
+			if (ind_buf[ind_off] != expect)
+				goto resize_inode_invalid;
+			ind_off++;
+		}
+	}
+
+cleanup:
+	if (dind_buf)
+		ext2fs_free_mem(&dind_buf);
+
+ }
 
 void check_super_block(e2fsck_t ctx)
 {
@@ -325,7 +435,6 @@ void check_super_block(e2fsck_t ctx)
 	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
-	struct ext2_inode inode;
 	__u32	free_blocks = 0, free_inodes = 0;
 
 	inodes_per_block = EXT2_INODES_PER_BLOCK(fs->super);
@@ -368,6 +477,9 @@ void check_super_block(e2fsck_t ctx)
 			  MIN_CHECK | MAX_CHECK, inodes_per_block, ipg_max);
 	check_super_value(ctx, "r_blocks_count", sb->s_r_blocks_count,
 			  MAX_CHECK, 0, sb->s_blocks_count / 4);
+	check_super_value(ctx, "reserved_gdt_blocks", 
+			  sb->s_reserved_gdt_blocks, MAX_CHECK, 0,
+			  fs->blocksize/4);
 
 	if (!ctx->num_blocks) {
 		pctx.errcode = e2fsck_get_device_size(ctx);
@@ -542,38 +654,7 @@ void check_super_block(e2fsck_t ctx)
 		ext2fs_mark_super_dirty(fs);
 	}
 
-	/* 
-	 * If the resize inode feature isn't set, then
-	 * s_reserved_gdt_blocks must be zero, and the resize inode
-	 * must be cleared.
-	 */
-	if (!(fs->super->s_feature_compat & 
-	      EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
-		if (fs->super->s_reserved_gdt_blocks) {
-			pctx.num = fs->super->s_reserved_gdt_blocks;
-			if (fix_problem(ctx, PR_0_NONZERO_RESERVED_GDT_BLOCKS,
-					&pctx)) {
-				fs->super->s_reserved_gdt_blocks = 0;
-				ext2fs_mark_super_dirty(fs);
-			}
-		}
-		e2fsck_read_inode(ctx, EXT2_RESIZE_INO, &inode, 
-				  "check_resize");
-		for (i=0; i < EXT2_N_BLOCKS; i++) {
-			if (inode.i_block[i])
-				break;
-		}
-		pctx.ino = EXT2_RESIZE_INO;
-		if ((i < EXT2_N_BLOCKS) &&
-		    fix_problem(ctx, PR_0_CLEAR_RESIZE_INODE, &pctx)) {
-			for (i=0; i < EXT2_N_BLOCKS; i++) {
-				inode.i_block[i] = 0;
-			}
-			inode.i_blocks = 0;
-			e2fsck_write_inode(ctx, EXT2_RESIZE_INO, &inode,
-					   "clear_resize");
-		}
-	}
+	check_resize_inode(ctx);
 
 	/*
 	 * Clean up any orphan inodes, if present.

@@ -721,6 +721,24 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->block_ea_map = 0;
 	}
 
+	if (ctx->flags & E2F_FLAG_RESIZE_INODE) {
+		ext2fs_block_bitmap save_bmap;
+		errcode_t retval;
+
+		save_bmap = fs->block_map;
+		fs->block_map = ctx->block_found_map;
+		clear_problem_context(&pctx);
+		pctx.errcode = ext2fs_create_resize_inode(fs);
+		if (pctx.errcode) {
+			fix_problem(ctx, PR_1_RESIZE_INODE_CREATE, &pctx);
+			/* Should never get here */
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
+		}
+		fs->block_map = save_bmap;
+		ctx->flags &= ~E2F_FLAG_RESIZE_INODE;
+	}
+		       
 	if (ctx->flags & E2F_FLAG_RESTART) {
 		/*
 		 * Only the master copy of the superblock and block
@@ -1526,14 +1544,14 @@ static int process_block(ext2_filsys fs,
 	}
 
 	if (p->ino == EXT2_RESIZE_INO) {
-		if (blockcnt >= 0) {
-			/* Check that the block is in the correct place
-			 * in the appropriate backup reserved gdt area */
-		} else if (blockcnt == BLOCK_COUNT_IND) {
-			/* Check that the block is in the correct place
-			 * in the primary reserved gdt area */
-		} else  /* The resize inode's DIND block should be
-			 * allocated as a normal block. */
+		/* 
+		 * The resize inode has already be sanity checked
+		 * during pass #0 (the superblock checks).  All we
+		 * have to do is mark the double indirect block as
+		 * being in use; all of the other blocks are handled
+		 * by mark_table_blocks()).
+		 */
+		if (blockcnt == BLOCK_COUNT_DIND)
 			mark_block_used(ctx, blk);
 	} else
 		mark_block_used(ctx, blk);

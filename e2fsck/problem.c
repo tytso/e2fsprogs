@@ -39,7 +39,8 @@
 #define PROMPT_SUPPRESS 16
 #define PROMPT_UNLINK	17
 #define PROMPT_CLEAR_HTREE 18
-#define PROMPT_NULL	19
+#define PROMPT_RECREATE 19
+#define PROMPT_NULL	20
 
 /*
  * These are the prompts which are used to ask the user if they want
@@ -65,7 +66,8 @@ static const char *prompt[] = {
 	N_("Suppress messages"),/* 16 */
 	N_("Unlink"),		/* 17 */
 	N_("Clear HTree index"),/* 18 */
-	"",			/* 19 */
+	N_("Recreate"),		/* 19 */
+	"",			/* 29 */
 };
 
 /*
@@ -92,7 +94,8 @@ static const char *preen_msg[] = {
 	N_("SUPPRESSED"),	/* 16 */
 	N_("UNLINKED"),		/* 17 */
 	N_("HTREE INDEX CLEARED"),/* 18 */
-	"",			/* 19 */
+	N_("WILL RECREATE"),	/* 19 */
+	"",			/* 20 */
 };
 
 static const struct e2fsck_problem problem_table[] = {
@@ -324,6 +327,11 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_0_CLEAR_RESIZE_INODE,
 	  N_("Resize_@i not enabled, but the resize inode is non-zero.  "),
 	  PROMPT_CLEAR, 0 },
+
+	/* Resize inode invalid */
+	{ PR_0_RESIZE_INODE_INVALID,
+	  N_("Resize @i not valid.  "),
+	  PROMPT_RECREATE, 0 },
 
 	/* Pass 1 errors */
 	
@@ -718,7 +726,12 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("Bad @b @i has an indirect @b (%b) that conflicts with\n"
 	     "@f metadata.  "),
 	  PROMPT_CLEAR, PR_LATCH_BBLOCK },
-		  
+
+	/* Resize inode failed */
+	{ PR_1_RESIZE_INODE_CREATE,
+	  N_("Resize @i (re)creation failed: %m."),
+	  PROMPT_ABORT, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

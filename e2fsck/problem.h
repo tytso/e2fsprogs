@@ -181,6 +181,9 @@ struct problem_context {
 /* Resize_inode not enabled, but resize inode is non-zero */
 #define PR_0_CLEAR_RESIZE_INODE			0x00002F
 
+/* Resize inode invalid */
+#define PR_0_RESIZE_INODE_INVALID		0x000030
+
 /*
  * Pass 1 errors
  */
@@ -415,6 +418,9 @@ struct problem_context {
 
 /* Bad block has indirect block that conflicts with filesystem block */
 #define PR_1_BB_FS_BLOCK		0x01004D
+
+/* Resize inode failed */
+#define PR_1_RESIZE_INODE_CREATE	0x01004E
 
 /*
  * Pass 1b errors

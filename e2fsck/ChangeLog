@@ -1,3 +1,18 @@
+2004-12-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (e2fsck_pass1): At the end of the pass 1 processing, if
+		we have been signalled to do so, recreate the resize inode.
+
+	* super.c (check_resize_inode): New function which checks to make
+		sure the resize inode is valid.  It is called by
+		check_super_block().  If it is invalid, it will signal to
+		pass1.c that the resize inode needs to recreate.
+
+	* e2fsck.h (E2F_FLAG_RESIZE_INODE): New flag
+
+	* problem.c, problem.h (PR_0_RESIZE_INODE_INVALID,
+		PR_1_RESIZE_INODE_CREATE): Add new problem codes.
+
 2004-12-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* swapfs.c (swap_inodes): Since swap_inodes bypasses the inode
