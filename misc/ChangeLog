@@ -1,3 +1,8 @@
+2005-02-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* filefrag.c (frag_report): In verbose mode, print the first and
+		last block numbers; may be useful for some folks.
+
 2005-02-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.c: Define _XOPEN_SOURCE to be 500 to fix compilation

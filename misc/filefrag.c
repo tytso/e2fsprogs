@@ -110,9 +110,12 @@ static void frag_report(const char *filename)
 		printf("Blocksize of file %s is %ld\n", filename, bs);
 	bpib = bs / 4;
 	numblocks = (fileinfo.st_size + (bs-1)) / bs;
-	if (verbose)
+	if (verbose) {
 		printf("File size of %s is %lld (%ld blocks)\n", filename, 
 		       (long long) fileinfo.st_size, numblocks);
+		printf("First block: %ld\nLast block: %ld\n",
+		       get_bmap(fd, 0), get_bmap(fd, numblocks - 1));
+	}
 	for (i=0; i < numblocks; i++) {
 		if (is_ext2) {
 			if (((i-EXT2_DIRECT) % bpib) == 0)
