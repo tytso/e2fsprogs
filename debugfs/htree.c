@@ -31,6 +31,7 @@ static FILE *pager;
 
 static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 				 struct ext2_inode *inode,
+				 struct ext2_dx_root_info * root,
 				 blk_t blk, char *buf)
 {
 	errcode_t	errcode;
@@ -68,7 +69,9 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 			(dirent->name_len & 0xFF) : EXT2_NAME_LEN;
 		strncpy(name, dirent->name, thislen);
 		name[thislen] = '\0';
-		errcode = ext2fs_dirhash(0, name, thislen, &hash);
+		errcode = ext2fs_dirhash(root->hash_version, name, thislen, 
+					 fs->super->s_hash_seed,
+					 &hash, 0);
 		if (errcode)
 			com_err("htree_dump_leaf_node", errcode,
 				"while calculating hash");
@@ -89,11 +92,13 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 
 static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 				 struct ext2_inode *inode,
+				 struct ext2_dx_root_info * root,
 				 blk_t blk, char *buf, int level);
 
 
 static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 				struct ext2_inode *inode,
+				struct ext2_dx_root_info * root,
 				struct ext2_dx_entry *ent, 
 				char *buf, int level)
 {
@@ -115,10 +120,10 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 		fprintf(pager, "Entry #%d: Hash 0x%08x, block %d\n", i,
 		       i ? ent[i].hash : 0, ent[i].block);
 		if (level)
-			htree_dump_int_block(fs, ino, inode,
+			htree_dump_int_block(fs, ino, inode, root,
 					     ent[i].block, buf, level-1);
 		else
-			htree_dump_leaf_node(fs, ino, inode,
+			htree_dump_leaf_node(fs, ino, inode, root,
 					     ent[i].block, buf);
 	}
 
@@ -127,6 +132,7 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 
 static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 				 struct ext2_inode *inode,
+				 struct ext2_dx_root_info * root,
 				 blk_t blk, char *buf, int level)
 {
 	char		*cbuf;
@@ -153,7 +159,8 @@ static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 		return;
 	}
 
-	htree_dump_int_node(fs, ino, inode, (struct ext2_dx_entry *) (buf+8),
+	htree_dump_int_node(fs, ino, inode, root,
+			    (struct ext2_dx_entry *) (buf+8),
 			    cbuf, level);
 	free(cbuf);
 }
@@ -241,7 +248,7 @@ void do_htree_dump(int argc, char *argv[])
 	ent = (struct ext2_dx_entry *) (buf + 24 + root->info_length);
 	limit = (struct ext2_dx_countlimit *) ent;
 
-	htree_dump_int_node(current_fs, ino, &inode, ent,
+	htree_dump_int_node(current_fs, ino, &inode, root, ent,
 			    buf + current_fs->blocksize,
 			    root->indirect_levels);
 
@@ -256,19 +263,36 @@ errout:
  */
 void do_dx_hash(int argc, char *argv[])
 {
-	ext2_dirhash_t hash;
+	ext2_dirhash_t hash, minor_hash;
 	errcode_t	err;
+	int		c;
+	int		hash_version = 0;
+	__u32		hash_seed[4];
 	
-	if (argc != 2) {
+	hash_seed[0] = hash_seed[1] = hash_seed[2] = hash_seed[3] = 0;
+	optind = 0;
+#ifdef HAVE_OPTRESET
+	optreset = 1;		/* Makes BSD getopt happy */
+#endif
+	while ((c = getopt (argc, argv, "h:")) != EOF) {
+		switch (c) {
+		case 'h':
+			hash_version = atoi(optarg);
+			break;
+		}
+	}
+	if (optind != argc-1) {
 		com_err(argv[0], 0, "usage: dx_hash filename");
 		return;
 	}
-	err = ext2fs_dirhash(0, argv[1], strlen(argv[1]), &hash);
+	err = ext2fs_dirhash(hash_version, argv[optind], strlen(argv[optind]),
+			     hash_seed, &hash, &minor_hash);
 	if (err) {
 		com_err(argv[0], err, "while caclulating hash");
 		return;
 	}
-	printf("Hash of %s is 0x%0x\n", argv[1], hash);
+	printf("Hash of %s is 0x%0x (minor 0x%0x)\n", argv[optind],
+	       hash, minor_hash);
 }
 
 /*

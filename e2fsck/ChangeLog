@@ -1,3 +1,23 @@
+2002-06-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (check_blocks): Move htree handling to handle_htree().
+		Factor out calls to ext2fs_write_inode so that it happens
+		if dirty_inode is non-zero.
+		(handle_htree): Add checks for invalid htree root, invalid
+		hash version, invalid hash version, and htree depth too deep.
+
+	* problem.h, problem.c (PR_1_HTREE_NODIR, PR_1_HTREE_BADROOT,
+		PR_1_HTREE_HASHV, PR_1_HTREE_INCOMPAT, PR_1_HTREE_DEPTH): 
+		Add new problem codes.
+
+	* pass2.c (parse_int_node): Fix silly typo.
+		(check_dir_block): Change to use new ext2fs_dirhash()
+		function prototype.
+		(pass2): Fixed two minor bugs discovered by the test case:
+		Don't stop checking dxdir's after clearing a bad inode.  
+		If there is a bad max hash, make sure the bad_dir flag
+		is set to make sure we try to clear inode.
+
 2002-06-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.c (e2fsck_reset_context): Free the dx_dirinfo structure.

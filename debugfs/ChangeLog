@@ -1,3 +1,8 @@
+2002-06-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* htree.c (do_dx_hash): Use new ext2fs_dirhash function signature.
+		Add getopt support so user can specify the hash version.
+
 2002-05-11    <tytso@snap.thunk.org>
 
 	* debug_cmds.ct, debugfs.c (do_bmap): Add new command "bmap" which

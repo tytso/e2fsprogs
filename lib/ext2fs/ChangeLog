@@ -1,3 +1,10 @@
+2002-06-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* dirhash.c (ext2fs_dirhash): Change function signature to support
+		a hash seed, and to return the minor hash (for 64-bit hash
+		support).   Add support for the half MD4, half MD4 with
+		seed, and half MD4 with seed and 64 bits.
+
 2002-06-15  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2_fs.h (EXT2_DIRSYNC_FL): Add new file.

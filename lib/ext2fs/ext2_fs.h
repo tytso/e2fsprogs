@@ -167,6 +167,13 @@ struct ext2_dx_root_info {
 	__u8 unused_flags;
 };
 
+#define EXT2_HASH_LEGACY	0
+#define EXT2_HASH_HALF_MD4	1
+#define EXT2_HASH_HALF_MD4_SEED	2
+#define EXT2_HASH_HALF_MD4_64	3 	/* SEED & 64 */
+
+#define EXT2_HASH_FLAG_INCOMPAT	0x1
+
 struct ext2_dx_entry {
 	__u32 hash;
 	__u32 block;
@@ -428,8 +435,8 @@ struct ext2_super_block {
 	__u32	s_journal_inum;		/* inode number of journal file */
 	__u32	s_journal_dev;		/* device number of journal file */
 	__u32	s_last_orphan;		/* start of list of inodes to delete */
-
-	__u32	s_reserved[197];	/* Padding to the end of the block */
+	__u32	s_hash_seed[4];		/* HTREE hash */
+	__u32	s_reserved[193];	/* Padding to the end of the block */
 };
 
 /*

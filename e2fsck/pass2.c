@@ -205,6 +205,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 				pctx.blk2 = dx_db->node_max_hash;
 				code = PR_2_HTREE_MAX_HASH;
 				fix_problem(ctx, code, &pctx);
+				bad_dir++;
 			}
 			if (!(dx_db->flags & DX_FLAG_REFERENCED)) {
 				code = PR_2_HTREE_NOTREF;
@@ -221,7 +222,6 @@ void e2fsck_pass2(e2fsck_t ctx)
 		if (bad_dir && fix_problem(ctx, PR_2_HTREE_CLEAR, &pctx)) {
 			clear_htree(ctx, dx_dir->ino);
 			dx_dir->ino = 0;
-			break;
 		}
 #ifdef ENABLE_HTREE_CLEAR
 		if (dx_dir->ino) {
@@ -501,7 +501,7 @@ static void parse_int_node(ext2_filsys fs,
 		/* Check to make sure the block is valid */
 		if (blk > dx_dir->numblocks) {
 			if (fix_problem(cd->ctx, PR_2_HTREE_BADBLK,
-					cd->pctx)) {
+					&cd->pctx)) {
 				clear_htree(cd->ctx, cd->pctx.ino);
 				dx_dir->ino = 0;
 				return;
@@ -781,7 +781,8 @@ static int check_dir_block(ext2_filsys fs,
 #ifdef ENABLE_HTREE
 		if (dx_db) {
 			ext2fs_dirhash(dx_dir->hashversion, dirent->name,
-				       (dirent->name_len & 0xFF), &hash);
+				       (dirent->name_len & 0xFF),
+				       fs->super->s_hash_seed, &hash, 0);
 			if (hash < dx_db->min_hash)
 				dx_db->min_hash = hash;
 			if (hash > dx_db->max_hash)

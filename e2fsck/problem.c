@@ -38,7 +38,8 @@
 #define PROMPT_DELETE 	15
 #define PROMPT_SUPPRESS 16
 #define PROMPT_UNLINK	17
-#define PROMPT_NULL	18
+#define PROMPT_CLEAR_HTREE 18
+#define PROMPT_NULL	19
 
 /*
  * These are the prompts which are used to ask the user if they want
@@ -63,7 +64,8 @@ static const char *prompt[] = {
 	N_("Delete file"),	/* 15 */
 	N_("Suppress messages"),/* 16 */
 	N_("Unlink"),		/* 17 */
-	"",			/* 18 */
+	N_("Clear HTree index"),/* 18 */
+	"",			/* 19 */
 };
 
 /*
@@ -89,7 +91,8 @@ static const char *preen_msg[] = {
 	N_("FILE DELETED"),	/* 15 */
 	N_("SUPPRESSED"),	/* 16 */
 	N_("UNLINKED"),		/* 17 */
-	"",			/* 18 */
+	N_("HTREE INDEX CLEARED"),/* 18 */
+	"",			/* 19 */
 };
 
 static const struct e2fsck_problem problem_table[] = {
@@ -668,8 +671,33 @@ static const struct e2fsck_problem problem_table[] = {
 	/* INDEX_FL flag set on a non-HTREE filesystem */
 	{ PR_1_HTREE_SET,
 	  N_("@i %i has INDEX_FL flag set on @f without htree support.\n"),
-	  PROMPT_CLEAR, 0 },
+	  PROMPT_CLEAR_HTREE, 0 },
 
+	/* INDEX_FL flag set on a non-directory */	
+	{ PR_1_HTREE_NODIR,
+	  N_("@i %i has INDEX_FL flag set but is not a @d.\n"),
+	  PROMPT_CLEAR_HTREE, 0 },
+
+	/* Invalid root node in HTREE directory */	
+	{ PR_1_HTREE_BADROOT,
+	  N_("@h %i has an invalid root node.\n"),
+	  PROMPT_CLEAR_HTREE, 0 },
+
+	/* Unsupported hash version in HTREE directory */	
+	{ PR_1_HTREE_HASHV,
+	  N_("@h %i has an unsupported hash version (%N)\n"),
+	  PROMPT_CLEAR_HTREE, 0 },
+
+	/* Incompatible flag in HTREE root node */	
+	{ PR_1_HTREE_INCOMPAT,
+	  N_("@h %i uses an incompatible htree root node flag.\n"),
+	  PROMPT_CLEAR_HTREE, 0 },
+
+	/* HTREE too deep */	
+	{ PR_1_HTREE_DEPTH,
+	  N_("@h %i has a tree depth (%N) which is too big\n"),
+	  PROMPT_CLEAR_HTREE, 0 },
+		  
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
@@ -1021,7 +1049,7 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Bad block in htree interior node */
 	{ PR_2_HTREE_BADBLK,
 	  N_("@p @h %d (%q): bad @b number %B.\n"),
-	  PROMPT_CLEAR, 0 },
+	  PROMPT_CLEAR_HTREE, 0 },
 
 	/* Pass 3 errors */
 

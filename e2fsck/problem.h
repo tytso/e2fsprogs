@@ -388,6 +388,21 @@ struct problem_context {
 /* INDEX_FL flag set on a non-HTREE filesystem */
 #define PR_1_HTREE_SET			0x010047
 
+/* INDEX_FL flag set on a non-directory */	
+#define PR_1_HTREE_NODIR		0x010048
+
+/* Invalid root node in HTREE directory */	
+#define PR_1_HTREE_BADROOT		0x010049
+
+/* Unsupported hash version in HTREE directory */	
+#define PR_1_HTREE_HASHV		0x01004A
+
+/* Incompatible flag in HTREE root node */	
+#define PR_1_HTREE_INCOMPAT		0x01004B
+
+/* HTREE too deep */	
+#define PR_1_HTREE_DEPTH		0x01004C
+
 /*
  * Pass 1b errors
  */

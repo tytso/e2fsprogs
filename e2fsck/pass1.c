@@ -1132,6 +1132,57 @@ clear_extattr:
 	return 0;
 }
 
+/* Returns 1 if bad htree, 0 if OK */
+static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
+			ext2_ino_t ino, struct ext2_inode *inode,
+			char *block_buf)
+{
+	struct ext2_dx_root_info	*root;
+	ext2_filsys			fs = ctx->fs;
+	errcode_t			retval;
+	blk_t				blk;
+
+	if ((!LINUX_S_ISDIR(inode->i_mode) &&
+	     fix_problem(ctx, PR_1_HTREE_NODIR, pctx)) ||
+	    (!(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) &&
+	     fix_problem(ctx, PR_1_HTREE_SET, pctx)))
+		return 1;
+
+	blk = inode->i_block[0];
+	if (((blk == 0) ||
+	     (blk < fs->super->s_first_data_block) ||
+	     (blk >= fs->super->s_blocks_count)) &&
+	    fix_problem(ctx, PR_1_HTREE_BADROOT, pctx))
+		return 1;
+
+	retval = io_channel_read_blk(fs->io, blk, 1, block_buf);
+	if (retval && fix_problem(ctx, PR_1_HTREE_BADROOT, pctx))
+		return 1;
+	
+	/* XXX should check that beginning matches a directory */
+	root = (struct ext2_dx_root_info *) (block_buf + 24);
+
+	if ((root->reserved_zero || root->info_length < 8) &&
+	    fix_problem(ctx, PR_1_HTREE_BADROOT, pctx))
+		return 1;
+
+	pctx->num = root->hash_version;
+	if ((root->hash_version != EXT2_HASH_LEGACY) &&
+	    (root->hash_version != EXT2_HASH_HALF_MD4) &&
+	    fix_problem(ctx, PR_1_HTREE_HASHV, pctx))
+		return 1;
+		
+	if ((root->unused_flags & EXT2_HASH_FLAG_INCOMPAT) &&
+	    fix_problem(ctx, PR_1_HTREE_INCOMPAT, pctx))
+		return 1;
+
+	pctx->num = root->indirect_levels;
+	if ((root->indirect_levels > 1) &&
+	    fix_problem(ctx, PR_1_HTREE_DEPTH, pctx))
+		return 1;
+	
+	return 0;
+}
 
 /*
  * This subroutine is called on each inode to account for all of the
@@ -1145,6 +1196,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	ext2_ino_t	ino = pctx->ino;
 	struct ext2_inode *inode = pctx->inode;
 	int		bad_size = 0;
+	int		dirty_inode = 0;
 	__u64		size;
 	
 	if (!ext2fs_inode_has_valid_blocks(inode))
@@ -1172,8 +1224,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		else {
 			if (fix_problem(ctx, PR_1_COMPR_SET, pctx)) {
 				inode->i_flags &= ~EXT2_COMPRBLK_FL;
-				e2fsck_write_inode(ctx, ino, inode,
-						   "check_blocks");
+				dirty_inode++;
 			}
 		}
 	}
@@ -1182,7 +1233,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 				       pb.is_dir ? BLOCK_FLAG_HOLE : 0,
 				       block_buf, process_block, &pb);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-		return;
+		goto out;
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
 	end_problem_latch(ctx, PR_LATCH_TOOBIG);
 	if (pctx->errcode)
@@ -1192,11 +1243,10 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		ctx->fs_fragmented++;
 
 	if (pb.clear) {
-		e2fsck_read_inode(ctx, ino, inode, "check_blocks");
 		inode->i_links_count = 0;
 		ext2fs_icount_store(ctx->inode_link_info, ino, 0);
 		inode->i_dtime = time(0);
-		e2fsck_write_inode(ctx, ino, inode, "check_blocks");
+		dirty_inode++;
 		ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
 		ext2fs_unmark_inode_bitmap(ctx->inode_reg_map, ino);
 		ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
@@ -1206,24 +1256,20 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		 * restart the pass 1 scan.
 		 */
 		ctx->flags |= E2F_FLAG_RESTART;
-		return;
+		goto out;
 	}
 	
 	if (inode->i_flags & EXT2_INDEX_FL) {
-		if (fs->super->s_feature_compat &
-		    EXT2_FEATURE_COMPAT_DIR_INDEX) {
+		if (handle_htree(ctx, pctx, ino, inode, block_buf)) {
+			inode->i_flags &= ~EXT2_INDEX_FL;
+			dirty_inode++;
+		} else {
 #ifdef ENABLE_HTREE
 			e2fsck_add_dx_dir(ctx, ino, pb.last_block+1);
 #endif
-		} else {
-			if (fix_problem(ctx, PR_1_HTREE_SET, pctx)) {
-				inode->i_flags &= ~EXT2_INDEX_FL;
-				e2fsck_write_inode(ctx, ino, inode,
-						   "check_blocks");
-			}
-		} 
+		}
 	}
-
+	
 	if (inode->i_file_acl && check_ext_attr(ctx, pctx, block_buf))
 		pb.num_blocks++;
 
@@ -1238,7 +1284,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			inode->i_links_count = 0;
 			ext2fs_icount_store(ctx->inode_link_info, ino, 0);
 			inode->i_dtime = time(0);
-			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
+			dirty_inode++;
 			ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
 			ext2fs_unmark_inode_bitmap(ctx->inode_reg_map, ino);
 			ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
@@ -1270,7 +1316,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			inode->i_size = pctx->num;
 			if (LINUX_S_ISREG(inode->i_mode))
 				inode->i_size_high = pctx->num >> 32;
-			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
+			dirty_inode++;
 		}
 		pctx->num = 0;
 	}
@@ -1281,10 +1327,13 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pctx->num = pb.num_blocks;
 		if (fix_problem(ctx, PR_1_BAD_I_BLOCKS, pctx)) {
 			inode->i_blocks = pb.num_blocks;
-			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
+			dirty_inode++;
 		}
 		pctx->num = 0;
 	}
+out:
+	if (dirty_inode)
+		e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 }
 
 #if 0
@@ -1422,8 +1471,8 @@ static int process_block(ext2_filsys fs,
 			p->fragmented = 1;
 	}
 	p->previous_block = blk;
-	
-	if (p->is_dir && blockcnt > 2*1024*1024/fs->blocksize)
+
+	if (p->is_dir && blockcnt > (1 << (15 - fs->super->s_log_block_size)))
 		problem = PR_1_TOOBIG_DIR;
 	if (p->is_reg && p->num_blocks+1 >= p->max_blocks)
 		problem = PR_1_TOOBIG_REG;
