@@ -1,5 +1,10 @@
 2003-12-26  Theodore Ts'o  <tytso@mit.edu>
 
+	* chattr.1.in: Update text indicating the 'c', 's', and 'u'
+		attributes are not currently supported to remove any
+		mention of a specific kernel version.  (Addresses Debian
+		bug #214920)
+
 	* fsck.8.in: Update text describing "standard" options supported
 		by filesystem-specific checkers.  (Addresses Debian bug
 		#222606)

@@ -127,9 +127,10 @@ although it can be displayed by
 .B chattr
 was written by Remy Card <Remy.Card@linux.org>.
 .SH BUGS AND LIMITATIONS
-As of Linux 2.2, the `c', 's',  and `u' attribute are not honored 
-by the kernel filesystem code.    These attributes will be implemented
-in a future ext2 fs version.
+The `c', 's',  and `u' attributes are not honored 
+by the ext2 and ext3 filesystems as implemented in the current mainline
+Linux kernels.    These attributes may be implemented
+in future versions ext2 and ext3.
 .PP
 The `j' option is only useful if the filesystem is mounted as ext3.
 .PP
