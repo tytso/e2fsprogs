@@ -559,6 +559,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			check_size(ctx, &pctx);
 			ctx->fs_blockdev_count++;
 		} else if (LINUX_S_ISLNK (inode.i_mode)) {
+			check_immutable(ctx, &pctx);
 			ctx->fs_symlinks_count++;
 			if (!inode.i_blocks) {
 				if (inode.i_size_high ||
