@@ -1,7 +1,7 @@
 /*
  * pass3.c -- pass #3 of e2fsck: Check for directory connectivity
  *
- * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
+ * Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999 Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -538,16 +538,25 @@ static errcode_t adjust_inode_count(e2fsck_t ctx, ino_t ino, int adj)
 	       inode.i_links_count);
 #endif
 
-	inode.i_links_count += adj;
 	if (adj == 1) {
 		ext2fs_icount_increment(ctx->inode_count, ino, 0);
+		if (inode.i_links_count == (__u16) ~0)
+			return 0;
 		ext2fs_icount_increment(ctx->inode_link_info, ino, 0);
-	} else {
+		inode.i_links_count++;
+	} else if (adj == -1) {
 		ext2fs_icount_decrement(ctx->inode_count, ino, 0);
+		if (inode.i_links_count == 0)
+			return 0;
 		ext2fs_icount_decrement(ctx->inode_link_info, ino, 0);
+		inode.i_links_count--;
+	} else {
+		/* Should never happen */
+		printf("Debug error in e2fsck adjust_inode_count, "
+		       "should never happen.\n");
+		exit(1);
 	}
 	
-
 	retval = ext2fs_write_inode(fs, ino, &inode);
 	if (retval)
 		return retval;
@@ -635,9 +644,10 @@ static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ino_t parent)
  */
 
 struct expand_dir_struct {
-	int	done;
-	errcode_t	err;
-	e2fsck_t	ctx;
+	int			done;
+	int			newblocks;
+	errcode_t		err;
+	e2fsck_t		ctx;
 };
 
 static int expand_dir_proc(ext2_filsys fs,
@@ -690,6 +700,8 @@ static int expand_dir_proc(ext2_filsys fs,
 	ext2fs_mark_block_bitmap(ctx->block_found_map, new_blk);
 	ext2fs_mark_block_bitmap(fs->block_map, new_blk);
 	ext2fs_mark_bb_dirty(fs);
+	es->newblocks++;
+	
 	if (es->done)
 		return (BLOCK_CHANGED | BLOCK_ABORT);
 	else
@@ -711,13 +723,14 @@ static errcode_t expand_directory(e2fsck_t ctx, ino_t dir)
 	 * them.
 	 */
 	e2fsck_read_bitmaps(ctx);
-	
+
 	retval = ext2fs_check_directory(fs, dir);
 	if (retval)
 		return retval;
 	
 	es.done = 0;
 	es.err = 0;
+	es.newblocks = 0;
 	es.ctx = ctx;
 	
 	retval = ext2fs_block_iterate(fs, dir, BLOCK_FLAG_APPEND,
@@ -736,7 +749,7 @@ static errcode_t expand_directory(e2fsck_t ctx, ino_t dir)
 		return retval;
 	
 	inode.i_size += fs->blocksize;
-	inode.i_blocks += fs->blocksize / 512;
+	inode.i_blocks += (fs->blocksize / 512) * es.newblocks;
 
 	e2fsck_write_inode(ctx, dir, &inode, "expand_directory");
 

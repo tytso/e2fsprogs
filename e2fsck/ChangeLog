@@ -1,4 +1,22 @@
-1999-07-18  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+1999-09-07    <tytso@rsts-11.mit.edu>
+
+	* pass3.c (adjust_inode_count): Fix bug where we didn't keep the
+		internal and external inode counts in sync when we
+		decremented an inode whose link count was already zero.
+		Now we skip incrementing or decrementing both link counts
+		if we would cause an overflow condition.
+		(expand_dir, expand_dir_proc): Change where we update the
+		inode block count and size files so that the block count
+		field is updated correctly when we create an indirect block.
+
+1999-08-02    <tytso@valinux.com>
+
+	* pass1b.c (clone_file_block): Don't clear the dup_map flag if
+		the block also shares data with the fs metadata when
+		the count drops to 1, since the block should still be
+		cloned, as fs metadata isn't included in the count.
+
+1999-07-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.15
 

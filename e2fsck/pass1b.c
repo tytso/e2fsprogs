@@ -601,7 +601,9 @@ static int clone_file_block(ext2_filsys fs,
 				return BLOCK_ABORT;
 			}
 			p->num_bad--;
-			if (p->num_bad == 1)
+			if (p->num_bad == 1 &&
+			    !ext2fs_test_block_bitmap(ctx->block_illegal_map,
+						      *block_nr))
 				ext2fs_unmark_block_bitmap(ctx->block_dup_map,
 							   *block_nr);
 			*block_nr = new_block;
