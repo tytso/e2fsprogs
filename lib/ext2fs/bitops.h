@@ -77,6 +77,11 @@ extern int ext2fs_fast_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
 					       blk_t block, int num);
 extern void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map);
 
+/* These two routines moved to gen_bitmap.c */
+extern int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
+					 __u32 bitno);
+extern int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
+					   blk_t bitno);
 /*
  * The inline routines themselves...
  * 
@@ -456,11 +461,6 @@ _INLINE_ int ext2fs_find_next_bit_set (void * addr, int size, int offset)
 }
 #endif	
 
-/* These two routines moved to gen_bitmap.c */
-extern int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
-					 __u32 bitno);
-extern int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
-					   blk_t bitno);
 _INLINE_ int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					blk_t bitno);
 

@@ -933,7 +933,6 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 	struct ext2_ext_attr_header 	*header;
 	struct problem_context		pctx;
 	ext2_filsys			fs = ctx->fs;
-	errcode_t			retval;
 	blk_t				blk;
 	__u32				should_be;
 	int				count;

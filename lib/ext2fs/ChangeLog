@@ -1,5 +1,9 @@
 2001-12-16  Theodore Tso  <tytso@valinux.com>
 
+	* bitops.h (ext2fs_mark_generic_bitmap, ext2fs_unmark_generic_bitmap),
+		ext_attr.c (ext2fs_read_ext_attr, ext2fs_write_ext_attr),
+		fileio.c (ext2fs_file_write): Fix gcc -Wall nits
+
 	* Makefile.in, jfs_user.h: linux/jfs.h has been renamed to
 		linux/jbd.h
 

@@ -173,6 +173,16 @@ static errcode_t meta_get_blocks(ext2_filsys fs, ext2_ino_t ino,
 	return 0;
 }
 
+static errcode_t meta_check_directory(ext2_filsys fs, ext2_ino_t ino)
+{
+	if ((ino != stashed_ino) || !stashed_inode)
+		return EXT2_ET_CALLBACK_NOTHANDLED;
+
+	if (!LINUX_S_ISDIR(stashed_inode->i_mode))
+		return EXT2_ET_NO_DIRECTORY;
+	return 0;
+}
+
 static errcode_t meta_read_inode(ext2_filsys fs, ext2_ino_t ino,
 				 struct ext2_inode *inode)
 {
@@ -180,6 +190,20 @@ static errcode_t meta_read_inode(ext2_filsys fs, ext2_ino_t ino,
 		return EXT2_ET_CALLBACK_NOTHANDLED;
 	*inode = *stashed_inode;
 	return 0;
+}
+
+static void use_inode_shortcuts(ext2_filsys fs, int bool)
+{
+	if (bool) {
+		fs->get_blocks = meta_get_blocks;
+		fs->check_directory = meta_check_directory;
+		fs->read_inode = meta_read_inode;
+		stashed_ino = 0;
+	} else {
+		fs->get_blocks = 0;
+		fs->check_directory = 0;
+		fs->read_inode = 0;
+	}
 }
 
 static int process_dir_block(ext2_filsys fs, blk_t *block_nr,
@@ -293,7 +317,7 @@ static void write_block(int fd, char *buf, int sparse_offset,
 	}
 }
 
-static output_meta_data_blocks(ext2_filsys fs, int fd)
+static void output_meta_data_blocks(ext2_filsys fs, int fd)
 {
 	errcode_t	retval;
 	blk_t		blk;
@@ -360,6 +384,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 		exit(1);
 	}
 	
+	use_inode_shortcuts(fs, 1);
 	stashed_inode = &inode;
 	while (1) {
 		retval = ext2fs_get_next_inode(scan, &ino, &inode);
@@ -404,7 +429,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 			}
 		}
 	}
-	
+	use_inode_shortcuts(fs, 0);
 	output_meta_data_blocks(fs, fd);
 }
 

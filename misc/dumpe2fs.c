@@ -37,6 +37,7 @@ extern int optind;
 #include "ext2fs/ext2fs.h"
 #include "e2p/e2p.h"
 #include "jfs_user.h"
+#include <uuid/uuid.h>
 
 #include "../version.h"
 #include "nls-enable.h"
@@ -45,7 +46,7 @@ extern int optind;
 
 const char * program_name = "dumpe2fs";
 char * device_name = NULL;
-char *num_format = "%lu";
+const char *num_format = "%lu";
 
 static void usage(void)
 {
@@ -125,12 +126,12 @@ static void list_desc (ext2_filsys fs)
 		printf(num_format, fs->group_desc[i].bg_block_bitmap);
 		diff = fs->group_desc[i].bg_block_bitmap - group_blk;
 		if (diff >= 0)
-			printf(" (+%d)", diff);
+			printf(" (+%ld)", diff);
 		fputs(_(", Inode bitmap at "), stdout);
 		printf(num_format, fs->group_desc[i].bg_inode_bitmap);
 		diff = fs->group_desc[i].bg_inode_bitmap - group_blk;
 		if (diff >= 0)
-			printf(" (+%d)", diff);
+			printf(" (+%ld)", diff);
 		fputs(_("\n  Inode table at "), stdout);
 		printf(num_format, fs->group_desc[i].bg_inode_table);
 		fputc('-', stdout);
@@ -138,7 +139,7 @@ static void list_desc (ext2_filsys fs)
 		       inode_blocks_per_group - 1);
 		diff = fs->group_desc[i].bg_inode_table - group_blk;
 		if (diff > 0)
-			printf(" (+%d)", diff);
+			printf(" (+%ld)", diff);
 		printf (_("\n  %d free blocks, %d free inodes, "
 			  "%d directories\n  Free blocks: "),
 			fs->group_desc[i].bg_free_blocks_count,

@@ -1,5 +1,8 @@
 2001-12-16  Theodore Tso  <tytso@valinux.com>
 
+	* setsuper.c (print_possible_fields), 
+		logdump.c (dump_journal): Fix gcc -Wall nits
+
 	* Makefile.in, jfs_user.h: linux/jfs.h has been renamed to
 		linux/jbd.h
 

@@ -206,7 +206,7 @@ void parse_journal_opts(const char *opts)
  * in the filesystem.  For very small filesystems, it is not reasonable to
  * have a journal that fills more than half of the filesystem.
  */
-int figure_journal_size(int journal_size, ext2_filsys fs)
+int figure_journal_size(int size, ext2_filsys fs)
 {
 	blk_t j_blocks;
 
@@ -215,9 +215,8 @@ int figure_journal_size(int journal_size, ext2_filsys fs)
 		return 0;
 	}
 	
-	if (journal_size >= 0) {
-		j_blocks = journal_size * 1024 /
-			(fs->blocksize	/ 1024);
+	if (size >= 0) {
+		j_blocks = size * 1024 / (fs->blocksize	/ 1024);
 		if (j_blocks < 1024 || j_blocks > 102400) {
 			fprintf(stderr, _("\nThe requested journal "
 				"size is %d blocks; it must be\n"

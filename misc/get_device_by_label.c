@@ -82,7 +82,7 @@ get_label_uuid(const char *device, char **label, char *uuid) {
 	/* should merge these later */
 	int fd;
 	size_t label_size;
-	char *sb_uuid = 0, *sb_label = 0;
+	unsigned char *sb_uuid = 0, *sb_label = 0;
 	struct ext2_super_block e2sb;
 	struct xfs_super_block xfsb;
 

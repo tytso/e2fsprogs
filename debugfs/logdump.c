@@ -34,6 +34,7 @@ extern int optreset;		/* defined by BSD, but not others */
 
 #include "debugfs.h"
 #include "jfs_user.h"
+#include <uuid/uuid.h>
 
 enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
 
@@ -342,13 +343,13 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	    (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
 		blocksize = EXT2_BLOCK_SIZE(sb);
 		blocknr = (blocksize == 1024) ? 2 : 1;
-		uuid_unparse(&sb->s_uuid, jsb_buffer);
+		uuid_unparse(sb->s_uuid, jsb_buffer);
 		fprintf(out_file, "Ext2 superblock header found.\n");
 		if (dump_all) {
 			fprintf(out_file, "\tuuid=%s\n", jsb_buffer);
 			fprintf(out_file, "\tblocksize=%d\n", blocksize);
 			fprintf(out_file, "\tjournal data size %ld\n",
-				sb->s_blocks_count);
+				(long) sb->s_blocks_count);
 		}
 	}
 	

@@ -172,7 +172,7 @@ static errcode_t parse_string(struct super_set_info *info, char *arg)
 static void print_possible_fields()
 {
 	struct super_set_info *ss;
-	char	*type;
+	const char	*type;
 
 	printf("Superblock fields supported by the set_super_value command:\n");
 	for (ss = super_fields ; ss->name ; ss++) {

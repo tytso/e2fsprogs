@@ -239,11 +239,9 @@ errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
 			    unsigned int nbytes, unsigned int *written)
 {
 	ext2_filsys	fs;
-	blk_t pb;
 	errcode_t	retval = 0;
 	unsigned int	start, c, count = 0;
 	char		*ptr = (char *) buf;
-	int		dontfill;
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 	fs = file->fs;

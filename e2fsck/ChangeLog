@@ -1,5 +1,9 @@
 2001-12-16  Theodore Tso  <tytso@valinux.com>
 
+	* e2fsck.h (ext2fs_get_refcount_size), unix.c (check_mount, PRS), 
+		pass1.c (adjust_extattr_refcount), 
+		ea_refcount.c (ea_refcount_create): Fix gcc -Wall nits.
+	
 	* recovery.c, revoke.c: Update to versions from 2.4.17-pre8.
 
 	* journal.c, jfs_user.h: Update support code for new version of

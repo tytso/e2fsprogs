@@ -304,6 +304,7 @@ extern errcode_t ea_refcount_decrement(ext2_refcount_t refcount,
 				       blk_t blk, int *ret);
 extern errcode_t ea_refcount_store(ext2_refcount_t refcount,
 				   blk_t blk, int count);
+extern blk_t ext2fs_get_refcount_size(ext2_refcount_t refcount);
 extern void ea_refcount_intr_begin(ext2_refcount_t refcount);
 extern blk_t ea_refcount_intr_next(ext2_refcount_t refcount, int *ret);
 

@@ -20,8 +20,8 @@
 
 struct flags_name {
 	unsigned long	flag;
-	char 		*short_name;
-	char 		*long_name;
+	const char	*short_name;
+	const char	*long_name;
 };
 
 static struct flags_name flags_array[] = {

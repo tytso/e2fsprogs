@@ -1,5 +1,14 @@
 2001-12-16  Theodore Tso  <tytso@valinux.com>
 
+	* dumpe2fs.c (list_desc), fsck.c (fs_match),
+		get_device_by_label.c (get_label_uuid), 
+		mke2fs.c (set_fs_defaults, zap_sector, PRS),
+		tune2fs.c (remove_journal_device, update_feature_set),
+		util.c (figure_journal_size), util.h: Fix gcc -Wall nits.
+
+	* e2image.c (write_raw_image_file): Fix gcc -Wall nits, and use
+		the stashed inode functions to optimize away system calls.
+
 	* Makefile.in, jfs_user.h: linux/jfs.h has been renamed to
 		linux/jbd.h
 

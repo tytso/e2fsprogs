@@ -142,7 +142,8 @@ struct mke2fs_defaults {
 	{ 0, 0, 0, 0},
 };
 
-static void set_fs_defaults(char *fs_type, struct ext2_super_block *super,
+static void set_fs_defaults(const char *fs_type,
+			    struct ext2_super_block *super,
 			    int blocksize, int *inode_ratio)
 {
 	int	megs;
@@ -317,7 +318,7 @@ struct progress_struct {
 };
 
 static void progress_init(struct progress_struct *progress,
-			  char *label,__u32 max)
+			  const char *label,__u32 max)
 {
 	int	i;
 
@@ -555,8 +556,8 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 
 	buf = malloc(512*nsect);
 	if (!buf) {
-		printf(_("Warning: out of memory erasing sectors %d-%d: %s\n"),
-		       sect, sect + nsect - 1, error_message(retval));
+		printf(_("Out of memory erasing sectors %d-%d\n"),
+		       sect, sect + nsect - 1);
 		exit(1);
 	}
 	memset(buf, 0, 512*nsect);
@@ -771,7 +772,7 @@ static void PRS(int argc, char *argv[])
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
 	char *		raid_opts = 0;
-	char *		fs_type = 0;
+	const char *	fs_type = 0;
 	int		default_features = 1;
 	blk_t		dev_size;
 #ifdef linux

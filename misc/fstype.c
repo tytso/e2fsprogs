@@ -16,11 +16,13 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
+#include "fsck.h"
+
 struct fs_magic {
-	const char *fs_name;
-	int	offset;
-	int	len;
-	char	*magic;
+	const char 	*fs_name;
+	int		offset;
+	int		len;
+	const char	*magic;
 };
 
 struct fs_magic type_array[] = {

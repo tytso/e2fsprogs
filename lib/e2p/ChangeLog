@@ -1,3 +1,7 @@
+2001-12-16  Theodore Tso  <tytso@valinux.com>
+
+	* pf.c: Add const to struct flags_name to avoid -Wall complaints.
+
 2001-11-05  Theodore Tso  <tytso@valinux.com>
 
 	* pf.c: Add a new file attribute, EXT2_NOTAIL_FL

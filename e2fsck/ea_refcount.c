@@ -47,7 +47,6 @@ errcode_t ea_refcount_create(int size, ext2_refcount_t *ret)
 	ext2_refcount_t	refcount;
 	errcode_t	retval;
 	size_t		bytes;
-	int		i;
 
 	retval = ext2fs_get_mem(sizeof(struct ea_refcount),
 				(void **) &refcount);

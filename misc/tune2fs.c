@@ -95,7 +95,7 @@ static __u32 ok_features[3] = {
  */
 static void remove_journal_device(ext2_filsys fs)
 {
-	char		*journal_device;
+	char		*journal_path;
 	ext2_filsys	jfs;
 	char		buf[1024];
 	journal_superblock_t	*jsb;
@@ -107,16 +107,16 @@ static void remove_journal_device(ext2_filsys fs)
 		commit_remove_journal = 1; /* force removal even if error */
 
 	uuid_unparse(fs->super->s_journal_uuid, buf);
-	journal_device = get_spec_by_uuid(buf);
+	journal_path = get_spec_by_uuid(buf);
 
-	if (!journal_device) {
-		journal_device =
+	if (!journal_path) {
+		journal_path =
 			ext2fs_find_block_device(fs->super->s_journal_dev);
-		if (!journal_device)
+		if (!journal_path)
 			return;
 	}
 
-	retval = ext2fs_open(journal_device, EXT2_FLAG_RW|
+	retval = ext2fs_open(journal_path, EXT2_FLAG_RW|
 			     EXT2_FLAG_JOURNAL_DEV_OK, 0,
 			     fs->blocksize, unix_io_manager, &jfs);
 	if (retval) {
@@ -126,7 +126,7 @@ static void remove_journal_device(ext2_filsys fs)
 	}
 	if (!(jfs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
 		fprintf(stderr, _("%s is not a journal device.\n"),
-			journal_device);
+			journal_path);
 		goto no_valid_journal;
 	}
 
@@ -181,7 +181,7 @@ no_valid_journal:
 	       sizeof(fs->super->s_journal_uuid));
 	ext2fs_mark_super_dirty(fs);
 	printf(_("Journal removed\n"));
-	free(journal_device);
+	free(journal_path);
 }
 
 /* Helper function for remove_journal_inode */
@@ -250,9 +250,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 {
 	int sparse, old_sparse, filetype, old_filetype;
 	int journal, old_journal;
-	struct ext2_inode	inode;
 	struct ext2_super_block *sb= fs->super;
-	errcode_t		retval;
 
 	old_sparse = sb->s_feature_ro_compat &
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;

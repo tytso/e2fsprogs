@@ -736,7 +736,7 @@ static int fs_match(struct fs_info *fs, struct fs_type_compile *cmp)
 	if (cmp->list == 0 || cmp->list[0] == 0)
 		return 1;
 
-	for (n=0; cp = cmp->list[n]; n++) {
+	for (n=0; (cp = cmp->list[n]); n++) {
 		switch (cmp->type[n]) {
 		case FS_TYPE_NORMAL:
 			checked_type++;

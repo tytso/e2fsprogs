@@ -60,7 +60,6 @@ void ext2fs_swap_ext_attr(ext2_filsys fs, char *to, char *from)
 errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf)
 {
 	errcode_t	retval;
-	struct ext2_ext_attr_entry *entry;
 
  	retval = io_channel_read_blk(fs->io, block, 1, buf);
 	if (retval)
@@ -76,9 +75,8 @@ errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf)
 errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *inbuf)
 {
 	errcode_t	retval;
-	char		*p, *end, *write_buf;
+	char		*write_buf;
 	char		*buf = NULL;
-	struct ext2_dir_entry *dirent;
 
 #ifdef EXT2FS_ENABLE_SWAPFS
 	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||

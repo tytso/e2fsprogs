@@ -204,7 +204,7 @@ static void show_stats(e2fsck_t	ctx)
 static void check_mount(e2fsck_t ctx)
 {
 	errcode_t	retval;
-	int		mount_flags, cont, fd;
+	int		mount_flags, cont;
 
 	retval = ext2fs_check_if_mounted(ctx->filesystem_name, &mount_flags);
 	if (retval) {
@@ -592,8 +592,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		ctx->options |= E2F_OPT_READONLY;
 	ctx->filesystem_name = argv[optind];
 	if (flush) {
-		int	fd = open(ctx->filesystem_name, O_RDONLY, 0);
-
+		fd = open(ctx->filesystem_name, O_RDONLY, 0);
 		if (fd < 0) {
 			com_err("open", errno,
 				_("while opening %s for flushing"),
