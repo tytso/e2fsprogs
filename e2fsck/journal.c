@@ -402,7 +402,7 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 		
 	case JFS_SUPERBLOCK_V2:
 		journal->j_format_version = 2;
-		if (jsb->s_nr_users &&
+		if (jsb->s_nr_users > 1 &&
 		    (ctx->fs->io == ctx->journal_io))
 			clear_v2_journal_fields(journal);
 		if (ntohl(jsb->s_nr_users) > 1) {
