@@ -294,7 +294,7 @@ static int fs_expand( logical_volume_t * volume,
 	}
 	
 	/* don't expand if mounted */
-	if (EngFncs->is_mounted(volume->name, NULL)) {
+	if (EVMS_IS_MOUNTED(volume)) {
 		rc = EBUSY;
 		goto errout;
 	}
