@@ -1,3 +1,8 @@
+2000-12-08    <tytso@snap.thunk.org>
+
+	* Makefile.in (srcdir): Fix so that top-level "make check" works
+		correctly.
+
 2000-10-18    <tytso@valinux.com>
 
 	* random_exercise.c: Add support for making the test files have a

@@ -1,3 +1,7 @@
+2000-12-08    <tytso@snap.thunk.org>
+
+	* Makefile.in: Fix so that top-level "make check" works correctly.
+
 2000-07-13    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.19

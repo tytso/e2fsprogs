@@ -40,7 +40,7 @@ extern int optind;
 #include "../version.h"
 #include "nls-enable.h"
 
-const char * program_name = "e2label";
+const char * program_name = "e2image";
 char * device_name = NULL;
 
 static void usage(void)

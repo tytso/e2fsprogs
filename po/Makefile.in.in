@@ -178,7 +178,7 @@ uninstall:
 	done
 	rm -f $(gettextsrcdir)/po-Makefile.in.in
 
-check: all
+check:: all
 
 cat-id-tbl.o: ../intl/libgettext.h
 

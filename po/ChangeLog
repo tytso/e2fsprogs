@@ -1,0 +1,5 @@
+2000-12-08    <tytso@snap.thunk.org>
+
+	* Makefile.in.in: Fix so that top-level "make check" works
+	correctly.
+

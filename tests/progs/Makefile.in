@@ -49,8 +49,6 @@ install:
 
 uninstall:
 
-check:
-
 mostlyclean: clean
 distclean: clean
 	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old

@@ -2,6 +2,8 @@
 
 all::
 
+check::
+
 SHELL = /bin/sh
 
 prefix = @prefix@

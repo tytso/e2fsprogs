@@ -48,7 +48,7 @@ install-libs: install-libs-recursive
 
 uninstall-libs: uninstall-libs-recursive
 
-TAGS clean-recursive distclean-recursive depend-recursive \
+TAGS clean-recursive distclean-recursive depend-recursive check-recursive \
 	    mostlyclean-recursive realclean-recursive install-recursive:
 	for subdir in $(SUBDIRS); do \
 	  if test -d $$subdir ; then \
@@ -104,8 +104,7 @@ distclean-local: clean-local
 realclean-local: distclean-local
 	$(RM) -f configure
 
-check:
-	cd tests && $(MAKE) check
+check::	check-recursive
 
 distribution_tar_file:
 	$(RM) -rf /tmp/dest
