@@ -25,8 +25,12 @@
 #ifdef HAVE_SYS_MKDEV_H
 #include <sys/mkdev.h>
 #endif
+#ifdef HAVE_SYS_SYSMACROS_H
+#include <sys/sysmacros.h>
+#endif
 #include "nls-enable.h"
 #include "get_device_by_label.h"
+#include "fsck.h"
 
 /* function prototype from libext2 */
 extern char *ext2fs_find_block_device(dev_t device);
@@ -155,7 +159,7 @@ uuidcache_init(void) {
 			    (statbuf.st_rdev != dev)) {
 				devname = ext2fs_find_block_device(dev);
 			} else
-				devname = strdup(device);
+				devname = string_copy(device);
 			if (!devname)
 				continue;
 			if (!get_label_uuid(devname, &label, uuid))
@@ -183,11 +187,11 @@ get_spec_by_x(int n, const char *t) {
 		switch (n) {
 		case UUID:
 			if (!memcmp(t, uc->uuid, sizeof(uc->uuid)))
-				return strdup(uc->device);
+				return string_copy(uc->device);
 			break;
 		case VOL:
 			if (!strcmp(t, uc->label))
-				return strdup(uc->device);
+				return string_copy(uc->device);
 			break;
 		}
 		uc = uc->next;
@@ -195,8 +199,8 @@ get_spec_by_x(int n, const char *t) {
 	return NULL;
 }
 
-static u_char
-fromhex(char c) {
+static char fromhex(char c)
+{
 	if (isdigit(c))
 		return (c - '0');
 	else if (islower(c))
@@ -206,8 +210,9 @@ fromhex(char c) {
 }
 
 char *
-get_spec_by_uuid(const char *s) {
-	u_char uuid[16];
+get_spec_by_uuid(const char *s)
+{
+	char uuid[16];
 	int i;
 
 	if (strlen(s) != 36 ||

@@ -66,7 +66,7 @@ static int w_flag = 0;			/* do r/w test: 0=no, 1=yes,
 static int s_flag = 0;			/* show progress of test */
 static int force = 0;			/* force check of mounted device */
 
-static void usage(NOARGS)
+static void usage(void)
 {
 	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] device [blocks_count [start_count]]\n"),
 		 program_name);
@@ -79,9 +79,6 @@ static ext2_badblocks_list bb_list = NULL;
 static FILE *out;
 static blk_t next_bad = 0;
 static ext2_badblocks_iterate bb_iter = NULL;
-
-/* Everything is STDC, these days */
-#define NOARGS void
 
 /*
  * This routine reports a new bad block.  If the bad block has already
@@ -111,7 +108,7 @@ static int bb_output (unsigned long bad)
 	return 1;
 }
 
-static void print_status(NOARGS)
+static void print_status(void)
 {
 	fprintf(stderr, "%9ld/%9ld", currently_testing, num_blocks);
 	fprintf(stderr, "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
@@ -149,7 +146,7 @@ static void capture_terminate(jmp_buf term_addr)
 	signal (SIGUSR2, terminate_intr);
 }
 
-static void uncapture_terminate(NOARGS)
+static void uncapture_terminate(void)
 {
 	terminate_addr = NULL;
 	signal (SIGHUP, SIG_DFL);
@@ -220,10 +217,10 @@ static int host_dev;
 static void flush_bufs (int dev)
 {
 #ifdef HAVE_FDATASYNC
-  if (sync && fdatasync (dev) == -1)
+  if (fdatasync (dev) == -1)
     com_err (program_name, errno, _("during fdatasync"));
 #else
-  if (sync && fsync (dev) == -1)
+  if (fsync (dev) == -1)
     com_err (program_name, errno, _("during fsync"));
 #endif
 
@@ -321,7 +318,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 {
 	int i;
 	char * buffer;
-	unsigned char pattern[] = {0xaa, 0x55, 0xff, 0x00};
+	static unsigned char pattern[] = {0xaa, 0x55, 0xff, 0x00};
 	unsigned int bb_count = 0;
 
 	buffer = malloc (2 * block_size);
@@ -659,9 +656,9 @@ int main (int argc, char ** argv)
 	int passes_clean = 0;
 	int dev;
 	errcode_t errcode;
-	unsigned int (*test_func)(int dev, unsigned long blocks_count,
-				  int block_size, unsigned long from_count,
-				  unsigned long blocks_at_once);
+	unsigned int (*test_func)(int, unsigned long,
+				  int, unsigned long,
+				  unsigned long);
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);

@@ -1,3 +1,8 @@
+2001-01-05    <tytso@snap.thunk.org>
+
+	* configure.in: Add checks for the header files sys/mkdev.h and
+		sys/sysmacros.h.
+
 2000-12-08    <tytso@snap.thunk.org>
 
 	* MCONFIG.in, Makefile.in: Fix so that top-level "make check"

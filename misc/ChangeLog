@@ -1,3 +1,17 @@
+2001-01-05    <tytso@snap.thunk.org>
+
+	* get_device_by_label.h (get_volume_label_by_spec): Add function
+		prototype.
+
+	* get_device_by_label.c: Use string_copy() instead of strdup() for
+		portability's sake.  Fix a few other gcc -Wall
+		complaints. 
+
+	* fsck.c (string_copy): Export string_copy() extern.
+
+	* badblocks.c: Fix various gcc -Wall complaints, including
+		an incorrect reference to sync in flush_bufs().
+
 2001-01-03    <tytso@snap.thunk.org>
 
 	* tune2fs.c (update_feature_set, add_journal): Moved to separate

@@ -106,7 +106,7 @@ const char *fsck_prefix_path = "/sbin:/sbin/fs.d:/sbin/fs:/etc/fs:/etc";
 char *fsck_path = 0;
 static int ignore(struct fs_info *);
 
-static char *string_copy(const char *s)
+char *string_copy(const char *s)
 {
 	char	*ret;
 

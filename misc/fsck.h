@@ -2,6 +2,8 @@
  * fsck.h
  */
 
+#include <time.h>
+
 #ifdef __STDC__
 #define NOARGS void
 #else
@@ -58,4 +60,4 @@ struct fsck_instance {
 };
 
 extern char *base_device(char *device);
-
+extern char *string_copy(const char *s);
