@@ -70,6 +70,8 @@ static const char *ignored_types[] = {
 	"proc",
 	"sw",
 	"swap",
+	"tmpfs",
+	"devpts",
 	NULL
 };
 
@@ -77,7 +79,10 @@ static const char *really_wanted[] = {
 	"minix",
 	"ext2",
 	"ext3",
+	"jfs",
+	"reiserfs",
 	"xiafs",
+	"xfs",
 	NULL
 };
 
@@ -219,9 +224,9 @@ static void free_instance(struct fsck_instance *i)
 	return;
 }
 
-static struct fs_info *create_fs_device(char *device, char *mntpnt,
-					char *type, char *opts, int freq,
-					int passno)
+static struct fs_info *create_fs_device(const char *device, const char *mntpnt,
+					const char *type, const char *opts, 
+					int freq, int passno)
 {
 	struct fs_info *fs;
 
@@ -251,7 +256,6 @@ static struct fs_info *create_fs_device(char *device, char *mntpnt,
 static int parse_fstab_line(char *line, struct fs_info **ret_fs)
 {
 	char	*dev, *device, *mntpnt, *type, *opts, *freq, *passno, *cp;
-	char	*t = NULL;
 	struct fs_info *fs;
 
 	*ret_fs = 0;
@@ -283,24 +287,33 @@ static int parse_fstab_line(char *line, struct fs_info **ret_fs)
 	dev = blkid_get_devname(cache, device, NULL);
 	if (dev)
 		device = dev;
-	
-	if (strcmp(type, "auto") == 0 || (strchr(type, ',') != 0))
-		t = blkid_get_tag_value(cache, "TYPE", device);
-	if (t)
-		type = t;
 
-	fs = create_fs_device(device, mntpnt, type, opts,
+	if (strchr(type, ','))
+		type = 0;
+
+	fs = create_fs_device(device, mntpnt, type ? type : "auto", opts,
 			      freq ? atoi(freq) : -1,
 			      passno ? atoi(passno) : -1);
 	if (dev)
 		free(dev);
-	if (t)
-		free(t);
 	   
 	if (!fs)
 		return -1;
 	*ret_fs = fs;
 	return 0;
+}
+
+static void interpret_type(struct fs_info *fs)
+{
+	char	*t;
+	
+	if (strcmp(fs->type, "auto") != 0)
+		return;
+	t = blkid_get_tag_value(cache, "TYPE", fs->device);
+	if (t) {
+		free(fs->type);
+		fs->type = t;
+	}
 }
 
 /*
@@ -355,7 +368,6 @@ static void load_fs_info(const char *filename)
 static struct fs_info *lookup(char *filesys)
 {
 	struct fs_info *fs;
-	int	try_again = 0;
 
 	/* No filesys name given. */
 	if (filesys == NULL)
@@ -655,15 +667,19 @@ static int wait_all(int flags)
  */
 static void fsck_device(struct fs_info *fs, int interactive)
 {
-	const char *type = 0;
+	const char *type;
 	int retval;
 
-	if (fstype && strncmp(fstype, "no", 2) &&
+	interpret_type(fs);
+
+	if (strcmp(fs->type, "auto") != 0)
+		type = fs->type;
+	else if (fstype && strncmp(fstype, "no", 2) &&
 	    strncmp(fstype, "opts=", 5) && strncmp(fstype, "loop", 4) && 
 	    !strchr(fstype, ','))
 		type = fstype;
-
-	type = fs->type ? fs->type : DEFAULT_FSTYPE;
+	else
+		type = DEFAULT_FSTYPE;
 
 	num_running++;
 	retval = execute(type, fs->device, fs->mountpt, interactive);
@@ -826,6 +842,8 @@ static int ignore(struct fs_info *fs)
 	if (fs->passno == 0)
 		return 1;
 
+	interpret_type(fs);
+
 	/*
 	 * If a specific fstype is specified, and it doesn't match,
 	 * ignore it.
@@ -906,8 +924,8 @@ static int check_all(NOARGS)
 
 	/*
 	 * Do an initial scan over the filesystem; mark filesystems
-	 * which should be ignored as done, and resolve LABEL= and
-	 * UUID= specifications to the real device.
+	 * which should be ignored as done, and resolve any "auto"
+	 * filesystem types (done as a side-effect of calling ignore()).
 	 */
 	for (fs = filesys_info; fs; fs = fs->next) {
 		if (ignore(fs))
@@ -1170,7 +1188,7 @@ int main(int argc, char *argv[])
 {
 	int i, status = 0;
 	int interactive = 0;
-	char *type, *oldpath = getenv("PATH");
+	char *oldpath = getenv("PATH");
 	const char *fstab;
 	struct fs_info *fs;
 
@@ -1224,15 +1242,8 @@ int main(int argc, char *argv[])
 		}
 		fs = lookup(devices[i]);
 		if (!fs) {
-			type = blkid_get_tag_value(cache, "TYPE", devices[i]);
-			if (!type) {
-				fprintf(stderr, _("Could not determine "
-						  "filesystem type for %s\n"),
-					devices[i]);
-				continue;
-			}
-			fs = create_fs_device(devices[i], 0, type, 0, -1, -1);
-			free(type);
+			fs = create_fs_device(devices[i], 0, "auto",
+					      0, -1, -1);
 			if (!fs)
 				continue;
 		}

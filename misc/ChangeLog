@@ -1,3 +1,14 @@
+2003-04-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.c (parse_fstab_line, interpret_type, fsck_device, ignore,
+		main): Don't evaluate the filesystem type when loading the
+		fstab file, since that might cause fsck to hang trying to
+		read from a floppy disk.  (Addresses Debian bug #187812)
+		Add tmpfs and devpts to filesystems that should be
+		ignored, and add jfs, reseirfs, and xfs as filesystems
+		types where we should complain if we can't find the fsck
+		program for that filesystem type.
+
 2003-04-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.c (bb_output): Flush output to the badblocks
