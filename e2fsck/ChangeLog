@@ -1,3 +1,9 @@
+2004-01-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* problem.c (fix_problem): Don't call print_e2fsck_message if the
+		message is empty; otherwise, the NLS substitution will
+		print the .po header, which is Just Wrong.
+
 2004-01-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass2.c (deallocate_inode_block): Check to make sure the block

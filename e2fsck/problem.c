@@ -1558,7 +1558,8 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 			printf("%s: ", ctx->device_name ?
 			       ctx->device_name : ctx->filesystem_name);
 		}
-		print_e2fsck_message(ctx, _(message), pctx, 1);
+		if (*message)
+			print_e2fsck_message(ctx, _(message), pctx, 1);
 	}
 	if (!(ptr->flags & PR_PREEN_OK) && (ptr->prompt != PROMPT_NONE))
 		preenhalt(ctx);
