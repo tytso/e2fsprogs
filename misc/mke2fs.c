@@ -166,7 +166,8 @@ static void set_fs_defaults(const char *fs_type,
 		    (megs > p->size))
 			continue;
 		if (ratio == 0)
-			*inode_ratio = p->inode_ratio;
+			*inode_ratio = p->inode_ratio < blocksize ?
+				blocksize : p->inode_ratio;
 		if (blocksize == 0) {
 			if (p->blocksize == DEF_MAX_BLOCKSIZE)
 				p->blocksize = sys_page_size;

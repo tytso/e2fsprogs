@@ -1,3 +1,8 @@
+2002-06-09  Andreas Dilger  <adilger@clusterfs.com>
+
+	* f_8192_block, f_16384_block: Basic tests of 8192-byte block
+		and 16384-byte blocksize filesystems.
+
 2002-05-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_badsymlinks: Check for symlink too big error message.

@@ -1,3 +1,8 @@
+2002-05-22  Andreas Dilger <adilger@clusterfs.com>
+
+	* mke2fs.c (set_fs_defaults): make the default inode ratio at most
+		one inode per block for large blocksizes.
+
 2002-05-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (PRS): Determine the page size using sysconf() at

@@ -308,13 +308,20 @@ void check_super_block(e2fsck_t ctx)
 	blk_t	first_block, last_block;
 	struct ext2_super_block *sb = fs->super;
 	blk_t	blocks_per_group = fs->super->s_blocks_per_group;
+	blk_t	bpg_max;
 	int	inodes_per_block;
+	int	ipg_max;
 	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
-	
-	inodes_per_block = (EXT2_BLOCK_SIZE(fs->super) /
-			    EXT2_INODE_SIZE(fs->super));
+
+	inodes_per_block = EXT2_INODES_PER_BLOCK(fs->super);
+	ipg_max = inodes_per_block * (blocks_per_group - 4);
+	if (ipg_max > EXT2_MAX_INODES_PER_GROUP(sb))
+		ipg_max = EXT2_MAX_INODES_PER_GROUP(sb);
+	bpg_max = 8 * EXT2_BLOCK_SIZE(sb);
+	if (bpg_max > EXT2_MAX_BLOCKS_PER_GROUP(sb))
+		bpg_max = EXT2_MAX_BLOCKS_PER_GROUP(sb);
 
 	ctx->invalid_inode_bitmap_flag = (int *) e2fsck_allocate_memory(ctx,
 		 sizeof(int) * fs->group_desc_count, "invalid_inode_bitmap");
@@ -322,7 +329,7 @@ void check_super_block(e2fsck_t ctx)
 		 sizeof(int) * fs->group_desc_count, "invalid_block_bitmap");
 	ctx->invalid_inode_table_flag = (int *) e2fsck_allocate_memory(ctx,
 		sizeof(int) * fs->group_desc_count, "invalid_inode_table");
-		
+
 	clear_problem_context(&pctx);
 
 	/*
@@ -341,12 +348,11 @@ void check_super_block(e2fsck_t ctx)
 			  MIN_CHECK | MAX_CHECK, 0, sb->s_log_block_size);
 	check_super_value(ctx, "frags_per_group", sb->s_frags_per_group,
 			  MIN_CHECK | MAX_CHECK, sb->s_blocks_per_group,
-			  8 * EXT2_BLOCK_SIZE(sb));
+			  bpg_max);
 	check_super_value(ctx, "blocks_per_group", sb->s_blocks_per_group,
-			  MIN_CHECK | MAX_CHECK, 8, 8 * EXT2_BLOCK_SIZE(sb));
+			  MIN_CHECK | MAX_CHECK, 8, bpg_max);
 	check_super_value(ctx, "inodes_per_group", sb->s_inodes_per_group,
-			  MIN_CHECK | MAX_CHECK, inodes_per_block,
-			  inodes_per_block * (blocks_per_group-4));
+			  MIN_CHECK | MAX_CHECK, inodes_per_block, ipg_max);
 	check_super_value(ctx, "r_blocks_count", sb->s_r_blocks_count,
 			  MAX_CHECK, 0, sb->s_blocks_count / 4);
 

@@ -43,7 +43,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 {
 	ext2_filsys	fs;
 	errcode_t	retval;
-	int		i, j, groups_per_block;
+	int		i, j, groups_per_block, blocks_per_group;
 	blk_t		group_block;
 	char		*dest;
 	struct ext2_group_desc *gdp;
@@ -196,14 +196,16 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	/*
 	 * Read group descriptors
 	 */
-	if ((EXT2_BLOCKS_PER_GROUP(fs->super)) == 0) {
+	blocks_per_group = EXT2_BLOCKS_PER_GROUP(fs->super);
+	if (blocks_per_group == 0 ||
+	    blocks_per_group > EXT2_MAX_BLOCKS_PER_GROUP(fs->super) ||
+	    fs->inode_blocks_per_group > EXT2_MAX_INODES_PER_GROUP(fs->super)) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
 	fs->group_desc_count = (fs->super->s_blocks_count -
 				fs->super->s_first_data_block +
-				EXT2_BLOCKS_PER_GROUP(fs->super) - 1)
-		/ EXT2_BLOCKS_PER_GROUP(fs->super);
+				blocks_per_group - 1) / blocks_per_group;
 	fs->desc_blocks = (fs->group_desc_count +
 			   EXT2_DESC_PER_BLOCK(fs->super) - 1)
 		/ EXT2_DESC_PER_BLOCK(fs->super);

@@ -1,5 +1,18 @@
 2002-06-09  Andreas Dilger <adilger@clusterfs.com>
 
+	* ext2_fs.h: Add macros for maximum block/inode counts:
+		EXT2_INODES_PER_BLOCK, EXT2_MAX_BLOCKS_PER_GROUP,
+		and EXT2_MAX_INODES_PER_GROUP.
+
+	* openfs.c (ext2fs_open): Check that the number of blocks in a group
+		is less than 2^16, otherwise we need an INCOMPAT flag (not
+		in existence yet, if ever) to open such a filesystem.
+
+	* initialize.c (ext2fs_initialize): Limit the number of blocks and
+		inodes in a group to less than 2^16.
+
+2002-06-09  Andreas Dilger <adilger@clusterfs.com>
+
 	* ext2_fs.h: Further minor cleanups of the header.  Consolidate
 		some checks for __KERNEL__ into one place.
 

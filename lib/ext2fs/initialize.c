@@ -63,6 +63,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	int		rem;
 	int		overhead = 0;
 	blk_t		group_block;
+	int		ipg;
 	int		i, j;
 	blk_t		numblocks;
 	char		*buf;
@@ -131,9 +132,11 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	fs->blocksize = EXT2_BLOCK_SIZE(super);
 	fs->fragsize = EXT2_FRAG_SIZE(super);
 	frags_per_block = fs->blocksize / fs->fragsize;
-	
-	/* default: (fs->blocksize*8) blocks/group */
-	set_field(s_blocks_per_group, fs->blocksize*8); 
+
+	/* default: (fs->blocksize*8) blocks/group, up to 2^16 (GDT limit) */
+	set_field(s_blocks_per_group, fs->blocksize * 8);
+	if (super->s_blocks_per_group > EXT2_MAX_BLOCKS_PER_GROUP(super))
+		super->s_blocks_per_group = EXT2_MAX_BLOCKS_PER_GROUP(super);
 	super->s_frags_per_group = super->s_blocks_per_group * frags_per_block;
 	
 	super->s_blocks_count = param->s_blocks_count;
@@ -180,14 +183,20 @@ retry:
 	 * There should be at least as many inodes as the user
 	 * requested.  Figure out how many inodes per group that
 	 * should be.  But make sure that we don't allocate more than
-	 * one bitmap's worth of inodes
+	 * one bitmap's worth of inodes each group.
 	 */
-	super->s_inodes_per_group = (super->s_inodes_count +
-				     fs->group_desc_count - 1) /
-					     fs->group_desc_count;
-	if (super->s_inodes_per_group > fs->blocksize*8)
-		super->s_inodes_per_group = fs->blocksize*8;
-	
+	ipg = (super->s_inodes_count + fs->group_desc_count - 1) /
+		fs->group_desc_count;
+	if (ipg > fs->blocksize * 8)
+		ipg = fs->blocksize * 8;
+
+	if (ipg > EXT2_MAX_INODES_PER_GROUP(super))
+		ipg = EXT2_MAX_INODES_PER_GROUP(super);
+
+	super->s_inodes_per_group = ipg;
+	if (super->s_inodes_count > ipg * fs->group_desc_count)
+		super->s_inodes_count = ipg * fs->group_desc_count;
+
 	/*
 	 * Make sure the number of inodes per group completely fills
 	 * the inode table blocks in the descriptor.  If not, add some

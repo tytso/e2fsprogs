@@ -1,3 +1,10 @@
+2002-05-22  Andreas Dilger <adilger@clusterfs.com>
+
+	* super.c (check_superblock): Check that the number of inodes and
+		blocks in a group is less than 2^16, so that the free inode
+		and block counts for a group fit into the group descriptor
+		table fields.  Any more than that would need a COMPAT flag.
+
 2002-05-22  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1.c (check_ext_attr): Update to support the V2 Bestbits EA
