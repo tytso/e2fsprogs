@@ -227,17 +227,19 @@ static errcode_t e2fsck_journal_init_dev(e2fsck_t ctx,
 	int		blocksize = ctx->fs->blocksize;
 	struct ext2_super_block jsuper;
 	struct problem_context pctx;
+	const char	*journal_name;
 
 	clear_problem_context(&pctx);
-	if (!ctx->journal_name)
-		ctx->journal_name = ext2fs_find_block_device(s->s_journal_dev);
+	journal_name = ctx->journal_name;
+	if (!journal_name)
+		journal_name = ext2fs_find_block_device(s->s_journal_dev);
 
-	if (!ctx->journal_name) {
+	if (!journal_name) {
 		fix_problem(ctx, PR_0_CANT_FIND_JOURNAL, &pctx);
 		return EXT2_ET_LOAD_EXT_JOURNAL;
 	}
 
-	jfs_debug(1, "Using journal file %s\n", ctx->journal_name);
+	jfs_debug(1, "Using journal file %s\n", journal_name);
 
 #if 1
 	io_ptr = unix_io_manager;
@@ -245,8 +247,10 @@ static errcode_t e2fsck_journal_init_dev(e2fsck_t ctx,
 	io_ptr = test_io_manager;
 	test_io_backing_manager = unix_io_manager;
 #endif
-	if ((retval = io_ptr->open(ctx->journal_name, IO_FLAG_RW,
-					    &ctx->journal_io)))
+	retval = io_ptr->open(journal_name, IO_FLAG_RW, &ctx->journal_io);
+	if (!ctx->journal_name)
+		free((void *) journal_name);
+	if (retval)
 		return retval;
 
 	io_channel_set_blksize(ctx->journal_io, blocksize);
@@ -516,6 +520,12 @@ static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal,
 	}
 	brelse(journal->j_sb_buffer);
 
+	if (ctx->journal_io) {
+		if (ctx->fs && ctx->fs->io != ctx->journal_io)
+			io_channel_close(ctx->journal_io);
+		ctx->journal_io = 0;
+	}
+	
 	if (journal->j_inode)
 		ext2fs_free_mem((void **)&journal->j_inode);
 	ext2fs_free_mem((void **)&journal);

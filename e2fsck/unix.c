@@ -287,6 +287,8 @@ static void check_if_skip(e2fsck_t ctx)
 	       fs->super->s_blocks_count - fs->super->s_free_blocks_count,
 	       fs->super->s_blocks_count);
 	ext2fs_close(fs);
+	ctx->fs = NULL;
+	e2fsck_free_context(ctx);
 	exit(FSCK_OK);
 }
 
@@ -450,7 +452,6 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #ifdef MTRACE
 	extern void	*mallwatch;
 #endif
-	char		*oldpath = getenv("PATH");
 	e2fsck_t	ctx;
 	errcode_t	retval;
 #ifdef HAVE_SIGNAL_H
@@ -462,21 +463,6 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		return retval;
 
 	*ret_ctx = ctx;
-
-	/* Update our PATH to include /sbin  */
-	if (oldpath) {
-		char *newpath;
-
-		newpath = (char *) malloc(sizeof (PATH_SET) + 1 +
-					  strlen (oldpath));
-		if (!newpath)
-			fatal_error(ctx, "Couldn't malloc() newpath");
-		strcpy (newpath, PATH_SET);
-		strcat (newpath, ":");
-		strcat (newpath, oldpath);
-		putenv (newpath);
-	} else
-		putenv (PATH_SET);
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
@@ -648,6 +634,24 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	sa.sa_handler = signal_progress_off;
 	sigaction(SIGUSR2, &sa, 0);
 #endif
+
+	/* Update our PATH to include /sbin if we need to run badblocks  */
+	if (cflag) {
+		char *oldpath = getenv("PATH");
+		if (oldpath) {
+			char *newpath;
+
+			newpath = (char *) malloc(sizeof (PATH_SET) + 1 +
+						  strlen (oldpath));
+			if (!newpath)
+				fatal_error(ctx, "Couldn't malloc() newpath");
+			strcpy (newpath, PATH_SET);
+			strcat (newpath, ":");
+			strcat (newpath, oldpath);
+			putenv (newpath);
+		} else
+			putenv (PATH_SET);
+	}
 	return 0;
 }
 

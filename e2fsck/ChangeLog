@@ -1,5 +1,17 @@
 2001-07-29  Theodore Tso  <tytso@valinux.com>
 
+	* unix.c (check_if_skip): Free the e2fsck context structure on a
+		normal clean filesystem exit, to make it easier to find
+		real memory leaks.
+		(PRS): Only update the path to include /sbin at the
+		beginning if the -c option is given, again to make it
+		easier to find memory leaks.
+
+	* journal.c (e2fsck_journal_init_dev): Avoid memory leak if we
+		need to search for the journal device.
+		(e2fsck_journal_release): Free the journal IO channel when
+		we release the journal handle, to avoid a memory leak.
+
 	* e2fsck.c (e2fsck_reset_context): Fix bug; only close the io
 		channel if it is *different* from the filesystem io
 		channel.
