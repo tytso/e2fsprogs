@@ -13,7 +13,7 @@ fsck \- check and repair a Linux file system
 [
 .B \-t
 .I fstype
-] -- [
+] [\-\-] [
 .B fsck-options
 ]
 .I filesys [ ... ]

@@ -48,6 +48,9 @@ DEPLIBS_E2P= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR)
 
 all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES)
 
+findsuper: findsuper.o
+	$(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o
+
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS_E2P) $(LIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS_E2P) $(LIBUUID)
 
