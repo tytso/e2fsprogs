@@ -150,3 +150,4 @@
 00000000 T _ext2fs_icount_validate		libext2fs       icount
 00000000 T _ext2fs_resize_inode_bitmap 		libext2fs       rs_bitmap
 00000000 T _ext2fs_resize_block_bitmap 		libext2fs       rs_bitmap
+00000000 T _ext2fs_dblist_count 		libext2fs       dblist

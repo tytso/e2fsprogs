@@ -179,7 +179,6 @@ errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 			       int blockcnt)
 {
-	struct ext2_db_entry 	*ent;
 	int			i;
 	
 	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
@@ -239,4 +238,7 @@ static int dir_block_cmp(const void *a, const void *b)
 	return (db_a->blockcnt - db_b->blockcnt);
 }
 
-			     
+int ext2fs_dblist_count(ext2_dblist dblist)
+{
+	return (int) dblist->count;
+}
