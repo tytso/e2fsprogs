@@ -1,3 +1,8 @@
+2003-12-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Add filefrag program to the list of programs
+		installed in /usr/sbin.
+
 2003-12-11  Theodore Ts'o  <tytso@thunk.org>
 
 	* tune2fs.8.in: Fix some whitespace errors in the command synopsis.
