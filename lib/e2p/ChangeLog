@@ -1,3 +1,8 @@
+2000-07-06  Theodore Ts'o  <tytso@valinux.com>
+
+	* ls.c (list_super): Display the journal information fields in the
+		superblock if the filesystem has a journal.
+
 2000-07-04  Theodore Ts'o  <tytso@valinux.com>
 
 	* Makefile.in: Remove explicit link of -lc in the shared library.

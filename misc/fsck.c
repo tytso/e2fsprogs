@@ -74,6 +74,7 @@ static const char *ignored_types[] = {
 static const char *really_wanted[] = {
 	"minix",
 	"ext2",
+	"ext3",
 	"xiafs",
 	NULL
 };
@@ -357,6 +358,8 @@ static struct fs_info *lookup(char *filesys)
 		    !strcmp(filesys, fs->mountpt))
 			break;
 	}
+	if (fs && strchr(fs->device, '='))
+		fs->device = interpret_device(fs->device);
 
 	if (fs || !try_again)
 		return fs;
@@ -429,7 +432,8 @@ static int execute(const char *type, char *device, char *mntpt,
 		argv[argc++] = string_copy(args[i]);
 
 	if (progress & !progress_active()) {
-		if (strcmp(type, "ext2") == 0) {
+		if ((strcmp(type, "ext2") == 0) ||
+		    (strcmp(type, "ext3") == 0)) {
 			argv[argc++] = string_copy("-C0");
 			inst->flags |= FLAG_PROGRESS;
 		}
@@ -564,7 +568,8 @@ static struct fsck_instance *wait_one(NOARGS)
 		for (inst2 = instance_list; inst2; inst2 = inst2->next) {
 			if (inst2->flags & FLAG_DONE)
 				continue;
-			if (strcmp(inst2->type, "ext2"))
+			if (strcmp(inst2->type, "ext2") &&
+			    strcmp(inst2->type, "ext3"))
 				continue;
 			/*
 			 * If we've just started the fsck, wait a tiny

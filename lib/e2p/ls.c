@@ -73,7 +73,23 @@ struct ext2fs_sb {
 	__u8	s_uuid[16];		/* 128-bit uuid for volume */
 	char	s_volume_name[16]; 	/* volume name */
 	char	s_last_mounted[64]; 	/* directory where last mounted */
-	__u32	s_reserved[206];	/* Padding to the end of the block */
+	__u32	s_algorithm_usage_bitmap; /* For compression */
+	/*
+	 * Performance hints.  Directory preallocation should only
+	 * happen if the EXT2_FEATURE_COMPAT_DIR_PREALLOC flag is on.
+	 */
+	__u8	s_prealloc_blocks;	/* Nr of blocks to try to preallocate*/
+	__u8	s_prealloc_dir_blocks;	/* Nr to preallocate for dirs */
+	__u16	s_padding1;
+	/* 
+	 * Journaling support.
+	 */
+	__u8	s_journal_uuid[16];	/* uuid of journal superblock */
+	__u32	s_journal_inum;		/* inode number of journal file */
+	__u32	s_journal_dev;		/* device number of journal file */
+	__u32	s_last_orphan;		/* start of list of inodes to delete */
+	
+	__u32	s_reserved[197];	/* Padding to the end of the block */
 };
 
 #ifndef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
@@ -264,18 +280,24 @@ void list_super (struct ext2_super_block * s)
 		next = s->s_lastcheck + s->s_checkinterval;
 		printf("Next check after:         %s", ctime(&next));
 	}
-#ifdef	EXT2_DEF_RESUID
 	printf("Reserved blocks uid:      ");
 	print_user(s->s_def_resuid);
 	printf("Reserved blocks gid:      ");
 	print_group(s->s_def_resgid);
-#endif
-#ifdef EXT2_DYNAMIC_REV
 	if (s->s_rev_level >= EXT2_DYNAMIC_REV) {
 		printf("First inode:              %d\n", s->s_first_ino);
 		printf("Inode size:		  %d\n", s->s_inode_size);
 	}
-#endif
+	if (s->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
+		if (e2p_is_null_uuid(sb->s_journal_uuid)) {
+			strcpy(buf, "<none>");
+		} else
+			e2p_uuid_to_str(sb->s_uuid, buf);
+		printf("Journal UUID:             %s\n", buf);
+		printf("Journal inode:            %u\n", s->s_journal_inum);
+		printf("Journal device:		  %x\n", s->s_journal_dev);
+		printf("Orphaned inode list:      %u\n", s->s_last_orphan);
+	}
 }
 
 

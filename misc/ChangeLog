@@ -1,5 +1,9 @@
 2000-07-06  Theodore Ts'o  <tytso@valinux.com>
 
+	* fsck.c (execute, wait_one): Treat fsck.ext3 the same as
+		fsck.ext2 (because they are the same) for the purposes of
+		the progress bar display logic.
+
 	* tune2fs.8.in: Update manual page to document what happens if
 		max_mount_count is negative.
 
