@@ -1,5 +1,10 @@
 2005-01-27  Theodore Ts'o  <tytso@mit.edu>
 
+	* mke2fs.c (PRS): Don't use a blocksize greater than 4k, even on
+		2.6 kernels, unless explicitly requested by the user; not
+		all 2.6 kernels (includeing stock 2.6 kernels as of this
+		writing) don't support blocksizes > 4k.
+
 	* mke2fs.c (PRS): If the device size is too big to be expressed
 		using a 1k blocksize, retry with a 4k blocksize.
 		(Addresses Sourceforge bug #1106631)

@@ -166,8 +166,8 @@ struct mke2fs_defaults {
 	{ default_str, 3, 1024, 8192 },
 	{ "journal", 0, 4096, 8192 },
 	{ "news", 0, 4096, 4096 },
-	{ "largefile", 0, DEF_MAX_BLOCKSIZE, 1024 * 1024 },
-	{ "largefile4", 0, DEF_MAX_BLOCKSIZE, 4096 * 1024 },
+	{ "largefile", 0, 4096, 1024 * 1024 },
+	{ "largefile4", 0, 4096, 4096 * 1024 },
 	{ 0, 0, 0, 0},
 };
 
