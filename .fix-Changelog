@@ -7,6 +7,7 @@ header=/tmp/revheader
 for i in $FILES 
 do
 	echo $i
+	bk edit $i
 	cat $header $i > $i.new
 	mv $i.new $i
 done

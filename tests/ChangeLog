@@ -1,3 +1,7 @@
+2002-11-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.31
+
 2002-11-08    <tytso@snap.thunk.org>
 
 	* f_swapfs: Skip the test if swapfs has been disabled via the

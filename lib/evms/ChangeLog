@@ -1,5 +1,9 @@
 2002-11-08  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.31
+
+2002-11-08  Theodore Ts'o  <tytso@mit.edu>
+
 	* fs_ext2.c (fs_expand, fs_shrink), 
 	  fsimext2.c (fsim_mkfs, fsim_fsck): Inform the user if e2fsck, 
 		mke2fs or resize2fs dies with a signal, or if the exit 
