@@ -1,3 +1,10 @@
+2000-08-22    <tytso@valinux.com>
+
+	* unix_io.c: Make massive changes to support a multiple block
+		writethrough cacheing.
+
+	* ext2_io.h: Added flags field to the io_channel structure.
+
 2000-08-19    <tytso@valinux.com>
 
 	* finddev.c, ext2fs.h, Makefile.in: Add new file, finddev.c, which

@@ -45,13 +45,24 @@
 
 #define EXT2_CHECK_MAGIC(struct, code) \
 	  if ((struct)->magic != (code)) return (code)
-  
+
+struct unix_cache {
+	char		*buf;
+	unsigned long	block;
+	int		access_time;
+	int		dirty:1;
+	int		in_use:1;
+};
+
+#define CACHE_SIZE 8
+#define WRITE_VIA_CACHE_SIZE 4	/* Must be smaller than CACHE_SIZE */
+
 struct unix_private_data {
 	int	magic;
 	int	dev;
 	int	flags;
-	char	*buf;
-	int	buf_block_nr;
+	int	access_time;
+	struct unix_cache cache[CACHE_SIZE];
 };
 
 static errcode_t unix_open(const char *name, int flags, io_channel *channel);
@@ -75,6 +86,208 @@ static struct struct_io_manager struct_unix_manager = {
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
+
+/*
+ * Here are the raw I/O functions
+ */
+static errcode_t raw_read_blk(io_channel channel,
+			      struct unix_private_data *data,
+			      unsigned long block,
+			      int count, void *buf)
+{
+	errcode_t	retval;
+	size_t		size;
+	ext2_loff_t	location;
+	int		actual = 0;
+
+	size = (count < 0) ? -count : count * channel->block_size;
+	location = (ext2_loff_t) block * channel->block_size;
+	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
+		goto error_out;
+	}
+	actual = read(data->dev, buf, size);
+	if (actual != size) {
+		if (actual < 0)
+			actual = 0;
+		retval = EXT2_ET_SHORT_READ;
+		goto error_out;
+	}
+	return 0;
+	
+error_out:
+	memset((char *) buf+actual, 0, size-actual);
+	if (channel->read_error)
+		retval = (channel->read_error)(channel, block, count, buf,
+					       size, actual, retval);
+	return retval;
+}
+
+static errcode_t raw_write_blk(io_channel channel,
+			       struct unix_private_data *data,
+			       unsigned long block,
+			       int count, const void *buf)
+{
+	size_t		size;
+	ext2_loff_t	location;
+	int		actual = 0;
+	errcode_t	retval;
+
+	if (count == 1)
+		size = channel->block_size;
+	else {
+		if (count < 0)
+			size = -count;
+		else
+			size = count * channel->block_size;
+	}
+
+	location = (ext2_loff_t) block * channel->block_size;
+	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
+		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
+		goto error_out;
+	}
+	
+	actual = write(data->dev, buf, size);
+	if (actual != size) {
+		retval = EXT2_ET_SHORT_WRITE;
+		goto error_out;
+	}
+	return 0;
+	
+error_out:
+	if (channel->write_error)
+		retval = (channel->write_error)(channel, block, count, buf,
+						size, actual, retval);
+	return retval;
+}
+
+
+/*
+ * Here we implement the cache functions
+ */
+
+/* Allocate the cache buffers */
+static errcode_t alloc_cache(io_channel channel,
+			     struct unix_private_data *data)
+{
+	errcode_t		retval;
+	struct unix_cache	*cache;
+	int			i;
+	
+	data->access_time = 0;
+	for (i=0, cache = data->cache; i < CACHE_SIZE; i++, cache++) {
+		cache->block = 0;
+		cache->access_time = 0;
+		cache->dirty = 0;
+		cache->in_use = 0;
+		if ((retval = ext2fs_get_mem(channel->block_size,
+					     (void **) &cache->buf)))
+			return retval;
+	}
+	return 0;
+}
+
+/* Free the cache buffers */
+static void free_cache(io_channel channel, 
+		       struct unix_private_data *data)
+{
+	struct unix_cache	*cache;
+	int			i;
+	
+	data->access_time = 0;
+	for (i=0, cache = data->cache; i < CACHE_SIZE; i++, cache++) {
+		cache->block = 0;
+		cache->access_time = 0;
+		cache->dirty = 0;
+		cache->in_use = 0;
+		if (cache->buf)
+			ext2fs_free_mem((void **) &cache->buf);
+		cache->buf = 0;
+	}
+}
+
+/*
+ * Try to find a block in the cache.  If get_cache is non-zero, then
+ * if the block isn't in the cache, evict the oldest block in the
+ * cache and create a new cache entry for the requested block.
+ */
+struct unix_cache *find_cached_block(io_channel channel,
+				     struct unix_private_data *data,
+				     unsigned long block,
+				     int get_cache)
+{
+	struct unix_cache	*cache, *free_cache, *oldest_cache;
+	int			i;
+	
+	free_cache = oldest_cache = 0;
+	for (i=0, cache = data->cache; i < CACHE_SIZE; i++, cache++) {
+		if (!cache->in_use) {
+			free_cache = cache;
+			continue;
+		}
+		if (cache->block == block) {
+			cache->access_time = ++data->access_time;
+			return cache;
+		}
+		if (!oldest_cache ||
+		    (cache->access_time < oldest_cache->access_time))
+			oldest_cache = cache;
+	}
+	if (!get_cache)
+		return 0;
+	
+	/*
+	 * Try to allocate cache slot.
+	 */
+	if (free_cache)
+		cache = free_cache;
+	else {
+		cache = oldest_cache;
+		if (cache->dirty)
+			raw_write_blk(channel, data,
+				      cache->block, 1, cache->buf);
+	}
+	cache->in_use = 1;
+	cache->block = block;
+	cache->access_time = ++data->access_time;
+	return cache;
+}
+
+/*
+ * Flush all of the blocks in the cache
+ */
+static errcode_t flush_cached_blocks(io_channel channel,
+				     struct unix_private_data *data,
+				     int invalidate)
+
+{
+	struct unix_cache	*cache;
+	errcode_t		retval, retval2;
+	int			i;
+	
+	retval2 = 0;
+	for (i=0, cache = data->cache; i < CACHE_SIZE; i++, cache++) {
+		if (!cache->in_use)
+			continue;
+		
+		if (invalidate)
+			cache->in_use = 0;
+		
+		if (!cache->dirty)
+			continue;
+		
+		retval = raw_write_blk(channel, data,
+				       cache->block, 1, cache->buf);
+		if (retval)
+			retval2 = retval;
+		else
+			cache->dirty = 0;
+	}
+	return retval2;
+}
+
+
 
 static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 {
@@ -110,11 +323,10 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 
 	memset(data, 0, sizeof(struct unix_private_data));
 	data->magic = EXT2_ET_MAGIC_UNIX_IO_CHANNEL;
-	retval = ext2fs_get_mem(io->block_size, (void **) &data->buf);
-	data->buf_block_nr = -1;
-	if (retval)
-		goto cleanup;
 
+	if ((retval = alloc_cache(io, data)))
+		goto cleanup;
+	
 	open_flags = (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY;
 #ifdef HAVE_OPEN64
 	data->dev = open64(name, open_flags);
@@ -129,13 +341,12 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	return 0;
 
 cleanup:
-	if (io)
-		ext2fs_free_mem((void **) &io);
 	if (data) {
-		if (data->buf)
-			ext2fs_free_mem((void **) &data->buf);
+		free_cache(io, data);
 		ext2fs_free_mem((void **) &data);
 	}
+	if (io)
+		ext2fs_free_mem((void **) &io);
 	return retval;
 }
 
@@ -150,11 +361,12 @@ static errcode_t unix_close(io_channel channel)
 
 	if (--channel->refcount > 0)
 		return 0;
-	
+
+	retval = flush_cached_blocks(channel, data, 0);
+
 	if (close(data->dev) < 0)
 		retval = errno;
-	if (data->buf)
-		ext2fs_free_mem((void **) &data->buf);
+	free_cache(channel, data);
 	if (channel->private_data)
 		ext2fs_free_mem((void **) &channel->private_data);
 	if (channel->name)
@@ -173,12 +385,13 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
 	if (channel->block_size != blksize) {
-		channel->block_size = blksize;
-		ext2fs_free_mem((void **) &data->buf);
-		retval = ext2fs_get_mem(blksize, (void **) &data->buf);
-		if (retval)
+		if ((retval = flush_cached_blocks(channel, data, 0)))
 			return retval;
-		data->buf_block_nr = -1;
+		
+		channel->block_size = blksize;
+		free_cache(channel, data);
+		if ((retval = alloc_cache(channel, data)))
+			return retval;
 	}
 	return 0;
 }
@@ -188,96 +401,111 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 			       int count, void *buf)
 {
 	struct unix_private_data *data;
+	struct unix_cache *cache;
 	errcode_t	retval;
-	size_t		size;
-	ext2_loff_t	location;
-	int		actual = 0;
+	int		i, j;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
 	/*
-	 * If it's in the cache, use it!
+	 * If we're doing an odd-sized read, flush out the cache and
+	 * then do a direct read.
 	 */
-	if ((count == 1) && (block == data->buf_block_nr)) {
-		memcpy(buf, data->buf, channel->block_size);
-		return 0;
+	if (count < 0) {
+		if ((retval = flush_cached_blocks(channel, data, 0)))
+			return retval;
+		return raw_read_blk(channel, data, block, count, buf);
 	}
-#if 0
-	printf("read_block %lu (%d)\n", block, count);
+
+	while (count > 0) {
+		/* If it's in the cache, use it! */
+		if ((cache = find_cached_block(channel, data, block, 0))) {
+#ifdef DEBUG
+			printf("Using cached block %d\n", block);
 #endif
-	size = (count < 0) ? -count : count * channel->block_size;
-	location = (ext2_loff_t) block * channel->block_size;
-	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
-		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
-		goto error_out;
-	}
-	actual = read(data->dev, buf, size);
-	if (actual != size) {
-		if (actual < 0)
-			actual = 0;
-		retval = EXT2_ET_SHORT_READ;
-		goto error_out;
-	}
-	if (count == 1) {
-		data->buf_block_nr = block;
-		memcpy(data->buf, buf, size);	/* Update the cache */
+			memcpy(buf, cache->buf, channel->block_size);
+			count--;
+			block++;
+			buf += channel->block_size;
+			continue;
+		}
+		/*
+		 * Find the number of uncached blocks so we can do a
+		 * single read request
+		 */
+		for (i=1; i < count; i++)
+			if (find_cached_block(channel, data, block+i, 0))
+				break;
+#ifdef DEBUG
+		printf("Reading %d blocks starting at %d\n", i, block);
+#endif
+		if ((retval = raw_read_blk(channel, data, block, i, buf)))
+			return retval;
+		
+		/* Save the results in the cache */
+		for (j=0; j < i; j++) {
+			count--;
+			cache = find_cached_block(channel, data, block++, 1);
+			if (cache)
+				memcpy(cache->buf, buf, channel->block_size);
+			buf += channel->block_size;
+		}
 	}
 	return 0;
-	
-error_out:
-	memset((char *) buf+actual, 0, size-actual);
-	if (channel->read_error)
-		retval = (channel->read_error)(channel, block, count, buf,
-					       size, actual, retval);
-	return retval;
 }
 
 static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 				int count, const void *buf)
 {
 	struct unix_private_data *data;
-	size_t		size;
-	ext2_loff_t	location;
-	int		actual = 0;
-	errcode_t	retval;
+	struct unix_cache *cache;
+	errcode_t	retval = 0, retval2;
+	char		*cp;
+	int		i, writethrough;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
-	if (count == 1)
-		size = channel->block_size;
-	else {
-		data->buf_block_nr = -1; 	/* Invalidate the cache */
-		if (count < 0)
-			size = -count;
-		else
-			size = count * channel->block_size;
-	} 
-
-	location = (ext2_loff_t) block * channel->block_size;
-	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
-		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
-		goto error_out;
-	}
-	
-	actual = write(data->dev, buf, size);
-	if (actual != size) {
-		retval = EXT2_ET_SHORT_WRITE;
-		goto error_out;
+	/*
+	 * If we're doing an odd-sized write or a very large write,
+	 * flush out the cache completely and then do a direct write.
+	 */
+	if (count < 0 || count > WRITE_VIA_CACHE_SIZE) {
+		if ((retval = flush_cached_blocks(channel, data, 1)))
+			return retval;
+		return raw_write_blk(channel, data, block, count, buf);
 	}
 
-	if ((count == 1) && (block == data->buf_block_nr))
-		memcpy(data->buf, buf, size); /* Update the cache */
+	/*
+	 * For a moderate-sized multi-block write, first force a write
+	 * if we're in write-through cache mode, and then fill the
+	 * cache with the blocks.
+	 */
+	writethrough = channel->flags & CHANNEL_FLAGS_WRITETHROUGH;
+	if (writethrough)
+		retval = raw_write_blk(channel, data, block, count, buf);
 	
-	return 0;
-	
-error_out:
-	if (channel->write_error)
-		retval = (channel->write_error)(channel, block, count, buf,
-						size, actual, retval);
+	while (count > 0) {
+		cache = find_cached_block(channel, data, block, 1);
+		if (!cache) {
+			/*
+			 * Oh shit, we couldn't get cache descriptor.
+			 * Force the write directly.
+			 */
+			if ((retval2 = raw_write_blk(channel, data, block,
+						1, buf)))
+				retval = retval2;
+		} else {
+			memcpy(cache->buf, buf, channel->block_size);
+			cache->dirty = !writethrough;
+		}
+		count--;
+		block++;
+		buf += channel->block_size;
+	}
 	return retval;
 }
 
@@ -287,12 +515,14 @@ error_out:
 static errcode_t unix_flush(io_channel channel)
 {
 	struct unix_private_data *data;
+	errcode_t retval = 0;
 	
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
-	
+
+	retval = flush_cached_blocks(channel, data, 0);
 	fsync(data->dev);
-	return 0;
+	return retval;
 }
 

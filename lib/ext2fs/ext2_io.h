@@ -27,6 +27,8 @@ ext2_loff_t ext2fs_llseek (int, ext2_loff_t, int);
 typedef struct struct_io_manager *io_manager;
 typedef struct struct_io_channel *io_channel;
 
+#define CHANNEL_FLAGS_WRITETHROUGH	0x01
+
 struct struct_io_channel {
 	errcode_t	magic;
 	io_manager	manager;
@@ -47,7 +49,8 @@ struct struct_io_channel {
 				       int actual_bytes_written,
 				       errcode_t error);
 	int		refcount;
-	int		reserved[15];
+	int		flags;
+	int		reserved[14];
 	void		*private_data;
 	void		*app_data;
 };
