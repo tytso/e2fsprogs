@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-07-25 17:40-0400\n"
+"POT-Creation-Date: 2003-08-21 01:58-0400\n"
 "PO-Revision-Date: 2003-04-27 15:48+0200\n"
 "Last-Translator: Miloslav Trmac <mitr@volny.cz>\n"
 "Language-Team: Czech <cs@li.org>\n"
@@ -29,8 +29,8 @@ msgid "while reading the bad blocks inode"
 msgstr "pĹi ÄtenĂ­ inode ĹĄpatnĂ˝ch blokĹŻ"
 
 #: e2fsck/badblocks.c:71 e2fsck/iscan.c:112 e2fsck/scantest.c:109
-#: e2fsck/unix.c:823 e2fsck/unix.c:855 misc/badblocks.c:974
-#: misc/badblocks.c:982 misc/badblocks.c:996 misc/badblocks.c:1008
+#: e2fsck/unix.c:828 e2fsck/unix.c:860 misc/badblocks.c:997
+#: misc/badblocks.c:1005 misc/badblocks.c:1019 misc/badblocks.c:1031
 #: misc/dumpe2fs.c:337 misc/e2image.c:477 misc/e2image.c:493 misc/mke2fs.c:210
 #: misc/tune2fs.c:748 resize/main.c:228
 #, c-format
@@ -127,12 +127,12 @@ msgstr ""
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 msgstr "PouĹžitĂ­: %s [-F] [-I bloky_inode_bufferĹŻ] zaĹĂ­zenĂ­\n"
 
-#: e2fsck/iscan.c:83 e2fsck/unix.c:643 resize/main.c:205
+#: e2fsck/iscan.c:83 e2fsck/unix.c:648 resize/main.c:205
 #, c-format
 msgid "while opening %s for flushing"
 msgstr "pĹi otevĂ­rĂĄnĂ­ %s pro synchronizaci"
 
-#: e2fsck/iscan.c:88 e2fsck/unix.c:649 resize/main.c:212
+#: e2fsck/iscan.c:88 e2fsck/unix.c:654 resize/main.c:212
 #, c-format
 msgid "while trying to flush %s"
 msgstr "pĹi pokusu synchronizovat %s"
@@ -150,31 +150,31 @@ msgstr "pĹi zĂ­skĂĄvĂĄnĂ­ dalĹĄĂ­ inode"
 msgid "%d inodes scanned.\n"
 msgstr "prozkoumĂĄno %d inode.\n"
 
-#: e2fsck/journal.c:420
+#: e2fsck/journal.c:449
 msgid "reading journal superblock\n"
 msgstr "ÄtenĂ­ superbloku ĹžurnĂĄlu\n"
 
-#: e2fsck/journal.c:477
+#: e2fsck/journal.c:506
 #, c-format
 msgid "%s: no valid journal superblock found\n"
 msgstr "%s: nenalezen platnĂ˝ superblok ĹžurnĂĄlu\n"
 
-#: e2fsck/journal.c:486
+#: e2fsck/journal.c:515
 #, c-format
 msgid "%s: journal too short\n"
 msgstr "%s: ĹžurnĂĄl pĹĂ­liĹĄ krĂĄtkĂ˝\n"
 
-#: e2fsck/journal.c:758
+#: e2fsck/journal.c:787
 #, c-format
 msgid "%s: recovering journal\n"
 msgstr "%s: obnovuji ĹžurnĂĄl\n"
 
-#: e2fsck/journal.c:760
+#: e2fsck/journal.c:789
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
 msgstr "%s: nebudu obnovovat ĹžurnĂĄl v reĹžimu jen pro ÄtenĂ­\n"
 
-#: e2fsck/journal.c:781
+#: e2fsck/journal.c:810
 #, c-format
 msgid "while trying to re-open %s"
 msgstr "pĹi pokusu znovu otevĹĂ­t %s"
@@ -328,16 +328,16 @@ msgstr "<RezervovanĂĄ inode 9>"
 msgid "<Reserved inode 10>"
 msgstr "<RezervovanĂĄ inode 10>"
 
-#: e2fsck/pass1b.c:195
+#: e2fsck/pass1b.c:203
 msgid "multiply claimed inode map"
 msgstr "mapa nÄkolikrĂĄt alokovanĂ˝ch inode"
 
-#: e2fsck/pass1b.c:539 e2fsck/pass1b.c:676
+#: e2fsck/pass1b.c:547 e2fsck/pass1b.c:684
 #, c-format
 msgid "internal error; can't find dup_blk for %d\n"
 msgstr "internĂ­ chyba, nemohu najĂ­t dup_blk pro %d\n"
 
-#: e2fsck/pass1b.c:719
+#: e2fsck/pass1b.c:727
 msgid "returned from clone_file_block"
 msgstr "vrĂĄcenĂ˝ z clone_file_block"
 
@@ -820,103 +820,109 @@ msgstr ""
 "MaĹžu pole za superblokem ĹžurnĂĄlu V1...\n"
 "\n"
 
-#: e2fsck/problem.c:316
+#: e2fsck/problem.c:314
+msgid ""
+"Backing up @j @i @b information.\n"
+"\n"
+msgstr ""
+
+#: e2fsck/problem.c:321
 msgid "Pass 1: Checking @is, @bs, and sizes\n"
 msgstr "PrĹŻchod 1: Kontroluji inode, bloky a velikosti\n"
 
-#: e2fsck/problem.c:320
+#: e2fsck/problem.c:325
 msgid "@r is not a @d.  "
 msgstr "KoĹenovĂĄ inode nenĂ­ adresĂĄĹ. "
 
-#: e2fsck/problem.c:325
+#: e2fsck/problem.c:330
 msgid "@r has dtime set (probably due to old mke2fs).  "
 msgstr "KoĹenovĂĄ inode mĂĄ nastaven dtime (moĹžnĂĄ kvĹŻli starĂŠm mke2fs). "
 
-#: e2fsck/problem.c:330
+#: e2fsck/problem.c:335
 msgid "Reserved @i %i %Q has bad mode.  "
 msgstr "RezervovanĂĄ inode %i %Q mĂĄ ĹĄpatnĂ˝ reĹžim. "
 
-#: e2fsck/problem.c:335
+#: e2fsck/problem.c:340
 #, c-format
 msgid "@D @i %i has zero dtime.  "
 msgstr "OdstranÄnĂĄ inode %i mĂĄ nulovĂ˝ dtime. "
 
-#: e2fsck/problem.c:340
+#: e2fsck/problem.c:345
 #, c-format
 msgid "@i %i is in use, but has dtime set.  "
 msgstr "Inode %i se pouĹžĂ­vĂĄ, ale mĂĄ nastaven dtime. "
 
-#: e2fsck/problem.c:345
+#: e2fsck/problem.c:350
 #, c-format
 msgid "@i %i is a @z @d.  "
 msgstr "Inode %i je adresĂĄĹ nulovĂŠ dĂŠlky. "
 
-#: e2fsck/problem.c:350
+#: e2fsck/problem.c:355
 msgid "@g %g's @b @B at %b @C.\n"
 msgstr ""
 "Bitmapa blokĹŻ skupiny %g v %b koliduje s jinĂ˝m blokem systĂŠmu souborĹŻ.\n"
 
-#: e2fsck/problem.c:355
+#: e2fsck/problem.c:360
 msgid "@g %g's @i @B at %b @C.\n"
 msgstr ""
 "Bitmapa inode skupiny %g v %b koliduje s jinĂ˝m blokem systĂŠmu souborĹŻ.\n"
 
-#: e2fsck/problem.c:360
+#: e2fsck/problem.c:365
 msgid "@g %g's @i table at %b @C.\n"
 msgstr ""
 "Tabulka inode skupiny %g v %b koliduje s jinĂ˝m blokem systĂŠmu souborĹŻ.\n"
 
-#: e2fsck/problem.c:365
+#: e2fsck/problem.c:370
 msgid "@g %g's @b @B (%b) is bad.  "
 msgstr "Bitmapa blokĹŻ skupiny %g (%b) je ĹĄpatnĂĄ. "
 
-#: e2fsck/problem.c:370
+#: e2fsck/problem.c:375
 msgid "@g %g's @i @B (%b) is bad.  "
 msgstr "Bitmapa inode skupiny %g (%b) je ĹĄpatnĂĄ. "
 
-#: e2fsck/problem.c:375
+#: e2fsck/problem.c:380
 msgid "@i %i, i_size is %Is, @s %N.  "
 msgstr "V inode %i je i_size %Is, mÄla by bĂ˝t %N. "
 
-#: e2fsck/problem.c:380
+#: e2fsck/problem.c:385
 msgid "@i %i, i_@bs is %Ib, @s %N.  "
 msgstr "V inode %i je i_blocks %Ib, mÄlo by bĂ˝t %N. "
 
-#: e2fsck/problem.c:385
+#: e2fsck/problem.c:390
 msgid "@I @b #%B (%b) in @i %i.  "
 msgstr "NeplatnĂ˝ blok #%B (%b) v inode %i. "
 
-#: e2fsck/problem.c:390
+#: e2fsck/problem.c:395
 msgid "@b #%B (%b) overlaps @f metadata in @i %i.  "
 msgstr "Blok #%B (%b) se pĹekrĂ˝vĂĄ s metadaty systĂŠmu souborĹŻ v inode %i. "
 
-#: e2fsck/problem.c:395
+#: e2fsck/problem.c:400
 #, c-format
 msgid "@i %i has illegal @b(s).  "
 msgstr "Inode %i mĂĄ neplatnĂ˝ blok(y). "
 
-#: e2fsck/problem.c:400
+#: e2fsck/problem.c:405
 #, c-format
 msgid "Too many illegal @bs in @i %i.\n"
 msgstr "PĹĂ­liĹĄ mnoho neplatnĂ˝ch blokĹŻ v inode %i.\n"
 
-#: e2fsck/problem.c:405
+#: e2fsck/problem.c:410
 msgid "@I @b #%B (%b) in bad @b @i.  "
 msgstr "NeplatnĂ˝ blok #%B (%b) v inode ĹĄpatnĂ˝ch blokĹŻ. "
 
-#: e2fsck/problem.c:410
+#: e2fsck/problem.c:415
 msgid "Bad @b @i has illegal @b(s).  "
 msgstr "Inode ĹĄpatnĂ˝ch blokĹŻ mĂĄ neplatnĂ˝ blok(y). "
 
-#: e2fsck/problem.c:415
+#: e2fsck/problem.c:420
 msgid "Duplicate or bad @b in use!\n"
 msgstr "PouĹžĂ­vĂĄ se duplikĂĄtnĂ­ nebo ĹĄpatnĂ˝ blok!\n"
 
-#: e2fsck/problem.c:420
+#: e2fsck/problem.c:425
 msgid "Bad @b %b used as bad @b indirect @b?!?\n"
 msgstr "Ĺ patnĂ˝ blok %b pouĹžĂ­vĂĄn jako nepĹĂ­mĂ˝ blok ĹĄpatnĂ˝ch blokĹŻ?!?\n"
 
-#: e2fsck/problem.c:425
+#: e2fsck/problem.c:430
 msgid ""
 "\n"
 "This inconsistency can not be fixed with e2fsck; to fix it, use\n"
@@ -928,7 +934,7 @@ msgstr ""
 "dumpe2fs -b pro vĂ˝pis seznamu ĹĄpatnĂ˝ch blokĹŻ a e2fsck -L jmĂŠnosouboru\n"
 "pro jeho opÄtovnĂŠ naÄtenĂ­.\n"
 
-#: e2fsck/problem.c:433
+#: e2fsck/problem.c:438
 msgid ""
 "\n"
 "If the @b is really bad, the @f can not be fixed.\n"
@@ -936,7 +942,7 @@ msgstr ""
 "\n"
 "Je-li blok opravdu ĹĄpatnĂ˝, nemĹŻĹže bĂ˝t systĂŠm souborĹŻ opraven.\n"
 
-#: e2fsck/problem.c:438
+#: e2fsck/problem.c:443
 msgid ""
 "You can clear the this @b (and hope for the best) from the\n"
 "bad @b list and hope that @b is really OK, but there are no\n"
@@ -947,99 +953,99 @@ msgstr ""
 "tento blok je ve skuteÄnosti v poĹĂĄdku, ale nemĂĄte ĹžĂĄdnou zĂĄruku.\n"
 "\n"
 
-#: e2fsck/problem.c:445
+#: e2fsck/problem.c:450
 msgid "The primary @S (%b) is on the bad @b list.\n"
 msgstr "PrimĂĄrnĂ­ superblok (%b) je na seznamu ĹĄpatnĂ˝ch blokĹŻ.\n"
 
-#: e2fsck/problem.c:450
+#: e2fsck/problem.c:455
 msgid "Block %b in the primary @g descriptors is on the bad @b list\n"
 msgstr ""
 "Blok %b v primĂĄrnĂ­ch deskriptorech skupin je na seznamu ĹĄpatnĂ˝ch blokĹŻ\n"
 
-#: e2fsck/problem.c:456
+#: e2fsck/problem.c:461
 msgid "Warning: Group %g's @S (%b) is bad.\n"
 msgstr "VarovĂĄnĂ­: superblok skupiny %g (%b) je ĹĄpatnĂ˝.\n"
 
-#: e2fsck/problem.c:461
+#: e2fsck/problem.c:466
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
 msgstr ""
 "VarovĂĄnĂ­: Kopie deskriptorĹŻ skupin ve skupinÄ %g mĂĄ ĹĄpatnĂ˝ blok (%b).\n"
 
-#: e2fsck/problem.c:467
+#: e2fsck/problem.c:472
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
 msgstr ""
 "Chyba pĹi programovĂĄnĂ­? Blok #%b bezdĹŻvodnÄ pouĹžit v process_bad_blocks.\n"
 
-#: e2fsck/problem.c:473
+#: e2fsck/problem.c:478
 msgid "@A %N contiguous @b(s) in @b @g %g for %s: %m\n"
 msgstr ""
 "Chyba pĹi alokaci %N souvislĂ˝ch blokĹŻ ve skupinÄ blokĹŻ %g pro %s: %m\n"
 
-#: e2fsck/problem.c:478
+#: e2fsck/problem.c:483
 #, c-format
 msgid "@A @b buffer for relocating %s\n"
 msgstr "Chyba pĹi alokaci vyrovnĂĄvacĂ­ pamÄti blokĹŻ pro pĹemĂ­stÄnĂ­ %s\n"
 
-#: e2fsck/problem.c:483
+#: e2fsck/problem.c:488
 msgid "Relocating @g %g's %s from %b to %c...\n"
 msgstr "PĹemĂ­sĹĽuji %s skupiny %g z %b do %c...\n"
 
 # FIXME: no-c-format so that I can reorder it properly
-#: e2fsck/problem.c:488
+#: e2fsck/problem.c:493
 #, c-format
 msgid "Relocating @g %g's %s to %c...\n"
 msgstr "PĹemĂ­sĹĽuji skupiny %g %s do %c...\n"
 
-#: e2fsck/problem.c:493
+#: e2fsck/problem.c:498
 msgid "Warning: could not read @b %b of %s: %m\n"
 msgstr "VarovĂĄnĂ­: nemohu naÄĂ­st blok %s %s: %m\n"
 
-#: e2fsck/problem.c:498
+#: e2fsck/problem.c:503
 msgid "Warning: could not write @b %b for %s: %m\n"
 msgstr "VarovĂĄnĂ­: nemohu zapsat blok %b pro %s: %m\n"
 
-#: e2fsck/problem.c:513
+#: e2fsck/problem.c:518
 #, c-format
 msgid "@A icount link information: %m\n"
 msgstr "Chyba pĹi alokaci informacĂ­ odkazĹŻ icount: %m\n"
 
-#: e2fsck/problem.c:518
+#: e2fsck/problem.c:523
 #, c-format
 msgid "@A @d @b array: %m\n"
 msgstr "Chyba pĹi alokaci pole blokĹŻ adresĂĄĹe: %m\n"
 
-#: e2fsck/problem.c:523
+#: e2fsck/problem.c:528
 #, c-format
 msgid "Error while scanning @is (%i): %m\n"
 msgstr "Chyba pĹi zkoumĂĄnĂ­ inode (%i): %m\n"
 
-#: e2fsck/problem.c:528
+#: e2fsck/problem.c:533
 #, c-format
 msgid "Error while iterating over @bs in @i %i: %m\n"
 msgstr "Chyba pĹi iteraci pĹes bloky v inode %i: %m\n"
 
-#: e2fsck/problem.c:533
+#: e2fsck/problem.c:538
 msgid "Error storing @i count information (@i=%i, count=%N): %m\n"
 msgstr ""
 "Chyba pĹi uklĂĄdĂĄnĂ­ informace o poÄtu inode (inode=%i, poÄet=%N): %m\n"
 
-#: e2fsck/problem.c:538
+#: e2fsck/problem.c:543
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
 msgstr ""
 "Chyba pĹi uklĂĄdĂĄnĂ­ informace o bloku adresĂĄĹe (inode=%i, blok=%b, ÄĂ­s=%"
 "N): %m\n"
 
-#: e2fsck/problem.c:544
+#: e2fsck/problem.c:549
 #, c-format
 msgid "Error reading @i %i: %m\n"
 msgstr "Chyba pĹi ÄtenĂ­ inode %i: %m\n"
 
-#: e2fsck/problem.c:552
+#: e2fsck/problem.c:557
 #, c-format
 msgid "@i %i has imagic flag set.  "
 msgstr "Inode %i mĂĄ nastaven pĹĂ­znak imagic. "
 
-#: e2fsck/problem.c:557
+#: e2fsck/problem.c:562
 #, c-format
 msgid ""
 "Special (@v/socket/fifo/symlink) file (@i %i) has immutable\n"
@@ -1049,119 +1055,119 @@ msgstr ""
 "nastaven\n"
 "pĹĂ­znak immutable nebo append-only. "
 
-#: e2fsck/problem.c:563
+#: e2fsck/problem.c:568
 #, c-format
 msgid "@i %i has @cion flag set on @f without @cion support.  "
 msgstr ""
 "Inode %i mĂĄ nastaven pĹĂ­znak komprimace na systĂŠmu souborĹŻ bez podpory "
 "komprimace. "
 
-#: e2fsck/problem.c:583
+#: e2fsck/problem.c:588
 msgid "@j is not regular file.  "
 msgstr "Ĺ˝urnĂĄl nenĂ­ obyÄejnĂ˝ soubor. "
 
-#: e2fsck/problem.c:588
+#: e2fsck/problem.c:593
 #, c-format
 msgid "@i %i was part of the orphaned @i list.  "
 msgstr "Inode %i byla souÄĂĄstĂ­ seznamu osiĹelĂ˝ch inode. "
 
-#: e2fsck/problem.c:594
+#: e2fsck/problem.c:599
 msgid "@is that were part of a corrupted orphan linked list found.  "
 msgstr ""
 "Nalezeny inode, kterĂŠ byly souÄĂĄstĂ­ poĹĄkozenĂŠho spojovĂŠho seznamu "
 "osiĹelĂ˝ch. "
 
-#: e2fsck/problem.c:604
+#: e2fsck/problem.c:609
 msgid "Error reading @a @b %b for @i %i.  "
 msgstr "Chyba pĹi ÄtenĂ­ bloku rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b pro inode %i. "
 
-#: e2fsck/problem.c:609
+#: e2fsck/problem.c:614
 msgid "@i %i has a bad @a @b %b.  "
 msgstr "Inode %i mĂĄ ĹĄpatnĂ˝ blok rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b. "
 
-#: e2fsck/problem.c:614
+#: e2fsck/problem.c:619
 msgid "Error reading @a @b %b (%m).  "
 msgstr "Chyba pĹi ÄtenĂ­ bloku rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b (%m). "
 
-#: e2fsck/problem.c:619
+#: e2fsck/problem.c:624
 msgid "@a @b %b has reference count %B, should be %N.  "
 msgstr "Blok rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b mĂĄ poÄet odkazĹŻ %B, mÄl by bĂ˝t %N. "
 
-#: e2fsck/problem.c:624
+#: e2fsck/problem.c:629
 msgid "Error writing @a @b %b (%m).  "
 msgstr "Chyba pĹi zĂĄpisu bloku rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b (%m). "
 
-#: e2fsck/problem.c:629
+#: e2fsck/problem.c:634
 msgid "@a @b %b has h_blocks > 1.  "
 msgstr "Blok rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b mĂĄ h_blocks > 1. "
 
-#: e2fsck/problem.c:634
+#: e2fsck/problem.c:639
 msgid "Error allocating @a @b %b.  "
 msgstr "Chyba pĹi alokaci bloku rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b. "
 
-#: e2fsck/problem.c:639
+#: e2fsck/problem.c:644
 msgid "@a @b %b is corrupt (allocation collision).  "
 msgstr "Blok rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b je poĹĄkozen (kolize alokace). "
 
-#: e2fsck/problem.c:644
+#: e2fsck/problem.c:649
 msgid "@a @b %b is corrupt (invalid name).  "
 msgstr "Blok rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b je poĹĄkozen (neplatnĂ˝ nĂĄzev). "
 
-#: e2fsck/problem.c:649
+#: e2fsck/problem.c:654
 msgid "@a @b %b is corrupt (invalid value).  "
 msgstr "Blok rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b je poĹĄkozen (neplatnĂĄ hodnota). "
 
-#: e2fsck/problem.c:654
+#: e2fsck/problem.c:659
 #, c-format
 msgid "@i %i is too big.  "
 msgstr "Inode %i je pĹĂ­liĹĄ velkĂĄ. "
 
-#: e2fsck/problem.c:658
+#: e2fsck/problem.c:663
 msgid "@b #%B (%b) causes @d to be too big.  "
 msgstr "Blok #%B (%b) pĹŻsobĂ­, Ĺže adresĂĄĹ je pĹĂ­liĹĄ velkĂ˝. "
 
-#: e2fsck/problem.c:663
+#: e2fsck/problem.c:668
 msgid "@b #%B (%b) causes file to be too big.  "
 msgstr "Blok #%B (%b) pĹŻsobĂ­, Ĺže soubor je pĹĂ­liĹĄ velkĂ˝. "
 
-#: e2fsck/problem.c:668
+#: e2fsck/problem.c:673
 msgid "@b #%B (%b) causes symlink to be too big.  "
 msgstr "Blok #%B (%b) pĹŻsobĂ­, Ĺže symbolickĂ˝ odkaz je pĹĂ­liĹĄ velkĂ˝. "
 
-#: e2fsck/problem.c:673
+#: e2fsck/problem.c:678
 #, c-format
 msgid "@i %i has INDEX_FL flag set on @f without htree support.\n"
 msgstr ""
 "Inode %i mĂĄ nastaven pĹĂ­znak INDEX_FL na systĂŠmu souborĹŻ bez podpory "
 "htree.\n"
 
-#: e2fsck/problem.c:678
+#: e2fsck/problem.c:683
 #, c-format
 msgid "@i %i has INDEX_FL flag set but is not a @d.\n"
 msgstr "Inode %i mĂĄ nastaven pĹĂ­znak INDEX_FL, ale nenĂ­ adresĂĄĹ.\n"
 
-#: e2fsck/problem.c:683
+#: e2fsck/problem.c:688
 #, c-format
 msgid "@h %i has an invalid root node.\n"
 msgstr "Inode HTREE adresĂĄĹe %i mĂĄ neplatnĂ˝ koĹenovĂ˝ uzel.\n"
 
-#: e2fsck/problem.c:688
+#: e2fsck/problem.c:693
 msgid "@h %i has an unsupported hash version (%N)\n"
 msgstr "Inode HTREE adresĂĄĹe %i mĂĄ nepodporovanou verzi hashe (%N)\n"
 
-#: e2fsck/problem.c:693
+#: e2fsck/problem.c:698
 #, c-format
 msgid "@h %i uses an incompatible htree root node flag.\n"
 msgstr ""
 "Inode HTREE adresĂĄĹe %i pouĹžĂ­vĂĄ nekompatibilnĂ­ pĹĂ­znak koĹenovĂŠho uzlu "
 "htree.\n"
 
-#: e2fsck/problem.c:698
+#: e2fsck/problem.c:703
 msgid "@h %i has a tree depth (%N) which is too big\n"
 msgstr ""
 "Inode HTREE adresĂĄĹe %i mĂĄ hloubku stromu (%N), kterĂĄ je pĹĂ­liĹĄ velkĂĄ\n"
 
-#: e2fsck/problem.c:705
+#: e2fsck/problem.c:710
 msgid ""
 "Duplicate @bs found... invoking duplicate @b passes.\n"
 "Pass 1B: Rescan for duplicate/bad @bs\n"
@@ -1169,41 +1175,41 @@ msgstr ""
 "Nalezeny duplikĂĄtnĂ­ bloky... spouĹĄtĂ­m prĹŻchody pro duplikĂĄtnĂ­ bloky.\n"
 "PrĹŻchod 1B: OpÄtovnĂŠ hledĂĄnĂ­ duplikovanĂ˝ch/ĹĄpatnĂ˝ch blokĹŻ\n"
 
-#: e2fsck/problem.c:711
+#: e2fsck/problem.c:716
 #, c-format
 msgid "Duplicate/bad @b(s) in @i %i:"
 msgstr "DuplikovanĂ˝/ĹĄpatnĂ˝ blok(y) v inode %i:"
 
-#: e2fsck/problem.c:726
+#: e2fsck/problem.c:731
 #, c-format
 msgid "Error while scanning inodes (%i): %m\n"
 msgstr "Chyba pĹi zkoumĂĄnĂ­ inode (%i): %m\n"
 
-#: e2fsck/problem.c:731
+#: e2fsck/problem.c:736
 #, c-format
 msgid "@A @i @B (inode_dup_map): %m\n"
 msgstr "Chyba pĹi alokaci bitmapy inode (inode_dup_map): %m\n"
 
-#: e2fsck/problem.c:736
+#: e2fsck/problem.c:741
 #, c-format
 msgid "Error while iterating over @bs in @i %i (%s): %m\n"
 msgstr "Chyba pĹi iteraci pĹes bloky v inode %i (%s): %m\n"
 
-#: e2fsck/problem.c:741 e2fsck/problem.c:1062
+#: e2fsck/problem.c:746 e2fsck/problem.c:1067
 msgid "Error addjusting refcount for @a @b %b (@i %i): %m\n"
 msgstr ""
 "Chyba pĹi ĂşpravÄ poÄtu odkazĹŻ bloku rozĹĄĂ­ĹenĂ˝ch atributĹŻ %b (inode %i): "
 "%m\n"
 
-#: e2fsck/problem.c:747
+#: e2fsck/problem.c:752
 msgid "Pass 1C: Scan directories for @is with dup @bs.\n"
 msgstr "PrĹŻchod 1C: HledĂĄnĂ­ inode s duplikovanĂ˝mi bloky v adresĂĄĹĂ­ch.\n"
 
-#: e2fsck/problem.c:753
+#: e2fsck/problem.c:758
 msgid "Pass 1D: Reconciling duplicate @bs\n"
 msgstr "PrĹŻchod 1D: Opravuji duplikĂĄtnĂ­ bloky\n"
 
-#: e2fsck/problem.c:758
+#: e2fsck/problem.c:763
 msgid ""
 "File %Q (@i #%i, mod time %IM) \n"
 "  has %B duplicate @b(s), shared with %N file(s):\n"
@@ -1211,15 +1217,15 @@ msgstr ""
 "Soubor %Q (inode #%i, Äas zmÄny %IM) \n"
 "  mĂĄ %B duplikovanĂ˝ch blokĹŻ, sdĂ­lenĂ˝ch s %N soubory:\n"
 
-#: e2fsck/problem.c:764
+#: e2fsck/problem.c:769
 msgid "\t%Q (@i #%i, mod time %IM)\n"
 msgstr "        %Q (inode #%i, Äas zmÄny %IM)\n"
 
-#: e2fsck/problem.c:769
+#: e2fsck/problem.c:774
 msgid "\t<@f metadata>\n"
 msgstr "\t<metadata systĂŠmu souborĹŻ>\n"
 
-#: e2fsck/problem.c:774
+#: e2fsck/problem.c:779
 msgid ""
 "(There are %N @is containing duplicate/bad @bs.)\n"
 "\n"
@@ -1227,7 +1233,7 @@ msgstr ""
 "(Existuje %N inode obsahujĂ­cĂ­ch duplikĂĄtnĂ­/ĹĄpatnĂŠ bloky.)\n"
 "\n"
 
-#: e2fsck/problem.c:779
+#: e2fsck/problem.c:784
 msgid ""
 "Duplicated @bs already reassigned or cloned.\n"
 "\n"
@@ -1235,279 +1241,279 @@ msgstr ""
 "DuplikĂĄtnĂ­ bloky jiĹž pĹiĹazeny nebo klonovĂĄny.\n"
 "\n"
 
-#: e2fsck/problem.c:792
+#: e2fsck/problem.c:797
 #, c-format
 msgid "Couldn't clone file: %m\n"
 msgstr "Nemohu klonovat soubor: %m\n"
 
-#: e2fsck/problem.c:798
+#: e2fsck/problem.c:803
 msgid "Pass 2: Checking @d structure\n"
 msgstr "PrĹŻchod 2: Kontroluji strukturu adresĂĄĹĹŻ\n"
 
-#: e2fsck/problem.c:803
+#: e2fsck/problem.c:808
 #, c-format
 msgid "Bad @i number for '.' in @d @i %i.\n"
 msgstr "Ĺ patnĂŠ ÄĂ­slo inode pro '.' v inode adresĂĄĹe %i.\n"
 
-#: e2fsck/problem.c:808
+#: e2fsck/problem.c:813
 msgid "@E has bad @i #: %Di.\n"
 msgstr "PoloĹžka '%Dn' v %p (%i) mĂĄ ĹĄpatnĂŠ # inode: %Di.\n"
 
-#: e2fsck/problem.c:813
+#: e2fsck/problem.c:818
 msgid "@E has @D/unused @i %Di.  "
 msgstr "PoloĹžka '%Dn' v %p (%i) mĂĄ odstranÄnou/nepouĹžĂ­vanou inode %Di. "
 
-#: e2fsck/problem.c:818
+#: e2fsck/problem.c:823
 msgid "@E @L to '.'  "
 msgstr "PoloĹžka '%Dn' v %p (%i) je odkaz na '.' "
 
-#: e2fsck/problem.c:823
+#: e2fsck/problem.c:828
 msgid "@E points to @i (%Di) located in a bad @b.\n"
 msgstr ""
 "PoloĹžka '%Dn' v %p (%i) ukazuje na inode (%Di) umĂ­stÄnou ve ĹĄpatnĂŠm "
 "bloku.\n"
 
-#: e2fsck/problem.c:828
+#: e2fsck/problem.c:833
 msgid "@E @L to @d %P (%Di).\n"
 msgstr "PoloĹžka '%Dn' v %p (%i) je odkaz na adresĂĄĹ %P (%Di).\n"
 
-#: e2fsck/problem.c:833
+#: e2fsck/problem.c:838
 msgid "@E @L to the @r.\n"
 msgstr "PoloĹžka '%Dn' v %p (%i) je odkaz na koĹenovou inode.\n"
 
-#: e2fsck/problem.c:838
+#: e2fsck/problem.c:843
 msgid "@E has illegal characters in its name.\n"
 msgstr "PoloĹžka '%Dn' v %p (%i) mĂĄ ve svĂŠm jmĂŠnÄ neplatnĂŠ znaky.\n"
 
-#: e2fsck/problem.c:843
+#: e2fsck/problem.c:848
 #, c-format
 msgid "Missing '.' in @d @i %i.\n"
 msgstr "ChybĂ­ '.' v inode adresĂĄĹe %i.\n"
 
-#: e2fsck/problem.c:848
+#: e2fsck/problem.c:853
 #, c-format
 msgid "Missing '..' in @d @i %i.\n"
 msgstr "ChybĂ­ '..' v inode adresĂĄĹe %i.\n"
 
-#: e2fsck/problem.c:853
+#: e2fsck/problem.c:858
 msgid "First @e '%Dn' (inode=%Di) in @d @i %i (%p) @s '.'\n"
 msgstr ""
 "PrvnĂ­ poloĹžka '%Dn' (inode=%Di) v inode adresĂĄĹe %i (%p) by mÄla bĂ˝t '.'\n"
 
-#: e2fsck/problem.c:858
+#: e2fsck/problem.c:863
 msgid "Second @e '%Dn' (inode=%Di) in @d @i %i @s '..'\n"
 msgstr ""
 "DruhĂĄ poloĹžka '%Dn' (inode=%Di) v inode adresĂĄĹe %i (%p) by mÄla bĂ˝t "
 "'..'\n"
 
-#: e2fsck/problem.c:863
+#: e2fsck/problem.c:868
 msgid "i_faddr @F %IF, @s zero.\n"
 msgstr "i_faddr pro inode %i (%Q) je %IF, mÄla by bĂ˝t nula.\n"
 
-#: e2fsck/problem.c:868
+#: e2fsck/problem.c:873
 msgid "i_file_acl @F %If, @s zero.\n"
 msgstr "i_file_acl pro inode %i (%Q) je %If, mÄlo by bĂ˝t nula.\n"
 
-#: e2fsck/problem.c:873
+#: e2fsck/problem.c:878
 msgid "i_dir_acl @F %Id, @s zero.\n"
 msgstr "i_dir_acl pro inode %i (%Q) je %N, mÄlo by bĂ˝t nula.\n"
 
-#: e2fsck/problem.c:878
+#: e2fsck/problem.c:883
 msgid "i_frag @F %N, @s zero.\n"
 msgstr "i_frag pro inode %i (%Q) je %N, mÄlo by bĂ˝t nula.\n"
 
-#: e2fsck/problem.c:883
+#: e2fsck/problem.c:888
 msgid "i_fsize @F %N, @s zero.\n"
 msgstr "i_fsize pro inode %i (%Q) je %N, mÄla by bĂ˝t nula.\n"
 
-#: e2fsck/problem.c:888
+#: e2fsck/problem.c:893
 msgid "@i %i (%Q) has a bad mode (%Im).\n"
 msgstr "Inode %i (%Q) mĂĄ ĹĄpatnĂ˝ reĹžim (%Im).\n"
 
-#: e2fsck/problem.c:893
+#: e2fsck/problem.c:898
 msgid "@d @i %i, @b %B, offset %N: @d corrupted\n"
 msgstr "inode adresĂĄĹe %i, blok %B, posun %N: adresĂĄĹ poĹĄkozen\n"
 
-#: e2fsck/problem.c:898
+#: e2fsck/problem.c:903
 msgid "@d @i %i, @b %B, offset %N: filename too long\n"
 msgstr ""
 "inode adresĂĄĹe %i, blok %B, posun %N: nĂĄzev souboru pĹĂ­liĹĄ dlouhĂ˝\n"
 
-#: e2fsck/problem.c:903
+#: e2fsck/problem.c:908
 msgid "@d @i %i has an unallocated @b #%B.  "
 msgstr "inode adresĂĄĹe %i mĂĄ nealokovanĂ˝ blok #%B. "
 
-#: e2fsck/problem.c:908
+#: e2fsck/problem.c:913
 #, c-format
 msgid "'.' @d @e in @d @i %i is not NULL terminated\n"
 msgstr "PoloĹžka adresĂĄĹe '.' v inode adresĂĄĹe %i nenĂ­ ukonÄena NULL\n"
 
-#: e2fsck/problem.c:913
+#: e2fsck/problem.c:918
 #, c-format
 msgid "'..' @d @e in @d @i %i is not NULL terminated\n"
 msgstr "PoloĹžka adresĂĄĹe '..' v inode adresĂĄĹe %i nenĂ­ ukonÄena NULL\n"
 
-#: e2fsck/problem.c:918
+#: e2fsck/problem.c:923
 msgid "@i %i (%Q) is an @I character @v.\n"
 msgstr "Inode %i (%q) je neplatnĂŠ znakovĂŠ zaĹĂ­zenĂ­.\n"
 
-#: e2fsck/problem.c:923
+#: e2fsck/problem.c:928
 msgid "@i %i (%Q) is an @I @b @v.\n"
 msgstr "Inode %i (%Q) je neplatnĂŠ blokovĂŠ zaĹĂ­zenĂ­.\n"
 
-#: e2fsck/problem.c:928
+#: e2fsck/problem.c:933
 msgid "@E is duplicate '.' @e.\n"
 msgstr "PoloĹžka '%Dn' v %p (%i) je duplikĂĄtnĂ­ poloĹžka '.'.\n"
 
-#: e2fsck/problem.c:933
+#: e2fsck/problem.c:938
 msgid "@E is duplicate '..' @e.\n"
 msgstr "PoloĹžka '%Dn' v %p (%i) je duplikĂĄtnĂ­ poloĹžka '..'.\n"
 
-#: e2fsck/problem.c:938 e2fsck/problem.c:1219
+#: e2fsck/problem.c:943 e2fsck/problem.c:1224
 #, c-format
 msgid "Internal error: couldn't find dir_info for %i.\n"
 msgstr "InternĂ­ chyba: nemohu najĂ­t dir_info pro %i.\n"
 
-#: e2fsck/problem.c:943
+#: e2fsck/problem.c:948
 msgid "@E has rec_len of %Dr, should be %N.\n"
 msgstr ""
 "PoloĹžka '%Dn' v %p (%i) mĂĄ rec_len %Dr, mÄla by bĂ˝t %N.\n"
 "\n"
 
-#: e2fsck/problem.c:948
+#: e2fsck/problem.c:953
 #, c-format
 msgid "@A icount structure: %m\n"
 msgstr "Chyba pĹi alokaci struktury icount: %m\n"
 
-#: e2fsck/problem.c:953
+#: e2fsck/problem.c:958
 #, fuzzy, c-format
 msgid "Error iterating over @d @bs: %m\n"
 msgstr "Chyba pĹi iteraci pĹes bloky adresĂĄĹe: %m\n"
 
-#: e2fsck/problem.c:958
+#: e2fsck/problem.c:963
 msgid "Error reading @d @b %b (@i %i): %m\n"
 msgstr "Chyba pĹi ÄtenĂ­ bloku adresĂĄĹe %b (inode %i): %m\n"
 
-#: e2fsck/problem.c:963
+#: e2fsck/problem.c:968
 msgid "Error writing @d @b %b (@i %i): %m\n"
 msgstr "Chyba pĹi zĂĄpisu bloku adresĂĄĹe %b (inode %i): %m\n"
 
-#: e2fsck/problem.c:968
+#: e2fsck/problem.c:973
 #, c-format
 msgid "@A new @d @b for @i %i (%s): %m\n"
 msgstr "Chyba pĹi alokaci novĂŠho bloku adresĂĄĹe pro inode %i (%s): %m\n"
 
-#: e2fsck/problem.c:973
+#: e2fsck/problem.c:978
 #, c-format
 msgid "Error deallocating @i %i: %m\n"
 msgstr "Chyba pĹi dealokaci inode %i: %m\n"
 
-#: e2fsck/problem.c:978
+#: e2fsck/problem.c:983
 msgid "@d @e for '.' is big.  "
 msgstr "PoloĹžka adresĂĄĹe pro '.' je velkĂĄ. "
 
-#: e2fsck/problem.c:983
+#: e2fsck/problem.c:988
 msgid "@i %i (%Q) is an @I FIFO.\n"
 msgstr "Inode %i (%Q) je neplatnĂĄ FIFO.\n"
 
-#: e2fsck/problem.c:988
+#: e2fsck/problem.c:993
 msgid "@i %i (%Q) is an @I socket.\n"
 msgstr "Inode %i (%Q) je neplatnĂ˝ socket.\n"
 
-#: e2fsck/problem.c:993
+#: e2fsck/problem.c:998
 msgid "Setting filetype for @E to %N.\n"
 msgstr "Nastavuji filetype pro poloĹžku '%Dn' v %p (%i) na %N.\n"
 
-#: e2fsck/problem.c:998
+#: e2fsck/problem.c:1003
 msgid "@E has an incorrect filetype (was %Dt, should be %N).\n"
 msgstr ""
 "PoloĹžka '%Dn' v %p (%i) mĂĄ neplatnĂ˝ filetype (byl %Dt, mÄl by bĂ˝t %N).\n"
 
-#: e2fsck/problem.c:1003
+#: e2fsck/problem.c:1008
 msgid "@E has filetype set.\n"
 msgstr "PoloĹžka '%Dn' v %p (%i) mĂĄ nastaven filetype.\n"
 
-#: e2fsck/problem.c:1008
+#: e2fsck/problem.c:1013
 msgid "@E has a zero-length name.\n"
 msgstr "PoloĹžka '%Dn' v %p (%i) mĂĄ nĂĄzev nulovĂŠ dĂŠlky.\n"
 
-#: e2fsck/problem.c:1013
+#: e2fsck/problem.c:1018
 msgid "Symlink %Q (@i #%i) is invalid.\n"
 msgstr "SymbolickĂ˝ odkaz %Q (inode #%i) je neplatnĂ˝.\n"
 
 # FIXME: @F already ends with 'is'
-#: e2fsck/problem.c:1018
+#: e2fsck/problem.c:1023
 #, fuzzy
 msgid "@a @b @F invalid (%If).\n"
 msgstr "Blok rozĹĄĂ­ĹenĂ˝ch atributĹŻ pro inode %i (%Q) je neplatnĂ˝ (%If).\n"
 
-#: e2fsck/problem.c:1023
+#: e2fsck/problem.c:1028
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
 msgstr ""
 "SystĂŠm souborĹŻ obsahuje velkĂŠ soubory, ale v superbloku nemĂĄ pĹĂ­znak "
 "LARGE_FILE.\n"
 
-#: e2fsck/problem.c:1028
+#: e2fsck/problem.c:1033
 msgid "@p @h %d: node (%B) not referenced\n"
 msgstr "ProblĂŠm v inode HTREE adresĂĄĹe %d: na uzel (%B) neexistuje odkaz\n"
 
-#: e2fsck/problem.c:1033
+#: e2fsck/problem.c:1038
 msgid "@p @h %d: node (%B) referenced twice\n"
 msgstr ""
 "ProblĂŠm v inode HTREE adresĂĄĹe %d: na uzel (%B) existujĂ­ dva odkazy\n"
 
-#: e2fsck/problem.c:1038
+#: e2fsck/problem.c:1043
 msgid "@p @h %d: node (%B) has bad min hash\n"
 msgstr "ProblĂŠm v inode HTREE adresĂĄĹe %d: uzel (%B) mĂĄ ĹĄpatnĂ˝ min hash\n"
 
-#: e2fsck/problem.c:1043
+#: e2fsck/problem.c:1048
 msgid "@p @h %d: node (%B) has bad max hash\n"
 msgstr "ProblĂŠm v inode HTREE adresĂĄĹe %d: uzel (%B) mĂĄ ĹĄpatnĂ˝ max hash\n"
 
-#: e2fsck/problem.c:1048
+#: e2fsck/problem.c:1053
 msgid "Invalid @h %d (%q).  "
 msgstr "NeplatnĂ˝ inode HTREE adresĂĄĹe %d (%q). "
 
-#: e2fsck/problem.c:1052
+#: e2fsck/problem.c:1057
 msgid "Forcibly clearing HTREE flag on @i %d (%q).  (Beta test code)\n"
 msgstr ""
 "VynucenÄ maĹžu pĹĂ­znak HTREE v inode %d (%q). (KĂłd v beta testovĂĄnĂ­)\n"
 
-#: e2fsck/problem.c:1057
+#: e2fsck/problem.c:1062
 msgid "@p @h %d (%q): bad @b number %b.\n"
 msgstr "ProblĂŠm v inode HTREE adresĂĄĹe %d (%q): ĹĄpatnĂŠ ÄĂ­slo bloku %b.\n"
 
-#: e2fsck/problem.c:1067
+#: e2fsck/problem.c:1072
 #, c-format
 msgid "@p @h %d: root node is invalid\n"
 msgstr "ProblĂŠm v inode HTREE adresĂĄĹe %d: koĹenovĂ˝ uzel je neplatnĂ˝\n"
 
-#: e2fsck/problem.c:1072
+#: e2fsck/problem.c:1077
 msgid "@p @h %d: node (%B) has bad limit (%N)\n"
 msgstr ""
 "ProblĂŠm v inode HTREE adresĂĄĹe %d: uzel (%B) mĂĄ ĹĄpatnĂ˝ limit (%N)\n"
 
-#: e2fsck/problem.c:1077
+#: e2fsck/problem.c:1082
 msgid "@p @h %d: node (%B) has bad count (%N)\n"
 msgstr ""
 "ProblĂŠm v inode HTREE adresĂĄĹe %d: uzel (%B) mĂĄ ĹĄpatnĂ˝ poÄet (%N)\n"
 
-#: e2fsck/problem.c:1082
+#: e2fsck/problem.c:1087
 msgid "@p @h %d: node (%B) has an unordered hash table\n"
 msgstr ""
 "ProblĂŠm v inode HTREE adresĂĄĹe %d: uzel (%B) mĂĄ nesetĹĂ­dÄnou hash "
 "tabulku\n"
 
-#: e2fsck/problem.c:1087
+#: e2fsck/problem.c:1092
 msgid "@p @h %d: node (%B) has bad depth\n"
 msgstr "ProblĂŠm v inode HTREE adresĂĄĹe %d: uzel (%B) mĂĄ ĹĄpatnou hloubku\n"
 
-#: e2fsck/problem.c:1092
+#: e2fsck/problem.c:1097
 msgid "Duplicate @E found.  "
 msgstr "Nalezena duplikĂĄtnĂ­ poloĹžka '%Dn' v %p (%i). "
 
 # FIXME: no-c-format
-#: e2fsck/problem.c:1097
+#: e2fsck/problem.c:1102
 #, no-c-format
 msgid ""
 "@E has a non-unique filename.\n"
@@ -1516,7 +1522,7 @@ msgstr ""
 "@E mĂĄ neunikĂĄtnĂ­ nĂĄzev souboru.\n"
 "PĹejmenovat na %s"
 
-#: e2fsck/problem.c:1102
+#: e2fsck/problem.c:1107
 msgid ""
 "Duplicate @e '%Dn' found.\n"
 "\tMarking %p (%i) to be rebuilt.\n"
@@ -1526,79 +1532,79 @@ msgstr ""
 "         OznaÄuji %p (%i) pro pĹestavbu.\n"
 "\n"
 
-#: e2fsck/problem.c:1109
+#: e2fsck/problem.c:1114
 msgid "Pass 3: Checking @d connectivity\n"
 msgstr "PrĹŻchod 3: Kontroluji dosaĹžitelnost adresĂĄĹĹŻ\n"
 
-#: e2fsck/problem.c:1114
+#: e2fsck/problem.c:1119
 msgid "@r not allocated.  "
 msgstr "KoĹenovĂĄ inode nealokovĂĄna. "
 
-#: e2fsck/problem.c:1119
+#: e2fsck/problem.c:1124
 msgid "No room in @l @d.  "
 msgstr "NenĂ­ mĂ­sto v adresĂĄĹi lost+found. "
 
-#: e2fsck/problem.c:1124
+#: e2fsck/problem.c:1129
 #, c-format
 msgid "Unconnected @d @i %i (%p)\n"
 msgstr "NepĹipojenĂ˝ adresĂĄĹ inode %i (%p)\n"
 
-#: e2fsck/problem.c:1129
+#: e2fsck/problem.c:1134
 msgid "/@l not found.  "
 msgstr "/lost+found nenalezeno. "
 
-#: e2fsck/problem.c:1134
+#: e2fsck/problem.c:1139
 msgid "'..' in %Q (%i) is %P (%j), @s %q (%d).\n"
 msgstr "'..' v %Q (%i) je %P (%j), mÄlo by bĂ˝t %q (%d).\n"
 
-#: e2fsck/problem.c:1139
+#: e2fsck/problem.c:1144
 msgid "Bad or non-existent /@l.  Cannot reconnect.\n"
 msgstr "Ĺ patnĂŠ nebo neexistujĂ­cĂ­ /lost+found. Nemohu znovu pĹipojit.\n"
 
-#: e2fsck/problem.c:1144
+#: e2fsck/problem.c:1149
 #, c-format
 msgid "Could not expand /@l: %m\n"
 msgstr "Nemohu zvÄtĹĄit /lost+found: %m\n"
 
-#: e2fsck/problem.c:1149
+#: e2fsck/problem.c:1154
 #, c-format
 msgid "Could not reconnect %i: %m\n"
 msgstr "Nemohu znovu pĹipojit %i: %m\n"
 
-#: e2fsck/problem.c:1154
+#: e2fsck/problem.c:1159
 #, c-format
 msgid "Error while trying to find /@l: %m\n"
 msgstr "Chyba pĹi pokusu najĂ­t /lost+found: %m\n"
 
-#: e2fsck/problem.c:1159
+#: e2fsck/problem.c:1164
 #, c-format
 msgid "ext2fs_new_@b: %m while trying to create /@l @d\n"
 msgstr "ext2fs_new_block: %m pĹi pokusu vytvoĹit adresĂĄĹ /lost+found\n"
 
-#: e2fsck/problem.c:1164
+#: e2fsck/problem.c:1169
 #, c-format
 msgid "ext2fs_new_@i: %m while trying to create /@l @d\n"
 msgstr "ext2fs_new_inode: %m pĹi pokusu vytvoĹit adresĂĄĹ /lost+found\n"
 
-#: e2fsck/problem.c:1169
+#: e2fsck/problem.c:1174
 #, c-format
 msgid "ext2fs_new_dir_@b: %m while creating new @d @b\n"
 msgstr ""
 "ext2fs_new_dir_block: %m pĹi pokusu vytvĂĄĹenĂ­ novĂŠho adresĂĄĹe /lost"
 "+found\n"
 
-#: e2fsck/problem.c:1174
+#: e2fsck/problem.c:1179
 #, c-format
 msgid "ext2fs_write_dir_@b: %m while writing the @d @b for /@l\n"
 msgstr ""
 "ext2fs_write_dir_block: %m pĹi zĂĄpisu bloku adresĂĄĹe pro /lost+found\n"
 
-#: e2fsck/problem.c:1179
+#: e2fsck/problem.c:1184
 #, c-format
 msgid "Error while adjusting @i count on @i %i\n"
 msgstr "Chyba pĹi ĂşpravÄ poÄtu inode v inode %i\n"
 
-#: e2fsck/problem.c:1184
+#: e2fsck/problem.c:1189
 #, c-format
 msgid ""
 "Couldn't fix parent of @i %i: %m\n"
@@ -1607,7 +1613,7 @@ msgstr ""
 "Nemohu opravit rodiÄe inode %i: %m\n"
 "\n"
 
-#: e2fsck/problem.c:1189
+#: e2fsck/problem.c:1194
 #, c-format
 msgid ""
 "Couldn't fix parent of @i %i: Couldn't find parent @d entry\n"
@@ -1616,59 +1622,59 @@ msgstr ""
 "Nemohu opravit rodiÄe inode %i: Nemohu najĂ­t rodiÄovskou poloĹžku adresĂĄĹe\n"
 "\n"
 
-#: e2fsck/problem.c:1194
+#: e2fsck/problem.c:1199
 msgid "@A @i @B (%N): %m\n"
 msgstr "Chyba pĹi alokaci bitmapy inode (%N): %m\n"
 
-#: e2fsck/problem.c:1199
+#: e2fsck/problem.c:1204
 #, c-format
 msgid "Error creating root @d (%s): %m\n"
 msgstr "Chyba pĹi vytvĂĄĹenĂ­ koĹenovĂŠho adresĂĄĹe (%s): %m\n"
 
-#: e2fsck/problem.c:1204
+#: e2fsck/problem.c:1209
 #, c-format
 msgid "Error creating /@l @d (%s): %m\n"
 msgstr "Chyba pĹi vytvĂĄĹenĂ­ adresĂĄĹe /lost+found (%s): %m\n"
 
-#: e2fsck/problem.c:1209
+#: e2fsck/problem.c:1214
 msgid "@r is not a @d; aborting.\n"
 msgstr "KoĹenovĂĄ inode nenĂ­ adresĂĄĹ; konÄĂ­m.\n"
 
-#: e2fsck/problem.c:1214
+#: e2fsck/problem.c:1219
 msgid "Cannot proceed without a @r.\n"
 msgstr "Nemohu pokraÄovat bez koĹenovĂŠ inode.\n"
 
-#: e2fsck/problem.c:1224
+#: e2fsck/problem.c:1229
 #, c-format
 msgid "/@l is not a @d (ino=%i)\n"
 msgstr "/lost+found nenĂ­ adresĂĄĹ (ino=%i)\n"
 
-#: e2fsck/problem.c:1231
+#: e2fsck/problem.c:1236
 msgid "Pass 3A: Optimizing directories\n"
 msgstr "PrĹŻchod 3A: Optimalizuji adresĂĄĹe\n"
 
-#: e2fsck/problem.c:1236
+#: e2fsck/problem.c:1241
 #, c-format
 msgid "Failed to create dirs_to_hash iterator: %m"
 msgstr "Nemohu vytvoĹit iterĂĄtor dirs_to_hash: %m"
 
-#: e2fsck/problem.c:1241
+#: e2fsck/problem.c:1246
 msgid "Failed to optimize directory %q (%d): %m"
 msgstr "Nemohu optimalizovat adresĂĄĹ %q (%d): %m"
 
-#: e2fsck/problem.c:1246
+#: e2fsck/problem.c:1251
 msgid "Optimizing directories: "
 msgstr "Optimalizuji adresĂĄĹe: "
 
-#: e2fsck/problem.c:1263
+#: e2fsck/problem.c:1268
 msgid "Pass 4: Checking reference counts\n"
 msgstr "PrĹŻchod 4: Kontroluji poÄty odkazĹŻ\n"
 
-#: e2fsck/problem.c:1278
+#: e2fsck/problem.c:1283
 msgid "@i %i ref count is %Il, @s %N.  "
 msgstr "PoÄet odkazĹŻ inode %i je %Il, mÄl by bĂ˝t %N. "
 
-#: e2fsck/problem.c:1282
+#: e2fsck/problem.c:1287
 msgid ""
 "WARNING: PROGRAMMING BUG IN E2FSCK!\n"
 "\tOR SOME BONEHEAD (YOU) IS CHECKING A MOUNTED (LIVE) FILESYSTEM.\n"
@@ -1680,47 +1686,47 @@ msgstr ""
 "inode_link_info[%i] je %N, inode.i_links_count je %Il. MÄly by bĂ˝t "
 "stejnĂŠ!\n"
 
-#: e2fsck/problem.c:1292
+#: e2fsck/problem.c:1297
 msgid "Pass 5: Checking @g summary information\n"
 msgstr "PrĹŻchod 5: Kontroluji souhrnnĂŠ informace skupin\n"
 
-#: e2fsck/problem.c:1297
+#: e2fsck/problem.c:1302
 msgid "Padding at end of @i @B is not set. "
 msgstr "VĂ˝plĹ na konci bitmapy inode nenĂ­ nastavena. "
 
-#: e2fsck/problem.c:1302
+#: e2fsck/problem.c:1307
 msgid "Padding at end of @b @B is not set. "
 msgstr "VĂ˝plĹ na konci bitmapy blokĹŻ nenĂ­ nastavena. "
 
-#: e2fsck/problem.c:1307
+#: e2fsck/problem.c:1312
 msgid "@b @B differences: "
 msgstr "RozdĂ­ly v bitmapÄ blokĹŻ: "
 
-#: e2fsck/problem.c:1327
+#: e2fsck/problem.c:1332
 msgid "@i @B differences: "
 msgstr "RozdĂ­ly v bitmapÄ inode: "
 
-#: e2fsck/problem.c:1347
+#: e2fsck/problem.c:1352
 msgid "Free @is count wrong for @g #%g (%i, counted=%j).\n"
 msgstr "PoÄet volnĂ˝ch inode ĹĄpatnĂ˝ ve skupinÄ #%g (%i, spoÄteno=%j).\n"
 
-#: e2fsck/problem.c:1352
+#: e2fsck/problem.c:1357
 msgid "Directories count wrong for @g #%g (%i, counted=%j).\n"
 msgstr "PoÄet adresĂĄĹĹŻ ĹĄpatnĂ˝ ve skupinÄ #%g (%i, spoÄteno=%j).\n"
 
-#: e2fsck/problem.c:1357
+#: e2fsck/problem.c:1362
 msgid "Free @is count wrong (%i, counted=%j).\n"
 msgstr "PoÄet volnĂ˝ch inode ĹĄpatnĂ˝ (%i, spoÄteno=%j).\n"
 
-#: e2fsck/problem.c:1362
+#: e2fsck/problem.c:1367
 msgid "Free @bs count wrong for @g #%g (%b, counted=%c).\n"
 msgstr "PoÄet volnĂ˝ch blokĹŻ ĹĄpatnĂ˝ ve skupinÄ #%g (%b, spoÄteno=%c).\n"
 
-#: e2fsck/problem.c:1367
+#: e2fsck/problem.c:1372
 msgid "Free @bs count wrong (%b, counted=%c).\n"
 msgstr "PoÄet volnĂ˝ch blokĹŻ ĹĄpatnĂ˝ (%b, spoÄteno=%c).\n"
 
-#: e2fsck/problem.c:1372
+#: e2fsck/problem.c:1377
 msgid ""
 "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
 "endpoints (%i, %j)\n"
@@ -1728,16 +1734,16 @@ msgstr ""
 "CHYBA PĹI PROGRAMOVĂNĂ: hranice (%b, %c) bitmapy systĂŠmu souborĹŻ (#%N) "
 "neodpovĂ­dajĂ­ vypoÄtenĂ˝m hranicĂ­m bitmapy (%i, %j)\n"
 
-#: e2fsck/problem.c:1378
+#: e2fsck/problem.c:1383
 msgid "Internal error: fudging end of bitmap (%N)\n"
 msgstr "InternĂ­ chyba: pokaĹženĂ˝ konec bitmapy (%N)\n"
 
-#: e2fsck/problem.c:1512
+#: e2fsck/problem.c:1517
 #, c-format
 msgid "Unhandled error code (0x%x)!\n"
 msgstr "NeobslouĹženĂ˝ kĂłd chyby (0x%x)!\n"
 
-#: e2fsck/problem.c:1584
+#: e2fsck/problem.c:1589
 msgid "IGNORED"
 msgstr "IGNOROVĂNO"
 
@@ -1997,7 +2003,7 @@ msgid_plural "%8d files\n"
 msgstr[0] "%8d velkĂ˝ch souborĹŻ\n"
 msgstr[1] "%8d velkĂ˝ch souborĹŻ\n"
 
-#: e2fsck/unix.c:169 misc/badblocks.c:758 misc/tune2fs.c:764 misc/util.c:133
+#: e2fsck/unix.c:169 misc/badblocks.c:781 misc/tune2fs.c:764 misc/util.c:133
 #: resize/main.c:97
 #, c-format
 msgid "while determining whether %s is mounted."
@@ -2070,16 +2076,16 @@ msgstr ", kontrola vynucena.\n"
 msgid "%s: clean, %d/%d files, %d/%d blocks\n"
 msgstr "%s: ÄistĂ˝, %d/%d souborĹŻ, %d/%d blokĹŻ\n"
 
-#: e2fsck/unix.c:385
+#: e2fsck/unix.c:382
 #, c-format
 msgid "ERROR: Couldn't open /dev/null (%s)\n"
 msgstr "CHYBA: Nemohu otevĹĂ­t /dev/null (%s)\n"
 
-#: e2fsck/unix.c:456
+#: e2fsck/unix.c:453
 msgid "Invalid EA version.\n"
 msgstr "NeplatnĂĄ verze EA.\n"
 
-#: e2fsck/unix.c:465
+#: e2fsck/unix.c:462
 msgid ""
 "Extended options are separated by commas, and may take an argument which\n"
 "is set off by an equals ('=') sign.  Valid raid options are:\n"
@@ -2092,67 +2098,67 @@ msgstr ""
 "\tea_ver=<verze_ea (1 nebo 2)\n"
 "\n"
 
-#: e2fsck/unix.c:515
+#: e2fsck/unix.c:520
 #, c-format
 msgid "Error validating file descriptor %d: %s\n"
 msgstr "Chyba pĹi ovÄĹovĂĄnĂ­ platnosti deskriptoru souboru %d: %s\n"
 
-#: e2fsck/unix.c:519
+#: e2fsck/unix.c:524
 msgid "Invalid completion information file descriptor"
 msgstr "NeplatnĂ˝ deskriptor souborĹŻ informace o dokonÄenĂ­"
 
-#: e2fsck/unix.c:534
+#: e2fsck/unix.c:539
 msgid "Only one the options -p/-a, -n or -y may be specified."
 msgstr "MĹŻĹže bĂ˝t zadĂĄn jen jeden z pĹepĂ­naÄĹŻ -p/-a, -n nebo -y."
 
-#: e2fsck/unix.c:555
+#: e2fsck/unix.c:560
 msgid "The -t option is not supported on this version of e2fsck.\n"
 msgstr "PĹepĂ­naÄ -t nenĂ­ v tĂŠto verzi e2fsck podporovĂĄn.\n"
 
-#: e2fsck/unix.c:620
+#: e2fsck/unix.c:625
 msgid "Byte-swapping filesystems not compiled in this version of e2fsck\n"
 msgstr ""
 "PĹehozenĂ­ bajtĹŻ systĂŠmĹŻ souborĹŻ nenĂ­ zabudovĂĄno v tĂŠto verzi e2fsck\n"
 
-#: e2fsck/unix.c:658
+#: e2fsck/unix.c:663
 msgid "Incompatible options not allowed when byte-swapping.\n"
 msgstr "PĹi pĹehozenĂ­ bajtĹŻ nejsou dovoleny nekompatibilnĂ­ pĹepĂ­naÄe.\n"
 
-#: e2fsck/unix.c:665
+#: e2fsck/unix.c:670
 msgid "The -c and the -l/-L options may not be both used at the same time.\n"
 msgstr "PĹepĂ­naÄe -c a -l/-L nemohou bĂ˝t pouĹžity zĂĄroveĹ.\n"
 
-#: e2fsck/unix.c:743
+#: e2fsck/unix.c:748
 msgid "Error: ext2fs library version out of date!\n"
 msgstr "Chyba: starĂĄ verze knihovny ext2fs!\n"
 
-#: e2fsck/unix.c:751
+#: e2fsck/unix.c:756
 msgid "while trying to initialize program"
 msgstr "pĹi pokusu inicializovat program"
 
-#: e2fsck/unix.c:765
+#: e2fsck/unix.c:770
 #, c-format
 msgid "\tUsing %s, %s\n"
 msgstr "\tPouĹžĂ­vĂĄm %s, %s\n"
 
-#: e2fsck/unix.c:777
+#: e2fsck/unix.c:782
 msgid "need terminal for interactive repairs"
 msgstr "pro interaktivnĂ­ opravy potĹebuji terminĂĄl"
 
-#: e2fsck/unix.c:813
+#: e2fsck/unix.c:818
 #, c-format
 msgid "%s trying backup blocks...\n"
 msgstr "%s zkouĹĄĂ­m zĂĄloĹžnĂ­ bloky...\n"
 
-#: e2fsck/unix.c:814
+#: e2fsck/unix.c:819
 msgid "Couldn't find ext2 superblock,"
 msgstr "Nemohu najĂ­t superblok ext2,"
 
-#: e2fsck/unix.c:815
+#: e2fsck/unix.c:820
 msgid "Group descriptors look bad..."
 msgstr "Deskriptory skupin vypadajĂ­ ĹĄpatnÄ..."
 
-#: e2fsck/unix.c:826
+#: e2fsck/unix.c:831
 msgid ""
 "The filesystem revision is apparently too high for this version of e2fsck.\n"
 "(Or the filesystem superblock is corrupt)\n"
@@ -2162,20 +2168,20 @@ msgstr ""
 "(Nebo je superblok systĂŠmu souborĹŻ poĹĄkozen)\n"
 "\n"
 
-#: e2fsck/unix.c:832
+#: e2fsck/unix.c:837
 msgid "Could this be a zero-length partition?\n"
 msgstr "Mohl by toto bĂ˝t oddĂ­l nulovĂŠ dĂŠlky?\n"
 
-#: e2fsck/unix.c:834
+#: e2fsck/unix.c:839
 #, c-format
 msgid "You must have %s access to the filesystem or be root\n"
 msgstr "MusĂ­te mĂ­t pĹĂ­stup %s k systĂŠmu souborĹŻ nebo bĂ˝t root\n"
 
-#: e2fsck/unix.c:839
+#: e2fsck/unix.c:844
 msgid "Possibly non-existent or swap device?\n"
 msgstr "PravdÄpodobnÄ neexistujĂ­cĂ­ nebo odklĂĄdacĂ­ zaĹĂ­zenĂ­?\n"
 
-#: e2fsck/unix.c:842
+#: e2fsck/unix.c:847
 msgid ""
 "Disk write-protected; use the -n option to do a read-only\n"
 "check of the device.\n"
@@ -2183,16 +2189,16 @@ msgstr ""
 "Disk chrĂĄnÄn proti zĂĄpisu; pouĹžijte pĹepĂ­naÄ -n pro provedenĂ­\n"
 "kontroly zaĹĂ­zenĂ­ jen pro ÄtenĂ­.\n"
 
-#: e2fsck/unix.c:858
+#: e2fsck/unix.c:863
 msgid "Get a newer version of e2fsck!"
 msgstr "SeĹžeĹte novÄjĹĄĂ­ verzi e2fsck!"
 
-#: e2fsck/unix.c:879
+#: e2fsck/unix.c:884
 #, c-format
 msgid "while checking ext3 journal for %s"
 msgstr "pĹi kontrole ĹžurnĂĄlu ext3 pro %s"
 
-#: e2fsck/unix.c:890
+#: e2fsck/unix.c:895
 msgid ""
 "Warning: skipping journal recovery because doing a read-only filesystem "
 "check.\n"
@@ -2200,21 +2206,21 @@ msgstr ""
 "VarovĂĄnĂ­: pĹeskakuji obnovu ĹžurnĂĄlu, protoĹže provĂĄnĂ­m kontrolu systĂŠmu "
 "souborĹŻ jen pro ÄtenĂ­.\n"
 
-#: e2fsck/unix.c:903
+#: e2fsck/unix.c:908
 #, c-format
 msgid "unable to set superblock flags on %s\n"
 msgstr "nemohu nastavit pĹĂ­znaky superbloku na %s\n"
 
-#: e2fsck/unix.c:909
+#: e2fsck/unix.c:914
 #, c-format
 msgid "while recovering ext3 journal of %s"
 msgstr "pĹi obnovÄ ĹžurnĂĄlu ext3 %s"
 
-#: e2fsck/unix.c:938
+#: e2fsck/unix.c:943
 msgid "Warning: compression support is experimental.\n"
 msgstr "VarovĂĄnĂ­: podpora komprese je experimentĂĄlnĂ­.\n"
 
-#: e2fsck/unix.c:943
+#: e2fsck/unix.c:948
 #, c-format
 msgid ""
 "E2fsck not compiled with HTREE support,\n"
@@ -2223,37 +2229,37 @@ msgstr ""
 "E2fsck nepĹeloĹžen s podporou HTREE,\n"
 "\tale systĂŠm souborĹŻ %s mĂĄ adresĂĄĹe HTREE.\n"
 
-#: e2fsck/unix.c:986
+#: e2fsck/unix.c:991
 #, c-format
 msgid "%s: Filesystem byte order already normalized.\n"
 msgstr "%s: PoĹadĂ­ bajtĹŻ systĂŠmu souborĹŻ jiĹž normalizovĂĄno.\n"
 
-#: e2fsck/unix.c:1006
+#: e2fsck/unix.c:1011
 msgid "while reading bad blocks inode"
 msgstr "pĹi ÄtenĂ­ inode ĹĄpatnĂ˝ch blokĹŻ"
 
-#: e2fsck/unix.c:1008
+#: e2fsck/unix.c:1013
 msgid "This doesn't bode well, but we'll try to go on...\n"
 msgstr "Toto nevypadĂĄ dobĹe, ale zkusĂ­me pokraÄovat...\n"
 
-#: e2fsck/unix.c:1015
+#: e2fsck/unix.c:1020
 msgid "Restarting e2fsck from the beginning...\n"
 msgstr "SpouĹĄtĂ­m e2fsck od zaÄĂĄtku...\n"
 
-#: e2fsck/unix.c:1019
+#: e2fsck/unix.c:1024
 msgid "while resetting context"
 msgstr "pĹi nulovĂĄnĂ­ kontextu"
 
-#: e2fsck/unix.c:1026
+#: e2fsck/unix.c:1031
 #, c-format
 msgid "%s: e2fsck canceled.\n"
 msgstr "%s: e2fsck pĹeruĹĄen.\n"
 
-#: e2fsck/unix.c:1031
+#: e2fsck/unix.c:1036
 msgid "aborted"
 msgstr "pĹeruĹĄen"
 
-#: e2fsck/unix.c:1039
+#: e2fsck/unix.c:1044
 #, c-format
 msgid ""
 "\n"
@@ -2262,12 +2268,12 @@ msgstr ""
 "\n"
 "%s: ***** SYSTĂM SOUBORĹŽ BYL ZMÄNÄN *****\n"
 
-#: e2fsck/unix.c:1042
+#: e2fsck/unix.c:1047
 #, c-format
 msgid "%s: ***** REBOOT LINUX *****\n"
 msgstr "%s: ***** ZNOVU ZAVEÄTE LINUX *****\n"
 
-#: e2fsck/unix.c:1048
+#: e2fsck/unix.c:1053
 #, c-format
 msgid ""
 "\n"
@@ -2428,73 +2434,73 @@ msgstr ""
 " [-svwnf] [-c blokĹŻ_najednou] [-p poÄet_prĹŻchodĹŻ] zaĹĂ­zenĂ­\n"
 " [poslednĂ­_blok [poÄĂĄteÄnĂ­_poÄet]]\n"
 
-#: misc/badblocks.c:225
+#: misc/badblocks.c:227
 #, fuzzy
 msgid "Testing with random pattern: "
 msgstr "Ätu a porovnĂĄvĂĄm: "
 
-#: misc/badblocks.c:241
+#: misc/badblocks.c:243
 #, fuzzy
 msgid "Testing with pattern 0x"
 msgstr "Zapisuji vzorek 0x%08x: "
 
-#: misc/badblocks.c:266 misc/badblocks.c:295
+#: misc/badblocks.c:268 misc/badblocks.c:297
 msgid "during seek"
 msgstr "pĹi posunu"
 
-#: misc/badblocks.c:273
+#: misc/badblocks.c:275
 #, c-format
 msgid "Weird value (%ld) in do_read\n"
 msgstr "DivnĂĄ hodnota (%ld) v do_read\n"
 
-#: misc/badblocks.c:316
+#: misc/badblocks.c:318
 msgid "during ext2fs_sync_device"
 msgstr "pĹi ext2fs_sync_device"
 
-#: misc/badblocks.c:332 misc/badblocks.c:549
+#: misc/badblocks.c:334 misc/badblocks.c:572
 msgid "while beginning bad block list iteration"
 msgstr "pĹi zaÄĂĄtku iterace v seznamu ĹĄpatnĂ˝ch blokĹŻ"
 
-#: misc/badblocks.c:346 misc/badblocks.c:431 misc/badblocks.c:559
+#: misc/badblocks.c:348 misc/badblocks.c:439 misc/badblocks.c:582
 msgid "while allocating buffers"
 msgstr "pĹi alokaci vyrovnĂĄvacĂ­ch pamÄti"
 
-#: misc/badblocks.c:350
+#: misc/badblocks.c:352
 #, fuzzy, c-format
 msgid "Checking blocks %lu to %lu\n"
 msgstr "Od bloku %lu do %lu\n"
 
-#: misc/badblocks.c:354
+#: misc/badblocks.c:356
 msgid "Checking for bad blocks in read-only mode\n"
 msgstr "HledĂĄm ĹĄpatnĂŠ bloky v reĹžimu jen pro ÄtenĂ­\n"
 
-#: misc/badblocks.c:364
+#: misc/badblocks.c:366
 msgid "Checking for bad blocks (read-only test): "
 msgstr "HledĂĄm ĹĄpatnĂŠ bloky (test jen pro ÄtenĂ­): "
 
-#: misc/badblocks.c:439
+#: misc/badblocks.c:447
 msgid "Checking for bad blocks in read-write mode\n"
 msgstr "HledĂĄm ĹĄpatnĂŠ bloky v reĹžimu ÄtenĂ­ i zĂĄpis\n"
 
-#: misc/badblocks.c:440 misc/badblocks.c:573
+#: misc/badblocks.c:448 misc/badblocks.c:596
 #, c-format
 msgid "From block %lu to %lu\n"
 msgstr "Od bloku %lu do %lu\n"
 
-#: misc/badblocks.c:484
+#: misc/badblocks.c:499
 msgid "Reading and comparing: "
 msgstr "Ätu a porovnĂĄvĂĄm: "
 
-#: misc/badblocks.c:572
+#: misc/badblocks.c:595
 msgid "Checking for bad blocks in non-destructive read-write mode\n"
 msgstr "HledĂĄm ĹĄpatnĂŠ bloky v nedestruktivnĂ­m reĹžimu ÄtenĂ­ i zĂĄpis\n"
 
-#: misc/badblocks.c:576
+#: misc/badblocks.c:599
 #, fuzzy
 msgid "Checking for bad blocks (non-destructive read-write test)\n"
 msgstr "HledĂĄm ĹĄpatnĂŠ bloky (nedestruktivnĂ­ test ÄtenĂ­ i zĂĄpisu): "
 
-#: misc/badblocks.c:583
+#: misc/badblocks.c:606
 msgid ""
 "\n"
 "Interrupt caught, cleaning up\n"
@@ -2502,48 +2508,48 @@ msgstr ""
 "\n"
 "Zachyceno pĹeruĹĄenĂ­, uklĂ­zĂ­m\n"
 
-#: misc/badblocks.c:653
+#: misc/badblocks.c:676
 #, c-format
 msgid "during test data write, block %lu"
 msgstr "pĹi testovacĂ­m zĂĄpisu dat, blok %lu"
 
-#: misc/badblocks.c:765 misc/util.c:140
+#: misc/badblocks.c:788 misc/util.c:140
 #, c-format
 msgid "%s is mounted; "
 msgstr "%s je pĹipojen; "
 
-#: misc/badblocks.c:767
+#: misc/badblocks.c:790
 msgid "badblocks forced anyway.  Hope /etc/mtab is incorrect.\n"
 msgstr "badblocks pĹesto vynucen. DoufĂĄm, Ĺže /etc/mtab je nesprĂĄvnĂĄ.\n"
 
-#: misc/badblocks.c:771
+#: misc/badblocks.c:794
 msgid "it's not safe to run badblocks!\n"
 msgstr "nenĂ­ bezpeÄnĂŠ spouĹĄtÄt badblocks!\n"
 
-#: misc/badblocks.c:830 misc/mke2fs.c:889
+#: misc/badblocks.c:853 misc/mke2fs.c:889
 #, c-format
 msgid "bad block size - %s"
 msgstr "ĹĄpatnĂĄ velikost bloku - %s"
 
-#: misc/badblocks.c:887
+#: misc/badblocks.c:910
 #, fuzzy, c-format
 msgid "can't allocate memory for test_pattern - %s"
 msgstr "Nemohu alokovat pamÄĹĽ pro typy systĂŠmu souborĹŻ\n"
 
-#: misc/badblocks.c:901
+#: misc/badblocks.c:924
 #, fuzzy, c-format
 msgid "invalid test_pattern: %s\n"
 msgstr "NeplatnĂ˝ sada pĹepĂ­naÄĹŻ systĂŠmu souborĹŻ: %s\n"
 
-#: misc/badblocks.c:917
+#: misc/badblocks.c:940
 msgid "Maximum of one test_pattern may be specified in read-only mode"
 msgstr ""
 
-#: misc/badblocks.c:923
+#: misc/badblocks.c:946
 msgid "Random test_pattern is not allowed in read-only mode"
 msgstr ""
 
-#: misc/badblocks.c:937
+#: misc/badblocks.c:960
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size manually\n"
@@ -2551,34 +2557,34 @@ msgstr ""
 "Nemohu zjistit velikost zaĹĂ­zenĂ­; musĂ­te velikost\n"
 "zadat ruÄnÄ\n"
 
-#: misc/badblocks.c:943
+#: misc/badblocks.c:966
 msgid "while trying to determine device size"
 msgstr "pĹi pokusu zjistit velikost zaĹĂ­zenĂ­"
 
-#: misc/badblocks.c:949 misc/mke2fs.c:1063
+#: misc/badblocks.c:972 misc/mke2fs.c:1063
 #, c-format
 msgid "bad blocks count - %s"
 msgstr "ĹĄpatnĂ˝ poÄet blokĹŻ - %s"
 
-#: misc/badblocks.c:958
+#: misc/badblocks.c:981
 #, c-format
 msgid "bad starting block - %s"
 msgstr "ĹĄpatnĂ˝ poÄĂĄteÄnĂ­ blok - %s"
 
-#: misc/badblocks.c:964
+#: misc/badblocks.c:987
 #, c-format
 msgid "bad blocks range: %lu-%lu"
 msgstr "ĹĄpatnĂ˝ rozsah blokĹŻ: %lu-%lu"
 
-#: misc/badblocks.c:1019
+#: misc/badblocks.c:1042
 msgid "creating in-memory bad blocks list"
 msgstr "vytvĂĄĹĂ­m seznam ĹĄpatnĂ˝ch blokĹŻ v pamÄti"
 
-#: misc/badblocks.c:1034
+#: misc/badblocks.c:1057
 msgid "adding to in-memory bad block list"
 msgstr "pĹidĂĄvĂĄm do seznamu ĹĄpatnĂ˝ch blokĹŻ v pamÄti"
 
-#: misc/badblocks.c:1058
+#: misc/badblocks.c:1081
 #, c-format
 msgid "Pass completed, %u bad blocks found.\n"
 msgstr "PrĹŻchod dokonÄen, nalezeno %u ĹĄpatnĂ˝ch blokĹŻ.\n"
@@ -3817,16 +3823,16 @@ msgstr ""
 msgid "Usage: %s [-r] [-t]\n"
 msgstr "PouĹžitĂ­: %s [-r] [-t]\n"
 
-#: resize/extent.c:197
+#: resize/extent.c:196
 msgid "# Extent dump:\n"
 msgstr "# VĂ˝pis extentĹŻ:\n"
 
-#: resize/extent.c:198
+#: resize/extent.c:197
 #, c-format
 msgid "#\tNum=%d, Size=%d, Cursor=%d, Sorted=%d\n"
 msgstr "#\tÄĂ­s=%d, Velikost=%d, Kurzor=%d, SetĹĂ­zeno=%d\n"
 
-#: resize/extent.c:201
+#: resize/extent.c:200
 #, c-format
 msgid "#\t\t %u -> %u (%d)\n"
 msgstr "#\t\t %u -> %u (%d)\n"
@@ -3931,58 +3937,58 @@ msgstr ""
 "SystĂŠm souborĹŻ na %s je nynĂ­ %d blokĹŻ dlouhĂ˝.\n"
 "\n"
 
-#: resize/resize2fs.c:110
+#: resize/resize2fs.c:109
 #, c-format
 msgid "Number of free blocks: %d/%d, Needed: %d\n"
 msgstr "PoÄet volnĂ˝ch blokĹŻ: %d/%d, PotĹeba: %d\n"
 
-#: resize/resize2fs.c:455
+#: resize/resize2fs.c:454
 msgid "meta-data blocks"
 msgstr "bloky meta-dat"
 
-#: resize/resize2fs.c:576
+#: resize/resize2fs.c:575
 msgid "reserved blocks"
 msgstr "rezervovanĂŠ bloky"
 
-#: resize/resize2fs.c:581
+#: resize/resize2fs.c:580
 msgid "blocks to be moved"
 msgstr "bloky pro pĹesun"
 
-#: resize/resize2fs.c:811
+#: resize/resize2fs.c:810
 msgid "Going into desperation mode for block allocations\n"
 msgstr "PĹechĂĄzĂ­m do zoufalĂŠho reĹžimu alokace blokĹŻ\n"
 
-#: resize/resize2fs.c:915
+#: resize/resize2fs.c:914
 #, c-format
 msgid "Moving %d blocks %u->%u\n"
 msgstr "PĹesouvĂĄm %d blokĹŻ %u->%u\n"
 
-#: resize/resize2fs.c:991
+#: resize/resize2fs.c:990
 #, c-format
 msgid "ino=%u, blockcnt=%lld, %u->%u\n"
 msgstr "ino=%u, poÄetblokĹŻ=%lld, %u->%u\n"
 
-#: resize/resize2fs.c:1159
+#: resize/resize2fs.c:1157
 #, c-format
 msgid "Inode moved %u->%u\n"
 msgstr "Inode pĹesunuta %u->%u\n"
 
-#: resize/resize2fs.c:1224
+#: resize/resize2fs.c:1222
 #, c-format
 msgid "Inode translate (dir=%u, name=%.*s, %u->%u)\n"
 msgstr "PĹeklad inode (adr=%u, nĂĄzev=%.*s, %u->%u)\n"
 
-#: resize/resize2fs.c:1350
+#: resize/resize2fs.c:1348
 #, c-format
 msgid "Itable move group %d block %u->%u (diff %d)\n"
 msgstr "PĹesun itable skupina %d blok %u->%u (rozdĂ­l %d)\n"
 
-#: resize/resize2fs.c:1376
+#: resize/resize2fs.c:1374
 #, c-format
 msgid "%d blocks of zeros...\n"
 msgstr "%d blockĹŻ nul...\n"
 
-#: resize/resize2fs.c:1411
+#: resize/resize2fs.c:1409
 msgid "Inode table move finished.\n"
 msgstr "PĹesun tabulky inode dokonÄen.\n"
 
