@@ -1,3 +1,16 @@
+e2fsprogs (1.34+1.35-WIP-2003.08.21-3) unstable; urgency=low
+
+  * Adjust the man page descriptions so that "apropos ext2" or
+    "apropos ext3" will find all of the e2fsprogs man pages.
+    (Closes: #206845)
+  * Protect against a potential core dump in e2fsck when printing a
+    message about a backup superblock.
+  * Fix a bug in mke2fs which caused -T largefile or -T largefile4 to
+    core dump due to a division by zero error.  (Closes: #207082)
+  * Force e2fsprogs to use the matched version of e2fslibs.  (Closes: #208103)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 31 Aug 2003 21:49:52 -0400
+
 e2fsprogs (1.34+1.35-WIP-2003.08.21-2) unstable; urgency=low
 
   * When moving the journal or backing up the journal inode
