@@ -1,3 +1,8 @@
+2002-07-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c (do_rmdir), debugfs.8.in: Implement the rmdir command.
+		Addresses Debian bug #138003.
+
 2002-06-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* htree.c (do_dx_hash): Use new ext2fs_dirhash function signature.

@@ -331,7 +331,6 @@ as the unlink() system call.
 .I rmdir filespec
 Remove the directory
 .IR filespec .
-This function is currently not implemented.
 .TP
 .I setb block [count]
 Mark the block number

@@ -906,7 +906,7 @@ void do_undel(int argc, char *argv[])
 	ext2fs_block_iterate(current_fs, ino, 0, NULL,
 			     mark_blocks_proc, NULL);
 
-	ext2fs_inode_alloc_stats(current_fs, ino, +1);
+	ext2fs_inode_alloc_stats2(current_fs, ino, +1, 0);
 
 	make_link(argv[1], argv[2]);
 }
@@ -1109,7 +1109,7 @@ void do_write(int argc, char *argv[])
 	}
         if (ext2fs_test_inode_bitmap(current_fs->inode_map,newfile))
 		com_err(argv[0], 0, "Warning: inode already set");
-	ext2fs_inode_alloc_stats(current_fs, newfile, +1);
+	ext2fs_inode_alloc_stats2(current_fs, newfile, +1, 0);
 	memset(&inode, 0, sizeof(inode));
 	inode.i_mode = statbuf.st_mode;
 	inode.i_atime = inode.i_ctime = inode.i_mtime = time(NULL);
@@ -1240,12 +1240,6 @@ void do_mkdir(int argc, char *argv[])
 
 }
 
-void do_rmdir(int argc, char *argv[])
-{
-	printf("Unimplemented\n");
-}
-
-
 static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
 			       int blockcnt, void *private)
 {
@@ -1266,11 +1260,11 @@ static void kill_file_by_inode(ext2_ino_t inode)
 	if (debugfs_write_inode(inode, &inode_buf, 0))
 		return;
 
-	printf("Kill file by inode %u\n", inode);
 	ext2fs_block_iterate(current_fs, inode, 0, NULL,
 			     release_blocks_proc, NULL);
 	printf("\n");
-	ext2fs_inode_alloc_stats(current_fs, inode, -1);
+	ext2fs_inode_alloc_stats2(current_fs, inode, -1,
+				  LINUX_S_ISDIR(inode_buf.i_mode));
 }
 
 
@@ -1315,6 +1309,90 @@ void do_rm(int argc, char *argv[])
 	unlink_file_by_name(argv[1]);
 	if (inode.i_links_count == 0)
 		kill_file_by_inode(inode_num);
+}
+
+struct rd_struct {
+	ext2_ino_t	parent;
+	int		empty;
+};
+
+static int rmdir_proc(ext2_ino_t dir,
+		      int	entry,
+		      struct ext2_dir_entry *dirent,
+		      int	offset,
+		      int	blocksize,
+		      char	*buf,
+		      void	*private)
+{
+	struct rd_struct *rds = (struct rd_struct *) private;
+
+	if (dirent->inode == 0)
+		return 0;
+	if (((dirent->name_len&0xFF) == 1) && (dirent->name[0] == '.'))
+		return 0;
+	if (((dirent->name_len&0xFF) == 2) && (dirent->name[0] == '.') &&
+	    (dirent->name[1] == '.')) {
+		rds->parent = dirent->inode;
+		return 0;
+	}
+	rds->empty = 0;
+	return 0;
+}
+	
+void do_rmdir(int argc, char *argv[])
+{
+	int retval;
+	ext2_ino_t inode_num;
+	struct ext2_inode inode;
+	struct rd_struct rds;
+
+	if (common_args_process(argc, argv, 2, 2, "rmdir",
+				"<filename>", CHECK_FS_RW))
+		return;
+
+	retval = ext2fs_namei(current_fs, root, cwd, argv[1], &inode_num);
+	if (retval) {
+		com_err(argv[0], retval, "while trying to resolve filename");
+		return;
+	}
+
+	if (debugfs_read_inode(inode_num, &inode, argv[0]))
+		return;
+
+	if (!LINUX_S_ISDIR(inode.i_mode)) {
+		com_err(argv[0], 0, "file is not a directory");
+		return;
+	}
+
+	rds.parent = 0;
+	rds.empty = 1;
+
+	retval = ext2fs_dir_iterate2(current_fs, inode_num, 0,
+				    0, rmdir_proc, &rds);
+	if (retval) {
+		com_err(argv[0], retval, "while iterating over directory");
+		return;
+	}
+	if (rds.empty == 0) {
+		com_err(argv[0], 0, "directory not empty");
+		return;
+	}
+
+	inode.i_links_count = 0;
+	if (debugfs_write_inode(inode_num, &inode, argv[0]))
+		return;
+
+	unlink_file_by_name(argv[1]);
+	kill_file_by_inode(inode_num);
+
+	if (rds.parent) {
+		if (debugfs_read_inode(rds.parent, &inode, argv[0]))
+			return;
+		if (inode.i_links_count > 1)
+			inode.i_links_count--;
+		if (debugfs_write_inode(rds.parent, &inode, argv[0]))
+			return;
+	}
 }
 
 void do_show_debugfs_params(int argc, char *argv[])
