@@ -1,3 +1,10 @@
+2003-05-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Add $(LIBINTL) to the link line so we can support
+		using the internal gettext library.
+
+	* e2fsck.h: Add #ifndef protection around LOCALEDIR definition.
+
 2003-04-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* message.c (expand_at_expression): Fixed NLS support for message

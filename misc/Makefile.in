@@ -63,13 +63,13 @@ findsuper: findsuper.o
 
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBS_BLKID)
 	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS) \
-		$(LIBS_BLKID) $(LIBS_E2P)
+		$(LIBS_BLKID) $(LIBS_E2P) $(LIBINTL)
 
 blkid: $(BLKID_OBJS) $(DEPLIBS_BLKID)
-	$(CC) $(ALL_LDFLAGS) -o blkid $(BLKID_OBJS) $(LIBS_BLKID)
+	$(CC) $(ALL_LDFLAGS) -o blkid $(BLKID_OBJS) $(LIBS_BLKID) $(LIBINTL)
 
 e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS) $(LIBINTL)
 
 base_device: base_device.c
 	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $(srcdir)/base_device.c \
@@ -80,37 +80,37 @@ check:: base_device
 	cmp $(srcdir)/base_device.tst base_device.out
 
 mklost+found: $(MKLPF_OBJS)
-	$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS)
+	$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS) $(LIBINTL)
 
 mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBUUID) $(DEPLIBS_BLKID)
 	$(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBS_BLKID) \
-		$(LIBE2P) $(LIBUUID)
+		$(LIBE2P) $(LIBUUID) $(LIBINTL)
 
 mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBUUID)
 	$(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
-		$(STATIC_LIBS) $(STATIC_LIBE2P) $(STATIC_LIBUUID)
+		$(STATIC_LIBS) $(STATIC_LIBE2P) $(STATIC_LIBUUID) $(LIBINTL)
 
 resize2fs: resize2fs.o $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o resize2fs resize2fs.o $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o resize2fs resize2fs.o $(LIBS) $(LIBINTL)
 
 chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
-	$(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS_E2P)
+	$(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS_E2P) $(LIBINTL)
 
 lsattr: $(LSATTR_OBJS) $(DEPLIBS_E2P)
-	$(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS_E2P)
+	$(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS_E2P) $(LIBINTL)
 
 uuidgen: $(UUIDGEN_OBJS) $(DEPLIBUUID)
-	$(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID)
+	$(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID) $(LIBINTL)
 
 dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS) \
-		$(LIBS_E2P) $(LIBUUID)
+		$(LIBS_E2P) $(LIBUUID) $(LIBINTL)
 
 fsck: $(FSCK_OBJS) $(DEBLIBS_BLKID)
-	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS_BLKID)
+	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS_BLKID) $(LIBINTL)
 
 badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS) $(LIBINTL)
 
 logsave: logsave.o
 	$(CC) $(ALL_LDFLAGS) -o logsave logsave.o

@@ -25,10 +25,10 @@ SRCS= $(srcdir)/extent.c \
 	$(srcdir)/main.c \
 	$(srcdir)/sim_progress.c
 
-LIBS= $(LIBEXT2FS) $(LIBCOM_ERR)  
+LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBINTL)
 DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR)
 
-STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
+STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(LIBINTL)
 STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
 
 .c.o:
@@ -37,7 +37,7 @@ STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR)
 all:: $(PROGS) $(TEST_PROGS) $(MANPAGES) 
 
 resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS) 
 
 resize2fs.static: $(RESIZE_OBJS)  $(STATIC_DEPLIBS)
 	$(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o resize2fs.static \
@@ -47,7 +47,7 @@ resize2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/resize2fs.8.in
 	$(SUBSTITUTE) $(srcdir)/resize2fs.8.in resize2fs.8
 
 test_extent: $(TEST_EXTENT_OBJS)
-	$(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS)
+	$(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS) 
 	
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(root_sbindir) \

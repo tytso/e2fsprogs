@@ -503,7 +503,6 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 
-ALL_LINGUAS="it nyc tr de de-utf"
 AM_GNU_GETTEXT
 dnl
 dnl End of configuration options
@@ -641,7 +640,7 @@ if test "$e2fsprogs_cv_struct_st_flags" = yes; then
 	  AC_DEFINE(HAVE_STAT_FLAGS)
   fi
 fi
-AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 getmntinfo strtoull strcasecmp srandom fchown mallinfo fdatasync strnlen sysconf pathconf)
+AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 getmntinfo strtoull strcasecmp srandom fchown mallinfo fdatasync strnlen strptime sysconf pathconf)
 dnl
 dnl Check to see if -lsocket is required (solaris) to make something
 dnl that uses socket() to compile; this is needed for the UUID library
