@@ -10,7 +10,9 @@
  */
 
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
