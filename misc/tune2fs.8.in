@@ -259,9 +259,17 @@ Create an ext3 journal (as if using the
 option).
 .RE
 .IP
-After setting or clearing any filesystem feature,
+After setting or clearing 
+.B sparse_super
+and 
+.B filetype 
+filesystem features,
 .BR e2fsck (8)
 must be run on the filesystem to return the filesystem to a consistent state.
+.B Tune2fs
+will print a message requesting that the system administrator run
+.BR e2fsck (8)
+if necessary.
 .IP
 .B Warning:
 Linux kernels before 2.0.39 and many 2.1 series kernels do not support
