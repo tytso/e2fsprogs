@@ -578,7 +578,6 @@ extern int	   journal_set_features
 extern int	   journal_create     (journal_t *);
 extern int	   journal_load       (journal_t *);
 extern void	   journal_release    (journal_t *);
-extern int	   journal_recover    (journal_t *);
 extern int	   journal_wipe       (journal_t *, int);
 extern int	   journal_skip_recovery (journal_t *);
 extern void	   journal_update_superblock (journal_t *, int);
@@ -590,17 +589,9 @@ extern int	   journal_clear_err  (journal_t *);
 
 /* Primary revoke support */
 #define JOURNAL_REVOKE_DEFAULT_HASH 256
-extern int	   journal_init_revoke(journal_t *, int);
-extern void	   journal_destroy_revoke(journal_t *);
 extern int	   journal_revoke (handle_t *, unsigned long, struct buffer_head *);
 extern void	   journal_cancel_revoke(handle_t *, struct buffer_head *);
 extern void	   journal_write_revoke_records(journal_t *, transaction_t *);
-
-/* Recovery revoke support */
-extern int	   journal_set_revoke(journal_t *, unsigned long, tid_t);
-extern int	   journal_test_revoke(journal_t *, unsigned long, tid_t);
-extern void	   journal_clear_revoke(journal_t *);
-
 
 /* The log thread user interface:
  *
@@ -642,6 +633,13 @@ static inline int is_journal_abort(journal_t *journal)
 	return journal->j_flags & JFS_ABORT;
 }
 
+
+extern inline void mark_buffer_jdirty(struct buffer_head * bh)
+{
+	if (!test_and_set_bit(BH_JDirty, &bh->b_state))
+		set_writetime(bh, 0);
+}
+
 /* Not all architectures define BUG() */
 #ifndef BUG
  #define BUG() do { \
@@ -651,6 +649,22 @@ static inline int is_journal_abort(journal_t *journal)
 #endif /* BUG */
 
 #endif /* __KERNEL__   */
+
+/* Function prototypes, used by both user- and kernel- space */
+
+/* recovery.c */
+extern int	   journal_recover    (journal_t *);
+
+/* revoke.c */
+	/* Primary recovery support */
+extern int	   journal_init_revoke(journal_t *, int);
+extern void	   journal_destroy_revoke(journal_t *);
+
+	/* Recovery revoke support */
+extern int	   journal_set_revoke(journal_t *, unsigned long, tid_t);
+extern int	   journal_test_revoke(journal_t *, unsigned long, tid_t);
+extern void	   journal_clear_revoke(journal_t *);
+
 
 /* Comparison functions for transaction IDs: perform comparisons using
  * modulo arithmetic so that they work over sequence number wraps. */
@@ -666,13 +680,5 @@ static inline int tid_geq(tid_t x, tid_t y)
 	int difference = (x - y);
 	return (difference >= 0);
 }
-
-
-extern inline void mark_buffer_jdirty(struct buffer_head * bh)
-{
-	if (!test_and_set_bit(BH_JDirty, &bh->b_state))
-		set_writetime(bh, 0);
-}
-
 
 #endif /* _LINUX_JFS_H */
