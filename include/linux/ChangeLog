@@ -1,3 +1,11 @@
+2001-01-05    <tytso@snap.thunk.org>
+
+	* jfs.h: Move prototypes outside of the KERNEL #ifdef.  Remove
+		indentation in front of #define.
+
+	* jfs_compat.h: Add #include of netinet/in.h for htonl, and not to
+		use inline functions if compiling with gcc -Wall.
+
 2000-12-30    <tytso@snap.thunk.org>
 
 	* ext2_fs.h (EXT3_JOURNAL_DATA_FL): Add new inode flag definition.

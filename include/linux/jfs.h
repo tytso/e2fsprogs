@@ -578,7 +578,6 @@ extern int	   journal_set_features
 extern int	   journal_create     (journal_t *);
 extern int	   journal_load       (journal_t *);
 extern void	   journal_release    (journal_t *);
-extern int	   journal_recover    (journal_t *);
 extern int	   journal_wipe       (journal_t *, int);
 extern int	   journal_skip_recovery (journal_t *);
 extern void	   journal_update_superblock (journal_t *, int);
@@ -590,16 +589,10 @@ extern int	   journal_clear_err  (journal_t *);
 
 /* Primary revoke support */
 #define JOURNAL_REVOKE_DEFAULT_HASH 256
-extern int	   journal_init_revoke(journal_t *, int);
-extern void	   journal_destroy_revoke(journal_t *);
 extern int	   journal_revoke (handle_t *, unsigned long, struct buffer_head *);
 extern void	   journal_cancel_revoke(handle_t *, struct buffer_head *);
 extern void	   journal_write_revoke_records(journal_t *, transaction_t *);
 
-/* Recovery revoke support */
-extern int	   journal_set_revoke(journal_t *, unsigned long, tid_t);
-extern int	   journal_test_revoke(journal_t *, unsigned long, tid_t);
-extern void	   journal_clear_revoke(journal_t *);
 
 
 /* The log thread user interface:
@@ -644,13 +637,26 @@ static inline int is_journal_abort(journal_t *journal)
 
 /* Not all architectures define BUG() */
 #ifndef BUG
- #define BUG() do { \
+# define BUG() do { \
         printk("kernel BUG at %s:%d!\n", __FILE__, __LINE__); \
 	* ((char *) 0) = 0; \
  } while (0)
 #endif /* BUG */
 
 #endif /* __KERNEL__   */
+
+/* Function prototypes, used by both user- and kernel- space */
+
+/* recovery.c */
+extern int	   journal_recover    (journal_t *);
+
+/* revoke.c */
+extern int	   journal_init_revoke(journal_t *, int);
+extern int	   journal_set_revoke(journal_t *, unsigned long, tid_t);
+extern int	   journal_test_revoke(journal_t *, unsigned long, tid_t);
+extern void	   journal_clear_revoke(journal_t *);
+extern void	   journal_destroy_revoke(journal_t *);
+
 
 /* Comparison functions for transaction IDs: perform comparisons using
  * modulo arithmetic so that they work over sequence number wraps. */

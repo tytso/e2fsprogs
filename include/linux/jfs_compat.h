@@ -4,6 +4,9 @@
 
 #include <linux/list.h>
 #include <errno.h>
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
 
 #define printk printf
 #define KERN_ERR ""
@@ -52,5 +55,10 @@ struct journal_s
 	} } while (0)
 
 #define is_journal_abort(x) 0
+
+/* Need this so we can compile with configure --enable-gcc-wall */
+#ifdef NO_INLINE_FUNCS
+#define inline
+#endif
 
 #endif /* _JFS_COMPAT_H */
