@@ -813,3 +813,5 @@ for i in MCONFIG Makefile e2fsprogs.spec \
 	fi
 done
 AC_OUTPUT($outlist)
+if test -f util/gen-tarball; then chmod +x util/gen-tarball; fi
+

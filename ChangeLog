@@ -1,3 +1,7 @@
+2005-02-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Make util/gen-tarball executable after it is created.
+
 2005-02-04  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Remove support for --enable-clear-htree; this was
