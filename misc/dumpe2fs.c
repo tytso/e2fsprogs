@@ -93,7 +93,7 @@ static void list_desc (ext2_filsys fs)
 	blk_t	group_blk, next_blk;
 	blk_t	super_blk, old_desc_blk, new_desc_blk;
 	char *block_bitmap=NULL, *inode_bitmap=NULL;
-	int inode_blocks_per_group, old_desc_blocks;
+	int inode_blocks_per_group, old_desc_blocks, reserved_gdt;
 	int has_super;
 
 	if (fs->block_map)
@@ -105,6 +105,7 @@ static void list_desc (ext2_filsys fs)
 				   EXT2_INODE_SIZE(fs->super)) +
 				  EXT2_BLOCK_SIZE(fs->super) - 1) /
 				 EXT2_BLOCK_SIZE(fs->super);
+	reserved_gdt = fs->super->s_reserved_gdt_blocks;
 	fputc('\n', stdout);
 	group_blk = fs->super->s_first_data_block;
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
@@ -130,6 +131,13 @@ static void list_desc (ext2_filsys fs)
 			printf(_(", Group descriptors at "));
 			printf(range_format, old_desc_blk,
 			       old_desc_blk + old_desc_blocks - 1);
+			if (reserved_gdt) {
+				printf(_("\n  Reserved GDT blocks at "));
+				printf(range_format, 
+				       old_desc_blk + old_desc_blocks,
+				       old_desc_blk + old_desc_blocks + 
+				       reserved_gdt - 1);
+			}
 		} else if (new_desc_blk) {
 			fputc(has_super ? ',' : ' ', stdout);
 			printf(_(" Group descriptor at "));

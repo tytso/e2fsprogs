@@ -1,3 +1,8 @@
+2004-12-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* dumpe2fs.c (list_desc): If reserved GDT blocks are present,
+		display them along with the other filesystem meta blocks.
+
 2004-12-22  Theodore Ts'o  <tytso@mit.edu>
 
 	* fsck.c (main): Check return from malloc of fsck_path string.
