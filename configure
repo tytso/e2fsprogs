@@ -1215,7 +1215,7 @@ else
 	MAKEFILE_BSDLIB=$srcdir/lib/Makefile.bsd-lib
 	LIB_EXT=.so
 	case "$host_os" in
-	darwin.*)
+	darwin*)
 		MAKEFILE_BSDLIB=$srcdir/lib/Makefile.darwin-lib
 		LIB_EXT=.dylib
 	;;

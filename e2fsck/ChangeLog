@@ -1,3 +1,8 @@
+2003-03-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* util.c: Explicitly declare e2fsck_global_ctx as extern for the
+		benefit of the Apple Darwin port.
+
 2003-03-15  Theodore Ts'o  <tytso@mit.edu>
 
 	* rehash.c (e2fsck_rehash_dir): If user specified the -n option,

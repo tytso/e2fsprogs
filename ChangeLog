@@ -1,3 +1,7 @@
+2003-03-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Fix the Apple Darwin port.
+
 2003-03-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Check to see if libdl exists for the sake of dlopen

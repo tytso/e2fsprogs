@@ -31,7 +31,7 @@
 
 #include "e2fsck.h"
 
-e2fsck_t e2fsck_global_ctx;	/* Try your very best not to use this! */
+extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
 
 #include <sys/time.h>
 #include <sys/resource.h>

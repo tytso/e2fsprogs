@@ -1,3 +1,7 @@
+2003-03-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* getsize.c (blkid_get_dev_size): Fix Apple Darwin port.
+
 2003-03-06    <tytso@mit.edu>
 
 	* devname.c (probe_one): Fix bug; if a partition has no known

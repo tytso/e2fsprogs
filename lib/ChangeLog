@@ -1,3 +1,7 @@
+2003-03-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.darwin-lib: Fix Apple Darwin port.
+
 2003-03-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.darwin-lib: New file to provide support for e2fsprogs

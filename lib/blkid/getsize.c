@@ -35,6 +35,13 @@
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */
 #endif
 
+#ifdef APPLE_DARWIN
+#include <sys/ioctl.h>
+#include <sys/disk.h>
+
+#define BLKGETSIZE DKIOCGETBLOCKCOUNT32
+#endif /* APPLE_DARWIN */
+
 static int valid_offset(int fd, blkid_loff_t offset)
 {
 	char ch;
@@ -59,10 +66,11 @@ blkid_loff_t blkid_get_dev_size(int fd)
 	struct floppy_struct this_floppy;
 #endif
 #ifdef HAVE_SYS_DISKLABEL_H
-	int part;
+	int part = -1;
 	struct disklabel lab;
 	struct partition *pp;
 	char ch;
+	struct stat st;
 #endif /* HAVE_SYS_DISKLABEL_H */
 
 #ifdef BLKGETSIZE
@@ -74,21 +82,20 @@ blkid_loff_t blkid_get_dev_size(int fd)
 		return (blkid_loff_t)this_floppy.size << 9;
 #endif
 #ifdef HAVE_SYS_DISKLABEL_H
-	part = strlen(file) - 1;
-	if (part >= 0) {
-		ch = file[part];
-		if (isdigit(ch))
-			part = 0;
-		else if (ch >= 'a' && ch <= 'h')
-			part = ch - 'a';
-		else
-			part = -1;
-	}
+#if 0
+	/*
+	 * This should work in theory but I haven't tested it.  Anyone
+	 * on a BSD system want to test this for me?  In the meantime,
+	 * binary search mechanism should work just fine.
+	 */
+	if ((fstat(fd, &st) >= 0) && S_ISBLK(st.st_mode))
+		part = st.st_rdev & 7;
 	if (part >= 0 && (ioctl(fd, DIOCGDINFO, (char *)&lab) >= 0)) {
 		pp = &lab.d_partitions[part];
 		if (pp->p_size)
 			return pp->p_size << 9;
 	}
+#endif
 #endif /* HAVE_SYS_DISKLABEL_H */
 
 	/*

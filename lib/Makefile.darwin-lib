@@ -2,8 +2,7 @@
 # This is a Makefile stub which handles the creation of Darwin BSD shared
 # libraries.
 #
-# In order to use this stub, the following makefile variables must be 
-efined.
+# In order to use this stub, the following makefile variables must be defined.
 #
 # BSDLIB_VERSION = 1.0
 # BSDLIB_IMAGE = libce
@@ -23,8 +22,7 @@ BSD_LIB = $(BSDLIB_IMAGE).$(BSDLIB_VERSION).dylib
 image:		$(BSD_LIB)
 
 $(BSD_LIB): $(OBJS)
-	(cd pic; $(CC) -dynamiclib -compatibility_version 1.0 
- -current_version $(BSDLIB_VERSION) \
+	(cd pic; $(CC) -dynamiclib -compatibility_version 1.0 -current_version $(BSDLIB_VERSION) \
 		-flat_namespace -undefined warning -o $(BSD_LIB) $(OBJS))
 	$(MV) pic/$(BSD_LIB) .
 	$(RM) -f ../$(BSD_LIB)
