@@ -732,7 +732,7 @@ static int check_all(NOARGS)
 				break;
 		}
 		if (fs && !skip_root && !ignore(fs)) {
-			fsck_device(fs->device, 0);
+			fsck_device(fs->device, 1);
 			fs->flags |= FLAG_DONE;
 			status |= wait_all();
 			if (status > EXIT_NONDESTRUCT)
@@ -777,13 +777,12 @@ static int check_all(NOARGS)
 			/*
 			 * Spawn off the fsck process
 			 */
-			fsck_device(fs->device, 0);
+			fsck_device(fs->device, serialize);
 			fs->flags |= FLAG_DONE;
 
 			if (serialize) {
 				pass_done = 0;
 				break; /* Only do one filesystem at a time */
-
 			}
 		}
 		if (verbose > 1)

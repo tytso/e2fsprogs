@@ -51,7 +51,7 @@ all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES)
 findsuper: findsuper.o
 	$(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o
 
-tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS_E2P) $(LIBUUID)
+tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS_E2P) $(DEPLIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS_E2P) $(LIBUUID)
 
 e2label: $(E2LABEL_OBJS) 
@@ -60,10 +60,10 @@ e2label: $(E2LABEL_OBJS)
 mklost+found: $(MKLPF_OBJS)
 	$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS)
 
-mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(LIBUUID)
+mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBE2P) $(LIBUUID)
 
-mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(STATIC_LIBUUID)
+mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBUUID)
 	$(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
 		$(STATIC_LIBS) $(STATIC_LIBE2P) $(STATIC_LIBUUID)
 
@@ -76,7 +76,7 @@ chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
 lsattr: $(LSATTR_OBJS) $(DEPLIBS_E2P)
 	$(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS_E2P)
 
-uuidgen: $(UUIDGEN_OBJS) $(LIBUUID)
+uuidgen: $(UUIDGEN_OBJS) $(DEPLIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID)
 
 dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS_E2P)
