@@ -49,30 +49,37 @@ static void usage(void)
 	exit (1);
 }
 
-static void write_header(int fd, struct ext2_image_hdr *hdr)
+static void write_header(int fd, struct ext2_image_hdr *hdr, int blocksize)
 {
-	char header_buf[4096];
+	char *header_buf;
 	int actual;
+
+	header_buf = malloc(blocksize);
+	if (!header_buf) {
+		fprintf(stderr, _("Couldn't allocate header buffer\n"));
+		exit(1);
+	}
 
 	if (lseek(fd, 0, SEEK_SET) < 0) {
 		perror("lseek while writing header");
 		exit(1);
 	}
-	memset(header_buf, 0, sizeof(header_buf));
+	memset(header_buf, 0, blocksize);
 	
 	if (hdr)
 		memcpy(header_buf, hdr, sizeof(struct ext2_image_hdr));
 	
-	actual = write(fd, header_buf, sizeof(header_buf));
+	actual = write(fd, header_buf, blocksize);
 	if (actual < 0) {
 		perror("write header");
 		exit(1);
 	}
-	if (actual != sizeof(header_buf)) {
+	if (actual != blocksize) {
 		fprintf(stderr, _("short write (only %d bytes) for"
 				  "writing image header"), actual);
 		exit(1);
 	}
+	free(header_buf);
 }
 
 
@@ -125,7 +132,7 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 
-	write_header(fd, NULL);
+	write_header(fd, NULL, fs->blocksize);
 	memset(&hdr, 0, sizeof(struct ext2_image_hdr));
 	
 	hdr.offset_super = lseek(fd, 0, SEEK_CUR);
@@ -159,7 +166,10 @@ int main (int argc, char ** argv)
 	hdr.magic_number = EXT2_ET_MAGIC_E2IMAGE;
 	strcpy(hdr.magic_descriptor, "Ext2 Image 1.0");
 	gethostname(hdr.fs_hostname, sizeof(hdr.fs_hostname));
-
+	strncat(hdr.fs_device_name, device_name, sizeof(hdr.fs_device_name));
+	hdr.fs_device_name[sizeof(hdr.fs_device_name) - 1] = 0;
+	hdr.fs_blocksize = fs->blocksize;
+	
 	if (stat(device_name, &st) == 0)
 		hdr.fs_device = st.st_rdev;
 
@@ -170,7 +180,7 @@ int main (int argc, char ** argv)
 	memcpy(hdr.fs_uuid, fs->super->s_uuid, sizeof(hdr.fs_uuid));
 
 	hdr.image_time = time(0);
-	write_header(fd, &hdr);
+	write_header(fd, &hdr, fs->blocksize);
 
 	ext2fs_close (fs);
 	exit (0);

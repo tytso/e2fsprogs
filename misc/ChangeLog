@@ -1,3 +1,8 @@
+2001-05-03  Theodore Tso  <tytso@valinux.com>
+
+	* e2image.c (main): Fix format of e2image to be easier to be parse
+		by ext2fs_open().
+
 2001-05-01  Theodore Tso  <tytso@valinux.com>
 
 	* fsck.c (device_already_active): If we're not able to determine
