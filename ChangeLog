@@ -1,5 +1,9 @@
 2004-05-04  Theodore Ts'o  <tytso@mit.edu>
 
+	* e2fsprogs.spec.in: Fix up e2fsprogs.spec file so it should work
+		on a RH 9.0 system.  Based off of changes proposed by
+		Andreas Dilger.
+
 	* configure.in, configure: Enable the fsck wrapper for the Debian
 		FreeBSD kernel / GNU userspace port.  (Addresses Debian
 		Bug #246738)
