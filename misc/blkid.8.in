@@ -22,6 +22,10 @@ blkid \- command\-line utility to locate/print block device attributes
 .I writecachefile
 ]
 [
+.B \-o
+.I format
+]
+[
 .B \-s
 .I tag
 ]
@@ -58,6 +62,21 @@ scanned but not necessarily available at this time), specify
 .TP
 .B \-h
 Display a usage message and exit.
+.TP
+.B \-o 
+Display 
+.BR blkid 's
+output using the specified format.  The
+.I format
+parameter may be 
+.IR full ,
+(the default), 
+.IR  value ,
+(only print the value of any tags printed by 
+.BR blkid)
+or 
+.I device
+(only print the device name).
 .TP
 .B \-p
 Probe all available devices.  This is the default when displaying

@@ -1,5 +1,8 @@
 2004-03-20  Theodore Ts'o  <tytso@mit.edu>
 
+	* blkid.c (main, print_tags): Add new option -o which allows the
+		user to control the output format of blkid.
+
 	* mke2fs.8.in: Fix spelling typos (Addresses Debian Bug #238741)
 
 2004-03-08  Theodore Ts'o  <tytso@mit.edu>

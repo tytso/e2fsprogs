@@ -19,6 +19,9 @@ extern char *optarg;
 extern int optind;
 #endif
 
+#define OUTPUT_VALUE_ONLY	0x0001
+#define OUTPUT_DEVICE_ONLY	0x0002
+
 #include "blkid/blkid.h"
 
 const char *progname = "blkid";
@@ -34,8 +37,8 @@ static void usage(int error)
 
 	print_version(out);
 	fprintf(out,
-		"usage:\t%s [-c <file>] [-h] "
-		"[-p] [-s <tag>] [-t <token>] [-v] [-w <file>] [dev ...]\n"
+		"usage:\t%s [-c <file>] [-h] [-o format] "
+		"[-p] [-s <tag>] [-t <token>]\n    [-v] [-w <file>] [dev ...]\n"
 		"\t-c\tcache file (default: /etc/blkid.tab, /dev/null = none)\n"
 		"\t-h\tprint this usage message and exit\n"
 		"\t-s\tshow specified tag(s) (default show all tags)\n"
@@ -47,7 +50,7 @@ static void usage(int error)
 	exit(error);
 }
 
-static void print_tags(blkid_dev dev, char *show[], int numtag)
+static void print_tags(blkid_dev dev, char *show[], int numtag, int output)
 {
 	blkid_tag_iterate	iter;
 	const char		*type, *value;
@@ -55,6 +58,11 @@ static void print_tags(blkid_dev dev, char *show[], int numtag)
 
 	if (!dev)
 		return;
+
+	if (output & OUTPUT_DEVICE_ONLY) {
+		printf("%s\n", blkid_dev_devname(dev));
+		return;
+	}
 
 	iter = blkid_tag_iterate_begin(dev);
 	while (blkid_tag_next(iter, &type, &value) == 0) {
@@ -65,15 +73,18 @@ static void print_tags(blkid_dev dev, char *show[], int numtag)
 			if (i >= numtag)
 				continue;
 		}
-		if (first) {
+		if (first && !(output & OUTPUT_VALUE_ONLY)) {
 			printf("%s: ", blkid_dev_devname(dev));
 			first = 0;
 		}
-		printf("%s=\"%s\" ", type, value);
+		if ((output & OUTPUT_VALUE_ONLY))
+			printf("%s\n", value);
+		else
+			printf("%s=\"%s\" ", type, value);
 	}
 	blkid_tag_iterate_end(iter);
 
-	if (!first)
+	if (!first && !(output & OUTPUT_VALUE_ONLY))
 		printf("\n");
 }
 
@@ -89,9 +100,10 @@ int main(int argc, char **argv)
 	int version = 0;
 	int err = 4;
 	unsigned int i;
+	int output_format = 0;
 	char c;
 
-	while ((c = getopt (argc, argv, "c:f:hps:t:w:v")) != EOF)
+	while ((c = getopt (argc, argv, "c:f:ho:ps:t:w:v")) != EOF)
 		switch (c) {
 		case 'c':
 			if (optarg && !*optarg)
@@ -100,6 +112,18 @@ int main(int argc, char **argv)
 				read = optarg;
 			if (!write)
 				write = read;
+			break;
+		case 'o':
+			if (!strcmp(optarg, "value"))
+				output_format = OUTPUT_VALUE_ONLY;
+			else if (!strcmp(optarg, "device"))
+				output_format = OUTPUT_DEVICE_ONLY;
+			else if (!strcmp(optarg, "full"))
+				output_format = 0;
+			else {
+				fprintf(stderr, "Invalid output format %s.  Chose from value, device, or full\n", optarg);
+				exit(1);
+			}
 			break;
 		case 's':
 			if (numtag >= sizeof(show) / sizeof(*show)) {
@@ -158,7 +182,7 @@ int main(int argc, char **argv)
 
 		if ((dev = blkid_find_dev_with_tag(cache, search_type,
 						   search_value))) {
-			print_tags(dev, show, numtag);
+			print_tags(dev, show, numtag, output_format);
 			err = 0;
 		}
 	/* If we didn't specify a single device, show all available devices */
@@ -170,7 +194,7 @@ int main(int argc, char **argv)
 
 		iter = blkid_dev_iterate_begin(cache);
 		while (blkid_dev_next(iter, &dev) == 0) {
-			print_tags(dev, show, numtag);
+			print_tags(dev, show, numtag, output_format);
 			err = 0;
 		}
 		blkid_dev_iterate_end(iter);
@@ -180,7 +204,7 @@ int main(int argc, char **argv)
 						  BLKID_DEV_NORMAL);
 
 		if (dev) {
-			print_tags(dev, show, numtag);
+			print_tags(dev, show, numtag, output_format);
 			err = 0;
 		}
 	}
