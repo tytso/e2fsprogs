@@ -131,31 +131,31 @@ else {\
  * Structure of the ext2 super block
  */
 struct ext2_super_block {
-	__u32	s_inodes_count;		/* Inodes count */
-	__u32	s_blocks_count;		/* Blocks count */
-	__u32	s_r_blocks_count;	/* Reserved blocks count */
-	__u32	s_free_blocks_count;	/* Free blocks count */
-	__u32	s_free_inodes_count;	/* Free inodes count */
-	__u32	s_first_data_block;	/* First Data Block */
-	__u32	s_log_block_size;	/* Block size */
-	__s32	s_log_frag_size;	/* Fragment size */
-	__u32	s_blocks_per_group;	/* # Blocks per group */
-	__u32	s_frags_per_group;	/* # Fragments per group */
-	__u32	s_inodes_per_group;	/* # Inodes per group */
-	__u32	s_mtime;		/* Mount time */
-	__u32	s_wtime;		/* Write time */
-	__u16	s_mnt_count;		/* Mount count */
-	__s16	s_max_mnt_count;	/* Maximal mount count */
-	__u16	s_magic;		/* Magic signature */
-	__u16	s_state;		/* File system state */
-	__u16	s_errors;		/* Behaviour when detecting errors */
-	__u16	s_minor_rev_level; 	/* minor revision level */
-	__u32	s_lastcheck;		/* time of last check */
-	__u32	s_checkinterval;	/* max. time between checks */
-	__u32	s_creator_os;		/* OS */
-	__u32	s_rev_level;		/* Revision level */
-	__u16	s_def_resuid;		/* Default uid for reserved blocks */
-	__u16	s_def_resgid;		/* Default gid for reserved blocks */
+	u_int32_t	s_inodes_count;		/* Inodes count */
+	u_int32_t	s_blocks_count;		/* Blocks count */
+	u_int32_t	s_r_blocks_count;	/* Reserved blocks count */
+	u_int32_t	s_free_blocks_count;	/* Free blocks count */
+	u_int32_t	s_free_inodes_count;	/* Free inodes count */
+	u_int32_t	s_first_data_block;	/* First Data Block */
+	u_int32_t	s_log_block_size;	/* Block size */
+	int32_t		s_log_frag_size;	/* Fragment size */
+	u_int32_t	s_blocks_per_group;	/* # Blocks per group */
+	u_int32_t	s_frags_per_group;	/* # Fragments per group */
+	u_int32_t	s_inodes_per_group;	/* # Inodes per group */
+	u_int32_t	s_mtime;		/* Mount time */
+	u_int32_t	s_wtime;		/* Write time */
+	u_int16_t	s_mnt_count;		/* Mount count */
+	int16_t		s_max_mnt_count;	/* Maximal mount count */
+	u_int16_t	s_magic;		/* Magic signature */
+	u_int16_t	s_state;		/* File system state */
+	u_int16_t	s_errors;		/* Behaviour when detecting errors */
+	u_int16_t	s_minor_rev_level; 	/* minor revision level */
+	u_int32_t	s_lastcheck;		/* time of last check */
+	u_int32_t	s_checkinterval;	/* max. time between checks */
+	u_int32_t	s_creator_os;		/* OS */
+	u_int32_t	s_rev_level;		/* Revision level */
+	u_int16_t	s_def_resuid;		/* Default uid for reserved blocks */
+	u_int16_t	s_def_resgid;		/* Default gid for reserved blocks */
 	/*
 	 * These fields are for EXT2_DYNAMIC_REV superblocks only.
 	 *
@@ -169,32 +169,32 @@ struct ext2_super_block {
 	 * feature set, it must abort and not try to meddle with
 	 * things it doesn't understand...
 	 */
-	__u32	s_first_ino; 		/* First non-reserved inode */
-	__u16   s_inode_size; 		/* size of inode structure */
-	__u16	s_block_group_nr; 	/* block group # of this superblock */
-	__u32	s_feature_compat; 	/* compatible feature set */
-	__u32	s_feature_incompat; 	/* incompatible feature set */
-	__u32	s_feature_ro_compat; 	/* readonly-compatible feature set */
-	__u8	s_uuid[16];		/* 128-bit uuid for volume */
-	char	s_volume_name[16]; 	/* volume name */
-	char	s_last_mounted[64]; 	/* directory where last mounted */
-	__u32	s_algorithm_usage_bitmap; /* For compression */
+	u_int32_t	s_first_ino; 		/* First non-reserved inode */
+	u_int16_t	s_inode_size; 		/* size of inode structure */
+	u_int16_t	s_block_group_nr; 	/* block group # of this superblock */
+	u_int32_t	s_feature_compat; 	/* compatible feature set */
+	u_int32_t	s_feature_incompat; 	/* incompatible feature set */
+	u_int32_t	s_feature_ro_compat; 	/* readonly-compatible feature set */
+	u_int8_t	s_uuid[16];		/* 128-bit uuid for volume */
+	int8_t		s_volume_name[16]; 	/* volume name */
+	int8_t		s_last_mounted[64]; 	/* directory where last mounted */
+	u_int32_t	s_algorithm_usage_bitmap; /* For compression */
 	/*
 	 * Performance hints.  Directory preallocation should only
 	 * happen if the EXT2_FEATURE_COMPAT_DIR_PREALLOC flag is on.
 	 */
-	__u8	s_prealloc_blocks;	/* Nr of blocks to try to preallocate*/
-	__u8	s_prealloc_dir_blocks;	/* Nr to preallocate for dirs */
-	__u16	s_padding1;
+	u_int8_t	s_prealloc_blocks;	/* Nr of blocks to try to preallocate*/
+	u_int8_t	s_prealloc_dir_blocks;	/* Nr to preallocate for dirs */
+	u_int16_t	s_padding1;
 	/* 
 	 * Journaling support valid if EXT2_FEATURE_COMPAT_HAS_JOURNAL set.
 	 */
-	__u8	s_journal_uuid[16];	/* uuid of journal superblock */
-	__u32	s_journal_inum;		/* inode number of journal file */
-	__u32	s_journal_dev;		/* device number of journal file */
-	__u32	s_last_orphan;		/* start of list of inodes to delete */
+	u_int8_t	s_journal_uuid[16];	/* uuid of journal superblock */
+	u_int32_t	s_journal_inum;		/* inode number of journal file */
+	u_int32_t	s_journal_dev;		/* device number of journal file */
+	u_int32_t	s_last_orphan;		/* start of list of inodes to delete */
 	
-	__u32	s_reserved[197];	/* Padding to the end of the block */
+	u_int32_t	s_reserved[197];	/* Padding to the end of the block */
 };
 
 #define L2MEGABYTE      20

@@ -1,3 +1,8 @@
+2002-11-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsimext2.h: Synchronize with EVMS CVS rev 1.8 (2002/8/29).
+		Change all __uXX's to u_intXX_t's.
+
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.30
