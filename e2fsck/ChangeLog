@@ -1,5 +1,8 @@
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
+	* unix.c (usage), e2fsck.8.in: Add the -D option to the usage and
+		command synopsis.  (Addresses Debian bug #167108)
+
 	* pass1.c (e2fsck_pass1): Check the superblock write time to see
 		whether or not we can safely do the LOW_DTIME checks.
 		(Addresses Sourceforge bug #620980)

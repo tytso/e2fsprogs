@@ -8,7 +8,7 @@ e2fsck \- check a Linux second extended file system
 .SH SYNOPSIS
 .B e2fsck
 [
-.B \-pacnyrdfvstFSV
+.B \-pacnyrdfvstDFSV
 ]
 [
 .B \-b
