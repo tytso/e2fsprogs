@@ -115,6 +115,13 @@ that e2fsck is running on a video console or terminal.
 Print debugging output (useless unless you are debugging
 .BR e2fsck ).
 .TP
+.B \-D
+Optimize directories in filesystem.  This option causes e2fsck to
+try to optimize all directories, either by reindexing them if the
+filesystem supports directory indexing,  or by sorting and compressing
+directories for smaller directories, or for filesystems using
+traditional linear directories.
+.TP
 .B \-f
 Force checking even if the file system seems clean.
 .TP

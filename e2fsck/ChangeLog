@@ -1,5 +1,30 @@
 2002-07-24  Theodore Ts'o  <tytso@mit.edu>
 
+	* e2fsck.8.in, e2fsck.h, pass3.c (e2fsck_pass3), unix.c, rehash.c:
+		Add new option -D, which requests e2fsck to optimize all
+		directories.  Rehash.c will also compress and sort
+		non-indexed directories.
+
+	* problem.c, problem.h: Rename PR_3A_REHASH_* to PR_3A_OPTIMIZE_*
+
+	* unix.c (PRS): Make sure the signal_cancel is registered without
+		SA_RESTART.
+
+	* rehash.c (e2fsck_rehash_dir, copy_dir_entries, calculate_tree):
+		Restructured code in e2fsck_rehash_dir into two new
+		subroutines to make the code more understandable/maintainable.
+		(set_root_node): Fixed bug which caused the root node to
+		be invalid on non-FILETYPE filesystems due to an
+		unitialized variable.
+		(calculate_tree): Fix bug where pointers which might get
+		invalidated if realloc() moves outdir->buf around.
+		(e2fsck_rehash_dir): Fix memory leak bug.
+
+	* pass3.c (e2fsck_get_lost_and_found), e2fsck.h, e2fsck.c:
+		Exported as a public interface a function for finding the
+		lost and found directory.  Cache the location of the lost
+		and found directory in the e2fsck context structure.
+
 	* util.c (ask_yn, read_a_char): Note when the user has typed ^C,
 		and abort processing by longjmp'ing to ctx->abort_loc.
 

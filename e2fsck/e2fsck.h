@@ -138,6 +138,7 @@ struct resource_track {
 #define E2F_OPT_DEBUG		0x0080
 #define E2F_OPT_FORCE		0x0100
 #define E2F_OPT_WRITECHECK	0x0200
+#define E2F_OPT_COMPRESS_DIRS	0x0400
 
 /*
  * E2fsck flags
@@ -235,6 +236,12 @@ struct e2fsck_struct {
 	ext2_ino_t stashed_ino;
 	struct ext2_inode *stashed_inode;
 
+	/*
+	 * Location of the lost and found directory
+	 */
+	ext2_ino_t lost_and_found;
+	int bad_lost_and_found;
+	
 	/*
 	 * Directory information
 	 */
@@ -387,6 +394,7 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 extern int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t inode);
 extern errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 					 int num, int gauranteed_size);
+extern ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix);
 
 
 /* region.c */

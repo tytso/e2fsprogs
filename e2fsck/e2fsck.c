@@ -42,6 +42,8 @@ errcode_t e2fsck_allocate_context(e2fsck_t *ret)
 errcode_t e2fsck_reset_context(e2fsck_t ctx)
 {
 	ctx->flags = 0;
+	ctx->lost_and_found = 0;
+	ctx->bad_lost_and_found = 0;
 	if (ctx->inode_used_map) {
 		ext2fs_free_inode_bitmap(ctx->inode_used_map);
 		ctx->inode_used_map = 0;

@@ -44,12 +44,8 @@
 static void check_root(e2fsck_t ctx);
 static int check_directory(e2fsck_t ctx, struct dir_info *dir,
 			   struct problem_context *pctx);
-static ext2_ino_t get_lost_and_found(e2fsck_t ctx);
 static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ext2_ino_t parent);
 static errcode_t adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, int adj);
-
-static ext2_ino_t lost_and_found = 0;
-static int bad_lost_and_found = 0;
 
 static ext2fs_inode_bitmap inode_loop_detect = 0;
 static ext2fs_inode_bitmap inode_done_map = 0;
@@ -123,8 +119,14 @@ void e2fsck_pass3(e2fsck_t ctx)
 	 * Force the creation of /lost+found if not present
 	 */
 	if ((ctx->flags & E2F_OPT_READONLY) == 0)
-		get_lost_and_found(ctx);
+		e2fsck_get_lost_and_found(ctx, 1);
 
+	/*
+	 * If there are any directories that need to be indexed or
+	 * optimized, do it here.
+	 */
+	e2fsck_rehash_directories(ctx);
+	
 abort_exit:
 	e2fsck_free_dir_info(ctx);
 	if (inode_loop_detect) {
@@ -136,10 +138,6 @@ abort_exit:
 		inode_done_map = 0;
 	}
 
-	/* If there are any directories that need to be indexed, do it here. */
-	if (ctx->dirs_to_hash)
-		e2fsck_rehash_directories(ctx);
-	
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
@@ -308,8 +306,8 @@ static int check_directory(e2fsck_t ctx, struct dir_info *dir,
 				if (e2fsck_reconnect_file(ctx, p->ino))
 					ext2fs_unmark_valid(fs);
 				else {
-					p->parent = lost_and_found;
-					fix_dotdot(ctx, p, lost_and_found);
+					p->parent = ctx->lost_and_found;
+					fix_dotdot(ctx, p, ctx->lost_and_found);
 				}
 			}
 			break;
@@ -364,7 +362,7 @@ static int check_directory(e2fsck_t ctx, struct dir_info *dir,
  * This routine gets the lost_and_found inode, making it a directory
  * if necessary
  */
-static ext2_ino_t get_lost_and_found(e2fsck_t ctx)
+ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 {
 	ext2_filsys fs = ctx->fs;
 	ext2_ino_t			ino;
@@ -376,14 +374,24 @@ static ext2_ino_t get_lost_and_found(e2fsck_t ctx)
 	struct 	problem_context	pctx;
 	struct dir_info 	*dirinfo;
 
+	if (ctx->lost_and_found)
+		return ctx->lost_and_found;
+
 	clear_problem_context(&pctx);
 	
 	retval = ext2fs_lookup(fs, EXT2_ROOT_INO, name,
 			       sizeof(name)-1, 0, &ino);
+	if (retval && !fix)
+		return 0;
 	if (!retval) {
-		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, ino))
+		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, ino)) {
+			ctx->lost_and_found = ino;
 			return ino;
+		}
+				
 		/* Lost+found isn't a directory! */
+		if (!fix)
+			return 0;
 		pctx.ino = ino;
 		if (!fix_problem(ctx, PR_3_LPF_NOTDIR, &pctx))
 			return 0;
@@ -495,6 +503,7 @@ static ext2_ino_t get_lost_and_found(e2fsck_t ctx)
 	adjust_inode_count(ctx, EXT2_ROOT_INO, 1);
 	ext2fs_icount_store(ctx->inode_count, ino, 2);
 	ext2fs_icount_store(ctx->inode_link_info, ino, 2);
+	ctx->lost_and_found = ino;
 #if 0
 	printf("/lost+found created; inode #%lu\n", ino);
 #endif
@@ -516,12 +525,11 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t ino)
 	clear_problem_context(&pctx);
 	pctx.ino = ino;
 
-	if (!bad_lost_and_found && !lost_and_found) {
-		lost_and_found = get_lost_and_found(ctx);
-		if (!lost_and_found)
-			bad_lost_and_found++;
+	if (!ctx->bad_lost_and_found && !ctx->lost_and_found) {
+		if (e2fsck_get_lost_and_found(ctx, 1) == 0)
+			ctx->bad_lost_and_found++;
 	}
-	if (bad_lost_and_found) {
+	if (ctx->bad_lost_and_found) {
 		fix_problem(ctx, PR_3_NO_LPF, &pctx);
 		return 1;
 	}
@@ -529,17 +537,19 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t ino)
 	sprintf(name, "#%u", ino);
 	if (ext2fs_read_inode(fs, ino, &inode) == 0)
 		file_type = ext2_file_type(inode.i_mode);
-	retval = ext2fs_link(fs, lost_and_found, name, ino, file_type);
+	retval = ext2fs_link(fs, ctx->lost_and_found, name, ino, file_type);
 	if (retval == EXT2_ET_DIR_NO_SPACE) {
 		if (!fix_problem(ctx, PR_3_EXPAND_LF_DIR, &pctx))
 			return 1;
-		retval = e2fsck_expand_directory(ctx, lost_and_found, 1, 0);
+		retval = e2fsck_expand_directory(ctx, ctx->lost_and_found, 
+						 1, 0);
 		if (retval) {
 			pctx.errcode = retval;
 			fix_problem(ctx, PR_3_CANT_EXPAND_LPF, &pctx);
 			return 1;
 		}
-		retval = ext2fs_link(fs, lost_and_found, name, ino, file_type);
+		retval = ext2fs_link(fs, ctx->lost_and_found, name,
+				     ino, file_type);
 	}
 	if (retval) {
 		pctx.errcode = retval;

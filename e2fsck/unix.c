@@ -475,7 +475,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		ctx->program_name = *argv;
 	else
 		ctx->program_name = "e2fsck";
-	while ((c = getopt (argc, argv, "panyrcC:B:dfvtFVM:b:I:j:P:l:L:N:Ss")) != EOF)
+	while ((c = getopt (argc, argv, "panyrcC:B:dfvtFVM:b:I:j:P:l:L:N:SsD")) != EOF)
 		switch (c) {
 		case 'C':
 			ctx->progress = e2fsck_update_progress;
@@ -493,6 +493,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			_("Invalid completion information file descriptor"));
 			} else
 				close(fd);
+			break;
+		case 'D':
+			ctx->options |= E2F_OPT_COMPRESS_DIRS;
 			break;
 		case 'p':
 		case 'a':
@@ -596,7 +599,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	if (optind != argc - 1)
 		usage(ctx);
 	if ((ctx->options & E2F_OPT_NO) && !bad_blocks_file &&
-	    !cflag && !swapfs)
+	    !cflag && !swapfs && !(ctx->options & E2F_OPT_COMPRESS_DIRS))
 		ctx->options |= E2F_OPT_READONLY;
 	ctx->filesystem_name = argv[optind];
 	if (flush) {
@@ -634,6 +637,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	 * Set up signal action
 	 */
 	memset(&sa, 0, sizeof(struct sigaction));
+	sa.sa_handler = signal_cancel;
+	sigaction(SIGINT, &sa, 0);
+	sigaction(SIGTERM, &sa, 0);
 #ifdef SA_RESTART
 	sa.sa_flags = SA_RESTART;
 #endif
@@ -642,9 +648,6 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	sigaction(SIGUSR1, &sa, 0);
 	sa.sa_handler = signal_progress_off;
 	sigaction(SIGUSR2, &sa, 0);
-	sa.sa_handler = signal_cancel;
-	sigaction(SIGINT, &sa, 0);
-	sigaction(SIGTERM, &sa, 0);
 #endif
 
 	/* Update our PATH to include /sbin if we need to run badblocks  */

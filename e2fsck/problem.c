@@ -1173,35 +1173,35 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("/@l is not a @d (ino=%i)\n"),
 	  PROMPT_UNLINK, 0 },
 
-	/* Pass 3a (rehashing directory) errors	*/
+	/* Pass 3A Directory Optimization	*/
 
-	/* Pass 3a: Reindexing directories */
+	/* Pass 3A: Optimizing directories */
 	{ PR_3A_PASS_HEADER,
-	  N_("Pass 3a: Reindexing directories\n"),
+	  N_("Pass 3A: Optimizing directories\n"),
 	  PROMPT_NONE, PR_PREEN_NOMSG },
 
 	/* Error iterating over directories */
-	{ PR_3A_REHASH_ITER,
+	{ PR_3A_OPTIMIZE_ITER,
 	  N_("Failed to create dirs_to_hash iterator: %m"),
 	  PROMPT_NONE, 0 },
 
 	/* Error rehash directory */
-	{ PR_3A_REHASH_DIR_ERR,
-	  N_("Failed to rehash directory %q (%d): %m"),
+	{ PR_3A_OPTIMIZE_DIR_ERR,
+	  N_("Failed to optimize directory %q (%d): %m"),
 	  PROMPT_NONE, 0 },
 
 	/* Rehashing dir header */
-	{ PR_3A_REHASH_DIR_HEADER,
-	  N_("Rehashing directories: "),
+	{ PR_3A_OPTIMIZE_DIR_HEADER,
+	  N_("Optimizing directories: "),
 	  PROMPT_NONE, PR_MSG_ONLY },
 
 	/* Rehashing directory %d */
-	{ PR_3A_REHASH_DIR,
+	{ PR_3A_OPTIMIZE_DIR,
 	  " %d",
-	  PROMPT_NONE, PR_LATCH_REHASH_DIR | PR_PREEN_NOHDR},
+	  PROMPT_NONE, PR_LATCH_OPTIMIZE_DIR | PR_PREEN_NOHDR},
 		  
 	/* Rehashing dir end */	  
-	{ PR_3A_REHASH_DIR_END,
+	{ PR_3A_OPTIMIZE_DIR_END,
 	  "\n",
 	  PROMPT_NONE, PR_PREEN_NOHDR },
 
@@ -1375,7 +1375,7 @@ static struct latch_descr pr_latch_info[] = {
 	{ PR_LATCH_DBLOCK, PR_1B_DUP_BLOCK_HEADER, PR_1B_DUP_BLOCK_END },
 	{ PR_LATCH_LOW_DTIME, PR_1_ORPHAN_LIST_REFUGEES, 0 },
 	{ PR_LATCH_TOOBIG, PR_1_INODE_TOOBIG, 0 },
-	{ PR_LATCH_REHASH_DIR, PR_3A_REHASH_DIR_HEADER, PR_3A_REHASH_DIR_END },
+	{ PR_LATCH_OPTIMIZE_DIR, PR_3A_OPTIMIZE_DIR_HEADER, PR_3A_OPTIMIZE_DIR_END },
 	{ -1, 0, 0 },
 };
 
