@@ -1,3 +1,12 @@
+2002-02-22  Theodore Tso  <tytso@valinux.com>
+
+	* journal.c: Improve code maintainability and reduce code size by 
+		moving common code paths in e2fsck_journal_init_dev() and
+		e2fsck_journal_init_inode() into e2fsck_get_journal().
+		Also fixed a memory leak in recover_ext3_journal().
+
+	* super.c (release_orphan_inodes): Fix memory leak.
+
 2002-02-03  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.26

@@ -294,6 +294,7 @@ static int release_orphan_inodes(e2fsck_t ctx)
 		e2fsck_write_inode(ctx, ino, &inode, "delete_file");
 		ino = next_ino;
 	}
+	ext2fs_free_mem((void **) &block_buf);
 	return 0;
 return_abort:
 	ext2fs_free_mem((void **) &block_buf);
