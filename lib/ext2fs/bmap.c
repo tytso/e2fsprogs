@@ -1,5 +1,5 @@
 /*
- * bmap.c --- logical to phiscal block mapping
+ * bmap.c --- logical to physical block mapping
  *
  * Copyright (C) 1997 Theodore Ts'o.
  *

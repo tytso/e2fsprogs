@@ -100,11 +100,7 @@ void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
 		for (i = 0; i < EXT2_N_BLOCKS; i++)
 			t->i_block[i] = f->i_block[i];
 	}
-#if defined(HAVE_EXT2_INODE_VERSION)
-	t->i_version = ext2fs_swab32(f->i_version);
-#else
 	t->i_generation = ext2fs_swab32(f->i_generation);
-#endif
 	t->i_file_acl = ext2fs_swab32(f->i_file_acl);
 	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
 	t->i_faddr = ext2fs_swab32(f->i_faddr);
@@ -116,10 +112,12 @@ void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
 		t->osd2.linux2.l_i_frag = f->osd2.linux2.l_i_frag;
 		t->osd2.linux2.l_i_fsize = f->osd2.linux2.l_i_fsize;
 		t->osd2.linux2.i_pad1 = ext2fs_swab16(f->osd2.linux2.i_pad1);
-		t->osd2.linux2.l_i_reserved2[0] =
-			ext2fs_swab32(f->osd2.linux2.l_i_reserved2[0]);
-		t->osd2.linux2.l_i_reserved2[1] =
-			ext2fs_swab32(f->osd2.linux2.l_i_reserved2[1]);
+		t->osd2.linux2.l_i_uid_high =
+		  ext2fs_swab16 (f->osd2.linux2.l_i_uid_high);
+		t->osd2.linux2.l_i_gid_high =
+		  ext2fs_swab16 (f->osd2.linux2.l_i_gid_high);
+		t->osd2.linux2.l_i_reserved2 =
+			ext2fs_swab32(f->osd2.linux2.l_i_reserved2);
 		break;
 	case EXT2_OS_HURD:
 		t->osd1.hurd1.h_i_translator =

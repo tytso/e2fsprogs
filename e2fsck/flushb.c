@@ -9,10 +9,6 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#ifdef HAVE_LINUX_FS_H
-#include <linux/fs.h>
-#endif
-
 #ifdef __STDC__
 #define NOARGS void
 #else

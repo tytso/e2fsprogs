@@ -29,9 +29,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
-#ifdef HAVE_LINUX_FS_H
-#include <linux/fs.h>
-#endif
 #include <linux/ext2_fs.h>
 
 #include "ext2fs/ext2fs.h"

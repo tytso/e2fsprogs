@@ -17,9 +17,6 @@
 #include <errno.h>
 #endif
 #include <fcntl.h>
-#ifdef HAVE_LINUX_FS_H
-#include <linux/fs.h>
-#endif
 #ifdef HAVE_LINUX_FD_H
 #include <sys/ioctl.h>
 #include <linux/fd.h>

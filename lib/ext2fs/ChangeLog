@@ -1,3 +1,11 @@
+2000-02-02  Theodore Ts'o  <tytso@valinux.com>
+
+	* getsize.c, ismounted.c: Remove unneeded include of linux/fs.h
+
+	* swapfs.c: Remove #ifdef HAVE_EXT2_INODE_VERSION since it's not
+		needed any more; we know it will always be i_generation.
+		Add support for swapping the high bits of the uid and gid.
+
 1999-11-19    <tytso@valinux.com>
 
 	* mkdir.c (ext2fs_mkdir): Only update the parent's inode link
