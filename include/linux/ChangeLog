@@ -1,3 +1,7 @@
+2000-07-07  Theodore Ts'o  <tytso@valinux.com>
+
+	* ext2_fs.h: Update ext3 extension feature #define's.
+
 2000-07-04  Theodore Ts'o  <tytso@valinux.com>
 
 	* ext2_fs.h: Update to include latest journalling additions to the

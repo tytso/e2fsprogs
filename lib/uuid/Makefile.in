@@ -91,9 +91,8 @@ tst_uuid: tst_uuid.o $(DEPLIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o tst_uuid tst_uuid.o $(LIBUUID)
 
 uuid_time: $(srcdir)/uuid_time.c $(DEPLIBUUID)
-	$(CC) $(ALL_CFLAGS) -DDEBUG $(srcdir)/uuid_time.c -c -o uuid_time.o
-	$(CC) -o uuid_time uuid_time.o $(LIBUUID)
-	$(RM) uuid_time.o
+	$(CC) $(ALL_CFLAGS) -DDEBUG -o uuid_time $(srcdir)/uuid_time.c \
+		$(LIBUUID)
 
 libuuid.3: $(DEP_SUBSTITUTE) $(srcdir)/libuuid.3.in
 	$(SUBSTITUTE) $(srcdir)/libuuid.3.in libuuid.3

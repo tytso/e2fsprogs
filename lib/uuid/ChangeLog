@@ -1,3 +1,9 @@
+2000-07-07  Theodore Ts'o  <tytso@valinux.com>
+
+	* Makefile.in (uuid_time): Fix compilation rule so that
+		uuid_time.o doesn't get bashed in order to build the
+		command-line version of uuid_time.
+
 2000-07-04  Theodore Ts'o  <tytso@valinux.com>
 
 	* Makefile.in: Remove explicit link of -lc in the shared library.
