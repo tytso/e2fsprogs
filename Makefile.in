@@ -26,7 +26,7 @@ all:: subs
 	$(MAKE) docs
 
 subs:
-	for i in $(SUBS) ; do if test -d `dirname $$i` ; then make $$i ; fi ; done
+	for i in $(SUBS) ; do if test -d `dirname $$i` ; then $(MAKE) $$i ; fi ; done
 
 progs: subs all-progs-recursive
 libs: subs all-libs-recursive
