@@ -94,7 +94,7 @@ static void usage(void)
 	" [-N number-of-inodes]\n\t[-m reserved-blocks-percentage] "
 	"[-o creator-os] [-g blocks-per-group]\n\t[-L volume-label] "
 	"[-M last-mounted-directory] [-O feature[,...]]\n\t"
-	"[-r fs-revision] [-R raid_opts] [-qvSV] device [blocks-count]\n"),
+	"[-r fs-revision] [-R options] [-qvSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
@@ -714,6 +714,11 @@ static void show_stats(ext2_filsys fs)
 		s->s_r_blocks_count,
 	       100.0 * s->s_r_blocks_count / s->s_blocks_count);
 	printf(_("First data block=%u\n"), s->s_first_data_block);
+	if (s->s_reserved_gdt_blocks)
+		printf(_("Maximum filesystem blocks=%lu\n"),
+		       (s->s_reserved_gdt_blocks + fs->desc_blocks) *
+		       (fs->blocksize / sizeof(struct ext2_group_desc)) *
+		       s->s_blocks_per_group);
 	if (fs->group_desc_count > 1)
 		printf(_("%u block groups\n"), fs->group_desc_count);
 	else
@@ -726,7 +731,7 @@ static void show_stats(ext2_filsys fs)
 		printf("\n");
 		return;
 	}
-	
+
 	printf(_("Superblock backups stored on blocks: "));
 	group_block = s->s_first_data_block;
 	col_left = 0;
@@ -768,17 +773,17 @@ static int set_os(struct ext2_super_block *sb, char *os)
 
 #define PATH_SET "PATH=/sbin"
 
-static void parse_raid_opts(const char *opts)
+static void parse_r_opts(struct ext2_super_block *param, const char *opts)
 {
 	char	*buf, *token, *next, *p, *arg;
 	int	len;
-	int	raid_usage = 0;
+	int	r_usage = 0;
 
 	len = strlen(opts);
 	buf = malloc(len+1);
 	if (!buf) {
-		fprintf(stderr, _("Couldn't allocate memory to parse "
-			"raid options!\n"));
+		fprintf(stderr,
+			_("Couldn't allocate memory to parse options!\n"));
 		exit(1);
 	}
 	strcpy(buf, opts);
@@ -788,7 +793,7 @@ static void parse_raid_opts(const char *opts)
 		if (p) {
 			*p = 0;
 			next = p+1;
-		} 
+		}
 		arg = strchr(token, '=');
 		if (arg) {
 			*arg = 0;
@@ -796,32 +801,91 @@ static void parse_raid_opts(const char *opts)
 		}
 		if (strcmp(token, "stride") == 0) {
 			if (!arg) {
-				raid_usage++;
+				r_usage++;
 				continue;
 			}
 			fs_stride = strtoul(arg, &p, 0);
 			if (*p || (fs_stride == 0)) {
 				fprintf(stderr,
 					_("Invalid stride parameter.\n"));
-				raid_usage++;
+				r_usage++;
 				continue;
 			}
+		} else if (!strcmp(token, "resize")) {
+			unsigned long resize = 1;
+			int tmp;
+
+			if (!arg) {
+				r_usage++;
+				continue;
+			}
+
+			p = &arg[strlen(arg) - 1];
+
+			switch(*p++) {
+			case 'T':
+			case 't': resize <<= 10; /* no break */
+			case 'G':
+			case 'g': resize <<= 10; /* no break */
+			case 'M':
+			case 'm': resize <<= 10; /* no break */
+			case 'K':
+			case 'k': resize >>= param->s_log_block_size -10; *p = 0; break;
+			case 'b': resize >>= param->s_log_block_size - 9; *p = 0; break;
+			case '0': break;
+			case '1': break;
+			case '2': break;
+			case '3': break;
+			case '4': break;
+			case '5': break;
+			case '6': break;
+			case '7': break;
+			case '8': break;
+			case '9': break;
+			default: r_usage++; continue;
+			}
+
+			resize *= strtoul(arg, NULL, 0);
+
+			if (resize == 0) {
+				fprintf(stderr,
+					_("Invalid resize parameter.\n"));
+				r_usage++;
+				continue;
+			}
+			param->s_feature_compat |=
+				EXT2_FEATURE_COMPAT_RESIZE_INODE;
+			tmp = param->s_blocks_per_group;
+			if (tmp > EXT2_MAX_BLOCKS_PER_GROUP(param))
+				tmp = EXT2_MAX_BLOCKS_PER_GROUP(param);
+			resize = (resize + tmp - 1) / tmp;
+			tmp = (1 << param->s_log_block_size) /
+				sizeof(struct ext2_group_desc);
+			resize = (resize + tmp - 1) / tmp;
+			/* XXX param->s_res_gdt_blocks = resize - existing
+			cur_groups = (resize - sb->s_first_data_block +
+				      EXT2_BLOCKS_PER_GROUP(super) - 1) /bpg;
+			cur_gdb = (cur_groups + gdpb - 1) / gdpb;
+			*/
+
 		} else
-			raid_usage++;
+			r_usage++;
 	}
-	if (raid_usage) {
-		fprintf(stderr, _("\nBad raid options specified.\n\n"
-			"Raid options are separated by commas, "
+	if (r_usage) {
+		fprintf(stderr, _("\nBad options specified.\n\n"
+			"Options are separated by commas, "
 			"and may take an argument which\n"
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid raid options are:\n"
-			"\tstride=<stride length in blocks>\n\n"));
+			"\tstride=<stride length in blocks>\n"
+			"\tresize=<resize maximum size in blocks>\n\n"));
 		exit(1);
 	}
 }	
 
 static __u32 ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
+		EXT2_FEATURE_COMPAT_RESIZE_INODE |
 		EXT2_FEATURE_COMPAT_DIR_INDEX,	/* Compat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
 		EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|
@@ -844,9 +908,8 @@ static void PRS(int argc, char *argv[])
 	ext2_ino_t	num_inodes = 0;
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
-	char *		raid_opts = 0;
+	char *		r_opts = 0;
 	const char *	fs_type = 0;
-	int		default_features = 1;
 	blk_t		dev_size;
 #ifdef __linux__
 	struct 		utsname ut;
@@ -1056,14 +1119,12 @@ static void PRS(int argc, char *argv[])
 			mount_dir = optarg;
 			break;
 		case 'O':
-			if (!strcmp(optarg, "none") || default_features) {
+			if (!strcmp(optarg, "none")) {
 				param.s_feature_compat = 0;
 				param.s_feature_incompat = 0;
 				param.s_feature_ro_compat = 0;
-				default_features = 0;
-			}
-			if (!strcmp(optarg, "none"))
 				break;
+			}
 			if (e2p_edit_feature(optarg,
 					    &param.s_feature_compat,
 					    ok_features)) {
@@ -1073,7 +1134,7 @@ static void PRS(int argc, char *argv[])
 			}
 			break;
 		case 'R':
-			raid_opts = optarg;
+			r_opts = optarg;
 			break;
 		case 'S':
 			super_only = 1;
@@ -1093,7 +1154,7 @@ static void PRS(int argc, char *argv[])
 	device_name = argv[optind];
 	optind++;
 	if (optind < argc) {
-		unsigned long tmp2  = strtoul(argv[optind++], &tmp, 0);
+		unsigned long long tmp2 = strtoull(argv[optind++], &tmp, 0);
 
 		if ((*tmp) || (tmp2 > 0xfffffffful)) {
 			com_err(program_name, 0, _("bad blocks count - %s"),
@@ -1114,9 +1175,6 @@ static void PRS(int argc, char *argv[])
 			error_message(EXT2_ET_BASE));
 		exit(0);
 	}
-
-	if (raid_opts)
-		parse_raid_opts(raid_opts);
 
 	/*
 	 * If there's no blocksize specified and there is a journal
@@ -1262,6 +1320,20 @@ static void PRS(int argc, char *argv[])
 	set_fs_defaults(fs_type, &param, blocksize, sector_size, &inode_ratio);
 	blocksize = EXT2_BLOCK_SIZE(&param);
 	
+	if (r_opts)
+		parse_r_opts(&param, r_opts);
+
+	/* Since sparse_super is the default, we would only have a problem
+	 * here if it was explicitly disabled.
+	 */
+	if ((param.s_feature_compat & EXT2_FEATURE_COMPAT_RESIZE_INODE) &&
+	    !(param.s_feature_ro_compat&EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)) {
+		com_err(program_name, 0,
+			_("reserved online resize blocks not supported "
+			  "on non-sparse filesystem"));
+		exit(1);
+	}
+
 	if (param.s_blocks_per_group) {
 		if (param.s_blocks_per_group < 256 ||
 		    param.s_blocks_per_group > 8 * (unsigned) blocksize) {
@@ -1299,9 +1371,8 @@ static void PRS(int argc, char *argv[])
 	 * Calculate number of blocks to reserve
 	 */
 	param.s_r_blocks_count = (param.s_blocks_count * reserved_ratio) / 100;
-
 }
-					
+
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
@@ -1460,6 +1531,12 @@ int main (int argc, char *argv[])
 		create_lost_and_found(fs);
 		reserve_inodes(fs);
 		create_bad_block_inode(fs, bb_list);
+		retval = ext2fs_create_resize_inode(fs);
+		if (retval) {
+			com_err("ext2fs_create_resize_inode", retval,
+				_("while reserving blocks for online resize"));
+			exit(1);
+		}
 	}
 
 	if (journal_device) {

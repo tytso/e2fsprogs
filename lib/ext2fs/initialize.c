@@ -58,6 +58,35 @@
 #endif
 #define EXT2_DFL_CHECKINTERVAL (86400L * 180L)
 
+/*
+ * Calculate the number of GDT blocks to reserve for online filesystem growth.
+ * The absolute maximum number of GDT blocks we can reserve is determined by
+ * the number of block pointers that can fit into a single block.
+ */
+static int calc_reserved_gdt_blocks(ext2_filsys fs)
+{
+	struct ext2_super_block *sb = fs->super;
+	unsigned long bpg = sb->s_blocks_per_group;
+	unsigned int gdpb = fs->blocksize / sizeof(struct ext2_group_desc);
+	unsigned long max_blocks = 0xffffffff;
+	unsigned long rsv_groups;
+	int rsv_gdb;
+
+	/* We set it at 1024x the current filesystem size, or
+	 * the upper block count limit (2^32), whichever is lower.
+	 */
+	if (sb->s_blocks_count < max_blocks / 1024)
+		max_blocks = sb->s_blocks_count * 1024;
+	rsv_groups = (max_blocks - sb->s_first_data_block + bpg - 1) / bpg;
+	rsv_gdb = (rsv_groups + gdpb - 1) / gdpb - fs->desc_blocks;
+	if (rsv_gdb > EXT2_ADDR_PER_BLOCK(sb))
+		rsv_gdb = EXT2_ADDR_PER_BLOCK(sb);
+	printf("max_blocks %lu, rsv_groups = %lu, rsv_gdb = %lu\n",
+	       max_blocks, rsv_groups, rsv_gdb);
+
+	return rsv_gdb;
+}
+
 errcode_t ext2fs_initialize(const char *name, int flags,
 			    struct ext2_super_block *param,
 			    io_manager manager, ext2_filsys *ret_fs)
@@ -72,6 +101,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	unsigned int	ipg;
 	dgrp_t		i;
 	blk_t		numblocks;
+	int		rsv_gdt;
 	char		*buf;
 
 	if (!param || !param->s_blocks_count)
@@ -120,10 +150,14 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_feature_incompat, 0);
 	set_field(s_feature_ro_compat, 0);
 	set_field(s_first_meta_bg, 0);
-	if (super->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)
-		return EXT2_ET_UNSUPP_FEATURE;
-	if (super->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)
-		return EXT2_ET_RO_UNSUPP_FEATURE;
+	if (super->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
+		retval = EXT2_ET_UNSUPP_FEATURE;
+		goto cleanup;
+	}
+	if (super->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP) {
+		retval = EXT2_ET_RO_UNSUPP_FEATURE;
+		goto cleanup;
+	}
 
 	set_field(s_rev_level, EXT2_GOOD_OLD_REV);
 	if (super->s_rev_level >= EXT2_DYNAMIC_REV) {
@@ -157,8 +191,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	 * If we're creating an external journal device, we don't need
 	 * to bother with the rest.
 	 */
-	if (super->s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+	if (super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		fs->group_desc_count = 0;
 		ext2fs_mark_super_dirty(fs);
 		*ret_fs = fs;
@@ -170,8 +203,10 @@ retry:
 				super->s_first_data_block +
 				EXT2_BLOCKS_PER_GROUP(super) - 1)
 		/ EXT2_BLOCKS_PER_GROUP(super);
-	if (fs->group_desc_count == 0)
-		return EXT2_ET_TOOSMALL;
+	if (fs->group_desc_count == 0) {
+		retval = EXT2_ET_TOOSMALL;
+		goto cleanup;
+	}
 	fs->desc_blocks = (fs->group_desc_count +
 			   EXT2_DESC_PER_BLOCK(super) - 1)
 		/ EXT2_DESC_PER_BLOCK(super);
@@ -244,15 +279,29 @@ retry:
 	super->s_free_inodes_count = super->s_inodes_count;
 
 	/*
+	 * check the number of reserved group descriptor table blocks
+	 */
+	if (super->s_feature_compat & EXT2_FEATURE_COMPAT_RESIZE_INODE)
+		rsv_gdt = calc_reserved_gdt_blocks(fs);
+	else
+		rsv_gdt = 0;
+	set_field(s_reserved_gdt_blocks, rsv_gdt);
+	if (super->s_reserved_gdt_blocks > EXT2_ADDR_PER_BLOCK(super)) {
+		retval = EXT2_ET_RES_GDT_BLOCKS;
+		goto cleanup;
+	}
+
+	/*
 	 * Overhead is the number of bookkeeping blocks per group.  It
 	 * includes the superblock backup, the group descriptor
 	 * backups, the inode bitmap, the block bitmap, and the inode
 	 * table.
-	 *
-	 * XXX Not all block groups need the descriptor blocks, but
-	 * being clever is tricky...
 	 */
-	overhead = (int) (3 + fs->desc_blocks + fs->inode_blocks_per_group);
+
+	overhead = (int) (2 + fs->inode_blocks_per_group);
+
+	if (ext2fs_bg_has_super(fs, fs->group_desc_count - 1))
+		overhead += 1 + fs->desc_blocks + super->s_reserved_gdt_blocks;
 
 	/* This can only happen if the user requested too many inodes */
 	if (overhead > super->s_blocks_per_group)

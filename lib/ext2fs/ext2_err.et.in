@@ -287,5 +287,8 @@ ec	EXT2_ET_TOO_MANY_INODES,
 ec	EXT2_ET_NOT_IMAGE_FILE,
 	"E2image snapshot not in use"
 
+ec	EXT2_ET_RES_GDT_BLOCKS,
+	"Too many reserved group descriptor blocks"
+
 	end
 

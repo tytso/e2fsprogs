@@ -40,7 +40,8 @@ int ext2fs_reserve_super_and_bgd(ext2_filsys fs,
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
-		old_desc_blocks = fs->desc_blocks;
+		old_desc_blocks = 
+			fs->desc_blocks + fs->super->s_reserved_gdt_blocks;
 
 	if (super_blk || (group == 0))
 		ext2fs_mark_block_bitmap(bmap, super_blk);

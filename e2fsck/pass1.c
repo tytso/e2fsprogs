@@ -1525,7 +1525,18 @@ static int process_block(ext2_filsys fs,
 			return 0;
 	}
 
-	mark_block_used(ctx, blk);
+	if (p->ino == EXT2_RESIZE_INO) {
+		if (blockcnt >= 0) {
+			/* Check that the block is in the correct place
+			 * in the appropriate backup reserved gdt area */
+		} else if (blockcnt == BLOCK_COUNT_IND) {
+			/* Check that the block is in the correct place
+			 * in the primary reserved gdt area */
+		} else  /* The resize inode's DIND block should be
+			 * allocated as a normal block. */
+			mark_block_used(ctx, blk);
+	} else
+		mark_block_used(ctx, blk);
 	p->num_blocks++;
 	if (blockcnt >= 0)
 		p->last_block = blockcnt;

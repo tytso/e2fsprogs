@@ -430,6 +430,7 @@ typedef struct ext2_icount *ext2_icount_t;
 #define EXT2_LIB_FEATURE_COMPAT_SUPP	(EXT2_FEATURE_COMPAT_DIR_PREALLOC|\
 					 EXT2_FEATURE_COMPAT_IMAGIC_INODES|\
 					 EXT3_FEATURE_COMPAT_HAS_JOURNAL|\
+					 EXT2_FEATURE_COMPAT_RESIZE_INODE|\
 					 EXT2_FEATURE_COMPAT_DIR_INDEX|\
 					 EXT2_FEATURE_COMPAT_EXT_ATTR)
 
@@ -600,14 +601,12 @@ extern errcode_t ext2fs_check_desc(ext2_filsys fs);
 /* closefs.c */
 extern errcode_t ext2fs_close(ext2_filsys fs);
 extern errcode_t ext2fs_flush(ext2_filsys fs);
-extern int ext2fs_bg_has_super(ext2_filsys fs, int group_block);
 extern int ext2fs_super_and_bgd_loc(ext2_filsys fs, 
 				    dgrp_t group,
 				    blk_t *ret_super_blk,
 				    blk_t *ret_old_desc_blk,
 				    blk_t *ret_new_desc_blk,
 				    int *ret_meta_bg);
-extern void ext2fs_update_dynamic_rev(ext2_filsys fs);
 
 /* cmp_bitmaps.c */
 extern errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,
@@ -888,6 +887,9 @@ extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 				     void (*invalid)(ext2_filsys fs,
 						     blk_t blk));
 
+/* res_gdt.c */
+extern errcode_t ext2fs_create_resize_inode(ext2_filsys fs);
+
 /* rs_bitmap.c */
 extern errcode_t ext2fs_resize_generic_bitmap(__u32 new_end,
 					      __u32 new_real_end,
@@ -898,6 +900,12 @@ extern errcode_t ext2fs_resize_block_bitmap(__u32 new_end, __u32 new_real_end,
 					    ext2fs_block_bitmap bmap);
 extern errcode_t ext2fs_copy_bitmap(ext2fs_generic_bitmap src,
 				    ext2fs_generic_bitmap *dest);
+
+/* sparse.c */
+extern int ext2fs_bg_has_super(ext2_filsys fs, int group_block);
+extern void ext2fs_update_dynamic_rev(ext2_filsys fs);
+extern unsigned int ext2fs_list_backups(ext2_filsys fs, unsigned *three,
+					unsigned *five, unsigned *seven);
 
 /* swapfs.c */
 extern void ext2fs_swap_super(struct ext2_super_block * super);
