@@ -1,3 +1,8 @@
+2001-05-12  Theodore Tso  <tytso@valinux.com>
+
+	* debugfs.c (print_features): Use fputs instead of printf to
+		output using the passed-in FILE *.
+
 2001-05-09  Theodore Tso  <tytso@valinux.com>
 
 	* debugfs.c (do_write, do_mknod): Set the file type information

@@ -236,7 +236,7 @@ static void print_features(struct ext2_super_block * s, FILE *f)
 	int	i, j, printed=0;
 __u32	*mask = &s->s_feature_compat, m;
 
-	printf ("Filesystem features:");
+	fputs("Filesystem features:", f);
 	for (i=0; i <3; i++,mask++) {
 		for (j=0,m=1; j < 32; j++, m<<=1) {
 			if (*mask & m) {
@@ -246,8 +246,8 @@ __u32	*mask = &s->s_feature_compat, m;
 		}
 	}
 	if (printed == 0)
-		printf("(none)");
-	printf("\n");
+		fputs("(none)", f);
+	fputs("\n", f);
 }
 
 void do_show_super_stats(int argc, char *argv[])
