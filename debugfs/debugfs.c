@@ -1175,7 +1175,8 @@ void do_write(int argc, char *argv[])
 	current_fs->super->s_free_inodes_count--;
 	ext2fs_mark_super_dirty(current_fs);
 	printf("Allocated inode: %u\n", newfile);
-	retval = ext2fs_link(current_fs, cwd, argv[2], newfile, 0);
+	retval = ext2fs_link(current_fs, cwd, argv[2], newfile,
+			     EXT2_FT_REG_FILE);
 	if (retval) {
 		com_err(argv[2], retval, "");
 		close(fd);
@@ -1211,6 +1212,7 @@ void do_mknod(int argc, char *argv[])
 	ext2_ino_t	newfile;
 	errcode_t 	retval;
 	struct ext2_inode inode;
+	int		filetype;
 
 	if (check_fs_open(argv[0]))
 		return;
@@ -1222,17 +1224,21 @@ void do_mknod(int argc, char *argv[])
 	switch (argv[2][0]) {
 		case 'p':
 			mode = LINUX_S_IFIFO;
+			filetype = EXT2_FT_FIFO;
 			nr = 3;
 			break;
 		case 'c':
 			mode = LINUX_S_IFCHR;
+			filetype = EXT2_FT_CHRDEV;
 			nr = 5;
 			break;
 		case 'b':
 			mode = LINUX_S_IFBLK;
+			filetype = EXT2_FT_BLKDEV;
 			nr = 5;
 			break;
 		default:
+			filetype = 0;
 			nr = 0;
 	}
 	if (nr == 5) {
@@ -1253,13 +1259,14 @@ void do_mknod(int argc, char *argv[])
 		return;
 	}
 	printf("Allocated inode: %u\n", newfile);
-	retval = ext2fs_link(current_fs, cwd, argv[1], newfile, 0);
+	retval = ext2fs_link(current_fs, cwd, argv[1], newfile, filetype);
 	if (retval) {
 		if (retval == EXT2_ET_DIR_NO_SPACE) {
 			retval = ext2fs_expand_dir(current_fs, cwd);
 			if (!retval)
 				retval = ext2fs_link(current_fs, cwd,
-						     argv[1], newfile, 0);
+						     argv[1], newfile,
+						     filetype);
 		}
 		if (retval) {
 			com_err(argv[1], retval, "");
