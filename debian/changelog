@@ -1,3 +1,11 @@
+e2fsprogs (1.33-4) unstable; urgency=low
+
+  * Add replaces field to comerr-dev to resolve a file conflict with
+    /usr/include/com_err.h and the libkrb5-dev package.  (Closes: #192277)
+  * Add -t option to badblocks to control the test pattern used.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu,  8 May 2003 03:29:47 -0400
+
 e2fsprogs (1.33-3) unstable; urgency=low
 
   * Add full Heimdall/Kerberos4-kth compatibility to com_err routines.
