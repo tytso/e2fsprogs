@@ -1,3 +1,10 @@
+2001-09-10  Theodore Tso  <tytso@valinux.com>
+
+	* com_err.texinfo: Add appropriate @node and @menu lines so that
+		the a valid .info file can be made.  Use @deftypefun to
+		define functions.  Change the e-mail address where bug
+		reports to be sent to be is the e2fsprogs maintainer.
+
 2001-09-02  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.24a
