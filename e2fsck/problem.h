@@ -127,6 +127,9 @@ struct problem_context {
 /* Superblock recovery flag clear - journal needs to be reset */
 #define PR_0_JOURNAL_RESET_PROMPT 0x000019
 
+/* Filesystem revision is 0, but feature flags are set */
+#define PR_0_FS_REV_LEVEL	0x00001A
+
 /* Clearing orphan inode */
 #define PR_0_ORPHAN_CLEAR_INODE			0x000020
 	
@@ -298,6 +301,9 @@ struct problem_context {
 
 /* Non-zero size on on device, fifo or socket inode */
 #define PR_1_SET_NONZSIZE		0x010032
+
+/* Filesystem revision is 0, but feature flags are set */
+#define PR_1_FS_REV_LEVEL		0x010033
 
 /*
  * Pass 1b errors

@@ -254,6 +254,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@I @i %i in @o @i list.\n"),
 	  PROMPT_NONE, 0 },
 
+	/* Filesystem revision is 0, but feature flags are set */
+	{ PR_0_FS_REV_LEVEL,
+	  "@F has feature flag(s) set, but is a revision 0 @f.  ",
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
+
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */
@@ -517,7 +522,12 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_1_SET_NONZSIZE,
 	  "Special (device/socket/fifo) @i %i has non-zero size.  ",
 	  PROMPT_FIX, PR_PREEN_OK },
-	  
+
+	/* Filesystem revision is 0, but feature flags are set */
+	{ PR_1_FS_REV_LEVEL,
+	  "@F has feature flag(s) set, but is a revision 0 @f.  ",
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

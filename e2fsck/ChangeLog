@@ -1,3 +1,8 @@
+2000-12-13  Theodore Ts'o  <tytso@valinux.com>
+
+	* problem.c, problem.h (PR_0_FS_REV_LEVEL, PR_1_FS_REV_LEVEL): Add
+		new problem codes.
+
 2000-12-09    <tytso@snap.thunk.org>
 
 	* flushb.c: Fix flushb so that it does something other than waste
