@@ -1,3 +1,8 @@
+2000-04-03  Theodore Ts'o  <tytso@valinux.com>
+
+	* subst.c: For platforms that don't define optarg.h, manually
+		define optarg and optind.
+
 1999-11-19    <tytso@valinux.com>
 
 	* Makefile.in (distclean): Remove TAGS and Makefile.in.old from
