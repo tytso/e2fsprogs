@@ -16,7 +16,6 @@ e2image \- Save critical ext2 filesystem data to a file
 The
 .B e2image
 program will save critical filesystem data on the ext2 filesystem located on 
-display or change the filesystem label on the ext2 filesystem located on
 .I device  
 to a file specified by 
 .IR image-file .

@@ -1,3 +1,8 @@
+2001-11-24  Theodore Tso  <tytso@valinux.com>
+
+	* e2image.8.in: Fix cut-and-paste typo (Addresses Debian bug
+		#119624)
+
 2001-11-13  Theodore Tso  <tytso@valinux.com>
 
 	* util.c (check_plausibility): Use stat64 if available so that
