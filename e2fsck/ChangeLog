@@ -1,5 +1,10 @@
 1999-10-25    <tytso@valinux.com>
 
+	* util.c: For NT portability, don't redefine getchar(), since
+		stdio defines that.  Instead we introduce a new
+		abstract macro read_a_char() which is #defined to the
+		right function as necessary.
+
 	* problem.c, problem.h (PR_2_NULL_NAME): Add new problem code.
 
 	* pass2.c (check_dir_block): Require that the length of the

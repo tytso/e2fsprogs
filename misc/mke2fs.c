@@ -40,7 +40,6 @@
 #endif
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>
@@ -48,6 +47,7 @@
 #include <linux/ext2_fs.h>
 #ifdef HAVE_LINUX_MAJOR_H
 #include <linux/major.h>
+#include <sys/stat.h>		/* Only need sys/stat.h for major nr test */
 #endif
 
 #include "et/com_err.h"
@@ -952,7 +952,7 @@ static void PRS(int argc, char *argv[])
 	 * Calculate number of inodes based on the inode ratio
 	 */
 	param.s_inodes_count = num_inodes ? num_inodes : 
-		((long long) param.s_blocks_count * EXT2_BLOCK_SIZE(&param))
+		((__u64) param.s_blocks_count * EXT2_BLOCK_SIZE(&param))
 			/ inode_ratio;
 
 	/*

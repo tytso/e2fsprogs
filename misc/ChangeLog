@@ -2,6 +2,9 @@
 
 	* mke2fs.c (show_stats): Capitalized Hurd to make the GNU types
 		happy. 
+		(PRS): Use __u64 instead of long long for portability
+		reasons.   Also moved #include of sys/stat.h inside #ifdef
+		HAVE_LINUX_MAJOR_H for portability reasons.
 
 	* fsck.c (execute): Fix really stupid bug in the linked list
 		management which caused fsck in parallel mode to go into

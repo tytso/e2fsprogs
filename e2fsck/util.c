@@ -17,11 +17,14 @@
 #ifdef HAVE_CONIO_H
 #undef HAVE_TERMIOS_H
 #include <conio.h>
-#define getchar()	getch()
+#define read_a_char()	getch()
 #else
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #endif
+#else /* !HAVE_CONIO_H */
+#include <stdio.h>
+#define read_a_char	getchar()
 #endif
 
 #ifdef HAVE_MALLOC_H
@@ -86,7 +89,7 @@ int ask_yn(const char * string, int def)
 	printf("%s%s? ", string, defstr);
 	while (1) {
 		fflush (stdout);
-		if ((c = getchar()) == EOF)
+		if ((c = read_a_char()) == EOF)
 			break;
 		c = toupper(c);
 		if (c == 'Y') {
