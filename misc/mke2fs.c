@@ -88,7 +88,7 @@ int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
 static void usage(void)
 {
 	fprintf(stderr, _("Usage: %s [-c|-t|-l filename] [-b block-size] "
-	"[-f fragment-size]\n\t[-i bytes-per-inode] [-j journal-options]"
+	"[-f fragment-size]\n\t[-i bytes-per-inode] [-j] [-J journal-options]"
 	" [-N number-of-inodes]\n\t[-m reserved-blocks-percentage] "
 	"[-o creator-os] [-g blocks-per-group]\n\t[-L volume-label] "
 	"[-M last-mounted-directory] [-O feature[,...]]\n\t"
@@ -137,6 +137,7 @@ struct mke2fs_defaults {
 	{ default_str, 0, 4096, 8192 },
 	{ default_str, 512, 1024, 4096 },
 	{ default_str, 3, 1024, 8192 },
+	{ "journal", 0, 4096, 8192 },
 	{ "news", 0, 4096, 4096 },
 	{ "largefile", 0, 4096, 1024 * 1024 },
 	{ "largefile4", 0, 4096, 4096 * 1024 },
@@ -569,6 +570,8 @@ static void create_journal_dev(ext2_filsys fs)
 	struct progress_struct progress;
 	errcode_t		retval;
 	char			*buf;
+	blk_t			blk;
+	int			count;
 
 	if (quiet)
 		memset(&progress, 0, sizeof(progress));
@@ -576,7 +579,6 @@ static void create_journal_dev(ext2_filsys fs)
 		progress_init(&progress, _("Zeroing journal device: "),
 			      fs->super->s_blocks_count);
 
-#if 0
 	retval = zero_blocks(fs, 0, fs->super->s_blocks_count,
 			     &progress, &blk, &count);
 	if (retval) {
@@ -585,8 +587,8 @@ static void create_journal_dev(ext2_filsys fs)
 			blk, count);
 		exit(1);
 	}
-	zero_blocks(0, 0, 0, 0, 0);
-#endif
+	zero_blocks(0, 0, 0, 0, 0, 0);
+
 	retval = ext2fs_create_journal_superblock(fs,
 				  fs->super->s_blocks_count, 0, &buf);
 	if (retval) {
@@ -594,7 +596,9 @@ static void create_journal_dev(ext2_filsys fs)
 			_("while initialization journal superblock"));
 		exit(1);
 	}
-	retval = io_channel_write_blk(fs->io, 1, 1, buf);
+	retval = io_channel_write_blk(fs->io,
+				      fs->super->s_first_data_block+1,
+				      1, buf);
 	if (retval) {
 		com_err("create_journal_dev", retval,
 			_("while writing journal superblock"));
@@ -742,7 +746,7 @@ static void parse_raid_opts(const char *opts)
 }	
 
 static __u32 ok_features[3] = {
-	0,					/* Compat */
+	EXT3_FEATURE_COMPAT_HAS_JOURNAL,	/* Compat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
 		EXT3_FEATURE_INCOMPAT_JOURNAL_DEV,
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
@@ -762,9 +766,7 @@ static void PRS(int argc, char *argv[])
 	errcode_t	retval;
 	int		sparse_option = 1;
 	char *		oldpath = getenv("PATH");
-	struct ext2_super_block *param_ext2 = &param;
 	char *		raid_opts = 0;
-	char *		journal_opts = 0;
 	char *		fs_type = 0;
 	const char *	feature_set = "filetype";
 	blk_t		dev_size;
@@ -808,7 +810,7 @@ static void PRS(int argc, char *argv[])
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv,
-		    "b:cf:g:i:j:l:m:no:qr:R:s:tvI:ST:FL:M:N:O:V")) != EOF)
+		    "b:cf:g:i:jl:m:no:qr:R:s:tvI:J:ST:FL:M:N:O:V")) != EOF)
 		switch (c) {
 		case 'b':
 			blocksize = strtoul(optarg, &tmp, 0);
@@ -860,8 +862,12 @@ static void PRS(int argc, char *argv[])
 				exit(1);
 			}
 			break;
+		case 'J':
+			parse_journal_opts(optarg);
+			break;
 		case 'j':
-			journal_opts = optarg;
+			if (!journal_size)
+				journal_size = -1;
 			break;
 		case 'l':
 			bad_blocks_filename = malloc(strlen(optarg)+1);
@@ -956,9 +962,17 @@ static void PRS(int argc, char *argv[])
 	if (raid_opts)
 		parse_raid_opts(raid_opts);
 
-	if (journal_opts)
-		parse_journal_opts(journal_opts);
-	
+	/* Parse the user-supplied feature_set, if any. */
+	if (feature_set && !strncasecmp(feature_set, "none", 4))
+		feature_set = NULL;
+	if (feature_set && e2p_edit_feature(feature_set,
+					    &param.s_feature_compat,
+					    ok_features)) {
+		fprintf(stderr, _("Invalid filesystem option set: %s\n"),
+			feature_set);
+		exit(1);
+	}
+
 	if (!force)
 		check_plausibility(device_name);
 	check_mount(device_name, force, _("filesystem"));
@@ -1006,7 +1020,17 @@ static void PRS(int argc, char *argv[])
 		proceed_question();
 	}
 
-	set_fs_defaults(fs_type, param_ext2, blocksize, &inode_ratio);
+	/*
+	 * If the user asked for HAS_JOURNAL, then make sure a journal
+	 * gets created.
+	 */
+	if ((param.s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+	    !journal_size)
+		journal_size = -1;
+	if (!fs_type &&
+	    (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV))
+		fs_type = "journal";
+	set_fs_defaults(fs_type, &param, blocksize, &inode_ratio);
 
 	if (param.s_blocks_per_group) {
 		if (param.s_blocks_per_group < 256 ||
@@ -1035,18 +1059,9 @@ static void PRS(int argc, char *argv[])
 		feature_set = NULL;
 	}
 	if (sparse_option)
-		param_ext2->s_feature_ro_compat |=
+		param.s_feature_ro_compat |=
 			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 
-	if (feature_set && !strncasecmp(feature_set, "none", 4))
-		feature_set = NULL;
-	if (feature_set && e2p_edit_feature(feature_set,
-					    &param_ext2->s_feature_compat,
-					    ok_features)) {
-		fprintf(stderr, _("Invalid filesystem option set: %s\n"),
-			feature_set);
-		exit(1);
-	}
 }
 					
 int main (int argc, char *argv[])
@@ -1169,7 +1184,6 @@ int main (int argc, char *argv[])
 #endif
 	}
 
-	journal_blocks = journal_size * 1024 / (fs->blocksize 	/ 1024);
 	if (journal_device) {
 		ext2_filsys	jfs;
 		
@@ -1200,6 +1214,11 @@ int main (int argc, char *argv[])
 			printf(_("done\n"));
 		ext2fs_close(jfs);
 	} else if (journal_size) {
+		if (journal_size < 0)
+			journal_blocks = journal_default_size(fs->super->s_blocks_count);
+		else
+			journal_blocks = journal_size * 1024 /
+				(fs->blocksize	/ 1024);
 		if (!quiet)
 			printf(_("Creating journal (%d blocks): "),
 			       journal_blocks);

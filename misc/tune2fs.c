@@ -48,6 +48,7 @@ extern int optind;
 #include "et/com_err.h"
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
+#include "jfs_user.h"
 #include "util.h"
 
 #include "../version.h"
@@ -56,7 +57,6 @@ extern int optind;
 const char * program_name = "tune2fs";
 char * device_name;
 char * new_label, *new_last_mounted, *new_UUID;
-const char *journal_opts;
 static int c_flag, C_flag, e_flag, g_flag, i_flag, l_flag, L_flag;
 static int m_flag, M_flag, r_flag, s_flag = -1, u_flag, U_flag;
 static int print_label;
@@ -77,7 +77,7 @@ static void usage(void)
 	fprintf(stderr,
 		_("Usage: %s [-c max-mounts-count] [-e errors-behavior] "
 		  "[-g group]\n"
-		 "\t[-i interval[d|m|w]] [-j journal-options]\n"
+		 "\t[-i interval[d|m|w]] [-j] [-J journal-options]\n"
 		 "\t[-l] [-s sparse-flag] [-m reserved-blocks-percent]\n"
 		  "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
 		  "\t[-L volume-label] [-M last-mounted-dir] [-U UUID]\n"
@@ -90,6 +90,80 @@ static __u32 ok_features[3] = {
 	EXT2_FEATURE_INCOMPAT_FILETYPE,		/* Incompat */
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
 };
+
+/*
+ * Remove an external journal from the filesystem
+ */
+static void remove_journal_device(ext2_filsys fs)
+{
+	char		*journal_device;
+	ext2_filsys	jfs;
+	char		buf[1024];
+	journal_superblock_t	*jsb;
+	int		i, nr_users;
+	errcode_t	retval;
+
+	journal_device = ext2fs_find_block_device(fs->super->s_journal_dev);
+	if (!journal_device)
+		return;
+
+	retval = ext2fs_open(journal_device, EXT2_FLAG_RW|
+			     EXT2_FLAG_JOURNAL_DEV_OK, 0,
+			     fs->blocksize, unix_io_manager, &jfs);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while trying to open external journal"));
+		exit(1);
+	}
+	if (!(jfs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+		fprintf(stderr, "%s is not a journal device.\n",
+			journal_device);
+		exit(1);
+	}
+
+	/* Get the journal superblock */
+	if ((retval = io_channel_read_blk(jfs->io, 1, -1024, buf))) {
+		com_err(program_name, retval,
+			_("while reading journal superblock"));
+		exit(1);
+	}
+
+	jsb = (journal_superblock_t *) buf;
+	if ((jsb->s_header.h_magic != (unsigned) ntohl(JFS_MAGIC_NUMBER)) ||
+	    (jsb->s_header.h_blocktype != (unsigned) ntohl(JFS_SUPERBLOCK_V2))) {
+		fprintf(stderr, _("Journal superblock not found!\n"));
+		exit(1);
+	}
+
+	/* Find the filesystem UUID */
+	nr_users = ntohl(jsb->s_nr_users);
+	for (i=0; i < nr_users; i++) {
+		if (memcmp(fs->super->s_uuid,
+			   &jsb->s_users[i*16], 16) == 0)
+			break;
+	}
+	if (i >= nr_users) {
+		fprintf(stderr, "Filesystem's UUID not found on journal device.\n");
+		exit(1);
+	}
+	nr_users--;
+	for (i=0; i < nr_users; i++)
+		memcpy(&jsb->s_users[i*16], &jsb->s_users[(i+1)*16], 16);
+	jsb->s_nr_users = htonl(nr_users);
+
+	/* Write back the journal superblock */
+	if ((retval = io_channel_write_blk(jfs->io, 1, -1024, buf))) {
+		com_err(program_name, retval,
+			"while writing journal superblock.");
+		exit(1);
+	}
+
+	fs->super->s_journal_dev = 0;
+	memset(fs->super->s_journal_uuid, 0,
+	       sizeof(fs->super->s_journal_uuid));
+	ext2fs_mark_super_dirty(fs);
+}
+
 
 /*
  * Update the feature set as provided by the user.
@@ -158,6 +232,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 				exit(1);
 			}
 		}
+		if (sb->s_journal_dev)
+			remove_journal_device(fs);
 	}
 	if (journal && !old_journal) {
 		/*
@@ -166,12 +242,12 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		 * creating the journal.  We supply a default size if
 		 * necessary.
 		 */
-		if (!journal_opts)
-			journal_opts = "size=16";
+		if (!journal_size)
+			journal_size = -1;
 		sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 		journal = old_journal;
 	}
-	
+
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
 	    (sb->s_feature_compat || sb->s_feature_ro_compat ||
 	     sb->s_feature_incompat))
@@ -199,8 +275,6 @@ static void add_journal(ext2_filsys fs)
 		fprintf(stderr, _("The filesystem already has a journal.\n"));
 		exit(1);
 	}
-	parse_journal_opts(journal_opts);
-	journal_blocks = journal_size * 1024 / (fs->blocksize / 1024);
 	if (journal_device) {
 		check_plausibility(journal_device);
 		check_mount(journal_device, 0, _("journal"));
@@ -229,6 +303,10 @@ static void add_journal(ext2_filsys fs)
 	} else if (journal_size) {
 		printf(_("Creating journal inode: "));
 		fflush(stdout);
+		if (journal_size < 0)
+			journal_blocks = journal_default_size(fs->super->s_blocks_count);
+		else
+			journal_blocks = journal_size * 1024 / (fs->blocksize / 1024);
 		retval = ext2fs_add_journal_inode(fs, journal_blocks,
 						  journal_flags);
 		if (retval) {
@@ -288,7 +366,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	fprintf (stderr, _("tune2fs %s, %s for EXT2 FS %s, %s\n"),
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
-	while ((c = getopt (argc, argv, "c:e:g:i:j:lm:r:s:u:C:L:M:O:U:")) != EOF)
+	while ((c = getopt (argc, argv, "c:e:g:i:jlm:r:s:u:C:J:L:M:O:U:")) != EOF)
 		switch (c)
 		{
 			case 'c':
@@ -382,7 +460,11 @@ static void parse_tune2fs_options(int argc, char **argv)
 				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'j':
-				journal_opts = optarg;
+				if (!journal_size)
+					journal_size = -1;
+				break;
+			case 'J':
+				parse_journal_opts(optarg);
 				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'l':
@@ -606,7 +688,7 @@ int main (int argc, char ** argv)
 	}
 	if (features_cmd)
 		update_feature_set(fs, features_cmd);
-	if (journal_opts)
+	if (journal_size || journal_device)
 		add_journal(fs);
 	
 	if (U_flag) {

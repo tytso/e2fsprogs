@@ -24,6 +24,9 @@ tune2fs \- adjust tunable filesystem parameters on second extended filesystems
 ]
 [
 .B \-j
+]
+[
+.B \-J
 .I journal-options
 ]
 [
@@ -106,26 +109,39 @@ in months, and
 .B w
 in weeks.  A value of zero will disable the timedependent checking.
 .TP
-.BR \-j " journal_options"
+.B -j
+Add an ext3 journal to the filesystem.
+If the 
+.B \-J
+option is not specified, the default journal parameters will used will create
+an appropriately sized journal (given the size of the filesystem) 
+stored within the filesystem.
+.TP
+.BR \-J " journal_options"
 add a journal inode or device to the filesystem.  
 Journal options are comma
 separated, and may take an argument using the equals ('=')  sign.
-Currently two options are supported,
+Currently only two (mutually exclusive) options are supported,
 .I size
 and
 .IR device .
-One these two options must be specified when 
-building the journal.
-The 
-.I size 
-option takes a numerical argument which specifies the size of the 
-journal in MB (1024*1024 bytes).  Any size between 4MB and 100MB may be used.
-Use of this option implies that the journal will be stored in the 
-filesystem, so it must be small enough to fit into the filesystem.
-The 
-.I device
-option takes a filename which specifies a block device (external 
-to the filesystem) which will contain the external journal.  
+.TP
+.BI "\-J size=" journal-size
+Create a journal stored in the filesystem of size
+.IR journal-size .
+The size of the journal must be between 1MB and 100MB and there 
+must be sufficient free space in the filesystem to create a journal of
+that size.
+.TP
+.BI "\-J device=" external-journal
+Add an external journal found on a block device
+named by 
+.I external-journal 
+to the filesystem.
+The external 
+journal must have been already created using the command
+.B mke2fs -O journal_dev 
+.IR journal-device.
 .TP
 .B \-l
 list the contents of the filesystem superblock.

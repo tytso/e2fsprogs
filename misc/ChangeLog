@@ -1,5 +1,16 @@
 2001-01-17  Theodore Ts'o  <tytso@valinux.com>
 
+	* tune2fs.c, mke2fs.c, tune2fs.8.in, mke2fs.8.in: Change user
+		interface so that -J is used to specify journal options,
+		and -j is used to request creation of a journal using
+		default values.  (This is a UI change, but we haven't done
+		a formal release, and it makes things much more consistent
+		with the rest of the options out there.) 
+
+	* tune2fs.c: Add support for removing a filesystem from an
+		external journal; we correctly remove the filesystem UUID
+		from the external journal's filesystem list.
+
 	* util.h, util.c (journal_default_size): New function from Andreas
 		Dilger to calculate an appropriate default journal size
 		given a filesystem size.

@@ -30,6 +30,9 @@ mke2fs \- create a Linux second extended file system
 ]
 [
 .B \-j
+]
+[
+.B \-J
 .I journal-options
 ]
 [
@@ -135,29 +138,41 @@ ratio, the fewer inodes will be created.
 This value generally shouldn't be smaller than
 the blocksize of the filesystem, since then too many inodes will be made.  
 Be warned that is not possible to expand the number of inodes on a 
-filesystem after it is created, so be careful decided the correct
+filesystem after it is created, so be careful deciding the correct
 value for this parameter. 
-.TP
-.BI \-j " journal options"
+.TP 
+.B -j
 Build the ext2 filesystem with the ext3 journaling feature enabled.  
+If the 
+.B \-J
+option is not specified, the default journal parameters will used will create
+an appropriately sized journal (given the size of the filesystem) 
+stored internally in the filesystem.
+.TP
+.BI \-J " journal options"
+Create the ext3 journal using options specified on the command-line.
 Journal options are comma
 separated, and may take an argument using the equals ('=')  sign.
-Currently two options are supported,
+Currently two (mutually exclusive) options are supported,
 .I size
 and
 .IR device .
-One these two options must be specified when 
-building the journal.
-The 
-.I size 
-option takes a numerical argument which specifies the size of the 
-journal in MB (1024*1024 bytes).  Any size between 4MB and 100MB may be used.
-Use of this option implies that the journal will be stored in the 
-filesystem, so it must be small enough to fit into the filesystem.
-The 
-.I device
-option takes a filename which specifies a block device (external 
-to the filesystem) which will contain the external journal.  
+.TP
+.BI "\-J size=" journal-size
+Create a journal stored in the filesystem of size
+.IR journal-size .
+The size of the journal must be between 1MB and 100MB and it must fit within 
+the newly created filesystem.
+.TP
+.BI "\-J device=" external-journal
+Add an external journal found on a block device
+named by 
+.I external-journal 
+to the filesystem.
+The external 
+journal must have been already created using the command
+.B mke2fs -O journal_dev 
+.IR journal-device.
 .TP
 .B \-n
 causes mke2fs to not actually create a filesystem, but display what it 
