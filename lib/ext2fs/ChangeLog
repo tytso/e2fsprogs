@@ -1,3 +1,7 @@
+2002-10-15    <tytso@snap.thunk.org>
+
+	* ext2_fs.h: Add new field in superblock for default mount options.
+
 2002-10-13  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2fs.h: Add #include of header files necessary for ext2fs.h to

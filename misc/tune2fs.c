@@ -66,6 +66,7 @@ static unsigned long resgid, resuid;
 static unsigned short errors;
 static int open_flag;
 static char *features_cmd;
+static char *mntopts_cmd;
 
 int journal_size, journal_flags;
 char *journal_device;
@@ -79,10 +80,11 @@ static void usage(void)
 	fprintf(stderr,
 		_("Usage: %s [-c max-mounts-count] [-e errors-behavior] "
 		  "[-g group]\n"
-		 "\t[-i interval[d|m|w]] [-j] [-J journal-options]\n"
-		 "\t[-l] [-s sparse-flag] [-m reserved-blocks-percent]\n"
-		  "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
-		  "\t[-L volume-label] [-M last-mounted-dir]\n"
+		  "\t[-i interval[d|m|w]] [-j] [-J journal-options]\n"
+		  "\t[-l] [-s sparse-flag] [-m reserved-blocks-percent]\n"
+		  "\t[-o [^]mount-options[,...]] [-r reserved-blocks-count]\n"
+		  "\t[-u user] [-C mount-count] [-L volume-label] "
+		  "[-M last-mounted-dir]\n"
 		  "\t[-O [^]feature[,...]] [-T last-check-time] [-U UUID]"
 		  " device\n"), program_name);
 	exit (1);
@@ -245,6 +247,21 @@ static void remove_journal_inode(ext2_filsys fs)
 		exit(1);
 	}
 	fs->super->s_journal_inum = 0;
+	ext2fs_mark_super_dirty(fs);
+}
+
+/*
+ * Update the default mount options
+ */
+static void update_mntopts(ext2_filsys fs, char *mntopts)
+{
+	struct ext2_super_block *sb= fs->super;
+
+	if (e2p_edit_mntopts(mntopts, &sb->s_default_mount_opts, ~0)) {
+		fprintf(stderr, _("Invalid mount option set: %s\n"),
+			mntopts);
+		exit(1);
+	}
 	ext2fs_mark_super_dirty(fs);
 }
 
@@ -445,7 +462,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	struct passwd * pw;
 
 	printf("tune2fs %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
-	while ((c = getopt(argc, argv, "c:e:fg:i:jlm:r:s:u:C:J:L:M:O:T:U:")) != EOF)
+	while ((c = getopt(argc, argv, "c:e:fg:i:jlm:o:r:s:u:C:J:L:M:O:T:U:")) != EOF)
 		switch (c)
 		{
 			case 'c':
@@ -577,6 +594,16 @@ static void parse_tune2fs_options(int argc, char **argv)
 				M_flag = 1;
 				open_flag = EXT2_FLAG_RW;
 				break;
+			case 'o':
+				if (mntopts_cmd) {
+					com_err (program_name, 0,
+					 _("-o may only be specified once"));
+					usage();
+				}
+				mntopts_cmd = optarg;
+				open_flag = EXT2_FLAG_RW;
+				break;
+				
 			case 'O':
 				if (features_cmd) {
 					com_err (program_name, 0,
@@ -811,6 +838,8 @@ int main (int argc, char ** argv)
 			sizeof(sb->s_last_mounted));
 		ext2fs_mark_super_dirty(fs);
 	}
+	if (mntopts_cmd)
+		update_mntopts(fs, mntopts_cmd);
 	if (features_cmd)
 		update_feature_set(fs, features_cmd);
 	if (journal_size || journal_device)

@@ -37,6 +37,11 @@ tune2fs \- adjust tunable filesystem parameters on second extended filesystems
 .I reserved-blocks-percentage
 ]
 [
+.B \-o
+.RI [^] mount-options [,...]
+]
+
+[
 .B \-r
 .I reserved-blocks-count
 ]
@@ -255,6 +260,49 @@ Set the percentage of reserved filesystem blocks.
 .TP
 .BI \-M " last-mounted-directory"
 Set the last-mounted directory for the filesystem.
+.TP
+.BR \-o " [^]\fImount-option\fR[,...]"
+Set or clear the indicated default mount options in the filesystem.
+Default mount options can be overriden by mount options specified 
+either in 
+.BR /etc/fstab (5)
+or on the command line arguments to
+.BR mount (8).   
+Older kernels may not support this feature; in particular,
+kernels which predate 2.4.20 will almost certainly ignore the
+default mount options field in the superblock.
+.IP
+More than one mount option can be cleared or set by separating
+features with commas.  Mount options prefixed with a 
+caret character ('^') will be cleared in the filesystem's superblock; 
+mount options without a prefix character or prefixed with a plus 
+character ('+') will be added to the filesystem.
+.IP
+The following mount options can be set or cleared using
+.BR tune2fs :
+.RS 1.2i
+.TP
+.B debug
+Enable debugging code for this filesystem.
+.TP
+.B bsdgroups
+Emulate BSD behaviour when creating new files: they will take the group-id
+of the directory in which they were created.  The standard System V behaviour
+is the default, where newly created files take on the fsgid of the crrent
+process, unless the directry has the setgid bit set, in which case it takes 
+the gid from the parent directory, and also gets the setgid bit set if it is 
+directory itself.
+.TP
+.B user_xattr
+Enable user-specified extended attributes.
+.TP
+.B acl
+Enable Posix Access Control Lists.
+.TP
+.B uid16
+Disables 32-bit UIDs and GIDs.  This is for interoperability with
+older kernels which only store and expect 16-bit values.
+.RE
 .TP
 .BR \-O " [^]\fIfeature\fR[,...]"
 Set or clear the indicated filesystem features (options) in the filesystem.

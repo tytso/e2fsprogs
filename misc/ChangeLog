@@ -1,3 +1,9 @@
+2002-10-15    <tytso@snap.thunk.org>
+
+	* tune2fs.8.in, tune2fs.c (update_mntopts, main): Add new option
+		'o' which allows the system administrator to specify
+		default mount options.
+
 2002-10-13  Theodore Ts'o  <tytso@mit.edu>
 
 	* get_device_by_label.c (read_partitions): Use a 16k buffer to

@@ -438,7 +438,8 @@ struct ext2_super_block {
 	__u8	s_def_hash_version;	/* Default hash version to use */
 	__u8	s_reserved_char_pad;
 	__u16	s_reserved_word_pad;
-	__u32	s_reserved[192];	/* Padding to the end of the block */
+	__u32	s_default_mount_opts;
+	__u32	s_reserved[191];	/* Padding to the end of the block */
 };
 
 /*
@@ -499,6 +500,15 @@ struct ext2_super_block {
  */
 #define EXT2_DEF_RESUID		0
 #define EXT2_DEF_RESGID		0
+
+/*
+ * Default mount options
+ */
+#define EXT2_DEFM_DEBUG		0x0001
+#define EXT2_DEFM_BSDGROUPS	0x0002
+#define EXT2_DEFM_XATTR_USER	0x0004
+#define EXT2_DEFM_ACL		0x0008
+#define EXT2_DEFM_UID16		0x0010
 
 /*
  * Structure of a directory entry

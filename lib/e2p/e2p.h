@@ -41,3 +41,7 @@ const char *e2p_uuid2str(void *uu);
 
 const char *e2p_hash2string(int num);
 int e2p_string2hash(char *string);
+
+const char *e2p_mntopt2string(int compat, unsigned int mask);
+int e2p_string2mntopt(char *string, unsigned int *mask);
+int e2p_edit_mntopts(const char *str, __u32 *mntopts, __u32 ok);

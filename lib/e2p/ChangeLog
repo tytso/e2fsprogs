@@ -1,3 +1,11 @@
+2002-10-15    <tytso@snap.thunk.org>
+
+	* ls.c (print_mntopts, list_super2): Print any default mount
+		options which the filesystem might have.
+
+	* e2p.h, mntopts.c: New function which converts back and forth
+		between strings and default mount options.
+
 2001-09-24  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.29

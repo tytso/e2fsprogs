@@ -112,6 +112,24 @@ static void print_features(struct ext2_super_block * s, FILE *f)
 #endif
 }
 
+static void print_mntopts(struct ext2_super_block * s, FILE *f)
+{
+#ifdef EXT2_DYNAMIC_REV
+	int	i, printed=0;
+	__u32	mask = s->s_default_mount_opts, m;
+
+	fprintf(f, "Default mount options:   ");
+	for (i=0,m=1; i < 32; i++, m<<=1) {
+		if (mask & m) {
+			fprintf(f, " %s", e2p_mntopt2string(i, m));
+			printed++;
+		}
+	}
+	if (printed == 0)
+		fprintf(f, " (none)");
+	fprintf(f, "\n");
+#endif
+}
 
 
 #ifndef EXT2_INODE_SIZE
@@ -157,6 +175,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	} else
 		fprintf(f, " (unknown)\n");
 	print_features(sb, f);
+	print_mntopts(sb, f);
 	fprintf(f, "Filesystem state:        ");
 	print_fs_state (f, sb->s_state);
 	fprintf(f, "\n");
