@@ -120,18 +120,14 @@ static void validate_test_seq(badblocks_list bb, blk_t *vec)
 
 int file_test(badblocks_list bb)
 {
-	char	tmp_filename[20] = "#testXXXXXX";
 	badblocks_list new_bb = 0;
 	errcode_t	retval;
 	FILE	*f;
 
-	mktemp(tmp_filename);
-
-	unlink(tmp_filename);
-	f = fopen(tmp_filename, "w");
+	f = tmpfile();
 	if (!f) {
-		fprintf(stderr, "Error opening temp file %s: %s\n",
-			tmp_filename, error_message(errno));
+		fprintf(stderr, "Error opening temp file: %s\n",
+			error_message(errno));
 		return 1;
 	}
 	retval = ext2fs_write_bb_FILE(bb, 0, f);
@@ -139,14 +135,8 @@ int file_test(badblocks_list bb)
 		com_err("file_test", retval, "while writing bad blocks");
 		return 1;
 	}
-	fclose(f);
 
-	f = fopen(tmp_filename, "r");
-	if (!f) {
-		fprintf(stderr, "Error re-opening temp file %s: %s\n",
-			tmp_filename, error_message(errno));
-		return 1;
-	}
+	rewind(f);
 	retval = ext2fs_read_bb_FILE2(0, f, &new_bb, 0, 0);
 	if (retval) {
 		com_err("file_test", retval, "while reading bad blocks");
