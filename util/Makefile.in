@@ -14,14 +14,14 @@ SRCS = $(srcdir)/subst.c
 @MCONFIG@
 
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $< -o $@
+	$(BUILD_CC) -c $(ALL_CFLAGS) $< -o $@
 
 PROGS=		subst
 
 all:: $(PROGS)
 
 subst: subst.o
-	$(CC) $(ALL_LDFLAGS) -o subst subst.o
+	$(BUILD_CC) $(ALL_LDFLAGS) -o subst subst.o
 
 clean:
 	$(RM) -f $(PROGS) \#* *.s *.o *.a *~ core

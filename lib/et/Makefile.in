@@ -122,9 +122,9 @@ distclean:: clean
 #
 error_message.o: $(srcdir)/error_message.c $(srcdir)/com_err.h \
  $(srcdir)/error_table.h $(srcdir)/mit-sipb-copyright.h $(srcdir)/internal.h
-et_name.o: $(srcdir)/et_name.c $(srcdir)/error_table.h \
- $(srcdir)/mit-sipb-copyright.h $(srcdir)/internal.h 
-init_et.o: $(srcdir)/init_et.c $(srcdir)/com_err.h \
- $(srcdir)/error_table.h $(srcdir)/mit-sipb-copyright.h
+et_name.o: $(srcdir)/et_name.c $(srcdir)/com_err.h $(srcdir)/error_table.h \
+ $(srcdir)/mit-sipb-copyright.h $(srcdir)/internal.h
+init_et.o: $(srcdir)/init_et.c $(srcdir)/com_err.h $(srcdir)/error_table.h \
+ $(srcdir)/mit-sipb-copyright.h
 com_err.o: $(srcdir)/com_err.c $(srcdir)/com_err.h \
- $(srcdir)/mit-sipb-copyright.h $(srcdir)/error_table.h $(srcdir)/internal.h 
+ $(srcdir)/mit-sipb-copyright.h $(srcdir)/error_table.h $(srcdir)/internal.h

@@ -319,6 +319,13 @@ AC_CHECK_TOOL(STRIP, strip, :)
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_C_CROSS
+# See if we need a separate native compiler.
+if test $cross_compiling = no; then
+  BUILD_CC="$CC"
+  AC_SUBST(BUILD_CC)
+else
+  AC_CHECK_PROGS(BUILD_CC, gcc cc)
+fi
 AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h linux/fd.h linux/major.h sys/disklabel.h sys/sockio.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h)
 AC_FUNC_VPRINTF
 dnl
@@ -363,8 +370,8 @@ if test "$cross_compiling" = yes -a "$ac_cv_sizeof_long" = ""; then
   ac_cv_sizeof_short=2
   ac_cv_sizeof_int=4
   ac_cv_sizeof_long=4
-  ac_cv_sizeof_long_long=0
-  AC_MSG_WARN([Cross-compiling, so cannot check type sizes; assuming short=2, int=4, long=4])
+  ac_cv_sizeof_long_long=8
+  AC_MSG_WARN([Cross-compiling, so cannot check type sizes; assuming short=2, int=4, long=4, long long=8])
 fi
 AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(int)
@@ -466,10 +473,10 @@ if test "$e2fsprogs_cv_ext2_inode_version" = yes; then
   AC_DEFINE(HAVE_EXT2_INODE_VERSION)
 fi
 dnl
-dnl Linux places root files in the / by default
+dnl Linux and Hurd places root files in the / by default
 dnl
 case "$host_os" in
-linux*)
+linux* | gnu*)
 	if test "$prefix" = NONE -a "$root_prefix" = NONE ; then
 		root_prefix="";
 		echo "On $host_os systems, root_prefix defaults to ''"

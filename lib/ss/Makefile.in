@@ -169,8 +169,8 @@ invocation.o: $(srcdir)/invocation.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
  $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
 help.o: $(srcdir)/help.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
  $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
-execute_cmd.o: $(srcdir)/execute_cmd.c $(srcdir)/ss_internal.h \
- $(srcdir)/ss.h $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
+execute_cmd.o: $(srcdir)/execute_cmd.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
+ $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
 listen.o: $(srcdir)/listen.c $(srcdir)/copyright.h $(srcdir)/ss_internal.h \
  $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
 parse.o: $(srcdir)/parse.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
@@ -189,4 +189,3 @@ requests.o: $(srcdir)/requests.c $(srcdir)/copyright.h \
  $(srcdir)/ss_internal.h $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
 data.o: $(srcdir)/data.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
  $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
-

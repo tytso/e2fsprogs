@@ -77,18 +77,16 @@ debug_cmds.o: debug_cmds.c $(top_srcdir)/lib/ss/ss.h \
 debugfs.o: $(srcdir)/debugfs.c $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ss/ss.h $(top_srcdir)/lib/ss/copyright.h \
  $(top_builddir)/lib/ss/ss_err.h $(srcdir)/debugfs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/uuid/uuid.h \
- $(srcdir)/../version.h
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(top_srcdir)/lib/uuid/uuid.h $(srcdir)/../version.h
 util.o: $(srcdir)/util.c $(srcdir)/debugfs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h \
- $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
-ls.o: $(srcdir)/ls.c $(srcdir)/debugfs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h
+ls.o: $(srcdir)/ls.c $(srcdir)/debugfs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
 ncheck.o: $(srcdir)/ncheck.c $(srcdir)/debugfs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \

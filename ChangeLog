@@ -1,5 +1,12 @@
 1999-07-03    <tytso@valinux.com>
 
+	* MCONFIG.in (BUILD_CC):
+	* configure.in (BUILD_CC): If cross compiling, find the native C
+		compiler and set it to BUILD_CC so that we can
+		successfully build util/subst.
+
+1999-07-03    <tytso@valinux.com>
+
 	* Makefile.in (depend): Make "make depend" at the top-level
 		automatically recurse through all subdirectories.
 

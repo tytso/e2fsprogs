@@ -1,3 +1,9 @@
+1999-07-03    <tytso@valinux.com>
+
+	* Makefile.in (subst): Build subst using $(BUILD_CC), since it's a
+		helper program which must be built using the native C
+		compiler during a cross-compilation.
+
 1999-01-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.14
