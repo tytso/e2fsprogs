@@ -319,10 +319,10 @@ AC_SUBST(LIB_EXT)
 AC_SUBST(STATIC_LIB_EXT)
 AC_SUBST(PROFILED_LIB_EXT)
 dnl
-dnl handle --enable-jfs-debug
+dnl handle --enable-jbd-debug
 dnl
-AC_ARG_ENABLE([jfs-debug],
-[  --enable-jfs-debug  	  enable journal debugging],
+AC_ARG_ENABLE([jbd-debug],
+[  --enable-jbd-debug  	  enable journal debugging],
 if test "$enableval" = "no"
 then
 	echo "Disabling journal debugging"

@@ -1,5 +1,8 @@
 2002-11-08  Theodore Ts'o  <tytso@mit.edu>
 
+	* configure.in, configure: Change --enable-jfs-debug to 
+		--enable-jbd-debug for consistency's sake.
+
 	* configure.in, configure: Add new substitution variable,
 		SWAPFS_CMT, which is '' if swapfs has been enabled, and
 		'#' if it has been disabled.

@@ -42,7 +42,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --enable-checker	  build checker libraries"
 ac_help="$ac_help
-  --enable-jfs-debug  	  enable journal debugging"
+  --enable-jbd-debug  	  enable journal debugging"
 ac_help="$ac_help
   --disable-swapfs    	  disable support of legacy byte-swapped filesystems"
 ac_help="$ac_help
@@ -1274,9 +1274,9 @@ fi
 
 
 
-# Check whether --enable-jfs-debug or --disable-jfs-debug was given.
-if test "${enable_jfs_debug+set}" = set; then
-  enableval="$enable_jfs_debug"
+# Check whether --enable-jbd-debug or --disable-jbd-debug was given.
+if test "${enable_jbd_debug+set}" = set; then
+  enableval="$enable_jbd_debug"
   if test "$enableval" = "no"
 then
 	echo "Disabling journal debugging"
