@@ -1,5 +1,10 @@
 2001-01-12  Theodore Ts'o  <tytso@valinux.com>
 
+	* problem.c: For PR_1_RESERVED_BAD_MODE, print a description of
+		the reserved inode.  In PR_0_JOURNAL_HAS_JOURNAL, prompt
+		to clear the journal, rather than deleting it (which is
+		more accurate).  (From Andreas Dilger.)
+
 	* journal.c: Make sure all functions which return an error code
 		use the errcode_t return type, and not "int"
 		(e2fsck_journal_release): Add new parameter, "drop",

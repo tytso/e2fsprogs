@@ -212,7 +212,7 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Superblock flag should be cleared */
 	{ PR_0_JOURNAL_HAS_JOURNAL,
 	  N_("@S doesn't have has_journal flag, but has ext3 @j %s.\n"),
-	  PROMPT_DELETE, PR_PREEN_OK },
+	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Superblock flag is incorrect */
 	{ PR_0_JOURNAL_RECOVER_SET,
@@ -277,7 +277,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Reserved inode has bad mode */
 	{ PR_1_RESERVED_BAD_MODE,
-	  N_("Reserved @i %i has bad mode.  "),
+	  N_("Reserved @i %i %Q has bad mode.  "),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Deleted inode has zero dtime */
