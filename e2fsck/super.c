@@ -14,9 +14,6 @@
 #include <stdlib.h>
 #endif
 #include <string.h>
-#include <fcntl.h>
-#include <ctype.h>
-#include <termios.h>
 #include <time.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -28,8 +25,6 @@
 #ifdef HAVE_MNTENT_H
 #include <mntent.h>
 #endif
-#include <sys/ioctl.h>
-#include <malloc.h>
 
 #include "uuid/uuid.h"
 #include "e2fsck.h"
