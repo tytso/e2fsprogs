@@ -1,3 +1,8 @@
+2002-07-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* htree.c (htree_dump_int_node): Add byte swapping code sot that
+		the htree dump function works on a big-endian machine.
+
 2002-07-15  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c (do_show_super_stats): Calculate and print the number

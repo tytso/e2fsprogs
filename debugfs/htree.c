@@ -102,29 +102,36 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 				struct ext2_dx_entry *ent, 
 				char *buf, int level)
 {
-	struct		ext2_dx_countlimit *limit;
-	int		i;
+	struct ext2_dx_countlimit	limit;
+	struct ext2_dx_entry		e;
+	int				i;
+	
 
-	limit = (struct ext2_dx_countlimit *) ent;
+	limit = *((struct ext2_dx_countlimit *) ent);
+	limit.count = ext2fs_le16_to_cpu(limit.count);
+	limit.limit = ext2fs_le16_to_cpu(limit.limit);
 
-	fprintf(pager, "Number of entries (count): %d\n", limit->count);
-	fprintf(pager, "Number of entries (limit): %d\n", limit->limit);
+	fprintf(pager, "Number of entries (count): %d\n", limit.count);
+	fprintf(pager, "Number of entries (limit): %d\n", limit.limit);
 
-	for (i=0; i < limit->count; i++)
+	for (i=0; i < limit.count; i++)
 		fprintf(pager, "Entry #%d: Hash 0x%08x, block %d\n", i,
-		       i ? ent[i].hash : 0, ent[i].block);
+		       i ? ext2fs_le32_to_cpu(ent[i].hash) : 0,
+			ext2fs_le32_to_cpu(ent[i].block));
 
 	fprintf(pager, "\n");
 
-	for (i=0; i < limit->count; i++) {
+	for (i=0; i < limit.count; i++) {
+		e.hash = ext2fs_le32_to_cpu(ent[i].hash);
+		e.block = ext2fs_le32_to_cpu(ent[i].block);
 		fprintf(pager, "Entry #%d: Hash 0x%08x, block %d\n", i,
-		       i ? ent[i].hash : 0, ent[i].block);
+		       i ? e.hash : 0, e.block);
 		if (level)
 			htree_dump_int_block(fs, ino, inode, root,
-					     ent[i].block, buf, level-1);
+					     e.block, buf, level-1);
 		else
 			htree_dump_leaf_node(fs, ino, inode, root,
-					     ent[i].block, buf);
+					     e.block, buf);
 	}
 
 	fprintf(pager, "---------------------\n");
