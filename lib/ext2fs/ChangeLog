@@ -1,3 +1,9 @@
+2003-05-13  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix_io.c: Add #ifdef NO_IO_CACHE which disables all userspace
+		caching by the unix_io layer.  Not enabled, only for
+		debugging. 
+
 2003-05-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* test_io.c: Pay attention to the environment variables

@@ -278,6 +278,7 @@ static void free_cache(io_channel channel,
 	}
 }
 
+#ifndef NO_IO_CACHE
 /*
  * Try to find a block in the cache.  If the block is not found, and
  * eldest is a non-zero pointer, then fill in eldest with the cache
@@ -358,6 +359,7 @@ static errcode_t flush_cached_blocks(io_channel channel,
 	}
 	return retval2;
 }
+#endif /* NO_IO_CACHE */
 
 static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 {
@@ -471,7 +473,9 @@ static errcode_t unix_close(io_channel channel)
 	if (--channel->refcount > 0)
 		return 0;
 
+#ifndef NO_IO_CACHE
 	retval = flush_cached_blocks(channel, data, 0);
+#endif
 
 	if (close(data->dev) < 0)
 		retval = errno;
@@ -494,8 +498,10 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
 	if (channel->block_size != blksize) {
+#ifndef NO_IO_CACHE
 		if ((retval = flush_cached_blocks(channel, data, 0)))
 			return retval;
+#endif
 		
 		channel->block_size = blksize;
 		free_cache(channel, data);
@@ -519,6 +525,9 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
+#ifdef NO_IO_CACHE
+	return raw_read_blk(channel, data, block, count, buf);
+#else
 	/*
 	 * If we're doing an odd-sized read or a very large read,
 	 * flush out the cache and then do a direct read.
@@ -567,6 +576,7 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 		}
 	}
 	return 0;
+#endif /* NO_IO_CACHE */
 }
 
 static errcode_t unix_write_blk(io_channel channel, unsigned long block,
@@ -582,6 +592,9 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
+#ifdef NO_IO_CACHE
+	return raw_write_blk(channel, data, block, count, buf);
+#else	
 	/*
 	 * If we're doing an odd-sized write or a very large write,
 	 * flush out the cache completely and then do a direct write.
@@ -615,6 +628,7 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 		cp += channel->block_size;
 	}
 	return retval;
+#endif /* NO_IO_CACHE */
 }
 
 static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
@@ -628,11 +642,13 @@ static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
+#ifndef NO_IO_CACHE
 	/*
 	 * Flush out the cache completely
 	 */
 	if ((retval = flush_cached_blocks(channel, data, 1)))
 		return retval;
+#endif
 
 	if (lseek(data->dev, offset, SEEK_SET) < 0)
 		return errno;
@@ -656,7 +672,9 @@ static errcode_t unix_flush(io_channel channel)
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
+#ifndef NO_IO_CACHE
 	retval = flush_cached_blocks(channel, data, 0);
+#endif
 	fsync(data->dev);
 	return retval;
 }
