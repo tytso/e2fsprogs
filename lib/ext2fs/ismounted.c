@@ -44,17 +44,29 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 				   int *mount_flags, char *mtpt, int mtlen)
 {
 	struct mntent 	*mnt;
-	struct stat	st_mntpnt, st_file;
+	struct stat	st_buf;
 	errcode_t	retval = 0;
+	dev_t		file_dev;
 	FILE 		*f;
 	int		fd;
 
 	*mount_flags = 0;
 	if ((f = setmntent (mtab_file, "r")) == NULL)
 		return errno;
-	while ((mnt = getmntent (f)) != NULL)
+	file_dev = 0;
+#ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
+	if (stat(file, &st_buf) == 0)
+		file_dev = st_buf.st_rdev;
+#endif	
+	while ((mnt = getmntent (f)) != NULL) {
 		if (strcmp(file, mnt->mnt_fsname) == 0)
 			break;
+#ifndef __GNU__
+		if (file_dev && (stat(mnt->mnt_fsname, &st_buf) == 0) &&
+		    file_dev == st_buf.st_rdev)
+			break;
+#endif
+	}
 
 	if (mnt == 0) {
 #ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
@@ -65,8 +77,8 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 		 * check if the given device has the same major/minor number
 		 * as the device that the root directory is on.
 		 */
-		if (stat("/", &st_mntpnt) == 0 && stat(file, &st_file) == 0) {
-			if (st_mntpnt.st_dev == st_file.st_rdev) {
+		if (file_dev && stat("/", &st_buf) == 0) {
+			if (st_buf.st_dev == file_dev) {
 				*mount_flags = EXT2_MF_MOUNTED;
 				if (mtpt)
 					strncpy(mtpt, "/", mtlen);
@@ -83,7 +95,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	 * (read: Slackware) don't initialize /etc/mtab before checking
 	 * all of the non-root filesystems on the disk.
 	 */
-	if (stat(mnt->mnt_dir, &st_mntpnt) < 0) {
+	if (stat(mnt->mnt_dir, &st_buf) < 0) {
 		retval = errno;
 		if (retval == ENOENT) {
 #ifdef DEBUG
@@ -94,14 +106,12 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 		}
 		goto exit;
 	}
-	if (stat(file, &st_file) == 0) {
-		if (st_mntpnt.st_dev != st_file.st_rdev) {
+	if (file_dev && (st_buf.st_dev != file_dev)) {
 #ifdef DEBUG
-			printf("Bogus entry in %s!  (%s not mounted on %s)\n",
-			       mtab_file, file, mnt->mnt_dir);
+		printf("Bogus entry in %s!  (%s not mounted on %s)\n",
+		       mtab_file, file, mnt->mnt_dir);
 #endif
-			goto exit;
-		}
+		goto exit;
 	}
 #endif
 	*mount_flags = EXT2_MF_MOUNTED;
@@ -234,13 +244,16 @@ errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags)
 int main(int argc, char **argv)
 {
 	int	retval, mount_flags;
+	char	mntpt[80];
 	
 	if (argc < 2) {
 		fprintf(stderr, "Usage: %s device\n", argv[0]);
 		exit(1);
 	}
 
-	retval = ext2fs_check_if_mounted(argv[1], &mount_flags);
+	mntpt[0] = 0;
+	retval = ext2fs_check_mount_point(argv[1], &mount_flags,
+					  mntpt, sizeof(mntpt));
 	if (retval) {
 		com_err(argv[0], retval,
 			"while calling ext2fs_check_if_mounted");
@@ -255,6 +268,8 @@ int main(int argc, char **argv)
 	
 	if (mount_flags & EXT2_MF_ISROOT)
 		printf("\t%s is the root filesystem.\n", argv[1]);
+	if (mntpt[0])
+		printf("\t%s is mounted on %s.\n", argv[1], mntpt);
 	
 	exit(0);
 }

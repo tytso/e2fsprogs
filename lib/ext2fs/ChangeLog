@@ -1,3 +1,10 @@
+2001-12-24  Theodore Tso  <tytso@valinux.com>
+
+	* ismounted.c (check_mntent_file): Stat all of the entries in
+		/etc/mtab and/or /proc/mounts in order to catch dim-witted
+		system administrators who might have created alias
+		devices.
+ 
 2001-12-23  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in, jfs_user.h: Move linux/jbd.h to
