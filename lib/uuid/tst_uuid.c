@@ -1,7 +1,7 @@
 /*
  * tst_uuid.c --- test program from the UUID library
  *
- * Copyright (C) 1996, 1997 Theodore Ts'o.
+ * Copyright (C) 1996, 1997, 1998 Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -19,6 +19,8 @@ main(int argc, char **argv)
 {
 	uuid_t		buf, tst;
 	char		str[100];
+	struct timeval	tv;
+	time_t		time_reg;
 	unsigned char	*cp;
 	int i;
 	int failed = 0;
@@ -31,6 +33,11 @@ main(int argc, char **argv)
 		printf("%02x", *cp++);
 	}
 	printf("\n");
+	tv.tv_sec = 0;
+	tv.tv_usec = 0;
+	time_reg = uuid_time(buf, &tv);
+	printf("UUID time is: (%d, %d): %s\n", tv.tv_sec, tv.tv_usec,
+	       ctime(&time_reg));
 	uuid_parse(str, tst);
 	if (uuid_compare(buf, tst))
 		printf("UUID parse and compare succeeded.\n");

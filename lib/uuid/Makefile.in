@@ -24,7 +24,8 @@ OBJS=		clear.o \
 		pack.o \
 		parse.o \
 		unpack.o \
-		unparse.o
+		unparse.o \
+		uuid_time.o
 
 SRCS=		$(srcdir)/clear.c \
 		$(srcdir)/compare.c \
@@ -34,7 +35,8 @@ SRCS=		$(srcdir)/clear.c \
 		$(srcdir)/pack.c \
 		$(srcdir)/parse.c \
 		$(srcdir)/unpack.c \
-		$(srcdir)/unparse.c
+		$(srcdir)/unparse.c \
+		$(srcdir)/uuid_time.c
 
 LIBRARY= libuuid
 LIBDIR= uuid
@@ -42,20 +44,20 @@ LIBDIR= uuid
 DLL_ADDRESS = 0x67900000
 DLL_JUMPSIZE = 0x1000
 DLL_GOTSIZE  = 0x1000
-DLL_VERSION = 0.0
+DLL_VERSION = 0.1
 DLL_IMAGE = libuuid
 DLL_STUB = libuuid
 DLL_MYDIR = uuid
 DLL_INSTALL_DIR = $(root_libdir)
 
-ELF_VERSION = 1.1
+ELF_VERSION = 1.2
 ELF_SO_VERSION = 1
 ELF_IMAGE = libuuid
 ELF_MYDIR = uuid
 ELF_INSTALL_DIR = $(root_libdir)
 ELF_OTHER_LIBS = -lc
 
-BSDLIB_VERSION = 1.0
+BSDLIB_VERSION = 1.1
 BSDLIB_IMAGE = libuuid
 BSDLIB_MYDIR = uuid
 BSDLIB_INSTALL_DIR = $(root_libdir)
@@ -76,13 +78,16 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
 @BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) -fpic -o pic/$*.o -c $<
 
-all:: tst_uuid
+all:: tst_uuid uuid_time
 
 tst_uuid.o: $(srcdir)/tst_uuid.c
 	$(CC) $(ALL_CFLAGS) -c $(srcdir)/tst_uuid.c -o tst_uuid.o
 
 tst_uuid: tst_uuid.o $(LIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o tst_uuid tst_uuid.o $(LIBUUID)
+
+uuid_time: $(srcdir)/uuid_time.c
+	$(CC) $(ALL_CFLAGS) -DDEBUG $(srcdir)/uuid_time.c -o uuid_time $(LIBUUID)
 
 installdirs::
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir)  \
@@ -100,7 +105,7 @@ uninstall::
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/*
-	$(RM) -f ../libuuid.a ../libuuid_p.a tst_uuid
+	$(RM) -f ../libuuid.a ../libuuid_p.a tst_uuid uuid_time
 
 mostlyclean:: clean
 distclean:: clean

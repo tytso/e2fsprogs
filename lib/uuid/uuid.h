@@ -1,13 +1,17 @@
 /*
  * Public include file for the UUID library
  * 
- * Copyright (C) 1996, 1997 Theodore Ts'o.
+ * Copyright (C) 1996, 1997, 1998 Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
  * %End-Header%
  */
+
+#include <sys/types.h>
+#include <sys/time.h>
+#include <time.h>
 
 typedef unsigned char uuid_t[16];
 
@@ -32,5 +36,7 @@ int uuid_parse(char *in, uuid_t uu);
 /* unparse.c */
 void uuid_unparse(uuid_t uu, char *out);
 
+/* uuid_time.c */
+time_t uuid_time(uuid_t uu, struct timeval *ret_tv);
 
 
