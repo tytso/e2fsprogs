@@ -1,6 +1,6 @@
 Summary: Utilities for managing the second extended (ext2) filesystem.
 Name: e2fsprogs
-Version: 1.20-WIP
+Version: 1.20.WIP
 Release: 0
 Copyright: GPL
 Group: System Environment/Base
@@ -98,20 +98,20 @@ fi
 /usr/bin/chattr
 /usr/bin/lsattr
 /usr/bin/uuidgen
-{_mandir}/man1/chattr.1*
-{_mandir}/man1/lsattr.1*
-{_mandir}/man1/uuidgen.1*
+%{_mandir}/man1/chattr.1*
+%{_mandir}/man1/lsattr.1*
+%{_mandir}/man1/uuidgen.1*
 
-{_mandir}/man8/badblocks.8*
-{_mandir}/man8/debugfs.8*
-{_mandir}/man8/dumpe2fs.8*
-{_mandir}/man8/e2fsck.8*
-{_mandir}/man8/e2label.8*
-{_mandir}/man8/fsck.8*
-{_mandir}/man8/mke2fs.8*
-{_mandir}/man8/mklost+found.8*
-{_mandir}/man8/resize2fs.8*
-{_mandir}/man8/tune2fs.8*
+%{_mandir}/man8/badblocks.8*
+%{_mandir}/man8/debugfs.8*
+%{_mandir}/man8/dumpe2fs.8*
+%{_mandir}/man8/e2fsck.8*
+%{_mandir}/man8/e2label.8*
+%{_mandir}/man8/fsck.8*
+%{_mandir}/man8/mke2fs.8*
+%{_mandir}/man8/mklost+found.8*
+%{_mandir}/man8/resize2fs.8*
+%{_mandir}/man8/tune2fs.8*
 
 %files devel
 %defattr(-,root,root)
@@ -136,6 +136,6 @@ fi
 /usr/include/ext2fs
 /usr/include/ss
 /usr/include/uuid
-{_mandir}/man1/compile_et.1*
-{_mandir}/man3/com_err.3*
+%{_mandir}/man1/compile_et.1*
+%{_mandir}/man3/com_err.3*
 
