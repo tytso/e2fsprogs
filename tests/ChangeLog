@@ -1,3 +1,11 @@
+2002-05-18  Andreas Dilger  <adilger@clusterfs.com>
+
+	* f_badsymlink: Add extra length checks for symlinks
+		- missing nul termination test (new)
+		- nul terminated but i_size is wrong
+		- i_size == maximum size (no space for nul, new)
+		- too many blocks for long symlink
+
 2002-03-08  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.27

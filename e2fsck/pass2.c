@@ -675,7 +675,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	if (!ext2fs_inode_has_valid_blocks(&inode))
 		return;
 
-	if (!LINUX_S_ISDIR(inode.i_mode) &&
+	if (LINUX_S_ISREG(inode.i_mode) &&
 	    (inode.i_size_high || inode.i_size & 0x80000000UL))
 		ctx->large_files--;
 

@@ -173,15 +173,14 @@ static int strnlen(const char * s, int count)
  */
 int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode)
 {
+	int len;
 	int i;
 
-	if ((inode->i_size_high || inode->i_size == 0) ||
-	    (inode->i_flags & (EXT2_IMMUTABLE_FL | EXT2_APPEND_FL |
-			       EXT2_INDEX_FL)))
+	if (inode->i_size_high || inode->i_size == 0)
 		return 0;
 
 	if (inode->i_blocks) {
-		if ((inode->i_size > fs->blocksize) ||
+		if ((inode->i_size >= fs->blocksize) ||
 		    (inode->i_blocks != fs->blocksize >> 9) ||
 		    (inode->i_block[0] < fs->super->s_first_data_block) ||
 		    (inode->i_block[0] >= fs->super->s_blocks_count))
@@ -190,14 +189,26 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode)
 		for (i = 1; i < EXT2_N_BLOCKS; i++)
 			if (inode->i_block[i])
 				return 0;
-	} else {
-		if (inode->i_size > sizeof(inode->i_block) - 1)
+
+		{char buf[fs->blocksize];
+
+		if (io_channel_read_blk(fs->io, inode->i_block[0], 1, buf))
 			return 0;
 
-		if (inode->i_size !=
-		    strnlen((char *)inode->i_block, sizeof(inode->i_block)))
+		len = strnlen(buf, fs->blocksize);
+		if (len == fs->blocksize)
+			return 0;
+		}
+	} else {
+		if (inode->i_size >= sizeof(inode->i_block))
+			return 0;
+
+		len = strnlen((char *)inode->i_block, sizeof(inode->i_block));
+		if (len == sizeof(inode->i_block))
 			return 0;
 	}
+	if (len != inode->i_size)
+		return 0;
 	return 1;
 }
 
@@ -205,15 +216,16 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode)
  * If the immutable (or append-only) flag is set on the inode, offer
  * to clear it.
  */
+#define BAD_SPECIAL_FLAGS (EXT2_IMMUTABLE_FL | EXT2_APPEND_FL | EXT2_INDEX_FL)
 static void check_immutable(e2fsck_t ctx, struct problem_context *pctx)
 {
-	if (!(pctx->inode->i_flags & (EXT2_IMMUTABLE_FL | EXT2_APPEND_FL)))
+	if (!(pctx->inode->i_flags & BAD_SPECIAL_FLAGS))
 		return;
 
 	if (!fix_problem(ctx, PR_1_SET_IMMUTABLE, pctx))
 		return;
 
-	pctx->inode->i_flags &= ~((EXT2_IMMUTABLE_FL | EXT2_APPEND_FL));
+	pctx->inode->i_flags &= ~BAD_SPECIAL_FLAGS;
 	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
 }
 
@@ -1137,7 +1149,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.fragmented = 0;
 	pb.compressed = 0;
 	pb.previous_block = 0;
-	pb.is_dir = LINUX_S_ISDIR(pctx->inode->i_mode);
+	pb.is_dir = LINUX_S_ISDIR(inode->i_mode);
 	pb.inode = inode;
 	pb.pctx = pctx;
 	pb.ctx = ctx;
@@ -1218,6 +1230,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			    fs->super->s_prealloc_dir_blocks)
 				bad_size = 2;
 		}
+	} else if (!LINUX_S_ISREG(inode->i_mode)) {
+		if (inode->i_size_high)
+			bad_size = 5;
 	} else {
 		size = inode->i_size | ((__u64) inode->i_size_high << 32);
 		if ((size < pb.last_block * fs->blocksize))
@@ -1230,13 +1245,14 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pctx->num = (pb.last_block+1) * fs->blocksize;
 		if (fix_problem(ctx, PR_1_BAD_I_SIZE, pctx)) {
 			inode->i_size = pctx->num;
-			if (!pb.is_dir)
+			if (LINUX_S_ISREG(inode->i_mode))
 				inode->i_size_high = pctx->num >> 32;
 			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 		}
 		pctx->num = 0;
 	}
-	if (!pb.is_dir && (inode->i_size_high || inode->i_size & 0x80000000UL))
+	if (LINUX_S_ISREG(inode->i_mode) &&
+	    (inode->i_size_high || inode->i_size & 0x80000000UL))
 		ctx->large_files++;
 	if (pb.num_blocks != inode->i_blocks) {
 		pctx->num = pb.num_blocks;
@@ -1342,7 +1358,7 @@ static int process_block(ext2_filsys fs,
 		   perhaps this really is just an illegal block. */
 		return 0;
 	}
-	
+
 	if (blk == 0) {
 		if (p->is_dir == 0) {
 			/*

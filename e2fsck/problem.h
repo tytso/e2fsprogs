@@ -362,16 +362,16 @@ struct problem_context {
 
 /* Error allocating EA region allocation structure */
 #define PR_1_EA_ALLOC_REGION		0x01003F
-	
+
 /* Error EA allocation collision */
 #define PR_1_EA_ALLOC_COLLISION		0x010040
-	
+
 /* Bad extended attribute name */
 #define PR_1_EA_BAD_NAME		0x010041
 
 /* Bad extended attribute value */
-#define PR_1_EA_BAD_VALUE		0x0100423
-	
+#define PR_1_EA_BAD_VALUE		0x010042
+
 /*
  * Pass 1b errors
  */
@@ -562,7 +562,7 @@ struct problem_context {
 /* Directory filename can't be zero-length  */
 #define PR_2_NULL_NAME		0x020030
 
-/* Invalid fast symlink size */
+/* Invalid symlink size */
 #define PR_2_SYMLINK_SIZE	0x020031
 
 /* i_file_acl (extended attribute) is bad */
