@@ -54,13 +54,13 @@ PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR) \
 #
 #MCHECK= -DMCHECK
 
-OBJS= unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o pass3.o pass4.o \
+OBJS= dict.o unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o pass3.o pass4.o \
 	pass5.o journal.o swapfs.o badblocks.o util.o dirinfo.o dx_dirinfo.o \
 	ehandler.o problem.o message.o recovery.o region.o revoke.o \
 	ea_refcount.o rehash.o $(MTRACE_OBJ)
 
-PROFILED_OBJS= profiled/unix.o profiled/e2fsck.o profiled/super.o \
-	profiled/pass1.o profiled/pass1b.o \
+PROFILED_OBJS= profiled/dict.o profiled/unix.o profiled/e2fsck.o \
+	profiled/super.o profiled/pass1.o profiled/pass1b.o \
 	profiled/pass2.o profiled/pass3.o profiled/pass4.o profiled/pass5.o \
 	profiled/journal.o profiled/badblocks.o profiled/util.o \
 	profiled/dirinfo.o profiled/dx_dirinfo.o profiled/ehandler.o \
@@ -69,6 +69,7 @@ PROFILED_OBJS= profiled/unix.o profiled/e2fsck.o profiled/super.o \
 	profiled/ea_refcount.o profiled/rehash.o
 
 SRCS= $(srcdir)/e2fsck.c \
+	$(srcdir)/dict.c \
 	$(srcdir)/super.c \
 	$(srcdir)/pass1.c \
 	$(srcdir)/pass1b.c \

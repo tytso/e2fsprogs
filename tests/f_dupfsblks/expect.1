@@ -14,8 +14,8 @@ Pass 1C: Scan directories for inodes with dup blocks.
 Pass 1D: Reconciling duplicate blocks
 (There are 3 inodes containing duplicate/bad blocks.)
 
-File /quux (inode #14, mod time Thu Aug  5 07:18:09 1999) 
-  has 1 duplicate block(s), shared with 2 file(s):
+File /foo (inode #12, mod time Thu Apr 28 17:57:53 1994) 
+  has 4 duplicate block(s), shared with 2 file(s):
 	<filesystem metadata>
 	/bar (inode #13, mod time Thu Aug  5 07:17:17 1999)
 Clone duplicate/bad blocks? yes
@@ -23,12 +23,12 @@ Clone duplicate/bad blocks? yes
 File /bar (inode #13, mod time Thu Aug  5 07:17:17 1999) 
   has 2 duplicate block(s), shared with 3 file(s):
 	<filesystem metadata>
-	/quux (inode #14, mod time Thu Aug  5 07:18:09 1999)
 	/foo (inode #12, mod time Thu Apr 28 17:57:53 1994)
+	/quux (inode #14, mod time Thu Aug  5 07:18:09 1999)
 Clone duplicate/bad blocks? yes
 
-File /foo (inode #12, mod time Thu Apr 28 17:57:53 1994) 
-  has 4 duplicate block(s), shared with 2 file(s):
+File /quux (inode #14, mod time Thu Aug  5 07:18:09 1999) 
+  has 1 duplicate block(s), shared with 2 file(s):
 	<filesystem metadata>
 	/bar (inode #13, mod time Thu Aug  5 07:17:17 1999)
 Clone duplicate/bad blocks? yes

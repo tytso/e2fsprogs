@@ -1,3 +1,13 @@
+2002-08-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* dict.c, dict.h: New file from kazlib 1.20 which implements a
+		red-black tree
+	
+	* pass1b.c: Massive changes to take advantage of dict.c.  This
+		removes several O(n**2) algorithms from the rare case
+		where there are a large number of blocks claimed by
+		multiple inodes.
+
 2002-07-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.8.in, e2fsck.h, pass3.c (e2fsck_pass3), unix.c, rehash.c:

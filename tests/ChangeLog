@@ -1,3 +1,9 @@
+2002-08-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_dup, f_dup2, f_dup3, f_bbfile, f_dupfsblks: Update expect
+		scripts to deal with ordering changes caused by use of a
+		red-block tree in pass1b.
+
 2002-07-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_expand, f_h_badnode, f_h_badroot: Modify the expect scripts to
