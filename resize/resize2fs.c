@@ -696,6 +696,12 @@ static void init_block_alloc(ext2_resize_t rfs)
 {
 	rfs->alloc_state = AVOID_OLD;
 	rfs->new_blk = rfs->new_fs->super->s_first_data_block;
+#if 0
+	/* HACK for testing */
+	if (rfs->new_fs->super->s_blocks_count >
+	    rfs->old_fs->super->s_blocks_count)
+		rfs->new_blk = rfs->old_fs->super->s_blocks_count;
+#endif
 }
 
 static blk_t get_new_block(ext2_resize_t rfs)
@@ -922,11 +928,23 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	int			group;
 	char			*block_buf = 0;
 	ino_t			start_to_move;
+	blk_t			orig_size;
 	
 	if ((rfs->old_fs->group_desc_count <=
 	     rfs->new_fs->group_desc_count) &&
 	    !rfs->bmap)
 		return 0;
+
+	/*
+	 * Save the original size of the old filesystem, and
+	 * temporarily set the size to be the new size if the new size
+	 * is larger.  We need to do this to avoid catching an error
+	 * by the block iterator routines
+	 */
+	orig_size = rfs->old_fs->super->s_blocks_count;
+	if (orig_size < rfs->new_fs->super->s_blocks_count)
+		rfs->old_fs->super->s_blocks_count =
+			rfs->new_fs->super->s_blocks_count;
 
 	retval = ext2fs_open_inode_scan(rfs->old_fs, 0, &scan);
 	if (retval) goto errout;
@@ -1024,6 +1042,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	io_channel_flush(rfs->old_fs->io);
 
 errout:
+	rfs->old_fs->super->s_blocks_count = orig_size;
 	if (rfs->bmap) {
 		ext2fs_free_extent_table(rfs->bmap);
 		rfs->bmap = 0;
