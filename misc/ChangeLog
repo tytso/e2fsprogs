@@ -1,3 +1,9 @@
+2003-04-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in (uuidgen): Avoid linking lsattr and chattr against
+		libext2fs, and avoid linking blkid against any of the ext2
+		libraries.
+
 2003-04-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in (fsck): Fsck does not need to linked against the
