@@ -1,3 +1,11 @@
+1998-04-28  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2fs.h: Define EXT2_QSORT_TYPE appropriately for the
+		return type for comparison functions for qsort.
+
+	* dblist.c (dir_block_cmp): Use EXT2_QSORT_TYPE in function
+		declaration.
+
 1998-04-26  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* ext2fs.h, bitops.h: Add support for the Watcom C compiler to do

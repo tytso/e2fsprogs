@@ -25,7 +25,7 @@
 
 #include "ext2fsP.h"
 
-static int dir_block_cmp(const void *a, const void *b);
+static EXT2_QSORT_TYPE dir_block_cmp(const void *a, const void *b);
 
 /*
  * Returns the number of directories in the filesystem as reported by
@@ -234,7 +234,7 @@ errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 }
 
 
-static int dir_block_cmp(const void *a, const void *b)
+static EXT2_QSORT_TYPE dir_block_cmp(const void *a, const void *b)
 {
 	const struct ext2_db_entry *db_a =
 		(const struct ext2_db_entry *) a;

@@ -66,6 +66,15 @@ typedef __s64		blkcnt_t;
 #include "ext2fs/ext2_err.h"
 #endif
 
+/*
+ * Portability help for Microsoft Visual C++
+ */
+#ifdef _MSC_VER
+#define EXT2_QSORT_TYPE int __cdecl
+#else
+#define EXT2_QSORT_TYPE int
+#endif
+
 typedef struct struct_ext2_filsys *ext2_filsys;
 
 struct ext2fs_struct_generic_bitmap {

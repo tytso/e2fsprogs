@@ -9,21 +9,8 @@
  * %End-Header%
  */
 
-#include <stdio.h>
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#include <string.h>
-#include <time.h>
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
-#include <unistd.h>
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
-#endif
-#ifdef HAVE_MNTENT_H
-#include <mntent.h>
 #endif
 
 #ifndef EXT2_SKIP_UUID

@@ -49,7 +49,7 @@ errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent, int size)
 	retval = ext2fs_get_mem(sizeof(struct ext2_extent_entry) *
 				extent->size, (void **) &extent->list);
 	if (retval) {
-		free(extent);
+		ext2fs_free_mem((void **) &extent);
 		return retval;
 	}
 	memset(extent->list, 0,
@@ -121,7 +121,7 @@ errcode_t ext2fs_add_extent_entry(ext2_extent extent, __u32 old_loc, __u32 new_l
 /*
  * Helper function for qsort
  */
-static int extent_cmp(const void *a, const void *b)
+static EXT2_QSORT_TYPE extent_cmp(const void *a, const void *b)
 {
 	const struct ext2_extent_entry *db_a;
 	const struct ext2_extent_entry *db_b;

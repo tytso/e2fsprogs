@@ -62,7 +62,7 @@ static void alloc_bad_map(e2fsck_t ctx);
 static void alloc_bb_map(e2fsck_t ctx);
 static void handle_fs_bad_blocks(e2fsck_t ctx);
 static void process_inodes(e2fsck_t ctx, char *block_buf);
-static int process_inode_cmp(const void *a, const void *b);
+static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
 static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
 				  dgrp_t group, void * priv_data);
 /* static char *describe_illegal_block(ext2_filsys fs, blk_t block); */
@@ -592,7 +592,7 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 	ehandler_operation(old_operation);
 }
 
-static int process_inode_cmp(const void *a, const void *b)
+static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b)
 {
 	const struct process_inode_block *ib_a =
 		(const struct process_inode_block *) a;
