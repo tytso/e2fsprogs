@@ -15,12 +15,11 @@ DVI=texi2dvi
 DVIPS=dvips -o "$@"
 INFO=makeinfo
 HTML=texi2html
-RM=/bin/rm -rf
 
 all:: libext2fs.info libext2fs.dvi
 
 install-doc-libs:
-	$(RM) $(DESTDIR)$(infodir)/libext2fs.info*
+	$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(infodir)
 	for i in libext2fs.info* ; do \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(infodir)/$$i ; \
@@ -28,7 +27,7 @@ install-doc-libs:
 	gzip -9 $(DESTDIR)$(infodir)/libext2fs.info*
 
 uninstall-doc-libs:
-	$(RM) $(DESTDIR)$(infodir)/libext2fs.info*
+	$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
 
 libext2fs.info: $(srcdir)/libext2fs.texinfo
 	$(INFO) $(srcdir)/libext2fs.texinfo
@@ -38,7 +37,7 @@ libext2fs.dvi: $(srcdir)/libext2fs.texinfo
 
 .PHONY: distclean
 distclean:: clean
-	$(RM) Makefile
+	$(RM) -f Makefile
 
 .PHONY: clean
 clean:: clean-all
