@@ -1,3 +1,11 @@
+2001-12-23  Theodore Tso  <tytso@valinux.com>
+
+	* Makefile.in, jfs_user.h: Move linux/jbd.h to
+		ext2fs/kernel-jbd.h, to avoid using the system header
+		file version of hbd.h when using diet glibc (since it
+		forcibly adds /usr/include to the beginning of the
+		include search path.)
+
 2001-12-22  Theodore Tso  <tytso@valinux.com>
 
 	* debugfs.c (kill_file_by_inode, release_blocks_proc): Update the

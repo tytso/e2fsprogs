@@ -1,3 +1,14 @@
+2001-12-23  Theodore Tso  <tytso@valinux.com>
+
+	* Makefile.in, jfs_user.h: Move linux/jbd.h to
+		ext2fs/kernel-jbd.h, to avoid using the system header
+		file version of hbd.h when using diet glibc (since it
+		forcibly adds /usr/include to the beginning of the
+		include search path.)
+
+	* kernel-jbd.h, kernel-list.h, jfs_compat.h: Move files from
+		include/linux directory.
+
 2001-12-16  Theodore Tso  <tytso@valinux.com>
 
 	* bitops.h (ext2fs_mark_generic_bitmap, ext2fs_unmark_generic_bitmap),

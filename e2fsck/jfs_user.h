@@ -97,7 +97,7 @@ _INLINE_ void do_cache_destroy(kmem_cache_t *cache)
 /*
  * Now pull in the real linux/jfs.h definitions.
  */
-#include <linux/jbd.h>
+#include <ext2fs/kernel-jbd.h>
 
 /*
  * Kernel compatibility functions are defined in journal.c
