@@ -1,3 +1,8 @@
+2005-01-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Fix the kernel compile-time echo commands to be
+		consistent and portable
+
 2005-01-13  Matthias Andree  <matthias.andree@gmx.de>
 
 	* getsize.c: Move #include "blkidP.h" before <sys/queues.h> to avoid a

@@ -1,3 +1,8 @@
+2005-01-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Fix the kernel compile-time echo commands to be
+		consistent and portable
+
 2005-01-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* uuidP.h: Use inttypes.h in preference to stdint.h for

@@ -33,11 +33,11 @@ uninstall-doc-libs:
 	$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
 
 libext2fs.info: $(srcdir)/libext2fs.texinfo
-	@echo "	MAKEINFO $<"
+	@echo "	MAKEINFO $@"
 	-@$(INFO) $(srcdir)/libext2fs.texinfo
 
 libext2fs.dvi: $(srcdir)/libext2fs.texinfo
-	@echo "	TEXI2DVI $<"
+	@echo "	TEXI2DVI $@"
 	-@$(DVI) $(srcdir)/libext2fs.texinfo
 
 .PHONY: distclean

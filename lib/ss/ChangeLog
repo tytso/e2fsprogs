@@ -1,3 +1,8 @@
+2005-01-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Fix the kernel compile-time echo commands to be
+		consistent and portable
+
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Use Linux-kernel-style makefile output for "make
