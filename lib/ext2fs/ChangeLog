@@ -1,3 +1,10 @@
+2000-11-01    <tytso@snap.thunk.org>
+
+	* inode.c (ext2fs_flush_icache): Add new function
+		ext2fs_flush_icache() which flushes the internal inode
+		cache.  Applications which modify the inode table blocks
+		directly must call this function.
+
 2000-10-26    <tytso@snap.thunk.org>
 
 	* mkjournal.c: Add #include of netinet/in.h, since Solaris

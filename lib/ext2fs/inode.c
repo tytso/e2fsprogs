@@ -54,10 +54,25 @@ struct ext2_struct_inode_scan {
 	int			reserved[6];
 };
 
+/*
+ * This routine flushes the icache, if it exists.
+ */
+errcode_t ext2fs_flush_icache(ext2_filsys fs)
+{
+	int	i;
+	
+	if (!fs->icache)
+		return 0;
+
+	for (i=0; i < fs->icache->cache_size; i++)
+		fs->icache->cache[i].ino = 0;
+
+	return 0;
+}
+
 static errcode_t create_icache(ext2_filsys fs)
 {
 	errcode_t	retval;
-	int		i;
 	
 	if (fs->icache)
 		return 0;
@@ -84,8 +99,7 @@ static errcode_t create_icache(ext2_filsys fs)
 		ext2fs_free_mem((void **) &fs->icache);
 		return retval;
 	}
-	for (i=0; i < fs->icache->cache_size; i++)
-		fs->icache->cache[i].ino = 0;
+	ext2fs_flush_icache(fs);
 	return 0;
 }
 
