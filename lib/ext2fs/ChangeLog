@@ -1,3 +1,8 @@
+2002-06-09  Andreas Dilger <adilger@clusterfs.com>
+
+	* ext2_fs.h: Further minor cleanups of the header.  Consolidate
+		some checks for __KERNEL__ into one place.
+
 2002-05-22  Andreas Dilger <adilger@clusterfs.com>
 
 	* ext2_fs.h: Remove macros accessing u.ext2_sb field and use

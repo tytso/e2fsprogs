@@ -78,32 +78,23 @@
  */
 #define EXT2_MIN_BLOCK_LOG_SIZE		10	/* 1024 */
 #define EXT2_MAX_BLOCK_LOG_SIZE		13	/* 8192 */
-#define EXT2_MIN_BLOCK_SIZE		(1 << EXT2_MIN_BLOCK_LOG_SIZE)
-#define EXT2_MAX_BLOCK_SIZE		(1 << EXT2_MAX_BLOCK_LOG_SIZE)
+#define EXT2_MIN_BLOCK_SIZE	(1 << EXT2_MIN_BLOCK_LOG_SIZE)
+#define EXT2_MAX_BLOCK_SIZE	(1 << EXT2_MAX_BLOCK_LOG_SIZE)
 #ifdef __KERNEL__
-# define EXT2_BLOCK_SIZE(s)		((s)->s_blocksize)
-#else
-# define EXT2_BLOCK_SIZE(s)		(EXT2_MIN_BLOCK_SIZE << (s)->s_log_block_size)
-#endif
-#define EXT2_ACLE_PER_BLOCK(s)		(EXT2_BLOCK_SIZE(s) / sizeof (struct ext2_acl_entry))
-#define EXT2_ADDR_PER_BLOCK(s)		(EXT2_BLOCK_SIZE(s) / sizeof (__u32))
-#ifdef __KERNEL__
-# define EXT2_BLOCK_SIZE_BITS(s)	((s)->s_blocksize_bits)
-#else
-# define EXT2_BLOCK_SIZE_BITS(s)	((s)->s_log_block_size + 10)
-#endif
-#ifdef __KERNEL__
+#define EXT2_BLOCK_SIZE(s)	((s)->s_blocksize)
+#define EXT2_BLOCK_SIZE_BITS(s)	((s)->s_blocksize_bits)
 #define EXT2_ADDR_PER_BLOCK_BITS(s)	(EXT2_SB(s)->addr_per_block_bits)
-#define EXT2_INODE_SIZE(s)		(EXT2_SB(s)->s_inode_size)
-#define EXT2_FIRST_INO(s)		(EXT2_SB(s)->s_first_ino)
+#define EXT2_INODE_SIZE(s)	(EXT2_SB(s)->s_inode_size)
+#define EXT2_FIRST_INO(s)	(EXT2_SB(s)->s_first_ino)
 #else
+#define EXT2_BLOCK_SIZE(s)	(EXT2_MIN_BLOCK_SIZE << (s)->s_log_block_size)
+#define EXT2_BLOCK_SIZE_BITS(s)	((s)->s_log_block_size + 10)
 #define EXT2_INODE_SIZE(s)	(((s)->s_rev_level == EXT2_GOOD_OLD_REV) ? \
-				 EXT2_GOOD_OLD_INODE_SIZE : \
-				 (s)->s_inode_size)
+				 EXT2_GOOD_OLD_INODE_SIZE : (s)->s_inode_size)
 #define EXT2_FIRST_INO(s)	(((s)->s_rev_level == EXT2_GOOD_OLD_REV) ? \
-				 EXT2_GOOD_OLD_FIRST_INO : \
-				 (s)->s_first_ino)
+				 EXT2_GOOD_OLD_FIRST_INO : (s)->s_first_ino)
 #endif
+#define EXT2_ADDR_PER_BLOCK(s)	(EXT2_BLOCK_SIZE(s) / sizeof(__u32))
 
 /*
  * Macro-instructions used to manage fragments
@@ -330,7 +321,7 @@ struct ext2_inode {
 #define i_fsize		osd2.masix2.m_i_fsize
 #define i_reserved2	osd2.masix2.m_i_reserved2
 
-#endif	/* defined(__KERNEL) || defined(__linux__) */
+#endif	/* defined(__KERNEL__) || defined(__linux__) */
 
 /*
  * File system states
