@@ -100,6 +100,11 @@ to match
 Expand the directory
 .IR filespec .
 .TP
+.I feature [fs_feature] [-fs_feature] ...
+Set or clear various filesystem features in the superblock.  After setting
+or clearing any filesystem features that were requested, print the current
+state of the filesystem feature set.
+.TP
 .I find_free_block [goal]
 Find the first free block, starting from
 .I goal
@@ -181,8 +186,14 @@ device numbers must be specified.
 Take the requested list of inode numbers, and print a listing of pathnames
 to those inodes.
 .TP
-.I open [-w] device
-Open a file system for editing.  
+.I open [-w] [-f] device
+Open a filesystem for editing.  The 
+.I -w 
+flag causes the filesystem to be opened for writing.  The 
+.I -f 
+flag forces the filesystem to be opened even if there are some unknown 
+or incompatible filesystem features which would normally 
+prevent the filesystem from being opened.
 .TP
 .I pwd
 Print the current working directory.
@@ -215,8 +226,10 @@ Mark inode
 .I filespec
 as in use in the inode bitmap.
 .TP
-.I show_super_stats
-List the contents of the super block.
+.I show_super_stats [-h]
+List the contents of the super block and the block group descriptors.  If the
+.I -h
+flag is given, only print out the superblock contents.
 .TP
 .I stat filespec
 Display the contents of the inode structure of the inode

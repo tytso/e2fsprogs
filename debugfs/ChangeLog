@@ -1,3 +1,10 @@
+1999-09-07    <tytso@rsts-11.mit.edu>
+
+	* debugfs.c, debug_cmds.ct: Add new debugfs command "feature"
+		which allows the user to set or clear filesystme features.
+		Add the -f (force) option to the open command.  Add the 
+		-h (superblock header only) option to the stats command.
+
 1999-07-30    <tytso@rsts-11.mit.edu>
 
 	* debugfs.c (dump_inode): Fix debugfs message so it is the same

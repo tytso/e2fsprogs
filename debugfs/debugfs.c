@@ -83,10 +83,13 @@ void do_open_filesys(int argc, char **argv)
 #ifdef HAVE_OPTRESET
 	optreset = 1;		/* Makes BSD getopt happy */
 #endif
-	while ((c = getopt (argc, argv, "w")) != EOF) {
+	while ((c = getopt (argc, argv, "wf")) != EOF) {
 		switch (c) {
 		case 'w':
-			open_flags = EXT2_FLAG_RW;
+			open_flags |= EXT2_FLAG_RW;
+			break;
+		case 'f':
+			open_flags |= EXT2_FLAG_FORCE;
 			break;
 		default:
 			com_err(argv[0], 0, usage);
@@ -165,17 +168,54 @@ void do_init_filesys(int argc, char **argv)
 	return;
 }
 
+static void print_features(struct ext2fs_sb * s, FILE *f)
+{
+#ifdef EXT2_DYNAMIC_REV
+	int	i, j, printed=0;
+__u32	*mask = &s->s_feature_compat, m;
+
+	printf ("Filesystem features:");
+	for (i=0; i <3; i++,mask++) {
+		for (j=0,m=1; j < 32; j++, m<<=1) {
+			if (*mask & m) {
+				fprintf(f, " %s", e2p_feature2string(i, m));
+				printed++;
+			}
+		}
+	}
+	if (printed == 0)
+		printf("(none)");
+	printf("\n");
+#endif
+}
+
 void do_show_super_stats(int argc, char *argv[])
 {
 	int	i;
 	FILE 	*out;
 	struct ext2fs_sb *sb;
 	struct ext2_group_desc *gdp;
+	int	c, header_only = 0;
 	char buf[80];
 	const char *none = "(none)";
+	const char *usage = "Usage: show_super [-h]";
 
-	if (argc > 1) {
-		com_err(argv[0], 0, "Usage: show_super");
+	optind = 0;
+#ifdef HAVE_OPTRESET
+	optreset = 1;		/* Makes BSD getopt happy */
+#endif
+	while ((c = getopt (argc, argv, "h")) != EOF) {
+		switch (c) {
+		case 'h':
+			header_only++;
+			break;
+		default:
+			com_err(argv[0], 0, usage);
+			return;
+		}
+	}
+	if (optind != argc) {
+		com_err(argv[0], 0, usage);
 		return;
 	}
 	if (check_fs_open(argv[0]))
@@ -201,6 +241,7 @@ void do_show_super_stats(int argc, char *argv[])
 	else
 		strcpy(buf, none);
 	fprintf(out, "Filesystem UUID = %s\n", buf);
+	print_features(sb, out);
 	fprintf(out, "Last mount time = %s", time_to_string(sb->s_mtime));
 	fprintf(out, "Last write time = %s", time_to_string(sb->s_wtime));
 	fprintf(out, "Mount counts = %d (maximal = %d)\n",
@@ -230,6 +271,11 @@ void do_show_super_stats(int argc, char *argv[])
 		(current_fs->group_desc_count != 1) ? "s" : "",
 		current_fs->desc_blocks,
 		(current_fs->desc_blocks != 1) ? "s" : "");
+
+	if (header_only) {
+		close_pager(out);
+		return;
+	}
 	
 	gdp = &current_fs->group_desc[0];
 	for (i = 0; i < current_fs->group_desc_count; i++, gdp++)
@@ -1170,6 +1216,9 @@ void do_mkdir(int argc, char *argv[])
 		return;
 	}
 
+	if (check_fs_read_write(argv[0]))
+		return;
+
 	cp = strrchr(argv[1], '/');
 	if (cp) {
 		*cp = 0;
@@ -1237,6 +1286,9 @@ void do_kill_file(int argc, char *argv[])
 	if (check_fs_open(argv[0]))
 		return;
 
+	if (check_fs_read_write(argv[0]))
+		return;
+
 	inode_num = string_to_inode(argv[1]);
 	if (!inode_num) {
 		com_err(argv[0], 0, "Cannot find file");
@@ -1256,6 +1308,9 @@ void do_rm(int argc, char *argv[])
 		return;
 	}
 	if (check_fs_open(argv[0]))
+		return;
+
+	if (check_fs_read_write(argv[0]))
 		return;
 
 	retval = ext2fs_namei(current_fs, root, cwd, argv[1], &inode_num);
@@ -1317,6 +1372,26 @@ void do_expand_dir(int argc, char *argv[])
 	if (retval)
 		com_err("ext2fs_expand_dir", retval, "");
 	return;
+}
+
+void do_features(int argc, char *argv[])
+{
+	int	i;
+	
+	if (check_fs_open(argv[0]))
+		return;
+
+	if ((argc != 1) && check_fs_read_write(argv[0]))
+		return;
+	for (i=1; i < argc; i++) {
+		if (e2p_edit_feature(argv[i],
+				     &current_fs->super->s_feature_compat))
+			com_err(argv[0], 0, "Unknown feature: %s\n",
+				argv[i]);
+		else
+			ext2fs_mark_super_dirty(current_fs);
+	}
+	print_features((struct ext2fs_sb *) current_fs->super, stdout);
 }
 
 static int source_file(const char *cmd_file, int sci_idx)

@@ -13,6 +13,9 @@ request do_open_filesys, "Open a filesystem",
 request do_close_filesys, "Close the filesystem",
 	close_filesys, close;
 
+request do_features, "Set/print superblock features",
+	feature, features;
+
 request do_dirty_filesys, "Mark the filesystem as dirty",
 	dirty_filesys, dirty;
 
@@ -110,7 +113,4 @@ request do_cat, "Dump an inode out to stdout",
 	cat;
 
 end;
-
-
-
 
