@@ -1,3 +1,9 @@
+2001-07-30  Theodore Tso  <tytso@valinux.com>
+
+	* unix.c (check_mount): Remove the code which tested for the root
+		filesystem being mounted read-only, and depend on the
+		results flags from ext2fs_check_if_mounted.
+
 2001-07-29  Theodore Tso  <tytso@valinux.com>
 
 	* unix.c (check_if_skip): Free the e2fsck context structure on a

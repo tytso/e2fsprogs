@@ -210,23 +210,16 @@ static void check_mount(e2fsck_t ctx)
 			ctx->filesystem_name);
 		return;
 	}
-	if (!(mount_flags & EXT2_MF_MOUNTED))
+
+	/*
+	 * If the filesystem isn't mounted, or it's the root filesystem
+	 * and it's mounted read-only, then everything's fine.
+	 */
+	if ((!(mount_flags & EXT2_MF_MOUNTED)) ||
+	    ((mount_flags & EXT2_MF_ISROOT) &&
+	     (mount_flags & EXT2_MF_READONLY)))
 		return;
 
-#if (defined(__linux__) && defined(HAVE_MNTENT_H))
-	/*
-	 * If the root is mounted read-only, then /etc/mtab is
-	 * probably not correct; so we won't issue a warning based on
-	 * it.
-	 */
-	fd = open(MOUNTED, O_RDWR);
-	if (fd < 0) {
-		if (errno == EROFS)
-			return;
-	} else
-		close(fd);
-#endif
-	
 	if (ctx->options & E2F_OPT_READONLY) {
 		printf(_("Warning!  %s is mounted.\n"), ctx->filesystem_name);
 		return;
