@@ -44,11 +44,11 @@ resize2fs.static: $(RESIZE_OBJS)  $(STATIC_DEPLIBS)
 		$(RESIZE_OBJS) $(STATIC_LIBS) 
 
 resize2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/resize2fs.8.in
-	$(SUBSTITUTE) $(srcdir)/resize2fs.8.in resize2fs.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/resize2fs.8.in resize2fs.8
 
 test_extent: $(TEST_EXTENT_OBJS)
 	$(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS) 
-	
+
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir)
@@ -85,7 +85,7 @@ check:: test_extent.out
 		diff test_extent.out $(srcdir)/test_extent.in ; \
 		exit 1 ; \
 	fi
-	
+
 clean:
 	$(RM) -f $(PROGS) $(TEST_PROGS) $(MANPAGES) \#* *.s *.o *.a *~ core \
 		resize2fs.static test_extent.out
@@ -116,7 +116,7 @@ $(top_srcdir)/.exclude-file:
 		>> $(top_srcdir)/.exclude-file
 	echo $(SRCROOT)/e2fsprogs-ALL-@E2FSPROGS_VERSION@.tar.gz \
 		>> $(top_srcdir)/.exclude-file
-	
+
 source_tar_file: $(top_srcdir)/.exclude-file
 	(cd $(top_srcdir)/..; a=$(SRCROOT); rm -f $$a ; ln -sf e2fsprogs $$a ; \
 		$(TAR) -c -h -v -f - \

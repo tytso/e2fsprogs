@@ -1,5 +1,8 @@
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
+	* MCONFIG.in (SUBSTITUTE_UPTIME): New definition which passes the
+		-t option to subst.
+
 	* configure.in: Add test for stdint.h
 
 2004-03-19  Theodore Ts'o  <tytso@mit.edu>

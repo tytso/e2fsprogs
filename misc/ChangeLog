@@ -1,3 +1,10 @@
+2004-04-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Update the modtime even if subst doesn't need to
+		update the man pages, to avoid always re-running
+		subst, especially since there are no dependencies on these
+		generated files.
+
 2004-03-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid.c: Remove the partially implemented -p option (it never

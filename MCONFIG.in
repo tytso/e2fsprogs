@@ -109,6 +109,7 @@ LINUX_INCLUDE=@LINUX_INCLUDE@
 #
 SUBST_CONF=$(top_builddir)/util/subst.conf
 SUBSTITUTE= $(top_builddir)/util/subst -f $(SUBST_CONF)
+SUBSTITUTE_UPTIME= $(top_builddir)/util/subst -t -f $(SUBST_CONF)
 DEP_SUBSTITUTE= $(top_builddir)/util/subst $(SUBST_CONF)
 
 $(top_builddir)/util/subst:

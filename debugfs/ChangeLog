@@ -1,3 +1,10 @@
+2004-04-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Update the modtime even if subst doesn't need to
+		update the debugfs man page, to avoid always re-running
+		subst, especially since there are no dependencies on the
+		man page.
+
 2004-03-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c (make_link): Set the filetype information when

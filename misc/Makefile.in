@@ -121,52 +121,52 @@ filefrag: $(FILEFRAG_OBJS)
 	$(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) 
 
 tune2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/tune2fs.8.in
-	$(SUBSTITUTE) $(srcdir)/tune2fs.8.in tune2fs.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/tune2fs.8.in tune2fs.8
 
 mklost+found.8: $(DEP_SUBSTITUTE) $(srcdir)/mklost+found.8.in
-	$(SUBSTITUTE) $(srcdir)/mklost+found.8.in mklost+found.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/mklost+found.8.in mklost+found.8
 
 mke2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/mke2fs.8.in
-	$(SUBSTITUTE) $(srcdir)/mke2fs.8.in mke2fs.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/mke2fs.8.in mke2fs.8
 
 e2label.8: $(DEP_SUBSTITUTE) $(srcdir)/e2label.8.in
-	$(SUBSTITUTE) $(srcdir)/e2label.8.in e2label.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/e2label.8.in e2label.8
 
 findfs.8: $(DEP_SUBSTITUTE) $(srcdir)/findfs.8.in
-	$(SUBSTITUTE) $(srcdir)/findfs.8.in findfs.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/findfs.8.in findfs.8
 
 e2image.8: $(DEP_SUBSTITUTE) $(srcdir)/e2image.8.in
-	$(SUBSTITUTE) $(srcdir)/e2image.8.in e2image.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/e2image.8.in e2image.8
 
 dumpe2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/dumpe2fs.8.in 
-	$(SUBSTITUTE) $(srcdir)/dumpe2fs.8.in dumpe2fs.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/dumpe2fs.8.in dumpe2fs.8
 
 badblocks.8: $(DEP_SUBSTITUTE) $(srcdir)/badblocks.8.in
-	$(SUBSTITUTE) $(srcdir)/badblocks.8.in badblocks.8	
+	$(SUBSTITUTE_UPTIME) $(srcdir)/badblocks.8.in badblocks.8	
 
 fsck.8: $(DEP_SUBSTITUTE) $(srcdir)/fsck.8.in
-	$(SUBSTITUTE) $(srcdir)/fsck.8.in fsck.8 
+	$(SUBSTITUTE_UPTIME) $(srcdir)/fsck.8.in fsck.8 
 
 blkid.8: $(DEP_SUBSTITUTE) $(srcdir)/blkid.8.in
-	$(SUBSTITUTE) $(srcdir)/blkid.8.in blkid.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/blkid.8.in blkid.8
 
 logsave.8: $(DEP_SUBSTITUTE) $(srcdir)/logsave.8.in
-	$(SUBSTITUTE) $(srcdir)/logsave.8.in logsave.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/logsave.8.in logsave.8
 
 chattr.1: $(DEP_SUBSTITUTE) $(srcdir)/chattr.1.in
-	$(SUBSTITUTE) $(srcdir)/chattr.1.in chattr.1 
+	$(SUBSTITUTE_UPTIME) $(srcdir)/chattr.1.in chattr.1 
 
 lsattr.1: $(DEP_SUBSTITUTE) $(srcdir)/lsattr.1.in 
-	$(SUBSTITUTE) $(srcdir)/lsattr.1.in lsattr.1 
+	$(SUBSTITUTE_UPTIME) $(srcdir)/lsattr.1.in lsattr.1 
 
 uuidgen.1: $(DEP_SUBSTITUTE) $(srcdir)/uuidgen.1.in 
-	$(SUBSTITUTE) $(srcdir)/uuidgen.1.in uuidgen.1 
+	$(SUBSTITUTE_UPTIME) $(srcdir)/uuidgen.1.in uuidgen.1 
 
 blkid.1: $(DEP_SUBSTITUTE) $(srcdir)/blkid.1.in 
-	$(SUBSTITUTE) $(srcdir)/blkid.1.in blkid.1 
+	$(SUBSTITUTE_UPTIME) $(srcdir)/blkid.1.in blkid.1 
 
 filefrag.8: $(DEP_SUBSTITUTE) $(srcdir)/filefrag.8.in
-	$(SUBSTITUTE) $(srcdir)/filefrag.8.in filefrag.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/filefrag.8.in filefrag.8
 
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(sbindir) \

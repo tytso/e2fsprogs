@@ -60,10 +60,10 @@ ext2ed: $(OBJS)
 	$(CC) $(ALL_LDFLAGS) -o ext2ed $(OBJS) $(LIBS)
 
 ext2ed.8: $(DEP_SUBSTITUTE) $(srcdir)/ext2ed.8.in
-	$(SUBSTITUTE) $(srcdir)/ext2ed.8.in ext2ed.8
+	$(SUBSTITUTE_UPTIME) $(srcdir)/ext2ed.8.in ext2ed.8
 
 ext2ed.conf: $(DEP_SUBSTITUTE) $(srcdir)/ext2ed.conf.in
-	$(SUBSTITUTE) $(srcdir)/ext2ed.conf.in ext2ed.conf
+	$(SUBSTITUTE_UPTIME) $(srcdir)/ext2ed.conf.in ext2ed.conf
 
 clean:
 	$(RM) -f ext2ed $(OBJS) $(DOCS) ext2ed.conf ext2ed.8

@@ -68,7 +68,7 @@ $(top_builddir)/lib/blkid/blkid_types.h: $(srcdir)/blkid_types.h.in $(top_buildd
 	cd $(top_builddir); CONFIG_FILES=$(my_dir)/blkid_types.h ./config.status
 
 libblkid.3: $(DEP_SUBSTITUTE) $(srcdir)/libblkid.3.in
-	$(SUBSTITUTE) $(srcdir)/libblkid.3.in libblkid.3
+	$(SUBSTITUTE_UPTIME) $(srcdir)/libblkid.3.in libblkid.3
 
 tst_cache: $(srcdir)/cache.c $(DEPLIBS_BLKID)
 	$(CC) -o tst_cache -DTEST_PROGRAM $(srcdir)/cache.c $(LIBS_BLKID) $(ALL_CFLAGS)
