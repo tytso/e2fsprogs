@@ -1,5 +1,8 @@
 2001-02-07  Theodore Tso  <tytso@valinux.com>
 
+	* tune2fs.8.in: Update man page to reflect that 2.0.39 supports
+		sparse_super.
+
 	* dumpe2fs.c (list_desc): Fix fencepost error when calculating the
 		range of inode table blocks.  Add '0x' to values printed
 		in hex.

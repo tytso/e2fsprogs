@@ -153,10 +153,10 @@ adjust the reserved blocks percentage on the given device.
 adjust the reserved blocks count on the given device.
 .TP
 .BI \-s " sparse_super_flag"
-set or reset the sparse_superblock flag.  The sparse_superblock feature
+set or reset the sparse_superblock flag.  The sparse_super feature
 saves space on really big filesystems.
 .B Warning:
-The Linux 2.0 kernel does not properly support this feature.  Neither do
+The Linux kernels before 2.0.39 do not support this feature.  Neither do
 all Linux 2.1 kernels; please don't use this unless you know what you're
 doing!
 .TP
