@@ -160,6 +160,11 @@ mostlyclean:: clean
 distclean:: clean
 	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
+#
+# Hack to parallel makes recognize dependencies correctly.
+#
+$(top_builddir)/lib/ss/ss_err.h: ss_err.h
+
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in

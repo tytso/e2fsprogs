@@ -153,6 +153,11 @@ mostlyclean:: clean
 distclean:: clean
 	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
+#
+# Hack to parallel makes recognize dependencies correctly.
+#
+../../lib/libuuid.a: libuuid.a
+
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in

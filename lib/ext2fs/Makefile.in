@@ -196,6 +196,10 @@ mostlyclean:: clean
 distclean:: clean
 	$(RM) -f .depend ext2_err.c ext2_err.h Makefile \
 		$(srcdir)/TAGS $(srcdir)/Makefile.in.old
+#
+# Hack to parallel makes recognize dependencies correctly.
+#
+$(top_builddir)/lib/ext2fs/ext2_err.h: ext2_err.h
 
 # +++ Dependency line eater +++
 # 

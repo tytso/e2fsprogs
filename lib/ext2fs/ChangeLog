@@ -1,3 +1,8 @@
+2000-05-25    <tytso@snap.thunk.org>
+
+	* Makefile: Add hack dependency rule so that parallel makes work
+		correctly. 
+
 2000-05-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* ext2fs.h: Add appropriate ifdef's to support C++ compilation.
