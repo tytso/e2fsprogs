@@ -103,6 +103,7 @@ static void frag_report(const char *filename)
 	}
 	if (ioctl(fd, FIGETBSZ, &bs) < 0) {
 		perror("FIGETBSZ");
+		close(fd);
 		return;
 	}
 	if (verbose)
@@ -141,7 +142,7 @@ static void frag_report(const char *filename)
 			(expected>1) ? "s" : "");
 	else
 		fputc('\n', stdout);
-	
+	close(fd);
 }
 
 static void usage(const char *progname)
