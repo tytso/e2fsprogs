@@ -22,4 +22,4 @@ extern void check_plausibility(const char *device);
 extern void parse_journal_opts(const char *opts);
 extern void check_mount(const char *device, int force, const char *type);
 extern int figure_journal_size(int journal_size, ext2_filsys fs);
-
+extern void print_check_message(ext2_filsys fs);

@@ -79,7 +79,28 @@ adjusts tunable filesystem parameters on a Linux second extended filesystem.
 Adjust the maximal mounts count between two filesystem checks.  If 
 .I max-mount-counts
 is 0 then the number of times the filesystem is mounted will be disregarded
-by e2fsck and the kernel.
+by
+.BR e2fsck (8)
+and the kernel.
+.sp
+Staggering the mount-counts at which filesystems are forcibly
+checked will avoid all filesystems being checked at one time
+when using journaled filesystems.
+.sp
+You should strongly consider the consequences of disabling
+mount-count-dependent checking entirely.  Bad disk drives, cables,
+memory, and kernel bugs could all corrupt a filesystem without
+marking the filesystem dirty or in error.  If you are using
+journaling on your filesystem, your filesystem will
+.B never
+be marked dirty, so it will not normally be checked.  A
+filesystem error detected by the kernel will still force
+an fsck on the next reboot, but it may already be too late
+to prevent data loss at that point.
+.sp
+See also the
+.B \-i
+option for time-dependent checking.
 .TP
 .BI \-C " mount-count"
 Set the number of times the filesystem has been mounted.
@@ -88,6 +109,9 @@ the filesystem at the next reboot.
 .TP
 .BI \-e " error-behavior"
 Change the behavior of the kernel code when errors are detected.
+In all cases, a filesystem error will cause
+.BR e2fsck (8)
+to check the filesystem on the next boot.
 .I error-behavior
 can be one of the following:
 .RS 1.2i
@@ -117,9 +141,19 @@ result in days,
 .B m
 in months, and
 .B w
-in weeks.  A value of zero will disable the timedependent checking.
+in weeks.  A value of zero will disable the time-dependent checking.
+.sp
+It is strongly recommended that either
+.B \-c
+(mount-count-dependent) or
+.B \-i
+(time-dependent) checking be enabled to force periodic full
+.BR e2fsck (8)
+checking of the filesystem.  Failure to do so may lead to filesystem
+corruption due to bad disks, cables, memory, or kernel bugs to go
+unnoticed until they cause data loss or corruption.
 .TP
-.B -j
+.B \-j
 Add an ext3 journal to the filesystem.  If the 
 .B \-J
 option is not specified, the default journal parameters will be used to create
@@ -274,7 +308,7 @@ was written by Remy Card <Remy.Card@linux.org>.
 .B tune2fs
 uses the ext2fs library written by Theodore Ts'o <tytso@mit.edu>.
 This manual page was written by Christian Kuhtz <chk@data-hh.Hanse.DE>.
-Timedependent checking was added by Uwe Ohse <uwe@tirka.gun.de>.
+Time-dependent checking was added by Uwe Ohse <uwe@tirka.gun.de>.
 .SH AVAILABILITY
 .B tune2fs
 is part of the e2fsprogs package and is available from 

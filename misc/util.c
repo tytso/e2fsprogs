@@ -234,3 +234,12 @@ int figure_journal_size(int journal_size, ext2_filsys fs)
 	return j_blocks;
 }
 
+void print_check_message(ext2_filsys fs)
+{
+	printf(_("This filesystem will be automatically "
+		 "checked every %d mounts or\n"
+		 "%g days, whichever comes first.  "
+		 "Use tune2fs -c or -i to override.\n"),
+	       fs->super->s_max_mnt_count,
+	       (double)fs->super->s_checkinterval / (3600 * 24));
+}

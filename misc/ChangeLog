@@ -1,5 +1,15 @@
 2001-06-13  Theodore Tso  <tytso@valinux.com>
 
+	* tune2fs.c, mke2fs.c, util.c, util.h (print_check_message): Move
+		the message which displays how often the filesystem will
+		be checked from mke2fs into a utility subroutine.  Then
+		cause tune2fs to call that function to display the message
+		after adding a journal to a filesystem.
+
+	* mke2fs.8.in: Add manual page fixups and explanation for why it's
+		good to check filesystems periodically from Andreas
+		Dilger.
+
 	* Makefile.in: Don't build e2image if --disable-imager is
 		specified to configure.
 
