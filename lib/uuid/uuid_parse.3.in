@@ -55,14 +55,13 @@ otherwise \-1 is returned.
 .SH "CONFORMING TO"
 OSF DCE 1.1
 .SH AUTHOR
-.B uuid_parse
-was written by Theodore Y. Ts'o for the ext2 filesystem utilties.
+Theodore Y. Ts'o
 .SH AVAILABILITY
-.B uuid_parse
-is part of libuuid from the e2fsprogs package and is available from
-http://e2fsprogs.sourceforge.net.
+.UR http://e2fsprogs.sourceforge.net/
+http://e2fsprogs.sourceforge.net/
+.UE
 .SH "SEE ALSO"
-.BR libuuid (3),
+.BR uuid (3),
 .BR uuid_clear (3),
 .BR uuid_compare (3),
 .BR uuid_copy (3),

@@ -167,7 +167,7 @@ exit 0
 %{_mandir}/man1/mk_cmds.1*
 %{_mandir}/man3/com_err.3*
 %{_mandir}/man3/libblkid.3*
-%{_mandir}/man3/libuuid.3*
+%{_mandir}/man3/uuid.3*
 %{_mandir}/man3/uuid_clear.3*
 %{_mandir}/man3/uuid_compare.3*
 %{_mandir}/man3/uuid_copy.3*

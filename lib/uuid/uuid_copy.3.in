@@ -47,15 +47,16 @@ function copies the UUID variable
 The copied UUID is returned in the location pointed to by
 .IR dst .
 .SH AUTHOR
-.B uuid_copy
-was written by Theodore Y. Ts'o for the ext2 filesystem utilties.
+Theodore Y. Ts'o
 .SH AVAILABILITY
-.B uuid_copy
-is part of libuuid from the e2fsprogs package and is available from
-http://e2fsprogs.sourceforge.net.
+.UR http://e2fsprogs.sourceforge.net/
+http://e2fsprogs.sourceforge.net/
+.UE
 .SH "SEE ALSO"
-.BR libuuid (3),
+.BR uuid (3),
 .BR uuid_clear (3),
 .BR uuid_compare (3),
 .BR uuid_generate (3),
-.BR uuid_is_null (3)
+.BR uuid_is_null (3),
+.BR uuid_parse (3),
+.BR uuid_unparse (3)

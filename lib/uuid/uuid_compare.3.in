@@ -51,15 +51,16 @@ is found,  respectively, to be lexigraphically less than, equal, or
 greater than 
 .IR uu2 .
 .SH AUTHOR
-.B uuid_compare
-was written by Theodore Y. Ts'o for the ext2 filesystem utilties.
+Theodore Y. Ts'o
 .SH AVAILABILITY
-.B uuid_compare
-is part of libuuid from the e2fsprogs package and is available from
-http://e2fsprogs.sourceforge.net.
+.UR http://e2fsprogs.sourceforge.net/
+http://e2fsprogs.sourceforge.net/
+.UE
 .SH "SEE ALSO"
-.BR libuuid (3),
+.BR uuid (3),
 .BR uuid_clear (3),
 .BR uuid_copy (3),
 .BR uuid_generate (3),
-.BR uuid_is_null (3)
+.BR uuid_is_null (3),
+.BR uuid_parse (3),
+.BR uuid_unparse (3)

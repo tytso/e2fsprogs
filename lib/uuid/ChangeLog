@@ -1,5 +1,7 @@
 2004-05-04  Theodore Ts'o  <tytso@mit.edu>
 
+	* Update and clean up uuid man pages
+
 	* gen_uuid.c (uuid_generate_time): Mask off the timestamp to avoid
 		a Y8.8888K problem.
 
