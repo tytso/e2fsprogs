@@ -9,6 +9,12 @@
  * %End-Header%
  */
 
+#ifndef __sun__
+       /* Solaris for some strange reason drops struct
+          timeval if _XOPEN_SOURCE defined */
+#define _XOPEN_SOURCE /* glibc2 needs this for strptime */
+#endif
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -356,6 +362,7 @@ static errcode_t parse_bmap(struct field_set_info *info, char *arg)
 	if (retval) {
 		com_err("set_inode", retval, "while setting block map");
 	}
+	return retval;
 }
 
 

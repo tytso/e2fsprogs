@@ -1,3 +1,9 @@
+2005-01-19  Matthias Andree <matthias.andree@gmx.de>
+
+	* set_fields.c: Add _XOPEN_SOURCE #define on all but Solaris
+		systems so that strptime() gets defined.
+		(parse_bmap): Add missing return statement.
+
 2005-01-07  Theodore Ts'o  <tytso@mit.edu>
 
 	* debug_cmds.ct: Make the official name of set_inode be
