@@ -83,7 +83,7 @@ dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS_E2P)
 	$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS_E2P)
 
 fsck: $(FSCK_OBJS)
-	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS)
+	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS)
 
 badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS)

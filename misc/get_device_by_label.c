@@ -1,22 +1,35 @@
 /*
  * get_device_by_label.h
  *
- * Copyright 1999 by Andries Brouwer and Theodore Ts'o
+ * Copyright 1999 by Andries Brouwer
+ * Copyright 1999, 2000 by Theodore Ts'o
  *
  * This file may be redistributed under the terms of the GNU Public
  * License.
  *
  * Taken from aeb's mount, 990619
  * Updated from aeb's mount, 20000725
+ * Added call to ext2fs_find_block_device, so that we can find devices
+ * 	even if devfs (ugh) is compiled in, but not mounted, since
+ * 	this messes up /proc/partitions, by TYT.
  */
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#ifdef HAVE_SYS_MKDEV_H
+#include <sys/mkdev.h>
+#endif
 #include "nls-enable.h"
 #include "get_device_by_label.h"
+
+/* function prototype from libext2 */
+extern char *ext2fs_find_block_device(dev_t device);
 
 #define PROC_PARTITIONS "/proc/partitions"
 #define DEVLABELDIR	"/dev"
@@ -91,8 +104,10 @@ uuidcache_init(void) {
 	int ma, mi, sz;
 	static char ptname[100];
 	FILE *procpt;
-	char uuid[16], *label;
+	char uuid[16], *label, *devname;
 	char device[110];
+	dev_t	dev;
+	struct stat statbuf;
 	int firstPass;
 	int handleOnFirst;
 
@@ -126,18 +141,25 @@ uuidcache_init(void) {
 
 		for(s = ptname; *s; s++);
 		if (isdigit(s[-1])) {
-		/*
-		 * Note: this is a heuristic only - there is no reason
-		 * why these devices should live in /dev.
-		 * Perhaps this directory should be specifiable by option.
-		 * One might for example have /devlabel with links to /dev
-		 * for the devices that may be accessed in this way.
-		 * (This is useful, if the cdrom on /dev/hdc must not
-		 * be accessed.)
-		 */
+			/*
+			 * We first look in /dev for the device, but
+			 * if we don't find it, or if the stat
+			 * information doesn't check out, we use
+			 * ext2fs_find_block_device to find it.
+			 */
 			sprintf(device, "%s/%s", DEVLABELDIR, ptname);
-			if (!get_label_uuid(device, &label, uuid))
-				uuidcache_addentry(strdup(device), label, uuid);
+			dev = makedev(ma, mi);
+			if ((stat(device, &statbuf) < 0) ||
+			    (statbuf.st_rdev != dev)) {
+				devname = ext2fs_find_block_device(dev);
+			} else
+				devname = strdup(device);
+			if (!devname)
+				continue;
+			if (!get_label_uuid(devname, &label, uuid))
+				uuidcache_addentry(devname, label, uuid);
+			else
+				free(devname);
 		}
 	    }
 	}
