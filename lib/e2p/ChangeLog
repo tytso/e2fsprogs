@@ -1,3 +1,9 @@
+2001-05-13  Theodore Tso  <tytso@valinux.com>
+
+	* ls.c (print_features): Added missing space when printing (none)
+		as the filesystem feature.
+		(list_super2): If the filesystem revision is unknown, say so.
+
 2001-01-15  Theodore Ts'o  <tytso@valinux.com>
 
 	* ls.c (list_super2): Fix bug where we were printing the

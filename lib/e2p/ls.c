@@ -107,7 +107,7 @@ static void print_features(struct ext2_super_block * s, FILE *f)
 		}
 	}
 	if (printed == 0)
-		fprintf(f, "(none)");
+		fprintf(f, " (none)");
 	fprintf(f, "\n");
 #endif
 }
@@ -159,7 +159,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, " (dynamic)\n");
 #endif
 	} else
-		fprintf(f, "\n");
+		fprintf(f, " (unknown)\n");
 	print_features(sb, f);
 	fprintf(f, "Filesystem state:        ");
 	print_fs_state (f, sb->s_state);
