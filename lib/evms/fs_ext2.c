@@ -370,6 +370,8 @@ static int fs_expand( logical_volume_t * volume,
 			/* get expand exit code */
 			LOG("Expand completed with rc = %d \n",status);
 			rc = WEXITSTATUS(status);
+		} else {
+			rc = EINTR;
 		}
 	}
 	if (buffer) {
@@ -525,6 +527,8 @@ static int fs_shrink( logical_volume_t * volume,
 			/* get shrink exit code */
 			LOG("Shrink completed with rc = %d \n",status);
 			rc = WEXITSTATUS(status);
+		} else {
+			rc = EINTR;
 		}
 	}
 	if (buffer) {

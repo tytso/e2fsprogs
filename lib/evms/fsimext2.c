@@ -139,7 +139,9 @@ int fsim_mkfs(logical_volume_t * volume, option_array_t * options )
             if ( WIFEXITED(status) ) {
                 /* get mke2fs exit code */
                 rc = WEXITSTATUS(status);
-            }
+            } else {
+		    rc = EINTR;
+	    }
     }
 
     return rc;
@@ -339,6 +341,8 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options,
 			LOG("e2fsck completed with exit code %d \n",
 			    *ret_status);
 			rc = 0;
+		} else {
+			rc = EINTR;
 		}
 	}
 
