@@ -254,6 +254,11 @@ static void reserve_stdio_fds(NOARGS)
 		fd = open("/dev/null", O_RDWR);
 		if (fd > 2)
 			break;
+		if (fd < 0) {
+			fprintf(stderr, "ERROR: Couldn't open /dev/null (%s)\n",
+				strerror(errno));
+			break;
+		}
 	}
 	close(fd);
 }

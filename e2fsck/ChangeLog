@@ -1,3 +1,8 @@
+1999-05-17    <tytso@rsts-11.mit.edu>
+
+	* unix.c (reserve_stdio_fds): Add safety check in case
+		reserve_stdio_fds couldn't open /dev/null.
+
 1999-03-14  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* util.c (print_resource_track): Use mallinfo if present to get
