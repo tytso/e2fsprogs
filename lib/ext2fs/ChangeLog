@@ -1,3 +1,11 @@
+2002-04-27    <tytso@snap.thunk.org>
+
+	* ismounted.c (check_mntent_file, is_swap_device): Verify that the
+		file we are checking is a block device file before looking
+		at st_rdev, since it's not valid for normal files.
+		(is_swap_device): Move so that it is outside the
+		HAVE_MNTENT_H, so that it is always built.
+
 2002-03-11  Theodore Tso  <tytso@mit.edu>
 
 	* dirblock.c (ext2fs_read_dir_block2, ext2fs_write_dir_block): New

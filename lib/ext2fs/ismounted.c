@@ -55,17 +55,19 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 		return errno;
 	file_dev = 0;
 #ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
-	if (stat(file, &st_buf) == 0)
+	if ((stat(file, &st_buf) == 0) &&
+	    S_ISBLK(st_buf.st_mode))
 		file_dev = st_buf.st_rdev;
-#endif	
+#endif	/* __GNU__ */
 	while ((mnt = getmntent (f)) != NULL) {
 		if (strcmp(file, mnt->mnt_fsname) == 0)
 			break;
 #ifndef __GNU__
 		if (file_dev && (stat(mnt->mnt_fsname, &st_buf) == 0) &&
-		    file_dev == st_buf.st_rdev)
+		    S_ISBLK(st_buf.st_mode) &&
+		    (file_dev == st_buf.st_rdev))
 			break;
-#endif
+#endif	/* __GNU__ */
 	}
 
 	if (mnt == 0) {
@@ -85,7 +87,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 				goto is_root;
 			}
 		}
-#endif
+#endif	/* __GNU__ */
 		goto exit;
 	}
 #ifndef __GNU__ /* The GNU hurd is deficient; what else is new? */
@@ -101,7 +103,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 #ifdef DEBUG
 			printf("Bogus entry in %s!  (%s does not exist)\n",
 			       mtab_file, mnt->mnt_dir);
-#endif
+#endif /* DEBUG */
 			retval = 0;
 		}
 		goto exit;
@@ -110,10 +112,10 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 #ifdef DEBUG
 		printf("Bogus entry in %s!  (%s not mounted on %s)\n",
 		       mtab_file, file, mnt->mnt_dir);
-#endif
+#endif /* DEBUG */
 		goto exit;
 	}
-#endif
+#endif /* __GNU__ */
 	*mount_flags = EXT2_MF_MOUNTED;
 	
 	/* Check to see if the ro option is set */
@@ -146,50 +148,6 @@ exit:
 	return retval;
 }
 
-/*
- * Check to see if we're dealing with the swap device.
- */
-static int is_swap_device(const char *file)
-{
-	FILE		*f;
-	char		buf[1024], *cp;
-	dev_t		file_dev;
-	struct stat	st_buf;
-	int		ret = 0;
-
-	file_dev = 0;
-#ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
-	if (stat(file, &st_buf) == 0)
-		file_dev = st_buf.st_rdev;
-#endif	
-
-	if (!(f = fopen("/proc/swaps", "r")))
-		return 0;
-	/* Skip the first line */
-	fgets(buf, sizeof(buf), f);
-	while (!feof(f)) {
-		if (!fgets(buf, sizeof(buf), f))
-			break;
-		if ((cp = strchr(buf, ' ')) != NULL)
-			*cp = 0;
-		if ((cp = strchr(buf, '\t')) != NULL)
-			*cp = 0;
-		if (strcmp(buf, file) == 0) {
-			ret++;
-			break;
-		}
-#ifndef __GNU__
-		if (file_dev && (stat(buf, &st_buf) == 0) &&
-		    file_dev == st_buf.st_rdev) {
-			ret++;
-			break;
-		}
-#endif
-	}
-	fclose(f);
-	return ret;
-}
-
 static errcode_t check_mntent(const char *file, int *mount_flags,
 			      char *mtpt, int mtlen)
 {
@@ -200,13 +158,13 @@ static errcode_t check_mntent(const char *file, int *mount_flags,
 				   mtpt, mtlen);
 	if (retval == 0)
 		return 0;
-#endif
+#endif /* DEBUG */
 #ifdef __linux__
 	retval = check_mntent_file("/proc/mounts", file, mount_flags,
 				   mtpt, mtlen);
 	if (retval == 0)
 		return 0;
-#endif
+#endif /* __linux__ */
 	retval = check_mntent_file(MOUNTED, file, mount_flags, mtpt, mtlen);
 	return retval;
 }
@@ -248,6 +206,53 @@ static errcode_t check_getmntinfo(const char *file, int *mount_flags,
 	return 0;
 }
 #endif /* HAVE_GETMNTINFO */
+
+/*
+ * Check to see if we're dealing with the swap device.
+ */
+static int is_swap_device(const char *file)
+{
+	FILE		*f;
+	char		buf[1024], *cp;
+	dev_t		file_dev;
+	struct stat	st_buf;
+	int		ret = 0;
+
+	file_dev = 0;
+#ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
+	if ((stat(file, &st_buf) == 0) &&
+	    S_ISBLK(st_buf.st_mode))
+		file_dev = st_buf.st_rdev;
+#endif	/* __GNU__ */
+
+	if (!(f = fopen("/proc/swaps", "r")))
+		return 0;
+	/* Skip the first line */
+	fgets(buf, sizeof(buf), f);
+	while (!feof(f)) {
+		if (!fgets(buf, sizeof(buf), f))
+			break;
+		if ((cp = strchr(buf, ' ')) != NULL)
+			*cp = 0;
+		if ((cp = strchr(buf, '\t')) != NULL)
+			*cp = 0;
+		if (strcmp(buf, file) == 0) {
+			ret++;
+			break;
+		}
+#ifndef __GNU__
+		if (file_dev && (stat(buf, &st_buf) == 0) &&
+		    S_ISBLK(st_buf.st_mode) &&
+		    file_dev == st_buf.st_rdev) {
+			ret++;
+			break;
+		}
+#endif 	/* __GNU__ */
+	}
+	fclose(f);
+	return ret;
+}
+
 
 /*
  * ext2fs_check_mount_point() returns 1 if the device is mounted, 0
@@ -325,4 +330,4 @@ int main(int argc, char **argv)
 	
 	exit(0);
 }
-#endif
+#endif /* DEBUG */
