@@ -382,7 +382,7 @@ struct ext2_super_block {
 	__u8	s_prealloc_dir_blocks;	/* Nr to preallocate for dirs */
 	__u16	s_padding1;
 	/* 
-	 * Journaling support.
+	 * Journaling support valid if EXT2_FEATURE_COMPAT_HAS_JOURNAL set.
 	 */
 	__u8	s_journal_uuid[16];	/* uuid of journal superblock */
 	__u32	s_journal_inum;		/* inode number of journal file */

@@ -295,8 +295,8 @@ void list_super (struct ext2_super_block * s)
 			e2p_uuid_to_str(sb->s_uuid, buf);
 		printf("Journal UUID:             %s\n", buf);
 		printf("Journal inode:            %u\n", s->s_journal_inum);
-		printf("Journal device:		  %x\n", s->s_journal_dev);
-		printf("Orphaned inode list:      %u\n", s->s_last_orphan);
+		printf("Journal device:	          %x\n", s->s_journal_dev);
+		printf("First orphan inode:       %u\n", s->s_last_orphan);
 	}
 }
 

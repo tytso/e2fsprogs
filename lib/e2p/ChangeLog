@@ -1,3 +1,7 @@
+2000-08-14    <tytso@valinux.com>
+
+	* ls.c (list_super): Use better description of s_last_orphan
+
 2000-07-13    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.19
