@@ -109,7 +109,7 @@ static __u32 ok_features[3] = {
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
 };
 
-static const char *please_fsck = _("Please run e2fsck on the filesystem.\n");
+static const char *please_fsck = N_("Please run e2fsck on the filesystem.\n");
 
 int main (int argc, char ** argv)
 {
@@ -377,7 +377,7 @@ int main (int argc, char ** argv)
 			fs->super->s_state &= ~EXT2_VALID_FS;
 			ext2fs_mark_super_dirty(fs);
 			printf(_("\nSparse superblock flag set.  %s"),
-			       please_fsck);
+			       _(please_fsck));
 		}
 #else /* !EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
 		com_err (program_name, 0,
@@ -398,7 +398,7 @@ int main (int argc, char ** argv)
 			fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 			ext2fs_mark_super_dirty(fs);
 			printf(_("\nSparse superblock flag cleared.  %s"),
-			       please_fsck);
+			       _(please_fsck));
 		}
 #else /* !EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
 		com_err (program_name, 0,
@@ -455,7 +455,7 @@ int main (int argc, char ** argv)
 		if ((sparse != old_sparse) ||
 		    (filetype != old_filetype)) {
 			fs->super->s_state &= ~EXT2_VALID_FS;
-			printf("\n%s\n", please_fsck);
+			printf("\n%s\n", _(please_fsck));
 		}
 		ext2fs_mark_super_dirty(fs);
 	}
