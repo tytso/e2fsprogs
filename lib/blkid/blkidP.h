@@ -148,7 +148,7 @@ extern int	blkid_debug_mask;
 #endif
 
 #ifdef CONFIG_BLKID_DEBUG
-static __inline__ void DEB_DUMP_TAG(int mask, blkid_tag tag)
+static inline void DEB_DUMP_TAG(int mask, blkid_tag tag)
 {
 	if (!(mask & blkid_debug_mask))
 		return;
@@ -161,7 +161,7 @@ static __inline__ void DEB_DUMP_TAG(int mask, blkid_tag tag)
 	printf("    tag: %s=\"%s\"\n", tag->bit_name, tag->bit_val);
 }
 
-static __inline__ void DEB_DUMP_DEV(int mask, blkid_dev dev)
+static inline void DEB_DUMP_DEV(int mask, blkid_dev dev)
 {
 	struct list_head *p;
 
@@ -186,7 +186,7 @@ static __inline__ void DEB_DUMP_DEV(int mask, blkid_dev dev)
 	printf("\n");
 }
 
-static __inline__ void DEB_DUMP_CACHE(int mask, blkid_cache cache)
+static inline void DEB_DUMP_CACHE(int mask, blkid_cache cache)
 {
 	struct list_head *p;
 
