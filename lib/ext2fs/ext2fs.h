@@ -396,7 +396,7 @@ typedef struct ext2_icount *ext2_icount_t;
 #define HOLE_BLKADDR(_b) ((_b) == 0 || (_b) == EXT2FS_COMPRESSED_BLKADDR)
 
 /*
- * Features supprted by this version of the library
+ * Features supported by this version of the library
  */
 #define EXT2_LIB_FEATURE_COMPAT_SUPP	(EXT2_FEATURE_COMPAT_DIR_PREALLOC|\
 					 EXT2_FEATURE_COMPAT_IMAGIC_INODES|\

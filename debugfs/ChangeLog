@@ -1,6 +1,8 @@
 2001-01-12  Theodore Ts'o  <tytso@valinux.com>
 
-	*  debugfs.h,  debugfs.c  (do_show_super_stats): Use  full words
+	* setsuper.c: Cleaned up some random whitespace problems.
+
+	* debugfs.h,  debugfs.c  (do_show_super_stats): Use  full words
 		instead of pluralism hack  to make I18N conversion easier.
 		Clean up gcc -Wall complaints.
 
