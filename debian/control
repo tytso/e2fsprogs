@@ -2,16 +2,15 @@ Source: e2fsprogs
 Section: base
 Priority: required
 Maintainer: Yann Dirson <dirson@debian.org>
-Build-Depends: texi2html, texinfo, debhelper
-Standards-Version: 3.0.1
+Build-Depends: texi2html, texinfo, debhelper (>= 2), fakeroot (<< 0.4.4-9.2) | debhelper (>= 3.0.24)
+Standards-Version: 3.5.4
 
 Package: e2fsprogs
 Essential: yes
 Pre-Depends: ${shlibs:Depends}
-Suggests: gpart, parted
+Suggests: gpart, parted, e2fsck-static
 Conflicts: e2fslibsg, dump (<< 0.4b4-4), quota (<< 1.55-8.1)
-Provides: libcomerr2, libss2, libext2fs2, libe2p2, libuuid1, e2fslibsg
-Replaces: e2fslibsg, ss2g, comerr2g
+Provides: libcomerr2, libss2, libext2fs2, libe2p2, libuuid1
 Architecture: any
 Description: The EXT2 file system utilities and libraries.
  EXT2 stands for "Extended Filesystem", version 2. It's the main
@@ -19,6 +18,22 @@ Description: The EXT2 file system utilities and libraries.
  .
  This package contains programs for creating, checking, and maintaining EXT2
  filesystems, and the generic `fsck' wrapper.
+
+Package: e2fsck-static
+Section: admin
+Priority: optional
+Depends: e2fsprogs (= ${Source-Version})
+Recommends: sash | zsh30-static | busybox-static
+Architecture: any
+Description: A statically-linked version of the ext2 filesystem checker.
+ This may be of some help to you if you filesystem gets corrupted enough
+ to break the shared libraries used by the dynamically linked checker.
+ .
+ This binary takes much more space than its dynamic counterpart located
+ in e2fsprogs, though.
+ .
+ You may want to install a statically-linked shell as well, to be able
+ to run this program if something like your C library gets corrupted.
 
 Package: comerr-dev
 Section: devel
@@ -48,7 +63,7 @@ Description: Command-line interface parsing library - headers and static librari
 Package: uuid-dev
 Section: devel
 Priority: extra
-Depends: ${libcdev:Depends}, e2fsprogs
+Depends: ${libcdev:Depends}, e2fsprogs (= ${Source-Version})
 Conflicts: e2fsprogs (<< 1.10-6)
 Replaces: e2fslibs-dev (<< 1.15)
 Architecture: any
@@ -64,7 +79,7 @@ Description: Universally unique id library - headers and static libraries.
 Package: e2fslibs-dev
 Section: devel
 Priority: extra
-Depends: ${libcdev:Depends}, comerr-dev, e2fsprogs
+Depends: ${libcdev:Depends}, comerr-dev, e2fsprogs (= ${Source-Version})
 Suggests: doc-base
 Provides: ext2fs-dev, e2p-dev
 Conflicts: e2fsprogs (<< 1.10-6)

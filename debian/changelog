@@ -1,17 +1,45 @@
-e2fsprogs (1.20-1) unstable; urgency=low
+e2fsprogs (1.19+1.20-WIP-0514-2) unstable; urgency=low
 
-  * New upstream release:
+  * Tighten dependency on dephelper.
+
+ -- Yann Dirson <dirson@debian.org>  Tue, 15 May 2001 21:38:47 +0200
+
+e2fsprogs (1.19+1.20-WIP-0514-1) unstable; urgency=low
+
+  * New upstream pre-release snapshot:
   ** new program: e2image.
   ** e2fsck validates file descriptor specified in -C (Closes: #55220)
   ** Fix multiple progress bar fsck bug (Closes: #65267)
   ** Add devfs support to fsck (Closes: #94159)
   ** Fix debugfs dump cmd looping on disk errors (Closes: #79163)
   ** Miscellaneous manual page clarifications (Closes: #63442, #67446,
-     and #87216)
+    #87216)
+  ** Compilation fixes for Hurd (Closes: #52045).
+  ** New config.{guess,sub} for parisc support (Closes: #94690).
   ** Improved ext3 support
   ** tune2fs can now safely modify mounted filesystems
+  * Added missing @dircategory entry to libext2fs.info (lintian)
+  * Moved debugfs back from /usr/sbin/ to /sbin/ (Closes: #97035).
+  * Moved e2label back to /sbin/ as well, as it is now a hard link to
+    tune2fs.
+  * New binary package with statically linked e2fsck, recommending a
+    statically linked shell (Closes: #62611).
+  * All deps against e2fsprogs itself now versionned (lintian).
+  * Updated copyright file (upstream location, packaging copyright notice
+    for previous maintainers and for Alcove).
+  * Remove call to dh_testversion, use versionned build-dep instead
+    (lintian).
+  * Support for DEB_BUILD_OPTIONS debug/nostrip for policy 3.2
+    compliance.
+  * Use dh_shlibdeps -l instead of setting LD_LIBRARY_PATH explicitely -
+    necessary for new versions of fakeroot, and requires debhelper 3.0.23
+    for a fix.  Well finally 3.0.23 is buggy, leave this for later.
+  * Avoid to call ldconfig at "make install" time, too costly.
+  * Get rid in control files of references to never-released standalone
+    lib files (split attempted in 1997/98).  
+  * Bumped Standards-Version to 3.5.4.
 
- -- Theodore Tso <tytso@think.thunk.org>  Wed, 11 May 2001 00:51:14 -0400
+ -- Yann Dirson <dirson@debian.org>  Tue, 15 May 2001 14:28:39 +0200
 
 e2fsprogs (1.19-4) unstable; urgency=medium
 
@@ -533,9 +561,3 @@ e2fsprogs (1.06-2) unstable; urgency=low
    the -t argument was overriden by the filesystem type listed for the
    device in /etc/fstab.
  * added Debian GNU/Linux package maintenance system files
-
-
-Local variables:
-mode: debian-changelog
-add-log-mailing-address: "dirson@debian.org"
-End:
