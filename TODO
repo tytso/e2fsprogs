@@ -4,4 +4,52 @@ BTW: Could you please add some sort of deleted and possibly corrupted file
      and inode list to e2fsck report. There should be filenames deleted
      from directory inodes, files with duplicate blocks e.t.c.
      It's pretty annoying to filter this information from e2fsck output
-     by hand :-(
+     by hand :-
+
+------------------------------------------
+
+Add a "answer Yes always to this class of question" response.
+
+----------------------------------
+
+ext2fs_flush() should return a different error message for primary
+versus backup superblock flushing, so that mke2fs can print an
+appropriate error message.
+
+-----------------------------------
+
+Put code into e2fsck to support imagic inodes....
+
+---------------------------------
+
+Deal with the case where /lost+found isn't a directory....
+
+
+--------------------------------------
+Date: Mon, 08 Mar 1999 21:46:14 +0100
+From: Sergio Polini <s.polini@mclink.it>
+
+
+I'm reading the sorce code of e2fsck 1.14.
+In pass2.c, lines 352-357, I read:
+
+if ((dirent->name_len & 0xFF) > EXT2_NAME_LEN) {
+        if (fix_problem(ctx, PR_2_FILENAME_LONG, &cd->pctx)) {
+                dirent->name_len = EXT2_NAME_LEN;
+                dir_modified++;
+        }
+}
+
+I think that I'll never see any messages about too long filenames,
+because "whatever & 0xFF" can never be "> 0xFF".
+Am I wrong?
+--------------------------------------
+
+debugfs --- ls of a corrupt directory (or a non-directory inode) with
+inconsistent lengths can cause it to core dump!  Should fix to make it
+more robust.
+
+-------------------------------------
+
+
+

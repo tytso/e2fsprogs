@@ -1,6 +1,24 @@
 /*
  * fpopen.c --- unlike the libc popen, it directly executes the
  * command instead of call out to the shell.
+ *
+ * Copyright Theodore Ts'o, 1996-1999.
+ *
+ * Permission to use this file is granted for any purposes, as long as
+ * this copyright statement is kept intact and the author is not held
+ * liable for any damages resulting from the use of this program.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ALL OF
+ * WHICH ARE HEREBY DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE.
  */
 
 #include <unistd.h>
@@ -20,7 +38,7 @@ FILE *fpopen(const char *cmd, const char *mode)
 	int	i = 0;
 	char	*buf, *prog = 0;
 	char	*p;
-	int	do_stdin;
+	int	do_stdin, do_stderr = 0;
 	int	fds[2];
 	pid_t	pid;
 
@@ -39,6 +57,10 @@ FILE *fpopen(const char *cmd, const char *mode)
 	default:
 		errno = EINVAL;
 		return NULL;
+	}
+	switch (*(mode+1)) {
+	case '&':
+		do_stderr = 1;
 	}
 
 	/*
@@ -81,6 +103,8 @@ FILE *fpopen(const char *cmd, const char *mode)
 		} else {
 			close(fds[0]);
 			dup2(fds[1], 1);
+			if (do_stderr)
+				dup2(fds[1], 2);
 		}
 		(void) execvp(prog, argv);
 		perror(prog);
