@@ -193,36 +193,85 @@ struct hfs_super_block {
 	__u32	h_blksize;
 };
 
-#ifndef le32_to_cpu	/* Assume if one is defined, all are defined */
-#define X16_to_cpu(x) ((__u16)((((__u16)(x) & 0x00ffU) << 8) | \
-			       (((__u16)(x) & 0xff00U) >> 8)))
-#define X32_to_cpu(x) ((__u32)((((__u32)(x) & 0x000000ffU) << 24) | \
-			       (((__u32)(x) & 0x0000ff00U) << 8) | \
-			       (((__u32)(x) & 0x00ff0000U) >> 8) | \
-			       (((__u32)(x) & 0xff000000U) >> 24)))
-#define X64_to_cpu(x) ((__u64)((((__u64)(x) & 0x00000000000000ffULL) << 56) | \
-			       (((__u64)(x) & 0x000000000000ff00ULL) << 40) | \
-			       (((__u64)(x) & 0x0000000000ff0000ULL) << 24) | \
-			       (((__u64)(x) & 0x00000000ff000000ULL) <<  8) | \
-			       (((__u64)(x) & 0x000000ff00000000ULL) >>  8) | \
-			       (((__u64)(x) & 0x0000ff0000000000ULL) >> 24) | \
-			       (((__u64)(x) & 0x00ff000000000000ULL) >> 40) | \
-			       (((__u64)(x) & 0xff00000000000000ULL) >> 56)))
-#if  __BYTE_ORDER == __BIG_ENDIAN
-#define le16_to_cpu(x) X16_to_cpu(x)
-#define le32_to_cpu(x) X32_to_cpu(x)
-#define le64_to_cpu(x) X64_to_cpu(x)
-#define be16_to_cpu(x) (x)
-#define be32_to_cpu(x) (x)
-#define be64_to_cpu(x) (x)
-#else
-#define le16_to_cpu(x) (x)
-#define le32_to_cpu(x) (x)
-#define le64_to_cpu(x) (x)
-#define be16_to_cpu(x) X16_to_cpu(x)
-#define be32_to_cpu(x) X32_to_cpu(x)
-#define be64_to_cpu(x) X64_to_cpu(x)
+/*
+ * Byte swap functions
+ */
+#ifdef __GNUC__
+#define _INLINE_ extern __inline__
+#else				/* For Watcom C */
+#define _INLINE_ extern inline
 #endif
+
+#if ((defined __GNUC__) && \
+     (defined(__i386__) || defined(__i486__) || defined(__i586__)))
+
+#define _BLKID_HAVE_ASM_BITOPS_
+
+_INLINE_ __u32 blkid_swab32(__u32 val)
+{
+#ifdef EXT2FS_REQUIRE_486
+	__asm__("bswap %0" : "=r" (val) : "0" (val));
+#else
+	__asm__("xchgb %b0,%h0\n\t"	/* swap lower bytes	*/
+		"rorl $16,%0\n\t"	/* swap words		*/
+		"xchgb %b0,%h0"		/* swap higher bytes	*/
+		:"=q" (val)
+		: "0" (val));
+#endif
+	return val;
+}
+
+_INLINE_ __u16 blkid_swab16(__u16 val)
+{
+	__asm__("xchgb %b0,%h0"		/* swap bytes		*/ \
+		: "=q" (val) \
+		:  "0" (val)); \
+		return val;
+}
+
+_INLINE_ __u64 blkid_swab64(__u64 val)
+{
+	return (blkid_swab32(val >> 32) |
+		(((__u64) blkid_swab32(val & 0xFFFFFFFFUL)) << 32));
+}
+#endif
+
+#if !defined(_BLKID_HAVE_ASM_BITOPS_)
+
+_INLINE_  __u16 blkid_swab16(__u16 val)
+{
+	return (val >> 8) | (val << 8);
+}
+
+_INLINE_ __u32 blkid_swab32(__u32 val)
+{
+	return ((val>>24) | ((val>>8)&0xFF00) |
+		((val<<8)&0xFF0000) | (val<<24));
+}
+
+_INLINE_ u64 blkid_swab64(__u64 val)
+{
+	return (blkid_swab32(val >> 32) |
+		(((__u64) blkid_swab32(val & 0xFFFFFFFFUL)) << 32));
+}
+#endif 
+
+
+
+#if  __BYTE_ORDER == __BIG_ENDIAN
+#define blkid_le16(x) blkid_swab16(x)
+#define blkid_le32(x) blkid_swab32(x)
+#define blkid_le64(x) blkid_swab64(x)
+#define blkid_be16(x) (x)
+#define blkid_be32(x) (x)
+#define blkid_be64(x) (x)
+#else
+#define blkid_le16(x) (x)
+#define blkid_le32(x) (x)
+#define blkid_le64(x) (x)
+#define blkid_be16(x) blkid_swab16(x)
+#define blkid_be32(x) blkid_swab32(x)
+#define blkid_be64(x) blkid_swab64(x)
 #endif
 
 #endif /* _BLKID_PROBE_H */

@@ -54,48 +54,24 @@ void blkid_free_tag(blkid_tag tag)
 }
 
 /*
- * Find the desired tag on a list of tags with the same type.
- */
-blkid_tag blkid_find_tv_tags(blkid_tag head, const char *value)
-{
-	struct blkid_struct_tag *tag = NULL;
-	struct list_head *p;
-
-	if (!head || !value)
-		return NULL;
-
-	DBG(printf("looking for %s in %s list\n", value, head->bit_name));
-
-	list_for_each(p, &head->bit_names) {
-		blkid_tag tmp = list_entry(p, struct blkid_struct_tag, 
-					   bit_names);
-
-		if (!strcmp(tmp->bit_val, value)) {
-			tag = tmp;
-			break;
-		}
-	}
-
-	return tag;
-}
-
-/*
- * Find the desired tag on a device.  If tag->bit_value is NULL, then the
+ * Find the desired tag on a device.  If value is NULL, then the
  * first such tag is returned, otherwise return only exact tag if found.
  */
-blkid_tag blkid_find_tag_dev(blkid_dev dev, blkid_tag tag)
+blkid_tag blkid_find_tag_dev(blkid_dev dev, const char *type,
+			     const char *value)
 {
 	blkid_tag found = NULL;
 	struct list_head *p;
 
-	if (!dev || !tag)
+	if (!dev || !type || !value)
 		return NULL;
 
 	list_for_each(p, &dev->bid_tags) {
-		blkid_tag tmp = list_entry(p, struct blkid_struct_tag, bit_tags);
+		blkid_tag tmp = list_entry(p, struct blkid_struct_tag,
+					   bit_tags);
 
-		if (!strcmp(tmp->bit_name, tag->bit_name) &&
-		    (!tag->bit_val || !strcmp(tmp->bit_val, tag->bit_val))){
+		if (!strcmp(tmp->bit_name, type) &&
+		    (!value || !strcmp(tmp->bit_val, value))){
 			found = tmp;
 			break;
 		}
@@ -108,66 +84,26 @@ blkid_tag blkid_find_tag_dev(blkid_dev dev, blkid_tag tag)
  * Find the desired tag type in the cache.
  * We return the head tag for this tag type.
  */
-blkid_tag blkid_find_head_cache(blkid_cache cache, blkid_tag tag)
+blkid_tag blkid_find_head_cache(blkid_cache cache, const char *type)
 {
 	blkid_tag head = NULL;
 	struct list_head *p;
 
-	if (!cache || !tag)
+	if (!cache || !type)
 		return NULL;
 
 	list_for_each(p, &cache->bic_tags) {
 		blkid_tag tmp = list_entry(p, struct blkid_struct_tag, 
 					   bit_tags);
 
-		if (!strcmp(tmp->bit_name, tag->bit_name)) {
-			DBG(printf("    found cache tag head %s\n", tag->bit_name));
+		if (!strcmp(tmp->bit_name, type)) {
+			DBG(printf("    found cache tag head %s\n", type));
 			head = tmp;
 			break;
 		}
 	}
 
 	return head;
-}
-
-/*
- * Find a specific tag value in the cache.  If not found return NULL.
- */
-blkid_tag blkid_find_tag_cache(blkid_cache cache, blkid_tag tag)
-{
-	blkid_tag head;
-
-	DBG(printf("looking for %s=%s in cache\n", tag->bit_name, tag->bit_val));
-
-	head = blkid_find_head_cache(cache, tag);
-
-	return blkid_find_tv_tags(head, tag->bit_val);
-}
-
-/*
- * Get a specific tag value in the cache.  If not found return NULL.
- * If we have not already probed the devices, do so and search again.
- */
-blkid_tag blkid_get_tag_cache(blkid_cache cache, blkid_tag tag)
-{
-	blkid_tag head, found;
-
-	if (!tag || !cache)
-		return NULL;
-
-	DBG(printf("looking for %s=%s in cache\n", tag->bit_name, tag->bit_val));
-
-	head = blkid_find_head_cache(cache, tag);
-	found = blkid_find_tv_tags(head, tag->bit_val);
-
-	if ((!head || !found) && !(cache->bic_flags & BLKID_BIC_FL_PROBED)) {
-		blkid_probe_all(&cache);
-		if (!head)
-			head = blkid_find_head_cache(cache, tag);
-		found = blkid_find_tv_tags(head, tag->bit_val);
-	}
-
-	return found;
 }
 
 /*
@@ -204,12 +140,12 @@ static void add_tag_to_dev(blkid_dev dev, blkid_tag tag)
  * if an identical tag does not already exist.
  * If tag is valid, the tag will be returned in this pointer.
  */
-int blkid_create_tag(blkid_dev dev, blkid_tag *tag, const char *name,
+int blkid_create_tag(blkid_dev dev, const char *name,
 		     const char *value, const int vlength)
 {
 	blkid_tag t, found;
 
-	if (!tag && !dev)
+	if (!dev)
 		return -BLKID_ERR_PARAM;
 
 	if (!name)
@@ -222,16 +158,12 @@ int blkid_create_tag(blkid_dev dev, blkid_tag *tag, const char *name,
 	t->bit_name = string_copy(name);
 	t->bit_val = stringn_copy(value, vlength);
 
-	if ((found = blkid_find_tag_dev(dev, t))) {
-		if (tag)
-			*tag = found;
+	if ((found = blkid_find_tag_dev(dev, name, t->bit_val))) {
 		blkid_free_tag(t);
 		return 0;
 	}
 
 	add_tag_to_dev(dev, t);
-	if (tag)
-		*tag = t;
 
 	return 0;
 }
@@ -279,28 +211,6 @@ errout:
 	string_free(name);
 	return -1;
 }
-
-/*
- * Convert a NAME=value pair into a token.
- */
-blkid_tag blkid_token_to_tag(const char *token)
-{
-	char *name, *value;
-	blkid_tag tag = NULL;
-
-	DBG(printf("trying to make '%s' into a tag\n", token));
-
-	if (blkid_parse_tag_string(token, &name, &value) != 0)
-		return NULL;
-
-	blkid_create_tag(NULL, &tag, name, value, sizeof(value));
-
-	string_free(name);
-	string_free(value);
-
-	return tag;
-}
-
 
 /*
  * Tag iteration routines for the public libblkid interface.
@@ -381,10 +291,32 @@ extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache,
 					 const char *type,
 					 const char *value)
 {
-	blkid_tag tag = NULL, found;
+	blkid_tag head = 0, found;
+	struct list_head *p;
+
+	if (!cache || !type || !value)
+		return NULL;
+
+	DBG(printf("looking for %s=%s in cache\n", type, value));
 	
-	blkid_create_tag(NULL, &tag, type, value, strlen(value));
-	found = blkid_get_tag_cache(cache, tag);
-	blkid_free_tag(tag);
+try_again:
+	if (!head)
+		head = blkid_find_head_cache(cache, type);
+
+	found = 0;
+	list_for_each(p, &head->bit_names) {
+		blkid_tag tmp = list_entry(p, struct blkid_struct_tag, 
+					   bit_names);
+
+		if (!strcmp(tmp->bit_val, value)) {
+			found = tmp;
+			break;
+		}
+	}
+
+	if ((!head || !found) && !(cache->bic_flags & BLKID_BIC_FL_PROBED)) {
+		blkid_probe_all(&cache);
+		goto try_again;
+	}
 	return (found ? found->bit_dev : NULL);
 }

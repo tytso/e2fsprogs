@@ -86,11 +86,8 @@ http://www.gnu.org/licenses/licenses.html#LGPL
 .BR blkid_get_devname (3),
 .BR blkid_get_devno (3),
 .BR blkid_probe_all (3),
-.BR blkid_token_to_tag (3),
 .BR blkid_free_dev (3),
 .BR blkid_find_tag_dev (3),
-.BR blkid_find_tag_cache (3),
-.BR blkid_get_tag_cache (3),
 .BR blkid_get_tagname_devname (3),
 .BR blkid_get_token (3),
 .BR blkid.tab (7)

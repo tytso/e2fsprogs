@@ -63,7 +63,7 @@ static int probe_default(int fd, blkid_dev *dev_p, const char *devname,
 
 	offset = (blkid_loff_t)id->bim_kboff << 10;
 	if (id->bim_kboff < 0)
-		offset = (size & ~((blkid_loff_t)id->bim_align - 1)) + offset;
+		offset += (size & ~((blkid_loff_t)(id->bim_align - 1)));
 
 	if (blkid_llseek(fd, offset, 0) < 0 ||
 	    read(fd, buf, id->bim_kbsize << 10) != id->bim_kbsize << 10)
@@ -91,7 +91,7 @@ static int probe_default(int fd, blkid_dev *dev_p, const char *devname,
 	dev->bid_flags |= BLKID_BID_FL_VERIFIED;
 
 	if (id->bim_type)
-		blkid_create_tag(dev, NULL, "TYPE", id->bim_type,
+		blkid_create_tag(dev, "TYPE", id->bim_type,
 				 strlen(id->bim_type));
 
 	DBG(printf("%s: devno 0x%04Lx, type %s\n", devname,
@@ -117,15 +117,15 @@ static int probe_ext2(int fd, blkid_dev *dev_p, const char *devname,
 	es = (struct ext2_super_block *)buf;
 
 	DBG(printf("size = %Ld, ext2_sb.compat = %08X:%08X:%08X\n", size,
-		   le32_to_cpu(es->s_feature_compat),
-		   le32_to_cpu(es->s_feature_incompat),
-		   le32_to_cpu(es->s_feature_ro_compat)));
+		   blkid_le32(es->s_feature_compat),
+		   blkid_le32(es->s_feature_incompat),
+		   blkid_le32(es->s_feature_ro_compat)));
 
 	/* Make sure we don't keep re-probing as ext2 for a journaled fs */
 	if (!strcmp(id->bim_type, "ext2") &&
-	    (le32_to_cpu(es->s_feature_compat) &
+	    (blkid_le32(es->s_feature_compat) &
 	     EXT3_FEATURE_COMPAT_HAS_JOURNAL ||
-	     le32_to_cpu(es->s_feature_incompat) &
+	     blkid_le32(es->s_feature_incompat) &
 	     EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
 		blkid_free_dev(dev);
 		return -BLKID_ERR_PARAM;
@@ -134,22 +134,18 @@ static int probe_ext2(int fd, blkid_dev *dev_p, const char *devname,
 	/* Don't set this until there is no chance of error */
 	*dev_p = dev;
 
-	dev->bid_size = (blkid_loff_t)le32_to_cpu(es->s_blocks_count) <<
-		(le32_to_cpu(es->s_log_block_size) + 10);
-
-	/* This is a safe (minimum) number, as it ignores metadata usage. */
-	dev->bid_free = (blkid_loff_t)le32_to_cpu(es->s_free_blocks_count) <<
-		(le32_to_cpu(es->s_log_block_size) + 10);
+	dev->bid_size = (blkid_loff_t)blkid_le32(es->s_blocks_count) <<
+		(blkid_le32(es->s_log_block_size) + 10);
 
 	if (strlen(es->s_volume_name)) {
-		blkid_create_tag(dev, NULL, "LABEL", es->s_volume_name,
+		blkid_create_tag(dev, "LABEL", es->s_volume_name,
 				 sizeof(es->s_volume_name));
 	}
 
 	if (!uuid_is_null(es->s_uuid)) {
 		char uuid[37];
 		uuid_unparse(es->s_uuid, uuid);
-		blkid_create_tag(dev, NULL, "UUID", uuid, sizeof(uuid));
+		blkid_create_tag(dev, "UUID", uuid, sizeof(uuid));
 	}
 
 	return 0;
@@ -168,7 +164,7 @@ static int probe_jbd(int fd, blkid_dev *dev_p, const char *devname,
 
 	es = (struct ext2_super_block *)buf;
 
-	if (!(le32_to_cpu(es->s_feature_incompat) &
+	if (!(blkid_le32(es->s_feature_incompat) &
 	      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
 		blkid_free_dev(dev);
 		return -BLKID_ERR_PARAM;
@@ -192,7 +188,7 @@ static int probe_ext3(int fd, blkid_dev *dev_p, const char *devname,
 
 	es = (struct ext2_super_block *)buf;
 
-	if (!(le32_to_cpu(es->s_feature_compat) &
+	if (!(blkid_le32(es->s_feature_compat) &
 	      EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
 		blkid_free_dev(dev);
 		*dev_p = NULL;
@@ -201,9 +197,9 @@ static int probe_ext3(int fd, blkid_dev *dev_p, const char *devname,
 	/* Don't set this until there is no chance of error */
 	*dev_p = dev;
 
-	if (!(le32_to_cpu(es->s_feature_incompat) &
+	if (!(blkid_le32(es->s_feature_incompat) &
 	      EXT3_FEATURE_INCOMPAT_RECOVER)) {
-		blkid_create_tag(dev, NULL, "TYPE", "ext2", 4);
+		blkid_create_tag(dev, "TYPE", "ext2", 4);
 		dev->bid_flags |= BLKID_BID_FL_MTYPE;
 	}
 
@@ -242,14 +238,14 @@ static int probe_vfat(int fd, blkid_dev *dev_p, const char *devname,
 		while (*end == ' ' && end >= vs->vs_label)
 			--end;
 		if (end >= vs->vs_label)
-			blkid_create_tag(dev, NULL, "LABEL", vs->vs_label,
+			blkid_create_tag(dev, "LABEL", vs->vs_label,
 					 end - vs->vs_label + 1);
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */
 	sprintf(serno, "%02X%02X-%02X%02X", vs->vs_serno[3], vs->vs_serno[2],
 		vs->vs_serno[1], vs->vs_serno[0]);
-	blkid_create_tag(dev, NULL, "UUID", serno, sizeof(serno));
+	blkid_create_tag(dev, "UUID", serno, sizeof(serno));
 
 	return 0;
 }
@@ -286,14 +282,14 @@ static int probe_msdos(int fd, blkid_dev *dev_p, const char *devname,
 		while (*end == ' ' && end >= ms->ms_label)
 			--end;
 		if (end >= ms->ms_label)
-			blkid_create_tag(dev, NULL, "LABEL", ms->ms_label,
+			blkid_create_tag(dev, "LABEL", ms->ms_label,
 					 end - ms->ms_label + 1);
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */
 	sprintf(serno, "%02X%02X-%02X%02X", ms->ms_serno[3], ms->ms_serno[2],
 		ms->ms_serno[1], ms->ms_serno[0]);
-	blkid_create_tag(dev, NULL, "UUID", serno, sizeof(serno));
+	blkid_create_tag(dev, "UUID", serno, sizeof(serno));
 
 	return 0;
 }
@@ -314,19 +310,17 @@ static int probe_xfs(int fd, blkid_dev *dev_p, const char *devname,
 	/* Don't set this until there is no chance of error */
 	*dev_p = dev;
 	/* If the filesystem size is larger than the device, this is bad */
-	dev->bid_size = be64_to_cpu(xs->xs_dblocks) *
-		be32_to_cpu(xs->xs_blocksize);
-	dev->bid_free = be64_to_cpu(xs->xs_fdblocks) *
-		be32_to_cpu(xs->xs_blocksize);
+	dev->bid_size = blkid_be64(xs->xs_dblocks) *
+		blkid_be32(xs->xs_blocksize);
 
 	if (strlen(xs->xs_fname))
-		blkid_create_tag(dev, NULL, "LABEL", xs->xs_fname,
+		blkid_create_tag(dev, "LABEL", xs->xs_fname,
 				 sizeof(xs->xs_fname));
 
 	if (!uuid_is_null(xs->xs_uuid)) {
 		char uuid[37];
 		uuid_unparse(xs->xs_uuid, uuid);
-		blkid_create_tag(dev, NULL, "UUID", uuid, sizeof(uuid));
+		blkid_create_tag(dev, "UUID", uuid, sizeof(uuid));
 	}
 	return 0;
 }
@@ -345,10 +339,10 @@ static int probe_reiserfs(int fd, blkid_dev *dev_p, const char *devname,
 
 	rs = (struct reiserfs_super_block *)buf;
 
-	blocksize = le16_to_cpu(rs->rs_blocksize);
+	blocksize = blkid_le16(rs->rs_blocksize);
 
 	/* If the superblock is inside the journal, we have the wrong one */
-	if (id->bim_kboff/(blocksize>>10) > le32_to_cpu(rs->rs_journal_block)) {
+	if (id->bim_kboff/(blocksize>>10) > blkid_le32(rs->rs_journal_block)) {
 		blkid_free_dev(dev);
 		return -BLKID_ERR_BIG;
 	}
@@ -357,21 +351,20 @@ static int probe_reiserfs(int fd, blkid_dev *dev_p, const char *devname,
 	*dev_p = dev;
 
 	/* If the filesystem size is larger than the device, this is bad */
-	dev->bid_size = le32_to_cpu(rs->rs_blocks_count) * blocksize;
-	dev->bid_free = le32_to_cpu(rs->rs_free_blocks) * blocksize;
+	dev->bid_size = blkid_le32(rs->rs_blocks_count) * blocksize;
 
 	/* LABEL/UUID are only valid for later versions of Reiserfs v3.6. */
 	if (!strcmp(id->bim_magic, "ReIsEr2Fs") ||
 	    !strcmp(id->bim_magic, "ReIsEr3Fs")) {
 		if (strlen(rs->rs_label)) {
-			blkid_create_tag(dev, NULL, "LABEL", rs->rs_label,
+			blkid_create_tag(dev, "LABEL", rs->rs_label,
 					 sizeof(rs->rs_label));
 		}
 
 		if (!uuid_is_null(rs->rs_uuid)) {
 			char uuid[37];
 			uuid_unparse(rs->rs_uuid, uuid);
-			blkid_create_tag(dev, NULL, "UUID", uuid, sizeof(uuid));
+			blkid_create_tag(dev, "UUID", uuid, sizeof(uuid));
 		}
 	}
 
@@ -421,7 +414,7 @@ static int probe_swap(int fd, blkid_dev *dev_p, const char *devname,
 
 	/* A label can not exist on the old (128MB max) swap format */
 	if (!strcmp(id->bim_magic, "SWAPSPACE2") && sh->sh_label[0]) {
-		blkid_create_tag(dev, NULL, "LABEL", sh->sh_label,
+		blkid_create_tag(dev, "LABEL", sh->sh_label,
 				 sizeof(sh->sh_label));
 	}
 
@@ -455,7 +448,7 @@ static int probe_mdraid(int fd, blkid_dev *dev_p, const char *devname,
 		memcpy(md_uuid + 4, &md->set_uuid1, 12);
 
 		uuid_unparse(md_uuid, uuid);
-		blkid_create_tag(dev, NULL, "UUID", uuid, sizeof(uuid));
+		blkid_create_tag(dev, "UUID", uuid, sizeof(uuid));
 	}
 	return 0;
 }
@@ -473,7 +466,7 @@ static int probe_hfs(int fd, blkid_dev *dev_p, const char *devname,
 
 	hfs = (struct hfs_super_block *)buf;
 
-	if (be32_to_cpu(hfs->h_blksize) != 512)
+	if (blkid_be32(hfs->h_blksize) != 512)
 		return -BLKID_ERR_PARAM;
 
 	/* Don't set this until there is no chance of error */
@@ -621,7 +614,7 @@ static struct blkid_magic *devname_to_magic(const char *devname, int fd,
 		 * alignment requirements.
 		 */
 		if (id->bim_kboff < 0) {
-			start = (size & ~((blkid_loff_t)id->bim_align - 1)) +
+			start = (size & ~((blkid_loff_t)(id->bim_align - 1))) +
 				offset;
 			if (start < 0) /* Device too small for alignment */
 				continue;

@@ -299,8 +299,7 @@ static int parse_xml(char **name, char **value, char **cp)
  * Return 0 if no tag found.
  * Return -ve error code.
  */
-static int parse_tag(blkid_cache cache, blkid_dev dev, blkid_tag *tag,
-		     char **cp)
+static int parse_tag(blkid_cache cache, blkid_dev dev, char **cp)
 {
 	char *name;
 	char *value;
@@ -308,8 +307,6 @@ static int parse_tag(blkid_cache cache, blkid_dev dev, blkid_tag *tag,
 
 	if (!cache || !dev)
 		return -BLKID_ERR_PARAM;
-
-	*tag = NULL;
 
 	if ((ret = parse_token(&name, &value, cp)) <= 0 /* &&
 	    (ret = parse_xml(&name, &value, cp)) <= 0 */)
@@ -328,7 +325,9 @@ static int parse_tag(blkid_cache cache, blkid_dev dev, blkid_tag *tag,
 		/* FIXME: need to parse a long long eventually */
 		dev->bid_time = strtol(value, 0, 0);
 	else
-		ret = blkid_create_tag(dev, tag, name, value, strlen(value));
+		ret = blkid_create_tag(dev, name, value, strlen(value));
+
+	DBG(printf("    tag: %s=\"%s\"\n", name, value));
 
 	return ret < 0 ? ret : 1;
 }
@@ -347,7 +346,6 @@ static int parse_tag(blkid_cache cache, blkid_dev dev, blkid_tag *tag,
 static int blkid_parse_line(blkid_cache cache, blkid_dev *dev_p, char *cp)
 {
 	blkid_dev dev;
-	blkid_tag tag;
 	int ret;
 
 	if (!cache || !dev_p)
@@ -362,9 +360,8 @@ static int blkid_parse_line(blkid_cache cache, blkid_dev *dev_p, char *cp)
 
 	dev = *dev_p;
 
-	while ((ret = parse_tag(cache, dev, &tag, &cp)) > 0) {
-		/* Added to tags for this device struct already */
-		DEB_DUMP_TAG(tag);
+	while ((ret = parse_tag(cache, dev, &cp)) > 0) {
+		;
 	}
 
 	if (dev->bid_type == NULL) {

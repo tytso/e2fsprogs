@@ -36,7 +36,6 @@ struct blkid_struct_dev
 	char			*bid_name;	/* Device inode pathname */
 	char			*bid_type;	/* Preferred device TYPE */
 	blkid_loff_t		bid_size;	/* Filesystem size in bytes */
-	blkid_loff_t		bid_free;	/* Filesystem free in bytes */
 	blkid_loff_t		bid_devsize;	/* Device size in bytes */
 	dev_t			bid_devno;	/* Device major/minor number */
 	time_t			bid_time;	/* Last update time of device */
@@ -114,6 +113,10 @@ extern const char *devdirs[];
 #define BLKID_ERR_PARAM	22
 #define BLKID_ERR_BIG	27
 
+#if defined(TEST_PROGRAM)
+#define DEBUG
+#endif
+
 #ifdef DEBUG
 #define DEBUG_CACHE
 #define DEBUG_DUMP
@@ -160,7 +163,7 @@ static inline void DEB_DUMP_DEV(blkid_dev dev)
 	printf("  dev: flags = 0x%08X\n", dev->bid_flags);
 
 	list_for_each(p, &dev->bid_tags) {
-		blkid_tag tag = list_entry(p, struct blkid_stuct_tag, bit_tags);
+		blkid_tag tag = list_entry(p, struct blkid_struct_tag, bit_tags);
 		DEB_DUMP_TAG(tag);
 	}
 	printf("\n");
@@ -232,15 +235,11 @@ extern blkid_dev blkid_get_devno(blkid_cache cache, dev_t devno);
  */
 extern blkid_tag blkid_new_tag(void);
 extern void blkid_free_tag(blkid_tag tag);
-extern int blkid_create_tag(blkid_dev dev, blkid_tag *tag,
-			    const char *name, const char *value,
-			    const int vlength);
-extern blkid_tag blkid_token_to_tag(const char *token);
-extern blkid_tag blkid_find_tv_tags(blkid_tag head, const char *value);
-extern blkid_tag blkid_find_tag_dev(blkid_dev dev, blkid_tag tag);
-extern blkid_tag blkid_find_head_cache(blkid_cache cache, blkid_tag tag);
-extern blkid_tag blkid_find_tag_cache(blkid_cache cache, blkid_tag tag);
-extern blkid_tag blkid_get_tag_cache(blkid_cache cache, blkid_tag tag);
+extern int blkid_create_tag(blkid_dev dev, const char *name,
+			    const char *value, const int vlength);
+extern blkid_tag blkid_find_tag_dev(blkid_dev dev, const char *type,
+				    const char *value);
+extern blkid_tag blkid_find_head_cache(blkid_cache cache, const char *type);
 
 /*
  * Functions to create and find a specific tag type: dev.c

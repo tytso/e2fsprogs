@@ -100,7 +100,7 @@ static int add_tag_to_cache(blkid_cache cache, blkid_tag tag)
 
 	DBG(printf("    adding tag %s=%s to cache\n", tag->bit_name, tag->bit_val));
 
-	if (!(head = blkid_find_head_cache(cache, tag))) {
+	if (!(head = blkid_find_head_cache(cache, tag->bit_name))) {
 		head = blkid_new_tag();
 		if (!head)
 			return -BLKID_ERR_MEM;

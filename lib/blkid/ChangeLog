@@ -1,3 +1,29 @@
+2003-01-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* read.c (parse_tag): Do not return that blkid_tag when parsing
+		the blkid.tag file.
+
+	* resolve.c (blkid_get_token, blkid_get_tagname_devname): Fold in
+		code from removed functions
+
+	* tag.c (blkid_create_tag): Don't return the newly tag strcture
+		any more, as it's not needed.
+		(blkid_find_tag_cache, blkid_get_tag_cache,
+		 blkid_token_to_tag, blkid_find_tv_tags): Remove these 
+		functions, as they are either only used once or have
+		interfaces that should be deprecated.
+		(blkid_find_tag_dev, blkid_find_head_cache): Replace use
+		of blkid_tag with one or two const char * type/value
+		arguments.
+		(blkid_find_dev_with_tag): Fold in code from removed functions
+
+	* probe.h, probe.c: Use a more sophisticated set of byte-swapping
+		routines which are more compact and efficient.  Drop
+		calculation of bid_free, since it's unnecessary.  Avoid 
+
+	* save.c (blkid_save_cache): Set the permissions on the blkid
+		cache file to 644.
+	
 2003-01-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* cache.c, dev.c, devname.c, devno.c, getsize.c, llseek.c, 

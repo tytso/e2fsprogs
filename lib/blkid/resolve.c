@@ -14,6 +14,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
 #include <sys/types.h>
@@ -34,7 +35,7 @@
 char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
 				const char *devname)
 {
-	blkid_tag tag, found;
+	blkid_tag found;
 	blkid_dev dev;
 	char *ret = NULL;
 
@@ -43,14 +44,11 @@ char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
 	if (!devname)
 		return NULL;
 
-	if (blkid_create_tag(NULL, &tag, tagname, NULL, 0) < 0)
-		return NULL;
-
 	if (!cache)
 		DBG(printf("no cache given, direct device probe\n"));
 
 	if ((dev = blkid_get_devname(cache, devname)) &&
-	    (found = blkid_find_tag_dev(dev, tag)))
+	    (found = blkid_find_tag_dev(dev, tagname, NULL)))
 		ret = string_copy(found->bit_val);
 
 	if (!cache)
@@ -70,19 +68,16 @@ char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
 char *blkid_get_token(blkid_cache cache, const char *token,
 		      const char *value)
 {
-	blkid_tag tag = NULL, found = NULL;
+	blkid_dev dev;
 	blkid_cache c = cache;
-	char *name = NULL;
+	char *t = 0, *v = 0;
+	char *ret = NULL;
 
+	if (!token)
+		return NULL;
+	
 	DBG(printf("looking for %s%c%s %s\n", token, value ? '=' : ' ',
 		   value ? value : "", cache ? "in cache" : "from disk"));
-
-	if (!(tag = blkid_token_to_tag(token))) {
-		if (!value)
-			return string_copy(token);
-		if (blkid_create_tag(NULL,&tag,token,value,strlen(value)) < 0)
-			return NULL;
-	}
 
 	if (!cache) {
 		if (blkid_read_cache(&c, NULL) < 0)
@@ -91,17 +86,30 @@ char *blkid_get_token(blkid_cache cache, const char *token,
 			return NULL;
 	}
 
-	if ((found = blkid_get_tag_cache(c, tag)) && found->bit_dev)
-		name = string_copy(found->bit_dev->bid_name);
+	if (!value) {
+		blkid_parse_tag_string(token, &t, &v);
+		if (!t || !v)
+			goto errout;
+		token = t;
+		value = v;
+	}
 
+	dev = blkid_find_dev_with_tag(c, token, value);
+	if (!dev)
+		goto errout;
+
+	ret = string_copy(blkid_devname_name(dev));
+
+errout:
+	if (t)
+		free(t);
+	if (v)
+		free(v);
 	if (!cache) {
 		blkid_save_cache(c, NULL);
 		blkid_free_cache(c);
 	}
-
-
-	blkid_free_tag(tag);
-	return name;
+	return (ret);
 }
 
 #ifdef TEST_PROGRAM

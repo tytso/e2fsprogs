@@ -130,6 +130,7 @@ int blkid_save_cache(blkid_cache cache, const char *filename)
 					file = fdopen(fd, "w");
 					opened = tmp;
 				}
+				fchmod(fd, 0644);
 			}
 		}
 
