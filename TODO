@@ -207,3 +207,7 @@ Add a check in configure.in on Linux systems making sure that
 some very obscure errors!
 
 -----------------------------------------------------------------
+
+Debugfs's link command should set the file type information
+
+---------------------------------------------------------------
