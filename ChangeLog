@@ -1,5 +1,8 @@
 1999-01-01  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* INSTALL.elfbin (NOTE): Add a warning that the ELF binaries
+		assume glibc.
+
 	* config.guess: Update with a newer version from the FSF (although
 		I've removed rms's pathetic LINUX/GNU name kludgery)
 

@@ -1,7 +1,10 @@
 NOTE: This is the ELF version of the binary distribution.  If you have
 a DLL system, please compile e2fsprogs from sources yourself.  (In
 fact, in general you're better off compiling e2fsprogs from sources
-instead of using precompiled binaries.)
+instead of using precompiled binaries.)  
+
+Also please note that these binaries assume the use of the GNU Libc.
+If you're still using libc5, you'll need build e2fsprogs from source.
 
 	To install the binary distribution of the second extended file
 system management programs, just follow the steps:
