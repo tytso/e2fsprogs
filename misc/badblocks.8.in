@@ -142,16 +142,21 @@ Default is 0, meaning
 will exit after the first pass.
 .TP
 .BI \-t " test_pattern"
-Specify a test pattern.  A value of -1 uses a random bit pattern.
-All other values are used to fill the test buffer.  
+Specify a test pattern to be read (and written) to disk blocks.   The
+.I test_pattern
+may either be a numeric value between 0 and ULONG_MAX-1 inclusive, or the word 
+"random", which specifies that the block should be filled with a random
+bit pattern.
 For read/write (\fB-w\fR) and non-destructive (\fB-n\fR) modes,
-multiple test patterns may be specified. For
-read-only mode only a single byte pattern may be used and it may not be
-the random value -1.  Read-only testing with a pattern assumes that the
-same pattern has previously been written to the disk - if not, large
+one or more test patterns may be specified by specifiying the
+.B -t
+option for each test pattern desired.  For
+read-only mode only a single pattern may be specified and it may not be
+"random".  Read-only testing with a pattern assumes that the
+specified pattern has previously been written to the disk - if not, large
 numbers of blocks will fail verification.  
 If multiple patterns
-are specified then all blocks will be tested with an earlier pattern 
+are specified then all blocks will be tested with an one pattern 
 before proceeding to the next pattern.
 .TP
 .B \-n

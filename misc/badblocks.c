@@ -64,7 +64,7 @@ static int s_flag = 0;			/* show progress of test */
 static int force = 0;			/* force check of mounted device */
 static int t_flag = 0;			/* number of test patterns */
 static int t_max = 0;			/* allocated test patterns */
-static long *t_patts = NULL;		/* test patterns */
+static unsigned long *t_patts = NULL;	/* test patterns */
 #define T_INC 32
 
 static void usage(void)
@@ -159,12 +159,13 @@ static void uncapture_terminate(void)
 	signal (SIGUSR2, SIG_DFL);
 }
 
-static void pattern_fill(unsigned char *buffer, int pattern, size_t n)
+static void pattern_fill(unsigned char *buffer, unsigned long pattern,
+			 size_t n)
 {
 	int	i, nb;
-	unsigned char	bpattern[4], *ptr;
+	unsigned char	bpattern[sizeof(pattern)], *ptr;
 	
-	if (pattern == -1) {
+	if (pattern == ~0) {
 		for (ptr = buffer; ptr < buffer + n; ptr++) {
 			(*ptr) = random() % (1 << (8 * sizeof(char)));
 		}
@@ -184,9 +185,12 @@ static void pattern_fill(unsigned char *buffer, int pattern, size_t n)
 			if (i < 0)
 				i = nb;
 		}
-		if (s_flag | v_flag)
-			fprintf(stderr, _("Testing with pattern 0x%02x%02x%02x%02x: "),
-				buffer[0], buffer[1], buffer[2], buffer[3]);
+		if (s_flag | v_flag) {
+			fprintf(stderr, _("Testing with pattern 0x"));
+			for (i = 0; i <= nb; i++)
+				fprintf(stderr, "%02x", buffer[i]);
+			fprintf(stderr, ": ");
+		}
 	}
 }
 
@@ -359,8 +363,8 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 			     unsigned long blocks_at_once)
 {
 	char * buffer;
-	const long patterns[] = {0xaa, 0x55, 0xff, 0x00};
-	const long *pattern;
+	const unsigned long patterns[] = {0xaa, 0x55, 0xff, 0x00};
+	const unsigned long *pattern;
 	int nr_pattern, pat_idx;
 	unsigned int bb_count = 0;
 
@@ -456,8 +460,8 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 {
 	char *blkbuf, *save_ptr, *test_ptr, *read_ptr;
 	int try, i;
-	const long patterns[] = {-1};
-	const long *pattern;
+	const unsigned long patterns[] = { ~0 };
+	const unsigned long *pattern;
 	int nr_pattern, pat_idx;
 	long got, used2, written, save_currently_testing;
 	struct saved_blk_record *test_record;
@@ -709,7 +713,7 @@ int main (int argc, char ** argv)
 	int passes_clean = 0;
 	int dev;
 	errcode_t errcode;
-	long pattern;
+	unsigned long pattern;
 	unsigned int (*test_func)(int, unsigned long,
 				  int, unsigned long,
 				  unsigned long);
@@ -798,14 +802,20 @@ int main (int argc, char ** argv)
 				t_patts = t_patts_new;
 				t_max += T_INC;
 			}
-			pattern = strtol(optarg, &tmp, 0);
-			if (*tmp) {
-				com_err(program_name, 0,
+			if (!strcmp(optarg, "r") || !strcmp(optarg,"random")) {
+				t_patts[t_flag++] = ~0;
+			} else {
+				pattern = strtoul(optarg, &tmp, 0);
+				if (*tmp) {
+					com_err(program_name, 0,
 					_("invalid test_pattern: %s\n"),
-					optarg);
-				exit(1);
+						optarg);
+					exit(1);
+				}
+				if (pattern == ~0)
+					pattern = 0xffff;
+				t_patts[t_flag++] = pattern;
 			}
-			t_patts[t_flag++] = pattern;
 			break;
 		default:
 			usage();
@@ -818,7 +828,7 @@ int main (int argc, char ** argv)
 			  "in read-only mode"));
 			exit(1);
 		}
-		if (t_patts && (t_patts[0] == -1)) {
+		if (t_patts && (t_patts[0] == ~0)) {
 			com_err(program_name, 0,
 			_("Random test_pattern is not allowed "
 			  "in read-only mode"));
