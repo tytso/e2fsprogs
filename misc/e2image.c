@@ -265,18 +265,31 @@ static int check_zero_block(char *buf, int blocksize)
 	return 1;
 }
 
-static void write_block(int fd, char *buf, int blocksize, blk_t block)
+static void write_block(int fd, char *buf, int sparse_offset,
+			int blocksize, blk_t block)
 {
 	int		count;
 	errcode_t	err;
 
-	count = write(fd, buf, blocksize);
-	if (count != blocksize) {
-		if (count == -1)
-			err = errno;
-		else
-			err = 0;
-		com_err(program_name, err, "error writing block %d", block);
+	if (sparse_offset) {
+#ifdef HAVE_LSEEK64
+		if (lseek64(fd, sparse_offset, SEEK_CUR) < 0)
+			perror("lseek");
+#else
+		if (lseek(fd, sparse_offset, SEEK_CUR) < 0)
+			perror("lseek");
+#endif
+	}
+	if (blocksize) {
+		count = write(fd, buf, blocksize);
+		if (count != blocksize) {
+			if (count == -1)
+				err = errno;
+			else
+				err = 0;
+			com_err(program_name, err, "error writing block %d", 
+				block);
+		}
 	}
 }
 
@@ -285,6 +298,7 @@ static output_meta_data_blocks(ext2_filsys fs, int fd)
 	errcode_t	retval;
 	blk_t		blk;
 	char		buf[8192], zero_buf[8192];
+	int		sparse = 0;
 
 	memset(zero_buf, 0, sizeof(zero_buf));
 	for (blk = 0; blk < fs->super->s_blocks_count; blk++) {
@@ -297,24 +311,23 @@ static output_meta_data_blocks(ext2_filsys fs, int fd)
 			}
 			if ((fd != 1) && check_zero_block(buf, fs->blocksize))
 				goto sparse_write;
-			write_block(fd, buf, fs->blocksize, blk);
+			write_block(fd, buf, sparse, fs->blocksize, blk);
+			sparse = 0;
 		} else {
 		sparse_write:
 			if (fd == 1) {
-				write_block(fd, zero_buf, fs->blocksize, blk);
+				write_block(fd, zero_buf, 0,
+					    fs->blocksize, blk);
 				continue;
 			}
-#ifdef HAVE_LSEEK64
-			if (lseek64(fd, fs->blocksize, SEEK_CUR) < 0)
-				perror("lseek");
-#else
-			if (lseek(fd, fs->blocksize, SEEK_CUR) < 0)
-				perror("lseek");
-#endif			
+			sparse += fs->blocksize;
+			if (sparse >= 1024*1024) {
+				write_block(fd, 0, sparse, 0, 0);
+				sparse = 0;
+			}
 		}
 	}
-	buf[0] = 0;
-	write(fd, buf, 1);
+	write_block(fd, zero_buf, sparse, 1, -1);
 }
 
 static void write_raw_image_file(ext2_filsys fs, int fd)
