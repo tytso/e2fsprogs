@@ -1,3 +1,9 @@
+2004-04-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* cache.c (blkid_get_cache): If the BLKID_FILE environment
+		variable is set, use it to find the blkid.tab file if the
+		calling application did not supply a filename.
+
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Update the modtime even if subst doesn't need to

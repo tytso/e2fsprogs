@@ -39,7 +39,11 @@ int blkid_get_cache(blkid_cache *ret_cache, const char *filename)
 	INIT_LIST_HEAD(&cache->bic_devs);
 	INIT_LIST_HEAD(&cache->bic_tags);
 
-	if (!filename || !strlen(filename))
+	if (filename && !strlen(filename))
+		filename = 0;
+	if (!filename)
+		filename = getenv("BLKID_FILE");
+	if (!filename)
 		filename = BLKID_CACHE_FILE;
 	cache->bic_filename = blkid_strdup(filename);
 	
