@@ -22,7 +22,7 @@ debugfs: ls
 13 (28) indirect-fluff-test   14 (28) double-indirect-test   15 (20) sym   
 16 (24) long-sym-test   17 (864) dir-test   
 debugfs: stat sym
-Inode: 15   Type: symlink    Mode:  0777   Flags: 0x0   Version: 1
+Inode: 15   Type: symlink    Mode:  0777   Flags: 0x0   Version/Generation: 1
 User:     0   Group:     0   Size: 5
 File ACL: 0    Directory ACL: 0
 Links: 1   Blockcount: 0
@@ -32,7 +32,7 @@ atime: 0x322737e2 -- Fri Aug 30 18:50:10 1996
 mtime: 0x322737e2 -- Fri Aug 30 18:50:10 1996
 Fast_link_dest: fluff
 debugfs: stat double-indirect-test
-Inode: 14   Type: regular    Mode:  0644   Flags: 0x0   Version: 1
+Inode: 14   Type: regular    Mode:  0644   Flags: 0x0   Version/Generation: 1
 User:     0   Group:     0   Size: 348960
 File ACL: 0    Directory ACL: 0
 Links: 1   Blockcount: 688
@@ -84,7 +84,7 @@ debugfs: ls
 13 (28) indirect-fluff-test   14 (28) double-indirect-test   15 (20) sym   
 16 (24) long-sym-test   17 (864) dir-test   
 debugfs: stat sym
-Inode: 15   Type: symlink    Mode:  0777   Flags: 0x0   Version: 1
+Inode: 15   Type: symlink    Mode:  0777   Flags: 0x0   Version/Generation: 1
 User:     0   Group:     0   Size: 5
 File ACL: 0    Directory ACL: 0
 Links: 1   Blockcount: 0
@@ -94,7 +94,7 @@ atime: 0x322737e2 -- Fri Aug 30 18:50:10 1996
 mtime: 0x322737e2 -- Fri Aug 30 18:50:10 1996
 Fast_link_dest: fluff
 debugfs: stat double-indirect-test
-Inode: 14   Type: regular    Mode:  0644   Flags: 0x0   Version: 1
+Inode: 14   Type: regular    Mode:  0644   Flags: 0x0   Version/Generation: 1
 User:     0   Group:     0   Size: 348960
 File ACL: 0    Directory ACL: 0
 Links: 1   Blockcount: 688
