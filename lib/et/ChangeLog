@@ -1,3 +1,8 @@
+2002-09-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* internal.h: Remove declaration of perror.  All modern systems
+		can be expected to define perror() these days.
+
 2001-08-31  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.28
