@@ -594,6 +594,7 @@ static struct fsck_instance *wait_one(NOARGS)
 				}
 			} else
 				kill(inst2->pid, SIGUSR1);
+			inst2->flags |= FLAG_PROGRESS;
 			break;
 		}
 	}

@@ -1,5 +1,11 @@
 2000-12-02    <tytso@snap.thunk.org>
 
+	* fsck.c (wait_one): When we let a new fsck take control of the
+		console to display the progress bar, set FLAG_PROGRESS to
+		so that fsck knows not to start new processes during an
+		fsck pass with the progress bar. (Should fix debian bug
+		#65267)
+
 	* tune2fs.8.in: Add clarifying statement about converting user and
 		group names to uid's before storing them in the
 		superblock.  (Debian bug #67446)
