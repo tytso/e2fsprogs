@@ -25,9 +25,9 @@
 #include "problem.h"
 #include "uuid/uuid.h"
 
-#ifdef JFS_DEBUG
+#ifdef JFS_DEBUG		/* Enabled by configure --enable-jfs-debug */
 static int bh_count = 0;
-int journal_enable_debug = 0;
+int journal_enable_debug = 2;
 #endif
 
 /* Kernel compatibility functions for handling the journal.  These allow us
@@ -483,9 +483,6 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 	    uuid_is_null(sb->s_journal_uuid))
  		return 0;
 
-#ifdef JFS_DEBUG		/* Enabled by configure --enable-jfs-debug */
-	journal_enable_debug = 2;
-#endif
 	clear_problem_context(&pctx);
 	pctx.num = sb->s_journal_inum;
 

@@ -1,3 +1,8 @@
+2001-05-13  Theodore Tso  <tytso@valinux.com>
+
+	* journal.c: Code cleanup; initialize journal_enable_debug using
+		an initializer.
+
 2001-05-12  Theodore Tso  <tytso@valinux.com>
 
 	* unix.c (PRS): Skip validation of -C's file descriptor if it is
