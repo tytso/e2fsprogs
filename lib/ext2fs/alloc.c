@@ -55,7 +55,7 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir, int mode,
 	i = start_inode;
 
 	do {
-		if (!ext2fs_test_inode_bitmap(map, i))
+		if (!ext2fs_fast_test_inode_bitmap(map, i))
 			break;
 		i++;
 		if (i > fs->super->s_inodes_count)
@@ -87,7 +87,7 @@ errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
 		goal = fs->super->s_first_data_block;
 	i = goal;
 	do {
-		if (!ext2fs_test_block_bitmap(map, i)) {
+		if (!ext2fs_fast_test_block_bitmap(map, i)) {
 			*ret = i;
 			return 0;
 		}

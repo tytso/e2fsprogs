@@ -179,6 +179,7 @@ static int mkjournal_proc(ext2_filsys		fs,
 		return BLOCK_ABORT;
 	}
 	*blocknr = new_blk;
+	last_blk = new_blk;
 	ext2fs_mark_block_bitmap(fs->block_map, new_blk);
 	ext2fs_mark_bb_dirty(fs);
 	group = ext2fs_group_of_blk(fs, new_blk);

@@ -1,3 +1,16 @@
+2001-08-05  Theodore Tso  <tytso@valinux.com>
+
+	* alloc.c (ext2fs_new_inode, ext2fs_new_block): Use the fast
+		version of the bitmap test routines to speed up these
+		routines.  (At some point I may want to make these
+		routines use the find_first_bit functions, but that will
+		add a lot of complexity since it means that these
+		functions will have to break the bitmap abstraction
+		boundary.  It's not clear it's worth it.)
+
+	* mkjournal.c (mkjournal_proc): Remember the last block allocated
+		to speed up ext2fs_new_block().
+
 2001-07-29  Theodore Tso  <tytso@valinux.com>
 
 	* finddev.c (scan_dir): Fix memory leak; we weren't calling
