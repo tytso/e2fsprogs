@@ -199,7 +199,7 @@ static errcode_t test_close(io_channel channel)
 	if (data->real)
 		retval = io_channel_close(data->real);
 
-	if (data->outfile)
+	if (data->outfile && data->outfile != stderr)
 		fclose(data->outfile);
 	
 	ext2fs_free_mem((void **) &channel->private_data);
