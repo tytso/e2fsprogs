@@ -1,3 +1,25 @@
+2005-01-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2fs.h: Add definition of struct ext2_inode_large
+
+	* ext2_fs.h: Add new function prototypes
+
+	* ext_attr.c (ext2fs_read_ext_attr, ext2fs_write_ext_attr): The
+		ext2fs_swap_ext_attr() has been moved to swapfs.c, and
+		given a new argument, has_header.
+
+	* swapfs.c (ext2fs_swap_ext_attr): Moved from ext_attr.c, and
+		takes an argument which controls whether or not there is
+		an EA header which needs to be byteswaped.
+		(ext2fs_swap_inode_full): New function which byte-swaps
+		the EA in inode.
+
+	* inode.c (ext2fs_get_next_inode_full, ext2fs_read_inode_full,
+		ext2fs_write_inode_full): New functions, originally from
+		Alex Tomas, but which needed to be substantially fixed so
+		that the tests wouldn't cause major stack overwrite bugs
+		in byte-swapping is enabled.
+	
 2005-01-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Fix the kernel compile-time echo commands to be

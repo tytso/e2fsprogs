@@ -13,10 +13,12 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <string.h>
 #include <time.h>
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
+#include <ext2fs/ext2_ext_attr.h>
 
 #ifdef EXT2FS_ENABLE_SWAPFS
 void ext2fs_swap_super(struct ext2_super_block * sb)
@@ -78,12 +80,53 @@ void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
 	gdp->bg_used_dirs_count = ext2fs_swab16(gdp->bg_used_dirs_count);
 }
 
-void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
-		       struct ext2_inode *f, int hostorder)
+void ext2fs_swap_ext_attr(char *to, char *from, int bufsize, int has_header)
+{
+	struct ext2_ext_attr_header *from_header =
+		(struct ext2_ext_attr_header *)from;
+	struct ext2_ext_attr_header *to_header =
+		(struct ext2_ext_attr_header *)to;
+	struct ext2_ext_attr_entry *from_entry, *to_entry;
+	char *from_end = (char *)from_header + bufsize;
+	int n;
+
+	if (to_header != from_header)
+		memcpy(to_header, from_header, bufsize);
+
+	from_entry = (struct ext2_ext_attr_entry *)from_header;
+	to_entry   = (struct ext2_ext_attr_entry *)to_header;
+
+	if (has_header) {
+		to_header->h_magic    = ext2fs_swab32(from_header->h_magic);
+		to_header->h_blocks   = ext2fs_swab32(from_header->h_blocks);
+		to_header->h_refcount = ext2fs_swab32(from_header->h_refcount);
+		for (n=0; n<4; n++)
+			to_header->h_reserved[n] =
+				ext2fs_swab32(from_header->h_reserved[n]);
+		from_entry = (struct ext2_ext_attr_entry *)(from_header+1);
+		to_entry   = (struct ext2_ext_attr_entry *)(to_header+1);
+	}
+
+	while ((char *)from_entry < from_end && *(__u32 *)from_entry) {
+		to_entry->e_value_offs  =	
+			ext2fs_swab16(from_entry->e_value_offs);
+		to_entry->e_value_block =	
+			ext2fs_swab32(from_entry->e_value_block);
+		to_entry->e_value_size  =	
+			ext2fs_swab32(from_entry->e_value_size);
+		from_entry = EXT2_EXT_ATTR_NEXT(from_entry);
+		to_entry   = EXT2_EXT_ATTR_NEXT(to_entry);
+	}
+}
+
+void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
+			    struct ext2_inode_large *f, int hostorder,
+			    int bufsize)
 {
 	unsigned i;
 	int islnk = 0;
-	
+	__u32 *eaf, *eat;
+
 	if (hostorder && LINUX_S_ISLNK(f->i_mode))
 		islnk = 1;
 	t->i_mode = ext2fs_swab16(f->i_mode);
@@ -101,7 +144,7 @@ void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
 	t->i_flags = ext2fs_swab32(f->i_flags);
 	t->i_file_acl = ext2fs_swab32(f->i_file_acl);
 	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
-	if (!islnk || ext2fs_inode_data_blocks(fs, t)) {
+	if (!islnk || ext2fs_inode_data_blocks(fs, (struct ext2_inode *)t)) {
 		for (i = 0; i < EXT2_N_BLOCKS; i++)
 			t->i_block[i] = ext2fs_swab32(f->i_block[i]);
 	} else if (t != f) {
@@ -151,5 +194,44 @@ void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
 			ext2fs_swab32(f->osd2.masix2.m_i_reserved2[1]);
 		break;
 	}
+
+	if (bufsize < (int) (sizeof(struct ext2_inode) + sizeof(__u16)))
+		return; /* no i_extra_isize field */
+
+	t->i_extra_isize = ext2fs_swab16(f->i_extra_isize);
+	if (t->i_extra_isize > EXT2_INODE_SIZE(fs->super) -
+				sizeof(struct ext2_inode)) {
+		/* this is error case: i_extra_size is too large */
+		return;
+	}
+
+	i = sizeof(struct ext2_inode) + t->i_extra_isize + sizeof(__u32);
+	if (bufsize < (int) i)
+		return; /* no space for EA magic */
+
+	eaf = (__u32 *) (((char *) f) + sizeof(struct ext2_inode) +
+					f->i_extra_isize);
+
+	if (ext2fs_swab32(*eaf) != EXT2_EXT_ATTR_MAGIC)
+		return; /* it seems no magic here */
+
+	eat = (__u32 *) (((char *) t) + sizeof(struct ext2_inode) +
+					f->i_extra_isize);
+	*eat = ext2fs_swab32(*eaf);
+
+	/* convert EA(s) */
+	ext2fs_swap_ext_attr((char *) (eat + 1), (char *) (eaf + 1),
+			     bufsize - sizeof(struct ext2_inode) -
+			     t->i_extra_isize - sizeof(__u32), 0);
+
 }
+
+void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
+		       struct ext2_inode *f, int hostorder)
+{
+	ext2fs_swap_inode_full(fs, (struct ext2_inode_large *) t,
+				(struct ext2_inode_large *) f, hostorder,
+				sizeof(struct ext2_inode));
+}
+
 #endif

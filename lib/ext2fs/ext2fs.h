@@ -698,7 +698,6 @@ extern errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest);
 extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir);
 
 /* ext_attr.c */
-void ext2fs_swap_ext_attr(ext2_filsys fs, char *to, char *from);
 extern errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf);
 extern errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block,
 				       void *buf);
@@ -787,6 +786,10 @@ errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *);
 
 /* inode.c */
 extern errcode_t ext2fs_flush_icache(ext2_filsys fs);
+extern errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, 
+					    ext2_ino_t *ino,
+					    struct ext2_inode *inode, 
+					    int bufsize);
 extern errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 				  ext2_inode_scan *ret_scan);
 extern void ext2fs_close_inode_scan(ext2_inode_scan scan);
@@ -803,8 +806,14 @@ extern void ext2fs_set_inode_callback
 	 void *done_group_data);
 extern int ext2fs_inode_scan_flags(ext2_inode_scan scan, int set_flags,
 				   int clear_flags);
+extern errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
+					struct ext2_inode * inode, 
+					int bufsize);
 extern errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
 			    struct ext2_inode * inode);
+extern errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
+					 struct ext2_inode * inode, 
+					 int bufsize);
 extern errcode_t ext2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
 			    struct ext2_inode * inode);
 extern errcode_t ext2fs_get_blocks(ext2_filsys fs, ext2_ino_t ino, blk_t *blocks);
@@ -909,8 +918,13 @@ extern errcode_t ext2fs_copy_bitmap(ext2fs_generic_bitmap src,
 				    ext2fs_generic_bitmap *dest);
 
 /* swapfs.c */
+extern void ext2fs_swap_ext_attr(char *to, char *from, int bufsize, 
+				 int has_header);
 extern void ext2fs_swap_super(struct ext2_super_block * super);
 extern void ext2fs_swap_group_desc(struct ext2_group_desc *gdp);
+extern void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
+				   struct ext2_inode_large *f, int hostorder,
+				   int bufsize);
 extern void ext2fs_swap_inode(ext2_filsys fs,struct ext2_inode *t,
 			      struct ext2_inode *f, int hostorder);
 
