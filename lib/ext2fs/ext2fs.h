@@ -45,7 +45,8 @@
 #include "e2_types.h"
 #else
 #include <asm/types.h>
-#if (defined(__GNUC__) && defined(__STRICT_ANSI__) && ((~0UL) == 0xffffffff))
+#if defined(__GNUC__) && defined(__STRICT_ANSI__) && \
+	((~0UL) == 0xffffffff) || defined(__i386__)
 typedef __signed__ long long __s64;
 typedef unsigned long long __u64;
 #endif
