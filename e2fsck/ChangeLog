@@ -1,3 +1,8 @@
+2002-03-04  Philipp Thomas  <pthomas@suse.de>
+
+        * unix.c (main): Newer libintl needs LC_CTYPE to be set in
+		addition to LC_MESSAGES.
+
 2002-02-24  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in (install): Install hard links for man pages for

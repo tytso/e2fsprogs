@@ -1,3 +1,11 @@
+2002-03-04  Philipp Thomas  <pthomas@suse.de>
+
+	* chattr.c (main), fsck.c (main), mke2fs.c (main), findsuper.c
+		(main), dumpe2fs.c (main), lsattr.c (main), partinfo.c (main),
+		tune2fs.c (main), mklost+found.c (main), badblocks.c
+		(main), e2image.c (main): Newer libintl needs LC_CTYPE to
+		be set in addition to LC_MESSAGES.
+
 2002-02-25  Andreas Dilger  <adilger@clusterfs.com>
 
 	* mke2fs.c: Add check for mkfs.ext3 and create a journal in
