@@ -44,9 +44,8 @@ static void
     if (fmt) {
         vfprintf (stderr, fmt, args);
     }
-    /* should do this only on a tty in raw mode */
-    putc('\r', stderr);
-    putc('\n', stderr);
+    /* should output \r only if using a tty in raw mode */
+    fputs("\r\n", stderr);
     fflush(stderr);
 }
 

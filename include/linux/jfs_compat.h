@@ -2,7 +2,7 @@
 #ifndef _JFS_COMPAT_H
 #define _JFS_COMPAT_H
 
-#include <linux/list.h>
+#include "linked_list.h"
 #include <errno.h>
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>

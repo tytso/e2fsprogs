@@ -1,3 +1,10 @@
+2001-12-02  Theodore Tso  <tytso@valinux.com>
+
+	* com_err.c (default_com_err_proc): Work around bug in diet libc
+		which core dumps when using fputc on stderr; besides, it
+		shaves bytes off of com_err.o if we use fputs instead of
+		two fputc calls.
+
 2001-09-20  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.25

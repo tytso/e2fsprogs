@@ -34,7 +34,7 @@ FILE *open_pager(void)
 
 void close_pager(FILE *stream)
 {
-	if (stream && stream != stdout) fclose(stream);
+	if (stream && stream != stdout) pclose(stream);
 }
 
 /*

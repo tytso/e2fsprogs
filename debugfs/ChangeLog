@@ -1,3 +1,8 @@
+2001-12-02  Theodore Tso  <tytso@valinux.com>
+
+	* util.c (close_pager): Use pclose() instead of fclose() when
+		closing the pager stream.
+
 2001-11-30  Theodore Tso  <tytso@valinux.com>
 
 	* debugfs.c (finish_range, dump_blocks): Fixed bug in Andreas's >
