@@ -1,3 +1,7 @@
+2001-06-08  Theodore Tso  <tytso@valinux.com>
+
+	* recover.c, revoke.c: Synchronize with ext3 0.7a
+
 2001-06-02  Theodore Tso  <tytso@valinux.com>
 
 	* recovery.c (scan_revoke_records): Fix bug in recovery code;

@@ -33,11 +33,13 @@
  *   cancel the revoke before the transaction commits.
  *
  * Block is journaled and then revoked:
- *   The revoke must take precedence over the write of the block, so 
- *   we need either to cancel the journal entry or to write the revoke
+ *   The revoke must take precedence over the write of the block, so we
+ *   need either to cancel the journal entry or to write the revoke
  *   later in the log than the log block.  In this case, we choose the
- *   former: the commit code must skip any block that has the Revoke bit
- *   set.
+ *   latter: journaling a block cancels any revoke record for that block
+ *   in the current transaction, so any revoke for that block in the
+ *   transaction must have happened after the block was journaled and so
+ *   the revoke must take precedence.
  *
  * Block is revoked and then written as data: 
  *   The data write is allowed to succeed, but the revoke is _not_
@@ -52,7 +54,7 @@
  *			buffer has not been revoked, and cancel_revoke
  *			need do nothing.
  * RevokeValid set, Revoke set:
- *			buffer has been revoked.
+ * buffer has been revoked.  
  */
 
 #ifndef __KERNEL__
@@ -489,7 +491,7 @@ int journal_set_revoke(journal_t *journal,
 	if (record) {
 		/* If we have multiple occurences, only record the
 		 * latest sequence number in the hashed record */
-		if (tid_ge(sequence, record->sequence))
+		if (tid_gt(sequence, record->sequence))
 			record->sequence = sequence;
 		return 0;
 	} 
@@ -512,7 +514,7 @@ int journal_test_revoke(journal_t *journal,
 	record = find_revoke_record(journal, blocknr);
 	if (!record)
 		return 0;
-	if (tid_ge(sequence, record->sequence))
+	if (tid_gt(sequence, record->sequence))
 		return 0;
 	return 1;
 }

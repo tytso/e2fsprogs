@@ -284,7 +284,7 @@ int journal_skip_recovery(journal_t *journal)
 
 	struct recovery_info	info;
 	
-	memset (&info, 0, sizeof(info));
+	memset(&info, 0, sizeof(info));
 	sb = journal->j_superblock;
 	
 	err = do_one_pass(journal, &info, PASS_SCAN);
