@@ -1,3 +1,9 @@
+2000-12-02    <tytso@snap.thunk.org>
+
+	* tune2fs.8.in: Add clarifying statement about converting user and
+		group names to uid's before storing them in the
+		superblock.  (Debian bug #67446)
+
 2000-11-16  Theodore Ts'o  <tytso@valinux.com>
 
 	* mke2fs.c(main): Expand the -j option so that it parses

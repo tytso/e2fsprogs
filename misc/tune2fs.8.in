@@ -89,7 +89,8 @@ can be one of the following:
 set the user group which can benefit from the reserved blocks.
 .br
 .I group
-can be a numerical gid or a group name.
+can be a numerical gid or a group name.  If a group name is given,
+it is converted to a numerical gid before it is stored in the superblock.
 .TP
 .BI \-i " interval-between-checks\fR[\fBd\fR|\fBm\fR|\fBw\fR]"
 adjust the maximal time between two filesystem checks. 
@@ -121,7 +122,8 @@ doing!
 .BI \-u " user"
 set the user who can benefit from the reserved blocks.
 .I user
-can be a numerical uid or a user name.
+can be a numerical uid or a user name.  If a user name is given, it 
+is converted to a numerical uid before it is stored in the superblock.
 .TP
 .BI \-C " mount-count"
 set the number of times the filesystem has been mounted.
