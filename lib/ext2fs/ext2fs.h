@@ -720,6 +720,9 @@ extern void ext2fs_u32_list_free(ext2_u32_list bb);
 extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 					blk_t *retblocks);
 
+/* getsectsize.c */
+errcode_t ext2fs_get_device_sectsize(const char *file, int *sectsize);
+
 /* imager.c */
 extern errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags);
 extern errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd, int flags);

@@ -40,6 +40,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	gen_bitmap.o \
 	get_pathname.o \
 	getsize.o \
+	getsectsize.o \
 	icount.o \
 	initialize.o \
 	inline.o \
@@ -91,6 +92,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/gen_bitmap.c \
 	$(srcdir)/get_pathname.c \
 	$(srcdir)/getsize.c \
+	$(srcdir)/getsectsize.c \
 	$(srcdir)/icount.c \
 	$(srcdir)/imager.c \
 	$(srcdir)/initialize.c \
@@ -202,6 +204,10 @@ tst_byteswap: tst_byteswap.o bitops.o $(STATIC_LIBEXT2FS)
 tst_bitops: tst_bitops.o inline.o $(STATIC_LIBEXT2FS)
 	$(CC) -o tst_bitops tst_bitops.o inline.o \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
+
+tst_getsectsize: tst_getsectsize.o getsectsize.o $(STATIC_LIBEXT2FS)
+	$(CC) -o tst_sectgetsize tst_getsectsize.o getsectsize.o \
+		-DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 mkjournal: mkjournal.c $(STATIC_LIBEXT2FS)
 	$(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)

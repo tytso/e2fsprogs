@@ -1,3 +1,9 @@
+2003-05-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (PRS, set_fs_defaults): If the sector size of the
+		device is larger than the default block size, then use the
+		sector size of the device as the default block size.
+
 2003-05-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.c: Use an unsigned integer to support 4-byte test

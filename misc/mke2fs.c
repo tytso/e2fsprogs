@@ -147,7 +147,8 @@ struct mke2fs_defaults {
 
 static void set_fs_defaults(const char *fs_type,
 			    struct ext2_super_block *super,
-			    int blocksize, int *inode_ratio)
+			    int blocksize, int sector_size,
+			    int *inode_ratio)
 {
 	int	megs;
 	int	ratio = 0;
@@ -170,6 +171,8 @@ static void set_fs_defaults(const char *fs_type,
 				blocksize : p->inode_ratio;
 		use_bsize = p->blocksize;
 	}
+	if (use_bsize < sector_size)
+		use_bsize = sector_size;
 	if (blocksize <= 0) {
 		if (use_bsize == DEF_MAX_BLOCKSIZE)
 			use_bsize = sys_page_size;
@@ -799,6 +802,7 @@ static void PRS(int argc, char *argv[])
 	int		inode_ratio = 0;
 	int		inode_size = 0;
 	int		reserved_ratio = 5;
+	int		sector_size = 0;
 	ext2_ino_t	num_inodes = 0;
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
@@ -1187,7 +1191,15 @@ static void PRS(int argc, char *argv[])
 	    ((tmp = getenv("MKE2FS_FIRST_META_BG"))))
 		param.s_first_meta_bg = atoi(tmp);
 
-	set_fs_defaults(fs_type, &param, blocksize, &inode_ratio);
+	/* Get the hardware sector size, if available */
+	retval = ext2fs_get_device_sectsize(device_name, &sector_size);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while trying to determine hardware sector size"));
+		exit(1);
+	}
+	
+	set_fs_defaults(fs_type, &param, blocksize, sector_size, &inode_ratio);
 	blocksize = EXT2_BLOCK_SIZE(&param);
 	
 	if (param.s_blocks_per_group) {
