@@ -252,7 +252,9 @@ int main (int argc, char ** argv)
 			"long.  Nothing to do!\n\n"), new_size);
 		exit(0);
 	}
-	if (!force && (fs->super->s_lastcheck < fs->super->s_mtime)) {
+	if (!force && ((fs->super->s_lastcheck < fs->super->s_mtime) ||
+		       (fs->super->s_state & EXT2_ERROR_FS) ||
+		       ((fs->super->s_state & EXT2_VALID_FS) == 0))) {
 		fprintf(stderr, _("Please run 'e2fsck -f %s' first.\n\n"),
 			device_name);
 		exit(1);
