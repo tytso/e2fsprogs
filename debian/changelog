@@ -1,3 +1,19 @@
+e2fsprogs (1.22-2) unstable; urgency=medium
+
+  * This is only a trivial patch to stop some user confusion, and would be
+    great to have in woody, hence the urgency.
+  * Applied upstream patch to e2fsck to warn user when some errors were
+    not corrected due to user answering "no" (Closes: #104502).
+
+ -- Yann Dirson <dirson@debian.org>  Sat, 28 Jul 2001 23:01:49 +0200
+
+e2fsprogs (1.22-1) unstable; urgency=low
+
+  * Final 1.22 release:
+  ** Fixes build problems on big-endian (Closes: #101686, #101798).
+
+ -- Yann Dirson <dirson@debian.org>  Sat, 23 Jun 2001 14:03:17 +0200
+
 e2fsprogs (1.21+1.22-WIP-0620-1) unstable; urgency=low
 
   * New upstream pre-release, critical for big-endian platforms 
@@ -88,7 +104,7 @@ e2fsprogs (1.19+1.20-WIP-0520-1) unstable; urgency=low
 
 e2fsprogs (1.19+1.20-WIP-0514-2) unstable; urgency=low
 
-  * Tighten dependency on dephelper.
+  * Tighten dependency on debhelper.
 
  -- Yann Dirson <dirson@debian.org>  Tue, 15 May 2001 21:38:47 +0200
 
