@@ -16,6 +16,10 @@ INSTALL = @INSTALL@
 
 all:: 
 
+SMANPAGES=	libuuid.3 uuid_clear.3 uuid_compare.3 uuid_copy.3 \
+		uuid_generate.3 uuid_is_null.3 uuid_parse.3 \
+		uuid_time.3 uuid_unparse.3
+
 OBJS=		clear.o \
 		compare.o \
 		copy.o \
@@ -78,7 +82,7 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
 @BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) -fpic -o pic/$*.o -c $<
 
-all:: tst_uuid uuid_time
+all:: tst_uuid uuid_time $(SMANPAGES)
 
 tst_uuid.o: $(srcdir)/tst_uuid.c
 	$(CC) $(ALL_CFLAGS) -c $(srcdir)/tst_uuid.c -o tst_uuid.o
@@ -86,12 +90,39 @@ tst_uuid.o: $(srcdir)/tst_uuid.c
 tst_uuid: tst_uuid.o $(LIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o tst_uuid tst_uuid.o $(LIBUUID)
 
-uuid_time: $(srcdir)/uuid_time.c
+uuid_time: $(srcdir)/uuid_time.c $(LIBUUID)
 	$(CC) $(ALL_CFLAGS) -DDEBUG $(srcdir)/uuid_time.c -o uuid_time $(LIBUUID)
+
+libuuid.3: $(DEP_SUBSTITUTE) $(srcdir)/libuuid.3.in
+	$(SUBSTITUTE) $(srcdir)/libuuid.3.in libuuid.3
+
+uuid_clear.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_clear.3.in
+	$(SUBSTITUTE) $(srcdir)/uuid_clear.3.in uuid_clear.3
+
+uuid_compare.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_compare.3.in
+	$(SUBSTITUTE) $(srcdir)/uuid_compare.3.in uuid_compare.3
+
+uuid_copy.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_copy.3.in
+	$(SUBSTITUTE) $(srcdir)/uuid_copy.3.in uuid_copy.3
+
+uuid_generate.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_generate.3.in
+	$(SUBSTITUTE) $(srcdir)/uuid_generate.3.in uuid_generate.3
+
+uuid_is_null.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_is_null.3.in
+	$(SUBSTITUTE) $(srcdir)/uuid_is_null.3.in uuid_is_null.3
+
+uuid_parse.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_parse.3.in
+	$(SUBSTITUTE) $(srcdir)/uuid_parse.3.in uuid_parse.3
+
+uuid_time.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_time.3.in
+	$(SUBSTITUTE) $(srcdir)/uuid_time.3.in uuid_time.3
+
+uuid_unparse.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_unparse.3.in
+	$(SUBSTITUTE) $(srcdir)/uuid_unparse.3.in uuid_unparse.3
 
 installdirs::
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir)  \
-		$(DESTDIR)$(includedir)/uuid
+		$(DESTDIR)$(includedir)/uuid $(DESTDIR)$(man3dir)
 
 install:: all installdirs 
 	$(INSTALL_DATA) libuuid.a $(DESTDIR)$(libdir)/libuuid.a
@@ -99,13 +130,19 @@ install:: all installdirs
 	-$(RANLIB) $(DESTDIR)$(libdir)/libuuid.a
 	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libuuid.a
 	$(INSTALL_DATA) $(srcdir)/uuid.h $(DESTDIR)$(includedir)/uuid/uuid.h
+	for i in $(SMANPAGES); do \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(man3dir)/$$i; \
+	done
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libuuid.a
+	for i in $(SMANPAGES); do \
+		$(RM) -f $(DESTDIR)$(man3dir)/$$i; \
+	done
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/*
-	$(RM) -f ../libuuid.a ../libuuid_p.a tst_uuid uuid_time
+	$(RM) -f ../libuuid.a ../libuuid_p.a tst_uuid uuid_time $(SMANPAGES)
 
 mostlyclean:: clean
 distclean:: clean

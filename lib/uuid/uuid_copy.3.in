@@ -1,0 +1,37 @@
+.\" Copyright 1999 Andreas Dilger (adilger@enel.ucalgary.ca)
+.\"
+.\" This man page was created for libuuid.so.1.1 from e2fsprogs-1.14.
+.\" 
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.\" Created  Wed Mar 10 17:42:12 1999, Andreas Dilger
+.TH UUID_COPY 3 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+uuid_copy \- copy a UUID value
+.SH SYNOPSIS
+.nf
+.B #include <uuid/uuid.h>
+.sp
+.BI "void uuid_copy(uuid_t " dst ", uuid_t " src);
+.fi
+.SH DESCRIPTION
+The
+.B uuid_copy
+function copies the UUID variable
+.IR src " to " dst .
+.SH RETURN VALUE
+The copied UUID is returned in the location pointed to by
+.IR dst .
+.SH AUTHOR
+.B uuid_copy
+was written by Theodore Y. Ts'o for the ext2 filesystem utilties.
+.SH AVAILABILITY
+.B uuid_copy
+is part of libuuid from the e2fsprogs package and is available for anonymous
+ftp from tsx\-11.mit.edu (and its mirrors) in /pub/linux/packages/ext2fs.
+.SH "SEE ALSO"
+.BR libuuid (3),
+.BR uuid_clear (3),
+.BR uuid_compare (3),
+.BR uuid_generate (3),
+.BR uuid_is_null (3)

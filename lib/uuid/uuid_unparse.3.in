@@ -1,0 +1,40 @@
+.\" Copyright 1999 Andreas Dilger (adilger@enel.ucalgary.ca)
+.\"
+.\" This man page was created for libuuid.so.1.1 from e2fsprogs-1.14.
+.\" 
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.\" Created  Wed Mar 10 17:42:12 1999, Andreas Dilger
+.TH UUID_UNPARSE 3 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+uuid_unparse \- output UUID variable in string format
+.SH SYNOPSIS
+.nf
+.B #include <uuid/uuid.h>
+.sp
+.BI "void uuid_unparse(uuid_t " uu ", char *" out );
+.fi
+.SH DESCRIPTION
+The
+.B uuid_unparse
+function converts the supplied UUID
+.I uu
+from the internal binary format into a 36\-byte string (plus tailing '\\0')
+of the form 1b4e28ba\-2fa1\-11d2\-883f\-b9a76 and stores this value in the
+character string pointed to by
+.IR out .
+.SH "CONFORMING TO"
+OSF DCE 1.1
+.SH AUTHOR
+.B uuid_unparse
+was written by Theodore Y. Ts'o for the ext2 filesystem utilties.
+.SH AVAILABILITY
+.B uuid_unparse
+is part of libuuid from the e2fsprogs package and is available for anonymous
+ftp from tsx\-11.mit.edu (and its mirrors) in /pub/linux/packages/ext2fs.
+.SH "SEE ALSO"
+.BR libuuid (3),
+.BR uuid_clear (3),
+.BR uuid_generate (3),
+.BR uuid_parse (3),
+.BR uuid_time (3)

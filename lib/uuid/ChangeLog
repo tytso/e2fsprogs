@@ -1,3 +1,7 @@
+1999-03-11  Andreas Dilger <adilger@enel.ucalgary.ca>
+
+	* Created man pages for libuuid functions.
+
 1999-01-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.14

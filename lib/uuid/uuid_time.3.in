@@ -1,0 +1,52 @@
+.\" Copyright 1999 Andreas Dilger (adilger@enel.ucalgary.ca)
+.\"
+.\" This man page was created for libuuid.so.1.1 from e2fsprogs-1.14.
+.\" 
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.\" Created  Wed Mar 10 17:42:12 1999, Andreas Dilger
+.TH UUID_TIME 3 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+uuid_time \- extract the time at which the UUID was created
+.SH SYNOPSIS
+.nf
+.B #include <uuid/uuid.h>
+.sp
+.BI "time_t uuid_time(uuid_t " uu ", struct timeval *" ret_tv )
+.fi
+.SH DESCRIPTION
+The
+.B uuid_time
+function extracts the time at which the supplied UUID
+.I uu
+was created.  Note that the UUID creation time is encoded within the UUID,
+and this function can only reasonably expect to extract the creation time
+for UUIDs created with the
+.BR uuid_generate (3)
+function.  It may or may not work with UUIDs created by OSF DCE
+.BR uuidgen .
+.SH "RETURN VALUES"
+The time at which the UUID was created, in seconds since January 1, 1970 GMT
+(the epoch), is returned (see
+.BR time "(2))."
+The time at which the UUID was created, in seconds and microseconds since
+the epoch, is also stored in the location pointed to by
+.I ret_tv
+(see
+.BR gettimeofday "(2))."
+.SH AUTHOR
+.B uuid_time
+was written by Theodore Y. Ts'o for the ext2 filesystem utilties.
+.SH AVAILABILITY
+.B uuid_time
+is part of libuuid from the e2fsprogs package and is available for anonymous
+ftp from tsx\-11.mit.edu (and its mirrors) in /pub/linux/packages/ext2fs.
+.SH "SEE ALSO"
+.BR libuuid (3),
+.BR uuid_clear (3),
+.BR uuid_compare (3),
+.BR uuid_copy (3),
+.BR uuid_generate (3),
+.BR uuid_is_null (3),
+.BR uuid_parse (3),
+.BR uuid_unparse (3)
