@@ -209,6 +209,31 @@ struct hfs_super_block {
 	__u32	h_blksize;
 };
 
+struct ocfs_volume_header {
+	u_char	minor_version[4];
+	u_char	major_version[4];
+	u_char	signature[128];
+	u_char  mount[128];
+	u_char  mount_len[2];
+};
+
+struct ocfs_volume_label {
+	u_char	disk_lock[48];
+	u_char	label[64];	
+	u_char	label_len[2];
+	u_char  vol_id[16];
+	u_char  vol_id_len[2];
+};
+
+#define ocfsmajor(o) ((uint)o.major_version[0] \
+                   + (((uint) o.major_version[1]) << 8) \
+                   + (((uint) o.major_version[2]) << 16) \
+                   + (((uint) o.major_version[3]) << 24))
+#define ocfslabellen(o)	((uint)o.label_len[0] + (((uint) o.label_len[1]) << 8))
+#define ocfsmountlen(o)	((uint)o.mount_len[0] + (((uint) o.mount_len[1])<<8))
+
+#define OCFS_MAGIC "OracleCFS"
+
 #define ISODCL(from, to) (to - from + 1)
 struct iso_volume_descriptor {
 	char type[ISODCL(1,1)]; /* 711 */

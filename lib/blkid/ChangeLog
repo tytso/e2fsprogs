@@ -1,3 +1,9 @@
+2004-03-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c (probe_ocfs), probe.h: Add support for the Oracle
+		Cluster Filesystem (ocfs).  Patches courtesy of Rusty
+		Lynch (rusty@linux.co.intel.com).
+
 2004-03-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* getsize.c (blkid_get_dev_size): Update getsize functions to use
