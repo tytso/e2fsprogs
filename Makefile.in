@@ -86,9 +86,10 @@ all-libs-recursive install-libs-recursive uninstall-libs-recursive install-shlib
 mostlyclean: mostlyclean-recursive mostlyclean-local
 
 clean: clean-recursive clean-local clean-doc
-	$(RM) -f $(SUBS)
+	$(RM) -f $(SUBS) 
 
 distclean: distclean-doc distclean-recursive distclean-local 
+	$(RM) -rf autom4te.cache e2fsprogs.spec ext2ed/Makefile po/stamp-po
 
 realclean: realclean-recursive realclean-local
 

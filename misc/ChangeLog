@@ -1,5 +1,7 @@
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Delete e2initrd_helper when doing a make clean.
+
 	* tune2fs.c: If there is a question mark in the device name,
 		separate out the options to the IO layer, and pass it on
 		to ext2fs_open2().

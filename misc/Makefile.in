@@ -279,7 +279,7 @@ uninstall:
 clean:
 	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) $(UMANPAGES) $(SMANPAGES) \
 		base_device base_device.out mke2fs.static filefrag \
-		\#* *.s *.o *.a *~ core 
+		e2initrd_helper \#* *.s *.o *.a *~ core 
 
 mostlyclean: clean
 distclean: clean
