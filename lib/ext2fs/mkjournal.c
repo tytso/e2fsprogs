@@ -49,7 +49,10 @@ errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
 {
 	errcode_t		retval;
 	journal_superblock_t	*jsb;
-	
+
+	if (size < 1024)
+		return EXT2_ET_JOURNAL_TOO_SMALL;
+
 	if ((retval = ext2fs_get_mem(fs->blocksize, (void **) &jsb)))
 		return retval;
 
@@ -259,7 +262,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 		return errno;
 	
 	if (!S_ISBLK(st.st_mode))
-		return EXT2_JOURNAL_NOT_BLOCK;	/* Must be a block device */
+		return EXT2_ET_JOURNAL_NOT_BLOCK; /* Must be a block device */
 
 	/* Get the journal superblock */
 	if ((retval = io_channel_read_blk(journal_dev->io, 1, -1024, buf)))
@@ -268,7 +271,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	jsb = (journal_superblock_t *) buf;
 	if ((jsb->s_header.h_magic != (unsigned) ntohl(JFS_MAGIC_NUMBER)) ||
 	    (jsb->s_header.h_blocktype != (unsigned) ntohl(JFS_SUPERBLOCK_V2)))
-		return EXT2_NO_JOURNAL_SB;
+		return EXT2_ET_NO_JOURNAL_SB;
 
 	if (ntohl(jsb->s_blocksize) != fs->blocksize)
 		return EXT2_ET_UNEXPECTED_BLOCK_SIZE;

@@ -1,3 +1,12 @@
+2001-04-16  Theodore Tso  <tytso@valinux.com>
+
+	* mkjournal.c (ext2fs_create_journal_superblock): Add safety
+		check; return an error if there's an attempt to create a
+		journal less than 1024 filesystem blocks.
+
+	* ext2_err.et.in, mkjournal.c: Change EXT2_JOURNAL_NOT_BLOCK and
+		EXT2_NO_JOURNAL_SB to be EXT2_ET_*.
+
 2001-02-20  Theodore Tso  <tytso@valinux.com>
 
 	* bitops.h (ext2fs_swab16, ext2fs_swab32): Add i386 assembly

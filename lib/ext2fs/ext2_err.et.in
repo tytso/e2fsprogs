@@ -257,11 +257,14 @@ ec	EXT2_ET_CANCEL_REQUESTED,
 ec	EXT2_ET_FILE_TOO_BIG,
 	"Ext2 file too big"
 
-ec	EXT2_JOURNAL_NOT_BLOCK,
+ec	EXT2_ET_JOURNAL_NOT_BLOCK,
 	"Supplied journal device not a block device"
 
-ec	EXT2_NO_JOURNAL_SB,
+ec	EXT2_ET_NO_JOURNAL_SB,
 	"Journal superblock not found"
+
+ec	EXT2_ET_JOURNAL_TOO_SMALL,
+	"Journal must be at least 1024 blocks"
 
 	end
 
