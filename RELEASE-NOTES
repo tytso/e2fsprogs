@@ -1,5 +1,5 @@
-de2fsprogs 1.36-WIP (January 9, 2005)
-====================================
+de2fsprogs 1.36-rc2 (January 11, 2005)
+======================================
 
 All of the patches that were applied to Fedore Core 3's
 e2fsprogs-1.35-11.2 have been integrated, although sometimes with a
@@ -27,6 +27,8 @@ The fsck program will now accept an optional filedescriptor argument
 to the -C option.  (The Fedora version of this patch would sometimes
 cause fsck to ignore a parameter on fsck's command line in some rare
 cases, sigh.)
+
+Add support for swap partition label and uuid's in the blkid library.
 
 Badblocks will now correctly display block numbers greater than
 999,999,999 in its progress display.
