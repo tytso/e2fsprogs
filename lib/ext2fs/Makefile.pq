@@ -1,6 +1,6 @@
 TOPSRC=..\..
-
-!include $(TOPSRC)\powerquest\MCONFIG
+LIBNAME=EXT2.LIB
+OBJFILE=EXT2.LST
 
 OBJS= 	alloc.obj \
 	alloc_tables.obj \
@@ -46,4 +46,8 @@ OBJS= 	alloc.obj \
 	valid_blk.obj \
 	version.obj
 
-ALL: $(OBJS)
+!include $(TOPSRC)\powerquest\MCONFIG
+
+ALL:: $(OBJS)
+
+!include $(TOPSRC)\powerquest\MAKEFILE.STD

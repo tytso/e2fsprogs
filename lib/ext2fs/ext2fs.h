@@ -758,7 +758,7 @@ _INLINE_ errcode_t ext2fs_get_mem(long size, void **ptr)
 {
 	*ptr = malloc(size);
 	if (!*ptr)
-		return EXT2_NO_MEMORY;
+		return EXT2_ET_NO_MEMORY;
 	return 0;
 }
 
@@ -781,7 +781,7 @@ _INLINE_ errcode_t ext2fs_resize_mem(long size, void **ptr)
 
 	p = realloc(*ptr, size);
 	if (!p)
-		return EXT2_NO_MEMORY;
+		return EXT2_ET_NO_MEMORY;
 	*ptr = p;
 	return 0;
 }

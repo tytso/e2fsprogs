@@ -1,6 +1,6 @@
 TOPSRC=..
-
-!include $(TOPSRC)\powerquest\MCONFIG
+LIBNAME=RESIZE.LIB
+OBJFILE=RESIZE.LST
 
 OBJS= extent.obj \
 	ext2_block_move.obj \
@@ -8,4 +8,9 @@ OBJS= extent.obj \
 	resize2fs.obj \
 	sim_progress.obj
 
-ALL: $(OBJS)
+ALL:: $(OBJS)
+
+!include $(TOPSRC)\powerquest\MCONFIG
+
+
+!include $(TOPSRC)\powerquest\MAKEFILE.STD

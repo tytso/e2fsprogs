@@ -71,15 +71,6 @@ ec	EXT2_ET_BAD_MAGIC,
 ec	EXT2_ET_REV_TOO_HIGH,
 	"Filesystem revision too high"
 
-ec	EXT2_ET_SB_LSEEK,
-	"Can't seek to superblock"
-
-ec	EXT2_ET_SB_READ,
-	"Can't read superblock"
-
-ec	EXT2_ET_SB_WRITE,
-	"Can't write superblock"
-
 ec	EXT2_ET_RO_FILSYS,
 	"Attempt to write to filesystem opened read-only"
 
@@ -224,37 +215,38 @@ ec	EXT2_ET_UNSUPP_FEATURE,
 ec	EXT2_ET_RO_UNSUPP_FEATURE,
 	"Filesystem has unsupported read-only feature(s)"
 
-ec	EXT2_IO_LLSEEK_FAILED,
+ec	EXT2_ET_LLSEEK_FAILED,
 	"IO Channel failed to seek on read or write"
 
-ec	EXT2_NO_MEMORY,
+ec	EXT2_ET_NO_MEMORY,
 	"Memory allocation failed"
 
-ec	EXT2_INVALID_ARGUMENT,
+ec	EXT2_ET_INVALID_ARGUMENT,
 	"Invalid argument passed to ext2 library"
 
-ec	EXT2_BLOCK_ALLOC_FAIL,
+ec	EXT2_ET_BLOCK_ALLOC_FAIL,
 	"Could not allocate block in ext2 filesystem"
 
-ec	EXT2_INODE_ALLOC_FAIL,
+ec	EXT2_ET_INODE_ALLOC_FAIL,
 	"Could not allocate inode in ext2 filesystem"
 
-ec	EXT2_NO_DIRECTORY,
+ec	EXT2_ET_NO_DIRECTORY,
 	"Ext2 inode is not a directory"
 
-ec	EXT2_TOO_MANY_REFS,
+ec	EXT2_ET_TOO_MANY_REFS,
 	"Too many references in table"
 
-ec	EXT2_FILE_NOT_FOUND,
+ec	EXT2_ET_FILE_NOT_FOUND,
 	"File not found by ext2_lookup"
 
-ec	EXT2_FILE_RO,
+ec	EXT2_ET_FILE_RO,
 	"File open read-only"
 
-ec	EXT2_DB_NOT_FOUND,
+ec	EXT2_ET_DB_NOT_FOUND,
 	"Ext2 directory block not found"
 
-ec	EXT2_DIR_EXISTS,
+ec	EXT2_ET_DIR_EXISTS,
 	"Ext2 directory already exists"
 
 	end
+

@@ -1,3 +1,8 @@
+Fri Oct 31 01:14:41 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* et_c.awk, et_h.awk: Remove support for non STDC compilers, since
+		the workarounds caused problems with the header file.
+
 Sun Aug 10 09:40:54 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* error_table.h:
