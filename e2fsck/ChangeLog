@@ -1,3 +1,10 @@
+2002-08-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* ehandler.c (e2fsck_handle_read_error): If the user asks to
+		ignore the error, offer to try forcing a write of the
+		block to the disk; sometimes this will cause the drive to
+		remap the bad block.
+
 2002-08-31  Theodore Ts'o  <tytso@valinux.com>
 
 	* pass2.c (e2fsck_pass2): If this is a HTREE directory, sort the
