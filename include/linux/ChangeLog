@@ -1,3 +1,11 @@
+2001-05-01  Theodore Tso  <tytso@valinux.com>
+
+	* ext2_fs.h: New feature assignments for
+		EXT2_FEATURE_COMPAT_RESIZE_INODE for Andreas Dilger and
+		EXT3_FEATURE_COMPAT_DIR_INDEX for Daniel Phillips.
+		Synchronize kernel function prototypes (which don't matter
+		for e2fsprogs) with Linux 2.4.4.
+
 2001-01-14  Theodore Ts'o  <tytso@valinux.com>
 
 	* ext2_fs.h (EXT3_FEATURE_INCOMPAT_JOURNAL_DEV): Add definition

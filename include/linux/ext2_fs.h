@@ -443,6 +443,8 @@ struct ext2_super_block {
 #define EXT2_FEATURE_COMPAT_DIR_PREALLOC	0x0001
 #define EXT2_FEATURE_COMPAT_IMAGIC_INODES	0x0002
 #define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x0004
+#define EXT3_FEATURE_COMPAT_DIR_INDEX		0x0008
+#define EXT2_FEATURE_COMPAT_RESIZE_INODE	0x0010
 
 #define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
 #define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
@@ -533,7 +535,8 @@ struct ext2_dir_entry_2 {
 extern int ext2_permission (struct inode *, int);
 
 /* balloc.c */
-extern int ext2_group_sparse(int group);
+extern int ext2_bg_has_super(struct super_block *sb, int group);
+extern unsigned long ext2_bg_num_gdb(struct super_block *sb, int group);
 extern int ext2_new_block (const struct inode *, unsigned long,
 			   __u32 *, __u32 *, int *);
 extern void ext2_free_blocks (const struct inode *, unsigned long,
@@ -557,25 +560,22 @@ extern int ext2_read (struct inode *, struct file *, char *, int);
 extern int ext2_write (struct inode *, struct file *, char *, int);
 
 /* fsync.c */
-extern int ext2_sync_file (struct file *, struct dentry *);
+extern int ext2_sync_file (struct file *, struct dentry *, int);
+extern int ext2_fsync_inode (struct inode *, int);
 
 /* ialloc.c */
-extern struct inode * ext2_new_inode (const struct inode *, int, int *);
+extern struct inode * ext2_new_inode (const struct inode *, int);
 extern void ext2_free_inode (struct inode *);
 extern unsigned long ext2_count_free_inodes (struct super_block *);
 extern void ext2_check_inodes_bitmap (struct super_block *);
 
 /* inode.c */
-extern long ext2_bmap (struct inode *, long);
-extern int ext2_get_block (struct inode *, long, struct buffer_head *, int);
 
 extern struct buffer_head * ext2_getblk (struct inode *, long, int, int *);
-extern int ext2_getblk_block (struct inode *, long, int, int *, int *);
 extern struct buffer_head * ext2_bread (struct inode *, int, int, int *);
 
-extern int ext2_getcluster (struct inode * inode, long block);
 extern void ext2_read_inode (struct inode *);
-extern void ext2_write_inode (struct inode *);
+extern void ext2_write_inode (struct inode *, int);
 extern void ext2_put_inode (struct inode *);
 extern void ext2_delete_inode (struct inode *);
 extern int ext2_sync_inode (struct inode *);
@@ -586,17 +586,7 @@ extern int ext2_ioctl (struct inode *, struct file *, unsigned int,
 		       unsigned long);
 
 /* namei.c */
-extern void ext2_release (struct inode *, struct file *);
-extern struct dentry *ext2_lookup (struct inode *, struct dentry *);
-extern int ext2_create (struct inode *,struct dentry *,int);
-extern int ext2_mkdir (struct inode *,struct dentry *,int);
-extern int ext2_rmdir (struct inode *,struct dentry *);
-extern int ext2_unlink (struct inode *,struct dentry *);
-extern int ext2_symlink (struct inode *,struct dentry *,const char *);
-extern int ext2_link (struct dentry *, struct inode *, struct dentry *);
-extern int ext2_mknod (struct inode *, struct dentry *, int, int);
-extern int ext2_rename (struct inode *, struct dentry *,
-			struct inode *, struct dentry *);
+extern struct inode_operations ext2_dir_inode_operations;
 
 /* super.c */
 extern void ext2_error (struct super_block *, const char *, const char *, ...)
@@ -606,11 +596,12 @@ extern NORET_TYPE void ext2_panic (struct super_block *, const char *,
 	__attribute__ ((NORET_AND format (printf, 3, 4)));
 extern void ext2_warning (struct super_block *, const char *, const char *, ...)
 	__attribute__ ((format (printf, 3, 4)));
+extern void ext2_update_dynamic_rev (struct super_block *sb);
 extern void ext2_put_super (struct super_block *);
 extern void ext2_write_super (struct super_block *);
 extern int ext2_remount (struct super_block *, int *, char *);
 extern struct super_block * ext2_read_super (struct super_block *,void *,int);
-extern int ext2_statfs (struct super_block *, struct statfs *, int);
+extern int ext2_statfs (struct super_block *, struct statfs *);
 
 /* truncate.c */
 extern void ext2_truncate (struct inode *);
@@ -620,14 +611,16 @@ extern void ext2_truncate (struct inode *);
  */
 
 /* dir.c */
-extern struct inode_operations ext2_dir_inode_operations;
+extern struct file_operations ext2_dir_operations;
 
 /* file.c */
 extern struct inode_operations ext2_file_inode_operations;
+extern struct file_operations ext2_file_operations;
 
 /* symlink.c */
-extern struct inode_operations ext2_symlink_inode_operations;
 extern struct inode_operations ext2_fast_symlink_inode_operations;
+
+extern struct address_space_operations ext2_aops;
 
 #endif	/* __KERNEL__ */
 
