@@ -1,3 +1,8 @@
+2000-07-07  Theodore Ts'o  <tytso@valinux.com>
+
+	* e2fsprogs.spec (%post): Remove resize2fs from its old location
+		in /usr/sbin in the postinstall script.
+
 2000-07-05    <tytso@snap.thunk.org>
 
 	* config.guess, config.sub: Update to use latest version from FSF

@@ -1,3 +1,9 @@
+2000-07-07  Theodore Ts'o  <tytso@valinux.com>
+
+	* ext2fs.h (EXT2_LIB_FEATURE_INCOMPAT_SUPP): Add
+		EXT3_FEATURE_INCOMPAT_RECOVER (aka needs_recovery) to the
+		list of filesystem flags supported by the library.
+
 2000-07-04  Theodore Ts'o  <tytso@valinux.com>
 
 	* ext2fs.h: Update to include latest journalling additions to the

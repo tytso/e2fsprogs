@@ -53,6 +53,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/ldconfig
+# Remove possibly old version
+/bin/rm -f /usr/sbin/resize2fs
 
 %postun
 /sbin/ldconfig
