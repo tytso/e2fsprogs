@@ -1,3 +1,12 @@
+2001-07-10  Theodore Tso  <tytso@valinux.com>
+
+	* closefs.c (write_primary_superblock): After writing changes to
+		the primary superblock, update the original superblock
+		copy so we don't have to re-write those changes in the
+		future.
+		(ext2fs_flush): Clear the superblock dirty flag after
+		we've flushed out changes to disk.
+
 2001-07-07  Theodore Tso  <tytso@valinux.com>
 
 	* bitops.h (ext2fs_find_first_bit_set): Use %esi instead of %ebx

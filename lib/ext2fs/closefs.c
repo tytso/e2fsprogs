@@ -91,6 +91,7 @@ static errcode_t write_primary_superblock(ext2_filsys fs,
 		if (retval)
 			return retval;
 	}
+	memcpy(fs->orig_super, super, SUPERBLOCK_SIZE);
 	return 0;
 }
 
@@ -250,6 +251,8 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		if (retval)
 			goto errout;
 	}
+
+	fs->flags &= ~EXT2_FLAG_DIRTY;
 
 	/*
 	 * Flush the blocks out to disk
