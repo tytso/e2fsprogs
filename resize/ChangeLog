@@ -1,3 +1,8 @@
+2002-04-09    <tytso@snap.thunk.org>
+
+	* main.c (main): If resize_fs returns an error, don't print the
+		message stating that the filesystem was resized.
+
 2002-03-31    <tytso@mit.edu>
 
 	* main.c (main): If we are resizing a plain file which is smaller

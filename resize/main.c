@@ -264,6 +264,7 @@ int main (int argc, char ** argv)
 		com_err(program_name, retval, _("while trying to resize %s"),
 			device_name);
 		ext2fs_close (fs);
+		exit(1);
 	}
 	printf(_("The filesystem on %s is now %d blocks long.\n\n"),
 	       device_name, new_size);
