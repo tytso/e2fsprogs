@@ -12,7 +12,9 @@ lsattr \- list file attributes on a Linux second extended file system
 ]
 .SH DESCRIPTION
 .B lsattr
-lists the file attributes on a second extended file system.
+lists the file attributes on a second extended file system.  See
+.BR chattr (1)
+for a description of the attributes and what they mean.
 .SH OPTIONS
 .TP
 .B \-R

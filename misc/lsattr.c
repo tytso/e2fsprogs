@@ -45,12 +45,12 @@ extern char *optarg;
 
 static const char * program_name = "lsattr";
 
-static int all = 0;
-static int dirs_opt = 0;
-static unsigned pf_options = 0;
-static int recursive = 0;
-static int verbose = 0;
-static int generation_opt = 0;
+static int all;
+static int dirs_opt;
+static unsigned pf_options;
+static int recursive;
+static int verbose;
+static int generation_opt;
 
 static void usage(void)
 {
@@ -63,24 +63,27 @@ static void list_attributes (const char * name)
 	unsigned long flags;
 	unsigned long generation;
 
-	if (fgetflags (name, &flags) == -1)
+	if (fgetflags (name, &flags) == -1) {
 		com_err (program_name, errno, _("While reading flags on %s"),
 			 name);
-	else if (fgetversion (name, &generation) == -1)
-		com_err (program_name, errno, _("While reading version on %s"),
-			 name);
-	else
-	{
-		if (generation_opt)
-			printf ("%5lu ", generation);
-		if (pf_options & PFOPT_LONG) {
-			printf("%-28s ", name);
-			print_flags(stdout, flags, pf_options);
-			fputc('\n', stdout);
-		} else {
-			print_flags(stdout, flags, pf_options);
-			printf(" %s\n", name);
+		return;
+	}
+	if (generation_opt) {
+		if (fgetversion (name, &generation) == -1) {
+			com_err (program_name, errno,
+				 _("While reading version on %s"),
+				 name);
+			return;
 		}
+		printf ("%5lu ", generation);
+	}
+	if (pf_options & PFOPT_LONG) {
+		printf("%-28s ", name);
+		print_flags(stdout, flags, pf_options);
+		fputc('\n', stdout);
+	} else {
+		print_flags(stdout, flags, pf_options);
+		printf(" %s\n", name);
 	}
 }
 

@@ -1,5 +1,11 @@
 2000-12-31    <tytso@snap.thunk.org>
 
+	* lsattr.1.in: Add pointer to chattr man page for definition of
+		the file attributes.
+
+	* lsattr.c (list_attributes): Minor cleanup to smooth out logic
+		flow.  Also removed static initialized variables to zero.
+
 	* chattr.c (decode_arg, get_flag): Use a table-driven method for
 		decoding the ext2 file flags character options.  Add
 		support for the journaled data flag.
