@@ -560,44 +560,17 @@ AC_CHECK_HEADERS(net/if.h,,,
 AC_FUNC_VPRINTF
 dnl Check to see if dirent has member d_reclen. On cygwin those d_reclen
 dnl is not decleared.
-AC_MSG_CHECKING(whether d_reclen declared in dirent)
-AC_CACHE_VAL(e2fsprogs_cv_have_d_reclen_dirent,
-	AC_TRY_COMPILE(
-[#include <dirent.h>], [struct dirent de; de.d_reclen = 0; ],
-	[e2fsprogs_cv_have_d_reclen_dirent=yes],
-	[e2fsprogs_cv_have_d_reclen_dirent=no]))
-AC_MSG_RESULT($e2fsprogs_cv_have_d_reclen_dirent)
-if test "$e2fsprogs_cv_have_d_reclen_dirent" = yes; then
-   AC_DEFINE(HAVE_RECLEN_DIRENT)
-fi
+AC_CHECK_MEMBER(struct dirent.d_reclen,[AC_DEFINE(HAVE_RECLEN_DIRENT)],,
+		[#include <dirent.h>])
 dnl Check to see if ssize_t was decleared
-AC_MSG_CHECKING(whether ssize_t declared)
-AC_CACHE_VAL(e2fsprogs_cv_have_ssize_t,
-	AC_TRY_COMPILE(
-[#include <sys/types.h>], [ssize_t a = 0; ],
-	[e2fsprogs_cv_have_ssize_t=yes],
-	[e2fsprogs_cv_have_ssize_t=no]))
-AC_MSG_RESULT($e2fsprogs_cv_have_ssize_t)
-if test "$e2fsprogs_cv_have_ssize_t" = yes; then
-   AC_DEFINE(HAVE_TYPE_SSIZE_T)
-fi
+AC_CHECK_TYPE(ssize_t,[AC_DEFINE(HAVE_TYPE_SSIZE_T)],,
+	      [#include <sys/types.h>])
 dnl
 dnl Check to see if llseek() is declared in unistd.h.  On some libc's 
 dnl it is, and on others it isn't..... Thank you glibc developers....
 dnl
-dnl Warning!  Use of --enable-gcc-wall may throw off this test.
-dnl
-dnl
-AC_MSG_CHECKING(whether llseek declared in unistd.h)
-AC_CACHE_VAL(e2fsprogs_cv_have_llseek_prototype,
-	AC_TRY_COMPILE(
-[#include <unistd.h>], [extern int llseek(int);],
-	[e2fsprogs_cv_have_llseek_prototype=no],
-	[e2fsprogs_cv_have_llseek_prototype=yes]))
-AC_MSG_RESULT($e2fsprogs_cv_have_llseek_prototype)
-if test "$e2fsprogs_cv_have_llseek_prototype" = yes; then
-   AC_DEFINE(HAVE_LLSEEK_PROTOTYPE)
-fi
+AC_CHECK_DECL(llseek,[AC_DEFINE(HAVE_LLSEEK_PROTOTYPE)],,
+	      [#include <unistd.h>])
 dnl
 dnl Check to see if lseek64() is declared in unistd.h.  Glibc's header files
 dnl are so convoluted that I can't tell whether it will always be defined,
@@ -607,18 +580,10 @@ dnl
 dnl Warning!  Use of --enable-gcc-wall may throw off this test.
 dnl
 dnl
-AC_MSG_CHECKING(whether lseek64 declared in unistd.h)
-AC_CACHE_VAL(e2fsprogs_cv_have_lseek64_prototype,
-	AC_TRY_COMPILE(
-[#define _LARGEFILE_SOURCE
-#define _LARGEFILE64_SOURCE
-#include <unistd.h>], [extern int lseek64(int);],
-	[e2fsprogs_cv_have_lseek64_prototype=no],
-	[e2fsprogs_cv_have_lseek64_prototype=yes]))
-AC_MSG_RESULT($e2fsprogs_cv_have_lseek64_prototype)
-if test "$e2fsprogs_cv_have_lseek64_prototype" = yes; then
-   AC_DEFINE(HAVE_LSEEK64_PROTOTYPE)
-fi
+AC_CHECK_DECL(lseek64,[AC_DEFINE(HAVE_LSEEK64_PROTOTYPE)],,
+		[#define _LARGEFILE_SOURCE
+		 #define _LARGEFILE64_SOURCE
+		 #include <unistd.h>])
 dnl
 dnl Word sizes...
 dnl
@@ -674,18 +639,10 @@ fi
 dnl
 dnl Check for the presence of SA_LEN
 dnl
-AC_MSG_CHECKING(whether struct sockaddr contains sa_len) 
-AC_CACHE_VAL(e2fsprogs_cv_sockaddr_sa_len,
-[AC_TRY_COMPILE([#include <sys/types.h>
-#include <sys/socket.h>
-],
-[struct sockaddr sa;
-sa.sa_len;],
-e2fsprogs_cv_sockaddr_sa_len=yes,e2fsprogs_cv_sockaddr_sa_len=no)])
-AC_MSG_RESULT([$]e2fsprogs_cv_sockaddr_sa_len)
-if test $e2fsprogs_cv_sockaddr_sa_len = yes; then
-  AC_DEFINE_UNQUOTED(HAVE_SA_LEN,1,[Define if struct sockaddr contains sa_len])
-fi
+AC_CHECK_MEMBER(struct sockaddr.sa_len,
+		AC_DEFINE_UNQUOTED(HAVE_SA_LEN,1,[Define if struct sockaddr contains sa_len]),,
+	[#include <sys/types.h>
+	 #include <sys/socket.h>])
 dnl
 AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 getmntinfo strtoull strcasecmp srandom fchown mallinfo fdatasync strnlen strptime sysconf pathconf posix_memalign memalign valloc)
 dnl

@@ -11216,9 +11216,9 @@ fi
 done
 
 
-echo "$as_me:$LINENO: checking whether d_reclen declared in dirent" >&5
-echo $ECHO_N "checking whether d_reclen declared in dirent... $ECHO_C" >&6
-if test "${e2fsprogs_cv_have_d_reclen_dirent+set}" = set; then
+echo "$as_me:$LINENO: checking for struct dirent.d_reclen" >&5
+echo $ECHO_N "checking for struct dirent.d_reclen... $ECHO_C" >&6
+if test "${ac_cv_member_struct_dirent_d_reclen+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -11228,10 +11228,13 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 #include <dirent.h>
+
 int
 main ()
 {
-struct dirent de; de.d_reclen = 0;
+static struct dirent ac_aggr;
+if (ac_aggr.d_reclen)
+return 0;
   ;
   return 0;
 }
@@ -11257,27 +11260,73 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  e2fsprogs_cv_have_d_reclen_dirent=yes
+  ac_cv_member_struct_dirent_d_reclen=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-e2fsprogs_cv_have_d_reclen_dirent=no
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <dirent.h>
+
+int
+main ()
+{
+static struct dirent ac_aggr;
+if (sizeof ac_aggr.d_reclen)
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_member_struct_dirent_d_reclen=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_member_struct_dirent_d_reclen=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-
-echo "$as_me:$LINENO: result: $e2fsprogs_cv_have_d_reclen_dirent" >&5
-echo "${ECHO_T}$e2fsprogs_cv_have_d_reclen_dirent" >&6
-if test "$e2fsprogs_cv_have_d_reclen_dirent" = yes; then
-   cat >>confdefs.h <<\_ACEOF
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+echo "$as_me:$LINENO: result: $ac_cv_member_struct_dirent_d_reclen" >&5
+echo "${ECHO_T}$ac_cv_member_struct_dirent_d_reclen" >&6
+if test $ac_cv_member_struct_dirent_d_reclen = yes; then
+  cat >>confdefs.h <<\_ACEOF
 #define HAVE_RECLEN_DIRENT 1
 _ACEOF
 
 fi
-echo "$as_me:$LINENO: checking whether ssize_t declared" >&5
-echo $ECHO_N "checking whether ssize_t declared... $ECHO_C" >&6
-if test "${e2fsprogs_cv_have_ssize_t+set}" = set; then
+
+echo "$as_me:$LINENO: checking for ssize_t" >&5
+echo $ECHO_N "checking for ssize_t... $ECHO_C" >&6
+if test "${ac_cv_type_ssize_t+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -11287,10 +11336,14 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 #include <sys/types.h>
+
 int
 main ()
 {
-ssize_t a = 0;
+if ((ssize_t *) 0)
+  return 0;
+if (sizeof (ssize_t))
+  return 0;
   ;
   return 0;
 }
@@ -11316,27 +11369,27 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  e2fsprogs_cv_have_ssize_t=yes
+  ac_cv_type_ssize_t=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-e2fsprogs_cv_have_ssize_t=no
+ac_cv_type_ssize_t=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-
-echo "$as_me:$LINENO: result: $e2fsprogs_cv_have_ssize_t" >&5
-echo "${ECHO_T}$e2fsprogs_cv_have_ssize_t" >&6
-if test "$e2fsprogs_cv_have_ssize_t" = yes; then
-   cat >>confdefs.h <<\_ACEOF
+echo "$as_me:$LINENO: result: $ac_cv_type_ssize_t" >&5
+echo "${ECHO_T}$ac_cv_type_ssize_t" >&6
+if test $ac_cv_type_ssize_t = yes; then
+  cat >>confdefs.h <<\_ACEOF
 #define HAVE_TYPE_SSIZE_T 1
 _ACEOF
 
 fi
-echo "$as_me:$LINENO: checking whether llseek declared in unistd.h" >&5
-echo $ECHO_N "checking whether llseek declared in unistd.h... $ECHO_C" >&6
-if test "${e2fsprogs_cv_have_llseek_prototype+set}" = set; then
+
+echo "$as_me:$LINENO: checking whether llseek is declared" >&5
+echo $ECHO_N "checking whether llseek is declared... $ECHO_C" >&6
+if test "${ac_cv_have_decl_llseek+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -11346,10 +11399,14 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 #include <unistd.h>
+
 int
 main ()
 {
-extern int llseek(int);
+#ifndef llseek
+  char *p = (char *) llseek;
+#endif
+
   ;
   return 0;
 }
@@ -11375,27 +11432,27 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  e2fsprogs_cv_have_llseek_prototype=no
+  ac_cv_have_decl_llseek=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-e2fsprogs_cv_have_llseek_prototype=yes
+ac_cv_have_decl_llseek=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-
-echo "$as_me:$LINENO: result: $e2fsprogs_cv_have_llseek_prototype" >&5
-echo "${ECHO_T}$e2fsprogs_cv_have_llseek_prototype" >&6
-if test "$e2fsprogs_cv_have_llseek_prototype" = yes; then
-   cat >>confdefs.h <<\_ACEOF
+echo "$as_me:$LINENO: result: $ac_cv_have_decl_llseek" >&5
+echo "${ECHO_T}$ac_cv_have_decl_llseek" >&6
+if test $ac_cv_have_decl_llseek = yes; then
+  cat >>confdefs.h <<\_ACEOF
 #define HAVE_LLSEEK_PROTOTYPE 1
 _ACEOF
 
 fi
-echo "$as_me:$LINENO: checking whether lseek64 declared in unistd.h" >&5
-echo $ECHO_N "checking whether lseek64 declared in unistd.h... $ECHO_C" >&6
-if test "${e2fsprogs_cv_have_lseek64_prototype+set}" = set; then
+
+echo "$as_me:$LINENO: checking whether lseek64 is declared" >&5
+echo $ECHO_N "checking whether lseek64 is declared... $ECHO_C" >&6
+if test "${ac_cv_have_decl_lseek64+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -11405,12 +11462,16 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 #define _LARGEFILE_SOURCE
-#define _LARGEFILE64_SOURCE
-#include <unistd.h>
+		 #define _LARGEFILE64_SOURCE
+		 #include <unistd.h>
+
 int
 main ()
 {
-extern int lseek64(int);
+#ifndef lseek64
+  char *p = (char *) lseek64;
+#endif
+
   ;
   return 0;
 }
@@ -11436,24 +11497,24 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  e2fsprogs_cv_have_lseek64_prototype=no
+  ac_cv_have_decl_lseek64=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-e2fsprogs_cv_have_lseek64_prototype=yes
+ac_cv_have_decl_lseek64=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-
-echo "$as_me:$LINENO: result: $e2fsprogs_cv_have_lseek64_prototype" >&5
-echo "${ECHO_T}$e2fsprogs_cv_have_lseek64_prototype" >&6
-if test "$e2fsprogs_cv_have_lseek64_prototype" = yes; then
-   cat >>confdefs.h <<\_ACEOF
+echo "$as_me:$LINENO: result: $ac_cv_have_decl_lseek64" >&5
+echo "${ECHO_T}$ac_cv_have_decl_lseek64" >&6
+if test $ac_cv_have_decl_lseek64 = yes; then
+  cat >>confdefs.h <<\_ACEOF
 #define HAVE_LSEEK64_PROTOTYPE 1
 _ACEOF
 
 fi
+
 if test "$cross_compiling" = yes -a "$ac_cv_sizeof_long" = ""; then
   # if cross-compiling, with no cached values, just assume something common.
   ac_cv_sizeof_short=2
@@ -13649,9 +13710,9 @@ _ACEOF
 
   fi
 fi
-echo "$as_me:$LINENO: checking whether struct sockaddr contains sa_len" >&5
-echo $ECHO_N "checking whether struct sockaddr contains sa_len... $ECHO_C" >&6
-if test "${e2fsprogs_cv_sockaddr_sa_len+set}" = set; then
+echo "$as_me:$LINENO: checking for struct sockaddr.sa_len" >&5
+echo $ECHO_N "checking for struct sockaddr.sa_len... $ECHO_C" >&6
+if test "${ac_cv_member_struct_sockaddr_sa_len+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
@@ -13661,13 +13722,14 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 #include <sys/types.h>
-#include <sys/socket.h>
+	 #include <sys/socket.h>
 
 int
 main ()
 {
-struct sockaddr sa;
-sa.sa_len;
+static struct sockaddr ac_aggr;
+if (ac_aggr.sa_len)
+return 0;
   ;
   return 0;
 }
@@ -13693,25 +13755,72 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  e2fsprogs_cv_sockaddr_sa_len=yes
+  ac_cv_member_struct_sockaddr_sa_len=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-e2fsprogs_cv_sockaddr_sa_len=no
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <sys/types.h>
+	 #include <sys/socket.h>
+
+int
+main ()
+{
+static struct sockaddr ac_aggr;
+if (sizeof ac_aggr.sa_len)
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_member_struct_sockaddr_sa_len=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_member_struct_sockaddr_sa_len=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-
-echo "$as_me:$LINENO: result: $e2fsprogs_cv_sockaddr_sa_len" >&5
-echo "${ECHO_T}$e2fsprogs_cv_sockaddr_sa_len" >&6
-if test $e2fsprogs_cv_sockaddr_sa_len = yes; then
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+echo "$as_me:$LINENO: result: $ac_cv_member_struct_sockaddr_sa_len" >&5
+echo "${ECHO_T}$ac_cv_member_struct_sockaddr_sa_len" >&6
+if test $ac_cv_member_struct_sockaddr_sa_len = yes; then
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_SA_LEN 1
 _ACEOF
 
 fi
+
 
 
 

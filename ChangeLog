@@ -1,3 +1,10 @@
+2005-01-19  Matthias Andree <matthias.andree@gmx.de>
+
+	* configure.in: Clean up checks for dirent.d_reclen, ssize_t,
+		llseek, lseek64, sockaddr.sa_len and make the lseek checks
+		immune to compiler warnings, so that they can be compiled
+		with Intel C++ 8.1.
+
 2005-01-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Make configure.in script check for prerequisite
