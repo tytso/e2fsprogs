@@ -1,3 +1,8 @@
+2000-07-04  Theodore Ts'o  <tytso@valinux.com>
+
+	* ext2_fs.h: Update to include latest journalling additions to the
+		superblock.
+
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
 	* ext2_fs.h (EXT2_NOCOMPR_FL): Rename EXT2_NOCOMP_FL to

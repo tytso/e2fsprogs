@@ -1,5 +1,8 @@
 2000-07-04  Theodore Ts'o  <tytso@valinux.com>
 
+	* ext2fs.h: Update to include latest journalling additions to the
+		superblock.
+
 	* dll/jump.funcs: Add new jumptable entries for
 		ext2fs_write_bb_FILE, ext2fs_read_bb_FILE2, and
 		ext2fs_badblocks_equal.
