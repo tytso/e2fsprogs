@@ -183,13 +183,10 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 }
 
 /*
- * ext2fs_check_if_mounted() sets the mount_flags EXT2_MF_MOUNTED and
+ * ext2fs_check_if_mounted() sets the mount_flags EXT2_MF_MOUNTED,
  * EXT2_MF_READONLY, and EXT2_MF_ROOT
  * 
  */
-#ifdef __TURBOC__
- #pragma argsused
-#endif
 errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags)
 {
 	return ext2fs_check_mount_point(file, mount_flags, NULL, 0);
