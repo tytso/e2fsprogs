@@ -204,14 +204,10 @@ static void check_size(e2fsck_t ctx, struct problem_context *pctx)
 {
 	struct ext2_inode *inode = pctx->inode;
 	
-	if ((LINUX_S_ISBLK(inode->i_mode) ||
-	     LINUX_S_ISCHR(inode->i_mode) ||
-	     LINUX_S_ISFIFO(inode->i_mode) ||
-	     LINUX_S_ISSOCK(inode->i_mode)) && 
-	    !inode->i_size || !inode->i_size_high)
+	if ((inode->i_size == 0) && (inode->i_size_high == 0))
 		return;
 	
-	if(!fix_problem(ctx, PR_1_SET_NONZSIZE, pctx))
+	if (!fix_problem(ctx, PR_1_SET_NONZSIZE, pctx))
 		return;
 	
 	inode->i_size = 0;
