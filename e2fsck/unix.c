@@ -223,7 +223,7 @@ static int is_on_batt(void)
 	}
 	d = opendir("/proc/acpi/ac_adapter");
 	if (d) {
-		while (de=readdir(d)) {
+		while ((de=readdir(d)) != NULL) {
 			if (!strncmp(".", de->d_name, 1))
 				continue;
 			snprintf(fname, 80, "/proc/acpi/ac_adapter/%s/state", 
@@ -361,6 +361,7 @@ int e2fsck_simple_progress(e2fsck_t ctx, const char *label, float percent,
 	unsigned int	tick;
 	struct timeval	tv;
 	int dpywidth;
+	int fixed_percent;
 
 	if (ctx->flags & E2F_FLAG_PROG_SUPPRESS)
 		return 0;
@@ -370,9 +371,10 @@ int e2fsck_simple_progress(e2fsck_t ctx, const char *label, float percent,
 	 * percentage hasn't changed, then we skip out right
 	 * away. 
 	 */
-	if (ctx->progress_last_percent == (int) 10 * percent)
+	fixed_percent = (int) ((10 * percent) + 0.5);
+	if (ctx->progress_last_percent == fixed_percent)
 		return 0;
-	ctx->progress_last_percent = (int) 10 * percent;
+	ctx->progress_last_percent = fixed_percent;
 
 	/*
 	 * If we've already updated the spinner once within
@@ -382,7 +384,7 @@ int e2fsck_simple_progress(e2fsck_t ctx, const char *label, float percent,
 	gettimeofday(&tv, NULL);
 	tick = (tv.tv_sec << 3) + (tv.tv_usec / (1000000 / 8));
 	if ((tick == ctx->progress_last_time) &&
-	    (percent != 0.0) && (percent != 100.0))
+	    (fixed_percent != 0) && (fixed_percent != 1000))
 		return 0;
 	ctx->progress_last_time = tick;
 
@@ -402,16 +404,18 @@ int e2fsck_simple_progress(e2fsck_t ctx, const char *label, float percent,
 	printf("%s%s: |%s%s", ctx->start_meta, label,
 	       bar + (sizeof(bar) - (i+1)),
 	       spaces + (sizeof(spaces) - (dpywidth - i + 1)));
-	if (percent == 100.0)
+	if (fixed_percent == 1000)
 		fputc('|', stdout);
 	else
 		fputc(spinner[ctx->progress_pos & 3], stdout);
+	printf(" %4.1f%%  ", percent);
 	if (dpynum)
-		printf(" %4.1f%%  %u\r%s", percent, dpynum, ctx->stop_meta);
+		printf("%u\r", dpynum);
 	else
-		printf(" %4.1f%%   \r%s", percent, ctx->stop_meta);
+		fputs(" \r", stdout);
+	fputs(ctx->stop_meta, stdout);
 	
-	if (percent == 100.0)
+	if (fixed_percent == 1000)
 		e2fsck_clear_progbar(ctx);
 	fflush(stdout);
 
@@ -873,11 +877,6 @@ restart:
 	flags = 0;
 	if ((ctx->options & E2F_OPT_READONLY) == 0)
 		flags |= EXT2_FLAG_RW;
-
-	if (ctx->io_options) {
-		int len = strlen(ctx->filesystem_name) + 
-			strlen(ctx->io_options) + 2;
-	}
 
 	if (ctx->superblock && ctx->blocksize) {
 		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options, 

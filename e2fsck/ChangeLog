@@ -1,3 +1,10 @@
+2005-01-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (e2fsck_simple_progress): Use fixed integer math
+		to check to see if we're at 0 or 100%
+		(is_on_batt): Clean up gcc -Wall warning
+		(main): Remove dead code
+
 2005-01-13  Matthias Andree  <matthias.andree@gmx.de>
 
 	* unix.c: Do not call closedir if the handle is zero, to avoid
