@@ -1,3 +1,8 @@
+Tue Oct 14 21:48:16 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* gen_uuid.c: Use clock_reg instead of clock, since clock
+		conflicts with a header file declaration.
+
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.11
