@@ -354,32 +354,13 @@ _INLINE_ __u32 ext2fs_swab32(__u32 val)
 
 #endif /* !_EXT2_HAVE_ASM_SWAB */
 
-_INLINE_ int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
+/* These two routines moved to gen_bitmap.c */
+extern int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					 __u32 bitno);
-_INLINE_ int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
+extern int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					   blk_t bitno);
 _INLINE_ int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					blk_t bitno);
-
-_INLINE_ int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
-					 __u32 bitno)
-{
-	if ((bitno < bitmap->start) || (bitno > bitmap->end)) {
-		ext2fs_warn_bitmap2(bitmap, EXT2FS_MARK_ERROR, bitno);
-		return 0;
-	}
-	return ext2fs_set_bit(bitno - bitmap->start, bitmap->bitmap);
-}
-
-_INLINE_ int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
-					   blk_t bitno)
-{
-	if ((bitno < bitmap->start) || (bitno > bitmap->end)) {
-		ext2fs_warn_bitmap2(bitmap, EXT2FS_UNMARK_ERROR, bitno);
-		return 0;
-	}
-	return ext2fs_clear_bit(bitno - bitmap->start, bitmap->bitmap);
-}
 
 _INLINE_ int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					blk_t bitno)
@@ -627,7 +608,6 @@ _INLINE_ void ext2fs_fast_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
 	for (i=0; i < num; i++)
 		ext2fs_clear_bit(block + i - bitmap->start, bitmap->bitmap);
 }
-
 #undef _INLINE_
 #endif
 

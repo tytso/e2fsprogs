@@ -30,6 +30,7 @@ OBJS= ext2_err.o \
 	finddev.o \
 	flushb.o \
 	freefs.o \
+	gen_bitmap.o \
 	get_pathname.o \
 	getsize.o \
 	icount.o \
@@ -82,6 +83,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/finddev.c \
 	$(srcdir)/flushb.c \
 	$(srcdir)/freefs.c \
+	$(srcdir/gen_bitmap.c \
 	$(srcdir)/get_pathname.c \
 	$(srcdir)/getsize.c \
 	$(srcdir)/icount.c \

@@ -1,5 +1,11 @@
 2001-06-11  Theodore Tso  <tytso@valinux.com>
 
+	* Makefile.in, gen_bitmap.c, bitops.h: Move inline functions
+		ext2fs_mark_generic_bitmap and
+		ext2fs_unmark_generic_bitmap to gen_bitmap.c as normal
+		functions.  (This saves space and doesn't significantly
+		change the speed of e2fsck on a P-III.)
+
 	* ext2fs.h, bitops.h, block.c, bmap.c, closefs.c, dirblock.c,
 		inode.c, native.c, openfs.c, rw_bitmaps.c, swapfs.c: Only
 		include the byte-swapping logic if ENABLE_SWAPFS is turned

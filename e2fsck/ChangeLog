@@ -1,5 +1,8 @@
 2001-06-11  Theodore Tso  <tytso@valinux.com>
 
+	* unix.c (PRS): Fix bug introduced in 1.20 which broke the -F
+		flag.
+
 	* Makefile.in: Add message.c and swapfs.c to the list of source
 		files to build the make depend.
 
