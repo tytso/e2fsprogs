@@ -91,11 +91,11 @@ with no other options.
 .TP
 .B \-t
 Search the blkid cache (plus any devices specifed on the command line) 
-for all visible block devices with tokens named
+for all block devices with tokens named
 .I NAME
 that have the value 
 .IR value ,
-and print the name of any devices that are found.
+and display any devices which are found.
 Common values for
 .I NAME
 include

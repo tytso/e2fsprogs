@@ -1,3 +1,9 @@
+2005-01-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid.c (main): Make blkid -t display all devices that match the
+		specified criteria, not just the first one.  (Addresses
+		Debian Bug #290530)
+
 2005-01-20    <tytso@snap.thunk.org>
 
 	* filefrag.c (frag_report): Fix filefrag so that it works

@@ -174,17 +174,39 @@ int main(int argc, char **argv)
 	err = 2;
 	/* If looking for a specific NAME=value pair, print only that */
 	if (search_type) {
-		blkid_dev dev;
+		blkid_dev_iterate	dev_iter;
+		blkid_tag_iterate	tag_iter;
+		blkid_dev		dev;
+		int			found;
+		const char		*type, *value;
 
 		/* Load any additional devices not in the cache */
 		for (i = 0; i < numdev; i++)
 			blkid_get_dev(cache, devices[i], BLKID_DEV_NORMAL);
 
-		if ((dev = blkid_find_dev_with_tag(cache, search_type,
-						   search_value))) {
+		/* 
+		 * XXX We need better interfaces in the blkid library
+		 * so we don't need to open code as much stuff.
+		 */
+		dev_iter = blkid_dev_iterate_begin(cache);
+		while (blkid_dev_next(dev_iter, &dev) == 0) {
+			found = 0;
+
+			tag_iter = blkid_tag_iterate_begin(dev);
+			while (blkid_tag_next(tag_iter, &type, &value) == 0) {
+				if (!strcmp(type, search_type) &&
+				    !strcmp(value, search_value))
+					found++;
+			}
+			blkid_tag_iterate_end(tag_iter);
+			if (!found)
+				continue;
+			
 			print_tags(dev, show, numtag, output_format);
 			err = 0;
 		}
+		blkid_dev_iterate_end(dev_iter);
+
 	/* If we didn't specify a single device, show all available devices */
 	} else if (!numdev) {
 		blkid_dev_iterate	iter;
