@@ -276,6 +276,11 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_0_JOURNAL_RESET_COMPAT,
 	  N_("Ext3 @j @S has bad feature flag(s) set.\n"),
  	  PROMPT_CLEAR, PR_PREEN_OK|PR_PREEN_NOMSG },
+
+	/* Journal has unsupported version number */
+	{ PR_0_JOURNAL_UNSUPP_VERSION,
+	  N_("@j version not supported by this e2fsck.\n"),
+	  PROMPT_ABORT, 0 },
  
 	/* Pass 1 errors */
 	

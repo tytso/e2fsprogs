@@ -155,6 +155,9 @@ struct problem_context {
 /* Journal has unsupported feature - reset */
 #define PR_0_JOURNAL_RESET_COMPAT		0x000027
 
+/* Journal has unsupported version number */
+#define PR_0_JOURNAL_UNSUPP_VERSION		0x000028
+
 /*
  * Pass 1 errors
  */

@@ -1,3 +1,20 @@
+2001-05-23  Theodore Tso  <tytso@valinux.com>
+
+	* journal.c (e2fsck_journal_reset_super): Fix bug; the reset
+		journal wasn't getting written out to disk since the dirty
+		bit wasn't being set on the buffer.
+		(e2fsck_journal_load): Don't print an error message if the
+		journal version number is wrong; just return a error code
+		reflecting this fact.  If the block type in the journal
+		superblcok is obviously not a version number, report the
+		journal is corrupted.
+		(e2fsck_check_ext3_journal): On an unsupported journal
+		version, prompt to abort by default, but then offer a
+		chance to clear the journal as corrupt.
+
+	* problem.c, problem.h (PR_0_JOURNAL_UNSUPP_VERSION): Added new
+		problem code.
+
 2001-05-14  Theodore Tso  <tytso@valinux.com>
 
 	* pass1.c: Treat inodes with a low dtime (that were from a

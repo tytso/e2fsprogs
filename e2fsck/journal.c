@@ -333,15 +333,21 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	case JFS_SUPERBLOCK_V2:
 		journal->j_format_version = 2;
 		break;
+
+	/*
+	 * These should never appear in a journal super block, so if
+	 * they do, the journal is badly corrupted.
+	 */
+	case JFS_DESCRIPTOR_BLOCK:
+	case JFS_COMMIT_BLOCK:
+	case JFS_REVOKE_BLOCK:
+		return EXT2_ET_CORRUPT_SUPERBLOCK;
 		
 	/* If we don't understand the superblock major type, but there
 	 * is a magic number, then it is likely to be a new format we
 	 * just don't understand, so leave it alone. */
 	default:
-		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
-			_("%s: journal has unrecognised format\n"),
-			ctx->device_name);
-		return EXT2_ET_UNSUPP_FEATURE;
+		return EXT2_ET_JOURNAL_UNSUPP_VERSION;
 	}
 
 	if (JFS_HAS_INCOMPAT_FEATURE(journal, ~JFS_KNOWN_INCOMPAT_FEATURES)) {
@@ -427,6 +433,7 @@ static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 		new_seq ^= u.val[i];
 	jsb->s_sequence = htonl(new_seq);
 
+	mark_buffer_dirty(journal->j_sb_buffer, 1);
 	ll_rw_block(WRITE, 1, &journal->j_sb_buffer);
 }
 
@@ -508,7 +515,9 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 
 	retval = e2fsck_journal_load(journal);
 	if (retval) {
-		if (retval == EXT2_ET_CORRUPT_SUPERBLOCK)
+		if ((retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
+		    ((retval == EXT2_ET_JOURNAL_UNSUPP_VERSION) &&
+		    (!fix_problem(ctx, PR_0_JOURNAL_UNSUPP_VERSION, &pctx))))
 			retval = e2fsck_journal_fix_corrupt_super(ctx, journal,
 								  &pctx);
 		e2fsck_journal_release(ctx, journal, 0, 1);
