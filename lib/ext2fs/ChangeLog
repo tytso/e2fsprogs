@@ -1,5 +1,10 @@
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
+	* flushb.c (ext2fs_sync_device): If the BLKFLSBUF ioctl succeeds,
+		don't try the FDFLUSH ioctl that was required for floppies
+		with older kernels.  This avoids needless whining from the
+		MD device driver.  (Addresses Sourceforge bug #545832).
+
 	* openfs.c (ext2fs_open): Fix bug which caused us to pass the
 		wrong group_block to ext2fs_descriptor_block_loc if we're
 		using the backup superblock/block group descriptors.

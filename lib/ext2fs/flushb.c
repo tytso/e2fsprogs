@@ -62,12 +62,13 @@ errcode_t ext2fs_sync_device(int fd, int flushb)
 	if (flushb) {
 
 #ifdef BLKFLSBUF
-		ioctl (fd, BLKFLSBUF, 0);   /* In case this is a HD */
+		if (ioctl (fd, BLKFLSBUF, 0) == 0)
+			return 0;
 #else
  #warning BLKFLSBUF not defined
 #endif
 #ifdef FDFLUSH
-		ioctl (fd, FDFLUSH, 0);   /* In case this is floppy */
+		ioctl (fd, FDFLUSH, 0);   /* In case this is a floppy */
 #else
  #warning FDFLUSH not defined
 #endif
