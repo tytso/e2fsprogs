@@ -21,13 +21,23 @@ First written on: March 30 1995
 Copyright (C) 1995 Gadi Oxman
 
 */
- 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 
+#ifdef HAVE_READLINE
 #include <readline.h>
 #include <history.h>
+#endif
+
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#else
+extern int optind;
+extern char *optarg;
+#endif
 
 #include "ext2ed.h"
 
@@ -77,106 +87,275 @@ struct struct_inode_bitmap_info inode_bitmap_info;		/* Used by inodebitmap_com.c
 
 int redraw_request=0;						/* Is set by a signal handler to handle terminal */
 								/* screen size change. */
-char email_address [80]="tgud@tochnapc2.technion.ac.il";
 
-int main (void)
 
-/* We just call the parser to get commands from the user. We quit when parser returns. */
-
+/*
+ * We just call the parser to get commands from the user. We quit when
+ * parser returns.
+ */
+int main (int argc, char **argv)
 {
-	if (!init ()) return (0);				/* Perform some initial initialization */
-								/* Quit if failed */
-
-	parser ();						/* Get and parse user commands */
+	int	write_priv = 0;
+	int	c;
+	char	*buf;
 	
-	prepare_to_close ();					/* Do some cleanup */
-	printf ("Quitting ...\n");
-	return (1);						/* And quit */
+	if (!init ())
+		return (1);
+	while ((c = getopt (argc, argv, "w")) != EOF) {
+		switch (c) {
+		case 'w':
+			write_priv++;
+			break;
+		}
+	}
+	if (optind < argc) {
+		buf = malloc(strlen(argv[optind]) + 32);
+		if (!buf) {
+			fprintf(stderr, "Couldn't allocate filename buffer\n");
+			exit(1);
+		}
+		strcpy(buf, "set_device ");
+		strcat(buf, argv[optind]);
+		set_device(buf);
+		free(buf);
+		if (write_priv) {
+			wprintw (command_win,"\n");			
+			enable_write("enable_write");
+		}
+	}
+	parser ();			/* Get and parse user commands */
+	prepare_to_close();		/* Do some cleanup */
+	printf("Quitting ...\n");
+	return(0);
 }
 
 
-void parser (void)
+/*
+ * Read a character from the command window
+ */
+int command_read_key()
+{
+	int	key = 0;
+
+	while (!key) {
+		if (redraw_request) {
+			redraw_all();
+			redraw_request=0;
+		}
+		key = wgetch(command_win);
+		switch (key) {
+		case 0x1A:
+			key = 0;
+			kill(getpid(), SIGTSTP);
+			break;
+			
+		case KEY_NPAGE:
+			pgdn("");
+			refresh_command_win ();
+			break;
+
+		case KEY_PPAGE:
+			pgup("");
+			refresh_command_win ();
+			break;
+		case ERR:
+			key = 0;
+			break;
+			
+		case KEY_BACKSPACE:
+			key = '\b';
+		}
+		if ((key < 32 && key != '\b' && key != '\n') ||
+		    (key > 127))
+			key = 0;
+	}
+	return key;
+}
+
+#ifdef HAVE_READLINE
+int rl_getc_replacement(FILE *f)
+{
+	int	key = command_read_key();
+
+	if (key == '\b') {
+		if (rl_point > 0)
+			wprintw(command_win, "\b \b");
+	} else
+		wprintw(command_win, "%c", key);
+	return key;
+}
 
 /*
-
-This function asks the user for a command and calls the dispatcher function, dispatch, to analyze it.
-We use the readline library function readline to read the command, hence all the usual readline keys
-are available.
-The new command is saved both in the readline's history and in our tiny one-command cache, so that
-only the enter key is needed to retype it.
-
-*/
-
+ * This function asks the user for a command and calls the dispatcher
+ * function, dispatch, to analyze it.  We use the readline library
+ * function readline to read the command, hence all the usual readline
+ * keys are available.  The new command is saved both in the
+ * readline's history and in our tiny one-command cache, so that only
+ * the enter key is needed to retype it.
+ */
+void parser (void)
 {
 	char *ptr,command_line [80];
 	int quit=0;
 
+#if 0
+	noecho();
+	cbreak();
+	keypad(command_win, 1);
+	wtimeout(command_win, 100);
+	
+	rl_getc_function = rl_getc_replacement;
+#endif
+	
 	while (!quit) {
-		
-		if (redraw_request) {				/* Terminal screen size has changed */
-			dispatch ("redraw");dispatch ("show");redraw_request=0;
+		/* Terminal screen size has changed */
+		if (redraw_request) {
+			redraw_all();
+			redraw_request=0;
 		}
 
-		wmove (command_win,0,0);wclrtoeol (command_win);refresh_command_win ();
+		wmove (command_win,0,0);
+		wclrtoeol (command_win);
+		wprintw (command_win,"ext2ed > ");
+		refresh_command_win ();
 
-		mvcur (-1,-1,LINES-COMMAND_WIN_LINES,0);	/* At last ! I spent ** days ** on this one */
+		/*
+		 * The ncurses library optimizes cursor movement by
+		 * keeping track of the cursor position. However, by
+		 * using the readline library I'm breaking its
+		 * assumptions. The double -1 arguments tell ncurses
+		 * to disable cursor movement optimization this
+		 * time.
+		 */
+		mvcur (-1,-1,LINES-COMMAND_WIN_LINES,0);
+		
+		/* echo (); */
+		ptr=readline ("ext2ed > ");
+		/* noecho (); */
 
-								/* The ncurses library optimizes cursor movement by */
-								/* keeping track of the cursor position. However, by */
-								/* using the readline library I'm breaking its */
-								/* assumptions. The double -1 arguments tell ncurses */
-								/* to disable cursor movement optimization this time. */
-		//echo ();
-		ptr=readline ("ext2ed > ");			/* Read the user's command line. */
-		//noecho ();
-
-		strcpy (command_line,ptr);			/* Readline allocated the buffer - Copy the string */
-		free (ptr);					/* and free the allocated buffer */
+		/*
+		 * Readline allocated the buffer - Copy the string
+		 * and free the allocated buffer
+		 * XXX WHY???
+		 */
+		strcpy (command_line,ptr);
+		free (ptr);					
 
 		if (*command_line != 0)
-			add_history (command_line);		/* Add the non-empty command to the command histroy */
+			add_history (command_line);
 
-		if (*command_line==0)				/* If only enter was pressed, recall the last command */
+		/* If only enter was pressed, recall the last command */
+		if (*command_line==0)				
 			strcpy (command_line,last_command_line);
 		
-								/* Emulate readline's actions for ncurses */
-
-		mvcur (-1,-1,LINES-COMMAND_WIN_LINES,0);	/* Again, needed for correct integration of the */
-								/* ncurses and readline libraries */
-
+		/* Emulate readline's actions for ncurses */
+		mvcur (-1,-1,LINES-COMMAND_WIN_LINES,0);
 		werase (command_win);
-		wprintw (command_win,"ext2ed > ");wprintw (command_win,command_line);
-		wprintw (command_win,"\n");refresh_command_win ();
+		wprintw (command_win,"ext2ed > ");
+		wprintw (command_win,command_line);
+		wprintw (command_win,"\n");
+		refresh_command_win ();
 
-		strcpy (last_command_line,command_line);	/* Save this command in our tiny cache */
+		/* Save this command in our tiny cache */
+		strcpy (last_command_line,command_line);
 
-		quit=dispatch (command_line);			/* And call dispatch to do the actual job */
+		/* And call dispatch to do the actual job */
+		quit=dispatch (command_line);
 	}		
 }
+#else
+void read_line(char * foo) {
+	char * chptr = foo;
+	int ch;
+	int done = 0;
 
+	while (!done && (ch = command_read_key())) {
+		switch (ch) {
+		case '\n':
+			done = 1;
+			break;
 
-int dispatch (char *command_line)
+		case '\b':
+			if (chptr > foo) {
+				wprintw(command_win, "\b \b");
+				chptr--;
+			}
+			break;
+
+		default:
+			if (ch > 256)
+				break;
+			if (ch == '\n') break;
+			*chptr++ = ch;
+			wprintw(command_win, "%c", ch);
+			break;
+		}
+	}
+	*chptr = '\0';
+}
+
+void parser (void)
+{
+	char command_line [80];
+	int quit=0;
+
+	noecho();
+	cbreak();
+	wtimeout(command_win, 100);
+	keypad(command_win, 1);
+
+	while (!quit) {
+		/* Terminal screen size has changed */
+		if (redraw_request) {
+			redraw_all();
+			redraw_request=0;
+		}
+
+		wmove (command_win,0,0);wclrtoeol (command_win);
+
+		wmove(command_win, 0, 0);
+		wprintw(command_win, "ext2ed > ");
+		read_line(command_line);
+
+		/* If only enter was pressed, recall the last command */
+ 		if (*command_line==0)
+ 			strcpy (command_line,last_command_line);
+
+		mvcur (-1,-1,LINES-COMMAND_WIN_LINES + 1,0);	
+
+ 		strcpy (last_command_line,command_line);	/* Save this command in our tiny cache */
+		
+		/* And call dispatch to do the actual job */
+		quit=dispatch (command_line);
+	}		
+}
+#endif
+
 
 /*
-
-This is a very important function. Its task is to recieve a command name and link it to a C function.
-There are three type of commands:
-
-1.	General commands - Always available and accessed through general_commands.
-2.	Ext2 specific commands - Available when editing an ext2 filesystem, accessed through ext2_commands.
-3.	Type specific commands - Those are changing according to the current type. The global
-	variable current_type points to the current object definition (of type struct_descriptor).
-	In it, the struct_commands entry contains the type specific commands links.
-	
-Overriding is an important feature - Much like in C++ : The same command name can dispatch to different
-functions. The overriding priority is 3,2,1; That is - A type specific command will always override a
-general command. This is used through the program to allow fine tuned operation.
-
-When an handling function is found, it is called along with the command line that was passed to us. The handling
-function is then free to interpert the arguments in its own style.
-
-*/
-
+ * This is a very important function. Its task is to recieve a command
+ * name and link it to a C function.  There are three types of commands:
+ * 
+ * 1.	General commands - Always available and accessed through
+ * general_commands. 
+ * 2.	Ext2 specific commands - Available when editing an ext2
+ * filesystem, accessed through ext2_commands. 
+ * 3.	Type specific commands - Those are changing according to the
+ * current type. The global variable current_type points to the
+ * current object definition (of type struct_descriptor). In it, the
+ * struct_commands entry contains the type specific commands links. 
+ * 	
+ * Overriding is an important feature - Much like in C++ : The same
+ * command name can dispatch to different functions. The overriding
+ * priority is 3,2,1; That is - A type specific command will always
+ * override a general command. This is used through the program to
+ * allow fine tuned operation. 
+ * 
+ * When an handling function is found, it is called along with the
+ * command line that was passed to us. The handling function is then
+ * free to interpert the arguments in its own style. 
+ */
+int dispatch (char *command_line)
 {
 	int i,found=0;
 	
@@ -186,10 +365,13 @@ function is then free to interpert the arguments in its own style.
 			
 	if (strcasecmp (command,"quit")==0) return (1);	
 
-	/* 1. Search for type specific commands FIRST - Allows overriding of a general command */
+	/* 1. Search for type specific commands FIRST - Allows
+	overriding of a general command */
 
 	if (current_type != NULL)
-		for (i=0;i<=current_type->type_commands.last_command && !found;i++) {
+		for (i=0;
+		     i<=current_type->type_commands.last_command && !found;
+		     i++) {
 			if (strcasecmp (command,current_type->type_commands.names [i])==0) {
 				(*current_type->type_commands.callback [i]) (command_line);
 				found=1;
@@ -227,16 +409,14 @@ function is then free to interpert the arguments in its own style.
 	return (0);
 }
 
-char *parse_word (char *source,char *dest)
 
 /*
-
-This function copies the next word in source to the variable dest, ignoring whitespaces.
-It returns a pointer to the next word in source.
-It is used to split the command line into command and arguments.
-
-*/
-
+ * 
+ * This function copies the next word in source to the variable dest,
+ * ignoring whitespaces.  It returns a pointer to the next word in
+ * source.  It is used to split the command line into command and arguments.
+ */
+char *parse_word (char *source,char *dest)
 {
 	char ch,*source_ptr,*target_ptr;
 	
@@ -265,22 +445,22 @@ It is used to split the command line into command and arguments.
 	return (--source_ptr);
 }
 
-char *complete_command (char *text,int state)
-
 /*
-
-text is the partial command entered by the user; We assume that it is a part of a command - I didn't write code
-for smarter completion.
-
-The state variable is an index which tells us how many possible completions we already returned to readline.
-
-We return only one possible completion or (char *) NULL if there are no more completions. This
-function will be called by readline over and over until we tell it to stop.
-
-While scanning for possible completions, we use the same priority definition which was used in dispatch.
-
-*/
-
+ * text is the partial command entered by the user; We assume that it
+ * is a part of a command - I didn't write code for smarter completion.
+ * 
+ * The state variable is an index which tells us how many possible
+ * completions we already returned to readline. 
+ * 
+ * We return only one possible completion or (char *) NULL if there
+ * are no more completions. This function will be called by readline
+ * over and over until we tell it to stop. 
+ * 
+ * While scanning for possible completions, we use the same priority
+ * definition which was used in dispatch. 
+ */
+#if HAVE_READLINE
+char *complete_command (char *text,int state)
 {
 	int state_index=-1;
 	int i,len;
@@ -332,15 +512,13 @@ While scanning for possible completions, we use the same priority definition whi
 	
 	return ((char *) NULL);
 }
+#endif
 
-char *dupstr (char *src)
 
 /* 
-
-Nothing special - Just allocates enough space and copy the string.
-
-*/
-
+ * Nothing special - Just allocates enough space and copy the string.
+ */
+char *dupstr (char *src)
 {
 	char *ptr;
 	
@@ -350,18 +528,13 @@ Nothing special - Just allocates enough space and copy the string.
 }
 
 #ifdef DEBUG
-
-void internal_error (char *description,char *source_name,char *function_name)
-
 /*
-
-This function reports an internal error. It is almost not used. One place in which I do check for internal
-errors is disk.c.
-
-We just report the error, and try to continue ...
-
-*/
-
+ * This function reports an internal error. It is almost not used. One
+ * place in which I do check for internal errors is disk.c.
+ * 
+ * We just report the error, and try to continue ...
+ */
+void internal_error (char *description,char *source_name,char *function_name)
 {
 	wprintw (command_win,"Internal error - Found by source: %s.c , function: %s\n",source_name,function_name);
 	wprintw (command_win,"\t%s\n",description);	

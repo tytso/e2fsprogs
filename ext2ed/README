@@ -1,3 +1,43 @@
+ext2ed - The extended-2 filesystem editor, version e2fsprogs
+
+
+This version of ext2ed has been modified and updated by Theodore Ts'o
+for inclusion with the e2fsprogs package.
+
+It is currently not built by default -- the top-level e2fsprogs
+Makefile doesn't recurse into this directory.  This is because ext2ed
+has a number of VERY SERIOUS shortcomings:
+
+1)  It doesn't work on filesystems bigger that 2GB
+
+2)  It assumes that all's the world an Intel, and assumes that
+	everything is in Intel (little-endian) byte order.
+
+Fixing both of these problems are non-trivial, and so I at this point
+DO NOT RECOMMEND that distributions try to include this program, even
+as modified and updated in e2fsprogs.  This especially goes for
+Debian, where the Debian maintainer for e2fsprogs has a history of
+making authorized changes to e2fsprogs to include programs that aren't
+supported, and then starts bugging me with bug reports.  YES I KNOW.
+THIS PROGRAM HAS HORRIBLE SHORTCOMINGS.  IT IS INCLUDED HERE ONLY
+BECAUSE IT'S A CONVENIENT WAY FOR (FOR E2FSPROGS DEVELOPERS ON INTEL
+MACHINES) TO GENERATE TEST CASES BY SELECTIVELY CORRUPTING
+FILESYSTEMS.  I WILL NOT SUPPORT THIS PROGRAM FOR USE BY GENERAL
+USERS SO PLEASE DO NOT INCLUDE IT IN A DISTRIBUTION.  
+
+I have currently disabled the use of GNU Readline in this program,
+because readline and ncurses really don't play well together at all.
+Readline assumes that it can write arbitrary text to the screen
+(especially when it tries to print out a completion list), which just
+doesn't work with ncurses.  Fixing this so they would work together
+would require wholesale changes to readline.   
+
+				Theodore Ts'o
+				tytso@MIT.EDU
+				May 12, 2001
+
+----------------------------------------------------------------------------
+
 ext2ed - The extended-2 filesystem editor, version 0.2
 ------------------------------------------------------
 

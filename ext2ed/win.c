@@ -22,23 +22,44 @@ Copyright (C) 1995 Gadi Oxman
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 
 #include "ext2ed.h"
 #include "../version.h"
 
 struct struct_pad_info show_pad_info;
-WINDOW *title_win,*show_win,*command_win,*show_pad;
+WINDOW *title_win,*show_win,*command_win,*mt_win1,*mt_win2,*show_pad;
 
 /* to remember configuration after initscr 
  * and modify it
  */
-struct termios termioInit, termioCurrent; 
+struct termios termioInit, termioCurrent;
+
+void draw_title_win (void)
+{
+	char title_string [128];
+
+	werase(title_win);
+	box (title_win,0,0);
+	sprintf (title_string,"EXT2ED - Extended-2 File System editor ver %s (%s)", E2FSPROGS_VERSION, E2FSPROGS_DATE);
+	wmove (title_win,TITLE_WIN_LINES/2,(COLS-strlen (title_string))/2);
+	wprintw (title_win,title_string);
+	wrefresh(title_win);
+}
+
+void setup_show_win(void)
+{
+	wbkgdset (show_win,A_REVERSE);werase (show_win);
+	show_pad_info.line=0;
+	show_pad_info.col=0;
+	show_pad_info.display_lines=LINES-TITLE_WIN_LINES-SHOW_WIN_LINES-COMMAND_WIN_LINES-2;
+	show_pad_info.display_cols=COLS;
+	show_pad_info.max_line=show_pad_info.display_lines-1;show_pad_info.max_col=show_pad_info.display_cols-1;
+	show_pad_info.disable_output=0;
+}	
 
 void init_windows (void)
-
 {
-	char title_string [80];
-	
 	initscr ();
 	tcgetattr(0,&termioInit); /* save initial config */
 	termioCurrent = termioInit;
@@ -54,41 +75,34 @@ void init_windows (void)
 	title_win=newwin (TITLE_WIN_LINES,COLS,0,0);
 	show_win=newwin (SHOW_WIN_LINES,COLS,TITLE_WIN_LINES,0);
 	show_pad=newpad (SHOW_PAD_LINES,SHOW_PAD_COLS);
+	mt_win1=newwin (1,COLS,TITLE_WIN_LINES+SHOW_WIN_LINES,0);
+	mt_win2=newwin (1,COLS,LINES-COMMAND_WIN_LINES-1,0);
 	command_win=newwin (COMMAND_WIN_LINES,COLS,LINES-COMMAND_WIN_LINES,0);
 
 	if (title_win==NULL || show_win==NULL || show_pad==NULL || command_win==NULL) {
 		printf ("Error - Not enough memory - Can not initialize windows\n");exit (1);
 	}
 
-	box (title_win,0,0);
-	sprintf (title_string,"EXT2ED - Extended-2 File System editor ver %s (%s)", E2FSPROGS_VERSION, E2FSPROGS_DATE);
-	wmove (title_win,TITLE_WIN_LINES/2,(COLS-strlen (title_string))/2);
-	wprintw (title_win,title_string);
+	draw_title_win();
 
-#ifdef	OLD_NCURSES
-	wattrset (show_win,A_NORMAL);werase (show_win);
-#else
-	wbkgdset (show_win,A_REVERSE);werase (show_win);
-#endif
-	show_pad_info.line=0;show_pad_info.col=0;
-	show_pad_info.display_lines=LINES-TITLE_WIN_LINES-SHOW_WIN_LINES-COMMAND_WIN_LINES-2;
-	show_pad_info.display_cols=COLS;
-	show_pad_info.max_line=show_pad_info.display_lines-1;show_pad_info.max_col=show_pad_info.display_cols-1;
-	show_pad_info.disable_output=0;
-	
+	setup_show_win();
+
 	scrollok (command_win,TRUE);
 
-	refresh_title_win ();refresh_show_win ();refresh_show_pad ();refresh_command_win ();
+	refresh_title_win ();
+	refresh_show_win ();
+	refresh_show_pad();
+	refresh_command_win ();
+	wrefresh(mt_win1);
+	wrefresh(mt_win2);
 }
 
 void refresh_title_win (void)
-
 {
 	wrefresh (title_win);
 }
 
 void refresh_show_win (void)
-
 {
 	int current_page,total_pages;
 	
@@ -135,13 +149,11 @@ void refresh_show_pad (void)
 }
 
 void refresh_command_win (void)
-
 {
 	wrefresh (command_win);
 }
 
 void close_windows (void)
-
 {
 //	echo ();
 	tcsetattr(0,TCSANOW,&termioInit);
@@ -155,7 +167,6 @@ void close_windows (void)
 }
 
 void show_info (void)
-
 {
 	int block_num,block_offset;
 	
@@ -174,12 +185,47 @@ void show_info (void)
 
 
 void redraw_all (void)
-
 {
-	close_windows ();
-	init_windows ();
-	
-	wmove (command_win,0,0);
-	mvcur (-1,-1,LINES-COMMAND_WIN_LINES,0);
-	
+	int min_lines = TITLE_WIN_LINES+SHOW_WIN_LINES+COMMAND_WIN_LINES+3;
+	struct winsize ws;
+	int	save_col, save_lines;
+
+	/* get the size of the terminal connected to stdout */
+	ioctl(1, TIOCGWINSZ, &ws);
+	/*
+	 * Do it again because GDB doesn't stop before the first ioctl
+	 * call, we want an up-to-date size when we're
+	 * single-stepping.
+	 */
+	if (ioctl(1, TIOCGWINSZ, &ws) == 0) {
+		if (ws.ws_row < min_lines)
+			ws.ws_row = min_lines;
+		if ((ws.ws_row != LINES) || (ws.ws_col != COLS)) {
+			wmove (show_win,2,COLS-18);
+			wclrtoeol(show_win);
+			wrefresh(show_win);
+			resizeterm(ws.ws_row, ws.ws_col);
+			wresize(title_win, TITLE_WIN_LINES,COLS);
+			wresize(show_win, SHOW_WIN_LINES,COLS);
+			wresize(command_win, COMMAND_WIN_LINES,COLS);
+			wresize(mt_win1, 1,COLS);
+			wresize(mt_win2, 1,COLS);
+			mvwin(mt_win2, LINES-COMMAND_WIN_LINES-1,0);
+			mvwin(command_win, LINES-COMMAND_WIN_LINES,0);
+			draw_title_win();
+			show_pad_info.display_lines=LINES-TITLE_WIN_LINES-SHOW_WIN_LINES-COMMAND_WIN_LINES-2;
+			show_pad_info.display_cols=COLS;
+		}
+	}
+	clearok(title_win, 1);
+	clearok(show_win, 1);
+	clearok(command_win, 1);
+	clearok(mt_win1, 1);
+	clearok(mt_win2, 1);
+	wrefresh(mt_win1);
+	wrefresh(mt_win2);
+	refresh_show_pad();
+	refresh_show_win();
+	refresh_title_win ();
+	refresh_command_win ();
 }

@@ -17,7 +17,9 @@ Copyright (C) 1995 Gadi Oxman
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_READLINE
 #include <readline.h>
+#endif
 #include <signal.h>
 #include <unistd.h>
 
@@ -438,7 +440,9 @@ int set_file_system_info (void)
 void init_readline (void)
 
 {
+#ifdef HAVE_READLINE
 	rl_completion_entry_function=(Function *) complete_command;
+#endif
 }
 
 void init_signals (void)
@@ -453,7 +457,11 @@ void init_signals (void)
 void signal_SIGWINCH_handler (int sig_num)
 
 {
-	redraw_request=1;						/* We will handle it in main.c */
+	redraw_request=1;	/* We will handle it in main.c */
+	
+	/* Reset signal handler */	
+	signal (SIGWINCH, signal_SIGWINCH_handler);	
+	
 }
 
 void signal_SIGTERM_handler (int sig_num)

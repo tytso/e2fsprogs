@@ -1,3 +1,36 @@
+2002-05-12    <tytso@mit.edu>
+
+	* README: Add warning about shortcomings in ext2ed.  Please don't
+		include this in distributions --- it's too buggy for that.
+
+	* init.c (signal_SIGWINCH_handler): Reinstall signal handler after
+		it is activated.
+
+	* main.c: Make use of readline library optional (currently
+		disabled).  Allow the filesystem/device which is to be
+		examined/edited to be specified on the command line, with
+		the -w option indicating that the filesystem should be
+		opened read/write.  Use the ncurses functions to read from
+		the keyboard, and use the pgdn and pgup keys to activate
+		the relavant commands.  Also poll the keyboard with a
+		timeout of .1 second, so that window-size changes can be
+		dealt with automatically.
+
+	* Makefile.in: Remove ncurses library from link line.
+
+	* win.c: Rewrite redraw function so that it changes the all of the
+		ncurses's windows, instead of destroying all of the
+		windows and recreating them all.  (This assumes requires
+		some ncurses-specific functions, and isn't quite as
+		portable, but that's OK.)  Create two new windows and
+		force the lines above and below the showpad area to be
+		empty.
+
+	* general_com.c: Remove e-mail address for Gadi Oxman, since it
+		doesn't work anymore, and I've made enough changes that
+		Gadi shouldn't get any complaints or bug reports for this
+		version.
+	
 2002-05-11    <tytso@mit.edu>
 
 	* win.c, main.c, general_com.c: Use e2fsprogs's version
@@ -10,6 +43,8 @@
 	* ext2.descriptors: Updated with newer superblock descriptor; use
 		__u32 and __u16 instead of unsigned long and unsigned
 		short.  Add data structures for direcctory indexing code.
+
+	* Makefile.in: Added make depend logic.
 
 2002-05-11    <tytso@mit.edu>
 

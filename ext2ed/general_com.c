@@ -89,20 +89,14 @@ void help (char *command_line)
 	wprintw (show_pad,"EXT2ED ver %s (%s)\n",E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	wprintw (show_pad,"Copyright (C) 1995 Gadi Oxman\n");
 	wprintw (show_pad,"Reviewed 2001 Christian Bac\n");
+	wprintw (show_pad,"Modified and enchanced by Theodore Ts'o, 2002\n");
 	wprintw (show_pad,"EXT2ED is hereby placed under the terms of the GNU General Public License.\n\n");
 	wprintw (show_pad,"EXT2ED was programmed as a student project in the software laboratory\n");
 	wprintw (show_pad,"of the faculty of electrical engineering in the\n");
 	wprintw (show_pad,"Technion - Israel Institute of Technology\n");
 	wprintw (show_pad,"with the guide of Avner Lottem and Dr. Ilana David.\n");
 
-	max_line+=6;
-	
-	wprintw (show_pad,"\n\n");max_line+=2;
-	
-	wprintw (show_pad,"Please feel free to mail me at (currently) %s\n",email_address);
-	wprintw (show_pad,"with any commet, suggestion, and of-course, bug report concerning EXT2ED.\n");
-	
-	max_line+=2;
+	max_line+=10;
 	
 	show_pad_info.line=0;show_pad_info.max_line=max_line;
 
