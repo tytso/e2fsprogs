@@ -1,3 +1,11 @@
+2001-02-20  Theodore Tso  <tytso@valinux.com>
+
+	* bitops.h (ext2fs_swab16, ext2fs_swab32): Add i386 assembly
+		inline functions.
+
+	* tst_byteswap.c: New function to test the byteswap functions.
+		Add to regression test suite.
+
 2001-02-08  Theodore Tso  <tytso@valinux.com>
 
 	* e2image.h (struct ext2_image_hdr): Fix type for fs_hostname

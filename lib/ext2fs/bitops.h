@@ -109,7 +109,8 @@ extern void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map);
 			    defined(__i586__)))
 
 #define _EXT2_HAVE_ASM_BITOPS_
-	
+#define _EXT2_HAVE_ASM_SWAB_
+
 /*
  * These are done by inline assembly for speed reasons.....
  *
@@ -153,6 +154,28 @@ _INLINE_ int ext2fs_test_bit(int nr, const void * addr)
 		:"=r" (oldbit)
 		:"m" (EXT2FS_CONST_ADDR),"r" (nr));
 	return oldbit;
+}
+
+_INLINE_ __u32 ext2fs_swab32(__u32 val)
+{
+#ifdef EXT2FS_REQUIRE_486
+	__asm__("bswap %0" : "=r" (val) : "0" (val));
+#else
+	__asm__("xchgb %b0,%h0\n\t"	/* swap lower bytes	*/
+		"rorl $16,%0\n\t"	/* swap words		*/
+		"xchgb %b0,%h0"		/* swap higher bytes	*/
+		:"=q" (val)
+		: "0" (val));
+#endif
+	return val;
+}
+
+_INLINE_ __u16 ext2fs_swab16(__u16 val)
+{
+	__asm__("xchgb %b0,%h0"		/* swap bytes		*/ \
+		: "=q" (val) \
+		:  "0" (val)); \
+		return val;
 }
 
 #undef EXT2FS_ADDR
@@ -314,7 +337,7 @@ _INLINE_ int ext2fs_test_bit(int nr, const void *addr)
 
 #endif /* __sparc__ */
 
-#ifndef _EXT2_HAVE_ASM_SWAB
+#ifndef _EXT2_HAVE_ASM_SWAB_
 
 _INLINE_ __u16 ext2fs_swab16(__u16 val)
 {
