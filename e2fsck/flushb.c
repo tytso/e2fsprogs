@@ -29,11 +29,12 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/mount.h>
 #include "../misc/nls-enable.h"
 
-/* For Linux/i386, define BLKFLSBUF */
-#if (!defined(BLKFLSBUF) && defined(__i386__))
-#define BLKFLSBUF  0x1261	/* flush buffer cache */
+/* For Linux, define BLKFLSBUF if necessary */
+#if (!defined(BLKFLSBUF) && defined(__linux__))
+#define BLKFLSBUF	_IO(0x12,97)	/* flush buffer cache */
 #endif
 
 const char *progname;

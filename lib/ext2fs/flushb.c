@@ -20,21 +20,26 @@
 #if HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
+#if HAVE_SYS_MOUNT_H
+#include <sys/mount.h>		/* This may define BLKFLSBUF */
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
 /*
- * For Linux/i386, define BLKFLSBUF and FDFLUSH if necessary, since 
- * no portable header file does so for us.  This really should be
- * fixed in the glibc header files.  Until then....
+ * For Linux, define BLKFLSBUF and FDFLUSH if necessary, since 
+ * not all portable header file does so for us.  This really should be
+ * fixed in the glibc header files.  (Recent glibcs appear to define
+ * BLKFLSBUF in sys/mount.h, but FDFLUSH still doesn't seem to be
+ * defined anywhere portable.)  Until then....
  */
-#if (defined(__i386__) && defined(__linux__))
+#ifdef __linux__
 #ifndef BLKFLSBUF
-#define BLKFLSBUF	0x1261	/* flush buffer cache */
+#define BLKFLSBUF	_IO(0x12,97)	/* flush buffer cache */
 #endif
 #ifndef FDFLUSH
-#define FDFLUSH		0x024b	/* flush floppy disk */
+#define FDFLUSH		_IO(2,0x4b)	/* flush floppy disk */
 #endif
 #endif
 

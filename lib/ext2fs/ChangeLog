@@ -1,5 +1,9 @@
 2001-06-22  Theodore Tso  <tytso@valinux.com>
 
+	* flushb.c: Use platform independent method of defining the
+		BLKFLSBUF and FDFLUSH ioctl's.  Also include sys/mount.h
+		since on newer glibc's BLKFLSBUF is defined there.
+
 	* bitops.h: The C language versions of ext2fs_swab16/32 need to be
 		included if EXT2FS_ENABLE_SWAPFS is defined, since we need
 		to support byte swapping even if we don't support the
