@@ -1,3 +1,9 @@
+1999-11-04    <tytso@valinux.com>
+
+	* fsck.c (main): Move setting of the interactive flag to before
+		the call to check_all(), so that people who try to use
+		fsck -As can do so interactively.
+
 1999-10-26    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.17

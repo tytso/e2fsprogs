@@ -952,12 +952,12 @@ int main(int argc, char *argv[])
 		fsck_path = string_copy(fsck_prefix_path);
 	}
 	
+	if ((num_devices == 1) || (serialize))
+		interactive = 1;
+
 	/* If -A was specified ("check all"), do that! */
 	if (doall)
 		return check_all();
-
-	if ((num_devices == 1) || (serialize))
-		interactive = 1;
 
 	for (i = 0 ; i < num_devices; i++) {
 		fsck_device(devices[i], interactive);
