@@ -29,12 +29,18 @@
 
 static struct ext2_super_block set_sb;
 static struct ext2_inode set_inode;
+static ext2_ino_t set_ino;
+static int array_idx;
+
+#define FLAG_ARRAY	0x0001
 
 struct field_set_info {
 	const char	*name;
 	void	*ptr;
 	unsigned int	size;
 	errcode_t (*func)(struct field_set_info *info, char *arg);
+	int flags;
+	int max_idx;
 };
 
 static errcode_t parse_uint(struct field_set_info *info, char *arg);
@@ -43,6 +49,7 @@ static errcode_t parse_string(struct field_set_info *info, char *arg);
 static errcode_t parse_uuid(struct field_set_info *info, char *arg);
 static errcode_t parse_hashalg(struct field_set_info *info, char *arg);
 static errcode_t parse_time(struct field_set_info *info, char *arg);
+static errcode_t parse_bmap(struct field_set_info *info, char *arg);
 
 static struct field_set_info super_fields[] = {
 	{ "inodes_count", &set_sb.s_inodes_count, 4, parse_uint },
@@ -116,21 +123,11 @@ static struct field_set_info inode_fields[] = {
 	{ "blocks", &set_inode.i_blocks, 4, parse_uint },
 	{ "flags", &set_inode.i_flags, 4, parse_uint },
 	{ "translator", &set_inode.osd1.hurd1.h_i_translator, 4, parse_uint },
-	{ "block[0]", &set_inode.i_block[0], 4, parse_uint },
-	{ "block[1]", &set_inode.i_block[1], 4, parse_uint },
-	{ "block[2]", &set_inode.i_block[2], 4, parse_uint },
-	{ "block[3]", &set_inode.i_block[3], 4, parse_uint },
-	{ "block[4]", &set_inode.i_block[4], 4, parse_uint },
-	{ "block[5]", &set_inode.i_block[5], 4, parse_uint },
-	{ "block[6]", &set_inode.i_block[6], 4, parse_uint },
-	{ "block[7]", &set_inode.i_block[7], 4, parse_uint },
-	{ "block[8]", &set_inode.i_block[8], 4, parse_uint },
-	{ "block[9]", &set_inode.i_block[9], 4, parse_uint },
-	{ "block[10]", &set_inode.i_block[10], 4, parse_uint },
-	{ "block[11]", &set_inode.i_block[11], 4, parse_uint },
-	{ "block[12]", &set_inode.i_block[12], 4, parse_uint },
-	{ "block[13]", &set_inode.i_block[13], 4, parse_uint },
-	{ "block[14]", &set_inode.i_block[14], 4, parse_uint },
+	{ "block", &set_inode.i_block[0], 4, parse_uint, FLAG_ARRAY, 
+	  EXT2_NDIR_BLOCKS },
+	{ "block[IND]", &set_inode.i_block[EXT2_IND_BLOCK], 4, parse_uint },
+	{ "block[DIND]", &set_inode.i_block[EXT2_DIND_BLOCK], 4, parse_uint },
+	{ "block[TIND]", &set_inode.i_block[EXT2_TIND_BLOCK], 4, parse_uint },
 	{ "generation", &set_inode.i_generation, 4, parse_uint },
 	{ "file_acl", &set_inode.i_file_acl, 4, parse_uint },
 	{ "dir_acl", &set_inode.i_dir_acl, 4, parse_uint },
@@ -140,21 +137,60 @@ static struct field_set_info inode_fields[] = {
 	{ "uid_high", &set_inode.osd2.linux2.l_i_uid_high, 8, parse_uint },
 	{ "gid_high", &set_inode.osd2.linux2.l_i_gid_high, 8, parse_uint },
 	{ "author", &set_inode.osd2.hurd2.h_i_author, 8, parse_uint },
+	{ "bmap", NULL, 4, parse_bmap, FLAG_ARRAY },
 	{ 0, 0, 0, 0 }
 };
-
 
 static struct field_set_info *find_field(struct field_set_info *fields,
 					 char *field)
 {
 	struct field_set_info *ss;
+	const char	*prefix;
+	char		*arg, *delim, *idx, *tmp;
 
-	if (strncmp(field, "s_", 2) == 0)
+	if (fields == super_fields)
+		prefix = "s_";
+	else
+		prefix = "i_";
+	if (strncmp(field, prefix, 2) == 0)
 		field += 2;
-	for (ss = fields ; ss->name ; ss++) {
-		if (strcmp(ss->name, field) == 0)
-			return ss;
+
+	arg = malloc(strlen(field)+1);
+	if (!arg)
+		return NULL;
+	strcpy(arg, field);
+
+	idx = strchr(arg, '[');
+	if (idx) {
+		*idx++ = 0;
+		delim = idx + strlen(idx) - 1;
+		if (!*idx || *delim != ']')
+			idx = 0;
+		else
+			*delim = 0;
 	}
+	/* 
+	 * Can we parse the number?
+	 */
+	if (idx) {
+		array_idx = strtol(idx, &tmp, 0);
+		if (*tmp)
+			idx = 0;
+	}
+
+	for (ss = fields ; ss->name ; ss++) {
+		if (ss->flags & FLAG_ARRAY) {
+			if (!idx || (strcmp(ss->name, arg) != 0))
+				continue;
+			if (ss->max_idx > 0 && array_idx >= ss->max_idx)
+				continue;
+		} else {
+			if (strcmp(ss->name, field) != 0)
+				continue;
+		}
+		return ss;
+	}
+
 	return NULL;
 }
 
@@ -162,9 +198,15 @@ static errcode_t parse_uint(struct field_set_info *info, char *arg)
 {
 	unsigned long	num;
 	char *tmp;
-	__u32	*ptr32;
-	__u16	*ptr16;
-	__u8	*ptr8;
+	union {
+		__u32	*ptr32;
+		__u16	*ptr16;
+		__u8	*ptr8;
+	} u;
+
+	u.ptr8 = (__u8 *) info->ptr;
+	if (info->flags & FLAG_ARRAY)
+		u.ptr8 += array_idx * info->size;
 
 	num = strtoul(arg, &tmp, 0);
 	if (*tmp) {
@@ -174,16 +216,13 @@ static errcode_t parse_uint(struct field_set_info *info, char *arg)
 	}
 	switch (info->size) {
 	case 4:
-		ptr32 = (__u32 *) info->ptr;
-		*ptr32 = num;
+		*u.ptr32 = num;
 		break;
 	case 2:
-		ptr16 = (__u16 *) info->ptr;
-		*ptr16 = num;
+		*u.ptr16 = num;
 		break;
 	case 1:
-		ptr8 = (__u8 *) info->ptr;
-		*ptr8 = num;
+		*u.ptr8 = num;
 		break;
 	}
 	return 0;
@@ -297,12 +336,35 @@ static errcode_t parse_hashalg(struct field_set_info *info, char *arg)
 	return 0;
 }
 
+static errcode_t parse_bmap(struct field_set_info *info, char *arg)
+{
+	unsigned long	num;
+	blk_t		blk;
+	errcode_t	retval;
+	char		*tmp;
+
+	num = strtoul(arg, &tmp, 0);
+	if (*tmp) {
+		fprintf(stderr, "Couldn't parse '%s' for field %s.\n",
+			arg, info->name);
+		return EINVAL;
+	}
+	blk = num;
+
+	retval = ext2fs_bmap(current_fs, set_ino, &set_inode, 0, BMAP_SET, 
+			     array_idx, &blk);
+	if (retval) {
+		com_err("set_inode", retval, "while setting block map");
+	}
+}
+
 
 static void print_possible_fields(struct field_set_info *fields)
 {
 	struct field_set_info *ss;
 	const char	*type, *cmd;
 	FILE *f;
+	char name[40], idx[40];
 
 	if (fields == super_fields) {
 		type = "Superblock";
@@ -329,7 +391,15 @@ static void print_possible_fields(struct field_set_info *fields)
 			type = "hash algorithm";
 		else if (ss->func == parse_time)
 			type = "date/time";
-		fprintf(f, "\t%-20s\t%s\n", ss->name, type);
+		strcpy(name, ss->name);
+		if (ss->flags & FLAG_ARRAY) {
+			if (ss->max_idx > 0) 
+				sprintf(idx, "[%d]", ss->max_idx);
+			else
+				strcpy(idx, "[]");
+			strcat(name, idx);
+		}
+		fprintf(f, "\t%-20s\t%s\n", name, type);
 	}
 	close_pager(f);
 }
@@ -368,7 +438,6 @@ void do_set_inode(int argc, char *argv[])
 		"\t\"set_inode -l\" will list the names of "
 		"the fields in an ext2 inode\n\twhich can be set.";
 	static struct field_set_info *ss;
-	ext2_ino_t ino;
 	
 	if ((argc == 2) && !strcmp(argv[1], "-l")) {
 		print_possible_fields(inode_fields);
@@ -384,15 +453,15 @@ void do_set_inode(int argc, char *argv[])
 		return;
 	}
 
-	ino = string_to_inode(argv[1]);
-	if (!ino)
+	set_ino = string_to_inode(argv[1]);
+	if (!set_ino)
 		return;
 
-	if (debugfs_read_inode(ino, &set_inode, argv[1]))
+	if (debugfs_read_inode(set_ino, &set_inode, argv[1]))
 		return;
 
 	if (ss->func(ss, argv[3]) == 0) {
-		if (debugfs_write_inode(ino, &set_inode, argv[1]))
+		if (debugfs_write_inode(set_ino, &set_inode, argv[1]))
 			return;
 	}
 }

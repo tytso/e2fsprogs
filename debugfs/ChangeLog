@@ -1,3 +1,10 @@
+2004-12-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* set_fields.c: Add support for array indexes, which we use for
+		the i_block[] array.  Also add the pseudo inode field
+		bmap, which can be used for setting logical->physical
+		mappings directly.
+
 2004-12-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* setfields.c: Renamed from setsuper.c
