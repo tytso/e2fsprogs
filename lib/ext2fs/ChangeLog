@@ -1,3 +1,8 @@
+2004-09-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* llseek.c (ext2fs_llseek): On non-linux systems, use lseek64() if
+		it is present.  (Addresses Debian bug #269044)
+
 2004-07-28  Theodore Ts'o  <tytso@mit.edu>
 
 	* rw_bitmaps.c (read_bitmaps), block.c (block_iterate_ind,

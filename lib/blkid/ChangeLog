@@ -1,3 +1,8 @@
+2004-09-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* llseek.c (blkid_llseek): On non-linux systems, use lseek64() if
+		it is present.  (Addresses Debian bug #269044)
+
 2004-05-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* read.c (blkid_read_cache): Add missing fclose() which was
