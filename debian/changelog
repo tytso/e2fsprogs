@@ -4,7 +4,8 @@ e2fsprogs (1.35-8) unstable; urgency=low
        when there is a trailing '/' in the directory name.  (Closes: #272943)
   * Make sure the configure files are newer than configure.in the
        debian/rules file so that a dpkg-source created patch won't
-       trigger an attempt rebuild of the configure script.  (Closes: #272558)
+       trigger an attempt rebuild of the configure script.  
+       (Closes: #272558, #273242)
   * Make sure /usr/lib/e2initrd_helper is in the e2fsprogs package.
        (Closes: #272698, #272728, #273161, #273163)
   * Only use blocksizes > 4k on Linux 2.6 and newer systems.  (Closes: #271064)
