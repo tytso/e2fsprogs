@@ -1,3 +1,9 @@
+2002-07-02  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.8.in: Cleaned up man page, and made it a bit more
+		OS-agnostic.  Addresses Debian bug #144621.  Hope this
+		makes the Hurd whiners happy.  :-)
+
 2002-06-28  Theodore Ts'o  <tytso@mit.edu>
 
 	* chattr.1.in: Fix man page typo.  (Addresses Debian bug #141938)

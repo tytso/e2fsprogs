@@ -4,7 +4,7 @@
 .\" 
 .TH MKE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-mke2fs \- create a Linux second extended file system
+mke2fs \- create an ext2/3 filesystem
 .SH SYNOPSIS
 .B mke2fs
 [
@@ -120,8 +120,7 @@ mke2fs \- create a Linux second extended file system
 @JDEV@]
 .SH DESCRIPTION
 .B mke2fs
-is used to create a Linux second extended file system on a device (usually
-a disk partition).
+is used to create an ext2/ext3 filesystem (usually in a disk partition).
 .I device
 is the special file corresponding to the device (e.g 
 .IR /dev/hdXX ).
@@ -187,13 +186,12 @@ The following journal options are supported:
 .RS 1.2i
 .TP
 .BI size= journal-size
-Create a journal stored in the filesystem of size
+Create an internal journal (i.e., stored inside the filesystem) of size
 .I journal-size 
 megabytes.
 The size of the journal must be at least 1024 filesystem blocks 
 (i.e., 1MB if using 1k blocks, 4MB if using 4k blocks, etc.) 
 and may be no more than 102,400 filesystem blocks.  
-The journal must fit within the newly created filesystem.  
 @JDEV@.TP
 @JDEV@.BI device= external-journal
 @JDEV@Attach the filesystem to the journal block device located on
@@ -280,14 +278,15 @@ Currently, the
 .B sparse_super
 and
 .B filetype
-features are turned on by default unless 
+features are turned on by default when 
 .B mke2fs
-is run on a system with a pre-2.2 Linux kernel.  Filesystems that
-may need to mounted on pre-2.2 kernels should be created with 
+is run on a system with Linux 2.2 or later (unless creator-os is set to
+the Hurd).  Filesystems that may need to be mounted on pre-2.2 Linux or
+other kernels should be created with
 .B "\-O none"
 (or
 .B "\-r 0"
-for 1.2 kernels) which will disable these features, even if 
+for Linux 1.2) which will disable these features, even if 
 .B mke2fs 
 is run on a system which can support them.
 .sp
