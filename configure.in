@@ -827,6 +827,14 @@ else
 fi
 AC_SUBST(DO_TEST_SUITE)
 dnl
+dnl Only include the intl include files if we're building with them
+dnl 
+INTL_FLAGS=
+if test "$USE_INCLUDED_LIBINTL" = "yes" ; then
+	INTL_FLAGS='-I$(top_builddir)/intl -I$(top_srcdir)/intl'
+fi
+AC_SUBST(INTL_FLAGS)
+dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
 dnl directories
 dnl

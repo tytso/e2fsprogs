@@ -1,3 +1,10 @@
+2003-05-17  Theodore Tso  <tytso@thunk.org>
+
+	* MCONFIG.in, configure.in: Only put the intl directory in the -I
+		search path if we are using --with-internal-gettext.
+		Otherwise causes compatibility problems with the woody
+		glibc.   (Addresses Debian bug #193372)
+
 2003-05-13  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Fix typo in help message for --enable-evms-11

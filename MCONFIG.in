@@ -37,9 +37,10 @@ BUILD_CC = @BUILD_CC@
 DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@
+INTL_FLAGS = @INTL_FLAGS@
 ALL_CFLAGS = $(CPPFLAGS) $(DEFS) $(USE_WFLAGS) $(CFLAGS) $(XTRA_CFLAGS) \
-	-I$(top_builddir)/intl -I$(top_srcdir)/intl \
-	-I$(top_builddir)/lib -I$(top_srcdir)/lib $(LINUX_INCLUDE) 
+	$(INTL_FLAGS) -I$(top_builddir)/lib -I$(top_srcdir)/lib \
+	$(LINUX_INCLUDE) 
 LDFLAGS = @LDFLAGS@
 ALL_LDFLAGS = $(LDFLAGS)
 RM = @RM@

@@ -6145,6 +6145,11 @@ else
   DO_TEST_SUITE=check
 fi
 
+INTL_FLAGS=
+if test "$USE_INCLUDED_LIBINTL" = "yes" ; then
+	INTL_FLAGS='-I$(top_builddir)/intl -I$(top_srcdir)/intl'
+fi
+
 test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux
@@ -6419,6 +6424,7 @@ s%@LDFLAG_STATIC@%$LDFLAG_STATIC%g
 s%@SS_DIR@%$SS_DIR%g
 s%@ET_DIR@%$ET_DIR%g
 s%@DO_TEST_SUITE@%$DO_TEST_SUITE%g
+s%@INTL_FLAGS@%$INTL_FLAGS%g
 
 CEOF
 EOF
