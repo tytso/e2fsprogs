@@ -4,6 +4,9 @@
 		percentage after multiplying it by 10, nor 1000, since we
 		only need to save values to a tenth of a percent (and the
 		percentage is already from 0 .. 100%, not 0 .. 1).
+		Also, re-arrange the logic so that we do the time
+		check only after doing the percentage check, and we
+		only advance the spinner if we're about to display it.
 
 2000-07-04  Theodore Ts'o  <tytso@valinux.com>
 

@@ -1,3 +1,7 @@
+2000-07-05    <tytso@snap.thunk.org>
+
+	* Makefile.in (install): Install resize2fs in /sbin, not /usr/sbin.
+
 2000-06-12  Theodore Ts'o  <tytso@valinux.com>
 
 	* main.c, resize2fs.c, resize2fs.h, extent.c: Add NLS support.

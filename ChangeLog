@@ -31,7 +31,7 @@
 Thu Apr  6 17:43:11 2000  Theodore Y. Ts'o  <tytso@signal.thunk.org>
 
 	* configure.in (fdatasync): Add test for fdatasync(), since not
-		all functions have this function.
+		all OS's have this function.
 
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
