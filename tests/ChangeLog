@@ -1,3 +1,8 @@
+2000-02-07  Theodore Ts'o  <tytso@valinux.com>
+
+	* f_swapfs: Fix expected text to match changed debugfs dump
+		command for i_generation field.
+
 1999-11-10    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.18
