@@ -318,7 +318,8 @@ inline.o: $(srcdir)/inline.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 inode.o: $(srcdir)/inode.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(srcdir)/ext2fsP.h $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+ $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h \
+ $(srcdir)/e2image.h
 ismounted.o: $(srcdir)/ismounted.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
@@ -350,7 +351,7 @@ newdir.o: $(srcdir)/newdir.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 openfs.o: $(srcdir)/openfs.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h $(srcdir)/e2image.h
 read_bb.o: $(srcdir)/read_bb.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
@@ -363,7 +364,7 @@ rs_bitmap.o: $(srcdir)/rs_bitmap.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 rw_bitmaps.o: $(srcdir)/rw_bitmaps.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h $(srcdir)/e2image.h
 swapfs.o: $(srcdir)/swapfs.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
