@@ -192,6 +192,8 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	    case EXT2_OS_LINUX: os = "Linux"; break;
 	    case EXT2_OS_HURD:  os = "GNU/Hurd"; break;
 	    case EXT2_OS_MASIX: os = "Masix"; break;
+	    case EXT2_OS_FREEBSD: os = "FreeBSD"; break;
+	    case EXT2_OS_LITES:	os = "Lites"; break;
 	    default:		os = "unknown"; break;
 	}
 	fprintf(f, "Filesystem OS type:       %s\n", os);

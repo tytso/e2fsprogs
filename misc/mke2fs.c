@@ -702,6 +702,8 @@ static void show_stats(ext2_filsys fs)
 	    case EXT2_OS_LINUX: fputs("Linux", stdout); break;
 	    case EXT2_OS_HURD:  fputs("GNU/Hurd", stdout);   break;
 	    case EXT2_OS_MASIX: fputs ("Masix", stdout); break;
+	    case EXT2_OS_FREEBSD: fputs ("FerrBSD", stdout); break;
+	    case EXT2_OS_LITES: fputs ("Lites", stdout); break;
 	    default:		fputs(_("(unknown os)"), stdout);
         }
 	printf("\n");
@@ -767,6 +769,10 @@ static int set_os(struct ext2_super_block *sb, char *os)
 		sb->s_creator_os = EXT2_OS_HURD;
 	else if (strcasecmp(os, "masix") == 0)
 		sb->s_creator_os = EXT2_OS_MASIX;
+	else if (strcasecmp(os, "freebsd") == 0)
+		sb->s_creator_os = EXT2_OS_FREEBSD;
+	else if (strcasecmp(os, "lites") == 0)
+		sb->s_creator_os = EXT2_OS_LITES;
 	else
 		return 0;
 	return 1;

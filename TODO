@@ -202,3 +202,8 @@ From e2fsprogs Debian TODO file as of 1.10-13.
 
 Add --lba option to debian icheck command, and have ways of making it
 easier to translate LBA to filesystem block numbers.
+
+-------------------------------------------------------
+
+Move creator_os string parsing and unparsing from mke2fs and e2p/ls.c
+to a centralized e2p library function.
