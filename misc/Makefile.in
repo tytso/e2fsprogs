@@ -200,7 +200,8 @@ tune2fs.o: $(srcdir)/tune2fs.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_srcdir)/lib/uuid/uuid.h $(top_srcdir)/lib/e2p/e2p.h \
  $(srcdir)/jfs_user.h $(top_srcdir)/include/linux/jfs.h \
  $(top_srcdir)/include/linux/jfs_compat.h $(top_srcdir)/include/linux/list.h \
- $(srcdir)/util.h $(top_srcdir)/version.h $(srcdir)/nls-enable.h
+ $(srcdir)/util.h $(srcdir)/get_device_by_label.h $(top_srcdir)/version.h \
+ $(srcdir)/nls-enable.h
 mklost+found.o: $(srcdir)/mklost+found.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/version.h \
  $(srcdir)/nls-enable.h
@@ -235,7 +236,8 @@ util.o: $(srcdir)/util.c $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/nls-enable.h $(srcdir)/util.h \
- $(srcdir)/get_device_by_label.h
+ $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/nls-enable.h \
+ $(srcdir)/get_device_by_label.h $(srcdir)/util.h
 uuidgen.o: $(srcdir)/uuidgen.c $(top_srcdir)/lib/uuid/uuid.h \
  $(srcdir)/nls-enable.h
+fstype.o: $(srcdir)/fstype.c
