@@ -215,10 +215,10 @@ static errcode_t test_write_blk(io_channel channel, unsigned long block,
 
 	if (data->real)
 		retval = io_channel_write_blk(data->real, block, count, buf);
-	if (data->write_byte)
-		data->write_byte(block, count, retval);
+	if (data->write_blk)
+		data->write_blk(block, count, retval);
 	else
-		printf("Test_io: write_byte(%lu, %d) returned %s\n",
+		printf("Test_io: write_blk(%lu, %d) returned %s\n",
 		       block, count, retval ? error_message(retval) : "OK");
 	return retval;
 }
@@ -238,7 +238,7 @@ static errcode_t test_write_byte(io_channel channel, unsigned long offset,
 	if (data->write_byte)
 		data->write_byte(offset, count, retval);
 	else
-		printf("Test_io: write_blk(%lu, %d) returned %s\n",
+		printf("Test_io: write_byte(%lu, %d) returned %s\n",
 		       offset, count, retval ? error_message(retval) : "OK");
 	return retval;
 }

@@ -1,3 +1,8 @@
+2000-11-21    <tytso@snap.thunk.org>
+
+	* test_io.c (test_write_blk, test_write_byte): Fix typos pointed
+		out by Andreas Dilger.
+
 2000-11-05    <tytso@snap.thunk.org>
 
 	* imager.c (ext2fs_image_{inode,super,bitmap}_{read,write},
