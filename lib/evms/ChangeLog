@@ -1,3 +1,10 @@
+2002-06-01    <tytso@thunk.org>
+
+	* fs_ext2.c (fs_init_task): Fix minor bugs pointed out by Steve
+		Pratt.  Fixed a selection bug and added checks to make
+		sure volumes are not mounted when creating the list of
+		volumes which can be mkfs'ed by the ext2/3 plugin.
+
 2002-05-28    <tytso@thunk.org>
 
 	* fsimext2.c: Log the fsck and mke2fs command lines.  Return

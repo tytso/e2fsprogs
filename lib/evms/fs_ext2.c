@@ -631,7 +631,7 @@ static int fs_init_task( task_context_t * context )
 	
 	LOGENTRY();
 
-	context->min_selected_objects = 0;
+	context->min_selected_objects = 1;
 	context->max_selected_objects = 1;
 	context->option_descriptors->count = 0;
 
@@ -647,7 +647,9 @@ static int fs_init_task( task_context_t * context )
 		switch (context->action) {
 		case EVMS_Task_mkfs:
 			/* only mkfs unformatted volumes */
-			if (volume->file_system_manager == NULL) {
+			if ((volume->file_system_manager == NULL) &&
+			    !EVMS_IS_MOUNTED(volume) &&
+			    (volume->vol_size > MINEXT2)) {
 				rc = InsertObject(context->acceptable_objects, sizeof(logical_volume_t), volume, VOLUME_TAG, NULL, InsertAtStart, TRUE, (void **)&waste);
 			}
 			break;
