@@ -1,9 +1,12 @@
-E2fsprogs 1.23-WIP (July 20, 2001)  (up to 1.23-WIP-0620)
+E2fsprogs 1.23-WIP (July 20, 2001)  (up to 1.23-WIP-0722)
 ==================================
 
 Add initial support for extended attributes (EA); e2fsck will
-correctly handle a filesystem with extended attributes and check the
-EA blocks for corruptions.
+correctly handle a filesystem with EA's and check the EA blocks for
+corruptions.
+
+Add initial support for external journals (so long as the external journal
+only supports a single filesystem).
 
 Speed up the check of an ext3 filesystems by avoiding a needless flush
 of all of the superblock and block group descriptors.
