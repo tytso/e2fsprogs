@@ -7,6 +7,9 @@
 e2image \- Save critical ext2 filesystem data to a file
 .SH SYNOPSIS
 .B e2image
+[
+.B \-r
+]
 .I device
 .I image-file
 .SH DESCRIPTION
@@ -27,6 +30,20 @@ option to those programs.  This can be used by an expert in assisting
 the recovery of catastrophically corrupted filesystems.  In the future,
 e2fsck will be enhanced to be able to use the image file to help
 recover a badly damaged filesystem.
+.PP
+The 
+.B \-r
+option will create a raw image file instead.  A raw image file differs
+from a normal image file in two ways.  First, the filesystem metadata is
+placed in the proper position so that e2fsck, dumpe2fs, debugfs,
+etc. can be run directly on the raw image file.  In order to minimize
+the amount of disk space consumed by a raw image file, the file is
+created as a sparse file.  (Beware of copying or
+compressing/decompressing this file with utilities that don't understand
+how to create sparse files; the file will become as large as the
+filesystem itself!)  Secondly, the raw image file also includes indirect
+blocks and data blocks, which the current image file does not have ---
+although this may change in the future.
 .PP
 It is a very good idea to periodically (at boot time and 
 every week or so) to create image files for all of
@@ -54,7 +71,7 @@ filesystem, with 200,000 inodes in use out of 1.2 million inodes, the
 image file be approximately 35 megabytes; a 4 gigabyte filesystem with
 15,000 inodes in use out of 550,000 inodes will result in a 3 megabyte
 image file.  Image files tend to be quite
-compressible; a sparse image file taking up 32 megabytes of space on
+compressible; an image file taking up 32 megabytes of space on
 disk will generally compress down to 3 or 4 megabytes.
 .PP
 .SH AUTHOR
