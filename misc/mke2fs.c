@@ -1123,6 +1123,11 @@ static void PRS(int argc, char *argv[])
 				  "(max %d), forced to continue\n"),
 			blocksize, sys_page_size);
 	}
+	if ((blocksize > 4096) &&
+	    (param.s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+		fprintf(stderr, "\nWarning: some 2.4 kernels do not support "
+			"blocksizes greater than 4096 \n\tusing ext3."
+			"  Use -b 4096 if this is an issue for you.\n\n");
 
 	if (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		if (!fs_type)

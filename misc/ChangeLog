@@ -1,5 +1,9 @@
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
+	* mke2fs.c (PRS): Add warning if using -j and the blocksize is
+		greater than 4096, since some kernels don't support ext3
+		with large block sizes.  (Addresses Debian bug #193773)
+
 	* badblocks.c (set_o_direct): Remove debugging printf.  (Addresses
 		Debian bug #201499)
 
