@@ -1,3 +1,8 @@
+2003-03-06    <tytso@mit.edu>
+
+	* devname.c (probe_one): Fix bug; if a partition has no known
+		type, don't derference a null pointer and crash.
+
 2003-03-06  Theodore Tso  <tytso@mit.edu>
 
 	* blkid_types.h.in: Don't redefine types if other e2fsprogs

@@ -129,7 +129,8 @@ static void probe_one(blkid_cache cache, const char *ptname,
 set_pri:
 	if (!pri && !strncmp(ptname, "md", 2))
 		pri = BLKID_PRI_MD;
-	dev->bid_pri = pri;
+	if (dev)
+		dev->bid_pri = pri;
 	return;
 }
 
