@@ -421,7 +421,7 @@ to be written when the filesystem is closed or flushed.
 Read the inode number @var{ino} into @var{inode}.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_write_inode(ext2_filsys @var{fs}, ext2_ino_t @var{ino}, struct ext2_inode *@var{inode})
+@deftypefun errcode_t ext2fs_write_inode (ext2_filsys @var{fs}, ext2_ino_t @var{ino}, struct ext2_inode *@var{inode})
 Write @var{inode} to inode @var{ino}.
 @end deftypefun
 
@@ -917,7 +917,7 @@ inode counts, namely (1) inode counts are very often zero (because
 the inode is currrently not in use), and (2) many files have a inode
 count of 1 (because they are a file which has no additional hard links).
 
-@deftypefun errcode_t ext2fs_create_icount2(ext2_filsys @var{fs}, int @var{flags}, int @var{size}, ext2_icount_t @var{hint}, ext2_icount_t *@var{ret})
+@deftypefun errcode_t ext2fs_create_icount2 (ext2_filsys @var{fs}, int @var{flags}, int @var{size}, ext2_icount_t @var{hint}, ext2_icount_t *@var{ret})
 
 Creates an icount stucture for a filesystem @var{fs}, with initial space
 for @var{size} inodes whose count is greater than 1.  The @var{flags}
@@ -933,38 +933,38 @@ that the icount structure can determine in advance which inodes are
 likely to contain a count grater than 1.
 @end deftypefun
 
-@deftypefun void ext2fs_free_icount(ext2_icount_t @var{icount})
+@deftypefun void ext2fs_free_icount (ext2_icount_t @var{icount})
 
 Frees an icount structure.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_icount_fetch(ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})
+@deftypefun errcode_t ext2fs_icount_fetch (ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})
 
 Returns in @var{ret} fetches the count for a particular inode @var{ino}.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_icount_increment(ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})
+@deftypefun errcode_t ext2fs_icount_increment (ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})
 
 Increments the ref count for inode @var{ino}.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_icount_decrement(ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})
+@deftypefun errcode_t ext2fs_icount_decrement (ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})
 
 Decrements the ref count for inode @var{ino}.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_icount_store(ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 @var{count})
+@deftypefun errcode_t ext2fs_icount_store (ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 @var{count})
 
 Sets the reference count for inode @var{ino} to be @var{count}.
 @end deftypefun
 
-@deftypefun ext2_ino_t ext2fs_get_icount_size(ext2_icount_t @var{icount})
+@deftypefun ext2_ino_t ext2fs_get_icount_size (ext2_icount_t @var{icount})
 
 Returns the current number of inodes in @var{icount} which has a count
 greater than 1.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_icount_validate(ext2_icount_t @var{icount}, FILE *@var{f})
+@deftypefun errcode_t ext2fs_icount_validate (ext2_icount_t @var{icount}, FILE *@var{f})
 
 Validates the internal rep invariant of @var{icount}; if there are any
 problems, print out debugging information to @var{f}.  This function is
@@ -1026,7 +1026,7 @@ intended for debugging and testing use only.
 
 /* version.c */
 
-@deftypefun int ext2fs_get_library_version(const char **@var{ver_string}, const char **@var{date_string})
+@deftypefun int ext2fs_get_library_version (const char **@var{ver_string}, const char **@var{date_string})
 
 This function returns the current version of the ext2 library.  The
 return value contains an integer version code, which consists of the
@@ -1039,7 +1039,7 @@ set to point at a constant string containing the library version and/or
 release date, respectively.
 @end deftypefun
 
-@deftypefun int ext2fs_parse_version_string(const char *@var{ver_string})
+@deftypefun int ext2fs_parse_version_string (const char *@var{ver_string})
 
 This function takes a version string which may included in an
 application and returns a version code using the same algorithm used by

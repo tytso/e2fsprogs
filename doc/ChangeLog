@@ -1,3 +1,8 @@
+2001-08-30  Theodore Tso  <tytso@valinux.com>
+
+	* libext2fs.texinfo: Remove texinfo warnings by adding white space
+		after the function name and before the open parenthesis.
+
 2001-08-15  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.23
