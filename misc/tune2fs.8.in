@@ -63,7 +63,7 @@ tune2fs \- adjust tunable filesystem parameters on second extended filesystems
 ]
 [
 .B \-O 
-\fR[^]\fIfeature\fR[,...]
+.RI [^] feature [,...]
 ]
 [
 .B \-U
@@ -76,31 +76,41 @@ adjusts tunable filesystem parameters on a Linux second extended filesystem.
 .SH OPTIONS
 .TP
 .BI \-c " max-mount-counts"
-adjust the maximal mounts count between two filesystem checks.  If 
+Adjust the maximal mounts count between two filesystem checks.  If 
 .I max-mount-counts
-is -1 then the number of times the filesystem is mounted will be disregarded
+is 0 then the number of times the filesystem is mounted will be disregarded
 by e2fsck and the kernel.
 .TP
+.BI \-C " mount-count"
+Set the number of times the filesystem has been mounted.
+Can be used in conjunction with -c to force an fsck on
+the filesystem at the next reboot.
+.TP
 .BI \-e " error-behavior"
-change the behavior of the kernel code when errors are detected.
+Change the behavior of the kernel code when errors are detected.
 .I error-behavior
 can be one of the following:
-.br
-\	continue\	\	Continue normal execution.
-.br
-\	remount-ro\	Remount filesystem read-only.
-.br
-\	panic\	\	Cause a kernel panic.
+.RS 1.2i
+.TP 1.2i
+.B continue
+Continue normal execution.
+.TP
+.B remount-ro
+Remount filesystem read-only.
+.TP
+.B panic
+Cause a kernel panic.
+.RE
 .TP
 .BI \-g " group"
-set the user group which can benefit from the reserved blocks.
-.br
+Set the group which can use reserved filesystem blocks.
+The 
 .I group
-can be a numerical gid or a group name.  If a group name is given,
+parameter can be a numerical gid or a group name.  If a group name is given,
 it is converted to a numerical gid before it is stored in the superblock.
 .TP
-.BI \-i " interval-between-checks\fR[\fBd\fR|\fBm\fR|\fBw\fR]"
-adjust the maximal time between two filesystem checks. 
+.B \-i " \fIinterval-between-checks\fR[\fBd\fR|\fBm\fR|\fBw\fR]"
+Adjust the maximal time between two filesystem checks. 
 No postfix or
 .B d
 result in days,
@@ -110,104 +120,151 @@ in months, and
 in weeks.  A value of zero will disable the timedependent checking.
 .TP
 .B -j
-Add an ext3 journal to the filesystem.
-If the 
+Add an ext3 journal to the filesystem.  If the 
 .B \-J
 option is not specified, the default journal parameters will used will create
 an appropriately sized journal (given the size of the filesystem) 
-stored within the filesystem.
+stored within the filesystem.  Note that you must be using a kernel
+which has ext3 support in order to actually make use of the journal.
 .TP
 .BR \-J " journal_options"
-add a journal inode or device to the filesystem.  
-Journal options are comma
+Override the default ext3 journal parameters. Journal options are comma
 separated, and may take an argument using the equals ('=')  sign.
-Currently only two (mutually exclusive) options are supported,
-.I size
-and
-.IR device .
+The following journal options are supported:
+.RS 1.2i
 .TP
-.BI "\-J size=" journal-size
+.BI size= journal-size
 Create a journal stored in the filesystem of size
 .IR journal-size .
 The size of the journal must be between 1024 and 10,240 filesystem blocks and
 there must be sufficient free space in the filesystem to create a journal of
 that size.
-.TP
-.BI "\-J device=" external-journal
-Add an external journal found on a block device
-named by 
-.I external-journal 
-to the filesystem.
-The external 
-journal must have been already created using the command
-.B mke2fs -O journal_dev 
-.IR journal-device.
+@JDEV@.TP
+@JDEV@.BI device= external-journal
+@JDEV@Add an external journal found on a block device
+@JDEV@named by 
+@JDEV@.I external-journal 
+@JDEV@to the filesystem.
+@JDEV@The external 
+@JDEV@journal must have been already created using the command
+@JDEV@.B mke2fs -O journal_dev 
+@JDEV@.IR journal-device.
+.RE
+@JDEV@.IP
+@JDEV@Only one of the
+@JDEV@.BR size " or " device
+@JDEV@options can be given for a filesystem.
 .TP
 .B \-l
-list the contents of the filesystem superblock.
-.TP
-.BI \-m " reserved-blocks-percentage"
-adjust the reserved blocks percentage on the given device.
-.TP
-.BI \-r " reserved-blocks-count"
-adjust the reserved blocks count on the given device.
-.TP
-.BI \-s " sparse_super_flag"
-set or reset the sparse_superblock flag.  The sparse_super feature
-saves space on really big filesystems.
-.B Warning:
-The Linux kernels before 2.0.39 do not support this feature.  Neither do
-all Linux 2.1 kernels; please don't use this unless you know what you're
-doing!
-.TP
-.BI \-u " user"
-set the user who can benefit from the reserved blocks.
-.I user
-can be a numerical uid or a user name.  If a user name is given, it 
-is converted to a numerical uid before it is stored in the superblock.
-.TP
-.BI \-C " mount-count"
-set the number of times the filesystem has been mounted.
+List the contents of the filesystem superblock.
 .TP
 .BI \-L " volume-label"
-set the volume label of the filesystem.  
+Set the volume label of the filesystem.  
 Ext2 filesystem labels can be at most 16 characters long; if
 .I volume-label 
 is longer than 16 characters, 
 .B tune2fs
-will truncate it and print a warning message.  
+will truncate it and print a warning.  
+.TP
+.BI \-m " reserved-blocks-percentage"
+Set the percentage of reserved filesystem blocks.
 .TP
 .BI \-M " last-mounted-directory"
-set the last-mounted directory for the filesystem.
+Set the last-mounted directory for the filesystem.
 .TP
 .BI \-O " \fR[^]\fIfeature\fR[,...]"
 set or clear the indicated filesystem features (options) in the filesystem.
-.I Feature
-can be one of the following supported filesystem options: 
-.IR sparse_super ,
-which will cause the filesystem to use sparse superblocks, and
-.IR filetype ,
-which will cause the filesystem to store file type information in 
-directory entries.  After setting or clearing either filesystem feature,
-e2fsck must be run on the filesystem.
+More than one filesystem feature can be cleared or set by separating
+features with commas.  Filesystem features prefixed with a 
+caret character ('^') will be cleared in the filesystem's superblock; 
+filesystem features without a prefix character or prefixed with a plus 
+character ('+') will be added to the filesystem.
+.IP
+The following filesystem features can be set or cleared using
+.BR
+tune2fs :
+.RS 1.2i
+.TP
+.B sparse_super
+Limit the number of backup superblocks to save space on large filesystems.
+.TP
+.B filetype
+Store file type information in 
+directory entries.
+.TP
+.B has_journal
+Create an ext3 journal (as if using the
+.B \-j
+option).
+.RE
+.IP
+After setting or clearing any filesystem feature,
+.BR e2fsck (8)
+must be run on the filesystem to return the filesystem to a 
+consistent state.
+This option must not be used on mounted filesystems.
+.IP
+.B Warning:
+Linux kernels before 2.0.39 do not support the sparse_super 
+or filetype features; neither do all Linux 2.1 kernels.  
+Enabling certain filesystem features
+may prevent the filesystem from being mounted on older kernels.
+.TP
+.BI \-r " reserved-blocks-count"
+Set the number of reserved filesystem blocks.
+.TP
+.BI \-s " sparse_super_flag"
+set or reset the sparse_superblock flag.  The sparse_super feature
+saves space on really big filesystems.  This is the same as using the
+.B "\-O sparse_super"
+option.
+.IP
+.B Warning:
+The Linux kernels before 2.0.39 do not support this feature.  Neither do
+all Linux 2.1 kernels; please don't use this unless you know what you're
+doing!  You need to run
+.BR e2fsck (8)
+on the filesystem after changing this feature in order to have a valid
+filesystem.
+.TP
+.BI \-u " user"
+Set the user who can use the reserved filesystem blocks.
+.I user
+can be a numerical uid or a user name.  If a user name is given, it 
+is converted to a numerical uid before it is stored in the superblock.
 .TP
 .BI \-U " UUID"
-set the UUID of the filesystem.  A sample UUID looks like this: 
-"c1b9d5a2-f162-11cf-9ece-0020afc76f16".  The uuid may also be
-.IR null ,
-which will set the filesystem UUID to the null UUID (clearing it), 
-.IR random ,
-which will generate a new random-based UUID for the filesystem, or
-.IR time ,
-which will generate a new time-based UUID for the filesystem (see
-.BR uuidgen (8)).
+set the universally unique identifier (UUID) of the filesystem to
+.IR UUID .
+The format of the UUID is a series of hex digits separated by hypthens, 
+like this: 
+"c1b9d5a2-f162-11cf-9ece-0020afc76f16".  
+The 
+.I UUID
+parameter may also be one of the following:
+.RS 1.2i
+.TP
+.I clear
+clear the filesystem UUID
+.TP
+.I random
+generate a new randomly-generated UUID
+.TP
+.I time
+generate a new time-based UUID
+.RE
+.IP
+See
+.BR uuidgen (8)
+for more information.
+If the system does not have a good random number generator such as
+.I /dev/random
+or
+.IR /dev/urandom ,
+.B tune2fs
+will automatically use a time-based UUID instead of a randomly-generated UUID.
 .SH BUGS
 We haven't found any bugs yet.  That doesn't mean there aren't any...
-.SH WARNING
-Never use tune2fs to change parameters of a read/write mounted filesystem!
-.B Use this utility
-.B at your own risk.
-You're modifying a filesystem!
 .SH AUTHOR
 .B tune2fs 
 was written by Remy Card <Remy.Card@linux.org>.

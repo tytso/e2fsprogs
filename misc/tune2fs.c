@@ -387,6 +387,8 @@ static void parse_tune2fs_options(int argc, char **argv)
 						 optarg);
 					usage();
 				}
+				if (max_mount_count == 0)
+					max_mount_count = -1;
 				c_flag = 1;
 				open_flag = EXT2_FLAG_RW;
 				break;
