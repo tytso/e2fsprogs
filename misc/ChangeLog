@@ -1,5 +1,8 @@
 2001-01-11    <tytso@snap.thunk.org>
 
+	* badblocks.c (flush_bufs): Use ext2fs_sync_device() to sync and
+		flush the device.
+
 	* mke2fs.c: Change ino_t to ext2_ino_t.
 
 2001-01-08    <tytso@snap.thunk.org>

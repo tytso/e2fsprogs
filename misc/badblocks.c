@@ -47,10 +47,6 @@ extern int optind;
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
-#if HAVE_LINUX_FS_H
-#include <linux/fd.h>
-#endif
-
 #include "et/com_err.h"
 #include "ext2fs/ext2_io.h"
 #include <linux/ext2_fs.h>
@@ -214,22 +210,13 @@ static long do_write (int dev, char * buffer, int try, int block_size,
 
 static int host_dev;
 
-static void flush_bufs (int dev)
+static void flush_bufs(void)
 {
-#ifdef HAVE_FDATASYNC
-  if (fdatasync (dev) == -1)
-    com_err (program_name, errno, _("during fdatasync"));
-#else
-  if (fsync (dev) == -1)
-    com_err (program_name, errno, _("during fsync"));
-#endif
+	errcode_t	retval;
 
-#ifdef BLKFLSBUF
-  ioctl (host_dev, BLKFLSBUF, 0);   /* In case this is a HD */
-#endif
-#ifdef FDFLUSH
-  ioctl (host_dev, FDFLUSH, 0);   /* In case this is floppy */
-#endif
+	retval = ext2fs_sync_device(host_dev, 1);
+	if (retval)
+		com_err(program_name, retval, _("during ext2fs_sync_device"));
 }
 
 static unsigned int test_ro (int dev, unsigned long blocks_count,
@@ -258,7 +245,7 @@ static unsigned int test_ro (int dev, unsigned long blocks_count,
 		com_err (program_name, ENOMEM, _("while allocating buffers"));
 		exit (1);
 	}
-	flush_bufs(dev);
+	flush_bufs();
 	if (v_flag) {
 	    fprintf(stderr, _("Checking for bad blocks in read-only mode\n"));
 	    fprintf (stderr, _("From block %lu to %lu\n"), from_count,
@@ -328,7 +315,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 		exit (1);
 	}
 
-	flush_bufs(dev);
+	flush_bufs();
 
 	if (v_flag) {
 		fprintf(stderr,
@@ -363,7 +350,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 		alarm (0);
 		if (s_flag | v_flag)
 			fprintf(stderr, _(done_string));
-		flush_bufs(dev);
+		flush_bufs();
 		if (s_flag | v_flag)
 			fprintf (stderr, _("Reading and comparing: "));
 		num_blocks = blocks_count;
@@ -391,7 +378,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 		alarm (0);
 		if (s_flag | v_flag)
 			fprintf(stderr, _(done_string));
-		flush_bufs(dev);
+		flush_bufs();
 	}
 
 	return bb_count;
@@ -446,7 +433,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		(*ptr) = random() % (1 << sizeof(char));
 	}
 
-	flush_bufs(dev);
+	flush_bufs();
 	if (v_flag) {
 	    fprintf (stderr,
 		     _("Checking for bad blocks in non-destructive read-write mode\n"));
@@ -539,7 +526,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		    (currently_testing < blocks_count))
 			continue;
 
-		flush_bufs(dev);
+		flush_bufs();
 		save_currently_testing = currently_testing;
 
 		/*
@@ -668,7 +655,7 @@ int main (int argc, char ** argv)
 	textdomain(NLS_CAT_NAME);
 #endif
 	test_func = test_ro;
-	
+
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv, "b:fi:o:svwnc:p:h:")) != EOF) {
