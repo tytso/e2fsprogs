@@ -1,9 +1,9 @@
-1999-07-03    <tytso@rsts-11.mit.edu>
+1999-07-03    <tytso@valinux.com>
 
 	* uuidgen.c: Add option parsing so that user can ask for either a
 		time-based UUID or a random-based UUID.
 
-1999-07-02    <tytso@rsts-11.mit.edu>
+1999-07-02    <tytso@valinux.com>
 
 	* fsck.c: Added support for LABEL= and UUID= specifications for
 		the filesystem's device, to match what recent mount

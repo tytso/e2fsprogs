@@ -54,7 +54,7 @@
 		more accurate malloc statistics.
 
 	* pass3.c (get_lost_and_found): Check to see if lost+found is a
-		plain fail; if so, offer to unlink it.
+		plain file; if so, offer to unlink it.
 
 	* problem.c, problem.h (PR_3_LPF_NOTDIR): Add new problem code.
 

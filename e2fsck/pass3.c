@@ -354,7 +354,7 @@ ino_t get_lost_and_found(e2fsck_t ctx)
 		if (!fix_problem(ctx, PR_3_LPF_NOTDIR, &pctx))
 			return 0;
 
-		/* OK, unlink the old /lost+found directory. */
+		/* OK, unlink the old /lost+found file. */
 		pctx.errcode = ext2fs_unlink(fs, EXT2_ROOT_INO, name, ino, 0);
 		if (pctx.errcode) {
 			pctx.str = "ext2fs_unlink";
