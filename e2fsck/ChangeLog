@@ -1,3 +1,9 @@
+2002-07-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (e2fsck_pass1): If e2fsck is run with -n, don't create
+		the dirs_to_hash list, since we don't want to reindex
+		directories if the filesystem is opened read-only.
+
 2002-07-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.8.in: Document new exit code FSCK_CANCELED

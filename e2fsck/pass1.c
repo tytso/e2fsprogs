@@ -277,7 +277,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (!(ctx->options & E2F_OPT_PREEN))
 		fix_problem(ctx, PR_1_PASS_HEADER, &pctx);
 
-	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) {
+	if ((fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) &&
+	    !(ctx->options & E2F_OPT_NO)) {
 		if (ext2fs_u32_list_create(&ctx->dirs_to_hash, 50))
 			ctx->dirs_to_hash = 0;
 	}
