@@ -1,11 +1,10 @@
 /*
-/*
  * nt_io.c --- This is the Nt I/O interface to the I/O manager.
  *
  * Implements a one-block write-through cache.
  *
  * Copyright (C) 1993, 1994, 1995 Theodore Ts'o.
- * Copyright (C) 1998 Andrey Shedel
+ * Copyright (C) 1998 Andrey Shedel (andreys@ns.cr.cyco.com)
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
