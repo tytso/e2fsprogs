@@ -370,7 +370,7 @@ int main (int argc, char ** argv)
 		if (sb->s_feature_ro_compat &
 		    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)
 			fprintf(stderr, _("\nThe filesystem already"
-				" has spare superblocks.\n"));
+				" has sparse superblocks.\n"));
 		else {
 			sb->s_feature_ro_compat |=
 				EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
@@ -390,7 +390,7 @@ int main (int argc, char ** argv)
 		if (!(sb->s_feature_ro_compat &
 		      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
 			fprintf(stderr, _("\nThe filesystem already"
-				" does not support spare superblocks.\n"));
+				" has sparse superblocks disabled.\n"));
 		else {
 			sb->s_feature_ro_compat &=
 				~EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;

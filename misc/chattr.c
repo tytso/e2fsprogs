@@ -46,21 +46,21 @@
 #include "../version.h"
 #include "nls-enable.h"
 
-const char * program_name = "chattr";
+static const char * program_name = "chattr";
 
-int add = 0;
-int rem = 0;
-int set = 0;
-int set_version = 0;
+static int add = 0;
+static int rem = 0;
+static int set = 0;
+static int set_version = 0;
 
-unsigned long version;
+static unsigned long version;
 
-int recursive = 0;
-int verbose = 0;
+static int recursive = 0;
+static int verbose = 0;
 
-unsigned long af;
-unsigned long rf;
-unsigned long sf;
+static unsigned long af;
+static unsigned long rf;
+static unsigned long sf;
 
 static void fatal_error(const char * fmt_string, int errcode)
 {
@@ -82,6 +82,10 @@ static int decode_arg (int * i, int argc, char ** argv)
 		for (p = &argv[*i][1]; *p; p++)
 			switch (*p)
 			{
+			case 'A':
+				rf |= EXT2_NOATIME_FL;
+				rem = 1;
+				break;
 			case 'R':
 				recursive = 1;
 				break;
@@ -92,34 +96,22 @@ static int decode_arg (int * i, int argc, char ** argv)
 			case 'V':
 				verbose = 1;
 				break;
-#ifdef	EXT2_APPEND_FL
 			case 'a':
 				rf |= EXT2_APPEND_FL;
 				rem = 1;
 				break;
-#endif
-#ifdef EXT2_NOATIME_FL
-			case 'A':
-				rf |= EXT2_NOATIME_FL;
-				rem = 1;
-				break;
-#endif
 			case 'c':
 				rf |= EXT2_COMPR_FL;
 				rem = 1;
 				break;
-#ifdef	EXT2_NODUMP_FL
 			case 'd':
 				rf |= EXT2_NODUMP_FL;
 				rem = 1;
 				break;
-#endif
-#ifdef	EXT2_IMMUTABLE_FL
 			case 'i':
 				rf |= EXT2_IMMUTABLE_FL;
 				rem = 1;
 				break;
-#endif
 			case 's':
 				rf |= EXT2_SECRM_FL;
 				rem = 1;
@@ -152,32 +144,24 @@ static int decode_arg (int * i, int argc, char ** argv)
 		for (p = &argv[*i][1]; *p; p++)
 			switch (*p)
 			{
-			case 'S':
-				af |= EXT2_SYNC_FL;
-				break;
-#ifdef	EXT2_APPEND_FL
-			case 'a':
-				af |= EXT2_APPEND_FL;
-				break;
-#endif
-#ifdef EXT2_NOATIME_FL
 			case 'A':
 				af |= EXT2_NOATIME_FL;
 				break;
-#endif
+			case 'S':
+				af |= EXT2_SYNC_FL;
+				break;
+			case 'a':
+				af |= EXT2_APPEND_FL;
+				break;
 			case 'c':
 				af |= EXT2_COMPR_FL;
 				break;
-#ifdef	EXT2_NODUMP_FL
 			case 'd':
 				af |= EXT2_NODUMP_FL;
 				break;
-#endif
-#ifdef	EXT2_IMMUTABLE_FL
 			case 'i':
 				af |= EXT2_IMMUTABLE_FL;
 				break;
-#endif
 			case 's':
 				af |= EXT2_SECRM_FL;
 				break;
@@ -193,32 +177,24 @@ static int decode_arg (int * i, int argc, char ** argv)
 		for (p = &argv[*i][1]; *p; p++)
 			switch (*p)
 			{
-			case 'S':
-				sf |= EXT2_SYNC_FL;
-				break;
-#ifdef	EXT2_APPEND_FL
-			case 'a':
-				sf |= EXT2_APPEND_FL;
-				break;
-#endif
-#ifdef EXT2_NOATIME_FL
 			case 'A':
 				sf |= EXT2_NOATIME_FL;
 				break;
-#endif
+			case 'S':
+				sf |= EXT2_SYNC_FL;
+				break;
+			case 'a':
+				sf |= EXT2_APPEND_FL;
+				break;
 			case 'c':
 				sf |= EXT2_COMPR_FL;
 				break;
-#ifdef	EXT2_NODUMP_FL
 			case 'd':
 				sf |= EXT2_NODUMP_FL;
 				break;
-#endif
-#ifdef	EXT2_IMMUTABLE_FL
 			case 'i':
 				sf |= EXT2_IMMUTABLE_FL;
 				break;
-#endif
 			case 's':
 				sf |= EXT2_SECRM_FL;
 				break;
@@ -243,37 +219,40 @@ static void change_attributes (const char * name)
 	unsigned long flags;
 	struct stat st;
 
-	if (lstat (name, &st) == -1)
-	{
-		com_err (program_name, errno, _("while stating %s"), name);
+	if (lstat (name, &st) == -1) {
+		com_err (program_name, errno, _("while trying to stat %s"), 
+			 name);
 		return;
 	}
 	if (S_ISLNK(st.st_mode) && recursive)
 		return;
-	if (set)
-	{
-		if (verbose)
-		{
+
+	/* Don't try to open device files, fifos etc.  We probably
+           ought to display an error if the file was explicitly given
+           on the command line (whether or not recursive was
+           requested).  */
+	if (!S_ISREG(st.st_mode) && !S_ISLNK(st.st_mode) &&
+	    !S_ISDIR(st.st_mode))
+		return;
+
+	if (set) {
+		if (verbose) {
 			printf (_("Flags of %s set as "), name);
 			print_flags (stdout, sf, 0);
 			printf ("\n");
 		}
 		if (fsetflags (name, sf) == -1)
 			perror (name);
-	}
-	else
-	{
+	} else {
 		if (fgetflags (name, &flags) == -1)
 			com_err (program_name, errno,
 			         _("while reading flags on %s"), name);
-		else
-		{
+		else {
 			if (rem)
 				flags &= ~rf;
 			if (add)
 				flags |= af;
-			if (verbose)
-			{
+			if (verbose) {
 				printf (_("Flags of %s set as "), name);
 				print_flags (stdout, flags, 0);
 				printf ("\n");
@@ -283,8 +262,7 @@ static void change_attributes (const char * name)
 				         _("while setting flags on %s"), name);
 		}
 	}
-	if (set_version)
-	{
+	if (set_version) {
 		if (verbose)
 			printf (_("Version of %s set as %lu\n"), name, version);
 		if (fsetversion (name, version) == -1)
@@ -292,13 +270,13 @@ static void change_attributes (const char * name)
 			         _("while setting version on %s"), name);
 	}
 	if (S_ISDIR(st.st_mode) && recursive)
-		iterate_on_dir (name, chattr_dir_proc, (void *) NULL);
+		iterate_on_dir (name, chattr_dir_proc, NULL);
 }
 
-static int chattr_dir_proc (const char * dir_name, struct dirent * de, void * private)
+static int chattr_dir_proc (const char * dir_name, struct dirent * de,
+			    void * unused_private)
 {
-	if (strcmp (de->d_name, ".") && strcmp (de->d_name, ".."))
-	{
+	if (strcmp (de->d_name, ".") && strcmp (de->d_name, "..")) {
 	        char *path;
 
 		path = malloc(strlen (dir_name) + 1 + strlen (de->d_name) + 1);
@@ -325,8 +303,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	i = 1;
-	while (i < argc && !end_arg)
-	{
+	while (i < argc && !end_arg) {
 		if (decode_arg (&i, argc, argv) == EOF)
 			end_arg = 1;
 		else
@@ -334,13 +311,15 @@ int main (int argc, char ** argv)
 	}
 	if (i >= argc)
 		usage ();
-	if (set && (add || rem))
-	{
+	if (set && (add || rem)) {
 		fprintf (stderr, _("= is incompatible with - and +\n"));
 		exit (1);
 	}
-	if (!(add || rem || set || set_version))
-	{
+	if ((rf & af) != 0) {
+		fprintf (stderr, "Can't both set and unset same flag.\n");
+		exit (1);
+	}
+	if (!(add || rem || set || set_version)) {
 		fprintf (stderr, _("Must use '-v', =, - or +\n"));
 		exit (1);
 	}

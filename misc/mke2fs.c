@@ -905,12 +905,14 @@ static void PRS(int argc, char *argv[])
 	device_name = argv[optind];
 	optind++;
 	if (optind < argc) {
-		param.s_blocks_count = strtoul(argv[optind++], &tmp, 0);
-		if (*tmp) {
+		unsigned long tmp2  = strtoul(argv[optind++], &tmp, 0);
+
+		if ((*tmp) || (tmp2 > 0xfffffffful)) {
 			com_err(program_name, 0, _("bad blocks count - %s"),
 				argv[optind - 1]);
 			exit(1);
 		}
+		param.s_blocks_count = tmp2;
 	}
 	if (optind < argc)
 		usage();

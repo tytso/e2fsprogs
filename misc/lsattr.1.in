@@ -28,7 +28,7 @@ List all files in directories, including files that start with `.'.
 List directories like other files, rather than listing their contents.
 .TP
 .B \-v
-List the files version.
+List the file's version/generation number.
 .SH AUTHOR
 .B lsattr
 has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer

@@ -43,14 +43,14 @@ extern char *optarg;
 #include "../version.h"
 #include "nls-enable.h"
 
-const char * program_name = "lsattr";
+static const char * program_name = "lsattr";
 
-int all = 0;
-int d_opt = 0;
-int l_opt = 0;
-int recursive = 0;
-int verbose = 0;
-int v_opt = 0;
+static int all = 0;
+static int dirs_opt = 0;
+static unsigned pf_options = 0;
+static int recursive = 0;
+static int verbose = 0;
+static int generation_opt = 0;
 
 static void usage(void)
 {
@@ -61,20 +61,26 @@ static void usage(void)
 static void list_attributes (const char * name)
 {
 	unsigned long flags;
-	unsigned long version;
+	unsigned long generation;
 
 	if (fgetflags (name, &flags) == -1)
 		com_err (program_name, errno, _("While reading flags on %s"),
 			 name);
-	else if (fgetversion (name, &version) == -1)
+	else if (fgetversion (name, &generation) == -1)
 		com_err (program_name, errno, _("While reading version on %s"),
 			 name);
 	else
 	{
-		if (v_opt)
-			printf ("%5lu ", version);
-		print_flags (stdout, flags, l_opt);
-		printf (" %s\n", name);
+		if (generation_opt)
+			printf ("%5lu ", generation);
+		if (pf_options & PFOPT_LONG) {
+			printf("%-28s ", name);
+			print_flags(stdout, flags, pf_options);
+			fputc('\n', stdout);
+		} else {
+			print_flags(stdout, flags, pf_options);
+			printf(" %s\n", name);
+		}
 	}
 }
 
@@ -85,11 +91,11 @@ static void lsattr_args (const char * name)
 	struct stat st;
 
 	if (lstat (name, &st) == -1)
-		com_err (program_name, errno, _("while stating %s"), name);
-	else
-	{
-		if (S_ISDIR(st.st_mode) && !d_opt)
-			iterate_on_dir (name, lsattr_dir_proc, (void *) NULL);
+		com_err (program_name, errno, _("while trying to stat %s"),
+			 name);
+	else {
+		if (S_ISDIR(st.st_mode) && !dirs_opt)
+			iterate_on_dir (name, lsattr_dir_proc, NULL);
 		else
 			list_attributes (name);
 	}
@@ -112,8 +118,7 @@ static int lsattr_dir_proc (const char * dir_name, struct dirent * de, void * pr
 			    strcmp(de->d_name, ".") &&
 			    strcmp(de->d_name, "..")) {
 				printf ("\n%s:\n", path);
-				iterate_on_dir (path, lsattr_dir_proc,
-						(void *) NULL);
+				iterate_on_dir (path, lsattr_dir_proc, NULL);
 				printf ("\n");
 			}
 		}
@@ -147,13 +152,13 @@ int main (int argc, char ** argv)
 				all = 1;
 				break;
 			case 'd':
-				d_opt = 1;
+				dirs_opt = 1;
 				break;
 			case 'l':
-				l_opt = 1;
+				pf_options = PFOPT_LONG;
 				break;
 			case 'v':
-				v_opt = 1;
+				generation_opt = 1;
 				break;
 			default:
 				usage();

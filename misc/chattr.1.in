@@ -40,7 +40,7 @@ ignored.
 Be verbose with chattr's output and print the program version.
 .TP
 .BI \-v " version"
-Set the filesystem version.
+Set the file's version/generation number.
 .SH ATTRIBUTES
 When a file with the 'A' attribute set is modified, its atime record is
 not modified.  This avoids a certain amount of disk I/O for laptop

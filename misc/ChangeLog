@@ -1,3 +1,25 @@
+2000-02-09  Theodore Ts'o  <tytso@valinux.com>
+
+	* chattr.1.in: 
+	* lsattr.1.in: Change "version" to "version/generation number".
+
+	* chattr.1.in: Fix stupid file vs filesystem typo.
+
+	* tune2fs.c Fix spelling error (spare vs sparse).
+
+	* mke2fs.c (PRS): Add safety check to make sure the number of
+		blocks doesn't exceed 32 bits on a 64 bit machine.
+
+	* chattr.c: Random cleanup; file-only variables are now static.
+		Options for setting/clearings flags put into order, and
+		#ifdef's removed (since we now use a built-in header
+		file).  Add error message if user tries to set and reset
+		the same flag.
+
+	* lsattr.c: Random cleanup; file-only variables are now static.
+		The -l "long" listing has been changed to look nicer.
+		Options names have been renamed to be more descriptive.
+	
 2000-02-06  Theodore Ts'o  <tytso@valinux.com>
 
 	* badblocks.c, chattr.c, dumpe2fs.c, e2label.c, findsuper.c,
