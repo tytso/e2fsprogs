@@ -1,7 +1,15 @@
 2001-04-16  Theodore Tso  <tytso@valinux.com>
 
+	* util.c (parse_journal_opts): Remove code which allowed a bare
+		number to be treated as a journal size.
+
 	* mke2fs.c, tune2fs.c: Add newlines to error messages so that they
 		look nicer.
+
+	* mke2fs.c (create_journal_dev): Call
+		ext2fs_create_journal_superblock() first, so if it's going
+		to error out, the user finds out before waiting for the
+		entire device to get zero'ed.
 
 2001-03-26  Theodore Tso  <tytso@valinux.com>
 

@@ -168,11 +168,8 @@ void parse_journal_opts(const char *opts)
 		} else if (strcmp(token, "v1_superblock") == 0) {
 			journal_flags |= EXT2_MKJOURNAL_V1_SUPER;
 			continue;
-		} else {
-			journal_size = strtoul(token, &p, 0);
-			if (*p)
-				journal_usage++;
-		}
+		} else
+			journal_usage++;
 	}
 	if (journal_usage) {
 		fprintf(stderr, _("\nBad journal options specified.\n\n"

@@ -573,6 +573,13 @@ static void create_journal_dev(ext2_filsys fs)
 	blk_t			blk;
 	int			count;
 
+	retval = ext2fs_create_journal_superblock(fs,
+				  fs->super->s_blocks_count, 0, &buf);
+	if (retval) {
+		com_err("create_journal_dev", retval,
+			_("while initializing journal superblock"));
+		exit(1);
+	}
 	if (quiet)
 		memset(&progress, 0, sizeof(progress));
 	else
@@ -589,13 +596,6 @@ static void create_journal_dev(ext2_filsys fs)
 	}
 	zero_blocks(0, 0, 0, 0, 0, 0);
 
-	retval = ext2fs_create_journal_superblock(fs,
-				  fs->super->s_blocks_count, 0, &buf);
-	if (retval) {
-		com_err("create_journal_dev", retval,
-			_("while initialization journal superblock"));
-		exit(1);
-	}
 	retval = io_channel_write_blk(fs->io,
 				      fs->super->s_first_data_block+1,
 				      1, buf);
