@@ -580,13 +580,16 @@ extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ino_t dir);
 /* fileio.c */
 extern errcode_t ext2fs_file_open(ext2_filsys fs, ino_t ino,
 				  int flags, ext2_file_t *ret);
+extern ext2_filsys ext2fs_file_get_fs(ext2_file_t file);
 extern errcode_t ext2fs_file_close(ext2_file_t file);
 extern errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
-				  int wanted, int *got);
+				  unsigned int wanted, unsigned int *got);
 extern errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
-				   int nbytes, int *written);
+				   unsigned int nbytes, unsigned int *written);
 extern errcode_t ext2fs_file_llseek(ext2_file_t file, ext2_off_t offset,
 				    int whence, ext2_off_t *ret_pos);
+extern ext2_off_t ext2fs_file_get_size(ext2_file_t file);
+extern errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size);
 
 /* freefs.c */
 extern void ext2fs_free(ext2_filsys fs);
@@ -721,9 +724,9 @@ extern int ext2fs_get_library_version(const char **ver_string,
 				      const char **date_string);
 
 /* inline functions */
-extern errcode_t ext2fs_get_mem(long size, void **ptr);
+extern errcode_t ext2fs_get_mem(unsigned long size, void **ptr);
 extern errcode_t ext2fs_free_mem(void **ptr);
-extern errcode_t ext2fs_resize_mem(long size, void **ptr);
+extern errcode_t ext2fs_resize_mem(unsigned long size, void **ptr);
 extern void ext2fs_mark_super_dirty(ext2_filsys fs);
 extern void ext2fs_mark_changed(ext2_filsys fs);
 extern int ext2fs_test_changed(ext2_filsys fs);
@@ -754,7 +757,7 @@ extern int ext2fs_group_of_ino(ext2_filsys fs, ino_t ino);
 /*
  *  Allocate memory
  */
-_INLINE_ errcode_t ext2fs_get_mem(long size, void **ptr)
+_INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void **ptr)
 {
 	*ptr = malloc(size);
 	if (!*ptr)
@@ -775,7 +778,7 @@ _INLINE_ errcode_t ext2fs_free_mem(void **ptr)
 /*
  *  Resize memory
  */
-_INLINE_ errcode_t ext2fs_resize_mem(long size, void **ptr)
+_INLINE_ errcode_t ext2fs_resize_mem(unsigned long size, void **ptr)
 {
 	void *p;
 

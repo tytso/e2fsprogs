@@ -70,19 +70,23 @@ int ext2fs_test_bit(int nr, const void * addr)
 void ext2fs_warn_bitmap(errcode_t errcode, unsigned long arg,
 			const char *description)
 {
+#ifndef OMIT_COM_ERR
 	if (description)
 		com_err(0, errcode, "#%u for %s", arg, description);
 	else
 		com_err(0, errcode, "#%u", arg);
+#endif
 }
 
 void ext2fs_warn_bitmap2(ext2fs_generic_bitmap bitmap,
 			    int code, unsigned long arg)
 {
+#ifndef OMIT_COM_ERR
 	if (bitmap->description)
 		com_err(0, bitmap->base_error_code+code,
 			"#%u for %s", arg, bitmap->description);
 	else
 		com_err(0, bitmap->base_error_code + code, "#%u", arg);
+#endif
 }
 

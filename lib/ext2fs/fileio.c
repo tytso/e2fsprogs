@@ -78,6 +78,16 @@ fail:
 }
 
 /*
+ * This function returns the filesystem handle of a file from the structure
+ */
+ext2_filsys ext2fs_file_get_fs(ext2_file_t file)
+{
+	if (file->magic != EXT2_ET_MAGIC_EXT2_FILE)
+		return 0;
+	return file->fs;
+}
+
+/*
  * This function flushes the dirty block buffer out to disk if
  * necessary.
  */
@@ -130,12 +140,12 @@ errcode_t ext2fs_file_close(ext2_file_t file)
 
 
 errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
-			   int wanted, int *got)
+			   unsigned int wanted, unsigned int *got)
 {
 	ext2_filsys	fs;
 	errcode_t	retval;
 	blk_t		b, pb;
-	int		start, left, c, count = 0;
+	unsigned int	start, left, c, count = 0;
 	char		*ptr = buf;
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
@@ -200,12 +210,12 @@ fail:
 
 
 errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
-			    int nbytes, int *written)
+			    unsigned int nbytes, unsigned int *written)
 {
 	ext2_filsys	fs;
 	errcode_t	retval;
 	blk_t		b, pb;
-	int		start, c, count = 0;
+	unsigned int		start, c, count = 0;
 	char		*ptr = buf;
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
@@ -282,4 +292,34 @@ errcode_t ext2fs_file_llseek(ext2_file_t file, ext2_off_t offset,
 	return 0;
 }
 
+/*
+ * This function returns the size of the file, according to the inode
+ */
+ext2_off_t ext2fs_file_get_size(ext2_file_t file)
+{
+	if (file->magic != EXT2_ET_MAGIC_EXT2_FILE)
+		return 0;
+	return file->inode.i_size;
+}
 
+/*
+ * This function sets the size of the file, truncating it if necessary
+ * 
+ * XXX still need to call truncate
+ */
+extern errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size)
+{
+	errcode_t	retval;
+	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
+	
+	file->inode.i_size = size;
+	retval = ext2fs_write_inode(file->fs, file->ino, &file->inode);
+	if (retval)
+		return retval;
+
+	/* 
+	 * XXX truncate inode if necessary
+	 */
+
+	return 0;
+}
