@@ -51,6 +51,7 @@ RANLIB = @RANLIB@
 STRIP = @STRIP@
 LD = $(PURE) @CC@
 ARUPD = $(AR) r
+LDCONFIG = @LDCONFIG@
 
 #
 # Library definitions

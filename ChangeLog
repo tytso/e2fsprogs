@@ -1,3 +1,8 @@
+2001-05-19  Theodore Tso  <tytso@valinux.com>
+
+	* configure.in, MCONFIG.in (LDCONFIG): Use AC_PATH_PROG to find
+		the pathname for ldconfig.
+
 2001-05-05  Theodore Tso  <tytso@valinux.com>
 
 	* config.guess, config.sub: Update to use latest version from FSF
