@@ -111,6 +111,22 @@ AC_ARG_WITH([root-prefix],
 root_prefix=$withval,
 root_prefix=NONE)dnl
 dnl
+dnl handle --enable-compression
+dnl
+AC_ARG_ENABLE([compression],
+[  --enable-compression	  enable EXPERIMENTAL compression support],
+if test "$enableval" = "no"
+then
+	echo "Disabling compression support"
+else
+	AC_DEFINE(ENABLE_COMPRESSION)
+	echo "Enabling compression support"
+	echo "WARNING: Compression support is experimental"
+fi
+,
+echo "Disabling compression support by default"
+)
+dnl
 dnl handle --enable-dll-shlibs
 dnl
 AC_ARG_ENABLE([dll-shlibs],
@@ -191,7 +207,7 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 
-ALL_LINGUAS="it"
+ALL_LINGUAS="it nyc"
 AM_GNU_GETTEXT
 dnl
 dnl handle --enable-profile

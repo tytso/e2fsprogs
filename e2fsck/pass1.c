@@ -72,7 +72,8 @@ static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
 
 struct process_block_struct {
 	ino_t		ino;
-	int		is_dir:1, clear:1, suppress:1, fragmented:1;
+	int		is_dir:1, clear:1, suppress:1,
+				fragmented:1, compressed:1;
 	blk_t		num_blocks;
 	e2_blkcnt_t	last_block;
 	int		num_illegal_blocks;
@@ -773,12 +774,27 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.num_illegal_blocks = 0;
 	pb.suppress = 0; pb.clear = 0;
 	pb.fragmented = 0;
+	pb.compressed = 0;
 	pb.previous_block = 0;
 	pb.is_dir = LINUX_S_ISDIR(pctx->inode->i_mode);
 	pb.inode = inode;
 	pb.pctx = pctx;
 	pb.ctx = ctx;
 	pctx->ino = ino;
+
+	if (inode->i_flags & EXT2_COMPRBLK_FL) {
+		if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+				      EXT2_FEATURE_INCOMPAT_COMPRESSION))
+			pb.compressed = 1;
+		else {
+			if (fix_problem(ctx, PR_1_COMPR_SET, pctx)) {
+				inode->i_flags &= ~EXT2_COMPRBLK_FL;
+				e2fsck_write_inode(ctx, ino, inode,
+						   "check_blocks");
+			}
+		}
+	}
+
 	pctx->errcode = ext2fs_block_iterate2(fs, ino,
 				       pb.is_dir ? BLOCK_FLAG_HOLE : 0,
 				       block_buf, process_block, &pb);
@@ -941,6 +957,28 @@ int process_block(ext2_filsys fs,
 	pctx = p->pctx;
 	ctx = p->ctx;
 
+	if (p->compressed && (blk == EXT2FS_COMPRESSED_BLKADDR)) {
+		/* todo: Check that the comprblk_fl is high, that the
+		   blkaddr pattern looks right (all non-holes up to
+		   first EXT2FS_COMPRESSED_BLKADDR, then all
+		   EXT2FS_COMPRESSED_BLKADDR up to end of cluster),
+		   that the feature_incompat bit is high, and that the
+		   inode is a regular file.  If we're doing a "full
+		   check" (a concept introduced to e2fsck by e2compr,
+		   meaning that we look at data blocks as well as
+		   metadata) then call some library routine that
+		   checks the compressed data.  I'll have to think
+		   about this, because one particularly important
+		   problem to be able to fix is to recalculate the
+		   cluster size if necessary.  I think that perhaps
+		   we'd better do most/all e2compr-specific checks
+		   separately, after the non-e2compr checks.  If not
+		   doing a full check, it may be useful to test that
+		   the personality is linux; e.g. if it isn't then
+		   perhaps this really is just an illegal block. */
+		return 0;
+	}
+	
 	if (blk == 0) {
 		if (p->is_dir == 0) {
 			/*
@@ -976,7 +1014,7 @@ int process_block(ext2_filsys fs,
 	 * file be contiguous.  (Which can never be true for really
 	 * big files that are greater than a block group.)
 	 */
-	if (p->previous_block) {
+	if (!HOLE_BLKADDR(p->previous_block)) {
 		if (p->previous_block+1 != blk)
 			p->fragmented = 1;
 	}
@@ -1056,6 +1094,11 @@ int process_bad_block(ext2_filsys fs,
 	int		i;
 	struct problem_context *pctx;
 	e2fsck_t	ctx;
+
+	/*
+	 * Note: This function processes blocks for the bad blocks
+	 * inode, which is never compressed.  So we don't use HOLE_BLKADDR().
+	 */
 
 	if (!blk)
 		return 0;

@@ -605,7 +605,7 @@ static int deallocate_inode_block(ext2_filsys fs,
 {
 	e2fsck_t	ctx = (e2fsck_t) priv_data;
 	
-	if (!*block_nr)
+	if (HOLE_BLKADDR(*block_nr))
 		return 0;
 	ext2fs_unmark_block_bitmap(ctx->block_found_map, *block_nr);
 	ext2fs_unmark_block_bitmap(fs->block_map, *block_nr);

@@ -241,7 +241,10 @@ struct problem_context {
 
 /* Immutable flag set on a device or socket inode */
 #define PR_1_SET_IMMUTABLE		0x010030
-	
+
+/* Compression flag set on a non-compressed filesystem */
+#define PR_1_COMPR_SET			0x010031
+
 /*
  * Pass 1b errors
  */

@@ -1,3 +1,26 @@
+2000-02-11    <tytso@snap.thunk.org>
+
+	* unix.c (main): If compression is enabled on the filesystem,
+		print a warning message (for now).
+
+	* message.c: Add new compression shortcut: @c == compress
+
+	* problem.c, problem.h (PR_1_COMPR_SET): Add new error code.
+
+	* pass1.c (check_blocks): If the inode has EXT2_COMPRBLK_FL flag
+		set, check to see if the filesystem supports compression.
+		If it does pass this information down to process_block()
+		so it can treat the compressed block flag words
+		correctly.  If not, offer to clear the flag, since it
+		shouldn't be set.  
+		(process_block): If an inode has the compressed inode flag
+		set, allow EXT2FS_COMPRESSED_BLKADDR.
+
+	* pass1b.c (process_pass1b_block, delete_file_block,
+		clone_file_block):
+	* pass2.c (deallocate_inode_block): Use HOLE_BLKADDR to check to
+		see if the block can be skipped.
+
 2000-02-08    <tytso@snap.thunk.org>
 
 	* util.c: Make resource tracking message more concise.

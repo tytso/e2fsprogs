@@ -102,3 +102,20 @@ test.
 b) An option to mkfs to zero the partition.  Yes, it can be done with
 dd, but it would be a nicer way of doing it.
 
+------------------------------------------------------------------
+
+Add support for in ext2fs_block_iterate() for a returning the
+compressed flag blocks to block_iterate.  Change default to not return
+EXT2_COMPRESSED_BLKADDR.  Change e2fsck to pass this flag in.
+
+(The old compression patches did this by default all the time, which
+is bad, since it meant e2fsck never saw the EXT2_COMPRESSED_BLKADDR
+flagword.
+
+------------------------------------------------------------
+
+E2fsck should offer to clear all the blocks in an indirect block, not
+the entire inode, so there's better recovery for when an indirect
+block gets trashed.
+
+

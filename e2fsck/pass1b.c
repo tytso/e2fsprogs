@@ -241,7 +241,7 @@ int process_pass1b_block(ext2_filsys fs,
 	int i;
 	e2fsck_t ctx;
 
-	if (!*block_nr)
+	if (HOLE_BLKADDR(*block_nr))
 		return 0;
 	p = (struct process_block_struct *) priv_data;
 	ctx = p->ctx;
@@ -493,7 +493,7 @@ static int delete_file_block(ext2_filsys fs,
 	pb = (struct process_block_struct *) priv_data;
 	ctx = pb->ctx;
 
-	if (!*block_nr)
+	if (HOLE_BLKADDR(*block_nr))
 		return 0;
 
 	if (ext2fs_test_block_bitmap(ctx->block_dup_map, *block_nr)) {
@@ -567,7 +567,7 @@ static int clone_file_block(ext2_filsys fs,
 
 	ctx = cs->ctx;
 	
-	if (!*block_nr)
+	if (HOLE_BLKADDR(*block_nr))
 		return 0;
 
 	if (ext2fs_test_block_bitmap(ctx->block_dup_map, *block_nr)) {

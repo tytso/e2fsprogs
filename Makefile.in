@@ -121,7 +121,7 @@ $(srcdir)/.exclude-file:
 	a=$(SRCROOT); \
 	(cd $(srcdir)/.. ; find e2fsprogs \( -name \*~ -o -name \*.orig \
 		-o -name CVS -o -name \*.rej -o -name Makefile.pq \
-		-o -name TAGS -o -name \*.old \
+		-o -name TAGS -o -name \*.old -o -name \*.gmo \
 		-o -name TODO -o -name changed-files -o -name .#\* \) \
 		-print) | sed -e "s/e2fsprogs/$$a/" > $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/build" >> $(srcdir)/.exclude-file
@@ -129,6 +129,8 @@ $(srcdir)/.exclude-file:
 	echo "$(SRCROOT)/resize" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/powerquest" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/.exclude-file" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/po/stamp-cat-id" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/po/cat-id-tbl.c" >> $(srcdir)/.exclude-file
 	echo $(SRCROOT)/e2fsprogs-@E2FSPROGS_VERSION@.tar.gz \
 		>> $(srcdir)/.exclude-file
 

@@ -50,6 +50,7 @@
  * 	@A	error allocating
  * 	@b	block
  * 	@B	bitmap
+ * 	@c	compress
  * 	@C	conflicts with some other fs block
  * 	@i	inode
  * 	@I	illegal
@@ -95,6 +96,7 @@ static const char *abbrevs[] = {
 	N_("Aerror allocating"),
 	N_("bblock"),
 	N_("Bbitmap"),
+	N_("ccompress"),
 	N_("Cconflicts with some other fs @b"),
 	N_("iinode"),
 	N_("Iillegal"),

@@ -757,6 +757,11 @@ restart:
 			"(%s)", ctx->filesystem_name);
 		goto get_newer;
 	}
+#ifdef ENABLE_COMPRESSION
+	if (s->s_feature_incompat & EXT2_FEATURE_INCOMPAT_COMPRESSION)
+		com_err(ctx->program_name, 0,
+			_("Warning: compression support is experimental.\n"));
+#endif
 	if (ctx->device_name == 0 &&
 	    (s->s_volume_name[0] != 0)) {
 		char *cp = malloc(sizeof(s->s_volume_name)+1);
