@@ -1,3 +1,9 @@
+1998-07-31  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* debugfs.c (do_stat, do_clri): Fix bug where debugfs wasn't
+		displaying the error message if ext2fs_read_inode() failed.
+		(do_rm): Fix similar problem for call to ext2fs_namei().
+	
 1998-07-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.12

@@ -382,7 +382,7 @@ void do_stat(int argc, char *argv[])
 	retval = ext2fs_read_inode(current_fs, inode, &inode_buf);
 	if (retval) 
 	  {
-	    com_err(argv[0], 0, "Reading inode");
+	    com_err(argv[0], retval, "while trying to read inode %d", inode);
 	    return;
 	  }
 
@@ -433,7 +433,8 @@ void do_clri(int argc, char *argv[])
 
 	retval = ext2fs_read_inode(current_fs, inode, &inode_buf);
 	if (retval) {
-		com_err(argv[0], 0, "while trying to read inode %d", inode);
+		com_err(argv[0], retval, "while trying to read inode %d", 
+			inode);
 		return;
 	}
 	memset(&inode_buf, 0, sizeof(inode_buf));
@@ -1254,7 +1255,7 @@ void do_rm(int argc, char *argv[])
 
 	retval = ext2fs_namei(current_fs, root, cwd, argv[1], &inode_num);
 	if (retval) {
-		com_err(argv[0], 0, "Cannot find file");
+		com_err(argv[0], retval, "while trying to resolve filename");
 		return;
 	}
 
