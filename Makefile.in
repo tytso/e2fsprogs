@@ -123,10 +123,11 @@ $(srcdir)/.exclude-file:
 	(cd $(srcdir)/.. && find e2fsprogs \( -name \*~ -o -name \*.orig \
 		-o -name CVS -o -name \*.rej -o -name Makefile.pq \
 		-o -name TAGS -o -name \*.old -o -name \*.gmo \
-		-o -name TODO -o -name changed-files -o -name .#\* \) \
+		-o -name changed-files -o -name .#\* \) \
 		-print) | sed -e "s/e2fsprogs/$$a/" > $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/build" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/rpm.log" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/TODO" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/powerquest" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/.exclude-file" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/po/stamp-cat-id" >> $(srcdir)/.exclude-file
