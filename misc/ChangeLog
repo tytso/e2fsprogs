@@ -1,3 +1,11 @@
+Mon Jul 14 15:27:29 1997  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* e2label.c: New file contributed by Andries Brouwer which
+ 		provides an easy-to-use interface to modify the filesystem
+ 		label.
+	
+	* Makefile.in (SPROGS): Add Makefile support to build e2label
+
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.11
