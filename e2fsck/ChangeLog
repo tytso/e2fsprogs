@@ -1,3 +1,9 @@
+2005-03-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (check_blocks): Move counting the extended attribute
+		block earlier so that we don't have to worry about
+		num_blocks wrapping for files which are too big.
+
 2006-02-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.36

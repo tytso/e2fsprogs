@@ -1260,6 +1260,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 	}
 
+	if (inode->i_file_acl && check_ext_attr(ctx, pctx, block_buf))
+		pb.num_blocks++;
+
 	if (ext2fs_inode_has_valid_blocks(inode))
 		pctx->errcode = ext2fs_block_iterate2(fs, ino,
 				       pb.is_dir ? BLOCK_FLAG_HOLE : 0,
@@ -1319,9 +1322,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			goto out;
 		}
 	}
-
-	if (inode->i_file_acl && check_ext_attr(ctx, pctx, block_buf))
-		pb.num_blocks++;
 
 	pb.num_blocks *= (fs->blocksize / 512);
 #if 0
