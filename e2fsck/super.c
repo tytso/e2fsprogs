@@ -31,7 +31,6 @@
 #endif
 #include "e2fsck.h"
 #include "problem.h"
-#include "../version.h"
 
 #define MIN_CHECK 1
 #define MAX_CHECK 2
@@ -51,6 +50,21 @@ static void check_super_value(e2fsck_t ctx, const char *descr,
 		ctx->flags |= E2F_FLAG_ABORT; /* never get here! */
 	}
 }
+
+/*
+ * This routine may get stubbed out in special compilations of the
+ * e2fsck code..
+ */
+#ifndef EXT2_SPECIAL_DEVICE_SIZE
+errcode_t e2fsck_get_device_size(e2fsck_t ctx)
+{
+	return (ext2fs_get_device_size(ctx->filesystem_name,
+				       EXT2_BLOCK_SIZE(ctx->fs->super),
+				       &ctx->num_blocks));
+}
+#else
+extern errcode_t e2fsck_get_device_size(e2fsck_t ctx);
+#endif
 
 void check_super_block(e2fsck_t ctx)
 {
@@ -95,8 +109,7 @@ void check_super_block(e2fsck_t ctx)
 			  MAX_CHECK, 0, s->s_blocks_count);
 
 	if (!ctx->num_blocks) {
-		pctx.errcode = ext2fs_get_device_size(ctx->filesystem_name,
-			      EXT2_BLOCK_SIZE(s), &ctx->num_blocks);
+		pctx.errcode = e2fsck_get_device_size(ctx);
 		if (pctx.errcode && pctx.errcode != EXT2_ET_UNIMPLEMENTED) {
 			fix_problem(ctx, PR_0_GETSIZE_ERROR, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;

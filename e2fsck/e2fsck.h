@@ -205,6 +205,12 @@ struct e2fsck_struct {
 	int fs_dind_count;
 	int fs_tind_count;
 	int fs_fragmented;
+
+	/*
+	 * For the use of callers of the e2fsck functions; not used by
+	 * e2fsck functions themselves.
+	 */
+	void *priv_data;
 };
 
 

@@ -148,8 +148,6 @@ void e2fsck_pass4(e2fsck_t ctx)
 	ext2fs_free_icount(ctx->inode_count); ctx->inode_count = 0;
 	ext2fs_free_inode_bitmap(ctx->inode_bb_map);
 	ctx->inode_bb_map = 0;
-	if (ctx->progress)
-		(ctx->progress)(ctx, 4, max, max);	
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
 		print_resource_track("Pass 4", &rtrack);

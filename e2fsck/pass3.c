@@ -112,8 +112,6 @@ void e2fsck_pass3(e2fsck_t ctx)
 	max = e2fsck_get_num_dirinfo(ctx);
 	count = 0;
 
-	if (ctx->progress)
-		(ctx->progress)(ctx, 3, 0, max);
 	for (i=0; (dir = e2fsck_dir_info_iter(ctx, &i)) != 0;) {
 		if (ctx->progress)
 			(ctx->progress)(ctx, 3, count++, max);
