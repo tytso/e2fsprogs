@@ -640,7 +640,7 @@ struct problem_context {
 #define PR_2_HTREE_CLEAR	0x020038
 
 /* Clear the htree flag forcibly */
-#define PR_2_HTREE_FCLR		0x020039
+/* #define PR_2_HTREE_FCLR	0x020039 */
 
 /* Bad block in htree interior node */
 #define PR_2_HTREE_BADBLK	0x02003A

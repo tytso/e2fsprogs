@@ -1081,11 +1081,6 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_2_HTREE_CLEAR,
 	  N_("Invalid @h %d (%q).  "), PROMPT_CLEAR, 0 },
 		  
-	/* Clear the htree flag forcibly */
-	{ PR_2_HTREE_FCLR,
-	  N_("Forcibly clearing HTREE flag on @i %d (%q).  (Beta test code)\n"),
-		  PROMPT_NONE, 0 },
-
 	/* Bad block in htree interior node */
 	{ PR_2_HTREE_BADBLK,
 	  N_("@p @h %d (%q): bad @b number %b.\n"),

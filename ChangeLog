@@ -1,5 +1,8 @@
 2005-02-04  Theodore Ts'o  <tytso@mit.edu>
 
+	* configure.in: Remove support for --enable-clear-htree; this was
+		only needed during the early development of the htree patch.
+
 	* configure.in, MCONFIG.in: Add support for --enable-maintainer-mode;
 		only rebuild configure from configure.in if it is enabled.
 

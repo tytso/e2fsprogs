@@ -243,13 +243,6 @@ void e2fsck_pass2(e2fsck_t ctx)
 			clear_htree(ctx, dx_dir->ino);
 			dx_dir->numblocks = 0;
 		}
-#ifdef ENABLE_HTREE_CLEAR
-		if (dx_dir->numblocks) {
-			fix_problem(ctx, PR_2_HTREE_FCLR, &pctx);
-			clear_htree(ctx, dx_dir->ino);
-			dx_dir->numblocks = 0;
-		}
-#endif
 	}
 #endif
 	ext2fs_free_mem(&buf);

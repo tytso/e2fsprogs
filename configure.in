@@ -190,25 +190,6 @@ echo "Enabling htree directory support by default"
 )
 AC_SUBST(HTREE_CMT)
 dnl
-dnl handle --enable-clear-htree
-dnl
-AC_ARG_ENABLE([htree-clear],
-[  --enable-htree-clear 	  clear htree because we don't trust e2fsck],
-if test "$enableval" = "no"
-then
-	HTREE_CLR_CMT=#
-	echo "Disabling htree clearing"
-else
-	HTREE_CLR_CMT=
-	AC_DEFINE(ENABLE_HTREE_CLEAR)
-	echo "Enabling htree clearing"
-fi
-,
-HTREE_CLR_CMT=#
-echo "Disabling htree clearing by default"
-)
-AC_SUBST(HTREE_CLR_CMT)
-dnl
 dnl handle --enable-elf-shlibs
 dnl
 AC_ARG_ENABLE([elf-shlibs],

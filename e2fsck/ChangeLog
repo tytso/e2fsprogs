@@ -1,3 +1,10 @@
+2005-02-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass2.c (e2fsck_pass2), problem.c (PR_2_HTREE_FCLR), problem.h
+		(PR_2_HTREE_FCLR): Remove support for
+		--enable-clear-htree; this was only needed during the
+		early development of the htree patch.
+
 2005-01-28  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass2.c (e2fsck_process_bad_inode): Fix a corner case involving

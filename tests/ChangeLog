@@ -1,3 +1,8 @@
+2005-02-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in, f_h_badnode, f_dup_de, f_h_reindex, f_h_normal,
+		f_h_badroot: Remove support for --enable-htree-clear
+
 2005-01-28  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_bad_inode, f_recnect_bad: Adjust test cases to take into

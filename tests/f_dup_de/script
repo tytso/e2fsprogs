@@ -1,4 +1,4 @@
-if test "$HTREE"x = x -o "$HTREE_CLR"x = yx; then
+if test "$HTREE"x = x ; then
 	gunzip < $test_dir/image.gz > $TMPFILE
 	$DEBUGFS -w -R "feature ^dir_index" $TMPFILE >/dev/null 2>&1
 	gzip $TMPFILE
