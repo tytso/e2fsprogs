@@ -2,6 +2,10 @@
 
 	* badblocks.8.in: Fix spelling typo.  (Addresses Debian bug #110621)
 
+	* mke2fs.c (zap_sector): Now takes a third argument, which is how
+		many sectors to clear out.  Fixed up Andreas's patch to
+		make it a bit more efficient/compact.
+
 2001-08-30  Andreas Dilger  <adilger@turbolinux.com>
 
 	* mke2fs.c (main): Zap the second sector of the disk, along with
