@@ -2,8 +2,9 @@
 
 	* uuid_time.c (main), tst_uuid.c (main): Fix gcc -Wall complaints.
 
-	* copy.c (uuid_copy): Change arguments to make it clear which
-		argument is the source and which is the destination.
+	* uuid.h, copy.c (uuid_copy): Change arguments to make it
+		clear which argument is the source and which is the
+		destination.
 
 	* gen_uuid.c (get_random_fd): Use gettimeofday to seed the PRNG,
 		so we can take advantage of tv_usec to do (slightly)

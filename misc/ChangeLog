@@ -1,3 +1,10 @@
+2001-01-14  Theodore Ts'o  <tytso@valinux.com>
+
+	* tune2fs.c (add_journal): Minor fixes from Andreas Dilger. Flush
+		stdout after printing in-progress message.  
+		(main): Exit with status code 1 if we failed to determine
+		the mount status of the device.
+
 2001-01-11    <tytso@snap.thunk.org>
 
 	* e2image.c, mke2fs.c, mklost+found.c, tune2fs.c, util.c,

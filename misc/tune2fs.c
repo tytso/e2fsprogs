@@ -205,6 +205,7 @@ static void add_journal(ext2_filsys fs)
 		check_mount(journal_device, 0, _("journal"));
 		printf(_("Creating journal on device %s: "),
 		       journal_device);
+		fflush(stdout);
 		retval = ext2fs_add_journal_device(fs, journal_device,
 						   journal_blocks,
 						   journal_flags);
@@ -494,7 +495,7 @@ int main (int argc, char ** argv)
 		com_err("ext2fs_check_if_mount", retval,
 			_("while determining whether %s is mounted."),
 			device_name);
-		exit(0);
+		exit(1);
 	}
 	/* Normally we only need to write out the superblock */
 	fs->flags |= EXT2_FLAG_SUPER_ONLY;

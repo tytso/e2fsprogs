@@ -28,7 +28,7 @@ void uuid_clear(uuid_t uu);
 int uuid_compare(uuid_t uu1, uuid_t uu2);
 
 /* copy.c */
-void uuid_copy(uuid_t uu1, uuid_t uu2);
+void uuid_copy(uuid_t dst, uuid_t src);
 
 /* gen_uuid.c */
 void uuid_generate(uuid_t out);
