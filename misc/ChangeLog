@@ -1,5 +1,9 @@
 2001-05-20  Theodore Tso  <tytso@valinux.com>
 
+	* fsck.c (device_already_active): Fix bug in
+		device_already_active which could cause infinite loops if
+		we don't know the base_device of the filesystem.
+
 	* fsck.c: Make sure all exit status codes returned by fsck are
 		consistent with the error codes documented in the fsck man
 		page.

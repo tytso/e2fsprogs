@@ -698,8 +698,12 @@ static int device_already_active(char *device)
 #endif
 
 	base = base_device(device);
-	if (!base)
-		return 1;
+	/*
+	 * If we don't know the base device, assume that the device is
+	 * already active if there are any fsck instances running.
+	 */
+	if (!base) 
+		return (instance_list != 0);
 	for (inst = instance_list; inst; inst = inst->next) {
 		if (!strcmp(base, inst->base_device)) {
 			free(base);
