@@ -1,3 +1,8 @@
+2000-05-25    <tytso@snap.thunk.org>
+
+	* test_script.in: Ignore files in the test directory (to avoid
+		spurious messages when builddir==srcdir).
+
 2000-05-08  Theodore Ts'o  <tytso@valinux.com>
 
 	* f_hurd: Add test for Hurd-specific features (right now, just

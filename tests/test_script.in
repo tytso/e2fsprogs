@@ -27,6 +27,9 @@ fi
 for test_dir in $TESTS
 do
 	test_name=`echo $test_dir | sed -e 's;.*/;;'`
+	if [ -f $test_dir ] ; then
+	    continue;
+	fi
 	if [ ! -d $test_dir ] ; then
 		echo "The test '$test_name' does not exist."
 		continue;
