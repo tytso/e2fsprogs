@@ -31,6 +31,9 @@ extern void do_dump(int argc, char **argv);
 extern void do_cat(int argc, char **argv);
 extern void do_rdump(int argc, char **argv);
 
+/* logdump.c */
+extern void do_logdump(int argc, char **argv);
+
 /* lsdel.c */
 extern void do_lsdel(int argc, char **argv);
 
@@ -44,7 +47,7 @@ extern void do_ncheck(int argc, char **argv);
 extern void do_set_super(int argc, char **);
 
 /* debugfs.c */
-extern void internal_dump_inode(FILE *, char *, ext2_ino_t, 
+extern void internal_dump_inode(FILE *, const char *, ext2_ino_t, 
 				struct ext2_inode *, int);
 
 extern void do_dirty_filesys(int argc, char **argv);

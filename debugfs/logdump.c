@@ -72,9 +72,7 @@ static void do_hexdump (FILE *, char *, int);
 
 void do_logdump(int argc, char **argv)
 {
-	ext2_ino_t	inode;
 	int		c;
-	int		fd;
 	int		retval;
 	char		*out_fn;
 	FILE		*out_file;
@@ -92,12 +90,15 @@ void do_logdump(int argc, char **argv)
 					  "[-ac] [-b<block>] [-i<inode>] "
 					  "[-f<journal_file>] [output_file]");
 	
-	struct journal_source journal_source = {};
+	struct journal_source journal_source;
 
 	optind = 0;
 #ifdef HAVE_OPTRESET
 	optreset = 1;		/* Makes BSD getopt happy */
 #endif
+	journal_source.where = 0;
+	journal_source.fd = 0;
+	journal_source.file = 0;
 	dump_all = 0;
 	dump_contents = 0;
 	dump_descriptors = 1;
@@ -243,8 +244,9 @@ void do_logdump(int argc, char **argv)
 }
 
 
-int read_journal_block(char *cmd, struct journal_source *source, off_t offset,
-		       char *buf, int size, int *got)
+static int read_journal_block(const char *cmd, struct journal_source *source, 
+			      off_t offset, char *buf, int size,
+			      unsigned int *got)
 {
 	int retval;
 	
@@ -281,7 +283,7 @@ int read_journal_block(char *cmd, struct journal_source *source, off_t offset,
 	return retval;
 }
 
-static char *type_to_name(int btype)
+static const char *type_to_name(int btype)
 {
 	switch (btype) {
 	case JFS_DESCRIPTOR_BLOCK:
@@ -294,7 +296,6 @@ static char *type_to_name(int btype)
 		return "V2 superblock";
 	case JFS_REVOKE_BLOCK:
 		return "revoke table";
-	default:
 	}
 	return "unrecognised type";
 }
@@ -307,7 +308,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	char			buf[8192];
 	journal_superblock_t	*jsb;
 	int			blocksize;
-	int			got;
+	unsigned int		got;
 	int			retval;
 	__u32			magic, sequence, blocktype;
 	journal_header_t	*header;
@@ -494,7 +495,7 @@ static void show_extent(FILE *out_file, int start_extent, int end_extent,
 			start_extent, end_extent-start_extent, first_block);
 }
 
-static void show_indirect(FILE *out_file, char *name, __u32 where)
+static void show_indirect(FILE *out_file, const char *name, __u32 where)
 {
 	if (where)
 		fprintf(out_file, "(%s): %u ", name, where);
@@ -508,8 +509,9 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 				int blocksize,
 				tid_t transaction)
 {
-	int got, retval;
-	char buf[8192];
+	unsigned int 	got;
+	int		retval;
+	char 		buf[8192];
 	
 	if (!(dump_all
 	      || (fs_blocknr == block_to_dump)
@@ -576,7 +578,7 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 		 * inode. */
 		
 		fprintf (out_file, "    Blocks:  ");
-		start_extent = -1;
+		first = prev = start_extent = -1;
 
 		for (i=0; i<EXT2_NDIR_BLOCKS; i++) {
 			this = inode->i_block[i];

@@ -1,5 +1,7 @@
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
+	* debugfs.c, debugfs.h, logdump.c: Fix various gcc -Wall nitpicks.
+
 	* logdump.c (read_journal_block): Replace pread with lseek/read
 		combination.
 

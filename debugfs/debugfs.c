@@ -388,7 +388,7 @@ static int list_blocks_proc(ext2_filsys fs, blk_t *blocknr, int blockcnt,
 }
 
 
-static void dump_blocks(FILE *f, char *prefix, ext2_ino_t inode)
+static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)
 {
 	struct list_blocks_struct lb;
 
@@ -406,7 +406,7 @@ static void dump_blocks(FILE *f, char *prefix, ext2_ino_t inode)
 }
 
 
-void internal_dump_inode(FILE *out, char *prefix,
+void internal_dump_inode(FILE *out, const char *prefix,
 			 ext2_ino_t inode_num, struct ext2_inode *inode,
 			 int do_dump_blocks)
 {
