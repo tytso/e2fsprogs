@@ -35,6 +35,8 @@ struct ext2_file {
 	char 			*buf;
 };
 
+#define BMAP_BUFFER (file->buf + fs->blocksize)
+
 errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 			   int flags, ext2_file_t *ret)
 {
@@ -63,7 +65,7 @@ errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 	if (retval)
 		goto fail;
 	
-	retval = ext2fs_get_mem(fs->blocksize * 2, (void **) &file->buf);
+	retval = ext2fs_get_mem(fs->blocksize * 3, (void **) &file->buf);
 	if (retval)
 		goto fail;
 
@@ -94,8 +96,10 @@ ext2_filsys ext2fs_file_get_fs(ext2_file_t file)
 static errcode_t ext2fs_file_flush(ext2_file_t file)
 {
 	errcode_t	retval;
+	ext2_filsys fs;
 	
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
+	fs = file->fs;
 
 	if (!(file->flags & EXT2_FILE_BUF_VALID) ||
 	    !(file->flags & EXT2_FILE_BUF_DIRTY))
@@ -106,14 +110,14 @@ static errcode_t ext2fs_file_flush(ext2_file_t file)
 	 * Allocate it.
 	 */
 	if (!file->physblock) {
-		retval = ext2fs_bmap(file->fs, file->ino, &file->inode,
-				     file->buf, BMAP_ALLOC,
+		retval = ext2fs_bmap(fs, file->ino, &file->inode,
+				     BMAP_BUFFER, BMAP_ALLOC,
 				     file->blockno, &file->physblock);
 		if (retval)
 			return retval;
 	}
 
-	retval = io_channel_write_blk(file->fs->io, file->physblock,
+	retval = io_channel_write_blk(fs->io, file->physblock,
 				      1, file->buf);
 	if (retval)
 		return retval;
@@ -122,6 +126,62 @@ static errcode_t ext2fs_file_flush(ext2_file_t file)
 
 	return retval;
 }
+
+/*
+ * This function synchronizes the file's block buffer and the current
+ * file position, possibly invalidating block buffer if necessary
+ */
+static errcode_t sync_buffer_position(ext2_file_t file)
+{
+	blk_t	b;
+	errcode_t	retval;
+
+	b = file->pos / file->fs->blocksize;
+	if (b != file->blockno) {
+		retval = ext2fs_file_flush(file);
+		if (retval)
+			return retval;
+		file->flags &= ~EXT2_FILE_BUF_VALID;
+	}
+	file->blockno = b;
+	return 0;
+}
+
+/*
+ * This function loads the file's block buffer with valid data from
+ * the disk as necessary.
+ *
+ * If dontfill is true, then skip initializing the buffer since we're
+ * going to be replacing its entire contents anyway.  If set, then the
+ * function basically only sets file->physblock and EXT2_FILE_BUF_VALID
+ */
+#define DONTFILL 1
+static errcode_t load_buffer(ext2_file_t file, int dontfill)
+{
+	ext2_filsys	fs = file->fs;
+	errcode_t	retval;
+
+	if (!(file->flags & EXT2_FILE_BUF_VALID)) {
+		retval = ext2fs_bmap(fs, file->ino, &file->inode,
+				     BMAP_BUFFER, 0, file->blockno,
+				     &file->physblock);
+		if (retval)
+			return retval;
+		if (!dontfill) {
+			if (file->physblock) {
+				retval = io_channel_read_blk(fs->io,
+							     file->physblock, 
+							     1, file->buf);
+				if (retval)
+					return retval;
+			} else
+				memset(file->buf, 0, fs->blocksize);
+		}
+		file->flags |= EXT2_FILE_BUF_VALID;
+	}
+	return 0;
+}
+	
 
 errcode_t ext2fs_file_close(ext2_file_t file)
 {
@@ -143,68 +203,39 @@ errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
 			   unsigned int wanted, unsigned int *got)
 {
 	ext2_filsys	fs;
-	errcode_t	retval;
-	blk_t		b, pb;
+	errcode_t	retval = 0;
 	unsigned int	start, left, c, count = 0;
 	char		*ptr = (char *) buf;
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 	fs = file->fs;
 
-again:
-	if (file->pos >= file->inode.i_size)
-		goto done;
+	while ((file->pos < file->inode.i_size) && (wanted > 0)) {
+		retval = sync_buffer_position(file);
+		if (retval)
+			goto fail;
+		retval = load_buffer(file, 0);
+		if (retval)
+			goto fail;
 
-	b = file->pos / fs->blocksize;
-	if (b != file->blockno) {
-		retval = ext2fs_file_flush(file);
-		if (retval)
-			goto fail;
-		file->flags &= ~EXT2_FILE_BUF_VALID;
-	}
-	file->blockno = b;
-	if (!(file->flags & EXT2_FILE_BUF_VALID)) {
-		retval = ext2fs_bmap(fs, file->ino, &file->inode,
-				     file->buf, 0, b, &pb);
-		if (retval)
-			goto fail;
-		if (pb) {
-			file->physblock = pb;
-			retval = io_channel_read_blk(fs->io, pb, 1, file->buf);
-			if (retval)
-				goto fail;
-		} else {
-			file->physblock = 0;
-			memset(file->buf, 0, fs->blocksize);
-		}
-		
-		file->flags |= EXT2_FILE_BUF_VALID;
-	}
-	start = file->pos % fs->blocksize;
-	c = fs->blocksize - start;
-	if (c > wanted)
-		c = wanted;
-	left = file->inode.i_size - file->pos ;
-	if (c > left)
-		c = left;
+		start = file->pos % fs->blocksize;
+		c = fs->blocksize - start;
+		if (c > wanted)
+			c = wanted;
+		left = file->inode.i_size - file->pos ;
+		if (c > left)
+			c = left;
 	
-	memcpy(ptr, file->buf+start, c);
-	file->pos += c;
-	ptr += c;
-	count += c;
-	wanted -= c;
-
-	if (wanted > 0)
-		goto again;
-
-done:
+		memcpy(ptr, file->buf+start, c);
+		file->pos += c;
+		ptr += c;
+		count += c;
+		wanted -= c;
+	}
+	
+fail:
 	if (got)
 		*got = count;
-	return 0;
-
-fail:
-	if (count)
-		goto done;
 	return retval;
 }
 
@@ -213,10 +244,11 @@ errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
 			    unsigned int nbytes, unsigned int *written)
 {
 	ext2_filsys	fs;
-	errcode_t	retval;
-	blk_t		b, pb;
-	unsigned int		start, c, count = 0;
+	blk_t pb;
+	errcode_t	retval = 0;
+	unsigned int	start, c, count = 0;
 	char		*ptr = (char *) buf;
+	int		dontfill;
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 	fs = file->fs;
@@ -224,53 +256,37 @@ errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
 	if (!(file->flags & EXT2_FILE_WRITE))
 		return EXT2_ET_FILE_RO;
 
-again:
-	b = file->pos / fs->blocksize;
-	if (b != file->blockno) {
-		retval = ext2fs_file_flush(file);
+	while (nbytes > 0) {
+		retval = sync_buffer_position(file);
 		if (retval)
 			goto fail;
-		file->flags &= ~EXT2_FILE_BUF_VALID;
-	}
-	file->blockno = b;
-	if (!(file->flags & EXT2_FILE_BUF_VALID)) {
-		retval = ext2fs_bmap(fs, file->ino, &file->inode,
-				     file->buf, BMAP_ALLOC, b, &pb);
-		if (retval)
-			goto fail;
-		file->physblock = pb;
 		
-		retval = io_channel_read_blk(fs->io, pb, 1, file->buf);
+		start = file->pos % fs->blocksize;
+		c = fs->blocksize - start;
+		if (c > nbytes)
+			c = nbytes;
+
+		/*
+		 * We only need to do a read-modify-update cycle if
+		 * we're doing a partial write.
+		 */
+		retval = load_buffer(file, (c == fs->blocksize));
 		if (retval)
 			goto fail;
-		file->flags |= EXT2_FILE_BUF_VALID;
+
+		file->flags |= EXT2_FILE_BUF_DIRTY;
+		memcpy(file->buf+start, ptr, c);
+		file->pos += c;
+		ptr += c;
+		count += c;
+		nbytes -= c;
 	}
-	start = file->pos % fs->blocksize;
-	c = fs->blocksize - start;
-	if (c > nbytes)
-		c = nbytes;
 	
-	file->flags |= EXT2_FILE_BUF_DIRTY;
-	memcpy(file->buf+start, ptr, c);
-	file->pos += c;
-	ptr += c;
-	count += c;
-	nbytes -= c;
-
-	if (nbytes > 0)
-		goto again;
-
-done:
+fail:
 	if (written)
 		*written = count;
-	return 0;
-
-fail:
-	if (count)
-		goto done;
 	return retval;
 }
-
 
 errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
 			    int whence, ext2_off_t *ret_pos)

@@ -1,3 +1,13 @@
+2001-05-05  Theodore Tso  <tytso@valinux.com>
+
+	* fileio.c (ext2fs_file_read): Factored out common code and
+		cleaned up function.  Fixed a bug where if there was an
+		error reading from the disk, the number of bytes read
+		wasn't reliably set.  (Fixes Debian bug #79163)
+		(ext2fs_file_write): Factored out common code and made
+		function more efficient; if writing a full block, don't
+		bother to do a read-modify-write cycle.
+
 2001-05-04  Theodore Tso  <tytso@valinux.com>
 
 	* dirblock.c (ext2fs_read_dir_block): Check for an directory
