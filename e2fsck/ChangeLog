@@ -1,4 +1,9 @@
-1999-09-07    <tytso@rsts-11.mit.edu>
+1999-09-24    <tytso@valinux.com>
+
+	* unix.c (PRS), util.c (ask_yn): Add #ifdef's to make
+		e2fsprogs easier to port to non-Unix platforms.
+
+1999-09-07    <tytso@valinux.com>
 
 	* pass3.c (adjust_inode_count): Fix bug where we didn't keep the
 		internal and external inode counts in sync when we

@@ -16,9 +16,10 @@
 #include <string.h>
 #include <fcntl.h>
 #include <ctype.h>
-#include <termios.h>
 #include <time.h>
+#ifdef HAVE_SIGNAL_H
 #include <signal.h>
+#endif
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
@@ -36,8 +37,6 @@
 #include "e2fsck.h"
 #include "problem.h"
 #include "../version.h"
-
-extern int isatty(int);
 
 /* Command line options */
 static int blocksize = 0;
@@ -338,6 +337,7 @@ static void reserve_stdio_fds(NOARGS)
 	close(fd);
 }
 
+#ifdef HAVE_SIGNAL_H
 static e2fsck_t global_signal_ctx;
 
 static void signal_progress_on(int sig)
@@ -361,6 +361,7 @@ static void signal_progress_off(int sig)
 	e2fsck_clear_progbar(ctx);
 	ctx->progress = 0;
 }
+#endif
 
 static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 {
@@ -372,7 +373,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	char		*oldpath = getenv("PATH");
 	e2fsck_t	ctx;
 	errcode_t	retval;
+#ifdef HAVE_SIGNAL_H
 	struct sigaction	sa;
+#endif
 
 	retval = e2fsck_allocate_context(&ctx);
 	if (retval)
@@ -530,6 +533,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			exit(FSCK_ERROR);
 		}
 	}
+#ifdef HAVE_SIGNAL_H
 	/*
 	 * Set up signal action
 	 */
@@ -542,6 +546,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	sigaction(SIGUSR1, &sa, 0);
 	sa.sa_handler = signal_progress_off;
 	sigaction(SIGUSR2, &sa, 0);
+#endif
 	return 0;
 }
 

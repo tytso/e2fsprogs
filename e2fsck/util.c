@@ -13,7 +13,17 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+
+#ifdef HAVE_CONIO_H
+#undef HAVE_TERMIOS_H
+#include <conio.h>
+#define getchar()	getch()
+#else
+#ifdef HAVE_TERMIOS_H
 #include <termios.h>
+#endif
+#endif
+
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
@@ -54,8 +64,10 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
 int ask_yn(const char * string, int def)
 {
 	int		c;
-	struct termios	termios, tmp;
 	const char	*defstr;
+
+#ifdef HAVE_TERMIOS_H
+	struct termios	termios, tmp;
 
 	tcgetattr (0, &termios);
 	tmp = termios;
@@ -63,6 +75,7 @@ int ask_yn(const char * string, int def)
 	tmp.c_cc[VMIN] = 1;
 	tmp.c_cc[VTIME] = 0;
 	tcsetattr (0, TCSANOW, &tmp);
+#endif
 
 	if (def == 1)
 		defstr = "<y>";
@@ -91,7 +104,9 @@ int ask_yn(const char * string, int def)
 		printf ("yes\n\n");
 	else
 		printf ("no\n\n");
+#ifdef HAVE_TERMIOS_H
 	tcsetattr (0, TCSANOW, &termios);
+#endif
 	return def;
 }
 
