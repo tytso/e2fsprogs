@@ -42,9 +42,8 @@ static int save_dev(blkid_dev dev, FILE *file)
 	DBG(printf("device %s, type %s\n", dev->bid_name, dev->bid_type));
 
 	fprintf(file,
-		"<device TYPE=\"%s\" DEVNO=\"0x%04lx\" ID=\"%d\" TIME=\"%lu\"",
-		dev->bid_type, (unsigned long) dev->bid_devno,
-		dev->bid_id, dev->bid_time);
+		"<device TYPE=\"%s\" DEVNO=\"0x%04lx\" TIME=\"%lu\"",
+		dev->bid_type, (unsigned long) dev->bid_devno, dev->bid_time);
 	if (dev->bid_pri)
 		fprintf(file, " PRI=\"%d\"", dev->bid_pri);
 	list_for_each(p, &dev->bid_tags) {

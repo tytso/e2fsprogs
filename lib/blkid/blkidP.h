@@ -36,7 +36,6 @@ struct blkid_struct_dev
 	int			bid_pri;	/* Device priority */
 	dev_t			bid_devno;	/* Device major/minor number */
 	time_t			bid_time;	/* Last update time of device */
-	unsigned int		bid_id;		/* Unique cache id for device */
 	unsigned int		bid_flags;	/* Device status bitflags */
 	char			*bid_label;	/* Shortcut to device LABEL */
 	char			*bid_uuid;	/* Shortcut to binary UUID */
@@ -88,7 +87,6 @@ struct blkid_struct_cache
 	struct list_head	bic_devs;	/* List head of all devices */
 	struct list_head	bic_tags;	/* List head of all tag types */
 	time_t			bic_time;	/* Last probe time */
-p	unsigned int		bic_idmax;	/* Highest ID assigned */
 	unsigned int		bic_flags;	/* Status flags of the cache */
 	char			*bic_filename;	/* filename of cache */
 };
@@ -162,7 +160,6 @@ static inline void DEB_DUMP_DEV(blkid_dev dev)
 
 	printf("  dev: name = %s\n", dev->bid_name);
 	printf("  dev: DEVNO=\"0x%0Lx\"\n", dev->bid_devno);
-	printf("  dev: ID=\"%u\"\n", dev->bid_id);
 	printf("  dev: TIME=\"%lu\"\n", dev->bid_time);
 	printf("  dev: PRI=\"%d\"\n", dev->bid_pri);
 	printf("  dev: flags = 0x%08X\n", dev->bid_flags);
@@ -184,7 +181,6 @@ static inline void DEB_DUMP_CACHE(blkid_cache cache)
 	}
 
 	printf("cache: time = %lu\n", cache->bic_time);
-	printf("cache: idmax = %u\n", cache->bic_idmax);
 	printf("cache: flags = 0x%08X\n", cache->bic_flags);
 
 	list_for_each(p, &cache->bic_devs) {

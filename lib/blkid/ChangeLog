@@ -1,5 +1,9 @@
 2003-02-14  Theodore Ts'o  <tytso@mit.edu>
 
+	* blkidP.h, devname.c (blkid_get_devname), read.c (parse_tag),
+		save.c (save_dev): Remove bid_id, as it is not used for
+		anything.
+
 	* Makefile.in (blkid): When building the blkid, don't link against
 		the shared blkid library; link only against the static
 		blkid library.

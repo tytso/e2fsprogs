@@ -73,7 +73,6 @@ blkid_dev blkid_get_devname(blkid_cache cache, const char *devname,
 			return NULL;
 		dev->bid_name = blkid_strdup(devname);
 		dev->bid_cache = cache;
-		dev->bid_id = ++(cache->bic_idmax);
 		list_add_tail(&dev->bid_devs, &cache->bic_devs);
 		cache->bic_flags |= BLKID_BIC_FL_CHANGED;
 	}
