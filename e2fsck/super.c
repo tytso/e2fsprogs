@@ -446,6 +446,7 @@ void check_super_block(e2fsck_t ctx)
 	blk_t	bpg_max;
 	int	inodes_per_block;
 	int	ipg_max;
+	int	inode_size;
 	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
@@ -494,7 +495,18 @@ void check_super_block(e2fsck_t ctx)
 	check_super_value(ctx, "reserved_gdt_blocks", 
 			  sb->s_reserved_gdt_blocks, MAX_CHECK, 0,
 			  fs->blocksize/4);
-
+	inode_size = EXT2_INODE_SIZE(sb);
+	check_super_value(ctx, "inode_size",
+			  inode_size, MIN_CHECK | MAX_CHECK,
+			  EXT2_GOOD_OLD_INODE_SIZE, fs->blocksize);
+	if (inode_size & (inode_size - 1)) {
+		pctx.num = inode_size;
+		pctx.str = "inode_size";
+		fix_problem(ctx, PR_0_MISC_CORRUPT_SUPER, &pctx);
+		ctx->flags |= E2F_FLAG_ABORT; /* never get here! */
+		return;
+	}
+		
 	if (!ctx->num_blocks) {
 		pctx.errcode = e2fsck_get_device_size(ctx);
 		if (pctx.errcode && pctx.errcode != EXT2_ET_UNIMPLEMENTED) {

@@ -1,5 +1,8 @@
 2005-03-20  Theodore Ts'o  <tytso@mit.edu>
 
+	* super.c (check_super_block): Add sanity checks for the
+		superblock's inode_size field.
+
 	* pass3.c (check_root, e2fsck_get_lost_and_found): Call
 		ext2fs_write_new_inode() instead of ext2fs_write_inode().
 
