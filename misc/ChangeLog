@@ -1,3 +1,7 @@
+1999-07-18  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs 1.15
+
 1999-07-18    <tytso@rsts-11.mit.edu>
 
 	* mke2fs.c (PRS, set_fs_defaults): Add new option -T which allows

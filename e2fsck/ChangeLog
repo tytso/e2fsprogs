@@ -1,3 +1,7 @@
+1999-07-18  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs 1.15
+
 1999-07-19    <tytso@valinux.com>
 
 	* unix.c (usage): Add minimalist emergency help to the usage
