@@ -1,4 +1,11 @@
-1999-09-15    <tytso@rsts-11.mit.edu>
+1999-10-14    <tytso@valinux.com>
+
+	* fsck.c (wait_one): If the fsck process just started, wait a
+		second before sending a SIGUSR1, to give it a chance
+		to set the signal handler; otherwise, fsck will die on an
+		unhandled SIGUSR1.
+
+1999-09-15    <tytso@valinux.com>
 
 	* mke2fs.c (show_stats): Fix display bug when printing out the
 		number of superblocks.  Suggested by Yann Dirson.

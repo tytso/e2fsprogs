@@ -33,6 +33,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -377,7 +378,7 @@ static int execute(char *type, char *device, char *mntpt, int interactive)
 {
 	char *s, *argv[80], prog[80];
 	int  argc, i;
-	struct fsck_instance *inst;
+	struct fsck_instance *inst, *p;
 	pid_t	pid;
 
 	inst = malloc(sizeof(struct fsck_instance));
@@ -433,8 +434,18 @@ static int execute(char *type, char *device, char *mntpt, int interactive)
 	inst->prog = string_copy(prog);
 	inst->type = string_copy(type);
 	inst->device = string_copy(device);
-	inst->next = instance_list;
-	instance_list = inst;
+	inst->start_time = time(0);
+	inst->next = NULL;
+
+	/*
+	 * Find the end of the list, so we add the instance on at the end.
+	 */
+	for (p = instance_list; p && p->next; p = p->next);
+
+	if (p)
+		p->next = instance_list;
+	else
+		instance_list = inst;
 	
 	return 0;
 }
@@ -460,31 +471,28 @@ static struct fsck_instance *wait_one(NOARGS)
 		return(inst);
 	}
 
-retry:
-	pid = wait(&status);
-	if (pid < 0) {
-		if ((errno == EINTR) || (errno == EAGAIN))
-			goto retry;
-		if (errno == ECHILD) {
-			fprintf(stderr,
-				"%s: wait: No more child process?!?\n",
-				progname);
-			return NULL;
+	do {
+		pid = wait(&status);
+		if (pid < 0) {
+			if ((errno == EINTR) || (errno == EAGAIN))
+				continue;
+			if (errno == ECHILD) {
+				fprintf(stderr,
+					"%s: wait: No more child process?!?\n",
+					progname);
+				return NULL;
+			}
+			perror("wait");
+			continue;
 		}
-		perror("wait");
-		goto retry;
-	}
-	for (prev = 0, inst = instance_list;
-	     inst;
-	     prev = inst, inst = inst->next) {
-		if (inst->pid == pid)
-			break;
-	}
-	if (!inst) {
-		printf("Unexpected child process %d, status = 0x%x\n",
-		       pid, status);
-		goto retry;
-	}
+		for (prev = 0, inst = instance_list;
+		     inst;
+		     prev = inst, inst = inst->next) {
+			if (inst->pid == pid)
+				break;
+		}
+	} while (!inst);
+
 	if (WIFEXITED(status)) 
 		status = WEXITSTATUS(status);
 	else if (WIFSIGNALED(status)) {
@@ -514,7 +522,19 @@ retry:
 				continue;
 			if (strcmp(inst2->type, "ext2"))
 				continue;
-			kill(inst2->pid, SIGUSR1);
+			/*
+			 * If we've just started the fsck, wait a tiny
+			 * bit before sending the kill, to give it
+			 * time to set up the signal handler
+			 */
+			if (inst2->start_time < time(0)+2) {
+				if (fork() == 0) {
+					sleep(1);
+					kill(inst2->pid, SIGUSR1);
+					exit(0);
+				}
+			} else
+				kill(inst2->pid, SIGUSR1);
 			break;
 		}
 	}

@@ -49,6 +49,7 @@ struct fsck_instance {
 	int	pid;
 	int	flags;
 	int	exit_status;
+	time_t	start_time;
 	char *	prog;
 	char *	type;
 	char *	device;
