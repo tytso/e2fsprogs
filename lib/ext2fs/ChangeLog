@@ -1,5 +1,10 @@
 2001-01-05    <tytso@snap.thunk.org>
 
+	* dirblock.c (ext2fs_read_dir_block): Fix a potential case where
+		we may overrun allocated memory in case of a corrupted
+		filesystem (or an e2fsck test case :-) when byte-swapping
+		the directory block.
+
 	* ext2fs.h: Indent the #warning to fix gcc -Wall complaint.
 
 	* mkjournal.c (ext2fs_add_journal_device): Fix various gcc -Wall

@@ -39,7 +39,7 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 		return 0;
 	p = (char *) buf;
 	end = (char *) buf + fs->blocksize;
-	while (p < end) {
+	while (p < end-8) {
 		dirent = (struct ext2_dir_entry *) p;
 		dirent->inode = ext2fs_swab32(dirent->inode);
 		dirent->rec_len = ext2fs_swab16(dirent->rec_len);
