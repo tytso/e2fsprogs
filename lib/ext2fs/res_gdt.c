@@ -1,5 +1,5 @@
 /*
- * res_gdt.h --- reserve blocks for growing the group descriptor table
+ * res_gdt.c --- reserve blocks for growing the group descriptor table
  *               during online resizing.
  *
  * Copyright (C) 2002 Andreas Dilger
@@ -15,6 +15,42 @@
 #include <time.h>
 #include "ext2_fs.h"
 #include "ext2fs.h"
+
+/*
+ * Iterate through the groups which hold BACKUP superblock/GDT copies in an
+ * ext3 filesystem.  The counters should be initialized to 1, 5, and 7 before
+ * calling this for the first time.  In a sparse filesystem it will be the
+ * sequence of powers of 3, 5, and 7: 1, 3, 5, 7, 9, 25, 27, 49, 81, ...
+ * For a non-sparse filesystem it will be every group: 1, 2, 3, 4, ...
+ */
+static unsigned int list_backups(ext2_filsys fs, unsigned int *three,
+				 unsigned int *five, unsigned int *seven)
+{
+	unsigned int *min = three;
+	int mult = 3;
+	unsigned int ret;
+
+	if (!(fs->super->s_feature_ro_compat &
+	      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)) {
+		ret = *min;
+		*min += 1;
+		return ret;
+	}
+
+	if (*five < *min) {
+		min = five;
+		mult = 5;
+	}
+	if (*seven < *min) {
+		min = seven;
+		mult = 7;
+	}
+
+	ret = *min;
+	*min *= mult;
+
+	return ret;
+}
 
 /*
  * This code assumes that the reserved blocks have already been marked in-use
@@ -124,7 +160,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 			goto out_dindir;
 		}
 
-		while ((grp = ext2fs_list_backups(fs, &three, &five, &seven)) <
+		while ((grp = list_backups(fs, &three, &five, &seven)) <
 		       fs->group_desc_count) {
 			blk_t expect = gdt_blk + grp * sb->s_blocks_per_group;
 

@@ -60,7 +60,6 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	read_bb_file.o \
 	res_gdt.o \
 	rw_bitmaps.o \
-	sparse.o \
 	swapfs.o \
 	unix_io.o \
 	unlink.o \
@@ -120,7 +119,6 @@ SRCS= ext2_err.c \
 	$(srcdir)/res_gdt.c \
 	$(srcdir)/rs_bitmap.c \
 	$(srcdir)/rw_bitmaps.c \
-	$(srcdir)/sparse.c \
 	$(srcdir)/swapfs.c \
 	$(srcdir)/test_io.c \
 	$(srcdir)/unix_io.c \
@@ -476,8 +474,6 @@ rw_bitmaps.o: $(srcdir)/rw_bitmaps.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h $(srcdir)/e2image.h
-sparse.o: $(srcdir)/sparse.c $(srcdir)/ext2_fs.h \
- $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h
 swapfs.o: $(srcdir)/swapfs.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \

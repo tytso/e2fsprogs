@@ -1,5 +1,16 @@
 2004-12-15  Theodore Ts'o  <tytso@mit.edu>
 
+	* sparse.c (ext2fs_list_backups, ext2fs_bg_has_super),
+		res_gdt.c (list_backups), closefs.c (ext2fs_bg_has_super),
+		ext2fs.h: Move ext2fs_list_backups() to res_gdt.c, and
+		ext2fs_bg_has_super() back to closefs.c.  There's no
+		reason for the new file, since list_backups() isn't being
+		used by any other functions, and can be made static, and
+		all users of the ext2fs filesystem will have to call
+		ext2fs_close() anyway.
+
+2004-12-15  Theodore Ts'o  <tytso@mit.edu>
+
 	* Applied resize inode patch from Andreas Dilger
 
 	* res_gdt.c (ext2fs_create_resize_inode): New function that

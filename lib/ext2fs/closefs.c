@@ -19,6 +19,32 @@
 #include "ext2_fs.h"
 #include "ext2fsP.h"
 
+static int test_root(int a, int b)
+{
+	if (a == 0)
+		return 1;
+	while (1) {
+		if (a == 1)
+			return 1;
+		if (a % b)
+			return 0;
+		a = a / b;
+	}
+}
+
+int ext2fs_bg_has_super(ext2_filsys fs, int group_block)
+{
+	if (!(fs->super->s_feature_ro_compat &
+	      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
+		return 1;
+
+	if (test_root(group_block, 3) || (test_root(group_block, 5)) ||
+	    test_root(group_block, 7))
+		return 1;
+
+	return 0;
+}
+
 int ext2fs_super_and_bgd_loc(ext2_filsys fs, 
 			     dgrp_t group,
 			     blk_t *ret_super_blk,
