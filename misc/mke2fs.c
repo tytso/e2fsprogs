@@ -126,6 +126,10 @@ static void proceed_question(NOARGS)
 		exit(1);
 }
 
+#ifndef SCSI_BLK_MAJOR
+#define SCSI_BLK_MAJOR(M)  ((M) == SCSI_DISK_MAJOR || (M) == SCSI_CDROM_MAJOR)
+#endif
+
 static void check_plausibility(NOARGS)
 {
 #ifdef HAVE_LINUX_MAJOR_H

@@ -200,12 +200,15 @@ static void free_instance(struct fsck_instance *i)
 	return;
 }
 
-struct fs_info *parse_fstab_line(char *line)
+int parse_fstab_line(char *line, struct fs_info **ret_fs)
 {
 	char	*device, *mntpnt, *type, *opts, *freq, *passno, *cp;
 	struct fs_info *fs;
 
+	*ret_fs = 0;
 	strip_line(line);
+	if (cp = strchr(line, '#'))
+		*cp = 0;	/* Ignore everything after the comment char */
 	cp = line;
 
 	device = parse_word(&cp);
@@ -215,11 +218,14 @@ struct fs_info *parse_fstab_line(char *line)
 	freq = parse_word(&cp);
 	passno = parse_word(&cp);
 
-	if (!device || !mntpnt || !type)
-		return 0;
+	if (!device)
+		return 0;	/* Allow blank lines */
+	
+	if (!mntpnt || !type)
+		return -1;
 	
 	if (!(fs = malloc(sizeof(struct fs_info))))
-		return 0;
+		return -1;
 
 	fs->device = string_copy(device);
 	fs->mountpt = string_copy(mntpnt);
@@ -230,7 +236,9 @@ struct fs_info *parse_fstab_line(char *line)
 	fs->flags = 0;
 	fs->next = NULL;
 
-	return fs;
+	*ret_fs = fs;
+
+	return 0;
 }
 
 /*
@@ -255,11 +263,13 @@ static void load_fs_info(char *filename)
 		if (!fgets(buf, sizeof(buf), f))
 			break;
 		buf[sizeof(buf)-1] = 0;
-		if ((fs = parse_fstab_line(buf)) == NULL) {
+		if (parse_fstab_line(buf, &fs) < 0) {
 			fprintf(stderr, "WARNING: bad format "
 				"on line %d of %s\n", lineno, filename);
 			continue;
 		}
+		if (!fs)
+			continue;
 		if (!filesys_info)
 			filesys_info = fs;
 		else
@@ -327,7 +337,7 @@ static char *find_fsck(char *type)
  * Execute a particular fsck program, and link it into the list of
  * child processes we are waiting for.
  */
-static int execute(char *prog, char *device)
+static int execute(char *prog, char *device, char *mntpt)
 {
 	char *s, *argv[80];
 	int  argc, i;
@@ -350,7 +360,7 @@ static int execute(char *prog, char *device)
 	}
 
 	if (verbose || noexecute) {
-		printf("[%s] ", s);
+		printf("[%s -- %s] ", s, mntpt);
 		for (i=0; i < argc; i++)
 			printf("%s ", argv[i]);
 		printf("\n");
@@ -492,7 +502,7 @@ static void fsck_device(char *device)
 		type = DEFAULT_FSTYPE;
 
 	sprintf(prog, "fsck.%s", type);
-	retval = execute(prog, device);
+	retval = execute(prog, device, fsent->mountpt);
 	if (retval) {
 		fprintf(stderr, "%s: Error %d while executing %s for %s\n",
 			progname, retval, prog, device);
