@@ -44,6 +44,7 @@ struct test_private_data {
 	void (*read_blk)(unsigned long block, int count, errcode_t err);
 	void (*write_blk)(unsigned long block, int count, errcode_t err);
 	void (*set_blksize)(int blksize, errcode_t err);
+	void (*write_byte)(unsigned long block, int count, errcode_t err);
 };
 
 static errcode_t test_open(const char *name, int flags, io_channel *channel);
@@ -79,6 +80,8 @@ void (*test_io_cb_write_blk)
 	(unsigned long block, int count, errcode_t err) = 0;
 void (*test_io_cb_set_blksize)
 	(int blksize, errcode_t err) = 0;
+void (*test_io_cb_write_byte)
+	(unsigned long block, int count, errcode_t err) = 0;
 
 static errcode_t test_open(const char *name, int flags, io_channel *channel)
 {
@@ -124,6 +127,7 @@ static errcode_t test_open(const char *name, int flags, io_channel *channel)
 	data->read_blk = 	test_io_cb_read_blk;
 	data->write_blk = 	test_io_cb_write_blk;
 	data->set_blksize = 	test_io_cb_set_blksize;
+	data->write_byte = 	test_io_cb_write_byte;
 	
 	*channel = io;
 	return 0;
@@ -211,11 +215,31 @@ static errcode_t test_write_blk(io_channel channel, unsigned long block,
 
 	if (data->real)
 		retval = io_channel_write_blk(data->real, block, count, buf);
-	if (data->write_blk)
-		data->write_blk(block, count, retval);
+	if (data->write_byte)
+		data->write_byte(block, count, retval);
+	else
+		printf("Test_io: write_byte(%lu, %d) returned %s\n",
+		       block, count, retval ? error_message(retval) : "OK");
+	return retval;
+}
+
+static errcode_t test_write_byte(io_channel channel, unsigned long offset,
+			       int count, const void *buf)
+{
+	struct test_private_data *data;
+	errcode_t	retval = 0;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct test_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_TEST_IO_CHANNEL);
+
+	if (data->real && data->real->manager->write_byte)
+		retval = io_channel_write_byte(data->real, offset, count, buf);
+	if (data->write_byte)
+		data->write_byte(offset, count, retval);
 	else
 		printf("Test_io: write_blk(%lu, %d) returned %s\n",
-		       block, count, retval ? error_message(retval) : "OK");
+		       offset, count, retval ? error_message(retval) : "OK");
 	return retval;
 }
 

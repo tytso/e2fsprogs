@@ -80,6 +80,9 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	 * superblock, then he/she must also specify the block size!
 	 * Otherwise, read the master superblock located at offset
 	 * SUPERBLOCK_OFFSET from the start of the partition.
+	 *
+	 * Note: we only save a backup copy of the superblock if we
+	 * are reading the superblock from the primary superblock location.
 	 */
 	if (superblock) {
 		if (!block_size) {
@@ -88,15 +91,22 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		}
 		io_channel_set_blksize(fs->io, block_size);
 		group_block = superblock + 1;
+		fs->orig_super = 0;
 	} else {
 		io_channel_set_blksize(fs->io, SUPERBLOCK_OFFSET);
 		superblock = 1;
 		group_block = 0;
+		retval = ext2fs_get_mem(SUPERBLOCK_SIZE,
+					(void **) &fs->orig_super);
+		if (retval)
+			goto cleanup;
 	}
 	retval = io_channel_read_blk(fs->io, superblock, -SUPERBLOCK_SIZE,
 				     fs->super);
 	if (retval)
 		goto cleanup;
+	if (fs->orig_super)
+		memcpy(fs->orig_super, fs->super, SUPERBLOCK_SIZE);
 
 	if ((fs->super->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC)) ||
 	    (fs->flags & EXT2_FLAG_SWAP_BYTES)) {

@@ -203,10 +203,11 @@ struct struct_ext2_filsys {
 	badblocks_list			badblocks;
 	ext2_dblist			dblist;
 	__u32				stride;	/* for mke2fs */
+	struct ext2_super_block *	orig_super;
 	/*
 	 * Reserved for future expansion
 	 */
-	__u32				reserved[11];
+	__u32				reserved[10];
 
 	/*
 	 * Reserved for the use of the calling application.

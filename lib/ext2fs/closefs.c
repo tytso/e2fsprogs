@@ -56,6 +56,56 @@ int ext2fs_bg_has_super(ext2_filsys fs, int group_block)
 #endif
 }
 
+/*
+ * This function forces out the primary superblock.  We need to only
+ * write out those fields which we have changed, since if the
+ * filesystem is mounted, it may have changed some of the other
+ * fields.
+ *
+ * It takes as input a superblock which has already been byte swapped
+ * (if necessary).
+ *
+ */
+static errcode_t write_primary_superblock(ext2_filsys fs,
+					  struct ext2_super_block *super)
+{
+	__u16		*old_super, *new_super;
+	int		check_idx, write_idx, size;
+	errcode_t	retval;
+
+	if (!fs->io->manager->write_byte || !fs->orig_super) {
+		io_channel_set_blksize(fs->io, SUPERBLOCK_OFFSET);
+		retval = io_channel_write_blk(fs->io, 1, -SUPERBLOCK_SIZE,
+					      super);
+		io_channel_set_blksize(fs->io, fs->blocksize);
+		return retval;
+	}
+
+	old_super = (__u16 *) fs->orig_super;
+	new_super = (__u16 *) super;
+
+	for (check_idx = 0; check_idx < SUPERBLOCK_SIZE/2; check_idx++) {
+		if (old_super[check_idx] == new_super[check_idx])
+			continue;
+		write_idx = check_idx;
+		for (check_idx++; check_idx < SUPERBLOCK_SIZE/2; check_idx++)
+			if (old_super[check_idx] == new_super[check_idx])
+				break;
+		size = 2 * (check_idx - write_idx);
+#if 0
+		printf("Writing %d bytes starting at %d\n",
+		       size, write_idx*2);
+#endif
+		retval = io_channel_write_byte(fs->io,
+			       SUPERBLOCK_OFFSET + (2 * write_idx), size,
+					       new_super + write_idx);
+		if (retval)
+			return retval;
+	}
+	return 0;
+}
+
+
 errcode_t ext2fs_flush(ext2_filsys fs)
 {
 	dgrp_t		i,j,maxgroup,sgrp;
@@ -111,12 +161,9 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	 * separately, since it is located at a fixed location
 	 * (SUPERBLOCK_OFFSET).
 	 */
-	io_channel_set_blksize(fs->io, SUPERBLOCK_OFFSET);
-	retval = io_channel_write_blk(fs->io, 1, -SUPERBLOCK_SIZE,
-				      super_shadow);
+	retval = write_primary_superblock(fs, super_shadow);
 	if (retval)
 		goto errout;
-	io_channel_set_blksize(fs->io, fs->blocksize);
 
 	/*
 	 * Set the state of the FS to be non-valid.  (The state has

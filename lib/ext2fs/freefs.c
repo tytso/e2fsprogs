@@ -35,6 +35,8 @@ void ext2fs_free(ext2_filsys fs)
 		ext2fs_free_mem((void **) &fs->device_name);
 	if (fs->super)
 		ext2fs_free_mem((void **) &fs->super);
+	if (fs->orig_super)
+		ext2fs_free_mem((void **) &fs->orig_super);
 	if (fs->group_desc)
 		ext2fs_free_mem((void **) &fs->group_desc);
 	if (fs->block_map)

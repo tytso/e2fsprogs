@@ -1,3 +1,30 @@
+2000-10-26    <tytso@snap.thunk.org>
+
+	* ext2_io.h (io_channel_write_byte): Add new interface to allow
+		callers to write specific byte ranges.  This is an
+		optional interface, which not all IO channels may
+		implement.
+
+	* unix_io.c (unix_write_byte):
+	* test_io.c (test_write_byte): Add implementation of the
+		write_byte function.
+
+	* closefs.c (write_primary_superblock, ext2fs_flush): Add a new
+		function which writes the primary superblock.  If the IO
+		channel supports writing raw bytes directly, only fields
+		which were modified are written to the disk.  This makes
+		it safe(r) to use utilities like tune2fs on a mounted
+		filesystem. 
+
+	* freefs.c (ext2fs_free): Free the original superblock if it is
+		available. 
+
+	* openfs.c (ext2fs_open): Store a copy of the original superblock
+		when opening it.
+
+	* ext2fs.h: Add a field to store the original superblock in the
+		ext2 context structure.
+
 2000-10-24    <tytso@snap.thunk.org>
 
 	* llseek.c: Add #ifdef's for IA64 (it's a 64-bit platform, so we

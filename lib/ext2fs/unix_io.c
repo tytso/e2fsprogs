@@ -73,6 +73,8 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 				int count, const void *data);
 static errcode_t unix_flush(io_channel channel);
+static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
+				int size, const void *data);
 
 static struct struct_io_manager struct_unix_manager = {
 	EXT2_ET_MAGIC_IO_MANAGER,
@@ -82,7 +84,8 @@ static struct struct_io_manager struct_unix_manager = {
 	unix_set_blksize,
 	unix_read_blk,
 	unix_write_blk,
-	unix_flush
+	unix_flush,
+	unix_write_byte
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
@@ -507,6 +510,36 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 		buf += channel->block_size;
 	}
 	return retval;
+}
+
+static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
+				 int size, const void *buf)
+{
+	struct unix_private_data *data;
+	struct unix_cache *cache;
+	errcode_t	retval = 0, retval2;
+	char		*cp;
+	int		i, writethrough;
+	size_t		actual;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	/*
+	 * Flush out the cache completely
+	 */
+	if ((retval = flush_cached_blocks(channel, data, 1)))
+		return retval;
+
+	if (lseek(data->dev, offset, SEEK_SET) < 0)
+		return errno;
+	
+	actual = write(data->dev, buf, size);
+	if (actual != size)
+		return EXT2_ET_SHORT_WRITE;
+
+	return 0;
 }
 
 /*
