@@ -577,11 +577,26 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("Error reading @a @b %b for @i %i.  "),
 	  PROMPT_CLEAR, 0 },
 
-	  /* Invalid extended attribute block */
+	/* Invalid extended attribute block */
 	{ PR_1_BAD_EA_BLOCK,
 	  N_("@i %i has a bad @a @b %b.  "),
 	  PROMPT_CLEAR, 0 },
 
+	/* Error reading Extended Attribute block while fixing refcount */
+	{ PR_1_EXTATTR_READ_ABORT,
+	  N_("Error reading @a @b %b (%m).  "),
+	  PROMPT_ABORT, 0 },
+		  
+	/* Extended attribute reference count incorrect */
+	{ PR_1_EXTATTR_REFCOUNT,
+	  N_("@a @b %b has reference count %B, should be %N.  "),
+	  PROMPT_FIX, 0 },
+		  
+	/* Error writing Extended Attribute block while fixing refcount */ 
+	{ PR_1_EXTATTR_WRITE,
+	  N_("Error writing @a @b %b (%m).  "),
+	  PROMPT_ABORT, 0 },
+		  
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

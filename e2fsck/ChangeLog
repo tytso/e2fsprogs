@@ -1,3 +1,16 @@
+2001-07-07  Theodore Tso  <tytso@valinux.com>
+
+	* pass1.c (adjust_extattr_refcount): Add new function which
+		adjusts the reference counts of extended attribute blocks
+		if needed, both up and down.
+		(e2fsck_pass1): If the refcount or refcount_extra
+		structure are present, call adjust_extattr_refcount(),
+		and free it afterwards.
+
+	* problem.h, problem.c (PR_1_EXTATTR_READ_ABORT, 
+		PR_1_EXTATTR_REFCOUNT, PR_1_EXTATTR_WRITE): Add new
+		problem codes.
+
 2001-07-02  Theodore Tso  <tytso@valinux.com>
 
 	* pass1.c (e2fsck_pass1, check_ext_attr, check_blocks): Add

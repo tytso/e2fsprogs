@@ -70,6 +70,8 @@ static void process_inodes(e2fsck_t ctx, char *block_buf);
 static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
 static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
 				  dgrp_t group, void * priv_data);
+static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount, 
+				    char *block_buf, int adjust_sign);
 /* static char *describe_illegal_block(ext2_filsys fs, blk_t block); */
 
 struct process_block_struct {
@@ -623,6 +625,23 @@ void e2fsck_pass1(e2fsck_t ctx)
 	ext2fs_close_inode_scan(scan);
 	ehandler_operation(0);
 
+	/*
+	 * If any extended attribute blocks' reference counts need to
+	 * be adjusted, either up (ctx->refcount_extra), or down
+	 * (ctx->refcount), then fix them.
+	 */
+	if (ctx->refcount) {
+		adjust_extattr_refcount(ctx, ctx->refcount, block_buf, -1);
+		ea_refcount_free(ctx->refcount);
+		ctx->refcount = 0;
+	}
+	if (ctx->refcount_extra) {
+		adjust_extattr_refcount(ctx, ctx->refcount_extra,
+					block_buf, +1);
+		ea_refcount_free(ctx->refcount_extra);
+		ctx->refcount_extra = 0;
+	}
+		
 	if (ctx->invalid_bitmaps)
 		handle_fs_bad_blocks(ctx);
 
@@ -860,6 +879,52 @@ static _INLINE_ void mark_block_used(e2fsck_t ctx, blk_t block)
 }
 
 /*
+ * Adjust the extended attribute block's reference counts at the end
+ * of pass 1, either by subtracting out references for EA blocks that
+ * are still referenced in ctx->refcount, or by adding references for
+ * EA blocks that had extra references as accounted for in
+ * ctx->refcount_extra.
+ */
+static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount, 
+				    char *block_buf, int adjust_sign)
+{
+	struct ext2_ext_attr_header 	*header;
+	struct problem_context		pctx;
+	ext2_filsys			fs = ctx->fs;
+	errcode_t			retval;
+	blk_t				blk;
+	__u32				should_be;
+	int				count;
+
+	clear_problem_context(&pctx);
+	
+	ea_refcount_intr_begin(refcount);
+	while (1) {
+		if ((blk = ea_refcount_intr_next(refcount, &count)) == 0)
+			break;
+		pctx.blk = blk;
+		pctx.errcode = ext2fs_read_ext_attr(fs, blk, block_buf);
+		if (pctx.errcode) {
+			fix_problem(ctx, PR_1_EXTATTR_READ_ABORT, &pctx);
+			return;
+		}
+		header = (struct ext2_ext_attr_header *) block_buf;
+		pctx.blkcount = header->h_refcount;
+		should_be = header->h_refcount + adjust_sign * count;
+		pctx.num = should_be;
+		if (fix_problem(ctx, PR_1_EXTATTR_REFCOUNT, &pctx)) {
+			header->h_refcount = should_be;
+			pctx.errcode = ext2fs_write_ext_attr(fs, blk,
+							     block_buf);
+			if (pctx.errcode) {
+				fix_problem(ctx, PR_1_EXTATTR_WRITE, &pctx);
+				continue;
+			}
+		}
+	}
+}
+
+/*
  * Handle processing the extended attribute blocks
  */
 static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
@@ -869,7 +934,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	ext2_ino_t	ino = pctx->ino;
 	struct ext2_inode *inode = pctx->inode;
 	blk_t		blk;
-	static struct ext2_ext_attr_header *header;
+	struct ext2_ext_attr_header *header;
 	int		count;
 	
 	blk = inode->i_file_acl;
@@ -941,7 +1006,6 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	pctx->errcode = ext2fs_read_ext_attr(fs, blk, block_buf);
 	if (pctx->errcode && fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx))
 		goto clear_extattr;
-	/* XXX what if read_ext_attr returns an error */
 	header = (struct ext2_ext_attr_header *) block_buf;
 
 	if (header->h_magic != EXT2_EXT_ATTR_MAGIC) {

@@ -336,6 +336,15 @@ struct problem_context {
 /* Invalid Extended Attribute block */
 #define PR_1_BAD_EA_BLOCK		0x01003A
 
+/* Error reading Extended Attribute block while fixing refcount -- abort */
+#define PR_1_EXTATTR_READ_ABORT		0x01003B
+
+/* Extended attribute reference count incorrect */
+#define PR_1_EXTATTR_REFCOUNT		0x01003C
+
+/* Error writing Extended Attribute block while fixing refcount */ 
+#define PR_1_EXTATTR_WRITE		0x01003D
+	
 /*
  * Pass 1b errors
  */
