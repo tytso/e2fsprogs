@@ -1,3 +1,8 @@
+2001-11-24  Theodore Tso  <tytso@valinux.com>
+
+	* e2fsck.8.in: Fix minor typo in man page and clarify device
+		specification.
+
 2001-10-07  Theodore Tso  <tytso@valinux.com>
 
 	* journal.c (clear_v2_journal_fields, e2fsck_journal_load): If the

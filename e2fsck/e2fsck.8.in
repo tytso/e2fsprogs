@@ -30,16 +30,15 @@ e2fsck \- check a Linux second extended file system
 @JDEV@.B \-j
 @JDEV@.I external-journal
 @JDEV@]
-@JDEV@[
 .I device
 .SH DESCRIPTION
 .B e2fsck
 is used to check a Linux second extended file system (e2fs).  E2fsck also 
 supports ext2 filesystems countaining a journal, which are
 also sometimes known as ext3 filesystems.
-.TP
+.PP
 .I device
-is the special file corresponding to the device (e.g
+is the device file where the filesystem is stored (e.g.
 .IR /dev/hdc1 ).
 .SH OPTIONS
 .TP
