@@ -153,7 +153,7 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 
 #ifndef HAVE_STRNLEN
 /*
- * Incredibly, libc5 doesn't appear to have strncpy.  So we have to
+ * Incredibly, libc5 doesn't appear to have strnlen.  So we have to
  * provide our own.
  */
 static int strnlen(const char * s, int count)

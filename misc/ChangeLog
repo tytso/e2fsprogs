@@ -2,9 +2,18 @@
 
 	* badblocks.8.in: Fix spelling typo.  (Addresses Debian bug #110621)
 
+2001-08-30  Andreas Dilger  <adilger@turbolinux.com>
+
+	* mke2fs.c (main): Zap the second sector of the disk, along with
+		any sectors in the same filesystem block after the superblock.
+		The latter will remove (for example) swapspace signatures
+		on 4kB+ blocksize filesystems.  Also when zeroing the "end"
+		of the filesystem don't actually zero the start of a very
+		small device (less than 64 blocks).
+
 2001-08-27  Theodore Tso  <tytso@valinux.com>
 
-	* fsck.c (main): Make version display consisstent with the other
+	* fsck.c (main): Make version display consistent with the other
 		e2fsprogs programs.
 
 	* lsattr.c, chattr.c, mke2fs.c, tune2fs.c, dumpe2fs.c, e2image.c,

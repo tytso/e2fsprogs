@@ -809,8 +809,9 @@ static void PRS(int argc, char *argv[])
 		param.s_feature_ro_compat = 0;
 	}
 #endif
-	fprintf (stderr, "mke2fs %s (%s)\n", E2FSPROGS_VERSION,
-		 E2FSPROGS_DATE);
+	fprintf (stderr, _("mke2fs %s, %s for EXT2 FS %s, %s\n"),
+		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
+		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv,
@@ -1220,21 +1221,38 @@ int main (int argc, char *argv[])
 		fs->super->s_state |= EXT2_ERROR_FS;
 		fs->flags &= ~(EXT2_FLAG_IB_DIRTY|EXT2_FLAG_BB_DIRTY);
 	} else {
+		/* rsv must be a power of two (64kB is MD RAID sb alignment) */
 		int rsv = 65536 / EXT2_BLOCK_SIZE(fs->super);
 		unsigned long blocks = fs->super->s_blocks_count;
-		unsigned long start = (blocks & ~(rsv - 1)) - rsv;
+		unsigned long start;
 		blk_t ret_blk;
 
 #ifdef ZAP_BOOTBLOCK
 		zap_sector(fs, 0);
+		zap_sector(fs, 1);
 #endif
+
+		/*
+		 * Zero out sectors after the superblock in the same fs block
+		 * (only needed for 4kB+ block size).  We have already done
+		 * the superblock itself earlier, and we will overwrite the
+		 * following blocks with GDT/bitmap/itable also.
+		 */
+		for (i = 4; i < (1 << fs->super->s_log_block_size + 1); i++)
+			zap_sector(fs, i);
+
 		/*
 		 * Wipe out any old MD RAID (or other) metadata at the end
 		 * of the device.  This will also verify that the device is
-		 * as large as we think it is.
+		 * as large as we think.  Be careful with very small devices.
 		 */
-		retval = zero_blocks(fs, start, blocks - start,
-				     NULL, &ret_blk, NULL);
+		start = (blocks & ~(rsv - 1));
+		if (start > rsv)
+			start -= rsv;
+		if (start > 0)
+			retval = zero_blocks(fs, start, blocks - start,
+					     NULL, &ret_blk, NULL);
+
 		if (retval) {
 			com_err(program_name, retval,
 				_("zeroing block %u at end of filesystem"),
