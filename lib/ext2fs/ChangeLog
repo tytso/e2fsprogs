@@ -1,3 +1,9 @@
+2005-01-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* version.c (ext2fs_parse_version_string): Change parsing
+		algorithm so that version strings such as 1.36-rc1 returns
+		a non-surprising result (i.e., 136, and not 1361).
+
 2005-01-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* block.c (block_iterate_ind, block_iterate_dind,

@@ -30,8 +30,10 @@ int ext2fs_parse_version_string(const char *ver_string)
 	int version = 0;
 
 	for (cp = ver_string; *cp; cp++) {
-		if (!isdigit(*cp))
+		if (*cp == '.')
 			continue;
+		if (!isdigit(*cp))
+			break;
 		version = (version * 10) + (*cp - '0');
 	}
 	return version;
