@@ -1491,7 +1491,7 @@ static int process_block(ext2_filsys fs,
 	}
 	p->previous_block = blk;
 
-	if (p->is_dir && blockcnt > (1 << (15 - fs->super->s_log_block_size)))
+	if (p->is_dir && blockcnt > (1 << (21 - fs->super->s_log_block_size)))
 		problem = PR_1_TOOBIG_DIR;
 	if (p->is_reg && p->num_blocks+1 >= p->max_blocks)
 		problem = PR_1_TOOBIG_REG;
