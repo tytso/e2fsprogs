@@ -1,5 +1,9 @@
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.37
+
+2005-03-21  Theodore Ts'o  <tytso@mit.edu>
+
 	* message.c, pass1.c, problem.c, problem.h, util.c: Integrate code
 		from Alex Thomas at Clusterfs to check extended attributes
 		stored in inodes.

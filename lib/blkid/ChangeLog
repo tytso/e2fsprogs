@@ -1,5 +1,9 @@
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.37
+
+2005-03-21  Theodore Ts'o  <tytso@mit.edu>
+
 	* cache.c (blkid_get_cache): Ignore the BLKID_FILE environment
 		variable if blkid_get_cache() is called from a setuid
 		program.

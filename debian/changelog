@@ -1,12 +1,22 @@
-e2fsprogs (1.36release-2) unstable; urgency=low
+e2fsprogs (1.37-1) unstable; urgency=low
 
+  * New upstream release.
+  * Fixed a bug in e2fsck so it would notice if a file with an extended
+    attribute block was exactly 2**32 blocks, such that i_blocks wrapped
+    to zero.
+  * Fixed a bug in filefrag which caused it to falsely report a
+    discontinuity when there are one or more unallocated blocks at the
+    beginning of a file.
+  * Fix the missing translations (caused by a bug in the gen-tarball
+    script).  (Closes: #296769)
+  * Add support in e2fsck and debugfs for extended attributes in inodes.
   * Fix the missing translations (caused by a bug in the gen-tarball script).
     (Closes: #296769)
   * Force compile_et and mk_cmds to use /usr/bin/awk so that we will work
     on any Debian system regardless of which version of awk is installed.
     (Closes: #299341)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 17 Mar 2005 00:19:49 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 21 Mar 2005 22:31:08 -0500
 
 e2fsprogs (1.36release-1) unstable; urgency=low
 

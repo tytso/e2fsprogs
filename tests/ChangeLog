@@ -1,5 +1,9 @@
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.37
+
+2005-03-21  Theodore Ts'o  <tytso@mit.edu>
+
 	* f_valid_ea_in_inode: New test case
 
 2006-02-05  Theodore Ts'o  <tytso@mit.edu>

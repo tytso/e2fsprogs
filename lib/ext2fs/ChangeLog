@@ -1,5 +1,9 @@
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
+	* Release of E2fsprogs 1.37
+
+2005-03-21  Theodore Ts'o  <tytso@mit.edu>
+
 	* ext2_ext_attr.h (EXT2_XATTR_LEN, EXT2_XATTR_SIZE): Add new
 		convenience cpp macros.
 

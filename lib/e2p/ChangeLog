@@ -1,3 +1,7 @@
+2005-03-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.37
+
 2005-03-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* ls.c (list_super2): Use the new e2p_os2string() function
