@@ -93,17 +93,18 @@ SRCROOT = `echo e2fsprogs-@E2FSPROGS_VERSION@ | sed -e 's/-WIP//' \
 					-e 's/pre-//'`
 
 $(srcdir)/.exclude-file:
-	(cd $(srcdir)/.. ; find $(SRCROOT) \( -name \*~ -o -name \*.orig \
-		-o -name \*.rej \) -print > $(SRCROOT)/.exclude-file)
+	(cd $(srcdir)/.. ; find e2fsprogs \( -name \*~ -o -name \*.orig \
+		-o -name CVS -o -name \*.rej \) -print \
+		> $(srcdir)/.exclude-file)
 	echo "$(SRCROOT)/build" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/rpm.log" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/.exclude-file" >> $(srcdir)/.exclude-file
 	echo $(SRCROOT)/e2fsprogs-@E2FSPROGS_VERSION@.tar.gz \
 		>> $(srcdir)/.exclude-file
 	
-
 source_tar_file: $(srcdir)/.exclude-file
-	(cd $(srcdir) ; $(TAR) -C .. -c -v -f - \
-		-X .exclude-file $(SRCROOT) | \
+	(cd $(srcdir)/..; a=$(SRCROOT); rm -f $$a ; ln -sf e2fsprogs $$a ; \
+		$(TAR) -c -h -v -f - \
+			-X $$a/.exclude-file $$a | \
 		gzip -9 > e2fsprogs-@E2FSPROGS_VERSION@.tar.gz)
 	rm -f $(srcdir)/.exclude-file
