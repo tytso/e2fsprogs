@@ -1,5 +1,8 @@
 1999-11-19    <tytso@valinux.com>
 
+	* message.c (safe_print): Fix to properly display ^A, ^B, etc. and
+		to print Delete as ^?
+
 	* Makefile.in (distclean): Remove TAGS and Makefile.in.old from
 		the source directory.
 

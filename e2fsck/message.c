@@ -148,9 +148,9 @@ static void safe_print(const char *cp, int len)
 			fputs("M-", stdout);
 			ch -= 128;
 		}
-		if (ch < 32) {
+		if ((ch < 32) || (ch == 0x7f)) {
 			fputc('^', stdout);
-			ch += 32;
+			ch ^= 0x40; /* ^@, ^A, ^B; ^? for DEL */
 		}
 		fputc(ch, stdout);
 	}
