@@ -17,7 +17,7 @@ INSTALL = @INSTALL@
 SPROGS=		mke2fs badblocks tune2fs dumpe2fs $(E2IMAGE_PROG) @FSCK_PROG@
 USPROGS=	mklost+found
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
-			e2label.8 $(E2IMAGE_MAN) @FSCK_MAN@
+			e2label.8 findfs.8 $(E2IMAGE_MAN) @FSCK_MAN@
 
 UPROGS=		chattr lsattr uuidgen
 UMANPAGES=	chattr.1 lsattr.1 uuidgen.1
@@ -116,6 +116,9 @@ mke2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/mke2fs.8.in
 e2label.8: $(DEP_SUBSTITUTE) $(srcdir)/e2label.8.in
 	$(SUBSTITUTE) $(srcdir)/e2label.8.in e2label.8
 
+findfs.8: $(DEP_SUBSTITUTE) $(srcdir)/findfs.8.in
+	$(SUBSTITUTE) $(srcdir)/findfs.8.in findfs.8
+
 e2image.8: $(DEP_SUBSTITUTE) $(srcdir)/e2image.8.in
 	$(SUBSTITUTE) $(srcdir)/e2image.8.in e2image.8
 
@@ -157,6 +160,8 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		$(DESTDIR)$(root_sbindir)/mkfs.ext3
 	$(LN) -f $(DESTDIR)$(root_sbindir)/tune2fs \
 		$(DESTDIR)$(root_sbindir)/e2label
+	$(LN) -f $(DESTDIR)$(root_sbindir)/tune2fs \
+		$(DESTDIR)$(root_sbindir)/findfs
 	for i in $(UPROGS); do \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(bindir)/$$i; \
 		$(STRIP) $(DESTDIR)$(bindir)/$$i; \

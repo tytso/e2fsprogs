@@ -627,8 +627,26 @@ static void parse_tune2fs_options(int argc, char **argv)
 	if (!open_flag && !l_flag)
 		usage();
 	device_name = argv[optind];
-}	
+}
 
+do_findfs(int argc, char **argv)
+{
+	char	*dev;
+
+	if ((argc != 2) ||
+	    (strncmp(argv[1], "LABEL=", 6) && strncmp(argv[1], "UUID=", 5))) {
+		fprintf(stderr, "Usage: findfs LABEL=<label>|UUID=<uuid>\n");
+		exit(2);
+	}
+	dev = interpret_spec(argv[1]);
+	if (!dev) {
+		fprintf(stderr, "Filesystem matching %s not found\n", 
+			argv[1]);
+		exit(1);
+	}
+	puts(dev);
+	exit(0);
+}
 
 
 int main (int argc, char ** argv)
@@ -647,6 +665,8 @@ int main (int argc, char ** argv)
 		program_name = *argv;
 	initialize_ext2_error_table();
 
+	if (strcmp(get_progname(argv[0]), "findfs") == 0)
+		do_findfs(argc, argv);
 	if (strcmp(get_progname(argv[0]), "e2label") == 0)
 		parse_e2label_options(argc, argv);
 	else

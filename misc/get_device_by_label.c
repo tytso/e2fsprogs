@@ -37,6 +37,7 @@
 extern char *ext2fs_find_block_device(dev_t device);
 
 #define PROC_PARTITIONS "/proc/partitions"
+#define PROC_EVMS_VOLUMES "/proc/evms/volumes"
 #define DEVLABELDIR	"/dev"
 #define VG_DIR          "/proc/lvm/VGs"
 
@@ -197,7 +198,8 @@ static void init_lvm(void)
 #endif
 
 static void
-uuidcache_init(void) {
+read_partitions(void)
+{
 	char line[100];
 	char *s;
 	int ma, mi, sz;
@@ -210,13 +212,6 @@ uuidcache_init(void) {
 	int firstPass;
 	int handleOnFirst;
 
-	if (uuidCache)
-		return;
-
-#ifdef VG_DIR
-	init_lvm();
-#endif
-	
 	procpt = fopen(PROC_PARTITIONS, "r");
 	if (!procpt)
 		return;
@@ -259,6 +254,10 @@ uuidcache_init(void) {
 				devname = string_copy(device);
 			if (!devname)
 				continue;
+#ifdef DEBUG
+			printf("Checking partition %s (%d, %d)\n",
+			       devname, ma, mi);
+#endif
 			if (!get_label_uuid(devname, &label, uuid))
 				uuidcache_addentry(devname, label, uuid);
 			else
@@ -268,6 +267,64 @@ uuidcache_init(void) {
 	}
 
 	fclose(procpt);
+}
+
+static void
+read_evms(void)
+{
+	char line[100];
+	char *s;
+	int ma, mi, sz;
+	FILE *procpt;
+	char uuid[16], *label, *devname;
+	char device[110];
+	dev_t	dev;
+	struct stat statbuf;
+
+	procpt = fopen(PROC_EVMS_VOLUMES, "r");
+	if (!procpt)
+		return;
+	while (fgets(line, sizeof(line), procpt)) {
+		if (sscanf (line, " %d %d %d %*s %*s %[^\n ]",
+			    &ma, &mi, &sz, device) != 4)
+			continue;
+
+		/*
+		 * We first look for the device in the named location,
+		 * but if we don't find it, or if the stat information
+		 * doesn't check out, we use ext2fs_find_block_device
+		 * to find it.
+		 */
+		dev = makedev(ma, mi);
+		if ((stat(device, &statbuf) < 0) || (statbuf.st_rdev != dev)) {
+			devname = ext2fs_find_block_device(dev);
+		} else
+			devname = string_copy(device);
+		if (!devname)
+			continue;
+#ifdef DEBUG
+		printf("Checking partition %s (%d, %d)\n",
+		       devname, ma, mi);
+#endif
+		if (!get_label_uuid(devname, &label, uuid))
+			uuidcache_addentry(devname, label, uuid);
+		else
+			free(devname);
+	}
+	fclose(procpt);
+}
+
+static void
+uuidcache_init(void)
+{
+	if (uuidCache)
+		return;
+
+#ifdef VG_DIR
+	init_lvm();
+#endif
+	read_evms();
+	read_partitions();
 }
 
 #define UUID   1
@@ -328,7 +385,7 @@ get_spec_by_uuid(const char *s)
 	return get_spec_by_x(UUID, uuid);
 
  bad_uuid:
-	fprintf(stderr, _("WARNING: %s: bad UUID"), s);
+	fprintf(stderr, _("WARNING: %s: bad UUID\n"), s);
 	return NULL;
 }
 
@@ -371,3 +428,10 @@ char *interpret_spec(char *spec)
 		dev = string_copy(spec);
 	return dev;
 }
+
+#ifdef DEBUG
+main(int argc, char **argv)
+{
+	uuidcache_init();
+}
+#endif

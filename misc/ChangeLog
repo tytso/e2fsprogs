@@ -1,5 +1,17 @@
 2002-08-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* findfs.8.in: New man page.
+
+	* tune2fs.c (do_findfs): If tune2fs is executed with argv[0] set
+		to findfs, then it will interpret argv[1] as one of
+		LABEL=xxx or UUID=xxx and translate it to a device name.
+
+	* get_device_by_label.c (uuidcache_init): Moved code which
+		interpreted /proc/partitions into read_partitions(), and
+		then added support for interpreting /proc/evms/volumes in
+		read_evms().  uuidcache_init() calls both read_evms() and
+		read_partitions().
+
 	* mke2fs.8.in: Add a common usage of the -n option.  (Addresses
 		Debian Bug #146437)
 
