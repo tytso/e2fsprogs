@@ -22,12 +22,7 @@
 #include <errno.h>
 #endif
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 blk_t test1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0 };

@@ -23,12 +23,7 @@
 #include <sys/types.h>
 #endif
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,

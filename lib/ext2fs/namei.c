@@ -17,12 +17,7 @@
 
 /* #define NAMEI_DEBUG */
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 static errcode_t open_namei(ext2_filsys fs, ext2_ino_t root, ext2_ino_t base,

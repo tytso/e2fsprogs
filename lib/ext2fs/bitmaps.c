@@ -24,12 +24,7 @@
 #include <sys/types.h>
 #endif
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,

@@ -15,12 +15,7 @@
 #include <sys/types.h>
 #endif
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 #ifndef _EXT2_HAVE_ASM_BITOPS_

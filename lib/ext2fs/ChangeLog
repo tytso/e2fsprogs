@@ -1,5 +1,20 @@
 2001-05-14  Theodore Tso  <tytso@valinux.com>
 
+	* alloc.c, alloc_tables.c, badblocks.c, bb_compat.c, bb_inode.c,
+		bitmaps.c, bitops.c, block.c, bmap.c, bmove.c, brel_ma.c,
+		check_desc.c, closefs.c, cmp_bitmaps.c, dblist.c,
+		dblist_dir.c, dir_iterate.c, dirblock.c, dupfs.c,
+		expanddir.c, ext2_fs.h, fileio.c, finddev.c, flushb.c,
+		freefs.c, get_pathname.c, getsize.c, icount.c, imager.c,
+		initialize.c, inline.c, inode.c, irel_ma.c, ismounted.c,
+		link.c, lookup.c, mkdir.c, mkjournal.c, namei.c, native.c,
+		newdir.c, nt_io.c, openfs.c, read_bb.c, read_bb_file.c,
+		rs_bitmap.c, rw_bitmaps.c, swapfs.c, test_io.c,
+		tst_badblocks.c, tst_byteswap.c, tst_getsize.c,
+		tst_iscan.c, unix_io.c, unlink.c, valid_blk.c, version.c,
+		write_bb_file.c, ext2_fs.h: Moved file from include/linux.
+		Adjust all files in this directroy to include this file.
+
 	* mkjournal.c (ext2fs_create_journal_superblock): Remove redundant
 		code.
 

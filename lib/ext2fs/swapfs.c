@@ -15,12 +15,7 @@
 #endif
 #include <time.h>
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 void ext2fs_swap_super(struct ext2_super_block * sb)

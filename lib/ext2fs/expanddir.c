@@ -15,12 +15,7 @@
 #include <unistd.h>
 #endif
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 struct expand_dir_struct {

@@ -30,12 +30,7 @@
 #endif /* HAVE_GETMNTINFO */
 #include <string.h>
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 #ifdef HAVE_MNTENT_H

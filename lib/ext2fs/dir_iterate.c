@@ -18,12 +18,7 @@
 #include <errno.h>
 #endif
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fsP.h"
 
 errcode_t ext2fs_dir_iterate(ext2_filsys fs,

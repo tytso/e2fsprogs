@@ -17,12 +17,7 @@
 #include <string.h>
 #include <time.h>
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fsP.h"
 
 static EXT2_QSORT_TYPE dir_block_cmp(const void *a, const void *b);

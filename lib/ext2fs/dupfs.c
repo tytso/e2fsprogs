@@ -16,12 +16,7 @@
 #include <time.h>
 #include <string.h>
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fsP.h"
 
 errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)

@@ -23,12 +23,7 @@
 #include <sys/types.h>
 #endif
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 errcode_t ext2fs_resize_generic_bitmap(__u32 new_end, __u32 new_real_end,

@@ -178,7 +178,7 @@ NtDelayExecution(
 #include <malloc.h>
 
 #include <linux/types.h>
-#include <linux/ext2_fs.h>
+#include "ext2_fs.h"
 #include <errno.h>
 
 #include "et/com_err.h"

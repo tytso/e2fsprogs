@@ -17,12 +17,7 @@
 #include <string.h>
 #include <time.h>
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fsP.h"
 
 static int db_dir_proc(ext2_filsys fs, struct ext2_db_entry *db_info,

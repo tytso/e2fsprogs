@@ -29,12 +29,7 @@
 #include <netinet/in.h>
 #endif
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "e2p/e2p.h"
 #include "ext2fs.h"
 #include "jfs_user.h"

@@ -24,12 +24,7 @@
 #include <sys/types.h>
 #endif
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,

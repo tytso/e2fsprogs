@@ -11,12 +11,7 @@
 
 #include <stdio.h>
 
-#if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
-#else
-#include <linux/ext2_fs.h>
-#endif
-
 #include "ext2fs.h"
 
 errcode_t ext2fs_write_bb_FILE(ext2_badblocks_list bb_list,
