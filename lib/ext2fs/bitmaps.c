@@ -33,12 +33,14 @@ static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
 			     const char *descr, char *init_map,
 			     ext2fs_generic_bitmap *ret)
 {
-	ext2fs_generic_bitmap bitmap;
-	size_t	size;
+	ext2fs_generic_bitmap	bitmap;
+	errcode_t		retval;
+	size_t			size;
 
-	bitmap = malloc(sizeof(struct ext2fs_struct_generic_bitmap));
-	if (!bitmap)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct ext2fs_struct_generic_bitmap),
+				(void **) &bitmap);
+	if (retval)
+		return retval;
 
 	bitmap->magic = EXT2_ET_MAGIC_GENERIC_BITMAP;
 	bitmap->fs = NULL;
@@ -47,21 +49,22 @@ static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
 	bitmap->real_end = real_end;
 	bitmap->base_error_code = EXT2_ET_BAD_GENERIC_MARK;
 	if (descr) {
-		bitmap->description = malloc(strlen(descr)+1);
-		if (!bitmap->description) {
-			free(bitmap);
-			return EXT2_NO_MEMORY;
+		retval = ext2fs_get_mem(strlen(descr)+1,
+					(void **) &bitmap->description);
+		if (retval) {
+			ext2fs_free_mem((void **) &bitmap);
+			return retval;
 		}
 		strcpy(bitmap->description, descr);
 	} else
 		bitmap->description = 0;
 
 	size = (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1);
-	bitmap->bitmap = malloc(size);
-	if (!bitmap->bitmap) {
-		free(bitmap->description);
-		free(bitmap);
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(size, (void **) &bitmap->bitmap);
+	if (retval) {
+		ext2fs_free_mem((void **) &bitmap->description);
+		ext2fs_free_mem((void **) &bitmap);
+		return retval;
 	}
 
 	if (init_map)

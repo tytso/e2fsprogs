@@ -69,9 +69,9 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 		return 0;
 	nbytes = (size_t) ((EXT2_INODES_PER_GROUP(fs->super)+7) / 8);
 	
-	bitmap_block = malloc(fs->blocksize);
-	if (!bitmap_block)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(fs->blocksize, (void **) &bitmap_block);
+	if (retval)
+		return retval;
 	memset(bitmap_block, 0xff, fs->blocksize);
 	for (i = 0; i < fs->group_desc_count; i++) {
 		memcpy(bitmap_block, inode_bitmap, nbytes);
@@ -91,7 +91,7 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 	}
 	fs->flags |= EXT2_FLAG_CHANGED;
 	fs->flags &= ~EXT2_FLAG_IB_DIRTY;
-	free(bitmap_block);
+	ext2fs_free_mem((void **) &bitmap_block);
 	return 0;
 }
 
@@ -113,9 +113,9 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 	if (!block_bitmap)
 		return 0;
 	nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
-	bitmap_block = malloc(fs->blocksize);
-	if (!bitmap_block)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(fs->blocksize, (void **) &bitmap_block);
+	if (retval)
+		return retval;
 	memset(bitmap_block, 0xff, fs->blocksize);
 	for (i = 0; i < fs->group_desc_count; i++) {
 		memcpy(bitmap_block, block_bitmap, nbytes);
@@ -144,7 +144,7 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 	}
 	fs->flags |= EXT2_FLAG_CHANGED;
 	fs->flags &= ~EXT2_FLAG_BB_DIRTY;
-	free(bitmap_block);
+	ext2fs_free_mem((void **) &bitmap_block);
 	return 0;
 }
 
@@ -162,7 +162,9 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 	fs->write_bitmaps = ext2fs_write_bitmaps;
 
-	buf = malloc(strlen(fs->device_name) + 80);
+	retval = ext2fs_get_mem(strlen(fs->device_name) + 80, (void **) &buf);
+	if (retval)
+		return retval;
 	if (do_block) {
 		if (fs->block_map)
 			ext2fs_free_block_bitmap(fs->block_map);
@@ -181,7 +183,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 			goto cleanup;
 		inode_bitmap = fs->inode_map->bitmap;
 	}
-	free(buf);
+	ext2fs_free_mem((void **) &buf);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (block_bitmap) {
@@ -225,15 +227,15 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	
 cleanup:
 	if (do_block) {
-		free(fs->block_map);
+		ext2fs_free_mem((void **) &fs->block_map);
 		fs->block_map = 0;
 	}
 	if (do_inode) {
-		free(fs->inode_map);
+		ext2fs_free_mem((void **) &fs->inode_map);
 		fs->inode_map = 0;
 	}
 	if (buf)
-		free(buf);
+		ext2fs_free_mem((void **) &buf);
 	return retval;
 }
 

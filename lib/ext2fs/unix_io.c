@@ -26,9 +26,9 @@
 #include <sys/types.h>
 #endif
 
-#include "et/com_err.h"
-#include "ext2fs/ext2_err.h"
-#include "ext2fs/ext2_io.h"
+#include <linux/ext2_fs.h>
+
+#include "ext2fs.h"
 
 /*
  * For checking structure magic numbers...
@@ -75,23 +75,22 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 
 	if (name == 0)
 		return EXT2_ET_BAD_DEVICE_NAME;
-	io = (io_channel) malloc(sizeof(struct struct_io_channel));
-	if (!io)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct struct_io_channel),
+				(void **) &io);
+	if (retval)
+		return retval;
 	memset(io, 0, sizeof(struct struct_io_channel));
 	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
-	data = (struct unix_private_data *)
-		malloc(sizeof(struct unix_private_data));
-	if (!data) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct unix_private_data),
+				(void **) &data);
+	if (retval)
 		goto cleanup;
-	}
+
 	io->manager = unix_io_manager;
-	io->name = malloc(strlen(name)+1);
-	if (!io->name) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(strlen(name)+1, (void **) &io->name);
+	if (retval)
 		goto cleanup;
-	}
+
 	strcpy(io->name, name);
 	io->private_data = data;
 	io->block_size = 1024;
@@ -101,12 +100,11 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 
 	memset(data, 0, sizeof(struct unix_private_data));
 	data->magic = EXT2_ET_MAGIC_UNIX_IO_CHANNEL;
-	data->buf = malloc(io->block_size);
+	retval = ext2fs_get_mem(io->block_size, (void **) &data->buf);
 	data->buf_block_nr = -1;
-	if (!data->buf) {
-		retval = EXT2_NO_MEMORY;
+	if (retval)
 		goto cleanup;
-	}
+
 	data->dev = open(name, (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY);
 	if (data->dev < 0) {
 		retval = errno;
@@ -117,11 +115,11 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 
 cleanup:
 	if (io)
-		free(io);
+		ext2fs_free_mem((void **) &io);
 	if (data) {
 		if (data->buf)
-			free(data->buf);
-		free(data);
+			ext2fs_free_mem((void **) &data->buf);
+		ext2fs_free_mem((void **) &data);
 	}
 	return retval;
 }
@@ -141,18 +139,19 @@ static errcode_t unix_close(io_channel channel)
 	if (close(data->dev) < 0)
 		retval = errno;
 	if (data->buf)
-		free(data->buf);
+		ext2fs_free_mem((void **) &data->buf);
 	if (channel->private_data)
-		free(channel->private_data);
+		ext2fs_free_mem((void **) &channel->private_data);
 	if (channel->name)
-		free(channel->name);
-	free(channel);
+		ext2fs_free_mem((void **) &channel->name);
+	ext2fs_free_mem((void **) &channel);
 	return retval;
 }
 
 static errcode_t unix_set_blksize(io_channel channel, int blksize)
 {
 	struct unix_private_data *data;
+	errcode_t		retval;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;
@@ -160,10 +159,10 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 
 	if (channel->block_size != blksize) {
 		channel->block_size = blksize;
-		free(data->buf);
-		data->buf = malloc(blksize);
-		if (!data->buf)
-			return EXT2_NO_MEMORY;
+		ext2fs_free_mem((void **) &data->buf);
+		retval = ext2fs_get_mem(blksize, (void **) &data->buf);
+		if (retval)
+			return retval;
 		data->buf_block_nr = -1;
 	}
 	return 0;

@@ -24,9 +24,9 @@
 #include <sys/types.h>
 #endif
 
-#include "et/com_err.h"
-#include "ext2fs/ext2_err.h"
-#include "ext2fs/ext2_io.h"
+#include <linux/ext2_fs.h>
+
+#include "ext2fs.h"
 
 /*
  * For checking structure magic numbers...
@@ -85,23 +85,23 @@ static errcode_t test_open(const char *name, int flags, io_channel *channel)
 
 	if (name == 0)
 		return EXT2_ET_BAD_DEVICE_NAME;
-	io = (io_channel) malloc(sizeof(struct struct_io_channel));
-	if (!io)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct struct_io_channel),
+				(void **) &io);
+	if (retval)
+		return retval;
 	memset(io, 0, sizeof(struct struct_io_channel));
 	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
-	data = (struct test_private_data *)
-		malloc(sizeof(struct test_private_data));
-	if (!data) {
+	retval = ext2fs_get_mem(sizeof(struct test_private_data),
+				(void **) &data);
+	if (retval) {
 		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	io->manager = test_io_manager;
-	io->name = malloc(strlen(name)+1);
-	if (!io->name) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(strlen(name)+1, (void **) &io->name);
+	if (retval)
 		goto cleanup;
-	}
+
 	strcpy(io->name, name);
 	io->private_data = data;
 	io->block_size = 1024;
@@ -127,9 +127,9 @@ static errcode_t test_open(const char *name, int flags, io_channel *channel)
 
 cleanup:
 	if (io)
-		free(io);
+		ext2fs_free_mem((void **) &io);
 	if (data)
-		free(data);
+		ext2fs_free_mem((void **) &data);
 	return retval;
 }
 
@@ -149,10 +149,10 @@ static errcode_t test_close(io_channel channel)
 		retval = io_channel_close(data->real);
 	
 	if (channel->private_data)
-		free(channel->private_data);
+		ext2fs_free_mem((void **) &channel->private_data);
 	if (channel->name)
-		free(channel->name);
-	free(channel);
+		ext2fs_free_mem((void **) &channel->name);
+	ext2fs_free_mem((void **) &channel);
 	return retval;
 }
 

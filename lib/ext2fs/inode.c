@@ -53,27 +53,33 @@ struct ext2_struct_inode_scan {
 
 static errcode_t create_icache(ext2_filsys fs)
 {
-	int	i;
+	errcode_t	retval;
+	int		i;
 	
 	if (fs->icache)
 		return 0;
-	fs->icache = malloc(sizeof(struct ext2_inode_cache));
+	retval = ext2fs_get_mem(sizeof(struct ext2_inode_cache), 
+				(void **) &fs->icache);
+	if (retval)
+		return retval;
+
 	memset(fs->icache, 0, sizeof(struct ext2_inode_cache));
-	fs->icache->buffer = malloc(fs->blocksize);
-	if (!fs->icache->buffer) {
-		free(fs->icache);
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(fs->blocksize, (void **) &fs->icache->buffer);
+	if (retval) {
+		ext2fs_free_mem((void **) &fs->icache);
+		return retval;
 	}
 	fs->icache->buffer_blk = 0;
 	fs->icache->cache_last = -1;
 	fs->icache->cache_size = 4;
 	fs->icache->refcount = 1;
-	fs->icache->cache = malloc(sizeof(struct ext2_inode_cache_ent)
-				   * fs->icache->cache_size);
-	if (!fs->icache->cache) {
-		free(fs->icache->buffer);
-		free(fs->icache);
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct ext2_inode_cache_ent)
+				* fs->icache->cache_size,
+				(void **) &fs->icache->cache);
+	if (retval) {
+		ext2fs_free_mem((void **) &fs->icache->buffer);
+		ext2fs_free_mem((void **) &fs->icache);
+		return retval;
 	}
 	for (i=0; i < fs->icache->cache_size; i++)
 		fs->icache->cache[i].ino = 0;
@@ -108,9 +114,10 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 		fs->get_blocks = save_get_blocks;
 	}
 
-	scan = (ext2_inode_scan) malloc(sizeof(struct ext2_struct_inode_scan));
-	if (!scan)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct ext2_struct_inode_scan),
+				(void **) &scan);
+	if (retval)
+		return retval;
 	memset(scan, 0, sizeof(struct ext2_struct_inode_scan));
 
 	scan->magic = EXT2_ET_MAGIC_INODE_SCAN;
@@ -120,20 +127,22 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 	scan->current_group = -1;
 	scan->inode_buffer_blocks = buffer_blocks ? buffer_blocks : 8;
 	scan->groups_left = fs->group_desc_count;
-	scan->inode_buffer = malloc((size_t) (scan->inode_buffer_blocks * 
-					      fs->blocksize));
+	retval = ext2fs_get_mem((size_t) (scan->inode_buffer_blocks * 
+					  fs->blocksize),
+				(void **) &scan->inode_buffer);
 	scan->done_group = 0;
 	scan->done_group_data = 0;
 	scan->bad_block_ptr = 0;
-	if (!scan->inode_buffer) {
-		free(scan);
-		return EXT2_NO_MEMORY;
+	if (retval) {
+		ext2fs_free_mem((void **) &scan);
+		return retval;
 	}
-	scan->temp_buffer = malloc(scan->inode_size);
-	if (!scan->temp_buffer) {
-		free(scan->inode_buffer);
-		free(scan);
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(scan->inode_size,
+				(void **) &scan->temp_buffer);
+	if (retval) {
+		ext2fs_free_mem((void **) &scan->inode_buffer);
+		ext2fs_free_mem((void **) &scan);
+		return retval;
 	}
 	if (scan->fs->badblocks && scan->fs->badblocks->num)
 		scan->scan_flags |= EXT2_SF_CHK_BADBLOCKS;
@@ -146,11 +155,11 @@ void ext2fs_close_inode_scan(ext2_inode_scan scan)
 	if (!scan || (scan->magic != EXT2_ET_MAGIC_INODE_SCAN))
 		return;
 	
-	free(scan->inode_buffer);
+	ext2fs_free_mem((void **) &scan->inode_buffer);
 	scan->inode_buffer = NULL;
-	free(scan->temp_buffer);
+	ext2fs_free_mem((void **) &scan->temp_buffer);
 	scan->temp_buffer = NULL;
-	free(scan);
+	ext2fs_free_mem((void **) &scan);
 	return;
 }
 

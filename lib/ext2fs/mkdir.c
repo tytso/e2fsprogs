@@ -137,7 +137,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 	
 cleanup:
 	if (block)
-		free(block);
+		ext2fs_free_mem((void **) &block);
 	return retval;
 
 }

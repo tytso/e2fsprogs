@@ -68,15 +68,14 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	rec.bad_block_count = 0;
 	rec.ind_blocks_size = rec.ind_blocks_ptr = 0;
 	rec.max_ind_blocks = 10;
-	rec.ind_blocks = malloc(rec.max_ind_blocks * sizeof(blk_t));
-	if (!rec.ind_blocks)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(rec.max_ind_blocks * sizeof(blk_t),
+				(void **) &rec.ind_blocks);
+	if (retval)
+		return retval;
 	memset(rec.ind_blocks, 0, rec.max_ind_blocks * sizeof(blk_t));
-	rec.block_buf = malloc(fs->blocksize);
-	if (!rec.block_buf) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(fs->blocksize, (void **) &rec.block_buf);
+	if (retval)
 		goto cleanup;
-	}
 	memset(rec.block_buf, 0, fs->blocksize);
 	rec.err = 0;
 	
@@ -146,8 +145,8 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 		goto cleanup;
 	
 cleanup:
-	free(rec.ind_blocks);
-	free(rec.block_buf);
+	ext2fs_free_mem((void **) &rec.ind_blocks);
+	ext2fs_free_mem((void **) &rec.block_buf);
 	return retval;
 }
 
@@ -165,7 +164,8 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 {
 	struct set_badblock_record *rec = (struct set_badblock_record *)
 		private;
-	int	group;
+	errcode_t	retval;
+	int		group;
 
 	if (!*block_nr)
 		return 0;
@@ -182,11 +182,11 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 	if (blockcnt < 0) {
 		if (rec->ind_blocks_size >= rec->max_ind_blocks) {
 			rec->max_ind_blocks += 10;
-			rec->ind_blocks = realloc(rec->ind_blocks,
-						  rec->max_ind_blocks *
-						  sizeof(blk_t));
-			if (!rec->ind_blocks) {
-				rec->err = EXT2_NO_MEMORY;
+			retval = ext2fs_resize_mem(rec->max_ind_blocks
+						   * sizeof(blk_t),
+						   (void **) &rec->ind_blocks);
+			if (retval) {
+				rec->err = retval;
 				return BLOCK_ABORT;
 			}
 		}

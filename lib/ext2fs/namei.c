@@ -50,12 +50,12 @@ static errcode_t follow_link(ext2_filsys fs, ino_t root, ino_t dir,
 		return EXT2_ET_SYMLINK_LOOP;
 	}
 	if (ei.i_blocks) {
-		buffer = malloc (fs->blocksize);
-		if (!buffer)
-			return EXT2_NO_MEMORY;
+		retval = ext2fs_get_mem(fs->blocksize, (void **) &buffer);
+		if (retval)
+			return retval;
 		retval = io_channel_read_blk(fs->io, ei.i_block[0], 1, buffer);
 		if (retval) {
-			free(buffer);
+			ext2fs_free_mem((void **) &buffer);
 			return retval;
 		}
 		pathname = buffer;
@@ -64,7 +64,7 @@ static errcode_t follow_link(ext2_filsys fs, ino_t root, ino_t dir,
 	retval = open_namei(fs, root, dir, pathname, ei.i_size, 1,
 			    link_count, buf, res_inode);
 	if (buffer)
-		free (buffer);
+		ext2fs_free_mem((void **) &buffer);
 	return retval;
 }
 
@@ -156,14 +156,14 @@ errcode_t ext2fs_namei(ext2_filsys fs, ino_t root, ino_t cwd,
 	
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
-	buf = malloc(fs->blocksize);
-	if (!buf)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+	if (retval)
+		return retval;
 	
 	retval = open_namei(fs, root, cwd, name, strlen(name), 0, 0,
 			    buf, inode);
 
-	free(buf);
+	ext2fs_free_mem((void **) &buf);
 	return retval;
 }
 
@@ -175,14 +175,14 @@ errcode_t ext2fs_namei_follow(ext2_filsys fs, ino_t root, ino_t cwd,
 	
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
-	buf = malloc(fs->blocksize);
-	if (!buf)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+	if (retval)
+		return retval;
 	
 	retval = open_namei(fs, root, cwd, name, strlen(name), 1, 0,
 			    buf, inode);
 
-	free(buf);
+	ext2fs_free_mem((void **) &buf);
 	return retval;
 }
 
@@ -194,13 +194,13 @@ extern errcode_t ext2fs_follow_link(ext2_filsys fs, ino_t root, ino_t cwd,
 	
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
-	buf = malloc(fs->blocksize);
-	if (!buf)
-		return EXT2_NO_MEMORY;
-	
+	retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+	if (retval)
+		return retval;
+
 	retval = follow_link(fs, root, cwd, inode, 0, buf, res_inode);
 
-	free(buf);
+	ext2fs_free_mem((void **) &buf);
 	return retval;
 }
 

@@ -56,9 +56,10 @@ errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 
 	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
 	    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)) {
-		write_buf = buf = malloc(fs->blocksize);
-		if (!buf)
-			return EXT2_NO_MEMORY;
+		retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+		if (retval)
+			return retval;
+		write_buf = buf;
 		memcpy(buf, inbuf, fs->blocksize);
 		p = buf;
 		end = buf + fs->blocksize;
@@ -73,7 +74,7 @@ errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 		write_buf = inbuf;
  	retval = io_channel_write_blk(fs->io, block, 1, write_buf);
 	if (buf)
-		free(buf);
+		ext2fs_free_mem((void **) &buf);
 	return retval;
 }
 

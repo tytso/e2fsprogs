@@ -113,9 +113,9 @@ errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 	char		*buf = 0;
 
 	if (!block_buf) {
-		buf = malloc(fs->blocksize);
-		if (!buf)
-			return EXT2_NO_MEMORY;
+		retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+		if (retval)
+			return retval;
 		block_buf = buf;
 	}
 	memset(block_buf, 0, fs->blocksize);
@@ -145,7 +145,7 @@ errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 
 fail:
 	if (buf)
-		free(buf);
+		ext2fs_free_mem((void **) &buf);
 	return retval;
 }
 

@@ -71,10 +71,14 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	fs->super->s_wtime = time(NULL);
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		retval = EXT2_NO_MEMORY;
-		if (!(super_shadow = malloc(SUPERBLOCK_SIZE)))
+		retval = ext2fs_get_mem(SUPERBLOCK_SIZE,
+					(void **) &super_shadow);
+		if (retval)
 			goto errout;
-		if (!(group_shadow = malloc((size_t) fs->blocksize *
-					    fs->desc_blocks)))
+		retval = ext2fs_get_mem((size_t)(fs->blocksize *
+						 fs->desc_blocks),
+					(void **) &group_shadow);
+		if (retval)
 			goto errout;
 		memset(group_shadow, 0, (size_t) fs->blocksize *
 		       fs->desc_blocks);
@@ -164,9 +168,9 @@ errout:
 	fs->super->s_state = fs_state;
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		if (super_shadow)
-			free(super_shadow);
+			ext2fs_free_mem((void **) &super_shadow);
 		if (group_shadow)
-			free(group_shadow);
+			ext2fs_free_mem((void **) &group_shadow);
 	}
 	return retval;
 }

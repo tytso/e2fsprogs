@@ -63,9 +63,10 @@ static errcode_t make_dblist(ext2_filsys fs, ino_t size, ino_t count,
 	    (fs->dblist->magic == EXT2_ET_MAGIC_DBLIST))
 		return 0;
 
-	dblist = malloc(sizeof(struct ext2_struct_dblist));
-	if (!dblist)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct ext2_struct_dblist),
+				(void **) &dblist);
+	if (retval)
+		return retval;
 	memset(dblist, 0, sizeof(struct ext2_struct_dblist));
 
 	dblist->magic = EXT2_ET_MAGIC_DBLIST;
@@ -80,11 +81,10 @@ static errcode_t make_dblist(ext2_filsys fs, ino_t size, ino_t count,
 	}
 	len = (size_t) sizeof(struct ext2_db_entry) * dblist->size;
 	dblist->count = count;
-	dblist->list = malloc(len);
-	if (dblist->list == NULL) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(len, (void **) &dblist->list);
+	if (retval)
 		goto cleanup;
-	}
+	
 	if (list)
 		memcpy(dblist->list, list, len);
 	else
@@ -93,7 +93,7 @@ static errcode_t make_dblist(ext2_filsys fs, ino_t size, ino_t count,
 	return 0;
 cleanup:
 	if (dblist)
-		free(dblist);
+		ext2fs_free_mem((void **) &dblist);
 	return retval;
 }
 
@@ -148,19 +148,20 @@ errcode_t ext2fs_copy_dblist(ext2_dblist src, ext2_dblist *dest)
 errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 			       int blockcnt)
 {
-	struct ext2_db_entry 	*nlist, *new;
+	struct ext2_db_entry 	*new;
+	errcode_t		retval;
 	
 	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
 
 	if (dblist->count >= dblist->size) {
 		dblist->size += 100;
-		nlist = realloc(dblist->list, (size_t) dblist->size *
-				sizeof(struct ext2_db_entry));
-		if (nlist == 0) {
+		retval = ext2fs_resize_mem((size_t) dblist->size *
+					   sizeof(struct ext2_db_entry),
+					   (void **) &dblist->list);
+		if (retval) {
 			dblist->size -= 100;
-			return EXT2_NO_MEMORY;
+			return retval;
 		}
-		dblist->list = nlist;
 	}
 	new = dblist->list + ( (int) dblist->count++);
 	new->blk = blk;

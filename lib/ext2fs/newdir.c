@@ -26,15 +26,16 @@
 errcode_t ext2fs_new_dir_block(ext2_filsys fs, ino_t dir_ino, ino_t parent_ino,
 			       char **block)
 {
-	char	*buf;
-	struct ext2_dir_entry *dir = NULL;
-	int	rec_len;
+	struct ext2_dir_entry 	*dir = NULL;
+	errcode_t		retval;
+	char			*buf;
+	int			rec_len;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
-	buf = malloc(fs->blocksize);
-	if (!buf)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+	if (retval)
+		return retval;
 	memset(buf, 0, fs->blocksize);
 	dir = (struct ext2_dir_entry *) buf;
 	dir->rec_len = fs->blocksize;

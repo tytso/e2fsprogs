@@ -35,18 +35,20 @@ static errcode_t make_badblocks_list(int size, int num, blk_t *list,
 				     ext2_badblocks_list *ret)
 {
 	ext2_badblocks_list	bb;
+	errcode_t		retval;
 	
-	bb = malloc(sizeof(struct ext2_struct_badblocks_list));
-	if (!bb)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct ext2_struct_badblocks_list),
+				(void **) &bb);
+	if (retval)
+		return retval;
 	memset(bb, 0, sizeof(struct ext2_struct_badblocks_list));
 	bb->magic = EXT2_ET_MAGIC_BADBLOCKS_LIST;
 	bb->size = size ? size : 10;
 	bb->num = num;
-	bb->list = malloc(bb->size * sizeof(blk_t));
+	retval = ext2fs_get_mem(bb->size * sizeof(blk_t), (void **) &bb->list);
 	if (!bb->list) {
-		free(bb);
-		return EXT2_NO_MEMORY;
+		ext2fs_free_mem((void **) &bb);
+		return retval;
 	}
 	if (list)
 		memcpy(bb->list, list, bb->size * sizeof(blk_t));
@@ -94,17 +96,17 @@ errcode_t ext2fs_badblocks_copy(ext2_badblocks_list src,
  */
 errcode_t ext2fs_badblocks_list_add(ext2_badblocks_list bb, blk_t blk)
 {
-	int	i, j;
-	blk_t	*new_list;
+	errcode_t	retval;
+	int		i, j;
 
 	EXT2_CHECK_MAGIC(bb, EXT2_ET_MAGIC_BADBLOCKS_LIST);
 
 	if (bb->num >= bb->size) {
 		bb->size += 10;
-		new_list = realloc(bb->list, bb->size * sizeof(blk_t));
-		if (!new_list)
-			return EXT2_NO_MEMORY;
-		bb->list = new_list;
+		retval = ext2fs_resize_mem(bb->size * sizeof(blk_t),
+					   (void **) &bb->list);
+		if (retval)
+			return retval;
 	}
 
 	j = bb->num;
@@ -162,12 +164,14 @@ errcode_t ext2fs_badblocks_list_iterate_begin(ext2_badblocks_list bb,
 					      ext2_badblocks_iterate *ret)
 {
 	ext2_badblocks_iterate iter;
+	errcode_t		retval;
 
 	EXT2_CHECK_MAGIC(bb, EXT2_ET_MAGIC_BADBLOCKS_LIST);
 
-	iter = malloc(sizeof(struct ext2_struct_badblocks_iterate));
-	if (!iter)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct ext2_struct_badblocks_iterate),
+			      (void **) &iter);
+	if (retval)
+		return retval;
 
 	iter->magic = EXT2_ET_MAGIC_BADBLOCKS_ITERATE;
 	iter->bb = bb;
@@ -202,7 +206,7 @@ void ext2fs_badblocks_list_iterate_end(ext2_badblocks_iterate iter)
 		return;
 
 	iter->bb = 0;
-	free(iter);
+	ext2fs_free_mem((void **) &iter);
 }
 
 

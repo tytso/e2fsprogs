@@ -108,9 +108,9 @@ errcode_t ext2fs_move_blocks(ext2_filsys fs,
 	pb.alloc_map = alloc_map ? alloc_map : fs->block_map;
 	pb.flags = flags;
 	
-	block_buf = malloc(fs->blocksize * 4);
-	if (!block_buf)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(fs->blocksize * 4, (void **) &block_buf);
+	if (retval)
+		return retval;
 	pb.buf = block_buf + fs->blocksize * 3;
 
 	/*

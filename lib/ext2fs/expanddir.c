@@ -54,9 +54,9 @@ static int expand_dir_proc(ext2_filsys fs,
 		}
 		es->done = 1;
 	} else {
-		block = malloc(fs->blocksize);
-		if (!block) {
-			es->err = EXT2_NO_MEMORY;
+		retval = ext2fs_get_mem(fs->blocksize, (void **) &block);
+		if (retval) {
+			es->err = retval;
 			return BLOCK_ABORT;
 		}
 		memset(block, 0, fs->blocksize);
@@ -66,7 +66,7 @@ static int expand_dir_proc(ext2_filsys fs,
 		es->err = retval;
 		return BLOCK_ABORT;
 	}
-	free(block);
+	ext2fs_free_mem((void **) &block);
 	*blocknr = new_blk;
 	ext2fs_mark_block_bitmap(fs->block_map, new_blk);
 	ext2fs_mark_bb_dirty(fs);

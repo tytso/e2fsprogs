@@ -46,6 +46,7 @@ static int get_pathname_proc(struct ext2_dir_entry *dirent,
 			     void	*private)
 {
 	struct get_pathname_struct	*gp;
+	errcode_t			retval;
 
 	gp = (struct get_pathname_struct *) private;
 
@@ -53,7 +54,8 @@ static int get_pathname_proc(struct ext2_dir_entry *dirent,
 	    !strncmp(dirent->name, "..", 2))
 		gp->parent = dirent->inode;
 	if (dirent->inode == gp->search_ino) {
-		gp->name = malloc(dirent->name_len + 1);
+		retval = ext2fs_get_mem(dirent->name_len + 1,
+					(void **) &gp->name);
 		if (!gp->name) {
 			gp->errcode = EXT2_NO_MEMORY;
 			return DIRENT_ABORT;
@@ -73,17 +75,17 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ino_t dir, ino_t ino,
 	errcode_t	retval;
 
 	if (dir == ino) {
-		*name = malloc(2);
-		if (!*name)
-			return EXT2_NO_MEMORY;
+		retval = ext2fs_get_mem(2, (void **)name);
+		if (retval)
+			return retval;
 		strcpy(*name, (dir == EXT2_ROOT_INO) ? "/" : ".");
 		return 0;
 	}
 
 	if (!dir || (maxdepth < 0)) {
-		*name = malloc(4);
-		if (!*name)
-			return EXT2_NO_MEMORY;
+		retval = ext2fs_get_mem(4, (void **)name);
+		if (retval)
+			return retval;
 		strcpy(*name, "...");
 		return 0;
 	}
@@ -111,14 +113,14 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ino_t dir, ino_t ino,
 	}
 	
 	if (gp.name) 
-		ret = malloc(strlen(parent_name)+strlen(gp.name)+2);
+		retval = ext2fs_get_mem(strlen(parent_name)+strlen(gp.name)+2,
+					(void **) &ret);
 	else
-		ret = malloc(strlen(parent_name)+5); /* strlen("???") + 2 */
-		
-	if (!ret) {
-		retval = EXT2_NO_MEMORY;
+		retval = ext2fs_get_mem(strlen(parent_name)+5,
+					(void **) &ret);
+	if (retval)
 		goto cleanup;
-	}
+	
 	ret[0] = 0;
 	if (parent_name[1])
 		strcat(ret, parent_name);
@@ -128,12 +130,12 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ino_t dir, ino_t ino,
 	else
 		strcat(ret, "???");
 	*name = ret;
-	free(parent_name);
+	ext2fs_free_mem((void **) &parent_name);
 	retval = 0;
 	
 cleanup:
 	if (gp.name)
-		free(gp.name);
+		ext2fs_free_mem((void **) &gp.name);
 	return retval;
 }
 
@@ -145,13 +147,13 @@ errcode_t ext2fs_get_pathname(ext2_filsys fs, ino_t dir, ino_t ino,
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
-	buf = malloc(fs->blocksize);
-	if (!buf)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+	if (retval)
+		return retval;
 	if (dir == ino)
 		ino = 0;
 	retval = ext2fs_get_pathname_int(fs, dir, ino, 32, buf, name);
-	free(buf);
+	ext2fs_free_mem((void **) &buf);
 	return retval;
 	
 }

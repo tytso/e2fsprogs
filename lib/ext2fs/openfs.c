@@ -52,10 +52,11 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	struct ext2fs_sb	*s;
 	
 	EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
-	
-	fs = (ext2_filsys) malloc(sizeof(struct struct_ext2_filsys));
-	if (!fs)
-		return EXT2_NO_MEMORY;
+
+	retval = ext2fs_get_mem(sizeof(struct struct_ext2_filsys),
+				(void **) &fs);
+	if (retval)
+		return retval;
 	
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
@@ -65,17 +66,13 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	if (retval)
 		goto cleanup;
 	fs->io->app_data = fs;
-	fs->device_name = malloc(strlen(name)+1);
-	if (!fs->device_name) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(strlen(name)+1, (void **) &fs->device_name);
+	if (retval)
 		goto cleanup;
-	}
 	strcpy(fs->device_name, name);
-	fs->super = malloc(SUPERBLOCK_SIZE);
-	if (!fs->super) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, (void **) &fs->super);
+	if (retval)
 		goto cleanup;
-	}
 
 	/*
 	 * If the user specifies a specific block # for the
@@ -172,11 +169,10 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	fs->desc_blocks = (fs->group_desc_count +
 			   EXT2_DESC_PER_BLOCK(fs->super) - 1)
 		/ EXT2_DESC_PER_BLOCK(fs->super);
-	fs->group_desc = malloc((size_t) (fs->desc_blocks * fs->blocksize));
-	if (!fs->group_desc) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(fs->desc_blocks * fs->blocksize,
+				(void **) &fs->group_desc);
+	if (retval)
 		goto cleanup;
-	}
 	if (!group_block)
 		group_block = fs->super->s_first_data_block + 1;
 	dest = (char *) fs->group_desc;

@@ -72,9 +72,10 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	if (!param || !param->s_blocks_count)
 		return EXT2_INVALID_ARGUMENT;
 	
-	fs = (ext2_filsys) malloc(sizeof(struct struct_ext2_filsys));
-	if (!fs)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct struct_ext2_filsys),
+				(void **) &fs);
+	if (retval)
+		return retval;
 	
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
@@ -83,17 +84,16 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	if (retval)
 		goto cleanup;
 	fs->io->app_data = fs;
-	fs->device_name = malloc(strlen(name)+1);
-	if (!fs->device_name) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(strlen(name)+1, (void **) &fs->device_name);
+	if (retval)
 		goto cleanup;
-	}
+
 	strcpy(fs->device_name, name);
-	fs->super = super = malloc(SUPERBLOCK_SIZE);
-	if (!super) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, (void **) &super);
+	if (retval)
 		goto cleanup;
-	}
+	fs->super = super;
+
 	memset(super, 0, SUPERBLOCK_SIZE);
 
 #define set_field(field, default) (super->field = param->field ? \
@@ -229,11 +229,10 @@ retry:
 	 * count.
 	 */
 
-	buf = malloc(strlen(fs->device_name) + 80);
-	if (!buf) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(strlen(fs->device_name) + 80,
+				(void **) &buf);
+	if (retval)
 		goto cleanup;
-	}
 	
 	sprintf(buf, "block bitmap for %s", fs->device_name);
 	retval = ext2fs_allocate_block_bitmap(fs, buf, &fs->block_map);
@@ -245,13 +244,13 @@ retry:
 	if (retval)
 		goto cleanup;
 
-	free(buf);
+	ext2fs_free_mem((void **) &buf);
 
-	fs->group_desc = malloc((size_t) fs->desc_blocks * fs->blocksize);
-	if (!fs->group_desc) {
-		retval = EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem((size_t) fs->desc_blocks * fs->blocksize,
+				(void **) &fs->group_desc);
+	if (retval)
 		goto cleanup;
-	}
+
 	memset(fs->group_desc, 0, (size_t) fs->desc_blocks * fs->blocksize);
 
 	/*

@@ -721,6 +721,9 @@ extern int ext2fs_get_library_version(const char **ver_string,
 				      const char **date_string);
 
 /* inline functions */
+extern errcode_t ext2fs_get_mem(long size, void **ptr);
+extern errcode_t ext2fs_free_mem(void **ptr);
+extern errcode_t ext2fs_resize_mem(long size, void **ptr);
 extern void ext2fs_mark_super_dirty(ext2_filsys fs);
 extern void ext2fs_mark_changed(ext2_filsys fs);
 extern int ext2fs_test_changed(ext2_filsys fs);
@@ -746,6 +749,43 @@ extern int ext2fs_group_of_ino(ext2_filsys fs, ino_t ino);
 #else
 #define _INLINE_ extern __inline__
 #endif
+
+#ifndef EXT2_CUSTOM_MEMORY_ROUTINES
+/*
+ *  Allocate memory
+ */
+_INLINE_ errcode_t ext2fs_get_mem(long size, void **ptr)
+{
+	*ptr = malloc(size);
+	if (!*ptr)
+		return EXT2_NO_MEMORY;
+	return 0;
+}
+
+/*
+ * Free memory
+ */
+_INLINE_ errcode_t ext2fs_free_mem(void **ptr)
+{
+	free(*ptr);
+	*ptr = 0;
+	return 0;
+}
+	
+/*
+ *  Resize memory
+ */
+_INLINE_ errcode_t ext2fs_resize_mem(long size, void **ptr)
+{
+	void *p;
+
+	p = realloc(*ptr, size);
+	if (!p)
+		return EXT2_NO_MEMORY;
+	*ptr = p;
+	return 0;
+}
+#endif	/* Custom memory routines */
 
 /*
  * Mark a filesystem superblock as dirty

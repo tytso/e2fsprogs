@@ -48,9 +48,10 @@ extern errcode_t
 	if (block_buf)
 		ctx.buf = block_buf;
 	else {
-		ctx.buf = malloc(dblist->fs->blocksize);
-		if (!ctx.buf)
-			return EXT2_NO_MEMORY;
+		retval = ext2fs_get_mem(dblist->fs->blocksize,
+					(void **) &ctx.buf);
+		if (retval)
+			return retval;
 	}
 	ctx.func = 0;
 	ctx.func2 = func;
@@ -60,7 +61,7 @@ extern errcode_t
 	retval = ext2fs_dblist_iterate(dblist, db_dir_proc, &ctx);
 	
 	if (!block_buf)
-		free(ctx.buf);
+		ext2fs_free_mem((void **) &ctx.buf);
 	if (retval)
 		return retval;
 	return ctx.errcode;

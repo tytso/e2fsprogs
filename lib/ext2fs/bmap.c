@@ -157,9 +157,9 @@ errcode_t ext2fs_bmap(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
 	addr_per_block = fs->blocksize >> 2;
 
 	if (!block_buf) {
-		buf = malloc(fs->blocksize * 2);
-		if (!buf)
-			return EXT2_NO_MEMORY;
+		retval = ext2fs_get_mem(fs->blocksize * 2, (void **) &buf);
+		if (retval)
+			return retval;
 		block_buf = buf;
 	}
 
@@ -236,7 +236,7 @@ errcode_t ext2fs_bmap(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
 				 &blocks_alloc, block, phys_blk);
 done:
 	if (buf)
-		free(buf);
+		ext2fs_free_mem((void **) &buf);
 	if ((retval == 0) && blocks_alloc) {
 		inode->i_blocks += (blocks_alloc * fs->blocksize) / 512;
 		retval = ext2fs_write_inode(fs, ino, inode);

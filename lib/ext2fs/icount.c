@@ -62,12 +62,12 @@ void ext2fs_free_icount(ext2_icount_t icount)
 
 	icount->magic = 0;
 	if (icount->list)
-		free(icount->list);
+		ext2fs_free_mem((void **) &icount->list);
 	if (icount->single)
 		ext2fs_free_inode_bitmap(icount->single);
 	if (icount->multiple)
 		ext2fs_free_inode_bitmap(icount->multiple);
-	free(icount);
+	ext2fs_free_mem((void **) &icount);
 }
 
 errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
@@ -84,9 +84,9 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
 			size = (size_t) hint->size;
 	}
 	
-	icount = malloc(sizeof(struct ext2_icount));
-	if (!icount)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_get_mem(sizeof(struct ext2_icount), (void **) &icount);
+	if (retval)
+		return retval;
 	memset(icount, 0, sizeof(struct ext2_icount));
 
 	retval = ext2fs_allocate_inode_bitmap(fs, 0, 
@@ -121,8 +121,8 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
 	printf("Icount allocated %d entries, %d bytes.\n",
 	       icount->size, bytes);
 #endif
-	icount->list = malloc(bytes);
-	if (!icount->list)
+	retval = ext2fs_get_mem(bytes, (void **) &icount->list);
+	if (retval)
 		goto errout;
 	memset(icount->list, 0, bytes);
 
@@ -163,7 +163,8 @@ errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, int size,
 static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 					    ino_t ino, int pos)
 {
-	struct ext2_icount_el *el, *new_list;
+	struct ext2_icount_el 	*el;
+	errcode_t		retval;
 	ino_t			new_size = 0;
 	int			num;
 
@@ -178,12 +179,12 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 #if 0
 		printf("Reallocating icount %d entries...\n", new_size);
 #endif	
-		new_list = realloc(icount->list, (size_t) new_size *
-				   sizeof(struct ext2_icount_el));
-		if (!new_list)
+		retval = ext2fs_resize_mem((size_t) new_size *
+					   sizeof(struct ext2_icount_el),
+					   (void **) &icount->list);
+		if (retval)
 			return 0;
 		icount->size = new_size;
-		icount->list = new_list;
 	}
 	num = (int) icount->count - pos;
 	if (num < 0)

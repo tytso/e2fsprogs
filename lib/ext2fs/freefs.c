@@ -29,11 +29,11 @@ void ext2fs_free(ext2_filsys fs)
 		io_channel_close(fs->io);
 	}
 	if (fs->device_name)
-		free(fs->device_name);
+		ext2fs_free_mem((void **) &fs->device_name);
 	if (fs->super)
-		free(fs->super);
+		ext2fs_free_mem((void **) &fs->super);
 	if (fs->group_desc)
-		free(fs->group_desc);
+		ext2fs_free_mem((void **) &fs->group_desc);
 	if (fs->block_map)
 		ext2fs_free_block_bitmap(fs->block_map);
 	if (fs->inode_map)
@@ -51,7 +51,7 @@ void ext2fs_free(ext2_filsys fs)
 	
 	fs->magic = 0;
 
-	free(fs);
+	ext2fs_free_mem((void **) &fs);
 }
 
 void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap)
@@ -61,14 +61,14 @@ void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap)
 
 	bitmap->magic = 0;
 	if (bitmap->description) {
-		free(bitmap->description);
+		ext2fs_free_mem((void **) &bitmap->description);
 		bitmap->description = 0;
 	}
 	if (bitmap->bitmap) {
-		free(bitmap->bitmap);
+		ext2fs_free_mem((void **) &bitmap->bitmap);
 		bitmap->bitmap = 0;
 	}
-	free(bitmap);
+	ext2fs_free_mem((void **) &bitmap);
 }
 
 void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap)
@@ -97,11 +97,11 @@ static void ext2fs_free_inode_cache(struct ext2_inode_cache *icache)
 	if (--icache->refcount)
 		return;
 	if (icache->buffer)
-		free(icache->buffer);
+		ext2fs_free_mem((void **) &icache->buffer);
 	if (icache->cache)
-		free(icache->cache);
+		ext2fs_free_mem((void **) &icache->cache);
 	icache->buffer_blk = 0;
-	free(icache);
+	ext2fs_free_mem((void **) &icache);
 }
 
 /*
@@ -113,9 +113,9 @@ void ext2fs_badblocks_list_free(ext2_badblocks_list bb)
 		return;
 
 	if (bb->list)
-		free(bb->list);
+		ext2fs_free_mem((void **) &bb->list);
 	bb->list = 0;
-	free(bb);
+	ext2fs_free_mem((void **) &bb);
 }
 
 /*
@@ -127,11 +127,11 @@ void ext2fs_free_dblist(ext2_dblist dblist)
 		return;
 
 	if (dblist->list)
-		free(dblist->list);
+		ext2fs_free_mem((void **) &dblist->list);
 	dblist->list = 0;
 	if (dblist->fs && dblist->fs->dblist == dblist)
 		dblist->fs->dblist = 0;
 	dblist->magic = 0;
-	free(dblist);
+	ext2fs_free_mem((void **) &dblist);
 }
 

@@ -31,9 +31,9 @@
 errcode_t ext2fs_resize_generic_bitmap(__u32 new_end, __u32 new_real_end,
 				       ext2fs_generic_bitmap bmap)
 {
-	size_t	size, new_size;
-	char 	*new_bitmap;
-	__u32	bitno;
+	errcode_t	retval;
+	size_t		size, new_size;
+	__u32		bitno;
 
 	if (!bmap)
 		return EXT2_INVALID_ARGUMENT;
@@ -59,13 +59,12 @@ errcode_t ext2fs_resize_generic_bitmap(__u32 new_end, __u32 new_real_end,
 	size = ((bmap->real_end - bmap->start) / 8) + 1;
 	new_size = ((new_real_end - bmap->start) / 8) + 1;
 
-	new_bitmap = realloc(bmap->bitmap, new_size);
-	if (!new_bitmap)
-		return EXT2_NO_MEMORY;
+	retval = ext2fs_resize_mem(new_size, (void **) &bmap->bitmap);
+	if (retval)
+		return retval;
 	if (new_size > size)
-		memset(new_bitmap + size, 0, new_size - size);
+		memset(bmap->bitmap + size, 0, new_size - size);
 
-	bmap->bitmap = new_bitmap;
 	bmap->end = new_end;
 	bmap->real_end = new_real_end;
 	return 0;
