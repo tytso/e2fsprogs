@@ -282,6 +282,9 @@ extern struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, int *control);
 extern const char *ehandler_operation(const char *op);
 extern void ehandler_init(io_channel channel);
 
+/* journal.c */
+extern int e2fsck_run_ext3_journal(const char *device);
+
 /* pass1.c */
 extern void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool);
 extern int e2fsck_pass1_check_device_inode(struct ext2_inode *inode);

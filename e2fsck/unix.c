@@ -260,8 +260,9 @@ static void check_if_skip(e2fsck_t ctx)
 		reason = _("contains a file system with errors");
 	else if ((fs->super->s_state & EXT2_VALID_FS) == 0)
 		reason = _("was not cleanly unmounted");
-	else if (fs->super->s_mnt_count >=
-		 (unsigned) fs->super->s_max_mnt_count)
+	else if ((fs->super->s_max_mnt_count >= 0) &&
+		 (fs->super->s_mnt_count >=
+		  (unsigned) fs->super->s_max_mnt_count))
 		reason = _("has reached maximal mount count");
 	else if (fs->super->s_checkinterval &&
 		 time(0) >= (fs->super->s_lastcheck +
@@ -290,7 +291,6 @@ struct percent_tbl {
 struct percent_tbl e2fsck_tbl = {
 	5, { 0, 70, 90, 92,  95, 100 }
 };
-static int dpywidth = 50;
 static char bar[] =
 	"==============================================================="
 	"===============================================================";
@@ -330,6 +330,7 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 	float percent;
 	int	tick;
 	struct timeval	tv;
+	static int dpywidth = 0;
 
 	if (pass == 0)
 		return 0;
@@ -340,6 +341,10 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 	} else {
 		if (ctx->flags & E2F_FLAG_PROG_SUPPRESS)
 			return 0;
+		if (dpywidth == 0) {
+			dpywidth = 66 - strlen(ctx->device_name);
+			dpywidth = 8 * (dpywidth / 8);
+		}
 		/*
 		 * Calculate the new progress position.  If the
 		 * percentage hasn't changed, then we skip out right
@@ -701,7 +706,10 @@ restart:
 	io_ptr = test_io_manager;
 	test_io_backing_manager = unix_io_manager;
 #endif
-	flags = (ctx->options & E2F_OPT_READONLY) ? 0 : EXT2_FLAG_RW;
+	flags = 0;
+	if ((ctx->options & E2F_OPT_READONLY) == 0)
+		flags |= EXT2_FLAG_RW;
+
 	if (ctx->superblock && blocksize) {
 		retval = ext2fs_open(ctx->filesystem_name, flags,
 				     ctx->superblock, blocksize, io_ptr, &fs);
@@ -769,11 +777,28 @@ restart:
 		fatal_error(ctx, _("Get a newer version of e2fsck!"));
 	}
 #endif
+	s = (struct ext2fs_sb *) fs->super;
+	/*
+	 * Check to see if we need to do ext3-style recovery.  If so,
+	 * do it, and then restart the fsck.
+	 */
+	if (s->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) {
+		printf("%s: reading journal for ext3 filesystem...\n",
+		       ctx->filesystem_name);
+		ext2fs_close(fs);
+		retval = e2fsck_run_ext3_journal(ctx->filesystem_name);
+		if (retval) {
+			com_err(ctx->program_name, retval,
+				": couldn't load ext3 journal for %s",
+				ctx->filesystem_name);
+			exit(FSCK_ERROR);
+		}
+		goto restart;
+	}
 	/*
 	 * Check for compatibility with the feature sets.  We need to
 	 * be more stringent than ext2fs_open().
 	 */
-	s = (struct ext2fs_sb *) fs->super;
 	if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
 	    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
 		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,

@@ -1,3 +1,21 @@
+2000-07-06  Theodore Ts'o  <tytso@valinux.com>
+
+	* unix.c (check_if_skip): Modify algorithm for checking
+		s_max_mnt_count to match with the kernel.  (If
+		s_max_mnt_count is negative, ignore the mnt_count check.)
+
+	* unix.c (e2fsck_update_progress): Adjust the width of the
+		progress bar dynamically, based on the filesystem name
+		that we need to display.
+
+	* unix.c (main): If the ext3 needs_recovery flag is set, call
+		e2fsck_run_ext3_journal() and then restart the e2fsck run.
+
+	* journal.c (e2fsck_run_ext3_journal): New file which contains
+		logic to recover the ext3 journal.  This version relies on
+		the kernel being able to mount the filesystem in order to
+		run the journal.
+
 2000-07-05  Theodore Ts'o  <tytso@valinux.com>
 
 	* unix.c (e2fsck_update_progress): Only save and check the last
