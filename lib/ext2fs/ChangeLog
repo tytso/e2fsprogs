@@ -1,5 +1,9 @@
 2000-12-13  Theodore Ts'o  <tytso@valinux.com>
 
+	* closefs.c (ext2fs_update_fs_dynamic_rev): New function suggested
+		by Andreas Dilger to update the filesystem revision to
+		EXT2_DYNAMIC_REV.
+
 	* swapfs.c (ext2fs_swap_super): Add byte swapping for the journal
 		fields.
 

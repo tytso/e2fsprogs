@@ -106,6 +106,23 @@ static errcode_t write_primary_superblock(ext2_filsys fs,
 }
 
 
+/*
+ * Updates the revision to EXT2_DYNAMIC_REV
+ */
+void ext2fs_update_fs_dynamic_rev(ext2_filsys fs)
+{
+	struct ext2_super_block *sb = fs->super;
+
+	if (sb->s_rev_level > EXT2_GOOD_OLD_REV)
+		return;
+
+	sb->s_rev_level = EXT2_DYNAMIC_REV;
+	sb->s_first_ino = EXT2_GOOD_OLD_FIRST_INO;
+	sb->s_inode_size = EXT2_GOOD_OLD_INODE_SIZE;
+	/* s_uuid is handled by e2fsck already */
+	/* other fields should be left alone */
+}
+
 errcode_t ext2fs_flush(ext2_filsys fs)
 {
 	dgrp_t		i,j,maxgroup,sgrp;
