@@ -56,7 +56,7 @@ E2fsprogs 1.19 (July 13, 2000)
 ==============================
 
 Release the resize2fs program since the timeout before it could
-publish it under the GPL has finally expired.
+be released under the GPL has finally expired.
 
 Add experimental support needed for the ext2 compression patches.
 This requires compiling e2fsprogs with the --enable-compression flag
@@ -112,8 +112,8 @@ Added non-destructive write testing to the badblocks program, courtesy
 of David Beattie.  The badblocks also now has an option to input the
 current set of bad blocks, so that known bad blocks are skipped to
 speed up the badblocks test.  There is also a persistent rescan
-feature that causes badblocks to run some number of passes until the
-set of bad blocks is no longer grows. 
+feature which causes badblocks to run until it has completed some
+number of passes without discovering any new bad blocks.
 
 Badblocks now checks to see if the device is mounted and refuses to do
 the tests involving writing to the device if it is mounted.  Also,
