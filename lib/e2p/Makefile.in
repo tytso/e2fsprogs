@@ -16,15 +16,15 @@ INSTALL = @INSTALL@
 
 all::
 
-OBJS=		fgetflags.o fsetflags.o fgetversion.o fsetversion.o \
+OBJS=		feature.o fgetflags.o fsetflags.o fgetversion.o fsetversion.o \
 		getflags.o getversion.o iod.o ls.o pe.o pf.o ps.o \
 		setflags.o setversion.o uuid.o
 
-SRCS=		$(srcdir)/fgetflags.c $(srcdir)/fsetflags.c \
-		$(srcdir)/fgetversion.c $(srcdir)/fsetversion.c \
-		$(srcdir)/getflags.c $(srcdir)/getversion.c \
-		$(srcdir)/iod.c $(srcdir)/ls.c $(srcdir)/pe.c \
-		$(srcdir)/pf.c $(srcdir)/ps.c \
+SRCS=		$(srcdir)/feature.c $(srcdir)/fgetflags.c \
+		$(srcdir)/fsetflags.c $(srcdir)/fgetversion.c \
+		$(srcdir)/fsetversion.c $(srcdir)/getflags.c \
+		$(srcdir)/getversion.c $(srcdir)/iod.c $(srcdir)/ls.c \
+		$(srcdir)/pe.c $(srcdir)/pf.c $(srcdir)/ps.c \
 		$(srcdir)/setflags.c $(srcdir)/setversion.c \
 		$(srcdir)/uuid.c
 

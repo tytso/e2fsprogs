@@ -4,6 +4,10 @@
 
 #include <linux/ext2_fs.h>
 
+#define E2P_FEATURE_COMPAT	0
+#define E2P_FEATURE_INCOMPAT	1
+#define E2P_FEATURE_RO_INCOMPAT	2
+
 int fgetflags (const char * name, unsigned long * flags);
 int fgetversion (const char * name, unsigned long * version);
 int fsetflags (const char * name, unsigned long flags);
@@ -19,6 +23,10 @@ void print_flags (FILE * f, unsigned long flags, int long_format);
 void print_fs_state (FILE * f, unsigned short state);
 int setflags (int fd, unsigned long flags);
 int setversion (int fd, unsigned long version);
+
+char *e2p_feature2string(int compat, unsigned int mask);
+int e2p_string2feature(char *string, int *compat, unsigned int *mask);
+int e2p_edit_feature(char *str, __u32 *compat_array);
 
 int e2p_is_null_uuid(void *uu);
 void e2p_uuid_to_str(void *uu, char *out);

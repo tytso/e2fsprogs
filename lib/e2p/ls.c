@@ -151,6 +151,28 @@ static const char *interval_string(unsigned int secs)
 	return buf;
 }
 
+static void print_features(struct ext2_super_block * s)
+{
+#ifdef EXT2_DYNAMIC_REV
+	int	i, j, printed=0;
+	__u32	*mask = &s->s_feature_compat, m;
+
+	printf ("Filesystem features:     ");
+	for (i=0; i <3; i++,mask++) {
+		for (j=0,m=1; j < 32; j++, m<<=1) {
+			if (*mask & m) {
+				printf(" %s", e2p_feature2string(i, m));
+				printed++;
+			}
+		}
+	}
+	if (printed == 0)
+		printf("(none)");
+	printf("\n");
+#endif
+}
+
+
 
 #ifndef EXT2_INODE_SIZE
 #define EXT2_INODE_SIZE(s) sizeof(struct ext2_inode)
@@ -199,14 +221,7 @@ void list_super (struct ext2_super_block * s)
 #endif
 	} else
 		printf("\n");
-#ifdef EXT2_DYNAMIC_REV
-	printf ("Filesystem features:      ");
-	if (s->s_feature_ro_compat & EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)
-		printf("sparse_super");
-	else
-		printf("(none)");
-	printf("\n");
-#endif
+	print_features(s);
 	printf ("Filesystem state:        ");
 	print_fs_state (stdout, s->s_state);
 	printf ("\n");

@@ -1,4 +1,13 @@
-1999-07-18  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+1999-09-07    <tytso@valinux.com>
+
+	* Makefile.in, feature.c, e2p.h: New file which is used for
+		displaying and editing superblock feature sets.
+
+	* ls.c (print_features, list_super): Add new function
+		print_features which is used to display the feature
+		bits in the superblock.
+
+1999-07-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.15
 
