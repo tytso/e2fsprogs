@@ -40,19 +40,19 @@
 
 #ifdef HAVE_MNTENT_H
 /*
- * XXX we assume that /etc/mtab is located on the root filesystem, and
- * we only check to see if the mount is readonly for the root
- * filesystem.
+ * Helper function which checks a file in /etc/mtab format to see if a
+ * filesystem is mounted.  Returns an error if the file doesn't exist
+ * or can't be opened.  
  */
-static errcode_t check_mntent(const char *file, int *mount_flags,
-			      char *mtpt, int mtlen)
+static errcode_t check_mntent_file(const char *mtab_file, const char *file, 
+				   int *mount_flags, char *mtpt, int mtlen)
 {
 	FILE * f;
 	struct mntent * mnt;
 	int	fd;
 
 	*mount_flags = 0;
-	if ((f = setmntent (MOUNTED, "r")) == NULL)
+	if ((f = setmntent (mtab_file, "r")) == NULL)
 		return errno;
 	while ((mnt = getmntent (f)) != NULL)
 		if (strcmp(file, mnt->mnt_fsname) == 0)
@@ -62,6 +62,16 @@ static errcode_t check_mntent(const char *file, int *mount_flags,
 		return 0;
 	*mount_flags = EXT2_MF_MOUNTED;
 	
+	/* Check to see if the ro option is set */
+	if (hasmntopt(mnt, MNTOPT_RO))
+		*mount_flags |= EXT2_MF_READONLY;
+
+	/*
+	 * Check to see if we're referring to the root filesystem.
+	 * If so, do a manual check to see if we can open /etc/mtab
+	 * read/write, since if the root is mounted read/only,
+	 * /etc/mtab may not be accurate.
+	 */
 	if (!strcmp(mnt->mnt_dir, "/")) {
 		*mount_flags |= EXT2_MF_ISROOT;
 		fd = open(MOUNTED, O_RDWR);
@@ -75,6 +85,22 @@ static errcode_t check_mntent(const char *file, int *mount_flags,
 		strncpy(mtpt, mnt->mnt_dir, mtlen);
 	return 0;
 }
+
+static errcode_t check_mntent(const char *file, int *mount_flags,
+			      char *mtpt, int mtlen)
+{
+	errcode_t	retval;
+
+#ifdef __linux__
+	retval = check_mntent_file("/proc/mounts", file, mount_flags,
+				   mtpt, mtlen);
+	if (retval == 0)
+		return 0;
+#endif
+	retval = check_mntent_file(MOUNTED, file, mount_flags, mtpt, mtlen);
+	return retval;
+}
+
 #endif
 
 #ifdef HAVE_GETMNTINFO
@@ -159,3 +185,34 @@ errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags)
 #endif /* HAVE_GETMNTINFO */
 #endif /* HAVE_MNTENT_H */
 }
+
+#ifdef DEBUG
+int main(int argc, char **argv)
+{
+	blk_t	blocks;
+	int	retval, mount_flags;
+	
+	if (argc < 2) {
+		fprintf(stderr, "Usage: %s device\n", argv[0]);
+		exit(1);
+	}
+
+	retval = ext2fs_check_if_mounted(argv[1], &mount_flags);
+	if (retval) {
+		com_err(argv[0], retval,
+			"while calling ext2fs_check_if_mounted");
+		exit(1);
+	}
+	printf("Device %s reports flags %02x\n", argv[1], mount_flags);
+	if (mount_flags & EXT2_MF_MOUNTED)
+		printf("\t%s is mounted.\n");
+	
+	if (mount_flags & EXT2_MF_READONLY)
+		printf("\t%s is read-only.\n");
+	
+	if (mount_flags & EXT2_MF_ISROOT)
+		printf("\t%s is the root filesystem.\n");
+	
+	exit(0);
+}
+#endif

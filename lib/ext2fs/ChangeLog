@@ -1,5 +1,11 @@
 2001-04-16  Theodore Tso  <tytso@valinux.com>
 
+	* ismounted.c (check_mntent): Check /proc/mounts on Linux systems
+		before checking /etc/mtab.  The EXT2_MF_READONLY flag is
+		now set from the /etc/mtab options field for all
+		filesystems, not just the root filesystem.  Add debugging
+		code to make it easier to test ext2fs_check_if_mounted().
+
 	* mkjournal.c (ext2fs_create_journal_superblock): Add safety
 		check; return an error if there's an attempt to create a
 		journal less than 1024 filesystem blocks.
