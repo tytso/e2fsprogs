@@ -106,6 +106,18 @@ uninstall::
 			$(DESTDIR)$(bindir)/compile_et
 	$(RM) -rf $(DESTDIR)$(includedir)/et $(DESTDIR)$(datadir)/et
 
+check:: compile_et
+	for i in $(srcdir)/test_cases/*.et ; do \
+		t=`basename $$i | sed -e 's/.et//'`; \
+		./compile_et --build-tree $$i ; \
+		diff -c $(srcdir)/test_cases/$$t.c $$t.c > $$t.failed; \
+		if [ $$? -ne 0 ]; then echo Test case $$t failed; exit 1 ; fi ; \
+		diff -c $(srcdir)/test_cases/$$t.h $$t.h >> $$t.failed; \
+		if [ $$? -ne 0 ]; then echo Test case $$t failed; exit 1 ; fi ; \
+		$(RM) -f $$t.c $$t.h $$t.failed; \
+		echo "Test case $$t succeeded" ; \
+	done
+
 clean::
 	$(RM) -f compile_et libcom_err.a libcom_err_p.a
 	$(RM) -f $(OBJS) profiled/*

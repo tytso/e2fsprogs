@@ -1,3 +1,19 @@
+e2fsprogs (1.33-2) unstable; urgency=low
+
+  * Fix up NLS support
+     - Fix message abbreviations support (i.e., @g --> group)
+     - Update to gettext 0.11.5 
+     - Add Czech translation
+     - Install message catalogs
+     - Other miscellaneous NLS bug fixes
+  * Add new debugfs command, imap, which prints the location of a 
+    specified inode in the inode table.
+  * Put /usr/include/com_err.h in comerr-dev instead of e2fslibs-dev.  
+    (Closes #191899)
+  * Add support for OV-style continuations in compile_et.  (Closes #191900)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon,  5 May 2003 18:13:12 -0400
+
 e2fsprogs (1.33-1) unstable; urgency=low
 
   * New upstream version (Closes: #189687)

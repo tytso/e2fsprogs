@@ -1,3 +1,10 @@
+2003-05-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* et_c.awk: Add support for OV-style continuations in compile_et.
+		(Closes Debian bug #191900).
+
+	* Makefile.in: Add regression test suite for compile_et.
+
 2003-04-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.33

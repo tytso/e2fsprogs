@@ -122,7 +122,20 @@ c2n["_"]=63
 	table_item_count = 0
 }
 
+(continuation == 1) && ($0 ~ /\\[ \t]*$/) {
+	text=substr($0,1,length($0)-1);
+#	printf "\t\t\"%s\"\n", text > outfile
+	cont_buf=cont_buf text;
+}
+
+(continuation == 1) && ($0 ~ /"[ \t]*$/) {
+#	printf "\t\t\"%s,\n", $0 > outfile
+	printf "\t%s,\n", cont_buf $0 > outfile
+	continuation = 0;
+}
+
 /^[ \t]*(error_code|ec)[ \t]+[A-Z_0-9]+,[ \t]*$/ {
+	table_item_count++
 	skipone=1
 	next
 }
@@ -137,10 +150,30 @@ c2n["_"]=63
 	table_item_count++
 }
 
+/^[ \t]*(error_code|ec)[ \t]+[A-Z_0-9]+,[ \t]*".*\\[ \t]*$/ {
+	text=""
+	for (i=3; i<=NF; i++) { 
+	    text = text FS $i
+	}
+	text=substr(text,2,length(text)-2);
+#	printf "\t%s\"\n", text > outfile
+	cont_buf=text
+	continuation++;
+}
+
+/^[ \t]*".*\\[ \t]*$/ {
+	if (skipone) {
+	    text=substr($0,1,length($0)-1);
+#	    printf "\t%s\"\n", text > outfile
+	    cont_buf=text
+	    continuation++;
+	}
+	skipone=0
+}
+
 { 
 	if (skipone) {
 	    printf "\t%s,\n", $0 > outfile
-	    table_item_count++
 	}
 	skipone=0
 }
