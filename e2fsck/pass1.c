@@ -961,6 +961,8 @@ int process_bad_block(ext2_filsys fs,
 	for (i = 0; i < fs->group_desc_count; i++ ) {
 		pctx->group = i;
 		pctx->blk = blk;
+		if (!ext2fs_bg_has_super(fs, i))
+			goto skip_super;
 		if (blk == first_block) {
 			if (i == 0) {
 				if (fix_problem(ctx,
@@ -988,6 +990,7 @@ int process_bad_block(ext2_filsys fs,
 			fix_problem(ctx, PR_1_BAD_GROUP_DESCRIPTORS, pctx);
 			return 0;
 		}
+	skip_super:
 		if (blk == fs->group_desc[i].bg_block_bitmap) {
 			if (fix_problem(ctx, PR_1_BB_BAD_BLOCK, pctx)) {
 				ctx->invalid_block_bitmap_flag[i]++;
@@ -1012,6 +1015,7 @@ int process_bad_block(ext2_filsys fs,
 			 */
 			return 0;
 		}
+		first_block += fs->super->s_blocks_per_group;
 	}
 	/*
 	 * If we've gotten to this point, then the only

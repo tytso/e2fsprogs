@@ -1,3 +1,14 @@
+Wed Nov 19 16:15:44 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (process_bad_block): Fix bug where first_block wasn't
+		getting incremented, which caused user to get a
+		"Programming error?" warning if there was a bad block in a
+		non-primary superblock/group_descriptor.  Also fixed
+		another bug so that ext2fs_bg_has_super() is consulted, to
+		avoid problems when using a filesystem with the
+		sparse_groups option set and there are bad blocks at the
+		beginning of a group which doesn't have a superblock.
+
 Thu Nov  6 16:10:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass1.c, pass2.c, pass3.c, pass4.c, pass5.c: Add calls to the 
