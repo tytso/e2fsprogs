@@ -148,26 +148,26 @@ distclean:: clean
 # the Makefile.in file
 #
 cache.o: $(srcdir)/cache.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(srcdir)/list.h $(top_builddir)/lib/blkid/blkid_types.h
-dev.o: $(srcdir)/dev.c $(srcdir)/blkidP.h $(srcdir)/blkid.h $(srcdir)/list.h \
- $(top_builddir)/lib/blkid/blkid_types.h
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
+dev.o: $(srcdir)/dev.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
 devname.o: $(srcdir)/devname.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(srcdir)/list.h $(top_builddir)/lib/blkid/blkid_types.h
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
 devno.o: $(srcdir)/devno.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(srcdir)/list.h $(top_builddir)/lib/blkid/blkid_types.h
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
 getsize.o: $(srcdir)/getsize.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(srcdir)/list.h $(top_builddir)/lib/blkid/blkid_types.h
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
 llseek.o: $(srcdir)/llseek.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(srcdir)/list.h $(top_builddir)/lib/blkid/blkid_types.h
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
 probe.o: $(srcdir)/probe.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(srcdir)/list.h $(top_builddir)/lib/blkid/blkid_types.h \
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h \
  $(top_srcdir)/lib/uuid/uuid.h $(srcdir)/probe.h
 read.o: $(srcdir)/read.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(srcdir)/list.h $(top_builddir)/lib/blkid/blkid_types.h \
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h \
  $(top_srcdir)/lib/uuid/uuid.h
 resolve.o: $(srcdir)/resolve.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(srcdir)/list.h $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/probe.h
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h $(srcdir)/probe.h
 save.o: $(srcdir)/save.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(srcdir)/list.h $(top_builddir)/lib/blkid/blkid_types.h
-tag.o: $(srcdir)/tag.c $(srcdir)/blkidP.h $(srcdir)/blkid.h $(srcdir)/list.h \
- $(top_builddir)/lib/blkid/blkid_types.h
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
+tag.o: $(srcdir)/tag.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h

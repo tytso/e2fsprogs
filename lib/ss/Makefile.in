@@ -196,3 +196,5 @@ requests.o: $(srcdir)/requests.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
  $(top_builddir)/lib/ss/ss_err.h
 data.o: $(srcdir)/data.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
  $(top_builddir)/lib/ss/ss_err.h
+get_readline.o: $(srcdir)/get_readline.c $(srcdir)/ss_internal.h \
+ $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
