@@ -67,7 +67,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 			if (st_root.st_dev == st_file.st_rdev) {
 				*mount_flags = EXT2_MF_MOUNTED;
 				if (mtpt)
-					strcpy(mtpt, "/");
+					strncpy(mtpt, "/", mtlen);
 				goto is_root;
 			}
 		}
@@ -117,9 +117,8 @@ static errcode_t check_mntent(const char *file, int *mount_flags,
 	return retval;
 }
 
-#endif
+#elif defined(HAVE_GETMNTINFO)
 
-#ifdef HAVE_GETMNTINFO
 static errcode_t check_getmntinfo(const char *file, int *mount_flags,
 				  char *mtpt, int mtlen)
 {
@@ -174,6 +173,7 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 #ifdef HAVE_GETMNTINFO
 	return check_getmntinfo(device, mount_flags, mtpt, mtlen);
 #else
+#warning "Can't use getmntent or getmntinfo to check for mounted filesystems!"
 	*mount_flags = 0;
 	return 0;
 #endif /* HAVE_GETMNTINFO */
@@ -182,7 +182,7 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 
 /*
  * ext2fs_check_if_mounted() sets the mount_flags EXT2_MF_MOUNTED and
- * EXT2_MF_READONLY
+ * EXT2_MF_READONLY, and EXT2_MF_ROOT
  * 
  */
 #ifdef __TURBOC__
@@ -190,22 +190,12 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 #endif
 errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags)
 {
-#ifdef HAVE_MNTENT_H
-	return check_mntent(file, mount_flags, NULL, 0);
-#else 
-#ifdef HAVE_GETMNTINFO
-	return check_getmntinfo(file, mount_flags, NULL, 0);
-#else
-	*mount_flags = 0;
-	return 0;
-#endif /* HAVE_GETMNTINFO */
-#endif /* HAVE_MNTENT_H */
+	return ext2fs_check_mount_point(file, mount_flags, NULL, 0);
 }
 
 #ifdef DEBUG
 int main(int argc, char **argv)
 {
-	blk_t	blocks;
 	int	retval, mount_flags;
 	
 	if (argc < 2) {

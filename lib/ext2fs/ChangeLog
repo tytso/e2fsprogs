@@ -1,3 +1,10 @@
+2001-05-25  Theodore Tso  <tytso@valinux.com>
+
+	* ismounted.c: More cleanups for ismounted.c, some from Andreas,
+		some to clean up Andreas's patches.  Use strncpy instead
+		of strcpy to save the root's mountpoint.  Clean up #ifdef
+		structure.  Remove uneeded variable in testing/debug driver.
+
 2001-05-24  Andreas Dilger  <adilger@turbolinux.com>
 
 	* ismounted.c: Add check for root device which doesn't depend on
