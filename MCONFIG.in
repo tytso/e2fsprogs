@@ -30,7 +30,8 @@ BUILD_CC = @BUILD_CC@
 DEFS = @DEFS@
 CFLAGS = @CFLAGS@
 ALL_CFLAGS = $(CPPFLAGS) $(DEFS) $(WFLAGS) $(CFLAGS) $(XTRA_CFLAGS) \
-	-I$(top_builddir)/lib -I$(top_srcdir)/lib $(LINUX_INCLUDE) 
+	-I$(top_builddir)/lib -I$(top_srcdir)/lib \
+	-I$(top_srcdir)/include $(LINUX_INCLUDE) 
 LDFLAGS = @LDFLAGS@
 ALL_LDFLAGS = $(LDFLAGS)
 RM = @RM@

@@ -1,3 +1,18 @@
+2000-02-02  Theodore Ts'o  <tytso@valinux.com>
+
+	* MCONFIG.in: Always include src/include in the include path now.
+		This forces us to use our internally provided ext2_fs.h
+		file, for sanity's sake.  
+
+	* configure.in: If linux/fs.h isn't found, then add
+		build/include into the include path only, since
+		src/include is now always included.  Removed define of
+		HAVE_LINUX_FS_H, since we're not using it any more.
+		Removed i_version vs. i_generation check, since with the
+		included header file it is a permanently known quantity.
+		Removed AC_C_CROSS since it has been merged into
+		AC_PROG_CC in autoconf 2.13. 
+
 2000-01-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* MCONFIG.in (DEPLIBUUID): Since LIBUUID can sometimes include
