@@ -155,6 +155,7 @@ static int is_swap_device(const char *file)
 	char		buf[1024], *cp;
 	dev_t		file_dev;
 	struct stat	st_buf;
+	int		ret = 0;
 
 	file_dev = 0;
 #ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
@@ -162,8 +163,7 @@ static int is_swap_device(const char *file)
 		file_dev = st_buf.st_rdev;
 #endif	
 
-	f = fopen("/proc/swaps", "r");
-	if (!f)
+	if (!(f = fopen("/proc/swaps", "r")))
 		return 0;
 	/* Skip the first line */
 	fgets(buf, sizeof(buf), f);
@@ -174,15 +174,20 @@ static int is_swap_device(const char *file)
 			*cp = 0;
 		if ((cp = strchr(buf, '\t')) != NULL)
 			*cp = 0;
-		if (strcmp(buf, file) == 0)
-			return 1;
+		if (strcmp(buf, file) == 0) {
+			ret++;
+			break;
+		}
 #ifndef __GNU__
 		if (file_dev && (stat(buf, &st_buf) == 0) &&
-		    file_dev == st_buf.st_rdev)
-			return 1;
+		    file_dev == st_buf.st_rdev) {
+			ret++;
+			break;
+		}
 #endif
 	}
-	return 0;
+	fclose(f);
+	return ret;
 }
 
 static errcode_t check_mntent(const char *file, int *mount_flags,

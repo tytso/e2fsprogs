@@ -1,10 +1,16 @@
+2002-02-21  Theodore Tso  <tytso@valinux.com>
+
+	* ismounted.c (is_swap_device): Fix file descriptor/memory leak;
+		we were missing an fclose().
+
 2002-02-20  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in, inode_io.c, ext2fs.h, ext2_err.et.in: Add new io
 		abstraction interface which exports an ext2 inode.
 
-	* fileio.c (ext2fs_file_flush): Export ext2fs_file_flush as a
-		public interface.
+	* ext2fs.h, fileio.c (ext2fs_file_flush): Export ext2fs_file_flush
+		as a public interface.  Change void * to const void * in
+		ext2fs_file_write's interface.
 
 	* test_io.c (test_close), unix_io.c (unix_close): Remove unneeded
 		conditional; save a few bytes.
