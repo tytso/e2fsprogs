@@ -1,3 +1,7 @@
+2001-09-24  Theodore Tso  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.29
+
 2002-09-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* internal.h: Remove declaration of perror.  All modern systems

@@ -1,3 +1,7 @@
+2001-09-24  Theodore Tso  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.29
+
 2002-09-22  root  <tytso@mit.edu>
 
 	* htree.c (htree_dump_int_node): Flag continuation hashes to make
