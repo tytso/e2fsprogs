@@ -1,3 +1,8 @@
+1998-09-02  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* resize2fs.c: Rename max to max_groups and max_dirs to avoid
+		possible conflicts with a cpp macro named "max".
+
 1998-07-26  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* resize2fs.h: Protect include of unistd.h with HAVE_UNISTD_H.

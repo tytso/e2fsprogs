@@ -65,7 +65,7 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs);
 errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags,
 		    errcode_t (*progress)(ext2_resize_t rfs, int pass,
 				     unsigned long cur,
-				     unsigned long max))
+				     unsigned long max_val))
 {
 	ext2_resize_t	rfs;
 	errcode_t	retval;
@@ -469,7 +469,7 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
  */
 static errcode_t blocks_to_move(ext2_resize_t rfs)
 {
-	int	i, j, max;
+	int	i, j, max_groups;
 	blk_t	blk, group_blk;
 	unsigned long old_blocks, new_blocks;
 	errcode_t	retval;
@@ -519,9 +519,9 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		goto errout;
 	}
 
-	max = fs->group_desc_count;
-	if (max > old_fs->group_desc_count)
-		max = old_fs->group_desc_count;
+	max_groups = fs->group_desc_count;
+	if (max_groups > old_fs->group_desc_count)
+		max_groups = old_fs->group_desc_count;
 	group_blk = old_fs->super->s_first_data_block;
 	/*
 	 * If we're reducing the number of descriptor blocks, this
@@ -529,7 +529,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	 * blocks as free.
 	 */
 	if (old_blocks > new_blocks) {
-		for (i = 0; i < max; i++) {
+		for (i = 0; i < max_groups; i++) {
 			if (!ext2fs_bg_has_super(fs, i)) {
 				group_blk += fs->super->s_blocks_per_group;
 				continue;
@@ -549,7 +549,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	 * If we're increasing the number of descriptor blocks, life
 	 * gets interesting....  
 	 */
-	for (i = 0; i < max; i++) {
+	for (i = 0; i < max_groups; i++) {
 		if (!ext2fs_bg_has_super(fs, i))
 			goto next_group;
 
@@ -1066,7 +1066,7 @@ errout:
 struct istruct {
 	ext2_resize_t rfs;
 	errcode_t	err;
-	unsigned long	max;
+	unsigned long	max_dirs;
 	int		num;
 };
 
@@ -1081,7 +1081,7 @@ static int check_and_change_inodes(ino_t dir, int entry,
 		io_channel_flush(is->rfs->old_fs->io);
 		is->err = (is->rfs->progress)(is->rfs,
 					      E2_RSZ_INODE_REF_UPD_PASS,
-					      ++is->num, is->max);
+					      ++is->num, is->max_dirs);
 		if (is->err)
 			return DIRENT_ABORT;
 	}
@@ -1118,13 +1118,13 @@ static errcode_t inode_ref_fix(ext2_resize_t rfs)
 	 * inode references
 	 */
 	is.num = 0;
-	is.max = ext2fs_dblist_count(rfs->old_fs->dblist);
+	is.max_dirs = ext2fs_dblist_count(rfs->old_fs->dblist);
 	is.rfs = rfs;
 	is.err = 0;
 
 	if (rfs->progress) {
 		retval = (rfs->progress)(rfs, E2_RSZ_INODE_REF_UPD_PASS,
-					 0, is.max);
+					 0, is.max_dirs);
 		if (retval)
 			goto errout;
 	}
@@ -1168,16 +1168,16 @@ errout:
  */
 static errcode_t move_itables(ext2_resize_t rfs)
 {
-	int		i, n, num, max, size, diff;
+	int		i, n, num, max_groups, size, diff;
 	ext2_filsys	fs = rfs->new_fs;
 	char		*cp;
 	blk_t		old_blk, new_blk;
 	errcode_t	retval;
 	int		to_move, moved;
 
-	max = fs->group_desc_count;
-	if (max > rfs->old_fs->group_desc_count)
-		max = rfs->old_fs->group_desc_count;
+	max_groups = fs->group_desc_count;
+	if (max_groups > rfs->old_fs->group_desc_count)
+		max_groups = rfs->old_fs->group_desc_count;
 
 	size = fs->blocksize * fs->inode_blocks_per_group;
 	if (!rfs->itable_buf) {
@@ -1190,7 +1190,7 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	 * Figure out how many inode tables we need to move
 	 */
 	to_move = moved = 0;
-	for (i=0; i < max; i++)
+	for (i=0; i < max_groups; i++)
 		if (rfs->old_fs->group_desc[i].bg_inode_table !=
 		    fs->group_desc[i].bg_inode_table)
 			to_move++;
@@ -1207,7 +1207,7 @@ static errcode_t move_itables(ext2_resize_t rfs)
 
 	rfs->old_fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 
-	for (i=0; i < max; i++) {
+	for (i=0; i < max_groups; i++) {
 		old_blk = rfs->old_fs->group_desc[i].bg_inode_table;
 		new_blk = fs->group_desc[i].bg_inode_table;
 		diff = new_blk - old_blk;
