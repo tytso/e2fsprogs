@@ -51,7 +51,7 @@ recreating the partition, make sure you create it with the same starting
 disk cylinder as before!  Otherwise, the resize operation will 
 certainly not work, and you may lose your entire filesystem.
 .PP
-If you wish to shrink the an ext2 partition, first use 
+If you wish to shrink an ext2 partition, first use 
 .B resize2fs
 to shrink the size of filesystem.  Then you may use 
 .BR fdisk (8)
