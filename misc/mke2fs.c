@@ -152,6 +152,7 @@ static void set_fs_defaults(const char *fs_type,
 	int	megs;
 	int	ratio = 0;
 	struct mke2fs_defaults *p;
+	int	use_bsize = 1024;
 
 	megs = super->s_blocks_count * (EXT2_BLOCK_SIZE(super) / 1024) / 1024;
 	if (inode_ratio)
@@ -162,22 +163,25 @@ static void set_fs_defaults(const char *fs_type,
 		if ((strcmp(p->type, fs_type) != 0) &&
 		    (strcmp(p->type, default_str) != 0))
 			continue;
-		if ((p->size != 0) &&
-		    (megs > p->size))
+		if ((p->size != 0) && (megs > p->size))
 			continue;
 		if (ratio == 0)
 			*inode_ratio = p->inode_ratio < blocksize ?
 				blocksize : p->inode_ratio;
-		if (blocksize == 0) {
-			if (p->blocksize == DEF_MAX_BLOCKSIZE)
-				p->blocksize = sys_page_size;
-			super->s_log_frag_size = super->s_log_block_size =
-				int_log2(p->blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
-		}
+		use_bsize = p->blocksize;
 	}
-	if (blocksize == 0)
-		super->s_blocks_count /= EXT2_BLOCK_SIZE(super) / 1024;
+	if (blocksize <= 0) {
+		if (use_bsize == DEF_MAX_BLOCKSIZE)
+			use_bsize = sys_page_size;
+		if ((blocksize < 0) && (use_bsize < (-blocksize)))
+			use_bsize = -blocksize;
+		blocksize = use_bsize;
+		super->s_blocks_count /= blocksize / 1024;
+	}
+	super->s_log_frag_size = super->s_log_block_size =
+		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 }
+
 
 /*
  * Helper function for read_bb_file and test_disk
@@ -788,7 +792,7 @@ static __u32 ok_features[3] = {
 
 static void PRS(int argc, char *argv[])
 {
-	int		c;
+	int		b, c;
 	int		size;
 	char *		tmp;
 	int		blocksize = 0;
@@ -875,9 +879,10 @@ static void PRS(int argc, char *argv[])
 		    "b:cf:g:i:jl:m:no:qr:R:s:tvI:J:ST:FL:M:N:O:V")) != EOF)
 		switch (c) {
 		case 'b':
-			blocksize = strtoul(optarg, &tmp, 0);
-			if (blocksize < EXT2_MIN_BLOCK_SIZE ||
-			    blocksize > EXT2_MAX_BLOCK_SIZE || *tmp) {
+			blocksize = strtol(optarg, &tmp, 0);
+			b = (blocksize > 0) ? blocksize : -blocksize;
+			if (b < EXT2_MIN_BLOCK_SIZE ||
+			    b > EXT2_MAX_BLOCK_SIZE || *tmp) {
 				com_err(program_name, 0,
 					_("bad block size - %s"), optarg);
 				exit(1);
@@ -886,8 +891,10 @@ static void PRS(int argc, char *argv[])
 				fprintf(stderr, _("Warning: blocksize %d not "
 						  "usable on most systems.\n"),
 					blocksize);
-			param.s_log_block_size =
-				int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+			if (blocksize > 0) 
+				param.s_log_block_size =
+					int_log2(blocksize >>
+						 EXT2_MIN_BLOCK_LOG_SIZE);
 			break;
 		case 'c':	/* Check for bad blocks */
 		case 't':	/* deprecated */
@@ -1067,7 +1074,7 @@ static void PRS(int argc, char *argv[])
 	 * If there's no blocksize specified and there is a journal
 	 * device, use it to figure out the blocksize
 	 */
-	if (blocksize == 0 && journal_device) {
+	if (blocksize <= 0 && journal_device) {
 		ext2_filsys	jfs;
 
 		retval = ext2fs_open(journal_device,
@@ -1077,6 +1084,13 @@ static void PRS(int argc, char *argv[])
 			com_err(program_name, retval,
 				_("while trying to open journal device %s\n"),
 				journal_device);
+			exit(1);
+		}
+		if ((blocksize < 0) && (jfs->blocksize < -blocksize)) {
+			com_err(program_name, 0,
+				_("Journal dev blocksize (%d) smaller than"
+				  "minimum blocksize %d\n"), jfs->blocksize,
+				-blocksize);
 			exit(1);
 		}
 		blocksize = jfs->blocksize;
@@ -1153,7 +1167,7 @@ static void PRS(int argc, char *argv[])
 		
 	} else if (!force && (param.s_blocks_count > dev_size)) {
 		com_err(program_name, 0,
-			_("Filesystem larger than apparent filesystem size."));
+			_("Filesystem larger than apparent device size."));
 		proceed_question();
 	}
 
@@ -1172,10 +1186,11 @@ static void PRS(int argc, char *argv[])
 		param.s_first_meta_bg = atoi(tmp);
 
 	set_fs_defaults(fs_type, &param, blocksize, &inode_ratio);
-
+	blocksize = EXT2_BLOCK_SIZE(&param);
+	
 	if (param.s_blocks_per_group) {
 		if (param.s_blocks_per_group < 256 ||
-		    param.s_blocks_per_group > 8 * EXT2_BLOCK_SIZE(&param)) {
+		    param.s_blocks_per_group > 8 * blocksize) {
 			com_err(program_name, 0,
 				_("blocks per group count out of range"));
 			exit(1);
@@ -1189,7 +1204,7 @@ static void PRS(int argc, char *argv[])
 			com_err(program_name, 0,
 				_("bad inode size %d (min %d/max %d)"),
 				inode_size, EXT2_GOOD_OLD_INODE_SIZE,
-				EXT2_BLOCK_SIZE(&param));
+				blocksize);
 			exit(1);
 		}
 		if (inode_size != EXT2_GOOD_OLD_INODE_SIZE)
@@ -1203,7 +1218,7 @@ static void PRS(int argc, char *argv[])
 	 * Calculate number of inodes based on the inode ratio
 	 */
 	param.s_inodes_count = num_inodes ? num_inodes : 
-		((__u64) param.s_blocks_count * EXT2_BLOCK_SIZE(&param))
+		((__u64) param.s_blocks_count * blocksize)
 			/ inode_ratio;
 
 	/*

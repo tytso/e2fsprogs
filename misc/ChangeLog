@@ -1,5 +1,9 @@
 2003-04-11  Theodore Ts'o  <tytso@mit.edu>
 
+	* mke2fs.c (PRS): If the argument to -b is negative, treat it as a
+		minimum blocksize.  (Feature requested by EVMS developers
+		for mainframe DASD's that do not support 1k blocksizes.)
+
 	* mke2fs.8.in: Document the -g option.  (Addresses Debian bug #188318)
 
 	* mke2fs.c (PRS): Fix bug where mke2fs was incorrectly checking

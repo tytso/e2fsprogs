@@ -9,9 +9,11 @@ e2fsprogs (1.32+1.33-WIP-2003.03.30-3) unstable; urgency=low
     for a suitable readine library.
   * Fix bug in mke2fs, which was was incorrectly checking the argument
     to the -g option if the default block size is used.  (Closes: #188319)
-  * Update man pages.  (Addresses Debian bug #188318)
+  * Update man pages.  (Closes: #188318)
+  * Mke2fs can be given a minimum block size by passing in a negative 
+    number to the -b option.
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 11 Apr 2003 13:59:08 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 11 Apr 2003 22:08:00 -0400
 
 e2fsprogs (1.32+1.33-WIP-2003.03.30-2) unstable; urgency=low
 

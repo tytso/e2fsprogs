@@ -142,10 +142,17 @@ option was specified.
 Specify the size of blocks in bytes.  Valid block size vales are 1024, 
 2048 and 4096 bytes per block.  If omitted,
 .B mke2fs
-block-size is determined by the file system size and the expected usage
-of the filesystem (see the
+block-size is hueristically determined by the file system size and
+the expected usage of the filesystem (see the
 .B \-T
-option).
+option).  If 
+.I block-size
+is negative, then mke2fs will use hueristics to determine the
+appropriate block size, with the constraint that the block size will be
+at least 
+.I block-size
+bytes.  This is useful for certain hardware devices which require that
+the blocksize be a multiple of 2k.
 .TP
 .B \-c
 Check the device for bad blocks before creating the file system.  If
