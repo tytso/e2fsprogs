@@ -173,6 +173,16 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		goto errout;
 
 	/*
+	 * If this is an external journal device, don't write out the
+	 * block group descriptors or any of the backup superblocks
+	 */
+	if (fs->super->s_feature_incompat &
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+		retval = 0;
+		goto errout;
+	}
+
+	/*
 	 * Set the state of the FS to be non-valid.  (The state has
 	 * already been backed up earlier, and will be restored when
 	 * we exit.)
