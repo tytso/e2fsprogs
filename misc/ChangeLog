@@ -1,5 +1,8 @@
 2001-04-16  Theodore Tso  <tytso@valinux.com>
 
+	* mke2fs.c (main): Add better explanation about when the
+		filesystem will be checked after it is created.
+
 	* util.c (parse_journal_opts): Remove code which allowed a bare
 		number to be treated as a journal size.
 
