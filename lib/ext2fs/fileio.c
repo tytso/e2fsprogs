@@ -35,9 +35,6 @@ struct ext2_file {
 	char 			*buf;
 };
 
-/*
- * XXX Doesn't handle writing yet
- */
 errcode_t ext2fs_file_open(ext2_filsys fs, ino_t ino,
 			   int flags, ext2_file_t *ret)
 {
@@ -66,7 +63,7 @@ errcode_t ext2fs_file_open(ext2_filsys fs, ino_t ino,
 	if (retval)
 		goto fail;
 	
-	retval = ext2fs_get_mem(fs->blocksize, (void **) &file->buf);
+	retval = ext2fs_get_mem(fs->blocksize * 2, (void **) &file->buf);
 	if (retval)
 		goto fail;
 

@@ -1,3 +1,11 @@
+1999-05-29    <tytso@rsts-11.mit.edu>
+
+	* ext2fs.h: Add feature definition for AFS IMAGIC inodes.
+
+	* fileio.c (ext2fs_file_open): Remove obsolete comment stating
+		that we don't handle writing yet (we do).  Fixed bug where
+		we weren't allocating a big enough buffer for ext2_bmap.
+
 1999-05-03    <tytso@rsts-11.mit.edu>
 
 	* openfs.c (ext2fs_open): Check to make sure that the number of

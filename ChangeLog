@@ -1,3 +1,13 @@
+1999-04-17    <tytso@rsts-11.mit.edu>
+
+	* MCONFIG.in: Define man1dir, man3dir, and man8dir in terms of
+		mandir.
+
+1999-03-31  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* config.sub: Update config.sub from autoconf 2.13 so that it will
+		recognize new machine types from the Alpha.
+
 1999-03-16  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* configure.in: Add check for malloc.h and mallinfo().

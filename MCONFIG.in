@@ -13,9 +13,9 @@ sbindir = @sbindir@
 libdir = @libdir@
 includedir = @includedir@
 mandir = @mandir@
-man1dir = $(prefix)/man/man1
-man3dir = $(prefix)/man/man3
-man8dir = $(prefix)/man/man8
+man1dir = $(mandir)/man1
+man3dir = $(mandir)/man3
+man8dir = $(mandir)/man8
 infodir = @infodir@
 datadir = @datadir@
 
