@@ -322,6 +322,12 @@ static void write_inode_tables(ext2_filsys fs)
 	int		i, j, num, count;
 	char		*buf;
 	char		format[20], backup[80];
+	int		sync_kludge = 0;
+	char		*mke2fs_sync;
+
+	mke2fs_sync = getenv("MKE2FS_SYNC");
+	if (mke2fs_sync)
+		sync_kludge = atoi(mke2fs_sync);
 
 	buf = malloc(fs->blocksize * STRIDE_LENGTH);
 	if (!buf) {
@@ -362,6 +368,12 @@ static void write_inode_tables(ext2_filsys fs)
 		}
 		if (!quiet) 
 			fputs(backup, stdout);
+		if (sync_kludge) {
+			if (sync_kludge == 1)
+				sync();
+			else if ((i % sync_kludge) == 0)
+				sync();
+		}
 	}
 	free(buf);
 	if (!quiet)

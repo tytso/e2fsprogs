@@ -1,3 +1,19 @@
+1999-02-09  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* fsck.c (fsck_device): Print an error message if the user passes
+		in a device or directory name which isn't found in /etc/fstab.
+		Allow the location of /etc/fstab to be overridden by
+		the FSTAB_FILE environment variable.
+
+1999-01-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (write_inode_tables): Add kludge code so that when the
+		MKE2FS_SYNC environment variable is set, mke2fs will sync
+		every MKE2FS_SYNC block groups, while it is writing out
+		the inode tables.  This is to work around a VM bug in the
+		2.0 kernel.  I've heard a report that a RAID user was able
+		to trigger it even using a 2.2 kernel.
+
 1999-01-16  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* fsck.c (execute, wait_one): Modified routines so that they

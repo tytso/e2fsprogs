@@ -507,6 +507,12 @@ static void fsck_device(char *device)
 		if (!type)
 			type = fsent->type;
 	}
+	if (!fsent) {
+		fprintf(stderr,
+			"Error: no entry found the fstab file for %s.\n",
+			device);
+		exit(1);
+	}
 	if (!type)
 		type = DEFAULT_FSTYPE;
 
@@ -830,6 +836,7 @@ int main(int argc, char *argv[])
 	int i;
 	int status = 0;
 	char *oldpath = getenv("PATH");
+	char *fstab;
 
 	PRS(argc, argv);
 
@@ -837,7 +844,10 @@ int main(int argc, char *argv[])
 		printf("Parallelizing fsck version %s (%s)\n",
 			E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
-	load_fs_info(_PATH_MNTTAB);
+	fstab = getenv("FSTAB_FILE");
+	if (!fstab)
+		fstab = _PATH_MNTTAB;
+	load_fs_info(fstab);
 
 	/* Update our search path to include uncommon directories. */
 	if (oldpath) {
