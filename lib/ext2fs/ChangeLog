@@ -1,5 +1,12 @@
 2004-05-26  Theodore Ts'o  <tytso@mit.edu>
 
+	* closefs.c (ext2fs_flush): Make sure the master superblock is
+		written last, and only after other I/O has been flushed to
+		disk.  Thanks to Junfeng Yang from the Stanford
+		Metacompilation group for pointing a potential ordering
+		constraint problem if we don't write things out in the
+		right order.
+
 	* test_io.c: Implement the ability to abort after n reads or
 		writes to a particular block.  The block is specified by
 		TEST_IO_BLOCK environment variable, and the read/write
