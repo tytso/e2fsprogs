@@ -1,5 +1,9 @@
 2001-05-23  Theodore Tso  <tytso@valinux.com>
 
+	* partinfo.c (main): Use unsigned long instead of long when
+		querying the size of a device using the BLKGETSIZE ioctl,
+		to remove the 1TB limit (and turn it into a 2TB limit :-)
+
 	* fsck.c (compile_fs_type): Fix I18N compilation bug: use N_()
 		instead of _() to initialize static variables.
 

@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 {
 	struct hd_geometry loc;
 	int fd, i;
-	long size;
+	unsigned long size;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 			continue;
 		}
     
-		printf("%s: h=%3d s=%3d c=%4d   start=%8d size=%8d end=%8d\n",
+		printf("%s: h=%3d s=%3d c=%4d   start=%8d size=%8lu end=%8d\n",
 		       argv[i], 
 		       loc.heads, (int)loc.sectors, loc.cylinders,
 		       (int)loc.start, size, (int) loc.start + size -1);
