@@ -1,5 +1,22 @@
-E2fsprogs 1.35-WIP (August 1, 2003)
+E2fsprogs 1.35-WIP (August 21, 2003)
 ===================================
+
+Add support for backing up the journal inode location in the
+superblock.  E2fsck will automatically save the journal information in
+the superblock if it is not there already, and will use it if the
+journal inode appears to be corrupted.  ext2fs_add_journal_inode()
+will also save the backup information, so that new filesystems created
+by mke2fs and filesystems that have journals added via tune2fs will
+also have journal location written to the superblock as well.
+Debugfs's logdump command has been enhanced so that it can use the
+journal information in the superblock.
+  
+Shrink the size of the e2fsck executable by moving some initialized
+variables to the BSS segment.
+
+E2fsck will avoid printing the ^A and ^B characters which bracket the
+progress bar when stdout and stdin are a tty device instead of a pipe
+to another program.  (Addresses Debian bug #204137)
 
 Fix regression tests so they work correctly when e2fsprogs is compiled
 with configure --disable-htree.
@@ -13,11 +30,22 @@ read-write tests, we try to recover after an error so that we can
 continue reading on page-aligned boundaries.  (Addresses Debian Bug
 #203713)
   
+Update and clarified various man pages.
+
 Fixed various Debian packaging issues (see debian/changelog).
 
 Programmer's notes: 
 -------------------
 
+Added two new functions, ext2fs_file_open2() and
+ext2fs_inode_io_intern2() which take a pointer to an inode structure.
+
+Fix compile_et to output the correct prototype for
+initialize_xxx_err_table_r() in the header file.  (Addresses Debian
+bug #204332)
+
+In the lib/et makefile, make sure com_err.info is deleted on "make clean".
+  
 Fix 64-bit warnings in e2fsprogs pass1b by using inttypes.h if
 present.  This is for when we try stuffing an int into void * pointer.
 

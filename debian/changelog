@@ -1,3 +1,22 @@
+e2fsprogs (1.34+1.35-WIP-2003.08.21-1) unstable; urgency=low
+
+  * Fix compile_et to output the correct prototype for
+    initialize_xxx_err_table_r() in the header file.  (Closes: #204332)
+  * E2fsck will avoid printing ^A and ^B characters bracketing the
+    progress bar when stdout is a tty device.  (Closes #204137)
+  * Add support for storing the journal inode location in the superblock
+    so that e2fsck can recover from a corrupted inode table after a power
+    failure.
+  * Move the initrd script from /etc/mkinitrd/scripts to
+    /usr/share/initrd-tools/scripts so that mkinitrd will not remove
+    the file when it is uninstalled.  (Closes #204019)
+  * Remove unneeded files in debian directory: blkid-dev.substvars and
+    e2fsprogs-bf.lintian-overrides.  (Closes: #203914)
+  * Support "noopt" in DEB_BUILD_OPTIONS instead of "debug".  
+    (Closes: #203914)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 21 Aug 2003 01:47:58 -0400
+
 e2fsprogs (1.34+1.35-WIP-2003.08.01-1) unstable; urgency=low
 
   * Fix O_DIRECT test to prevent badblocks from screwing up after
