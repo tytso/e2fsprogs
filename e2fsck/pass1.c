@@ -76,9 +76,10 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 
 struct process_block_struct {
 	ext2_ino_t	ino;
-	int		is_dir:1, clear:1, suppress:1,
+	int		is_dir:1, is_reg:1, clear:1, suppress:1,
 				fragmented:1, compressed:1;
 	blk_t		num_blocks;
+	blk_t		max_blocks;
 	e2_blkcnt_t	last_block;
 	int		num_illegal_blocks;
 	blk_t		previous_block;
@@ -410,7 +411,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			pb.num_blocks = pb.last_block = 0;
 			pb.num_illegal_blocks = 0;
 			pb.suppress = 0; pb.clear = 0; pb.is_dir = 0;
-			pb.fragmented = 0;
+			pb.is_reg = 0; pb.fragmented = 0;
 			pb.inode = &inode;
 			pb.pctx = &pctx;
 			pb.ctx = ctx;
@@ -1150,6 +1151,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.compressed = 0;
 	pb.previous_block = 0;
 	pb.is_dir = LINUX_S_ISDIR(inode->i_mode);
+	pb.is_reg = LINUX_S_ISREG(inode->i_mode);
+	pb.max_blocks = 1 << (31 - fs->super->s_log_block_size);
 	pb.inode = inode;
 	pb.pctx = pctx;
 	pb.ctx = ctx;
@@ -1174,6 +1177,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		return;
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
+	end_problem_latch(ctx, PR_LATCH_TOOBIG);
 	if (pctx->errcode)
 		fix_problem(ctx, PR_1_BLOCK_ITERATE, pctx);
 
@@ -1221,25 +1225,21 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	}
 	if (pb.is_dir) {
 		int nblock = inode->i_size >> EXT2_BLOCK_SIZE_BITS(fs->super);
-		/* We don't let a directory become larger than 2GB */
-		if (nblock > (pb.last_block + 1) ||
-		    (inode->i_size & ((fs->blocksize-1) | 0x80000000UL)) != 0)
+		if (nblock > (pb.last_block + 1))
 			bad_size = 1;
 		else if (nblock < (pb.last_block + 1)) {
 			if (((pb.last_block + 1) - nblock) >
 			    fs->super->s_prealloc_dir_blocks)
 				bad_size = 2;
 		}
-	} else if (!LINUX_S_ISREG(inode->i_mode)) {
-		if (inode->i_size_high)
-			bad_size = 5;
 	} else {
+		if (!LINUX_S_ISREG(inode->i_mode) && inode->i_size_high)
+			bad_size = 5;
 		size = inode->i_size | ((__u64) inode->i_size_high << 32);
 		if ((size < pb.last_block * fs->blocksize))
 			bad_size = 3;
 		else if (size > ext2_max_sizes[fs->super->s_log_block_size])
 			bad_size = 4;
-		/* FIXME: need to ensure pb.num_blocks < 2^32 */
 	}
 	if (bad_size) {
 		pctx->num = (pb.last_block+1) * fs->blocksize;
@@ -1400,6 +1400,13 @@ static int process_block(ext2_filsys fs,
 	}
 	p->previous_block = blk;
 	
+	if (p->is_dir && blockcnt > 2*1024*1024/fs->blocksize)
+		problem = PR_1_TOOBIG_DIR;
+	if (p->is_reg && p->num_blocks+1 >= p->max_blocks)
+		problem = PR_1_TOOBIG_REG;
+	if (!p->is_dir && !p->is_reg && blockcnt > 0)
+		problem = PR_1_TOOBIG_SYMLINK;
+	    
 	if (blk < fs->super->s_first_data_block ||
 	    blk >= fs->super->s_blocks_count)
 		problem = PR_1_ILLEGAL_BLOCK_NUM;

@@ -1,3 +1,15 @@
+2002-05-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (process_block): If an inode has too many blocks or
+		is too big, then offer to truncate the inode.
+		(check_blocks): Don't bother checking the size to see if
+		it's too big, since that's just a symptom, not the disease
+		(which we're now appropriately checking in process_block).
+
+	* problem.c, problem.h: Add new problem codes PR_1_INODE_TOOBIG,
+		PR_1_TOOBIG_DIR, PR_1_TOOBIG_REG, PR_1_TOOBIG_SYMLINK, and
+		add the latch code PR_LATCH_TOOBIG.
+
 2002-05-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.h, pass1.c (e2fsck_pass1_check_symlink), pass2.c

@@ -1,5 +1,13 @@
 2002-05-21  Theodore Ts'o  <tytso@mit.edu>
 
+	* f_badsymlinks: Check for symlink too big error message.
+
+	* f_lotsbad: Check for directory too big error message.
+
+	* f_big_sparse: New test case which e2fsck's response to a large,
+		sparse file, and tests the code which adds the LARGE_FILE
+		feature to a filesystem.
+
 	* f_badsymlinks, f_filetype: Revert expected text since we're no
 		longer checking for EXT2_INDEX_FL along with the other
 		immutable flags.

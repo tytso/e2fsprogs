@@ -36,6 +36,7 @@ struct problem_context {
 #define PR_LATCH_RELOC	0x0050  /* Latch for superblock relocate hint */
 #define PR_LATCH_DBLOCK	0x0060	/* Latch for pass 1b dup block headers */
 #define PR_LATCH_LOW_DTIME 0x0070 /* Latch for pass1 orphaned list refugees */
+#define PR_LATCH_TOOBIG	0x0080	/* Latch for file to big errors */
 
 #define PR_LATCH(x)	((((x) & PR_LATCH_MASK) >> 4) - 1)
 
@@ -371,6 +372,18 @@ struct problem_context {
 
 /* Bad extended attribute value */
 #define PR_1_EA_BAD_VALUE		0x010042
+
+/* Inode too big (latch question) */
+#define PR_1_INODE_TOOBIG		0x010043
+
+/* Directory too big */
+#define PR_1_TOOBIG_DIR			0x010044
+
+/* Regular file too big */
+#define PR_1_TOOBIG_REG			0x010045
+
+/* Symlink too big */
+#define PR_1_TOOBIG_SYMLINK		0x010046
 
 /*
  * Pass 1b errors

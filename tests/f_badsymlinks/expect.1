@@ -12,6 +12,11 @@ Inode 19, i_blocks is 2, should be 0.  Fix? yes
 Special (device/socket/fifo/symlink) file (inode 20) has immutable
 or append-only flag set.  Clear? yes
 
+Inode 21 is too big.  Truncate? yes
+
+Block #1 (22) causes symlink to be too big.  CLEARED.
+Inode 21, i_blocks is 4, should be 2.  Fix? yes
+
 Pass 2: Checking directory structure
 Symlink /empty_link (inode #17) is invalid.
 Clear? yes

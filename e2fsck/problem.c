@@ -89,6 +89,7 @@ static const char *preen_msg[] = {
 	N_("FILE DELETED"),	/* 15 */
 	N_("SUPPRESSED"),	/* 16 */
 	N_("UNLINKED"),		/* 17 */
+	"",			/* 18 */
 };
 
 static const struct e2fsck_problem problem_table[] = {
@@ -644,6 +645,25 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_1_EA_BAD_VALUE,
 	  N_("@a @b %b is corrupt (invalid value).  "),
 	  PROMPT_CLEAR, 0},
+
+	/* Inode too big (latch question) */
+	{ PR_1_INODE_TOOBIG,
+	  N_("@i %i is too big.  "), PROMPT_TRUNCATE, 0 },
+
+	/* Directory too big */
+	{ PR_1_TOOBIG_DIR, 
+	  N_("@b #%B (%b) causes @d to be too big.  "),
+	  PROMPT_CLEAR, PR_LATCH_TOOBIG },
+
+	/* Regular file too big */
+	{ PR_1_TOOBIG_REG,
+	  N_("@b #%B (%b) causes file to be too big.  "),
+	  PROMPT_CLEAR, PR_LATCH_TOOBIG },
+
+	/* Symlink too big */
+	{ PR_1_TOOBIG_SYMLINK,
+	  N_("@b #%B (%b) causes symlink to be too big.  "),
+	  PROMPT_CLEAR, PR_LATCH_TOOBIG },
 
 	/* Pass 1b errors */
 
@@ -1255,6 +1275,7 @@ static struct latch_descr pr_latch_info[] = {
 	{ PR_LATCH_RELOC, PR_0_RELOCATE_HINT, 0 },
 	{ PR_LATCH_DBLOCK, PR_1B_DUP_BLOCK_HEADER, PR_1B_DUP_BLOCK_END },
 	{ PR_LATCH_LOW_DTIME, PR_1_ORPHAN_LIST_REFUGEES, 0 },
+	{ PR_LATCH_TOOBIG, PR_1_INODE_TOOBIG, 0 },
 	{ -1, 0, 0 },
 };
 
