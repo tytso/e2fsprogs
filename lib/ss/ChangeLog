@@ -1,5 +1,8 @@
 1999-11-19    <tytso@valinux.com>
 
+	* execute_cmd.c (ss_execute_line): Fix memory leak; we weren't
+		freeing the argv array.
+
 	* Makefile.in (distclean): Remove TAGS and Makefile.in.old from
 		the source directory.
 
