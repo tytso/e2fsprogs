@@ -1,3 +1,7 @@
+2005-01-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* tune2fs.8.in: Clarified man page about the -c option.
+
 2005-01-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid.c (main): Make blkid -t display all devices that match the
