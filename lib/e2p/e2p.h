@@ -37,3 +37,7 @@ int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array);
 
 int e2p_is_null_uuid(void *uu);
 void e2p_uuid_to_str(void *uu, char *out);
+const char *e2p_uuid2str(void *uu);
+
+const char *e2p_hash2string(int num);
+int e2p_string2hash(char *string);

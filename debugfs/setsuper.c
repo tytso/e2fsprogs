@@ -30,6 +30,8 @@ struct super_set_info {
 static errcode_t parse_uint(struct super_set_info *info, char *arg);
 static errcode_t parse_int(struct super_set_info *info, char *arg);
 static errcode_t parse_string(struct super_set_info *info, char *arg);
+static errcode_t parse_uuid(struct super_set_info *info, char *arg);
+static errcode_t parse_hashalg(struct super_set_info *info, char *arg);
 
 static struct super_set_info super_fields[] = {
 	{ "inodes_count", &set_sb.s_inodes_count, 4, parse_uint },
@@ -63,7 +65,7 @@ static struct super_set_info super_fields[] = {
 	{ "feature_compat", &set_sb.s_feature_compat, 4, parse_uint },
 	{ "feature_incompat", &set_sb.s_feature_incompat, 4, parse_uint },
 	{ "feature_ro_compat", &set_sb.s_feature_ro_compat, 4, parse_uint }, 
-	/* __u8	s_uuid[16]; */
+	{ "uuid", &set_sb.s_uuid, 16, parse_uuid },
 	{ "volume_name",  &set_sb.s_volume_name, 16, parse_string },
 	{ "last_mounted",  &set_sb.s_last_mounted, 64, parse_string },
 	{ "lastcheck",  &set_sb.s_lastcheck, 4, parse_uint },
@@ -73,11 +75,12 @@ static struct super_set_info super_fields[] = {
 	{ "prealloc_dir_blocks", &set_sb.s_prealloc_dir_blocks, 1,
 		  parse_uint },
 	/* s_padding1 */
-	/* s_journal_uuid */
+	{ "journal_uuid", &set_sb.s_journal_uuid, 16, parse_uuid },
 	{ "journal_inum", &set_sb.s_journal_inum, 4, parse_uint },
 	{ "journal_dev", &set_sb.s_journal_dev, 4, parse_uint },
 	{ "last_orphan", &set_sb.s_last_orphan, 4, parse_uint },
-	
+	{ "hash_seed", &set_sb.s_hash_seed, 16, parse_uuid },
+	{ "def_hash_version", &set_sb.s_def_hash_version, 1, parse_hashalg },
 	{ 0, 0, 0, 0 }
 };
 
@@ -169,6 +172,39 @@ static errcode_t parse_string(struct super_set_info *info, char *arg)
 	return 0;
 }
 
+static errcode_t parse_uuid(struct super_set_info *info, char *arg)
+{
+	char *	p = (char *) info->ptr;
+	
+	if ((strcasecmp(arg, "null") == 0) ||
+	    (strcasecmp(arg, "clear") == 0)) {
+		uuid_clear(p);
+	} else if (strcasecmp(arg, "time") == 0) {
+		uuid_generate_time(p);
+	} else if (strcasecmp(arg, "random") == 0) {
+		uuid_generate(p);
+	} else if (uuid_parse(arg, p)) {
+		fprintf(stderr, "Invalid UUID format: %s\n", arg);
+		return EINVAL;
+	}
+	return 0;
+}
+
+static errcode_t parse_hashalg(struct super_set_info *info, char *arg)
+{
+	int	hashv;
+	unsigned char	*p = (unsigned char *) info->ptr;
+
+	hashv = e2p_string2hash(arg);
+	if (hashv < 0) {
+		fprintf(stderr, "Invalid hash algorithm: %s\n", arg);
+		return EINVAL;
+	}
+	*p = hashv;
+	return 0;
+}
+
+
 static void print_possible_fields(void)
 {
 	struct super_set_info *ss;
@@ -183,6 +219,10 @@ static void print_possible_fields(void)
 			type = "integer";
 		else if (ss->func == parse_uint)
 			type = "unsigned integer";
+		else if (ss->func == parse_uuid)
+			type = "UUID";
+		else if (ss->func == parse_hashalg)
+			type = "hash algorithm";
 		printf("\t%-20s\t%s\n", ss->name, type);
 	}
 }

@@ -66,3 +66,14 @@ void e2p_uuid_to_str(void *uu, char *out)
 		uuid.node[0], uuid.node[1], uuid.node[2],
 		uuid.node[3], uuid.node[4], uuid.node[5]);
 }
+
+const char *e2p_uuid2str(void *uu)
+{
+	static char buf[80];
+
+	if (e2p_is_null_uuid(uu))
+		return "<none>";
+	e2p_uuid_to_str(uu, buf);
+	return buf;
+}
+

@@ -145,11 +145,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	} else
 		strcpy(buf, "<not available>");
 	fprintf(f, "Last mounted on:          %s\n", buf);
-	if (!e2p_is_null_uuid(sb->s_uuid)) {
-		e2p_uuid_to_str(sb->s_uuid, buf);
-	} else
-		strcpy(buf, "<none>");
-	fprintf(f, "Filesystem UUID:          %s\n", buf);
+	fprintf(f, "Filesystem UUID:          %s\n", e2p_uuid2str(sb->s_uuid));
 	fprintf(f, "Filesystem magic number:  0x%04X\n", sb->s_magic);
 	fprintf(f, "Filesystem revision #:    %d", sb->s_rev_level);
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV) {
@@ -212,14 +208,17 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "Inode size:		  %d\n", sb->s_inode_size);
 	}
 	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
-		if (e2p_is_null_uuid(sb->s_journal_uuid)) {
-			strcpy(buf, "<none>");
-		} else
-			e2p_uuid_to_str(sb->s_journal_uuid, buf);
-		fprintf(f, "Journal UUID:             %s\n", buf);
+		fprintf(f, "Journal UUID:             %s\n",
+			e2p_uuid2str(sb->s_journal_uuid));
 		fprintf(f, "Journal inode:            %u\n", sb->s_journal_inum);
 		fprintf(f, "Journal device:	          0x%04x\n", sb->s_journal_dev);
 		fprintf(f, "First orphan inode:       %u\n", sb->s_last_orphan);
+	}
+	if (sb->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) {
+		fprintf(f, "Default directory hash:   %s\n",
+			e2p_hash2string(sb->s_def_hash_version));
+		fprintf(f, "Directory Hash Seed:      %s\n",
+			e2p_uuid2str(sb->s_hash_seed));
 	}
 }
 

@@ -1,3 +1,15 @@
+2002-08-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* ls.c (list_super2): Print the default hash version and the hash
+		seed for the directory indexing.  Use the new e2p_uuid2str
+		function to factor out common code.
+		
+	* uuid.c (e2p_uuid2str), e2p.h: New utility function which factors
+		out some common code.
+
+	* hashstr.c (e2p_hash2string, e2p_string2hash): New functions
+		which convert the hash algorithm name to and from a string.
+	
 2002-08-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* fsetflags.c (fsetflags), fgetflags.c (fgetflags.c), setflags.c
