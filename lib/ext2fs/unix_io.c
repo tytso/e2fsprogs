@@ -30,6 +30,7 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#include <sys/resource.h>
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -293,6 +294,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	struct unix_private_data *data = NULL;
 	errcode_t	retval;
 	int		open_flags;
+	struct stat	st;
 
 	if (name == 0)
 		return EXT2_ET_BAD_DEVICE_NAME;
@@ -334,6 +336,24 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	if (data->dev < 0) {
 		retval = errno;
 		goto cleanup;
+	}
+	/*
+	 * Work around a bug in 2.4.10+ kernels where writes to block
+	 * devices are wrongly getting hit by the filesize limit.
+	 */
+	if ((flags & IO_FLAG_RW) && 
+	    (fstat(data->dev, &st) == 0) &&
+	    (S_ISBLK(st.st_mode))) {
+		struct rlimit	rlim;
+		
+		rlim.rlim_cur = RLIM_INFINITY;
+		rlim.rlim_max = RLIM_INFINITY;
+		setrlimit(RLIMIT_FSIZE, &rlim);
+		getrlimit(RLIMIT_FSIZE, &rlim);
+		if (rlim.rlim_cur != rlim.rlim_max) {
+			rlim.rlim_cur = rlim.rlim_max;
+			setrlimit(RLIMIT_FSIZE, &rlim);
+		}
 	}
 	*channel = io;
 	return 0;
