@@ -1,3 +1,12 @@
+e2fsprogs (1.33-3) unstable; urgency=low
+
+  * Add full Heimdall/Kerberos4-kth compatibility to com_err routines.
+  * Declare comerr-dev as replacing << e2fslibs-dev 1.33-2, to avoid
+    errors when upgrading to the new versions of comerr-dev and
+    e2fslibs-dev
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue,  6 May 2003 00:29:47 -0400
+
 e2fsprogs (1.33-2) unstable; urgency=low
 
   * Fix up NLS support

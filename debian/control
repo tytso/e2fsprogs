@@ -27,6 +27,7 @@ Priority: extra
 Depends: ${libcdev:Depends}, libcomerr2
 Suggests: doc-base
 Conflicts: e2fsprogs (<< 1.10-6)
+Replaces: e2fslibs-dev (<< 1.33-2)
 Architecture: any
 Description: The Common Error Description library - headers and static libraries
  libcomerr is an attempt to present a common error-handling mechanism to

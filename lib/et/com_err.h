@@ -8,7 +8,7 @@
  * with this package.
  */
 
-#ifndef __COM_ERR_H
+#if !defined(__COM_ERR_H) && !defined(__COM_ERR_H__)
 
 #include <stdarg.h>
 
@@ -32,7 +32,7 @@ extern void (*set_com_err_hook (void (*) (const char *, long,
 	(const char *, long, const char *, va_list);
 extern void (*reset_com_err_hook (void)) (const char *, long, 
 					  const char *, va_list);
-extern int init_error_table(const char * const *msgs, int base, int count);
+extern int init_error_table(const char * const *msgs, long base, int count);
 
 extern errcode_t add_error_table(const struct error_table * et);
 extern errcode_t remove_error_table(const struct error_table * et);
@@ -47,4 +47,5 @@ extern void initialize_error_table_r(struct et_list **list,
 extern void free_error_table(struct et_list *et);
 
 #define __COM_ERR_H
-#endif /* ! defined(__COM_ERR_H) */
+#define __COM_ERR_H__
+#endif /* !defined(__COM_ERR_H) && !defined(__COM_ERR_H__)*/

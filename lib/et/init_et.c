@@ -31,7 +31,7 @@ struct foobar {
 
 extern struct et_list * _et_list;
 
-int init_error_table(const char * const *msgs, int base, int count)
+int init_error_table(const char * const *msgs, long base, int count)
 {
     struct foobar * new_et;
 
