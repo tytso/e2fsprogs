@@ -925,6 +925,14 @@ static int check_all(NOARGS)
 			fs->flags |= FLAG_DONE;
 		}
 	}
+	/*
+	 * This is for the bone-headed user who enters the root
+	 * filesystem twice.  Skip root will skep all root entries.
+	 */
+	if (skip_root)
+		for (fs = filesys_info; fs; fs = fs->next)
+			if (!strcmp(fs->mountpt, "/"))
+				fs->flags |= FLAG_DONE;
 
 	while (not_done_yet) {
 		not_done_yet = 0;

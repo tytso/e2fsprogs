@@ -1,3 +1,11 @@
+2002-09-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.c: If the bone-headed user enters the filename twice, the
+		-R option which skips the root filesystem will skip all of
+		them.  (Addresses Debian bug #159423).  Note!  This is not
+		a precedent for dealing intelligently with any other kind
+		of doubled entry in /etc/fstab!
+
 2002-09-22  root  <tytso@mit.edu>
 
 	* mke2fs.c (main): Enable directory indexing by default.
