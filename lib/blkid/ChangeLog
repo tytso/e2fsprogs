@@ -1,3 +1,9 @@
+2004-04-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c (blkid_verify_devname): If the time is earlier than the
+		last modified time of the device, then force a reverify;
+		it means the system time may not be trustworthy.
+
 2004-04-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* cache.c (blkid_get_cache): If the BLKID_FILE environment

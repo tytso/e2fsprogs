@@ -417,16 +417,19 @@ blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev)
 	unsigned char *bufs[BLKID_BLK_OFFS + 1], *buf;
 	const char *type;
 	struct stat st;
-	time_t diff;
+	time_t diff, now;
 	int fd, idx;
 
 	if (!dev)
 		return NULL;
 
-	diff = time(0) - dev->bid_time;
+	now = time(0);
+	diff = now - dev->bid_time;
 
-	if (diff < BLKID_PROBE_MIN || (dev->bid_flags & BLKID_BID_FL_VERIFIED &&
-				       diff < BLKID_PROBE_INTERVAL))
+	if ((now < dev->bid_time) ||
+	    (diff < BLKID_PROBE_MIN) || 
+	    (dev->bid_flags & BLKID_BID_FL_VERIFIED &&
+	     diff < BLKID_PROBE_INTERVAL))
 		return dev;
 
 	DBG(DEBUG_PROBE,
