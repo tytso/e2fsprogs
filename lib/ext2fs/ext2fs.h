@@ -543,6 +543,8 @@ extern int ext2fs_badblocks_list_iterate(ext2_badblocks_iterate iter,
 extern void ext2fs_badblocks_list_iterate_end(ext2_badblocks_iterate iter);
 extern errcode_t ext2fs_badblocks_copy(ext2_badblocks_list src,
 				       ext2_badblocks_list *dest);
+extern int ext2fs_badblocks_equal(ext2_badblocks_list bb1,
+				  ext2_badblocks_list bb2);
 
 /* bb_compat */
 extern errcode_t badblocks_list_create(badblocks_list *ret, int size);
@@ -804,6 +806,13 @@ extern errcode_t ext2fs_read_bb_inode(ext2_filsys fs,
 				      ext2_badblocks_list *bb_list);
 
 /* read_bb_file.c */
+extern errcode_t ext2fs_read_bb_FILE2(ext2_filsys fs, FILE *f, 
+				      ext2_badblocks_list *bb_list,
+				      void *private,
+				      void (*invalid)(ext2_filsys fs,
+						      blk_t blk,
+						      char *badstr,
+						      void *private));
 extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f, 
 				     ext2_badblocks_list *bb_list,
 				     void (*invalid)(ext2_filsys fs,

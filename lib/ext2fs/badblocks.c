@@ -226,3 +226,16 @@ void ext2fs_badblocks_list_iterate_end(ext2_badblocks_iterate iter)
 	iter->bb = 0;
 	ext2fs_free_mem((void **) &iter);
 }
+
+int ext2fs_badblocks_equal(ext2_badblocks_list bb1, ext2_badblocks_list bb2)
+{
+	EXT2_CHECK_MAGIC(bb1, EXT2_ET_MAGIC_BADBLOCKS_LIST);
+	EXT2_CHECK_MAGIC(bb2, EXT2_ET_MAGIC_BADBLOCKS_LIST);
+
+	if (bb1->num != bb2->num)
+		return 0;
+
+	if (memcmp(bb1->list, bb2->list, bb1->num * sizeof(blk_t)) != 0)
+		return 0;
+	return 1;
+}

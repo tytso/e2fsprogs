@@ -52,7 +52,8 @@ OBJS= ext2_err.o \
 	unix_io.o \
 	unlink.o \
 	valid_blk.o \
-	version.o
+	version.o \
+	write_bb_file.o 
 
 SRCS= ext2_err.c \
 	$(srcdir)/alloc.c \
@@ -99,7 +100,8 @@ SRCS= ext2_err.c \
 	$(srcdir)/unix_io.c \
 	$(srcdir)/unlink.c \
 	$(srcdir)/valid_blk.c \
-	$(srcdir)/version.c
+	$(srcdir)/version.c \
+	$(srcdir)/write_bb_file.c
 
 HFILES= bitops.h ext2fs.h ext2_io.h
 
@@ -121,7 +123,7 @@ ELF_SO_VERSION = 2
 ELF_IMAGE = libext2fs
 ELF_MYDIR = ext2fs
 ELF_INSTALL_DIR = $(root_libdir)
-ELF_OTHER_LIBS = -lc -L../.. -lcom_err
+ELF_OTHER_LIBS = -L../.. -lcom_err
 
 BSDLIB_VERSION = 2.1
 BSDLIB_IMAGE = libext2fs
@@ -154,8 +156,10 @@ ext2_err.et: $(DEP_SUBSTITUTE) $(srcdir)/ext2_err.et.in
 ext2_err.c ext2_err.h: ext2_err.et
 	$(COMPILE_ET) ext2_err.et
 
-tst_badblocks: tst_badblocks.o badblocks.o freefs.o
-	$(CC) -o tst_badblocks tst_badblocks.o badblocks.o freefs.o $(LIBCOM_ERR)
+tst_badblocks: tst_badblocks.o freefs.o \
+		read_bb_file.o write_bb_file.o badblocks.o 
+	$(CC) -o tst_badblocks tst_badblocks.o freefs.o \
+		read_bb_file.o write_bb_file.o badblocks.o $(LIBCOM_ERR)
 
 tst_iscan: tst_iscan.o inode.o $(STATIC_LIBEXT2FS)
 	$(CC) -o tst_iscan tst_iscan.o inode.o $(STATIC_LIBEXT2FS) \
