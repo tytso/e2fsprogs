@@ -1,6 +1,12 @@
 #ifndef _EXT2_TYPES_H
 #define _EXT2_TYPES_H
 
+/* 
+ * If linux/types.h is already been included, assume it has defined
+ * everything we need.  (cross fingers)
+ */
+#ifndef _LINUX_TYPES_H
+
 typedef unsigned char __u8;
 typedef signed char __s8;
 
@@ -41,5 +47,7 @@ typedef	unsigned short	__u32;
 #else
  ?== error: undefined 32 bit type
 #endif
+
+#endif /* LINUX_TYPES_H */
 
 #endif /* EXT2_TYPES_H */

@@ -1,5 +1,8 @@
 2001-06-13  Theodore Tso  <tytso@valinux.com>
 
+	* ext2_types.h.in: If linux/types.h has been defined, then don't
+		try to redefine the typedefs.
+
 	* Makefile.in (HFILES): Add ext2_types.h to the list of files
 		which should be installed.
 

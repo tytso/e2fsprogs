@@ -41,7 +41,7 @@ clean-doc:
 distclean-doc:
 	cd doc && $(MAKE) distclean
 
-install: all-libs-recursive install-progs-recursive \
+install: $(SUBS) all-libs-recursive install-progs-recursive \
 	install-shlibs-libs-recursive install-doc-libs
 #	export MANPATH=$(DESTDIR)$(mandir); $(srcdir)/install-utils/compile_manpages
 

@@ -1,5 +1,9 @@
 2001-06-13  Theodore Tso  <tytso@valinux.com>
 
+	* Makefile.in: Make the install target depend on $(SUBS) to
+		accomodate the fools who want to compile and install
+		e2fsprogs as root using just one command.
+
 	* Makefile.in: Don't recurse into debugfs and resize subdirectory
 		if --disable-debugfs or --disable-resizer is given as a
 		configuration option.
