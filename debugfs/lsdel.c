@@ -82,6 +82,7 @@ void do_lsdel(int argc, char **argv)
  	long			secs = 0;
  	char			*tmp;
 	time_t			now = time(0);
+	FILE			*out;
 	
 	if (common_args_process(argc, argv, 1, 2, "ls_deleted_inodes",
 				"[secs]", 0))
@@ -179,18 +180,21 @@ void do_lsdel(int argc, char **argv)
 		}
 	}
 
-	printf(" Inode  Owner  Mode    Size    Blocks    Time deleted\n");
+	out = open_pager();
+	
+	fprintf(out, " Inode  Owner  Mode    Size    Blocks   Time deleted\n");
 	
 	qsort(delarray, num_delarray, sizeof(struct deleted_info),
 	      deleted_info_compare);
 	
 	for (i = 0; i < num_delarray; i++) {
-		printf("%6u %6d %6o %6llu %4d/%4d %s", delarray[i].ino,
+		fprintf(out, "%6u %6d %6o %6llu %4d/%4d %s", delarray[i].ino,
 		       delarray[i].uid, delarray[i].mode, delarray[i].size,
 		       delarray[i].free_blocks, delarray[i].num_blocks, 
 		       time_to_string(delarray[i].dtime));
 	}
-	printf("%d deleted inodes found.\n", num_delarray);
+	fprintf(out, "%d deleted inodes found.\n", num_delarray);
+	close_pager(out);
 	
 error_out:
 	free(block_buf);

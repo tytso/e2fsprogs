@@ -1,3 +1,14 @@
+2002-03-05  Theodore Tso  <tytso@mit.edu>
+
+	* lsdel.c (do_lsdel): lsdel uses the pager to print out the list
+		of potentially deleted inode.  Thanks to Jaroslav Drzik
+		<jdrzik@host.sk> for suggesting this enhancement.
+
+	* debugfs.c (do_modify_inode): Fix bug which caused modify_inode
+		to core dump if a fliesystem isn't open.  Thanks to 
+		Jaroslav Drzik <jdrzik@host.sk> for finding and reporting
+		the bug and his proposed fix.
+
 2002-02-26  Theodore Tso  <tytso@mit.edu>
 
 	* ls.c (list_dir_proc): When listing the directory entry in long 

@@ -686,13 +686,15 @@ void do_modify_inode(int argc, char *argv[])
 	int 		i;
 	unsigned char	*frag, *fsize;
 	char		buf[80];
-	int 		os = current_fs->super->s_creator_os;
+	int 		os;
 	const char	*hex_format = "0x%x";
 	const char	*octal_format = "0%o";
 	const char	*decimal_format = "%d";
 	
 	if (common_inode_args_process(argc, argv, &inode_num, CHECK_FS_RW))
 		return;
+
+	os = current_fs->super->s_creator_os;
 
 	if (debugfs_read_inode(inode_num, &inode, argv[1]))
 		return;
