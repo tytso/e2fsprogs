@@ -1,3 +1,10 @@
+2002-05-22  Andreas Dilger <adilger@clusterfs.com>
+
+	* ext2_fs.h: Remove macros accessing u.ext2_sb field and use
+		the EXT2_SB() macro instead.  Remove kernel function
+		prototypes also.  This matches the 2.5 kernel, and
+		is also cleaner for other reasons.  Whitespace cleanup.
+
 2002-05-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2_ext_attr.h: Update to V2 version of the Bestbits format.
