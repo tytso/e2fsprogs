@@ -351,6 +351,24 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 	return 0;
 }
 
+#define V1_SB_SIZE	0x0024
+static void clear_v2_journal_fields(journal_t *journal)
+{
+	e2fsck_t ctx = journal->j_dev;
+	struct buffer_head *jbh = journal->j_sb_buffer;
+	struct problem_context pctx;
+
+	clear_problem_context(&pctx);
+
+	if (!fix_problem(ctx, PR_0_CLEAR_V2_JOURNAL, &pctx))
+		return;
+
+	memset(((char *) journal->j_superblock) + V1_SB_SIZE, 0,
+	       ctx->fs->blocksize-V1_SB_SIZE);
+	mark_buffer_dirty(journal->j_sb_buffer, 1);
+}
+
+
 static errcode_t e2fsck_journal_load(journal_t *journal)
 {
 	e2fsck_t ctx = journal->j_dev;
@@ -375,10 +393,18 @@ static errcode_t e2fsck_journal_load(journal_t *journal)
 	switch (ntohl(jsb->s_header.h_blocktype)) {
 	case JFS_SUPERBLOCK_V1:
 		journal->j_format_version = 1;
+		if (jsb->s_feature_compat ||
+		    jsb->s_feature_incompat ||
+		    jsb->s_feature_ro_compat ||
+		    jsb->s_nr_users)
+			clear_v2_journal_fields(journal);
 		break;
 		
 	case JFS_SUPERBLOCK_V2:
 		journal->j_format_version = 2;
+		if (jsb->s_nr_users &&
+		    (ctx->fs->io == ctx->journal_io))
+			clear_v2_journal_fields(journal);
 		if (ntohl(jsb->s_nr_users) > 1) {
 			fix_problem(ctx, PR_0_JOURNAL_UNSUPP_MULTIFS, &pctx);
 			return EXT2_ET_JOURNAL_UNSUPP_VERSION;

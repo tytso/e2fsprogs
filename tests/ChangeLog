@@ -1,3 +1,8 @@
+2001-10-07  Theodore Tso  <tytso@valinux.com>
+
+	* f_bad_local_jnl: New test which tests for a V2 journal with bad
+		fields caused by a botched V1->V2 upgrade.
+
 2001-09-20  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.25

@@ -1,3 +1,13 @@
+2001-10-07  Theodore Tso  <tytso@valinux.com>
+
+	* journal.c (clear_v2_journal_fields, e2fsck_journal_load): If the
+		V2 fields are set on a V1 journal superblock, or an
+		internal V2 journal has s_nr_users is non-zero, clear the
+		entire journal superblock beyond the V1 superblock.  This
+		fixes botched V1->V2 updates.
+
+	* problem.c, problem.h (PR_0_CLEAR_V2_JOURNAL): Add new problem code.
+
 2001-09-20  Theodore Tso  <tytso@valinux.com>
 
 	* e2fsck.h, journal.c (e2fsck_move_ext3_journal): Add new function

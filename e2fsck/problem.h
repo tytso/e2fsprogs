@@ -161,6 +161,9 @@ struct problem_context {
 /* Error moving journal */
 #define	PR_0_ERR_MOVE_JOURNAL			0x000029
 
+/* Clearing V2 journal superblock */
+#define PR_0_CLEAR_V2_JOURNAL			0x00002A
+
 /*
  * Pass 1 errors
  */

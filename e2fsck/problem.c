@@ -287,6 +287,12 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("Error moving @j: %m\n\n"),
 	  PROMPT_NONE, 0 },
 
+	/* Clearing V2 journal superblock */
+	{ PR_0_CLEAR_V2_JOURNAL,
+	  N_("Found invalid V2 @j @S fields (from V1 journal).\n"
+	     "Clearing fields beyond the V1 @j @S...\n\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */
