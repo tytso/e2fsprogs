@@ -20,82 +20,6 @@
 
 #include "e2p.h"
 
-/*
- * The ext2fs library private definition of the ext2 superblock, so we
- * don't have to depend on the kernel's definition of the superblock,
- * which might not have the latest features.
- */
-struct ext2fs_sb {
-	__u32	s_inodes_count;		/* Inodes count */
-	__u32	s_blocks_count;		/* Blocks count */
-	__u32	s_r_blocks_count;	/* Reserved blocks count */
-	__u32	s_free_blocks_count;	/* Free blocks count */
-	__u32	s_free_inodes_count;	/* Free inodes count */
-	__u32	s_first_data_block;	/* First Data Block */
-	__u32	s_log_block_size;	/* Block size */
-	__s32	s_log_frag_size;	/* Fragment size */
-	__u32	s_blocks_per_group;	/* # Blocks per group */
-	__u32	s_frags_per_group;	/* # Fragments per group */
-	__u32	s_inodes_per_group;	/* # Inodes per group */
-	__u32	s_mtime;		/* Mount time */
-	__u32	s_wtime;		/* Write time */
-	__u16	s_mnt_count;		/* Mount count */
-	__s16	s_max_mnt_count;	/* Maximal mount count */
-	__u16	s_magic;		/* Magic signature */
-	__u16	s_state;		/* File system state */
-	__u16	s_errors;		/* Behaviour when detecting errors */
-	__u16	s_minor_rev_level; 	/* minor revision level */
-	__u32	s_lastcheck;		/* time of last check */
-	__u32	s_checkinterval;	/* max. time between checks */
-	__u32	s_creator_os;		/* OS */
-	__u32	s_rev_level;		/* Revision level */
-	__u16	s_def_resuid;		/* Default uid for reserved blocks */
-	__u16	s_def_resgid;		/* Default gid for reserved blocks */
-	/*
-	 * These fields are for EXT2_DYNAMIC_REV superblocks only.
-	 *
-	 * Note: the difference between the compatible feature set and
-	 * the incompatible feature set is that if there is a bit set
-	 * in the incompatible feature set that the kernel doesn't
-	 * know about, it should refuse to mount the filesystem.
-	 * 
-	 * e2fsck's requirements are more strict; if it doesn't know
-	 * about a feature in either the compatible or incompatible
-	 * feature set, it must abort and not try to meddle with
-	 * things it doesn't understand...
-	 */
-	__u32	s_first_ino; 		/* First non-reserved inode */
-	__u16   s_inode_size; 		/* size of inode structure */
-	__u16	s_block_group_nr; 	/* block group # of this superblock */
-	__u32	s_feature_compat; 	/* compatible feature set */
-	__u32	s_feature_incompat; 	/* incompatible feature set */
-	__u32	s_feature_ro_compat; 	/* readonly-compatible feature set */
-	__u8	s_uuid[16];		/* 128-bit uuid for volume */
-	char	s_volume_name[16]; 	/* volume name */
-	char	s_last_mounted[64]; 	/* directory where last mounted */
-	__u32	s_algorithm_usage_bitmap; /* For compression */
-	/*
-	 * Performance hints.  Directory preallocation should only
-	 * happen if the EXT2_FEATURE_COMPAT_DIR_PREALLOC flag is on.
-	 */
-	__u8	s_prealloc_blocks;	/* Nr of blocks to try to preallocate*/
-	__u8	s_prealloc_dir_blocks;	/* Nr to preallocate for dirs */
-	__u16	s_padding1;
-	/* 
-	 * Journaling support.
-	 */
-	__u8	s_journal_uuid[16];	/* uuid of journal superblock */
-	__u32	s_journal_inum;		/* inode number of journal file */
-	__u32	s_journal_dev;		/* device number of journal file */
-	__u32	s_last_orphan;		/* start of list of inodes to delete */
-	
-	__u32	s_reserved[197];	/* Padding to the end of the block */
-};
-
-#ifndef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
-#define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
-#endif
-
 static void print_user (unsigned short uid, FILE *f)
 {
 	struct passwd *pw;
@@ -198,18 +122,17 @@ static void print_features(struct ext2_super_block * s, FILE *f)
 #define EXT2_GOOD_OLD_REV 0
 #endif
 
-void list_super2(struct ext2_super_block * s, FILE *f)
+void list_super2(struct ext2_super_block * sb, FILE *f)
 {
 	int inode_blocks_per_group;
-	struct ext2fs_sb *sb = (struct ext2fs_sb *) s;
 	char buf[80];
 	const char *os;
 	time_t	tm;
 
-	inode_blocks_per_group = (((s->s_inodes_per_group *
-				    EXT2_INODE_SIZE(s)) +
-				   EXT2_BLOCK_SIZE(s) - 1) /
-				  EXT2_BLOCK_SIZE(s));
+	inode_blocks_per_group = (((sb->s_inodes_per_group *
+				    EXT2_INODE_SIZE(sb)) +
+				   EXT2_BLOCK_SIZE(sb) - 1) /
+				  EXT2_BLOCK_SIZE(sb));
 	if (sb->s_volume_name[0]) {
 		memset(buf, 0, sizeof(buf));
 		strncpy(buf, sb->s_volume_name, sizeof(sb->s_volume_name));
@@ -227,76 +150,76 @@ void list_super2(struct ext2_super_block * s, FILE *f)
 	} else
 		strcpy(buf, "<none>");
 	fprintf(f, "Filesystem UUID:          %s\n", buf);
-	fprintf(f, "Filesystem magic number:  0x%04X\n", s->s_magic);
-	fprintf(f, "Filesystem revision #:    %d", s->s_rev_level);
-	if (s->s_rev_level == EXT2_GOOD_OLD_REV) {
+	fprintf(f, "Filesystem magic number:  0x%04X\n", sb->s_magic);
+	fprintf(f, "Filesystem revision #:    %d", sb->s_rev_level);
+	if (sb->s_rev_level == EXT2_GOOD_OLD_REV) {
 		fprintf(f, " (original)\n");
 #ifdef EXT2_DYNAMIC_REV
-	} else if (s->s_rev_level == EXT2_DYNAMIC_REV) {
+	} else if (sb->s_rev_level == EXT2_DYNAMIC_REV) {
 		fprintf(f, " (dynamic)\n");
 #endif
 	} else
 		fprintf(f, "\n");
-	print_features(s, f);
+	print_features(sb, f);
 	fprintf(f, "Filesystem state:        ");
-	print_fs_state (f, s->s_state);
+	print_fs_state (f, sb->s_state);
 	fprintf(f, "\n");
 	fprintf(f, "Errors behavior:          ");
-	print_fs_errors(f, s->s_errors);
+	print_fs_errors(f, sb->s_errors);
 	fprintf(f, "\n");
-	switch (s->s_creator_os) {
+	switch (sb->s_creator_os) {
 	    case EXT2_OS_LINUX: os = "Linux"; break;
 	    case EXT2_OS_HURD:  os = "GNU/Hurd"; break;
 	    case EXT2_OS_MASIX: os = "Masix"; break;
 	    default:		os = "unknown"; break;
 	}
 	fprintf(f, "Filesystem OS type:       %s\n", os);
-	fprintf(f, "Inode count:              %u\n", s->s_inodes_count);
-	fprintf(f, "Block count:              %u\n", s->s_blocks_count);
-	fprintf(f, "Reserved block count:     %u\n", s->s_r_blocks_count);
-	fprintf(f, "Free blocks:              %u\n", s->s_free_blocks_count);
-	fprintf(f, "Free inodes:              %u\n", s->s_free_inodes_count);
-	fprintf(f, "First block:              %u\n", s->s_first_data_block);
-	fprintf(f, "Block size:               %u\n", EXT2_BLOCK_SIZE(s));
-	fprintf(f, "Fragment size:            %u\n", EXT2_FRAG_SIZE(s));
-	fprintf(f, "Blocks per group:         %u\n", s->s_blocks_per_group);
-	fprintf(f, "Fragments per group:      %u\n", s->s_frags_per_group);
-	fprintf(f, "Inodes per group:         %u\n", s->s_inodes_per_group);
+	fprintf(f, "Inode count:              %u\n", sb->s_inodes_count);
+	fprintf(f, "Block count:              %u\n", sb->s_blocks_count);
+	fprintf(f, "Reserved block count:     %u\n", sb->s_r_blocks_count);
+	fprintf(f, "Free blocks:              %u\n", sb->s_free_blocks_count);
+	fprintf(f, "Free inodes:              %u\n", sb->s_free_inodes_count);
+	fprintf(f, "First block:              %u\n", sb->s_first_data_block);
+	fprintf(f, "Block size:               %u\n", EXT2_BLOCK_SIZE(sb));
+	fprintf(f, "Fragment size:            %u\n", EXT2_FRAG_SIZE(sb));
+	fprintf(f, "Blocks per group:         %u\n", sb->s_blocks_per_group);
+	fprintf(f, "Fragments per group:      %u\n", sb->s_frags_per_group);
+	fprintf(f, "Inodes per group:         %u\n", sb->s_inodes_per_group);
 	fprintf(f, "Inode blocks per group:   %u\n", inode_blocks_per_group);
-	tm = s->s_mtime;
+	tm = sb->s_mtime;
 	fprintf(f, "Last mount time:          %s", ctime(&tm));
-	tm = s->s_wtime;
+	tm = sb->s_wtime;
 	fprintf(f, "Last write time:          %s", ctime(&tm));
-	fprintf(f, "Mount count:              %u\n", s->s_mnt_count);
-	fprintf(f, "Maximum mount count:      %d\n", s->s_max_mnt_count);
-	tm = s->s_lastcheck;
+	fprintf(f, "Mount count:              %u\n", sb->s_mnt_count);
+	fprintf(f, "Maximum mount count:      %d\n", sb->s_max_mnt_count);
+	tm = sb->s_lastcheck;
 	fprintf(f, "Last checked:             %s", ctime(&tm));
-	fprintf(f, "Check interval:           %u (%s)\n", s->s_checkinterval,
-	       interval_string(s->s_checkinterval));
-	if (s->s_checkinterval)
+	fprintf(f, "Check interval:           %u (%s)\n", sb->s_checkinterval,
+	       interval_string(sb->s_checkinterval));
+	if (sb->s_checkinterval)
 	{
 		time_t next;
 
-		next = s->s_lastcheck + s->s_checkinterval;
+		next = sb->s_lastcheck + sb->s_checkinterval;
 		fprintf(f, "Next check after:         %s", ctime(&next));
 	}
 	fprintf(f, "Reserved blocks uid:      ");
-	print_user(s->s_def_resuid, f);
+	print_user(sb->s_def_resuid, f);
 	fprintf(f, "Reserved blocks gid:      ");
-	print_group(s->s_def_resgid, f);
-	if (s->s_rev_level >= EXT2_DYNAMIC_REV) {
-		fprintf(f, "First inode:              %d\n", s->s_first_ino);
-		fprintf(f, "Inode size:		  %d\n", s->s_inode_size);
+	print_group(sb->s_def_resgid, f);
+	if (sb->s_rev_level >= EXT2_DYNAMIC_REV) {
+		fprintf(f, "First inode:              %d\n", sb->s_first_ino);
+		fprintf(f, "Inode size:		  %d\n", sb->s_inode_size);
 	}
-	if (s->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
+	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
 		if (e2p_is_null_uuid(sb->s_journal_uuid)) {
 			strcpy(buf, "<none>");
 		} else
 			e2p_uuid_to_str(sb->s_uuid, buf);
 		fprintf(f, "Journal UUID:             %s\n", buf);
-		fprintf(f, "Journal inode:            %u\n", s->s_journal_inum);
-		fprintf(f, "Journal device:	          0x%04x\n", s->s_journal_dev);
-		fprintf(f, "First orphan inode:       %u\n", s->s_last_orphan);
+		fprintf(f, "Journal inode:            %u\n", sb->s_journal_inum);
+		fprintf(f, "Journal device:	          0x%04x\n", sb->s_journal_dev);
+		fprintf(f, "First orphan inode:       %u\n", sb->s_last_orphan);
 	}
 }
 

@@ -1,3 +1,8 @@
+2001-01-01    <tytso@snap.thunk.org>
+
+	* ls.c: Remove our own internal definition of struct ext2fs_sb.
+		We can assume that ext2_super_block is always up to date.
+
 2000-12-31    <tytso@snap.thunk.org>
 
 	* pf.c: Add code to print out the journalled data flag.
