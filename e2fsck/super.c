@@ -474,11 +474,27 @@ void check_super_block(e2fsck_t ctx)
 	}
 
 	/*
+	 * If we have any of the compatibility flags set, we need to have a
+	 * revision 1 filesystem.  Most kernels will not check the flags on
+	 * a rev 0 filesystem and we may have corruption issues because of
+	 * the incompatible changes to the filesystem.
+	 */
+	if (!(ctx->options & E2F_OPT_READONLY) &&
+	    fs->super->s_rev_level == EXT2_GOOD_OLD_REV &&
+	    (fs->super->s_feature_compat ||
+	     fs->super->s_feature_ro_compat ||
+	     fs->super->s_feature_incompat) &&
+	    fix_problem(ctx, PR_0_FS_REV_LEVEL, &pctx)) {
+		ext2fs_update_fs_rev(fs);
+		ext2fs_mark_super_dirty(fs);
+	}
+
+	/*
 	 * Clean up any orphan inodes, if present.
 	 */
 	if (!(ctx->options & E2F_OPT_READONLY) && release_orphan_inodes(ctx)) {
 		fs->super->s_state &= ~EXT2_VALID_FS;
-		ext2fs_mark_super_dirty(ctx->fs);
+		ext2fs_mark_super_dirty(fs);
 	}
 
 	return;

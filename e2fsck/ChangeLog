@@ -1,5 +1,12 @@
 2000-12-13  Theodore Ts'o  <tytso@valinux.com>
 
+	* super.c (check_super_block): If we have any of the compatibility
+		 flags set, we need to have a revision 1 filesystem.  Most
+		 kernels will not check the flags on a rev 0 filesystem
+		 and we may have corruption issues because of the
+		 incompatible changes to the filesystem.  Patch from Andreas
+		 Dilger.
+
 	* problem.c, problem.h (PR_0_FS_REV_LEVEL, PR_1_FS_REV_LEVEL): Add
 		new problem codes.
 
