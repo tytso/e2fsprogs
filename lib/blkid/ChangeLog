@@ -1,3 +1,7 @@
+2003-01-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* save.c (blkid_save_cache): Use mkstemp() instead mktemp().
+
 2002-10-04  Jordan Breeding  <jordan.breeding@attbi.com>
 
 	* Forward port to e2fsprogs 1.30

@@ -88,7 +88,7 @@ int blkid_save_cache(blkid_cache *cache, char *filename)
 	char tmp[4096] = { '\0', };
 	char *opened = NULL;
 	FILE *file = NULL;
-	int ret;
+	int fd, ret;
 
 	if (!cache)
 		return -BLKID_ERR_PARAM;
@@ -123,8 +123,9 @@ int blkid_save_cache(blkid_cache *cache, char *filename)
 		 */
 		if (ret == 0 && S_ISREG(st.st_mode)) {
 			snprintf(tmp, sizeof(tmp) - 1, "%s-XXXXXX", filename);
-			if (mktemp(tmp) == tmp && *tmp != '\0') {
-				file = fopen(tmp, "w");
+			fd = mkstemp(tmp);
+			if (fd >= 0) {
+				file = fdopen(fd, "w");
 				opened = tmp;
 			}
 		}
