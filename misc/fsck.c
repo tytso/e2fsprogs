@@ -243,6 +243,8 @@ static void interpret_type(struct fs_info *fs)
 	const char	*type;
 	
 	if (strcmp(fs->type, "auto") == 0) {
+		if (fs && strchr(fs->device, '='))
+			fs->device = interpret_device(fs->device);
 		type = identify_fs(fs->device);
 		if (type) {
 			free(fs->type);
