@@ -41,11 +41,11 @@ option of
 .PP
 .SH AUTHOR
 .B e2label 
-was written by Andries Brouwer (aeb@cwi.nl).
+was written by Theodore Ts'o (tytso@mit.edu).
 .SH AVAILABILITY
 .B e2label
-is part of the e2fsprogs package and is available for anonymous 
-ftp from tsx-11.mit.edu in /pub/linux/packages/ext2fs.
+is part of the e2fsprogs package and is available from anonymous 
+http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR mke2fs (8),
 .BR tune2fs (8)

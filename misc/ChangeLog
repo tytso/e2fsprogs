@@ -1,5 +1,15 @@
 2001-05-03  Theodore Tso  <tytso@valinux.com>
 
+	* e2image.8.in: New manual page
+
+	* badblocks.8.in, e2label.8.in, mke2fs.8.in mklost+found.8.in, 
+		tune2fs.8.in: Update location of e2fsprogs to be
+		http://e2fsprogs.sourceforge.net.
+
+	* dumpe2fs.c (main): Add new flag, -i, which will allow dumpe2fs
+		to dump out the filesystem statistics from an ext2 image
+		file.
+	
 	* e2image.c (main): Fix format of e2image to be easier to be parse
 		by ext2fs_open().
 

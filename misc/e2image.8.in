@@ -1,0 +1,29 @@
+.\" -*- nroff -*-
+.\" Copyright 2001 by Theodore Ts'o.  All Rights Reserved.
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.TH E2IMAGE 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+e2image \- Save critical ext2 filesystem data to a file
+.SH SYNOPSIS
+.B e2image
+.I device
+.I image-file
+.SH DESCRIPTION
+.B e2image
+will save critical filesystem data on the ext2 filesystem located on 
+display or change the filesystem label on the ext2 filesystem located on
+.I device
+to a file.
+.PP
+.SH AUTHOR
+.B e2label 
+was written by Theodore Ts'o (tytso@mit.edu).
+.SH AVAILABILITY
+.B e2image
+is part of the e2fsprogs package and is available from anonymous 
+http://e2fsprogs.sourceforge.net.
+.SH SEE ALSO
+.BR dumpe2fs (8),
+.BR debugfs (8)
+

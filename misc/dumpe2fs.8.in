@@ -8,7 +8,7 @@ dumpe2fs \- dump filesystem information
 .SH SYNOPSIS
 .B dumpe2fs
 [
-.B \-bfhxV
+.B \-bfhixV
 ]
 [
 .B \-ob 
@@ -57,6 +57,13 @@ can cause some of dumpe2fs's display to be suspect).
 only display the superblock information and not any of the block
 group descriptor detail information.
 .TP
+.B \-i
+display the filesystem data from an image file created by 
+.BR e2image ,
+using 
+.I device
+as the pathname to the image file.
+.TP
 .B \-x
 print the detailed group information block numbers in hexadecimal format
 .TP
@@ -72,9 +79,10 @@ output.
 was written by Remy Card <Remy.Card@linux.org>.
 .SH AVAILABILITY
 .B dumpe2fs
-is part of the e2fsprogs package and is available for anonymous 
-ftp from tsx-11.mit.edu in /pub/linux/packages/ext2fs.
+is part of the e2fsprogs package and is available from anonymous 
+http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR e2fsck (8),
 .BR mke2fs (8),
 .BR tune2fs (8)
+

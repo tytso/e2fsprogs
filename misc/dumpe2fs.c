@@ -49,7 +49,7 @@ int opt_hex = 0;
 
 static void usage(void)
 {
-	fprintf (stderr, _("Usage: %s [-bfhxV] [-ob superblock] "
+	fprintf (stderr, _("Usage: %s [-bfhixV] [-ob superblock] "
 		 "[-oB blocksize] device\n"), program_name);
 	exit (1);
 }
@@ -255,6 +255,7 @@ int main (int argc, char ** argv)
 	int		print_badblocks = 0;
 	int		use_superblock = 0;
 	int		use_blocksize = 0;
+	int		image_dump = 0;
 	int		force = 0;
 	int		flags;
 	int		header_only = 0;
@@ -273,7 +274,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	
-	while ((c = getopt (argc, argv, "bfhxVo:")) != EOF) {
+	while ((c = getopt (argc, argv, "bfhixVo:")) != EOF) {
 		switch (c) {
 		case 'b':
 			print_badblocks++;
@@ -283,6 +284,9 @@ int main (int argc, char ** argv)
 			break;
 		case 'h':
 			header_only++;
+			break;
+		case 'i':
+			image_dump++;
 			break;
 		case 'o':
 			if (optarg[0] == 'b')
@@ -312,6 +316,9 @@ int main (int argc, char ** argv)
 	flags = EXT2_FLAG_JOURNAL_DEV_OK;
 	if (force)
 		flags |= EXT2_FLAG_FORCE;
+	if (image_dump)
+		flags |= EXT2_FLAG_IMAGE_FILE;
+	
 	retval = ext2fs_open (device_name, flags, use_superblock,
 			      use_blocksize, unix_io_manager, &fs);
 	if (retval) {
