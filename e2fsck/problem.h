@@ -93,7 +93,40 @@ struct problem_context {
 
 /* The Hurd does not support the filetype feature */
 #define PR_0_HURD_CLEAR_FILETYPE 0x00000E
-	
+
+/* Journal inode is invalid */
+#define PR_0_JOURNAL_BAD_INODE	0x00000F
+
+/* Superblock has a journal device (which we can't handle yet) */
+#define PR_0_JOURNAL_UNSUPP_DEV	0x000010
+
+/* Superblock has a bad journal device */
+#define PR_0_JOURNAL_BAD_DEV	0x000011
+
+/* Superblock has a journal UUID (which we can't handle yet) */
+#define PR_0_JOURNAL_UNSUPP_UUID 0x000012
+
+/* Superblock has a bad journal UUID */
+#define PR_0_JOURNAL_BAD_UUID	0x000013
+
+/* Journal has an unknown superblock type */
+#define PR_0_JOURNAL_UNSUPP_SUPER 0x000014
+
+/* Journal superblock is corrupt */
+#define PR_0_JOURNAL_BAD_SUPER	0x000015
+
+/* Journal superblock is corrupt */
+#define PR_0_JOURNAL_HAS_JOURNAL 0x000016
+
+/* Superblock has recovery flag set but no journal */
+#define PR_0_JOURNAL_RECOVER_SET 0x000017
+
+/* Warning message about leaving data in the journal */
+#define PR_0_JOURNAL_RESET_JOURNAL 0x000018
+
+/* Superblock recovery flag clear - journal needs to be reset */
+#define PR_0_JOURNAL_RESET_PROMPT 0x000019
+
 /*
  * Pass 1 errors
  */

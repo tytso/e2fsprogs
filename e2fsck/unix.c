@@ -778,43 +778,11 @@ restart:
 	}
 #endif
 	s = (struct ext2fs_sb *) fs->super;
+
 	/*
-	 * Check to see if we need to do ext3-style recovery.  If so,
-	 * do it, and then restart the fsck.
+	 * Set the device name, which is used whenever we print error
+	 * or informational messages to the user.
 	 */
-	if (s->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) {
-		printf("%s: reading journal for ext3 filesystem...\n",
-		       ctx->filesystem_name);
-		ext2fs_close(fs);
-		retval = e2fsck_run_ext3_journal(ctx->filesystem_name);
-		if (retval) {
-			com_err(ctx->program_name, retval,
-				": couldn't load ext3 journal for %s",
-				ctx->filesystem_name);
-			exit(FSCK_ERROR);
-		}
-		goto restart;
-	}
-	/*
-	 * Check for compatibility with the feature sets.  We need to
-	 * be more stringent than ext2fs_open().
-	 */
-	if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
-	    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
-		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
-			"(%s)", ctx->filesystem_name);
-		goto get_newer;
-	}
-	if (s->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP) {
-		com_err(ctx->program_name, EXT2_ET_RO_UNSUPP_FEATURE,
-			"(%s)", ctx->filesystem_name);
-		goto get_newer;
-	}
-#ifdef ENABLE_COMPRESSION
-	if (s->s_feature_incompat & EXT2_FEATURE_INCOMPAT_COMPRESSION)
-		com_err(ctx->program_name, 0,
-			_("Warning: compression support is experimental.\n"));
-#endif
 	if (ctx->device_name == 0 &&
 	    (s->s_volume_name[0] != 0)) {
 		char *cp = malloc(sizeof(s->s_volume_name)+1);
@@ -827,6 +795,51 @@ restart:
 	}
 	if (ctx->device_name == 0)
 		ctx->device_name = ctx->filesystem_name;
+
+	/*
+	 * Check to see if we need to do ext3-style recovery.  If so,
+	 * do it, and then restart the fsck.
+	 */
+	retval = e2fsck_check_ext3_journal(ctx);
+	if (retval) {
+		com_err(ctx->program_name, retval,
+			_("while checking ext3 journal for %s"),
+			ctx->device_name);
+		ext2fs_close(ctx->fs);
+		exit(FSCK_ERROR);
+	}
+
+	if (s->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) {
+		retval = e2fsck_run_ext3_journal(ctx);
+		if (retval) {
+			com_err(ctx->program_name, retval,
+				_("while recovering ext3 journal of %s"),
+				ctx->device_name);
+			exit(FSCK_ERROR);
+		}
+		goto restart;
+	}
+
+	/*
+	 * Check for compatibility with the feature sets.  We need to
+	 * be more stringent than ext2fs_open().
+	 */
+	if ((s->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
+	    (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
+		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
+			"(%s)", ctx->device_name);
+		goto get_newer;
+	}
+	if (s->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP) {
+		com_err(ctx->program_name, EXT2_ET_RO_UNSUPP_FEATURE,
+			"(%s)", ctx->device_name);
+		goto get_newer;
+	}
+#ifdef ENABLE_COMPRESSION
+	if (s->s_feature_incompat & EXT2_FEATURE_INCOMPAT_COMPRESSION)
+		com_err(ctx->program_name, 0,
+			_("Warning: compression support is experimental.\n"));
+#endif
 	
 	/*
 	 * If the user specified a specific superblock, presumably the

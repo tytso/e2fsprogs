@@ -29,7 +29,9 @@ e2fsck \- check a Linux second extended file system
 .I device
 .SH DESCRIPTION
 .B e2fsck
-is used to check a Linux second extended file system.
+is used to check a Linux second extended file system (e2fs).  E2fsck also 
+supports ext2 filesystems countaining a journal, which are
+also sometimes known as ext3 filesystems.
 .TP
 .I device
 is the special file corresponding to the device (e.g

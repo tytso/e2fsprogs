@@ -172,7 +172,62 @@ static const struct e2fsck_problem problem_table[] = {
 
 	{ PR_0_HURD_CLEAR_FILETYPE,
 	  N_("The Hurd does not support the filetype feature.\n"),
-	  PROMPT_CLEAR, 0 },	  
+	  PROMPT_CLEAR, 0 },
+
+	/* Journal inode is invalid */
+	{ PR_0_JOURNAL_BAD_INODE,
+	  N_("@S has a bad ext3 journal (@i %N).\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Superblock has a journal device (which we can't handle yet) */
+	{ PR_0_JOURNAL_UNSUPP_DEV,
+	  N_("@S has external ext3 journal device (unsupported).\n"),
+	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_DEV },
+
+	/* Superblock has a bad journal device */
+	{ PR_0_JOURNAL_BAD_DEV,
+	  N_("@S has a bad ext3 journal (device %X).\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Superblock has a journal UUID (which we can't handle yet) */
+	{ PR_0_JOURNAL_UNSUPP_UUID,
+	  N_("@S has an ext3 journal UUID (unsupported).\n"),
+	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_UUID },
+
+	/* Superblock has a bad journal UUID */
+	{ PR_0_JOURNAL_BAD_UUID,
+	  N_("@S has a bad ext3 journal (UUID %s).\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Journal has an unknown superblock type */
+	{ PR_0_JOURNAL_UNSUPP_SUPER,
+	  N_("Ext3 journal @S is unknown type %N (unsupported).\n"),
+	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_SUPER },
+
+	/* Journal superblock is corrupt */
+	{ PR_0_JOURNAL_BAD_SUPER,
+	  N_("Ext3 journal @S is corrupt.\n"),
+	  PROMPT_FIX, PR_PREEN_OK },
+
+	/* Superblock flag should be cleared */
+	{ PR_0_JOURNAL_HAS_JOURNAL,
+	  N_("@S doesn't have has_journal flag, but has ext3 journal %s.\n"),
+	  PROMPT_DELETE, PR_PREEN_OK },
+
+	/* Superblock flag is incorrect */
+	{ PR_0_JOURNAL_RECOVER_SET,
+	  N_("@S has ext3 needs_recovery flag set, but no journal.\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Journal should be reset */
+	{ PR_0_JOURNAL_RESET_JOURNAL,
+	  N_("*** WARNING *** leaving data in the journal may be DANGEROUS.\n"),
+	  PROMPT_NONE, PR_PREEN_NOMSG|PR_AFTER_CODE, PR_0_JOURNAL_RESET_PROMPT},
+
+	/* Journal should be reset */
+	{ PR_0_JOURNAL_RESET_PROMPT,
+	  N_("ext3 recovery flag clear, but journal has data.\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK|PR_PREEN_NOMSG },
 
 	/* Pass 1 errors */
 	
@@ -1168,11 +1223,11 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	
 	}
 
-	if (ptr->flags & PR_AFTER_CODE)
-		(void) fix_problem(ctx, ptr->second_code, pctx);
-
 	if ((ptr->prompt == PROMPT_ABORT) && answer)
 		fatal_error(ctx, 0);
+
+	if (ptr->flags & PR_AFTER_CODE)
+		answer = fix_problem(ctx, ptr->second_code, pctx);
 
 	return answer;
 }

@@ -1,3 +1,14 @@
+2000-07-12  Andreas Dilger <adilger@turbolinux.com>
+
+	* journal.c: implement loading of ext3 journal for recovery code
+
+	* problem.c (fix_problem): return answer from PR_AFTER_CODE to caller.
+		Add journal problems.
+
+	* recovery.c (journal_recover): user-space ext3 journal recovery code
+
+	* unix.c (main) : check journal and do recovery in separate steps
+
 2000-08-07    <tytso@snap.thunk.org>
 
 	* unix.c (calc_percent): Make sure that we don't take a floating

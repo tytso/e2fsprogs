@@ -283,7 +283,8 @@ extern const char *ehandler_operation(const char *op);
 extern void ehandler_init(io_channel channel);
 
 /* journal.c */
-extern int e2fsck_run_ext3_journal(const char *device);
+extern int e2fsck_check_ext3_journal(e2fsck_t ctx);
+extern int e2fsck_run_ext3_journal(e2fsck_t ctx);
 
 /* pass1.c */
 extern void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool);

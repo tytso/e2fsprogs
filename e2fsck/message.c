@@ -44,6 +44,7 @@
  * 			the containing directory.
  * 	%s	<str>			miscellaneous string
  * 	%S	backup superblock
+ * 	%X	<num> hexadecimal format
  *
  * The following '@' expansions are supported:
  *
@@ -377,6 +378,13 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		break;
 	case 's':
 		printf("%s", ctx->str);
+		break;
+	case 'X':
+#ifdef EXT2_NO_64_TYPE
+		printf("0x%x", ctx->num);
+#else
+		printf("0x%llx", ctx->num);
+#endif
 		break;
 	default:
 	no_context:
