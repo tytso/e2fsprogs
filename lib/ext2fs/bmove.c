@@ -14,6 +14,9 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 #include "ext2fs/ext2fs.h"

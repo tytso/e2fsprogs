@@ -14,6 +14,9 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>

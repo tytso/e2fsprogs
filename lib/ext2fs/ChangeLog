@@ -1,3 +1,10 @@
+Wed Sep  3 14:27:30 1997  Theodore Y. Ts'o  <tytso@edt.mit.edu>
+
+	* llseek.c: Added missing semicolon to glibc fixup declaration of
+ 	llseek().
+
+	* bmove.c: Add #include of errno.h
+
 Sat Aug 23 22:47:46 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in (ELF_SO_VERSION): Bump version to be 2.4 since we've

@@ -31,7 +31,7 @@
 #include <syscall.h>
 
 #if (__GLIBC__ == 2)
-ext2_loff_t llseek (int fd, ext2_loff_t offset, int origin)
+ext2_loff_t llseek (int fd, ext2_loff_t offset, int origin);
 #endif
 
 #define my_llseek llseek
