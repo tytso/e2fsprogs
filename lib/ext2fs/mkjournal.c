@@ -74,10 +74,8 @@ errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
 	 * adjust these fields.
 	 */
 	if (fs->super->s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
 		jsb->s_nr_users = 0;
-		jsb->s_first = htonl(1);
-	}
 
 	*ret_jsb = (char *) jsb;
 	return 0;

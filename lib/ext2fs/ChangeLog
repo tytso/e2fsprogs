@@ -1,3 +1,8 @@
+2001-05-14  Theodore Tso  <tytso@valinux.com>
+
+	* mkjournal.c (ext2fs_create_journal_superblock): Remove redundant
+		code.
+
 2001-05-05  Theodore Tso  <tytso@valinux.com>
 
 	* fileio.c (ext2fs_file_read): Factored out common code and
