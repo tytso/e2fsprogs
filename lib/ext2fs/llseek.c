@@ -12,14 +12,18 @@
 #include <sys/types.h>
 
 #include <errno.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include "et/com_err.h"
 #include "ext2fs/io.h"
 
 #ifdef __linux__
 
 #ifdef HAVE_LLSEEK
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <syscall.h>
 
 #else	/* HAVE_LLSEEK */

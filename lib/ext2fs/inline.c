@@ -14,7 +14,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <fcntl.h>
 #include <time.h>

@@ -10,7 +10,9 @@
  */
 
 #include <stdio.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 
 #include <linux/ext2_fs.h>

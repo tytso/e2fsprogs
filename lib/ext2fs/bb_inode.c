@@ -15,7 +15,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <fcntl.h>
 #include <time.h>
@@ -154,6 +156,9 @@ cleanup:
  * Clear the bad blocks in the bad block inode, while saving the
  * indirect blocks.
  */
+#ifdef __TURBOC__
+#pragma argsused
+#endif
 static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 				blk_t ref_block, int ref_offset, void *private)
 {
@@ -207,6 +212,9 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
  *
  * Set the block list in the bad block inode, using the supplied bitmap.
  */
+#ifdef __TURBOC__
+#pragma argsused
+#endif
 static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 			      int blockcnt, blk_t ref_block, 
 			      int ref_offset, void *private)

@@ -20,7 +20,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 #if HAVE_ERRNO_H
 #include <errno.h>
@@ -31,12 +33,15 @@
 #include "ext2fs.h"
 
 struct get_pathname_struct {
-	int		search_ino;
-	int		parent;
+	ino_t		search_ino;
+	ino_t		parent;
 	char		*name;
 	errcode_t	errcode;
 };
 
+#ifdef __TURBOC__
+#pragma argsused
+#endif
 static int get_pathname_proc(struct ext2_dir_entry *dirent,
 			     int	offset,
 			     int	blocksize,

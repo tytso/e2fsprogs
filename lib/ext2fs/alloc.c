@@ -11,7 +11,9 @@
  */
 
 #include <stdio.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <time.h>
 #include <sys/stat.h>
@@ -33,7 +35,7 @@
 errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode,
 			   ext2fs_inode_bitmap map, ino_t *ret)
 {
-	int	dir_group = 0;
+	ino_t	dir_group = 0;
 	ino_t	i;
 	ino_t	start_inode;
 

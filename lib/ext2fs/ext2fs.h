@@ -45,7 +45,7 @@ typedef unsigned int	dgrp_t;
 typedef struct struct_ext2_filsys *ext2_filsys;
 
 struct ext2fs_struct_generic_bitmap {
-	int		magic;
+	errcode_t	magic;
 	ext2_filsys 	fs;
 	__u32		start, end;
 	__u32		real_end;
@@ -119,7 +119,7 @@ typedef struct ext2_struct_dblist *ext2_dblist;
 #define EXT2_NEW_INODE_FL	0x80000000
 
 struct struct_ext2_filsys {
-	int				magic;
+	errcode_t			magic;
 	io_channel			io;
 	int				flags;
 	char *				device_name;

@@ -1,3 +1,31 @@
+Sun Aug 10 10:05:22 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* block.c (ext2fs_block_iterate2): Use retval which is a errcode_t
+		type.
+
+	* bitmaps.c (make_bitmap): Use size_t instead of int where
+		appropriate.
+
+	* bb_inode.c (set_bad_block_proc): Add #pragma argsused for Turbo C.
+
+	* alloc.c (ext2fs_new_inode): Use ino_t instead of int for the
+		group number.
+
+	* get_pathname.c: Use ino_t instead of int where appropriate.
+
+	* ext2fs.h: Make the magic structure element be errcode_t instead
+		of int.
+
+	* alloc.c alloc_tables.c badblocks.c bb_compat.c bb_inode.c
+ 	 	bitmaps.c block.c bmove.c brel_ma.c check_desc.c closefs.c
+ 	 	cmp_bitmaps.c dblist.c dblist_dir.c dir_iterate.c
+ 	 	dirblock.c dupfs.c expanddir.c freefs.c get_pathname.c
+ 	 	icount.c initialize.c inline.c inode.c irel_ma.c link.c
+ 	 	llseek.c lookup.c mkdir.c namei.c newdir.c read_bb.c
+ 	 	read_bb_file.c rs_bitmap.c rw_bitmaps.c swapfs.c 
+ 	 	test_io.c tst_badblocks.c tst_iscan.c unix_io.c unlink.c
+ 	 	valid_blk.c version.c: Add an #ifdef for HAVE_UNISTD_H
+
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* unix_io.c (unix_read_blk): If ext2fs_llseek() fails, but errno

@@ -11,7 +11,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 #if HAVE_ERRNO_H
 #include <errno.h>
@@ -321,9 +323,9 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
-	ret = ext2fs_get_blocks(fs, ino, blocks);
-	if (ret)
-		return ret;
+	retval = ext2fs_get_blocks(fs, ino, blocks);
+	if (retval)
+		return retval;
 
 	ctx.fs = fs;
 	ctx.func = func;

@@ -12,7 +12,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <fcntl.h>
 #include <time.h>
@@ -31,7 +33,7 @@ static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
 			     ext2fs_generic_bitmap *ret)
 {
 	ext2fs_generic_bitmap bitmap;
-	int	size;
+	size_t	size;
 
 	bitmap = malloc(sizeof(struct ext2fs_struct_generic_bitmap));
 	if (!bitmap)
@@ -53,7 +55,7 @@ static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
 	} else
 		bitmap->description = 0;
 
-	size = ((bitmap->real_end - bitmap->start) / 8) + 1;
+	size = (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1);
 	bitmap->bitmap = malloc(size);
 	if (!bitmap->bitmap) {
 		free(bitmap->description);
@@ -187,7 +189,7 @@ void ext2fs_clear_inode_bitmap(ext2fs_inode_bitmap bitmap)
 		return;
 
 	memset(bitmap->bitmap, 0,
-	       ((bitmap->real_end - bitmap->start) / 8) + 1);
+	       (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1));
 }
 
 void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap)
@@ -196,5 +198,5 @@ void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap)
 		return;
 
 	memset(bitmap->bitmap, 0,
-	       ((bitmap->real_end - bitmap->start) / 8) + 1);
+	       (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1));
 }
