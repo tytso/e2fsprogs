@@ -1,3 +1,8 @@
+Mon Oct 20 19:30:45 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* configure.in (HAVE_LLSEEK_PROTOTYPE): Added check to see if
+		llseek is declared in unistd.h
+
 Sun Oct 19 19:09:30 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* configure.in: Add tests for sys/stat.h, sys/time.h, and sys/types.h

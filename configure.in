@@ -222,7 +222,7 @@ dnl
 dnl handle --enable-gcc-wall
 dnl
 AC_ARG_ENABLE([gcc-wall],
-[  --enable-gcc-wall	  enable GCC anal warnings],
+[  --enable-gcc-wall	  enable GCC anal warnings (DON'T USE IN PRODUCTION)],
 if test "$enableval" = "no"
 then
 	W=#
@@ -333,6 +333,23 @@ AC_CACHE_VAL(e2fsprogs_cv_struct_d_namlen,
 AC_MSG_RESULT($e2fsprogs_cv_struct_d_namlen)
 if test "$e2fsprogs_cv_struct_d_namlen" = yes; then
   AC_DEFINE(HAVE_DIRENT_NAMLEN)
+fi
+dnl
+dnl Check to see if llseek() is declared in unistd.h.  On some libc's 
+dnl it is, and on others it isn't..... Thank you glibc developers....
+dnl
+dnl Warning!  Use of --enable-gcc-wall may throw off this test.
+dnl
+dnl
+AC_MSG_CHECKING(whether llseek declared in unistd.h)
+AC_CACHE_VAL(e2fsprogs_cv_have_llseek_prototype,
+	AC_TRY_COMPILE(
+[#include <unistd.h>], [extern int llseek(int);],
+	[e2fsprogs_cv_have_llseek_prototype=no],
+	[e2fsprogs_cv_have_llseek_prototype=yes]))
+AC_MSG_RESULT($e2fsprogs_cv_have_llseek_prototype)
+if test "$e2fsprogs_cv_have_llseek_prototype" = yes; then
+   AC_DEFINE(HAVE_LLSEEK_PROTOTYPE)
 fi
 dnl
 dnl Word sizes...

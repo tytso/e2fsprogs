@@ -32,8 +32,8 @@
 #endif
 #include <syscall.h>
 
-#if (__GLIBC__ == 2)
-ext2_loff_t llseek (int fd, ext2_loff_t offset, int origin);
+#ifndef HAVE_LLSEEK_PROTOTYPE
+extern long long llseek (int fd, long long offset, int origin);
 #endif
 
 #define my_llseek llseek
