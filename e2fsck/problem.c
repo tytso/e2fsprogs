@@ -1138,7 +1138,7 @@ static const struct e2fsck_problem problem_table[] = {
 	  PROMPT_NONE, PR_PREEN_OK | PR_PREEN_NOMSG},
 
 	/* Block not used, but marked in bitmap */
-	{ PR_5_UNUSED_BLOCK,
+	{ PR_5_BLOCK_UNUSED,
 	  " -%b",
 	  PROMPT_NONE, PR_LATCH_BBITMAP | PR_PREEN_OK | PR_PREEN_NOMSG },
 		  
@@ -1158,7 +1158,7 @@ static const struct e2fsck_problem problem_table[] = {
 	  PROMPT_NONE, PR_PREEN_OK | PR_PREEN_NOMSG },
 
 	/* Inode not used, but marked in bitmap */
-	{ PR_5_UNUSED_INODE,
+	{ PR_5_INODE_UNUSED,
 	  " -%i",
 	  PROMPT_NONE, PR_LATCH_IBITMAP | PR_PREEN_OK | PR_PREEN_NOMSG },
 		  
@@ -1218,6 +1218,26 @@ static const struct e2fsck_problem problem_table[] = {
 	  "Error copying in replacement @b @B: %m\n",
 	  PROMPT_NONE, PR_FATAL },
 		  
+	/* Block range not used, but marked in bitmap */
+	{ PR_5_BLOCK_RANGE_UNUSED,
+	  " -(%b--%c)",
+	  PROMPT_NONE, PR_LATCH_BBITMAP | PR_PREEN_OK | PR_PREEN_NOMSG },
+		  
+	/* Block range used, but not marked used in bitmap */
+	{ PR_5_BLOCK_RANGE_USED,
+	  " +(%b--%c)",
+	  PROMPT_NONE, PR_LATCH_BBITMAP | PR_PREEN_OK | PR_PREEN_NOMSG },
+
+	/* Inode range not used, but marked in bitmap */
+	{ PR_5_INODE_RANGE_UNUSED,
+	  " -(%i--%j)",
+	  PROMPT_NONE, PR_LATCH_IBITMAP | PR_PREEN_OK | PR_PREEN_NOMSG },
+		  
+	/* Inode range used, but not marked used in bitmap */
+	{ PR_5_INODE_RANGE_USED,
+	  " +(%i--%j)",
+	  PROMPT_NONE, PR_LATCH_IBITMAP | PR_PREEN_OK | PR_PREEN_NOMSG },
+
 	{ 0 }
 };
 
@@ -1317,7 +1337,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 
 	ptr = find_problem(code);
 	if (!ptr) {
-		printf(_("Unhandled error code (%d)!\n"), code);
+		printf(_("Unhandled error code (0x%x)!\n"), code);
 		return 0;
 	}
 	def_yn = 1;

@@ -683,7 +683,7 @@ struct problem_context {
 #define PR_5_BLOCK_BITMAP_HEADER 	0x050003
 
 /* Block not used, but marked in bitmap */
-#define PR_5_UNUSED_BLOCK		0x050004
+#define PR_5_BLOCK_UNUSED		0x050004
 	  
 /* Block used, but not marked used in bitmap */
 #define PR_5_BLOCK_USED			0x050005
@@ -695,7 +695,7 @@ struct problem_context {
 #define PR_5_INODE_BITMAP_HEADER	0x050007
 
 /* Inode not used, but marked in bitmap */
-#define PR_5_UNUSED_INODE		0x050008
+#define PR_5_INODE_UNUSED		0x050008
 	  
 /* Inode used, but not marked used in bitmap */
 #define PR_5_INODE_USED			0x050009
@@ -729,6 +729,18 @@ struct problem_context {
 
 /* Error copying in replacement block bitmap */
 #define PR_5_COPY_BBITMAP_ERROR		0x050013
+
+/* Block range not used, but marked in bitmap */
+#define PR_5_BLOCK_RANGE_UNUSED		0x050014
+	  
+/* Block range used, but not marked used in bitmap */
+#define PR_5_BLOCK_RANGE_USED		0x050015
+
+/* Inode range not used, but marked in bitmap */
+#define PR_5_INODE_RANGE_UNUSED		0x050016
+	  
+/* Inode rangeused, but not marked used in bitmap */
+#define PR_5_INODE_RANGE_USED		0x050017
 
 /*
  * Function declarations

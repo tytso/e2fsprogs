@@ -1,3 +1,12 @@
+2002-03-06    <tytso@snap.thunk.org>
+
+	* f_badorphan, f_badtable, f_bbinode, f_dupsuper, f_expand,
+		f_illbbitmap, f_illibitmap, f_illitable, f_imagic, 
+		f_imagic_fs, f_lotsbad, f_lpf, f_messy_inode, 
+		f_miss_blk_bmap, f_misstable, f_overfsblks: Adjust expect
+		files to deal with the fact that e2fsck is now reporting
+		ranges during pass 5.
+
 2002-02-12  Theodore Tso  <tytso@mit.edu>
 
 	* run_e2fsck (status): Use separate sed invocations for greater

@@ -72,6 +72,42 @@ void e2fsck_pass5(e2fsck_t ctx)
 #endif
 }
 
+#define NO_BLK ((blk_t) -1)
+
+static print_bitmap_problem(e2fsck_t ctx, int problem,
+			    struct problem_context *pctx)
+{
+	switch (problem) {
+	case PR_5_BLOCK_UNUSED:
+		if (pctx->blk == pctx->blk2)
+			pctx->blk2 = 0;
+		else
+			problem = PR_5_BLOCK_RANGE_UNUSED;
+		break;
+	case PR_5_BLOCK_USED:
+		if (pctx->blk == pctx->blk2)
+			pctx->blk2 = 0;
+		else
+			problem = PR_5_BLOCK_RANGE_USED;
+		break;
+	case PR_5_INODE_UNUSED:
+		if (pctx->ino == pctx->ino2)
+			pctx->ino2 = 0;
+		else
+			problem = PR_5_INODE_RANGE_UNUSED;
+		break;
+	case PR_5_INODE_USED:
+		if (pctx->ino == pctx->ino2)
+			pctx->ino2 = 0;
+		else
+			problem = PR_5_INODE_RANGE_USED;
+		break;
+	}
+	fix_problem(ctx, problem, pctx);
+	pctx->blk = pctx->blk2 = NO_BLK;
+	pctx->ino = pctx->ino2 = 0;
+}
+	
 static void check_block_bitmaps(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
@@ -83,7 +119,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	int	group_free = 0;
 	int	actual, bitmap;
 	struct problem_context	pctx;
-	int	problem, fixit, had_problem;
+	int	problem, save_problem, fixit, had_problem;
 	errcode_t	retval;
 	
 	clear_problem_context(&pctx);
@@ -122,6 +158,8 @@ static void check_block_bitmaps(e2fsck_t ctx)
 		       
 redo_counts:
 	had_problem = 0;
+	save_problem = 0;
+	pctx.blk = pctx.blk2 = NO_BLK;
 	for (i = fs->super->s_first_data_block;
 	     i < fs->super->s_blocks_count;
 	     i++) {
@@ -135,15 +173,26 @@ redo_counts:
 			/*
 			 * Block not used, but marked in use in the bitmap.
 			 */
-			problem = PR_5_UNUSED_BLOCK;
+			problem = PR_5_BLOCK_UNUSED;
 		} else {
 			/*
 			 * Block used, but not marked in use in the bitmap.
 			 */
 			problem = PR_5_BLOCK_USED;
 		}
-		pctx.blk = i;
-		fix_problem(ctx, problem, &pctx);
+		if (pctx.blk == NO_BLK) {
+			pctx.blk = pctx.blk2 = i;
+			save_problem = problem;
+		} else {
+			if ((problem == save_problem) &&
+			    (pctx.blk2 == i-1))
+				pctx.blk2++;
+			else {
+				print_bitmap_problem(ctx, save_problem, &pctx);
+				pctx.blk = pctx.blk2 = i;
+				save_problem = problem;
+			}
+		}
 		ctx->flags |= E2F_FLAG_PROG_SUPPRESS;
 		had_problem++;
 		
@@ -165,8 +214,10 @@ redo_counts:
 					return;
 		}
 	}
+	if (pctx.blk != NO_BLK)
+		print_bitmap_problem(ctx, save_problem, &pctx);
 	if (had_problem)
-		fixit = end_problem_latch(ctx, 	PR_LATCH_BBITMAP);
+		fixit = end_problem_latch(ctx, PR_LATCH_BBITMAP);
 	else
 		fixit = -1;
 	ctx->flags &= ~E2F_FLAG_PROG_SUPPRESS;
@@ -234,7 +285,7 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int	actual, bitmap;
 	errcode_t	retval;
 	struct problem_context	pctx;
-	int	problem, fixit, had_problem;
+	int	problem, save_problem, fixit, had_problem;
 	
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,
@@ -272,6 +323,8 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 
 redo_counts:
 	had_problem = 0;
+	save_problem = 0;
+	pctx.ino = pctx.ino2 = 0;
 	for (i = 1; i <= fs->super->s_inodes_count; i++) {
 		actual = ext2fs_fast_test_inode_bitmap(ctx->inode_used_map, i);
 		bitmap = ext2fs_fast_test_inode_bitmap(fs->inode_map, i);
@@ -283,15 +336,26 @@ redo_counts:
 			/*
 			 * Inode wasn't used, but marked in bitmap
 			 */
-			problem = PR_5_UNUSED_INODE;
+			problem = PR_5_INODE_UNUSED;
 		} else /* if (actual && !bitmap) */ {
 			/*
 			 * Inode used, but not in bitmap
 			 */
 			problem = PR_5_INODE_USED;
 		}
-		pctx.ino = i;
-		fix_problem(ctx, problem, &pctx);
+		if (pctx.ino == 0) {
+			pctx.ino = pctx.ino2 = i;
+			save_problem = problem;
+		} else {
+			if ((problem == save_problem) &&
+			    (pctx.ino2 == i-1))
+				pctx.ino2++;
+			else {
+				print_bitmap_problem(ctx, save_problem, &pctx);
+				pctx.ino = pctx.ino2 = i;
+				save_problem = problem;
+			}
+		}
 		ctx->flags |= E2F_FLAG_PROG_SUPPRESS;
 		had_problem++;
 		
@@ -319,6 +383,9 @@ do_counts:
 					return;
 		}
 	}
+	if (pctx.ino)
+		print_bitmap_problem(ctx, save_problem, &pctx);
+	
 	if (had_problem)
 		fixit = end_problem_latch(ctx, PR_LATCH_IBITMAP);
 	else
