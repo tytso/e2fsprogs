@@ -1,3 +1,7 @@
+2000-12-30    <tytso@snap.thunk.org>
+
+	* jfs.h: Update to 0.5e version
+
 2000-12-09    <tytso@snap.thunk.org>
 
 	* jfs.h, jfs_compat.h, list.h: New files added to support ext3.

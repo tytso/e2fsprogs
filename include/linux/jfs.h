@@ -26,6 +26,8 @@
  */
 #ifdef __KERNEL__
 #define JFS_DEBUG
+#else
+#define JFS_DEBUG
 #endif
 
 extern int journal_enable_debug;
@@ -36,7 +38,7 @@ extern int journal_enable_debug;
 		if ((n) <= journal_enable_debug) {			\
 			printk (KERN_DEBUG "JFS DEBUG: (%s, %d): %s: ",	\
 				__FILE__, __LINE__, __FUNCTION__);	\
-		  	printk (f, a);					\
+		  	printk (f, ## a);				\
 		}							\
 	} while (0)
 #else
@@ -302,9 +304,6 @@ struct transaction_s
 	 * transaction handle but not yet modified. */
 	int			t_outstanding_credits;
 	
-	/* Wait queue to wait for updates to complete */
-	struct wait_queue *	t_wait;
-
 	/* Forward and backward links for the circular list of all
 	 * transactions awaiting checkpoint */
 	transaction_t		*t_cpnext, *t_cpprev;
@@ -337,6 +336,12 @@ struct journal_s
 
 	/* Version of the superblock format */
 	int			j_format_version;
+
+	/* Number of processes waiting to create a barrier lock */
+	int			j_barrier_count;
+	
+	/* The barrier lock itself */
+	struct semaphore	j_barrier;
 	
 	/* Transactions: The current running transaction... */
 	transaction_t *		j_running_transaction;
@@ -352,7 +357,7 @@ struct journal_s
 	struct wait_queue *	j_wait_lock;
 
 	/* Wait queue for waiting for a locked transaction to start
-           committing */
+           committing, or for a barrier lock to be released */
 	struct wait_queue *	j_wait_transaction_locked;
 	
 	/* Wait queue for waiting for checkpointing to complete */
@@ -367,6 +372,9 @@ struct journal_s
 	/* Wait queue to trigger commit */
 	struct wait_queue *	j_wait_commit;
 	
+	/* Wait queue to wait for updates to complete */
+	struct wait_queue *	j_wait_updates;
+
 	/* Semaphore for locking against concurrent checkpoints */
 	struct semaphore 	j_checkpoint_sem;
 		
@@ -442,10 +450,12 @@ struct journal_s
 /* 
  * Journal flag definitions 
  */
-#define JFS_UNMOUNT	1	/* Journal thread is being destroyed */
-#define JFS_SYNC	2	/* Perform synchronous transaction commits */
-#define JFS_ABORT	4	/* Journaling has been aborted for errors. */
-#define JFS_ACK_ERR	8	/* The errno in the sb has been acked */
+#define JFS_UNMOUNT	0x001	/* Journal thread is being destroyed */
+#define JFS_SYNC	0x002	/* Perform synchronous transaction commits */
+#define JFS_ABORT	0x004	/* Journaling has been aborted for errors. */
+#define JFS_ACK_ERR	0x008	/* The errno in the sb has been acked */
+#define JFS_FLUSHED	0x010	/* The journal superblock has been flushed */
+#define JFS_LOADED	0x020	/* The journal superblock has been loaded */
 
 /* 
  * Journaling internal variables/parameters 
@@ -553,6 +563,9 @@ extern void	 journal_sync_buffer (struct buffer_head *);
 extern int	 journal_stop (handle_t *);
 extern int	 journal_flush (journal_t *);
 
+extern void	 journal_lock_updates (journal_t *);
+extern void	 journal_unlock_updates (journal_t *);
+
 extern journal_t * journal_init_dev   (kdev_t, int start, int len, int bsize);
 extern journal_t * journal_init_inode (struct inode *);
 extern int	   journal_update_format (journal_t *);
@@ -566,6 +579,8 @@ extern int	   journal_create     (journal_t *);
 extern int	   journal_load       (journal_t *);
 extern void	   journal_release    (journal_t *);
 extern int	   journal_recover    (journal_t *);
+extern int	   journal_wipe       (journal_t *, int);
+extern int	   journal_skip_recovery (journal_t *);
 extern void	   journal_update_superblock (journal_t *, int);
 extern void	   __journal_abort      (journal_t *);
 extern void	   journal_abort      (journal_t *, int);
@@ -626,6 +641,14 @@ static inline int is_journal_abort(journal_t *journal)
 {
 	return journal->j_flags & JFS_ABORT;
 }
+
+/* Not all architectures define BUG() */
+#ifndef BUG
+ #define BUG() do { \
+        printk("kernel BUG at %s:%d!\n", __FILE__, __LINE__); \
+	* ((char *) 0) = 0; \
+ } while (0)
+#endif /* BUG */
 
 #endif /* __KERNEL__   */
 
