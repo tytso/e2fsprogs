@@ -27,9 +27,12 @@ int uuid_parse(const char *in, uuid_t uu)
 		return -1;
 	for (i=0, cp = in; i <= 36; i++,cp++) {
 		if ((i == 8) || (i == 13) || (i == 18) ||
-		    (i == 23))
+		    (i == 23)) {
 			if (*cp == '-')
 				continue;
+			else
+				return -1;
+		}
 		if (i== 36)
 			if (*cp == 0)
 				continue;

@@ -13,6 +13,23 @@
 
 #include "uuid.h"
 
+static int test_uuid(const char * uuid, int isValid)
+{
+	static const char * validStr[2] = {"invalid", "valid"};
+	uuid_t uuidBits;
+	int parsedOk;
+
+	parsedOk = uuid_parse(uuid, uuidBits) == 0;
+	
+	printf("%s is %s", uuid, validStr[isValid]);
+	if (parsedOk != isValid) {
+		printf(" but uuid_parse says %s\n", validStr[parsedOk]);
+		return 1;
+	}
+	printf(", OK\n");
+	return 0;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -107,6 +124,18 @@ main(int argc, char **argv)
 		printf("UUID copy and compare failed!\n");
 		failed++;
 	}
+	failed += test_uuid("84949cc5-4701-4a84-895b-354c584a981b", 1);
+	failed += test_uuid("84949CC5-4701-4A84-895B-354C584A981B", 1);
+	failed += test_uuid("84949cc5-4701-4a84-895b-354c584a981bc", 0);
+	failed += test_uuid("84949cc5-4701-4a84-895b-354c584a981", 0);
+	failed += test_uuid("84949cc5x4701-4a84-895b-354c584a981b", 0);
+	failed += test_uuid("84949cc504701-4a84-895b-354c584a981b", 0);
+	failed += test_uuid("84949cc5-470104a84-895b-354c584a981b", 0);
+	failed += test_uuid("84949cc5-4701-4a840895b-354c584a981b", 0);
+	failed += test_uuid("84949cc5-4701-4a84-895b0354c584a981b", 0);
+	failed += test_uuid("g4949cc5-4701-4a84-895b-354c584a981b", 0);
+	failed += test_uuid("84949cc5-4701-4a84-895b-354c584a981g", 0);
+	
 	if (failed) {
 		printf("%d failures.\n", failed);
 		exit(1);

@@ -1,3 +1,12 @@
+2002-07-15  Theodore Ts'o  <tytso@mit.edu>
+
+	* parse.c (uuid_parse): Fix uuid parsing bug which didn't complain
+		for certain types of invalid input text.  (Addresses
+		Debian bug #152891).
+
+	* tst_uuid.c: Add test cases for invalid text strings passed to
+		uuid_parse.
+
 2002-03-08  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.27
