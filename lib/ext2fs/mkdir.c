@@ -31,6 +31,10 @@
 
 #include "ext2fs.h"
 
+#ifndef EXT2_FT_DIR
+#define EXT2_FT_DIR		2
+#endif
+
 errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 		       const char *name)
 {
@@ -116,7 +120,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 		}
 		if (retval != EXT2_ET_FILE_NOT_FOUND)
 			goto cleanup;
-		retval = ext2fs_link(fs, parent, name, ino, 0);
+		retval = ext2fs_link(fs, parent, name, ino, EXT2_FT_DIR);
 		if (retval)
 			goto cleanup;
 	}

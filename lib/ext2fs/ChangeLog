@@ -1,3 +1,16 @@
+1999-10-22    <tytso@valinux.com>
+
+	* mkdir.c (ext2fs_mkdir): Pass EXT2_FT_DIR flag to ext2fs_link().
+
+	* link.c (ext2fs_link): This call now uses the low three bits of
+		the flags parameter to pass the directory filetype
+		information; it will set the directory entry FILETYPE
+		information if the filesystem supports it.
+
+	* newdir.c (ext2fs_new_dir_block): If the FILETYPE superblock
+		option is set, then create the '.' and '..' entries with
+		the filetype set to EXT2_FT_DIR.
+
 1999-09-24    <tytso@valinux.com>
 
 	* nt_io.c: New file which supports I/O under Windows NT.
