@@ -1,3 +1,22 @@
+e2fsprogs (1.33+1.34-WIP-2003.05.21-1) unstable; urgency=low
+
+  * Fix problems with compiling e2fsprogs with NLS support on woody 
+    (Closes: #193372)
+  * Remove the extraneous de-utf.po file.
+  * Add get-text to build-depends.
+  * Use ngettext (abbreviated with P_()) to simplify the statistics reporting.
+  * Fix badblocks to be able to support arbitrary 4 byte test patterns.
+  * Fix bug which caused us to accidentally include the EVMS plugin in
+    the e2fsprogs package (which doesn't work, but causes confusing messages
+    to show up when the evms client is started).
+  * If the hardware sector size of a device is larger than the default 
+    blocksize, use the hardware sector size as the blocksize when creating 
+    a filesystem, to solve problems with s/390 DASD's.
+  * Add a shared library dependency to libuuid to libblkid (Closes: #194094)
+  * Add initial implementation of a dump_unused command (Closes: #79164)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 18 May 2003 01:24:16 -0400
+
 e2fsprogs (1.33-5) unstable; urgency=low
 
   * Clarify blocksize units when displaying messages in resize2fs, and 
