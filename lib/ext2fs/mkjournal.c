@@ -255,7 +255,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	__u32		nr_users;
 
 	/* Make sure the device exists and is a block device */
-	if (stat(fs->device_name, &st) < 0)
+	if (stat(journal_dev->device_name, &st) < 0)
 		return errno;
 	
 	if (!S_ISBLK(st.st_mode))
