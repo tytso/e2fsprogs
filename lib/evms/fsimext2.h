@@ -1,8 +1,3 @@
-/* Version number of the ext2 plugin */
-#define MAJOR_VERSION 1
-#define MINOR_VERSION 0
-#define PATCH_LEVEL 0
-
 /*
  *
  *   Copyright (c) International Business Machines  Corp., 2000
@@ -47,10 +42,10 @@
 extern plugin_record_t ext2_plugrec;
 engine_functions_t *EngFncs;
                  
-// file system type ... used by the SetPluginID macro
+/*  file system type ... used by the SetPluginID macro */
 #define FS_TYPE_EXT2     7
                  
-// logging macros 
+/*  logging macros  */
 #define LOGENTRY()                  EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Enter.\n", __FUNCTION__)
 #define LOGEXIT()                   EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Exit.\n", __FUNCTION__ )
 #define LOGEXITRC()                 EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Exit.  RC= %d.\n", __FUNCTION__, rc)
@@ -64,7 +59,7 @@ engine_functions_t *EngFncs;
 #define LOG_DEBUG(msg, args...)		EngFncs->write_log_entry(DEBUG,	pMyPluginRecord, __FUNCTION__ ": " msg, ## args)
 #define LOG_EXTRA(msg, args...)		EngFncs->write_log_entry(EXTRA,	pMyPluginRecord, __FUNCTION__ ": " msg, ## args)
 
-// useful macro for option code
+/*  useful macro for option code */
 #define SET_STRING_FIELD(a,b)\
 a = EngFncs->engine_alloc( strlen(b)+1 );\
 if (a ) {\

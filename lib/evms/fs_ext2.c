@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <plugin.h>
+#include <sys/wait.h>
 #include "fsimext2.h"
 
 static plugin_record_t    *pMyPluginRecord = &ext2_plugrec;
@@ -50,12 +51,13 @@ static int fs_setup( engine_mode_t mode, engine_functions_t *engine_function_tab
      * this here in case we do at a later date....
      */
     rc = fsim_test_version();
+#if 0
     if ( rc ) {
         MESSAGE( "e2fsprogs must be version 1.XXX or later to function properly with this FSIM." );
         MESSAGE( "Please get the current version of e2fsprogs from http://e2fsprogs.sourceforge.net" );
         rc = ENOSYS;
     }
-     
+#endif
 	LOGEXIT();
 	return rc;
 }
@@ -257,10 +259,114 @@ static int fs_get_fs_limits( logical_volume_t * volume,
 static int fs_expand( logical_volume_t * volume,
 		              sector_count_t   * new_size )
 {
-    /* unsupported at this time */
-	int  rc = ENOSYS;
+	struct ext2_super_block *sb;
+	int     rc = 0;
+	char   *argv[7];
+	pid_t   pidf;
+	int     status;
+	int     fds1[2];  /* pipe for stdin 0=read 1=write */
+	int     fds2[2];  /* pipe for stderr and stdout 0=-read,1=write */
+	int     bytes_read;
+	char    *buffer = NULL;
+	int	banner = 0;
 
 	LOGENTRY();
+
+	/* get and validate current ext2/3 superblock */
+	sb = (struct ext2_super_block *) volume->private_data;	
+	rc = fsim_get_ext2_superblock( volume, sb );
+	if ((sb->s_lastcheck < sb->s_mtime) ||
+	    (sb->s_state & EXT2_ERROR_FS) ||
+	    ((sb->s_state & EXT2_VALID_FS) == 0)) {
+		MESSAGE("Running fsck before expanding volume");
+		rc = fsim_fsck(volume, NULL );
+		if (rc)
+			goto errout;
+	}
+	
+	/* don't expand if mounted */
+	if (EngFncs->is_mounted(volume->name, NULL)) {
+		rc = EBUSY;
+		goto errout;
+	}
+
+	if (pipe(fds1)) {
+		rc = errno;
+		goto errout;
+	}
+	if (pipe(fds2)) {
+		rc = errno;
+		goto errout;
+	}
+	if (!(buffer = EngFncs->engine_alloc(MAX_USER_MESSAGE_LEN))) {
+		rc = ENOMEM;
+		goto errout;
+	}
+
+	/* Fork and execute the correct program. */
+	switch (pidf = fork()) {
+
+	/* error */
+	case -1:
+		return EIO;
+
+		/* child */
+	case 0:  
+		argv[0] = "resize2fs";
+		SET_STRING_FIELD(argv[1], EVMS_GET_DEVNAME(volume));
+		argv[2] = NULL;
+
+		dup2(fds1[0],0);	/* fds1[0] replaces stdin */
+		dup2(fds2[1],1);	/* fds2[1] replaces stdout */
+		dup2(fds2[1],2);	/* fds2[1] replaces stderr */
+		close(fds2[0]);		/* don't need this here */
+		close(fds1[1]);		/* don't need this here */
+
+		rc = execvp( argv[0], argv );
+
+		/* using exit() can hang GUI, use _exit */
+		_exit(errno);
+
+		/* parent */
+	default:
+		/*
+		 * WARNING: Do Not close read handle of stdin or
+		 *  you will cause a SIGPIPE if you write after the 
+		 * child process has gone away.
+		 */
+/*		close(fds1[0]);  */
+		close(fds2[1]);
+
+		/* wait for child to complete */
+		while (!(pidf = waitpid( pidf, &status, WNOHANG ))) {
+			bytes_read = read(fds2[0],buffer,MAX_USER_MESSAGE_LEN);
+			if (bytes_read > 0) {
+				if (!banner)
+					MESSAGE("expand output:");
+				banner = 1;
+				MESSAGE("%s", buffer);
+				memset(buffer,0,bytes_read); /* clear out message  */
+			}
+			usleep(10000); /* don't hog all the cpu */
+		}
+		/* do final read, just in case we missed some */
+		bytes_read = read(fds2[0],buffer,MAX_USER_MESSAGE_LEN);
+		if (bytes_read > 0) {
+			if (!banner)
+				MESSAGE("expand output:");
+			MESSAGE("%s",buffer);
+		}
+		if ( WIFEXITED(status) ) {
+			/* get expand exit code */
+			LOG("Expand completed with rc = %d \n",status);
+			rc = WEXITSTATUS(status);
+		}
+	}
+	if (buffer) {
+		EngFncs->engine_free(buffer);
+	}
+	fs_get_fs_size(volume, new_size);
+errout:
 	LOGEXITRC();
 	return rc;
 }
@@ -294,10 +400,119 @@ static int fs_shrink( logical_volume_t * volume,
         		      sector_count_t     requested_size,
 		              sector_count_t   * new_size )
 {
-    /* unsupported at this time */
-	int  rc = ENOSYS;
+	int     rc = 0;
+	char   *argv[7];
+	pid_t   pidf;
+	int     status;
+	int     fds1[2];  /* pipe for stdin 0=read 1=write */
+	int     fds2[2];  /* pipe for stderr and stdout 0=-read,1=write */
+	int     bytes_read;
+	char    *buffer = NULL;
+	char    size_buf[128];
+	struct ext2_super_block *sb;
+	int	banner = 0;
 
 	LOGENTRY();
+
+	/* don't shrink if mounted */
+	if (EVMS_IS_MOUNTED(volume)) {
+		LOGEXITRC();
+		return EBUSY;
+	}
+
+	/* get and validate current ext2/3 superblock */
+	sb = (struct ext2_super_block *) volume->private_data;	
+	rc = fsim_get_ext2_superblock( volume, sb );
+	requested_size = requested_size >> (1 + sb->s_log_block_size);
+	if ((sb->s_lastcheck < sb->s_mtime) ||
+	    (sb->s_state & EXT2_ERROR_FS) ||
+	    ((sb->s_state & EXT2_VALID_FS) == 0)) {
+		MESSAGE("Running fsck before shrinking volume");
+		rc = fsim_fsck(volume, NULL );
+		if (rc)
+			goto errout;
+	}
+	    
+	if (pipe(fds1)) {
+		rc = errno;
+		goto errout;
+	}
+	if (pipe(fds2)) {
+		rc = errno;
+		goto errout;
+	}
+	if (!(buffer = EngFncs->engine_alloc(MAX_USER_MESSAGE_LEN))) {
+		rc = ENOMEM;
+		goto errout;
+	}
+
+	/* Fork and execute the correct program. */
+	switch (pidf = fork()) {
+
+	/* error */
+	case -1:
+		return EIO;
+
+		/* child */
+	case 0:  
+		argv[0] = "resize2fs";
+		SET_STRING_FIELD(argv[1], EVMS_GET_DEVNAME(volume));
+		sprintf(size_buf,"%lld", (sector_count_t)requested_size);
+		argv[2] = size_buf;
+		argv[3] = NULL;
+
+		dup2(fds1[0],0);	/* fds1[0] replaces stdin */
+		dup2(fds2[1],1);	/* fds2[1] replaces stdout */
+		dup2(fds2[1],2);	/* fds2[1] replaces stderr */
+		close(fds2[0]);		/*  don't need this here */
+		close(fds1[1]);		/*  don't need this here */
+
+		rc = execvp( argv[0], argv );
+
+		/* using exit() can hang GUI, use _exit */
+		_exit(errno);
+
+		/* parent */
+	default:
+		/*
+		 * WARNING: Do Not close read handle of stdin or you
+		 * will cause a SIGPIPE if you write after the child
+		 * process has gone away.
+		 */
+  /*		close(fds1[0]);  */
+		close(fds2[1]);
+		write(fds1[1], "Yes\n",4);  
+
+		/* wait for child to complete */
+		while (!(pidf = waitpid( pidf, &status, WNOHANG ))) {
+			bytes_read = read(fds2[0],buffer,MAX_USER_MESSAGE_LEN);
+			if (bytes_read > 0) {
+				if (!banner)
+					MESSAGE("Shrink output:");
+				banner = 1;
+				MESSAGE("%s", buffer);
+				memset(buffer,0,bytes_read); /* clear out message  */
+			}
+			usleep(10000); /* don't hog all the cpu */
+		}
+		/* do final read, just in case we missed some */
+		bytes_read = read(fds2[0],buffer,MAX_USER_MESSAGE_LEN);
+		if (bytes_read > 0) {
+			if (!banner)
+				MESSAGE("Shrink output:");
+			MESSAGE("%s",buffer);
+		}
+		if ( WIFEXITED(status) ) {
+			/* get shrink exit code */
+			LOG("Shrink completed with rc = %d \n",status);
+			rc = WEXITSTATUS(status);
+		}
+	}
+	if (buffer) {
+		EngFncs->engine_free(buffer);
+	}
+	fs_get_fs_size(volume, new_size);
+errout:
 	LOGEXITRC();
 	return rc;
 }
@@ -775,9 +990,7 @@ static int fs_set_volumes( task_context_t * context,
 			               task_effect_t  * effect )
 {
 	int  rc = 0;
-    int64_t  log_size;
-    unsigned int  max_log_size;
-    logical_volume_t * vol;
+	logical_volume_t * vol;
 
 	LOGENTRY();
 
@@ -960,7 +1173,7 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 	if (info) {
 
 		if (descriptor_name == NULL) {
-			*info = NULL;	  // init to no info returned
+			*info = NULL;	  /* init to no info returned */
 
 			Info = EngFncs->engine_alloc( sizeof(extended_info_array_t) + (8*sizeof(extended_info_t))  );
 			if (Info) {
@@ -1027,7 +1240,7 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 				iptr->collection_type    = EVMS_Collection_None;
 				memset( &iptr->group, 0, sizeof(group_info_t));
 
-#ifdef VERSION
+#if defined(PACKAGE) && defined(VERSION)
 				iptr = &Info->info[Info->count++];
 				SET_STRING_FIELD( iptr->name, "E2fsprogs Version" );
 				SET_STRING_FIELD( iptr->title, "E2fsprogs Version" );
@@ -1063,13 +1276,23 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 static int fs_can_expand_by(logical_volume_t * volume, 
                             sector_count_t   * delta) 
 {
-    /* unsupported at this time */
-	int  rc = ENOSYS;
+	int  rc = 0;
 
 	LOGENTRY();
+	if (EVMS_IS_MOUNTED(volume)) {
+		rc = EBUSY; /* If mounted, can't expand */
+		goto errout;
+	} 
+	fs_get_fs_limits( volume,	/* reset limits */
+			 &volume->min_fs_size,
+			 &volume->max_vol_size,
+			 &volume->max_fs_size);
+	if (volume->fs_size + *delta > volume->max_fs_size) {
+		*delta = volume->max_fs_size - volume->fs_size;
+	}
+errout:
 	LOGEXITRC();
 	return rc;
-
 }
 
 
@@ -1079,10 +1302,24 @@ static int fs_can_expand_by(logical_volume_t * volume,
 static int fs_can_shrink_by(logical_volume_t * volume, 
                             sector_count_t * delta) 
 {
-    /* unsupported at this time */
-	int  rc = ENOSYS;
+	int  rc = 0;
 
 	LOGENTRY();
+	if (EVMS_IS_MOUNTED(volume)) {
+		rc = EBUSY; /* If mounted, can't shrink */
+		goto errout;
+	} 
+	fs_get_fs_limits( volume,	/* reset limits */
+			 &volume->min_fs_size,
+			 &volume->max_vol_size,
+			 &volume->max_fs_size);
+	if (volume->fs_size - *delta < volume->min_fs_size) {
+		*delta = volume->fs_size - volume->min_fs_size;
+	}
+	if (volume->min_fs_size >= volume->vol_size) {
+		rc = ENOSPC;
+	}
+errout:
 	LOGEXITRC();
 	return rc;
 }

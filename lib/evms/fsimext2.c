@@ -36,7 +36,7 @@ int fsim_rw_diskblocks( int, int64_t, int32_t, void *, int );
 void set_mkfs_options( option_array_t *, char **, logical_volume_t *, char * );
 void set_fsck_options( option_array_t *, char **, logical_volume_t * );
 
-// Vector of plugin record ptrs that we export for the EVMS Engine. 
+/* Vector of plugin record ptrs that we export for the EVMS Engine.  */
 plugin_record_t *evms_plugin_records[] = {
 	&ext2_plugrec,
 	NULL
@@ -55,21 +55,23 @@ static plugin_record_t  * pMyPluginRecord = &ext2_plugrec;
  * Get the size limits for this volume.
  */
 int fsim_get_volume_limits( struct ext2_super_block * sb,
-			   sector_count_t    * min_size,
-			   sector_count_t    * max_volume_size,
-			   sector_count_t    * max_object_size)
+                         sector_count_t   * fs_min_size,
+                         sector_count_t   * fs_max_size,
+                         sector_count_t   * vol_max_size)
 {
 	int rc = 0;
 	sector_count_t fs_size;
+	int		blk_to_sect;
 
 	/* 
 	 * Since ext2/3 does not yet support shrink or expand,
 	 * all values are actual file system size.
 	 */
-	fs_size = sb->s_blocks_count << (1 + sb->s_log_block_size);
-	*max_volume_size = fs_size;
-	*max_object_size = fs_size;
-	*min_size        = fs_size;
+	blk_to_sect = (1 + sb->s_log_block_size);
+	fs_size = sb->s_blocks_count << blk_to_sect;
+	*fs_min_size = (sb->s_blocks_count - sb->s_free_blocks_count) << blk_to_sect;
+	*fs_max_size = (sector_count_t) 1 << (32+blk_to_sect);
+	*vol_max_size = 0xffffffff;
 
 	return rc;
 }
@@ -164,7 +166,8 @@ void set_mkfs_options( option_array_t * options,
                        logical_volume_t * volume, 
                        char * logsize )
 {
-    int i, opt_count = 2;
+    int i, bufsize, opt_count = 2;
+    char *buf;
 
     argv[0] = "mke2fs";
 
@@ -246,16 +249,20 @@ void set_mkfs_options( option_array_t * options,
     argv[opt_count++] = EVMS_GET_DEVNAME(volume);
     argv[opt_count] = NULL;
      
-    {
-	    FILE	*f;
-
-	    f = fopen("/var/tmp/evms-log", "a");
-	    for ( i=0; argv[i]; i++) {
-		    fprintf(f, "'%s' ", argv[i]);
-	    }
-	    fprintf(f, "\n");
-	    fclose(f);
+    bufsize = 0;
+    for (i=0; argv[i]; i++)
+	    bufsize += strlen(argv[i]) + 5;
+    buf = malloc(bufsize+1);
+    if (!buf)
+	    return;
+    buf[0] = 0;
+    for (i=0; argv[i]; i++) {
+	    strcat(buf, argv[i]);
+	    strcat(buf, " ");
     }
+    EngFncs->write_log_entry(DEBUG, pMyPluginRecord,
+			     "mke2fs command: %s\n", buf);
+    free(buf);
     
     return;
 }
@@ -325,16 +332,21 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options )
 			if (bytes_read > 0) {
 				/* display e2fsck output */
 				if (!banner)
-					MESSAGE("e2fsck output: \n\n%s",buffer);
-				else
-					banner = 1;
-				memset(buffer,0,bytes_read); //clear out message  
+					MESSAGE("e2fsck output:");
+				banner = 1;
+				MESSAGE("%s",buffer);
+				memset(buffer,0,bytes_read); /* clear out message  */
 			}
 			usleep(10000); /* don't hog all the cpu */
 		}
 
-		/* wait for child to complete */
-		pidf = waitpid( pidf, &status, 0 );
+		/* do final read, just in case we missed some */
+		bytes_read = read(fds2[0],buffer,MAX_USER_MESSAGE_LEN);
+		if (bytes_read > 0) {
+			if (!banner)
+				MESSAGE("e2fsck output:");
+			MESSAGE("%s",buffer);
+		}
 		if ( WIFEXITED(status) ) {
 			/* get e2fsck exit code */
 			rc = WEXITSTATUS(status);
@@ -363,12 +375,21 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options )
  */                        
 void set_fsck_options( option_array_t * options, char ** argv, logical_volume_t * volume )
 {
-    int i, opt_count = 1;
+    int i, bufsize, num_opts, opt_count = 1;
     int do_preen = 1;
+    char *buf;
 
     argv[0] = "e2fsck";
 
-    for ( i=0; i<options->count; i++) {
+    if (options) 
+	    num_opts = options->count;
+    else {
+	    /* No options, assume force (for resizing) */
+	    argv[opt_count++] = "-f";
+	    num_opts = 0;
+    }
+    
+    for ( i=0; i < num_opts; i++) {
 
         if ( options->option[i].is_number_based ) {
 
@@ -454,16 +475,20 @@ void set_fsck_options( option_array_t * options, char ** argv, logical_volume_t 
     argv[opt_count++] = EVMS_GET_DEVNAME(volume);
     argv[opt_count]   = NULL;
 
-    {
-	    FILE	*f;
-
-	    f = fopen("/var/tmp/evms-log", "a");
-	    for ( i=0; argv[i]; i++) {
-		    fprintf(f, "'%s' ", argv[i]);
-	    }
-	    fprintf(f, "\n");
-	    fclose(f);
+    bufsize = 0;
+    for (i=0; argv[i]; i++)
+	    bufsize += strlen(argv[i]) + 5;
+    buf = malloc(bufsize+1);
+    if (!buf)
+	    return;
+    buf[0] = 0;
+    for (i=0; argv[i]; i++) {
+	    strcat(buf, argv[i]);
+	    strcat(buf, " ");
     }
+    EngFncs->write_log_entry(DEBUG, pMyPluginRecord,
+			     "fsck command: %s\n", buf);
+    free(buf);
     
     return;
 }
