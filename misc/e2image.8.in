@@ -32,7 +32,7 @@ recover a badly damaged filesystem.
 .PP
 If  
 .I image-file
-is -, then the output of 
+is \-, then the output of 
 .B e2image
 will be sent to standard output, so that the output can be piped to
 another program, such as 
@@ -81,7 +81,7 @@ It is a very good idea to periodically (at boot time and
 every week or so) to create image files for all of
 filesystems on a system, as well as saving the partition
 layout (which can be generated using the using
-.B fdisk -l
+.B fdisk \-l
 command).  Ideally the image file should be stored on some filesystem
 other that
 the filesystem whose data it contains, to ensure that its data is
@@ -93,7 +93,7 @@ creates the image file as a sparse file.
 Hence, if the image file
 needs to be copied to another location, it should
 either be compressed first or copied using the 
-.B \--sparse=always
+.B \-\-sparse=always
 option to GNU version of 
 .BR cp .  
 .PP
@@ -111,7 +111,7 @@ disk will generally compress down to 3 or 4 megabytes.
 was written by Theodore Ts'o (tytso@mit.edu).
 .SH AVAILABILITY
 .B e2image
-is part of the e2fsprogs package and is available from anonymous 
+is part of the e2fsprogs package and is available from 
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR dumpe2fs (8),
