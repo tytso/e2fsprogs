@@ -1,3 +1,51 @@
+Sat Jan 17 13:13:31 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_open_inode_scan): Initialize the group variables
+		so that we don't need to call get_next_blockgroup() the
+		first time around.  Saves a bit of time, and prevents us
+		from needing to assign -1 to current_group (which is an
+		unsigned value).
+
+	* icount.c (insert_icount_el): Cast the estimated number of inodes
+		from a float to an ino_t.
+
+	* alloc.c, alloc_tables.c, badlbocks.c, bb_compat.c, bb_inode.c,
+ 		bitmaps.c, bitops.c, block.c, bmap.c, bmove.c, brel_ma.c,
+ 		check_desc.c, closefs.c, cmp_bitmaps.c, dblist.c,
+ 		dblist_dir.c, dir_iterate.c, dirblock.c, dupfs.c,
+		expanddir.c, ext2fs.h, fileio.c, freefs.c,
+		get_pathname.c, getsize.c, icount.c, initialize.c,
+		inline.c, inode.c, irel_ma.c, ismounted.c, link.c,
+		lookup.c, mkdir.c, namei.c, native.c, newdir.c,
+		openfs.c, read_bb.c, read_bb_file.c, rs_bitmap.c,
+		rw_bitmaps.c, swapfs.c, test_io.c, tst_badblocks.c,
+		tst_getsize.c, tst_iscan.c, unix_io.c, unlink.c,
+		valid_blk.c, version.c: If EXT2_FLAT_INCLUDES is
+		defined, then assume all of the
+ 		ext2-specific header files are in a flat directory.
+
+	* block.c, bmove.c, dirblock.c, fileio.c: Explicitly cast
+		all assignments from void * to be compatible with C++.
+
+Tue Jan  6 11:28:15 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* closefs.c (ext2fs_flush): Add a call to io_channel_flush() to
+		make sure the contents of the disk are flushed to disk.
+
+Mon Dec 29 14:39:13 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dblist.c (ext2fs_add_dir_block): Change new to be new_entry to
+		avoid C++ namespace clash.
+
+	* bitmaps.c (ext2fs_copy_bitmap): Change new to be new_map to
+		avoid C++ namespace clash.
+
+	* ext2fs.h, bb_inode.c, block.c, bmove.c, brel.h, brel_ma.c,
+ 	 	irel.h, irel_ma.c, dblist.c, dblist_dir.c, dir_iterate.c,
+ 	 	ext2fsP.h, expanddir.c, get_pathname.c, inode.c, link.c,
+ 	 	unlink.c: Change private to be priv_data (to avoid C++
+ 	 	namespace clash)
+
 Fri Nov 28 09:26:31 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* dblist.c (ext2fs_get_num_dirs): Make ext2fs_get_num_dirs more

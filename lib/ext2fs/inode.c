@@ -21,7 +21,11 @@
 #include <sys/types.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fsP.h"
 
@@ -43,7 +47,7 @@ struct ext2_struct_inode_scan {
 	errcode_t		(*done_group)(ext2_filsys fs,
 					      ext2_inode_scan scan,
 					      dgrp_t group,
-					      void * private);
+					      void * priv_data);
 	void *			done_group_data;
 	int			bad_block_ptr;
 	int			scan_flags;
@@ -123,9 +127,13 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 	scan->fs = fs;
 	scan->inode_size = EXT2_INODE_SIZE(fs->super);
 	scan->bytes_left = 0;
-	scan->current_group = -1;
+	scan->current_group = 0;
+	scan->groups_left = fs->group_desc_count - 1;
 	scan->inode_buffer_blocks = buffer_blocks ? buffer_blocks : 8;
-	scan->groups_left = fs->group_desc_count;
+	scan->current_block = scan->fs->
+		group_desc[scan->current_group].bg_inode_table;
+	scan->inodes_left = EXT2_INODES_PER_GROUP(scan->fs->super);
+	scan->blocks_left = scan->fs->inode_blocks_per_group;
 	retval = ext2fs_get_mem((size_t) (scan->inode_buffer_blocks * 
 					  fs->blocksize),
 				(void **) &scan->inode_buffer);
@@ -166,7 +174,7 @@ void ext2fs_set_inode_callback(ext2_inode_scan scan,
 			       errcode_t (*done_group)(ext2_filsys fs,
 						       ext2_inode_scan scan,
 						       dgrp_t group,
-						       void * private),
+						       void * priv_data),
 			       void *done_group_data)
 {
 	if (!scan || (scan->magic != EXT2_ET_MAGIC_INODE_SCAN))

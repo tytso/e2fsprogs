@@ -43,9 +43,15 @@ typedef __u32		blk_t;
 typedef unsigned int	dgrp_t;
 typedef __u32		ext2_off_t;
 
+#if EXT2_FLAT_INCLUDES
+#include "com_err.h"
+#include "ext2_io.h"
+#include "ext2_err.h"
+#else
 #include "et/com_err.h"
 #include "ext2fs/ext2_io.h"
 #include "ext2fs/ext2_err.h"
+#endif
 
 typedef struct struct_ext2_filsys *ext2_filsys;
 
@@ -173,7 +179,7 @@ struct struct_ext2_filsys {
 	/*
 	 * Reserved for the use of the calling application.
 	 */
-	void *				private;
+	void *				priv_data;
 
 	/*
 	 * Inode cache
@@ -477,8 +483,8 @@ extern errcode_t ext2fs_block_iterate(ext2_filsys fs,
 				      int (*func)(ext2_filsys fs,
 						  blk_t	*blocknr,
 						  int	blockcnt,
-						  void	*private),
-				      void *private);
+						  void	*priv_data),
+				      void *priv_data);
 
 errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 				ino_t	ino,
@@ -489,8 +495,8 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 					    int	blockcnt,
 					    blk_t	ref_blk,
 					    int		ref_offset,
-					    void	*private),
-				void *private);
+					    void	*priv_data),
+				void *priv_data);
 
 /* bmap.c */
 extern errcode_t ext2fs_bmap(ext2_filsys fs, ino_t ino,
@@ -527,8 +533,8 @@ extern errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino,
 				      blk_t blk, int blockcnt);
 extern errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 	int (*func)(ext2_filsys fs, struct ext2_db_entry *db_info,
-		    void	*private),
-       void *private);
+		    void	*priv_data),
+       void *priv_data);
 extern errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ino_t ino,
 				      blk_t blk, int blockcnt);
 extern errcode_t ext2fs_copy_dblist(ext2_dblist src,
@@ -546,8 +552,8 @@ extern errcode_t
 					      int	offset,
 					      int	blocksize,
 					      char	*buf,
-					      void	*private),
-				  void *private);
+					      void	*priv_data),
+				  void *priv_data);
 
 /* dirblock.c */
 extern errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
@@ -564,13 +570,13 @@ extern errcode_t ext2fs_dir_iterate(ext2_filsys fs,
 					  int	offset,
 					  int	blocksize,
 					  char	*buf,
-					  void	*private),
-			      void *private);
-	/* private to library */
+					  void	*priv_data),
+			      void *priv_data);
+	/* priv_data to library */
 extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 				    blk_t		*blocknr,
 				    int		blockcnt,
-				    void		*private);
+				    void		*priv_data);
 
 /* dupfs.c */
 extern errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest);
@@ -622,7 +628,7 @@ extern void ext2fs_set_inode_callback
 	 errcode_t (*done_group)(ext2_filsys fs,
 				 ext2_inode_scan scan,
 				 dgrp_t group,
-				 void * private),
+				 void * priv_data),
 	 void *done_group_data);
 extern int ext2fs_inode_scan_flags(ext2_inode_scan scan, int set_flags,
 				   int clear_flags);

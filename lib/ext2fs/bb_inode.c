@@ -27,7 +27,11 @@
 #include <sys/types.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 
@@ -43,10 +47,11 @@ struct set_badblock_record {
 };
 
 static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
-			      blk_t ref_block, int ref_offset, void *private);
+			      blk_t ref_block, int ref_offset,
+			      void *priv_data);
 static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 				blk_t ref_block, int ref_offset,
-				void *private);
+				void *priv_data);
 	
 /*
  * Given a bad blocks bitmap, update the bad blocks inode to reflect
@@ -159,10 +164,11 @@ cleanup:
 #pragma argsused
 #endif
 static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
-				blk_t ref_block, int ref_offset, void *private)
+				blk_t ref_block, int ref_offset,
+				void *priv_data)
 {
 	struct set_badblock_record *rec = (struct set_badblock_record *)
-		private;
+		priv_data;
 	errcode_t	retval;
 	int		group;
 
@@ -217,10 +223,10 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 #endif
 static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 			      int blockcnt, blk_t ref_block, 
-			      int ref_offset, void *private)
+			      int ref_offset, void *priv_data)
 {
 	struct set_badblock_record *rec = (struct set_badblock_record *)
-		private;
+		priv_data;
 	errcode_t	retval;
 	blk_t		blk;
 	int		group;

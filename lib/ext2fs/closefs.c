@@ -16,7 +16,11 @@
 #include <time.h>
 #include <string.h>
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fsP.h"
 
@@ -162,7 +166,11 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		if (retval)
 			goto errout;
 	}
-	retval = 0;
+
+	/*
+	 * Flush the blocks out to disk
+	 */
+	retval = io_channel_flush(fs->io);
 errout:
 	fs->super->s_state = fs_state;
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {

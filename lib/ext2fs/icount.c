@@ -16,7 +16,12 @@
 #include <string.h>
 #include <stdio.h>
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
+
 #include "ext2fs.h"
 
 /*
@@ -170,8 +175,8 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 	if (icount->count >= icount->size) {
 		if (icount->count) {
 			new_size = icount->list[(unsigned)icount->count-1].ino;
-			new_size = icount->count * 
-				((float) new_size / icount->num_inodes);
+			new_size = (ino_t) (icount->count * 
+				((float) new_size / icount->num_inodes));
 		}
 		if (new_size < (icount->size + 100))
 			new_size = icount->size + 100;

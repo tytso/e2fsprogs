@@ -15,7 +15,11 @@
 #include <unistd.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 
@@ -26,7 +30,7 @@ struct block_context {
 		    int		bcount,
 		    blk_t	ref_blk,
 		    int		ref_offset,
-		    void	*private);
+		    void	*priv_data);
 	int		bcount;
 	int		bsize;
 	int		flags;
@@ -34,7 +38,7 @@ struct block_context {
 	char	*ind_buf;
 	char	*dind_buf;
 	char	*tind_buf;
-	void	*private;
+	void	*priv_data;
 };
 
 static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
@@ -49,7 +53,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 	    !(ctx->flags & BLOCK_FLAG_DATA_ONLY))
 		ret = (*ctx->func)(ctx->fs, ind_block,
 				   BLOCK_COUNT_IND, ref_block,
-				   ref_offset, ctx->private);
+				   ref_offset, ctx->priv_data);
 	if (!*ind_block || (ret & BLOCK_ABORT)) {
 		ctx->bcount += limit;
 		return ret;
@@ -78,7 +82,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 		for (i = 0; i < limit; i++, ctx->bcount++, block_nr++) {
 			flags = (*ctx->func)(ctx->fs, block_nr, ctx->bcount,
 					     *ind_block, offset, 
-					     ctx->private);
+					     ctx->priv_data);
 			changed	|= flags;
 			if (flags & BLOCK_ABORT) {
 				ret |= BLOCK_ABORT;
@@ -92,7 +96,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 				continue;
 			flags = (*ctx->func)(ctx->fs, block_nr, ctx->bcount,
 					     *ind_block, offset, 
-					     ctx->private);
+					     ctx->priv_data);
 			changed	|= flags;
 			if (flags & BLOCK_ABORT) {
 				ret |= BLOCK_ABORT;
@@ -118,7 +122,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 	    !(ret & BLOCK_ABORT))
 		ret |= (*ctx->func)(ctx->fs, ind_block,
 				    BLOCK_COUNT_IND, ref_block,
-				    ref_offset, ctx->private);
+				    ref_offset, ctx->priv_data);
 	return ret;
 }
 	
@@ -134,7 +138,7 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 	    !(ctx->flags & BLOCK_FLAG_DATA_ONLY))
 		ret = (*ctx->func)(ctx->fs, dind_block,
 				   BLOCK_COUNT_DIND, ref_block,
-				   ref_offset, ctx->private);
+				   ref_offset, ctx->priv_data);
 	if (!*dind_block || (ret & BLOCK_ABORT)) {
 		ctx->bcount += limit*limit;
 		return ret;
@@ -205,7 +209,7 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 	    !(ret & BLOCK_ABORT))
 		ret |= (*ctx->func)(ctx->fs, dind_block,
 				    BLOCK_COUNT_DIND, ref_block,
-				    ref_offset, ctx->private);
+				    ref_offset, ctx->priv_data);
 	return ret;
 }
 	
@@ -221,7 +225,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 	    !(ctx->flags & BLOCK_FLAG_DATA_ONLY))
 		ret = (*ctx->func)(ctx->fs, tind_block,
 				   BLOCK_COUNT_TIND, ref_block,
-				   ref_offset, ctx->private);
+				   ref_offset, ctx->priv_data);
 	if (!*tind_block || (ret & BLOCK_ABORT)) {
 		ctx->bcount += limit*limit*limit;
 		return ret;
@@ -292,7 +296,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 	    !(ret & BLOCK_ABORT))
 		ret |= (*ctx->func)(ctx->fs, tind_block,
 				    BLOCK_COUNT_TIND, ref_block,
-				    ref_offset, ctx->private);
+				    ref_offset, ctx->priv_data);
 	
 	return ret;
 }
@@ -306,8 +310,8 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 					    int	blockcnt,
 					    blk_t	ref_blk,
 					    int		ref_offset,
-					    void	*private),
-				void *private)
+					    void	*priv_data),
+				void *priv_data)
 {
 	int	i;
 	int	got_inode = 0;
@@ -325,7 +329,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 
 	ctx.fs = fs;
 	ctx.func = func;
-	ctx.private = private;
+	ctx.priv_data = priv_data;
 	ctx.flags = flags;
 	ctx.bcount = 0;
 	if (block_buf) {
@@ -352,7 +356,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 			ret |= (*ctx.func)(fs,
 					   &inode.osd1.hurd1.h_i_translator,
 					   BLOCK_COUNT_TRANSLATOR,
-					   0, 0, private);
+					   0, 0, priv_data);
 			if (ret & BLOCK_ABORT)
 				goto abort;
 		}
@@ -364,7 +368,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 	for (i = 0; i < EXT2_NDIR_BLOCKS ; i++, ctx.bcount++) {
 		if (blocks[i] || (flags & BLOCK_FLAG_APPEND)) {
 			ret |= (*ctx.func)(fs, &blocks[i],
-					    ctx.bcount, 0, 0, private);
+					    ctx.bcount, 0, 0, priv_data);
 			if (ret & BLOCK_ABORT)
 				goto abort;
 		}
@@ -412,7 +416,7 @@ struct xlate {
 	int (*func)(ext2_filsys	fs,
 		    blk_t	*blocknr,
 		    int		bcount,
-		    void	*private);
+		    void	*priv_data);
 	void *real_private;
 };
 
@@ -420,9 +424,9 @@ struct xlate {
 #pragma argsused
 #endif
 static int xlate_func(ext2_filsys fs, blk_t *blocknr, int blockcnt,
-		      blk_t ref_block, int ref_offset, void *private)
+		      blk_t ref_block, int ref_offset, void *priv_data)
 {
-	struct xlate *xl = private;
+	struct xlate *xl = (struct xlate *) priv_data;
 
 	return (*xl->func)(fs, blocknr, blockcnt, xl->real_private);
 }
@@ -434,12 +438,12 @@ errcode_t ext2fs_block_iterate(ext2_filsys fs,
 			       int (*func)(ext2_filsys fs,
 					   blk_t	*blocknr,
 					   int	blockcnt,
-					   void	*private),
-			       void *private)
+					   void	*priv_data),
+			       void *priv_data)
 {
 	struct xlate xl;
 	
-	xl.real_private = private;
+	xl.real_private = priv_data;
 	xl.func = func;
 
 	return ext2fs_block_iterate2(fs, ino, flags, block_buf,

@@ -22,7 +22,11 @@
 #include <errno.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 #include "brel.h"
@@ -72,7 +76,7 @@ errcode_t ext2fs_brel_memarray_create(char *name, blk_t max_block,
 	if (retval)
 		goto errout;
 	memset(ma, 0, sizeof(struct brel_ma));
-	brel->private = ma;
+	brel->priv_data = ma;
 	
 	size = (size_t) (sizeof(struct ext2_block_relocate_entry) *
 			 (max_block+1));
@@ -106,7 +110,7 @@ static errcode_t bma_put(ext2_brel brel, blk_t old,
 {
 	struct brel_ma 	*ma;
 
-	ma = brel->private;
+	ma = brel->priv_data;
 	if (old > ma->max_block)
 		return EXT2_ET_INVALID_ARGUMENT;
 	ma->entries[(unsigned)old] = *ent;
@@ -118,7 +122,7 @@ static errcode_t bma_get(ext2_brel brel, blk_t old,
 {
 	struct brel_ma 	*ma;
 
-	ma = brel->private;
+	ma = brel->priv_data;
 	if (old > ma->max_block)
 		return EXT2_ET_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned)old].new == 0)
@@ -138,7 +142,7 @@ static errcode_t bma_next(ext2_brel brel, blk_t *old,
 {
 	struct brel_ma 	*ma;
 
-	ma = brel->private;
+	ma = brel->priv_data;
 	while (++brel->current < ma->max_block) {
 		if (ma->entries[(unsigned)brel->current].new == 0)
 			continue;
@@ -154,7 +158,7 @@ static errcode_t bma_move(ext2_brel brel, blk_t old, blk_t new)
 {
 	struct brel_ma 	*ma;
 
-	ma = brel->private;
+	ma = brel->priv_data;
 	if ((old > ma->max_block) || (new > ma->max_block))
 		return EXT2_ET_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned)old].new == 0)
@@ -168,7 +172,7 @@ static errcode_t bma_delete(ext2_brel brel, blk_t old)
 {
 	struct brel_ma 	*ma;
 
-	ma = brel->private;
+	ma = brel->priv_data;
 	if (old > ma->max_block)
 		return EXT2_ET_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned)old].new == 0)
@@ -184,7 +188,7 @@ static errcode_t bma_free(ext2_brel brel)
 	if (!brel)
 		return 0;
 
-	ma = brel->private;
+	ma = brel->priv_data;
 
 	if (ma) {
 		if (ma->entries)

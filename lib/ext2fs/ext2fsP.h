@@ -52,15 +52,15 @@ struct dir_context {
 		    int	offset,
 		    int	blocksize,
 		    char	*buf,
-		    void	*private);
+		    void	*priv_data);
 	int (*func2)(ino_t	dir,
 		     int	entry,
 		     struct ext2_dir_entry *dirent,
 		     int	offset,
 		     int	blocksize,
 		     char	*buf,
-		     void	*private);
-	void		*private;
+		     void	*priv_data);
+	void		*priv_data;
 	errcode_t	errcode;
 };
 
@@ -86,5 +86,5 @@ struct ext2_inode_cache_ent {
 extern int ext2_process_dir_block(ext2_filsys fs,
 				  blk_t	*blocknr,
 				  int	blockcnt,
-				  void	*private);
+				  void	*priv_data);
 

@@ -27,7 +27,7 @@ struct ext2_inode_relocation_table {
 	__u32	magic;
 	char	*name;
 	ino_t	current;
-	void	*private;
+	void	*priv_data;
 
 	/*
 	 * Add an inode relocation entry.

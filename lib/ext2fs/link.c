@@ -15,7 +15,11 @@
 #include <unistd.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 
@@ -31,9 +35,9 @@ static int link_proc(struct ext2_dir_entry *dirent,
 		     int	offset,
 		     int	blocksize,
 		     char	*buf,
-		     void	*private)
+		     void	*priv_data)
 {
-	struct link_struct *ls = (struct link_struct *) private;
+	struct link_struct *ls = (struct link_struct *) priv_data;
 	struct ext2_dir_entry *next;
 	int rec_len;
 	int ret = 0;

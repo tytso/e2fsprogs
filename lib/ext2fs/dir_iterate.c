@@ -18,7 +18,11 @@
 #include <errno.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fsP.h"
 
@@ -30,8 +34,8 @@ errcode_t ext2fs_dir_iterate(ext2_filsys fs,
 					 int	offset,
 					 int	blocksize,
 					 char	*buf,
-					 void	*private),
-			     void *private)
+					 void	*priv_data),
+			     void *priv_data)
 {
 	struct		dir_context	ctx;
 	errcode_t	retval;
@@ -53,7 +57,7 @@ errcode_t ext2fs_dir_iterate(ext2_filsys fs,
 	}
 	ctx.func = func;
 	ctx.func2 = 0;
-	ctx.private = private;
+	ctx.priv_data = priv_data;
 	ctx.errcode = 0;
 	retval = ext2fs_block_iterate(fs, dir, 0, 0,
 				      ext2fs_process_dir_block, &ctx);
@@ -71,9 +75,9 @@ errcode_t ext2fs_dir_iterate(ext2_filsys fs,
 extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 				    blk_t		*blocknr,
 				    int		blockcnt,
-				    void		*private)
+				    void		*priv_data)
 {
-	struct dir_context *ctx = (struct dir_context *) private;
+	struct dir_context *ctx = (struct dir_context *) priv_data;
 	int		offset = 0;
 	int		ret = 0;
 	int		changed = 0;
@@ -98,11 +102,11 @@ extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 
 		if (ctx->func)
 			ret = (ctx->func)(dirent, offset, fs->blocksize,
-					  ctx->buf, ctx->private);
+					  ctx->buf, ctx->priv_data);
 		else if (ctx->func2) {
 			ret = (ctx->func2)(ctx->dir, entry, dirent, offset,
 					   fs->blocksize, ctx->buf,
-					   ctx->private);
+					   ctx->priv_data);
 			if (entry < DIRENT_OTHER_FILE)
 				entry++;
 		}

@@ -24,7 +24,11 @@
 #include <unistd.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 
@@ -42,12 +46,12 @@ static int get_pathname_proc(struct ext2_dir_entry *dirent,
 			     int	offset,
 			     int	blocksize,
 			     char	*buf,
-			     void	*private)
+			     void	*priv_data)
 {
 	struct get_pathname_struct	*gp;
 	errcode_t			retval;
 
-	gp = (struct get_pathname_struct *) private;
+	gp = (struct get_pathname_struct *) priv_data;
 
 	if ((dirent->name_len == 2) &&
 	    !strncmp(dirent->name, "..", 2))

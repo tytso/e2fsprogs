@@ -18,7 +18,12 @@
 #include <sys/time.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
+
 #include "ext2fs/ext2fs.h"
 
 struct process_block_struct {
@@ -34,13 +39,14 @@ struct process_block_struct {
 
 static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			 int blockcnt, blk_t ref_block,
-			 int ref_offset, void *private)
+			 int ref_offset, void *priv_data)
 {
-	struct process_block_struct *pb = private;
+	struct process_block_struct *pb;
 	errcode_t	retval;
 	int		ret;
 	blk_t		block, orig;
 
+	pb = (struct process_block_struct *) priv_data;
 	block = orig = *block_nr;
 	ret = 0;
 	

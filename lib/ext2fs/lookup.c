@@ -15,7 +15,11 @@
 #include <unistd.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 
@@ -33,9 +37,9 @@ static int lookup_proc(struct ext2_dir_entry *dirent,
 		       int	offset,
 		       int	blocksize,
 		       char	*buf,
-		       void	*private)
+		       void	*priv_data)
 {
-	struct lookup_struct *ls = (struct lookup_struct *) private;
+	struct lookup_struct *ls = (struct lookup_struct *) priv_data;
 
 	if (ls->len != dirent->name_len)
 		return 0;

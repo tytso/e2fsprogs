@@ -24,7 +24,11 @@
 #include <sys/types.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 
@@ -87,16 +91,16 @@ errcode_t ext2fs_copy_bitmap(ext2fs_generic_bitmap src,
 			     ext2fs_generic_bitmap *dest)
 {
 	errcode_t		retval;
-	ext2fs_generic_bitmap	new;
+	ext2fs_generic_bitmap	new_map;
 
 	retval = make_bitmap(src->start, src->end, src->real_end,
-			     src->description, src->bitmap, &new);
+			     src->description, src->bitmap, &new_map);
 	if (retval)
 		return retval;
-	new->magic = src->magic;
-	new->fs = src->fs;
-	new->base_error_code = src->base_error_code;
-	*dest = new;
+	new_map->magic = src->magic;
+	new_map->fs = src->fs;
+	new_map->base_error_code = src->base_error_code;
+	*dest = new_map;
 	return 0;
 }
 

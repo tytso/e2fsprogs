@@ -23,7 +23,11 @@
 #include <sys/types.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 
@@ -39,9 +43,9 @@ struct read_bb_record {
 #pragma argsused
 #endif
 static int mark_bad_block(ext2_filsys fs, blk_t *block_nr,
-			     int blockcnt, void *private)
+			     int blockcnt, void *priv_data)
 {
-	struct read_bb_record *rb = (struct read_bb_record *) private;
+	struct read_bb_record *rb = (struct read_bb_record *) priv_data;
 	
 	if (blockcnt < 0)
 		return 0;

@@ -15,7 +15,11 @@
 #include <unistd.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 
@@ -27,9 +31,9 @@ struct expand_dir_struct {
 static int expand_dir_proc(ext2_filsys fs,
 			   blk_t	*blocknr,
 			   int	blockcnt,
-			   void	*private)
+			   void	*priv_data)
 {
-	struct expand_dir_struct *es = (struct expand_dir_struct *) private;
+	struct expand_dir_struct *es = (struct expand_dir_struct *) priv_data;
 	blk_t	new_blk;
 	static blk_t	last_blk = 0;
 	char		*block;

@@ -19,7 +19,11 @@
 #include <errno.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 #include "irel.h"
@@ -88,7 +92,7 @@ errcode_t ext2fs_irel_memarray_create(char *name, ino_t max_inode,
 	if (retval)
 		goto errout;
 	memset(ma, 0, sizeof(struct irel_ma));
-	irel->private = ma;
+	irel->priv_data = ma;
 	
 	size = (size_t) (sizeof(ino_t) * (max_inode+1));
 	retval = ext2fs_get_mem(size, (void **) &ma->orig_map);
@@ -142,7 +146,7 @@ static errcode_t ima_put(ext2_irel irel, ino_t old,
 	errcode_t			retval;
 	int				size;
 
-	ma = irel->private;
+	ma = irel->priv_data;
 	if (old > ma->max_inode)
 		return EXT2_ET_INVALID_ARGUMENT;
 
@@ -177,7 +181,7 @@ static errcode_t ima_get(ext2_irel irel, ino_t old,
 {
 	struct irel_ma 	*ma;
 
-	ma = irel->private;
+	ma = irel->priv_data;
 	if (old > ma->max_inode)
 		return EXT2_ET_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned) old].new == 0)
@@ -192,7 +196,7 @@ static errcode_t ima_get_by_orig(ext2_irel irel, ino_t orig, ino_t *old,
 	struct irel_ma 	*ma;
 	ino_t	ino;
 
-	ma = irel->private;
+	ma = irel->priv_data;
 	if (orig > ma->max_inode)
 		return EXT2_ET_INVALID_ARGUMENT;
 	ino = ma->orig_map[(unsigned) orig];
@@ -214,7 +218,7 @@ static errcode_t ima_next(ext2_irel irel, ino_t *old,
 {
 	struct irel_ma 	*ma;
 
-	ma = irel->private;
+	ma = irel->priv_data;
 	while (++irel->current < ma->max_inode) {
 		if (ma->entries[(unsigned) irel->current].new == 0)
 			continue;
@@ -235,7 +239,7 @@ static errcode_t ima_add_ref(ext2_irel irel, ino_t ino,
 	struct ext2_inode_relocate_entry *ent;
 	errcode_t		retval;
 
-	ma = irel->private;
+	ma = irel->priv_data;
 	if (ino > ma->max_inode)
 		return EXT2_ET_INVALID_ARGUMENT;
 
@@ -266,7 +270,7 @@ static errcode_t ima_start_iter_ref(ext2_irel irel, ino_t ino)
 {
 	struct irel_ma 	*ma;
 
-	ma = irel->private;
+	ma = irel->priv_data;
 	if (ino > ma->max_inode)
 		return EXT2_ET_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned) ino].new == 0)
@@ -282,7 +286,7 @@ static errcode_t ima_next_ref(ext2_irel irel,
 	struct irel_ma 	*ma;
 	struct inode_reference_entry *ref_ent;
 
-	ma = irel->private;
+	ma = irel->priv_data;
 	
 	ref_ent = ma->ref_entries + ma->ref_current;
 
@@ -301,7 +305,7 @@ static errcode_t ima_move(ext2_irel irel, ino_t old, ino_t new)
 {
 	struct irel_ma 	*ma;
 
-	ma = irel->private;
+	ma = irel->priv_data;
 	if ((old > ma->max_inode) || (new > ma->max_inode))
 		return EXT2_ET_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned) old].new == 0)
@@ -324,7 +328,7 @@ static errcode_t ima_delete(ext2_irel irel, ino_t old)
 {
 	struct irel_ma 	*ma;
 
-	ma = irel->private;
+	ma = irel->priv_data;
 	if (old > ma->max_inode)
 		return EXT2_ET_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned) old].new == 0)
@@ -348,7 +352,7 @@ static errcode_t ima_free(ext2_irel irel)
 	if (!irel)
 		return 0;
 
-	ma = irel->private;
+	ma = irel->priv_data;
 
 	if (ma) {
 		if (ma->orig_map)

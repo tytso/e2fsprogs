@@ -17,12 +17,16 @@
 #include <string.h>
 #include <time.h>
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fsP.h"
 
 static int db_dir_proc(ext2_filsys fs, struct ext2_db_entry *db_info,
-		       void *private);
+		       void *priv_data);
 
 extern errcode_t
 	ext2fs_dblist_dir_iterate(ext2_dblist dblist,
@@ -34,8 +38,8 @@ extern errcode_t
 					      int	offset,
 					      int	blocksize,
 					      char	*buf,
-					      void	*private),
-				  void *private)
+					      void	*priv_data),
+				  void *priv_data)
 {
 	errcode_t		retval;
 	struct dir_context	ctx;
@@ -54,7 +58,7 @@ extern errcode_t
 	}
 	ctx.func = 0;
 	ctx.func2 = func;
-	ctx.private = private;
+	ctx.priv_data = priv_data;
 	ctx.errcode = 0;
 
 	retval = ext2fs_dblist_iterate(dblist, db_dir_proc, &ctx);
@@ -67,12 +71,13 @@ extern errcode_t
 }
 
 static int db_dir_proc(ext2_filsys fs, struct ext2_db_entry *db_info,
-		       void *private)
+		       void *priv_data)
 {
-	struct dir_context	*ctx = private;
+	struct dir_context	*ctx;
 
+	ctx = (struct dir_context *) priv_data;
 	ctx->dir = db_info->ino;
 	
 	return ext2fs_process_dir_block(fs, &db_info->blk,
-					db_info->blockcnt, private);
+					db_info->blockcnt, priv_data);
 }

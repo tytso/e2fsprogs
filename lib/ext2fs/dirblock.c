@@ -16,7 +16,11 @@
 #include <string.h>
 #include <time.h>
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 
@@ -33,7 +37,7 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 	if ((fs->flags & (EXT2_FLAG_SWAP_BYTES|
 			  EXT2_FLAG_SWAP_BYTES_READ)) == 0)
 		return 0;
-	p = buf;
+	p = (char *) buf;
 	end = (char *) buf + fs->blocksize;
 	while (p < end) {
 		dirent = (struct ext2_dir_entry *) p;
@@ -70,7 +74,7 @@ errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 			dirent->name_len = ext2fs_swab16(dirent->name_len);
 		}
 	} else
-		write_buf = inbuf;
+		write_buf = (char *) inbuf;
  	retval = io_channel_write_blk(fs->io, block, 1, write_buf);
 	if (buf)
 		ext2fs_free_mem((void **) &buf);

@@ -17,7 +17,11 @@
 #include <string.h>
 #include <time.h>
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fsP.h"
 
@@ -154,7 +158,7 @@ errcode_t ext2fs_copy_dblist(ext2_dblist src, ext2_dblist *dest)
 errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 			       int blockcnt)
 {
-	struct ext2_db_entry 	*new;
+	struct ext2_db_entry 	*new_entry;
 	errcode_t		retval;
 	
 	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
@@ -169,10 +173,10 @@ errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 			return retval;
 		}
 	}
-	new = dblist->list + ( (int) dblist->count++);
-	new->blk = blk;
-	new->ino = ino;
-	new->blockcnt = blockcnt;
+	new_entry = dblist->list + ( (int) dblist->count++);
+	new_entry->blk = blk;
+	new_entry->ino = ino;
+	new_entry->blockcnt = blockcnt;
 
 	dblist->sorted = 0;
 
@@ -206,8 +210,8 @@ errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 				int (*func)(ext2_filsys fs,
 					    struct ext2_db_entry *db_info,
-					    void	*private),
-				void *private)
+					    void	*priv_data),
+				void *priv_data)
 {
 	ino_t	i;
 	int	ret;
@@ -220,7 +224,7 @@ errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 		dblist->sorted = 1;
 	}
 	for (i=0; i < dblist->count; i++) {
-		ret = (*func)(dblist->fs, &dblist->list[(int)i], private);
+		ret = (*func)(dblist->fs, &dblist->list[(int)i], priv_data);
 		if (ret & DBLIST_ABORT)
 			return 0;
 	}

@@ -15,7 +15,11 @@
 #include <unistd.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
 
 #include "ext2fs.h"
 
@@ -145,7 +149,7 @@ errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
 	errcode_t	retval;
 	blk_t		b, pb;
 	unsigned int	start, left, c, count = 0;
-	char		*ptr = buf;
+	char		*ptr = (char *) buf;
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 	fs = file->fs;
@@ -215,7 +219,7 @@ errcode_t ext2fs_file_write(ext2_file_t file, void *buf,
 	errcode_t	retval;
 	blk_t		b, pb;
 	unsigned int		start, c, count = 0;
-	char		*ptr = buf;
+	char		*ptr = (char *) buf;
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 	fs = file->fs;

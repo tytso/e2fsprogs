@@ -26,7 +26,12 @@
 #include <sys/disklabel.h>
 #endif /* HAVE_SYS_DISKLABEL_H */
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
 #include <linux/ext2_fs.h>
+#endif
+
 #include "ext2fs.h"
 
 static int valid_offset (int fd, ext2_loff_t offset)
