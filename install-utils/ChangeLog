@@ -1,3 +1,8 @@
+2000-04-02  Theodore Ts'o  <tytso@valinux.com>
+
+	* Add e2label.8 to the remove_preformat_manpages script.
+		(Probably isn't being used any more, but...)
+
 1999-11-10    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.18
