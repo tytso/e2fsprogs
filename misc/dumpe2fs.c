@@ -86,11 +86,15 @@ static void list_desc (ext2_filsys fs)
 	unsigned long i;
 	long diff;
 	blk_t	group_blk, next_blk;
-	char * block_bitmap = fs->block_map->bitmap;
-	char * inode_bitmap = fs->inode_map->bitmap;
+	char *block_bitmap=NULL, *inode_bitmap=NULL;
 	int inode_blocks_per_group;
 	int group_desc_blocks;
 	int meta_bg, meta_bg_size, has_super;
+
+	if (fs->block_map)
+		block_bitmap = fs->block_map->bitmap;
+	if (fs->inode_map)
+		inode_bitmap = fs->inode_map->bitmap;
 
 	inode_blocks_per_group = ((fs->super->s_inodes_per_group *
 				   EXT2_INODE_SIZE(fs->super)) +
@@ -160,17 +164,25 @@ static void list_desc (ext2_filsys fs)
 		if (diff > 0)
 			printf(" (+%ld)", diff);
 		printf (_("\n  %d free blocks, %d free inodes, "
-			  "%d directories\n  Free blocks: "),
+			  "%d directories\n"),
 			fs->group_desc[i].bg_free_blocks_count,
 			fs->group_desc[i].bg_free_inodes_count,
 			fs->group_desc[i].bg_used_dirs_count);
-		print_free (i, block_bitmap, fs->super->s_blocks_per_group,
-			    fs->super->s_first_data_block);
-		fputs(_("\n  Free inodes: "), stdout);
-		print_free (i, inode_bitmap, fs->super->s_inodes_per_group, 1);
-		fputc('\n', stdout);
-		block_bitmap += fs->super->s_blocks_per_group / 8;
-		inode_bitmap += fs->super->s_inodes_per_group / 8;
+		if (block_bitmap) {
+			fputs(_("  Free blocks: "), stdout);
+			print_free (i, block_bitmap,
+				    fs->super->s_blocks_per_group,
+				    fs->super->s_first_data_block);
+			fputc('\n', stdout);
+			block_bitmap += fs->super->s_blocks_per_group / 8;
+		}
+		if (inode_bitmap) {
+			fputs(_("  Free inodes: "), stdout);
+			print_free (i, inode_bitmap,
+				    fs->super->s_inodes_per_group, 1);
+			fputc('\n', stdout);
+			inode_bitmap += fs->super->s_inodes_per_group / 8;
+		}
 		group_blk = next_blk;
 	}
 }
@@ -352,14 +364,12 @@ int main (int argc, char ** argv)
 			exit (0);
 		}
 		retval = ext2fs_read_bitmaps (fs);
-		if (retval) {
-			com_err (program_name, retval,
-				 _("while trying to read the bitmaps"),
-				 device_name);
-			ext2fs_close (fs);
-			exit (1);
-		}
 		list_desc (fs);
+		if (retval) {
+			printf(_("\n%s: %s: error reading bitmaps: %s\n"),
+			       program_name, device_name,
+			       error_message(retval));
+		}
 	}
 	ext2fs_close (fs);
 	exit (0);

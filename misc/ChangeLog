@@ -1,3 +1,10 @@
+2002-10-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* dumpe2fs.c (list_desc, main): Make dumpe2fs more robust so that
+		if there is an error reading the block/inode bitmaps, it
+		will still print out the contents of the block group
+		descriptors.
+
 2002-10-20  Theodore Ts'o  <tytso@valinux.com>
 
 	* dumpe2fs.c (list_desc), mke2fs.c (PRS), e2image.c
