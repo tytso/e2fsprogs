@@ -30,6 +30,10 @@ extern int optreset;		/* defined by BSD, but not others */
 
 #include "debugfs.h"
 
+#ifndef O_LARGEFILE
+#define O_LARGEFILE 0
+#endif
+
 /*
  * The mode_xlate function translates a linux mode into a native-OS mode_t.
  */
@@ -174,7 +178,7 @@ void do_dump(int argc, char **argv)
 	if (!inode) 
 		return;
 
-	fd = open(out_fn, O_CREAT | O_WRONLY | O_TRUNC, 0666);
+	fd = open(out_fn, O_CREAT | O_WRONLY | O_TRUNC | O_LARGEFILE, 0666);
 	if (fd < 0) {
 		com_err(argv[0], errno, "while opening %s for dump_inode",
 			out_fn);

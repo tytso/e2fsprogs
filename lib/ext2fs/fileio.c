@@ -24,7 +24,7 @@ struct ext2_file {
 	ext2_ino_t		ino;
 	struct ext2_inode	inode;
 	int 			flags;
-	ext2_off_t		pos;
+	__u64			pos;
 	blk_t			blockno;
 	blk_t			physblock;
 	char 			*buf;
@@ -199,13 +199,14 @@ errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
 {
 	ext2_filsys	fs;
 	errcode_t	retval = 0;
-	unsigned int	start, left, c, count = 0;
+	unsigned int	start, c, count = 0;
+	__u64		left;
 	char		*ptr = (char *) buf;
 
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 	fs = file->fs;
 
-	while ((file->pos < file->inode.i_size) && (wanted > 0)) {
+	while ((file->pos < EXT2_I_SIZE(&file->inode)) && (wanted > 0)) {
 		retval = sync_buffer_position(file);
 		if (retval)
 			goto fail;
@@ -217,7 +218,7 @@ errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
 		c = fs->blocksize - start;
 		if (c > wanted)
 			c = wanted;
-		left = file->inode.i_size - file->pos ;
+		left = EXT2_I_SIZE(&file->inode) - file->pos ;
 		if (c > left)
 			c = left;
 	
@@ -281,8 +282,8 @@ fail:
 	return retval;
 }
 
-errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
-			    int whence, ext2_off_t *ret_pos)
+errcode_t ext2fs_file_llseek(ext2_file_t file, __u64 offset,
+			    int whence, __u64 *ret_pos)
 {
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 
@@ -291,7 +292,7 @@ errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
 	else if (whence == EXT2_SEEK_CUR)
 		file->pos += offset;
 	else if (whence == EXT2_SEEK_END)
-		file->pos = file->inode.i_size + offset;
+		file->pos = EXT2_I_SIZE(&file->inode) + offset;
 	else
 		return EXT2_ET_INVALID_ARGUMENT;
 
@@ -301,14 +302,42 @@ errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
 	return 0;
 }
 
+errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
+			    int whence, ext2_off_t *ret_pos)
+{
+	__u64		loffset, ret_loffset;
+	errcode_t	retval;
+	
+	loffset = offset;
+	retval = ext2fs_file_llseek(file, loffset, whence, &ret_loffset);
+	*ret_pos = (ext2_off_t) ret_loffset;
+	return retval;
+}
+
+
+/*
+ * This function returns the size of the file, according to the inode
+ */
+errcode_t ext2fs_file_get_lsize(ext2_file_t file, __u64 *ret_size)
+{
+	if (file->magic != EXT2_ET_MAGIC_EXT2_FILE)
+		return EXT2_ET_MAGIC_EXT2_FILE;
+	*ret_size = EXT2_I_SIZE(&file->inode);
+	return 0;
+}
+
 /*
  * This function returns the size of the file, according to the inode
  */
 ext2_off_t ext2fs_file_get_size(ext2_file_t file)
 {
-	if (file->magic != EXT2_ET_MAGIC_EXT2_FILE)
+	__u64	size;
+
+	if (ext2fs_file_get_lsize(file, &size))
 		return 0;
-	return file->inode.i_size;
+	if ((size >> 32) != 0)
+		return 0;
+	return size;
 }
 
 /*
@@ -322,6 +351,7 @@ errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size)
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 	
 	file->inode.i_size = size;
+	file->inode.i_size_high = 0;
 	retval = ext2fs_write_inode(file->fs, file->ino, &file->inode);
 	if (retval)
 		return retval;

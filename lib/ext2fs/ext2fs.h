@@ -381,6 +381,11 @@ typedef struct ext2_struct_inode_scan *ext2_inode_scan;
 #define LINUX_S_ISSOCK(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFSOCK)
 
 /*
+ * ext2 size of an inode
+ */
+#define EXT2_I_SIZE(i)	((i)->i_size | ((__u64) (i)->i_size_high << 32))
+
+/*
  * ext2_icount_t abstraction
  */
 #define EXT2_ICOUNT_OPT_INCREMENT	0x01
@@ -687,8 +692,11 @@ extern errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
 				  unsigned int wanted, unsigned int *got);
 extern errcode_t ext2fs_file_write(ext2_file_t file, const void *buf,
 				   unsigned int nbytes, unsigned int *written);
+extern errcode_t ext2fs_file_llseek(ext2_file_t file, __u64 offset,
+				   int whence, __u64 *ret_pos);
 extern errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
 				   int whence, ext2_off_t *ret_pos);
+errcode_t ext2fs_file_get_lsize(ext2_file_t file, __u64 *ret_size);
 extern ext2_off_t ext2fs_file_get_size(ext2_file_t file);
 extern errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size);
 
