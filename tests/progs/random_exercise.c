@@ -33,7 +33,9 @@ struct state {
 
 struct state state_array[MAXFDS];
 
-char data_buffer[4096];
+#define DATA_SIZE 65536
+
+char data_buffer[DATA_SIZE];
 
 void clear_state_array()
 {
@@ -54,11 +56,24 @@ int get_random_fd()
 	}
 }
 
+unsigned int get_inode_num(int fd)
+{
+	struct stat st;
+
+	if (fstat(fd, &st) < 0) {
+		perror("fstat");
+		return 0;
+	}
+	return st.st_ino;
+}
+
+
 void create_random_file()
 {
 	char template[16] = "EX.XXXXXX";
 	int	fd;
 	int	isdir = 0;
+	int	size;
 	
 	mktemp(template);
 	isdir = random() & 1;
@@ -66,24 +81,44 @@ void create_random_file()
 		if (mkdir(template, 0700) < 0)
 			return;
 		fd = open(template, O_RDONLY, 0600);
+		printf("Created temp directory %s, fd = %d\n",
+		       template, fd);
 	} else {
+		size = random() & (DATA_SIZE-1);		
 		fd = open(template, O_CREAT|O_RDWR, 0600);
-		write(fd, data_buffer, sizeof(data_buffer));
+		write(fd, data_buffer, size);
+		printf("Created temp file %s, fd = %d, size=%d\n",
+		       template, fd, size);
 	}
+	state_array[fd].isdir = isdir;
 	if (fd < 0)
 		return;
-	printf("Created temp %s %s, fd = %d\n",
-	       isdir ? "directory" : "file", template, fd);
 	state_array[fd].isdir = isdir;
 	state_array[fd].state = STATE_CREATED;
 	strcpy(state_array[fd].name, template);
 }
 
+void truncate_file(int fd)
+{
+	int	size;
+
+	size = random() & (DATA_SIZE-1);
+
+	if (state_array[fd].isdir)
+		return;
+
+	ftruncate(fd, size);
+	printf("Truncating temp file %s, fd = %d, ino=%u, size=%d\n",
+	       state_array[fd].name, fd, get_inode_num(fd), size);
+}
+
+
 void unlink_file(int fd)
 {
 	char *filename = state_array[fd].name;
 	
-	printf("Deleting %s, fd = %d\n", filename, fd);
+	printf("Deleting %s, fd = %d, ino = %u\n", filename, fd,
+	       get_inode_num(fd));
 
 	if (state_array[fd].isdir)
 		rmdir(filename);
@@ -96,7 +131,8 @@ void close_file(int fd)
 {
 	char *filename = state_array[fd].name;
 	
-	printf("Closing %s, fd = %d\n", filename, fd);
+	printf("Closing %s, fd = %d, ino = %u\n", filename, fd,
+	       get_inode_num(fd));
 	
 	close(fd);
 	state_array[fd].state = STATE_CLEAR;
@@ -118,7 +154,11 @@ main(int argc, char **argv)
 			create_random_file();
 			break;
 		case STATE_CREATED:
-			unlink_file(fd);
+			if ((state_array[fd].isdir == 0) &&
+			    (random() & 2))
+				truncate_file(fd);
+			else
+				unlink_file(fd);
 			break;
 		case STATE_DELETED:
 			close_file(fd);
