@@ -66,6 +66,10 @@ tune2fs \- adjust tunable filesystem parameters on second extended filesystems
 .RI [^] feature [,...]
 ]
 [
+.B \-T
+.I time-last-checked
+]
+[
 .B \-U
 .I UUID
 ]
@@ -293,6 +297,22 @@ doing!  You need to run
 .BR e2fsck (8)
 on the filesystem after changing this feature in order to have a valid
 filesystem.
+.TP
+.BI \-T " time-last-checked"
+Set the time the filesystem was last checked using
+.BR  e2fsck .
+This can be useful in scripts which use a Logical Volume Manager to make
+a consistent snapshot of a filesystem, and then check the filesystem 
+during off hours to make sure it hasn't been corrupted due to 
+hardware problems, etc.  If the filesystem was clean, then this option can 
+be used to set the last checked time on the original filesystem.  The format 
+of 
+.I time-last-checked
+is the international date format, with an optional time specifier, i.e.
+YYYYMMDD[[HHMM]SS].   The keyword 
+.B now
+is also accepted, in which case the last checked time will be set to the 
+current time.
 .TP
 .BI \-u " user"
 Set the user who can use the reserved filesystem blocks.

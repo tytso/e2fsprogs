@@ -57,7 +57,8 @@ const char * program_name = "tune2fs";
 char * device_name;
 char * new_label, *new_last_mounted, *new_UUID;
 static int c_flag, C_flag, e_flag, f_flag, g_flag, i_flag, l_flag, L_flag;
-static int m_flag, M_flag, r_flag, s_flag = -1, u_flag, U_flag;
+static int m_flag, M_flag, r_flag, s_flag = -1, u_flag, U_flag, T_flag;
+static time_t last_check_time;
 static int print_label;
 static int max_mount_count, mount_count, mount_flags;
 static unsigned long interval, reserved_ratio, reserved_blocks;
@@ -79,8 +80,9 @@ static void usage(void)
 		 "\t[-i interval[d|m|w]] [-j] [-J journal-options]\n"
 		 "\t[-l] [-s sparse-flag] [-m reserved-blocks-percent]\n"
 		  "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
-		  "\t[-L volume-label] [-M last-mounted-dir] [-U UUID]\n"
-		  "\t[-O [^]feature[,...]] device\n"), program_name);
+		  "\t[-L volume-label] [-M last-mounted-dir]\n"
+		  "\t[-O [^]feature[,...]] [-T last-check-time] [-U UUID]"
+		  " device\n"), program_name);
 	exit (1);
 }
 
@@ -418,6 +420,23 @@ static void parse_e2label_options(int argc, char ** argv)
 		print_label++;
 }
 
+static time_t parse_time(char *str)
+{
+	struct	tm	ts;
+
+	if (strcmp(str, "now") == 0) {
+		return (time(0));
+	}
+	memset(&ts, 0, sizeof(ts));
+	strptime(optarg, "%Y%m%d%H%M%S", &ts);
+	if (ts.tm_mday == 0) {
+		com_err(program_name, 0,
+			_("Couldn't parse date/time specifier: %s"),
+			str);
+		usage();
+	}
+	return (mktime(&ts));
+}
 
 static void parse_tune2fs_options(int argc, char **argv)
 {
@@ -427,7 +446,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	struct passwd * pw;
 
 	printf("tune2fs %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
-	while ((c = getopt (argc, argv, "c:e:fg:i:jlm:r:s:u:C:J:L:M:O:U:")) != EOF)
+	while ((c = getopt(argc, argv, "c:e:fg:i:jlm:r:s:u:C:J:L:M:O:T:U:")) != EOF)
 		switch (c)
 		{
 			case 'c':
@@ -581,6 +600,11 @@ static void parse_tune2fs_options(int argc, char **argv)
 				break;
 			case 's':
 				s_flag = atoi(optarg);
+				open_flag = EXT2_FLAG_RW;
+				break;
+			case 'T':
+				T_flag = 1;
+				last_check_time = parse_time(optarg);
 				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'u':
@@ -740,6 +764,12 @@ int main (int argc, char ** argv)
 			printf(_("\nSparse superblock flag cleared.  %s"),
 			       _(please_fsck));
 		}
+	}
+	if (T_flag) {
+		sb->s_lastcheck = last_check_time;
+		ext2fs_mark_super_dirty(fs);
+		printf(_("Setting time filesystem last checked to %s\n"),
+		       ctime(&last_check_time));
 	}
 	if (u_flag) {
 		sb->s_def_resuid = resuid;

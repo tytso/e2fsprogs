@@ -1,3 +1,9 @@
+2001-12-26  Theodore Tso  <tytso@valinux.com>
+
+	* tune2fs.8.in, tune2fs.c (parse_tune2fs_options, main): Add
+		support for new option, -T, which allows the user to set
+		the last checked time on the filesystem.
+
 2001-12-24  Theodore Tso  <tytso@valinux.com>
 
 	* mke2fs.c (main, test_disk): If two -c options are
