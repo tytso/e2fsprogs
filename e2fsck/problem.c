@@ -787,6 +787,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  "Cannot proceed without a @r.\n",
 	  PROMPT_NONE, PR_FATAL },  
 
+	/* Internal error: couldn't find dir_info */
+	{ PR_3_NO_DIRINFO,
+	  "Internal error: couldn't find dir_info for %i.\n",
+	  PROMPT_NONE, PR_FATAL },
+
 	/* Pass 4 errors */
 	
 	/* Pass 4: Checking reference counts */

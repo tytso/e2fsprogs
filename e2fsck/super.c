@@ -24,12 +24,12 @@
 
 static void check_super_value(e2fsck_t ctx, const char *descr,
 			      unsigned long value, int flags,
-			      unsigned long min, unsigned long max)
+			      unsigned long min_val, unsigned long max_val)
 {
 	struct		problem_context pctx;
 
-	if (((flags & MIN_CHECK) && (value < min)) ||
-	    ((flags & MAX_CHECK) && (value > max))) {
+	if (((flags & MIN_CHECK) && (value < min_val)) ||
+	    ((flags & MAX_CHECK) && (value > max_val))) {
 		clear_problem_context(&pctx);
 		pctx.num = value;
 		pctx.str = descr;
@@ -57,7 +57,7 @@ void check_super_block(e2fsck_t ctx)
 	blk_t	first_block, last_block;
 	struct ext2fs_sb *s = (struct ext2fs_sb *) fs->super;
 	blk_t	blocks_per_group = fs->super->s_blocks_per_group;
-	int	i;
+	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
 

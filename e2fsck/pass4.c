@@ -85,7 +85,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 #endif
 	struct problem_context	pctx;
 	__u16	link_count, link_counted;
-	int	group, max;
+	int	group, maxgroup;
 	
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
@@ -101,16 +101,16 @@ void e2fsck_pass4(e2fsck_t ctx)
 		fix_problem(ctx, PR_4_PASS_HEADER, &pctx);
 
 	group = 0;
-	max = fs->group_desc_count;
+	maxgroup = fs->group_desc_count;
 	if (ctx->progress)
-		if ((ctx->progress)(ctx, 4, 0, max))
+		if ((ctx->progress)(ctx, 4, 0, maxgroup))
 			return;
 	
 	for (i=1; i <= fs->super->s_inodes_count; i++) {
 		if ((i % fs->super->s_inodes_per_group) == 0) {
 			group++;
 			if (ctx->progress)
-				if ((ctx->progress)(ctx, 4, group, max))
+				if ((ctx->progress)(ctx, 4, group, maxgroup))
 					return;
 		}
 		if (i == EXT2_BAD_INO ||

@@ -64,7 +64,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 #endif
 	struct problem_context	pctx;
 	struct dir_info	*dir;
-	unsigned long max, count;
+	unsigned long maxdirs, count;
 
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
@@ -109,16 +109,16 @@ void e2fsck_pass3(e2fsck_t ctx)
 
 	ext2fs_mark_inode_bitmap(inode_done_map, EXT2_ROOT_INO);
 
-	max = e2fsck_get_num_dirinfo(ctx);
+	maxdirs = e2fsck_get_num_dirinfo(ctx);
 	count = 1;
 
 	if (ctx->progress)
-		if ((ctx->progress)(ctx, 3, 0, max))
+		if ((ctx->progress)(ctx, 3, 0, maxdirs))
 			goto abort_exit;
 	
 	for (i=0; (dir = e2fsck_dir_info_iter(ctx, &i)) != 0;) {
 		if (ctx->progress)
-			if ((ctx->progress)(ctx, 3, count++, max))
+			if ((ctx->progress)(ctx, 3, count++, maxdirs))
 				goto abort_exit;
 		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dir->ino))
 			check_directory(ctx, dir, &pctx);
@@ -256,17 +256,19 @@ static void check_directory(e2fsck_t ctx, struct dir_info *dir,
 	ext2_filsys fs = ctx->fs;
 	struct dir_info *p = dir;
 
+	if (!p)
+		return;
+
 	ext2fs_clear_inode_bitmap(inode_loop_detect);
-	while (p) {
-		/*
-		 * If we find a parent which we've already checked,
-		 * then stop; we know it's either already connected to
-		 * the directory tree, or it isn't but the user has
-		 * already told us he doesn't want us to reconnect the
-		 * disconnected subtree.
-		 */
-		if (ext2fs_test_inode_bitmap(inode_done_map, p->ino))
-			goto check_dot_dot;
+
+	/*
+	 * Keep going until we find a parent which we've already
+	 * checked.  We know it's either already connected to the
+	 * directory tree, or it isn't but the user has already told
+	 * us he doesn't want us to reconnect the disconnected
+	 * subtree.
+	 */
+	while (!ext2fs_test_inode_bitmap(inode_done_map, p->ino)) {
 		/*
 		 * Mark this inode as being "done"; by the time we
 		 * return from this function, the inode we either be
@@ -275,6 +277,7 @@ static void check_directory(e2fsck_t ctx, struct dir_info *dir,
 		 * lost+found.
 		 */
 		ext2fs_mark_inode_bitmap(inode_done_map, p->ino);
+
 		/*
 		 * If this directory doesn't have a parent, or we've
 		 * seen the parent once already, then offer to
@@ -282,23 +285,25 @@ static void check_directory(e2fsck_t ctx, struct dir_info *dir,
 		 */
 		if (!p->parent ||
 		    (ext2fs_test_inode_bitmap(inode_loop_detect,
-					      p->parent)))
+					      p->parent))) {
+			pctx->ino = p->ino;
+			if (fix_problem(ctx, PR_3_UNCONNECTED_DIR, pctx)) {
+				if (e2fsck_reconnect_file(ctx, p->ino))
+					ext2fs_unmark_valid(fs);
+				else {
+					p->parent = lost_and_found;
+					fix_dotdot(ctx, p, lost_and_found);
+				}
+			}
 			break;
+		}
 		ext2fs_mark_inode_bitmap(inode_loop_detect,
 					 p->parent);
+		pctx->ino = p->parent;
 		p = e2fsck_get_dir_info(ctx, p->parent);
-	}
-	/*
-	 * If we've reached here, we've hit a detached directory
-	 * inode; offer to reconnect it to lost+found.
-	 */
-	pctx->ino = p->ino;
-	if (fix_problem(ctx, PR_3_UNCONNECTED_DIR, pctx)) {
-		if (e2fsck_reconnect_file(ctx, p->ino))
-			ext2fs_unmark_valid(fs);
-		else {
-			p->parent = lost_and_found;
-			fix_dotdot(ctx, p, lost_and_found);
+		if (!p) {
+			fix_problem(ctx, PR_3_NO_DIRINFO, pctx);
+			return;
 		}
 	}
 
@@ -306,7 +311,6 @@ static void check_directory(e2fsck_t ctx, struct dir_info *dir,
 	 * Make sure that .. and the parent directory are the same;
 	 * offer to fix it if not.
 	 */
-check_dot_dot:
 	if (dir->parent != dir->dotdot) {
 		pctx->ino = dir->ino;
 		pctx->ino2 = dir->dotdot;

@@ -1,3 +1,20 @@
+1998-09-02  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* problem.c: Add PR_3_NO_DIRINFO error code.
+
+	* super.c (check_super_value): Rename min and max to min_val and
+		max_val to avoid possible cpp macro conflicts.
+
+	* pass4.c (e2fsck_pass4): Rename max to maxgroup, to avoid
+		possible cpp macro conflicts.
+	
+	* pass3.c (e2fsck_pass3): Rename max to maxdirs, to avoid possible
+		cpp macro conflicts.
+		(check_directory): Fix logic to avoid possible core dump
+		in the case of ext2fs_get_dir_info returning NULL.  (By
+		the time we get here, it should never happen, but...).
+		Also simply/streamline the control flow of the function.
+
 1998-08-17  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* unix.c (check_if_skip): Move the "not cleanly mounted" check

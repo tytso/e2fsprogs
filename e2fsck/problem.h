@@ -472,6 +472,9 @@ struct problem_context {
 /* Cannot proceed without a root inode. */
 #define PR_3_NO_ROOT_INODE_ABORT	0x030015
 
+/* Internal error: couldn't find dir_info */
+#define PR_3_NO_DIRINFO			0x020016
+
 /*
  * Pass 4 errors
  */
