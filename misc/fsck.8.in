@@ -171,7 +171,7 @@ Filesystems with a
 .I fs_passno
 value of 0 are skipped and are not checked at all.  Filesystems with a
 .I fs_passno
-value of greater than zero will be checked in order, with filesystems
+value of greater than zero will be checked in order, 
 with filesystems with the lowest
 .I fs_passno 
 number being checked first.
