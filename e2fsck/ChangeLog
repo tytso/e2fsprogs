@@ -1,3 +1,8 @@
+2003-09-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (PRS): Check the returned name from blkid_get_devname and
+		print an error if the requested LABEL/UUID does not exist.
+	
 2003-09-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1.c (mark_table_blocks): Use the new function

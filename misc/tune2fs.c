@@ -441,6 +441,11 @@ static void parse_e2label_options(int argc, char ** argv)
 		exit(1);
 	}
 	device_name = blkid_get_devname(NULL, argv[1], NULL);
+	if (!device_name) {
+		com_err("e2label", 0, _("Unable to resolve '%s'"), 
+			argv[1]);
+		exit(1);
+	}
 	if (argc == 3) {
 		open_flag = EXT2_FLAG_RW | EXT2_FLAG_JOURNAL_DEV_OK;
 		L_flag = 1;
@@ -691,6 +696,11 @@ static void parse_tune2fs_options(int argc, char **argv)
 	if (!open_flag && !l_flag)
 		usage();
 	device_name = blkid_get_devname(NULL, argv[optind], NULL);
+	if (!device_name) {
+		com_err("tune2fs", 0, _("Unable to resolve '%s'"), 
+			argv[optind]);
+		exit(1);
+	}
 }
 
 void do_findfs(int argc, char **argv)
@@ -704,7 +714,7 @@ void do_findfs(int argc, char **argv)
 	}
 	dev = blkid_get_devname(NULL, argv[1], NULL);
 	if (!dev) {
-		fprintf(stderr, "Filesystem matching %s not found\n", 
+		com_err("findfs", 0, _("Unable to resolve '%s'"), 
 			argv[1]);
 		exit(1);
 	}

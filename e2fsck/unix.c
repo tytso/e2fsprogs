@@ -638,6 +638,11 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	    !cflag && !swapfs && !(ctx->options & E2F_OPT_COMPRESS_DIRS))
 		ctx->options |= E2F_OPT_READONLY;
 	ctx->filesystem_name = blkid_get_devname(ctx->blkid, argv[optind], 0);
+	if (!ctx->filesystem_name) {
+		com_err(ctx->program_name, 0, _("Unable to resolve '%s'"), 
+			argv[optind]);
+		fatal_error(ctx, 0);
+	}
 	if (extended_opts)
 		parse_extended_opts(ctx, extended_opts);
 	
