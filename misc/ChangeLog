@@ -1,5 +1,8 @@
 2001-08-15  Theodore Tso  <tytso@valinux.com>
 
+	* fsck.c (check_all): Don't bother to interpret a device where the
+		pass number is zero.  (Addresses Debian bug #106696).
+
 	* mke2fs.c (PRS): Handle -O and -s options in line in the getopt
 		loop, so that -s and -O handling are a bit more intuitive.
 		(Not that they should be mixed anyway; -s is deprecated.)

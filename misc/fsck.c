@@ -874,7 +874,8 @@ static int check_all(NOARGS)
 	for (fs = filesys_info; fs; fs = fs->next) {
 		if (ignore(fs))
 			fs->flags |= FLAG_DONE;
-		fs->device = interpret_device(fs->device);
+		else
+			fs->device = interpret_device(fs->device);
 	}
 		
 	/*
