@@ -1,7 +1,7 @@
 /*
  * ismounted.c --- Check to see if the filesystem was mounted
  * 
- * Copyright (C) 1995 Theodore Ts'o.
+ * Copyright (C) 1995,1996,1997,1998,1999,2000 Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -29,6 +29,7 @@
 #include <sys/mount.h>
 #endif /* HAVE_GETMNTINFO */
 #include <string.h>
+#include <sys/stat.h>
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -52,22 +53,43 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	while ((mnt = getmntent (f)) != NULL)
 		if (strcmp(file, mnt->mnt_fsname) == 0)
 			break;
-	endmntent (f);
-	if (mnt == 0)
+
+	if (mnt == 0) {
+		struct stat st_root, st_file;
+		/*
+		 * Do an extra check to see if this is the root device.  We
+		 * can't trust /etc/fstab, and /proc/mounts will only list
+		 * /dev/root for the root filesystem.  Argh.  Instead we
+		 * check if the given device has the same major/minor number
+		 * as the device that the root directory is on.
+		 */
+		if (stat("/", &st_root) == 0 && stat(file, &st_file) == 0) {
+			if (st_root.st_dev == st_file.st_rdev) {
+				*mount_flags = EXT2_MF_MOUNTED;
+				if (mtpt)
+					strcpy(mtpt, "/");
+				goto is_root;
+			}
+		}
+		endmntent (f);
 		return 0;
+	}
 	*mount_flags = EXT2_MF_MOUNTED;
 	
 	/* Check to see if the ro option is set */
 	if (hasmntopt(mnt, MNTOPT_RO))
 		*mount_flags |= EXT2_MF_READONLY;
 
+	if (mtpt)
+		strncpy(mtpt, mnt->mnt_dir, mtlen);
 	/*
 	 * Check to see if we're referring to the root filesystem.
 	 * If so, do a manual check to see if we can open /etc/mtab
-	 * read/write, since if the root is mounted read/only,
-	 * /etc/mtab may not be accurate.
+	 * read/write, since if the root is mounted read/only, the
+	 * contents of /etc/mtab may not be accurate.
 	 */
 	if (!strcmp(mnt->mnt_dir, "/")) {
+is_root:
 		*mount_flags |= EXT2_MF_ISROOT;
 		fd = open(MOUNTED, O_RDWR);
 		if (fd < 0) {
@@ -76,8 +98,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 		} else
 			close(fd);
 	}
-	if (mtpt)
-		strncpy(mtpt, mnt->mnt_dir, mtlen);
+	endmntent (f);
 	return 0;
 }
 
@@ -200,13 +221,13 @@ int main(int argc, char **argv)
 	}
 	printf("Device %s reports flags %02x\n", argv[1], mount_flags);
 	if (mount_flags & EXT2_MF_MOUNTED)
-		printf("\t%s is mounted.\n");
+		printf("\t%s is mounted.\n", argv[1]);
 	
 	if (mount_flags & EXT2_MF_READONLY)
-		printf("\t%s is read-only.\n");
+		printf("\t%s is read-only.\n", argv[1]);
 	
 	if (mount_flags & EXT2_MF_ISROOT)
-		printf("\t%s is the root filesystem.\n");
+		printf("\t%s is the root filesystem.\n", argv[1]);
 	
 	exit(0);
 }
