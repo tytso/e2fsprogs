@@ -511,6 +511,13 @@ restart:
 			       "r/o" : "r/w");
 		else if (retval == ENXIO)
 			printf("Possibly non-existent or swap device?\n");
+#ifdef EROFS
+		else if (retval == EROFS)
+			printf("Disk write-protected; use the -n option"
+			       "to do a read-only\n"
+			       "check of the device.\n");
+
+#endif
 		else
 			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);
 		fatal_error(0);
