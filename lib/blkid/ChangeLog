@@ -1,3 +1,8 @@
+2005-03-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* getsize.c (blkid_get_dev_size): Fix compilation problem on
+		Darwin systems.
+
 2006-02-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.36

@@ -92,7 +92,7 @@ blkid_loff_t blkid_get_dev_size(int fd)
 #ifdef DKIOCGETBLOCKCOUNT	/* For Apple Darwin */
 	if (ioctl(fd, DKIOCGETBLOCKCOUNT, &size64) >= 0) {
 		if ((sizeof(blkid_loff_t) < sizeof(unsigned long long))
-		    && ((size64 / (blocksize / 512)) > 0xFFFFFFFF))
+		    && (size64 << 9 > 0xFFFFFFFF))
 			return 0; /* EFBIG */
 		return (blkid_loff_t) size64 << 9;
 	}
