@@ -1,10 +1,124 @@
+e2fsprogs 1.36-WIP (September 19, 2004)
+=======================================
+
+Fixed two potential ordering constraint problems in e2fsck which might
+cause the filesystem to be corrupted if e2fsck is interrupted during a
+(extremely narrow) race window.  Thanks to Junfeng Yang from the
+Stanford Metacompilation group for pointing this out.
+
+Fixed bug in e2fsck where it would not accurately detect whether or
+not the system is running on adaptor if the ACPI device representing
+the AC adapter didn't correspond to the what was used on IBM
+Thinkpads.
+
+Change e2fsck to accept directories greater than 32MB.
+
+Fix e2fsck so that a checkinterval of zero disables a time-based check
+of the filesystem.
+
+Debugfs will check the DEBUGFS_PAGER enviroment variable in preference
+to the PAGER environment variable.  (Addresses Debian Bug #239547)
+
+Tune2fs will not mark rewrite the superblock if the feature bitmasks 
+are not modified.
+
+The debugfs program will set the filetype information when creating a
+link.
+
+Add debugfs -d option to use a separate source of data blocks when
+reading from an e2image file.
+
+Add e2image -I option which allows the e2image metadata to be
+installed into a filesystem.
+
+Fixed bug in the badblocks program which caused "done" to always
+appear in english even when a translation was available.  (Addresses
+Debian Bug #252836)
+
+The blkid program has a new option -o which controls the output format
+of the blkid program; this is makes blkid more convenient to use in
+shell scripts.
+
+Fix a minor bug in uuid library, which was not using the full 14 bits
+of clock sequence when generating UUID's.
+
+Fix a Y8.8888K problem in the uuid library.
+
+Logsave now creates a new session id for itself to avoid getting
+killed by init whan transitioning between init levels.
+
+Change the licensing of the UUID library to be the 3-clause BSD-style
+license; this allows Apple to use the uuid library in Darwin.
+
+Add ocfs and ocfs2 probe support into the blkid library.
+
+Fix a memory and file descriptor leak in the blkid library.
+
+The blkid library will revalidate the device if the system time is
+earlier than last verification time of the device, since that
+indicates that the system time is probably nottrustworthy.
+
+The blkid library will override the default location of the blkid.tab
+file by the BLKID_FILE environment variable, if it is available.
+
+Change the getsize functions to use the BLKGETSIZE64 ioctl on Linux 2.6.
+
+Add various portability fixes for lame new versions of glibc, Darwin
+and GNU/KFreeBSD, as well as removing XSI:ism's.  (Addresses Debian
+Bugs #239934, #264630, #269044, #255589)
+
+Updated and clarified various man pages.  (Addresses Debian Bugs #236383,
+	#241940, #238741, #242995, #256669, #268148, #256760)
+
+Updated and fixed translations.   (Addresses Debian bugs #244105, #262836)
+
+Update the rpm spec files so that it works better with Fedora core 2
+and RH9.
+
+Fixed various Debian packaging issues (see debian/changelog).  In
+particular, fixed the Debian initrd scripts.  (#241183, #248050,
+#253595, #247775)
+
+
+Programmer's notes: 
+-------------------
+
+Fixed various compiler warnings.
+
+The uuid library now has new functions uuid_unparse_upper() and
+uuid_unparse_lower() which forces the case of the hex digits to be
+upper case, or lower case.
+
+The build process has been speeded up by enhancing the subst program
+to update the modtime on the generated files even when the generated
+file hasn't changed.
+
+The uuid library now uses C99 stdint.h types instead of custom types.
+
+Updated config.guess and config.sub with newer versions from the FSF.
+
+Removed out of date .cvsignore files from the source distribution.
+
+Fix build of mke2fs.static.
+
+The test_io mechanism can now abort after n reads or writes to a
+particular block.  The block is specified by TEST_IO_BLOCK environment
+variable, and the read/write count by the TEST_IO_READ_ABORT and
+TEST_IO_WRITE_ABORT environment variables.  The block data is now only
+dumped if the 0x10 bit is set in TEST_IO_FLAGS.
+
+UUID_DEFINE() in the uuid library now creates a static variable, with
+__attribute__ ((unused)) if we are using GCC, so that UUID_DEFINE can
+be used in header files.
+
+
 E2fsprogs 1.35 (February 28, 2004) 
 ==================================
 
-E2fsck has a new -k option, which in conjuction with the -c options,
+E2fsck has a new -k option, which in conjunction with the -c options,
 preserves the existing badblocks list.
 
-Cleaned up e2fsck's preem-mode messages during the passes 1b, 1c, and 1d.
+Cleaned up e2fsck's preen-mode messages during the passes 1b, 1c, and 1d.
 
 E2fsprogs will now deal correctly with symlinks that contain
 extended attribute information, which can be created using SE Linux.
@@ -27,7 +141,7 @@ directory.  (Addresses Debian bug #219640).
 Fixed a bug where e2fsck would bomb out if a journal needed to be
 replayed when using an alternate superblock.
  
-2fsck will give an extra grace period before actually forcing a check
+E2fsck will give an extra grace period before actually forcing a check
 if the laptop is running on battery.  The next time fsck runs while
 the system is on the AC mains, or after the grace period is exceeded,
 the filesystem will be checked.  (Addresses Debian bug #205177)
@@ -90,6 +204,8 @@ debugfs now searches for the appropriate pager to use, beginning with
 Debugfs will now support 2.6 device numbers where the major or minor
 number may be larger than 255.  (Addresses Sourceforge bug #865289)
  
+Fix debugging printf in resize2fs.  (Addresses Debian Bug #271605)
+
 Chattr now stops processing options when it sees '--'.  (Addresses
 Debian bug #225188)
 
@@ -101,7 +217,7 @@ is generating a time-based uuid.  The random MAC address was not
 correctly generated to be a multicast address.
  
 Add compile_et extensions from Heimdall that were missed the first time
-arounded.
+around.
 
 Fix bug in badblocks when using O_DIRECT; we need to make sure that
 we're reading from an offset which is page aligned.  For read-only and
