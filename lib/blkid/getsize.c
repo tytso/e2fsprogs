@@ -29,6 +29,9 @@
 #include <sys/disklabel.h>
 #include <sys/stat.h>
 #endif /* HAVE_SYS_DISKLABEL_H */
+#ifdef __linux__
+#include <sys/utsname.h>
+#endif
 
 #include "blkidP.h"
 
@@ -63,6 +66,10 @@ static int valid_offset(int fd, blkid_loff_t offset)
  */
 blkid_loff_t blkid_get_dev_size(int fd)
 {
+	int valid_blkgetsize64 = 1;
+#ifdef __linux__
+	struct 		utsname ut;
+#endif
 	unsigned long long size64;
 	unsigned long size;
 	blkid_loff_t high, low;
@@ -78,7 +85,7 @@ blkid_loff_t blkid_get_dev_size(int fd)
 #endif /* HAVE_SYS_DISKLABEL_H */
 
 #ifdef DKIOCGETBLOCKCOUNT	/* For Apple Darwin */
-	if (ioctl(fd, BLKGETSIZE64, &size64) >= 0) {
+	if (ioctl(fd, DKIOCGETBLOCKCOUNT, &size64) >= 0) {
 		if ((sizeof(blkid_loff_t) < sizeof(unsigned long long))
 		    && ((size64 / (blocksize / 512)) > 0xFFFFFFFF))
 			return 0; /* EFBIG */
@@ -88,7 +95,14 @@ blkid_loff_t blkid_get_dev_size(int fd)
 #endif
 
 #ifdef BLKGETSIZE64
-	if (ioctl(fd, BLKGETSIZE64, &size64) >= 0) {
+#ifdef __linux__
+	if ((uname(&ut) == 0) &&
+	    ((ut.release[0] == '2') && (ut.release[1] == '.') &&
+	     (ut.release[2] < '6') && (ut.release[3] == '.')))
+		valid_blkgetsize64 = 0;
+#endif
+	if (valid_blkgetsize64 &&
+	    ioctl(fd, BLKGETSIZE64, &size64) >= 0) {
 		if ((sizeof(blkid_loff_t) < sizeof(unsigned long long))
 		    && ((size64) > 0xFFFFFFFF))
 			return 0; /* EFBIG */

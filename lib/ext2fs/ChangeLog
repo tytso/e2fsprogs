@@ -1,3 +1,10 @@
+2004-03-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* getsize.c (ext2fs_get_device_size): Only use the BLKGETSIZE64
+		ioctl on Linux 2.6 since it is unreliable in Linux 2.4.
+		(Addresses Debian Bug #236528).  Fix typo in the ioctl
+		used for Mac OS X.
+
 2004-03-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* getsize.c (ext2fs_get_device_size): Update getsize functions to

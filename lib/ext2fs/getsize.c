@@ -36,6 +36,9 @@
 #include <sys/queue.h> /* for LIST_HEAD */
 #include <sys/disk.h>
 #endif /* HAVE_SYS_DISK_H */
+#ifdef __linux__
+#include <sys/utsname.h>
+#endif
 
 #if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */
@@ -119,6 +122,10 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 				 blk_t *retblocks)
 {
 	int	fd;
+	int valid_blkgetsize64 = 1;
+#ifdef __linux__
+	struct 		utsname ut;
+#endif
 	unsigned long long size64;
 	unsigned long	size;
 	ext2_loff_t high, low;
@@ -141,7 +148,7 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 		return errno;
 
 #ifdef DKIOCGETBLOCKCOUNT	/* For Apple Darwin */
-	if (ioctl(fd, BLKGETSIZE64, &size64) >= 0) {
+	if (ioctl(fd, DKIOCGETBLOCKCOUNT, &size64) >= 0) {
 		if ((sizeof(*retblocks) < sizeof(unsigned long long))
 		    && ((size64 / (blocksize / 512)) > 0xFFFFFFFF))
 			return EFBIG;
@@ -152,7 +159,14 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 #endif
 
 #ifdef BLKGETSIZE64
-	if (ioctl(fd, BLKGETSIZE64, &size64) >= 0) {
+#ifdef __linux__
+	if ((uname(&ut) == 0) &&
+	    ((ut.release[0] == '2') && (ut.release[1] == '.') &&
+	     (ut.release[2] < '6') && (ut.release[3] == '.')))
+		valid_blkgetsize64 = 0;
+#endif
+	if (valid_blkgetsize64 &&
+	    ioctl(fd, BLKGETSIZE64, &size64) >= 0) {
 		if ((sizeof(*retblocks) < sizeof(unsigned long long))
 		    && ((size64 / blocksize) > 0xFFFFFFFF))
 			return EFBIG;

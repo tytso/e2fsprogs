@@ -1,3 +1,10 @@
+2004-03-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* getsize.c (blkid_get_dev_size): Only use the BLKGETSIZE64 ioctl
+		on Linux 2.6 since it is unreliable in Linux 2.4..
+		(Addresses Debian Bug #236528) Fix typo in the ioctl used
+		for Mac OS X.
+
 2004-03-04  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c (probe_ocfs), probe.h: Add support for the Oracle
