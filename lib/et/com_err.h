@@ -17,7 +17,7 @@ typedef long errcode_t;
 struct error_table {
 	char const * const * msgs;
 	long base;
-	unsigned int n_msgs;
+	int n_msgs;
 };
 
 struct et_list;

@@ -1,3 +1,10 @@
+2003-11-22  Theodore Ts'o  <tytso@mit.edu>
+
+	* com_err.h: Retore the type of n_msgs in the error_table
+		structure to "int" from "unsigned int" fix a core dumping 
+		bug in the com_right() function.  (Addresses Debian bug 
+		#213450)
+
 2003-08-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Delete com_err.info on a make clean
