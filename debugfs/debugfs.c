@@ -1097,6 +1097,13 @@ void do_write(int argc, char *argv[])
 		return;
 	}
 
+	retval = ext2fs_namei(current_fs, root, cwd, argv[2], &newfile);
+	if (retval == 0) {
+		com_err(argv[0], 0, "The file '%s' already exists\n", argv[2]);
+		close(fd);
+		return;
+	}
+
 	retval = ext2fs_new_inode(current_fs, cwd, 010755, 0, &newfile);
 	if (retval) {
 		com_err(argv[0], retval, "");
