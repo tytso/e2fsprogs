@@ -41,8 +41,8 @@ related to internationalization, you should tell about the version of
 `gettext' which is used.  The information can be found in the
 `intl/VERSION' file, in internationalized packages.
 
-One advise in advance
-=====================
+One piece of advise in advance
+==============================
 
    If you want to exploit the full power of internationalization, you
 should configure it using
