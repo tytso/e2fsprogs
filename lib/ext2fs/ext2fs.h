@@ -300,11 +300,12 @@ struct struct_ext2_filsys {
  */
 
 #define DIRENT_FLAG_INCLUDE_EMPTY	1
-
+#define DIRENT_FLAG_INCLUDE_REMOVED	2
 
 #define DIRENT_DOT_FILE		1
 #define DIRENT_DOT_DOT_FILE	2
 #define DIRENT_OTHER_FILE	3
+#define DIRENT_DELETED_FILE	4
 
 /*
  * Inode scan definitions
@@ -441,6 +442,10 @@ extern errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start,
 					blk_t *ret);
 extern errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 				    char *block_buf, blk_t *ret);
+
+/* alloc_stats.c */
+void ext2fs_inode_alloc_stats(ext2_filsys fs, ext2_ino_t ino, int inuse);
+void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse);
 
 /* alloc_tables.c */
 extern errcode_t ext2fs_allocate_tables(ext2_filsys fs);
@@ -598,6 +603,18 @@ extern errcode_t ext2fs_dir_iterate(ext2_filsys fs,
 			      int flags,
 			      char *block_buf,
 			      int (*func)(struct ext2_dir_entry *dirent,
+					  int	offset,
+					  int	blocksize,
+					  char	*buf,
+					  void	*priv_data),
+			      void *priv_data);
+extern errcode_t ext2fs_dir_iterate2(ext2_filsys fs, 
+			      ext2_ino_t dir,
+			      int flags,
+			      char *block_buf,
+			      int (*func)(ext2_ino_t	dir,
+					  int	entry,
+					  struct ext2_dir_entry *dirent,
 					  int	offset,
 					  int	blocksize,
 					  char	*buf,

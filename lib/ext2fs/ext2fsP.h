@@ -48,18 +48,13 @@ struct dir_context {
 	ext2_ino_t		dir;
 	int		flags;
 	char		*buf;
-	int (*func)(struct ext2_dir_entry *dirent,
+	int (*func)(ext2_ino_t	dir,
+		    int	entry,
+		    struct ext2_dir_entry *dirent,
 		    int	offset,
 		    int	blocksize,
 		    char	*buf,
 		    void	*priv_data);
-	int (*func2)(ext2_ino_t	dir,
-		     int	entry,
-		     struct ext2_dir_entry *dirent,
-		     int	offset,
-		     int	blocksize,
-		     char	*buf,
-		     void	*priv_data);
 	void		*priv_data;
 	errcode_t	errcode;
 };

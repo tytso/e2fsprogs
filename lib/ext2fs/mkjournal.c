@@ -154,7 +154,6 @@ static int mkjournal_proc(ext2_filsys		fs,
 	blk_t	new_blk;
 	static blk_t	last_blk = 0;
 	errcode_t	retval;
-	int		group;
 	
 	if (*blocknr) {
 		last_blk = *blocknr;
@@ -180,12 +179,7 @@ static int mkjournal_proc(ext2_filsys		fs,
 	}
 	*blocknr = new_blk;
 	last_blk = new_blk;
-	ext2fs_mark_block_bitmap(fs->block_map, new_blk);
-	ext2fs_mark_bb_dirty(fs);
-	group = ext2fs_group_of_blk(fs, new_blk);
-	fs->group_desc[group].bg_free_blocks_count--;
-	fs->super->s_free_blocks_count--;
-	ext2fs_mark_super_dirty(fs);
+	ext2fs_block_alloc_stats(fs, new_blk, +1);
 
 	if (es->num_blocks == 0)
 		return (BLOCK_CHANGED | BLOCK_ABORT);

@@ -1,3 +1,25 @@
+2002-01-03  Theodore Tso  <tytso@valinux.com>
+
+	* dir_iterate.c (ext2fs_dir_iterate2, ext2fs_process_dir_block):
+		Add support for a new flag, DIRENT_FLAG_INCLUDE_REMOVED,
+		which will return deleted directory entries.
+		ext2fs_dir_iterate2 takes a new callback function which
+		is identical with the one used by
+		ext2fs_dblist_dir_iterate().  If the directory entry is
+		deleted, the callback function will be called with the
+		entry paraemter set to DIRENT_DELETED_FILE.
+
+	* Makefile.in, alloc_stats.c (ext2fs_inode_alloc_stats,
+		ext2fs_block_alloc_stats): New functions which update
+		block/inode allocation statistics in the bitmaps, block
+		group descriptors, and superblock.
+
+	* mkjournal.c (mkjournal_proc), mkdir.c (ext2fs_mkdir),
+		expanddir.c (expand_dir_proc), bb_inode.c
+		(clear_bad_block_proc, set_bad_block_proc,
+		ext2fs_update_bb_inode), alloc.c (ext2fs_alloc_block):
+		Update to use new block/inode allocation statistics.
+
 2001-12-24  Theodore Tso  <tytso@valinux.com>
 
 	* ismounted.c (is_swap_device): New function used by

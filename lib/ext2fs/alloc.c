@@ -107,7 +107,6 @@ errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 {
 	errcode_t	retval;
 	blk_t		block;
-	int		group;
 	char		*buf = 0;
 
 	if (!block_buf) {
@@ -132,12 +131,7 @@ errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 	if (retval)
 		goto fail;
 	
-	fs->super->s_free_blocks_count--;
-	group = ext2fs_group_of_blk(fs, block);
-	fs->group_desc[group].bg_free_blocks_count--;
-	ext2fs_mark_block_bitmap(fs->block_map, block);
-	ext2fs_mark_super_dirty(fs);
-	ext2fs_mark_bb_dirty(fs);
+	ext2fs_block_alloc_stats(fs, block, +1);
 	*ret = block;
 	return 0;
 

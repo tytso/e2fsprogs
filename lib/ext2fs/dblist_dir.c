@@ -50,8 +50,7 @@ errcode_t ext2fs_dblist_dir_iterate(ext2_dblist dblist,
 		if (retval)
 			return retval;
 	}
-	ctx.func = 0;
-	ctx.func2 = func;
+	ctx.func = func;
 	ctx.priv_data = priv_data;
 	ctx.errcode = 0;
 

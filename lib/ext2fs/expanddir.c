@@ -36,7 +36,6 @@ static int expand_dir_proc(ext2_filsys		fs,
 	static blk_t	last_blk = 0;
 	char		*block;
 	errcode_t	retval;
-	int		group;
 	
 	if (*blocknr) {
 		last_blk = *blocknr;
@@ -70,12 +69,7 @@ static int expand_dir_proc(ext2_filsys		fs,
 	}
 	ext2fs_free_mem((void **) &block);
 	*blocknr = new_blk;
-	ext2fs_mark_block_bitmap(fs->block_map, new_blk);
-	ext2fs_mark_bb_dirty(fs);
-	group = ext2fs_group_of_blk(fs, new_blk);
-	fs->group_desc[group].bg_free_blocks_count--;
-	fs->super->s_free_blocks_count--;
-	ext2fs_mark_super_dirty(fs);
+	ext2fs_block_alloc_stats(fs, new_blk, +1);
 	es->newblocks++;
 
 	if (es->done)

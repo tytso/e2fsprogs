@@ -39,7 +39,6 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	ext2_ino_t		scratch_ino;
 	blk_t			blk;
 	char			*block = 0;
-	int			group;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -130,20 +129,9 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	/*
 	 * Update accounting....
 	 */
-	ext2fs_mark_block_bitmap(fs->block_map, blk);
-	ext2fs_mark_bb_dirty(fs);
-	ext2fs_mark_inode_bitmap(fs->inode_map, ino);
-	ext2fs_mark_ib_dirty(fs);
+	ext2fs_block_alloc_stats(fs, blk, +1);
+	ext2fs_inode_alloc_stats(fs, ino, +1);
 
-	group = ext2fs_group_of_blk(fs, blk);
-	fs->group_desc[group].bg_free_blocks_count--;
-	group = ext2fs_group_of_ino(fs, ino);
-	fs->group_desc[group].bg_free_inodes_count--;
-	fs->group_desc[group].bg_used_dirs_count++;
-	fs->super->s_free_blocks_count--;
-	fs->super->s_free_inodes_count--;
-	ext2fs_mark_super_dirty(fs);
-	
 cleanup:
 	if (block)
 		ext2fs_free_mem((void **) &block);

@@ -59,7 +59,6 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	errcode_t			retval;
 	struct set_badblock_record 	rec;
 	struct ext2_inode		inode;
-	blk_t				blk;
 	
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -101,16 +100,6 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	 * block inode (!).
 	 */
 	if (bb_list) {
-		retval = ext2fs_badblocks_list_iterate_begin(bb_list,
-							     &rec.bb_iter);
-		if (retval)
-			goto cleanup;
-		while (ext2fs_badblocks_list_iterate(rec.bb_iter, &blk)) {
-			ext2fs_mark_block_bitmap(fs->block_map, blk); 
-		}
-		ext2fs_badblocks_list_iterate_end(rec.bb_iter);
-		ext2fs_mark_bb_dirty(fs);
-		
 		retval = ext2fs_badblocks_list_iterate_begin(bb_list,
 							     &rec.bb_iter);
 		if (retval)
@@ -168,7 +157,6 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 	struct set_badblock_record *rec = (struct set_badblock_record *)
 		priv_data;
 	errcode_t	retval;
-	int		group;
 	unsigned long 	old_size;
 
 	if (!*block_nr)
@@ -202,12 +190,7 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 	/*
 	 * Mark the block as unused, and update accounting information
 	 */
-	ext2fs_unmark_block_bitmap(fs->block_map, *block_nr);
-	ext2fs_mark_bb_dirty(fs);
-	group = ext2fs_group_of_blk(fs, *block_nr);
-	fs->group_desc[group].bg_free_blocks_count++;
-	fs->super->s_free_blocks_count++;
-	ext2fs_mark_super_dirty(fs);
+	ext2fs_block_alloc_stats(fs, *block_nr, -1);
 	
 	*block_nr = 0;
 	return BLOCK_CHANGED;
@@ -230,7 +213,6 @@ static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 		priv_data;
 	errcode_t	retval;
 	blk_t		blk;
-	int		group;
 
 	if (blockcnt >= 0) {
 		/*
@@ -264,17 +246,12 @@ static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 			rec->err = retval;
 			return BLOCK_ABORT;
 		}
-		ext2fs_mark_block_bitmap(fs->block_map, blk); 
-		ext2fs_mark_bb_dirty(fs);
 	}
 	
 	/*
 	 * Update block counts
 	 */
-	group = ext2fs_group_of_blk(fs, blk);
-	fs->group_desc[group].bg_free_blocks_count--;
-	fs->super->s_free_blocks_count--;
-	ext2fs_mark_super_dirty(fs);
+	ext2fs_block_alloc_stats(fs, blk, +1);
 	
 	*block_nr = blk;
 	return BLOCK_CHANGED;
