@@ -1,3 +1,9 @@
+2004-04-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (is_on_batt): Be more flexible about the name of the ACPI
+		device that corresponds to the AC adapter.  (Addresses
+		Debian bug #242136)
+
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Update the modtime even if subst doesn't need to

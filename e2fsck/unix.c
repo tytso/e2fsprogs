@@ -39,6 +39,12 @@ extern int optind;
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
+#endif
 
 #include "et/com_err.h"
 #include "e2fsck.h"
@@ -203,8 +209,10 @@ static void check_mount(e2fsck_t ctx)
 static int is_on_batt(void)
 {
 	FILE	*f;
-	char	tmp[80], tmp2[80];
+	DIR	*d;
+	char	tmp[80], tmp2[80], fname[80];
 	unsigned int	acflag;
+	struct dirent*	de;
 
 	f = fopen("/proc/apm", "r");
 	if (f) {
@@ -213,14 +221,24 @@ static int is_on_batt(void)
 		fclose(f);
 		return (acflag != 1);
 	}
-	f = fopen("/proc/acpi/ac_adapter/AC/state", "r");
-	if (f) {
+	d = opendir("/proc/acpi/ac_adapter");
+	while (d && (de=readdir(d))) {
+		if (!strncmp(".", de->d_name, 1))
+			continue;
+		snprintf(fname, 80, "/proc/acpi/ac_adapter/%s/state", 
+			 de->d_name);
+		f = fopen(fname, "r");
+		if (!f)
+			continue;
 		if (fscanf(f, "%s %s", tmp2, tmp) != 2)
 			tmp[0] = 0;
 		fclose(f);
-		if (strncmp(tmp, "off-line", 8) == 0)
+		if (strncmp(tmp, "off-line", 8) == 0) {
+			closedir(d);
 			return 1;
+		}
 	}
+	closedir(d);
 	return 0;
 }
 
