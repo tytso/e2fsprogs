@@ -281,5 +281,8 @@ ec	EXT2_ET_DIRHASH_UNSUPP,
 ec	EXT2_ET_BAD_EA_BLOCK_NUM,
 	"Illegal extended attribute block number"
 
+ec	EXT2_ET_TOO_MANY_INODES,
+	"Cannot create filesystem with requested number of inodes"
+
 	end
 

@@ -189,8 +189,17 @@ retry:
 	 */
 	ipg = (super->s_inodes_count + fs->group_desc_count - 1) /
 		fs->group_desc_count;
-	if (ipg > fs->blocksize * 8)
-		ipg = fs->blocksize * 8;
+	if (ipg > fs->blocksize * 8) {
+		if (super->s_blocks_per_group >= 256) {
+			/* Try again with slightly different parameters */
+			super->s_blocks_per_group -= 8;
+			super->s_blocks_count = param->s_blocks_count;
+			super->s_frags_per_group = super->s_blocks_per_group *
+				frags_per_block;
+			goto retry;
+		} else
+			return EXT2_ET_TOO_MANY_INODES;
+	}
 
 	if (ipg > EXT2_MAX_INODES_PER_GROUP(super))
 		ipg = EXT2_MAX_INODES_PER_GROUP(super);
@@ -239,7 +248,11 @@ retry:
 	 * being clever is tricky...
 	 */
 	overhead = (int) (3 + fs->desc_blocks + fs->inode_blocks_per_group);
-	
+
+	/* This can only happen if the user requested too many inodes */
+	if (overhead > super->s_blocks_per_group)
+		return EXT2_ET_TOO_MANY_INODES;
+
 	/*
 	 * See if the last group is big enough to support the
 	 * necessary data structures.  If not, we need to get rid of
