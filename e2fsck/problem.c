@@ -696,7 +696,7 @@ static const struct e2fsck_problem problem_table[] = {
 	/* HTREE too deep */	
 	{ PR_1_HTREE_DEPTH,
 	  N_("@h %i has a tree depth (%N) which is too big\n"),
-	  PROMPT_CLEAR_HTREE, PR_PREEN_OK0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 		  
 	/* Pass 1b errors */
 
