@@ -101,6 +101,23 @@ if test "$linux_headers" != yes; then
 fi
 AC_SUBST(LINUX_INCLUDE)
 dnl
+dnl Alpha computers use fast and imprecise floating point code that may
+dnl miss exceptions by default. Force sane options if we're using GCC.
+AC_MSG_CHECKING(for additional special compiler flags)
+if test "$GCC" = yes
+then
+    case "$host_cpu" in
+	alpha)		addcflags="-mieee" ;;
+    esac
+fi
+if test "x$addcflags" != x
+then
+    AC_MSG_RESULT($addcflags)
+    CFLAGS="$addcflags $CFLAGS"
+else
+    AC_MSG_RESULT([[(none)]])
+fi
+dnl
 dnl Set default values for library extentions.  Will be dealt with after
 dnl parsing configuration opions, which may modify these
 dnl
