@@ -459,6 +459,20 @@ Time-dependent checking was added by Uwe Ohse <uwe@tirka.gun.de>.
 .B tune2fs
 is part of the e2fsprogs package and is available from 
 http://e2fsprogs.sourceforge.net.
+.SH ENVIRONMENT VARIABLES
+The
+.B tune2fs
+program's behavior is affected by the following environment variables:
+.TP
+.B TUNE2FS_SKIP_MOUNT_CHECK
+If this environment variable is set, 
+.B tune2fs
+will not try to check to see if the filesystem is mounted.  This may be 
+necessary in limited initrd environments when 
+.I /etc/mtab
+or
+.I /proc
+may not be available.
 .SH SEE ALSO
 .BR dumpe2fs (8),
 .BR e2fsck (8),

@@ -1,3 +1,11 @@
+2004-04-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* tune2fs.c (main): If the environment variable
+		TUNE2FS_SKIP_MOUNT_CHECK is set, do not try to check if
+		the filesystem is mounted.
+		(update_feature_set): If the compatibility bitmasks were
+		not modified, don't set the superblock dirty bit.
+
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Update the modtime even if subst doesn't need to

@@ -282,6 +282,11 @@ static void update_feature_set(ext2_filsys fs, char *features)
 	int sparse, old_sparse, filetype, old_filetype;
 	int journal, old_journal, dxdir, old_dxdir;
 	struct ext2_super_block *sb= fs->super;
+	__u32	old_compat, old_incompat, old_ro_compat;
+
+	old_compat = sb->s_feature_compat;
+	old_ro_compat = sb->s_feature_ro_compat;
+	old_incompat = sb->s_feature_incompat;
 
 	old_sparse = sb->s_feature_ro_compat &
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
@@ -355,7 +360,10 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		sb->s_state &= ~EXT2_VALID_FS;
 		printf("\n%s\n", _(please_fsck));
 	}
-	ext2fs_mark_super_dirty(fs);
+	if ((old_compat != sb->s_feature_compat) ||
+	    (old_ro_compat != sb->s_feature_ro_compat) ||
+	    (old_incompat != sb->s_feature_incompat))
+		ext2fs_mark_super_dirty(fs);
 }
 
 /*
@@ -769,13 +777,18 @@ int main (int argc, char ** argv)
 		       sb->s_volume_name);
 		exit(0);
 	}
-	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
-	if (retval) {
-		com_err("ext2fs_check_if_mount", retval,
-			_("while determining whether %s is mounted."),
-			device_name);
-		exit(1);
+	if (getenv("TUNE2FS_SKIP_MOUNT_CHECK")) {
+		mount_flags = 0;
+	} else {
+		retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+		if (retval) {
+			com_err("ext2fs_check_if_mount", retval,
+				_("while determining whether %s is mounted."),
+				device_name);
+			exit(1);
+		}
 	}
+
 	/* Normally we only need to write out the superblock */
 	fs->flags |= EXT2_FLAG_SUPER_ONLY;
 
