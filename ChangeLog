@@ -1,3 +1,11 @@
+2001-06-11  Theodore Tso  <tytso@valinux.com>
+
+	* configure.in: Add new switch, --disable-swapfs which disables
+		support of byte-swapping old filesystems.  Add new test,
+		AC_C_BIGENDIAN, which sets WORDS_BIGENDIAN on big-endian
+		machines.   Change handling of --with-ccopts so that if
+		set, the default CFLAGS is suppressed.
+
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
 	* wordwrap.pl: Add some rules which help fix up the dependencies.
