@@ -108,7 +108,12 @@ void pass2(ext2_filsys fs)
 	clear_problem_context(&cd.pctx);
 	
 	retval = ext2fs_dblist_iterate(fs->dblist, check_dir_block, &cd);
-
+	if (retval) {
+		com_err("ext2fs_dblist_iterate", retval,
+			"while iterating through dblist");
+		fatal_error(0);
+	}
+	
 	free(buf);
 	ext2fs_free_dblist(fs->dblist);
 

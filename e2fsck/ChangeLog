@@ -1,3 +1,7 @@
+Tue Jun 10 12:07:37 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass2.c (pass2): Check the error return from ext2fs_dblist_iterate.
+
 Thu May  8 22:45:27 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* e2fsck.8.in: Fix minor typos and grammer oops found by Bill
