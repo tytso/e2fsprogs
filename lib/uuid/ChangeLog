@@ -1,3 +1,9 @@
+2004-09-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen_uuid.c (get_node_id): glibc always defines AF_LINK, so only
+		try to use struct sockaddr_dl if HAVE_NET_IF_DL_H is
+		defined.  (Addresses Debian Bug #256669)
+
 2004-05-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* uuid.h (UUID_DEFINE): Make the UUID defined as a static
