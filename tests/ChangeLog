@@ -1,3 +1,12 @@
+2002-05-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_badsymlinks, f_filetype: Revert expected text since we're no
+		longer checking for EXT2_INDEX_FL along with the other
+		immutable flags.
+	
+	* f_badsymlinks, f_badinode: The symlink invalid size problem text
+		has been generalized to "invalid symlink".
+
 2002-05-18  Andreas Dilger  <adilger@clusterfs.com>
 
 	* f_badsymlink: Add extra length checks for symlinks

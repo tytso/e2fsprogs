@@ -107,7 +107,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize,
+	buf = (char *) e2fsck_allocate_memory(ctx, 2*fs->blocksize,
 					      "directory scan buffer");
 
 	/*
@@ -547,7 +547,8 @@ static int check_dir_block(ext2_filsys fs,
 		    ext2fs_test_inode_bitmap(ctx->inode_bad_map,
 					     dirent->inode)) {
 			if (e2fsck_process_bad_inode(ctx, ino,
-						     dirent->inode)) {
+						     dirent->inode,
+						     buf + fs->blocksize)) {
 				dirent->inode = 0;
 				dir_modified++;
 				goto next;
@@ -696,7 +697,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 }
 
 extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
-				    ext2_ino_t ino)
+				    ext2_ino_t ino, char *buf)
 {
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode	inode;
@@ -730,8 +731,8 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		 && !e2fsck_pass1_check_device_inode(&inode))
 		problem = PR_2_BAD_SOCKET;
 	else if (LINUX_S_ISLNK(inode.i_mode)
-		 && !e2fsck_pass1_check_symlink(fs, &inode)) {
-		problem = PR_2_SYMLINK_SIZE;
+		 && !e2fsck_pass1_check_symlink(fs, &inode, buf)) {
+		problem = PR_2_INVALID_SYMLINK;
 	}
 
 	if (problem) {

@@ -86,6 +86,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 #endif
 	struct problem_context	pctx;
 	__u16	link_count, link_counted;
+	char	*buf = 0;
 	int	group, maxgroup;
 	
 #ifdef RESOURCE_TRACK
@@ -126,7 +127,10 @@ void e2fsck_pass4(e2fsck_t ctx)
 		ext2fs_icount_fetch(ctx->inode_link_info, i, &link_count);
 		ext2fs_icount_fetch(ctx->inode_count, i, &link_counted);
 		if (link_counted == 0) {
-			if (e2fsck_process_bad_inode(ctx, 0, i))
+			if (!buf)
+				buf = e2fsck_allocate_memory(ctx,
+				     fs->blocksize, "bad_inode buffer");
+			if (e2fsck_process_bad_inode(ctx, 0, i, buf))
 				continue;
 			if (disconnect_inode(ctx, i))
 				continue;
@@ -157,6 +161,8 @@ void e2fsck_pass4(e2fsck_t ctx)
 	ctx->inode_bb_map = 0;
 	ext2fs_free_inode_bitmap(ctx->inode_imagic_map);
 	ctx->inode_imagic_map = 0;
+	if (buf)
+		ext2fs_free_mem((void **) &buf);
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);

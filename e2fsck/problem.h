@@ -562,8 +562,8 @@ struct problem_context {
 /* Directory filename can't be zero-length  */
 #define PR_2_NULL_NAME		0x020030
 
-/* Invalid symlink size */
-#define PR_2_SYMLINK_SIZE	0x020031
+/* Invalid symlink */
+#define PR_2_INVALID_SYMLINK	0x020031
 
 /* i_file_acl (extended attribute) is bad */
 #define PR_2_FILE_ACL_BAD	0x020032

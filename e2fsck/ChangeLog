@@ -1,3 +1,52 @@
+2002-05-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.h, pass1.c (e2fsck_pass1_check_symlink), pass2.c
+		(e2fsck_process_bad_inode): Add an extra
+		argument so a scratch buffer can be passed into the
+		function.
+
+	* pass1.c (e2fsck_pass1_check_device_inode,
+		e2fsck_pass1_check_symlink): If the EXT2_INDEX_FL flag is
+		set, then the device/FIFO is invalid.
+		(check_immutable): Don't check for EXT2_INDEX_FL; we take
+		care of that elsewhere now.
+		(e2fsck_pass1): Check to see if the symlink is valid
+		before we offer to clear any immutable bits.  This matches
+		the order in which we check other special files.
+
+	* pass2.c (e2fsck_pass2): Allocate a bigger scratch buffer so we
+		can pass part of it to e2fsck_process_bad_inode.
+
+	* pass4.c (e2fsck_pass4): If we need to call
+		e2fsck_process_bad_inode(), allocate the necessary scratch
+		buffer.
+
+	* problem.h, problem.c: Change PR_2_SYMLINK_SIZE to be
+		PR_2_INVALID_SYMLINK, and change the text
+		accordingly.  Revert the text change for PR_1_SET_IMMUTABLE
+		since we no longer check for EXT2_INDEX_FL in
+		check_immutable().
+
+2002-05-18  Andreas Dilger <adilger@clusterfs.com>
+
+	* pass1.c (e2fsck_pass1_check_symlink): Remove checks of
+		immutable/append-only checks, since this is handled by
+		check_immutable.  For non-fast symlinks, read in the
+		data block and check the length to make sure it
+		matches with the inode size.
+		(check_immutable): Generalize to also check for the 
+		EXT2_INDEX_FL flag. 
+		(check_blocks): For non-regular files, signal a bad inode 
+		size if i_size_high is non-zero.
+
+	* pass2.c: Only count large files if they are regular files
+		(not just if they aren't directories).
+
+	* problem.c, problem.h: Change comment for PR_2_SYMLINK_SIZE
+		to indicate that it can be triggered by any symlink,
+		not fast symlink.  Change text for PR_1_SET_IMMUTABLE
+		to indicate that it the EXT2_INDEX_FL was set.
+
 2002-05-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1.c (e2fsck_pass1): When calculating max_sizes, omit capping

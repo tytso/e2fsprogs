@@ -129,10 +129,12 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 	int	i;
 
 	/*
-	 * If i_blocks is non-zero, then this is a bogus device/fifo/socket
+	 * If i_blocks is non-zero, or the index flag is set, then
+	 * this is a bogus device/fifo/socket
 	 */
-	if (inode->i_blocks)
+	if (inode->i_blocks || (inode->i_flags & EXT2_INDEX_FL))
 		return 0;
+
 	/*
 	 * We should be able to do the test below all the time, but
 	 * because the kernel doesn't forcibly clear the device
@@ -171,12 +173,14 @@ static int strnlen(const char * s, int count)
  * Check to make sure a symlink inode is real.  Returns 1 if the symlink
  * checks out, 0 if not.
  */
-int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode)
+int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode,
+			       char *buf)
 {
 	int len;
 	int i;
 
-	if (inode->i_size_high || inode->i_size == 0)
+	if ((inode->i_size_high || inode->i_size == 0) ||
+	    (inode->i_flags & EXT2_INDEX_FL))
 		return 0;
 
 	if (inode->i_blocks) {
@@ -190,15 +194,12 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode)
 			if (inode->i_block[i])
 				return 0;
 
-		{char buf[fs->blocksize];
-
 		if (io_channel_read_blk(fs->io, inode->i_block[0], 1, buf))
 			return 0;
 
 		len = strnlen(buf, fs->blocksize);
 		if (len == fs->blocksize)
 			return 0;
-		}
 	} else {
 		if (inode->i_size >= sizeof(inode->i_block))
 			return 0;
@@ -216,7 +217,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode)
  * If the immutable (or append-only) flag is set on the inode, offer
  * to clear it.
  */
-#define BAD_SPECIAL_FLAGS (EXT2_IMMUTABLE_FL | EXT2_APPEND_FL | EXT2_INDEX_FL)
+#define BAD_SPECIAL_FLAGS (EXT2_IMMUTABLE_FL | EXT2_APPEND_FL)
 static void check_immutable(e2fsck_t ctx, struct problem_context *pctx)
 {
 	if (!(pctx->inode->i_flags & BAD_SPECIAL_FLAGS))
@@ -615,11 +616,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 			check_immutable(ctx, &pctx);
 			check_size(ctx, &pctx);
 			ctx->fs_blockdev_count++;
-		} else if (LINUX_S_ISLNK (inode.i_mode)) {
+		} else if (LINUX_S_ISLNK (inode.i_mode) &&
+			   e2fsck_pass1_check_symlink(fs, &inode, block_buf)) {
 			check_immutable(ctx, &pctx);
 			ctx->fs_symlinks_count++;
-			if (!e2fsck_pass1_check_symlink(fs, &inode))
-				mark_inode_bad(ctx, ino);
 			if (!inode.i_blocks) {
 				ctx->fs_fast_symlinks_count++;
 				goto next;
@@ -1139,7 +1139,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	int		bad_size = 0;
 	__u64		size;
 	
-	if (!ext2fs_inode_has_valid_blocks(pctx->inode))
+	if (!ext2fs_inode_has_valid_blocks(inode))
 		return;
 	
 	pb.ino = ino;
