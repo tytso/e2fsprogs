@@ -1,5 +1,19 @@
-E2fsprogs 1.27-WIP (March 4, 2002)
-==================================
+E2fsprogs 1.27 (March 8, 2002)
+==============================
+
+The warning messages for mke2fs now go to standard error.
+
+Fixed to make sure "make check" runs all of the test programs with
+LD_LIBRARY_PATH set, so that we test the libraries in the build tree.
+
+The mke2fs program checks the boot sector for the BSD disk label, and
+avoids erasing it if it is there.
+
+Fixed a bug in e2fsck which caused it to core dump if the journal
+inode was missing when it was supposed to be there.
+
+E2fsck now prints ranges in pass 5 when printing deltas for the block
+and inode bitmaps.
 
 Debugfs's "ls -l" command now will print out the file type information
 in the directory entry.
@@ -27,6 +41,8 @@ Updated the I18N code so that calls to setlocate(LC_CTYPE, 0) are made
 
 Programmer's notes:
 -------------------
+
+Fixed various gcc -Wall complaints.
 
 Fixed a few memory leaks in the e2fsck journaling code, and in the
 ismounted code checking for a swap device.

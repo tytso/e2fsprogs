@@ -1,3 +1,7 @@
+2002-03-08  Theodore Tso  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.27
+
 2002-02-23  Theodore Tso  <tytso@mit.edu>
 
 	* com_err.texinfo: Fix up the com_err info file so that it

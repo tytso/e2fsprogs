@@ -1,3 +1,7 @@
+2002-03-08  Theodore Tso  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.27
+
 2002-03-07    <tytso@mit.edu>
 
 	* f_miss_journal, f_extra_journal: Added new test cases.

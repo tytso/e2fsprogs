@@ -1,3 +1,7 @@
+2002-03-08  Theodore Tso  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.27
+
 2002-03-07  Theodore Tso  <tytso@mit.edu>
 
 	* journal.c, pass5.c, revoke.c: Fix gcc -Wall complaints
