@@ -476,9 +476,9 @@ static time_t parse_time(char *str)
 	}
 	memset(&ts, 0, sizeof(ts));
 #ifdef HAVE_STRPTIME
-	strptime(optarg, "%Y%m%d%H%M%S", &ts);
+	strptime(str, "%Y%m%d%H%M%S", &ts);
 #else
-	sscanf(optarg, "%4d%2d%2d%2d%2d%2d", &ts.tm_year, &ts.tm_mon,
+	sscanf(str, "%4d%2d%2d%2d%2d%2d", &ts.tm_year, &ts.tm_mon,
 	       &ts.tm_mday, &ts.tm_hour, &ts.tm_min, &ts.tm_sec);
 	ts.tm_year -= 1900;
 	ts.tm_mon -= 1;
