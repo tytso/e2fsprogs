@@ -16,8 +16,9 @@ filesystem inconsistencies after an unclean shutdown), mke2fs (used to
 initialize a partition to contain an empty ext2 filesystem), debugfs
 (used to examine the internal structure of a filesystem, to manually
 repair a corrupted filesystem or to create test cases for e2fsck), tune2fs
-(used to modify filesystem parameters) and most of the other core ext2fs
-filesystem utilities.
+(used to modify filesystem parameters), resize2fs to grow and shrink
+unmounted ext2 filesystems, and most of the other core ext2fs filesystem
+utilities.
 
 You should install the e2fsprogs package if you are using any ext2
 filesystems (if you're not sure, you probably should install this

@@ -1,5 +1,8 @@
 2000-08-14    <tytso@valinux.com>
 
+	* e2fsprogs.spec (Summary): Add description of resize2fs to the
+		package summary.
+
 	* configure.in: Add test for sys/mount.h (required for e2fsck's
 		ext3 recovery code)
 

@@ -4,6 +4,7 @@ e2fsck/emptydir.c
 e2fsck/extend.c
 e2fsck/flushb.c
 e2fsck/iscan.c
+e2fsck/journal.c
 e2fsck/message.c
 e2fsck/pass1b.c
 e2fsck/pass1.c
@@ -11,6 +12,7 @@ e2fsck/pass3.c
 e2fsck/pass4.c
 e2fsck/pass5.c
 e2fsck/problem.c
+e2fsck/recover.c
 e2fsck/scantest.c
 e2fsck/swapfs.c
 e2fsck/unix.c
