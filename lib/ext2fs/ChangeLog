@@ -1,3 +1,14 @@
+2001-05-04  Theodore Tso  <tytso@valinux.com>
+
+	* dirblock.c (ext2fs_read_dir_block): Check for an directory
+		record length which isn't a multiple four, and treat that
+		as an invalid.  Scan the directory and return an error
+		(EXT2_ET_DIR_CORRUPTED) if the directory records are
+		corrupted.
+		(ext2fs_write_dir_block): If while byte-swapping the
+		directory block, if there's an error, abort and return
+		EXT2_ET_DIR_CORRUPTED.
+
 2001-05-02  Theodore Tso  <tytso@valinux.com>
 
 	* ext2fs.h (EXT2_FLAG_IMAGE_FILE): Add new flag, and add

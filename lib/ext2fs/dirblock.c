@@ -30,23 +30,34 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 	errcode_t	retval;
 	char		*p, *end;
 	struct ext2_dir_entry *dirent;
+	struct ext2_dir_entry_2 *dirent2;
+	unsigned int	rec_len, do_swap;
 
  	retval = io_channel_read_blk(fs->io, block, 1, buf);
 	if (retval)
 		return retval;
-	if ((fs->flags & (EXT2_FLAG_SWAP_BYTES|
-			  EXT2_FLAG_SWAP_BYTES_READ)) == 0)
-		return 0;
+	do_swap = (fs->flags & (EXT2_FLAG_SWAP_BYTES|
+				EXT2_FLAG_SWAP_BYTES_READ)) != 0;
 	p = (char *) buf;
 	end = (char *) buf + fs->blocksize;
 	while (p < end-8) {
-		dirent = (struct ext2_dir_entry *) p;
-		dirent->inode = ext2fs_swab32(dirent->inode);
-		dirent->rec_len = ext2fs_swab16(dirent->rec_len);
-		dirent->name_len = ext2fs_swab16(dirent->name_len);
-		p += (dirent->rec_len < 8) ? 8 : dirent->rec_len;
+		dirent = (struct ext2_dir_entry_2 *) p;
+		if (do_swap) {
+			dirent->inode = ext2fs_swab32(dirent->inode);
+			dirent->rec_len = ext2fs_swab16(dirent->rec_len);
+			dirent->name_len = ext2fs_swab16(dirent->name_len);
+		}
+		rec_len = dirent->rec_len;
+		if ((rec_len < 8) || (rec_len % 4)) {
+			rec_len = 8;
+			retval = EXT2_ET_DIR_CORRUPTED;
+		}
+		dirent2 = dirent;
+		if ((dirent2->name_len +8) > dirent2->rec_len)
+			retval = EXT2_ET_DIR_CORRUPTED;
+		p += rec_len;
 	}
-	return 0;
+	return retval;
 }
 
 errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
@@ -68,7 +79,12 @@ errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 		end = buf + fs->blocksize;
 		while (p < end) {
 			dirent = (struct ext2_dir_entry *) p;
-			p += (dirent->rec_len < 8) ? 8 : dirent->rec_len;
+			if ((dirent->rec_len < 8) ||
+			    (dirent->rec_len % 4)) {
+				retval = EXT2_ET_DIR_CORRUPTED;
+				goto errout;
+			}
+			p += dirent->rec_len;
 			dirent->inode = ext2fs_swab32(dirent->inode);
 			dirent->rec_len = ext2fs_swab16(dirent->rec_len);
 			dirent->name_len = ext2fs_swab16(dirent->name_len);
@@ -76,6 +92,7 @@ errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 	} else
 		write_buf = (char *) inbuf;
  	retval = io_channel_write_blk(fs->io, block, 1, write_buf);
+errout:
 	if (buf)
 		ext2fs_free_mem((void **) &buf);
 	return retval;
