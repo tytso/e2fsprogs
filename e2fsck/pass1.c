@@ -1057,8 +1057,9 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			if (fix_problem(ctx, PR_1_EA_BAD_VALUE, pctx))
 				goto clear_extattr;
 		}
-		if (region_allocate(region, entry->e_value_offs,
-			           EXT2_EXT_ATTR_SIZE(entry->e_value_size))) {
+		if (entry->e_value_size &&
+		    region_allocate(region, entry->e_value_offs,
+				    EXT2_EXT_ATTR_SIZE(entry->e_value_size))) {
 			if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION, pctx))
 				goto clear_extattr;
 		}

@@ -1,3 +1,10 @@
+2001-07-25  Theodore Tso  <tytso@valinux.com>
+
+	* pass1.c (check_ext_attr): Skip zero-length EA entries.
+
+	* problem.c: PR_1_EA_ALLOC_COLLISION shouldn't abort, but should
+		prompt to clear the EA block.
+
 2001-07-22  Theodore Tso  <tytso@valinux.com>
 
 	* journal.c (ll_rw_block): Use ctx->journal_io instead of the

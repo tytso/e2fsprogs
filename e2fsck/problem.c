@@ -610,7 +610,7 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Error EA allocation collision */
 	{ PR_1_EA_ALLOC_COLLISION,
 	  N_("@a @b %b is corrupt (allocation collision).  "),
-	  PROMPT_ABORT, 0},
+	  PROMPT_CLEAR, 0},
 	
 	/* Bad extended attribute name */
 	{ PR_1_EA_BAD_NAME,
