@@ -53,6 +53,7 @@ static void PRS(int argc, char *argv[])
 #ifdef MTRACE
 	extern void	*mallwatch;
 #endif
+	errcode_t	retval;
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
