@@ -327,6 +327,23 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 	if (mount_flags & EXT2_MF_MOUNTED) {
 		strcat(jfile, "/.journal");
 
+		/*
+		 * If .../.journal already exists, make sure any 
+		 * immutable or append-only flags are cleared.
+		 */
+#if defined(HAVE_CHFLAGS) && defined(UF_NODUMP)
+		(void) chflags (jfile, 0);
+#else
+#if HAVE_EXT2_IOCTLS
+		fd = open(jfile, O_RDONLY);
+		if (fd >= 0) {
+			f = 0;
+			ioctl(fd, EXT2_IOC_SETFLAGS, &f);
+			close(fd);
+		}
+#endif
+#endif
+
 		/* Create the journal file */
 		if ((fd = open(jfile, O_CREAT|O_WRONLY, 0600)) < 0)
 			return errno;
@@ -342,7 +359,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 		retval = fchflags (fd, UF_NODUMP|UF_IMMUTABLE);
 #else
 #if HAVE_EXT2_IOCTLS
-		f = EXT2_NODUMP_FL | EXT2_IMMUTABLE_FL;;
+		f = EXT2_NODUMP_FL | EXT2_IMMUTABLE_FL;
 		retval = ioctl(fd, EXT2_IOC_SETFLAGS, &f);
 #endif
 #endif

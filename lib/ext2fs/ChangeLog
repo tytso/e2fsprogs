@@ -1,5 +1,11 @@
 2001-11-05  Theodore Tso  <tytso@valinux.com>
 
+	* mkjournal.c (ext2fs_add_journal_inode): When creating a .journal
+		file on adding a journal to an already-mounted filesystem,
+		try to clear the ext2 file attributes on an already
+		existing .journal file so that we don't fail if on a
+		partially added journal to the filesystem.
+
 	* ext2_fs.h: Define a new ext2 file attribute, EXT2_NOTAIL_FL,
 		which signals that a particular inode should not have the
 		last bits of data (the "tail") be merged with another
