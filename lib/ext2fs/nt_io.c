@@ -442,7 +442,7 @@ _OpenNtName(
 						&ObjectAttributes,
 						&IoStatusBlock,
 						FILE_SHARE_WRITE | FILE_SHARE_READ,
-						FILE_SYNCHRONOUS_IO_ALERT);
+						FILE_SYNCHRONOUS_IO_NONALERT);
 
 	if(!NT_SUCCESS(Status))
 	{
@@ -460,7 +460,7 @@ _OpenNtName(
 							&ObjectAttributes,
 							&IoStatusBlock,
 							FILE_SHARE_WRITE | FILE_SHARE_READ,
-							FILE_SYNCHRONOUS_IO_ALERT);
+							FILE_SYNCHRONOUS_IO_NONALERT);
 
 		//
 		// Try to satisfy mode
@@ -478,7 +478,7 @@ _OpenNtName(
 							&ObjectAttributes,
 							&IoStatusBlock,
 							FILE_SHARE_WRITE | FILE_SHARE_READ,
-							FILE_SYNCHRONOUS_IO_ALERT);
+							FILE_SYNCHRONOUS_IO_NONALERT);
 		}
 	}
 
@@ -1169,7 +1169,7 @@ nt_open(const char *name, int flags, io_channel *channel)
 		// Lock/dismount
 		//
 
-		if(!NT_SUCCESS(_LockDrive(NtData->Handle)) || !NT_SUCCESS(_DismountDrive(NtData->Handle)))
+		if(!NT_SUCCESS(_LockDrive(NtData->Handle)) /*|| !NT_SUCCESS(_DismountDrive(NtData->Handle))*/)
 		{
 			NtData->OpenedReadonly = TRUE;
 		}

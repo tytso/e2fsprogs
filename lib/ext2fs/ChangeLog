@@ -1,5 +1,11 @@
 1999-10-25    <tytso@valinux.com>
 
+	* nt_io.c (_OpenNtName): Open the device using
+		FILE_SYNCHRONOUS_IO_NONALERT instead of
+		FILE_SYNCHRONOUS_IO_ALERT
+		(nt_open): At the end of the device open routine, unlock 
+		the drive but do not dismount it.
+
 	* initialize.c (CREATOR_OS): Use __GNU__ instead of __gnu__ to
 		detect the Hurd OS.
 
