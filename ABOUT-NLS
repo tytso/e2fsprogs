@@ -1,3 +1,22 @@
+E2fsprogs-specific notes
+************************
+
+1)  NLS support is not enabled by default.  In order to get NLS
+	support, use the --enable-nls option when running configure.
+
+2)  The intl and po directories aren't linked into the main makefile
+	subdirectories.
+
+3)  The documentation for gettext is abysmal.  I hope everything is
+right, but I make no guarantees; the NLS integration is still in
+testing.  (This is why it's disabled by default.)
+
+4)  This ABOUT-NLS file was obtained from ftp.gnu.org in February,
+2000.  Apparently this is the most recent version as of this writing,
+even though it was apparently last modified in August, 1998.
+
+
+
 Notes on the Free Translation Project
 *************************************
 
