@@ -1,3 +1,8 @@
+1999-05-02    <tytso@rsts-11.mit.edu>
+
+	* findsuper.c: Added documentation from aeb@cwi.nl; some minor
+		code cleanups.
+
 1999-05-20    <tytso@rsts-11.mit.edu>
 
 	* dumpe2fs.c, dumpe2fs.8.in: Added new command-line options which

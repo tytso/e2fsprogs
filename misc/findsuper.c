@@ -31,7 +31,37 @@
  *		Steve
  * ssd@nevets.oau.org
  * ssd@mae.engr.ucf.edu
+ * 
  */
+
+/*
+ * Documentation addendum added by Andreas dwguest@win.tue.nl/aeb@cwi.nl
+ * 
+ * The program findsuper is a utility that scans a disk and finds
+ * copies of ext2 superblocks (by checking for the ext2 signature; it
+ * will occasionally find other blocks that by coincidence have this
+ * signature - often these can be recognised by their ridiculous
+ * dates).
+ * 
+ * For each superblock found, it prints the offset in bytes, the
+ * offset in 1024-byte blocks, the size of ext2 partition in 1024-byte
+ * blocks, the filesystem blocksize (given as log(blocksize)-10, so
+ * that 0 means 1024), the block group number (0 for older ext2
+ * systems), and a timestamp (s_mtime).
+ * 
+ * This program can be used to retrieve partitions that have been
+ * lost.  The superblock for block group 0 is found 1 block (2
+ * sectors) after the partition start.
+ * 
+ * For new systems that have a block group number in the superblock it
+ * is immediately clear which superblock is the first of a partition.
+ * For old systems where no group numbers are given, the first
+ * superblock can be recognised by the timestamp: all superblock
+ * copies have the creation time in s_mtime, except the first, which
+ * has the last time e2fsck or tune2fs wrote to the filesystem.
+ * 
+ */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -82,15 +112,17 @@ main(int argc, char *argv[])
 	for (;!feof(f) &&  (i=fseek(f,sk,SEEK_SET))!= -1; sk+=skiprate){
 		if (i=fread(&ext2,sizeof(ext2),1, f)!=1) {
 			perror("read failed");
-		} else if (ext2.s_magic == EXT2_SUPER_MAGIC){
-			tm = ext2.s_mtime;
-			s=ctime(&tm);
-			s[24]=0;
-			printf("%9ld %9ld %9ld %5ld %4d %s\n", sk,
-			       sk/1024, ext2.s_blocks_count,
-			       ext2.s_log_block_size,
-			       ext2.s_block_group_nr, s);
 		}
+		if (ext2.s_magic != EXT2_SUPER_MAGIC)
+			continue;
+		
+		tm = ext2.s_mtime;
+		s=ctime(&tm);
+		s[24]=0;
+		printf("%9ld %9ld %9ld %5ld %4d %s\n", sk,
+		       sk/1024, ext2.s_blocks_count,
+		       ext2.s_log_block_size,
+		       ext2.s_block_group_nr, s);
 	}
 	printf("Failed on %d at %ld\n", i, sk);
 	fclose(f);
