@@ -30,7 +30,7 @@ static int save_dev(blkid_dev dev, FILE *file)
 {
 	struct list_head *p;
 
-	if (!dev)
+	if (!dev || dev->bid_name[0] != '/')
 		return 0;
 
 	DBG(DEBUG_SAVE,

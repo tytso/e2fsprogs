@@ -78,6 +78,50 @@ static void set_uuid(blkid_dev dev, uuid_t uuid)
 	}
 }
 
+static void get_ext2_info(blkid_dev dev, unsigned char *buf)
+{
+	struct ext2_super_block *es = (struct ext2_super_block *) buf;
+	const char *label = 0;
+
+	DBG(DEBUG_PROBE, printf("ext2_sb.compat = %08X:%08X:%08X\n", 
+		   blkid_le32(es->s_feature_compat),
+		   blkid_le32(es->s_feature_incompat),
+		   blkid_le32(es->s_feature_ro_compat)));
+
+	if (strlen(es->s_volume_name)) {
+		label = es->s_volume_name;
+		blkid_set_tag(dev, "LABEL", label, sizeof(es->s_volume_name));
+	}
+
+	set_uuid(dev, es->s_uuid);
+}
+
+static int probe_ext3(int fd __BLKID_ATTR((unused)), 
+		      blkid_cache cache __BLKID_ATTR((unused)), 
+		      blkid_dev dev,
+		      struct blkid_magic *id, unsigned char *buf)
+{
+	struct ext2_super_block *es;
+
+	es = (struct ext2_super_block *)buf;
+
+	/* Distinguish between jbd and ext2/3 fs */
+	if (blkid_le32(es->s_feature_incompat) & 
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
+		return -BLKID_ERR_PARAM;
+
+	/* Distinguish between ext3 and ext2 */
+	if (!(blkid_le32(es->s_feature_compat) &
+	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+		return -BLKID_ERR_PARAM;
+
+	get_ext2_info(dev, buf);
+
+	blkid_set_tag(dev, "SEC_TYPE", "ext2", sizeof("ext2"));
+
+	return 0;
+}
+
 static int probe_ext2(int fd __BLKID_ATTR((unused)), 
 		      blkid_cache cache __BLKID_ATTR((unused)), 
 		      blkid_dev dev,
@@ -88,27 +132,12 @@ static int probe_ext2(int fd __BLKID_ATTR((unused)),
 
 	es = (struct ext2_super_block *)buf;
 
-	DBG(DEBUG_PROBE, printf("ext2_sb.compat = %08X:%08X:%08X\n", 
-		   blkid_le32(es->s_feature_compat),
-		   blkid_le32(es->s_feature_incompat),
-		   blkid_le32(es->s_feature_ro_compat)));
-
 	/* Distinguish between jbd and ext2/3 fs */
-	if (id && (blkid_le32(es->s_feature_incompat) &
-		   EXT3_FEATURE_INCOMPAT_JOURNAL_DEV))
+	if (blkid_le32(es->s_feature_incompat) & 
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
 		return -BLKID_ERR_PARAM;
 
-	if (strlen(es->s_volume_name))
-		label = es->s_volume_name;
-	blkid_set_tag(dev, "LABEL", label, sizeof(es->s_volume_name));
-
-	set_uuid(dev, es->s_uuid);
-
-	if (blkid_le32(es->s_feature_compat) &
-	    EXT3_FEATURE_COMPAT_HAS_JOURNAL)
-		sec_type = "ext3";
-	
-	blkid_set_tag(dev, "SEC_TYPE", sec_type, 0);
+	get_ext2_info(dev, buf);
 
 	return 0;
 }
@@ -125,7 +154,9 @@ static int probe_jbd(int fd __BLKID_ATTR((unused)),
 	      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV))
 		return -BLKID_ERR_PARAM;
 
-	return (probe_ext2(fd, cache, dev, 0, buf));
+	get_ext2_info(dev, buf);
+
+	return 0;
 }
 
 static int probe_vfat(int fd __BLKID_ATTR((unused)), 
@@ -182,6 +213,7 @@ static int probe_msdos(int fd __BLKID_ATTR((unused)),
 	sprintf(serno, "%02X%02X-%02X%02X", ms->ms_serno[3], ms->ms_serno[2],
 		ms->ms_serno[1], ms->ms_serno[0]);
 	blkid_set_tag(dev, "UUID", serno, 0);
+	blkid_set_tag(dev, "SEC_TYPE", "msdos", sizeof("msdos"));
 
 	return 0;
 }
@@ -369,6 +401,7 @@ static int probe_ocfs2(int fd __BLKID_ATTR((unused)),
 static struct blkid_magic type_array[] = {
 /*  type     kboff   sboff len  magic			probe */
   { "jbd",	 1,   0x38,  2, "\123\357",		probe_jbd },
+  { "ext3",	 1,   0x38,  2, "\123\357",		probe_ext3 },
   { "ext2",	 1,   0x38,  2, "\123\357",		probe_ext2 },
   { "reiserfs",	 8,   0x34,  8, "ReIsErFs",		probe_reiserfs },
   { "reiserfs", 64,   0x34,  9, "ReIsEr2Fs",		probe_reiserfs },
@@ -378,9 +411,9 @@ static struct blkid_magic type_array[] = {
   { "ntfs",      0,      3,  8, "NTFS    ",             0 },
   { "vfat",      0,   0x52,  5, "MSWIN",                probe_vfat },
   { "vfat",      0,   0x52,  8, "FAT32   ",             probe_vfat },
-  { "msdos",     0,   0x36,  5, "MSDOS",                probe_msdos },
-  { "msdos",     0,   0x36,  8, "FAT16   ",             probe_msdos },
-  { "msdos",     0,   0x36,  8, "FAT12   ",             probe_msdos },
+  { "vfat",      0,   0x36,  5, "MSDOS",                probe_msdos },
+  { "vfat",      0,   0x36,  8, "FAT16   ",             probe_msdos },
+  { "vfat",      0,   0x36,  8, "FAT12   ",             probe_msdos },
   { "minix",     1,   0x10,  2, "\177\023",             0 },
   { "minix",     1,   0x10,  2, "\217\023",             0 },
   { "minix",	 1,   0x10,  2, "\150\044",		0 },
@@ -454,7 +487,7 @@ blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev)
 		   dev->bid_name, diff));
 
 	if (((fd = open(dev->bid_name, O_RDONLY)) < 0) ||
-	    (fstat(fd, &st) < 0) || !S_ISBLK(st.st_mode)) {
+	    (fstat(fd, &st) < 0)) {
 		if (errno == ENXIO || errno == ENODEV || errno == ENOENT) {
 			blkid_free_dev(dev);
 			return NULL;

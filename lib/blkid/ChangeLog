@@ -1,3 +1,19 @@
+2005-01-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* save.c (save_dev): Don't save relative pathnames since they
+		won't be useful to another process.
+
+	* devname.c (probe_one): Make sure the device is a block device
+		before checking st_rdev.
+
+	* probe.c (probe_msdos): Mark msdos filesystems as type vfat, with
+		a SEC_TYPE of msdos, so that mount will use vfat to mount
+		msdos filesystems.  (Addresses Debian bug #287455)
+		(probe_ext3): For ext3 filesystems, return a type of ext3
+		and a SEC_TYPE of ext2, for similar reasons as above.
+		(blkid_verify_devname): Allow non-block devices to be
+		verified, for testing purposes.
+
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Use Linux-kernel-style makefile output for "make
