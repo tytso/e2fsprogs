@@ -103,6 +103,7 @@ static const char *base_devices[] = {
 	NULL
 };
 #else
+#define BASE_MD "/dev/md"
 static const char *base_devices[] = {
 	"/dev/hda",
 	"/dev/hdb",
@@ -123,6 +124,7 @@ static const char *base_devices[] = {
 	"/dev/sde",
 	"/dev/sdf",
 	"/dev/sdg",
+	BASE_MD,
 	NULL
 };
 #endif
@@ -747,6 +749,14 @@ static int device_already_active(char *device)
 
 	if (force_all_parallel)
 		return 0;
+
+#ifdef BASE_MD
+	/* Don't check a soft raid disk with any other disk */
+	if (instance_list &&
+	    (!strncmp(instance_list->device, BASE_MD, sizeof(BASE_MD)-1) ||
+	     !strncmp(device, BASE_MD, sizeof(BASE_MD)-1)))
+		return 1;
+#endif
 
 	for (inst = instance_list; inst; inst = inst->next) {
 		if (!strcmp(base, base_device(inst->device)))

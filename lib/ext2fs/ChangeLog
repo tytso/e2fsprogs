@@ -1,3 +1,8 @@
+2000-10-24    <tytso@snap.thunk.org>
+
+	* llseek.c: Add #ifdef's for IA64 (it's a 64-bit platform, so we
+		don't need to use llseek).
+
 2000-10-24    <tytso@valinux.com>
 
 	* Makefile.in, ext2fs.h, jfs_dat.h, mkjournal.c: Add functions for

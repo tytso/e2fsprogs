@@ -1,5 +1,9 @@
 2000-10-24    <tytso@snap.thunk.org>
 
+	* fsck.c (device_already_active): Add a special case check for MD
+		devices, so we don't try to check them in parallel with
+		other devices.
+
 	* mke2fs.c (PRS, main), mke2fs.8.in: Add support for the -j
 		option, which builds an ext2/3 filesystem with an ext3
 		journal.

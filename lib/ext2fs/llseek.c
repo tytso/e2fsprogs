@@ -45,11 +45,11 @@ extern long long llseek (int fd, long long offset, int origin);
 
 #else	/* ! HAVE_LLSEEK */
 
-#ifdef __alpha__
+#if defined(__alpha__) || defined (__ia64__)
 
 #define llseek lseek
 
-#else /* !__alpha__ */
+#else /* !__alpha__ && !__ia64__*/
 
 #include <linux/unistd.h>
 
@@ -81,7 +81,7 @@ static ext2_loff_t my_llseek (int fd, ext2_loff_t offset, int origin)
 	return (retval == -1 ? (ext2_loff_t) retval : result);
 }
 
-#endif	/* __alpha__ */
+#endif	/* __alpha__ || __ia64__ */
 
 #endif /* HAVE_LLSEEK */
 
