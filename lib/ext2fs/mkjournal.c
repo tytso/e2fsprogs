@@ -35,6 +35,7 @@
 #include <linux/ext2_fs.h>
 #endif
 
+#include "e2p/e2p.h"
 #include "ext2fs.h"
 #include "jfs_user.h"
 
@@ -130,7 +131,6 @@ static int mkjournal_proc(ext2_filsys		fs,
 	struct mkjournal_struct *es = (struct mkjournal_struct *) priv_data;
 	blk_t	new_blk;
 	static blk_t	last_blk = 0;
-	char		*block;
 	errcode_t	retval;
 	int		group;
 	
@@ -264,6 +264,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
 	       sizeof(fs->super->s_journal_uuid));
 	fs->super->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 	ext2fs_mark_super_dirty(fs);
+	return 0;
 }
 
 /*
@@ -279,8 +280,8 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 	char			jfile[1024];
 	int			fd, mount_flags;
 
-	if (retval = ext2fs_check_mount_point(fs->device_name, &mount_flags,
-					      jfile, sizeof(jfile)-10))
+	if ((retval = ext2fs_check_mount_point(fs->device_name, &mount_flags,
+					       jfile, sizeof(jfile)-10)))
 		return retval;
 
 	if (mount_flags & EXT2_MF_MOUNTED) {

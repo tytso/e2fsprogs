@@ -1,3 +1,11 @@
+2001-01-05    <tytso@snap.thunk.org>
+
+	* ext2fs.h: Indent the #warning to fix gcc -Wall complaint.
+
+	* mkjournal.c (ext2fs_add_journal_device): Fix various gcc -Wall
+		complaints including a missing return 0 at the end of
+		ext2fs_add_journal_device.
+
 2001-01-03    <tytso@snap.thunk.org>
 
 	* Makefile.in: Link in libe2p when creating libext2fs as a shared

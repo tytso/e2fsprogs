@@ -407,7 +407,7 @@ typedef struct ext2_icount *ext2_icount_t;
 /* If the below warning bugs you, then have
    `CPPFLAGS=-DI_KNOW_THAT_COMPRESSION_IS_EXPERIMENTAL' in your
    environment at configure time. */
-#warning "Compression support is experimental"
+ #warning "Compression support is experimental"
 #endif
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE|\
 					 EXT2_FEATURE_INCOMPAT_COMPRESSION|\
