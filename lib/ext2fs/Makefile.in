@@ -150,8 +150,7 @@ COMPILE_ET=../et/compile_et
 
 DISTFILES= Makefile *.c *.h image
 
-ext2_err.et: $(SUBSTITUTE) $(srcdir)/ext2_err.et.in
-	-$(CHMOD) +x $(SUBSTITUTE) 
+ext2_err.et: $(DEP_SUBSTITUTE) $(srcdir)/ext2_err.et.in
 	$(SUBSTITUTE) $(srcdir)/ext2_err.et.in ext2_err.et
 
 ext2_err.c ext2_err.h: ext2_err.et

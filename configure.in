@@ -508,7 +508,7 @@ rmakefile=
 if test -d ${srcdir}/resize ; then
    rmakefile=resize/Makefile
 fi
-AC_OUTPUT(MCONFIG lib/substitute_sh Makefile lib/et/Makefile 
+AC_OUTPUT(MCONFIG Makefile util/Makefile util/subst.conf lib/et/Makefile 
 	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
 	misc/Makefile e2fsck/Makefile debugfs/Makefile tests/Makefile 
 	tests/progs/Makefile $rmakefile doc/Makefile)

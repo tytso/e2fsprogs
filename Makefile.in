@@ -69,10 +69,9 @@ distclean: distclean-recursive distclean-local
 
 realclean: realclean-recursive realclean-local
 
-include/linux/types.h: $(SUBSTITUTE) $(srcdir)/include/linux/types.h.in
-	-chmod +x $(SUBSTITUTE)
+include/linux/types.h: $(DEP_SUBSTITUTE) $(srcdir)/include/linux/types.h.in
 	$(SUBSTITUTE) $(srcdir)/include/linux/types.h.in \
-		include/linux/types.h
+	> include/linux/types.h
 
 mostlyclean-local:
 	$(RM) -f \#* *~ core MAKELOG 

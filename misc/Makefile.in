@@ -45,7 +45,7 @@ DEPLIBS_E2P= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR)
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-all:: $(SPROGS) $(UPROGS) $(USPROGS) fix_substitute $(SMANPAGES) $(UMANPAGES)
+all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES)
 
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS_E2P) $(LIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS_E2P) $(LIBUUID)
@@ -81,31 +81,28 @@ fsck: $(FSCK_OBJS)
 badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS)
 
-fix_substitute:
-	-$(CHMOD) +x $(SUBSTITUTE) 
-
-tune2fs.8: $(SUBSTITUTE) $(srcdir)/tune2fs.8.in
+tune2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/tune2fs.8.in
 	$(SUBSTITUTE) $(srcdir)/tune2fs.8.in tune2fs.8
 
-mklost+found.8: $(SUBSTITUTE) $(srcdir)/mklost+found.8.in
+mklost+found.8: $(DEP_SUBSTITUTE) $(srcdir)/mklost+found.8.in
 	$(SUBSTITUTE) $(srcdir)/mklost+found.8.in mklost+found.8
 
-mke2fs.8: $(SUBSTITUTE) $(srcdir)/mke2fs.8.in
+mke2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/mke2fs.8.in
 	$(SUBSTITUTE) $(srcdir)/mke2fs.8.in mke2fs.8
 
-dumpe2fs.8: $(SUBSTITUTE) $(srcdir)/dumpe2fs.8.in 
+dumpe2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/dumpe2fs.8.in 
 	$(SUBSTITUTE) $(srcdir)/dumpe2fs.8.in dumpe2fs.8
 
-badblocks.8: $(SUBSTITUTE) $(srcdir)/badblocks.8.in
+badblocks.8: $(DEP_SUBSTITUTE) $(srcdir)/badblocks.8.in
 	$(SUBSTITUTE) $(srcdir)/badblocks.8.in badblocks.8	
 
-fsck.8: $(SUBSTITUTE) $(srcdir)/fsck.8.in
+fsck.8: $(DEP_SUBSTITUTE) $(srcdir)/fsck.8.in
 	$(SUBSTITUTE) $(srcdir)/fsck.8.in fsck.8 
 
-chattr.1: $(SUBSTITUTE) $(srcdir)/chattr.1.in
+chattr.1: $(DEP_SUBSTITUTE) $(srcdir)/chattr.1.in
 	$(SUBSTITUTE) $(srcdir)/chattr.1.in chattr.1 
 
-lsattr.1: $(SUBSTITUTE) $(srcdir)/lsattr.1.in 
+lsattr.1: $(DEP_SUBSTITUTE) $(srcdir)/lsattr.1.in 
 	$(SUBSTITUTE) $(srcdir)/lsattr.1.in lsattr.1 
 
 installdirs:

@@ -38,8 +38,7 @@ all:: $(PROGS) $(TEST_PROGS) $(MANPAGES)
 resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS)
 
-resize2fs.8: $(SUBSTITUTE) $(srcdir)/resize2fs.8.in
-	-$(CHMOD) +x $(SUBSTITUTE)
+resize2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/resize2fs.8.in
 	$(SUBSTITUTE) $(srcdir)/resize2fs.8.in resize2fs.8
 
 test_extent: $(TEST_EXTENT_OBJS)

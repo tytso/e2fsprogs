@@ -62,8 +62,7 @@ BSDLIB_INSTALL_DIR = $(libdir)
 @MAKEFILE_PROFILE@
 @MAKEFILE_CHECKER@
 
-compile_et: $(SUBSTITUTE) $(srcdir)/compile_et.sh.in
-	-$(CHMOD) +x $(SUBSTITUTE) 
+compile_et: $(DEP_SUBSTITUTE) $(srcdir)/compile_et.sh.in
 	$(SUBSTITUTE) $(srcdir)/compile_et.sh.in compile_et
 	$(CHMOD) +x compile_et
 

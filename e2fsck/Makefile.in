@@ -109,8 +109,7 @@ iscan: iscan.o util.o
 profiled:
 	mkdir profiled
 
-e2fsck.8: $(SUBSTITUTE) $(srcdir)/e2fsck.8.in
-	-$(CHMOD) +x $(SUBSTITUTE)
+e2fsck.8: $(DEP_SUBSTITUTE) $(srcdir)/e2fsck.8.in
 	$(SUBSTITUTE) $(srcdir)/e2fsck.8.in e2fsck.8
 
 installdirs:

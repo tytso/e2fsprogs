@@ -85,7 +85,9 @@ LINUX_INCLUDE=@LINUX_INCLUDE@
 #
 # A fast substitution command for fixing up man pages, shell scripts, etc.
 #
-SUBSTITUTE= $(top_builddir)/lib/substitute_sh
+SUBST_CONF=$(top_builddir)/util/subst.conf
+SUBSTITUTE= $(top_builddir)/util/subst -f $(SUBST_CONF)
+DEP_SUBSTITUTE= $(top_builddir)/util/subst $(SUBST_CONF)
 
 #
 # Warning flags
@@ -161,9 +163,5 @@ depend:: .depend
 	$(MV) $(srcdir)/Makefile.in $(srcdir)/Makefile.in.old; \
 	$(MV) $(srcdir)/Makefile.in.new $(srcdir)/Makefile.in; \
 	else :; fi
-
-
-
-
 
 # End of file MCONFIG

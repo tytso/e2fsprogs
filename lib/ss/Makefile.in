@@ -123,8 +123,7 @@ ct.tab.c ct.tab.h: ct.y
 #	$(LD) -r -s -o $@ $(OBJS)
 #	$(CHMOD) -x $@
 
-mk_cmds: $(SUBSTITUTE) $(srcdir)/mk_cmds.sh.in
-	-$(CHMOD) +x $(SUBSTITUTE) 
+mk_cmds: $(DEP_SUBSTITUTE) $(srcdir)/mk_cmds.sh.in
 	$(SUBSTITUTE) $(srcdir)/mk_cmds.sh.in mk_cmds
 	$(CHMOD) +x mk_cmds
 

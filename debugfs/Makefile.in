@@ -36,8 +36,7 @@ debugfs: $(DEBUG_OBJS) $(DEPLIBS)
 debug_cmds.c debug_cmds.h: debug_cmds.ct
 	$(MK_CMDS) $(srcdir)/debug_cmds.ct
 
-debugfs.8: $(SUBSTITUTE) $(srcdir)/debugfs.8.in
-	-$(CHMOD) +x $(SUBSTITUTE)
+debugfs.8: $(DEP_SUBSTITUTE) $(srcdir)/debugfs.8.in
 	$(SUBSTITUTE) $(srcdir)/debugfs.8.in debugfs.8
 
 installdirs:
