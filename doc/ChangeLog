@@ -1,0 +1,4 @@
+1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (install-doc-libs): Remove libext2fs.info*, not just
+		libext2fs.info*.gz.  Add an uninstall-doc-libs target.

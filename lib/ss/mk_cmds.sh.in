@@ -2,14 +2,34 @@
 #
 #
 
-DIR=@SS_DIR@
+DIR="${DIR-@datadir@/ss}"
+SS_DIR=@SS_DIR@
 AWK=@AWK@
 SED=@SED@
+
+if test "x$1" = x ; then
+    echo "Usage: mk_cmds file"
+    exit 1
+fi
+
+if test ! -f $DIR/ct_c.sed -o ! -f $DIR/ct_c.awk ; then
+    DIR=$SS_DIR
+#    echo "Falling back to $DIR..."
+    if test ! -f $DIR/ct_c.sed -o ! -f $DIR/ct_c.awk ; then
+	echo "compile_et: Couldn't find compile_et's template files."
+	exit 1
+    fi
+fi
 
 FILE=$1
 ROOT=`echo $1 | sed -e s/.ct$//`
 BASE=`basename $ROOT`
 TMP=ct$$.c
+
+if ! test -f $FILE ; then
+    echo "$FILE: File not found"
+    exit 1;
+fi
 
 ${SED} -f ${DIR}/ct_c.sed  ${FILE} \
 	| ${AWK} -f ${DIR}/ct_c.awk rootname=${ROOT} outfile=${TMP} -

@@ -3,7 +3,7 @@
 .\"
 .\" $Header$
 .\"
-.TH COMPILE_ET 1 "22 Nov 1988" SIPB
+.TH COMPILE_ET 1 "30 Mar 1998" SIPB
 .SH NAME
 compile_et \- error table compiler
 .SH SYNOPSIS
@@ -64,10 +64,12 @@ remaining text to the end of the source line will be ignored.
 
 .SH BUGS
 
-Since
+Since the original
 .B compile_et
 uses a very simple parser based on
-.IR yacc (1),
+.IR yacc (1), and this current version of 
+.B compile_et
+uses an awk/sed combination of scripts, 
 its error recovery leaves much to be desired.
 
 .\" .IR for manual entries

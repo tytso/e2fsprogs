@@ -1,3 +1,18 @@
+1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in: Fix bug where my_dir was set incorrectly.  Install
+		the et_c.awk and et_h.awk files in $(datadir)/et (i.e.,
+		/usr/share/et) directory.  Change to use new
+		installation directory variables convention.  Fix
+		uninstall rules to take $(DESTDIR) into account.
+
+	* compile_et.1: Change man page to reflect the fact that
+		compile_et is now a awk/sed script, not a yacc script.
+
+	* compile_et.sh.in: Look in $(datadir)/et for et_c.awk and
+		et_h.awk; if not found, look in the build directory.  Add
+		error checking for non-existent input file.
+
 Fri Oct 31 01:14:41 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* et_c.awk, et_h.awk: Remove support for non STDC compilers, since

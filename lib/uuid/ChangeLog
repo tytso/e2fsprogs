@@ -1,3 +1,9 @@
+1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in: Change to use new installation directory variables
+		convention.  Fix uninstall rules to take $(DESTDIR) into
+		account.
+
 Sun Mar  8 22:17:59 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* gen_uuid.c (get_node_id): Use char * instead of caddr_t, which
