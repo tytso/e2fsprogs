@@ -1,3 +1,9 @@
+2001-11-30  Theodore Tso  <tytso@valinux.com>
+
+	* f_badorphan, f_journal: Update expect files to reflect the fact
+		that new e2fsck's will move the .journal file to a hidden
+		inode.
+
 2001-11-26  Theodore Tso  <tytso@valinux.com>
 
 	* f_miss_blk_bmap: Add new test which checks for bug in e2fsck
