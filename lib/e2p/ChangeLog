@@ -1,3 +1,9 @@
+Thu Apr  6 17:38:00 2000  Theodore Y. Ts'o  <tytso@signal.thunk.org>
+
+	* feature.c: Make feature_list static; it shouldn't be exported.
+
+	* dll/jump.funcs: Update a.out shared library control file.
+
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
 	* pf.c (print_flags): Rename EXT2_NOCOMP_FL to 	EXT2_NOCOMPR_FL.

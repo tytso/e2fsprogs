@@ -1,3 +1,8 @@
+Thu Apr  6 17:50:25 2000  Theodore Y. Ts'o  <tytso@signal.thunk.org>
+
+	* badblocks.c (flush_bufs): Use fsync() if the system doesn't
+		support fdatasync().
+
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
 	* badblocks.c, dumpe2fs.c, e2label.c, mke2fs.c, tune2fs.c,

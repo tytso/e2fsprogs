@@ -63,7 +63,7 @@ struct feature {
 	const char	*string;
 };
 
-struct feature feature_list[] = {
+static struct feature feature_list[] = {
 	{	E2P_FEATURE_COMPAT, EXT2_FEATURE_COMPAT_DIR_PREALLOC,
 			"dir_prealloc" },
 	{	E2P_FEATURE_COMPAT, EXT3_FEATURE_COMPAT_HAS_JOURNAL,

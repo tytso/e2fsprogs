@@ -225,8 +225,13 @@ static void flush_bufs (int dev, int sync)
       )
     fprintf (stderr, _("Flushing buffers\n"));
 
+#ifdef HAVE_FDATASYNC
   if (sync && fdatasync (dev) == -1)
+    com_err (program_name, errno, _("during fdatasync"));
+#else
+  if (sync && fsync (dev) == -1)
     com_err (program_name, errno, _("during fsync"));
+#endif
 
 #ifdef BLKFLSBUF
   ioctl (host_dev, BLKFLSBUF, 0);   /* In case this is a HD */

@@ -13,3 +13,6 @@
 00000000 T _setversion          libe2p       setversion
 00000000 T _e2p_is_null_uuid    libe2p       uuid
 00000000 T _e2p_uuid_to_str     libe2p       uuid
+00000000 T _e2p_feature2string  libe2p       feature
+00000000 T _e2p_string2feature  libe2p       feature
+00000000 T _e2p_edit_feature    libe2p       feature
