@@ -12,6 +12,7 @@
  */
 
 #include "uuidP.h"
+#include <string.h>
 
 #define UUCMP(u1,u2) if (u1 != u2) return((u1 < u2) ? -1 : 1);
 

@@ -9,6 +9,12 @@
  * %End-Header%
  */
 
+/*
+ * Force inclusion of SVID stuff since we need it if we're compiling in
+ * gcc-wall wall mode
+ */
+#define _SVID_SOURCE
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -41,7 +47,7 @@
 #define rand() 		random()
 #endif
 
-static int get_random_fd()
+static int get_random_fd(void)
 {
 	struct timeval	tv;
 	static int	fd = -2;

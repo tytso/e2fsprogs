@@ -1,3 +1,13 @@
+2001-05-01  Theodore Tso  <tytso@valinux.com>
+
+	* parse.c, compare.c: Include string.h to fix gcc -Wall
+		complaints.
+
+	* gen_uuid.c: Define _SVID_SOURCE to avoid gcc -Wall errors
+		because some required structures wouldn't be otherwise
+		defined.  Fix a minor gcc -Wall nit in the declaration of
+		get_random_fd().
+
 2001-01-12  Theodore Ts'o  <tytso@valinux.com>
 
 	* uuid_time.c (main), tst_uuid.c (main): Fix gcc -Wall complaints.
