@@ -165,8 +165,16 @@ static errcode_t check_mntent(const char *file, int *mount_flags,
 	if (retval == 0)
 		return 0;
 #endif /* __linux__ */
+#if defined(MOUNTED) || defined(_PATH_MOUNTED)
+#ifndef MOUNTED
+#define MOUNTED _PATH_MOUNTED
+#endif /* MOUNTED */
 	retval = check_mntent_file(MOUNTED, file, mount_flags, mtpt, mtlen);
 	return retval;
+#else 
+	*mount_flags = 0;
+	return 0;
+#endif /* defined(MOUNTED) || defined(_PATH_MOUNTED) */
 }
 
 #elif defined(HAVE_GETMNTINFO)

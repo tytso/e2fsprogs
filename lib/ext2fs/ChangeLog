@@ -1,3 +1,8 @@
+2002-06-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* ismounted.c (check_mntent): In AIX 4.3, MOUNTED isn't defined.
+		Add appropriate fallbacks in this case.
+
 2002-06-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* dirhash.c (ext2fs_dirhash): Change function signature to support
