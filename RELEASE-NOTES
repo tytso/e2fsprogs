@@ -1,3 +1,61 @@
+E2fsprogs 1.33-WIP (March 6, 2003)
+==================================
+
+Fix bug in resize2fs which incorrectly moved the block and inode
+bitmaps for sparse superblock filesystems and incorrectly marked
+blocks as in use.  (Addresses Debian bug #174766)
+ 
+Added a new shared library, the blkid library, which efficiently
+allows fsck, mke2fs, e2fsck, and tune2fs to be able to look up LABEL
+and UUID filesystem specifiers without needing to search all of the
+devices in the system.  Instead, the device is looked up in a cache
+file, and then verified to make sure the blkid cache is correct.
+
+Tune2fs and e2label will accept LABEL=xxx and UID=yyy specifiers for
+the device name, using the blkid library.  (Addresses Debian bugs
+#166048, #179671)
+
+Fsck now supports backslash escapes in /etc/fstab so that \040 can be
+used for spaces in device labels.
+
+Removed 32-bit limitations for debugfs's dump command.
+
+If the user specifies a large number of inodes, Mke2fs will
+automatically adjust the number of blocks per group to find a valid
+set of filesystem parameters.
+
+Add workaround to detect broken MD devices where when some of the
+underlying devices are marked read-only, writes to the MD device are
+silently dropped.  E2fsck will detect if there is an attempt to run
+the journal twice, and abort with an error if this is the case.
+(Addresses IBM Bugzilla bug #1226)
+
+E2fsck will print an error if more than one of the -p/-a, -n or -y
+options are specified.
+
+E2fsck will fix HTREE corruptions in preen mode, without stopping the
+boot process.  This is needed because the 2.4 ext2 filesystem
+accidentally had the INDEX_FL backwards compatibility code removed.
+
+Mke2fs no longer creates filesystems with the dir_index flag set by
+default; the user has to specifically request it.
+
+Update and clarified various man pages. (Addresses Debian bugs
+#173612, #175233, #175113, and #170497)
+
+Programmer's notes: 
+-------------------
+
+Fix various gcc -Wall nits.
+
+Fixed a lot of portability problems that caused e2fsprogs not to build
+successfully under Solaris.
+
+Changes to create a subset distribution which consists only of the
+et, ss, uuid, and blkid libraries.  The configure script and top-level
+makefile were changed to support working with a subset distribution.
+
+
 E2fsprogs 1.32 (Nomvember 9, 2002)
 ==================================
 
@@ -11,6 +69,7 @@ Made some other minor optimizations to the Unix I/O routines to save a
 small amount of CPU time.
 
 Updated internationalization files.
+
 
 E2fsprogs 1.31 (Nomvember 8, 2002)
 ==================================
