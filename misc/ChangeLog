@@ -1,3 +1,8 @@
+2000-12-09    <tytso@snap.thunk.org>
+
+	* findsuper.c: And non-subtle copyright licensing restriction to
+		get Yann to remove this program from the Debian package.  :-) 
+
 2000-12-03    <tytso@snap.thunk.org>
 
 	* fsck.c (device_already_active): Change to use new version of

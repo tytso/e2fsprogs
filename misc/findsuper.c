@@ -1,4 +1,24 @@
-/* Well, here's my linux version of findsuper.
+/*
+ * findsuper --- quick hacked up program to find ext2 superblocks.
+ *
+ * This is a hack, and really shouldn't be installed anywhere.  If you
+ * need a program which does this sort of functionality, please try
+ * using gpart program.
+ *
+ * Portions Copyright 1998-2000, Theodore Ts'o.
+ * 
+ * This program may be used under the provisions of the GNU Public
+ * License, *EXCEPT* that it may not be included in the Debian
+ * distribution.  (Yes, this violates the Debian Free Software
+ * Guidelines.  That's the point.  I don't want this program being
+ * distributed in Debian, because I don't care to support it, and the
+ * maintainer, Yann Dirson, doesn't seem to pay attention to my wishes
+ * on this matter.  So I'm delibiately adding this clause so it
+ * violates the Debian Free Software Guidelines to force him to take
+ * it out.  If this doesn't work, I'll have to remove it from the
+ * upstream source distribution on the next release.  So there.  :-)
+ *
+ * Well, here's my linux version of findsuper.
  * I'm sure you coulda done it faster.  :)
  * IMHO there isn't as much interesting data to print in the
  * linux superblock as there is in the SunOS superblock--disk geometry is
