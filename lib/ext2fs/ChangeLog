@@ -1,3 +1,10 @@
+2005-03-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* getsize.c (ext2fs_get_device_size): Check to see if the number
+		of blocks is greater than 2**32 when we are doing a binary
+		search to determine the device size.  Thanks to Stephen
+		Tweedie for the patch.
+	
 2006-02-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.36

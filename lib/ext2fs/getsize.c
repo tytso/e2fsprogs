@@ -260,7 +260,11 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	}
 	valid_offset (fd, 0);
 	close(fd);
-	*retblocks = (low + 1) / blocksize;
+	size64 = low + 1;
+	if ((sizeof(*retblocks) < sizeof(unsigned long long))
+	    && ((size64 / blocksize) > 0xFFFFFFFF))
+		return EFBIG;
+	*retblocks = size64 / blocksize;
 	return 0;
 }
 
