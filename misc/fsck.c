@@ -1192,6 +1192,9 @@ int main(int argc, char *argv[])
 	const char *fstab;
 	struct fs_info *fs;
 
+	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+	setvbuf(stderr, NULL, _IONBF, BUFSIZ);
+
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
 	setlocale(LC_CTYPE, "");
