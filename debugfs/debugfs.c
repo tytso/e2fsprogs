@@ -300,7 +300,13 @@ void do_dirty_filesys(int argc, char **argv)
 {
 	if (check_fs_open(argv[0]))
 		return;
-	
+	if (check_fs_read_write(argv[0]))
+		return;
+
+	if (argv[1] && !strcmp(argv[1], "-clean"))
+		current_fs->super->s_state |= EXT2_VALID_FS;
+	else
+		current_fs->super->s_state &= ~EXT2_VALID_FS;
 	ext2fs_mark_super_dirty(current_fs);
 }
 

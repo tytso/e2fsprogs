@@ -1,3 +1,11 @@
+1999-10-25    <tytso@valinux.com>
+
+	* debugfs.c (do_dirty_filesys): Make the "dirty" command clear the
+		valid bit on the superblock.  (And with a -clean option to
+		set the valid bit.)  Originally it was used just to set
+		the "needs to be written" bit in the in-core version of
+		the fs structure.
+
 1999-10-22    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.16

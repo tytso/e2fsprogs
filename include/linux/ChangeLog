@@ -1,3 +1,11 @@
+1999-10-25    <tytso@valinux.com>
+
+	* ext2_fs.h (i_reserved2): Use __GNU__ instead of __hurd__ to
+		detect the Hurd OS.  To protect against future
+		irrationality on the part of the FSF concerning whether
+		Linux is GNU or not, on a system which defines both
+		__linux__ and __GNU___, __linux__ takes precedence.
+
 1999-10-22    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.16

@@ -34,7 +34,7 @@
 
 #if  defined(__linux__)    &&	defined(EXT2_OS_LINUX)
 #define CREATOR_OS EXT2_OS_LINUX
-#elif defined(__gnu__)     &&	defined(EXT2_OS_HURD)
+#elif defined(__GNU__)     &&	defined(EXT2_OS_HURD)
 #define CREATOR_OS EXT2_OS_HURD
 #elif defined(__FreeBSD__) &&	defined(EXT2_OS_FREEBSD)
 #define CREATOR_OS EXT2_OS_FREEBSD

@@ -275,23 +275,21 @@ struct ext2_inode {
 #define i_frag		osd2.linux2.l_i_frag
 #define i_fsize		osd2.linux2.l_i_fsize
 #define i_reserved2	osd2.linux2.l_i_reserved2
-#endif
 
-#ifdef	__hurd__
+#elif defined(__GNU__)
 #define i_translator	osd1.hurd1.h_i_translator
 #define i_frag		osd2.hurd2.h_i_frag;
 #define i_fsize		osd2.hurd2.h_i_fsize;
 #define i_uid_high	osd2.hurd2.h_i_uid_high
 #define i_gid_high	osd2.hurd2.h_i_gid_high
 #define i_author	osd2.hurd2.h_i_author
-#endif
 
-#ifdef	__masix__
+#elif defined (__masix__)
 #define i_reserved1	osd1.masix1.m_i_reserved1
 #define i_frag		osd2.masix2.m_i_frag
 #define i_fsize		osd2.masix2.m_i_fsize
 #define i_reserved2	osd2.masix2.m_i_reserved2
-#endif
+#endif /* defined(__KERNEL__) || defined(__linux__) */
 
 /*
  * File system states
