@@ -1,3 +1,8 @@
+2002-03-11  Theodore Tso  <tytso@mit.edu>
+
+	* htree.c (htree_dump_leaf_node): Use the ext2_dirhash function
+		instead of a local static function.
+
 2002-03-08  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.27

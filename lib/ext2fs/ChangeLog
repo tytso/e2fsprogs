@@ -1,3 +1,10 @@
+2002-03-11  Theodore Tso  <tytso@mit.edu>
+
+	* ext2_err.et.in (EXT2_ET_DIRHASH_UNSUPP): New error code
+
+	* dirhash.c (ext2fs_dirhash): New function which calculates the
+		hash for a filename in an indexed directory.
+
 2002-03-08  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.27

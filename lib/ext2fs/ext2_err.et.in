@@ -275,5 +275,8 @@ ec	EXT2_ET_LOAD_EXT_JOURNAL,
 ec	EXT2_ET_NO_JOURNAL,
 	"Journal not found"
 
+ec	EXT2_ET_DIRHASH_UNSUPP,
+	"Directory hash unsupported"
+
 	end
 

@@ -29,21 +29,6 @@ extern int optreset;		/* defined by BSD, but not others */
 
 static FILE *pager;
 
-static unsigned dx_hack_hash (const char *name, int len)
-{
-	__u32 hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
-	while (len--) {
-		__u32 hash = hash1 + (hash0 ^ (*name++ * 7152373));
-		
-		if (hash & 0x80000000) hash -= 0x7fffffff;
-		hash1 = hash0;
-		hash0 = hash;
-	}
-	return hash0;
-}
-
-#define dx_hash(s,n) (dx_hack_hash(s,n) << 1)
-
 static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 				 struct ext2_inode *inode,
 				 blk_t blk, char *buf)
@@ -54,6 +39,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	char		name[EXT2_NAME_LEN];
 	char		tmp[EXT2_NAME_LEN + 16];
 	blk_t		pblk;
+	ext2_dirhash_t 	hash;
 	
 	errcode = ext2fs_bmap(fs, ino, inode, buf, 0, blk, &pblk);
 	if (errcode) {
@@ -82,8 +68,12 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 			(dirent->name_len & 0xFF) : EXT2_NAME_LEN;
 		strncpy(name, dirent->name, thislen);
 		name[thislen] = '\0';
+		errcode = ext2fs_dirhash(0, name, thislen, &hash);
+		if (errcode)
+			com_err("htree_dump_leaf_node", errcode,
+				"while calculating hash");
 		sprintf(tmp, "%u 0x%08x (%d) %s   ", dirent->inode,
-		       dx_hash(name, thislen), dirent->rec_len, name);
+			hash, dirent->rec_len, name);
 		thislen = strlen(tmp);
 		if (col + thislen > 80) {
 			fprintf(pager, "\n");
@@ -266,12 +256,19 @@ errout:
  */
 void do_dx_hash(int argc, char *argv[])
 {
+	ext2_dirhash_t hash;
+	errcode_t	err;
+	
 	if (argc != 2) {
 		com_err(argv[0], 0, "usage: dx_hash filename");
 		return;
 	}
-	printf("Hash of %s is 0x%0x\n", argv[1],
-	       dx_hash(argv[1], strlen(argv[1])));
+	err = ext2fs_dirhash(0, argv[1], strlen(argv[1]), &hash);
+	if (err) {
+		com_err(argv[0], err, "while caclulating hash");
+		return;
+	}
+	printf("Hash of %s is 0x%0x\n", argv[1], hash);
 }
 
 /*
