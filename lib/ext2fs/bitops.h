@@ -75,6 +75,7 @@ extern void ext2fs_fast_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
 						  blk_t block, int num);
 extern int ext2fs_fast_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
 					       blk_t block, int num);
+extern void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map);
 
 /*
  * The inline routines themselves...

@@ -1,3 +1,8 @@
+Thu Sep  4 12:28:22 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* bitmaps.c (ext2fs_set_bitmap_padding): New function which sets the
+		padding of the bitmap to be all one's.
+
 Wed Sep  3 14:27:30 1997  Theodore Y. Ts'o  <tytso@edt.mit.edu>
 
 	* llseek.c: Added missing semicolon to glibc fixup declaration of
