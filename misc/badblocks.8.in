@@ -60,7 +60,8 @@ or
 .B mke2fs
 programs, it is important that the block size is properly specified,
 since the block numbers which are generated are very dependent on the 
-block size in use.   For this reason, it is strongly recommended that
+block size in use by the filesystem.   
+For this reason, it is strongly recommended that
 users 
 .B not
 run 
@@ -75,7 +76,7 @@ programs.
 .SH OPTIONS
 .TP
 .BI \-b " block-size"
-Specify the size of blocks in bytes.
+Specify the size of blocks in bytes.  The default is 1024.
 .TP
 .BI \-c " number of blocks"
 is the number of blocks which are tested at a time.  The default is 64.

@@ -1,3 +1,9 @@
+e2fsprogs (1.35-9) unstable; urgency=low
+
+  * Minor man page clarifications.  (Closes: #273679)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 28 Sep 2004 10:29:29 -0400
+
 e2fsprogs (1.35-8) unstable; urgency=low
 
   * Remove double "//" when listing attributes in the root directory or
