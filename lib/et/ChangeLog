@@ -1,3 +1,8 @@
+2001-09-16  Theodore Tso  <tytso@valinux.com>
+
+	* compile_et.sh.in: Make the shell script safe from directory
+		pathnames with spaces.
+
 2001-09-10  Theodore Tso  <tytso@valinux.com>
 
 	* com_err.texinfo: Add appropriate @node and @menu lines so that

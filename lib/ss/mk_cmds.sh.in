@@ -3,7 +3,7 @@
 #
 
 DIR="${DIR-@datadir@/ss}"
-SS_DIR=@SS_DIR@
+SS_DIR="@SS_DIR@"
 AWK=@AWK@
 SED=@SED@
 
@@ -13,36 +13,36 @@ if test "x$1" = x ; then
 fi
 
 if test -n "$_SS_DIR_OVERRIDE" ; then
-    DIR=$_SS_DIR_OVERRIDE;
+    DIR="$_SS_DIR_OVERRIDE";
 fi
 
 if test ! -f $DIR/ct_c.sed -o ! -f $DIR/ct_c.awk ; then
-    DIR=$SS_DIR
+    DIR="$SS_DIR"
 #    echo "Falling back to $DIR..."
-    if test ! -f $DIR/ct_c.sed -o ! -f $DIR/ct_c.awk ; then
+    if test ! -f "$DIR/ct_c.sed" -o ! -f "$DIR/ct_c.awk" ; then
 	echo "mk_cmds: Couldn't find mk_cmds's template files."
 	exit 1
     fi
 fi
 
-FILE=$1
+FILE="$1"
 ROOT=`echo $1 | sed -e s/.ct$//`
-BASE=`basename $ROOT`
-TMP=ct$$.c
+BASE=`basename "$ROOT"`
+TMP="ct$$.c"
 
-if test ! -f $FILE ; then
+if test ! -f "$FILE" ; then
     echo "$FILE: File not found"
     exit 1;
 fi
 
-${SED} -f ${DIR}/ct_c.sed  ${FILE} \
-	| ${AWK} -f ${DIR}/ct_c.awk rootname=${ROOT} outfile=${TMP} -
+${SED} -f "${DIR}/ct_c.sed"  "${FILE}" \
+	| ${AWK} -f "${DIR}/ct_c.awk" "rootname=${ROOT}" "outfile=${TMP}" -
 
-if grep "^#__ERROR_IN_FILE" ${TMP} > /dev/null; then
-	rm ${TMP}
+if grep "^#__ERROR_IN_FILE" "${TMP}" > /dev/null; then
+	rm "${TMP}"
 	exit 1
 else
-	rm -f ${BASE}.c
-	mv ${TMP} ${BASE}.c
+	rm -f "${BASE}.c"
+	mv "${TMP}" "${BASE}.c"
 	exit 0
 fi
