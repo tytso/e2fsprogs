@@ -99,6 +99,7 @@ fi
 %{_root_sbindir}/fsck
 %{_root_sbindir}/fsck.ext2
 %{_root_sbindir}/fsck.ext3
+%{_root_sbindir}/logsave
 %{_root_sbindir}/mke2fs
 %{_root_sbindir}/mkfs.ext2
 %{_root_sbindir}/mkfs.ext3
@@ -131,6 +132,7 @@ fi
 %{_mandir}/man8/e2image.8*
 %{_mandir}/man8/e2label.8*
 %{_mandir}/man8/fsck.8*
+%{_mandir}/man8/logsave.8*
 %{_mandir}/man8/mke2fs.8*
 %{_mandir}/man8/mkfs.ext2.8*
 %{_mandir}/man8/mkfs.ext3.8*

@@ -1,0 +1,52 @@
+.\" -*- nroff -*-
+.\" Copyright 2003 by Theodore Ts'o.  All Rights Reserved.
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.TH LOGSAVE 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+logsave \- save the output of a command in a logfile
+.SH SYNOPSIS
+.B logsave
+[
+.B \-v
+]
+.I logfile command [ ... ]
+.SH DESCRIPTION
+The
+.B logsave
+program will execute
+.I command 
+with the specified argument, and save a copy of its output to
+.IR logfile .
+If the containing directory for
+.I logfile
+does not exist, 
+.B logsave
+will accumulate the output in memory until it can be written out.
+A copy of the output will also be written to standard output.
+.PP
+If 
+.I command
+is a single hyphen ('-'), then instead of executing a program,
+.B logsave
+will take the input from standard input.
+.PP
+.B logsave
+is useful for saving the output of initial boot scripts 
+until the /var partition is mounted, so the output can be written to 
+/var/log.
+.SH OPTIONS
+.TP
+.B \-a
+This option will cause the output to be appended to 
+.IR logfile ,
+instead of replacing the current contents.
+.TP
+.B \-v
+This option will
+.B logsave
+more verbose.
+.SH AUTHOR
+Theodore Ts'o (tytso@mit.edu)
+.SH SEE ALSO
+.BR fsck (8)
