@@ -254,8 +254,13 @@ for the sake of utilities that key off of the last mounted directory to
 determine where the filesytem should be mounted.
 .TP
 .B \-n
-causes mke2fs to not actually create a filesystem, but display what it 
-would do if it were to create a filesystem.
+causes mke2fs to not actually create a filesystem, but display what it
+would do if it were to create a filesystem.  This can be used to
+determine the location of the backup superblocks for a particular
+filesystem, so long as the mke2fs parameters that were passed when the
+filesystem was originally created are used again.  (With the
+.B \-n 
+option added, of course!)
 .TP
 .BI \-N " number-of-inodes"
 overrides the default calculation of the number of inodes that should be 
