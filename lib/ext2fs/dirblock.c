@@ -25,7 +25,6 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 	errcode_t	retval;
 	char		*p, *end;
 	struct ext2_dir_entry *dirent;
-	struct ext2_dir_entry_2 *dirent2;
 	unsigned int	rec_len, do_swap;
 
  	retval = io_channel_read_blk(fs->io, block, 1, buf);
@@ -51,8 +50,7 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 			rec_len = 8;
 			retval = EXT2_ET_DIR_CORRUPTED;
 		}
-		dirent2 = (struct ext2_dir_entry_2 *) dirent;
-		if ((dirent2->name_len +8) > dirent2->rec_len)
+		if (((dirent->name_len & 0xFF) + 8) > dirent->rec_len)
 			retval = EXT2_ET_DIR_CORRUPTED;
 		p += rec_len;
 	}

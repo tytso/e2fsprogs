@@ -1,3 +1,11 @@
+2001-06-22  Theodore Tso  <tytso@valinux.com>
+
+	* dirblock.c (ext2fs_read_dir_block): Remove use of dir_entry_2
+		since the byte-swapping code all assumes the
+		ext2_dir_entry structure.  (It's a question of whether or
+		not name_len should be byte-swapped or not, and whether
+		it's a 16 bit or 8 bit field.)
+
 2001-06-15  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.21
