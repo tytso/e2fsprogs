@@ -412,7 +412,7 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 	num_blocks = 0;
 	alarm(0);
 	if (s_flag || v_flag)
-		fputs(done_string, stderr);
+		fputs(_(done_string), stderr);
 
 	fflush (stderr);
 	free (blkbuf);
@@ -493,7 +493,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
-			fputs(done_string, stderr);
+			fputs(_(done_string), stderr);
 		flush_bufs();
 		if (s_flag | v_flag)
 			fputs(_("Reading and comparing: "), stderr);
@@ -534,7 +534,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
-			fputs(done_string, stderr);
+			fputs(_(done_string), stderr);
 		flush_bufs();
 	}
 	uncapture_terminate();
@@ -756,7 +756,7 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 		num_blocks = 0;
 		alarm(0);
 		if (s_flag || v_flag > 1)
-			fputs(done_string, stderr);
+			fputs(_(done_string), stderr);
 
 		flush_bufs();
 	}

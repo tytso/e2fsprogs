@@ -1,5 +1,8 @@
 2004-09-19  Theodore Ts'o  <tytso@mit.edu>
 
+	* badblocks.c: Use _() around done_string, so that it gets
+		correctly translated.  (Addresses Debian Bug #252836)
+
 	* tune2fs.8.in: Add a description of the .journal file, why it
 		is created, and how e2fsck converts it to an invisible
 		journal.  (Addresses Debian Bug #256760)
