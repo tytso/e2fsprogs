@@ -1,5 +1,9 @@
 2002-11-08  Theodore Ts'o  <tytso@mit.edu>
 
+	* fs_ext2.c (fs_expand, fs_shrink): Synchronize with EVMS CVS rev
+		1.11 (2002/8/27).  Read from the resize2fs output in 
+		non-blocking mode, so the GUI continues to updates the window.
+
 	* fsimext2.h: Synchronize with EVMS CVS rev 1.8 (2002/8/29).
 		Change all __uXX's to u_intXX_t's.
 

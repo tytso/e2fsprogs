@@ -25,6 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <plugin.h>
 #include <sys/wait.h>
 #include "fsimext2.h"
@@ -346,6 +347,7 @@ static int fs_expand( logical_volume_t * volume,
 		close(fds2[1]);
 
 		/* wait for child to complete */
+		fcntl(fds2[0], F_SETFL, fcntl(fds2[0], F_GETFL,0) | O_NONBLOCK);
 		while (!(pidf = waitpid( pidf, &status, WNOHANG ))) {
 			bytes_read = read(fds2[0],buffer,MAX_USER_MESSAGE_LEN);
 			if (bytes_read > 0) {
@@ -499,6 +501,7 @@ static int fs_shrink( logical_volume_t * volume,
 		close(fds2[1]);
 		write(fds1[1], "Yes\n",4);  
 
+		fcntl(fds2[0], F_SETFL, fcntl(fds2[0], F_GETFL,0) | O_NONBLOCK);
 		/* wait for child to complete */
 		while (!(pidf = waitpid( pidf, &status, WNOHANG ))) {
 			bytes_read = read(fds2[0],buffer,MAX_USER_MESSAGE_LEN);
