@@ -44,6 +44,9 @@ int verbose = 0;
 #define FIBMAP	   _IO(0x00,1)	/* bmap access */
 #define FIGETBSZ   _IO(0x00,2)	/* get the block size used for bmap */
 
+#define EXT3_EXTENTS_FL			0x00080000 /* Inode uses extents */
+#define	EXT3_IOC_GETFLAGS		_IOR('f', 1, long)
+
 static unsigned long get_bmap(int fd, unsigned long block)
 {
 	int	ret;
@@ -72,6 +75,7 @@ static void frag_report(const char *filename)
 	long		cylgroups;
 	int		discont = 0, expected;
 	int		is_ext2 = 0;
+	unsigned int	flags;
 
 	if (statfs(filename, &fsinfo) < 0) {
 		perror("statfs");
@@ -106,6 +110,15 @@ static void frag_report(const char *filename)
 		close(fd);
 		return;
 	}
+	if (ioctl(fd, EXT3_IOC_GETFLAGS, &flags) < 0) {
+		perror("EXT3_IOC_GETFLAGS");
+		close(fd);
+		return;
+	}
+	if (flags & EXT3_EXTENTS_FL) {
+		printf("File is stored in extents format\n");
+		is_ext2 = 0;
+	}
 	if (verbose)
 		printf("Blocksize of file %s is %ld\n", filename, bs);
 	bpib = bs / 4;
@@ -126,14 +139,15 @@ static void frag_report(const char *filename)
 				last_block++;
 		}
 		block = get_bmap(fd, i);
-		if (i && block && (block != last_block +1) ) {
+		if (block == 0)
+			continue;
+		if (last_block && (block != last_block +1) ) {
 			if (verbose)
 				printf("Discontinuity: Block %ld is at %ld (was %ld)\n",
 				       i, block, last_block);
 			discont++;
 		}
-		if (block)
-			last_block = block;
+		last_block = block;
 	}
 	if (discont==0)
 		printf("%s: 1 extent found", filename);

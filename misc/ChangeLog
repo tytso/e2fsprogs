@@ -1,3 +1,12 @@
+2005-03-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* filefrag.c (frag_report): Automatically detect files that are
+		stored using the new experimental file fragments format,
+		and use the non-ext2 algorithm for determing the number of
+		extents.  Avoid reporting a false discontinuity if there
+		is a non-allocated block (or extent) at the beginning of
+		the file.
+
 2006-02-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.36
