@@ -550,10 +550,9 @@ static void reserve_inodes(ext2_filsys fs)
 	ext2fs_mark_ib_dirty(fs);
 }
 
-#ifdef __alpha__
 #define BSD_DISKMAGIC   (0x82564557UL)  /* The disk magic number */
+#define BSD_MAGICDISK   (0x57455682UL)  /* The disk magic number reversed */
 #define BSD_LABEL_OFFSET        64
-#endif
 
 static void zap_sector(ext2_filsys fs, int sect, int nsect)
 {
@@ -569,18 +568,20 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 	}
 	memset(buf, 0, 512*nsect);
 
-#ifdef __alpha__
-	/* Check for a BSD disklabel, and don't erase it if so */
-	retval = io_channel_read_blk(fs->io, 0, -512, buf);
-	if (retval)
-		fprintf(stderr, _("Warning: could not read block 0: %s\n"),
-			error_message(retval));
-	else {
-		magic = (unsigned int *) (buf + BSD_LABEL_OFFSET);
-		if (*magic == BSD_DISKMAGIC)
-			return;
+	if (sect == 0) {
+		/* Check for a BSD disklabel, and don't erase it if so */
+		retval = io_channel_read_blk(fs->io, 0, -512, buf);
+		if (retval)
+			fprintf(stderr,
+				_("Warning: could not read block 0: %s\n"),
+				error_message(retval));
+		else {
+			magic = (unsigned int *) (buf + BSD_LABEL_OFFSET);
+			if ((*magic == BSD_DISKMAGIC) ||
+			    (*magic == BSD_MAGICDISK))
+				return;
+		}
 	}
-#endif
 
 	io_channel_set_blksize(fs->io, 512);
 	retval = io_channel_write_blk(fs->io, sect, -512*nsect, buf);

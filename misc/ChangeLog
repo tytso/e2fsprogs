@@ -1,3 +1,8 @@
+2002-03-08  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.c: Check for the BSD disklabel on all architectures, and
+		also check the byte-swapped magic number as well.
+
 2002-03-07  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c: Output warnings to stderr 
