@@ -24,6 +24,10 @@
  
 2001-08-15  Theodore Tso  <tytso@valinux.com>
 
+	* Release of E2fsprogs 1.23
+
+2001-08-15  Theodore Tso  <tytso@valinux.com>
+
 	* tune2fs.c: Make sure that error messages are sent to stderr, and
 		normal messages are sent to stdout.  (Addresses Debian bug
 		#108555.)

@@ -2,6 +2,10 @@
 
 	* pass1.c (strnlen): Provide strnlen if libc doesn't.
 
+2001-08-15  Theodore Tso  <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.23
+
 2001-08-13  Theodore Tso  <tytso@valinux.com>
 
 	* super.c (release_orphan_inodes): If the filesystem contains

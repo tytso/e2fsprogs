@@ -4,6 +4,10 @@
 		for strdup, since we don't actually care about that symbol
 		any more.
 
+2001-08-15  Theodore Tso  <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.23
+
 2001-08-04  Andreas Dilger  <root@lynx.adilger.int>
 
 	* Makefile.in: Add "*.orig" to "make clean" target, change

@@ -1,3 +1,7 @@
+2001-08-15  Theodore Tso  <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.23
+
 2001-06-27  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in: Don't predefine RM; it's defined by MCONFIG
