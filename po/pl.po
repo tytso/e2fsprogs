@@ -1,21 +1,20 @@
 # Polish translation for e2fsprogs.
-# Copyright (C) 2002 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 # This file is distributed under the same license as the e2fsprogs package.
-# Jakub Bogusz <qboosh@pld-linux.org>, 2002-2003.
+# Jakub Bogusz <qboosh@pld-linux.org>, 2002-2004.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.34\n"
+"Project-Id-Version: e2fsprogs 1.35\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2003-12-24 14:17-0500\n"
-"PO-Revision-Date: 2003-08-08 19:23+0200\n"
+"PO-Revision-Date: 2004-02-29 20:20+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: e2fsck/badblocks.c:22 misc/mke2fs.c:194
 #, c-format
@@ -55,8 +54,7 @@ msgstr "podczas uaktualniania i-wêz³a wadliwego bloku"
 #: e2fsck/badblocks.c:129
 #, c-format
 msgid "Warning illegal block %u found in bad block inode.  Cleared.\n"
-msgstr ""
-"Uwaga: niedopuszczalny blok %u w i-wê¼le wadliwego bloku. Wyczyszczono.\n"
+msgstr "Uwaga: niedopuszczalny blok %u w i-wê¼le wadliwego bloku. Wyczyszczono.\n"
 
 #: e2fsck/ehandler.c:53
 #, c-format
@@ -172,8 +170,7 @@ msgstr "%s: odtwarzanie z kroniki\n"
 #: e2fsck/journal.c:789
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
-msgstr ""
-"%s: odtworzenie z kroniki nie zostanie wykonane w trybie tylko do odczytu\n"
+msgstr "%s: odtworzenie z kroniki nie zostanie wykonane w trybie tylko do odczytu\n"
 
 #: e2fsck/journal.c:810
 #, c-format
@@ -696,8 +693,7 @@ msgstr "@S ma b³êdn± kronikê ext3 (@i %i).\n"
 
 #: e2fsck/problem.c:190
 msgid "External @j has multiple @f users (unsupported).\n"
-msgstr ""
-"Zewnêtrzna @j ma wielu u¿ytkowników systemu plików (nie obs³ugiwane).\n"
+msgstr "Zewnêtrzna @j ma wielu u¿ytkowników systemu plików (nie obs³ugiwane).\n"
 
 #: e2fsck/problem.c:195
 msgid "Can't find external @j\n"
@@ -714,8 +710,7 @@ msgstr "Zewnêtrzna @j nie obs³uguje tego systemu plików\n"
 #: e2fsck/problem.c:210
 msgid ""
 "Ext3 @j @S is unknown type %N (unsupported).\n"
-"It is likely that your copy of e2fsck is old and/or doesn't support this @j "
-"format.\n"
+"It is likely that your copy of e2fsck is old and/or doesn't support this @j format.\n"
 "It is also possible the @j @S is corrupt.\n"
 msgstr ""
 "@S kroniki ext3 ma nieznany typ %N (nie obs³ugiwany).\n"
@@ -820,7 +815,7 @@ msgstr ""
 msgid ""
 "Backing up @j @i @b information.\n"
 "\n"
-msgstr ""
+msgstr "Tworzenie kopii zapasowej informacji z @bu i-wêz³a kroniki.\n"
 
 #: e2fsck/problem.c:321
 msgid "Pass 1: Checking @is, @bs, and sizes\n"
@@ -912,9 +907,8 @@ msgid "Duplicate or bad @b in use!\n"
 msgstr "Podwójny lub wadliwy @b jest u¿ywany!\n"
 
 #: e2fsck/problem.c:425
-#, fuzzy
 msgid "Bad @b %b used as bad @b @i indirect @b.  "
-msgstr "Wadliwy @b %b jest u¿ywany jako nie bezpo¶redni @b wadliwego @bu?!?\n"
+msgstr "Wadliwy @b %b jest u¿ywany jako niebiezpo¶redni @b i-wê¼³a z wadliwym @biem. "
 
 #: e2fsck/problem.c:430
 msgid ""
@@ -923,6 +917,10 @@ msgid ""
 "should stop now and run e2fsck -c to scan for bad blocks\n"
 "in the @f.\n"
 msgstr ""
+"\n"
+"I-wêze³ z wadliwym @biem zosta³ prawdopodobnie uszkodzony.\n"
+"Prawdopodobnie nale¿a³oby teraz zatrzymaæ i uruchomiæ e2fsck -c\n"
+"aby przeszukaæ @f pod k±tem wadliwych bloków.\n"
 
 #: e2fsck/problem.c:437
 msgid ""
@@ -1011,13 +1009,11 @@ msgstr "B³±d podczas iteracji po @bach w i-wê¼le %i: %m\n"
 
 #: e2fsck/problem.c:537
 msgid "Error storing @i count information (@i=%i, count=%N): %m\n"
-msgstr ""
-"B³±d podczas zapisu informacji o liczbie i-wêz³ów (@i=%i, liczba=%N): %m\n"
+msgstr "B³±d podczas zapisu informacji o liczbie i-wêz³ów (@i=%i, liczba=%N): %m\n"
 
 #: e2fsck/problem.c:542
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
-msgstr ""
-"B³±d podczas zapisu informacji o @dch @bach (@i=%i, @b=%b, liczba=%N): %m\n"
+msgstr "B³±d podczas zapisu informacji o @dch @bach (@i=%i, @b=%b, liczba=%N): %m\n"
 
 #: e2fsck/problem.c:548
 #, c-format
@@ -1088,8 +1084,7 @@ msgstr "B³±d podczas przydzielania @bu rozszerzonych atrybutów %b. "
 
 #: e2fsck/problem.c:643
 msgid "@a @b %b is corrupt (allocation collision).  "
-msgstr ""
-"@b rozszerzonych atrybutów %b jest uszkodzony (kolizja przydzielania). "
+msgstr "@b rozszerzonych atrybutów %b jest uszkodzony (kolizja przydzielania). "
 
 #: e2fsck/problem.c:648
 msgid "@a @b %b is corrupt (invalid name).  "
@@ -1119,8 +1114,7 @@ msgstr "@b #%B (%b) powoduje, ¿e dowi±zanie jest zbyt du¿e. "
 #: e2fsck/problem.c:677
 #, c-format
 msgid "@i %i has INDEX_FL flag set on @f without htree support.\n"
-msgstr ""
-"@i %i ma ustawion± flagê INDEX_FL na systemie plików bez obs³ugi htree.\n"
+msgstr "@i %i ma ustawion± flagê INDEX_FL na systemie plików bez obs³ugi htree.\n"
 
 #: e2fsck/problem.c:682
 #, c-format
@@ -1150,6 +1144,8 @@ msgid ""
 "Bad @b @i has an indirect @b (%b) that conflicts with\n"
 "@f metadata.  "
 msgstr ""
+"I-wêze³ z wadliwym @biem ma niebezpo¶redni @b (%b) bêd±cy\n"
+"w konflikcie z metadanymi systemu plików. "
 
 #: e2fsck/problem.c:715
 msgid ""
@@ -1181,15 +1177,11 @@ msgstr "B³±d podczas iteracji po @bach w i-wê¼le %i (%s): %m\n"
 
 #: e2fsck/problem.c:751 e2fsck/problem.c:1072
 msgid "Error addjusting refcount for @a @b %b (@i %i): %m\n"
-msgstr ""
-"B³±d podczas poprawiania refcount dla @bu rozszerzonych atrybutów %b (@i %"
-"i): %m\n"
+msgstr "B³±d podczas poprawiania refcount dla @bu rozszerzonych atrybutów %b (@i %i): %m\n"
 
 #: e2fsck/problem.c:757
 msgid "Pass 1C: Scan directories for @is with dup @bs.\n"
-msgstr ""
-"Przebieg 1C: Przeszukiwanie katalogów pod k±tem i-wêz³ów z podwójnymi "
-"@bami.\n"
+msgstr "Przebieg 1C: Przeszukiwanie katalogów pod k±tem i-wêz³ów z podwójnymi @bami.\n"
 
 #: e2fsck/problem.c:763
 msgid "Pass 1D: Reconciling duplicate @bs\n"
@@ -1469,8 +1461,7 @@ msgstr "@p i-wê¼le @du HTREE %d: wêze³ (%B) ma b³êdny licznik (%N)\n"
 
 #: e2fsck/problem.c:1092
 msgid "@p @h %d: node (%B) has an unordered hash table\n"
-msgstr ""
-"@p i-wê¼le @du HTREE %d: wêze³ (%B) ma nie uporz±dkowan± tablicê haszuj±c±\n"
+msgstr "@p i-wê¼le @du HTREE %d: wêze³ (%B) ma nie uporz±dkowan± tablicê haszuj±c±\n"
 
 #: e2fsck/problem.c:1097
 msgid "@p @h %d: node (%B) has bad depth\n"
@@ -1689,12 +1680,8 @@ msgid "Free @bs count wrong (%b, counted=%c).\n"
 msgstr "B³êdna liczba wolnych @bów (%b, naliczono %c).\n"
 
 #: e2fsck/problem.c:1382
-msgid ""
-"PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
-"endpoints (%i, %j)\n"
-msgstr ""
-"B£¡D PROGRAMU: koñce bitmap systemu plików (#%N) (%b, %c) nie zgadzaj± siê z "
-"policzonymi koñcami bitmap (%i, %j)\n"
+msgid "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B endpoints (%i, %j)\n"
+msgstr "B£¡D PROGRAMU: koñce bitmap systemu plików (#%N) (%b, %c) nie zgadzaj± siê z policzonymi koñcami bitmap (%i, %j)\n"
 
 #: e2fsck/problem.c:1388
 msgid "Internal error: fudging end of bitmap (%N)\n"
@@ -1804,8 +1791,7 @@ msgid ""
 " -p                   Automatic repair (no questions)\n"
 " -n                   Make no changes to the filesystem\n"
 " -y                   Assume \"yes\" to all questions\n"
-" -c                   Check for bad blocks and add them to the badblock "
-"list\n"
+" -c                   Check for bad blocks and add them to the badblock list\n"
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
@@ -1814,8 +1800,7 @@ msgstr ""
 " -n                   Nie wykonywanie zmian w systemie plików\n"
 " -y                   Przyjêcie odpowiedzi \"tak\" na wszystkie pytania\n"
 " -c                   Szukanie wadliwych bloków i dodanie ich do listy\n"
-" -f                   Wymuszenie sprawdzenia nawet \"czystego\" systemu "
-"plików\n"
+" -f                   Wymuszenie sprawdzenia nawet \"czystego\" systemu plików\n"
 
 #: e2fsck/unix.c:79
 msgid ""
@@ -1828,8 +1813,7 @@ msgid ""
 msgstr ""
 " -v                   Pokazywanie wiêkszej ilo¶ci informacji\n"
 " -b superblok         U¿ycie innego superbloku\n"
-" -B rozm.bloku        Wymuszenie rozmiaru bloku przy poszukiwaniu "
-"superbloku\n"
+" -B rozm.bloku        Wymuszenie rozmiaru bloku przy poszukiwaniu superbloku\n"
 " -j zewn-kronika      Ustawienie po³o¿enia zewnêtrznej kroniki\n"
 " -l plik_z³ych_bloków Dodanie do listy wadliwych bloków\n"
 " -L plik_z³ych_bloków Ustawienie listy wadliwych bloków\n"
@@ -2053,18 +2037,18 @@ msgid ", check forced.\n"
 msgstr ", wymuszono sprawdzenie.\n"
 
 #: e2fsck/unix.c:271
-#, fuzzy, c-format
+#, c-format
 msgid "%s: clean, %d/%d files, %d/%d blocks"
-msgstr "%s: czysty, %d/%d plików, %d/%d bloków\n"
+msgstr "%s: czysty, %d/%d plików, %d/%d bloków"
 
 #: e2fsck/unix.c:286
 msgid " (check after next mount)"
-msgstr ""
+msgstr " (sprawdzenie po nastêpnym montowaniu)"
 
 #: e2fsck/unix.c:288
 #, c-format
 msgid " (check in %ld mounts)"
-msgstr ""
+msgstr "(sprawdzenie za %ld montowañ)"
 
 #: e2fsck/unix.c:430
 #, c-format
@@ -2111,7 +2095,7 @@ msgstr "Zamiana bajtów systemu plików nie wkompilowana w tê wersjê e2fsck\n"
 #: e2fsck/unix.c:690 misc/tune2fs.c:444 misc/tune2fs.c:699 misc/tune2fs.c:716
 #, c-format
 msgid "Unable to resolve '%s'"
-msgstr ""
+msgstr "Nie uda³o siê rozwi±zaæ '%s'"
 
 #: e2fsck/unix.c:716
 msgid "Incompatible options not allowed when byte-swapping.\n"
@@ -2192,9 +2176,7 @@ msgid "while checking ext3 journal for %s"
 msgstr "podczas sprawdzania kroniki ext3 dla %s"
 
 #: e2fsck/unix.c:948
-msgid ""
-"Warning: skipping journal recovery because doing a read-only filesystem "
-"check.\n"
+msgid "Warning: skipping journal recovery because doing a read-only filesystem check.\n"
 msgstr ""
 "Uwaga: pominiêto odtwarzanie z kroniki z powodu sprawdzania w trybie tylko\n"
 "do odczytu.\n"
@@ -2418,13 +2400,11 @@ msgstr "zakoñczone                  \n"
 #, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-" [-c blocks_at_once] [-p num_passes] [-t test_pattern [-t test_pattern "
-"[...]]]\n"
+" [-c blocks_at_once] [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
 " device [last_block [start_block]]\n"
 msgstr ""
 "Sk³adnia: %s [-b rozm_bloku] [-i plik_wej] [-o plik_wyj] [-svwnf]\n"
-" [-c bloków_naraz] [-p przebiegów] [-t wzór_testowy [-t wzór_testowy "
-"[...]]]\n"
+" [-c bloków_naraz] [-p przebiegów] [-t wzór_testowy [-t wzór_testowy [...]]]\n"
 " urz±dzenie [ostatni_blok [pocz±tek]]\n"
 
 #: misc/badblocks.c:227
@@ -2937,8 +2917,7 @@ msgstr "--oczekiwanie-- (przebieg %d)\n"
 
 #: misc/fsck.c:1034
 msgid "Usage: fsck [-ACNPRTV] [-t fstype] [fs-options] [filesys ...]\n"
-msgstr ""
-"Sk³adnia: fsck [-ACNPRTV] [-t rodzaj-fs] [opcje-fs] [system-plików ...]\n"
+msgstr "Sk³adnia: fsck [-ACNPRTV] [-t rodzaj-fs] [opcje-fs] [system-plików ...]\n"
 
 #: misc/fsck.c:1076
 #, c-format
@@ -3268,11 +3247,8 @@ msgstr "%d-bajtowe bloki s± zbyt du¿e dla systemu (max %d)"
 
 #: misc/mke2fs.c:1136
 #, c-format
-msgid ""
-"Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
-msgstr ""
-"Uwaga: %d-bajtowe bloki s± zbyt du¿e dla systemu (max %d), wymuszono "
-"kontynuacjê\n"
+msgid "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
+msgstr "Uwaga: %d-bajtowe bloki s± zbyt du¿e dla systemu (max %d), wymuszono kontynuacjê\n"
 
 #: misc/mke2fs.c:1161
 msgid "filesystem"
@@ -3966,15 +3942,3 @@ msgstr "%d bloków zer...\n"
 #: resize/resize2fs.c:1421
 msgid "Inode table move finished.\n"
 msgstr "Przenoszenie tablicy i-wêz³ów zakoñczone.\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "This inconsistency can not be fixed with e2fsck; to fix it, use\n"
-#~ "dumpe2fs -b to dump out the bad @b list and e2fsck -L filename\n"
-#~ "to read it back in again.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Ta nieprawid³owo¶æ nie mo¿e byæ naprawiona przez e2fsck; aby to "
-#~ "naprawiæ,\n"
-#~ "nale¿y u¿yæ dumpe2fs -b aby zrzuciæ listê wadliwych @bów, a nastêpnie\n"
-#~ "e2fsck -L nazwa_pliku, aby odczytaæ j± ponownie.\n"

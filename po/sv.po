@@ -1,13 +1,13 @@
 # Swedish messages for e2fsprogs.
-# Copyright © 2003 Free Software Foundation, Inc.
-# Göran Uddeborg <goeran@uddeborg.se>, 2003.
-# $Revision: 1.8 $
+# Copyright © 2003, 2004 Free Software Foundation, Inc.
+# Göran Uddeborg <goeran@uddeborg.se>, 2003, 2004.
+# $Revision: 1.10 $
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.34\n"
+"Project-Id-Version: e2fsprogs 1.35\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2003-12-24 14:17-0500\n"
-"PO-Revision-Date: 2003-11-08 13:39+0100\n"
+"PO-Revision-Date: 2004-03-15 11:17+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -723,8 +723,7 @@ msgstr "Extern journal stödjer inte detta filsystem\n"
 #: e2fsck/problem.c:210
 msgid ""
 "Ext3 @j @S is unknown type %N (unsupported).\n"
-"It is likely that your copy of e2fsck is old and/or doesn't support this @j "
-"format.\n"
+"It is likely that your copy of e2fsck is old and/or doesn't support this @j format.\n"
 "It is also possible the @j @S is corrupt.\n"
 msgstr ""
 "Ext3-journalsuperblock är av okänd typ %N (ej stött).\n"
@@ -743,8 +742,7 @@ msgstr "superblock har inte har-journal-flagga, men har ext3-journal %s.\n"
 
 #: e2fsck/problem.c:228
 msgid "@S has ext3 needs_recovery flag set, but no @j.\n"
-msgstr ""
-"superblock har ext3-behöver-rättas-flagga satt, men har ext3-journal %s.\n"
+msgstr "superblock har ext3-behöver-rättas-flagga satt, men har ext3-journal %s.\n"
 
 #: e2fsck/problem.c:233
 msgid "ext3 recovery flag clear, but @j has data.\n"
@@ -764,8 +762,7 @@ msgstr "Rättningsflagga inte satt i reservsuperblock, så kör journal ändå.\n"
 
 #: e2fsck/problem.c:253
 msgid "%s @o @i %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n"
-msgstr ""
-"%s föräldralös inod %i (uid=%Iu, gid=%Ig, rättighet=%Im, storlek=%Is)\n"
+msgstr "%s föräldralös inod %i (uid=%Iu, gid=%Ig, rättighet=%Im, storlek=%Is)\n"
 
 #: e2fsck/problem.c:258
 msgid "@I @b #%B (%b) found in @o @i %i.\n"
@@ -830,6 +827,8 @@ msgid ""
 "Backing up @j @i @b information.\n"
 "\n"
 msgstr ""
+"Säkerhetskopierar blockinformation för journalinod.\n"
+"\n"
 
 #: e2fsck/problem.c:321
 msgid "Pass 1: Checking @is, @bs, and sizes\n"
@@ -864,18 +863,15 @@ msgstr "Inod %i är en nollängds katalog.  "
 
 #: e2fsck/problem.c:355
 msgid "@g %g's @b @B at %b @C.\n"
-msgstr ""
-"Grupp %g:s blockbitkarta vid %b står i konflikt med annat filsystemblock.\n"
+msgstr "Grupp %g:s blockbitkarta vid %b står i konflikt med annat filsystemblock.\n"
 
 #: e2fsck/problem.c:360
 msgid "@g %g's @i @B at %b @C.\n"
-msgstr ""
-"Grupp %g:s inodbitkarta vid %b står i konflikt med annat filsystemblock.\n"
+msgstr "Grupp %g:s inodbitkarta vid %b står i konflikt med annat filsystemblock.\n"
 
 #: e2fsck/problem.c:365
 msgid "@g %g's @i table at %b @C.\n"
-msgstr ""
-"Grupp %g:s inodtabell vid %b står i konflikt med annat filsystemblock.\n"
+msgstr "Grupp %g:s inodtabell vid %b står i konflikt med annat filsystemblock.\n"
 
 #: e2fsck/problem.c:370
 msgid "@g %g's @b @B (%b) is bad.  "
@@ -924,9 +920,8 @@ msgid "Duplicate or bad @b in use!\n"
 msgstr "Duplicerat eller felaktigt block används!\n"
 
 #: e2fsck/problem.c:425
-#, fuzzy
 msgid "Bad @b %b used as bad @b @i indirect @b.  "
-msgstr "Felaktigt block %b använd som dåligt block indirektblock?!?\n"
+msgstr "Felaktigt block %b använt som indirektblock för dåliga block.  "
 
 #: e2fsck/problem.c:430
 msgid ""
@@ -935,6 +930,10 @@ msgid ""
 "should stop now and run e2fsck -c to scan for bad blocks\n"
 "in the @f.\n"
 msgstr ""
+"\n"
+"Inoden för dåliga block har antagligen blivit skadad.  Du bör\n"
+"antagligen sluta nu och köra e2fsck -c för att söka efter dålia block\n"
+"i filsystemet.\n"
 
 #: e2fsck/problem.c:437
 msgid ""
@@ -962,8 +961,7 @@ msgstr "Det primära superblocket (%b) är på listan över dåliga block.\n"
 
 #: e2fsck/problem.c:454
 msgid "Block %b in the primary @g descriptors is on the bad @b list\n"
-msgstr ""
-"Block %b i de primära gruppbeskrivarna är på listan över dåliga block\n"
+msgstr "Block %b i de primära gruppbeskrivarna är på listan över dåliga block\n"
 
 #: e2fsck/problem.c:460
 msgid "Warning: Group %g's @S (%b) is bad.\n"
@@ -971,19 +969,15 @@ msgstr "Varning: Grupp %g:s superblock (%b) är dåligt.\n"
 
 #: e2fsck/problem.c:465
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
-msgstr ""
-"Varning: Grupp %g:s kopia av gruppbeskrivarna har ett dåligt block (%b).\n"
+msgstr "Varning: Grupp %g:s kopia av gruppbeskrivarna har ett dåligt block (%b).\n"
 
 #: e2fsck/problem.c:471
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
-msgstr ""
-"Programmeringsfel?  Block nr. %b tas i anspråk utan anledning i "
-"process_bad_block.\n"
+msgstr "Programmeringsfel?  Block nr. %b tas i anspråk utan anledning i process_bad_block.\n"
 
 #: e2fsck/problem.c:477
 msgid "@A %N contiguous @b(s) in @b @g %g for %s: %m\n"
-msgstr ""
-"Fel vid allokering av %N konsekutiva block i blockgrupp %g för %s: %m\n"
+msgstr "Fel vid allokering av %N konsekutiva block i blockgrupp %g för %s: %m\n"
 
 #: e2fsck/problem.c:482
 #, c-format
@@ -1033,9 +1027,7 @@ msgstr "Fel vid lagring av inodsräknarinformation (inod=%i, antal=%N): %m\n"
 
 #: e2fsck/problem.c:542
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
-msgstr ""
-"Fel vid lagring av katalogblocksinformation (inod=%i, block=%b, antal=%N): %"
-"m\n"
+msgstr "Fel vid lagring av katalogblocksinformation (inod=%i, block=%b, antal=%N): %m\n"
 
 #: e2fsck/problem.c:548
 #, c-format
@@ -1059,8 +1051,7 @@ msgstr ""
 #: e2fsck/problem.c:567
 #, c-format
 msgid "@i %i has @cion flag set on @f without @cion support.  "
-msgstr ""
-"Inod %i har kompressionsflagga satt på filsystem utan kompressionsstöd.  "
+msgstr "Inod %i har kompressionsflagga satt på filsystem utan kompressionsstöd.  "
 
 #: e2fsck/problem.c:587
 msgid "@j is not regular file.  "
@@ -1165,6 +1156,8 @@ msgid ""
 "Bad @b @i has an indirect @b (%b) that conflicts with\n"
 "@f metadata.  "
 msgstr ""
+"Inoden för dåliga block har ett indirektblock (%b) som står i konflikt\n"
+"med filsystemsmetadata.  "
 
 #: e2fsck/problem.c:715
 msgid ""
@@ -1196,9 +1189,7 @@ msgstr "Fel vid iterering över block i inod %i (%s): %m\n"
 
 #: e2fsck/problem.c:751 e2fsck/problem.c:1072
 msgid "Error addjusting refcount for @a @b %b (@i %i): %m\n"
-msgstr ""
-"Fel vid justering av referensräknare för externa attribut-block %b (inod %"
-"i): %m\n"
+msgstr "Fel vid justering av referensräknare för externa attribut-block %b (inod %i): %m\n"
 
 #: e2fsck/problem.c:757
 msgid "Pass 1C: Scan directories for @is with dup @bs.\n"
@@ -1268,8 +1259,7 @@ msgstr "Post \"%Dn\" i %p (%i) är en länk till \".\"  "
 
 #: e2fsck/problem.c:833
 msgid "@E points to @i (%Di) located in a bad @b.\n"
-msgstr ""
-"Post \"%Dn\" i %p (%i) pekar på inod (%Di) som finns i ett trasigt block.\n"
+msgstr "Post \"%Dn\" i %p (%i) pekar på inod (%Di) som finns i ett trasigt block.\n"
 
 #: e2fsck/problem.c:838
 msgid "@E @L to @d %P (%Di).\n"
@@ -1295,8 +1285,7 @@ msgstr "\"..\" saknas i kataloginod %i.\n"
 
 #: e2fsck/problem.c:863
 msgid "First @e '%Dn' (inode=%Di) in @d @i %i (%p) @s '.'\n"
-msgstr ""
-"Första post \"%Dn\" (inod=%Di) i kataloginod %i (%p) skulle varit \".\"\n"
+msgstr "Första post \"%Dn\" (inod=%Di) i kataloginod %i (%p) skulle varit \".\"\n"
 
 #: e2fsck/problem.c:868
 msgid "Second @e '%Dn' (inode=%Di) in @d @i %i @s '..'\n"
@@ -1421,8 +1410,7 @@ msgstr "Sätter filtyp för post \"%Dn\" i %p (%i) till %N.\n"
 
 #: e2fsck/problem.c:1008
 msgid "@E has an incorrect filetype (was %Dt, should be %N).\n"
-msgstr ""
-"Post \"%Dn\" i %p (%i) har felaktig filtyp (var %Dt, skulle varit %N).\n"
+msgstr "Post \"%Dn\" i %p (%i) har felaktig filtyp (var %Dt, skulle varit %N).\n"
 
 #: e2fsck/problem.c:1013
 msgid "@E has filetype set.\n"
@@ -1442,9 +1430,7 @@ msgstr "Utökat attribut-block för inod %i (%Q) är ogiltigt (%If).\n"
 
 #: e2fsck/problem.c:1033
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
-msgstr ""
-"Filsystem innehåller stora filer, men saknar flaggan LARGE_FILE i "
-"superblock.\n"
+msgstr "Filsystem innehåller stora filer, men saknar flaggan LARGE_FILE i superblock.\n"
 
 #: e2fsck/problem.c:1038
 msgid "@p @h %d: node (%B) not referenced\n"
@@ -1468,8 +1454,7 @@ msgstr "Ogiltig HTREE-katalognod %d (%q).  "
 
 #: e2fsck/problem.c:1062
 msgid "Forcibly clearing HTREE flag on @i %d (%q).  (Beta test code)\n"
-msgstr ""
-"Framtvingar nollställning av HTREE-flagga på inod %d (%q).  (Betatestkod)\n"
+msgstr "Framtvingar nollställning av HTREE-flagga på inod %d (%q).  (Betatestkod)\n"
 
 #: e2fsck/problem.c:1067
 msgid "@p @h %d (%q): bad @b number %b.\n"
@@ -1492,8 +1477,7 @@ msgstr ""
 
 #: e2fsck/problem.c:1092
 msgid "@p @h %d: node (%B) has an unordered hash table\n"
-msgstr ""
-"Problem i HTREE-katalognod %d (%q): not (%B) har en oordnat hash-tabell\n"
+msgstr "Problem i HTREE-katalognod %d (%q): not (%B) har en oordnat hash-tabell\n"
 
 #: e2fsck/problem.c:1097
 msgid "@p @h %d: node (%B) has bad depth\n"
@@ -1584,8 +1568,7 @@ msgstr "ext2fs_new_dir_block: %m när nytt katalogblock skapades\n"
 #: e2fsck/problem.c:1184
 #, c-format
 msgid "ext2fs_write_dir_@b: %m while writing the @d @b for /@l\n"
-msgstr ""
-"ext2fs_write_dir_block: %m vid skrivning av katalogblocket för /lost+found\n"
+msgstr "ext2fs_write_dir_block: %m vid skrivning av katalogblocket för /lost+found\n"
 
 #: e2fsck/problem.c:1189
 #, c-format
@@ -1607,8 +1590,7 @@ msgid ""
 "Couldn't fix parent of @i %i: Couldn't find parent @d entry\n"
 "\n"
 msgstr ""
-"Kunde inte rätta förälder till inod %i: Kunde inte hitta "
-"förälderkatalogpost\n"
+"Kunde inte rätta förälder till inod %i: Kunde inte hitta förälderkatalogpost\n"
 "\n"
 
 #: e2fsck/problem.c:1204
@@ -1670,8 +1652,7 @@ msgid ""
 "@i_link_info[%i] is %N, @i.i_links_count is %Il.  They should be the same!\n"
 msgstr ""
 "VARNING: PROGRAMMERINGSFEL I E2FSCK!\n"
-"    ELLER NÅGON KLANTSKALLE (DU) KONTROLLERAR ETT MONTERAT (AKTIVT) "
-"FILSYSTEM.\n"
+"    ELLER NÅGON KLANTSKALLE (DU) KONTROLLERAR ETT MONTERAT (AKTIVT) FILSYSTEM.\n"
 "inod_link_info[%i] är %N, inod.i_links_count är %Il.  De skulle vara samma!\n"
 
 #: e2fsck/problem.c:1302
@@ -1715,9 +1696,7 @@ msgid "Free @bs count wrong (%b, counted=%c).\n"
 msgstr "Antal fria block är fel (%b, räknade=%c).\n"
 
 #: e2fsck/problem.c:1382
-msgid ""
-"PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
-"endpoints (%i, %j)\n"
+msgid "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B endpoints (%i, %j)\n"
 msgstr ""
 "PROGRAMMERINGSFEL: filsystem (nr. %N) bitkartas ändpunkter (%b, %c) stämmer\n"
 "inte med beräknade bitkarteändpunkter (%i, %j)\n"
@@ -1830,8 +1809,7 @@ msgid ""
 " -p                   Automatic repair (no questions)\n"
 " -n                   Make no changes to the filesystem\n"
 " -y                   Assume \"yes\" to all questions\n"
-" -c                   Check for bad blocks and add them to the badblock "
-"list\n"
+" -c                   Check for bad blocks and add them to the badblock list\n"
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
@@ -1840,8 +1818,7 @@ msgstr ""
 " -n                   Gör inga förändringar av filsystemet\n"
 " -y                   Anta \"ja\" som svar på alla frågor\n"
 " -c                   Leta efter dåliga block och lägg till dem i listan\n"
-" -f                   Framtvinga kontroll även om filsystemet är markerat "
-"rent\n"
+" -f                   Framtvinga kontroll även om filsystemet är markerat rent\n"
 
 #: e2fsck/unix.c:79
 msgid ""
@@ -2059,18 +2036,18 @@ msgid ", check forced.\n"
 msgstr ", kontroll framtvingad.\n"
 
 #: e2fsck/unix.c:271
-#, fuzzy, c-format
+#, c-format
 msgid "%s: clean, %d/%d files, %d/%d blocks"
-msgstr "%s: fläckfritt, %d/%d filer, %d/%d block\n"
+msgstr "%s: fläckfritt, %d/%d filer, %d/%d block"
 
 #: e2fsck/unix.c:286
 msgid " (check after next mount)"
-msgstr ""
+msgstr " (kontrollera efter nästa montering)"
 
 #: e2fsck/unix.c:288
 #, c-format
 msgid " (check in %ld mounts)"
-msgstr ""
+msgstr " (kontrollera om %ld monteringar)"
 
 #: e2fsck/unix.c:430
 #, c-format
@@ -2112,13 +2089,12 @@ msgstr "Flaggan -t stödjs inte i denna version av e2fsck.\n"
 
 #: e2fsck/unix.c:673
 msgid "Byte-swapping filesystems not compiled in this version of e2fsck\n"
-msgstr ""
-"Byteväxling av filsystem är inte inkompilerat i denna version av e2fsck\n"
+msgstr "Byteväxling av filsystem är inte inkompilerat i denna version av e2fsck\n"
 
 #: e2fsck/unix.c:690 misc/tune2fs.c:444 misc/tune2fs.c:699 misc/tune2fs.c:716
 #, c-format
 msgid "Unable to resolve '%s'"
-msgstr ""
+msgstr "Kan inte hitta \"%s\""
 
 #: e2fsck/unix.c:716
 msgid "Incompatible options not allowed when byte-swapping.\n"
@@ -2199,12 +2175,8 @@ msgid "while checking ext3 journal for %s"
 msgstr "vid kontroll av ext3-journal för %s"
 
 #: e2fsck/unix.c:948
-msgid ""
-"Warning: skipping journal recovery because doing a read-only filesystem "
-"check.\n"
-msgstr ""
-"Varning: hoppar över journalåterhämtning eftersom en läsningskontroll av "
-"filsystem görs.\n"
+msgid "Warning: skipping journal recovery because doing a read-only filesystem check.\n"
+msgstr "Varning: hoppar över journalåterhämtning eftersom en läsningskontroll av filsystem görs.\n"
 
 #: e2fsck/unix.c:961
 #, c-format
@@ -2425,13 +2397,11 @@ msgstr "klar                        \n"
 #, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-" [-c blocks_at_once] [-p num_passes] [-t test_pattern [-t test_pattern "
-"[...]]]\n"
+" [-c blocks_at_once] [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
 " device [last_block [start_block]]\n"
 msgstr ""
 "Användning: %s [-b blockstorlek] [-i infil] [-o utfile] [-svwnf]\n"
-" [-c block_åt_gången] [-p antal_pass] [-t testmönster [-t testmönster "
-"[...]]]\n"
+" [-c block_åt_gången] [-p antal_pass] [-t testmönster [-t testmönster [...]]]\n"
 " enhet [sista_block [start_block]]\n"
 
 #: misc/badblocks.c:227
@@ -3274,10 +3244,8 @@ msgstr "%d-byteblock för stort för systemet (max %d)"
 
 #: misc/mke2fs.c:1136
 #, c-format
-msgid ""
-"Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
-msgstr ""
-"Varning: %d-byteblock för stort för systemet (max %d), tvingas fortsätta\n"
+msgid "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
+msgstr "Varning: %d-byteblock för stort för systemet (max %d), tvingas fortsätta\n"
 
 # "Ett" för att detta sätts in i annan sträng där det föregås av "a".
 # Även "journal" kan sättas in på samma plats.  Felrapporterat.
@@ -3977,14 +3945,3 @@ msgstr "%d block med nollor ...\n"
 #: resize/resize2fs.c:1421
 msgid "Inode table move finished.\n"
 msgstr "Flytt av inodtabell klar.\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "This inconsistency can not be fixed with e2fsck; to fix it, use\n"
-#~ "dumpe2fs -b to dump out the bad @b list and e2fsck -L filename\n"
-#~ "to read it back in again.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Denna inkonsekvens kan inte avhjälpas med e2fsck.  För att laga den,\n"
-#~ "använd dumpe2fs -b för att skriva ut listan över dåliga block, och\n"
-#~ "e2fsck -L filnamn för att läsa tillbaka den in igen.\n"
