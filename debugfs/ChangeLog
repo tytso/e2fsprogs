@@ -1,5 +1,9 @@
 2003-12-07  Theodore Ts'o  <tytso@mit.edu>
 
+	* util.c (open_pager): Search for the pager to use, starting with
+		'pager', and then falling back to 'less' and then 'more'.
+		(Addresses Debian Bug: #221977)
+
 	* debugfs.c, debugfs.h, dump.c, htree.c, icheck.c, logdump.c,
 		ls.c, lsdel.c, ncheck.c, setsuper.c, unused.c: Fix gcc
 		-Wall nitpicks.
