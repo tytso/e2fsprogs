@@ -556,6 +556,24 @@ static int process_bad_inode(ext2_filsys fs, ino_t dir, ino_t ino)
 			return 1;
 		}
 	}
+
+	if (LINUX_S_ISCHR(inode.i_mode)
+	    && !e2fsck_pass1_check_device_inode(&inode)) {
+		if (fix_problem(fs, PR_2_BAD_CHAR_DEV, &pctx)) {
+			deallocate_inode(fs, ino, 0);
+			return 1;
+		}
+	}
+		
+	if (LINUX_S_ISBLK(inode.i_mode)
+	    && !e2fsck_pass1_check_device_inode(&inode)) {
+		if (fix_problem(fs, PR_2_BAD_BLOCK_DEV, &pctx)) {
+			deallocate_inode(fs, ino, 0);
+			return 1;
+		}
+	}
+
+		
 	if (inode.i_faddr &&
 	    fix_problem(fs, PR_2_FADDR_ZERO, &pctx)) {
 		inode.i_faddr = 0;

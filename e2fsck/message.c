@@ -44,6 +44,7 @@
  * 	@B	bitmap
  * 	@C	conflicts with some other fs block
  * 	@i	inode
+ * 	@I	illegal
  * 	@D	deleted
  * 	@d	directory
  * 	@e	entry
@@ -84,6 +85,7 @@ static const char *abbrevs[] = {
 	"Bbitmap",
 	"Cconflicts with some other fs @b",
 	"iinode",
+	"Iillegal",
 	"Ddeleted",
 	"ddirectory",
 	"eentry",

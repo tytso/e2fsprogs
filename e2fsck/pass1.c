@@ -166,6 +166,20 @@ static void unwind_pass1(ext2_filsys fs)
 	fs_fragmented = 0;
 }
 
+/*
+ * Check to make sure a device inode is real.  Returns 1 if the device
+ * checks out, 0 if not.
+ */
+int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
+{
+	int	i;
+
+	for (i=4; i < EXT2_N_BLOCKS; i++) 
+		if (inode->i_block[i])
+			return 0;
+	return 1;
+}
+
 void pass1(ext2_filsys fs)
 {
 	ino_t	ino;
@@ -402,9 +416,11 @@ void pass1(ext2_filsys fs)
 			fs_directory_count++;
 		} else if (LINUX_S_ISREG (inode.i_mode))
 			fs_regular_count++;
-		else if (LINUX_S_ISCHR (inode.i_mode))
+		else if (LINUX_S_ISCHR (inode.i_mode) &&
+			 e2fsck_pass1_check_device_inode(&inode))
 			fs_chardev_count++;
-		else if (LINUX_S_ISBLK (inode.i_mode))
+		else if (LINUX_S_ISBLK (inode.i_mode) &&
+			 e2fsck_pass1_check_device_inode(&inode))
 			fs_blockdev_count++;
 		else if (LINUX_S_ISLNK (inode.i_mode)) {
 			fs_symlinks_count++;

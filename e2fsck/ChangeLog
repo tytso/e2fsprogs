@@ -1,3 +1,16 @@
+Thu Aug 14 10:55:21 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* message.c: Add compression for the word "Illegal"
+
+	* problem.c: Added entries for PR_2_BAD_CHAR_DEV and
+	 	PR_2_BAD_BLOCK_DEV
+
+Wed Aug 13 09:55:57 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (pass1, check_device_inode), pass2.c
+ 		(process_bad_inode): Use a more stringent test for a valid
+ 		device.
+
 Sun Aug 10 18:58:02 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* e2fsck.c (check_mount): Add stronger warning message about the

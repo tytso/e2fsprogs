@@ -150,7 +150,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Illegal block number in inode */
 	{ PR_1_ILLEGAL_BLOCK_NUM,
-	  "Illegal @b #%B (%b) in @i %i.  ",
+	  "@I @b #%B (%b) in @i %i.  ",
 	  PROMPT_CLEAR, PR_LATCH_BLOCK },
 
 	/* Block number overlaps fs metadata */
@@ -170,7 +170,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Illegal block number in bad block inode */
 	{ PR_1_BB_ILLEGAL_BLOCK_NUM,
-	  "Illegal @b #%B (%b) in bad @b @i.  ",
+	  "@I @b #%B (%b) in bad @b @i.  ",
 	  PROMPT_CLEAR, PR_LATCH_BBLOCK },
 
 	/* Bad block inode has illegal blocks (latch question) */
@@ -312,6 +312,16 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_2_DOT_DOT_NULL_TERM,
 	  "'..' directory entry in @d @i %i is not NULL terminated\n",
 	  PROMPT_FIX, 0 },
+
+	/* Illegal character device inode */
+	{ PR_2_BAD_CHAR_DEV,
+	  "@i %i (%Q) is an @I character device.\n",
+	  PROMPT_CLEAR, 0 },
+
+	/* Illegal block device inode */
+	{ PR_2_BAD_BLOCK_DEV,
+	  "@i %i (%Q) is an @I @b device.\n",
+	  PROMPT_CLEAR, 0 },
 
 	  /* Pass 3 errors */
 

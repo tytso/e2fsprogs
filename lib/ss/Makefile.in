@@ -137,7 +137,7 @@ install:: libss.a $(INSTALL_HFILES) copyright.h installdirs ss_err.h
 	$(CHMOD) 644 $(DESTDIR)$(ulibdir)/libss.a
 	-$(RANLIB) $(DESTDIR)$(ulibdir)/libss.a
 	$(CHMOD) $(LIBMODE) $(DESTDIR)$(ulibdir)/libss.a
-	$(RM) -f $(includedir)/ss/*
+	$(RM) -f $(DESTDIR)$(includedir)/ss/*
 	for i in $(INSTALL_HFILES) copyright.h; do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/ss/$$i; \
 	done

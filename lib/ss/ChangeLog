@@ -1,3 +1,8 @@
+Thu Aug 14 08:17:22 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (install): Fix rm command to use $(DESTDIR)
+		appropriately.
+
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.11

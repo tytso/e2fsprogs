@@ -201,6 +201,12 @@ struct e2fsck_problem {
 /* '..' is not NULL terminated */
 #define PR_2_DOT_DOT_NULL_TERM	0x020017
 
+/* Illegal character device in inode */
+#define PR_2_BAD_CHAR_DEV	0x020018
+
+/* Illegal block device in inode */
+#define PR_2_BAD_BLOCK_DEV	0x020019
+
 /*
  * Pass 3 errors
  */

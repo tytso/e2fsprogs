@@ -160,6 +160,7 @@ extern errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino,
 				  struct ext2_inode *inode);
 extern errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
 				   struct ext2_inode *inode);
+extern int e2fsck_pass1_check_device_inode(struct ext2_inode *inode);
 
 /* badblock.c */
 extern void read_bad_blocks_file(ext2_filsys fs, const char *bad_blocks_file,
