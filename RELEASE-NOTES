@@ -10,12 +10,20 @@ mke2fs is invoked as mkfs.ext3, create the filesystem with a journal.
 Debugfs can now examine the experimental directory indexing
 information.
 
+Fixed bug in debugfs which caused it to core dump if modify_inode is
+called without an open filesystem.
+
+The debugfs lsdel command now runs its output through a pager first.
+
 When installing manual pages, remove the compressed manual pages first.
 
 Synchronized with Debian's packaging information for e2fsprogs-1.26-1.
 
 Fix the 2.4 resource limitation workaround introduced in 1.26 which
 actually broke things on mips32, sparc32, and Alpha platforms.
+
+Updated the I18N code so that calls to setlocate(LC_CTYPE, 0) are made
+(which is required by the newer libintl libraries).
 
 Programmer's notes:
 -------------------
