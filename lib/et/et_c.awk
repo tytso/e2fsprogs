@@ -77,6 +77,10 @@ c2n["_"]=63
 	# We start playing *_high, *low games here because the some
 	# awk programs do not have the necessary precision (sigh)
 	tab_base_low = table_number % mod_base
+	if (tab_base_low < 0) {
+		# Work around stupid bug in the ARM libm
+		tab_base_low = tab_base_low + mod_base
+	}
 	tab_base_high = int(table_number / mod_base)
 	tab_base_sign = 1;
 
@@ -85,6 +89,10 @@ c2n["_"]=63
 	tab_base_high = (tab_base_high * 256) + \
 			int(tab_base_low / mod_base)
 	tab_base_low = tab_base_low % mod_base
+	if (tab_base_low < 0) {
+		# Work around stupid bug in the ARM libm
+		tab_base_low = tab_base_low + mod_base
+	}
 
 	if (table_number > 128*256*256) {
 		# figure out:  table_number_base -= 256*256*256*256
