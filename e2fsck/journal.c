@@ -87,6 +87,18 @@ struct buffer_head *getblk(kdev_t kdev, blk_t blocknr, int blocksize)
 	return bh;
 }
 
+void sync_blockdev(kdev_t kdev)
+{
+	io_channel	io;
+
+	if (kdev->k_dev == K_DEV_FS)
+		io = kdev->k_ctx->fs->io;
+	else 
+		io = kdev->k_ctx->journal_io;
+
+	io_channel_flush(io);
+}
+
 void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 {
 	int retval;

@@ -41,8 +41,6 @@ struct kdev_s {
 
 typedef struct kdev_s *kdev_t;
 
-#define fsync_no_super(dev) do {} while(0)
-#define sync_blockdev(dev) do {} while(0)
 #define lock_buffer(bh) do {} while(0)
 #define unlock_buffer(bh) do {} while(0)
 #define buffer_req(bh) 1
@@ -107,6 +105,7 @@ _INLINE_ void do_cache_destroy(kmem_cache_t *cache)
  */
 int journal_bmap(journal_t *journal, blk_t block, unsigned long *phys);
 struct buffer_head *getblk(kdev_t ctx, blk_t blocknr, int blocksize);
+void sync_blockdev(kdev_t kdev);
 void ll_rw_block(int rw, int dummy, struct buffer_head *bh[]);
 void mark_buffer_dirty(struct buffer_head *bh);
 void mark_buffer_uptodate(struct buffer_head *bh, int val);
