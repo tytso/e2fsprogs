@@ -1,3 +1,8 @@
+2004-11-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.8.in: Removed the word "destructive" when describing the
+		read-write test, since it can confuse people.
+
 2004-10-08  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.8.in: Add an explanation about why reserved blocks in a

@@ -156,7 +156,7 @@ the blocksize be a multiple of 2k.
 .TP
 .B \-c
 Check the device for bad blocks before creating the file system.  If
-this option is specified twice, then a slower, destructive, read-write
+this option is specified twice, then a slower, read-write
 test is used instead of a fast read-only test.
 .TP
 .BI \-f " fragment-size"
