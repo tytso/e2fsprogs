@@ -210,36 +210,36 @@ struct hfs_super_block {
 };
 
 struct ocfs_volume_header {
-	u_char	minor_version[4];
-	u_char	major_version[4];
-	u_char	signature[128];
-	u_char  mount[128];
-	u_char  mount_len[2];
+	unsigned char	minor_version[4];
+	unsigned char	major_version[4];
+	unsigned char	signature[128];
+	unsigned char  mount[128];
+	unsigned char  mount_len[2];
 };
 
 struct ocfs_volume_label {
-	u_char	disk_lock[48];
-	u_char	label[64];	
-	u_char	label_len[2];
-	u_char  vol_id[16];
-	u_char  vol_id_len[2];
+	unsigned char	disk_lock[48];
+	unsigned char	label[64];	
+	unsigned char	label_len[2];
+	unsigned char  vol_id[16];
+	unsigned char  vol_id_len[2];
 };
 
-#define ocfsmajor(o) ((uint)o.major_version[0] \
-                   + (((uint) o.major_version[1]) << 8) \
-                   + (((uint) o.major_version[2]) << 16) \
-                   + (((uint) o.major_version[3]) << 24))
-#define ocfslabellen(o)	((uint)o.label_len[0] + (((uint) o.label_len[1]) << 8))
-#define ocfsmountlen(o)	((uint)o.mount_len[0] + (((uint) o.mount_len[1])<<8))
+#define ocfsmajor(o) ((__u32)o.major_version[0] \
+                   + (((__u32) o.major_version[1]) << 8) \
+                   + (((__u32) o.major_version[2]) << 16) \
+                   + (((__u32) o.major_version[3]) << 24))
+#define ocfslabellen(o)	((__u32)o.label_len[0] + (((__u32) o.label_len[1]) << 8))
+#define ocfsmountlen(o)	((__u32)o.mount_len[0] + (((__u32) o.mount_len[1])<<8))
 
 #define OCFS_MAGIC "OracleCFS"
 
 struct ocfs2_super_block {
-	u_char  signature[8];
-	u_char  s_dummy1[184];
-	u_char  s_dummy2[80];
-	u_char  s_label[64];
-	u_char  s_uuid[16];
+	unsigned char  signature[8];
+	unsigned char  s_dummy1[184];
+	unsigned char  s_dummy2[80];
+	unsigned char  s_label[64];
+	unsigned char  s_uuid[16];
 };
 
 #define OCFS2_MIN_BLOCKSIZE             512

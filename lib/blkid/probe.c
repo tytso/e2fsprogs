@@ -320,7 +320,7 @@ static int probe_ocfs(int fd __BLKID_ATTR((unused)),
 {
 	struct ocfs_volume_header ovh;
 	struct ocfs_volume_label ovl;
-	uint major;
+	__u32 major;
 
 	memcpy(&ovh, buf, sizeof(ovh));
 	memcpy(&ovl, buf+512, sizeof(ovl));
