@@ -32,9 +32,6 @@
 #if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */
 #endif
-#if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE64)
-#define BLKGETSIZE64 _IO(0x12,109)	/* return device size */
-#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -57,9 +54,6 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 				 blk_t *retblocks)
 {
 	int	fd;
-#ifdef BLKGETSIZE64
-	unsigned long long	size64;
-#endif
 #ifdef BLKGETSIZE
 	unsigned long	size;
 #endif
@@ -82,17 +76,6 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	if (fd < 0)
 		return errno;
 
-#ifdef BLKGETSIZE64
-	if (ioctl(fd, BLKGETSIZE64, &size64) >= 0) {
-		close(fd);
-		size64 = size64 / (blocksize / 512);
-		*retblocks = size64;
-		if (*retblocks != size64) {
-			return EFBIG;
-		}
-		return 0;
-	}
-#endif
 #ifdef BLKGETSIZE
 	if (ioctl(fd, BLKGETSIZE, &size) >= 0) {
 		close(fd);
