@@ -135,6 +135,11 @@ int buffer_uptodate(struct buffer_head *bh)
 	return bh->b_uptodate;
 }
 
+void mark_buffer_uptodate(struct buffer_head *bh, int val)
+{
+	bh->b_uptodate = val;
+}
+
 void wait_on_buffer(struct buffer_head *bh)
 {
 	if (!bh->b_uptodate)

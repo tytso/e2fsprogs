@@ -1,5 +1,8 @@
 2001-03-29  Theodore Tso  <tytso@valinux.com>
 
+	* journal.c (mark_buffer_uptodate): Add emulation of kernel
+		function mark_buffer_uptodate.
+
 	* recovery.c, revoke.c: Synchronize with 0.6b ext3 files.
 
 2001-02-12  Theodore Tso  <tytso@valinux.com>

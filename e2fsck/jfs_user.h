@@ -40,6 +40,7 @@ int bmap(struct inode *inode, int block);
 struct buffer_head *getblk(e2fsck_t ctx, blk_t blocknr, int blocksize);
 void ll_rw_block(int rw, int dummy, struct buffer_head *bh[]);
 void mark_buffer_dirty(struct buffer_head *bh, int dummy);
+void mark_buffer_uptodate(struct buffer_head *bh, int val);
 void brelse(struct buffer_head *bh);
 int buffer_uptodate(struct buffer_head *bh);
 void wait_on_buffer(struct buffer_head *bh);
