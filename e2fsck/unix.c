@@ -349,9 +349,9 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 		ctx->progress_pos = (ctx->progress_pos+1) & 3;
 		ctx->flags |= E2F_FLAG_PROG_BAR;
 		percent = calc_percent(&e2fsck_tbl, pass, cur, max);
-		if (ctx->progress_last_percent == (int) 1000 * percent)
+		if (ctx->progress_last_percent == (int) 10 * percent)
 			return 0;
-		ctx->progress_last_percent = (int) 1000 * percent;
+		ctx->progress_last_percent = (int) 10 * percent;
 		i = ((percent * dpywidth) + 50) / 100;
 		printf("%s: |%s%s", ctx->device_name,
 		       bar + (sizeof(bar) - (i+1)),

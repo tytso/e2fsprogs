@@ -1,3 +1,10 @@
+2000-07-05  Theodore Ts'o  <tytso@valinux.com>
+
+	* unix.c (e2fsck_update_progress): Only save and check the last
+		percentage after multiplying it by 10, nor 1000, since we
+		only need to save values to a tenth of a percent (and the
+		percentage is already from 0 .. 100%, not 0 .. 1).
+
 2000-07-04  Theodore Ts'o  <tytso@valinux.com>
 
 	* pass1.c (e2fsck_pass1): Check to see if the ext3 s_last_orphan
