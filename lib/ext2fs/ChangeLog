@@ -1,3 +1,10 @@
+2003-05-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* test_io.c: Pay attention to the environment variables
+		TEST_IO_LOGFILE, TEST_IO_FLAGS, and TEST_IO_BLOCK to
+		determine whether or not we should log io activity, and to
+		where.
+
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* tst_badblocks.c (file_test): Use tmpfile() instead of mktemp().

@@ -1,5 +1,7 @@
 2003-05-05  Theodore Ts'o  <tytso@mit.edu>
 
+	* configure.in, configure: Add --enable-testio-debug configure option. 
+
 	* configure.in, configure, Makefile.in: Add --with-diet-libc
 		convenience option.  Add --disable-evms option.
 

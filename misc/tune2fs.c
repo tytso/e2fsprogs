@@ -109,6 +109,7 @@ static void remove_journal_device(ext2_filsys fs)
 	int		i, nr_users;
 	errcode_t	retval;
 	int		commit_remove_journal = 0;
+	io_manager	io_ptr;
 
 	if (f_flag)
 		commit_remove_journal = 1; /* force removal even if error */
@@ -123,9 +124,15 @@ static void remove_journal_device(ext2_filsys fs)
 			return;
 	}
 
+#ifdef CONFIG_TESTIO_DEBUG
+	io_ptr = test_io_manager;
+	test_io_backing_manager = unix_io_manager;
+#else
+	io_ptr = unix_io_manager;
+#endif
 	retval = ext2fs_open(journal_path, EXT2_FLAG_RW|
 			     EXT2_FLAG_JOURNAL_DEV_OK, 0,
-			     fs->blocksize, unix_io_manager, &jfs);
+			     fs->blocksize, io_ptr, &jfs);
 	if (retval) {
 		com_err(program_name, retval,
 			_("while trying to open external journal"));
@@ -358,6 +365,7 @@ static void add_journal(ext2_filsys fs)
 	unsigned long journal_blocks;
 	errcode_t	retval;
 	ext2_filsys	jfs;
+	io_manager	io_ptr;
 
 	if (fs->super->s_feature_compat &
 	    EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
@@ -367,9 +375,15 @@ static void add_journal(ext2_filsys fs)
 	if (journal_device) {
 		check_plausibility(journal_device);
 		check_mount(journal_device, 0, _("journal"));
+#ifdef CONFIG_TESTIO_DEBUG
+		io_ptr = test_io_manager;
+		test_io_backing_manager = unix_io_manager;
+#else
+		io_ptr = unix_io_manager;
+#endif
 		retval = ext2fs_open(journal_device, EXT2_FLAG_RW|
 				     EXT2_FLAG_JOURNAL_DEV_OK, 0,
-				     fs->blocksize, unix_io_manager, &jfs);
+				     fs->blocksize, io_ptr, &jfs);
 		if (retval) {
 			com_err(program_name, retval,
 				_("\n\twhile trying to open journal on %s\n"),
@@ -704,6 +718,7 @@ int main (int argc, char ** argv)
 	errcode_t retval;
 	ext2_filsys fs;
 	struct ext2_super_block *sb;
+	io_manager io_ptr;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -722,8 +737,13 @@ int main (int argc, char ** argv)
 	else
 		parse_tune2fs_options(argc, argv);
 	
-	retval = ext2fs_open (device_name, open_flag, 0, 0,
-			      unix_io_manager, &fs);
+#ifdef CONFIG_TESTIO_DEBUG
+	io_ptr = test_io_manager;
+	test_io_backing_manager = unix_io_manager;
+#else
+	io_ptr = unix_io_manager;
+#endif
+	retval = ext2fs_open (device_name, open_flag, 0, 0, io_ptr, &fs);
         if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);

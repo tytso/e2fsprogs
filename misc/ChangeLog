@@ -1,3 +1,9 @@
+2003-05-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* tune2fs.c (main, add_journal_device, remove_journal_device): If
+		--enable-testio-debug is set, then use the test_io manager
+		so we can watch what tune2fs is doing.
+
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* uuidgen.c (main): Add setup functions for NLS support.

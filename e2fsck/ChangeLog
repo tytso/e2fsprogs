@@ -1,3 +1,8 @@
+2003-05-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (main): If --enable-testio-debug is set, then use the
+		test_io manager so we can watch what e2fsck is doing.
+
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (show_stats): Remove uneeded use of _() around string

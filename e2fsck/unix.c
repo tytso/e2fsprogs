@@ -824,11 +824,11 @@ int main (int argc, char *argv[])
 	}
 	ctx->superblock = ctx->use_superblock;
 restart:
-#if 1
-	io_ptr = unix_io_manager;
-#else
+#ifdef CONFIG_TESTIO_DEBUG
 	io_ptr = test_io_manager;
 	test_io_backing_manager = unix_io_manager;
+#else
+	io_ptr = unix_io_manager;
 #endif
 	flags = 0;
 	if ((ctx->options & E2F_OPT_READONLY) == 0)
