@@ -23,7 +23,6 @@
 #include <termios.h>
 #endif
 #include <stdio.h>
-#define read_a_char()	getchar()
 #endif
 
 #ifdef HAVE_MALLOC_H
@@ -31,6 +30,8 @@
 #endif
 
 #include "e2fsck.h"
+
+e2fsck_t e2fsck_global_ctx;	/* Try your very best not to use this! */
 
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -69,6 +70,28 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
 	return ret;
 }
 
+#ifndef HAVE_CONIO_H
+int read_a_char(void)
+{
+	char	c;
+	int	r;
+	int	fail = 0;
+
+	while(1) {
+		if (e2fsck_global_ctx &&
+		    (e2fsck_global_ctx->flags & E2F_FLAG_CANCEL)) {
+			return 3;
+		}
+		r = read(0, &c, 1);
+		if (r == 1)
+			return c;
+		if (fail++ > 100)
+			break;
+	}
+	return EOF;
+}
+#endif
+
 int ask_yn(const char * string, int def)
 {
 	int		c;
@@ -88,9 +111,9 @@ int ask_yn(const char * string, int def)
 #endif
 
 	if (def == 1)
-		defstr = _("<y>");
+		defstr = _(_("<y>"));
 	else if (def == 0)
-		defstr = _("<n>");
+		defstr = _(_("<n>"));
 	else
 		defstr = _(" (y/n)");
 	printf("%s%s? ", string, defstr);
@@ -98,6 +121,18 @@ int ask_yn(const char * string, int def)
 		fflush (stdout);
 		if ((c = read_a_char()) == EOF)
 			break;
+		if (c == 3) {
+#ifdef HAVE_TERMIOS_H
+			tcsetattr (0, TCSANOW, &termios);
+#endif
+			if (e2fsck_global_ctx &&
+			    e2fsck_global_ctx->flags & E2F_FLAG_SETJMP_OK) {
+				puts("\n");
+				longjmp(e2fsck_global_ctx->abort_loc, 1);
+			}
+			puts(_("cancelled!\n"));
+			return 0;
+		}
 		if (strchr(short_yes, (char) c)) {
 			def = 1;
 			break;
@@ -110,9 +145,9 @@ int ask_yn(const char * string, int def)
 			break;
 	}
 	if (def)
-		printf ("yes\n\n");
+		puts(_("yes\n"));
 	else
-		printf ("no\n\n");
+		puts (_("no\n"));
 #ifdef HAVE_TERMIOS_H
 	tcsetattr (0, TCSANOW, &termios);
 #endif

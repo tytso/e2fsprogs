@@ -1,3 +1,8 @@
+2002-07-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* util.c (ask_yn, read_a_char): Note when the user has typed ^C,
+		and abort processing by longjmp'ing to ctx->abort_loc.
+
 2002-07-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1.c (e2fsck_pass1): If e2fsck is run with -n, don't create
