@@ -302,6 +302,22 @@ Enable Posix Access Control Lists.
 .B uid16
 Disables 32-bit UIDs and GIDs.  This is for interoperability with
 older kernels which only store and expect 16-bit values.
+.TP
+.B journal_data
+When the filesystem is mounted with journalling enabled, all data
+(not just metadata) is committed into the journal prior to being written
+into the main filesystem.
+.TP
+.B journal_data_ordered
+When the filesystem is mounted with journalling enabled, all data is forced
+directly out to the main file system prior to its metadata being commutted 
+to the journal.
+.TP
+.B journal_data_writeback
+When the filesystem is mounted with journalling enabled, data may be
+written into the main filesystem after its metadata has been commutted
+to the journal.  This may increase throughput, however, it may allow old
+data to appear in files after a crash and journal recovery.
 .RE
 .TP
 .BR \-O " [^]\fIfeature\fR[,...]"
