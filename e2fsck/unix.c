@@ -831,7 +831,6 @@ restart:
 		com_err(ctx->program_name, retval,
 			_("while checking ext3 journal for %s"),
 			ctx->device_name);
-		ext2fs_close(ctx->fs);
 		fatal_error(ctx, 0);
 	}
 

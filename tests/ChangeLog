@@ -1,4 +1,8 @@
-2002-03-06    <tytso@snap.thunk.org>
+2002-03-07    <tytso@mit.edu>
+
+	* f_miss_journal, f_extra_journal: Added new test cases.
+
+2002-03-06    <tytso@mit.edu>
 
 	* f_badorphan, f_badtable, f_bbinode, f_dupsuper, f_expand,
 		f_illbbitmap, f_illibitmap, f_illitable, f_imagic, 

@@ -1,4 +1,14 @@
-2002-03-06    <tytso@snap.thunk.org>
+2002-03-07    <tytso@snap.thunk.org>
+
+	* unix.c (main): Don't close the filesystem before calling
+		fatal_error(); this just causes a needless warning about a
+		bad I/O manager magic number.
+
+	* journal.c (e2fsck_check_ext3_journal): Offer to clear the inode
+		in case the journal is too small, or the inode number in
+		the superblock doesn't appear to be random.
+
+2002-03-06    <tytso@mit.edu>
 
 	* problem.h, problem.c: PR_5_BLOCK_RANGE_UNUSED,
 		PR_5_BLOCK_RANGE_USED, PR_5_INODE_RANGE_UNUSED,
