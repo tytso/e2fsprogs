@@ -157,7 +157,7 @@ distclean:: clean
 # Hack to parallel makes recognize dependencies correctly.
 #
 ../../lib/libuuid.a: libuuid.a
-../../lib/libuuid.so: libuuid.so
+../../lib/libuuid.so: image
 
 # +++ Dependency line eater +++
 # 

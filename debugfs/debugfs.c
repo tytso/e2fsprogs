@@ -612,6 +612,8 @@ void do_testi(int argc, char *argv[])
 	}
 	if (check_fs_open(argv[0]))
 		return;
+	if (check_fs_bitmaps(argv[0]))
+		return;
 	inode = string_to_inode(argv[1]);
 	if (!inode) 
 		return;
@@ -681,6 +683,8 @@ void do_testb(int argc, char *argv[])
 		return;
 	}
 	if (check_fs_open(argv[0]))
+		return;
+	if (check_fs_bitmaps(argv[0]))
 		return;
 	block = strtoul(argv[1], &tmp, 0);
 	if (!block || *tmp) {

@@ -1,3 +1,11 @@
+2000-05-27  Theodore Ts'o  <tytso@valinux.com>
+
+	* debugfs.c (do_testb, do_testi): Call check_fs_bitmaps to avoid
+		coredumping if the bitmaps aren't loaded.
+
+	* util.c (check_fs_bitmaps): New function which checks whether or
+		not the bitmaps are loaded.
+
 2000-05-23  Aaron Crane  <aaronc@pobox.com>
 
 	* debugfs.8.in: Documented new behaviour.

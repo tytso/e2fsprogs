@@ -20,6 +20,7 @@ extern void close_pager(FILE *stream);
 extern int check_fs_open(char *name);
 extern int check_fs_not_open(char *name);
 extern int check_fs_read_write(char *name);
+extern int check_fs_bitmaps(char *name);
 extern ino_t string_to_inode(char *str);
 extern char *time_to_string(__u32);
 

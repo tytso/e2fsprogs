@@ -107,6 +107,20 @@ int check_fs_read_write(char *name)
 }
 
 /*
+ * This routine returns 1 if a filesystem is doesn't have its inode
+ * and block bitmaps loaded, and prints an error message to that
+ * effect.
+ */
+int check_fs_bitmaps(char *name)
+{
+	if (!current_fs->block_map || !current_fs->inode_map) {
+		com_err(name, 0, "Filesystem bitmaps not loaded");
+		return 1;
+	}
+	return 0;
+}
+
+/*
  * This function takes a __u32 time value and converts it to a string,
  * using ctime
  */
