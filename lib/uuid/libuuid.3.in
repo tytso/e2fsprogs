@@ -9,10 +9,9 @@
 .SH NAME
 libuuid \- DCE compatible Universally Unique Identifier library
 .SH SYNOPSIS
-.nf
 .B #include <uuid/uuid.h>
 .sp
-cc
+.B cc
 .I file.c
 .B \-luuid
 .SH DESCRIPTION
