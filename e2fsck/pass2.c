@@ -1260,7 +1260,8 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		if (fix_problem(ctx, PR_2_FRAG_ZERO, &pctx)) {
 			*frag = 0;
 			inode_modified++;
-		}
+		} else
+			not_fixed++;
 		pctx.num = 0;
 	}
 	if (fsize && *fsize) {
