@@ -1,5 +1,13 @@
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
+	* badblocks.8.in: Updated manual page with suggestions from David
+		Beattie.
+
+	* badblocks.c (test_nd): Generalized cleanup and bug-fixes.   We
+		now explicitly clear out the signal handlers to prevent a
+		longjmp to a deactivated stack frame.  
+		(test_rw): Fixed a signed vs. unsigned comparison error.
+
 	* badblocks.8.in, chattr.1.in, dumpe2fs.8.in, lsattr.1.in,
 		mklost+found.8.in, tune2fs.8.in: Update Remy Card's e-mail
 		address.  

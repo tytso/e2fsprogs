@@ -44,10 +44,37 @@ Specify the size of blocks in bytes.
 .TP
 .BI \-c " number of blocks"
 is the number of blocks which are tested at a time.  The default is 16.
+Increasing this number will increase the efficiency of
+.B badblocks
+but also will increase its memory usage.
+.B Badblocks
+needs memory proportional to the number of blocks tested at once, in
+read-only mode, proportional to twice that number in read-write mode,
+and proportional to three times that number in non-destructive read-write
+mode.  If you set the number-of-blocks parameter to too high a value,
+.B badblocks
+will exit almost immediately with an out-of-memory error "while allocating
+buffers".  If you set it too low, however, for a non-destructive-write-mode
+test, then you are less likely to detect questionable blocks on an unreliable
+hard drive (i.e., one that holds its data for a while even in bad areas, but
+which loses the data in truely bad blocks, over time), since the
+read-and-compare stage of the test will occur sooner after the data is written.
 .TP
 .BI \-i " input_file"
-Read a list of already existing known bad blocks.  Badblocks will skip 
-testing these blocks since they are known bad.
+Read a list of already existing known bad blocks.
+.B Badblocks
+will skip testing these blocks since they are known to be bad.  If
+.I input_file
+is specified as "-", the list will be read from the standard input.
+Blocks listed in this list will be omitted from the list of
+.I new
+bad blocks produced on the standard output or in the output file.
+The
+.B \-b
+option of
+.BR dumpe2fs (8)
+can be used to retrieve the list of blocks currently marked bad on
+an existing filesystem, in a format suitable for use with this option.
 .TP
 .BI \-o " output_file"
 Write the list of bad blocks to the specified file.  Without this option,
@@ -62,8 +89,11 @@ or
 .BR mke2fs (8).
 .TP
 .BI \-p " num_passes"
-Repeat scanning the disk until there are no new blocks discovered after
-num_passes scans of the disk.
+Repeat scanning the disk until there are no new blocks discovered in
+num_passes consecutive scans of the disk.
+Default is 0, meaning
+.B badblocks
+will exit after the first pass.
 .TP
 .B \-n
 Use non-destructive read-write mode.
@@ -84,12 +114,15 @@ every block of the device, reading every block and comparing the contents.
 Never use the
 .B \-w
 option on an device containing an existing file system.
-This option erases data!
+This option erases data!  If you want to do write-mode testing on
+an existing file system, use the
+.B \-n
+option.  It is slower, but it will preserve your data.
 .SH AUTHOR
 .B badblocks
 was written by Remy Card <Remy.Card@linux.org>.  Current maintainer is
 Theodore Ts'o <tytso@alum.mit.edu>.  Non-destructive read/write test
-implemented by David Beattie <dbeattie@usa.net>.
+implemented by David Beattie <dbeattie@softhome.net>.
 .SH AVAILABILITY
 .B badblocks
 is part of the e2fsprogs package and is available for anonymous 
