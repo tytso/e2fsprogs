@@ -1,5 +1,9 @@
 2005-01-27  Theodore Ts'o  <tytso@mit.edu>
 
+	* super.c (check_resize_inode): If the resize inode has a zero
+		i_links_count or isn't a regular file, consider the resize
+		inode as invalid, and offer to recreate it.
+
 	* pass2.c (e2fsck_process_bad_inode): Offer to clear i_file_acl
 		before checking to see if an invalid inode should be
 		removed, since otherwise the fast symlink detection code

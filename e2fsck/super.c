@@ -372,7 +372,8 @@ void check_resize_inode(e2fsck_t ctx)
 		if (i != EXT2_DIND_BLOCK && inode.i_block[i])
 			break;
 	}
-	if ((i < EXT2_N_BLOCKS) || !blk ||
+	if ((i < EXT2_N_BLOCKS) || !blk || !inode.i_links_count ||
+	    !(inode.i_mode & LINUX_S_IFREG) ||
 	    (blk < fs->super->s_first_data_block ||
 	     blk >= fs->super->s_blocks_count)) {
 	resize_inode_invalid:

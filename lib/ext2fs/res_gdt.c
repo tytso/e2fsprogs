@@ -72,8 +72,6 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	sb = fs->super;
-	if (!sb->s_reserved_gdt_blocks)
-		return 0;
 
 	retval = ext2fs_get_mem(2 * fs->blocksize, (void **)&dindir_buf);
 	if (retval)

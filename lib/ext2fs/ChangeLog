@@ -1,3 +1,8 @@
+2005-01-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* res_gdt.c (ext2fs_create_resize_inode): Create the resize inode
+		even if s_reserved_gdt_blocks is zero.
+
 2005-01-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2fs.pc.in: Add pkg-config files.
