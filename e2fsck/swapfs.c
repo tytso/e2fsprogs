@@ -126,7 +126,7 @@ static void swap_inodes(ext2_filsys fs)
 		}
 		inode = (struct ext2_inode *) buf;
 		for (i=0; i < fs->super->s_inodes_per_group; i++, ino++) {
-			if (fs->flags & EXT2_SWAP_BYTES_READ)
+			if (fs->flags & EXT2_FLAG_SWAP_BYTES_READ)
 				ext2fs_swap_inode(fs, inode, inode, 0);
 			stashed_ino = ino;
 			stashed_inode = inode;
@@ -137,7 +137,7 @@ static void swap_inodes(ext2_filsys fs)
 			    LINUX_S_ISDIR(inode->i_mode))
 				swap_inode_blocks(fs, ino, block_buf, inode);
 			
-			if (fs->flags & EXT2_SWAP_BYTES_WRITE)
+			if (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)
 				ext2fs_swap_inode(fs, inode, inode, 1);
 			inode++;
 		}
@@ -177,17 +177,19 @@ void swap_filesys(ext2_filsys fs)
 			"byte-swap it.\n", device_name);
 		fatal_error(0);
 	}
-	if (fs->flags & EXT2_SWAP_BYTES) {
-		fs->flags &= ~(EXT2_SWAP_BYTES|EXT2_SWAP_BYTES_WRITE);
-		fs->flags |= EXT2_SWAP_BYTES_READ;
+	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
+		fs->flags &= ~(EXT2_FLAG_SWAP_BYTES|
+			       EXT2_FLAG_SWAP_BYTES_WRITE);
+		fs->flags |= EXT2_FLAG_SWAP_BYTES_READ;
 	} else {
-		fs->flags &= ~EXT2_SWAP_BYTES_READ;
-		fs->flags |= EXT2_SWAP_BYTES_WRITE;
+		fs->flags &= ~EXT2_FLAG_SWAP_BYTES_READ;
+		fs->flags |= EXT2_FLAG_SWAP_BYTES_WRITE;
 	}
 	swap_inodes(fs);
-	if (fs->flags & EXT2_SWAP_BYTES_WRITE)
-		fs->flags |= EXT2_SWAP_BYTES;
-	fs->flags &= ~(EXT2_SWAP_BYTES_READ|EXT2_SWAP_BYTES_WRITE);
+	if (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)
+		fs->flags |= EXT2_FLAG_SWAP_BYTES;
+	fs->flags &= ~(EXT2_FLAG_SWAP_BYTES_READ|
+		       EXT2_FLAG_SWAP_BYTES_WRITE);
 	ext2fs_flush(fs);
 	
 	if (tflag > 1) {

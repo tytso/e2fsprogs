@@ -8,6 +8,63 @@
 
 #include "e2fsck.h"
 
+/*
+ * This routine is called when an inode is not connected to the
+ * directory tree.
+ * 
+ * This subroutine returns 1 then the caller shouldn't bother with the
+ * rest of the pass 4 tests.
+ */
+int disconnect_inode(ext2_filsys fs, ino_t i)
+{
+	struct ext2_inode	inode;
+
+	e2fsck_read_inode(fs, i, &inode, "pass4: disconnect_inode");
+	if (!inode.i_blocks && (LINUX_S_ISREG(inode.i_mode) ||
+				LINUX_S_ISDIR(inode.i_mode))) {
+		/*
+		 * This is a zero-length file; prompt to delete it...
+		 */
+		printf("Unattached zero-length inode %lu\n", i);
+		if (ask("Clear", 1)) {
+			inode_link_info[i] = 0;
+			inode.i_links_count = 0;
+			inode.i_dtime = time(0);
+			e2fsck_write_inode(fs, i, &inode,
+					   "disconnect_inode");
+			/*
+			 * Fix up the bitmaps...
+			 */
+			read_bitmaps(fs);
+			ext2fs_unmark_inode_bitmap(inode_used_map, i);
+			ext2fs_unmark_inode_bitmap(inode_dir_map, i);
+			ext2fs_unmark_inode_bitmap(fs->inode_map, i);
+			ext2fs_mark_ib_dirty(fs);
+			return 0;
+		}
+	}
+	
+	/*
+	 * Prompt to reconnect.
+	 */
+	printf("Unattached inode %lu\n", i);
+	preenhalt(fs);
+	if (ask("Connect to /lost+found", 1)) {
+		if (reconnect_file(fs, i))
+			ext2fs_unmark_valid(fs);
+	} else {
+		/*
+		 * If we don't attach the inode, then skip the
+		 * i_links_test since there's no point in trying to
+		 * force i_links_count to zero.
+		 */
+		ext2fs_unmark_valid(fs);
+		return 1;
+	}
+	return 0;
+}
+
+
 void pass4(ext2_filsys fs)
 {
 	ino_t	i;
@@ -29,25 +86,8 @@ void pass4(ext2_filsys fs)
 		if (!(ext2fs_test_inode_bitmap(inode_used_map, i)))
 			continue;
 		if (inode_count[i] == 0) {
-			/*
-			 * Inode isn't attached to the filesystem;
-			 * prompt to reconnect.
-			 */
-			printf("Unattached inode %lu\n", i);
-			preenhalt(fs);
-			if (ask("Connect to /lost+found", 1)) {
-				if (reconnect_file(fs, i))
-					ext2fs_unmark_valid(fs);
-			} else {
-				/*
-				 * If we don't attach the inode, then
-				 * skip the i_links_test since there's
-				 * no point in trying to force
-				 * i_links_count to zero.
-				 */
-				ext2fs_unmark_valid(fs);
+			if (disconnect_inode(fs, i))
 				continue;
-			}
 		}
 		if (inode_count[i] != inode_link_info[i]) {
 			e2fsck_read_inode(fs, i, &inode, "pass4");

@@ -14,9 +14,12 @@ else
 fi
 
 cmd_dir=$SRCDIR
-TMPFILE=./test.img
 
-. $SRCDIR/test_config
+if test "$TEST_CONFIG"x = x; then
+	TEST_CONFIG=$SRCDIR/test_config
+fi
+
+. $TEST_CONFIG
 
 for test_dir in $TESTS
 do

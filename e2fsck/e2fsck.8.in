@@ -151,7 +151,7 @@ is the sum of the following conditions:
 .br
 \	128\	\-\ Shared library error
 .br
-.SH BUGS
+.SH REPORTING BUGS
 Almost any piece of software will have bugs.  If you manage to find a
 filesystem which causes 
 .B e2fsck

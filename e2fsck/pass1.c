@@ -300,6 +300,11 @@ void pass1(ext2_filsys fs)
 					ext2fs_unmark_valid(fs);
 			}
 		}
+		if (ino == EXT2_BOOT_LOADER_INO) {
+			ext2fs_mark_inode_bitmap(inode_used_map, ino);
+			check_blocks(fs, ino, &inode, block_buf);
+			goto next;
+		}
 		if ((ino != EXT2_ROOT_INO) &&
 		    (ino < EXT2_FIRST_INODE(fs->super))) {
 			ext2fs_mark_inode_bitmap(inode_used_map, ino);
@@ -755,7 +760,8 @@ int process_block(ext2_filsys fs,
 			 * get called with BLOCK_FLAG_HOLE
 			 */
 			printf("process_block() called with blk == 0, "
-			       "inode %lu???", p->ino);
+			       "blockcnt=%d, inode %lu???\n",
+			       blockcnt, p->ino);
 			return 0;
 		}
 		if (blockcnt < 0)

@@ -1,3 +1,7 @@
+Thu Sep 12 15:23:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.05
+
 Mon Sep  9 23:05:11 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* debugfs.c (unlink_file_by_name): If unlinking a file with a

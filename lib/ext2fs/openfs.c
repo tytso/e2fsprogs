@@ -89,8 +89,8 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		goto cleanup;
 
 	if ((fs->super->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC)) ||
-	    (fs->flags & EXT2_SWAP_BYTES)) {
-		fs->flags |= EXT2_SWAP_BYTES;
+	    (fs->flags & EXT2_FLAG_SWAP_BYTES)) {
+		fs->flags |= EXT2_FLAG_SWAP_BYTES;
 
 		ext2fs_swap_super(fs->super);
 	}
@@ -156,7 +156,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		if (retval)
 			goto cleanup;
 		group_block++;
-		if (fs->flags & EXT2_SWAP_BYTES) {
+		if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 			gdp = (struct ext2_group_desc *) dest;
 			groups_per_block = fs->blocksize /
 				sizeof(struct ext2_group_desc);

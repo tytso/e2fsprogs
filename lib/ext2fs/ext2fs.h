@@ -71,9 +71,10 @@ typedef struct ext2fs_struct_generic_bitmap *ext2fs_block_bitmap;
 #define EXT2_FLAG_VALID		0x08
 #define EXT2_FLAG_IB_DIRTY	0x10
 #define EXT2_FLAG_BB_DIRTY	0x20
-#define EXT2_SWAP_BYTES		0x40
-#define EXT2_SWAP_BYTES_READ	0x80
-#define EXT2_SWAP_BYTES_WRITE	0x100
+#define EXT2_FLAG_SWAP_BYTES		0x40
+#define EXT2_FLAG_SWAP_BYTES_READ	0x80
+#define EXT2_FLAG_SWAP_BYTES_WRITE	0x100
+#define EXT2_FLAG_MASTER_SB_ONLY	0x200
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is

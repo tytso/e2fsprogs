@@ -1,3 +1,7 @@
+Thu Sep 12 15:23:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.05
+
 Tue Aug 27 16:50:43 1996  Miles Bader  <miles@gnu.ai.mit.edu>
 
 	* uuid/gen_uuid.c [HAVE_NET_IF_H] <net/if.h>: Include guarded.

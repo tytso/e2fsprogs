@@ -7,6 +7,12 @@
 dumpe2fs \- dump filesystem information
 .SH SYNOPSIS
 .B dumpe2fs
+[
+.B -b
+]
+[
+.B -V
+]
 device
 .SH DESCRIPTION
 .BI dumpe2fs
@@ -18,6 +24,13 @@ present on
 is similar to Berkeley's
 .BI dumpfs
 program for the BSD Fast File System.
+.SH OPTIONS
+.TP
+.I -b
+print the blocks which are reserved as bad in the filesystem.
+.TP
+.I -V
+print the version number of dumpe2fs and exit.
 .SH BUGS
 You need to know the physical filesystem structure to understand the
 output.

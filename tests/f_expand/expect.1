@@ -1,11 +1,8 @@
-Filesystem did not have a UUID; generating one.
-
 Pass 1: Checking inodes, blocks, and sizes
-Deleted inode 2 has zero dtime.
-Set dtime? yes
+Root inode is not a directory.  Clear? yes
 
 Pass 2: Checking directory structure
-Entry '..' in /lost+found (11) has deleted/unused inode 2.
+Entry '..' in ??? (11) has deleted/unused inode 2.
 Clear? yes
 
 Pass 3: Checking directory connectivity
@@ -556,6 +553,12 @@ Connect to /lost+found? yes
 Inode 100 has ref count 2, expecting 1.
 Set i_nlinks to count? yes
 
+Unattached inode 101
+Connect to /lost+found? yes
+
+Inode 101 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
 Unattached inode 102
 Connect to /lost+found? yes
 
@@ -574,16 +577,57 @@ Connect to /lost+found? yes
 Inode 104 has ref count 2, expecting 1.
 Set i_nlinks to count? yes
 
+Unattached inode 105
+Connect to /lost+found? yes
+
+Inode 105 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 106
+Connect to /lost+found? yes
+
+Inode 106 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 107
+Connect to /lost+found? yes
+
+Inode 107 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 108
+Connect to /lost+found? yes
+
+Inode 108 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 109
+Connect to /lost+found? yes
+
+Inode 109 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 110
+Connect to /lost+found? yes
+
+Inode 110 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 111
+Connect to /lost+found? yes
+
+Inode 111 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
 Pass 5: Checking group summary information
 Fix summary information? yes
 
-Block bitmap differences: -33.  FIXED
-Free blocks count wrong for group 0 (68, counted=67).  FIXED
-Free blocks count wrong (68, counted=67).  FIXED
-Free inodes count wrong for group #0 (1, counted=0).  FIXED
+Free blocks count wrong for group 0 (56, counted=55).  FIXED
+Free blocks count wrong (56, counted=55).  FIXED
+Free inodes count wrong for group #0 (89, counted=88).  FIXED
 Directories count wrong for group #0 (2, counted=3).  FIXED
-Free inodes count wrong (1, counted=0).  FIXED
+Free inodes count wrong (89, counted=88).  FIXED
 
 test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
-test_filesys: 104/104 files (0.0% non-contiguous), 33/100 blocks
+test_filesys: 112/200 files (0.0% non-contiguous), 145/200 blocks
 Exit status is 1

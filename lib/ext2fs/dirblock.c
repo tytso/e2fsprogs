@@ -27,7 +27,8 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
  	retval = io_channel_read_blk(fs->io, block, 1, buf);
 	if (retval)
 		return retval;
-	if ((fs->flags & (EXT2_SWAP_BYTES|EXT2_SWAP_BYTES_READ)) == 0)
+	if ((fs->flags & (EXT2_FLAG_SWAP_BYTES|
+			  EXT2_FLAG_SWAP_BYTES_READ)) == 0)
 		return 0;
 	p = buf;
 	end = (char *) buf + fs->blocksize;
@@ -49,8 +50,8 @@ errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 	char		*buf = 0;
 	struct ext2_dir_entry *dirent;
 
-	if ((fs->flags & EXT2_SWAP_BYTES) ||
-	    (fs->flags & EXT2_SWAP_BYTES_WRITE)) {
+	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+	    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)) {
 		write_buf = buf = malloc(fs->blocksize);
 		if (!buf)
 			return ENOMEM;

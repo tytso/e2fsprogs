@@ -89,6 +89,12 @@ static int decode_arg (int * i, int argc, char ** argv)
 				rem = 1;
 				break;
 #endif
+#ifdef EXT2_NOATIME_FL
+			case 'A':
+				rf |= EXT2_NOATIME_FL;
+				rem = 1;
+				break;
+#endif
 			case 'c':
 				rf |= EXT2_COMPR_FL;
 				rem = 1;
@@ -145,6 +151,11 @@ static int decode_arg (int * i, int argc, char ** argv)
 				af |= EXT2_APPEND_FL;
 				break;
 #endif
+#ifdef EXT2_NOATIME_FL
+			case 'A':
+				af |= EXT2_NOATIME_FL;
+				break;
+#endif
 			case 'c':
 				af |= EXT2_COMPR_FL;
 				break;
@@ -179,6 +190,11 @@ static int decode_arg (int * i, int argc, char ** argv)
 #ifdef	EXT2_APPEND_FL
 			case 'a':
 				sf |= EXT2_APPEND_FL;
+				break;
+#endif
+#ifdef EXT2_NOATIME_FL
+			case 'A':
+				sf |= EXT2_NOATIME_FL;
 				break;
 #endif
 			case 'c':

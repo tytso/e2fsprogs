@@ -1,3 +1,39 @@
+Mon Oct  7 00:45:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (main): Print out the version number of the shared
+		library when using the -V option.
+
+	* swapfs.c (swap_filesys): Change EXT2_SWAP to EXT2_FLAG_SWAP for
+	 	consistency's sake.
+
+	* e2fsck.c (main): By setting EXT2_FLAG_MASTER_SB_ONLY, only write
+ 		out the backup superblocks when we know we have a valid
+ 		filesystem.
+
+Tue Oct  1 22:00:29 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* util.c (preenhalt): Make it explicit on preenhalt that running
+		e2fsck manually means without the -a or -p flag.
+
+Fri Sep 27 14:41:08 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (pass1): Add support for the EXT2_BOOT_LOADER inode.
+		(Linux/FT actually sets the mode bits, so we have to
+		handle it specially.)
+
+	* e2fsck.c (check_if_skip): Print a message if the filesystem is
+ 		just dirty, so that the user knows that it's about to be
+ 		checked (since this will take a while).
+
+Mon Sep 16 17:00:01 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass4.c: If a disconnected inode is zero-length, prompt to
+		delete it instead of connecting it to lost+found.
+
+Thu Sep 12 15:23:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.05
+
 Fri Aug 30 20:24:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass4.c (pass4): If the user refuses to connect an unattached

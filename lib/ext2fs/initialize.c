@@ -227,7 +227,7 @@ retry:
 		goto cleanup;
 	
 	sprintf(buf, "inode bitmap for %s", fs->device_name);
-	retval = ext2fs_allocate_inode_bitmap(fs, 0, &fs->inode_map);
+	retval = ext2fs_allocate_inode_bitmap(fs, buf, &fs->inode_map);
 	if (retval)
 		goto cleanup;
 

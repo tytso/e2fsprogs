@@ -24,7 +24,7 @@ int ext2fs_native_flag(void)
 {
 	if (i386_byteorder())
 		return 0;
-	return EXT2_SWAP_BYTES;
+	return EXT2_FLAG_SWAP_BYTES;
 }
 
 	

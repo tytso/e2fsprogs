@@ -1,3 +1,11 @@
+Sun Sep 22 16:20:12 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pf.c: Add support for the 'A' (no atime) flag.
+
+Thu Sep 12 15:23:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.05
+
 Sat Sep  7 14:48:35 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* ls.c (interval_string): Pretty print the check interval.

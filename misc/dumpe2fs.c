@@ -39,7 +39,7 @@ char * device_name = NULL;
 
 static volatile void usage (void)
 {
-	fprintf (stderr, "usage: %s device\n", program_name);
+	fprintf (stderr, "usage: %s [-bV] device\n", program_name);
 	exit (1);
 }
 
@@ -166,17 +166,23 @@ void main (int argc, char ** argv)
 	int		big_endian;
 	char		c;
 
+	initialize_ext2_error_table();
 	fprintf (stderr, "dumpe2fs %s, %s for EXT2 FS %s, %s\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
 	
-	while ((c = getopt (argc, argv, "b")) != EOF) {
+	while ((c = getopt (argc, argv, "bV")) != EOF) {
 		switch (c) {
 		case 'b':
 			print_badblocks++;
 			break;
+		case 'V':
+			/* Print version number and exit */
+			fprintf(stderr, "\tUsing %s\n",
+				error_message(EXT2_ET_BASE));
+			exit(0);
 		default:
 			usage ();
 		}
@@ -184,7 +190,6 @@ void main (int argc, char ** argv)
 	if (optind > argc - 1)
 		usage ();
 	device_name = argv[optind++];
-	initialize_ext2_error_table();
 	retval = ext2fs_open (device_name, 0, 0, 0, unix_io_manager, &fs);
 	if (retval) {
 		com_err (program_name, retval, "while trying to open %s",
@@ -203,7 +208,7 @@ void main (int argc, char ** argv)
 			ext2fs_close (fs);
 			exit (1);
 		}
-		big_endian = ((fs->flags & EXT2_SWAP_BYTES) != 0);
+		big_endian = ((fs->flags & EXT2_FLAG_SWAP_BYTES) != 0);
 		if (!i386_byteorder())
 			big_endian = !big_endian;
 		if (big_endian)

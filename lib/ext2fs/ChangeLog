@@ -1,3 +1,30 @@
+Mon Oct  7 00:44:17 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2fs.h, block.c, closefs.c, dirblock.c, inode.c, native.c,
+	 	open.c: Change EXT2_SWAP to EXT2_FLAG_SWAP for
+	 	consistency's sake.
+	
+	* closefs.c (ext2fs_flush): If the flag EXT2_MASTER_SB_ONLY is
+		set, then only write out the master superblock.
+
+Sun Oct  6 21:45:26 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* block.c (ext2fs_block_iterate): Fixed bug which caused
+ 		block_iterate to fail to handle HURD created filesystems;
+ 		it tested the inode translator field before the inode was
+ 		loaded.
+
+Tue Sep 17 14:08:24 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* initialize.c (ext2fs_initialize): Make sure the description for
+		the inode bitmap is set correctly.
+
+	* bitmaps.c (ext2fs_allocate_generic_bitmap): Fix minor type typo.
+
+Thu Sep 12 15:23:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.05
+
 Sat Sep  7 07:36:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* initialize.c: Override the kernel's idea of default

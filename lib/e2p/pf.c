@@ -32,6 +32,9 @@ static const unsigned long flags_array[] = {
 #ifdef	EXT2_NODUMP_FL
 	EXT2_NODUMP_FL,
 #endif
+#ifdef	EXT2_NOATIME_FL
+	EXT2_NOATIME_FL,
+#endif
 	0};
 
 static const char * short_flags[] = {
@@ -48,6 +51,9 @@ static const char * short_flags[] = {
 #ifdef	EXT2_NODUMP_FL
 	"d",
 #endif
+#ifdef	EXT2_NOATIME_FL
+	"A",
+#endif
 	NULL};
 
 static const char * long_flags[] = {
@@ -63,6 +69,9 @@ static const char * long_flags[] = {
 #endif
 #ifdef	EXT2_NODUMP_FL
 	"No_Dump, ",
+#endif
+#ifdef	EXT2_NOATIME_FL
+	"No_Atime, ",
 #endif
 	NULL};
 

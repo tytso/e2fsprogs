@@ -20,11 +20,15 @@ profiling libraries, add the option --enable-profile.
 
 	make
 
-5) Install the programs
+5)   Check to make sure the installation built correctly:
+
+	make check
+
+6)  Install the programs
 
 	Run `make install'
 
-6) Install the include files and libraries
+7)  Install the include files and libraries
 
 	You can run `make install-libs' to install the include files and
 libraries.  Please note that this installation is not needed for the
@@ -32,7 +36,7 @@ programs to work.  It is only needed if you expect to develop other
 programs using the libraries or if you want to compile other program
 using these libraries (like the 4.4BSD dump and restore port).
 
-7) Remove any pre-formatted man pages.  
+8)  Remove any pre-formatted man pages.  
 
 	Some distributions will have pre-formatted manual pages which
 will always be displayed in preference to newer man pages in /usr/man.
@@ -40,7 +44,7 @@ If this is the case, you may need to manually remove them in order to
 see the correct manual pages.  The shell script in
 install-utils/remove_preformat_manpages may be helpful in doing so.
 
-8) Make sure your /etc/fstab file is correct.
+9)  Make sure your /etc/fstab file is correct.
 
 	Some distributions install an /etc/fstab which is missing the
 fifth and sixth field of filesystem entry, which are the dump

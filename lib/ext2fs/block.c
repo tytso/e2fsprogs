@@ -58,8 +58,8 @@ static int block_iterate_ind(blk_t *ind_block, struct block_context *ctx)
 		return ret;
 	}
 	limit = ctx->fs->blocksize >> 2;
-	if ((ctx->fs->flags & EXT2_SWAP_BYTES) ||
-	    (ctx->fs->flags & EXT2_SWAP_BYTES_READ)) {
+	if ((ctx->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+	    (ctx->fs->flags & EXT2_FLAG_SWAP_BYTES_READ)) {
 		block_nr = (blk_t *) ctx->ind_buf;
 		for (i = 0; i < limit; i++, block_nr++)
 			*block_nr = ext2fs_swab32(*block_nr);
@@ -89,8 +89,8 @@ static int block_iterate_ind(blk_t *ind_block, struct block_context *ctx)
 		}
 	}
 	if (changed & BLOCK_CHANGED) {
-		if ((ctx->fs->flags & EXT2_SWAP_BYTES) ||
-		    (ctx->fs->flags & EXT2_SWAP_BYTES_WRITE)) {
+		if ((ctx->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+		    (ctx->fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)) {
 			block_nr = (blk_t *) ctx->ind_buf;
 			for (i = 0; i < limit; i++, block_nr++)
 				*block_nr = ext2fs_swab32(*block_nr);
@@ -133,8 +133,8 @@ static int block_iterate_dind(blk_t *dind_block, struct block_context *ctx)
 		return ret;
 	}
 	limit = ctx->fs->blocksize >> 2;
-	if ((ctx->fs->flags & EXT2_SWAP_BYTES) ||
-	    (ctx->fs->flags & EXT2_SWAP_BYTES_READ)) {
+	if ((ctx->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+	    (ctx->fs->flags & EXT2_FLAG_SWAP_BYTES_READ)) {
 		block_nr = (blk_t *) ctx->dind_buf;
 		for (i = 0; i < limit; i++, block_nr++)
 			*block_nr = ext2fs_swab32(*block_nr);
@@ -162,8 +162,8 @@ static int block_iterate_dind(blk_t *dind_block, struct block_context *ctx)
 		}
 	}
 	if (changed & BLOCK_CHANGED) {
-		if ((ctx->fs->flags & EXT2_SWAP_BYTES) ||
-		    (ctx->fs->flags & EXT2_SWAP_BYTES_WRITE)) {
+		if ((ctx->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+		    (ctx->fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)) {
 			block_nr = (blk_t *) ctx->dind_buf;
 			for (i = 0; i < limit; i++, block_nr++)
 				*block_nr = ext2fs_swab32(*block_nr);
@@ -206,8 +206,8 @@ static int block_iterate_tind(blk_t *tind_block, struct block_context *ctx)
 		return ret;
 	}
 	limit = ctx->fs->blocksize >> 2;
-	if ((ctx->fs->flags & EXT2_SWAP_BYTES) ||
-	    (ctx->fs->flags & EXT2_SWAP_BYTES_READ)) {
+	if ((ctx->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+	    (ctx->fs->flags & EXT2_FLAG_SWAP_BYTES_READ)) {
 		block_nr = (blk_t *) ctx->tind_buf;
 		for (i = 0; i < limit; i++, block_nr++)
 			*block_nr = ext2fs_swab32(*block_nr);
@@ -235,8 +235,8 @@ static int block_iterate_tind(blk_t *tind_block, struct block_context *ctx)
 		}
 	}
 	if (changed & BLOCK_CHANGED) {
-		if ((ctx->fs->flags & EXT2_SWAP_BYTES) ||
-		    (ctx->fs->flags & EXT2_SWAP_BYTES_WRITE)) {
+		if ((ctx->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+		    (ctx->fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)) {
 			block_nr = (blk_t *) ctx->tind_buf;
 			for (i = 0; i < limit; i++, block_nr++)
 				*block_nr = ext2fs_swab32(*block_nr);
@@ -298,16 +298,17 @@ errcode_t ext2fs_block_iterate(ext2_filsys fs,
 	 * Iterate over the HURD translator block (if present)
 	 */
 	if ((fs->super->s_creator_os == EXT2_OS_HURD) &&
-	    !(flags & BLOCK_FLAG_DATA_ONLY) &&
-	    inode.osd1.hurd1.h_i_translator) {
+	    !(flags & BLOCK_FLAG_DATA_ONLY)) {
 		ctx.errcode = ext2fs_read_inode(fs, ino, &inode);
 		if (ctx.errcode)
 			goto abort;
 		got_inode = 1;
-		ret |= (*func)(fs, &inode.osd1.hurd1.h_i_translator,
-			       BLOCK_COUNT_TRANSLATOR, private);
-		if (ret & BLOCK_ABORT)
-			goto abort;
+		if (inode.osd1.hurd1.h_i_translator) {
+			ret |= (*func)(fs, &inode.osd1.hurd1.h_i_translator,
+				       BLOCK_COUNT_TRANSLATOR, private);
+			if (ret & BLOCK_ABORT)
+				goto abort;
+		}
 	}
 	
 	/*

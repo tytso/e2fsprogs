@@ -1,3 +1,18 @@
+Mon Oct  7 00:56:24 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* chattr.1.in: Documented the 'A' (noatime) attribute.
+
+	* dumpe2fs.c (main): Change EXT2_SWAP to EXT2_FLAG_SWAP for
+	 	consistency's sake.
+
+Sun Sep 22 16:18:47 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* chattr.c (decode_arg): Add support for the 'A' (noatime) flag.
+
+Thu Sep 12 15:23:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.05
+
 Sat Sep  7 07:34:11 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* tune2fs.c (main): Add support for new option -C, which sets the 

@@ -1,3 +1,20 @@
+Mon Oct  7 07:52:41 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* f_preen: New test case which makes sure that e2fsck -p won't
+ 		bash the backup superblock in case of a corrupted master
+ 		superblock.
+	
+	* test_script.in: Let the environment variable TEST_CONFIG to
+		override the location of the test_config file.  Move
+		definition of TMP_DIR to test_config.
+
+	* test_config: Add new defnitions for mke2fs, dumpe2fs, tune2fs,
+		lsattr, and chattr.
+
+Thu Sep 12 15:23:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.05
+
 Mon Sep  9 23:09:47 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in (check): Add explicit ./ to test_script invokation,

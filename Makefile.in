@@ -13,7 +13,7 @@ SUBDIRS=$(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
 SUBS= include/linux/types.h
 
-all:: $(SUBS) libs progs check
+all:: $(SUBS) libs progs
 
 progs: $(SUBS) all-progs-recursive
 libs: $(SUBS) all-libs-recursive

@@ -1,3 +1,6 @@
+Thu Sep 12 15:23:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.05
 Wed Aug 28 15:20:26 1996  Miles Bader  <miles@gnu.ai.mit.edu>
 
 	* Makefile.elf-lib (installdirs-elf-lib): Renamed from installdirs

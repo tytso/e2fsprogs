@@ -1,3 +1,13 @@
+Mon Oct  7 08:22:31 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (all): Don't run "make check" by default.  User
+ 	 	should manually run "make check" if they wish to test
+ 	 	things out.
+
+Thu Sep 12 15:23:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.05
+
 Sat Aug 31 10:55:45 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* configure.in (AC_CHECK_FUNCS): Add fchown to list of functions

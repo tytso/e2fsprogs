@@ -149,15 +149,15 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 		scan->ptr += scan->inode_size - extra_bytes;
 		scan->bytes_left -= scan->inode_size - extra_bytes;
 
-		if ((scan->fs->flags & EXT2_SWAP_BYTES) ||
-		    (scan->fs->flags & EXT2_SWAP_BYTES_READ))
+		if ((scan->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+		    (scan->fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
 			ext2fs_swap_inode(scan->fs, inode,
 				 (struct ext2_inode *) scan->temp_buffer, 0);
 		else
 			*inode = *((struct ext2_inode *) scan->temp_buffer);
 	} else {
-		if ((scan->fs->flags & EXT2_SWAP_BYTES) ||
-		    (scan->fs->flags & EXT2_SWAP_BYTES_READ))
+		if ((scan->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+		    (scan->fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
 			ext2fs_swap_inode(scan->fs, inode,
 				 (struct ext2_inode *) scan->ptr, 0);
 		else
@@ -266,8 +266,8 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, unsigned long ino,
 	} else
 		memcpy((char *) inode, ptr, length);
 	
-	if ((fs->flags & EXT2_SWAP_BYTES) ||
-	    (fs->flags & EXT2_SWAP_BYTES_READ))
+	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+	    (fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
 		ext2fs_swap_inode(fs, inode, inode, 0);
 
 	/* Update the inode cache */
@@ -322,8 +322,8 @@ errcode_t ext2fs_write_inode(ext2_filsys fs, unsigned long ino,
 		inode_buffer_size = fs->blocksize;
 		inode_buffer_block = 0;
 	}
-	if ((fs->flags & EXT2_SWAP_BYTES) ||
-	    (fs->flags & EXT2_SWAP_BYTES_WRITE))
+	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+	    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE))
 		ext2fs_swap_inode(fs, &temp_inode, inode, 1);
 	else
 		memcpy(&temp_inode, inode, sizeof(struct ext2_inode));

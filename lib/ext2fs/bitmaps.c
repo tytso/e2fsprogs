@@ -28,7 +28,7 @@ errcode_t ext2fs_allocate_generic_bitmap(__u32 start,
 					 const char *descr,
 					 ext2fs_generic_bitmap *ret)
 {
-	ext2fs_inode_bitmap bitmap;
+	ext2fs_generic_bitmap bitmap;
 	int	size;
 
 	bitmap = malloc(sizeof(struct ext2fs_struct_generic_bitmap));

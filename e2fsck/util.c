@@ -160,7 +160,8 @@ void preenhalt(ext2_filsys fs)
 {
 	if (!preen)
 		return;
-	fprintf(stderr, "\n\n%s: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.\n",
+	fprintf(stderr, "\n\n%s: UNEXPECTED INCONSISTENCY; "
+		"RUN fsck MANUALLY.\n\t(i.e., without -a or -p options)\n",
 	       device_name);
 	if (fs != NULL) {
 		fs->super->s_state |= EXT2_ERROR_FS;

@@ -3,8 +3,14 @@
 #
 
 FSCK=../e2fsck/e2fsck
+MKE2FS=../misc/mke2fs
+DUMPE2FS=../misc/dumpe2fs
+TUNE2FS=../misc/tune2fs
+CHATTR=../misc/chattr
+LSATTR=../misc/lsattr
 DEBUGFS=../debugfs/debugfs
 LD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss
+TMPFILE=./test.img
 export LD_LIBRARY_PATH
 TZ=GMT
 export TZ

@@ -421,19 +421,19 @@ static void check_if_skip(ext2_filsys fs)
 		 time(0) >= (fs->super->s_lastcheck +
 			     fs->super->s_checkinterval))
 		reason = "has gone too long without being checked";
+	else if ((fs->super->s_state & EXT2_VALID_FS) == 0)
+		reason = "was not cleanly unmounted";
 	if (reason) {
 		printf("%s %s, check forced.\n", device_name, reason);
 		return;
 	}
-	if (fs->super->s_state & EXT2_VALID_FS) {
-		printf("%s: clean, %d/%d files, %d/%d blocks\n", device_name,
-		       fs->super->s_inodes_count - fs->super->s_free_inodes_count,
-		       fs->super->s_inodes_count,
-		       fs->super->s_blocks_count - fs->super->s_free_blocks_count,
-		       fs->super->s_blocks_count);
-		ext2fs_close(fs);
-		exit(FSCK_OK);
-	}
+	printf("%s: clean, %d/%d files, %d/%d blocks\n", device_name,
+	       fs->super->s_inodes_count - fs->super->s_free_inodes_count,
+	       fs->super->s_inodes_count,
+	       fs->super->s_blocks_count - fs->super->s_free_blocks_count,
+	       fs->super->s_blocks_count);
+	ext2fs_close(fs);
+	exit(FSCK_OK);
 }	
 
 #define PATH_SET "PATH=/sbin"
@@ -606,8 +606,11 @@ int main (int argc, char *argv[])
 			 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 			 EXT2FS_VERSION, EXT2FS_DATE);
 
-	if (show_version_only)
+	if (show_version_only) {
+		fprintf(stderr, "\tUsing %s\n",
+			error_message(EXT2_ET_BASE));
 		exit(0);
+	}
 	
 	check_mount();
 	
@@ -671,6 +674,12 @@ restart:
 	if (superblock && rwflag)
 		ext2fs_mark_super_dirty(fs);
 
+	/*
+	 * Don't overwrite the backup superblock and block
+	 * descriptors, until we're sure the filesystem is OK....
+	 */
+	fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
+
 	ehandler_init(fs->io);
 
 	invalid_inode_bitmap = allocate_memory(sizeof(int) *
@@ -691,7 +700,8 @@ restart:
 		test_disk(fs);
 
 	if (normalize_swapfs) {
-		if ((fs->flags & EXT2_SWAP_BYTES) == ext2fs_native_flag()) {
+		if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ==
+		    ext2fs_native_flag()) {
 			fprintf(stderr, "%s: Filesystem byte order "
 				"already normalized.\n", device_name);
 			fatal_error(0);
@@ -733,7 +743,9 @@ restart:
 			exit_value = FSCK_REBOOT;
 		}
 	}
-	if (!ext2fs_test_valid(fs))
+	if (ext2fs_test_valid(fs))
+		fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
+	else
 		exit_value = FSCK_UNCORRECTED;
 	if (rwflag) {
 		if (ext2fs_test_valid(fs)) {

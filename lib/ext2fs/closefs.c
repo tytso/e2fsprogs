@@ -20,7 +20,7 @@
 
 errcode_t ext2fs_flush(ext2_filsys fs)
 {
-	int		i,j;
+	int		i,j,maxgroup;
 	int		group_block;
 	errcode_t	retval;
 	char		*group_ptr;
@@ -34,7 +34,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	fs_state = fs->super->s_state;
 
 	fs->super->s_wtime = time(NULL);
-	if (fs->flags & EXT2_SWAP_BYTES) {
+	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		retval = ENOMEM;
 		if (!(super_shadow = malloc(SUPERBLOCK_SIZE)))
 			goto errout;
@@ -75,7 +75,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	 * we exit.)
 	 */
 	fs->super->s_state &= ~EXT2_VALID_FS;
-	if (fs->flags & EXT2_SWAP_BYTES) {
+	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		*super_shadow = *fs->super;
 		ext2fs_swap_super(super_shadow);
 	}
@@ -85,7 +85,9 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	 * superblocks and group descriptors.
 	 */
 	group_block = fs->super->s_first_data_block;
-	for (i = 0; i < fs->group_desc_count; i++) {
+	maxgroup = (fs->flags & EXT2_FLAG_MASTER_SB_ONLY) ? 1 :
+		fs->group_desc_count;
+	for (i = 0; i < maxgroup; i++) {
 		if (i !=0 ) {
 			retval = io_channel_write_blk(fs->io, group_block,
 						      -SUPERBLOCK_SIZE,
@@ -120,7 +122,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	retval = 0;
 errout:
 	fs->super->s_state = fs_state;
-	if (fs->flags & EXT2_SWAP_BYTES) {
+	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		if (super_shadow)
 			free(super_shadow);
 		if (group_shadow)
