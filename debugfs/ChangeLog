@@ -1,3 +1,8 @@
+2001-06-03  Theodore Tso  <tytso@valinux.com>
+
+	* debugfs.c (copy_file): Fixed signed vs unsigned bug which causes
+		read errors to not be noticed.
+
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in: Move include/asm/types.h.in to 

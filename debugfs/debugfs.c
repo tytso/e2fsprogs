@@ -1098,7 +1098,8 @@ static errcode_t copy_file(int fd, ext2_ino_t newfile)
 {
 	ext2_file_t	e2_file;
 	errcode_t	retval;
-	unsigned int	got, written;
+	int		got;
+	unsigned int	written;
 	char		buf[8192];
 	char		*ptr;
 
