@@ -1,3 +1,57 @@
+E2fsprogs 1.20 (August 20, 2000 --- WORK IN PROGRESS)
+=====================================================
+
+Add support for replaying the ext3 journal purely in user mode.  Used
+code contributed by Andreas Dilger, with bug fixes by Theodore Ts'o.
+
+E2fsck will now check for the existence of a linked list of orphan
+inodes in the superblock, and clear those inodes before starting the
+rest of the filesystem check (but after the journal playback).
+
+Fixed bug in the progress bar printing code which could cause e2fsck
+to core dump on an illegal filesystem.
+
+Fsck using a UUID or a LABEL specifier will work even if devfs is
+compiled into the kernel and not mounted.  If the pathnames in
+/proc/partitions are incorrect, fsck will search /dev for the correct
+device (using the new ext2fs_find_block_device library function).
+Fsck now also checks the RAID devices first so that they are properly
+found when they are in use.
+
+The dumpe2fs program can now print out the group description
+information in hex, and also prints the location of the superblock and
+block group descriptor for those block groups that have them.
+
+Mke2fs now clears the ext2 superblock before it starts creating a
+filesystem, so that the superblock magic number is only written if the
+filesystem creation process successfully completes.
+
+The debugfs program's stat command now pretty-prints the blocks used
+by an inode so that it's more compact and informative.
+
+The debugfs stats command now uses the same libe2p code (which is used
+by dumpe2fs) to print the superblock header information.  This is more
+complete, and it avoids a bit of code duplication.
+
+Added a new debugfs command, set_super_value (ssv) which allows the
+user to set arbitrary superblock fields.
+
+
+Programmer's notes:
+-------------------
+
+The e2fsck message printer now supports %Iu and %Ig, which will print
+out the inode's user and group owners, respectively.
+
+Added a new function to libext2, ext2fs_find_block_device(), which
+searches the system (i.e., /dev, /devfs, /devices) for a pathname to a
+device given its device number.
+
+Added new utility programs in tests/progs: random_exercise and
+hold_inode.  They aren't built by default; they're useful for
+exercising ext3 filesystem code.
+
+
 E2fsprogs 1.19 (July 13, 2000)
 ==============================
 
