@@ -1,3 +1,14 @@
+e2fsprogs (1.33-5) unstable; urgency=low
+
+  * Clarify blocksize units when displaying messages in resize2fs, and 
+    support using suffixes (sectors, kilobytes, megabites, gigabytes) 
+    to the size parameter to indicate units.  (Closes: #189814)
+  * Fix debugfs core-dumping problem caused by getopt.  (Works around: #192834)
+  * Add package dependency to shlibs for comerr to indicate support 
+    for kth compatibility.  (Closes: #193096)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 13 May 2003 23:45:08 -0400
+
 e2fsprogs (1.33-4) unstable; urgency=low
 
   * Add replaces field to comerr-dev to resolve a file conflict with

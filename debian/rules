@@ -352,7 +352,7 @@ binary-arch: install install-udeb
 		>> debian/e2fsprogs/DEBIAN/shlibs
 	echo "libuuid ${UUID_SOVERSION} libuuid${UUID_SOVERSION}" \
 		>> debian/e2fsprogs/DEBIAN/shlibs
-	echo "libcom_err ${COMERR_SOVERSION} libcomerr${COMERR_SOVERSION}" \
+	echo "libcom_err ${COMERR_SOVERSION} libcomerr${COMERR_SOVERSION}, libcomerr-kth-compat" \
 		>> debian/e2fsprogs/DEBIAN/shlibs
 	echo "libss ${SS_SOVERSION} libss${SS_SOVERSION}" \
 		>> debian/e2fsprogs/DEBIAN/shlibs
