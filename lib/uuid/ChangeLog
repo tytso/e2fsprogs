@@ -1,3 +1,7 @@
+1999-10-22    <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.16
+
 1999-10-21    <tytso@valinux.com>
 
 	* uuid_generate.8.in: Update man page to use a more standard

@@ -1,5 +1,9 @@
 1999-10-22    <tytso@valinux.com>
 
+	* Release of E2fsprogs 1.16
+
+1999-10-22    <tytso@valinux.com>
+
 	* pass2.c (check_filetype): If the filetype filesystem feature is
 		not set, and a directory entry has a dirent feature, offer
 		to clear it (since 2.0 kernels will do complain will
