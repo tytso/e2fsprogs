@@ -92,8 +92,8 @@ hard drive to be hidden by the effects of the hard disk track buffer.
 .B \-f
 Normally, badblocks will refuse to do a read/write or a non-destructive
 test on a device which is mounted, since either can cause the system to
-potentially crash; even a non-destructive test can damage a mounted
-filesystem.  This can be overriden using the
+potentially crash and/or damage the filesystem even if it is mounted
+read-only.  This can be overriden using the
 .B \-f
 flag, but should almost never be used --- if you think you're smarter
 than the 

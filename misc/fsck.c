@@ -993,7 +993,7 @@ static int check_all(NOARGS)
 static void usage(NOARGS)
 {
 	fprintf(stderr,
-		_("Usage: fsck [-ACNPRTV] [-t fstype] [fs-options] filesys\n"));
+		_("Usage: fsck [-ACNPRTV] [-t fstype] [fs-options] [filesys ...]\n"));
 	exit(EXIT_USAGE);
 }
 
@@ -1173,8 +1173,9 @@ int main(int argc, char *argv[])
 		return check_all();
 
 	if (num_devices == 0) {
-		fprintf(stderr, _("\nNo devices specified to be checked!\n"));
-		exit(EXIT_ERROR);
+		serialize++;
+		interactive++;
+		return check_all();
 	}
 	for (i = 0 ; i < num_devices; i++) {
 		if (cancel_requested) {

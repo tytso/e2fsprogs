@@ -14,7 +14,7 @@ fsck \- check and repair a Linux file system
 .B \-t
 .I fstype
 ] 
-.I filesys [ ... ]
+.I [filesys ... ]
 [\-\-] [
 .B fs-specific-options
 ]
@@ -28,10 +28,20 @@ a mount point (e.g.
 .IR / ", " /usr ", " /home ),
 or an ext2 label or UUID specifier (e.g.
 UUID=8868abf6-88c5-4a83-98b8-bfc24057f7bd or LABEL=root).  
-The 
+Normally, the 
 .B fsck 
 program will try to run filesystems on different physical disk drives 
 in parallel to reduce total amount time to check all of the filesystems.
+.PP
+If no filesystems are specified on the command line, and the 
+.B \-A 
+option is not specified, 
+.B fsck
+will default to checking filesystems in
+.B /etc/fstab
+serial.  This is equivalent to the 
+.B \-As
+options.
 .PP
 The exit code returned by
 .B fsck
@@ -53,9 +63,8 @@ is the sum of the following conditions:
 .br
 \	128\	\-\ Shared library error
 .br
-The exit code returned when all file systems are checked using the
-.B \-A
-option is the bit-wise OR of the exit codes for each
+The exit code returned when multiple file systems are checked 
+is the bit-wise OR of the exit codes for each
 file system that is checked.
 .PP
 In actuality,
