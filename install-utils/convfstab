@@ -22,7 +22,7 @@ do
 	echo "Please remove it by hand." >&2
 	;;
       * )
-	if [ $# -gt 6 -o $# -lt 3 ]
+	if [ $# -gt 6 ] || [ $# -lt 3 ]
 	then
 	  echo "Don't have a clue about \"$LINE\"." >&2
 	  echo "$LINE"

@@ -16,10 +16,10 @@ if test -n "$_SS_DIR_OVERRIDE" ; then
     DIR="$_SS_DIR_OVERRIDE";
 fi
 
-if test ! -f $DIR/ct_c.sed -o ! -f $DIR/ct_c.awk ; then
+if test ! -f $DIR/ct_c.sed || test ! -f $DIR/ct_c.awk ; then
     DIR="$SS_DIR"
 #    echo "Falling back to $DIR..."
-    if test ! -f "$DIR/ct_c.sed" -o ! -f "$DIR/ct_c.awk" ; then
+    if test ! -f "$DIR/ct_c.sed" || test ! -f "$DIR/ct_c.awk" ; then
 	echo "mk_cmds: Couldn't find mk_cmds's template files."
 	exit 1
     fi

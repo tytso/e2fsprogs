@@ -48,7 +48,7 @@ jump/jump.vars: dll/jump.vars
 # If this hack doesn't work, try replacing it with a hardcoded path to 
 # libgcc.a, or -lgcc.  
 #
-#DLL_LIBGCC ="`$(CC) -v 2>&1 | head -1 | \
+#DLL_LIBGCC ="`$(CC) -v 2>&1 | head -n 1 | \
 #		sed -e 's;[^/]*;;' -e 's/specs/libgcc.a/'`"
 DLL_LIBGCC ="`$(CC) --print-libgcc-file-name`"
 

@@ -18,7 +18,7 @@ DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
 # find the version for the main package, from changelog file
-MAIN_VERSION = $(shell head -1 debian/changelog | cut '-d ' -f 2 | sed 's/[()]//g')
+MAIN_VERSION = $(shell head -n 1 debian/changelog | cut '-d ' -f 2 | sed 's/[()]//g')
 # find versions for libraries going into their own packages, from their Makefile.in's,
 # and sonames for all libs
 COMERR_VERSION = $(shell grep ELF_VERSION lib/et/Makefile.in | cut '-d ' -f3)

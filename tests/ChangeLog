@@ -1,3 +1,8 @@
+2004-09-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* test_script.in: Remove XSI:isms for greater portability.
+		(Addresses Debian Bug #255589)
+
 2004-02-28  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.35

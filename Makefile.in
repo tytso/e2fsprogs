@@ -49,7 +49,7 @@ distclean-doc:
 install: subs all-libs-recursive install-progs-recursive \
 	install-shlibs-libs-recursive install-doc-libs
 #	export MANPATH=$(DESTDIR)$(mandir); $(srcdir)/install-utils/compile_manpages
-	if test ! -d e2fsck -a ! -d debugfs -a ! -d misc -a ! -d ext2ed ; then $(MAKE) install-libs ; fi
+	if test ! -d e2fsck && test ! -d debugfs && test ! -d misc && test ! -d ext2ed ; then $(MAKE) install-libs ; fi
 
 uninstall: uninstall-progs-recursive uninstall-shlibs-libs-recursive uninstall-doc-libs
 

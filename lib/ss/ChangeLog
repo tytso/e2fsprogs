@@ -1,3 +1,8 @@
+2004-09-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* mk_cmds.sh.in: Remove XSI:isms for greater portability.
+		(Addresses Debian Bug #255589)
+
 2004-02-29  Brian Bergstrand  <brian@bergstrand.org>
 
 	* Makefile.in: Use $(BSDLIB_PIC_FLAG) to determine whether to use

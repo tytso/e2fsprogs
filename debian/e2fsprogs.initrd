@@ -16,7 +16,7 @@ if [ $rootdev != 256 ]; then
     fi
     umount -n /devfs > /dev/null 2>&1
     umount -n /mnt > /dev/null 2>&1
-    if test -n "$ext3root" -o -n "$ext2root" ; then
+    if test -n "$ext3root" || test -n "$ext2root" ; then
 	mount -nt tmpfs tmpfs /etc
 	echo >> /etc/fstab
 	echo >> /etc/mtab

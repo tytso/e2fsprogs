@@ -1,3 +1,8 @@
+2004-09-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.dll-lib (jump): Remove XSI:isms for greater portability.
+		(Addresses Debian Bug #255589)
+
 2004-02-29  Brian Bergstrand  <brian@bergstrand.org>
 
 	* Makefile.bsd-lib, Makefile.darwin-lib: Define BSDLIB_PIC_FLAG

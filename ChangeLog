@@ -1,5 +1,8 @@
 2004-09-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Remove XSI:isms for greater portability.
+		(Addresses Debian Bug #255589)
+
 	* config.guess, config.sub: Update to newer version from the FSF
 		(2004-06-11)
 
