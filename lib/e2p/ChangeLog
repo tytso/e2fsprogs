@@ -1,3 +1,8 @@
+2001-01-11  Theodore Ts'o  <tytso@valinux.com>
+
+	* pf.c: Clarified name of the Compression_Raw_Access flag, and
+		capitalized Journaled_Data.
+
 2001-01-01    <tytso@snap.thunk.org>
 
 	* ls.c: Remove our own internal definition of struct ext2fs_sb.
