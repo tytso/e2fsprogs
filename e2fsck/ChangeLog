@@ -1,3 +1,9 @@
+2002-08-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* problem.c: Fix PR_1_RELOC_BLOCK_ALLOCATE message to explain that
+		it is necessary to find contiguous blocks in a particular
+		block group.
+
 2002-08-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.8.in: Add clarifying text describing how e2fsck works

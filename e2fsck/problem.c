@@ -470,7 +470,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Error allocating blocks for relocating metadata */
 	{ PR_1_RELOC_BLOCK_ALLOCATE,
-	  N_("@A %N @b(s) for %s: %m\n"),
+	  N_("@A %N contiguous @b(s) in @b @g %g for %s: %m\n"),
 	  PROMPT_NONE, PR_PREEN_OK },
 		
 	/* Error allocating block buffer during relocation process */
