@@ -1294,7 +1294,7 @@ void do_write(int argc, char *argv[])
 	inode.i_atime = inode.i_ctime = inode.i_mtime = time(NULL);
 	inode.i_links_count = 1;
 	inode.i_size = statbuf.st_size;
-	if (debugfs_write_inode(newfile, &inode, argv[0])) {
+	if (debugfs_write_new_inode(newfile, &inode, argv[0])) {
 		close(fd);
 		return;
 	}
@@ -1387,7 +1387,7 @@ void do_mknod(int argc, char *argv[])
 		inode.i_block[1] = (minor & 0xff) | (major << 8) | ((minor & ~0xff) << 12);
 	}
 	inode.i_links_count = 1;
-	if (debugfs_write_inode(newfile, &inode, argv[0]))
+	if (debugfs_write_new_inode(newfile, &inode, argv[0]))
 		return;
 }
 

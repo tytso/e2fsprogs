@@ -1,3 +1,13 @@
+2005-03-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* mkdir.c (ext2fs_mkdir): Call ext2fs_write_new_inode() instead of
+		ext2fs_write_inode().
+
+	* inode.c (ext2fs_write_new_inode): New function which should be
+		used when the caller is writing an inode for the first
+		time.  It makes sure that the extra portion of the large
+		inode is cleared.
+
 2005-03-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Fix clean target to remove tst_getsectsize.

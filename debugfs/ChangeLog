@@ -1,5 +1,10 @@
 2005-03-20  Theodore Ts'o  <tytso@mit.edu>
 
+	* util.c (debugfs_write_new_inode): New function
+
+	* debgufs.c (do_write, do_mknod): Call ext2fs_write_new_inode()
+		instead of ext2fs_write_inode().
+
 	* debugfs.c (do_stat): Add support for dumping extended attributes
 		which are stored in the inode body.
 

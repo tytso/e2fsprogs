@@ -816,6 +816,8 @@ extern errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 					 int bufsize);
 extern errcode_t ext2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
 			    struct ext2_inode * inode);
+extern errcode_t ext2fs_write_new_inode(ext2_filsys fs, ext2_ino_t ino,
+			    struct ext2_inode * inode);
 extern errcode_t ext2fs_get_blocks(ext2_filsys fs, ext2_ino_t ino, blk_t *blocks);
 extern errcode_t ext2fs_check_directory(ext2_filsys fs, ext2_ino_t ino);
 

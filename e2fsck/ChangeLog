@@ -1,5 +1,8 @@
 2005-03-20  Theodore Ts'o  <tytso@mit.edu>
 
+	* pass3.c (check_root, e2fsck_get_lost_and_found): Call
+		ext2fs_write_new_inode() instead of ext2fs_write_inode().
+
 	* pass1.c (check_blocks): Move counting the extended attribute
 		block earlier so that we don't have to worry about
 		num_blocks wrapping for files which are too big.

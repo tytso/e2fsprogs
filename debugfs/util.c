@@ -346,3 +346,15 @@ int debugfs_write_inode(ext2_ino_t ino, struct ext2_inode * inode,
 	return 0;
 }
 
+int debugfs_write_new_inode(ext2_ino_t ino, struct ext2_inode * inode,
+			    const char *cmd)
+{
+	int retval;
+
+	retval = ext2fs_write_new_inode(current_fs, ino, inode);
+	if (retval) {
+		com_err(cmd, retval, "while creating inode %u", ino);
+		return 1;
+	}
+	return 0;
+}

@@ -715,6 +715,32 @@ errcode_t ext2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
 	return ext2fs_write_inode_full(fs, ino, inode,
 				       sizeof(struct ext2_inode));
 }
+
+/* 
+ * This function should be called when writing a new inode.  It makes
+ * sure that extra part of large inodes is cleared.
+ */
+errcode_t ext2fs_write_new_inode(ext2_filsys fs, ext2_ino_t ino,
+				 struct ext2_inode *inode)
+{
+	struct ext2_inode	*buf;
+	errcode_t		retval;
+	int 			size = EXT2_INODE_SIZE(fs->super);
+
+	if (size == sizeof(struct ext2_inode))
+		return ext2fs_write_inode_full(fs, ino, inode,
+					       sizeof(struct ext2_inode));
+
+	buf = malloc(size);
+	if (!buf)
+		return ENOMEM;
+
+	memset(buf, 0, size);
+	*buf = *inode;
+
+	retval = ext2fs_write_inode_full(fs, ino, buf, size);
+}
+
  
 errcode_t ext2fs_get_blocks(ext2_filsys fs, ext2_ino_t ino, blk_t *blocks)
 {
