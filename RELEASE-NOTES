@@ -6,6 +6,15 @@ with relatively uncommon edge cases: a directory with an indirect
 block which is claimed by another file, and when the last inode in the
 filesystem has blocks claimed by another file.
 
+E2fsck now checks to see if the i_size field of a fast symlink is too
+big, and offers to clear the symlink if so.
+
+E2fsck now checks to see if i_size_high of special files is non-zero,
+and offers to clear i_size_high.
+
+Fixed byte-ordering conversion bug which caused e2fsck's revoke
+handling to essentially not work.
+
 Fix e2fsck's handling of incompatible journal flags so that the user
 has chance to abort, and then has the option to clear out the journal
 entirely.

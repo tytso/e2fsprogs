@@ -1,4 +1,7 @@
-2001-06-01  Theodore Tso  <tytso@valinux.com>
+2001-06-02  Theodore Tso  <tytso@valinux.com>
+
+	* f_badinode: Added a fast symlink with an invalid size to test
+		e2fsck's handling of this case.
 
 	* f_dup3: New test case which checks handling of blocks claimed
 		multiple times by one inode which weren't handled
