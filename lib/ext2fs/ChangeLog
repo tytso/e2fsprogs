@@ -1,5 +1,8 @@
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
+	* block.c: Readibility tweak in conditionals involving
+		ctx->fs->flags.
+
 	* ext2fs.h: Use AUTOCONF SIZEOF_* macros if available to determine
 		how to define __s64 and __u64.  Turn off "compression is
 		experimental" warning if the cpp macro
