@@ -1,4 +1,4 @@
-E2fsprogs 1.20 (May 10, 2001)
+E2fsprogs 1.20 (May 14, 2001)
 =============================
 
 Add support for replaying the ext3 journal purely in user mode,
@@ -58,7 +58,7 @@ A max_mount_count of zero is now treated as if no mount count were
 set.  (Previously, no mount count was indicated by using -1, and a
 mount count of zero caused e2fsck to always be run.)
 
-Mke2fs supports two new filesystem types largefile and largefile64.
+Mke2fs supports two new filesystem types largefile and largefile4.
 
 Mke2fs now adds some randomness in s_max_mount_count so that multiple
 filesystems won't be all checked at the same time under normal
