@@ -42,6 +42,9 @@ struct kdev_s {
 typedef struct kdev_s *kdev_t;
 
 #define fsync_no_super(dev) do {} while(0)
+#define sync_blockdev(dev) do {} while(0)
+#define lock_buffer(bh) do {} while(0)
+#define unlock_buffer(bh) do {} while(0)
 #define buffer_req(bh) 1
 #define do_readahead(journal, start) do {} while(0)
 	
@@ -110,3 +113,9 @@ void mark_buffer_uptodate(struct buffer_head *bh, int val);
 void brelse(struct buffer_head *bh);
 int buffer_uptodate(struct buffer_head *bh);
 void wait_on_buffer(struct buffer_head *bh);
+
+/*
+ * Define newer 2.5 interfaces
+ */
+#define __getblk(dev, blocknr, blocksize) getblk(dev, blocknr, blocksize)
+#define set_buffer_uptodate(bh) mark_buffer_uptodate(bh, 1)

@@ -16,12 +16,11 @@
 #ifndef __KERNEL__
 #include "jfs_user.h"
 #else
-#include <linux/sched.h>
+#include <linux/time.h>
 #include <linux/fs.h>
 #include <linux/jbd.h>
 #include <linux/errno.h>
 #include <linux/slab.h>
-#include <linux/locks.h>
 #endif
 
 /*
@@ -95,7 +94,7 @@ static int do_readahead(journal_t *journal, unsigned int start)
 			goto failed;
 		}
 
-		bh = getblk(journal->j_dev, blocknr, journal->j_blocksize);
+		bh = __getblk(journal->j_dev, blocknr, journal->j_blocksize);
 		if (!bh) {
 			err = -ENOMEM;
 			goto failed;
@@ -148,7 +147,7 @@ static int jread(struct buffer_head **bhp, journal_t *journal,
 		return err;
 	}
 
-	bh = getblk(journal->j_dev, blocknr, journal->j_blocksize);
+	bh = __getblk(journal->j_dev, blocknr, journal->j_blocksize);
 	if (!bh)
 		return -ENOMEM;
 
@@ -207,8 +206,9 @@ do {									\
 		var -= ((journal)->j_last - (journal)->j_first);	\
 } while (0)
 
-/*
- * journal_recover
+/**
+ * int journal_recover(journal_t *journal) - recovers a on-disk journal
+ * @journal: the journal to recover
  *
  * The primary function for recovering the log contents when mounting a
  * journaled device.  
@@ -218,7 +218,6 @@ do {									\
  * blocks.  In the third and final pass, we replay any un-revoked blocks
  * in the log.  
  */
-
 int journal_recover(journal_t *journal)
 {
 	int			err;
@@ -242,7 +241,6 @@ int journal_recover(journal_t *journal)
 		return 0;
 	}
 	
-
 	err = do_one_pass(journal, &info, PASS_SCAN);
 	if (!err)
 		err = do_one_pass(journal, &info, PASS_REVOKE);
@@ -260,22 +258,23 @@ int journal_recover(journal_t *journal)
 	journal->j_transaction_sequence = ++info.end_transaction;
 		
 	journal_clear_revoke(journal);
-	fsync_no_super(journal->j_fs_dev);
+	sync_blockdev(journal->j_fs_dev);
 	return err;
 }
 
-/*
- * journal_skip_recovery
+/**
+ * int journal_skip_recovery() - Start journal and wipe exiting records
+ * @journal: journal to startup
  *
  * Locate any valid recovery information from the journal and set up the
  * journal structures in memory to ignore it (presumably because the
  * caller has evidence that it is out of date).  
+ * This function does'nt appear to be exorted..
  *
  * We perform one pass over the journal to allow us to tell the user how
  * much recovery information is being erased, and to let us initialise
  * the journal transaction sequence numbers to the next unused ID. 
  */
-
 int journal_skip_recovery(journal_t *journal)
 {
 	int			err;
@@ -295,7 +294,6 @@ int journal_skip_recovery(journal_t *journal)
 #ifdef CONFIG_JBD_DEBUG
 		int dropped = info.end_transaction - ntohl(sb->s_sequence);
 #endif
-		
 		jbd_debug(0, 
 			  "JBD: ignoring %d transaction%s from the journal.\n",
 			  dropped, (dropped == 1) ? "" : "s");
@@ -303,14 +301,12 @@ int journal_skip_recovery(journal_t *journal)
 	}
 
 	journal->j_tail = 0;
-	
 	return err;
 }
 
 static int do_one_pass(journal_t *journal,
 			struct recovery_info *info, enum passtype pass)
 {
-	
 	unsigned int		first_commit_ID, next_commit_ID;
 	unsigned long		next_log_block;
 	int			err, success = 0;
@@ -460,7 +456,8 @@ static int do_one_pass(journal_t *journal,
 								
 					/* Find a buffer for the new
 					 * data being restored */
-					nbh = getblk(journal->j_fs_dev, blocknr,
+					nbh = __getblk(journal->j_fs_dev, 
+						       blocknr,
 						     journal->j_blocksize);
 					if (nbh == NULL) {
 						printk(KERN_ERR 
@@ -472,6 +469,7 @@ static int do_one_pass(journal_t *journal,
 						goto failed;
 					}
 
+					lock_buffer(nbh);
 					memcpy(nbh->b_data, obh->b_data,
 							journal->j_blocksize);
 					if (flags & JFS_FLAG_ESCAPE) {
@@ -480,11 +478,12 @@ static int do_one_pass(journal_t *journal,
 					}
 
 					BUFFER_TRACE(nbh, "marking dirty");
+					set_buffer_uptodate(nbh);
 					mark_buffer_dirty(nbh);
 					BUFFER_TRACE(nbh, "marking uptodate");
-					mark_buffer_uptodate(nbh, 1);
 					++info->nr_replays;
 					/* ll_rw_block(WRITE, 1, &nbh); */
+					unlock_buffer(nbh);
 					brelse(obh);
 					brelse(nbh);
 				}

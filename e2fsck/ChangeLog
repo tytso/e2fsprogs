@@ -1,3 +1,8 @@
+2003-12-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* recovery.c, jfs_user.h: Sync recovery.c with latest 2.5 kernel
+		version.
+
 2003-12-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (main): When testing a disk using e2fsck -c, use the list
