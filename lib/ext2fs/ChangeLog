@@ -1,3 +1,8 @@
+1998-09-22  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* initialize.c (ext2fs_initialize): Make sure that we allocate
+		enough inodes so that we can make a valid filesystem.
+
 1998-09-02  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* rw_bitmaps.c: Fixed signed/unsigned warnings.

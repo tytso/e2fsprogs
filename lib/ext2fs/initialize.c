@@ -161,6 +161,13 @@ retry:
 	set_field(s_inodes_count, super->s_blocks_count/(4096/fs->blocksize));
 
 	/*
+	 * Make sure we have at least EXT2_FIRST_INO + 1 inodes, so
+	 * that we have enough inodes for the filesystem(!)
+	 */
+	if (super->s_inodes_count < EXT2_FIRST_INO(super)+1)
+		super->s_inodes_count = EXT2_FIRST_INO(super)+1;
+	
+	/*
 	 * There should be at least as many inodes as the user
 	 * requested.  Figure out how many inodes per group that
 	 * should be.  But make sure that we don't allocate more than
