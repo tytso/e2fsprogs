@@ -323,7 +323,7 @@ blk_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 {
 	struct ext2_super_block *sb;
 	io_channel		io = NULL;
-	void			*buf;
+	void			*buf = NULL;
 	int			blocksize;
 	blk_t			superblock, ret_sb = 8193;
 	
