@@ -237,7 +237,7 @@ static char *interpret_device(char *spec)
 		fprintf(stderr, "Couldn't open /proc/partitions: %s\n",
 			strerror(errno));
 		fprintf(stderr, "Is /proc mounted?\n");
-		exit(1);
+		exit(EXIT_ERROR);
 	}
 	/*
 	 * Check to see if this is because we're not running as root
@@ -248,7 +248,7 @@ static char *interpret_device(char *spec)
 	else
 		fprintf(stderr, "Couldn't find matching filesystem: %s\n", 
 			spec);
-	exit(1);
+	exit(EXIT_ERROR);
 }
 
 /*
@@ -839,7 +839,7 @@ static void PRS(int argc, char *argv[])
 			if (num_devices >= MAX_DEVICES) {
 				fprintf(stderr, _("%s: too many devices\n"),
 					progname);
-				exit(1);
+				exit(EXIT_ERROR);
 			}
 			devices[num_devices++] =
 				interpret_device(string_copy(arg));
@@ -849,7 +849,7 @@ static void PRS(int argc, char *argv[])
 			if (num_args >= MAX_ARGS) {
 				fprintf(stderr, _("%s: too many arguments\n"),
 					progname);
-				exit(1);
+				exit(EXIT_ERROR);
 			}
 			args[num_args++] = string_copy(arg);
 			continue;
@@ -918,7 +918,7 @@ static void PRS(int argc, char *argv[])
 				fprintf(stderr,
 					_("%s: too many arguments\n"),
 					progname);
-				exit(1);
+				exit(EXIT_ERROR);
 			}
 			args[num_args++] = string_copy(options);
 			opt = 0;
