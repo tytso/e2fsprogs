@@ -1,3 +1,40 @@
+E2fsprogs 1.27-WIP (March 4, 2002)
+==================================
+
+Debugfs's "ls -l" command now will print out the file type information
+in the directory entry.
+
+Create man pages and hard links for fsck.ext3 and mkfs.ext3.  If
+mke2fs is invoked as mkfs.ext3, create the filesystem with a journal.
+
+Debugfs can now examine the experimental directory indexing
+information.
+
+When installing manual pages, remove the compressed manual pages first.
+
+Synchronized with Debian's packaging information for e2fsprogs-1.26-1.
+
+Fix the 2.4 resource limitation workaround introduced in 1.26 which
+actually broke things on mips32, sparc32, and Alpha platforms.
+
+Programmer's notes:
+-------------------
+
+Fixed a few memory leaks in the e2fsck journaling code, and in the
+ismounted code checking for a swap device.
+
+Add new inode I/O abstraction interface which exports an inode as
+an I/O object.
+  
+Exported ext2_file_flush as a public interface.
+  
+In ext2_file_write, we now mark the buffer void * argument as a const, since ext2_file_write doesn't modify the buffer.
+
+Lots of small random portability fixes to make e2fsprogs build under
+AIX --- even without the 5L compatibility toolkit, and even using the
+uber-crippled AIX native C compiler.
+
+
 E2fsprogs 1.26 (February 3, 2002)
 =================================
 
