@@ -111,6 +111,8 @@ c2n["_"]=63
 			tab_base_high--
 		}
 	}
+	prefix_str = ""
+	curr_idx = 0
 	curr_low = tab_base_low
 	curr_high = tab_base_high
 	curr_sign = tab_base_sign
@@ -124,7 +126,7 @@ c2n["_"]=63
 }
 
 /^[ \t]*(error_code|ec)[ \t]+[A-Z_0-9]+,/ {
-	tag=substr($2,1,length($2)-1)
+	tag=prefix_str substr($2,1,length($2)-1)
 	if (curr_high == 0) {
 		printf "#define %-40s (%dL)\n", tag, \
 			curr_sign*curr_low > outfile
@@ -133,6 +135,7 @@ c2n["_"]=63
 			curr_low > outfile
 	}
 	curr_low += curr_sign;
+	curr_idx++;
 	if (curr_low >= mod_base) {
 		curr_low -= mod_base;
 		curr_high++
@@ -142,6 +145,25 @@ c2n["_"]=63
 		cur_high--
 	}
 }
+
+/^[ \t]*(prefix)[ \t]+[A-Z_0-9]+/ {
+	prefix_str = $2 "_"
+}
+
+/^[ \t]*(index)[ \t]+[A-Z_0-9]+/ {
+	new_idx = $2
+	curr_low += curr_sign * (new_idx - curr_idx)
+	curr_idx = new_idx
+	if (curr_low >= mod_base) {
+		curr_low -= mod_base;
+		curr_high++
+	}
+	if (curr_low < 0) {
+		cur_low += mod_base
+		cur_high--
+	}
+}
+
 
 END {
 	print "extern const struct error_table et_" table_name "_error_table;" > outfile

@@ -1,5 +1,8 @@
 2003-05-05  Theodore Ts'o  <tytso@mit.edu>
 
+	* et_c.awk, et_h.awk, com_err.h, com_right.c: Add full Heimdall
+		compatibility. 
+
 	* et_c.awk: Add support for OV-style continuations in compile_et.
 		(Closes Debian bug #191900).
 

@@ -15,9 +15,9 @@ DEP_MAKEFILE = $(DEP_LIB_MAKEFILES)
 
 all:: compile_et
 
-OBJS= error_message.o et_name.o init_et.o com_err.o
+OBJS= error_message.o et_name.o init_et.o com_err.o com_right.o
 SRCS = $(srcdir)/error_message.c $(srcdir)/et_name.c $(srcdir)/init_et.c \
-	$(srcdir)/com_err.c
+	$(srcdir)/com_err.c $(srcdir)/com_right.c
 
 HFILES= com_err.h
 SHARE_FILES= et_c.awk et_h.awk
@@ -139,3 +139,5 @@ et_name.o: $(srcdir)/et_name.c $(srcdir)/com_err.h $(srcdir)/error_table.h \
 init_et.o: $(srcdir)/init_et.c $(srcdir)/com_err.h $(srcdir)/error_table.h
 com_err.o: $(srcdir)/com_err.c $(srcdir)/com_err.h $(srcdir)/error_table.h \
  $(srcdir)/internal.h
+com_right.o: $(srcdir)/com_right.c $(srcdir)/com_err.h \
+ $(srcdir)/error_table.h

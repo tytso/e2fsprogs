@@ -118,6 +118,8 @@ c2n["_"]=63
 	print " */" > outfile
 
 	print "" > outfile
+	print "#include <stdlib.h>" > outfile
+	print "" > outfile
 	print "static const char * const text[] = {" > outfile
 	table_item_count = 0
 }
@@ -177,9 +179,20 @@ c2n["_"]=63
 	}
 	skipone=0
 }
+
+/^[ \t]*(prefix)[ \t]+[A-Z_0-9]+/ {
+	prefix_str = $2 "_"
+}
+
+/^[ \t]*(index)[ \t]+[A-Z_0-9]+/ {
+	new_idx = $2
+	for (i = table_item_count ; i < new_idx; i++) {
+		printf "\t\"Reserved %s error (%d)\",\n", \
+			table_name, table_item_count++ > outfile
+	}
+}
+
 END {
-
-
 	print "    0" > outfile
 	print "};" > outfile
 	print "" > outfile
@@ -215,6 +228,20 @@ END {
 	print "        _et_list = &link;" > outfile
 	print "    }" > outfile
 	print "}" > outfile
-	
-
+	print "" > outfile
+	print "/* For Heimdall compatibility */" > outfile
+	print "void initialize_" table_name "_error_table_r(struct et_list **list)" > outfile
+	print "{" > outfile
+	print "    struct et_list *et, **end;" > outfile
+	print "" > outfile
+	print "    for (end = list, et = *list; et; end = &et->next, et = et->next)" > outfile
+	print "        if (et->table->msgs == text)" > outfile
+	print "            return;" > outfile
+	print "    et = malloc(sizeof(struct et_list));" > outfile
+	print "    if (et == 0)" > outfile
+	print "        return;" > outfile
+	print "    et->table = &et_" table_name "_error_table;" > outfile
+	print "    et->next = 0;" > outfile
+	print "    *end = et;" > outfile
+	print "}" > outfile
 }

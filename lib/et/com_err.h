@@ -38,6 +38,13 @@ extern errcode_t add_error_table(const struct error_table * et);
 extern errcode_t remove_error_table(const struct error_table * et);
 extern void add_to_error_table(struct et_list *new_table);
 
+/* Provided for Heimdall compatibility */
+extern const char *com_right(struct et_list *list, long code);
+extern void initialize_error_table_r(struct et_list **list, 
+				     const char **messages, 
+				     int num_errors,
+				     long base);
+extern void free_error_table(struct et_list *et);
 
 #define __COM_ERR_H
 #endif /* ! defined(__COM_ERR_H) */
