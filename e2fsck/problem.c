@@ -703,6 +703,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  "@E has an incorrect filetype (was %dt, should be %N)\n",
 	  PROMPT_FIX, 0 },
 
+	/* Directory filetype set on filesystem */
+	{ PR_2_CLEAR_FILETYPE,
+	  "@E has filetype set\n",
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

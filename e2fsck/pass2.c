@@ -291,8 +291,13 @@ static _INLINE_ int check_filetype(e2fsck_t ctx,
 	struct ext2_inode	inode;
 
 	if (!(ctx->fs->super->s_feature_incompat &
-	      EXT2_FEATURE_INCOMPAT_FILETYPE))
-		return 0;
+	      EXT2_FEATURE_INCOMPAT_FILETYPE)) {
+		if (filetype == 0 ||
+		    !fix_problem(ctx, PR_2_CLEAR_FILETYPE, pctx))
+			return 0;
+		dirent->name_len = dirent->name_len & 0xFF;
+		return 1;
+	}
 
 	if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dirent->inode)) {
 		should_be = EXT2_FT_DIR;

@@ -417,6 +417,9 @@ struct problem_context {
 /* Directory filetype incorrect */
 #define PR_2_BAD_FILETYPE	0x020028
 
+/* Directory filetype set when it shouldn't be */
+#define PR_2_CLEAR_FILETYPE	0x020029
+
 /*
  * Pass 3 errors
  */
