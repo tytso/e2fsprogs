@@ -1,3 +1,15 @@
+2002-05-11    <tytso@snap.thunk.org>
+
+	* debug_cmds.ct, debugfs.c (do_bmap): Add new command "bmap" which
+		calculates the logical->physical block mapping for an
+		inode.
+
+	* debugfs.c (do_init_filsys, main), util.c
+		(common_block_args_process): Fix bad calling parameter
+		order when calling parse_ulong.  This broke the -b  and -s
+		options to debugfs, as well as do_init, and the testb,
+		setb, clearb functions.
+
 2002-04-01    <tytso@snap.thunk.org>
 
 	* util.c (parse_ulong): Fix typo which cases parse_ulong to

@@ -199,7 +199,7 @@ void do_init_filesys(int argc, char **argv)
 		return;
 
 	memset(&param, 0, sizeof(struct ext2_super_block));
-	param.s_blocks_count = parse_ulong(argv[0], argv[2],
+	param.s_blocks_count = parse_ulong(argv[2], argv[0],
 					   "blocks count", &err);
 	if (err)
 		return;
@@ -1362,6 +1362,30 @@ void do_features(int argc, char *argv[])
 	print_features(current_fs->super, stdout);
 }
 
+void do_bmap(int argc, char *argv[])
+{
+	ext2_ino_t	ino;
+	blk_t		blk, pblk;
+	int		err;
+	errcode_t	errcode;
+	
+	if (common_args_process(argc, argv, 3, 3, argv[0],
+				"<file> logical_blk", 0))
+		return;
+
+	ino = string_to_inode(argv[1]);
+	blk = parse_ulong(argv[2], argv[0], "logical_block", &err);
+
+	errcode = ext2fs_bmap(current_fs, ino, 0, 0, 0, blk, &pblk);
+	if (errcode) {
+		com_err("argv[0]", errcode,
+			"while mapping logical block %d\n", blk);
+		return;
+	}
+	printf("%d\n", pblk);
+}
+
+
 static int source_file(const char *cmd_file, int sci_idx)
 {
 	FILE		*f;
@@ -1433,11 +1457,11 @@ int main(int argc, char **argv)
 			open_flags |= EXT2_FLAG_RW;
 			break;
 		case 'b':
-			blocksize = parse_ulong(argv[0], optarg,
+			blocksize = parse_ulong(optarg, argv[0], 
 						"block size", 0);
 			break;
 		case 's':
-			superblock = parse_ulong(argv[0], optarg,
+			superblock = parse_ulong(optarg, argv[0], 
 						 "superblock number", 0);
 			break;
 		case 'c':

@@ -136,5 +136,8 @@ request do_dx_hash, "Calculate the directory hash of a filename",
 request do_dirsearch, "Search a directory for a particular filename",
 	dirsearch;
 
+request do_bmap, "Calculate the logical->physical block mapping for an inode",
+	bmap;
+
 end;
 

@@ -139,7 +139,7 @@ errcode_t ext2fs_bmap(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 	/* Read inode structure if necessary */
 	if (!inode) {
 		retval = ext2fs_read_inode(fs, ino, &inode_buf);
-		if (!retval)
+		if (retval)
 			return retval;
 		inode = &inode_buf;
 	}

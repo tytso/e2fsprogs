@@ -233,7 +233,7 @@ int common_block_args_process(int argc, char *argv[],
 	if (strtoblk(argv[0], argv[1], block))
 		return 1;
 	if (argc > 2) {
-		*count = parse_ulong(argv[0], argv[2], "count", &err);
+		*count = parse_ulong(argv[2], argv[0], "count", &err);
 		if (err)
 			return 1;
 	}
