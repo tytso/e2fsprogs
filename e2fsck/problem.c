@@ -421,8 +421,7 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Immutable flag set on a device or socket inode */
 	{ PR_1_SET_IMMUTABLE,
 	  "Special (device/socket/fifo) @i %i has immutable flag set.  ",
-	  PROMPT_CLEAR, 0 },
-		  
+	  PROMPT_CLEAR, PR_PREEN_OK | PR_PREEN_NO | PR_NO_OK },
 
 	/* Pass 1b errors */
 
@@ -1070,7 +1069,9 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		return 0;
 	}
 	def_yn = 1;
-	if ((ptr->flags & PR_NO_DEFAULT) || (ctx->options & E2F_OPT_NO))
+	if ((ptr->flags & PR_NO_DEFAULT) ||
+	    ((ptr->flags & PR_PREEN_NO) && (ctx->options & E2F_OPT_PREEN)) ||
+	    (ctx->options & E2F_OPT_NO))
 		def_yn= 0;
 
 	/*
