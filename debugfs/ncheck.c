@@ -11,9 +11,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
-#include <getopt.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include "debugfs.h"
 
@@ -31,11 +32,11 @@ struct inode_walk_struct {
 	ino_t			parent;
 };
 
-int ncheck_proc(struct ext2_dir_entry *dirent,
-		int	offset,
-		int	blocksize,
-		char	*buf,
-		void	*private)
+static int ncheck_proc(struct ext2_dir_entry *dirent,
+		       int	offset,
+		       int	blocksize,
+		       char	*buf,
+		       void	*private)
 {
 	struct inode_walk_struct *iw = (struct inode_walk_struct *) private;
 	int	i;
@@ -113,7 +114,7 @@ void do_ncheck(int argc, char **argv)
 		if (inode.i_dtime)
 			goto next;
 		/* Ignore anything that isn't a directory */
-		if (!S_ISDIR(inode.i_mode))
+		if (!LINUX_S_ISDIR(inode.i_mode))
 			goto next;
 
 		iw.position = 0;

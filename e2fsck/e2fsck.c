@@ -22,9 +22,16 @@
 #include <ctype.h>
 #include <termios.h>
 #include <time.h>
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#endif
 #include <unistd.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
+#ifdef HAVE_MNTENT_H
 #include <mntent.h>
+#endif
 #include <sys/ioctl.h>
 #include <malloc.h>
 
@@ -36,6 +43,7 @@ extern int isatty(int);
 
 const char * program_name = "e2fsck";
 const char * device_name = NULL;
+const char * filesystem_name = NULL;
 
 /* Command line options */
 int nflag = 0;
@@ -99,24 +107,26 @@ static void show_stats(ext2_filsys fs)
 		       inodes_used, inodes, blocks_used, blocks);
 		return;
 	}
-	printf ("\n%6d inode%s used (%d%%)\n", inodes_used,
+	printf ("\n%8d inode%s used (%d%%)\n", inodes_used,
 		(inodes_used != 1) ? "s" : "",
 		100 * inodes_used / inodes);
-	printf ("%6d block%s used (%d%%)\n"
-		"%6d bad block%s\n", blocks_used,
+	printf ("         # of inodes with ind/dind/tind blocks: %d/%d/%d\n",
+		fs_ind_count, fs_dind_count, fs_tind_count);
+	printf ("%8d block%s used (%d%%)\n"
+		"%8d bad block%s\n", blocks_used,
 		(blocks_used != 1) ? "s" : "",
 		100 * blocks_used / blocks, fs_badblocks_count,
 		fs_badblocks_count != 1 ? "s" : "");
-	printf ("\n%6d regular file%s\n"
-		"%6d director%s\n"
-		"%6d character device file%s\n"
-		"%6d block device file%s\n"
-		"%6d fifo%s\n"
-		"%6d link%s\n"
-		"%6d symbolic link%s (%d fast symbolic link%s)\n"
-		"%6d socket%s\n"
-		"------\n"
-		"%6d file%s\n",
+	printf ("\n%8d regular file%s\n"
+		"%8d director%s\n"
+		"%8d character device file%s\n"
+		"%8d block device file%s\n"
+		"%8d fifo%s\n"
+		"%8d link%s\n"
+		"%8d symbolic link%s (%d fast symbolic link%s)\n"
+		"%8d socket%s\n"
+		"--------\n"
+		"%8d file%s\n",
 		fs_regular_count, (fs_regular_count != 1) ? "s" : "",
 		fs_directory_count, (fs_directory_count != 1) ? "ies" : "y",
 		fs_chardev_count, (fs_chardev_count != 1) ? "s" : "",
@@ -133,36 +143,26 @@ static void show_stats(ext2_filsys fs)
 
 static void check_mount(NOARGS)
 {
-	FILE * f;
-	struct mntent * mnt;
-	int cont;
-	int fd;
+	errcode_t	retval;
+	int		mount_flags, cont;
 
-	if ((f = setmntent (MOUNTED, "r")) == NULL)
+	retval = ext2fs_check_if_mounted(filesystem_name, &mount_flags);
+	if (retval) {
+		com_err("ext2fs_check_if_mount", retval,
+			"while determining whether %s is mounted.",
+			filesystem_name);
 		return;
-	while ((mnt = getmntent (f)) != NULL)
-		if (strcmp (device_name, mnt->mnt_fsname) == 0)
-			break;
-	endmntent (f);
-	if (!mnt)
+	}
+	if (!(mount_flags & EXT2_MF_MOUNTED))
 		return;
-
-	if  (!strcmp(mnt->mnt_dir, "/"))
-		root_filesystem = 1;
-
 	/*
 	 * If the root is mounted read-only, then /etc/mtab is
 	 * probably not correct; so we won't issue a warning based on
 	 * it.
 	 */
-	fd = open(MOUNTED, O_RDWR);
-	if (fd < 0) {
-		if (errno == EROFS) {
-			read_only_root = 1;
-			return;
-		}
-	} else
-		close(fd);
+	if ((mount_flags & EXT2_MF_ISROOT) &&
+	    (mount_flags & EXT2_MF_READONLY))
+		return;
 	
 	if (!rwflag) {
 		printf("Warning!  %s is mounted.\n", device_name);
@@ -217,6 +217,7 @@ static void check_super_block(ext2_filsys fs)
 	blk_t	blocks_per_group = fs->super->s_blocks_per_group;
 	int	i;
 	blk_t	should_be;
+	errcode_t retval;
 
 	/*
 	 * Verify the super block constants...
@@ -241,6 +242,23 @@ static void check_super_block(ext2_filsys fs)
 	check_super_value("r_blocks_count", s->s_r_blocks_count,
 			  MAX_CHECK, 0, s->s_blocks_count);
 
+	retval = ext2fs_get_device_size(filesystem_name, EXT2_BLOCK_SIZE(s),
+					&should_be);
+	if (retval) {
+		com_err("ext2fs_get_device_size", retval,
+			"while trying to check physical size of filesystem");
+		fatal_error(0);
+	}
+	if (should_be < s->s_blocks_count) {
+		printf("The filesystem size (according to the superblock) is %d blocks\n", s->s_blocks_count);
+		printf("The physical size of the device is %d blocks\n",
+		       should_be);
+		printf("Either the superblock or the partition table is likely to be corrupt!\n");
+		preenhalt(fs);
+		if (ask("Abort", 1))
+			fatal_error(0);
+	}
+
 	if (s->s_log_block_size != s->s_log_frag_size) {
 		printf("Superblock block_size = %d, fragsize = %d.\n",
 		       EXT2_BLOCK_SIZE(s), EXT2_FRAG_SIZE(s));
@@ -253,16 +271,16 @@ static void check_super_block(ext2_filsys fs)
 	should_be = s->s_frags_per_group /
 		(s->s_log_block_size - s->s_log_frag_size + 1);
 	if (s->s_blocks_per_group != should_be) {
-		printf("Superblock blocks_per_group = %lu, should "
-		       "have been %lu\n", s->s_blocks_per_group,
+		printf("Superblock blocks_per_group = %u, should "
+		       "have been %u\n", s->s_blocks_per_group,
 		       should_be);
 		printf(corrupt_msg);
 	}
 
 	should_be = (s->s_log_block_size == 0) ? 1 : 0;
 	if (s->s_first_data_block != should_be) {
-		printf("Superblock first_data_block = %lu, should "
-		       "have been %lu\n", s->s_first_data_block,
+		printf("Superblock first_data_block = %u, should "
+		       "have been %u\n", s->s_first_data_block,
 		       should_be);
 		printf(corrupt_msg);
 	}
@@ -278,12 +296,12 @@ static void check_super_block(ext2_filsys fs)
 			last_block = fs->super->s_blocks_count;
 		if ((fs->group_desc[i].bg_block_bitmap < first_block) ||
 		    (fs->group_desc[i].bg_block_bitmap >= last_block)) {
-			printf("Block bitmap %lu for group %d is "
-			       "not in group.\n",
-			       fs->group_desc[i].bg_block_bitmap, i);
-			preenhalt();
-			if (!ask("Continue (and relocate)", 1)) {
-				fatal_error(0);
+			printf("Block bitmap for group %d is not in group.  "
+			       "(block %u)\n",
+			       i, fs->group_desc[i].bg_block_bitmap);
+			preenhalt(fs);
+			if (!ask("Relocate", 1)) {
+				fatal_error("Block bitmap not in group");
 			}
 			fs->group_desc[i].bg_block_bitmap = 0;
 			invalid_block_bitmap[i]++;
@@ -291,12 +309,12 @@ static void check_super_block(ext2_filsys fs)
 		}
 		if ((fs->group_desc[i].bg_inode_bitmap < first_block) ||
 		    (fs->group_desc[i].bg_inode_bitmap >= last_block)) {
-			printf("Warning: Inode bitmap %lu for group %d "
-			       "not in group.\n",
-			       fs->group_desc[i].bg_inode_bitmap, i);
-			preenhalt();
-			if (!ask("Continue", 1)) {
-				fatal_error(0);
+			printf("Inode bitmap group %d not in group.  "
+			       "(block %u)\n",
+			       i, fs->group_desc[i].bg_inode_bitmap);
+			preenhalt(fs);
+			if (!ask("Relocate", 1)) {
+				fatal_error("Inode bitmap not in group");
 			}
 			fs->group_desc[i].bg_inode_bitmap = 0;
 			invalid_inode_bitmap[i]++;
@@ -305,13 +323,13 @@ static void check_super_block(ext2_filsys fs)
 		if ((fs->group_desc[i].bg_inode_table < first_block) ||
 		    ((fs->group_desc[i].bg_inode_table +
 		      fs->inode_blocks_per_group - 1) >= last_block)) {
-			printf("Warning: Inode table %lu for group %d "
-			       "not in group.\n",
-			       fs->group_desc[i].bg_inode_table, i);
+			printf("Inode table for group %d not in group.  "
+			       "(block %u)\n",
+			       i, fs->group_desc[i].bg_inode_table);
 			printf("WARNING: SEVERE DATA LOSS POSSIBLE.\n");
-			preenhalt();
-			if (!ask("Continue", 1)) {
-				fatal_error(0);
+			preenhalt(fs);
+			if (!ask("Relocate", 1)) {
+				fatal_error("Inode table not in group");
 			}
 			fs->group_desc[i].bg_inode_table = 0;
 			invalid_inode_table[i]++;
@@ -349,10 +367,16 @@ static void check_if_skip(ext2_filsys fs)
 		return;
 	}
 	if (fs->super->s_state & EXT2_VALID_FS) {
-		printf("%s is clean, no check.\n", device_name);
+		printf("%s: clean, %d/%d files, %d/%d blocks\n", device_name,
+		       fs->super->s_inodes_count - fs->super->s_free_inodes_count,
+		       fs->super->s_inodes_count,
+		       fs->super->s_blocks_count - fs->super->s_free_blocks_count,
+		       fs->super->s_blocks_count);
 		exit(FSCK_OK);
 	}
 }	
+
+#define PATH_SET "PATH=/sbin"
 
 static void PRS(int argc, char *argv[])
 {
@@ -361,14 +385,21 @@ static void PRS(int argc, char *argv[])
 #ifdef MTRACE
 	extern void	*mallwatch;
 #endif
-	char		*oldpath;
-	static char	newpath[PATH_MAX];
+	char		*oldpath = getenv("PATH");
 
 	/* Update our PATH to include /sbin  */
-	strcpy(newpath, "PATH=/sbin:");
-	if ((oldpath = getenv("PATH")) != NULL)
-		strcat(newpath, oldpath);
-	putenv(newpath);
+	if (oldpath) {
+		char *newpath;
+
+		newpath = malloc(sizeof (PATH_SET) + 1 + strlen (oldpath));
+		if (!newpath)
+			fatal_error("Couldn't malloc() newpath");
+		strcpy (newpath, PATH_SET);
+		strcat (newpath, ":");
+		strcat (newpath, oldpath);
+		putenv (newpath);
+	} else
+		putenv (PATH_SET);
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
@@ -376,7 +407,7 @@ static void PRS(int argc, char *argv[])
 	
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "panyrcB:dfvtFVM:b:I:P:l:L:")) != EOF)
+	while ((c = getopt (argc, argv, "panyrcB:dfvtFVM:b:I:P:l:L:N:")) != EOF)
 		switch (c) {
 		case 'p':
 		case 'a':
@@ -427,7 +458,11 @@ static void PRS(int argc, char *argv[])
 			force = 1;
 			break;
 		case 'F':
+#ifdef BLKFLSBUF
 			flush = 1;
+#else
+			fatal_error ("-F not supported");
+#endif
 			break;
 		case 'v':
 			verbose = 1;
@@ -440,6 +475,9 @@ static void PRS(int argc, char *argv[])
 			mallwatch = (void *) strtol(optarg, NULL, 0);
 			break;
 #endif
+		case 'N':
+			device_name = optarg;
+			break;
 		default:
 			usage ();
 		}
@@ -449,21 +487,27 @@ static void PRS(int argc, char *argv[])
 		usage ();
 	if (nflag && !bad_blocks_file && !cflag)
 		rwflag = 0;
-	device_name = argv[optind];
+	filesystem_name = argv[optind];
+	if (device_name == 0)
+		device_name = filesystem_name;
 	if (flush) {
-		int	fd = open(device_name, O_RDONLY, 0);
+#ifdef BLKFLSBUF
+		int	fd = open(filesystem_name, O_RDONLY, 0);
 
 		if (fd < 0) {
 			com_err("open", errno, "while opening %s for flushing",
-				device_name);
+				filesystem_name);
 			exit(FSCK_ERROR);
 		}
 		if (ioctl(fd, BLKFLSBUF, 0) < 0) {
 			com_err("BLKFLSBUF", errno, "while trying to flush %s",
-				device_name);
+				filesystem_name);
 			exit(FSCK_ERROR);
 		}
 		close(fd);
+#else
+		fatal_error ("BLKFLSBUF not supported");
+#endif /* BLKFLSBUF */
 	}
 }
 					
@@ -502,12 +546,13 @@ int main (int argc, char *argv[])
 restart:
 	sync_disks();
 	if (superblock && blocksize) {
-		retval = ext2fs_open(device_name, rwflag ? EXT2_FLAG_RW : 0,
+		retval = ext2fs_open(filesystem_name,
+				     rwflag ? EXT2_FLAG_RW : 0,
 				     superblock, blocksize, unix_io_manager,
 				     &fs);
 	} else if (superblock) {
 		for (i=0; possible_block_sizes[i]; i++) {
-			retval = ext2fs_open(device_name,
+			retval = ext2fs_open(filesystem_name,
 					     rwflag ? EXT2_FLAG_RW : 0,
 					     superblock,
 					     possible_block_sizes[i],
@@ -516,22 +561,38 @@ restart:
 				break;
 		}
 	} else 
-		retval = ext2fs_open(device_name, rwflag ? EXT2_FLAG_RW : 0,
+		retval = ext2fs_open(filesystem_name,
+				     rwflag ? EXT2_FLAG_RW : 0,
 				     0, 0, unix_io_manager, &fs);
 	if (retval) {
 		com_err(program_name, retval, "while trying to open %s",
-			device_name);
-		if (retval == EXT2_ET_REV_TOO_HIGH)
+			filesystem_name);
+		switch (retval) {
+		case EXT2_ET_REV_TOO_HIGH:
 			printf ("Get a newer version of e2fsck!\n");
-		else
+			break;
+		case EXT2_ET_SHORT_READ:
+			printf ("Could this be a zero-length partition?\n");
+			break;
+		case EPERM:
+		case EACCES:
+			printf("You must have %s access to the "
+			       "filesystem or be root\n",
+			       rwflag ? "r/w" : "r/o");
+			break;
+		case ENXIO:
+			printf("Possibly non-existent or swap device?\n");
+			break;
+		default:
 			printf(corrupt_msg);
+		}
 		fatal_error(0);
 	}
 
 #ifdef	EXT2_CURRENT_REV
 	if (fs->super->s_rev_level > E2FSCK_CURRENT_REV) {
 		com_err(program_name, retval, "while trying to open %s",
-			device_name);
+			filesystem_name);
 		printf ("Get a newer version of e2fsck!\n");
 		fatal_error(0);
 	}
@@ -569,6 +630,9 @@ restart:
 	ext2fs_mark_valid(fs);
 	
 	pass1(fs);
+	free(invalid_inode_bitmap);
+	free(invalid_block_bitmap);
+	free(invalid_inode_table);
 	if (restart_e2fsck) {
 		ext2fs_close(fs);
 		printf("Restarting e2fsck from the beginning...\n");

@@ -10,11 +10,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
 
+#ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>
+#endif
 #include <linux/ext2_fs.h>
 
 #include "ext2fs/ext2fs.h"
@@ -134,6 +135,9 @@ extern int fs_fifo_count;
 extern int fs_total_count;
 extern int fs_badblocks_count;
 extern int fs_sockets_count;
+extern int fs_ind_count;
+extern int fs_dind_count;
+extern int fs_tind_count;
 
 extern struct resource_track	global_rtrack;
 
@@ -173,7 +177,7 @@ extern int ask_yn(const char * string, int def);
 extern void fatal_error (const char * fmt_string);
 extern void read_bitmaps(ext2_filsys fs);
 extern void write_bitmaps(ext2_filsys fs);
-extern void preenhalt(NOARGS);
+extern void preenhalt(ext2_filsys fs);
 extern void print_resource_track(struct resource_track *track);
 extern void init_resource_track(struct resource_track *track);
 extern int inode_has_valid_blocks(struct ext2_inode *inode);

@@ -1,3 +1,58 @@
+Thu Oct 26 12:05:06 1995    <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (install): Strip programs when they are installed.
+
+Fri Aug 18 15:09:08 1995  Theodore Y. Ts'o  <tytso@dcl>
+
+	* debugfs.c (do_find_free_block): Fix typo in code which checked
+		to see if the usage message should be printed.
+
+Thu Aug 17 22:55:58 1995    <tytso@rsts-11.mit.edu>
+
+	* debugfs.c (do_open_filesys): Change to always set optreset to 1,
+		to make BSD getopt()'s happy.  Also set optind to 1, which
+		should make more getopt()'s happy.
+
+Fri Aug 11 08:45:01 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* debugfs.c (do_find_free_block, do_find_free_inode): Fix bug in
+		the usage handling where "ffi ?" or "ffb ?" would
+		dereference a NULL pointer.
+
+Fri Aug 11 14:21:07 1995  Remy Card  <card@bbj>
+
+	* debugfs.8: Updated date and version number.
+
+Thu Aug 10 14:28:50 1995  Remy Card  <card@bbj>
+
+	* debugfs.8: Fixed a spelling error in Ted's name :-)
+
+Mon Jun 12 19:08:25 1995  Theodore Y. Ts'o  (tytso@dcl)
+
+	* debugfs.c, ncheck.c, icheck.c, lsdel.c, dump.c: Include
+		<errno.h> (if it exists)
+
+	* debugfs.c, dump.c, icheck.c, lsdel.c, ncheck.c: Don't include
+		<getopt.h> if it doesn't exist.
+
+Sun Jun 11 15:21:07 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* ncheck.c (do_ncheck): Use LINUX_S_ISDIR instead of S_ISDIR
+
+	* debugfs.c: Implement the mknod and write commands (from Linus).
+
+		Change names of modify_char, modify_short, and modify_long
+		to be modify_u8, modify_u16, and modify_u32, respectively.
+
+Thu Jun  8 12:29:15 1995  Miles Bader  <miles@churchy.gnu.ai.mit.edu>
+
+	* debugfs.c (dump_inode): Only print out inode frag fields if
+	HAVE_EXT2_FRAGS is defined (by configure).  Don't print out the
+	reserved field at all for  now.
+
+	* Makefile.in: Rewritten to conform to GNU coding standards and
+	support separate compilation directories.
+
 Thu Nov 24 17:46:23 1994  Theodore Y. Ts'o  (tytso@rt-11)
 
 	* dump.c: Added two new commands, "dump" and "cat", which allow

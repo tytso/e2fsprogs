@@ -9,6 +9,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 
@@ -33,7 +36,7 @@ struct block_context {
 static int block_iterate_ind(blk_t *ind_block, struct block_context *ctx)
 {
 	int	ret = 0, changed = 0;
-	int	i, flags;
+	int	i, flags, limit;
 	blk_t	*block_nr;
 
 	if (!(ctx->flags & BLOCK_FLAG_DEPTH_TRAVERSE))
@@ -52,19 +55,42 @@ static int block_iterate_ind(blk_t *ind_block, struct block_context *ctx)
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	for (i = 0; i < (ctx->fs->blocksize >> 2); i++, ctx->bcount++) {
-		block_nr = (blk_t *) ctx->ind_buf + i;
-		if (*block_nr || (ctx->flags & BLOCK_FLAG_APPEND)) {
+	limit = ctx->fs->blocksize >> 2;
+	if (ctx->fs->flags & EXT2_SWAP_BYTES) {
+		block_nr = (blk_t *) ctx->ind_buf;
+		for (i = 0; i < limit; i++, block_nr++)
+			*block_nr = ext2fs_swab32(*block_nr);
+	}
+	block_nr = (blk_t *) ctx->ind_buf;
+	if (ctx->flags & BLOCK_FLAG_APPEND) {
+		for (i = 0; i < limit; i++, ctx->bcount++, block_nr++) {
 			flags = (*ctx->func)(ctx->fs, block_nr, ctx->bcount,
 					     ctx->private);
-			changed	|= flags & BLOCK_CHANGED;
+			changed	|= flags;
+			if (flags & BLOCK_ABORT) {
+				ret |= BLOCK_ABORT;
+				break;
+			}
+		}
+	} else {
+		for (i = 0; i < limit; i++, ctx->bcount++, block_nr++) {
+			if (*block_nr == 0)
+				continue;
+			flags = (*ctx->func)(ctx->fs, block_nr, ctx->bcount,
+					     ctx->private);
+			changed	|= flags;
 			if (flags & BLOCK_ABORT) {
 				ret |= BLOCK_ABORT;
 				break;
 			}
 		}
 	}
-	if (changed) {
+	if (changed & BLOCK_CHANGED) {
+		if (ctx->fs->flags & EXT2_SWAP_BYTES) {
+			block_nr = (blk_t *) ctx->ind_buf;
+			for (i = 0; i < limit; i++, block_nr++)
+				*block_nr = ext2fs_swab32(*block_nr);
+		}
 		ctx->errcode = io_channel_write_blk(ctx->fs->io, *ind_block,
 						    1, ctx->ind_buf);
 		if (ctx->errcode)
@@ -79,7 +105,7 @@ static int block_iterate_ind(blk_t *ind_block, struct block_context *ctx)
 static int block_iterate_dind(blk_t *dind_block, struct block_context *ctx)
 {
 	int	ret = 0, changed = 0;
-	int	i, flags;
+	int	i, flags, limit;
 	blk_t	*block_nr;
 
 	if (!(ctx->flags & BLOCK_FLAG_DEPTH_TRAVERSE))
@@ -98,18 +124,40 @@ static int block_iterate_dind(blk_t *dind_block, struct block_context *ctx)
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	for (i = 0; i < (ctx->fs->blocksize >> 2); i++) {
-		block_nr = (blk_t *) ctx->dind_buf + i;
-		if (*block_nr || (ctx->flags & BLOCK_FLAG_APPEND)) {
+	limit = ctx->fs->blocksize >> 2;
+	if (ctx->fs->flags & EXT2_SWAP_BYTES) {
+		block_nr = (blk_t *) ctx->dind_buf;
+		for (i = 0; i < limit; i++, block_nr++)
+			*block_nr = ext2fs_swab32(*block_nr);
+	}
+	block_nr = (blk_t *) ctx->dind_buf;
+	if (ctx->flags & BLOCK_FLAG_APPEND) {
+		for (i = 0; i < limit; i++, block_nr++) {
 			flags = block_iterate_ind(block_nr, ctx);
-			changed |= flags & BLOCK_CHANGED;
+			changed |= flags;
+			if (flags & (BLOCK_ABORT | BLOCK_ERROR)) {
+				ret |= flags & (BLOCK_ABORT | BLOCK_ERROR);
+				break;
+			}
+		}
+	} else {
+		for (i = 0; i < limit; i++, block_nr++) {
+			if (*block_nr == 0)
+				continue;
+			flags = block_iterate_ind(block_nr, ctx);
+			changed |= flags;
 			if (flags & (BLOCK_ABORT | BLOCK_ERROR)) {
 				ret |= flags & (BLOCK_ABORT | BLOCK_ERROR);
 				break;
 			}
 		}
 	}
-	if (changed) {
+	if (changed & BLOCK_CHANGED) {
+		if (ctx->fs->flags & EXT2_SWAP_BYTES) {
+			block_nr = (blk_t *) ctx->dind_buf;
+			for (i = 0; i < limit; i++, block_nr++)
+				*block_nr = ext2fs_swab32(*block_nr);
+		}
 		ctx->errcode = io_channel_write_blk(ctx->fs->io, *dind_block,
 						    1, ctx->dind_buf);
 		if (ctx->errcode)
@@ -124,7 +172,7 @@ static int block_iterate_dind(blk_t *dind_block, struct block_context *ctx)
 static int block_iterate_tind(blk_t *tind_block, struct block_context *ctx)
 {
 	int	ret = 0, changed = 0;
-	int	i, flags;
+	int	i, flags, limit;
 	blk_t	*block_nr;
 
 	if (!(ctx->flags & BLOCK_FLAG_DEPTH_TRAVERSE))
@@ -143,17 +191,40 @@ static int block_iterate_tind(blk_t *tind_block, struct block_context *ctx)
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	for (i = 0; i < (ctx->fs->blocksize >> 2); i++) {
-		block_nr = (blk_t *) ctx->tind_buf + i;
-		if (*block_nr || (ctx->flags & BLOCK_FLAG_APPEND)) {
+	limit = ctx->fs->blocksize >> 2;
+	if (ctx->fs->flags & EXT2_SWAP_BYTES) {
+		block_nr = (blk_t *) ctx->tind_buf;
+		for (i = 0; i < limit; i++, block_nr++)
+			*block_nr = ext2fs_swab32(*block_nr);
+	}
+	block_nr = (blk_t *) ctx->tind_buf;
+	if (ctx->flags & BLOCK_FLAG_APPEND) {
+		for (i = 0; i < limit; i++, block_nr++) {
 			flags = block_iterate_dind(block_nr, ctx);
+			changed |= flags;
+			if (flags & (BLOCK_ABORT | BLOCK_ERROR)) {
+				ret |= flags & (BLOCK_ABORT | BLOCK_ERROR);
+				break;
+			}
+		}
+	} else {
+		for (i = 0; i < limit; i++, block_nr++) {
+			if (*block_nr == 0)
+				continue;
+			flags = block_iterate_dind(block_nr, ctx);
+			changed |= flags;
 			if (flags & (BLOCK_ABORT | BLOCK_ERROR)) {
 				ret |= flags & (BLOCK_ABORT | BLOCK_ERROR);
 				break;
 			}
 		}
 	}
-	if (changed) {
+	if (changed & BLOCK_CHANGED) {
+		if (ctx->fs->flags & EXT2_SWAP_BYTES) {
+			block_nr = (blk_t *) ctx->tind_buf;
+			for (i = 0; i < limit; i++, block_nr++)
+				*block_nr = ext2fs_swab32(*block_nr);
+		}
 		ctx->errcode = io_channel_write_blk(ctx->fs->io, *tind_block,
 						    1, ctx->tind_buf);
 		if (ctx->errcode)

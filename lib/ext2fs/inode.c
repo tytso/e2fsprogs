@@ -11,10 +11,15 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
+
+static void inocpy_with_swap(struct ext2_inode *t, struct ext2_inode *f);
 
 errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 				 ext2_inode_scan *ret_scan)
@@ -77,9 +82,6 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 	
 	EXT2_CHECK_MAGIC(scan, EXT2_ET_MAGIC_INODE_SCAN);
 
-	if (!scan->inode_buffer)
-		return EINVAL;
-	
 	if (scan->inodes_left <= 0) {
 		if (scan->blocks_left <= 0) {
 			if (scan->done_group) {
@@ -120,7 +122,11 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 			return EXT2_ET_NEXT_INODE_READ;
 		scan->inode_scan_ptr = (struct ext2_inode *) scan->inode_buffer;
 	}
-	*inode = *scan->inode_scan_ptr++;
+	if (scan->fs->flags & EXT2_SWAP_BYTES)
+		inocpy_with_swap(inode, scan->inode_scan_ptr++);
+	else
+		*inode = *scan->inode_scan_ptr++;
+
 	scan->inodes_left--;
 	scan->current_inode++;
 	*ino = scan->current_inode;
@@ -171,8 +177,12 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, unsigned long ino,
 			return retval;
 		inode_buffer_block = block_nr;
 	}
-	memcpy (inode, (struct ext2_inode *) inode_buffer + i,
-		sizeof (struct ext2_inode));
+	if (fs->flags & EXT2_SWAP_BYTES)
+		inocpy_with_swap(inode,
+				 (struct ext2_inode *) inode_buffer + i);
+	else
+		memcpy (inode, (struct ext2_inode *) inode_buffer + i,
+			sizeof (struct ext2_inode));
 	return 0;
 }
 
@@ -217,8 +227,12 @@ errcode_t ext2fs_write_inode(ext2_filsys fs, unsigned long ino,
 			return retval;
 		inode_buffer_block = block_nr;
 	}
-	memcpy ((struct ext2_inode *) inode_buffer + i, inode,
-		sizeof (struct ext2_inode));
+	if (fs->flags & EXT2_SWAP_BYTES)
+		inocpy_with_swap((struct ext2_inode *) inode_buffer + i,
+				 inode);
+	else
+		memcpy ((struct ext2_inode *) inode_buffer + i, inode,
+			sizeof (struct ext2_inode));
 	retval = io_channel_write_blk(fs->io, block_nr, 1, inode_buffer);
 	if (retval)
 		return retval;
@@ -264,10 +278,33 @@ errcode_t ext2fs_check_directory(ext2_filsys fs, ino_t ino)
 	retval = ext2fs_read_inode(fs, ino, &inode);
 	if (retval)
 		return retval;
-	if (!S_ISDIR(inode.i_mode))
+	if (!LINUX_S_ISDIR(inode.i_mode))
 		return ENOTDIR;
 	return 0;
 }
 
+static void inocpy_with_swap(struct ext2_inode *t, struct ext2_inode *f)
+{
+	unsigned i;
 	
-
+	t->i_mode = ext2fs_swab16(f->i_mode);
+	t->i_uid = ext2fs_swab16(f->i_uid);
+	t->i_size = ext2fs_swab32(f->i_size);
+	t->i_atime = ext2fs_swab32(f->i_atime);
+	t->i_ctime = ext2fs_swab32(f->i_ctime);
+	t->i_mtime = ext2fs_swab32(f->i_mtime);
+	t->i_dtime = ext2fs_swab32(f->i_dtime);
+	t->i_gid = ext2fs_swab16(f->i_gid);
+	t->i_links_count = ext2fs_swab16(f->i_links_count);
+	t->i_blocks = ext2fs_swab32(f->i_blocks);
+	t->i_flags = ext2fs_swab32(f->i_flags);
+	for (i = 0; i < EXT2_N_BLOCKS; i++)
+		t->i_block[i] = ext2fs_swab32(f->i_block[i]);
+	t->i_version = ext2fs_swab32(f->i_version);
+	t->i_file_acl = ext2fs_swab32(f->i_file_acl);
+	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
+	t->i_faddr = ext2fs_swab32(f->i_faddr);
+	t->osd2.linux2.l_i_frag = f->osd2.linux2.l_i_frag;
+	t->osd2.linux2.l_i_fsize = f->osd2.linux2.l_i_fsize;
+	t->osd2.linux2.i_pad1 = ext2fs_swab16(f->osd2.linux2.i_pad1);
+}

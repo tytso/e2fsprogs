@@ -1,3 +1,256 @@
+Thu Oct 26 12:05:30 1995    <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (install): Strip programs when they are installed.
+		(e2fsck): Build e2fsck statically.
+
+Wed Oct 25 21:18:16 1995    <tytso@rsts-11.mit.edu>
+
+	* util.c (preenhalt): Preenhalt now takes an argument, which is an
+		ext2fs_filsys; this allows it to set the EXT2_ERROR_FS
+		flag in the superblock in cases where preenhalt is called.
+		All calls to preenhalt() were changed to either
+		preenhalt(fs) or preenhalt(NULL) in a few cases where the
+		fs pointer was not available.  (Most notable, for block
+		read/write errors.)
+
+Mon Sep  4 21:41:03 1995  Remy Card  <card@bbj>
+
+	* ehandler.c:
+	  util.c: Include <sys/time.h> before <sys/resource.h>.  BSD needs it.
+
+Mon Sep  4 10:14:49 1995    <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (show_stats): Show statistics about how many inodes
+		have indirect, doubly indirect, and triply indirect
+		blocks.  Allow up to 8 digits for statistics, instead of
+		merely 6, so things look pretty for large filesystems.
+
+	* pass1.c (pass1): Keep statistics about indirect, doubly
+	        indirect, and triply indirect blocks.
+
+	* pass1.c (unwind_pass1): Clear the above statistics when unwinding
+		pass 1.
+
+Fri Aug 18 15:17:10 1995  Theodore Y. Ts'o  <tytso@dcl>
+
+	* util.c, ehandler.c: Move #include of <sys/resource.h> after
+		#include of "e2fsck.h", since sys/resource.h may depend on
+		sys/time.h, which is #included in e2fsck.h.
+
+Thu Aug 17 22:33:37 1995    <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (check_mount):  Use the new ext2fs_check_if_mounted()
+		function to determine if the device is mounted.
+
+	* e2fsck.c (main):  Add better error messages if ext2fs_open()
+		fails. 
+
+Wed Aug 16 16:25:02 1995    <tytso@rsts-11.mit.edu>
+
+	* pass1.c (check_blocks): If we're clearing a directory, clear
+		pb.is_dir so we don't do the following check of making
+		sure the directory size matches; this is pointless, since
+		we've already cleared the inode.
+
+Fri Aug 11 09:08:54 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* pass1.c (bad_primary_block): New function, called by
+		process_bad_block, which explains the facts of life to the
+		user when a block in the primary superblock or primary
+		group descriptors is bad.
+
+	* pass2.c (check_dot): Handle the case where the first directory
+		entry is used, but not ".".
+
+	* pass2.c (check_dotdot): Handle the case where the second directory
+		entry is used, but is not "..".
+
+Thu Aug 10 10:05:10 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* e2fsck.c (check_super_block): Get the size of the physical
+		device and if it is smaller than the reported size of the
+		filesystem, report an error.
+
+Sat Aug 12 03:39:18 1995  Remy Card  <card@bbj>
+
+	* e2fsck.c (check_if_skip): Print the number of allocated files and
+		blocks on clean filesystems.
+
+Fri Aug 11 14:15:36 1995  Remy Card  <card@bbj>
+
+	* e2fsck.8: Updated date and version number.
+
+Thu Aug 10 14:26:01 1995  Remy Card  <card@bbj>
+
+	* pass1.c (check_blocks): Check that directory size matches *exactly*
+		the count of allocated blocks.
+
+Wed Aug  9 21:21:24 1995  Theodore Y. Ts'o  <tytso@dcl>
+
+	* pass1b.c (pass1d): Free the shared[] array when we're done with
+		it to avoid a memory leak.
+
+	* pass1.c (unwind_pass1): Use ext2fs_free_block_bitmap to free the
+	        block_dup_map.
+
+	* pass2.c (process_bad_inode): When clearing the inode, make sure
+		the pathname is freed, to prevent a memory leak.
+
+	* pass5.c (check_inode_bitmaps): Free free_array and dir_array
+		when we're finished with them.
+		(check_block_bitmaps): Free free_array when we're finished
+		with them.
+
+	* Makefile.in (e2fsck, flushb): Use $(LD) instead of $(CC) when
+		linking the executable.
+
+	* pass2.c (process_bad_inode): Even on OS's that don't support the
+		fragment fields, make sure the Linux equivalent fields are
+		set to zero.  If an OS wants to reuse these fields, which
+		is probably a bad idea (although we may get desperate in
+		the future) this code will have to be changed.
+
+	* pass1.c (dir_block_cmp): If the block numbers are equal, compare
+		on the inode field, and then blockcnt field.  This is just
+		to keep the ordering of dir_blocks the same on all
+		platforms when there are more than on missing directory
+		blocks, which are indicated directories with holes, which
+		are indicated with the block number being set to zero.
+
+Sun Aug  6 15:40:58 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* pass1.c (check_blocks, process_block): check_blocks() modified
+		to call the ext2fs_block_iterate() with BLOCK_FLAG_HOLE if
+		the inode is a directory.  process_block() now checks to
+		see if a directory has a "hole", or missing block.  If so,
+		this fact is recorded in the directory block list so that
+		the problem can be resolved in pass #2.
+
+	* pass2.c (allocate_dir_block): Added allocate_dir_block() to
+		allocate new blocks for directories with "holes".  Called
+		out of check_dir_block if a block in the directory block
+		list is zero.
+
+	* pass3.c (get_lost_and_found): Move location of free(block) to
+		prevent possible memory leak.
+
+Sat Aug  5 12:42:22 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* pass2.c (check_dir_block): Use a automatic, fixed-saize array
+		instead of alloca() --- alloca is not portable!  Check to
+		make sure the filename is not longer than EXT2_NAME_LEN,
+		and offer to fix it by truncating it, since it should
+		never happen.
+
+	* e2fsck.c (PRS): Use malloc() instead of alloca() --- alloca() is
+		not portable!!  In any case putenv() in some systems must
+		take a static character array or malloc()'ed memory;
+		passing memory allocated using alloca() to putenv() is not
+		advisable.
+
+	* pass2.c (check_dot, check_dotdot): Use malloc() instead of
+		alloca() --- alloca() is not portable!!!
+
+Tue Jul 18 20:04:02 1995    <tytso@rsx-11.mit.edu>
+
+	* pass1b.c (pass1c): 
+	* pass3.c (check_root, get_lost_and_found): 
+	* pass2.c (check_dir_block): Use ext2fs_{read,write}_dir_block
+		to read/write the directory block.
+
+Mon Jul 17 04:00:56 1995    <tytso@rsx-11.mit.edu>
+
+	* util.c (ask_yn): Apply patch supplied by Peter A. Zaitcev to
+		make sure VMIN and VTIME are set correct.
+
+Fri Jul 14 19:26:29 1995    <tytso@rsx-11.mit.edu>
+
+	* pass1.c (mark_block_used): Change to be an inline function.
+		Assume that the block validity checks are already done,
+		and use the fast variant of the bitmap functions.
+
+Thu Jul 13 08:10:55 1995    <tytso@rsx-11.mit.edu>
+
+	* pass5.c (check_block_bitmaps, check_inode_bitmaps): Check the
+		bounds of the bitmaps in advance, and then use the fast
+		variant of e2fs_test_{block,inode}_bitmap.
+
+	* pass1.c (mark_block_used): Use ext2_fast_mark_block_bitmap since
+		the bounds checking has already been done earlier.
+
+Wed Jul 12 02:22:46 1995    <tytso@rsx-11.mit.edu>
+
+	* pass1.c (pass1): Allocate and free the block_illegal_map, which
+		is used for shortcut processing in process_block.
+		(mark_table_blocks): Initialize block_illegal_map with the
+		filesystem blocks.
+		(describe_illegal_block): New helper function that
+		describes why a block is illegal.
+		(process_block): Use block_illegal_map as a shortcut
+		to determine whether a block is bad.  Use
+		describe_illegal_block to print out why the block is illegal.
+
+Mon Jun 12 19:11:06 1995  Theodore Y. Ts'o  (tytso@dcl)
+
+	* flushb.c: Don't include <linux/fs.h> if it doesn't exist.
+
+	* scantest.c: Don't include <linux/fs.h>, <getopt.h>, or
+		<mntent.h> if they don't exist.  (Mostly so that "make
+		depend" works.)
+
+	* pass1.c, pass1b.c, pass3.c, badblocks.c: Include <errno.h> (if
+		it exists).
+
+	* e2fsck.c, scantest.c: Don't include <getopt.h> if it doesn't
+		exist. 
+
+Mon Jun 12 08:37:49 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* pass2.c (process_bad_inode, check_for_zero_long,
+	        check_for_zero_char):  Change long to u32, and char to u8.
+
+Sun Jun 11 15:05:57 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* util.c (inode_has_valid_blocks): 
+	* pass2.c (process_bad_inode): 
+	* pass1.c (pass1, check_blocks, pass1_check_directory): Use
+		LINUX_S_IS* instead of S_IS*.
+
+	* e2fsck.h: Don't #include <sys/stat.h>
+
+	* flushb.c (main): Add #ifdef BLKFLSBUF around ioctl.  (Although
+		this program is pretty much useless if BLKFLSBUF isn't
+		supported.)
+
+	* e2fsck.c, badblocks.c: Add #include <errno.h>, since errno is
+	        used.
+
+Thu Jun  8 12:31:19 1995  Miles Bader  <miles@churchy.gnu.ai.mit.edu>
+
+	* pass2.c (check_dot, check_dotdot, check_dir_block): Use alloca
+	to allocate space for file names instead of using fixed size buffers.
+	(process_bad_inode): Only check inode frag fields if
+	HAVE_EXT2_FRAGS is defined (by configure).
+	* pass1.c (pass1): Only check the inode frag fields if
+	HAVE_EXT2_FRAGS is defined (by configure).
+
+	* e2fsck.c (check_mount): Only check for a mounted filesystem if
+	HAVE_MNTENT_H is defined (by configure).
+	(PRS): Use alloca to allocate the new path string, instead of
+	having a fixed size buffer (which was the wrong size anyway).
+	(PRS): Only support the -F (flush) option if the BLKFLSBUF ioctl
+	is defined.
+
+	* e2fsck.h: Only include <linux/fs.h> if HAVE_LINUX_FS_H is
+	defined (by configure).
+
+	* Makefile.in: Rewritten to conform to GNU coding standards and
+	support separate compilation directories.
+
+Thu Apr  6 15:04:36 1995  Remy Card  <card@bbj.ibp.fr>
+
+	* pass1.c (pass1): Test the mode in reserved inodes (must be zero).
+
 Sat Mar 11 13:12:16 1995  Theodore Y. Ts'o  <tytso@localhost>
 
 	* pass1.c (unwind_pass1): Clear the file type statistics counter

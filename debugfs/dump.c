@@ -11,7 +11,9 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
-#include <getopt.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -24,8 +26,8 @@ struct dump_block_struct {
 	errcode_t	errcode;
 };
 
-int dump_block(ext2_filsys fs, blk_t *blocknr, int blockcnt, void
-	       *private)
+static int dump_block(ext2_filsys fs, blk_t *blocknr, int blockcnt,
+		      void *private)
 {
 	ssize_t nbytes;
 	
@@ -58,7 +60,7 @@ retry_write:
 	return 0;
 }
 
-void dump_file(char *cmdname, ino_t inode, int fd, char *outname)
+static void dump_file(char *cmdname, ino_t inode, int fd, char *outname)
 {
 	errcode_t retval;
 	struct dump_block_struct rec;

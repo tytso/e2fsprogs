@@ -14,7 +14,9 @@
  * 93/10/30	- Creation
  */
 
+#if HAVE_ERRNO_H
 #include <errno.h>
+#endif
 #include <sys/ioctl.h>
 
 #include <linux/ext2_fs.h>
@@ -23,5 +25,11 @@
 
 int setversion (int fd, unsigned long version)
 {
+#if HAVE_EXT2_IOCTLS
 	return ioctl (fd, EXT2_IOC_SETVERSION, &version);
+#else /* ! HAVE_EXT2_IOCTLS */
+	extern int errno;
+	errno = EOPNOTSUPP;
+	return -1;
+#endif /* ! HAVE_EXT2_IOCTLS */
 }

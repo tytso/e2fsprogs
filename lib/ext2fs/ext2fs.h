@@ -21,7 +21,9 @@
  */
 #define EXT2_LIB_CURRENT_REV	0
 
-typedef unsigned long	blk_t;
+#include <linux/types.h>
+
+typedef __u32		blk_t;
 typedef unsigned int	dgrp_t;
 
 #include "et/com_err.h"
@@ -64,6 +66,7 @@ typedef struct ext2fs_struct_block_bitmap *ext2fs_block_bitmap;
 #define EXT2_FLAG_VALID		0x08
 #define EXT2_FLAG_IB_DIRTY	0x10
 #define EXT2_FLAG_BB_DIRTY	0x20
+#define EXT2_SWAP_BYTES		0x40
 
 struct struct_ext2_filsys {
 	int				magic;
@@ -128,8 +131,21 @@ struct struct_badblocks_iterate {
 
 /*
  * Block interate flags
+ *
+ * BLOCK_FLAG_APPEND, or BLOCK_FLAG_HOLE, indicates that the interator
+ * function should be called on blocks where the block number is zero.
+ * This is used by ext2fs_expand_dir() to be able to add a new block
+ * to an inode.  It can also be used for programs that want to be able
+ * to deal with files that contain "holes".
+ * 
+ * BLOCK_FLAG_TRAVERSE indicates that the iterator function for the
+ * indirect, doubly indirect, etc. blocks should be called after all
+ * of the blocks containined in the indirect blocks are processed.
+ * This is useful if you are going to be deallocating blocks from an
+ * inode.
  */
 #define BLOCK_FLAG_APPEND	1
+#define BLOCK_FLAG_HOLE		1
 #define BLOCK_FLAG_DEPTH_TRAVERSE	2
 
 /*
@@ -167,6 +183,38 @@ struct ext2_struct_inode_scan {
 	void *			done_group_data;
 	int			reserved[8];
 };
+
+/*
+ * ext2fs_check_if_mounted flags
+ */
+#define EXT2_MF_MOUNTED		1
+#define EXT2_MF_ISROOT		2
+#define EXT2_MF_READONLY	4 
+
+/*
+ * Ext2/linux mode flags.  We define them here so that we don't need
+ * to depend on the OS's sys/stat.h, since we may be compiling on a
+ * non-Linux system.
+ */
+#define LINUX_S_IFMT  00170000
+#define LINUX_S_IFSOCK 0140000
+#define LINUX_S_IFLNK	 0120000
+#define LINUX_S_IFREG  0100000
+#define LINUX_S_IFBLK  0060000
+#define LINUX_S_IFDIR  0040000
+#define LINUX_S_IFCHR  0020000
+#define LINUX_S_IFIFO  0010000
+#define LINUX_S_ISUID  0004000
+#define LINUX_S_ISGID  0002000
+#define LINUX_S_ISVTX  0001000
+
+#define LINUX_S_ISLNK(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFLNK)
+#define LINUX_S_ISREG(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFREG)
+#define LINUX_S_ISDIR(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFDIR)
+#define LINUX_S_ISCHR(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFCHR)
+#define LINUX_S_ISBLK(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFBLK)
+#define LINUX_S_ISFIFO(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFIFO)
+#define LINUX_S_ISSOCK(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFSOCK)
 
 /*
  * For checking structure magic numbers...
@@ -208,20 +256,18 @@ extern errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs);
 extern errcode_t ext2fs_write_block_bitmap (ext2_filsys fs);
 extern errcode_t ext2fs_read_inode_bitmap (ext2_filsys fs);
 extern errcode_t ext2fs_read_block_bitmap(ext2_filsys fs);
-errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
-				       const char *descr,
-				       ext2fs_block_bitmap *ret);
-errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
-				       const char *descr,
-				       ext2fs_inode_bitmap *ret);
-errcode_t ext2fs_fudge_inode_bitmap_end(ext2fs_inode_bitmap bitmap,
-					ino_t end, ino_t *oend);
-errcode_t ext2fs_fudge_block_bitmap_end(ext2fs_block_bitmap bitmap,
-					blk_t end, blk_t *oend);
-void ext2fs_clear_inode_bitmap(ext2fs_inode_bitmap bitmap);
-void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap);
-void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap);
-void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap);
+extern errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
+					      const char *descr,
+					      ext2fs_block_bitmap *ret);
+extern errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
+					      const char *descr,
+					      ext2fs_inode_bitmap *ret);
+extern errcode_t ext2fs_fudge_inode_bitmap_end(ext2fs_inode_bitmap bitmap,
+					       ino_t end, ino_t *oend);
+extern errcode_t ext2fs_fudge_block_bitmap_end(ext2fs_block_bitmap bitmap,
+					       blk_t end, blk_t *oend);
+extern void ext2fs_clear_inode_bitmap(ext2fs_inode_bitmap bitmap);
+extern void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap);
 extern errcode_t ext2fs_read_bitmaps(ext2_filsys fs);
 extern errcode_t ext2fs_write_bitmaps(ext2_filsys fs);
 
@@ -243,11 +289,30 @@ extern errcode_t ext2fs_check_desc(ext2_filsys fs);
 extern errcode_t ext2fs_close(ext2_filsys fs);
 extern errcode_t ext2fs_flush(ext2_filsys fs);
 
+/* cmp_bitmaps.c */
+extern errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,
+					     ext2fs_block_bitmap bm2);
+extern errcode_t ext2fs_compare_inode_bitmap(ext2fs_inode_bitmap bm1,
+					     ext2fs_inode_bitmap bm2);
+
+
+/* dirblock.c */
+extern errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
+				       void *buf);
+extern errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
+					void *buf);
+
 /* expanddir.c */
 extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ino_t dir);
 
 /* freefs.c */
 extern void ext2fs_free(ext2_filsys fs);
+extern void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap);
+extern void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap);
+
+/* getsize.c */
+extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,
+					blk_t *retblocks);
 
 /* initialize.c */
 extern errcode_t ext2fs_initialize(const char *name, int flags,
@@ -278,6 +343,9 @@ extern errcode_t ext2fs_write_inode(ext2_filsys fs, unsigned long ino,
 			    struct ext2_inode * inode);
 extern errcode_t ext2fs_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks);
 extern errcode_t ext2fs_check_directory(ext2_filsys fs, ino_t ino);
+
+/* ismounted.c */
+extern errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags);
 
 /* namei.c */
 extern errcode_t ext2fs_dir_iterate(ext2_filsys fs, 
@@ -326,6 +394,10 @@ extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 				     badblocks_list *bb_list,
 				     void (*invalid)(ext2_filsys fs,
 						     blk_t blk));
+
+/* swapfs.c */
+extern void ext2fs_swap_super(struct ext2_super_block * super);
+extern void ext2fs_swap_group_desc(struct ext2_group_desc *gdp);
 
 /* inline functions */
 extern void ext2fs_mark_super_dirty(ext2_filsys fs);

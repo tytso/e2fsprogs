@@ -1,6 +1,72 @@
+Wed Oct 25 11:58:20 1995    <tytso@rsts-11.mit.edu>
+
+	* ss_internal.h: Removed malloc, realloc, free definitions, and
+		#include <stdlib.h> instead.
+
+Mon Sep  4 21:46:00 1995  Remy Card  <card@bbj>
+
+	* Makefile.in: Added support for BSD shared libraries.
+		(distclean): Use the -f option when removing files.
+
+Fri Aug 18 15:15:09 1995  Theodore Y. Ts'o  <tytso@dcl>
+
+	* Makefile.in (mk_cmds): Remove usage of $<, since it's not
+		portable. 
+
+Sat Aug 12 03:11:02 1995  Remy Card  <card@bbj>
+
+	* Makefile.in (install): Install static libraries in $(ulibdir)
+		(/usr/lib on Linux) instead of $(libdir) (/lib on Linux).
+
+Thu Aug 10 14:23:31 1995  Remy Card  <card@bbj>
+
+	* Makefile.in (distclean): Remove mk_cmds.sh.
+
+Sat Aug  5 11:44:29 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* mk_cmds.sh.in: Remove the old .c file before moving the new file
+		into place.
+
+	* Makefile.in (DLL_INSTALL_DIR, ELF_INSTALL_DIR): Set the
+		installation directories correctly.
+
+	* Makefile.in (clean): Don't remove mk_cmds.sh, since it's built
+		from the configure script.
+
+Tue Jul 11 20:47:46 1995    <tytso@rsx-11.mit.edu>
+
+	* help.c (ss_help): Use malloc instead of alloca for maximal
+		portability.  Check return value of malloc before using
+		buffer.  Allocate memory when printing usage message.
+
+Thu Jun 15 23:46:16 1995  Remy Card  <card@bbj>
+
+	* Makefile.in: Added support for ELF shared libraries.
+		Fixed typos in the compilation rules.
+		(distclean): Added mk_cmds.sh.
+
+Sat Jun 10 19:57:07 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* mk_cmds.sh.in: Use SS_DIR instead of srcdir to determine the
+		location of the ss directory.
+
+Thu Jun  8 13:18:48 1995  Miles Bader  <miles@churchy.gnu.ai.mit.edu>
+
+	* help.c (ss_help): Use alloca to allocate space for filenames
+	instead of fixed buffers.
+	* error.c (ss_error, & includes): Change the selection of
+	varargs/stdarg to work with configure.
+	* pager.c: Include <errno.h> if possible.
+	* parse.c: Ditto.
+	* request_tbl.c: Ditto.
+
+	* Makefile.in: Rewritten to conform to GNU coding standards and
+	support separate compilation directories.
+	Don't preprocess mk_cmds.sh, as this is now done by configure.
+
 Sat Mar 11 18:14:52 1995  Theodore Y. Ts'o  <tytso@localhost>
 
-	* Makefile (DLL_INSTALL_DIR): Install libss in /lib, since it's
+	* Makefile.in (DLL_INSTALL_DIR): Install libss in /lib, since it's
 		needed by debugfs (which is installed in /sbin).
 
 

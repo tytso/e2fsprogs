@@ -42,11 +42,7 @@ void ss_list_requests(argc, argv, sci_idx, info_ptr)
 #endif
     sigret_t (*func)();
 #ifndef NO_FORK
-#ifndef WAIT_USES_INT
-    union wait waitb;
-#else
     int waitb;
-#endif
 #endif
 
     DONT_USE(argc);

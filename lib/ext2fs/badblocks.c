@@ -13,6 +13,9 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 

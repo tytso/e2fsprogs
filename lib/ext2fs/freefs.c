@@ -27,9 +27,43 @@ void ext2fs_free(ext2_filsys fs)
 	if (fs->group_desc)
 		free(fs->group_desc);
 	if (fs->block_map)
-		free(fs->block_map);
+		ext2fs_free_block_bitmap(fs->block_map);
 	if (fs->inode_map)
-		free(fs->inode_map);
+		ext2fs_free_inode_bitmap(fs->inode_map);
 	free(fs);
+}
+
+void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap)
+{
+	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_INODE_BITMAP))
+		return;
+
+	bitmap->magic = 0;
+	if (bitmap->description) {
+		free(bitmap->description);
+		bitmap->description = 0;
+	}
+	if (bitmap->bitmap) {
+		free(bitmap->bitmap);
+		bitmap->bitmap = 0;
+	}
+	free(bitmap);
+}
+
+void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap)
+{
+	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_BLOCK_BITMAP))
+		return;
+
+	bitmap->magic = 0;
+	if (bitmap->description) {
+		free(bitmap->description);
+		bitmap->description = 0;
+	}
+	if (bitmap->bitmap) {
+		free(bitmap->bitmap);
+		bitmap->bitmap = 0;
+	}
+	free(bitmap);
 }
 

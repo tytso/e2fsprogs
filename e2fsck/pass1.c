@@ -31,9 +31,18 @@
  */
 
 #include <time.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <et/com_err.h>
 #include "e2fsck.h"
+
+#ifdef NO_INLINE_FUNCS
+#define _INLINE_
+#else
+#define _INLINE_ inline
+#endif
 
 /* Files counts */
 int fs_directory_count = 0;
@@ -47,6 +56,9 @@ int fs_fifo_count = 0;
 int fs_total_count = 0;
 int fs_badblocks_count = 0;
 int fs_sockets_count = 0;
+int fs_ind_count = 0;
+int fs_dind_count = 0;
+int fs_tind_count = 0;
 
 ext2fs_inode_bitmap inode_used_map = 0;	/* Inodes which are in use */
 ext2fs_inode_bitmap inode_bad_map = 0;	/* Inodes which are bad in some way */
@@ -54,6 +66,7 @@ ext2fs_inode_bitmap inode_dir_map = 0;	/* Inodes which are directories */
 
 ext2fs_block_bitmap block_found_map = 0;
 ext2fs_block_bitmap block_dup_map = 0;
+ext2fs_block_bitmap block_illegal_map = 0;
 
 static int fix_link_count = -1;
 
@@ -75,6 +88,7 @@ static int process_inode_cmp(const void *a, const void *b);
 static int dir_block_cmp(const void *a, const void *b);
 static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
 				  dgrp_t group, void * private);
+static char *describe_illegal_block(ext2_filsys fs, blk_t block);
 
 struct process_block_struct {
 	ino_t	ino;
@@ -125,7 +139,7 @@ static void unwind_pass1(ext2_filsys fs)
 	free(dir_blocks);	dir_blocks = 0;
 	dir_block_size = 0;
 	if (block_dup_map) {
-		free(block_dup_map); block_dup_map = 0;
+		ext2fs_free_block_bitmap(block_dup_map); block_dup_map = 0;
 	}
 
 	/* Clear statistic counters */
@@ -140,6 +154,9 @@ static void unwind_pass1(ext2_filsys fs)
 	fs_total_count = 0;
 	fs_badblocks_count = 0;
 	fs_sockets_count = 0;
+	fs_ind_count = 0;
+	fs_dind_count = 0;
+	fs_tind_count = 0;
 }
 
 void pass1(ext2_filsys fs)
@@ -182,6 +199,13 @@ void pass1(ext2_filsys fs)
 	if (retval) {
 		com_err("ext2fs_allocate_block_bitmap", retval,
 			"while allocating block_found_map");
+		fatal_error(0);
+	}
+	retval = ext2fs_allocate_block_bitmap(fs, "illegal block map",
+					      &block_illegal_map);
+	if (retval) {
+		com_err("ext2fs_allocate_block_bitmap", retval,
+			"while allocating block_illegal_map");
 		fatal_error(0);
 	}
 	inode_link_info = allocate_memory((fs->super->s_inodes_count + 1) *
@@ -241,9 +265,9 @@ void pass1(ext2_filsys fs)
 			 * not, offer to clear it.  It will be
 			 * regnerated in pass #3.
 			 */
-			if (!S_ISDIR(inode.i_mode)) {
+			if (!LINUX_S_ISDIR(inode.i_mode)) {
 				printf("Root inode is not a directory.  ");
-				preenhalt();
+				preenhalt(fs);
 				if (ask("Clear", 1)) {
 					inode.i_dtime = time(0);
 					inode.i_links_count = 0;
@@ -281,6 +305,15 @@ void pass1(ext2_filsys fs)
 		}
 		if ((ino != EXT2_ROOT_INO) && (ino < EXT2_FIRST_INO)) {
 			ext2fs_mark_inode_bitmap(inode_used_map, ino);
+			if (inode.i_mode != 0) {
+				printf("Reserved inode %lu has bad mode.  ", ino);
+				if (ask("Clear", 1)) {
+					inode.i_mode = 0;
+					e2fsck_write_inode(fs, ino, &inode,
+							   "pass1");
+				} else 
+					ext2fs_unmark_valid(fs);
+			}
 			check_blocks(fs, ino, &inode, block_buf);
 			goto next;
 		}
@@ -329,37 +362,46 @@ void pass1(ext2_filsys fs)
 		}
 		
 		ext2fs_mark_inode_bitmap(inode_used_map, ino);
-		if (inode.i_faddr || inode.i_frag || inode.i_fsize ||
-		    inode.i_file_acl || inode.i_dir_acl) {
+		if (inode.i_faddr
+#if HAVE_EXT2_FRAGS
+		    || inode.i_frag || inode.i_fsize
+#endif
+		    || inode.i_file_acl || inode.i_dir_acl) {
 			if (!inode_bad_map)
 				alloc_bad_map(fs);
 			ext2fs_mark_inode_bitmap(inode_bad_map, ino);
 		}
 		
-		if (S_ISDIR(inode.i_mode)) {
+		if (LINUX_S_ISDIR(inode.i_mode)) {
 			ext2fs_mark_inode_bitmap(inode_dir_map, ino);
 			add_dir_info(fs, ino, 0, &inode);
 			fs_directory_count++;
-		} else if (S_ISREG (inode.i_mode))
+		} else if (LINUX_S_ISREG (inode.i_mode))
 			fs_regular_count++;
-		else if (S_ISCHR (inode.i_mode))
+		else if (LINUX_S_ISCHR (inode.i_mode))
 			fs_chardev_count++;
-		else if (S_ISBLK (inode.i_mode))
+		else if (LINUX_S_ISBLK (inode.i_mode))
 			fs_blockdev_count++;
-		else if (S_ISLNK (inode.i_mode)) {
+		else if (LINUX_S_ISLNK (inode.i_mode)) {
 			fs_symlinks_count++;
 			if (!inode.i_blocks)
 				fs_fast_symlinks_count++;
 		}
-		else if (S_ISFIFO (inode.i_mode))
+		else if (LINUX_S_ISFIFO (inode.i_mode))
 			fs_fifo_count++;
-		else if (S_ISSOCK (inode.i_mode))
+		else if (LINUX_S_ISSOCK (inode.i_mode))
 		        fs_sockets_count++;
 		else {
 			if (!inode_bad_map)
 				alloc_bad_map(fs);
 			ext2fs_mark_inode_bitmap(inode_bad_map, ino);
 		}
+		if (inode.i_block[EXT2_IND_BLOCK])
+			fs_ind_count++;
+		if (inode.i_block[EXT2_DIND_BLOCK])
+			fs_dind_count++;
+		if (inode.i_block[EXT2_TIND_BLOCK])
+			fs_tind_count++;
 		if (inode.i_block[EXT2_IND_BLOCK] ||
 		    inode.i_block[EXT2_DIND_BLOCK] ||
 		    inode.i_block[EXT2_TIND_BLOCK]) {
@@ -397,7 +439,7 @@ void pass1(ext2_filsys fs)
 	if (block_dup_map) {
 		if (preen) {
 			printf("Duplicate or bad blocks in use!\n");
-			preenhalt();
+			preenhalt(fs);
 		}
 		pass1_dupblocks(fs, block_buf);
 	}
@@ -406,6 +448,9 @@ void pass1(ext2_filsys fs)
 	free(inodes_to_process);
 endit:
 	free(block_buf);
+	ext2fs_free_block_bitmap(block_illegal_map);
+	block_illegal_map = 0;
+	
 	if (tflag > 1) {
 		printf("Pass 1: ");
 		print_resource_track(&rtrack);
@@ -446,7 +491,7 @@ static void process_inodes(ext2_filsys fs, char *block_buf)
 		ino = inodes_to_process[i].ino;
 		stashed_ino = ino;
 #if 0
-		printf("%lu ", ino);
+		printf("%u ", ino);
 #endif
 		sprintf(buf, "reading indirect blocks of inode %lu", ino);
 		ehandler_operation(buf);
@@ -479,7 +524,13 @@ static int dir_block_cmp(const void *a, const void *b)
 	const struct dir_block_struct *db_b =
 		(const struct dir_block_struct *) b;
 
-	return (db_a->blk - db_b->blk);
+	if (db_a->blk != db_b->blk)
+		return (db_a->blk - db_b->blk);
+	
+	if (db_a->ino != db_b->ino)
+		return (db_a->ino - db_b->ino);
+
+	return (db_a->blockcnt - db_b->blockcnt);
 }
 
 /*
@@ -501,12 +552,15 @@ static void alloc_bad_map(ext2_filsys fs)
 /*
  * Marks a block as in use, setting the dup_map if it's been set
  * already.  Called by process_block and process_bad_block.
+ *
+ * WARNING: Assumes checks have already been done to make sure block
+ * is valid.  This is true in both process_block and process_bad_block.
  */
-static void mark_block_used(ext2_filsys fs, blk_t block)
+static _INLINE_ void mark_block_used(ext2_filsys fs, blk_t block)
 {
 	errcode_t	retval;
 	
-	if (ext2fs_test_block_bitmap(block_found_map, block)) {
+	if (ext2fs_fast_test_block_bitmap(block_found_map, block)) {
 		if (!block_dup_map) {
 			retval = ext2fs_allocate_block_bitmap(fs,
 			      "multiply claimed block map", &block_dup_map);
@@ -516,9 +570,9 @@ static void mark_block_used(ext2_filsys fs, blk_t block)
 				fatal_error(0);
 			}
 		}
-		ext2fs_mark_block_bitmap(block_dup_map, block);
+		ext2fs_fast_mark_block_bitmap(block_dup_map, block);
 	} else {
-		ext2fs_mark_block_bitmap(block_found_map, block);
+		ext2fs_fast_mark_block_bitmap(block_found_map, block);
 	}
 }
 
@@ -539,11 +593,12 @@ static void check_blocks(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
 	pb.num_blocks = pb.last_block = 0;
 	pb.num_illegal_blocks = 0;
 	pb.suppress = pb.clear = 0;
-	pb.is_dir = S_ISDIR(inode->i_mode);
+	pb.is_dir = LINUX_S_ISDIR(inode->i_mode);
 	pb.fix = -1;
 	pb.inode = inode;
-	retval = ext2fs_block_iterate(fs, ino, 0, block_buf,
-				      process_block, &pb);
+	retval = ext2fs_block_iterate(fs, ino,
+				      pb.is_dir ? BLOCK_FLAG_HOLE : 0,
+				      block_buf, process_block, &pb);
 	if (retval)
 		com_err(program_name, retval,
 			"while calling ext2fs_block_iterate in check_blocks");
@@ -575,7 +630,7 @@ static void check_blocks(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
 
 	pb.num_blocks *= (fs->blocksize / 512);
 #if 0
-	printf("inode %lu, i_size = %lu, last_block = %lu, i_blocks=%lu, num_blocks = %lu\n",
+	printf("inode %u, i_size = %lu, last_block = %lu, i_blocks=%lu, num_blocks = %lu\n",
 	       ino, inode->i_size, pb.last_block, inode->i_blocks,
 	       pb.num_blocks);
 #endif
@@ -589,12 +644,14 @@ static void check_blocks(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
 			ext2fs_unmark_inode_bitmap(inode_dir_map, ino);
 			ext2fs_unmark_inode_bitmap(inode_used_map, ino);
 			fs_directory_count--;
+			pb.is_dir = 0;
 		} else
 			ext2fs_unmark_valid(fs);
 	}
-	if (inode->i_size < pb.last_block * fs->blocksize) {
-		printf ("Inode %lu, incorrect size, %lu (counted = %u). ",
-			ino, inode->i_size,
+	if ((pb.is_dir && (inode->i_size != (pb.last_block + 1) * fs->blocksize)) ||
+	    (inode->i_size < pb.last_block * fs->blocksize)) {
+		printf ("%s %lu, incorrect size, %u (counted = %u). ",
+			pb.is_dir ? "Directory" : "Inode", ino, inode->i_size,
 			(pb.last_block+1) * fs->blocksize);
 		if (ask ("Set size to counted", 1)) {
 			inode->i_size = (pb.last_block+1) * fs->blocksize;
@@ -603,7 +660,7 @@ static void check_blocks(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
 			ext2fs_unmark_valid(fs);
 	}
 	if (pb.num_blocks != inode->i_blocks) {
-		printf ("Inode %lu, i_blocks wrong %lu (counted=%u).  ",
+		printf ("Inode %lu, i_blocks wrong %u (counted=%u).  ",
 			ino, inode->i_blocks, pb.num_blocks);
 		if (ask ("Set i_blocks to counted", 1)) {
 			inode->i_blocks = pb.num_blocks;
@@ -611,7 +668,57 @@ static void check_blocks(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
 		} else
 				ext2fs_unmark_valid(fs);
 	}
-}	
+}
+
+/*
+ * Helper function called by process block when an illegal block is
+ * found.  It returns a description about why the block is illegal
+ */
+static char *describe_illegal_block(ext2_filsys fs, blk_t block)
+{
+	blk_t	super;
+	int	i;
+	static char	problem[80];
+
+	super = fs->super->s_first_data_block;
+	strcpy(problem, "PROGRAMMING ERROR: Unknown reason for illegal block");
+	if (block < super) {
+		sprintf(problem, "< FIRSTBLOCK (%u)", super);
+		return(problem);
+	} else if (block >= fs->super->s_blocks_count) {
+		sprintf(problem, "> BLOCKS (%u)", fs->super->s_blocks_count);
+		return(problem);
+	}
+	for (i = 0; i < fs->group_desc_count; i++) {
+		if (block == super) {
+			sprintf(problem, "is the superblock in group %d", i);
+			break;
+		}
+		if (block > super &&
+		    block <= (super + fs->desc_blocks)) {
+			sprintf(problem, "is in the group descriptors "
+				"of group %d", i);
+			break;
+		}
+		if (block == fs->group_desc[i].bg_block_bitmap) {
+			sprintf(problem, "is the block bitmap of group %d", i);
+			break;
+		}
+		if (block == fs->group_desc[i].bg_inode_bitmap) {
+			sprintf(problem, "is the inode bitmap of group %d", i);
+			break;
+		}
+		if (block >= fs->group_desc[i].bg_inode_table &&
+		    (block < fs->group_desc[i].bg_inode_table
+		     + fs->inode_blocks_per_group)) {
+			sprintf(problem, "is in the inode table of group %d",
+				i);
+			break;
+		}
+		super += fs->super->s_blocks_per_group;
+	}
+	return(problem);
+}
 
 /*
  * This is a helper function for check_blocks().
@@ -622,55 +729,41 @@ int process_block(ext2_filsys fs,
 		  void *private)
 {
 	struct process_block_struct *p;
-	int	group;
-	int	illegal_block = 0;
-	char	problem[80];
-	blk_t	firstblock, group_super;
+	char	*problem;
 	blk_t	blk = *block_nr;
+	int	ret_code = 0;
 
-	if (!blk)
-		return 0;
 	p = (struct process_block_struct *) private;
 
-#if 0
-	printf("Process_block, inode %lu, block %lu, #%d\n", p->ino, blk,
-	       blockcnt);
-#endif	
-	
-	firstblock = fs->super->s_first_data_block;
-	group = (blk - firstblock) / fs->super->s_blocks_per_group;
-	group_super = ((group * fs->super->s_blocks_per_group) +
-		       fs->super->s_first_data_block);
-	if (blk < firstblock) {
-		sprintf(problem, "< FIRSTBLOCK (%lu)", firstblock);
-		illegal_block++;
-	} else if (blk >= fs->super->s_blocks_count) {
-		sprintf(problem, "> BLOCKS (%lu)", fs->super->s_blocks_count);
-		illegal_block++;
-	} else if (blk == group_super) {
-		sprintf(problem, "is the superblock in group %d", group);
-		illegal_block++;
-	} else if (blk > group_super &&
-		   blk <= (group_super + fs->desc_blocks)) {
-		sprintf(problem, "is in the group descriptors in group %d",
-			group);
-		illegal_block++;
-	} else if (blk == fs->group_desc[group].bg_block_bitmap) {
-		sprintf(problem, "is the block bitmap of group %d", group);
-		illegal_block++;
-	} else if (blk == fs->group_desc[group].bg_inode_bitmap) {
-		sprintf(problem, "is the inode bitmap of group %d", group);
-		illegal_block++;
-	} else if (blk >= fs->group_desc[group].bg_inode_table &&
-		   blk < fs->group_desc[group].bg_inode_table + fs->inode_blocks_per_group) {
-		sprintf(problem, "is in the inode table of group %d", group);
-		illegal_block++;
+	if (blk == 0) {
+		if (p->is_dir == 0) {
+			printf("process_block() called with blk == 0, "
+			       "inode %lu???", p->ino);
+			return 0;
+		}
+		if (blockcnt < 0)
+			return 0;
+		if (blockcnt * fs->blocksize < p->inode->i_size) {
+			printf("Hole found in directory inode %lu!  "
+			       "(blkcnt=%d)\n", p->ino, blockcnt);
+			goto mark_dir;
+		}
+		return 0;
 	}
-	if (illegal_block) {
+
+#if 0
+	printf("Process_block, inode %lu, block %u, #%d\n", p->ino, blk,
+	       blockcnt);
+#endif
+	
+	if (blk < fs->super->s_first_data_block ||
+	    blk >= fs->super->s_blocks_count ||
+	    ext2fs_test_block_bitmap(block_illegal_map, blk)) {
+		problem = describe_illegal_block(fs, blk);
 		if (preen) {
-			printf("Block %lu of inode %lu %s\n", blk, p->ino,
+			printf("Block %u of inode %lu %s\n", blk, p->ino,
 			       problem);
-			preenhalt();
+			preenhalt(fs);
 		}
 		if (p->fix == -1) {
 			printf("Remove illegal block(s) in inode %lu", p->ino);
@@ -689,28 +782,34 @@ int process_block(ext2_filsys fs,
 			}
 		}
 		if (!p->suppress)
-			printf("Block #%d (%lu) %s.  %s\n", blockcnt, blk,
+			printf("Block #%d (%u) %s.  %s\n", blockcnt, blk,
 			       problem, clear_msg[p->fix]);
 		if (p->fix) {
-			*block_nr = 0;
-			return BLOCK_CHANGED;
+			blk = *block_nr = 0;
+			ret_code = BLOCK_CHANGED;
+			goto mark_dir;
 		} else {
 			ext2fs_unmark_valid(fs);
 			return 0;
 		}
 	}
 
-	p->num_blocks++;
-	if (blockcnt > 0)
-		p->last_block = blockcnt;
 	mark_block_used(fs, blk);
+	p->num_blocks++;
+	if (blockcnt < 0)
+		return 0;
 	
-	if (p->is_dir && (blockcnt >= 0)) {
+	p->last_block = blockcnt;
+mark_dir:
+	if (p->is_dir) {
 		if (dir_block_count >= dir_block_size) {
 			dir_block_size += 100;
 			dir_blocks = realloc(dir_blocks,
 					     dir_block_size *
 					     sizeof(struct dir_block_struct));
+			if (dir_blocks == 0)
+				fatal_error("Not enough memory to "
+					    "realloc dir_blocks");
 		}
 
 		dir_blocks[dir_block_count].blk = blk;
@@ -718,19 +817,13 @@ int process_block(ext2_filsys fs,
 		dir_blocks[dir_block_count].blockcnt = blockcnt;
 		dir_block_count++;
 	}
-	
-#if 0
-	printf("process block, inode %lu, block #%d is %lu\n",
-	       p->ino, blockcnt, blk);
-#endif
-	
-	return 0;
+	return ret_code;
 }
 
-static void bad_block_indirect(blk_t blk)
+static void bad_block_indirect(ext2_filsys fs, blk_t blk)
 {
-	printf("Bad block %lu used as bad block indirect block?!?\n", blk);
-	preenhalt();
+	printf("Bad block %u used as bad block indirect block?!?\n", blk);
+	preenhalt(fs);
 	printf("\nThis inconsistency can not be fixed with "
 	       "e2fsck; to fix it, use\n"
 	       """dumpe2fs -b"" to dump out the bad block "
@@ -739,6 +832,22 @@ static void bad_block_indirect(blk_t blk)
 	if (ask("Continue", 0))
 		return;
 	fatal_error(0);
+}
+
+static int bad_primary_block(ext2_filsys fs, blk_t *block_nr)
+{
+	printf("\nIf the block is really bad, the filesystem can not be "
+	       "fixed.\n");
+	preenhalt(fs);
+	printf("You can clear the this block from the bad block list\n");
+	printf("and hope that block is really OK, but there are no "
+	       "guarantees.\n\n");
+	if (ask("Clear (and hope for the best)", 1)) {
+		*block_nr = 0;
+		return 1;
+	}
+	ext2fs_unmark_valid(fs);
+	return 0;
 }
 
 int process_bad_block(ext2_filsys fs,
@@ -758,12 +867,12 @@ int process_bad_block(ext2_filsys fs,
 	if ((blk < fs->super->s_first_data_block) ||
 	    (blk >= fs->super->s_blocks_count)) {
 		if (preen) {
-			printf("Illegal block %lu in bad block inode\n", blk);
-			preenhalt();
+			printf("Illegal block %u in bad block inode\n", blk);
+			preenhalt(fs);
 		}
 		if (p->fix == -1)
 			p->fix = ask("Remove illegal block(s) in bad block inode", 1);
-		printf("Illegal block %lu in bad block inode.  %s\n", blk,
+		printf("Illegal block %u in bad block inode.  %s\n", blk,
 		       clear_msg[p->fix]);
 		if (p->fix) {
 			*block_nr = 0;
@@ -776,13 +885,13 @@ int process_bad_block(ext2_filsys fs,
 
 	if (blockcnt < 0) {
 		if (ext2fs_test_block_bitmap(block_found_map, blk))
-			bad_block_indirect(blk);
+			bad_block_indirect(fs, blk);
 		else
 			mark_block_used(fs, blk);
 		return 0;
 	}
 #if 0 
-	printf ("DEBUG: Marking %lu as bad.\n", blk);
+	printf ("DEBUG: Marking %u as bad.\n", blk);
 #endif
 	fs_badblocks_count++;
 	/*
@@ -803,31 +912,35 @@ int process_bad_block(ext2_filsys fs,
 	for (i = 0; i < fs->group_desc_count; i++ ) {
 		if (blk == first_block) {
 			if (i == 0) {
-				printf("The primary superblock (%lu) is "
-				       "bad.  Aiiieeee....\n", blk);
-				fatal_error(0);
+				printf("The primary superblock (%u) is "
+				       "on the bad block list.\n", blk);
+				if (bad_primary_block(fs, block_nr))
+					return BLOCK_CHANGED;
+				return 0;
 			}
 			if (!preen)
 				printf("Warning: Group %d's superblock "
-				       "(%lu) is bad.\n", i, blk);
+				       "(%u) is bad.\n", i, blk);
 			return 0;
 		}
 		if ((blk > first_block) &&
 		    (blk <= first_block + fs->desc_blocks)) {
 			if (i == 0) {
-				printf("Bad block %lu is in the primary "
-				       "group descriptors.  Aiiieeee....\n",
-				       blk);
-				fatal_error(0);
+				printf("Block %u in the primary group "
+				       "descriptors is on the bad block "
+				       "list\n", blk);
+				if (bad_primary_block(fs, block_nr))
+					return BLOCK_CHANGED;
+				return 0;
 			}
 			if (!preen)
 				printf("Warning: Group %d's copy of the "
 				       "group descriptors has a bad "
-				       "block (%lu).\n", i, blk);
+				       "block (%u).\n", i, blk);
 			return 0;
 		}
 		if (blk == fs->group_desc[i].bg_block_bitmap) {
-			printf("Group %d's block bitmap (%lu) is bad.  ",
+			printf("Group %d's block bitmap (%u) is bad.  ",
 			       i, blk);
 			if (ask("Relocate", 1)) {
 				invalid_block_bitmap[i]++;
@@ -837,7 +950,7 @@ int process_bad_block(ext2_filsys fs,
 			return 0;
 		}
 		if (blk == fs->group_desc[i].bg_inode_bitmap) {
-			printf("Group %d's inode bitmap (%lu) is bad.  ",
+			printf("Group %d's inode bitmap (%u) is bad.  ",
 			       i, blk);
 			if (ask("Relocate", 1)) {
 				invalid_inode_bitmap[i]++;
@@ -850,7 +963,7 @@ int process_bad_block(ext2_filsys fs,
 		    (blk < (fs->group_desc[i].bg_inode_table +
 			    fs->inode_blocks_per_group))) {
 			printf("WARNING: Severe data loss possible!!!!\n");
-			printf("Bad block %lu in group %d's inode table.  ",
+			printf("Bad block %u in group %d's inode table.  ",
 			       blk, i);
 			if (ask("Relocate", 1)) {
 				invalid_inode_table[i]++;
@@ -868,11 +981,11 @@ int process_bad_block(ext2_filsys fs,
 	 */
 	if ((blk == p->inode->i_block[EXT2_IND_BLOCK]) ||
 	    p->inode->i_block[EXT2_DIND_BLOCK]) {
-		bad_block_indirect(blk);
+		bad_block_indirect(fs, blk);
 		return 0;
 	}
 	
-	printf("Programming error?  block #%lu claimed for no reason "
+	printf("Programming error?  block #%u claimed for no reason "
 	       "in process_bad_block.\n", blk);
 	return 0;
 }
@@ -904,15 +1017,15 @@ static void new_table_block(ext2_filsys fs, blk_t first_block, int group,
 	ext2fs_mark_super_dirty(fs);
 	printf("Relocating group %d's %s ", group, name);
 	if (old_block)
-		printf("from %lu ", old_block);
-	printf("to %lu...\n", *new_block);
+		printf("from %u ", old_block);
+	printf("to %u...\n", *new_block);
 	for (i = 0; i < num; i++) {
 		ext2fs_mark_block_bitmap(block_found_map, (*new_block)+i);
 		if (old_block) {
 			retval = io_channel_read_blk(fs->io, old_block + i,
 						     1, buf);
 			if (retval)
-				printf("Warning: could not read block %lu "
+				printf("Warning: could not read block %u "
 				       "of %s: %s\n",
 				       old_block + i, name,
 				       error_message(retval));
@@ -922,7 +1035,7 @@ static void new_table_block(ext2_filsys fs, blk_t first_block, int group,
 		retval = io_channel_write_blk(fs->io, (*new_block) + i,
 					      1, buf);
 		if (retval)
-			printf("Warning: could not write block %lu for %s: %s\n",
+			printf("Warning: could not write block %u for %s: %s\n",
 			       (*new_block) + i, name, error_message(retval));
 	}
 	free(buf);
@@ -977,19 +1090,23 @@ static void mark_table_blocks(ext2_filsys fs)
 		if (fs->group_desc[i].bg_block_bitmap) {
 			if (ext2fs_test_block_bitmap(block_found_map,
 				     fs->group_desc[i].bg_block_bitmap)) {
-				printf("Group %i's block bitmap at %lu "
+				printf("Group %i's block bitmap at %u "
 				       "conflicts with some other fs block.\n",
 				       i, fs->group_desc[i].bg_block_bitmap);
-				preenhalt();
+				preenhalt(fs);
 				if (ask("Relocate", 1)) {
 					invalid_block_bitmap[i]++;
 					invalid_bitmaps++;
 				} else {
 					ext2fs_unmark_valid(fs);
 				}
-			} else
+			} else {
 			    ext2fs_mark_block_bitmap(block_found_map,
 				     fs->group_desc[i].bg_block_bitmap);
+			    ext2fs_mark_block_bitmap(block_illegal_map,
+				     fs->group_desc[i].bg_block_bitmap);
+		    }
+			
 		}
 		/*
 		 * Mark block used for the inode bitmap 
@@ -997,19 +1114,22 @@ static void mark_table_blocks(ext2_filsys fs)
 		if (fs->group_desc[i].bg_inode_bitmap) {
 			if (ext2fs_test_block_bitmap(block_found_map,
 				     fs->group_desc[i].bg_inode_bitmap)) {
-				printf("Group %i's inode bitmap at %lu "
+				printf("Group %i's inode bitmap at %u "
 				       "conflicts with some other fs block.\n",
 				       i, fs->group_desc[i].bg_inode_bitmap);
-				preenhalt();
+				preenhalt(fs);
 				if (ask("Relocate", 1)) {
 					invalid_inode_bitmap[i]++;
 					invalid_bitmaps++;
 				} else {
 					ext2fs_unmark_valid(fs);
 				}
-			} else
+			} else {
 			    ext2fs_mark_block_bitmap(block_found_map,
 				     fs->group_desc[i].bg_inode_bitmap);
+			    ext2fs_mark_block_bitmap(block_illegal_map,
+				     fs->group_desc[i].bg_inode_bitmap);
+			}
 		}
 		    
 		/*
@@ -1021,20 +1141,23 @@ static void mark_table_blocks(ext2_filsys fs)
 			     j++, b++) {
 				if (ext2fs_test_block_bitmap(block_found_map,
 							     b)) {
-					printf("Group %i's inode table at %lu "
+					printf("Group %i's inode table at %u "
 					       "conflicts with some other "
 					       "fs block.\n",
 					       i, b);
-					preenhalt();
+					preenhalt(fs);
 					if (ask("Relocate", 1)) {
 						invalid_inode_table[i]++;
 						invalid_bitmaps++;
 					} else {
 						ext2fs_unmark_valid(fs);
 					}
-				} else
+				} else {
 				    ext2fs_mark_block_bitmap(block_found_map,
 							     b);
+				    ext2fs_mark_block_bitmap(block_illegal_map,
+							     b);
+				    }
 			}
 		}
 			    
@@ -1042,13 +1165,17 @@ static void mark_table_blocks(ext2_filsys fs)
 		 * Mark this group's copy of the superblock
 		 */
 		ext2fs_mark_block_bitmap(block_found_map, block);
+		ext2fs_mark_block_bitmap(block_illegal_map, block);
 		
 		/*
 		 * Mark this group's copy of the descriptors
 		 */
-		for (j = 0; j < fs->desc_blocks; j++)
+		for (j = 0; j < fs->desc_blocks; j++) {
 			ext2fs_mark_block_bitmap(block_found_map,
 						 block + j + 1);
+			ext2fs_mark_block_bitmap(block_illegal_map,
+						 block + j + 1);
+		}
 		block += fs->super->s_blocks_per_group;
 	}
 }
@@ -1077,7 +1204,7 @@ static errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 static errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino)
 {
 	if (ino == stashed_ino) {
-		if (!S_ISDIR(stashed_inode->i_mode))
+		if (!LINUX_S_ISDIR(stashed_inode->i_mode))
 			return ENOTDIR;
 		return 0;
 	}

@@ -34,7 +34,7 @@ void pass4(ext2_filsys fs)
 			 * prompt to reconnect.
 			 */
 			printf("Unattached inode %lu\n", i);
-			preenhalt();
+			preenhalt(fs);
 			if (ask("Connect to /lost+found", 1)) {
 				if (reconnect_file(fs, i))
 					ext2fs_unmark_valid(fs);
@@ -45,7 +45,7 @@ void pass4(ext2_filsys fs)
 			e2fsck_read_inode(fs, i, &inode, "pass4");
 			if (inode_link_info[i] != inode.i_links_count) {
 				printf("WARNING: PROGRAMMING BUG IN E2FSCK!\n");
-				printf("inode_link_info[%d] is %lu, "
+				printf("inode_link_info[%ld] is %u, "
 				       "inode.i_links_count is %d.  "
 				       "They should be the same!\n",
 				       i, inode_link_info[i],

@@ -1,0 +1,181 @@
+gcc -O2 -fomit-frame-pointer  -I.. -c pe.c
+In file included from pe.c:19:
+/usr/include/linux/ext2_fs.h:127: parse error before `__u32'
+/usr/include/linux/ext2_fs.h:127: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:128: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:129: parse error before `aclh_acle_count'
+/usr/include/linux/ext2_fs.h:129: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:130: parse error before `aclh_first_acle'
+/usr/include/linux/ext2_fs.h:130: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:135: parse error before `__u32'
+/usr/include/linux/ext2_fs.h:135: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:136: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:137: parse error before `acle_type'
+/usr/include/linux/ext2_fs.h:137: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:138: parse error before `acle_tag'
+/usr/include/linux/ext2_fs.h:138: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:139: parse error before `acle_pad1'
+/usr/include/linux/ext2_fs.h:139: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:140: parse error before `acle_next'
+/usr/include/linux/ext2_fs.h:140: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:149: parse error before `__u32'
+/usr/include/linux/ext2_fs.h:149: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:150: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:151: parse error before `bg_inode_table'
+/usr/include/linux/ext2_fs.h:151: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:152: parse error before `bg_free_blocks_count'
+/usr/include/linux/ext2_fs.h:152: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:153: parse error before `bg_free_inodes_count'
+/usr/include/linux/ext2_fs.h:153: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:158: parse error before `__u32'
+/usr/include/linux/ext2_fs.h:158: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:159: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:160: parse error before `bg_inode_table'
+/usr/include/linux/ext2_fs.h:160: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:161: parse error before `bg_free_blocks_count'
+/usr/include/linux/ext2_fs.h:161: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:162: parse error before `bg_free_inodes_count'
+/usr/include/linux/ext2_fs.h:162: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:163: parse error before `bg_used_dirs_count'
+/usr/include/linux/ext2_fs.h:163: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:164: parse error before `bg_pad'
+/usr/include/linux/ext2_fs.h:164: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:165: parse error before `bg_reserved'
+/usr/include/linux/ext2_fs.h:165: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:166: parse error before `}'
+/usr/include/linux/ext2_fs.h:213: parse error before `__u16'
+/usr/include/linux/ext2_fs.h:213: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:214: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:215: parse error before `i_size'
+/usr/include/linux/ext2_fs.h:215: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:216: parse error before `i_atime'
+/usr/include/linux/ext2_fs.h:216: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:217: parse error before `i_ctime'
+/usr/include/linux/ext2_fs.h:217: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:218: parse error before `i_mtime'
+/usr/include/linux/ext2_fs.h:218: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:219: parse error before `i_dtime'
+/usr/include/linux/ext2_fs.h:219: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:220: parse error before `i_gid'
+/usr/include/linux/ext2_fs.h:220: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:221: parse error before `i_links_count'
+/usr/include/linux/ext2_fs.h:221: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:222: parse error before `i_blocks'
+/usr/include/linux/ext2_fs.h:222: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:223: parse error before `i_flags'
+/usr/include/linux/ext2_fs.h:223: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:226: parse error before `__u32'
+/usr/include/linux/ext2_fs.h:226: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:226: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:227: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:229: parse error before `__u32'
+/usr/include/linux/ext2_fs.h:229: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:230: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:232: parse error before `__u32'
+/usr/include/linux/ext2_fs.h:232: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:233: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:234: parse error before `}'
+/usr/include/linux/ext2_fs.h:234: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:235: parse error before `i_block'
+/usr/include/linux/ext2_fs.h:235: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:236: parse error before `i_version'
+/usr/include/linux/ext2_fs.h:236: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:237: parse error before `i_file_acl'
+/usr/include/linux/ext2_fs.h:237: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:238: parse error before `i_dir_acl'
+/usr/include/linux/ext2_fs.h:238: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:239: parse error before `i_faddr'
+/usr/include/linux/ext2_fs.h:239: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:242: parse error before `__u8'
+/usr/include/linux/ext2_fs.h:242: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:242: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:243: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:244: parse error before `i_pad1'
+/usr/include/linux/ext2_fs.h:244: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:245: parse error before `l_i_reserved2'
+/usr/include/linux/ext2_fs.h:245: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:246: parse error before `}'
+/usr/include/linux/ext2_fs.h:246: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:248: parse error before `__u8'
+/usr/include/linux/ext2_fs.h:248: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:249: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:250: parse error before `h_i_mode_high'
+/usr/include/linux/ext2_fs.h:250: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:251: parse error before `h_i_uid_high'
+/usr/include/linux/ext2_fs.h:251: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:252: parse error before `h_i_gid_high'
+/usr/include/linux/ext2_fs.h:252: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:253: parse error before `h_i_author'
+/usr/include/linux/ext2_fs.h:253: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:254: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:256: parse error before `__u8'
+/usr/include/linux/ext2_fs.h:256: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:257: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:258: parse error before `m_pad1'
+/usr/include/linux/ext2_fs.h:258: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:259: parse error before `m_i_reserved2'
+/usr/include/linux/ext2_fs.h:259: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:260: parse error before `}'
+/usr/include/linux/ext2_fs.h:260: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:261: parse error before `}'
+/usr/include/linux/ext2_fs.h:261: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:262: parse error before `}'
+/usr/include/linux/ext2_fs.h:329: parse error before `__u32'
+/usr/include/linux/ext2_fs.h:329: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:330: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:331: parse error before `s_r_blocks_count'
+/usr/include/linux/ext2_fs.h:331: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:332: parse error before `s_free_blocks_count'
+/usr/include/linux/ext2_fs.h:332: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:333: parse error before `s_free_inodes_count'
+/usr/include/linux/ext2_fs.h:333: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:334: parse error before `s_first_data_block'
+/usr/include/linux/ext2_fs.h:334: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:335: parse error before `s_log_block_size'
+/usr/include/linux/ext2_fs.h:335: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:336: parse error before `s_log_frag_size'
+/usr/include/linux/ext2_fs.h:336: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:337: parse error before `s_blocks_per_group'
+/usr/include/linux/ext2_fs.h:337: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:338: parse error before `s_frags_per_group'
+/usr/include/linux/ext2_fs.h:338: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:339: parse error before `s_inodes_per_group'
+/usr/include/linux/ext2_fs.h:339: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:340: parse error before `s_mtime'
+/usr/include/linux/ext2_fs.h:340: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:341: parse error before `s_wtime'
+/usr/include/linux/ext2_fs.h:341: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:342: parse error before `s_mnt_count'
+/usr/include/linux/ext2_fs.h:342: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:343: parse error before `s_max_mnt_count'
+/usr/include/linux/ext2_fs.h:343: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:344: parse error before `s_magic'
+/usr/include/linux/ext2_fs.h:344: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:345: parse error before `s_state'
+/usr/include/linux/ext2_fs.h:345: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:346: parse error before `s_errors'
+/usr/include/linux/ext2_fs.h:346: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:347: parse error before `s_pad'
+/usr/include/linux/ext2_fs.h:347: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:348: parse error before `s_lastcheck'
+/usr/include/linux/ext2_fs.h:348: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:349: parse error before `s_checkinterval'
+/usr/include/linux/ext2_fs.h:349: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:350: parse error before `s_creator_os'
+/usr/include/linux/ext2_fs.h:350: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:351: parse error before `s_rev_level'
+/usr/include/linux/ext2_fs.h:351: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:352: parse error before `s_def_resuid'
+/usr/include/linux/ext2_fs.h:352: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:353: parse error before `s_def_resgid'
+/usr/include/linux/ext2_fs.h:353: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:354: parse error before `s_reserved'
+/usr/include/linux/ext2_fs.h:354: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:355: parse error before `}'
+/usr/include/linux/ext2_fs.h:372: parse error before `__u32'
+/usr/include/linux/ext2_fs.h:372: warning: no semicolon at end of struct or union
+/usr/include/linux/ext2_fs.h:373: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:374: parse error before `name_len'
+/usr/include/linux/ext2_fs.h:374: warning: data definition has no type or storage class
+/usr/include/linux/ext2_fs.h:376: parse error before `}'
+make: *** [pe.o] Error 1

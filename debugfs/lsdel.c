@@ -11,7 +11,9 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
-#include <getopt.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -34,20 +36,20 @@ struct lsdel_struct {
 	int			bad_blocks;
 };
 
-int deleted_info_compare(const void *a, const void *b)
+static int deleted_info_compare(const void *a, const void *b)
 {
-	struct deleted_info *arg1, *arg2;
+	const struct deleted_info *arg1, *arg2;
 
-	arg1 = (struct deleted_info *) a;
-	arg2 = (struct deleted_info *) b;
+	arg1 = (const struct deleted_info *) a;
+	arg2 = (const struct deleted_info *) b;
 
 	return arg1->dtime - arg2->dtime;
 }
 
-int lsdel_proc(ext2_filsys fs,
-	       blk_t	*block_nr,
-	       int blockcnt,
-	       void *private)
+static int lsdel_proc(ext2_filsys fs,
+		      blk_t	*block_nr,
+		      int blockcnt,
+		      void *private)
 {
 	struct lsdel_struct *lsd = (struct lsdel_struct *) private;
 

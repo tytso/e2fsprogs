@@ -4,12 +4,13 @@
  * For copyright info, see copyright.h.
  */
 
-#ifdef HAS_UNISTD_H
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#ifdef HAS_STDLIB_H
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#include <fcntl.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -29,7 +30,7 @@ void ss_help (argc, argv, sci_idx, info_ptr)
     int sci_idx;
     pointer info_ptr;
 {
-    char buffer[MAXPATHLEN];
+    char *buffer;
     char const *request_name;
     int code;
     int fd, child;
@@ -47,9 +48,16 @@ void ss_help (argc, argv, sci_idx, info_ptr)
     }
     else if (argc != 2) {
 	/* should do something better than this */
+	buffer = malloc(80+2*strlen(request_name));
+	if (!buffer) {
+		ss_perror(sci_idx, 0,
+			  "couldn't allocate memory to print usage message");
+		return;
+	}
 	sprintf(buffer, "usage:\n\t%s [topic|command]\nor\t%s\n",
 		request_name, request_name);
 	ss_perror(sci_idx, 0, buffer);
+	free(buffer);
 	return;
     }
     info = ss_info(sci_idx);
@@ -61,21 +69,32 @@ void ss_help (argc, argv, sci_idx, info_ptr)
 	ss_perror(sci_idx, SS_ET_NO_INFO_DIR, (char *)NULL);
 	return;
     }
-    for (idx = 0; info->info_dirs[idx] != (char *)NULL; idx++) {
+    for (fd = -1, idx = 0; info->info_dirs[idx] != (char *)NULL; idx++) {
+        buffer = malloc(strlen (info->info_dirs[idx]) + 1 +
+			strlen (argv[1]) + 6);
+	if (!buffer) {
+	    ss_perror(sci_idx, 0,
+		      "couldn't allocate memory for help filename");
+	    return;
+	}
 	(void) strcpy(buffer, info->info_dirs[idx]);
 	(void) strcat(buffer, "/");
 	(void) strcat(buffer, argv[1]);
 	(void) strcat(buffer, ".info");
-	if ((fd = open(&buffer[0], O_RDONLY)) >= 0) goto got_it;
+	fd = open(buffer, O_RDONLY);
+	free(buffer);
+	if (fd >= 0)
+	    break;
     }
-    if ((fd = open(&buffer[0], O_RDONLY)) < 0) {
-	char buf[MAXPATHLEN];
-	strcpy(buf, "No info found for ");
+    if (fd < 0) {
+#define MSG "No info found for "
+        char *buf = malloc(strlen (MSG) + strlen (argv[1]) + 1);
+	strcpy(buf, MSG);
 	strcat(buf, argv[1]);
 	ss_perror(sci_idx, 0, buf);
+	free(buf);
 	return;
     }
-got_it:
     switch (child = fork()) {
     case -1:
 	ss_perror(sci_idx, errno, "Can't fork for pager");
@@ -91,7 +110,7 @@ got_it:
     }
 }
 
-#ifndef USE_DIRENT_H
+#ifndef HAVE_DIRENT_H
 #include <sys/dir.h>
 #else
 #include <dirent.h>

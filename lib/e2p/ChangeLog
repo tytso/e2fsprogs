@@ -1,3 +1,61 @@
+Fri Oct 27 18:07:48 1995    <tytso@rsts-11.mit.edu>
+
+	* iod.c (iterate_on_dir): Don't assume that d->reclen is the size
+		of the dirent structure; it isn't under Linux.
+
+Mon Sep  4 21:43:53 1995  Remy Card  <card@bbj>
+
+	* Makefile.in: Added support for BSD shared libraries.
+
+Fri Aug 11 08:36:40 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* setflags.c: #include <sys/types.h> before including <sys/stat.h>
+
+Sat Aug 12 03:11:45 1995  Remy Card  <card@bbj>
+
+	* Makefile.in (install): Install static libraries in $(ulibdir)
+		(/usr/lib on Linux) instead of $(libdir) (/lib on Linux).
+
+Sat Aug  5 11:43:36 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* Makefile.in (DLL_INSTALL_DIR, ELF_INSTALL_DIR): Set the
+		installation directories correctly.
+
+Thu Jun 15 23:41:20 1995  Remy Card  <card@bbj>
+
+	* Makefile.in: Added support for ELF shared libraries.
+
+Mon Jun 12 08:34:44 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* e2p.h: Move <direct.h> after <stdio.h>
+
+Thu Jun  8 12:47:04 1995  Miles Bader  <miles@churchy.gnu.ai.mit.edu>
+
+	* iod.c (iterate_on_dir): If struct dirent has a d_namlen field,
+	assume that actual dirent entries may be larger than the structure
+	(by the name field), and take extra care deal with this case.
+	This code assumes that d_reclen is a valid dirent field.
+	Also, don't include <dirent.h>, as e2p.h already does.
+
+	* fgetversion.c (fgetversion): Only use the ext2 ioctl if it
+	doesn't cause a compile-time barf, otherwise just return EOPNOTSUPP.
+	* getversion.c (getversion): Ditto.
+	* fsetversion.c (fsetversion): Ditto.
+	* setversion.c (setversion): Ditto.
+	* fsetflags.c (fsetflags): Use chflags instead of the ext2 ioctl
+	if possible, and otherwise only use the ioctl if it doesn't barf.
+	* setflags.c (setflags): Ditto (with fchflags).
+	* fgetflags.c (fgetflags): Use the stat st_flags field instead of
+	the ext2 ioctl if possible, and otherwise only use the ioctl if it
+	doesn't barf.
+	* getflags.c (getflags): Ditto.
+
+	* e2p.h: Include <sys/types.h>, as some <dirent.h>s need it.
+	* ls.c: Move the include of <sys/types.h> to where <grp.h> can see it.
+
+	* Makefile.in: Rewritten to conform to GNU coding standards and
+	support separate compilation directories.
+
 Mon Nov  7 21:59:12 1994  Remy Card  <card@bbj>
 
 	* ls.c (list_super): List the new fields s_def_resuid and

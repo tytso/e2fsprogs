@@ -1,0 +1,322 @@
+AC_INIT(version.h)
+MCONFIG=./MCONFIG
+AC_SUBST_FILE(MCONFIG)
+dnl
+dnl handle --enable-dll-shlibs
+dnl
+AC_ARG_ENABLE([dll-shlibs],
+[  --enable-dll-shlibs	select DLL libraries],
+if test "$enableval" = "no"
+then
+	DLL_CMT=#
+	MAKEFILE_DLL=/dev/null
+	echo "Disabling DLL shared libraries"
+else
+	DLL_CMT=
+	MAKEFILE_DLL=$srcdir/lib/Makefile.dll-lib
+	echo "Enabling DLL shared libraries"
+fi
+,
+MAKEFILE_DLL=/dev/null
+DLL_CMT=#
+echo "Disabling DLL shared libraries by default"
+)
+AC_SUBST(DLL_CMT)
+AC_SUBST_FILE(MAKEFILE_DLL)
+dnl
+dnl handle --enable-elf-shlibs
+dnl
+AC_ARG_ENABLE([elf-shlibs],
+[  --enable-elf-shlibs	select ELF shared libraries],
+if test "$enableval" = "no"
+then
+	ELF_CMT=#
+	MAKEFILE_ELF=/dev/null
+	echo "Disabling ELF shared libraries"
+else
+	ELF_CMT=
+	MAKEFILE_ELF=$srcdir/lib/Makefile.elf-lib
+	echo "Enabling ELF shared libraries"
+fi
+,
+MAKEFILE_ELF=/dev/null
+ELF_CMT=#
+echo "Disabling ELF shared libraries by default"
+)
+AC_SUBST(ELF_CMT)
+AC_SUBST_FILE(MAKEFILE_ELF)
+dnl
+dnl handle --enable-bsd-shlibs
+dnl
+AC_ARG_ENABLE([bsd-shlibs],
+[  --enable-bsd-shlibs	select BSD shared libraries],
+if test "$enableval" = "no"
+then
+	BSDLIB_CMT=#
+	MAKEFILE_BSDLIB=/dev/null
+	echo "Disabling BSD shared libraries"
+else
+	BSDLIB_CMT=
+	MAKEFILE_BSDLIB=$srcdir/lib/Makefile.bsd-lib
+	echo "Enabling BSD shared libraries"
+fi
+,
+MAKEFILE_BSDLIB=/dev/null
+BSDLIB_CMT=#
+echo "Disabling BSD shared libraries by default"
+)
+AC_SUBST(BSDLIB_CMT)
+AC_SUBST_FILE(MAKEFILE_BSDLIB)
+dnl
+dnl handle --enable-profile
+dnl
+AC_ARG_ENABLE([profile],
+[  --enable-profile	build profiling libraries],
+if test "$enableval" = "no"
+then
+	PROFILE_CMT=#
+	MAKEFILE_PROFILE=/dev/null
+	echo "Disabling profiling libraries"
+else
+	PROFILE_CMT=
+	MAKEFILE_PROFILE=$srcdir/lib/Makefile.profile
+	echo "Building profiling libraries"
+fi
+,
+PROFILE_CMT=#
+MAKEFILE_PROFILE=/dev/null
+echo "Disabling profiling libraries by default"
+)
+AC_SUBST(PROFILE_CMT)
+AC_SUBST_FILE(MAKEFILE_PROFILE)
+dnl
+dnl handle --enable-checker
+dnl
+AC_ARG_ENABLE([checker],
+[  --enable-checker	build checker libraries],
+if test "$enableval" = "no"
+then
+	CHECKER_CMT=#
+	MAKEFILE_CHECKER=/dev/null
+	echo "Disabling checker libraries"
+else
+	CHECKER_CMT=
+	MAKEFILE_CHECKER=$srcdir/lib/Makefile.checker
+	echo "Building checker libraries"
+fi
+,
+CHECKER_CMT=#
+MAKEFILE_CHECKER=/dev/null
+echo "Disabling checker libraries by default"
+)
+AC_SUBST(CHECKER_CMT)
+AC_SUBST_FILE(MAKEFILE_CHECKER)
+dnl
+dnl handle --enable-gcc-wall
+dnl
+AC_ARG_ENABLE([gcc-wall],
+[  --enable-gcc-wall	enable GCC anal warnings],
+if test "$enableval" = "no"
+then
+	W=#
+	echo "Disabling GCC warnings"
+else
+	W=
+	echo "Enabling GCC warnings"
+fi
+,
+W=#
+echo "Disabling GCC warnings by default"
+)
+AC_SUBST(W)
+dnl
+dnl
+MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
+AC_SUBST_FILE(MAKEFILE_LIBRARY)
+dnl
+dnl End of configuration options
+dnl
+AC_PROG_MAKE_SET
+AC_PATH_PROG(LN, ln, ln)
+AC_PATH_PROG(MV, mv, mv)
+AC_PATH_PROG(CP, cp, cp)
+AC_PATH_PROG(RM, rm, rm)
+AC_PATH_PROG(CHMOD, chmod, :)
+AC_PATH_PROG(AWK, awk, awk)
+AC_PATH_PROG(SED, sed, sed)
+AC_CHECK_TOOL(AR, ar, ar)
+AC_CHECK_TOOL(RANLIB, ranlib, :)
+AC_CHECK_TOOL(STRIP, strip, :)
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_C_CROSS
+AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h mntent.h dirent.h getopt.h linux/fd.h sys/disklabel.h)
+AC_FUNC_VPRINTF
+dnl
+dnl See if struct dirent has a d_namlen field (like bsd systems), implying
+dnl that the actual length of the structure may be grater than the declared
+dnl length. 
+dnl
+AC_MSG_CHECKING(whether struct dirent has a d_namlen field)
+AC_CACHE_VAL(e2fsprogs_cv_struct_d_namlen,
+	AC_TRY_COMPILE(
+[#include <sys/types.h>
+#include <dirent.h>],
+		[struct dirent de; de.d_namlen = 0;],
+		[e2fsprogs_cv_struct_d_namlen=yes],
+		[e2fsprogs_cv_struct_d_namlen=no]))
+AC_MSG_RESULT($e2fsprogs_cv_struct_d_namlen)
+if test "$e2fsprogs_cv_struct_d_namlen" = yes; then
+  AC_DEFINE(HAVE_DIRENT_NAMLEN)
+fi
+dnl
+dnl Word sizes...
+dnl
+if test "$cross_compiling" = yes -a "$ac_cv_sizeof_long" = ""; then
+  # if cross-compiling, with no cached values, just assume something common. 
+  ac_cv_sizeof_short=2
+  ac_cv_sizeof_int=4
+  ac_cv_sizeof_long=4
+  AC_MSG_WARN([Cross-compiling, so cannot check type sizes; assuming short=2, int=4, long=4])
+fi
+AC_CHECK_SIZEOF(short)
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+SIZEOF_SHORT=$ac_cv_sizeof_short
+SIZEOF_INT=$ac_cv_sizeof_int
+SIZEOF_LONG=$ac_cv_sizeof_long
+AC_SUBST(SIZEOF_SHORT)
+AC_SUBST(SIZEOF_INT)
+AC_SUBST(SIZEOF_LONG)
+dnl
+dnl See if struct stat has a st_flags field, in which case we can get file
+dnl flags somewhat portably.  Also check for the analogous setter, chflags().
+dnl
+AC_MSG_CHECKING(whether struct stat has a st_flags field)
+AC_CACHE_VAL(e2fsprogs_cv_struct_st_flags,
+	AC_TRY_COMPILE([#include <sys/stat.h>],
+		[struct stat stat; stat.st_flags = 0;],
+		[e2fsprogs_cv_struct_st_flags=yes],
+		[e2fsprogs_cv_struct_st_flags=no]))
+AC_MSG_RESULT($e2fsprogs_cv_struct_st_flags)
+if test "$e2fsprogs_cv_struct_st_flags" = yes; then
+  AC_DEFINE(HAVE_STAT_FLAGS)
+fi
+AC_CHECK_FUNCS(chflags getrusage llseek strdup getmntinfo)
+dnl
+dnl On systems without linux header files, we add an extra include directory
+dnl that holds enough to fake it (hopefully).  Note that the $(top_srcdir) here
+dnl is quoted so that it gets expanded by make, not by configure.
+dnl
+AC_CHECK_HEADER(linux/fs.h, [linux_headers=yes], [linux_headers=no])
+AC_SUBST(EXTRA_PROGS)
+if test "$linux_headers" = yes; then
+  AC_DEFINE(HAVE_LINUX_FS_H)
+  # These are some programs that depend on having linux headers around, and
+  # won't work otherwise.  So we only compile them if we can.
+  EXTRA_PROGS="$EXTRA_PROGS flushb"
+else
+  LINUX_INCLUDE='-I$(top_srcdir)/include -I$(top_builddir)/include'
+  # Use this include directory with test compiles in the configure script too.
+  CPPFLAGS="$CPPFLAGS -I$srcdir/include -I./include"
+fi
+AC_SUBST(LINUX_INCLUDE)
+dnl
+dnl See if optreset exists
+dnl
+AC_MSG_CHECKING(for optreset)
+AC_CACHE_VAL(ac_cv_have_optreset,
+[AC_EGREP_HEADER(optreset, unistd.h,
+  ac_cv_have_optreset=yes, ac_cv_have_optreset=no)])dnl
+AC_MSG_RESULT($ac_cv_have_optreset)
+if test $ac_cv_have_optreset = yes; then
+  AC_DEFINE(HAVE_OPTRESET)
+fi
+dnl
+dnl See if our system has frags enabled (at least in the header file)
+dnl
+AC_MSG_CHECKING(whether struct ext2_inode has frags fields)
+AC_CACHE_VAL(e2fsprogs_cv_struct_ext2_inode_frags,
+	AC_TRY_COMPILE([#include <linux/ext2_fs.h>],
+		[struct ext2_inode i; i.i_frag = i.i_fsize = 0;],
+		[e2fsprogs_cv_struct_ext2_inode_frags=yes],
+		[e2fsprogs_cv_struct_ext2_inode_frags=no]))
+AC_MSG_RESULT($e2fsprogs_cv_struct_ext2_inode_frags)
+if test "$e2fsprogs_cv_struct_ext2_inode_frags" = yes; then
+  AC_DEFINE(HAVE_EXT2_FRAGS)
+fi
+dnl
+dnl See if using the EXT2 ioctls causes a compile-time barf (as on the hurd).
+dnl
+AC_MSG_CHECKING(whether the ext2 ioctls compile)
+AC_CACHE_VAL(e2fsprogs_cv_ioctl_ext2,
+	AC_TRY_COMPILE([#include <linux/ext2_fs.h>
+#include <sys/ioctl.h>],
+		[ioctl (0, EXT2_IOC_SETVERSION, 0);],
+		[e2fsprogs_cv_ioctl_ext2=yes],
+		[e2fsprogs_cv_ioctl_ext2=no]))
+AC_MSG_RESULT($e2fsprogs_cv_ioctl_ext2)
+if test "$e2fsprogs_cv_ioctl_ext2" = yes; then
+  AC_DEFINE(HAVE_EXT2_IOCTLS)
+fi
+dnl
+dnl On linux, force the prefix to be '/'
+dnl
+AC_REQUIRE([AC_CANONICAL_HOST])
+case "$host_os" in
+linux*)
+	if test "$prefix" = NONE ; then
+		prefix='/';
+		echo "On Linux systems, prefix defaults to '/'"
+	fi
+;;
+esac
+dnl
+dnl See if -static works.
+dnl XXX for now, assume that only Linux systems support -static
+dnl
+AC_REQUIRE([AC_CANONICAL_HOST])
+LDFALG_STATIC=
+case "$host_os" in
+linux*)
+	LDFLAG_STATIC=-static
+	echo "On Linux systems, assume -static works"
+;;
+esac
+AC_SUBST(LDFLAG_STATIC)
+dnl
+dnl Check to see if prefix is '/'
+dnl
+if test "$prefix" = / ; then
+	usr_prefix=/usr
+else
+	usr_prefix="\${prefix}"
+fi
+AC_SUBST(usr_prefix)
+dnl
+dnl Make the ss and et directories work correctly.
+dnl
+SS_DIR=`cd ${srcdir}/lib/ss; pwd`
+ET_DIR=`cd ${srcdir}/lib/et; pwd`
+AC_SUBST(SS_DIR)
+AC_SUBST(ET_DIR)
+dnl
+dnl Only try to run the test suite if we're not cross compiling.
+dnl
+if test "$cross_compiling" = yes ; then
+  DO_TEST_SUITE=
+else
+  DO_TEST_SUITE=check
+fi
+AC_SUBST(DO_TEST_SUITE)
+dnl
+dnl Make our output files, being sure that we create the some miscellaneous 
+dnl directories
+dnl
+test -d lib || mkdir lib
+test -d include || mkdir include
+test -d include/linux || mkdir include/linux
+AC_OUTPUT(MCONFIG include/linux/types.h Makefile lib/et/Makefile 
+	lib/et/compile_et.sh lib/ss/Makefile lib/ss/mk_cmds.sh 
+	lib/ext2fs/Makefile lib/e2p/Makefile misc/Makefile 
+	e2fsck/Makefile debugfs/Makefile tests/Makefile)

@@ -19,6 +19,7 @@
 static char sccsid[] = "@(#)vfprintf.c	5.2 (Berkeley) 6/27/88";
 #endif /* LIBC_SCCS and not lint */
 
+#if !HAVE_VPRINTF && HAVE_DOPRNT
 #include <stdio.h>
 #include <varargs.h>
 
@@ -45,3 +46,4 @@ vfprintf(iop, fmt, ap)
 
 	return (ferror(iop) ? EOF : len);
 }
+#endif /* !HAVE_VPRINTF */

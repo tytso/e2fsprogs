@@ -41,7 +41,7 @@ errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 	while (!feof (f)) {
 		if (fgets(buf, sizeof(buf), f) == NULL)
 			break;
-		count = sscanf(buf, "%lu", &blockno);
+		count = sscanf(buf, "%u", &blockno);
 		if (count <= 0)
 			continue;
 		if ((blockno < fs->super->s_first_data_block) ||

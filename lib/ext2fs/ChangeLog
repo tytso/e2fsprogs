@@ -1,3 +1,234 @@
+Thu Oct 26 12:09:16 1995    <tytso@rsts-11.mit.edu>
+
+	* ext2_err.et: Updated message in EXT2_ET_BASE to say version 0.5c
+
+	* swapfs.c (ext2fs_swap_super): Put an #ifdef check around
+		s_def_resuid and s_def_resgid for backwards compatibility.
+
+Fri Oct 20 23:33:31 1995    <tytso@rsts-11.mit.edu>
+
+	* bitops.h: Added #ifdef's for Sparc.
+
+Wed Sep  6 22:14:46 1995    <tytso@rsts-11.mit.edu>
+
+	* getsize.c: #include <sys/ioctl.h> under Linux to pick up ioctl()
+	        declaration
+
+	* closefs.c: #include <string.h> to pick up memset() declaration
+
+Mon Sep  4 21:45:29 1995  Remy Card  <card@bbj>
+
+	* Makefile.in: Added support for BSD shared libraries.
+
+	* initialize.c (ext2fs_initialize): Correctly set the s_creator_os
+		flag.
+
+Mon Sep  4 09:55:30 1995    <tytso@rsts-11.mit.edu>
+
+	* unix_io.c (unix_open): Add a double check; if the passed in name
+		is NULL, return EXT2_ET_BAD_DEVICE_NAME.
+
+	* ext2_err.et (EXT2_ET_BAD_DEVICE_NAME): Added new error code
+
+Wed Aug 16 15:44:10 1995    <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_check_directory): Use LINUX_S_ISDIR instead of
+		S_ISDIR.
+
+Tue Aug 15 13:08:36 1995    <tytso@rsts-11.mit.edu>
+
+	* getsize.c (ext2fs_get_device_size): Add support for reading the
+		partition size from a BSD disk label.
+
+Thu Aug 10 09:33:26 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* getsize.c (ext2fs_get_device_size): New function that determins
+		the size of a device.  Used by mke2fs and e2fsck.
+
+Sat Aug 12 03:09:54 1995  Remy Card  <card@bbj>
+
+	* Makefile.in (install): Install static libraries in $(ulibdir)
+		(/usr/lib on Linux) instead of $(libdir) (/lib on Linux).
+
+Wed Aug  9 17:04:23 1995  Theodore Y. Ts'o  <tytso@dcl>
+
+	* bitmaps.c (ext2fs_free_inode_bitmap, ext2fs_free_block_bitmap):
+		Move these functions to freefs.c.
+
+	* closefs.c (ext2fs_flush): If swapping blocks, clear the group
+		descriptors shadow memory to keep purify quiet.  (This
+		also has the nice benefit that the unused portion of the
+		shadow descriptors are zeroed out.)
+
+	* dirblock.c (ext2fs_write_dir_block): We need to use
+		dirent->rec_len *before* it's byteswapped to find the
+		location of the next directory structure!
+
+	* alloc.c (ext2fs_new_inode): Fix bug which could potentially
+		cause ext2fs_new_inode to loop infinitely if we're trying
+		to allocate an inode in group #0 and there are no free
+		inodes at all in the system.
+
+	* closefs.c: #include <errno.h> if it exists.
+
+Sun Aug  6 13:27:50 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* ext2fs.h (BLOCK_FLAG_HOLE): Added new definition for
+		BLOCK_FLAG_APPEND.  Added documentation for the block
+		interator flags.
+
+Sat Aug  5 11:44:05 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* Makefile.in (DLL_INSTALL_DIR, ELF_INSTALL_DIR): Set the
+		installation directories correctly.
+
+Tue Jul 18 09:27:38 1995    <tytso@rsx-11.mit.edu>
+
+	* namei.c (process_dir_block): 
+	* mkdir.c (ext2fs_mkdir): 
+	* expanddir.c (expand_dir_proc): Use ext2fs_{read,write}_dir_block
+		to read/write the directory block.
+
+	* dirblock.c (ext2fs_read_dir_block), ext2fs_write_dir_block): New
+		file containing functions for reading and writing
+		directory blocks (byte swapping if necesssary)
+
+	* block.c (block_iterate_ind, block_iterate_dind, 
+		block_iterate_tind): Byte swap the block addresses if
+		EXT2_SWAP_BYTES is set (and swap them back before writing
+		them out.)
+
+	* inode.c (inocpy_with_swap): New function.
+	(ext2fs_get_next_inode, ext2fs_read_inode, ext2fs_write_inode):
+		Call inocpy_with_swap if EXT2_SWAP_BYTES if set.
+
+	* closefs.c (ext2fs_flush): If EXT2_SWAP_BYTES is set, then swap
+		the superblock and group descriptors before writing it out.
+
+	* openfs.c (ext2fs_open): If the magic number is byte-swapped,
+		then set the EXT2_SWAP_BYTES and byte-swap the superblock
+		and group descriptors.
+
+	* swapfs.c (ext2fs_swap_super, ext2fs_swap_group_desc): New functions
+		to desp ext2 filesystem structures.
+
+	* bitops.c (set_bit, clear_bit, test_bit): Use modifications
+		supplied by Pete A. Zaitcev so that the C language
+		versions of these functions are more portable.  They will
+		now work on both little and big endian systems, and the
+		assumption that 32-bit integers are used is gone.
+
+	* bitops.h (ext2_swab16, ext2_swab32): Added new functions for
+		doing byte swapping.
+
+	* ext2fs.h (EXT2_SWAP_BYTES): Add new flag which indicates that
+		byte swapping should take place.
+
+Sun Jul 16 06:21:43 1995    <tytso@rsx-11.mit.edu>
+
+	* Makefile.in, cmp_bitmaps.c (ext2fs_compare_block_bitmap_end,
+	        ext2fs_compare_inode_bitmap_end): Added new file
+		containing routines to compare bitmaps.
+
+	* ext2_err.et (EXT2_ET_NEQ_BLOCK_BITMAP, EXT2_ET_NEQ_INODE_BITMAP): 
+		Added new error codes.
+
+Sat Jul 15 04:23:37 1995    <tytso@rsx-11.mit.edu>
+
+	* inode.c (ext2fs_get_next_inode): Don't check scan->inode_buffer;
+		if the magic number is correct, it will be allocated.
+
+Fri Jul 14 19:02:59 1995    <tytso@rsx-11.mit.edu>
+
+	* block.c (block_iterate_ind, block_iterate_dind, 
+		block_iterate_tind): Don't recompute block_nr each loop;
+		just increment it!  Factor check of BLOCK_FLAG_APPEND out
+		of the loop.  Factor mask of BLOCK_CHANGED into changed
+		variable out of the loop.  (block_iterate_ind, in
+		particular, gets called a lot, so every little
+		optimization helps.)
+
+Thu Jul 13 08:02:45 1995    <tytso@rsx-11.mit.edu>
+
+	* block.c (block_iterate_ind, block_iterate_dind, 
+		block_iterate_tind): Precompute limit of loop to speed up
+		block_iterate_ind and company.
+
+	* bitops.h (ext2fs_fast_mark_block_bitmap, 
+		ext2fs_fast_unmark_block_bitmap, ext2fs_fast_test_block_bitmap,
+		ext2fs_fast_mark_inode_bitmap, ext2fs_fast_unmark_inode_bitmap,
+		ext2fs_fast_test_inode_bitmap): Add fast version of these
+		functions, which don't do range checking.
+
+	* bitops.h (ext2fs_get_block_bitmap_start, 
+		ext2fs_get_inode_bitmap_start, ext2fs_get_block_bitmap_end,
+		ext2fs_get_inode_bitmap_end): Add new accessor functions
+		which return the start and end points of the bitmaps.
+
+Tue Jul 11 18:59:41 1995    <tytso@rsx-11.mit.edu>
+
+	* llseek.c (ext2_llseek): If the offset is small enough, use lseek
+		instead of llseek.  The errno if the offset is too large
+		and lseek is not supported should be EINVAL, not -EINVAL.
+
+Thu Jun 15 23:43:02 1995  Remy Card  <card@bbj>
+
+	* Makefile.in: Added support for ELF shared libraries.
+		Fixed typos in the compilation rules.
+		(distclean): Added Makefile.
+
+	* llseek.c (llseek): New function, if llseek() does not exist in the
+	C library.
+	(ext2_llseek): Changed to call llseek().
+
+Mon Jun 12 08:29:07 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* ext2fs.h: Use __u32 to define blk_t, instead of unsigned long.
+
+Sun Jun 11 15:02:54 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* mkdir.c (ext2fs_mkdir): Use LINUX_S_IFDIR instead of S_IFDIR.
+
+	* ext2fs.h (LINUX_S_IFDIR): Define a linux specific versions of
+		the S_*, which are normally defined in <sys/stat.h>.  This
+		allows us to compile e2fsprogs on a non-Linux system,
+		which may have a different value for S_IFDIR.
+
+Sat Jun 10 23:47:05 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* bitops.c (clear_bit, set_bit): Remove calls to cli() and sti();
+		this is a user-mode application!
+
+Thu Jun  8 13:13:22 1995  Miles Bader  <miles@churchy.gnu.ai.mit.edu>
+
+	* llseek.c: Put the include of <linux/unistd.h> inside the #ifdef
+	__linux__ so that non-linux systems won't see it.
+
+	* alloc.c: Include <errno.h> if possible.
+	* badblocks.c: Ditto.
+	* bb_inode.c: Ditto.
+	* bitmaps.c: Ditto.
+	* block.c: Ditto.
+	* expanddir.c: Ditto.
+	* get_pathname.c: Ditto.
+	* initialize.c: Ditto.
+	* inode.c: Ditto.
+	* llseek.c: Ditto.
+	* mkdir.c: Ditto.
+	* namei.c: Ditto.
+	* newdir.c: Ditto.
+	* openfs.c: Ditto.
+	* rw_bitmaps.c: Ditto.
+	* unix_io.c: Ditto.
+
+	* Makefile.in: Rewritten to conform to GNU coding standards and
+	support separate compilation directories.
+
+Thu May 11 04:13:12 1995    <tytso@rsx-11.mit.edu>
+
+	* initialize.c (ext2fs_initialize): Don't allow more than one
+		bitmaps's worth of inodes in a group.
+
 Sat Mar 11 14:07:11 1995  Theodore Y. Ts'o  <tytso@localhost>
 
 	* llseek.c (ext2_llseek): Added error checking to the llseek()

@@ -14,6 +14,9 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 
@@ -149,39 +152,5 @@ void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap)
 
 	memset(bitmap->bitmap, 0,
 	       ((bitmap->real_end - bitmap->start) / 8) + 1);
-}
-
-void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap)
-{
-	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_INODE_BITMAP))
-		return;
-
-	bitmap->magic = 0;
-	if (bitmap->description) {
-		free(bitmap->description);
-		bitmap->description = 0;
-	}
-	if (bitmap->bitmap) {
-		free(bitmap->bitmap);
-		bitmap->bitmap = 0;
-	}
-	free(bitmap);
-}
-
-void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap)
-{
-	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_BLOCK_BITMAP))
-		return;
-
-	bitmap->magic = 0;
-	if (bitmap->description) {
-		free(bitmap->description);
-		bitmap->description = 0;
-	}
-	if (bitmap->bitmap) {
-		free(bitmap->bitmap);
-		bitmap->bitmap = 0;
-	}
-	free(bitmap);
 }
 

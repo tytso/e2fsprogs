@@ -13,6 +13,9 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 
@@ -100,7 +103,7 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 {
 	int i;
-	char *block_bitmap, *inode_bitmap;
+	char *block_bitmap = 0, *inode_bitmap = 0;
 	char *buf;
 	errcode_t retval;
 	int block_nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
@@ -130,39 +133,31 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		inode_bitmap = fs->inode_map->bitmap;
 	}
 	free(buf);
-	buf = malloc(fs->blocksize);
-	if (!buf) {
-		retval = ENOMEM;
-		goto cleanup;
-	}
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		if (do_block) {
+		if (block_bitmap) {
 			retval = io_channel_read_blk
 				(fs->io,
 				 fs->group_desc[i].bg_block_bitmap,
-				 1, buf);
+				 -block_nbytes, block_bitmap);
 			if (retval) {
 				retval = EXT2_ET_BLOCK_BITMAP_READ;
 				goto cleanup;
 			}
-			memcpy(block_bitmap, buf, block_nbytes);
 			block_bitmap += block_nbytes;
 		}
-		if (do_inode) {
+		if (inode_bitmap) {
 			retval = io_channel_read_blk
 				(fs->io,
 				 fs->group_desc[i].bg_inode_bitmap,
-				 1, buf);
+				 -inode_nbytes, inode_bitmap);
 			if (retval) {
 				retval = EXT2_ET_INODE_BITMAP_READ;
 				goto cleanup;
 			}
-			memcpy(inode_bitmap, buf, inode_nbytes);
 			inode_bitmap += inode_nbytes;
 		}
 	}
-	free(buf);
 	return 0;
 	
 cleanup:

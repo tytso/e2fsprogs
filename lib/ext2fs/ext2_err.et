@@ -5,7 +5,7 @@
 	error_table ext2
 
 ec	EXT2_ET_BASE,
-	"EXT2FS Library version 0.5b"
+	"EXT2FS Library version 0.5c"
 
 ec	EXT2_ET_MAGIC_EXT2FS_FILSYS,
 	"Wrong magic number for ext2_filsys structure"
@@ -180,6 +180,15 @@ ec	EXT2_ET_BAD_DIND_BLOCK,
 
 ec	EXT2_ET_BAD_TIND_BLOCK,
 	"Illegal triply indirect block found" 
+
+ec	EXT2_ET_NEQ_BLOCK_BITMAP,
+	"Block bitmaps are not the same"
+
+ec	EXT2_ET_NEQ_INODE_BITMAP,
+	"Inode bitmaps are not the same"
+
+ec	EXT2_ET_BAD_DEVICE_NAME,
+	"Illegal or malformed device name"
 
 	end
 

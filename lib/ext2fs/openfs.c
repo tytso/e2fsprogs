@@ -1,16 +1,25 @@
 /*
  * openfs.c --- open an ext2 filesystem
  * 
- * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995 Theodore Ts'o.
+ * 
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
  */
 
 #include <stdio.h>
 #include <string.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#if HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 #include <fcntl.h>
 #include <time.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -27,8 +36,9 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 {
 	ext2_filsys	fs;
 	errcode_t	retval;
-	int		i, group_block;
+	int		i, j, group_block, groups_per_block;
 	char		*dest;
+	struct ext2_group_desc *gdp;
 	
 	EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
 	
@@ -77,6 +87,13 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 				     fs->super);
 	if (retval)
 		goto cleanup;
+
+	if ((fs->super->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC)) ||
+	    (fs->flags & EXT2_SWAP_BYTES)) {
+		fs->flags |= EXT2_SWAP_BYTES;
+
+		ext2fs_swap_super(fs->super);
+	}
 	
 	if (fs->super->s_magic != EXT2_SUPER_MAGIC) {
 		retval = EXT2_ET_BAD_MAGIC;
@@ -126,6 +143,13 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		if (retval)
 			goto cleanup;
 		group_block++;
+		if (fs->flags & EXT2_SWAP_BYTES) {
+			gdp = (struct ext2_group_desc *) dest;
+			groups_per_block = fs->blocksize /
+				sizeof(struct ext2_group_desc);
+			for (j=0; j < groups_per_block; j++)
+				ext2fs_swap_group_desc(gdp++);
+		}
 		dest += fs->blocksize;
 	}
 

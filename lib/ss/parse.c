@@ -7,6 +7,9 @@
 #ifdef HAS_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include "ss_internal.h"
 #include "copyright.h"

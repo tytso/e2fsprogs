@@ -1,7 +1,5 @@
-	This is the new version (0.5b) of the second extended file system
-management programs.  You need to run Linux 1.0 or above to use it since
-some programs used some ext2fs features that where not available in
-previous kernel versions.
+	This is the new version (0.5c) of the second extended file system
+management programs.  
 
 	See the file INSTALL for installation instructions.  This is
 important!  Note that your /etc/fstab file may need modifying before

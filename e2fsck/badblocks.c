@@ -6,6 +6,9 @@
  */
 
 #include <time.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <et/com_err.h>
 #include "e2fsck.h"
@@ -16,7 +19,7 @@ static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 
 static void invalid_block(ext2_filsys fs, blk_t blk)
 {
-	printf("Bad block %lu out of range; ignored.\n", blk);
+	printf("Bad block %u out of range; ignored.\n", blk);
 	return;
 }
 
@@ -97,7 +100,7 @@ static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 	 */
 	if (*block_nr >= fs->super->s_blocks_count ||
 	    *block_nr < fs->super->s_first_data_block) {
-		printf("Warning illegal block %lu found in bad block inode.  Cleared.\n", *block_nr);
+		printf("Warning illegal block %u found in bad block inode.  Cleared.\n", *block_nr);
 		*block_nr = 0;
 		return BLOCK_CHANGED;
 	}
@@ -127,7 +130,7 @@ void test_disk(ext2_filsys fs)
 	/*
 	 * Now run the bad blocks program
 	 */
-	sprintf(buf, "badblocks %s%s %ld", preen ? "" : "-s ",
+	sprintf(buf, "badblocks %s%s %d", preen ? "" : "-s ",
 		fs->device_name,
 		fs->super->s_blocks_count);
 	if (verbose)

@@ -4,6 +4,10 @@
  * For copyright information, see copyright.h.
  */
 
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
+
 #include "copyright.h"
 #include "ss_internal.h"
 

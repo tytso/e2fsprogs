@@ -1,0 +1,69 @@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+top_builddir = .
+INSTALL = @INSTALL@
+
+@MCONFIG@
+
+LIB_SUBDIRS=lib/et lib/ss lib/ext2fs lib/e2p
+PROG_SUBDIRS=e2fsck debugfs misc
+SUBDIRS=$(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
+
+all:: libs progs check
+
+progs: all-progs-recursive
+libs: all-libs-recursive
+
+install: all-libs-recursive install-progs-recursive \
+	install-shlibs-libs-recursive
+	(export MANPATH=$(DESTDIR)$(mandir); $(srcdir)/install-utils/compile_manpages)
+
+install-libs: install-libs-recursive
+
+TAGS clean-recursive distclean-recursive \
+	    mostlyclean-recursive realclean-recursive install-recursive:
+	for subdir in $(SUBDIRS); do \
+	  target=`echo $@|$(SED) 's/-recursive//'`; \
+	  echo making $$target in $$subdir; \
+	  (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	done
+
+all-progs-recursive install-progs-recursive:
+	for subdir in $(PROG_SUBDIRS); do \
+	  target=`echo $@|$(SED) 's/-progs-recursive//'`; \
+	  echo making $$target in $$subdir; \
+	  (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	done
+
+all-libs-recursive install-libs-recursive install-shlibs-libs-recursive:
+	for subdir in $(LIB_SUBDIRS); do \
+	  target=`echo $@|$(SED) 's/-libs-recursive//'`; \
+	  echo making $$target in $$subdir; \
+	  (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	done
+
+mostlyclean: mostlyclean-recursive mostlyclean-local
+clean: clean-recursive clean-local
+distclean: distclean-recursive distclean-local
+realclean: realclean-recursive realclean-local
+
+mostlyclean-local:
+	$(RM) -f \#* *~ core MAKELOG 
+clean-local: mostlyclean-local
+distclean-local: clean-local
+	$(RM) -f include/linux/types.h
+	$(RM) -f config.status config.log config.cache MCONFIG Makefile
+realclean-local: distclean-local
+	$(RM) -f configure
+
+check:
+	(cd tests; make check)
+
+Makefile: config.status $(srcdir)/Makefile.in
+	CONFIG_FILES=$@ CONFIG_HEADERS= ./config.status
+
+config.status: $(srcdir)/configure
+	./config.status --recheck
+$(srcdir)/configure: $(srcdir)/configure.in
+	cd $(srcdir) && autoconf

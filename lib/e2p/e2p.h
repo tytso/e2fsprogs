@@ -1,5 +1,6 @@
-#include <dirent.h>
+#include <sys/types.h>		/* Needed by dirent.h on netbsd */
 #include <stdio.h>
+#include <dirent.h>
 
 #include <linux/ext2_fs.h>
 

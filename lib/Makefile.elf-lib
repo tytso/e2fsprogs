@@ -1,0 +1,41 @@
+#
+# This is a Makefile stub which handles the creation of Linux ELF shared
+# libraries.
+#
+# In order to use this stub, the following makefile variables must be defined.
+# 
+# ELF_VERSION = 1.0
+# ELF_IMAGE = libce
+# ELF_MYDIR = et
+# ELF_INSTALL_DIR = $(SHLIBDIR)
+#
+
+all:: elfshared image
+
+subdirs:: elfshared
+
+elfshared:
+	mkdir elfshared
+
+ELF_LIB = $(ELF_IMAGE).so.$(ELF_VERSION)
+
+image:		$(ELF_LIB)
+
+$(ELF_LIB): $(OBJS)
+	(cd elfshared; $(CC) --shared -o $(ELF_LIB) $(OBJS))
+	$(MV) elfshared/$(ELF_LIB) .
+	$(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so
+	$(LN) $(ELF_LIB) ../$(ELF_LIB)
+	$(LN) ../$(ELF_LIB) ../$(ELF_IMAGE).so
+
+installdirs::
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(ELF_INSTALL_DIR)
+
+install-shlibs install:: $(ELF_LIB) installdirs
+	$(INSTALL_PROGRAM) $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
+	-ldconfig
+
+clean::
+	$(RM) -rf elfshared
+	$(RM) -f $(ELF_LIB)
+	$(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so

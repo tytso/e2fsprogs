@@ -1,31 +1,30 @@
-	To install the second extended file system management program,
+	To install the second extended file system management programs,
 just follow the steps:
 
-1) Edit the file MCONFIG
+1) Change directory into the top of the e2fsprogs source tree
 
-	This file contains definitions used in the various makefiles.  These
-definitions have reasonable default value but you may want to adjust them to 
-your system configuration.
+2) Create a build directory and cd into it:
 
-	In particular, if you don't have the tools to build shared
-libraries, you'll want to comment out the "BUILD_DLL_SHLIBS = YES"
-line.
+	mkdir build; cd build
 
-2) Compile the programs
+3)  Run the configure script
 
-	Run `make world' to (a) create the dependencies files, (b)
-compile the libraries and the programs, and (c) run a test suite on
-e2fsck.  The test suite runs a series of tests; for each one, e2fsck
-should return an exit status of 1 on the first pass, and an exit
-status of 0 on the second pass.  The one exception to this is the
-"okgroup.img" test, which should return an exit status of 0 for both
-passes.
+	../configure
 
-3) Install the programs
+	If you wish to turn on DLL shared libraries, add the option
+flag --enable-dll-shlibs.  If you wish to turn on ELF shared
+libraries, add the option --enable-elf-shlibs.  If you wish to build
+profiling libraries, add the option --enable-profile.
+
+4)  Compile the programs
+
+	make
+
+5) Install the programs
 
 	Run `make install'
 
-4) Install the include files and libraries
+6) Install the include files and libraries
 
 	You can run `make install-libs' to install the include files and
 libraries.  Please note that this installation is not needed for the
@@ -33,14 +32,15 @@ programs to work.  It is only needed if you expect to develop other
 programs using the libraries or if you want to compile other program
 using these libraries (like the 4.4BSD dump and restore port).
 
-5) Remove any pre-formatted man pages.  Some distributions will have
-pre-formatted manual pages which will always be displayed in
-preference to newer man pages in /usr/man.  If this is the case, you
-may need to manually remove them in order to see the correct manual
-pages.  The shell script in install-utils/remove_preformat_manpages
-may be helpful in doing so.
+7) Remove any pre-formatted man pages.  
 
-5) Make sure your /etc/fstab file is correct.
+	Some distributions will have pre-formatted manual pages which
+will always be displayed in preference to newer man pages in /usr/man.
+If this is the case, you may need to manually remove them in order to
+see the correct manual pages.  The shell script in
+install-utils/remove_preformat_manpages may be helpful in doing so.
+
+8) Make sure your /etc/fstab file is correct.
 
 	Some distributions install an /etc/fstab which is missing the
 fifth and sixth field of filesystem entry, which are the dump
@@ -56,6 +56,6 @@ you should add "1 1" at the end of each line, so that they look like this:
 
 /dev/hda4       /        ext2        defaults	1	1
 
-	There is a script in insatll-utils/convfstab (donated by
+	There is a script in install-utils/convfstab (donated by
 Michael Weller) that may help you correct your /etc/fstab file.
 

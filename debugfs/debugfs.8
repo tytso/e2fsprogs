@@ -1,5 +1,8 @@
 .\" -*- nroff -*-
-.TH DEBUGFS 8 "November 1994" "Version 0.5b"
+.\" Copyright 1993, 1994, 1995 by Theodore Ts'o.  All Rights Reserved.
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.TH DEBUGFS 8 "October 1995" "Version 0.5c"
 .SH NAME
 debugfs \- ext2 file system debugger
 .SH SYNOPSIS
@@ -27,18 +30,26 @@ option, the file system is open in read-only mode.
 .B debugfs
 is an interactive debugger. It understands a number of commands.
 .TP
-.I cd file
+.I cat <file>
+Dump the contents of an inode to stdout.
 .TP
-.I chroot file
+.I cd <directory>
+Change the current working directory to specified directory
+.TP
+.I chroot <directory>
+Change the root directory to be the specified inode.
 .TP
 .I close
 Close the currently open file system.
 .TP
-.I clri file
+.I clri <file>
 Clear the contents of the inode corresponding to
 .I file
 .TP
-.I expand_dir, file
+.I dump <file> <out_file>
+Dump the contents of an inode to a file.
+.TP
+.I expand_dir <file>
 Expand a directory.
 .TP
 .I find_free_block [goal]
@@ -49,28 +60,33 @@ and allocates it.
 .I find_free_inode [dir [mode]]
 Find a free inode and allocates it.
 .TP
-.I freeb block
+.I freeb <block>
 Mark the block as not allocated.
 .TP
-.I freei file
+.I freei <file>
 Free the inode corresponding to
 .I file
 .TP
 .I help
+Print a list of commands understood by 
+.BR debugfs (8).
 .TP
-.I iname inode
+.I icheck <block>
+Do block->inode translation.
+.TP
+.I iname <inode>
 Print the file name corresponding to
 .I inode
-(currently not implemented).
+(currently not implemented - see ncheck).
 .TP
-.I initialize device blocksize
+.I initialize <device> <blocksize>
 Create an ext2 file system on
 .I device
 .TP
-.I kill_file file
+.I kill_file <file>
 Remove a file and deallocates its blocks.
 .TP
-.I ln source_file dest_file
+.I ln <source_file> <dest_file>
 Create a link.
 .TP
 .I ls [pathname]
@@ -78,55 +94,69 @@ Emulate the
 .BR ls (1)
 command.
 .TP
-.I modify_inode file
+.I modify_inode <file>
 Modify the contents of the inode corresponding to
 .I file
 .TP
-.I mkdir file
+.I mkdir <file>
 Make a directory.
 .TP
-.I open [-w] device
+.I mknod <file> [p|[[c|b] <major> <minor>]]
+Create a special device file
+.TP
+.I ncheck <inode>
+Do inode->name translation.
+.TP
+.I open [-w] <device>
 Open a file system.
 .TP
 .I pwd
+Print the current working directory.
 .TP
 .I quit
 Quit
 .B debugfs
 .TP
-.I rm file
+.I rm <file>
 Remove a file.
 .TP
-.I rmdir file
+.I rmdir <directory>
 Remove a directory.
 .TP
-.I setb block
+.I setb <block>
 Mark the block as allocated.
 .TP
-.I seti file
+.I seti <file>
 Mark in use the inode corresponding to
 .I file
 .TP
 .I show_super_stats
 List the contents of the super block.
 .TP
-.I stat file
+.I stat <file>
 Dump the contents of the inode corresponding to
 .I file
 .TP
-.I testb block
+.I testb <block>
 Test if the block is marked as allocated.
 .TP
-.I testi file
+.I testi <file>
 Test if the inode correponding to
 .I file
 is marked as allocated.
 .TP
-.I unlink file
+.I unlink <file>
 Remove a link.
+.TP
+.I write source_file <file>
+Create a file in the filesystem named
+.IR file ,
+and copy the contents of
+.I source_file
+into the destination file.
 .SH AUTHOR
 .B debugfs
-has been written by Theodore T'so <tytso@mit.edu>.
+was written by Theodore Ts'o <tytso@mit.edu>.
 .SH SEE ALSO
 .BR dumpe2fs (8),
 .BR e2fsck (8),

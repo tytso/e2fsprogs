@@ -11,9 +11,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
-#include <getopt.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #include "debugfs.h"
 
@@ -29,10 +30,10 @@ struct block_walk_struct {
 	ino_t			inode;
 };
 
-int icheck_proc(ext2_filsys fs,
-		blk_t	*block_nr,
-		int blockcnt,
-		void *private)
+static int icheck_proc(ext2_filsys fs,
+		       blk_t	*block_nr,
+		       int blockcnt,
+		       void *private)
 {
 	struct block_walk_struct *bw = (struct block_walk_struct *) private;
 	int	i;

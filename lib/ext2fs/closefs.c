@@ -9,6 +9,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 
@@ -21,27 +25,60 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	errcode_t	retval;
 	char		*group_ptr;
 	unsigned long	fs_state;
+	struct ext2_super_block *super_shadow = 0;
+	struct ext2_group_desc *group_shadow = 0;
+	struct ext2_group_desc *s, *t;
 	
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
+	fs_state = fs->super->s_state;
+
+	fs->super->s_wtime = time(NULL);
+	if (fs->flags & EXT2_SWAP_BYTES) {
+		retval = ENOMEM;
+		if (!(super_shadow = malloc(SUPERBLOCK_SIZE)))
+			goto errout;
+		if (!(group_shadow = malloc(fs->blocksize*fs->desc_blocks)))
+			goto errout;
+		memset(group_shadow, 0, fs->blocksize*fs->desc_blocks);
+
+		/* swap the superblock */
+		*super_shadow = *fs->super;
+		ext2fs_swap_super(super_shadow);
+
+		/* swap the group descriptors */
+		for (j=0, s=fs->group_desc, t=group_shadow;
+		     j < fs->group_desc_count; j++, t++, s++) {
+			*t = *s;
+			ext2fs_swap_group_desc(t);
+		}
+	} else {
+		super_shadow = fs->super;
+		group_shadow = fs->group_desc;
+	}
+	
 	/*
 	 * Write out master superblock.  This has to be done
 	 * separately, since it is located at a fixed location
 	 * (SUPERBLOCK_OFFSET).
 	 */
-	fs->super->s_wtime = time(NULL);
 	io_channel_set_blksize(fs->io, SUPERBLOCK_OFFSET);
-	retval = io_channel_write_blk(fs->io, 1, -SUPERBLOCK_SIZE, fs->super);
+	retval = io_channel_write_blk(fs->io, 1, -SUPERBLOCK_SIZE,
+				      super_shadow);
 	if (retval)
-		return retval;
+		goto errout;
 	io_channel_set_blksize(fs->io, fs->blocksize);
 
 	/*
-	 * Save the state of the FS and set it to non valid for the
-	 * backup superblocks
+	 * Set the state of the FS to be non-valid.  (The state has
+	 * already been backed up earlier, and will be restored when
+	 * we exit.)
 	 */
-	fs_state = fs->super->s_state;
 	fs->super->s_state &= ~EXT2_VALID_FS;
+	if (fs->flags & EXT2_SWAP_BYTES) {
+		*super_shadow = *fs->super;
+		ext2fs_swap_super(super_shadow);
+	}
 
 	/*
 	 * Write out the master group descriptors, and the backup
@@ -52,27 +89,21 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		if (i !=0 ) {
 			retval = io_channel_write_blk(fs->io, group_block,
 						      -SUPERBLOCK_SIZE,
-						      fs->super);
-			if (retval) {
-				fs->super->s_state = fs_state;
-				return retval;
-			}
+						      super_shadow);
+			if (retval)
+				goto errout;
 		}
-		group_ptr = (char *) fs->group_desc;
+		group_ptr = (char *) group_shadow;
 		for (j=0; j < fs->desc_blocks; j++) {
 			retval = io_channel_write_blk(fs->io,
 						      group_block+1+j, 1,
 						      group_ptr);
-			if (retval) {
-				fs->super->s_state = fs_state;
-				return retval;
-			}
+			if (retval)
+				goto errout;
 			group_ptr += fs->blocksize;
 		}
 		group_block += EXT2_BLOCKS_PER_GROUP(fs->super);
 	}
-
-	fs->super->s_state = fs_state;
 
 	/*
 	 * If the write_bitmaps() function is present, call it to
@@ -83,10 +114,19 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	if (fs->write_bitmaps) {
 		retval = fs->write_bitmaps(fs);
 		if (retval)
-			return retval;
+			goto errout;
 	}
-		
-	return 0;
+
+	retval = 0;
+errout:
+	fs->super->s_state = fs_state;
+	if (fs->flags & EXT2_SWAP_BYTES) {
+		if (super_shadow)
+			free(super_shadow);
+		if (group_shadow)
+			free(group_shadow);
+	}
+	return retval;
 }
 
 errcode_t ext2fs_close(ext2_filsys fs)

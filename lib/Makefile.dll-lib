@@ -14,7 +14,31 @@
 # DLL_INSTALL_DIR = $(SHLIBDIR)
 #
 
-all:: image stubs
+all:: jump image stubs
+
+subdirs:: jump jump/jump.funcs jump/jump.ignore jump/jump.import \
+	jump/jump.params jump/jump.undefs jump/jump.vars
+
+jump:
+	mkdir jump
+
+jump/jump.funcs: dll/jump.funcs
+	$(CP) $< $@
+
+jump/jump.ignore: dll/jump.ignore
+	$(CP) $< $@
+
+jump/jump.import: dll/jump.import
+	$(CP) $< $@
+
+jump/jump.params: dll/jump.params
+	$(CP) $< $@
+
+jump/jump.undefs: dll/jump.undefs
+	$(CP) $< $@
+
+jump/jump.vars: dll/jump.vars
+	$(CP) $< $@
 
 #
 # This is a horrible hack to try to find libgcc.a  --- the DLL documentation
@@ -37,34 +61,31 @@ $(DLL_IMAGE).so.$(DLL_VERSION): $(OBJS)
 		$(DLL_BIN)/mkimage -l $(DLL_IMAGE) -v $(DLL_VERSION) \
 		-a $(DLL_ADDRESS) -j $(DLL_JUMPSIZE) -g $(DLL_GOTSIZE) -- \
 		$(OBJS) -lc $(DLL_LIBS) $(DLL_LIBGCC) -lc)
-	mv jump/$(DLL_IMAGE).so.$(DLL_VERSION) .
+	$(MV) jump/$(DLL_IMAGE).so.$(DLL_VERSION) .
 
 $(DLL_STUB).sa:
 	(cd jump; export JUMP_DIR=`pwd`; \
 		$(DLL_BIN)/mkstubs -l $(DLL_IMAGE) -v $(DLL_VERSION) \
 		-a $(DLL_ADDRESS) -j $(DLL_JUMPSIZE) -g $(DLL_GOTSIZE) \
 		-- $(DLL_STUB))
-	mv jump/$(DLL_STUB).sa .
-	@$(RM) ../$@
-	@$(LN) $(DLL_MYDIR)/$@ ../$@
+	$(MV) jump/$(DLL_STUB).sa .
+	$(RM) -f ../$@
+	$(LN) $@ ../$@
 
-install:: $(DLL_IMAGE).so.$(DLL_VERSION)
-	$(INSTALLBIN) $(DLL_IMAGE).so.$(DLL_VERSION) \
-		$(DLL_INSTALL_DIR)/$(DLL_IMAGE).so.$(DLL_VERSION)
+installdirs::
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(DLL_INSTALL_DIR)
+
+install-shlibs install:: $(DLL_IMAGE).so.$(DLL_VERSION) installdirs
+	$(INSTALL_PROGRAM) $(DLL_IMAGE).so.$(DLL_VERSION) \
+		$(DESTDIR)$(DLL_INSTALL_DIR)/$(DLL_IMAGE).so.$(DLL_VERSION)
 	-ldconfig
 
-install-libs:: $(DLL_STUB).sa
-	$(INSTALLLIB) $(DLL_STUB).sa $(LIBDIR)/$(DLL_STUB).sa
-	$(CHMOD) 644 $(LIBDIR)/$(DLL_STUB).sa
-	$(RANLIB) $(LIBDIR)/$(DLL_STUB).sa
-	$(CHMOD) $(LIBMODE) $(LIBDIR)/$(DLL_STUB).sa
-
-install-tree:: $(DLL_IMAGE).so.$(DLL_VERSION)
-	rm -f ../../shlibs/$(DLL_IMAGE).so.$(DLL_VERSION)
-	cp $(DLL_IMAGE).so.$(DLL_VERSION) ../../shlibs
-	strip ../../shlibs/$(DLL_IMAGE).so.$(DLL_VERSION)
-	chmod 555 ../../shlibs/$(DLL_IMAGE).so.$(DLL_VERSION)
+install:: $(DLL_STUB).sa
+	$(INSTALL_DATA) $(DLL_STUB).sa $(DESTDIR)$(ulibdir)/$(DLL_STUB).sa
+	$(CHMOD) 644 $(DESTDIR)$(ulibdir)/$(DLL_STUB).sa
+	$(RANLIB) $(DESTDIR)$(ulibdir)/$(DLL_STUB).sa
+	$(CHMOD) $(LIBMODE) $(DESTDIR)$(ulibdir)/$(DLL_STUB).sa
 
 clean::
-	(cd jump; $(RM) *~ *.o *.s jump.log size.nm)
-	$(RM) ../$(DLL_STUB).sa $(DLL_STUB).sa $(DLL_IMAGE).so.$(DLL_VERSION)
+	$(RM) -f ../$(DLL_STUB).sa $(DLL_STUB).sa $(DLL_IMAGE).so.$(DLL_VERSION)
+	$(RM) -rf jump

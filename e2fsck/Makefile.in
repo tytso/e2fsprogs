@@ -1,0 +1,167 @@
+#
+# Makefile for e2fsck
+#
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+top_builddir = ..
+INSTALL = @INSTALL@
+LDFLAG_STATIC = @LDFLAG_STATIC@
+
+@MCONFIG@
+
+PROGS=		e2fsck extend @EXTRA_PROGS@
+MANPAGES=	e2fsck.8
+
+LIBS= -L../lib -lss -lcom_err -lext2fs $(CHECKLIB)
+DEPLIBS= ../lib/libss.a ../lib/libcom_err.a ../lib/libext2fs.a
+
+.c.o:
+	$(CC) -c $(CFLAGS) $< -o $@
+
+#
+# Flags for using Checker
+#	Note: The optimization flags must include -g
+#
+#MCHECK=	-checker
+#LIBS= -L../lib -lss -lcom_err -le2fs $(CHECKLIB)
+#DEPLIBS= ../lib/libss.a ../lib/libcom_err.a ../lib/libext2fs.a
+#CHECKLIB= /usr/lib/libchecker.o
+
+#
+# Flags for doing mtrace --- uncomment to produce mtracing e2fsck
+# 	Note:  The optimization flags must include -g
+#
+#MTRACE=	-DMTRACE
+#MTRACE_OBJ= mtrace.o
+#MTRACE_SRC= $(srcdir)/mtrace.c
+#OPT= -g
+
+#
+# Flags for doing mcheck --- uncomment to produce mchecking e2fsck
+# 	Note:  The optimization flags must include -g
+#
+#MCHECK= -DMCHECK
+
+#
+# Flags for profiling --- uncomment to produce profiling e2fsck
+#
+#PROF=		-pg
+#LIBS= -L../lib -lss -lcom_err_p -lext2fs_p 
+#DEPLIBS= ../lib/libss.a ../lib/libcom_err_p.a ../lib/libext2fs_p.a
+
+OBJS= e2fsck.o pass1.o pass1b.o pass2.o pass3.o pass4.o pass5.o \
+	badblocks.o util.o dirinfo.o ehandler.o $(MTRACE_OBJ)
+
+SRCS= $(srcdir)/e2fsck.c \
+	$(srcdir)/pass1.c \
+	$(srcdir)/pass1b.c \
+	$(srcdir)/pass2.c \
+	$(srcdir)/pass3.c \
+	$(srcdir)/pass4.c \
+	$(srcdir)/pass5.c \
+	$(srcdir)/badblocks.c \
+	$(srcdir)/util.c \
+	$(srcdir)/dirinfo.c \
+	$(srcdir)/ehandler.c \
+	$(MTRACE_SRC)
+
+all:: $(PROGS)
+
+e2fsck: $(OBJS)  $(DEPLIBS)
+	$(LD) $(LDFLAGS) $(LDFLAG_STATIC) -o e2fsck $(OBJS) $(LIBS) 
+
+extend: extend.o
+	$(LD) $(LDFLAGS) -o extend extend.o $(CHECKLIB)
+
+flushb: flushb.o
+	$(LD) $(LDFLAGS) -o flushb flushb.o $(CHECKLIB)
+
+iscan: iscan.o util.o
+	$(LD) $(LDFLAGS) -o iscan iscan.o util.o ehandler.o $(LIBS)
+
+
+installdirs:
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(sbindir) $(DESTDIR)$(man8dir) \
+		$(DESTDIR)$(cat8dir)
+
+install: $(PROGS) $(MANPAGES) installdirs
+	for i in $(PROGS); do \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(sbindir)/$$i; \
+		$(STRIP) $(DESTDIR)$(sbindir)/$$i; \
+	done
+	$(LN) -f $(DESTDIR)$(sbindir)/e2fsck $(DESTDIR)$(sbindir)/fsck.ext2
+	for i in $(MANPAGES); do \
+		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(man8dir)/$$i; \
+	done
+uninstall:
+	$(RM) -f $(sbindir)/e2fsck
+	$(RM) -f $(sbindir)/flushb
+	$(RM) -f $(sbindir)/fsck.ext2
+	for i in $(MANPAGES); do \
+		$(RM) -f $(man8dir)/$$i; \
+	done
+
+clean:
+	$(RM) -f $(PROGS) \#* *\# *.s *.o *.a *~ core
+mostlyclean: clean
+distclean: clean
+	$(RM) -f .depend Makefile
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
+e2fsck.o : $(srcdir)/e2fsck.c \
+  $(top_srcdir)/lib/et/com_err.h \
+  $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h \
+  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/../version.h 
+pass1.o : $(srcdir)/pass1.c \
+  $(top_srcdir)/lib/et/com_err.h \
+  $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h 
+pass1b.o : $(srcdir)/pass1b.c \
+  $(top_srcdir)/lib/et/com_err.h \
+  $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h \
+  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h 
+pass2.o : $(srcdir)/pass2.c $(top_srcdir)/lib/et/com_err.h \
+  $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h \
+  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h 
+pass3.o : $(srcdir)/pass3.c \
+  $(top_srcdir)/lib/et/com_err.h \
+  $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h \
+  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h 
+pass4.o : $(srcdir)/pass4.c $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h \
+  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/io.h \
+  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h 
+pass5.o : $(srcdir)/pass5.c $(top_srcdir)/lib/et/com_err.h \
+  $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h \
+  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h 
+badblocks.o : $(srcdir)/badblocks.c \
+  $(top_srcdir)/lib/et/com_err.h \
+  $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h \
+  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h 
+util.o : $(srcdir)/util.c \
+  $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+  $(top_srcdir)/lib/ext2fs/bitops.h 
+dirinfo.o : $(srcdir)/dirinfo.c $(top_srcdir)/lib/et/com_err.h \
+  $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h \
+  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h 
+ehandler.o : $(srcdir)/ehandler.c \
+  $(srcdir)/e2fsck.h \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+  $(top_srcdir)/lib/ext2fs/bitops.h 
+

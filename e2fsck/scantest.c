@@ -7,9 +7,13 @@
 #include <ctype.h>
 #include <termios.h>
 #include <time.h>
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#endif
 #include <unistd.h>
+#ifdef HAVE_MNTENT_H
 #include <mntent.h>
+#endif
 #include <sys/ioctl.h>
 #include <malloc.h>
 #include <sys/resource.h>
@@ -25,7 +29,9 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
+#ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>
+#endif
 #include <linux/ext2_fs.h>
 
 #include "ext2fs/ext2fs.h"

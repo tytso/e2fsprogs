@@ -15,9 +15,12 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include "et/com_err.h"
-#include "ext2_err.h"
+#include "ext2fs/ext2_err.h"
 #include "io.h"
 
 /*
@@ -63,6 +66,8 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	struct unix_private_data *data = NULL;
 	errcode_t	retval;
 
+	if (name == 0)
+		return EXT2_ET_BAD_DEVICE_NAME;
 	io = (io_channel) malloc(sizeof(struct struct_io_channel));
 	if (!io)
 		return ENOMEM;

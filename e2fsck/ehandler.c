@@ -11,9 +11,11 @@
 #include <string.h>
 #include <ctype.h>
 #include <termios.h>
-#include <sys/resource.h>
 
 #include "e2fsck.h"
+
+#include <sys/time.h>
+#include <sys/resource.h>
 
 static const char *operation;
 
@@ -49,7 +51,7 @@ static errcode_t e2fsck_handle_read_error(io_channel channel,
 	else
 		printf("Error reading block %lu (%s).  ", block,
 		       error_message(error));
-	preenhalt();
+	preenhalt(NULL);
 	if (ask("Ignore error", 1))
 		return 0;
 
@@ -89,7 +91,7 @@ static errcode_t e2fsck_handle_write_error(io_channel channel,
 	else
 		printf("Error writing block %lu (%s).  ", block,
 		       error_message(error));
-	preenhalt();
+	preenhalt(NULL);
 	if (ask("Ignore error", 1))
 		return 0;
 

@@ -11,10 +11,25 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
+
+#if  defined(__linux__)    &&	defined(EXT2_OS_LINUX)
+#define CREATOR_OS EXT2_OS_LINUX
+#elif defined(__gnu__)     &&	defined(EXT2_OS_HURD)
+#define CREATOR_OS EXT2_OS_HURD
+#elif defined(__FreeBSD__) &&	defined(EXT2_OS_FREEBSD)
+#define CREATOR_OS EXT2_OS_FREEBSD
+#elif defined(LITES) 	   &&	defined(EXT2_OS_LITES)
+#define CREATOR_OS EXT2_OS_LITES
+#else
+#define CREATOR_OS EXT2_OS_LINUX /* by default */
+#endif
 
 errcode_t ext2fs_initialize(const char *name, int flags,
 			    struct ext2_super_block *param,
@@ -72,9 +87,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_checkinterval, EXT2_DFL_CHECKINTERVAL);
 	super->s_lastcheck = time(NULL);
 
-#ifdef	EXT2_OS_LINUX
-	super->s_creator_os = EXT2_OS_LINUX;
-#endif
+	super->s_creator_os = CREATOR_OS;
 
 	fs->blocksize = EXT2_BLOCK_SIZE(super);
 	fs->fragsize = EXT2_FRAG_SIZE(super);
@@ -104,11 +117,14 @@ retry:
 	/*
 	 * There should be at least as many inodes as the user
 	 * requested.  Figure out how many inodes per group that
-	 * should be.
+	 * should be.  But make sure that we don't allocate more than
+	 * one bitmap's worth of inodes
 	 */
 	super->s_inodes_per_group = (super->s_inodes_count +
 				     fs->group_desc_count - 1) /
 					     fs->group_desc_count;
+	if (super->s_inodes_per_group > fs->blocksize*8)
+		super->s_inodes_per_group = fs->blocksize*8;
 	
 	/*
 	 * Make sure the number of inodes per group completely fills

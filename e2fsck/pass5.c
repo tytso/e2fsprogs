@@ -61,12 +61,39 @@ static void check_block_bitmaps(ext2_filsys fs)
 	
 	free_array = allocate_memory(fs->group_desc_count * sizeof(int),
 				     "free block count array");
-				     
+
+	if ((fs->super->s_first_data_block <
+	     ext2fs_get_block_bitmap_start(block_found_map)) ||
+	    (fs->super->s_blocks_count-1 >
+	     ext2fs_get_block_bitmap_end(block_found_map))) {
+		printf("PROGRAMMING ERROR: filesystem endpoints (%d, %d)\n\t"
+		       "don't match block_found_map endpoints (%d, %d).\n",
+		       fs->super->s_first_data_block,
+		       fs->super->s_blocks_count -1,
+		       ext2fs_get_block_bitmap_start(block_found_map),
+		       ext2fs_get_block_bitmap_end(block_found_map));
+		fatal_error(0);
+	}
+		       
+	if ((fs->super->s_first_data_block <
+	     ext2fs_get_block_bitmap_start(fs->block_map)) ||
+	    (fs->super->s_blocks_count-1 >
+	     ext2fs_get_block_bitmap_end(fs->block_map))) {
+		printf("PROGRAMMING ERROR: filesystem endpoints (%d, %d)\n\t"
+		       "don't match fs->block_map endpoints (%d, %d).\n",
+		       fs->super->s_first_data_block,
+		       fs->super->s_blocks_count -1,
+		       ext2fs_get_block_bitmap_start(fs->block_map),
+		       ext2fs_get_block_bitmap_end(fs->block_map));
+		fatal_error(0);
+	}
+		       
+		       
 	for (i = fs->super->s_first_data_block;
 	     i < fs->super->s_blocks_count;
 	     i++) {
-		actual = ext2fs_test_block_bitmap(block_found_map, i);
-		bitmap = ext2fs_test_block_bitmap(fs->block_map, i);
+		actual = ext2fs_fast_test_block_bitmap(block_found_map, i);
+		bitmap = ext2fs_fast_test_block_bitmap(fs->block_map, i);
 		
 		if (actual == bitmap)
 			goto do_counts;
@@ -82,7 +109,7 @@ static void check_block_bitmaps(ext2_filsys fs)
 			 * Block not used, but marked in use in the bitmap.
 			 */
 			if (!preen)
-				printf(" -%lu", i);
+				printf(" -%u", i);
 			if (do_fix)
 				ext2fs_unmark_block_bitmap(fs->block_map,
 							   i);
@@ -91,7 +118,7 @@ static void check_block_bitmaps(ext2_filsys fs)
 			 * Block used, but not marked in use in the bitmap.
 			 */
 			if (!preen)
-				printf(" +%lu", i);
+				printf(" +%u", i);
 			if (do_fix)
 				ext2fs_mark_block_bitmap(fs->block_map,
 							 i);
@@ -124,7 +151,7 @@ static void check_block_bitmaps(ext2_filsys fs)
 				do_fix = ask(fix_question, 1);
 			if (!preen)
 				printf("Free blocks count wrong for "
-				       "group %lu (%u, counted=%d).  %s\n", i,
+				       "group %u (%u, counted=%d).  %s\n", i,
 				       fs->group_desc[i].bg_free_blocks_count,
 				       free_array[i], fix_msg[do_fix]);
 			if (do_fix) {
@@ -140,7 +167,7 @@ static void check_block_bitmaps(ext2_filsys fs)
 			do_fix = ask(fix_question, 1);
 		if (!preen)
 			printf("Free blocks count wrong "
-			       "(%lu, counted=%d).  %s\n",
+			       "(%u, counted=%d).  %s\n",
 			       fs->super->s_free_blocks_count, free_blocks,
 			       fix_msg[do_fix]);
 		if (do_fix) {
@@ -149,6 +176,7 @@ static void check_block_bitmaps(ext2_filsys fs)
 		} else
 			ext2fs_unmark_valid(fs);
 	}
+	free(free_array);
 }
 			
 static void check_inode_bitmaps(ext2_filsys fs)
@@ -170,9 +198,30 @@ static void check_inode_bitmaps(ext2_filsys fs)
 	dir_array = allocate_memory(fs->group_desc_count * sizeof(int),
 				    "directory count array");
 				     
+	if ((1 < ext2fs_get_inode_bitmap_start(inode_used_map)) ||
+	    (fs->super->s_inodes_count > 
+	     ext2fs_get_inode_bitmap_end(inode_used_map))) {
+		printf("PROGRAMMING ERROR: filesystem inode endpoints (%d, %d)\n\t"
+		       "don't match inode_used_map endpoints (%d, %d).\n",
+		       1, fs->super->s_inodes_count,
+		       ext2fs_get_inode_bitmap_start(inode_used_map),
+		       ext2fs_get_inode_bitmap_end(inode_used_map));
+		fatal_error(0);
+	}
+	if ((1 < ext2fs_get_inode_bitmap_start(fs->inode_map)) ||
+	    (fs->super->s_inodes_count > 
+	     ext2fs_get_inode_bitmap_end(fs->inode_map))) {
+		printf("PROGRAMMING ERROR: filesystem inode endpoints (%d, %d)\n\t"
+		       "don't match fs->inode_map endpoints (%d, %d).\n",
+		       1, fs->super->s_inodes_count,
+		       ext2fs_get_inode_bitmap_start(fs->inode_map),
+		       ext2fs_get_inode_bitmap_end(fs->inode_map));
+		fatal_error(0);
+	}
+
 	for (i = 1; i <= fs->super->s_inodes_count; i++) {
-		actual = ext2fs_test_inode_bitmap(inode_used_map, i);
-		bitmap = ext2fs_test_inode_bitmap(fs->inode_map, i);
+		actual = ext2fs_fast_test_inode_bitmap(inode_used_map, i);
+		bitmap = ext2fs_fast_test_inode_bitmap(fs->inode_map, i);
 		
 		if (actual == bitmap)
 			goto do_counts;
@@ -265,7 +314,7 @@ do_counts:
 			do_fix = ask(fix_question, 1);
 		if (!preen)
 			printf("Free inodes count wrong "
-			       "(%lu, counted=%d).  %s\n",
+			       "(%u, counted=%d).  %s\n",
 			       fs->super->s_free_inodes_count, free_inodes,
 			       fix_msg[do_fix]);
 		if (do_fix) {
@@ -274,6 +323,8 @@ do_counts:
 		} else
 			ext2fs_unmark_valid(fs);
 	}
+	free(free_array);
+	free(dir_array);
 }
 
 static void check_inode_end(ext2_filsys fs)

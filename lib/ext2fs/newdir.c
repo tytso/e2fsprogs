@@ -9,6 +9,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 

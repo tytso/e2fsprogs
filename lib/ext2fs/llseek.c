@@ -9,11 +9,24 @@
 
 #include <errno.h>
 #include <unistd.h>
-#include <linux/unistd.h>
 #include "et/com_err.h"
 #include "ext2fs/io.h"
 
 #ifdef __linux__
+
+#ifdef HAVE_LLSEEK
+#include <unistd.h>
+#include <syscall.h>
+
+#else	/* HAVE_LLSEEK */
+
+#ifdef __alpha__
+
+#define llseek lseek
+
+#else /* !__alpha__ */
+
+#include <linux/unistd.h>
 
 #ifndef __NR__llseek
 #define __NR__llseek            140
@@ -26,54 +39,62 @@ static _syscall5(int,_llseek,unsigned int,fd,unsigned long,offset_high,
 		 unsigned long, offset_low,ext2_loff_t *,result,
 		 unsigned int, origin)
 
+static ext2_loff_t llseek (unsigned int fd, ext2_loff_t offset,
+		unsigned int origin)
+{
+	ext2_loff_t result;
+	int retval;
+
+	retval = _llseek (fd, ((unsigned long long) offset) >> 32,
+			((unsigned long long) offset) & 0xffffffff,
+			&result, origin);
+	return (retval == -1 ? (ext2_loff_t) retval : result);
+}
+
+#endif	/* HAVE_LLSEEK */
+
+#endif /* __alpha__ */
+
 ext2_loff_t ext2_llseek (unsigned int fd, ext2_loff_t offset,
 			 unsigned int origin)
 {
-	unsigned long offset_high;
-	unsigned long offset_low;
 	ext2_loff_t result;
-	int retval;
 	static int do_compat = 0;
 
+	if ((sizeof(off_t) >= sizeof(ext2_loff_t)) ||
+	    (offset < ((ext2_loff_t) 1 << ((sizeof(off_t)*8) -1))))
+		return lseek(fd, (off_t) offset, origin);
+
 	if (do_compat) {
-	compat_lseek:
-		if ((sizeof(off_t) < sizeof(ext2_loff_t)) &&
-		    (offset >= ((ext2_loff_t) 1 << ((sizeof(off_t)*8) -1)))) {
-			errno = -EINVAL;
-			return -1;
-		}
-		return lseek (fd, (off_t) offset, origin);
+		errno = EINVAL;
+		return -1;
 	}
 	
-	offset_high = ((unsigned long long) offset) >> 32;
-	offset_low = ((unsigned long long) offset) & 0xffffffff;
-	retval = _llseek (fd, offset_high, offset_low, &result, origin);
-	if (retval == -1 && errno == ENOSYS) {
+	result = llseek (fd, offset, origin);
+	if (result == -1 && errno == ENOSYS) {
 		/*
 		 * Just in case this code runs on top of an old kernel
 		 * which does not support the llseek system call
 		 */
 		do_compat++;
-		goto compat_lseek;
+		errno = EINVAL;
 	}
-	if (retval == -1)
-		result = -1;
 	return result;
 }
 
-#else
+#else /* !linux */
 
 ext2_loff_t ext2_llseek (unsigned int fd, ext2_loff_t offset,
 			 unsigned int origin)
 {
 	if ((sizeof(off_t) < sizeof(ext2_loff_t)) &&
 	    (offset >= ((ext2_loff_t) 1 << ((sizeof(off_t)*8) -1)))) {
-		errno = -EINVAL;
+		errno = EINVAL;
 		return -1;
 	}
 	return lseek (fd, (off_t) offset, origin);
 }
 
-#endif
+#endif 	/* linux */
 
 

@@ -9,11 +9,11 @@
  * Public License
  */
 
+#include <sys/types.h>
 #include <grp.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <time.h>
-#include <sys/types.h>
 
 #include <linux/ext2_fs.h>
 
@@ -52,23 +52,23 @@ void list_super (struct ext2_super_block * s)
 	printf ("Errors behavior:          ");
 	print_fs_errors (stdout, s->s_errors);
 	printf ("\n");
-	printf ("Inode count:              %lu\n", s->s_inodes_count);
-	printf ("Block count:              %lu\n", s->s_blocks_count);
-	printf ("Reserved block count:     %lu\n", s->s_r_blocks_count);
-	printf ("Free blocks:              %lu\n", s->s_free_blocks_count);
-	printf ("Free inodes:              %lu\n", s->s_free_inodes_count);
-	printf ("First block:              %lu\n", s->s_first_data_block);
+	printf ("Inode count:              %u\n", s->s_inodes_count);
+	printf ("Block count:              %u\n", s->s_blocks_count);
+	printf ("Reserved block count:     %u\n", s->s_r_blocks_count);
+	printf ("Free blocks:              %u\n", s->s_free_blocks_count);
+	printf ("Free inodes:              %u\n", s->s_free_inodes_count);
+	printf ("First block:              %u\n", s->s_first_data_block);
 	printf ("Block size:               %u\n", EXT2_BLOCK_SIZE(s));
 	printf ("Fragment size:            %u\n", EXT2_FRAG_SIZE(s));
-	printf ("Blocks per group:         %lu\n", s->s_blocks_per_group);
-	printf ("Fragments per group:      %lu\n", s->s_frags_per_group);
-	printf ("Inodes per group:         %lu\n", s->s_inodes_per_group);
+	printf ("Blocks per group:         %u\n", s->s_blocks_per_group);
+	printf ("Fragments per group:      %u\n", s->s_frags_per_group);
+	printf ("Inodes per group:         %u\n", s->s_inodes_per_group);
 	printf ("Last mount time:          %s", ctime ((time_t *) &s->s_mtime));
 	printf ("Last write time:          %s", ctime ((time_t *) &s->s_wtime));
 	printf ("Mount count:              %u\n", s->s_mnt_count);
 	printf ("Maximum mount count:      %d\n", s->s_max_mnt_count);
 	printf ("Last checked:             %s", ctime ((time_t *) &s->s_lastcheck));
-	printf ("Check interval:           %lu\n", s->s_checkinterval);
+	printf ("Check interval:           %u\n", s->s_checkinterval);
 	if (s->s_checkinterval)
 	{
 		time_t next;

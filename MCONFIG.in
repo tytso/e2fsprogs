@@ -1,0 +1,118 @@
+# Beginning of file MCONFIG
+
+SHELL = /bin/sh
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+usr_prefix = @usr_prefix@
+bindir = $(exec_prefix)/bin
+ubindir = $(usr_prefix)/bin
+sbindir = $(exec_prefix)/sbin
+usbindir = $(usr_prefix)/sbin
+libdir = $(exec_prefix)/lib
+ulibdir = $(usr_prefix)/lib
+includedir = $(usr_prefix)/include
+mandir = $(usr_prefix)/man
+man1dir = $(usr_prefix)/man/man1
+man8dir = $(usr_prefix)/man/man8
+cat1dir = $(usr_prefix)/man/cat1
+cat8dir = $(usr_prefix)/man/cat8
+
+@SET_MAKE@
+
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+CC = @CC@
+DEFS = @DEFS@
+LIBS = @LIBS@
+CFLAGS = $(CPPFLAGS) $(DEFS) $(WFLAGS) @CFLAGS@ $(XTRA_CFLAGS) \
+	-I$(top_builddir)/lib -I$(top_srcdir)/lib $(LINUX_INCLUDE) 
+LDFLAGS = @LDFLAGS@
+RM = @RM@
+LN = @LN@
+MV = @MV@
+CP = @CP@
+CHMOD = @CHMOD@
+AR = @AR@
+AWK = @AWK@
+SED = @SED@
+RANLIB = @RANLIB@
+STRIP = @STRIP@
+LD = $(PURE) @CC@
+ARUPD = $(AR) r
+
+#
+# Use these definitions is you use tools 2.x, x < 16
+#
+#DLL_BIN=/usr/dll/bin
+#JUMP_PREFIX=/usr/dll/jump/
+
+#
+# Use these definitions if you use tools 2.16 or above
+#
+DLL_BIN=/usr/bin
+JUMP_PREFIX=/usr/bin/jump
+
+# An include directive pointing to a directory holding enough linux-like
+# include files to satisfy some programs here
+LINUX_INCLUDE=@LINUX_INCLUDE@
+
+#
+# Warning flags
+#
+# Uncomment WFLAGS if you want really anal GCC warning messages
+#
+#
+@W@WFLAGS=		-ansi -D_POSIX_SOURCE -pedantic \
+@W@			-Wall -Wwrite-strings -Wpointer-arith \
+@W@			-Wcast-qual -Wenum-clash -Wcast-align -Wtraditional \
+@W@			-Wstrict-prototypes -Wmissing-prototypes \
+@W@			-Wnested-externs -Winline -DNO_INLINE_FUNCS -Wshadow 
+
+#
+# Installation user and groups
+#
+BINGRP=		bin
+BINOWN=		bin
+BINMODE=	555
+INCGRP=		bin
+INCOWN=		bin
+INCMODE=	444
+LIBOWN=		bin
+LIBGRP=		bin
+LIBMODE=	444
+MANGRP=		bin
+MANOWN=		bin
+MANMODE=	444
+
+all::
+
+#
+# Make depend magic...
+#
+
+.depend: Makefile $(SRCS) $(top_srcdir)/depfix.sed
+	if test -n "$(SRCS)" ; then \
+		$(CC) -M $(CFLAGS) $(SRCS) | \
+			sed -f $(top_srcdir)/depfix.sed | \
+			sed -e 's; $(srcdir)/; $$(srcdir)/;g' | \
+			sed -e 's; $(top_srcdir)/; $$(top_srcdir)/;g' | \
+			sed -e 's; $(top_builddir)/; $$(top_builddir)/;g' | \
+			sed -e 's; \./; ;g' | \
+		grep -v "  \\\\$$" > .depend; \
+	else :; fi
+
+depend:: .depend
+	if test -n "$(SRCS)" ; then \
+		sed -e '/^# +++ Dependency line eater +++/,$$d' \
+			< $(srcdir)/Makefile.in | cat - .depend \
+			> $(srcdir)/Makefile.in.new; \
+	$(MV) $(srcdir)/Makefile.in $(srcdir)/Makefile.in.old; \
+	$(MV) $(srcdir)/Makefile.in.new $(srcdir)/Makefile.in; \
+	else :; fi
+
+
+
+
+
+# End of file MCONFIG

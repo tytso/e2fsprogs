@@ -10,9 +10,11 @@
 #include <string.h>
 #include <ctype.h>
 #include <termios.h>
-#include <sys/resource.h>
 
 #include "e2fsck.h"
+
+#include <sys/time.h>
+#include <sys/resource.h>
 
 const char * fix_msg[2] = { "IGNORED", "FIXED" };
 const char * clear_msg[2] = { "IGNORED", "CLEARED" };
@@ -51,6 +53,8 @@ int ask_yn(const char * string, int def)
 	tcgetattr (0, &termios);
 	tmp = termios;
 	tmp.c_lflag &= ~(ICANON | ECHO);
+	tmp.c_cc[VMIN] = 1;
+	tmp.c_cc[VTIME] = 0;
 	tcsetattr (0, TCSANOW, &tmp);
 
 	if (def == 1)
@@ -152,24 +156,36 @@ void write_bitmaps(ext2_filsys fs)
 	}
 }
 
-void preenhalt(NOARGS)
+void preenhalt(ext2_filsys fs)
 {
 	if (!preen)
 		return;
 	fprintf(stderr, "\n\n%s: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.\n",
 	       device_name);
+	if (fs != NULL) {
+		fs->super->s_state |= EXT2_ERROR_FS;
+		ext2fs_mark_super_dirty(fs);
+		ext2fs_close(fs);
+	}
 	exit(FSCK_UNCORRECTED);
 }
 
 void init_resource_track(struct resource_track *track)
 {
+#ifdef HAVE_GETRUSAGE
 	struct rusage r;
+#endif
 	
 	track->brk_start = sbrk(0);
 	gettimeofday(&track->time_start, 0);
+#ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
 	track->user_start = r.ru_utime;
 	track->system_start = r.ru_stime;
+#else
+	track->user_start.tv_sec = track->user_start.tv_usec = 0;
+	track->system_start.tv_sec = track->system_start.tv_usec = 0;
+#endif
 }
 
 static __inline__ float timeval_subtract(struct timeval *tv1,
@@ -181,10 +197,13 @@ static __inline__ float timeval_subtract(struct timeval *tv1,
 
 void print_resource_track(struct resource_track *track)
 {
+#ifdef HAVE_GETRUSAGE
 	struct rusage r;
+#endif
 	struct timeval time_end;
 
 	gettimeofday(&time_end, 0);
+#ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
 
 	printf("Memory used: %d, elapsed time: %6.3f/%6.3f/%6.3f\n",
@@ -192,6 +211,11 @@ void print_resource_track(struct resource_track *track)
 	       timeval_subtract(&time_end, &track->time_start),
 	       timeval_subtract(&r.ru_utime, &track->user_start),
 	       timeval_subtract(&r.ru_stime, &track->system_start));
+#else
+	printf("Memory used: %d, elapsed time: %6.3f\n",
+	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)),
+	       timeval_subtract(&time_end, &track->time_start));
+#endif
 }
 
 void e2fsck_read_inode(ext2_filsys fs, unsigned long ino,
@@ -230,15 +254,15 @@ int inode_has_valid_blocks(struct ext2_inode *inode)
 	 * Only directories, regular files, and some symbolic links
 	 * have valid block entries.
 	 */
-	if (!S_ISDIR(inode->i_mode) && !S_ISREG(inode->i_mode) &&
-	    !S_ISLNK(inode->i_mode))
+	if (!LINUX_S_ISDIR(inode->i_mode) && !LINUX_S_ISREG(inode->i_mode) &&
+	    !LINUX_S_ISLNK(inode->i_mode))
 		return 0;
 	
 	/*
 	 * If the symbolic link is a "fast symlink", then the symlink
 	 * target is stored in the block entries.
 	 */
-	if (S_ISLNK (inode->i_mode) && inode->i_blocks == 0 &&
+	if (LINUX_S_ISLNK (inode->i_mode) && inode->i_blocks == 0 &&
 	    inode->i_size < EXT2_N_BLOCKS * sizeof (unsigned long))
 		return 0;
 

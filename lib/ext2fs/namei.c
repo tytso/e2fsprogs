@@ -9,6 +9,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 
@@ -87,7 +90,7 @@ static int process_dir_block(ext2_filsys  fs,
 	if (blockcnt < 0)
 		return 0;
 
-	ctx->errcode = io_channel_read_blk(fs->io, *blocknr, 1, ctx->buf);
+	ctx->errcode = ext2fs_read_dir_block(fs, *blocknr, ctx->buf);
 	if (ctx->errcode)
 		return BLOCK_ABORT;
 	
@@ -116,8 +119,7 @@ next:
 	}
 
 	if (changed) {
-		ctx->errcode = io_channel_write_blk(fs->io, *blocknr, 1,
-						    ctx->buf);
+		ctx->errcode = ext2fs_write_dir_block(fs, *blocknr, ctx->buf);
 		if (ctx->errcode)
 			return BLOCK_ABORT;
 	}

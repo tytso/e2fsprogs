@@ -13,6 +13,9 @@
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 
@@ -35,7 +38,8 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 	 * Allocate an inode, if necessary
 	 */
 	if (!ino) {
-		retval = ext2fs_new_inode(fs, parent, S_IFDIR | 0755, 0, &ino);
+		retval = ext2fs_new_inode(fs, parent, LINUX_S_IFDIR | 0755,
+					  0, &ino);
 		if (retval)
 			goto cleanup;
 	}
@@ -58,7 +62,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 	 * Create the inode structure....
 	 */
 	memset(&inode, 0, sizeof(struct ext2_inode));
-	inode.i_mode = S_IFDIR | 0755;
+	inode.i_mode = LINUX_S_IFDIR | 0755;
 	inode.i_uid = inode.i_gid = 0;
 	inode.i_blocks = fs->blocksize / 512;
 	inode.i_block[0] = blk;
@@ -69,7 +73,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 	/*
 	 * Write out the inode and inode data block
 	 */
-	retval = io_channel_write_blk(fs->io, blk, 1, block);
+	retval = ext2fs_write_dir_block(fs, blk, block);
 	if (retval)
 		goto cleanup;
 	retval = ext2fs_write_inode(fs, ino, &inode); 

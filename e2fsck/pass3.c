@@ -30,6 +30,9 @@
  *     	- The dirinfo directory information cache.
  */
 
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include "et/com_err.h"
 
 #include "e2fsck.h"
@@ -134,7 +137,7 @@ void check_root(ext2_filsys fs, ino_t root_ino)
 	}
 
 	printf("Root inode not allocated.  ");
-	preenhalt();
+	preenhalt(fs);
 	if (!ask("Rellocate", 1)) {
 		ext2fs_unmark_valid(fs);
 		fatal_error("Cannot proceed without a root inode.");
@@ -166,9 +169,9 @@ void check_root(ext2_filsys fs, ino_t root_ino)
 		fatal_error(0);
 	}
 
-	retval = io_channel_write_blk(fs->io, blk, 1, block);
+	retval = ext2fs_write_dir_block(fs, blk, block);
 	if (retval) {
-		com_err("io_channel_write_blk", retval,
+		com_err("ext2fs_write_dir_block", retval,
 			"while writing the root directory block");
 		fatal_error(0);
 	}
@@ -275,7 +278,7 @@ static void check_directory(ext2_filsys fs, ino_t ino)
 	printf("Unconnected directory inode %lu (%s)\n", p->ino, path1);
 	if (path1 != unknown)
 		free(path1);
-	preenhalt();
+	preenhalt(fs);
 	if (ask("Connect to /lost+found", 1)) {
 		if (reconnect_file(fs, p->ino))
 			ext2fs_unmark_valid(fs);
@@ -341,7 +344,7 @@ ino_t get_lost_and_found(ext2_filsys fs)
 		       error_message(retval));
 	else
 		printf("/lost+found not found.  ");
-	preenhalt();
+	preenhalt(fs);
 	if (!ask("Create", 1)) {
 		ext2fs_unmark_valid(fs);
 		return 0;
@@ -391,13 +394,13 @@ ino_t get_lost_and_found(ext2_filsys fs)
 		return 0;
 	}
 
-	retval = io_channel_write_blk(fs->io, blk, 1, block);
+	retval = ext2fs_write_dir_block(fs, blk, block);
+	free(block);
 	if (retval) {
-		com_err("io_channel_write_blk", retval,
+		com_err("ext2fs_write_dir_block", retval,
 			"while writing the directory block for /lost+found");
 		return 0;
 	}
-	free(block);
 
 	/*
 	 * Set up the inode structure
@@ -542,7 +545,7 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 	
 	retval = adjust_inode_count(fp->fs, dirent->inode, -1);
 	if (retval)
-		printf("Error while adjusting inode count on inode %lu\n",
+		printf("Error while adjusting inode count on inode %u\n",
 		       dirent->inode);
 	retval = adjust_inode_count(fp->fs, fp->parent, 1);
 	if (retval)
@@ -626,7 +629,7 @@ static int expand_dir_proc(ext2_filsys fs,
 		}
 		memset(block, 0, fs->blocksize);
 	}	
-	retval = io_channel_write_blk(fs->io, new_blk, 1, block);
+	retval = ext2fs_write_dir_block(fs, new_blk, block);
 	if (retval) {
 		es->err = retval;
 		return BLOCK_ABORT;

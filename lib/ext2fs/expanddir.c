@@ -9,6 +9,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <linux/ext2_fs.h>
 
@@ -55,7 +58,7 @@ static int expand_dir_proc(ext2_filsys fs,
 		}
 		memset(block, 0, fs->blocksize);
 	}	
-	retval = io_channel_write_blk(fs->io, new_blk, 1, block);
+	retval = ext2fs_write_dir_block(fs, new_blk, block);
 	if (retval) {
 		es->err = retval;
 		return BLOCK_ABORT;

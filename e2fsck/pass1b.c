@@ -24,6 +24,9 @@
  */
 
 #include <time.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 
 #include <et/com_err.h>
 #include "e2fsck.h"
@@ -237,7 +240,7 @@ int process_pass1b_block(ext2_filsys fs,
 			if (!p->dup_blocks)
 				printf("Duplicate/bad block(s) in inode %lu:",
 				       p->ino);
-			printf(" %lu", *block_nr);
+			printf(" %u", *block_nr);
 		}
 		p->dup_blocks++;
 		ext2fs_mark_block_bitmap(block_dup_map, *block_nr);
@@ -330,8 +333,8 @@ void pass1c(ext2_filsys fs, char *block_buf)
 	 * (by searching for the containing directory for that inode.)
 	 */
 	for (i=0; inodes_left && i < dir_block_count; i++) {
-		retval = io_channel_read_blk(fs->io, dir_blocks[i].blk,
-					     1, block_buf);
+		retval = ext2fs_read_dir_block(fs, dir_blocks[i].blk,
+					       block_buf);
 		entry = offset = 0;
 		while (offset < fs->blocksize) {
 			entry++;
@@ -478,6 +481,7 @@ static void pass1d(ext2_filsys fs, char *block_buf)
 			ext2fs_unmark_valid(fs);
 		printf("\n");
 	}
+	free(shared);
 }
 
 static int delete_file_block(ext2_filsys fs,

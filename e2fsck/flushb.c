@@ -9,7 +9,9 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
+#ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>
+#endif
 
 #ifdef __STDC__
 #define NOARGS void
@@ -43,9 +45,15 @@ int main(int argc, char **argv)
 	 * Note: to reread the partition table, use the ioctl
 	 * BLKRRPART instead of BLKFSLBUF.
 	 */
+#ifdef BLKFLSBUF
 	if (ioctl(fd, BLKFLSBUF, 0) < 0) {
-		perror("ioctl");
+		perror("ioctl BLKFLSBUF");
 		exit(1);
 	}
 	return 0;
+#else
+	fprintf(stderr,
+		"BLKFLSBUF ioctl not supported!  Can't flush buffers.\n");
+	return 1;
+#endif
 }

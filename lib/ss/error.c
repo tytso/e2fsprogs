@@ -22,20 +22,10 @@
 #include <com_err.h>
 #include "ss_internal.h"
 
-#ifdef _STDARG_H_
-#define STDARG
-#endif
-
-#ifdef _STDARG_H
-#define STDARG
-#endif
-
-#ifndef __STDC__
-/* we didn't get it in com_err.h if it wasn't STDC. */
-#ifndef STDARG
-/* and we don't need it, either, if we're using stdarg.h... */
-#include <varargs.h>
-#endif
+#ifdef HAVE_STDARG_H
+#include <stdarg.h>
+#else
+#include <vararg.h>
 #endif
   
 #undef ss_error
@@ -78,7 +68,7 @@ char * ss_name(sci_idx)
     }
 }
 
-#ifdef STDARG
+#ifdef HAVE_STDARG_H
 void ss_error (int sci_idx, long code, const char * fmt, ...)
 #else
 void ss_error (va_alist)
@@ -87,7 +77,7 @@ void ss_error (va_alist)
 {
     register char const *whoami;
     va_list pvar;
-#ifndef STDARG
+#ifndef HAVE_STDARG_H
     int sci_idx;
     long code;
     char * fmt;

@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <errno.h>
-#ifdef HAS_STDLIB_H
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 #include "com_err.h"
