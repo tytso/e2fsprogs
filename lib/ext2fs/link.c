@@ -97,8 +97,9 @@ static int link_proc(struct ext2_dir_entry *dirent,
 errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name, 
 		      ext2_ino_t ino, int flags)
 {
-	errcode_t	retval;
-	struct link_struct ls;
+	errcode_t		retval;
+	struct link_struct	ls;
+	struct ext2_inode	inode;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -117,5 +118,17 @@ errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 	if (retval)
 		return retval;
 
-	return (ls.done) ? 0 : EXT2_ET_DIR_NO_SPACE;
+	if (!ls.done)
+		return EXT2_ET_DIR_NO_SPACE;
+
+	if ((retval = ext2fs_read_inode(fs, dir, &inode)) != 0)
+		return retval;
+
+	if (inode.i_flags & EXT2_INDEX_FL) {
+		inode.i_flags &= ~EXT2_INDEX_FL;
+		if ((retval = ext2fs_write_inode(fs, dir, &inode)) != 0)
+			return retval;
+	}
+
+	return 0;
 }

@@ -1,3 +1,8 @@
+2002-07-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* link.c (ext2fs_link): When adding a new link to a directory,
+		clear the HTREE bit.
+
 2002-07-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* dirhash.c (ext2fs_dirhash): Fix bug which caused MD4
