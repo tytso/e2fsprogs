@@ -40,7 +40,11 @@ static plugin_record_t    *pMyPluginRecord = &ext2_plugrec;
 +-------------------------------------------------------------------------------------*/
 
 
+#if (EVMS_ABI_CODE >= 120)
+static int fs_setup( engine_functions_t *engine_function_table)
+#else
 static int fs_setup( engine_mode_t mode, engine_functions_t *engine_function_table)
+#endif
 {
     int rc = 0;
 	EngFncs = engine_function_table;
@@ -702,7 +706,7 @@ static int fs_init_task( task_context_t * context )
 		opt->help = NULL;
 		opt->type = EVMS_Type_Boolean;
 		opt->unit = EVMS_Unit_None;
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 		opt->size = 0;
 #endif
 		opt->flags = EVMS_OPTION_FLAGS_NOT_REQUIRED;
@@ -717,7 +721,7 @@ static int fs_init_task( task_context_t * context )
 		opt->help = NULL;
 		opt->type = EVMS_Type_Boolean;
 		opt->unit = EVMS_Unit_None;
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 		opt->size = 0;
 #endif
 		opt->flags = EVMS_OPTION_FLAGS_NOT_REQUIRED;
@@ -732,7 +736,7 @@ static int fs_init_task( task_context_t * context )
 		opt->help = NULL;
 		opt->type = EVMS_Type_String;
 		opt->unit = EVMS_Unit_None;
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 		opt->size = 16;
 #else
 		opt->min_len = 0;
@@ -754,7 +758,7 @@ static int fs_init_task( task_context_t * context )
 		opt->help = NULL;
 		opt->type = EVMS_Type_Boolean;
 		opt->unit = EVMS_Unit_None;
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 		opt->size = 0;
 #endif
 		opt->flags = EVMS_OPTION_FLAGS_NOT_REQUIRED;
@@ -775,7 +779,7 @@ static int fs_init_task( task_context_t * context )
 		opt->help = NULL;
 		opt->type = EVMS_Type_Boolean;
 		opt->unit = EVMS_Unit_None;
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 		opt->size = 0;
 #endif
 		opt->flags = EVMS_OPTION_FLAGS_NOT_REQUIRED;
@@ -790,7 +794,7 @@ static int fs_init_task( task_context_t * context )
 		opt->help = NULL;
 		opt->type = EVMS_Type_Boolean;
 		opt->unit = EVMS_Unit_None;
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 		opt->size = 0;
 #endif
 		opt->flags = EVMS_OPTION_FLAGS_NOT_REQUIRED;
@@ -808,7 +812,7 @@ static int fs_init_task( task_context_t * context )
 		SET_STRING(opt->title, "Check For Bad Blocks" );
 		SET_STRING(opt->tip, "Check for bad blocks and mark them as busy." );
 		opt->help = NULL;
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 		opt->size = 0;
 #endif
 		opt->type = EVMS_Type_Boolean;
@@ -829,7 +833,7 @@ static int fs_init_task( task_context_t * context )
 		opt->help = NULL;
 		opt->type = EVMS_Type_Boolean;
 		opt->unit = EVMS_Unit_None;
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 		opt->size = 0;
 #endif
 		if (EVMS_IS_MOUNTED(context->volume)) {
@@ -848,7 +852,7 @@ static int fs_init_task( task_context_t * context )
 		opt->help = NULL;
 		opt->type = EVMS_Type_Boolean;
 		opt->unit = EVMS_Unit_None;
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 		opt->size = 0;
 #endif
 		opt->flags = EVMS_OPTION_FLAGS_NOT_REQUIRED | EVMS_OPTION_FLAGS_INACTIVE;
@@ -1186,7 +1190,7 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 	extended_info_array_t   *Info;
 	extended_info_t		*iptr;
 	char                     version_string[64];
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 	char                     required_version_string[64];
 #else
 	char                     required_engine_api_version_string[64];
@@ -1210,7 +1214,7 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 					MINOR_VERSION,
 					PATCH_LEVEL );
 
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 				sprintf(required_version_string, "%d.%d.%d",
 					pMyPluginRecord->required_api_version.major,
 					pMyPluginRecord->required_api_version.minor,
@@ -1267,7 +1271,7 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 				iptr->collection_type    = EVMS_Collection_None;
 				memset( &iptr->group, 0, sizeof(group_info_t));
 
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 				iptr = &Info->info[Info->count++];
 				SET_STRING_FIELD( iptr->name, "Required Version" );
 				SET_STRING_FIELD( iptr->title, "Required Engine Version" );
@@ -1424,7 +1428,7 @@ static fsim_functions_t  fsim_ops = {
 plugin_record_t  ext2_plugrec = {
 	id:                               SetPluginID(EVMS_OEM_IBM, EVMS_FILESYSTEM_INTERFACE_MODULE, FS_TYPE_EXT2 ),
 	version:                          {MAJOR_VERSION, MINOR_VERSION, PATCH_LEVEL},
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 	required_api_version:             {ENGINE_PLUGIN_API_MAJOR_VERION, 
 					   ENGINE_PLUGIN_API_MINOR_VERION,
 					   ENGINE_PLUGIN_API_PATCH_LEVEL},

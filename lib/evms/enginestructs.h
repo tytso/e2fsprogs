@@ -47,7 +47,7 @@ typedef struct plugin_record_s {
                                                            /* used only by the Engine */
     plugin_id_t                     id;                    /* Plug-in's ID */
     evms_version_t                  version;               /* Plug-in's version */
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
     evms_version_t                  required_api_version;  /* Version of the Engine plug-in API */
                                                            /* that the plug-in requires */
 #else
@@ -90,7 +90,7 @@ typedef struct storage_object_s {
     dlist_t                      child_objects;         /* List of child objects, filled in by owner */
     struct storage_object_s    * associated_object;     /* Object to which this object is associated */
     u_int32_t                    flags;                 /* Defined by SOFLAG_???? in common.h */
-    lba_t                        start;                 /* Relative starting block of this object */
+    lsn_t                        start;                 /* Relative starting sector of this object */
     sector_count_t               size;                  /* Size of object in sectors */
     struct logical_volume_s    * volume;                /* Volume which comprises this object */
     evms_feature_header_t      * feature_header;        /* Copy of EVMS storage object's top feature header */
@@ -147,7 +147,7 @@ typedef struct logical_volume_s {
     sector_count_t            original_vol_size;    /* Size of the file system before expand or shrink */
     sector_count_t            vol_size;             /* Size of the volume */
     sector_count_t            max_vol_size;         /* Maximum size for the volume */
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     sector_count_t            shrink_vol_size;      /* Size to which to shrink the volume */
 #endif
     struct logical_volume_s * associated_volume;    /* Volume to which this volume is associated */
@@ -160,13 +160,13 @@ typedef struct logical_volume_s {
     u_int64_t                 serial_number;        /* Volume's serial number */
     u_int32_t                 flags;                /* Defined by VOLFLAG_???? defines */
     void                    * private_data;         /* Private data pointer for FSIMs. */
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     void                    * original_fsim_private_data;
                                                     /* Private data of original FSIM. */
 #endif
     char                      name[EVMS_VOLUME_NAME_SIZE+1];
                                                     /* Volume name, filled in by the Engine */
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     char                      dev_node[EVMS_VOLUME_NAME_SIZE+1];
                                                     /* Device node */
 #endif

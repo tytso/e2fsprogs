@@ -1,5 +1,15 @@
 2002-11-08  Theodore Ts'o  <tytso@mit.edu>
 
+	* fs_ext2.c (fs_setup): Synchronize with EVMS CVS rev 1.14 
+		(2002/10/17): Changed function to correspond with EVMS ABI
+		1.2
+
+	* Makefile.in, common.h, enginestructs.h, fs_ext2.c, fsimext2.h,
+		options.h, plugfuncs.h: Change #define from ABI_EVMS_1_0
+		to EVMS_ABI_CODE which may be 100, 110, or 120,
+		corresponding to EVMS releases 1.0.0, 1.1.0, and 1.2.0.
+		Update header files to support EVMS ABI 1.2.
+	
 	* fsimext2.c (set_mkfs_options): Synchronize with EVMS CVS rev
 		1.7 (2002/09/11): Add a hack to force mkfs won't a 
 		blocksize equal to the hardsector size if it is larger

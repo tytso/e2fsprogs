@@ -23,7 +23,7 @@
 /*
  * EVMS 1.0 backwards compatibility functions
  */
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 #define EVMS_IS_MOUNTED(vol)	((vol)->mount_point != 0)
 #define EVMS_GET_DEVNAME(vol)	((vol)->name)
 #else

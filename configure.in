@@ -164,20 +164,33 @@ echo "Disabling htree clearing by default"
 )
 AC_SUBST(HTREE_CLR_CMT)
 dnl
-dnl handle --enable-old-evms
+dnl handle --enable-emvs-10
 dnl
-AC_ARG_ENABLE([old-evms],
-[  --enable-old-evms	  use EVMS 1.0 ABI (instead of EVMS 1.1)],
-if test "$enableval" = "no"
+EVMS_ABI_CODE=120
+AC_ARG_ENABLE([evms-10],
+[  --enable-evms-10	  use EVMS 1.0 ABI (instead of EVMS 1.2)],
+if test "$enableval" != "no"
 then
-	echo "Using EVMS 1.1.0 ABI"
-else
-	AC_DEFINE(ABI_EVMS_1_0)
+	EVMS_ABI_CODE=100
 	echo "Enabling EVMS 1.0.0 ABI"
 fi
-,
-echo "Using EVMS 1.1.0 ABI by default"
 )
+dnl
+dnl handle --enable-emvs-11
+dnl
+AC_ARG_ENABLE([evms-11],
+[  --enable-evms-11	  use EVMS 1.1 ABI (instead of EVMS 1.1)],
+if test "$enableval" != "no"
+then
+	EVMS_ABI_CODE=110
+	echo "Enabling EVMS 1.1.0 ABI"
+fi
+)
+if test "$EVMS_ABI_CODE" = "120"
+then
+	echo "Using EVMS 1.2.0 ABI by default"
+fi
+AC_SUBST(EVMS_ABI_CODE)
 dnl
 dnl handle --enable-dll-shlibs
 dnl

@@ -32,9 +32,13 @@
 #define MAX_USER_MESSAGE_LEN    10240
 
 
-#ifndef ABI_EVMS_1_0
+#if ((EVMS_ABI_CODE == 110) || (EVMS_ABI_CODE == 120))
 #define ENGINE_SERVICES_API_MAJOR_VERION  8
+#if (EVMS_ABI_CODE == 110)
 #define ENGINE_SERVICES_API_MINOR_VERION  0
+#else
+#define ENGINE_SERVICES_API_MINOR_VERION  1
+#endif
 #define ENGINE_SERVICES_API_PATCH_LEVEL   0
 #endif
 
@@ -43,7 +47,8 @@
  */
 
 typedef struct engine_functions_s {
-#ifndef ABI_EVMS_1_0
+
+#if (EVMS_ABI_CODE >= 110)
     /*
      * Get the version of the plug-in API that this Engine provides.
      */
@@ -364,7 +369,7 @@ typedef struct engine_functions_s {
                               char                * message_text,
                               option_desc_array_t * options);
 
-#ifndef ABI_EVMS_1_0		/* New for version 8 */
+#if (EVMS_ABI_CODE >= 110)		/* New for version 8 */
     /*
      * Start, update, or close a progress indicator for the user.  See the
      * description in common.h for how the progress_t structures are used.
@@ -396,7 +401,7 @@ typedef struct engine_functions_s {
     BOOLEAN (*is_mounted)(char   * volume_name,
                           char * * mount_name);
 
-#ifndef ABI_EVMS_1_0		/* New for version 8 */
+#if (EVMS_ABI_CODE >= 110)		/* New for version 8 */
     /*
      * Assign an FSIM to a volume.  FSIMs can use this service to claim control
      * of a volume.  For example, an FSIM for a journaling file system may want
@@ -420,25 +425,40 @@ typedef struct engine_functions_s {
      */
     int (*unassign_fsim_from_volume)(logical_volume_t * volume);
 #endif
-    
+
+#if (EVMS_ABI_CODE >= 120)
+    /*
+     * Get the mode in which the Engine was opened.
+     */
+    engine_mode_t (*get_engine_mode)(void);
+#endif
+
 } engine_functions_t;
 
 
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
 #define ENGINE_PLUGIN_API_MAJOR_VERION  3
-#else
+#elif (EVMS_ABI_CODE == 110)
 #define ENGINE_PLUGIN_API_MAJOR_VERION  8
-#endif
+#elif (EVMS_ABI_CODE == 120)
+#define ENGINE_PLUGIN_API_MAJOR_VERION  9
+#else
+#error Unknown EVMS_ABI
+#endif /* EVMS_ABI_CODE */
 #define ENGINE_PLUGIN_API_MINOR_VERION  0
 #define ENGINE_PLUGIN_API_PATCH_LEVEL   0
 
 typedef struct plugin_functions_s {
+#if (EVMS_ABI_CODE >= 120)
+    int (*setup_evms_plugin)(engine_functions_t * functions);
+#else	
     int (*setup_evms_plugin)(engine_mode_t        mode,
                              engine_functions_t * functions);
+#endif
 
     void (*cleanup_evms_plugin)(void);
 
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     /*
      * Can you apply your plug-in to the input_object?  If yes, return the size
      * of the object you would create.
@@ -454,7 +474,7 @@ typedef struct plugin_functions_s {
      */
     int (*can_delete)(storage_object_t * object);
 
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     /*
      * Can you unassign your plug-in from this object?
      */
@@ -504,10 +524,18 @@ typedef struct plugin_functions_s {
     int (*can_shrink_by)(storage_object_t * object,
                          sector_count_t   * size);
 
+#if (EVMS_ABI_CODE >= 120)
+    /*
+     * Can you replace this object's child with another object?
+     */
+    int (*can_replace_child)(storage_object_t * object,
+                             storage_object_t * child);
+#else
     /*
      * Can you move this object?
      */
     int (*can_move)(storage_object_t * object);
+#endif
 
     /*
      * Will you allow your object to be made into a volume?  (We don't see
@@ -541,7 +569,7 @@ typedef struct plugin_functions_s {
                   option_array_t * options,
                   dlist_t          output_objects);
 
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     /*
      * Assign your plug-in to produce storage objects from the given storage
      * object.  This function makes sense mainly for segment managers that are
@@ -561,7 +589,7 @@ typedef struct plugin_functions_s {
     int (*delete)(storage_object_t * object,
                   dlist_t            child_objects);
 
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     /*
      * Unassign your plug-in from producing storage objects from the given
      * storage object.  This function makes sense mainly for segment managers
@@ -602,6 +630,14 @@ typedef struct plugin_functions_s {
                   dlist_t            input_objects,
                   option_array_t   * options);
 
+#if (EVMS_ABI_CODE >= 120)
+    /*
+     * Replace the object's child with the new child object.
+     */
+    int (*replace_child)(storage_object_t * object,
+                         storage_object_t * child,
+                         storage_object_t * new_child);
+#else
     /*
      * Move the contents of the source object to the target object using the
      * given options.
@@ -609,6 +645,7 @@ typedef struct plugin_functions_s {
     int (*move)(storage_object_t * source,
                 storage_object_t * target,
                 option_array_t   * options);
+#endif
 
     /*
      * This call notifies you that your object is being made into (or part of)
@@ -762,7 +799,7 @@ typedef struct plugin_functions_s {
                  sector_count_t     count,
                  void             * buffer);
 
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     /*
      * Return an array of plug-in functions that you support for this object.
      */
@@ -788,7 +825,7 @@ typedef struct plugin_functions_s {
 } plugin_functions_t;
 
 
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
 #define ENGINE_FSIM_API_MAJOR_VERION  8
 #define ENGINE_FSIM_API_MINOR_VERION  0
 #define ENGINE_FSIM_API_PATCH_LEVEL   0
@@ -865,7 +902,7 @@ typedef struct fsim_functions_s {
     int (*can_shrink_by)(logical_volume_t * volume,
                          sector_count_t   * delta_size);
 
-#ifndef ABI_EVMS_1_0		/* New for version 8 */
+#if (EVMS_ABI_CODE >= 110)		/* New for version 8 */
     /*
      * mkfs has been scheduled.  Do any setup work such as claiming another
      * volume for an external log.
@@ -880,7 +917,7 @@ typedef struct fsim_functions_s {
     int (*mkfs)(logical_volume_t * volume,
                 option_array_t   * options);
 
-#ifndef ABI_EVMS_1_0		/* New for version 8 */
+#if (EVMS_ABI_CODE >= 110)		/* New for version 8 */
     /*
      * unmkfs has been scheduled.  Do any setup work such as releasing another
      * volume that was used for an external log.
@@ -1026,7 +1063,7 @@ typedef struct fsim_functions_s {
     int (*get_plugin_info)(char                    * info_name,
                            extended_info_array_t * * info);
 
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     /*
      * Return an array of plug-in functions that you support for this volume.
      */
@@ -1041,7 +1078,7 @@ typedef struct fsim_functions_s {
                            dlist_t            objects,
                            option_array_t   * options);
 #endif
-    
+
     /*
      * Generic method for communicating with your plug-in.
      */
@@ -1052,7 +1089,7 @@ typedef struct fsim_functions_s {
 } fsim_functions_t;
 
 
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
 #define ENGINE_CONTAINER_API_MAJOR_VERION  8
 #define ENGINE_CONTAINER_API_MINOR_VERION  0
 #define ENGINE_CONTAINER_API_PATCH_LEVEL   0
@@ -1176,7 +1213,7 @@ typedef struct container_functions_s {
     int (*set_container_info)(storage_container_t * container,
                               option_array_t      * options);
 
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     /*
      * Return an array of plug-in functions that you support for this container.
      */

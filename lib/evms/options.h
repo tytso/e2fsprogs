@@ -66,13 +66,15 @@ typedef enum {
     EVMS_Task_defrag,
     EVMS_Task_Message,
     EVMS_Task_Add_Feature,
+    EVMS_Task_Shrink_Container,
+    EVMS_Task_Set_Container_Info,
     EVMS_Task_Plugin_Function = 0x1000  /* Base number for plug-in funtions */
 } task_action_t;
 
 
 typedef struct function_info_s {
     task_action_t   function;       /* Plugin function number */
-#ifndef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE >= 110)
     char          * name;           /* Short, unique (within the plug-in) name for the function */
                                     /* e.g., "addspare" */
 #endif
@@ -239,7 +241,7 @@ typedef struct option_descriptor_s {
     char                     *help;                 /* Multi-paragraph detailed option help */
     value_type_t              type;                 /* Defines option data type */
     value_unit_t              unit;                 /* Defines unit value */
-#ifdef ABI_EVMS_1_0
+#if (EVMS_ABI_CODE == 100)
     u_int32_t                 size;                 /* Maximum size (in bytes) of option value */
 #else
     value_format_t            format;               /* Suggested format for display of values */
