@@ -109,6 +109,9 @@ endif
 ${CFGSTDSTAMP}:
 	dh_testdir
 
+	# Make sure we don't try to rebuild the configure scripts
+	find . -name configure | xargs touch
+
 	mkdir -p ${stdbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${stdbuilddir} && \

@@ -1,3 +1,11 @@
+e2fsprogs (1.35-8) unstable; urgency=low
+
+  * Make sure the configure files are newer than configure.in the
+       debian/rules file so that a dpkg-source created patch won't
+       trigger an attempt rebuild of the configure script.  (Closes: #272558)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 22 Sep 2004 00:50:20 -0400
+
 e2fsprogs (1.35-7) unstable; urgency=low
 
   * Make sure "done" gets correctly translated in badblocks(8), and update
