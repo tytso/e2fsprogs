@@ -1,3 +1,7 @@
+2001-06-21  Theodore Tso  <tytso@valinux.com>
+
+	* uuid.h: Add protection against multiple inclusion
+
 2001-06-15  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.21

@@ -9,6 +9,9 @@
  * %End-Header%
  */
 
+#ifndef _UUID_UUID_H
+#define _UUID_UUID_H
+
 #include <sys/types.h>
 #include <sys/time.h>
 #include <time.h>
@@ -48,3 +51,5 @@ void uuid_unparse(uuid_t uu, char *out);
 time_t uuid_time(uuid_t uu, struct timeval *ret_tv);
 int uuid_type(uuid_t uu);
 int uuid_variant(uuid_t uu);
+
+#endif /* _UUID_UUID_H */
