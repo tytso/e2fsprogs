@@ -1,3 +1,9 @@
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen_uuid.c (get_random_bytes): Don't spin forever if read()
+		returns EINTR or EAGAIN, so that when /dev/random is
+		opened O_NONBLOCK, we don't end up spinning forever.
+
 2001-09-24  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.29

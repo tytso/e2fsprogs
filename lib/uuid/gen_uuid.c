@@ -81,11 +81,8 @@ static void get_random_bytes(void *buf, int nbytes)
 	if (fd >= 0) {
 		while (nbytes > 0) {
 			i = read(fd, cp, nbytes);
-			if ((i < 0) &&
-			    ((errno == EINTR) || (errno == EAGAIN)))
-				continue;
 			if (i <= 0) {
-				if (lose_counter++ == 8)
+				if (lose_counter++ > 16)
 					break;
 				continue;
 			}
