@@ -1,12 +1,11 @@
 /*
- * tune2fs.c		- Change the file system parameters on
- *			  an unmounted second extended file system
+ * tune2fs.c - Change the file system parameters on an ext2 file system
  *
  * Copyright (C) 1992, 1993, 1994  Remy Card <card@masi.ibp.fr>
  *                                 Laboratoire MASI, Institut Blaise Pascal
  *                                 Universite Pierre et Marie Curie (Paris VI)
  *
- * Copyright 1995, 1996, 1997 by Theodore Ts'o.
+ * Copyright 1995, 1996, 1997, 1998, 1999, 2000 by Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -57,7 +56,7 @@ extern int optind;
 const char * program_name = "tune2fs";
 char * device_name;
 char * new_label, *new_last_mounted, *new_UUID;
-static int c_flag, C_flag, e_flag, g_flag, i_flag, l_flag, L_flag;
+static int c_flag, C_flag, e_flag, f_flag, g_flag, i_flag, l_flag, L_flag;
 static int m_flag, M_flag, r_flag, s_flag = -1, u_flag, U_flag;
 static int print_label;
 static int max_mount_count, mount_count, mount_flags;
@@ -102,6 +101,10 @@ static void remove_journal_device(ext2_filsys fs)
 	journal_superblock_t	*jsb;
 	int		i, nr_users;
 	errcode_t	retval;
+	int		commit_remove_journal = 0;
+
+	if (f_flag)
+		commit_remove_journal = 1; /* force removal even if error */
 
 	journal_device = ext2fs_find_block_device(fs->super->s_journal_dev);
 	if (!journal_device)
@@ -113,26 +116,26 @@ static void remove_journal_device(ext2_filsys fs)
 	if (retval) {
 		com_err(program_name, retval,
 			_("while trying to open external journal"));
-		exit(1);
+		goto no_valid_journal;
 	}
 	if (!(jfs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
 		fprintf(stderr, "%s is not a journal device.\n",
 			journal_device);
-		exit(1);
+		goto no_valid_journal;
 	}
 
 	/* Get the journal superblock */
 	if ((retval = io_channel_read_blk(jfs->io, 1, -1024, buf))) {
 		com_err(program_name, retval,
 			_("while reading journal superblock"));
-		exit(1);
+		goto no_valid_journal;
 	}
 
 	jsb = (journal_superblock_t *) buf;
 	if ((jsb->s_header.h_magic != (unsigned) ntohl(JFS_MAGIC_NUMBER)) ||
 	    (jsb->s_header.h_blocktype != (unsigned) ntohl(JFS_SUPERBLOCK_V2))) {
 		fprintf(stderr, _("Journal superblock not found!\n"));
-		exit(1);
+		goto no_valid_journal;
 	}
 
 	/* Find the filesystem UUID */
@@ -144,7 +147,8 @@ static void remove_journal_device(ext2_filsys fs)
 	}
 	if (i >= nr_users) {
 		fprintf(stderr, "Filesystem's UUID not found on journal device.\n");
-		exit(1);
+		commit_remove_journal = 1;
+		goto no_valid_journal;
 	}
 	nr_users--;
 	for (i=0; i < nr_users; i++)
@@ -155,13 +159,21 @@ static void remove_journal_device(ext2_filsys fs)
 	if ((retval = io_channel_write_blk(jfs->io, 1, -1024, buf))) {
 		com_err(program_name, retval,
 			"while writing journal superblock.");
-		exit(1);
+		goto no_valid_journal;
 	}
 
+	commit_remove_journal = 1;
+
+no_valid_journal:
+	if (commit_remove_journal == 0) {
+		printf(_("Journal NOT removed\n"));
+		exit(1);
+	}
 	fs->super->s_journal_dev = 0;
 	memset(fs->super->s_journal_uuid, 0,
 	       sizeof(fs->super->s_journal_uuid));
 	ext2fs_mark_super_dirty(fs);
+	printf(_("Journal removed\n"));
 }
 
 
@@ -228,7 +240,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 						    &inode);
 			if (retval) {
 				com_err(program_name, retval,
-					"while write journal inode");
+					"while writing journal inode");
 				exit(1);
 			}
 		}
@@ -364,7 +376,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	fprintf (stderr, _("tune2fs %s, %s for EXT2 FS %s, %s\n"),
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
-	while ((c = getopt (argc, argv, "c:e:g:i:jlm:r:s:u:C:J:L:M:O:U:")) != EOF)
+	while ((c = getopt (argc, argv, "c:e:fg:i:jlm:r:s:u:C:J:L:M:O:U:")) != EOF)
 		switch (c)
 		{
 			case 'c':
@@ -404,6 +416,9 @@ static void parse_tune2fs_options(int argc, char **argv)
 				}
 				e_flag = 1;
 				open_flag = EXT2_FLAG_RW;
+				break;
+			case 'f': /* Force */
+				f_flag = 1;
 				break;
 			case 'g':
 				resgid = strtoul (optarg, &tmp, 0);
@@ -460,6 +475,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 			case 'j':
 				if (!journal_size)
 					journal_size = -1;
+				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'J':
 				parse_journal_opts(optarg);
@@ -690,7 +706,8 @@ int main (int argc, char ** argv)
 		add_journal(fs);
 	
 	if (U_flag) {
-		if (strcasecmp(new_UUID, "null") == 0) {
+		if ((strcasecmp(new_UUID, "null") == 0) ||
+		    (strcasecmp(new_UUID, "clear") == 0)) {
 			uuid_clear(sb->s_uuid);
 		} else if (strcasecmp(new_UUID, "time") == 0) {
 			uuid_generate_time(sb->s_uuid);
