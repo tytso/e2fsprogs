@@ -1045,8 +1045,7 @@ static void PRS(int argc, char *argv[])
 	if ((param.s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
 	    !journal_size)
 		journal_size = -1;
-	if (!fs_type &&
-	    (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+	if (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		if (!fs_type)
 			fs_type = "journal";
 		reserved_ratio = 0;
