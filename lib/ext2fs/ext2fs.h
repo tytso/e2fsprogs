@@ -12,6 +12,10 @@
 #ifndef _EXT2FS_EXT2FS_H
 #define _EXT2FS_EXT2FS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Non-GNU C compilers won't necessarily understand inline
  */
@@ -1000,6 +1004,10 @@ _INLINE_ int ext2fs_group_of_ino(ext2_filsys fs, ino_t ino)
 	return (ino - 1) / fs->super->s_inodes_per_group;
 }
 #undef _INLINE_
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* _EXT2FS_EXT2FS_H */

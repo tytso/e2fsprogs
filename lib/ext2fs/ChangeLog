@@ -1,3 +1,7 @@
+2000-05-18  Theodore Ts'o  <tytso@valinux.com>
+
+	* ext2fs.h: Add appropriate ifdef's to support C++ compilation.
+
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
 	* block.c: Readibility tweak in conditionals involving
