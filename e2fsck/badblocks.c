@@ -114,7 +114,7 @@ fatal:
 
 void test_disk(e2fsck_t ctx)
 {
-	read_bad_blocks_file(ctx, 0, 1);
+	read_bad_blocks_file(ctx, 0, 0);
 }
 
 static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
