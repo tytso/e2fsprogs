@@ -1,3 +1,8 @@
+2004-01-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_selinux: Add test case which tests SE Linux generated symlinks
+		that contain extended attribute data.
+
 2003-12-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_lpf2: New test case to validate reconnecting a directory after
