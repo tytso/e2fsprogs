@@ -1,5 +1,10 @@
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* unix_io.c (unix_read_blk): If ext2fs_llseek() fails, but errno
+		is zero, then return EXT2_IO_LLSEEK_FAILED.
+
+	* ext2_err.et.in: Add a new error code, EXT2_IO_LLSEEK_FAILED.
+
 	* Release of E2fsprogs 1.11
 
 Mon Jun 16 23:53:06 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>

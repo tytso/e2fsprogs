@@ -224,4 +224,7 @@ ec	EXT2_ET_UNSUPP_FEATURE,
 ec	EXT2_ET_RO_UNSUPP_FEATURE,
 	"Filesystem has unsupported read-only feature(s)"
 
+ec	EXT2_IO_LLSEEK_FAILED,
+	"IO Channel failed to seek on read or write"
+
 	end

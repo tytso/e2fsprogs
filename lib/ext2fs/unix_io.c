@@ -193,7 +193,7 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 	size = (count < 0) ? -count : count * channel->block_size;
 	location = (ext2_loff_t) block * channel->block_size;
 	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
-		retval = errno;
+		retval = errno ? errno : EXT2_IO_LLSEEK_FAILED;
 		goto error_out;
 	}
 	actual = read(data->dev, buf, size);
@@ -242,7 +242,7 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 
 	location = (ext2_loff_t) block * channel->block_size;
 	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
-		retval = errno;
+		retval = errno ? errno : EXT2_IO_LLSEEK_FAILED;
 		goto error_out;
 	}
 	
