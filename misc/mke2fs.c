@@ -559,7 +559,7 @@ static void zap_sector(ext2_filsys fs, int sect)
 	retval = io_channel_write_blk(fs->io, sect, -512, buf);
 	io_channel_set_blksize(fs->io, fs->blocksize);
 	if (retval)
-		printf(_("Warning: could not erase sector %d: %s\n", sect),
+		printf(_("Warning: could not erase sector %d: %s\n"), sect,
 		       error_message(retval));
 }
 	

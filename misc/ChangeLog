@@ -1,3 +1,8 @@
+2000-10-24    <tytso@valinux.com>
+
+	* mke2fs.c (zap_sector): Fix really stupid typo which gcc 2.95
+		didn't catch.
+
 2000-09-12    <tytso@valinux.com>
 
 	* fsck.c: Add base device definitions for hd[e-h], for those
