@@ -57,6 +57,7 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	PARTITION_INFORMATION pi;
 	DISK_GEOMETRY gi;
 	DWORD retbytes;
+	LARGE_INTEGER filesize;
 
 	dev = CreateFile(file, GENERIC_READ, 
 			 FILE_SHARE_READ | FILE_SHARE_WRITE ,
@@ -80,6 +81,9 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 			     gi.SectorsPerTrack *
 			     gi.TracksPerCylinder *
 			     gi.Cylinders.QuadPart / blocksize;
+
+	} else if (GetFileSizeEx(dev, &filesize)) {
+		*retblocks = filesize.QuadPart / blocksize;
 	}
 
 	CloseHandle(dev);
