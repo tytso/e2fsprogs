@@ -8,6 +8,7 @@
 		Use logical names for the API version numbers, since 
 		the ABI is much more dependent on the headers.  Add
 		code to byte-swap the superblock if necessary.
+		Fix up logging macros to use __FUNCTION__ correctly.
 
 	* common.h, dlist.h, enginestructs.h, options.h, plugfuncs.c, 
 		fs_ext2.c: Synchronize with ABI of EVMS 1.1.

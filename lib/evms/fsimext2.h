@@ -46,18 +46,18 @@ engine_functions_t *EngFncs;
 #define FS_TYPE_EXT2     7
                  
 /*  logging macros  */
-#define LOGENTRY()                  EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Enter.\n", __FUNCTION__)
-#define LOGEXIT()                   EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Exit.\n", __FUNCTION__ )
-#define LOGEXITRC()                 EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Exit.  RC= %d.\n", __FUNCTION__, rc)
-#define MESSAGE(msg, args...)	    EngFncs->user_message(pMyPluginRecord, NULL, NULL, msg, ##args)
-#define LOG_CRITICAL(msg, args...)	EngFncs->write_log_entry(CRITICAL,	pMyPluginRecord, __FUNCTION__ ": " msg, ## args)
-#define LOG_SERIOUS(msg, args...)	EngFncs->write_log_entry(SERIOUS,	pMyPluginRecord, __FUNCTION__ ": " msg, ## args)
-#define LOG_ERROR(msg, args...)		EngFncs->write_log_entry(ERROR,	pMyPluginRecord, __FUNCTION__ ": " msg, ## args)
-#define LOG_WARNING(msg, args...)	EngFncs->write_log_entry(WARNING,	pMyPluginRecord, __FUNCTION__ ": " msg, ## args)
-#define LOG(msg, args...)		    EngFncs->write_log_entry(DEFAULT,	pMyPluginRecord, __FUNCTION__ ": " msg, ## args)
-#define LOG_DETAILS(msg, args...)	EngFncs->write_log_entry(DETAILS,	pMyPluginRecord, __FUNCTION__ ": " msg, ## args)
-#define LOG_DEBUG(msg, args...)		EngFncs->write_log_entry(DEBUG,	pMyPluginRecord, __FUNCTION__ ": " msg, ## args)
-#define LOG_EXTRA(msg, args...)		EngFncs->write_log_entry(EXTRA,	pMyPluginRecord, __FUNCTION__ ": " msg, ## args)
+#define MESSAGE(msg, args...)		EngFncs->user_message(pMyPluginRecord, NULL, NULL, msg, ##args)
+#define LOGENTRY()			EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Enter.\n",         __FUNCTION__ )
+#define LOGEXIT()			EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Exit.\n",          __FUNCTION__ )
+#define LOGEXITRC()			EngFncs->write_log_entry(ENTRY_EXIT, pMyPluginRecord, "%s:  Exit.  RC= %d.\n", __FUNCTION__ , rc)
+#define LOG_CRITICAL(msg, args...)	EngFncs->write_log_entry(CRITICAL,   pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)
+#define LOG_SERIOUS(msg, args...)	EngFncs->write_log_entry(SERIOUS,    pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)
+#define LOG_ERROR(msg, args...)		EngFncs->write_log_entry(ERROR,      pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)
+#define LOG_WARNING(msg, args...)	EngFncs->write_log_entry(WARNING,    pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)
+#define LOG(msg, args...)		EngFncs->write_log_entry(DEFAULT,    pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)
+#define LOG_DETAILS(msg, args...)	EngFncs->write_log_entry(DETAILS,    pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)
+#define LOG_DEBUG(msg, args...)		EngFncs->write_log_entry(DEBUG,      pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)
+#define LOG_EXTRA(msg, args...)		EngFncs->write_log_entry(EXTRA,      pMyPluginRecord, "%s: " msg, __FUNCTION__ , ## args)
 
 /*  useful macro for option code */
 #define SET_STRING_FIELD(a,b)\
