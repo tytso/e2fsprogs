@@ -195,7 +195,7 @@ static int mkjournal_proc(ext2_filsys		fs,
 /*
  * This function adds a journal inode to a filesystem
  */
-errcode_t ext2fs_add_journal_fs(ext2_filsys fs, blk_t size, int flags)
+errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 {
 	journal_superblock_t	jsb;
 	errcode_t		retval;
@@ -272,7 +272,7 @@ main(int argc, char **argv)
 		exit(1);
 	}
 
-	retval = ext2fs_add_journal_fs(fs, 1024);
+	retval = ext2fs_add_journal_inode(fs, 1024);
 	if (retval) {
 		com_err(argv[0], retval, "while adding journal to %s",
 			device_name);

@@ -1,3 +1,8 @@
+2000-12-14  Andreas Dilger  <adilger@turbolinux.com>
+
+	* mkjournal.c: rename ext2fs_add_journal_fs() to the more descriptive
+		ext2fs_add_journal_inode()
+
 2001-01-01    <tytso@snap.thunk.org>
 
 	* ext2fs.h: Remove definition of ext2fs_sb.  Note: this may break
@@ -30,7 +35,7 @@
 
 2000-12-09    <tytso@snap.thunk.org>
 
-	* ext2fs.h, mkjournal.c (ext2fs_add_journal_fs,
+	* ext2fs.h, mkjournal.c (ext2fs_add_journal_inode,
 		ext2fs_add_journal_device): Add a new argument to the APIs
 		of these function, which is a flags word.  This is used to
 		allow the creation of a V1 superblock for those folks who

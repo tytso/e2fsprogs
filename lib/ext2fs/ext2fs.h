@@ -712,8 +712,8 @@ extern errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 /* mkjournal.c */
 extern errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
 					   blk_t size, int flags);
-extern errcode_t ext2fs_add_journal_fs(ext2_filsys fs, blk_t size,
-				       int flags);
+extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size,
+					  int flags);
 
 /* openfs.c */
 extern errcode_t ext2fs_open(const char *name, int flags, int superblock,
