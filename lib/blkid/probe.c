@@ -220,8 +220,8 @@ static int probe_jfs(int fd, blkid_cache cache, blkid_dev dev,
 
 	js = (struct jfs_super_block *)buf;
 
-	if (strlen(js->js_label))
-		blkid_set_tag(dev, "LABEL", js->js_label,
+	if (strlen((char *) js->js_label))
+		blkid_set_tag(dev, "LABEL", (char *) js->js_label,
 			      sizeof(js->js_label));
 	set_uuid(dev, js->js_uuid);
 	return 0;
@@ -235,9 +235,9 @@ static int probe_romfs(int fd, blkid_cache cache, blkid_dev dev,
 	ros = (struct romfs_super_block *)buf;
 
 	/* can be longer, padded to a 16 bytes boundary */
-	if (strlen(ros->ros_volume)) {
-		blkid_set_tag(dev, "LABEL", ros->ros_volume,
-			      (strlen(ros->ros_volume)|15)+1);
+	if (strlen((char *) ros->ros_volume)) {
+		blkid_set_tag(dev, "LABEL", (char *) ros->ros_volume,
+			      (strlen((char *) ros->ros_volume)|15)+1);
 	}
 	return 0;
 }

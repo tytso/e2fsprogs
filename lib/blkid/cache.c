@@ -11,6 +11,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "blkidP.h"
 
 int blkid_debug_mask = 0;

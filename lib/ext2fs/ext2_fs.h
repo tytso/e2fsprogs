@@ -315,7 +315,8 @@ struct ext2_inode {
 #define i_gid_high	osd2.linux2.l_i_gid_high
 #define i_reserved2	osd2.linux2.l_i_reserved2
 
-#elif defined(__GNU__)
+#else
+#if defined(__GNU__)
 
 #define i_translator	osd1.hurd1.h_i_translator
 #define i_frag		osd2.hurd2.h_i_frag;
@@ -324,13 +325,16 @@ struct ext2_inode {
 #define i_gid_high	osd2.hurd2.h_i_gid_high
 #define i_author	osd2.hurd2.h_i_author
 
-#elif defined(__masix__)
+#else
+#if defined(__masix__)
 
 #define i_reserved1	osd1.masix1.m_i_reserved1
 #define i_frag		osd2.masix2.m_i_frag
 #define i_fsize		osd2.masix2.m_i_fsize
 #define i_reserved2	osd2.masix2.m_i_reserved2
 
+#endif  /* __masix__ */
+#endif  /* __GNU__ */
 #endif	/* defined(__KERNEL__) || defined(__linux__) */
 
 /*

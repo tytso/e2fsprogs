@@ -1,3 +1,9 @@
+2003-07-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* badblocks.c: Fix gcc -Wall nitpicks (signed/unsigned type issues)
+
+	* blkid.c: Fix gcc -Wall nitpicks (missing #include <string.h>)
+
 2003-05-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (PRS, set_fs_defaults): If the sector size of the

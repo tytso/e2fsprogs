@@ -95,7 +95,7 @@ void (*test_io_cb_write_byte)
 
 static void test_dump_block(io_channel channel,
 			    struct test_private_data *data,
-			    unsigned long block, void *buf)
+			    unsigned long block, const void *buf)
 {
 	const unsigned char *cp;
 	FILE *f = data->outfile;
@@ -105,7 +105,7 @@ static void test_dump_block(io_channel channel,
 	for (i=0, cp = buf; i < channel->block_size; i++, cp++) {
 		cksum += *cp;
 	}
-	fprintf(f, "Contents of block %d, checksum %08x: \n", block, cksum);
+	fprintf(f, "Contents of block %lu, checksum %08lu: \n", block, cksum);
 	for (i=0, cp = buf; i < channel->block_size; i++, cp++) {
 		if ((i % 16) == 0)
 			fprintf(f, "%04x: ", i);

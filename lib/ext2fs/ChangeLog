@@ -1,3 +1,20 @@
+2003-07-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* kernel-jbd.h, flushb.c: Fix gcc -Wall nitpicks (indented cpp
+		directives)
+
+	* ext2_types.h.in, initialize.c: Fix gcc -Wall nitpicks 
+		(don't use #elsif)
+
+	* ismounted.c: Fix gcc -Wall nitpicks (Don't use exit as a goto label)
+
+	* llseek.c: Fix gcc -Wall nitpicks (don't use #elsif)
+
+	* lookup.c, read_bb.c: Fix gcc -Wall nitpicks (indent
+		non-traditional #pragma)
+
+	* test_io.c: Fix gcc -Wall nitpicks (const/unsigned type issues)
+
 2003-06-24    <tytso@snap.thunk.org>
 
 	* badblocks.c, ext2fs.h (ext2fs_u32_list_find,

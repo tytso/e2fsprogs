@@ -99,7 +99,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 			}
 		}
 #endif	/* __GNU__ */
-		goto exit;
+		goto errout;
 	}
 #ifndef __GNU__ /* The GNU hurd is deficient; what else is new? */
 	/* Validate the entry in case /etc/mtab is out of date */
@@ -117,14 +117,14 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 #endif /* DEBUG */
 			retval = 0;
 		}
-		goto exit;
+		goto errout;
 	}
 	if (file_rdev && (st_buf.st_dev != file_rdev)) {
 #ifdef DEBUG
 		printf("Bogus entry in %s!  (%s not mounted on %s)\n",
 		       mtab_file, file, mnt->mnt_dir);
 #endif /* DEBUG */
-		goto exit;
+		goto errout;
 	}
 #endif /* __GNU__ */
 	*mount_flags = EXT2_MF_MOUNTED;
@@ -156,7 +156,7 @@ is_root:
 		(void) unlink(TEST_FILE);
 	}
 	retval = 0;
-exit:
+errout:
 	endmntent (f);
 	return retval;
 }
@@ -190,7 +190,8 @@ static errcode_t check_mntent(const char *file, int *mount_flags,
 #endif /* defined(MOUNTED) || defined(_PATH_MOUNTED) */
 }
 
-#elif defined(HAVE_GETMNTINFO)
+#else
+#if defined(HAVE_GETMNTINFO)
 
 static errcode_t check_getmntinfo(const char *file, int *mount_flags,
 				  char *mtpt, int mtlen)
@@ -227,6 +228,7 @@ static errcode_t check_getmntinfo(const char *file, int *mount_flags,
 	return 0;
 }
 #endif /* HAVE_GETMNTINFO */
+#endif /* HAVE_MNTENT_H */
 
 /*
  * Check to see if we're dealing with the swap device.
@@ -299,7 +301,7 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 	return check_getmntinfo(device, mount_flags, mtpt, mtlen);
 #else
 #ifdef __GNUC__
-#warning "Can't use getmntent or getmntinfo to check for mounted filesystems!"
+ #warning "Can't use getmntent or getmntinfo to check for mounted filesystems!"
 #endif
 	*mount_flags = 0;
 	return 0;

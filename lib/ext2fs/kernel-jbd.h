@@ -769,7 +769,7 @@ static inline void journal_abort_handle(handle_t *handle)
 
 /* Not all architectures define BUG() */
 #ifndef BUG
- #define BUG() do { \
+#define BUG() do { \
         printk("kernel BUG at %s:%d!\n", __FILE__, __LINE__); \
 	* ((char *) 0) = 0; \
  } while (0)

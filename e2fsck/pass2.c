@@ -41,6 +41,8 @@
  * 	- The inode_reg_map bitmap
  */
 
+#include <string.h>
+
 #include "e2fsck.h"
 #include "problem.h"
 #include "dict.h"

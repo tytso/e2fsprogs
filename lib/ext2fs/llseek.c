@@ -34,7 +34,8 @@
 
 #define my_llseek lseek64
 
-#elif defined(HAVE_LLSEEK)
+#else
+#if defined(HAVE_LLSEEK)
 #include <syscall.h>
 
 #ifndef HAVE_LLSEEK_PROTOTYPE
@@ -84,6 +85,7 @@ static ext2_loff_t my_llseek (int fd, ext2_loff_t offset, int origin)
 #endif	/* __alpha__ || __ia64__ */
 
 #endif /* HAVE_LLSEEK */
+#endif /* defined(HAVE_LSEEK64) && defined(HAVE_LSEEK64_PROTOTYPE) */
 
 ext2_loff_t ext2fs_llseek (int fd, ext2_loff_t offset, int origin)
 {

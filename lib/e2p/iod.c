@@ -19,6 +19,7 @@
 #include <unistd.h>
 #endif
 #include <stdlib.h>
+#include <string.h>
 
 int iterate_on_dir (const char * dir_name,
 		    int (*func) (const char *, struct dirent *, void *),

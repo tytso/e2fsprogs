@@ -1,3 +1,9 @@
+2003-07-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass2.c: Fix gcc -Wall nitpicks (missing #include <string.h>)
+
+	* dict.c, dict.h: Fix gcc -Wall nitpicks (indented cpp directives)
+
 2003-06-8  Theodore Ts'o  <tytso@mit.edu>
 
 	* problem.c: Fix spelling error.

@@ -1,3 +1,14 @@
+2003-07-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* MCONFIG.in (WFLAGS): Add additional warning checks.  Remove
+		--traditional since newer versions of gcc are overly annoying.
+
+2003-07-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* Add workaround for Libintl / Darwin incompatibility.  Apparently
+		Darwin's gcc doesn't like the __asm__ statements used by
+		libintl to redirect the system-provided gettext calls.
+
 2003-06-08  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Adjust defaults for FreeBSD to no longer build the

@@ -1056,14 +1056,14 @@ void dict_load_next(dict_load_t *load, dnode_t *newnode, const void *key)
     assert (!dnode_is_in_a_dict(newnode));
     assert (dict->nodecount < dict->maxcount);
 
-    #ifndef NDEBUG
+#ifndef NDEBUG
     if (dict->nodecount > 0) {
 	if (dict->dupes)
 	    assert (dict->compare(nil->left->key, key) <= 0);
 	else
 	    assert (dict->compare(nil->left->key, key) < 0);
     }
-    #endif
+#endif
 
     newnode->key = key;
     nil->right->left = newnode;
@@ -1184,9 +1184,9 @@ void dict_merge(dict_t *dest, dict_t *source)
     copyleft:
 	{
 	    dnode_t *next = dict_next(dest, leftnode);
-	    #ifndef NDEBUG
+#ifndef NDEBUG
 	    leftnode->left = NULL;	/* suppress assertion in dict_load_next */
-	    #endif
+#endif
 	    dict_load_next(&load, leftnode, leftnode->key);
 	    leftnode = next;
 	    continue;
@@ -1195,9 +1195,9 @@ void dict_merge(dict_t *dest, dict_t *source)
     copyright:
 	{
 	    dnode_t *next = dict_next(source, rightnode);
-	    #ifndef NDEBUG
+#ifndef NDEBUG
 	    rightnode->left = NULL;
-	    #endif
+#endif
 	    dict_load_next(&load, rightnode, rightnode->key);
 	    rightnode = next;
 	    continue;

@@ -27,18 +27,24 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
-#if  defined(__linux__)    &&	defined(EXT2_OS_LINUX)
+#if defined(__linux__)    &&	defined(EXT2_OS_LINUX)
 #define CREATOR_OS EXT2_OS_LINUX
-#elif defined(__GNU__)     &&	defined(EXT2_OS_HURD)
+#else
+#if defined(__GNU__)     &&	defined(EXT2_OS_HURD)
 #define CREATOR_OS EXT2_OS_HURD
-#elif defined(__FreeBSD__) &&	defined(EXT2_OS_FREEBSD)
+#else
+#if defined(__FreeBSD__) &&	defined(EXT2_OS_FREEBSD)
 #define CREATOR_OS EXT2_OS_FREEBSD
-#elif defined(LITES) 	   &&	defined(EXT2_OS_LITES)
+#else
+#if defined(LITES) 	   &&	defined(EXT2_OS_LITES)
 #define CREATOR_OS EXT2_OS_LITES
 #else
 #define CREATOR_OS EXT2_OS_LINUX /* by default */
-#endif
-
+#endif /* defined(LITES) && defined(EXT2_OS_LITES) */
+#endif /* defined(__FreeBSD__) && defined(EXT2_OS_FREEBSD) */
+#endif /* defined(__GNU__)     && defined(EXT2_OS_HURD) */
+#endif /* defined(__linux__)   && defined(EXT2_OS_LINUX) */
+	
 /*
  * Note we override the kernel include file's idea of what the default
  * check interval (never) should be.  It's a good idea to check at

@@ -1,3 +1,11 @@
+2003-07-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid_types.h.in: Fix gcc -Wall nitpicks (don't use #elsif)
+
+	* cache.c: Fix gcc -Wall nitpicks (missing #include <string.h>)
+
+	* probe.h: Fix gcc -Wall nitpicks (missing casts)
+
 2003-05-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in (ELF_OTHER_LIBS): The blkid library depends on the

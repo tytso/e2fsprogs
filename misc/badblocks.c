@@ -198,7 +198,7 @@ static void pattern_fill(unsigned char *buffer, unsigned long pattern,
  * Perform a read of a sequence of blocks; return the number of blocks
  *    successfully sequentially read.
  */
-static long do_read (int dev, char * buffer, int try, int block_size,
+static long do_read (int dev, unsigned char * buffer, int try, int block_size,
 		     unsigned long current_block)
 {
 	long got;
@@ -225,7 +225,7 @@ static long do_read (int dev, char * buffer, int try, int block_size,
  * Perform a write of a sequence of blocks; return the number of blocks
  *    successfully sequentially written.
  */
-static long do_write (int dev, char * buffer, int try, int block_size,
+static long do_write (int dev, unsigned char * buffer, int try, int block_size,
 		     unsigned long current_block)
 {
 	long got;
@@ -264,7 +264,7 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 			     int block_size, unsigned long from_count,
 			     unsigned long blocks_at_once)
 {
-	char * blkbuf;
+	unsigned char * blkbuf;
 	int try;
 	long got;
 	unsigned int bb_count = 0;
@@ -348,7 +348,7 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 	num_blocks = 0;
 	alarm(0);
 	if (s_flag || v_flag)
-		fprintf(stderr, _(done_string));
+		fputs(done_string, stderr);
 
 	fflush (stderr);
 	free (blkbuf);
@@ -362,7 +362,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 			     int block_size, unsigned long from_count,
 			     unsigned long blocks_at_once)
 {
-	char * buffer;
+	unsigned char * buffer;
 	const unsigned long patterns[] = {0xaa, 0x55, 0xff, 0x00};
 	const unsigned long *pattern;
 	int nr_pattern, pat_idx;
@@ -413,7 +413,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
-			fprintf(stderr, _(done_string));
+			fputs(done_string, stderr);
 		flush_bufs();
 		if (s_flag | v_flag)
 			fprintf (stderr, _("Reading and comparing: "));
@@ -441,7 +441,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
-			fprintf(stderr, _(done_string));
+			fputs(done_string, stderr);
 		flush_bufs();
 	}
 	uncapture_terminate();
@@ -458,7 +458,7 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 			     int block_size, unsigned long from_count,
 			     unsigned long blocks_at_once)
 {
-	char *blkbuf, *save_ptr, *test_ptr, *read_ptr;
+	unsigned char *blkbuf, *save_ptr, *test_ptr, *read_ptr;
 	int try, i;
 	const unsigned long patterns[] = { ~0 };
 	const unsigned long *pattern;
@@ -470,7 +470,7 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 	jmp_buf terminate_env;
 	errcode_t errcode;
 	long buf_used;
-	unsigned int bb_count;
+	unsigned int bb_count = 0;
 
 	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
 	if (errcode) {
@@ -657,7 +657,7 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 		num_blocks = 0;
 		alarm(0);
 		if (s_flag || v_flag > 1)
-			fprintf(stderr, _(done_string));
+			fputs(done_string, stderr);
 
 		flush_bufs();
 	}
@@ -789,7 +789,7 @@ int main (int argc, char ** argv)
 			break;
 		case 't':
 			if (t_flag + 1 > t_max) {
-				long *t_patts_new;
+				unsigned long *t_patts_new;
 
 				t_patts_new = realloc(t_patts, t_max + T_INC);
 				if (!t_patts_new) {

@@ -1492,8 +1492,8 @@ void do_imap(int argc, char *argv[])
 		block;
 	offset &= (EXT2_BLOCK_SIZE(current_fs->super) - 1);
 
-	printf("Inode %d is part of block group %d\n"
-	       "\tlocated at block %d, offset 0x%04x\n", ino, group,
+	printf("Inode %d is part of block group %lu\n"
+	       "\tlocated at block %lu, offset 0x%04lx\n", ino, group,
 	       block_nr, offset);
 
 }
