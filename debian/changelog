@@ -1,3 +1,12 @@
+e2fsprogs (1.35-3) unstable; urgency=low
+
+  * Mention e2image's limitation in writing a normal image file to
+    stdout (Closes: #236383)
+  * Only use BLKGETSIZE64 on Linux 2.6 since it is unreliable on Linux 2.4.
+    (Closes: #236528)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon,  8 Mar 2004 14:19:15 -0500
+
 e2fsprogs (1.35-2) unstable; urgency=low
 
   * Use 64-bit ioctl's if present to determine the 64-bit size of a device
