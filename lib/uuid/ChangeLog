@@ -1,3 +1,8 @@
+2004-04-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen_uuid.c, pack.c, unpack.c, uuid_time.c, uuidP.h,
+		uuid_types.h.in: Use ANSI C99 types if stdint.h exists.
+
 2004-03-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* gen_uuid.c (get_node_id): Clean up AF_LINK #ifdef's for Darwin.

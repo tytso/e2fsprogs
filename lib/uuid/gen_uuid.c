@@ -219,11 +219,11 @@ static int get_node_id(unsigned char *node_id)
 /* Assume that the gettimeofday() has microsecond granularity */
 #define MAX_ADJUSTMENT 10
 
-static int get_clock(__u32 *clock_high, __u32 *clock_low, __u16 *ret_clock_seq)
+static int get_clock(uint32_t *clock_high, uint32_t *clock_low, uint16_t *ret_clock_seq)
 {
 	static int			adjustment = 0;
 	static struct timeval		last = {0, 0};
-	static __u16			clock_seq;
+	static uint16_t			clock_seq;
 	struct timeval 			tv;
 	unsigned long long		clock_reg;
 	
@@ -266,7 +266,7 @@ void uuid_generate_time(uuid_t out)
 	static unsigned char node_id[6];
 	static int has_init = 0;
 	struct uuid uu;
-	__u32	clock_mid;
+	uint32_t	clock_mid;
 
 	if (!has_init) {
 		if (get_node_id(node_id) <= 0) {
@@ -282,7 +282,7 @@ void uuid_generate_time(uuid_t out)
 	}
 	get_clock(&clock_mid, &uu.time_low, &uu.clock_seq);
 	uu.clock_seq |= 0x8000;
-	uu.time_mid = (__u16) clock_mid;
+	uu.time_mid = (uint16_t) clock_mid;
 	uu.time_hi_and_version = (clock_mid >> 16) | 0x1000;
 	memcpy(uu.node, node_id, 6);
 	uuid_pack(&uu, out);

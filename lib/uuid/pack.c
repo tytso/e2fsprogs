@@ -37,7 +37,7 @@
 
 void uuid_pack(const struct uuid *uu, uuid_t ptr)
 {
-	__u32	tmp;
+	uint32_t	tmp;
 	unsigned char	*out = ptr;
 
 	tmp = uu->time_low;

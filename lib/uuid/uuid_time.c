@@ -46,7 +46,7 @@
 time_t uuid_time(const uuid_t uu, struct timeval *ret_tv)
 {
 	struct uuid		uuid;
-	__u32			high;
+	uint32_t			high;
 	struct timeval		tv;
 	unsigned long long	clock_reg;
 

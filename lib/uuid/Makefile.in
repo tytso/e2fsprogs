@@ -130,7 +130,6 @@ install:: all installdirs
 	-$(RANLIB) $(DESTDIR)$(libdir)/libuuid.a
 	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libuuid.a
 	$(INSTALL_DATA) $(srcdir)/uuid.h $(DESTDIR)$(includedir)/uuid/uuid.h
-	$(INSTALL_DATA) uuid_types.h $(DESTDIR)$(includedir)/uuid/uuid_types.h
 	for i in $(SMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man3dir)/$$i.gz; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man3dir)/$$i; \

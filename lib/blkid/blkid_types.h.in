@@ -4,7 +4,7 @@
  * also defined the types that we need.
  */
 #if (!defined(_LINUX_TYPES_H) && !defined(_BLKID_TYPES_H) && \
-	!defined(_UUID_TYPES) && !defined(_EXT2_TYPES_H))
+	!defined(_EXT2_TYPES_H))
 #define _BLKID_TYPES_H
 
 typedef unsigned char __u8;

@@ -37,8 +37,8 @@
 
 void uuid_unpack(const uuid_t in, struct uuid *uu)
 {
-	const __u8	*ptr = in;
-	__u32		tmp;
+	const uint8_t	*ptr = in;
+	uint32_t		tmp;
 
 	tmp = *ptr++;
 	tmp = (tmp << 8) | *ptr++;
