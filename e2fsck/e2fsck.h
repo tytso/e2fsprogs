@@ -205,6 +205,7 @@ struct e2fsck_struct {
 	int fs_dind_count;
 	int fs_tind_count;
 	int fs_fragmented;
+	int large_files;
 
 	/*
 	 * For the use of callers of the e2fsck functions; not used by

@@ -667,6 +667,7 @@ static int process_bad_inode(e2fsck_t ctx, ino_t dir, ino_t ino)
 		inode_modified++;
 	}
 	if (inode.i_dir_acl &&
+	    LINUX_S_ISDIR(inode.i_mode) &&
 	    fix_problem(ctx, PR_2_DIR_ACL_ZERO, &pctx)) {
 		inode.i_dir_acl = 0;
 		inode_modified++;
@@ -778,4 +779,3 @@ static int update_dir_block(ext2_filsys fs,
 	}
 	return 0;
 }
-	

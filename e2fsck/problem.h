@@ -17,8 +17,9 @@ struct problem_context {
 	struct ext2_inode *inode;
 	struct ext2_dir_entry *dirent;
 	blk_t	blk, blk2;
-	int	blkcount, group;
-	__u32	num;
+	blkcnt_t	blkcount;
+	int		group;
+	__u64	num;
 	const char *str;
 };
 
@@ -228,6 +229,9 @@ struct problem_context {
 
 /* Suppress messages prompt */
 #define PR_1_SUPPRESS_MESSAGES		0x010002D
+
+/* Filesystem contains large files, but has no such flag in sb */
+#define PR_1_FEATURE_LARGE_FILES 	0x01002E
 
 /*
  * Pass 1b errors

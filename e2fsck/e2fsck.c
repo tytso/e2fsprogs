@@ -108,6 +108,7 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 	ctx->fs_dind_count = 0;
 	ctx->fs_tind_count = 0;
 	ctx->fs_fragmented = 0;
+	ctx->large_files = 0;
 
 	/* Reset the superblock to the user's requested value */
 	ctx->superblock = ctx->use_superblock;

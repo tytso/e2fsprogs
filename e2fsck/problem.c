@@ -400,6 +400,11 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Suppress messages prompt */
 	{ PR_1_SUPPRESS_MESSAGES, "", PROMPT_SUPPRESS, PR_NO_OK },
 		  
+	/* Filesystem contains large files, but has no such flag in sb */
+	{ PR_1_FEATURE_LARGE_FILES,
+	  "@f contains large files, but lacks LARGE_FILE flag in @S.\n",
+	  PROMPT_FIX, 0 },
+	  
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

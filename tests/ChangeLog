@@ -1,3 +1,9 @@
+1998-03-23  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* f_messy_inode: Modify test to deal with changes to support
+		64-bit size files.  (/MAKEDEV had i_dir_acl, now
+		i_size_high, set.)
+
 Sat Oct 25 18:38:56 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Add scripts to skip the e_brel_bma and e_irel_ima tests (since

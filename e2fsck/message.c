@@ -197,7 +197,20 @@ static _INLINE_ void expand_inode_expression(char ch,
 	
 	switch (ch) {
 	case 's':
-		printf("%u", inode->i_size);
+		if (LINUX_S_ISDIR(inode->i_mode))
+			printf("%u", inode->i_size);
+		else {
+#ifdef EXT2_NO_64_TYPE
+			if (inode->i_size_high)
+				printf("0x%x%08x", inode->i_size_high,
+				       inode->i_size);
+			else
+				printf("%u", inode->i_size);
+#else
+			printf("%llu", (inode->i_size | 
+					((__u64) inode->i_size_high << 32)));
+#endif
+		}
 		break;
 	case 'b':
 		printf("%u", inode->i_blocks);
@@ -220,7 +233,8 @@ static _INLINE_ void expand_inode_expression(char ch,
 		printf("%u", inode->i_file_acl);
 		break;
 	case 'd':
-		printf("%u", inode->i_dir_acl);
+		printf("%u", (LINUX_S_ISDIR(inode->i_mode) ?
+			      inode->i_dir_acl : 0));
 		break;
 	default:
 	no_inode:
@@ -282,7 +296,11 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		printf("%u", ctx->blk);
 		break;
 	case 'B':
+#ifdef EXT2_NO_64_TYPE
 		printf("%d", ctx->blkcount);
+#else
+		printf("%lld", ctx->blkcount);
+#endif
 		break;
 	case 'c':
 		printf("%u", ctx->blk2);
@@ -303,7 +321,11 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		printf("%s", error_message(ctx->errcode));
 		break;
 	case 'N':
+#ifdef EXT2_NO_64_TYPE
 		printf("%u", ctx->num);
+#else
+		printf("%llu", ctx->num);
+#endif
 		break;
 	case 'p':
 		print_pathname(fs, ctx->ino, 0);

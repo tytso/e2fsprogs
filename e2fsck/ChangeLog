@@ -1,3 +1,49 @@
+1998-03-23  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* unix.c: Fix bug in check of feature set, to make sure we can
+		really fix this filesystem.
+
+	* problem.h: Make blkcount type to be of type blkcnt_t.  Make the
+		num field be a 64 bit type.  Add the problem code
+		PR_1_FEATURE_LARGE_FILES
+
+	* problem.c: Add table entry for the problem code
+		PR_1_FEATURE_LARGE_FILES.
+
+	* pass1.c (e2fsck_pass1): A non-zero i_dir_acl field is only
+		a problem for directory inodes.  (Since it is also
+		i_size_high now.)   If there are no large_files, then
+		clear the LARGE_FLAG feature flag.  If there are
+		large_files, but the LARGE_FLAG feature flag is not set,
+		complain and offer to fix it.
+		(check_blocks): Add support to deal with non-directory
+		inodes that have i_size_high set (i.e., large_files).
+		Don't give an error if a directory has preallocated
+		blocks, to support the DIR_PREALLOC feature.
+		(process_block, process_bad_block): The blockcnt variable
+		is a type of blkcnt_t, for conversion to the new
+		block_iterate2.
+
+	* pass2.c (process_bad_inode): A non-zero i_dir_acl field is only
+		a problem for directory inodes.  (Since it is also
+		i_size_high now.)
+
+	* message.c (expand_inode_expression): Print a 64-bits of the
+		inode size for non-directory inodes.  (Directory inodes
+		can only use a 32-bit directory acl size, since
+		i_size_high is shared with i_dir_acl.)  Add sanity check
+		so that trying to print out the directory acl on a
+		non-directory inode will print zero.
+		(expand_percent_expression): %B and %N, which print 
+		pctx->blkcount and pctx->num, can now be 64 bit
+		variables.  Print them using the "%lld" format if
+		EXT2_NO_64_TYPE is not defined.
+
+	* e2fsck.h: Add the large_flagsfield to the e2fsck context.
+
+	* e2fsck.c (e2fsck_reset_context): Clear the large_flags
+		field.
+
 Sun Mar  8 23:08:08 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass3.c (fix_dotdot_proc): 

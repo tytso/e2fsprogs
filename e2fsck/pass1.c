@@ -50,10 +50,10 @@
 #endif
 
 static int process_block(ext2_filsys fs, blk_t	*blocknr,
-			 int	blockcnt, blk_t ref_blk, 
+			 blkcnt_t blockcnt, blk_t ref_blk, 
 			 int ref_offset, void *priv_data);
 static int process_bad_block(ext2_filsys fs, blk_t *block_nr,
-			     int blockcnt, blk_t ref_blk,
+			     blkcnt_t blockcnt, blk_t ref_blk,
 			     int ref_offset, void *priv_data);
 static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 char *block_buf);
@@ -68,12 +68,12 @@ static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
 /* static char *describe_illegal_block(ext2_filsys fs, blk_t block); */
 
 struct process_block_struct {
-	ino_t	ino;
-	int	is_dir:1, clear:1, suppress:1, fragmented:1;
-	int	num_blocks;
-	int	last_block;
-	int	num_illegal_blocks;
-	blk_t	previous_block;
+	ino_t		ino;
+	int		is_dir:1, clear:1, suppress:1, fragmented:1;
+	blk_t		num_blocks;
+	blkcnt_t	last_block;
+	int		num_illegal_blocks;
+	blk_t		previous_block;
 	struct ext2_inode *inode;
 	struct problem_context *pctx;
 	e2fsck_t	ctx;
@@ -94,6 +94,20 @@ struct scan_callback_struct {
  */
 static struct process_inode_block *inodes_to_process;
 static int process_inode_count;
+
+#define EXT2_BPP(bits) (1UL << ((bits) - 2))
+
+#define EXT2_MAX_SIZE(bits) \
+	(((EXT2_NDIR_BLOCKS + EXT2_BPP(bits) +	\
+	   EXT2_BPP(bits) * EXT2_BPP(bits) +	\
+	   EXT2_BPP(bits) * EXT2_BPP(bits) * EXT2_BPP(bits)) * \
+	  (1UL << bits)) - 1)
+
+static long long ext2_max_sizes[] = {
+EXT2_MAX_SIZE(10), EXT2_MAX_SIZE(11), EXT2_MAX_SIZE(12), EXT2_MAX_SIZE(13)
+};
+
+#undef EXT2_BPP
 
 /*
  * Free all memory allocated by pass1 in preparation for restarting
@@ -382,7 +396,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		}
 		
 		if (inode.i_faddr || frag || fsize
-		    || inode.i_file_acl || inode.i_dir_acl) {
+		    || inode.i_file_acl ||
+		    (LINUX_S_ISDIR(inode.i_mode) && inode.i_dir_acl)) {
 			if (!ctx->inode_bad_map)
 				alloc_bad_map(ctx);
 			ext2fs_mark_inode_bitmap(ctx->inode_bad_map, ino);
@@ -487,6 +502,24 @@ endit:
 	ext2fs_free_block_bitmap(ctx->block_illegal_map);
 	ctx->block_illegal_map = 0;
 
+	if (ctx->large_files && 
+	    !(fs->super->s_feature_ro_compat & 
+	      EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
+		if (fix_problem(ctx, PR_1_FEATURE_LARGE_FILES, &pctx)) {
+			fs->super->s_feature_ro_compat |= 
+				EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
+			ext2fs_mark_super_dirty(fs);
+		}
+	} else if (!ctx->large_files &&
+	    (fs->super->s_feature_ro_compat &
+	      EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
+		if (fs->flags & EXT2_FLAG_RW) {
+			fs->super->s_feature_ro_compat &= 
+				~EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
+	
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
 		print_resource_track("Pass 1", &rtrack);
@@ -654,6 +687,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	struct process_block_struct pb;
 	ino_t		ino = pctx->ino;
 	struct ext2_inode *inode = pctx->inode;
+	int		bad_size = 0;
+	__u64		size;
+	struct ext2fs_sb	*sb;
 	
 	if (!ext2fs_inode_has_valid_blocks(pctx->inode))
 		return;
@@ -700,7 +736,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 
 	pb.num_blocks *= (fs->blocksize / 512);
 #if 0
-	printf("inode %u, i_size = %lu, last_block = %lu, i_blocks=%lu, num_blocks = %lu\n",
+	printf("inode %u, i_size = %lu, last_block = %lld, i_blocks=%lu, num_blocks = %lu\n",
 	       ino, inode->i_size, pb.last_block, inode->i_blocks,
 	       pb.num_blocks);
 #endif
@@ -716,16 +752,36 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			pb.is_dir = 0;
 		}
 	}
-	if ((pb.is_dir && (inode->i_size !=
-			   (pb.last_block + 1) * fs->blocksize)) ||
-	    (inode->i_size < pb.last_block * fs->blocksize)) {
+	if (pb.is_dir) {
+		int nblock = inode->i_size >> EXT2_BLOCK_SIZE_BITS(fs->super);
+		if ((nblock > (pb.last_block + 1)) ||
+		    ((inode->i_size & (fs->blocksize-1)) != 0))
+			bad_size = 1;
+		else if (nblock < (pb.last_block + 1)) {
+			sb = (struct ext2fs_sb *) fs->super;
+			if (((pb.last_block + 1) - nblock) >
+			    sb->s_prealloc_dir_blocks)
+				bad_size = 1;
+		}
+	} else {
+		size = inode->i_size + ((__u64) inode->i_size_high << 32);
+		if ((size < pb.last_block * fs->blocksize))
+			bad_size = 1;
+		else if (size > ext2_max_sizes[fs->super->s_log_block_size])
+			bad_size = 1;
+	}
+	if (bad_size) {
 		pctx->num = (pb.last_block+1) * fs->blocksize;
 		if (fix_problem(ctx, PR_1_BAD_I_SIZE, pctx)) {
 			inode->i_size = pctx->num;
+			if (!pb.is_dir)
+				inode->i_size_high = pctx->num >> 32;
 			e2fsck_write_inode(ctx, ino, inode, "check_blocks");
 		}
 		pctx->num = 0;
 	}
+	if (!pb.is_dir && inode->i_size_high)
+		ctx->large_files++;
 	if (pb.num_blocks != inode->i_blocks) {
 		pctx->num = pb.num_blocks;
 		if (fix_problem(ctx, PR_1_BAD_I_BLOCKS, pctx)) {
@@ -793,7 +849,7 @@ static char *describe_illegal_block(ext2_filsys fs, blk_t block)
  */
 int process_block(ext2_filsys fs,
 		  blk_t	*block_nr,
-		  int blockcnt,
+		  blkcnt_t blockcnt,
 		  blk_t ref_block,
 		  int ref_offset, 
 		  void *priv_data)
@@ -918,7 +974,7 @@ static void bad_block_indirect(e2fsck_t ctx, blk_t blk)
 
 int process_bad_block(ext2_filsys fs,
 		      blk_t *block_nr,
-		      int blockcnt,
+		      blkcnt_t blockcnt,
 		      blk_t ref_block,
 		      int ref_offset,
 		      void *priv_data)
