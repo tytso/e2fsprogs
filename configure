@@ -2212,15 +2212,11 @@ else
 linux_headers=no
 fi
 
-
 if test "$linux_headers" = yes; then
   cat >> confdefs.h <<\EOF
 #define HAVE_LINUX_FS_H 1
 EOF
 
-  # These are some programs that depend on having linux headers around, and
-  # won't work otherwise.  So we only compile them if we can.
-  EXTRA_PROGS="$EXTRA_PROGS flushb"
 else
   LINUX_INCLUDE='-I$(top_srcdir)/include -I$(top_builddir)/include'
   # Use this include directory with test compiles in the configure script too.
@@ -2229,7 +2225,7 @@ fi
 
 SOCKET_LIB=''
 echo $ac_n "checking for socket in -lsocket""... $ac_c" 1>&6
-echo "configure:2233: checking for socket in -lsocket" >&5
+echo "configure:2229: checking for socket in -lsocket" >&5
 ac_lib_var=`echo socket'_'socket | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2237,7 +2233,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lsocket  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2241 "configure"
+#line 2237 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2248,7 +2244,7 @@ int main() {
 socket()
 ; return 0; }
 EOF
-if { (eval echo configure:2252: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2248: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -2270,12 +2266,12 @@ fi
 
 
 echo $ac_n "checking for optreset""... $ac_c" 1>&6
-echo "configure:2274: checking for optreset" >&5
+echo "configure:2270: checking for optreset" >&5
 if eval "test \"`echo '$''{'ac_cv_have_optreset'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2279 "configure"
+#line 2275 "configure"
 #include "confdefs.h"
 #include <unistd.h>
 EOF
@@ -2298,12 +2294,12 @@ EOF
 
 fi
 echo $ac_n "checking whether the ext2 ioctls compile""... $ac_c" 1>&6
-echo "configure:2302: checking whether the ext2 ioctls compile" >&5
+echo "configure:2298: checking whether the ext2 ioctls compile" >&5
 if eval "test \"`echo '$''{'e2fsprogs_cv_ioctl_ext2'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2307 "configure"
+#line 2303 "configure"
 #include "confdefs.h"
 #include <linux/ext2_fs.h>
 #include <sys/ioctl.h>
@@ -2311,7 +2307,7 @@ int main() {
 ioctl (0, EXT2_IOC_SETVERSION, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:2315: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2311: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   e2fsprogs_cv_ioctl_ext2=yes
 else
@@ -2351,20 +2347,20 @@ linux* | gnu*)
 ;;
 esac
 echo $ac_n "checking whether linker accepts -static""... $ac_c" 1>&6
-echo "configure:2355: checking whether linker accepts -static" >&5
+echo "configure:2351: checking whether linker accepts -static" >&5
 if eval "test \"`echo '$''{'ac_cv_e2fsprogs_use_static'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
 cat > conftest.$ac_ext <<EOF
-#line 2361 "configure"
+#line 2357 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 fflush(stdout);
 ; return 0; }
 EOF
-if { (eval echo configure:2368: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:2364: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   ac_cv_e2fsprogs_use_static=yes
 else
@@ -2610,7 +2606,6 @@ s%@SIZEOF_SHORT@%$SIZEOF_SHORT%g
 s%@SIZEOF_INT@%$SIZEOF_INT%g
 s%@SIZEOF_LONG@%$SIZEOF_LONG%g
 s%@SIZEOF_LONG_LONG@%$SIZEOF_LONG_LONG%g
-s%@EXTRA_PROGS@%$EXTRA_PROGS%g
 s%@LINUX_INCLUDE@%$LINUX_INCLUDE%g
 s%@SOCKET_LIB@%$SOCKET_LIB%g
 s%@usr_prefix@%$usr_prefix%g
