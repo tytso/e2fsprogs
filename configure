@@ -2344,7 +2344,7 @@ linux* | gnu*)
 ;;
 esac
 if test "$root_prefix" = NONE ; then
-	if "$prefix" = NONE ; then
+	if test "$prefix" = NONE ; then
 		root_prefix="$ac_default_prefix"
 	else
 		root_prefix="$prefix"
