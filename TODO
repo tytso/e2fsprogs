@@ -1,0 +1,7 @@
+User request:
+
+BTW: Could you please add some sort of deleted and possibly corrupted file
+     and inode list to e2fsck report. There should be filenames deleted
+     from directory inodes, files with duplicate blocks e.t.c.
+     It's pretty annoying to filter this information from e2fsck output
+     by hand :-(
