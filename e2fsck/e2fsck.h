@@ -38,6 +38,12 @@
 #define FSCK_LIBRARY     128	/* Shared library error */
 
 /*
+ * The last ext2fs revision level that this version of e2fsck is able to
+ * support
+ */
+#define E2FSCK_CURRENT_REV	0
+
+/*
  * Inode count arrays
  */
 extern unsigned short * inode_count;
@@ -81,15 +87,20 @@ struct resource_track {
 extern const char * program_name;
 extern const char * device_name;
 
-extern char * inode_used_map;	/* Inodes which are in use */
-extern char * inode_bad_map;	/* Inodes which are bad in some way */
-extern char * inode_dir_map;	/* Inodes which are directories */
+extern ext2fs_inode_bitmap inode_used_map; /* Inodes which are in use */
+extern ext2fs_inode_bitmap inode_bad_map; /* Inodes which are bad somehow */
+extern ext2fs_inode_bitmap inode_dir_map; /* Inodes which are directories */
 
-extern char * block_found_map;	/* Blocks which are used by an inode */
-extern char * block_dup_map;	/* Blocks which are used by more than once */
+extern ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
+extern ext2fs_block_bitmap block_dup_map; /* Blocks which are used by more than once */
 
 extern const char *fix_msg[2];	/* Fixed or ignored! */
 extern const char *clear_msg[2]; /* Cleared or ignored! */
+
+extern int *invalid_inode_bitmap;
+extern int *invalid_block_bitmap;
+extern int *invalid_inode_table;
+extern int restart_e2fsck;
 
 /* Command line options */
 extern int nflag;
@@ -125,6 +136,8 @@ extern int fs_badblocks_count;
 extern int fs_sockets_count;
 
 extern struct resource_track	global_rtrack;
+
+extern int invalid_bitmaps;
 
 /*
  * Procedure declarations
@@ -164,6 +177,10 @@ extern void preenhalt(NOARGS);
 extern void print_resource_track(struct resource_track *track);
 extern void init_resource_track(struct resource_track *track);
 extern int inode_has_valid_blocks(struct ext2_inode *inode);
+extern void e2fsck_read_inode(ext2_filsys fs, unsigned long ino,
+			      struct ext2_inode * inode, const char * proc);
+extern void e2fsck_write_inode(ext2_filsys fs, unsigned long ino,
+			       struct ext2_inode * inode, const char * proc);
 #ifdef MTRACE
 extern void mtrace_print(char *mesg);
 #endif

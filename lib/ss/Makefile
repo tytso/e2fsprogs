@@ -1,7 +1,21 @@
+#
+# Makefile for lib/ss
+#
+
 include ../../MCONFIG
 
-ARCHIVE=ar r
-RANLIB=ranlib
+ifdef BUILD_DLL_SHLIBS
+DLL_ADDRESS = 0x66880000
+DLL_JUMPSIZE = 0x1000
+DLL_GOTSIZE  = 0x1000
+DLL_VERSION = 1.0
+DLL_IMAGE = libss
+DLL_STUB = libss
+DLL_LIBS = -L../.. -lcom_err
+DLL_MYDIR = ss
+DLL_INSTALL_DIR = $(SHLIBDIR)
+endif
+
 RM=rm -f
 MV=mv
 LN=ln -s
@@ -9,9 +23,11 @@ TAGS=etags
 COMPILE_ET=../et/compile_et
 MK_CMDS=../ss/mk_cmds
 
+DEFS= -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -DPOSIX_SIGNALS
+
 # hard coded .. is so that ss/ss_err.h works
 # hard coded ../et is so com_err.h works
-CFLAGS= -I. -I.. -I../et $(OPT)
+CFLAGS= -I. -I.. -I../et $(OPT) $(WFLAGS) $(DEFS)
 
 # hard coded for target install
 srcdir=	.
@@ -35,6 +51,10 @@ SRCS=	invocation.c help.c \
 	data.c  \
 	ss_err.h
 # ss_err.h here, so that make depend catches it.
+
+ifdef BUILD_DLL_SHLIBS
+include ../Makefile.dll-lib
+endif
 
 CODE= $(SRCS) $(MKCMDSFILES)
 
@@ -61,25 +81,36 @@ FILES=	$(SRCS) $(MKCMDSFILES) $(HFILES) \
 # stuff to build
 #
 
+.c.o:
+	$(CC) $(CFLAGS) -c $*.c
+ifdef BUILD_DLL_SHLIBS
+	(export JUMP_DIR=`pwd`/jump; $(CC) -B$(JUMP_PREFIX) $(CFLAGS) \
+		-o jump/$*.o -c $*.c)
+endif
+
 all::	mk_cmds libss.a # libss_p.a lint
 
 dist:	archives
 
-install:: all
-	$(INSTALLLIB) libss.a ${DESTDIR}$(LIBDIR)/libss.a
-	$(CHMOD) 644 ${DESTDIR}$(LIBDIR)/libss.a
-	$(RANLIB) ${DESTDIR}$(LIBDIR)/libss.a
-	$(CHMOD) $(LIBMODE) ${DESTDIR}$(LIBDIR)/libss.a
+install::
 
-install:: $(HFILES) copyright.h
-	@rm -rf ${DESTDIR}$(INCLDIR)/ss
-	@mkdir ${DESTDIR}$(INCLDIR)/ss
+install-libs:: all
+	$(INSTALLLIB) libss.a $(LIBDIR)/libss.a
+	$(CHMOD) 644 $(LIBDIR)/libss.a
+	$(RANLIB) $(LIBDIR)/libss.a
+	$(CHMOD) $(LIBMODE) $(LIBDIR)/libss.a
+
+install-libs:: $(HFILES) copyright.h
+	@rm -rf $(INCLDIR)/ss
+	@mkdir $(INCLDIR)/ss
 	for i in $(HFILES) copyright.h; do \
-		$(INSTALLINC) $(srcdir)/$$i ${DESTDIR}$(INCLDIR)/ss/$$i; \
+		$(INSTALLINC) $(srcdir)/$$i $(INCLDIR)/ss/$$i; \
 	done
 
-install:: copyright.h
-	$(INSTALLFILE) $(srcdir)/copyright.h ${DESTDIR}$(INCLDIR)/ss/mit-sipb-copyright.h
+install-libs:: copyright.h
+	$(INSTALLINC) $(srcdir)/copyright.h $(INCLDIR)/ss/mit-sipb-copyright.h
+
+install-tree::
 
 std_rqs.c: std_rqs.ct
 	$(MK_CMDS) std_rqs.ct
@@ -107,19 +138,19 @@ libss.a: $(OBJS)
 	$(RM) ../$@
 	$(LN) ss/$@ ../$@
 
-clean:
-	$(RM) libss.a mk_cmds
+
+clean::	
+	$(RM) ../libss.a libss.a mk_cmds
 	$(RM) *.o *~ \#* *.bak core 
 
-really-clean: clean
-	$(RM) .depend ss_err.h
+really-clean:: clean
+	$(RM) .depend ss_err.h ss_err.c
 
-#install::
-#	$(INSTALLLIB) libss.a $(DESTDIR)$(LIBDIR)/libss.a
-#	$(CHMOD) 644 $(DESTDIR)$(LIBDIR)/libss.a
-#	$(RANLIB)    $(DESTDIR)$(LIBDIR)/libss.a
-#	$(CHMOD) 444 $(DESTDIR)$(LIBDIR)/libss.a
-## 
+install-libs::
+	$(INSTALLLIB) libss.a $(LIBDIR)/libss.a
+	$(CHMOD) 644 $(LIBDIR)/libss.a
+	$(RANLIB)    $(LIBDIR)/libss.a
+	$(CHMOD) 444 $(LIBDIR)/libss.a
 
 
 libss.o:	$(OBJS)

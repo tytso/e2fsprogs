@@ -9,7 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <linux/fs.h>
+
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -23,6 +23,8 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ino_t dir_ino, ino_t parent_ino,
 	char	*buf;
 	struct ext2_dir_entry *dir = NULL;
 	int	rec_len;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	buf = malloc(fs->blocksize);
 	if (!buf)

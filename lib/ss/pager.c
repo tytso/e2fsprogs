@@ -7,6 +7,10 @@
  * For copyright information, see copyright.h.
  */
 
+#ifdef HAS_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include "ss_internal.h"
 #include "copyright.h"
 #include <stdio.h>
@@ -26,7 +30,6 @@ extern int errno;
  * handle SIGINT sensibly
  * allow finer control -- put-page-break-here
  */
-void ss_page_stdin();
 
 #ifndef NO_FORK
 int ss_pager_create() 
@@ -71,9 +74,17 @@ void ss_page_stdin()
 		(void) close(i);
 	(void) signal(SIGINT, SIG_DFL);
 	{
+#ifdef POSIX_SIGNALS
+		sigset_t mask;
+		
+		sigprocmask(SIG_BLOCK, 0, &mask);
+		sigdelset(&mask, SIGINT);
+		sigprocmask(SIG_SETMASK, &mask, 0);
+#else
 		int mask = sigblock(0);
 		mask &= ~sigmask(SIGINT);
 		sigsetmask(mask);
+#endif
 	}
 	if (_ss_pager_name == (char *)NULL) {
 		if ((_ss_pager_name = getenv("PAGER")) == (char *)NULL)

@@ -21,7 +21,7 @@ static char const twentyfive_spaces[26] =
     "                         ";
 static char const NL[2] = "\n";
 
-ss_list_requests(argc, argv, sci_idx, info_ptr)
+void ss_list_requests(argc, argv, sci_idx, info_ptr)
     int argc;
     char **argv;
     int sci_idx;
@@ -35,22 +35,38 @@ ss_list_requests(argc, argv, sci_idx, info_ptr)
     char buffer[BUFSIZ];
     FILE *output;
     int fd;
+#ifdef POSIX_SIGNALS
+    sigset_t omask, igmask;
+#else
     int mask;
+#endif
     sigret_t (*func)();
+#ifndef NO_FORK
 #ifndef WAIT_USES_INT
     union wait waitb;
 #else
     int waitb;
 #endif
+#endif
 
     DONT_USE(argc);
     DONT_USE(argv);
 
+#ifdef POSIX_SIGNALS
+    sigemptyset(&igmask);
+    sigaddset(&igmask, SIGINT);
+    sigprocmask(SIG_BLOCK, &igmask, &omask);
+#else
     mask = sigblock(sigmask(SIGINT));
+#endif
     func = signal(SIGINT, SIG_IGN);
     fd = ss_pager_create();
     output = fdopen(fd, "w");
+#ifdef POSIX_SIGNALS
+    sigprocmask(SIG_SETMASK, &omask, (sigset_t *) 0);
+#else
     sigsetmask(mask);
+#endif
 
     fprintf (output, "Available %s requests:\n\n",
 	     ss_info (sci_idx) -> subsystem_name);

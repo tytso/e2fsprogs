@@ -18,7 +18,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -48,7 +47,10 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, badblocks_list bb_list)
 	errcode_t			retval;
 	struct set_badblock_record 	rec;
 	struct ext2_inode		inode;
+	blk_t				blk;
 	
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	if (!fs->block_map)
 		return EXT2_ET_NO_BLOCK_BITMAP;
 	
@@ -70,7 +72,8 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, badblocks_list bb_list)
 	/*
 	 * First clear the old bad blocks (while saving the indirect blocks) 
 	 */
-	retval = ext2fs_block_iterate(fs, EXT2_BAD_INO, 0, 0,
+	retval = ext2fs_block_iterate(fs, EXT2_BAD_INO,
+				      BLOCK_FLAG_DEPTH_TRAVERSE, 0,
 				      clear_bad_block_proc, &rec);
 	if (retval)
 		goto cleanup;
@@ -81,8 +84,21 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, badblocks_list bb_list)
 	
 	/*
 	 * Now set the bad blocks!
+	 *
+	 * First, mark the bad blocks as used.  This prevents a bad
+	 * block from being used as an indirecto block for the bad
+	 * block inode (!).
 	 */
 	if (bb_list) {
+		retval = badblocks_list_iterate_begin(bb_list, &rec.bb_iter);
+		if (retval)
+			goto cleanup;
+		while (badblocks_list_iterate(rec.bb_iter, &blk)) {
+			ext2fs_mark_block_bitmap(fs->block_map, blk); 
+		}
+		badblocks_list_iterate_end(rec.bb_iter);
+		ext2fs_mark_bb_dirty(fs);
+		
 		retval = badblocks_list_iterate_begin(bb_list, &rec.bb_iter);
 		if (retval)
 			goto cleanup;
@@ -138,6 +154,15 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 	if (!*block_nr)
 		return 0;
 
+	/*
+	 * If the block number is outrageous, clear it and ignore it.
+	 */
+	if (*block_nr >= fs->super->s_blocks_count ||
+	    *block_nr < fs->super->s_first_data_block) {
+		*block_nr = 0;
+		return BLOCK_CHANGED;
+	}
+
 	if (blockcnt < 0) {
 		if (rec->ind_blocks_size >= rec->max_ind_blocks) {
 			rec->max_ind_blocks += 10;
@@ -155,7 +180,7 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 	/*
 	 * Mark the block as unused, and update accounting information
 	 */
-	ext2fs_unmark_block_bitmap(fs, fs->block_map, *block_nr);
+	ext2fs_unmark_block_bitmap(fs->block_map, *block_nr);
 	ext2fs_mark_bb_dirty(fs);
 	group = ext2fs_group_of_blk(fs, *block_nr);
 	fs->group_desc[group].bg_free_blocks_count++;
@@ -188,34 +213,38 @@ static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 		if (!badblocks_list_iterate(rec->bb_iter, &blk))
 			return BLOCK_ABORT;
 		rec->bad_block_count++;
-	} else if (rec->ind_blocks_ptr < rec->ind_blocks_size)
+	} else {
 		/*
 		 * An indirect block; fetch a block from the
-		 * previously used indirect block list.
+		 * previously used indirect block list.  The block
+		 * most be not marked as used; if so, get another one.
+		 * If we run out of reserved indirect blocks, allocate
+		 * a new one.
 		 */
-		blk = rec->ind_blocks[rec->ind_blocks_ptr++];
-	else {
-		/*
-		 * An indirect block, and we're out of reserved
-		 * indirect blocks.  Allocate a new one.
-		 */
-		retval = ext2fs_new_block(fs, 0, 0, &blk);
-		if (retval) {
-			rec->err = retval;
-			return BLOCK_ABORT;
+	retry:
+		if (rec->ind_blocks_ptr < rec->ind_blocks_size) {
+			blk = rec->ind_blocks[rec->ind_blocks_ptr++];
+			if (ext2fs_test_block_bitmap(fs->block_map, blk))
+				goto retry;
+		} else {
+			retval = ext2fs_new_block(fs, 0, 0, &blk);
+			if (retval) {
+				rec->err = retval;
+				return BLOCK_ABORT;
+			}
 		}
 		retval = io_channel_write_blk(fs->io, blk, 1, rec->block_buf);
 		if (retval) {
 			rec->err = retval;
 			return BLOCK_ABORT;
 		}
+		ext2fs_mark_block_bitmap(fs->block_map, blk); 
+		ext2fs_mark_bb_dirty(fs);
 	}
 	
 	/*
-	 * Mark the block as used, and update block counts
+	 * Update block counts
 	 */
-	ext2fs_mark_block_bitmap(fs, fs->block_map, blk); 
-	ext2fs_mark_bb_dirty(fs);
 	group = ext2fs_group_of_blk(fs, blk);
 	fs->group_desc[group].bg_free_blocks_count--;
 	fs->super->s_free_blocks_count--;

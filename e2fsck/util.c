@@ -105,28 +105,21 @@ void read_bitmaps(ext2_filsys fs)
 {
 	errcode_t	retval;
 
-	if (!fs->inode_map) {
-		ehandler_operation("reading inode bitmaps");
-		retval = ext2fs_read_inode_bitmap(fs);
-		ehandler_operation(0);
-		if (retval) {
-			com_err(program_name, retval,
-				"while retrying to read inode bitmaps for %s",
-				device_name);
-			fatal_error(0);
-		}
+	if (invalid_bitmaps) {
+		com_err(program_name, 0,
+			"read_bitmaps: illegal bitmap block(s) for %s",
+			device_name);
+		fatal_error(0);
 	}
-	
-	if (!fs->block_map) {
-		ehandler_operation("reading block bitmaps");
-		retval = ext2fs_read_block_bitmap(fs);
-		ehandler_operation(0);
-		if (retval) {
-			com_err(program_name, retval,
-				"while retrying to read block bitmaps for %s",
-				device_name);
-			fatal_error(0);
-		}
+
+	ehandler_operation("reading inode and block bitmaps");
+	retval = ext2fs_read_bitmaps(fs);
+	ehandler_operation(0);
+	if (retval) {
+		com_err(program_name, retval,
+			"while retrying to read bitmaps for %s",
+			device_name);
+		fatal_error(0);
 	}
 }
 
@@ -199,6 +192,32 @@ void print_resource_track(struct resource_track *track)
 	       timeval_subtract(&time_end, &track->time_start),
 	       timeval_subtract(&r.ru_utime, &track->user_start),
 	       timeval_subtract(&r.ru_stime, &track->system_start));
+}
+
+void e2fsck_read_inode(ext2_filsys fs, unsigned long ino,
+			      struct ext2_inode * inode, const char *proc)
+{
+	int retval;
+
+	retval = ext2fs_read_inode(fs, ino, inode);
+	if (retval) {
+		com_err("ext2fs_read_inode", retval,
+			"while reading inode %ld in %s", ino, proc);
+		fatal_error(0);
+	}
+}
+
+extern void e2fsck_write_inode(ext2_filsys fs, unsigned long ino,
+			       struct ext2_inode * inode, const char *proc)
+{
+	int retval;
+
+	retval = ext2fs_write_inode(fs, ino, inode);
+	if (retval) {
+		com_err("ext2fs_write_inode", retval,
+			"while writing inode %ld in %s", ino, proc);
+		fatal_error(0);
+	}
 }
 
 /*

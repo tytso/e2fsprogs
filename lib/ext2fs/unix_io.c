@@ -20,7 +20,15 @@
 #include "ext2_err.h"
 #include "io.h"
 
+/*
+ * For checking structure magic numbers...
+ */
+
+#define EXT2_CHECK_MAGIC(struct, code) \
+	  if ((struct)->magic != (code)) return (code)
+  
 struct unix_private_data {
+	int	magic;
 	int	dev;
 	int	flags;
 	char	*buf;
@@ -36,7 +44,8 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 				int count, const void *data);
 static errcode_t unix_flush(io_channel channel);
 
-struct struct_io_manager struct_unix_manager = {
+static struct struct_io_manager struct_unix_manager = {
+	EXT2_ET_MAGIC_IO_MANAGER,
 	"Unix I/O Manager",
 	unix_open,
 	unix_close,
@@ -57,6 +66,8 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	io = (io_channel) malloc(sizeof(struct struct_io_channel));
 	if (!io)
 		return ENOMEM;
+	memset(io, 0, sizeof(struct struct_io_channel));
+	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
 	data = (struct unix_private_data *)
 		malloc(sizeof(struct unix_private_data));
 	if (!data) {
@@ -71,9 +82,12 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	}
 	strcpy(io->name, name);
 	io->private_data = data;
+	io->block_size = 1024;
+	io->read_error = 0;
+	io->write_error = 0;
 
 	memset(data, 0, sizeof(struct unix_private_data));
-	io->block_size = 1024;
+	data->magic = EXT2_ET_MAGIC_UNIX_IO_CHANNEL;
 	data->buf = malloc(io->block_size);
 	data->buf_block_nr = -1;
 	if (!data->buf) {
@@ -104,7 +118,10 @@ static errcode_t unix_close(io_channel channel)
 	struct unix_private_data *data;
 	errcode_t	retval = 0;
 
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+	
 	if (close(data->dev) < 0)
 		retval = errno;
 	if (data->buf)
@@ -121,7 +138,10 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 {
 	struct unix_private_data *data;
 
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
 	if (channel->block_size != blksize) {
 		channel->block_size = blksize;
 		free(data->buf);
@@ -140,9 +160,12 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 	struct unix_private_data *data;
 	errcode_t	retval;
 	size_t		size;
+	ext2_loff_t	location;
 	int		actual = 0;
 
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
 	/*
 	 * If it's in the cache, use it!
@@ -151,9 +174,12 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 		memcpy(buf, data->buf, channel->block_size);
 		return 0;
 	}
+#if 0
+	printf("read_block %lu (%d)\n", block, count);
+#endif
 	size = (count < 0) ? -count : count * channel->block_size;
-	if (lseek(data->dev, block * channel->block_size, SEEK_SET) !=
-	    block * channel->block_size) {
+	location = (ext2_loff_t) block * channel->block_size;
+	if (ext2_llseek(data->dev, location, SEEK_SET) != location) {
 		retval = errno;
 		goto error_out;
 	}
@@ -183,10 +209,13 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 {
 	struct unix_private_data *data;
 	size_t		size;
+	ext2_loff_t	location;
 	int		actual = 0;
 	errcode_t	retval;
 
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
 	if (count == 1)
 		size = channel->block_size;
@@ -197,9 +226,9 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 		else
 			size = count * channel->block_size;
 	} 
-		
-	if (lseek(data->dev, block * channel->block_size, SEEK_SET) !=
-	    block * channel->block_size) {
+
+	location = (ext2_loff_t) block * channel->block_size;
+	if (ext2_llseek(data->dev, location, SEEK_SET) != location) {
 		retval = errno;
 		goto error_out;
 	}
@@ -228,6 +257,12 @@ error_out:
  */
 static errcode_t unix_flush(io_channel channel)
 {
+	struct unix_private_data *data;
+	
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+	
 	return 0;
 }
 

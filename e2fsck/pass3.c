@@ -38,14 +38,14 @@ static void check_root(ext2_filsys fs, ino_t root_ino);
 static void check_directory(ext2_filsys fs, ino_t dir);
 static ino_t get_lost_and_found(ext2_filsys fs);
 static void fix_dotdot(ext2_filsys fs, struct dir_info *dir, ino_t parent);
-static int adjust_inode_count(ext2_filsys fs, ino_t ino, int adj);
+static errcode_t adjust_inode_count(ext2_filsys fs, ino_t ino, int adj);
 static errcode_t expand_directory(ext2_filsys fs, ino_t dir);
 
 static ino_t lost_and_found = 0;
 static int bad_lost_and_found = 0;
 
-static char *inode_loop_detect;
-static char *inode_done_map;
+static ext2fs_inode_bitmap inode_loop_detect;
+static ext2fs_inode_bitmap inode_done_map;
 	
 void pass3(ext2_filsys fs)
 {
@@ -65,13 +65,16 @@ void pass3(ext2_filsys fs)
 	/*
 	 * Allocate some bitmaps to do loop detection.
 	 */
-	retval = ext2fs_allocate_inode_bitmap(fs, &inode_loop_detect);
+	retval = ext2fs_allocate_inode_bitmap(fs,
+					      "inode loop detection bitmap",
+					      &inode_loop_detect);
 	if (retval) {
 		com_err("ext2fs_allocate_inode_bitmap", retval,
 			"while allocating inode_loop_detect");
 		fatal_error(0);
 	}
-	retval = ext2fs_allocate_inode_bitmap(fs, &inode_done_map);
+	retval = ext2fs_allocate_inode_bitmap(fs, "inode done bitmap",
+					      &inode_done_map);
 	if (retval) {
 		com_err("ext2fs_allocate_inode_bitmap", retval,
 			"while allocating inode_done_map");
@@ -83,16 +86,16 @@ void pass3(ext2_filsys fs)
 	}
 
 	check_root(fs, EXT2_ROOT_INO);
-	ext2fs_mark_inode_bitmap(fs, inode_done_map, EXT2_ROOT_INO);
+	ext2fs_mark_inode_bitmap(inode_done_map, EXT2_ROOT_INO);
 
 	for (i=1; i <= fs->super->s_inodes_count; i++) {
-		if (ext2fs_test_inode_bitmap(fs, inode_dir_map, i))
+		if (ext2fs_test_inode_bitmap(inode_dir_map, i))
 			check_directory(fs, i);
 	}
 	
 	free_dir_info(fs);
-	free(inode_loop_detect);
-	free(inode_done_map);
+	ext2fs_free_inode_bitmap(inode_loop_detect);
+	ext2fs_free_inode_bitmap(inode_done_map);
 	if (tflag > 1) {
 		printf("Pass 3: ");
 		print_resource_track(&rtrack);
@@ -111,13 +114,13 @@ void check_root(ext2_filsys fs, ino_t root_ino)
 	char *			block;
 	struct dir_info		*dir;
 	
-	if (ext2fs_test_inode_bitmap(fs, inode_used_map, root_ino)) {
+	if (ext2fs_test_inode_bitmap(inode_used_map, root_ino)) {
 		/*
 		 * If the root inode is a directory, die here.  The
 		 * user must have answered 'no' in pass1 when we
 		 * offered to clear it.
 		 */
-		if (!(ext2fs_test_inode_bitmap(fs, inode_dir_map, root_ino)))
+		if (!(ext2fs_test_inode_bitmap(inode_dir_map, root_ino)))
 			fatal_error("Root inode not directory");
 		
 		/*
@@ -148,8 +151,8 @@ void check_root(ext2_filsys fs, ino_t root_ino)
 			"while trying to create root directory");
 		fatal_error(0);
 	}
-	ext2fs_mark_block_bitmap(fs, block_found_map, blk);
-	ext2fs_mark_block_bitmap(fs, fs->block_map, blk);
+	ext2fs_mark_block_bitmap(block_found_map, blk);
+	ext2fs_mark_block_bitmap(fs->block_map, blk);
 	ext2fs_mark_bb_dirty(fs);
 
 	/*
@@ -199,9 +202,9 @@ void check_root(ext2_filsys fs, ino_t root_ino)
 	inode_count[EXT2_ROOT_INO] = 2;
 	inode_link_info[EXT2_ROOT_INO] = 2;
 
-	ext2fs_mark_inode_bitmap(fs, inode_used_map, EXT2_ROOT_INO);
-	ext2fs_mark_inode_bitmap(fs, inode_dir_map, EXT2_ROOT_INO);
-	ext2fs_mark_inode_bitmap(fs, fs->inode_map, EXT2_ROOT_INO);
+	ext2fs_mark_inode_bitmap(inode_used_map, EXT2_ROOT_INO);
+	ext2fs_mark_inode_bitmap(inode_dir_map, EXT2_ROOT_INO);
+	ext2fs_mark_inode_bitmap(fs->inode_map, EXT2_ROOT_INO);
 	ext2fs_mark_ib_dirty(fs);
 }
 
@@ -223,12 +226,12 @@ static void check_directory(ext2_filsys fs, ino_t ino)
 
 	dir = get_dir_info(ino);
 	if (!dir) {
-		printf("Internal error: couldn't find dir_info for %ld\n",
+		printf("Internal error: couldn't find dir_info for %lu\n",
 		       ino);
 		fatal_error(0);
 	}
 
-	memset(inode_loop_detect, 0, (fs->super->s_inodes_count / 8) + 1);
+	ext2fs_clear_inode_bitmap(inode_loop_detect);
 	p = dir;
 	while (p) {
 		/*
@@ -238,7 +241,7 @@ static void check_directory(ext2_filsys fs, ino_t ino)
 		 * already told us he doesn't want us to reconnect the
 		 * disconnected subtree.
 		 */
-		if (ext2fs_test_inode_bitmap(fs, inode_done_map, p->ino))
+		if (ext2fs_test_inode_bitmap(inode_done_map, p->ino))
 			goto check_dot_dot;
 		/*
 		 * Mark this inode as being "done"; by the time we
@@ -247,17 +250,17 @@ static void check_directory(ext2_filsys fs, ino_t ino)
 		 * or we will have offered to reconnect this to
 		 * lost+found.
 		 */
-		ext2fs_mark_inode_bitmap(fs, inode_done_map, p->ino);
+		ext2fs_mark_inode_bitmap(inode_done_map, p->ino);
 		/*
 		 * If this directory doesn't have a parent, or we've
 		 * seen the parent once already, then offer to
 		 * reparent it to lost+found
 		 */
 		if (!p->parent ||
-		    (ext2fs_test_inode_bitmap(fs, inode_loop_detect,
+		    (ext2fs_test_inode_bitmap(inode_loop_detect,
 					      p->parent)))
 			break;
-		ext2fs_mark_inode_bitmap(fs, inode_loop_detect,
+		ext2fs_mark_inode_bitmap(inode_loop_detect,
 					 p->parent);
 		p = get_dir_info(p->parent);
 	}
@@ -269,7 +272,7 @@ static void check_directory(ext2_filsys fs, ino_t ino)
 	if (retval)
 		path1 = unknown;
 
-	printf("Unconnected directory inode %li (%s)\n", p->ino, path1);
+	printf("Unconnected directory inode %lu (%s)\n", p->ino, path1);
 	if (path1 != unknown)
 		free(path1);
 	preenhalt();
@@ -301,7 +304,7 @@ check_dot_dot:
 		if (retval)
 			path3 = unknown;
 		
-		printf("'..' in %s (%ld) is %s (%ld), should be %s (%ld).\n",
+		printf("'..' in %s (%lu) is %s (%lu), should be %s (%lu).\n",
 		       path1, ino, path2, dir->dotdot,
 		       path3, dir->parent);
 		if (path1 != unknown)
@@ -359,8 +362,8 @@ ino_t get_lost_and_found(ext2_filsys fs)
 			"while trying to create /lost+found directory");
 		return 0;
 	}
-	ext2fs_mark_block_bitmap(fs, block_found_map, blk);
-	ext2fs_mark_block_bitmap(fs, fs->block_map, blk);
+	ext2fs_mark_block_bitmap(block_found_map, blk);
+	ext2fs_mark_block_bitmap(fs->block_map, blk);
 	ext2fs_mark_bb_dirty(fs);
 
 	/*
@@ -373,9 +376,9 @@ ino_t get_lost_and_found(ext2_filsys fs)
 			"while trying to create /lost+found directory");
 		return 0;
 	}
-	ext2fs_mark_inode_bitmap(fs, inode_used_map, ino);
-	ext2fs_mark_inode_bitmap(fs, inode_dir_map, ino);
-	ext2fs_mark_inode_bitmap(fs, fs->inode_map, ino);
+	ext2fs_mark_inode_bitmap(inode_used_map, ino);
+	ext2fs_mark_inode_bitmap(inode_dir_map, ino);
+	ext2fs_mark_inode_bitmap(fs->inode_map, ino);
 	ext2fs_mark_ib_dirty(fs);
 
 	/*
@@ -433,7 +436,7 @@ ino_t get_lost_and_found(ext2_filsys fs)
 	inode_count[ino] = 2;
 	inode_link_info[ino] = 2;
 #if 0
-	printf("/lost+found created; inode #%d\n", ino);
+	printf("/lost+found created; inode #%lu\n", ino);
 #endif
 	return ino;
 }
@@ -459,7 +462,7 @@ int reconnect_file(ext2_filsys fs, ino_t inode)
 		}
 	}
 
-	sprintf(name, "#%ld", inode);
+	sprintf(name, "#%lu", inode);
 	retval = ext2fs_link(fs, lost_and_found, name, inode, 0);
 	if (retval == EXT2_ET_DIR_NO_SPACE) {
 		if (!ask("No room in /lost+found; expand /lost+found", 1))
@@ -473,7 +476,7 @@ int reconnect_file(ext2_filsys fs, ino_t inode)
 		retval = ext2fs_link(fs, lost_and_found, name, inode, 0);
 	}
 	if (retval) {
-		printf("Could not reconnect %ld: %s\n", inode,
+		printf("Could not reconnect %lu: %s\n", inode,
 		       error_message(retval));
 		return 1;
 	}
@@ -486,7 +489,7 @@ int reconnect_file(ext2_filsys fs, ino_t inode)
 /*
  * Utility routine to adjust the inode counts on an inode.
  */
-static int adjust_inode_count(ext2_filsys fs, ino_t ino, int adj)
+static errcode_t adjust_inode_count(ext2_filsys fs, ino_t ino, int adj)
 {
 	errcode_t		retval;
 	struct ext2_inode 	inode;
@@ -499,7 +502,7 @@ static int adjust_inode_count(ext2_filsys fs, ino_t ino, int adj)
 		return retval;
 
 #if 0
-	printf("Adjusting link count for inode %d by %d (from %d)\n", ino, adj,
+	printf("Adjusting link count for inode %lu by %d (from %d)\n", ino, adj,
 	       inode.i_links_count);
 #endif
 
@@ -539,11 +542,11 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 	
 	retval = adjust_inode_count(fp->fs, dirent->inode, -1);
 	if (retval)
-		printf("Error while adjusting inode count on inode %ld\n",
+		printf("Error while adjusting inode count on inode %lu\n",
 		       dirent->inode);
 	retval = adjust_inode_count(fp->fs, fp->parent, 1);
 	if (retval)
-		printf("Error while adjusting inode count on inode %ld\n",
+		printf("Error while adjusting inode count on inode %lu\n",
 		       fp->parent);
 
 	dirent->inode = fp->parent;
@@ -562,13 +565,13 @@ static void fix_dotdot(ext2_filsys fs, struct dir_info *dir, ino_t parent)
 	fp.done = 0;
 
 #if 0
-	printf("Fixing '..' of inode %d to be %d...\n", dir->ino, parent);
+	printf("Fixing '..' of inode %lu to be %lu...\n", dir->ino, parent);
 #endif
 	
 	retval = ext2fs_dir_iterate(fs, dir->ino, DIRENT_FLAG_INCLUDE_EMPTY,
 				    0, fix_dotdot_proc, &fp);
 	if (retval || !fp.done) {
-		printf("Couldn't fix parent of inode %ld: %s\n\n",
+		printf("Couldn't fix parent of inode %lu: %s\n\n",
 		       dir->ino, retval ? error_message(retval) :
 		       "Couldn't find parent direntory entry");
 		ext2fs_unmark_valid(fs);
@@ -630,8 +633,8 @@ static int expand_dir_proc(ext2_filsys fs,
 	}
 	free(block);
 	*blocknr = new_blk;
-	ext2fs_mark_block_bitmap(fs, block_found_map, new_blk);
-	ext2fs_mark_block_bitmap(fs, fs->block_map, new_blk);
+	ext2fs_mark_block_bitmap(block_found_map, new_blk);
+	ext2fs_mark_block_bitmap(fs->block_map, new_blk);
 	ext2fs_mark_bb_dirty(fs);
 	if (es->done)
 		return (BLOCK_CHANGED | BLOCK_ABORT);
@@ -673,9 +676,7 @@ static errcode_t expand_directory(ext2_filsys fs, ino_t dir)
 	inode.i_size += fs->blocksize;
 	inode.i_blocks += fs->blocksize / 512;
 
-	retval = ext2fs_write_inode(fs, dir, &inode);
-	if (retval)
-		return retval;
+	e2fsck_write_inode(fs, dir, &inode, "expand_directory");
 
 	return 0;
 }

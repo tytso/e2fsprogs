@@ -2,7 +2,8 @@ include ../MCONFIG
 
 CFLAGS=		$(OPT) $(WFLAGS) -I../lib
 LDFLAGS=	$(OPT)
-SPROGS=		tune2fs mklost+found mke2fs dumpe2fs badblocks fsck
+SPROGS=		mke2fs badblocks tune2fs dumpe2fs fsck
+USPROGS=	mklost+found
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			fsck.8
 
@@ -21,32 +22,38 @@ FSCK_OBJS=	fsck.o
 LIBS= -L../lib -lext2fs -le2p -lcom_err 
 DEPLIBS= ../lib/libext2fs.a ../lib/libe2p.a ../lib/libcom_err.a 
 
-all: $(SPROGS) $(UPROGS)
+all: $(SPROGS) $(UPROGS) $(USPROGS)
 
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS)
-	cc $(LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS)
+	$(CC) $(LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS)
 
 mklost+found: $(MKLPF_OBJS)
-	cc $(LDFLAGS) -o mklost+found $(MKLPF_OBJS)
+	$(CC) $(LDFLAGS) -o mklost+found $(MKLPF_OBJS)
 
 mke2fs: $(MKE2FS_OBJS) $(DEPLIBS)
-	cc $(LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS)
+	$(CC) $(LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS)
+
+mke2fs.static: $(MKE2FS_OBJS) $(DEPLIBS)
+	$(CC) $(LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) $(LIBS)
 
 chattr: $(CHATTR_OBJS) $(DEPLIBS)
-	cc $(LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS)
+	$(CC) $(LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS)
 
 lsattr: $(LSATTR_OBJS) $(DEPLIBS)
-	cc $(LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS)
+	$(CC) $(LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS)
 
 dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS)
-	cc $(LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS)
+	$(CC) $(LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS)
 
 badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
-	cc $(LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS)
+	$(CC) $(LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS)
 
 install:: $(SPROGS) $(UPROGS)
 	for i in $(SPROGS); do \
 		$(INSTALLBIN) $$i $(SBINDIR)/$$i; \
+	done
+	for i in $(USPROGS); do \
+		$(INSTALLBIN) $$i $(USRSBINDIR)/$$i; \
 	done
 	ln -sf mke2fs $(SBINDIR)/mkfs.ext2
 	for i in $(UPROGS); do \
@@ -61,8 +68,18 @@ install:: $(SMANPAGES) $(UMANPAGES)
 		$(INSTALLMAN) $$i $(UMANDIR)/$$i; \
 	done
 
+install-tree:: $(SPROGS) $(UPROGS)
+	for i in $(SPROGS) $(UPROGS); do \
+		rm -f ../bin/$$i; \
+		cp $$i ../bin; \
+		strip ../bin/$$i; \
+		chmod 555 ../bin/$$i; \
+	done
+	ln -sf mke2fs ../bin/mkfs.ext2
+
 clean:
-	rm -f $(SPROGS) $(UPROGS) \#* *.s *.o *.a *~ core
+	rm -f $(SPROGS) $(USPROGS) $(UPROGS) mke2fs.static \
+		\#* *.s *.o *.a *~ core
 
 really-clean: clean
 	rm -f .depend 

@@ -9,7 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <linux/fs.h>
+
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -62,7 +62,7 @@ static int expand_dir_proc(ext2_filsys fs,
 	}
 	free(block);
 	*blocknr = new_blk;
-	ext2fs_mark_block_bitmap(fs, fs->block_map, new_blk);
+	ext2fs_mark_block_bitmap(fs->block_map, new_blk);
 	ext2fs_mark_bb_dirty(fs);
 	group = ext2fs_group_of_blk(fs, new_blk);
 	fs->group_desc[group].bg_free_blocks_count--;
@@ -80,6 +80,8 @@ errcode_t ext2fs_expand_dir(ext2_filsys fs, ino_t dir)
 	struct expand_dir_struct es;
 	struct ext2_inode	inode;
 	
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
 

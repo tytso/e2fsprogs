@@ -9,7 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <linux/fs.h>
+
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -46,6 +46,8 @@ errcode_t ext2fs_dir_iterate(ext2_filsys fs,
 	struct		dir_context	ctx;
 	errcode_t	retval;
 	
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	retval = ext2fs_check_directory(fs, dir);
 	if (retval)
 		return retval;
@@ -155,6 +157,8 @@ errcode_t ext2fs_lookup(ext2_filsys fs, ino_t dir, const char *name,
 	errcode_t	retval;
 	struct lookup_struct ls;
 
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	ls.name = name;
 	ls.len = namelen;
 	ls.inode = inode;
@@ -175,6 +179,8 @@ errcode_t ext2fs_namei(ext2_filsys fs, ino_t root, ino_t cwd, const char *name,
 	const char	*p = name, *q;
 	int		len;
 	errcode_t	retval;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	buf = malloc(fs->blocksize);
 	if (!buf)

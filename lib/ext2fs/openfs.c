@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -31,11 +30,14 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	int		i, group_block;
 	char		*dest;
 	
+	EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
+	
 	fs = (ext2_filsys) malloc(sizeof(struct struct_ext2_filsys));
 	if (!fs)
 		return ENOMEM;
 	
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
+	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
 	fs->flags = flags;
 	retval = manager->open(name, (flags & EXT2_FLAG_RW) ? IO_FLAG_RW : 0,
 			       &fs->io);
@@ -65,9 +67,11 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			goto cleanup;
 		}
 		io_channel_set_blksize(fs->io, block_size);
+		group_block = superblock + 1;
 	} else {
 		io_channel_set_blksize(fs->io, SUPERBLOCK_OFFSET);
 		superblock = 1;
+		group_block = 0;
 	}
 	retval = io_channel_read_blk(fs->io, superblock, -SUPERBLOCK_SIZE,
 				     fs->super);
@@ -78,6 +82,12 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		retval = EXT2_ET_BAD_MAGIC;
 		goto cleanup;
 	}
+#ifdef	EXT2_CURRENT_REV
+	if (fs->super->s_rev_level > EXT2_LIB_CURRENT_REV) {
+		retval = EXT2_ET_REV_TOO_HIGH;
+		goto cleanup;
+	}
+#endif
 	fs->blocksize = EXT2_BLOCK_SIZE(fs->super);
 	fs->fragsize = EXT2_FRAG_SIZE(fs->super);
 	fs->inode_blocks_per_group = (fs->super->s_inodes_per_group /
@@ -108,7 +118,8 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		retval = ENOMEM;
 		goto cleanup;
 	}
-	group_block = fs->super->s_first_data_block + 1;
+	if (!group_block)
+		group_block = fs->super->s_first_data_block + 1;
 	dest = (char *) fs->group_desc;
 	for (i=0 ; i < fs->desc_blocks; i++) {
 		retval = io_channel_read_blk(fs->io, group_block, 1, dest);
@@ -123,47 +134,5 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 cleanup:
 	ext2fs_free(fs);
 	return retval;
-}
-
-/*
- * This routine sanity checks the group descriptors
- */
-errcode_t ext2fs_check_desc(ext2_filsys fs)
-{
-	int i;
-	int block = fs->super->s_first_data_block;
-	int next, inode_blocks_per_group;
-
-	inode_blocks_per_group = fs->super->s_inodes_per_group /
-		EXT2_INODES_PER_BLOCK (fs->super);
-
-	for (i = 0; i < fs->group_desc_count; i++) {
-		next = block + fs->super->s_blocks_per_group;
-		/*
-		 * Check to make sure block bitmap for group is
-		 * located within the group.
-		 */
-		if (fs->group_desc[i].bg_block_bitmap < block ||
-		    fs->group_desc[i].bg_block_bitmap >= next)
-			return EXT2_ET_GDESC_BAD_BLOCK_MAP;
-		/*
-		 * Check to make sure inode bitmap for group is
-		 * located within the group
-		 */
-		if (fs->group_desc[i].bg_inode_bitmap < block ||
-		    fs->group_desc[i].bg_inode_bitmap >= next)
-			return EXT2_ET_GDESC_BAD_INODE_MAP;
-		/*
-		 * Check to make sure inode table for group is located
-		 * within the group
-		 */
-		if (fs->group_desc[i].bg_inode_table < block ||
-		    fs->group_desc[i].bg_inode_table+inode_blocks_per_group >=
-		    next)
-			return EXT2_ET_GDESC_BAD_INODE_TABLE;
-		
-		block = next;
-	}
-	return 0;
 }
 

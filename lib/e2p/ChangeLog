@@ -1,0 +1,15 @@
+Mon Nov  7 21:59:12 1994  Remy Card  <card@bbj>
+
+	* ls.c (list_super): List the new fields s_def_resuid and
+	s_def_resgid.
+
+	(print_user): New function which prints the uid and the user name.
+
+	(print_group): New function which prints the gid and the group name.
+
+Wed Aug 17 21:50:39 1994  Remy Card  (card@bbj)
+
+	* pf.c (print_flags): New attributes are recognized and a long
+	format can be used.
+
+

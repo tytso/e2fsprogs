@@ -1,0 +1,13 @@
+00000000 T _fgetflags           libe2p       jump/fgetflags
+00000000 T _fsetflags           libe2p       jump/fsetflags
+00000000 T _fgetversion         libe2p       jump/fgetversion
+00000000 T _fsetversion         libe2p       jump/fsetversion
+00000000 T _getflags            libe2p       jump/getflags
+00000000 T _getversion          libe2p       jump/getversion
+00000000 T _iterate_on_dir      libe2p       jump/iod
+00000000 T _list_super          libe2p       jump/ls
+00000000 T _print_fs_errors     libe2p       jump/pe
+00000000 T _print_flags         libe2p       jump/pf
+00000000 T _print_fs_state      libe2p       jump/ps
+00000000 T _setflags            libe2p       jump/setflags
+00000000 T _setversion          libe2p       jump/setversion

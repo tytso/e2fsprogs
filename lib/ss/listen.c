@@ -61,7 +61,11 @@ int ss_listen (sci_idx)
     char input[BUFSIZ];
     char buffer[BUFSIZ];
     char *end = buffer;
+#ifdef POSIX_SIGNALS
+    sigset_t omask, igmask;
+#else
     int mask;
+#endif
     int code;
     jmp_buf old_jmpb;
     ss_data *old_info = current_info;
@@ -69,11 +73,21 @@ int ss_listen (sci_idx)
     current_info = info = ss_info(sci_idx);
     sig_cont = (sigret_t (*)()) 0;
     info->abort = 0;
+#ifdef POSIX_SIGNALS
+    sigemptyset(&igmask);
+    sigaddset(&igmask, SIGINT);
+    sigprocmask(SIG_BLOCK, &igmask, &omask);
+#else
     mask = sigblock(sigmask(SIGINT));
+#endif
     memcpy(old_jmpb, listen_jmpb, sizeof(jmp_buf));
     sig_int = signal(SIGINT, listen_int_handler);
     setjmp(listen_jmpb);
+#ifdef POSIX_SIGNALS
+    sigprocmask(SIG_SETMASK, &omask, (sigset_t *) 0);
+#else
     (void) sigsetmask(mask);
+#endif
     while(!info->abort) {
 	print_prompt();
 	*end = '\0';

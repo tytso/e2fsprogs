@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.TH CHATTR 1 "March 1994" "Version 0.5"
+.TH CHATTR 1 "November 1994" "Version 0.5b"
 .SH NAME
 chattr \- change file attributes on a Linux second extended file system
 .SH SYNOPSIS
@@ -19,14 +19,15 @@ mode
 .B chattr
 changes the files attributes on an second extended file system.
 .PP
-The format of a symbolic mode is +-=[Scsu].
+The format of a symbolic mode is +-=[Sacdisu].
 .PP
 The operator `+' causes the selected attributes to be added to the
 existing attributes of the files; `-' causes them to be removed; and
 `=' causes them to be the only attributes that the files have.
 .PP
-The letters `Scsu' select the new attributes for the files: synchronous
-updates (S), compressed (c), secure deletion (s), and undeletable (u).
+The letters `Sacdisu' select the new attributes for the files: synchronous
+updates (S), append only (a), compressed (c), immutable (i), no dump (d),
+secure deletion (s), and undeletable (u).
 .SH OPTIONS
 .TP
 .I -R
@@ -37,21 +38,42 @@ Verbosely describe changed attributes.
 .TP
 .I -v version
 Set the files version.
+.SH ATTRIBUTES
+A file with the `a' attribute set can only be open in append mode for writing.
+
+A file with the `c' attribute set is automatically compressed on the disk
+by the kernel. A read from this file returns uncompressed data. A write to
+this file compresses data before storing them on the disk.
+
+A file with the `d' attribute set is not candidate for backup when the
+.BR dump (8)
+program is run.
+
+A file with the `i' attribute cannot be modified: it cannot be deleted or
+renamed, no link can be created to this file and no data can be written
+to the file. Only the superuser can set or clear this attribute.
+
+When a file with the `s' attribute set is deleted, its blocks are zeroed and
+written back to the disk.
+
+When a file with the `S' attribute set is modified,
+the changes are written synchronously on the disk; this is equivalent to
+the `sync' mount option applied to a subset of the files.
+
+When a file with the `u' attribute set is deleted, its contents is saved.
+This allows the user to ask for its undeletion.
 .SH AUTHOR
 .B chattr
 has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
 of the ext2 fs.
 .SH BUGS AND LIMITATIONS
-As of ext2 fs 0.4, the kernel code only honours the `s' and `S' attributes. When
-a file with the `s' attribute set is deleted, its blocks are zeroed and
-written back to the disk. When a file with the `S' attribute set is modified,
-the changes are written synchronously on the disk; this is equivalent to
-the `sync' mount option applied to a subset of the files.
+As of ext2 fs 0.5a, the `c' and `u' attribute are not honoured by the kernel
+code.
 .PP
-The other attributes will be implemented in a next ext2 fs version.
+These attributes will be implemented in a future ext2 fs version.
 .SH AVAILABILITY
 .B chattr
-is available for anonymous ftp from ftp.ibp.fr (132.227.60.2) in
-/pub/linux/BETA/ext2fs.
+is available for anonymous ftp from ftp.ibp.fr and tsx-11.mit.edu in
+/pub/linux/packages/ext2fs.
 .SH SEE ALSO
 .BR lsattr (1)

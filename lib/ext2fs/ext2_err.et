@@ -1,14 +1,71 @@
 #
-# Copyright (C) 1993 Theodore Ts'o.  This file may be redistributed
+# Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be redistributed
 # under the terms of the GNU Public License.
 #
 	error_table ext2
 
 ec	EXT2_ET_BASE,
-	"EXT2FS Library version 0.0"
+	"EXT2FS Library version 0.5b"
+
+ec	EXT2_ET_MAGIC_EXT2FS_FILSYS,
+	"Wrong magic number for ext2_filsys structure"
+
+ec	EXT2_ET_MAGIC_BADBLOCKS_LIST,
+	"Wrong magic number for badblocks_list structure"
+
+ec	EXT2_ET_MAGIC_BADBLOCKS_ITERATE,
+	"Wrong magic number for badblocks_iterate structure"
+
+ec	EXT2_ET_MAGIC_INODE_SCAN,
+	"Wrong magic number for inode_scan structure"
+
+ec	EXT2_ET_MAGIC_IO_CHANNEL,
+	"Wrong magic number for io_channel structure"
+
+ec	EXT2_ET_MAGIC_UNIX_IO_CHANNEL,
+	"Wrong magic number for unix io_channel structure"
+
+ec	EXT2_ET_MAGIC_IO_MANAGER,
+	"Wrong magic number for io_manager structure"
+
+ec	EXT2_ET_MAGIC_BLOCK_BITMAP,
+	"Wrong magic number for block_bitmap structure"
+
+ec	EXT2_ET_MAGIC_INODE_BITMAP,
+	"Wrong magic number for inode_bitmap structure"
+
+ec	EXT2_ET_MAGIC_RESERVED_1,
+	"Wrong magic number --- RESERVED_1"
+
+ec	EXT2_ET_MAGIC_RESERVED_2,
+	"Wrong magic number --- RESERVED_2"
+
+ec	EXT2_ET_MAGIC_RESERVED_3,
+	"Wrong magic number --- RESERVED_3"
+
+ec	EXT2_ET_MAGIC_RESERVED_4,
+	"Wrong magic number --- RESERVED_4"
+
+ec	EXT2_ET_MAGIC_RESERVED_5,
+	"Wrong magic number --- RESERVED_5"
+
+ec	EXT2_ET_MAGIC_RESERVED_6,
+	"Wrong magic number --- RESERVED_6"
+
+ec	EXT2_ET_MAGIC_RESERVED_7,
+	"Wrong magic number --- RESERVED_7"
+
+ec	EXT2_ET_MAGIC_RESERVED_8,
+	"Wrong magic number --- RESERVED_8"
+
+ec	EXT2_ET_MAGIC_RESERVED_9,
+	"Wrong magic number --- RESERVED_9"
 
 ec	EXT2_ET_BAD_MAGIC,
 	"Bad magic number in super-block"
+
+ec	EXT2_ET_REV_TOO_HIGH,
+	"Filesystem revision too high"
 
 ec	EXT2_ET_SB_LSEEK,
 	"Can't seek to superblock"
@@ -90,6 +147,39 @@ ec	EXT2_ET_EXPAND_DIR_ERR,
 
 ec	EXT2_ET_TOOSMALL,
 	"Not enough space to build proposed filesystem"
+
+ec	EXT2_ET_BAD_BLOCK_MARK,
+	"Illegal block number passed to ext2fs_mark_block_bitmap"
+
+ec	EXT2_ET_BAD_BLOCK_UNMARK,
+	"Illegal block number passed to ext2fs_unmark_block_bitmap"
+
+ec	EXT2_ET_BAD_BLOCK_TEST,
+	"Illegal block number passed to ext2fs_test_block_bitmap"
+
+ec	EXT2_ET_BAD_INODE_MARK,
+	"Illegal inode number passed to ext2fs_mark_inode_bitmap"
+
+ec	EXT2_ET_BAD_INODE_UNMARK,
+	"Illegal inode number passed to ext2fs_unmark_inode_bitmap"
+
+ec	EXT2_ET_BAD_INODE_TEST,
+	"Illegal inode number passed to ext2fs_test_inode_bitmap"
+
+ec	EXT2_ET_FUDGE_BLOCK_BITMAP_END,
+	"Attempt to fudge end of block bitmap past the real end"
+
+ec	EXT2_ET_FUDGE_INODE_BITMAP_END,
+	"Attempt to fudge end of inode bitmap past the real end"
+
+ec	EXT2_ET_BAD_IND_BLOCK,
+	"Illegal indirect block found" 
+
+ec	EXT2_ET_BAD_DIND_BLOCK,
+	"Illegal doubly indirect block found" 
+
+ec	EXT2_ET_BAD_TIND_BLOCK,
+	"Illegal triply indirect block found" 
 
 	end
 

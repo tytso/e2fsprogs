@@ -1,0 +1,70 @@
+Sat Mar 11 13:12:16 1995  Theodore Y. Ts'o  <tytso@localhost>
+
+	* pass1.c (unwind_pass1): Clear the file type statistics counter
+		when pass 1 needs to be restarted from scratch.
+
+	* pass1.c (handle_fs_bad_blocks): Fix bug where bitmap blocks were
+		being reallocated to blocks in the next block group,
+		instead of the current block grup.
+
+	* pass1.c (pass1, check_blocks): Set inode_link_info[ino] whenever
+		inode.i_links_count is set.
+
+Tue Feb 14 01:38:04 1995  Theodore Y. Ts'o  (tytso@rt-11)
+
+	* pass1.c (process_block): Add checks for if the block is
+		trepassing on a superblock or group descriptor table.
+
+Sat Dec 31 00:52:11 1994    <tytso@rsx-11.mit.edu>
+
+	* main.c (corrupt_msg): Extend the message which is printed out
+		when the superblock is corrupt, to include the suggestion
+		of using the -b option to specify an alternate superblock.
+
+Thu Nov 24 09:29:58 1994  Theodore Y. Ts'o  (tytso@rt-11)
+
+	* badblocks.c (read_bad_blocks_file): If we are adding or
+		replacing bad blocks in the bad blocks inode, sanity check
+		the bad block inode first, and clear out any illegal blocks.
+
+	* pass2.c (check_name): Don't bomb out if the attempt to get the
+		pathname of the containing directory returns an error; the
+		directory may be too badly damaged to expect that
+		ext2fs_get_pathname will always succeed.  Use "???" if the
+		pathname can't be obtained (it's only for a printf to the
+		user anyway).
+
+		The name of the containing directory and the bad filename
+		were incorrectly interchanged in the user message.  Fixed.
+
+	* pass2.c (check_name, check_dir_block): Use a common static
+		string for the unknown pathname.
+
+Mon Nov  7 22:30:54 1994  Remy Card  <card@bbj>
+
+	* Fixed lots of printf formats to make sure that block and inode
+	numbers are printed as unsigned integers.
+
+Mon Oct 24 14:10:46 1994    (tytso@rsx-11)
+
+	* pass5.c (check_block_end): Fix calculation of how the last block
+		in the block bitmap should be calculated.
+
+Wed Sep  7 10:01:13 1994    (tytso@rsx-11)
+
+	* pass1b.c (pass1_dupblocks): Fix declaration of dup_inode_map to
+		be an ext2fs_inode_bitmap, and free it properly.
+
+	* e2fsck.h
+	* e2fsck.c (main): Folded in Remy Card's changes to add a revision
+	level to the superblock.
+
+Wed Aug 17 22:00:20 1994  Remy Card  (card@bbj)
+
+	* e2fsck.c (usage): Fixed bogus usage message.
+
+Wed Aug 17 11:21:45 1994  Theodore Y. Ts'o  (tytso@rt-11)
+
+	* pass1.c (process_bad_block): Fixed bug so that blocks in the
+	backup superblocks and group descriptors are handled gracefully.
+

@@ -35,7 +35,7 @@ void add_dir_info(ext2_filsys fs, ino_t ino, ino_t parent,
 	int	i, j;
 
 #if 0
-	printf("add_dir_info for inode %d...\n", ino);
+	printf("add_dir_info for inode %lu...\n", ino);
 #endif
 	if (!dir_info) {
 		dir_info_count = 0;

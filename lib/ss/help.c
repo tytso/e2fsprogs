@@ -4,6 +4,12 @@
  * For copyright info, see copyright.h.
  */
 
+#ifdef HAS_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAS_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -79,7 +85,7 @@ got_it:
 	ss_page_stdin();
     default:
 	(void) close(fd); /* what can we do if it fails? */
-	while (wait((union wait *)NULL) != child) {
+	while (wait(0) != child) {
 	    /* do nothing if wrong pid */
 	};
     }

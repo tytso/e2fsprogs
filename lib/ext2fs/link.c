@@ -9,7 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <linux/fs.h>
+
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -86,6 +86,8 @@ errcode_t ext2fs_link(ext2_filsys fs, ino_t dir, const char *name, ino_t ino,
 	errcode_t	retval;
 	struct link_struct ls;
 
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
 
@@ -128,6 +130,8 @@ errcode_t ext2fs_unlink(ext2_filsys fs, ino_t dir, const char *name, ino_t ino,
 {
 	errcode_t	retval;
 	struct link_struct ls;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;

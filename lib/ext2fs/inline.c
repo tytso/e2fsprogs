@@ -17,7 +17,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #define INCLUDE_INLINE_FUNCS

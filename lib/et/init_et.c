@@ -10,19 +10,17 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
+#ifdef HAS_STDLIB_H
+#include <stdlib.h>
+#endif
+#include "com_err.h"
 #include "error_table.h"
 #include "mit-sipb-copyright.h"
 
 #ifndef __STDC__
 #define const
 #endif
-
-#ifndef	lint
-static const char rcsid_init_et_c[] =
-    "$Header$";
-#endif
-
-extern char *malloc(), *realloc();
 
 struct foobar {
     struct et_list etl;
@@ -31,10 +29,14 @@ struct foobar {
 
 extern struct et_list * _et_list;
 
+#ifdef __STDC__
+int init_error_table(const char * const *msgs, int base, int count)
+#else
 int init_error_table(msgs, base, count)
     const char * const * msgs;
     int base;
     int count;
+#endif
 {
     struct foobar * new_et;
 
@@ -43,7 +45,7 @@ int init_error_table(msgs, base, count)
 
     new_et = (struct foobar *) malloc(sizeof(struct foobar));
     if (!new_et)
-	return errno;	/* oops */
+	return ENOMEM;	/* oops */
     new_et->etl.table = &new_et->et;
     new_et->et.msgs = msgs;
     new_et->et.base = base;

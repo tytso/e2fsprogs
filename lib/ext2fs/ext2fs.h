@@ -15,12 +15,44 @@
 #define SUPERBLOCK_OFFSET	1024
 #define SUPERBLOCK_SIZE 	1024
 
+/*
+ * The last ext2fs revision level that this version of the library is
+ * able to support.
+ */
+#define EXT2_LIB_CURRENT_REV	0
+
 typedef unsigned long	blk_t;
 typedef unsigned int	dgrp_t;
 
 #include "et/com_err.h"
 #include "ext2fs/io.h"
 #include "ext2fs/ext2_err.h"
+
+typedef struct struct_ext2_filsys *ext2_filsys;
+
+struct ext2fs_struct_inode_bitmap {
+	int	magic;
+	ext2_filsys fs;
+	ino_t	start, end;
+	ino_t	real_end;
+	char	*description;
+	char	*bitmap;
+	int	reserved[8];
+};
+
+typedef struct ext2fs_struct_inode_bitmap *ext2fs_inode_bitmap;
+
+struct ext2fs_struct_block_bitmap {
+	int	magic;
+	ext2_filsys fs;
+	blk_t	start, end;
+	ino_t	real_end;
+	char	*description;
+	char	*bitmap;
+	int	reserved[8];
+};
+
+typedef struct ext2fs_struct_block_bitmap *ext2fs_block_bitmap;
 
 /*
  * Flags for the ext2_filsys structure
@@ -33,9 +65,8 @@ typedef unsigned int	dgrp_t;
 #define EXT2_FLAG_IB_DIRTY	0x10
 #define EXT2_FLAG_BB_DIRTY	0x20
 
-typedef struct struct_ext2_filsys *ext2_filsys;
-
 struct struct_ext2_filsys {
+	int				magic;
 	io_channel			io;
 	int				flags;
 	char *				device_name;
@@ -46,11 +77,12 @@ struct struct_ext2_filsys {
 	unsigned long			desc_blocks;
 	struct ext2_group_desc *	group_desc;
 	int				inode_blocks_per_group;
-	char *				inode_map;
-	char *				block_map;
+	ext2fs_inode_bitmap		inode_map;
+	ext2fs_block_bitmap		block_map;
 	errcode_t (*get_blocks)(ext2_filsys fs, ino_t ino, blk_t *blocks);
 	errcode_t (*check_directory)(ext2_filsys fs, ino_t ino);
 	errcode_t (*write_bitmaps)(ext2_filsys fs);
+	int				reserved[16];
 
 	/*
 	 * Not used by ext2fs library; reserved for the use of the
@@ -66,10 +98,12 @@ struct struct_ext2_filsys {
 typedef struct struct_badblocks_list *badblocks_list;
 
 struct struct_badblocks_list {
+	int	magic;
 	int	num;
 	int	size;
 	blk_t	*list;
 	int	badblocks_flags;
+	int	reserved[8];
 };
 
 #define BADBLOCKS_FLAG_DIRTY	1
@@ -77,12 +111,14 @@ struct struct_badblocks_list {
 typedef struct struct_badblocks_iterate *badblocks_iterate;
 
 struct struct_badblocks_iterate {
+	int		magic;
 	badblocks_list	bb;
 	int		ptr;
+	int	reserved[8];
 };
-	
-#include "ext2fs/bitops.h"
 
+#include "ext2fs/bitops.h"
+	
 /*
  * Return flags for the block iterator functions
  */
@@ -112,7 +148,10 @@ struct struct_badblocks_iterate {
 /*
  * Inode scan definitions
  */
+typedef struct ext2_struct_inode_scan *ext2_inode_scan;
+
 struct ext2_struct_inode_scan {
+	int			magic;
 	ext2_filsys		fs;
 	ino_t			current_inode;
 	blk_t			current_block;
@@ -121,21 +160,33 @@ struct ext2_struct_inode_scan {
 	int			inode_buffer_blocks;
 	char *			inode_buffer;
 	struct ext2_inode *	inode_scan_ptr;
+	errcode_t		(*done_group)(ext2_filsys fs,
+					      ext2_inode_scan scan,
+					      dgrp_t group,
+					      void * private);
+	void *			done_group_data;
+	int			reserved[8];
 };
 
-typedef struct ext2_struct_inode_scan *ext2_inode_scan;
+/*
+ * For checking structure magic numbers...
+ */
 
+#define EXT2_CHECK_MAGIC(struct, code) \
+	  if ((struct)->magic != (code)) return (code)
+  
 /*
  * function prototypes
  */
 
 /* alloc.c */
 extern errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode,
-				  char *map, ino_t *ret);
+				  ext2fs_inode_bitmap map, ino_t *ret);
 extern errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
-				  char *map, blk_t *ret);
+				  ext2fs_block_bitmap map, blk_t *ret);
 extern errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start,
-					blk_t finish, int num, char *map,
+					blk_t finish, int num,
+					ext2fs_block_bitmap map,
 					blk_t *ret);
 
 /* badblocks.c */
@@ -157,8 +208,20 @@ extern errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs);
 extern errcode_t ext2fs_write_block_bitmap (ext2_filsys fs);
 extern errcode_t ext2fs_read_inode_bitmap (ext2_filsys fs);
 extern errcode_t ext2fs_read_block_bitmap(ext2_filsys fs);
-extern errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs, char **ret);
-extern errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs, char **ret);
+errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
+				       const char *descr,
+				       ext2fs_block_bitmap *ret);
+errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
+				       const char *descr,
+				       ext2fs_inode_bitmap *ret);
+errcode_t ext2fs_fudge_inode_bitmap_end(ext2fs_inode_bitmap bitmap,
+					ino_t end, ino_t *oend);
+errcode_t ext2fs_fudge_block_bitmap_end(ext2fs_block_bitmap bitmap,
+					blk_t end, blk_t *oend);
+void ext2fs_clear_inode_bitmap(ext2fs_inode_bitmap bitmap);
+void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap);
+void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap);
+void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap);
 extern errcode_t ext2fs_read_bitmaps(ext2_filsys fs);
 extern errcode_t ext2fs_write_bitmaps(ext2_filsys fs);
 
@@ -172,6 +235,9 @@ extern errcode_t ext2fs_block_iterate(ext2_filsys fs,
 						  int	blockcnt,
 						  void	*private),
 				      void *private);
+
+/* check_desc.c */
+extern errcode_t ext2fs_check_desc(ext2_filsys fs);
 
 /* closefs.c */
 extern errcode_t ext2fs_close(ext2_filsys fs);
@@ -194,6 +260,18 @@ extern errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 extern void ext2fs_close_inode_scan(ext2_inode_scan scan);
 extern errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 			       struct ext2_inode *inode);
+void ext2fs_set_inode_callback(ext2_inode_scan scan,
+			       errcode_t (*done_group)(ext2_filsys fs,
+						       ext2_inode_scan scan,
+						       dgrp_t group,
+						       void * private),
+			       void *done_group_data);
+void ext2fs_set_inode_callback(ext2_inode_scan scan,
+			       errcode_t (*done_group)(ext2_filsys fs,
+						       ext2_inode_scan scan,
+						       dgrp_t group,
+						       void * private),
+			       void *done_group_data);
 extern errcode_t ext2fs_read_inode (ext2_filsys fs, unsigned long ino,
 			    struct ext2_inode * inode);
 extern errcode_t ext2fs_write_inode(ext2_filsys fs, unsigned long ino,
@@ -229,7 +307,6 @@ extern errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 extern errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			     int block_size, io_manager manager,
 			     ext2_filsys *ret_fs);
-extern errcode_t ext2fs_check_desc(ext2_filsys fs);
 
 /* get_pathname.c */
 extern errcode_t ext2fs_get_pathname(ext2_filsys fs, ino_t dir, ino_t ino,

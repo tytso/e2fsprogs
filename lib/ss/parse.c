@@ -4,13 +4,12 @@
  * For copyright info, see copyright.h.
  */
 
+#ifdef HAS_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include "ss_internal.h"
 #include "copyright.h"
-
-#ifndef lint
-static char const rcsid[] =
-    "$Header$";
-#endif
 
 enum parse_mode { WHITESPACE, TOKEN, QUOTED_STRING };
 

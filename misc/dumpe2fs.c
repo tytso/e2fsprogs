@@ -71,8 +71,8 @@ static void print_free (unsigned long group, char * bitmap,
 static void list_desc (ext2_filsys fs)
 {
 	unsigned long i;
-	char * block_bitmap = fs->block_map;
-	char * inode_bitmap = fs->inode_map;
+	char * block_bitmap = fs->block_map->bitmap;
+	char * inode_bitmap = fs->inode_map->bitmap;
 
 	printf ("\n");
 	for (i = 0; i < fs->group_desc_count; i++)
@@ -125,38 +125,78 @@ static void list_bad_blocks(ext2_filsys fs)
 	printf("\n");
 }
 
+static void dump_bad_blocks(ext2_filsys fs)
+{
+	badblocks_list		bb_list = 0;
+	badblocks_iterate	bb_iter;
+	blk_t			blk;
+	errcode_t		retval;
+
+	retval = ext2fs_read_bb_inode(fs, &bb_list);
+	if (retval) {
+		com_err("ext2fs_read_bb_inode", retval, "");
+		exit(1);
+	}
+	retval = badblocks_list_iterate_begin(bb_list, &bb_iter);
+	if (retval) {
+		com_err("badblocks_list_iterate_begin", retval,
+			"while printing bad block list");
+		exit(1);
+	}
+	while (badblocks_list_iterate(bb_iter, &blk))
+		printf("%ld\n", blk);
+	badblocks_list_iterate_end(bb_iter);
+}
+
+
 void main (int argc, char ** argv)
 {
 	errcode_t	retval;
 	ext2_filsys	fs;
+	int		print_badblocks = 0;
+	char		c;
 
 	fprintf (stderr, "dumpe2fs %s, %s for EXT2 FS %s, %s\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
-	if (argc != 2)
+	
+	while ((c = getopt (argc, argv, "b")) != EOF) {
+		switch (c) {
+		case 'b':
+			print_badblocks++;
+			break;
+		default:
+			usage ();
+		}
+	}
+	if (optind > argc - 1)
 		usage ();
-	device_name = argv[1];
+	device_name = argv[optind++];
+	initialize_ext2_error_table();
 	retval = ext2fs_open (device_name, 0, 0, 0, unix_io_manager, &fs);
-	if (retval)
-	{
+	if (retval) {
 		com_err (program_name, retval, "while trying to open %s",
 			 device_name);
 		printf ("Couldn't find valid filesystem superblock.\n");
 		exit (1);
 	}
-	retval = ext2fs_read_bitmaps (fs);
-	if (retval)
-	{
-		com_err (program_name, retval, "while trying to read the bitmaps",
-			 device_name);
-		ext2fs_close (fs);
-		exit (1);
+	if (print_badblocks) {
+		dump_bad_blocks(fs);
+	} else {
+		retval = ext2fs_read_bitmaps (fs);
+		if (retval) {
+			com_err (program_name, retval,
+				 "while trying to read the bitmaps",
+				 device_name);
+			ext2fs_close (fs);
+			exit (1);
+		}
+		list_super (fs->super);
+		list_bad_blocks (fs);
+		list_desc (fs);
 	}
-	list_super (fs->super);
-	list_bad_blocks (fs);
-	list_desc (fs);
 	ext2fs_close (fs);
 	exit (0);
 }

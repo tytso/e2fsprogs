@@ -9,14 +9,13 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
 
 void ext2fs_free(ext2_filsys fs)
 {
-	if (!fs)
+	if (!fs || (fs->magic != EXT2_ET_MAGIC_EXT2FS_FILSYS))
 		return;
 	if (fs->io) {
 		io_channel_close(fs->io);

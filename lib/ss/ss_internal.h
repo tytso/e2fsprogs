@@ -11,11 +11,13 @@
 
 #ifdef __STDC__
 
+#define NOARGS void
 #define PROTOTYPE(p) p
 typedef void * pointer;
 
 #else
 
+#define NOARGS
 #define const
 #define volatile
 #define PROTOTYPE(p) ()
@@ -95,12 +97,12 @@ typedef struct _ss_data {	/* init values */
 #define	ss_info(sci_idx)	(_ss_table[sci_idx])
 #define	ss_current_request(sci_idx,code_ptr)	\
      (*code_ptr=0,ss_info(sci_idx)->current_request)
-void ss_unknown_function();
-void ss_delete_info_dir();
-int ss_execute_line();
-char **ss_parse();
+void ss_delete_info_dir PROTOTYPE((int sci_idx, char *info_dir,
+				   int *code_ptr));
+int ss_execute_line PROTOTYPE((int sci_idx, char *line_ptr));
+char **ss_parse PROTOTYPE((int sci_idx, char *line_ptr, int *argc_ptr));
 ss_abbrev_info *ss_abbrev_initialize PROTOTYPE((char *, int *));
-void ss_page_stdin();
+void ss_page_stdin(NOARGS);
 
 extern ss_data **_ss_table;
 extern char *ss_et_msgs[];

@@ -10,7 +10,7 @@
 #endif
 
 #ifndef DEFAULT_FSTYPE
-#   define DEFAULT_FSTYPE	"ext2"
+#define DEFAULT_FSTYPE	"ext2"
 #endif
 
 #define MAX_DEVICES 32

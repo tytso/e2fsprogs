@@ -10,8 +10,27 @@
 #endif
 
 static const char * const text[] = {
-		"EXT2FS Library version 0.0",
+		"EXT2FS Library version 0.5b",
+		"Wrong magic number for ext2_filsys structure",
+		"Wrong magic number for badblocks_list structure",
+		"Wrong magic number for badblocks_iterate structure",
+		"Wrong magic number for inode_scan structure",
+		"Wrong magic number for io_channel structure",
+		"Wrong magic number for unix io_channel structure",
+		"Wrong magic number for io_manager structure",
+		"Wrong magic number for block_bitmap structure",
+		"Wrong magic number for inode_bitmap structure",
+		"Wrong magic number --- RESERVED_1",
+		"Wrong magic number --- RESERVED_2",
+		"Wrong magic number --- RESERVED_3",
+		"Wrong magic number --- RESERVED_4",
+		"Wrong magic number --- RESERVED_5",
+		"Wrong magic number --- RESERVED_6",
+		"Wrong magic number --- RESERVED_7",
+		"Wrong magic number --- RESERVED_8",
+		"Wrong magic number --- RESERVED_9",
 		"Bad magic number in super-block",
+		"Filesystem revision too high",
 		"Can't seek to superblock",
 		"Can't read superblock",
 		"Can't write superblock",
@@ -39,6 +58,17 @@ static const char * const text[] = {
 		"Illegal block number",
 		"Internal error in ext2fs_expand_dir",
 		"Not enough space to build proposed filesystem",
+		"Illegal block number passed to ext2fs_mark_block_bitmap",
+		"Illegal block number passed to ext2fs_unmark_block_bitmap",
+		"Illegal block number passed to ext2fs_test_block_bitmap",
+		"Illegal inode number passed to ext2fs_mark_inode_bitmap",
+		"Illegal inode number passed to ext2fs_unmark_inode_bitmap",
+		"Illegal inode number passed to ext2fs_test_inode_bitmap",
+		"Attempt to fudge end of block bitmap past the real end",
+		"Attempt to fudge end of inode bitmap past the real end",
+		"Illegal indirect block found" ,
+		"Illegal doubly indirect block found" ,
+		"Illegal triply indirect block found" ,
     0
 };
 
@@ -53,7 +83,7 @@ struct et_list {
 };
 extern struct et_list *_et_list;
 
-static const struct error_table et = { text, 2133571328L, 29 };
+static const struct error_table et = { text, 2133571328L, 59 };
 
 static struct et_list link = { 0, 0 };
 

@@ -53,7 +53,7 @@ static void volatile fatal_error (const char * fmt_string, int errcode)
 	exit (errcode);
 }
 
-#define usage() fatal_error ("usage: %s [-RV] [-+=csu] [-v version] files...\n", \
+#define usage() fatal_error ("usage: %s [-RV] [-+=acdisSu] [-v version] files...\n", \
 			     1)
 
 static int decode_arg (int * i, int argc, char ** argv)
@@ -77,10 +77,28 @@ static int decode_arg (int * i, int argc, char ** argv)
 			case 'V':
 				verbose = 1;
 				break;
+#ifdef	EXT2_APPEND_FL
+			case 'a':
+				rf |= EXT2_APPEND_FL;
+				rem = 1;
+				break;
+#endif
 			case 'c':
 				rf |= EXT2_COMPR_FL;
 				rem = 1;
 				break;
+#ifdef	EXT2_NODUMP_FL
+			case 'd':
+				rf |= EXT2_NODUMP_FL;
+				rem = 1;
+				break;
+#endif
+#ifdef	EXT2_IMMUTABLE_FL
+			case 'i':
+				rf |= EXT2_IMMUTABLE_FL;
+				rem = 1;
+				break;
+#endif
 			case 's':
 				rf |= EXT2_SECRM_FL;
 				rem = 1;
@@ -116,9 +134,24 @@ static int decode_arg (int * i, int argc, char ** argv)
 			case 'S':
 				af |= EXT2_SYNC_FL;
 				break;
+#ifdef	EXT2_APPEND_FL
+			case 'a':
+				af |= EXT2_APPEND_FL;
+				break;
+#endif
 			case 'c':
 				af |= EXT2_COMPR_FL;
 				break;
+#ifdef	EXT2_NODUMP_FL
+			case 'd':
+				af |= EXT2_NODUMP_FL;
+				break;
+#endif
+#ifdef	EXT2_IMMUTABLE_FL
+			case 'i':
+				af |= EXT2_IMMUTABLE_FL;
+				break;
+#endif
 			case 's':
 				af |= EXT2_SECRM_FL;
 				break;
@@ -137,9 +170,24 @@ static int decode_arg (int * i, int argc, char ** argv)
 			case 'S':
 				sf |= EXT2_SYNC_FL;
 				break;
+#ifdef	EXT2_APPEND_FL
+			case 'a':
+				sf |= EXT2_APPEND_FL;
+				break;
+#endif
 			case 'c':
 				sf |= EXT2_COMPR_FL;
 				break;
+#ifdef	EXT2_NODUMP_FL
+			case 'd':
+				sf |= EXT2_NODUMP_FL;
+				break;
+#endif
+#ifdef	EXT2_IMMUTABLE_FL
+			case 'i':
+				sf |= EXT2_IMMUTABLE_FL;
+				break;
+#endif
 			case 's':
 				sf |= EXT2_SECRM_FL;
 				break;
@@ -174,7 +222,7 @@ static void change_attributes (const char * name)
 		if (verbose)
 		{
 			printf ("Flags of %s set as ", name);
-			print_flags (stdout, sf);
+			print_flags (stdout, sf, 0);
 			printf ("\n");
 		}
 		if (fsetflags (name, sf) == -1)
@@ -194,7 +242,7 @@ static void change_attributes (const char * name)
 			if (verbose)
 			{
 				printf ("Flags of %s set as ", name);
-				print_flags (stdout, flags);
+				print_flags (stdout, flags, 0);
 				printf ("\n");
 			}
 			if (fsetflags (name, flags) == -1)

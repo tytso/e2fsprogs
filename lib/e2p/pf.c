@@ -19,22 +19,69 @@
 
 #include "e2p.h"
 
-void print_flags (FILE * f, unsigned long flags)
+static const unsigned long flags_array[] = {
+	EXT2_SECRM_FL,
+	EXT2_UNRM_FL,
+	EXT2_COMPR_FL,
+	EXT2_SYNC_FL,
+#ifdef	EXT2_IMMUTABLE_FL
+	EXT2_IMMUTABLE_FL,
+#endif
+#ifdef	EXT2_APPEND_FL
+	EXT2_APPEND_FL,
+#endif
+#ifdef	EXT2_NODUMP_FL
+	EXT2_NODUMP_FL,
+#endif
+	0};
+
+static const char * short_flags[] = {
+	"s",
+	"u",
+	"c",
+	"S",
+#ifdef	EXT2_IMMUTABLE_FL
+	"i",
+#endif
+#ifdef	EXT2_APPEND_FL
+	"a",
+#endif
+#ifdef	EXT2_NODUMP_FL
+	"d",
+#endif
+	NULL};
+
+static const char * long_flags[] = {
+	"Secure_Deletion, ",
+	"Undelete, ",
+	"Compressed_File, ",
+	"Synchronous_Updates, ",
+#ifdef	EXT2_IMMUTABLE_FL
+	"Immutable, ",
+#endif
+#ifdef	EXT2_NODUMP_FL
+	"Append_Only, ",
+#endif
+#ifdef	EXT2_NODUMP_FL
+	"No_Dump, ",
+#endif
+	NULL};
+
+void print_flags (FILE * f, unsigned long flags, int long_format)
 {
-	if (flags & EXT2_SYNC_FL)
-		fprintf (f, "S");
+	int i;
+	const char ** flags_names;
+
+	if (long_format)
+		flags_names = long_flags;
 	else
-		fprintf (f, "-");
-	if (flags & EXT2_COMPR_FL)
-		fprintf (f, "c");
-	else
-		fprintf (f, "-");
-	if (flags & EXT2_SECRM_FL)
-		fprintf (f, "s");
-	else
-		fprintf (f, "-");
-	if (flags & EXT2_UNRM_FL)
-		fprintf (f, "u");
-	else
-		fprintf (f, "-");
+		flags_names = short_flags;
+
+	for (i = 0; flags_array[i] != 0; i++)
+	{
+		if (flags & flags_array[i])
+			fprintf (f, flags_names[i]);
+		else
+			fprintf (f, "-");
+	}
 }

@@ -29,7 +29,7 @@ void pass5(ext2_filsys fs)
 	init_resource_track(&rtrack);
 	
 	if (!preen)
-		printf("Pass 5: Checking group summary information.\n");
+		printf("Pass 5: Checking group summary information\n");
 
 	read_bitmaps(fs);
 
@@ -38,9 +38,9 @@ void pass5(ext2_filsys fs)
 	check_inode_end(fs);
 	check_block_end(fs);
 
-	free(inode_used_map);
-	free(inode_dir_map);
-	free(block_found_map);
+	ext2fs_free_inode_bitmap(inode_used_map);
+	ext2fs_free_inode_bitmap(inode_dir_map);
+	ext2fs_free_block_bitmap(block_found_map);
 
 	if (tflag > 1) {
 		printf("Pass 5: ");
@@ -50,7 +50,7 @@ void pass5(ext2_filsys fs)
 
 static void check_block_bitmaps(ext2_filsys fs)
 {
-	int	i;
+	blk_t	i;
 	int	*free_array;
 	int	group = 0;
 	int	blocks = 0;
@@ -65,15 +65,15 @@ static void check_block_bitmaps(ext2_filsys fs)
 	for (i = fs->super->s_first_data_block;
 	     i < fs->super->s_blocks_count;
 	     i++) {
-		actual = ext2fs_test_block_bitmap(fs, block_found_map, i);
-		bitmap = ext2fs_test_block_bitmap(fs, fs->block_map, i);
+		actual = ext2fs_test_block_bitmap(block_found_map, i);
+		bitmap = ext2fs_test_block_bitmap(fs->block_map, i);
 		
 		if (actual == bitmap)
 			goto do_counts;
 
 		if (do_fix < 0)
 			do_fix = ask(fix_question, 1);
-		if (print_header) {
+		if (!preen && print_header) {
 			printf(print_header);
 			print_header = 0;
 		}
@@ -81,17 +81,19 @@ static void check_block_bitmaps(ext2_filsys fs)
 			/*
 			 * Block not used, but marked in use in the bitmap.
 			 */
-			printf(" -%d", i);
+			if (!preen)
+				printf(" -%lu", i);
 			if (do_fix)
-				ext2fs_unmark_block_bitmap(fs, fs->block_map,
+				ext2fs_unmark_block_bitmap(fs->block_map,
 							   i);
 		} else {
 			/*
 			 * Block used, but not marked in use in the bitmap.
 			 */
-			printf(" +%d", i);
+			if (!preen)
+				printf(" +%lu", i);
 			if (do_fix)
-				ext2fs_mark_block_bitmap(fs, fs->block_map,
+				ext2fs_mark_block_bitmap(fs->block_map,
 							 i);
 		}
 		if (do_fix) {
@@ -120,9 +122,11 @@ static void check_block_bitmaps(ext2_filsys fs)
 		if (free_array[i] != fs->group_desc[i].bg_free_blocks_count) {
 			if (do_fix < 0)
 				do_fix = ask(fix_question, 1);
-			printf("Free blocks count wrong for group %d (%d, counted=%d).  %s\n",
-			       i, fs->group_desc[i].bg_free_blocks_count,
-			       free_array[i], fix_msg[do_fix]);
+			if (!preen)
+				printf("Free blocks count wrong for "
+				       "group %lu (%u, counted=%d).  %s\n", i,
+				       fs->group_desc[i].bg_free_blocks_count,
+				       free_array[i], fix_msg[do_fix]);
 			if (do_fix) {
 				fs->group_desc[i].bg_free_blocks_count =
 					free_array[i];
@@ -134,9 +138,11 @@ static void check_block_bitmaps(ext2_filsys fs)
 	if (free_blocks != fs->super->s_free_blocks_count) {
 		if (do_fix < 0)
 			do_fix = ask(fix_question, 1);
-		printf("Free blocks count wrong (%ld, counted=%d).  %s\n",
-		       fs->super->s_free_blocks_count, free_blocks,
-		       fix_msg[do_fix]);
+		if (!preen)
+			printf("Free blocks count wrong "
+			       "(%lu, counted=%d).  %s\n",
+			       fs->super->s_free_blocks_count, free_blocks,
+			       fix_msg[do_fix]);
 		if (do_fix) {
 			fs->super->s_free_blocks_count = free_blocks;
 			ext2fs_mark_super_dirty(fs);
@@ -147,7 +153,7 @@ static void check_block_bitmaps(ext2_filsys fs)
 			
 static void check_inode_bitmaps(ext2_filsys fs)
 {
-	int	i;
+	ino_t	i;
 	int	free_inodes = 0;
 	int	group_free = 0;
 	int	dirs_count = 0;
@@ -165,15 +171,15 @@ static void check_inode_bitmaps(ext2_filsys fs)
 				    "directory count array");
 				     
 	for (i = 1; i <= fs->super->s_inodes_count; i++) {
-		actual = ext2fs_test_inode_bitmap(fs, inode_used_map, i);
-		bitmap = ext2fs_test_inode_bitmap(fs, fs->inode_map, i);
+		actual = ext2fs_test_inode_bitmap(inode_used_map, i);
+		bitmap = ext2fs_test_inode_bitmap(fs->inode_map, i);
 		
 		if (actual == bitmap)
 			goto do_counts;
 		
 		if (do_fix < 0)
 			do_fix = ask(fix_question, 1);
-		if (print_header) {
+		if (!preen && print_header) {
 			printf(print_header);
 			print_header = 0;
 		}
@@ -181,17 +187,18 @@ static void check_inode_bitmaps(ext2_filsys fs)
 			/*
 			 * Inode wasn't used, but marked in bitmap
 			 */
-			printf(" -%d", i);
+			if (!preen)
+				printf(" -%lu", i);
 			if (do_fix)
-				ext2fs_unmark_inode_bitmap(fs, fs->inode_map,
-							   i);
+				ext2fs_unmark_inode_bitmap(fs->inode_map, i);
 		} else if (actual && !bitmap) {
 			/*
 			 * Inode used, but not in bitmap
 			 */
-			printf (" +%d", i);
+			if (!preen)
+				printf (" +%lu", i);
 			if (do_fix)
-				ext2fs_mark_inode_bitmap(fs, fs->inode_map, i);
+				ext2fs_mark_inode_bitmap(fs->inode_map, i);
 		}
 		if (do_fix) {
 			ext2fs_mark_ib_dirty(fs);
@@ -204,7 +211,7 @@ do_counts:
 			group_free++;
 			free_inodes++;
 		} else {
-			if (ext2fs_test_inode_bitmap(fs, inode_dir_map, i))
+			if (ext2fs_test_inode_bitmap(inode_dir_map, i))
 				dirs_count++;
 		}
 		inodes++;
@@ -225,9 +232,11 @@ do_counts:
 		if (free_array[i] != fs->group_desc[i].bg_free_inodes_count) {
 			if (do_fix < 0)
 				do_fix = ask(fix_question, 1);
-			printf ("Free inodes count wrong for group #%d (%d, counted=%d).  %s\n",
-				i, fs->group_desc[i].bg_free_inodes_count,
-				free_array[i], fix_msg[do_fix]);
+			if (!preen)
+				printf ("Free inodes count wrong for "
+					"group #%lu (%u, counted=%d).  %s\n", i,
+					fs->group_desc[i].bg_free_inodes_count,
+					free_array[i], fix_msg[do_fix]);
 			if (do_fix) {
 				fs->group_desc[i].bg_free_inodes_count =
 					free_array[i];
@@ -238,9 +247,11 @@ do_counts:
 		if (dir_array[i] != fs->group_desc[i].bg_used_dirs_count) {
 			if (do_fix < 0)
 				do_fix = ask(fix_question, 1);
-			printf ("Directories count wrong for group #%d (%d, counted=%d).  %s\n",
-				i, fs->group_desc[i].bg_used_dirs_count,
-				dir_array[i], fix_msg[do_fix]);
+			if (!preen)
+				printf ("Directories count wrong for "
+					"group #%lu (%u, counted=%d).  %s\n", i,
+					fs->group_desc[i].bg_used_dirs_count,
+					dir_array[i], fix_msg[do_fix]);
 			if (do_fix) {
 				fs->group_desc[i].bg_used_dirs_count =
 					dir_array[i];
@@ -252,9 +263,11 @@ do_counts:
 	if (free_inodes != fs->super->s_free_inodes_count) {
 		if (do_fix < 0)
 			do_fix = ask(fix_question, 1);
-		printf("Free inodes count wrong (%ld, counted=%d).  %s\n",
-		       fs->super->s_free_inodes_count, free_inodes,
-		       fix_msg[do_fix]);
+		if (!preen)
+			printf("Free inodes count wrong "
+			       "(%lu, counted=%d).  %s\n",
+			       fs->super->s_free_inodes_count, free_inodes,
+			       fix_msg[do_fix]);
 		if (do_fix) {
 			fs->super->s_free_inodes_count = free_inodes;
 			ext2fs_mark_super_dirty(fs);
@@ -265,23 +278,26 @@ do_counts:
 
 static void check_inode_end(ext2_filsys fs)
 {
-	ino_t	end;
-	ino_t	save_inodes_count = fs->super->s_inodes_count;
-	ino_t	i;
+	ino_t	end, save_inodes_count, i;
+	errcode_t	retval;
 
 	end = EXT2_INODES_PER_GROUP(fs->super) * fs->group_desc_count;
+	retval = ext2fs_fudge_inode_bitmap_end(fs->inode_map, end,
+					       &save_inodes_count);
+	if (retval) {
+		com_err("check_inode_end", retval,
+			"while trying to fudge end of inode bitmap");
+		fatal_error(0);
+	}
 	if (save_inodes_count == end)
 		return;
 	
-	fs->super->s_inodes_count = end;
-
 	for (i = save_inodes_count + 1; i <= end; i++) {
-		if (!ext2fs_test_inode_bitmap(fs, fs->inode_map, i)) {
+		if (!ext2fs_test_inode_bitmap(fs->inode_map, i)) {
 			printf("Padding at end of inode bitmap is not set. ");
 			if (ask("Fix", 1)) {
 				for (i = save_inodes_count + 1; i <= end; i++)
-					ext2fs_mark_inode_bitmap(fs,
-								 fs->inode_map,
+					ext2fs_mark_inode_bitmap(fs->inode_map,
 								 i);
 				ext2fs_mark_ib_dirty(fs);
 			} else
@@ -290,31 +306,39 @@ static void check_inode_end(ext2_filsys fs)
 		}
 	}
 
-	fs->super->s_inodes_count = save_inodes_count;
+	retval = ext2fs_fudge_inode_bitmap_end(fs->inode_map,
+					       save_inodes_count, 0);
+	if (retval) {
+		com_err("check_inode_end", retval,
+			"while trying to fudge end of inode bitmap back");
+		fatal_error(0);
+	}
 }
 
 static void check_block_end(ext2_filsys fs)
 {
-	blk_t	end;
-	blk_t	save_blocks_count = fs->super->s_blocks_count;
-	blk_t	i;
+	blk_t	end, save_blocks_count, i;
+	errcode_t	retval;
 
-	end = fs->super->s_first_data_block +
-		(EXT2_BLOCKS_PER_GROUP(fs->super) * fs->group_desc_count);
-
+	end = fs->block_map->start +
+		(EXT2_BLOCKS_PER_GROUP(fs->super) * fs->group_desc_count) - 1;
+	retval = ext2fs_fudge_block_bitmap_end(fs->block_map, end,
+					       &save_blocks_count);
+	if (retval) {
+		com_err("check_block_end", retval,
+			"while trying to fudge end of block bitmap");
+		fatal_error(0);
+	}
 	if (save_blocks_count == end)
 		return;
 	
-	fs->super->s_blocks_count = end;
-
-	for (i = save_blocks_count; i < end; i++) {
-		if (!ext2fs_test_block_bitmap(fs, fs->block_map, i)) {
+	for (i = save_blocks_count + 1; i <= end; i++) {
+		if (!ext2fs_test_block_bitmap(fs->block_map, i)) {
 			printf("Padding at end of block bitmap is not set. ");
 
 			if (ask("Fix", 1)) {
 				for (i = save_blocks_count + 1; i < end; i++)
-					ext2fs_mark_block_bitmap(fs,
-								 fs->block_map,
+					ext2fs_mark_block_bitmap(fs->block_map,
 								 i);
 				ext2fs_mark_bb_dirty(fs);
 			} else
@@ -323,6 +347,12 @@ static void check_block_end(ext2_filsys fs)
 		}
 	}
 
-	fs->super->s_blocks_count = save_blocks_count;
+	retval = ext2fs_fudge_block_bitmap_end(fs->block_map,
+					       save_blocks_count, 0);
+	if (retval) {
+		com_err("check_block_end", retval,
+			"while trying to fudge end of block bitmap back");
+		fatal_error(0);
+	}
 }
 

@@ -9,7 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <linux/fs.h>
+
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -40,6 +40,12 @@ static int block_iterate_ind(blk_t *ind_block, struct block_context *ctx)
 		ret = (*ctx->func)(ctx->fs, ind_block, -1, ctx->private);
 	if (!*ind_block || (ret & BLOCK_ABORT))
 		return ret;
+	if (*ind_block >= ctx->fs->super->s_blocks_count ||
+	    *ind_block < ctx->fs->super->s_first_data_block) {
+		ctx->errcode = EXT2_ET_BAD_IND_BLOCK;
+		ret |= BLOCK_ERROR;
+		return ret;
+	}
 	ctx->errcode = io_channel_read_blk(ctx->fs->io, *ind_block,
 					   1, ctx->ind_buf);
 	if (ctx->errcode) {
@@ -80,6 +86,12 @@ static int block_iterate_dind(blk_t *dind_block, struct block_context *ctx)
 		ret = (*ctx->func)(ctx->fs, dind_block, -2, ctx->private);
 	if (!*dind_block || (ret & BLOCK_ABORT))
 		return ret;
+	if (*dind_block >= ctx->fs->super->s_blocks_count ||
+	    *dind_block < ctx->fs->super->s_first_data_block) {
+		ctx->errcode = EXT2_ET_BAD_DIND_BLOCK;
+		ret |= BLOCK_ERROR;
+		return ret;
+	}
 	ctx->errcode = io_channel_read_blk(ctx->fs->io, *dind_block,
 					   1, ctx->dind_buf);
 	if (ctx->errcode) {
@@ -119,6 +131,12 @@ static int block_iterate_tind(blk_t *tind_block, struct block_context *ctx)
 		ret = (*ctx->func)(ctx->fs, tind_block, -3, ctx->private);
 	if (!*tind_block || (ret & BLOCK_ABORT))
 		return ret;
+	if (*tind_block >= ctx->fs->super->s_blocks_count ||
+	    *tind_block < ctx->fs->super->s_first_data_block) {
+		ctx->errcode = EXT2_ET_BAD_TIND_BLOCK;
+		ret |= BLOCK_ERROR;
+		return ret;
+	}
 	ctx->errcode = io_channel_read_blk(ctx->fs->io, *tind_block,
 					   1, ctx->tind_buf);
 	if (ctx->errcode) {
@@ -165,6 +183,8 @@ errcode_t ext2fs_block_iterate(ext2_filsys fs,
 	struct ext2_inode inode;
 	errcode_t	retval;
 	
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	ret = ext2fs_get_blocks(fs, ino, blocks);
 	if (ret)
 		return ret;

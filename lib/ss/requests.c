@@ -10,8 +10,12 @@
 #include <stdio.h>
 #include "ss_internal.h"
 
-#define	DECLARE(name)	name(argc,argv,sci_idx)int argc,sci_idx;char **argv;
-
+#ifdef __STDC__
+#define	DECLARE(name) void name(int argc,char **argv, int sci_idx)
+#else
+#define	DECLARE(name) void name(argc,argv,sci_idx)int argc,sci_idx;char **argv;
+#endif
+	
 /*
  * ss_self_identify -- assigned by default to the "." request
  */

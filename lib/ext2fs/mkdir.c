@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -29,6 +28,8 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 	blk_t			blk;
 	char			*block = 0;
 	int			group;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	/*
 	 * Allocate an inode, if necessary
@@ -109,9 +110,9 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 	/*
 	 * Update accounting....
 	 */
-	ext2fs_mark_block_bitmap(fs, fs->block_map, blk);
+	ext2fs_mark_block_bitmap(fs->block_map, blk);
 	ext2fs_mark_bb_dirty(fs);
-	ext2fs_mark_inode_bitmap(fs, fs->inode_map, ino);
+	ext2fs_mark_inode_bitmap(fs->inode_map, ino);
 	ext2fs_mark_ib_dirty(fs);
 
 	group = ext2fs_group_of_blk(fs, blk);

@@ -47,9 +47,11 @@ typedef struct _ss_rp_options {	/* DEFAULT VALUES */
 #define SS_OPT_DONT_SUMMARIZE	0x0002
 
 void ss_help __SS_PROTO;
-char *ss_current_request();
-char *ss_name();
+#if 0
+char *ss_current_request();	/* This is actually a macro */
+#endif
 #ifdef __STDC__
+char *ss_name(int sci_idx);
 void ss_error (int, long, char const *, ...);
 void ss_perror (int, long, char const *);
 int ss_create_invocation(char *, char *, char *, ss_request_table *, int *);
@@ -57,7 +59,9 @@ void ss_delete_invocation(int);
 int ss_listen(int);
 void ss_add_request_table(int, ss_request_table *, int, int *);
 void ss_delete_request_table(int, ss_request_table *, int *);
+void ss_abort_subsystem(int sci_idx, int code);
 #else
+char *ss_name();
 void ss_error ();
 void ss_perror ();
 int ss_create_invocation();
@@ -65,7 +69,7 @@ void ss_delete_invocation();
 int ss_listen();
 void ss_add_request_table();
 void ss_delete_request_table();
-#endif
 void ss_abort_subsystem();
+#endif
 extern ss_request_table ss_std_requests;
 #endif /* _ss_h */

@@ -1,0 +1,155 @@
+Sat Mar 11 14:07:11 1995  Theodore Y. Ts'o  <tytso@localhost>
+
+	* llseek.c (ext2_llseek): Added error checking to the llseek()
+		compat code to protect against overflow.  This only
+		applies to 1.0 and early 1.1 kernels, which don't support
+		the llseek() system call.
+
+Thu Nov 24 16:29:00 1994  Theodore Y. Ts'o  (tytso@rt-11)
+
+	* unix_io.c (unix_open): Initialize the read_error and write_error
+		io_channel pointers to be null.
+
+	* bb_inode.c (clear_bad_block_proc): If an illegal block number is
+		found, clear it but don't try to update the filesystem
+		accounting information, since that's hopeless anyway.
+
+	* block.c (bloblock_iterate_ind, bloblock_iterate_dind,
+	bloblock_iterate_tind): Check to see if the indirect blocks are
+		valid before trying to read them.
+
+	* ext2_err.et (EXT2_ET_BAD_IND_BLOCK, EX2_ET_BAD_DIND_BLOCK,
+	EXT2_ET_BAD_TIND_BLOCK): Add new error codes.
+
+	* bitops.h (ext2fs_mark_block_bitmap, ext2fs_unmark_block_bitmap,
+	ext2fs_test_block_bitmap, ext2fs_mark_inode_bitmap,
+	ext2fs_unmark_inode_bitmap, ext2fs_test_inode_bitmap):  If an
+		illegal block or inode number is passed in, return instead
+		of trying to test, set, or clear the bit.
+
+Mon Nov  7 21:32:33 1994  Remy Card  <card@bbj>
+
+	* Makefile: Added a dummy install target in case shared libraries
+		are not built.
+
+Mon Oct 24 14:11:44 1994    (tytso@rsx-11)
+
+	* bitmaps.c (ext2fs_allocate_block_bitmap): Fix calculation of how
+		the real last block of the bitmap should be calculated.
+
+Wed Sep  7 10:05:36 1994    (tytso@rsx-11)
+
+	* bitmaps.c (ext2fs_fudge_inode_bitmap_end, 
+		ext2fs_fudge_block_bitmap_end, ext2fs_clear_inode_bitmap,
+		ext2fs_clear_block_bitmap, ext2fs_free_inode_bitmap,
+		ext2fs_free_block_bitmap): Add magic number checking for
+		the inode and block bitmaps.
+
+	* bitmaps.c (ext2fs_allocate_block_bitmap): Fix to set the correct
+		magic number for a block bitmap instead of an inode bitmap.
+
+	* inode.c (ext2fs_close_inode_scan, ext2fs_get_next_inode):  Add
+		magic number checking for the inode_scan structure.
+
+	* badblocks.c (badblocks_list_free, badblocks_list_add, 
+		badblocks_list_test, badblocks_list_iterate_begin,
+		badblocks_list_iterate, badblocks_list_iterate_end): Add
+		magic number checking for the badblocks_list and
+		badblocks_iterate structures.
+
+	* ext2_err.et (EXT2_ET_MAGIC_UNIX_IO_CHANNEL): 
+	* unix_io.c (unix_open, unix_close, unix_set_blksize, unix_read_blk,
+		unix_write_blk, unix_flush): Add magic number checking
+		both for io_channel structure and unix_private_data
+		structure.
+
+	* openfs.c (ext2fs_open): Add check for io_manager structure's
+		magic number.
+
+	* rw_bitmaps.c (ext2fs_write_inode_bitmap, ext2fs_write_block_bitmap,
+		ext2fs_read_inode_bitmap, ext2fs_read_block_bitmap,
+		ext2fs_read_bitmaps, ext2fs_write_bitmaps): 
+	* read_bb.c (ext2fs_read_bb_inode): 
+	* read_bb_file.c (ext2fs_read_bb_FILE): 
+	* newdir.c (ext2fs_new_dir_block): 
+	* namei.c (ext2fs_dir_iterate, ext2fs_lookup, ext2fs_namei): 
+	* link.c (ext2fs_link, ext2fs_unlink): 
+	* inode.c (ext2fs_open_inode_scan, ext2fs_read_inode,
+		ext2fs_write_inode, ext2fs_get_blocks, 
+		ext2fs_check_directory): 
+	* get_pathname.c (ext2fs_get_pathname): 
+	* expanddir.c (ext2fs_expand_dir): 
+	* block.c (ext2fs_block_iterate): 
+	* bitmaps.c (ext2fs_allocate_inode_bitmap, 
+		ext2fs_allocate_block_bitmap): 
+	* bb_inode.c (ext2fs_update_bb_inode): 
+	* alloc.c (ext2fs_new_inode,ext2fs_new_block,ext2fs_get_free_blocks): 
+	* check_desc.c (ext2fs_check_desc): 
+	* closefs.c (ext2fs_close, ext2fs_flush): 
+	* freefs.c (ext2fs_free): Add check for ext2_filsys magic number.
+
+	* Makefile:
+	* ext2fs.h:
+	* openfs.c:
+	* check_desc.c (ext2fs_check_desc): Move ext2fs_check_desc from
+	openfs.c into its own file.
+
+	* ext2fs.h (EXT2_CHECK_MAGIC): Added macro for checking for
+	structure magic numbers.
+
+	* closefs.c (ext2fs_flush): Folded in Remy Card's changes to clear
+	the EXT2_VALID_FS flag in the backup superblock blocks, so that if
+	someone uses the -b option to specify the use of the backup
+	superblock --- this usually means that the main superblock is
+	toast.  :-)
+
+	* ext2fs.h: 
+	* ext2_err.et (EXT2_ET_REV_TOO_HIGH): 
+	* openfs.c (ext2fs_open): Folded in Remy Card's changes to add a
+	revision level to the superblock.
+
+Sun Aug 21 00:50:08 1994  Theodore Y. Ts'o  (tytso@rt-11)
+
+	* ext2fs.h:
+	* bitmaps.c:
+	* bitops.c
+	* bitops.h:
+	* openfs.c:
+	* initialize.c: Completely revamped the inode and block bitmap
+	structures, so that they can be better chance of being extensible
+	in a shared library.  They are now their own type, instead of
+	being a char *.  Also, the function signatures of
+	ext2fs_test_block_bitmap, ext2fs_mark_block_bitmap,
+	ext2fs_unmark_block_bitmap, ext2fs_test_inode_bitmap,
+	ext2fs_mark_inode_bitmap, and ext2fs_unmark_inode_bitmap were
+	changed to eliminate the ext2_filsys argument, since it is no
+	longer necessary.
+
+Wed Aug 17 21:46:44 1994  Remy Card  (card@bbj)
+
+	* unix_io.c (unix_read_blk and unix_write_blk): use the llseek
+	system call if available.
+
+	* llseek.c: new file.  This is the stub calling the llseek system
+	call which allows supports for 2GB+ file systems.
+
+	* initialize.c (ext2fs_initialize): Ext2fs_initialize now stores
+	the creator operating system.
+
+Wed Aug 17 10:03:24 1994  Theodore Y. Ts'o  (tytso@rt-11)
+
+	* initialize.c (ext2fs_initialize): Ext2fs_initialize now sets up
+	the group descriptor statistics in addition to everything else.
+	This relieves mke2fs of the responsibility of doing it.
+
+	* bitops.c, bitops.h: Add assembly inline functions for the 68000.
+	Added a new #define, _EXT2_HAVE_ASM_BITOPS_ to control whether or
+	not the generic C function equivalents should be included or not.
+
+	* openfs.c (ext2fs_open): If a superblock is specified, then use
+	the backup group descriptors that go along with this superblock,
+	instead of using the primary group descriptors.  This allows
+	e2fsck to recover filesystems where the primary group descriptors
+	have been trashed.
+
+

@@ -15,244 +15,173 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
 
-errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
+errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
+				       const char *descr,
+				       ext2fs_inode_bitmap *ret)
 {
-	int 		i;
-	int		nbytes;
-	errcode_t	retval;
-	char * inode_bitmap = fs->inode_map;
-	char * bitmap_block = NULL;
-
-	if (!(fs->flags & EXT2_FLAG_RW))
-		return EXT2_ET_RO_FILSYS;
-	if (!inode_bitmap)
-		return 0;
-	nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
-	bitmap_block = malloc(fs->blocksize);
-	if (!bitmap_block)
-		return ENOMEM;
-	memset(bitmap_block, 0xff, fs->blocksize);
-	for (i = 0; i < fs->group_desc_count; i++) {
-		memcpy(bitmap_block, inode_bitmap, nbytes);
-		retval = io_channel_write_blk(fs->io,
-		      fs->group_desc[i].bg_inode_bitmap, 1,
-					      bitmap_block);
-		if (retval)
-			return EXT2_ET_INODE_BITMAP_WRITE;
-		inode_bitmap += nbytes;
-	}
-	fs->flags |= EXT2_FLAG_CHANGED;
-	fs->flags &= ~EXT2_FLAG_IB_DIRTY;
-	free(bitmap_block);
-	return 0;
-}
-
-errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
-{
-	int 		i;
-	int		j;
-	int		nbytes;
-	int		nbits;
-	errcode_t	retval;
-	char * block_bitmap = fs->block_map;
-	char * bitmap_block = NULL;
-
-	if (!(fs->flags & EXT2_FLAG_RW))
-		return EXT2_ET_RO_FILSYS;
-	if (!block_bitmap)
-		return 0;
-	nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
-	bitmap_block = malloc(fs->blocksize);
-	if (!bitmap_block)
-		return ENOMEM;
-	memset(bitmap_block, 0xff, fs->blocksize);
-	for (i = 0; i < fs->group_desc_count; i++) {
-		memcpy(bitmap_block, block_bitmap, nbytes);
-		if (i == fs->group_desc_count - 1) {
-			/* Force bitmap padding for the last group */
-			nbits = (fs->super->s_blocks_count
-				 - fs->super->s_first_data_block)
-				% EXT2_BLOCKS_PER_GROUP(fs->super);
-			for (j = nbits; j < fs->blocksize * 8; j++)
-				set_bit(j, bitmap_block);
-		}
-		retval = io_channel_write_blk(fs->io,
-		      fs->group_desc[i].bg_block_bitmap, 1,
-					      bitmap_block);
-		if (retval)
-			return EXT2_ET_BLOCK_BITMAP_WRITE;
-		block_bitmap += nbytes;
-	}
-	fs->flags |= EXT2_FLAG_CHANGED;
-	fs->flags &= ~EXT2_FLAG_BB_DIRTY;
-	free(bitmap_block);
-	return 0;
-}
-
-errcode_t ext2fs_read_inode_bitmap (ext2_filsys fs)
-{
-	int i;
-	char * inode_bitmap;
-	char *buf = 0;
-	errcode_t	retval;
-	int nbytes;
-
-	fs->write_bitmaps = ext2fs_write_bitmaps;
-
-	if (fs->inode_map)
-		free(fs->inode_map);
-	nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
-	fs->flags &= ~EXT2_FLAG_IB_DIRTY;
-	fs->inode_map = malloc((nbytes * fs->group_desc_count) + 1);
-	if (!fs->inode_map)
-		return ENOMEM;
-	inode_bitmap = fs->inode_map;
-
-	buf = malloc(fs->blocksize);
-	if (!buf)
-		return ENOMEM;
-
-	for (i = 0; i < fs->group_desc_count; i++) {
-		retval = io_channel_read_blk(fs->io,
-			     fs->group_desc[i].bg_inode_bitmap, 1,
-					     buf);
-		if (retval) {
-			retval = EXT2_ET_INODE_BITMAP_READ;
-			goto cleanup;
-		}
-		memcpy(inode_bitmap, buf, nbytes);
-		inode_bitmap += nbytes;
-	}
-	free(buf);
-	return 0;
-	
-cleanup:
-	free(fs->inode_map);
-	fs->inode_map = 0;
-	if (buf)
-		free(buf);
-	return retval;
-}
-
-errcode_t ext2fs_read_block_bitmap(ext2_filsys fs)
-{
-	int i;
-	char * block_bitmap;
-	char *buf = 0;
-	errcode_t retval;
-	int nbytes;
-
-	fs->write_bitmaps = ext2fs_write_bitmaps;
-
-	if (fs->block_map)
-		free(fs->block_map);
-	nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
-	fs->flags &= ~EXT2_FLAG_BB_DIRTY;
-	fs->block_map = malloc((nbytes * fs->group_desc_count) + 1);
-	if (!fs->block_map)
-		return ENOMEM;
-	block_bitmap = fs->block_map;
-
-	buf = malloc(fs->blocksize);
-	if (!buf)
-		return ENOMEM;
-
-	for (i = 0; i < fs->group_desc_count; i++) {
-		retval = io_channel_read_blk(fs->io,
-			     fs->group_desc[i].bg_block_bitmap, 1,
-					     buf);
-		if (retval) {
-			retval = EXT2_ET_BLOCK_BITMAP_READ;
-			goto cleanup;
-		}
-		memcpy(block_bitmap, buf, nbytes);
-		block_bitmap += nbytes;
-	}
-	free(buf);
-	return 0;
-	
-cleanup:
-	free(fs->block_map);
-	fs->block_map = 0;
-	if (buf)
-		free(buf);
-	return retval;
-}
-
-errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs, char **ret)
-{
-	char	*map;
-	int	size;
-	
-	fs->write_bitmaps = ext2fs_write_bitmaps;
-
-	size = (fs->super->s_inodes_count / 8) + 1;
-	map = malloc(size);
-	if (!map)
-		return ENOMEM;
-	memset(map, 0, size);
-	*ret = map;
-	return 0;
-}
-
-errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs, char **ret)
-{
-	char	*map;
+	ext2fs_inode_bitmap bitmap;
 	int	size;
 
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	fs->write_bitmaps = ext2fs_write_bitmaps;
-	
-	size = (fs->super->s_blocks_count / 8) + 1;
-	map = malloc(size);
-	if (!map)
+
+	bitmap = malloc(sizeof(struct ext2fs_struct_inode_bitmap));
+	if (!bitmap)
 		return ENOMEM;
-	memset(map, 0, size);
-	*ret = map;
+
+	bitmap->magic = EXT2_ET_MAGIC_INODE_BITMAP;
+	bitmap->fs = fs;
+	bitmap->start = 1;
+	bitmap->end = fs->super->s_inodes_count;
+	bitmap->real_end = (EXT2_INODES_PER_GROUP(fs->super)
+			    * fs->group_desc_count);
+	if (descr) {
+		bitmap->description = malloc(strlen(descr)+1);
+		if (!bitmap->description) {
+			free(bitmap);
+			return ENOMEM;
+		}
+		strcpy(bitmap->description, descr);
+	} else
+		bitmap->description = 0;
+
+	size = ((bitmap->real_end - bitmap->start) / 8) + 1;
+	bitmap->bitmap = malloc(size);
+	if (!bitmap->bitmap) {
+		free(bitmap->description);
+		free(bitmap);
+		return ENOMEM;
+	}
+
+	memset(bitmap->bitmap, 0, size);
+	*ret = bitmap;
 	return 0;
 }
 
-errcode_t ext2fs_read_bitmaps(ext2_filsys fs)
+errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
+				       const char *descr,
+				       ext2fs_block_bitmap *ret)
 {
-	errcode_t	retval;
+	ext2fs_block_bitmap bitmap;
+	int	size;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	fs->write_bitmaps = ext2fs_write_bitmaps;
 
-	if (!fs->inode_map) {
-		retval = ext2fs_read_inode_bitmap(fs);
-		if (retval)
-			return retval;
+	bitmap = malloc(sizeof(struct ext2fs_struct_inode_bitmap));
+	if (!bitmap)
+		return ENOMEM;
+
+	bitmap->magic = EXT2_ET_MAGIC_BLOCK_BITMAP;
+	bitmap->fs = fs;
+	bitmap->start = fs->super->s_first_data_block;
+	bitmap->end = fs->super->s_blocks_count-1;
+	bitmap->real_end = (EXT2_BLOCKS_PER_GROUP(fs->super) 
+			    * fs->group_desc_count)-1 + bitmap->start;
+	if (descr) {
+		bitmap->description = malloc(strlen(descr)+1);
+		if (!bitmap->description) {
+			free(bitmap);
+			return ENOMEM;
+		}
+		strcpy(bitmap->description, descr);
+	} else
+		bitmap->description = 0;
+
+	size = ((bitmap->real_end - bitmap->start) / 8) + 1;
+	bitmap->bitmap = malloc(size);
+	if (!bitmap->bitmap) {
+		free(bitmap->description);
+		free(bitmap);
+		return ENOMEM;
 	}
-	if (!fs->block_map) {
-		retval = ext2fs_read_block_bitmap(fs);
-		if (retval)
-			return retval;
-	}
+
+	memset(bitmap->bitmap, 0, size);
+	*ret = bitmap;
 	return 0;
 }
 
-errcode_t ext2fs_write_bitmaps(ext2_filsys fs)
+errcode_t ext2fs_fudge_inode_bitmap_end(ext2fs_inode_bitmap bitmap,
+					ino_t end, ino_t *oend)
 {
-	errcode_t	retval;
-
-	if (fs->block_map && ext2fs_test_bb_dirty(fs)) {
-		retval = ext2fs_write_block_bitmap(fs);
-		if (retval)
-			return retval;
-	}
-	if (fs->inode_map && ext2fs_test_ib_dirty(fs)) {
-		retval = ext2fs_write_inode_bitmap(fs);
-		if (retval)
-			return retval;
-	}
+	EXT2_CHECK_MAGIC(bitmap, EXT2_ET_MAGIC_INODE_BITMAP);
+	
+	if (end > bitmap->real_end)
+		return EXT2_ET_FUDGE_INODE_BITMAP_END;
+	if (oend)
+		*oend = bitmap->end;
+	bitmap->end = end;
 	return 0;
-}	
+}
 
+errcode_t ext2fs_fudge_block_bitmap_end(ext2fs_block_bitmap bitmap,
+					blk_t end, blk_t *oend)
+{
+	EXT2_CHECK_MAGIC(bitmap, EXT2_ET_MAGIC_BLOCK_BITMAP);
+	
+	if (end > bitmap->real_end)
+		return EXT2_ET_FUDGE_BLOCK_BITMAP_END;
+	if (oend)
+		*oend = bitmap->end;
+	bitmap->end = end;
+	return 0;
+}
 
+void ext2fs_clear_inode_bitmap(ext2fs_inode_bitmap bitmap)
+{
+	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_INODE_BITMAP))
+		return;
 
+	memset(bitmap->bitmap, 0,
+	       ((bitmap->real_end - bitmap->start) / 8) + 1);
+}
 
+void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap)
+{
+	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_BLOCK_BITMAP))
+		return;
+
+	memset(bitmap->bitmap, 0,
+	       ((bitmap->real_end - bitmap->start) / 8) + 1);
+}
+
+void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap)
+{
+	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_INODE_BITMAP))
+		return;
+
+	bitmap->magic = 0;
+	if (bitmap->description) {
+		free(bitmap->description);
+		bitmap->description = 0;
+	}
+	if (bitmap->bitmap) {
+		free(bitmap->bitmap);
+		bitmap->bitmap = 0;
+	}
+	free(bitmap);
+}
+
+void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap)
+{
+	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_BLOCK_BITMAP))
+		return;
+
+	bitmap->magic = 0;
+	if (bitmap->description) {
+		free(bitmap->description);
+		bitmap->description = 0;
+	}
+	if (bitmap->bitmap) {
+		free(bitmap->bitmap);
+		bitmap->bitmap = 0;
+	}
+	free(bitmap);
+}
 

@@ -10,6 +10,10 @@
 #include <et/com_err.h>
 #include "e2fsck.h"
 
+static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
+				 void *private);
+
+
 static void invalid_block(ext2_filsys fs, blk_t blk)
 {
 	printf("Bad block %lu out of range; ignored.\n", blk);
@@ -24,6 +28,19 @@ void read_bad_blocks_file(ext2_filsys fs, const char *bad_blocks_file,
 	FILE		*f;
 
 	read_bitmaps(fs);
+
+	/*
+	 * Make sure the bad block inode is sane.  If there are any
+	 * illegal blocks, clear them.
+	 */
+	retval = ext2fs_block_iterate(fs, EXT2_BAD_INO, 0, 0,
+				      check_bb_inode_blocks, 0);
+	if (retval) {
+		com_err("ext2fs_block_iterate", retval,
+			"while sanity checking the bad blocks inode");
+		fatal_error(0);
+	}
+	
 	
 	/*
 	 * If we're appending to the bad blocks inode, read in the
@@ -67,6 +84,25 @@ void read_bad_blocks_file(ext2_filsys fs, const char *bad_blocks_file,
 
 	badblocks_list_free(bb_list);
 	return;
+}
+
+static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
+				 void *private)
+{
+	if (!*block_nr)
+		return 0;
+
+	/*
+	 * If the block number is outrageous, clear it and ignore it.
+	 */
+	if (*block_nr >= fs->super->s_blocks_count ||
+	    *block_nr < fs->super->s_first_data_block) {
+		printf("Warning illegal block %lu found in bad block inode.  Cleared.\n", *block_nr);
+		*block_nr = 0;
+		return BLOCK_CHANGED;
+	}
+
+	return 0;
 }
 
 void test_disk(ext2_filsys fs)

@@ -1,14 +1,14 @@
 .\" -*- nroff -*-
-.TH FSCK 8 "Mar 1994" "Version 0.5"
+.TH FSCK 8 "November 1994" "Version 0.5b"
 .SH NAME
 fsck \- check and repair a Linux file system
 .SH SYNOPSIS
 .B fsck
 [
-.B \-A
+.B \-AVRTN
 ]
 [
-.B \-V
+.B \-s
 ]
 [
 .B \-t
@@ -69,10 +69,18 @@ file and try to check all file systems in one run.  This option is
 typically used from the
 .I /etc/rc
 system initalization file, instead of multiple commands for checking
-a single file system.  Note, that with this option, you cannot give
-the
-.I filesys
-argument as well.
+a single file system.
+.TP
+.B -R
+When checking all file systems with the
+.B \-A
+flag, skip the root file system (in case it's already mounted read-write).
+.TP
+.B -T
+Don't show the title on startup.
+.TP
+.B -N
+Don't execute, just show what would be done.
 .TP
 .B -s
 Serialize fsck operations.  This is a good idea if you checking multiple
@@ -92,19 +100,32 @@ option if you do not.)
 .B -V
 Produce verbose output, including all file system-specific commands
 that are executed.
-Specifying this option more than once inhibits execution of any
-file system-specific commands.
-This is really only useful for testing.
 .TP
 .BI -t \ fstype
-Specifies the type of file system to be checked.
-If not specified, the type is deduced by searching for
+Specifies the type of file system to be checked.  When the
+.B \-A 
+flag is specified, only filesystems that match 
+.I fstype
+are checked.  If 
+.I fstype
+is prefixed with 
+.B no
+only filesystems whose filesystem do not match
+.I fstype
+are checked.
+.sp
+Normally, the filesystem type is deduced by searching for
 .I filesys
-in
-.I /etc/fstab
-and using the corresponding entry.
-If the type can not be deduced, the default file system type
-(currently ext2) is used.
+in the 
+.I /etc/fstab 
+file and using the corresponding entry.
+If the type can not be deduced, 
+.B fsck
+will use the type specified by the 
+.B \-t
+option if it specifies a unique filesystem type.  If this type is not
+available, the the default file system type
+(currently ext2) is used. 
 .TP
 .B fs-options
 Any options which are not understood by 
@@ -112,7 +133,7 @@ Any options which are not understood by
 or which follow the
 .B --
 option are treated as file system-specific options to be passed to the
-realm file system checker.
+file system-specific checker.
 .PP
 Currently, standardized file system-specific options are somewhat in
 flux.  Although not guaranteed, the following options are supported
@@ -143,7 +164,10 @@ Theodore Ts'o (tytso@mit.edu)
 The manual page was shamelessly adapted from David Engel and Fred van
 Kempen's generic fsck front end program, which was in turn shamelessly
 adapted from Remy Card's version for the ext2 file system.
+.SH FILES
+.IR /etc/fstab .
 .SH SEE ALSO
+.BR fstab (5),
 .BR mkfs (8),
 .BR fsck.minix (8),
 .BR fsck.ext2 (8)

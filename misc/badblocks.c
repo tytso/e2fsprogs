@@ -28,11 +28,13 @@
 #include <unistd.h>
 
 #include <sys/ioctl.h>
+#include <sys/types.h>
 
 #include <linux/fd.h>
 #include <linux/fs.h>
 
 #include "et/com_err.h"
+#include "ext2fs/io.h"
 
 const char * program_name = "badblocks";
 
@@ -42,7 +44,7 @@ int s_flag = 0;			/* show progress of test */
 
 static volatile void usage (void)
 {
-	fprintf (stderr, "Usage: %s [-b block_size] [-o output_file] [-w] device blocks_count\n",
+	fprintf (stderr, "Usage: %s [-b block_size] [-o output_file] [-svw] device blocks_count\n [start_count]\n",
 		 program_name);
 	exit (1);
 }
@@ -56,16 +58,18 @@ static long do_test (int dev, char * buffer, int try, unsigned long block_size,
 	long got;
 
 	/* Seek to the correct loc. */
-	if (lseek (dev, current_block * block_size, SEEK_SET) !=
-	    current_block * block_size)
-                 com_err (program_name, errno, "during seek");
+	if (ext2_llseek (dev, (ext2_loff_t) current_block * block_size,
+			 SEEK_SET) != (ext2_loff_t) current_block * block_size)
+		com_err (program_name, errno, "during seek");
 
 	/* Try the read */
 	got = read (dev, buffer, try * block_size);
 	if (got < 0)
 		got = 0;	
 	if (got & (block_size - 1))
-		fprintf (stderr, "Weird values in do_test: probably bugs\n");
+		fprintf (stderr,
+			 "Weird value (%ld) in do_test: probably bugs\n",
+			 got);
 	got /= block_size;
 	return got;
 }
@@ -79,13 +83,14 @@ static void alarm_intr (int alnum)
 	alarm(1);
 	if (!num_blocks)
 		return;
-	fprintf(stderr, "%6ld/%6ld", currently_testing, num_blocks);
-	fprintf(stderr, "\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	fprintf(stderr, "%9ld/%9ld", currently_testing, num_blocks);
+	fprintf(stderr, "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	fflush (stderr);
 }
 
 static void test_ro (int dev, unsigned long blocks_count,
-		     unsigned long block_size, FILE * out)
+		     unsigned long block_size, FILE * out,
+		     unsigned long from_count)
 {
 #define TEST_BUFFER_BLOCKS 16
 	char * blkbuf;
@@ -103,11 +108,13 @@ static void test_ro (int dev, unsigned long blocks_count,
 		fprintf (stderr, "Flushing buffers\n");
 	ioctl (dev, BLKFLSBUF, 0);	/* In case this is a HD */
 	ioctl (dev, FDFLUSH, 0);	/* In case this is floppy */
-	if (v_flag) 
-		fprintf (stderr,
-			 "Checking for bad blocks in read-only mode\n");
+	if (v_flag) {
+	    fprintf (stderr,
+		     "Checking for bad blocks in read-only mode\n");
+	    fprintf (stderr, "From block %lu to %lu\n", from_count, blocks_count);
+	}
 	try = TEST_BUFFER_BLOCKS;
-	currently_testing = 0;
+	currently_testing = from_count;
 	num_blocks = blocks_count;
 	if (s_flag) {
 		fprintf(stderr, "Checking for bad blocks (read-only test): ");
@@ -131,15 +138,16 @@ static void test_ro (int dev, unsigned long blocks_count,
 	num_blocks = 0;
 	alarm(0);
 	if (s_flag)
-		fprintf(stderr, "done         \n");
+		fprintf(stderr, "done               \n");
+	fflush (stderr);
 	free (blkbuf);
 }
 
 static void test_rw (int dev, unsigned long blocks_count,
-		     unsigned long block_size, FILE * out)
+		     unsigned long block_size, FILE * out,
+		     unsigned long from_count)
 {
 	int i;
-	int j;
 	char * buffer;
 	unsigned char pattern[] = {0xaa, 0x55, 0xff, 0x00};
 
@@ -159,35 +167,60 @@ static void test_rw (int dev, unsigned long blocks_count,
 	for (i = 0; i < sizeof (pattern); i++)
 	{
 		memset (buffer, pattern[i], block_size);
-		if (v_flag)
-			fprintf (stderr, "Writing pattern 0x%08x\n",
+		if (s_flag | v_flag)
+			fprintf (stderr, "Writing pattern 0x%08x: ",
 				 *((int *) buffer));
-		for (j = 0; j < blocks_count; j++)
+		num_blocks = blocks_count;
+		currently_testing = from_count;
+		if (s_flag)
+			alarm_intr(SIGALRM);
+		for (;
+		     currently_testing < blocks_count;
+		     currently_testing++)
 		{
-			if (lseek (dev, j * block_size, SEEK_SET) != j * block_size)
+			if (ext2_llseek (dev, (ext2_loff_t) currently_testing *
+					 block_size, SEEK_SET) !=
+			    (ext2_loff_t) currently_testing * block_size)
 				com_err (program_name, errno,
-					 "during seek on block %d", j);
+					 "during seek on block %d",
+					 currently_testing);
 			write (dev, buffer, block_size);
 		}
+		num_blocks = 0;
+		alarm (0);
+		if (s_flag | v_flag)
+			fprintf(stderr, "done               \n");
 		if (v_flag)
 			fprintf (stderr, "Flushing buffers\n");
 		if (fsync (dev) == -1)
 			com_err (program_name, errno, "during fsync");
 		ioctl (dev, BLKFLSBUF, 0);	/* In case this is a HD */
 		ioctl (dev, FDFLUSH, 0);	/* In case this is floppy */
-		if (v_flag)
-			fprintf (stderr, "Reading and comparing\n");
-		for (j = 0; j < blocks_count; j++)
+		if (s_flag | v_flag)
+			fprintf (stderr, "Reading and comparing: ");
+		num_blocks = blocks_count;
+		currently_testing = from_count;
+		if (s_flag)
+			alarm_intr(SIGALRM);
+		for (;
+		     currently_testing < blocks_count;
+		     currently_testing++)
 		{
-			if (lseek (dev, j * block_size, SEEK_SET) != j * block_size)
+			if (ext2_llseek (dev, (ext2_loff_t) currently_testing *
+					 block_size, SEEK_SET) !=
+			    (ext2_loff_t) currently_testing * block_size)
 				com_err (program_name, errno,
-					 "during seek on block %d", j);
+					 "during seek on block %d",
+					 currently_testing);
 			if (read (dev, buffer + block_size, block_size) < block_size)
-				fprintf (out, "%d\n", j);
+				fprintf (out, "%ld\n", currently_testing);
 			else if (memcmp (buffer, buffer + block_size, block_size))
-				fprintf (out, "%d\n", j);
-				
+				fprintf (out, "%ld\n", currently_testing);
 		}
+		num_blocks = 0;
+		alarm (0);
+		if (s_flag | v_flag)
+			fprintf(stderr, "done           \n");
 		if (v_flag)
 			fprintf (stderr, "Flushing buffers\n");
 		ioctl (dev, BLKFLSBUF, 0);	/* In case this is a HD */
@@ -203,7 +236,7 @@ void main (int argc, char ** argv)
 	char * output_file = NULL;
 	FILE * out;
 	unsigned long block_size = 1024;
-	unsigned long blocks_count;
+	unsigned long blocks_count, from_count;
 	int dev;
 
 	setbuf(stdout, NULL);
@@ -247,6 +280,14 @@ void main (int argc, char ** argv)
 		com_err (program_name, 0, "bad blocks count - %s", argv[optind]);
 		exit (1);
 	}
+	if (++optind <= argc-1) {
+		from_count = strtoul (argv[optind], &tmp, 0);
+	} else from_count = 0;
+	if (from_count >= blocks_count) {
+	    com_err (program_name, 0, "bad blocks range: %lu-%lu",
+		     from_count, blocks_count);
+	    exit (1);
+	}
 	dev = open (device_name, w_flag ? O_RDWR : O_RDONLY);
 	if (dev == -1)
 	{
@@ -267,9 +308,9 @@ void main (int argc, char ** argv)
 	else
 		out = stdout;
 	if (w_flag)
-		test_rw (dev, blocks_count, block_size, out);
+		test_rw (dev, blocks_count, block_size, out, from_count);
 	else
-		test_ro (dev, blocks_count, block_size, out);
+		test_ro (dev, blocks_count, block_size, out, from_count);
 	close (dev);
 	if (out != stdout)
 		fclose (out);

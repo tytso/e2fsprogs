@@ -12,7 +12,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -22,16 +21,21 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 {
 	ext2_inode_scan	scan;
 
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	scan = (ext2_inode_scan) malloc(sizeof(struct ext2_struct_inode_scan));
 	if (!scan)
 		return ENOMEM;
 	memset(scan, 0, sizeof(struct ext2_struct_inode_scan));
 
+	scan->magic = EXT2_ET_MAGIC_INODE_SCAN;
 	scan->fs = fs;
 	scan->current_group = -1;
 	scan->inode_buffer_blocks = buffer_blocks ? buffer_blocks : 8;
 	scan->groups_left = fs->group_desc_count;
 	scan->inode_buffer = malloc(scan->inode_buffer_blocks * fs->blocksize);
+	scan->done_group = 0;
+	scan->done_group_data = 0;
 	if (!scan->inode_buffer) {
 		free(scan);
 		return ENOMEM;
@@ -42,10 +46,27 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 
 void ext2fs_close_inode_scan(ext2_inode_scan scan)
 {
+	if (!scan || (scan->magic != EXT2_ET_MAGIC_INODE_SCAN))
+		return;
+	
 	free(scan->inode_buffer);
 	scan->inode_buffer = NULL;
 	free(scan);
 	return;
+}
+
+void ext2fs_set_inode_callback(ext2_inode_scan scan,
+			       errcode_t (*done_group)(ext2_filsys fs,
+						       ext2_inode_scan scan,
+						       dgrp_t group,
+						       void * private),
+			       void *done_group_data)
+{
+	if (!scan || (scan->magic != EXT2_ET_MAGIC_INODE_SCAN))
+		return;
+	
+	scan->done_group = done_group;
+	scan->done_group_data = done_group_data;
 }
 
 errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
@@ -54,21 +75,34 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 	errcode_t	retval;
 	int		num_blocks;
 	
+	EXT2_CHECK_MAGIC(scan, EXT2_ET_MAGIC_INODE_SCAN);
+
 	if (!scan->inode_buffer)
 		return EINVAL;
 	
 	if (scan->inodes_left <= 0) {
 		if (scan->blocks_left <= 0) {
-			if (scan->groups_left <= 0) {
-				*ino = 0;
-				return 0;
+			if (scan->done_group) {
+				retval = (scan->done_group)
+					(scan->fs, scan,
+					 scan->current_group,
+					 scan->done_group_data);
+				if (retval)
+					return retval;
 			}
-			scan->current_group++;
-			scan->groups_left--;
+			do {
+				if (scan->groups_left <= 0) {
+					*ino = 0;
+					return 0;
+				}
+				scan->current_group++;
+				scan->groups_left--;
 			
-			scan->current_block = scan->fs->group_desc[scan->current_group].bg_inode_table;
-			scan->blocks_left = (EXT2_INODES_PER_GROUP(scan->fs->super) /
-					     EXT2_INODES_PER_BLOCK(scan->fs->super));
+				scan->current_block =
+		scan->fs->group_desc[scan->current_group].bg_inode_table;
+				scan->blocks_left = (EXT2_INODES_PER_GROUP(scan->fs->super) /
+						     EXT2_INODES_PER_BLOCK(scan->fs->super));
+			} while (scan->current_block == 0);
 		} else {
 			scan->current_block += scan->inode_buffer_blocks;
 		}
@@ -109,6 +143,8 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, unsigned long ino,
 	errcode_t	retval;
 	int i;
 
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	if (ino > fs->super->s_inodes_count)
 		return EXT2_ET_BAD_INODE_NUM;
 	if (inode_buffer_size != fs->blocksize) {
@@ -148,6 +184,8 @@ errcode_t ext2fs_write_inode(ext2_filsys fs, unsigned long ino,
 	unsigned long block_nr;
 	errcode_t	retval;
 	int i;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
@@ -194,6 +232,8 @@ errcode_t ext2fs_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 	int			i;
 	errcode_t		retval;
 	
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	if (ino > fs->super->s_inodes_count)
 		return EXT2_ET_BAD_INODE_NUM;
 
@@ -214,6 +254,8 @@ errcode_t ext2fs_check_directory(ext2_filsys fs, ino_t ino)
 	struct	ext2_inode	inode;
 	errcode_t		retval;
 	
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	if (ino > fs->super->s_inodes_count)
 		return EXT2_ET_BAD_INODE_NUM;
 

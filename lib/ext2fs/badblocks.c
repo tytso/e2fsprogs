@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -30,6 +29,7 @@ errcode_t badblocks_list_create(badblocks_list *ret, int size)
 	if (!bb)
 		return ENOMEM;
 	memset(bb, 0, sizeof(struct struct_badblocks_list));
+	bb->magic = EXT2_ET_MAGIC_BADBLOCKS_LIST;
 	bb->size = size ? size : 10;
 	bb->list = malloc(bb->size * sizeof(blk_t));
 	if (!bb->list) {
@@ -45,6 +45,9 @@ errcode_t badblocks_list_create(badblocks_list *ret, int size)
  */
 void badblocks_list_free(badblocks_list bb)
 {
+	if (bb->magic != EXT2_ET_MAGIC_BADBLOCKS_LIST)
+		return;
+
 	if (bb->list)
 		free(bb->list);
 	bb->list = 0;
@@ -57,6 +60,8 @@ void badblocks_list_free(badblocks_list bb)
 errcode_t badblocks_list_add(badblocks_list bb, blk_t blk)
 {
 	int	i;
+
+	EXT2_CHECK_MAGIC(bb, EXT2_ET_MAGIC_BADBLOCKS_LIST);
 
 	for (i=0; i < bb->num; i++)
 		if (bb->list[i] == blk)
@@ -84,6 +89,8 @@ int badblocks_list_test(badblocks_list bb, blk_t blk)
 {
 	int	i;
 
+	EXT2_CHECK_MAGIC(bb, EXT2_ET_MAGIC_BADBLOCKS_LIST);
+
 	for (i=0; i < bb->num; i++)
 		if (bb->list[i] == blk)
 			return 1;
@@ -96,10 +103,13 @@ errcode_t badblocks_list_iterate_begin(badblocks_list bb,
 {
 	badblocks_iterate iter;
 
+	EXT2_CHECK_MAGIC(bb, EXT2_ET_MAGIC_BADBLOCKS_LIST);
+
 	iter = malloc(sizeof(struct struct_badblocks_iterate));
 	if (!iter)
 		return ENOMEM;
 
+	iter->magic = EXT2_ET_MAGIC_BADBLOCKS_ITERATE;
 	iter->bb = bb;
 	iter->ptr = 0;
 	*ret = iter;
@@ -108,7 +118,15 @@ errcode_t badblocks_list_iterate_begin(badblocks_list bb,
 
 int badblocks_list_iterate(badblocks_iterate iter, blk_t *blk)
 {
-	badblocks_list	bb = iter->bb;
+	badblocks_list	bb;
+
+	if (iter->magic != EXT2_ET_MAGIC_BADBLOCKS_ITERATE)
+		return 0;
+
+	bb = iter->bb;
+
+	if (bb->magic != EXT2_ET_MAGIC_BADBLOCKS_LIST)
+		return 0;
 	
 	if (iter->ptr < bb->num) {
 		*blk = bb->list[iter->ptr++];
@@ -120,6 +138,9 @@ int badblocks_list_iterate(badblocks_iterate iter, blk_t *blk)
 
 void badblocks_list_iterate_end(badblocks_iterate iter)
 {
+	if (!iter || (iter->magic != EXT2_ET_MAGIC_BADBLOCKS_ITERATE))
+		return;
+
 	iter->bb = 0;
 	free(iter);
 }

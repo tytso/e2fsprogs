@@ -2,14 +2,42 @@
 .\" Initial revision
 .\"
 .\"
-.TH TUNE2FS 8 "March 1994" "Version 0.5"
+.TH TUNE2FS 8 "November 1994" "Version 0.5b"
 
 .SH NAME
 tune2fs \- adjust tunable filesystem parameters on second extended filesystems
 .SH SYNOPSIS
 .B tune2fs
 [
-.B options
+.B -l
+]
+[
+.B -c
+.I max-mount-counts
+]
+[
+.B -e
+.I errors-behavior
+]
+[
+.B -i
+.I interval-between-checks
+]
+[
+.B -m
+.I reserved-blocks-percentage
+]
+[
+.B -r
+.I reserved-blocks-count
+]
+[
+.B -u
+.I user
+]
+[
+.B -g
+.I group
 ]
 device
 .SH DESCRIPTION
@@ -34,9 +62,15 @@ can be one of the followings:
 .br
 \	panic\	\	Causes a kernel panic.
 .TP
-.I -i interval-between-checks[d|m]
+.I -g group
+set the user group which can benefit from the reserved blocks.
+.br
+.I group
+can be a numerical gid or a group name.
+.TP
+.I -i interval-between-checks[d|m|w]
 adjust the maximal time between two filesystem checks. 
-No postfix or `d' result in days, and 'm' in months.
+No postfix or `d' result in days, `m' in months, and `w' in weeks.
 A value of zero will disable the timedependent checking.
 .TP
 .I -l
@@ -44,6 +78,14 @@ list the contents of the filesystem superblock.
 .TP
 .I -m reserved-blocks-percentage
 adjust the reserved blocks percentage on the given device.
+.TP
+.I -r reserved-blocks-count
+adjust the reserved blocks count on the given device.
+.TP
+.I -u user
+set the user who can benefit from the reserved blocks.
+.I user
+can be a numerical uid or a user name.
 .PP
 .SH BUGS
 We didn't find any bugs yet. Perhaps there are bugs but it's unlikely.
@@ -63,8 +105,8 @@ This manual page was written by Christian Kuhtz <chk@data-hh.Hanse.DE>.
 Timedependent checking was added by Uwe Ohse <uwe@tirka.gun.de>.
 .SH AVAILABILITY
 .B tune2fs
-is available for anonymous ftp from ftp.ibp.fr (132.227.60.2) in
-/pub/linux/BETA/ext2fs.
+is available for anonymous ftp from ftp.ibp.fr and tsx-11.mit.edu in
+/pub/linux/packages/ext2fs.
 .SH SEE ALSO
 .BR dumpe2fs (8),
 .BR e2fsck (8),

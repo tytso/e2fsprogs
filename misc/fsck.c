@@ -8,14 +8,24 @@
  *
  * Written by Theodore Ts'o, <tytso@mit.edu>
  * 
- * Usage:	fsck [-AV] [-t fstype] [fs-options] device
+ * Usage:	fsck [-AVRNTM] [-s] [-t fstype] [fs-options] device
  * 
+ * Miquel van Smoorenburg (miquels@drinkel.ow.org) 20-Oct-1994:
+ *   o Changed -t fstype to behave like with mount when -A (all file
+ *     systems) or -M (like mount) is specified.
+ *   o fsck looks if it can find the fsck.type program to decide
+ *     if it should ignore the fs type. This way more fsck programs
+ *     can be added without changing this front-end.
+ *   o -R flag skip root file system.
+ *
  * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be
  * redistributed under the terms of the GNU Public License.
  */
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/signal.h>
+#include <sys/stat.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -32,7 +42,6 @@
 static const char *ignored_types[] = {
 	"ignore",
 	"iso9660",
-	"msdos",
 	"nfs",
 	"proc",
 	"sw",
@@ -40,11 +49,42 @@ static const char *ignored_types[] = {
 	NULL
 };
 
+static const char *really_wanted[] = {
+	"minix",
+	"ext2",
+	"xiafs",
+	NULL
+};
+
+#ifdef DEV_DSK_DEVICES
+static const char *base_devices[] = {
+	"/dev/dsk/hda",
+	"/dev/dsk/hdb",
+	"/dev/dsk/hdc",
+	"/dev/dsk/hdd",
+	"/dev/dsk/hd1a",
+	"/dev/dsk/hd1b",
+	"/dev/dsk/hd1c",
+	"/dev/dsk/hd1d",
+	"/dev/dsk/sda",
+	"/dev/dsk/sdb",
+	"/dev/dsk/sdc",
+	"/dev/dsk/sdd",
+	"/dev/dsk/sde",
+	"/dev/dsk/sdf",
+	"/dev/dsk/sdg",
+	NULL
+};
+#else
 static const char *base_devices[] = {
 	"/dev/hda",
 	"/dev/hdb",
 	"/dev/hdc",
 	"/dev/hdd",
+	"/dev/hd1a",
+	"/dev/hd1b",
+	"/dev/hd1c",
+	"/dev/hd1d",
 	"/dev/sda",
 	"/dev/sdb",
 	"/dev/sdc",
@@ -54,6 +94,7 @@ static const char *base_devices[] = {
 	"/dev/sdg",
 	NULL
 };
+#endif
 
 /*
  * Global variables for options
@@ -66,12 +107,17 @@ int verbose = 0;
 int doall = 0;
 int noexecute = 0;
 int serialize = 0;
+int skip_root = 0;
+int like_mount = 0;
+int notitle = 0;
 char *progname;
 char *fstype = NULL;
 struct fs_info *filesys_info;
 struct fsck_instance *instance_list;
+static char fsck_path[PATH_MAX + 32];
+static int ignore(struct fs_info *);
 
-static char *strdup(char *s)
+static char *strdup(const char *s)
 {
 	char	*ret;
 
@@ -99,6 +145,7 @@ static void load_fs_info(NOARGS)
 	FILE *mntfile;
 	struct mntent *mp;
 	struct fs_info *fs;
+	int	old_fstab = 1;
 
 	filesys_info = NULL;
 	
@@ -119,9 +166,24 @@ static void load_fs_info(NOARGS)
 		fs->passno = mp->mnt_passno;
 		fs->next = filesys_info;
 		filesys_info = fs;
+		if (fs->passno)
+			old_fstab = 0;
 	}
 
 	(void) endmntent(mntfile);
+
+	if (old_fstab) {
+		fprintf(stderr, "\007\007\007"
+	"WARNING: Your /etc/fstab does not contain the fsck passno\n");
+		fprintf(stderr,
+	"	field.  I will kludge around things for you, but you\n");
+		fprintf(stderr,
+	"	should fix your /etc/fstab file as soon as you can.\n\n");
+		
+		for (fs = filesys_info; fs; fs = fs->next) {
+			fs->passno = 1;
+		}
+	}
 }
 	
 /* Lookup filesys in /etc/fstab and return the corresponding entry. */
@@ -142,13 +204,33 @@ static struct fs_info *lookup(char *filesys)
 	return fs;
 }
 
+/* Find fsck program for a given fs type. */
+static char *find_fsck(char *type)
+{
+  char *s;
+  const char *tpl;
+  static char prog[256];
+  char *p = strdup(fsck_path);
+  struct stat st;
+
+  /* Are we looking for a program or just a type? */
+  tpl = (strncmp(type, "fsck.", 5) ? "%s/fsck.%s" : "%s/%s");
+
+  for(s = strtok(p, ":"); s; s = strtok(NULL, ":")) {
+	sprintf(prog, tpl, s, type);
+	if (stat(prog, &st) == 0) break;
+  }
+  free(p);
+  return(s ? prog : NULL);
+}
+
 /*
  * Execute a particular fsck program, and link it into the list of
  * child processes we are waiting for.
  */
 static int execute(char *prog, char *device)
 {
-	char *argv[80];
+	char *s, *argv[80];
 	int  argc, i;
 	struct fsck_instance *inst;
 	pid_t	pid;
@@ -162,7 +244,14 @@ static int execute(char *prog, char *device)
 	argv[argc++] = strdup(device);
 	argv[argc] = 0;
 
+	s = find_fsck(prog);
+	if (s == NULL) {
+		fprintf(stderr, "fsck: %s: not found\n", prog);
+		return ENOENT;
+	}
+
 	if (verbose || noexecute) {
+		printf("[%s] ", s);
 		for (i=0; i < argc; i++)
 			printf("%s ", argv[i]);
 		printf("\n");
@@ -175,8 +264,8 @@ static int execute(char *prog, char *device)
 		perror("fork");
 		return errno;
 	} else if (pid == 0) {
-		(void) execvp(prog, argv);
-		perror(args[0]);
+		(void) execv(s, argv);
+		perror(argv[0]);
 		exit(EXIT_ERROR);
 	}
 	inst = malloc(sizeof(struct fsck_instance));
@@ -199,6 +288,7 @@ static int execute(char *prog, char *device)
 static struct fsck_instance *wait_one(NOARGS)
 {
 	int	status;
+	int	sig;
 	struct fsck_instance *inst, *prev;
 	pid_t	pid;
 
@@ -207,7 +297,6 @@ static struct fsck_instance *wait_one(NOARGS)
 
 retry:
 	pid = wait(&status);
-	status = WEXITSTATUS(status);
 	if (pid < 0) {
 		if ((errno == EINTR) || (errno == EAGAIN))
 			goto retry;
@@ -231,7 +320,23 @@ retry:
 		       pid, status);
 		goto retry;
 	}
-	
+	if (WIFEXITED(status)) 
+		status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status)) {
+		sig = WTERMSIG(status);
+		if (sig == SIGINT) {
+			status = EXIT_UNCORRECTED;
+		} else {
+			printf("Warning... %s for device %s exited "
+			       "with signal %d.\n",
+			       inst->prog, inst->device, sig);
+			status = EXIT_ERROR;
+		}
+	} else {
+		printf("%s %s: status is %x, should never happen.\n",
+		       inst->prog, inst->device, status);
+		status = EXIT_ERROR;
+	}
 	inst->exit_status = status;
 	if (prev)
 		prev->next = inst->next;
@@ -269,12 +374,13 @@ static void fsck_device(char *device)
 	int retval;
 	char prog[80];
 
-	if (fstype)
-		type = fstype;
-	else if ((fsent = lookup(device))) {
+	if ((fsent = lookup(device))) {
 		device = fsent->device;
 		type = fsent->type;
-	} else
+	} else if (fstype && strncmp(fstype, "no", 2) &&
+		   !strchr(fstype, ','))
+		type = fstype;
+	else
 		type = DEFAULT_FSTYPE;
 
 	sprintf(prog, "fsck.%s", type);
@@ -285,31 +391,77 @@ static void fsck_device(char *device)
 	}
 }
 
+/* See if filesystem type matches the list. */
+static int fs_match(char *type, char *fs_type)
+{
+  int ret = 0, negate = 0;
+  char list[128];
+  char *s;
+
+  if (!fs_type) return(1);
+
+  if (strncmp(fs_type, "no", 2) == 0) {
+	fs_type += 2;
+	negate = 1;
+  }
+  strcpy(list, fs_type);
+  s = strtok(list, ",");
+  while(s) {
+	if (strcmp(s, type) == 0) {
+		ret = 1;
+		break;
+	}
+	s = strtok(NULL, ",");
+  }
+  return(negate ? !ret : ret);
+}
+
+
 /* Check if we should ignore this filesystem. */
 static int ignore(struct fs_info *fs)
 {
 	const char *cp;
 	const char **ip;
+	int wanted = 0;
+
+	/*
+	 * If the pass number is 0, ignore it.
+	 */
+	if (fs->passno == 0)
+		return 1;
 
 	/*
 	 * If a specific fstype is specified, and it doesn't match,
 	 * ignore it.
 	 */
-	if (fstype && strcmp(fstype, fs->type))
-		return 1;
+	if (!fs_match(fs->type, fstype)) return 1;
 	
-	ip = ignored_types;
-	while (*ip != NULL) {
-		if (!strcmp(fs->type, *ip))
-			return 1;
-		ip++;
-	}
-
+	/* Noauto never matches. */
 	for (cp = strtok(fs->opts, ","); cp != NULL; cp = strtok(NULL, ",")) {
 		if (!strcmp(cp, "noauto"))
 			return 1;
 	}
 
+	/* Are we ignoring this type? */
+	for(ip = ignored_types; *ip; ip++)
+		if (strcmp(fs->type, *ip) == 0) return(1);
+
+	/* Do we really really want to check this fs? */
+	for(ip = really_wanted; *ip; ip++)
+		if (strcmp(fs->type, *ip) == 0) {
+			wanted = 1;
+			break;
+		}
+
+	/* See if the <fsck.fs> program is available. */
+	if (find_fsck(fs->type) == NULL) {
+		if (wanted)
+			fprintf(stderr, "fsck: cannot check %s: fsck.%s not found\n",
+				fs->device, fs->type);
+		return(1);
+	}
+
+	/* We can and want to check this file system type. */
 	return 0;
 }
 
@@ -326,7 +478,6 @@ static const char *base_device(char *device)
 	for (base = base_devices; *base; base++) {
 		if (!strncmp(*base, device, strlen(*base)))
 			return *base;
-		base++;
 	}
 	return device;
 }
@@ -370,14 +521,14 @@ static int check_all(NOARGS)
 		if (!strcmp(fs->mountpt, "/"))
 			break;
 	}
-	if (fs &&
-	    (!fstype || !strcmp(fstype, fs->type))) {
+	if (fs && !skip_root && !ignore(fs)) {
 		fsck_device(fs->device);
 		fs->flags |= FLAG_DONE;
 		status |= wait_all();
 		if (status > EXIT_NONDESTRUCT)
 			return status;
 	}
+	if (fs) fs->flags |= FLAG_DONE;
 
 	/*
 	 * Mark filesystems that should be ignored as done.
@@ -498,6 +649,15 @@ static void PRS(int argc, char *argv[])
 			case 'N':
 				noexecute++;
 				break;
+			case 'R':
+				skip_root++;
+				break;
+			case 'T':
+				notitle++;
+				break;
+			case 'M':
+				like_mount++;
+				break;
 			case 's':
 				serialize++;
 				break;
@@ -539,20 +699,20 @@ static void PRS(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-	char *oldpath, newpath[PATH_MAX];
+	char *oldpath;
 	int status = 0;
 	int i;
 
 	PRS(argc, argv);
 
-	printf("Parallelizing fsck version %s (%s)\n", E2FSPROGS_VERSION,
-	       E2FSPROGS_DATE);
+	if (!notitle)
+		printf("Parallelizing fsck version %s (%s)\n",
+			E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
-	/* Update our PATH to include /sbin, /etc/fs, and /etc. */
-	strcpy(newpath, "PATH=/sbin:/etc/fs:/etc:");
+	/* Update our search path to include uncommon directories. */
+	strcpy(fsck_path, "/sbin:/sbin/fs.d:/sbin/fs:/etc/fs:/etc:");
 	if ((oldpath = getenv("PATH")) != NULL)
-		strcat(newpath, oldpath);
-	putenv(newpath);
+		strcat(fsck_path, oldpath);
     
 	/* If -A was specified ("check all"), do that! */
 	if (doall)
@@ -564,7 +724,7 @@ int main(int argc, char *argv[])
 			struct fsck_instance *inst;
 
 			inst = wait_one();
-			if (!inst) {
+			if (inst) {
 				status |= inst->exit_status;
 				free_instance(inst);
 			}

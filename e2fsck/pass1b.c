@@ -101,7 +101,7 @@ static int dup_inode_count = 0;
 extern ino_t stashed_ino;
 extern struct ext2_inode *stashed_inode;
 
-static char *inode_dup_map;
+static ext2fs_inode_bitmap inode_dup_map;
 
 /*
  * Main procedure for handling duplicate blocks
@@ -112,7 +112,8 @@ void pass1_dupblocks(ext2_filsys fs, char *block_buf)
 	struct dup_block	*p, *q, *next_p, *next_q;
 	struct dup_inode	*r, *next_r;
 	
-	retval = ext2fs_allocate_inode_bitmap(fs, &inode_dup_map);
+	retval = ext2fs_allocate_inode_bitmap(fs,
+		      "multiply claimed inode map", &inode_dup_map);
 	if (retval) {
 		com_err("ext2fs_allocate_inode_bitmap", retval,
 			"while allocating inode_dup_map");
@@ -127,8 +128,8 @@ void pass1_dupblocks(ext2_filsys fs, char *block_buf)
 	 * Time to free all of the accumulated data structures that we
 	 * don't need anymore.
 	 */
-	free(inode_dup_map);   	inode_dup_map = 0;
-	free(block_dup_map);    block_dup_map = 0;
+	ext2fs_free_inode_bitmap(inode_dup_map);   	inode_dup_map = 0;
+	ext2fs_free_block_bitmap(block_dup_map);    block_dup_map = 0;
 	for (p = dup_blk; p; p = next_p) {
 		next_p = p->next_block;
 		for (q = p; q; q = next_q) {
@@ -177,7 +178,7 @@ void pass1b(ext2_filsys fs, char *block_buf)
 	while (ino) {
 		stashed_ino = ino;
 		if ((ino != EXT2_BAD_INO) &&
-		    (!ext2fs_test_inode_bitmap(fs, inode_used_map, ino) ||
+		    (!ext2fs_test_inode_bitmap(inode_used_map, ino) ||
 		     !inode_has_valid_blocks(&inode)))
 			goto next;
 
@@ -230,17 +231,17 @@ int process_pass1b_block(ext2_filsys fs,
 		return 0;
 	p = (struct process_block_struct *) private;
 	
-	if (ext2fs_test_block_bitmap(fs, block_dup_map, *block_nr)) {
+	if (ext2fs_test_block_bitmap(block_dup_map, *block_nr)) {
 		/* OK, this is a duplicate block */
 		if (p->ino != EXT2_BAD_INO) {
 			if (!p->dup_blocks)
-				printf("Duplicate/bad block(s) in inode %ld:",
+				printf("Duplicate/bad block(s) in inode %lu:",
 				       p->ino);
-			printf(" %ld", *block_nr);
+			printf(" %lu", *block_nr);
 		}
 		p->dup_blocks++;
-		ext2fs_mark_block_bitmap(fs, block_dup_map, *block_nr);
-		ext2fs_mark_inode_bitmap(fs, inode_dup_map, p->ino);
+		ext2fs_mark_block_bitmap(block_dup_map, *block_nr);
+		ext2fs_mark_inode_bitmap(inode_dup_map, p->ino);
 		dp = allocate_memory(sizeof(struct dup_block),
 				      "duplicate block record");
 		dp->block = *block_nr;
@@ -340,7 +341,7 @@ void pass1c(ext2_filsys fs, char *block_buf)
 			    ((dir_blocks[i].blockcnt == 0) && (entry <= 2)))
 				goto next;
 
-			if (!ext2fs_test_inode_bitmap(fs, inode_dup_map,
+			if (!ext2fs_test_inode_bitmap(inode_dup_map,
 						      dirent->inode))
 				goto next;
 
@@ -369,7 +370,7 @@ void pass1c(ext2_filsys fs, char *block_buf)
 	 */
 	for (p = dup_ino; p; p = p->next) {
 		if (!p->pathname) {
-			sprintf(buf, "<Unknown inode #%ld>", p->ino);
+			sprintf(buf, "<Unknown inode #%lu>", p->ino);
 			p->pathname = malloc(strlen(buf)+1);
 			if (!p->pathname) {
 				fprintf(stderr,	"pass1c: couldn't malloc "
@@ -440,7 +441,7 @@ static void pass1d(ext2_filsys fs, char *block_buf)
 		}
 		time_str = ctime(&p->mtime);
 		time_str[24] = 0;
-		printf("File %s (inode #%ld, mod time %s) \n",
+		printf("File %s (inode #%lu, mod time %s) \n",
 		       p->pathname, p->ino, time_str);
 		printf("  has %d duplicate blocks, shared with %d file%s:\n",
 		       p->num_dupblocks, shared_len,
@@ -453,7 +454,7 @@ static void pass1d(ext2_filsys fs, char *block_buf)
 				continue;
 			time_str = ctime(&s->mtime);
 			time_str[24] = 0;
-			printf("\t%s (inode #%ld, mod time %s)\n",
+			printf("\t%s (inode #%lu, mod time %s)\n",
 			       s->pathname, s->ino, time_str);
 		}
 		if (file_ok) {
@@ -489,22 +490,22 @@ static int delete_file_block(ext2_filsys fs,
 	if (!*block_nr)
 		return 0;
 
-	if (ext2fs_test_block_bitmap(fs, block_dup_map, *block_nr)) {
+	if (ext2fs_test_block_bitmap(block_dup_map, *block_nr)) {
 		for (p = dup_blk; p; p = p->next_block)
 			if (p->block == *block_nr)
 				break;
 		if (p) {
 			p->num_bad--;
 			if (p->num_bad == 1)
-				ext2fs_unmark_block_bitmap(fs, block_dup_map,
+				ext2fs_unmark_block_bitmap(block_dup_map,
 							   *block_nr);
 		} else
 			com_err("delete_file_block", 0,
 				"internal error; can't find dup_blk for %d\n",
 				*block_nr);
 	} else {
-		ext2fs_unmark_block_bitmap(fs, block_found_map, *block_nr);
-		ext2fs_unmark_block_bitmap(fs, fs->block_map, *block_nr);
+		ext2fs_unmark_block_bitmap(block_found_map, *block_nr);
+		ext2fs_unmark_block_bitmap(fs->block_map, *block_nr);
 	}
 		
 	return 0;
@@ -525,27 +526,17 @@ static void delete_file(ext2_filsys fs, struct dup_inode *dp, char* block_buf)
 		com_err("delete_file", retval,
 			"while calling ext2fs_block_iterate for inode %d",
 			dp->ino);
-	ext2fs_unmark_inode_bitmap(fs, inode_used_map, dp->ino);
-	ext2fs_unmark_inode_bitmap(fs, inode_dir_map, dp->ino);
+	ext2fs_unmark_inode_bitmap(inode_used_map, dp->ino);
+	ext2fs_unmark_inode_bitmap(inode_dir_map, dp->ino);
 	if (inode_bad_map)
-		ext2fs_unmark_inode_bitmap(fs, inode_bad_map, dp->ino);
-	ext2fs_unmark_inode_bitmap(fs, fs->inode_map, dp->ino);
+		ext2fs_unmark_inode_bitmap(inode_bad_map, dp->ino);
+	ext2fs_unmark_inode_bitmap(fs->inode_map, dp->ino);
 	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
-	retval = ext2fs_read_inode(fs, dp->ino, &inode);
-	if (retval) {
-		com_err("delete_file", retval, "while reading inode %d",
-			dp->ino);
-		return;
-	}
+	e2fsck_read_inode(fs, dp->ino, &inode, "delete_file");
 	inode.i_links_count = 0;
 	inode.i_dtime = time(0);
-	retval = ext2fs_write_inode(fs, dp->ino, &inode);
-	if (retval) {
-		com_err("delete_file", retval, "while writing inode %d",
-			dp->ino);
-		return;
-	}
+	e2fsck_write_inode(fs, dp->ino, &inode, "delete_file");
 }
 
 struct clone_struct {
@@ -566,7 +557,7 @@ static int clone_file_block(ext2_filsys fs,
 	if (!*block_nr)
 		return 0;
 
-	if (ext2fs_test_block_bitmap(fs, block_dup_map, *block_nr)) {
+	if (ext2fs_test_block_bitmap(block_dup_map, *block_nr)) {
 		for (p = dup_blk; p; p = p->next_block)
 			if (p->block == *block_nr)
 				break;
@@ -591,12 +582,12 @@ static int clone_file_block(ext2_filsys fs,
 			}
 			p->num_bad--;
 			if (p->num_bad == 1)
-				ext2fs_unmark_block_bitmap(fs, block_dup_map,
+				ext2fs_unmark_block_bitmap(block_dup_map,
 							   *block_nr);
 			*block_nr = new_block;
-			ext2fs_mark_block_bitmap(fs, block_found_map,
+			ext2fs_mark_block_bitmap(block_found_map,
 						 new_block);
-			ext2fs_mark_block_bitmap(fs, fs->block_map, new_block);
+			ext2fs_mark_block_bitmap(fs->block_map, new_block);
 			return BLOCK_CHANGED;
 		} else
 			com_err("clone_file_block", 0,

@@ -3,14 +3,13 @@
  *
  * For copyright information, see copyright.h.
  */
+
+#ifdef HAS_STDLIB_H
+#include <stdlib.h>
+#endif
 #include "ss_internal.h"
 #include "copyright.h"
 #define	size	sizeof(ss_data *)
-
-#ifndef lint
-static char const rcsid[] =
-    "$Header$";
-#endif
 
 int ss_create_invocation(subsystem_name, version_string, info_ptr,
 			 request_table_ptr, code_ptr)

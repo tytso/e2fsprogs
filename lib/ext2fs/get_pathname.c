@@ -9,7 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <linux/fs.h>
+
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -92,7 +92,11 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ino_t dir, ino_t ino,
 		return 0;
 	}
 	
-	ret = malloc(strlen(parent_name)+strlen(gp.name)+2);
+	if (gp.name) 
+		ret = malloc(strlen(parent_name)+strlen(gp.name)+2);
+	else
+		ret = malloc(strlen(parent_name)+5); /* strlen("???") + 2 */
+		
 	if (!ret) {
 		retval = ENOMEM;
 		goto cleanup;
@@ -120,6 +124,8 @@ errcode_t ext2fs_get_pathname(ext2_filsys fs, ino_t dir, ino_t ino,
 {
 	char	*buf;
 	errcode_t	retval;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	buf = malloc(fs->blocksize);
 	if (!buf)

@@ -35,12 +35,13 @@ const char * program_name = "lsattr";
 
 int all = 0;
 int d_opt = 0;
+int l_opt = 0;
 int recursive = 0;
 int v_opt = 0;
 
 static void volatile usage (void)
 {
-	fprintf (stderr, "Usage: %s [-Radv] [files...]\n", program_name);
+	fprintf (stderr, "Usage: %s [-Radlv] [files...]\n", program_name);
 	exit (1);
 }
 
@@ -59,7 +60,7 @@ static void list_attributes (const char * name)
 	{
 		if (v_opt)
 			printf ("%5lu ", version);
-		print_flags (stdout, flags);
+		print_flags (stdout, flags, l_opt);
 		printf (" %s\n", name);
 	}
 }
@@ -127,6 +128,9 @@ void main (int argc, char ** argv)
 				break;
 			case 'd':
 				d_opt = 1;
+				break;
+			case 'l':
+				l_opt = 1;
 				break;
 			case 'v':
 				v_opt = 1;

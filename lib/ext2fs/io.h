@@ -5,10 +5,23 @@
  * under the terms of the GNU Public License.
  */
 
+/*
+ * ext2_loff_t is defined here since unix_io.c needs it.
+ */
+#if defined(__GNUC__) || defined(HAS_LONG_LONG)
+typedef long long	ext2_loff_t;
+#else
+typedef long		ext2_loff_t;
+#endif
+
+/* llseek.c */
+ext2_loff_t ext2_llseek (unsigned int, ext2_loff_t, unsigned int);
+
 typedef struct struct_io_manager *io_manager;
 typedef struct struct_io_channel *io_channel;
 
 struct struct_io_channel {
+	int		magic;
 	io_manager	manager;
 	char		*name;
 	int		block_size;
@@ -26,10 +39,12 @@ struct struct_io_channel {
 				       size_t size,
 				       int actual_bytes_written,
 				       errcode_t error);
+	int		reserved[16];
 	void		*private_data;
 };
 
 struct struct_io_manager {
+	int magic;
 	const char *name;
 	errcode_t (*open)(const char *name, int flags, io_channel *channel);
 	errcode_t (*close)(io_channel channel);
@@ -39,6 +54,7 @@ struct struct_io_manager {
 	errcode_t (*write_blk)(io_channel channel, unsigned long block,
 			       int count, const void *data);
 	errcode_t (*flush)(io_channel channel);
+	int		reserved[16];
 };
 
 #define IO_FLAG_RW	1

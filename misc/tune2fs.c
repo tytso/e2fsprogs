@@ -23,12 +23,15 @@
  */
 
 #include <fcntl.h>
+#include <grp.h>
 #include <getopt.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 #include <linux/ext2_fs.h>
 
@@ -42,19 +45,26 @@ const char * program_name = "tune2fs";
 char * device_name = NULL;
 int c_flag = 0;
 int e_flag = 0;
+int g_flag = 0;
 int i_flag = 0;
 int l_flag = 0;
 int m_flag = 0;
+int r_flag = 0;
+int u_flag = 0;
 int max_mount_count;
 unsigned long interval;
 unsigned long reserved_ratio = 0;
+unsigned long reserved_blocks = 0;
 unsigned short errors;
+unsigned long resgid = 0;
+unsigned long resuid = 0;
 
 static volatile void usage (void)
 {
 	fprintf (stderr, "Usage: %s [-c max-mounts-count] [-e errors-behavior] "
-		 "[-i interval[d|m]]\n"
-		 "\t[-l] [-m reserved-blocks-percent] device\n", program_name);
+		 "[-g group]\n"
+		 "\t[-i interval[d|m|w]] [-l] [-m reserved-blocks-percent]\n"
+		 "\t[-r reserved-blocks-count] [-u user] device\n", program_name);
 	exit (1);
 }
 
@@ -64,6 +74,8 @@ void main (int argc, char ** argv)
 	char * tmp;
 	errcode_t retval;
 	ext2_filsys fs;
+	struct group * gr;
+	struct passwd * pw;
 
 	fprintf (stderr, "tune2fs %s, %s for EXT2 FS %s, %s\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
@@ -71,7 +83,7 @@ void main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	initialize_ext2_error_table();
-	while ((c = getopt (argc, argv, "c:e:i:lm:")) != EOF)
+	while ((c = getopt (argc, argv, "c:e:g:i:lm:r:u:")) != EOF)
 		switch (c)
 		{
 			case 'c':
@@ -101,6 +113,25 @@ void main (int argc, char ** argv)
 				}
 				e_flag = 1;
 				break;
+			case 'g':
+				resgid = strtoul (optarg, &tmp, 0);
+				if (*tmp)
+				{
+					gr = getgrnam (optarg);
+					if (gr == NULL)
+						tmp = optarg;
+					else
+						resgid = gr->gr_gid;
+				}
+				if (*tmp)
+				{
+					com_err (program_name, 0,
+						 "bad gid/group name - %s",
+						 optarg);
+					usage ();
+				}
+				g_flag = 1;
+				break;
 			case 'i':
 				interval = strtoul (optarg, &tmp, 0);
 				switch (*tmp)
@@ -115,6 +146,11 @@ void main (int argc, char ** argv)
 					case 'm':
 					case 'M': /* months! */
 						interval *= 86400 * 30;
+						tmp++;
+						break;
+					case 'w':
+					case 'W': /* weeks */
+						interval *= 86400 * 7;
 						tmp++;
 						break;
 				}
@@ -140,16 +176,48 @@ void main (int argc, char ** argv)
 				}
 				m_flag = 1;
 				break;
+			case 'r':
+				reserved_blocks = strtoul (optarg, &tmp, 0);
+				if (*tmp)
+				{
+					com_err (program_name, 0,
+						 "bad reserved blocks count - %s",
+						 optarg);
+					usage ();
+				}
+				r_flag = 1;
+				break;
+			case 'u':
+				resuid = strtoul (optarg, &tmp, 0);
+				if (*tmp)
+				{
+					pw = getpwnam (optarg);
+					if (pw == NULL)
+						tmp = optarg;
+					else
+						resuid = pw->pw_uid;
+				}
+				if (*tmp)
+				{
+					com_err (program_name, 0,
+						 "bad uid/user name - %s",
+						 optarg);
+					usage ();
+				}
+				u_flag = 1;
+				break;
 			default:
 				usage ();
 		}
 	if (optind < argc - 1 || optind == argc)
 		usage ();
-	if (!c_flag && !e_flag && !i_flag && !m_flag && !l_flag)
+	if (!c_flag && !e_flag && !g_flag && !i_flag && !l_flag && !m_flag
+	    && !r_flag && !u_flag)
 		usage ();
 	device_name = argv[optind];
 	retval = ext2fs_open (device_name,
-			      (c_flag || e_flag || i_flag || m_flag) ? EXT2_FLAG_RW : 0,
+			      (c_flag || e_flag || g_flag || i_flag || m_flag
+			       || r_flag || u_flag) ? EXT2_FLAG_RW : 0,
 			      0, 0, unix_io_manager, &fs);
         if (retval)
 	{
@@ -171,6 +239,18 @@ void main (int argc, char ** argv)
 		ext2fs_mark_super_dirty(fs);
 		printf ("Setting error behavior to %d\n", errors);
 	}
+	if (g_flag)
+#ifdef	EXT2_DEF_RESGID
+	{
+		fs->super->s_def_resgid = resgid;
+		ext2fs_mark_super_dirty(fs);
+		printf ("Setting reserved blocks gid to %lu\n", resgid);
+	}
+#else
+		com_err (program_name, 0,
+			 "The -g option is not supported by this version -- "
+			 "Recompile with a newer kernel");
+#endif
 	if (i_flag)
 	{
 		fs->super->s_checkinterval = interval;
@@ -185,6 +265,32 @@ void main (int argc, char ** argv)
 		printf ("Setting reserved blocks percentage to %lu (%lu blocks)\n",
 			reserved_ratio, fs->super->s_r_blocks_count);
 	}
+	if (r_flag)
+	{
+		if (reserved_blocks >= fs->super->s_blocks_count)
+		{
+			com_err (program_name, 0,
+				 "reserved blocks count is too big (%ul)",
+				 reserved_blocks);
+			exit (1);
+		}
+		fs->super->s_r_blocks_count = reserved_blocks;
+		ext2fs_mark_super_dirty(fs);
+		printf ("Setting reserved blocks count to %lu\n",
+			reserved_blocks);
+	}
+	if (u_flag)
+#ifdef	EXT2_DEF_RESUID
+	{
+		fs->super->s_def_resuid = resuid;
+		ext2fs_mark_super_dirty(fs);
+		printf ("Setting reserved blocks uid to %lu\n", resuid);
+	}
+#else
+		com_err (program_name, 0,
+			 "The -u option is not supported by this version -- "
+			 "Recompile with a newer kernel");
+#endif
 	if (l_flag)
 		list_super (fs->super);
 	ext2fs_close (fs);

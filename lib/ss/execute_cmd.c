@@ -4,14 +4,12 @@
  * For copyright info, see copyright.h.
  */
 
+#ifdef HAS_STDLIB_H
+#include <stdlib.h>
+#endif
 #include "ss_internal.h"
 #include "copyright.h"
 #include <stdio.h>
-
-#ifndef lint
-static char const rcsid[] =
-    "$Header$";
-#endif
 
 /*
  * get_request(tbl, idx)

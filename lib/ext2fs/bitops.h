@@ -22,19 +22,18 @@ extern const char *ext2fs_inode_string;
 extern const char *ext2fs_mark_string;
 extern const char *ext2fs_unmark_string;
 extern const char *ext2fs_test_string;
-extern void ext2fs_warn_bitmap(ext2_filsys fs, const char *op,
-			       const char *type, int arg);
+extern void ext2fs_warn_bitmap(errcode_t errcode, unsigned long arg,
+			       const char *description);
 
-extern void ext2fs_mark_block_bitmap(ext2_filsys fs, char *bitmap, int block);
-extern void ext2fs_unmark_block_bitmap(ext2_filsys fs, char *bitmap,
-				       int block);
-extern int ext2fs_test_block_bitmap(ext2_filsys fs, const char *bitmap,
-				    int block);
-extern void ext2fs_mark_inode_bitmap(ext2_filsys fs, char *bitmap, int inode);
-extern void ext2fs_unmark_inode_bitmap(ext2_filsys fs, char *bitmap,
-				       int inode);
-extern int ext2fs_test_inode_bitmap(ext2_filsys fs, const char *bitmap,
-				    int inode);
+extern void ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
+extern void ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
+				       blk_t block);
+extern int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
+
+extern void ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap, ino_t inode);
+extern void ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+				       ino_t inode);
+extern int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap, ino_t inode);
 
 /*
  * The inline routines themselves...
@@ -50,6 +49,9 @@ extern int ext2fs_test_inode_bitmap(ext2_filsys fs, const char *bitmap,
 #endif
 
 #if (defined(__i386__) || defined(__i486__) || defined(__i586__))
+
+#define _EXT2_HAVE_ASM_BITOPS_
+	
 /*
  * These are done by inline assembly for speed reasons.....
  *
@@ -99,73 +101,106 @@ _INLINE_ int test_bit(int nr, const void * addr)
 
 #endif	/* i386 */
 
-_INLINE_ void ext2fs_mark_block_bitmap(ext2_filsys fs, char *bitmap,
-					    int block)
+#ifdef __mc68000__
+
+#define _EXT2_HAVE_ASM_BITOPS_
+
+_INLINE_ int set_bit(int nr,void * addr)
 {
-	if ((block < fs->super->s_first_data_block) ||
-	    (block >= fs->super->s_blocks_count)) {
-		ext2fs_warn_bitmap(fs, ext2fs_mark_string,
-				   ext2fs_block_string, block);
-		return;
-	}
-	set_bit(block - fs->super->s_first_data_block, bitmap);
+	char retval;
+
+	__asm__ __volatile__ ("bfset %2@{%1:#1}; sne %0"
+	     : "=d" (retval) : "d" (nr), "a" (addr));
+
+	return retval;
 }
 
-_INLINE_ void ext2fs_unmark_block_bitmap(ext2_filsys fs, char *bitmap,
-					      int block)
+_INLINE_ int clear_bit(int nr, void * addr)
 {
-	if ((block < fs->super->s_first_data_block) ||
-	    (block >= fs->super->s_blocks_count)) {
-		ext2fs_warn_bitmap(fs, ext2fs_unmark_string,
-				   ext2fs_block_string, block);
-		return;
-	}
-	clear_bit(block - fs->super->s_first_data_block, bitmap);
+	char retval;
+
+	__asm__ __volatile__ ("bfclr %2@{%1:#1}; sne %0"
+	     : "=d" (retval) : "d" (nr), "a" (addr));
+
+	return retval;
 }
 
-_INLINE_ int ext2fs_test_block_bitmap(ext2_filsys fs, const char *bitmap,
-				      int block)
+_INLINE_ int test_bit(int nr, const void * addr)
 {
-	if ((block < fs->super->s_first_data_block) ||
-	    (block >= fs->super->s_blocks_count)) {
-		ext2fs_warn_bitmap(fs, ext2fs_test_string,
-				   ext2fs_block_string, block);
+	char retval;
+
+	__asm__ __volatile__ ("bftst %2@{%1:#1}; sne %0"
+	     : "=d" (retval) : "d" (nr), "a" (addr));
+
+	return retval;
+}
+
+#endif /* __mc68000__ */
+
+_INLINE_ void ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap,
+				       blk_t block)
+{
+	if ((block < bitmap->start) || (block > bitmap->end)) {
+		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_MARK, block,
+				   bitmap->description);
+		return;
+	}
+	set_bit(block - bitmap->start, bitmap->bitmap);
+}
+
+_INLINE_ void ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
+					 blk_t block)
+{
+	if ((block < bitmap->start) || (block > bitmap->end)) {
+		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_UNMARK,
+				   block, bitmap->description);
+		return;
+	}
+	clear_bit(block - bitmap->start, bitmap->bitmap);
+}
+
+_INLINE_ int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap,
+				       blk_t block)
+{
+	if ((block < bitmap->start) || (block > bitmap->end)) {
+		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_TEST,
+				   block, bitmap->description);
 		return 0;
 	}
-	return test_bit(block - fs->super->s_first_data_block, bitmap);
+	return test_bit(block - bitmap->start, bitmap->bitmap);
 }
 
-_INLINE_ void ext2fs_mark_inode_bitmap(ext2_filsys fs, char *bitmap,
-					    int inode)
+_INLINE_ void ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+				       ino_t inode)
 {
-	if ((inode < 1) || (inode > fs->super->s_inodes_count)) {
-		ext2fs_warn_bitmap(fs, ext2fs_mark_string,
-				   ext2fs_inode_string, inode);
+	if ((inode < bitmap->start) || (inode > bitmap->end)) {
+		ext2fs_warn_bitmap(EXT2_ET_BAD_INODE_MARK,
+				   inode, bitmap->description);
 		return;
 	}
-	set_bit(inode - 1, bitmap);
+	set_bit(inode - bitmap->start, bitmap->bitmap);
 }
 
-_INLINE_ void ext2fs_unmark_inode_bitmap(ext2_filsys fs, char *bitmap,
-					      int inode)
+_INLINE_ void ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+					 ino_t inode)
 {
-	if ((inode < 1) || (inode > fs->super->s_inodes_count)) {
-		ext2fs_warn_bitmap(fs, ext2fs_unmark_string,
-				   ext2fs_inode_string, inode);
+	if ((inode < bitmap->start) || (inode > bitmap->end)) {
+		ext2fs_warn_bitmap(EXT2_ET_BAD_INODE_UNMARK,
+				   inode, bitmap->description);
 		return;
 	}
-	clear_bit(inode - 1, bitmap);
+	clear_bit(inode - bitmap->start, bitmap->bitmap);
 }
 
-_INLINE_ int ext2fs_test_inode_bitmap(ext2_filsys fs, const char *bitmap,
-				      int inode)
+_INLINE_ int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
+				       ino_t inode)
 {
-	if ((inode < 1) || (inode > fs->super->s_inodes_count)) {
-		ext2fs_warn_bitmap(fs, ext2fs_test_string,
-				   ext2fs_inode_string, inode);
+	if ((inode < bitmap->start) || (inode > bitmap->end)) {
+		ext2fs_warn_bitmap(EXT2_ET_BAD_INODE_TEST,
+				   inode, bitmap->description);
 		return 0;
 	}
-	return test_bit(inode - 1, bitmap);
+	return test_bit(inode - bitmap->start, bitmap->bitmap);
 }
 
 #undef _INLINE_

@@ -9,8 +9,8 @@
  * $Locker$
  *
  * $Log$
- * Revision 1.1  1997/04/26 13:21:42  tytso
- * Checkin of e2fsprogs 0.5
+ * Revision 1.2  1997/04/26 13:34:09  tytso
+ * Checkin of e2fsprogs 0.5b
  *
  * Revision 1.1  1993/06/03  12:31:25  tytso
  * Initial revision

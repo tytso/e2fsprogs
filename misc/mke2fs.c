@@ -22,8 +22,10 @@
 #include <mntent.h>
 #include <malloc.h>
 #include <sys/ioctl.h>
-#include <linux/ext2_fs.h>
+#include <sys/types.h>
+
 #include <linux/fs.h>
+#include <linux/ext2_fs.h>
 
 #include "et/com_err.h"
 #include "ext2fs/ext2fs.h"
@@ -32,6 +34,7 @@
 #define STRIDE_LENGTH 8
 
 extern int isatty(int);
+extern FILE *fpopen(const char *cmd, const char *mode);
 
 const char * program_name = "mke2fs";
 const char * device_name = NULL;
@@ -40,6 +43,7 @@ const char * device_name = NULL;
 int	cflag = 0;
 int	verbose = 0;
 int	quiet = 0;
+int	super_only = 0;
 char	*bad_blocks_filename = 0;
 
 struct ext2_super_block param;
@@ -49,8 +53,8 @@ static void usage(NOARGS)
 	fprintf(stderr,
 		"Usage: %s [-c|-t|-l filename] [-b block-size] "
 		"[-f fragment-size]\n\t[-i bytes-per-inode] "
-		"[-m reserved-blocks-percentage] [-v]\n"
-		"\tdevice [blocks-count]\n",
+		"[-m reserved-blocks-percentage] [-qvS]\n"
+		"\t[-g blocks-per-group] device [blocks-count]\n",
 		program_name);
 	exit(1);
 }
@@ -67,11 +71,11 @@ static int log2(int arg)
 	return l;
 }
 
-static long valid_offset (int fd, int offset)
+static long valid_offset (int fd, ext2_loff_t offset)
 {
 	char ch;
 
-	if (lseek (fd, offset, 0) < 0)
+	if (ext2_llseek (fd, offset, 0) < 0)
 		return 0;
 	if (read (fd, &ch, 1) < 1)
 		return 0;
@@ -80,14 +84,14 @@ static long valid_offset (int fd, int offset)
 
 static int count_blocks (int fd)
 {
-	int high, low;
+	ext2_loff_t high, low;
 
 	low = 0;
 	for (high = 1; valid_offset (fd, high); high *= 2)
 		low = high;
 	while (low < high - 1)
 	{
-		const int mid = (low + high) / 2;
+		const ext2_loff_t mid = (low + high) / 2;
 
 		if (valid_offset (fd, mid))
 			low = mid;
@@ -192,7 +196,7 @@ static void test_disk(ext2_filsys fs, badblocks_list *bb_list)
 		exit(1);
 	}
 	retval = ext2fs_read_bb_FILE(fs, f, bb_list, invalid_block);
-	fclose (f);
+	pclose(f);
 	if (retval) {
 		com_err("ext2fs_read_bb_FILE", retval,
 			"while processing list of bad blocks from program");
@@ -202,11 +206,14 @@ static void test_disk(ext2_filsys fs, badblocks_list *bb_list)
 
 static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 {
-	int			i;
+	int			i, j;
 	int			must_be_good;
 	blk_t			blk;
 	badblocks_iterate	bb_iter;
 	errcode_t		retval;
+	blk_t			group_block;
+	int			group;
+	int			group_bad;
 
 	if (!bb_list)
 		return;
@@ -227,6 +234,33 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 			exit(1);
 		}
 	}
+
+	/*
+	 * See if any of the bad blocks are showing up in the backup
+	 * superblocks and/or group descriptors.  If so, issue a
+	 * warning and adjust the block counts appropriately.
+	 */
+	group_block = fs->super->s_first_data_block +
+		fs->super->s_blocks_per_group;
+	group_bad = 0;
+	
+	for (i = 1; i < fs->group_desc_count; i++) {
+		for (j=0; j < fs->desc_blocks+1; j++) {
+			if (badblocks_list_test(bb_list, group_block +
+						j)) {
+				if (!group_bad) 
+					fprintf(stderr,
+"Warning: the backup superblock/group descriptors at block %ld contain\n"
+"	bad blocks.\n\n",
+						group_block);
+				group_bad++;
+				group = ext2fs_group_of_blk(fs, group_block+j);
+				fs->group_desc[group].bg_free_blocks_count++;
+				fs->super->s_free_blocks_count++;
+			}
+		}
+		group_block += fs->super->s_blocks_per_group;
+	}
 	
 	/*
 	 * Mark all the bad blocks as used...
@@ -238,13 +272,13 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 		exit(1);
 	}
 	while (badblocks_list_iterate(bb_iter, &blk)) 
-		ext2fs_mark_block_bitmap(fs, fs->block_map, blk);
+		ext2fs_mark_block_bitmap(fs->block_map, blk);
 	badblocks_list_iterate_end(bb_iter);
 }
 
 static void new_table_block(ext2_filsys fs, blk_t first_block,
-			    const char *name, int num, const char *buf,
-			    blk_t *new_block)
+			    const char *name, int num, int initialize,
+			    const char *buf, blk_t *new_block)
 {
 	errcode_t	retval;
 	blk_t		blk;
@@ -260,21 +294,24 @@ static void new_table_block(ext2_filsys fs, blk_t first_block,
 		ext2fs_unmark_valid(fs);
 		return;
 	}
-	blk = *new_block;
-	for (i=0; i < num; i += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
-		if (num-i > STRIDE_LENGTH)
-			count = STRIDE_LENGTH;
-		else
-			count = num - i;
-		retval = io_channel_write_blk(fs->io, blk, count, buf);
-		if (retval)
-			printf("Warning: could not write %d blocks starting "
-			       "at %ld for %s: %s\n",
-			       count, blk, name, error_message(retval));
+	if (initialize) {
+		blk = *new_block;
+		for (i=0; i < num; i += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
+			if (num-i > STRIDE_LENGTH)
+				count = STRIDE_LENGTH;
+			else
+				count = num - i;
+			retval = io_channel_write_blk(fs->io, blk, count, buf);
+			if (retval)
+				printf("Warning: could not write %d blocks "
+				       "starting at %ld for %s: %s\n",
+				       count, blk, name,
+				       error_message(retval));
+		}
 	}
 	blk = *new_block;
 	for (i = 0; i < num; i++, blk++)
-		ext2fs_mark_block_bitmap(fs, fs->block_map, blk);
+		ext2fs_mark_block_bitmap(fs->block_map, blk);
 }	
 
 static void alloc_tables(ext2_filsys fs)
@@ -282,7 +319,6 @@ static void alloc_tables(ext2_filsys fs)
 	blk_t	group_blk;
 	int	i;
 	char	*buf;
-	int	numblocks;
 
 	buf = malloc(fs->blocksize * STRIDE_LENGTH);
 	if (!buf) {
@@ -297,28 +333,15 @@ static void alloc_tables(ext2_filsys fs)
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (!quiet)
 			printf("%4d/%4ld", i, fs->group_desc_count);
-		new_table_block(fs, group_blk, "block bitmap", 1, buf,
+		new_table_block(fs, group_blk, "block bitmap", 1, 0, buf,
 				&fs->group_desc[i].bg_block_bitmap);
-		new_table_block(fs, group_blk, "inode bitmap", 1, buf,
+		new_table_block(fs, group_blk, "inode bitmap", 1, 0, buf,
 				&fs->group_desc[i].bg_inode_bitmap);
 		new_table_block(fs, group_blk, "inode table",
-				fs->inode_blocks_per_group, buf,
+				fs->inode_blocks_per_group,
+				!super_only, buf,
 				&fs->group_desc[i].bg_inode_table);
 		
-		if (i == fs->group_desc_count-1) {
-			numblocks = (fs->super->s_blocks_count -
-				     fs->super->s_first_data_block) %
-					     fs->super->s_blocks_per_group;
-			if (!numblocks)
-				numblocks = fs->super->s_blocks_per_group;
-		} else
-			numblocks = fs->super->s_blocks_per_group;
-		numblocks -= 3 + fs->desc_blocks + fs->inode_blocks_per_group;
-		
-		fs->group_desc[i].bg_free_blocks_count = numblocks;
-		fs->group_desc[i].bg_free_inodes_count =
-			fs->super->s_inodes_per_group;
-		fs->group_desc[i].bg_used_dirs_count = 0;
 		group_blk += fs->super->s_blocks_per_group;
 		if (!quiet) 
 			printf("\b\b\b\b\b\b\b\b\b");
@@ -330,11 +353,27 @@ static void alloc_tables(ext2_filsys fs)
 static void create_root_dir(ext2_filsys fs)
 {
 	errcode_t	retval;
+	struct ext2_inode	inode;
 
 	retval = ext2fs_mkdir(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, 0);
 	if (retval) {
 		com_err("ext2fs_mkdir", retval, "while creating root dir");
 		exit(1);
+	}
+	if (geteuid()) {
+		retval = ext2fs_read_inode(fs, EXT2_ROOT_INO, &inode);
+		if (retval) {
+			com_err("ext2fs_read_inode", retval,
+				"while reading root inode");
+			exit(1);
+		}
+		inode.i_uid = geteuid();
+		retval = ext2fs_write_inode(fs, EXT2_ROOT_INO, &inode);
+		if (retval) {
+			com_err("ext2fs_write_inode", retval,
+				"while setting root inode ownership");
+			exit(1);
+		}
 	}
 }
 
@@ -371,7 +410,7 @@ static void create_bad_block_inode(ext2_filsys fs, badblocks_list bb_list)
 {
 	errcode_t	retval;
 	
-	ext2fs_mark_inode_bitmap(fs, fs->inode_map, EXT2_BAD_INO);
+	ext2fs_mark_inode_bitmap(fs->inode_map, EXT2_BAD_INO);
 	fs->group_desc[0].bg_free_inodes_count--;
 	fs->super->s_free_inodes_count--;
 	retval = ext2fs_update_bb_inode(fs, bb_list);
@@ -389,13 +428,27 @@ static void reserve_inodes(ext2_filsys fs)
 	int	group;
 
 	for (i = EXT2_ROOT_INO + 1; i < EXT2_FIRST_INO; i++) {
-		ext2fs_mark_inode_bitmap (fs, fs->inode_map, i);
+		ext2fs_mark_inode_bitmap(fs->inode_map, i);
 		group = ext2fs_group_of_ino(fs, i);
 		fs->group_desc[group].bg_free_inodes_count--;
 		fs->super->s_free_inodes_count--;
 	}
 	ext2fs_mark_ib_dirty(fs);
 }
+
+static void zap_bootblock(ext2_filsys fs)
+{
+	char buf[512];
+	int retval;
+
+	memset(buf, 0, 512);
+	
+	retval = io_channel_write_blk(fs->io, 0, -512, buf);
+	if (retval)
+		printf("Warning: could not erase block 0: %s\n", 
+		       error_message(retval));
+}
+	
 
 static void show_stats(ext2_filsys fs)
 {
@@ -449,7 +502,8 @@ static void PRS(int argc, char *argv[])
 	char	c;
 	int	size;
 	char	* tmp;
-	char *oldpath, newpath[PATH_MAX];
+	char	*oldpath;
+	static char newpath[PATH_MAX];
 	int	inode_ratio = 4096;
 	int	reserved_ratio = 5;
 
@@ -469,7 +523,7 @@ static void PRS(int argc, char *argv[])
 		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:cf:g:i:l:m:qtv")) != EOF)
+	while ((c = getopt (argc, argv, "b:cf:g:i:l:m:qtvS")) != EOF)
 		switch (c) {
 		case 'b':
 			size = strtoul(optarg, &tmp, 0);
@@ -499,11 +553,20 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'g':
 			param.s_blocks_per_group = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(program_name, 0,
+					"Illegal number for blocks per group");
+				exit(1);
+			}
 			if (param.s_blocks_per_group < 256 ||
 			    param.s_blocks_per_group > 8192 || *tmp) {
 				com_err(program_name, 0,
-					"bad blocks per group count - %s",
-					optarg);
+					"blocks per group count out of range");
+				exit(1);
+			}
+			if ((param.s_blocks_per_group % 8) != 0) {
+				com_err(program_name, 0,
+				"blocks per group must be multiple of 8");
 				exit(1);
 			}
 			break;
@@ -517,7 +580,13 @@ static void PRS(int argc, char *argv[])
 			}
 			break;
 		case 'l':
-			bad_blocks_filename = strdup(optarg);
+			bad_blocks_filename = malloc(strlen(optarg)+1);
+			if (!bad_blocks_filename) {
+				com_err(program_name, ENOMEM,
+					"in malloc for bad_blocks_filename");
+				exit(1);
+			}
+			strcpy(bad_blocks_filename, optarg);
 			break;
 		case 'm':
 			reserved_ratio = strtoul(optarg, &tmp, 0);
@@ -533,6 +602,9 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'q':
 			quiet = 1;
+			break;
+		case 'S':
+			super_only = 1;
 			break;
 		default:
 			usage();
@@ -560,7 +632,8 @@ static void PRS(int argc, char *argv[])
 	 * Calculate number of inodes based on the inode ratio
 	 */
 	param.s_inodes_count =
-		(param.s_blocks_count * EXT2_BLOCK_SIZE(&param)) / inode_ratio;
+		((long long) param.s_blocks_count * EXT2_BLOCK_SIZE(&param))
+			/ inode_ratio;
 
 	/*
 	 * Calculate number of blocks to reserve
@@ -598,10 +671,16 @@ int main (int argc, char *argv[])
 
 	handle_bad_blocks(fs, bb_list);
 	alloc_tables(fs);
-	create_root_dir(fs);
-	create_lost_and_found(fs);
-	reserve_inodes(fs);
-	create_bad_block_inode(fs, bb_list);
+	if (super_only) {
+		fs->super->s_state |= EXT2_ERROR_FS;
+		fs->flags &= ~(EXT2_FLAG_IB_DIRTY|EXT2_FLAG_BB_DIRTY);
+	} else {
+		create_root_dir(fs);
+		create_lost_and_found(fs);
+		reserve_inodes(fs);
+		create_bad_block_inode(fs, bb_list);
+		zap_bootblock(fs);
+	}
 	
 	if (!quiet)
 		printf("Writing superblocks and "

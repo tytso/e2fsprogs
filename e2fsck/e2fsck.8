@@ -2,7 +2,7 @@
 .\" Copyright 1993, 1994 by Theodore Ts'o.  All Rights Reserved.
 .\" This file may be copied under the terms of the GNU Public License.
 .\" 
-.TH NEW-E2FSCK 8 "March 1994" "Version 0.5"
+.TH E2FSCK 8 "November 1994" "Version 0.5b"
 .SH NAME
 e2fsck \- check a Linux second extended file system
 .SH SYNOPSIS
@@ -31,10 +31,25 @@ is used to check a Linux second extended file system.
 is the special file corresponding to the device (e.g /dev/hdXX).
 .SH OPTIONS
 .TP
+.I -a 
+This option does the same thing as the 
+.I -p
+option.  It is provided for backwards compatibility only; it is
+suggested that people use 
+.I -p 
+option whever possible.
+.TP
 .I -b superblock
 Instead of using the normal superblock, use the alternative superblock
 specified by 
 .IR superblock .
+.TP
+.I -B blocksize
+Normally, e2fsck will search for the superblock at various different
+block sizes in an attempt to find the appropriate block size.  This
+search can be fooled in some cases.  This option forces e2fsck to only
+try locating the superblock at a particular blocksize.  If the
+superblock is not found, e2fsck will terminate with a fatal error.
 .TP
 .I -d
 Print debugging output (useless unless you are debugging
@@ -77,9 +92,10 @@ to the filesystem.)
 .TP
 .I -p
 Automatically repair ("preen") the file system without any questions.
-The
-.I -a
-option is provided for backwards compatibility.
+.TP
+.I -r
+This option does nothing at all; it is provided only for backwards
+compatibility.
 .TP
 .I -t
 Print timing statistics for
@@ -118,10 +134,48 @@ is the sum of the following conditions:
 .br
 \	128\	\-\ Shared library error
 .br
+.SH BUGS
+Almost any piece of software will have bugs.  If you manage to find a
+filesystem which causes 
+.B e2fsck
+to crash, or which 
+.B e2fsck
+is unable to repair, please report it to the author.
+.PP
+Please include as much information as possible in your bug report.
+Ideally, include a complete transcript of the
+.B e2fsck
+run, so I can see exactly what error messages are displayed.  If you
+have a writeable filesystem where the transcript can be stored, the 
+.BR script (1)
+program is a handy way to save the output of
+.e2fsck
+to a file.
+.PP
+It is also useful to send the output of 
+.BR dumpe2fs (8).
+If a specific inode or inodes seems to be giving 
+.B e2fsck 
+trouble, try running the
+.BR debugfs (8)
+command and send the output of the 
+.I stat
+command run on the relevant inode(s).  If the inode is a directory, 
+the debugfs
+.I dump
+command will allow you to extract the contents of the directory inode,
+which can sent to me after being first run through
+.BR uuencode (1).
+.PP
+Always include the full version string which 
+.B e2fsck
+displays when it is run, so I know which version you are running.
 .SH AUTHOR
 This version of 
 .B e2fsck
 is written by Theodore Ts'o <tytso@mit.edu>.
 .SH SEE ALSO
 .BR mke2fs (8),
-.BR tune2fs (8)
+.BR tune2fs (8),
+.BR dumpe2fs (8),
+.BR debugfs (8)

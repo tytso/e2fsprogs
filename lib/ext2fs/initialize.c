@@ -12,7 +12,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -29,6 +28,8 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	int		overhead = 0;
 	blk_t		group_block;
 	int		i, j;
+	int		numblocks;
+	char		*buf;
 
 	if (!param || !param->s_blocks_count)
 		return EINVAL;
@@ -38,6 +39,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		return ENOMEM;
 	
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
+	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
 	fs->flags = flags | EXT2_FLAG_RW;
 	retval = manager->open(name, IO_FLAG_RW, &fs->io);
 	if (retval)
@@ -70,6 +72,10 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_checkinterval, EXT2_DFL_CHECKINTERVAL);
 	super->s_lastcheck = time(NULL);
 
+#ifdef	EXT2_OS_LINUX
+	super->s_creator_os = EXT2_OS_LINUX;
+#endif
+
 	fs->blocksize = EXT2_BLOCK_SIZE(super);
 	fs->fragsize = EXT2_FRAG_SIZE(super);
 	frags_per_block = fs->blocksize / fs->fragsize;
@@ -78,10 +84,13 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	super->s_frags_per_group = super->s_blocks_per_group * frags_per_block;
 	
 	super->s_blocks_count = param->s_blocks_count;
+	super->s_r_blocks_count = param->s_r_blocks_count;
+	if (super->s_r_blocks_count >= param->s_blocks_count) {
+		retval = EINVAL;
+		goto cleanup;
+	}
 
 retry:
-	set_field(s_r_blocks_count, super->s_blocks_count/20); /* 5% default */
-		  
 	fs->group_desc_count = (super->s_blocks_count -
 				super->s_first_data_block +
 				EXT2_BLOCKS_PER_GROUP(super) - 1)
@@ -149,13 +158,23 @@ retry:
 	 * count.
 	 */
 
-	retval = ext2fs_allocate_block_bitmap(fs, &fs->block_map);
+	buf = malloc(strlen(fs->device_name) + 80);
+	if (!buf) {
+		retval = ENOMEM;
+		goto cleanup;
+	}
+	
+	sprintf(buf, "block bitmap for %s", fs->device_name);
+	retval = ext2fs_allocate_block_bitmap(fs, buf, &fs->block_map);
 	if (retval)
 		goto cleanup;
 	
-	retval = ext2fs_allocate_inode_bitmap(fs, &fs->inode_map);
+	sprintf(buf, "inode bitmap for %s", fs->device_name);
+	retval = ext2fs_allocate_inode_bitmap(fs, 0, &fs->inode_map);
 	if (retval)
 		goto cleanup;
+
+	free(buf);
 
 	fs->group_desc = malloc(fs->desc_blocks * fs->blocksize);
 	if (!fs->group_desc) {
@@ -164,11 +183,34 @@ retry:
 	}
 	memset(fs->group_desc, 0, fs->desc_blocks * fs->blocksize);
 
+	/*
+	 * Reserve the superblock and group descriptors for each
+	 * group, and fill in the correct group statistics for group.
+	 * Note that although the block bitmap, inode bitmap, and
+	 * inode table have not been allocated (and in fact won't be
+	 * by this routine), they are accounted for nevertheless.
+	 */
 	group_block = super->s_first_data_block;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		for (j=0; j < fs->desc_blocks+1; j++)
-			ext2fs_mark_block_bitmap(fs, fs->block_map,
+			ext2fs_mark_block_bitmap(fs->block_map,
 						 group_block + j);
+
+		if (i == fs->group_desc_count-1) {
+			numblocks = (fs->super->s_blocks_count -
+				     fs->super->s_first_data_block) %
+					     fs->super->s_blocks_per_group;
+			if (!numblocks)
+				numblocks = fs->super->s_blocks_per_group;
+		} else
+			numblocks = fs->super->s_blocks_per_group;
+		numblocks -= 3 + fs->desc_blocks + fs->inode_blocks_per_group;
+		
+		fs->group_desc[i].bg_free_blocks_count = numblocks;
+		fs->group_desc[i].bg_free_inodes_count =
+			fs->super->s_inodes_per_group;
+		fs->group_desc[i].bg_used_dirs_count = 0;
+		
 		group_block += super->s_blocks_per_group;
 	}
 	

@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -21,7 +20,10 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	int		group_block;
 	errcode_t	retval;
 	char		*group_ptr;
+	unsigned long	fs_state;
 	
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	/*
 	 * Write out master superblock.  This has to be done
 	 * separately, since it is located at a fixed location
@@ -35,6 +37,13 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	io_channel_set_blksize(fs->io, fs->blocksize);
 
 	/*
+	 * Save the state of the FS and set it to non valid for the
+	 * backup superblocks
+	 */
+	fs_state = fs->super->s_state;
+	fs->super->s_state &= ~EXT2_VALID_FS;
+
+	/*
 	 * Write out the master group descriptors, and the backup
 	 * superblocks and group descriptors.
 	 */
@@ -44,20 +53,26 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 			retval = io_channel_write_blk(fs->io, group_block,
 						      -SUPERBLOCK_SIZE,
 						      fs->super);
-			if (retval)
+			if (retval) {
+				fs->super->s_state = fs_state;
 				return retval;
+			}
 		}
 		group_ptr = (char *) fs->group_desc;
 		for (j=0; j < fs->desc_blocks; j++) {
 			retval = io_channel_write_blk(fs->io,
 						      group_block+1+j, 1,
 						      group_ptr);
-			if (retval)
+			if (retval) {
+				fs->super->s_state = fs_state;
 				return retval;
+			}
 			group_ptr += fs->blocksize;
 		}
 		group_block += EXT2_BLOCKS_PER_GROUP(fs->super);
 	}
+
+	fs->super->s_state = fs_state;
 
 	/*
 	 * If the write_bitmaps() function is present, call it to
@@ -78,6 +93,8 @@ errcode_t ext2fs_close(ext2_filsys fs)
 {
 	errcode_t	retval;
 	
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
 	if (fs->flags & EXT2_FLAG_DIRTY) {
 		retval = ext2fs_flush(fs);
 		if (retval)

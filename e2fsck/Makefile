@@ -9,8 +9,6 @@ CFLAGS=		$(PROF) $(OPT) $(MTRACE) $(MCHECK) $(WFLAGS) -I../lib
 LDFLAGS=	$(PROF) $(OPT)
 PROGS=		e2fsck flushb
 MANPAGES=	e2fsck.8
-BINDIR=		$(SBINDIR)
-MANDIR=		$(SMANDIR)
 
 LIBS= -L../lib -lss -lcom_err -lext2fs $(CHECKLIB)
 DEPLIBS= ../lib/libss.a ../lib/libcom_err.a ../lib/libext2fs.a
@@ -20,7 +18,7 @@ DEPLIBS= ../lib/libss.a ../lib/libcom_err.a ../lib/libext2fs.a
 #	Note: The optimization flags must include -g
 #
 #MCHECK=	-checker
-#LIBS= -L../lib -lss -lcom_err -lext2fs $(CHECKLIB)
+#LIBS= -L../lib -lss -lcom_err -le2fs $(CHECKLIB)
 #DEPLIBS= ../lib/libss.a ../lib/libcom_err.a ../lib/libext2fs.a
 #CHECKLIB= /usr/lib/libchecker.o
 
@@ -54,26 +52,34 @@ all: $(PROGS)
 #	cc $(LDFLAGS) -o e2fsck $(OBJS) $(LIBS) 
 
 e2fsck: $(OBJS)  $(DEPLIBS)
-	cc $(LDFLAGS) -static -o e2fsck $(OBJS) $(LIBS) 
+	$(CC) $(LDFLAGS) -static -o e2fsck $(OBJS) $(LIBS) 
 
 flushb: flushb.o
-	cc $(LDFLAGS) -o flushb flushb.o $(CHECKLIB)
+	$(CC) $(LDFLAGS) -o flushb flushb.o $(CHECKLIB)
 
 install:: $(PROGS)
-	for i in $(PROGS); do \
-		$(INSTALLBIN) $$i $(BINDIR)/$$i; \
-	done
-	ln -sf e2fsck $(BINDIR)/fsck.ext2
+	$(INSTALLBIN) e2fsck $(SBINDIR)/e2fsck
+	$(INSTALLBIN) flushb $(USRSBINDIR)/flushb
+	ln -sf e2fsck $(SBINDIR)/fsck.ext2
 
 install:: $(MANPAGES)
 	for i in $(MANPAGES); do \
-		$(INSTALLMAN) $$i $(MANDIR)/$$i; \
+		$(INSTALLMAN) $$i $(SMANDIR)/$$i; \
 	done
+
+install-tree:: $(PROGS)
+	for i in $(PROGS); do \
+		rm -f ../bin/$$i; \
+		cp $$i ../bin; \
+		strip ../bin/$$i; \
+		chmod 555 ../bin/$$i; \
+	done
+	ln -sf e2fsck ../bin/fsck.ext2
 
 clean:
 	rm -f $(PROGS) \#* *\# *.s *.o *.a *~ core
 
-really-clean:
+really-clean: clean
 	rm -f .depend
 
 dep depend .depend:

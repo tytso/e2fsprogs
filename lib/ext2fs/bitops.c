@@ -10,12 +10,12 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#include <linux/fs.h>
+
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
 
-#if (!defined(__i386__) && !defined(__i486__) && !defined(__i586__))
+#ifndef _EXT2_HAVE_ASM_BITOPS_
 
 /*
  * For the benefit of those who are trying to port Linux to another
@@ -69,27 +69,14 @@ int test_bit(int nr, const void * addr)
 	mask = 1 << (nr & 0x1f);
 	return ((mask & *ADDR) != 0);
 }
-#endif	/* !i386 */
+#endif	/* !_EXT2_HAVE_ASM_BITOPS_ */
 
-/*
- * These are routines print warning messages; they are called by
- * inline routines.
- */
-const char *ext2fs_block_string = "block";
-const char *ext2fs_inode_string = "inode";
-const char *ext2fs_mark_string = "mark";
-const char *ext2fs_unmark_string = "unmark";
-const char *ext2fs_test_string = "test";
-
-void ext2fs_warn_bitmap(ext2_filsys fs, const char *op, const char *type,
-			int arg)
+void ext2fs_warn_bitmap(errcode_t errcode, unsigned long arg,
+			const char *description)
 {
-	char	func[80];
-
-	sprintf(func, "ext2fs_%s_%s_bitmap", op, type);
-	com_err(func, 0, "INTERNAL ERROR: illegal %s #%d for %s",
-		type, arg, fs->device_name);
+	if (description)
+		com_err(0, errcode, "#%u for %s", arg, description);
+	else
+		com_err(0, errcode, "#%u", arg);
 }
-
-
 

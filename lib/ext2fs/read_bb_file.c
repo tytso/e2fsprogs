@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -29,6 +28,9 @@ errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 	errcode_t	retval;
 	blk_t		blockno;
 	int		count;
+	char		buf[128];
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	if (!*bb_list) {
 		retval = badblocks_list_create(bb_list, 10);
@@ -37,9 +39,11 @@ errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 	}
 
 	while (!feof (f)) {
-		count = fscanf (f, "%lu", &blockno);
-		if (count <= 0)
+		if (fgets(buf, sizeof(buf), f) == NULL)
 			break;
+		count = sscanf(buf, "%lu", &blockno);
+		if (count <= 0)
+			continue;
 		if ((blockno < fs->super->s_first_data_block) ||
 		    (blockno >= fs->super->s_blocks_count)) {
 			if (invalid)
@@ -47,7 +51,8 @@ errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 			continue;
 		}
 		retval = badblocks_list_add(*bb_list, blockno);
-		return retval;
+		if (retval)
+			return retval;
 	}
 	return 0;
 }

@@ -1,0 +1,156 @@
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c ss_err.c
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/ss_err.o -c ss_err.c)
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c std_rqs.c
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/std_rqs.o -c std_rqs.c)
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c invocation.c
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/invocation.o -c invocation.c)
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c help.c
+help.c: In function `ss_help':
+help.c:45: warning: implicit declaration of function `ss_list_requests'
+help.c: At top level:
+help.c:101: warning: function declaration isn't a prototype
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/help.o -c help.c)
+help.c: In function `ss_help':
+help.c:45: warning: implicit declaration of function `ss_list_requests'
+help.c: At top level:
+help.c:101: warning: function declaration isn't a prototype
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c execute_cmd.c
+execute_cmd.c:69: warning: function declaration isn't a prototype
+execute_cmd.c:122: warning: function declaration isn't a prototype
+execute_cmd.c:155: warning: return-type defaults to `int'
+execute_cmd.c:155: warning: function declaration isn't a prototype
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/execute_cmd.o -c execute_cmd.c)
+execute_cmd.c:69: warning: function declaration isn't a prototype
+execute_cmd.c:122: warning: function declaration isn't a prototype
+execute_cmd.c:155: warning: return-type defaults to `int'
+execute_cmd.c:155: warning: function declaration isn't a prototype
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c listen.c
+listen.c:33: warning: function declaration isn't a prototype
+listen.c:49: warning: function declaration isn't a prototype
+listen.c: In function `ss_listen':
+listen.c:60: warning: function declaration isn't a prototype
+listen.c:60: warning: function declaration isn't a prototype
+listen.c:60: warning: function declaration isn't a prototype
+listen.c:70: warning: function declaration isn't a prototype
+listen.c:72: warning: implicit declaration of function `sigblock'
+listen.c:72: warning: implicit declaration of function `sigmask'
+listen.c:76: warning: implicit declaration of function `sigsetmask'
+listen.c:60: warning: variable `sig_cont' may be clobbered by `longjmp' or `vfork'
+listen.c:63: warning: variable `end' may be clobbered by `longjmp' or `vfork'
+listen.c: At top level:
+listen.c:132: warning: function declaration isn't a prototype
+listen.c: In function `ss_quit':
+listen.c:138: warning: control reaches end of non-void function
+listen.c: At top level:
+listen.c:23: warning: `rcs_id' defined but not used
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/listen.o -c listen.c)
+listen.c:33: warning: function declaration isn't a prototype
+listen.c:49: warning: function declaration isn't a prototype
+listen.c: In function `ss_listen':
+listen.c:60: warning: function declaration isn't a prototype
+listen.c:60: warning: function declaration isn't a prototype
+listen.c:60: warning: function declaration isn't a prototype
+listen.c:70: warning: function declaration isn't a prototype
+listen.c:72: warning: implicit declaration of function `sigblock'
+listen.c:72: warning: implicit declaration of function `sigmask'
+listen.c:76: warning: implicit declaration of function `sigsetmask'
+listen.c:60: warning: variable `sig_cont' may be clobbered by `longjmp' or `vfork'
+listen.c:63: warning: variable `end' may be clobbered by `longjmp' or `vfork'
+listen.c: At top level:
+listen.c:132: warning: function declaration isn't a prototype
+listen.c: In function `ss_quit':
+listen.c:138: warning: control reaches end of non-void function
+listen.c: At top level:
+listen.c:23: warning: `rcs_id' defined but not used
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c parse.c
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/parse.o -c parse.c)
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c error.c
+error.c:87: warning: no previous prototype for `ss_error'
+error.c: In function `ss_error':
+error.c:103: warning: implicit declaration of function `free'
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/error.o -c error.c)
+error.c:87: warning: no previous prototype for `ss_error'
+error.c: In function `ss_error':
+error.c:103: warning: implicit declaration of function `free'
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c prompt.c
+prompt.c:23: warning: no previous prototype for `ss_set_prompt'
+prompt.c:33: warning: no previous prototype for `ss_get_prompt'
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/prompt.o -c prompt.c)
+prompt.c:23: warning: no previous prototype for `ss_set_prompt'
+prompt.c:33: warning: no previous prototype for `ss_get_prompt'
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c request_tbl.c
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/request_tbl.o -c request_tbl.c)
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c list_rqs.c
+list_rqs.c:25: warning: function declaration isn't a prototype
+list_rqs.c: In function `ss_list_requests':
+list_rqs.c:39: warning: function declaration isn't a prototype
+list_rqs.c:51: warning: implicit declaration of function `sigblock'
+list_rqs.c:51: warning: implicit declaration of function `sigmask'
+list_rqs.c:53: warning: implicit declaration of function `ss_pager_create'
+list_rqs.c:55: warning: implicit declaration of function `sigsetmask'
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/list_rqs.o -c list_rqs.c)
+list_rqs.c:25: warning: function declaration isn't a prototype
+list_rqs.c: In function `ss_list_requests':
+list_rqs.c:39: warning: function declaration isn't a prototype
+list_rqs.c:51: warning: implicit declaration of function `sigblock'
+list_rqs.c:51: warning: implicit declaration of function `sigmask'
+list_rqs.c:53: warning: implicit declaration of function `ss_pager_create'
+list_rqs.c:55: warning: implicit declaration of function `sigsetmask'
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c pager.c
+pager.c:23: warning: function declaration isn't a prototype
+pager.c:36: warning: function declaration isn't a prototype
+pager.c: In function `ss_page_stdin':
+pager.c:77: warning: implicit declaration of function `sigblock'
+pager.c:78: warning: implicit declaration of function `sigmask'
+pager.c:79: warning: implicit declaration of function `sigsetmask'
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/pager.o -c pager.c)
+pager.c:23: warning: function declaration isn't a prototype
+pager.c:36: warning: function declaration isn't a prototype
+pager.c: In function `ss_page_stdin':
+pager.c:77: warning: implicit declaration of function `sigblock'
+pager.c:78: warning: implicit declaration of function `sigmask'
+pager.c:79: warning: implicit declaration of function `sigsetmask'
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c requests.c
+requests.c:23: warning: no previous prototype for `ss_self_identify'
+requests.c:33: warning: no previous prototype for `ss_subsystem_name'
+requests.c:41: warning: no previous prototype for `ss_subsystem_version'
+requests.c:50: warning: no previous prototype for `ss_unimplemented'
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/requests.o -c requests.c)
+requests.c:23: warning: no previous prototype for `ss_self_identify'
+requests.c:33: warning: no previous prototype for `ss_subsystem_name'
+requests.c:41: warning: no previous prototype for `ss_subsystem_version'
+requests.c:50: warning: no previous prototype for `ss_unimplemented'
+gcc -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H -c data.c
+data.c:12: warning: `copyright' defined but not used
+(export JUMP_DIR=`pwd`/jump; gcc -B/usr/dll/jump/ -I. -I.. -I../et -O2 -fomit-frame-pointer -ansi -D_POSIX_SOURCE -pedantic -Wall -Wwrite-strings -Wpointer-arith -Wcast-qual -Wenum-clash -Wcast-align -Wtraditional -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wshadow  -DWAIT_USES_INT -DHAS_STDLIB_H -DHAS_UNISTD_H \
+	-o jump/data.o -c data.c)
+data.c:12: warning: `copyright' defined but not used
+(cd jump; export JUMP_DIR=`pwd`; \
+	/usr/dll/bin/mkimage -l libss -v 1.0.0 \
+	-a 0x66880000 -j 0x1000 -g 0x1000 -- \
+	ss_err.o std_rqs.o invocation.o help.o execute_cmd.o listen.o parse.o error.o prompt.o request_tbl.o list_rqs.o pager.o requests.o data.o -lc -L../.. -lcom_err "`gcc --print-libgcc-file-name`" -lc)
+Warning - non-absolute pathname specified for library
+listen.o: Undefined symbol _sigmask referenced from text segment
+list_rqs.o: Undefined symbol _sigmask referenced from text segment
+pager.o: Undefined symbol _sigmask referenced from text segment
+system: No such file or directory
+
+/usr/dll/bin/mkimage: error running 'ld -x -T 66880000 -o libss.so.1.0.0 /u3/src/e2fsprogs-0.5b/lib/ss/jump/__jump.o ss_err.o std_rqs.o invocation.o help.o execute_cmd.o listen.o parse.o error.o prompt.o request_tbl.o list_rqs.o pager.o requests.o data.o -lc -L../.. -lcom_err /usr/lib/gcc-lib/i486-linux/2.5.8/libgcc.a -lc'
+
+mkimage v2.11
+Reading configuration files from /u3/src/e2fsprogs-0.5b/lib/ss/jump
+executing:ld -x -T 66880000 -o libss.so.1.0.0 /u3/src/e2fsprogs-0.5b/lib/ss/jump/__jump.o ss_err.o std_rqs.o invocation.o help.o execute_cmd.o listen.o parse.o error.o prompt.o request_tbl.o list_rqs.o pager.o requests.o data.o -lc -L../.. -lcom_err /usr/lib/gcc-lib/i486-linux/2.5.8/libgcc.a -lc
+make: *** [libss.so.1.0.0] Error 1

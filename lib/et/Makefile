@@ -1,19 +1,42 @@
+#
+# Makefile for lib/et
+#
+
+all:: compile_et libcom_err.a
+
 include ../../MCONFIG
-
-ARCHIVE=ar r
-RANLIB=ranlib
-RM=rm -f
-MV=mv
-LN=ln -s
-TAGS=etags
-
-CFLAGS_NO=
-CFLAGS= $(CFLAGS_NO) $(OPT)
 
 OBJS= error_message.o et_name.o init_et.o com_err.o
 SRCS = error_message.c et_name.c init_et.c com_err.c
 
 HFILES= com_err.h
+
+ifdef BUILD_PROFILE_LIBS
+all:: libcom_err_p.a
+endif
+
+ifdef BUILD_DLL_SHLIBS
+DLL_ADDRESS = 0x66800000
+DLL_JUMPSIZE = 0x1000
+DLL_GOTSIZE  = 0x1000
+DLL_VERSION = 1.0
+DLL_IMAGE = libet
+DLL_STUB = libcom_err
+DLL_MYDIR = et
+DLL_INSTALL_DIR = $(SHLIBDIR)
+
+include ../Makefile.dll-lib
+endif
+
+RM=rm -f
+MV=mv
+LN=ln -s
+TAGS=etags
+
+DEFS= -DHAS_STDLIB_H
+
+CFLAGS_NO= $(WFLAGS) $(DEFS)
+CFLAGS= $(CFLAGS_NO) $(OPT)
 
 #
 # what to build...
@@ -21,9 +44,14 @@ HFILES= com_err.h
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
+ifdef BUILD_PROFILE_LIBS
 	$(CC) $(CFLAGS_NO) -g -pg -o profiled/$*.o -c $*.c
+endif
+ifdef BUILD_DLL_SHLIBS
+	(export JUMP_DIR=`pwd`/jump; $(CC) -B$(JUMP_PREFIX) $(CFLAGS) \
+		-o jump/$*.o -c $*.c)
+endif
 
-all: compile_et libcom_err.a libcom_err_p.a
 
 compile_et: compile_et.sh
 	./config_script compile_et.sh $(AWK) > compile_et
@@ -45,26 +73,31 @@ libcom_err_p.a: $(OBJS)
 	$(RM) ../$@
 	$(LN) et/$@ ../$@
 
-clean:
+clean::
 	$(RM) compile_et libcom_err.a libcom_err_p.a
 	$(RM) $(OBJS) profiled/*
 	$(RM) *~ \#* *.bak *.otl *.aux *.toc *.PS *.dvi *.ps TAGS *.ln
+	$(RM) ../libcom_err.a ../libcom_err_p.a
 
-really-clean: clean
+really-clean:: clean
 	$(RM) .depend
 
-install:: libcom_err.a
-	$(INSTALLLIB) libcom_err.a $(DESTDIR)$(LIBDIR)/libcom_err.a
-	$(CHMOD) 644 $(DESTDIR)$(LIBDIR)/libcom_err.a
-	$(RANLIB)    $(DESTDIR)$(LIBDIR)/libcom_err.a
-	$(CHMOD) $(LIBMODE) $(DESTDIR)$(LIBDIR)/libcom_err.a
+install-libs:: libcom_err.a
+	$(INSTALLLIB) libcom_err.a $(LIBDIR)/libcom_err.a
+	$(CHMOD) 644 $(LIBDIR)/libcom_err.a
+	$(RANLIB)    $(LIBDIR)/libcom_err.a
+	$(CHMOD) $(LIBMODE) $(LIBDIR)/libcom_err.a
 
-install:: $(HFILES)
-	@rm -rf ${DESTDIR}$(INCLDIR)/et
-	@mkdir ${DESTDIR}$(INCLDIR)/et
+install-libs:: $(HFILES)
+	@rm -rf $(INCLDIR)/et
+	@mkdir $(INCLDIR)/et
 	for i in $(HFILES); do \
-		$(INSTALLINC) $$i ${DESTDIR}$(INCLDIR)/et/$$i; \
+		$(INSTALLINC) $$i $(INCLDIR)/et/$$i; \
 	done
+
+install-tree::
+
+install::
 
 ## 
 

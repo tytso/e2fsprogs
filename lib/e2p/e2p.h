@@ -14,7 +14,7 @@ int iterate_on_dir (const char * dir_name,
 		    void * private);
 void list_super (struct ext2_super_block * s);
 void print_fs_errors (FILE * f, unsigned short errors);
-void print_flags (FILE * f, unsigned long flags);
+void print_flags (FILE * f, unsigned long flags, int long_format);
 void print_fs_state (FILE * f, unsigned short state);
 int setflags (int fd, unsigned long flags);
 int setversion (int fd, unsigned long version);

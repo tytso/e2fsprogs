@@ -12,7 +12,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -23,13 +22,15 @@
  *
  * Should have a special policy for directories.
  */
-errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode, char *map,
-			   ino_t *ret)
+errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode,
+			   ext2fs_inode_bitmap map, ino_t *ret)
 {
 	int	dir_group = 0;
 	ino_t	i;
 	ino_t	start_inode;
 
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+	
 	if (!map)
 		map = fs->inode_map;
 	if (!map)
@@ -44,14 +45,14 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode, char *map,
 		i = EXT2_FIRST_INO;
 
 	do {
-		if (!ext2fs_test_inode_bitmap(fs, map, i))
+		if (!ext2fs_test_inode_bitmap(map, i))
 			break;
 		i++;
 		if (i > fs->super->s_inodes_count)
 			i = EXT2_FIRST_INO;
 	} while (i != start_inode);
 	
-	if (ext2fs_test_inode_bitmap(fs, map, i))
+	if (ext2fs_test_inode_bitmap(map, i))
 		return ENOSPC;
 	*ret = i;
 	return 0;
@@ -61,9 +62,12 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode, char *map,
  * Stupid algorithm --- we now just search forward starting from the
  * goal.  Should put in a smarter one someday....
  */
-errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal, char *map, blk_t *ret)
+errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
+			   ext2fs_block_bitmap map, blk_t *ret)
 {
 	blk_t	i = goal;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	if (!map)
 		map = fs->block_map;
@@ -72,7 +76,7 @@ errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal, char *map, blk_t *ret)
 	if (!i)
 		i = fs->super->s_first_data_block;
 	do {
-		if (!ext2fs_test_block_bitmap(fs, map, i)) {
+		if (!ext2fs_test_block_bitmap(map, i)) {
 			*ret = i;
 			return 0;
 		}
@@ -83,23 +87,26 @@ errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal, char *map, blk_t *ret)
 	return ENOSPC;
 }
 
-static int check_blocks_free(ext2_filsys fs, char *map, blk_t blk, int num)
+static int check_blocks_free(ext2_filsys fs, ext2fs_block_bitmap map,
+			     blk_t blk, int num)
 {
 	int	i;
 
 	for (i=0; i < num; i++) {
 		if ((blk+i) > fs->super->s_blocks_count)
 			return 0;
-		if (ext2fs_test_block_bitmap(fs, map, blk+i))
+		if (ext2fs_test_block_bitmap(map, blk+i))
 			return 0;
 	}
 	return 1;
 }
 
 errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start, blk_t finish,
-				 int num, char *map, blk_t *ret)
+				 int num, ext2fs_block_bitmap map, blk_t *ret)
 {
 	blk_t	b = start;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	if (!map)
 		map = fs->block_map;

@@ -1,0 +1,6 @@
+Sat Mar 11 18:14:52 1995  Theodore Y. Ts'o  <tytso@localhost>
+
+	* Makefile (DLL_INSTALL_DIR): Install libss in /lib, since it's
+		needed by debugfs (which is installed in /sbin).
+
+

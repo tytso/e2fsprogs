@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <linux/fs.h>
 #include <linux/ext2_fs.h>
 
 #include "ext2fs.h"
@@ -50,6 +49,8 @@ errcode_t ext2fs_read_bb_inode(ext2_filsys fs, badblocks_list *bb_list)
 	struct read_bb_record rb;
 	struct ext2_inode inode;
 	int	numblocks;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	if (!*bb_list) {
 		retval = ext2fs_read_inode(fs, EXT2_BAD_INO, &inode);

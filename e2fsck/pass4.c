@@ -10,7 +10,7 @@
 
 void pass4(ext2_filsys fs)
 {
-	int	i;
+	ino_t	i;
 	struct ext2_inode	inode;
 	struct resource_track	rtrack;
 	
@@ -21,19 +21,19 @@ void pass4(ext2_filsys fs)
 #endif
 
 	if (!preen)
-		printf("Pass 4: Check reference counts.\n");
+		printf("Pass 4: Checking reference counts\n");
 	for (i=1; i <= fs->super->s_inodes_count; i++) {
 		if (i == EXT2_BAD_INO ||
 		    (i > EXT2_ROOT_INO && i < EXT2_FIRST_INO))
 			continue;
-		if (!(ext2fs_test_inode_bitmap(fs, inode_used_map, i)))
+		if (!(ext2fs_test_inode_bitmap(inode_used_map, i)))
 			continue;
 		if (inode_count[i] == 0) {
 			/*
 			 * Inode isn't attached to the filesystem;
 			 * prompt to reconnect.
 			 */
-			printf("Unattached inode %d\n", i);
+			printf("Unattached inode %lu\n", i);
 			preenhalt();
 			if (ask("Connect to /lost+found", 1)) {
 				if (reconnect_file(fs, i))
@@ -42,20 +42,20 @@ void pass4(ext2_filsys fs)
 				ext2fs_unmark_valid(fs);
 		}
 		if (inode_count[i] != inode_link_info[i]) {
-			ext2fs_read_inode(fs, i, &inode);
+			e2fsck_read_inode(fs, i, &inode, "pass4");
 			if (inode_link_info[i] != inode.i_links_count) {
 				printf("WARNING: PROGRAMMING BUG IN E2FSCK!\n");
-				printf("inode_link_info[%d] is %d, "
+				printf("inode_link_info[%d] is %lu, "
 				       "inode.i_links_count is %d.  "
 				       "They should be the same!\n",
 				       i, inode_link_info[i],
 				       inode.i_links_count);
 			}
-			printf("Inode %d has ref count %d, expecting %d.\n",
+			printf("Inode %lu has ref count %d, expecting %d.\n",
 			       i, inode.i_links_count, inode_count[i]);
 			if (ask("Set i_nlinks to count", 1)) {
 				inode.i_links_count = inode_count[i];
-				ext2fs_write_inode(fs, i, &inode);
+				e2fsck_write_inode(fs, i, &inode, "pass4");
 			} else
 				ext2fs_unmark_valid(fs);
 		}

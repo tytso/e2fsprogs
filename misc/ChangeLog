@@ -1,0 +1,102 @@
+Sat Mar 11 10:59:58 1995  Theodore Y. Ts'o  <tytso@localhost>
+
+	* mke2fs.c (main, zap_bootblock): Added new function
+		zap_bootblock() which clears the first 512 bytes of the
+		filesystem.  This protects the filesystem from being
+		misidentified as a MS-DOS FAT filesystem.
+
+	* badblocks.c (alarm_intr, test_ro, test_rw): Increase the space
+		allocated for printing the block numbers, so that the
+		display doesn't get corrupted when running badblocks on a
+		very large partition.
+
+	* badblocks.c (do_test, test_ro, test_rw): Added missing cast to
+		ext2_loff_t, so that when checking a large device,
+		spurious seek errors aren't reported.
+
+	* mke2fs.c (count_blocks): Declare mid to be of type ext2_loff_t
+		instead of type int, so that it works for filesystems
+		greater than 2 GB.  (Fortunately count_blocks is only
+		called if the device does not support the BLKGETSIZE
+		ioctl, which most do.)
+
+	* fsck.c (ignore): Add check to ignore filesystems with a pass
+		number of zero.  (This check was accidentally deleted at
+		during 0.5b development.)
+
+Sat Dec 31 00:47:16 1994    <tytso@rsx-11.mit.edu>
+
+	* mke2fs.c (new_table_block, alloc_tables, PRS, main): Add a new
+		option, -S, which only writes the superblock and group
+		descriptors.  Useful for recovering when all of the
+		superblocks are corrupted somehow (as a last ditch
+		measure).
+
+		Also, don't bother initializing the bitmap blocks in
+		alloc_tables(), since they will be overwritten at the end
+		anyway.  (Should speed up mke2fs by a little.)
+
+Tue Dec  6 02:20:55 1994    <tytso@rsx-11.mit.edu>
+
+	* fsck.c (main): Fix stupid typo where a null inst would be freed. 
+
+	* fsck.c (wait_one): Check WIFEXITED on status before trying to
+		extract the exit status.  In other cases, return
+		FSCK_ERROR if the back end processor exited with a signal.
+
+Tue Nov 15 10:20:00 1994  Remy Card  <card@bbj>
+
+	* tune2fs.c (main): Fixed a bug which prevented the use of the
+		new options.
+	Added the `w' (week) suffix recognition in the check interval.
+
+Sun Nov 13 15:58:48 1994    (tytso@rsx-11)
+
+	* fsck.c (load_fs_info): If the user has an obviously old
+		/etc/fstab file, issue a warning message and assume that
+		all partitions should be checked.
+
+Sat Nov 12 00:33:18 1994    (tytso@rsx-11)
+
+	* dumpe2fs.c (list_desc): Update to new inode and block bitmap
+		structures. 
+
+	* mke2fs.c (create_root_dir): Create the root directory owned by
+		the effective uid.
+
+Mon Nov  7 22:04:37 1994  Remy Card  <card@bbj>
+
+	* tune2fs.c (main.c): Added support for new options:
+	-r reserved_blocks_count, -g reserved_gid, -u reserved_uid.
+
+Sun Aug 21 00:57:33 1994  Theodore Y. Ts'o  (tytso@rt-11)
+
+	* fsck.c (ignore): If the pass number is 0, ignore the filesystem.
+
+Wed Aug 17 21:55:03 1994  Remy Card  (card@bbj)
+
+	* badblocks.c (test_rw): Added verbose output like in the
+	read-only test.
+
+	(do_test and test_rw): Use the llseek system call if available.
+
+	* chattr.c: Added support for new attributes.
+
+	* lsattr.c: Added support for long format.
+
+	* mke2fs.c (usage): Fixed bogus usage message.
+
+	(valid_offset): Use the llseek system call if available.
+
+Wed Aug 17 10:50:57 1994  Theodore Y. Ts'o  (tytso@rt-11)
+
+	* mke2fs.c (handle_bad_blocks): Check to see if a bad block is
+	where a backup superblock/group descriptor is stored.  If so,
+	print a warning message and adjust the superblock counts so that
+	they are correct.  (Otherwise, the bad block will get counted
+	twice and the # of free blocks count will be wrong.)
+
+	(alloc_tables): Removed code which calcualated the free block
+	statistics, which was moved to lib/ext2fs/initialize.c.  This
+	allows the bad block code to adjust the group descriptor
+	statistics if necessary.

@@ -1,0 +1,4 @@
+Sat Mar 11 18:26:33 1995  Theodore Y. Ts'o  <tytso@localhost>
+
+	* compile_manpages: Include an exit 0 at the end because some
+		implementations of man exit with a status of 1.

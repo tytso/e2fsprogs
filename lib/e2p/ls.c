@@ -9,12 +9,39 @@
  * Public License
  */
 
+#include <grp.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <time.h>
+#include <sys/types.h>
 
 #include <linux/ext2_fs.h>
 
 #include "e2p.h"
+
+static void print_user (unsigned short uid)
+{
+	struct passwd *pw;
+
+	printf ("%u ", uid);
+	pw = getpwuid (uid);
+	if (pw == NULL)
+		printf ("(user unknown)\n");
+	else
+		printf ("(user %s)\n", pw->pw_name);
+}
+
+static void print_group (unsigned short gid)
+{
+	struct group *gr;
+
+	printf ("%u ", gid);
+	gr = getgrgid (gid);
+	if (gr == NULL)
+		printf ("(group unknown)\n");
+	else
+		printf ("(group %s)\n", gr->gr_name);
+}
 
 void list_super (struct ext2_super_block * s)
 {
@@ -49,4 +76,10 @@ void list_super (struct ext2_super_block * s)
 		next = s->s_lastcheck + s->s_checkinterval;
 		printf ("Next check after:         %s", ctime (&next));
 	}
+#ifdef	EXT2_DEF_RESUID
+	printf ("Reserved blocks uid:      ");
+	print_user (s->s_def_resuid);
+	printf ("Reserved blocks gid:      ");
+	print_group (s->s_def_resuid);
+#endif
 }
