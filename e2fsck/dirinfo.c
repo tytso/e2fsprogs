@@ -29,9 +29,10 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ino_t ino, ino_t parent)
 		if (retval)
 			num_dirs = 1024;	/* Guess */
 		ctx->dir_info_size = num_dirs + 10;
-		ctx->dir_info  = e2fsck_allocate_memory(ctx,
-			ctx->dir_info_size * sizeof (struct dir_info),
-			"directory map");
+		ctx->dir_info  = (struct dir_info *)
+			e2fsck_allocate_memory(ctx, ctx->dir_info_size
+					       * sizeof (struct dir_info),
+					       "directory map");
 	}
 	
 	if (ctx->dir_info_count >= ctx->dir_info_size) {

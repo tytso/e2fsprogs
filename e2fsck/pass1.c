@@ -51,10 +51,10 @@
 
 static int process_block(ext2_filsys fs, blk_t	*blocknr,
 			 int	blockcnt, blk_t ref_blk, 
-			 int ref_offset, void *private);
+			 int ref_offset, void *priv_data);
 static int process_bad_block(ext2_filsys fs, blk_t *block_nr,
 			     int blockcnt, blk_t ref_blk,
-			     int ref_offset, void *private);
+			     int ref_offset, void *priv_data);
 static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 char *block_buf);
 static void mark_table_blocks(e2fsck_t ctx);
@@ -64,7 +64,7 @@ static void handle_fs_bad_blocks(e2fsck_t ctx);
 static void process_inodes(e2fsck_t ctx, char *block_buf);
 static int process_inode_cmp(const void *a, const void *b);
 static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
-				  dgrp_t group, void * private);
+				  dgrp_t group, void * priv_data);
 /* static char *describe_illegal_block(ext2_filsys fs, blk_t block); */
 
 struct process_block_struct {
@@ -200,9 +200,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	inodes_to_process = e2fsck_allocate_memory(ctx,
-	   ctx->process_inode_size * sizeof(struct process_inode_block),
-	   "array of inodes to process");
+	inodes_to_process = (struct process_inode_block *)
+		e2fsck_allocate_memory(ctx,
+				       (ctx->process_inode_size *
+					sizeof(struct process_inode_block)),
+				       "array of inodes to process");
 	process_inode_count = 0;
 
 	pctx.errcode = ext2fs_init_dblist(fs, 0);
@@ -213,8 +215,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 	}
 
 	mark_table_blocks(ctx);
-	block_buf = e2fsck_allocate_memory(ctx, fs->blocksize * 3,
-					   "block interate buffer");
+	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
+						    "block interate buffer");
 	fs->get_blocks = pass1_get_blocks;
 	fs->check_directory = pass1_check_directory;
 	fs->read_inode = pass1_read_inode;
@@ -493,14 +495,15 @@ endit:
  * glock group, call process_inodes.
  */
 static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
-			       dgrp_t group, void * private)
+			       dgrp_t group, void * priv_data)
 {
-	struct scan_callback_struct *scan_struct = private;
+	struct scan_callback_struct *scan_struct;
 	e2fsck_t ctx;
 
+	scan_struct = (struct scan_callback_struct *) priv_data;
 	ctx = scan_struct->ctx;
 	
-	process_inodes((e2fsck_t) fs->private, scan_struct->block_buf);
+	process_inodes((e2fsck_t) fs->priv_data, scan_struct->block_buf);
 
 	if (ctx->progress)
 		(ctx->progress)(ctx, 1, group+1, ctx->fs->group_desc_count);
@@ -789,7 +792,7 @@ int process_block(ext2_filsys fs,
 		  int blockcnt,
 		  blk_t ref_block,
 		  int ref_offset, 
-		  void *private)
+		  void *priv_data)
 {
 	struct process_block_struct *p;
 	struct problem_context *pctx;
@@ -798,7 +801,7 @@ int process_block(ext2_filsys fs,
 	int	problem = 0;
 	e2fsck_t	ctx;
 
-	p = (struct process_block_struct *) private;
+	p = (struct process_block_struct *) priv_data;
 	pctx = p->pctx;
 	ctx = p->ctx;
 
@@ -914,7 +917,7 @@ int process_bad_block(ext2_filsys fs,
 		      int blockcnt,
 		      blk_t ref_block,
 		      int ref_offset,
-		      void *private)
+		      void *priv_data)
 {
 	struct process_block_struct *p;
 	blk_t		blk = *block_nr;
@@ -926,7 +929,7 @@ int process_bad_block(ext2_filsys fs,
 	if (!blk)
 		return 0;
 	
-	p = (struct process_block_struct *) private;
+	p = (struct process_block_struct *) priv_data;
 	ctx = p->ctx;
 	pctx = p->pctx;
 	
@@ -1248,7 +1251,7 @@ static void mark_table_blocks(e2fsck_t ctx)
  */
 errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 {
-	e2fsck_t ctx = fs->private;
+	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 	int	i;
 	
 	if (ino != ctx->stashed_ino)
@@ -1261,7 +1264,7 @@ errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 
 errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino, struct ext2_inode *inode)
 {
-	e2fsck_t ctx = fs->private;
+	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
 	if (ino != ctx->stashed_ino)
 		return EXT2_ET_CALLBACK_NOTHANDLED;
@@ -1272,7 +1275,7 @@ errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino, struct ext2_inode *inode)
 errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
 			    struct ext2_inode *inode)
 {
-	e2fsck_t ctx = fs->private;
+	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
 	if (ino == ctx->stashed_ino)
 		*ctx->stashed_inode = *inode;
@@ -1281,7 +1284,7 @@ errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
 
 errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino)
 {
-	e2fsck_t ctx = fs->private;
+	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
 	if (ino != ctx->stashed_ino)
 		return EXT2_ET_CALLBACK_NOTHANDLED;

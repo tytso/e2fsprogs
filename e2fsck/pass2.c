@@ -51,14 +51,14 @@ static void deallocate_inode(e2fsck_t ctx, ino_t ino,
 static int process_bad_inode(e2fsck_t ctx, ino_t dir, ino_t ino);
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry *dir_blocks_info,
-			   void *private);
+			   void *priv_data);
 static int allocate_dir_block(e2fsck_t ctx,
 			      struct ext2_db_entry *dir_blocks_info,
 			      char *buf, struct problem_context *pctx);
 static int update_dir_block(ext2_filsys fs,
 			    blk_t	*block_nr,
 			    int blockcnt,
-			    void *private);
+			    void *priv_data);
 
 struct check_dir_struct {
 	char *buf;
@@ -98,8 +98,8 @@ void e2fsck_pass2(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	buf = e2fsck_allocate_memory(ctx, fs->blocksize,
-				     "directory scan buffer");
+	buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize,
+					      "directory scan buffer");
 
 	/*
 	 * Set up the parent pointer for the root directory, if
@@ -266,7 +266,7 @@ static int check_name(e2fsck_t ctx,
 
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry *db,
-			   void *private)
+			   void *priv_data)
 {
 	struct dir_info		*subdir, *dir;
 	struct ext2_dir_entry 	*dirent;
@@ -276,11 +276,12 @@ static int check_dir_block(ext2_filsys fs,
 	blk_t			block_nr = db->blk;
 	ino_t 			ino = db->ino;
 	__u16			links;
-	struct check_dir_struct	*cd = private;
+	struct check_dir_struct	*cd;
 	char 			*buf;
 	e2fsck_t		ctx;
 	int			problem;
 
+	cd = (struct check_dir_struct *) priv_data;
 	buf = cd->buf;
 	ctx = cd->ctx;
 
@@ -527,9 +528,9 @@ static int check_dir_block(ext2_filsys fs,
 static int deallocate_inode_block(ext2_filsys fs,
 			     blk_t	*block_nr,
 			     int blockcnt,
-			     void *private)
+			     void *priv_data)
 {
-	e2fsck_t	ctx = (e2fsck_t) private;
+	e2fsck_t	ctx = (e2fsck_t) priv_data;
 	
 	if (!*block_nr)
 		return 0;
@@ -765,10 +766,11 @@ static int allocate_dir_block(e2fsck_t ctx,
 static int update_dir_block(ext2_filsys fs,
 			    blk_t	*block_nr,
 			    int blockcnt,
-			    void *private)
+			    void *priv_data)
 {
-	struct ext2_db_entry *db = private;
+	struct ext2_db_entry *db;
 
+	db = (struct ext2_db_entry *) priv_data;
 	if (db->blockcnt == blockcnt) {
 		*block_nr = db->blk;
 		return BLOCK_CHANGED;

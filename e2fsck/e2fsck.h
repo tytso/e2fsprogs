@@ -23,9 +23,15 @@
 #ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>
 #endif
-#include <linux/ext2_fs.h>
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#include "ext2fs.h"
+#else
+#include <linux/ext2_fs.h>
 #include "ext2fs/ext2fs.h"
+#endif
+
 
 /* Everything is STDC, these days */
 #define NOARGS void

@@ -533,9 +533,9 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 			   int	offset,
 			   int	blocksize,
 			   char	*buf,
-			   void	*private)
+			   void	*priv_data)
 {
-	struct fix_dotdot_struct *fp = (struct fix_dotdot_struct *) private;
+	struct fix_dotdot_struct *fp = (struct fix_dotdot_struct *) priv_data;
 	errcode_t	retval;
 	struct problem_context pctx;
 
@@ -607,9 +607,9 @@ struct expand_dir_struct {
 static int expand_dir_proc(ext2_filsys fs,
 			   blk_t	*blocknr,
 			   int	blockcnt,
-			   void	*private)
+			   void	*priv_data)
 {
-	struct expand_dir_struct *es = (struct expand_dir_struct *) private;
+	struct expand_dir_struct *es = (struct expand_dir_struct *) priv_data;
 	blk_t	new_blk;
 	static blk_t	last_blk = 0;
 	char		*block;

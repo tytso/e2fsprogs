@@ -29,10 +29,10 @@ static errcode_t e2fsck_handle_read_error(io_channel channel,
 {
 	int	i;
 	char	*p;
-	ext2_filsys fs = channel->app_data;
+	ext2_filsys fs = (ext2_filsys) channel->app_data;
 	e2fsck_t ctx;
 
-	ctx = fs->private;
+	ctx = (e2fsck_t) fs->priv_data;
 
 	/*
 	 * If more than one block was read, try reading each block
@@ -72,10 +72,10 @@ static errcode_t e2fsck_handle_write_error(io_channel channel,
 {
 	int		i;
 	const char	*p;
-	ext2_filsys fs = channel->app_data;
+	ext2_filsys fs = (ext2_filsys) channel->app_data;
 	e2fsck_t ctx;
 	
-	ctx = fs->private;
+	ctx = (e2fsck_t) fs->priv_data;
 
 	/*
 	 * If more than one block was written, try writing each block

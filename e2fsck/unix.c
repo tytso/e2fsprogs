@@ -183,14 +183,6 @@ static void check_mount(e2fsck_t ctx)
 	return;
 }
 
-static void sync_disks(NOARGS)
-{
-	sync();
-	sync();
-	sleep(1);
-	sync();
-}
-
 /*
  * This routine checks to see if a filesystem can be skipped; if so,
  * it will exit with E2FSCK_OK.  Under some conditions it will print a
@@ -252,7 +244,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	if (oldpath) {
 		char *newpath;
 
-		newpath = malloc(sizeof (PATH_SET) + 1 + strlen (oldpath));
+		newpath = (char *) malloc(sizeof (PATH_SET) + 1 +
+					  strlen (oldpath));
 		if (!newpath)
 			fatal_error(ctx, "Couldn't malloc() newpath");
 		strcpy (newpath, PATH_SET);
@@ -318,7 +311,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		case 'L':
 			replace_bad_blocks++;
 		case 'l':
-			bad_blocks_file = malloc(strlen(optarg)+1);
+			bad_blocks_file = (char *) malloc(strlen(optarg)+1);
 			if (!bad_blocks_file)
 				fatal_error(ctx,
 					    "Couldn't malloc bad_blocks_file");
@@ -469,7 +462,6 @@ restart:
 	io_ptr = test_io_manager;
 	test_io_backing_manager = unix_io_manager;
 #endif
-	sync_disks();
 	flags = (ctx->options & E2F_OPT_READONLY) ? 0 : EXT2_FLAG_RW;
 	if (ctx->superblock && blocksize) {
 		retval = ext2fs_open(ctx->filesystem_name, flags,
@@ -525,7 +517,7 @@ restart:
 		exit(FSCK_ERROR);
 	}
 	ctx->fs = fs;
-	fs->private = ctx;
+	fs->priv_data = ctx;
 #ifdef	EXT2_CURRENT_REV
 	if (fs->super->s_rev_level > E2FSCK_CURRENT_REV) {
 		com_err(ctx->program_name, EXT2_ET_REV_TOO_HIGH,
@@ -659,7 +651,6 @@ restart:
 
 	e2fsck_write_bitmaps(ctx);
 	ext2fs_close(fs);
-	sync_disks();
 	
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME)

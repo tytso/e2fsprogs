@@ -14,7 +14,7 @@
 #include "e2fsck.h"
 
 static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
-				 void *private);
+				 void *priv_data);
 
 
 static void invalid_block(ext2_filsys fs, blk_t blk)
@@ -118,7 +118,7 @@ void test_disk(e2fsck_t ctx)
 }
 
 static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
-				 void *private)
+				 void *priv_data)
 {
 	if (!*block_nr)
 		return 0;

@@ -1,3 +1,23 @@
+Sat Jan 17 13:02:16 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.h: If EXT2_FLAT_INCLUDES is defined, then assume all of
+ 		the ext2-specific header files are in a flat directory.
+
+	* dirinfo.c, ehandler.c, pass1.c, pass1b.c, pass2.c, pass5.c,
+ 		super.c, swapfs.c, unix.c: Explicitly cast all assignments
+ 		from void * to be compatible with C++.
+
+Tue Jan  6 11:30:24 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* unix.c (sync_disk): Remove sync_disk and calls to that function,
+		since ext2fs_close() now takes care of this.
+
+Mon Dec 29 14:45:42 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c, pass1b.c, pass2.c, pass3.c, swapfs, badblocks.c,
+ 		ehandler.c, unix.c: Change use of private to be priv_data,
+ 		to avoid C++ reserved name clash.
+
 Fri Nov 28 09:30:26 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* dirinfo.c (e2fsck_add_dir_info): Use ext2fs_get_num_dirs instead

@@ -88,7 +88,7 @@ struct dup_inode {
 };
 
 static int process_pass1b_block(ext2_filsys fs, blk_t	*blocknr,
-				int	blockcnt, void	*private);
+				int	blockcnt, void	*priv_data);
 static void delete_file(e2fsck_t ctx, struct dup_inode *dp,
 			char *block_buf);
 static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf);
@@ -198,7 +198,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 					      process_pass1b_block, &pb);
 		if (pb.dup_blocks) {
 			end_problem_latch(ctx, PR_LATCH_DBLOCK);
-			dp = e2fsck_allocate_memory(ctx,
+			dp = (struct dup_inode *) e2fsck_allocate_memory(ctx,
 				    sizeof(struct dup_inode),
 				    "duplicate inode record");
 			dp->ino = ino;
@@ -232,7 +232,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 int process_pass1b_block(ext2_filsys fs,
 			 blk_t	*block_nr,
 			 int blockcnt,
-			 void *private)
+			 void *priv_data)
 {
 	struct process_block_struct *p;
 	struct dup_block *dp, *q, *r;
@@ -241,7 +241,7 @@ int process_pass1b_block(ext2_filsys fs,
 
 	if (!*block_nr)
 		return 0;
-	p = (struct process_block_struct *) private;
+	p = (struct process_block_struct *) priv_data;
 	ctx = p->ctx;
 	
 	if (ext2fs_test_block_bitmap(ctx->block_dup_map, *block_nr)) {
@@ -253,7 +253,8 @@ int process_pass1b_block(ext2_filsys fs,
 		p->dup_blocks++;
 		ext2fs_mark_block_bitmap(ctx->block_dup_map, *block_nr);
 		ext2fs_mark_inode_bitmap(inode_dup_map, p->ino);
-		dp = e2fsck_allocate_memory(ctx, sizeof(struct dup_block),
+		dp = (struct dup_block *) e2fsck_allocate_memory(ctx,
+					    sizeof(struct dup_block),
 					    "duplicate block record");
 		dp->block = *block_nr;
 		dp->ino = p->ino;
@@ -298,11 +299,13 @@ struct search_dir_struct {
 static int search_dirent_proc(ino_t dir, int entry,
 			      struct ext2_dir_entry *dirent,
 			      int offset, int blocksize,
-			      char *buf, void *private)
+			      char *buf, void *priv_data)
 {
-	struct search_dir_struct *sd = private;
+	struct search_dir_struct *sd;
 	struct dup_inode	*p;
-	
+
+	sd = (struct search_dir_struct *) priv_data;
+
 	if (dirent->inode > sd->max_inode)
 		/* Should abort this inode, but not everything */
 		return 0;	
@@ -380,8 +383,9 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 
 	pctx.num = dup_inode_count;
 	fix_problem(ctx, PR_1D_NUM_DUP_INODES, &pctx);
-	shared = e2fsck_allocate_memory(ctx, sizeof(ino_t) * dup_inode_count,
-					"Shared inode list");
+	shared = (ino_t *) e2fsck_allocate_memory(ctx,
+				sizeof(ino_t) * dup_inode_count,
+				"Shared inode list");
 	for (p = dup_ino; p; p = p->next) {
 		shared_len = 0;
 		file_ok = 1;
@@ -479,12 +483,13 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 static int delete_file_block(ext2_filsys fs,
 			     blk_t	*block_nr,
 			     int blockcnt,
-			     void *private)
+			     void *priv_data)
 {
-	struct process_block_struct *pb = private;
+	struct process_block_struct *pb;
 	struct dup_block *p;
 	e2fsck_t ctx;
 
+	pb = (struct process_block_struct *) priv_data;
 	ctx = pb->ctx;
 
 	if (!*block_nr)
@@ -551,12 +556,12 @@ struct clone_struct {
 static int clone_file_block(ext2_filsys fs,
 			    blk_t	*block_nr,
 			    int blockcnt,
-			    void *private)
+			    void *priv_data)
 {
 	struct dup_block *p;
 	blk_t	new_block;
 	errcode_t	retval;
-	struct clone_struct *cs = (struct clone_struct *) private;
+	struct clone_struct *cs = (struct clone_struct *) priv_data;
 	e2fsck_t ctx;
 
 	ctx = cs->ctx;

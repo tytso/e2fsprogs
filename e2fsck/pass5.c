@@ -90,7 +90,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	errcode_t	retval;
 	
 	clear_problem_context(&pctx);
-	free_array = e2fsck_allocate_memory(ctx,
+	free_array = (int *) e2fsck_allocate_memory(ctx,
 	    fs->group_desc_count * sizeof(int), "free block count array");
 
 	if ((fs->super->s_first_data_block <
@@ -223,10 +223,10 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int	problem, fixit;
 	
 	clear_problem_context(&pctx);
-	free_array = e2fsck_allocate_memory(ctx,
+	free_array = (int *) e2fsck_allocate_memory(ctx,
 	    fs->group_desc_count * sizeof(int), "free inode count array");
 				     
-	dir_array = e2fsck_allocate_memory(ctx,
+	dir_array = (int *) e2fsck_allocate_memory(ctx,
 	   fs->group_desc_count * sizeof(int), "directory count array");
 				     
 	if ((1 < ext2fs_get_inode_bitmap_start(ctx->inode_used_map)) ||

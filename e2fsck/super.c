@@ -60,11 +60,11 @@ void check_super_block(e2fsck_t ctx)
 	blk_t	should_be;
 	struct problem_context	pctx;
 
-	ctx->invalid_inode_bitmap_flag = e2fsck_allocate_memory(ctx,
+	ctx->invalid_inode_bitmap_flag = (int *) e2fsck_allocate_memory(ctx,
 		 sizeof(int) * fs->group_desc_count, "invalid_inode_bitmap");
-	ctx->invalid_block_bitmap_flag = e2fsck_allocate_memory(ctx,
+	ctx->invalid_block_bitmap_flag = (int *) e2fsck_allocate_memory(ctx,
 		 sizeof(int) * fs->group_desc_count, "invalid_block_bitmap");
-	ctx->invalid_inode_table_flag = e2fsck_allocate_memory(ctx,
+	ctx->invalid_inode_table_flag = (int *) e2fsck_allocate_memory(ctx,
 		sizeof(int) * fs->group_desc_count, "invalid_inode_table");
 		
 	clear_problem_context(&pctx);

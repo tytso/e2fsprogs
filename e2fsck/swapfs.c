@@ -30,11 +30,11 @@ struct swap_block_struct {
  * write them out.
  */
 static int swap_block(ext2_filsys fs, blk_t *block_nr, int blockcnt,
-		      void *private)
+		      void *priv_data)
 {
 	errcode_t	retval;
 	
-	struct swap_block_struct *sb = (struct swap_block_struct *) private;
+	struct swap_block_struct *sb = (struct swap_block_struct *) priv_data;
 
 	if (sb->isdir && (blockcnt >= 0) && *block_nr) {
 		retval = ext2fs_read_dir_block(fs, *block_nr, sb->dir_buf);
@@ -125,8 +125,8 @@ static void swap_inodes(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	block_buf = e2fsck_allocate_memory(ctx, fs->blocksize * 4,
-					   "block interate buffer");
+	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 4,
+						    "block interate buffer");
 	for (group = 0; group < fs->group_desc_count; group++) {
 		retval = io_channel_read_blk(fs->io,
 		      fs->group_desc[group].bg_inode_table,
