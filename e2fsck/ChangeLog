@@ -1,3 +1,14 @@
+2003-09-13  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (e2fsck_pass1), problem.h (PR_1_BB_FS_BLOCK), 
+	  problem.c (PR_1_BB_FS_BLOCK, PR_1_BBINODE_BAD_METABLOCK_PROMPT): 
+		Fix up the handling of corrupted indirect blocks in the 
+		bad block.  We now correctly handle the case where there
+		is an overlap between a block group descriptor or
+		a superblock and a bad block indirect block.  In the case
+		where the indirect block is corrupted, we now suggest
+		"e2fsck -c".
+	
 2003-09-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (PRS): Check the returned name from blkid_get_devname and

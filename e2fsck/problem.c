@@ -422,15 +422,14 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Bad block used as bad block indirect block */	  
 	{ PR_1_BBINODE_BAD_METABLOCK,
-	  N_("Bad @b %b used as bad @b indirect @b?!?\n"),
-	  PROMPT_NONE, PR_AFTER_CODE, PR_1_BBINODE_BAD_METABLOCK_PROMPT },
+	  N_("Bad @b %b used as bad @b @i indirect @b.  "),
+	  PROMPT_CLEAR, PR_LATCH_BBLOCK },
 
 	/* Inconsistency can't be fixed prompt */	  
 	{ PR_1_BBINODE_BAD_METABLOCK_PROMPT,
-	  N_("\nThis inconsistency can not be fixed with e2fsck; to fix it, use\n"
-	  """dumpe2fs -b"" to dump out the bad @b "
-	  "list and ""e2fsck -L filename""\n"
-	  "to read it back in again.\n"),
+	  N_("\nThe bad @b @i has probably been corrupted.  You probably\n"
+	     "should stop now and run ""e2fsck -c"" to scan for bad blocks\n"
+	     "in the @f.\n"),
 	  PROMPT_CONTINUE, PR_PREEN_NOMSG },
 
 	/* Bad primary block */
@@ -702,6 +701,12 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_1_HTREE_DEPTH,
 	  N_("@h %i has a tree depth (%N) which is too big\n"),
 	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
+		  
+	/* Bad block has indirect block that conflicts with filesystem block */
+	{ PR_1_BB_FS_BLOCK,
+	  N_("Bad @b @i has an indirect @b (%b) that conflicts with\n"
+	     "@f metadata.  "),
+	  PROMPT_CLEAR, PR_LATCH_BBLOCK },
 		  
 	/* Pass 1b errors */
 

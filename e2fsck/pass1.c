@@ -78,7 +78,7 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 struct process_block_struct {
 	ext2_ino_t	ino;
 	int		is_dir:1, is_reg:1, clear:1, suppress:1,
-				fragmented:1, compressed:1;
+				fragmented:1, compressed:1, bbcheck:1;
 	blk_t		num_blocks;
 	blk_t		max_blocks;
 	e2_blkcnt_t	last_block;
@@ -86,6 +86,7 @@ struct process_block_struct {
 	blk_t		previous_block;
 	struct ext2_inode *inode;
 	struct problem_context *pctx;
+	ext2fs_block_bitmap fs_meta_blocks;
 	e2fsck_t	ctx;
 };
 
@@ -417,18 +418,32 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (ino == EXT2_BAD_INO) {
 			struct process_block_struct pb;
 			
+			pctx.errcode = ext2fs_copy_bitmap(ctx->block_found_map,
+							  &pb.fs_meta_blocks);
+			if (pctx.errcode) {
+				pctx.num = 4;
+				fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, &pctx);
+				ctx->flags |= E2F_FLAG_ABORT;
+				return;
+			}
 			pb.ino = EXT2_BAD_INO;
 			pb.num_blocks = pb.last_block = 0;
 			pb.num_illegal_blocks = 0;
 			pb.suppress = 0; pb.clear = 0; pb.is_dir = 0;
-			pb.is_reg = 0; pb.fragmented = 0;
+			pb.is_reg = 0; pb.fragmented = 0; pb.bbcheck = 0;
 			pb.inode = &inode;
 			pb.pctx = &pctx;
 			pb.ctx = ctx;
 			pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, 
 				     block_buf, process_bad_block, &pb);
+			ext2fs_free_block_bitmap(pb.fs_meta_blocks);
 			if (pctx.errcode) {
 				fix_problem(ctx, PR_1_BLOCK_ITERATE, &pctx);
+				ctx->flags |= E2F_FLAG_ABORT;
+				return;
+			}
+			if (pb.bbcheck)
+				if (!fix_problem(ctx, PR_1_BBINODE_BAD_METABLOCK_PROMPT, &pctx)) {
 				ctx->flags |= E2F_FLAG_ABORT;
 				return;
 			}
@@ -1527,18 +1542,6 @@ mark_dir:
 	return ret_code;
 }
 
-static void bad_block_indirect(e2fsck_t ctx, blk_t blk)
-{
-	struct problem_context pctx;
-
-	clear_problem_context(&pctx);
-	/*
-	 * Prompt to see if we should continue or not.
-	 */
-	if (!fix_problem(ctx, PR_1_BBINODE_BAD_METABLOCK, &pctx))
-		ctx->flags |= E2F_FLAG_ABORT;
-}
-
 static int process_bad_block(ext2_filsys fs,
 		      blk_t *block_nr,
 		      e2_blkcnt_t blockcnt,
@@ -1579,8 +1582,20 @@ static int process_bad_block(ext2_filsys fs,
 	}
 
 	if (blockcnt < 0) {
-		if (ext2fs_test_block_bitmap(ctx->block_found_map, blk)) {
-			bad_block_indirect(ctx, blk);
+		if (ext2fs_test_block_bitmap(p->fs_meta_blocks, blk)) {
+			p->bbcheck = 1;
+			if (fix_problem(ctx, PR_1_BB_FS_BLOCK, pctx)) {
+				*block_nr = 0;
+				return BLOCK_CHANGED;
+			}
+		} else if (ext2fs_test_block_bitmap(ctx->block_found_map, 
+						    blk)) {
+			p->bbcheck = 1;
+			if (fix_problem(ctx, PR_1_BBINODE_BAD_METABLOCK, 
+					pctx)) {
+				*block_nr = 0;
+				return BLOCK_CHANGED;
+			}
 			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 				return BLOCK_ABORT;
 		} else
@@ -1671,8 +1686,13 @@ static int process_bad_block(ext2_filsys fs,
 	 * is using a bad block.
 	 */
 	if ((blk == p->inode->i_block[EXT2_IND_BLOCK]) ||
-	    p->inode->i_block[EXT2_DIND_BLOCK]) {
-		bad_block_indirect(ctx, blk);
+	    (blk == p->inode->i_block[EXT2_DIND_BLOCK]) ||
+	    (blk == p->inode->i_block[EXT2_TIND_BLOCK])) {
+		p->bbcheck = 1;
+		if (fix_problem(ctx, PR_1_BBINODE_BAD_METABLOCK, pctx)) {
+			*block_nr = 0;
+			return BLOCK_CHANGED;
+		}
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return BLOCK_ABORT;
 		return 0;

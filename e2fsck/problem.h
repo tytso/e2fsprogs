@@ -407,6 +407,9 @@ struct problem_context {
 /* HTREE too deep */	
 #define PR_1_HTREE_DEPTH		0x01004C
 
+/* Bad block has indirect block that conflicts with filesystem block */
+#define PR_1_BB_FS_BLOCK		0x01004D
+
 /*
  * Pass 1b errors
  */
