@@ -1,3 +1,15 @@
+Fri Oct  3 13:35:59 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* llseek.c (ext2fs_llseek): Fix type error for ext2fs_llseek()
+
+	* icount.c (ext2fs_icount_validate): 
+	* bmove.c (process_block): Fix lint error in type for fprintf().
+
+Mon Sep 15 11:45:09 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_check_directory): Add support for the callback
+		to return the error code EXT2_ET_CALLBACK_NOTHANDLED.
+
 Thu Sep  4 12:28:22 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* bitmaps.c (ext2fs_set_bitmap_padding): New function which sets the

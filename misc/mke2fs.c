@@ -538,7 +538,7 @@ static int set_os(struct ext2_super_block *sb, char *os)
 
 #define PATH_SET "PATH=/sbin"
 
-static parse_raid_opts(const char *opts)
+static void parse_raid_opts(const char *opts)
 {
 	char	*buf, *token, *next, *p, *arg;
 	int	len;

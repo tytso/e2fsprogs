@@ -84,7 +84,7 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 {
 	ext2_inode_scan	scan;
 	errcode_t	retval;
-	errcode_t (*save_get_blocks)(ext2_filsys fs, ino_t ino, blk_t *blocks);
+	errcode_t (*save_get_blocks)(ext2_filsys f, ino_t ino, blk_t *blocks);
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -629,8 +629,11 @@ errcode_t ext2fs_check_directory(ext2_filsys fs, ino_t ino)
 	if (ino > fs->super->s_inodes_count)
 		return EXT2_ET_BAD_INODE_NUM;
 
-	if (fs->check_directory)
-		return (fs->check_directory)(fs, ino);
+	if (fs->check_directory) {
+		retval = (fs->check_directory)(fs, ino);
+		if (retval != EXT2_ET_CALLBACK_NOTHANDLED)
+			return retval;
+	}
 	retval = ext2fs_read_inode(fs, ino, &inode);
 	if (retval)
 		return retval;

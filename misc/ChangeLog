@@ -1,3 +1,8 @@
+Fri Oct  3 13:38:45 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (parse_raid_opts): Make parse_raid_opts return a void,
+		to fix a -Wall warning.
+
 Mon Sep 15 22:07:12 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* tune2fs.c (main): 
