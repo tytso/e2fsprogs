@@ -133,6 +133,7 @@ int like_mount = 0;
 int notitle = 0;
 int parallel_root = 0;
 int progress = 0;
+int force_all_parallel = 0;
 char *progname;
 char *fstype = NULL;
 struct fs_info *filesys_info;
@@ -699,6 +700,9 @@ static int device_already_active(char *device)
 	struct fsck_instance *inst;
 	const char *base = base_device(device);
 
+	if (force_all_parallel)
+		return 0;
+
 	for (inst = instance_list; inst; inst = inst->next) {
 		if (!strcmp(base, base_device(inst->device)))
 			return 1;
@@ -914,6 +918,8 @@ static void PRS(int argc, char *argv[])
 			opt = 0;
 		}
 	}
+	if (getenv("FSCK_FORCE_ALL_PARALLEL"))
+		force_all_parallel++;
 }
 
 int main(int argc, char *argv[])
