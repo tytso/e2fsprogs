@@ -220,7 +220,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 			fprintf(stderr,
 				_("The needs_recovery flag is set.  "
 				  "Please run e2fsck before clearing\n"
-				  "the HAS_JOURNAL flag.\n"));
+				  "the has_journal flag.\n"));
 			exit(1);
 		}
 		/*

@@ -1,3 +1,7 @@
+2001-05-25  Theodore Tso  <tytso@valinux.com>
+
+	* tune2fs.c (update_feature_set): Fix capitalization typo.
+
 2001-05-23  Theodore Tso  <tytso@valinux.com>
 
 	* partinfo.c (main): Use unsigned long instead of long when
