@@ -1,3 +1,10 @@
+2000-08-14    <tytso@valinux.com>
+
+	* mke2fs.c (zap_sector): Change zap_bootsect to more general
+		zap_sect.
+		(main): Clear the superblock when starting mke2fs, to
+		avoid leaving the filesystem in an inconsistent state.
+
 2000-07-26    <tytso@valinux.com>
 
 	* get_device_by_label.c: Improve /proc/partitions parsing in

@@ -548,20 +548,20 @@ static void reserve_inodes(ext2_filsys fs)
 	ext2fs_mark_ib_dirty(fs);
 }
 
-#ifdef ZAP_BOOTBLOCK
-static void zap_bootblock(ext2_filsys fs)
+static void zap_sector(ext2_filsys fs, int sect)
 {
 	char buf[512];
 	int retval;
 
 	memset(buf, 0, 512);
 	
-	retval = io_channel_write_blk(fs->io, 0, -512, buf);
+	io_channel_set_blksize(fs->io, 512);
+	retval = io_channel_write_blk(fs->io, sect, -512, buf);
+	io_channel_set_blksize(fs->io, fs->blocksize);
 	if (retval)
 		printf(_("Warning: could not erase block 0: %s\n"),
 		       error_message(retval));
 }
-#endif
 	
 
 static void show_stats(ext2_filsys fs)
@@ -1035,6 +1035,11 @@ int main (int argc, char *argv[])
 	}
 
 	/*
+	 * Wipe out the old on-disk superblock
+	 */
+	zap_sector(fs, 2);
+
+	/*
 	 * Generate a UUID for it...
 	 */
 	s = (struct ext2fs_sb *) fs->super;
@@ -1103,7 +1108,7 @@ int main (int argc, char *argv[])
 		reserve_inodes(fs);
 		create_bad_block_inode(fs, bb_list);
 #ifdef ZAP_BOOTBLOCK
-		zap_bootblock(fs);
+		zap_sector(fs, 0);
 #endif
 	}
 	
