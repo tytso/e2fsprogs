@@ -386,12 +386,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 		return;
 	}
 	ext2fs_inode_scan_flags(scan, EXT2_SF_SKIP_MISSING_ITABLE, 0);
-	pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
-	if (pctx.errcode) {
-		fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
 	ctx->stashed_inode = &inode;
 	scan_struct.ctx = ctx;
 	scan_struct.block_buf = block_buf;
@@ -399,7 +393,24 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (ctx->progress)
 		if ((ctx->progress)(ctx, 1, 0, ctx->fs->group_desc_count))
 			return;
-	while (ino) {
+	while (1) {
+		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+			return;
+		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE) {
+			if (!ctx->inode_bb_map)
+				alloc_bb_map(ctx);
+			ext2fs_mark_inode_bitmap(ctx->inode_bb_map, ino);
+			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
+			continue;
+		}
+		if (pctx.errcode) {
+			fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
+		}
+		if (!ino)
+			break;
 		pctx.ino = ino;
 		pctx.inode = &inode;
 		ctx->stashed_ino = ino;
@@ -433,7 +444,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			}
 			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
 			clear_problem_context(&pctx);
-			goto next;
+			continue;
 		} else if (ino == EXT2_ROOT_INO) {
 			/*
 			 * Make sure the root inode is a directory; if
@@ -478,7 +489,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 							   "pass1");
 				}
 				check_blocks(ctx, &pctx, block_buf);
-				goto next;
+				continue;
 			}
 			if ((inode.i_links_count || inode.i_blocks ||
 			     inode.i_blocks || inode.i_block[0]) &&
@@ -512,7 +523,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 				}
 			}
 			check_blocks(ctx, &pctx, block_buf);
-			goto next;
+			continue;
 		}
 		/*
 		 * Check for inodes who might have been part of the
@@ -554,7 +565,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 							   "pass1");
 				}
 			}
-			goto next;
+			continue;
 		}
 		/*
 		 * n.b.  0.3c ext2fs code didn't clear i_links_count for
@@ -633,7 +644,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			if (ext2fs_inode_data_blocks(fs, &inode) == 0) {
 				ctx->fs_fast_symlinks_count++;
 				check_blocks(ctx, &pctx, block_buf);
-				goto next;
+				continue;
 			}
 		}
 		else if (LINUX_S_ISFIFO (inode.i_mode) &&
@@ -672,22 +683,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 
 			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 				return;
-		}
-	next:
-		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
-		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-			return;
-		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE) {
-			if (!ctx->inode_bb_map)
-				alloc_bb_map(ctx);
-			ext2fs_mark_inode_bitmap(ctx->inode_bb_map, ino);
-			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
-			goto next;
-		}
-		if (pctx.errcode) {
-			fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
-			ctx->flags |= E2F_FLAG_ABORT;
-			return;
 		}
 	}
 	process_inodes(ctx, block_buf);

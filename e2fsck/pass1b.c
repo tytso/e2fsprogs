@@ -246,21 +246,25 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
-	if (pctx.errcode) {
-		fix_problem(ctx, PR_1B_ISCAN_ERROR, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
 	ctx->stashed_inode = &inode;
 	pb.ctx = ctx;
 	pb.pctx = &pctx;
 	pctx.str = "pass1b";
-	while (ino) {
+	while (1) {
+		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
+		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
+			continue;
+		if (pctx.errcode) {
+			fix_problem(ctx, PR_1B_ISCAN_ERROR, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
+		}
+		if (!ino)
+			break;
 		pctx.ino = ctx->stashed_ino = ino;
 		if ((ino != EXT2_BAD_INO) &&
 		    !ext2fs_test_inode_bitmap(ctx->inode_used_map, ino))
-			goto next;
+			continue;
 
 		pb.ino = ino;
 		pb.dup_blocks = 0;
@@ -281,15 +285,6 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		}
 		if (pctx.errcode)
 			fix_problem(ctx, PR_1B_BLOCK_ITERATE, &pctx);
-	next:
-		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
-		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
-			goto next;
-		if (pctx.errcode) {
-			fix_problem(ctx, PR_1B_ISCAN_ERROR, &pctx);
-			ctx->flags |= E2F_FLAG_ABORT;
-			return;
-		}
 	}
 	ext2fs_close_inode_scan(scan);
 	e2fsck_use_inode_shortcuts(ctx, 0);
