@@ -1,3 +1,9 @@
+1999-01-07  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_read_inode, ext2fs_write_inode): Check to see if
+		the inode number is zero; if it's zero, return
+		EXT2_ET_BAD_INODE_NUM.
+
 1998-12-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* initialize.c (ext2fs_initialize): Use EXT2_FIRST_INODE instead

@@ -1,3 +1,8 @@
+1999-01-07  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* fsck.c (load_fs_info): If the pass number field is missing, it
+		needs to be treated as zero.
+
 1999-01-05  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* mke2fs.c (PRS): Allow the user to specify exactly how many

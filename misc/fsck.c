@@ -275,7 +275,9 @@ static void load_fs_info(char *filename)
 		else
 			fs_last->next = fs;
 		fs_last = fs;
-		if (fs->passno >=0)
+		if (fs->passno < 0)
+			fs->passno = 0;
+		else
 			old_fstab = 0;
 	}
 	

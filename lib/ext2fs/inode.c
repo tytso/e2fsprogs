@@ -495,7 +495,7 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, ino_t ino,
 			return 0;
 		}
 	}
-	if (ino > fs->super->s_inodes_count)
+	if ((ino == 0) || (ino > fs->super->s_inodes_count))
 		return EXT2_ET_BAD_INODE_NUM;
 	group = (ino - 1) / EXT2_INODES_PER_GROUP(fs->super);
 	offset = ((ino - 1) % EXT2_INODES_PER_GROUP(fs->super)) *
@@ -585,7 +585,7 @@ errcode_t ext2fs_write_inode(ext2_filsys fs, ino_t ino,
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
 
-	if (ino > fs->super->s_inodes_count)
+	if ((ino == 0) || (ino > fs->super->s_inodes_count))
 		return EXT2_ET_BAD_INODE_NUM;
 
 	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
