@@ -239,6 +239,7 @@ void do_show_super_stats(int argc, char *argv[])
 	FILE 	*out;
 	struct ext2_group_desc *gdp;
 	int	c, header_only = 0;
+	int	numdirs = 0;
 	const char *usage = "Usage: show_super [-h]";
 
 	optind = 0;
@@ -264,7 +265,10 @@ void do_show_super_stats(int argc, char *argv[])
 	out = open_pager();
 
 	list_super2(current_fs->super, out);
-
+	for (i=0; i < current_fs->group_desc_count; i++)
+		numdirs += current_fs->group_desc[i].bg_used_dirs_count;
+	fprintf(out, "Directories:              %d\n", numdirs);
+	
 	if (header_only) {
 		close_pager(out);
 		return;

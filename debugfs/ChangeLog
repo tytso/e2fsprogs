@@ -1,3 +1,9 @@
+2002-07-15  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c (do_show_super_stats): Calculate and print the number
+		of directories on a filesystem --- because we can and
+		because it can be useful.
+
 2002-07-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c (do_rmdir), debugfs.8.in: Implement the rmdir command.
