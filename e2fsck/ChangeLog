@@ -1,5 +1,17 @@
 2001-01-12  Theodore Ts'o  <tytso@valinux.com>
 
+	* journal.c: Make sure all functions which return an error code
+		use the errcode_t return type, and not "int"
+		(e2fsck_journal_release): Add new parameter, "drop",
+		which is used when we just want to deallocate the journal
+		without trying to write out any changes.
+		(mark_buffer_clean): New function
+		(e2fsck_check_ext3_journal): If we fail loading the
+		journal, make sure we free all memory associated with it.
+		(recover_ext3_journal): If we fail to load the journal or
+		initialize the revoke data structures, make sure we free all
+		memory associated with the journal.
+
 	* message.c (special_inode_name): Add more special inode names
 		(From Andreas Dilger)
 

@@ -116,6 +116,11 @@ void mark_buffer_dirty(struct buffer_head *bh, int dummy)
 	bh->b_dirty = dummy | 1; /* use dummy to avoid unused variable */
 }
 
+static void mark_buffer_clean(struct buffer_head * bh)
+{
+	bh->b_dirty = 0;
+}
+
 void brelse(struct buffer_head *bh)
 {
 	if (bh->b_dirty)
@@ -147,10 +152,10 @@ static void e2fsck_clear_recover(e2fsck_t ctx, int error)
 	ext2fs_mark_super_dirty(ctx->fs);
 }
 
-static int e2fsck_journal_init_inode(e2fsck_t ctx,
-				     struct ext2_super_block *s,
-				     ext2_ino_t journal_inum,
-				     journal_t **journal)
+static errcode_t e2fsck_journal_init_inode(e2fsck_t ctx,
+					   struct ext2_super_block *s,
+					   ext2_ino_t journal_inum,
+					   journal_t **journal)
 {
 	struct inode *inode;
 	struct buffer_head *bh;
@@ -206,7 +211,7 @@ exit_journal:
 	return retval;
 }
 
-static int e2fsck_get_journal(e2fsck_t ctx, journal_t **journal)
+static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **journal)
 {
 	char uuid_str[40];
 	struct problem_context pctx;
@@ -259,8 +264,8 @@ static int e2fsck_get_journal(e2fsck_t ctx, journal_t **journal)
 	return e2fsck_journal_init_inode(ctx, sb, sb->s_journal_inum, journal);
 }
 
-static int e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
-					struct problem_context *pctx)
+static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
+					      struct problem_context *pctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
 	int recover = ctx->fs->super->s_feature_incompat &
@@ -291,8 +296,8 @@ static int e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 	return 0;
 }
 
-static int e2fsck_journal_fix_unsupported_super(e2fsck_t ctx,
-						struct problem_context *pctx)
+static errcode_t e2fsck_journal_fix_unsupported_super(e2fsck_t ctx,
+					      struct problem_context *pctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
 
@@ -312,7 +317,7 @@ static int e2fsck_journal_fix_unsupported_super(e2fsck_t ctx,
 	return 0;
 }
 
-static int e2fsck_journal_load(journal_t *journal)
+static errcode_t e2fsck_journal_load(journal_t *journal)
 {
 	e2fsck_t ctx = journal->j_dev;
 	journal_superblock_t *jsb;
@@ -395,7 +400,7 @@ static int e2fsck_journal_load(journal_t *journal)
 }
 
 static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
-				journal_t *journal)
+				       journal_t *journal)
 {
 	char *p;
 	
@@ -426,8 +431,9 @@ static void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 	ll_rw_block(WRITE, 1, &journal->j_sb_buffer);
 }
 
-static int e2fsck_journal_fix_corrupt_super(e2fsck_t ctx, journal_t *journal,
-					    struct problem_context *pctx)
+static errcode_t e2fsck_journal_fix_corrupt_super(e2fsck_t ctx,
+						  journal_t *journal,
+						  struct problem_context *pctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
 	int recover = ctx->fs->super->s_feature_incompat &
@@ -450,11 +456,14 @@ static int e2fsck_journal_fix_corrupt_super(e2fsck_t ctx, journal_t *journal,
 	return 0;
 }
 
-static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal, int reset)
+static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal,
+				   int reset, int drop)
 {
 	journal_superblock_t *jsb;
 
-	if (!(ctx->options & E2F_OPT_READONLY)) {
+	if (drop)
+		mark_buffer_clean(journal->j_sb_buffer);
+	else if (!(ctx->options & E2F_OPT_READONLY)) {
 		jsb = journal->j_superblock;
 		jsb->s_sequence = htonl(journal->j_transaction_sequence);
 		if (reset)
@@ -464,7 +473,7 @@ static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal, int reset)
 	brelse(journal->j_sb_buffer);
 
 	if (journal->j_inode)
-		free(journal->j_inode);
+		ext2fs_free_mem((void **)&journal->j_inode);
 	ext2fs_free_mem((void **)&journal);
 }
 
@@ -504,8 +513,9 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 	retval = e2fsck_journal_load(journal);
 	if (retval) {
 		if (retval == EXT2_ET_CORRUPT_SUPERBLOCK)
-			return e2fsck_journal_fix_corrupt_super(ctx, journal,
-								&pctx);
+			retval = e2fsck_journal_fix_corrupt_super(ctx, journal,
+								  &pctx);
+		e2fsck_journal_release(ctx, journal, 0, 1);
 		return retval;
 	}
 
@@ -561,11 +571,11 @@ no_has_journal:
 		 */
 	}
 
-	e2fsck_journal_release(ctx, journal, reset);
+	e2fsck_journal_release(ctx, journal, reset, 0);
 	return retval;
 }
 
-static int recover_ext3_journal(e2fsck_t ctx)
+static errcode_t recover_ext3_journal(e2fsck_t ctx)
 {
 	journal_t *journal;
 	int retval;
@@ -576,14 +586,15 @@ static int recover_ext3_journal(e2fsck_t ctx)
 
 	retval = e2fsck_journal_load(journal);
 	if (retval)
-		return retval;
+		goto errout;
 
 	retval = journal_init_revoke(journal, 1024);
 	if (retval)
-		return retval;
+		goto errout;
 	
 	retval = -journal_recover(journal);
-	e2fsck_journal_release(ctx, journal, 1);
+errout:
+	e2fsck_journal_release(ctx, journal, 1, 0);
 	return retval;
 }
 
@@ -596,7 +607,7 @@ static int recover_ext3_journal(e2fsck_t ctx)
  * which is a cheap way to force the kernel to run the journal and
  * handle the recovery for us.
  */
-static int recover_ext3_journal_via_mount(e2fsck_t ctx)
+static errcode_t recover_ext3_journal_via_mount(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	char	*dirlist[] = {"/mnt","/lost+found","/tmp","/root","/boot",0};
