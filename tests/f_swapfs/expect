@@ -18,9 +18,9 @@ test_filesys: 25/256 files (0.0% non-contiguous), 418/1024 blocks
 Exit status is 0
 Running debugfs....
 debugfs: ls
-2 (12) .   2 (12) ..   11 (20) lost+found   12 (16) fluff   
-13 (28) indirect-fluff-test   14 (28) double-indirect-test   15 (20) sym   
-16 (24) long-sym-test   17 (864) dir-test   
+ 2  (12) .    2  (12) ..    11  (20) lost+found    12  (16) fluff   
+ 13  (28) indirect-fluff-test    14  (28) double-indirect-test   
+ 15  (20) sym    16  (24) long-sym-test    17  (864) dir-test   
 debugfs: stat sym
 Inode: 15   Type: symlink    Mode:  0777   Flags: 0x0   Generation: 1
 User:     0   Group:     0   Size: 5
@@ -80,9 +80,9 @@ test_filesys: 25/256 files (0.0% non-contiguous), 418/1024 blocks
 Exit status is 0
 Running debugfs....
 debugfs: ls
-2 (12) .   2 (12) ..   11 (20) lost+found   12 (16) fluff   
-13 (28) indirect-fluff-test   14 (28) double-indirect-test   15 (20) sym   
-16 (24) long-sym-test   17 (864) dir-test   
+ 2  (12) .    2  (12) ..    11  (20) lost+found    12  (16) fluff   
+ 13  (28) indirect-fluff-test    14  (28) double-indirect-test   
+ 15  (20) sym    16  (24) long-sym-test    17  (864) dir-test   
 debugfs: stat sym
 Inode: 15   Type: symlink    Mode:  0777   Flags: 0x0   Generation: 1
 User:     0   Group:     0   Size: 5

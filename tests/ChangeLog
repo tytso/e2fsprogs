@@ -2,6 +2,11 @@
 
 	* Release of E2fsprogs 1.26
 
+2002-02-03  Theodore Tso  <tytso@valinux.com>
+
+	* f_swapfs: Fix expect script to deal with extra spaces now
+		printed by debugfs's ls command.
+
 2002-01-06  Andreas Dilger  <adilger@turbolinux.com>
 
 	* Makefile: Add new target "make testnew" which will create a new
