@@ -248,7 +248,8 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 	
 	clear_problem_context(&pctx);
 	
-	fix_problem(ctx, PR_1B_PASS_HEADER, &pctx);
+	if (!(ctx->options & E2F_OPT_PREEN))
+		fix_problem(ctx, PR_1B_PASS_HEADER, &pctx);
 	pctx.errcode = ext2fs_open_inode_scan(fs, ctx->inode_buffer_blocks,
 					      &scan);
 	if (pctx.errcode) {
@@ -382,7 +383,8 @@ static void pass1c(e2fsck_t ctx, char *block_buf)
 
 	clear_problem_context(&pctx);
 
-	fix_problem(ctx, PR_1C_PASS_HEADER, &pctx);
+	if (!(ctx->options & E2F_OPT_PREEN))
+		fix_problem(ctx, PR_1C_PASS_HEADER, &pctx);
 
 	/*
 	 * Search through all directories to translate inodes to names
@@ -412,7 +414,8 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 	
 	clear_problem_context(&pctx);
 	
-	fix_problem(ctx, PR_1D_PASS_HEADER, &pctx);
+	if (!(ctx->options & E2F_OPT_PREEN))
+		fix_problem(ctx, PR_1D_PASS_HEADER, &pctx);
 	e2fsck_read_bitmaps(ctx);
 
 	pctx.num = dup_inode_count; /* dict_count(&ino_dict); */

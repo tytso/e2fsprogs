@@ -724,12 +724,12 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Duplicate/bad block(s) in inode */
 	{ PR_1B_DUP_BLOCK,	  
 	  " %b",
-	  PROMPT_NONE, PR_LATCH_DBLOCK },
+	  PROMPT_NONE, PR_LATCH_DBLOCK | PR_PREEN_NOHDR },
 
 	/* Duplicate/bad block(s) end */
 	{ PR_1B_DUP_BLOCK_END,
 	  "\n",
-	  PROMPT_NONE, 0 },
+	  PROMPT_NONE, PR_PREEN_NOHDR },
 		  
 	/* Error while scanning inodes */
 	{ PR_1B_ISCAN_ERROR,
