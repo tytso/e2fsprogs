@@ -1,5 +1,11 @@
 2003-07-12  Theodore Ts'o  <tytso@mit.edu>
 
+	* badblocks.c (do_read, do_write, test_rw): Change the read/write
+		test to honor the -c option (number of blocks at a time).
+		do_read and do_write will try to turn on the O_DIRECT flag
+		if it appears that it is possible to use it.  (Addresses
+		Debian bug #198006)
+
 	* mke2fs.c (set_fs_defaults): If sector_size is 0, don't use it to
 		set the blocksize to zero.  This causes MD devices to fail
 		since they don't support the BLKSSZGET ioctl.  (Addresses

@@ -29,6 +29,8 @@
  * 			 list.  (Work done by David Beattie)
  */
 
+#define _GNU_SOURCE /* for O_DIRECT */
+
 #include <errno.h>
 #include <fcntl.h>
 #ifdef HAVE_GETOPT_H
@@ -65,7 +67,11 @@ static int force = 0;			/* force check of mounted device */
 static int t_flag = 0;			/* number of test patterns */
 static int t_max = 0;			/* allocated test patterns */
 static unsigned long *t_patts = NULL;	/* test patterns */
+static int current_O_DIRECT = 0;	/* Current status of O_DIRECT flag */
+
 #define T_INC 32
+
+int sys_page_size = 4096;
 
 static void usage(void)
 {
@@ -80,6 +86,29 @@ static ext2_badblocks_list bb_list = NULL;
 static FILE *out;
 static blk_t next_bad = 0;
 static ext2_badblocks_iterate bb_iter = NULL;
+
+static void *allocate_buffer(size_t size)
+{
+	void	*ret = 0;
+	
+#ifdef HAVE_POSIX_MEMALIGN
+	if (posix_memalign(&ret, sys_page_size, size) < 0)
+		ret = 0;
+#else
+#ifdef HAVE_MEMALIGN
+	ret = memalign(sys_page_size, size);
+#else
+#ifdef HAVE_VALLOC
+	ret = valloc(size);
+#endif /* HAVE_VALLOC */
+#endif /* HAVE_MEMALIGN */	
+#endif /* HAVE_POSIX_MEMALIGN */
+
+	if (!ret)
+		ret = malloc(size);
+
+	return ret;
+}
 
 /*
  * This routine reports a new bad block.  If the bad block has already
@@ -159,6 +188,29 @@ static void uncapture_terminate(void)
 	signal (SIGUSR2, SIG_DFL);
 }
 
+static void set_o_direct(int dev, unsigned char *buffer, size_t size)
+{
+#ifdef O_DIRECT
+	int new_flag = O_DIRECT;
+	int flag;
+	
+	if ((((unsigned long) buffer & (sys_page_size - 1)) != 0) ||
+	    ((size & (sys_page_size - 1)) != 0))
+		new_flag = 0;
+
+	if (new_flag != current_O_DIRECT) {
+		printf("%s O_DIRECT\n", new_flag ? "Setting" : "Clearing");
+		flag = fcntl(dev, F_GETFL);
+		if (flag > 0) {
+			flag = (flag & ~O_DIRECT) | new_flag;
+			fcntl(dev, F_SETFL, flag);
+		}
+		current_O_DIRECT = new_flag;
+	}
+#endif
+}
+
+
 static void pattern_fill(unsigned char *buffer, unsigned long pattern,
 			 size_t n)
 {
@@ -203,6 +255,8 @@ static long do_read (int dev, unsigned char * buffer, int try, int block_size,
 {
 	long got;
 
+	set_o_direct(dev, buffer, try * block_size);
+
 	if (v_flag > 1)
 		print_status();
 
@@ -229,6 +283,8 @@ static long do_write (int dev, unsigned char * buffer, int try, int block_size,
 		     unsigned long current_block)
 {
 	long got;
+
+	set_o_direct(dev, buffer, try * block_size);
 
 	if (v_flag > 1)
 		print_status();
@@ -281,9 +337,9 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 	} while (next_bad && next_bad < from_count);
 
 	if (t_flag) {
-		blkbuf = malloc ((blocks_at_once + 1) * block_size);
+		blkbuf = allocate_buffer((blocks_at_once + 1) * block_size);
 	} else {
-		blkbuf = malloc (blocks_at_once * block_size);
+		blkbuf = allocate_buffer(blocks_at_once * block_size);
 	}
 	if (!blkbuf)
 	{
@@ -362,15 +418,16 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 			     int block_size, unsigned long from_count,
 			     unsigned long blocks_at_once)
 {
-	unsigned char * buffer;
+	unsigned char *buffer, *read_buffer;
 	const unsigned long patterns[] = {0xaa, 0x55, 0xff, 0x00};
 	const unsigned long *pattern;
-	int nr_pattern, pat_idx;
+	int i, try, got, nr_pattern, pat_idx;
 	unsigned int bb_count = 0;
 
-	buffer = malloc (2 * block_size);
-	if (!buffer)
-	{
+	buffer = allocate_buffer(2 * blocks_at_once * block_size);
+	read_buffer = buffer + blocks_at_once * block_size;
+	
+	if (!buffer) {
 		com_err (program_name, ENOMEM, _("while allocating buffers"));
 		exit (1);
 	}
@@ -391,25 +448,33 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 		nr_pattern = sizeof(patterns) / sizeof(patterns[0]);
 	}
 	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
-		pattern_fill(buffer, pattern[pat_idx], block_size);
+		pattern_fill(buffer, pattern[pat_idx],
+			     blocks_at_once * block_size);
 		num_blocks = last_block;
 		currently_testing = from_count;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
-		for (;
-		     currently_testing < last_block;
-		     currently_testing++)
-		{
-			if (ext2fs_llseek (dev, (ext2_loff_t) currently_testing *
-					 block_size, SEEK_SET) !=
-			    (ext2_loff_t) currently_testing * block_size)
-				com_err (program_name, errno,
-					 _("during seek on block %d"),
-					 currently_testing);
+
+		try = blocks_at_once;
+		while (currently_testing < last_block) {
+			if (currently_testing + try > last_block)
+				try = last_block - currently_testing;
+			got = do_write(dev, buffer, try, block_size,
+					currently_testing);
 			if (v_flag > 1)
 				print_status();
-			write (dev, buffer, block_size);
+
+			currently_testing += got;
+			if (got == try) {
+				try = blocks_at_once;
+				continue;
+			} else
+				try = 1;
+			if (got == 0) {
+				bb_count += bb_output(currently_testing++);
+			}
 		}
+		
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
@@ -421,23 +486,28 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 		currently_testing = from_count;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
-		for (;
-		     currently_testing < last_block;
-		     currently_testing++)
-		{
-			if (ext2fs_llseek (dev, (ext2_loff_t) currently_testing *
-					 block_size, SEEK_SET) !=
-			    (ext2_loff_t) currently_testing * block_size)
-				com_err (program_name, errno,
-					 _("during seek on block %d"),
-					 currently_testing);
+
+		try = blocks_at_once;
+		while (currently_testing < last_block) {
+			if (currently_testing + try > last_block)
+				try = last_block - currently_testing;
+			got = do_read (dev, read_buffer, try, block_size,
+				       currently_testing);
+			if (got == 0) {
+				bb_count += bb_output(currently_testing++);
+				continue;
+			}
+			for (i=0; i < got; i++) {
+				if (memcmp(read_buffer + i * block_size,
+					   buffer + i * block_size,
+					   block_size))
+					bb_count += bb_output(currently_testing+i);
+			}
+			currently_testing += got;
 			if (v_flag > 1)
 				print_status();
-			if ((read (dev, buffer + block_size, block_size) 
-			     != block_size) ||
-			    memcmp(buffer, buffer + block_size, block_size))
-				bb_count += bb_output(currently_testing);
 		}
+		
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
@@ -459,6 +529,7 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 			     unsigned long blocks_at_once)
 {
 	unsigned char *blkbuf, *save_ptr, *test_ptr, *read_ptr;
+	unsigned char *test_base, *save_base, *read_base;
 	int try, i;
 	const unsigned long patterns[] = { ~0 };
 	const unsigned long *pattern;
@@ -482,12 +553,17 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
 	} while (next_bad && next_bad < from_count);
 
-	blkbuf = malloc (3 * blocks_at_once * block_size);
+	blkbuf = allocate_buffer(3 * blocks_at_once * block_size);
 	test_record = malloc (blocks_at_once*sizeof(struct saved_blk_record));
 	if (!blkbuf || !test_record) {
 		com_err(program_name, ENOMEM, _("while allocating buffers"));
 		exit (1);
 	}
+
+	save_base = blkbuf;
+	test_base = blkbuf + (blocks_at_once * block_size);
+	read_base = blkbuf + (2 * blocks_at_once * block_size);
+	
 	num_saved = 0;
 
 	flush_bufs();
@@ -506,7 +582,7 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 		signal (SIGALRM, SIG_IGN);
 		fprintf(stderr, _("\nInterrupt caught, cleaning up\n"));
 
-		save_ptr = blkbuf;
+		save_ptr = save_base;
 		for (i=0; i < num_saved; i++) {
 			do_write(dev, save_ptr, test_record[i].num,
 				 block_size, test_record[i].block);
@@ -527,20 +603,20 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 		nr_pattern = sizeof(patterns) / sizeof(patterns[0]);
 	}
 	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
-		pattern_fill(blkbuf + blocks_at_once * block_size,
-			     pattern[pat_idx], blocks_at_once * block_size);
+		pattern_fill(test_base, pattern[pat_idx],
+			     blocks_at_once * block_size);
 
 		buf_used = 0;
 		bb_count = 0;
-		save_ptr = blkbuf;
-		test_ptr = blkbuf + (blocks_at_once * block_size);
+		save_ptr = save_base;
+		test_ptr = test_base;
 		currently_testing = from_count;
 		num_blocks = last_block;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 
 		while (currently_testing < last_block) {
-			try = blocks_at_once - buf_used;
+			got = try = blocks_at_once - buf_used;
 			if (next_bad) {
 				if (currently_testing == next_bad) {
 					/* fprintf (out, "%lu\n", nextbad); */
@@ -608,9 +684,9 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 			 * it doesn't match.
 			 */
 			used2 = 0;
-			save_ptr = blkbuf;
-			test_ptr = blkbuf + (blocks_at_once * block_size);
-			read_ptr = blkbuf + (2 * blocks_at_once * block_size);
+			save_ptr = save_base;
+			test_ptr = test_base;
+			read_ptr = read_base;
 			try = 0;
 
 			while (1) {
@@ -636,12 +712,12 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 					got++;
 				}
 					
-				/* when done, write back original data */
-				do_write (dev, save_ptr, got, block_size,
-					  currently_testing);
+				/* write back original data */
+				do_write (dev, save_ptr, got,
+					  block_size, currently_testing);
+				save_ptr += got * block_size;
 
 				currently_testing += got;
-				save_ptr += got * block_size;
 				test_ptr += got * block_size;
 				read_ptr += got * block_size;
 				try -= got;
@@ -650,8 +726,8 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 			/* empty the buffer so it can be reused */
 			num_saved = 0;
 			buf_used = 0;
-			save_ptr = blkbuf;
-			test_ptr = blkbuf + (blocks_at_once * block_size);
+			save_ptr = save_base;
+			test_ptr = test_base;
 			currently_testing = save_currently_testing;
 		}
 		num_blocks = 0;
@@ -717,6 +793,8 @@ int main (int argc, char ** argv)
 	unsigned int (*test_func)(int, unsigned long,
 				  int, unsigned long,
 				  unsigned long);
+	int open_flag = 0;
+	long sysval;
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
@@ -729,6 +807,18 @@ int main (int argc, char ** argv)
 	srandom((unsigned int)time(NULL));  /* simple randomness is enough */
 	test_func = test_ro;
 
+	/* Determine the system page size if possible */
+#ifdef HAVE_SYSCONF
+#if (!defined(_SC_PAGESIZE) && defined(_SC_PAGE_SIZE))
+#define _SC_PAGESIZE _SC_PAGE_SIZE
+#endif
+#ifdef _SC_PAGESIZE
+	sysval = sysconf(_SC_PAGESIZE);
+	if (sysval > 0)
+		sys_page_size = sysval;
+#endif /* _SC_PAGESIZE */
+#endif /* HAVE_SYSCONF */
+	
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv, "b:fi:o:svwnc:p:h:t:")) != EOF) {
@@ -878,21 +968,15 @@ int main (int argc, char ** argv)
 	if (w_flag)
 		check_mount(device_name);
 	
-	dev = open (device_name, O_RDWR);
-	if ((dev == -1) && ((errno == EPERM) || (errno == EACCES) ||
-			    (errno == EROFS)) &&
-	    (w_flag == 0))
-		dev = open(device_name, O_RDONLY);
+	open_flag = w_flag ? O_RDWR : O_RDONLY;
+	dev = open (device_name, open_flag);
 	if (dev == -1) {
 		com_err (program_name, errno, _("while trying to open %s"),
 			 device_name);
 		exit (1);
 	}
 	if (host_device_name) {
-		host_dev = open (host_device_name, O_RDWR);
-		if ((host_dev == -1) &&
-		    ((errno == EPERM) || (errno == EACCES)))
-			host_dev = open(host_device_name, O_RDONLY);
+		host_dev = open (host_device_name, open_flag);
 		if (host_dev == -1) {
 			com_err (program_name, errno,
 				 _("while trying to open %s"),
