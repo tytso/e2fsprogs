@@ -645,6 +645,7 @@ static int check_dir_block(ext2_filsys fs,
 	e2fsck_t		ctx;
 	int			problem;
 	struct ext2_dx_root_info *root;
+	struct ext2_dx_countlimit *limit;
 
 	cd = (struct check_dir_struct *) priv_data;
 	buf = cd->buf;
@@ -710,6 +711,7 @@ static int check_dir_block(ext2_filsys fs,
 		dx_db->max_hash = 0;
 			
 		dirent = (struct ext2_dir_entry *) buf;
+		limit = (struct ext2_dx_countlimit *) (buf+8);
 		if (db->blockcnt == 0) {
 			root = (struct ext2_dx_root_info *) (buf + 24);
 			dx_db->type = DX_DIRBLOCK_ROOT;
@@ -724,7 +726,10 @@ static int check_dir_block(ext2_filsys fs,
 			} 
 			dx_dir->hashversion = root->hash_version;
 		} else if ((dirent->inode == 0) &&
-			 (dirent->rec_len == fs->blocksize))
+			   (dirent->rec_len == fs->blocksize) &&
+			   (dirent->name_len == 0) &&
+			   (limit->limit == ((fs->blocksize-8) /
+					     sizeof(struct ext2_dx_entry))))
 			dx_db->type = DX_DIRBLOCK_NODE;
 	}
 #endif /* ENABLE_HTREE */

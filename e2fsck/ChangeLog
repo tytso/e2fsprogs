@@ -1,5 +1,11 @@
 2002-09-29  Theodore Ts'o  <tytso@mit.edu>
 
+	* pass2.c (check_dir_block): Do a more paranoid check when trying
+		to determine whether or not a directory entry is a
+		completely empty leaf block or leaf node.  Otherwise
+		e2fsck might get confused into thinking that a valid dxdir
+		was corrupted.
+
 	* rehash.c (e2fsck_rehash_dir): Apply patch from Christopher Li
 		which avoids creating an empty directory entry at the end
 		of the directory block.  This screws up earlier versions
