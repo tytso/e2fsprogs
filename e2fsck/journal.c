@@ -665,6 +665,7 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 	retval = e2fsck_get_journal(ctx, &journal);
 	if (retval) {
 		if ((retval == EXT2_ET_BAD_INODE_NUM) ||
+		    (retval == EXT2_ET_BAD_BLOCK_NUM) ||
 		    (retval == EXT2_ET_JOURNAL_TOO_SMALL) ||
 		    (retval == EXT2_ET_NO_JOURNAL))
 			return e2fsck_journal_fix_bad_inode(ctx, &pctx);

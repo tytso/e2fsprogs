@@ -1,3 +1,8 @@
+2004-10-04  Richard Mortimer  <richm@oldelvet.org.uk>
+
+        * journal.c (e2fsck_check_ext3_journal): Attempt recovery of the
+		filesystem if the journal contains illegal block numbers.
+
 2004-07-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1.c (process_block): Change the limit of directory size from
