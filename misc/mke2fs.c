@@ -777,7 +777,8 @@ static void parse_raid_opts(const char *opts)
 }	
 
 static __u32 ok_features[3] = {
-	EXT3_FEATURE_COMPAT_HAS_JOURNAL,	/* Compat */
+	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
+		EXT2_FEATURE_COMPAT_DIR_INDEX,	/* Compat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
 		EXT3_FEATURE_INCOMPAT_JOURNAL_DEV,
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
@@ -841,7 +842,8 @@ static void PRS(int argc, char *argv[])
 	param.s_rev_level = 1;  /* Create revision 1 filesystems now */
 	param.s_feature_incompat |= EXT2_FEATURE_INCOMPAT_FILETYPE;
 	param.s_feature_ro_compat |= EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-		
+	param.s_feature_compat |= EXT2_FEATURE_COMPAT_DIR_INDEX;
+
 #ifdef __linux__
 	if (uname(&ut)) {
 		perror("uname");
@@ -1240,6 +1242,12 @@ int main (int argc, char *argv[])
 	 * Generate a UUID for it...
 	 */
 	uuid_generate(fs->super->s_uuid);
+
+	/*
+	 * Initialize the directory index variables
+	 */
+	fs->super->s_def_hash_version = EXT2_HASH_TEA;
+	uuid_generate((unsigned char *) fs->super->s_hash_seed);
 
 	/*
 	 * Add "jitter" to the superblock's check interval so that we

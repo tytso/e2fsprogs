@@ -1,3 +1,11 @@
+2002-09-22  root  <tytso@mit.edu>
+
+	* mke2fs.c (main): Enable directory indexing by default.
+
+	* tune2fs.c (update_feature_set): Allow directory indexing flag to
+		be set.  If so, set the default hash to be TEA, and
+		initialize the hash seed to a random value.
+
 2002-09-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* get_device_by_label.c (init_lvm): Fix bug which caused
