@@ -1,3 +1,10 @@
+2000-08-14    <tytso@valinux.com>
+
+	* debugfs.c (dump_inode): Cap the length when printing a fast
+		symbolic link to inode.i_size.
+		(list_blocks_proc): Print block ranges (4510-4533) to make
+		the stat output easier to read.
+
 2000-06-27  Andreas Dilger <adilger@turbolabs.com>
 
 	* debugfs.c (list_blocks_proc): show relative inode block numbers

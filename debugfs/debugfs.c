@@ -373,23 +373,66 @@ void do_dirty_filesys(int argc, char **argv)
 struct list_blocks_struct {
 	FILE	*f;
 	int	total;
+	blk_t	first_block, last_block;
+	int	first_bcnt, last_bcnt;
+	int	first;
 };
+
+static void finish_range(struct list_blocks_struct *lb)
+{
+	if (lb->first_block == 0)
+		return;
+	if (lb->first)
+		lb->first = 0;
+	else
+		printf(", ");
+	if (lb->first_block == lb->last_block)
+		fprintf(lb->f, "(%d):%d", lb->first_bcnt, lb->first_block);
+	else
+		fprintf(lb->f, "(%d-%d):%d-%d", lb->first_bcnt,
+			lb->last_bcnt, lb->first_block, lb->last_block);
+	lb->first_block = 0;
+}
 
 static int list_blocks_proc(ext2_filsys fs, blk_t *blocknr, int blockcnt,
 			    void *private)
 {
 	struct list_blocks_struct *lb = (struct list_blocks_struct *) private;
 
-	if (blockcnt == -1)
-		fprintf(lb->f, "(IND):%d ", *blocknr);
-	else if (blockcnt == -2)
-		fprintf(lb->f, "(DIND):%d ", *blocknr);
-	else if (blockcnt == -3)
-		fprintf(lb->f, "(TIND):%d ", *blocknr);
+	lb->total++;
+	if (blockcnt >= 0) {
+		/*
+		 * See if we can add on to the existing range (if it exists)
+		 */
+		if (lb->first_block &&
+		    (lb->last_block+1 == *blocknr) &&
+		    (lb->last_bcnt+1 == blockcnt)) {
+			lb->last_block = *blocknr;
+			lb->last_bcnt = blockcnt;
+			return 0;
+		}
+		/*
+		 * Start a new range.
+		 */
+		finish_range(lb);
+		lb->first_block = lb->last_block = *blocknr;
+		lb->first_bcnt = lb->last_bcnt = blockcnt;
+		return 0;
+	}
+	/*
+	 * Not a normal block.  Always force a new range.
+	 */
+	finish_range(lb);
+	if (lb->first)
+		lb->first = 0;
 	else
-		fprintf(lb->f, "(%d):%d ", blockcnt, *blocknr);
-	if (*blocknr)
-		lb->total++;
+		printf(", ");
+	if (blockcnt == -1)
+		fprintf(lb->f, "(IND):%d", *blocknr);
+	else if (blockcnt == -2)
+		fprintf(lb->f, "(DIND):%d", *blocknr);
+	else if (blockcnt == -3)
+		fprintf(lb->f, "(TIND):%d", *blocknr);
 	return 0;
 }
 
@@ -400,9 +443,12 @@ static void dump_blocks(FILE *f, ino_t inode)
 
 	fprintf(f, "BLOCKS:\n");
 	lb.total = 0;
+	lb.first_block = 0;
 	lb.f = f;
+	lb.first = 1;
 	ext2fs_block_iterate(current_fs, inode, 0, NULL,
 			     list_blocks_proc, (void *)&lb);
+	finish_range(&lb);
 	if (lb.total)
 		fprintf(f, "\nTOTAL: %d\n", lb.total);
 	fprintf(f,"\n");
@@ -476,7 +522,8 @@ static void dump_inode(ino_t inode_num, struct ext2_inode inode)
 	  fprintf(out, "dtime: 0x%08x -- %s", inode.i_dtime,
 		  time_to_string(inode.i_dtime));
 	if (LINUX_S_ISLNK(inode.i_mode) && inode.i_blocks == 0)
-		fprintf(out, "Fast_link_dest: %s\n", (char *)inode.i_block);
+		fprintf(out, "Fast_link_dest: %.*s\n",
+			inode.i_size, (char *)inode.i_block);
 	else
 		dump_blocks(out, inode_num);
 	close_pager(out);
