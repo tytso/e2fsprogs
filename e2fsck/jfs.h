@@ -27,11 +27,11 @@
 /* #define JFS_DEBUG */
 
 #ifdef JFS_DEBUG
-extern int jfs_enable_debug;
+extern int journal_enable_debug;
 
 #define jfs_debug(n, f, a...)						\
 	do {								\
-		if ((n) <= jfs_enable_debug) {				\
+		if ((n) <= journal_enable_debug) {			\
 			printk (KERN_DEBUG "JFS DEBUG: (%s, %d): %s: ",	\
 				__FILE__, __LINE__, __FUNCTION__);	\
 		  	printk (f, ## a);			\
@@ -60,7 +60,8 @@ extern int jfs_enable_debug;
 
 #define JFS_DESCRIPTOR_BLOCK	1
 #define JFS_COMMIT_BLOCK	2
-#define JFS_SUPERBLOCK		3
+#define JFS_SUPERBLOCK_V1	3
+#define JFS_SUPERBLOCK_V2	4
 
 /*
  * Standard header for all descriptor blocks:
@@ -90,26 +91,67 @@ typedef struct journal_block_tag_s
 
 
 /*
- * The journal superblock
+ * The journal superblock.  All fields are in big-endian byte order.
  */
 typedef struct journal_superblock_s
 {
+/* 0x0000 */
 	journal_header_t s_header;
 
+/* 0x000C */
 	/* Static information describing the journal */
-	__u32		s_blocksize;	/* journal device blocksize */
-	__u32		s_maxlen;	/* total blocks in journal file */
-	__u32		s_first;	/* first block of log information */
+	__u32	s_blocksize;		/* journal device blocksize */
+	__u32	s_maxlen;		/* total blocks in journal file */
+	__u32	s_first;		/* first block of log information */
 	
+/* 0x0018 */
 	/* Dynamic information describing the current state of the log */
-	__u32		s_sequence;	/* first commit ID expected in log */
-	__u32		s_start;	/* blocknr of start of log */
+	__u32	s_sequence;		/* first commit ID expected in log */
+	__u32	s_start;		/* blocknr of start of log */
+
+/* 0x0020 */
+	/* Error value, as set by journal_abort(). */
+	__s32	s_errno;
+
+/* 0x0024 */
+	/* Remaining fields are only valid in a version-2 superblock */
+	__u32	s_feature_compat; 	/* compatible feature set */
+	__u32	s_feature_incompat; 	/* incompatible feature set */
+	__u32	s_feature_ro_compat; 	/* readonly-compatible feature set */
+/* 0x0030 */
+	__u8	s_uuid[16];		/* 128-bit uuid for journal */
+
+/* 0x0040 */
+	__u32	s_nr_users;		/* Nr of filesystems sharing log */
 	
+	__u32	s_dynsuper;		/* Blocknr of dynamic superblock copy*/
+	
+/* 0x0048 */
+	__u32	s_max_transaction;	/* Limit of journal blocks per trans.*/
+	__u32	s_max_trans_data;	/* Limit of data blocks per trans. */
+
+/* 0x0050 */
+	__u32	s_padding[44];
+
+/* 0x0100 */
+	__u8	s_users[16*48];		/* ids of all fs'es sharing the log */
+/* 0x0400 */
 } journal_superblock_t;
+
+#define JFS_HAS_COMPAT_FEATURE(j,mask)					\
+	((j)->j_format_version >= 2 &&					\
+	 ((j)->j_superblock->s_feature_compat & cpu_to_be32((mask))))
+#define JFS_HAS_RO_COMPAT_FEATURE(j,mask)				\
+	((j)->j_format_version >= 2 &&					\
+	 ((j)->j_superblock->s_feature_ro_compat & cpu_to_be32((mask))))
+#define JFS_HAS_INCOMPAT_FEATURE(j,mask)				\
+	((j)->j_format_version >= 2 &&					\
+	 ((j)->j_superblock->s_feature_incompat & cpu_to_be32((mask))))
+
+#define JFS_FEATURE_INCOMPAT_REVOKE	0x00000001
 
 #ifdef __KERNEL__
 
-#include <asm/semaphone.h>
 #include <linux/fs.h>
 
 
@@ -150,6 +192,7 @@ struct handle_s
 
 	/* Flags */
 	unsigned int		h_sync	: 1;	/* sync-on-close */
+	unsigned int		h_jdata	: 1;	/* force data journaling */
 };
 
 
@@ -250,7 +293,6 @@ struct transaction_s
 	 * jiffies ? */
 	unsigned long		t_expires;
 };
-#endif /* __KERNEL__ */
 
 
 /* The journal_t maintains all of the journaling state information for a
@@ -264,12 +306,18 @@ struct journal_s
 {
 	/* General journaling state flags */
 	unsigned long		j_flags;
+
+	/* Is there an outstanding uncleared error on the journal (from
+	 * a prior abort)? */
+	int			j_errno;
 	
 	/* The superblock buffer */
 	struct buffer_head *	j_sb_buffer;
 	journal_superblock_t *	j_superblock;
+
+	/* Version of the superblock format */
+	int			j_format_version;
 	
-#ifdef __KERNEL__
 	/* Transactions: The current running transaction... */
 	transaction_t *		j_running_transaction;
 	
@@ -305,14 +353,6 @@ struct journal_s
 	/* Journal running state: */
 	/* The lock flag is *NEVER* touched from interrupts. */
 	unsigned int		j_locked : 1;
-
-	/* Pointer to the current commit thread for this journal */
-	struct task_struct *	j_task;
-
-	/* The timer used to wakeup the commit thread: */
-	struct timer_list *	j_commit_timer;
-	int			j_commit_timer_active;
-#endif
 
 	/* Journal head: identifies the first unused block in the journal. */
 	unsigned long		j_head;
@@ -359,6 +399,9 @@ struct journal_s
 
 	__u8			j_uuid[16];
 
+	/* Pointer to the current commit thread for this journal */
+	struct task_struct *	j_task;
+
 	/* Maximum number of metadata buffers to allow in a single
 	 * compound commit transaction */
 	int			j_max_transaction_buffers;
@@ -367,15 +410,18 @@ struct journal_s
 	 * commit? */
 	unsigned long		j_commit_interval;
 
+	/* The timer used to wakeup the commit thread: */
+	struct timer_list *	j_commit_timer;
+	int			j_commit_timer_active;
 };
-
-#ifdef __KERNEL__
 
 /* 
  * Journal flag definitions 
  */
 #define JFS_UNMOUNT	1	/* Journal thread is being destroyed */
 #define JFS_SYNC	2	/* Perform synchronous transaction commits */
+#define JFS_ABORT	4	/* Journaling has been aborted for errors. */
+#define JFS_ACK_ERR	8	/* The errno in the sb has been acked */
 
 /* 
  * Journaling internal variables/parameters 
@@ -421,28 +467,16 @@ extern void		put_transaction (transaction_t *);
 extern int		set_transaction_state (transaction_t *, int);
 
 
-/*
- * Transaction locking
- *
- * We need to lock the journal during transaction state changes so that
- * nobody ever tries to take a handle on the running transaction while
- * we are in the middle of moving it to the commit phase.
- *
- * Note that the locking is completely interrupt unsafe.  We never touch
- * journal structures from interrupts.
- */
-
-static inline void __wait_on_journal (journal_t * journal)
-{
-	while (journal->j_locked)
-		sleep_on (&journal->j_wait_lock);
-}
-
+/* Transaction locking */
+extern void		__wait_on_journal (journal_t *);
 
 /* Journal locking.  In 2.2, we assume that the kernel lock is already
  * held. */
 static inline void lock_journal (journal_t * journal)
 {
+#ifdef __SMP__
+	J_ASSERT(current->lock_depth >= 0);
+#endif
 	if (journal->j_locked)
 		__wait_on_journal(journal);
 	journal->j_locked = 1;
@@ -475,30 +509,6 @@ static inline int journal_is_buffer_shared(struct buffer_head *bh)
 	return (count > 1);
 }
 
-/* Debugging code only: */
-
-#define jfs_ENOSYS() \
-do {								      \
-	printk (KERN_ERR "JFS unimplemented function " __FUNCTION__); \
-	current->state = TASK_UNINTERRUPTIBLE;			      \
-	schedule();						      \
-} while (1)
-
-/* The log thread user interface:
- *
- * Request space in the current transaction, and force transaction commit
- * transitions on demand.
- */
-
-extern int	log_space_left (journal_t *); /* Called with journal locked */
-extern void	log_start_commit (journal_t *, transaction_t *);
-extern void	log_wait_commit (journal_t *, tid_t);
-extern int	log_do_checkpoint (journal_t *, int);
-
-extern void	log_wait_for_space(journal_t *, int nblocks);
-extern void	journal_drop_transaction(journal_t *, transaction_t *);
-
-
 /* The journaling code user interface:
  *
  * Create and destroy handles
@@ -518,14 +528,47 @@ extern void	 journal_forget (handle_t *, struct buffer_head *);
 extern void	 journal_sync_buffer (struct buffer_head *);
 extern int	 journal_stop (handle_t *);
 extern int	 journal_flush (journal_t *);
+extern int	 journal_revoke (handle_t *, int);
 
 extern journal_t * journal_init_dev   (kdev_t, int start, int len, int bsize);
 extern journal_t * journal_init_inode (struct inode *);
+extern int	   journal_update_format (journal_t *);
+extern int	   journal_check_features (journal_t *, unsigned long, unsigned long, unsigned long);
 extern int	   journal_create     (journal_t *);
 extern int	   journal_load       (journal_t *);
 extern void	   journal_release    (journal_t *);
-extern void	   journal_update_superblock (journal_t *, int);
-#endif /* __KERNEL__   */
 extern int	   journal_recover    (journal_t *);
+extern void	   journal_update_superblock (journal_t *, int);
+extern void	   __journal_abort      (journal_t *);
+extern void	   journal_abort      (journal_t *, int);
+extern int	   journal_errno      (journal_t *);
+extern void	   journal_ack_err    (journal_t *);
+extern int	   journal_clear_err  (journal_t *);
 
+
+/* The log thread user interface:
+ *
+ * Request space in the current transaction, and force transaction commit
+ * transitions on demand.
+ */
+
+extern int	log_space_left (journal_t *); /* Called with journal locked */
+extern void	log_start_commit (journal_t *, transaction_t *);
+extern void	log_wait_commit (journal_t *, tid_t);
+extern int	log_do_checkpoint (journal_t *, int);
+
+extern void	log_wait_for_space(journal_t *, int nblocks);
+extern void	journal_drop_transaction(journal_t *, transaction_t *);
+
+
+/* Debugging code only: */
+
+#define jfs_ENOSYS() \
+do {								      \
+	printk (KERN_ERR "JFS unimplemented function " __FUNCTION__); \
+	current->state = TASK_UNINTERRUPTIBLE;			      \
+	schedule();						      \
+} while (1)
+
+#endif /* __KERNEL__   */
 #endif /* _LINUX_JFS_H */

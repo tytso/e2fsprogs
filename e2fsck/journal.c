@@ -26,7 +26,7 @@
 
 #ifdef JFS_DEBUG
 static int bh_count = 0;
-int jfs_enable_debug = 2;
+int journal_enable_debug = 2;
 #endif
 
 int bmap(struct inode *inode, int block)
@@ -318,14 +318,14 @@ static int e2fsck_journal_load(journal_t *journal)
 	if (jsb->s_header.h_magic != htonl(JFS_MAGIC_NUMBER))
 		return e2fsck_journal_fix_bad_inode(ctx, &pctx);
 
-	if (jsb->s_header.h_blocktype != htonl(JFS_SUPERBLOCK) ||
+	if (jsb->s_header.h_blocktype != htonl(JFS_SUPERBLOCK_V1) ||
 	    jsb->s_blocksize != htonl(journal->j_blocksize)) {
 		com_err(ctx->device_name, EXT2_ET_CORRUPT_SUPERBLOCK,
 			_("%s: no valid journal superblock found\n"));
 		return EXT2_ET_CORRUPT_SUPERBLOCK;
 	}
 
-	if (jsb->s_header.h_blocktype != htonl(JFS_SUPERBLOCK)) {
+	if (jsb->s_header.h_blocktype != htonl(JFS_SUPERBLOCK_V1)) {
 		pctx.num = ntohl(jsb->s_header.h_blocktype);
 		return e2fsck_journal_fix_unsupported_super(ctx, &pctx);
 	}
@@ -351,7 +351,7 @@ void e2fsck_journal_reset_super(e2fsck_t ctx, journal_superblock_t *jsb,
 				     blk_t size)
 {
 	jsb->s_header.h_magic = htonl(JFS_MAGIC_NUMBER);
-	jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK);
+	jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V1);
 	jsb->s_blocksize = htonl(ctx->fs->blocksize);
 	jsb->s_maxlen = htonl(size);
 	jsb->s_first = 1;

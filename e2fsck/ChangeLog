@@ -1,3 +1,9 @@
+2000-10-26    <tytso@snap.thunk.org>
+
+	* jfs.h, jfs_compat.h, journal.c: Updated to include the
+		definition of the new journal superblock format; still
+		only supports V1 superblocks for now.  (From sct)
+
 2000-10-24    <tytso@snap.thunk.org>
 
 	* super.c (release_inode_block, release_inode_blocks,
