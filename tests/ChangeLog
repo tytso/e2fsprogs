@@ -1,3 +1,8 @@
+2003-12-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_lpf2: New test case to validate reconnecting a directory after
+		creating /lost+found.
+
 2003-09-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* m_meta_bg: New test case to test the meta block group feature.

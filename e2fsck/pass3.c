@@ -302,9 +302,10 @@ static int check_directory(e2fsck_t ctx, struct dir_info *dir,
 					      p->parent)))) {
 			pctx->ino = p->ino;
 			if (fix_problem(ctx, PR_3_UNCONNECTED_DIR, pctx)) {
-				if (e2fsck_reconnect_file(ctx, p->ino))
+				if (e2fsck_reconnect_file(ctx, pctx->ino))
 					ext2fs_unmark_valid(fs);
 				else {
+					p = e2fsck_get_dir_info(ctx, pctx->ino);
 					p->parent = ctx->lost_and_found;
 					fix_dotdot(ctx, p, ctx->lost_and_found);
 				}

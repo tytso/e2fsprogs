@@ -1,3 +1,11 @@
+2003-12-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass3.c (check_directory): When reconnecting a directory, we may
+		need to create a lost+found directory.  This may
+		invalidate our pointer to the directory information, so we
+		must look it up again after calling
+		e2fsck_reconnect_file().  (Addresses Debian bug #219640).
+
 2003-12-10  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.h (E2F_FLAG_RESTARTED): Assign a unique flag bitfield to
