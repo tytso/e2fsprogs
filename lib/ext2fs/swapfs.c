@@ -54,6 +54,7 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 	sb->s_feature_incompat = ext2fs_swab32(sb->s_feature_incompat);
 	sb->s_feature_ro_compat = ext2fs_swab32(sb->s_feature_ro_compat);
 	sb->s_algorithm_usage_bitmap = ext2fs_swab32(sb->s_algorithm_usage_bitmap);
+	sb->s_reserved_gdt_blocks = ext2fs_swab16(sb->s_reserved_gdt_blocks);
 	sb->s_journal_inum = ext2fs_swab32(sb->s_journal_inum);
 	sb->s_journal_dev = ext2fs_swab32(sb->s_journal_dev);
 	sb->s_last_orphan = ext2fs_swab32(sb->s_last_orphan);
