@@ -1,3 +1,9 @@
+2003-08-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.8.in: Adjust description line so that apropos
+		"ext2" or "ext3" will find the man page.  (Addresses
+		Debian Bug #206845)
+
 2003-08-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.8.in: Fully document the logdump command in the debugfs

@@ -4,7 +4,7 @@
 .\" .TH RESIZE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .TH RESIZE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-resize2fs \- ext2 file system resizer
+resize2fs \- ext2/ext3 file system resizer
 .SH SYNOPSIS
 .B resize2fs
 [

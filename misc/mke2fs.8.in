@@ -4,7 +4,7 @@
 .\" 
 .TH MKE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-mke2fs \- create an ext2/3 filesystem
+mke2fs \- create an ext2/ext3 filesystem
 .SH SYNOPSIS
 .B mke2fs
 [

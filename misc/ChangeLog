@@ -1,3 +1,10 @@
+2003-08-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* dumpe2fs.8.in, e2image.8.in, e2label.8.in, mke2fs.8.in,
+		tune2fs.8.in: Adjust description line so that apropos
+		"ext2" or "ext3" will find the man page.  (Addresses
+		Debian Bug #206845)
+
 2003-08-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.c (set_o_direct): Add check to make sure the file

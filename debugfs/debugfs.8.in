@@ -4,7 +4,7 @@
 .\" 
 .TH DEBUGFS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-debugfs \- ext2 file system debugger
+debugfs \- ext2/ext3 file system debugger
 .SH SYNOPSIS
 .B debugfs
 [

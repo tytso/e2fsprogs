@@ -4,7 +4,7 @@
 .\" 
 .TH E2FSCK 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-e2fsck \- check a Linux second extended file system
+e2fsck \- check a Linux ext2/ext3 file system
 .SH SYNOPSIS
 .B e2fsck
 [

@@ -1,3 +1,9 @@
+2003-08-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.8.in: Adjust description line so that apropos
+		"ext2" or "ext3" will find the man page.  (Addresses
+		Debian Bug #206845)
+
 2003-08-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* journal.c (e2fsck_move_ext3_journal): When moving the journal or

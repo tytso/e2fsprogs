@@ -4,7 +4,7 @@
 .\" 
 .TH E2IMAGE 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-e2image \- Save critical ext2 filesystem data to a file
+e2image \- Save critical ext2/ext3 filesystem data to a file
 .SH SYNOPSIS
 .B e2image
 [
