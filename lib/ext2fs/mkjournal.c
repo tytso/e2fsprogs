@@ -321,14 +321,13 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 		/* Create the journal file */
 		if ((fd = open(jfile, O_CREAT|O_WRONLY, 0600)) < 0)
 			return errno;
-		close(fd);
 
 		if ((retval = write_journal_file(fs, jfile, size, flags)))
-			return retval;
-
+			goto errout;
+		
 		/* Get inode number of the journal file */
 		if (fstat(fd, &st) < 0)
-			return errno;
+			goto errout;
 
 #if defined(HAVE_CHFLAGS) && defined(UF_NODUMP)
 		retval = fchflags (fd, UF_NODUMP|UF_IMMUTABLE);
@@ -339,8 +338,9 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 #endif
 #endif
 		if (retval)
-			return retval;
-
+			goto errout;
+		
+		close(fd);
 		journal_ino = st.st_ino;
 	} else {
 		journal_ino = EXT2_JOURNAL_INO;
@@ -357,6 +357,9 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 
 	ext2fs_mark_super_dirty(fs);
 	return 0;
+errout:
+	close(fd);
+	return retval;
 }
 
 #ifdef DEBUG

@@ -1,5 +1,10 @@
 2001-06-22  Theodore Tso  <tytso@valinux.com>
 
+	* mkjournal.c (ext2fs_add_journal_inode): Move close of file
+		descriptor so that adding a journal to a mounted
+		filesystem doesn't die.  (Fixes a bug accidentally
+		introduced in e2fsprogs 1.21.)
+
 	* mkjournal.c (ext2fs_add_journal_inode): Only use fchflags if
 		HAVE_CHFLAGS and UF_NODUMP are defined, since the Hurd has
 		fchflags without defining UF_NODUMP.  (Addresses Debian
