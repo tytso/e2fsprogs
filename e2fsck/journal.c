@@ -716,7 +716,7 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 		return EXT2_ET_FILE_RO;
 	}
 
-	if (fs->flags & EXT2_FLAG_DIRTY)
+	if (ctx->fs->flags & EXT2_FLAG_DIRTY)
 		ext2fs_flush(ctx->fs);	/* Force out any modifications */
 
 	recover_retval = recover_ext3_journal(ctx);
