@@ -141,7 +141,7 @@ int main (int argc, char ** argv)
 		switch (c)
 		{
 			case 'c':
-				max_mount_count = strtoul (optarg, &tmp, 0);
+				max_mount_count = strtol (optarg, &tmp, 0);
 				if (*tmp || max_mount_count > 16000) {
 					com_err (program_name, 0,
 						 _("bad mounts count - %s"),

@@ -69,7 +69,10 @@ adjusts tunable filesystem parameters on a Linux second extended filesystem.
 .SH OPTIONS
 .TP
 .BI \-c " max-mount-counts"
-adjust the maximal mounts count between two filesystem checks.
+adjust the maximal mounts count between two filesystem checks.  If 
+.I max-mount-counts
+is -1 then the number of times the filesystem is mounted will be disregarded
+by e2fsck and the kernel.
 .TP
 .BI \-e " error-behavior"
 change the behavior of the kernel code when errors are detected.

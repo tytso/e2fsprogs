@@ -1,5 +1,12 @@
 2000-07-06  Theodore Ts'o  <tytso@valinux.com>
 
+	* tune2fs.8.in: Update manual page to document what happens if
+		max_mount_count is negative.
+
+	* tune2fs.c (main): Allow setting the maximal count value to be
+		negative, since the kernel interprets that as forcing a
+		check. 
+
 	* fsck.c (lookup, load_fs_info, check_all): Use lazy evaluation
 		for calling interpret_device(), since this requires root
 		privileges if the partitions need to be scanned.
