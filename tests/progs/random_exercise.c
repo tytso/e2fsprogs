@@ -24,6 +24,7 @@
 struct state {
 	char	name[16];
 	int	state;
+	int	isdir;
 };
 
 #define STATE_CLEAR	0
@@ -31,6 +32,8 @@ struct state {
 #define STATE_DELETED	2
 
 struct state state_array[MAXFDS];
+
+char data_buffer[4096];
 
 void clear_state_array()
 {
@@ -55,12 +58,23 @@ void create_random_file()
 {
 	char template[16] = "EX.XXXXXX";
 	int	fd;
+	int	isdir = 0;
 	
 	mktemp(template);
-	fd = open(template, O_CREAT|O_RDWR, 0600);
+	isdir = random() & 1;
+	if (isdir) {
+		if (mkdir(template, 0700) < 0)
+			return;
+		fd = open(template, O_RDONLY, 0600);
+	} else {
+		fd = open(template, O_CREAT|O_RDWR, 0600);
+		write(fd, data_buffer, sizeof(data_buffer));
+	}
 	if (fd < 0)
 		return;
-	printf("Created temp file %s, fd = %d\n", template, fd);
+	printf("Created temp %s %s, fd = %d\n",
+	       isdir ? "directory" : "file", template, fd);
+	state_array[fd].isdir = isdir;
 	state_array[fd].state = STATE_CREATED;
 	strcpy(state_array[fd].name, template);
 }
@@ -69,9 +83,12 @@ void unlink_file(int fd)
 {
 	char *filename = state_array[fd].name;
 	
-	printf("Unlinking %s, fd = %d\n", filename, fd);
-	
-	unlink(filename);
+	printf("Deleting %s, fd = %d\n", filename, fd);
+
+	if (state_array[fd].isdir)
+		rmdir(filename);
+	else
+		unlink(filename);
 	state_array[fd].state = STATE_DELETED;
 }
 
@@ -89,7 +106,10 @@ void close_file(int fd)
 main(int argc, char **argv)
 {
 	int	i, fd;
-	
+
+	memset(data_buffer, 0, sizeof(data_buffer));
+	sprintf(data_buffer, "This is a test file created by the "
+		"random_exerciser program\n");
 	
 	for (i=0; i < 100000; i++) {
 		fd = get_random_fd();

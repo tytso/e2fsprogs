@@ -1,3 +1,9 @@
+2000-10-18    <tytso@valinux.com>
+
+	* random_exercise.c: Add support for making the test files have a
+		certain size, and also add directories as test inodes as
+		well. 
+
 2000-08-20    <tytso@valinux.com>
 
 	* random_exercise.c: New file which feeds a lot of file creations
