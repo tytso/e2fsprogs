@@ -32,35 +32,35 @@
 int fgetflags (const char * name, unsigned long * flags)
 {
 #if HAVE_STAT_FLAGS
-  struct stat buf;
+	struct stat buf;
 
-  if (stat (name, &buf) == -1)
-    return -1;
+	if (stat (name, &buf) == -1)
+		return -1;
 
-  *flags = 0;
+	*flags = 0;
 #ifdef UF_IMMUTABLE
-  if (buf.st_flags & UF_IMMUTABLE)
-    *flags |= EXT2_IMMUTABLE_FL;
+	if (buf.st_flags & UF_IMMUTABLE)
+		*flags |= EXT2_IMMUTABLE_FL;
 #endif
 #ifdef UF_APPEND
-  if (buf.st_flags & UF_APPEND)
-    *flags |= EXT2_APPEND_FL;
+	if (buf.st_flags & UF_APPEND)
+		*flags |= EXT2_APPEND_FL;
 #endif
 #ifdef UF_NODUMP
-  if (buf.st_flags & UF_NODUMP)
-    *flags |= EXT2_NODUMP_FL;
+	if (buf.st_flags & UF_NODUMP)
+		*flags |= EXT2_NODUMP_FL;
 #endif
 
-  return 0;
+	return 0;
 #else
 #if HAVE_EXT2_IOCTLS
-	int fd;
-	int r;
+	int fd, r, f;
 
 	fd = open (name, O_RDONLY|O_NONBLOCK);
 	if (fd == -1)
 		return -1;
-	r = ioctl (fd, EXT2_IOC_GETFLAGS, flags);
+	r = ioctl (fd, EXT2_IOC_GETFLAGS, &f);
+	*flags = f;
 
 	close (fd);
 	return r;

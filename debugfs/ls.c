@@ -84,8 +84,8 @@ static int list_dir_proc(struct ext2_dir_entry *dirent,
 	struct list_dir_struct *ls = (struct list_dir_struct *) private;
 	int	thislen;
 
-	thislen = (dirent->name_len < EXT2_NAME_LEN) ? dirent->name_len :
-		EXT2_NAME_LEN;
+	thislen = ((dirent->name_len & 0xFF) < EXT2_NAME_LEN) ?
+		(dirent->name_len & 0xFF) : EXT2_NAME_LEN;
 	strncpy(name, dirent->name, thislen);
 	name[thislen] = '\0';
 

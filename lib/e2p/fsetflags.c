@@ -32,31 +32,31 @@
 int fsetflags (const char * name, unsigned long flags)
 {
 #if HAVE_CHFLAGS
-  unsigned long bsd_flags = 0;
+	unsigned long bsd_flags = 0;
 
 #ifdef UF_IMMUTABLE
-  if (flags & EXT2_IMMUTABLE_FL)
-    bsd_flags |= UF_IMMUTABLE;
+	if (flags & EXT2_IMMUTABLE_FL)
+		bsd_flags |= UF_IMMUTABLE;
 #endif
 #ifdef UF_APPEND
-  if (flags & EXT2_APPEND_FL)
-    bsd_flags |= UF_APPEND;
+	if (flags & EXT2_APPEND_FL)
+		bsd_flags |= UF_APPEND;
 #endif
 #ifdef UF_NODUMP
-  if (flags & EXT2_NODUMP_FL)
-    bsd_flags |= UF_NODUMP;
+	if (flags & EXT2_NODUMP_FL)
+		bsd_flags |= UF_NODUMP;
 #endif
 
-  return chflags (name, bsd_flags);
+	return chflags (name, bsd_flags);
 #else
 #if HAVE_EXT2_IOCTLS
-	int fd;
-	int r;
+	int fd, r, f;
 
 	fd = open (name, O_RDONLY|O_NONBLOCK);
 	if (fd == -1)
 		return -1;
-	r = ioctl (fd, EXT2_IOC_SETFLAGS, &flags);
+	f = (int) flags;
+	r = ioctl (fd, EXT2_IOC_SETFLAGS, &f);
 	close (fd);
 	return r;
 #else /* ! HAVE_EXT2_IOCTLS */

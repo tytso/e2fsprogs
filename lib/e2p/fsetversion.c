@@ -28,13 +28,13 @@
 int fsetversion (const char * name, unsigned long version)
 {
 #if HAVE_EXT2_IOCTLS
-	int fd;
-	int r;
+	int fd, r, ver;
 
 	fd = open (name, O_RDONLY|O_NONBLOCK);
 	if (fd == -1)
 		return -1;
-	r = ioctl (fd, EXT2_IOC_SETVERSION, &version);
+	ver = (int) version;
+	r = ioctl (fd, EXT2_IOC_SETVERSION, &ver);
 	close (fd);
 	return r;
 #else /* ! HAVE_EXT2_IOCTLS */

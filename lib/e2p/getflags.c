@@ -28,29 +28,33 @@
 int getflags (int fd, unsigned long * flags)
 {
 #if HAVE_STAT_FLAGS
-  struct stat buf;
+	struct stat buf;
 
-  if (fstat (fd, &buf) == -1)
-    return -1;
+	if (fstat (fd, &buf) == -1)
+		return -1;
 
-  *flags = 0;
+	*flags = 0;
 #ifdef UF_IMMUTABLE
-  if (buf.st_flags & UF_IMMUTABLE)
-    *flags |= EXT2_IMMUTABLE_FL;
+	if (buf.st_flags & UF_IMMUTABLE)
+		*flags |= EXT2_IMMUTABLE_FL;
 #endif
 #ifdef UF_APPEND
-  if (buf.st_flags & UF_APPEND)
-    *flags |= EXT2_APPEND_FL;
+	if (buf.st_flags & UF_APPEND)
+		*flags |= EXT2_APPEND_FL;
 #endif
 #ifdef UF_NODUMP
-  if (buf.st_flags & UF_NODUMP)
-    *flags |= EXT2_NODUMP_FL;
+	if (buf.st_flags & UF_NODUMP)
+		*flags |= EXT2_NODUMP_FL;
 #endif
 
-  return 0;
+	return 0;
 #else
 #if HAVE_EXT2_IOCTLS
-	return ioctl (fd, EXT2_IOC_GETFLAGS, flags);
+	int r, f;
+	
+	r = ioctl (fd, EXT2_IOC_GETFLAGS, &f);
+	*flags = f;
+	return r;
 #else /* ! HAVE_EXT2_IOCTLS */
 	extern int errno;
 	errno = EOPNOTSUPP;

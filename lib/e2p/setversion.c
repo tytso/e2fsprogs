@@ -24,7 +24,10 @@
 int setversion (int fd, unsigned long version)
 {
 #if HAVE_EXT2_IOCTLS
-	return ioctl (fd, EXT2_IOC_SETVERSION, &version);
+	int ver;
+
+	ver = (int) version;
+	return ioctl (fd, EXT2_IOC_SETVERSION, &ver);
 #else /* ! HAVE_EXT2_IOCTLS */
 	extern int errno;
 	errno = EOPNOTSUPP;

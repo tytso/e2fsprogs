@@ -1,3 +1,8 @@
+Sun Mar  8 22:53:04 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ls.c (list_dir_proc): Mask off high 8 bits from
+ 		dirent->name_len.
+
 Mon Dec  1 13:21:09 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in: Install debugfs in /sbin, instead of /usr/sbin.

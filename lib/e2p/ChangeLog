@@ -1,3 +1,11 @@
+Mon Mar  9 08:05:30 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* fgetflags.c, fgetversion.c, fsetflags.c, fsetversion.c,
+		getflags.c, getversion.c, setflags.c, setversion.c:
+		The ext2 version and flags ioctl's take an int *, not a
+		long *.  Fix library to use the correct type, so we don't
+		have problems on the Alpha.
+
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.11

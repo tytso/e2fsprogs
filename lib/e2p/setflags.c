@@ -29,25 +29,28 @@
 int setflags (int fd, unsigned long flags)
 {
 #if HAVE_CHFLAGS
-  unsigned long bsd_flags = 0;
+	unsigned long bsd_flags = 0;
 
 #ifdef UF_IMMUTABLE
-  if (flags & EXT2_IMMUTABLE_FL)
-    bsd_flags |= UF_IMMUTABLE;
+	if (flags & EXT2_IMMUTABLE_FL)
+		bsd_flags |= UF_IMMUTABLE;
 #endif
 #ifdef UF_APPEND
-  if (flags & EXT2_APPEND_FL)
-    bsd_flags |= UF_APPEND;
+	if (flags & EXT2_APPEND_FL)
+		bsd_flags |= UF_APPEND;
 #endif
 #ifdef UF_NODUMP
-  if (flags & EXT2_NODUMP_FL)
-    bsd_flags |= UF_NODUMP;
+	if (flags & EXT2_NODUMP_FL)
+		bsd_flags |= UF_NODUMP;
 #endif
 
-  return fchflags (fd, bsd_flags);
+	return fchflags (fd, bsd_flags);
 #else
 #if HAVE_EXT2_IOCTLS
-	return ioctl (fd, EXT2_IOC_SETFLAGS, &flags);
+	int	f;
+
+	f = (int) flags;
+	return ioctl (fd, EXT2_IOC_SETFLAGS, &f);
 #else /* ! HAVE_EXT2_IOCTLS */
 	extern int errno;
 	errno = EOPNOTSUPP;
