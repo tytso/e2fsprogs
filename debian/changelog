@@ -1,5 +1,8 @@
 e2fsprogs (1.35-7) unstable; urgency=low
 
+  * Filter out linux-gate.so, which is a pseudo entry for the 32->64bit
+      translation for amd64 systems, in the initrd creation script.
+      (Closes: #253595)
   * Change the initrd scripts to be use a helper program which avoids
        needing to mount the root filesystem and use awk to query the
        /etc/fstab file.  (Closes: #247775)

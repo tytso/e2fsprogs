@@ -14,7 +14,10 @@ case "$VERSION" in
 	;;
 esac
 
-for i in `ldd /sbin/tune2fs /usr/bin/awk | sort -u | awk '{print $3}'` 
+PROGS="/sbin/tune2fs /usr/lib/e2initrd_helper"
+LIBS=`ldd $PROGS | grep -v linux-gate.so | sort -u | \
+    awk '{print $3}'` 
+for i in $LIBS
 do
 	mkdir -p `dirname $INITRDDIR/$i`
 	cp $i $INITRDDIR/$i
