@@ -108,8 +108,9 @@ SRCROOT = `echo e2fsprogs-@E2FSPROGS_VERSION@ | sed -e 's/-WIP//' \
 $(srcdir)/.exclude-file:
 	a=$(SRCROOT); \
 	(cd $(srcdir)/.. ; find e2fsprogs \( -name \*~ -o -name \*.orig \
-		-o -name CVS -o -name \*.rej -o -name Makefile.pq \) -print) \
-		| sed -e "s/e2fsprogs/$$a/" > $(srcdir)/.exclude-file
+		-o -name CVS -o -name \*.rej -o -name Makefile.pq \
+		-o -name TODO -o -name changed-files -o -name .#\* \) \
+		-print) | sed -e "s/e2fsprogs/$$a/" > $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/build" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/rpm.log" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/resize" >> $(srcdir)/.exclude-file
