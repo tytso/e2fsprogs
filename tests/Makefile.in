@@ -1,0 +1,23 @@
+#
+# Makefile for the tests directory
+#
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+top_builddir = ..
+INSTALL = @INSTALL@
+
+all:: @DO_TEST_SUITE@
+
+check::
+	@echo "Running e2fsprogs test suite..."
+	@echo " "
+	@$(srcdir)/test_script $(srcdir)
+
+clean::
+	$(RM) -f *.log *.new *.failed *.ok test.img
+
+distclean:: clean
+	$(RM) -f Makefile
+	

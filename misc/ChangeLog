@@ -1,3 +1,132 @@
+Thu Oct 26 12:05:18 1995    <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (install): Strip programs when they are installed.
+
+Fri Aug 18 15:10:40 1995  Theodore Y. Ts'o  <tytso@dcl>
+
+	* mke2fs.c (PRS): Move call of check_mount() from main() to PRS(),
+		so we do the check to see if the filesystem is mounted
+		*before* we try to determine the size of the device.
+
+Wed Sep  6 23:34:07 1995  Remy Card  <card@bbj>
+
+	* fsck.c (load_fs_info): Load the informations from /etc/fstab in
+		the same order.
+
+Thu Aug 17 22:33:09 1995    <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (check_mount): Use the new ext2fs_check_if_mounted()
+		function to determine if the device is mounted.
+
+	* mke2fs.c (PRS): Change call to use the new
+		ext2fs_get_device_size() function in order to determine
+		the size of the filesystem.  Remove get_size() and
+		is_valid_offset(), which are no longer called.
+
+Fri Aug 11 08:26:24 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* fsck.c (fsck_device): Make sure fstype has been set by the user
+		and that it does not begin with "no" and the user has
+		specified exactly one type before using it as the type to
+		check.
+
+Fri Aug 11 14:17:18 1995  Remy Card  <card@bbj>
+
+	* badblocks.8:
+	* chattr.1:
+	* dumpe2fs.8:
+	* fsck.8:
+	* lsattr.1:
+	* mke2fs.8:
+	* mklost+found.8:
+	* tune2fs.8: Updated date and version number.
+
+Thu Aug 10 14:18:36 1995  Remy Card  <card@bbj>
+
+	* tune2fs.c: Fixed a bug which prevented the use of user and group
+		names with the -g and -u options.  Thanks to Jean Christophe
+		ANDRE <progfou@mycrob.cafard.freenix.fr>.
+
+	* mke2fs.8:
+	* tune2fs.8: Fixed a spelling error in Ted's name :-)
+
+Wed Aug  9 20:41:54 1995  Theodore Y. Ts'o  <tytso@dcl>
+
+	* mke2fs.c (count_blocks): Divide the size by
+		EXT2_BLOCK_SIZE(&param), instead of assuming that the
+		blocksize is always 1024 bytes.
+
+Sat Aug  5 12:00:51 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* mke2fs.c (PRS): Use malloc() instead of alloca() --- alloca() is
+		not portable!!  In any case putenv() in some systems must
+		take a static character array or malloc()'ed memory;
+		passing memory allocated using alloca() to putenv() is not
+		advisable.
+
+	* chattr.c (chattr_dir_proc): 
+	* lsattr.c (lsattr_dir_proc): Use malloc() instead of alloca() ---
+		alloca is not portable!
+
+	* fsck.c (fsck_device): If the filesystem type is specified by the
+		user using the -t option, let it override the type in
+		/etc/fstab.
+
+	* fsck.c (strdup): Don't build strdup() if the system defines it.
+
+Mon Jun 12 19:15:10 1995  Theodore Y. Ts'o  (tytso@dcl)
+
+	* chattr.c, lsattr.c: Include <sys/types.h> for <dirent.h>'s
+		benefit.
+
+	* The $(UPROGS) go in bin, not sbin.
+
+	* badblocks.c, chattr.c, dumpe2fs.c, fsck.c, lsattr.c, mke2fs.c,
+		tune2fs.c:  Don't include <getopt.h> if it doesn't exist.
+
+Mon Jun 12 16:36:04 1995  Theodore Y. Ts'o  <tytso@dcl>
+
+	* badblocks.c, chattr.c, dumpe2fs.c, fsck.c, lsattr.c, mke2fs.c,
+	        tune2fs.c: Only include getopt.h if HAVE_GETOPT_H is defined.
+
+Sat Jun 10 23:37:09 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* chattr.c: Include errno.h, since we use errno
+
+	* fsck.c (load_fs_info): If HAVE_MNTENT_H is not defined,
+		explicitly initialize filesys_info to be NULL.
+
+	* mke2fs.c: Include the stdio.h and errno.h header files
+
+Thu Jun  8 13:25:23 1995  Miles Bader  <miles@churchy.gnu.ai.mit.edu>
+
+	* mke2fs.c: Only include <linux/fs.h> if we can.
+	(get_size): Don't try to use the BLKGETSIZE ioctl unless it's defined.
+	(check_mount): Only check to see if the device is mounted if
+	HAVE_MNTENT_H is defined (by configure).
+
+	* fsck.c (load_fs_info): Only try to get info about filesystems if
+	HAVE_MNTENT_H is defined (by configure).
+	(main): Allocate space for a new fsck_path instead of append to a
+	statically sized buffer.
+	(PRS): Use alloca to allocate the new path string, instead of
+	having a fixed size buffer (which was the wrong size anyway).
+
+	* chattr.c (chattr_dir_proc): Use alloca to allocate space for a
+	filename instead of using a fixed-size buffer.
+	* lsattr.c (lsattr_dir_proc): Ditto.
+	* mklost+fond.c (main): Calculate the actual needed size for the
+	path buffer instead of using MAXPATHLEN (which not all systems have).
+
+	* badblocks.c: Only include linux include files if we have them.
+	(flush_bufs): New function to flush a block device, optionally
+	syncing it first.  This replaces other copies of this code.
+	(test_ro): Replace calls to ioctl with flush_bufs().
+	(test_rw): Ditto.
+
+	* Makefile.in: Rewritten to conform to GNU coding standards and
+	support separate compilation directories.
+
 Sat Mar 11 10:59:58 1995  Theodore Y. Ts'o  <tytso@localhost>
 
 	* mke2fs.c (main, zap_bootblock): Added new function

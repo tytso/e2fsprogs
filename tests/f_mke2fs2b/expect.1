@@ -1,0 +1,36 @@
+Pass 1: Checking inodes, blocks, and sizes
+Root inode has dtime set (probably due to old mke2fs).  Fix? yes
+
+Note: /lost+found will probably be deleted as well, due to the mke2fs bug.
+Be sure to run mklost+found to recreate it after e2fsck finishes.
+
+
+Deleted inode detected with non-zero link count.
+This is probably due to old ext2fs kernel code.  
+Fix inode(s)? yes
+
+Inode 11 is deleted w/ non-zero link_count.  CLEARED
+Inode 15 is deleted w/ non-zero link_count.  CLEARED
+Pass 2: Checking directory structure
+Entry 'lost+found' in / (2) has deleted/unused inode 11.
+Clear? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Inode 2 has ref count 4, expecting 3.
+Set i_nlinks to count? yes
+
+Pass 5: Checking group summary information
+Fix summary information? yes
+
+Block bitmap differences: -9 -10 -11 -12 -13 -14 -15 -16 -17 -18 -19 -20.  FIXED
+Free blocks count wrong for group 0 (75, counted=87).  FIXED
+Free blocks count wrong (75, counted=87).  FIXED
+Inode bitmap differences: -11.  FIXED
+Free inodes count wrong for group #0 (17, counted=18).  FIXED
+Directories count wrong for group #0 (4, counted=3).  FIXED
+Free inodes count wrong (17, counted=18).  FIXED
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 14/32 files, 13/100 blocks
+Exit status is 1

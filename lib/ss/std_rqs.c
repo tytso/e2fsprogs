@@ -1,4 +1,4 @@
-/* std_rqs.c - automatically generated from std_rqs.ct */
+/* ./std_rqs.c - automatically generated from ./std_rqs.ct */
 #include <ss/ss.h>
 
 #ifndef __STDC__

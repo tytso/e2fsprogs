@@ -1,0 +1,31 @@
+Pass 1: Checking inodes, blocks, and sizes
+Hole found in directory inode 11!  (blkcnt=0)
+Hole found in directory inode 11!  (blkcnt=3)
+Remove illegal block(s) in inode 11? yes
+
+Block #6 (200) > BLOCKS (100).  CLEARED
+Hole found in directory inode 11!  (blkcnt=11)
+Directory 11, incorrect size, 12288 (counted = 11264). Set size to counted? yes
+
+Inode 11, i_blocks wrong 24 (counted=16).  Set i_blocks to counted? yes
+
+Pass 2: Checking directory structure
+Directory inode 11 has a hole at block #0
+Allocate block? yes
+
+Directory inode 11 has a hole at block #3
+Allocate block? yes
+
+Directory inode 11 has a hole at block #6
+Allocate block? yes
+
+Directory inode 11 has a hole at block #11
+Allocate block? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 11/32 files, 22/100 blocks
+Exit status is 1

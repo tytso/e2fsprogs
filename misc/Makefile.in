@@ -1,0 +1,148 @@
+#
+# Standard e2fsprogs prologue....
+#
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+top_builddir = ..
+INSTALL = @INSTALL@
+
+@MCONFIG@
+
+SPROGS=		mke2fs badblocks tune2fs dumpe2fs fsck
+USPROGS=	mklost+found
+SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 fsck.8
+
+UPROGS=		chattr lsattr
+UMANPAGES=	chattr.1 lsattr.1
+
+TUNE2FS_OBJS=	tune2fs.o
+MKLPF_OBJS=	mklost+found.o
+MKE2FS_OBJS=	mke2fs.o
+CHATTR_OBJS=	chattr.o
+LSATTR_OBJS=	lsattr.o
+DUMPE2FS_OBJS=	dumpe2fs.o
+BADBLOCKS_OBJS=	badblocks.o
+FSCK_OBJS=	fsck.o
+
+SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
+		$(srcdir)/chattr.c $(srcdir)/lsattr.c $(srcdir)/dumpe2fs.c \
+		$(srcdir)/badblocks.c $(srcdir)/fsck.c
+
+LIBS= -L../lib -lext2fs -le2p -lcom_err 
+DEPLIBS= ../lib/libext2fs.a ../lib/libe2p.a ../lib/libcom_err.a 
+
+.c.o:
+	$(CC) -c $(CFLAGS) $< -o $@
+
+all:: $(SPROGS) $(UPROGS) $(USPROGS)
+
+tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS)
+	$(CC) $(LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS)
+
+mklost+found: $(MKLPF_OBJS)
+	$(CC) $(LDFLAGS) -o mklost+found $(MKLPF_OBJS)
+
+mke2fs: $(MKE2FS_OBJS) $(DEPLIBS)
+	$(CC) $(LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS)
+
+mke2fs.static: $(MKE2FS_OBJS) $(DEPLIBS)
+	$(CC) $(LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) $(LIBS)
+
+chattr: $(CHATTR_OBJS) $(DEPLIBS)
+	$(CC) $(LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS)
+
+lsattr: $(LSATTR_OBJS) $(DEPLIBS)
+	$(CC) $(LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS)
+
+dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS)
+	$(CC) $(LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS)
+
+fsck: $(FSCK_OBJS) $(DEPLIBS)
+	$(CC) $(LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS)
+
+badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
+	$(CC) $(LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS)
+
+installdirs:
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(bindir) $(DESTDIR)$(sbindir) \
+		$(DESTDIR)$(ubindir) $(DESTDIR)$(man1dir) \
+		$(DESTDIR)$(cat1dir) $(DESTDIR)$(man8dir) $(DESTDIR)$(cat8dir)
+
+install: all $(SMANPAGES) $(UMANPAGES) installdirs
+	for i in $(SPROGS); do \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(sbindir)/$$i; \
+		$(STRIP) $(DESTDIR)$(sbindir)/$$i; \
+	done
+	for i in $(USPROGS); do \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(usbindir)/$$i; \
+		$(STRIP) $(DESTDIR)$(usbindir)/$$i; \
+	done
+	$(LN) -f $(DESTDIR)$(sbindir)/mke2fs $(DESTDIR)$(sbindir)/mkfs.ext2
+	for i in $(UPROGS); do \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(ubindir)/$$i; \
+		$(STRIP) $(DESTDIR)$(ubindir)/$$i; \
+	done
+	for i in $(SMANPAGES); do \
+		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(man8dir)/$$i; \
+	done
+	for i in $(UMANPAGES); do \
+		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(man1dir)/$$i; \
+	done
+
+uninstall:
+	for i in $(SPROGS); do \
+		$(RM) -f $(sbindir)/$$i; \
+	done
+	for i in $(USPROGS); do \
+		$(RM) -f $(usbindir)/$$i; \
+	done
+	$(RM) -f $(sbindir)/mkfs.ext2
+	for i in $(UPROGS); do \
+		$(RM) -f $(ubindir)/$$i; \
+	done
+	for i in $(SMANPAGES); do \
+		$(RM) -f $(man8dir)/$$i; \
+	done
+	for i in $(UMANPAGES); do \
+		$(RM) -f $(man1dir)/$$i; \
+	done
+
+clean:
+	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) mke2fs.static \
+		\#* *.s *.o *.a *~ core
+mostlyclean: clean
+distclean: clean
+	$(RM) -f .depend Makefile
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
+tune2fs.o : $(srcdir)/tune2fs.c \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h \
+  $(srcdir)/../version.h 
+mklost+found.o : $(srcdir)/mklost+found.c \
+  $(srcdir)/../version.h 
+mke2fs.o : $(srcdir)/mke2fs.c \
+  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/../version.h 
+chattr.o : $(srcdir)/chattr.c \
+  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/e2p/e2p.h \
+  $(srcdir)/../version.h 
+lsattr.o : $(srcdir)/lsattr.c \
+  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/e2p/e2p.h \
+  $(srcdir)/../version.h 
+dumpe2fs.o : $(srcdir)/dumpe2fs.c \
+  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h \
+  $(srcdir)/../version.h 
+badblocks.o : $(srcdir)/badblocks.c \
+  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/io.h 
+fsck.o : $(srcdir)/fsck.c \
+  $(srcdir)/../version.h \
+  $(srcdir)/fsck.h 
+

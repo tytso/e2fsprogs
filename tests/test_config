@@ -1,0 +1,9 @@
+#
+# Test configuration
+#
+
+FSCK=../e2fsck/e2fsck
+LD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss
+export LD_LIBRARY_PATH
+TZ=GMT
+export TZ

@@ -24,7 +24,9 @@
 
 #include <fcntl.h>
 #include <grp.h>
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#endif
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -120,8 +122,10 @@ void main (int argc, char ** argv)
 					gr = getgrnam (optarg);
 					if (gr == NULL)
 						tmp = optarg;
-					else
+					else {
 						resgid = gr->gr_gid;
+						*tmp =0;
+					}
 				}
 				if (*tmp)
 				{
@@ -194,8 +198,10 @@ void main (int argc, char ** argv)
 					pw = getpwnam (optarg);
 					if (pw == NULL)
 						tmp = optarg;
-					else
+					else {
 						resuid = pw->pw_uid;
+						*tmp = 0;
+					}
 				}
 				if (*tmp)
 				{

@@ -8,6 +8,7 @@
 #define _ss_ss_internal_h __FILE__
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef __STDC__
 
@@ -106,10 +107,6 @@ void ss_page_stdin(NOARGS);
 
 extern ss_data **_ss_table;
 extern char *ss_et_msgs[];
-
-extern pointer malloc PROTOTYPE((unsigned));
-extern pointer realloc PROTOTYPE((pointer, unsigned));
-extern pointer calloc PROTOTYPE((unsigned, unsigned));
 
 #ifdef USE_SIGPROCMASK
 /* fake sigmask, sigblock, sigsetmask */

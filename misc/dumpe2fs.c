@@ -16,7 +16,9 @@
  * 94/02/27	- Ported to use the ext2fs library
  */
 
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#endif
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,8 +80,8 @@ static void list_desc (ext2_filsys fs)
 	for (i = 0; i < fs->group_desc_count; i++)
 	{
 		printf ("Group %lu:\n", i);
-		printf ("  Block bitmap at %lu, Inode bitmap at %lu, "
-			"Inode table at %lu\n",
+		printf ("  Block bitmap at %u, Inode bitmap at %u, "
+			"Inode table at %u\n",
 			fs->group_desc[i].bg_block_bitmap,
 			fs->group_desc[i].bg_inode_bitmap,
 			fs->group_desc[i].bg_inode_table);
@@ -118,9 +120,9 @@ static void list_bad_blocks(ext2_filsys fs)
 		exit(1);
 	}
 	if (badblocks_list_iterate(bb_iter, &blk))
-		printf("Bad blocks: %ld", blk);
+		printf("Bad blocks: %d", blk);
 	while (badblocks_list_iterate(bb_iter, &blk))
-		printf(", %ld", blk);
+		printf(", %d", blk);
 	badblocks_list_iterate_end(bb_iter);
 	printf("\n");
 }
@@ -144,7 +146,7 @@ static void dump_bad_blocks(ext2_filsys fs)
 		exit(1);
 	}
 	while (badblocks_list_iterate(bb_iter, &blk))
-		printf("%ld\n", blk);
+		printf("%d\n", blk);
 	badblocks_list_iterate_end(bb_iter);
 }
 

@@ -1,0 +1,46 @@
+Pass 1: Checking inodes, blocks, and sizes
+Remove illegal block(s) in inode 12? yes
+
+Block #12 (778398818) > BLOCKS (100).  CLEARED
+Block #13 (1768444960) > BLOCKS (100).  CLEARED
+Block #14 (1752375411) > BLOCKS (100).  CLEARED
+Block #15 (1684829551) > BLOCKS (100).  CLEARED
+Block #16 (1886349344) > BLOCKS (100).  CLEARED
+Block #17 (1819633253) > BLOCKS (100).  CLEARED
+Block #18 (1663072620) > BLOCKS (100).  CLEARED
+Block #19 (1735287144) > BLOCKS (100).  CLEARED
+Block #20 (1310731877) > BLOCKS (100).  CLEARED
+Block #21 (560297071) > BLOCKS (100).  CLEARED
+Block #22 (543512352) > BLOCKS (100).  CLEARED
+Block #23 (1869835361) > BLOCKS (100).  CLEARED
+Block #24 (1634231072) > BLOCKS (100).  CLEARED
+Block #25 (543516526) > BLOCKS (100).  CLEARED
+Block #26 (174418036) > BLOCKS (100).  CLEARED
+Block #27 (1919819811) > BLOCKS (100).  CLEARED
+Block #28 (543584032) > BLOCKS (100).  CLEARED
+Block #29 (1701734764) > BLOCKS (100).  CLEARED
+Block #30 (1869881459) > BLOCKS (100).  CLEARED
+Too many illegal blocks in inode 12.
+Clear inode? yes
+
+Restarting e2fsck from the beginning...
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Entry 'termcap' in / (2) has deleted/unused inode 12.
+Clear? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Fix summary information? yes
+
+Block bitmap differences: -27 -28 -29 -30 -31 -32 -33 -34 -35 -36 -37 -38 -39 -40 -41 -44 -45.  FIXED
+Free blocks count wrong for group 0 (41, counted=58).  FIXED
+Free blocks count wrong (41, counted=58).  FIXED
+Inode bitmap differences: -12.  FIXED
+Free inodes count wrong for group #0 (20, counted=21).  FIXED
+Free inodes count wrong (20, counted=21).  FIXED
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 11/32 files, 42/100 blocks
+Exit status is 1

@@ -11,20 +11,35 @@
  * enforced (but it's not much fun on a character device :-). 
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
 #include <ctype.h>
 #include <termios.h>
 #include <time.h>
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#endif
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
+#ifdef HAVE_MNTENT_H
 #include <mntent.h>
+#endif
 #include <malloc.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <stdio.h>
 
+#ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>
+#endif
 #include <linux/ext2_fs.h>
 
 #include "et/com_err.h"
@@ -71,72 +86,21 @@ static int log2(int arg)
 	return l;
 }
 
-static long valid_offset (int fd, ext2_loff_t offset)
-{
-	char ch;
-
-	if (ext2_llseek (fd, offset, 0) < 0)
-		return 0;
-	if (read (fd, &ch, 1) < 1)
-		return 0;
-	return 1;
-}
-
-static int count_blocks (int fd)
-{
-	ext2_loff_t high, low;
-
-	low = 0;
-	for (high = 1; valid_offset (fd, high); high *= 2)
-		low = high;
-	while (low < high - 1)
-	{
-		const ext2_loff_t mid = (low + high) / 2;
-
-		if (valid_offset (fd, mid))
-			low = mid;
-		else
-			high = mid;
-	}
-	valid_offset (fd, 0);
-	return (low + 1) / 1024;
-}
-
-static int get_size(const char  *file)
-{
-	int	fd;
-	int	size;
-
-	fd = open(file, O_RDWR);
-	if (fd < 0) {
-		com_err("open", errno, "while trying to determine size of %s",
-			file);
-		exit(1);
-	}
-	if (ioctl(fd, BLKGETSIZE, &size) >= 0) {
-		close(fd);
-		return size / (EXT2_BLOCK_SIZE(&param) / 512);
-	}
-		
-	size = count_blocks(fd);
-	close(fd);
-	return size;
-}
-
 static void check_mount(NOARGS)
 {
-	FILE * f;
-	struct mntent * mnt;
+	errcode_t	retval;
+	int		mount_flags;
 
-	if ((f = setmntent (MOUNTED, "r")) == NULL)
+	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+	if (retval) {
+		com_err("ext2fs_check_if_mount", retval,
+			"while determining whether %s is mounted.",
+			device_name);
 		return;
-	while ((mnt = getmntent (f)) != NULL)
-		if (strcmp (device_name, mnt->mnt_fsname) == 0)
-			break;
-	endmntent (f);
-	if (!mnt)
+	}
+	if (!(mount_flags & EXT2_MF_MOUNTED))
 		return;
-
+	
 	fprintf(stderr, "%s is mounted; will not make a filesystem here!\n",
 		device_name);
 	exit(1);
@@ -147,7 +111,7 @@ static void check_mount(NOARGS)
  */
 static void invalid_block(ext2_filsys fs, blk_t blk)
 {
-	printf("Bad block %lu out of range; ignored.\n", blk);
+	printf("Bad block %u out of range; ignored.\n", blk);
 	return;
 }
 
@@ -184,7 +148,7 @@ static void test_disk(ext2_filsys fs, badblocks_list *bb_list)
 	errcode_t	retval;
 	char		buf[1024];
 
-	sprintf(buf, "badblocks %s%s %ld", quiet ? "" : "-s ",
+	sprintf(buf, "badblocks %s%s %d", quiet ? "" : "-s ",
 		fs->device_name,
 		fs->super->s_blocks_count);
 	if (verbose)
@@ -227,7 +191,7 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 		if (badblocks_list_test(bb_list, i)) {
 			fprintf(stderr, "Block %d in primary superblock/group "
 				"descriptor area bad.\n", i);
-			fprintf(stderr, "Blocks %ld through %d must be good "
+			fprintf(stderr, "Blocks %d through %d must be good "
 				"in order to build a filesystem.\n",
 				fs->super->s_first_data_block, must_be_good);
 			fprintf(stderr, "Aborting....\n");
@@ -250,7 +214,7 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 						j)) {
 				if (!group_bad) 
 					fprintf(stderr,
-"Warning: the backup superblock/group descriptors at block %ld contain\n"
+"Warning: the backup superblock/group descriptors at block %d contain\n"
 "	bad blocks.\n\n",
 						group_block);
 				group_bad++;
@@ -304,7 +268,7 @@ static void new_table_block(ext2_filsys fs, blk_t first_block,
 			retval = io_channel_write_blk(fs->io, blk, count, buf);
 			if (retval)
 				printf("Warning: could not write %d blocks "
-				       "starting at %ld for %s: %s\n",
+				       "starting at %d for %s: %s\n",
 				       count, blk, name,
 				       error_message(retval));
 		}
@@ -457,24 +421,24 @@ static void show_stats(ext2_filsys fs)
 	int			i, col_left;
 	
 	if (param.s_blocks_count != s->s_blocks_count)
-		printf("warning: %ld blocks unused.\n\n",
+		printf("warning: %d blocks unused.\n\n",
 		       param.s_blocks_count - s->s_blocks_count);
 	
-	printf("%lu inodes, %lu blocks\n", s->s_inodes_count,
+	printf("%u inodes, %u blocks\n", s->s_inodes_count,
 	       s->s_blocks_count);
-	printf("%lu blocks (%2.2f%%) reserved for the super user\n",
+	printf("%u blocks (%2.2f%%) reserved for the super user\n",
 		s->s_r_blocks_count,
 	       100.0 * s->s_r_blocks_count / s->s_blocks_count);
-	printf("First data block=%lu\n", s->s_first_data_block);
-	printf("Block size=%u (log=%lu)\n", fs->blocksize,
+	printf("First data block=%u\n", s->s_first_data_block);
+	printf("Block size=%u (log=%u)\n", fs->blocksize,
 		s->s_log_block_size);
-	printf("Fragment size=%u (log=%lu)\n", fs->fragsize,
+	printf("Fragment size=%u (log=%u)\n", fs->fragsize,
 		s->s_log_frag_size);
 	printf("%lu block group%s\n", fs->group_desc_count,
 		(fs->group_desc_count > 1) ? "s" : "");
-	printf("%lu blocks per group, %lu fragments per group\n",
+	printf("%u blocks per group, %u fragments per group\n",
 	       s->s_blocks_per_group, s->s_frags_per_group);
-	printf("%lu inodes per group\n", s->s_inodes_per_group);
+	printf("%u inodes per group\n", s->s_inodes_per_group);
 
 	if (fs->group_desc_count == 1) {
 		printf("\n");
@@ -490,28 +454,36 @@ static void show_stats(ext2_filsys fs)
 			printf("\n\t");
 			col_left = 8;
 		}
-		printf("%lu", group_block);
+		printf("%u", group_block);
 		if (i != fs->group_desc_count - 1)
 			printf(", ");
 	}
 	printf("\n\n");
 }
 
+#define PATH_SET "PATH=/sbin"
+
 static void PRS(int argc, char *argv[])
 {
 	char	c;
 	int	size;
 	char	* tmp;
-	char	*oldpath;
-	static char newpath[PATH_MAX];
 	int	inode_ratio = 4096;
 	int	reserved_ratio = 5;
+	errcode_t	retval;
+	char	*oldpath = getenv("PATH");
 
 	/* Update our PATH to include /sbin  */
-	strcpy(newpath, "PATH=/sbin:");
-	if ((oldpath = getenv("PATH")) != NULL)
-		strcat(newpath, oldpath);
-	putenv(newpath);
+	if (oldpath) {
+		char *newpath;
+		
+		newpath = malloc(sizeof (PATH_SET) + 1 + strlen (oldpath));
+		strcpy (newpath, PATH_SET);
+		strcat (newpath, ":");
+		strcat (newpath, oldpath);
+		putenv (newpath);
+	} else
+		putenv (PATH_SET);
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
@@ -623,10 +595,21 @@ static void PRS(int argc, char *argv[])
 	}
 	if (optind < argc)
 		usage();
+
+	check_mount();
+
 	param.s_log_frag_size = param.s_log_block_size;
 
-	if (!param.s_blocks_count)
-		param.s_blocks_count = get_size(device_name);
+	if (!param.s_blocks_count) {
+		retval = ext2fs_get_device_size(device_name,
+						EXT2_BLOCK_SIZE(&param),
+						&param.s_blocks_count);
+		if (retval) {
+			com_err(program_name, 0,
+				"while trying to determine filesystem size");
+			exit(1);
+		}
+	}
 
 	/*
 	 * Calculate number of inodes based on the inode ratio
@@ -648,8 +631,6 @@ int main (int argc, char *argv[])
 	badblocks_list	bb_list = 0;
 	
 	PRS(argc, argv);
-
-	check_mount();
 
 	/*
 	 * Initialize the superblock....

@@ -26,15 +26,28 @@
 #include <sys/wait.h>
 #include <sys/signal.h>
 #include <sys/stat.h>
-#include <errno.h>
 #include <limits.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#if HAVE_ERRNO_H
 #include <errno.h>
+#endif
+#if HAVE_MNTENT_H
 #include <mntent.h>
+#endif
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
+#include <malloc.h>
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#endif
 
 #include "../version.h"
 #include "fsck.h"
@@ -114,9 +127,15 @@ char *progname;
 char *fstype = NULL;
 struct fs_info *filesys_info;
 struct fsck_instance *instance_list;
-static char fsck_path[PATH_MAX + 32];
+const char *fsck_prefix_path = "/sbin:/sbin/fs.d:/sbin/fs:/etc/fs:/etc";
+char *fsck_path = 0;
 static int ignore(struct fs_info *);
 
+#ifdef HAVE_STRDUP
+#ifdef _POSIX_SOURCE
+extern char *strdup(const char *s);
+#endif
+#else
 static char *strdup(const char *s)
 {
 	char	*ret;
@@ -126,6 +145,7 @@ static char *strdup(const char *s)
 		strcpy(ret, s);
 	return ret;
 }
+#endif
 
 static void free_instance(struct fsck_instance *i)
 {
@@ -142,9 +162,11 @@ static void free_instance(struct fsck_instance *i)
  */
 static void load_fs_info(NOARGS)
 {
+#if HAVE_MNTENT_H
 	FILE *mntfile;
 	struct mntent *mp;
 	struct fs_info *fs;
+	struct fs_info *fs_last = NULL;
 	int	old_fstab = 1;
 
 	filesys_info = NULL;
@@ -164,8 +186,12 @@ static void load_fs_info(NOARGS)
 		fs->opts = strdup(mp->mnt_opts);
 		fs->freq = mp->mnt_freq;
 		fs->passno = mp->mnt_passno;
-		fs->next = filesys_info;
-		filesys_info = fs;
+		fs->next = NULL;
+		if (!filesys_info)
+			filesys_info = fs;
+		else
+			fs_last->next = fs;
+		fs_last = fs;
 		if (fs->passno)
 			old_fstab = 0;
 	}
@@ -184,6 +210,9 @@ static void load_fs_info(NOARGS)
 			fs->passno = 1;
 		}
 	}
+#else
+	filesys_info = NULL;
+#endif /* HAVE_MNTENT_H */
 }
 	
 /* Lookup filesys in /etc/fstab and return the corresponding entry. */
@@ -366,21 +395,30 @@ static int wait_all(NOARGS)
 
 /*
  * Run the fsck program on a particular device
+ * 
+ * If the type is specified using -t, and it isn't prefixed with "no"
+ * (as in "noext2") and only one filesystem type is specified, then
+ * use that type regardless of what is specified in /etc/fstab.
+ * 
+ * If the type isn't specified by the user, then use either the type
+ * specified in /etc/fstab, or DEFAULT_FSTYPE.
  */
 static void fsck_device(char *device)
 {
-	const char	*type;
+	const char	*type = 0;
 	struct fs_info *fsent;
 	int retval;
 	char prog[80];
 
+	if (fstype && strncmp(type, "no", 2) && !strchr(type, ','))
+		type = fstype;
+
 	if ((fsent = lookup(device))) {
 		device = fsent->device;
-		type = fsent->type;
-	} else if (fstype && strncmp(fstype, "no", 2) &&
-		   !strchr(fstype, ','))
-		type = fstype;
-	else
+		if (!type)
+			type = fsent->type;
+	}
+	if (!type)
 		type = DEFAULT_FSTYPE;
 
 	sprintf(prog, "fsck.%s", type);
@@ -699,9 +737,9 @@ static void PRS(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-	char *oldpath;
-	int status = 0;
 	int i;
+	int status = 0;
+	char *oldpath = getenv("PATH");
 
 	PRS(argc, argv);
 
@@ -710,10 +748,16 @@ int main(int argc, char *argv[])
 			E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
 	/* Update our search path to include uncommon directories. */
-	strcpy(fsck_path, "/sbin:/sbin/fs.d:/sbin/fs:/etc/fs:/etc:");
-	if ((oldpath = getenv("PATH")) != NULL)
-		strcat(fsck_path, oldpath);
-    
+	if (oldpath) {
+		fsck_path = malloc (strlen (fsck_prefix_path) + 1 +
+				    strlen (oldpath) + 1);
+		strcpy (fsck_path, fsck_prefix_path);
+		strcat (fsck_path, ":");
+		strcat (fsck_path, oldpath);
+	} else {
+		fsck_path = strdup(oldpath);
+	}
+	
 	/* If -A was specified ("check all"), do that! */
 	if (doall)
 		return check_all();
@@ -730,7 +774,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
 	status |= wait_all();
+	free(fsck_path);
 	return status;
 }

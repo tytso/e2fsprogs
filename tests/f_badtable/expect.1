@@ -1,0 +1,29 @@
+Pass 1: Checking inodes, blocks, and sizes
+Group 0's block bitmap (3) is bad.  Relocate? yes
+
+Group 0's inode bitmap (4) is bad.  Relocate? yes
+
+WARNING: Severe data loss possible!!!!
+Bad block 6 in group 0's inode table.  Relocate? yes
+
+WARNING: Severe data loss possible!!!!
+Bad block 8 in group 0's inode table.  Relocate? yes
+
+Relocating group 0's block bitmap from 3 to 22...
+Relocating group 0's inode bitmap from 4 to 23...
+Relocating group 0's inode table from 5 to 24...
+Restarting e2fsck from the beginning...
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Fix summary information? yes
+
+Block bitmap differences: -5 -7 +22 +23 +24 +25 +26 +27.  FIXED
+Free blocks count wrong for group 0 (78, counted=74).  FIXED
+Free blocks count wrong (78, counted=74).  FIXED
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 11/32 files, 26/100 blocks
+Exit status is 1

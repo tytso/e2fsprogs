@@ -1,0 +1,33 @@
+Pass 1: Checking inodes, blocks, and sizes
+Remove illegal block(s) in inode 14? yes
+
+Block #2 (4294901760) > BLOCKS (100).  CLEARED
+Block #3 (4294901760) > BLOCKS (100).  CLEARED
+Block #4 (4294901760) > BLOCKS (100).  CLEARED
+Block #5 (4294901760) > BLOCKS (100).  CLEARED
+Block #6 (4294901760) > BLOCKS (100).  CLEARED
+Block #7 (4294901760) > BLOCKS (100).  CLEARED
+Block #8 (4294901760) > BLOCKS (100).  CLEARED
+Block #9 (4294901760) > BLOCKS (100).  CLEARED
+Block #10 (4294901760) > BLOCKS (100).  CLEARED
+Inode 14, i_blocks wrong 18 (counted=4).  Set i_blocks to counted? yes
+
+Pass 2: Checking directory structure
+i_file_acl for inode 14 (/MAKEDEV) is 4294901760, should be zero.
+Clear i_file_acl? yes
+
+i_dir_acl for inode 14 (/MAKEDEV) is 4294901760, should be zero.
+Clear i_dir_acl? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Fix summary information? yes
+
+Block bitmap differences: -43 -44 -45 -46 -47 -48 -49.  FIXED
+Free blocks count wrong for group 0 (68, counted=75).  FIXED
+Free blocks count wrong (68, counted=75).  FIXED
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 29/32 files, 25/100 blocks
+Exit status is 1

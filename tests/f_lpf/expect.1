@@ -1,0 +1,39 @@
+Pass 1: Checking inodes, blocks, and sizes
+
+Deleted inode detected with non-zero link count.
+This is probably due to old ext2fs kernel code.  
+Fix inode(s)? yes
+
+Inode 11 is deleted w/ non-zero link_count.  CLEARED
+Inode 13 is deleted w/ non-zero link_count.  CLEARED
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Unattached inode 14
+Connect to /lost+found? yes
+
+/lost+found not found.  Create? yes
+
+Inode 14 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 15
+Connect to /lost+found? yes
+
+Inode 15 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Pass 5: Checking group summary information
+Fix summary information? yes
+
+Free blocks count wrong for group 0 (25, counted=38).  FIXED
+Free blocks count wrong (39, counted=38).  FIXED
+Free inodes count wrong for group #0 (2, counted=1).  FIXED
+Directories count wrong for group #0 (1, counted=2).  FIXED
+Free inodes count wrong (2, counted=1).  FIXED
+Padding at end of block bitmap is not set. Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 15/16 files, 62/100 blocks
+Exit status is 1

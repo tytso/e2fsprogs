@@ -1,0 +1,21 @@
+Pass 1: Checking inodes, blocks, and sizes
+Remove illegal block(s) in inode 12? yes
+
+Block #4 (2) is in the group descriptors of group 0.  CLEARED
+Block #5 (3) is the block bitmap of group 0.  CLEARED
+Block #6 (1) is the superblock in group 0.  CLEARED
+Inode 12, i_blocks wrong 34 (counted=28).  Set i_blocks to counted? yes
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Fix summary information? yes
+
+Block bitmap differences: -29 -30 -31.  FIXED
+Free blocks count wrong for group 0 (61, counted=64).  FIXED
+Free blocks count wrong (61, counted=64).  FIXED
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 12/32 files, 36/100 blocks
+Exit status is 1

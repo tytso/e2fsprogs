@@ -30,7 +30,7 @@
 void main (int argc, char ** argv)
 {
 	char name [EXT2_NAME_LEN];
-	char path [MAXPATHLEN];
+	char path [sizeof (LPF) + 1 + 256];
 	struct stat st;
 	int i, j;
 	int d;

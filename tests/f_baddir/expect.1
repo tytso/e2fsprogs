@@ -1,0 +1,39 @@
+Pass 1: Checking inodes, blocks, and sizes
+Directory 12, incorrect size, 182 (counted = 1024). Set size to counted? yes
+
+Inode 13 is a zero length directory.  Clear? yes
+
+Pass 2: Checking directory structure
+Entry 'zero' in / (2) has deleted/unused inode 13.
+Clear? yes
+
+Directory inode 12, block 0, offset 0: directory corrupted
+Salvage? yes
+
+Missing '.' in directory inode 12.
+Fix? yes
+
+Missing '..' in directory inode 12.
+Fix? yes
+
+Pass 3: Checking directory connectivity
+'..' in /block.h (12) is . (0), should be / (2).
+Fix? yes
+
+Pass 4: Checking reference counts
+Inode 12 has ref count 1, expecting 2.
+Set i_nlinks to count? yes
+
+Pass 5: Checking group summary information
+Fix summary information? yes
+
+Block bitmap differences: -22.  FIXED
+Free blocks count wrong (76, counted=77).  FIXED
+Inode bitmap differences: -13.  FIXED
+Free inodes count wrong for group #0 (19, counted=20).  FIXED
+Directories count wrong for group #0 (4, counted=3).  FIXED
+Free inodes count wrong (19, counted=20).  FIXED
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 12/32 files, 23/100 blocks
+Exit status is 1

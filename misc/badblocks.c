@@ -20,7 +20,9 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#endif
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,8 +32,10 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
+#if HAVE_LINUX_FS_H
 #include <linux/fd.h>
 #include <linux/fs.h>
+#endif
 
 #include "et/com_err.h"
 #include "ext2fs/io.h"
@@ -88,6 +92,26 @@ static void alarm_intr (int alnum)
 	fflush (stderr);
 }
 
+static void flush_bufs (int dev, int sync)
+{
+  if (v_flag
+#if !defined (BLKFLSBUF) && !defined (FDFLUSH)
+      && sync
+#endif
+      )
+    fprintf (stderr, "Flushing buffers\n");
+
+  if (sync && fsync (dev) == -1)
+    com_err (program_name, errno, "during fsync");
+
+#ifdef BLKLSBUF
+  ioctl (dev, BLKFLSBUF, 0);	/* In case this is a HD */
+#endif
+#ifdef FDFLUSH
+  ioctl (dev, FDFLUSH, 0);	/* In case this is floppy */
+#endif
+}
+
 static void test_ro (int dev, unsigned long blocks_count,
 		     unsigned long block_size, FILE * out,
 		     unsigned long from_count)
@@ -103,11 +127,7 @@ static void test_ro (int dev, unsigned long blocks_count,
 		com_err (program_name, ENOMEM, "while allocating buffers");
 		exit (1);
 	}
-
-	if (v_flag)
-		fprintf (stderr, "Flushing buffers\n");
-	ioctl (dev, BLKFLSBUF, 0);	/* In case this is a HD */
-	ioctl (dev, FDFLUSH, 0);	/* In case this is floppy */
+	flush_bufs (dev, 0);
 	if (v_flag) {
 	    fprintf (stderr,
 		     "Checking for bad blocks in read-only mode\n");
@@ -158,10 +178,8 @@ static void test_rw (int dev, unsigned long blocks_count,
 		exit (1);
 	}
 
-	if (v_flag)
-		fprintf (stderr, "Flushing buffers\n");
-	ioctl (dev, BLKFLSBUF, 0);	/* In case this is a HD */
-	ioctl (dev, FDFLUSH, 0);	/* In case this is floppy */
+	flush_bufs (dev, 0);
+
 	if (v_flag)
 		fprintf (stderr, "Checking for bad blocks in read-write mode\n");
 	for (i = 0; i < sizeof (pattern); i++)
@@ -190,12 +208,7 @@ static void test_rw (int dev, unsigned long blocks_count,
 		alarm (0);
 		if (s_flag | v_flag)
 			fprintf(stderr, "done               \n");
-		if (v_flag)
-			fprintf (stderr, "Flushing buffers\n");
-		if (fsync (dev) == -1)
-			com_err (program_name, errno, "during fsync");
-		ioctl (dev, BLKFLSBUF, 0);	/* In case this is a HD */
-		ioctl (dev, FDFLUSH, 0);	/* In case this is floppy */
+		flush_bufs (dev, 1);
 		if (s_flag | v_flag)
 			fprintf (stderr, "Reading and comparing: ");
 		num_blocks = blocks_count;
@@ -221,10 +234,7 @@ static void test_rw (int dev, unsigned long blocks_count,
 		alarm (0);
 		if (s_flag | v_flag)
 			fprintf(stderr, "done           \n");
-		if (v_flag)
-			fprintf (stderr, "Flushing buffers\n");
-		ioctl (dev, BLKFLSBUF, 0);	/* In case this is a HD */
-		ioctl (dev, FDFLUSH, 0);	/* In case this is floppy */
+		flush_bufs (dev, 0);
 	}
 }
 

@@ -1,0 +1,48 @@
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Missing '.' in directory inode 12.
+Fix? yes
+
+Missing '..' in directory inode 12.
+Fix? yes
+
+First entry in directory inode 13 contains 'X' (inode=11)
+instead of '.'.
+Change to be '.'? yes
+
+Missing '..' in directory inode 14.
+Fix? yes
+
+Second entry in directory inode 15 contains 'XX' (inode=11)
+instead of '..'.
+Change to be '..'? yes
+
+Missing '.' in directory inode 16.
+Fix? yes
+
+Missing '..' in directory inode 16.
+Fix? yes
+
+Pass 3: Checking directory connectivity
+'..' in /a (12) is . (0), should be / (2).
+Fix? yes
+
+'..' in /c (14) is . (0), should be / (2).
+Fix? yes
+
+'..' in /d (15) is . (0), should be / (2).
+Fix? yes
+
+'..' in /e (16) is . (0), should be / (2).
+Fix? yes
+
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+Fix summary information? yes
+
+Free blocks count wrong for group 0 (72, counted=73).  FIXED
+Free blocks count wrong (72, counted=73).  FIXED
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 16/32 files, 27/100 blocks
+Exit status is 1

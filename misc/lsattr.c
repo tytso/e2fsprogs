@@ -16,12 +16,21 @@
  * 94/02/27	- Integrated in Ted's distribution
  */
 
+#include <sys/types.h>
 #include <dirent.h>
+#ifdef HAVE_ERRNO_H
 #include <errno.h>
+#endif
 #include <fcntl.h>
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#else
+extern int optind;
+extern char *optarg;
+#endif
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <linux/ext2_fs.h>
@@ -84,26 +93,28 @@ static void lsattr_args (const char * name)
 
 static int lsattr_dir_proc (const char * dir_name, struct dirent * de, void * private)
 {
-	char path [MAXPATHLEN];
 	struct stat st;
+	char *path;
+
+	path = malloc(strlen (dir_name) + 1 + strlen (de->d_name) + 1);
 
 	sprintf (path, "%s/%s", dir_name, de->d_name);
 	if (lstat (path, &st) == -1)
 		perror (path);
-	else
-	{
-		if (de->d_name[0] != '.' || all)
-		{
+	else {
+		if (de->d_name[0] != '.' || all) {
 			list_attributes (path);
 			if (S_ISDIR(st.st_mode) && recursive &&
-			    strcmp (de->d_name, ".") && strcmp (de->d_name, ".."))
-			{
+			    strcmp(de->d_name, ".") &&
+			    strcmp(de->d_name, "..")) {
 				printf ("\n%s:\n", path);
-				iterate_on_dir (path, lsattr_dir_proc, (void *) NULL);
+				iterate_on_dir (path, lsattr_dir_proc,
+						(void *) NULL);
 				printf ("\n");
 			}
 		}
 	}
+	free(path);
 	return 0;
 }
 

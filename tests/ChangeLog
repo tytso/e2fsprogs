@@ -1,0 +1,16 @@
+Mon Sep  4 23:06:06 1995  Remy Card  <card@bbj>
+
+	* Makefile.in (clean, distclean): Use the -f option when removing
+		files.
+
+Fri Aug 11 10:10:30 1995  Theodore Y. Ts'o  <tytso@lurch.mit.edu>
+
+	* test_script: Count up the number of passed and failed tests by
+		tallying the *.ok and *.failed files.
+
+	* run_e2fsck: Create foo.ok and foo.failed files when tests
+		succeed or fail, respectively.
+
+	* test_config (TZ): Set the timezone to be GMT, so that test
+		results are consistent.
+

@@ -16,12 +16,18 @@
  * 94/02/27	- Integrated in Ted's distribution
  */
 
+#include <sys/types.h>
 #include <dirent.h>
 #include <fcntl.h>
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <linux/ext2_fs.h>
@@ -264,12 +270,17 @@ static void change_attributes (const char * name)
 
 static int chattr_dir_proc (const char * dir_name, struct dirent * de, void * private)
 {
-	char path[MAXPATHLEN];
-
 	if (strcmp (de->d_name, ".") && strcmp (de->d_name, ".."))
 	{
+	        char *path;
+
+		path = malloc(strlen (dir_name) + 1 + strlen (de->d_name) + 1);
+		if (!path)
+			fatal_error("Couldn't allocate path variable "
+				    "in chattr_dir_proc", 1);
 		sprintf (path, "%s/%s", dir_name, de->d_name);
 		change_attributes (path);
+		free(path);
 	}
 	return 0;
 }
