@@ -14,6 +14,9 @@
  * 93/10/30	- Creation
  */
 
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+
 #if HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -28,6 +31,12 @@
 #endif
 
 #include "e2p.h"
+
+#ifdef O_LARGEFILE
+#define OPEN_FLAGS (O_RDONLY|O_NONBLOCK|O_LARGEFILE)
+#else
+#define OPEN_FLAGS (O_RDONLY|O_NONBLOCK)
+#endif
 
 int fgetflags (const char * name, unsigned long * flags)
 {
@@ -56,7 +65,7 @@ int fgetflags (const char * name, unsigned long * flags)
 #if HAVE_EXT2_IOCTLS
 	int fd, r, f;
 
-	fd = open (name, O_RDONLY|O_NONBLOCK);
+	fd = open (name, OPEN_FLAGS);
 	if (fd == -1)
 		return -1;
 	r = ioctl (fd, EXT2_IOC_GETFLAGS, &f);

@@ -1,3 +1,12 @@
+2000-12-02    <tytso@snap.thunk.org>
+
+	* fgetflags.c (fgetflags):
+	* fgetversion.c (fgetversion):
+	* fsetflags.c (fsetflags):
+	* fsetversion.c (fsetversion): Use the LFS API if available so
+		that the files are opened with O_LARGEFILE.  Addresses
+		Debian bug #72690.
+
 2000-08-14    <tytso@valinux.com>
 
 	* ls.c (list_super): Use better description of s_last_orphan
