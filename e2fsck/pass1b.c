@@ -203,6 +203,8 @@ void pass1b(ext2_filsys fs, char *block_buf)
 		
 	next:
 		retval = ext2fs_get_next_inode(scan, &ino, &inode);
+		if (retval == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
+			goto next;
 		if (retval) {
 			com_err(program_name, retval,
 				"while doing inode scan");

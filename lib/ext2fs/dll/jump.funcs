@@ -142,3 +142,11 @@
 00000000 T _ext2fs_get_library_version		libext2fs	version
 00000000 T _ext2fs_parse_version_string		libext2fs	version
 00000000 T _ext2fs_set_dir_block		libext2fs	dblist
+00000000 T _ext2fs_badblocks_copy 		libext2fs       badblocks
+00000000 T _ext2fs_copy_bitmap			libext2fs       bitmaps
+00000000 T _ext2fs_bg_has_super 		libext2fs       closefs
+00000000 T _ext2fs_copy_dblist  		libext2fs       dblist
+00000000 T _ext2fs_dup_handle   		libext2fs       dupfs
+00000000 T _ext2fs_icount_validate		libext2fs       icount
+00000000 T _ext2fs_resize_inode_bitmap 		libext2fs       rs_bitmap
+00000000 T _ext2fs_resize_block_bitmap 		libext2fs       rs_bitmap

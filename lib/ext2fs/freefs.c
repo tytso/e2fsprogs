@@ -15,7 +15,9 @@
 
 #include <linux/ext2_fs.h>
 
-#include "ext2fs.h"
+#include "ext2fsP.h"
+
+static void ext2fs_free_inode_cache(struct ext2_inode_cache *icache);
 
 void ext2fs_free(ext2_filsys fs)
 {
@@ -41,6 +43,9 @@ void ext2fs_free(ext2_filsys fs)
 
 	if (fs->dblist)
 		ext2fs_free_dblist(fs->dblist);
+
+	if (fs->icache)
+		ext2fs_free_inode_cache(fs->icache);
 	
 	fs->magic = 0;
 
@@ -80,5 +85,51 @@ void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap)
 
 	bitmap->magic = EXT2_ET_MAGIC_GENERIC_BITMAP;
 	ext2fs_free_generic_bitmap(bitmap);
+}
+
+/*
+ * Free the inode cache structure
+ */
+static void ext2fs_free_inode_cache(struct ext2_inode_cache *icache)
+{
+	if (--icache->refcount)
+		return;
+	if (icache->buffer)
+		free(icache->buffer);
+	if (icache->cache)
+		free(icache->cache);
+	icache->buffer_blk = 0;
+	free(icache);
+}
+
+/*
+ * This procedure frees a badblocks list.
+ */
+void ext2fs_badblocks_list_free(ext2_badblocks_list bb)
+{
+	if (bb->magic != EXT2_ET_MAGIC_BADBLOCKS_LIST)
+		return;
+
+	if (bb->list)
+		free(bb->list);
+	bb->list = 0;
+	free(bb);
+}
+
+/*
+ * Free a directory block list
+ */
+void ext2fs_free_dblist(ext2_dblist dblist)
+{
+	if (!dblist || (dblist->magic != EXT2_ET_MAGIC_DBLIST))
+		return;
+
+	if (dblist->list)
+		free(dblist->list);
+	dblist->list = 0;
+	if (dblist->fs && dblist->fs->dblist == dblist)
+		dblist->fs->dblist = 0;
+	dblist->magic = 0;
+	free(dblist);
 }
 

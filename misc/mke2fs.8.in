@@ -40,6 +40,12 @@ mke2fs \- create a Linux second extended file system
 .B \-q
 ]
 [
+.B \-r fs-revision-level
+]
+[
+.B -R raid_options
+]
+[
 .B -s sparse-super-flag
 ]
 [
@@ -120,7 +126,11 @@ Quiet execution.  Useful if mke2fs is run in a script.
 .I -s sparse-super-flag
 If sparse-super-flag is 1, then turn on the sparse superblock flag.  
 If 0, then turn off the sparse superblock flag.  (Currently, the sparse 
-superblock flag defaults to off.)
+superblock flag defaults to off.)  
+.B Warning:
+The Linux 2.0 kernel does not properly support this feature.  Neither do
+all Linux 2.1 kernels; please don't use this unless you know what you're
+doing!
 .TP
 .I -v
 Verbose execution.
@@ -136,6 +146,17 @@ Set the volume label for the filesystem.
 Set the last mounted directory for the filesystem.  This might be useful 
 for the sake of utilities that key off of the last mounted directory to 
 determine where the filesytem should be mounted.
+.TP
+.I -r revision
+Set the filesystem revision for the new filesystem.  Note that 1.2
+kernels only support revision 0 filesystems.
+.TP
+.I -R raid_options
+Set raid-related options for the filesystem.  Raid options are common
+separated, and may take an argument using the equals ('=')  sign.
+Currently the only supported argument is 
+.I stride
+which takes as its argument the number of blocks in a RAID stripe.
 .TP
 .I -S
 Write superblock and group descriptors only.  This is useful if all of

@@ -1,3 +1,84 @@
+Thu Apr 24 12:16:42 1997  Theodre Ts'o  <tytso@localhost.mit.edu>
+
+	* Release of E2fsprogs version 1.10
+
+Thu Apr 24 10:13:42 1997  Theodre Ts'o  <tytso@localhost.mit.edu>
+
+	* alloc_tables.c (ext2fs_allocate_tables): Correctly place the
+		inode and block bitmaps based on the RAID 0 stride
+		parameter (which is passed by mke2fs).
+
+	* ext2fs.h: Add "stride" parameter to ext2_filsys, to be used by
+ 		mke2fs to communicate the stride length to
+ 		ext2fs_allocate_tables()
+
+Wed Apr 23 21:50:42 1997  Theodre Ts'o  <tytso@localhost.mit.edu>
+
+	* initialize.c (ext2fs_initialize): Fix to compile under Linux 1.2
+		systems.  (We can't assume that the new filesystem types
+		are supported.)
+
+Wed Apr 23 18:40:53 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* alloc_tables.c (ext2fs_allocate_tables): Make sure that we
+		allocate the inode and block bitmaps inside block group at
+		all times.
+
+Mon Apr 21 00:06:28 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* alloc.c (ext2fs_new_block): Fix bug where if goal==0 and the
+		filesystem has no free blocks, ext2fs_new_block would loop
+		forever.
+
+	* dupfs.c (ext2fs_dup_handle): Duplicate an ext2 filesystem handle
+
+	* freefs.c (ext2fs_free_inode_cache): Decrement refcount and only
+		free if refcount goes to zero.
+
+	* inode.c (create_icache): Initialize refcount to 1.
+
+	* ext2fsP.h: Added refcount to ext2_inode_cache
+
+	* dblist.c (ext2fs_copy_dblist): New function to copy a directory
+		block list.
+
+	* badblocks.c (ext2fs_badblocks_copy): New function to copy a
+		badblocks structure.
+
+Sun Apr 20 23:19:51 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* bitmaps.c (ext2fs_copy_bitmap): New function to copy a bitmap.
+
+	* unix_io.c, test_io.c (unix_open, test_open): Initialize the
+ 	 	refcount to 1.
+		(unix_close, test_close): Decrement the refcount and only
+ 		close the io_channel if the refcount goes to 0.
+
+	* io.h: Add refcount to the io_channel structure.  Add new macro
+		interface io_channel_bumpcount() to bump the refcount.
+
+Thu Apr 17 20:25:03 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_read_inode, ext2fs_write_inode): Use the inode
+		cache in the filesystem handle, instead of the inode cache
+		in a static variable.
+
+	* freefs.c: Added static function to free the inode cache (called by
+		ext2fs_free). 
+
+	* ext2fsP.h: Added definition of the ext2_inode_cache structures.
+
+	* ext2fs.h: Added pointer to the inode_cache structure.
+
+	* block.c (block_iterate_ind, block_iterate_dind, 
+		block_iterate_tind): If there are holes in the indirect,
+		doubly indirect, or triply indirect blocks, increment the
+		block count field automatically.
+
+Thu Apr 17 12:23:38 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.09
+
 Mon Apr 14 20:38:56 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* version.c (ext2fs_parse_version_string): Check the passed in

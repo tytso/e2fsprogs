@@ -26,11 +26,9 @@
 
 #include "ext2fs.h"
 
-errcode_t ext2fs_allocate_generic_bitmap(__u32 start,
-					 __u32 end,
-					 __u32 real_end,
-					 const char *descr,
-					 ext2fs_generic_bitmap *ret)
+static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
+			     const char *descr, char *init_map,
+			     ext2fs_generic_bitmap *ret)
 {
 	ext2fs_generic_bitmap bitmap;
 	int	size;
@@ -63,10 +61,39 @@ errcode_t ext2fs_allocate_generic_bitmap(__u32 start,
 		return ENOMEM;
 	}
 
-	memset(bitmap->bitmap, 0, size);
+	if (init_map)
+		memcpy(bitmap->bitmap, init_map, size);
+	else
+		memset(bitmap->bitmap, 0, size);
 	*ret = bitmap;
 	return 0;
 }
+
+errcode_t ext2fs_allocate_generic_bitmap(__u32 start,
+					 __u32 end,
+					 __u32 real_end,
+					 const char *descr,
+					 ext2fs_generic_bitmap *ret)
+{
+	return make_bitmap(start, end, real_end, descr, 0, ret);
+}
+
+errcode_t ext2fs_copy_bitmap(ext2fs_generic_bitmap src,
+			     ext2fs_generic_bitmap *dest)
+{
+	errcode_t		retval;
+	ext2fs_generic_bitmap	new;
+
+	retval = make_bitmap(src->start, src->end, src->real_end,
+			     src->description, src->bitmap, &new);
+	if (retval)
+		return retval;
+	new->magic = src->magic;
+	new->fs = src->fs;
+	new->base_error_code = src->base_error_code;
+	return 0;
+}
+
 
 errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
 				       const char *descr,

@@ -74,6 +74,7 @@ int	quiet = 0;
 int	super_only = 0;
 int	force = 0;
 char	*bad_blocks_filename = 0;
+__u32	fs_stride = 0;
 
 struct ext2_super_block param;
 char *creator_os = NULL;
@@ -86,7 +87,8 @@ static void usage(NOARGS)
 	"[-f fragment-size]\n\t[-i bytes-per-inode] "
 	"[-m reserved-blocks-percentage] [-qvS]\n\t"
 	"[-o creator-os] [-g blocks-per-group] [-L volume-label]\n\t"
-	"[-M last-mounted-directory] device [blocks-count]\n",
+	"[-M last-mounted-directory] [-r fs-revision] [-R raid_opts]\n\t"
+	"device [blocks-count]\n",
 		program_name);
 	exit(1);
 }
@@ -536,6 +538,59 @@ static int set_os(struct ext2_super_block *sb, char *os)
 
 #define PATH_SET "PATH=/sbin"
 
+static parse_raid_opts(const char *opts)
+{
+	char	*buf, *token, *next, *p, *arg;
+	int	len;
+	int	raid_usage = 0;
+
+	len = strlen(opts);
+	buf = malloc(len+1);
+	if (!buf) {
+		fprintf(stderr, "Couldn't allocate memory to parse "
+			"raid options!\n");
+		exit(1);
+	}
+	strcpy(buf, opts);
+	for (token = buf; token && *token; token = next) {
+		p = strchr(token, ',');
+		next = 0;
+		if (p) {
+			*p = 0;
+			next = p+1;
+		} 
+		arg = strchr(token, '=');
+		if (arg) {
+			*arg = 0;
+			arg++;
+		}
+		if (strcmp(token, "stride") == 0) {
+			if (!arg) {
+				raid_usage++;
+				continue;
+			}
+			fs_stride = strtoul(arg, &p, 0);
+			if (*p || (fs_stride == 0)) {
+				fprintf(stderr, "Invalid stride parameter.\n");
+				raid_usage++;
+				continue;
+			}
+		} else
+			raid_usage++;
+	}
+	if (raid_usage) {
+		fprintf(stderr, "\nBad raid options specified.\n\n"
+			"Raid options are separated by commas, "
+			"and may take an argument which\n"
+			"\tis set off by an equals ('=') sign.\n\n"
+			"Valid raid options are:\n"
+			"\tstride=<stride length in blocks>\n\n");
+		exit(1);
+	}
+}	
+
+
+
 static void PRS(int argc, char *argv[])
 {
 	char	c;
@@ -548,6 +603,7 @@ static void PRS(int argc, char *argv[])
 	int	sparse_option = -1;
 	char	*oldpath = getenv("PATH");
 	struct ext2fs_sb *param_ext2 = (struct ext2fs_sb *) &param;
+	char	*raid_opts = 0;
 	
 	/* Update our PATH to include /sbin  */
 	if (oldpath) {
@@ -565,9 +621,6 @@ static void PRS(int argc, char *argv[])
 	setbuf(stderr, NULL);
 	initialize_ext2_error_table();
 	memset(&param, 0, sizeof(struct ext2_super_block));
-#ifdef EXT2_DYNAMIC_REV
-	param.s_rev_level = EXT2_DYNAMIC_REV;
-#endif
 	
 	fprintf (stderr, "mke2fs %s, %s for EXT2 FS %s, %s\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
@@ -575,7 +628,7 @@ static void PRS(int argc, char *argv[])
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv,
-			    "b:cf:g:i:l:m:o:qr:s:tvI:SFL:M:")) != EOF)
+			    "b:cf:g:i:l:m:o:qr:R:s:tvI:SFL:M:")) != EOF)
 		switch (c) {
 		case 'b':
 			size = strtoul(optarg, &tmp, 0);
@@ -673,6 +726,9 @@ static void PRS(int argc, char *argv[])
 		case 'M':
 			mount_dir = optarg;
 			break;
+		case 'R':
+			raid_opts = optarg;
+			break;
 		case 'S':
 			super_only = 1;
 			break;
@@ -693,6 +749,9 @@ static void PRS(int argc, char *argv[])
 	}
 	if (optind < argc)
 		usage();
+
+	if (raid_opts)
+		parse_raid_opts(raid_opts);
 
 	if (!force)
 		check_plausibility();
@@ -807,6 +866,7 @@ int main (int argc, char *argv[])
 		test_disk(fs, &bb_list);
 
 	handle_bad_blocks(fs, bb_list);
+	fs->stride = fs_stride;
 	retval = ext2fs_allocate_tables(fs);
 	if (retval) {
 		com_err(program_name, retval,

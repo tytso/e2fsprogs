@@ -156,6 +156,10 @@ static const char *interval_string(unsigned int secs)
 #define EXT2_INODE_SIZE(s) sizeof(struct ext2_inode)
 #endif
 
+#ifndef EXT2_GOOD_OLD_REV
+#define EXT2_GOOD_OLD_REV 0
+#endif
+
 void list_super (struct ext2_super_block * s)
 {
 	int inode_blocks_per_group;
@@ -195,12 +199,14 @@ void list_super (struct ext2_super_block * s)
 #endif
 	} else
 		printf("\n");
+#ifdef EXT2_DYNAMIC_REV
 	printf ("Filesystem features:      ");
 	if (s->s_feature_ro_compat & EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)
 		printf("sparse_super");
 	else
 		printf("(none)");
 	printf("\n");
+#endif
 	printf ("Filesystem state:        ");
 	print_fs_state (stdout, s->s_state);
 	printf ("\n");

@@ -103,6 +103,10 @@ adjust the reserved blocks count on the given device.
 .I -s sparse_super_flag
 sets and resets the sparse_superblock flag.  The sparse_superblock feature
 saves space on really big filesystems.
+.B Warning:
+The Linux 2.0 kernel does not properly support this feature.  Neither do
+all Linux 2.1 kernels; please don't use this unless you know what you're
+doing!
 .TP
 .I -u user
 set the user who can benefit from the reserved blocks.

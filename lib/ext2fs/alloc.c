@@ -73,7 +73,7 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode,
 errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
 			   ext2fs_block_bitmap map, blk_t *ret)
 {
-	blk_t	i = goal;
+	blk_t	i;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -81,8 +81,9 @@ errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
 		map = fs->block_map;
 	if (!map)
 		return EXT2_ET_NO_BLOCK_BITMAP;
-	if (!i)
-		i = fs->super->s_first_data_block;
+	if (!goal || (goal >= fs->super->s_blocks_count))
+		goal = fs->super->s_first_data_block;
+	i = goal;
 	do {
 		if (!ext2fs_test_block_bitmap(map, i)) {
 			*ret = i;

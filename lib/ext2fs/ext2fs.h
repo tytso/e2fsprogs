@@ -141,16 +141,21 @@ struct struct_ext2_filsys {
 				struct ext2_inode *inode);
 	badblocks_list			badblocks;
 	ext2_dblist			dblist;
+	__u32				stride;	/* for mke2fs */
 	/*
 	 * Reserved for future expansion
 	 */
-	__u32				reserved[12];
+	__u32				reserved[11];
 
 	/*
-	 * Not used by ext2fs library; reserved for the use of the
-	 * calling application.
+	 * Reserved for the use of the calling application.
 	 */
-	void *				private; 
+	void *				private;
+
+	/*
+	 * Inode cache
+	 */
+	struct ext2_inode_cache		*icache;
 };
 
 #include "ext2fs/bitops.h"
@@ -374,7 +379,6 @@ errcode_t ext2fs_allocate_tables(ext2_filsys fs);
 /* badblocks.c */
 extern errcode_t ext2fs_badblocks_list_create(ext2_badblocks_list *ret,
 					    int size);
-extern void ext2fs_badblocks_list_free(ext2_badblocks_list bb);
 extern errcode_t ext2fs_badblocks_list_add(ext2_badblocks_list bb,
 					   blk_t blk);
 extern int ext2fs_badblocks_list_test(ext2_badblocks_list bb,
@@ -385,16 +389,18 @@ extern errcode_t
 extern int ext2fs_badblocks_list_iterate(ext2_badblocks_iterate iter,
 					 blk_t *blk);
 extern void ext2fs_badblocks_list_iterate_end(ext2_badblocks_iterate iter);
+extern errcode_t ext2fs_badblocks_copy(ext2_badblocks_list src,
+				       ext2_badblocks_list *dest);
 
 /* bb_compat */
 extern errcode_t badblocks_list_create(badblocks_list *ret, int size);
-extern void badblocks_list_free(badblocks_list bb);
 extern errcode_t badblocks_list_add(badblocks_list bb, blk_t blk);
 extern int badblocks_list_test(badblocks_list bb, blk_t blk);
 extern errcode_t badblocks_list_iterate_begin(badblocks_list bb,
 					      badblocks_iterate *ret);
 extern int badblocks_list_iterate(badblocks_iterate iter, blk_t *blk);
 extern void badblocks_list_iterate_end(badblocks_iterate iter);
+extern void badblocks_list_free(badblocks_list bb);
 
 /* bb_inode.c */
 extern errcode_t ext2fs_update_bb_inode(ext2_filsys fs,
@@ -464,18 +470,18 @@ extern errcode_t ext2fs_compare_inode_bitmap(ext2fs_inode_bitmap bm1,
 
 /* dblist.c */
 
-errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ino_t *ret_num_dirs);
-errcode_t ext2fs_init_dblist(ext2_filsys fs, ext2_dblist *ret_dblist);
-void ext2fs_free_dblist(ext2_dblist dblist);
-errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
-			     int blockcnt);
-errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
-				int (*func)(ext2_filsys fs,
-					    struct ext2_db_entry *db_info,
-					    void	*private),
-				void *private);
-errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
-			       int blockcnt);
+extern errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ino_t *ret_num_dirs);
+extern errcode_t ext2fs_init_dblist(ext2_filsys fs, ext2_dblist *ret_dblist);
+extern errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino,
+				      blk_t blk, int blockcnt);
+extern errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
+	int (*func)(ext2_filsys fs, struct ext2_db_entry *db_info,
+		    void	*private),
+       void *private);
+extern errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ino_t ino,
+				      blk_t blk, int blockcnt);
+extern errcode_t ext2fs_copy_dblist(ext2_dblist src,
+				    ext2_dblist *dest);
 
 /* dblist_dir.c */
 extern errcode_t
@@ -514,6 +520,8 @@ extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 				    int		blockcnt,
 				    void		*private);
 
+/* dupfs.c */
+extern errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest);
 
 /* expanddir.c */
 extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ino_t dir);
@@ -523,6 +531,8 @@ extern void ext2fs_free(ext2_filsys fs);
 extern void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap);
 extern void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap);
 extern void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap);
+extern void ext2fs_free_dblist(ext2_dblist dblist);
+extern void ext2fs_badblocks_list_free(badblocks_list bb);
 
 /* getsize.c */
 extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,
@@ -631,6 +641,8 @@ extern errcode_t ext2fs_resize_inode_bitmap(__u32 new_end, __u32 new_real_end,
 					    ext2fs_inode_bitmap bmap);
 extern errcode_t ext2fs_resize_block_bitmap(__u32 new_end, __u32 new_real_end,
 					    ext2fs_block_bitmap bmap);
+extern errcode_t ext2fs_copy_bitmap(ext2fs_generic_bitmap src,
+				    ext2fs_generic_bitmap *dest);
 
 /* swapfs.c */
 extern void ext2fs_swap_super(struct ext2_super_block * super);

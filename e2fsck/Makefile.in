@@ -147,34 +147,26 @@ distclean: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-e2fsck.o: $(srcdir)/e2fsck.c \
- $(top_srcdir)/lib/et/com_err.h \
+e2fsck.o: $(srcdir)/e2fsck.c $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/uuid/uuid.h $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/problem.h \
  $(srcdir)/../version.h
-pass1.o: $(srcdir)/pass1.c \
- $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/e2fsck.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h \
+pass1.o: $(srcdir)/pass1.c $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/problem.h
-pass1b.o: $(srcdir)/pass1b.c \
- $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/e2fsck.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h \
+pass1b.o: $(srcdir)/pass1b.c $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/problem.h
-pass2.o: $(srcdir)/pass2.c $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/e2fsck.h \
+pass2.o: $(srcdir)/pass2.c $(top_srcdir)/lib/et/com_err.h $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(srcdir)/problem.h
-pass3.o: $(srcdir)/pass3.c \
- $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/e2fsck.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h \
+pass3.o: $(srcdir)/pass3.c $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/problem.h
 pass4.o: $(srcdir)/pass4.c $(srcdir)/e2fsck.h \
@@ -182,31 +174,26 @@ pass4.o: $(srcdir)/pass4.c $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/problem.h
 pass5.o: $(srcdir)/pass5.c $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/e2fsck.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
-badblocks.o: $(srcdir)/badblocks.c \
- $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/e2fsck.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(srcdir)/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h
-util.o: $(srcdir)/util.c \
- $(srcdir)/e2fsck.h \
+badblocks.o: $(srcdir)/badblocks.c $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+util.o: $(srcdir)/util.c $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h  
+ $(top_srcdir)/lib/ext2fs/bitops.h 
 dirinfo.o: $(srcdir)/dirinfo.c $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/e2fsck.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
-ehandler.o: $(srcdir)/ehandler.c \
- $(srcdir)/e2fsck.h \
+ $(srcdir)/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+ehandler.o: $(srcdir)/ehandler.c $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h  
-problem.o: $(srcdir)/problem.c \
- $(srcdir)/e2fsck.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h 
+problem.o: $(srcdir)/problem.c $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/problem.h

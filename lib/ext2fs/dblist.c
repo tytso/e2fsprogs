@@ -47,12 +47,16 @@ errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ino_t *ret_num_dirs)
 }
 
 /*
- * Initialize a directory block list
+ * helper function for making a new directory block list (for
+ * initialize and copy).
  */
-errcode_t ext2fs_init_dblist(ext2_filsys fs, ext2_dblist *ret_dblist)
+static errcode_t make_dblist(ext2_filsys fs, ino_t size, ino_t count,
+			     struct ext2_db_entry *list,
+			     ext2_dblist *ret_dblist)
 {
 	ext2_dblist	dblist;
 	errcode_t	retval;
+	size_t		len;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -67,27 +71,68 @@ errcode_t ext2fs_init_dblist(ext2_filsys fs, ext2_dblist *ret_dblist)
 
 	dblist->magic = EXT2_ET_MAGIC_DBLIST;
 	dblist->fs = fs;
-	retval = ext2fs_get_num_dirs(fs, &dblist->size);
-	if (retval)
-		goto cleanup;
-
-	dblist->count = 0;
-	dblist->sorted = 1;
-	dblist->list = malloc(sizeof(struct ext2_db_entry) * dblist->size);
+	if (size)
+		dblist->size = size;
+	else {
+		retval = ext2fs_get_num_dirs(fs, &dblist->size);
+		if (retval)
+			goto cleanup;
+	}
+	len = sizeof(struct ext2_db_entry) * dblist->size;
+	dblist->count = count;
+	dblist->list = malloc(len);
 	if (dblist->list == NULL) {
 		retval = ENOMEM;
 		goto cleanup;
 	}
+	if (list)
+		memcpy(dblist->list, list, len);
+	else
+		memset(dblist->list, 0, len);
+	*ret_dblist = dblist;
+	return 0;
+cleanup:
+	if (dblist)
+		free(dblist);
+	return retval;
+}
+
+/*
+ * Initialize a directory block list
+ */
+errcode_t ext2fs_init_dblist(ext2_filsys fs, ext2_dblist *ret_dblist)
+{
+	ext2_dblist	dblist;
+	errcode_t	retval;
+
+	retval = make_dblist(fs, 0, 0, 0, &dblist);
+	if (retval)
+		return retval;
+
+	dblist->sorted = 1;
 	if (ret_dblist)
 		*ret_dblist = dblist;
 	else
 		fs->dblist = dblist;
 
 	return 0;
-cleanup:
-	if (dblist)
-		free(dblist);
-	return retval;
+}
+
+/*
+ * Copy a directory block list
+ */
+errcode_t ext2fs_copy_dblist(ext2_dblist src, ext2_dblist *dest)
+{
+	ext2_dblist	dblist;
+	errcode_t	retval;
+
+	retval = make_dblist(src->fs, src->size, src->count, src->list,
+			     &dblist);
+	if (retval)
+		return retval;
+	dblist->sorted = src->sorted;
+	*dest = dblist;
+	return 0;
 }
 
 /*

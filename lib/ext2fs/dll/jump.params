@@ -3,4 +3,4 @@ Text=0x66900000
 Data=0x00000000
 Jump=0x00001000
 GOT=0x00001000
-Version=1.1.0
+Version=1.2.0

@@ -42,6 +42,8 @@ errcode_t ext2fs_allocate_tables(ext2_filsys fs)
 		 * Allocate the inode table
 		 */
 		start_blk = group_blk + 3 + fs->desc_blocks;
+		if (start_blk > last_blk)
+			start_blk = group_blk;
 		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
 						fs->inode_blocks_per_group,
 						fs->block_map, &new_blk);
@@ -56,8 +58,15 @@ errcode_t ext2fs_allocate_tables(ext2_filsys fs)
 		/*
 		 * Allocate the block and inode bitmaps
 		 */
-		start_blk += fs->inode_blocks_per_group +
-			((2 * i) % (last_blk - start_blk));
+		if (fs->stride) {
+			start_blk += fs->inode_blocks_per_group;
+			start_blk += ((fs->stride * i) %
+				      (last_blk - start_blk));
+			if (start_blk > last_blk)
+				 /* should never happen */
+				start_blk = group_blk;
+		} else
+			start_blk = group_blk;
 		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
 						1, fs->block_map, &new_blk);
 		if (retval)

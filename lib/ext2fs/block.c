@@ -46,13 +46,16 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 	int	i, flags, limit, offset;
 	blk_t	*block_nr;
 
+	limit = ctx->fs->blocksize >> 2;
 	if (!(ctx->flags & BLOCK_FLAG_DEPTH_TRAVERSE) &&
 	    !(ctx->flags & BLOCK_FLAG_DATA_ONLY))
 		ret = (*ctx->func)(ctx->fs, ind_block,
 				   BLOCK_COUNT_IND, ref_block,
 				   ref_offset, ctx->private);
-	if (!*ind_block || (ret & BLOCK_ABORT))
+	if (!*ind_block || (ret & BLOCK_ABORT)) {
+		ctx->bcount += limit;
 		return ret;
+	}
 	if (*ind_block >= ctx->fs->super->s_blocks_count ||
 	    *ind_block < ctx->fs->super->s_first_data_block) {
 		ctx->errcode = EXT2_ET_BAD_IND_BLOCK;
@@ -65,7 +68,6 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	limit = ctx->fs->blocksize >> 2;
 	if ((ctx->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
 	    (ctx->fs->flags & EXT2_FLAG_SWAP_BYTES_READ)) {
 		block_nr = (blk_t *) ctx->ind_buf;
@@ -129,13 +131,16 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 	int	i, flags, limit, offset;
 	blk_t	*block_nr;
 
+	limit = ctx->fs->blocksize >> 2;
 	if (!(ctx->flags & BLOCK_FLAG_DEPTH_TRAVERSE) &&
 	    !(ctx->flags & BLOCK_FLAG_DATA_ONLY))
 		ret = (*ctx->func)(ctx->fs, dind_block,
 				   BLOCK_COUNT_DIND, ref_block,
 				   ref_offset, ctx->private);
-	if (!*dind_block || (ret & BLOCK_ABORT))
+	if (!*dind_block || (ret & BLOCK_ABORT)) {
+		ctx->bcount += limit*limit;
 		return ret;
+	}
 	if (*dind_block >= ctx->fs->super->s_blocks_count ||
 	    *dind_block < ctx->fs->super->s_first_data_block) {
 		ctx->errcode = EXT2_ET_BAD_DIND_BLOCK;
@@ -148,7 +153,6 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	limit = ctx->fs->blocksize >> 2;
 	if ((ctx->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
 	    (ctx->fs->flags & EXT2_FLAG_SWAP_BYTES_READ)) {
 		block_nr = (blk_t *) ctx->dind_buf;
@@ -171,8 +175,10 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 		}
 	} else {
 		for (i = 0; i < limit; i++, block_nr++) {
-			if (*block_nr == 0)
+			if (*block_nr == 0) {
+				ctx->bcount += limit;
 				continue;
+			}
 			flags = block_iterate_ind(block_nr,
 						  *dind_block, offset,
 						  ctx);
@@ -212,13 +218,16 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 	int	i, flags, limit, offset;
 	blk_t	*block_nr;
 
+	limit = ctx->fs->blocksize >> 2;
 	if (!(ctx->flags & BLOCK_FLAG_DEPTH_TRAVERSE) &&
 	    !(ctx->flags & BLOCK_FLAG_DATA_ONLY))
 		ret = (*ctx->func)(ctx->fs, tind_block,
 				   BLOCK_COUNT_TIND, ref_block,
 				   ref_offset, ctx->private);
-	if (!*tind_block || (ret & BLOCK_ABORT))
+	if (!*tind_block || (ret & BLOCK_ABORT)) {
+		ctx->bcount += limit*limit*limit;
 		return ret;
+	}
 	if (*tind_block >= ctx->fs->super->s_blocks_count ||
 	    *tind_block < ctx->fs->super->s_first_data_block) {
 		ctx->errcode = EXT2_ET_BAD_TIND_BLOCK;
@@ -231,7 +240,6 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	limit = ctx->fs->blocksize >> 2;
 	if ((ctx->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
 	    (ctx->fs->flags & EXT2_FLAG_SWAP_BYTES_READ)) {
 		block_nr = (blk_t *) ctx->tind_buf;
@@ -254,8 +262,10 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 		}
 	} else {
 		for (i = 0; i < limit; i++, block_nr++) {
-			if (*block_nr == 0)
+			if (*block_nr == 0) {
+				ctx->bcount += limit*limit;
 				continue;
+			}
 			flags = block_iterate_dind(block_nr,
 						   *tind_block,
 						   offset, ctx);

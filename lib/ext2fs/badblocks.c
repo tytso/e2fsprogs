@@ -26,26 +26,58 @@
 #include "ext2fsP.h"
 
 /*
- * This procedure create an empty badblocks list.
+ * Helper function for making a badblocks list
  */
-errcode_t ext2fs_badblocks_list_create(ext2_badblocks_list *ret, int size)
+static errcode_t make_badblocks_list(int size, int num, blk_t *list,
+				     ext2_badblocks_list *ret)
 {
 	ext2_badblocks_list	bb;
-
+	
 	bb = malloc(sizeof(struct ext2_struct_badblocks_list));
 	if (!bb)
 		return ENOMEM;
 	memset(bb, 0, sizeof(struct ext2_struct_badblocks_list));
 	bb->magic = EXT2_ET_MAGIC_BADBLOCKS_LIST;
 	bb->size = size ? size : 10;
+	bb->num = num;
 	bb->list = malloc(bb->size * sizeof(blk_t));
 	if (!bb->list) {
 		free(bb);
 		return ENOMEM;
 	}
+	if (list)
+		memcpy(bb->list, list, bb->size * sizeof(blk_t));
+	else
+		memset(bb->list, 0, bb->size * sizeof(blk_t));
 	*ret = bb;
 	return 0;
 }
+	
+
+/*
+ * This procedure creates an empty badblocks list.
+ */
+errcode_t ext2fs_badblocks_list_create(ext2_badblocks_list *ret, int size)
+{
+	return make_badblocks_list(size, 0, 0, ret);
+}
+
+/*
+ * This procedure copies a badblocks list
+ */
+errcode_t ext2fs_badblocks_copy(ext2_badblocks_list src,
+				ext2_badblocks_list *dest)
+{
+	errcode_t	retval;
+	
+	retval = make_badblocks_list(src->size, src->num, src->list,
+				     dest);
+	if (retval)
+		return retval;
+	(*dest)->badblocks_flags = src->badblocks_flags;
+	return 0;
+}
+
 
 /*
  * This procedure frees a badblocks list.

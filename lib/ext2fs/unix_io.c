@@ -94,6 +94,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	io->block_size = 1024;
 	io->read_error = 0;
 	io->write_error = 0;
+	io->refcount = 1;
 
 	memset(data, 0, sizeof(struct unix_private_data));
 	data->magic = EXT2_ET_MAGIC_UNIX_IO_CHANNEL;
@@ -130,6 +131,9 @@ static errcode_t unix_close(io_channel channel)
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	if (--channel->refcount > 0)
+		return 0;
 	
 	if (close(data->dev) < 0)
 		retval = errno;

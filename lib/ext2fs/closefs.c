@@ -190,33 +190,3 @@ errcode_t ext2fs_close(ext2_filsys fs)
 	return 0;
 }
 
-/*
- * This procedure frees a badblocks list.
- */
-void ext2fs_badblocks_list_free(ext2_badblocks_list bb)
-{
-	if (bb->magic != EXT2_ET_MAGIC_BADBLOCKS_LIST)
-		return;
-
-	if (bb->list)
-		free(bb->list);
-	bb->list = 0;
-	free(bb);
-}
-
-/*
- * Close a directory block list
- */
-void ext2fs_free_dblist(ext2_dblist dblist)
-{
-	if (!dblist || (dblist->magic != EXT2_ET_MAGIC_DBLIST))
-		return;
-
-	if (dblist->list)
-		free(dblist->list);
-	dblist->list = 0;
-	if (dblist->fs && dblist->fs->dblist == dblist)
-		dblist->fs->dblist = 0;
-	dblist->magic = 0;
-	free(dblist);
-}

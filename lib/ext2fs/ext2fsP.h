@@ -64,6 +64,22 @@ struct dir_context {
 	errcode_t	errcode;
 };
 
+/*
+ * Inode cache structure
+ */
+struct ext2_inode_cache {
+	void *				buffer;
+	blk_t				buffer_blk;
+	int				cache_last;
+	int				cache_size;
+	int				refcount;
+	struct ext2_inode_cache_ent	*cache;
+};
+
+struct ext2_inode_cache_ent {
+	ino_t	ino;
+	struct ext2_inode inode;
+};
 
 /* Function prototypes */
 

@@ -43,7 +43,8 @@ struct struct_io_channel {
 				       size_t size,
 				       int actual_bytes_written,
 				       errcode_t error);
-	int		reserved[16];
+	int		refcount;
+	int		reserved[15];
 	void		*private_data;
 };
 
@@ -71,6 +72,7 @@ struct struct_io_manager {
 #define io_channel_read_blk(c,b,n,d)	((c)->manager->read_blk((c),b,n,d))
 #define io_channel_write_blk(c,b,n,d)	((c)->manager->write_blk((c),b,n,d))
 #define io_channel_flush(c) 		((c)->manager->flush((c)))
+#define io_channel_bumpcount(c)		((c)->refcount++)
 	
 /* unix_io.c */
 extern io_manager unix_io_manager;

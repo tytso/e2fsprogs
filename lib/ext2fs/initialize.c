@@ -58,7 +58,6 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	ext2_filsys	fs;
 	errcode_t	retval;
 	struct ext2_super_block *super;
-	struct ext2fs_sb	*s;
 	int		frags_per_block;
 	int		rem;
 	int		overhead = 0;
@@ -92,12 +91,9 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		goto cleanup;
 	}
 	memset(super, 0, SUPERBLOCK_SIZE);
-	s = (struct ext2fs_sb *) super;
 
 #define set_field(field, default) (super->field = param->field ? \
 				   param->field : (default))
-#define set_ext2_field(field, default) (s->field = param->field ? \
-					param->field : (default))
 
 	super->s_magic = EXT2_SUPER_MAGIC;
 	super->s_state = EXT2_VALID_FS;
@@ -107,15 +103,15 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_first_data_block, super->s_log_block_size ? 0 : 1);
 	set_field(s_max_mnt_count, EXT2_DFL_MAX_MNT_COUNT);
 	set_field(s_errors, EXT2_ERRORS_DEFAULT);
-	set_ext2_field(s_feature_compat, 0);
-	set_ext2_field(s_feature_incompat, 0);
-	set_ext2_field(s_feature_ro_compat, 0);
-	if (s->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)
+#ifdef EXT2_DYNAMIC_REV
+	set_field(s_feature_compat, 0);
+	set_field(s_feature_incompat, 0);
+	set_field(s_feature_ro_compat, 0);
+	if (super->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)
 		return EXT2_ET_UNSUPP_FEATURE;
-	if (s->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)
+	if (super->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)
 		return EXT2_ET_RO_UNSUPP_FEATURE;
 
-#ifdef EXT2_DYNAMIC_REV
 	set_field(s_rev_level, EXT2_GOOD_OLD_REV);
 	if (super->s_rev_level >= EXT2_DYNAMIC_REV) {
 		set_field(s_first_ino, EXT2_GOOD_OLD_FIRST_INO);

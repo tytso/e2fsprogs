@@ -1,3 +1,28 @@
+Thu Apr 24 12:16:42 1997  Theodre Ts'o  <tytso@localhost.mit.edu>
+
+	* Release of E2fsprogs version 1.10
+
+Thu Apr 24 09:52:47 1997  Theodre Ts'o  <tytso@localhost.mit.edu>
+
+	* mke2fs.c: Added new option -R, which specifies RAID options.
+  		Currently the only supported RAID option is "stride" which
+ 		specifies the stripe width in RAID filesystem.  This is
+ 		used to aid in the placement of the inode and block
+ 		bitmaps.
+
+	* mke2fs.8.in, tune2fs.8.in: Added warnings that the sparse
+ 		superblock option isn't yet supported by most kernels.
+
+Wed Apr 23 22:42:51 1997  Theodre Ts'o  <tytso@localhost.mit.edu>
+
+	* mke2fs.c (PRS): Make the default filesystem revision be 0, not
+ 		1.  (Since some people are still worried about 1.2.13
+ 		compatibility).
+
+Thu Apr 17 12:23:38 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.09
+
 Fri Apr 11 18:57:24 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* chattr.1.in: Updated man page so that the 'A' attribute is
