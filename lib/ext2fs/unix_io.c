@@ -55,7 +55,8 @@ struct unix_cache {
 };
 
 #define CACHE_SIZE 8
-#define WRITE_VIA_CACHE_SIZE 4	/* Must be smaller than CACHE_SIZE */
+#define WRITE_DIRECT_SIZE 4	/* Must be smaller than CACHE_SIZE */
+#define READ_DIRECT_SIZE 4	/* Should be smaller than CACHE_SIZE */
 
 struct unix_private_data {
 	int	magic;
@@ -211,14 +212,14 @@ static void free_cache(io_channel channel,
 }
 
 /*
- * Try to find a block in the cache.  If get_cache is non-zero, then
- * if the block isn't in the cache, evict the oldest block in the
- * cache and create a new cache entry for the requested block.
+ * Try to find a block in the cache.  If the block is not found, and
+ * eldest is a non-zero pointer, then fill in eldest with the cache
+ * entry to that should be reused.
  */
 static struct unix_cache *find_cached_block(io_channel channel,
 					    struct unix_private_data *data,
 					    unsigned long block,
-					    int get_cache)
+					    struct unix_cache **eldest)
 {
 	struct unix_cache	*cache, *unused_cache, *oldest_cache;
 	int			i;
@@ -226,7 +227,8 @@ static struct unix_cache *find_cached_block(io_channel channel,
 	unused_cache = oldest_cache = 0;
 	for (i=0, cache = data->cache; i < CACHE_SIZE; i++, cache++) {
 		if (!cache->in_use) {
-			unused_cache = cache;
+			if (!unused_cache)
+				unused_cache = cache;
 			continue;
 		}
 		if (cache->block == block) {
@@ -237,25 +239,24 @@ static struct unix_cache *find_cached_block(io_channel channel,
 		    (cache->access_time < oldest_cache->access_time))
 			oldest_cache = cache;
 	}
-	if (!get_cache)
-		return 0;
-	
-	/*
-	 * Try to allocate cache slot.
-	 */
-	if (unused_cache)
-		cache = unused_cache;
-	else {
-		cache = oldest_cache;
-		if (cache->dirty)
-			raw_write_blk(channel, data,
-				      cache->block, 1, cache->buf);
-	}
+	if (eldest)
+		*eldest = (unused_cache) ? unused_cache : oldest_cache;
+	return 0;
+}
+
+/*
+ * Reuse a particular cache entry for another block.
+ */
+void reuse_cache(io_channel channel, struct unix_private_data *data,
+		 struct unix_cache *cache, unsigned long block)
+{
+	if (cache->dirty && cache->in_use)
+		raw_write_blk(channel, data, cache->block, 1, cache->buf);
+
 	cache->in_use = 1;
 	cache->dirty = 0;
 	cache->block = block;
 	cache->access_time = ++data->access_time;
-	return cache;
 }
 
 /*
@@ -444,7 +445,7 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 			       int count, void *buf)
 {
 	struct unix_private_data *data;
-	struct unix_cache *cache;
+	struct unix_cache *cache, *reuse[READ_DIRECT_SIZE];
 	errcode_t	retval;
 	char		*cp;
 	int		i, j;
@@ -454,10 +455,10 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
 
 	/*
-	 * If we're doing an odd-sized read, flush out the cache and
-	 * then do a direct read.
+	 * If we're doing an odd-sized read or a very large read,
+	 * flush out the cache and then do a direct read.
 	 */
-	if (count < 0) {
+	if (count < 0 || count > WRITE_DIRECT_SIZE) {
 		if ((retval = flush_cached_blocks(channel, data, 0)))
 			return retval;
 		return raw_read_blk(channel, data, block, count, buf);
@@ -466,7 +467,8 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 	cp = buf;
 	while (count > 0) {
 		/* If it's in the cache, use it! */
-		if ((cache = find_cached_block(channel, data, block, 0))) {
+		if ((cache = find_cached_block(channel, data, block,
+					       &reuse[0]))) {
 #ifdef DEBUG
 			printf("Using cached block %d\n", block);
 #endif
@@ -481,7 +483,8 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 		 * single read request
 		 */
 		for (i=1; i < count; i++)
-			if (find_cached_block(channel, data, block+i, 0))
+			if (find_cached_block(channel, data, block+i,
+					      &reuse[i]))
 				break;
 #ifdef DEBUG
 		printf("Reading %d blocks starting at %d\n", i, block);
@@ -492,9 +495,9 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 		/* Save the results in the cache */
 		for (j=0; j < i; j++) {
 			count--;
-			cache = find_cached_block(channel, data, block++, 1);
-			if (cache)
-				memcpy(cache->buf, cp, channel->block_size);
+			cache = reuse[j];
+			reuse_cache(channel, data, cache, block++);
+			memcpy(cache->buf, cp, channel->block_size);
 			cp += channel->block_size;
 		}
 	}
@@ -505,7 +508,7 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 				int count, const void *buf)
 {
 	struct unix_private_data *data;
-	struct unix_cache *cache;
+	struct unix_cache *cache, *reuse;
 	errcode_t	retval = 0, retval2;
 	const char	*cp;
 	int		writethrough;
@@ -518,7 +521,7 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 	 * If we're doing an odd-sized write or a very large write,
 	 * flush out the cache completely and then do a direct write.
 	 */
-	if (count < 0 || count > WRITE_VIA_CACHE_SIZE) {
+	if (count < 0 || count > WRITE_DIRECT_SIZE) {
 		if ((retval = flush_cached_blocks(channel, data, 1)))
 			return retval;
 		return raw_write_blk(channel, data, block, count, buf);
@@ -535,19 +538,13 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 	
 	cp = buf;
 	while (count > 0) {
-		cache = find_cached_block(channel, data, block, 1);
+		cache = find_cached_block(channel, data, block, &reuse);
 		if (!cache) {
-			/*
-			 * Oh shit, we couldn't get cache descriptor.
-			 * Force the write directly.
-			 */
-			if ((retval2 = raw_write_blk(channel, data, block,
-						1, cp)))
-				retval = retval2;
-		} else {
-			memcpy(cache->buf, cp, channel->block_size);
-			cache->dirty = !writethrough;
+			cache = reuse;
+			reuse_cache(channel, data, cache, block);
 		}
+		memcpy(cache->buf, cp, channel->block_size);
+		cache->dirty = !writethrough;
 		count--;
 		block++;
 		cp += channel->block_size;

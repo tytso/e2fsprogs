@@ -1,4 +1,10 @@
-2002-11-09    <tytso@snap.thunk.org>
+2002-11-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix_io.c (find_cached_block, reuse_cache, unix_read_blk, 
+		unix_write_blk): Optimize routines so that we don't end up
+		searching the cache twice when a block isn't in the
+		cache.  If reads are larger than READ_DIRECT_SIZE, don't
+		let them go through the cache.
 
 	* unix_io.c (find_cached_block): Fixed bug which caused some clean
 		blocks to be erroneously marked as dirty, so they would
