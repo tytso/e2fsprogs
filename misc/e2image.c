@@ -240,7 +240,7 @@ static void mark_table_blocks(ext2_filsys fs)
 	 */
 	for (j = 0; j < fs->desc_blocks; j++) {
 		ext2fs_mark_block_bitmap(meta_block_map,
-					 block + j + 1);
+			 ext2fs_descriptor_block_loc(fs, block, j));
 	}
 
 	for (i = 0; i < fs->group_desc_count; i++) {

@@ -90,6 +90,7 @@ static void list_desc (ext2_filsys fs)
 	char * inode_bitmap = fs->inode_map->bitmap;
 	int inode_blocks_per_group;
 	int group_desc_blocks;
+	int meta_bg, meta_bg_size, has_super;
 
 	inode_blocks_per_group = ((fs->super->s_inodes_per_group *
 				   EXT2_INODE_SIZE(fs->super)) +
@@ -111,14 +112,35 @@ static void list_desc (ext2_filsys fs)
 		printf (_("Group %lu: (Blocks "), i);
 		printf(range_format, group_blk, next_blk - 1);
 		fputs(")\n", stdout);
-		if (ext2fs_bg_has_super (fs, i)) {
-			printf (_("  %s Superblock at "),
+		has_super = ext2fs_bg_has_super(fs, i);
+		if (has_super) {
+			printf (_("  %s superblock at "),
 				i == 0 ? _("Primary") : _("Backup"));
 			printf(num_format, group_blk);
-			printf(_(",  Group Descriptors at "));
+		}
+		meta_bg_size = (fs->blocksize /
+				sizeof (struct ext2_group_desc));
+		meta_bg = i / meta_bg_size;
+		if (!(fs->super->s_feature_incompat &
+		      EXT2_FEATURE_INCOMPAT_META_BG) ||
+		    (meta_bg < fs->super->s_first_meta_bg)) {
+			fputc(has_super ? ',' : ' ', stdout);
+			printf(_(" Group descriptors at "));
 			printf(range_format, group_blk+1,
 			       group_blk + group_desc_blocks);
 			fputc('\n', stdout);
+		} else {
+			if (has_super)
+				has_super = 1;
+			if (((i % meta_bg_size) == 0) ||
+			    ((i % meta_bg_size) == 1) ||
+			    ((i % meta_bg_size) == (meta_bg_size-1))) {
+				fputc(has_super ? ',' : ' ', stdout);
+				printf(_(" Group descriptor at "));
+				printf(num_format, group_blk + has_super);
+				fputc('\n', stdout);
+			} else if (has_super)
+				fputc('\n', stdout);
 		}
 		fputs(_("  Block bitmap at "), stdout);
 		printf(num_format, fs->group_desc[i].bg_block_bitmap);

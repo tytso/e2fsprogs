@@ -202,6 +202,9 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	fprintf(f, "Inodes per group:         %u\n", sb->s_inodes_per_group);
 	fprintf(f, "Inode blocks per group:   %u\n", inode_blocks_per_group);
 	tm = sb->s_mtime;
+	if (sb->s_first_meta_bg)
+		fprintf(f, "First meta block group:   %u\n",
+			sb->s_first_meta_bg);
 	fprintf(f, "Last mount time:          %s", ctime(&tm));
 	tm = sb->s_wtime;
 	fprintf(f, "Last write time:          %s", ctime(&tm));

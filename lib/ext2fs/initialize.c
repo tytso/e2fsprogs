@@ -67,6 +67,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	int		i, j;
 	blk_t		numblocks;
 	char		*buf;
+	int		meta_bg_size, meta_bg, has_super;
 
 	if (!param || !param->s_blocks_count)
 		return EXT2_ET_INVALID_ARGUMENT;
@@ -113,6 +114,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_feature_compat, 0);
 	set_field(s_feature_incompat, 0);
 	set_field(s_feature_ro_compat, 0);
+	set_field(s_first_meta_bg, 0);
 	if (super->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)
 		return EXT2_ET_UNSUPP_FEATURE;
 	if (super->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)
@@ -301,11 +303,35 @@ retry:
 		} else
 			numblocks = fs->super->s_blocks_per_group;
 
-		if (ext2fs_bg_has_super(fs, i)) {
-			for (j=0; j < fs->desc_blocks+1; j++)
+		has_super = ext2fs_bg_has_super(fs, i);
+
+		if (has_super) {
+			ext2fs_mark_block_bitmap(fs->block_map, group_block);
+			numblocks--;
+		}
+		meta_bg_size = (fs->blocksize /
+				sizeof (struct ext2_group_desc));
+		meta_bg = i / meta_bg_size;
+
+		if (!(fs->super->s_feature_incompat &
+		      EXT2_FEATURE_INCOMPAT_META_BG) ||
+		    (meta_bg < fs->super->s_first_meta_bg)) {
+			if (has_super) {
+				for (j=0; j < fs->desc_blocks; j++)
+					ext2fs_mark_block_bitmap(fs->block_map,
+							 group_block + j + 1);
+				numblocks -= fs->desc_blocks;
+			}
+		} else {
+			if (has_super)
+				has_super = 1;
+			if (((i % meta_bg_size) == 0) ||
+			    ((i % meta_bg_size) == 1) ||
+			    ((i % meta_bg_size) == (meta_bg_size-1))) {
 				ext2fs_mark_block_bitmap(fs->block_map,
-							 group_block + j);
-			numblocks -= 1 + fs->desc_blocks;
+					 group_block + has_super);
+				numblocks--;
+			}
 		}
 		
 		numblocks -= 2 + fs->inode_blocks_per_group;

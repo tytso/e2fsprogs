@@ -24,8 +24,26 @@
 #endif
 
 #include "ext2_fs.h"
+
+
 #include "ext2fs.h"
 #include "e2image.h"
+
+blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
+{
+	int	bg;
+	int	has_super = 0;
+
+	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
+	    (i < fs->super->s_first_meta_bg))
+		return (group_block + i + 1);
+
+	bg = (fs->blocksize / sizeof (struct ext2_group_desc)) * i;
+	if (ext2fs_bg_has_super(fs, bg))
+		has_super = 1;
+	return (fs->super->s_first_data_block + has_super + 
+		(bg * fs->super->s_blocks_per_group));
+}
 
 /*
  *  Note: if superblock is non-zero, block-size must also be non-zero.
@@ -44,7 +62,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	ext2_filsys	fs;
 	errcode_t	retval;
 	int		i, j, groups_per_block, blocks_per_group;
-	blk_t		group_block;
+	blk_t		group_block, blk;
 	char		*dest;
 	struct ext2_group_desc *gdp;
 	
@@ -214,18 +232,17 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	if (retval)
 		goto cleanup;
 	if (!group_block)
-		group_block = fs->super->s_first_data_block + 1;
+		group_block = fs->super->s_first_data_block;
 	dest = (char *) fs->group_desc;
+	groups_per_block = fs->blocksize / sizeof(struct ext2_group_desc);
 	for (i=0 ; i < fs->desc_blocks; i++) {
-		retval = io_channel_read_blk(fs->io, group_block, 1, dest);
+		blk = ext2fs_descriptor_block_loc(fs, group_block, i);
+		retval = io_channel_read_blk(fs->io, blk, 1, dest);
 		if (retval)
 			goto cleanup;
-		group_block++;
 #ifdef EXT2FS_ENABLE_SWAPFS
 		if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 			gdp = (struct ext2_group_desc *) dest;
-			groups_per_block = fs->blocksize /
-				sizeof(struct ext2_group_desc);
 			for (j=0; j < groups_per_block; j++)
 				ext2fs_swap_group_desc(gdp++);
 		}

@@ -780,7 +780,8 @@ static __u32 ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_DIR_INDEX,	/* Compat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
-		EXT3_FEATURE_INCOMPAT_JOURNAL_DEV,
+		EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|
+		EXT2_FEATURE_INCOMPAT_META_BG,
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
 };
 
@@ -1163,6 +1164,12 @@ static void PRS(int argc, char *argv[])
 	if ((param.s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
 	    !journal_size)
 		journal_size = -1;
+
+	/* Set first meta blockgroup via an environment variable */
+	/* (this is mostly for debugging purposes) */
+	if ((param.s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
+	    ((tmp = getenv("MKE2FS_FIRST_META_BG"))))
+		param.s_first_meta_bg = atoi(tmp);
 
 	set_fs_defaults(fs_type, &param, blocksize, &inode_ratio);
 

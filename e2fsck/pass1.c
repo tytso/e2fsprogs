@@ -1793,7 +1793,7 @@ static void mark_table_blocks(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	blk_t	block, b;
-	int	i,j;
+	int	i, j, has_super, meta_bg, meta_bg_size;
 	struct problem_context pctx;
 	
 	clear_problem_context(&pctx);
@@ -1802,20 +1802,38 @@ static void mark_table_blocks(e2fsck_t ctx)
 	for (i = 0; i < fs->group_desc_count; i++) {
 		pctx.group = i;
 
-		if (ext2fs_bg_has_super(fs, i)) {
+		has_super = ext2fs_bg_has_super(fs, i);
+		if (has_super)
 			/*
 			 * Mark this group's copy of the superblock
 			 */
 			ext2fs_mark_block_bitmap(ctx->block_found_map, block);
 		
-			/*
-			 * Mark this group's copy of the descriptors
-			 */
-			for (j = 0; j < fs->desc_blocks; j++) {
-				ext2fs_mark_block_bitmap(ctx->block_found_map,
+		meta_bg_size = (fs->blocksize /
+				sizeof (struct ext2_group_desc));
+		meta_bg = i / meta_bg_size;
+		if (!(fs->super->s_feature_incompat &
+		      EXT2_FEATURE_INCOMPAT_META_BG) ||
+		    (meta_bg < fs->super->s_first_meta_bg)) {
+			if (has_super) {
+				/*
+				 * Mark this group's copy of the descriptors
+				 */
+				for (j = 0; j < fs->desc_blocks; j++) {
+					ext2fs_mark_block_bitmap(ctx->block_found_map,
 							 block + j + 1);
+				}
 			}
+		} else {
+			if (has_super)
+				has_super = 1;
+			if (((i % meta_bg_size) == 0) ||
+			    ((i % meta_bg_size) == 1) ||
+			    ((i % meta_bg_size) == (meta_bg_size-1)))
+				ext2fs_mark_block_bitmap(ctx->block_found_map,
+						 block + has_super);
 		}
+		
 		
 		/*
 		 * Mark the blocks used for the inode table

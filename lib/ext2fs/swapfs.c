@@ -57,6 +57,7 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 	sb->s_journal_inum = ext2fs_swab32(sb->s_journal_inum);
 	sb->s_journal_dev = ext2fs_swab32(sb->s_journal_dev);
 	sb->s_last_orphan = ext2fs_swab32(sb->s_last_orphan);
+	sb->s_first_meta_bg = ext2fs_swab32(sb->s_first_meta_bg);
 	for (i=0; i < 4; i++)
 		sb->s_hash_seed[i] = ext2fs_swab32(sb->s_hash_seed[i]);
 }

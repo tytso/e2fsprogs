@@ -113,9 +113,71 @@ void ext2fs_update_dynamic_rev(ext2_filsys fs)
 	/* other fields should be left alone */
 }
 
+/*
+ * This writes out the block group descriptors the original,
+ * old-fashioned way.
+ */
+static errcode_t write_bgdesc(ext2_filsys fs, dgrp_t group, blk_t group_block,
+			      struct ext2_group_desc *group_shadow)
+{
+	errcode_t	retval;
+	char		*group_ptr = (char *) group_shadow;
+	int		j;
+	int		has_super = ext2fs_bg_has_super(fs, group);
+	dgrp_t		meta_bg_size, meta_bg;
+	blk_t		blk;
+
+	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
+	meta_bg = group / meta_bg_size;
+	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
+	    (meta_bg < fs->super->s_first_meta_bg)) {
+		if (!has_super)
+			return 0;
+		for (j=0; j < fs->desc_blocks; j++) {
+			retval = io_channel_write_blk(fs->io,
+						      group_block+1+j, 1,
+						      group_ptr);
+			if (retval)
+				return retval;
+			group_ptr += fs->blocksize;
+		}
+	} else {
+		if (has_super)
+			group_block++;
+		if (((group % meta_bg_size) == 0) ||
+		    ((group % meta_bg_size) == 1) ||
+		    ((group % meta_bg_size) == (meta_bg_size-1))) {
+			return io_channel_write_blk(fs->io, group_block,
+				1, group_ptr + (meta_bg*fs->blocksize));
+		}
+	}
+	return 0;
+}
+
+
+static errcode_t write_backup_super(ext2_filsys fs, dgrp_t group,
+				    blk_t group_block,
+				    struct ext2_super_block *super_shadow)
+{
+	dgrp_t	sgrp = group;
+	
+	if (sgrp > ((1 << 16) - 1))
+		sgrp = (1 << 16) - 1;
+#ifdef EXT2FS_ENABLE_SWAPFS
+	if (fs->flags & EXT2_FLAG_SWAP_BYTES)
+		super_shadow->s_block_group_nr = ext2fs_swab16(sgrp);
+	else
+#endif
+		fs->super->s_block_group_nr = sgrp;
+
+	return io_channel_write_blk(fs->io, group_block, -SUPERBLOCK_SIZE, 
+				    super_shadow);
+}
+
+
 errcode_t ext2fs_flush(ext2_filsys fs)
 {
-	dgrp_t		i,j,maxgroup,sgrp;
+	dgrp_t		i,j,maxgroup;
 	blk_t		group_block;
 	errcode_t	retval;
 	char		*group_ptr;
@@ -204,36 +266,16 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	maxgroup = (fs->flags & EXT2_FLAG_MASTER_SB_ONLY) ? 1 :
 		fs->group_desc_count;
 	for (i = 0; i < maxgroup; i++) {
-		if (!ext2fs_bg_has_super(fs, i))
-			goto next_group;
-
-		sgrp = i;
-		if (sgrp > ((1 << 16) - 1))
-			sgrp = (1 << 16) - 1;
-#ifdef EXT2FS_ENABLE_SWAPFS
-		if (fs->flags & EXT2_FLAG_SWAP_BYTES)
-			super_shadow->s_block_group_nr = ext2fs_swab16(sgrp);
-		else
-#endif
-			fs->super->s_block_group_nr = sgrp;
-
-		if (i !=0 ) {
-			retval = io_channel_write_blk(fs->io, group_block,
-						      -SUPERBLOCK_SIZE,
-						      super_shadow);
+		if (i && ext2fs_bg_has_super(fs, i)) {
+			retval = write_backup_super(fs, i, group_block,
+						    super_shadow);
 			if (retval)
 				goto errout;
 		}
-		if (fs->flags & EXT2_FLAG_SUPER_ONLY)
-			goto next_group;
-		group_ptr = (char *) group_shadow;
-		for (j=0; j < fs->desc_blocks; j++) {
-			retval = io_channel_write_blk(fs->io,
-						      group_block+1+j, 1,
-						      group_ptr);
-			if (retval)
+		if (!(fs->flags & EXT2_FLAG_SUPER_ONLY)) {
+			if ((retval = write_bgdesc(fs, i, group_block, 
+						   group_shadow)))
 				goto errout;
-			group_ptr += fs->blocksize;
 		}
 	next_group:
 		group_block += EXT2_BLOCKS_PER_GROUP(fs->super);

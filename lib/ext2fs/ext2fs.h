@@ -432,10 +432,12 @@ typedef struct ext2_icount *ext2_icount_t;
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE|\
 					 EXT2_FEATURE_INCOMPAT_COMPRESSION|\
 					 EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|\
+					 EXT2_FEATURE_INCOMPAT_META_BG|\
 					 EXT3_FEATURE_INCOMPAT_RECOVER)
 #else
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE|\
 					 EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|\
+					 EXT2_FEATURE_INCOMPAT_META_BG|\
 					 EXT3_FEATURE_INCOMPAT_RECOVER)
 #endif
 #define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|\
@@ -808,6 +810,8 @@ extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size,
 extern errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			     int block_size, io_manager manager,
 			     ext2_filsys *ret_fs);
+extern blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, 
+					 dgrp_t i);
 
 /* get_pathname.c */
 extern errcode_t ext2fs_get_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino,
