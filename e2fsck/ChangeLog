@@ -1,3 +1,10 @@
+2005-01-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* super.c (check_resize_inode): Deal with the case where the
+		resize inode can't be read; don't try to recreate the
+		resize inode unless the resize feature is actually
+		enabled.
+
 2005-01-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* super.c (check_resize_inode): If the resize inode has a zero

@@ -329,17 +329,10 @@ void check_resize_inode(e2fsck_t ctx)
 	errcode_t	retval;
 
 	clear_problem_context(&pctx);
-	pctx.ino = EXT2_RESIZE_INO;
-	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);
-	if (retval) {
-		ctx->flags |= E2F_FLAG_RESIZE_INODE;
-		return;
-	}
 
 	/* 
-	 * If the resize inode feature isn't set, then
-	 * s_reserved_gdt_blocks must be zero, and the resize inode
-	 * must be cleared.
+	 * If the resize inode feature isn't set, then 
+	 * s_reserved_gdt_blocks must be zero.
 	 */
 	if (!(fs->super->s_feature_compat & 
 	      EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
@@ -351,6 +344,24 @@ void check_resize_inode(e2fsck_t ctx)
 				ext2fs_mark_super_dirty(fs);
 			}
 		}
+	}
+
+	/* Read the resizde inode */
+	pctx.ino = EXT2_RESIZE_INO;
+	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);
+	if (retval) {
+		if (fs->super->s_feature_compat & 
+		    EXT2_FEATURE_COMPAT_RESIZE_INODE)
+			ctx->flags |= E2F_FLAG_RESIZE_INODE;
+		return;
+	}
+
+	/* 
+	 * If the resize inode feature isn't set, check to make sure 
+	 * the resize inode is cleared; then we're done.
+	 */
+	if (!(fs->super->s_feature_compat & 
+	      EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
 		for (i=0; i < EXT2_N_BLOCKS; i++) {
 			if (inode.i_block[i])
 				break;
@@ -363,6 +374,7 @@ void check_resize_inode(e2fsck_t ctx)
 		}
 		return;
 	}
+
 	/* 
 	 * The resize inode feature is enabled; check to make sure the
 	 * only block in use is the double indirect block

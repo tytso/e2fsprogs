@@ -1542,11 +1542,14 @@ int main (int argc, char *argv[])
 		create_lost_and_found(fs);
 		reserve_inodes(fs);
 		create_bad_block_inode(fs, bb_list);
-		retval = ext2fs_create_resize_inode(fs);
-		if (retval) {
-			com_err("ext2fs_create_resize_inode", retval,
+		if (fs->super->s_feature_compat & 
+		    EXT2_FEATURE_COMPAT_RESIZE_INODE) {
+			retval = ext2fs_create_resize_inode(fs);
+			if (retval) {
+				com_err("ext2fs_create_resize_inode", retval,
 				_("while reserving blocks for online resize"));
-			exit(1);
+				exit(1);
+			}
 		}
 	}
 
