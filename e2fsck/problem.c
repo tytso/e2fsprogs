@@ -981,7 +981,17 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_5_FUDGE_BITMAP_ERROR,
 	  N_("Internal error: fudging end of bitmap (%N)\n"),
 	  PROMPT_NONE, PR_FATAL },	  
-	  
+
+	/* Error copying in replacement inode bitmap */
+	{ PR_5_COPY_IBITMAP_ERROR,
+	  "Error copying in replacement @i @B: %m\n",
+	  PROMPT_NONE, PR_FATAL },
+
+	/* Error copying in replacement block bitmap */
+	{ PR_5_COPY_BBITMAP_ERROR,
+	  "Error copying in replacement @b @B: %m\n",
+	  PROMPT_NONE, PR_FATAL },
+		  
 	{ 0 }
 };
 

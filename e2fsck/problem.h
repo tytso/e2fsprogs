@@ -587,10 +587,16 @@ struct problem_context {
 
 /* Programming error: bitmap endpoints don't match */
 #define PR_5_BMAP_ENDPOINTS		0x050010
-	
+
 /* Internal error: fudging end of bitmap */
 #define PR_5_FUDGE_BITMAP_ERROR		0x050011
-	
+
+/* Error copying in replacement inode bitmap */
+#define PR_5_COPY_IBITMAP_ERROR		0x050012
+
+/* Error copying in replacement block bitmap */
+#define PR_5_COPY_BBITMAP_ERROR		0x050013
+
 /*
  * Function declarations
  */

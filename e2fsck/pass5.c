@@ -175,7 +175,12 @@ redo_counts:
 		ext2fs_free_block_bitmap(fs->block_map);
 		retval = ext2fs_copy_bitmap(ctx->block_found_map,
 						  &fs->block_map);
-		/* XXX check retval --- should never fail! */
+		if (retval) {
+			clear_problem_context(&pctx);
+			fix_problem(ctx, PR_5_COPY_BBITMAP_ERROR, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
+		}
 		ext2fs_set_bitmap_padding(fs->block_map);
 		ext2fs_mark_bb_dirty(fs);
 		
@@ -324,7 +329,12 @@ do_counts:
 		ext2fs_free_inode_bitmap(fs->inode_map);
 		retval = ext2fs_copy_bitmap(ctx->inode_used_map,
 						  &fs->inode_map);
-		/* XXX check retval --- should never fail! */
+		if (retval) {
+			clear_problem_context(&pctx);
+			fix_problem(ctx, PR_5_COPY_IBITMAP_ERROR, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
+		}
 		ext2fs_set_bitmap_padding(fs->inode_map);
 		ext2fs_mark_ib_dirty(fs);
 

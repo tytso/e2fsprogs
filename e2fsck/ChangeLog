@@ -1,3 +1,11 @@
+2000-06-10  Theodore Ts'o  <tytso@valinux.com>
+
+	* pass5.c (check_block_bitmaps, check_inode_bitmaps): Add error
+		checking for a "should never happen case".
+
+	* problem.c, problem.h (PR_5_COPY_IBITMAP_ERROR,
+		PR_5_COPY_BBITMAP_ERROR): Add new error codes.
+
 2000-05-27  Theodore Ts'o  <tytso@valinux.com>
 
 	* pass1.c (pass1, check_size): Apply patch from Chris Wedgewood
