@@ -1,3 +1,7 @@
+2000-12-31    <tytso@snap.thunk.org>
+
+	* pf.c: Add code to print out the journalled data flag.
+
 2000-12-02    <tytso@snap.thunk.org>
 
 	* fgetflags.c (fgetflags):

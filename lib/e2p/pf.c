@@ -32,11 +32,12 @@ static struct flags_name flags_array[] = {
 	{ EXT2_APPEND_FL, "a", "Append_Only" },
 	{ EXT2_NODUMP_FL, "d", "No_Dump" },
 	{ EXT2_NOATIME_FL, "A", "No_Atime" },
-	{ EXT2_COMPR_FL, "c", "Compression_requested" },
-	{ EXT2_COMPRBLK_FL, "B", "Compressed_file" },
-	{ EXT2_DIRTY_FL, "D", "Compressed dirty file" },
-	{ EXT2_NOCOMPR_FL, "X", "Raw_access" },
+	{ EXT2_COMPR_FL, "c", "Compression_Requested" },
+	{ EXT2_COMPRBLK_FL, "B", "Compressed_File" },
+	{ EXT2_DIRTY_FL, "D", "Compressed_Dirty_File" },
+	{ EXT2_NOCOMPR_FL, "X", "Raw_Access" },
 	{ EXT2_ECOMPR_FL, "E", "Compression_Error" },
+	{ EXT3_JOURNAL_DATA_FL, "j", "Journaled_data" },
 	{ 0, NULL, NULL }
 };
 
