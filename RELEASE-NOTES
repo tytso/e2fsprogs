@@ -1,6 +1,13 @@
 E2fsprogs 1.33-WIP (March 6, 2003)
 ==================================
 
+E2fsck now finds most duplicate filenames (all when rebuilding all
+directories via the -D option) and offers to delete or rename
+duplicate filenames/directory entries.  (Addresses Debian Bug #176814).
+
+Fix bug in e2image.  When writing out a raw image file, include data
+blocks from symlinks that do not store the symlink within the inode.
+
 Fix bug in resize2fs which incorrectly moved the block and inode
 bitmaps for sparse superblock filesystems and incorrectly marked
 blocks as in use.  (Addresses Debian bug #174766)
@@ -49,7 +56,10 @@ Programmer's notes:
 Fix various gcc -Wall nits.
 
 Fixed a lot of portability problems that caused e2fsprogs not to build
-successfully under Solaris.
+successfully under Solaris and Apple/Darwin.
+
+Fixed a Makefile dependency to allow building e2fsprogs using parallel
+make jobs.
 
 Changes to create a subset distribution which consists only of the
 et, ss, uuid, and blkid libraries.  The configure script and top-level
