@@ -1,3 +1,44 @@
+E2fsprogs 1.30-WIP (September 30, 2002)
+=======================================
+
+E2fsck now uses a more sophisticated algorithm to salvage corrupted
+directories that recovers more information in the corrupted directory
+block.
+
+E2fsck now performs additional consistency checks on indexed (HTREE)
+directories.
+
+Fix bug where efsck might get confused about whether a completely
+empty directory block is an empty leaf block or an interior htree
+node.  This could cause e2fsck to get confused into think that a valid
+indexed directory was corrupted.
+
+E2fsck no longer creates an empty directory entry at the end of a
+directory block when optimizing a directory.  This would cause some
+earlier versions of the dxdir kernel code to corrupt the directory
+when attempting to split a node containing an empty directory entry.
+
+E2fsck could sometimes in rare circumstances leave the indexed flag
+set after a small directory was optimized by compressing it instead of
+indexing it.  (This should never happen in real life, since
+directories that small wouldn't have been indexed, but better safe
+than sorry.)
+
+E2fsck now only updates the master superblock in all cases.  This
+slightly shortens its run time.
+
+Ext2ed can deal with directory entries of length 0; previously it
+would get stuck in an infinite loop.
+
+Fsck now has support for reiserfs volumes when parsing LABEL= and UUID=
+specifiers.  (Sourceforge patch #613447)
+
+Badblocks will now work correctly on read-only devices such as
+CD-ROM's.  (Sourceforge patch #600451)
+
+Updated and clarified man pages.
+
+
 E2fsprogs 1.29 (September 24, 2002)
 ===================================
 
