@@ -8,15 +8,18 @@
  * Portions Copyright 1998-2000, Theodore Ts'o.
  * 
  * This program may be used under the provisions of the GNU Public
- * License, *EXCEPT* that it may not be included in the Debian
- * distribution.  (Yes, this violates the Debian Free Software
- * Guidelines.  That's the point.  I don't want this program being
- * distributed in Debian, because I don't care to support it, and the
- * maintainer, Yann Dirson, doesn't seem to pay attention to my wishes
- * on this matter.  So I'm delibiately adding this clause so it
- * violates the Debian Free Software Guidelines to force him to take
- * it out.  If this doesn't work, I'll have to remove it from the
- * upstream source distribution on the next release.  So there.  :-)
+ * License, *EXCEPT* that a binary copy of the executable may not be
+ * packaged as a part of binary package which is distributed as part
+ * of a Linux distribution.  (Yes, this violates the Debian Free
+ * Software Guidelines in terms of restricting its field of use.
+ * That's the point.  I don't want this program being distributed in
+ * Debian, because I don't care to support it, and the maintainer,
+ * Yann Dirson, doesn't seem to pay attention to my wishes on this
+ * matter.  So I'm delibiately adding this clause so it violates the
+ * Debian Free Software Guidelines to force him to take it out.  If
+ * this doesn't work, I'll have to remove it from the upstream source
+ * distribution at the next release.  End of Rant.  :-)
+ * 
  *
  * Well, here's my linux version of findsuper.
  * I'm sure you coulda done it faster.  :)
