@@ -88,10 +88,9 @@ static void get_ext2_info(blkid_dev dev, unsigned char *buf)
 		   blkid_le32(es->s_feature_incompat),
 		   blkid_le32(es->s_feature_ro_compat)));
 
-	if (strlen(es->s_volume_name)) {
+	if (strlen(es->s_volume_name))
 		label = es->s_volume_name;
-		blkid_set_tag(dev, "LABEL", label, sizeof(es->s_volume_name));
-	}
+	blkid_set_tag(dev, "LABEL", label, sizeof(es->s_volume_name));
 
 	set_uuid(dev, es->s_uuid);
 }
@@ -168,6 +167,7 @@ static int probe_vfat(int fd __BLKID_ATTR((unused)),
 	struct vfat_super_block *vs;
 	char serno[10];
 	const char *label = 0;
+	int label_len = 0;
 
 	vs = (struct vfat_super_block *)buf;
 
@@ -176,14 +176,16 @@ static int probe_vfat(int fd __BLKID_ATTR((unused)),
 
 		while (*end == ' ' && end >= vs->vs_label)
 			--end;
-		if (end >= vs->vs_label)
+		if (end >= vs->vs_label) {
 			label = vs->vs_label;
-		blkid_set_tag(dev, "LABEL", label, end - vs->vs_label + 1);
+			label_len = end - vs->vs_label + 1;
+		}
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */
 	sprintf(serno, "%02X%02X-%02X%02X", vs->vs_serno[3], vs->vs_serno[2],
 		vs->vs_serno[1], vs->vs_serno[0]);
+	blkid_set_tag(dev, "LABEL", label, label_len);
 	blkid_set_tag(dev, "UUID", serno, sizeof(serno));
 
 	return 0;
@@ -198,21 +200,24 @@ static int probe_msdos(int fd __BLKID_ATTR((unused)),
 	struct msdos_super_block *ms = (struct msdos_super_block *) buf;
 	char serno[10];
 	const char *label = 0;
+	int label_len = 0;
 
 	if (strncmp(ms->ms_label, "NO NAME", 7)) {
 		char *end = ms->ms_label + sizeof(ms->ms_label) - 1;
 
 		while (*end == ' ' && end >= ms->ms_label)
 			--end;
-		if (end >= ms->ms_label)
+		if (end >= ms->ms_label) {
 			label = ms->ms_label;
-		blkid_set_tag(dev, "LABEL", label, end - ms->ms_label + 1);
+			label_len = end - ms->ms_label + 1;
+		}
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */
 	sprintf(serno, "%02X%02X-%02X%02X", ms->ms_serno[3], ms->ms_serno[2],
 		ms->ms_serno[1], ms->ms_serno[0]);
 	blkid_set_tag(dev, "UUID", serno, 0);
+	blkid_set_tag(dev, "LABEL", label, label_len);
 	blkid_set_tag(dev, "SEC_TYPE", "msdos", sizeof("msdos"));
 
 	return 0;
@@ -256,9 +261,9 @@ static int probe_reiserfs(int fd __BLKID_ATTR((unused)),
 	    !strcmp(id->bim_magic, "ReIsEr3Fs")) {
 		if (strlen(rs->rs_label))
 			label = rs->rs_label;
-		blkid_set_tag(dev, "LABEL", label, sizeof(rs->rs_label));
 		set_uuid(dev, rs->rs_uuid);
 	}
+	blkid_set_tag(dev, "LABEL", label, sizeof(rs->rs_label));
 
 	return 0;
 }
@@ -294,7 +299,54 @@ static int probe_romfs(int fd __BLKID_ATTR((unused)),
 
 	if (strlen((char *) ros->ros_volume))
 		label = (char *) ros->ros_volume;
-	blkid_set_tag(dev, "LABEL", label, strlen(label));
+	blkid_set_tag(dev, "LABEL", label, 0);
+	return 0;
+}
+
+static int probe_swap0(int fd __BLKID_ATTR((unused)),
+		       blkid_cache cache __BLKID_ATTR((unused)),
+		       blkid_dev dev,
+		       struct blkid_magic *id __BLKID_ATTR((unused)),
+		       unsigned char *buf __BLKID_ATTR((unused)))
+{
+	blkid_set_tag(dev, "UUID", 0, 0);
+	blkid_set_tag(dev, "LABEL", 0, 0);
+	return 0;
+}
+
+static int probe_swap1(int fd,
+		       blkid_cache cache __BLKID_ATTR((unused)),
+		       blkid_dev dev,
+		       struct blkid_magic *id __BLKID_ATTR((unused)),
+		       unsigned char *buf __BLKID_ATTR((unused)))
+{
+	struct swap_id_block *sws;
+	const char *label = 0;
+
+	probe_swap0(fd, cache, dev, id, buf);
+	/*
+	 * Version 1 swap headers are always located at offset of 1024
+	 * bytes, although the swap signature itself is located at the
+	 * end of the page (which may vary depending on hardware
+	 * pagesize).
+	 */
+	if (lseek(fd, 1024, SEEK_SET) < 0) return 1;
+	if (!(sws = (struct swap_id_block *)malloc(1024))) return 1;
+	if (read(fd, sws, 1024) != 1024) {
+		free(sws);
+		return 1;
+	}
+
+	/* arbitrary sanity check.. is there any garbage down there? */
+	if (sws->sws_pad[32] == 0 && sws->sws_pad[33] == 0)  {
+		if (sws->sws_volume[0])
+			blkid_set_tag(dev, "LABEL", sws->sws_volume, 
+				      sizeof(sws->sws_volume));
+		if (sws->sws_uuid[0])
+			set_uuid(dev, sws->sws_uuid);
+	}
+	free(sws);
+
 	return 0;
 }
 
@@ -438,12 +490,16 @@ static struct blkid_magic type_array[] = {
   { "ufs",	 8,  0x55c,  4, "T\031\001\000",	0 },
   { "hpfs",	 8,	 0,  4, "I\350\225\371",	0 },
   { "sysv",	 0,  0x3f8,  4, "\020~\030\375",	0 },
-  { "swap",	 0,  0xff6, 10, "SWAP-SPACE",		0 },
-  { "swap",	 0,  0xff6, 10, "SWAPSPACE2",		0 },
-  { "swap",	 0, 0x1ff6, 10, "SWAP-SPACE",		0 },
-  { "swap",	 0, 0x1ff6, 10, "SWAPSPACE2",		0 },
-  { "swap",	 0, 0x3ff6, 10, "SWAP-SPACE",		0 },
-  { "swap",	 0, 0x3ff6, 10, "SWAPSPACE2",		0 },
+  { "swap",	 0,  0xff6, 10, "SWAP-SPACE",		probe_swap0 },
+  { "swap",	 0,  0xff6, 10, "SWAPSPACE2",		probe_swap1 },
+  { "swap",	 0, 0x1ff6, 10, "SWAP-SPACE",		probe_swap0 },
+  { "swap",	 0, 0x1ff6, 10, "SWAPSPACE2",		probe_swap1 },
+  { "swap",	 0, 0x3ff6, 10, "SWAP-SPACE",		probe_swap0 },
+  { "swap",	 0, 0x3ff6, 10, "SWAPSPACE2",		probe_swap1 },
+  { "swap",	 0, 0x7ff6, 10, "SWAP-SPACE",		probe_swap0 },
+  { "swap",	 0, 0x7ff6, 10, "SWAPSPACE2",		probe_swap1 },
+  { "swap",	 0, 0xfff6, 10, "SWAP-SPACE",		probe_swap0 },
+  { "swap",	 0, 0xfff6, 10, "SWAPSPACE2",		probe_swap1 },
   { "ocfs",	 0,	 8,  9,	 "OracleCFS",		probe_ocfs },
   { "ocfs2",	 1,	 0,  6,	 "OCFSV2",		probe_ocfs2 },
   { "ocfs2",	 2,	 0,  6,	 "OCFSV2",		probe_ocfs2 },

@@ -1,3 +1,22 @@
+2005-01-10  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c: Integrate and fix up Janos Farkas's patch.  Version 0
+		swap headers won't ever have uuid/labels.  Also, if the
+		swap partition is recreated without a label, make sure
+		label in the blkid file gets freed.
+		(get_ext2_info, probe_vfat, probe_msdos, probe_reiserfs):
+		Make sure the label is cleared from the blkid file if the
+		label gets cleared from the filesystem.
+		(probe_romfs): Avoid dereferencing a null pointer of the
+		label is not present.
+
+2005-01-10  Janos Farkas  <chexum+dev@gmail.com>
+
+	* probe.h: Define linux swap format.
+
+	* probe.c: Fetch uuid/label from swap headers if present.  Mark
+	swap types as needing extra probe.
+
 2005-01-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* save.c (save_dev): Don't save relative pathnames since they
@@ -168,7 +187,7 @@
 
 	* probe.c, probe.h: Fix XFS superblock definition.  Add support to
 		extract UUID and labels for JFS and romfs.  (Thanks to
-		Janos Farkas <chexum@acomp.hu>.)
+		Janos Farkas <chexum+dev@gmail.com>.)
 
 2003-03-30  Theodore Ts'o  <tytso@mit.edu>
 

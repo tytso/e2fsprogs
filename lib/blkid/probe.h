@@ -108,6 +108,17 @@ struct romfs_super_block {
 	unsigned char	ros_volume[16];
 };
 
+struct swap_id_block {
+/*	unsigned char	sws_boot[1024]; */
+	__u32		sws_version;
+	__u32		sws_lastpage;
+	__u32		sws_nrbad;
+	unsigned char	sws_uuid[16];
+	unsigned char	sws_volume[16];
+	unsigned char	sws_pad[117];
+	__u32		sws_badpg;
+};
+
 /* Yucky misaligned values */
 struct vfat_super_block {
 /* 00*/	unsigned char	vs_ignored[3];
@@ -174,14 +185,6 @@ struct minix_super_block {
 	unsigned char	ms_magic[2];
 	__u16		ms_state;
 	__u32		ms_zones;
-};
-
-struct swap_header {
-	char		sh_bootbits[1024];
-	unsigned int	sh_version;
-	unsigned int	sh_last_page;
-	unsigned int	sh_nr_badpages;
-	char		sh_label[16];
 };
 
 struct mdp_superblock_s {
