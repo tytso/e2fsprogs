@@ -270,6 +270,7 @@ static int e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 
 	if (has_journal || sb->s_journal_inum) {
 		/* The journal inode is bogus, remove and force full fsck */
+		pctx->ino = sb->s_journal_inum;
 		if (fix_problem(ctx, PR_0_JOURNAL_BAD_INODE, pctx)) {
 			if (has_journal && sb->s_journal_inum)
 				printf("*** ext3 journal has been deleted - "

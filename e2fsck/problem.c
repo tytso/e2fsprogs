@@ -176,7 +176,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Journal inode is invalid */
 	{ PR_0_JOURNAL_BAD_INODE,
-	  N_("@S has a bad ext3 @j (@i %N).\n"),
+	  N_("@S has a bad ext3 @j (@i %i).\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Superblock has a journal device (which we can't handle yet) */

@@ -1,3 +1,11 @@
+2001-01-12  Theodore Ts'o  <tytso@valinux.com>
+
+	* journal.c (e2fsck_journal_fix_bad_inode): Set pctx->ino to the
+		bad journal number.
+
+	* problem.c (PR_0_JOURNAL_BAD_INODE): Use pctx->ino instead of
+		pctx->num when printing the bad journal inode number.
+
 2001-01-11    <tytso@snap.thunk.org>
 
 	* pass1.c (process_block): Remove dead code which was never
