@@ -1,3 +1,10 @@
+2005-03-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* get_readline.c (ss_get_readline), pager.c (ss_page_stdin): If
+		called by a setuid/setgid or an otherwise privileged
+		program, be paranoid and ignore the PAGER and
+		SS_READLINE_PATH environment variables.
+
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.37

@@ -28,10 +28,39 @@ extern int errno;
 #include <sys/types.h>
 #include <sys/file.h>
 #include <signal.h>
+#ifdef HAVE_SYS_PRCTL_H
+#include <sys/prctl.h>
+#else
+#define PR_GET_DUMPABLE 3
+#endif
+#if (!defined(HAVE_PRCTL) && defined(linux))
+#include <sys/syscall.h>
+#endif
 
 static char MORE[] = "more";
 extern char *_ss_pager_name;
 extern char *getenv PROTOTYPE((const char *));
+
+char *ss_safe_getenv(const char *arg)
+{
+	if ((getuid() != geteuid()) || (getgid() != getgid()))
+		return NULL;
+#if HAVE_PRCTL
+	if (prctl(PR_GET_DUMPABLE) == 0)
+		return NULL;
+#else
+#if (defined(linux) && defined(SYS_prctl))
+	if (syscall(SYS_prctl, PR_GET_DUMPABLE) == 0)
+		return NULL;
+#endif
+#endif
+
+#ifdef HAVE___SECURE_GETENV
+	return __secure_getenv("BLKID_FILE");
+#else
+	return getenv("BLKID_FILE");
+#endif
+}
 
 /*
  * this needs a *lot* of work....
@@ -89,7 +118,7 @@ void ss_page_stdin()
 	sigdelset(&mask, SIGINT);
 	sigprocmask(SIG_SETMASK, &mask, 0);
 	if (_ss_pager_name == (char *)NULL) {
-		if ((_ss_pager_name = getenv("PAGER")) == (char *)NULL)
+		if ((_ss_pager_name = ss_safe_getenv("PAGER")) == (char *)NULL)
 			_ss_pager_name = MORE;
 	}
 	(void) execlp(_ss_pager_name, _ss_pager_name, (char *) NULL);

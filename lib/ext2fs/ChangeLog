@@ -1,3 +1,9 @@
+2005-03-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* test_io.c (test_open): If called by a setuid/setgid or an
+		otherwise privileged program, be paranoid and ignore the
+		TEST_IO_* environment variables.
+
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.37

@@ -22,6 +22,14 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#ifdef HAVE_SYS_PRCTL_H
+#include <sys/prctl.h>
+#else
+#define PR_GET_DUMPABLE 3
+#endif
+#if (!defined(HAVE_PRCTL) && defined(linux))
+#include <sys/syscall.h>
+#endif
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
@@ -132,6 +140,27 @@ static void test_abort(io_channel channel, unsigned long block)
 	abort();
 }
 
+static char *safe_getenv(const char *arg)
+{
+	if ((getuid() != geteuid()) || (getgid() != getgid()))
+		return NULL;
+#if HAVE_PRCTL
+	if (prctl(PR_GET_DUMPABLE) == 0)
+		return NULL;
+#else
+#if (defined(linux) && defined(SYS_prctl))
+	if (syscall(SYS_prctl, PR_GET_DUMPABLE) == 0)
+		return NULL;
+#endif
+#endif
+
+#ifdef HAVE___SECURE_GETENV
+	return __secure_getenv("BLKID_FILE");
+#else
+	return getenv("BLKID_FILE");
+#endif
+}
+
 static errcode_t test_open(const char *name, int flags, io_channel *channel)
 {
 	io_channel	io = NULL;
@@ -178,25 +207,25 @@ static errcode_t test_open(const char *name, int flags, io_channel *channel)
 	data->write_byte = 	test_io_cb_write_byte;
 
 	data->outfile = NULL;
-	if ((value = getenv("TEST_IO_LOGFILE")) != NULL)
+	if ((value = safe_getenv("TEST_IO_LOGFILE")) != NULL)
 		data->outfile = fopen(value, "w");
 	if (!data->outfile)
 		data->outfile = stderr;
 
 	data->flags = 0;
-	if ((value = getenv("TEST_IO_FLAGS")) != NULL)
+	if ((value = safe_getenv("TEST_IO_FLAGS")) != NULL)
 		data->flags = strtoul(value, NULL, 0);
 	
 	data->block = 0;
-	if ((value = getenv("TEST_IO_BLOCK")) != NULL)
+	if ((value = safe_getenv("TEST_IO_BLOCK")) != NULL)
 		data->block = strtoul(value, NULL, 0);
 
 	data->read_abort_count = 0;
-	if ((value = getenv("TEST_IO_READ_ABORT")) != NULL)
+	if ((value = safe_getenv("TEST_IO_READ_ABORT")) != NULL)
 		data->read_abort_count = strtoul(value, NULL, 0);
 
 	data->write_abort_count = 0;
-	if ((value = getenv("TEST_IO_WRITE_ABORT")) != NULL)
+	if ((value = safe_getenv("TEST_IO_WRITE_ABORT")) != NULL)
 		data->write_abort_count = strtoul(value, NULL, 0);
 	
 	*channel = io;

@@ -1,3 +1,12 @@
+2005-03-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* cache.c (blkid_get_cache): Use a much more paranoid
+		safe_getenv() function which will ignore the BLKID_FILE
+		environment varaible if the application program is setgid
+		or on a Linux system, if kernel doesn't think the process
+		is eligible to create a core dump.  Also if glibc has
+		__secure_getenv(), then use it.
+
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.37

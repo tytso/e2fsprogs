@@ -89,6 +89,7 @@ void ss_page_stdin(void);
 void ss_list_requests(int, char const * const *, int, pointer);
 int ss_execute_command(int sci_idx, char *argv[]);
 int ss_pager_create(void);
+char *ss_safe_getenv(const char *arg);
 char **ss_rl_completion(const char *text, int start, int end);
 
 extern ss_data **_ss_table;

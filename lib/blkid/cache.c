@@ -10,11 +10,47 @@
  * %End-Header%
  */
 
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_SYS_PRCTL_H
+#include <sys/prctl.h>
+#else
+#define PR_GET_DUMPABLE 3
+#endif
+#if (!defined(HAVE_PRCTL) && defined(linux))
+#include <sys/syscall.h>
+#endif
 #include "blkidP.h"
 
 int blkid_debug_mask = 0;
+
+
+static char *safe_getenv(const char *arg)
+{
+	if ((getuid() != geteuid()) || (getgid() != getgid()))
+		return NULL;
+#if HAVE_PRCTL
+	if (prctl(PR_GET_DUMPABLE) == 0)
+		return NULL;
+#else
+#if (defined(linux) && defined(SYS_prctl))
+	if (syscall(SYS_prctl, PR_GET_DUMPABLE) == 0)
+		return NULL;
+#endif
+#endif
+
+#ifdef HAVE___SECURE_GETENV
+	return __secure_getenv("BLKID_FILE");
+#else
+	return getenv("BLKID_FILE");
+#endif
+}
 
 int blkid_get_cache(blkid_cache *ret_cache, const char *filename)
 {
@@ -41,8 +77,8 @@ int blkid_get_cache(blkid_cache *ret_cache, const char *filename)
 
 	if (filename && !strlen(filename))
 		filename = 0;
-	if (!filename && (getuid() == geteuid()))
-		filename = getenv("BLKID_FILE");
+	if (!filename) 
+		filename = safe_getenv("BLKID_FILE");
 	if (!filename)
 		filename = BLKID_CACHE_FILE;
 	cache->bic_filename = blkid_strdup(filename);

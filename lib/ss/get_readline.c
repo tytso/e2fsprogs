@@ -50,7 +50,7 @@ void ss_get_readline(int sci_idx)
 	if (info->readline_handle)
 		return;
 
-	libpath = getenv("SS_READLINE_PATH");
+	libpath = ss_safe_getenv("SS_READLINE_PATH");
 	if (!libpath)
 		libpath = DEFAULT_LIBPATH;
 	if (*libpath == 0 || !strcmp(libpath, "none"))

@@ -1,3 +1,8 @@
+2005-03-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Add tests for __secure_getenv(), prctl(),
+		and sys/prctl.h
+
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.37
