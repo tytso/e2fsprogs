@@ -501,6 +501,7 @@ extern errcode_t ext2fs_badblocks_copy(ext2_badblocks_list src,
 				       ext2_badblocks_list *dest);
 extern int ext2fs_badblocks_equal(ext2_badblocks_list bb1,
 				  ext2_badblocks_list bb2);
+extern int ext2fs_u32_list_count(ext2_u32_list bb);
 
 /* bb_compat */
 extern errcode_t badblocks_list_create(badblocks_list *ret, int size);
