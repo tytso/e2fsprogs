@@ -22,14 +22,16 @@ FILE *open_pager(void)
 	const char *pager = getenv("PAGER");
 
 	signal(SIGPIPE, SIG_IGN);
-	if (!pager)
+	if (pager) {
+		if (strcmp(pager, "__none__") == 0) {
+			return stdout;
+		}
+	} else
 		pager = "more";
 
 	outfile = popen(pager, "w");
-	if (!outfile)
-		outfile = stdout;
 
-	return (outfile);
+	return (outfile ? outfile : stdout);
 }
 
 void close_pager(FILE *stream)

@@ -1,3 +1,8 @@
+2002-02-25  Theodore Tso  <tytso@valinux.com>
+
+	* ext2_fs.h: Add structure definitions for the directory indexing
+		extension.
+
 2002-02-23  Theodore Tso  <tytso@valinux.com>
 
 	* unix_io.c (unix_open): Fix 2.4 resource limit workaround so that

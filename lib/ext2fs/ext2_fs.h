@@ -147,6 +147,37 @@ struct ext2_group_desc
 };
 
 /*
+ * Data structures used by the directory indexing feature
+ *
+ * Note: all of the multibyte integer fields are little endian.
+ */
+
+/*
+ * Note: dx_root_info is laid out so that if it should somehow get
+ * overlaid by a dirent the two low bits of the hash version will be
+ * zero.  Therefore, the hash version mod 4 should never be 0.
+ * Sincerely, the paranoia department.
+ */
+struct ext2_dx_root_info {
+	__u32 reserved_zero;
+	__u8 hash_version; /* 0 now, 1 at release */
+	__u8 info_length; /* 8 */
+	__u8 indirect_levels;
+	__u8 unused_flags;
+};
+
+struct ext2_dx_entry {
+	__u32 hash;
+	__u32 block;
+};
+
+struct ext2_dx_countlimit {
+	__u16 limit;
+	__u16 count;
+};
+
+
+/*
  * Macro-instructions used to manage group descriptors
  */
 #ifdef __KERNEL__

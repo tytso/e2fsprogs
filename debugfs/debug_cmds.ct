@@ -127,5 +127,14 @@ request do_set_super, "Set superblock value",
 request do_logdump, "Dump the contents of the journal",
 	logdump;
 
+request do_htree_dump, "Dump a hash-indexed directory",
+	htree_dump, htree;
+
+request do_dx_hash, "Calculate the directory hash of a filename",
+	dx_hash, hash;
+
+request do_dirsearch, "Search a directory for a particular filename",
+	dirsearch;
+
 end;
 

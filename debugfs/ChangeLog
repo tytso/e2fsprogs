@@ -1,3 +1,12 @@
+2002-02-25  Theodore Tso  <tytso@valinux.com>
+
+	* util.c (open_pager): If the PAGER environment is set to __none__
+		then don't use a pager at all, and ship it all to stdout.
+
+	* Makefile.in, debug_cmds.ct, htree.c: Add new file htree.c, which
+		implements the three new commands, htree_dump, dx_hash,
+		and dirsearch.
+
 2002-02-24  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in (install): Remove any compressed man pages before
