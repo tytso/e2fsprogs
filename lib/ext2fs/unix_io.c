@@ -252,6 +252,7 @@ static struct unix_cache *find_cached_block(io_channel channel,
 				      cache->block, 1, cache->buf);
 	}
 	cache->in_use = 1;
+	cache->dirty = 0;
 	cache->block = block;
 	cache->access_time = ++data->access_time;
 	return cache;
