@@ -1,3 +1,10 @@
+2002-08-13    <tytso@snap.thunk.org>
+
+	* Makefile.in: Move dupfs.o and test_io.o from the
+		needed-by-debugfs object list to the needed-by-resizer
+		object list.  Fixes compile problem if the system is built
+		with only --disable-debugfs.
+
 2002-07-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* link.c (ext2fs_link): When adding a new link to a directory,

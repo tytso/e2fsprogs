@@ -7,10 +7,10 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-@DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o cmp_bitmaps.o dupfs.o fileio.o \
-@DEBUGFS_CMT@	namei.o test_io.o write_bb_file.o 
+@DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o cmp_bitmaps.o fileio.o \
+@DEBUGFS_CMT@	namei.o write_bb_file.o 
 
-@RESIZER_CMT@RESIZE_LIB_OBJS = rs_bitmap.o
+@RESIZER_CMT@RESIZE_LIB_OBJS = rs_bitmap.o dupfs.o test_io.o 
 
 @IMAGER_CMT@E2IMAGE_LIB_OBJS = imager.o
 
