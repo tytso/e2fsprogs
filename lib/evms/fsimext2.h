@@ -20,6 +20,11 @@
  *
  */
 
+/* If EVMS_ABI_CODE is not defined, default to EVMS ABI 1.2 */
+#ifndef EVMS_ABI_CODE
+#define EVMS_ABI_CODE 120
+#endif
+
 /*
  * EVMS 1.0 backwards compatibility functions
  */
