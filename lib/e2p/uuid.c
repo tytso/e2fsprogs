@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <asm/types.h>
+#include <ext2fs/ext2_types.h>
 
 #include "e2p.h"
 

@@ -11,7 +11,7 @@ LIB_SUBDIRS=lib/et lib/ss lib/e2p lib/ext2fs lib/uuid # lib/finddev
 PROG_SUBDIRS=e2fsck debugfs misc resize tests/progs 
 SUBDIRS=util $(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
-SUBS= include/asm/types.h
+SUBS= lib/ext2fs/ext2_types.h
 
 TAR=tar
 
@@ -87,9 +87,9 @@ realclean: realclean-recursive realclean-local
 
 depend:: depend-recursive
 
-include/asm/types.h: $(DEP_SUBSTITUTE) $(srcdir)/include/asm/types.h.in
-	$(SUBSTITUTE) $(srcdir)/include/asm/types.h.in \
-	> include/asm/types.h
+lib/ext2fs/ext2_types.h: $(DEP_SUBSTITUTE) $(srcdir)/lib/ext2fs/ext2_types.h.in
+	$(SUBSTITUTE) $(srcdir)/lib/ext2fs/ext2_types.h.in \
+	> lib/ext2fs/ext2_types.h
 
 mostlyclean-local:
 	$(RM) -f \#* *~ core MAKELOG 
@@ -97,7 +97,7 @@ mostlyclean-local:
 clean-local: mostlyclean-local
 
 distclean-local: clean-local
-	$(RM) -f include/asm/types.h $(SUBST_CONF) \
+	$(RM) -f lib/ext2fs/ext2_types.h $(SUBST_CONF) \
 		config.status config.log config.cache MCONFIG Makefile \
 		$(srcdir)/TAGS $(srcdir)/Makefile.in.old
 

@@ -1,5 +1,5 @@
-#ifndef _ASM_TYPES_H
-#define _ASM_TYPES_H
+#ifndef _EXT2_TYPES_H
+#define _EXT2_TYPES_H
 
 typedef unsigned char __u8;
 typedef signed char __s8;
@@ -42,4 +42,4 @@ typedef	unsigned short	__u32;
  ?== error: undefined 32 bit type
 #endif
 
-#endif /* LINUX_TYPES_H */
+#endif /* EXT2_TYPES_H */

@@ -1,5 +1,10 @@
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
+	* Makefile.in, uuidP.h: Move include/asm/types.h.in to
+		lib/ext2fs/ext2_fs.h.in.
+
+2001-06-01  Theodore Tso  <tytso@valinux.com>
+
 	* unpack.c, unparse.c, uuid_time.c: Update files to be under the
 		LGPL (that somehow were missed when libuuid was converted
 		to use the LGPL).  Whoops.

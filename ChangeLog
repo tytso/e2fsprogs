@@ -1,3 +1,10 @@
+2001-06-01  Theodore Tso  <tytso@valinux.com>
+
+	* wordwrap.pl: Add some rules which help fix up the dependencies.
+
+	* Makefile.in: Move include/asm/types.h.in to
+		lib/ext2fs/ext2_fs.h.in.
+
 2001-05-25  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.20

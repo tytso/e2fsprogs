@@ -11,6 +11,9 @@ while (<>) {
     $linelen = 0;
     split;
     while (defined($word = shift @_)) {
+	$word =~ s#\$\(srcdir\)/\.\./version.h#\$\(top_srcdir\)/version.h#;
+	$word =~ s#\$\(srcdir\)/.\.\/\.\./version.h#\$\(top_srcdir\)/version.h#;
+	$word =~ s#\$\(srcdir\)/.\.\/et/com_err.h#\$\(top_srcdir\)/lib/et/com_err.h#;
 	if ($linelen > 0) {
 	    printf(" ");
 	}

@@ -1,5 +1,10 @@
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
+	* Makefile.in: Move include/asm/types.h.in to
+		lib/ext2fs/ext2_fs.h.in.
+
+2001-06-01  Theodore Tso  <tytso@valinux.com>
+
 	* pass1.c (pass1_get_blocks, pass1_read_inode, pass1_write_inode, 
 		pass1_check_directory): Add a safety check to make sure
 		ctx->stashed_inode is non-zero.

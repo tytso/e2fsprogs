@@ -1,5 +1,8 @@
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
+	* Makefile.in: Move include/asm/types.h.in to 
+		lib/ext2fs/ext2_fs.h.in.
+
 	* debugfs.c, debugfs.h, logdump.c: Fix various gcc -Wall nitpicks.
 
 	* logdump.c (read_journal_block): Replace pread with lseek/read

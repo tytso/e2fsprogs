@@ -48,17 +48,7 @@ extern "C" {
 #if EXT2_FLAT_INCLUDES
 #include "e2_types.h"
 #else
-#include <asm/types.h>
-#if !defined(__GNUC__) || defined(__STRICT_ANSI__)  /* asm/types.h already defines __s64 and __u64 otherwise */
-#if SIZEOF_LONG == 8
-typedef __signed__ long __s64;
-typedef unsigned long __u64;
-#elif SIZEOF_LONG_LONG == 8 || \
-  defined(__GNUC__) && (((~0UL) == 0xffffffff) || defined(__i386__))
-typedef __signed__ long long __s64;
-typedef unsigned long long __u64;
-#endif /* SIZEOF_LONG == 8 */
-#endif
+#include <ext2fs/ext2_types.h>
 #endif /* EXT2_FLAT_INCLUDES */
 
 typedef __u32		ext2_ino_t;

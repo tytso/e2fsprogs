@@ -1,3 +1,8 @@
+2001-06-01  Theodore Tso  <tytso@valinux.com>
+
+	* Makefile.in, dosio.c, ext2_fs.h, ext2_types.h.in, ext2fs.h:
+		Move include/asm/types.h.in to 	lib/ext2fs/ext2_fs.h.in.
+
 2001-05-25  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.20
