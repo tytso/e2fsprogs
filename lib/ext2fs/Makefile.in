@@ -280,7 +280,12 @@ expanddir.o: $(srcdir)/expanddir.c $(top_srcdir)/include/linux/ext2_fs.h \
 fileio.o: $(srcdir)/fileio.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
-finddev.o: $(srcdir)/finddev.c
+finddev.o: $(srcdir)/finddev.c $(top_srcdir)/include/linux/ext2_fs.h \
+ $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+flushb.o: $(srcdir)/flushb.c $(top_srcdir)/include/linux/ext2_fs.h \
+ $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 freefs.o: $(srcdir)/freefs.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(srcdir)/ext2fsP.h $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
@@ -321,7 +326,8 @@ mkdir.o: $(srcdir)/mkdir.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 mkjournal.o: $(srcdir)/mkjournal.c $(top_srcdir)/include/linux/ext2_fs.h \
- $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h \
  $(srcdir)/jfs_user.h $(top_srcdir)/include/linux/jfs.h \
  $(top_srcdir)/include/linux/jfs_compat.h $(top_srcdir)/include/linux/list.h
@@ -368,7 +374,7 @@ valid_blk.o: $(srcdir)/valid_blk.c $(top_srcdir)/include/linux/ext2_fs.h \
 version.o: $(srcdir)/version.c $(top_srcdir)/include/linux/ext2_fs.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h \
- $(top_srcdir)/version.h
+ $(srcdir)/../../version.h
 write_bb_file.o: $(srcdir)/write_bb_file.c \
  $(top_srcdir)/include/linux/ext2_fs.h $(srcdir)/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \

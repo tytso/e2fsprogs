@@ -137,7 +137,7 @@ main.o: $(srcdir)/main.c $(srcdir)/resize2fs.h \
  $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/version.h
+ $(srcdir)/../version.h
 sim_progress.o: $(srcdir)/sim_progress.c $(srcdir)/resize2fs.h \
  $(top_srcdir)/include/linux/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
