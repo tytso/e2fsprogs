@@ -36,6 +36,10 @@
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */
 #endif
 
+#if defined(__linux__) && defined(_IOR) && !defined(BLKGETSIZE64)
+#define BLKGETSIZE64 _IOR(0x12,114,size_t)	/* return device size in bytes (u64 *arg) */
+#endif
+
 #ifdef APPLE_DARWIN
 #include <sys/ioctl.h>
 #include <sys/disk.h>
@@ -59,9 +63,8 @@ static int valid_offset(int fd, blkid_loff_t offset)
  */
 blkid_loff_t blkid_get_dev_size(int fd)
 {
-#ifdef BLKGETSIZE
+	unsigned long long size64;
 	unsigned long size;
-#endif
 	blkid_loff_t high, low;
 #ifdef FDGETPRM
 	struct floppy_struct this_floppy;
@@ -74,10 +77,31 @@ blkid_loff_t blkid_get_dev_size(int fd)
 	struct stat st;
 #endif /* HAVE_SYS_DISKLABEL_H */
 
+#ifdef DKIOCGETBLOCKCOUNT	/* For Apple Darwin */
+	if (ioctl(fd, BLKGETSIZE64, &size64) >= 0) {
+		if ((sizeof(blkid_loff_t) < sizeof(unsigned long long))
+		    && ((size64 / (blocksize / 512)) > 0xFFFFFFFF))
+			return 0; /* EFBIG */
+		close(fd);
+		return (blkid_loff_t) size64 << 9;
+	}
+#endif
+
+#ifdef BLKGETSIZE64
+	if (ioctl(fd, BLKGETSIZE64, &size64) >= 0) {
+		if ((sizeof(blkid_loff_t) < sizeof(unsigned long long))
+		    && ((size64) > 0xFFFFFFFF))
+			return 0; /* EFBIG */
+		close(fd);
+		return size64;
+	}
+#endif
+
 #ifdef BLKGETSIZE
 	if (ioctl(fd, BLKGETSIZE, &size) >= 0)
 		return (blkid_loff_t)size << 9;
 #endif
+
 #ifdef FDGETPRM
 	if (ioctl(fd, FDGETPRM, &this_floppy) >= 0)
 		return (blkid_loff_t)this_floppy.size << 9;
