@@ -1,0 +1,34 @@
+	To install the second extended file system management program,
+just follow the steps:
+
+1) Edit the file MCONFIG
+
+	This file contains definitions used in the various makefiles.  These
+definitions have reasonable default value but you may want to adjust them to 
+your system configuration.
+
+2) Create the dependencies files
+
+	Run `make depend' to create the dependencies files.  Note that this
+is not strictly necessary since the makefiles automagically recreates them
+if they do not exist.
+
+3) Compile the programs
+
+	Run `make' to compile the libraries and the programs.
+
+4) Install the programs
+
+	Run `make install'
+
+5) Install the include files and libraries
+
+	You can run `make install-libs' to install the include files and
+libraries.  Please note that this installation is not needed for the
+programs to work.  It is only needed if you expect to develop other
+programs using the libraries.
+
+
+	You can run `make world' as an alternative to steps 2 and 3.  This
+will create the dependencies files, compile the programs and run e2fsck on
+a test suite contained in e2fsck/images.

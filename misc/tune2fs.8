@@ -1,0 +1,71 @@
+.\" Revision 1.0 93/06/3 23:00  chk
+.\" Initial revision
+.\"
+.\"
+.TH TUNE2FS 8 "March 1994" "Version 0.5"
+
+.SH NAME
+tune2fs \- adjust tunable filesystem parameters on second extended filesystems
+.SH SYNOPSIS
+.B tune2fs
+[
+.B options
+]
+device
+.SH DESCRIPTION
+.BI tune2fs
+adjusts tunable filesystem parameters on a Linux second extended filesystem.
+.PP
+.B Never use tune2fs on a read/write mounted filesystem to change parameters!
+.PP
+.SH OPTIONS
+.TP
+.I -c max-mount-counts
+adjust the maximal mounts count between two filesystem checks.
+.TP
+.I -e errors-behavior
+change the behavior of the kernel code when errors are detected.
+.I errors-behavior
+can be one of the followings:
+.br
+\	continue\	\	Continue normal execution.
+.br
+\	remount-ro\	Remount the filesystem read-only.
+.br
+\	panic\	\	Causes a kernel panic.
+.TP
+.I -i interval-between-checks[d|m]
+adjust the maximal time between two filesystem checks. 
+No postfix or `d' result in days, and 'm' in months.
+A value of zero will disable the timedependent checking.
+.TP
+.I -l
+list the contents of the filesystem superblock.
+.TP
+.I -m reserved-blocks-percentage
+adjust the reserved blocks percentage on the given device.
+.PP
+.SH BUGS
+We didn't find any bugs yet. Perhaps there are bugs but it's unlikely.
+.PP
+.SH WARNING
+.B Use this utility on your own risk. You're modifying filesystems.
+.SH AUTHOR
+.B tune2fs 
+has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
+of the ext2 fs.
+.br
+.B tune2fs
+uses the ext2fs library written by Theodore T'so <tytso@mit.edu>.
+.br
+This manual page was written by Christian Kuhtz <chk@data-hh.Hanse.DE>.
+.br
+Timedependent checking was added by Uwe Ohse <uwe@tirka.gun.de>.
+.SH AVAILABILITY
+.B tune2fs
+is available for anonymous ftp from ftp.ibp.fr (132.227.60.2) in
+/pub/linux/BETA/ext2fs.
+.SH SEE ALSO
+.BR dumpe2fs (8),
+.BR e2fsck (8),
+.BR mke2fs (8)

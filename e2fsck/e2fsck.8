@@ -1,0 +1,127 @@
+.\" -*- nroff -*-
+.\" Copyright 1993, 1994 by Theodore Ts'o.  All Rights Reserved.
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.TH NEW-E2FSCK 8 "March 1994" "Version 0.5"
+.SH NAME
+e2fsck \- check a Linux second extended file system
+.SH SYNOPSIS
+.B e2fsck
+[
+.B \-panyrdfvtFV
+]
+[
+.B \-b
+.I superblock
+]
+[
+.B \-B
+.I blocksize
+]
+[
+.B \-l|-L
+.I bad_blocks_file
+]
+.I device
+.SH DESCRIPTION
+.B e2fsck
+is used to check a Linux second extended file system.
+.TP
+.I device
+is the special file corresponding to the device (e.g /dev/hdXX).
+.SH OPTIONS
+.TP
+.I -b superblock
+Instead of using the normal superblock, use the alternative superblock
+specified by 
+.IR superblock .
+.TP
+.I -d
+Print debugging output (useless unless you are debugging
+.B e2fsck
+).
+.TP
+.I -f
+Force checking even if the file system seems clean.
+.TP
+.I -F
+Flush the filesystem device's buffer caches before beginning.  Only
+really useful for doing e2fsck time trials.
+.TP
+.I -l filename
+Add the blocks listed in the file specified by 
+.I filename
+to the list of bad blocks.
+.TP
+.I -L filename
+Set the bad blocks list to be the list of blocks specified by 
+.IR filename .
+(This option is the same as the 
+.I -l
+option, except the bad blocks list is cleared before the blocks listed
+in the file are added to the bad blocks list.)
+.TP
+.I -n
+Open the filesystem read-only, and assume an answer of ``no'' to all
+questions.  Allows
+.B e2fsck
+to be used non-interactively.  (Note: if the 
+.I -l
+or
+.I -L
+options are specified in addition to the 
+.I -n
+option, then the filesystem will be opened read-write, to permit the
+bad-blocks list to be updated.  However, no other changes will be made
+to the filesystem.)
+.TP
+.I -p
+Automatically repair ("preen") the file system without any questions.
+The
+.I -a
+option is provided for backwards compatibility.
+.TP
+.I -t
+Print timing statistics for
+.BR e2fsck .
+If this option is used twice, additional timing statistics are printed
+on a pass by pass basis.
+.TP
+.I -v
+Verbose mode.
+.TP
+.I -V
+Print version information and exit.
+.TP
+.I -y
+Assume an answer of ``yes'' to all questions; allows 
+.B e2fsck
+to be used non-interactively.
+.SH EXIT CODE
+The exit code returned by
+.B e2fsck
+is the sum of the following conditions:
+.br
+\	0\	\-\ No errors
+.br
+\	1\	\-\ File system errors corrected
+.br
+\	2\	\-\ File system errors corrected, system should
+.br
+\	\	\ \ be rebooted if file system was mounted
+.br
+\	4\	\-\ File system errors left uncorrected
+.br
+\	8\	\-\ Operational error
+.br
+\	16\	\-\ Usage or syntax error
+.br
+\	128\	\-\ Shared library error
+.br
+.SH AUTHOR
+This version of 
+.B e2fsck
+is written by Theodore Ts'o <tytso@mit.edu>.
+.SH SEE ALSO
+.BR mke2fs (8),
+.BR tune2fs (8)

@@ -1,0 +1,69 @@
+data.o : data.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h ss_internal.h /usr/include/string.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h ss.h ../ss/mit-sipb-copyright.h \
+  ../ss/ss_err.h copyright.h 
+error.o : error.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h copyright.h ../et/com_err.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h \
+  ss_internal.h /usr/include/string.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  ss.h ../ss/mit-sipb-copyright.h ../ss/ss_err.h 
+execute_cmd.o : execute_cmd.c ss_internal.h /usr/include/stdio.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/libio.h /usr/include/_G_config.h /usr/include/string.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h ss.h ../ss/mit-sipb-copyright.h \
+  ../ss/ss_err.h copyright.h 
+help.o : help.c /usr/include/sys/param.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/limits.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/syslimits.h /usr/include/limits.h \
+  /usr/include/features.h /usr/include/sys/cdefs.h /usr/include/posix1_lim.h /usr/include/linux/limits.h \
+  /usr/include/posix2_lim.h /usr/include/linux/param.h /usr/include/sys/types.h \
+  /usr/include/linux/types.h /usr/include/sys/file.h /usr/include/fcntl.h /usr/include/linux/fcntl.h \
+  /usr/include/sys/wait.h /usr/include/gnu/types.h /usr/include/waitflags.h /usr/include/waitstatus.h \
+  /usr/include/endian.h /usr/include/bytesex.h ss_internal.h /usr/include/stdio.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/string.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  ss.h ../ss/mit-sipb-copyright.h ../ss/ss_err.h copyright.h /usr/include/sys/dir.h \
+  /usr/include/dirent.h /usr/include/linux/dirent.h 
+invocation.o : invocation.c ss_internal.h /usr/include/stdio.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/libio.h /usr/include/_G_config.h /usr/include/string.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h ss.h ../ss/mit-sipb-copyright.h \
+  ../ss/ss_err.h copyright.h 
+list_rqs.o : list_rqs.c copyright.h ss_internal.h /usr/include/stdio.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/libio.h /usr/include/_G_config.h /usr/include/string.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h ss.h ../ss/mit-sipb-copyright.h \
+  ../ss/ss_err.h /usr/include/signal.h /usr/include/sys/types.h /usr/include/linux/types.h \
+  /usr/include/linux/signal.h /usr/include/setjmp.h /usr/include/jmp_buf.h /usr/include/i386/jmp_buf.h \
+  /usr/include/sys/wait.h /usr/include/gnu/types.h /usr/include/waitflags.h /usr/include/waitstatus.h \
+  /usr/include/endian.h /usr/include/bytesex.h 
+listen.o : listen.c copyright.h ss_internal.h /usr/include/stdio.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/libio.h /usr/include/_G_config.h /usr/include/string.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h ss.h ../ss/mit-sipb-copyright.h \
+  ../ss/ss_err.h /usr/include/setjmp.h /usr/include/jmp_buf.h /usr/include/i386/jmp_buf.h \
+  /usr/include/signal.h /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/signal.h \
+  /usr/include/sys/param.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/limits.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/syslimits.h /usr/include/limits.h \
+  /usr/include/posix1_lim.h /usr/include/linux/limits.h /usr/include/posix2_lim.h \
+  /usr/include/linux/param.h 
+pager.o : pager.c ss_internal.h /usr/include/stdio.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/libio.h /usr/include/_G_config.h /usr/include/string.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h ss.h ../ss/mit-sipb-copyright.h \
+  ../ss/ss_err.h copyright.h /usr/include/sys/types.h /usr/include/linux/types.h \
+  /usr/include/sys/file.h /usr/include/fcntl.h /usr/include/linux/fcntl.h /usr/include/signal.h \
+  /usr/include/linux/signal.h 
+parse.o : parse.c ss_internal.h /usr/include/stdio.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/libio.h /usr/include/_G_config.h /usr/include/string.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h ss.h ../ss/mit-sipb-copyright.h \
+  ../ss/ss_err.h copyright.h 
+prompt.o : prompt.c copyright.h /usr/include/stdio.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/libio.h /usr/include/_G_config.h ss_internal.h \
+  /usr/include/string.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h ss.h \
+  ../ss/mit-sipb-copyright.h ../ss/ss_err.h 
+request_tbl.o : request_tbl.c copyright.h ss_internal.h /usr/include/stdio.h \
+  /usr/include/features.h /usr/include/sys/cdefs.h /usr/include/libio.h /usr/include/_G_config.h \
+  /usr/include/string.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h ss.h \
+  ../ss/mit-sipb-copyright.h ../ss/ss_err.h 
+requests.o : requests.c mit-sipb-copyright.h /usr/include/stdio.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/libio.h /usr/include/_G_config.h ss_internal.h \
+  /usr/include/string.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h ss.h \
+  ../ss/mit-sipb-copyright.h ../ss/ss_err.h 
+ss_err.o : ss_err.c 
+std_rqs.o : std_rqs.c ../ss/ss.h ../ss/mit-sipb-copyright.h ../ss/ss_err.h 
+test_ss.o : test_ss.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h ss.h ../ss/mit-sipb-copyright.h \
+  ../ss/ss_err.h 

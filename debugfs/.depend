@@ -1,0 +1,36 @@
+debugfs.o : debugfs.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/unistd.h /usr/include/posix_opt.h \
+  /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/stdlib.h /usr/include/errno.h \
+  /usr/include/linux/errno.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h \
+  /usr/include/alloca.h /usr/include/ctype.h /usr/include/string.h /usr/include/time.h \
+  /usr/include/getopt.h /usr/include/sys/stat.h /usr/include/linux/stat.h ../lib/et/com_err.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h ../lib/ss/ss.h ../lib/ss/mit-sipb-copyright.h \
+  ../lib/ss/ss_err.h debugfs.h /usr/include/linux/ext2_fs.h ../lib/ext2fs/ext2fs.h \
+  ../lib/ext2fs/io.h ../lib/ext2fs/ext2_err.h ../lib/ext2fs/bitops.h 
+icheck.o : icheck.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/unistd.h /usr/include/posix_opt.h \
+  /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/stdlib.h /usr/include/errno.h \
+  /usr/include/linux/errno.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h \
+  /usr/include/alloca.h /usr/include/ctype.h /usr/include/string.h /usr/include/time.h \
+  /usr/include/getopt.h /usr/include/sys/stat.h /usr/include/linux/stat.h debugfs.h \
+  /usr/include/linux/ext2_fs.h ../lib/ext2fs/ext2fs.h ../lib/et/com_err.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h \
+  ../lib/ext2fs/io.h ../lib/ext2fs/ext2_err.h ../lib/ext2fs/bitops.h 
+ncheck.o : ncheck.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/unistd.h /usr/include/posix_opt.h \
+  /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/stdlib.h /usr/include/errno.h \
+  /usr/include/linux/errno.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h \
+  /usr/include/alloca.h /usr/include/ctype.h /usr/include/string.h /usr/include/time.h \
+  /usr/include/getopt.h /usr/include/sys/stat.h /usr/include/linux/stat.h debugfs.h \
+  /usr/include/linux/ext2_fs.h ../lib/ext2fs/ext2fs.h ../lib/et/com_err.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h \
+  ../lib/ext2fs/io.h ../lib/ext2fs/ext2_err.h ../lib/ext2fs/bitops.h 
+util.o : util.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/unistd.h /usr/include/posix_opt.h \
+  /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/stdlib.h /usr/include/errno.h \
+  /usr/include/linux/errno.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h \
+  /usr/include/alloca.h /usr/include/ctype.h /usr/include/string.h debugfs.h /usr/include/linux/ext2_fs.h \
+  ../lib/ext2fs/ext2fs.h ../lib/et/com_err.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h \
+  ../lib/ext2fs/io.h ../lib/ext2fs/ext2_err.h ../lib/ext2fs/bitops.h 

@@ -1,0 +1,133 @@
+.\" -*- nroff -*-
+.TH DEBUGFS 8 "March 1994" "Version 0.4b"
+.SH NAME
+debugfs \- ext2 file system debugger
+.SH SYNOPSIS
+.B debugfs
+[
+[
+.B \-w
+]
+device
+]
+.SH DESCRIPTION
+.B debugfs
+is a file system debugger. It can be used to examine and change the
+state of an ext2 file system.
+.br
+.I device
+is the special file corresponding to the device containing the ext2
+file system (e.g /dev/hdXX).
+.SH OPTIONS
+.TP
+.I -w
+Specify that the file system should be open in read-write mode. Without this
+option, the file system is open in read-only mode.
+.SH COMMANDS
+.B debugfs
+is an interactive debugger. It understands a number of commands.
+.TP
+.I cd file
+.TP
+.I chroot file
+.TP
+.I close
+Close the currently open file system.
+.TP
+.I clri file
+Clear the contents of the inode corresponding to
+.I file
+.TP
+.I expand_dir, file
+Expand a directory.
+.TP
+.I find_free_block [goal]
+Find the first free block, starting from
+.I goal
+and allocates it.
+.TP
+.I find_free_inode [dir [mode]]
+Find a free inode and allocates it.
+.TP
+.I freeb block
+Mark the block as not allocated.
+.TP
+.I freei file
+Free the inode corresponding to
+.I file
+.TP
+.I help
+.TP
+.I iname inode
+Print the file name corresponding to
+.I inode
+(currently not implemented).
+.TP
+.I initialize device blocksize
+Create an ext2 file system on
+.I device
+.TP
+.I kill_file file
+Remove a file and deallocates its blocks.
+.TP
+.I ln source_file dest_file
+Create a link.
+.TP
+.I ls [pathname]
+Emulate the
+.BR ls (1)
+command.
+.TP
+.I modify_inode file
+Modify the contents of the inode corresponding to
+.I file
+.TP
+.I mkdir file
+Make a directory.
+.TP
+.I open [-w] device
+Open a file system.
+.TP
+.I pwd
+.TP
+.I quit
+Quit
+.B debugfs
+.TP
+.I rm file
+Remove a file.
+.TP
+.I rmdir file
+Remove a directory.
+.TP
+.I setb block
+Mark the block as allocated.
+.TP
+.I seti file
+Mark in use the inode corresponding to
+.I file
+.TP
+.I show_super_stats
+List the contents of the super block.
+.TP
+.I stat file
+Dump the contents of the inode corresponding to
+.I file
+.TP
+.I testb block
+Test if the block is marked as allocated.
+.TP
+.I testi file
+Test if the inode correponding to
+.I file
+is marked as allocated.
+.TP
+.I unlink file
+Remove a link.
+.SH AUTHOR
+.B debugfs
+has been written by Theodore T'so <tytso@mit.edu>.
+.SH SEE ALSO
+.BR dumpe2fs (8),
+.BR e2fsck (8),
+.BR mke2fs (8)

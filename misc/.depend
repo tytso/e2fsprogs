@@ -1,0 +1,98 @@
+badblocks.o : badblocks.c /usr/include/errno.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/linux/errno.h /usr/include/fcntl.h /usr/include/sys/types.h /usr/include/linux/types.h \
+  /usr/include/linux/fcntl.h /usr/include/getopt.h /usr/include/signal.h /usr/include/linux/signal.h \
+  /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h /usr/include/stdlib.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h \
+  /usr/include/string.h /usr/include/unistd.h /usr/include/posix_opt.h /usr/include/gnu/types.h \
+  /usr/include/sys/ioctl.h /usr/include/linux/ioctl.h /usr/include/termios.h /usr/include/linux/termios.h \
+  /usr/include/linux/fd.h /usr/include/linux/fs.h /usr/include/linux/linkage.h \
+  /usr/include/linux/limits.h /usr/include/linux/wait.h /usr/include/linux/dirent.h \
+  /usr/include/linux/vfs.h /usr/include/linux/net.h /usr/include/linux/socket.h \
+  /usr/include/linux/sockios.h /usr/include/linux/pipe_fs_i.h /usr/include/linux/minix_fs_i.h \
+  /usr/include/linux/ext_fs_i.h /usr/include/linux/ext2_fs_i.h /usr/include/linux/hpfs_fs_i.h \
+  /usr/include/linux/msdos_fs_i.h /usr/include/linux/iso_fs_i.h /usr/include/linux/nfs_fs_i.h \
+  /usr/include/linux/nfs.h /usr/include/linux/xia_fs_i.h /usr/include/linux/sysv_fs_i.h \
+  /usr/include/linux/minix_fs_sb.h /usr/include/linux/ext_fs_sb.h /usr/include/linux/ext2_fs_sb.h \
+  /usr/include/linux/hpfs_fs_sb.h /usr/include/linux/msdos_fs_sb.h /usr/include/linux/iso_fs_sb.h \
+  /usr/include/linux/nfs_fs_sb.h /usr/include/linux/xia_fs_sb.h /usr/include/linux/sysv_fs_sb.h \
+  ../lib/et/com_err.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h 
+chattr.o : chattr.c /usr/include/dirent.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h /usr/include/fcntl.h /usr/include/linux/fcntl.h \
+  /usr/include/getopt.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+  /usr/include/stdlib.h /usr/include/errno.h /usr/include/linux/errno.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h \
+  /usr/include/unistd.h /usr/include/posix_opt.h /usr/include/sys/param.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/limits.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/syslimits.h /usr/include/limits.h \
+  /usr/include/posix1_lim.h /usr/include/linux/param.h /usr/include/sys/stat.h \
+  /usr/include/linux/stat.h /usr/include/linux/ext2_fs.h ../lib/et/com_err.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h \
+  ../lib/e2p/e2p.h ../version.h 
+dumpe2fs.o : dumpe2fs.c /usr/include/getopt.h /usr/include/fcntl.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/sys/types.h /usr/include/linux/types.h \
+  /usr/include/linux/fcntl.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+  /usr/include/stdlib.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/errno.h \
+  /usr/include/linux/errno.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h \
+  /usr/include/string.h /usr/include/unistd.h /usr/include/posix_opt.h /usr/include/gnu/types.h \
+  /usr/include/linux/ext2_fs.h ../lib/ext2fs/ext2fs.h ../lib/et/com_err.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h \
+  ../lib/ext2fs/io.h ../lib/ext2fs/ext2_err.h ../lib/ext2fs/bitops.h ../lib/e2p/e2p.h \
+  /usr/include/dirent.h /usr/include/linux/limits.h /usr/include/linux/dirent.h \
+  ../version.h 
+fsck.o : fsck.c /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/sys/wait.h \
+  /usr/include/features.h /usr/include/sys/cdefs.h /usr/include/gnu/types.h /usr/include/waitflags.h \
+  /usr/include/waitstatus.h /usr/include/errno.h /usr/include/linux/errno.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/limits.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/syslimits.h /usr/include/limits.h \
+  /usr/include/posix1_lim.h /usr/include/linux/limits.h /usr/include/stdio.h /usr/include/libio.h \
+  /usr/include/_G_config.h /usr/include/stdlib.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h /usr/include/string.h /usr/include/mntent.h \
+  /usr/include/unistd.h /usr/include/posix_opt.h /usr/include/getopt.h ../version.h \
+  fsck.h 
+lsattr.o : lsattr.c /usr/include/dirent.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h /usr/include/errno.h /usr/include/linux/errno.h \
+  /usr/include/fcntl.h /usr/include/linux/fcntl.h /usr/include/getopt.h /usr/include/stdio.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/unistd.h /usr/include/posix_opt.h \
+  /usr/include/sys/param.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/limits.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/syslimits.h /usr/include/limits.h \
+  /usr/include/posix1_lim.h /usr/include/linux/param.h /usr/include/sys/stat.h \
+  /usr/include/linux/stat.h /usr/include/linux/ext2_fs.h ../lib/et/com_err.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h \
+  ../lib/e2p/e2p.h ../version.h 
+mke2fs.o : mke2fs.c /usr/include/string.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/fcntl.h /usr/include/sys/types.h \
+  /usr/include/linux/types.h /usr/include/linux/fcntl.h /usr/include/ctype.h /usr/include/termios.h \
+  /usr/include/linux/termios.h /usr/include/time.h /usr/include/getopt.h /usr/include/unistd.h \
+  /usr/include/posix_opt.h /usr/include/gnu/types.h /usr/include/stdlib.h /usr/include/errno.h \
+  /usr/include/linux/errno.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h \
+  /usr/include/mntent.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+  /usr/include/malloc.h /usr/include/sys/ioctl.h /usr/include/linux/ioctl.h /usr/include/linux/ext2_fs.h \
+  /usr/include/linux/fs.h /usr/include/linux/linkage.h /usr/include/linux/limits.h \
+  /usr/include/linux/wait.h /usr/include/linux/dirent.h /usr/include/linux/vfs.h \
+  /usr/include/linux/net.h /usr/include/linux/socket.h /usr/include/linux/sockios.h \
+  /usr/include/linux/pipe_fs_i.h /usr/include/linux/minix_fs_i.h /usr/include/linux/ext_fs_i.h \
+  /usr/include/linux/ext2_fs_i.h /usr/include/linux/hpfs_fs_i.h /usr/include/linux/msdos_fs_i.h \
+  /usr/include/linux/iso_fs_i.h /usr/include/linux/nfs_fs_i.h /usr/include/linux/nfs.h \
+  /usr/include/linux/xia_fs_i.h /usr/include/linux/sysv_fs_i.h /usr/include/linux/minix_fs_sb.h \
+  /usr/include/linux/ext_fs_sb.h /usr/include/linux/ext2_fs_sb.h /usr/include/linux/hpfs_fs_sb.h \
+  /usr/include/linux/msdos_fs_sb.h /usr/include/linux/iso_fs_sb.h /usr/include/linux/nfs_fs_sb.h \
+  /usr/include/linux/xia_fs_sb.h /usr/include/linux/sysv_fs_sb.h ../lib/et/com_err.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h ../lib/ext2fs/ext2fs.h ../lib/ext2fs/io.h \
+  ../lib/ext2fs/ext2_err.h ../lib/ext2fs/bitops.h ../version.h 
+mklost+found.o : mklost+found.c /usr/include/errno.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/linux/errno.h /usr/include/fcntl.h /usr/include/sys/types.h \
+  /usr/include/linux/types.h /usr/include/linux/fcntl.h /usr/include/stdio.h /usr/include/libio.h \
+  /usr/include/_G_config.h /usr/include/string.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/unistd.h /usr/include/posix_opt.h /usr/include/gnu/types.h /usr/include/sys/param.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/limits.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/syslimits.h \
+  /usr/include/limits.h /usr/include/posix1_lim.h /usr/include/linux/limits.h \
+  /usr/include/linux/param.h /usr/include/sys/stat.h /usr/include/linux/stat.h \
+  /usr/include/linux/ext2_fs.h ../version.h 
+tune2fs.o : tune2fs.c /usr/include/fcntl.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/fcntl.h \
+  /usr/include/getopt.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+  /usr/include/stdlib.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/errno.h \
+  /usr/include/linux/errno.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/float.h \
+  /usr/include/string.h /usr/include/time.h /usr/include/unistd.h /usr/include/posix_opt.h \
+  /usr/include/gnu/types.h /usr/include/linux/ext2_fs.h ../lib/ext2fs/ext2fs.h \
+  ../lib/et/com_err.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h ../lib/ext2fs/io.h \
+  ../lib/ext2fs/ext2_err.h ../lib/ext2fs/bitops.h ../lib/e2p/e2p.h /usr/include/dirent.h \
+  /usr/include/linux/limits.h /usr/include/linux/dirent.h ../version.h 

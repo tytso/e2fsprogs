@@ -1,0 +1,77 @@
+fgetflags.o : fgetflags.c /usr/include/errno.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/linux/errno.h /usr/include/fcntl.h /usr/include/sys/types.h /usr/include/linux/types.h \
+  /usr/include/linux/fcntl.h /usr/include/unistd.h /usr/include/posix_opt.h /usr/include/gnu/types.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/sys/ioctl.h \
+  /usr/include/linux/ioctl.h /usr/include/termios.h /usr/include/linux/termios.h \
+  /usr/include/linux/ext2_fs.h e2p.h /usr/include/dirent.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h 
+fgetversion.o : fgetversion.c /usr/include/errno.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/linux/errno.h /usr/include/fcntl.h /usr/include/sys/types.h /usr/include/linux/types.h \
+  /usr/include/linux/fcntl.h /usr/include/unistd.h /usr/include/posix_opt.h /usr/include/gnu/types.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/sys/ioctl.h \
+  /usr/include/linux/ioctl.h /usr/include/termios.h /usr/include/linux/termios.h \
+  /usr/include/linux/ext2_fs.h e2p.h /usr/include/dirent.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h 
+fsetflags.o : fsetflags.c /usr/include/errno.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/linux/errno.h /usr/include/fcntl.h /usr/include/sys/types.h /usr/include/linux/types.h \
+  /usr/include/linux/fcntl.h /usr/include/unistd.h /usr/include/posix_opt.h /usr/include/gnu/types.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/sys/ioctl.h \
+  /usr/include/linux/ioctl.h /usr/include/termios.h /usr/include/linux/termios.h \
+  /usr/include/linux/ext2_fs.h e2p.h /usr/include/dirent.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h 
+fsetversion.o : fsetversion.c /usr/include/errno.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/linux/errno.h /usr/include/fcntl.h /usr/include/sys/types.h /usr/include/linux/types.h \
+  /usr/include/linux/fcntl.h /usr/include/unistd.h /usr/include/posix_opt.h /usr/include/gnu/types.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/sys/ioctl.h \
+  /usr/include/linux/ioctl.h /usr/include/termios.h /usr/include/linux/termios.h \
+  /usr/include/linux/ext2_fs.h e2p.h /usr/include/dirent.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h 
+getflags.o : getflags.c /usr/include/errno.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/linux/errno.h /usr/include/sys/ioctl.h /usr/include/linux/ioctl.h \
+  /usr/include/termios.h /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/termios.h \
+  /usr/include/linux/ext2_fs.h e2p.h /usr/include/dirent.h /usr/include/gnu/types.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h 
+getversion.o : getversion.c /usr/include/errno.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/linux/errno.h /usr/include/sys/ioctl.h /usr/include/linux/ioctl.h \
+  /usr/include/termios.h /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/termios.h \
+  /usr/include/linux/ext2_fs.h e2p.h /usr/include/dirent.h /usr/include/gnu/types.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h 
+iod.o : iod.c /usr/include/dirent.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h e2p.h /usr/include/stdio.h /usr/include/libio.h \
+  /usr/include/_G_config.h /usr/include/linux/ext2_fs.h 
+ls.o : ls.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/time.h /usr/include/linux/ext2_fs.h \
+  e2p.h /usr/include/dirent.h /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h 
+pe.o : pe.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/linux/ext2_fs.h e2p.h \
+  /usr/include/dirent.h /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h 
+pf.o : pf.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/linux/ext2_fs.h e2p.h \
+  /usr/include/dirent.h /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h 
+ps.o : ps.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/include/linux/ext2_fs.h e2p.h \
+  /usr/include/dirent.h /usr/include/gnu/types.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h \
+  /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h 
+setflags.o : setflags.c /usr/include/errno.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/linux/errno.h /usr/include/sys/ioctl.h /usr/include/linux/ioctl.h \
+  /usr/include/termios.h /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/termios.h \
+  /usr/include/linux/ext2_fs.h e2p.h /usr/include/dirent.h /usr/include/gnu/types.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h 
+setversion.o : setversion.c /usr/include/errno.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/linux/errno.h /usr/include/sys/ioctl.h /usr/include/linux/ioctl.h \
+  /usr/include/termios.h /usr/include/sys/types.h /usr/include/linux/types.h /usr/include/linux/termios.h \
+  /usr/include/linux/ext2_fs.h e2p.h /usr/include/dirent.h /usr/include/gnu/types.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h /usr/include/linux/limits.h \
+  /usr/include/linux/dirent.h /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h 

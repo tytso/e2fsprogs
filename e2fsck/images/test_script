@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# Test script for e2fsck
+#
+
+FSCK=../e2fsck
+SECOND_FSCK=$FSCK
+FSCK_OPT=-yft
+SECOND_FSCK_OPT=$FSCK_OPT
+
+#
+# Uncomment to test against original e2fsck
+#
+#FSCK=/u4/src/e2fsprogs-0.3c/e2fsck
+#FSCK_OPT=-af
+
+OUTFILE=test_script.log
+
+cp /dev/null $OUTFILE
+
+for i in *.img.gz
+do
+	echo -n "Testing $i...	"
+	echo "Testing $i..." >> $OUTFILE
+	gunzip < $i > /tmp/$i.$$
+	echo $FSCK $FSCK_OPT /tmp/$i.$$  >> $OUTFILE
+	$FSCK $FSCK_OPT /tmp/$i.$$  >> $OUTFILE 2>&1 
+	status=$?
+	echo Exit status is $status >> $OUTFILE
+	echo " "  >> $OUTFILE
+	echo -n "Exit status $status	"
+	echo Running e2fsck again.... >> $OUTFILE
+	echo $SECOND_FSCK $SECOND_FSCK_OPT /tmp/$i.$$ >> $OUTFILE
+	$SECOND_FSCK $SECOND_FSCK_OPT /tmp/$i.$$ >> $OUTFILE 2>&1 
+	status=$?
+	echo Exit status is $status >> $OUTFILE
+	echo Exit status $status
+	rm /tmp/$i.$$
+	echo "---------------------------------------------------" >> $OUTFILE
+done
+	
+	

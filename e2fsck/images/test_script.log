@@ -1,0 +1,1289 @@
+Testing baddir.img.gz...
+../e2fsck -yft /tmp/baddir.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Inode 13 is a zero length directory.  Clear? yes
+
+Pass 2: Checking directory structure
+Entry 'zero' in / (2) has deleted/unused inode 13.
+Clear? yes
+
+Directory inode 12, block 0, offset 0: directory corrupted
+Salvage? yes
+
+Missing '.' in directory inode 12.
+Fix? yes
+
+Missing '..' in directory inode 12.
+Fix? yes
+
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  2.354/ 0.000/ 0.320
+'..' in /block.h (12) is . (0), should be / (2).
+Fix? yes
+
+Pass 4: Check reference counts.
+Inode 12 has ref count 1, expecting 2.
+Set i_nlinks to count? yes
+
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Block bitmap differences: -22.  FIXED
+Free blocks count wrong (76, counted=77).  FIXED
+Inode bitmap differences: -13.  FIXED
+Free inodes count wrong for group #0 (19, counted=20).  FIXED
+Directories count wrong for group #0 (4, counted=3).  FIXED
+Free inodes count wrong (19, counted=20).  FIXED
+
+/tmp/baddir.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/baddir.img.gz.994: 12/32 files, 23/100 blocks
+Memory used: 74192, elapsed time:  3.648/ 0.020/ 0.590
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/baddir.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.369/ 0.010/ 0.280
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/baddir.img.gz.994: 12/32 files, 23/100 blocks
+Memory used: 78288, elapsed time:  2.638/ 0.030/ 0.520
+Exit status is 0
+---------------------------------------------------
+Testing badinode.img.gz...
+../e2fsck -yft /tmp/badinode.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Inode 12 (/motd) has a bad mode (0110444).
+Clear? yes
+
+i_fsize for inode 13 (/timings) is 4, should be zero.
+Clear i_fsize? yes
+
+i_file_acl for inode 13 (/timings) is 39, should be zero.
+Clear i_file_acl? yes
+
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.882/ 0.010/ 0.300
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Block bitmap differences: -25.  FIXED
+Free blocks count wrong for group 0 (76, counted=77).  FIXED
+Free blocks count wrong (76, counted=77).  FIXED
+Free inodes count wrong for group #0 (19, counted=20).  FIXED
+Free inodes count wrong (19, counted=20).  FIXED
+
+/tmp/badinode.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/badinode.img.gz.994: 12/32 files, 23/100 blocks
+Memory used: 78288, elapsed time:  3.171/ 0.040/ 0.550
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/badinode.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.380/ 0.000/ 0.300
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/badinode.img.gz.994: 12/32 files, 23/100 blocks
+Memory used: 78288, elapsed time:  2.659/ 0.010/ 0.560
+Exit status is 0
+---------------------------------------------------
+Testing badlkcnt.img.gz...
+../e2fsck -yft /tmp/badlkcnt.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+
+Deleted inode detected with non-zero link count.
+This is probably due to old ext2fs kernel code.  
+Fix inode(s)? yes
+
+Inode 13 is deleted w/ non-zero link_count.  CLEARED
+Inode 15 is deleted w/ non-zero link_count.  CLEARED
+Inode 16 is deleted w/ non-zero link_count.  CLEARED
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.935/ 0.030/ 0.270
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+
+/tmp/badlkcnt.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/badlkcnt.img.gz.994: 29/32 files, 32/100 blocks
+Memory used: 78288, elapsed time:  3.211/ 0.050/ 0.520
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/badlkcnt.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.382/ 0.010/ 0.280
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/badlkcnt.img.gz.994: 29/32 files, 32/100 blocks
+Memory used: 78288, elapsed time:  2.659/ 0.020/ 0.540
+Exit status is 0
+---------------------------------------------------
+Testing badroot.img.gz...
+../e2fsck -yft /tmp/badroot.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Root inode is not a directory.  Clear? yes
+
+Pass 2: Checking directory structure
+Entry '..' in ??? (11) has deleted/unused inode 2.
+Clear? yes
+
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.920/ 0.020/ 0.280
+Root inode not allocated.  Rellocate? yes
+
+Unconnected directory inode 11 (...)
+Connect to /lost+found? yes
+
+/lost+found not found.  Create? yes
+
+Pass 4: Check reference counts.
+Inode 11 has ref count 3, expecting 2.
+Set i_nlinks to count? yes
+
+Unattached inode 12
+Connect to /lost+found? yes
+
+Inode 12 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Free blocks count wrong for group 0 (77, counted=76).  FIXED
+Free blocks count wrong (77, counted=76).  FIXED
+Free inodes count wrong for group #0 (20, counted=19).  FIXED
+Directories count wrong for group #0 (2, counted=3).  FIXED
+Free inodes count wrong (20, counted=19).  FIXED
+
+/tmp/badroot.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/badroot.img.gz.994: 13/32 files, 24/100 blocks
+Memory used: 78288, elapsed time:  3.222/ 0.040/ 0.560
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/badroot.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.380/ 0.010/ 0.290
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/badroot.img.gz.994: 13/32 files, 24/100 blocks
+Memory used: 78288, elapsed time:  2.658/ 0.020/ 0.540
+Exit status is 0
+---------------------------------------------------
+Testing badtable.img.gz...
+../e2fsck -yft /tmp/badtable.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Warning: Bad block(s) found in filesystem-reserved blocks.
+Bad block 3 in group 0's block bitmap.  Relocate? yes
+
+Bad block 4 in group 0's inode bitmap.  Relocate? yes
+
+WARNING: Severe data loss possible!!!!
+Bad block 6 in group 0's inode table.  Relocate? yes
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.939/ 0.020/ 0.280
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Block bitmap differences: -5 -7 +22 +23 +24 +25 +26 +27.  FIXED
+Free blocks count wrong for group 0 (78, counted=74).  FIXED
+Free blocks count wrong (78, counted=74).  FIXED
+
+/tmp/badtable.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/badtable.img.gz.994: 11/32 files, 26/100 blocks
+Memory used: 78288, elapsed time:  3.232/ 0.040/ 0.550
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/badtable.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.379/ 0.010/ 0.290
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/badtable.img.gz.994: 11/32 files, 26/100 blocks
+Memory used: 78288, elapsed time:  2.658/ 0.020/ 0.550
+Exit status is 0
+---------------------------------------------------
+Testing bbfile.img.gz...
+../e2fsck -yft /tmp/bbfile.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Duplicate blocks found... invoking duplicate block passes.
+Pass 1B: Rescan for duplicate/bad blocks
+Duplicate/bad block(s) in inode 2: 21
+Duplicate/bad block(s) in inode 11: 9 10 11 12 13 14 15 16 17 18 19 20
+Duplicate/bad block(s) in inode 12: 25 26
+Pass 1C: Scan directories for inodes with dup blocks.
+Pass 1D: Reconciling duplicate blocks
+(There are 3 inodes containing duplicate/bad blocks.)
+
+File /termcap (inode #12, mod time Sun Jan  2 03:29:13 1994) 
+  has 2 duplicate blocks, shared with 1 file:
+	<The bad blocks inode> (inode #1, mod time Sun Jan  2 03:32:04 1994)
+Clone duplicate/bad blocks? yes
+
+
+File /lost+found (inode #11, mod time Sun Jan  2 03:28:40 1994) 
+  has 12 duplicate blocks, shared with 1 file:
+	<The bad blocks inode> (inode #1, mod time Sun Jan  2 03:32:04 1994)
+Clone duplicate/bad blocks? yes
+
+
+File / (inode #2, mod time Sun Jan  2 03:29:13 1994) 
+  has 1 duplicate blocks, shared with 1 file:
+	<The bad blocks inode> (inode #1, mod time Sun Jan  2 03:32:04 1994)
+Clone duplicate/bad blocks? yes
+
+
+Warning: Bad block(s) found in filesystem-reserved blocks.
+Bad block 4 in group 0's inode bitmap.  Relocate? yes
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  2.031/ 0.070/ 0.280
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Block bitmap differences: +22 +23 +24 +57.  FIXED
+Free blocks count wrong for group 0 (61, counted=42).  FIXED
+Free blocks count wrong (61, counted=42).  FIXED
+
+/tmp/bbfile.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/bbfile.img.gz.994: 12/32 files, 58/100 blocks
+Memory used: 78288, elapsed time:  3.322/ 0.100/ 0.530
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/bbfile.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Warning: Bad block(s) found in filesystem-reserved blocks.
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.374/ 0.000/ 0.300
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/bbfile.img.gz.994: 12/32 files, 58/100 blocks
+Memory used: 78288, elapsed time:  2.649/ 0.020/ 0.550
+Exit status is 0
+---------------------------------------------------
+Testing bitmaps.img.gz...
+../e2fsck -yft /tmp/bitmaps.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.811/ 0.020/ 0.290
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Block bitmap differences: +12 -20 +41 -50.  FIXED
+Inode bitmap differences: +11 -15.  FIXED
+
+/tmp/bitmaps.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/bitmaps.img.gz.994: 11/32 files, 22/100 blocks
+Memory used: 78288, elapsed time:  3.101/ 0.040/ 0.550
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/bitmaps.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.359/ 0.000/ 0.300
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/bitmaps.img.gz.994: 11/32 files, 22/100 blocks
+Memory used: 78288, elapsed time:  2.639/ 0.010/ 0.560
+Exit status is 0
+---------------------------------------------------
+Testing dirlink.img.gz...
+../e2fsck -yft /tmp/dirlink.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Entry 'quux' in /foo (12) is a link to directory /bar (13).
+Clear? yes
+
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  1.928/ 0.000/ 0.300
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+
+/tmp/dirlink.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/dirlink.img.gz.994: 13/32 files, 24/100 blocks
+Memory used: 74192, elapsed time:  3.203/ 0.010/ 0.560
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/dirlink.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  1.370/ 0.010/ 0.280
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/dirlink.img.gz.994: 13/32 files, 24/100 blocks
+Memory used: 74192, elapsed time:  2.649/ 0.030/ 0.530
+Exit status is 0
+---------------------------------------------------
+Testing dup.img.gz...
+../e2fsck -yft /tmp/dup.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Duplicate blocks found... invoking duplicate block passes.
+Pass 1B: Rescan for duplicate/bad blocks
+Duplicate/bad block(s) in inode 12: 25 26
+Duplicate/bad block(s) in inode 13: 25 26
+Pass 1C: Scan directories for inodes with dup blocks.
+Pass 1D: Reconciling duplicate blocks
+(There are 2 inodes containing duplicate/bad blocks.)
+
+File /motd (inode #13, mod time Mon Sep 20 23:19:20 1993) 
+  has 2 duplicate blocks, shared with 1 file:
+	/termcap (inode #12, mod time Mon Sep 20 23:19:14 1993)
+Clone duplicate/bad blocks? yes
+
+
+File /termcap (inode #12, mod time Mon Sep 20 23:19:14 1993) 
+  has 2 duplicate blocks, shared with 1 file:
+	/motd (inode #13, mod time Mon Sep 20 23:19:20 1993)
+Duplicated blocks already reassigned or cloned.
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.652/ 0.020/ 0.310
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Free blocks count wrong for group 0 (44, counted=60).  FIXED
+Free blocks count wrong (62, counted=60).  FIXED
+Padding at end of block bitmap is not set. Fix? yes
+
+
+/tmp/dup.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/dup.img.gz.994: 13/16 files, 40/100 blocks
+Memory used: 78288, elapsed time:  2.955/ 0.060/ 0.570
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/dup.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.370/ 0.000/ 0.300
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/dup.img.gz.994: 13/16 files, 40/100 blocks
+Memory used: 78288, elapsed time:  2.647/ 0.010/ 0.560
+Exit status is 0
+---------------------------------------------------
+Testing dup2.img.gz...
+../e2fsck -yft /tmp/dup2.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Duplicate blocks found... invoking duplicate block passes.
+Pass 1B: Rescan for duplicate/bad blocks
+Duplicate/bad block(s) in inode 12: 25 26
+Duplicate/bad block(s) in inode 13: 25 26 57 58
+Duplicate/bad block(s) in inode 14: 57 58
+Pass 1C: Scan directories for inodes with dup blocks.
+Pass 1D: Reconciling duplicate blocks
+(There are 3 inodes containing duplicate/bad blocks.)
+
+File /pass1.c (inode #14, mod time Tue Sep 21 00:28:37 1993) 
+  has 2 duplicate blocks, shared with 1 file:
+	/motd (inode #13, mod time Mon Sep 20 23:19:20 1993)
+Clone duplicate/bad blocks? yes
+
+
+File /motd (inode #13, mod time Mon Sep 20 23:19:20 1993) 
+  has 4 duplicate blocks, shared with 2 files:
+	/pass1.c (inode #14, mod time Tue Sep 21 00:28:37 1993)
+	/termcap (inode #12, mod time Mon Sep 20 23:19:14 1993)
+Clone duplicate/bad blocks? yes
+
+
+File /termcap (inode #12, mod time Mon Sep 20 23:19:14 1993) 
+  has 2 duplicate blocks, shared with 1 file:
+	/motd (inode #13, mod time Mon Sep 20 23:19:20 1993)
+Duplicated blocks already reassigned or cloned.
+
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.969/ 0.020/ 0.300
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Free blocks count wrong for group 0 (8, counted=22).  FIXED
+Free blocks count wrong (26, counted=22).  FIXED
+Padding at end of block bitmap is not set. Fix? yes
+
+
+/tmp/dup2.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/dup2.img.gz.994: 16/16 files, 78/100 blocks
+Memory used: 78288, elapsed time:  3.270/ 0.060/ 0.560
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/dup2.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.383/ 0.000/ 0.300
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/dup2.img.gz.994: 16/16 files, 78/100 blocks
+Memory used: 78288, elapsed time:  2.659/ 0.020/ 0.550
+Exit status is 0
+---------------------------------------------------
+Testing end-bitmap.img.gz...
+../e2fsck -yft /tmp/end-bitmap.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.998/ 0.010/ 0.300
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Free blocks count wrong for group 0 (44, counted=63).  FIXED
+Padding at end of block bitmap is not set. Fix? yes
+
+
+/tmp/end-bitmap.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/end-bitmap.img.gz.994: 12/16 files, 37/100 blocks
+Memory used: 78288, elapsed time:  3.285/ 0.030/ 0.560
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/end-bitmap.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 78288, elapsed time:  1.391/ 0.020/ 0.270
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/end-bitmap.img.gz.994: 12/16 files, 37/100 blocks
+Memory used: 78288, elapsed time:  2.668/ 0.030/ 0.530
+Exit status is 0
+---------------------------------------------------
+Testing expand.img.gz...
+../e2fsck -yft /tmp/expand.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Deleted inode 2 has zero dtime.
+Set dtime? yes
+
+Pass 2: Checking directory structure
+Entry '..' in /lost+found (11) has deleted/unused inode 2.
+Clear? yes
+
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  2.008/ 0.030/ 0.280
+Root inode not allocated.  Rellocate? yes
+
+Unconnected directory inode 11 (...)
+Connect to /lost+found? yes
+
+/lost+found not found.  Create? yes
+
+Pass 4: Check reference counts.
+Inode 11 has ref count 3, expecting 2.
+Set i_nlinks to count? yes
+
+Unattached inode 12
+Connect to /lost+found? yes
+
+Inode 12 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 13
+Connect to /lost+found? yes
+
+Inode 13 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 14
+Connect to /lost+found? yes
+
+Inode 14 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 15
+Connect to /lost+found? yes
+
+Inode 15 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 16
+Connect to /lost+found? yes
+
+Inode 16 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 17
+Connect to /lost+found? yes
+
+Inode 17 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 18
+Connect to /lost+found? yes
+
+Inode 18 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 19
+Connect to /lost+found? yes
+
+Inode 19 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 20
+Connect to /lost+found? yes
+
+Inode 20 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 21
+Connect to /lost+found? yes
+
+Inode 21 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 22
+Connect to /lost+found? yes
+
+Inode 22 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 23
+Connect to /lost+found? yes
+
+Inode 23 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 24
+Connect to /lost+found? yes
+
+Inode 24 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 25
+Connect to /lost+found? yes
+
+Inode 25 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 26
+Connect to /lost+found? yes
+
+Inode 26 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 27
+Connect to /lost+found? yes
+
+Inode 27 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 28
+Connect to /lost+found? yes
+
+Inode 28 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 29
+Connect to /lost+found? yes
+
+Inode 29 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 30
+Connect to /lost+found? yes
+
+Inode 30 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 31
+Connect to /lost+found? yes
+
+Inode 31 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 32
+Connect to /lost+found? yes
+
+Inode 32 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 33
+Connect to /lost+found? yes
+
+Inode 33 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 34
+Connect to /lost+found? yes
+
+Inode 34 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 35
+Connect to /lost+found? yes
+
+Inode 35 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 36
+Connect to /lost+found? yes
+
+Inode 36 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 37
+Connect to /lost+found? yes
+
+Inode 37 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 38
+Connect to /lost+found? yes
+
+Inode 38 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 39
+Connect to /lost+found? yes
+
+Inode 39 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 40
+Connect to /lost+found? yes
+
+Inode 40 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 41
+Connect to /lost+found? yes
+
+Inode 41 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 42
+Connect to /lost+found? yes
+
+Inode 42 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 43
+Connect to /lost+found? yes
+
+Inode 43 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 44
+Connect to /lost+found? yes
+
+Inode 44 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 45
+Connect to /lost+found? yes
+
+Inode 45 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 46
+Connect to /lost+found? yes
+
+Inode 46 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 47
+Connect to /lost+found? yes
+
+Inode 47 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 48
+Connect to /lost+found? yes
+
+Inode 48 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 49
+Connect to /lost+found? yes
+
+Inode 49 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 50
+Connect to /lost+found? yes
+
+Inode 50 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 51
+Connect to /lost+found? yes
+
+Inode 51 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 52
+Connect to /lost+found? yes
+
+Inode 52 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 53
+Connect to /lost+found? yes
+
+Inode 53 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 54
+Connect to /lost+found? yes
+
+Inode 54 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 55
+Connect to /lost+found? yes
+
+Inode 55 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 56
+Connect to /lost+found? yes
+
+Inode 56 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 57
+Connect to /lost+found? yes
+
+Inode 57 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 58
+Connect to /lost+found? yes
+
+Inode 58 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 59
+Connect to /lost+found? yes
+
+Inode 59 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 60
+Connect to /lost+found? yes
+
+Inode 60 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 61
+Connect to /lost+found? yes
+
+Inode 61 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 62
+Connect to /lost+found? yes
+
+Inode 62 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 63
+Connect to /lost+found? yes
+
+Inode 63 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 64
+Connect to /lost+found? yes
+
+Inode 64 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 65
+Connect to /lost+found? yes
+
+Inode 65 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 66
+Connect to /lost+found? yes
+
+Inode 66 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 67
+Connect to /lost+found? yes
+
+Inode 67 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 68
+Connect to /lost+found? yes
+
+Inode 68 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 69
+Connect to /lost+found? yes
+
+Inode 69 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 70
+Connect to /lost+found? yes
+
+Inode 70 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 71
+Connect to /lost+found? yes
+
+Inode 71 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 72
+Connect to /lost+found? yes
+
+Inode 72 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 73
+Connect to /lost+found? yes
+
+Inode 73 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 74
+Connect to /lost+found? yes
+
+Inode 74 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 75
+Connect to /lost+found? yes
+
+Inode 75 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 76
+Connect to /lost+found? yes
+
+Inode 76 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 77
+Connect to /lost+found? yes
+
+Inode 77 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 78
+Connect to /lost+found? yes
+
+Inode 78 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 79
+Connect to /lost+found? yes
+
+Inode 79 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 80
+Connect to /lost+found? yes
+
+Inode 80 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 81
+Connect to /lost+found? yes
+
+Inode 81 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 82
+Connect to /lost+found? yes
+
+Inode 82 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 83
+Connect to /lost+found? yes
+
+Inode 83 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 84
+Connect to /lost+found? yes
+
+Inode 84 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 85
+Connect to /lost+found? yes
+
+Inode 85 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 86
+Connect to /lost+found? yes
+
+Inode 86 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 87
+Connect to /lost+found? yes
+
+Inode 87 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 88
+Connect to /lost+found? yes
+
+Inode 88 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 89
+Connect to /lost+found? yes
+
+Inode 89 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 90
+Connect to /lost+found? yes
+
+Inode 90 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 91
+Connect to /lost+found? yes
+
+Inode 91 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 92
+Connect to /lost+found? yes
+
+Inode 92 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 93
+Connect to /lost+found? yes
+
+Inode 93 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 94
+Connect to /lost+found? yes
+
+No room in /lost+found; expand /lost+found? yes
+
+Inode 94 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 95
+Connect to /lost+found? yes
+
+Inode 95 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 96
+Connect to /lost+found? yes
+
+Inode 96 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 97
+Connect to /lost+found? yes
+
+Inode 97 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 98
+Connect to /lost+found? yes
+
+Inode 98 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 99
+Connect to /lost+found? yes
+
+Inode 99 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 100
+Connect to /lost+found? yes
+
+Inode 100 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 102
+Connect to /lost+found? yes
+
+Inode 102 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 103
+Connect to /lost+found? yes
+
+Inode 103 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 104
+Connect to /lost+found? yes
+
+Inode 104 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Block bitmap differences: -33.  FIXED
+Free blocks count wrong for group 0 (68, counted=67).  FIXED
+Free blocks count wrong (68, counted=67).  FIXED
+Free inodes count wrong for group #0 (1, counted=0).  FIXED
+Directories count wrong for group #0 (2, counted=3).  FIXED
+Free inodes count wrong (1, counted=0).  FIXED
+
+/tmp/expand.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/expand.img.gz.994: 104/104 files, 33/100 blocks
+Memory used: 74192, elapsed time:  3.652/ 0.210/ 0.740
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/expand.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  1.387/ 0.010/ 0.300
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/expand.img.gz.994: 104/104 files, 33/100 blocks
+Memory used: 74192, elapsed time:  2.668/ 0.020/ 0.560
+Exit status is 0
+---------------------------------------------------
+Testing lpf.img.gz...
+../e2fsck -yft /tmp/lpf.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+
+Deleted inode detected with non-zero link count.
+This is probably due to old ext2fs kernel code.  
+Fix inode(s)? yes
+
+Inode 11 is deleted w/ non-zero link_count.  CLEARED
+Inode 13 is deleted w/ non-zero link_count.  CLEARED
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  1.933/ 0.010/ 0.290
+Pass 4: Check reference counts.
+Unattached inode 14
+Connect to /lost+found? yes
+
+/lost+found not found.  Create? yes
+
+Inode 14 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Unattached inode 15
+Connect to /lost+found? yes
+
+Inode 15 has ref count 2, expecting 1.
+Set i_nlinks to count? yes
+
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Free blocks count wrong for group 0 (25, counted=38).  FIXED
+Free blocks count wrong (39, counted=38).  FIXED
+Free inodes count wrong for group #0 (2, counted=1).  FIXED
+Directories count wrong for group #0 (1, counted=2).  FIXED
+Free inodes count wrong (2, counted=1).  FIXED
+Padding at end of block bitmap is not set. Fix? yes
+
+
+/tmp/lpf.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/lpf.img.gz.994: 15/16 files, 62/100 blocks
+Memory used: 74192, elapsed time:  3.242/ 0.050/ 0.550
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/lpf.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  1.438/ 0.000/ 0.290
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/lpf.img.gz.994: 15/16 files, 62/100 blocks
+Memory used: 74192, elapsed time:  2.717/ 0.010/ 0.550
+Exit status is 0
+---------------------------------------------------
+Testing mke2fs2b.img.gz...
+../e2fsck -yft /tmp/mke2fs2b.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Root inode has dtime set (probably due to old mke2fs).  Fix? yes
+
+Note: /lost+found will probably be deleted as well, due to the mke2fs bug.
+Be sure to run mklost+found to recreate it after e2fsck finishes.
+
+
+Deleted inode detected with non-zero link count.
+This is probably due to old ext2fs kernel code.  
+Fix inode(s)? yes
+
+Inode 11 is deleted w/ non-zero link_count.  CLEARED
+Inode 15 is deleted w/ non-zero link_count.  CLEARED
+Pass 2: Checking directory structure
+Entry 'lost+found' in / (2) has deleted/unused inode 11.
+Clear? yes
+
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  1.911/ 0.000/ 0.300
+Pass 4: Check reference counts.
+Inode 2 has ref count 4, expecting 3.
+Set i_nlinks to count? yes
+
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Block bitmap differences: -9 -10 -11 -12 -13 -14 -15 -16 -17 -18 -19 -20.  FIXED
+Free blocks count wrong for group 0 (75, counted=87).  FIXED
+Free blocks count wrong (75, counted=87).  FIXED
+Inode bitmap differences: -11.  FIXED
+Free inodes count wrong for group #0 (17, counted=18).  FIXED
+Directories count wrong for group #0 (4, counted=3).  FIXED
+Free inodes count wrong (17, counted=18).  FIXED
+
+/tmp/mke2fs2b.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/mke2fs2b.img.gz.994: 14/32 files, 13/100 blocks
+Memory used: 74192, elapsed time:  3.208/ 0.020/ 0.570
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/mke2fs2b.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  1.364/ 0.010/ 0.280
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/mke2fs2b.img.gz.994: 14/32 files, 13/100 blocks
+Memory used: 74192, elapsed time:  2.637/ 0.030/ 0.530
+Exit status is 0
+---------------------------------------------------
+Testing noroot.img.gz...
+../e2fsck -yft /tmp/noroot.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+
+Deleted inode detected with non-zero link count.
+This is probably due to old ext2fs kernel code.  
+Fix inode(s)? yes
+
+Inode 15 is deleted w/ non-zero link_count.  CLEARED
+Pass 2: Checking directory structure
+Entry '..' in /lost+found (11) has deleted/unused inode 2.
+Clear? yes
+
+Entry '..' in /foo (12) has deleted/unused inode 2.
+Clear? yes
+
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  1.951/ 0.030/ 0.280
+Root inode not allocated.  Rellocate? yes
+
+Unconnected directory inode 11 (...)
+Connect to /lost+found? yes
+
+/lost+found not found.  Create? yes
+
+Unconnected directory inode 12 (...)
+Connect to /lost+found? yes
+
+Pass 4: Check reference counts.
+Inode 11 has ref count 3, expecting 2.
+Set i_nlinks to count? yes
+
+Inode 12 has ref count 4, expecting 3.
+Set i_nlinks to count? yes
+
+Pass 5: Checking group summary information.
+Fix summary information? yes
+
+Free blocks count wrong for group 0 (75, counted=74).  FIXED
+Free blocks count wrong (75, counted=74).  FIXED
+Free inodes count wrong for group #0 (17, counted=16).  FIXED
+Directories count wrong for group #0 (4, counted=5).  FIXED
+Free inodes count wrong (17, counted=16).  FIXED
+
+/tmp/noroot.img.gz.994: ***** FILE SYSTEM WAS MODIFIED *****
+/tmp/noroot.img.gz.994: 16/32 files, 26/100 blocks
+Memory used: 74192, elapsed time:  3.259/ 0.050/ 0.560
+Exit status is 1
+ 
+Running e2fsck again....
+../e2fsck -yft /tmp/noroot.img.gz.994
+e2fsck 0.5, 28-Mar-94 for EXT2 FS 0.5, 94/03/10
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Peak memory: Memory used: 74192, elapsed time:  1.360/ 0.000/ 0.290
+Pass 4: Check reference counts.
+Pass 5: Checking group summary information.
+/tmp/noroot.img.gz.994: 16/32 files, 26/100 blocks
+Memory used: 74192, elapsed time:  2.638/ 0.010/ 0.550
+Exit status is 0
+---------------------------------------------------

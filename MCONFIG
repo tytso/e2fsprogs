@@ -1,0 +1,57 @@
+#
+# C Compiler
+#
+CC=		gcc
+
+#
+# Optimization flags
+#
+#OPT=	-g -O -fno-inline
+OPT=	-O2 -fomit-frame-pointer
+
+#
+# Warning flags
+#
+WFLAGS=		-ansi -D_POSIX_SOURCE -pedantic \
+			-Wall -Wwrite-strings -Wpointer-arith \
+			-Wcast-qual -Wenum-clash -Wcast-align -Wtraditional \
+			-Wstrict-prototypes -Wmissing-prototypes \
+			-Wnested-externs -Winline -Wshadow 
+
+#
+# Installation user and groups
+#
+BINGRP=		bin
+BINOWN=		bin
+BINMODE=	555
+INCGRP=		bin
+INCOWN=		bin
+INCMODE=	444
+LIBOWN=		bin
+LIBGRP=		bin
+LIBMODE=	444
+MANGRP=		bin
+MANOWN=		bin
+MANMODE=	444
+
+#
+# Installation programs
+#
+CHMOD=		chmod
+INSTALL=	install -c
+INSTALLBIN=	$(INSTALL) -o $(BINOWN) -g $(BINGRP) -m $(BINMODE) -s
+INSTALLINC=	$(INSTALL) -o $(INCOWN) -g $(INCGRP) -m $(INCMODE)
+INSTALLLIB=	$(INSTALL) -o $(LIBOWN) -g $(LIBGRP) -m $(LIBMODE)
+INSTALLMAN=	$(INSTALL) -o $(MANOWN) -g $(MANGRP) -m $(MANMODE)
+
+#
+# Destination directories
+#
+ETCDIR=		/etc
+INCLDIR=	/usr/include
+LIBDIR=		/usr/lib
+SBINDIR=	/sbin
+SMANDIR=	/usr/man/man8
+UMANDIR=	/usr/man/man1
+USRBINDIR=	/usr/bin
+USRSBINDIR=	/usr/sbin

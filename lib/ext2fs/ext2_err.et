@@ -1,0 +1,95 @@
+#
+# Copyright (C) 1993 Theodore Ts'o.  This file may be redistributed
+# under the terms of the GNU Public License.
+#
+	error_table ext2
+
+ec	EXT2_ET_BASE,
+	"EXT2FS Library version 0.0"
+
+ec	EXT2_ET_BAD_MAGIC,
+	"Bad magic number in super-block"
+
+ec	EXT2_ET_SB_LSEEK,
+	"Can't seek to superblock"
+
+ec	EXT2_ET_SB_READ,
+	"Can't read superblock"
+
+ec	EXT2_ET_SB_WRITE,
+	"Can't write superblock"
+
+ec	EXT2_ET_RO_FILSYS,
+	"Attempt to write to filesystem opened read-only"
+
+ec	EXT2_ET_GDESC_READ,
+	"Can't read group descriptors"
+
+ec	EXT2_ET_GDESC_WRITE,
+	"Can't write group descriptors"
+
+ec	EXT2_ET_GDESC_BAD_BLOCK_MAP,
+	"Corrupt group descriptor: bad block for block bitmap"
+
+ec	EXT2_ET_GDESC_BAD_INODE_MAP,
+	"Corrupt group descriptor: bad block for inode bitmap"
+
+ec	EXT2_ET_GDESC_BAD_INODE_TABLE,
+	"Corrupt group descriptor: bad block for inode table"
+
+ec	EXT2_ET_INODE_BITMAP_WRITE,
+	"Can't write an inode bitmap"
+
+ec	EXT2_ET_INODE_BITMAP_READ,
+	"Can't read an inode bitmap"
+
+ec	EXT2_ET_BLOCK_BITMAP_WRITE,
+	"Can't write an block bitmap"
+
+ec	EXT2_ET_BLOCK_BITMAP_READ,
+	"Can't read an block bitmap"
+
+ec	EXT2_ET_INODE_TABLE_WRITE,
+	"Can't write an inode table"
+
+ec	EXT2_ET_INODE_TABLE_READ,
+	"Can't read an inode table"
+
+ec	EXT2_ET_NEXT_INODE_READ,
+	"Can't read next inode"
+
+ec	EXT2_ET_UNEXPECTED_BLOCK_SIZE,
+	"Filesystem has unexpected block size"
+
+ec	EXT2_ET_DIR_CORRUPTED,
+	"EXT2 directory corrupted"
+
+ec	EXT2_ET_SHORT_READ,
+	"Attempt to read block from filesystem resulted in short read"
+
+ec	EXT2_ET_SHORT_WRITE,
+	"Attempt to write block from filesystem resulted in short write"
+
+ec	EXT2_ET_DIR_NO_SPACE,
+	"No free space in the directory"
+
+ec	EXT2_ET_NO_INODE_BITMAP,
+	"Inode bitmap not loaded"
+
+ec	EXT2_ET_NO_BLOCK_BITMAP,
+	"BLOCK bitmap not loaded"
+
+ec	EXT2_ET_BAD_INODE_NUM,
+	"Illegal inode number"
+
+ec	EXT2_ET_BAD_BLOCK_NUM,
+	"Illegal block number"
+
+ec	EXT2_ET_EXPAND_DIR_ERR,
+	"Internal error in ext2fs_expand_dir"
+
+ec	EXT2_ET_TOOSMALL,
+	"Not enough space to build proposed filesystem"
+
+	end
+

@@ -1,0 +1,30 @@
+.\" -*- nroff -*-
+.TH MKLOST+FOUND 8 "March 1994" "Version 0.5"
+.SH NAME
+mklost+found \- create a lost+found directory on a mounted Linux
+second extended file system
+.SH SYNOPSIS
+.B mklost+found
+.SH DESCRIPTION
+.B mklost+found
+is used to create a lost+found directory in the current working directory
+on a Linux second extended file system.
+.br
+.B mklost+found
+pre-allocates disk blocks to the directory to make it usable by
+.B e2fsck
+.SH OPTIONS
+There are none.
+.SH AUTHOR
+.B mklost+found
+has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
+of the ext2 fs.
+.SH BUGS
+There are none :-)
+.SH AVAILABILITY
+.B mklost+found
+is available for anonymous ftp from ftp.ibp.fr (132.227.60.2) in
+/pub/linux/BETA/ext2fs.
+.SH SEE ALSO
+.BR e2fsck (8),
+.BR mke2fs (8)

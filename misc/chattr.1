@@ -1,0 +1,57 @@
+.\" -*- nroff -*-
+.TH CHATTR 1 "March 1994" "Version 0.5"
+.SH NAME
+chattr \- change file attributes on a Linux second extended file system
+.SH SYNOPSIS
+.B chattr
+[
+.B \-RV
+]
+[
+.B -v
+version
+]
+[
+mode
+]
+.I files...
+.SH DESCRIPTION
+.B chattr
+changes the files attributes on an second extended file system.
+.PP
+The format of a symbolic mode is +-=[Scsu].
+.PP
+The operator `+' causes the selected attributes to be added to the
+existing attributes of the files; `-' causes them to be removed; and
+`=' causes them to be the only attributes that the files have.
+.PP
+The letters `Scsu' select the new attributes for the files: synchronous
+updates (S), compressed (c), secure deletion (s), and undeletable (u).
+.SH OPTIONS
+.TP
+.I -R
+Recursively change attributes of directories and their contents.
+.TP
+.I -V
+Verbosely describe changed attributes.
+.TP
+.I -v version
+Set the files version.
+.SH AUTHOR
+.B chattr
+has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
+of the ext2 fs.
+.SH BUGS AND LIMITATIONS
+As of ext2 fs 0.4, the kernel code only honours the `s' and `S' attributes. When
+a file with the `s' attribute set is deleted, its blocks are zeroed and
+written back to the disk. When a file with the `S' attribute set is modified,
+the changes are written synchronously on the disk; this is equivalent to
+the `sync' mount option applied to a subset of the files.
+.PP
+The other attributes will be implemented in a next ext2 fs version.
+.SH AVAILABILITY
+.B chattr
+is available for anonymous ftp from ftp.ibp.fr (132.227.60.2) in
+/pub/linux/BETA/ext2fs.
+.SH SEE ALSO
+.BR lsattr (1)

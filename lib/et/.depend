@@ -1,0 +1,13 @@
+com_err.o : com_err.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h mit-sipb-copyright.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/stdarg.h \
+  error_table.h internal.h /usr/include/errno.h /usr/include/linux/errno.h com_err.h 
+error_message.o : error_message.c /usr/include/stdio.h /usr/include/features.h \
+  /usr/include/sys/cdefs.h /usr/include/libio.h /usr/include/_G_config.h /usr/include/string.h \
+  /usr/lib/gcc-lib/i486-linux/2.5.8/include/stddef.h error_table.h mit-sipb-copyright.h \
+  internal.h /usr/include/errno.h /usr/include/linux/errno.h 
+et_name.o : et_name.c error_table.h mit-sipb-copyright.h internal.h /usr/include/errno.h \
+  /usr/include/features.h /usr/include/sys/cdefs.h /usr/include/linux/errno.h 
+init_et.o : init_et.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h error_table.h mit-sipb-copyright.h 
+vfprintf.o : vfprintf.c /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+  /usr/include/libio.h /usr/include/_G_config.h /usr/lib/gcc-lib/i486-linux/2.5.8/include/varargs.h 

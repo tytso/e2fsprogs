@@ -1,0 +1,104 @@
+.\" -*- nroff -*-
+.TH MKE2FS 8 "March 1994" "Version 0.5"
+.SH NAME
+mke2fs \- create a Linux second extended file system
+.SH SYNOPSIS
+.B mke2fs
+[
+.B \-c
+| 
+.\" .B \-t
+.\" test
+.\" |
+.B \-l
+filename
+]
+[
+.B \-b
+block-size
+]
+[
+.B \-f
+fragment-size
+]
+[
+.B \-i
+bytes-per-inode
+]
+[
+.B \-m
+reserved-blocks-percentage
+]
+[
+.B \-v
+]
+device
+[
+blocks-count
+]
+.SH DESCRIPTION
+.B mke2fs
+is used to create a Linux second extended file system on a device (usually
+a disk partition).
+.br
+.I device
+is the special file corresponding to the device (e.g /dev/hdXX).
+.br
+.I blocks-count
+is the number of blocks on the device.  If omitted,
+.B mke2fs
+automagically figures the file system size.
+.SH OPTIONS
+.TP
+.I -b block-size
+Specify the size of blocks in bytes.
+.TP
+.I -c
+Check the device for bad blocks before creating the file system, using a
+fast read-only test.
+.TP
+.I -f fragment-size
+Specify the size of fragments in bytes.
+.TP
+.I -i bytes-per-inode
+Specify the bytes/inode ratio. 
+.B mke2fs
+creates an inode for every
+.I bytes-per-inode
+bytes of space on the disk.  This value defaults to 4096 bytes.
+.I bytes-per-inode
+must be at least 1024.
+.TP
+.I -l filename
+Read the bad blocks list from
+.I filename
+\.
+.TP
+.I -m reserved-blocks-percentage
+Specify the percentage of reserved blocks for the super-user.  This value
+defaults to 5%.
+.\" .TP
+.\" .I -t test
+.\" Check the device for bad blocks before creating the file system
+.\" using the specified test.
+.TP
+.I -v
+Verbose execution.
+.SH AUTHOR
+This version of
+.B mke2fs
+has been written by Theodore T'so <tytso@mit.edu>.
+.SH BUGS
+.B mke2fs
+accepts the -f option but currently ignores it because the second
+extended file system does not support fragments yet.
+.br
+There may be some other ones.  Please, report them to the author.
+.SH AVAILABILITY
+.B mke2fs
+is available for anonymous ftp from ftp.ibp.fr (132.227.60.2) in
+/pub/linux/BETA/ext2fs.
+.SH SEE ALSO
+.BR dumpe2fs (8),
+.BR e2fsck (8),
+.BR tune2fs (8)

@@ -1,0 +1,32 @@
+.TH DUMPE2FS 8 "March 1994" "Version 0.5"
+
+.SH NAME
+dumpe2fs \- dump filesystem information
+.SH SYNOPSIS
+.B dumpe2fs
+device
+.SH DESCRIPTION
+.BI dumpe2fs
+prints the super block and blocks group information for the filesystem
+present on
+.I device.
+.PP
+.BI dumpe2fs
+is similar to Berkeley's
+.BI dumpfs
+program for the BSD Fast File System.
+.SH BUGS
+You need to know the physical filesystem structure to understand the
+output.
+.SH AUTHOR
+.B dumpe2fs 
+has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
+of the ext2 fs.
+.SH AVAILABILITY
+.B dumpe2fs
+is available for anonymous ftp from ftp.ibp.fr (132.227.60.2) in
+/pub/linux/BETA/ext2fs.
+.SH SEE ALSO
+.BR e2fsck (8),
+.BR mke2fs (8),
+.BR tune2fs (8)
