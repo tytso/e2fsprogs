@@ -1,3 +1,7 @@
+2003-03-15  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_dup_de: Added test case provided from Debian bug report #176814
+
 2003-03-06  Theodore Tso  <tytso@mit.edu>
 
 	* run_e2fsck, defaults/e_script: Solaris doesn't support "tr -d \r",
