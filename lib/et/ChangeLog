@@ -1,3 +1,7 @@
+2000-12-04    <tytso@snap.thunk.org>
+
+	* compile_et.1: Fix simple typo in the man page.
+
 2000-07-13    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.19
