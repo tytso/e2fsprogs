@@ -1,3 +1,9 @@
+2004-02-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.8.in: Fix the debugfs man page to reference the
+		init_filesys command, instead of "initialize".  (Addresses
+		Debian Bug #232406)
+
 2004-02-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c (internal_dump_inode): Correctly deal with symlinks
