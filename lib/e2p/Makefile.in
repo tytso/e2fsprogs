@@ -92,6 +92,7 @@ distclean:: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
+feature.o: $(srcdir)/feature.c $(srcdir)/e2p.h
 fgetflags.o: $(srcdir)/fgetflags.c $(srcdir)/e2p.h
 fsetflags.o: $(srcdir)/fsetflags.c $(srcdir)/e2p.h
 fgetversion.o: $(srcdir)/fgetversion.c $(srcdir)/e2p.h
