@@ -808,16 +808,23 @@ restart:
 	}
 
 	if (s->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) {
-		retval = e2fsck_run_ext3_journal(ctx);
-		if (retval) {
-			com_err(ctx->program_name, retval,
+		if (ctx->options & E2F_OPT_READONLY) {
+			printf(_("Warning: skipping journal recovery "
+				 "because doing a read-only filesystem "
+				 "check.\n"));
+			io_channel_flush(ctx->fs->io);
+		} else {
+			retval = e2fsck_run_ext3_journal(ctx);
+			if (retval) {
+				com_err(ctx->program_name, retval,
 				_("while recovering ext3 journal of %s"),
-				ctx->device_name);
-			fatal_error(ctx, 0);
+					ctx->device_name);
+				fatal_error(ctx, 0);
+			}
+			ext2fs_close(ctx->fs);
+			ctx->fs = 0;
+			goto restart;
 		}
-		ext2fs_close(ctx->fs);
-		ctx->fs = 0;
-		goto restart;
 	}
 
 	/*
