@@ -138,7 +138,7 @@ set the last-mounted directory for the filesystem.
 set or clear the indicated filesystem features (options) in the filesystem.
 .I Feature
 can be one of the following supported filesystem options: 
-.IR sparse ,
+.IR sparse_super ,
 which cause the filesystem to use sparse superblocks, and
 .IR filetype ,
 which will cause the filesystem to store file type information in 

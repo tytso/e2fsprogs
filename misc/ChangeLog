@@ -1,3 +1,8 @@
+1999-11-23    <tytso@valinux.com>
+
+	* tune2fs.8.in: Fix man page so that the sparse_super filesystem
+		option is properly named.
+
 1999-11-22    <tytso@valinux.com>
 
 	* mke2fs.c: Change log2() and log10() to int_log2() and
