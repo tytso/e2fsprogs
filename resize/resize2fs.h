@@ -29,13 +29,6 @@
 
 #include "ext2fs/ext2fs.h"
 
-#ifdef __STDC__
-#define NOARGS void
-#else
-#define NOARGS
-#define const
-#endif
-
 /*
  * For the extent map
  */
