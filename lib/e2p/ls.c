@@ -203,6 +203,9 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	fprintf(f, "First block:              %u\n", sb->s_first_data_block);
 	fprintf(f, "Block size:               %u\n", EXT2_BLOCK_SIZE(sb));
 	fprintf(f, "Fragment size:            %u\n", EXT2_FRAG_SIZE(sb));
+	if (sb->s_reserved_gdt_blocks)
+		fprintf(f, "Reserved GDT blocks:      %u\n", 
+			sb->s_reserved_gdt_blocks);
 	fprintf(f, "Blocks per group:         %u\n", sb->s_blocks_per_group);
 	fprintf(f, "Fragments per group:      %u\n", sb->s_frags_per_group);
 	fprintf(f, "Inodes per group:         %u\n", sb->s_inodes_per_group);

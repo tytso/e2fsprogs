@@ -1,3 +1,8 @@
+2004-12-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* ls.c (list_super2): Print the s_reserved_gdt_blocks field if it
+		is non-zero.
+
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Use Linux-kernel-style makefile output for "make
