@@ -175,10 +175,15 @@ static void check_mount(NOARGS)
 	}
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		return;
-	
-	fprintf(stderr, "%s is mounted; will not make a filesystem here!\n",
-		device_name);
-	exit(1);
+
+	fprintf(stderr, "%s is mounted; ", device_name);
+	if (force) {
+		fprintf(stderr, "mke2fs forced anyway.  "
+			"Hope /etc/mtab is incorrect.\n");
+	} else {
+		fprintf(stderr, "will not make a filesystem here!\n");
+		exit(1);
+	}
 }
 
 /*

@@ -156,7 +156,7 @@ Verbose execution.
 Force 
 .B mke2fs
 to run, even if the specified device is not a 
-block special device.
+block special device, or appears to be mounted.
 .TP
 .I -L
 Set the volume label for the filesystem.

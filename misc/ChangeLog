@@ -1,3 +1,8 @@
+1999-06-29    <tytso@valinux.com>
+
+	* mke2fs.c (check_mount): Allow a filesystem to be made even if it
+		appears mounted if the force option is given.
+
 1999-06-24    <tytso@valinux.com>
 
 	* mke2fs.8.in: Fix typo in man page which caused the badblocks
