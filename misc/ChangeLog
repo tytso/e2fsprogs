@@ -1,3 +1,9 @@
+2001-06-07  Theodore Tso  <tytso@valinux.com>
+
+	* chattr.c, lsattr.c: Don't use _FILE_BITS_OFFSET method of using
+		the 64-bit function, since this changes the expected size
+		of struct dirent.  Instead use lseek64 explicitly.
+
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in: Move include/asm/types.h.in to

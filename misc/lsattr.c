@@ -18,7 +18,6 @@
  */
 
 #define _LARGEFILE64_SOURCE
-#define _FILE_OFFSET_BITS 64
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -54,6 +53,14 @@ static unsigned pf_options;
 static int recursive;
 static int verbose;
 static int generation_opt;
+
+#ifdef _LFS64_LARGEFILE
+#define LSTAT		lstat64
+#define STRUCT_STAT	struct stat64
+#else
+#define LSTAT		lstat
+#define STRUCT_STAT	struct stat
+#endif
 
 static void usage(void)
 {
@@ -94,9 +101,9 @@ static int lsattr_dir_proc (const char *, struct dirent *, void *);
 
 static void lsattr_args (const char * name)
 {
-	struct stat st;
+	STRUCT_STAT	st;
 
-	if (lstat (name, &st) == -1)
+	if (LSTAT (name, &st) == -1)
 		com_err (program_name, errno, _("while trying to stat %s"),
 			 name);
 	else {
@@ -109,13 +116,13 @@ static void lsattr_args (const char * name)
 
 static int lsattr_dir_proc (const char * dir_name, struct dirent * de, void * private)
 {
-	struct stat st;
+	STRUCT_STAT	st;
 	char *path;
 
 	path = malloc(strlen (dir_name) + 1 + strlen (de->d_name) + 1);
 
 	sprintf (path, "%s/%s", dir_name, de->d_name);
-	if (lstat (path, &st) == -1)
+	if (LSTAT (path, &st) == -1)
 		perror (path);
 	else {
 		if (de->d_name[0] != '.' || all) {

@@ -19,7 +19,6 @@
  */
 
 #define _LARGEFILE64_SOURCE
-#define _FILE_OFFSET_BITS 64
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -64,6 +63,14 @@ static int verbose;
 static unsigned long af;
 static unsigned long rf;
 static unsigned long sf;
+
+#ifdef _LFS64_LARGEFILE
+#define LSTAT		lstat64
+#define STRUCT_STAT	struct stat64
+#else
+#define LSTAT		lstat
+#define STRUCT_STAT	struct stat
+#endif
 
 static void fatal_error(const char * fmt_string, int errcode)
 {
@@ -170,9 +177,9 @@ static int chattr_dir_proc (const char *, struct dirent *, void *);
 static void change_attributes (const char * name)
 {
 	unsigned long flags;
-	struct stat st;
+	STRUCT_STAT	st;
 
-	if (lstat (name, &st) == -1) {
+	if (LSTAT (name, &st) == -1) {
 		com_err (program_name, errno, _("while trying to stat %s"), 
 			 name);
 		return;
