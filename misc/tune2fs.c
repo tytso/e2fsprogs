@@ -813,6 +813,5 @@ int main (int argc, char ** argv)
 
 	if (l_flag)
 		list_super (sb);
-	ext2fs_close (fs);
-	exit (0);
+	return (ext2fs_close (fs) ? 1 : 0);
 }
