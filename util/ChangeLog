@@ -1,5 +1,9 @@
 1998-12-15  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* Release of E2fsprogs 1.13
+
+1998-12-15  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
 	* subst.c (get_subst_symbol): Add [0-9] to the list of valid
 		characters for a substitution symbol.
 

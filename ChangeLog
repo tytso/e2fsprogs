@@ -1,3 +1,7 @@
+1998-12-15  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs 1.13
+
 1998-11-27  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* configure.in: Add paths.h to header files for which we search.
