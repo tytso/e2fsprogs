@@ -129,8 +129,8 @@ and
 .BI "\-J size=" journal-size
 Create a journal stored in the filesystem of size
 .IR journal-size .
-The size of the journal must be between 1MB and 100MB and there 
-must be sufficient free space in the filesystem to create a journal of
+The size of the journal must be between 1024 and 10,240 filesystem blocks and
+there must be sufficient free space in the filesystem to create a journal of
 that size.
 .TP
 .BI "\-J device=" external-journal

@@ -163,14 +163,8 @@ void parse_journal_opts(const char *opts)
 				continue;
 			}
 			journal_size = strtoul(arg, &p, 0);
-		journal_size_check:
-			if (*p || (journal_size < 1 || journal_size > 100)) {
-				fprintf(stderr,
-				_("Invalid journal size parameter - %s.\n"),
-					arg);
+			if (*p)
 				journal_usage++;
-				continue;
-			}
 		} else if (strcmp(token, "v1_superblock") == 0) {
 			journal_flags |= EXT2_MKJOURNAL_V1_SUPER;
 			continue;
@@ -178,8 +172,6 @@ void parse_journal_opts(const char *opts)
 			journal_size = strtoul(token, &p, 0);
 			if (*p)
 				journal_usage++;
-			else
-				goto journal_size_check;
 		}
 	}
 	if (journal_usage) {
@@ -190,30 +182,56 @@ void parse_journal_opts(const char *opts)
 			"Valid raid options are:\n"
 			"\tsize=<journal size in megabytes>\n"
 			"\tdevice=<journal device>\n\n"
-			"Journal size must be between "
-			"1 and 100 megabytes.\n\n" ));
+			"The journal size must be between "
+			"1024 and 102400 filesystem blocks.\n\n" ));
 		exit(1);
 	}
 }	
 
 /*
+ * Determine the number of journal blocks to use, either via
+ * user-specified # of megabytes, or via some intelligently selected
+ * defaults.
+ * 
  * Find a reasonable journal file size (in blocks) given the number of blocks
  * in the filesystem.  For very small filesystems, it is not reasonable to
  * have a journal that fills more than half of the filesystem.
  */
-int journal_default_size(blk_t blocks_count)
+int figure_journal_size(int journal_size, ext2_filsys fs)
 {
 	blk_t j_blocks;
 
-	if (blocks_count < 2048) {
-		fprintf(stderr, "Filesystem too small for a journal\n");
-		j_blocks = 0;
-	} else if (blocks_count < 32768)
+	if (fs->super->s_blocks_count < 2048) {
+		fprintf(stderr, _("\nFilesystem too small for a journal\n"));
+		return 0;
+	}
+	
+	if (journal_size >= 0) {
+		j_blocks = journal_size * 1024 /
+			(fs->blocksize	/ 1024);
+		if (j_blocks < 1024 || j_blocks > 102400) {
+			fprintf(stderr, _("\nThe requested journal "
+				"size is %d blocks; it must be\n"
+				"between 1024 and 102400 blocks.  "
+				"Aborting.\n"),
+				j_blocks);
+			exit(1);
+		}
+		if (j_blocks > fs->super->s_free_blocks_count) {
+			fprintf(stderr, _("\nJournal size too big "
+					  "for filesystem.\n"));
+			exit(1);
+		}
+		return j_blocks;
+	}
+
+	if (fs->super->s_blocks_count < 32768)
 		j_blocks = 1024;
-	else if (blocks_count < 262144)
+	else if (fs->super->s_blocks_count < 262144)
 		j_blocks = 4096;
 	else
 		j_blocks = 8192;
 
 	return j_blocks;
 }
+

@@ -1216,11 +1216,7 @@ int main (int argc, char *argv[])
 			printf(_("done\n"));
 		ext2fs_close(jfs);
 	} else if (journal_size) {
-		if (journal_size < 0)
-			journal_blocks = journal_default_size(fs->super->s_blocks_count);
-		else
-			journal_blocks = journal_size * 1024 /
-				(fs->blocksize	/ 1024);
+		journal_blocks = figure_journal_size(journal_size, fs);
 
 		if (!journal_blocks) {
 			fs->super->s_feature_compat &=
@@ -1252,8 +1248,9 @@ no_journal:
 		printf(_("\nWarning, had trouble writing out superblocks."));
 	}
 	if (!quiet) {
-		printf(_("done\n"));
-		printf(_("e2fsck will be run every %d mounts or %4g days"),
+		printf(_("done\n\n"));
+		printf(_("Filesystem will be checked run "
+			 "every %d mounts or %g days.\n"),
 		       fs->super->s_max_mnt_count,
 		       (double)fs->super->s_checkinterval / (3600 * 24));
 	}

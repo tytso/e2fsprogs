@@ -161,8 +161,10 @@ and
 .BI "\-J size=" journal-size
 Create a journal stored in the filesystem of size
 .IR journal-size .
-The size of the journal must be between 1MB and 100MB and it must fit within 
-the newly created filesystem.
+The size of the journal must be at least 1024 filesystem blocks 
+(i.e., 1MB if using 1k blocks, 4MB if using 4k blocks, etc.) 
+and may be no more than 10,240 filesystem blocks.  
+The journal must fit within the newly created filesystem.  
 .TP
 .BI "\-J device=" external-journal
 Add an external journal found on a block device

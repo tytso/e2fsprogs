@@ -303,10 +303,8 @@ static void add_journal(ext2_filsys fs)
 	} else if (journal_size) {
 		printf(_("Creating journal inode: "));
 		fflush(stdout);
-		if (journal_size < 0)
-			journal_blocks = journal_default_size(fs->super->s_blocks_count);
-		else
-			journal_blocks = journal_size * 1024 / (fs->blocksize / 1024);
+		journal_blocks = figure_journal_size(journal_size, fs);
+
 		retval = ext2fs_add_journal_inode(fs, journal_blocks,
 						  journal_flags);
 		if (retval) {

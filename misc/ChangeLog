@@ -1,3 +1,21 @@
+2001-03-26  Theodore Tso  <tytso@valinux.com>
+
+	* mke2fs.8.in, tune2fs.8.in: Change man paegs to document that the
+		journal must be bewteen 1024 and 10,240 file system
+		blocks.
+
+	* mke2fs.c, tune2fs.c: Change to use figure_journal_size()
+
+	* util.c, util.h (figure_journal_size): Change
+		journal_default_size into routine which also converts the
+		requested journal size into filesystem blocks and does
+		bounds checking to make sure the journal is sized
+		reasonably.  Renamed function to journal_default_size.
+		(parse_journal_opts): Remove bounds check for the journal
+		size, since this is now done in figure_journal_size, and
+		based on the number of filesystem blocks, as opposed to
+		using the absolute size of the journal.
+
 2001-02-17  Theodore Tso  <tytso@valinux.com>
 
 	* mke2fs.c (main): Flush out the "creating journal" message.
