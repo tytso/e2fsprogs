@@ -171,11 +171,11 @@ static void set_fs_defaults(const char *fs_type,
 				blocksize : p->inode_ratio;
 		use_bsize = p->blocksize;
 	}
-	if (sector_size && use_bsize < sector_size)
-		use_bsize = sector_size;
 	if (blocksize <= 0) {
 		if (use_bsize == DEF_MAX_BLOCKSIZE)
 			use_bsize = sys_page_size;
+		if (sector_size && use_bsize < sector_size)
+			use_bsize = sector_size;
 		if ((blocksize < 0) && (use_bsize < (-blocksize)))
 			use_bsize = -blocksize;
 		blocksize = use_bsize;

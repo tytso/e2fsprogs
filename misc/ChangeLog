@@ -1,3 +1,9 @@
+2003-08-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (set_fs_defaults): Fix bug which caused -T largefile or
+		-T largefile4 to core dump due to a division by zero
+		error.  (Addressed Debian bug #207082)
+
 2003-08-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* dumpe2fs.8.in, e2image.8.in, e2label.8.in, mke2fs.8.in,
