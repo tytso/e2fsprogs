@@ -95,9 +95,10 @@ SRCROOT = `echo e2fsprogs-@E2FSPROGS_VERSION@ | sed -e 's/-WIP//' \
 TAR=tar
 
 $(top_srcdir)/.exclude-file:
+	a=$(SRCROOT); \
 	(cd $(top_srcdir)/.. ; find e2fsprogs \( -name \*~ -o -name \*.orig \
-		-o -name CVS -o -name \*.rej \) -print \
-		> .exclude-file)
+		-o -name CVS -o -name \*.rej \) -print) \
+		| sed -e "s/e2fsprogs/$$a/" > $(top_srcdir)/.exclude-file
 	echo "$(SRCROOT)/build" >> $(top_srcdir)/.exclude-file
 	echo "$(SRCROOT)/rpm.log" >> $(top_srcdir)/.exclude-file
 	echo "$(SRCROOT)/.exclude-file" >> $(top_srcdir)/.exclude-file
@@ -111,9 +112,32 @@ source_tar_file: $(top_srcdir)/.exclude-file
 		gzip -9 > e2fsprogs-@E2FSPROGS_VERSION@.tar.gz)
 	rm -f $(top_srcdir)/.exclude-file
 
-
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
+extent.o: $(srcdir)/extent.c $(srcdir)/resize2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+ext2_block_move.o: $(srcdir)/ext2_block_move.c $(srcdir)/resize2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+ext2_inode_move.o: $(srcdir)/ext2_inode_move.c $(srcdir)/resize2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+resize2fs.o: $(srcdir)/resize2fs.c $(srcdir)/resize2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+main.o: $(srcdir)/main.c $(srcdir)/resize2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+sim_progress.o: $(srcdir)/sim_progress.c $(srcdir)/resize2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h

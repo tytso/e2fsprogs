@@ -21,8 +21,6 @@
 #include <linux/ext2_fs.h>
 
 #include "ext2fs/ext2fs.h"
-#include "ext2fs/brel.h"
-#include "banalysis.h"
 
 #ifdef __STDC__
 #define NOARGS void
