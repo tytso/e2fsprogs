@@ -1,3 +1,9 @@
+2001-01-17  Theodore Ts'o  <tytso@valinux.com>
+
+	* pass1.c (check_blocks): Fix large file checking code so that
+		files > 2GB are considered large files, and restrict
+		directories from being > 2GB.
+
 2001-01-12  Theodore Ts'o  <tytso@valinux.com>
 
 	* journal.c (e2fsck_journal_fix_unsupported_super): Remove unused

@@ -923,8 +923,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	}
 	if (pb.is_dir) {
 		int nblock = inode->i_size >> EXT2_BLOCK_SIZE_BITS(fs->super);
-		if ((nblock > (pb.last_block + 1)) ||
-		    ((inode->i_size & (fs->blocksize-1)) != 0))
+		/* We don't let a directory become larger than 2GB */
+		if (nblock > (pb.last_block + 1) ||
+		    (inode->i_size & ((fs->blocksize-1) | 0x80000000UL)) != 0)
 			bad_size = 1;
 		else if (nblock < (pb.last_block + 1)) {
 			if (((pb.last_block + 1) - nblock) >
@@ -932,11 +933,12 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 				bad_size = 2;
 		}
 	} else {
-		size = inode->i_size + ((__u64) inode->i_size_high << 32);
+		size = inode->i_size | ((__u64) inode->i_size_high << 32);
 		if ((size < pb.last_block * fs->blocksize))
 			bad_size = 3;
 		else if (size > ext2_max_sizes[fs->super->s_log_block_size])
 			bad_size = 4;
+		/* FIXME: need to ensure pb.num_blocks < 2^32 */
 	}
 	if (bad_size) {
 		pctx->num = (pb.last_block+1) * fs->blocksize;
@@ -948,7 +950,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		pctx->num = 0;
 	}
-	if (!pb.is_dir && inode->i_size_high)
+	if (!pb.is_dir && (inode->i_size_high || inode->i_size & 0x80000000UL))
 		ctx->large_files++;
 	if (pb.num_blocks != inode->i_blocks) {
 		pctx->num = pb.num_blocks;
