@@ -34,9 +34,11 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 	if (new) {
 		*block_nr = new;
 		ret |= BLOCK_CHANGED;
+#ifdef RESIZE2FS_DEBUG
 		if (pb->flags & RESIZE_DEBUG_BMOVE)
 			printf("ino=%ld, blockcnt=%d, %u->%u\n", pb->ino,
 			       blockcnt, block, new);
+#endif
 	}
 
 	if (pb->is_dir) {
@@ -125,9 +127,11 @@ errcode_t ext2fs_block_move(ext2_resize_t rfs)
 		if (retval) goto errout;
 		if (!size)
 			break;
+#ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_BMOVE)
 			printf("Moving %d blocks %u->%u\n", size,
 			       old, new);
+#endif
 		do {
 			c = size;
 			if (c > fs->inode_blocks_per_group)

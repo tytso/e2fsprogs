@@ -104,13 +104,6 @@ void main (int argc, char ** argv)
 		printf ("Couldn't find valid filesystem superblock.\n");
 		exit (1);
 	}
-	retval = ext2fs_read_bitmaps(fs);
-	if (retval) {
-		com_err (program_name, retval,
-			 "while trying to read the bitmaps", device_name);
-		ext2fs_close (fs);
-		exit (1);
-	}
 	retval = resize_fs(fs, new_size, flags);
 	if (retval) {
 		com_err(program_name, retval, "while trying to resize %s",

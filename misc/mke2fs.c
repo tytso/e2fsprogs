@@ -36,11 +36,9 @@
 #ifdef HAVE_MNTENT_H
 #include <mntent.h>
 #endif
-#include <malloc.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <stdio.h>
 
 #ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>

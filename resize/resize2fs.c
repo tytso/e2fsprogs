@@ -574,10 +574,12 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		new = fs->group_desc[i].bg_inode_table;
 		diff = new - old;
 		
+#ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
 			printf("Itable move group %d block "
 			       "%u->%u (diff %d)\n", 
 			       i, old, new, diff);
+#endif
 		
 		if (!diff)
 			continue;
@@ -596,8 +598,10 @@ static errcode_t move_itables(ext2_resize_t rfs)
 			if (*cp)
 				break;
 		n = n >> EXT2_BLOCK_SIZE_BITS(fs->super);
+#ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
 			printf("%d blocks of zeros...\n", n);
+#endif
 		num = fs->inode_blocks_per_group;
 		if (n > diff)
 			num -= n;
@@ -622,8 +626,10 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	}
 	ext2fs_flush(rfs->new_fs);
 	io_channel_flush(fs->io);
+#ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
 		printf("Inode table move finished.\n");
+#endif
 	if (progress)
 		ext2fs_progress_close(progress);
 	return 0;
@@ -631,11 +637,15 @@ static errcode_t move_itables(ext2_resize_t rfs)
 backout:
 	if (progress)
 		ext2fs_progress_close(progress);
+#ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
 		printf("Error: %s; now backing out!\n", error_message(retval));
+#endif
 	while (--i >= 0) {
+#ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
 			printf("Group %d block %u->%u\n", i, new, old);
+#endif
 		old = rfs->old_fs->group_desc[i].bg_inode_table;
 		new = fs->group_desc[i].bg_inode_table;
 		
@@ -746,11 +756,13 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags)
 	if (retval)
 		goto errout;
 
+#ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & RESIZE_DEBUG_BMOVE)
 		printf("Number of free blocks: %d/%d, Needed: %d\n",
 		       rfs->old_fs->super->s_free_blocks_count,
 		       rfs->new_fs->super->s_free_blocks_count,
 		       rfs->needed_blocks);
+#endif
 	
 	retval = ext2fs_block_move(rfs);
 	if (retval)

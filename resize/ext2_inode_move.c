@@ -56,10 +56,12 @@ static int check_and_change_inodes(ino_t dir, int entry,
 
 	if (!new)
 		return 0;
+#ifdef RESIZE2FS_DEBUG
 	if (is->flags & RESIZE_DEBUG_INODEMAP)
 		printf("Inode translate (dir=%ld, name=%.*s, %u->%ld)\n",
 		       dir, dirent->name_len, dirent->name,
 		       dirent->inode, new);
+#endif
 
 	dirent->inode = new;
 
@@ -251,8 +253,10 @@ errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 		if (LINUX_S_ISDIR(inode.i_mode))
 			rfs->new_fs->group_desc[group].bg_used_dirs_count++;
 		
+#ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_INODEMAP)
 			printf("Inode moved %ld->%ld\n", ino, new);
+#endif
 
 		ext2fs_add_extent_entry(imap, ino, new);
 	}
