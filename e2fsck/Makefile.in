@@ -123,7 +123,7 @@ extend: extend.o
 flushb: flushb.o
 	$(LD) $(ALL_LDFLAGS) -o flushb flushb.o $(CHECKLIB)
 
-iscan: iscan.o util.o
+iscan: iscan.o util.o ehandler.o $(DEPLIBS)
 	$(LD) $(ALL_LDFLAGS) -o iscan iscan.o util.o ehandler.o $(LIBS)
 
 profiled:
