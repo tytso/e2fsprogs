@@ -22,6 +22,10 @@ e2fsck \- check a Linux second extended file system
 .B \-l|-L
 .I bad_blocks_file
 ]
+[
+.B \-C
+.I fd
+]
 .I device
 .SH DESCRIPTION
 .B e2fsck
@@ -68,6 +72,20 @@ to run the
 .BR badblocks (8)
 program to find any blocks which are bad on the filesystem, 
 and then marks them as bad by adding them to the bad block inode.
+.TP
+.I -C
+This option causes
+.B e2fsck
+to write completion information to the specified file descriptor 
+so that the progress of the filesystem 
+check can be monitored.  This option is typically used by programs which are
+executing 
+.BR e2fsck ,
+although -C 0 is a special case which will output a spinning
+character which can be useful for users who want to have something to watch
+while 
+.B e2fsck
+goes about its business.
 .TP
 .I -d
 Print debugging output (useless unless you are debugging

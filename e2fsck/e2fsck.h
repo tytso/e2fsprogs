@@ -191,6 +191,12 @@ struct e2fsck_struct {
 	struct resource_track	global_rtrack;
 #endif
 
+	/*
+	 * How we display the progress update (for unix)
+	 */
+	int progress_fd;
+	int progress_pos;
+
 	/* File counts */
 	int fs_directory_count;
 	int fs_regular_count;

@@ -1,3 +1,17 @@
+1998-05-07  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* unix.c (PRS): Added new option -C, which causes e2fsck to print
+		progress updates so that callers can keep track of the
+		completion progress of e2fsck.  Designed for use by
+		progress, except for -C 0, which prints a spinning report
+		which may be useful for some users.
+
+	* pass5.c (e2fsck_pass5): Use a finer-grained progress reporting
+		scheme (useful for larger filesystems).
+
+	* e2fsck.h: Add progress_fd and progress_pos, for use by the Unix
+		progress reporting functions.
+
 1998-04-28  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass1.c (process_inode_cmp): Use EXT2_QSORT_TYPE to define the

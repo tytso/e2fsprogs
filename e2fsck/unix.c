@@ -220,6 +220,28 @@ static void check_if_skip(e2fsck_t ctx)
 	exit(FSCK_OK);
 }
 
+/*
+ * For completion notice
+ */
+static int e2fsck_update_progress(e2fsck_t ctx, int pass,
+				  unsigned long cur, unsigned long max)
+{
+	const char spinner[] = "\\|/-";
+	int percent;
+	struct e2_progress_struct *prog_struct;
+	char buf[80];
+	
+	if (ctx->progress_fd) {
+		sprintf(buf, "%d %lu %lu\n", pass, cur, max);
+		write(ctx->progress_fd, buf, strlen(buf));
+	} else {
+		ctx->progress_pos = (ctx->progress_pos+1) & 3;
+		fputc(spinner[ctx->progress_pos], stdout);
+		fputc('\b', stdout);
+		fflush(stdout);
+	}
+	return 0;
+}
 
 #define PATH_SET "PATH=/sbin"
 
@@ -263,8 +285,12 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		ctx->program_name = *argv;
 	else
 		ctx->program_name = "e2fsck";
-	while ((c = getopt (argc, argv, "panyrcB:dfvtFVM:b:I:P:l:L:N:Ss")) != EOF)
+	while ((c = getopt (argc, argv, "panyrcC:B:dfvtFVM:b:I:P:l:L:N:Ss")) != EOF)
 		switch (c) {
+		case 'C':
+			ctx->progress = e2fsck_update_progress;
+			ctx->progress_fd = atoi(optarg);
+			break;
 		case 'p':
 		case 'a':
 			ctx->options |= E2F_OPT_PREEN;

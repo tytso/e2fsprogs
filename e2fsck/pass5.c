@@ -39,14 +39,10 @@ void e2fsck_pass5(e2fsck_t ctx)
 		fix_problem(ctx, PR_5_PASS_HEADER, &pctx);
 
 	if (ctx->progress)
-		if ((ctx->progress)(ctx, 5, 0, 3))
+		if ((ctx->progress)(ctx, 5, 0, ctx->fs->group_desc_count*2))
 			return;
 
 	e2fsck_read_bitmaps(ctx);
-
-	if (ctx->progress)
-		if ((ctx->progress)(ctx, 5, 2, 3))
-			return;
 
 	check_block_bitmaps(ctx);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
@@ -60,10 +56,6 @@ void e2fsck_pass5(e2fsck_t ctx)
 	check_block_end(ctx);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		return;
-
-	if (ctx->progress)
-		if ((ctx->progress)(ctx, 5, 3, 3))
-			return;
 
 	ext2fs_free_inode_bitmap(ctx->inode_used_map);
 	ctx->inode_used_map = 0;
@@ -164,6 +156,10 @@ redo_counts:
 			group ++;
 			blocks = 0;
 			group_free = 0;
+			if (ctx->progress)
+				if ((ctx->progress)(ctx, 5, group,
+						    fs->group_desc_count*2))
+					return;
 		}
 	}
 	if (had_problem)
@@ -305,6 +301,11 @@ do_counts:
 			inodes = 0;
 			group_free = 0;
 			dirs_count = 0;
+			if (ctx->progress)
+				if ((ctx->progress)(ctx, 5,
+					    group + fs->group_desc_count,
+					    fs->group_desc_count*2))
+					return;
 		}
 	}
 	if (had_problem)
