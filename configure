@@ -4930,10 +4930,17 @@ test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux
 test -d include/asm || mkdir include/asm
-rmakefile=
-if test -d ${srcdir}/resize ; then
-   rmakefile=resize/Makefile
-fi
+for i in MCONFIG Makefile util/Makefile util/subst.conf lib/et/Makefile \
+	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile \
+	lib/uuid/Makefile lib/uuid/uuid_types.h \
+	lib/blkid/Makefile lib/blkid/blkid_types.h \
+	lib/evms/Makefile misc/Makefile ext2ed/Makefile e2fsck/Makefile \
+	debugfs/Makefile tests/Makefile tests/progs/Makefile \
+	resize/Makefile doc/Makefile intl/Makefile po/Makefile.in ; do
+	if test -d `dirname ${srcdir}/$i` ; then
+		outlist="$outlist $i"
+	fi
+done
 trap '' 1 2 15
 cat > confcache <<\EOF
 # This file is a shell script that caches the results of configure
@@ -5047,12 +5054,7 @@ done
 ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
-trap 'rm -fr `echo "MCONFIG Makefile util/Makefile util/subst.conf lib/et/Makefile 
-	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
-	lib/blkid/Makefile lib/blkid/blkid_types.h lib/evms/Makefile
-	misc/Makefile ext2ed/Makefile e2fsck/Makefile debugfs/Makefile \
-	tests/Makefile tests/progs/Makefile $rmakefile doc/Makefile 
-	intl/Makefile po/Makefile.in" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "$outlist" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -5232,12 +5234,7 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"MCONFIG Makefile util/Makefile util/subst.conf lib/et/Makefile 
-	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
-	lib/blkid/Makefile lib/blkid/blkid_types.h lib/evms/Makefile
-	misc/Makefile ext2ed/Makefile e2fsck/Makefile debugfs/Makefile \
-	tests/Makefile tests/progs/Makefile $rmakefile doc/Makefile 
-	intl/Makefile po/Makefile.in"}
+CONFIG_FILES=\${CONFIG_FILES-"$outlist"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then

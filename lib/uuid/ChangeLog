@@ -1,3 +1,8 @@
+2003-03-02  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in, uuidP.h, uuid_types.h.in: Use uuid_types.h instead
+		of ext2_types.h
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32

@@ -1,5 +1,5 @@
-#ifndef _BLKID_TYPES_H
-#define _BLKID_TYPES_H
+#ifndef _UUID_TYPES_H
+#define _UUID_TYPES_H
 
 /* 
  * If linux/types.h is already been included, assume it has defined
@@ -50,4 +50,4 @@ typedef	unsigned short	__u32;
 
 #endif /* LINUX_TYPES_H */
 
-#endif /* BLKID_TYPES_H */
+#endif /* UUID_TYPES_H */

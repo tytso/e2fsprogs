@@ -25,7 +25,7 @@ SRCS= $(srcdir)/cache.c $(srcdir)/dev.c $(srcdir)/devname.c $(srcdir)/devno.c \
  $(srcdir)/getsize.c $(srcdir)/llseek.c $(srcdir)/probe.c \
  $(srcdir)/read.c $(srcdir)/resolve.c $(srcdir)/save.c $(srcdir)/tag.c
 
-HFILES=		blkid.h list.h
+HFILES=		blkid.h
 HFILES_IN=	blkid_types.h
 
 LIBRARY= libblkid

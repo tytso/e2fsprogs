@@ -1,3 +1,10 @@
+2003-03-02  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Don't install list.h, since it's not used by the
+		public blkid.h file.
+
+	* blkid_types.h.in: Change #ifndef protection to use _BLKID_TYPES_H
+
 2003-03-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* tag.c (blkid_set_tag): Fix bug; don't return an error when

@@ -10,7 +10,7 @@
  */
 
 #include <sys/types.h>
-#include <ext2fs/ext2_types.h>
+#include <uuid/uuid_types.h>
 
 #include "uuid.h"
 

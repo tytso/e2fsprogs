@@ -1,3 +1,12 @@
+2003-03-02  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in, Makefile.in: Ignore missing directories so we can
+		do a subset distribution.  If there are no e2fsprogs
+		applications, then "make install" will install the
+		library's development files.  "make subset_tar_file" will
+		create a subset distribution which consists of the
+		et, ss, uuid, and blkid libraries.
+
 2003-02-22  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in, configure: Add new configure option 
