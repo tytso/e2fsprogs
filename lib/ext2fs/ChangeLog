@@ -1,5 +1,7 @@
 2005-03-18  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Fix clean target to remove tst_getsectsize.
+
 	* getsize.c (ext2fs_get_device_size): Check to see if the number
 		of blocks is greater than 2**32 when we are doing a binary
 		search to determine the device size.  Thanks to Stephen
