@@ -1,3 +1,8 @@
+2000-07-04    <tytso@snap.thunk.org>
+
+	* Makefile.in: Use _SS_DIR_OVERRIDE to make sure we get the
+		mk_cmds support files from the source tree.
+
 1999-11-19    <tytso@valinux.com>
 
 	* Makefile.in (distclean): Remove TAGS and Makefile.in.old from

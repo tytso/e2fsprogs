@@ -45,9 +45,11 @@
 	print "    (char const *)0" > outfile
 	print "};" > outfile 
 	printf "extern void %s __SS_PROTO;\n", subr > outfile
-	subr_tab[cmdnum] = subr
-	options_tab[cmdnum] = options
-	help_tab[cmdnum] = help
+	# Work around a bug in gawk 3.0.5
+	awk_bug = cmdnum
+	subr_tab[awk_bug] = subr
+	options_tab[awk_bug] = options
+	help_tab[awk_bug] = help
 }
 
 /^[0-9]/ {

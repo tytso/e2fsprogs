@@ -38,7 +38,7 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 
 TAGS=etags
 COMPILE_ET=../et/compile_et
-MK_CMDS=./mk_cmds
+MK_CMDS=_SS_DIR_OVERRIDE=. ./mk_cmds
 
 # -I.. is so that ss/ss_err.h works
 # -I$(srcdir)/.. is so that ss/ss.h works
@@ -108,7 +108,7 @@ FILES=	$(SRCS) $(MKCMDSFILES) $(HFILES) \
 
 all::	libss.a # libss_p.a lint
 
-std_rqs.c: std_rqs.ct $(MK_CMDS)
+std_rqs.c: std_rqs.ct mk_cmds
 	DIR=$(srcdir) $(MK_CMDS) $(srcdir)/std_rqs.ct
 
 ss_err.c ss_err.h: ss_err.et
