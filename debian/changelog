@@ -5,8 +5,10 @@ e2fsprogs (1.32+1.33-WIP-2003.03.30-3) unstable; urgency=low
   * Change the sectoin of com_err-dev, ss-dev, uuid-dev, libblkid-dev,
     e2fslibs-dev to libdevel
   * Add libblkid1-udeb package for the Debian Installer.
+  * Use the SS_READLINE_PATH environment variable to control the search
+    for a suitable readine library.
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 10 Apr 2003 00:15:08 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 11 Apr 2003 12:55:34 -0400
 
 e2fsprogs (1.32+1.33-WIP-2003.03.30-2) unstable; urgency=low
 

@@ -1,3 +1,10 @@
+2003-04-11  root  <tytso@mit.edu>
+
+	* get_readline.c (DEFAULT_LIBPATH): Use the SS_READLINE_PATH
+		environment variable to control the search for a suitable
+		readine library.  As a default, try using libreadline,
+		libedit, and libeditline.
+
 2003-03-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* pager.c, listen.c, requests.c, list_rqs.c, ct_c.awk, prompt.c, 

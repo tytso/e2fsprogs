@@ -35,17 +35,44 @@ static void ss_release_readline(ss_data *info)
 #endif
 }
 
+/* Libraries we will try to use for readline/editline functionality */
+#define DEFAULT_LIBPATH "libreadline.so.4:libreadline.so:libedit.so.2:libedit.so:libeditline.so.0:libeditline.so"
+
 void ss_get_readline(int sci_idx)
 {
 #ifdef HAVE_DLOPEN
-	void	*handle;
+	void	*handle = NULL;
 	ss_data *info = ss_info(sci_idx);
-	const char **t;
+	const char **t, *libpath = 0;
+	char	*tmp, *cp, *next;
 	char **(**completion_func)(const char *, int, int);
 	
-	if (info->readline_handle ||
-	    getenv("SS_NO_READLINE") ||
-	    ((handle = dlopen("libreadline.so", RTLD_NOW)) == NULL))
+	if (info->readline_handle)
+		return;
+
+	libpath = getenv("SS_READLINE_PATH");
+	if (!libpath)
+		libpath = DEFAULT_LIBPATH;
+	if (*libpath == 0 || !strcmp(libpath, "none"))
+		return;
+	
+	tmp = malloc(strlen(libpath)+1);
+	if (!tmp)
+		return;
+	strcpy(tmp, libpath);
+	for (cp = tmp; cp; cp = next) {
+		next = strchr(cp, ':');
+		if (next)
+			*next++ = 0;
+		if (*cp == 0)
+			continue;
+		if ((handle = dlopen(cp, RTLD_NOW))) {
+			/* printf("Using %s for readline library\n", cp); */
+			break;
+		}
+	}
+	free(tmp);
+	if (!handle)
 		return;
 
 	info->readline_handle = handle;
