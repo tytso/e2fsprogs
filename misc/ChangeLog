@@ -1,3 +1,12 @@
+2000-12-28    <tytso@snap.thunk.org>
+
+	* base_device.c (base_device): Add support for DAC960 device
+		names.
+
+	* fsck.c (device_already_active): Handle the case where
+		base_device doesn't know how to interpret the device name,
+		instead of core dumping.
+
 2000-12-09    <tytso@snap.thunk.org>
 
 	* mke2fs.c (main, parse_journal_opts): Add support for creating V1

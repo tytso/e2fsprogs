@@ -68,6 +68,16 @@ char *base_device(char *device)
 		return str;
 	}
 
+	/* Handle DAC 960 devices */
+	if (strncmp(cp, "rd/", 3) == 0) {
+		cp += 3;
+		if (cp[0] != 'c' || cp[2] != 'd' ||
+		    !isdigit(cp[1]) || !isdigit(cp[3]))
+			goto errout;
+		*(cp+4) = 0;
+		return str;
+	}
+
 	/* Now let's handle /dev/hd* and /dev/sd* devices.... */
 	if ((cp[0] == 'h' || cp[0] == 's') && (cp[1] == 'd')) {
 		cp += 2;
