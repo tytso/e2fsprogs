@@ -110,16 +110,16 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Superblock corrupt */
 	{ PR_0_SB_CORRUPT,
 	  N_("\nThe @S could not be read or does not describe a correct ext2\n"
-	  "@f.  If the device is valid and it really contains an ext2\n"
+	  "@f.  If the @d is valid and it really contains an ext2\n"
 	  "@f (and not swap or ufs or something else), then the @S\n"
   "is corrupt, and you might try running e2fsck with an alternate @S:\n"
-	  "    e2fsck -b %S <device>\n\n"),
+	  "    e2fsck -b %S <@d>\n\n"),
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Filesystem size is wrong */
 	{ PR_0_FS_SIZE_WRONG,
 	  N_("The @f size (according to the @S) is %b @bs\n"
-	  "The physical size of the device is %c @bs\n"
+	  "The physical size of the @d is %c @bs\n"
 	  "Either the @S or the partition table is likely to be corrupt!\n"),
 	  PROMPT_ABORT, 0 },
 
@@ -162,7 +162,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Error determing physical device size of filesystem */
 	{ PR_0_GETSIZE_ERROR,	  
-	  N_("Error determining size of the physical device: %m\n"),
+	  N_("Error determining size of the physical @d: %m\n"),
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Inode count in superblock is incorrect */
@@ -176,52 +176,52 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Journal inode is invalid */
 	{ PR_0_JOURNAL_BAD_INODE,
-	  N_("@S has a bad ext3 journal (@i %N).\n"),
+	  N_("@S has a bad ext3 @j (@i %N).\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Superblock has a journal device (which we can't handle yet) */
 	{ PR_0_JOURNAL_UNSUPP_DEV,
-	  N_("@S has external ext3 journal device (unsupported).\n"),
+	  N_("@S has external ext3 @j @d (unsupported).\n"),
 	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_DEV },
 
 	/* Superblock has a bad journal device */
 	{ PR_0_JOURNAL_BAD_DEV,
-	  N_("@S has a bad ext3 journal (device %X).\n"),
+	  N_("@S has a bad ext3 @j (@d %X).\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Superblock has a journal UUID (which we can't handle yet) */
 	{ PR_0_JOURNAL_UNSUPP_UUID,
-	  N_("@S has an ext3 journal UUID (unsupported).\n"),
+	  N_("@S has an ext3 @j UUID (unsupported).\n"),
 	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_UUID },
 
 	/* Superblock has a bad journal UUID */
 	{ PR_0_JOURNAL_BAD_UUID,
-	  N_("@S has a bad ext3 journal (UUID %s).\n"),
+	  N_("@S has a bad ext3 @j (UUID %s).\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Journal has an unknown superblock type */
 	{ PR_0_JOURNAL_UNSUPP_SUPER,
-	  N_("Ext3 journal @S is unknown type %N (unsupported).\n"),
+	  N_("Ext3 @j @S is unknown type %N (unsupported).\n"),
 	  PROMPT_ABORT, PR_NO_OK | PR_AFTER_CODE, PR_0_JOURNAL_BAD_SUPER },
 
 	/* Journal superblock is corrupt */
 	{ PR_0_JOURNAL_BAD_SUPER,
-	  N_("Ext3 journal @S is corrupt.\n"),
+	  N_("Ext3 @j @S is corrupt.\n"),
 	  PROMPT_FIX, PR_PREEN_OK },
 
 	/* Superblock flag should be cleared */
 	{ PR_0_JOURNAL_HAS_JOURNAL,
-	  N_("@S doesn't have has_journal flag, but has ext3 journal %s.\n"),
+	  N_("@S doesn't have has_journal flag, but has ext3 @j %s.\n"),
 	  PROMPT_DELETE, PR_PREEN_OK },
 
 	/* Superblock flag is incorrect */
 	{ PR_0_JOURNAL_RECOVER_SET,
-	  N_("@S has ext3 needs_recovery flag set, but no journal.\n"),
+	  N_("@S has ext3 needs_recovery flag set, but no @j.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Journal should be reset */
 	{ PR_0_JOURNAL_RESET_JOURNAL,
-	  N_("*** WARNING *** leaving data in the journal may be DANGEROUS.\n"),
+	  N_("*** WARNING *** leaving data in the @j may be DANGEROUS.\n"),
 	  PROMPT_NONE, PR_PREEN_NOMSG|PR_AFTER_CODE, PR_0_JOURNAL_RESET_PROMPT},
 
 	/* Journal should be reset */
@@ -480,13 +480,13 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Error while storing inode count information */	  
 	{ PR_1_ICOUNT_STORE,
-	  N_("Error storing @i count information (inode=%i, count=%N): %m\n"),
+	  N_("Error storing @i count information (@i=%i, count=%N): %m\n"),
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error while storing directory block information */	  
 	{ PR_1_ADD_DBLOCK,
 	  N_("Error storing @d @b information "
-	  "(inode=%i, block=%b, num=%N): %m\n"),
+	  "(@i=%i, @b=%b, num=%N): %m\n"),
 	  PROMPT_NONE, PR_FATAL },
 
 	/* Error while reading inode (for clearing) */	  
@@ -509,7 +509,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Immutable flag set on a device or socket inode */
 	{ PR_1_SET_IMMUTABLE,
-	  N_("Special (device/socket/fifo) @i %i has immutable or "
+	  N_("Special (@d/socket/fifo) @i %i has immutable or "
 	     "append-only flag set.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK | PR_PREEN_NO | PR_NO_OK },
 
@@ -520,14 +520,19 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Non-zero size for device, fifo or socket inode */
 	{ PR_1_SET_NONZSIZE,
-	  "Special (device/socket/fifo) @i %i has non-zero size.  ",
+	  "Special (@d/socket/fifo) @i %i has non-zero size.  ",
 	  PROMPT_FIX, PR_PREEN_OK },
 
 	/* Filesystem revision is 0, but feature flags are set */
 	{ PR_1_FS_REV_LEVEL,
-	  "@F has feature flag(s) set, but is a revision 0 @f.  ",
+	  "@f has feature flag(s) set, but is a revision 0 @f.  ",
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
+	/* Journal inode is not in use, but contains data */	  
+	{ PR1_JOURNAL_INODE_NOT_CLEAR,
+	  "@j @i is not in use, but contains data.  ",
+	  PROMPT_CLEAR, PR_PREEN_OK },	  
+	  
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
@@ -739,12 +744,12 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Illegal character device inode */
 	{ PR_2_BAD_CHAR_DEV,
-	  N_("@i %i (%Q) is an @I character device.\n"),
+	  N_("@i %i (%Q) is an @I character @d.\n"),
 	  PROMPT_CLEAR, 0 },
 
 	/* Illegal block device inode */
 	{ PR_2_BAD_BLOCK_DEV,
-	  N_("@i %i (%Q) is an @I @b device.\n"),
+	  N_("@i %i (%Q) is an @I @b @d.\n"),
 	  PROMPT_CLEAR, 0 },
 
 	/* Duplicate '.' entry */

@@ -305,6 +305,9 @@ struct problem_context {
 /* Filesystem revision is 0, but feature flags are set */
 #define PR_1_FS_REV_LEVEL		0x010033
 
+/* Journal inode not in use, needs clearing */
+#define PR1_JOURNAL_INODE_NOT_CLEAR	0x010034
+
 /*
  * Pass 1b errors
  */

@@ -1,5 +1,14 @@
 2001-01-03    <tytso@snap.thunk.org>
 
+	* pass1.c (e2fsck_pass1): Moved journal inode handling out to its
+		own block; if the journal inode is not in use, and it
+		contains data, offer to clear it.
+
+	* problem.h, problem.c (PR1_JOURNAL_INODE_NOT_CLEAR): Add new
+		problem code.
+
+	* problem.c: Modified problem table to use a new abbreviations.
+
 	* message.c: Add @j abbreviation for journal, and @d abbreviation
 		for device.
 

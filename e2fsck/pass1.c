@@ -392,6 +392,19 @@ void e2fsck_pass1(e2fsck_t ctx)
 				}
 			}
 		}
+		if (ino == EXT2_JOURNAL_INO) {
+			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
+			if (fs->super->s_journal_inum == EXT2_JOURNAL_INO) {
+				check_blocks(ctx, &pctx, block_buf);
+				goto next;
+			}
+			if ((inode.i_blocks || inode.i_block[0]) &&
+			    fix_problem(ctx, PR1_JOURNAL_INODE_NOT_CLEAR, 
+					&pctx)) {
+				memset(&inode, 0, sizeof(inode));
+				e2fsck_write_inode(ctx, ino, &inode, "pass1");
+			}
+		}
 		if ((ino != EXT2_ROOT_INO) &&
 		    (ino < EXT2_FIRST_INODE(fs->super))) {
 			int	problem = 0;
@@ -402,10 +415,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 				if (LINUX_S_ISDIR(inode.i_mode))
 					problem = PR_1_RESERVED_BAD_MODE;
 				break;
-			case EXT2_JOURNAL_INO:
-				if (fs->super->s_journal_inum ==
-				    EXT2_JOURNAL_INO)
-					break;
 			default:
 				if (inode.i_mode != 0)
 					problem = PR_1_RESERVED_BAD_MODE;
