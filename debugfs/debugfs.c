@@ -1507,6 +1507,5 @@ int main(int argc, char **argv)
 	if (current_fs)
 		close_filesystem();
 	
-	exit(exit_status);
+	return exit_status;
 }
-

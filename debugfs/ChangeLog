@@ -1,5 +1,8 @@
 2000-01-18  Theodore Ts'o  <tytso@valinux.com>
 
+	* debugfs.c (main): Use return instead of exit at the end of main
+		to avoid some compiler warnings.
+
 	* Makefile.in: Since LIBUUID can sometimes include
 		"-lsocket" we need a separate DEPLIBUUID that can be used
 		in Makefile's dependency rules.
