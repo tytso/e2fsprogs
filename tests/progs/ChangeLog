@@ -1,3 +1,10 @@
+Sat Oct 25 18:50:33 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (PROGS): Remove test_rel from the test programs that
+	 	we build for now.
+
+	* test_icount.c: Fix some random lint warnings.
+
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.11

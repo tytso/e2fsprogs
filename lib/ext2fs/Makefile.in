@@ -18,7 +18,6 @@ OBJS= ext2_err.o \
 	block.o \
 	bmap.o \
 	bmove.o \
-#	brel_ma.o \
 	check_desc.o \
 	closefs.o \
 	cmp_bitmaps.o \
@@ -36,7 +35,6 @@ OBJS= ext2_err.o \
 	initialize.o \
 	inline.o \
 	inode.o \
-#	irel_ma.o \
 	ismounted.o \
 	link.o \
 	llseek.o \

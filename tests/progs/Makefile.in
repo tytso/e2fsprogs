@@ -13,7 +13,7 @@ INSTALL = @INSTALL@
 
 MK_CMDS=	../../lib/ss/mk_cmds
 
-PROGS=		test_rel test_icount
+PROGS=		test_icount
 
 TEST_REL_OBJS=	test_rel.o test_rel_cmds.o
 

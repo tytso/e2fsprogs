@@ -222,8 +222,7 @@ void do_dump(int argc, char **argv)
 void do_validate(int argc, char **argv)
 {
 	errcode_t	retval;
-	ino_t	size;
-	
+
 	if (check_icount(argv[0]))
 		return;
 	retval = ext2fs_icount_validate(test_icount, stdout);
@@ -236,7 +235,6 @@ void do_validate(int argc, char **argv)
 
 void do_get_size(int argc, char **argv)
 {
-	errcode_t	retval;
 	ino_t	size;
 	
 	if (check_icount(argv[0]))
