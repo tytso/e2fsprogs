@@ -1,3 +1,9 @@
+2001-05-13  Theodore Tso  <tytso@valinux.com>
+
+	* mke2fs.c (PRS): Integrated changes from Andreas Dilger which
+		make the revision superblock field be set to the correct
+		value depending on if superblock features are set.
+
 2001-05-12  Theodore Tso  <tytso@valinux.com>
 
 	* fsck.c (PRS): fsck -? now prints the usage message.

@@ -589,7 +589,7 @@ static void create_journal_dev(ext2_filsys fs)
 			     &progress, &blk, &count);
 	if (retval) {
 		com_err("create_journal_dev", retval,
-			"while zeroing journal device (block %u, count %d)",
+			_("while zeroing journal device (block %u, count %d)"),
 			blk, count);
 		exit(1);
 	}
@@ -771,16 +771,8 @@ static void PRS(int argc, char *argv[])
 	blk_t		dev_size;
 #ifdef linux
 	struct 		utsname ut;
-
-	if (uname(&ut)) {
-		perror("uname");
-		exit(1);
-	}
-	if ((ut.release[0] == '1') ||
-	    (ut.release[0] == '2' && ut.release[1] == '.' &&
-	     ut.release[2] < '2' && ut.release[3] == '.'))
-		feature_set = NULL;
 #endif
+
 	/* Update our PATH to include /sbin  */
 	if (oldpath) {
 		char *newpath;
@@ -803,6 +795,19 @@ static void PRS(int argc, char *argv[])
 	memset(&param, 0, sizeof(struct ext2_super_block));
 	param.s_rev_level = 1;  /* Create revision 1 filesystems now */
 	
+#ifdef linux
+	if (uname(&ut)) {
+		perror("uname");
+		exit(1);
+	}
+	if ((ut.release[0] == '1') ||
+	    (ut.release[0] == '2' && ut.release[1] == '.' &&
+	     ut.release[2] < '2' && ut.release[3] == '.')) {
+		sparse_option = 0;
+		feature_set = NULL;
+		param.s_rev_level = 0;
+	}
+#endif
 	fprintf (stderr, _("mke2fs %s, %s for EXT2 FS %s, %s\n"),
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
@@ -865,6 +870,8 @@ static void PRS(int argc, char *argv[])
 			parse_journal_opts(optarg);
 			break;
 		case 'j':
+			param.s_feature_compat |=
+				EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 			if (!journal_size)
 				journal_size = -1;
 			break;
@@ -894,6 +901,10 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'r':
 			param.s_rev_level = atoi(optarg);
+			if (param.s_rev_level == EXT2_GOOD_OLD_REV) {
+				sparse_option = 0;
+				feature_set = NULL;
+			}
 			break;
 		case 's':	/* deprecated */
 			sparse_option = atoi(optarg);
@@ -972,6 +983,15 @@ static void PRS(int argc, char *argv[])
 		exit(1);
 	}
 
+	if (sparse_option)
+		param.s_feature_ro_compat |=
+			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+
+	if (param.s_rev_level == EXT2_GOOD_OLD_REV &&
+	    (param.s_feature_compat || param.s_feature_ro_compat ||
+	     param.s_feature_incompat))
+		param.s_rev_level = 1;  /* Create a revision 1 filesystem */
+
 	if (!force)
 		check_plausibility(device_name);
 	check_mount(device_name, force, _("filesystem"));
@@ -1027,8 +1047,11 @@ static void PRS(int argc, char *argv[])
 	    !journal_size)
 		journal_size = -1;
 	if (!fs_type &&
-	    (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV))
-		fs_type = "journal";
+	    (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+		if (!fs_type)
+			fs_type = "journal";
+		reserved_ratio = 0;
+	}
 	set_fs_defaults(fs_type, &param, blocksize, &inode_ratio);
 
 	if (param.s_blocks_per_group) {
@@ -1051,15 +1074,6 @@ static void PRS(int argc, char *argv[])
 	 * Calculate number of blocks to reserve
 	 */
 	param.s_r_blocks_count = (param.s_blocks_count * reserved_ratio) / 100;
-
-	/* Turn off features not supported by the earlier filesystem version */
-	if (param.s_rev_level == 0) {
-		sparse_option = 0;
-		feature_set = NULL;
-	}
-	if (sparse_option)
-		param.s_feature_ro_compat |=
-			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 
 }
 					
