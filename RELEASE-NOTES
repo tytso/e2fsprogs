@@ -1,6 +1,9 @@
 E2fsprogs 1.21-WIP (June 1, 2001)
 =================================
 
+Fixed a ext3 recovery bug in the revoke handling; synchornized with
+ext3 0.7a.
+
 Fixed two bugs in e2fsck's handling of dup block handling, dealing
 with relatively uncommon edge cases: a directory with an indirect
 block which is claimed by another file, and when the last inode in the
@@ -19,6 +22,14 @@ Fix e2fsck's handling of incompatible journal flags so that the user
 has chance to abort, and then has the option to clear out the journal
 entirely.
 
+Fixed a bug in debugfs which caused read errors when copying a file to
+not be noticed.
+
+Fixed a bug in lsattr and chattr which was accidentally introduced in
+1.20 to support > 2GB files; both lsattr and chattr wasn't reading
+directories correctly because the change modified the layout of struct
+dirent to be incompatible with the libe2p shared library.
+
 Programmer's notes:
 -------------------
 
@@ -26,6 +37,9 @@ Fix general gcc -Wall complaints.
 
 The types needed by the ext2 header files are now provided by
 lib/ext2fs/ext2_types.h, instead of include/asm/types.h.
+
+Integers are now preferred to longs when trying to find a 32-bit type
+in ext2_types.h.
 
 Fixed make depend script so that it automatically corrects the
 pathname cleanups performed by make -M, so I don't have to fix them up
@@ -36,6 +50,10 @@ bash'isms.
 
 Removed debugfs's dependence on pread(), which was accidentally
 intrudced in e2fsprogs 1.20
+
+Fixed a performance bug in the libext2fs's icount routine; the size
+estimate of the icount array was incorrectly being calculated.
+
 
 
 E2fsprogs 1.20 (May 20, 2001)
