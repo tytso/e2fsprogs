@@ -1,3 +1,7 @@
+2001-09-20  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.25
+
 2001-09-10  Theodore Tso  <tytso@valinux.com>
 
 	* compare.c (uuid_compare), copy.c (uuid_copy), 

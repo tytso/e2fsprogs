@@ -1,3 +1,7 @@
+2001-09-20  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.25
+
 2001-09-16  Theodore Tso  <tytso@valinux.com>
 
 	* compile_et.sh.in: Make the shell script safe from directory
