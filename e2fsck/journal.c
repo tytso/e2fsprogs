@@ -120,6 +120,7 @@ void wait_on_buffer(struct buffer_head *bh)
 		ll_rw_block(READ, 1, bh);
 }
 
+
 static void e2fsck_clear_recover(e2fsck_t ctx, int error)
 {
 	struct ext2fs_sb *s = (struct ext2fs_sb *)ctx->fs->super;
@@ -465,11 +466,9 @@ no_has_journal:
 	return retval;
 }
 
-static int e2fsck_recover_ext3_journal(e2fsck_t ctx)
+static int recover_ext3_journal(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	io_manager io_ptr = fs->io->manager;
-	int blocksize = fs->blocksize;
 	journal_t *journal;
 	int retval;
 
@@ -486,53 +485,25 @@ static int e2fsck_recover_ext3_journal(e2fsck_t ctx)
 	if (retval)
 		goto exit;
 
-	/* Reload the filesystem context to get up-to-date data from disk
-	 * because journal recovery will change the filesystem under us.
-	 */
-	ext2fs_close(fs);
-	retval = ext2fs_open(ctx->device_name, EXT2_FLAG_RW,
-			     ctx->superblock, blocksize, io_ptr, &fs);
-
-	if (retval) {
-		com_err(ctx->program_name, retval,
-			_("while trying to re-open %s"),
-			ctx->device_name);
-		exit(FSCK_ERROR);
-	}
-	ctx->fs = fs;
-	fs->priv_data = ctx;
-
-	/* FIXME - In the future we will clean up the ophans here.
-	 *         For now, we need to force a full fsck to clean them up.
-	 *         We shouldn't have this problem in normal circumstances
-	 *         as the kernel recovery code should save us.
-	 */
-	if (fs->super->s_last_orphan)
-		fs->super->s_state &= ~EXT2_VALID_FS;
-	else
-		jfs_debug(1, "no orphan inodes to clean up\n");
-
 exit:
 	e2fsck_clear_recover(ctx, retval);
-	ext2fs_close(ctx->fs);
 	return retval;
 }
 
 
+#if 0
 #define TEMPLATE "/tmp/ext3.XXXXXX"
 
 /*
  * This function attempts to mount and unmount an ext3 filesystem,
  * which is a cheap way to force the kernel to run the journal and
- * handle the recovery for us.  If that fails, we need to recover
- * the journal ourselves manually.
+ * handle the recovery for us.
  */
-int e2fsck_run_ext3_journal(e2fsck_t ctx)
+static int recover_ext3_journal_via_mount(e2fsck_t ctx)
 {
-#ifdef __linux__
 	ext2_filsys fs = ctx->fs;
 	char	*dirlist[] = {"/mnt","/lost+found","/tmp","/root","/boot",0};
-	int	 retval = 0;
+	errcode_t	 retval, retval2;
 	int	 count = 0;
 	char	 template[] = TEMPLATE;
 	struct stat buf;
@@ -544,10 +515,6 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 		return EXT2_ET_FILE_RO;
 	}
 
-	/* For now, non-root users and loop devices can't use kernel recovery */
-	if (geteuid()||stat(ctx->device_name, &buf)||!S_ISBLK(buf.st_mode))
-		goto manual_recover;
-
 	printf(_("%s: trying for ext3 kernel journal recovery\n"),
 	       ctx->device_name);
 	/*
@@ -558,16 +525,15 @@ newtemp:
 	tmpdir = mktemp(template);
 	if (tmpdir) {
 		jfs_debug(2, "trying %s as ext3 temp mount point\n", tmpdir);
-		retval = mkdir(template, 0700);
-		if (retval) {
+		if (mkdir(template, 0700)) {
 			if (errno == EROFS) {
 				tmpdir = NULL;
 				template[0] = '\0';
 			} else if (errno == EEXIST && count++ < 10) {
 				strcpy(template, TEMPLATE);
 				goto newtemp;
-			} else
-				goto manual_recover;
+			}
+			return errno;
 		}
 	}
 
@@ -580,7 +546,7 @@ newtemp:
 		char	**cpp, *dir;
 
 		if (stat("/", &buf))
-			goto manual_recover;
+			return errno;
 
 		rootdev = buf.st_dev;
 
@@ -601,35 +567,20 @@ newtemp:
 		int		blocksize = fs->blocksize;
 
 		jfs_debug(2, "using %s for ext3 mount\n", tmpdir);
-		ext2fs_close(fs);
 		/* FIXME - need to handle loop devices here */
-		retval = mount(ctx->device_name, tmpdir, "ext3", MNT_FL, NULL);
-		if (retval) {
+		if (mount(ctx->device_name, tmpdir, "ext3", MNT_FL, NULL)) {
+			retval = errno;
 			com_err(ctx->program_name, errno,
 				"when mounting %s", ctx->device_name);
 			if (template[0])
 				rmdir(tmpdir);
-
-			retval = ext2fs_open(ctx->device_name, EXT2_FLAG_RW,
-					     ctx->superblock, blocksize, io_ptr,
-					     &fs);
-
-			if (retval) {
-				com_err(ctx->program_name, retval,
-					_("while trying to re-open %s"),
-					ctx->device_name);
-				exit(FSCK_ERROR);
-			}
-			fs->priv_data = ctx;
-			ctx->fs = fs;
-			goto manual_recover;
+			return retval;
 		}
 		/*
 		 * Now that it mounted cleanly, the filesystem will have been
 		 * recovered, so we can now unmount it.
 		 */
-		retval = umount(tmpdir);
-		if (retval)
+		if (umount(tmpdir))
 			return errno;
 
 		/*
@@ -639,8 +590,34 @@ newtemp:
 			rmdir(tmpdir);
 		return 0;
 	}
+}
+#endif
 
-manual_recover:
-#endif /* __linux__ */
-	return e2fsck_recover_ext3_journal(ctx);
+int e2fsck_run_ext3_journal(e2fsck_t ctx)
+{
+	io_manager io_ptr = ctx->fs->io->manager;
+	int blocksize = ctx->fs->blocksize;
+	errcode_t	retval;
+	
+	if ((retval = recover_ext3_journal(ctx)))
+		return retval;
+	
+	/*
+	 * Reload the filesystem context to get up-to-date data from disk
+	 * because journal recovery will change the filesystem under us.
+	 */
+	ext2fs_close(ctx->fs);
+	retval = ext2fs_open(ctx->device_name, EXT2_FLAG_RW,
+			     ctx->superblock, blocksize, io_ptr,
+			     &ctx->fs);
+
+	if (retval) {
+		com_err(ctx->program_name, retval,
+			_("while trying to re-open %s"),
+			ctx->device_name);
+		exit(FSCK_ERROR);
+	}
+	ctx->fs->priv_data = ctx;
+
+	return 0;
 }

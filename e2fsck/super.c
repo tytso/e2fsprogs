@@ -51,6 +51,149 @@ errcode_t e2fsck_get_device_size(e2fsck_t ctx)
 }
 #endif
 
+/*
+ * helper function to release an inode
+ */
+struct process_block_struct {
+	ino_t	ino;
+	e2fsck_t ctx;
+	struct problem_context *pctx;
+	int	abort;
+};
+
+static int release_inode_block(ext2_filsys fs,
+			       blk_t	*block_nr,
+			       int blockcnt,
+			       void *priv_data)
+{
+	struct process_block_struct *pb;
+	e2fsck_t ctx;
+	struct problem_context *pctx;
+	blk_t	blk = *block_nr;
+
+	pb = (struct process_block_struct *) priv_data;
+	ctx = pb->ctx;
+	pctx = pb->pctx;
+
+	pctx->blk = blk;
+	pctx->blkcount = blockcnt;
+
+	if (HOLE_BLKADDR(blk))
+		return 0;
+
+	if ((blk < fs->super->s_first_data_block) ||
+	    (blk >= fs->super->s_blocks_count)) {
+		fix_problem(ctx, PR_0_ORPHAN_ILLEGAL_BLOCK_NUM, pctx);
+		pb->abort = 1;
+		return BLOCK_ABORT;
+	}
+
+	if (!ext2fs_test_block_bitmap(fs->block_map, blk)) {
+		fix_problem(ctx, PR_0_ORPHAN_ALREADY_CLEARED_BLOCK, pctx);
+		pb->abort = 1;
+		return BLOCK_ABORT;
+	}
+	
+	ext2fs_unmark_block_bitmap(fs->block_map, blk);
+	
+	return 0;
+}
+		
+/*
+ * This function releases an inode.  Returns 1 if an inconsistency was
+ * found.
+ */
+static int release_inode_blocks(e2fsck_t ctx, ino_t ino, char* block_buf,
+				struct problem_context *pctx)
+{
+	ext2_filsys fs = ctx->fs;
+	errcode_t			retval;
+	struct process_block_struct 	pb;
+
+	pb.ino = ino;
+	pb.ctx = ctx;
+	pb.abort = 0;
+	pb.pctx = pctx;
+	retval = ext2fs_block_iterate(fs, ino, 0, block_buf,
+				      release_inode_block, &pb);
+	if (retval) {
+		com_err("delete_file", retval,
+			_("while calling ext2fs_block_iterate for inode %d"),
+			ino);
+		return 1;
+	}
+	if (pb.abort)
+		return 1;
+
+	ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
+	ext2fs_mark_ib_dirty(fs);
+	ext2fs_mark_bb_dirty(fs);
+	return 0;
+}
+
+/*
+ * This function releases all of the orphan inodes.  It returns 1 if
+ * it hit some error, and 0 on success.
+ */
+static int release_orphan_inodes(e2fsck_t ctx)
+{
+	ext2_filsys fs = ctx->fs;
+	ino_t	ino, next_ino;
+	struct ext2_inode inode;
+	struct problem_context pctx;
+	char *block_buf;
+
+	if ((ino = fs->super->s_last_orphan) == 0)
+		return 0;
+
+	if ((ino < EXT2_FIRST_INODE(fs->super)) ||
+	    (ino > fs->super->s_inodes_count)) {
+		clear_problem_context(&pctx);
+		pctx.ino;
+		fix_problem(ctx, PR_0_ORPHAN_ILLEGAL_HEAD_INODE, &pctx);
+		return 1;
+	}
+
+	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
+						    "block interate buffer");
+	e2fsck_read_bitmaps(ctx);
+	
+	while (ino) {
+#ifdef JFS_DEBUG
+		printf("Clearing orphan inode %d\n", ino);
+#endif
+
+		e2fsck_read_inode(ctx, ino, &inode, "delete_file");
+		clear_problem_context(&pctx);
+		pctx.ino;
+		pctx.inode = &inode;
+
+		if (inode.i_links_count) {
+			fix_problem(ctx, PR_0_ORPHAN_INODE_INUSE, &pctx);
+			goto abort;
+		}
+		next_ino = inode.i_dtime;
+		if (next_ino &&
+		    ((ino < EXT2_FIRST_INODE(fs->super)) ||
+		     (ino > fs->super->s_inodes_count))) {
+			fix_problem(ctx, PR_0_ORPHAN_ILLEGAL_INODE, &pctx);
+			goto abort;
+		}
+
+		if (release_inode_blocks(ctx, ino, block_buf, &pctx))
+			goto abort;
+		
+		inode.i_dtime = time(0);
+		e2fsck_write_inode(ctx, ino, &inode, "delete_file");
+		ino = next_ino;
+	}
+	return 0;
+abort:
+	ext2fs_free_mem((void **) &block_buf);
+	return 1;
+}
+
+
 void check_super_block(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
@@ -223,7 +366,8 @@ void check_super_block(e2fsck_t ctx)
 	 * For the Hurd, check to see if the filetype option is set,
 	 * since it doesn't support it.
 	 */
-	if (fs->super->s_creator_os == EXT2_OS_HURD &&
+	if (!(ctx->options & E2F_OPT_READONLY) &&
+	    fs->super->s_creator_os == EXT2_OS_HURD &&
 	    (fs->super->s_feature_incompat &
 	     EXT2_FEATURE_INCOMPAT_FILETYPE)) {
 		if (fix_problem(ctx, PR_0_HURD_CLEAR_FILETYPE, &pctx)) {
@@ -233,5 +377,16 @@ void check_super_block(e2fsck_t ctx)
 
 		}
 	}
+
+	/*
+	 * Clean up any orphan inodes, if present.
+	 */
+	if (!(ctx->options & E2F_OPT_READONLY) && release_orphan_inodes(ctx)) {
+		fs->super->s_state &= ~EXT2_VALID_FS;
+		ext2fs_mark_super_dirty(ctx->fs);
+	}
+
 	return;
 }
+
+

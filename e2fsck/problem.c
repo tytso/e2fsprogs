@@ -229,6 +229,31 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("ext3 recovery flag clear, but journal has data.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK|PR_PREEN_NOMSG },
 
+	/* Illegal block found in orphaned inode */
+	{ PR_0_ORPHAN_ILLEGAL_BLOCK_NUM,
+	   N_("@I @b #%B (%b) found in @o @i %i.\n"),
+	  PROMPT_NONE, 0 },
+		  
+	/* Already cleared block found in orphaned inode */
+	{ PR_0_ORPHAN_ALREADY_CLEARED_BLOCK,
+	   N_("Already cleared @b #%B (%b) found in @o @i %i.\n"),
+	  PROMPT_NONE, 0 },
+  
+	/* Illegal orphan inode in superblock */
+	{ PR_0_ORPHAN_ILLEGAL_HEAD_INODE,
+	  N_("@I @o @i %i in @S.\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Illegal inode in orphaned inode list */
+	{ PR_0_ORPHAN_ILLEGAL_INODE,
+	  N_("@I @i %i in @o @i list.\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Orphan inode has a non-zero link count */
+	{ PR_0_ORPHAN_INODE_INUSE,
+	  N_("@o @i %i has a non-zero link count.\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */
@@ -300,7 +325,7 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@i %i, i_@bs is %Ib, @s %N.  "),
 	  PROMPT_FIX, PR_PREEN_OK },
 
-	/* Illegal block number in inode */
+	/* Illegal blocknumber in inode */
 	{ PR_1_ILLEGAL_BLOCK_NUM,
 	  N_("@I @b #%B (%b) in @i %i.  "),
 	  PROMPT_CLEAR, PR_LATCH_BLOCK },

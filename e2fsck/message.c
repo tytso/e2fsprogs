@@ -64,10 +64,11 @@
  * 	@g	group
  * 	@l	lost+found
  * 	@L	is a link
- * 	@u	unattached
+ * 	@o	orphaned
  * 	@r	root inode
  * 	@s	should be 
  * 	@S	superblock
+ * 	@u	unattached
  * 	@z	zero-length
  */
 
@@ -110,10 +111,11 @@ static const char *abbrevs[] = {
 	N_("ggroup"),
 	N_("llost+found"),
 	N_("Lis a link"),
-	N_("uunattached"),
+	N_("oorphaned"),
 	N_("rroot @i"),
 	N_("sshould be"),
 	N_("Ssuper@b"),
+	N_("uunattached"),
 	N_("zzero-length"),
 	"@@",
 	0

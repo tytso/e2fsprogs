@@ -817,6 +817,8 @@ restart:
 				ctx->device_name);
 			exit(FSCK_ERROR);
 		}
+		ext2fs_close(ctx->fs);
+		ctx->fs = 0;
 		goto restart;
 	}
 

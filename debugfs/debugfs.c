@@ -337,7 +337,7 @@ static void finish_range(struct list_blocks_struct *lb)
 	if (lb->first)
 		lb->first = 0;
 	else
-		printf(", ");
+		fprintf(lb->f, ", ");
 	if (lb->first_block == lb->last_block)
 		fprintf(lb->f, "(%d):%d", lb->first_bcnt, lb->first_block);
 	else

@@ -1,3 +1,23 @@
+2000-08-18    <tytso@valinux.com>
+
+	* Makefile.in: Update the make dependencies
+	
+	* problem.c, problem.h: Add the problem codes: 
+		PR_0_ORPHAN_ILLEGAL_BLOCK_NUM, 
+		PR_0_ORPHAN_ALREADY_CLEARED_BLOCK, 
+		PR_0_ORPHAN_ILLEGAL_HEAD_INODE, 
+		PR_0_ORPHAN_ILLEGAL_INODE, PR_0_ORPHAN_INODE_INUSE
+
+	* super.c (release_inode_blocks, release_orphan_inodes,
+		check_super_block): Add support for clearing orphaned
+		inodes from the unmounted filesystem.
+
+	* journal.c (e2fsck_recover_ext3_journal): Remove the last orphan
+		check; this is now handled in check_super_block ---
+		non-journaled filesystems can use the orphan list in the
+		future.  Also, move the the re-opening of the filesystem
+		to e2fsck_run_ext3_journal().
+
 2000-07-12  Andreas Dilger <adilger@turbolinux.com>
 
 	* journal.c: implement loading of ext3 journal for recovery code
