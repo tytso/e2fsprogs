@@ -301,7 +301,7 @@ of the
 executable.
 .TP
 .B "\-O \fIfeature\fR[,...]"
-Create filesystem with given features (filesystem options), overridding 
+Create filesystem with given features (filesystem options), overriding 
 the default filesystem options.
 Currently, the
 .B sparse_super
