@@ -24,6 +24,14 @@ typedef unsigned char uuid_t[16];
 #define UUID_VARIANT_MICROSOFT	2
 #define UUID_VARIANT_OTHER	3
 
+/* UUID Type definitions */
+#define UUID_TYPE_DCE_TIME   1
+#define UUID_TYPE_DCE_RANDOM 4
+
+/* Allow UUID constants to be defined */
+#define UUID_DEFINE(name,u0,u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11,u12,u13,u14,u15) \
+	const uuid_t name = {u0,u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11,u12,u13,u14,u15}
+
 #ifdef __cplusplus
 extern "C" {
 #endif

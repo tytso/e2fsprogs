@@ -1,5 +1,8 @@
 2004-03-19  Theodore Ts'o  <tytso@mit.edu>
 
+	* uuid.h (UUID_DEFINE): Add UUID type #define's, and add an CPP
+		macro to define UUID constants.
+
 	* gen_uuid.c (get_clock): Use 14 bits for the clock sequence,
 		instead of just 13 bits.
 
