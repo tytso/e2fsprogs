@@ -1,3 +1,8 @@
+2003-03-10  Theodore Ts'o  <tytso@mit.edu>
+
+	* fileio.c (ext2fs_file_lseek): Fix bug added when adding 64-bit
+		support; avoid null dereference when ret_pos is NULL.
+
 2003-03-06  Theodore Tso  <tytso@mit.edu>
 
 	* ext2_types.h.in: Don't redefine types if other e2fsprogs

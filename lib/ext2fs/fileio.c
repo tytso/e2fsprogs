@@ -310,7 +310,8 @@ errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
 	
 	loffset = offset;
 	retval = ext2fs_file_llseek(file, loffset, whence, &ret_loffset);
-	*ret_pos = (ext2_off_t) ret_loffset;
+	if (ret_pos)
+		*ret_pos = (ext2_off_t) ret_loffset;
 	return retval;
 }
 
