@@ -1,3 +1,13 @@
+2003-09-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_dup_de: Remove spurious rm error messages when htree is
+		enabled
+
+	* run_e2fsck, run_mke2fs: Add new support for mke2fs test cases.
+
+	* m_dasd_bs, m_large_file, m_no_opt, m_std: New test cases
+		exercising mke2fs.
+
 2003-08-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_bad_local_jnl, f_badorphan, f_h_badroot, f_h_reindex,

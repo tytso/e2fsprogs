@@ -7,4 +7,4 @@ if test "$HTREE"x = x -o "$HTREE_CLR"x = yx; then
 	EXP2=$test_dir/expect-nohtree.2
 fi
 . $cmd_dir/run_e2fsck
-rm "$TMPFILE".gz
+rm -f "$TMPFILE".gz

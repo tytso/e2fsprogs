@@ -327,6 +327,7 @@ struct progress_struct {
 	char		format[20];
 	char		backup[80];
 	__u32		max;
+	int		skip_progress;
 };
 
 static void progress_init(struct progress_struct *progress,
@@ -349,13 +350,17 @@ static void progress_init(struct progress_struct *progress,
 		progress->backup[(2*i)+1] = 0;
 	progress->max = max;
 
+	progress->skip_progress = 0;
+	if (getenv("MKE2FS_SKIP_PROGRESS"))
+		progress->skip_progress++;
+
 	fputs(label, stdout);
 	fflush(stdout);
 }
 
 static void progress_update(struct progress_struct *progress, __u32 val)
 {
-	if (progress->format[0] == 0)
+	if ((progress->format[0] == 0) || progress->skip_progress)
 		return;
 	printf(progress->format, val, progress->max);
 	fputs(progress->backup, stdout);
@@ -1213,6 +1218,9 @@ static void PRS(int argc, char *argv[])
 			_("while trying to determine hardware sector size"));
 		exit(1);
 	}
+
+	if (tmp = getenv("MKE2FS_DEVICE_SECTSIZE"))
+		sector_size = atoi(tmp);
 	
 	set_fs_defaults(fs_type, &param, blocksize, sector_size, &inode_ratio);
 	blocksize = EXT2_BLOCK_SIZE(&param);
@@ -1483,7 +1491,8 @@ no_journal:
 	}
 	if (!quiet) {
 		printf(_("done\n\n"));
-		print_check_message(fs);
+		if (!getenv("MKE2FS_SKIP_CHECK_MSG"))
+			print_check_message(fs);
 	}
 	val = ext2fs_close(fs);
 	return (retval || val) ? 1 : 0;

@@ -1,3 +1,6 @@
+if [ "$DESCRIPTION"x != x ]; then
+	echo -n "$DESCRIPTION: "
+fi
 if [ "$IMAGE"x = x ]; then
 	IMAGE=$test_dir/image.gz
 fi
@@ -26,14 +29,18 @@ if [ "$EXP2"x = x ]; then
 	EXP2=$test_dir/expect.2
 fi
 
-gunzip < $IMAGE > $TMPFILE
+if [ "$SKIP_GUNZIP" != "true" ] ; then
+	gunzip < $IMAGE > $TMPFILE
+fi
+
+cp /dev/null $OUT1
 
 eval $PREP_CMD
 
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT1.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT1.new
-sed -e '1d' $OUT1.new | sed -e '/^JFS DEBUG:/d'  | tr -d \\015 > $OUT1
+sed -e '1d' $OUT1.new | sed -e '/^JFS DEBUG:/d'  | tr -d \\015 >> $OUT1
 rm -f $OUT1.new
 
 if [ "$ONE_PASS_ONLY" != "true" ]; then
@@ -70,6 +77,8 @@ if [ "$SKIP_VERIFY" != "true" ] ; then
 fi
 
 if [ "$SKIP_CLEANUP" != "true" ] ; then
-	unset IMAGE FSCK_OPT SECOND_FSCK_OPT OUT1 OUT2 EXP1 EXP2 ONE_PASS_ONLY PREP_CMD
+	unset IMAGE FSCK_OPT SECOND_FSCK_OPT OUT1 OUT2 EXP1 EXP2 
+	unset SKIP_VERIFY SKIP_CLEANUP SKIP_GUNZIP ONE_PASS_ONLY PREP_CMD
+	unset DESCRIPTION
 fi
 

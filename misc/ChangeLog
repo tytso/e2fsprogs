@@ -1,3 +1,16 @@
+2003-09-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (progress_init, progress_update): If the environment
+		variable MKE2FS_SKIP_PROGRESS is set, then don't print out
+		a progress bar; for regression test support.
+		(PRS): If the environment variable MKE2FS_DEVICE_SECTSIZE
+		is set, then override the device sector size.  Again for
+		regression test support.
+		(main): If the environment variable MKE2FS_SKIP_CHECK_MSG
+		is set, then skip printing an information messages about
+		when the filesystem will be checked, since this number is
+		random and screws up the regression test expect script.
+
 2003-08-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (set_fs_defaults): Fix bug which caused -T largefile or
