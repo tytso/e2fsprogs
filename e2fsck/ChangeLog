@@ -1,3 +1,12 @@
+2005-01-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass2.c (e2fsck_process_bad_inode): Offer to clear i_file_acl
+		before checking to see if an invalid inode should be
+		removed, since otherwise the fast symlink detection code
+		can get confused.  Also clear the inode's entry in
+		inode_bad_map if the inode has been completely fixed.
+		(Addresses Red Hat Bugzilla #146284)
+
 2005-01-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (main, check_if_skip): Set the valid flag earlier, and if

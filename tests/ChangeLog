@@ -1,3 +1,7 @@
+2005-01-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_clear_xattr: New test case
+
 2005-01-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_summary_counts: New test case

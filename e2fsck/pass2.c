@@ -1178,6 +1178,7 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode	inode;
 	int			inode_modified = 0;
+	int			not_fixed = 0;
 	unsigned char		*frag, *fsize;
 	struct problem_context	pctx;
 	int	problem = 0;
@@ -1188,6 +1189,14 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	pctx.ino = ino;
 	pctx.dir = dir;
 	pctx.inode = &inode;
+
+	if (inode.i_file_acl &&
+	    !(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR) &&
+	    fix_problem(ctx, PR_2_FILE_ACL_ZERO, &pctx)) {
+		inode.i_file_acl = 0;
+		inode_modified++;
+	} else
+		not_fixed++;
 
 	if (!LINUX_S_ISDIR(inode.i_mode) && !LINUX_S_ISREG(inode.i_mode) &&
 	    !LINUX_S_ISCHR(inode.i_mode) && !LINUX_S_ISBLK(inode.i_mode) &&
@@ -1217,14 +1226,17 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 				return 0;
 			return 1;
-		}
+		} else
+			not_fixed++;
 		problem = 0;
 	}
 		
-	if (inode.i_faddr &&
-	    fix_problem(ctx, PR_2_FADDR_ZERO, &pctx)) {
-		inode.i_faddr = 0;
-		inode_modified++;
+	if (inode.i_faddr) {
+		if (fix_problem(ctx, PR_2_FADDR_ZERO, &pctx)) {
+			inode.i_faddr = 0;
+			inode_modified++;
+		} else
+			not_fixed++;
 	}
 
 	switch (fs->super->s_creator_os) {
@@ -1256,31 +1268,33 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		if (fix_problem(ctx, PR_2_FSIZE_ZERO, &pctx)) {
 			*fsize = 0;
 			inode_modified++;
-		}
+		} else
+			not_fixed++;
 		pctx.num = 0;
 	}
 
 	if (inode.i_file_acl &&
-	    !(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR) &&
-	    fix_problem(ctx, PR_2_FILE_ACL_ZERO, &pctx)) {
-		inode.i_file_acl = 0;
-		inode_modified++;
-	}
-	if (inode.i_file_acl &&
 	    ((inode.i_file_acl < fs->super->s_first_data_block) ||
-	     (inode.i_file_acl >= fs->super->s_blocks_count)) &&
-	    fix_problem(ctx, PR_2_FILE_ACL_BAD, &pctx)) {
-		inode.i_file_acl = 0;
-		inode_modified++;
+	     (inode.i_file_acl >= fs->super->s_blocks_count))) {
+		if (fix_problem(ctx, PR_2_FILE_ACL_BAD, &pctx)) {
+			inode.i_file_acl = 0;
+			inode_modified++;
+		} else
+			not_fixed++;
 	}
 	if (inode.i_dir_acl &&
-	    LINUX_S_ISDIR(inode.i_mode) &&
-	    fix_problem(ctx, PR_2_DIR_ACL_ZERO, &pctx)) {
-		inode.i_dir_acl = 0;
-		inode_modified++;
+	    LINUX_S_ISDIR(inode.i_mode)) {
+		if (fix_problem(ctx, PR_2_DIR_ACL_ZERO, &pctx)) {
+			inode.i_dir_acl = 0;
+			inode_modified++;
+		} else
+			not_fixed++;
 	}
+
 	if (inode_modified)
 		e2fsck_write_inode(ctx, ino, &inode, "process_bad_inode");
+	if (!not_fixed)
+		ext2fs_unmark_inode_bitmap(ctx->inode_bad_map, ino);
 	return 0;
 }
 
