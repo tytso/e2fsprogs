@@ -13,6 +13,8 @@ uuid_unparse \- output UUID variable in string format
 .B #include <uuid/uuid.h>
 .sp
 .BI "void uuid_unparse(uuid_t " uu ", char *" out );
+.BI "void uuid_unparse_upper(uuid_t " uu ", char *" out );
+.BI "void uuid_unparse_lower(uuid_t " uu ", char *" out );
 .fi
 .SH DESCRIPTION
 The
@@ -22,9 +24,18 @@ function converts the supplied UUID
 from the internal binary format into a 36\-byte string (plus tailing '\\0')
 of the form 1b4e28ba\-2fa1\-11d2\-883f\-b9a76 and stores this value in the
 character string pointed to by
-.IR out .
-.SH "CONFORMING TO"
-OSF DCE 1.1
+.IR out .  
+The case of the hex digits returned by 
+.B uuid_unparse
+may be upper or lower case, and is
+dependent on the system-dependent local default.  
+.PP
+If the case of the
+hex digits is important then the functions
+.B uuid_unparse_upper
+and 
+.B uuid_unparse_lower
+may be used.
 .SH AUTHOR
 .B uuid_unparse
 was written by Theodore Y. Ts'o for the ext2 filesystem utilties.

@@ -81,6 +81,8 @@ int uuid_parse(const char *in, uuid_t uu);
 
 /* unparse.c */
 void uuid_unparse(const uuid_t uu, char *out);
+void uuid_unparse_lower(const uuid_t uu, char *out);
+void uuid_unparse_upper(const uuid_t uu, char *out);
 
 /* uuid_time.c */
 time_t uuid_time(const uuid_t uu, struct timeval *ret_tv);
