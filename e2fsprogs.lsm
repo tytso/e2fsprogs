@@ -8,7 +8,7 @@ Keywords:       utilities, fsck, filesystem, Ext2fs
 Author:         tytso@mit.edu (Theodore Tso)
 Maintained-by:  tytso@mit.edu (Theodore Tso)
 Primary-site:   download.sourceforge.net /pub/sourceforge/e2fsprogs
-		3192kB e2fsprogs-1.37.tar.gz
+		3432kB e2fsprogs-1.37.tar.gz
 		452kB e2fsprogs-libs-1.37.tar.gz
                 1kB   e2fsprogs-1.37.lsm
 Alternate-site: 
