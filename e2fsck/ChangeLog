@@ -14,6 +14,12 @@
 		inode block count and size files so that the block count
 		field is updated correctly when we create an indirect block.
 
+1999-08-05    <tytso@valinux.com>
+
+	* super.c (check_super_block): Check to see whether the
+		inodes_per_group value in the superblock is insanely too
+		high.
+
 1999-08-02    <tytso@valinux.com>
 
 	* pass1b.c (clone_file_block): Don't clear the dup_map flag if
