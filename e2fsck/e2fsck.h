@@ -409,6 +409,8 @@ extern int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t inode);
 extern errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 					 int num, int gauranteed_size);
 extern ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix);
+extern errcode_t e2fsck_adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, 
+					   int adj);
 
 
 /* region.c */
@@ -456,3 +458,5 @@ extern int ext2_file_type(unsigned int mode);
 
 /* unix.c */
 extern void e2fsck_clear_progbar(e2fsck_t ctx);
+extern int e2fsck_simple_progress(e2fsck_t ctx, char *label,
+				  float percent, unsigned int dpynum);

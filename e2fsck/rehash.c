@@ -157,28 +157,6 @@ static int fill_dir_block(ext2_filsys fs,
 }
 
 /* Used for sorting the hash entry */
-static EXT2_QSORT_TYPE hash_cmp(const void *a, const void *b)
-{
-	const struct hash_entry *he_a = (const struct hash_entry *) a;
-	const struct hash_entry *he_b = (const struct hash_entry *) b;
-	int	ret;
-	
-	if (he_a->hash > he_b->hash)
-		ret = 1;
-	else if (he_a->hash < he_b->hash)
-		ret = -1;
-	else {
-		if (he_a->minor_hash > he_b->minor_hash)
-			ret = 1;
-		else if (he_a->minor_hash < he_b->minor_hash)
-			ret = -1;
-		else
-			ret = 0;
-	}
-	return ret;
-}
-
-/* Used for sorting the hash entry */
 static EXT2_QSORT_TYPE name_cmp(const void *a, const void *b)
 {
 	const struct hash_entry *he_a = (const struct hash_entry *) a;
@@ -198,6 +176,28 @@ static EXT2_QSORT_TYPE name_cmp(const void *a, const void *b)
 			ret = -1;
 		else
 			ret = 0;
+	}
+	return ret;
+}
+
+/* Used for sorting the hash entry */
+static EXT2_QSORT_TYPE hash_cmp(const void *a, const void *b)
+{
+	const struct hash_entry *he_a = (const struct hash_entry *) a;
+	const struct hash_entry *he_b = (const struct hash_entry *) b;
+	int	ret;
+	
+	if (he_a->hash > he_b->hash)
+		ret = 1;
+	else if (he_a->hash < he_b->hash)
+		ret = -1;
+	else {
+		if (he_a->minor_hash > he_b->minor_hash)
+			ret = 1;
+		else if (he_a->minor_hash < he_b->minor_hash)
+			ret = -1;
+		else
+			ret = name_cmp(a, b);
 	}
 	return ret;
 }
@@ -249,6 +249,127 @@ static errcode_t get_next_block(ext2_filsys fs, struct out_dir *outdir,
 	return 0;
 }
 
+/*
+ * This function is used to make a unique filename.  We do this by
+ * appending ~0, and then incrementing the number.  However, we cannot
+ * expand the length of the filename beyond the padding available in
+ * the directory entry.
+ */
+static void mutate_name(char *str, __u16 *len)
+{
+	int	i;
+	__u16	l = *len & 0xFF, h = *len & 0xff00;
+	
+	/*
+	 * First check to see if it looks the name has been mutated
+	 * already
+	 */
+	for (i = l-1; i > 0; i--) {
+		if (!isdigit(str[i]))
+			break;
+	}
+	if ((i == l-1) || (str[i] != '~')) {
+		if (((l-1) & 3) < 2)
+			l += 2;
+		else
+			l = (l+3) & ~3;
+		str[l-2] = '~';
+		str[l-1] = '0';
+		*len = l | h;
+		return;
+	}
+	for (i = l-1; i >= 0; i--) {
+		if (isdigit(str[i])) {
+			if (str[i] == '9')
+				str[i] = '0';
+			else {
+				str[i]++;
+				return;
+			}
+			continue;
+		}
+		if (i == 1) {
+			if (str[0] == 'z')
+				str[0] = 'A';
+			else if (str[0] == 'Z') {
+				str[0] = '~';
+				str[1] = '0';
+			} else
+				str[0]++;
+		} else if (i > 0) {
+			str[i] = '1';
+			str[i-1] = '~';
+		} else {
+			if (str[0] == '~')
+				str[0] = 'a';
+			else 
+				str[0]++;
+		}
+		break;
+	}
+}
+
+static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
+				    ext2_ino_t ino,
+				    struct fill_dir_struct *fd)
+{
+	struct problem_context	pctx;
+	struct hash_entry 	*ent, *prev;
+	int			i, j;
+	int			fixed = 0;
+	char			new_name[256];
+	__u16			new_len;
+	
+	clear_problem_context(&pctx);
+	pctx.ino = ino;
+
+	for (i=1; i < fd->num_array; i++) {
+		ent = fd->harray + i;
+		prev = ent - 1;
+		if (!ent->dir->inode ||
+		    ((ent->dir->name_len & 0xFF) !=
+		     (prev->dir->name_len & 0xFF)) ||
+		    (strncmp(ent->dir->name, prev->dir->name,
+			     ent->dir->name_len & 0xFF)))
+			continue;
+		pctx.dirent = ent->dir;
+		if ((ent->dir->inode == prev->dir->inode) &&
+		    fix_problem(ctx, PR_2_DUPLICATE_DIRENT, &pctx)) {
+			e2fsck_adjust_inode_count(ctx, ent->dir->inode, -1);
+			ent->dir->inode = 0;
+			fixed++;
+			continue;
+		}
+		memcpy(new_name, ent->dir->name, ent->dir->name_len & 0xFF);
+		new_len = ent->dir->name_len;
+		mutate_name(new_name, &new_len);
+		for (j=0; j < fd->num_array; j++) {
+			if ((i==j) ||
+			    ((ent->dir->name_len & 0xFF) !=
+			     (fd->harray[j].dir->name_len & 0xFF)) ||
+			    (strncmp(new_name, fd->harray[j].dir->name,
+				     new_len & 0xFF)))
+				continue;
+			mutate_name(new_name, &new_len);
+			
+			j = -1;
+		}
+		new_name[new_len & 0xFF] = 0;
+		pctx.str = new_name;
+		if (fix_problem(ctx, PR_2_NON_UNIQUE_FILE, &pctx)) {
+			memcpy(ent->dir->name, new_name, new_len & 0xFF);
+			ent->dir->name_len = new_len;
+			ext2fs_dirhash(fs->super->s_def_hash_version,
+				       ent->dir->name,
+				       ent->dir->name_len & 0xFF,
+				       fs->super->s_hash_seed,
+				       &ent->hash, &ent->minor_hash);
+			fixed++;
+		}
+	}
+	return fixed;
+}
+
 
 static errcode_t copy_dir_entries(ext2_filsys fs,
 				  struct fill_dir_struct *fd,
@@ -277,6 +398,8 @@ static errcode_t copy_dir_entries(ext2_filsys fs,
 	left = fs->blocksize;
 	for (i=0; i < fd->num_array; i++) {
 		ent = fd->harray + i;
+		if (ent->dir->inode == 0)
+			continue;
 		rec_len = EXT2_DIR_REC_LEN(ent->dir->name_len & 0xFF);
 		if (rec_len > left) {
 			if (left)
@@ -575,12 +698,19 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino)
 #endif
 
 	/* Sort the list */
+resort:
 	if (fd.compress)
 		qsort(fd.harray+2, fd.num_array-2,
 		      sizeof(struct hash_entry), name_cmp);
 	else
 		qsort(fd.harray, fd.num_array,
 		      sizeof(struct hash_entry), hash_cmp);
+
+	/*
+	 * Look for duplicates
+	 */
+	if (duplicate_search_and_fix(ctx, fs, ino, &fd))
+		goto resort;
 
 	/*
 	 * Copy the directory entries.  In a htree directory these
@@ -623,7 +753,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 	ext2_u32_iterate 	iter;
 	ext2_ino_t		ino;
 	errcode_t		retval;
-	int			i, all_dirs, dir_index, first = 1;
+	int			i, cur, max, all_dirs, dir_index, first = 1;
 
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
@@ -639,9 +769,11 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 	clear_problem_context(&pctx);
 
 	dir_index = ctx->fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX;
-	if (all_dirs)
+	cur = 0;
+	if (all_dirs) {
 		i = 0;
-	else {
+		max = e2fsck_get_num_dirinfo(ctx);
+	} else {
 		retval = ext2fs_u32_list_iterate_begin(ctx->dirs_to_hash, 
 						       &iter);
 		if (retval) {
@@ -649,6 +781,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 			fix_problem(ctx, PR_3A_OPTIMIZE_ITER, &pctx);
 			return;
 		}
+		max = ext2fs_u32_list_count(ctx->dirs_to_hash);
 	}
 	while (1) {
 		if (all_dirs) {
@@ -666,12 +799,16 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 			fix_problem(ctx, PR_3A_PASS_HEADER, &pctx);
 			first = 0;
 		}
+#if 0
 		fix_problem(ctx, PR_3A_OPTIMIZE_DIR, &pctx);
+#endif
 		pctx.errcode = e2fsck_rehash_dir(ctx, ino);
 		if (pctx.errcode) {
 			end_problem_latch(ctx, PR_LATCH_OPTIMIZE_DIR);
 			fix_problem(ctx, PR_3A_OPTIMIZE_DIR_ERR, &pctx);
 		}
+		e2fsck_simple_progress(ctx, "Rebuilding directory",
+				       (float) (++cur) / (float) max, ino);
 	}
 	end_problem_latch(ctx, PR_LATCH_OPTIMIZE_DIR);
 	if (!all_dirs)

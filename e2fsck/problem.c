@@ -1087,6 +1087,16 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@p @h %d: node (%B) has bad depth\n"),
 	  PROMPT_NONE, 0 },
 	
+	/* Duplicate directory entry found */
+	{ PR_2_DUPLICATE_DIRENT,
+	  N_("Duplicate @E found.  "),
+	  PROMPT_CLEAR, 0 },
+	
+	/* Non-unique filename found */
+	{ PR_2_NON_UNIQUE_FILE,
+	  N_("@E has a non-unique filename.\nRename to %s"),
+	  PROMPT_NULL, 0 },
+	
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

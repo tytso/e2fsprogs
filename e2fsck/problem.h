@@ -643,7 +643,13 @@ struct problem_context {
 #define PR_2_HTREE_HASH_ORDER	0x02003F
 
 /* Node in HTREE directory has bad depth */
-#define PR_2_HTREE_BAD_DEPTH	0x020040	
+#define PR_2_HTREE_BAD_DEPTH	0x020040
+
+/* Duplicate directory entry found */
+#define PR_2_DUPLICATE_DIRENT	0x020041
+
+/* Non-unique filename found */
+#define PR_2_NON_UNIQUE_FILE	0x020042
 
 /*
  * Pass 3 errors

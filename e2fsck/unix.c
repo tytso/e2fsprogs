@@ -328,6 +328,71 @@ extern void e2fsck_clear_progbar(e2fsck_t ctx)
 	ctx->flags &= ~E2F_FLAG_PROG_BAR;
 }
 
+int e2fsck_simple_progress(e2fsck_t ctx, char *label, float percent,
+			   unsigned int dpynum)
+{
+	static const char spinner[] = "\\|/-";
+	char buf[80];
+	int	i;
+	int	tick;
+	struct timeval	tv;
+	int dpywidth;
+
+	if (ctx->flags & E2F_FLAG_PROG_SUPPRESS)
+		return 0;
+
+	/*
+	 * Calculate the new progress position.  If the
+	 * percentage hasn't changed, then we skip out right
+	 * away. 
+	 */
+	if (ctx->progress_last_percent == (int) 10 * percent)
+		return 0;
+	ctx->progress_last_percent = (int) 10 * percent;
+
+	/*
+	 * If we've already updated the spinner once within
+	 * the last 1/8th of a second, no point doing it
+	 * again.
+	 */
+	gettimeofday(&tv, NULL);
+	tick = (tv.tv_sec << 3) + (tv.tv_usec / (1000000 / 8));
+	if ((tick == ctx->progress_last_time) &&
+	    (percent != 0.0) && (percent != 100.0))
+		return 0;
+	ctx->progress_last_time = tick;
+
+	/*
+	 * Advance the spinner, and note that the progress bar
+	 * will be on the screen
+	 */
+	ctx->progress_pos = (ctx->progress_pos+1) & 3;
+	ctx->flags |= E2F_FLAG_PROG_BAR;
+
+	dpywidth = 66 - strlen(label);
+	dpywidth = 8 * (dpywidth / 8);
+	if (dpynum)
+		dpywidth -= 8;
+
+	i = ((percent * dpywidth) + 50) / 100;
+	printf("%s: |%s%s", label, bar + (sizeof(bar) - (i+1)),
+	       spaces + (sizeof(spaces) - (dpywidth - i + 1)));
+	if (percent == 100.0)
+		fputc('|', stdout);
+	else
+		fputc(spinner[ctx->progress_pos & 3], stdout);
+	if (dpynum)
+		printf(" %4.1f%%  %u\r", percent, dpynum);
+	else
+		printf(" %4.1f%%   \r", percent);
+	
+	if (percent == 100.0)
+		e2fsck_clear_progbar(ctx);
+	fflush(stdout);
+
+	return 0;
+}
+
 static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 				  unsigned long cur, unsigned long max)
 {
@@ -346,53 +411,9 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 		sprintf(buf, "%d %lu %lu\n", pass, cur, max);
 		write(ctx->progress_fd, buf, strlen(buf));
 	} else {
-		if (ctx->flags & E2F_FLAG_PROG_SUPPRESS)
-			return 0;
-		if (dpywidth == 0) {
-			dpywidth = 66 - strlen(ctx->device_name);
-			dpywidth = 8 * (dpywidth / 8);
-		}
-		/*
-		 * Calculate the new progress position.  If the
-		 * percentage hasn't changed, then we skip out right
-		 * away. 
-		 */
 		percent = calc_percent(&e2fsck_tbl, pass, cur, max);
-		if (ctx->progress_last_percent == (int) 10 * percent)
-			return 0;
-		ctx->progress_last_percent = (int) 10 * percent;
-
-		/*
-		 * If we've already updated the spinner once within
-		 * the last 1/8th of a second, no point doing it
-		 * again.
-		 */
-		gettimeofday(&tv, NULL);
-		tick = (tv.tv_sec << 3) + (tv.tv_usec / (1000000 / 8));
-		if ((tick == ctx->progress_last_time) &&
-		    (cur != max) && (cur != 0))
-			return 0;
-		ctx->progress_last_time = tick;
-
-		/*
-		 * Advance the spinner, and note that the progress bar
-		 * will be on the screen
-		 */
-		ctx->progress_pos = (ctx->progress_pos+1) & 3;
-		ctx->flags |= E2F_FLAG_PROG_BAR;
-		
-		i = ((percent * dpywidth) + 50) / 100;
-		printf("%s: |%s%s", ctx->device_name,
-		       bar + (sizeof(bar) - (i+1)),
-		       spaces + (sizeof(spaces) - (dpywidth - i + 1)));
-		if (percent == 100.0)
-			fputc('|', stdout);
-		else
-			fputc(spinner[ctx->progress_pos & 3], stdout);
-		printf(" %4.1f%%   \r", percent);
-		if (percent == 100.0)
-			e2fsck_clear_progbar(ctx);
-		fflush(stdout);
+		e2fsck_simple_progress(ctx, ctx->device_name,
+				       percent, 0);
 	}
 	return 0;
 }

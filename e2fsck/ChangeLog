@@ -1,3 +1,23 @@
+2003-03-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* rehash.c (duplicate_search_and_fix): Now search for duplicates
+		filenames, and either prompt to remove a complete
+		duplicate entry, or to rename a duplicate filename.
+		(e2fsck_rehash_dir): Use a progress bar to report
+		progress, and don't print all of the directory inodes as
+		they are optimized.
+
+	* problem.c, problem.h (PR_2_DUPLICATE_DIRENT,
+		PR_2_NON_UNIQUE_FILE):  New problem codes.
+	
+	* unix.c (e2fsck_simple_progress), e2fsck.h: New function which
+		can be called to provide specialized progress bars that
+		are not related to the top-level pass-based completion
+		percentage.
+
+	* pass3.c (e2fsck_adjust_inode_count), e2fsck.h: Export previously
+		static function.
+
 2003-03-06    <tytso@mit.edu>
 
 	* e2fsck.8.in: Fix minor nit in the -C option.  (Addresses Debian

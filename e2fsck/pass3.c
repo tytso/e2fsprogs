@@ -45,7 +45,6 @@ static void check_root(e2fsck_t ctx);
 static int check_directory(e2fsck_t ctx, struct dir_info *dir,
 			   struct problem_context *pctx);
 static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ext2_ino_t parent);
-static errcode_t adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, int adj);
 
 static ext2fs_inode_bitmap inode_loop_detect = 0;
 static ext2fs_inode_bitmap inode_done_map = 0;
@@ -406,7 +405,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 		dirinfo = e2fsck_get_dir_info(ctx, ino);
 		if (dirinfo)
 			dirinfo->parent = 0;
-		adjust_inode_count(ctx, ino, -1);
+		e2fsck_adjust_inode_count(ctx, ino, -1);
 	} else if (retval != EXT2_ET_FILE_NOT_FOUND) {
 		pctx.errcode = retval;
 		fix_problem(ctx, PR_3_ERR_FIND_LPF, &pctx);
@@ -435,7 +434,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	/*
 	 * Next find a free inode.
 	 */
-	retval = ext2fs_new_inode(fs, EXT2_ROOT_INO, 040755,
+	retval = ext2fs_new_inode(fs, EXT2_ROOT_INO, 040700,
 				  ctx->inode_used_map, &ino);
 	if (retval) {
 		pctx.errcode = retval;
@@ -498,7 +497,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	 * Miscellaneous bookkeeping that needs to be kept straight.
 	 */
 	e2fsck_add_dir_info(ctx, ino, EXT2_ROOT_INO);
-	adjust_inode_count(ctx, EXT2_ROOT_INO, 1);
+	e2fsck_adjust_inode_count(ctx, EXT2_ROOT_INO, 1);
 	ext2fs_icount_store(ctx->inode_count, ino, 2);
 	ext2fs_icount_store(ctx->inode_link_info, ino, 2);
 	ctx->lost_and_found = ino;
@@ -554,7 +553,7 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t ino)
 		fix_problem(ctx, PR_3_CANT_RECONNECT, &pctx);
 		return 1;
 	}
-	adjust_inode_count(ctx, ino, 1);
+	e2fsck_adjust_inode_count(ctx, ino, 1);
 
 	return 0;
 }
@@ -562,7 +561,7 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t ino)
 /*
  * Utility routine to adjust the inode counts on an inode.
  */
-static errcode_t adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, int adj)
+errcode_t e2fsck_adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, int adj)
 {
 	ext2_filsys fs = ctx->fs;
 	errcode_t		retval;
@@ -628,12 +627,12 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 
 	clear_problem_context(&pctx);
 	
-	retval = adjust_inode_count(fp->ctx, dirent->inode, -1);
+	retval = e2fsck_adjust_inode_count(fp->ctx, dirent->inode, -1);
 	if (retval) {
 		pctx.errcode = retval;
 		fix_problem(fp->ctx, PR_3_ADJUST_INODE, &pctx);
 	}
-	retval = adjust_inode_count(fp->ctx, fp->parent, 1);
+	retval = e2fsck_adjust_inode_count(fp->ctx, fp->parent, 1);
 	if (retval) {
 		pctx.errcode = retval;
 		fix_problem(fp->ctx, PR_3_ADJUST_INODE, &pctx);
