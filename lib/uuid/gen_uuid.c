@@ -43,17 +43,20 @@
 
 static int get_random_fd()
 {
-	static int fd = -2;
-	int	i;
+	struct timeval	tv;
+	static int	fd = -2;
+	int		i;
 
 	if (fd == -2) {
+		gettimeofday(&tv, 0);
 		fd = open("/dev/urandom", O_RDONLY);
 		if (fd == -1)
 			fd = open("/dev/random", O_RDONLY | O_NONBLOCK);
-		srand((getpid() << 16) ^ getuid() ^ time(0));
+		srand((getpid() << 16) ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
 	}
 	/* Crank the random number generator a few times */
-	for (i = time(0) & 0x1F; i > 0; i--)
+	gettimeofday(&tv, 0);
+	for (i = (tv.tv_sec ^ tv.tv_usec) & 0x1F; i > 0; i--)
 		rand();
 	return fd;
 }
@@ -85,14 +88,11 @@ static void get_random_bytes(void *buf, int nbytes)
 			lose_counter = 0;
 		}
 	}
-	if (nbytes == 0)
-		return;
 
 	/* XXX put something better here if no /dev/random! */
-	for (i=0; i < nbytes; i++)
+	for (i = 0; i < nbytes; i++)
 		*cp++ = rand() & 0xFF;
 	return;
-	
 }
 
 /*
@@ -268,4 +268,3 @@ void uuid_generate(uuid_t out)
 	else
 		uuid_generate_time(out);
 }
-

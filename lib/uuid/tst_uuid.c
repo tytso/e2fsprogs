@@ -85,7 +85,7 @@ main(int argc, char **argv)
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 	time_reg = uuid_time(buf, &tv);
-	printf("UUID time is: (%d, %d): %s\n", tv.tv_sec, tv.tv_usec,
+	printf("UUID time is: (%ld, %ld): %s\n", tv.tv_sec, tv.tv_usec,
 	       ctime(&time_reg));
 	uuid_parse(str, tst);
 	if (!uuid_compare(buf, tst))
