@@ -1,3 +1,10 @@
+2002-09-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.8.in, tune2fs.8.in: Clarify manual pages about using the
+		caret ('^') character to negate feature sets when using
+		the -O option.  Define the has_journal feature to avoid
+		confusion about what ^has_journal means.
+
 2001-09-24  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.29

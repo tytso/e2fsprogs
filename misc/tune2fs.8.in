@@ -275,9 +275,10 @@ Limit the number of backup superblocks to save space on large filesystems.
 Store file type information in directory entries.
 .TP
 .B has_journal
-Create an ext3 journal (as if using the
+Use a journal to ensure filesystem consistency even across unclean shutdowns.
+Setting the filesystem feature is equivalent to using the 
 .B \-j
-option).
+option.
 .RE
 .IP
 After setting or clearing 
