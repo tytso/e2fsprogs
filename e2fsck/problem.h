@@ -420,6 +420,9 @@ struct problem_context {
 /* Directory filetype set when it shouldn't be */
 #define PR_2_CLEAR_FILETYPE	0x020029
 
+/* Directory filename can't be zero-length  */
+#define PR_2_NULL_NAME		0x020030
+
 /*
  * Pass 3 errors
  */

@@ -406,7 +406,7 @@ static int check_dir_block(ext2_filsys fs,
 		cd->pctx.dirent = dirent;
 		cd->pctx.num = offset;
 		if (((offset + dirent->rec_len) > fs->blocksize) ||
-		    (dirent->rec_len < 8) ||
+		    (dirent->rec_len < 12) ||
 		    ((dirent->rec_len % 4) != 0) ||
 		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
 			if (fix_problem(ctx, PR_2_DIR_CORRUPTED, &cd->pctx)) {
@@ -496,6 +496,12 @@ static int check_dir_block(ext2_filsys fs,
 			 * directory hasn't been created yet.
 			 */
 			problem = PR_2_LINK_ROOT;
+		} else if ((dot_state > 2) &&
+			   (dirent->name_len & 0xFF) == 0) {
+			/*
+			 * Don't allow zero-length directory names.
+			 */
+			problem = PR_2_NULL_NAME;
 		}
 
 		if (problem) {

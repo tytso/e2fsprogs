@@ -1,3 +1,11 @@
+1999-10-25    <tytso@valinux.com>
+
+	* problem.c, problem.h (PR_2_NULL_NAME): Add new problem code.
+
+	* pass2.c (check_dir_block): Require that the length of the
+		directory entry be at least 12 bytes.  Check to see if the
+		filename is zero-length, and flag that as an error.
+
 1999-10-22    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.16

@@ -708,6 +708,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  "@E has filetype set\n",
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
+	/* Directory filename is null */
+	{ PR_2_NULL_NAME,
+	  "@E has a zero-length name\n",
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */
