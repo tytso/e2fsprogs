@@ -1,3 +1,7 @@
+2000-06-09    <tytso@snap.thunk.org>
+
+	* lsdel.c (do_lsdel): Handle bad bad blocks in inode table.
+
 2000-05-27  Theodore Ts'o  <tytso@valinux.com>
 
 	* debugfs.c (do_testb, do_testi): Call check_fs_bitmaps to avoid
