@@ -1,3 +1,12 @@
+Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.04
+
+Wed May 15 21:15:43 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (fsck): fsck doesn't need to be linked with the ext2
+		libraries.
+
 Wed Mar 27 00:33:40 1996    <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.03

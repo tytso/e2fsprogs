@@ -89,42 +89,16 @@ distclean:: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-fgetflags.o : $(srcdir)/fgetflags.c \
-  $(srcdir)/e2p.h \
-  
-fsetflags.o : $(srcdir)/fsetflags.c \
-  $(srcdir)/e2p.h \
-  
-fgetversion.o : $(srcdir)/fgetversion.c \
-  $(srcdir)/e2p.h \
-  
-fsetversion.o : $(srcdir)/fsetversion.c \
-  $(srcdir)/e2p.h \
-  
-getflags.o : $(srcdir)/getflags.c \
-  $(srcdir)/e2p.h \
-  
-getversion.o : $(srcdir)/getversion.c \
-  $(srcdir)/e2p.h \
-  
-iod.o : $(srcdir)/iod.c $(srcdir)/e2p.h \
-  
-ls.o : $(srcdir)/ls.c \
-  $(srcdir)/e2p.h \
-  
-pe.o : $(srcdir)/pe.c \
-  $(srcdir)/e2p.h \
-  
-pf.o : $(srcdir)/pf.c \
-  $(srcdir)/e2p.h \
-  
-ps.o : $(srcdir)/ps.c \
-  $(srcdir)/e2p.h \
-  
-setflags.o : $(srcdir)/setflags.c \
-  $(srcdir)/e2p.h \
-  
-setversion.o : $(srcdir)/setversion.c \
-  $(srcdir)/e2p.h \
-  
-
+fgetflags.o: $(srcdir)/fgetflags.c $(srcdir)/e2p.h
+fsetflags.o: $(srcdir)/fsetflags.c $(srcdir)/e2p.h
+fgetversion.o: $(srcdir)/fgetversion.c $(srcdir)/e2p.h
+fsetversion.o: $(srcdir)/fsetversion.c $(srcdir)/e2p.h
+getflags.o: $(srcdir)/getflags.c $(srcdir)/e2p.h
+getversion.o: $(srcdir)/getversion.c $(srcdir)/e2p.h
+iod.o: $(srcdir)/iod.c $(srcdir)/e2p.h
+ls.o: $(srcdir)/ls.c  $(srcdir)/e2p.h
+pe.o: $(srcdir)/pe.c $(srcdir)/e2p.h
+pf.o: $(srcdir)/pf.c $(srcdir)/e2p.h
+ps.o: $(srcdir)/ps.c $(srcdir)/e2p.h
+setflags.o: $(srcdir)/setflags.c $(srcdir)/e2p.h
+setversion.o: $(srcdir)/setversion.c $(srcdir)/e2p.h

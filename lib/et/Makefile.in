@@ -60,8 +60,10 @@ BSDLIB_INSTALL_DIR = $(libdir)
 @MAKEFILE_PROFILE@
 @MAKEFILE_CHECKER@
 
-compile_et: compile_et.sh
-	$(CP) $< $@ && $(CHMOD) +x compile_et
+compile_et: $(SUBSTITUTE) $(srcdir)/compile_et.sh.in
+	-$(CHMOD) +x $(SUBSTITUTE) 
+	$(SUBSTITUTE) $(srcdir)/compile_et.sh.in compile_et
+	$(CHMOD) +x compile_et
 
 com_err.ps : com_err.dvi
 com_err.dvi: com_err.texinfo
@@ -97,26 +99,18 @@ clean::
 	$(RM) -f ../libcom_err.a ../libcom_err_p.a
 mostlyclean:: clean
 distclean:: clean
-	$(RM) -f .depend compile_et.sh Makefile
+	$(RM) -f .depend Makefile
 
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-error_message.o : $(srcdir)/error_message.c \
-  $(srcdir)/com_err.h \
-  $(srcdir)/error_table.h $(srcdir)/mit-sipb-copyright.h $(srcdir)/internal.h 
-et_name.o : $(srcdir)/et_name.c $(srcdir)/error_table.h $(srcdir)/mit-sipb-copyright.h \
-  $(srcdir)/internal.h \
-  
-init_et.o : $(srcdir)/init_et.c \
-  $(srcdir)/com_err.h \
-  $(srcdir)/error_table.h \
-  $(srcdir)/mit-sipb-copyright.h 
-com_err.o : $(srcdir)/com_err.c \
-  $(srcdir)/com_err.h \
-  $(srcdir)/mit-sipb-copyright.h \
-  $(srcdir)/error_table.h $(srcdir)/internal.h \
-  
-
+error_message.o: $(srcdir)/error_message.c $(srcdir)/com_err.h \
+ $(srcdir)/error_table.h $(srcdir)/mit-sipb-copyright.h $(srcdir)/internal.h
+et_name.o: $(srcdir)/et_name.c $(srcdir)/error_table.h \
+ $(srcdir)/mit-sipb-copyright.h $(srcdir)/internal.h 
+init_et.o: $(srcdir)/init_et.c $(srcdir)/com_err.h \
+ $(srcdir)/error_table.h $(srcdir)/mit-sipb-copyright.h
+com_err.o: $(srcdir)/com_err.c $(srcdir)/com_err.h \
+ $(srcdir)/mit-sipb-copyright.h $(srcdir)/error_table.h $(srcdir)/internal.h 

@@ -1,3 +1,18 @@
+Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.04
+
+Wed May 15 21:41:29 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (relocate_hint): Issue a hint that the user may wish to
+		try "e2fsck -b 8193" before allowing e2fsck to relocate
+		inode table blocks.
+
+	* Makefile.in (e2fsck): Build e2fsck statically or dynamically
+		depending on the option to configure.  Added targets for
+		e2fsck.static and e2fsck.shared for people who want to
+		build a static or shared variant manually.
+
 Wed Mar 27 00:33:40 1996    <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.03

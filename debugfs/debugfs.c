@@ -261,8 +261,14 @@ static void dump_inode(ino_t inode_num, struct ext2_inode inode)
 		inode.i_mode & 0777, inode.i_flags, inode.i_version);
 	fprintf(out, "User: %5d   Group: %5d   Size: %d\n",  
 		inode.i_uid, inode.i_gid, inode.i_size);
-	fprintf(out, "File ACL: %d    Directory ACL: %d\n",
-		inode.i_file_acl, inode.i_dir_acl);
+	if (fs->super->s_creator_os == EXT2_OS_HURD)
+		fprintf(out,
+			"File ACL: %d    Directory ACL: %d Translator: %d\n",
+			inode.i_file_acl, inode.i_dir_acl,
+			inode.osd1.hurd1.h_i_translator);
+	else
+		fprintf(out, "File ACL: %d    Directory ACL: %d\n",
+			inode.i_file_acl, inode.i_dir_acl);
 	fprintf(out, "Links: %d   Blockcount: %d\n", inode.i_links_count,
 		inode.i_blocks);
 #if HAVE_EXT2_FRAGS
@@ -625,6 +631,11 @@ void do_modify_inode(int argc, char *argv[])
 #endif
 	modify_u32(argv[0], "File acl", decimal_format, &inode.i_file_acl);
 	modify_u32(argv[0], "Directory acl", decimal_format, &inode.i_dir_acl);
+
+	if (fs->super->s_creator_os == EXT2_OS_HURD)
+		modify_u32(argv[0], "Translator Block",
+			    decimal_format, &inode.osd1.hurd1.h_i_translator);
+	
 	modify_u32(argv[0], "Fragment address", decimal_format, &inode.i_faddr);
 #if HAVE_EXT2_FRAGS
 	modify_u8(argv[0], "Fragment number", decimal_format, &inode.i_frag);

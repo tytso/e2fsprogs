@@ -21,19 +21,23 @@ SRCS= debug_cmds.c $(srcdir)/debugfs.c $(srcdir)/util.c \
 	$(srcdir)/ncheck.c $(srcdir)/icheck.c $(srcdir)/lsdel.c \
 	$(srcdir)/dump.c
 
-LIBS= -L../lib -lext2fs -lss -lcom_err 
-DEPLIBS= ../lib/libext2fs.a ../lib/libss.a ../lib/libcom_err.a 
+LIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR) 
+DEPLIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR) 
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-all:: $(PROGS)
+all:: $(PROGS) $(MANPAGES)
 
 debugfs: $(DEBUG_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o debugfs $(DEBUG_OBJS) $(LIBS)
 
 debug_cmds.c debug_cmds.h: debug_cmds.ct
 	$(MK_CMDS) $(srcdir)/debug_cmds.ct
+
+debugfs.8: $(SUBSTITUTE) $(srcdir)/debugfs.8.in
+	-$(CHMOD) +x $(SUBSTITUTE)
+	$(SUBSTITUTE) $(srcdir)/debugfs.8.in debugfs.8
 
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(usbindir) \
@@ -57,7 +61,8 @@ uninstall:
 	done
 
 clean:
-	$(RM) -f debugfs \#* *.s *.o *.a *~ debug_cmds.c core
+	$(RM) -f debugfs debugfs.8 \#* *.s *.o *.a *~ debug_cmds.c core
+
 mostlyclean: clean
 distclean: clean
 	$(RM) -f debug_cmds.c .depend Makefile
@@ -67,37 +72,31 @@ distclean: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-debug_cmds.o: debug_cmds.c $(top_srcdir)/lib/ss/ss.h \
-  $(top_srcdir)/lib/ss/mit-sipb-copyright.h $(top_builddir)/lib/ss/ss_err.h
-debugfs.o: $(srcdir)/debugfs.c \
-  $(top_srcdir)/lib/et/com_err.h \
-  $(top_srcdir)/lib/ss/ss.h $(top_srcdir)/lib/ss/mit-sipb-copyright.h $(top_builddir)/lib/ss/ss_err.h \
-  $(srcdir)/debugfs.h \
-  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
-  $(top_srcdir)/lib/ext2fs/bitops.h
-util.o: $(srcdir)/util.c \
-  $(srcdir)/debugfs.h \
-  $(top_srcdir)/lib/ext2fs/ext2fs.h \
-  $(top_srcdir)/lib/et/com_err.h \
-  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
-ncheck.o: $(srcdir)/ncheck.c \
-  $(srcdir)/debugfs.h \
-  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
-  $(top_srcdir)/lib/ext2fs/io.h \
-  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
-icheck.o: $(srcdir)/icheck.c \
-  $(srcdir)/debugfs.h \
-  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
-  $(top_srcdir)/lib/ext2fs/io.h \
-  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
-lsdel.o: $(srcdir)/lsdel.c \
-  $(srcdir)/debugfs.h \
-  $(top_srcdir)/lib/ext2fs/ext2fs.h \
-  $(top_srcdir)/lib/et/com_err.h \
-  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
-dump.o: $(srcdir)/dump.c \
-  $(srcdir)/debugfs.h \
-  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
-  $(top_srcdir)/lib/ext2fs/io.h \
-  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
+debug_cmds.o: debug_cmds.c $(top_srcdir)/lib/ss/ss.h $(top_srcdir)/lib/ss/copyright.h \
+ $(top_builddir)/lib/ss/ss_err.h
+debugfs.o: $(srcdir)/debugfs.c $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ss/ss.h $(top_srcdir)/lib/ss/copyright.h \
+ $(top_builddir)/lib/ss/ss_err.h $(srcdir)/debugfs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h
+util.o: $(srcdir)/util.c $(srcdir)/debugfs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+ncheck.o: $(srcdir)/ncheck.c $(srcdir)/debugfs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+icheck.o: $(srcdir)/icheck.c $(srcdir)/debugfs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+lsdel.o: $(srcdir)/lsdel.c $(srcdir)/debugfs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+dump.o: $(srcdir)/dump.c $(srcdir)/debugfs.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
 

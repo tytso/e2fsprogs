@@ -224,6 +224,24 @@ static void check_super_value(const char *descr, unsigned long value,
 	}
 }
 
+static void relocate_hint()
+{
+	static hint_issued = 0;
+
+	/* Only issue the hint once */
+	if (hint_issued)
+		return;
+
+	printf("Note: if there is several inode or block bitmap blocks\n"
+	       "which require relocation, or one part of the inode table\n"
+	       "which must be moved, you may wish to try running e2fsck\n"
+	       "the '-b 8193' option first.  The problem may lie only with\n"
+	       "the primary block group descriptor, and the backup block\n"
+	       "group descriptor may be OK.\n\n");
+	hint_issued = 1;
+}
+
+	
 static void check_super_block(ext2_filsys fs)
 {
 	blk_t	first_block, last_block;
@@ -312,6 +330,7 @@ static void check_super_block(ext2_filsys fs)
 			last_block = fs->super->s_blocks_count;
 		if ((fs->group_desc[i].bg_block_bitmap < first_block) ||
 		    (fs->group_desc[i].bg_block_bitmap >= last_block)) {
+			relocate_hint();
 			printf("Block bitmap for group %d is not in group.  "
 			       "(block %u)\n",
 			       i, fs->group_desc[i].bg_block_bitmap);
@@ -325,6 +344,7 @@ static void check_super_block(ext2_filsys fs)
 		}
 		if ((fs->group_desc[i].bg_inode_bitmap < first_block) ||
 		    (fs->group_desc[i].bg_inode_bitmap >= last_block)) {
+			relocate_hint();
 			printf("Inode bitmap group %d not in group.  "
 			       "(block %u)\n",
 			       i, fs->group_desc[i].bg_inode_bitmap);
@@ -339,6 +359,7 @@ static void check_super_block(ext2_filsys fs)
 		if ((fs->group_desc[i].bg_inode_table < first_block) ||
 		    ((fs->group_desc[i].bg_inode_table +
 		      fs->inode_blocks_per_group - 1) >= last_block)) {
+			relocate_hint();
 			printf("Inode table for group %d not in group.  "
 			       "(block %u)\n",
 			       i, fs->group_desc[i].bg_inode_table);

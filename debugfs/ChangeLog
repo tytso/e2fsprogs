@@ -1,3 +1,12 @@
+Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.04
+
+Wed May 3 20:41:26 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* debugfs.c (dump_inode): Correctly print the translator on the	hurd.
+	       (do_modify_inode): Modify the translator block on the hurd.
+
 Wed Mar 27 00:33:40 1996    <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.03

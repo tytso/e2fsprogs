@@ -1,3 +1,15 @@
+Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.04
+
+Wed May 15 21:41:29 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* f_illibitmap/expect.1, f_illbbitmap/expect.1: Changed
+		expected output to reflect hint which e2fsck will print when
+		there is a illegal block in the block group
+		descriptors, pointing at a block bitmap, inode bitmap,
+		or block in the inode table.
+
 Wed Mar 27 00:33:40 1996    <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.03

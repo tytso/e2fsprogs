@@ -45,4 +45,4 @@ install-shlibs install:: $(ELF_LIB) installdirs
 clean::
 	$(RM) -rf elfshared
 	$(RM) -f $(ELF_LIB)
-	$(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so
+	$(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so ../$(ELF_SONAME)

@@ -30,16 +30,22 @@ SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/chattr.c $(srcdir)/lsattr.c $(srcdir)/dumpe2fs.c \
 		$(srcdir)/badblocks.c $(srcdir)/fsck.c
 
-LIBS= -L../lib -lext2fs -le2p -lcom_err 
-DEPLIBS= ../lib/libext2fs.a ../lib/libe2p.a ../lib/libcom_err.a 
+LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
+DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
+
+STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
+STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
+
+LIBS_E2P= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR) 
+DEPLIBS_E2P= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR) 
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-all:: $(SPROGS) $(UPROGS) $(USPROGS)
+all:: $(SPROGS) $(UPROGS) $(USPROGS) fix_substitute $(SMANPAGES) $(UMANPAGES)
 
-tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS)
+tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS_E2P)
+	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS_E2P)
 
 mklost+found: $(MKLPF_OBJS)
 	$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS)
@@ -47,23 +53,51 @@ mklost+found: $(MKLPF_OBJS)
 mke2fs: $(MKE2FS_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS)
 
-mke2fs.static: $(MKE2FS_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) $(LIBS)
+mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS)
+	$(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
+		$(STATIC_LIBS)
 
-chattr: $(CHATTR_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS)
+chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
+	$(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS_E2P)
 
-lsattr: $(LSATTR_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS)
+lsattr: $(LSATTR_OBJS) $(DEPLIBS_E2P)
+	$(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS_E2P)
 
-dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS)
+dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS_E2P)
+	$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS_E2P)
 
-fsck: $(FSCK_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS)
+fsck: $(FSCK_OBJS)
+	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS)
 
 badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS)
+
+fix_substitute:
+	-$(CHMOD) +x $(SUBSTITUTE) 
+
+tune2fs.8: $(SUBSTITUTE) $(srcdir)/tune2fs.8.in
+	$(SUBSTITUTE) $(srcdir)/tune2fs.8.in tune2fs.8
+
+mklost+found.8: $(SUBSTITUTE) $(srcdir)/mklost+found.8.in
+	$(SUBSTITUTE) $(srcdir)/mklost+found.8.in mklost+found.8
+
+mke2fs.8: $(SUBSTITUTE) $(srcdir)/mke2fs.8.in
+	$(SUBSTITUTE) $(srcdir)/mke2fs.8.in mke2fs.8
+
+dumpe2fs.8: $(SUBSTITUTE) $(srcdir)/dumpe2fs.8.in 
+	$(SUBSTITUTE) $(srcdir)/dumpe2fs.8.in dumpe2fs.8
+
+badblocks.8: $(SUBSTITUTE) $(srcdir)/badblocks.8.in
+	$(SUBSTITUTE) $(srcdir)/badblocks.8.in badblocks.8	
+
+fsck.8: $(SUBSTITUTE) $(srcdir)/fsck.8.in
+	$(SUBSTITUTE) $(srcdir)/fsck.8.in fsck.8 
+
+chattr.1: $(SUBSTITUTE) $(srcdir)/chattr.1.in
+	$(SUBSTITUTE) $(srcdir)/chattr.1.in chattr.1 
+
+lsattr.1: $(SUBSTITUTE) $(srcdir)/lsattr.1.in 
+	$(SUBSTITUTE) $(srcdir)/lsattr.1.in lsattr.1 
 
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(bindir) $(DESTDIR)$(sbindir) \
@@ -110,8 +144,9 @@ uninstall:
 	done
 
 clean:
-	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) mke2fs.static \
-		\#* *.s *.o *.a *~ core
+	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) $(UMANPAGES) $(SMANPAGES) \
+		mke2fs.static \#* *.s *.o *.a *~ core
+
 mostlyclean: clean
 distclean: clean
 	$(RM) -f .depend Makefile
@@ -121,28 +156,26 @@ distclean: clean
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-tune2fs.o : $(srcdir)/tune2fs.c \
-  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
-  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h \
-  $(srcdir)/../version.h 
-mklost+found.o : $(srcdir)/mklost+found.c \
-  $(srcdir)/../version.h 
-mke2fs.o : $(srcdir)/mke2fs.c \
-  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
-  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/../version.h 
-chattr.o : $(srcdir)/chattr.c \
-  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/e2p/e2p.h \
-  $(srcdir)/../version.h 
-lsattr.o : $(srcdir)/lsattr.c \
-  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/e2p/e2p.h \
-  $(srcdir)/../version.h 
-dumpe2fs.o : $(srcdir)/dumpe2fs.c \
-  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
-  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h \
-  $(srcdir)/../version.h 
-badblocks.o : $(srcdir)/badblocks.c \
-  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/io.h 
-fsck.o : $(srcdir)/fsck.c \
-  $(srcdir)/../version.h \
-  $(srcdir)/fsck.h 
+tune2fs.o: $(srcdir)/tune2fs.c \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h \
+ $(srcdir)/../version.h
+mklost+found.o: $(srcdir)/mklost+found.c $(srcdir)/../version.h
+mke2fs.o: $(srcdir)/mke2fs.c $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
+ $(srcdir)/../version.h
+chattr.o: $(srcdir)/chattr.c $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/../version.h
+lsattr.o: $(srcdir)/lsattr.c $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/e2p/e2p.h $(srcdir)/../version.h
+dumpe2fs.o: $(srcdir)/dumpe2fs.c \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h $(top_srcdir)/lib/e2p/e2p.h \
+ $(srcdir)/../version.h
+badblocks.o: $(srcdir)/badblocks.c $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h
+fsck.o: $(srcdir)/fsck.c $(srcdir)/../version.h $(srcdir)/fsck.h
 

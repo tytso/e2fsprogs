@@ -1,13 +1,13 @@
 /*
  * Copyright 1987, 1988 by MIT Student Information Processing Board
  *
- * For copyright information, see mit-sipb-copyright.h.
+ * For copyright information, see copyright.h.
  */
 
 #ifndef _ss_h
 #define _ss_h __FILE__
 
-#include <ss/mit-sipb-copyright.h>
+#include <ss/copyright.h>
 #include <ss/ss_err.h>
 
 extern int errno;
