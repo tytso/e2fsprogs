@@ -63,7 +63,7 @@ void ext2fs_swap_super(struct ext2_super_block * super)
 	s->s_algorithm_usage_bitmap = ext2fs_swab32(s->s_algorithm_usage_bitmap);
 	s->s_journal_inum = ext2fs_swab32(s->s_journal_inum);
 	s->s_journal_dev = ext2fs_swab32(s->s_journal_dev);
-	s->s_last_orphan = ext2fs_swab32(s->s_last_orphan);}
+	s->s_last_orphan = ext2fs_swab32(s->s_last_orphan);
 }
 
 void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
