@@ -1,3 +1,7 @@
+Mon Sep 15 22:03:36 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* debugfs.c (main): Fix declaration of main so that it returns an int.
+
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.11
