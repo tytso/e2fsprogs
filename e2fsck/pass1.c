@@ -141,6 +141,22 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 	return 1;
 }
 
+/*
+ * If the immutable flag is set on the inode, offer to clear it.
+ */
+static void check_immutable(e2fsck_t ctx, struct problem_context *pctx)
+{
+	if (!(pctx->inode->i_flags & EXT2_IMMUTABLE_FL))
+		return;
+
+	if (!fix_problem(ctx, PR_1_SET_IMMUTABLE, pctx))
+		return;
+
+	pctx->inode->i_flags &= ~EXT2_IMMUTABLE_FL;
+	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
+}
+
+
 void e2fsck_pass1(e2fsck_t ctx)
 {
 	int	i;
@@ -157,6 +173,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	struct		problem_context pctx;
 	struct		scan_callback_struct scan_struct;
 	struct ext2fs_sb *sb;
+	int		imagic_fs;
 	
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
@@ -182,7 +199,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ext2_max_sizes[i] = max_sizes;
 	}
 #undef EXT2_BPP
-	
+
+	sb = (struct ext2fs_sb *) fs->super;
+	imagic_fs = (sb->s_feature_compat & EXT2_FEATURE_COMPAT_IMAGIC_INODES);
+
 	/*
 	 * Allocate bitmaps structures
 	 */
@@ -418,9 +438,18 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ext2fs_mark_inode_bitmap(ctx->inode_bad_map, ino);
 		}
 		if (inode.i_flags & EXT2_IMAGIC_FL) {
-			if (!ctx->inode_imagic_map)
-				alloc_imagic_map(ctx);
-			ext2fs_mark_inode_bitmap(ctx->inode_imagic_map, ino);
+			if (imagic_fs) {
+				if (!ctx->inode_imagic_map)
+					alloc_imagic_map(ctx);
+				ext2fs_mark_inode_bitmap(ctx->inode_imagic_map,
+							 ino);
+			} else {
+				if (fix_problem(ctx, PR_1_SET_IMAGIC, &pctx)) {
+					inode.i_flags &= ~EXT2_IMAGIC_FL;
+					e2fsck_write_inode(ctx, ino,
+							   &inode, "pass1");
+				}
+			}
 		}
 		
 		if (LINUX_S_ISDIR(inode.i_mode)) {
@@ -431,12 +460,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ext2fs_mark_inode_bitmap(ctx->inode_reg_map, ino);
 			ctx->fs_regular_count++;
 		} else if (LINUX_S_ISCHR (inode.i_mode) &&
-			 e2fsck_pass1_check_device_inode(&inode))
+			   e2fsck_pass1_check_device_inode(&inode)) {
+			check_immutable(ctx, &pctx);
 			ctx->fs_chardev_count++;
-		else if (LINUX_S_ISBLK (inode.i_mode) &&
-			 e2fsck_pass1_check_device_inode(&inode))
+		} else if (LINUX_S_ISBLK (inode.i_mode) &&
+			   e2fsck_pass1_check_device_inode(&inode)) {
+			check_immutable(ctx, &pctx);
 			ctx->fs_blockdev_count++;
-		else if (LINUX_S_ISLNK (inode.i_mode)) {
+		} else if (LINUX_S_ISLNK (inode.i_mode)) {
 			ctx->fs_symlinks_count++;
 			if (!inode.i_blocks) {
 				ctx->fs_fast_symlinks_count++;
@@ -444,12 +475,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 			}
 		}
 		else if (LINUX_S_ISFIFO (inode.i_mode) &&
-			  e2fsck_pass1_check_device_inode(&inode))
+			 e2fsck_pass1_check_device_inode(&inode)) {
+			check_immutable(ctx, &pctx);
 			ctx->fs_fifo_count++;
-		else if ((LINUX_S_ISSOCK (inode.i_mode)) &&
-			 e2fsck_pass1_check_device_inode(&inode))
+		} else if ((LINUX_S_ISSOCK (inode.i_mode)) &&
+			   e2fsck_pass1_check_device_inode(&inode)) {
+			check_immutable(ctx, &pctx);
 		        ctx->fs_sockets_count++;
-		else {
+		} else {
 			if (!ctx->inode_bad_map)
 				alloc_bad_map(ctx);
 			ext2fs_mark_inode_bitmap(ctx->inode_bad_map, ino);
@@ -529,7 +562,6 @@ endit:
 	ext2fs_free_block_bitmap(ctx->block_illegal_map);
 	ctx->block_illegal_map = 0;
 
-	sb = (struct ext2fs_sb *) fs->super;
 	if (ctx->large_files && 
 	    !(sb->s_feature_ro_compat & 
 	      EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {

@@ -451,7 +451,7 @@ ino_t get_lost_and_found(e2fsck_t ctx)
 	/*
 	 * Finally, create the directory link
 	 */
-	pctx.errcode = ext2fs_link(fs, EXT2_ROOT_INO, name, ino, 0);
+	pctx.errcode = ext2fs_link(fs, EXT2_ROOT_INO, name, ino, EXT2_FT_DIR);
 	if (pctx.errcode) {
 		pctx.str = "ext2fs_link";
 		fix_problem(ctx, PR_3_CREATE_LPF_ERROR, &pctx);
@@ -474,15 +474,17 @@ ino_t get_lost_and_found(e2fsck_t ctx)
 /*
  * This routine will connect a file to lost+found
  */
-int e2fsck_reconnect_file(e2fsck_t ctx, ino_t inode)
+int e2fsck_reconnect_file(e2fsck_t ctx, ino_t ino)
 {
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
 	char		name[80];
 	struct problem_context	pctx;
+	struct ext2_inode 	inode;
+	int		file_type = 0;
 
 	clear_problem_context(&pctx);
-	pctx.ino = inode;
+	pctx.ino = ino;
 
 	if (!bad_lost_and_found && !lost_and_found) {
 		lost_and_found = get_lost_and_found(ctx);
@@ -494,8 +496,10 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ino_t inode)
 		return 1;
 	}
 	
-	sprintf(name, "#%lu", inode);
-	retval = ext2fs_link(fs, lost_and_found, name, inode, 0);
+	sprintf(name, "#%lu", ino);
+	if (ext2fs_read_inode(fs, ino, &inode) == 0)
+		file_type = ext2_file_type(inode.i_mode);
+	retval = ext2fs_link(fs, lost_and_found, name, ino, file_type);
 	if (retval == EXT2_ET_DIR_NO_SPACE) {
 		if (!fix_problem(ctx, PR_3_EXPAND_LF_DIR, &pctx))
 			return 1;
@@ -505,14 +509,14 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ino_t inode)
 			fix_problem(ctx, PR_3_CANT_EXPAND_LPF, &pctx);
 			return 1;
 		}
-		retval = ext2fs_link(fs, lost_and_found, name, inode, 0);
+		retval = ext2fs_link(fs, lost_and_found, name, ino, file_type);
 	}
 	if (retval) {
 		pctx.errcode = retval;
 		fix_problem(ctx, PR_3_CANT_RECONNECT, &pctx);
 		return 1;
 	}
-	adjust_inode_count(ctx, inode, +1);
+	adjust_inode_count(ctx, ino, +1);
 
 	return 0;
 }

@@ -149,7 +149,7 @@ of desired inodes directly.
 .BI \-O " feature\fR[,...]"
 Create the filesystem with the listed set of features 
 (filesystem options).  The following features are supported: 
-.IR sparse ,
+.IR sparse_super ,
 which cause the filesystem to use sparse superblocks, and
 .IR filetype ,
 which will cause the filesystem to store file type information in 

@@ -1,3 +1,28 @@
+1999-11-09    <tytso@valinux.com>
+
+	* pass1.c (e2fsck_pass1): If the filesystem does not support
+		imagic inodes, if an inode has the imagic flag set, offer
+		to clear the imagic flag.  If a valid device/fifo/socket
+		has the immutable flag set, call the new helper function
+		check_immutable() to offerto clear the immutable flag.
+
+	* pass2.c (check_filetype): Use the new ext2_file_type() helper
+		function instead of calculating the file_type information
+		manually.
+
+	* pass3.c (e2fsck_reconnect_file): When adding a link to
+		lost+found, calculate the filetype information so that
+		ext2fs_link() can use the information if applicable.
+		(get_lost_and_found): Create the /lost+found directory
+		with the correct filetype information if applicable.
+
+	* util.c (ext2_file_type), e2fsck.h: New function which returns
+		the directory entry file type information given the
+		inode's mode bits.
+
+	* problem.c, problem.h: Added new problem codes PR_1_SET_IMAGIC
+		and PR_1_SET_IMMUTABLE.
+
 1999-11-07    <tytso@valinux.com>
 
 	* pass4.c (e2fsck_pass4): Clear inode_imagic_map after freeing it,

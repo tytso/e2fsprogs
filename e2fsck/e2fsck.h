@@ -304,6 +304,7 @@ extern void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
 extern void mtrace_print(char *mesg);
 #endif
 extern blk_t get_backup_sb(ext2_filsys fs);
+extern int ext2_file_type(unsigned int mode);
 
 /* unix.c */
 extern void e2fsck_clear_progbar(e2fsck_t ctx);

@@ -236,6 +236,12 @@ struct problem_context {
 /* Filesystem contains large files, but has no such flag in sb */
 #define PR_1_FEATURE_LARGE_FILES 	0x01002E
 
+/* Imagic flag set on an inode when filesystem doesn't support it */
+#define PR_1_SET_IMAGIC			0x01002F
+
+/* Immutable flag set on a device or socket inode */
+#define PR_1_SET_IMMUTABLE		0x010030
+	
 /*
  * Pass 1b errors
  */

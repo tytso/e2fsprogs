@@ -1,3 +1,8 @@
+1999-11-10    <tytso@valinux.com>
+
+	* mke2fs.8.in: Update manual page so that the sparse_option
+		filesystem option is properly named.
+
 1999-11-04    <tytso@valinux.com>
 
 	* fsck.c (main): Move setting of the interactive flag to before

@@ -413,6 +413,17 @@ static const struct e2fsck_problem problem_table[] = {
 	  "@f contains large files, but lacks LARGE_FILE flag in @S.\n",
 	  PROMPT_FIX, 0 },
 	  
+	/* Imagic flag set on an inode when filesystem doesn't support it */
+	{ PR_1_SET_IMAGIC,
+	  "@i %i has imagic flag set.  ",
+	  PROMPT_CLEAR, 0 },
+
+	/* Immutable flag set on a device or socket inode */
+	{ PR_1_SET_IMMUTABLE,
+	  "Special (device/socket/fifo) @i %i has immutable flag set.  ",
+	  PROMPT_CLEAR, 0 },
+		  
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

@@ -311,16 +311,7 @@ static _INLINE_ int check_filetype(e2fsck_t ctx,
 	else {
 		e2fsck_read_inode(ctx, dirent->inode, &inode,
 				  "check_filetype");
-		if (LINUX_S_ISCHR (inode.i_mode))
-			should_be = EXT2_FT_CHRDEV;
-		else if (LINUX_S_ISBLK (inode.i_mode))
-			should_be = EXT2_FT_BLKDEV;
-		else if (LINUX_S_ISLNK (inode.i_mode))
-			should_be = EXT2_FT_SYMLINK;
-		else if (LINUX_S_ISFIFO (inode.i_mode))
-			should_be = EXT2_FT_FIFO;
-		else if (LINUX_S_ISSOCK (inode.i_mode))
-			should_be = EXT2_FT_SOCK;
+		should_be = ext2_file_type(inode.i_mode);
 	}
 	if (filetype == should_be)
 		return 0;

@@ -314,3 +314,31 @@ blk_t get_backup_sb(ext2_filsys fs)
 	return fs->super->s_blocks_per_group + 1;
 }
 
+/*
+ * Given a mode, return the ext2 file type
+ */
+int ext2_file_type(unsigned int mode)
+{
+	if (LINUX_S_ISREG(mode))
+		return EXT2_FT_REG_FILE;
+
+	if (LINUX_S_ISDIR(mode))
+		return EXT2_FT_DIR;
+	
+	if (LINUX_S_ISCHR(mode))
+		return EXT2_FT_CHRDEV;
+	
+	if (LINUX_S_ISBLK(mode))
+		return EXT2_FT_BLKDEV;
+	
+	if (LINUX_S_ISLNK(mode))
+		return EXT2_FT_SYMLINK;
+
+	if (LINUX_S_ISFIFO(mode))
+		return EXT2_FT_FIFO;
+	
+	if (LINUX_S_ISSOCK(mode))
+		return EXT2_FT_SOCK;
+	
+	return 0;
+}
