@@ -1,3 +1,8 @@
+2000-06-27  Andreas Dilger <adilger@turbolabs.com>
+
+	* debugfs.c (list_blocks_proc): show relative inode block numbers
+		and/or indirect block status
+
 2000-07-13    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.19

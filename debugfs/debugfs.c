@@ -380,8 +380,16 @@ static int list_blocks_proc(ext2_filsys fs, blk_t *blocknr, int blockcnt,
 {
 	struct list_blocks_struct *lb = (struct list_blocks_struct *) private;
 
-	fprintf(lb->f, "%d ", *blocknr);
-	lb->total++;
+	if (blockcnt == -1)
+		fprintf(lb->f, "(IND):%d ", *blocknr);
+	else if (blockcnt == -2)
+		fprintf(lb->f, "(DIND):%d ", *blocknr);
+	else if (blockcnt == -3)
+		fprintf(lb->f, "(TIND):%d ", *blocknr);
+	else
+		fprintf(lb->f, "(%d):%d ", blockcnt, *blocknr);
+	if (*blocknr)
+		lb->total++;
 	return 0;
 }
 
