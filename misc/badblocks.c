@@ -219,7 +219,7 @@ static void pattern_fill(unsigned char *buffer, unsigned long pattern,
 	unsigned int	i, nb;
 	unsigned char	bpattern[sizeof(pattern)], *ptr;
 	
-	if (pattern == (unsigned char) ~0) {
+	if (pattern == (unsigned long) ~0) {
 		for (ptr = buffer; ptr < buffer + n; ptr++) {
 			(*ptr) = random() % (1 << (8 * sizeof(char)));
 		}
