@@ -92,8 +92,7 @@ static void usage(void)
 	" [-N number-of-inodes]\n\t[-m reserved-blocks-percentage] "
 	"[-o creator-os] [-g blocks-per-group]\n\t[-L volume-label] "
 	"[-M last-mounted-directory] [-O feature[,...]]\n\t"
-	"[-r fs-revision] [-R raid_opts] [-s sparse-super-flag]\n\t"
-	"[-qvSV] device [blocks-count]\n"),
+	"[-r fs-revision] [-R raid_opts] [-qvSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
@@ -823,8 +822,8 @@ static void PRS(int argc, char *argv[])
 				int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 			group_blk_max = blocksize * 8;
 			break;
-		case 'c':
-		case 't':	/* Check for bad blocks */
+		case 'c':	/* Check for bad blocks */
+		case 't':	/* deprecated */
 			cflag = 1;
 			break;
 		case 'f':
@@ -896,7 +895,7 @@ static void PRS(int argc, char *argv[])
 		case 'r':
 			param.s_rev_level = atoi(optarg);
 			break;
-		case 's':
+		case 's':	/* deprecated */
 			sparse_option = atoi(optarg);
 			break;
 #ifdef EXT2_DYNAMIC_REV

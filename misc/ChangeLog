@@ -1,3 +1,8 @@
+2001-04-21  Theodore Tso  <tytso@valinux.com>
+
+	* mke2fs.c (usage): Remove the deprecated -s option from the usage
+		message.
+
 2001-04-16  Theodore Tso  <tytso@valinux.com>
 
 	* mke2fs.c (main): Add better explanation about when the
