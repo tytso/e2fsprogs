@@ -1,3 +1,15 @@
+2004-12-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* initialize.c (calc_reserved_gdt_blocks): #ifdef out all
+		debugging printf statements.
+	
+	* res_gdt.c (ext2fs_create_resize_inode): Return
+		EXT2_ET_RESIZE_INODE_CORRUPT if the resize inode is not
+		what we expect.  #ifdef out all debugging printf
+		statements.
+
+	* ext2_err.et.in (EXT2_ET_RESIZE_INODE_CORRUPT): Add new error code.
+
 2004-12-22  Theodore Ts'o  <tytso@mit.edu>
 
 	* swapfs.c (ext2fs_swap_super): Byteswap the reserved_gdt_blocks

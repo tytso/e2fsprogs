@@ -88,7 +88,9 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 	apb = EXT2_ADDR_PER_BLOCK(sb);
 	rsv_add = fs->blocksize / 512;
 	if ((dindir_blk = inode.i_block[EXT2_DIND_BLOCK])) {
+#ifdef RES_GDT_DEBUG
 		printf("reading GDT dindir %u\n", dindir_blk);
+#endif
 		retval = io_channel_read_blk(fs->io, dindir_blk, 1, dindir_buf);
 		if (retval)
 			goto out_inode;
@@ -120,7 +122,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 	}
 
 	for (rsv_off = 0, gdt_off = fs->desc_blocks,
-	     gdt_blk = sb->s_first_data_block + 1 + gdt_off;
+	     gdt_blk = sb->s_first_data_block + 1 + fs->desc_blocks;
 	     rsv_off < sb->s_reserved_gdt_blocks;
 	     rsv_off++, gdt_off++, gdt_blk++) {
 		unsigned int three = 1, five = 5, seven = 7;
@@ -149,14 +151,18 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 			       gdt_blk, dindir_blk, gdt_off);
 #endif
 		} else if (dindir_buf[gdt_off] == gdt_blk) {
+#ifdef RES_GDT_DEBUG
 			printf("reading primary GDT block %u\n", gdt_blk);
+#endif
 			retval = io_channel_read_blk(fs->io,gdt_blk,1,gdt_buf);
 			if (retval)
 				goto out_dindir;
 		} else {
+#ifdef RES_GDT_DEBUG
 			printf("bad primary GDT %u != %u at %u[%u]\n",
 			       dindir_buf[gdt_off], gdt_blk,dindir_blk,gdt_off);
-			retval = -1; // XXX
+#endif
+			retval = EXT2_ET_RESIZE_INODE_CORRUPT;
 			goto out_dindir;
 		}
 
@@ -173,9 +179,11 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 				inode.i_blocks += rsv_add;
 				gdt_dirty = inode_dirty = 1;
 			} else if (gdt_buf[last] != expect) {
+#ifdef RES_GDT_DEBUG
 				printf("bad backup GDT %u != %u at %u[%u]\n",
 				       gdt_buf[last], expect, gdt_blk, last);
-				retval = -1; // XXX
+#endif
+				retval = EXT2_ET_RESIZE_INODE_CORRUPT;
 				goto out_dindir;
 			}
 			last++;
@@ -197,8 +205,10 @@ out_dindir:
 			retval = retval2;
 	}
 out_inode:
+#ifdef RES_GDT_DEBUG
 	printf("inode.i_blocks = %u, i_size = %u\n", inode.i_blocks,
 	       inode.i_size);
+#endif
 	if (inode_dirty) {
 		inode.i_atime = inode.i_mtime = time(0);
 		retval2 = ext2fs_write_inode(fs, EXT2_RESIZE_INO, &inode);

@@ -290,5 +290,8 @@ ec	EXT2_ET_NOT_IMAGE_FILE,
 ec	EXT2_ET_RES_GDT_BLOCKS,
 	"Too many reserved group descriptor blocks"
 
+ec	EXT2_ET_RESIZE_INODE_CORRUPT,
+	"Resize inode is corrupt"
+
 	end
 
