@@ -55,7 +55,7 @@
 #include "../version.h"
 #include "nls-enable.h"
 #include "fsck.h"
-#include "get_device_by_label.h"
+#include "blkid/blkid.h"
 
 #ifndef _PATH_MNTTAB
 #define	_PATH_MNTTAB	"/etc/fstab"
@@ -104,10 +104,24 @@ volatile int cancel_requested = 0;
 int kill_sent = 0;
 char *progname;
 char *fstype = NULL;
-struct fs_info *filesys_info;
+struct fs_info *filesys_info = NULL, *filesys_last = NULL;
 struct fsck_instance *instance_list;
 const char *fsck_prefix_path = "/sbin:/sbin/fs.d:/sbin/fs:/etc/fs:/etc";
 char *fsck_path = 0;
+blkid_cache cache = NULL;
+
+static char *string_copy(const char *s)
+{
+	char	*ret;
+
+	if (!s)
+		return 0;
+	ret = malloc(strlen(s)+1);
+	if (ret)
+		strcpy(ret, s);
+	return ret;
+}
+
 static int ignore(struct fs_info *);
 
 static char *skip_over_blank(char *cp)
@@ -158,6 +172,9 @@ static void parse_escape(char *word)
 	char	*p, *q;
 	int	ac, i;
 
+	if (!word)
+		return;
+
 	for (p = word, q = word; *p; p++, q++) {
 		*q = *p;
 		if (*p != '\\')
@@ -200,9 +217,39 @@ static void free_instance(struct fsck_instance *i)
 	return;
 }
 
+static struct fs_info *create_fs_device(char *device, char *mntpnt,
+					char *type, char *opts, int freq,
+					int passno)
+{
+	struct fs_info *fs;
+
+	if (!(fs = malloc(sizeof(struct fs_info))))
+		return NULL;
+
+	fs->device = string_copy(device);
+	fs->mountpt = string_copy(mntpnt);
+	fs->type = string_copy(type);
+	fs->opts = string_copy(opts ? opts : "");
+	fs->freq = freq;
+	fs->passno = passno;
+	fs->flags = 0;
+	fs->next = NULL;
+
+	if (!filesys_info)
+		filesys_info = fs;
+	else
+		filesys_last->next = fs;
+	filesys_last = fs;
+
+	return fs;
+}
+
+
+
 static int parse_fstab_line(char *line, struct fs_info **ret_fs)
 {
-	char	*device, *mntpnt, *type, *opts, *freq, *passno, *cp;
+	char	*dev, *device, *mntpnt, *type, *opts, *freq, *passno, *cp;
+	char	*t = NULL;
 	struct fs_info *fs;
 
 	*ret_fs = 0;
@@ -218,6 +265,12 @@ static int parse_fstab_line(char *line, struct fs_info **ret_fs)
 	freq = parse_word(&cp);
 	passno = parse_word(&cp);
 
+	if (!device)
+		return 0;	/* Allow blank lines */
+	
+	if (!mntpnt || !type)
+		return -1;
+
 	parse_escape(device);
 	parse_escape(mntpnt);
 	parse_escape(type);
@@ -225,84 +278,28 @@ static int parse_fstab_line(char *line, struct fs_info **ret_fs)
 	parse_escape(freq);
 	parse_escape(passno);
 
-	if (!device)
-		return 0;	/* Allow blank lines */
+	dev = blkid_get_devname(cache, device, NULL);
+	if (dev)
+		device = dev;
 	
-	if (!mntpnt || !type)
-		return -1;
-	
-	if (!(fs = malloc(sizeof(struct fs_info))))
-		return -1;
+	if (strcmp(type, "auto") == 0 || (strchr(type, ',') != 0))
+		t = blkid_get_tag_value(cache, "TYPE", device);
+	if (t)
+		type = t;
 
-	fs->device = string_copy(device);
-	fs->mountpt = string_copy(mntpnt);
-	fs->type = string_copy(type);
-	fs->opts = string_copy(opts ? opts : "");
-	fs->freq = freq ? atoi(freq) : -1;
-	fs->passno = passno ? atoi(passno) : -1;
-	fs->flags = 0;
-	fs->next = NULL;
-
+	fs = create_fs_device(device, mntpnt, type, opts,
+			      freq ? atoi(freq) : -1,
+			      passno ? atoi(passno) : -1);
+	if (dev)
+		free(dev);
+	if (t)
+		free(t);
+	   
+	if (!fs)
+		return -1;
 	*ret_fs = fs;
-
 	return 0;
 }
-
-/*
- * Interpret the device name if necessary 
- */
-static char *interpret_device(char *spec)
-{
-	char *dev = interpret_spec(spec);
-
-	if (dev)
-		return dev;
-
-	/*
-	 * Check to see if this was because /proc/partitions isn't
-	 * found.
-	 */
-	if (access("/proc/partitions", R_OK) < 0) {
-		fprintf(stderr, "Couldn't open /proc/partitions: %s\n",
-			strerror(errno));
-		fprintf(stderr, "Is /proc mounted?\n");
-		exit(EXIT_ERROR);
-	}
-	/*
-	 * Check to see if this is because we're not running as root
-	 */
-	if (geteuid())
-		fprintf(stderr,
-			"Must be root to scan for matching filesystems: %s\n",
-			spec);
-	else
-		fprintf(stderr, "Couldn't find matching filesystem: %s\n",
-			spec);
-	exit(EXIT_ERROR);
-}
-
-/*
- * Interpret filesystem auto type if necessary
- */
-static void interpret_type(struct fs_info *fs)
-{
-	const char	*type;
-	
-	if (strcmp(fs->type, "auto") == 0 ||
-	    (strchr(fs->type, ',') != 0)) {
-		if (fs && strchr(fs->device, '='))
-			fs->device = interpret_device(fs->device);
-		type = identify_fs(fs->device, fs->type);
-		if (type) {
-			free(fs->type);
-			fs->type = string_copy(type);
-		} else
-			fprintf(stderr, _("Could not determine "
-					  "filesystem type for %s\n"),
-				fs->device);
-	}
-}
-
 
 /*
  * Load the filesystem database from /etc/fstab
@@ -313,9 +310,8 @@ static void load_fs_info(const char *filename)
 	char	buf[1024];
 	int	lineno = 0;
 	int	old_fstab = 1;
-	struct fs_info *fs, *fs_last = NULL;
+	struct fs_info *fs;
 
-	filesys_info = NULL;
 	if ((f = fopen(filename, "r")) == NULL) {
 		fprintf(stderr, _("WARNING: couldn't open %s: %s\n"),
 			filename, strerror(errno));
@@ -333,11 +329,6 @@ static void load_fs_info(const char *filename)
 		}
 		if (!fs)
 			continue;
-		if (!filesys_info)
-			filesys_info = fs;
-		else
-			fs_last->next = fs;
-		fs_last = fs;
 		if (fs->passno < 0)
 			fs->passno = 0;
 		else
@@ -369,22 +360,8 @@ static struct fs_info *lookup(char *filesys)
 		return NULL;
 
 	for (fs = filesys_info; fs; fs = fs->next) {
-		if (strchr(fs->device, '='))
-			try_again++;
 		if (!strcmp(filesys, fs->device) ||
-		    !strcmp(filesys, fs->mountpt))
-			break;
-	}
-	if (fs && strchr(fs->device, '='))
-		fs->device = interpret_device(fs->device);
-
-	if (fs || !try_again)
-		return fs;
-
-	for (fs = filesys_info; fs; fs = fs->next) {
-		fs->device = interpret_device(fs->device);
-		if (!strcmp(filesys, fs->device) ||
-		    !strcmp(filesys, fs->mountpt))
+		    (fs->mountpt && !strcmp(filesys, fs->mountpt)))
 			break;
 	}
 
@@ -428,7 +405,7 @@ static int progress_active(NOARGS)
  * Execute a particular fsck program, and link it into the list of
  * child processes we are waiting for.
  */
-static int execute(const char *type, char *device, char *mntpt,
+static int execute(const char *type, const char *device, const char *mntpt,
 		   int interactive)
 {
 	char *s, *argv[80], prog[80];
@@ -674,10 +651,9 @@ static int wait_all(int flags)
  * If the type isn't specified by the user, then use either the type
  * specified in /etc/fstab, or DEFAULT_FSTYPE.
  */
-static void fsck_device(char *device, int interactive)
+static void fsck_device(struct fs_info *fs, int interactive)
 {
 	const char *type = 0;
-	struct fs_info *fsent;
 	int retval;
 
 	if (fstype && strncmp(fstype, "no", 2) &&
@@ -685,21 +661,13 @@ static void fsck_device(char *device, int interactive)
 	    !strchr(fstype, ','))
 		type = fstype;
 
-	if ((fsent = lookup(device))) {
-		device = fsent->device;
-		interpret_type(fsent);
-		if (!type)
-			type = fsent->type;
-	}
-	if (!type)
-		type = DEFAULT_FSTYPE;
+	type = fs->type ? fs->type : DEFAULT_FSTYPE;
 
 	num_running++;
-	retval = execute(type, device, fsent ? fsent->mountpt : 0,
-			 interactive);
+	retval = execute(type, fs->device, fs->mountpt, interactive);
 	if (retval) {
 		fprintf(stderr, _("%s: Error %d while executing fsck.%s "
-			"for %s\n"), progname, retval, type, device);
+			"for %s\n"), progname, retval, type, fs->device);
 		num_running--;
 	}
 }
@@ -856,8 +824,6 @@ static int ignore(struct fs_info *fs)
 	if (fs->passno == 0)
 		return 1;
 
-	interpret_type(fs);
-
 	/*
 	 * If a specific fstype is specified, and it doesn't match,
 	 * ignore it.
@@ -944,8 +910,6 @@ static int check_all(NOARGS)
 	for (fs = filesys_info; fs; fs = fs->next) {
 		if (ignore(fs))
 			fs->flags |= FLAG_DONE;
-		else
-			fs->device = interpret_device(fs->device);
 	}
 		
 	/*
@@ -958,7 +922,7 @@ static int check_all(NOARGS)
 		}
 		if (fs) {
 			if (!skip_root && !ignore(fs)) {
-				fsck_device(fs->device, 1);
+				fsck_device(fs, 1);
 				status |= wait_all(0);
 				if (status > EXIT_NONDESTRUCT)
 					return status;
@@ -1005,7 +969,7 @@ static int check_all(NOARGS)
 			/*
 			 * Spawn off the fsck process
 			 */
-			fsck_device(fs->device, serialize);
+			fsck_device(fs, serialize);
 			fs->flags |= FLAG_DONE;
 
 			/*
@@ -1056,7 +1020,7 @@ static void signal_cancel(int sig)
 static void PRS(int argc, char *argv[])
 {
 	int	i, j;
-	char	*arg, *tmp;
+	char	*arg, *dev, *tmp = 0;
 	char	options[128];
 	int	opt = 0;
 	int     opts_for_fsck = 0;
@@ -1082,16 +1046,37 @@ static void PRS(int argc, char *argv[])
 		arg = argv[i];
 		if (!arg)
 			continue;
-		if ((arg[0] == '/' && !opts_for_fsck) ||
-		    (strncmp(arg, "LABEL=", 6) == 0) ||
-		    (strncmp(arg, "UUID=", 5) == 0)) {
+		if ((arg[0] == '/' && !opts_for_fsck) || strchr(arg, '=')) {
 			if (num_devices >= MAX_DEVICES) {
 				fprintf(stderr, _("%s: too many devices\n"),
 					progname);
 				exit(EXIT_ERROR);
 			}
-			devices[num_devices++] =
-				interpret_device(string_copy(arg));
+			dev = blkid_get_devname(cache, arg, NULL);
+			if (!dev && strchr(arg, '=')) {
+				/*
+				 * Check to see if we failed because
+				 * /proc/partitions isn't found.
+				 */
+				if (access("/proc/partitions", R_OK) < 0) {
+					fprintf(stderr, "Couldn't open /proc/partitions: %s\n",
+						strerror(errno));
+					fprintf(stderr, "Is /proc mounted?\n");
+					exit(EXIT_ERROR);
+				}
+				/*
+				 * Check to see if this is because
+				 * we're not running as root
+				 */
+				if (geteuid())
+					fprintf(stderr,
+		"Must be root to scan for matching filesystems: %s\n", arg);
+				else
+					fprintf(stderr,
+		"Couldn't find matching filesystem: %s\n", arg);
+				exit(EXIT_ERROR);
+			}
+			devices[num_devices++] = dev ? dev : string_copy(arg);
 			continue;
 		}
 		if (arg[0] != '-' || opts_for_fsck) {
@@ -1181,11 +1166,11 @@ static void PRS(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-	int i;
-	int status = 0;
+	int i, status = 0;
 	int interactive = 0;
-	char *oldpath = getenv("PATH");
+	char *type, *oldpath = getenv("PATH");
 	const char *fstab;
+	struct fs_info *fs;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -1193,6 +1178,7 @@ int main(int argc, char *argv[])
 	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
 	textdomain(NLS_CAT_NAME);
 #endif
+	blkid_get_cache(&cache, NULL);
 	PRS(argc, argv);
 
 	if (!notitle)
@@ -1234,7 +1220,21 @@ int main(int argc, char *argv[])
 			}
 			break;
 		}
-		fsck_device(devices[i], interactive);
+		fs = lookup(devices[i]);
+		if (!fs) {
+			type = blkid_get_tag_value(cache, "TYPE", devices[i]);
+			if (!type) {
+				fprintf(stderr, _("Could not determine "
+						  "filesystem type for %s\n"),
+					devices[i]);
+				continue;
+			}
+			fs = create_fs_device(devices[i], 0, type, 0, -1, -1);
+			free(type);
+			if (!fs)
+				continue;
+		}
+		fsck_device(fs, interactive);
 		if (serialize ||
 		    (max_running && (num_running >= max_running))) {
 			struct fsck_instance *inst;
@@ -1250,5 +1250,6 @@ int main(int argc, char *argv[])
 	}
 	status |= wait_all(0);
 	free(fsck_path);
+	blkid_put_cache(cache);
 	return status;
 }

@@ -15,7 +15,7 @@ LIB_SUBDIRS=lib/et lib/ss lib/e2p lib/ext2fs lib/uuid lib/blkid
 PROG_SUBDIRS=e2fsck $(DEBUGFS_DIR) misc $(RESIZE_DIR) tests/progs $(EVMS_DIR)
 SUBDIRS=util $(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
-SUBS= lib/ext2fs/ext2_types.h
+SUBS= lib/ext2fs/ext2_types.h lib/blkid/blkid_types.h
 
 TAR=tar
 
@@ -94,6 +94,10 @@ depend:: depend-recursive
 lib/ext2fs/ext2_types.h: $(DEP_SUBSTITUTE) $(srcdir)/lib/ext2fs/ext2_types.h.in
 	$(SUBSTITUTE) $(srcdir)/lib/ext2fs/ext2_types.h.in \
 	> lib/ext2fs/ext2_types.h
+
+lib/blkid/blkid_types.h: $(DEP_SUBSTITUTE) $(srcdir)/lib/blkid/blkid_types.h.in
+	$(SUBSTITUTE) $(srcdir)/lib/blkid/blkid_types.h.in \
+	> lib/blkid/blkid_types.h
 
 mostlyclean-local:
 	$(RM) -f \#* *~ *.orig core MAKELOG 

@@ -50,7 +50,7 @@ static void print_tags(blkid_dev dev, char *show[], int numtag)
 {
 	blkid_tag_iterate	iter;
 	const char		*type, *value;
-	int 			i, first = 1, printed_type = 0;
+	int 			i, first = 1;
 
 	if (!dev)
 		return;
@@ -90,16 +90,8 @@ int main(int argc, char **argv)
 	int i;
 	char c;
 
-	while ((c = getopt (argc, argv, "c:d:f:hps:t:w:v")) != EOF)
+	while ((c = getopt (argc, argv, "c:f:hps:t:w:v")) != EOF)
 		switch (c) {
-		case 'd':	/* deprecated */
-			if (numdev >= sizeof(devices) / sizeof(*devices)) {
-				fprintf(stderr,
-					"Too many devices specified\n");
-				usage(err);
-			}
-			devices[numdev++] = optarg;
-			break;
 		case 'c':
 			if (optarg && !*optarg)
 				read = NULL;

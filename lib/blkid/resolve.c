@@ -30,6 +30,7 @@ char *blkid_get_tag_value(blkid_cache cache, const char *tagname,
 {
 	blkid_tag found;
 	blkid_dev dev;
+	blkid_cache c = cache;
 	char *ret = NULL;
 
 	DBG(DEBUG_RESOLVE, printf("looking for %s on %s\n", tagname, devname));
@@ -37,12 +38,17 @@ char *blkid_get_tag_value(blkid_cache cache, const char *tagname,
 	if (!devname)
 		return NULL;
 
-	if ((dev = blkid_get_dev(cache, devname, BLKID_DEV_NORMAL)) &&
+	if (!cache) {
+		if (blkid_get_cache(&c, NULL) < 0)
+			return NULL;
+	}
+
+	if ((dev = blkid_get_dev(c, devname, BLKID_DEV_NORMAL)) &&
 	    (found = blkid_find_tag_dev(dev, tagname)))
 		ret = blkid_strdup(found->bit_val);
 
 	if (!cache)
-		blkid_free_dev(dev);
+		blkid_put_cache(c);
 
 	return ret;
 }
@@ -64,16 +70,18 @@ char *blkid_get_devname(blkid_cache cache, const char *token,
 	if (!token)
 		return NULL;
 	
-	DBG(DEBUG_RESOLVE,
-	    printf("looking for %s%c%s %s\n", token, value ? '=' : ' ',
-		   value ? value : "", cache ? "in cache" : "from disk"));
-
 	if (!cache) {
 		if (blkid_get_cache(&c, NULL) < 0)
 			return NULL;
 	}
 
+	DBG(DEBUG_RESOLVE,
+	    printf("looking for %s%s%s %s\n", token, value ? "=" : "",
+		   value ? value : "", cache ? "in cache" : "from disk"));
+
 	if (!value) {
+		if (!strchr(token, '='))
+			return blkid_strdup(token);
 		blkid_parse_tag_string(token, &t, &v);
 		if (!t || !v)
 			goto errout;

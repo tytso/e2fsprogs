@@ -1,3 +1,13 @@
+2003-03-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.c, util.c, tune2fs.c, Makefile.in: Use the blkid library
+		instead of the specialized functions in
+		get-device-by-label.c and fstype.c.
+
+	* base_device.c (base_device): Take a const char* as an argument.
+
+	* blkid.c: Remove deprecated -d option,
+
 2003-02-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid.c: Update to reflect renaming of blkid_get_devname() to

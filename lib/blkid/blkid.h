@@ -13,6 +13,7 @@
 #ifndef _BLKID_BLKID_H
 #define _BLKID_BLKID_H
 
+#include <sys/types.h>
 #include <blkid/blkid_types.h>
 
 #ifdef __cplusplus

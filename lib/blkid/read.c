@@ -384,7 +384,7 @@ void blkid_read_cache(blkid_cache cache)
 	 * struct so that the cache can be populated.
 	 */
 	if ((fd = open(cache->bic_filename, O_RDONLY)) < 0)
-		return 0;
+		return;
 	if (fstat(fd, &st) < 0)
 		goto errout;
 	if ((st.st_mtime == cache->bic_ftime) ||
@@ -426,7 +426,7 @@ void blkid_read_cache(blkid_cache cache)
 	cache->bic_flags &= ~BLKID_BIC_FL_CHANGED;
 	cache->bic_ftime = st.st_mtime;
 
-	return 0;
+	return;
 errout:
 	close(fd);
 	return;

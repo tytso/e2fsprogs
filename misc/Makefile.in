@@ -22,22 +22,22 @@ SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 UPROGS=		chattr lsattr uuidgen
 UMANPAGES=	chattr.1 lsattr.1 uuidgen.1
 
-TUNE2FS_OBJS=	tune2fs.o util.o get_device_by_label.o
+TUNE2FS_OBJS=	tune2fs.o util.o
 MKLPF_OBJS=	mklost+found.o
-MKE2FS_OBJS=	mke2fs.o util.o get_device_by_label.o
+MKE2FS_OBJS=	mke2fs.o util.o 
 CHATTR_OBJS=	chattr.o
 LSATTR_OBJS=	lsattr.o
 UUIDGEN_OBJS=	uuidgen.o
 DUMPE2FS_OBJS=	dumpe2fs.o
 BADBLOCKS_OBJS=	badblocks.o
 E2IMAGE_OBJS=	e2image.o
-FSCK_OBJS=	fsck.o get_device_by_label.o base_device.o fstype.o
+FSCK_OBJS=	fsck.o base_device.o
 BLKID_OBJS=	blkid.o
 
 SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/chattr.c $(srcdir)/lsattr.c $(srcdir)/dumpe2fs.c \
 		$(srcdir)/badblocks.c $(srcdir)/fsck.c $(srcdir)/util.c \
-		$(srcdir)/uuidgen.c $(srcdir)/fstype.c $(srcdir)/blkid.c
+		$(srcdir)/uuidgen.c $(srcdir)/blkid.c
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
 DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
@@ -59,8 +59,9 @@ all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES)
 findsuper: findsuper.o
 	$(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o
 
-tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS_E2P) $(DEPLIBUUID)
-	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS_E2P) $(LIBUUID)
+tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS_E2P) $(DEPLIBUUID) $(DEPLIBS_BLKID)
+	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS_BLKID) \
+		$(LIBS_E2P) $(LIBUUID)
 
 blkid: $(BLKID_OBJS) $(DEPLIBS_E2P) $(DEPLIBS_BLKID)
 	$(CC) $(ALL_LDFLAGS) -o blkid $(BLKID_OBJS) $(LIBS_E2P) $(LIBS_BLKID)
@@ -72,10 +73,6 @@ base_device: base_device.c
 	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $(srcdir)/base_device.c \
 		-DDEBUG -o base_device
 
-fstype: fstype.c
-	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -DTEST_PROGRAM $(srcdir)/fstype.c \
-		get_device_by_label.o $(LIBUUID) $(LIBS) -o fstype
-
 check:: base_device
 	./base_device < $(srcdir)/base_device.tst > base_device.out
 	cmp $(srcdir)/base_device.tst base_device.out
@@ -83,8 +80,9 @@ check:: base_device
 mklost+found: $(MKLPF_OBJS)
 	$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS)
 
-mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBUUID)
-	$(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBE2P) $(LIBUUID)
+mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBUUID) $(DEPLIBS_BLKID)
+	$(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBS_BLKID) \
+		$(LIBE2P) $(LIBUUID)
 
 mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBUUID)
 	$(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
@@ -105,8 +103,8 @@ uuidgen: $(UUIDGEN_OBJS) $(DEPLIBUUID)
 dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS_E2P) $(DEPLIBUUID)
 	$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS_E2P) $(LIBUUID)
 
-fsck: $(FSCK_OBJS)
-	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS)
+fsck: $(FSCK_OBJS) $(DEBLIBS_BLKID)
+	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS) $(LIBS_BLKID)
 
 badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS)
@@ -236,7 +234,8 @@ tune2fs.o: $(srcdir)/tune2fs.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_srcdir)/lib/uuid/uuid.h $(top_srcdir)/lib/e2p/e2p.h \
  $(srcdir)/jfs_user.h $(top_srcdir)/lib/ext2fs/kernel-jbd.h \
  $(top_srcdir)/lib/ext2fs/jfs_compat.h $(top_srcdir)/lib/ext2fs/kernel-list.h \
- $(srcdir)/util.h $(srcdir)/get_device_by_label.h $(top_srcdir)/version.h \
+ $(srcdir)/util.h $(top_srcdir)/lib/blkid/blkid.h \
+ $(top_builddir)/lib/blkid/blkid_types.h $(top_srcdir)/version.h \
  $(srcdir)/nls-enable.h
 mklost+found.o: $(srcdir)/mklost+found.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/version.h \
@@ -267,13 +266,16 @@ badblocks.o: $(srcdir)/badblocks.c $(top_srcdir)/lib/et/com_err.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(srcdir)/nls-enable.h
 fsck.o: $(srcdir)/fsck.c $(top_srcdir)/version.h $(srcdir)/nls-enable.h \
- $(srcdir)/fsck.h $(srcdir)/get_device_by_label.h
+ $(srcdir)/fsck.h $(top_srcdir)/lib/blkid/blkid.h \
+ $(top_builddir)/lib/blkid/blkid_types.h
 util.o: $(srcdir)/util.c $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/nls-enable.h \
- $(srcdir)/get_device_by_label.h $(srcdir)/util.h
+ $(top_srcdir)/lib/blkid/blkid.h $(top_builddir)/lib/blkid/blkid_types.h \
+ $(srcdir)/util.h
 uuidgen.o: $(srcdir)/uuidgen.c $(top_srcdir)/lib/uuid/uuid.h \
  $(srcdir)/nls-enable.h
-fstype.o: $(srcdir)/fstype.c $(srcdir)/fsck.h
+blkid.o: $(srcdir)/blkid.c $(top_srcdir)/lib/blkid/blkid.h \
+ $(top_builddir)/lib/blkid/blkid_types.h

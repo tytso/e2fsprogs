@@ -29,7 +29,7 @@
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "nls-enable.h"
-#include "get_device_by_label.h"
+#include "blkid/blkid.h"
 #include "util.h"
 
 #ifndef HAVE_STRCASECMP
@@ -178,7 +178,7 @@ void parse_journal_opts(const char *opts)
 		       arg ? arg : "NONE");
 #endif
 		if (strcmp(token, "device") == 0) {
-			journal_device = interpret_spec(arg);
+			journal_device = blkid_get_devname(NULL, arg, NULL);
 			if (!journal_device) {
 				journal_usage++;
 				continue;

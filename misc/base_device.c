@@ -38,7 +38,7 @@ static const char *devfs_hier[] = {
 	"host", "bus", "target", "lun", 0
 };
 
-char *base_device(char *device)
+char *base_device(const char *device)
 {
 	char *str, *cp;
 	const char **hier, *disk;

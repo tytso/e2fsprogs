@@ -1,3 +1,17 @@
+2003-03-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* resolve.c (blkid_get_tag_value): If the passed-in cache is NULL,
+		then get and release a temporary cache as a convenience to
+		the calling application.
+		(blkid_get_devname): If the passed in token does not
+		contain an '=', and value is NULL, then return the passed
+		in token.
+
+	* read.c (blkid_read_cache): Don't return 0 since blkid_read_cache
+		now returns void.
+
+	* blkid.h: Add include of sys/types.h, since we use dev_t
+
 2003-02-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* resolve.c (blkid_get_tag_value): Rename function (used to be
