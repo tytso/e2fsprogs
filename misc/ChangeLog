@@ -1,5 +1,8 @@
 2001-04-21  Theodore Tso  <tytso@valinux.com>
 
+	* mke2fs.8.in: Manual page cleanups.  Temporarily comment out the
+		documentation for the extern journal device support.
+
 	* mke2fs.c (usage): Remove the deprecated -s option from the usage
 		message.
 
