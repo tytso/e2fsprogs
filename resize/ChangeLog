@@ -1,3 +1,10 @@
+1998-03-29  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* extent.c (extent_cmp): Add const to cast to prevent -Wall warning.
+
+	* main.c (check_mount): Rename function argument to prevent -Wall
+		warning. 
+
 1998-03-24  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* main.c (main): Check to make sure we can really resize this

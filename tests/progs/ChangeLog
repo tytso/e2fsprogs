@@ -1,3 +1,10 @@
+1998-03-29  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* test_icount.h (do_dump, do_validate): Add prototypes to fix
+		-Wall warnings.
+
+	* test_icount.c: Fix -Wall warnings.
+
 Sat Oct 25 18:50:33 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in (PROGS): Remove test_rel from the test programs that

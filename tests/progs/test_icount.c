@@ -240,7 +240,7 @@ void do_get_size(int argc, char **argv)
 	if (check_icount(argv[0]))
 		return;
 	size = ext2fs_get_icount_size(test_icount);
-	printf("Size of icount is: %u\n", size);
+	printf("Size of icount is: %lu\n", size);
 }
 
 static int source_file(const char *cmd_file, int sci_idx)

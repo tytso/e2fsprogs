@@ -79,23 +79,23 @@ static errcode_t resize_progress_func(ext2_resize_t rfs, int pass,
 	return 0;
 }
 
-static void check_mount(char *device_name)
+static void check_mount(char *device)
 {
 	errcode_t	retval;
 	int		mount_flags;
 
-	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+	retval = ext2fs_check_if_mounted(device, &mount_flags);
 	if (retval) {
 		com_err("ext2fs_check_if_mount", retval,
 			"while determining whether %s is mounted.",
-			device_name);
+			device);
 		return;
 	}
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		return;
 	
 	fprintf(stderr, "%s is mounted; can't resize a "
-		"mounted filesystem!\n\n", device_name);
+		"mounted filesystem!\n\n", device);
 	exit(1);
 }
 

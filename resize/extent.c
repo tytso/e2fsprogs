@@ -124,8 +124,8 @@ static int extent_cmp(const void *a, const void *b)
 	const struct ext2_extent_entry *db_a;
 	const struct ext2_extent_entry *db_b;
 	
-	db_a = (struct ext2_extent_entry *) a;
-	db_b = (struct ext2_extent_entry *) b;
+	db_a = (const struct ext2_extent_entry *) a;
+	db_b = (const struct ext2_extent_entry *) b;
 	
 	return (db_a->old_loc - db_b->old_loc);
 }	
