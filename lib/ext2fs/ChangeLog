@@ -1,3 +1,12 @@
+2002-07-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix_io.c (unix_open): Only attempt the setrlimit workaround if
+		the kernel version is 2.4.10 -- 2.4.17, since otherwise an
+		old version of glibc (built against 2.2 headers) will
+		interact badly with the workaround to actually cause more
+		problems.  I hate it when the glibc folks think they're
+		being smarter than the kernel....
+
 2002-06-28  Andreas Dilger <adilger@clusterfs.com>
 
 	* ext2_fs.h: Add superblock field for reserved group descriptors.

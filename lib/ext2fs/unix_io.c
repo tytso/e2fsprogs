@@ -25,6 +25,9 @@
 #endif
 #include <fcntl.h>
 #include <time.h>
+#ifdef __linux__
+#include <sys/utsname.h>
+#endif
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -296,6 +299,9 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	errcode_t	retval;
 	int		open_flags;
 	struct stat	st;
+#ifdef __linux__
+	struct 		utsname ut;
+#endif
 
 	if (name == 0)
 		return EXT2_ET_BAD_DEVICE_NAME;
@@ -347,10 +353,18 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 #define RLIM_INFINITY  (~0UL)
 #endif
 	/*
-	 * Work around a bug in 2.4.10+ kernels where writes to block
-	 * devices are wrongly getting hit by the filesize limit.
+	 * Work around a bug in 2.4.10-2.4.18 kernels where writes to
+	 * block devices are wrongly getting hit by the filesize
+	 * limit.  This workaround isn't perfect, since it won't work
+	 * if glibc wasn't built against 2.2 header files.  (Sigh.)
+	 * 
 	 */
-	if ((flags & IO_FLAG_RW) && 
+	if ((flags & IO_FLAG_RW) &&
+	    (uname(&ut) == 0) &&
+	    ((ut.release[0] == '2') && (ut.release[1] == '.') &&
+	     (ut.release[2] == '4') && (ut.release[3] == '.') &&
+	     (ut.release[4] == '1') && (ut.release[5] >= '0') &&
+	     (ut.release[5] < '8')) &&
 	    (fstat(data->dev, &st) == 0) &&
 	    (S_ISBLK(st.st_mode))) {
 		struct rlimit	rlim;
