@@ -1,3 +1,10 @@
+2001-05-21  Theodore Tso  <tytso@valinux.com>
+
+	* ext2_fs.h: Change assignment of EXT2_FEATURE_COMPAT_DIR_INDEX to
+		make room for pre-existing usage of
+		EXT2_FEATURE_COMPAT_EXT_ATTR.  Add flag EXT2_INDEX_FL with
+		the same codepoint as EXT2_BTREE_FL.
+
 2001-05-20  Theodore Tso  <tytso@valinux.com>
 
 	* ext2fs.h: #include <> instead of "" for ext2fs and et header

@@ -187,6 +187,7 @@ struct ext2_group_desc
 #define EXT2_ECOMPR_FL			0x00000800 /* Compression error */
 /* End compression flags --- maybe not all used */	
 #define EXT2_BTREE_FL			0x00001000 /* btree format dir */
+#define EXT2_INDEX_FL			0x00001000 /* hash-indexed directory */
 #define EXT2_IMAGIC_FL			0x00002000
 #define EXT3_JOURNAL_DATA_FL		0x00004000 /* file data should be journaled */
 #define EXT2_RESERVED_FL		0x80000000 /* reserved for ext2 lib */
@@ -438,8 +439,9 @@ struct ext2_super_block {
 #define EXT2_FEATURE_COMPAT_DIR_PREALLOC	0x0001
 #define EXT2_FEATURE_COMPAT_IMAGIC_INODES	0x0002
 #define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x0004
-#define EXT2_FEATURE_COMPAT_DIR_INDEX		0x0008
+#define EXT2_FEATURE_COMPAT_EXT_ATTR		0x0008
 #define EXT2_FEATURE_COMPAT_RESIZE_INODE	0x0010
+#define EXT2_FEATURE_COMPAT_DIR_INDEX		0x0020
 
 #define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
 #define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
