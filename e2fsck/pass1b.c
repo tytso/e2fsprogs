@@ -226,8 +226,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		}
 	}
 	ext2fs_close_inode_scan(scan);
-	fs->get_blocks = 0;
-	fs->check_directory = 0;
+	e2fsck_use_inode_shortcuts(ctx, 0);
 }
 
 static int process_pass1b_block(ext2_filsys fs,
@@ -586,7 +585,7 @@ static int clone_file_block(ext2_filsys fs,
 				cs->errcode = retval;
 				return BLOCK_ABORT;
 			}
-			if (cs->dir) {
+			if (cs->dir && (blockcnt >= 0)) {
 				retval = ext2fs_set_dir_block(fs->dblist,
 				      cs->dir, new_block, blockcnt);
 				if (retval) {

@@ -1,3 +1,21 @@
+2001-06-01  Theodore Tso  <tytso@valinux.com>
+
+	* pass1.c (pass1_get_blocks, pass1_read_inode, pass1_write_inode, 
+		pass1_check_directory): Add a safety check to make sure
+		ctx->stashed_inode is non-zero.
+
+	* pass1b.c (pass1b): Use e2fsck_use_inode_shortcuts() to disable
+		the inode shortcut processing, instead of manually
+		clearing only half of the function pointers that needed to
+		be NULL'ed out.  This caused nasty bugs if the last inode
+		in the filesystem needed dup block processing.
+		
+	* pass1b.c (clone_file_block): When cloning a directory's metadata
+		block, don't try to update the directory block list
+		database, since indirect blocks aren't stored in the
+		database and the resulting error will abort the file clone
+		operation.
+
 2001-05-25  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.20

@@ -1522,7 +1522,7 @@ static errcode_t pass1_get_blocks(ext2_filsys fs, ext2_ino_t ino,
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 	int	i;
 	
-	if (ino != ctx->stashed_ino)
+	if ((ino != ctx->stashed_ino) || !ctx->stashed_inode)
 		return EXT2_ET_CALLBACK_NOTHANDLED;
 
 	for (i=0; i < EXT2_N_BLOCKS; i++)
@@ -1535,7 +1535,7 @@ static errcode_t pass1_read_inode(ext2_filsys fs, ext2_ino_t ino,
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
-	if (ino != ctx->stashed_ino)
+	if ((ino != ctx->stashed_ino) || !ctx->stashed_inode)
 		return EXT2_ET_CALLBACK_NOTHANDLED;
 	*inode = *ctx->stashed_inode;
 	return 0;
@@ -1546,7 +1546,7 @@ static errcode_t pass1_write_inode(ext2_filsys fs, ext2_ino_t ino,
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
-	if (ino == ctx->stashed_ino)
+	if ((ino == ctx->stashed_ino) && ctx->stashed_inode)
 		*ctx->stashed_inode = *inode;
 	return EXT2_ET_CALLBACK_NOTHANDLED;
 }
@@ -1555,7 +1555,7 @@ static errcode_t pass1_check_directory(ext2_filsys fs, ext2_ino_t ino)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
-	if (ino != ctx->stashed_ino)
+	if ((ino != ctx->stashed_ino) || !ctx->stashed_inode)
 		return EXT2_ET_CALLBACK_NOTHANDLED;
 
 	if (!LINUX_S_ISDIR(ctx->stashed_inode->i_mode))
@@ -1580,5 +1580,3 @@ void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool)
 		fs->write_inode = 0;
 	}
 }
-
-		
