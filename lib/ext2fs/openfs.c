@@ -40,7 +40,8 @@
  * 
  * 	EXT2_FLAG_RW	- Open the filesystem for read/write.
  * 	EXT2_FLAG_FORCE - Open the filesystem even if some of the
- *  				features aren't supported.
+ *				features aren't supported.
+ *	EXT2_FLAG_JOURNAL_DEV_OK - Open an ext3 journal device
  */
 errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		      int block_size, io_manager manager, ext2_filsys *ret_fs)
