@@ -318,7 +318,7 @@ blk_t get_backup_sb(ext2_filsys fs)
 {
 	if (!fs || !fs->super)
 		return 8193;
-	return fs->super->s_blocks_per_group + 1;
+	return fs->super->s_blocks_per_group + fs->super->s_first_data_block;
 }
 
 /*

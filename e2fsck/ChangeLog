@@ -1,3 +1,8 @@
+2000-10-30    <tytso@snap.thunk.org>
+
+	* util.c (get_backup_sb): Calculate backup superblock correctly
+		when the blocksize is > 1k.
+
 2000-10-26    <tytso@snap.thunk.org>
 
 	* jfs.h, jfs_compat.h, journal.c: Updated to include the
