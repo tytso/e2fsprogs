@@ -140,4 +140,5 @@ fi
 /usr/include/uuid
 %{_mandir}/man1/compile_et.1*
 %{_mandir}/man3/com_err.3*
-
+%{_mandir}/man3/libuuid.3*
+%{_mandir}/man3/uuid*.3*
