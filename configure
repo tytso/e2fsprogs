@@ -4774,7 +4774,6 @@ ac_given_INSTALL="$INSTALL"
 
 trap 'rm -fr `echo "MCONFIG Makefile util/Makefile util/subst.conf lib/et/Makefile 
 	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
-	lib/finddev/Makefile
 	misc/Makefile e2fsck/Makefile debugfs/Makefile tests/Makefile 
 	tests/progs/Makefile $rmakefile doc/Makefile 
 	intl/Makefile po/Makefile.in" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
@@ -4948,7 +4947,6 @@ cat >> $CONFIG_STATUS <<EOF
 
 CONFIG_FILES=\${CONFIG_FILES-"MCONFIG Makefile util/Makefile util/subst.conf lib/et/Makefile 
 	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile lib/uuid/Makefile
-	lib/finddev/Makefile
 	misc/Makefile e2fsck/Makefile debugfs/Makefile tests/Makefile 
 	tests/progs/Makefile $rmakefile doc/Makefile 
 	intl/Makefile po/Makefile.in"}
