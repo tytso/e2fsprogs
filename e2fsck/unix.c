@@ -262,7 +262,8 @@ static void check_if_skip(e2fsck_t ctx)
 	    cflag || swapfs)
 		return;
 	
-	if (fs->super->s_state & EXT2_ERROR_FS)
+	if ((fs->super->s_state & EXT2_ERROR_FS) ||
+	    !ext2fs_test_valid(fs))
 		reason = _(" contains a file system with errors");
 	else if ((fs->super->s_state & EXT2_VALID_FS) == 0)
 		reason = _(" was not cleanly unmounted");
@@ -1060,6 +1061,7 @@ restart:
 
 	if (ctx->superblock)
 		set_latch_flags(PR_LATCH_RELOC, PRL_LATCHED, 0);
+	ext2fs_mark_valid(fs);
 	check_super_block(ctx);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		fatal_error(ctx, 0);

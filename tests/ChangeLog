@@ -1,3 +1,7 @@
+2005-01-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_summary_counts: New test case
+
 2005-01-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* r_resize_inode: Skip this test if resize2fs is not compiled (due

@@ -431,6 +431,7 @@ void check_super_block(e2fsck_t ctx)
 	ext2_filsys fs = ctx->fs;
 	blk_t	first_block, last_block;
 	struct ext2_super_block *sb = fs->super;
+	struct ext2_group_desc *gd;
 	blk_t	blocks_per_group = fs->super->s_blocks_per_group;
 	blk_t	bpg_max;
 	int	inodes_per_block;
@@ -542,56 +543,86 @@ void check_super_block(e2fsck_t ctx)
 	/*
 	 * Verify the group descriptors....
 	 */
-	first_block =  fs->super->s_first_data_block;
+	first_block =  sb->s_first_data_block;
 	last_block = first_block + blocks_per_group;
 
-	for (i = 0; i < fs->group_desc_count; i++) {
+	for (i = 0, gd=fs->group_desc; i < fs->group_desc_count; i++, gd++) {
 		pctx.group = i;
 		
 		if (i == fs->group_desc_count - 1)
-			last_block = fs->super->s_blocks_count;
-		if ((fs->group_desc[i].bg_block_bitmap < first_block) ||
-		    (fs->group_desc[i].bg_block_bitmap >= last_block)) {
-			pctx.blk = fs->group_desc[i].bg_block_bitmap;
+			last_block = sb->s_blocks_count;
+		if ((gd->bg_block_bitmap < first_block) ||
+		    (gd->bg_block_bitmap >= last_block)) {
+			pctx.blk = gd->bg_block_bitmap;
 			if (fix_problem(ctx, PR_0_BB_NOT_GROUP, &pctx))
-				fs->group_desc[i].bg_block_bitmap = 0;
+				gd->bg_block_bitmap = 0;
 		}
-		if (fs->group_desc[i].bg_block_bitmap == 0) {
+		if (gd->bg_block_bitmap == 0) {
 			ctx->invalid_block_bitmap_flag[i]++;
 			ctx->invalid_bitmaps++;
 		}
-		if ((fs->group_desc[i].bg_inode_bitmap < first_block) ||
-		    (fs->group_desc[i].bg_inode_bitmap >= last_block)) {
-			pctx.blk = fs->group_desc[i].bg_inode_bitmap;
+		if ((gd->bg_inode_bitmap < first_block) ||
+		    (gd->bg_inode_bitmap >= last_block)) {
+			pctx.blk = gd->bg_inode_bitmap;
 			if (fix_problem(ctx, PR_0_IB_NOT_GROUP, &pctx))
-				fs->group_desc[i].bg_inode_bitmap = 0;
+				gd->bg_inode_bitmap = 0;
 		}
-		if (fs->group_desc[i].bg_inode_bitmap == 0) {
+		if (gd->bg_inode_bitmap == 0) {
 			ctx->invalid_inode_bitmap_flag[i]++;
 			ctx->invalid_bitmaps++;
 		}
-		if ((fs->group_desc[i].bg_inode_table < first_block) ||
-		    ((fs->group_desc[i].bg_inode_table +
+		if ((gd->bg_inode_table < first_block) ||
+		    ((gd->bg_inode_table +
 		      fs->inode_blocks_per_group - 1) >= last_block)) {
-			pctx.blk = fs->group_desc[i].bg_inode_table;
+			pctx.blk = gd->bg_inode_table;
 			if (fix_problem(ctx, PR_0_ITABLE_NOT_GROUP, &pctx))
-				fs->group_desc[i].bg_inode_table = 0;
+				gd->bg_inode_table = 0;
 		}
-		if (fs->group_desc[i].bg_inode_table == 0) {
+		if (gd->bg_inode_table == 0) {
 			ctx->invalid_inode_table_flag[i]++;
 			ctx->invalid_bitmaps++;
 		}
-		free_blocks += fs->group_desc[i].bg_free_blocks_count;
-		free_inodes += fs->group_desc[i].bg_free_inodes_count;
-		first_block += fs->super->s_blocks_per_group;
-		last_block += fs->super->s_blocks_per_group;
+		free_blocks += gd->bg_free_blocks_count;
+		free_inodes += gd->bg_free_inodes_count;
+		first_block += sb->s_blocks_per_group;
+		last_block += sb->s_blocks_per_group;
+
+		if ((gd->bg_free_blocks_count > sb->s_blocks_per_group) ||
+		    (gd->bg_free_inodes_count > sb->s_inodes_per_group) ||
+		    (gd->bg_used_dirs_count > sb->s_inodes_per_group))
+			ext2fs_unmark_valid(fs);
+
 	}
+
+	/*
+	 * Update the global counts from the block group counts.  This
+	 * is needed for an experimental patch which eliminates
+	 * locking the entire filesystem when allocating blocks or
+	 * inodes; if the filesystem is not unmounted cleanly, the
+	 * global counts may not be accurate.
+	 */
+	if ((free_blocks != sb->s_free_blocks_count) ||
+	    (free_inodes != sb->s_free_inodes_count)) {
+		if (ctx->options & E2F_OPT_READONLY)
+			ext2fs_unmark_valid(fs);
+		else {
+			sb->s_free_blocks_count = free_blocks;
+			sb->s_free_inodes_count = free_inodes;
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
+	
+	if ((sb->s_free_blocks_count > sb->s_blocks_count) ||
+	    (sb->s_free_inodes_count > sb->s_inodes_count))
+		ext2fs_unmark_valid(fs);
+
+
 	/*
 	 * If we have invalid bitmaps, set the error state of the
 	 * filesystem.
 	 */
 	if (ctx->invalid_bitmaps && !(ctx->options & E2F_OPT_READONLY)) {
-		fs->super->s_state &= ~EXT2_VALID_FS;
+		sb->s_state &= ~EXT2_VALID_FS;
 		ext2fs_mark_super_dirty(fs);
 	}
 
@@ -610,21 +641,6 @@ void check_super_block(e2fsck_t ctx)
 	}
 #endif
 
-	/*
-	 * Update the global counts from the block group counts.  This
-	 * is needed for an experimental patch which eliminates
-	 * locking the entire filesystem when allocating blocks or
-	 * inodes; if the filesystem is not unmounted cleanly, the
-	 * global counts may not be accurate.
-	 */
-	if (!(ctx->options & E2F_OPT_READONLY) &&
-	    ((free_blocks != fs->super->s_free_blocks_count) ||
-	     (free_inodes != fs->super->s_free_inodes_count))) {
-		fs->super->s_free_blocks_count = free_blocks;
-		fs->super->s_free_inodes_count = free_inodes;
-		ext2fs_mark_super_dirty(fs);
-	}
-	
 	/*
 	 * For the Hurd, check to see if the filetype option is set,
 	 * since it doesn't support it.

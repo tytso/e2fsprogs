@@ -1,3 +1,15 @@
+2005-01-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (main, check_if_skip): Set the valid flag earlier, and if
+		it is cleared by the superblock tests, then assume that
+		the filesystem contains errors and must be checked.
+
+	* super.c (check_super_block): Check the individual block group
+		inode and block free counts, as well as the filesystem
+		inode and block free counts.  If any of the block/inode
+		free counts is too large, force a full filesystem check.
+		(Addresses Debian Bug: #291571)
+
 2005-01-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* super.c (check_resize_inode): If resize feature is set, but
