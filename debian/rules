@@ -209,7 +209,7 @@ install-std: build
 	make -C ${stdbuilddir} install-libs DESTDIR=${tmpdir} LDCONFIG=true
 
   # remove FSIM for now.
-	rm ${tmpdir}/lib/evms/libe2fsim.1.1.1.so
+	-rm ${tmpdir}/lib/evms/libe2fsim.*.so
 
   # statically-linked fsck
 	${INSTALL_PROGRAM} ${stdbuilddir}/e2fsck/e2fsck.static ${tmpdir}/sbin
@@ -238,7 +238,7 @@ install-bf: build
 	cd ${bfdir}/usr/bin && rm -f uuidgen
 
   # remove FSIM for now.
-	rm ${bfdir}/lib/evms/libe2fsim.1.1.1.so
+	rm ${bfdir}/lib/evms/libe2fsim.*.so
 
 install-udeb: install-bf
 	dh_testdir

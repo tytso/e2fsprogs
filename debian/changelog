@@ -1,3 +1,18 @@
+e2fsprogs (1.32-2) unstable; urgency=high
+
+  * Applied upstream patch to fix htree problems, and to deactivate it by
+    default in mke2fs (Closes: #181615, #179043)
+  * Be sure removal of libe2fsim doesn't fail, as it's not built on hurd
+    (Closes: #164117).
+
+ -- Yann Dirson <dirson@debian.org>  Fri, 21 Feb 2003 00:21:44 +0100
+
+e2fsprogs (1.32-1) unstable; urgency=low
+
+  * New upstream release (Closes: #167108).
+
+ -- Yann Dirson <dirson@debian.org>  Tue, 19 Nov 2002 00:18:09 +0100
+
 e2fsprogs (1.29+1.30-WIP-0930-2) unstable; urgency=low
 
   * Made mkinitrd script to skip commented-out lines (Closes: #163251).
