@@ -489,7 +489,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	if (retval)
 		return retval;
 
-	retval = mark_table_blocks(fs, &meta_bmap);
+	retval = mark_table_blocks(old_fs, &meta_bmap);
 	if (retval)
 		return retval;
 
@@ -720,6 +720,7 @@ static blk_t get_new_block(ext2_resize_t rfs)
 		    ext2fs_test_block_bitmap(rfs->reserve_blocks,
 					     rfs->new_blk) ||
 		    ((rfs->alloc_state == AVOID_OLD) &&
+		     (rfs->new_blk < rfs->old_fs->super->s_blocks_count) &&
 		     ext2fs_test_block_bitmap(rfs->old_fs->block_map,
 					      rfs->new_blk))) {
 			rfs->new_blk++;

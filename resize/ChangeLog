@@ -1,3 +1,11 @@
+Sat Mar  7 18:18:04 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* resize2fs.c (blocks_to_move): Create the meta_bmap using the old
+		filesystem, not the new filesystem.  
+		(get_new_block): Don't try checking the old block bitmap
+		if the block we're testing is beyond the boundaries of the
+		old filesystem.
+
 Fri Feb 27 01:02:50 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Makefile.in: Add rule to build a static version of resize2fs.
