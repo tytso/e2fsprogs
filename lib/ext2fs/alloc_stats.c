@@ -15,7 +15,8 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
-void ext2fs_inode_alloc_stats(ext2_filsys fs, ext2_ino_t ino, int inuse)
+void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
+			       int inuse, int isdir)
 {
 	int	group = ext2fs_group_of_ino(fs, ino);
 
@@ -24,9 +25,16 @@ void ext2fs_inode_alloc_stats(ext2_filsys fs, ext2_ino_t ino, int inuse)
 	else
 		ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
 	fs->group_desc[group].bg_free_inodes_count -= inuse;
+	if (isdir)
+		fs->group_desc[group].bg_used_dirs_count += inuse;
 	fs->super->s_free_inodes_count -= inuse;
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_mark_ib_dirty(fs);
+}
+
+void ext2fs_inode_alloc_stats(ext2_filsys fs, ext2_ino_t ino, int inuse)
+{
+	ext2fs_inode_alloc_stats2(fs, ino, inuse, 0);
 }
 
 void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse)

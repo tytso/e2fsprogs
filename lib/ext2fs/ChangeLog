@@ -2,6 +2,16 @@
 
 	* Release of E2fsprogs 1.26
 
+2002-02-03  Theodore Tso  <tytso@valinux.com>
+
+	* mkdir.c (ext2fs_mkdir): Change to use ext2fs_inode_alloc_stats2
+		so that the number of directories in use is adjusted
+		appropriately.
+
+	* alloc_stats.c (ext2fs_inode_alloc_stats2): Add new function
+		which optionally will modify the number of directories
+		count.
+
 2002-01-03  Theodore Tso  <tytso@mit.edu>
 
 	* dir_iterate.c (ext2fs_dir_iterate2, ext2fs_process_dir_block):
