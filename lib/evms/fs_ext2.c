@@ -372,9 +372,15 @@ static int fs_expand( logical_volume_t * volume,
 		}
 		if ( WIFEXITED(status) ) {
 			/* get expand exit code */
-			LOG("Expand completed with rc = %d \n",status);
 			rc = WEXITSTATUS(status);
+			if (rc)
+				LOG("Expand completed successfully\n");
+			else
+				LOG("Expand completed with rc = %d\n", status);
 		} else {
+			if (WIFSIGNALED(status))
+				LOG("Expand died with signal %d",
+				    WTERMSIG(status));
 			rc = EINTR;
 		}
 	}
@@ -529,9 +535,15 @@ static int fs_shrink( logical_volume_t * volume,
 		}
 		if ( WIFEXITED(status) ) {
 			/* get shrink exit code */
-			LOG("Shrink completed with rc = %d \n",status);
 			rc = WEXITSTATUS(status);
+			if (rc) 
+				LOG("Shrink completed successfully\n");
+			else
+				LOG("Shrink completed with rc = %d\n",status);
 		} else {
+			if (WIFSIGNALED(status))
+				LOG("Shrink died with signal %d",
+				    WTERMSIG(status));
 			rc = EINTR;
 		}
 	}

@@ -139,7 +139,12 @@ int fsim_mkfs(logical_volume_t * volume, option_array_t * options )
             if ( WIFEXITED(status) ) {
                 /* get mke2fs exit code */
                 rc = WEXITSTATUS(status);
+		if (rc)
+			LOG("mke2fs exited with status %d", rc);
             } else {
+		    if (WIFSIGNALED(status))
+			    LOG("mke2fs died with signal %d",
+				WTERMSIG(status));
 		    rc = EINTR;
 	    }
     }
@@ -358,10 +363,13 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options,
 		if ( WIFEXITED(status) ) {
 			/* get e2fsck exit code */
 			*ret_status = WEXITSTATUS(status);
-			LOG("e2fsck completed with exit code %d \n",
+			LOG("e2fsck completed with exit code %d\n",
 			    *ret_status);
 			rc = 0;
 		} else {
+			if (WIFSIGNALED(status))
+				LOG("e2fsck died with signal %d",
+				    WTERMSIG(status));
 			rc = EINTR;
 		}
 	}
