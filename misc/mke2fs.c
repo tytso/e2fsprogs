@@ -843,7 +843,9 @@ static void PRS(int argc, char *argv[])
 	param.s_rev_level = 1;  /* Create revision 1 filesystems now */
 	param.s_feature_incompat |= EXT2_FEATURE_INCOMPAT_FILETYPE;
 	param.s_feature_ro_compat |= EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+#if 0
 	param.s_feature_compat |= EXT2_FEATURE_COMPAT_DIR_INDEX;
+#endif
 
 #ifdef __linux__
 	if (uname(&ut)) {

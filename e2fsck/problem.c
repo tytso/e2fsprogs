@@ -671,32 +671,32 @@ static const struct e2fsck_problem problem_table[] = {
 	/* INDEX_FL flag set on a non-HTREE filesystem */
 	{ PR_1_HTREE_SET,
 	  N_("@i %i has INDEX_FL flag set on @f without htree support.\n"),
-	  PROMPT_CLEAR_HTREE, 0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* INDEX_FL flag set on a non-directory */	
 	{ PR_1_HTREE_NODIR,
 	  N_("@i %i has INDEX_FL flag set but is not a @d.\n"),
-	  PROMPT_CLEAR_HTREE, 0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* Invalid root node in HTREE directory */	
 	{ PR_1_HTREE_BADROOT,
 	  N_("@h %i has an invalid root node.\n"),
-	  PROMPT_CLEAR_HTREE, 0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* Unsupported hash version in HTREE directory */	
 	{ PR_1_HTREE_HASHV,
 	  N_("@h %i has an unsupported hash version (%N)\n"),
-	  PROMPT_CLEAR_HTREE, 0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* Incompatible flag in HTREE root node */	
 	{ PR_1_HTREE_INCOMPAT,
 	  N_("@h %i uses an incompatible htree root node flag.\n"),
-	  PROMPT_CLEAR_HTREE, 0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* HTREE too deep */	
 	{ PR_1_HTREE_DEPTH,
 	  N_("@h %i has a tree depth (%N) which is too big\n"),
-	  PROMPT_CLEAR_HTREE, 0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK0 },
 		  
 	/* Pass 1b errors */
 
@@ -1065,22 +1065,22 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Invalid HTREE root node */
 	{ PR_2_HTREE_BAD_ROOT,
 	  N_("@p @h %d: root node is invalid\n"),
-	  PROMPT_CLEAR_HTREE, 0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* Invalid HTREE limit */
 	{ PR_2_HTREE_BAD_LIMIT,
 	  N_("@p @h %d: node (%B) has bad limit (%N)\n"),
-	  PROMPT_CLEAR_HTREE, 0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* Invalid HTREE count */
 	{ PR_2_HTREE_BAD_COUNT,
 	  N_("@p @h %d: node (%B) has bad count (%N)\n"),
-	  PROMPT_CLEAR_HTREE, 0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* HTREE interior node has out-of-order hashes in table */
 	{ PR_2_HTREE_HASH_ORDER,
 	  N_("@p @h %d: node (%B) has an unordered hash table\n"),
-	  PROMPT_CLEAR_HTREE, 0 },
+	  PROMPT_CLEAR_HTREE, PR_PREEN_OK },
 
 	/* Node in HTREE directory has bad depth */
 	{ PR_2_HTREE_BAD_DEPTH,

@@ -1,3 +1,9 @@
+2002-11-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* problem.c: Make HTREE problems PR_PREEN_OK, so that we don't
+		abort an e2fsck after the filesystem has been mounted
+		using the 2.4 ext2 codebase.
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32

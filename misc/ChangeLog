@@ -1,3 +1,10 @@
+2002-11-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (PRS): Don't enable the dir_index feature by default;
+		the ext2 code on 2.4 kernels (but not 2.2 kernels, and not
+		the 2.4 ext3 code) accidentally had the backwards
+		compatibility support for dir_indexing removed.
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32
