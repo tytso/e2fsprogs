@@ -1,3 +1,10 @@
+1999-10-22    <tytso@valinux.com>
+
+	* feature.c (e2p_edit_feature), e2p.h: Add a new argument which
+		allows the calling application to limit what features the
+		user is allowed to set or clear using this function.
+		Also add support for comma separated lists.
+
 1999-09-07    <tytso@valinux.com>
 
 	* Makefile.in, feature.c, e2p.h: New file which is used for

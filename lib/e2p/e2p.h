@@ -26,7 +26,7 @@ int setversion (int fd, unsigned long version);
 
 char *e2p_feature2string(int compat, unsigned int mask);
 int e2p_string2feature(char *string, int *compat, unsigned int *mask);
-int e2p_edit_feature(char *str, __u32 *compat_array);
+int e2p_edit_feature(char *str, __u32 *compat_array, __u32 *ok_array);
 
 int e2p_is_null_uuid(void *uu);
 void e2p_uuid_to_str(void *uu, char *out);

@@ -167,22 +167,25 @@ static char *skip_over_blanks(char *cp)
 
 char *skip_over_word(char *cp)
 {
-	while (*cp && !isspace(*cp))
+	while (*cp && !isspace(*cp) && *cp != ',')
 		cp++;
 	return cp;
 }
 
-int e2p_edit_feature(char *str, __u32 *compat_array)
+/*
+ * Edit a feature set array as requested by the user.  The ok_array,
+ * if set, allows the application to limit what features the user is
+ * allowed to set or clear using this function.
+ */
+int e2p_edit_feature(char *str, __u32 *compat_array, __u32 *ok_array)
 {
 	char	*cp, *buf, *next;
 	int	neg;
 	unsigned int	compat, mask;
 
 	buf = malloc(strlen(str)+1);
-	if (!buf) {
-		errno = ENOMEM;
+	if (!buf)
 		return 1;
-	}
 	strcpy(buf, str);
 	cp = buf;
 	while (cp && *cp) {
@@ -202,6 +205,8 @@ int e2p_edit_feature(char *str, __u32 *compat_array)
 			break;
 		}
 		if (e2p_string2feature(cp, &compat, &mask))
+			return 1;
+		if (ok_array && !(ok_array[compat] & mask))
 			return 1;
 		if (neg)
 			compat_array[compat] &= ~mask;
