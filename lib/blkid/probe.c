@@ -82,7 +82,7 @@ static int probe_ext2(int fd, blkid_cache cache, blkid_dev dev,
 		      struct blkid_magic *id, unsigned char *buf)
 {
 	struct ext2_super_block *es;
-	const char *sec_type = 0;
+	const char *sec_type = 0, *label = 0;
 
 	es = (struct ext2_super_block *)buf;
 
@@ -97,8 +97,8 @@ static int probe_ext2(int fd, blkid_cache cache, blkid_dev dev,
 		return -BLKID_ERR_PARAM;
 
 	if (strlen(es->s_volume_name))
-		blkid_set_tag(dev, "LABEL", es->s_volume_name,
-			      sizeof(es->s_volume_name));
+		label = es->s_volume_name;
+	blkid_set_tag(dev, "LABEL", label, sizeof(es->s_volume_name));
 
 	set_uuid(dev, es->s_uuid);
 
@@ -128,6 +128,7 @@ static int probe_vfat(int fd, blkid_cache cache, blkid_dev dev,
 {
 	struct vfat_super_block *vs;
 	char serno[10];
+	const char *label = 0;
 
 	vs = (struct vfat_super_block *)buf;
 
@@ -137,8 +138,8 @@ static int probe_vfat(int fd, blkid_cache cache, blkid_dev dev,
 		while (*end == ' ' && end >= vs->vs_label)
 			--end;
 		if (end >= vs->vs_label)
-			blkid_set_tag(dev, "LABEL", vs->vs_label,
-				      end - vs->vs_label + 1);
+			label = vs->vs_label;
+		blkid_set_tag(dev, "LABEL", label, end - vs->vs_label + 1);
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */
@@ -154,6 +155,7 @@ static int probe_msdos(int fd, blkid_cache cache, blkid_dev dev,
 {
 	struct msdos_super_block *ms = (struct msdos_super_block *) buf;
 	char serno[10];
+	const char *label = 0;
 
 	if (strncmp(ms->ms_label, "NO NAME", 7)) {
 		char *end = ms->ms_label + sizeof(ms->ms_label) - 1;
@@ -161,8 +163,8 @@ static int probe_msdos(int fd, blkid_cache cache, blkid_dev dev,
 		while (*end == ' ' && end >= ms->ms_label)
 			--end;
 		if (end >= ms->ms_label)
-			blkid_set_tag(dev, "LABEL", ms->ms_label,
-				      end - ms->ms_label + 1);
+			label = ms->ms_label;
+		blkid_set_tag(dev, "LABEL", label, end - ms->ms_label + 1);
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */
@@ -177,12 +179,13 @@ static int probe_xfs(int fd, blkid_cache cache, blkid_dev dev,
 		     struct blkid_magic *id, unsigned char *buf)
 {
 	struct xfs_super_block *xs;
+	const char *label = 0;
 
 	xs = (struct xfs_super_block *)buf;
 
 	if (strlen(xs->xs_fname))
-		blkid_set_tag(dev, "LABEL", xs->xs_fname,
-			      sizeof(xs->xs_fname));
+		label = xs->xs_fname;
+	blkid_set_tag(dev, "LABEL", label, sizeof(xs->xs_fname));
 	set_uuid(dev, xs->xs_uuid);
 	return 0;
 }
@@ -192,6 +195,7 @@ static int probe_reiserfs(int fd, blkid_cache cache, blkid_dev dev,
 {
 	struct reiserfs_super_block *rs = (struct reiserfs_super_block *) buf;
 	unsigned int blocksize;
+	const char *label = 0;
 
 	blocksize = blkid_le16(rs->rs_blocksize);
 
@@ -202,11 +206,9 @@ static int probe_reiserfs(int fd, blkid_cache cache, blkid_dev dev,
 	/* LABEL/UUID are only valid for later versions of Reiserfs v3.6. */
 	if (!strcmp(id->bim_magic, "ReIsEr2Fs") ||
 	    !strcmp(id->bim_magic, "ReIsEr3Fs")) {
-		if (strlen(rs->rs_label)) {
-			blkid_set_tag(dev, "LABEL", rs->rs_label,
-				      sizeof(rs->rs_label));
-		}
-
+		if (strlen(rs->rs_label))
+			label = rs->rs_label;
+		blkid_set_tag(dev, "LABEL", label, sizeof(rs->rs_label));
 		set_uuid(dev, rs->rs_uuid);
 	}
 
@@ -217,12 +219,13 @@ static int probe_jfs(int fd, blkid_cache cache, blkid_dev dev,
 		     struct blkid_magic *id, unsigned char *buf)
 {
 	struct jfs_super_block *js;
+	const char *label = 0;
 
 	js = (struct jfs_super_block *)buf;
 
 	if (strlen((char *) js->js_label))
-		blkid_set_tag(dev, "LABEL", (char *) js->js_label,
-			      sizeof(js->js_label));
+		label = (char *) js->js_label;
+	blkid_set_tag(dev, "LABEL", label, sizeof(js->js_label));
 	set_uuid(dev, js->js_uuid);
 	return 0;
 }
@@ -231,14 +234,13 @@ static int probe_romfs(int fd, blkid_cache cache, blkid_dev dev,
 		       struct blkid_magic *id, unsigned char *buf)
 {
 	struct romfs_super_block *ros;
+	const char *label = 0;
 
 	ros = (struct romfs_super_block *)buf;
 
-	/* can be longer, padded to a 16 bytes boundary */
-	if (strlen((char *) ros->ros_volume)) {
-		blkid_set_tag(dev, "LABEL", (char *) ros->ros_volume,
-			      (strlen((char *) ros->ros_volume)|15)+1);
-	}
+	if (strlen((char *) ros->ros_volume))
+		label = (char *) ros->ros_volume;
+	blkid_set_tag(dev, "LABEL", label, strlen(label));
 	return 0;
 }
 

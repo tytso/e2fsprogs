@@ -1,3 +1,8 @@
+2003-07-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c: When revalidating a filesystem, delete the LABEL tag if
+		the filesystem no longer has a label.
+
 2003-07-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* tag.c (blkid_find_dev_with_tag): If blkid_probe_all() returns an
