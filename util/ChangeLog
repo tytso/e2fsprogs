@@ -1,3 +1,7 @@
+1998-03-31  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* subst.conf.in: Add substitution for @datadir@
+
 Mon Jan 19 09:25:24 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* subst.c: Rename "new" to "new_f" to avoid C++ reserved word

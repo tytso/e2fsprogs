@@ -11,7 +11,7 @@ typedef unsigned int	__u64;
 typedef long		__s64;
 typedef unsigned long	__u64;
 #elif (@SIZEOF_LONG_LONG@ == 8)
-typedef long long 	__s64;
+typedef __signed__ long long 	__s64;
 typedef unsigned long long	__u64;
 #endif
 

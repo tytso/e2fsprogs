@@ -1,3 +1,11 @@
+1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in: Change to use new installation directory variables
+		convention.  Fix uninstall rules to take $(DESTDIR) into
+		account.  Remove cat8dir from the installdirs target,
+		since modern man package don't necessarily put the cat
+		directory in /usr/man/cat?.
+
 1998-03-29  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* extent.c (extent_cmp): Add const to cast to prevent -Wall warning.

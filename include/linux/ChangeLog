@@ -1,3 +1,7 @@
+1998-03-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* types.h.in: Add a signed keyword to the __s64 definition.
+
 1998-03-23  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* ext2_fs.h: Update to latest 2.1.90+diffs version of ext2_fs.h
