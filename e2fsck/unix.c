@@ -544,8 +544,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 
 	*ret_ctx = ctx;
 
-	setbuf(stdout, NULL);
-	setbuf(stderr, NULL);
+	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+	setvbuf(stderr, NULL, _IONBF, BUFSIZ);
 	initialize_ext2_error_table();
 	blkid_get_cache(&ctx->blkid, NULL);
 	
@@ -810,7 +810,7 @@ int main (int argc, char *argv[])
 #endif
 
 	if (!(ctx->options & E2F_OPT_PREEN) || show_version_only)
-		fprintf (stderr, "e2fsck %s (%s)\n", my_ver_string,
+		fprintf(stderr, "e2fsck %s (%s)\n", my_ver_string,
 			 my_ver_date);
 
 	if (show_version_only) {

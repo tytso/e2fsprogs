@@ -4,7 +4,10 @@
 		characters.  These characters are used as in-band
 		signalling to allow a logging program to filter out the
 		progress bar.
-
+		(PRS): Use setvbuf instead of setbuf to force stdout and
+		stderr to be non-buffered when the stdout/stderr are a pipe.
+		This fixes a cosmetic problem when using e2fsck under logsave.
+	
 2003-04-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c: Add #ifdef around #include <sys/ioctl.h>
