@@ -467,6 +467,7 @@ static int probe_oracleasm(int fd __BLKID_ATTR((unused)),
 static struct blkid_magic type_array[] = {
 /*  type     kboff   sboff len  magic			probe */
   { "oracleasm", 0,	32,  8, "ORCLDISK",		probe_oracleasm },
+  { "ntfs",      0,      3,  8, "NTFS    ",             0 },
   { "jbd",	 1,   0x38,  2, "\123\357",		probe_jbd },
   { "ext3",	 1,   0x38,  2, "\123\357",		probe_ext3 },
   { "ext2",	 1,   0x38,  2, "\123\357",		probe_ext2 },
@@ -475,7 +476,6 @@ static struct blkid_magic type_array[] = {
   { "reiserfs", 64,   0x34,  9, "ReIsEr3Fs",		probe_reiserfs },
   { "reiserfs", 64,   0x34,  8, "ReIsErFs",		probe_reiserfs },
   { "reiserfs",	 8,	20,  8, "ReIsErFs",		probe_reiserfs },
-  { "ntfs",      0,      3,  8, "NTFS    ",             0 },
   { "vfat",      0,   0x52,  5, "MSWIN",                probe_vfat },
   { "vfat",      0,   0x52,  8, "FAT32   ",             probe_vfat },
   { "vfat",      0,   0x36,  5, "MSDOS",                probe_msdos },

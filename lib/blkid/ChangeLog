@@ -1,3 +1,10 @@
+2005-01-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c: Windows can perform a "quick format" that doesn't clear
+		enough of the partition that the blkid probes can get
+		confused.  Do the NTFS test first to deal with this
+		Windows misfeature.  (Addresses Debian Bug #291990)
+
 2005-01-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c (probe_oracleasm): Add support for recognizing Oracle
