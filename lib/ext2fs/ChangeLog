@@ -1,3 +1,13 @@
+2002-10-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* alloc_tables.c (ext2fs_allocate_group_table): Allocate the inode
+		table so that it buts up against the bitmap blocks, to
+		avoid block fragmentation.
+
+	* closefs.c (write_bgdesc), initalize.c (ext2fs_initialize): Fix
+		bug; only allocate group descriptor blocks up to
+		s_first_meta_bg.
+
 2002-10-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2_fs.h: Add a new superblock field, s_mkfs_time, so that we

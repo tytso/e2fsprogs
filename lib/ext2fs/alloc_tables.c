@@ -41,38 +41,17 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	if (last_blk >= fs->super->s_blocks_count)
 		last_blk = fs->super->s_blocks_count - 1;
 
-	start_blk = group_blk + 3 + fs->desc_blocks;
-	if (start_blk > last_blk)
-		start_blk = group_blk;
-
 	if (!bmap)
 		bmap = fs->block_map;
 	
 	/*
-	 * Allocate the inode table
-	 */
-	if (!fs->group_desc[group].bg_inode_table) {
-		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
-						fs->inode_blocks_per_group,
-						bmap, &new_blk);
-		if (retval)
-			return retval;
-		for (j=0, blk = new_blk;
-		     j < fs->inode_blocks_per_group;
-		     j++, blk++)
-			ext2fs_mark_block_bitmap(bmap, blk);
-		fs->group_desc[group].bg_inode_table = new_blk;
-	}
-
-	/*
 	 * Allocate the block and inode bitmaps, if necessary
 	 */
 	if (fs->stride) {
-		start_blk += fs->inode_blocks_per_group;
+		start_blk = group_blk + fs->inode_blocks_per_group;
 		start_blk += ((fs->stride * group) %
 			      (last_blk - start_blk));
 		if (start_blk > last_blk)
-			/* should never happen */
 			start_blk = group_blk;
 	} else
 		start_blk = group_blk;
@@ -100,6 +79,24 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		ext2fs_mark_block_bitmap(bmap, new_blk);
 		fs->group_desc[group].bg_inode_bitmap = new_blk;
 	}
+
+	/*
+	 * Allocate the inode table
+	 */
+	if (!fs->group_desc[group].bg_inode_table) {
+		retval = ext2fs_get_free_blocks(fs, group_blk, last_blk,
+						fs->inode_blocks_per_group,
+						bmap, &new_blk);
+		if (retval)
+			return retval;
+		for (j=0, blk = new_blk;
+		     j < fs->inode_blocks_per_group;
+		     j++, blk++)
+			ext2fs_mark_block_bitmap(bmap, blk);
+		fs->group_desc[group].bg_inode_table = new_blk;
+	}
+
+	
 	return 0;
 }
 

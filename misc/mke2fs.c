@@ -1175,7 +1175,7 @@ static void PRS(int argc, char *argv[])
 
 	if (param.s_blocks_per_group) {
 		if (param.s_blocks_per_group < 256 ||
-		    param.s_blocks_per_group > group_blk_max || *tmp) {
+		    param.s_blocks_per_group > group_blk_max) {
 			com_err(program_name, 0,
 				_("blocks per group count out of range"));
 			exit(1);

@@ -204,8 +204,7 @@ int main (int argc, char ** argv)
 	 * Check for compatibility with the feature sets.  We need to
 	 * be more stringent than ext2fs_open().
 	 */
-	if ((fs->super->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
-	    (fs->super->s_feature_incompat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)) {
+	if (fs->super->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) {
 		com_err(program_name, EXT2_ET_UNSUPP_FEATURE,
 			"(%s)", device_name);
 		exit(1);

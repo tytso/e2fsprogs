@@ -122,18 +122,21 @@ static errcode_t write_bgdesc(ext2_filsys fs, dgrp_t group, blk_t group_block,
 {
 	errcode_t	retval;
 	char		*group_ptr = (char *) group_shadow;
-	int		j;
+	int		j, old_desc_blocks;
 	int		has_super = ext2fs_bg_has_super(fs, group);
 	dgrp_t		meta_bg_size, meta_bg;
-	blk_t		blk;
 
 	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
 	meta_bg = group / meta_bg_size;
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = fs->super->s_first_meta_bg;
+	else
+		old_desc_blocks = fs->desc_blocks;
 	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||
 	    (meta_bg < fs->super->s_first_meta_bg)) {
 		if (!has_super)
 			return 0;
-		for (j=0; j < fs->desc_blocks; j++) {
+		for (j=0; j < old_desc_blocks; j++) {
 			retval = io_channel_write_blk(fs->io,
 						      group_block+1+j, 1,
 						      group_ptr);
@@ -180,7 +183,6 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	dgrp_t		i,j,maxgroup;
 	blk_t		group_block;
 	errcode_t	retval;
-	char		*group_ptr;
 	unsigned long	fs_state;
 	struct ext2_super_block *super_shadow = 0;
 	struct ext2_group_desc *group_shadow = 0;
@@ -277,7 +279,6 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 						   group_shadow)))
 				goto errout;
 		}
-	next_group:
 		group_block += EXT2_BLOCKS_PER_GROUP(fs->super);
 	}
 	fs->super->s_block_group_nr = 0;

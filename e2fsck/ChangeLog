@@ -1,3 +1,9 @@
+2002-10-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (mark_table_blocks): Fix bug in meta_bg support; only
+		mark blocks legacy group descriptor blocks up to 
+		s_first_meta_bg.
+
 2002-10-20  Theodore Ts'o  <tytso@valinux.com>
 
 	* pass1.c (mark_table_blocks): Add support for the meta_blockgroup

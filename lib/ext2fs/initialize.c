@@ -67,7 +67,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	int		i, j;
 	blk_t		numblocks;
 	char		*buf;
-	int		meta_bg_size, meta_bg, has_super;
+	int		meta_bg_size, meta_bg, has_super, old_desc_blocks;
 
 	if (!param || !param->s_blocks_count)
 		return EXT2_ET_INVALID_ARGUMENT;
@@ -293,6 +293,10 @@ retry:
 	 */
 	group_block = super->s_first_data_block;
 	super->s_free_blocks_count = 0;
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = fs->super->s_first_meta_bg;
+	else
+		old_desc_blocks = fs->desc_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (i == fs->group_desc_count-1) {
 			numblocks = (fs->super->s_blocks_count -
@@ -317,10 +321,10 @@ retry:
 		      EXT2_FEATURE_INCOMPAT_META_BG) ||
 		    (meta_bg < fs->super->s_first_meta_bg)) {
 			if (has_super) {
-				for (j=0; j < fs->desc_blocks; j++)
+				for (j=0; j < old_desc_blocks; j++)
 					ext2fs_mark_block_bitmap(fs->block_map,
 							 group_block + j + 1);
-				numblocks -= fs->desc_blocks;
+				numblocks -= old_desc_blocks;
 			}
 		} else {
 			if (has_super)
@@ -357,6 +361,3 @@ cleanup:
 	ext2fs_free(fs);
 	return retval;
 }
-	
-
-

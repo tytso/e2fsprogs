@@ -179,6 +179,7 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk_t new_size)
 	blk_t		blk, group_block;
 	unsigned long	i, j;
 	int		old_numblocks, numblocks, adjblocks;
+	int		has_super, meta_bg, meta_bg_size, old_desc_blocks;
 	unsigned long	max_group;
 	
 	fs = rfs->new_fs;
@@ -341,6 +342,10 @@ retry:
 		if (retval)
 			goto errout;
 	}
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = fs->super->s_first_meta_bg;
+	else
+		old_desc_blocks = fs->desc_blocks;
 	for (i = rfs->old_fs->group_desc_count;
 	     i < fs->group_desc_count; i++) {
 		memset(&fs->group_desc[i], 0,
@@ -356,12 +361,33 @@ retry:
 		} else
 			numblocks = fs->super->s_blocks_per_group;
 
-		if (ext2fs_bg_has_super(fs, i)) {
-			for (j=0; j < fs->desc_blocks+1; j++)
-				ext2fs_mark_block_bitmap(fs->block_map,
-							 group_block + j);
-			adjblocks = 1 + fs->desc_blocks;
+		has_super = ext2fs_bg_has_super(fs, i);
+		if (has_super) {
+			ext2fs_mark_block_bitmap(fs->block_map, group_block);
+			adjblocks++;
 		}
+		meta_bg_size = (fs->blocksize /
+				sizeof (struct ext2_group_desc));
+		meta_bg = i / meta_bg_size;
+		if (!(fs->super->s_feature_incompat &
+		      EXT2_FEATURE_INCOMPAT_META_BG) ||
+		    (meta_bg < fs->super->s_first_meta_bg)) {
+			if (has_super) {
+				for (j=0; j < old_desc_blocks; j++)
+					ext2fs_mark_block_bitmap(fs->block_map,
+							 group_block + 1 + j);
+				adjblocks += old_desc_blocks;
+			}
+		} else {
+			if (has_super)
+				has_super = 1;
+			if (((i % meta_bg_size) == 0) ||
+			    ((i % meta_bg_size) == 1) ||
+			    ((i % meta_bg_size) == (meta_bg_size-1)))
+				ext2fs_mark_block_bitmap(fs->block_map,
+						 group_block + has_super);
+		}
+		
 		adjblocks += 2 + fs->inode_blocks_per_group;
 		
 		numblocks -= adjblocks;
@@ -421,7 +447,8 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 				   ext2fs_block_bitmap *ret_bmap)
 {
 	blk_t			block, b;
-	int			i,j;
+	int			i,j, has_super, meta_bg, meta_bg_size;
+	int			old_desc_blocks;
 	ext2fs_block_bitmap	bmap;
 	errcode_t		retval;
 
@@ -430,21 +457,43 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 	if (retval)
 		return retval;
 	
+	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
 	block = fs->super->s_first_data_block;
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = fs->super->s_first_meta_bg;
+	else
+		old_desc_blocks = fs->desc_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
-		if (ext2fs_bg_has_super(fs, i)) {
+		has_super = ext2fs_bg_has_super(fs, i);
+		if (has_super)
 			/*
 			 * Mark this group's copy of the superblock
 			 */
 			ext2fs_mark_block_bitmap(bmap, block);
 		
-			/*
-			 * Mark this group's copy of the descriptors
-			 */
-			for (j = 0; j < fs->desc_blocks; j++)
-				ext2fs_mark_block_bitmap(bmap, block + j + 1);
-		}
+		meta_bg = i / meta_bg_size;
 		
+		if (!(fs->super->s_feature_incompat &
+		      EXT2_FEATURE_INCOMPAT_META_BG) ||
+		    (meta_bg < fs->super->s_first_meta_bg)) {
+			if (has_super) {
+				/*
+				 * Mark this group's copy of the descriptors
+				 */
+				for (j = 0; j < old_desc_blocks; j++)
+					ext2fs_mark_block_bitmap(bmap,
+							 block + j + 1);
+			}
+		} else {
+			if (has_super)
+				has_super = 1;
+			if (((i % meta_bg_size) == 0) ||
+			    ((i % meta_bg_size) == 1) ||
+			    ((i % meta_bg_size) == (meta_bg_size-1)))
+				ext2fs_mark_block_bitmap(bmap,
+							 block + has_super);
+		}
+	
 		/*
 		 * Mark the blocks used for the inode table
 		 */
@@ -470,13 +519,49 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 }
 
 /*
+ * This function checks to see if a particular block (either a
+ * superblock or a block group descriptor) overlaps with an inode or
+ * block bitmap block, or with the inode table.
+ */
+static void mark_fs_metablock(ext2_resize_t rfs,
+			      ext2fs_block_bitmap meta_bmap,
+			      int group, blk_t blk)
+{
+	ext2_filsys 	fs = rfs->new_fs;
+	
+	ext2fs_mark_block_bitmap(rfs->reserve_blocks, blk);
+	ext2fs_mark_block_bitmap(fs->block_map, blk);
+
+	/*
+	 * Check to see if we overlap with the inode or block bitmap,
+	 * or the inode tables.  If not, and the block is in use, then
+	 * mark it as a block to be moved.
+	 */
+	if (IS_BLOCK_BM(fs, group, blk)) {
+		FS_BLOCK_BM(fs, group) = 0;
+		rfs->needed_blocks++;
+	} else if (IS_INODE_BM(fs, group, blk)) {
+		FS_INODE_BM(fs, group) = 0;
+		rfs->needed_blocks++;
+	} else if (IS_INODE_TB(fs, group, blk)) {
+		FS_INODE_TB(fs, group) = 0;
+		rfs->needed_blocks++;
+	} else if (ext2fs_test_block_bitmap(rfs->old_fs->block_map, blk) &&
+		   !ext2fs_test_block_bitmap(meta_bmap, blk)) {
+		ext2fs_mark_block_bitmap(rfs->move_blocks, blk);
+		rfs->needed_blocks++;
+	}
+}
+
+
+/*
  * This routine marks and unmarks reserved blocks in the new block
  * bitmap.  It also determines which blocks need to be moved and
  * places this information into the move_blocks bitmap.
  */
 static errcode_t blocks_to_move(ext2_resize_t rfs)
 {
-	int	i, j, max_groups;
+	int	i, j, max_groups, has_super, meta_bg, meta_bg_size;
 	blk_t	blk, group_blk;
 	unsigned long old_blocks, new_blocks;
 	errcode_t	retval;
@@ -518,9 +603,14 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		ext2fs_mark_block_bitmap(rfs->reserve_blocks, blk);
 	}
 	
-	old_blocks = old_fs->desc_blocks;
-	new_blocks = fs->desc_blocks;
-
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) {
+		old_blocks = old_fs->super->s_first_meta_bg;
+		new_blocks = fs->super->s_first_meta_bg;
+	} else {
+		old_blocks = old_fs->desc_blocks;
+		new_blocks = fs->desc_blocks;
+	}
+	
 	if (old_blocks == new_blocks) {
 		retval = 0;
 		goto errout;
@@ -556,38 +646,29 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	 * If we're increasing the number of descriptor blocks, life
 	 * gets interesting....  
 	 */
+	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
 	for (i = 0; i < max_groups; i++) {
-		if (!ext2fs_bg_has_super(fs, i))
-			goto next_group;
+		has_super = ext2fs_bg_has_super(fs, i);
+		if (has_super)
+			mark_fs_metablock(rfs, meta_bmap, i, group_blk);
 
-		for (blk = group_blk;
-		     blk < group_blk + 1 + new_blocks; blk++) {
-			ext2fs_mark_block_bitmap(rfs->reserve_blocks, blk);
-			ext2fs_mark_block_bitmap(fs->block_map, blk);
-
-			/*
-			 * Check to see if we overlap with the inode
-			 * or block bitmap, or the inode tables.  If
-			 * not, and the block is in use, then mark it
-			 * as a block to be moved.
-			 */
-			if (IS_BLOCK_BM(fs, i, blk)) {
-				FS_BLOCK_BM(fs, i) = 0;
-				rfs->needed_blocks++;
-			} else if (IS_INODE_BM(fs, i, blk)) {
-				FS_INODE_BM(fs, i) = 0;
-				rfs->needed_blocks++;
-			} else if (IS_INODE_TB(fs, i, blk)) {
-				FS_INODE_TB(fs, i) = 0;
-				rfs->needed_blocks++;
-			} else if (ext2fs_test_block_bitmap(old_fs->block_map,
-							    blk) &&
-				   !ext2fs_test_block_bitmap(meta_bmap, blk)) {
-				ext2fs_mark_block_bitmap(rfs->move_blocks,
-							 blk);
-				rfs->needed_blocks++;
-			}
+		meta_bg = i / meta_bg_size;
+		if (!(fs->super->s_feature_incompat &
+		      EXT2_FEATURE_INCOMPAT_META_BG) ||
+		    (meta_bg < fs->super->s_first_meta_bg)) {
+			for (blk = group_blk+1;
+			     blk < group_blk + 1 + new_blocks; blk++)
+				mark_fs_metablock(rfs, meta_bmap, i, blk);
+		} else {
+			if (has_super)
+				has_super = 1;
+			if (((i % meta_bg_size) == 0) ||
+			    ((i % meta_bg_size) == 1) ||
+			    ((i % meta_bg_size) == (meta_bg_size-1)))
+				mark_fs_metablock(rfs, meta_bmap, i,
+						  group_blk + has_super);
 		}
+
 		if (fs->group_desc[i].bg_inode_table &&
 		    fs->group_desc[i].bg_inode_bitmap &&
 		    fs->group_desc[i].bg_block_bitmap)

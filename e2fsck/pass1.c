@@ -1793,12 +1793,16 @@ static void mark_table_blocks(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	blk_t	block, b;
-	int	i, j, has_super, meta_bg, meta_bg_size;
+	int	i, j, has_super, meta_bg, meta_bg_size, old_desc_blocks;
 	struct problem_context pctx;
 	
 	clear_problem_context(&pctx);
 	
 	block = fs->super->s_first_data_block;
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = fs->super->s_first_meta_bg;
+	else
+		old_desc_blocks = fs->desc_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		pctx.group = i;
 
@@ -1819,7 +1823,7 @@ static void mark_table_blocks(e2fsck_t ctx)
 				/*
 				 * Mark this group's copy of the descriptors
 				 */
-				for (j = 0; j < fs->desc_blocks; j++) {
+				for (j = 0; j < old_desc_blocks; j++) {
 					ext2fs_mark_block_bitmap(ctx->block_found_map,
 							 block + j + 1);
 				}

@@ -1,3 +1,12 @@
+2002-10-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* dumpe2fs.c (list_desc): Fix bug in algorithm which determined
+		which blocks are used as backup superblock and block group
+		descriptors.
+
+	* mke2fs.c (PRS): Fix bug which checked the tmp pointer
+		erreoneously (and needlessly).
+
 2002-10-28    <tytso@snap.thunk.org>
 
 	* fsck.c (main): Fix bug reported by Gregory Mutt.  Multiple

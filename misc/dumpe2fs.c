@@ -87,8 +87,7 @@ static void list_desc (ext2_filsys fs)
 	long diff;
 	blk_t	group_blk, next_blk;
 	char *block_bitmap=NULL, *inode_bitmap=NULL;
-	int inode_blocks_per_group;
-	int group_desc_blocks;
+	int inode_blocks_per_group, old_desc_blocks;
 	int meta_bg, meta_bg_size, has_super;
 
 	if (fs->block_map)
@@ -100,15 +99,12 @@ static void list_desc (ext2_filsys fs)
 				   EXT2_INODE_SIZE(fs->super)) +
 				  EXT2_BLOCK_SIZE(fs->super) - 1) /
 				 EXT2_BLOCK_SIZE(fs->super);
-	group_desc_blocks = ((fs->super->s_blocks_count -
-			      fs->super->s_first_data_block +
-			      EXT2_BLOCKS_PER_GROUP(fs->super) - 1) /
-			     EXT2_BLOCKS_PER_GROUP(fs->super) +
-			     EXT2_DESC_PER_BLOCK(fs->super) - 1) /
-			    EXT2_DESC_PER_BLOCK(fs->super);
-
 	fputc('\n', stdout);
 	group_blk = fs->super->s_first_data_block;
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = fs->super->s_first_meta_bg;
+	else
+		old_desc_blocks = fs->desc_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		next_blk = group_blk + fs->super->s_blocks_per_group;
 		if (next_blk > fs->super->s_blocks_count)
@@ -128,11 +124,12 @@ static void list_desc (ext2_filsys fs)
 		if (!(fs->super->s_feature_incompat &
 		      EXT2_FEATURE_INCOMPAT_META_BG) ||
 		    (meta_bg < fs->super->s_first_meta_bg)) {
-			fputc(has_super ? ',' : ' ', stdout);
-			printf(_(" Group descriptors at "));
-			printf(range_format, group_blk+1,
-			       group_blk + group_desc_blocks);
-			fputc('\n', stdout);
+			if (has_super) {
+				printf(_(", Group descriptors at "));
+				printf(range_format, group_blk+1,
+				       group_blk + old_desc_blocks);
+				fputc('\n', stdout);
+			}
 		} else {
 			if (has_super)
 				has_super = 1;
