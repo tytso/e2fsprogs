@@ -1,3 +1,13 @@
+e2fsprogs (1.36release-2) unstable; urgency=low
+
+  * Fix the missing translations (caused by a bug in the gen-tarball script).
+    (Closes: #296769)
+  * Force compile_et and mk_cmds to use /usr/bin/awk so that we will work
+    on any Debian system regardless of which version of awk is installed.
+    (Closes: #299341)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 17 Mar 2005 00:19:49 -0500
+
 e2fsprogs (1.36release-1) unstable; urgency=low
 
   * New upstream release.

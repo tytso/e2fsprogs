@@ -114,10 +114,10 @@ ${CFGSTDSTAMP}:
 
 	mkdir -p ${stdbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
-	cd ${stdbuilddir} && \
+	cd ${stdbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS}
 else
-	cd ${stdbuilddir} && CC="${DEB_HOST_GNU_TYPE}-gcc" \
+	cd ${stdbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
 endif
@@ -125,7 +125,7 @@ endif
   # specially-built MIPS lib
 	if [ ismips = "${ismips}" ]; then \
 		mkdir -p ${mipsbuilddir} ; \
-		cd ${mipsbuilddir} && \
+		cd ${mipsbuilddir} && AWK=/usr/bin/awk \
 			${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} ; \
 	fi
 
@@ -138,10 +138,10 @@ ${CFGBFSTAMP}:
 
 	mkdir -p ${bfbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
-	cd ${bfbuilddir} && \
+	cd ${bfbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS}
 else
-	cd ${bfbuilddir} && CC="${DEB_HOST_GNU_TYPE}-gcc" \
+	cd ${bfbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
 endif
