@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 	}
 	
 	if (argv[2]) {
-		value = blkid_get_tagname_devname(cache, argv[1], argv[2]);
+		value = blkid_get_tag_value(cache, argv[1], argv[2]);
 		printf("%s has tag %s=%s\n", argv[2], argv[1],
 		       value ? value : "<missing>");
 	} else {

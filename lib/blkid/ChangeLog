@@ -1,5 +1,10 @@
 2003-03-01  Theodore Ts'o  <tytso@mit.edu>
 
+	* resolve.c (main): Update debugging test program so that it
+		compiles with the latest blkid API changes.
+
+	* libblkid.3.in: Update manual page to reflect recent API changes.
+
 	* resolve.c (blkid_get_tag_value): If the passed-in cache is NULL,
 		then get and release a temporary cache as a convenience to
 		the calling application.

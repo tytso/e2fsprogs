@@ -1,3 +1,8 @@
+2003-03-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* libblkid.txt (token): New file which gives basic
+		documentation to the libblkid library.
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32

@@ -30,11 +30,6 @@ and is verified to still be valid before being returned to the user
 The cache file also allows unprivileged users (normally anyone other
 than root, or those not in the "disk" group) to locate devices by label/id.
 .P
-Functions with "get" in their name will first search the cache (if given)
-for the specified data, and failing that will search visible block devices
-for this information.  Functions with "find" in their name will only search
-the existing cache data for the specified device.
-.P
 In situations where one is getting information about a single known device,
 it does not impact performance whether the cache is used or not (unless you
 are not able to read the block device directly).  If you are dealing with
@@ -51,14 +46,14 @@ in this situation.
 .SH AUTHOR
 .B libblkid
 was written by Andreas Dilger for the ext2 filesystem utilties, with input
-from Ted Ts'o.
+from Ted Ts'o.  The library was subsequently heavily modified by Ted Ts'o.
 .SH FILES
 .TP
 .I /etc/blkid.tab 
 Caches data extracted from each recognized block device.
 .SH AVAILABILITY
 .B libblkid
-is part of the e2fsprogs package since version 1.25 and is available from
+is part of the e2fsprogs package since version 1.33 and is available from
 http://e2fsprogs.sourceforge.net.
 .SH COPYING
 .B libblkid
@@ -84,8 +79,6 @@ http://www.gnu.org/licenses/licenses.html#LGPL
 .BR blkid_put_cache (3),
 .BR blkid_get_dev (3),
 .BR blkid_probe_all (3),
-.BR blkid_free_dev (3),
-.BR blkid_find_tag_dev (3),
-.BR blkid_get_tagname_devname (3),
-.BR blkid_get_token (3),
+.BR blkid_get_devname (3),
+.BR blkid_get_tag_value (3),
 .BR blkid.tab (7)

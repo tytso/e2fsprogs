@@ -1,0 +1,55 @@
+libblkid - a library to handle device identification and token extraction
+
+Basic usage is as follows - there are two normal usage patterns:
+
+For cases where a program wants information about multiple devices, or
+expects to be doing multiple token searches, the program should directly
+initialize cache file via (second parameter is cache filename, NULL = default):
+
+	blkid_cache cache = NULL;
+	if (blkid_get_cache(&cache, NULL) < 0)
+		/* error reading the cache file, not really fatal */
+
+Note that if no cache file exists, an empty cache struct is still allocated.
+Usage of libblkid functions will use the cache to avoid needless device scans.
+
+For cases where a program only wants to find a single token, or display
+information about a specific device, it is often not necessary to manually
+load the cache.  For functions which deal with a single device, they will
+probe the device directly if no cache is given.  For "get" functions which
+do searching, they will read/free the cache internally.
+
+
+How to use libblkid?  Normally, you either want to find a device with a
+specific NAME=value token, or you want to output token(s) from a device.
+To locate a specific token, you can call:
+
+	if ((devname = blkid_get_devname(cache, token, value))) {
+		/* do something with devname */
+		string_free(devname);
+	}
+
+where cache is optionally loaded, token is either a "NAME=value" string,
+or "NAME" and value gives the desired value to look for.  The return
+value is an allocated string which holds the resulting device name (if
+found) or "NAME" if we do not have a proper value, or NULL if a specific
+token was not found.  This allows you to pass token = "/dev/hda1" or
+token = "LABEL=root" and get a valid device name back if possible.  The
+returned string must be freed with "free(devname)".
+
+The other common usage is to want the value of a specific tag on a device.
+
+	if ((value = blkid_get_tag_value(cache, tagname, devname))) {
+		/* do something with value */
+		string_free(value);
+	}
+
+If you have directly loaded the cache from the program, you need to clean
+up by saving the cache (assuming you have write access to the cache, this
+happens automatically if you didn't load it directly), and freeing it (this
+will also free all associated devices/tags):
+
+	blkid_put_cache(cache);
+
+In all cases, any data returned by the searching functions from the cache
+is first verified from disk to ensure that it is still valid.
