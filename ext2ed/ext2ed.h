@@ -35,7 +35,7 @@ Copyright (C) 1995 Gadi Oxman
 #define DEBUG						/* Activate self-sanity checks */
 
 #include <linux/ext2_fs.h>				/* Main kernel ext2 include file */
-#include <linux/stat.h>
+#include <sys/stat.h>
 
 #ifdef OLD_NCURSES					/* The ncurses interface */
 	#include <ncurses/ncurses.h>

@@ -77,8 +77,8 @@ struct struct_inode_bitmap_info inode_bitmap_info;		/* Used by inodebitmap_com.c
 
 int redraw_request=0;						/* Is set by a signal handler to handle terminal */
 								/* screen size change. */
-int version_major=0,version_minor=1;			
-char revision_date [80]="August 22 1995";
+int version_major=0,version_minor=2;			
+char revision_date [80]="April 5 2001";
 char email_address [80]="tgud@tochnapc2.technion.ac.il";
 
 int main (void)
@@ -128,9 +128,9 @@ only the enter key is needed to retype it.
 								/* using the readline library I'm breaking its */
 								/* assumptions. The double -1 arguments tell ncurses */
 								/* to disable cursor movement optimization this time. */
-		echo ();
+		//echo ();
 		ptr=readline ("ext2ed > ");			/* Read the user's command line. */
-		noecho ();
+		//noecho ();
 
 		strcpy (command_line,ptr);			/* Readline allocated the buffer - Copy the string */
 		free (ptr);					/* and free the allocated buffer */

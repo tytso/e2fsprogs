@@ -1,7 +1,23 @@
-ext2ed - The extended-2 filesystem editor, version 0.1
+ext2ed - The extended-2 filesystem editor, version 0.2
 ------------------------------------------------------
 
-This is version 0.1 of ext2ed - The extended-2 filesystem editor.
+This is version 0.2 of ext2ed - The extended-2 filesystem editor.
+
+Modifications on Apr 5 2001
+This is minor bug fixes to ext2ed, as of April 2001.
+It supports modern ext2 version that has file type in directory structure
+and fixes the missunderstanding between ncurses and
+readline.
+
+I first applied patches from Redhat except the one for readline that 
+rewrote a readline behavior.
+
+Globals diffs between version 0.1 and 0.2 is stored in file :
+	diff-ext2ed.1.2
+
+Christian Bac <Christian.Bac@nt-evry.fr>
+
+----------------------------------------------------------------------------
 
 Documentation
 -------------
@@ -99,3 +115,4 @@ Enjoy,
 
 Gadi Oxman <tgud@tochnapc2.technion.ac.il>
 Haifa, August 23 1995
+

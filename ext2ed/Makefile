@@ -24,9 +24,9 @@
 # required ncurses and readline include files / libraries. Be sure that you
 # don't mix two two versions of ncurses.
 
-# NCURSES_INCLUDE	=	-I/usr/local/include -I/usr/local/include/ncurses
-# NCURSES_LIB		= 	-L/usr/local/lib
-# READLINE_INCLUDE	=	-I/usr/include -I/usr/include/readline
+NCURSES_INCLUDE	=	-I/usr/include/ncurses
+# NCURSES_LIB		= 	-L/usr//lib
+READLINE_INCLUDE	=	-I/usr/include/readline
 # READLINE_LIB		=	-L/usr/lib
 
 # ------------------------------------------------------------------------
@@ -65,11 +65,12 @@ clean:
 
 install: ext2ed
 	install -d $(VAR_DIR)
-	install -d $(DOC_DIR)
 	install -m 755 ext2ed $(BIN_DIR)
 	install -m 644 ext2.descriptors $(VAR_DIR)
 	install -m 644 ext2ed.conf $(VAR_DIR)
 	install -m 644 doc/ext2ed.8 $(MAN_DIR)
+
+install.doc: 
 	install -m 644 doc/user-guide-0.1.sgml $(DOC_DIR)
 	install -m 644 doc/user-guide-0.1.ps $(DOC_DIR)
 	install -m 644 doc/Ext2fs-overview-0.1.sgml $(DOC_DIR)

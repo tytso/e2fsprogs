@@ -87,6 +87,7 @@ void help (char *command_line)
 	
 	wprintw (show_pad,"EXT2ED ver %d.%d (%s)\n",version_major,version_minor,revision_date);
 	wprintw (show_pad,"Copyright (C) 1995 Gadi Oxman\n");
+	wprintw (show_pad,"Reviewed 2001 Christian Bac\n");
 	wprintw (show_pad,"EXT2ED is hereby placed under the terms of the GNU General Public License.\n\n");
 	wprintw (show_pad,"EXT2ED was programmed as a student project in the software laboratory\n");
 	wprintw (show_pad,"of the faculty of electrical engineering in the\n");

@@ -20,7 +20,7 @@ Copyright (C) 1995 Gadi Oxman
 #include <readline.h>
 #include <signal.h>
 #include <unistd.h>
-#include <sys/ioctl.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -427,9 +427,9 @@ void init_readline (void)
 void init_signals (void)
 
 {
-	signal (SIGWINCH,(SignalHandler) signal_SIGWINCH_handler);	/* Catch SIGWINCH */
-	signal (SIGTERM,(SignalHandler) signal_SIGTERM_handler);
-	signal (SIGSEGV,(SignalHandler) signal_SIGSEGV_handler);
+	signal (SIGWINCH, signal_SIGWINCH_handler);	/* Catch SIGWINCH */
+	signal (SIGTERM, signal_SIGTERM_handler);
+	signal (SIGSEGV, signal_SIGSEGV_handler);
 	
 }
 

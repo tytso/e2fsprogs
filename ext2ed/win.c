@@ -9,6 +9,9 @@ Window management - Interfacing with the ncurses library
 --------------------------------------------------------
 
 First written on: April 17 1995
+Modified on : April 05 2001 Christian.Bac@int-evry.fr
+it looks like readline does not like that initscr decides to set the tty to
+noecho.
 
 Copyright (C) 1995 Gadi Oxman
 
@@ -17,11 +20,18 @@ Copyright (C) 1995 Gadi Oxman
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
+#include <unistd.h>
 
 #include "ext2ed.h"
 
 struct struct_pad_info show_pad_info;
 WINDOW *title_win,*show_win,*command_win,*show_pad;
+
+/* to remember configuration after initscr 
+ * and modify it
+ */
+struct termios termioInit, termioCurrent; 
 
 void init_windows (void)
 
@@ -29,6 +39,10 @@ void init_windows (void)
 	char title_string [80];
 	
 	initscr ();
+	tcgetattr(0,&termioInit); /* save initial config */
+	termioCurrent = termioInit;
+	termioCurrent.c_lflag |= ECHO; /* set echo on */
+	tcsetattr(0,TCSANOW,&termioCurrent);
 	
 	if (LINES<TITLE_WIN_LINES+SHOW_WIN_LINES+COMMAND_WIN_LINES+3) {
 		printf ("Sorry, your terminal screen is too small\n");
@@ -128,7 +142,8 @@ void refresh_command_win (void)
 void close_windows (void)
 
 {
-	echo ();
+//	echo ();
+	tcsetattr(0,TCSANOW,&termioInit);
 	
 	delwin (title_win);
 	delwin (command_win);

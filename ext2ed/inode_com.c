@@ -214,7 +214,7 @@ void type_ext2_inode___show (char *command_line)
 	
 	wprintw (show_win,"Inode type: ");
 
-	if (inode_num < EXT2_FIRST_INO) {
+	if (inode_num < EXT2_GOOD_OLD_FIRST_INO) {
 		switch (inode_num) {
 			case EXT2_BAD_INO:
 				wprintw (show_win,"Bad blocks inode - ");

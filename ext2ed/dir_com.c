@@ -98,13 +98,13 @@ struct struct_file_info search_dir_entries (int (*action) (struct struct_file_in
 
 {
 	struct struct_file_info info;						/* Temporary variables used to */
-	struct ext2_dir_entry *dir_entry_ptr;					/* contain the current search entries */
+	struct ext2_dir_entry_2 *dir_entry_ptr;					/* contain the current search entries */
 	
 	int return_code;
 	
 	info=first_file_info;							/* Start from the first entry - Read it */
 	low_read (info.buffer,file_system_info.block_size,info.global_block_offset);
-	dir_entry_ptr=(struct ext2_dir_entry *) (info.buffer+info.dir_entry_offset);
+	dir_entry_ptr=(struct ext2_dir_entry_2 *) (info.buffer+info.dir_entry_offset);
 	
 	while (info.file_offset < info.file_length) {				/* While we haven't reached the end */
 		
@@ -115,7 +115,7 @@ struct struct_file_info search_dir_entries (int (*action) (struct struct_file_in
 
 										/* Pass to the next entry */
 										
-		dir_entry_ptr=(struct ext2_dir_entry *) (info.buffer+info.dir_entry_offset);
+		dir_entry_ptr=(struct ext2_dir_entry_2 *) (info.buffer+info.dir_entry_offset);
 
 		info.dir_entry_num++;
 		info.dir_entry_offset+=dir_entry_ptr->rec_len;
@@ -133,7 +133,7 @@ struct struct_file_info search_dir_entries (int (*action) (struct struct_file_in
 										/* read it and update the pointer */
 										
 			low_read (info.buffer,file_system_info.block_size,info.global_block_offset);
-			dir_entry_ptr=(struct ext2_dir_entry *) (info.buffer+info.dir_entry_offset);
+			dir_entry_ptr=(struct ext2_dir_entry_2 *) (info.buffer+info.dir_entry_offset);
 			
 		}
 		
@@ -216,9 +216,9 @@ void type_dir___cd (char *command_line)
 	int status;
 	char *ptr,full_dir_name [500],dir_name [500],temp [500],temp2 [500];
 	struct struct_file_info info;
-	struct ext2_dir_entry *dir_entry_ptr;
+	struct ext2_dir_entry_2 *dir_entry_ptr;
 
-	dir_entry_ptr=(struct ext2_dir_entry *) (file_info.buffer+file_info.dir_entry_offset);
+	dir_entry_ptr=(struct ext2_dir_entry_2 *) (file_info.buffer+file_info.dir_entry_offset);
 		
 	ptr=parse_word (command_line,dir_name);
 	
@@ -317,9 +317,9 @@ Returns FOUND if found, or CONTINUE if not found.
 */
 
 {
-	struct ext2_dir_entry *dir_entry_ptr;
+	struct ext2_dir_entry_2 *dir_entry_ptr;
 
-	dir_entry_ptr=(struct ext2_dir_entry *) (info->buffer+info->dir_entry_offset);
+	dir_entry_ptr=(struct ext2_dir_entry_2 *) (info->buffer+info->dir_entry_offset);
 
 	if (dir_entry_ptr->name_len != strlen (name_search))
 		return (CONTINUE);
@@ -395,10 +395,10 @@ It involves computing the device offset of the inode and using directly the seto
 	long inode_offset;
 	char buffer [80];
 
-	struct ext2_dir_entry *dir_entry_ptr;
+	struct ext2_dir_entry_2 *dir_entry_ptr;
 
 	low_read (file_info.buffer,file_system_info.block_size,file_info.global_block_offset);
-	dir_entry_ptr=(struct ext2_dir_entry *) (file_info.buffer+file_info.dir_entry_offset);
+	dir_entry_ptr=(struct ext2_dir_entry_2 *) (file_info.buffer+file_info.dir_entry_offset);
 
 	inode_offset=inode_num_to_inode_offset (dir_entry_ptr->inode);			/* Compute the inode's offset */
 	sprintf (buffer,"setoffset %ld",inode_offset);dispatch (buffer);		/* Move to it */
@@ -449,9 +449,9 @@ Show the current search entry (info) in one line. If the entry happens to be the
 
 {
 	unsigned char temp [80];
-	struct ext2_dir_entry *dir_entry_ptr;
+	struct ext2_dir_entry_2 *dir_entry_ptr;
 	
-	dir_entry_ptr=(struct ext2_dir_entry *) (info->buffer+info->dir_entry_offset);
+	dir_entry_ptr=(struct ext2_dir_entry_2 *) (info->buffer+info->dir_entry_offset);
 
 	if (info->dir_entry_num == file_info.dir_entry_num)				/* Highlight the current entry */
 		wattrset (show_pad,A_REVERSE);
@@ -591,9 +591,9 @@ because it is of variable length.
 {
 	int found=0;
 	unsigned char *ptr,buffer [80],variable [80],value [80],temp [80];
-	struct ext2_dir_entry *dir_entry_ptr;
+	struct ext2_dir_entry_2 *dir_entry_ptr;
 	
-	dir_entry_ptr=(struct ext2_dir_entry *) (file_info.buffer+file_info.dir_entry_offset);
+	dir_entry_ptr=(struct ext2_dir_entry_2 *) (file_info.buffer+file_info.dir_entry_offset);
 	
 	ptr=parse_word (command_line,buffer);
 	if (*ptr==0) {
