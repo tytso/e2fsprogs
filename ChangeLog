@@ -1,3 +1,8 @@
+2001-01-11  Theodore Ts'o  <tytso@valinux.com>
+
+	* Makefile.in (PROG_SUBDIRS): Build lib/e2p before lib/ext2fs
+		since libext2fs depends on libe2p.
+
 2001-01-11    <tytso@snap.thunk.org>
 
 	* MCONFIG.in: Change --enable-gcc-wall handling so that it's no
