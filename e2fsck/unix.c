@@ -116,91 +116,45 @@ static void show_stats(e2fsck_t	ctx)
 		       blocks_used, blocks);
 		return;
 	}
-	/*
-	 * This is a bit ugly. But I think there will nearly always be more
-	 * than one "thing" to report about, so I won't try writing complex
-	 * code to handle one/two/many forms of all words.
-	 * Some languages (Italian, at least) never uses the plural form
-	 * of foreign words, so in real life this could not be a problem.
-	 * md@linux.it - 2000-1-15
-	 */
-#ifdef ENABLE_NLS
-	printf (_("\n%8d inodes used (%d%%)\n"), inodes_used,
-		100 * inodes_used / inodes);
-	printf (_("%8d non-contiguous inodes (%0d.%d%%)\n"),
+	printf (P_("\n%8d inode used (%d%%)\n", "\n%8d inodes used (%d%%)\n",
+		   inodes_used), inodes_used, 100 * inodes_used / inodes);
+	printf (P_("%8d non-contiguous inode (%0d.%d%%)\n",
+		   "%8d non-contiguous inodes (%0d.%d%%)\n",
+		   ctx->fs_fragmented),
 		ctx->fs_fragmented, frag_percent / 10, frag_percent % 10);
 	printf (_("         # of inodes with ind/dind/tind blocks: %d/%d/%d\n"),
 		ctx->fs_ind_count, ctx->fs_dind_count, ctx->fs_tind_count);
-	printf (_("%8d blocks used (%d%%)\n"
-		"%8d bad blocks\n"), blocks_used,
-		(int) ((long long) 100 * blocks_used / blocks),
-		ctx->fs_badblocks_count);
-	printf(_("%8d large files\n"), ctx->large_files);
-	printf (_("\n%8d regular files\n"
-		"%8d directories\n"
-		"%8d character device files\n"
-		"%8d block device files\n"
-		"%8d fifos\n"
-		"%8d links\n"
-		"%8d symbolic links (%d fast symbolic links)\n"
-		"%8d sockets\n"
-		"--------\n"
-		"%8d files\n"),
-		ctx->fs_regular_count,
-		ctx->fs_directory_count,
-		ctx->fs_chardev_count,
-		ctx->fs_blockdev_count,
-		ctx->fs_fifo_count,
-		ctx->fs_links_count - dir_links,
-		ctx->fs_symlinks_count,
-		ctx->fs_fast_symlinks_count,
-		ctx->fs_sockets_count,
+	printf (P_("%8d block used (%d%%)\n", "%8d blocks used (%d%%)\n",
+		   blocks_used),
+		blocks_used, (int) ((long long) 100 * blocks_used / blocks));
+	printf (P_("%8d bad block\n", "%8d bad blocks\n",
+		   ctx->fs_badblocks_count), ctx->fs_badblocks_count);
+	printf (P_("%8d large file\n", "%8d large files\n",
+		   ctx->large_files), ctx->large_files);
+	printf (P_("\n%8d regular file\n", "\n%8d regular files\n",
+		   ctx->fs_regular_count), ctx->fs_regular_count);
+	printf (P_("%8d directory\n", "%8d directories\n",
+		   ctx->fs_directory_count), ctx->fs_directory_count);
+	printf (P_("%8d character device file\n",
+		   "%8d character device files\n", ctx->fs_chardev_count),
+		ctx->fs_chardev_count);
+	printf (P_("%8d block device file\n", "%8d block device files\n",
+		   ctx->fs_blockdev_count), ctx->fs_blockdev_count);
+	printf (P_("%8d fifo\n", "%8d fifos\n", ctx->fs_fifo_count),
+		ctx->fs_fifo_count);
+	printf (P_("%8d link\n", "%8d links\n",
+		   ctx->fs_links_count - dir_links),
+		ctx->fs_links_count - dir_links);
+	printf (P_("%8d symbolic link", "%8d symbolic links",
+		   ctx->fs_symlinks_count), ctx->fs_symlinks_count);
+	printf (P_(" (%d fast symbolic link)\n", " (%d fast symbolic links)\n",
+		   ctx->fs_fast_symlinks_count), ctx->fs_fast_symlinks_count);
+	printf (P_("%8d socket\n", "%8d sockets\n", ctx->fs_sockets_count),
+		ctx->fs_sockets_count);
+	printf ("--------\n");
+	printf (P_("%8d file\n", "%8d files\n",
+		   ctx->fs_total_count - dir_links),
 		ctx->fs_total_count - dir_links);
-#else
-	printf ("\n%8d inode%s used (%d%%)\n", inodes_used,
-		(inodes_used != 1) ? "s" : "",
-		100 * inodes_used / inodes);
-	printf ("%8d non-contiguous inodes (%0d.%d%%)\n",
-		ctx->fs_fragmented, frag_percent / 10, frag_percent % 10);
-	printf ("         # of inodes with ind/dind/tind blocks: %d/%d/%d\n",
-		ctx->fs_ind_count, ctx->fs_dind_count, ctx->fs_tind_count);
-	printf ("%8d block%s used (%d%%)\n"
-		"%8d bad block%s\n", blocks_used,
-		(blocks_used != 1) ? "s" : "",
-		100 * blocks_used / blocks, ctx->fs_badblocks_count,
-		ctx->fs_badblocks_count != 1 ? "s" : "");
-	printf("%8d large file%s\n", ctx->large_files,
-	       (ctx->large_files != 1) ? "s" : "");
-	printf ("\n%8d regular file%s\n"
-		"%8d director%s\n"
-		"%8d character device file%s\n"
-		"%8d block device file%s\n"
-		"%8d fifo%s\n"
-		"%8d link%s\n"
-		"%8d symbolic link%s (%d fast symbolic link%s)\n"
-		"%8d socket%s\n"
-		"--------\n"
-		"%8d file%s\n",
-		ctx->fs_regular_count,
-		(ctx->fs_regular_count != 1) ? "s" : "",
-		ctx->fs_directory_count,
-		(ctx->fs_directory_count != 1) ? "ies" : "y",
-		ctx->fs_chardev_count,
-		(ctx->fs_chardev_count != 1) ? "s" : "",
-		ctx->fs_blockdev_count,
-		(ctx->fs_blockdev_count != 1) ? "s" : "",
-		ctx->fs_fifo_count,
-		(ctx->fs_fifo_count != 1) ? "s" : "",
-		ctx->fs_links_count - dir_links,
-		((ctx->fs_links_count - dir_links) != 1) ? "s" : "",
-		ctx->fs_symlinks_count,
-		(ctx->fs_symlinks_count != 1) ? "s" : "",
-		ctx->fs_fast_symlinks_count,
-		(ctx->fs_fast_symlinks_count != 1) ? "s" : "",
-		ctx->fs_sockets_count, (ctx->fs_sockets_count != 1) ? "s" : "",
-		ctx->fs_total_count - dir_links,
-		((ctx->fs_total_count - dir_links) != 1) ? "s" : "");
-#endif
 }
 
 static void check_mount(e2fsck_t ctx)

@@ -1,3 +1,9 @@
+2003-05-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (show_stats), e2fsck.h: Use ngettext (abbreivated with
+		the macro P_(str1, str2, n)) to simplify the statistics
+		reporting.
+
 2003-05-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (main): If --enable-testio-debug is set, then use the
