@@ -1,3 +1,9 @@
+2003-11-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* com_err.h, com_err.c: Use GCC attributes to mark com_err and
+		default_com_err_proc as taking printf-style format
+		strings.
+
 2003-11-22  Theodore Ts'o  <tytso@mit.edu>
 
 	* com_err.h: Retore the type of n_msgs in the error_table

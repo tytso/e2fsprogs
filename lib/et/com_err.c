@@ -19,6 +19,11 @@
 static void
 default_com_err_proc (const char *whoami, errcode_t code, const
 		      char *fmt, va_list args)
+	COM_ERR_ATTR((format(printf, 3, 0)));
+
+static void
+default_com_err_proc (const char *whoami, errcode_t code, const
+		      char *fmt, va_list args)
 {
     if (whoami) {
 	fputs(whoami, stderr);

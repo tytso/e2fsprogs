@@ -10,6 +10,12 @@
 
 #if !defined(__COM_ERR_H) && !defined(__COM_ERR_H__)
 
+#ifdef __GNUC__
+#define COM_ERR_ATTR(x) __attribute__(x)
+#else
+#define COM_ERR_ATTR(x)
+#endif
+
 #include <stdarg.h>
 
 typedef long errcode_t;
@@ -19,12 +25,15 @@ struct error_table {
 	long base;
 	int n_msgs;
 };
-
 struct et_list;
 
-extern void com_err (const char *, long, const char *, ...);
+extern void com_err (const char *, long, const char *, ...)
+	COM_ERR_ATTR((format(printf, 3, 4)));
+
 extern void com_err_va (const char *whoami, errcode_t code, const char *fmt,
-		 va_list args);
+		 va_list args)
+	COM_ERR_ATTR((format(printf, 3, 0)));
+
 extern char const *error_message (long);
 extern void (*com_err_hook) (const char *, long, const char *, va_list);
 extern void (*set_com_err_hook (void (*) (const char *, long, 
