@@ -1,3 +1,7 @@
+2001-02-08  Theodore Tso  <tytso@valinux.com>
+
+	* e2image.h (struct ext2_image_hdr): Fix type for fs_hostname
+
 2001-02-07  Theodore Tso  <tytso@valinux.com>
 
 	* mkjournal.c (ext2fs_create_journal_superblock): Fix the setting

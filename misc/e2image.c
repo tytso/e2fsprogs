@@ -85,6 +85,7 @@ int main (int argc, char ** argv)
 	int raw_flag = 0;
 	int fd = 0;
 	struct ext2_image_hdr hdr;
+	struct stat st;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -117,7 +118,7 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 
-	fd = open(argv[optind+1], O_CREAT|O_TRUNC|O_RDWR, 0600);
+	fd = open(argv[optind+1], O_CREAT|O_RDWR, 0600);
 	if (fd < 0) {
 		com_err(program_name, errno, _("while trying to open %s"),
 			argv[optind+1]);
@@ -154,7 +155,25 @@ int main (int argc, char ** argv)
 		com_err(program_name, retval, _("while writing inode bitmap"));
 		exit(1);
 	}
-	
+
+	hdr.magic_number = EXT2_ET_MAGIC_E2IMAGE;
+	strcpy(hdr.magic_descriptor, "Ext2 Image 1.0");
+	gethostname(hdr.fs_hostname, sizeof(hdr.fs_hostname));
+
+	if (stat(device_name, &st) == 0)
+		hdr.fs_device = st.st_rdev;
+
+	if (fstat(fd, &st) == 0) {
+		hdr.image_device = st.st_dev;
+		hdr.image_inode = st.st_ino;
+	}
+	memcpy(hdr.fs_uuid, fs->super->s_uuid, sizeof(hdr.fs_uuid));
+
+	hdr.image_time = time(0);
+	write_header(fd, &hdr);
+
 	ext2fs_close (fs);
 	exit (0);
 }
+
+

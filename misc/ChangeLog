@@ -1,3 +1,7 @@
+2001-02-08  Theodore Tso  <tytso@valinux.com>
+
+	* e2image.c (main): Add code to write the e2image header.
+
 2001-02-07  Theodore Tso  <tytso@valinux.com>
 
 	* tune2fs.8.in: Update man page to reflect that 2.0.39 supports
