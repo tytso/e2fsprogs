@@ -199,6 +199,7 @@ errcode_t ext2fs_inode_scan_goto_blockgroup(ext2_inode_scan scan,
 {
 	scan->current_group = group - 1;
 	scan->groups_left = scan->fs->group_desc_count - group;
+	scan->current_inode = group * EXT2_INODES_PER_GROUP(scan->fs->super);
 	return get_next_blockgroup(scan);
 }
 

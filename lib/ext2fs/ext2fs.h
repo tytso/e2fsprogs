@@ -464,6 +464,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 /* bmove.c */
 extern errcode_t ext2fs_move_blocks(ext2_filsys fs,
 				    ext2fs_block_bitmap reserve,
+				    ext2fs_block_bitmap alloc_map,
 				    int flags);
 
 /* check_desc.c */

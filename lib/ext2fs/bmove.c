@@ -20,6 +20,7 @@ struct process_block_struct {
 	ino_t			ino;
 	struct ext2_inode *	inode;
 	ext2fs_block_bitmap	reserve;
+	ext2fs_block_bitmap	alloc_map;
 	errcode_t		error;
 	char			*buf;
 	int			add_dir;
@@ -49,7 +50,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 				return BLOCK_ABORT;
 			}
 		} while (ext2fs_test_block_bitmap(pb->reserve, block) ||
-			 ext2fs_test_block_bitmap(fs->block_map, block));
+			 ext2fs_test_block_bitmap(pb->alloc_map, block));
 
 		retval = io_channel_read_blk(fs->io, orig, 1, pb->buf);
 		if (retval) {
@@ -62,7 +63,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			return BLOCK_ABORT;
 		}
 		*block_nr = block;
-		ext2fs_mark_block_bitmap(fs->block_map, block);
+		ext2fs_mark_block_bitmap(pb->alloc_map, block);
 		ret = BLOCK_CHANGED;
 		printf("ino=%ld, blockcnt=%d, %ld->%ld\n", pb->ino,
 		       blockcnt, orig, block);
@@ -80,6 +81,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 
 errcode_t ext2fs_move_blocks(ext2_filsys fs,
 			     ext2fs_block_bitmap reserve,
+			     ext2fs_block_bitmap alloc_map,
 			     int flags)
 {
 	ino_t	ino;
@@ -95,6 +97,7 @@ errcode_t ext2fs_move_blocks(ext2_filsys fs,
 
 	pb.reserve = reserve;
 	pb.error = 0;
+	pb.alloc_map = alloc_map ? alloc_map : fs->block_map;
 	
 	block_buf = malloc(fs->blocksize * 4);
 	if (!block_buf)
