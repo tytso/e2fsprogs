@@ -1,3 +1,10 @@
+2000-05-29  Theodore Ts'o  <tytso@valinux.com>
+
+	* mke2fs.c (PRS): Add a much more specific error message if the
+		filesystem size is defaulted and get_device_size returns a
+		size of zero.  Otherwise, users get a confusing "invalid
+		argument while passed to ext2 library" error message.
+
 2000-05-08  Theodore Ts'o  <tytso@valinux.com>
 
 	* fsck.c (interpret_device): Add better error messages if a UUID=

@@ -949,8 +949,22 @@ static void PRS(int argc, char *argv[])
 				"must specify\nthe size of the "
 				"filesystem\n"));
 			exit(1);
-		} else
+		} else {
+			if (dev_size == 0) {
+				com_err(program_name, 0,
+				_("Device size reported to be zero.  "
+				  "Invalid partition specified, or\n\t"
+				  "partition table wasn't reread "
+				  "after running fdisk, due to\n\t"
+				  "a modified partition being busy "
+				  "and in use.  You may need to reboot\n\t"
+				  "to re-read your partition table.\n"
+				  ));
+				exit(1);
+			}
 			param.s_blocks_count = dev_size;
+		}
+		
 	} else if (!force && (param.s_blocks_count > dev_size)) {
 		com_err(program_name, 0,
 			_("Filesystem larger than apparent filesystem size."));
