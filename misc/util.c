@@ -17,6 +17,8 @@
 #include <linux/ext2_fs.h>
 #ifdef HAVE_LINUX_MAJOR_H
 #include <linux/major.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
 

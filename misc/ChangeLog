@@ -1,3 +1,7 @@
+2001-05-07  Theodore Tso  <tytso@valinux.com>
+
+	* util.c: Use specific check for HAVE_SYS_STAT_H.
+
 2001-05-05  Theodore Tso  <tytso@valinux.com>
 
 	* fsck.8.in: Add explicit language to describe how options get
