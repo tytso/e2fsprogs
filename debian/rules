@@ -242,8 +242,12 @@ install-udeb: build
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
 
 	rm -rf ${udebdir}/usr
-	find ${udebdir}/sbin -type f -a ! -name mkfs.\*  -a ! -name fsck.\* \
-		-a ! -name e2fsck -a ! -name mke2fs -print | xargs rm
+	find ${udebdir}/sbin -type f -a ! -name e2fsck \
+		-a ! -name mke2fs -print | xargs rm
+
+	(cd ${udebdir}/sbin; ln -s e2fsck fsck.ext2 ; \
+		ln -s e2fsck fsck.ext3 ; ln -s mke2fs mkfs.ext2 ; \
+		ln -s mke2fs mkfs.ext3)
 
 	mkdir -p ${blkidudebdir}/lib
 	mv ${udebdir}/lib/libblkid.* ${blkidudebdir}/lib
@@ -320,8 +324,6 @@ binary-arch: install install-udeb
 
 	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
 	dh_installinfo -pe2fslibs-dev ${stdbuilddir}/doc/libext2fs.info
-
-	dh_undocumented
 
 	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibblkid${BLKID_SOVERSION} ChangeLog
 

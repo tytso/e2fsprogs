@@ -15,6 +15,8 @@ e2fsprogs (1.33+1.34-WIP-2003.05.21-2) unstable; urgency=low
     handle an exit code that has the bit #2 set.  (Closes: #183675)
   * Badblocks will attempt to use O_DIRECT if it is safe to do so.  
     (Closes: #198006)
+  * Use symbolic links for fsck.ext{2,3} and mkfs.ext{2,3} in the udeb
+    package since busybox tar can't deal with hard links.  (Closes: #196508)
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 12 Jul 2003 03:16:08 -0400
 
