@@ -26,8 +26,6 @@
  */
 #ifdef __KERNEL__
 #define JFS_DEBUG
-#else
-#define JFS_DEBUG
 #endif
 
 extern int journal_enable_debug;

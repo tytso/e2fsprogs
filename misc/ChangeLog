@@ -1,5 +1,7 @@
 2001-05-12  Theodore Tso  <tytso@valinux.com>
 
+	* fsck.c (PRS): fsck -? now prints the usage message.
+
 	* badblocks.8.in, dumpe2fs.8.in, e2label.8.in, mke2fs.8.in, 
 		mklost+found.8.in, tune2fs.8.in: Fix typo; removed
 		excess "anonymous" in the AVAILABILITY section.

@@ -902,6 +902,9 @@ static void PRS(int argc, char *argv[])
 			case '-':
 				opts_for_fsck++;
 				break;
+			case '?':
+				usage();
+				break;
 			default:
 				options[++opt] = arg[j];
 				break;

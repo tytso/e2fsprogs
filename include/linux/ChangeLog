@@ -1,3 +1,8 @@
+2001-05-12  Theodore Tso  <tytso@valinux.com>
+
+	* jfs.h (JFS_DEBUG): Don't define JFS_DEBUG for non-kernel builds;
+		if necessasry it can be set with configure --enable-jfs-debug
+
 2001-05-01  Theodore Tso  <tytso@valinux.com>
 
 	* ext2_fs.h: New feature assignments for
