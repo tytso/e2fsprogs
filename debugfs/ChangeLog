@@ -1,3 +1,9 @@
+2001-12-22  Theodore Tso  <tytso@valinux.com>
+
+	* debugfs.c (kill_file_by_inode, release_blocks_proc): Update the
+		group descriptor free block and inode counts when deleting
+		or killing a file.
+
 2001-12-16  Theodore Tso  <tytso@valinux.com>
 
 	* setsuper.c (print_possible_fields), 

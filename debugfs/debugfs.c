@@ -1340,14 +1340,22 @@ void do_rmdir(int argc, char *argv[])
 static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
 			       int blockcnt, void *private)
 {
-	printf("%d ", *blocknr);
-	ext2fs_unmark_block_bitmap(fs->block_map,*blocknr);
+	blk_t	block;
+	int	group;
+
+	block = *blocknr;
+	printf("%d ", block);
+	ext2fs_unmark_block_bitmap(fs->block_map,block);
+	group = ext2fs_group_of_blk(fs, block);
+	fs->group_desc[group].bg_free_blocks_count++;
+	fs->super->s_free_blocks_count++;
 	return 0;
 }
 
 static void kill_file_by_inode(ext2_ino_t inode)
 {
 	struct ext2_inode inode_buf;
+	int	group;
 
 	ext2fs_read_inode(current_fs, inode, &inode_buf);
 	inode_buf.i_dtime = time(NULL);
@@ -1358,7 +1366,11 @@ static void kill_file_by_inode(ext2_ino_t inode)
 			     release_blocks_proc, NULL);
 	printf("\n");
 	ext2fs_unmark_inode_bitmap(current_fs->inode_map, inode);
-
+	group = ext2fs_group_of_ino(current_fs, inode);
+	current_fs->group_desc[group].bg_free_inodes_count++;
+	current_fs->super->s_free_inodes_count++;
+	
+	ext2fs_mark_super_dirty(current_fs);
 	ext2fs_mark_bb_dirty(current_fs);
 	ext2fs_mark_ib_dirty(current_fs);
 }
