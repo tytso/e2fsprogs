@@ -22,11 +22,21 @@ if [ "$OUT2"x = x ]; then
 fi
 
 if [ "$EXP1"x = x ]; then
-	EXP1=$test_dir/expect.1
+	if [ -f $test_dir/expect.1.gz ]; then
+		EXP1=tmp_expect
+		gunzip < $test_dir/expect.1.gz > $EXP1
+	else
+		EXP1=$test_dir/expect.1
+	fi
 fi
 
 if [ "$EXP2"x = x ]; then
-	EXP2=$test_dir/expect.2
+	if [ -f $test_dir/expect.2.gz ]; then
+		EXP2=tmp_expect
+		gunzip < $test_dir/expect.2.gz > $EXP2
+	else
+		EXP2=$test_dir/expect.2
+	fi
 fi
 
 if [ "$SKIP_GUNZIP" != "true" ] ; then
@@ -51,7 +61,11 @@ if [ "$ONE_PASS_ONLY" != "true" ]; then
 	rm -f $OUT2.new
 fi
 
-rm $TMPFILE
+eval $AFTER_CMD
+
+if [ "$SKIP_UNLINK" != "true" ] ; then
+	rm $TMPFILE
+fi
 
 if [ "$SKIP_VERIFY" != "true" ] ; then
 	rm -f $test_name.ok $test_name.failed
@@ -74,11 +88,12 @@ if [ "$SKIP_VERIFY" != "true" ] ; then
 			diff -c $EXP2 $OUT2 >> $test_name.failed
 		fi
 	fi
+	rm -f tmp_expect
 fi
 
 if [ "$SKIP_CLEANUP" != "true" ] ; then
 	unset IMAGE FSCK_OPT SECOND_FSCK_OPT OUT1 OUT2 EXP1 EXP2 
 	unset SKIP_VERIFY SKIP_CLEANUP SKIP_GUNZIP ONE_PASS_ONLY PREP_CMD
-	unset DESCRIPTION
+	unset DESCRIPTION SKIP_UNLINK AFTER_CMD
 fi
 

@@ -1,3 +1,13 @@
+2003-09-03  Theodore Ts'o  <tytso@mit.edu>
+
+	* m_meta_bg: New test case to test the meta block group feature.
+
+	* m_raid_opt: New test case to test raid striping
+
+	* run_e2fsck, run_mke2fs, filter_dumpe2fs: Add dumpe2fs output to
+		the test output for comparison.  Add support for
+		compressed expect scripts.
+
 2003-09-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_dup_de: Remove spurious rm error messages when htree is

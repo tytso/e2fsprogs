@@ -1,0 +1,11 @@
+1a\
+
+1d
+/^Filesystem UUID:/d
+/^Filesystem created:/d
+/^Last write time:/d
+/^Last mount time:/d
+/^Last checked:/d
+/^Directory Hash Seed:/d
+/^Next check after:/d
+/^Maximum mount count:/d

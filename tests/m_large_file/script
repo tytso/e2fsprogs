@@ -1,4 +1,4 @@
-DESCRIPTION="no filesystem extensions"
+DESCRIPTION="largefile fs type"
 FS_SIZE=65536
 MKE2FS_DEVICE_SECTSIZE=2048
 export MKE2FS_DEVICE_SECTSIZE
