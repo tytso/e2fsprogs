@@ -1,3 +1,9 @@
+2003-12-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.8.in: Update text describing "standard" options supported
+		by filesystem-specific checkers.  (Addresses Debian bug
+		#222606)
+
 2003-12-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Add filefrag program to the list of programs

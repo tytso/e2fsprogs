@@ -277,8 +277,9 @@ You're almost certainly doing something that you shouldn't be doing
 with 
 .BR fsck.
 .PP
-Currently, standardized file system-specific options are somewhat in
-flux.  Although not guaranteed, the following options are supported
+Options to different filesystem-specific fsck's are not standardized.
+If in doubt, please consult the man pages of the filesystem-specific
+checker.  Although not guaranteed, the following options are supported
 by most file system checkers:
 .TP
 .B \-a
@@ -292,7 +293,20 @@ for backwards compatibility only.  This option is mapped to
 .B \-p
 option which is safe to use, unlike the 
 .B \-a 
-option that most file system checkers support.
+option that some file system checkers support.
+.TP
+.B \-n
+For some filesystem-specific checkers, the 
+.B \-n
+option will cause the fs-specific fsck to avoid attempting to repair any 
+problems, but simply report such problems to stdout.  This is however
+not true for all filesystem-specific checkers.  In particular, 
+.BR fsck.reiserfs (8)
+will not report any corruption if given this option.
+.BR fsck.minix (8)
+does not support the 
+.B \-n 
+option at all.
 .TP
 .B \-r
 Interactively repair the filesystem (ask for confirmations).  Note: It
@@ -301,6 +315,21 @@ run in parallel.  Also note that this is
 .BR e2fsck 's
 default behavior; it supports this option for backwards compatibility
 reasons only.
+.TP
+.B \-y
+For some filesystem-specific checkers, the 
+.B \-y 
+option will cause the fs-specific fsck to always attempt to fix any
+detected filesystem corruption automatically.  Sometimes an expert may
+be able to do better driving the fsck manually.  Note that 
+.B not
+all filesystem-specific checkers implement this option.  In particular 
+.BR fsck.minix (8)
+and
+.BR fsck.cramfs (8)
+does not support the
+.B -y
+option as of this writing.
 .SH AUTHOR
 Theodore Ts'o (tytso@mit.edu)
 .SH FILES
@@ -355,8 +384,12 @@ file.  It is also use for developers who are testing
 .SH SEE ALSO
 .BR fstab (5),
 .BR mkfs (8),
-.BR fsck.minix (8),
 .BR fsck.ext2 (8)
 or
 .BR e2fsck (8),
-.BR fsck.xiafs (8).
+.BR cramfsck (8)
+.BR fsck.minix (8),
+.BR fsck.jfs (8)
+.BR fsck.xfs (8),
+.BR fsck.xiafs (8)
+.BR reiserfsck (8).
