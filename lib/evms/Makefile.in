@@ -6,7 +6,7 @@ my_dir = lib/evms
 INSTALL = @INSTALL@
 
 MAJOR_VERSION	= 1
-MINOR_VERSION	= 0
+MINOR_VERSION	= 1
 PATCH_LEVEL	= 0
 EXTRAVERSION	=
 
@@ -49,10 +49,8 @@ distclean:: clean
 # the Makefile.in file
 #
 fs_ext2.o: $(srcdir)/fs_ext2.c $(srcdir)/plugin.h $(srcdir)/dlist.h \
- $(srcdir)/common.h $(srcdir)/evms_user.h $(srcdir)/evms_common.h \
- $(srcdir)/evms_ioctl.h $(srcdir)/options.h $(srcdir)/enginestructs.h \
+ $(srcdir)/common.h $(srcdir)/options.h $(srcdir)/enginestructs.h \
  $(srcdir)/plugfuncs.h $(srcdir)/fsimext2.h
 fsimext2.o: $(srcdir)/fsimext2.c $(srcdir)/plugin.h $(srcdir)/dlist.h \
- $(srcdir)/common.h $(srcdir)/evms_user.h $(srcdir)/evms_common.h \
- $(srcdir)/evms_ioctl.h $(srcdir)/options.h $(srcdir)/enginestructs.h \
+ $(srcdir)/common.h $(srcdir)/options.h $(srcdir)/enginestructs.h \
  $(srcdir)/plugfuncs.h $(srcdir)/fsimext2.h

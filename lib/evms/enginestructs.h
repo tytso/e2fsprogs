@@ -26,7 +26,6 @@
 #include <dlist.h>
 #include <common.h>
 #include <options.h>
-#include <evms/evms_user.h>
 
 struct plugin_functions_s;
 struct fsim_functions_s;
@@ -48,8 +47,23 @@ typedef struct plugin_record_s {
                                                            /* used only by the Engine */
     plugin_id_t                     id;                    /* Plug-in's ID */
     evms_version_t                  version;               /* Plug-in's version */
+#ifdef ABI_EVMS_1_0
     evms_version_t                  required_api_version;  /* Version of the Engine plug-in API */
                                                            /* that the plug-in requires */
+#else
+    evms_version_t                  required_engine_api_version;
+                                                           /* Version of the Engine services API */
+                                                           /* that the plug-in requires */
+    union {
+        evms_version_t              plugin;                /* Version of the Engine plug-in API */
+                                                           /* that the plug-in requires */
+        evms_version_t              fsim;                  /* Version of the Engine FSIM API */
+                                                           /* that the FSIM plug-in requires */
+    } required_plugin_api_version;
+    evms_version_t                  required_container_api_version;
+                                                           /* Version of the Engine container API */
+                                                           /* that the plug-in requires */
+#endif
     so_record_t                   * so_record;             /* Record for the shared object from */
                                                            /* which the plug-in was loaded */
     char                          * short_name;
@@ -146,6 +160,10 @@ typedef struct logical_volume_s {
     u_int64_t                 serial_number;        /* Volume's serial number */
     u_int32_t                 flags;                /* Defined by VOLFLAG_???? defines */
     void                    * private_data;         /* Private data pointer for FSIMs. */
+#ifndef ABI_EVMS_1_0
+    void                    * original_fsim_private_data;
+                                                    /* Private data of original FSIM. */
+#endif
     char                      name[EVMS_VOLUME_NAME_SIZE+1];
                                                     /* Volume name, filled in by the Engine */
 #ifndef ABI_EVMS_1_0

@@ -27,16 +27,16 @@
 #include <options.h>
 #include <enginestructs.h>
 
-#ifdef ABI_EVMS_1_0
-#define ENGINE_PLUGIN_API_MAJOR_VERION  3
-#else
-#define ENGINE_PLUGIN_API_MAJOR_VERION  7
-#endif
-#define ENGINE_PLUGIN_API_MINOR_VERION  0
-#define ENGINE_PLUGIN_API_PATCH_LEVEL   0
 
 /* Maximum length of a user message. */
 #define MAX_USER_MESSAGE_LEN    10240
+
+
+#ifndef ABI_EVMS_1_0
+#define ENGINE_SERVICES_API_MAJOR_VERION  8
+#define ENGINE_SERVICES_API_MINOR_VERION  0
+#define ENGINE_SERVICES_API_PATCH_LEVEL   0
+#endif
 
 /*
  * For all can_????() functions, the function returns 0 if "yes", else a reason code.
@@ -364,6 +364,14 @@ typedef struct engine_functions_s {
                               char                * message_text,
                               option_desc_array_t * options);
 
+#ifndef ABI_EVMS_1_0		/* New for version 8 */
+    /*
+     * Start, update, or close a progress indicator for the user.  See the
+     * description in common.h for how the progress_t structures are used.
+     */
+    int (*progress)(progress_t * progress);
+#endif
+
     /*
      * Can this object be renamed?  The Engine will figure out if there are any
      * restrictions that would prevent the object from being renamed, e.g., the
@@ -388,249 +396,41 @@ typedef struct engine_functions_s {
     BOOLEAN (*is_mounted)(char   * volume_name,
                           char * * mount_name);
 
+#ifndef ABI_EVMS_1_0		/* New for version 8 */
+    /*
+     * Assign an FSIM to a volume.  FSIMs can use this service to claim control
+     * of a volume.  For example, an FSIM for a journaling file system may want
+     * to claim another volume for an external log.
+     * The Engine will return an error code if there is any reason the FSIM
+     * cannot be assigned to the volume, such as the volume already being owned
+     * by another FSIM.
+     * An FSIM does not use this service as part of the processing of a call to
+     * the FSIM's is_this_yours() function.  The Engine will automatically
+     * assign the FSIM to a volume if it returns 0 on a call to is_this_yours().
+     *
+     */
+    int (*assign_fsim_to_volume)(plugin_record_t  * fsim,
+                                 logical_volume_t * volume);
+
+    /*
+     * Unassign an FSIM from a volume.  FSIMs can use this service to release
+     * control of a volume.  For example, on unmkfs_setup() an FSIM for a
+     * journaling file system may want to release its claim on another volume
+     * that it used for an external log.
+     */
+    int (*unassign_fsim_from_volume)(logical_volume_t * volume);
+#endif
+    
 } engine_functions_t;
 
 
-typedef struct fsim_functions_s {
-    int (*setup_evms_plugin)(engine_mode_t        mode,
-                             engine_functions_t * functions);
-
-    void (*cleanup_evms_plugin)(void);
-
-    /*
-     * Does this FSIM manage the file system on this volume?
-     * Return 0 for "yes", else a reason code.
-     */
-    int (*is_this_yours)(logical_volume_t * volume);
-
-    /*
-     * Get the current size of the file system on this volume.
-     */
-    int (*get_fs_size)(logical_volume_t * volume,
-                       sector_count_t   * fs_size);
-
-    /*
-     * Get the file system size limits for this volume.
-     */
-    int (*get_fs_limits)(logical_volume_t * volume,
-                         sector_count_t   * fs_min_size,
-                         sector_count_t   * fs_max_size,
-                         sector_count_t   * vol_max_size);
-
-    /*
-     * Can you install your file system on this volume?
-     */
-    int (*can_mkfs)(logical_volume_t * volume);
-
-    /*
-     * Can you remove your file system from this volume?
-     */
-    int (*can_unmkfs)(logical_volume_t * volume);
-
-    /*
-     * Can you fsck this volume?
-     */
-    int (*can_fsck)(logical_volume_t * volume);
-
-    /*
-     * Can you defrag this volume?
-     */
-    int (*can_defrag)(logical_volume_t * volume);
-
-    /*
-     * Can you expand this volume by the amount specified?
-     * If your file system cannot handle expansion at all, return an
-     * error code that indicates why it cannot be expanded..
-     * If your file system can expand but cannot handle having unused
-     * space after the end of your file system, adjust the *delta_size
-     * to the maximum you allow and return 0.
-     * If your file system cannot fill the resulting size but your file
-     * system can handle extra unused space after the end of the file
-     * system, then do not change the *delta_size and return 0.
-     */
-    int (*can_expand_by)(logical_volume_t * volume,
-                         sector_count_t   * delta_size);
-
-    /*
-     * Can you shrink this volume by the amount specified?
-     * If your file system cannot handle shrinking at all, return an
-     * error code that indicates why it cannot be shrunk.
-     * If your file system can shrink but the *delta_size is too much to
-     * shrink by, adjust the *delta_size to the maximum shrinkage you allow and
-     * return 0.
-     */
-    int (*can_shrink_by)(logical_volume_t * volume,
-                         sector_count_t   * delta_size);
-
-    /*
-     * Install your file system on the volume.
-     */
-    int (*mkfs)(logical_volume_t * volume,
-                option_array_t   * options);
-
-    /*
-     * Remove your file system from the volume.  This could be as simple as
-     * wiping out critical sectors, such as a superblock, so that you will
-     * no longer detect that your file system is installed on the volume.
-     */
-    int (*unmkfs)(logical_volume_t * volume);
-
-    /*
-     * Run fsck on the volume.
-     */
-    int (*fsck)(logical_volume_t * volume,
-                option_array_t   * options);
-
-    /*
-     * Defragment on the volume.
-     */
-    int (*defrag)(logical_volume_t * volume,
-                  option_array_t   * options);
-
-    /*
-     * Expand the volume to new_size.  If the volume is not expanded exactly to
-     * new_size, set new_sie to the new_size of the volume.
-     */
-    int (*expand)(logical_volume_t * volume,
-                  sector_count_t   * new_size);
-
-    /*
-     * Shrink the volume to new_size.  If the volume is not expanded exactly to
-     * new_size, set new_size to the new_size of the volume.
-     */
-    int (*shrink)(logical_volume_t * volume,
-                  sector_count_t     requested_size,
-                  sector_count_t   * new_size);
-
-    /*
-     * Return the total number of supported options for the specified task.
-     */
-    int (*get_option_count)(task_context_t * context);
-
-    /*
-     * Fill in the initial list of acceptable objects.  Fill in the minimum and
-     * maximum number of objects that must/can be selected.  Set up all initial
-     * values in the option_descriptors in the context record for the given
-     * task.  Some fields in the option_descriptor may be dependent on a
-     * selected object.  Leave such fields blank for now, and fill in during the
-     * set_objects call.
-     */
-    int (*init_task)(task_context_t * context);
-
-    /*
-     * Examine the specified value, and determine if it is valid for the task
-     * and option_descriptor index. If it is acceptable, set that value in the
-     * appropriate entry in the option_descriptor. The value may be adjusted
-     * if necessary/allowed. If so, set the effect return value accordingly.
-     */
-    int (*set_option)(task_context_t * context,
-                      u_int32_t        index,
-                      value_t        * value,
-                      task_effect_t  * effect);
-
-    /*
-     * Validate the volumes in the selected_objects dlist in the task context.
-     * Remove from the selected objects lists any volumes which are not
-     * acceptable.  For unacceptable volumes, create a declined_handle_t
-     * structure with the reason why it is not acceptable, and add it to the
-     * declined_volumes dlist.  Modify the acceptable_objects dlist in the task
-     * context as necessary based on the selected objects and the current
-     * settings of the options.  Modify any option settings as necessary based
-     * on the selected objects.  Return the appropriate task_effect_t settings
-     * if the object list(s), minimum or maximum objects selected, or option
-     * settings have changed.
-     */
-    int (*set_volumes)(task_context_t * context,
-                       dlist_t          declined_volumes,    /* of type declined_handle_t */
-                       task_effect_t  * effect);
-
-
-    /*
-     * Return any additional information that you wish to provide about the
-     * volume.  The Engine provides an external API to get the information
-     * stored in the logical_volume_t.  This call is to get any other
-     * information about the volume that is not specified in the
-     * logical_volume_t.  Any piece of information you wish to provide must be
-     * in an extended_info_t structure.  Use the Engine's engine_alloc() to
-     * allocate the memory for the extended_info_t.  Also use engine_alloc() to
-     * allocate any strings that may go into the extended_info_t.  Then use
-     * engine_alloc() to allocate an extended_info_array_t with enough entries
-     * for the number of extended_info_t structures you are returning.  Fill
-     * in the array and return it in *info.
-     * If you have extended_info_t descriptors that themselves may have more
-     * extended information, set the EVMS_EINFO_FLAGS_MORE_INFO_AVAILABLE flag
-     * in the extended_info_t flags field.  If the caller wants more information
-     * about a particular extended_info_t item, this API will be called with a
-     * pointer to the storage_object_t and with a pointer to the name of the
-     * extended_info_t item.  In that case, return an extended_info_array_t with
-     * further information about the item.  Each of those items may have the
-     * EVMS_EINFO_FLAGS_MORE_INFO_AVAILABLE flag set if you desire.  It is your
-     * responsibility to give the items unique names so that you know which item
-     * the caller is asking additional information for.  If info_name is NULL,
-     * the caller just wants top level information about the object.
-     */
-    int (*get_volume_info)(logical_volume_t        * volume,
-                           char                    * info_name,
-                           extended_info_array_t * * info);
-
-    /*
-     * Apply the settings of the options to the given volume.
-     */
-    int (*set_volume_info)(logical_volume_t * volume,
-                           option_array_t   * options);
-
-    /*
-     * Return any additional information that you wish to provide about your
-     * plug-in.  The Engine provides an external API to get the information
-     * stored in the plugin_record_t.  This call is to get any other
-     * information about the plug-in that is not specified in the
-     * plugin_record_t.  Any piece of information you wish to provide must be
-     * in an extended_info_t structure.  Use the Engine's engine_alloc() to
-     * allocate the memory for the extended_info_t.  Also use engine_alloc() to
-     * allocate any strings that may go into the extended_info_t.  Then use
-     * engine_alloc() to allocate an extended_info_array_t with enough entries
-     * for the number of extended_info_t structures you are returning.  Fill
-     * in the array and return it in *info.
-     * If you have extended_info_t descriptors that themselves may have more
-     * extended information, set the EVMS_EINFO_FLAGS_MORE_INFO_AVAILABLE flag
-     * in the extended_info_t flags field.  If the caller wants more information
-     * about a particular extended_info_t item, this API will be called with a
-     * pointer to the storage_object_t and with a pointer to the name of the
-     * extended_info_t item.  In that case, return an extended_info_array_t with
-     * further information about the item.  Each of those items may have the
-     * EVMS_EINFO_FLAGS_MORE_INFO_AVAILABLE flag set if you desire.  It is your
-     * responsibility to give the items unique names so that you know which item
-     * the caller is asking additional information for.  If info_name is NULL,
-     * the caller just wants top level information about the object.
-     */
-    int (*get_plugin_info)(char                    * info_name,
-                           extended_info_array_t * * info);
-
-#ifndef ABI_EVMS_1_0
-    /*
-     * Return an array of private actions that you support for this volume.
-     */
-    int (*get_plugin_functions)(logical_volume_t        * volume,
-                                function_info_array_t * * actions);
-
-    /*
-     * Execute the private action on the volume.
-     */
-    int (*plugin_function)(logical_volume_t * volume,
-                           task_action_t      action,
-                           dlist_t            objects,
-                           option_array_t   * options);
+#ifdef ABI_EVMS_1_0
+#define ENGINE_PLUGIN_API_MAJOR_VERION  3
+#else
+#define ENGINE_PLUGIN_API_MAJOR_VERION  8
 #endif
-    
-    /*
-     * Generic method for communicating with your plug-in.
-     */
-    int (*direct_plugin_communication)(void  * thing,
-                                       BOOLEAN target_kernel_plugin,
-                                       void  * arg);
-
-} fsim_functions_t;
-
+#define ENGINE_PLUGIN_API_MINOR_VERION  0
+#define ENGINE_PLUGIN_API_PATCH_LEVEL   0
 
 typedef struct plugin_functions_s {
     int (*setup_evms_plugin)(engine_mode_t        mode,
@@ -964,13 +764,13 @@ typedef struct plugin_functions_s {
 
 #ifndef ABI_EVMS_1_0
     /*
-     * Return an array of private actions that you support for this object.
+     * Return an array of plug-in functions that you support for this object.
      */
     int (*get_plugin_functions)(storage_object_t        * object,
                                 function_info_array_t * * actions);
 
     /*
-     * Execute the private action on the object.
+     * Execute the plug-in function on the object.
      */
     int (*plugin_function)(storage_object_t * object,
                            task_action_t      action,
@@ -987,6 +787,276 @@ typedef struct plugin_functions_s {
 
 } plugin_functions_t;
 
+
+#ifndef ABI_EVMS_1_0
+#define ENGINE_FSIM_API_MAJOR_VERION  8
+#define ENGINE_FSIM_API_MINOR_VERION  0
+#define ENGINE_FSIM_API_PATCH_LEVEL   0
+#endif
+
+typedef struct fsim_functions_s {
+    int (*setup_evms_plugin)(engine_mode_t        mode,
+                             engine_functions_t * functions);
+
+    void (*cleanup_evms_plugin)(void);
+
+    /*
+     * Does this FSIM manage the file system on this volume?
+     * Return 0 for "yes", else a reason code.
+     */
+    int (*is_this_yours)(logical_volume_t * volume);
+
+    /*
+     * Get the current size of the file system on this volume.
+     */
+    int (*get_fs_size)(logical_volume_t * volume,
+                       sector_count_t   * fs_size);
+
+    /*
+     * Get the file system size limits for this volume.
+     */
+    int (*get_fs_limits)(logical_volume_t * volume,
+                         sector_count_t   * fs_min_size,
+                         sector_count_t   * fs_max_size,
+                         sector_count_t   * vol_max_size);
+
+    /*
+     * Can you install your file system on this volume?
+     */
+    int (*can_mkfs)(logical_volume_t * volume);
+
+    /*
+     * Can you remove your file system from this volume?
+     */
+    int (*can_unmkfs)(logical_volume_t * volume);
+
+    /*
+     * Can you fsck this volume?
+     */
+    int (*can_fsck)(logical_volume_t * volume);
+
+    /*
+     * Can you defrag this volume?
+     */
+    int (*can_defrag)(logical_volume_t * volume);
+
+    /*
+     * Can you expand this volume by the amount specified?
+     * If your file system cannot handle expansion at all, return an
+     * error code that indicates why it cannot be expanded..
+     * If your file system can expand but cannot handle having unused
+     * space after the end of your file system, adjust the *delta_size
+     * to the maximum you allow and return 0.
+     * If your file system cannot fill the resulting size but your file
+     * system can handle extra unused space after the end of the file
+     * system, then do not change the *delta_size and return 0.
+     */
+    int (*can_expand_by)(logical_volume_t * volume,
+                         sector_count_t   * delta_size);
+
+    /*
+     * Can you shrink this volume by the amount specified?
+     * If your file system cannot handle shrinking at all, return an
+     * error code that indicates why it cannot be shrunk.
+     * If your file system can shrink but the *delta_size is too much to
+     * shrink by, adjust the *delta_size to the maximum shrinkage you allow and
+     * return 0.
+     */
+    int (*can_shrink_by)(logical_volume_t * volume,
+                         sector_count_t   * delta_size);
+
+#ifndef ABI_EVMS_1_0		/* New for version 8 */
+    /*
+     * mkfs has been scheduled.  Do any setup work such as claiming another
+     * volume for an external log.
+     */
+    int (*mkfs_setup)(logical_volume_t * volume,
+                      option_array_t   * options);
+#endif
+
+    /*
+     * Install your file system on the volume.
+     */
+    int (*mkfs)(logical_volume_t * volume,
+                option_array_t   * options);
+
+#ifndef ABI_EVMS_1_0		/* New for version 8 */
+    /*
+     * unmkfs has been scheduled.  Do any setup work such as releasing another
+     * volume that was used for an external log.
+     */
+    int (*unmkfs_setup)(logical_volume_t * volume);
+#endif
+
+    /*
+     * Remove your file system from the volume.  This could be as simple as
+     * wiping out critical sectors, such as a superblock, so that you will
+     * no longer detect that your file system is installed on the volume.
+     */
+    int (*unmkfs)(logical_volume_t * volume);
+
+    /*
+     * Run fsck on the volume.
+     */
+    int (*fsck)(logical_volume_t * volume,
+                option_array_t   * options);
+
+    /*
+     * Defragment on the volume.
+     */
+    int (*defrag)(logical_volume_t * volume,
+                  option_array_t   * options);
+
+    /*
+     * Expand the volume to new_size.  If the volume is not expanded exactly to
+     * new_size, set new_sie to the new_size of the volume.
+     */
+    int (*expand)(logical_volume_t * volume,
+                  sector_count_t   * new_size);
+
+    /*
+     * Shrink the volume to new_size.  If the volume is not expanded exactly to
+     * new_size, set new_size to the new_size of the volume.
+     */
+    int (*shrink)(logical_volume_t * volume,
+                  sector_count_t     requested_size,
+                  sector_count_t   * new_size);
+
+    /*
+     * Return the total number of supported options for the specified task.
+     */
+    int (*get_option_count)(task_context_t * context);
+
+    /*
+     * Fill in the initial list of acceptable objects.  Fill in the minimum and
+     * maximum number of objects that must/can be selected.  Set up all initial
+     * values in the option_descriptors in the context record for the given
+     * task.  Some fields in the option_descriptor may be dependent on a
+     * selected object.  Leave such fields blank for now, and fill in during the
+     * set_objects call.
+     */
+    int (*init_task)(task_context_t * context);
+
+    /*
+     * Examine the specified value, and determine if it is valid for the task
+     * and option_descriptor index. If it is acceptable, set that value in the
+     * appropriate entry in the option_descriptor. The value may be adjusted
+     * if necessary/allowed. If so, set the effect return value accordingly.
+     */
+    int (*set_option)(task_context_t * context,
+                      u_int32_t        index,
+                      value_t        * value,
+                      task_effect_t  * effect);
+
+    /*
+     * Validate the volumes in the selected_objects dlist in the task context.
+     * Remove from the selected objects lists any volumes which are not
+     * acceptable.  For unacceptable volumes, create a declined_handle_t
+     * structure with the reason why it is not acceptable, and add it to the
+     * declined_volumes dlist.  Modify the acceptable_objects dlist in the task
+     * context as necessary based on the selected objects and the current
+     * settings of the options.  Modify any option settings as necessary based
+     * on the selected objects.  Return the appropriate task_effect_t settings
+     * if the object list(s), minimum or maximum objects selected, or option
+     * settings have changed.
+     */
+    int (*set_volumes)(task_context_t * context,
+                       dlist_t          declined_volumes,    /* of type declined_handle_t */
+                       task_effect_t  * effect);
+
+
+    /*
+     * Return any additional information that you wish to provide about the
+     * volume.  The Engine provides an external API to get the information
+     * stored in the logical_volume_t.  This call is to get any other
+     * information about the volume that is not specified in the
+     * logical_volume_t.  Any piece of information you wish to provide must be
+     * in an extended_info_t structure.  Use the Engine's engine_alloc() to
+     * allocate the memory for the extended_info_t.  Also use engine_alloc() to
+     * allocate any strings that may go into the extended_info_t.  Then use
+     * engine_alloc() to allocate an extended_info_array_t with enough entries
+     * for the number of extended_info_t structures you are returning.  Fill
+     * in the array and return it in *info.
+     * If you have extended_info_t descriptors that themselves may have more
+     * extended information, set the EVMS_EINFO_FLAGS_MORE_INFO_AVAILABLE flag
+     * in the extended_info_t flags field.  If the caller wants more information
+     * about a particular extended_info_t item, this API will be called with a
+     * pointer to the storage_object_t and with a pointer to the name of the
+     * extended_info_t item.  In that case, return an extended_info_array_t with
+     * further information about the item.  Each of those items may have the
+     * EVMS_EINFO_FLAGS_MORE_INFO_AVAILABLE flag set if you desire.  It is your
+     * responsibility to give the items unique names so that you know which item
+     * the caller is asking additional information for.  If info_name is NULL,
+     * the caller just wants top level information about the object.
+     */
+    int (*get_volume_info)(logical_volume_t        * volume,
+                           char                    * info_name,
+                           extended_info_array_t * * info);
+
+    /*
+     * Apply the settings of the options to the given volume.
+     */
+    int (*set_volume_info)(logical_volume_t * volume,
+                           option_array_t   * options);
+
+    /*
+     * Return any additional information that you wish to provide about your
+     * plug-in.  The Engine provides an external API to get the information
+     * stored in the plugin_record_t.  This call is to get any other
+     * information about the plug-in that is not specified in the
+     * plugin_record_t.  Any piece of information you wish to provide must be
+     * in an extended_info_t structure.  Use the Engine's engine_alloc() to
+     * allocate the memory for the extended_info_t.  Also use engine_alloc() to
+     * allocate any strings that may go into the extended_info_t.  Then use
+     * engine_alloc() to allocate an extended_info_array_t with enough entries
+     * for the number of extended_info_t structures you are returning.  Fill
+     * in the array and return it in *info.
+     * If you have extended_info_t descriptors that themselves may have more
+     * extended information, set the EVMS_EINFO_FLAGS_MORE_INFO_AVAILABLE flag
+     * in the extended_info_t flags field.  If the caller wants more information
+     * about a particular extended_info_t item, this API will be called with a
+     * pointer to the storage_object_t and with a pointer to the name of the
+     * extended_info_t item.  In that case, return an extended_info_array_t with
+     * further information about the item.  Each of those items may have the
+     * EVMS_EINFO_FLAGS_MORE_INFO_AVAILABLE flag set if you desire.  It is your
+     * responsibility to give the items unique names so that you know which item
+     * the caller is asking additional information for.  If info_name is NULL,
+     * the caller just wants top level information about the object.
+     */
+    int (*get_plugin_info)(char                    * info_name,
+                           extended_info_array_t * * info);
+
+#ifndef ABI_EVMS_1_0
+    /*
+     * Return an array of plug-in functions that you support for this volume.
+     */
+    int (*get_plugin_functions)(logical_volume_t        * volume,
+                                function_info_array_t * * actions);
+
+    /*
+     * Execute the plug-in function on the volume.
+     */
+    int (*plugin_function)(logical_volume_t * volume,
+                           task_action_t      action,
+                           dlist_t            objects,
+                           option_array_t   * options);
+#endif
+    
+    /*
+     * Generic method for communicating with your plug-in.
+     */
+    int (*direct_plugin_communication)(void  * thing,
+                                       BOOLEAN target_kernel_plugin,
+                                       void  * arg);
+
+} fsim_functions_t;
+
+
+#ifndef ABI_EVMS_1_0
+#define ENGINE_CONTAINER_API_MAJOR_VERION  8
+#define ENGINE_CONTAINER_API_MINOR_VERION  0
+#define ENGINE_CONTAINER_API_PATCH_LEVEL   0
+#endif
 
 typedef struct container_functions_s {
 
@@ -1108,13 +1178,13 @@ typedef struct container_functions_s {
 
 #ifndef ABI_EVMS_1_0
     /*
-     * Return an array of private actions that you support for this container.
+     * Return an array of plug-in functions that you support for this container.
      */
     int (*get_plugin_functions)(storage_container_t     * container,
                                 function_info_array_t * * actions);
 
     /*
-     * Execute the private action on the container.
+     * Execute the plug-in function on the container.
      */
     int (*plugin_function)(storage_container_t * container,
                            task_action_t         action,

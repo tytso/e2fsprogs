@@ -22,17 +22,158 @@
 #ifndef EVMS_COMMON_H_INCLUDED
 #define EVMS_COMMON_H_INCLUDED 1
 
+#include <stdlib.h>
+#include <stdint.h>
 #include <linux/types.h>  /* will pull in platform specific data type info from linux/include/asm */
+#include <linux/major.h>    /* For EVMS_MAJOR */
 
-/* Need these to satisfy dependencies in evms_user.h
- * on systems running a 2.5.8 or newer kernel.
+typedef __u8    u8;
+typedef __u16   u16;
+typedef __u32   u32;
+typedef __u64   u64;
+
+/* version info */
+#define EVMS_MAJOR_VERSION              1
+#define EVMS_MINOR_VERSION              1
+#define EVMS_PATCHLEVEL_VERSION         0
+
+#define MAX_EVMS_VOLUMES                256 /* There are 256 minors */
+#define EVMS_VOLUME_NAME_SIZE           127
+
+#define IBM_OEM_ID                      8112    // could be anything, but used
+                                                // I=8, B=1, M=12
+// this one going away as well.
+#define EVMS_OEM_IBM    IBM_OEM_ID
+
+#define EVMS_INITIAL_CRC                0xFFFFFFFF
+#define EVMS_MAGIC_CRC			0x31415926
+
+#define EVMS_VSECTOR_SIZE               512
+#define EVMS_VSECTOR_SIZE_SHIFT         9
+
+#define DEV_PATH			"/dev"
+#define EVMS_DIR_NAME			"evms"
+#define EVMS_DEV_NAME			"block_device"
+#define EVMS_DEV_NODE_PATH		DEV_PATH "/" EVMS_DIR_NAME "/"
+#define EVMS_DEVICE_NAME		DEV_PATH "/" EVMS_DIR_NAME "/" EVMS_DEV_NAME
+
+/* EVMS will always use 64-bit fields */
+typedef u_int64_t evms_sector_t;
+
+/* EVMS specific device handle type definition */
+typedef u_int64_t evms_dev_handle_t;
+
+typedef struct evms_version {
+        /* major changes when incompatible differences are introduced */
+        u_int32_t    major;
+        /* minor changes when additions are made */
+        u_int32_t    minor;
+        /* patchlevel changes when bugs are fixed */
+        u_int32_t    patchlevel;
+} evms_version_t;
+
+typedef enum evms_plugin_code {
+        EVMS_NO_PLUGIN,                                // 0
+        EVMS_DEVICE_MANAGER,                           // 1
+        EVMS_SEGMENT_MANAGER,                          // 2
+        EVMS_REGION_MANAGER,                           // 3
+        EVMS_FEATURE,                                  // 4
+        EVMS_ASSOCIATIVE_FEATURE,                      // 5
+        EVMS_FILESYSTEM_INTERFACE_MODULE,              // 6
+        EVMS_CLUSTER_MANAGER_INTERFACE_MODULE,         // 7
+        EVMS_DISTRIBUTED_LOCK_MANAGER_INTERFACE_MODULE // 8
+} evms_plugin_code_t;
+
+#define SetPluginID(oem, type, id) ((oem << 16) | (type << 12) | id)
+#define GetPluginOEM(pluginid) (pluginid >> 16)
+#define GetPluginType(pluginid) ((pluginid >> 12) & 0xf)
+#define GetPluginID(pluginid) (pluginid & 0xfff)
+
+/* bit definitions for the flags field in
+ * the EVMS LOGICAL NODE (kernel) and
+ * the EVMS LOGICAL VOLUME (user) structures.
  */
-typedef __u8	u8;
-typedef __u16	u16;
-typedef __u32	u32;
-typedef __u64	u64;
+#define EVMS_FLAGS_WIDTH                   	32
+#define EVMS_VOLUME_FLAG                        (1<<0)
+#define EVMS_VOLUME_PARTIAL_FLAG                (1<<1)
+#define EVMS_VOLUME_PARTIAL			(1<<1)
+#define EVMS_VOLUME_SET_READ_ONLY               (1<<2)
+#define EVMS_VOLUME_READ_ONLY               	(1<<2)
 
-#include <evms/evms_user.h>
+/* queued flags bits */
+#define EVMS_REQUESTED_DELETE			(1<<5)
+#define EVMS_REQUESTED_QUIESCE			(1<<6)
+#define EVMS_REQUESTED_VFS_QUIESCE		(1<<7)
+
+/* this bit indicates corruption */
+#define EVMS_VOLUME_CORRUPT			(1<<8)
+
+/* these bits define the source of the corruption */
+#define EVMS_VOLUME_SOFT_DELETED               	(1<<9)
+#define EVMS_DEVICE_UNAVAILABLE			(1<<10)
+
+/* these bits define volume status */
+#define EVMS_MEDIA_CHANGED			(1<<20)
+#define EVMS_DEVICE_UNPLUGGED			(1<<21)
+
+/* these bits used for removable status */
+#define EVMS_DEVICE_MEDIA_PRESENT		(1<<24)
+#define EVMS_DEVICE_PRESENT			(1<<25)
+#define EVMS_DEVICE_LOCKABLE			(1<<26)
+#define EVMS_DEVICE_REMOVABLE			(1<<27)
+
+/* version info for evms_feature_header_t */
+#define EVMS_FEATURE_HEADER_MAJOR	3
+#define EVMS_FEATURE_HEADER_MINOR	0
+#define EVMS_FEATURE_HEADER_PATCHLEVEL	0
+
+/* bit definitions of FEATURE HEADER bits in the FLAGS field  */
+#define EVMS_FEATURE_ACTIVE                     (1<<0)
+#define EVMS_FEATURE_VOLUME_COMPLETE            (1<<1)
+
+/* bit definitions for VOLUME bits in the FLAGS field */
+#define EVMS_VOLUME_DATA_OBJECT			(1<<16)
+#define EVMS_VOLUME_DATA_STOP			(1<<17)
+
+#define EVMS_FEATURE_HEADER_SIGNATURE           0x54414546 // "FEAT"
+typedef struct evms_feature_header {
+/*  0*/
+	u_int32_t               signature;
+/*  4*/ u_int32_t               crc;
+/*  8*/ evms_version_t          version;
+	/* structure version */
+/* 20*/ evms_version_t          engine_version;
+	/* version of the Engine that */
+	/* wrote this feature header  */
+/* 32*/ u_int32_t               flags;
+/* 36*/ u_int32_t               feature_id;
+/* 40*/ u_int64_t		sequence_number;
+/* 48*/ u_int64_t		alignment_padding;
+        //required: starting lsn to 1st copy of feature's metadata.
+/* 56*/ evms_sector_t           feature_data1_start_lsn;
+/* 64*/	evms_sector_t		feature_data1_size;
+	//in 512 byte units
+	//optional: starting lsn to 2nd copy of feature's metadata.
+	//          if unused set size field to 0.
+/* 72*/ evms_sector_t           feature_data2_start_lsn;
+/* 80*/	evms_sector_t		feature_data2_size;
+	//in 512 byte units
+/* 88*/ u_int64_t               volume_serial_number;
+/* 96*/ u_int32_t               volume_system_id;
+	/* the minor is stored here */
+/*100*/ u_int32_t               object_depth;
+	/* depth of object in the volume tree */
+/*104*/ char                    object_name[EVMS_VOLUME_NAME_SIZE + 1];
+/*232*/ char                    volume_name[EVMS_VOLUME_NAME_SIZE + 1];
+/*360*/ unsigned char		pad[152];
+/*512*/
+} evms_feature_header_t;
+
+/* EVMS specific error codes */
+#define EVMS_FEATURE_FATAL_ERROR                257
+#define EVMS_VOLUME_FATAL_ERROR                 258
+
+#define EVMS_FEATURE_INCOMPLETE_ERROR		259
 
 /* Defines for storage object names */
 #define EVMS_NAME_SIZE          EVMS_VOLUME_NAME_SIZE
@@ -48,6 +189,7 @@ typedef __u64	u64;
 #define SOFLAG_BIOS_READABLE        (1<<7)
 #define SOFLAG_MUST_BE_VOLUME       (1<<8)
 #define SOFLAG_NOT_CLAIMED          (1<<9)
+#define SOFLAG_WRITE_STOP_DATA      (1<<10)
 
 /* Defines for flags in the storage_container_t structure */
 #define SCFLAG_DIRTY                (1<<0)
@@ -67,11 +209,12 @@ typedef __u64	u64;
 #define VOLFLAG_EXPAND_FS           (1<<10)
 #define VOLFLAG_SHRINK_FS           (1<<11)
 #define VOLFLAG_SYNC_FS             (1<<12)
+#define VOLFLAG_PROBE_FS            (1<<13)
 
 /* A BOOLEAN variable is one which is either TRUE or FALSE. */
 #ifndef BOOLEAN_DEFINED
   #define BOOLEAN_DEFINED 1
-  typedef u_int8_t  BOOLEAN;
+typedef unsigned char BOOLEAN;
 #endif
 
 #ifndef TRUE
@@ -82,14 +225,13 @@ typedef __u64	u64;
 #endif
 
 /*
- * Logical Sector Number:  This is a physical sector address on a
- * system drive.
+ * Logical Sector Number:  This is a physical sector address on a system drive.
  */
 typedef u_int64_t       lsn_t;
 
 /*
- * Logical Block Address:  This is a sector address on a volume which
- * will be translated to a Logical Sector Number.
+ * Logical Block Address: This is a sector address on a volume which will be
+ * translated to a Logical Sector Number.
  */
 typedef u_int64_t       lba_t;
 
@@ -106,7 +248,7 @@ typedef u_int64_t       sector_count_t;
 typedef void          * module_handle_t;
 
 /*
- * The standard data type for Engine handles.
+ * The standard data type for Engine handles
  */
 typedef u_int32_t       engine_handle_t;
 
@@ -131,7 +273,7 @@ typedef u_int32_t       plugin_id_t;
 typedef u_int8_t        plugin_type_t;
 
 /*
- * The various modes in which the Engine can be.
+ * The various modes in which the Engine can be
  */
 typedef enum {
     ENGINE_CLOSED = 0,
@@ -150,6 +292,76 @@ typedef struct geometry_s {
     u_int64_t   boot_cylinder_limit;
     u_int64_t   block_size;
 } geometry_t;
+
+
+/*
+ * Definitions and structures for progress indicators.
+ */
+typedef enum {
+    DISPLAY_PERCENT = 0,        /* Display the progress as a percentage.      */
+                                /* This is the default display mode.          */
+    DISPLAY_COUNT,              /* Display the progress as a count.           */
+    INDETERMINATE               /* Progress cannot be measured with a count   */
+                                /* of items.  Progress is simply "working".   */
+} progress_type_t;
+
+typedef struct progress_s {
+    /*
+     * The plug-in MUST set id to zero on the first call.  An id of zero
+     * tells the UI to start a new progress indicator.  The UI MUST set the
+     * id field to a nonzero number that is unique from any other progress
+     * indicators that may be in effect.
+     */
+    uint            id;
+
+    /* Short title for the progress indicator */
+    char          * title;
+
+    /* Longer description of the task that is in progress */
+    char          * description;
+
+    /* Type of progress indicator */
+    progress_type_t type;
+
+    /*
+     * Current number of items completed.  The plug-in should set count to
+     * zero on the first call.
+     */
+    uint            count;
+
+    /*
+     * Total number of items to be completed.  The UI uses count/total_count
+     * to calculate the percent complete.  On the plug-in's last call to
+     * update the progress it MUST set count >= total_count.  When the UI
+     * gets a call for progress and count >= total_count, it knows it is the
+     * last call and closes the progress indicator.
+     */
+    uint            total_count;
+
+    /*
+     * The plug-in may provide an estimate of how many seconds it will take
+     * to complete the operation, but it is not required.  If the plug-in is
+     * not providing a time estimate it MUST set remaining_seconds to zero.
+     * 
+     * The plug-in may update remaining_seconds on subsequent calls for
+     * progress.  If the plug-in does not provide a time estimate, the UI
+     * may provide one based on the time elapsed between the calls to update
+     * the progress and the numbers in the count and total_count fields.
+     */
+    uint            remaining_seconds;
+
+    /*
+     * A place for the plug-in to store any data relating to this progress
+     * indicator.
+     */
+    void          * plugin_private_data;
+
+    /*
+     * A place for the UI to store any data relating to this progress
+     * indicator.
+     */
+    void          * ui_private_data;
+} progress_t;
 
 /*
  * The data types which a storage object can be.
@@ -226,34 +438,34 @@ typedef enum {
     WARNING = 3,
 
     /*
-     * Use DEFAULT for informational messages that do not indicate problems, or
-     * that a problem occurred but there was a work-around.  DEFAULT messages
-     * should be things that the user would usually want to know during any run
-     * of the Engine, such as how many volumes were discovered on the system,
-     * and not necessarily what a developer would want to know (use DETAILS or
-     * DEBUG for that).  Since DEFAULT is the default debug level, be careful
-     * not to put DEFAULT messages in loops or frequently executed code as they
-     * will bloat the log file.
+     * Use DEFAULT for informational messages that do not indicate problems,
+     * or that a problem occurred but there was a work-around.  DEFAULT
+     * messages should be things that the user would usually want to know
+     * during any run of the Engine, such as how many volumes were discovered
+     * on the system, and not necessarily what a developer would want to know
+     * (use DETAILS or DEBUG for that).  Since DEFAULT is the default debug
+     * level, be careful not to put DEFAULT messages in loops or frequently
+     * executed code as they will bloat the log file.
      */
     DEFAULT = 5,
 
     /*
-     * Use DETAILS to provide more detailed information about the system.  The
-     * message may provide additional information about the progress of the
-     * system.  It may contain more information about a DEFAULT message or more
-     * information about an error condition.
+     * Use DETAILS to provide more detailed information about the system.
+     * The message may provide additional information about the progress of
+     * the system.  It may contain more information about a DEFAULT message
+     * or more information about an error condition.
      */
     DETAILS = 6,
 
     /*
-     * Use DEBUG for messages that would help debug a problem, such as tracing
-     * code paths or dumping the contents of variables.
+     * Use DEBUG for messages that would help debug a problem, such as
+     * tracing code paths or dumping the contents of variables.
      */
     DEBUG = 7,
 
     /*
-     * Use EXTRA to provided more information than your standard debug messages
-     * provide.
+     * Use EXTRA to provided more information than your standard debug
+     * messages provide.
      */
 
     EXTRA = 8,
@@ -264,8 +476,8 @@ typedef enum {
     ENTRY_EXIT = 9,
 
     /*
-     * Use EVERYTHING for all manner of verbose output.  Feel free to bloat the
-     * log file with any messages that would help you debug a problem.
+     * Use EVERYTHING for all manner of verbose output.  Feel free to bloat
+     * the log file with any messages that would help you debug a problem.
      */
     EVERYTHING = 10
 

@@ -72,6 +72,10 @@ typedef enum {
 
 typedef struct function_info_s {
     task_action_t   function;       /* Plugin function number */
+#ifndef ABI_EVMS_1_0
+    char          * name;           /* Short, unique (within the plug-in) name for the function */
+                                    /* e.g., "addspare" */
+#endif
     char          * title;          /* Short title for the function */
                                     /* e.g. "Add a spare" */
                                     /* Example usage:  A UI might put this in */

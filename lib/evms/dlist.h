@@ -147,12 +147,12 @@
 
 #define DLISTHANDLER  1
 
-#include <linux/types.h>  /* will pull in platform specific data type info from linux/include/asm */
+#include <stdlib.h>
 #include <errno.h>
 
 #ifndef BOOLEAN_DEFINED
   #define BOOLEAN_DEFINED 1
-  typedef u_int8_t      BOOLEAN;
+  typedef unsigned char BOOLEAN;
 #endif
 
 typedef void *          ADDRESS;
@@ -292,8 +292,8 @@ typedef enum _Insertion_Modes {
 /*                                                                   */
 /*********************************************************************/
 dlist_t CreateList(uint InitialPoolSize,
-                 uint MaximumPoolSize,
-                 uint PoolIncrement);
+                   uint MaximumPoolSize,
+                   uint PoolIncrement);
 
 #else
 

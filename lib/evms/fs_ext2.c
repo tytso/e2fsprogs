@@ -1168,7 +1168,12 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 	extended_info_array_t   *Info;
 	extended_info_t		*iptr;
 	char                     version_string[64];
+#ifdef ABI_EVMS_1_0
 	char                     required_version_string[64];
+#else
+	char                     required_engine_api_version_string[64];
+	char                     required_fsim_api_version_string[64];
+#endif	
 
 	LOGENTRY();
 
@@ -1177,7 +1182,7 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 		if (descriptor_name == NULL) {
 			*info = NULL;	  /* init to no info returned */
 
-			Info = EngFncs->engine_alloc( sizeof(extended_info_array_t) + (8*sizeof(extended_info_t))  );
+			Info = EngFncs->engine_alloc( sizeof(extended_info_array_t) + (9*sizeof(extended_info_t))  );
 			if (Info) {
 
 				Info->count = 0;
@@ -1187,10 +1192,22 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 					MINOR_VERSION,
 					PATCH_LEVEL );
 
+#ifdef ABI_EVMS_1_0
 				sprintf(required_version_string, "%d.%d.%d",
 					pMyPluginRecord->required_api_version.major,
 					pMyPluginRecord->required_api_version.minor,
 					pMyPluginRecord->required_api_version.patchlevel );
+#else
+				sprintf(required_engine_api_version_string, "%d.%d.%d",
+					pMyPluginRecord->required_engine_api_version.major,
+					pMyPluginRecord->required_engine_api_version.minor,
+					pMyPluginRecord->required_engine_api_version.patchlevel );
+
+				sprintf(required_fsim_api_version_string, "%d.%d.%d",
+					pMyPluginRecord->required_plugin_api_version.fsim.major,
+					pMyPluginRecord->required_plugin_api_version.fsim.minor,
+					pMyPluginRecord->required_plugin_api_version.fsim.patchlevel );
+#endif
 
 				iptr = &Info->info[Info->count++];
 				SET_STRING_FIELD( iptr->name, "Short Name" );
@@ -1232,6 +1249,7 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 				iptr->collection_type    = EVMS_Collection_None;
 				memset( &iptr->group, 0, sizeof(group_info_t));
 
+#ifdef ABI_EVMS_1_0
 				iptr = &Info->info[Info->count++];
 				SET_STRING_FIELD( iptr->name, "Required Version" );
 				SET_STRING_FIELD( iptr->title, "Required Engine Version" );
@@ -1241,7 +1259,28 @@ static int fs_get_plugin_info( char * descriptor_name, extended_info_array_t * *
 				SET_STRING_FIELD( iptr->value.s, required_version_string );
 				iptr->collection_type    = EVMS_Collection_None;
 				memset( &iptr->group, 0, sizeof(group_info_t));
+#else
+				iptr = &Info->info[Info->count++];
+				SET_STRING_FIELD( iptr->name, "Required Engine Services Version" );
+				SET_STRING_FIELD( iptr->title, "Required Engine Services Version" );
+				SET_STRING_FIELD( iptr->desc, "This is the version of the Engine services that this plug-in requires. It will not run on older versions of the Engine services.");
+				iptr->type               = EVMS_Type_String;
+				iptr->unit               = EVMS_Unit_None;
+				SET_STRING_FIELD( iptr->value.s, required_engine_api_version_string );
+				iptr->collection_type    = EVMS_Collection_None;
+				memset( &iptr->group, 0, sizeof(group_info_t));
 
+				iptr = &Info->info[Info->count++];
+				SET_STRING_FIELD( iptr->name, "Required Engine FSIM API Version" );
+				SET_STRING_FIELD( iptr->title, "Required Engine FSIM API Version" );
+				SET_STRING_FIELD( iptr->desc, "This is the version of the Engine FSIM API that this plug-in requires. It will not run on older versions of the Engine FSIM API.");
+				iptr->type               = EVMS_Type_String;
+				iptr->unit               = EVMS_Unit_None;
+				SET_STRING_FIELD( iptr->value.s, required_fsim_api_version_string );
+				iptr->collection_type    = EVMS_Collection_None;
+				memset( &iptr->group, 0, sizeof(group_info_t));
+#endif
+				
 #if defined(PACKAGE) && defined(VERSION)
 				iptr = &Info->info[Info->count++];
 				SET_STRING_FIELD( iptr->name, "E2fsprogs Version" );
@@ -1367,9 +1406,18 @@ static fsim_functions_t  fsim_ops = {
 plugin_record_t  ext2_plugrec = {
 	id:                               SetPluginID(EVMS_OEM_IBM, EVMS_FILESYSTEM_INTERFACE_MODULE, FS_TYPE_EXT2 ),
 	version:                          {MAJOR_VERSION, MINOR_VERSION, PATCH_LEVEL},
+#ifdef ABI_EVMS_1_0
 	required_api_version:             {ENGINE_PLUGIN_API_MAJOR_VERION, 
 					   ENGINE_PLUGIN_API_MINOR_VERION,
 					   ENGINE_PLUGIN_API_PATCH_LEVEL},
+#else
+	required_engine_api_version:      {8, 
+					   0,
+					   0},
+	required_plugin_api_version: {fsim: {8, 
+					   0,
+					   0} },
+#endif
 	short_name:                       "Ext2/3",
 	long_name:                        "Ext2 File System Interface Module",
 	oem_name:                         "IBM",
