@@ -663,7 +663,12 @@ extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir);
 /* ext_attr.c */
 void ext2fs_swap_ext_attr(ext2_filsys fs, char *to, char *from);
 extern errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf);
-extern errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *buf); 
+extern errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block,
+				       void *buf);
+extern errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
+					   char *block_buf,
+					   int adjust, __u32 *newcount);
+
 /* fileio.c */
 extern errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 				  int flags, ext2_file_t *ret);
@@ -873,6 +878,8 @@ extern int ext2fs_test_ib_dirty(ext2_filsys fs);
 extern int ext2fs_test_bb_dirty(ext2_filsys fs);
 extern int ext2fs_group_of_blk(ext2_filsys fs, blk_t blk);
 extern int ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino);
+extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
+				      struct ext2_inode *inode);
 
 /*
  * The actual inlined functions definitions themselves...
@@ -1024,6 +1031,13 @@ _INLINE_ int ext2fs_group_of_blk(ext2_filsys fs, blk_t blk)
 _INLINE_ int ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino)
 {
 	return (ino - 1) / fs->super->s_inodes_per_group;
+}
+
+_INLINE_ blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
+					struct ext2_inode *inode)
+{
+       return inode->i_blocks -
+              (inode->i_file_acl ? fs->blocksize >> 9 : 0);
 }
 #undef _INLINE_
 #endif

@@ -152,10 +152,7 @@ static int release_inode_block(ext2_filsys fs,
 		retval |= BLOCK_CHANGED;
 	}
 	
-	ext2fs_unmark_block_bitmap(fs->block_map, blk);
-	fs->group_desc[ext2fs_group_of_blk(fs, blk)].bg_free_blocks_count++;
-	fs->super->s_free_blocks_count++;
-	
+	ext2fs_block_alloc_stats(fs, blk, -1);
 	return retval;
 }
 		
@@ -168,9 +165,10 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 				struct ext2_inode *inode, char *block_buf,
 				struct problem_context *pctx)
 {
+	struct process_block_struct 	pb;
 	ext2_filsys			fs = ctx->fs;
 	errcode_t			retval;
-	struct process_block_struct 	pb;
+	__u32				count;
 
 	if (!ext2fs_inode_has_valid_blocks(inode))
 		return 0;
@@ -211,7 +209,23 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		inode->i_blocks -= pb.truncated_blocks *
 			(fs->blocksize / 512);
 
-	ext2fs_mark_bb_dirty(fs);
+	if (inode->i_file_acl) {
+		retval = ext2fs_adjust_ea_refcount(fs, inode->i_file_acl,
+						   block_buf, -1, &count);
+		if (retval == EXT2_ET_BAD_EA_BLOCK_NUM) {
+			retval = 0;
+			count = 1;
+		}
+		if (retval) {
+			com_err("release_inode_blocks", retval,
+		_("while calling ext2fs_adjust_ea_refocunt for inode %d"),
+				ino);
+			return 1;
+		}
+		if (count == 0)
+			ext2fs_block_alloc_stats(fs, inode->i_file_acl, -1);
+		inode->i_file_acl = 0;
+	}
 	return 0;
 }
 
@@ -222,7 +236,6 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 static int release_orphan_inodes(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	int group;
 	ext2_ino_t	ino, next_ino;
 	struct ext2_inode inode;
 	struct problem_context pctx;
@@ -281,14 +294,8 @@ static int release_orphan_inodes(e2fsck_t ctx)
 			goto return_abort;
 
 		if (!inode.i_links_count) {
-			ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
-			ext2fs_mark_ib_dirty(fs);
-			group = ext2fs_group_of_ino(fs, ino);
-			fs->group_desc[group].bg_free_inodes_count++;
-			fs->super->s_free_inodes_count++;
-			if (LINUX_S_ISDIR(inode.i_mode))
-				fs->group_desc[group].bg_used_dirs_count--;
-			
+			ext2fs_inode_alloc_stats2(fs, ino, -1,
+						  LINUX_S_ISDIR(inode.i_mode));
 			inode.i_dtime = time(0);
 		} else {
 			inode.i_dtime = 0;

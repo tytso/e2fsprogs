@@ -30,6 +30,10 @@ e2fsck \- check a Linux second extended file system
 @JDEV@.B \-j
 @JDEV@.I external-journal
 @JDEV@]
+[
+.B \-E
+.I extended_options
+]
 .I device
 .SH DESCRIPTION
 .B e2fsck
@@ -121,6 +125,18 @@ try to optimize all directories, either by reindexing them if the
 filesystem supports directory indexing,  or by sorting and compressing
 directories for smaller directories, or for filesystems using
 traditional linear directories.
+.TP
+.BI \-E " extended_options"
+Set e2fsck extended options.  Extended options are comma
+separated, and may take an argument using the equals ('=') sign.  The 
+following options are supported:
+.RS 1.2i
+.TP
+.BI ea_ver= extended_attribute_version
+Assume the format of the extended attribute blocks in the filesystem is
+the specified version number.  The version number may be 1 or 2.  The
+default extended attribute version format is 2.
+.RE
 .TP
 .B \-f
 Force checking even if the file system seems clean.

@@ -278,5 +278,8 @@ ec	EXT2_ET_NO_JOURNAL,
 ec	EXT2_ET_DIRHASH_UNSUPP,
 	"Directory hash unsupported"
 
+ec	EXT2_ET_BAD_EA_BLOCK_NUM,
+	"Illegal extended attribute block number"
+
 	end
 

@@ -259,15 +259,17 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 	while (ino) {
 		pctx.ino = ctx->stashed_ino = ino;
 		if ((ino != EXT2_BAD_INO) &&
-		    (!ext2fs_test_inode_bitmap(ctx->inode_used_map, ino) ||
-		     !ext2fs_inode_has_valid_blocks(&inode)))
+		    !ext2fs_test_inode_bitmap(ctx->inode_used_map, ino))
 			goto next;
 
 		pb.ino = ino;
 		pb.dup_blocks = 0;
 		pb.inode = &inode;
-		pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
-					      process_pass1b_block, &pb);
+
+		if (ext2fs_inode_has_valid_blocks(&inode) ||
+		    (ino == EXT2_BAD_INO))
+			pctx.errcode = ext2fs_block_iterate2(fs, ino,
+				     0, block_buf, process_pass1b_block, &pb);
 		if (inode.i_file_acl)
 			process_pass1b_block(fs, &inode.i_file_acl,
 					     BLOCK_COUNT_EXTATTR, 0, 0, &pb);
@@ -543,7 +545,7 @@ static int delete_file_block(ext2_filsys fs,
 				*block_nr);
 	} else {
 		ext2fs_unmark_block_bitmap(ctx->block_found_map, *block_nr);
-		ext2fs_unmark_block_bitmap(fs->block_map, *block_nr);
+		ext2fs_block_alloc_stats(fs, *block_nr, -1);
 	}
 		
 	return 0;
@@ -556,6 +558,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	struct process_block_struct pb;
 	struct ext2_inode	inode;
 	struct problem_context	pctx;
+	unsigned int		count;
 
 	clear_problem_context(&pctx);
 	pctx.ino = pb.ino = ino;
@@ -563,23 +566,47 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	pb.ctx = ctx;
 	pctx.str = "delete_file";
 
-	pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
-				       delete_file_block, &pb);
+	e2fsck_read_inode(ctx, ino, &inode, "delete_file");
+	if (ext2fs_inode_has_valid_blocks(&inode))
+		pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
+						     delete_file_block, &pb);
 	if (pctx.errcode)
 		fix_problem(ctx, PR_1B_BLOCK_ITERATE, &pctx);
 	ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
 	ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
 	if (ctx->inode_bad_map)
 		ext2fs_unmark_inode_bitmap(ctx->inode_bad_map, ino);
-	ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
-	ext2fs_mark_ib_dirty(fs);
-	ext2fs_mark_bb_dirty(fs);
+	ext2fs_inode_alloc_stats2(fs, ino, -1, LINUX_S_ISDIR(inode.i_mode));
+
+	/* Inode may have changed by block_iterate, so reread it */
 	e2fsck_read_inode(ctx, ino, &inode, "delete_file");
 	inode.i_links_count = 0;
 	inode.i_dtime = time(0);
-	if (inode.i_file_acl)
-		delete_file_block(fs, &inode.i_file_acl,
-				  BLOCK_COUNT_EXTATTR, 0, 0, &pb);
+	if (inode.i_file_acl &&
+	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
+		count = 1;
+		pctx.errcode = ext2fs_adjust_ea_refcount(fs, inode.i_file_acl,
+						   block_buf, -1, &count);
+		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
+			pctx.errcode = 0;
+			count = 1;
+		}
+		if (pctx.errcode) {
+			pctx.blk = inode.i_file_acl;
+			fix_problem(ctx, PR_1B_ADJ_EA_REFCOUNT, &pctx);
+		}
+		/*
+		 * If the count is zero, then arrange to have the
+		 * block deleted.  If the block is in the block_dup_map,
+		 * also call delete_file_block since it will take care
+		 * of keeping the accounting straight.
+		 */
+		if ((count == 0) ||
+		    ext2fs_test_block_bitmap(ctx->block_dup_map,
+					     inode.i_file_acl)) 
+			delete_file_block(fs, &inode.i_file_acl,
+					  BLOCK_COUNT_EXTATTR, 0, 0, &pb);
+	}
 	e2fsck_write_inode(ctx, ino, &inode, "delete_file");
 }
 
@@ -683,8 +710,9 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 
 	pctx.ino = ino;
 	pctx.str = "clone_file";
-	pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
-				      clone_file_block, &cs);
+	if (ext2fs_inode_has_valid_blocks(&dp->inode))
+		pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
+						     clone_file_block, &cs);
 	ext2fs_mark_bb_dirty(fs);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1B_BLOCK_ITERATE, &pctx);
@@ -697,6 +725,8 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 		retval = cs.errcode;
 		goto errout;
 	}
+	/* The inode may have changed on disk, so we have to re-read it */
+	e2fsck_read_inode(ctx, ino, &dp->inode, "clone file EA");
 	blk = dp->inode.i_file_acl;
 	if (blk && (clone_file_block(fs, &dp->inode.i_file_acl,
 				     BLOCK_COUNT_EXTATTR, 0, 0, &cs) ==
@@ -717,7 +747,7 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 			if (di->inode.i_file_acl == blk) {
 				di->inode.i_file_acl = dp->inode.i_file_acl;
 				e2fsck_write_inode(ctx, ino_el->inode,
-					   &dp->inode, "clone file EA");
+					   &di->inode, "clone file EA");
 				decrement_badcount(ctx, blk, db);
 			}
 		}

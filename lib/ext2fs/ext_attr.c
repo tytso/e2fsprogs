@@ -1,7 +1,9 @@
 /*
  * ext_attr.c --- extended attribute blocks
  * 
- * Copyright (C) Andreas Gruenbacher, <a.gruenbacher@computer.org>
+ * Copyright (C) 2001 Andreas Gruenbacher, <a.gruenbacher@computer.org>
+ *
+ * Copyright (C) 2002 Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -94,5 +96,46 @@ errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *inbuf)
 		ext2fs_free_mem((void **) &buf);
 	if (!retval)
 		ext2fs_mark_changed(fs);
+	return retval;
+}
+
+/*
+ * This function adjusts the reference count of the EA block.
+ */
+errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
+				    char *block_buf, int adjust,
+				    __u32 *newcount)
+{
+	errcode_t	retval;
+	struct ext2_ext_attr_header *header;
+	char	*buf = 0;
+
+	if ((blk >= fs->super->s_blocks_count) ||
+	    (blk < fs->super->s_first_data_block))
+		return EXT2_ET_BAD_EA_BLOCK_NUM;
+
+	if (!block_buf) {
+		retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+		if (retval)
+			return retval;
+		block_buf = buf;
+	}
+
+	retval = ext2fs_read_ext_attr(fs, blk, block_buf);
+	if (retval)
+		goto errout;
+
+	header = (struct ext2_ext_attr_header *) block_buf;
+	header->h_refcount += adjust;
+	if (newcount)
+		*newcount = header->h_refcount;
+
+	retval = ext2fs_write_ext_attr(fs, blk, block_buf);
+	if (retval)
+		goto errout;
+
+errout:
+	if (buf)
+		ext2fs_free_mem((void **) &buf);
 	return retval;
 }

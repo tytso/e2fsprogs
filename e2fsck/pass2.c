@@ -886,7 +886,7 @@ static int deallocate_inode_block(ext2_filsys fs,
 	if (HOLE_BLKADDR(*block_nr))
 		return 0;
 	ext2fs_unmark_block_bitmap(ctx->block_found_map, *block_nr);
-	ext2fs_unmark_block_bitmap(fs->block_map, *block_nr);
+	ext2fs_block_alloc_stats(fs, *block_nr, -1);
 	return 0;
 }
 		
@@ -898,6 +898,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode	inode;
 	struct problem_context	pctx;
+	__u32			count;
 	
 	ext2fs_icount_store(ctx->inode_link_info, ino, 0);
 	e2fsck_read_inode(ctx, ino, &inode, "deallocate_inode");
@@ -915,8 +916,29 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
 	if (ctx->inode_bad_map)
 		ext2fs_unmark_inode_bitmap(ctx->inode_bad_map, ino);
-	ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
-	ext2fs_mark_ib_dirty(fs);
+	ext2fs_inode_alloc_stats2(fs, ino, -1, LINUX_S_ISDIR(inode.i_mode));
+
+	if (inode.i_file_acl &&
+	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
+		pctx.errcode = ext2fs_adjust_ea_refcount(fs, inode.i_file_acl,
+						   block_buf, -1, &count);
+		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
+			pctx.errcode = 0;
+			count = 1;
+		}
+		if (pctx.errcode) {
+			pctx.blk = inode.i_file_acl;
+			fix_problem(ctx, PR_2_ADJ_EA_REFCOUNT, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
+		}
+		if (count == 0) {
+			ext2fs_unmark_block_bitmap(ctx->block_found_map,
+						   inode.i_file_acl);
+			ext2fs_block_alloc_stats(fs, inode.i_file_acl, -1);
+		}
+		inode.i_file_acl = 0;
+	}
 
 	if (!ext2fs_inode_has_valid_blocks(&inode))
 		return;
@@ -925,13 +947,6 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	    (inode.i_size_high || inode.i_size & 0x80000000UL))
 		ctx->large_files--;
 
-	if (inode.i_file_acl) {
-		ext2fs_unmark_block_bitmap(ctx->block_found_map,
-					   inode.i_file_acl);
-		ext2fs_unmark_block_bitmap(fs->block_map, inode.i_file_acl);
-	}
-
-	ext2fs_mark_bb_dirty(fs);
 	pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
 					    deallocate_inode_block, ctx);
 	if (pctx.errcode) {
@@ -947,7 +962,6 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct ext2_inode	inode;
-	struct problem_context	pctx;
 	
 	e2fsck_read_inode(ctx, ino, &inode, "clear_htree");
 	inode.i_flags = inode.i_flags & ~EXT2_INDEX_FL;
@@ -980,16 +994,16 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	    !(LINUX_S_ISSOCK(inode.i_mode)))
 		problem = PR_2_BAD_MODE;
 	else if (LINUX_S_ISCHR(inode.i_mode)
-		 && !e2fsck_pass1_check_device_inode(&inode))
+		 && !e2fsck_pass1_check_device_inode(fs, &inode))
 		problem = PR_2_BAD_CHAR_DEV;
 	else if (LINUX_S_ISBLK(inode.i_mode)
-		 && !e2fsck_pass1_check_device_inode(&inode))
+		 && !e2fsck_pass1_check_device_inode(fs, &inode))
 		problem = PR_2_BAD_BLOCK_DEV;
 	else if (LINUX_S_ISFIFO(inode.i_mode)
-		 && !e2fsck_pass1_check_device_inode(&inode))
+		 && !e2fsck_pass1_check_device_inode(fs, &inode))
 		problem = PR_2_BAD_FIFO;
 	else if (LINUX_S_ISSOCK(inode.i_mode)
-		 && !e2fsck_pass1_check_device_inode(&inode))
+		 && !e2fsck_pass1_check_device_inode(fs, &inode))
 		problem = PR_2_BAD_SOCKET;
 	else if (LINUX_S_ISLNK(inode.i_mode)
 		 && !e2fsck_pass1_check_symlink(fs, &inode, buf)) {

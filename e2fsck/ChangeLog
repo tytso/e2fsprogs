@@ -1,3 +1,71 @@
+2002-08-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.h, e2fsck.c (e2fsck_allocate_context): Add new field to
+		the e2fsck context, ext_attr_ver, which specifies the EA
+		format version.
+
+	* unix.c (usage, parse_extended_opts, PRS), e2fsck.8.in: Add new
+		option -E, which allows the users to specify extended
+		options.  Added ea_ver extended option.
+
+	* pass1.c (e2fsck_pass1_check_device_inode): Add ext2_filsys
+		argument to this function, so we can account for the
+		presence of extended attribute blocks attached to device
+		inodes.
+		(e2fsck_pass1_check_symlink, e2fsck_pass1): Take into
+		account the fact that symlinks can also have extended
+		attribute blocks.
+		(check_ext_attr): Don't be flexible about the EA format
+		version.  Check against the version number in
+		ctx->ext_attr_ver. 
+		(check_blocks): Check all inodes, so that we account for
+		extended attribute blocks belonging to special files.
+		Clean up i_size checks.
+
+	* pass1b.c (pass1b): Check all inodes, so that we account for
+		extended attribute blocks belonging to special files.
+		(delete_file_block): Use ext2fs_alloc_block_stats() to
+		update the filesystem statistics.
+		(delete_file): Attempt to decrement the extended
+		attribute refcount, and free the EA block if the count
+		hits zero.
+		(clone_file): Fixed bugs in EA handling.  Don't call
+		block_iterate on inodes that don't have a valid i_block[]
+		array.  Reread the base inode since it may have been
+		changed by ext2fs_block_iterate.  When updating inodes as
+		part of cloning an EA block, write out the correct inode
+		structure.
+
+	* pass2.c (deallocate_inode_block, deallocate_inode): Use standard
+		ext2fs_alloc_*_stats functions to update the filesystem 
+		statistics.
+		(deallocate_inode): Attempt to decrement the extended
+		attribute refcount, and free the EA block if the count
+		hits zero. 
+		(e2fsck_process_bad_inode): Add extra argument to calls 
+		to e2fsck_pass1_check_device_inode ().
+
+	* pass3.c (e2fsck_get_lost_and_found): Use standard
+		ext2fs_alloc_*_stats functions to update the filesystem.
+		statistics when creating /lost+found.
+		(adjust_inode_count): Remove debugging code that can never
+		be triggered.
+
+	* pass4.c (disconnect_inode): Add explanation about why we only
+		clear inodes that have no data blocks and no EA blocks.
+		Use ext2fs_inode_alloc_stats2 function to update the
+		filesystem statistics when clearing a zero-length inode.
+
+	* problem.c, problem.h (PR_1B_ADJ_EA_REFCOUNT,
+		PR_2_ADJ_EA_REFCOUNT): Add new problem codes.
+
+	* super.c (release_inode_block), (release_orphan_inodes): Use the
+		standard ext2fs_alloc_*_stats functions to update the
+		filesystem statistics.
+		(release_inode_blocks): Attempt to decrement the extended
+		attribute refcount, and free the EA block if the count
+		hits zero.
+
 2002-08-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* dict.c, dict.h: New file from kazlib 1.20 which implements a

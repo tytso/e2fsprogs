@@ -430,8 +430,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 		return 0;
 	}
 	ext2fs_mark_block_bitmap(ctx->block_found_map, blk);
-	ext2fs_mark_block_bitmap(fs->block_map, blk);
-	ext2fs_mark_bb_dirty(fs);
+	ext2fs_block_alloc_stats(fs, blk, +1);
 
 	/*
 	 * Next find a free inode.
@@ -445,8 +444,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	}
 	ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
 	ext2fs_mark_inode_bitmap(ctx->inode_dir_map, ino);
-	ext2fs_mark_inode_bitmap(fs->inode_map, ino);
-	ext2fs_mark_ib_dirty(fs);
+	ext2fs_inode_alloc_stats2(fs, ino, +1, 1);
 
 	/*
 	 * Now let's create the actual data block for the inode
@@ -594,10 +592,6 @@ static errcode_t adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, int adj)
 			return 0;
 		ext2fs_icount_decrement(ctx->inode_link_info, ino, 0);
 		inode.i_links_count--;
-	} else {
-		/* Should never happen */
-		fatal_error(ctx, _("Debug error in e2fsck adjust_inode_count, "
-				   "should never happen.\n"));
 	}
 	
 	retval = ext2fs_write_inode(fs, ino, &inode);

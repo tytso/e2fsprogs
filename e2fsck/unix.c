@@ -61,7 +61,8 @@ static void usage(e2fsck_t ctx)
 	fprintf(stderr,
 		_("Usage: %s [-panyrcdfvstFSV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-I inode_buffer_blocks] [-P process_inode_size]\n"
-		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j ext-journal] device\n"),
+		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j ext-journal]\n"
+		"\t\t[-E extended-options] device\n"),
 		ctx->program_name);
 
 	fprintf(stderr, _("\nEmergency help:\n"
@@ -448,6 +449,60 @@ static void signal_cancel(int sig)
 }
 #endif
 
+static void parse_extended_opts(e2fsck_t ctx, const char *opts)
+{
+	char	*buf, *token, *next, *p, *arg;
+	int	len, ea_ver;
+	int	extended_usage = 0;
+
+	len = strlen(opts);
+	buf = malloc(len+1);
+	if (!buf) {
+		fprintf(stderr, _("Couldn't allocate memory to parse "
+			"extended options!\n"));
+		exit(1);
+	}
+	strcpy(buf, opts);
+	for (token = buf; token && *token; token = next) {
+		p = strchr(token, ',');
+		next = 0;
+		if (p) {
+			*p = 0;
+			next = p+1;
+		} 
+		arg = strchr(token, '=');
+		if (arg) {
+			*arg = 0;
+			arg++;
+		}
+		if (strcmp(token, "ea_ver") == 0) {
+			if (!arg) {
+				extended_usage++;
+				continue;
+			}
+			ea_ver = strtoul(arg, &p, 0);
+			if (*p ||
+			    ((ea_ver != 1) && (ea_ver != 2))) {
+				fprintf(stderr,
+					_("Invalid EA version.\n"));
+				extended_usage++;
+				continue;
+			}
+			ctx->ext_attr_ver = ea_ver;
+		} else
+			extended_usage++;
+	}
+	if (extended_usage) {
+		fprintf(stderr, _("Extended options are separated by commas, "
+			"and may take an argument which\n"
+			"is set off by an equals ('=') sign.  "
+			"Valid raid options are:\n"
+			"\tea_ver=<ea_version (1 or 2)\n\n"));
+		exit(1);
+	}
+}	
+
+
 static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 {
 	int		flush = 0;
@@ -460,6 +515,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #ifdef HAVE_SIGNAL_H
 	struct sigaction	sa;
 #endif
+	char		*extended_opts = 0;
 
 	retval = e2fsck_allocate_context(&ctx);
 	if (retval)
@@ -475,7 +531,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		ctx->program_name = *argv;
 	else
 		ctx->program_name = "e2fsck";
-	while ((c = getopt (argc, argv, "panyrcC:B:dfvtFVM:b:I:j:P:l:L:N:SsD")) != EOF)
+	while ((c = getopt (argc, argv, "panyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsD")) != EOF)
 		switch (c) {
 		case 'C':
 			ctx->progress = e2fsck_update_progress;
@@ -496,6 +552,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			break;
 		case 'D':
 			ctx->options |= E2F_OPT_COMPRESS_DIRS;
+			break;
+		case 'E':
+			extended_opts = optarg;
 			break;
 		case 'p':
 		case 'a':
@@ -602,6 +661,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	    !cflag && !swapfs && !(ctx->options & E2F_OPT_COMPRESS_DIRS))
 		ctx->options |= E2F_OPT_READONLY;
 	ctx->filesystem_name = argv[optind];
+	if (extended_opts)
+		parse_extended_opts(ctx, extended_opts);
+	
 	if (flush) {
 		fd = open(ctx->filesystem_name, O_RDONLY, 0);
 		if (fd < 0) {

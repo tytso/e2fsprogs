@@ -735,7 +735,13 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_1B_BLOCK_ITERATE,
 	  N_("Error while iterating over @bs in @i %i (%s): %m\n"),
 	  PROMPT_NONE, 0 },
-		  
+
+	/* Error adjusting EA refcount */
+	{ PR_1B_ADJ_EA_REFCOUNT,
+	  N_("Error addjusting refcount for @a @b %b (@i %i): %m\n"),
+	  PROMPT_NONE, 0 },
+
+
 	/* Pass 1C: Scan directories for inodes with dup blocks. */
 	{ PR_1C_PASS_HEADER,
 	  N_("Pass 1C: Scan directories for @is with dup @bs.\n"),
@@ -1050,6 +1056,11 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_2_HTREE_BADBLK,
 	  N_("@p @h %d (%q): bad @b number %b.\n"),
 	  PROMPT_CLEAR_HTREE, 0 },
+
+	/* Error adjusting EA refcount */
+	{ PR_2_ADJ_EA_REFCOUNT,
+	  N_("Error addjusting refcount for @a @b %b (@i %i): %m\n"),
+	  PROMPT_NONE, PR_FATAL },
 
 	/* Pass 3 errors */
 

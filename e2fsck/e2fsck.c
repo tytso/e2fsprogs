@@ -30,6 +30,7 @@ errcode_t e2fsck_allocate_context(e2fsck_t *ret)
 	memset(context, 0, sizeof(struct e2fsck_struct));
 
 	context->process_inode_size = 256;
+	context->ext_attr_ver = 2;
 
 	*ret = context;
 	return 0;

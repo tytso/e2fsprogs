@@ -1,3 +1,18 @@
+2002-08-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2_err.et.in (EXT2_ET_BAD_EA_BLOCK_NUM): New error code
+
+	* ext2fs.h (ext2fs_inode_data_blocks): New function which returns
+		the number of data blocks used by an inode exclusive of
+		the EA block.
+
+	* ext_attr.c (ext2fs_adjust_ea_refcount): New function which
+		adjusts the reference count in an extended attribute block.
+
+	* valid_blk.c (ext2fs_inode_has_valid_blocks): Add code to
+		correctly deal with extended attribute blocks in symbolic
+		links. 
+
 2002-08-13    <tytso@snap.thunk.org>
 
 	* Makefile.in: Move dupfs.o and test_io.o from the
