@@ -560,16 +560,22 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			break;
 		case 'p':
 		case 'a':
+			if (ctx->options & (E2F_OPT_YES|E2F_OPT_NO)) {
+			conflict_opt:
+				fatal_error(ctx, 
+	_("Only one the options -p/-a, -n or -y may be specified."));
+			}
 			ctx->options |= E2F_OPT_PREEN;
-			ctx->options &= ~(E2F_OPT_YES|E2F_OPT_NO);
 			break;
 		case 'n':
+			if (ctx->options & (E2F_OPT_YES|E2F_OPT_PREEN))
+				goto conflict_opt;
 			ctx->options |= E2F_OPT_NO;
-			ctx->options &= ~(E2F_OPT_YES|E2F_OPT_PREEN);
 			break;
 		case 'y':
+			if (ctx->options & (E2F_OPT_PREEN|E2F_OPT_NO))
+				goto conflict_opt;
 			ctx->options |= E2F_OPT_YES;
-			ctx->options &= ~(E2F_OPT_PREEN|E2F_OPT_NO);
 			break;
 		case 't':
 #ifdef RESOURCE_TRACK
