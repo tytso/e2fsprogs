@@ -119,10 +119,11 @@ check:: compile_et
 	done
 
 clean::
-	$(RM) -f compile_et libcom_err.a libcom_err_p.a
+	$(RM) -f compile_et libcom_err.a libcom_err_p.a com_err.info
 	$(RM) -f $(OBJS) profiled/*
 	$(RM) -f *~ \#* *.bak *.otl *.aux *.toc *.PS *.dvi *.ps TAGS *.ln
 	$(RM) -f ../libcom_err.a ../libcom_err_p.a
+
 mostlyclean:: clean
 distclean:: clean
 	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old

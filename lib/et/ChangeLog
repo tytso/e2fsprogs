@@ -1,3 +1,10 @@
+2003-08-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Delete com_err.info on a make clean
+
+	* testcases: Update to reflect fixed prototype for
+		initialize_xxx_err_table_r.
+
 2003-08-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* et_h.awk: Fix wrong prototype for initialize_xxx_err_table_r.
