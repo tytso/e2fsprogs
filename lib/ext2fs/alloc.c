@@ -22,9 +22,6 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -67,7 +64,7 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode,
 	} while (i != start_inode);
 	
 	if (ext2fs_test_inode_bitmap(map, i))
-		return ENOSPC;
+		return EXT2_INODE_ALLOC_FAIL;
 	*ret = i;
 	return 0;
 }
@@ -99,7 +96,33 @@ errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
 		if (i >= fs->super->s_blocks_count)
 			i = fs->super->s_first_data_block;
 	} while (i != goal);
-	return ENOSPC;
+	return EXT2_BLOCK_ALLOC_FAIL;
+}
+
+/*
+ * This function uses fs->block_map, and updates the filesystem
+ * accounting records appropriately.
+ */
+errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal, blk_t *ret)
+{
+	errcode_t	retval;
+	int		group;
+
+	if (!fs->block_map)
+		ext2fs_read_block_bitmap(fs);
+
+	retval = ext2fs_new_block(fs, goal, 0, ret);
+	if (retval)
+		return retval;
+	
+	fs->super->s_free_blocks_count--;
+	group = ((*ret - fs->super->s_first_data_block) /
+		 fs->super->s_blocks_per_group);
+	fs->group_desc[group].bg_free_blocks_count--;
+	ext2fs_mark_block_bitmap(fs->block_map, *ret);
+	ext2fs_mark_super_dirty(fs);
+	ext2fs_mark_bb_dirty(fs);
+	return 0;
 }
 
 errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start, blk_t finish,
@@ -128,6 +151,6 @@ errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start, blk_t finish,
 		}
 		b++;
 	} while (b != finish);
-	return ENOSPC;
+	return EXT2_BLOCK_ALLOC_FAIL;
 }
 

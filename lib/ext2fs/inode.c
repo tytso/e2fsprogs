@@ -21,9 +21,6 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -65,7 +62,7 @@ static errcode_t create_icache(ext2_filsys fs)
 	fs->icache->buffer = malloc(fs->blocksize);
 	if (!fs->icache->buffer) {
 		free(fs->icache);
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	}
 	fs->icache->buffer_blk = 0;
 	fs->icache->cache_last = -1;
@@ -76,7 +73,7 @@ static errcode_t create_icache(ext2_filsys fs)
 	if (!fs->icache->cache) {
 		free(fs->icache->buffer);
 		free(fs->icache);
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	}
 	for (i=0; i < fs->icache->cache_size; i++)
 		fs->icache->cache[i].ino = 0;
@@ -113,7 +110,7 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 
 	scan = (ext2_inode_scan) malloc(sizeof(struct ext2_struct_inode_scan));
 	if (!scan)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	memset(scan, 0, sizeof(struct ext2_struct_inode_scan));
 
 	scan->magic = EXT2_ET_MAGIC_INODE_SCAN;
@@ -130,13 +127,13 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 	scan->bad_block_ptr = 0;
 	if (!scan->inode_buffer) {
 		free(scan);
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	}
 	scan->temp_buffer = malloc(scan->inode_size);
 	if (!scan->temp_buffer) {
 		free(scan->inode_buffer);
 		free(scan);
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	}
 	if (scan->fs->badblocks && scan->fs->badblocks->num)
 		scan->scan_flags |= EXT2_SF_CHK_BADBLOCKS;
@@ -642,7 +639,7 @@ errcode_t ext2fs_check_directory(ext2_filsys fs, ino_t ino)
 	if (retval)
 		return retval;
 	if (!LINUX_S_ISDIR(inode.i_mode))
-		return ENOTDIR;
+		return EXT2_NO_DIRECTORY;
 	return 0;
 }
 

@@ -23,9 +23,6 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -41,7 +38,7 @@ static errcode_t make_badblocks_list(int size, int num, blk_t *list,
 	
 	bb = malloc(sizeof(struct ext2_struct_badblocks_list));
 	if (!bb)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	memset(bb, 0, sizeof(struct ext2_struct_badblocks_list));
 	bb->magic = EXT2_ET_MAGIC_BADBLOCKS_LIST;
 	bb->size = size ? size : 10;
@@ -49,7 +46,7 @@ static errcode_t make_badblocks_list(int size, int num, blk_t *list,
 	bb->list = malloc(bb->size * sizeof(blk_t));
 	if (!bb->list) {
 		free(bb);
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	}
 	if (list)
 		memcpy(bb->list, list, bb->size * sizeof(blk_t));
@@ -106,7 +103,7 @@ errcode_t ext2fs_badblocks_list_add(ext2_badblocks_list bb, blk_t blk)
 		bb->size += 10;
 		new_list = realloc(bb->list, bb->size * sizeof(blk_t));
 		if (!new_list)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		bb->list = new_list;
 	}
 
@@ -170,7 +167,7 @@ errcode_t ext2fs_badblocks_list_iterate_begin(ext2_badblocks_list bb,
 
 	iter = malloc(sizeof(struct ext2_struct_badblocks_iterate));
 	if (!iter)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 
 	iter->magic = EXT2_ET_MAGIC_BADBLOCKS_ITERATE;
 	iter->bb = bb;

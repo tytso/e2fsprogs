@@ -15,9 +15,6 @@
 #include <unistd.h>
 #endif
 #include <stdlib.h>
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -37,7 +34,7 @@ errcode_t ext2fs_new_dir_block(ext2_filsys fs, ino_t dir_ino, ino_t parent_ino,
 
 	buf = malloc(fs->blocksize);
 	if (!buf)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	memset(buf, 0, fs->blocksize);
 	dir = (struct ext2_dir_entry *) buf;
 	dir->rec_len = fs->blocksize;

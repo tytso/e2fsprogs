@@ -24,9 +24,6 @@
 #include <unistd.h>
 #endif
 #include <stdlib.h>
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -58,7 +55,7 @@ static int get_pathname_proc(struct ext2_dir_entry *dirent,
 	if (dirent->inode == gp->search_ino) {
 		gp->name = malloc(dirent->name_len + 1);
 		if (!gp->name) {
-			gp->errcode = ENOMEM;
+			gp->errcode = EXT2_NO_MEMORY;
 			return DIRENT_ABORT;
 		}
 		strncpy(gp->name, dirent->name, dirent->name_len);
@@ -78,7 +75,7 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ino_t dir, ino_t ino,
 	if (dir == ino) {
 		*name = malloc(2);
 		if (!*name)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		strcpy(*name, (dir == EXT2_ROOT_INO) ? "/" : ".");
 		return 0;
 	}
@@ -86,7 +83,7 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ino_t dir, ino_t ino,
 	if (!dir || (maxdepth < 0)) {
 		*name = malloc(4);
 		if (!*name)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		strcpy(*name, "...");
 		return 0;
 	}
@@ -119,7 +116,7 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ino_t dir, ino_t ino,
 		ret = malloc(strlen(parent_name)+5); /* strlen("???") + 2 */
 		
 	if (!ret) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	ret[0] = 0;
@@ -150,7 +147,7 @@ errcode_t ext2fs_get_pathname(ext2_filsys fs, ino_t dir, ino_t ino,
 
 	buf = malloc(fs->blocksize);
 	if (!buf)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	if (dir == ino)
 		ino = 0;
 	retval = ext2fs_get_pathname_int(fs, dir, ino, 32, buf, name);

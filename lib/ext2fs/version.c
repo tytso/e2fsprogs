@@ -17,9 +17,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#ifdef HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 #include "ext2fs.h"

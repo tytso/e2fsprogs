@@ -16,9 +16,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#ifdef HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -33,7 +30,7 @@ errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)
 	
 	fs = (ext2_filsys) malloc(sizeof(struct struct_ext2_filsys));
 	if (!fs)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 
 	*fs = *src;
 	fs->device_name = 0;
@@ -48,7 +45,7 @@ errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)
 	if (fs->icache)
 		fs->icache->refcount++;
 
-	retval = ENOMEM;
+	retval = EXT2_NO_MEMORY;
 	fs->device_name = malloc(strlen(src->device_name)+1);
 	if (!fs->device_name)
 		goto errout;

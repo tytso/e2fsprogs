@@ -24,9 +24,6 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -41,7 +38,7 @@ static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
 
 	bitmap = malloc(sizeof(struct ext2fs_struct_generic_bitmap));
 	if (!bitmap)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 
 	bitmap->magic = EXT2_ET_MAGIC_GENERIC_BITMAP;
 	bitmap->fs = NULL;
@@ -53,7 +50,7 @@ static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
 		bitmap->description = malloc(strlen(descr)+1);
 		if (!bitmap->description) {
 			free(bitmap);
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		}
 		strcpy(bitmap->description, descr);
 	} else
@@ -64,7 +61,7 @@ static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
 	if (!bitmap->bitmap) {
 		free(bitmap->description);
 		free(bitmap);
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	}
 
 	if (init_map)

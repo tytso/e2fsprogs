@@ -24,9 +24,6 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -73,11 +70,11 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	char		*buf;
 
 	if (!param || !param->s_blocks_count)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 	
 	fs = (ext2_filsys) malloc(sizeof(struct struct_ext2_filsys));
 	if (!fs)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
@@ -88,13 +85,13 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	fs->io->app_data = fs;
 	fs->device_name = malloc(strlen(name)+1);
 	if (!fs->device_name) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	strcpy(fs->device_name, name);
 	fs->super = super = malloc(SUPERBLOCK_SIZE);
 	if (!super) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	memset(super, 0, SUPERBLOCK_SIZE);
@@ -142,7 +139,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	super->s_blocks_count = param->s_blocks_count;
 	super->s_r_blocks_count = param->s_r_blocks_count;
 	if (super->s_r_blocks_count >= param->s_blocks_count) {
-		retval = EINVAL;
+		retval = EXT2_INVALID_ARGUMENT;
 		goto cleanup;
 	}
 
@@ -234,7 +231,7 @@ retry:
 
 	buf = malloc(strlen(fs->device_name) + 80);
 	if (!buf) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	
@@ -252,7 +249,7 @@ retry:
 
 	fs->group_desc = malloc((size_t) fs->desc_blocks * fs->blocksize);
 	if (!fs->group_desc) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	memset(fs->group_desc, 0, (size_t) fs->desc_blocks * fs->blocksize);

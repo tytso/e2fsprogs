@@ -19,9 +19,6 @@
 #endif
 #include <fcntl.h>
 #include <time.h>
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -58,7 +55,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	
 	fs = (ext2_filsys) malloc(sizeof(struct struct_ext2_filsys));
 	if (!fs)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
@@ -70,13 +67,13 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	fs->io->app_data = fs;
 	fs->device_name = malloc(strlen(name)+1);
 	if (!fs->device_name) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	strcpy(fs->device_name, name);
 	fs->super = malloc(SUPERBLOCK_SIZE);
 	if (!fs->super) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 
@@ -88,7 +85,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	 */
 	if (superblock) {
 		if (!block_size) {
-			retval = EINVAL;
+			retval = EXT2_INVALID_ARGUMENT;
 			goto cleanup;
 		}
 		io_channel_set_blksize(fs->io, block_size);
@@ -177,7 +174,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		/ EXT2_DESC_PER_BLOCK(fs->super);
 	fs->group_desc = malloc((size_t) (fs->desc_blocks * fs->blocksize));
 	if (!fs->group_desc) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	if (!group_block)

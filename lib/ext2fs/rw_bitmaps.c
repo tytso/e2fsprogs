@@ -23,9 +23,6 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -74,7 +71,7 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 	
 	bitmap_block = malloc(fs->blocksize);
 	if (!bitmap_block)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	memset(bitmap_block, 0xff, fs->blocksize);
 	for (i = 0; i < fs->group_desc_count; i++) {
 		memcpy(bitmap_block, inode_bitmap, nbytes);
@@ -118,7 +115,7 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 	nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
 	bitmap_block = malloc(fs->blocksize);
 	if (!bitmap_block)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	memset(bitmap_block, 0xff, fs->blocksize);
 	for (i = 0; i < fs->group_desc_count; i++) {
 		memcpy(bitmap_block, block_bitmap, nbytes);

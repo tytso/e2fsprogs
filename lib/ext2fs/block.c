@@ -15,9 +15,6 @@
 #include <unistd.h>
 #endif
 #include <stdlib.h>
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -337,7 +334,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 	} else {
 		ctx.ind_buf = malloc(fs->blocksize * 3);
 		if (!ctx.ind_buf)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 	}
 	ctx.dind_buf = ctx.ind_buf + fs->blocksize;
 	ctx.tind_buf = ctx.dind_buf + fs->blocksize;

@@ -17,9 +17,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#ifdef HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -53,7 +50,7 @@ extern errcode_t
 	else {
 		ctx.buf = malloc(dblist->fs->blocksize);
 		if (!ctx.buf)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 	}
 	ctx.func = 0;
 	ctx.func2 = func;

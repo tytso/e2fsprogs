@@ -310,7 +310,7 @@ ino_t get_lost_and_found(e2fsck_t ctx)
 			       sizeof(name)-1, 0, &ino);
 	if (!retval)
 		return ino;
-	if (retval != ENOENT) {
+	if (retval != EXT2_FILE_NOT_FOUND) {
 		pctx.errcode = retval;
 		fix_problem(ctx, PR_3_ERR_FIND_LPF, &pctx);
 	}

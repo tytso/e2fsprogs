@@ -25,9 +25,6 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include "et/com_err.h"
 #include "ext2fs/ext2_err.h"
@@ -80,19 +77,19 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 		return EXT2_ET_BAD_DEVICE_NAME;
 	io = (io_channel) malloc(sizeof(struct struct_io_channel));
 	if (!io)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	memset(io, 0, sizeof(struct struct_io_channel));
 	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
 	data = (struct unix_private_data *)
 		malloc(sizeof(struct unix_private_data));
 	if (!data) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	io->manager = unix_io_manager;
 	io->name = malloc(strlen(name)+1);
 	if (!io->name) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	strcpy(io->name, name);
@@ -107,7 +104,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	data->buf = malloc(io->block_size);
 	data->buf_block_nr = -1;
 	if (!data->buf) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	data->dev = open(name, (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY);
@@ -166,7 +163,7 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 		free(data->buf);
 		data->buf = malloc(blksize);
 		if (!data->buf)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		data->buf_block_nr = -1;
 	}
 	return 0;

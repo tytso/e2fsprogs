@@ -15,9 +15,6 @@
 #include <unistd.h>
 #endif
 #include <stdlib.h>
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 /* #define NAMEI_DEBUG */
 
@@ -55,7 +52,7 @@ static errcode_t follow_link(ext2_filsys fs, ino_t root, ino_t dir,
 	if (ei.i_blocks) {
 		buffer = malloc (fs->blocksize);
 		if (!buffer)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		retval = io_channel_read_blk(fs->io, ei.i_block[0], 1, buffer);
 		if (retval) {
 			free(buffer);
@@ -161,7 +158,7 @@ errcode_t ext2fs_namei(ext2_filsys fs, ino_t root, ino_t cwd,
 
 	buf = malloc(fs->blocksize);
 	if (!buf)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	
 	retval = open_namei(fs, root, cwd, name, strlen(name), 0, 0,
 			    buf, inode);
@@ -180,7 +177,7 @@ errcode_t ext2fs_namei_follow(ext2_filsys fs, ino_t root, ino_t cwd,
 
 	buf = malloc(fs->blocksize);
 	if (!buf)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	
 	retval = open_namei(fs, root, cwd, name, strlen(name), 1, 0,
 			    buf, inode);
@@ -199,7 +196,7 @@ extern errcode_t ext2fs_follow_link(ext2_filsys fs, ino_t root, ino_t cwd,
 
 	buf = malloc(fs->blocksize);
 	if (!buf)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	
 	retval = follow_link(fs, root, cwd, inode, 0, buf, res_inode);
 

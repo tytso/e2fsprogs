@@ -23,9 +23,6 @@
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -39,7 +36,7 @@ errcode_t ext2fs_resize_generic_bitmap(__u32 new_end, __u32 new_real_end,
 	__u32	bitno;
 
 	if (!bmap)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 
 	EXT2_CHECK_MAGIC(bmap, EXT2_ET_MAGIC_GENERIC_BITMAP);
 
@@ -64,7 +61,7 @@ errcode_t ext2fs_resize_generic_bitmap(__u32 new_end, __u32 new_real_end,
 
 	new_bitmap = realloc(bmap->bitmap, new_size);
 	if (!new_bitmap)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	if (new_size > size)
 		memset(new_bitmap + size, 0, new_size - size);
 
@@ -80,7 +77,7 @@ errcode_t ext2fs_resize_inode_bitmap(__u32 new_end, __u32 new_real_end,
 	errcode_t	retval;
 	
 	if (!bmap)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 
 	EXT2_CHECK_MAGIC(bmap, EXT2_ET_MAGIC_INODE_BITMAP);
 
@@ -97,7 +94,7 @@ errcode_t ext2fs_resize_block_bitmap(__u32 new_end, __u32 new_real_end,
 	errcode_t	retval;
 	
 	if (!bmap)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 
 	EXT2_CHECK_MAGIC(bmap, EXT2_ET_MAGIC_BLOCK_BITMAP);
 

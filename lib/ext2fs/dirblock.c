@@ -16,9 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#ifdef HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -61,7 +58,7 @@ errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 	    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)) {
 		write_buf = buf = malloc(fs->blocksize);
 		if (!buf)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		memcpy(buf, inbuf, fs->blocksize);
 		p = buf;
 		end = buf + fs->blocksize;

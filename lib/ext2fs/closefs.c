@@ -16,9 +16,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#ifdef HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -73,7 +70,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 
 	fs->super->s_wtime = time(NULL);
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		if (!(super_shadow = malloc(SUPERBLOCK_SIZE)))
 			goto errout;
 		if (!(group_shadow = malloc((size_t) fs->blocksize *

@@ -50,7 +50,7 @@ errcode_t ext2fs_dir_iterate(ext2_filsys fs,
 	else {
 		ctx.buf = malloc(fs->blocksize);
 		if (!ctx.buf)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 	}
 	ctx.func = func;
 	ctx.func2 = 0;

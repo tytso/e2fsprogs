@@ -74,7 +74,7 @@ errcode_t ext2fs_irel_memarray_create(char *name, ino_t max_inode,
 	/*
 	 * Allocate memory structures
 	 */
-	retval = ENOMEM;
+	retval = EXT2_NO_MEMORY;
 	irel = malloc(sizeof(struct ext2_inode_relocation_table));
 	if (!irel)
 		goto errout;
@@ -145,7 +145,7 @@ static errcode_t ima_put(ext2_irel irel, ino_t old,
 
 	ma = irel->private;
 	if (old > ma->max_inode)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 
 	/*
 	 * Force the orig field to the correct value; the application
@@ -165,7 +165,7 @@ static errcode_t ima_put(ext2_irel irel, ino_t old,
 		size = (sizeof(struct ext2_inode_reference) * ent->max_refs);
 		new_refs = realloc(ref_ent->refs, size);
 		if (!new_refs)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		ref_ent->refs = new_refs;
 	}
 
@@ -181,7 +181,7 @@ static errcode_t ima_get(ext2_irel irel, ino_t old,
 
 	ma = irel->private;
 	if (old > ma->max_inode)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned) old].new == 0)
 		return ENOENT;
 	*ent = ma->entries[(unsigned) old];
@@ -196,7 +196,7 @@ static errcode_t ima_get_by_orig(ext2_irel irel, ino_t orig, ino_t *old,
 
 	ma = irel->private;
 	if (orig > ma->max_inode)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 	ino = ma->orig_map[(unsigned) orig];
 	if (ino == 0)
 		return ENOENT;
@@ -238,7 +238,7 @@ static errcode_t ima_add_ref(ext2_irel irel, ino_t ino,
 
 	ma = irel->private;
 	if (ino > ma->max_inode)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 
 	ref_ent = ma->ref_entries + (unsigned) ino;
 	ent = ma->entries + (unsigned) ino;
@@ -251,13 +251,13 @@ static errcode_t ima_add_ref(ext2_irel irel, ino_t ino,
 				  ent->max_refs));
 		ref_ent->refs = malloc(size);
 		if (ref_ent->refs == 0)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		memset(ref_ent->refs, 0, size);
 		ref_ent->num = 0;
 	}
 
 	if (ref_ent->num >= ent->max_refs)
-		return ENOSPC;
+		return EXT2_TOO_MANY_REFS;
 
 	ref_ent->refs[(unsigned) ref_ent->num++] = *ref;
 	return 0;
@@ -269,7 +269,7 @@ static errcode_t ima_start_iter_ref(ext2_irel irel, ino_t ino)
 
 	ma = irel->private;
 	if (ino > ma->max_inode)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned) ino].new == 0)
 		return ENOENT;
 	ma->ref_current = ino;
@@ -304,7 +304,7 @@ static errcode_t ima_move(ext2_irel irel, ino_t old, ino_t new)
 
 	ma = irel->private;
 	if ((old > ma->max_inode) || (new > ma->max_inode))
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned) old].new == 0)
 		return ENOENT;
 	
@@ -327,7 +327,7 @@ static errcode_t ima_delete(ext2_irel irel, ino_t old)
 
 	ma = irel->private;
 	if (old > ma->max_inode)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 	if (ma->entries[(unsigned) old].new == 0)
 		return ENOENT;
 	

@@ -16,9 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#ifdef HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 #include "ext2fs.h"
@@ -89,7 +86,7 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
 	
 	icount = malloc(sizeof(struct ext2_icount));
 	if (!icount)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	memset(icount, 0, sizeof(struct ext2_icount));
 
 	retval = ext2fs_allocate_inode_bitmap(fs, 0, 
@@ -282,14 +279,14 @@ errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *out)
 
 	if (icount->count > icount->size) {
 		fprintf(out, "%s: count > size\n", bad);
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 	}
 	for (i=1; i < icount->count; i++) {
 		if (icount->list[i-1].ino >= icount->list[i].ino) {
 			fprintf(out, "%s: list[%d].ino=%ld, list[%d].ino=%ld\n",
 				bad, i-1, icount->list[i-1].ino,
 				i, icount->list[i].ino);
-			ret = EINVAL;
+			ret = EXT2_INVALID_ARGUMENT;
 		}
 	}
 	return ret;
@@ -302,7 +299,7 @@ errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ino_t ino, __u16 *ret)
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
 	if (!ino || (ino > icount->num_inodes))
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 
 	if (ext2fs_test_inode_bitmap(icount->single, ino)) {
 		*ret = 1;
@@ -330,7 +327,7 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ino_t ino,
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
 	if (!ino || (ino > icount->num_inodes))
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 
 	if (ext2fs_test_inode_bitmap(icount->single, ino)) {
 		/*
@@ -339,7 +336,7 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ino_t ino,
 		 */
 		el = get_icount_el(icount, ino, 1);
 		if (!el)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		ext2fs_unmark_inode_bitmap(icount->single, ino);
 		el->count = 2;
 	} else if (icount->multiple) {
@@ -352,7 +349,7 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ino_t ino,
 		if (ext2fs_test_inode_bitmap(icount->multiple, ino)) {
 			el = get_icount_el(icount, ino, 1);
 			if (!el)
-				return ENOMEM;
+				return EXT2_NO_MEMORY;
 			el->count++;
 		} else {
 			/*
@@ -377,7 +374,7 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ino_t ino,
 		}
 		el = get_icount_el(icount, ino, 1);
 		if (!el)
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		el->count++;
 	}
 	if (icount->multiple)
@@ -393,7 +390,7 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ino_t ino,
 	struct ext2_icount_el	*el;
 
 	if (!ino || (ino > icount->num_inodes))
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
@@ -413,11 +410,11 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ino_t ino,
 
 	if (icount->multiple &&
 	    !ext2fs_test_inode_bitmap(icount->multiple, ino))
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 	
 	el = get_icount_el(icount, ino, 0);
 	if (!el || el->count == 0)
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 
 	el->count--;
 	if (el->count == 1)
@@ -436,7 +433,7 @@ errcode_t ext2fs_icount_store(ext2_icount_t icount, ino_t ino,
 	struct ext2_icount_el	*el;
 
 	if (!ino || (ino > icount->num_inodes))
-		return EINVAL;
+		return EXT2_INVALID_ARGUMENT;
 
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
@@ -467,7 +464,7 @@ errcode_t ext2fs_icount_store(ext2_icount_t icount, ino_t ino,
 	 */
 	el = get_icount_el(icount, ino, 1);
 	if (!el)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	el->count = count;
 	ext2fs_unmark_inode_bitmap(icount->single, ino);
 	if (icount->multiple)

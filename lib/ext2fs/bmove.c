@@ -18,9 +18,6 @@
 #if HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 #include "ext2fs/ext2fs.h"
@@ -56,7 +53,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			if (++block >= fs->super->s_blocks_count)
 				block = fs->super->s_first_data_block;
 			if (block == orig) {
-				pb->error = ENOSPC;
+				pb->error = EXT2_BLOCK_ALLOC_FAIL;
 				return BLOCK_ABORT;
 			}
 		} while (ext2fs_test_block_bitmap(pb->reserve, block) ||
@@ -113,7 +110,7 @@ errcode_t ext2fs_move_blocks(ext2_filsys fs,
 	
 	block_buf = malloc(fs->blocksize * 4);
 	if (!block_buf)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	pb.buf = block_buf + fs->blocksize * 3;
 
 	/*

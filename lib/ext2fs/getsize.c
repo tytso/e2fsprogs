@@ -16,9 +16,6 @@
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-#ifdef HAVE_ERRNO_H
-#include <errno.h>
-#endif
 #include <fcntl.h>
 #ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>

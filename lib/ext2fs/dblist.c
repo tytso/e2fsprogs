@@ -17,9 +17,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#ifdef HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -68,7 +65,7 @@ static errcode_t make_dblist(ext2_filsys fs, ino_t size, ino_t count,
 
 	dblist = malloc(sizeof(struct ext2_struct_dblist));
 	if (!dblist)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	memset(dblist, 0, sizeof(struct ext2_struct_dblist));
 
 	dblist->magic = EXT2_ET_MAGIC_DBLIST;
@@ -85,7 +82,7 @@ static errcode_t make_dblist(ext2_filsys fs, ino_t size, ino_t count,
 	dblist->count = count;
 	dblist->list = malloc(len);
 	if (dblist->list == NULL) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	if (list)
@@ -161,7 +158,7 @@ errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 				sizeof(struct ext2_db_entry));
 		if (nlist == 0) {
 			dblist->size -= 100;
-			return ENOMEM;
+			return EXT2_NO_MEMORY;
 		}
 		dblist->list = nlist;
 	}

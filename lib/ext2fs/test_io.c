@@ -23,9 +23,6 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include "et/com_err.h"
 #include "ext2fs/ext2_err.h"
@@ -90,19 +87,19 @@ static errcode_t test_open(const char *name, int flags, io_channel *channel)
 		return EXT2_ET_BAD_DEVICE_NAME;
 	io = (io_channel) malloc(sizeof(struct struct_io_channel));
 	if (!io)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	memset(io, 0, sizeof(struct struct_io_channel));
 	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
 	data = (struct test_private_data *)
 		malloc(sizeof(struct test_private_data));
 	if (!data) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	io->manager = test_io_manager;
 	io->name = malloc(strlen(name)+1);
 	if (!io->name) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	strcpy(io->name, name);

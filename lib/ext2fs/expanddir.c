@@ -15,9 +15,6 @@
 #include <unistd.h>
 #endif
 #include <stdlib.h>
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -59,7 +56,7 @@ static int expand_dir_proc(ext2_filsys fs,
 	} else {
 		block = malloc(fs->blocksize);
 		if (!block) {
-			es->err = ENOMEM;
+			es->err = EXT2_NO_MEMORY;
 			return BLOCK_ABORT;
 		}
 		memset(block, 0, fs->blocksize);

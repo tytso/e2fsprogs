@@ -1,3 +1,18 @@
+Sat Oct 25 00:06:58 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* alloc.c (ext2fs_alloc_block): New function which allocates a
+		block and updates the filesystem accounting records
+		appropriately. 
+
+Wed Oct 22 16:47:27 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2_err.et.in: Added new error codes: EXT2_NO_MEMORY,
+		EXT2_INVALID_ARGUMENT, EXT2_BLOCK_ALLOC_FAIL,
+		EXT2_INODE_ALLOC_FAIL, EXT2_NOT_DIRECTORY
+
+	* Change various library files to use these functions instead of
+		EINVAL, ENOENT, etc.
+
 Mon Oct 20 19:32:40 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* llseek.c: Check HAVE_LLSEEK_PROTOTYPE to see whether or not we

@@ -27,9 +27,6 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -73,11 +70,11 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	rec.max_ind_blocks = 10;
 	rec.ind_blocks = malloc(rec.max_ind_blocks * sizeof(blk_t));
 	if (!rec.ind_blocks)
-		return ENOMEM;
+		return EXT2_NO_MEMORY;
 	memset(rec.ind_blocks, 0, rec.max_ind_blocks * sizeof(blk_t));
 	rec.block_buf = malloc(fs->blocksize);
 	if (!rec.block_buf) {
-		retval = ENOMEM;
+		retval = EXT2_NO_MEMORY;
 		goto cleanup;
 	}
 	memset(rec.block_buf, 0, fs->blocksize);
@@ -189,7 +186,7 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 						  rec->max_ind_blocks *
 						  sizeof(blk_t));
 			if (!rec->ind_blocks) {
-				rec->err = ENOMEM;
+				rec->err = EXT2_NO_MEMORY;
 				return BLOCK_ABORT;
 			}
 		}

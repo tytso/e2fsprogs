@@ -23,9 +23,6 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 
 #include <linux/ext2_fs.h>
 
@@ -114,7 +111,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 			name = 0;
 			goto cleanup;
 		}
-		if (retval != ENOENT)
+		if (retval != EXT2_FILE_NOT_FOUND)
 			goto cleanup;
 		retval = ext2fs_link(fs, parent, name, ino, 0);
 		if (retval)
