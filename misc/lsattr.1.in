@@ -33,7 +33,8 @@ List directories like other files, rather than listing their contents.
 List the file's version/generation number.
 .SH AUTHOR
 .B lsattr
-was written by Remy Card <Remy.Card@linux.org>.
+was written by Remy Card <Remy.Card@linux.org>.  It is currently being
+maintained by Theodore Ts'o <tytso@alum.mit.edu>.
 .SH BUGS
 There are none :-).
 .SH AVAILABILITY

@@ -449,7 +449,8 @@ will automatically use a time-based UUID instead of a randomly-generated UUID.
 We haven't found any bugs yet.  That doesn't mean there aren't any...
 .SH AUTHOR
 .B tune2fs 
-was written by Remy Card <Remy.Card@linux.org>.
+was written by Remy Card <Remy.Card@linux.org>.  It is currently being
+maintained by Theodore Ts'o <tytso@alum.mit.edu>.
 .B tune2fs
 uses the ext2fs library written by Theodore Ts'o <tytso@mit.edu>.
 This manual page was written by Christian Kuhtz <chk@data-hh.Hanse.DE>.

@@ -30,7 +30,8 @@ will not have to allocate data blocks in the filesystem during recovery.
 There are none.
 .SH AUTHOR
 .B mklost+found
-has been written by Remy Card <Remy.Card@linux.org>.
+has been written by Remy Card <Remy.Card@linux.org>.  It is currently being
+maintained by Theodore Ts'o <tytso@alum.mit.edu>.
 .SH BUGS
 There are none :-)
 .SH AVAILABILITY

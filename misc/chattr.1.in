@@ -25,11 +25,11 @@ The operator `+' causes the selected attributes to be added to the
 existing attributes of the files; `-' causes them to be removed; and
 `=' causes them to be the only attributes that the files have.
 .PP
-The letters `ASacDdijsu' select the new attributes for the files: 
-don't update atime (A), synchronous updates (S), synchronous directory
-updates (D), append only (a), compressed (c), no dump (d), immutable (i),
-data journalling (j), secure deletion (s), top of directory hierarchy
-(T), no tail-merging (t), and undeletable (u).
+The letters `acdijsuADST' select the new attributes for the files: 
+append only (a), compressed (c), no dump (d), immutable (i),
+data journalling (j), secure deletion (s), no tail-merging (t), 
+undeletable (u), no atime updates (A), synchronous directory updates (D), 
+synchronous updates (S), and top of directory hierarchy (T).
 .SH OPTIONS
 .TP
 .B \-R
@@ -125,7 +125,8 @@ although it can be displayed by
 .PP
 .SH AUTHOR
 .B chattr
-was written by Remy Card <Remy.Card@linux.org>.
+was written by Remy Card <Remy.Card@linux.org>.  It is currently being
+maintained by Theodore Ts'o <tytso@alum.mit.edu>.
 .SH BUGS AND LIMITATIONS
 The `c', 's',  and `u' attributes are not honored 
 by the ext2 and ext3 filesystems as implemented in the current mainline

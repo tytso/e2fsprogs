@@ -76,7 +76,8 @@ You need to know the physical filesystem structure to understand the
 output.
 .SH AUTHOR
 .B dumpe2fs 
-was written by Remy Card <Remy.Card@linux.org>.
+was written by Remy Card <Remy.Card@linux.org>.  It is currently being
+maintained by Theodore Ts'o <tytso@alum.mit.edu>.
 .SH AVAILABILITY
 .B dumpe2fs
 is part of the e2fsprogs package and is available from 

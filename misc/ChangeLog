@@ -1,3 +1,11 @@
+2004-01-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* chattr.1.in: Clarify man page.
+
+	* chattr.1.in, dumpe2fs.8.in, lsattr.1.in, mklost+found.8.in,
+		tune2fs.8.in: List Theodore Ts'o <tytso@alum.mit.edu> as
+		the current maintainer.
+
 2004-01-20  root  <tytso@mit.edu>
 
 	* chattr.c (main): Add support for '--' to stop options
