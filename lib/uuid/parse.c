@@ -16,11 +16,12 @@
 
 #include "uuidP.h"
 
-int uuid_parse(char *in, uuid_t uu)
+int uuid_parse(const char *in, uuid_t uu)
 {
-	struct uuid uuid;
-	int i;
-	char *cp, buf[3];
+	struct uuid	uuid;
+	int 		i;
+	const char	*cp;
+	char		buf[3];
 
 	if (strlen(in) != 36)
 		return -1;

@@ -12,10 +12,10 @@
 #include <string.h>
 #include "uuidP.h"
 
-void uuid_unpack(uuid_t in, struct uuid *uu)
+void uuid_unpack(const uuid_t in, struct uuid *uu)
 {
-	__u8	*ptr = in;
-	__u32	tmp;
+	const __u8	*ptr = in;
+	__u32		tmp;
 
 	tmp = *ptr++;
 	tmp = (tmp << 8) | *ptr++;

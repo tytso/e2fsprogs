@@ -12,7 +12,7 @@
 #include <string.h>
 #include "uuidP.h"
 
-void uuid_pack(struct uuid *uu, uuid_t ptr)
+void uuid_pack(const struct uuid *uu, uuid_t ptr)
 {
 	__u32	tmp;
 	unsigned char	*out = ptr;

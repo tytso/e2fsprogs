@@ -13,7 +13,7 @@
 
 #include "uuidP.h"
 
-void uuid_unparse(uuid_t uu, char *out)
+void uuid_unparse(const uuid_t uu, char *out)
 {
 	struct uuid uuid;
 

@@ -1,3 +1,13 @@
+2001-09-10  Theodore Tso  <tytso@valinux.com>
+
+	* compare.c (uuid_compare), copy.c (uuid_copy), 
+		isnull.c (uuid_is_null), pack.c (uuid_pack), 
+		parse.c (uuid_parse), unpack.c (uuid_unpack),
+		unparse.c (uuid_unparse), uuid.h, uuidP.h, 
+		uuid_time.c (uuid_time, uuid_type, uuid_variant):
+		Use const for pointer variables that we don't modify.  Add
+		the appropriate ifdef's in uuid.h to make it be C++ friendly.
+
 2001-09-02  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.24a
