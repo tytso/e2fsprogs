@@ -23,6 +23,5 @@ cp -sR `pwd`/$currdir $tmpdir/$builddir || exit 1
 
 (cd $tmpdir && tar czfh ${builddir}.tar.gz $builddir)
 
-rpm --define "_sourcedir `pwd`/$tmpdir" -ba $currdir/e2fsprogs.spec || exit $?
-rm -rf $tmpdir
-
+[ "`rpmbuild --version 2> /dev/null`" ] && RPM=rpmbuild || RPM=rpm
+$RPM --define "_sourcedir `pwd`/$tmpdir" -ba $currdir/e2fsprogs.spec || exit $?
