@@ -388,6 +388,8 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 	stashed_inode = &inode;
 	while (1) {
 		retval = ext2fs_get_next_inode(scan, &ino, &inode);
+		if (retval == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
+			continue;
 		if (retval) {
 			com_err(program_name, retval,
 				_("while getting next inode"));
