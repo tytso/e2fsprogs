@@ -1,3 +1,7 @@
+Tue Nov  4 10:46:18 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* configure.in: Add check for setjmp.h
+
 Mon Oct 20 19:30:45 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* configure.in (HAVE_LLSEEK_PROTOTYPE): Added check to see if
