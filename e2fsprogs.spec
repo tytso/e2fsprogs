@@ -1,12 +1,16 @@
+%define	_root_sbindir	/sbin
+%define	_root_libdir	/%{_lib}
+
 Summary: Utilities for managing the second extended (ext2) filesystem.
 Name: e2fsprogs
-Version: 1.32
+Version: 1.33
 Release: 0
 Copyright: GPL
 Group: System Environment/Base
-Buildroot: /var/tmp/%{name}-root
-Source: ftp://download.sourceforge.net/pub/sourceforge/e2fsprogs/e2fsprogs-%{version}.tar.gz
+Source:  ftp://download.sourceforge.net/pub/sourceforge/e2fsprogs/e2fsprogs-%{version}.tar.gz
+Url: http://e2fsprogs.sourceforge.net/
 Prereq: /sbin/ldconfig
+BuildRoot: %{_tmppath}/%{name}-root
 
 %description
 The e2fsprogs package contains a number of utilities for creating,
@@ -22,12 +26,15 @@ utilities.
 
 You should install the e2fsprogs package if you are using any ext2
 filesystems (if you're not sure, you probably should install this
-package).
+package).  You may also need to install it (even if you don't use
+ext2) for the libuuid and libblkid libraries and fsck tool that are
+included here.
 
 %package devel
 Summary: Ext2 filesystem-specific static libraries and headers.
 Group: Development/Libraries
-Requires: e2fsprogs
+Requires: e2fsprogs = %{version}
+Prereq: /sbin/install-info
 
 %description devel
 E2fsprogs-devel contains the libraries and header files needed to
@@ -40,34 +47,40 @@ also need to install e2fsprogs.
 %prep
 %setup
 
-%build
-CFLAGS="$RPM_OPT_FLAGS" ; export CFLAGS
-./configure --enable-elf-shlibs --mandir=%{_mandir} --infodir=%{_infodir}
+chmod 755 configure
+autoconf
 
+%build
+%configure --enable-elf-shlibs
 make libs progs docs
 
 %install
 rm -rf $RPM_BUILD_ROOT
 export PATH=/sbin:$PATH
-make install install-libs DESTDIR="$RPM_BUILD_ROOT"
+make install install-libs DESTDIR="$RPM_BUILD_ROOT" \
+	root_sbindir=%{_root_sbindir} root_libdir=%{_root_libdir}
+
+cd ${RPM_BUILD_ROOT}%{_libdir}
+ln -sf %{_root_libdir}/libcom_err.so.2 libcom_err.so
+ln -sf %{_root_libdir}/libe2p.so.2 libe2p.so
+ln -sf %{_root_libdir}/libext2fs.so.2 libext2fs.so
+ln -sf %{_root_libdir}/libss.so.2 libss.so
+ln -sf %{_root_libdir}/libuuid.so.1 libuuid.so
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post
-/sbin/ldconfig
-# Remove possibly old version
-/bin/rm -f /usr/sbin/resize2fs
+%post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
 %post devel
-if [ -x /sbin/install-info ]; then
+if [ -x /sbin/install-info -a -f %{_infodir}/libext2fs.info.gz ]; then
    /sbin/install-info %{_infodir}/libext2fs.info.gz %{_infodir}/dir
 fi
 
 %postun devel
-if [ $1 = 0 -a -x /sbin/install-info ]; then
+if [ $1 = 0 -a -x /sbin/install-info -a -f %{_infodir}/libext2fs.info.gz ]; then
    /sbin/install-info --delete %{_infodir}/libext2fs.info.gz %{_infodir}/dir
 fi
 
@@ -75,43 +88,52 @@ fi
 %defattr(-,root,root)
 %doc README RELEASE-NOTES
 
-/sbin/badblocks
-/sbin/debugfs
-/sbin/dumpe2fs
-/sbin/e2fsck
-/sbin/e2label
-/sbin/e2image
-/sbin/fsck
-/sbin/fsck.ext2
-/sbin/fsck.ext3
-/sbin/mke2fs
-/sbin/mkfs.ext2
-/sbin/mkfs.ext3
-/sbin/tune2fs
-/sbin/resize2fs
-/usr/sbin/mklost+found
+%{_root_sbindir}/blkid
+%{_root_sbindir}/badblocks
+%{_root_sbindir}/debugfs
+%{_root_sbindir}/dumpe2fs
+%{_root_sbindir}/e2fsck
+%{_root_sbindir}/e2image
+%{_root_sbindir}/e2label
+%{_root_sbindir}/findfs
+%{_root_sbindir}/fsck
+%{_root_sbindir}/fsck.ext2
+%{_root_sbindir}/fsck.ext3
+%{_root_sbindir}/mke2fs
+%{_root_sbindir}/mkfs.ext2
+%{_root_sbindir}/mkfs.ext3
+%{_root_sbindir}/resize2fs
+%{_root_sbindir}/tune2fs
+%{_sbindir}/mklost+found
 
-/lib/libcom_err.so.*
-/lib/libe2p.so.*
-/lib/libext2fs.so.*
-/lib/libss.so.*
-/lib/libuuid.so.*
+%{_root_libdir}/libcom_err.so.*
+%{_root_libdir}/libe2p.so.*
+%{_root_libdir}/libext2fs.so.*
+%{_root_libdir}/libss.so.*
+%{_root_libdir}/libblkid.so.*
+%{_root_libdir}/libuuid.so.*
 
-/usr/bin/chattr
-/usr/bin/lsattr
-/usr/bin/uuidgen
+%{_bindir}/chattr
+%{_bindir}/lsattr
+%{_bindir}/uuidgen
 %{_mandir}/man1/chattr.1*
 %{_mandir}/man1/lsattr.1*
 %{_mandir}/man1/uuidgen.1*
 
 %{_mandir}/man8/badblocks.8*
+%{_mandir}/man8/blkid.8*
 %{_mandir}/man8/debugfs.8*
 %{_mandir}/man8/dumpe2fs.8*
 %{_mandir}/man8/e2fsck.8*
-%{_mandir}/man8/e2label.8*
+%{_mandir}/man8/findfs.8*
+%{_mandir}/man8/fsck.ext2.8*
+%{_mandir}/man8/fsck.ext3.8*
 %{_mandir}/man8/e2image.8*
+%{_mandir}/man8/e2label.8*
 %{_mandir}/man8/fsck.8*
 %{_mandir}/man8/mke2fs.8*
+%{_mandir}/man8/mkfs.ext2.8*
+%{_mandir}/man8/mkfs.ext3.8*
 %{_mandir}/man8/mklost+found.8*
 %{_mandir}/man8/resize2fs.8*
 %{_mandir}/man8/tune2fs.8*
@@ -119,27 +141,31 @@ fi
 %files devel
 %defattr(-,root,root)
 %{_infodir}/libext2fs.info*
-/usr/bin/compile_et
-/usr/bin/mk_cmds
+%{_bindir}/compile_et
+%{_bindir}/mk_cmds
 
-/usr/lib/libcom_err.a
-/usr/lib/libcom_err.so
-/usr/lib/libe2p.a
-/usr/lib/libe2p.so
-/usr/lib/libext2fs.a
-/usr/lib/libext2fs.so
-/usr/lib/libss.a
-/usr/lib/libss.so
-/usr/lib/libuuid.a
-/usr/lib/libuuid.so
+%{_libdir}/libcom_err.a
+%{_libdir}/libcom_err.so
+%{_libdir}/libe2p.a
+%{_libdir}/libe2p.so
+%{_libdir}/libext2fs.a
+%{_libdir}/libext2fs.so
+%{_libdir}/libss.a
+%{_libdir}/libss.so
+%{_libdir}/libblkid.a
+%{_libdir}/libblkid.so
+%{_libdir}/libuuid.a
+%{_libdir}/libuuid.so
 
-/usr/share/et
-/usr/share/ss
-/usr/include/et
-/usr/include/ext2fs
-/usr/include/ss
-/usr/include/uuid
+%{_datadir}/et
+%{_datadir}/ss
+%{_includedir}/blkid
+%{_includedir}/et
+%{_includedir}/ext2fs
+%{_includedir}/ss
+%{_includedir}/uuid
 %{_mandir}/man1/compile_et.1*
 %{_mandir}/man3/com_err.3*
 %{_mandir}/man3/libuuid.3*
 %{_mandir}/man3/uuid*.3*
+%{_mandir}/man3/libblkid.3*
