@@ -1,3 +1,8 @@
+2005-01-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in, test_script.in: Use @EGREP@ instead of grep -E for
+		portability with Solaris systems.
+
 2005-01-13  Matthias Andree  <matthias.andree@gmx.de>
 
 	* f_dup_de, r_resize_inode: change ">& /dev/null" to ">/dev/null 2>&1"

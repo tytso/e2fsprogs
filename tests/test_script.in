@@ -4,7 +4,7 @@
 #
 
 if test "$1"x = x ; then
-  TESTS=`ls -d $SRCDIR/[a-zA-Z]_* | grep -E -v "\.failed|\.new"`
+  TESTS=`ls -d $SRCDIR/[a-zA-Z]_* | $EGREP -v "\.failed|\.new"`
 else
   TESTS=
   for i 

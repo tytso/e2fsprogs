@@ -1,3 +1,8 @@
+2005-01-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* uuidP.h: Use inttypes.h in preference to stdint.h for
+		compatibility with older FreeBSD and Solaris systems.
+
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Use Linux-kernel-style makefile output for "make

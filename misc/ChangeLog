@@ -1,5 +1,11 @@
 2005-01-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* tune2fs.c: On Solaris, defining _XOPEN_SOURCE inexplicably
+		causes struct timeval to be undefined, breaking system
+		header files left and right.  But glibc requires
+		_XOPEN_SOURCE in order for strptime() to be defined.  So
+		don't define _XOPEN_SOURCE on Solaris systems.
+
 	* filefrag.c (frag_report): Applied patch from Francois Petillon
 		(fantec at proxad.net) to avoid a file descriptor leak.
 

@@ -32,8 +32,8 @@
  * %End-Header%
  */
 
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
 #else
 #include <uuid/uuid_types.h>
 #endif
