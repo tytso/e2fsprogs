@@ -93,7 +93,7 @@ MKCMDSCSRCS=	mk_cmds.c utils.c options.c ct.tab.c cmd_tbl.lex.c
 
 HFILES=	ss.h ss_internal.h copyright.h 
 
-INSTALL_HFILES=	ss.h ss_err.h copyright.h 
+INSTALL_HFILES=	ss.h copyright.h 
 
 # for 'tags' and dependencies
 
@@ -132,7 +132,7 @@ installdirs::
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(ulibdir) \
 		$(DESTDIR)$(includedir)/ss
 
-install:: libss.a $(INSTALL_HFILES) copyright.h installdirs
+install:: libss.a $(INSTALL_HFILES) copyright.h installdirs ss_err.h 
 	$(INSTALL_DATA) libss.a $(DESTDIR)$(ulibdir)/libss.a
 	$(CHMOD) 644 $(DESTDIR)$(ulibdir)/libss.a
 	-$(RANLIB) $(DESTDIR)$(ulibdir)/libss.a
@@ -141,6 +141,7 @@ install:: libss.a $(INSTALL_HFILES) copyright.h installdirs
 	for i in $(INSTALL_HFILES) copyright.h; do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/ss/$$i; \
 	done
+	$(INSTALL_DATA) ss_err.h $(DESTDIR)$(includedir)/ss/ss_err.h
 
 uninstall::
 	$(RM) -f $(ulibdir)/libss.a
