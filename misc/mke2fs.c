@@ -971,6 +971,28 @@ static void PRS(int argc, char *argv[])
 	if (raid_opts)
 		parse_raid_opts(raid_opts);
 
+	/*
+	 * If there's no blocksize specified and there is a journal
+	 * device, use it to figure out the blocksize
+	 */
+	if (blocksize == 0 && journal_device) {
+		ext2_filsys	jfs;
+
+		retval = ext2fs_open(journal_device,
+				     EXT2_FLAG_JOURNAL_DEV_OK, 0,
+				     0, unix_io_manager, &jfs);
+		if (retval) {
+			com_err(program_name, retval,
+				_("while trying to open journal device %s\n"),
+				journal_device);
+			exit(1);
+		}
+		blocksize = jfs->blocksize;
+		param.s_log_block_size =
+			int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+		ext2fs_close(jfs);
+	}
+		
 	/* Parse the user-supplied feature_set, if any. */
 	if (feature_set && !strncasecmp(feature_set, "none", 4))
 		feature_set = NULL;
@@ -1050,6 +1072,7 @@ static void PRS(int argc, char *argv[])
 			fs_type = "journal";
 		reserved_ratio = 0;
 	}
+
 	set_fs_defaults(fs_type, &param, blocksize, &inode_ratio);
 
 	if (param.s_blocks_per_group) {
@@ -1233,7 +1256,7 @@ int main (int argc, char *argv[])
 			exit(1);
 		}
 		if (!quiet) {
-			printf(_("Creating journal on device %s: "), 
+			printf(_("Adding journal to device %s: "), 
 			       journal_device);
 			fflush(stdout);
 		}

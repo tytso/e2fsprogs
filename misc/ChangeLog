@@ -1,3 +1,9 @@
+2001-07-27  Theodore Tso  <tytso@valinux.com>
+
+	* mke2fs.c (PRS): If the blocksize is not specified and the
+		journal device is specified, use it to determine the
+		blocksize of the new filesystem.
+
 2001-07-20  Theodore Tso  <tytso@valinux.com>
 
 	* fsck.8.in: Add much more explicit language documenting how the
