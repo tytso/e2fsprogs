@@ -283,7 +283,7 @@ void uuid_generate_time(uuid_t out)
 	get_clock(&clock_mid, &uu.time_low, &uu.clock_seq);
 	uu.clock_seq |= 0x8000;
 	uu.time_mid = (uint16_t) clock_mid;
-	uu.time_hi_and_version = (clock_mid >> 16) | 0x1000;
+	uu.time_hi_and_version = ((clock_mid >> 16) & 0x0FFF) | 0x1000;
 	memcpy(uu.node, node_id, 6);
 	uuid_pack(&uu, out);
 }

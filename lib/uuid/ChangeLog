@@ -1,3 +1,8 @@
+2004-05-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen_uuid.c (uuid_generate_time): Mask off the timestamp to avoid
+		a Y8.8888K problem.
+
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Update the modtime even if subst doesn't need to
