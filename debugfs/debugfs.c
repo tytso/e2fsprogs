@@ -818,9 +818,39 @@ void do_print_working_directory(int argc, char *argv[])
 	return;
 }
 
+/*
+ * Given a mode, return the ext2 file type
+ */
+static int ext2_file_type(unsigned int mode)
+{
+	if (LINUX_S_ISREG(mode))
+		return EXT2_FT_REG_FILE;
+
+	if (LINUX_S_ISDIR(mode))
+		return EXT2_FT_DIR;
+	
+	if (LINUX_S_ISCHR(mode))
+		return EXT2_FT_CHRDEV;
+	
+	if (LINUX_S_ISBLK(mode))
+		return EXT2_FT_BLKDEV;
+	
+	if (LINUX_S_ISLNK(mode))
+		return EXT2_FT_SYMLINK;
+
+	if (LINUX_S_ISFIFO(mode))
+		return EXT2_FT_FIFO;
+	
+	if (LINUX_S_ISSOCK(mode))
+		return EXT2_FT_SOCK;
+	
+	return 0;
+}
+
 static void make_link(char *sourcename, char *destname)
 {
-	ext2_ino_t	inode;
+	ext2_ino_t	ino;
+	struct ext2_inode inode;
 	int		retval;
 	ext2_ino_t	dir;
 	char		*dest, *cp, *basename;
@@ -828,8 +858,8 @@ static void make_link(char *sourcename, char *destname)
 	/*
 	 * Get the source inode
 	 */
-	inode = string_to_inode(sourcename);
-	if (!inode)
+	ino = string_to_inode(sourcename);
+	if (!ino)
 		return;
 	basename = strrchr(sourcename, '/');
 	if (basename)
@@ -859,8 +889,12 @@ static void make_link(char *sourcename, char *destname)
 			dest = destname;
 		}
 	}
+
+	if (debugfs_read_inode(ino, &inode, sourcename))
+		return;
 	
-	retval = ext2fs_link(current_fs, dir, dest, inode, 0);
+	retval = ext2fs_link(current_fs, dir, dest, ino, 
+			     ext2_file_type(inode.i_mode));
 	if (retval)
 		com_err("make_link", retval, "");
 	return;

@@ -1,3 +1,8 @@
+2004-03-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c (make_link): Set the filetype information when
+		creating a link.
+
 2004-02-28  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.35

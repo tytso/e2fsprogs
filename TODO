@@ -1,4 +1,4 @@
-Need to process the bad block inode *before* doing the inod scan.
+Need to process the bad block inode *before* doing the inode scan.
 
 Also check to see if the first block of the inode table is not on the
 bad block scan, and fix that.  We need to check for an inaccurate
@@ -192,10 +192,6 @@ know how hard it would be to do that, but I'll put it on my e2fsprogs
 TODO list.
 
 							- Ted
-
------------------------------------------------------------------
-
-Debugfs's link command should set the file type information
 
 ---------------------------------------------------------------
 From e2fsprogs Debian TODO file as of 1.10-13.
