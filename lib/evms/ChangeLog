@@ -1,0 +1,12 @@
+2002-05-28    <tytso@thunk.org>
+
+	* fsimext2.c: Log the fsck and mke2fs command lines.  Return
+		appropriate volume limits so that resizing will work
+		correctly.  Fix bug in how the e2fsck output was presented
+		to the user.
+
+	* fs_ext2.c: Add support for expanding and shrinking ext2/3
+		filesystems.
+
+
+
