@@ -143,7 +143,7 @@ static int get_node_id(unsigned char *node_id)
 	char buf[1024];
 	int		n, i;
 	unsigned char 	*a;
-#if defined(HAVE_NET_IF_DL_H) && defined(AF_LINK)
+#ifdef AF_LINK
 	struct sockaddr_dl *sdlp;
 #endif
 
@@ -188,9 +188,9 @@ static int get_node_id(unsigned char *node_id)
 			continue;
 		a = (unsigned char *) ifr.ifr_enaddr;
 #else
-#if defined(HAVE_NET_IF_DL_H) && defined(AF_LINK)
+#ifdef AF_LINK
 		sdlp = (struct sockaddr_dl *) &ifrp->ifr_addr;
-		if ((sdlp->sdl_family != AF_LINK) || (sdlp->sdl_alen < 6))
+		if ((sdlp->sdl_family != AF_LINK) || (sdlp->sdl_alen != 6))
 			continue;
 		a = (unsigned char *) &sdlp->sdl_data[sdlp->sdl_nlen];
 #else
@@ -200,7 +200,7 @@ static int get_node_id(unsigned char *node_id)
 		 */
 		close(sd);
 		return 0;
-#endif /* HAVE_NET_IF_DL_H && AF_LINK */
+#endif /* AF_LINK */
 #endif /* SIOCGENADDR */
 #endif /* SIOCGIFHWADDR */
 		if (!a[0] && !a[1] && !a[2] && !a[3] && !a[4] && !a[5])
