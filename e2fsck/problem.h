@@ -403,7 +403,7 @@ struct problem_context {
 #define PR_2_DEALLOC_INODE	0x020023
 
 /* Directory entry for '.' is big.  Split? */
-#define PR_2_SPLIT_DOT		0x0200024
+#define PR_2_SPLIT_DOT		0x020024
 
 /* Illegal FIFO */
 #define PR_2_BAD_FIFO		0x020025

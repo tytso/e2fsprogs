@@ -154,8 +154,9 @@ void e2fsck_pass4(e2fsck_t ctx)
 	ext2fs_free_icount(ctx->inode_link_info); ctx->inode_link_info = 0;
 	ext2fs_free_icount(ctx->inode_count); ctx->inode_count = 0;
 	ext2fs_free_inode_bitmap(ctx->inode_bb_map);
-	ext2fs_free_inode_bitmap(ctx->inode_imagic_map);
 	ctx->inode_bb_map = 0;
+	ext2fs_free_inode_bitmap(ctx->inode_imagic_map);
+	ctx->inode_imagic_map = 0;
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);

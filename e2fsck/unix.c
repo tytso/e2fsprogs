@@ -832,8 +832,9 @@ restart:
 		print_resource_track(NULL, &ctx->global_rtrack);
 #endif
 
-	e2fsck_free_context(ctx);
 	ext2fs_close(fs);
+	ctx->fs = NULL;
+	e2fsck_free_context(ctx);
 	
 	return exit_value;
 }

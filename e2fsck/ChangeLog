@@ -1,3 +1,27 @@
+1999-11-07    <tytso@valinux.com>
+
+	* pass4.c (e2fsck_pass4): Clear inode_imagic_map after freeing it,
+		to prevent it from getting freed twice.
+
+1999-11-06    <tytso@valinux.com>
+
+	* unix.c (main): Close the filesystem before freeing the context,
+		so that in the event of a free()-related segmentation
+		violation, the filesystem is properly closed and written
+		out.
+
+1999-10-27    <tytso@valinux.com>
+
+	* e2fsck.c (e2fsck_reset_context): When freeing
+		ctx->inode_reg_map, we weren't zero'ing
+		ctx->inode_reg_map, which could cause a segfault later on
+		in the e2fsck run.
+
+1999-10-26    <tytso@valinux.com>
+
+	* problem.h (PR_2_SPLIT_DOT): Fix excess zero in problem code (now
+		matches the standard convention).
+
 1999-10-26    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.17

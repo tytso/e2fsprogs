@@ -52,7 +52,7 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 	}
 	if (ctx->inode_reg_map) {
 		ext2fs_free_inode_bitmap(ctx->inode_reg_map);
-		ctx->inode_dir_map = 0;
+		ctx->inode_reg_map = 0;
 	}
 	if (ctx->block_found_map) {
 		ext2fs_free_block_bitmap(ctx->block_found_map);
