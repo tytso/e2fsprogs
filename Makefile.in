@@ -89,7 +89,8 @@ distribution_tar_file:
 	(cd /tmp/dest; $(TAR) cf - . ) | gzip -9 \
 		> e2fsprogs-@E2FSPROGS_VERSION@-@BINARY_TYPE@.tar.gz
 
-SRCROOT = `echo e2fsprogs-@E2FSPROGS_VERSION@ | sed -e 's/-WIP//'`
+SRCROOT = `echo e2fsprogs-@E2FSPROGS_VERSION@ | sed -e 's/-WIP//' \
+					-e 's/pre-//'`
 
 $(srcdir)/.exclude-file:
 	(cd $(srcdir)/.. ; find $(SRCROOT) \( -name \*~ -o -name \*.orig \

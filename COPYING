@@ -1,14 +1,14 @@
 This package, the EXT2 filesystem utilities, are protected by the GNU
 Public License, with the following exception --- 
 
-	If the version string in the file version.h contains the words
-	"WORK IN PROGRESS", then this package must be distributed in
-	source form only.  You can give a copy of the binary for
-	e2fsck to help a friend recover his or her filesystem, as the
-	need arises.  However, "WORK IN PROGRESS" means exactly that.
-	The package is in ALPHA testing, and for your protection as
-	much as mine, I'd rather not have it appear in a some
-	distribution --- especially not a CD-ROM distribution!
+	If the version string in the file version.h contains the
+	string "pre-", then this package must be distributed in source
+	form only.  You can give a copy of the binary for e2fsck to
+	help a friend recover his or her filesystem, as the need
+	arises.  However, "pre" indicates that this release is under
+	development, and availble for ALPHA testing.  So for your
+	protection as much as mine, I'd rather not have it appear in a
+	some distribution --- especially not a CD-ROM distribution!
 
 The most recent officially distributed version can be found on
 tsx-11.mit.edu, in /pub/linux/packages/ext2fs.  If you need to make a
@@ -20,4 +20,4 @@ this package are flexible, if you give me enough lead time.
 
 
 					Theodore Ts'o
-					17-Aug-94
+					26-Mar-97
