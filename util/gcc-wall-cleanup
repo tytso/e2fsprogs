@@ -1,0 +1,15 @@
+#!/bin/sed -f
+#
+# This script filters out gcc-wall crud that we're not interested in seeing.
+#
+/^cc /d
+/^kcc /d
+/^gcc /d
+/does not support `long long'/d
+/does not support the `ll' length modifier/d
+/traditional C rejects string concatenation/d
+/At top level:/d
+/In file included from/d
+/In function `.*':/d
+/^[ 	]*from/d
+

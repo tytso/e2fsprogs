@@ -1,3 +1,8 @@
+2001-01-11    <tytso@snap.thunk.org>
+
+	* gcc-wall-cleanup: New file which is used to clean up unnecessary
+		crud from gcc -Wall that we're not interested in seeing
+
 2000-07-13    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.19
