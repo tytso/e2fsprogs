@@ -111,7 +111,7 @@ and then marks them as bad by adding them to the bad block inode.
 If this option is specified twice, then the bad block scan will be done
 using a non-destructive read-write test.
 .TP
-.B \-C
+.BI \-C " fd"
 This option causes
 .B e2fsck
 to write completion information to the specified file descriptor 

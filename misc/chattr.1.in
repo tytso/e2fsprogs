@@ -48,7 +48,7 @@ not modified.  This avoids a certain amount of disk I/O for laptop
 systems.
 .PP
 A file with the `a' attribute set can only be open in append mode for writing.
-Only the superuser or a process pessessing the CAP_LINUX_IMMUTABLE 
+Only the superuser or a process possessing the CAP_LINUX_IMMUTABLE 
 capability can set or clear this attribute.
 .PP
 A file with the `c' attribute set is automatically compressed on the disk
@@ -78,13 +78,13 @@ although it can be displayed by
 .PP
 A file with the `i' attribute cannot be modified: it cannot be deleted or
 renamed, no link can be created to this file and no data can be written
-to the file.  Only the superuser or a process pessessing the
+to the file.  Only the superuser or a process possessing the
 CAP_LINUX_IMMUTABLE capability can set or clear this attribute.
 .PP
 A file with the `j' attribute has all of its data written to the ext3
 journal before being written to the file itself, if the filesystem is
 mounted with the "data=ordered" or "data=writeback" options.  When the
-filesystem is mounted with the "data=journalled" option all file data
+filesystem is mounted with the "data=journal" option all file data
 is already journalled and this attribute has no effect.  
 Only the superuser or a process possessing the CAP_SYS_RESOURCE
 capability can set or clear this attribute.

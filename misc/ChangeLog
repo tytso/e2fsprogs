@@ -1,3 +1,8 @@
+2003-03-06    <tytso@snap.thunk.org>
+
+	* tune2fs.8.in, chattr.1.in: Minor man page fixes (Addresses
+		Debian bugs #175233, #175113, and #170497)
+
 2003-03-06  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in (DEPLIBS_BLKID): Use DEPLIBUUID, not LIBUUID to

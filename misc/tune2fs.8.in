@@ -288,7 +288,7 @@ Enable debugging code for this filesystem.
 .B bsdgroups
 Emulate BSD behaviour when creating new files: they will take the group-id
 of the directory in which they were created.  The standard System V behaviour
-is the default, where newly created files take on the fsgid of the crrent
+is the default, where newly created files take on the fsgid of the current
 process, unless the directry has the setgid bit set, in which case it takes 
 the gid from the parent directory, and also gets the setgid bit set if it is 
 directory itself.

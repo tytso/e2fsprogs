@@ -1,3 +1,8 @@
+2003-03-06    <tytso@mit.edu>
+
+	* e2fsck.8.in: Fix minor nit in the -C option.  (Addresses Debian
+		bug #173612)
+
 2003-03-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in, journal.c, unix.c: Use blkid functions to find the
