@@ -117,19 +117,19 @@ DLL_IMAGE = libe2fs
 DLL_STUB = libext2fs
 DLL_LIBS = -L../.. -lcom_err
 DLL_MYDIR = ext2fs
-DLL_INSTALL_DIR = $(libdir)
+DLL_INSTALL_DIR = $(root_libdir)
 
 ELF_VERSION = 2.4
 ELF_SO_VERSION = 2
 ELF_IMAGE = libext2fs
 ELF_MYDIR = ext2fs
-ELF_INSTALL_DIR = $(libdir)
+ELF_INSTALL_DIR = $(root_libdir)
 ELF_OTHER_LIBS = -lc -L../.. -lcom_err
 
 BSDLIB_VERSION = 2.1
 BSDLIB_IMAGE = libext2fs
 BSDLIB_MYDIR = ext2fs
-BSDLIB_INSTALL_DIR = $(libdir)
+BSDLIB_INSTALL_DIR = $(root_libdir)
 
 @MAKEFILE_LIBRARY@
 @MAKEFILE_DLL@
@@ -173,22 +173,22 @@ check:: tst_badblocks tst_iscan
 	./tst_iscan
 
 installdirs::
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(ulibdir) \
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/ext2fs
 
 install:: all $(HFILES) installdirs 
-	$(INSTALL_DATA) libext2fs.a $(DESTDIR)$(ulibdir)/libext2fs.a
-	$(CHMOD) 644 $(DESTDIR)$(ulibdir)/libext2fs.a
-	-$(RANLIB) $(DESTDIR)$(ulibdir)/libext2fs.a
-	$(CHMOD) $(LIBMODE) $(DESTDIR)$(ulibdir)/libext2fs.a
+	$(INSTALL_DATA) libext2fs.a $(DESTDIR)$(libdir)/libext2fs.a
+	$(CHMOD) 644 $(DESTDIR)$(libdir)/libext2fs.a
+	-$(RANLIB) $(DESTDIR)$(libdir)/libext2fs.a
+	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libext2fs.a
 	for i in $(HFILES); do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/ext2fs/$$i; \
 	done
 	$(INSTALL_DATA) ext2_err.h  $(DESTDIR)$(includedir)/ext2fs/ext2_err.h
 
 uninstall::
-	$(RM) -f $(ulibdir)/libext2fs.a
-	$(RM) -rf $(includedir)/ext2fs
+	$(RM) -f $(DESTDIR)$(libdir)/libext2fs.a
+	$(RM) -rf $(DESTDIR)$(includedir)/ext2fs
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/* \
