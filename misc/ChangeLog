@@ -1,3 +1,8 @@
+1999-09-15    <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (show_stats): Fix display bug when printing out the
+		number of superblocks.  Suggested by Yann Dirson.
+
 1999-09-08    <tytso@valinux.com>
 
 	* partinfo.c: Fix minor compilation bugs pointed out by Yann

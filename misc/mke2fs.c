@@ -19,7 +19,6 @@
 #include <string.h>
 #include <fcntl.h>
 #include <ctype.h>
-#include <termios.h>
 #include <time.h>
 #ifdef linux
 #include <sys/utsname.h>
@@ -599,6 +598,8 @@ static void show_stats(ext2_filsys fs)
 		group_block += s->s_blocks_per_group;
 		if (!ext2fs_bg_has_super(fs, i))
 			continue;
+		if (i != 1)
+			printf(", ");
 		need = log10(group_block) + 2;
 		if (need > col_left) {
 			printf("\n\t");
@@ -606,8 +607,6 @@ static void show_stats(ext2_filsys fs)
 		}
 		col_left -= need;
 		printf("%u", group_block);
-		if (i != fs->group_desc_count - 1)
-			printf(", ");
 	}
 	printf("\n\n");
 }
