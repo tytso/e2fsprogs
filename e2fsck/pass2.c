@@ -154,7 +154,7 @@ static int check_dot(e2fsck_t ctx,
 	
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT;
-	else if ((dirent->name_len != 1) ||
+	else if (((dirent->name_len & 0xFF) != 1) ||
 		 (dirent->name[0] != '.'))
 		problem = PR_2_1ST_NOT_DOT;
 	else if (dirent->name[1] != '\0')
@@ -209,7 +209,7 @@ static int check_dotdot(e2fsck_t ctx,
 	
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT_DOT;
-	else if ((dirent->name_len != 2) ||
+	else if (((dirent->name_len & 0xFF) != 2) ||
 		 (dirent->name[0] != '.') ||
 		 (dirent->name[1] != '.'))
 		problem = PR_2_2ND_NOT_DOT_DOT;
@@ -250,7 +250,7 @@ static int check_name(e2fsck_t ctx,
 	int	fixup = -1;
 	int	ret = 0;
 	
-	for ( i = 0; i < dirent->name_len; i++) {
+	for ( i = 0; i < (dirent->name_len & 0xFF); i++) {
 		if (dirent->name[i] == '/' || dirent->name[i] == '\0') {
 			if (fixup < 0) {
 				fixup = fix_problem(ctx, PR_2_BAD_NAME, pctx);
@@ -337,7 +337,7 @@ static int check_dir_block(ext2_filsys fs,
 		if (((offset + dirent->rec_len) > fs->blocksize) ||
 		    (dirent->rec_len < 8) ||
 		    ((dirent->rec_len % 4) != 0) ||
-		    ((dirent->name_len+8) > dirent->rec_len)) {
+		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
 			if (fix_problem(ctx, PR_2_DIR_CORRUPTED, &cd->pctx)) {
 				dirent->rec_len = fs->blocksize - offset;
 				dirent->name_len = 0;
@@ -346,7 +346,7 @@ static int check_dir_block(ext2_filsys fs,
 			} else
 				return DIRENT_ABORT;
 		}
-		if (dirent->name_len > EXT2_NAME_LEN) {
+		if ((dirent->name_len & 0xFF) > EXT2_NAME_LEN) {
 			if (fix_problem(ctx, PR_2_FILENAME_LONG, &cd->pctx)) {
 				dirent->name_len = EXT2_NAME_LEN;
 				dir_modified++;
@@ -398,7 +398,7 @@ static int check_dir_block(ext2_filsys fs,
 			 */
 			problem = PR_2_BB_INODE;
 		} else if ((dot_state > 2) &&
-			   (dirent->name_len == 1) &&
+			   ((dirent->name_len & 0xFF) == 1) &&
 			   (dirent->name[0] == '.')) {
 			/*
 			 * If there's a '.' entry in anything other
@@ -407,7 +407,7 @@ static int check_dir_block(ext2_filsys fs,
 			 */
 			problem = PR_2_DUP_DOT;
 		} else if ((dot_state > 2) &&
-			   (dirent->name_len == 2) &&
+			   ((dirent->name_len & 0xFF) == 2) &&
 			   (dirent->name[0] == '.') && 
 			   (dirent->name[1] == '.')) {
 			/*

@@ -248,18 +248,18 @@ static _INLINE_ void expand_dirent_expression(char ch,
 		printf("%u", dirent->inode);
 		break;
 	case 'n':
-		len = dirent->name_len;
+		len = dirent->name_len & 0xFF;
 		if (len > EXT2_NAME_LEN)
 			len = EXT2_NAME_LEN;
 		if (len > dirent->rec_len)
 			len = dirent->rec_len;
-		printf("%.*s", dirent->name_len, dirent->name);
+		printf("%.*s", len, dirent->name);
 		break;
 	case 'r':
 		printf("%u", dirent->rec_len);
 		break;
 	case 'l':
-		printf("%u", dirent->name_len);
+		printf("%u", dirent->name_len & 0xFF);
 		break;
 	default:
 	no_dirent:

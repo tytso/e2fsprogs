@@ -1,3 +1,11 @@
+Sun Mar  8 23:08:08 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass3.c (fix_dotdot_proc): 
+	* pass2.c (check_dot, check_dotdot, check_name, check_dir_block): 
+	* message.c (expand_dirent_expression): Mask off the high eight
+		bits of the directory entry's name_len field, so that it
+		can be used for other purposes.
+
 Fri Feb 27 00:01:39 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* e2fsck.c (e2fsck_run): Since E2F_FLAG_SIGNAL_MASK doesn't

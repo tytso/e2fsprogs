@@ -542,7 +542,7 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 	errcode_t	retval;
 	struct problem_context pctx;
 
-	if (dirent->name_len != 2)
+	if ((dirent->name_len & 0xFF) != 2)
 		return 0;
 	if (strncmp(dirent->name, "..", 2))
 		return 0;
