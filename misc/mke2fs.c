@@ -70,24 +70,25 @@ extern int isatty(int);
 extern FILE *fpopen(const char *cmd, const char *mode);
 
 const char * program_name = "mke2fs";
-const char * device_name = NULL;
+const char * device_name /* = NULL */;
 
 /* Command line options */
-int	cflag = 0;
-int	verbose = 0;
-int	quiet = 0;
-int	super_only = 0;
-int	force = 0;
-int	noaction = 0;
-int	journal_size = 0;
-char	*bad_blocks_filename = 0;
-__u32	fs_stride = 0;
+int	cflag /* = 0 */ ;
+int	verbose /* = 0 */ ;
+int	quiet /* = 0 */ ;
+int	super_only /* = 0 */ ;
+int	force /* = 0 */ ;
+int	noaction /* = 0 */ ;
+int	journal_size /* = 0 */ ;
+int	journal_flags /* = 0 */ ;
+char	*bad_blocks_filename /* = 0 */ ;
+__u32	fs_stride /* = 0 */ ;
 
 struct ext2_super_block param;
-char *creator_os = NULL;
-char *volume_label = NULL;
-char *mount_dir = NULL;
-char *journal_device = NULL;
+char *creator_os /* = NULL */ ;
+char *volume_label /* = NULL */ ;
+char *mount_dir /* = NULL */ ;
+char *journal_device /* = NULL */ ;
 
 static void usage(NOARGS);
 static void check_plausibility(const char *device);
@@ -770,6 +771,9 @@ static void parse_journal_opts(const char *opts)
 				journal_usage++;
 				continue;
 			}
+		} else if (strcmp(token, "v1_superblock") == 0) {
+			journal_flags |= EXT2_MKJOURNAL_V1_SUPER;
+			continue;
 		} else {
 			journal_size = strtoul(token, &p, 0);
 			if (*p)
@@ -908,15 +912,6 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'j':
 			journal_opts = optarg;
-			break;
-#if 0
-			journal_size = strtoul(optarg, &tmp, 0);
-			if (journal_size < 4 || journal_size > 100 || *tmp) {
-				com_err(program_name, 0,
-					_("bad journal size - %s"), optarg);
-				exit(1);
-			}
-#endif
 			break;
 		case 'l':
 			bad_blocks_filename = malloc(strlen(optarg)+1);
@@ -1207,6 +1202,7 @@ int main (int argc, char *argv[])
 #endif
 	}
 
+	journal_blocks = journal_size * 1024 / (fs->blocksize 	/ 1024);
 	if (journal_device) { 
 		if (!force)
 			check_plausibility(journal_device); 
@@ -1215,7 +1211,9 @@ int main (int argc, char *argv[])
 		if (!quiet)
 			printf(_("Creating journal on device %s: "), 
 			       journal_device);
-		retval = ext2fs_add_journal_device(fs, journal_device, 0);
+		retval = ext2fs_add_journal_device(fs, journal_device,
+						   journal_blocks,
+						   journal_flags);
 		if(retval) { 
 			com_err (program_name, retval, 
 				 _("while trying to create journal on device %s"), 
@@ -1227,9 +1225,8 @@ int main (int argc, char *argv[])
 	} else if (journal_size) {
 		if (!quiet)
 			printf(_("Creating journal: "));
-		journal_blocks = journal_size * 1024 /
-			(fs->blocksize 	/ 1024);
-		retval = ext2fs_add_journal_fs(fs, journal_blocks);
+		retval = ext2fs_add_journal_fs(fs, journal_blocks,
+					       journal_flags);
 		if (retval) {
 			com_err (program_name, retval,
 				 _("while trying to create journal"));
