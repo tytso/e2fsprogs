@@ -8,6 +8,18 @@
  * %End-Header%
  */
 
+/*
+ * Resizing a filesystem consists of the following phases:
+ *
+ *	1.  Adjust superblock and (*) write out new parts of the inode
+ * 		table
+ * 	2.  Determine blocks which need to be relocated.
+ * 	3.  (*) Relocate blocks which must be moved, adjusting entries
+ * 		in the filesystem in the process.
+ * 	4.  (*) Move inodes which must be moved (only when shrinking a
+ * 		filesystem)
+ * 	5.  (*) Move the inode tables, if necessary.
+ */
 #include "resize2fs.h"
 
 /*
@@ -23,7 +35,6 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk_t new_size)
 	blk_t		blk, group_block;
 	unsigned long	i, j;
 	struct ext2_group_desc *new;
-	char		*buf;
 	int		old_numblocks, numblocks, adjblocks;
 	
 	fs = rfs->new_fs;
@@ -139,10 +150,10 @@ retry:
 	 */
 	if (rfs->old_fs->group_desc_count >= fs->group_desc_count)
 		return 0;
-	buf = malloc(fs->blocksize);
-	if (!buf)
+	rfs->itable_buf = malloc(fs->blocksize * fs->inode_blocks_per_group);
+	if (!rfs->itable_buf)
 		return ENOMEM;
-	memset(buf, 0, fs->blocksize);
+	memset(rfs->itable_buf, 0, fs->blocksize * fs->inode_blocks_per_group);
 	group_block = fs->super->s_first_data_block +
 		rfs->old_fs->group_desc_count * fs->super->s_blocks_per_group;
 	for (i = rfs->old_fs->group_desc_count;
@@ -181,13 +192,16 @@ retry:
 		if (retval)
 			return retval;
 
-		for (blk=fs->group_desc[i].bg_inode_table, j=0;
-		     j < fs->inode_blocks_per_group;
-		     blk++, j++) {
-			retval = io_channel_write_blk(fs->io, blk, 1, buf);
-			if (retval)
-				return retval;
-		}
+		/*
+		 * Write out the new inode table
+		 */
+		retval = io_channel_write_blk(fs->io,
+					      fs->group_desc[i].bg_inode_table,
+					      fs->inode_blocks_per_group,
+					      rfs->itable_buf);
+		if (retval)
+			return retval;
+		
 		group_block += fs->super->s_blocks_per_group;
 	}
 	return 0;
@@ -288,9 +302,9 @@ static errcode_t determine_relocations(ext2_resize_t rfs)
 			if (blk >= (fs->group_desc[i].bg_inode_table +
 				    fs->inode_blocks_per_group))
 				continue;
-			fs->group_desc[i].bg_inode_table = 0;
 			blk = fs->group_desc[i].bg_inode_table +
 				fs->inode_blocks_per_group - 1;
+			fs->group_desc[i].bg_inode_table = 0;
 		}
 		if (fs->group_desc[i].bg_inode_table &&
 		    fs->group_desc[i].bg_inode_bitmap &&
@@ -381,61 +395,94 @@ static errcode_t determine_relocations(ext2_resize_t rfs)
  */
 errcode_t move_itables(ext2_resize_t rfs)
 {
-	int	i, max;
+	int		i, n, num, max, size, diff;
 	ext2_filsys	fs = rfs->new_fs;
-	char		*buf;
+	char		*cp;
 	blk_t		old, new;
 	errcode_t	retval, err;
 
-	printf("Hide the women and children --- "
-	       "commencing inode table moves!!\n");
-	
 	max = fs->group_desc_count;
 	if (max > rfs->old_fs->group_desc_count)
 		max = rfs->old_fs->group_desc_count;
 
-	buf = malloc(fs->blocksize * fs->inode_blocks_per_group);
-	if (!buf)
-		return ENOMEM;
+	size = fs->blocksize * fs->inode_blocks_per_group;
+	if (!rfs->itable_buf) {
+		rfs->itable_buf = malloc(size);
+		if (!rfs->itable_buf)
+			return ENOMEM;
+	}
 	
 	for (i=0; i < max; i++) {
 		old = rfs->old_fs->group_desc[i].bg_inode_table;
 		new = fs->group_desc[i].bg_inode_table;
+		diff = new - old;
 		
-		printf("Group %d block %ld->%ld\n", i, old, new);
+		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
+			printf("Itable move group %d block "
+			       "%ld->%ld (diff %d)\n", 
+			       i, old, new, diff);
 		
-		if (old == new)
+		if (!diff)
 			continue;
 
 		retval = io_channel_read_blk(fs->io, old,
-					     fs->inode_blocks_per_group, buf);
+					     fs->inode_blocks_per_group,
+					     rfs->itable_buf);
 		if (retval) 
 			goto backout;
+		/*
+		 * The end of the inode table segment often contains
+		 * all zeros.  Find out if we have several blocks of
+		 * zeros so we can optimize the write.
+		 */
+		for (cp = rfs->itable_buf+size, n=0; n < size; n++, cp--)
+			if (*cp)
+				break;
+		n = n >> EXT2_BLOCK_SIZE_BITS(fs->super);
+		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
+			printf("%d blocks of zeros...\n", n);
+		num = fs->inode_blocks_per_group;
+		if (n > diff)
+			num -= n;
+
 		retval = io_channel_write_blk(fs->io, new,
-					      fs->inode_blocks_per_group, buf);
+					      num, rfs->itable_buf);
 		if (retval) {
 			io_channel_write_blk(fs->io, old,
-					      fs->inode_blocks_per_group, buf);
+					     num, rfs->itable_buf);
 			goto backout;
 		}
+		if (n > diff) {
+			retval = io_channel_write_blk(fs->io,
+			      old + fs->inode_blocks_per_group,
+			      diff, rfs->itable_buf - fs->blocksize * diff);
+			if (retval)
+				goto backout;
+		} 
+		io_channel_flush(fs->io);
 	}
 	ext2fs_flush(rfs->new_fs);
-	printf("Inode table move finished.\n");
+	if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
+		printf("Inode table move finished.\n");
 	return 0;
 	
 backout:
-	printf("Error: %s; now backing out!\n", error_message(retval));
+	if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
+		printf("Error: %s; now backing out!\n", error_message(retval));
 	while (--i >= 0) {
-		printf("Group %d block %ld->%ld\n", i, new, old);
+		if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
+			printf("Group %d block %ld->%ld\n", i, new, old);
 		old = rfs->old_fs->group_desc[i].bg_inode_table;
 		new = fs->group_desc[i].bg_inode_table;
 		
 		err = io_channel_read_blk(fs->io, new,
-					  fs->inode_blocks_per_group, buf);
+					  fs->inode_blocks_per_group,
+					  rfs->itable_buf);
 		if (err)
 			continue;
 		err = io_channel_write_blk(fs->io, old,
-					   fs->inode_blocks_per_group, buf);
+					   fs->inode_blocks_per_group,
+					   rfs->itable_buf);
 	}
 	return retval;
 }
@@ -503,10 +550,11 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 /*
  * This is the top-level routine which does the dirty deed....
  */
-errcode_t resize_fs(ext2_filsys fs, blk_t new_size)
+errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags)
 {
 	ext2_resize_t	rfs;
 	errcode_t	retval;
+	int		bmove_flags;
 
 	retval = ext2fs_read_bitmaps(fs);
 	if (retval)
@@ -521,6 +569,8 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size)
 	memset(rfs, 0, sizeof(struct ext2_resize_struct));
 
 	rfs->old_fs = fs;
+	rfs->flags = flags;
+	rfs->itable_buf	 = 0;
 	retval = ext2fs_dup_handle(fs, &rfs->new_fs);
 	if (retval)
 		goto errout;
@@ -533,49 +583,53 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size)
 	if (retval)
 		goto errout;
 
-	printf("Number of free blocks: %d, Needed: %d\n",
-	       fs->super->s_free_blocks_count, rfs->needed_blocks);
+	if (rfs->flags & RESIZE_DEBUG_BMOVE)
+		printf("Number of free blocks: %d, Needed: %d\n",
+		       fs->super->s_free_blocks_count, rfs->needed_blocks);
 	
 	if (rfs->needed_blocks > fs->super->s_free_blocks_count) {
 		retval = ENOSPC;
 		goto errout;
 	}
-	
-	printf("\nOld superblock:\n");
-	list_super(rfs->old_fs->super);
-	printf("\n\nNew superblock:\n");
-	list_super(rfs->new_fs->super);
-	printf("\n");
 
+	bmove_flags = EXT2_BMOVE_GET_DBLIST;
+	if (rfs->flags & RESIZE_DEBUG_BMOVE)
+		bmove_flags |= EXT2_BMOVE_DEBUG;
 	retval = ext2fs_move_blocks(rfs->old_fs, rfs->reserve_blocks,
-				    rfs->new_fs->block_map,
-				    EXT2_BMOVE_GET_DBLIST);
+				    rfs->new_fs->block_map, bmove_flags);
 	if (retval)
-		return retval;
+		goto errout;
 
 	retval = ext2fs_inode_move(rfs);
 	if (retval)
-		return retval;
+		goto errout;
 
 	retval = move_itables(rfs);
 	if (retval)
-		return retval;
+		goto errout;
 
 	retval = ext2fs_calculate_summary_stats(rfs->new_fs);
 	if (retval)
-		return retval;
+		goto errout;
 	
 	retval = ext2fs_close(rfs->new_fs);
 	if (retval)
-		return retval;
+		goto errout;
+
+	rfs->flags = flags;
 	
 	ext2fs_free(rfs->old_fs);
+	if (rfs->itable_buf)
+		free(rfs->itable_buf);
+	free(rfs);
 	
 	return 0;
 
 errout:
 	if (rfs->new_fs)
 		ext2fs_free(rfs->new_fs);
+	if (rfs->itable_buf)
+		free(rfs->itable_buf);
 	free(rfs);
 	return retval;
 }

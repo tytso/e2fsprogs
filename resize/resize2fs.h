@@ -32,6 +32,16 @@
 #endif
 
 /*
+ * Flags for the resizer; most are debugging flags only
+ */
+#define RESIZE_DEBUG_IO			0x0001
+#define RESIZE_DEBUG_BMOVE		0x0002
+#define RESIZE_DEBUG_INODEMAP		0x0004
+#define RESIZE_DEBUG_ITABLEMOVE		0x0008
+
+#define RESIZE_PERCENT_COMPLETE		0x0100
+
+/*
  * The core state structure for the ext2 resizer
  */
 
@@ -41,9 +51,11 @@ struct ext2_resize_struct {
 	ext2_brel	block_relocate;
 	ext2fs_block_bitmap reserve_blocks;
 	int		needed_blocks;
+	int		flags;
+	char		*itable_buf;
 };
 
 typedef struct ext2_resize_struct *ext2_resize_t;
 
 /* prototypes */
-extern errcode_t resize_fs(ext2_filsys fs, blk_t new_size);
+extern errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags);

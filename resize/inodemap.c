@@ -136,23 +136,29 @@ static ino_t inode_map_translate(inode_map imap, ino_t old)
 	return 0;
 }
 
+struct istruct {
+	inode_map	imap;
+	int		flags;
+};
+
 int check_and_change_inodes(ino_t dir, int entry,
 			    struct ext2_dir_entry *dirent, int offset,
 			    int	blocksize, char *buf, void *private)
 {
-	inode_map imap = private;
+	struct istruct *is = private;
 	ino_t	new;
 
 	if (!dirent->inode)
 		return 0;
 
-	new = inode_map_translate(imap, dirent->inode);
+	new = inode_map_translate(is->imap, dirent->inode);
 
 	if (!new)
 		return 0;
-
-	printf("Inode translate (dir=%ld, name=%.*s, %ld->%ld)\n",
-	       dir, dirent->name_len, dirent->name, dirent->inode, new);
+	if (is->flags & RESIZE_DEBUG_INODEMAP)
+		printf("Inode translate (dir=%ld, name=%.*s, %ld->%ld)\n",
+		       dir, dirent->name_len, dirent->name,
+		       dirent->inode, new);
 
 	dirent->inode = new;
 
@@ -167,6 +173,7 @@ errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 	inode_map		imap;
 	errcode_t		retval;
 	int			group;
+	struct istruct 		is;
 	
 	if (rfs->old_fs->group_desc_count <=
 	    rfs->new_fs->group_desc_count)
@@ -222,7 +229,8 @@ errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 		if (LINUX_S_ISDIR(inode.i_mode))
 			rfs->new_fs->group_desc[group].bg_used_dirs_count++;
 		
-		printf("inode %ld->%ld\n", ino, new);
+		if (rfs->flags & RESIZE_DEBUG_INODEMAP)
+			printf("Inode moved %ld->%ld\n", ino, new);
 
 		add_inode_map_entry(imap, ino, new);
 	}
@@ -230,8 +238,10 @@ errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 	 * Now, we iterate over all of the directories to update the
 	 * inode references
 	 */
+	is.imap = imap;
+	is.flags = rfs->flags;
 	retval = ext2fs_dblist_dir_iterate(rfs->old_fs->dblist, 0, 0,
-					   check_and_change_inodes, imap);
+					   check_and_change_inodes, &is);
 	if (retval)
 		return retval;
 

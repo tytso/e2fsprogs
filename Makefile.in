@@ -96,7 +96,7 @@ distribution_tar_file:
 		> e2fsprogs-@E2FSPROGS_VERSION@-@BINARY_TYPE@.tar.gz
 
 SRCROOT = `echo e2fsprogs-@E2FSPROGS_VERSION@ | sed -e 's/-WIP//' \
-					-e 's/pre-//'`
+			-e 's/pre-//' -e 's/-PLUS//'`
 
 $(srcdir)/.exclude-file:
 	(cd $(srcdir)/.. ; find e2fsprogs \( -name \*~ -o -name \*.orig \

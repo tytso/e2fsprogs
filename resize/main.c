@@ -26,6 +26,7 @@ void main (int argc, char ** argv)
 	errcode_t	retval;
 	ext2_filsys	fs;
 	int		c;
+	int		flags = 0;
 	blk_t		new_size;
 	io_manager	io_ptr;
 
@@ -35,10 +36,16 @@ void main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	
-	while ((c = getopt (argc, argv, "h")) != EOF) {
+	while ((c = getopt (argc, argv, "d:hp")) != EOF) {
 		switch (c) {
 		case 'h':
 			usage(program_name);
+			break;
+		case 'd':
+			flags |= atoi(optarg);
+			break;
+		case 'p':
+			flags |= RESIZE_PERCENT_COMPLETE;
 			break;
 		default:
 			usage (program_name);
@@ -49,12 +56,13 @@ void main (int argc, char ** argv)
 	device_name = argv[optind++];
 	new_size = atoi(argv[optind++]);
 	initialize_ext2_error_table();
-#if 1
-	io_ptr = unix_io_manager;
-#else
-	io_ptr = test_io_manager;
-	test_io_backing_manager = unix_io_manager;
-#endif
+
+	if (flags & RESIZE_DEBUG_IO) {
+		io_ptr = test_io_manager;
+		test_io_backing_manager = unix_io_manager;
+	} else 
+		io_ptr = unix_io_manager;
+
 	retval = ext2fs_open (device_name, EXT2_FLAG_RW, 0, 0,
 			      io_ptr, &fs);
 	if (retval) {
@@ -70,7 +78,7 @@ void main (int argc, char ** argv)
 		ext2fs_close (fs);
 		exit (1);
 	}
-	retval = resize_fs(fs, new_size);
+	retval = resize_fs(fs, new_size, flags);
 	if (retval) {
 		com_err(program_name, retval, "while trying to resize %s",
 			device_name);
