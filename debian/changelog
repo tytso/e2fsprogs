@@ -1,3 +1,25 @@
+e2fsprogs (1.24a-1) unstable; urgency=high
+
+  * New upstream release (Closes: #109577).
+  ** The only new code in there is in codepaths that
+    are only visited when previously unsupported features are used, so
+    they add virtually no risk.  Support for raw image files will be of
+    great help to debug users' problems.  Urgency set to "high" to make
+    sure this version gets released with woody.
+  
+  ** Fsck prints a warning message if now valid filesystems are passed to
+    it. (Closes: #107458).
+  ** Fsck -A will not try to interpret device names for filesystems which
+    have a pass number is 0. (Closes: #106696).
+  ** If -O none is passed to mke2fs, it will now not set the sparse_super
+    feature (Closes: #108165).
+  ** Tune2fs has been fixed to make sure that only error messages go to
+    stderr, and normal message go to stdout (Closes: #108555).
+  ** Minor man pages updates (Closes: #30833, #108174).
+  ** Doc fixes (Closes: #110621).
+
+ -- Yann Dirson <dirson@debian.org>  Tue,  4 Sep 2001 23:44:56 +0200
+
 e2fsprogs (1.22-2) unstable; urgency=medium
 
   * This is only a trivial patch to stop some user confusion, and would be
