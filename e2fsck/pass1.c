@@ -607,8 +607,8 @@ endit:
 	ext2fs_free_mem((void **) &block_buf);
 
 	if (ctx->large_files) {
-		if (!EXT2_HAS_RO_COMPAT_FEATURE(sb, 
-			EXT2_FEATURE_RO_COMPAT_LARGE_FILE) &&
+		if (!(sb->s_feature_ro_compat &
+		      EXT2_FEATURE_RO_COMPAT_LARGE_FILE) &&
 		    fix_problem(ctx, PR_1_FEATURE_LARGE_FILES, &pctx)) {
 			sb->s_feature_ro_compat |=
 				EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
@@ -842,8 +842,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pctx->ino = ino;
 
 	if (inode->i_flags & EXT2_COMPRBLK_FL) {
-		if (EXT2_HAS_INCOMPAT_FEATURE(fs->super,
-				      EXT2_FEATURE_INCOMPAT_COMPRESSION))
+		if (fs->super->s_feature_incompat &
+		    EXT2_FEATURE_INCOMPAT_COMPRESSION)
 			pb.compressed = 1;
 		else {
 			if (fix_problem(ctx, PR_1_COMPR_SET, pctx)) {

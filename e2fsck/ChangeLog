@@ -1,3 +1,7 @@
+2001-01-01    <tytso@snap.thunk.org>
+
+	* pass1.c (check_blocks): Remove use of EXT2_HAS_*_FEATURE macros.
+
 2000-12-31    <tytso@snap.thunk.org>
 
 	* jfs_compat.h: Remove uneeded header file.
