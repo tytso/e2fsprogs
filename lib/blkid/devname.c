@@ -2,7 +2,7 @@
  * devname.c - get a dev by its device inode name
  *
  * Copyright (C) Andries Brouwer
- * Copyright (C) 1999, 2000, 2001 Theodore Ts'o
+ * Copyright (C) 1999, 2000, 2001, 2002, 2003 Theodore Ts'o
  * Copyright (C) 2001 Andreas Dilger
  *
  * %Begin-Header%
@@ -234,6 +234,34 @@ exit:
 }
 #endif
 
+#define PROC_EVMS_VOLUMES "/proc/evms/volumes"
+
+static int
+evms_probe_all(blkid_cache **cache)
+{
+	char line[100];
+	int ma, mi, sz, num = 0;
+	FILE *procpt;
+	char device[110];
+
+	procpt = fopen(PROC_EVMS_VOLUMES, "r");
+	if (!procpt)
+		return 0;
+	while (fgets(line, sizeof(line), procpt)) {
+		if (sscanf (line, " %d %d %d %*s %*s %[^\n ]",
+			    &ma, &mi, &sz, device) != 4)
+			continue;
+
+		DBG(printf("Checking partition %s (%d, %d)\n",
+			   device, ma, mi));
+
+		probe_one(*cache, device, ma, mi, sz << 10);
+		num++;
+	}
+	fclose(procpt);
+	return num;
+}
+
 /*
  * Read the device data for all available block devices in the system.
  */
@@ -254,6 +282,9 @@ int blkid_probe_all(blkid_cache **cache)
 	if ((*cache)->bic_flags & BLKID_BIC_FL_PROBED &&
 	    time(0) - (*cache)->bic_time < BLKID_PROBE_INTERVAL)
 		return 0;
+
+	if (evms_probe_all(cache))
+		goto finish;
 
 #ifdef VG_DIR
 	lvm_probe_all(cache);
@@ -333,6 +364,7 @@ int blkid_probe_all(blkid_cache **cache)
 	}
 	fclose(proc);
 
+finish:
 	(*cache)->bic_time = time(0);
 	(*cache)->bic_flags |= BLKID_BIC_FL_PROBED;
 
