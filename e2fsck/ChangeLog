@@ -1,3 +1,8 @@
+2001-04-26  Theodore Tso  <tytso@valinux.com>
+
+	* unix.c (check_if_skip): If the max_mount_count is zero, treat it
+		as having no count set.
+
 2001-04-16  Theodore Tso  <tytso@valinux.com>
 
 	* super.c (check_super_block): Fix bad calculation of

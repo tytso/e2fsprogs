@@ -261,7 +261,7 @@ static void check_if_skip(e2fsck_t ctx)
 		reason = _("contains a file system with errors");
 	else if ((fs->super->s_state & EXT2_VALID_FS) == 0)
 		reason = _("was not cleanly unmounted");
-	else if ((fs->super->s_max_mnt_count >= 0) &&
+	else if ((fs->super->s_max_mnt_count > 0) &&
 		 (fs->super->s_mnt_count >=
 		  (unsigned) fs->super->s_max_mnt_count))
 		reason = _("has reached maximal mount count");
