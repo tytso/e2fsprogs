@@ -75,14 +75,14 @@ static void fs_cleanup()
 {
 	int rc = 0;
 	dlist_t global_volumes;
-	logical_volume_t * volume;
+	union{logical_volume_t *lvt; void *vp;}volume;
 	LOGENTRY();
 
 	rc = EngFncs->get_volume_list(pMyPluginRecord, &global_volumes);
 	if (!rc) {
-		while (ExtractObject(global_volumes, sizeof(logical_volume_t), VOLUME_TAG, NULL, (void**)&volume)==0) {
-			if (volume->private_data) {
-				EngFncs->engine_free(volume->private_data);
+		while (ExtractObject(global_volumes, sizeof(logical_volume_t), VOLUME_TAG, NULL, &volume.vp)==0) {
+			if (volume.lvt->private_data) {
+				EngFncs->engine_free(volume.lvt->private_data);
 			}
 		}
 	}
@@ -665,9 +665,10 @@ static int fs_get_option_count(task_context_t * context)
 static int fs_init_task( task_context_t * context )
 {
 	dlist_t global_volumes;
-	logical_volume_t * volume;
+	union{logical_volume_t *lvt; void *vp;}volume;
 	void* waste;
-	int size, tag;
+	int size;
+	union{unsigned long u; TAG t;}tag;
 	int  rc = 0;
 	option_descriptor_t	*opt;
 	
@@ -685,22 +686,22 @@ static int fs_init_task( task_context_t * context )
 
 	rc = EngFncs->get_volume_list(NULL, &global_volumes);
 
-	while (!(rc = BlindExtractObject(global_volumes, &size, (TAG *)&tag, NULL, (void **)&volume))) {
+	while (!(rc = BlindExtractObject(global_volumes, &size, &tag.t, NULL, &volume.vp))) {
 
 		switch (context->action) {
 		case EVMS_Task_mkfs:
 			/* only mkfs unformatted volumes */
-			if ((volume->file_system_manager == NULL) &&
-			    !EVMS_IS_MOUNTED(volume) &&
-			    ((volume->vol_size * PBSIZE) > MINEXT2)) {
-				rc = InsertObject(context->acceptable_objects, sizeof(logical_volume_t), volume, VOLUME_TAG, NULL, InsertAtStart, TRUE, (void **)&waste);
+			if ((volume.lvt->file_system_manager == NULL) &&
+			    !EVMS_IS_MOUNTED(volume.lvt) &&
+			    ((volume.lvt->vol_size * PBSIZE) > MINEXT2)) {
+				rc = InsertObject(context->acceptable_objects, sizeof(logical_volume_t), volume.lvt, VOLUME_TAG, NULL, InsertAtStart, TRUE, (void **)&waste);
 			}
 			break;
 
 		case EVMS_Task_fsck:					 
 			/* only fsck our stuff */
-			if (volume->file_system_manager == &ext2_plugrec) {
-				rc = InsertObject(context->acceptable_objects, sizeof(logical_volume_t), volume, VOLUME_TAG, NULL, InsertAtStart, TRUE, (void **)&waste);
+			if (volume.lvt->file_system_manager == &ext2_plugrec) {
+				rc = InsertObject(context->acceptable_objects, sizeof(logical_volume_t), volume.lvt, VOLUME_TAG, NULL, InsertAtStart, TRUE, (void **)&waste);
 			}
 			break;
 
@@ -1037,7 +1038,7 @@ static int fs_set_volumes( task_context_t * context,
 			               task_effect_t  * effect )
 {
 	int  rc = 0;
-	logical_volume_t * vol;
+	union{logical_volume_t *lvt; ADDRESS addr;}vol;
 
 	LOGENTRY();
 
@@ -1047,20 +1048,20 @@ static int fs_set_volumes( task_context_t * context,
 	if (context->action == EVMS_Task_mkfs) {
 	
         /* get the selected volume */
-        rc = GetObject(context->selected_objects,sizeof(logical_volume_t),VOLUME_TAG,NULL,FALSE,(ADDRESS *) &vol);
+        rc = GetObject(context->selected_objects,sizeof(logical_volume_t),VOLUME_TAG,NULL,FALSE, &vol.addr);
 
         if (!rc) {
-	    if (EVMS_IS_MOUNTED(vol)) {
+	    if (EVMS_IS_MOUNTED(vol.lvt)) {
                 /* If mounted, can't mkfs.ext2. */
                 rc = EBUSY;
             } else {
-                if ( (vol->vol_size * PBSIZE) < MINEXT2) {
+                if ( (vol.lvt->vol_size * PBSIZE) < MINEXT2) {
                     
                     /*****************************************************
                      *  FUTURE - move this volume to unacceptable list   *
                      *****************************************************/
 
-                    MESSAGE( "The size of volume %s is %d bytes.", EVMS_GET_DEVNAME(vol), vol->vol_size * PBSIZE );
+                    MESSAGE( "The size of volume %s is %d bytes.", EVMS_GET_DEVNAME(vol.lvt), vol.lvt->vol_size * PBSIZE );
                     MESSAGE( "mke2fs requires a minimum of %u bytes to build the ext2/3 file system.", MINEXT2 );
                     rc = EPERM;
                 }
