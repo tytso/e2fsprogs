@@ -1,5 +1,7 @@
 Sat Mar  7 18:18:04 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* main.c (main): Add copyright notice.
+
 	* resize2fs.c (blocks_to_move): Create the meta_bmap using the old
 		filesystem, not the new filesystem.  
 		(get_new_block): Don't try checking the old block bitmap

@@ -119,6 +119,7 @@ void main (int argc, char ** argv)
 	fprintf (stderr, "resize2fs %s, %s for EXT2 FS %s, %s\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
+	fprintf(stderr, "Copyright 1998 by Theodore Ts'o and PowerQuest, Inc.  All Rights Reserved.\n\n");
 	if (argc && *argv)
 		program_name = *argv;
 	
