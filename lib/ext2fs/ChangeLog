@@ -1,5 +1,10 @@
 2001-07-27  Theodore Tso  <tytso@valinux.com>
 
+	* getsize.c (ext2fs_get_device_size): Add support for the
+		BLKGETSIZE64 ioctl.  (Ioctl defined by unofficial patches
+		from Ben LaHaise, but it's likely this interface won't
+		change.)
+
 	* mkjournal.c (ext2fs_add_journal_device): Use the correct block
 		when writing the journal superblock, too.  (Oops! Needed
 		to make 1k filesystems with external journal to work.)
