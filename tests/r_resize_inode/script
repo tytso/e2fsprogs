@@ -1,9 +1,6 @@
 echo -n "resize2fs with resize_inode: "
 
-if ! test -x $RESIZE2FS; then
-	rm -f $test_name.ok $test_name.failed
-	echo "skipped"
-else
+if test -x $RESIZE2FS; then
 
 FSCK_OPT=-yf
 OUT=$test_name.log
@@ -99,4 +96,7 @@ fi
 
 unset IMAGE FSCK_OPT OUT EXP
 
-fi #if test -x $RESIZE2FS; then
+else #if test -x $RESIZE2FS; then
+	rm -f $test_name.ok $test_name.failed
+	echo "skipped"
+fi 
