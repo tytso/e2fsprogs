@@ -6,10 +6,10 @@ Clear? yes
 i_dir_acl for inode 15 (/test/quux) is 12, should be zero.
 Clear? yes
 
-i_faddr for inode 13 (/test/???) is 12, should be zero.
+i_file_acl for inode 13 (/test/???) is 12, should be zero.
 Clear? yes
 
-i_file_acl for inode 13 (/test/???) is 12, should be zero.
+i_faddr for inode 13 (/test/???) is 12, should be zero.
 Clear? yes
 
 Pass 3: Checking directory connectivity
@@ -18,6 +18,9 @@ Connect to /lost+found? yes
 
 Pass 4: Checking reference counts
 Inode 13 ref count is 4, should be 3.  Fix? yes
+
+i_file_acl for inode 28 (...) is 4294967295, should be zero.
+Clear? yes
 
 Inode 28 (...) has a bad mode (0177777).
 Clear? yes

@@ -1,3 +1,8 @@
+2005-01-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_bad_inode, f_recnect_bad: Adjust test cases to take into
+		account the change which clears the i_file_acl field earlier.
+
 2005-01-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_clear_xattr: New test case
