@@ -1,3 +1,9 @@
+2001-01-15  Theodore Ts'o  <tytso@valinux.com>
+
+	* ls.c (list_super2): Fix bug where we were printing the
+		filesystem UUID instead of journal UUID when trying to
+		display the journal UUID.
+
 2001-01-14  Theodore Ts'o  <tytso@valinux.com>
 
 	* feature.c: Remove backward compatibility #ifdef's for old

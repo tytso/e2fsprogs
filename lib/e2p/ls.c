@@ -215,7 +215,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		if (e2p_is_null_uuid(sb->s_journal_uuid)) {
 			strcpy(buf, "<none>");
 		} else
-			e2p_uuid_to_str(sb->s_uuid, buf);
+			e2p_uuid_to_str(sb->s_journal_uuid, buf);
 		fprintf(f, "Journal UUID:             %s\n", buf);
 		fprintf(f, "Journal inode:            %u\n", sb->s_journal_inum);
 		fprintf(f, "Journal device:	          0x%04x\n", sb->s_journal_dev);
