@@ -1,3 +1,9 @@
+2001-06-13  Theodore Tso  <tytso@valinux.com>
+
+	* setsuper.c: Add s_lastcheck field to the fields which can be
+		modified using set_super_value.  (Suggested by Andreas
+		Dilger)
+
 2001-06-03  Theodore Tso  <tytso@valinux.com>
 
 	* debugfs.c (copy_file): Fixed signed vs unsigned bug which causes

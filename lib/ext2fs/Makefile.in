@@ -112,7 +112,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/version.c \
 	$(srcdir)/write_bb_file.c
 
-HFILES= bitops.h ext2fs.h ext2_io.h  ext2_fs.h
+HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h ext2_types.h
 
 LIBRARY= libext2fs
 LIBDIR= ext2fs

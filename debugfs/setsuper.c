@@ -66,6 +66,7 @@ static struct super_set_info super_fields[] = {
 	/* __u8	s_uuid[16]; */
 	{ "volume_name",  &set_sb.s_volume_name, 16, parse_string },
 	{ "last_mounted",  &set_sb.s_last_mounted, 64, parse_string },
+	{ "lastcheck",  &set_sb.s_lastcheck, 4, parse_uint },
 	{ "algorithm_usage_bitmap", &set_sb.s_algorithm_usage_bitmap, 
 		  4, parse_uint },
 	{ "prealloc_blocks", &set_sb.s_prealloc_blocks, 1, parse_uint },

@@ -1,5 +1,8 @@
 2001-06-13  Theodore Tso  <tytso@valinux.com>
 
+	* Makefile.in (HFILES): Add ext2_types.h to the list of files
+		which should be installed.
+
 	* ismounted.c (check_mntent_file): Work around GNU hurd brain
 		damage.  Addresses Debian bug #100304.
 
