@@ -62,7 +62,7 @@ by the author.
 @title The EXT2FS Library
 @subtitle The EXT2FS Library
 @subtitle Version 1.33
-@subtitle March 2003
+@subtitle April 2003
 
 @author by Theodore Ts'o
 

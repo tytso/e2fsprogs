@@ -1,3 +1,11 @@
+e2fsprogs (1.32+1.33-WIP-2003.04.14-1) unstable; urgency=low
+
+  * New upstream version
+  * Add new utility program, logsave, to capture the output of fsck
+    during the boot sequence
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 16 Apr 2003 00:10:58 -0400
+
 e2fsprogs (1.32+1.33-WIP-2003.03.30-3) unstable; urgency=low
 
   * Provide /usr/include/com_err.h, which was previously provided by the

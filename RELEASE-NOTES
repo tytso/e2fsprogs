@@ -1,8 +1,46 @@
-E2fsprogs 1.33-WIP (March 30, 2003)
+E2fsprogs 1.33-WIP (April 14, 2003)
 ===================================
 
+Added a new utility program, logsave, which captures the output of a
+command in a log file, even if the containing directory hasn't been
+mounted yet (in which case the it saves the output in memory until it
+can write out the logfile).  This is useful for capturing the
+output of fsck during the boot sequence.
+
+Fixed some portability problems that were causing problems under
+the Cygwin32 environment.
+
+Mke2fs now interprets a negative number to the -b option as a minimum
+block size.
+
+Fixed a bug in mke2fs which was incorrectly checking the argument to
+the -g option if the default block size was used.  (Addresses Debian
+bug #188319)
+
+Fsck now explicitly ignores tmpfs and devpts, and it will complain if
+it can not find filesystem checkers for jfs, reseirfs, and xfs.
+
+E2fsck now updates the global free block and inode counters from the
+block group specific counters quietly.  This is needed for an
+experimental patch which eliminates locking the entire filesystem when
+allocating blocks or inodes; if the filesystem is not unmounted
+cleanly, the global counts may not be accurate.
+
+Imported bug fixes to the EVMS plugin from the EVMS 2.0 tree.  (EVMS
+2.0 is not yet supported; this only pulled in the bug fixes: fixed
+possible hangs caused by bugs in calling waitpid, and not setting the
+pipe to non-blocking mode; also fixed a file descriptor leak; made
+sure all functions call log entry/exit functions.)
+
+Badblocks now flushes its output file as bad blocks are discovered.
+
+The uuid library is now more paranoid about assuming the correctness
+of the /dev/random device; it mixes in a stream of bytes from
+random/srandom, just in case.
+
 Update Debian files to reflect the fact that I am now the Debian
-maintainer of e2fsprogs.
+maintainer of e2fsprogs.  Other various Debian-specific packaging
+cleanups.
 
 Move the source tarball generation functions from the top-level
 makefile to the util/gen-tarball script.  
@@ -21,7 +59,9 @@ e2fsprogs.
 
 The ss library will now try to dynamically link to the readline
 library and use it if it is present in the system.  This means that
-the debugfs program now has line editing and history features.
+the debugfs program now has line editing and history features.  The
+SS_READLINE_PATH environment variable is used to find a readline or
+readline-compatible library.
 
 E2fsck now finds most duplicate filenames (all when rebuilding all
 directories via the -D option) and offers to delete or rename
@@ -70,7 +110,7 @@ Mke2fs no longer creates filesystems with the dir_index flag set by
 default; the user has to specifically request it.
 
 Update and clarified various man pages. (Addresses Debian bugs
-#173612, #175233, #175113, and #170497, #185945)
+#173612, #175233, #175113, and #170497, #185945, #188318)
 
 Created man page for the mk_cmds program (from the libss library).
 
@@ -88,6 +128,10 @@ make jobs.
 Changes to create a subset distribution which consists only of the
 et, ss, uuid, and blkid libraries.  The configure script and top-level
 makefile were changed to support working with a subset distribution.
+
+Removed EXT2_FEATURE_RO_COMPAT_BTREE_DIR mention of since it's not
+actually used, and might people who are looking for
+EXT2_FEATURE_COMPAT_DIR_INDEX, which is in use.
 
 Updated debian files to fix a number of Lintian warnings.
 
