@@ -1,5 +1,10 @@
 2001-07-27  Theodore Tso  <tytso@valinux.com>
 
+	* mkjournal.c (ext2fs_create_journal_superblock): Set the first
+		block usable in the journal for external journals to be 2
+		or 3, depending on the blocksize, so that the existing
+		kernel code does the right thing.
+
 	* getsize.c (ext2fs_get_device_size): Add support for the
 		BLKGETSIZE64 ioctl.  (Ioctl defined by unofficial patches
 		from Ben LaHaise, but it's likely this interface won't
