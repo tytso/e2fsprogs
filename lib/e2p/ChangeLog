@@ -1,3 +1,8 @@
+2002-06-15  Theodore Ts'o  <tytso@mit.edu>
+
+	* pf.c: Changed "compressed dirty flag" from 'D' to 'Z'.  Add
+		dirsync flag and assign it 'D'.
+
 2002-03-08  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.27

@@ -225,9 +225,10 @@ struct ext2_dx_countlimit {
 #define EXT2_IMAGIC_FL			0x00002000
 #define EXT3_JOURNAL_DATA_FL		0x00004000 /* file data should be journaled */
 #define EXT2_NOTAIL_FL			0x00008000 /* file tail should not be merged */
+#define EXT2_DIRSYNC_FL 		0x00010000 /* Synchronous directory modifications */
 #define EXT2_RESERVED_FL		0x80000000 /* reserved for ext2 lib */
 
-#define EXT2_FL_USER_VISIBLE		0x0000DFFF /* User visible flags */
+#define EXT2_FL_USER_VISIBLE		0x0001DFFF /* User visible flags */
 #define EXT2_FL_USER_MODIFIABLE		0x000080FF /* User modifiable flags */
 
 /*

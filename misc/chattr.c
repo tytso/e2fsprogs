@@ -78,7 +78,7 @@ static void fatal_error(const char * fmt_string, int errcode)
 	exit (errcode);
 }
 
-#define usage() fatal_error(_("usage: %s [-RV] [-+=AacdijsSu] [-v version] files...\n"), \
+#define usage() fatal_error(_("usage: %s [-RV] [-+=AacDdijsSu] [-v version] files...\n"), \
 			     1)
 
 struct flags_char {
@@ -89,6 +89,7 @@ struct flags_char {
 static const struct flags_char flags_array[] = {
 	{ EXT2_NOATIME_FL, 'A' },
 	{ EXT2_SYNC_FL, 'S' },
+	{ EXT2_DIRSYNC_FL, 'D' },
 	{ EXT2_APPEND_FL, 'a' },
 	{ EXT2_COMPR_FL, 'c' },
 	{ EXT2_NODUMP_FL, 'd' },
@@ -218,6 +219,8 @@ static void change_attributes (const char * name)
 				print_flags (stdout, flags, 0);
 				printf ("\n");
 			}
+			if (!S_ISDIR(st.st_mode))
+				flags &= ~EXT2_DIRSYNC_FL;
 			if (fsetflags (name, flags) == -1)
 				com_err (program_name, errno,
 				         _("while setting flags on %s"), name);

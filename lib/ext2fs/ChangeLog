@@ -1,3 +1,7 @@
+2002-06-15  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2_fs.h (EXT2_DIRSYNC_FL): Add new file.
+
 2002-06-09  Andreas Dilger <adilger@clusterfs.com>
 
 	* ext2_fs.h: Add macros for maximum block/inode counts:

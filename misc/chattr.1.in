@@ -19,16 +19,16 @@ chattr \- change file attributes on a Linux second extended file system
 .B chattr
 changes the file attributes on a Linux second extended file system.
 .PP
-The format of a symbolic mode is +-=[ASacdistu].
+The format of a symbolic mode is +-=[ASacDdistu].
 .PP
 The operator `+' causes the selected attributes to be added to the
 existing attributes of the files; `-' causes them to be removed; and
 `=' causes them to be the only attributes that the files have.
 .PP
-The letters `ASacdijsu' select the new attributes for the files: 
-don't update atime (A), synchronous updates (S), append only (a), 
-compressed (c), no dump (d), immutable (i), data journalling (j),
-secure deletion (s), and undeletable (u).
+The letters `ASacDdijsu' select the new attributes for the files: 
+don't update atime (A), synchronous updates (S), synchronous directory
+updates (D), append only (a), compressed (c), no dump (d), immutable (i),
+data journalling (j), secure deletion (s), and undeletable (u).
 .SH OPTIONS
 .TP
 .B \-R
@@ -74,6 +74,10 @@ When a file with the `S' attribute set is modified,
 the changes are written synchronously on the disk; this is equivalent to
 the `sync' mount option applied to a subset of the files.
 .PP
+When a directory with the `D' attribute set is modified,
+the changes are written synchronously on the disk; this is equivalent to
+the `dirsync' mount option applied to a subset of the files.
+.PP
 A file with the 't' attribute will not have a partial block fragment at
 the of the file merged with other files (for those filesystems which
 support tail-merging).  This is necessary for applications such as LILO 
@@ -92,6 +96,8 @@ by the kernel filesystem code.    These attributes will be implemented
 in a future ext2 fs version.
 .PP
 The `j' option is only useful if the filesystem is mounted as ext3.
+.PP
+The `D' option is only useful on Linux kernel 2.5.19 and later.
 .SH AVAILABILITY
 .B chattr
 is part of the e2fsprogs package and is available from
