@@ -7,6 +7,7 @@
 #ifdef HAS_STDLIB_H
 #include <stdlib.h>
 #endif
+#include <string.h>
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif

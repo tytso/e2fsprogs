@@ -1,8 +1,21 @@
 /*
  * get_pathname.c --- do directry/inode -> name translation
  * 
- * Copyright (C) 1993 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
+ *
+ * 	ext2fs_get_pathname(fs, dir, ino, name)
+ *
+ * 	This function translates takes two inode numbers into a
+ * 	string, placing the result in <name>.  <dir> is the containing
+ * 	directory inode, and <ino> is the inode number itself.  If
+ * 	<ino> is zero, then ext2fs_get_pathname will return pathname
+ * 	of the the directory <dir>.
+ * 
  */
 
 #include <stdio.h>

@@ -1,8 +1,12 @@
 /*
  * getsize.c --- get the size of a partition.
  * 
- * Copyright (C) 1995 Theodore Ts'o.  This file may be
- * redistributed under the terms of the GNU Public License.
+ * Copyright (C) 1995, 1995 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -35,7 +39,7 @@ static int valid_offset (int fd, ext2_loff_t offset)
 {
 	char ch;
 
-	if (ext2_llseek (fd, offset, 0) < 0)
+	if (ext2fs_llseek (fd, offset, 0) < 0)
 		return 0;
 	if (read (fd, &ch, 1) < 1)
 		return 0;
@@ -49,12 +53,13 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 				 blk_t *retblocks)
 {
 	int	fd;
-	int	size;
+	long	size;
 	ext2_loff_t high, low;
 #ifdef FDGETPRM
 	struct floppy_struct this_floppy;
 #endif
 #ifdef HAVE_SYS_DISKLABEL_H
+	int part;
 	struct disklabel lab;
 	struct partition *pp;
 	char ch;
@@ -79,18 +84,18 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	}
 #endif
 #ifdef HAVE_SYS_DISKLABEL_H
-	size = strlen(file) - 1;
-	if (size >= 0) {
-		ch = file[size];
+	part = strlen(file) - 1;
+	if (part >= 0) {
+		ch = file[part];
 		if (isdigit(ch))
-			size = 0;
+			part = 0;
 		else if (ch >= 'a' && ch <= 'h')
-			size = ch - 'a';
+			part = ch - 'a';
 		else
-			size = -1;
+			part = -1;
 	}
-	if (size >= 0 && (ioctl(fd, DIOCGDINFO, (char *)&lab) >= 0)) {
-		pp = &lab.d_partitions[size];
+	if (part >= 0 && (ioctl(fd, DIOCGDINFO, (char *)&lab) >= 0)) {
+		pp = &lab.d_partitions[part];
 		if (pp->p_size) {
 			close(fd);
 			*retblocks = pp->p_size / (blocksize / 512);
@@ -101,7 +106,7 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 
 	/*
 	 * OK, we couldn't figure it out by using a specialized ioctl,
-	 * which is generally the besy way.  So do binary search to
+	 * which is generally the best way.  So do binary search to
 	 * find the size of the partition.
 	 */
 	low = 0;

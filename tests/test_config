@@ -9,6 +9,7 @@ TUNE2FS=../misc/tune2fs
 CHATTR=../misc/chattr
 LSATTR=../misc/lsattr
 DEBUGFS=../debugfs/debugfs
+TEST_REL=../tests/progs/test_rel
 LD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss
 TMPFILE=./test.img
 export LD_LIBRARY_PATH

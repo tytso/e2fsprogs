@@ -6,8 +6,12 @@
  *                                 Laboratoire MASI, Institut Blaise Pascal
  *                                 Universite Pierre et Marie Curie (Paris VI)
  *
- * This file can be redistributed under the terms of the GNU General
- * Public License
+ * Copyright 1995, 1996, 1997 by Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 /*

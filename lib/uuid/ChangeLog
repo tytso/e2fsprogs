@@ -1,3 +1,34 @@
+Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs version 1.07
+
+Sun Mar  2 16:45:36 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (ELF_VERSION): Change version to be 1.1
+
+Thu Feb  6 23:08:07 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* gen_uuid.c (uuid_generate): Set Multicast bit when picking a
+		random node_id, to prevent conflicts with IEEE 802
+		addresses obtained from network cards.
+
+Wed Jan  1 23:51:09 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* unpack.c, pack.c: Include string.h, since we use memcpy().
+
+Tue Dec  3 13:05:11 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* parse.c: Add #include of ctype.h and stdlib.h, to pull in the
+		required prototypes.
+
+Fri Oct 11 17:15:10 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (DLL_ADDRESS): Updated DLL address for libuuid.
+
+Tue Oct  8 02:02:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.06
+
 Thu Sep 12 15:23:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.05

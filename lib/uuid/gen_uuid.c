@@ -1,5 +1,12 @@
 /*
  * gen_uuid.c --- generate a DCE-compatible uuid
+ *
+ * Copyright (C) 1996, 1997 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #ifdef HAVE_UNISTD_H
@@ -185,8 +192,15 @@ void uuid_generate(uuid_t out)
 	__u32	clock_mid;
 
 	if (!has_init) {
-		if (get_node_id(node_id) <= 0)
+		if (get_node_id(node_id) <= 0) {
 			get_random_bytes(node_id, 6);
+			/*
+			 * Set multicast bit, to prevent conflicts
+			 * with IEEE 802 addresses obtained from
+			 * network cards
+			 */
+			node_id[0] |= 0x80;
+		}
 		has_init = 1;
 	}
 	get_clock(&clock_mid, &uu.time_low, &uu.clock_seq);

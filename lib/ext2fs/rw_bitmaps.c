@@ -1,8 +1,12 @@
 /*
  * rw_bitmaps.c --- routines to read and write the  inode and block bitmaps.
  *
- * Copyright (C) 1993,1994 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1994, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -28,6 +32,7 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 	errcode_t	retval;
 	char * inode_bitmap = fs->inode_map->bitmap;
 	char * bitmap_block = NULL;
+	blk_t		blk;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -43,11 +48,13 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 	memset(bitmap_block, 0xff, fs->blocksize);
 	for (i = 0; i < fs->group_desc_count; i++) {
 		memcpy(bitmap_block, inode_bitmap, nbytes);
-		retval = io_channel_write_blk(fs->io,
-		      fs->group_desc[i].bg_inode_bitmap, 1,
-					      bitmap_block);
-		if (retval)
-			return EXT2_ET_INODE_BITMAP_WRITE;
+		blk = fs->group_desc[i].bg_inode_bitmap;
+		if (blk) {
+			retval = io_channel_write_blk(fs->io, blk, 1,
+						      bitmap_block);
+			if (retval)
+				return EXT2_ET_INODE_BITMAP_WRITE;
+		}
 		inode_bitmap += nbytes;
 	}
 	fs->flags |= EXT2_FLAG_CHANGED;
@@ -65,6 +72,7 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 	errcode_t	retval;
 	char * block_bitmap = fs->block_map->bitmap;
 	char * bitmap_block = NULL;
+	blk_t		blk;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -88,11 +96,13 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 				for (j = nbits; j < fs->blocksize * 8; j++)
 					ext2fs_set_bit(j, bitmap_block);
 		}
-		retval = io_channel_write_blk(fs->io,
-		      fs->group_desc[i].bg_block_bitmap, 1,
-					      bitmap_block);
-		if (retval)
-			return EXT2_ET_BLOCK_BITMAP_WRITE;
+		blk = fs->group_desc[i].bg_block_bitmap;
+		if (blk) {
+			retval = io_channel_write_blk(fs->io, blk, 1,
+						      bitmap_block);
+			if (retval)
+				return EXT2_ET_BLOCK_BITMAP_WRITE;
+		}
 		block_bitmap += nbytes;
 	}
 	fs->flags |= EXT2_FLAG_CHANGED;
@@ -109,6 +119,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	errcode_t retval;
 	int block_nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
 	int inode_nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
+	blk_t	blk;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -137,25 +148,29 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (block_bitmap) {
-			retval = io_channel_read_blk
-				(fs->io,
-				 fs->group_desc[i].bg_block_bitmap,
-				 -block_nbytes, block_bitmap);
-			if (retval) {
-				retval = EXT2_ET_BLOCK_BITMAP_READ;
-				goto cleanup;
-			}
+			blk = fs->group_desc[i].bg_block_bitmap;
+			if (blk) {
+				retval = io_channel_read_blk(fs->io, blk,
+					     -block_nbytes, block_bitmap);
+				if (retval) {
+					retval = EXT2_ET_BLOCK_BITMAP_READ;
+					goto cleanup;
+				}
+			} else
+				memset(block_bitmap, 0, block_nbytes);
 			block_bitmap += block_nbytes;
 		}
 		if (inode_bitmap) {
-			retval = io_channel_read_blk
-				(fs->io,
-				 fs->group_desc[i].bg_inode_bitmap,
-				 -inode_nbytes, inode_bitmap);
-			if (retval) {
-				retval = EXT2_ET_INODE_BITMAP_READ;
-				goto cleanup;
-			}
+			blk = fs->group_desc[i].bg_inode_bitmap;
+			if (blk) {
+				retval = io_channel_read_blk(fs->io, blk,
+					     -inode_nbytes, inode_bitmap);
+				if (retval) {
+					retval = EXT2_ET_INODE_BITMAP_READ;
+					goto cleanup;
+				}
+			} else
+				memset(inode_bitmap, 0, inode_nbytes);
 			inode_bitmap += inode_nbytes;
 		}
 	}

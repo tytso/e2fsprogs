@@ -1,8 +1,12 @@
 /*
- * getsize.c --- get the size of a partition.
+ * ismounted.c --- Check to see if the filesystem was mounted
  * 
- * Copyright (C) 1995 Theodore Ts'o.  This file may be
- * redistributed under the terms of the GNU Public License.
+ * Copyright (C) 1995 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>

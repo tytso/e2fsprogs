@@ -1,8 +1,12 @@
 /*
  * read_bb --- read the bad blocks inode
  *
- * Copyright (C) 1994 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1994 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -19,7 +23,7 @@
 #include "ext2fs.h"
 
 struct read_bb_record {
-	badblocks_list	bb_list;
+	ext2_badblocks_list	bb_list;
 	errcode_t	err;
 };
 
@@ -34,7 +38,7 @@ static int mark_bad_block(ext2_filsys fs, blk_t *block_nr,
 	if (blockcnt < 0)
 		return 0;
 	
-	rb->err = badblocks_list_add(rb->bb_list, *block_nr);
+	rb->err = ext2fs_badblocks_list_add(rb->bb_list, *block_nr);
 	if (rb->err)
 		return BLOCK_ABORT;
 	return 0;
@@ -43,7 +47,7 @@ static int mark_bad_block(ext2_filsys fs, blk_t *block_nr,
 /*
  * Reads the current bad blocks from the bad blocks inode.
  */
-errcode_t ext2fs_read_bb_inode(ext2_filsys fs, badblocks_list *bb_list)
+errcode_t ext2fs_read_bb_inode(ext2_filsys fs, ext2_badblocks_list *bb_list)
 {
 	errcode_t	retval;
 	struct read_bb_record rb;
@@ -57,7 +61,7 @@ errcode_t ext2fs_read_bb_inode(ext2_filsys fs, badblocks_list *bb_list)
 		if (retval)
 			return retval;
 		numblocks = (inode.i_blocks / (fs->blocksize / 512)) + 20;
-		retval = badblocks_list_create(bb_list, numblocks);
+		retval = ext2fs_badblocks_list_create(bb_list, numblocks);
 		if (retval)
 			return retval;
 	}

@@ -18,8 +18,12 @@
  *     can be added without changing this front-end.
  *   o -R flag skip root file system.
  *
- * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be
- * redistributed under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <sys/types.h>
@@ -543,7 +547,7 @@ static int device_already_active(char *device)
 /* Check all file systems, using the /etc/fstab table. */
 static int check_all(NOARGS)
 {
-	struct fs_info *fs;
+	struct fs_info *fs = NULL;
 	struct fsck_instance *inst;
 	int status = EXIT_OK;
 	int not_done_yet = 1;
@@ -764,7 +768,7 @@ int main(int argc, char *argv[])
 		strcat (fsck_path, ":");
 		strcat (fsck_path, oldpath);
 	} else {
-		fsck_path = strdup(oldpath);
+		fsck_path = strdup(fsck_prefix_path);
 	}
 	
 	/* If -A was specified ("check all"), do that! */

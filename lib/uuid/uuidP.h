@@ -1,5 +1,12 @@
 /*
  * uuid.h -- private header file for uuids
+ * 
+ * Copyright (C) 1996, 1997 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <sys/types.h>

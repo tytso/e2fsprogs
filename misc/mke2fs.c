@@ -1,8 +1,12 @@
 /*
  * mke2fs.c - Make a ext2fs filesystem.
  * 
- * Copyright (C) 1994 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1994, 1995, 1996, 1997 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 /* Usage: mke2fs [options] device
@@ -108,7 +112,11 @@ static void check_plausibility(NOARGS)
 	val = stat(device_name, &s);
 	
 	if(val == -1) {
-		perror("stat");
+		printf("Could not stat %s --- %s\n", device_name,
+		       error_message(errno));
+		if (errno == ENOENT)
+			printf("\nThe device apparently does not exist; "
+			       "did yo specify it correctly?\n");
 		exit(1);
 	}
 	if(!S_ISBLK(s.st_mode)) {
@@ -285,49 +293,12 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 	badblocks_list_iterate_end(bb_iter);
 }
 
-static void new_table_block(ext2_filsys fs, blk_t first_block,
-			    const char *name, int num, int initialize,
-			    const char *buf, blk_t *new_block)
+static void write_inode_tables(ext2_filsys fs)
 {
 	errcode_t	retval;
 	blk_t		blk;
-	int		i;
-	int		count;
-	
-	retval = ext2fs_get_free_blocks(fs, first_block,
-			first_block + fs->super->s_blocks_per_group,
-					num, fs->block_map, new_block);
-	if (retval) {
-		printf("Could not allocate %d block(s) for %s: %s\n",
-		       num, name, error_message(retval));
-		ext2fs_unmark_valid(fs);
-		return;
-	}
-	if (initialize) {
-		blk = *new_block;
-		for (i=0; i < num; i += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
-			if (num-i > STRIDE_LENGTH)
-				count = STRIDE_LENGTH;
-			else
-				count = num - i;
-			retval = io_channel_write_blk(fs->io, blk, count, buf);
-			if (retval)
-				printf("Warning: could not write %d blocks "
-				       "starting at %d for %s: %s\n",
-				       count, blk, name,
-				       error_message(retval));
-		}
-	}
-	blk = *new_block;
-	for (i = 0; i < num; i++, blk++)
-		ext2fs_mark_block_bitmap(fs->block_map, blk);
-}	
-
-static void alloc_tables(ext2_filsys fs)
-{
-	blk_t	group_blk;
-	int	i;
-	char	*buf;
+	int		i, j, num, count;
+	char		*buf;
 
 	buf = malloc(fs->blocksize * STRIDE_LENGTH);
 	if (!buf) {
@@ -336,25 +307,30 @@ static void alloc_tables(ext2_filsys fs)
 	}
 	memset(buf, 0, fs->blocksize * STRIDE_LENGTH);
 	
-	group_blk = fs->super->s_first_data_block;
 	if (!quiet)
 		printf("Writing inode tables: ");
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (!quiet)
 			printf("%4d/%4ld", i, fs->group_desc_count);
-		new_table_block(fs, group_blk, "block bitmap", 1, 0, buf,
-				&fs->group_desc[i].bg_block_bitmap);
-		new_table_block(fs, group_blk, "inode bitmap", 1, 0, buf,
-				&fs->group_desc[i].bg_inode_bitmap);
-		new_table_block(fs, group_blk, "inode table",
-				fs->inode_blocks_per_group,
-				!super_only, buf,
-				&fs->group_desc[i].bg_inode_table);
 		
-		group_blk += fs->super->s_blocks_per_group;
+		blk = fs->group_desc[i].bg_inode_table;
+		num = fs->inode_blocks_per_group;
+		
+		for (j=0; j < num; j += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
+			if (num-j > STRIDE_LENGTH)
+				count = STRIDE_LENGTH;
+			else
+				count = num - j;
+			retval = io_channel_write_blk(fs->io, blk, count, buf);
+			if (retval)
+				printf("Warning: could not write %d blocks "
+				       "in inode table starting at %d: %s\n",
+				       count, blk, error_message(retval));
+		}
 		if (!quiet) 
 			printf("\b\b\b\b\b\b\b\b\b");
 	}
+	free(buf);
 	if (!quiet)
 		printf("done     \n");
 }
@@ -376,7 +352,9 @@ static void create_root_dir(ext2_filsys fs)
 				"while reading root inode");
 			exit(1);
 		}
-		inode.i_uid = geteuid();
+		inode.i_uid = getuid();
+		if (inode.i_uid)
+			inode.i_gid = getgid();
 		retval = ext2fs_write_inode(fs, EXT2_ROOT_INO, &inode);
 		if (retval) {
 			com_err("ext2fs_write_inode", retval,
@@ -800,11 +778,17 @@ int main (int argc, char *argv[])
 		test_disk(fs, &bb_list);
 
 	handle_bad_blocks(fs, bb_list);
-	alloc_tables(fs);
+	retval = ext2fs_allocate_tables(fs);
+	if (retval) {
+		com_err(program_name, retval,
+			"while trying to allocate filesystem tables");
+		exit(1);
+	}
 	if (super_only) {
 		fs->super->s_state |= EXT2_ERROR_FS;
 		fs->flags &= ~(EXT2_FLAG_IB_DIRTY|EXT2_FLAG_BB_DIRTY);
 	} else {
+		write_inode_tables(fs);
 		create_root_dir(fs);
 		create_lost_and_found(fs);
 		reserve_inodes(fs);

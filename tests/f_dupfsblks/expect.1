@@ -1,24 +1,21 @@
 Filesystem did not have a UUID; generating one.
 
 Pass 1: Checking inodes, blocks, and sizes
-Remove illegal block(s) in inode 12? yes
+Inode 12 has illegal block(s).  Clear? yes
 
-Block #1 (3) is the block bitmap of group 0.  CLEARED
-Block #2 (4) is the inode bitmap of group 0.  CLEARED
-Block #3 (6) is in the inode table of group 0.  CLEARED
-Directory 12, incorrect size, 4096 (counted = 1024). Set size to counted? yes
+Block #1 (3) overlaps filesystem metadata in inode 12.  CLEARED.
+Block #2 (4) overlaps filesystem metadata in inode 12.  CLEARED.
+Block #3 (6) overlaps filesystem metadata in inode 12.  CLEARED.
+Inode 12, i_size is 4096, should be 1024.  Fix? yes
 
-Inode 12, i_blocks wrong 8 (counted=2).  Set i_blocks to counted? yes
+Inode 12, i_blocks is 8, should be 2.  Fix? yes
 
 Pass 2: Checking directory structure
-Directory inode 12 has a hole at block #1
-Allocate block? yes
+Directory inode 12 has an unallocated block #1.  Allocate? yes
 
-Directory inode 12 has a hole at block #2
-Allocate block? yes
+Directory inode 12 has an unallocated block #2.  Allocate? yes
 
-Directory inode 12 has a hole at block #3
-Allocate block? yes
+Directory inode 12 has an unallocated block #3.  Allocate? yes
 
 Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts

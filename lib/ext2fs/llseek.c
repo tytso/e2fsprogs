@@ -1,8 +1,12 @@
 /*
  * llseek.c -- stub calling the llseek system call
  *
- * Copyright (C) 1994 Remy Card.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1994, 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <sys/types.h>
@@ -55,7 +59,7 @@ static ext2_loff_t llseek (unsigned int fd, ext2_loff_t offset,
 
 #endif /* __alpha__ */
 
-ext2_loff_t ext2_llseek (unsigned int fd, ext2_loff_t offset,
+ext2_loff_t ext2fs_llseek (unsigned int fd, ext2_loff_t offset,
 			 unsigned int origin)
 {
 	ext2_loff_t result;
@@ -84,7 +88,7 @@ ext2_loff_t ext2_llseek (unsigned int fd, ext2_loff_t offset,
 
 #else /* !linux */
 
-ext2_loff_t ext2_llseek (unsigned int fd, ext2_loff_t offset,
+ext2_loff_t ext2fs_llseek (unsigned int fd, ext2_loff_t offset,
 			 unsigned int origin)
 {
 	if ((sizeof(off_t) < sizeof(ext2_loff_t)) &&

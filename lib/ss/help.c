@@ -10,6 +10,11 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#else
+extern int errno;
+#endif
 #include <fcntl.h>
 #include <sys/param.h>
 #include <sys/types.h>
@@ -21,8 +26,6 @@
 #include <sys/wait.h>
 #include "ss_internal.h"
 #include "copyright.h"
-
-extern int errno;
 
 void ss_help (argc, argv, sci_idx, info_ptr)
     int argc;

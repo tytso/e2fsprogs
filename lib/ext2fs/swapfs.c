@@ -1,8 +1,12 @@
 /*
  * swapfs.c --- swap ext2 filesystem data structures
  * 
- * Copyright (C) 1995 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -98,9 +102,15 @@ void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
 
 	switch (fs->super->s_creator_os) {
 	case EXT2_OS_LINUX:
+		t->osd1.linux1.l_i_reserved1 =
+			ext2fs_swab32(f->osd1.linux1.l_i_reserved1);
 		t->osd2.linux2.l_i_frag = f->osd2.linux2.l_i_frag;
 		t->osd2.linux2.l_i_fsize = f->osd2.linux2.l_i_fsize;
 		t->osd2.linux2.i_pad1 = ext2fs_swab16(f->osd2.linux2.i_pad1);
+		t->osd2.linux2.l_i_reserved2[0] =
+			ext2fs_swab32(f->osd2.linux2.l_i_reserved2[0]);
+		t->osd2.linux2.l_i_reserved2[1] =
+			ext2fs_swab32(f->osd2.linux2.l_i_reserved2[1]);
 		break;
 	case EXT2_OS_HURD:
 		t->osd1.hurd1.h_i_translator =
@@ -117,9 +127,15 @@ void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
 		  ext2fs_swab32 (f->osd2.hurd2.h_i_author);
 		break;
 	case EXT2_OS_MASIX:
+		t->osd1.masix1.m_i_reserved1 =
+			ext2fs_swab32(f->osd1.masix1.m_i_reserved1);
 		t->osd2.masix2.m_i_frag = f->osd2.masix2.m_i_frag;
 		t->osd2.masix2.m_i_fsize = f->osd2.masix2.m_i_fsize;
 		t->osd2.masix2.m_pad1 = ext2fs_swab16(f->osd2.masix2.m_pad1);
+		t->osd2.masix2.m_i_reserved2[0] =
+			ext2fs_swab32(f->osd2.masix2.m_i_reserved2[0]);
+		t->osd2.masix2.m_i_reserved2[1] =
+			ext2fs_swab32(f->osd2.masix2.m_i_reserved2[1]);
 		break;
 	}
 }

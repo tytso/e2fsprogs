@@ -1,3 +1,29 @@
+Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs version 1.07
+
+Thu Mar  6 23:23:07 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* f_misstable: New test case which checks what happens when the
+		inode table for a block group is missing
+
+	* f_reconnect: New test case which makes sure a simple
+		disconnected inode is properly handled.
+
+Mon Dec  2 09:33:31 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* test_script.in: Add error checking to make sure a requested test
+		exists.
+
+Tue Oct 15 00:10:37 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* f_bbinode: New test case which exercises what happens when a bad
+		block appears in the inode table.
+
+Tue Oct  8 02:02:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.06
+
 Mon Oct  7 07:52:41 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* f_preen: New test case which makes sure that e2fsck -p won't

@@ -1,8 +1,12 @@
 /*
  * io.h --- the I/O manager abstraction
  * 
- * Copyright (C) 1993 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 /*
@@ -15,7 +19,7 @@ typedef long		ext2_loff_t;
 #endif
 
 /* llseek.c */
-ext2_loff_t ext2_llseek (unsigned int, ext2_loff_t, unsigned int);
+ext2_loff_t ext2fs_llseek (unsigned int, ext2_loff_t, unsigned int);
 
 typedef struct struct_io_manager *io_manager;
 typedef struct struct_io_channel *io_channel;
@@ -68,8 +72,14 @@ struct struct_io_manager {
 #define io_channel_write_blk(c,b,n,d)	((c)->manager->write_blk((c),b,n,d))
 #define io_channel_flush(c) 		((c)->manager->flush((c)))
 	
+/* unix_io.c */
 extern io_manager unix_io_manager;
 
-
-
-
+/* test_io.c */
+extern io_manager test_io_manager, test_io_backing_manager;
+extern void (*test_io_cb_read_blk)
+	(unsigned long block, int count, errcode_t err);
+extern void (*test_io_cb_write_blk)
+	(unsigned long block, int count, errcode_t err);
+extern void (*test_io_cb_set_blksize)
+	(int blksize, errcode_t err);

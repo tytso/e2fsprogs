@@ -1,10 +1,12 @@
 /*
  * openfs.c --- open an ext2 filesystem
  * 
- * Copyright (C) 1993, 1994, 1995 Theodore Ts'o.
+ * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
  * 
+ * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -30,6 +32,12 @@
 /*
  *  Note: if superblock is non-zero, block-size must also be non-zero.
  * 	Superblock and block_size can be zero to use the default size.
+ *
+ * Valid flags for ext2fs_open()
+ * 
+ * 	EXT2_FLAG_RW	- Open the filesystem for read/write.
+ * 	EXT2_FLAG_FORCE - Open the filesystem even if some of the
+ *  				features aren't supported.
  */
 errcode_t ext2fs_open(const char *name, int flags, int superblock,
 		      int block_size, io_manager manager, ext2_filsys *ret_fs)
@@ -39,6 +47,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	int		i, j, group_block, groups_per_block;
 	char		*dest;
 	struct ext2_group_desc *gdp;
+	struct ext2fs_sb	*s;
 	
 	EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
 	
@@ -112,6 +121,22 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	}
 #endif
 #endif
+	/*
+	 * Check for feature set incompatibility
+	 */
+	if (!(flags & EXT2_FLAG_FORCE)) {
+		s = (struct ext2fs_sb *) fs->super;
+		if (s->s_feature_incompat) {
+			retval = EXT2_ET_UNSUPP_FEATURE;
+			goto cleanup;
+		}
+		if ((flags & EXT2_FLAG_RW) &&
+		    s->s_feature_ro_compat) {
+			retval = EXT2_ET_RO_UNSUPP_FEATURE;
+			goto cleanup;
+		}
+	}
+	
 	fs->blocksize = EXT2_BLOCK_SIZE(fs->super);
 	if (fs->blocksize == 0) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;

@@ -12,6 +12,8 @@
 #endif
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
+#else
+extern int errno;
 #endif
 
 #include "ss_internal.h"
@@ -24,7 +26,6 @@
 static char MORE[] = "more";
 extern char *_ss_pager_name;
 extern char *getenv();
-extern int errno;
 
 /*
  * this needs a *lot* of work....

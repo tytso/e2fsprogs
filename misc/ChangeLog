@@ -1,3 +1,50 @@
+Wed Mar 12 13:32:05 1997  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs version 1.07
+
+Thu Mar  6 17:15:05 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (create_root_dir): Set the root directory's i_uid and
+		i_gid to be the real user and group id.
+
+Tue Mar  4 10:14:33 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (check_plausibility): Add more intelligent error
+		messages when the device doesn't exist.
+
+Sat Mar  1 10:43:32 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* fsck.c (main): Fix bug where the PATH environment variable isn't
+		set when it is unset.
+
+Tue Jan 14 12:30:45 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (write_inode_tables): Fixed bug in write_inode_tables
+ 		where a loop variable was getting reused in a nested loop.
+  		This caused the inode table to not be correctly
+ 		initialized.
+
+Thu Jan  2 00:00:37 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* lsattr.c, chattr.c: Include string.h, since we use memcpy().
+
+	* findsuper.c: Use time_t for ctime(), not __u32.
+
+Sat Dec 28 23:39:18 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* badblocks.c: Adapted -vv modifications from Rik Faith so that
+		they frequently update the block number field.
+
+	* badblocks.8.in: Document the optional start-block parameter
+
+Mon Oct 14 11:52:58 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c: Updated to use new ext2fs_allocate_tables() function.
+
+Tue Oct  8 02:02:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.06
+
 Mon Oct  7 00:56:24 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* chattr.1.in: Documented the 'A' (noatime) attribute.

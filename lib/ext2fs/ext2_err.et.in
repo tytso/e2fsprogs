@@ -1,6 +1,10 @@
 #
-# Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.  This file may be 
-# redistributed under the terms of the GNU Public License.
+# Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.  
+#
+# %Begin-Header%
+# This file may be redistributed under the terms of the GNU Public
+# License.
+# %End-Header%
 #
 	error_table ext2
 
@@ -37,14 +41,14 @@ ec	EXT2_ET_MAGIC_INODE_BITMAP,
 ec	EXT2_ET_MAGIC_GENERIC_BITMAP,
 	"Wrong magic number for generic_bitmap structure"
 
-ec	EXT2_ET_MAGIC_RESERVED_2,
-	"Wrong magic number --- RESERVED_2"
+ec	EXT2_ET_MAGIC_TEST_IO_CHANNEL,
+	"Wrong magic number for test io_channel structure"
 
-ec	EXT2_ET_MAGIC_RESERVED_3,
-	"Wrong magic number --- RESERVED_3"
+ec	EXT2_ET_MAGIC_DBLIST,
+	"Wrong magic number for directory block list structure"
 
-ec	EXT2_ET_MAGIC_RESERVED_4,
-	"Wrong magic number --- RESERVED_4"
+ec	EXT2_ET_MAGIC_ICOUNT,
+	"Wrong magic number for icount structure"
 
 ec	EXT2_ET_MAGIC_RESERVED_5,
 	"Wrong magic number --- RESERVED_5"
@@ -210,5 +214,14 @@ ec	EXT2_ET_SYMLINK_LOOP,
 
 ec	EXT2_ET_CALLBACK_NOTHANDLED,
 	"The callback function will not handle this case"
+
+ec	EXT2_ET_BAD_BLOCK_IN_INODE_TABLE,
+	"The inode is from a bad block in the inode table"
+
+ec	EXT2_ET_UNSUPP_FEATURE,
+	"Filesystem has unsupported feature(s)"
+
+ec	EXT2_ET_RO_UNSUPP_FEATURE,
+	"Filesystem has unsupported read-only feature(s)"
 
 	end

@@ -1,28 +1,21 @@
 Filesystem did not have a UUID; generating one.
 
 Pass 1: Checking inodes, blocks, and sizes
-Hole found in directory inode 11!  (blkcnt=0)
-Hole found in directory inode 11!  (blkcnt=3)
-Remove illegal block(s) in inode 11? yes
+Inode 11 has illegal block(s).  Clear? yes
 
-Block #6 (200) > BLOCKS (100).  CLEARED
-Hole found in directory inode 11!  (blkcnt=11)
-Directory 11, incorrect size, 12288 (counted = 11264). Set size to counted? yes
+Illegal block #6 (200) in inode 11.  CLEARED.
+Inode 11, i_size is 12288, should be 11264.  Fix? yes
 
-Inode 11, i_blocks wrong 24 (counted=16).  Set i_blocks to counted? yes
+Inode 11, i_blocks is 24, should be 16.  Fix? yes
 
 Pass 2: Checking directory structure
-Directory inode 11 has a hole at block #0
-Allocate block? yes
+Directory inode 11 has an unallocated block #0.  Allocate? yes
 
-Directory inode 11 has a hole at block #3
-Allocate block? yes
+Directory inode 11 has an unallocated block #3.  Allocate? yes
 
-Directory inode 11 has a hole at block #6
-Allocate block? yes
+Directory inode 11 has an unallocated block #6.  Allocate? yes
 
-Directory inode 11 has a hole at block #11
-Allocate block? yes
+Directory inode 11 has an unallocated block #11.  Allocate? yes
 
 Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts

@@ -19,7 +19,7 @@ output_file
 .B \-w
 ]
 device
-blocks-count
+blocks-count [ start-block ]
 .SH DESCRIPTION
 .B badblocks
 is used to search for bad blocks on a device (usually a disk partition).

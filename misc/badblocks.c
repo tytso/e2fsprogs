@@ -5,11 +5,15 @@
  *                                 Laboratoire MASI, Institut Blaise Pascal
  *                                 Universite Pierre et Marie Curie (Paris VI)
  *
+ * Copyright 1995, 1996, 1997 by Theodore Ts'o
+ *
  * This file is based on the minix file system programs fsck and mkfs
  * written and copyrighted by Linus Torvalds <Linus.Torvalds@cs.helsinki.fi>
- *
- * This file can be redistributed under the terms of the GNU General
- * Public License
+ * 
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 /*
@@ -53,6 +57,27 @@ static volatile void usage (void)
 	exit (1);
 }
 
+static unsigned long currently_testing = 0;
+static unsigned long num_blocks = 0;
+
+static void print_status(void)
+{
+	fprintf(stderr, "%9ld/%9ld", currently_testing, num_blocks);
+	fprintf(stderr, "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	fflush (stderr);
+}
+
+static void alarm_intr (int alnum)
+{
+	signal (SIGALRM, alarm_intr);
+	alarm(1);
+	if (!num_blocks)
+		return;
+	fprintf(stderr, "%9ld/%9ld", currently_testing, num_blocks);
+	fprintf(stderr, "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	fflush (stderr);
+}
+
 /*
  * Perform a test of a block; return the number of blocks readable/writeable.
  */
@@ -61,8 +86,11 @@ static long do_test (int dev, char * buffer, int try, unsigned long block_size,
 {
 	long got;
 
+	if (v_flag > 1)
+		print_status();
+
 	/* Seek to the correct loc. */
-	if (ext2_llseek (dev, (ext2_loff_t) current_block * block_size,
+	if (ext2fs_llseek (dev, (ext2_loff_t) current_block * block_size,
 			 SEEK_SET) != (ext2_loff_t) current_block * block_size)
 		com_err (program_name, errno, "during seek");
 
@@ -76,20 +104,6 @@ static long do_test (int dev, char * buffer, int try, unsigned long block_size,
 			 got);
 	got /= block_size;
 	return got;
-}
-
-static unsigned long currently_testing = 0;
-static unsigned long num_blocks = 0;
-
-static void alarm_intr (int alnum)
-{
-	signal (SIGALRM, alarm_intr);
-	alarm(1);
-	if (!num_blocks)
-		return;
-	fprintf(stderr, "%9ld/%9ld", currently_testing, num_blocks);
-	fprintf(stderr, "\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	fflush (stderr);
 }
 
 static void flush_bufs (int dev, int sync)
@@ -136,9 +150,10 @@ static void test_ro (int dev, unsigned long blocks_count,
 	try = TEST_BUFFER_BLOCKS;
 	currently_testing = from_count;
 	num_blocks = blocks_count;
-	if (s_flag) {
+	if (s_flag || v_flag > 1) {
 		fprintf(stderr, "Checking for bad blocks (read-only test): ");
-		alarm_intr(SIGALRM);
+		if (v_flag <= 1)
+			alarm_intr(SIGALRM);
 	}
 	while (currently_testing < blocks_count)
 	{
@@ -157,7 +172,7 @@ static void test_ro (int dev, unsigned long blocks_count,
 	}
 	num_blocks = 0;
 	alarm(0);
-	if (s_flag)
+	if (s_flag || v_flag > 1)
 		fprintf(stderr, "done               \n");
 	fflush (stderr);
 	free (blkbuf);
@@ -180,28 +195,33 @@ static void test_rw (int dev, unsigned long blocks_count,
 
 	flush_bufs (dev, 0);
 
-	if (v_flag)
-		fprintf (stderr, "Checking for bad blocks in read-write mode\n");
-	for (i = 0; i < sizeof (pattern); i++)
-	{
+	if (v_flag) {
+		fprintf(stderr,
+			"Checking for bad blocks in read-write mode\n");
+		fprintf(stderr, "From block %lu to %lu\n",
+			 from_count, blocks_count);
+	}
+	for (i = 0; i < sizeof (pattern); i++) {
 		memset (buffer, pattern[i], block_size);
 		if (s_flag | v_flag)
 			fprintf (stderr, "Writing pattern 0x%08x: ",
 				 *((int *) buffer));
 		num_blocks = blocks_count;
 		currently_testing = from_count;
-		if (s_flag)
+		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 		for (;
 		     currently_testing < blocks_count;
 		     currently_testing++)
 		{
-			if (ext2_llseek (dev, (ext2_loff_t) currently_testing *
+			if (ext2fs_llseek (dev, (ext2_loff_t) currently_testing *
 					 block_size, SEEK_SET) !=
 			    (ext2_loff_t) currently_testing * block_size)
 				com_err (program_name, errno,
 					 "during seek on block %d",
 					 currently_testing);
+			if (v_flag > 1)
+				print_status();
 			write (dev, buffer, block_size);
 		}
 		num_blocks = 0;
@@ -213,18 +233,20 @@ static void test_rw (int dev, unsigned long blocks_count,
 			fprintf (stderr, "Reading and comparing: ");
 		num_blocks = blocks_count;
 		currently_testing = from_count;
-		if (s_flag)
+		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 		for (;
 		     currently_testing < blocks_count;
 		     currently_testing++)
 		{
-			if (ext2_llseek (dev, (ext2_loff_t) currently_testing *
+			if (ext2fs_llseek (dev, (ext2_loff_t) currently_testing *
 					 block_size, SEEK_SET) !=
 			    (ext2_loff_t) currently_testing * block_size)
 				com_err (program_name, errno,
 					 "during seek on block %d",
 					 currently_testing);
+			if (v_flag > 1)
+				print_status();
 			if (read (dev, buffer + block_size, block_size) < block_size)
 				fprintf (out, "%ld\n", currently_testing);
 			else if (memcmp (buffer, buffer + block_size, block_size))
@@ -270,7 +292,7 @@ void main (int argc, char ** argv)
 			s_flag = 1;
 			break;
 		case 'v':
-			v_flag = 1;
+			v_flag++;
 			break;
 		case 'w':
 			w_flag = 1;

@@ -1,12 +1,12 @@
 Filesystem did not have a UUID; generating one.
 
 Pass 1: Checking inodes, blocks, and sizes
-Remove illegal block(s) in inode 12? yes
+Inode 12 has illegal block(s).  Clear? yes
 
-Block #4 (2) is in the group descriptors of group 0.  CLEARED
-Block #5 (3) is the block bitmap of group 0.  CLEARED
-Block #6 (1) is the superblock in group 0.  CLEARED
-Inode 12, i_blocks wrong 34 (counted=28).  Set i_blocks to counted? yes
+Block #4 (2) overlaps filesystem metadata in inode 12.  CLEARED.
+Block #5 (3) overlaps filesystem metadata in inode 12.  CLEARED.
+Block #6 (1) overlaps filesystem metadata in inode 12.  CLEARED.
+Inode 12, i_blocks is 34, should be 28.  Fix? yes
 
 Pass 2: Checking directory structure
 Pass 3: Checking directory connectivity

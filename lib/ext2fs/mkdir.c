@@ -1,8 +1,12 @@
 /*
  * mkdir.c --- make a directory in the filesystem
  * 
- * Copyright (C) 1994 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1994, 1995 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>

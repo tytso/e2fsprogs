@@ -1,5 +1,12 @@
 /*
- * uuid_to_str.c -- convert a UUID to string
+ * unparse.c -- convert a UUID to string
+ * 
+ * Copyright (C) 1996, 1997 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>

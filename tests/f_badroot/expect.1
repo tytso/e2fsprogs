@@ -4,11 +4,10 @@ Pass 1: Checking inodes, blocks, and sizes
 Root inode is not a directory.  Clear? yes
 
 Pass 2: Checking directory structure
-Entry '..' in ??? (11) has deleted/unused inode 2.
-Clear? yes
+Entry '..' in ??? (11) has deleted/unused inode 2.  Clear? yes
 
 Pass 3: Checking directory connectivity
-Root inode not allocated.  Reallocate? yes
+Root inode not allocated.  Allocate? yes
 
 Unconnected directory inode 11 (...)
 Connect to /lost+found? yes
@@ -16,14 +15,12 @@ Connect to /lost+found? yes
 /lost+found not found.  Create? yes
 
 Pass 4: Checking reference counts
-Inode 11 has ref count 3, expecting 2.
-Set i_nlinks to count? yes
+Inode 11 ref count is 3, should be 2.  Fix? yes
 
 Unattached inode 12
 Connect to /lost+found? yes
 
-Inode 12 has ref count 2, expecting 1.
-Set i_nlinks to count? yes
+Inode 12 ref count is 2, should be 1.  Fix? yes
 
 Pass 5: Checking group summary information
 Fix summary information? yes

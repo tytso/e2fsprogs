@@ -1,3 +1,14 @@
+/*
+ * tst_uuid.c --- test program from the UUID library
+ *
+ * Copyright (C) 1996, 1997 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
+ */
+
 #include <stdio.h>
 #include <linux/ext2_fs.h>
 

@@ -3,8 +3,12 @@
  *
  * Implements a one-block write-through cache.
  *
- * Copyright (C) 1993 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -184,7 +188,7 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 #endif
 	size = (count < 0) ? -count : count * channel->block_size;
 	location = (ext2_loff_t) block * channel->block_size;
-	if (ext2_llseek(data->dev, location, SEEK_SET) != location) {
+	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
 		retval = errno;
 		goto error_out;
 	}
@@ -233,7 +237,7 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 	} 
 
 	location = (ext2_loff_t) block * channel->block_size;
-	if (ext2_llseek(data->dev, location, SEEK_SET) != location) {
+	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
 		retval = errno;
 		goto error_out;
 	}

@@ -10,8 +10,6 @@
 #include <ss/copyright.h>
 #include <ss/ss_err.h>
 
-extern int errno;
-
 #ifdef __STDC__
 #define __SS_CONST const
 #define __SS_PROTO (int, const char * const *, int, void *)

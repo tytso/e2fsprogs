@@ -1,8 +1,12 @@
 /*
  * freefs.c --- free an ext2 filesystem
  * 
- * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
+ * %End-Header%
  */
 
 #include <stdio.h>
@@ -30,6 +34,16 @@ void ext2fs_free(ext2_filsys fs)
 		ext2fs_free_block_bitmap(fs->block_map);
 	if (fs->inode_map)
 		ext2fs_free_inode_bitmap(fs->inode_map);
+
+	if (fs->badblocks)
+		badblocks_list_free(fs->badblocks);
+	fs->badblocks = 0;
+
+	if (fs->dblist)
+		ext2fs_free_dblist(fs->dblist);
+	
+	fs->magic = 0;
+
 	free(fs);
 }
 
