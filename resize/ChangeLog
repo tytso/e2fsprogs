@@ -1,3 +1,9 @@
+2005-01-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* resize2fs.c: Fix bug where we don't release the blocks belonging
+		to the old inode table blocks when we move the inode
+		table.  (Addresses Debian Bug: #290894)
+
 2005-01-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* main.c (main): Use parse_num_blocks() from the e2p library to

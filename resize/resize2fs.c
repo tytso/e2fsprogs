@@ -126,14 +126,14 @@ errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 	if (retval)
 		goto errout;
 
-	retval = ext2fs_calculate_summary_stats(rfs->new_fs);
-	if (retval)
-		goto errout;
-	
 	retval = move_itables(rfs);
 	if (retval)
 		goto errout;
 
+	retval = ext2fs_calculate_summary_stats(rfs->new_fs);
+	if (retval)
+		goto errout;
+	
 	retval = fix_resize_inode(rfs->new_fs);
 	if (retval)
 		goto errout;
@@ -475,7 +475,7 @@ errout:
  * filesystem meta-data blocks.
  */
 static errcode_t mark_table_blocks(ext2_filsys fs,
-				   ext2fs_block_bitmap *ret_bmap)
+				   ext2fs_block_bitmap bmap)
 {
 	blk_t			block, b;
 	unsigned int		j;
@@ -483,14 +483,8 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 	unsigned long		meta_bg, meta_bg_size;
 	int			has_super;
 	unsigned int		old_desc_blocks;
-	ext2fs_block_bitmap	bmap;
 	errcode_t		retval;
 
-	retval = ext2fs_allocate_block_bitmap(fs, _("meta-data blocks"), 
-					      &bmap);
-	if (retval)
-		return retval;
-	
 	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
 	block = fs->super->s_first_data_block;
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
@@ -499,35 +493,7 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 		old_desc_blocks = fs->desc_blocks + 
 			fs->super->s_reserved_gdt_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
-		has_super = ext2fs_bg_has_super(fs, i);
-		if (has_super)
-			/*
-			 * Mark this group's copy of the superblock
-			 */
-			ext2fs_mark_block_bitmap(bmap, block);
-		
-		meta_bg = i / meta_bg_size;
-		
-		if (!(fs->super->s_feature_incompat &
-		      EXT2_FEATURE_INCOMPAT_META_BG) ||
-		    (meta_bg < fs->super->s_first_meta_bg)) {
-			if (has_super) {
-				/*
-				 * Mark this group's copy of the descriptors
-				 */
-				for (j = 0; j < old_desc_blocks; j++)
-					ext2fs_mark_block_bitmap(bmap,
-							 block + j + 1);
-			}
-		} else {
-			if (has_super)
-				has_super = 1;
-			if (((i % meta_bg_size) == 0) ||
-			    ((i % meta_bg_size) == 1) ||
-			    ((i % meta_bg_size) == (meta_bg_size-1)))
-				ext2fs_mark_block_bitmap(bmap,
-							 block + has_super);
-		}
+		ext2fs_reserve_super_and_bgd(fs, i, bmap);
 	
 		/*
 		 * Mark the blocks used for the inode table
@@ -542,6 +508,7 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 		 */
 		ext2fs_mark_block_bitmap(bmap,
 					 fs->group_desc[i].bg_block_bitmap);
+
 		/*
 		 * Mark block used for the inode bitmap 
 		 */
@@ -549,7 +516,6 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 					 fs->group_desc[i].bg_inode_bitmap);
 		block += fs->super->s_blocks_per_group;
 	}
-	*ret_bmap = bmap;
 	return 0;
 }
 
@@ -620,7 +586,12 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	if (retval)
 		return retval;
 
-	retval = mark_table_blocks(old_fs, &meta_bmap);
+	retval = ext2fs_allocate_block_bitmap(fs, _("meta-data blocks"), 
+					      &meta_bmap);
+	if (retval)
+		return retval;
+	
+	retval = mark_table_blocks(old_fs, meta_bmap);
 	if (retval)
 		return retval;
 
@@ -1346,9 +1317,9 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	dgrp_t		i, max_groups;
 	ext2_filsys	fs = rfs->new_fs;
 	char		*cp;
-	blk_t		old_blk, new_blk;
+	blk_t		old_blk, new_blk, blk;
 	errcode_t	retval;
-	int		to_move, moved;
+	int		j, to_move, moved;
 
 	max_groups = fs->group_desc_count;
 	if (max_groups > rfs->old_fs->group_desc_count)
@@ -1437,16 +1408,23 @@ static errcode_t move_itables(ext2_resize_t rfs)
 			if (retval)
 				goto errout;
 		}
+
+		for (blk = rfs->old_fs->group_desc[i].bg_inode_table, j=0;
+		     j < fs->inode_blocks_per_group ; j++, blk++)
+			ext2fs_unmark_block_bitmap(fs->block_map, blk);
+
 		rfs->old_fs->group_desc[i].bg_inode_table = new_blk;
 		ext2fs_mark_super_dirty(rfs->old_fs);
+		ext2fs_flush(rfs->old_fs);
+
 		if (rfs->progress) {
-			ext2fs_flush(rfs->old_fs);
 			retval = rfs->progress(rfs, E2_RSZ_MOVE_ITABLE_PASS,
 					       ++moved, to_move);
 			if (retval)
 				goto errout;
 		}
 	}
+	mark_table_blocks(fs, fs->block_map);
 	ext2fs_flush(fs);
 #ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
