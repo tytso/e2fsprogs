@@ -54,10 +54,15 @@ program does not manipulate the size of partitions.  If you wish to enlarge
 a filesystem, you must first make sure you can expand the size of the
 underlying partition first.  This can be done using 
 .BR fdisk (8)
-by deleting the partition and recreating it with a larger size.  When 
+by deleting the partition and recreating it with a larger size.  
+When 
 recreating the partition, make sure you create it with the same starting
 disk cylinder as before!  Otherwise, the resize operation will 
-certainly not work, and you may lose your entire filesystem.
+certainly not work, and you may lose your entire filesystem.  
+After running
+.BR fdisk (8),
+run resize2fs to resize the ext2 filesystem 
+to use all of the space in the newly enlarged partition.
 .PP
 If you wish to shrink an ext2 partition, first use 
 .B resize2fs

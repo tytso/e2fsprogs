@@ -1,3 +1,9 @@
+2003-06-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* resize2fs.8.in: Make explicit that you need to run resize2fs
+		after using fdisk to adjust the partition size when
+		expanding the filesystem.  (Addresses Debian Bug #195616)
+
 2003-05-13  root  <tytso@mit.edu>
 
 	* main.c (main): Add the ability to specify units to the size
