@@ -1,0 +1,407 @@
+Extended 2 filesystem structure definitions for ext2ed.
+
+Most of this file is just copied from the ext2 main include file.
+
+My parser is very primitive - It only searches for the struct keywords,
+and uses the variables in there. The rest of the file is just ignored.
+
+You will find at the end a few additional types which are not aviable in
+the original include file, such as the types "file" and "dir". They have
+no variables, but are necessary due to the way ext2ed binds C commands
+to specific types.
+
+Gadi Oxman, 7/95
+
+Here is the original copyright:
+
+/*
+ *  linux/include/linux/ext2_fs.h
+ *
+ *  Copyright (C) 1992, 1993, 1994  Remy Card (card@masi.ibp.fr)
+ *                                  Laboratoire MASI - Institut Blaise Pascal
+ *                                  Universite Pierre et Marie Curie (Paris VI)
+ *
+ *  from
+ *
+ *  linux/include/linux/minix_fs.h
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
+
+/*
+ * ACL structures
+ */
+struct ext2_acl_header	/* Header of Access Control Lists */
+{
+	unsigned long aclh_size;
+	unsigned long aclh_file_count;
+	unsigned long aclh_acle_count;
+	unsigned long aclh_first_acle;
+};
+
+struct ext2_acl_entry	/* Access Control List Entry */
+{
+	unsigned long  acle_size;
+	unsigned short acle_perms;	/* Access permissions */
+	unsigned short acle_type;	/* Type of entry */
+	unsigned short acle_tag;	/* User or group identity */
+	unsigned short acle_pad1;
+	unsigned long  acle_next;	/* Pointer on next entry for the */
+					/* same inode or on next free entry */
+};
+
+/*
+ * Structure of a blocks group descriptor
+ */
+
+struct ext2_group_desc
+{
+	unsigned long  bg_block_bitmap;		/* Blocks bitmap block */
+	unsigned long  bg_inode_bitmap;		/* Inodes bitmap block */
+	unsigned long  bg_inode_table;		/* Inodes table block */
+	unsigned short bg_free_blocks_count;	/* Free blocks count */
+	unsigned short bg_free_inodes_count;	/* Free inodes count */
+	unsigned short bg_used_dirs_count;	/* Directories count */
+	unsigned short bg_pad;
+	unsigned long  bg_reserved[0];
+	unsigned long  bg_reserved[1];
+	unsigned long  bg_reserved[2];
+};
+
+/*
+ * Structure of an inode on the disk
+ */
+struct ext2_inode {
+	unsigned short i_mode;		/* File mode */
+	unsigned short i_uid;		/* Owner Uid */
+	unsigned long  i_size;		/* Size in bytes */
+	unsigned long  i_atime;		/* Access time */
+	unsigned long  i_ctime;		/* Creation time */
+	unsigned long  i_mtime;		/* Modification time */
+	unsigned long  i_dtime;		/* Deletion Time */
+	unsigned short i_gid;		/* Group Id */
+	unsigned short i_links_count;	/* Links count */
+	unsigned long  i_blocks;	/* Blocks count */
+	unsigned long  i_flags;		/* File flags */
+	unsigned long  l_i_reserved1;
+	unsigned long  i_block[0]; /* Pointers to blocks */
+	unsigned long  i_block[1]; /* Pointers to blocks */
+	unsigned long  i_block[2]; /* Pointers to blocks */
+	unsigned long  i_block[3]; /* Pointers to blocks */
+	unsigned long  i_block[4]; /* Pointers to blocks */
+	unsigned long  i_block[5]; /* Pointers to blocks */
+	unsigned long  i_block[6]; /* Pointers to blocks */
+	unsigned long  i_block[7]; /* Pointers to blocks */
+	unsigned long  i_block[8]; /* Pointers to blocks */
+	unsigned long  i_block[9]; /* Pointers to blocks */
+	unsigned long  i_block[10]; /* Pointers to blocks */
+	unsigned long  i_block[11]; /* Pointers to blocks */
+	unsigned long  i_block[12]; /* Pointers to blocks */
+	unsigned long  i_block[13]; /* Pointers to blocks */
+	unsigned long  i_block[14]; /* Pointers to blocks */
+	unsigned long  i_version;	/* File version (for NFS) */
+	unsigned long  i_file_acl;	/* File ACL */
+	unsigned long  i_dir_acl;	/* Directory ACL */
+	unsigned long  i_faddr;		/* Fragment address */
+	unsigned char  l_i_frag;	/* Fragment number */
+	unsigned char  l_i_fsize;	/* Fragment size */
+	unsigned short i_pad1;
+	unsigned long  l_i_reserved2[0];
+	unsigned long  l_i_reserved2[1];
+};
+
+/*
+ * Structure of the super block
+ */
+struct ext2_super_block {
+	unsigned long  s_inodes_count;	/* Inodes count */
+	unsigned long  s_blocks_count;	/* Blocks count */
+	unsigned long  s_r_blocks_count; /* Reserved blocks count */
+	unsigned long  s_free_blocks_count; /* Free blocks count */
+	unsigned long  s_free_inodes_count; /* Free inodes count */
+	unsigned long  s_first_data_block; /* First Data Block */
+	unsigned long  s_log_block_size; /* Block size */
+	long           s_log_frag_size;	/* Fragment size */
+	unsigned long  s_blocks_per_group; /* # Blocks per group */
+	unsigned long  s_frags_per_group; /* # Fragments per group */
+	unsigned long  s_inodes_per_group; /* # Inodes per group */
+	unsigned long  s_mtime;		/* Mount time */
+	unsigned long  s_wtime;		/* Write time */
+	unsigned short s_mnt_count;	/* Mount count */
+	short          s_max_mnt_count;	/* Maximal mount count */
+	unsigned short s_magic;		/* Magic signature */
+	unsigned short s_state;		/* File system state */
+	unsigned short s_errors;	/* Behaviour when detecting errors */
+	unsigned short s_pad;
+	unsigned long  s_lastcheck;	/* time of last check */
+	unsigned long  s_checkinterval;	/* max. time between checks */
+	unsigned long  s_creator_os;	/* OS */
+	unsigned long  s_rev_level;	/* Revision level */
+	unsigned short  s_def_resuid;
+	unsigned short  s_deg_resgid;
+
+	unsigned long  s_reserved[0];	/* Padding to the end of the block */
+	unsigned long  s_reserved[1];
+	unsigned long  s_reserved[2];
+	unsigned long  s_reserved[3];
+	unsigned long  s_reserved[4];
+	unsigned long  s_reserved[5];
+	unsigned long  s_reserved[6];
+	unsigned long  s_reserved[7];
+	unsigned long  s_reserved[8];
+	unsigned long  s_reserved[9];
+	unsigned long  s_reserved[10];
+	unsigned long  s_reserved[11];
+	unsigned long  s_reserved[12];
+	unsigned long  s_reserved[13];
+	unsigned long  s_reserved[14];
+	unsigned long  s_reserved[15];
+	unsigned long  s_reserved[16];
+	unsigned long  s_reserved[17];
+	unsigned long  s_reserved[18];
+	unsigned long  s_reserved[19];
+	unsigned long  s_reserved[20];
+	unsigned long  s_reserved[21];
+	unsigned long  s_reserved[22];
+	unsigned long  s_reserved[23];
+	unsigned long  s_reserved[24];
+	unsigned long  s_reserved[25];
+	unsigned long  s_reserved[26];
+	unsigned long  s_reserved[27];
+	unsigned long  s_reserved[28];
+	unsigned long  s_reserved[29];
+	unsigned long  s_reserved[30];
+	unsigned long  s_reserved[31];
+	unsigned long  s_reserved[32];
+	unsigned long  s_reserved[33];
+	unsigned long  s_reserved[34];
+	unsigned long  s_reserved[35];
+	unsigned long  s_reserved[36];
+	unsigned long  s_reserved[37];
+	unsigned long  s_reserved[38];
+	unsigned long  s_reserved[39];
+	unsigned long  s_reserved[40];
+	unsigned long  s_reserved[41];
+	unsigned long  s_reserved[42];
+	unsigned long  s_reserved[43];
+	unsigned long  s_reserved[44];
+	unsigned long  s_reserved[45];
+	unsigned long  s_reserved[46];
+	unsigned long  s_reserved[47];
+	unsigned long  s_reserved[48];
+	unsigned long  s_reserved[49];
+	unsigned long  s_reserved[50];
+	unsigned long  s_reserved[51];
+	unsigned long  s_reserved[52];
+	unsigned long  s_reserved[53];
+	unsigned long  s_reserved[54];
+	unsigned long  s_reserved[55];
+	unsigned long  s_reserved[56];
+	unsigned long  s_reserved[57];
+	unsigned long  s_reserved[58];
+	unsigned long  s_reserved[59];
+	unsigned long  s_reserved[60];
+	unsigned long  s_reserved[61];
+	unsigned long  s_reserved[62];
+	unsigned long  s_reserved[63];
+	unsigned long  s_reserved[64];
+	unsigned long  s_reserved[65];
+	unsigned long  s_reserved[66];
+	unsigned long  s_reserved[67];
+	unsigned long  s_reserved[68];
+	unsigned long  s_reserved[69];
+	unsigned long  s_reserved[70];
+	unsigned long  s_reserved[71];
+	unsigned long  s_reserved[72];
+	unsigned long  s_reserved[73];
+	unsigned long  s_reserved[74];
+	unsigned long  s_reserved[75];
+	unsigned long  s_reserved[76];
+	unsigned long  s_reserved[77];
+	unsigned long  s_reserved[78];
+	unsigned long  s_reserved[79];
+	unsigned long  s_reserved[80];
+	unsigned long  s_reserved[81];
+	unsigned long  s_reserved[82];
+	unsigned long  s_reserved[83];
+	unsigned long  s_reserved[84];
+	unsigned long  s_reserved[85];
+	unsigned long  s_reserved[86];
+	unsigned long  s_reserved[87];
+	unsigned long  s_reserved[88];
+	unsigned long  s_reserved[89];
+	unsigned long  s_reserved[90];
+	unsigned long  s_reserved[91];
+	unsigned long  s_reserved[92];
+	unsigned long  s_reserved[93];
+	unsigned long  s_reserved[94];
+	unsigned long  s_reserved[95];
+	unsigned long  s_reserved[96];
+	unsigned long  s_reserved[97];
+	unsigned long  s_reserved[98];
+	unsigned long  s_reserved[99];
+	unsigned long  s_reserved[100];
+	unsigned long  s_reserved[101];
+	unsigned long  s_reserved[102];
+	unsigned long  s_reserved[103];
+	unsigned long  s_reserved[104];
+	unsigned long  s_reserved[105];
+	unsigned long  s_reserved[106];
+	unsigned long  s_reserved[107];
+	unsigned long  s_reserved[108];
+	unsigned long  s_reserved[109];
+	unsigned long  s_reserved[110];
+	unsigned long  s_reserved[111];
+	unsigned long  s_reserved[112];
+	unsigned long  s_reserved[113];
+	unsigned long  s_reserved[114];
+	unsigned long  s_reserved[115];
+	unsigned long  s_reserved[116];
+	unsigned long  s_reserved[117];
+	unsigned long  s_reserved[118];
+	unsigned long  s_reserved[119];
+	unsigned long  s_reserved[120];
+	unsigned long  s_reserved[121];
+	unsigned long  s_reserved[122];
+	unsigned long  s_reserved[123];
+	unsigned long  s_reserved[124];
+	unsigned long  s_reserved[125];
+	unsigned long  s_reserved[126];
+	unsigned long  s_reserved[127];
+	unsigned long  s_reserved[128];
+	unsigned long  s_reserved[129];
+	unsigned long  s_reserved[130];
+	unsigned long  s_reserved[131];
+	unsigned long  s_reserved[132];
+	unsigned long  s_reserved[133];
+	unsigned long  s_reserved[134];
+	unsigned long  s_reserved[135];
+	unsigned long  s_reserved[136];
+	unsigned long  s_reserved[137];
+	unsigned long  s_reserved[138];
+	unsigned long  s_reserved[139];
+	unsigned long  s_reserved[140];
+	unsigned long  s_reserved[141];
+	unsigned long  s_reserved[142];
+	unsigned long  s_reserved[143];
+	unsigned long  s_reserved[144];
+	unsigned long  s_reserved[145];
+	unsigned long  s_reserved[146];
+	unsigned long  s_reserved[147];
+	unsigned long  s_reserved[148];
+	unsigned long  s_reserved[149];
+	unsigned long  s_reserved[150];
+	unsigned long  s_reserved[151];
+	unsigned long  s_reserved[152];
+	unsigned long  s_reserved[153];
+	unsigned long  s_reserved[154];
+	unsigned long  s_reserved[155];
+	unsigned long  s_reserved[156];
+	unsigned long  s_reserved[157];
+	unsigned long  s_reserved[158];
+	unsigned long  s_reserved[159];
+	unsigned long  s_reserved[160];
+	unsigned long  s_reserved[161];
+	unsigned long  s_reserved[162];
+	unsigned long  s_reserved[163];
+	unsigned long  s_reserved[164];
+	unsigned long  s_reserved[165];
+	unsigned long  s_reserved[166];
+	unsigned long  s_reserved[167];
+	unsigned long  s_reserved[168];
+	unsigned long  s_reserved[169];
+	unsigned long  s_reserved[170];
+	unsigned long  s_reserved[171];
+	unsigned long  s_reserved[172];
+	unsigned long  s_reserved[173];
+	unsigned long  s_reserved[174];
+	unsigned long  s_reserved[175];
+	unsigned long  s_reserved[176];
+	unsigned long  s_reserved[177];
+	unsigned long  s_reserved[178];
+	unsigned long  s_reserved[179];
+	unsigned long  s_reserved[180];
+	unsigned long  s_reserved[181];
+	unsigned long  s_reserved[182];
+	unsigned long  s_reserved[183];
+	unsigned long  s_reserved[184];
+	unsigned long  s_reserved[185];
+	unsigned long  s_reserved[186];
+	unsigned long  s_reserved[187];
+	unsigned long  s_reserved[188];
+	unsigned long  s_reserved[189];
+	unsigned long  s_reserved[190];
+	unsigned long  s_reserved[191];
+	unsigned long  s_reserved[192];
+	unsigned long  s_reserved[193];
+	unsigned long  s_reserved[194];
+	unsigned long  s_reserved[195];
+	unsigned long  s_reserved[196];
+	unsigned long  s_reserved[197];
+	unsigned long  s_reserved[198];
+	unsigned long  s_reserved[199];
+	unsigned long  s_reserved[200];
+	unsigned long  s_reserved[201];
+	unsigned long  s_reserved[202];
+	unsigned long  s_reserved[203];
+	unsigned long  s_reserved[204];
+	unsigned long  s_reserved[205];
+	unsigned long  s_reserved[206];
+	unsigned long  s_reserved[207];
+	unsigned long  s_reserved[208];
+	unsigned long  s_reserved[209];
+	unsigned long  s_reserved[210];
+	unsigned long  s_reserved[211];
+	unsigned long  s_reserved[212];
+	unsigned long  s_reserved[213];
+	unsigned long  s_reserved[214];
+	unsigned long  s_reserved[215];
+	unsigned long  s_reserved[216];
+	unsigned long  s_reserved[217];
+	unsigned long  s_reserved[218];
+	unsigned long  s_reserved[219];
+	unsigned long  s_reserved[220];
+	unsigned long  s_reserved[221];
+	unsigned long  s_reserved[222];
+	unsigned long  s_reserved[223];
+	unsigned long  s_reserved[224];
+	unsigned long  s_reserved[225];
+	unsigned long  s_reserved[226];
+	unsigned long  s_reserved[227];
+	unsigned long  s_reserved[228];
+	unsigned long  s_reserved[229];
+	unsigned long  s_reserved[230];
+	unsigned long  s_reserved[231];
+	unsigned long  s_reserved[232];
+	unsigned long  s_reserved[233];
+	unsigned long  s_reserved[234];
+};
+
+The following is actually not used, due to the variable length of the
+name field. EXT2ED handles directories through the type "dir" below.
+
+/*
+ * Structure of a directory entry
+ */
+
+/* struct ext2_dir_entry { */
+/*
+	unsigned long  inode;			/* Inode number */
+	unsigned short rec_len;			/* Directory entry length */
+	unsigned short name_len;		/* Name length */
+	char           name[EXT2_NAME_LEN];	/* File name */
+};
+*/
+
+struct file {
+};
+
+struct dir {
+};
+
+struct block_bitmap {
+};
+
+struct inode_bitmap {
+};

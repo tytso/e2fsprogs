@@ -1,0 +1,2102 @@
+<!doctype linuxdoc system>
+
+<!-- EXT2ED - Project notes -->
+<!-- First written: July 25 1995 -->
+<!-- Last  updated: August 3 1995 -->
+<!-- This document is written Using the Linux documentation project Linuxdoc-SGML DTD -->
+
+<article>
+
+<title>EXT2ED - The Extended-2 filesystem editor - Design and implementation
+<author>Programmed by Gadi Oxman, with the guide of Avner Lottem
+<date>v0.1, August 3 1995
+<toc>
+
+<!-- Begin of document -->
+
+<sect>About EXT2ED documentation
+<p>
+
+The EXT2ED documentation consists of three parts:
+<itemize>
+<item>	The ext2 filesystem overview.
+<item>	The EXT2ED user's guide.
+<item>	The EXT2ED design and implementation.
+</itemize>
+
+This document is not the user's guide. If you just intend to use EXT2ED, you
+may not want to read it.
+
+However, if you intend to browse and modify the source code, this document is
+for you.
+
+In any case, If you intend to read this article, I strongly suggest that you
+will be familiar with the material presented in the other two articles as well.
+
+<sect>Preface
+<p>
+
+In this document I will try to explain how EXT2ED is constructed.
+At this time of writing, the initial version is finished and ready
+for distribution; It is fully functional. However, this was not always the
+case.
+
+At first, I didn't know much about Unix, much less about Unix filesystems,
+and even less about Linux and the extended-2 filesystem. While working
+on this project, I gradually acquired knowledge about all of the above
+subjects. I can think of two ways in which I could have made my project:
+<enum>
+<item>	The "Engineer" way
+
+	Learn the subject throughly before I get to the programming itself.
+	Then, I could easily see the entire picture and select the best
+	course of action, taking all the factors into account.
+<item>	The "Explorer - Progressive" way.
+
+	Jump immediately into the cold water - Start programming and
+	learning the material parallelly.
+</enum>
+
+I guess that the above dilemma is typical and appears all through science and
+technology.
+
+However, I didn't have the luxury of choice when I started my project -
+Linux is a relatively new (and great !) operating system. The extended-2
+filesystem is even newer - Its first release lies somewhere in 1993 - Only
+passed two years until I started working on my project.
+
+The situation I found myself at the beginning was that I didn't have a fully
+detailed document which describes the ext2 filesystem. In fact, I didn't
+have any ext2 document at all. When I asked Avner about documentation, he
+suggested two references:
+<itemize>
+<item>	A general Unix book - THE DESIGN OF THE UNIX OPERATING SYSTEM, by
+	Maurice J. Bach.
+<item>	The kernel sources.
+</itemize>
+I read the relevant parts of the book before I started my project - It is a
+bit old now, but the principles are still the same. However, I needed
+more than just the principles.
+
+The kernel sources are a rare bonus ! You don't get everyday the full
+sources of the operating system. There is so much that can be learned from
+them, and it is the ultimate source - The exact answer how the kernel
+works is there, with all the fine details. At the first week I started to
+look at random at the relevant parts of the sources. However, it is difficult
+to understand the global picture from direct reading of over one hundred
+page sources. Then, I started to do some programming. I didn't know
+yet what I was looking for, and I started to work on the project like a kid
+who starts to build a large puzzle.
+
+However, this was exactly the interesting part ! It is frustrating to know
+it all from advance - I think that the discovery itself, bit by bit, is the
+key to a true learning and understanding.
+
+Now, in this document, I am trying to present the subject. Even though I
+developed EXT2ED progressively, I now can see the entire subject much
+brighter than I did before, and though I do have the option of presenting it
+only in the "engineer" way. However, I will not do that.
+
+My presentation will be mixed - Sometimes I will present a subject with an
+incremental perspective, and sometimes from a "top down" view. I'll leave
+you to decide if my presentation choice was wise :-)
+
+In addition, you'll notice that the sections tend to get shorter as we get
+closer to the end. The reason is simply that I started to feel that I was
+repeating myself so I decided to present only the new ideas.
+
+<sect>Getting started ...
+<p>
+
+Getting started is almost always the most difficult task. Once you get
+started, things start "running" ...
+
+<sect1>Before the actual programming
+<p>
+
+From mine talking with Avner, I understood that Linux, like any other Unix
+system, provides accesses to the entire disk as though it were a general
+file - Accessing the device. It is surely a nice idea. Avner suggested two
+ways of action:
+<itemize>
+<item>	Opening the device like a regular file in the user space.
+<item>	Constructing a device driver which will run in the kernel space and
+	provide hooks for the user space program. The advantage is that it
+	will be a part of the kernel, and would be able to use the ext2
+	kernel functions to do some of the work.
+</itemize>
+I chose the first way. I think that the basic reason was simplicity - Learning
+the ext2 filesystem was complicated enough, and adding to it the task of
+learning how to program in the kernel space was too much. I still don't know
+how to program a device driver, and this is perhaps the bad part, but
+concerning the project in a back-perspective, I think that the first way is
+superior to the second; Ironically, because of the very reason I chose it -
+Simplicity. EXT2ED can now run entirely in the user space (which I think is
+a point in favor, because it doesn't require the user to recompile its
+kernel), and the entire hard work is mine, which fitted nicely into the
+learning experience - I didn't use other code to do the job (aside from
+looking at the sources, of-course).
+
+<sect1>Jumping into the cold water
+<p>
+
+I didn't know almost anything of the structure of the ext2 filesystem.
+Reading the sources was not enough - I needed to experiment. However, a tool
+for experiments in the ext2 filesystem was exactly my project ! - Kind of a
+paradox.
+
+I started immediately with constructing a simple <tt>hex editor</> - It would
+open the device as a regular file, provide means of moving inside the
+filesystem with a simple <tt>offset</> method, and just show a
+<tt> hex dump</> of the contents at this point. Programming this was trivially
+simple of-course. At this point, the user-interface didn't matter to me - I
+wanted a fast way to interact. As a result, I chose a simple command line
+parser. Of course, there where no windows at this point.
+
+A hex editor is nice, but is not enough. It indeed enabled me to see each part
+of the filesystem, but the format of the viewed data was difficult to
+analyze. I wanted to see the data in a more intuitive way.
+
+At this point of time, the most helpful file in the sources was the ext2
+main include file - <tt>/usr/include/linux/ext2_fs.h</>. Among its contents
+there were various structures which I assumed they are disk images - Appear
+exactly like that on the disk.
+
+I wanted a <tt>quick</> way to get going. I didn't have the patience to learn
+each of the structures use in the code. Rather, I wanted to see them in action,
+so that I could explore the connections between them - Test my assumptions,
+and reach other assumptions.
+
+So after the <tt>hex editor</>, EXT2ED progressed into a tool which has some
+elements of a compiler. I programmed EXT2ED to <tt>dynamically read the kernel
+ext2 main include file in run time</>, and process the information. The goal
+was to <tt>imply a structure-definition on the current offset at the
+filesystem</>. EXT2ED would then display the structure as a list of its
+variables names and contents, instead of a meaningless hex dump.
+
+The format of the include file is not very complicated - The structures
+are mostly <tt>flat</> - Didn't contain a lot of recursive structure; Only a
+global structure definition, and some variables. There were cases of
+structures inside structures, I treated them in a somewhat non-elegant way - I
+made all the structures flat, and expanded the arrays. As a result, the parser
+was very simple. After all, this was not an exercise in compiling, and I
+wanted to quickly get some results.
+
+To handle the task, I constructed the <tt>struct_descriptor</> structure.
+Each <tt>struct_descriptor instance</> contained information which is needed
+in order to format a block of data according to the C structure contained in 
+the kernel source. The information contained:
+<itemize>
+<item>	The descriptor name, used to reference to the structure in EXT2ED.
+<item>	The name of each variable.
+<item>	The relative offset of the each variable in the data block.
+<item>	The length, in bytes, of each variable.
+</itemize>
+Since I didn't want to limit the number of structures, I chose a simple
+double linked list to store the information. One variable contained the
+<tt>current structure type</> - A pointer to the relevant
+<tt>struct_descriptor</>.
+
+Now EXT2ED contained basically three command line operations:
+<itemize>
+<item>	setdevice
+
+	Used to open a device for reading only. Write access was postponed
+	to a very advanced state in the project, simply because I didn't
+	know a thing of the filesystem structure, and I believed that
+	making actual changes would do nothing but damage :-)
+<item>	setoffset
+
+	Used to move in the device.
+<item>	settype
+
+	Used to imply a structure definition on the current place.
+<item>	show
+
+	Used to display the data. It displayed the data in a simple hex dump
+	if there was no type set, or in a nice formatted way - As a list of
+	the variable contents, if there was.
+</itemize>
+
+Command line analyzing was primitive back then - A simple switch, as far as
+I can remember - Nothing alike the current flow control, but it was enough
+at the time.
+
+At the end, I had something to start working with. It knew to format many
+structures - None of which I understood - and provided me, without too much
+work, something to start with.
+
+<sect>Starting to explore
+<p>
+
+With the above tool in my pocket, I started to explore the ext2 filesystem
+structure. From the brief reading in Bach's book, I got familiar to some
+basic concepts - The <tt>superblock</>, for example. It seems that the
+superblock is an important part of the filesystem. I decided to start
+exploring with that.
+
+I realized that the superblock should be at a fixed location in the
+filesystem - Probably near the beginning. There can be no other way -
+The kernel should start at some place to find it. A brief looking in
+the kernel sources revealed that the superblock is signed by a special
+signature - A <tt>magic number</> - EXT2_SUPER_MAGIC (0xEF53 - EF probably
+stands for Extended Filesystem). I quickly found the superblock at the
+fixed offset 1024 in the filesystem - The <tt>s_magic</> variable in the
+superblock was set exactly to the above value.
+
+It seems that starting with the <tt>superblock</> was a good bet - Just from
+the list of variables, one can learn a lot. I didn't understand all of them
+at the time, but it seemed that the following keywords were repeating themself
+in various variables:
+<itemize>
+<item>	block
+<item>	inode
+<item>	group
+</itemize>
+At this point, I started to explore the block groups. I will not detail here
+the technical design of the ext2 filesystem. I have written a special
+article which explains just that, in the "engineering" way. Please refer to it
+if you feel that you are lacking knowledge in the structure of the ext2
+filesystem.
+
+I was exploring the filesystem in this way for some time, along with reading
+the sources. This lead naturally to the next step.
+
+<sect>Object specific commands
+<p>
+
+What has become clear is that the above way of exploring is not powerful
+enough - I found myself doing various calculations manually in order to pass
+between related structures. I needed to replace some tasks with an automated
+procedure.
+
+In addition, it also became clear that (of-course) each key object in the
+filesystem has its special place in regard to the overall ext2 filesystem
+design, and needs a <tt>fine tuned handling</>. It is at this point that the
+structure definitions <tt>came to life</> - They became <tt>object
+definitions</>, making EXT2ED <tt>object oriented</>.
+
+The actual meaning of the breathtaking words above, is that each structure
+now had a list of <tt>private commands</>, which ended up in
+<tt>calling special fine-tuned C functions</>. This approach was
+found to be very powerful and is <tt>the heart of EXT2ED even now</>.
+
+In order to implement the above concepts, I added the structure
+<tt>struct_commands</>. The role of this structure is to group together a
+group of commands, which can be later assigned to a specific type. Each
+structure had:
+<itemize>
+<item>	A list of command names.
+<item>	A list of pointers to functions, which binds each command to its
+	special fine-tuned C function.
+</itemize>
+In order to relate a list of commands to a type definition, each
+<tt>struct_descriptor</> structure (explained earlier) was added a private
+<tt>struct_commands</> structure.
+
+Follows the current definitions of <tt>struct_descriptor</> and of
+<tt>struct_command</>:
+<tscreen><code>
+struct struct_descriptor {
+        unsigned long length;
+        unsigned char name [60];
+        unsigned short fields_num;
+        unsigned char field_names [MAX_FIELDS][80];
+        unsigned short field_lengths [MAX_FIELDS];
+        unsigned short field_positions [MAX_FIELDS];
+        struct struct_commands type_commands;
+        struct struct_descriptor *prev,*next;
+};
+
+typedef void (*PF) (char *);
+
+struct struct_commands {
+        int last_command;
+        char *names [MAX_COMMANDS_NUM];
+        char *descriptions [MAX_COMMANDS_NUM];
+        PF callback [MAX_COMMANDS_NUM];
+};
+</code></tscreen>
+
+<sect><label id="flow_control">Program flow control
+<p>
+
+Obviously the above approach lead to a major redesign of EXT2ED. The
+main engine of the resulting design is basically the same even now.
+
+I redesigned the program flow control. Up to now, I analyzed the user command
+line with the simple switch method. Now I used the far superior callback
+method.
+
+I divided the available user commands into two groups:
+<enum>
+<item>	General commands.
+<item>	Type specific commands.
+</enum>
+As a result, at each point in time, the user was able to enter a
+<tt>general command</>, selectable from a list of general commands which was
+always available, or a <tt>type specific command</>, selectable from a list of
+commands which <tt>changed in time</> according to the current type that the
+user was editing. The special <tt>type specific command</> "knew" how to
+handle the object in the best possible way - It was "fine tuned" for the
+object's place in the ext2 filesystem design.
+
+In order to implement the above idea, I constructed a global variable of
+type <tt>struct_commands</>, which contained the <tt>general commands</>.
+The <tt>type specific commands</> were accessible through the <tt>struct
+descriptors</>, as explained earlier.
+
+The program flow was now done according to the following algorithm:
+<enum>
+<item>	Ask the user for a command line.
+<item>	Analyze the user command - Separate it into <tt>command</> and
+	<tt>arguments</>.
+<item>	Trace the list of known objects to match the command name to a type.
+	If the type is found, call the callback function, with the arguments
+	as a parameter. Then go back to step (1).
+<item>	If the command is not type specific, try to find it in the general
+	commands, and call it if found. Go back to step (1).
+<item>	If the command is not found, issue a short error message, and return
+	to step (1).
+</enum>
+Note the <tt>order</> of the above steps. In particular, note that a command
+is first assumed to be a type-specific command and only if this fails, a
+general command is searched. The "<tt>side-effect</>" (main effect, actually)
+is that when we have two commands with the <tt>same name</> - One that is a 
+type specific command, and one that is a general command, the dispatching
+algorithm will call the <tt>type specific command</>. This allows
+<tt>overriding</> of a command to provide <tt>fine-tuned</> operation.
+For example, the <tt>show</> command is overridden nearly everywhere,
+to accommodate for the different ways in which different objects are displayed,
+in order to provide an intuitive fine-tuned display.
+
+The above is done in the <tt>dispatch</> function, in <tt>main.c</>. Since
+it is a very important function in EXT2ED, and it is relatively short, I will
+list it entirely here. Note that a redesign was made since then - Another
+level was added between the two described, but I'll elaborate more on this
+later. However, the basic structure follows the explanation described above.
+<tscreen><code>
+int dispatch (char *command_line)
+
+{
+	int i,found=0;
+	char command [80];
+
+	parse_word (command_line,command);
+			
+	if (strcmp (command,"quit")==0) return (1);	
+
+	/* 1. Search for type specific commands FIRST - Allows overriding of a general command */
+
+	if (current_type != NULL)
+		for (i=0;i<=current_type->type_commands.last_command && !found;i++) {
+			if (strcmp (command,current_type->type_commands.names [i])==0) {
+				(*current_type->type_commands.callback [i]) (command_line);
+				found=1;
+			}
+		}
+
+	/* 2. Now search for ext2 filesystem general commands */
+
+	if (!found)
+		for (i=0;i<=ext2_commands.last_command && !found;i++) {
+			if (strcmp (command,ext2_commands.names [i])==0) {
+				(*ext2_commands.callback [i]) (command_line);
+				found=1;
+			}
+		}
+
+	
+	/* 3. If not found, search the general commands */
+	
+	if (!found)
+		for (i=0;i<=general_commands.last_command && !found;i++) {
+			if (strcmp (command,general_commands.names [i])==0) {
+				(*general_commands.callback [i]) (command_line);
+				found=1;
+			}
+		}
+
+	if (!found) {
+		wprintw (command_win,"Error: Unknown command\n");
+		refresh_command_win ();
+	}
+	
+	return (0);
+}
+</code></tscreen>
+
+<sect>Source files in EXT2ED
+<p>
+
+The project was getting large enough to be splitted into several source
+files. I splitted the source as much as I could into self-contained
+source files. The source files consist of the following blocks:
+<itemize>
+<item>	<tt>Main include file - ext2ed.h</>
+
+	This file contains the definitions of the various structures,
+	variables and functions used in EXT2ED. It is included by all source
+	files in EXT2ED.
+
+<item>	<tt>Main block - main.c</>
+
+	<tt>main.c</> handles the upper level of the program flow control.
+	It contains the <tt>parser</> and the <tt>dispatcher</>. Its task is
+	to ask the user for a required action, and to pass control to other
+	lower level functions in order to do the actual job.
+
+<item>	<tt>Initialization - init.c</>
+
+	The init source is responsible for the various initialization
+	actions which need to be done through the program. For example,
+	auto detection of an ext2 filesystem when selecting a device and
+	initialization of the filesystem-specific structures described
+	earlier.
+
+<item>	<tt>Disk activity - disk.c</>
+
+	<tt>disk.c</> is handles the lower level interaction with the
+	device. All disk activity is passed through this file - The various
+	functions through the source code request disk actions from the
+	functions in this file. In this way, for example, we can easily block
+	the write access to the device.
+
+<item>	<tt>Display output activity - win.c</>
+	
+	In a similar way to <tt>disk.c</>, the user-interface functions and
+	most of the interaction with the <tt>ncurses library</> are done
+	here. Nothing will be actually written to a specific window without
+	calling a function from this file.
+
+<item>	<tt>Commands available through dispatching - *_com.c </>
+
+	The above file name is generic - Each file which ends with
+	<tt>_com.c</> contains a group of related commands which can be
+	called through <tt>the dispatching function</>.
+
+	Each object typically has its own file. A separate file is also
+	available for the general commands.
+</itemize>
+The entire list of source files available at this time is:
+<itemize>
+<item>	blockbitmap_com.c
+<item>	dir_com.c
+<item>	disk.c
+<item>	ext2_com.c
+<item>	file_com.c
+<item>	general_com.c
+<item>	group_com.c
+<item>	init.c
+<item>	inode_com.c
+<item>	inodebitmap_com.c
+<item>	main.c
+<item>	super_com.c
+<item>	win.c
+</itemize>
+
+<sect>User interface
+<p>
+
+The user interface is text-based only and is based on the following
+libraries:
+
+<itemize>
+<item>	The <tt>ncurses</> library, developed by <tt>Zeyd Ben-Halim</>.
+<item>	The <tt>GNU readline</> library.
+</itemize>
+
+The user interaction is command line based - The user enters a command
+line, which consists of a <tt>command</> and of <tt>arguments</>. This fits
+nicely with the program flow control described earlier - The <tt>command</>
+is used by <tt>dispatch</> to select the right function, and the
+<tt>arguments</> are interpreted by the function itself.
+
+<sect1>The ncurses library
+<p>
+
+The <tt>ncurses</> library enables me to divide the screen into "windows".
+The main advantage is that I treat the "window" in a virtual way, asking
+the ncurses library to "write to a window". However, the ncurses
+library internally buffers the requests, and nothing is actually passed to the
+terminal until an explicit refresh is requested. When the refresh request is
+made, ncurses compares the current terminal state (as known in the last time
+that a refresh was done) with the new to be shown state, and passes to the
+terminal the minimal information required to update the display. As a
+result, the display output is optimized behind the scenes by the
+<tt>ncurses</> library, while I can still treat it in a virtual way.
+
+There are two basic concepts in the <tt>ncurses</> library:
+<itemize>
+<item>	A window.
+<item>	A pad.
+</itemize>
+A window can be no bigger than the actual terminal size. A pad, however, is
+not limited in its size.
+
+The user screen is divided by EXT2ED into three windows and one pad:
+<itemize>
+<item>	Title window.
+<item>	Status window.
+<item>	Main display pad.
+<item>	Command window.
+</itemize>
+
+The <tt>title window</> is static - It just displays the current version
+of EXT2ED.
+
+The user interaction is done in the <tt>command window</>. The user enters a
+<tt>command line</>, feedback is usually displayed there, and then relevant
+data is usually displayed in the main display and in the status window.
+
+The <tt>main display</> is using a <tt>pad</> instead of a window because
+the amount of information which is written to it is not known in advance.
+Therefor, the user treats the main display as a "window" into a bigger
+display and can <tt>scroll vertically</> using the <tt>pgdn</> and <tt>pgup</>
+commands. Although the <tt>pad</> mechanism enables me to use horizontal
+scrolling, I have not utilized this.
+
+When I need to show something to the user, I use the ncurses <tt>wprintw</>
+command. Then an explicit refresh command is required. As explained before,
+the refresh commands is piped through <tt>win.c</>. For example, to update
+the command window, <tt>refresh_command_win ()</> is used.
+
+<sect1>The readline library
+<p>
+
+Avner suggested me to integrate the GNU <tt>readline</> library in my project.
+The <tt>readline</> library is designed specifically for programs which use
+command line interface. It provides a nice package of <tt>command line editing
+tools</> - Inserting, deleting words, and the whole package of editing tools
+which are normally available in the <tt>bash</> shell (Refer to the readline
+documentation for details). In addition, I utilized the <tt>history</>
+feature of the readline library - The entered commands are saved in a
+<tt>command history</>, and can be called later by whatever means that the
+readline package provides. Command completion is also supported - When the
+user enters a partial command name, EXT2ED will provide the readline library
+with the possible completions.
+
+<sect>Possible support of other filesystems
+<p>
+
+The entire ext2 layer is provided through specific objects. Given another
+set of objects, support of other filesystem can be provided using the same
+dispatching mechanism. In order to prepare the surface for this option, I
+added yet another layer to the two-layer structure presented earlier. EXT2ED
+commands now consist of three layers:
+<itemize>
+<item>	The general commands.
+<item>	The ext2 general commands.
+<item>	The ext2 object specific commands.
+</itemize>
+The general commands are provided by the <tt>general_com.c</> source file,
+and are always available. The two other levels are not present when EXT2ED
+loads - They are dynamically added by <tt>init.c</> when EXT2ED detects an
+ext2 filesystem on the device.
+
+The abstraction levels presented above helps to extend EXT2ED to fully
+support a new filesystem, with its own specific type commands. 
+
+Even without any source code modification, the user is free to add structure
+definitions in a separate file (specified in the configuration file), 
+which will be added to the list of available objects. The added objects will
+consist only of variables, of-course, and will be used through the more
+primitive <tt>setoffset</> and <tt>settype</> commands.
+
+<sect>On the implementation of the various commands
+<p>
+
+This section points out some typical programming style that I used in many
+places at the code.
+
+<sect1>The explicit use of the dispatch function
+<p>
+
+The various commands are reached by the user through the <tt>dispatch</>
+function. This is not surprising. The fact that can be surprising, at least in
+a first look, is that <tt>you'll find the <em>dispatch</> call in many of my
+own functions !</>.
+
+I am in fact using my own implemented functions to construct higher
+level operations. I am heavily using the fact that the dispatching mechanism
+is object oriented ant that the <tt>overriding</> principle takes place and
+selects the proper function to call when several commands with the same name
+are accessible.
+
+Sometimes, however, I call the explicit command directly, without passing
+through <tt>dispatch</>. This is typically done when I want to bypass the
+<tt>overriding</> effect.
+
+<tscreen><verb>
+This is used, for example, in the interaction between the global cd command
+and the dir object specific cd command. You will see there that in order
+to implement the "entire" cd command, the type specific cd command uses both
+a dispatching mechanism to call itself recursively if a relative path is
+used, or a direct call of the general cd handling function if an explicit path
+is used.
+</verb></tscreen>
+
+<sect1>Passing information between handling functions
+<p>
+
+Typically, every source code file which handles one object type has a global
+structure specifically designed for it which is used by most of the
+functions in that file. This is used to pass information between the various
+functions there, and to physically provide the link to other related
+objects, typically for initialization use.
+
+<tscreen><verb>
+For example, in order to edit a file, information about the
+inode is needed - The file command is available only when editing an
+inode. When the file command is issued, the handling function (found,
+according to the source division outlined above, in inode_com.c) will
+store the necessary information about the inode in a specific structure
+of type struct_file_info which will be available for use by the file_com.c
+functions. Only then it will set the type to file. This is also the reason
+that a direct asynchronic set of the object type to a file through a settype
+command will fail - The above data structure will not be initialized
+properly because the user never was at the inode of the file. 
+</verb></tscreen>
+
+<sect1>A very simplified overview of a typical command handling function
+<p>
+
+This is a very simplified overview. Detailed information will follow
+where appropriate.
+
+<sect2>The prototype of a typical handling function
+<p>
+
+<enum>
+<item> 	I chose a unified <tt>naming convention</> for the various object
+	specific commands. It is perhaps best showed with an example:
+
+	The prototype of the handling function of the command <tt>next</> of
+	the type <tt>file</> is:
+	<tscreen><verb>
+		extern void type_file___next (char *command_line);
+	</verb></tscreen>
+
+	For other types and commands, the words <tt>file</> and <tt>next</>
+	should 	be replaced accordingly.
+
+<item>	The ext2 general commands syntax is similar. For example, the ext2
+	general command <tt>super</> results in calling:
+	<tscreen><verb>
+		extern void type_ext2___super (char *command_line);
+	</verb></tscreen>
+	Those functions are available in <tt>ext2_com.c</>.
+<item>	The general commands syntax is even simpler - The name of the
+	handling function is exactly the name of the commands. Those
+	functions are available in <tt>general_com.c</>.
+</enum>
+
+<sect2>	"Typical" algorithm
+<p>
+
+This section can't of-course provide meaningful information - Each
+command is handled differently, but the following frame is typical:
+<enum>
+<item>	Parse command line arguments and analyze them. Return with an error
+	message if the syntax is wrong.
+<item>	"Act accordingly", perhaps making use of the global variable available
+	to this type.
+<item>	Use some <tt>dispatch / direct </> calls in order to pass control to
+	other lower-level user commands.
+<item>	Sometimes <tt>dispatch</> to the object's <tt>show</> command to
+	display the resulting data to the user.
+</enum>
+I told you it is meaningless :-)
+
+<sect>Initialization overview
+<p>
+
+In this section I will discuss some aspects of the various initialization
+routines available in the source file <tt>init.c</>.
+
+<sect1>Upon startup
+<p>
+
+Follows the function <tt>main</>, appearing of-course in <tt>main.c</>:
+<tscreen><code>
+int main (void)
+
+{
+	if (!init ()) return (0);	/* Perform some initial initialization */
+					/* Quit if failed */
+
+	parser ();			/* Get and parse user commands */
+	
+	prepare_to_close ();		/* Do some cleanup */
+	printf ("Quitting ...\n");
+	return (1);			/* And quit */
+}
+</code></tscreen>
+
+The two initialization functions, which are called by <tt>main</>, are:
+<itemize>
+<item>	init
+<item>	prepare_to_close
+</itemize>
+
+<sect2>The init function
+<p>
+
+<tt>init</> is called from <tt>main</> upon startup. It initializes the
+following tasks / subsystems:
+<enum>
+<item>	Processing of the <tt>user configuration file</>, by using the
+	<tt>process_configuration_file</> function. Failing to complete the
+	configuration file processing is considered a <tt>fatal error</>,
+	and EXT2ED is aborted. I did it this way because the configuration
+	file has some sensitive user options like write access behavior, and
+	I wanted to be sure that the user is aware of them.
+<item>	Registration of the <tt>general commands</> through the use of
+	the <tt>add_general_commands</> function.
+<item>	Reset of the object memory rotating lifo structure.
+<item>	Reset of the device parameters and of the current type.
+<item>	Initialization of the windows subsystem - The interface between the
+	ncurses library and EXT2ED, through the use of the <tt>init_windows</>
+	function, available in <tt>win.c</>.
+<item>	Initialization of the interface between the readline library and
+	EXT2ED, through <tt>init_readline</>.
+<item>	Initialization of the <tt>signals</> subsystem, through
+	<tt>init_signals</>.
+<item>	Disabling write access. Write access needs to be explicitly enabled
+	using a user command, to prevent accidental user mistakes.
+</enum>
+When <tt>init</> is finished, it dispatches the <tt>help</> command in order
+to show the available commands to the user. Note that the ext2 layer is still
+not added; It will be added if and when EXT2ED will detect an ext2
+filesystem on a device.
+
+<sect2>The prepare_to_close function
+<p>
+
+The <tt>prepare_to_close</> function reverses some of the actions done
+earlier in EXT2ED and freeing the dynamically allocated memory.
+Specifically, it:
+<enum>
+<item>	Closes the open device, if any.
+<item>	Removes the first level - Removing the general commands, through
+	the use of <tt>free_user_commands</>, with a pointer to the
+	general_commands structure as a parameter.
+<item>	Removes of the second level - Removing the ext2 ext2 general
+	commands, in much the same way.
+<item>	Removes of the third level - Removing the objects and the object
+	specific commands, by using <tt>free_struct_descriptors</>.
+<item>	Closes the window subsystem, and deattaches EXT2ED from the ncurses
+	library, through the use of the <tt>close_windows</> function,
+	available in <tt>win.c</>.
+</enum>
+
+<sect1>	Registration of commands
+<p>
+
+Addition of a user command is done through the <tt>add_user_command</>
+function. The prototype is:
+<tscreen><verb>
+void add_user_command (struct struct_commands *ptr,char *name,char
+*description,PF callback);
+</verb></tscreen>
+The function receives a pointer to a structure of type
+<tt>struct_commands</>, a desired name for the command which will be used by
+the user to identify the command, a short description which is utilized by the
+<tt>help</> subsystem, and a pointer to a C function which will be called if
+<tt>dispatch</> decides that this command was requested.
+
+The <tt>add_user_command</> is a <tt>low level function</> used in the three
+levels to add user commands. For example, addition of the <tt>ext2
+general commands is done by:</>
+<tscreen><code>
+void add_ext2_general_commands (void)
+
+{
+	add_user_command (&ero;ext2_commands,"super","Moves to the superblock of the filesystem",type_ext2___super);
+	add_user_command (&ero;ext2_commands,"group","Moves to the first group descriptor",type_ext2___group);
+	add_user_command (&ero;ext2_commands,"cd","Moves to the directory specified",type_ext2___cd);
+}
+</code></tscreen>
+
+<sect1>Registration of objects
+<p>
+
+Registration of objects is based, as explained earlier, on the "compilation"
+of an external user file, which has a syntax similar to the C language
+<tt>struct</> keyword. The primitive parser I have implemented detects the
+definition of structures, and calls some lower level functions to actually
+register the new detected object. The parser's prototype is:
+<tscreen><verb>
+int set_struct_descriptors (char *file_name)
+</verb></tscreen>
+It opens the given file name, and calls, when appropriate:
+<itemize>
+<item>	add_new_descriptor
+<item>	add_new_variable
+</itemize>
+<tt>add_new_descriptor</> is a low level function which adds a new descriptor
+to the doubly linked list of the available objects. It will then call
+<tt>fill_type_commands</>, which will add specific commands to the object,
+if the object is known.
+
+<tt>add_new_variable</> will add a new variable of the requested length to the
+specified descriptor.
+
+<sect1>Initialization upon specification of a device
+<p>
+
+When the general command <tt>setdevice</> is used to open a device, some
+initialization sequence takes place, which is intended to determine two
+factors:
+<itemize>
+<item>	Are we dealing with an ext2 filesystem ?
+<item>	What are the basic filesystem parameters, such as its total size and
+	its block size ?
+</itemize>
+This questions are answered by the <tt>set_file_system_info</>, possibly
+using some <tt>help from the user</>, through the configuration file.
+The answers are placed in the <tt>file_system_info</> structure, which is of
+type <tt>struct_file_system_info</>:
+<tscreen><code>
+struct struct_file_system_info {
+	unsigned long file_system_size;
+	unsigned long super_block_offset;
+	unsigned long first_group_desc_offset;
+	unsigned long groups_count;
+	unsigned long inodes_per_block;
+	unsigned long blocks_per_group;		/* The name is misleading; beware */
+	unsigned long no_blocks_in_group;
+	unsigned short block_size;
+	struct ext2_super_block super_block;
+};
+</code></tscreen>
+
+Autodetection of an ext2 filesystem is usually recommended. However, on a damaged
+filesystem I can't assure a success. That's were the user comes in - He can
+<tt>override</> the auto detection procedure and force an ext2 filesystem, by
+selecting the proper options in the configuration file.
+
+If auto detection succeeds, the second question above is automatically
+answered - I get all the information I need from the filesystem itself. In
+any case, default parameters can be supplied in the configuration file and
+the user can select the required behavior.
+
+If we decide to treat the filesystem as an ext2 filesystem, <tt>registration of
+the ext2 specific objects</> is done at this point, by calling the
+<tt>set_struct_descriptors</> outlined earlier, with the name of the file
+which describes the ext2 objects, and is basically based on the ext2 sources
+main include file. At this point, EXT2ED can be fully used by the user.
+
+If we do not register the ext2 specific objects, the user can still provide
+object definitions in a separate file, and will be able to use EXT2ED in a
+<tt>limited form</>, but more sophisticated than a simple hex editor.
+
+<sect>main.c
+<p>
+
+As described earlier, <tt>main.c</> is used as a front-head to the entire
+program. <tt>main.c</> contains the following elements:
+
+<sect1>The main routine
+<p>
+
+The <tt>main</> routine was displayed above. Its task is to pass control to
+the initialization routines and to the parser.
+
+<sect1>The parser
+<p>
+
+The parser consists of the following functions:
+<itemize>
+<item>	The <tt>parser</> function, which reads the command line from the
+	user and saves it in readline's history buffer and in the internal
+	last-command buffer.
+<item>	The <tt>parse_word</> function, which receives a string and parses
+	the first word from it, ignoring whitespaces, and returns a pointer
+	to the rest of the string.
+<item>	The <tt>complete_command</> function, which is used by the readline
+	library for command completion. It scans the available commands at
+	this point and determines the possible completions.
+</itemize>
+
+<sect1>The dispatcher
+<p>
+
+The dispatcher was already explained in the flow control section - section
+<ref id="flow_control">. Its task is to pass control to the proper command
+handling function, based on the command line's command.
+
+<sect1>The self-sanity control
+<p>
+
+This is not fully implemented.
+
+The general idea was to provide a control system which will supervise the
+internal work of EXT2ED. Since I am pretty sure that bugs exist, I have
+double checked myself in a few instances, and issued an <tt>internal
+error</> warning if I reached the conclusion that something is not logical.
+The internal error is reported by the function <tt>internal_error</>,
+available in <tt>main.c</>. 
+
+The self sanity check is compiled only if the compile time option
+<tt>DEBUG</> is selected.
+
+<sect>The windows interface
+<p>
+
+Screen handling and interfacing to the <tt>ncurses</> library is done in
+<tt>win.c</>.
+
+<sect1>Initialization
+<p>
+
+Opening of the windows is done in <tt>init_windows</>. In
+<tt>close_windows</>, we just close our windows. The various window lengths
+with an exception to the <tt>show pad</> are defined in the main header file.
+The rest of the display will be used by the <tt>show pad</>.
+
+<sect1>Display output
+<p>
+
+Each actual refreshing of the terminal monitor is done by using the
+appropriate refresh function from this file: <tt>refresh_title_win</>,
+<tt>refresh_show_win</>, <tt>refresh_show_pad</> and
+<tt>refresh_command_win</>.
+
+With the exception of the <tt>show pad</>, each function simply calls the
+<tt>ncurses refresh command</>. In order to provide to <tt>scrolling</> in
+the <tt>show pad</>, some information about its status is constantly updated
+by the various functions which display output in it. <tt>refresh_show_pad</>
+passes this information to <tt>ncurses</> so that the correct part of the pad
+is actually copied to the display.
+
+The above information is saved in a global variable of type <tt>struct
+struct_pad_info</>:
+
+<tscreen><code>
+struct struct_pad_info {
+	int display_lines,display_cols;
+	int line,col;
+	int max_line,max_col;
+	int disable_output;
+};
+</code></tscreen>
+
+<sect1>Screen redraw
+<p>
+
+The <tt>redraw_all</> function will just reopen the windows. This action is
+necessary if the display gets garbled from some reason.
+
+<sect>The disk interface
+<p>
+
+All the disk activity with regard to the filesystem passes through the file
+<tt>disk.c</>. This is done that way to provide additional levels of safety
+concerning the disk access. This way, global decisions considering the disk
+can be easily accomplished. The benefits of this isolation will become even
+clearer in the next sections.
+
+<sect1>Low level functions
+<p>
+
+Read requests are ultimately handled by <tt>low_read</> and write requests
+are handled by <tt>low_write</>. They just receive the length of the data
+block, the offset in the filesystem and a pointer to the buffer and pass the
+request to the <tt>fread</> or <tt>fwrite</> standard library functions.
+
+<sect1>Mounted filesystems
+<p>
+
+EXT2ED design assumes that the edited filesystem is not mounted. Even if
+a <tt>reasonably simple</> way to handle mounted filesystems exists, it is
+probably <tt>too complicated</> :-)
+
+Write access to a mounted filesystem will be denied. Read access can be
+allowed by using a configuration file option. The mount status is determined
+by reading the file /etc/mtab.
+
+<sect1>Write access
+<p>
+
+Write access is the most sensitive part in the program. This program is
+intended for <tt>editing filesystems</>. It is obvious that a small mistake
+in this regard can make the filesystem not usable anymore.
+
+The following safety measures are added, of-course, to the general Unix
+permission protection - The user can always disable write access on the
+device file itself.
+
+Considering the user, the following safety measures were taken:
+<enum>
+<item>	The filesystem is <tt>never</> opened with write-access enables.
+	Rather, the user must explicitly request to enable write-access.
+<item>	The user can <tt>disable</> write access entirely by using a
+	<tt>configuration file option</>.
+<item>	Changes are never done automatically - Whenever the user makes
+	changes, they are done in memory. An explicit <tt>writedata</>
+	command should be issued to make the changes active in the disk.
+</enum>
+Considering myself, I tried to protect against my bugs by:
+<itemize>
+<item>	Opening the device in read-only mode until a write request is
+	issued by the user.
+<item>	Limiting <tt>actual</> filesystem access to two functions only -
+	<tt>low_read</> for reading, and <tt>low_write</> for writing. Those
+	functions were programmed carefully, and I added the self
+	sanity checks there. In addition, this is the only place in which I
+	need to check the user options described above - There can be no
+	place in which I can "forget" to check them.
+
+	Note that The disabling of write-access through the configuration file
+	is double checked here only as a <tt>self-sanity</> check - If
+	<tt>DEBUG</> is selected, since write enable should have been refused
+	and write-access is always disabled at startup, hence finding
+	<tt>here</> that the user has write access disabled through the
+	configuration file clearly indicates that I have a bug somewhere.
+</itemize>
+
+The following safety measure can provide protection against <tt>both</> user
+mistakes and my own bugs:
+<itemize>
+<item>	I added a <tt>logging option</>, which logs every actual write
+	access to the disk in the lowest level - In <tt>low_write</> itself.
+
+	The logging has nothing to do with the current type and the various
+	other higher level operations of EXT2ED - It is simply a hex dump of
+	the contents which will be overwritten; Both the original contents
+	and the new written data.
+
+	In that case, even if the user makes a 	mistake, the original data
+	can be retrieved.
+
+	Even If I have a bug somewhere which causes incorrect data to be
+	written to the disk, the logging option will still log exactly the
+	original contents at the place were data was incorrectly overwritten.
+	(This assumes, of-course, that <tt>low-write</> and the <tt>logging
+	itself</> work correctly. I have done my best to verify that this is
+	indeed the case).
+
+	The <tt>logging</> option is implemented in the <tt>log_changes</>
+	function.
+</itemize>
+
+<sect1>Reading / Writing objects
+<p>
+
+Usually <tt>(not always)</>, the current object data is available in the
+global variable <tt>type_data</>, which is of the type:
+<tscreen><code>
+struct struct_type_data {
+	long offset_in_block;
+
+	union union_type_data {
+		char buffer [EXT2_MAX_BLOCK_SIZE];
+		struct ext2_acl_header t_ext2_acl_header;
+		struct ext2_acl_entry t_ext2_acl_entry;
+		struct ext2_old_group_desc t_ext2_old_group_desc;
+		struct ext2_group_desc t_ext2_group_desc;
+		struct ext2_inode t_ext2_inode;
+		struct ext2_super_block t_ext2_super_block;
+		struct ext2_dir_entry t_ext2_dir_entry;
+	} u;
+};
+</code></tscreen>
+The above union enables me, in the program, to treat the data as raw data or
+as a meaningful filesystem object.
+
+The reading and writing, if done to this global variable, are done through
+the functions <tt>load_type_data</> and <tt>write_type_data</>, available in
+<tt>disk.c</>.
+
+<sect>The general commands
+<p>
+
+The <tt>general commands</> are handled in the file <tt>general_com.c</>.
+
+<sect1>The help system
+<p>
+
+The help command is handled by the function <tt>help</>. The algorithm is as
+follows:
+
+<enum>
+<item>	Check the command line arguments. If there is an argument, pass
+	control to the <tt>detailed_help</> function, in order to provide
+	help on the specific command.
+<item>	If general help was requested, display a list of the available
+	commands at this point. The three levels are displayed in reverse
+	order - First the commands which are specific to the current type
+	(If a current type is defined), then the ext2 general commands (If
+	we decided that the filesystem should be treated like an ext2
+	filesystem), then the general commands.
+<item>	Display information about EXT2ED - Current version, general
+	information about the project, etc.
+</enum>
+
+<sect1>The setdevice command
+<p>
+
+The <tt>setdevice</> commands result in calling the <tt>set_device</>
+function. The algorithm is:
+
+<enum>
+<item>	Parse the command line argument. If it isn't available report the
+	error and return.
+<item>	Close the current open device, if there is one.
+<item>	Open the new device in read-only mode. Update the global variables
+	<tt>device_name</> and <tt>device_handle</>.
+<item>	Disable write access.
+<item>	Empty the object memory.
+<item>	Unregister the ext2 general commands, using
+	<tt>free_user_commands</>.
+<item>	Unregister the current objects, using <tt>free_struct_descriptors</>
+<item>	Call <tt>set_file_system_info</> to auto-detect an ext2 filesystem
+	and set the basic filesystem values.
+<item>	Add the <tt>alternate descriptors</>, supplied by the user.
+<item>	Set the device offset to the filesystem start by dispatching
+	<tt>setoffset 0</>.
+<item>	Show the new available commands by dispatching the <tt>help</>
+	command.
+</enum>
+
+<sect1>Basic maneuvering
+<p>
+
+Basic maneuvering is done using the <tt>setoffset</> and the <tt>settype</>
+user commands.
+
+<tt>set_offset</> accepts some alternative forms of specifying the new
+offset. They all ultimately lead to changing the <tt>device_offset</>
+global variable and seeking to the new position. <tt>set_offset</> also
+calls <tt>load_type_data</> to read a block ahead of the new position into
+the <tt>type_data</> global variable.
+
+<tt>set_type</> will point the global variable <tt>current_type</> to the
+correct entry in the double linked list of the known objects. If the
+requested type is <tt>hex</> or <tt>none</>, <tt>current_type</> will be
+initialized to <tt>NULL</>. <tt>set_type</> will also dispatch <tt>show</>,
+so that the object data will be re-formatted in the new format.
+
+When editing an ext2 filesystem, it is not intended that those commands will
+be used directly, and it is usually not required. My implementation of the
+ext2 layer, on the other hand, uses this lower level commands on countless
+occasions.
+
+<sect1>The display functions
+<p>
+
+The general command version of <tt>show</> is handled by the <tt>show</>
+function. This command is overridden by various objects to provide a display
+which is better suited to the object.
+
+The general show command will format the data in <tt>type_data</> according
+to the structure definition of the current type and show it on the <tt>show
+pad</>. If there is no current type, the data will be shown as a simple hex
+dump; Otherwise, the list of variables, along with their values will be shown.
+
+A call to <tt>show_info</> is also made - <tt>show_info</> will provide
+<tt>general statistics</> on the <tt>show_window</>, such as the current
+block, current type, current offset and current page.
+
+The <tt>pgup</> and <tt>pgdn</> general commands just update the
+<tt>show_pad_info</> global variable - We just increment
+<tt>show_pad_info.line</> with the number of lines in the screen -
+<tt>show_pad_info.display_lines</>, which was initialized in
+<tt>init_windows</>.
+
+<sect1>Changing data
+<p>
+
+Data change is done in memory only. An update to the disk if followed by an
+explicit <tt>writedata</> command to the disk. The <tt>write_data</>
+function simple calls the <tt>write_type_data</> function, outlined earlier.
+
+The <tt>set</> command is used for changing the data.
+
+If there is no current type, control is passed to the <tt>hex_set</> function,
+which treats the data as a block of bytes and uses the
+<tt>type_data.offset_in_block</> variable to write the new text or hex string
+to the correct place in the block.
+
+If a current type is defined, the requested variable is searched in the
+current object, and the desired new valued is entered.
+
+The <tt>enablewrite</> commands just sets the global variable
+<tt>write_access</> to <tt>1</> and re-opens the filesystem in read-write
+mode, if possible.
+
+If the current type is NULL, a hex-mode is assumed - The <tt>next</> and
+<tt>prev</> commands will just update <tt>type_data.offset_in_block</>.
+
+If the current type is not NULL, the The <tt>next</> and <tt>prev</> command
+are usually overridden anyway. If they are not overridden, it will be assumed
+that the user is editing an array of such objects, and they will just pass
+to the next / prev element by dispatching to <tt>setoffset</> using the
+<tt>setoffset type + / - X</> syntax.
+
+<sect>The ext2 general commands
+<p>
+
+The ext2 general commands are contained in the <tt>ext2_general_commands</>
+global variable (which is of type <tt>struct struct_commands</>).
+
+The handling functions are implemented in the source file <tt>ext2_com.c</>.
+I will include the entire source code since it is relatively short.
+
+<sect1>The super command
+<p>
+
+The super command just "brings the user" to the main superblock and set the
+type to ext2_super_block. The implementation is trivial:
+
+<tscreen><code>
+void type_ext2___super (char *command_line)
+
+{
+	char buffer [80];
+	
+	super_info.copy_num=0;
+	sprintf (buffer,"setoffset %ld",file_system_info.super_block_offset);dispatch (buffer);
+	sprintf (buffer,"settype ext2_super_block");dispatch (buffer);
+}
+</code></tscreen>
+It involves only setting the <tt>copy_num</> variable to indicate the main
+copy, dispatching a <tt>setoffset</> command to reach the superblock, and
+dispatching a <tt>settype</> to enable the superblock specific commands.
+This last command will also call the <tt>show</> command of the
+<tt>ext2_super_block</> type, through dispatching at the general command
+<tt>settype</>.
+
+<sect1>The group command
+<p>
+
+The group command will bring the user to the specified group descriptor in
+the main copy of the group descriptors. The type will be set to
+<tt>ext2_group_desc</>:
+<tscreen><code>
+void type_ext2___group (char *command_line)
+
+{
+	long group_num=0;
+	char *ptr,buffer [80];
+	
+	ptr=parse_word (command_line,buffer);
+	if (*ptr!=0) {
+		ptr=parse_word (ptr,buffer);
+		group_num=atol (buffer);
+	}
+
+	group_info.copy_num=0;group_info.group_num=0;
+	sprintf (buffer,"setoffset %ld",file_system_info.first_group_desc_offset);dispatch (buffer);
+	sprintf (buffer,"settype ext2_group_desc");dispatch (buffer);
+	sprintf (buffer,"entry %ld",group_num);dispatch (buffer);
+}
+</code></tscreen>
+The implementation is as trivial as the <tt>super</> implementation. Note
+the use of the <tt>entry</> command, which is a command of the
+<tt>ext2_group_desc</> object, to pass to the correct group descriptor.
+
+<sect1>The cd command
+<p>
+
+The <tt>cd</> command performs the usual cd function. The path to the global
+cd command is a path from <tt>/</>.
+
+<tt>This is one of the best examples of the power of the object oriented
+design and of the dispatching mechanism. The operation is complicated, yet the
+implementation is surprisingly short !</>
+
+<tscreen><code>
+void type_ext2___cd (char *command_line)
+
+{
+	char temp [80],buffer [80],*ptr;
+	
+	ptr=parse_word (command_line,buffer);
+	if (*ptr==0) {
+		wprintw (command_win,"Error - No argument specified\n");
+		refresh_command_win ();return;
+	}
+	ptr=parse_word (ptr,buffer);
+	
+	if (buffer [0] != '/') {
+		wprintw (command_win,"Error - Use a full pathname (begin with '/')\n");
+		refresh_command_win ();return;
+	}
+
+	dispatch ("super");dispatch ("group");dispatch ("inode");
+	dispatch ("next");dispatch ("dir");
+	if (buffer [1] != 0) {
+		sprintf (temp,"cd %s",buffer+1);dispatch (temp);
+	}
+}
+</code></tscreen>
+
+Note the number of the dispatch calls ! 
+
+<tt>super</> is used to get to the superblock. <tt>group</> to get to the
+first group descriptor. <tt>inode</> brings us to the first inode - The bad
+blocks inode. A <tt>next</> is command to pass to the root directory inode,
+a <tt>dir</> command "enters" the directory, and then we let the <tt>object
+specific cd command</> to take us from there (The object is <tt>dir</>, so
+that <tt>dispatch</> will call the <tt>cd</> command of the <tt>dir</> type).
+Note that a symbolic link following could bring us back to the root directory,
+thus the innocent calls above treats nicely such a recursive case !
+
+I feel that the above is <tt>intuitive</> - I was expressing myself "in the
+language" of the ext2 filesystem - (Go to the inode, etc), and the code was
+written exactly in this spirit !
+
+I can write more at this point, but I guess I am already a bit carried
+away with the self compliments :-)
+
+<sect>The superblock
+<p>
+
+This section details the handling of the superblock.
+
+<sect1>The superblock variables
+<p>
+
+The superblock object is <tt>ext2_super_block</>. The definition is just
+taken from the kernel ext2 main include file - /usr/include/linux/ext2_fs.h.
+<footnote>
+Those lines of source are copyrighted by <tt>Remy Card</> - The author of the
+ext2 filesystem, and by <tt>Linus Torvalds</> - The first author of the Linux
+operating system. Please cross reference the section Acknowledgments for the
+full copyright.
+</footnote>
+<tscreen><code>
+struct ext2_super_block {
+	__u32	s_inodes_count;		/* Inodes count */
+	__u32	s_blocks_count;		/* Blocks count */
+	__u32	s_r_blocks_count;	/* Reserved blocks count */
+	__u32	s_free_blocks_count;	/* Free blocks count */
+	__u32	s_free_inodes_count;	/* Free inodes count */
+	__u32	s_first_data_block;	/* First Data Block */
+	__u32	s_log_block_size;	/* Block size */
+	__s32	s_log_frag_size;	/* Fragment size */
+	__u32	s_blocks_per_group;	/* # Blocks per group */
+	__u32	s_frags_per_group;	/* # Fragments per group */
+	__u32	s_inodes_per_group;	/* # Inodes per group */
+	__u32	s_mtime;		/* Mount time */
+	__u32	s_wtime;		/* Write time */
+	__u16	s_mnt_count;		/* Mount count */
+	__s16	s_max_mnt_count;	/* Maximal mount count */
+	__u16	s_magic;		/* Magic signature */
+	__u16	s_state;		/* File system state */
+	__u16	s_errors;		/* Behavior when detecting errors */
+	__u16	s_pad;
+	__u32	s_lastcheck;		/* time of last check */
+	__u32	s_checkinterval;	/* max. time between checks */
+	__u32	s_creator_os;		/* OS */
+	__u32	s_rev_level;		/* Revision level */
+	__u16	s_def_resuid;		/* Default uid for reserved blocks */
+	__u16	s_def_resgid;		/* Default gid for reserved blocks */
+	__u32	s_reserved[0];		/* Padding to the end of the block */
+	__u32	s_reserved[1];		/* Padding to the end of the block */
+	.
+	.
+	.
+	__u32	s_reserved[234];	/* Padding to the end of the block */
+};
+</code></tscreen>
+
+Note that I <tt>expanded</> the array due to my primitive parser
+implementation. The various fields are described in the <tt>technical
+document</>.
+
+<sect1>The superblock commands
+<p>
+
+This section explains the commands available in the <tt>ext2_super_block</>
+type. They all appear in <tt>super_com.c</>
+
+<sect2>The show command
+<p>
+
+The <tt>show</> command is overridden here in order to provide more
+information than just the list of variables. A <tt>show</> command will end
+up in calling <tt>type_super_block___show</>.
+
+The first thing that we do is calling the <tt>general show command</> in
+order to display the list of variables.
+
+We then add some interpretation to the various lines to make the data
+somewhat more intuitive (Expansion of the time variables and the creator
+operating system code, for example).
+
+We also display the <tt>backup copy number</> of the superblock in the status
+window. This copy number is saved in the <tt>super_info</> global variable -
+<tt>super_info.copy_num</>. Currently, this is the only variable there ...
+but this type of internal variable saving is typical through my
+implementation.
+
+<sect2>The backup copies handling commands
+<p>
+
+The <tt>current copy number</> is available in <tt>super_info.copy_num</>. It
+was initialized in the ext2 command <tt>super</>, and is used by the various
+superblock routines.
+
+The <tt>gocopy</> routine will pass to another copy of the superblock. The
+new device offset will be computed with the aid of the variables in the
+<tt>file_system_info</> structure. Then the routine will <tt>dispatch</> to
+the <tt>setoffset</> and the <tt>show</> routines.
+
+The <tt>setactivecopy</> routine will just save the current superblock data
+in a temporary variable of type <tt>ext2_super_block</>, and will dispatch
+<tt>gocopy 0</> to pass to the main superblock. Then it will place the saved
+data in place of the actual data.
+
+The above two commands can be used if the main superblock is corrupted.
+
+<sect>The group descriptors
+<p>
+
+The group descriptors handling mechanism allows the user to take a tour in
+the group descriptors table, stopping at each point, and examining the
+relevant inode table, block allocation map or inode allocation map through
+dispatching to the relevant objects.
+
+Some information about the group descriptors is available in the global
+variable <tt>group_info</>, which is of type <tt>struct_group_info</>:
+
+<tscreen><code>
+struct struct_group_info {
+	unsigned long copy_num;
+	unsigned long group_num;
+};
+</code></tscreen>
+
+<tt>group_num</> is the index of the current descriptor in the table.
+
+<tt>copy_num</> is the number of the current backup copy.
+
+<sect1>The group descriptor's variables
+<p>
+
+<tscreen><code>
+struct ext2_group_desc
+{
+	__u32	bg_block_bitmap;		/* Blocks bitmap block */
+	__u32	bg_inode_bitmap;		/* Inodes bitmap block */
+	__u32	bg_inode_table;			/* Inodes table block */
+	__u16	bg_free_blocks_count;		/* Free blocks count */
+	__u16	bg_free_inodes_count;		/* Free inodes count */
+	__u16	bg_used_dirs_count;		/* Directories count */
+	__u16	bg_pad;
+	__u32	bg_reserved[3];
+};
+</code></tscreen>
+
+The first three variables are used to provide the links to the
+<tt>blockbitmap, inodebitmap and inode</> objects.
+
+<sect1>Movement in the table
+<p>
+
+Movement in the group descriptors table is done using the <tt>next, prev and
+entry</> commands. Note that the first two commands <tt>override</> the
+general commands of the same name. The <tt>next and prev</> command are just
+calling the <tt>entry</> function to do the job. I will show <tt>next</>,
+for example:
+
+<tscreen><code>
+void type_ext2_group_desc___next (char *command_line)
+ 
+{
+	long entry_offset=1;
+	char *ptr,buffer [80];
+	
+	ptr=parse_word (command_line,buffer);
+	if (*ptr!=0) {
+		ptr=parse_word (ptr,buffer);
+		entry_offset=atol (buffer);
+	}
+
+	sprintf (buffer,"entry %ld",group_info.group_num+entry_offset);
+	dispatch (buffer);
+}
+</code></tscreen>
+The <tt>entry</> function is also simple - It just calculates the offset
+using the information in <tt>group_info</> and in <tt>file_system_info</>,
+and uses the usual <tt>setoffset / show</> pair. 
+
+<sect1>The show command
+<p>
+
+As usual, the <tt>show</> command is overridden. The implementation is
+similar to the superblock's show implementation - We just call the general
+show command, and add some information in the status window - The contents of
+the <tt>group_info</> structure.
+
+<sect1>Moving between backup copies
+<p>
+
+This is done exactly like the superblock case. Please refer to explanation
+there.
+
+<sect1>Links to the available friends
+<p>
+
+From a group descriptor, one typically wants to reach an <tt>inode</>, or
+one of the <tt>allocation bitmaps</>. This is done using the <tt>inode,
+blockbitmap or inodebitmap</> commands. The implementation is again trivial
+- Get the necessary information from the group descriptor, initialize the
+structures of the next type, and issue the <tt>setoffset / settype</> pair.
+
+For example, here is the implementation of the <tt>blockbitmap</> command:
+
+<tscreen><code>
+void type_ext2_group_desc___blockbitmap (char *command_line)
+
+{
+	long block_bitmap_offset;
+	char buffer [80];
+	
+	block_bitmap_info.entry_num=0;
+	block_bitmap_info.group_num=group_info.group_num;
+
+	block_bitmap_offset=type_data.u.t_ext2_group_desc.bg_block_bitmap;
+	sprintf (buffer,"setoffset block %ld",block_bitmap_offset);dispatch (buffer);
+	sprintf (buffer,"settype block_bitmap");dispatch (buffer);
+}
+</code></tscreen>
+
+<sect>The inode table
+<p>
+
+The inode handling enables the user to move in the inode table, edit the
+various attributes of the inode, and follow to the next stage - A file or a
+directory.
+
+<sect1>The inode variables
+<p>
+
+<tscreen><code>
+struct ext2_inode {
+	__u16	i_mode;		/* File mode */
+	__u16	i_uid;		/* Owner Uid */
+	__u32	i_size;		/* Size in bytes */
+	__u32	i_atime;	/* Access time */
+	__u32	i_ctime;	/* Creation time */
+	__u32	i_mtime;	/* Modification time */
+	__u32	i_dtime;	/* Deletion Time */
+	__u16	i_gid;		/* Group Id */
+	__u16	i_links_count;	/* Links count */
+	__u32	i_blocks;	/* Blocks count */
+	__u32	i_flags;	/* File flags */
+	union {
+		struct {
+			__u32  l_i_reserved1;
+		} linux1;
+		struct {
+			__u32  h_i_translator;
+		} hurd1;
+		struct {
+			__u32  m_i_reserved1;
+		} masix1;
+	} osd1;				/* OS dependent 1 */
+	__u32	i_block[EXT2_N_BLOCKS];	/* Pointers to blocks */
+	__u32	i_version;		/* File version (for NFS) */
+	__u32	i_file_acl;		/* File ACL */
+	__u32	i_dir_acl;		/* Directory ACL */
+	__u32	i_faddr;		/* Fragment address */
+	union {
+		struct {
+			__u8	l_i_frag;	/* Fragment number */
+			__u8	l_i_fsize;	/* Fragment size */
+			__u16	i_pad1;
+			__u32	l_i_reserved2[2];
+		} linux2;
+		struct {
+			__u8	h_i_frag;	/* Fragment number */
+			__u8	h_i_fsize;	/* Fragment size */
+			__u16	h_i_mode_high;
+			__u16	h_i_uid_high;
+			__u16	h_i_gid_high;
+			__u32	h_i_author;
+		} hurd2;
+		struct {
+			__u8	m_i_frag;	/* Fragment number */
+			__u8	m_i_fsize;	/* Fragment size */
+			__u16	m_pad1;
+			__u32	m_i_reserved2[2];
+		} masix2;
+	} osd2;				/* OS dependent 2 */
+};
+</code></tscreen>
+
+The above is the original source code definition. We can see that the inode
+supports <tt>Operating systems specific structures</>. In addition to the
+expansion of the arrays, I have <tt>"flattened</> the inode to support only
+the <tt>Linux</> declaration. It seemed that this one occasion of multiple
+variable aliases didn't justify the complication of generally supporting
+aliases. In any case, the above system specific variables are not used
+internally by EXT2ED, and the user is free to change the definition in
+<tt>ext2.descriptors</> to accommodate for his needs.
+
+<sect1>The handling functions
+<p>
+
+The user interface to <tt>movement</> is the usual <tt>next / prev /
+entry</> interface. There is really nothing special in those functions - The
+size of the inode is fixed, the total number of inodes is known from the
+superblock information, and the current entry can be figured up from the
+device offset and the inode table start offset, which is known from the
+corresponding group descriptor. Those functions are a bit older then some
+other implementations of <tt>next</> and <tt>prev</>, and they do not save
+information in a special structure. Rather, they recompute it when
+necessary.
+
+The <tt>show</> command is overridden here, and provides a lot of additional
+information about the inode - Its type, interpretation of the permissions,
+special ext2 attributes (Immutable file, for example), and a lot more.
+Again, the <tt>general show</> is called first, and then the additional
+information is written.
+
+<sect1>Accessing files and directories
+<p>
+
+From the inode, a <tt>file</> or a <tt>directory</> can typically be reached.
+In order to treat a file, for example, its inode needs to be constantly
+accessed. To satisfy that need, when editing a file or a directory, the
+inode is still saved in memory - <tt>type_data</> is not overwritten.
+Rather, the following takes place:
+<itemize>
+<item>	An internal global structure which is used by the types <tt>file</>
+	and <tt>dir</> handling functions is initialized by calling the
+	appropriate function.
+<item>	The type is changed accordingly.
+</itemize>
+The result is that a <tt>settype ext2_inode</> is the only action necessary
+to return to the inode - We actually never left it.
+
+Follows the implementation of the inode's <tt>file</> command:
+
+<tscreen><code>
+void type_ext2_inode___file (char *command_line)
+
+{
+	char buffer [80];
+	
+	if (!S_ISREG (type_data.u.t_ext2_inode.i_mode)) {
+		wprintw (command_win,"Error - Inode type is not file\n");
+		refresh_command_win ();	return;		
+	}
+	
+	if (!init_file_info ()) {
+		wprintw (command_win,"Error - Unable to show file\n");
+		refresh_command_win ();return;
+	}
+	
+	sprintf (buffer,"settype file");dispatch (buffer);
+}
+</code></tscreen>
+
+As we can see - We just call <tt>init_file_info</> to get the necessary
+information from the inode, and set the type to <tt>file</>. The next call
+to <tt>show</>, will dispatch to the <tt>file's show</> implementation.
+
+<sect>Viewing a file
+<p>
+
+There isn't an ext2 kernel structure which corresponds to a file - A file is
+just a series of blocks which are determined by its inode. As explained in
+the last section, the inode is never actually left - The type is changed to
+<tt>file</> - A type which contains no variables, and a special structure is
+initialized:
+
+<tscreen><code>
+struct struct_file_info {
+
+	struct ext2_inodes *inode_ptr;
+	
+	long inode_offset;
+	long global_block_num,global_block_offset;
+	long block_num,blocks_count;
+	long file_offset,file_length;
+	long level;
+	unsigned char buffer [EXT2_MAX_BLOCK_SIZE];
+	long offset_in_block;
+
+	int display;
+	/* The following is used if the file is a directory */
+	
+	long dir_entry_num,dir_entries_count;
+	long dir_entry_offset;
+};
+</code></tscreen>
+
+The <tt>inode_ptr</> will just point to the inode in <tt>type_data</>, which
+is not overwritten while the user is editing the file, as the
+<tt>setoffset</> command is not internally used. The <tt>buffer</>
+will contain the current viewed block of the file. The other variables
+contain information about the current place in the file. For example,
+<tt>global_block_num</> just contains the current block number.
+
+The general idea is that the above data structure will provide the file
+handling functions all the accurate information which is needed to accomplish
+their task.
+
+The global structure of the above type, <tt>file_info</>, is initialized by
+<tt>init_file_info</> in <tt>file_com.c</>, which is called by the
+<tt>type_ext2_inode___file</> function when the user requests to watch the
+file. <tt>It is updated as necessary to provide accurate information as long as
+the file is edited.</>
+
+<sect1>Returning to the file's inode
+<p>
+
+Concerning the method I used to handle files, the above task is trivial:
+<tscreen><code>
+void type_file___inode (char *command_line)
+
+{
+	dispatch ("settype ext2_inode");
+}
+</code></tscreen>
+
+<sect1>File movement
+<p>
+
+EXT2ED keeps track of the current position in the file. Movement inside the
+current block is done using <tt>next, prev and offset</> - They just change
+<tt>file_info.offset_in_block</>.
+
+Movement between blocks is done using <tt>nextblock, prevblock and block</>.
+To accomplish this, the direct blocks, indirect blocks, etc, need to be
+traced. This is done by <tt>file_block_to_global_block</>, which accepts a
+file's internal block number, and converts it to the actual filesystem block
+number.
+
+<tscreen><code>
+long file_block_to_global_block (long file_block,struct struct_file_info *file_info_ptr)
+
+{
+	long last_direct,last_indirect,last_dindirect;
+	long f_indirect,s_indirect;
+	
+	last_direct=EXT2_NDIR_BLOCKS-1;
+	last_indirect=last_direct+file_system_info.block_size/4;
+	last_dindirect=last_indirect+(file_system_info.block_size/4) \
+		*(file_system_info.block_size/4);
+
+	if (file_block <= last_direct) {
+		file_info_ptr->level=0;
+		return (file_info_ptr->inode_ptr->i_block [file_block]);
+	}
+	
+	if (file_block <= last_indirect) {
+		file_info_ptr->level=1;
+		file_block=file_block-last_direct-1;
+		return (return_indirect (file_info_ptr->inode_ptr-> \
+			i_block [EXT2_IND_BLOCK],file_block));
+	}
+
+	if (file_block <= last_dindirect) {
+		file_info_ptr->level=2;
+		file_block=file_block-last_indirect-1;
+		return (return_dindirect (file_info_ptr->inode_ptr-> \
+			i_block [EXT2_DIND_BLOCK],file_block));
+	}
+
+	file_info_ptr->level=3;
+	file_block=file_block-last_dindirect-1;
+	return (return_tindirect (file_info_ptr->inode_ptr-> \
+		i_block [EXT2_TIND_BLOCK],file_block));
+}
+</code></tscreen> 
+<tt>last_direct, last_indirect, etc</>, contain the last internal block number
+which is accessed by this method - If the requested block is smaller then
+<tt>last_direct</>, for example, it is a direct block.
+
+If the block is a direct block, its number is just taken from the inode.
+A non-direct block is handled by <tt>return_indirect, return_dindirect and
+return_tindirect</>, which correspond to indirect, double-indirect and
+triple-indirect. Each of the above functions is constructed using the lower
+level functions. For example, <tt>return_dindirect</> is constructed as
+follows:
+
+<tscreen><code>
+long return_dindirect (long table_block,long block_num)
+
+{
+	long f_indirect;
+	
+	f_indirect=block_num/(file_system_info.block_size/4);
+	f_indirect=return_indirect (table_block,f_indirect);
+	return (return_indirect (f_indirect,block_num%(file_system_info.block_size/4)));
+}
+</code></tscreen>
+
+<sect1>Object memory
+<p>
+
+The <tt>remember</> command is overridden here and in the <tt>dir</> type -
+We just remember the inode of the file. It is just simpler to implement, and
+doesn't seem like a big limitation.
+
+<sect1>Changing data
+<p>
+
+The <tt>set</> command is overridden, and provides the same functionality
+like the usage of the <tt>general set</> command with no type declared. The
+<tt>writedata</> is overridden so that we'll write the edited block
+(file_info.buffer) and not <tt>type_data</> (Which contains the inode).
+
+<sect>Directories
+<p>
+
+A directory is just a file which is formatted according to a special format.
+As such, EXT2ED handles directories and files quite alike. Specifically, the
+same variable of type <tt>struct_file_info</> which is used in the
+<tt>file</>, is used here.
+
+The <tt>dir</> type uses all the variables in the above structure, as
+opposed to the <tt>file</> type, which didn't use the last ones.
+
+<sect1>The search_dir_entries function
+<p>
+
+The entire situation is similar to that which was described in the
+<tt>file</> type, with one main change:
+
+The main function in <tt>dir_com.c</> is <tt>search_dir_entries</>. This
+function will <tt>"run"</> on the entire entries in the directory, and will
+call a client's function each time. The client's function is supplied as an
+argument, and will check the current entry for a match, based on its own
+criterion. It will then signal <tt>search_dir_entries</> whether to
+<tt>ABORT</> the search, whether it <tt>FOUND</> the entry it was looking
+for, or that the entry is still not found, and we should <tt>CONTINUE</>
+searching. Follows the declaration:
+<tscreen><code>
+struct struct_file_info search_dir_entries \ 
+	(int (*action) (struct struct_file_info *info),int *status)
+
+/*
+	This routine runs on all directory entries in the current directory.
+	For each entry, action is called. The return code of action is one of
+	the following:
+	
+		ABORT		-	Current dir entry is returned.
+		CONTINUE	-	Continue searching.
+		FOUND		-	Current dir entry is returned.
+		
+	If the last entry is reached, it is returned, along with an ABORT status.
+	
+	status is updated to the returned code of action.	
+*/
+</code></tscreen>
+
+With the above tool in hand, many operations are simple to perform - Here is
+the way I counted the entries in the current directory:
+
+<tscreen><code>
+long count_dir_entries (void)
+
+{
+	int status;
+	
+	return (search_dir_entries (&ero;action_count,&ero;status).dir_entry_num);
+}
+
+int action_count (struct struct_file_info *info)
+
+{
+	return (CONTINUE);
+}
+</code></tscreen>
+It will just <tt>CONTINUE</> until the last entry. The returned structure
+(of type <tt>struct_file_info</>) will have its number in the
+<tt>dir_entry_num</> field, and this is exactly the required number !
+
+<sect1>The cd command
+<p>
+
+The <tt>cd</> command accepts a relative path, and moves there ...
+The implementation is of-course a bit more complicated:
+<enum>
+<item>	The path is checked that it is not an absolute path (from <tt>/</>).
+	If it is, we let the <tt>general cd</> to do the job by calling
+	directly <tt>type_ext2___cd</>.
+<item>	The path is divided into the nearest path and the rest of the path.
+	For example, cd 1/2/3/4 is divided into <tt>1</> and into
+	<tt>2/3/4</>.
+<item>	It is the first part of the path that we need to search for in the
+	current directory. We search for it using <tt>search_dir_entries</>,
+	which accepts the <tt>action_name</> function as the user defined
+	function.
+<item>	<tt>search_dir_entries</> will scan the entire entries and will call
+	our <tt>action_name</> function for each entry. In
+	<tt>action_name</>, the required name will be checked against the
+	name of the current entry, and <tt>FOUND</> will be returned when a
+	match occurs.
+<item>	If the required entry is found, we dispatch a <tt>remember</>
+	command to insert the current <tt>inode</> into the object memory.
+	This is required to easily support <tt>symbolic links</> - If we
+	find later that the inode pointed by the entry is actually a
+	symbolic link, we'll need to return to this point, and the above
+	inode doesn't have (and can't have, because of <tt>hard links</>) the
+	information necessary to "move back".
+<item>	We then dispatch a <tt>followinode</> command to reach the inode
+	pointed by the required entry. This command will automatically
+	change the type to <tt>ext2_inode</> - We are now at an inode, and
+	all the inode commands are available.
+<item>	We check the inode's type to see if it is a directory. If it is, we
+	dispatch a <tt>dir</> command to "enter the directory", and
+	recursively call ourself (The type is <tt>dir</> again) by
+	dispatching a <tt>cd</> command, with the rest of the path as an
+	argument.
+<item>	If the inode's type is a symbolic link (only fast symbolic link were
+	meanwhile implemented. I guess this is typically the case.), we note
+	the path it is pointing at, the	saved inode is recalled, we dispatch
+	<tt>dir</> to get back to the original directory, and we call
+	ourself again with the <tt>link path/rest of the path</> argument.
+<item>	In any other case, we just stop at the resulting inode.
+</enum>
+
+<sect>The block and inode allocation bitmaps
+<p>
+
+The block allocation bitmap is reached by the corresponding group descriptor.
+The group descriptor handling functions will save the necessary information
+into a structure of the <tt>struct_block_bitmap_info</> type:
+
+<tscreen><code>
+struct struct_block_bitmap_info {
+	unsigned long entry_num;
+	unsigned long group_num;
+};
+</code></tscreen>
+
+The <tt>show</> command is overridden, and will show the block as a series of
+bits, each bit corresponding to a block. The main variable is the
+<tt>entry_num</> variable, declared above, which is just the current block
+number in this block group. The current entry is highlighted, and the
+<tt>next, prev and entry</> commands just change the above variable.
+
+The <tt>allocate and deallocate</> change the specified bits. Nothing
+special about them - They just contain code which converts between bit and
+byte locations.
+
+The <tt>inode allocation bitmap</> is treated in much the same fashion, with
+the same commands available.
+
+<sect>Filesystem size limitation
+<p>
+
+While an ext2 filesystem has a size limit of <tt>4 TB</>, EXT2ED currently
+<tt>can't</> handle filesystems which are <tt>bigger than 2 GB</>.
+
+This limitation results from my usage of <tt>32 bit long variables</> and
+of the <tt>fseek</> filesystem call, which can't seek up to 4 TB.
+
+By looking in the <tt>ext2 library</> source code by <tt>Theodore Ts'o</>,
+I discovered the <tt>llseek</> system call which can seek to a
+<tt>64 bit unsigned long long</> offset. Correcting the situation is not
+difficult in concept - I need to change long into unsigned long long where
+appropriate and modify <tt>disk.c</> to use the llseek system call.
+
+However, fixing the above limitation involves making changes in many places
+in the code and will obviously make the entire code less stable. For that
+reason, I chose to release EXT2ED as it is now and to postpone the above fix
+to the next release.
+
+<sect>Conclusion
+<p>
+
+Had I known in advance the structure of the ext2 filesystem, I feel that
+the resulting design would have been quite different from the presented
+design above.
+
+EXT2ED has now two levels of abstraction - A <tt>general</> filesystem, and an
+<tt>ext2</> filesystem, and the surface is more or less prepared for additions
+of other filesystems. Had I approached the design in the "engineering" way,
+I guess that the first level above would not have existed.
+
+<sect>Copyright
+<p>
+
+EXT2ED is Copyright (C) 1995 Gadi Oxman.
+
+EXT2ED is hereby placed under the GPL - Gnu Public License. You are free and
+welcome to copy, view and modify the sources. My only wish is that my
+copyright presented above will be left and that a list of the bug fixes,
+added features, etc, will be provided.
+
+The entire EXT2ED project is based, of-course, on the kernel sources. The
+<tt>ext2.descriptors</> distributed with EXT2ED is a slightly modified
+version of the main ext2 include file, /usr/include/linux/ext2_fs.h. Follows
+the original copyright:
+
+<tscreen><verb>
+/*
+ *  linux/include/linux/ext2_fs.h
+ *
+ * Copyright (C) 1992, 1993, 1994, 1995
+ * Remy Card (card@masi.ibp.fr)
+ * Laboratoire MASI - Institut Blaise Pascal
+ * Universite Pierre et Marie Curie (Paris VI)
+ *
+ *  from
+ *
+ *  linux/include/linux/minix_fs.h
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
+ */
+
+</verb></tscreen>
+
+<sect>Acknowledgments
+<p>
+
+EXT2ED was constructed as a student project in the software
+laboratory of the faculty of electrical-engineering in the
+<tt>Technion - Israel's institute of technology</>.
+
+At first, I would like to thank <tt>Avner Lottem</> and <tt>Doctor Ilana
+David</> for their interest and assistance in this project.
+
+I would also like to thank the following people, who were involved in the
+design and implementation of the ext2 filesystem kernel code and support
+utilities:
+<itemize>
+<item>	<tt>Remy Card</>
+
+	Who designed, implemented and maintains the ext2 filesystem kernel
+	code, and some of the ext2 utilities. <tt>Remy Card</> is also the
+	author 	of several helpful slides concerning the ext2 filesystem.
+	Specifically, he is the author of <tt>File Management in the Linux
+	Kernel</> and of <tt>The Second Extended File System - Current
+	State, Future Development</>.
+
+<item>	<tt>Wayne Davison</>
+
+	Who designed the ext2 filesystem.
+<item>	<tt>Stephen Tweedie</>
+
+	Who helped designing the ext2 filesystem kernel code and wrote the
+	slides <tt>Optimizations in File Systems</>.
+<item>	<tt>Theodore Ts'o</>
+
+	Who is the author of several ext2 utilities and of the ext2 library
+	<tt>libext2fs</> (which I didn't use, simply because I didn't know
+	it exists when I started to work on my project).
+</itemize>
+
+Lastly, I would like to thank, of-course, <tt>Linus Torvalds</> and the
+<tt>Linux community</> for providing all of us with such a great operating
+system.
+
+Please contact me in a case of bug report, suggestions, or just about
+anything concerning EXT2ED.
+
+Enjoy,
+
+Gadi Oxman &lt;tgud@tochnapc2.technion.ac.il&gt;
+
+Haifa, August 95
+</article>
