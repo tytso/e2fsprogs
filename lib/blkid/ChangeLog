@@ -1,5 +1,8 @@
 2004-09-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* probe.c, probe.h: Add support for ocfs2 detection, courtesy of
+		manish.singh@oracle.com
+
 	* getsize.c: Clean up header #include's.  Include sys/disk.h if
 		present since this is the new place where the
 		DIOCGMEDIASIZE ioctl is defined on FreeBSD systems.

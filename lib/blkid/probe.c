@@ -327,15 +327,28 @@ static int probe_ocfs(int fd __BLKID_ATTR((unused)),
 
 	major = ocfsmajor(ovh);
 	if (major == 1)
-		blkid_set_tag(dev,"SEC_TYPE","ocfs1",sizeof("ocfs1"));
-	else if (major == 2)
-		blkid_set_tag(dev,"SEC_TYPE","ocfs2",sizeof("ocfs2"));
+		blkid_set_tag(dev,"SEC_TYPE","ocfs1",sizeof("ocfs"));
 	else if (major >= 9)
 		blkid_set_tag(dev,"SEC_TYPE","ntocfs",sizeof("ntocfs"));
 	
 	blkid_set_tag(dev, "LABEL", ovl.label, ocfslabellen(ovl));
 	blkid_set_tag(dev, "MOUNT", ovh.mount, ocfsmountlen(ovh));
 	set_uuid(dev, ovl.vol_id);
+	return 0;
+}
+
+static int probe_ocfs2(int fd __BLKID_ATTR((unused)), 
+		      blkid_cache cache __BLKID_ATTR((unused)), 
+		      blkid_dev dev,
+		      struct blkid_magic *id __BLKID_ATTR((unused)), 
+		      unsigned char *buf)
+{
+	struct ocfs2_super_block *osb;
+
+	osb = (struct ocfs2_super_block *)buf;
+
+	blkid_set_tag(dev, "LABEL", osb->s_label, sizeof(osb->s_label));
+	set_uuid(dev, osb->s_uuid);
 	return 0;
 }
 
@@ -398,7 +411,11 @@ static struct blkid_magic type_array[] = {
   { "swap",	 0, 0x1ff6, 10, "SWAPSPACE2",		0 },
   { "swap",	 0, 0x3ff6, 10, "SWAP-SPACE",		0 },
   { "swap",	 0, 0x3ff6, 10, "SWAPSPACE2",		0 },
-  { "ocfs",	 0,	 8,  9,	 "OracleCFS",  probe_ocfs },
+  { "ocfs",	 0,	 8,  9,	 "OracleCFS",		probe_ocfs },
+  { "ocfs2",	 1,	 0,  6,	 "OCFSV2",		probe_ocfs2 },
+  { "ocfs2",	 2,	 0,  6,	 "OCFSV2",		probe_ocfs2 },
+  { "ocfs2",	 4,	 0,  6,	 "OCFSV2",		probe_ocfs2 },
+  { "ocfs2",	 8,	 0,  6,	 "OCFSV2",		probe_ocfs2 },
   {   NULL,	 0,	 0,  0, NULL,			NULL }
 };
 

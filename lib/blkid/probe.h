@@ -234,6 +234,21 @@ struct ocfs_volume_label {
 
 #define OCFS_MAGIC "OracleCFS"
 
+struct ocfs2_super_block {
+	u_char  signature[8];
+	u_char  s_dummy1[184];
+	u_char  s_dummy2[80];
+	u_char  s_label[64];
+	u_char  s_uuid[16];
+};
+
+#define OCFS2_MIN_BLOCKSIZE             512
+#define OCFS2_MAX_BLOCKSIZE             4096
+
+#define OCFS2_SUPER_BLOCK_BLKNO         2
+
+#define OCFS2_SUPER_BLOCK_SIGNATURE     "OCFSV2"
+
 #define ISODCL(from, to) (to - from + 1)
 struct iso_volume_descriptor {
 	char type[ISODCL(1,1)]; /* 711 */
