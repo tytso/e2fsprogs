@@ -1,3 +1,8 @@
+1999-11-23    <tytso@valinux.com>
+
+	* e2fsck.8.in: Update language about where to find a backup
+		superblock.
+
 1999-11-19    <tytso@valinux.com>
 
 	* pass1.c (process_inodes): Add shortcut handling; if
