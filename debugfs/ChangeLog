@@ -1,5 +1,9 @@
 2000-08-14    <tytso@valinux.com>
 
+	* debugfs.c (do_show_super_stats): Use list_super2() instead of
+		using explicit printf statements.  (We get a more complete
+		printout this way.)
+
 	* util.c (open_pager): If the PAGER environment variable is not
 		set, default to using "more".
 

@@ -281,56 +281,8 @@ void do_show_super_stats(int argc, char *argv[])
 	if (check_fs_open(argv[0]))
 		return;
 	out = open_pager();
-	sb = (struct ext2fs_sb *) current_fs->super;
-	fprintf(out, "Filesystem is read-%s\n",
-		current_fs->flags & EXT2_FLAG_RW ? "write" : "only");
-	if (sb->s_volume_name[0]) {
-		memset(buf, 0, sizeof(buf));
-		strncpy(buf, sb->s_volume_name, sizeof(sb->s_volume_name));
-	} else
-		strcpy(buf, none);
-	fprintf(out, "Volume name = %s\n", buf);
-	if (sb->s_last_mounted[0]) {
-		memset(buf, 0, sizeof(buf));
-		strncpy(buf, sb->s_last_mounted, sizeof(sb->s_last_mounted));
-	} else
-		strcpy(buf, none);
-	fprintf(out, "Last mounted directory = %s\n", buf);
-	if (!uuid_is_null(sb->s_uuid))
-		uuid_unparse(sb->s_uuid, buf);
-	else
-		strcpy(buf, none);
-	fprintf(out, "Filesystem UUID = %s\n", buf);
-	print_features(sb, out);
-	fprintf(out, "Last mount time = %s", time_to_string(sb->s_mtime));
-	fprintf(out, "Last write time = %s", time_to_string(sb->s_wtime));
-	fprintf(out, "Mount counts = %d (maximal = %d)\n",
-		sb->s_mnt_count, sb->s_max_mnt_count);
-	fputs ("Filesystem OS type = ", out);
-	switch (sb->s_creator_os) {
-	    case EXT2_OS_LINUX: fputs ("Linux\n", out); break;
-	    case EXT2_OS_HURD:  fputs ("GNU\n", out); break;
-	    case EXT2_OS_MASIX: fputs ("Masix\n", out); break;
-	    default:		fputs ("unknown\n", out);
-	}
-	fprintf(out, "Superblock size = %d\n",
-		sizeof(struct ext2_super_block));
-	fprintf(out, "Block size = %d, fragment size = %d\n",
-		EXT2_BLOCK_SIZE(sb), EXT2_FRAG_SIZE(sb));
-	fprintf(out, "Inode size = %d\n", EXT2_INODE_SIZE(sb));
-	fprintf(out, "%d inodes, %d free\n", sb->s_inodes_count,
-	        sb->s_free_inodes_count);
-	fprintf(out, "%d blocks, %d free, %d reserved, first block = %d\n",
-	        sb->s_blocks_count, sb->s_free_blocks_count,
-	        sb->s_r_blocks_count, sb->s_first_data_block);
-	fprintf(out, "%d blocks per group\n", sb->s_blocks_per_group);
-	fprintf(out, "%d fragments per group\n", sb->s_frags_per_group);
-	fprintf(out, "%d inodes per group\n", EXT2_INODES_PER_GROUP(sb));
-	fprintf(out, "%ld group%s (%ld descriptors block%s)\n",
-		current_fs->group_desc_count,
-		(current_fs->group_desc_count != 1) ? "s" : "",
-		current_fs->desc_blocks,
-		(current_fs->desc_blocks != 1) ? "s" : "");
+
+	list_super2(current_fs->super, out);
 
 	if (header_only) {
 		close_pager(out);
