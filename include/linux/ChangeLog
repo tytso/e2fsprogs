@@ -1,6 +1,6 @@
 2000-02-06  Theodore Ts'o  <tytso@valinux.com>
 
-	* ext2_fs.h: Fix header to skip defining EXT@FS_DEBUG since blows
+	* ext2_fs.h: Fix header to skip defining EXT2FS_DEBUG since blows
 		out on non GCC compilers.
 
 2000-02-02  Theodore Ts'o  <tytso@valinux.com>

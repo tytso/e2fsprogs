@@ -1,4 +1,8 @@
-2000-04-02  Theodore Ts'o  <tytso@valinux.com>
+2000-04-03  Theodore Ts'o  <tytso@valinux.com>
+
+	* Makefile.in: Remove uneeded parenthesis around shell pipelines
+		containing a "cd" command.  Use && instead of ; so that if
+		the "cd" fails, the makefile stops.
 
 	* MCONFIG.in (CPPFLAGS): Add define of CPPFLAGS from @CPPFLAGS@.
 		Remove uneeded parenthesis around shell pipelines
