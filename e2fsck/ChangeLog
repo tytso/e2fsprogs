@@ -1,5 +1,10 @@
 2003-08-24  Theodore Ts'o  <tytso@mit.edu>
 
+	* util.c (get_backup_sb): Check to make sure the context is passed
+		in non-NULL before trying to dereference it.  Otherwise we
+		might core dump when called to expand %S in a problem
+		description.
+
 	* e2fsck.8.in: Adjust description line so that apropos
 		"ext2" or "ext3" will find the man page.  (Addresses
 		Debian Bug #206845)
