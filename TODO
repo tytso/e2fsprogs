@@ -119,3 +119,80 @@ the entire inode, so there's better recovery for when an indirect
 block gets trashed.
 
 
+-------------------------------------------------------------
+
+From: Yann Dirson - LOGATIQUE <Yann.Dirson@France.Sun.COM>
+Date: Thu, 2 Mar 2000 13:52:13 +0100 (MET)
+
+During my experiments on the broken system, I noticed the following in
+the badblocks program (which I'm aware is not designed for IDE drives)
+- I'd probably have already fixed them if my home system was up :(
+
+* the syntax summary documents 2nd arg as blocks_count, which should
+probably read something like end_count.
+
+* testing past end of device is not detected, and lists those blocks
+as bad, whereas they simply do not exist.
+
+
+I think I'll probably add a "max count" option to findsuper(8), so
+that I do not have to wait for the whole disk to be scanned when the
+system had to be launched with "init=/bin/sh", in which case Ctrl-[CZ]
+and friends appear to be absolutely ignored.
+
+
+Somewhat unrelated, I just noticed the
+http://web.mit.edu/tytso/www/linux/ext2.html could be updated:
+
+- mentions 1.17 as new :)
+- could mention SGI xfs (http://oss.sgi.com/projects/xfs/ - they just
+  release 0.03 snapshot)
+
+----------------------------------------------------------------
+
+Return-Path: <tytso@MIT.EDU>
+Date: Thu, 10 Feb 2000 13:20:14 -0500
+From: "Theodore Y. Ts'o" <tytso@MIT.EDU>
+To: R.E.Wolff@BitWizard.nl
+In-Reply-To: Rogier Wolff's message of Thu, 10 Feb 2000 08:46:30 +0100 (MET),
+	<200002100746.IAA24573@cave.bitwizard.nl>
+Subject: Re: e2fsck request for enhancement.
+Phone: (781) 391-3464
+
+   Date: Thu, 10 Feb 2000 08:46:30 +0100 (MET)
+   From: R.E.Wolff@BitWizard.nl (Rogier Wolff)
+
+   Lately, while trying to recover a broken disk, my system froze (twice,
+   until I tried something else) while copying the disk.
+
+   So I had a file of about 50Mb that was growing frantically at the
+   moment of the crash.
+
+   e2fsck, then finds an indirect block that is completely bogus. It
+   starts by asking me if it's ok to clear a few of the referenced
+   blocks. I say yes. Then it comes to the conclusion: 
+
+      too many invalid blocks. Clear inode?
+
+   and then I get the option to delete the whole file. Not to truncate
+   the file to a "working" size.
+
+
+   I'd MUCH rather have e2fsck say something like:
+
+      inode 1234 references an invalid block 134345454. Hmm.
+      inode 1234 references 567 out of 50176 invalid blocks, 
+			  all near the end. Truncate file to 49152 blocks?
+
+   Here you can see that of the 1024 blocks near the end of the file,
+   only 567 were detected as invalid. However now 48Mb of the file will
+   be recovered, instead of thrown away.
+
+That's a good point.  Actually, the right thing is for e2fsck to offer
+to clear all of the bad blocks in a particular indirect block.  I don't
+know how hard it would be to do that, but I'll put it on my e2fsprogs
+TODO list.
+
+							- Ted
+
+----------------------------------------------------------------

@@ -1,3 +1,12 @@
+2000-04-06  Theodore Ts'o  <tytso@valinux.com>
+
+	* Makefile.in (source_tar_file): Remove the resize directory from
+		the list of excluded files.
+
+	* version.h: Update version header for an WIP release.
+
+	* e2fsprogs.spec: Updated for 1.19 release; added resize2fs.
+
 Thu Apr  6 17:43:11 2000  Theodore Y. Ts'o  <tytso@signal.thunk.org>
 
 	* configure.in (fdatasync): Add test for fdatasync(), since not

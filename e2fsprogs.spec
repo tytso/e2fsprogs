@@ -1,10 +1,10 @@
 Summary: Utilities for managing the second extended (ext2) filesystem.
 Name: e2fsprogs
-Version: 1.18
+Version: 1.19
 Release: 0
 Copyright: GPL
 Group: System Environment/Base
-Source: ftp://tsx-11.mit.edu/pub/linux/packages/ext2fs/e2fsprogs-1.18.tar.gz
+Source: ftp://tsx-11.mit.edu/pub/linux/packages/ext2fs/e2fsprogs-1.19.tar.gz
 BuildRoot: /tmp/e2fsprogs-root
 
 %description
@@ -68,6 +68,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(-, root, root) /sbin/tune2fs
 %attr(-, root, root) /sbin/dumpe2fs
 %attr(-, root, root) /sbin/fsck
+%attr(-, root, root) /sbin/resize2fs
 %attr(-, root, root) /usr/sbin/mklost+found
 %attr(-, root, root) /sbin/mkfs.ext2
 
@@ -89,6 +90,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(-, root, root) /usr/man/man8/dumpe2fs.8
 %attr(-, root, root) /usr/man/man8/badblocks.8
 %attr(-, root, root) /usr/man/man8/fsck.8
+%attr(-, root, root) /usr/man/man8/resize2fs.8
 %attr(-, root, root) /usr/man/man1/chattr.1
 %attr(-, root, root) /usr/man/man1/lsattr.1
 %attr(-, root, root) /usr/man/man1/uuidgen.1

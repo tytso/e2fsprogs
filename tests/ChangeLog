@@ -1,3 +1,8 @@
+2000-04-06  Theodore Ts'o  <tytso@valinux.com>
+
+	* f_filetype: Updated expect script to match with new text for
+		immutable/append-only files.
+
 2000-02-07  Theodore Ts'o  <tytso@valinux.com>
 
 	* f_swapfs: Fix expected text to match changed debugfs dump
