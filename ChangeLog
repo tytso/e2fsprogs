@@ -1,3 +1,8 @@
+2000-07-05    <tytso@snap.thunk.org>
+
+	* config.guess, config.sub: Update to use latest version from FSF
+		(2000-06-13)
+
 2000-05-25    <tytso@snap.thunk.org>
 
 	* Makefile.in: Fix makefile so that it's safe to build in parallel.
