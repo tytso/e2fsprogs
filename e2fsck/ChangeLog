@@ -2,6 +2,9 @@
 
 	* super.c (check_resize_inode): Use ext2fs_{read,write}_ind_block
 		so that byte swapping is handled on big-endian systems.
+		(check_super_block): Allow the number of reserved blocks
+		to be 50% of the number of blocks available, in order to
+		be consistent to what is allowed by tune2fs.
 
 2004-12-24  Theodore Ts'o  <tytso@mit.edu>
 

@@ -476,7 +476,7 @@ void check_super_block(e2fsck_t ctx)
 	check_super_value(ctx, "inodes_per_group", sb->s_inodes_per_group,
 			  MIN_CHECK | MAX_CHECK, inodes_per_block, ipg_max);
 	check_super_value(ctx, "r_blocks_count", sb->s_r_blocks_count,
-			  MAX_CHECK, 0, sb->s_blocks_count / 4);
+			  MAX_CHECK, 0, sb->s_blocks_count / 2);
 	check_super_value(ctx, "reserved_gdt_blocks", 
 			  sb->s_reserved_gdt_blocks, MAX_CHECK, 0,
 			  fs->blocksize/4);
