@@ -811,6 +811,7 @@ static void PRS(int argc, char *argv[])
 	int		inode_size = 0;
 	int		reserved_ratio = 5;
 	int		sector_size = 0;
+	int		show_version_only = 0;
 	ext2_ino_t	num_inodes = 0;
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
@@ -1054,13 +1055,12 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'V':
 			/* Print version number and exit */
-			fprintf(stderr, _("\tUsing %s\n"),
-				error_message(EXT2_ET_BASE));
-			exit(0);
+			show_version_only++;
+			break;
 		default:
 			usage();
 		}
-	if (optind == argc)
+	if ((optind == argc) && !show_version_only)
 		usage();
 	device_name = argv[optind];
 	optind++;
@@ -1077,9 +1077,15 @@ static void PRS(int argc, char *argv[])
 	if (optind < argc)
 		usage();
 
-	if (!quiet)
+	if (!quiet || show_version_only)
 		fprintf (stderr, "mke2fs %s (%s)\n", E2FSPROGS_VERSION, 
 			 E2FSPROGS_DATE);
+
+	if (show_version_only) {
+		fprintf(stderr, _("\tUsing %s\n"), 
+			error_message(EXT2_ET_BASE));
+		exit(0);
+	}
 
 	if (raid_opts)
 		parse_raid_opts(raid_opts);

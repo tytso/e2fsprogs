@@ -1,5 +1,7 @@
 2003-12-07  Theodore Ts'o  <tytso@mit.edu>
 
+	* mke2fs.c (PRS): Fix mke2fs -V so that it prints the version banner.
+
 	* badblocks.c, blkid.c, chattr.c, dumpe2fs.c, e2image.c, fsck.c,
 		fsck.h, lsattr.c, mke2fs.c, nls-enable.h, tune2fs.c,
 		util.c: Fix gcc -Wall nitpicks.
