@@ -17,8 +17,7 @@
 
 #include "resize2fs.h"
 
-#define E2FSPROGS_VERSION "1.10"
-#define E2FSPROGS_DATE "27-Apr-97"
+#include "../version.h"
 
 char *program_name, *device_name;
 

@@ -1,3 +1,11 @@
+Fri Feb 27 01:02:50 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in: Add rule to build a static version of resize2fs.
+	  	Update dependency rules.
+
+	* main.c: #include ../version.h, instead of using a hard-coded
+		version string.
+
 Tue Feb 24 15:22:52 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Change the progress function to return an errcode_t; this allows

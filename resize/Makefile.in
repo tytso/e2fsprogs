@@ -8,6 +8,7 @@ VPATH = @srcdir@
 top_builddir = ..
 my_dir = resize
 INSTALL = @INSTALL@
+LDFLAG_STATIC = @LDFLAG_STATIC@
 
 @MCONFIG@
 
@@ -27,13 +28,20 @@ SRCS= $(srcdir)/extent.c \
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR)  $(LIBUUID)
 DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR)  $(LIBUUID)
 
+STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(STATIC_LIBUUID)
+STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(STATIC_LIBUUID)
+
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-all:: $(PROGS) $(TEST_PROGS) $(MANPAGES)
+all:: $(PROGS) $(TEST_PROGS) $(MANPAGES) resize2fs.static
 
 resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS)
+
+resize2fs.static: $(RESIZE_OBJS)  $(STATIC_DEPLIBS)
+	$(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o resize2fs.static \
+		$(RESIZE_OBJS) $(STATIC_LIBS) 
 
 resize2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/resize2fs.8.in
 	$(SUBSTITUTE) $(srcdir)/resize2fs.8.in resize2fs.8
@@ -117,14 +125,6 @@ extent.o: $(srcdir)/extent.c $(srcdir)/resize2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h
-ext2_block_move.o: $(srcdir)/ext2_block_move.c $(srcdir)/resize2fs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h
-ext2_inode_move.o: $(srcdir)/ext2_inode_move.c $(srcdir)/resize2fs.h \
- $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
- $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h
 resize2fs.o: $(srcdir)/resize2fs.c $(srcdir)/resize2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
@@ -132,7 +132,7 @@ resize2fs.o: $(srcdir)/resize2fs.c $(srcdir)/resize2fs.h \
 main.o: $(srcdir)/main.c $(srcdir)/resize2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h
+ $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/../version.h
 sim_progress.o: $(srcdir)/sim_progress.c $(srcdir)/resize2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
