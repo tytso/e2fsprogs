@@ -1,5 +1,7 @@
 # Beginning of file MCONFIG
 
+all::
+
 SHELL = /bin/sh
 
 prefix = @prefix@
@@ -89,6 +91,9 @@ SUBST_CONF=$(top_builddir)/util/subst.conf
 SUBSTITUTE= $(top_builddir)/util/subst -f $(SUBST_CONF)
 DEP_SUBSTITUTE= $(top_builddir)/util/subst $(SUBST_CONF)
 
+$(top_builddir)/util/subst:
+	$(MAKE) -C $(top_builddir)/util subst
+
 #
 # Warning flags
 #
@@ -116,8 +121,6 @@ LIBMODE=	444
 MANGRP=		bin
 MANOWN=		bin
 MANMODE=	444
-
-all::
 
 #
 # Autoconf magic...

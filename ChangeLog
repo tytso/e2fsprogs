@@ -1,3 +1,8 @@
+1999-07-03    <tytso@valinux.com>
+
+	* MCONFIG.in (subst): Add rule to build the util/subst program if
+		necessary (by cd'ing to $(top_builddir)/util and making it.)
+
 1999-06-23    <tytso@valinux.com>
 
 	* configure.in: Check for the presence of i_generation field
