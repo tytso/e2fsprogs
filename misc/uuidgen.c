@@ -12,6 +12,9 @@
 #include <stdio.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#else
+extern char *optarg;
+extern int optind;
 #endif
 #include "uuid/uuid.h"
 #include "nls-enable.h"

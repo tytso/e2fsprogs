@@ -1,5 +1,9 @@
 2000-04-03  Theodore Ts'o  <tytso@valinux.com>
 
+	* badblocks.c, dumpe2fs.c, e2label.c, mke2fs.c, tune2fs.c,
+		uuidgen.c: For platforms that don't define optarg.h,
+		manually define optarg and optind.
+
 	* badblocks.8.in: Updated manual page with suggestions from David
 		Beattie.
 

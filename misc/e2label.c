@@ -19,6 +19,9 @@
 #include <time.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#else
+extern char *optarg;
+extern int optind;
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>

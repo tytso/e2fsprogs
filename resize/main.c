@@ -10,6 +10,9 @@
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
+#else
+extern char *optarg;
+extern int optind;
 #endif
 #include <fcntl.h>
 #include <sys/ioctl.h>

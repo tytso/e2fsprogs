@@ -1,3 +1,8 @@
+2000-04-03  Theodore Ts'o  <tytso@valinux.com>
+
+	* unix.c: For platforms that don't define optarg.h, manually
+		define optarg and optind.
+
 2000-03-20  Theodore Ts'o  <tytso@valinux.com>
 
 	* pass1.c (check_immutable, e2fsck_pass1_check_device_inode):
