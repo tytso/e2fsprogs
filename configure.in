@@ -201,53 +201,6 @@ echo "Disabling BSD shared libraries by default"
 AC_SUBST(BSDLIB_CMT)
 AC_SUBST_FILE(MAKEFILE_BSDLIB)
 dnl
-dnl handle --enable-jfs-debug
-dnl
-AC_ARG_ENABLE([jfs-debug],
-[  --enable-jfs-debug  	  enable journal debugging],
-if test "$enableval" = "no"
-then
-	echo "Disabling journal debugging"
-else
-	AC_DEFINE(JFS_DEBUG)
-	echo "Enabling journal debugging"
-fi
-,
-echo "Disabling journal debugging by default"
-)
-dnl
-dnl handle --enable-swapfs
-dnl
-AC_ARG_ENABLE([swapfs],
-[  --disable-swapfs    	  disable support of legacy byte-swapped filesystems],
-if test "$enableval" = "no"
-then
-	echo "Disabling swapfs support"
-	SWAPFS_CMT="#"
-else
-	AC_DEFINE(ENABLE_SWAPFS)
-	SWAPFS_CMT=
-	echo "Enabling swapfs support"
-fi
-,
-echo "Enabling swapfs support by default"
-AC_DEFINE(ENABLE_SWAPFS)
-SWAPFS_CMT=
-)
-AC_SUBST(SWAPFS_CMT)
-dnl
-dnl Add internationalization support, using gettext.
-dnl
-PACKAGE=e2fsprogs
-VERSION="$E2FSPROGS_VERSION"
-AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
-AC_SUBST(PACKAGE)
-AC_SUBST(VERSION)
-
-ALL_LINGUAS="it nyc"
-AM_GNU_GETTEXT
-dnl
 dnl handle --enable-profile
 dnl
 AC_ARG_ENABLE([profile],
@@ -298,6 +251,91 @@ dnl
 AC_SUBST(LIB_EXT)
 AC_SUBST(STATIC_LIB_EXT)
 AC_SUBST(PROFILED_LIB_EXT)
+dnl
+dnl handle --enable-jfs-debug
+dnl
+AC_ARG_ENABLE([jfs-debug],
+[  --enable-jfs-debug  	  enable journal debugging],
+if test "$enableval" = "no"
+then
+	echo "Disabling journal debugging"
+else
+	AC_DEFINE(JFS_DEBUG)
+	echo "Enabling journal debugging"
+fi
+,
+echo "Disabling journal debugging by default"
+)
+dnl
+dnl handle --enable-swapfs
+dnl
+AC_ARG_ENABLE([swapfs],
+[  --disable-swapfs    	  disable support of legacy byte-swapped filesystems],
+if test "$enableval" = "no"
+then
+	echo "Disabling swapfs support"
+else
+	AC_DEFINE(ENABLE_SWAPFS)
+	echo "Enabling swapfs support"
+fi
+,
+echo "Enabling swapfs support by default"
+AC_DEFINE(ENABLE_SWAPFS)
+)
+dnl
+dnl handle --enable-debugfs
+dnl
+AC_ARG_ENABLE([debugfs],
+[  --disable-debugfs   	  disable support of debugfs program],
+if test "$enableval" = "no"
+then
+	echo "Disabling debugfs support"
+	DEBUGFS_CMT="#"
+else
+	DEBUGFS_CMT=
+	echo "Enabling debugfs support"
+fi
+,
+echo "Enabling debugfs support by default"
+DEBUGFS_CMT=
+)
+AC_SUBST(DEBUGFS_CMT)
+dnl
+dnl handle --enable-imager
+dnl
+AC_ARG_ENABLE([imager],
+[  --disable-imager   	  disable support of e2image program],
+if test "$enableval" = "no"
+then
+	echo "Disabling e2image support"
+	IMAGER_CMT="#"
+else
+	IMAGER_CMT=
+	echo "Enabling e2image support"
+fi
+,
+echo "Enabling e2image support by default"
+IMAGER_CMT=
+)
+AC_SUBST(IMAGER_CMT)
+dnl
+dnl handle --enable-resizer
+dnl
+AC_ARG_ENABLE([resizer],
+[  --disable-resizer   	  disable support of e2resize program],
+if test "$enableval" = "no"
+then
+	echo "Disabling e2resize support"
+	RESIZER_CMT="#"
+else
+	RESIZER_CMT=
+	echo "Enabling e2resize support"
+fi
+,
+echo "Enabling e2resize support by default"
+RESIZER_CMT=
+)
+AC_SUBST(RESIZER_CMT)
 dnl
 dnl handle --enable-dynamic-e2fsck
 dnl
@@ -361,6 +399,18 @@ fi
 ,
 echo "Using standard bitmask operations by default"
 )
+dnl
+dnl Add internationalization support, using gettext.
+dnl
+PACKAGE=e2fsprogs
+VERSION="$E2FSPROGS_VERSION"
+AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+
+ALL_LINGUAS="it nyc"
+AM_GNU_GETTEXT
 dnl
 dnl End of configuration options
 dnl

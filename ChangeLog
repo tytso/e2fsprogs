@@ -1,3 +1,15 @@
+2001-06-13  Theodore Tso  <tytso@valinux.com>
+
+	* Makefile.in: Don't recurse into debugfs and resize subdirectory
+		if --disable-debugfs or --disable-resizer is given as a
+		configuration option.
+
+	* configure.in: Add --disable-resizer, --disable-imager, and
+		--disable-debugfs switches, which allow people who are
+		building boot floppies to build a very restricted
+		e2fsprogs distribution.  Note: these functions limit the
+		functions in the shared library, so beware!
+
 2001-06-11  Theodore Tso  <tytso@valinux.com>
 
 	* configure.in: Add new switch, --disable-swapfs which disables

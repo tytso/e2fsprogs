@@ -1,3 +1,8 @@
+2001-06-13  Theodore Tso  <tytso@valinux.com>
+
+	* Makefile.in: Don't build e2image if --disable-imager is
+		specified to configure.
+
 2001-06-12  Theodore Tso  <tytso@valinux.com>
 
 	* dumpe2fs.c: Use WORDS_BIGENDIAN to determine whether or not
