@@ -1,7 +1,7 @@
 e2fsprogs (1.35-7) unstable; urgency=low
 
-  * Make sure "done" gets correctly translated in badblocks(8).  
-      (Closes #252836)
+  * Make sure "done" gets correctly translated in badblocks(8), and update
+      French translation (Closes: #252836)
   * Always build the fsck wrapper on Debian systems (Closes: #248050)
   * Filter out linux-gate.so, which is a pseudo entry for the 32->64bit
       translation for amd64 systems, in the initrd creation script.
