@@ -1,5 +1,8 @@
 2000-12-30    <tytso@snap.thunk.org>
 
+	* malloc.h, mtrace.c: Renamed malloc.h to mtrace.h to avoid
+		conflicts with the system header file.
+
 	* problem.h: Fixed numbering of pass1 error messages; an extra 0
 		had slipped into some of the numbers.  (Pointed out by
 		Andreas Dilger)

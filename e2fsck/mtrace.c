@@ -23,7 +23,7 @@ Cambridge, MA 02139, USA.
 
 #ifndef	_MALLOC_INTERNAL
 #define	_MALLOC_INTERNAL
-#include "./malloc.h"
+#include "./mtrace.h"
 #endif
 
 #include <stdio.h>
