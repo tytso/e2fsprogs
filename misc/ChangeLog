@@ -1,5 +1,7 @@
 2003-04-11  Theodore Ts'o  <tytso@mit.edu>
 
+	* mke2fs.8.in: Document the -g option.  (Addresses Debian bug #188318)
+
 	* mke2fs.c (PRS): Fix bug where mke2fs was incorrectly checking
 		the argument to the -g option, if the default block size
 		is used.  (Addresses Debian bug #188319)

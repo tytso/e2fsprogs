@@ -22,6 +22,10 @@ mke2fs \- create an ext2/3 filesystem
 .I fragment-size
 ]
 [
+.B \-g
+.I blocks-per-group
+]
+[
 .B \-i
 .I bytes-per-inode
 ]
@@ -156,6 +160,18 @@ Force
 .B mke2fs
 to run, even if the specified device is not a 
 block special device, or appears to be mounted.
+.TP
+.BI \-g " blocks-per-group"
+Specify the number of blocks in a block group.  There is generally no
+reason the user to ever set this parameter, as the default is optimal
+for the filesystem.  (For administrators who are creating
+filesystems on RAID arrays, it is preferable to use the
+.I stride
+RAID parameter as part of the
+.B \-R
+option rather than manipulating the number of blocks per group.)  
+This option is generally used by developers who
+are developing test cases.  
 .TP
 .BI \-i " bytes-per-inode"
 Specify the bytes/inode ratio. 
