@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/vfs.h>
+#include <sys/ioctl.h>
 #include <linux/fd.h>
 
 int verbose = 0;
@@ -73,7 +74,7 @@ void frag_report(const char *filename)
 	    (fsinfo.f_type == 0xef53))
 		is_ext2++;
 	if (verbose) {
-		printf("Filesystem type is: %lx\n", fsinfo.f_type);
+		printf("Filesystem type is: %x\n", fsinfo.f_type);
 	}
 	cylgroups = (fsinfo.f_blocks + fsinfo.f_bsize*8-1) / fsinfo.f_bsize*8;
 	if (verbose) {
@@ -90,11 +91,11 @@ void frag_report(const char *filename)
 		return;
 	}
 	if (verbose)
-		printf("Blocksize of file %s is %d\n", filename, bs);
+		printf("Blocksize of file %s is %ld\n", filename, bs);
 	bpib = bs / 4;
 	numblocks = (fileinfo.st_size + (bs-1)) / bs;
 	if (verbose)
-		printf("File size of %s is %lld (%d blocks)\n", filename, 
+		printf("File size of %s is %lld (%ld blocks)\n", filename, 
 		       (long long) fileinfo.st_size, numblocks);
 	for (i=0; i < numblocks; i++) {
 		if (is_ext2) {
