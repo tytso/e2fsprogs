@@ -120,7 +120,7 @@ Description: Block device id library
 
 Package: libblkid1-udeb
 Section: debian-installer
-Priority: standard
+Priority: required
 Depends: ${shlibs:Depends}
 Provides: libblkid1
 Architecture: any
