@@ -57,7 +57,6 @@ typedef struct ext2_sim_progress *ext2_sim_progmeter;
 struct ext2_resize_struct {
 	ext2_filsys	old_fs;
 	ext2_filsys	new_fs;
-	ext2_brel	block_relocate;
 	ext2fs_block_bitmap reserve_blocks;
 	ext2fs_block_bitmap move_blocks;
 	int		needed_blocks;
