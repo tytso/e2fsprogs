@@ -25,6 +25,15 @@
 
 #include "e2p.h"
 
+/* 
+ * Deal with lame glibc's that define this function without actually 
+ * implementing it.  Can you say "attractive nuisance", boys and girls?
+ * I knew you could!
+ */
+#ifdef __linux__
+#undef HAVE_CHFLAGS
+#endif
+
 int setflags (int fd, unsigned long flags)
 {
 	struct stat buf;

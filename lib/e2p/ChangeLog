@@ -1,3 +1,11 @@
+2004-06-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* setflags.c, fsetflags.c: On linux systems, undefine HAVE_CHFLAGS
+		to deal with lame glibc's that define this function
+		without actually implementing it.  Can you say "attractive
+		nuisance", boys and girls?   I knew you could!  (Thanks to
+		Pavel Troller for reporting this braindamage.)
+
 2004-02-29  Brian Bergstrand  <brian@bergstrand.org>
 
 	* Makefile.in: Use $(BSDLIB_PIC_FLAG) to determine whether to use
