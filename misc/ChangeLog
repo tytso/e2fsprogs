@@ -1,5 +1,9 @@
 2001-08-15  Theodore Tso  <tytso@valinux.com>
 
+	* mke2fs.c (PRS): Handle -O and -s options in line in the getopt
+		loop, so that -s and -O handling are a bit more intuitive.
+		(Not that they should be mixed anyway; -s is deprecated.)
+
 	* tune2fs.c (parse_tune2fs_options): Give an error if -O is
 		specified more than once.
 

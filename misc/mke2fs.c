@@ -762,11 +762,10 @@ static void PRS(int argc, char *argv[])
 	int		reserved_ratio = 5;
 	ext2_ino_t	num_inodes = 0;
 	errcode_t	retval;
-	int		sparse_option = 0;
 	char *		oldpath = getenv("PATH");
 	char *		raid_opts = 0;
 	char *		fs_type = 0;
-	const char *	feature_set = "sparse_super,filetype";
+	int		default_features = 1;
 	blk_t		dev_size;
 #ifdef linux
 	struct 		utsname ut;
@@ -793,7 +792,9 @@ static void PRS(int argc, char *argv[])
 	initialize_ext2_error_table();
 	memset(&param, 0, sizeof(struct ext2_super_block));
 	param.s_rev_level = 1;  /* Create revision 1 filesystems now */
-	
+	param.s_feature_incompat |= EXT2_FEATURE_INCOMPAT_FILETYPE;
+	param.s_feature_ro_compat |= EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+		
 #ifdef linux
 	if (uname(&ut)) {
 		perror("uname");
@@ -802,9 +803,10 @@ static void PRS(int argc, char *argv[])
 	if ((ut.release[0] == '1') ||
 	    (ut.release[0] == '2' && ut.release[1] == '.' &&
 	     ut.release[2] < '2' && ut.release[3] == '.')) {
-		sparse_option = 0;
-		feature_set = NULL;
 		param.s_rev_level = 0;
+		param.s_feature_incompat = 0;
+		param.s_feature_compat = 0;
+		param.s_feature_ro_compat = 0;
 	}
 #endif
 	fprintf (stderr, _("mke2fs %s, %s for EXT2 FS %s, %s\n"),
@@ -901,12 +903,18 @@ static void PRS(int argc, char *argv[])
 		case 'r':
 			param.s_rev_level = atoi(optarg);
 			if (param.s_rev_level == EXT2_GOOD_OLD_REV) {
-				sparse_option = 0;
-				feature_set = NULL;
+				param.s_feature_incompat = 0;
+				param.s_feature_compat = 0;
+				param.s_feature_ro_compat = 0;
 			}
 			break;
 		case 's':	/* deprecated */
-			sparse_option = atoi(optarg);
+			if (atoi(optarg))
+				param.s_feature_ro_compat |=
+					EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+			else 
+				param.s_feature_ro_compat &=
+					~EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 			break;
 #ifdef EXT2_DYNAMIC_REV
 		case 'I':
@@ -932,7 +940,21 @@ static void PRS(int argc, char *argv[])
 			mount_dir = optarg;
 			break;
 		case 'O':
-			feature_set = optarg;
+			if (!strcmp(optarg, "none") || default_features) {
+				param.s_feature_compat = 0;
+				param.s_feature_incompat = 0;
+				param.s_feature_ro_compat = 0;
+				default_features = 0;
+			}
+			if (!strcmp(optarg, "none"))
+				break;
+			if (e2p_edit_feature(optarg,
+					    &param.s_feature_compat,
+					    ok_features)) {
+				fprintf(stderr,
+					_("Invalid filesystem option set: %s\n"), optarg);
+				exit(1);
+			}
 			break;
 		case 'R':
 			raid_opts = optarg;
@@ -992,28 +1014,15 @@ static void PRS(int argc, char *argv[])
 			int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 		ext2fs_close(jfs);
 	}
-		
-	/* Parse the user-supplied feature_set, if any. */
-	if (feature_set && !strncasecmp(feature_set, "none", 4))
-		feature_set = NULL;
-	if (feature_set && e2p_edit_feature(feature_set,
-					    &param.s_feature_compat,
-					    ok_features)) {
-		fprintf(stderr, _("Invalid filesystem option set: %s\n"),
-			feature_set);
-		exit(1);
-	}
 
 	if (param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		if (!fs_type)
 			fs_type = "journal";
 		reserved_ratio = 0;
-		sparse_option = 0;
-	}
-	if (sparse_option)
-		param.s_feature_ro_compat |=
-			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-
+		param.s_feature_incompat = EXT3_FEATURE_INCOMPAT_JOURNAL_DEV;
+		param.s_feature_compat = 0;
+		param.s_feature_ro_compat = 0;
+ 	}
 	if (param.s_rev_level == EXT2_GOOD_OLD_REV &&
 	    (param.s_feature_compat || param.s_feature_ro_compat ||
 	     param.s_feature_incompat))
