@@ -1,30 +1,31 @@
-# Italian translation for e2fsprogs
-# Copyright (C) 2000 Marco d'Itri
-# Marco d'Itri <md@linux.it>, 2000.
+# Turkish translations for e2fsprogs messages.
+# Copyright (C) 2001 Free Software Foundation, Inc.
+# Nilgün Belma Bugüner <nilgun@fide.org>, 2001.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.18\n"
+"Project-Id-Version: e2fsprogs 1.25\n"
 "POT-Creation-Date: 2001-10-08 11:47-0400\n"
-"PO-Revision-Date: 2000-01-15 14:21+01:00\n"
-"Last-Translator: Marco d'Itri <md@linux.it>\n"
-"Language-Team: Italian <it@li.org>\n"
+"PO-Revision-Date: 2001-10-06 07:25+300\n"
+"Last-Translator: Nilgün Belma Bugüner <nilgun@fide.org>\n"
+"Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=ISO-8859-9\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 0.9.5\n"
 
 #: e2fsck/badblocks.c:22 misc/mke2fs.c:181
 #, c-format
 msgid "Bad block %u out of range; ignored.\n"
-msgstr ""
+msgstr "Hatalý blok %u kapsamdýþý; yoksayýldý.\n"
 
 #: e2fsck/badblocks.c:45
 msgid "while sanity checking the bad blocks inode"
-msgstr ""
+msgstr "- hatalý bloklar düðümünde doðruluk denetlenirken hata oluþtu"
 
 #: e2fsck/badblocks.c:57
 msgid "while reading the bad blocks inode"
-msgstr ""
+msgstr "- hatalý bloklar düðümü okunurken hata oluþtu"
 
 #: e2fsck/badblocks.c:71 e2fsck/iscan.c:110 e2fsck/scantest.c:107
 #: e2fsck/unix.c:765 e2fsck/unix.c:797 misc/badblocks.c:767
@@ -33,602 +34,605 @@ msgstr ""
 #: misc/tune2fs.c:649 resize/main.c:196
 #, c-format
 msgid "while trying to open %s"
-msgstr ""
+msgstr "- %s açýlmaya çalýþýlýrken hata oluþtu"
 
 #: e2fsck/badblocks.c:81
 #, c-format
 msgid "while trying popen '%s'"
-msgstr ""
+msgstr "- '%s' veri yolu açýlmaya çalýþýlýrken hata oluþtu"
 
 #: e2fsck/badblocks.c:92 misc/mke2fs.c:204
 msgid "while reading in list of bad blocks from file"
-msgstr ""
+msgstr "- dosyadan hatalý bloklar listesinin okunmasý sýrasýnda hata oluþtu"
 
 #: e2fsck/badblocks.c:102
 msgid "while updating bad block inode"
-msgstr ""
+msgstr "- hatalý bloklar düðümü güncellenirken hata oluþtu"
 
 #: e2fsck/badblocks.c:131
 #, c-format
 msgid "Warning illegal block %u found in bad block inode.  Cleared.\n"
 msgstr ""
+"Uyarý: Kuraldýþý %u bloðu hatalý bloklar düðümünde bulundu.  Temizlendi.\n"
 
 #: e2fsck/ehandler.c:53
 #, c-format
 msgid "Error reading block %lu (%s) while %s.  "
-msgstr ""
+msgstr "%3$s iþlemi sýrasýnda blok %1$lu okunurken hata oluþtu (%2$s).  "
 
 #: e2fsck/ehandler.c:56
 #, c-format
 msgid "Error reading block %lu (%s).  "
-msgstr ""
+msgstr "blok %lu okunurken hata oluþtu (%s).  "
 
 #: e2fsck/ehandler.c:59 e2fsck/ehandler.c:103
 msgid "Ignore error"
-msgstr ""
+msgstr "Hata görmezden gelindi"
 
 #: e2fsck/ehandler.c:97
 #, c-format
 msgid "Error writing block %lu (%s) while %s.  "
-msgstr ""
+msgstr "%3$s iþlemi sýrasýnda blok %1$lu yazýlýrken hata oluþtu (%2$s).  "
 
 #: e2fsck/ehandler.c:100
 #, c-format
 msgid "Error writing block %lu (%s).  "
-msgstr ""
+msgstr "%lu bloðu yazýlýrken hata: %s.  "
 
 #: e2fsck/emptydir.c:56
 msgid "empty dirblocks"
-msgstr ""
+msgstr "boþ dizin bloklarý"
 
 #: e2fsck/emptydir.c:61
 msgid "empty dir map"
-msgstr ""
+msgstr "boþ dizin eþlemi"
 
 #. Inode number 11 is usually lost+found
 #: e2fsck/emptydir.c:97
 #, c-format
 msgid "Empty directory block %d (#%d) in inode %d\n"
-msgstr ""
+msgstr "Düðüm %3d deki dizin bloku %1d (#%2d) boþ\n"
 
 #: e2fsck/extend.c:21
 #, c-format
 msgid "%s: %s filename nblocks blocksize\n"
-msgstr ""
+msgstr "%s: %s dosya_ismi blok_sayýsý blok_boyu\n"
 
 #: e2fsck/extend.c:43
 msgid "Illegal number of blocks!\n"
-msgstr ""
+msgstr "Blok sayýsý kuraldýþý!\n"
 
 #: e2fsck/extend.c:49
 #, c-format
 msgid "Couldn't allocate block buffer (size=%d)\n"
-msgstr ""
+msgstr "Blok tamponu ayrýlamadý (boyu=%d)\n"
 
 #: e2fsck/flushb.c:44
 #, c-format
 msgid "Usage: %s disk\n"
-msgstr ""
+msgstr "Kullanýmý: %s disk\n"
 
 #: e2fsck/flushb.c:73
 msgid "BLKFLSBUF ioctl not supported!  Can't flush buffers.\n"
-msgstr ""
+msgstr "BLKFLSBUF ioctl desteklenmiyor!  Tamponlar boþaltýlamadý.\n"
 
 #: e2fsck/iscan.c:44
 #, c-format
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
-msgstr ""
+msgstr "Kullanýmý: %s [-F] [-I dosya_indeksi_tampon_bloklarý] aygýt\n"
 
 #: e2fsck/iscan.c:81 e2fsck/unix.c:599 resize/main.c:173
 #, c-format
 msgid "while opening %s for flushing"
-msgstr ""
+msgstr "%s temizlik için açýlýrken hata oluþtu"
 
 #: e2fsck/iscan.c:86 e2fsck/unix.c:605 resize/main.c:180
 #, c-format
 msgid "while trying to flush %s"
-msgstr ""
+msgstr "%s boþaltýlmaya çalýþýlýrken hata oluþtu"
 
 #: e2fsck/iscan.c:119 e2fsck/scantest.c:114 misc/e2image.c:340
 msgid "while opening inode scan"
-msgstr ""
+msgstr "dosya indeksi taramasý baþlatýlýrken hata oluþtu"
 
 #: e2fsck/iscan.c:127 misc/e2image.c:355
 msgid "while getting next inode"
-msgstr ""
+msgstr "sonraki dosya indeksine geçilirken hata oluþtu"
 
 #: e2fsck/iscan.c:136
 #, c-format
 msgid "%d inodes scanned.\n"
-msgstr ""
+msgstr "%d dosya indeksi tarandý.\n"
 
 #: e2fsck/journal.c:47
 #, c-format
 msgid "bmap journal inode %ld, block %d\n"
-msgstr ""
+msgstr "bmap jurnal dosya indeksi %ld, blok %d\n"
 
 #: e2fsck/journal.c:384
 msgid "reading journal superblock\n"
-msgstr ""
+msgstr "jurnal super bloku okunuyor\n"
 
 #: e2fsck/journal.c:441
 #, c-format
 msgid "%s: no valid journal superblock found\n"
-msgstr ""
+msgstr "%s: geçerli jurnal super bloku yok\n"
 
 #: e2fsck/journal.c:450
 #, c-format
 msgid "%s: journal too short\n"
-msgstr ""
+msgstr "%s: jurnal çok kýsa\n"
 
 #: e2fsck/journal.c:702
 #, c-format
 msgid "%s: recovering journal\n"
-msgstr ""
+msgstr "%s: jurnal kurtarýlýyor\n"
 
 #: e2fsck/journal.c:704
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
-msgstr ""
+msgstr "%s: salt-okunur durumdayken jurnal kurtarmasý yapýlamaz\n"
 
 #: e2fsck/journal.c:725
 #, c-format
 msgid "while trying to re-open %s"
-msgstr ""
+msgstr "%s yeniden açýlmaya çalýþýlýrken hata oluþtu"
 
 #: e2fsck/message.c:103
 msgid "aextended attribute"
-msgstr ""
+msgstr "aek özellik"
 
 #: e2fsck/message.c:104
 msgid "Aerror allocating"
-msgstr ""
+msgstr "Aayrýlýrken hata oluþtu"
 
 #: e2fsck/message.c:105
 msgid "bblock"
-msgstr ""
+msgstr "bblok"
 
 #: e2fsck/message.c:106
 msgid "Bbitmap"
-msgstr ""
+msgstr "Bbiteþlem"
 
 #: e2fsck/message.c:107
 msgid "ccompress"
-msgstr ""
+msgstr "csýkýþtýrma"
 
 #: e2fsck/message.c:108
 msgid "Cconflicts with some other fs @b"
-msgstr ""
+msgstr "Cbazý dosya sistemi bloklarý ile çeliþiyor"
 
 #: e2fsck/message.c:109
 msgid "iinode"
-msgstr ""
+msgstr "idosya indeksi"
 
 #: e2fsck/message.c:110
 msgid "Iillegal"
-msgstr ""
+msgstr "Ikuraldýþý"
 
 #: e2fsck/message.c:111
 msgid "jjournal"
-msgstr ""
+msgstr "jjurnal"
 
 #: e2fsck/message.c:112
 msgid "Ddeleted"
-msgstr ""
+msgstr "Dsilinen"
 
 #: e2fsck/message.c:113
 msgid "ddirectory"
-msgstr ""
+msgstr "ddizin"
 
 #: e2fsck/message.c:114
 msgid "eentry"
-msgstr ""
+msgstr "egirdi"
 
 #: e2fsck/message.c:115
 msgid "E@e '%Dn' in %p (%i)"
-msgstr ""
+msgstr "E%2p (%3i) içindeki '%1Dn' girdisi"
 
 #: e2fsck/message.c:116
 msgid "ffilesystem"
-msgstr ""
+msgstr "fdosya sistemi"
 
 #: e2fsck/message.c:117
 msgid "Ffor @i %i (%Q) is"
-msgstr ""
+msgstr "F%i (%Q) dosya indeksi için"
 
 #: e2fsck/message.c:118
 msgid "ggroup"
-msgstr ""
+msgstr "ggrup"
 
 #: e2fsck/message.c:119
 msgid "llost+found"
-msgstr ""
+msgstr "llost+found"
 
 #: e2fsck/message.c:120
 msgid "Lis a link"
-msgstr ""
+msgstr "Lbir baðdýr"
 
 #: e2fsck/message.c:121
 msgid "oorphaned"
-msgstr ""
+msgstr "oartýk"
 
 #: e2fsck/message.c:122
 msgid "rroot @i"
-msgstr ""
+msgstr "rkök @i"
 
 #: e2fsck/message.c:123
 msgid "sshould be"
-msgstr ""
+msgstr "solmalýydý"
 
 #: e2fsck/message.c:124
 msgid "Ssuper@b"
-msgstr ""
+msgstr "Ssüper blok"
 
 #: e2fsck/message.c:125
 msgid "uunattached"
-msgstr ""
+msgstr "ubaðlantýsýz"
 
 #: e2fsck/message.c:126
 msgid "vdevice"
-msgstr ""
+msgstr "vaygýt"
 
 #: e2fsck/message.c:127
 msgid "zzero-length"
-msgstr ""
+msgstr "zsýfýr uzunluklu"
 
 #: e2fsck/message.c:138
 msgid "<The NULL inode>"
-msgstr ""
+msgstr "<NULL dosya indeksi>"
 
 #. 0
 #: e2fsck/message.c:139
 msgid "<The bad blocks inode>"
-msgstr ""
+msgstr "<Hatalý bloklar dosya indeksi>"
 
 #. 1
 #. 2
 #: e2fsck/message.c:141
 msgid "<The ACL index inode>"
-msgstr ""
+msgstr "<ACL indeksinin dosya indeksi>"
 
 #. 3
 #: e2fsck/message.c:142
 msgid "<The ACL data inode>"
-msgstr ""
+msgstr "<ACL verisinin dosya indeksi>"
 
 #. 4
 #: e2fsck/message.c:143
 msgid "<The boot loader inode>"
-msgstr ""
+msgstr "<Önyükleyici dosya indeksi>"
 
 #. 5
 #: e2fsck/message.c:144
 msgid "<The undelete directory inode>"
-msgstr ""
+msgstr "<Kurtarýlan dizin dosya indeksi>"
 
 #. 6
 #: e2fsck/message.c:145
 msgid "<The group descriptor inode>"
-msgstr ""
+msgstr "<Grup tanýmlayýcý dosya indeksi>"
 
 #. 7
 #: e2fsck/message.c:146
 msgid "<The journal inode>"
-msgstr ""
+msgstr "<Jurnal dosya indeksi>"
 
 #. 8
 #: e2fsck/message.c:147
 msgid "<Reserved inode 9>"
-msgstr ""
+msgstr "<Yedek dosya indeksi 9>"
 
 #. 9
 #: e2fsck/message.c:148
 msgid "<Reserved inode 10>"
-msgstr ""
+msgstr "<Yedek dosya indeksi 10>"
 
 #: e2fsck/pass1b.c:127
 msgid "multiply claimed inode map"
-msgstr ""
+msgstr "tekrarlanan bloklarýn dosya indeksi eþlemi"
 
 #: e2fsck/pass1b.c:539 e2fsck/pass1b.c:650
 #, c-format
 msgid "internal error; can't find dup_blk for %d\n"
-msgstr ""
+msgstr "iç hata; %d için dup_blk bulunamýyor\n"
 
 #: e2fsck/pass1b.c:687
 msgid "returned from clone_file_block"
-msgstr ""
+msgstr "clone_file_block iþlevinden döndürüldü"
 
 #.
 #. * Allocate bitmaps structures
 #.
 #: e2fsck/pass1.c:290
 msgid "in-use inode map"
-msgstr ""
+msgstr "kullanýmdaki dosya indeksi eþlemi"
 
 #: e2fsck/pass1.c:299
 msgid "directory inode map"
-msgstr ""
+msgstr "dizin indeksi eþlemi"
 
 #: e2fsck/pass1.c:307
 msgid "regular file inode map"
-msgstr ""
+msgstr "normal dosya indeksi eþlemi"
 
 #: e2fsck/pass1.c:314
 msgid "in-use block map"
-msgstr ""
+msgstr "kullanýmdaki blok eþlemi"
 
 #: e2fsck/pass1.c:361
 msgid "doing inode scan"
-msgstr ""
+msgstr "dosya indeksi taramasý yapýlýyor"
 
 #: e2fsck/pass1.c:737
 msgid "Pass 1"
-msgstr ""
+msgstr "1. geçiþ"
 
 #: e2fsck/pass1.c:795
 #, c-format
 msgid "reading indirect blocks of inode %u"
-msgstr ""
+msgstr "%u dosya indeksinin dolaylý bloklarý okunuyor"
 
 #: e2fsck/pass1.c:837
 msgid "bad inode map"
-msgstr ""
+msgstr "hatalý dosya indeksi eþlemi"
 
 #: e2fsck/pass1.c:859
 msgid "inode in bad block map"
-msgstr ""
+msgstr "hatalý blok eþlemindeki dosya indeksi"
 
 #: e2fsck/pass1.c:879
 msgid "imagic inode map"
-msgstr ""
+msgstr "imagic dosya indeksi eþlemi"
 
 #: e2fsck/pass1.c:906
 msgid "multiply claimed block map"
-msgstr ""
+msgstr "tekrarlanan bloklarýn eþlemi"
 
 #: e2fsck/pass1.c:1006
 msgid "ext attr block map"
-msgstr ""
+msgstr "ek öznitelik bloðu eþlemi"
 
 #: e2fsck/pass1.c:1673
 msgid "block bitmap"
-msgstr ""
+msgstr "blok biteþlemi"
 
 #: e2fsck/pass1.c:1677
 msgid "inode bitmap"
-msgstr ""
+msgstr "dosya indeksi biteþlemi"
 
 #: e2fsck/pass1.c:1681
 msgid "inode table"
-msgstr ""
+msgstr "dosya indeksi tablosu"
 
 #.
 #. * Allocate some bitmaps to do loop detection.
 #.
 #: e2fsck/pass3.c:85
 msgid "inode done bitmap"
-msgstr ""
+msgstr "dosya indeksi yapýlmýþ biteþlem"
 
 #: e2fsck/pass3.c:96
 msgid "Peak memory"
-msgstr ""
+msgstr "Doruk bellek"
 
 #: e2fsck/pass3.c:141
 msgid "Pass 3"
-msgstr ""
+msgstr "3. geçiþ"
 
 #: e2fsck/pass3.c:331
 msgid "inode loop detection bitmap"
-msgstr ""
+msgstr "dosya indeksi döngüsü saptama biteþlemi"
 
 #. Should never happen
 #: e2fsck/pass3.c:584
 msgid "Debug error in e2fsck adjust_inode_count, should never happen.\n"
-msgstr ""
+msgstr "e2fsck hata ayýklamasýnda adjust_inode_count hatasý olmamalýydý.\n"
 
 #: e2fsck/pass4.c:163
 msgid "Pass 4"
-msgstr ""
+msgstr "4. geçiþ"
 
 #: e2fsck/pass5.c:70
 msgid "Pass 5"
-msgstr ""
+msgstr "5. geçiþ"
 
 #: e2fsck/problem.c:47
 msgid "(no prompt)"
-msgstr ""
+msgstr "(komut istemi yok)"
 
 #. 0
 #: e2fsck/problem.c:48
 msgid "Fix"
-msgstr ""
+msgstr "Düzelt"
 
 #. 1
 #: e2fsck/problem.c:49
 msgid "Clear"
-msgstr ""
+msgstr "Temizle"
 
 #. 2
 #: e2fsck/problem.c:50
 msgid "Relocate"
-msgstr ""
+msgstr "Konumlandýr"
 
 #. 3
 #: e2fsck/problem.c:51
 msgid "Allocate"
-msgstr ""
+msgstr "Tahsis et"
 
 #. 4
 #: e2fsck/problem.c:52
 msgid "Expand"
-msgstr ""
+msgstr "Geniþlet"
 
 #. 5
 #: e2fsck/problem.c:53
 msgid "Connect to /lost+found"
-msgstr ""
+msgstr "/lost+found a baðlan"
 
 #. 6
 #: e2fsck/problem.c:54
 msgid "Create"
-msgstr ""
+msgstr "Oluþtur"
 
 #. 7
 #: e2fsck/problem.c:55
 msgid "Salvage"
-msgstr ""
+msgstr "Kurtarýlacaklar"
 
 #. 8
 #: e2fsck/problem.c:56
 msgid "Truncate"
-msgstr ""
+msgstr "Kýrp"
 
 #. 9
 #: e2fsck/problem.c:57
 msgid "Clear inode"
-msgstr ""
+msgstr "Dosya indeksini temizle"
 
 #. 10
 #: e2fsck/problem.c:58
 msgid "Abort"
-msgstr ""
+msgstr "Vazgeç"
 
 #. 11
 #: e2fsck/problem.c:59
 msgid "Split"
-msgstr ""
+msgstr "Ayýr"
 
 #. 12
 #: e2fsck/problem.c:60
 msgid "Continue"
-msgstr ""
+msgstr "Devam et"
 
 #. 13
 #: e2fsck/problem.c:61
 msgid "Clone duplicate/bad blocks"
-msgstr ""
+msgstr "tekrarlý/hatalý bloklalarý kopyala"
 
 #. 14
 #: e2fsck/problem.c:62
 msgid "Delete file"
-msgstr ""
+msgstr "Dosyayý Sil"
 
 #. 15
 #: e2fsck/problem.c:63
 msgid "Suppress messages"
-msgstr ""
+msgstr "Ýletileri engelle"
 
 #. 16
 #: e2fsck/problem.c:64
 msgid "Unlink"
-msgstr ""
+msgstr "Baðý kaldýr"
 
 #: e2fsck/problem.c:72
 msgid "(NONE)"
-msgstr ""
+msgstr "(HÝÇBÝRÝ)"
 
 #. 0
 #: e2fsck/problem.c:73
 msgid "FIXED"
-msgstr ""
+msgstr "DÜZELTÝLDÝ"
 
 #. 1
 #: e2fsck/problem.c:74
 msgid "CLEARED"
-msgstr ""
+msgstr "TEMÝZLENDÝ"
 
 #. 2
 #: e2fsck/problem.c:75
 msgid "RELOCATED"
-msgstr ""
+msgstr "KONUMLANDI"
 
 #. 3
 #: e2fsck/problem.c:76
 msgid "ALLOCATED"
-msgstr ""
+msgstr "TAHSÝS EDÝLDÝ"
 
 #. 4
 #: e2fsck/problem.c:77
 msgid "EXPANDED"
-msgstr ""
+msgstr "GENÝÞLETÝLDÝ"
 
 #. 5
 #: e2fsck/problem.c:78
 msgid "RECONNECTED"
-msgstr ""
+msgstr "TEKRAR BAÐLANDI"
 
 #. 6
 #: e2fsck/problem.c:79
 msgid "CREATED"
-msgstr ""
+msgstr "OLUÞTURULDU"
 
 #. 7
 #: e2fsck/problem.c:80
 msgid "SALVAGED"
-msgstr ""
+msgstr "KURTARILABÝLÝRLER LÝSTELENDÝ"
 
 #. 8
 #: e2fsck/problem.c:81
 msgid "TRUNCATED"
-msgstr ""
+msgstr "KIRPILDI"
 
 #. 9
 #: e2fsck/problem.c:82
 msgid "INODE CLEARED"
-msgstr ""
+msgstr "DOSYA ÝNDEKSÝ TEMÝZLENDÝ"
 
 #. 10
 #: e2fsck/problem.c:83
 msgid "ABORTED"
-msgstr ""
+msgstr "VAZGEÇÝLDÝ"
 
 #. 11
 #: e2fsck/problem.c:84
 msgid "SPLIT"
-msgstr ""
+msgstr "AYRILDI"
 
 #. 12
 #: e2fsck/problem.c:85
 msgid "CONTINUING"
-msgstr ""
+msgstr "SÜRÜYOR"
 
 #. 13
 #: e2fsck/problem.c:86
 msgid "DUPLICATE/BAD BLOCKS CLONED"
-msgstr ""
+msgstr "TEKRARLI/HATALI BLOKLAR KOPYALANDI"
 
 #. 14
 #: e2fsck/problem.c:87
 msgid "FILE DELETED"
-msgstr ""
+msgstr "DOSYA SÝLÝNDÝ"
 
 #. 15
 #: e2fsck/problem.c:88
 msgid "SUPPRESSED"
-msgstr ""
+msgstr "ENGELLENDÝ"
 
 #. 16
 #: e2fsck/problem.c:89
 msgid "UNLINKED"
-msgstr ""
+msgstr "BAÐ KALDIRILDI"
 
 #. Pre-Pass 1 errors
 #. Block bitmap not in group
 #: e2fsck/problem.c:97
 msgid "@b @B for @g %g is not in @g.  (@b %b)\n"
-msgstr ""
+msgstr "%g grubunun @b biteþlemi @g içinde deðil. (%b @b)\n"
 
 #. Inode bitmap not in group
 #: e2fsck/problem.c:101
 msgid "@i @B for @g %g is not in @g.  (@b %b)\n"
-msgstr ""
+msgstr "%g grubunun @i biteþlemi @g içinde deðil. (%b @b)\n"
 
 #: e2fsck/problem.c:106
 msgid ""
 "@i table for @g %g is not in @g.  (@b %b)\n"
 "WARNING: SEVERE DATA LOSS POSSIBLE.\n"
 msgstr ""
+"%g grubunun @i tablosu @g içinde deðil. (%b @b)\n"
+"UYARI: CÝDDÝ VERÝ KAYBI OLASILIÐI.\n"
 
 #: e2fsck/problem.c:112
 msgid ""
@@ -640,6 +644,14 @@ msgid ""
 "    e2fsck -b %S <@v>\n"
 "\n"
 msgstr ""
+"\n"
+"Super blok okunamýyor ya da doðru ext2 @f tanýmlamýyor.\n"
+"Aygýt geçerliyse ve gerçekten bir ext2 @f içeriyorsa,\n"
+"(ve bir takas bölümü veya ufs ya da her neyse deðilse)\n"
+"@S bozulmuþ demektir. Baþka bir @S ile e2fsck çalýþtýrmayý\n"
+"denemelisiniz:\n"
+"      e2fsck -b %S <@v>\n"
+"\n"
 
 #: e2fsck/problem.c:121
 msgid ""
@@ -647,6 +659,9 @@ msgid ""
 "The physical size of the @v is %c @bs\n"
 "Either the @S or the partition table is likely to be corrupt!\n"
 msgstr ""
+"Dosya sistemi uzunluðu (@S ile iliþkili) %b @b,\n"
+"@výn gerçek boyutu ise %c @btur.\n"
+"Hem @S hem de disk bölümleme tablosu bozuk olabilir!\n"
 
 #: e2fsck/problem.c:128
 msgid ""
@@ -654,20 +669,23 @@ msgid ""
 "This version of e2fsck does not support fragment sizes different\n"
 "from the @b size.\n"
 msgstr ""
+"@S @b_uzunluðu = %b, adýmlama_uzunluðu = %c.\n"
+"Bu e2fsck sürümünde adýmlama uzunluklarýnýn blok uzunluklarýndan\n"
+"farklý olmasý desteklenmiyor.\n"
 
 #: e2fsck/problem.c:135
 msgid "@S @bs_per_group = %b, should have been %c\n"
-msgstr ""
+msgstr "@S grup_baþýna_blok_sayýsý = %b, %c olmalýydý\n"
 
 #: e2fsck/problem.c:140
 msgid "@S first_data_@b = %b, should have been %c\n"
-msgstr ""
+msgstr "@S ilk_veri_bloðu = %b, %c olmalýydý\n"
 
 #: e2fsck/problem.c:145
 msgid ""
 "@f did not have a UUID; generating one.\n"
 "\n"
-msgstr ""
+msgstr "@f bir UUID içermiyor; bir tane üretiliyor.\n"
 
 #: e2fsck/problem.c:150
 msgid ""
@@ -679,44 +697,50 @@ msgid ""
 "block group descriptor may be OK.\n"
 "\n"
 msgstr ""
+"Bilgi: Taþýnmasý gereken dosya indeksi tablosunun bir parçasý olan\n"
+"ya da yeniden konumlanmasý gereken blok biteþlemi bloklarý ya da\n"
+"dosya indeksleri varsa, e2fsck'yý önce '-b %S' seçeneðiyle çalýþtýrmak\n"
+"isteyebilirsiniz. Sorun sadece birincil blok grubu tanýmlayýcýsý ile\n"
+"ilgili olabilir ve yedekleme bloðu grubu tanýmlayýcýsý da doðru olabilir.\n"
+"\n"
 
 #: e2fsck/problem.c:160
 msgid "Corruption found in @S.  (%s = %N).\n"
-msgstr ""
+msgstr "Super blok içinde bozukluk saptandý. (%s = %N).\n"
 
 #: e2fsck/problem.c:165
 #, c-format
 msgid "Error determining size of the physical @v: %m\n"
-msgstr ""
+msgstr "Aygýtýn fiziksel uzunluðu saptanýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:170
 msgid "@i count in @S is %i, should be %j.\n"
-msgstr ""
+msgstr "@S içindeki @i sayýsý %i, %j olmalýydý.\n"
 
 #: e2fsck/problem.c:174
 msgid "The Hurd does not support the filetype feature.\n"
-msgstr ""
+msgstr "Hurd, dosya türü özelliðini desteklemiyor.\n"
 
 #: e2fsck/problem.c:179
 #, c-format
 msgid "@S has a bad ext3 @j (@i %i).\n"
-msgstr ""
+msgstr "@S hatalý bir @j içeriyor (%i @i).\n"
 
 #: e2fsck/problem.c:184
 msgid "External @j has multiple @f users (unsupported).\n"
-msgstr ""
+msgstr "Dýþ @j çok sayýda @f kullanýcýsý içeriyor. (desteklenmiyor)\n"
 
 #: e2fsck/problem.c:189
 msgid "Can't find external @j\n"
-msgstr ""
+msgstr "Dýþ @j bulunamýyor\n"
 
 #: e2fsck/problem.c:194
 msgid "External @j has bad @S\n"
-msgstr ""
+msgstr "Dýþ @j hatalý @S içeriyor\n"
 
 #: e2fsck/problem.c:199
 msgid "External @j does not support this @f\n"
-msgstr ""
+msgstr "Dýþ @j bu @fni desteklemiyor\n"
 
 #: e2fsck/problem.c:204
 msgid ""
@@ -725,61 +749,65 @@ msgid ""
 "format.\n"
 "It is also possible the @j @S is corrupt.\n"
 msgstr ""
+"Ext3 @j @S türü %N bilinmiyor (desteklenmiyor).\n"
+"Bu kopya, bu @f tarafýndan desteklenmeyen ve/ya\n"
+"eski bir biçem gibi görünüyor.\n"
+"Ayrýca, @j super bloðunun bozuk olmasý da mümkün.\n"
 
 #: e2fsck/problem.c:212
 msgid "Ext3 @j @S is corrupt.\n"
-msgstr ""
+msgstr "Ext3 @j super bloðu bozuk.\n"
 
 #: e2fsck/problem.c:217
 #, c-format
 msgid "@S doesn't have has_journal flag, but has ext3 @j %s.\n"
-msgstr ""
+msgstr "@S jurnal_var bayraðý içermiyor, ama ext3 @j %s içeriyor.\n"
 
 #: e2fsck/problem.c:222
 msgid "@S has ext3 needs_recovery flag set, but no @j.\n"
-msgstr ""
+msgstr "@S ext3 kurtarma_gerekir bayraðý içeriyor ama @j yok.\n"
 
 #: e2fsck/problem.c:227
 msgid "*** WARNING *** leaving data in the @j may be DANGEROUS.\n"
-msgstr ""
+msgstr "*** UYARI *** @j içinde veri býrakmak TEHLÝKELÝ olabilir.\n"
 
 #: e2fsck/problem.c:232
 msgid "ext3 recovery flag clear, but journal has data.\n"
-msgstr ""
+msgstr "exf3 kurtarma bayraðý temizlendi, ama jurnal veri içeriyor.\n"
 
 #: e2fsck/problem.c:237
 msgid "%s @o @i %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n"
-msgstr ""
+msgstr "%s @o @i %i (kull_kiml=%Iu, grup_kiml=%Ig, kip=%Im, boy=%Is)\n"
 
 #: e2fsck/problem.c:242
 msgid "@I @b #%B (%b) found in @o @i %i.\n"
-msgstr ""
+msgstr "@i %3i içindeki @b #%1B (%2b) @I.\n"
 
 #: e2fsck/problem.c:247
 msgid "Already cleared @b #%B (%b) found in @o @i %i.\n"
-msgstr ""
+msgstr "@o @i %3i içindeki @b #1%B (%2b) zaten temizlenmiþ.\n"
 
 #: e2fsck/problem.c:252
 #, c-format
 msgid "@I @o @i %i in @S.\n"
-msgstr ""
+msgstr "@S içindeki @o @i %i @I.\n"
 
 #: e2fsck/problem.c:257
 #, c-format
 msgid "@I @i %i in @o @i list.\n"
-msgstr ""
+msgstr "@o @i listesindeki @i %i @I\n"
 
 #: e2fsck/problem.c:267
 msgid "Ext3 @j @S has an unknown read-only feature flag set.\n"
-msgstr ""
+msgstr "Ext3 @j @S bilinmeyen salt-okunur özellikli bir bayrak içeriyor.\n"
 
 #: e2fsck/problem.c:272
 msgid "Ext3 @j @S has an unknown incompatible feature flag set.\n"
-msgstr ""
+msgstr "Ext3 @j @S bilinmeyen uyumsuz özellikli bir bayrak içeriyor.\n"
 
 #: e2fsck/problem.c:277
 msgid "@j version not supported by this e2fsck.\n"
-msgstr ""
+msgstr "@j sürümü bu e2fsck tarafýndan desteklenmiyor.\n"
 
 #: e2fsck/problem.c:282
 #, c-format
@@ -789,11 +817,11 @@ msgid ""
 msgstr ""
 
 #: e2fsck/problem.c:287
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "Error moving @j: %m\n"
 "\n"
-msgstr ""
+msgstr "Düðüm %i okunurken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:292
 msgid ""
@@ -804,97 +832,98 @@ msgstr ""
 
 #: e2fsck/problem.c:300
 msgid "Pass 1: Checking @is, @bs, and sizes\n"
-msgstr ""
+msgstr "1. geçiþ: dosya indeksleri, @blar ve uzunluklar denetleniyor\n"
 
 #. Root directory is not an inode
 #: e2fsck/problem.c:304
 msgid "@r is not a @d.  "
-msgstr ""
+msgstr "@r bir @d deðildir.  "
 
 #: e2fsck/problem.c:309
 msgid "@r has dtime set (probably due to old mke2fs).  "
-msgstr ""
+msgstr "@r için dtime belirtilmiþ (eski mke2fs'den dolayý olabilir).  "
 
 #: e2fsck/problem.c:314
 msgid "Reserved @i %i %Q has bad mode.  "
-msgstr ""
+msgstr "Yedek @i %i %Q hatalý kip içeriyor.  "
 
 #: e2fsck/problem.c:319
 #, c-format
 msgid "@D @i %i has zero dtime.  "
-msgstr ""
+msgstr "@D @i %i sýfýr dtime içeriyor.  "
 
 #: e2fsck/problem.c:324
 #, c-format
 msgid "@i %i is in use, but has dtime set.  "
-msgstr ""
+msgstr "@i %i kullanýmda, ama dtime belirtilmiþ.  "
 
 #: e2fsck/problem.c:329
 #, c-format
 msgid "@i %i is a @z @d.  "
-msgstr ""
+msgstr "@i %i bir @z @ddir.  "
 
 #: e2fsck/problem.c:334
 msgid "@g %g's @b @B at %b @C.\n"
-msgstr ""
+msgstr "%g grubunun %b deki @b @Binde @C.\n"
 
 #: e2fsck/problem.c:339
 msgid "@g %g's @i @B at %b @C.\n"
-msgstr ""
+msgstr "%g grubunun %b deki @i @Binde @C.\n"
 
 #: e2fsck/problem.c:344
 msgid "@g %g's @i table at %b @C.\n"
-msgstr ""
+msgstr "%g grubunun %b deki @i tablosunda @C.\n"
 
 #: e2fsck/problem.c:349
 msgid "@g %g's @b @B (%b) is bad.  "
-msgstr ""
+msgstr "%g grubunun @b @Bi (%b) hatalý.  "
 
 #: e2fsck/problem.c:354
 msgid "@g %g's @i @B (%b) is bad.  "
-msgstr ""
+msgstr "%g grubunun @i @Bi (%b) hatalý.  "
 
 #: e2fsck/problem.c:359
 msgid "@i %i, i_size is %Is, @s %N.  "
-msgstr ""
+msgstr "@i %i indeks uzunluðu %Is, %N @s.  "
 
 #: e2fsck/problem.c:364
 msgid "@i %i, i_@bs is %Ib, @s %N.  "
-msgstr ""
+msgstr "@i %i, @b indeksi %Ib, %N @s.  "
 
 #: e2fsck/problem.c:369
 msgid "@I @b #%B (%b) in @i %i.  "
-msgstr ""
+msgstr "@i %3i içindeki @b #1%B (2%b) @I.  "
 
 #: e2fsck/problem.c:374
 msgid "@b #%B (%b) overlaps @f metadata in @i %i.  "
-msgstr ""
+msgstr "@i %3i içindeki @b #1%B (%2b) @f metaverisinin üzerine taþýyor.  "
 
 #: e2fsck/problem.c:379
 #, c-format
 msgid "@i %i has illegal @b(s).  "
-msgstr ""
+msgstr "@i %i @I @b(lar) içeriyor.  "
 
 #: e2fsck/problem.c:384
 #, c-format
 msgid "Too many illegal @bs in @i %i.\n"
-msgstr ""
+msgstr "Düðüm %i içinde çok fazla kuraldýþý blok.\n"
 
 #: e2fsck/problem.c:389
 msgid "@I @b #%B (%b) in bad @b @i.  "
-msgstr ""
+msgstr "Hatalý blok düðümü içindeki blok %B (%b) kuraldýþý.  "
 
 #: e2fsck/problem.c:394
 msgid "Bad @b @i has illegal @b(s).  "
-msgstr ""
+msgstr "Hatalý blok düðümü kuraldýþý blok(lar) içeriyor.  "
 
 #: e2fsck/problem.c:399
 msgid "Duplicate or bad @b in use!\n"
-msgstr ""
+msgstr "Tekrarlanmýþ ya da hatalý blok kullanýmda!\n"
 
 #: e2fsck/problem.c:404
 msgid "Bad @b %b used as bad @b indirect @b?!?\n"
 msgstr ""
+"Hatalý blok %b, hatalý blok yerine kullanýlan blok olarak kullanýlmýþ?!?\n"
 
 #: e2fsck/problem.c:409
 msgid ""
@@ -903,12 +932,19 @@ msgid ""
 "dumpe2fs -b to dump out the bad @b list and e2fsck -L filename\n"
 "to read it back in again.\n"
 msgstr ""
+"\n"
+"Bu aykýrýlýk e2fsck ile düzeltilemez; düzeltmek için hatalý bloklar "
+"listesini\n"
+"dökümleyecek 'dumpe2fs -b' komutunu ve sonra onu tekrar geriye\n"
+"okuyacak olan 'e2fsck -L dosyaismi' komutunu kullanýn.\n"
 
 #: e2fsck/problem.c:417
 msgid ""
 "\n"
 "If the @b is really bad, the @f can not be fixed.\n"
 msgstr ""
+"\n"
+"Blok gerçekten hatalýysa, dosya sistemi düzeltilemez.\n"
 
 #: e2fsck/problem.c:422
 msgid ""
@@ -917,90 +953,100 @@ msgid ""
 "guarantees.\n"
 "\n"
 msgstr ""
+"Bu bloðu hatalý bloklar listesinden silebilir ve bu bloðun gerçekten\n"
+"doðru olduðunu umabilirsiniz, ancak hiçbir garantisi yoktur.\n"
+"\n"
 
 #: e2fsck/problem.c:429
 msgid "The primary @S (%b) is on the bad @b list.\n"
-msgstr ""
+msgstr "Birincil süperblok (%b) hatalý bloklar listesinde kayýtlý.\n"
 
 #: e2fsck/problem.c:434
 msgid "Block %b in the primary @g descriptors is on the bad @b list\n"
-msgstr ""
+msgstr "Birincil grup tanýmýndaki blok %b, hatalý bloklar listesinde kayýtlý\n"
 
 #: e2fsck/problem.c:440
 msgid "Warning: Group %g's @S (%b) is bad.\n"
-msgstr ""
+msgstr "Uyarý: %g grubunun superbloðu (%b) hatalý.\n"
 
 #: e2fsck/problem.c:445
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
-msgstr ""
+msgstr "Uyarý %g grubunun grup tanýmý kopyasý bir hatalý blok içeriyor (%b).\n"
 
 #: e2fsck/problem.c:451
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
 msgstr ""
+"Programlama hatasý?  blok %b, hatalý blok iþleminde sebepsiz olarak talep "
+"edildi.\n"
 
 #: e2fsck/problem.c:457
 msgid "@A %N @b(s) for %s: %m\n"
-msgstr ""
+msgstr "%2s için %1N bloða yer ayrýlýrken hata oluþtu: %3m\n"
 
 #: e2fsck/problem.c:462
 #, c-format
 msgid "@A @b buffer for relocating %s\n"
-msgstr ""
+msgstr "%s tekrar konumlamasý için blok tamponuna yer ayrýlýrken hata oluþtu\n"
 
 #: e2fsck/problem.c:467
 msgid "Relocating @g %g's %s from %b to %c...\n"
-msgstr ""
+msgstr "%g grubunun %s %b den %c ye aktarýlýyor...\n"
 
 #: e2fsck/problem.c:472
 #, c-format
 msgid "Relocating @g %g's %s to %c...\n"
-msgstr ""
+msgstr "%g grubunun %s %c ye aktarýlýyor...\n"
 
 #: e2fsck/problem.c:477
 msgid "Warning: could not read @b %b of %s: %m\n"
-msgstr ""
+msgstr "Uyarý: %2s nin %1b bloðu okunamadý: %3m\n"
 
 #: e2fsck/problem.c:482
 msgid "Warning: could not write @b %b for %s: %m\n"
-msgstr ""
+msgstr "Uyarý: %2s nin %1b bloðu yazýlamadý: %3m\n"
 
 #: e2fsck/problem.c:497
 #, c-format
 msgid "@A icount link information: %m\n"
-msgstr ""
+msgstr "Düðüm sayýsý bað bilgisine yer ayrýlýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:502
 #, c-format
 msgid "@A @d @b array: %m\n"
-msgstr ""
+msgstr "Dizin bloðu dizisine yer ayrýlýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:507
 #, c-format
 msgid "Error while scanning @is (%i): %m\n"
-msgstr ""
+msgstr "Düðümler(%i) taranýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:512
 #, c-format
 msgid "Error while iterating over @bs in @i %i: %m\n"
 msgstr ""
+"Düðüm %i içindeki bloklar üzerinde iþlemler tekrarlanýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:517
 msgid "Error storing @i count information (@i=%i, count=%N): %m\n"
 msgstr ""
+"Düðüm sayýsý bilgisi (düðüm = %i, sayýsý = %N)\n"
+"saklanýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:522
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
 msgstr ""
+"Dizin bloðu bilgisi (düðüm = %i, blok = %b, num = %N)\n"
+"saklanýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:528
 #, c-format
 msgid "Error reading @i %i: %m\n"
-msgstr ""
+msgstr "Düðüm %i okunurken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:536
 #, c-format
 msgid "@i %i has imagic flag set.  "
-msgstr ""
+msgstr "Düðüm %i imagic bayraðý içeriyor.  "
 
 #: e2fsck/problem.c:541
 #, c-format
@@ -1008,392 +1054,419 @@ msgid ""
 "Special (@v/socket/fifo/symlink) file (@i %i) has immutable\n"
 "or append-only flag set.  "
 msgstr ""
+"Özel (aygýt/soket/fifo/sembað) dosya (@i %i),\n"
+"salt-eklenir ya da deðiþmez bayraðý içeriyor.  "
 
 #: e2fsck/problem.c:547
 #, c-format
 msgid "@i %i has @cion flag set on @f without @cion support.  "
 msgstr ""
+"Düðüm %i sýkýþtýrma desteklenmeyen dosya sisteminde sýkýþtýrma bayraðý "
+"içeriyor.  "
 
 #: e2fsck/problem.c:567
 msgid "@j is not regular file.  "
-msgstr ""
+msgstr "Jurnal normal bir dosya deðil.  "
 
 #: e2fsck/problem.c:572
 #, c-format
 msgid "@i %i was part of the orphaned @i list.  "
-msgstr ""
+msgstr "Düðüm %i artýk düðüm listesinin parçasýydý.  "
 
 #: e2fsck/problem.c:578
 msgid "@is that were part of a corrupted orphan linked list found.  "
-msgstr ""
+msgstr "Bozuk bir artýk baðlý listenin bir parçasýný bulunduran düðümler.  "
 
 #: e2fsck/problem.c:588
 msgid "Error reading @a @b %b for @i %i.  "
-msgstr ""
+msgstr "Düðüm %2i için ek özellik bloðu %1b okunurken hata oluþtu.  "
 
 #: e2fsck/problem.c:593
 msgid "@i %i has a bad @a @b %b.  "
-msgstr ""
+msgstr "Düðüm %i bir hatalý ek özellik bloðu %b içeriyor.  "
 
 #: e2fsck/problem.c:598
 msgid "Error reading @a @b %b (%m).  "
-msgstr ""
+msgstr "Ek özellik bloðu %b okunurken hata oluþtu (%m).  "
 
 #: e2fsck/problem.c:603
 msgid "@a @b %b has reference count %B, should be %N.  "
-msgstr ""
+msgstr "Ek özellik bloðu %b %B baþvuru sayýsýna sahip, %N olmalýydý.  "
 
 #: e2fsck/problem.c:608
 msgid "Error writing @a @b %b (%m).  "
-msgstr ""
+msgstr "Ek özellik bloðu %b yazýlýrken hata oluþtu (%m).  "
 
 #: e2fsck/problem.c:613
 msgid "@a @b %b has h_blocks > 1.  "
-msgstr ""
+msgstr "Ek özellik bloðu %b için çoklu EA bloklarý desteklenmiyor.  "
 
 #: e2fsck/problem.c:618
 msgid "Error allocating @a @b %b.  "
-msgstr ""
+msgstr "Ek özellik bloðu %b ayrýlýrken hata oluþtu.  "
 
 #: e2fsck/problem.c:623
 msgid "@a @b %b is corrupt (allocation collision).  "
-msgstr ""
+msgstr "Ek özellik bloðu %b bozuk (tahsis çatýþmasý).  "
 
 #: e2fsck/problem.c:628
 msgid "@a @b %b is corrupt (invalid name).  "
-msgstr ""
+msgstr "Ek özellik bloðu %b bozuk (geçersiz isim).  "
 
 #: e2fsck/problem.c:633
 msgid "@a @b %b is corrupt (invalid value).  "
-msgstr ""
+msgstr "Ek özellik bloðu %b bozuk (geçersiz deðer).  "
 
 #: e2fsck/problem.c:640
 msgid ""
 "Duplicate @bs found... invoking duplicate @b passes.\n"
 "Pass 1B: Rescan for duplicate/bad @bs\n"
 msgstr ""
+"Tekrarlanmýþ bloklar bulundu... tekrarlanan blok taramasý baþlatýlýyor.\n"
+"Geçiþ 1B: tekrarlanmýþ/hatalý bloklar yeniden taranýyor\n"
 
 #: e2fsck/problem.c:646
 #, c-format
 msgid "Duplicate/bad @b(s) in @i %i:"
-msgstr ""
+msgstr "Düðüm %i içindeki tekrarlanmýþ/hatalý blok(lar):"
 
 #: e2fsck/problem.c:661
 #, c-format
 msgid "Error while scanning inodes (%i): %m\n"
-msgstr ""
+msgstr "Düðümler (%i) taranýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:666
 #, c-format
 msgid "@A @i @B (inode_dup_map): %m\n"
-msgstr ""
+msgstr "Düðüm biteþlemi (inode_dup_map) için yer ayrýlýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:671
 #, c-format
 msgid "Error while iterating over @bs in @i %i (%s): %m\n"
 msgstr ""
+"Düðüm %i içindeki bloklar üzerindeki iþlemler tekrarlanýrken\n"
+"hata oluþtu (%s): %m\n"
 
 #: e2fsck/problem.c:676
 msgid "Pass 1C: Scan directories for @is with dup @bs.\n"
-msgstr ""
+msgstr "Geçiþ 1C: tekrarlanmýþ bloklu düðümler için dizinler taranýyor.\n"
 
 #: e2fsck/problem.c:682
 msgid "Pass 1D: Reconciling duplicate @bs\n"
-msgstr ""
+msgstr "Geçiþ 1D: tekrarlanan bloklar yeniden uzlaþýlýyor\n"
 
 #: e2fsck/problem.c:687
 msgid ""
 "File %Q (@i #%i, mod time %IM) \n"
 "  has %B duplicate @b(s), shared with %N file(s):\n"
 msgstr ""
+"Dosya %Q (düðüm %i, deðiþiklik zamaný %IM) \n"
+"  tekrarlanan %B blok içeriyor ve %N dosya ile paylaþýmlý:\n"
 
 #: e2fsck/problem.c:693
 msgid "\t%Q (@i #%i, mod time %IM)\n"
-msgstr ""
+msgstr "\t%Q (düðüm %i, deðiþiklik zamaný %IM)\n"
 
 #: e2fsck/problem.c:698
 msgid "\t<@f metadata>\n"
-msgstr ""
+msgstr "\t<dosya sistemi metaverisi>\n"
 
 #: e2fsck/problem.c:703
 msgid ""
 "(There are %N @is containing duplicate/bad @bs.)\n"
 "\n"
 msgstr ""
+"(Tekrarlanan/hatalý bloklarý içeren %N düðüm var.)\n"
+"\n"
 
 #: e2fsck/problem.c:708
 msgid ""
 "Duplicated @bs already reassigned or cloned.\n"
 "\n"
 msgstr ""
+"Tekrarlanan bloklar zaten yeniden atandý ya da kopyalandý.\n"
+"\n"
 
 #: e2fsck/problem.c:721
 #, c-format
 msgid "Couldn't clone file: %m\n"
-msgstr ""
+msgstr "Dosya kopyalanamadý: %m\n"
 
 #: e2fsck/problem.c:727
 msgid "Pass 2: Checking @d structure\n"
-msgstr ""
+msgstr "Geçiþ 2: Dizin yapýsý denetleniyor\n"
 
 #: e2fsck/problem.c:732
 #, c-format
 msgid "Bad @i number for '.' in @d @i %i.\n"
-msgstr ""
+msgstr "Dizin düðümü %i içindeki '.' için düðüm numarasý hatalý.\n"
 
 #: e2fsck/problem.c:737
 msgid "@E has bad @i #: %Di.\n"
-msgstr ""
+msgstr "@E hatalý düðüm numarasý içeriyor: %Di.\n"
 
 #: e2fsck/problem.c:742
 msgid "@E has @D/unused @i %Di.  "
-msgstr ""
+msgstr "@E silinmiþ/kullanýlmayan düðüm %Di içeriyor.  "
 
 #: e2fsck/problem.c:747
 msgid "@E @L to '.'  "
-msgstr ""
+msgstr "@E '.' ya bir baðdýr.  "
 
 #: e2fsck/problem.c:752
 msgid "@E points to @i (%Di) located in a bad @b.\n"
-msgstr ""
+msgstr "@E bir hatalý blok içindeki düðümü (%Di) gösteriyor.\n"
 
 #: e2fsck/problem.c:757
 msgid "@E @L to @d %P (%Di).\n"
-msgstr ""
+msgstr "@E dizin %P (%Di) için bir baðdýr.\n"
 
 #: e2fsck/problem.c:762
 msgid "@E @L to the @r.\n"
-msgstr ""
+msgstr "@E kök düðümüne bir baðdýr.\n"
 
 #: e2fsck/problem.c:767
 msgid "@E has illegal characters in its name.\n"
-msgstr ""
+msgstr "@E isminde kuraldýþý karakterler içeriyor.\n"
 
 #: e2fsck/problem.c:772
 #, c-format
 msgid "Missing '.' in @d @i %i.\n"
-msgstr ""
+msgstr "Dizin düðümü %i içinde '.' eksik.\n"
 
 #: e2fsck/problem.c:777
 #, c-format
 msgid "Missing '..' in @d @i %i.\n"
-msgstr ""
+msgstr "Dizin düðümü %i içinde '..' eksik.\n"
 
 #: e2fsck/problem.c:782
 msgid "First @e '%Dn' (inode=%Di) in @d @i %i (%p) @s '.'\n"
 msgstr ""
+"Dizin düðümü %3i (%4p) içindeki ilk girdi '%1Dn' (@i=%2Di) '.' olmalý.\n"
 
 #: e2fsck/problem.c:787
 msgid "Second @e '%Dn' (inode=%Di) in @d @i %i @s '..'\n"
 msgstr ""
+"Dizin düðümü %3i (%4p) içindeki ikinci girdi '%1Dn' (düðüm = %2Di) '..' "
+"olmalý\n"
 
 #: e2fsck/problem.c:792
 msgid "i_faddr @F %IF, @s zero.\n"
-msgstr ""
+msgstr "@F i_faddr %IF, sýfýr olmalý.\n"
 
 #: e2fsck/problem.c:797
 msgid "i_file_acl @F %If, @s zero.\n"
-msgstr ""
+msgstr "@F i_file_acl %If, sýfýr olmalý.\n"
 
 #: e2fsck/problem.c:802
 msgid "i_dir_acl @F %Id, @s zero.\n"
-msgstr ""
+msgstr "@F i_dir_acl %Id, sýfýr olmalý.\n"
 
 #: e2fsck/problem.c:807
 msgid "i_frag @F %N, @s zero.\n"
-msgstr ""
+msgstr "@F i_frag %N, sýfýr olmalý.\n"
 
 #: e2fsck/problem.c:812
 msgid "i_fsize @F %N, @s zero.\n"
-msgstr ""
+msgstr "@F i_fsize %N, sýfýr olmalý.\n"
 
 #: e2fsck/problem.c:817
 msgid "@i %i (%Q) has a bad mode (%Im).\n"
-msgstr ""
+msgstr "Düðüm %i (%Q) bir hatalý kip (%Im) içeriyor.\n"
 
 #: e2fsck/problem.c:822
 msgid "@d @i %i, @b %B, offset %N: @d corrupted\n"
-msgstr ""
+msgstr "Dizin düðümü %i, blok %B, konum %N: dizin bozuk\n"
 
 #: e2fsck/problem.c:827
 msgid "@d @i %i, @b %B, offset %N: filename too long\n"
-msgstr ""
+msgstr "Dizin düðümü %i, blok %B, konum %N: dosya ismi çok uzun\n"
 
 #: e2fsck/problem.c:832
 msgid "@d @i %i has an unallocated @b #%B.  "
-msgstr ""
+msgstr "Dizin düðümü %i bir ayrýlmayan blok #%B içeriyor.  "
 
 #: e2fsck/problem.c:837
 #, c-format
 msgid "'.' @d @e in @d @i %i is not NULL terminated\n"
-msgstr ""
+msgstr "Dizin düðümü %i deki '.' dizin girdisi NULL sonlandýrmalý deðil\n"
 
 #: e2fsck/problem.c:842
 #, c-format
 msgid "'..' @d @e in @d @i %i is not NULL terminated\n"
-msgstr ""
+msgstr "Dizin düðümü %i deki '..' dizin girdisi NULL sonlandýrmalý deðil\n"
 
 #: e2fsck/problem.c:847
 msgid "@i %i (%Q) is an @I character @v.\n"
-msgstr ""
+msgstr "Düðüm %i (%Q) bir kuraldýþý karakter aygýtý.\n"
 
 #: e2fsck/problem.c:852
 msgid "@i %i (%Q) is an @I @b @v.\n"
-msgstr ""
+msgstr "Düðüm %i (%Q) bir kuraldýþý blok aygýtý.\n"
 
 #: e2fsck/problem.c:857
 msgid "@E is duplicate '.' @e.\n"
-msgstr ""
+msgstr "@E tekrarlayan '.' girdisi içeriyor.\n"
 
 #: e2fsck/problem.c:862
 msgid "@E is duplicate '..' @e.\n"
-msgstr ""
+msgstr "@E tekrarlayan '..' girdisi içeriyor.\n"
 
 #: e2fsck/problem.c:867 e2fsck/problem.c:1069
 #, c-format
 msgid "Internal error: couldn't find dir_info for %i.\n"
-msgstr ""
+msgstr "Ýç hata: %i için dizin bilgileri bulunamýyor.\n"
 
 #: e2fsck/problem.c:872
 msgid "@E has rec_len of %Dr, should be %N.\n"
-msgstr ""
+msgstr "@E %Dr kayýt uzunluðunda, %N olmalýydý.\n"
 
 #: e2fsck/problem.c:877
 #, c-format
 msgid "@A icount structure: %m\n"
-msgstr ""
+msgstr "icount veri yapýsý için yer ayrýlýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:882
 #, c-format
 msgid "Error interating over @d @bs: %m\n"
-msgstr ""
+msgstr "Dizin bloklarý üzerinde yineleme yapýlýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:887
 msgid "Error reading @d @b %b (@i %i): %m\n"
-msgstr ""
+msgstr "Dizin bloðu %b (düðüm %i) okunurken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:892
 msgid "Error writing @d @b %b (@i %i): %m\n"
-msgstr ""
+msgstr "Dizin bloðu %b (düðüm %i) yazýlýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:897
 #, c-format
 msgid "@A new @d @b for @i %i (%s): %m\n"
-msgstr ""
+msgstr "Düðüm %i için yeni dizin bloku ayrýlýrken hata oluþtu (%s): %m\n"
 
 #: e2fsck/problem.c:902
 #, c-format
 msgid "Error deallocating @i %i: %m\n"
-msgstr ""
+msgstr "Düðüm %i býrakýlýrken hata: %m\n"
 
 #: e2fsck/problem.c:907
 msgid "@d @e for '.' is big.  "
-msgstr ""
+msgstr "'.' için dizin girdisi büyük.  "
 
 #: e2fsck/problem.c:912
 msgid "@i %i (%Q) is an @I FIFO.\n"
-msgstr ""
+msgstr "Düðüm %i (%Q) bir kuraldýþý FIFO.\n"
 
 #: e2fsck/problem.c:917
 msgid "@i %i (%Q) is an @I socket.\n"
-msgstr ""
+msgstr "Düðüm %i (%Q) bir kuraldýþý soket.\n"
 
 #: e2fsck/problem.c:922
 msgid "Setting filetype for @E to %N.\n"
-msgstr ""
+msgstr "@E için dosya türü %N olarak belirleniyor.\n"
 
 #: e2fsck/problem.c:927
 msgid "@E has an incorrect filetype (was %Dt, should be %N).\n"
-msgstr ""
+msgstr "@E yanlýþ dosya türünde (%Dt, %N olmalýydý).\n"
 
 #: e2fsck/problem.c:932
 msgid "@E has filetype set.\n"
-msgstr ""
+msgstr "@E için dosya türü belirtilmiþ.\n"
 
 #: e2fsck/problem.c:937
 msgid "@E has a zero-length name.\n"
-msgstr ""
+msgstr "@Enin ismi sýfýr uzunlukta.\n"
 
 #: e2fsck/problem.c:942
 msgid "Symlink %Q (@i #%i) has an invalid size (%Is).\n"
-msgstr ""
+msgstr "Sembolik bað %Q (düðüm #%i) uzunluðu geçersiz (%Is).\n"
 
 #: e2fsck/problem.c:947
 msgid "@a @b @F is invalid (%If).\n"
-msgstr ""
+msgstr "@F ek özellik bloðu geçersiz (%If).\n"
 
 #: e2fsck/problem.c:952
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
 msgstr ""
+"Dosya sistemi çok büyük dosyalar içeriyor, ama süperblok LARGE_FILE "
+"bayraksýz\n"
 
 #: e2fsck/problem.c:959
 msgid "Pass 3: Checking @d connectivity\n"
-msgstr ""
+msgstr "Geçiþ 3: Dizin baðlanabilirliði denetleniyor\n"
 
 #: e2fsck/problem.c:964
 msgid "@r not allocated.  "
-msgstr ""
+msgstr "Kök düðümü tahsisli deðil.  "
 
 #: e2fsck/problem.c:969
 msgid "No room in @l @d.  "
-msgstr ""
+msgstr "/lost+found dizininde yer yok.  "
 
 #: e2fsck/problem.c:974
 #, c-format
 msgid "Unconnected @d @i %i (%p)\n"
-msgstr ""
+msgstr "Dizin düðümü %i (%p) baðlanamadý\n"
 
 #: e2fsck/problem.c:979
 msgid "/@l not found.  "
-msgstr ""
+msgstr "/lost+found dizini yok.  "
 
 #: e2fsck/problem.c:984
 msgid "'..' in %Q (%i) is %P (%j), @s %q (%d).\n"
-msgstr ""
+msgstr "%Q (%i) daki '..' %P (%j), süperblok %q (%d).\n"
 
 #: e2fsck/problem.c:989
 msgid "Bad or non-existent /@l.  Cannot reconnect.\n"
-msgstr ""
+msgstr "/lost+found dizini ya yok ya da hatalý. tekrar baðlanýlamýyor.\n"
 
 #: e2fsck/problem.c:994
 #, c-format
 msgid "Could not expand /@l: %m\n"
-msgstr ""
+msgstr "/lost+found dizini geniþletilemiyor: %m\n"
 
 #: e2fsck/problem.c:999
 #, c-format
 msgid "Could not reconnect %i: %m\n"
-msgstr ""
+msgstr "%i ye tekrar baðlanýlamýyor: %m\n"
 
 #: e2fsck/problem.c:1004
 #, c-format
 msgid "Error while trying to find /@l: %m\n"
-msgstr ""
+msgstr "/lost+found dizini bulunmaya çalýþýlýrkan hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:1009
 #, c-format
 msgid "ext2fs_new_@b: %m while trying to create /@l @d\n"
 msgstr ""
+"ext2fs_new_block: %m\n"
+"/lost+found dizini oluþturulmaya çalýþýlýrkan hata oluþtu.\n"
 
 #: e2fsck/problem.c:1014
 #, c-format
 msgid "ext2fs_new_@i: %m while trying to create /@l @d\n"
 msgstr ""
+"ext2fs_new_inode: %m\n"
+"/lost+found dizini oluþturulmaya çalýþýlýrkan hata oluþtu.\n"
 
 #: e2fsck/problem.c:1019
 #, c-format
 msgid "ext2fs_new_dir_@b: %m while creating new @d @b\n"
 msgstr ""
+"ext2fs_new_dir_block: %m\n"
+"yeni dizin bloðu oluþturulurken hata.\n"
 
 #: e2fsck/problem.c:1024
 #, c-format
 msgid "ext2fs_write_dir_@b: %m while writing the @d @b for /@l\n"
 msgstr ""
+"ext2fs_write_dir_block: %m\n"
+"/lost+found için dizin bloðu yazýlýrken hata oluþtu.\n"
 
 #: e2fsck/problem.c:1029
 #, c-format
 msgid "Error while adjusting @i count on @i %i\n"
-msgstr ""
+msgstr "Düðüm %i üzerinde düðüm sayýsý ayarlanýrken hata oluþtu\n"
 
 #: e2fsck/problem.c:1034
 #, c-format
@@ -1401,6 +1474,8 @@ msgid ""
 "Couldn't fix parent of @i %i: %m\n"
 "\n"
 msgstr ""
+"Düðüm %i için üst düðüm belirlenemedi: %m\n"
+"\n"
 
 #: e2fsck/problem.c:1039
 #, c-format
@@ -1408,41 +1483,43 @@ msgid ""
 "Couldn't fix parent of @i %i: Couldn't find parent @d entry\n"
 "\n"
 msgstr ""
+"Düðüm %i için üst düðüm belirlenemedi: üst dizin girdisi bulunamadý\n"
+"\n"
 
 #: e2fsck/problem.c:1044
 msgid "@A @i @B (%N): %m\n"
-msgstr ""
+msgstr "Düðüm biteþlemi (%N) ayrýlýrken hata oluþtu: %m\n"
 
 #: e2fsck/problem.c:1049
 #, c-format
 msgid "Error creating root @d (%s): %m\n"
-msgstr ""
+msgstr "Kök dizini oluþturulurken hata (%s): %m\n"
 
 #: e2fsck/problem.c:1054
 #, c-format
 msgid "Error creating /@l @d (%s): %m\n"
-msgstr ""
+msgstr "/lost+found dizini oluþturulurken hata (%s): %m\n"
 
 #: e2fsck/problem.c:1059
 msgid "@r is not a @d; aborting.\n"
-msgstr ""
+msgstr "Kök düðümü bir dizin deðil; çýkýlýyor.\n"
 
 #: e2fsck/problem.c:1064
 msgid "Cannot proceed without a @r.\n"
-msgstr ""
+msgstr "Bir kök düðümü olmaksýzýn iþlenemez.\n"
 
 #: e2fsck/problem.c:1074
 #, c-format
 msgid "/@l is not a @d (ino=%i)\n"
-msgstr ""
+msgstr "/lost+found bir dizin deðil (düðüm = %i)\n"
 
 #: e2fsck/problem.c:1081
 msgid "Pass 4: Checking reference counts\n"
-msgstr ""
+msgstr "Geçiþ 4: Baþvuru sayýsý denetleniyor\n"
 
 #: e2fsck/problem.c:1096
 msgid "@i %i ref count is %Il, @s %N.  "
-msgstr ""
+msgstr "düðüm %i baþvuru sayýsý %Il, süperblok %N.  "
 
 #: e2fsck/problem.c:1100
 msgid ""
@@ -1450,122 +1527,132 @@ msgid ""
 "\tOR SOME BONEHEAD (YOU) IS CHECKING A MOUNTED (LIVE) FILESYSTEM.\n"
 "@i_link_info[%i] is %N, @i.i_links_count is %Il.  They should be the same!\n"
 msgstr ""
+"UYARI: E2FSCK'DA YAZILIM HATASI!\n"
+"\tYA DA BÝR MANKAFA (SÝZ)\n"
+"(pardon, yazar BONEHEAD (YOU) yazmýþ da)\n"
+"\tBAÐLI (CANLI) DOSYA SÝSTEMÝNÝ DENETLETÝYOR.\n"
+"düðüm_baðý_bilgileri[%i] = %N, düðüm.düðüm_baðý_sayýsý = %Il.\n"
+"Bunlar ayný olmalýydý!\n"
 
 #: e2fsck/problem.c:1110
 msgid "Pass 5: Checking @g summary information\n"
-msgstr ""
+msgstr "Geçiþ 5: grup özet bilgileri denetleniyor\n"
 
 #: e2fsck/problem.c:1115
 msgid "Padding at end of @i @B is not set. "
-msgstr ""
+msgstr "Düðüm biteþleminin sonundaki alan belirlenmemiþ. "
 
 #: e2fsck/problem.c:1120
 msgid "Padding at end of @b @B is not set. "
-msgstr ""
+msgstr "Blok biteþleminin sonundaki alan belirlenmemiþ. "
 
 #: e2fsck/problem.c:1125
 msgid "@b @B differences: "
-msgstr ""
+msgstr "blok biteþlemi farklarý: "
 
 #: e2fsck/problem.c:1145
 msgid "@i @B differences: "
-msgstr ""
+msgstr "düðüm biteþlemi farklarý: "
 
 #: e2fsck/problem.c:1165
 msgid "Free @is count wrong for @g #%g (%i, counted=%j).\n"
-msgstr ""
+msgstr "%g. grup için serbest düðüm sayýsý yanlýþ (%i, sayýlan = %j).\n"
 
 #: e2fsck/problem.c:1170
 msgid "Directories count wrong for @g #%g (%i, counted=%j).\n"
-msgstr ""
+msgstr "%g. grup için dizin sayýsý yanlýþ (%i, sayýlan = %j).\n"
 
 #: e2fsck/problem.c:1175
 msgid "Free @is count wrong (%i, counted=%j).\n"
-msgstr ""
+msgstr "Serbest düðüm sayýsý yanlýþ (%i, sayýlan = %j).\n"
 
 #: e2fsck/problem.c:1180
 msgid "Free @bs count wrong for @g #%g (%b, counted=%c).\n"
-msgstr ""
+msgstr "%g. grup için serbest blok sayýsý yanlýþ (%b, sayýlan = %c).\n"
 
 #: e2fsck/problem.c:1185
 msgid "Free @bs count wrong (%b, counted=%c).\n"
-msgstr ""
+msgstr "Serbest blok sayýsý yanlýþ (%b, sayýlan = %c).\n"
 
 #: e2fsck/problem.c:1190
 msgid ""
 "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
 "endpoints (%i, %j)\n"
 msgstr ""
+"PROGRAMLAMA HATASI: dosya sistemi (#%N) biteþlem sýnýrlarý (%b, %c)\n"
+"hesaplanan biteþlem sýnýrlarý (%i, %j) ile uyuþmuyor\n"
 
 #: e2fsck/problem.c:1196
 msgid "Internal error: fudging end of bitmap (%N)\n"
-msgstr ""
+msgstr "Ýç hata: biteþlemin sonunda bozulma (%N)\n"
 
 #: e2fsck/problem.c:1308
 #, c-format
 msgid "Unhandled error code (%d)!\n"
-msgstr ""
+msgstr "Elde edilemeyen hata kodu (%d)!\n"
 
 #: e2fsck/problem.c:1382
 msgid "IGNORED"
-msgstr ""
+msgstr "YOKSAYILDI"
 
 #: e2fsck/scantest.c:79
 #, c-format
 msgid "Memory used: %d, elapsed time: %6.3f/%6.3f/%6.3f\n"
-msgstr ""
+msgstr "Kullanýlan bellek: %d, geçen süre: %6.3f/%6.3f/%6.3f\n"
 
 #: e2fsck/scantest.c:98
 #, c-format
 msgid "size of inode=%d\n"
-msgstr ""
+msgstr "düðüm uzunluðu = %d\n"
 
 #: e2fsck/scantest.c:119
 msgid "while starting inode scan"
-msgstr ""
+msgstr "- düðüm taramasý baþlatýlýrken hata oluþtu"
 
 #: e2fsck/scantest.c:130
 msgid "while doing inode scan"
-msgstr ""
+msgstr "- düðüm taramasý yapýlýrken hata oluþtu"
 
 #: e2fsck/super.c:200
-#, c-format
+#, fuzzy, c-format
 msgid "while calling ext2fs_block_iterate for inode %d"
-msgstr ""
+msgstr "ext2fs_block_iterate iþlevi çaðrýlýrken hata oluþtu"
 
 #: e2fsck/super.c:266
+#, fuzzy
 msgid "Truncating"
-msgstr ""
+msgstr "Kýrp"
 
 #: e2fsck/super.c:267
+#, fuzzy
 msgid "Clearing"
-msgstr ""
+msgstr "Temizle"
 
 #: e2fsck/swapfs.c:98
 msgid "while calling ext2fs_block_iterate"
-msgstr ""
+msgstr "ext2fs_block_iterate iþlevi çaðrýlýrken hata oluþtu"
 
 #: e2fsck/swapfs.c:104
 msgid "while calling iterator function"
-msgstr ""
+msgstr "- yineleme iþlevi çaðrýlýrken hata oluþtu"
 
 #: e2fsck/swapfs.c:125
 msgid "while allocating inode buffer"
-msgstr ""
+msgstr "- düðüm tampon belleði ayrýlýrken hata oluþtu"
 
 #: e2fsck/swapfs.c:137
 #, c-format
 msgid "while reading inode table (group %d)"
-msgstr ""
+msgstr "- düðüm tablosu okunurken hata oluþtu (grup %d)"
 
 #: e2fsck/swapfs.c:175
 #, c-format
 msgid "while writing inode table (group %d)"
-msgstr ""
+msgstr "- düðüm tablosu yazýlýrken hata oluþtu (grup %d)"
 
 #: e2fsck/swapfs.c:196
 msgid "Pass 0: Doing byte-swap of filesystem\n"
-msgstr ""
+msgstr "Geçiþ 0: dosya sisteminin baytlarý düzeltiliyor\n"
 
 #: e2fsck/swapfs.c:203
 #, c-format
@@ -1573,10 +1660,12 @@ msgid ""
 "%s: the filesystem must be freshly checked using fsck\n"
 "and not mounted before trying to byte-swap it.\n"
 msgstr ""
+"%s: dosya sitemi fsck kullanýlarak tamamen denetlenmeli ve\n"
+"ters baytlar normal düzene döndürülmeden baðlanmamalýdýr.\n"
 
 #: e2fsck/swapfs.c:229
 msgid "Byte swap"
-msgstr ""
+msgstr "Ters baytlý"
 
 #: e2fsck/unix.c:66
 #, c-format
@@ -1585,6 +1674,29 @@ msgid ""
 "\t\t[-I inode_buffer_blocks] [-P process_inode_size]\n"
 "\t\t[-l|-L bad_blocks_file] [-C fd] [-j ext-journal] device\n"
 msgstr ""
+"Kullanýmý: %s [-panyrcdfvstFSV] [seçenekler] aygýt\n"
+"Linux ikinci geliþmiþ dosya sisteminin (e2fs) denetlenmesi için\n"
+"kullanýlýr. ext3 desteklenmiþtir.\n"
+"\n"
+"Seçenekler:\n"
+"   -a                        -p ile ayný\n"
+"   -C dosya_tanýmlayýcý      e2fsck'yý çalýþtýran uygulamalarca kullanýlýr\n"
+"   -d                        Hata ayýklama iletilerini gösterir\n"
+"   -F                        tampon bellek iþlem öncesi boþaltýlýr\n"
+"   -r                        bu seçenek yoksayýlýr\n"
+"   -s                        dosya sistemi bayt sýralamasý tersse "
+"kullanýlýr.\n"
+"                             Normal sýrada ise etkisizdir.\n"
+"   -S                        Mevcut bayt sýralamasýna bakýlmaksýzýn dosya\n"
+"                             sisteminin bayt sýralamasý ters çevrilir\n"
+"   -t                        istatistikler gösterilir, iki kere verilmiþse\n"
+"                             her geçiþin istatistikleri de gösterilir.\n"
+"   -V                        sürüm bilgileri gösterilir ve çýkar\n"
+"   -I tampon_blok_sayýsý\n"
+"   -P iþlem_dosya_indeksi_boyu\n"
+"\n"
+"Çeviri hatalarýný <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
+"\n"
 
 #: e2fsck/unix.c:71
 msgid ""
@@ -1596,6 +1708,17 @@ msgid ""
 " -c                   Check for bad blocks\n"
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
+"\n"
+"Acil yardým:\n"
+"   -c                        hatalý bloklar bulunur ve belirlenir\n"
+"   -f                        disk bölümü temiz bile olsa denetim yapýlýr\n"
+"   -n                        dosya sistemi salt-okunur açýlýr. Denetim\n"
+"                             sýrasýnda tüm sorulara HAYIR cevabý verildiði\n"
+"                             varsayýlýr.\n"
+"   -p                        Hiçbir soru üretilmeden sistem otomatik "
+"onarýlýr\n"
+"   -y                        Denetim sýrasýnda tüm sorulara EVET cevabý\n"
+"                             verildiði varsayýlýr.\n"
 
 #: e2fsck/unix.c:77
 msgid ""
@@ -1606,11 +1729,19 @@ msgid ""
 " -l bad_blocks_file   Add to badblocks list\n"
 " -L bad_blocks_file   Set badblocks list\n"
 msgstr ""
+"   -b süperblok              normal süperblok yerine kullanýlacak süperblok\n"
+"   -B blokboyu               süperblokun aranacaðý blok boyu belirtilir\n"
+"   -j dýþ-jurnal-aygýtý      jurnal dosyasýnýn aranacaðý aygýt belirtilir\n"
+"   -l DOSYA                  DOSYAdaki hatalý bloklar, hatalý bloklar\n"
+"                             listesine eklenir\n"
+"   -L DOSYA                  DOSYAdaki hatalý bloklar hatalý bloklar\n"
+"                             listesindekilerle deðiþtirilir\n"
+"   -v                        ayrýntýlý bilgi verilir\n"
 
 #: e2fsck/unix.c:111
 #, c-format
 msgid "%s: %d/%d files (%0d.%d%% non-contiguous), %d/%d blocks\n"
-msgstr ""
+msgstr "%s: %d/%d dosya (%0d.%%%d yanyana olmayan düðüm), %d/%d blok\n"
 
 #: e2fsck/unix.c:126
 #, c-format
@@ -1618,16 +1749,18 @@ msgid ""
 "\n"
 "%8d inodes used (%d%%)\n"
 msgstr ""
+"\n"
+"%8d düðüm kullanýlmýþ (%%%d)\n"
 
 #: e2fsck/unix.c:128
 #, c-format
 msgid "%8d non-contiguous inodes (%0d.%d%%)\n"
-msgstr ""
+msgstr "%8d yanyana olmayan düðüm (%0d.%d%%)\n"
 
 #: e2fsck/unix.c:130
 #, c-format
 msgid "         # of inodes with ind/dind/tind blocks: %d/%d/%d\n"
-msgstr ""
+msgstr "         ind/dind/tind bloklarýnýn düðüm sayýlarý: %d/%d/%d\n"
 
 #: e2fsck/unix.c:132
 #, c-format
@@ -1635,11 +1768,13 @@ msgid ""
 "%8d blocks used (%d%%)\n"
 "%8d bad blocks\n"
 msgstr ""
+"%8d blok kullanýlmýþ (%%%d)\n"
+"%8d hatalý blok\n"
 
 #: e2fsck/unix.c:136
 #, c-format
 msgid "%8d large files\n"
-msgstr ""
+msgstr "%8d büyük dosya\n"
 
 #: e2fsck/unix.c:137
 #, c-format
@@ -1656,33 +1791,48 @@ msgid ""
 "--------\n"
 "%8d files\n"
 msgstr ""
+"\n"
+"%8d normal dosya\n"
+"%8d dizin\n"
+"%8d karakter özellikli aygýt dosyasý\n"
+"%8d blok özellikli aygýt dosyasý\n"
+"%8d fifo\n"
+"%8d dosya baðý\n"
+"%8d sembolik bað (%d hýzlý sembolik bað)\n"
+"%8d soket\n"
+"--------\n"
+"%8d dosya\n"
 
 #: e2fsck/unix.c:170
 #, c-format
 msgid "%8d large file%s\n"
 msgstr ""
+"%8d büyük dosya\n"
+"%s\n"
 
 #: e2fsck/unix.c:212 misc/badblocks.c:612 misc/tune2fs.c:665 misc/util.c:110
 #: resize/main.c:96
 #, c-format
 msgid "while determining whether %s is mounted."
-msgstr ""
+msgstr "- %s'in baðlý olup olmadýðý saptanmaya çalýþýlýrken hata oluþtu."
 
 #: e2fsck/unix.c:227
 #, c-format
 msgid "Warning!  %s is mounted.\n"
-msgstr ""
+msgstr "Uyarý!  %s baðlý.\n"
 
 #: e2fsck/unix.c:231
 #, c-format
 msgid "%s is mounted.  "
-msgstr ""
+msgstr "%s baðlandý.  "
 
 #: e2fsck/unix.c:233
 msgid ""
 "Cannot continue, aborting.\n"
 "\n"
 msgstr ""
+"Devam edilemiyor. çýkýlýyor.\n"
+"\n"
 
 #: e2fsck/unix.c:234
 msgid ""
@@ -1692,97 +1842,102 @@ msgid ""
 "SEVERE filesystem damage.\n"
 "\n"
 msgstr ""
+"\n"
+"\n"
+"UYARI!!! e2fsck'nýn baðlý bir dosya sisteminde çalýþtýrýlmasý\n"
+"ÇOK CÝDDÝ hasarlara sebep olabilir.\n"
+"\n"
 
 #: e2fsck/unix.c:237
 msgid "Do you really want to continue"
-msgstr ""
+msgstr "Gerçekten devam etmek istiyor musunuz?"
 
 #: e2fsck/unix.c:239
 msgid "check aborted.\n"
-msgstr ""
+msgstr "denetim durdu.\n"
 
 #: e2fsck/unix.c:260
 msgid " contains a file system with errors"
-msgstr ""
+msgstr " hatalý bir dosya sistemi içeriyor"
 
 #: e2fsck/unix.c:262
 msgid " was not cleanly unmounted"
-msgstr ""
+msgstr " usulünce sistemden ayrýlmamýþ"
 
 #: e2fsck/unix.c:266
 #, c-format
 msgid " has been mounted %u times without being checked"
-msgstr ""
+msgstr " denetlenmeksizin %u kere baðlandý"
 
 #: e2fsck/unix.c:271
 #, c-format
 msgid " has gone %u days without being checked"
-msgstr ""
+msgstr " denetlenmeksizin %u gün geçti"
 
 #: e2fsck/unix.c:277
 msgid ", check forced.\n"
-msgstr ""
+msgstr ", denetim baþlatýlacak.\n"
 
 #: e2fsck/unix.c:280
 #, c-format
 msgid "%s: clean, %d/%d files, %d/%d blocks\n"
-msgstr ""
+msgstr "%s: temiz, %d/%d dosya, %d/%d blok\n"
 
 #: e2fsck/unix.c:411
 #, c-format
 msgid "ERROR: Couldn't open /dev/null (%s)\n"
-msgstr ""
+msgstr "HATA: /dev/null açýlamadý (%s)\n"
 
 #: e2fsck/unix.c:482
 #, c-format
 msgid "Error validating file descriptor %d: %s\n"
-msgstr ""
+msgstr "Dosya tanýmý %d deðerlendirilirken hata: %s\n"
 
 #: e2fsck/unix.c:486
 msgid "Invalid completion information file descriptor"
-msgstr ""
+msgstr "Tamamlama bilgisi dosya tanýmý geçersiz"
 
 #: e2fsck/unix.c:510
 msgid "The -t option is not supported on this version of e2fsck.\n"
-msgstr ""
+msgstr " -t seçeneði e2fsck'nýn bu sürümünde desteklenmiyor.\n"
 
 #: e2fsck/unix.c:578
 msgid "Byte-swapping filesystems not compiled in this version of e2fsck\n"
-msgstr ""
+msgstr "Ters baytlý sistemleri e2fsck'nýn bu sürümünde derlenmemiþ\n"
 
 #: e2fsck/unix.c:614
 msgid "Incompatible options not allowed when byte-swapping.\n"
-msgstr ""
+msgstr "Ters baytlý sistemlerde uyumsuz seçeneklere izin verilmez.\n"
 
 #: e2fsck/unix.c:687
 msgid "Error: ext2fs library version out of date!\n"
-msgstr ""
+msgstr "Hata: ext2fs kitaplýk sürümü uygun deðil!\n"
 
 #: e2fsck/unix.c:695
 msgid "while trying to initialize program"
-msgstr ""
+msgstr "- uygulama baþlatýlmaya çelýþýlýrken hata oluþtu"
 
 #: e2fsck/unix.c:709
 #, c-format
 msgid "\tUsing %s, %s\n"
-msgstr ""
+msgstr "\t%s, %s kullanýlýyor\n"
 
 #: e2fsck/unix.c:721
 msgid "need terminal for interactive repairs"
-msgstr ""
+msgstr "etkileþimli onarým için terminal gerekli"
 
 #: e2fsck/unix.c:755
 #, c-format
 msgid "%s trying backup blocks...\n"
-msgstr ""
+msgstr "%s yedek bloklar deneniyor...\n"
 
 #: e2fsck/unix.c:756
 msgid "Couldn't find ext2 superblock,"
-msgstr ""
+msgstr "ext2 süperbloðu bulunamadý,"
 
 #: e2fsck/unix.c:757
 msgid "Group descriptors look bad..."
-msgstr ""
+msgstr "Grup tanýmlarý hatalý görünüyor..."
 
 #: e2fsck/unix.c:768
 msgid ""
@@ -1790,70 +1945,77 @@ msgid ""
 "(Or the filesystem superblock is corrupt)\n"
 "\n"
 msgstr ""
+"Dosya sistemi e2fsck'nýn bu sürümünden daha yüksek bir sürümü\n"
+"destekliyor gibi. (Ya da dosya sisteminin süperbloðu bozuk olabilir)\n"
+"\n"
 
 #: e2fsck/unix.c:774
 msgid "Could this be a zero-length partition?\n"
-msgstr ""
+msgstr "Bu sýfýr uzunluklu bir disk bölümü olabilir mi?\n"
 
 #: e2fsck/unix.c:776
 #, c-format
 msgid "You must have %s access to the filesystem or be root\n"
-msgstr ""
+msgstr "Dosya sistemine %s eriþiminiz olmalý ya da root olmalýsýnýz\n"
 
 #: e2fsck/unix.c:781
 msgid "Possibly non-existent or swap device?\n"
-msgstr ""
+msgstr "Bu mevcut olmayan bir aygýt ya da bir takas aygýtý olmalý?\n"
 
 #: e2fsck/unix.c:784
 msgid ""
 "Disk write-protected; use the -n option to do a read-only\n"
 "check of the device.\n"
 msgstr ""
+"Disk yazma korumalý; -n seçeneðini kullanrak salt-oku kipinde\n"
+"denetim yapýnýz.\n"
 
 #: e2fsck/unix.c:800
 msgid "Get a newer version of e2fsck!"
-msgstr ""
+msgstr "e2fsck'nýn daha yeni bir sürümünü alýn!"
 
 #: e2fsck/unix.c:826
 #, c-format
 msgid "while checking ext3 journal for %s"
-msgstr ""
+msgstr "- %s için ext3 jurnali denetlenirken hata oluþtu"
 
 #: e2fsck/unix.c:838
 msgid ""
 "Warning: skipping journal recovery because doing a read-only filesystem "
 "check.\n"
 msgstr ""
+"Uyarý: Dosya sistemi salt-oku kipinde denetlendiðinden\n"
+"jurnal kurtarmasý atlanýyor.\n"
 
 #: e2fsck/unix.c:846
 #, c-format
 msgid "while recovering ext3 journal of %s"
-msgstr ""
+msgstr "- %s ext3 jurnal dosyasý kurtarýlmaya çalýþýlýrken hata oluþtu"
 
 #: e2fsck/unix.c:874
 msgid "Warning: compression support is experimental.\n"
-msgstr ""
+msgstr "Uyarý: sýkýþtýrma desteði deneyseldir.\n"
 
 #: e2fsck/unix.c:910
 #, c-format
 msgid "%s: Filesystem byte order already normalized.\n"
-msgstr ""
+msgstr "%s Dosya sisteminde baytlar zaten normal.\n"
 
 #: e2fsck/unix.c:930
 msgid "while reading bad blocks inode"
-msgstr ""
+msgstr "- hatalý bloklar düðümü okunmaya çalýþýlýrken hata oluþtu"
 
 #: e2fsck/unix.c:932
 msgid "This doesn't bode well, but we'll try to go on...\n"
-msgstr ""
+msgstr "Bu pek hayra alamet deðil, ama üstüne gidilecek...\n"
 
 #: e2fsck/unix.c:939
 msgid "Restarting e2fsck from the beginning...\n"
-msgstr ""
+msgstr "e2fsck baþtan baþlýyor...\n"
 
 #: e2fsck/unix.c:943
 msgid "while resetting context"
-msgstr ""
+msgstr "- baðlam sýfýrlanýrken hata oluþtu"
 
 #: e2fsck/unix.c:960
 #, c-format
@@ -1861,11 +2023,13 @@ msgid ""
 "\n"
 "%s: ***** FILE SYSTEM WAS MODIFIED *****\n"
 msgstr ""
+"\n"
+"%s: ***** DOSYA SÝSTEMÝ DEÐÝÞTÝRÝLDÝ *****\n"
 
 #: e2fsck/unix.c:963
 #, c-format
 msgid "%s: ***** REBOOT LINUX *****\n"
-msgstr ""
+msgstr "%s: ***** MAKÝNAYI YENÝDEN BAÞLATIN *****\n"
 
 #: e2fsck/unix.c:971
 #, c-format
@@ -1874,26 +2038,29 @@ msgid ""
 "%s: ********** WARNING: Filesystem still has errors **********\n"
 "\n"
 msgstr ""
+"\n"
+"%s: ********** UYARI: Dosya sistemi hala hatalý **********\n"
+"\n"
 
 #: e2fsck/util.c:76 misc/util.c:51
 msgid "yY"
-msgstr ""
+msgstr "eE"
 
 #: e2fsck/util.c:77
 msgid "nN"
-msgstr ""
+msgstr "hH"
 
 #: e2fsck/util.c:91
 msgid "<y>"
-msgstr ""
+msgstr "<e>"
 
 #: e2fsck/util.c:93
 msgid "<n>"
-msgstr ""
+msgstr "<h>"
 
 #: e2fsck/util.c:95
 msgid " (y/n)"
-msgstr ""
+msgstr " (e/h)"
 
 #: e2fsck/util.c:125
 #, c-format
@@ -1901,6 +2068,8 @@ msgid ""
 "%s? no\n"
 "\n"
 msgstr ""
+"%s? hayýr\n"
+"\n"
 
 #: e2fsck/util.c:129
 #, c-format
@@ -1908,46 +2077,48 @@ msgid ""
 "%s? yes\n"
 "\n"
 msgstr ""
+"%s? evet\n"
+"\n"
 
 #: e2fsck/util.c:133
 msgid "yes"
-msgstr ""
+msgstr "evet"
 
 #: e2fsck/util.c:133
 msgid "no"
-msgstr ""
+msgstr "hayýr"
 
 #: e2fsck/util.c:146
 #, c-format
 msgid "e2fsck_read_bitmaps: illegal bitmap block(s) for %s"
-msgstr ""
+msgstr "e2fsck_read_bitmaps: %s için blok(larýn) biteþlemi kuraldýþý"
 
 #: e2fsck/util.c:151
 msgid "reading inode and block bitmaps"
-msgstr ""
+msgstr "düðüm ve blok biteþlemleri okunuyor"
 
 #: e2fsck/util.c:156
 #, c-format
 msgid "while retrying to read bitmaps for %s"
-msgstr ""
+msgstr "- %s için biteþlemlerin okunmasý yinelenirken hata oluþtu"
 
 #: e2fsck/util.c:168
 msgid "writing block bitmaps"
-msgstr ""
+msgstr "blok biteþlemleri yazýlýyor"
 
 #: e2fsck/util.c:173
 #, c-format
 msgid "while retrying to write block bitmaps for %s"
-msgstr ""
+msgstr "- %s için blok biteþlemlerinin yazýlmasý yinelenirken hata oluþtu"
 
 #: e2fsck/util.c:180
 msgid "writing inode bitmaps"
-msgstr ""
+msgstr "düðüm biteþlemleri yazýlýyor"
 
 #: e2fsck/util.c:185
 #, c-format
 msgid "while retrying to write inode bitmaps for %s"
-msgstr ""
+msgstr "- %s için düðüm biteþlemlerinin yazýlmasý yinelenirken hata oluþtu"
 
 #: e2fsck/util.c:198
 #, c-format
@@ -1957,40 +2128,44 @@ msgid ""
 "%s: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.\n"
 "\t(i.e., without -a or -p options)\n"
 msgstr ""
+"\n"
+"\n"
+"%s: BEKLENMEYEN UYUMSUZLUK; fsck ÇALIÞTIRMALISINIZ.\n"
+"\t(-a ve -p seçeneklerini kullanmadan)\n"
 
 #: e2fsck/util.c:263
 #, c-format
 msgid "Memory used: %dk/%dk (%dk/%dk), "
-msgstr ""
+msgstr "Kullanýlan bellek: %dk/%dk (%dk/%dk), "
 
 #: e2fsck/util.c:267
 #, c-format
 msgid "Memory used: %d, "
-msgstr ""
+msgstr "Kullanýlan bellek: %d, "
 
 #: e2fsck/util.c:273
 #, c-format
 msgid "time: %5.2f/%5.2f/%5.2f\n"
-msgstr ""
+msgstr "zaman: %5.2f/%5.2f/%5.2f\n"
 
 #: e2fsck/util.c:278
 #, c-format
 msgid "elapsed time: %6.3f\n"
-msgstr ""
+msgstr "geçen süre: %6.3f\n"
 
 #: e2fsck/util.c:292
 #, c-format
 msgid "while reading inode %ld in %s"
-msgstr ""
+msgstr "- %ld düðümü %s den okunurken hata oluþtu"
 
 #: e2fsck/util.c:305
 #, c-format
 msgid "while writing inode %ld in %s"
-msgstr ""
+msgstr "- %ld düðümü %s e yazýlýrken hata oluþtu"
 
 #: misc/badblocks.c:57
 msgid "done                        \n"
-msgstr ""
+msgstr "bitti                       \n"
 
 #: misc/badblocks.c:67
 #, c-format
@@ -1998,222 +2173,318 @@ msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
 " [-c blocks_at_once] [-p num_passes] device [last_block [start_count]]\n"
 msgstr ""
+"Kullanýmý: %s [seçenekler] aygýt [bitiþ_bloðu [baþlangýç_bloðu]]\n"
+"\n"
+"Bir aygýttaki hatalý bloklarýn aranmasýnda kullanýlýr.\n"
+"\n"
+"  bitiþ bloðu: verilmezse aygýtýn son bloðu öntanýmlýdýr.\n"
+"\n"
+"  baþlangýç bloðu: bitiþ bloðu verilmesi halinde verilmesi isteðe baðlýdýr.\n"
+"  verilmezse arama aygýtýn ilk bloðundan baþlatýlýr.\n"
+"\n"
+"Seçenekler:\n"
+"   -b block_boyu     blok uzunluðu, bayt olarak verilir\n"
+"   -c blok_sayýsý    bir kerede denetlenecek blok sayýsý, öntanýmlý deðeri "
+"16\n"
+"   -f                normalde hatalý bloklara oku-yaz iþlemi yapýlmaz.\n"
+"                     Bu, sistem baðlý deðilken -f seçeneði ile aþýlabilir.\n"
+"   -i girdi_dosyasý  bilinen hatalý bloklar bu dosyadan okunur\n"
+"   -o çýktý_dosyasý  hatalý bloklar bu dosyaya yazýlýr. Bu dosya daha sonra\n"
+"                     mke2fs ya da e2fsck tarafýndan -l seçeneði ile\n"
+"                     kullanýlabilir\n"
+"   -p deneme_sayýsý  hatalý bloklarýn bulunmasý için normalde tek deneme\n"
+"                     yapýlýr. Bu seçenekle deneme sayýsý belirtilebilir\n"
+"   -n                veri bozmayan salt-oku kipi yerine veri bozmayan\n"
+"                     oku-yaz kipi kullanýlýr\n"
+"   -s                iþlenen blok sayýsý ile sürecin izlenmesi saðlanýr\n"
+"   -v                iþlem sýrasýnda daha fazla ayrýntý verilir\n"
+"   -w                yazýlan deðer ile blok içeriðini karþýlaþtýran oku-yaz\n"
+"                     kipi kullanýlýr.\n"
+"ÖNEMLÝ: -w seçeneði verileri sildiðinden veri içeren dosya sistemlerinde\n"
+"        kullanýlmamalýdýr.\n"
+"\n"
+"Çeviri hatalarýný <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
+"\n"
 
 #: misc/badblocks.c:171 misc/badblocks.c:198
 msgid "during seek"
-msgstr ""
+msgstr "eriþim sýrasýnda"
 
 #: misc/badblocks.c:178
 #, c-format
 msgid "Weird value (%ld) in do_read\n"
-msgstr ""
+msgstr "do_read için tuhaf deðer (%ld)\n"
 
 #: misc/badblocks.c:219
 msgid "during ext2fs_sync_device"
-msgstr ""
+msgstr "ext2fs_sync_device sýrasýnda"
 
 #: misc/badblocks.c:235 misc/badblocks.c:411
 msgid "while beginning bad block list iteration"
-msgstr ""
+msgstr "- hatalý blok listesi yinelemesine baþlanýrken hata oluþtu"
 
 #: misc/badblocks.c:245 misc/badblocks.c:314 misc/badblocks.c:421
 msgid "while allocating buffers"
-msgstr ""
+msgstr "- tampon bellek ayrýlýrken hata oluþtu"
 
 #: misc/badblocks.c:250
 msgid "Checking for bad blocks in read-only mode\n"
-msgstr ""
+msgstr "Hatalý bloklar salt-oku kipinde denetleniyor\n"
 
 #: misc/badblocks.c:251 misc/badblocks.c:323 misc/badblocks.c:440
 #, c-format
 msgid "From block %lu to %lu\n"
-msgstr ""
+msgstr "Blok %lu dan %lu ya kadar\n"
 
 #: misc/badblocks.c:259
 msgid "Checking for bad blocks (read-only test): "
-msgstr ""
+msgstr "Hatalý bloklar için denetleniyor (salt-oku testi): "
 
 #: misc/badblocks.c:322
 msgid "Checking for bad blocks in read-write mode\n"
-msgstr ""
+msgstr "Hatalý bloklar oku-yaz kipinde denetleniyor\n"
 
 #: misc/badblocks.c:329
 #, c-format
 msgid "Writing pattern 0x%08x: "
-msgstr ""
+msgstr "Maske 0x%08x yazýlýyor: "
 
 #: misc/badblocks.c:343 misc/badblocks.c:368
 #, c-format
 msgid "during seek on block %d"
-msgstr ""
+msgstr "%d bloðuna eriþim sýrasýnda"
 
 #: misc/badblocks.c:355
 msgid "Reading and comparing: "
-msgstr ""
+msgstr "Okunuyor ve karþýlaþtýrýlýyor: "
 
 #: misc/badblocks.c:428
 msgid "Initializing random test data\n"
-msgstr ""
+msgstr "Rasgele test verisi hazýrlanýyor\n"
 
 #: misc/badblocks.c:439
 msgid "Checking for bad blocks in non-destructive read-write mode\n"
-msgstr ""
+msgstr "Hatalý bloklar veri bozmayan oku-yaz kipinde denetleniyor\n"
 
 #: misc/badblocks.c:443
 msgid "Checking for bad blocks (non-destructive read-write test): "
-msgstr ""
+msgstr "Hatalý bloklar için denetleniyor (veri bozmayan oku-yaz testi): "
 
 #: misc/badblocks.c:452
 msgid ""
 "\n"
 "Interrupt caught, cleaning up\n"
 msgstr ""
+"\n"
+"Kesme yakalandý, kaldýrýlýyor\n"
 
 #: misc/badblocks.c:509
 #, c-format
 msgid "during test data write, block %lu"
-msgstr ""
+msgstr "veri yazma denemesi sýrasýnda, blok %lu"
 
 #: misc/badblocks.c:619 misc/util.c:117
 #, c-format
 msgid "%s is mounted; "
-msgstr ""
+msgstr "%s baðlandý; "
 
 #: misc/badblocks.c:621
 msgid "badblocks forced anyway.  Hope /etc/mtab is incorrect.\n"
 msgstr ""
+"badblocks n'olursa olsun çalýþtýrýlacak. Ýnþallah /etc/mtab yanlýþtýr.\n"
 
 #: misc/badblocks.c:625
 msgid "it's not safe to run badblocks!\n"
-msgstr ""
+msgstr "'badblocks' çalýþtýrmak güvenli deðil!\n"
 
 #: misc/badblocks.c:667 misc/mke2fs.c:825
 #, c-format
 msgid "bad block size - %s"
-msgstr ""
+msgstr "blok uzunluðu hatalý - %s"
 
 #: misc/badblocks.c:730
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size manually\n"
-msgstr ""
+msgstr "Aygýt alaný saptanamadý; Elle bir deðer girmelisiniz\n"
 
 #: misc/badblocks.c:736
 msgid "while trying to determine device size"
-msgstr ""
+msgstr "- aygýt alaný saptanmaya çalýþýlýrken hata oluþtu"
 
 #: misc/badblocks.c:742 misc/mke2fs.c:985
 #, c-format
 msgid "bad blocks count - %s"
-msgstr ""
+msgstr "blok sayýsý hatalý - %s"
 
 #: misc/badblocks.c:751
 #, c-format
 msgid "bad starting block - %s"
-msgstr ""
+msgstr "baþlangýç bloðu hatalý - %s"
 
 #: misc/badblocks.c:757
 #, c-format
 msgid "bad blocks range: %lu-%lu"
-msgstr ""
+msgstr "hatalý bloklar aralýðý: %lu-%lu"
 
 #: misc/badblocks.c:812
 msgid "creating in-memory bad blocks list"
-msgstr ""
+msgstr "hatalý bloklar listesi bellekte oluþturuluyor"
 
 #: misc/badblocks.c:827
 msgid "adding to in-memory bad block list"
-msgstr ""
+msgstr "bellekteki hatalý bloklar listesine ekleniyor"
 
 #: misc/badblocks.c:851
 #, c-format
 msgid "Pass completed, %u bad blocks found.\n"
-msgstr ""
+msgstr "Geçiþ tamamlandý, %u hatalý blok bulundu.\n"
 
 #: misc/chattr.c:81
 #, c-format
 msgid "usage: %s [-RV] [-+=AacdijsSu] [-v version] files...\n"
 msgstr ""
+"kullanýmý: %s [seçenekler] dosyalar...\n"
+"\n"
+"Dosya özelliklerini deðiþtirmekte kullanýlýr.\n"
+"\n"
+"Sembolik kip seçenekleri:\n"
+"\n"
+"Bu kipte özellikler + ile mevcut seçeneklere eklenir, - ile kaldýrýlýr,\n"
+"= ile sadece belirtilen özellikler içerilir.\n"
+"\n"
+"   A: eriþim zamaný güncellenmez\n"
+"   a: sadece dosyanýn sonuna ekleme yapýlabilir. root deðiþtirebilir.\n"
+"   c: sýkýþtýrýlmýþ; dosyanýn okuma-yazma sýrasýndaki açýlmasý/"
+"sýkýþtýrýlmasý\n"
+"      çekirdeðin denetimindedir.\n"
+"   d: dökümlenmez; dump uygulamasýndan etkilenmez.\n"
+"   i: deðiþmez; dosya içeriði silinemez, yazýlamaz, dosyaya bað "
+"oluþturulamaz\n"
+"      ve ismi deðiþtirilemez. Sadece root bu özelliði deðiþtirebilir.\n"
+"   j: jurnal; dosya sistemi ext3 olarak baðlanmýþsa bu özellik etkisizdir\n"
+"   s: silinme güvenliði; bu özellik verilen bir dosya silindiðinde veri "
+"alaný\n"
+"      sýfýrlarla doldurulur\n"
+"   S: eþzamanlý güncellemeler; bu özelliði içeren bir dosyaya tüm\n"
+"      deðiþiklikler anýnda yazýlýr, sistemin 'sync' seçeneði ile "
+"baðlanmasýna\n"
+"      eþdeðer özellik saðlar\n"
+"   u: silinememezlik; bu dosya silindiðinde içeriði saklanýr, silecek\n"
+"      kullanýcýya silinme sýrasýnda sorulmasýný saðlar.\n"
+"\n"
+"Seçenekler:\n"
+"   -R         dizinler ve içeriklerinde ardýþýk iþlem yapýlýr\n"
+"   -V         sürüm bilgisi ile iþlem hakkýnda daha ayrýntýlý bilgi verilir\n"
+"   -v sürüm   dosyanýn sürüm/üretim numarasý belirtilir\n"
+"\n"
+"Çeviri hatalarýný <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
+"\n"
 
 #: misc/chattr.c:139
 #, c-format
 msgid "bad version - %s\n"
-msgstr ""
+msgstr "sürüm hatalý - %s\n"
 
 #: misc/chattr.c:183 misc/lsattr.c:107
 #, c-format
 msgid "while trying to stat %s"
-msgstr ""
+msgstr "- stat %s yapýlmaya çalýþýlýrken hata oluþtu"
 
 #: misc/chattr.c:200 misc/chattr.c:216
 #, c-format
 msgid "Flags of %s set as "
-msgstr ""
+msgstr "Belirlenen %s bayraklarý: "
 
 #: misc/chattr.c:209
 #, c-format
 msgid "while reading flags on %s"
-msgstr ""
+msgstr "- %s üzerinde bayraklar okunurken hata oluþtu"
 
 #: misc/chattr.c:222
 #, c-format
 msgid "while setting flags on %s"
-msgstr ""
+msgstr "- %s üzerinde bayraklar belirlenirken hata oluþtu"
 
 #: misc/chattr.c:227
 #, c-format
 msgid "Version of %s set as %lu\n"
-msgstr ""
+msgstr "%s sürümü %lu olarak belirlendi\n"
 
 #: misc/chattr.c:230
 #, c-format
 msgid "while setting version on %s"
-msgstr ""
+msgstr "- %s üzerinde sürüm belirlenirken hata oluþtu"
 
 #: misc/chattr.c:244
 msgid "Couldn't allocate path variable in chattr_dir_proc"
-msgstr ""
+msgstr "chattr_dir_proc iþlevinde dosya yolu deðiþkenine yer ayrýlamadý"
 
 #: misc/chattr.c:275
 msgid "= is incompatible with - and +\n"
-msgstr ""
+msgstr "= ile + ve - uyumsuz\n"
 
 #: misc/chattr.c:283
 msgid "Must use '-v', =, - or +\n"
-msgstr ""
+msgstr "'-v', =, - veya + kullanýlmalý\n"
 
 #: misc/dumpe2fs.c:52
 #, c-format
 msgid "Usage: %s [-bfhixV] [-ob superblock] [-oB blocksize] device\n"
 msgstr ""
+"Kullanýmý: %s [seçenekler] aygýt\n"
+"\n"
+"Dosya sistemi bilgilerini dökümler.\n"
+"\n"
+"Seçenekler:\n"
+"   -b              hatalý olarak imlenmiþ bloklarý gösterir\n"
+"   -f              dosya sistemi dumpe2fs'in bilmediði özellikler içerse "
+"bile\n"
+"                   bilgilerin dökümlenmesini saðlar\n"
+"   -h              grup tanýmlayýcýlarý deðil sadece süperblok bilgilerini\n"
+"                   gösterir\n"
+"   -i              belirtilen aygýt için e2image tarafýndan oluþturulmuþ "
+"disk\n"
+"                   görüntüsü dosyasýnýn verilerini gösterir\n"
+"   -x              ayrýntýlý olarak gruplarýn bilgileri gösterilir\n"
+"   -V              sürüm bilgileri gösterilir ve çýkar\n"
+"   -ob süperblok   dosya sistemini tanýmlayan süperblok belirtilir\n"
+"   -oB blok-boyu   dosya sistemini tanýmlayan blok uzunluðu belirtilir\n"
+"\n"
+"Çeviri hatalarýný <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
+"\n"
 
 #: misc/dumpe2fs.c:112
 #, c-format
 msgid "Group %lu: (Blocks 0x%04x -- 0x%04x)\n"
-msgstr ""
+msgstr "Grup %lu: (0x%04x ile 0x%04x arasýndaki bloklar)\n"
 
 #: misc/dumpe2fs.c:113
 #, c-format
 msgid "Group %lu: (Blocks %u -- %u)\n"
-msgstr ""
+msgstr "Grup %lu: (%u ile %u arasýndaki bloklar)\n"
 
 #: misc/dumpe2fs.c:116
 #, c-format
 msgid "  %s Superblock at 0x%04x,  Group Descriptors at 0x%04x-0x%04x\n"
 msgstr ""
+"  %s süperbloðun yeri:     0x%04x\n"
+"  Grup tanýmýnýn yeri:     0x%04x-0x%04x\n"
 
 #: misc/dumpe2fs.c:118
 #, c-format
 msgid "  %s Superblock at %u,  Group Descriptors at %u-%u\n"
 msgstr ""
+"  %s süperbloðun yeri:  %u\n"
+"  Grup tanýmýnýn yeri:     %u-%u\n"
 
 #: misc/dumpe2fs.c:120
 msgid "Primary"
-msgstr ""
+msgstr "  Ýlk"
 
 #: misc/dumpe2fs.c:120
 msgid "Backup"
-msgstr ""
+msgstr "Yedek"
 
 #: misc/dumpe2fs.c:123
 #, c-format
@@ -2221,6 +2492,9 @@ msgid ""
 "  Block bitmap at 0x%04x (+%d), Inode bitmap at 0x%04x (+%d)\n"
 "  Inode table at 0x%04x-0x%04x (+%d)\n"
 msgstr ""
+"  Blok biteþleminin yeri:  0x%04x (+%d)\n"
+"  Düðüm biteþleminin yeri: 0x%04x (+%d)\n"
+"  Düðüm tablosunun yeri:   0x%04x-0x%04x (+%d)\n"
 
 #: misc/dumpe2fs.c:126
 #, c-format
@@ -2228,154 +2502,175 @@ msgid ""
 "  Block bitmap at %u (+%d), Inode bitmap at %u (+%d)\n"
 "  Inode table at %u-%u (+%d)\n"
 msgstr ""
+"  Blok biteþleminin yeri:  %u (+%d)\n"
+"  Düðüm biteþleminin yeri: %u (+%d)\n"
+"  Düðüm tablosunun yeri:   %u-%u (+%d)\n"
 
 #: misc/dumpe2fs.c:137
 #, c-format
 msgid "  %d free blocks, %d free inodes, %d directories\n"
 msgstr ""
+"  Serbest blok sayýsý:     %d\n"
+"  Serbest düðüm sayýsý:    %d\n"
+"  Dizin sayýsý:            %d\n"
 
 #: misc/dumpe2fs.c:141
 msgid "  Free blocks: "
-msgstr ""
+msgstr "  Serbest bloklar:         "
 
 #: misc/dumpe2fs.c:146
 msgid "  Free inodes: "
-msgstr ""
+msgstr "  Serbest düðümler:        "
 
 #: misc/dumpe2fs.c:169 misc/dumpe2fs.c:195
 msgid "while printing bad block list"
-msgstr ""
+msgstr "- hatalý bloklar listesi basýlýrken hata oluþtu"
 
 #: misc/dumpe2fs.c:173
 #, c-format
 msgid "Bad blocks: %d"
-msgstr ""
+msgstr "Hatalý bloklar: %d"
 
 #: misc/dumpe2fs.c:214 misc/tune2fs.c:136
 msgid "while reading journal superblock"
-msgstr ""
+msgstr "- jurnal süperbloðu okunurken hata oluþtu"
 
 #: misc/dumpe2fs.c:222
 msgid "Couldn't find journal superblock magic numbers"
-msgstr ""
+msgstr "Jurnal süperbloðu taným numarasý bulunamadý"
 
 #. Print version number and exit
 #: misc/dumpe2fs.c:292 misc/mke2fs.c:971
 #, c-format
 msgid "\tUsing %s\n"
-msgstr ""
+msgstr "\t%s kullanýlýyor\n"
 
 #: misc/dumpe2fs.c:318 misc/e2image.c:435 misc/tune2fs.c:652 resize/main.c:198
 msgid "Couldn't find valid filesystem superblock.\n"
-msgstr ""
+msgstr "Geçerli süperblok bulunamadý.\n"
 
 #: misc/dumpe2fs.c:329
 msgid "Note: This is a byte-swapped filesystem\n"
-msgstr ""
+msgstr "Bilgi: Bu bir ters-baytlý dosya sistemi\n"
 
 #: misc/dumpe2fs.c:345
 msgid "while trying to read the bitmaps"
-msgstr ""
+msgstr "- biteþlemler okunmaya çalýþýlýrken hata oluþtu"
 
 #: misc/e2label.c:57
 #, c-format
 msgid "e2label: cannot open %s\n"
-msgstr ""
+msgstr "e2label: %s açýlamýyor\n"
 
 #: misc/e2label.c:62
 msgid "e2label: cannot seek to superblock\n"
-msgstr ""
+msgstr "e2label: süperbloka eriþilemiyor\n"
 
 #: misc/e2label.c:67
 msgid "e2label: error reading superblock\n"
-msgstr ""
+msgstr "e2label: süperblok okunurken hata oluþtu\n"
 
 #: misc/e2label.c:71
 msgid "e2label: not an ext2 filesystem\n"
-msgstr ""
+msgstr "e2label: bir ext2 dosya sistemi deðil\n"
 
 #: misc/e2label.c:96 misc/tune2fs.c:753
 msgid "Warning: label too long, truncating.\n"
-msgstr ""
+msgstr "Uyarý: etiket çok uzun, kýrpýlýyor.\n"
 
 #: misc/e2label.c:99
 msgid "e2label: cannot seek to superblock again\n"
-msgstr ""
+msgstr "e2label: süperbloða yine eriþilemedi\n"
 
 #: misc/e2label.c:104
 msgid "e2label: error writing superblock\n"
-msgstr ""
+msgstr "e2label: süperbloða yazýlýrken hata oluþtu\n"
 
 #: misc/e2label.c:116 misc/tune2fs.c:411
 msgid "Usage: e2label device [newlabel]\n"
 msgstr ""
+" \n"
+"Kullanýmý: e2label AYGIT [etiket]\n"
+"AYGIT bölüm ismini atamak/okumak için kullanýlýr.\n"
+"\n"
 
 #: misc/e2image.c:50
 #, c-format
 msgid "Usage: %s [-r] device file\n"
 msgstr ""
+"Kullanýmý: %s [-r] AYGIT DOSYA\n"
+"\n"
+"AYGIT üzerindeki ext2 dosya sisteminin kritik verilerini DOSYAya kaydeder.\n"
+"Örn: 4GB lýk bir sistem için yaklaþýk 3MB lýk bir görüntü dosyasý\n"
+"oluþturulur. Bu dosya, dosya sistemini kurtarmak için uzmanlarca\n"
+"kullanýlabilir. Belli aralýklarla bu dosyanýn baþka bir dosya sistemine\n"
+"kaydedilmesi önerilir. -r seçeneði temel biçemli bir dosya üretir, çok "
+"büyük\n"
+"olacaðýndan önerilmez. DOSYA yerine - verilirse dosya standart çýktýya\n"
+"yazýlýr.\n"
 
 #: misc/e2image.c:61
 msgid "Couldn't allocate header buffer\n"
-msgstr ""
+msgstr "Baþlýk için tampon bellek ayrýlamadý\n"
 
 #: misc/e2image.c:80
 #, c-format
 msgid "short write (only %d bytes) forwriting image header"
-msgstr ""
+msgstr "görüntü baþlýðýný yazmak için kýsa yazma (sadece %d bayt)"
 
 #: misc/e2image.c:99
 msgid "while writing superblock"
-msgstr ""
+msgstr "- süperbloða yazýlýrken hata oluþtu"
 
 #: misc/e2image.c:107
 msgid "while writing inode table"
-msgstr ""
+msgstr "- düðüm tablosuna yazýlýrken hata oluþtu"
 
 #: misc/e2image.c:114
 msgid "while writing block bitmap"
-msgstr ""
+msgstr "- blok biteþlemi yazýlýrken hata oluþtu"
 
 #: misc/e2image.c:121
 msgid "while writing inode bitmap"
-msgstr ""
+msgstr "- düðüm biteþlemi yazýlýrken hata oluþtu"
 
 #: misc/findsuper.c:117
 msgid "Usage:  findsuper device [skiprate [start]]\n"
-msgstr ""
+msgstr "Kullanýmý:  findsuper aygýt [atlama_uzunluðu [baþlangýç_bloðu]]\n"
 
 #: misc/findsuper.c:124
 msgid "Do you really want to skip less than a sector??\n"
 msgstr ""
+"Gerçekten bir sektörden küçük atlamalar yapýlmasýný istiyor musunuz??\n"
 
 #: misc/findsuper.c:130
 #, c-format
 msgid "Have to start at 0 or greater,not %ld\n"
-msgstr ""
+msgstr "Baþlangýç 0 ya da daha büyük olmalý, %ld deðil\n"
 
 #: misc/findsuper.c:143
 msgid "read failed"
-msgstr ""
+msgstr "okuma baþarýsýz"
 
 #: misc/findsuper.c:156
 #, c-format
 msgid "Failed on %d at %ld\n"
-msgstr ""
+msgstr "%d üstünde %ld de baþarýsýz olundu\n"
 
 #: misc/fsck.c:251
 #, c-format
 msgid "Could not determine filesystem type for %s\n"
-msgstr ""
+msgstr "%s için dosya sistemi türü saptanamadý\n"
 
 #: misc/fsck.c:271
 #, c-format
 msgid "WARNING: couldn't open %s: %s\n"
-msgstr ""
+msgstr "UYARI: %s açýlamadý: %s\n"
 
 #: misc/fsck.c:281
 #, c-format
 msgid "WARNING: bad format on line %d of %s\n"
-msgstr ""
+msgstr "UYARI: %2$s nin %1$d. satýrýnda biçem hatasý\n"
 
 #: misc/fsck.c:301
 msgid ""
@@ -2384,95 +2679,153 @@ msgid ""
 "\tshould fix your /etc/fstab file as soon as you can.\n"
 "\n"
 msgstr ""
+"UYARI: /etc/fstab dosyanýzda fsck geçiþ sayýsý alaný bulunmuyor.\n"
+"\tBu seferlik iþlem yapýlacak, ancak en kýsa zamanda bu dosyayý\n"
+"\tdüzeltmelisiniz.\n"
+"\n"
 
 #: misc/fsck.c:415
 #, c-format
 msgid "fsck: %s: not found\n"
-msgstr ""
+msgstr "fsck: %s: yok\n"
 
 #: misc/fsck.c:498
 #, c-format
 msgid "%s: wait: No more child process?!?\n"
-msgstr ""
+msgstr "%s: bekliyor: Baþka ast süreç yok?!?\n"
 
 #: misc/fsck.c:520
 #, c-format
 msgid "Warning... %s for device %s exited with signal %d.\n"
-msgstr ""
+msgstr "Uyarý... %s %s aygýtý için %d sinyali ile çýktý.\n"
 
 #: misc/fsck.c:526
 #, c-format
 msgid "%s %s: status is %x, should never happen.\n"
-msgstr ""
+msgstr "%s %s: durum %x, asla olmamalýydý.\n"
 
 #: misc/fsck.c:615
 #, c-format
 msgid "%s: Error %d while executing fsck.%s for %s\n"
-msgstr ""
+msgstr "%s: Hata %d: fsck.%s %s için çalýtýrýlýrken oluþtu.\n"
 
 #: misc/fsck.c:635
 msgid ""
 "Either all or none of the filesystem types passed to -t must be prefixed\n"
 "with 'no' or '!'.\n"
 msgstr ""
+"-t ile ister tüm dosya sistemi türleri belirtilsin ister bir dosya sistemi\n"
+"türü belirtilmesin, ya 'no' ya da '!' öneki kullanýlmalýdýr.\n"
 
 #: misc/fsck.c:654
 msgid "Couldn't allocate memory for filesystem types\n"
-msgstr ""
+msgstr "Dosya sistemi türleri için bellek ayrýlamadý\n"
 
 #: misc/fsck.c:794
 #, c-format
 msgid "fsck: cannot check %s: fsck.%s not found\n"
-msgstr ""
+msgstr "fsck: %s denetlenemiyor: fsck.%s yok\n"
 
 #: misc/fsck.c:851
 msgid "Checking all file systems.\n"
-msgstr ""
+msgstr "Tüm dosya sistemleri denetleniyor.\n"
 
 #: misc/fsck.c:921
 #, c-format
 msgid "--waiting-- (pass %d)\n"
-msgstr ""
+msgstr "--beklemede-- (%d geçiþi)\n"
 
 #: misc/fsck.c:942
 msgid "Usage: fsck [-ACNPRTV] [-t fstype] [fs-options] filesys\n"
 msgstr ""
+"Kullanýmý:\n"
+"    fsck [seçenekler] dosya-sistemi... [--] [fsck-seçenekleri]\n"
+"\n"
+"Bir ya da daha fazla dosya sistemini denetlemek veya istenirse onarmak\n"
+"için kullanýlýr. dosya-sistemi olarak bir disk bölümü, bir baðlama noktasý,\n"
+"bir bölüm etiketi ya da UUID verilebilir.\n"
+"\n"
+"Seçenekler:\n"
+"  -s               Denetimi hýzlandýrýr. Etkileþimli kipte iyi bir "
+"seçimdir.\n"
+"  -t ds-listesi    Denetlenecek dosya sistemlerinin türleri belirtilir.\n"
+"  -A               /etc/fstab dosyasýndaki denetlenmesi öngörülmüþ "
+"sistemlerin\n"
+"                   denetimleri yapýlýr.\n"
+"  -C               Denetim süreci bir göstergeyle gösterilir.\n"
+"  -N               Denetim yapýlýyormuþ gibi görünür, bir þey yapýlmaz.\n"
+"  -P               -A seçeneði ile birlikte kullanýlarak kök dosya sistemi\n"
+"                   denetlenirken diðer dosya sistemleri de paralel "
+"denetlenir\n"
+"  -R               -A seçeneði ile kullanýldýðýnda kök dosya sistemi\n"
+"                   denetlenmez.\n"
+"  -T               Baþlangýçta baþlýk gösterilmez.\n"
+"  -V               Ýþlemler sýrasýnda daha fazla ayrýntý verilir.\n"
+"\n"
+"fsck seçenekleri:\n"
+"\n"
+"Bu seçenekler e2fs dýþýndaki dosya sistemleri için garanti edilmez.\n"
+"\n"
+"  -a               Hiç bir soru sormadan sistem otomatik olarak denetlenir "
+"ve\n"
+"                   onarýlýr.\n"
+"  -r               Ýþlemler etkileþimli olarak yapýlýr. Paralel denetimler\n"
+"                   için önerilmez.\n"
+"\n"
+"Çeviri hatalarýný <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
+"\n"
 
 #: misc/fsck.c:968
 #, c-format
 msgid "%s: too many devices\n"
-msgstr ""
+msgstr "%s: aygýt sayýsý çok fazla\n"
 
 #: misc/fsck.c:978 misc/fsck.c:1049
 #, c-format
 msgid "%s: too many arguments\n"
-msgstr ""
+msgstr "%s: argüman sayýsý fazla\n"
 
 #: misc/fsck.c:1103
 msgid ""
 "\n"
 "No devices specified to be checked!\n"
 msgstr ""
+"\n"
+"Denetlenecek aygýt(lar) belirtilmedi!\n"
 
 #: misc/get_device_by_label.c:265
 #, c-format
 msgid "WARNING: %s: bad UUID"
-msgstr ""
+msgstr "UYARI: %s: Evrensel tek kimlik (UUID) hatalý"
 
 #: misc/lsattr.c:67
 #, c-format
 msgid "Usage: %s [-RVadlv] [files...]\n"
 msgstr ""
+"Kullanýmý: %s [seçenekler] [dosyalar...]\n"
+"\n"
+"Dosyalarýn özelliklerini listeler.\n"
+"\n"
+"Seçenekler:\n"
+"   -a    '.' ile baþlayanlar dahil dizinlerin içindeki tüm dosyalarý "
+"listeler\n"
+"   -d    dosyalar gibi dizinleri de listeler\n"
+"   -R    dizinler ve içerikleri ardýþýk olarak listelenir\n"
+"   -V    sürüm bilgileri gösterilir\n"
+"   -v    dosyalarýn sürüm/üretim numaralarýný listeler\n"
+"\n"
+"Çeviri hatalarýný <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
+"\n"
 
 #: misc/lsattr.c:77
 #, c-format
 msgid "While reading flags on %s"
-msgstr ""
+msgstr "- %s üzerinde bayraklar okunurken hata oluþtu"
 
 #: misc/lsattr.c:84
 #, c-format
 msgid "While reading version on %s"
-msgstr ""
+msgstr "- %s üzerinde sürüm okunurken hata oluþtu"
 
 #: misc/mke2fs.c:89
 #, c-format
@@ -2483,34 +2836,96 @@ msgid ""
 "\t[-L volume-label] [-M last-mounted-directory] [-O feature[,...]]\n"
 "\t[-r fs-revision] [-R raid_opts] [-qvSV] device [blocks-count]\n"
 msgstr ""
+"Kullanýmý: %s [seçenekler] aygýt [blok-sayýsý]\n"
+"\n"
+"Genellikle bir disk bölümü üzerinde bir ext2 dosya sistemi oluþturur.\n"
+"ext3 de desteklenmiþtir.\n"
+"\n"
+"Seçenekler:\n"
+"   -b 1024|2048|4096         dosya sisteminin blok uzunluðu belirtilir\n"
+"   -c                        salt-okunur kipte hatalý bloklar aranýr\n"
+"   -f adým-boyu              bu sürümde adým boyu blok boyuna eþittir\n"
+"   -F                        aygýt blok özellikli olmasa bile bir dosya\n"
+"                             sistemi oluþturulur\n"
+"   -g her-gruptaki-blok-sayýsý\n"
+"   -i dosya-indeksi-uzunluðu boþ bir dizinin disk üzerinde kaplayabileceði\n"
+"                             en küçük alan, bayt cinsinden verilir.\n"
+"   -j                        ext3 dosya sistemi için jurnal dosyasý "
+"oluþturur\n"
+"                             -J ile jurnal dosyasýnýn özellikleri "
+"verilmezse\n"
+"                             dosya öntanýmlý özelliklrele oluþturulur.\n"
+"                             DÝKKAT: Linux çekirdeðinde ext3 desteði yoksa\n"
+"                             sistem ext2 olarak kullanýlabilir\n"
+"   -J jurnal-seçenekleri     jurnal seçenekleri aþaðýda verilmiþtir\n"
+"   -l DOSYA                  hatalý bloklar DOSYAdan okunur\n"
+"   -L etiket                 dosya sistemine bir etiket atar\n"
+"   -m yedek-blok-yüzdesi     root kullanýcý için ayrýlan yedek bloklarýn\n"
+"                             yüzdesi. Öntanýmlý deðeri %%5 tir\n"
+"   -M son-baðlanan-dizin     dosya istemine son baðlanan dizin belirtilir\n"
+"   -n                        dosya sistemi oluþturulmaz, sadece iþlemleri\n"
+"                             gösterir\n"
+"   -N dosya-indeksi-sayýsý   sistemdeki toplam dosya indeksi sayýsý "
+"belirtilir\n"
+"   -o iþletim-sistemi        dosya sisteminin 'creator os' alanýna "
+"yazýlacak\n"
+"                             deðer. Normalde Linux'tur.\n"
+"   -O özellik[,...]          belirtilen özellikte dosya sistemi oluþturur.\n"
+"                             Özellikler aþaðýda verilmiþtir.\n"
+"   -q                        iþlem sýrasýnda bilgi verilmez\n"
+"   -r dosya-sistemi-sürümü   1.2 çekirdekler dýþýnda öntanýmlý deðeri 1 dir\n"
+"   -R raid_seçenekleri       bu seçenekler için man sayfasýna bakýnýz\n"
+"   -S                        kurtarma amacýyla sadece süper blok ve grup\n"
+"                             tanýmlayýcýlar yeniden yazýlýr\n"
+"   -T dosya-sistemi-türü     dosya sisteminin nasýl kullanýlacaðý "
+"belirtilir\n"
+"                             Türler için man sayfasýna bakýnýz.\n"
+"   -v                        iþlem sýrasýnda ayrýntýlý bilgi verilir\n"
+"   -V                        sürüm bilgileri gösterilir ve çýkar\n"
+"Jurnal seçenekleri:\n"
+"     size=jurnal-uzunluðu     Jurnal dosyasýnýn uzunluðu MB olarak "
+"belirtilir\n"
+"     device=dýþ-jurnal-aygýtý Baþka bir aygýt üzerindeki jurnal dosyasýnýn\n"
+"                              kullanýlmasý saðlanýr.\n"
+"\n"
+"Özellikler:\n"
+"     sparse_super    Yedek süperbloklarýn sayýsýný sýnýrlamakta kullanýlýr.\n"
+"     filetype        Dizin kayýtlarýnda dosya türü bilgisi saklanýr.\n"
+"     has_journal     -j seçeneði ile ayný. Bir ext3 jurnal dosyasý "
+"oluþturur.\n"
+"\n"
+"Çeviri hatalarýný <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
+"\n"
 
 #: misc/mke2fs.c:222
 #, c-format
 msgid "Running command: %s\n"
-msgstr ""
+msgstr "Çalýþan komut: %s\n"
 
 #: misc/mke2fs.c:226
 #, c-format
 msgid "while trying run '%s'"
-msgstr ""
+msgstr "- '%s' çalýþtýrýlýrken hata oluþtu"
 
 #: misc/mke2fs.c:233
 msgid "while processing list of bad blocks from program"
-msgstr ""
+msgstr "- hatalý bloklar listesi iþlenirken hata oluþtu"
 
 #: misc/mke2fs.c:259
 #, c-format
 msgid "Block %d in primary superblock/group descriptor area bad.\n"
-msgstr ""
+msgstr "Birincil süperblok/grup tanýmý alanýndaki blok %d hatalý\n"
 
 #: misc/mke2fs.c:261
 #, c-format
 msgid "Blocks %d through %d must be good in order to build a filesystem.\n"
 msgstr ""
+"Bir dosya sistemi oluþturulurken %d den %d ye kadar olan\n"
+"bloklar hatasýz olmak zorundadýr.\n"
 
 #: misc/mke2fs.c:264
 msgid "Aborting....\n"
-msgstr ""
+msgstr "Çýkýlýyor...\n"
 
 #: misc/mke2fs.c:284
 #, c-format
@@ -2519,22 +2934,25 @@ msgid ""
 "\tbad blocks.\n"
 "\n"
 msgstr ""
+"Uyarý: Blok %d deki yedek süperblok/grup tanýmý\n"
+"\"hatalý bloklar\" içeriyor.\n"
+"\n"
 
 #: misc/mke2fs.c:302
 msgid "while marking bad blocks as used"
-msgstr ""
+msgstr "- hatalý bloklar kullanýlmýþ olarak imlenirken hata oluþtu"
 
 #: misc/mke2fs.c:355
 msgid "done                            \n"
-msgstr ""
+msgstr "bitti                           \n"
 
 #: misc/mke2fs.c:390
 msgid "while allocating zeroizing buffer"
-msgstr ""
+msgstr "- sýfýrlama tampon belleði ayrýlýrken hata oluþtu"
 
 #: misc/mke2fs.c:431
 msgid "Writing inode tables: "
-msgstr ""
+msgstr "Düðüm tablolarý yazýlýyor: "
 
 #: misc/mke2fs.c:442
 #, c-format
@@ -2542,56 +2960,58 @@ msgid ""
 "\n"
 "Could not write %d blocks in inode table starting at %d: %s\n"
 msgstr ""
+"\n"
+"%2d de baþlayan düðüm tablosundaki %1d blok yazýlamadý: %3s\n"
 
 #: misc/mke2fs.c:465
 msgid "while creating root dir"
-msgstr ""
+msgstr "- kök dizin oluþturulurken hata"
 
 #: misc/mke2fs.c:472
 msgid "while reading root inode"
-msgstr ""
+msgstr "- kök düðümü okunurken hata oluþtu"
 
 #: misc/mke2fs.c:481
 msgid "while setting root inode ownership"
-msgstr ""
+msgstr "- kök düðümünün sahibi belirlenirken hata oluþtu"
 
 #: misc/mke2fs.c:498
 msgid "while creating /lost+found"
-msgstr ""
+msgstr "- /lost+found dizini oluþturulurken hata oluþtu"
 
 #: misc/mke2fs.c:505
 msgid "while looking up /lost+found"
-msgstr ""
+msgstr "- /lost+found dizine bakýlýrken hata oluþtu"
 
 #: misc/mke2fs.c:515
 msgid "while expanding /lost+found"
-msgstr ""
+msgstr "- /lost+found dizini geniþletilirken hata oluþtu"
 
 #: misc/mke2fs.c:531
 msgid "while setting bad block inode"
-msgstr ""
+msgstr "- hatalý blok düðümü belirlenirken hata oluþtu"
 
 #: misc/mke2fs.c:564
 #, c-format
 msgid "Warning: could not erase sector %d: %s\n"
-msgstr ""
+msgstr "Uyarý: %d. sektör silinemedi: %s\n"
 
 #: misc/mke2fs.c:580
 msgid "while initializing journal superblock"
-msgstr ""
+msgstr "- jurnal superbloðu ilklendirilirken hata oluþtu"
 
 #: misc/mke2fs.c:586
 msgid "Zeroing journal device: "
-msgstr ""
+msgstr "Jurnal aygýtý temizleniyor: "
 
 #: misc/mke2fs.c:593
 #, c-format
 msgid "while zeroing journal device (block %u, count %d)"
-msgstr ""
+msgstr "- jurnal aygýtý temizlenirken (blok %u, %d blok) hata oluþtu"
 
 #: misc/mke2fs.c:604
 msgid "while writing journal superblock"
-msgstr ""
+msgstr "- jurnal süperbloðu yazýlýrken hata oluþtu"
 
 #: misc/mke2fs.c:618
 #, c-format
@@ -2599,76 +3019,78 @@ msgid ""
 "warning: %d blocks unused.\n"
 "\n"
 msgstr ""
+"uyarý: %d blok kullanýlmamýþ.\n"
+"\n"
 
 #: misc/mke2fs.c:623
 #, c-format
 msgid "Filesystem label=%s\n"
-msgstr ""
+msgstr "Dosya sistemi ismi = %s\n"
 
 #: misc/mke2fs.c:624
 msgid "OS type: "
-msgstr ""
+msgstr "Ýþl. Sist. türü: "
 
 #: misc/mke2fs.c:629
 msgid "(unknown os)"
-msgstr ""
+msgstr "(bilinmeyen iþl. sist.)"
 
 #: misc/mke2fs.c:632
 #, c-format
 msgid "Block size=%u (log=%u)\n"
-msgstr ""
+msgstr "Blok boyu = %u (günlük kaydý = %u)\n"
 
 #: misc/mke2fs.c:634
 #, c-format
 msgid "Fragment size=%u (log=%u)\n"
-msgstr ""
+msgstr "Adýmlama boyu = %u (günlük kaydý = %u)\n"
 
 #: misc/mke2fs.c:636
 #, c-format
 msgid "%u inodes, %u blocks\n"
-msgstr ""
+msgstr "%u düðüm, %u blok\n"
 
 #: misc/mke2fs.c:638
 #, c-format
 msgid "%u blocks (%2.2f%%) reserved for the super user\n"
-msgstr ""
+msgstr "%u blok (%%%2.2f) süper kullanýcý için ayrýldý\n"
 
 #: misc/mke2fs.c:641
 #, c-format
 msgid "First data block=%u\n"
-msgstr ""
+msgstr "Ýlk veri bloðu = %u\n"
 
 #: misc/mke2fs.c:643
 #, c-format
 msgid "%u block groups\n"
-msgstr ""
+msgstr "%u blok grubu\n"
 
 #: misc/mke2fs.c:645
 #, c-format
 msgid "%u block group\n"
-msgstr ""
+msgstr "%u blok grubu\n"
 
 #: misc/mke2fs.c:646
 #, c-format
 msgid "%u blocks per group, %u fragments per group\n"
-msgstr ""
+msgstr "Grup baþýna %u blok ve %u sekme\n"
 
 #: misc/mke2fs.c:648
 #, c-format
 msgid "%u inodes per group\n"
-msgstr ""
+msgstr "grup baþýna %u düðüm\n"
 
 #: misc/mke2fs.c:655
 msgid "Superblock backups stored on blocks: "
-msgstr ""
+msgstr "Süperbloklarýn bulunduðu bloklar:"
 
 #: misc/mke2fs.c:705
 msgid "Couldn't allocate memory to parse raid options!\n"
-msgstr ""
+msgstr "Raid seçenekleri için bellek ayrýlamadý!\n"
 
 #: misc/mke2fs.c:730
 msgid "Invalid stride parameter.\n"
-msgstr ""
+msgstr "'stride' parametresi geçersiz.\n"
 
 #: misc/mke2fs.c:738
 msgid ""
@@ -2682,61 +3104,71 @@ msgid ""
 "\tstride=<stride length in blocks>\n"
 "\n"
 msgstr ""
+"\n"
+"Belirtilen raid seçenekleri hatalý.\n"
+"\n"
+"Raid seçenekleri '=' iþaretli çiftler virgüllerle ayrýlarak verilir.\n"
+"\n"
+"Geçerli raid seçenekleri:\n"
+"\tstride=<bloklardaki adým uzunluðu>\n"
+"\n"
 
 #: misc/mke2fs.c:840
 #, c-format
 msgid "bad fragment size - %s"
-msgstr ""
+msgstr "sekme boyu hatalý - %s"
 
 #: misc/mke2fs.c:846
 msgid "Warning: fragments not supported.  Ignoring -f option\n"
-msgstr ""
+msgstr "Uyarý: sekmeler desteklenmediðinden -f seçeneði yoksayýlýyor\n"
 
 #: misc/mke2fs.c:853
 msgid "Illegal number for blocks per group"
-msgstr ""
+msgstr "Grup baþýna blok sayýsý kuraldýþý"
 
 #: misc/mke2fs.c:858
 msgid "blocks per group must be multiple of 8"
-msgstr ""
+msgstr "grup baþýna blok sayýsý 8'in katlarý olmalýdýr"
 
 #: misc/mke2fs.c:867
 #, c-format
 msgid "bad inode ratio - %s"
-msgstr ""
+msgstr "düðüm oraný hatalý - %s"
 
 #: misc/mke2fs.c:884
 msgid "in malloc for bad_blocks_filename"
-msgstr ""
+msgstr "- bad_blocks_filename için bellek ayrýlýrken"
 
 #: misc/mke2fs.c:893
 #, c-format
 msgid "bad reserved blocks percent - %s"
-msgstr ""
+msgstr "yedek blok yüzdesi hatalý - %s"
 
 #: misc/mke2fs.c:956 misc/tune2fs.c:265
 #, c-format
 msgid "Invalid filesystem option set: %s\n"
-msgstr ""
+msgstr "Geçersiz dosya sistemi seçeneði: %s\n"
 
 #: misc/mke2fs.c:1009 misc/mke2fs.c:1270
 #, c-format
 msgid "while trying to open journal device %s\n"
-msgstr ""
+msgstr "- %s jurnal aygýtý açýlmaya çalýþýlýrken hata\n"
 
 #: misc/mke2fs.c:1034
 msgid "filesystem"
-msgstr ""
+msgstr "dosya sistemi"
 
 #: misc/mke2fs.c:1047 resize/main.c:221
 msgid "while trying to determine filesystem size"
-msgstr ""
+msgstr "- dosya sistemi uzunluðu saptanmaya çalýþýlýrken hata oluþtu"
 
 #: misc/mke2fs.c:1053
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size of the filesystem\n"
 msgstr ""
+"Aygýt alaný saptanamadý; dosya sistemi için\n"
+"bir uzunluk belirtmelisiniz\n"
 
 #: misc/mke2fs.c:1060
 msgid ""
@@ -2745,41 +3177,46 @@ msgid ""
 "\ta modified partition being busy and in use.  You may need to reboot\n"
 "\tto re-read your partition table.\n"
 msgstr ""
+"Aygýttaki alan sýfýr olarak raporlandý.  Ya deðiþtirilen bir disk bölümü\n"
+"hala meþgul veya kullanýmda olduðundan fdisk çalýþtýrýldýktan sonra\n"
+"disk bölümleme tablosu yeniden okunamadý ya da yanlýþ bölüm belirtildi.\n"
+"Disk bölümleme tablosunun yeniden okunmasý için sisteminizi yeniden\n"
+"baþlatmalýsýnýz.\n"
 
 #: misc/mke2fs.c:1075
 msgid "Filesystem larger than apparent filesystem size."
-msgstr ""
+msgstr "Dosya sisteminin uzunluðu görünürdeki uzunluktan büyük."
 
 #: misc/mke2fs.c:1093
 msgid "blocks per group count out of range"
-msgstr ""
+msgstr "Grup baþýna blok sayýsý kapsamdýþý"
 
 #: misc/mke2fs.c:1133
 msgid "while setting up superblock"
-msgstr ""
+msgstr "- süperblok ayarlanýrken hata oluþtu"
 
 #: misc/mke2fs.c:1161
 #, c-format
 msgid "unknown os - %s"
-msgstr ""
+msgstr "bilinmeyen iþletim sistemi - %s"
 
 #: misc/mke2fs.c:1216
 msgid "while trying to allocate filesystem tables"
-msgstr ""
+msgstr "- dosya sistemi tablolarý ayrýlmaya çalýþýlýrken hata oluþtu"
 
 #: misc/mke2fs.c:1247
 #, c-format
 msgid "zeroing block %u at end of filesystem"
-msgstr ""
+msgstr "sýfýrlama bloðu %u dosya sisteminin sonunda"
 
 #: misc/mke2fs.c:1263 misc/tune2fs.c:340
 msgid "journal"
-msgstr ""
+msgstr "jurnal"
 
 #: misc/mke2fs.c:1275
 #, c-format
 msgid "Adding journal to device %s: "
-msgstr ""
+msgstr "%s'e jurnal ekleniyor: "
 
 #: misc/mke2fs.c:1282
 #, c-format
@@ -2787,46 +3224,54 @@ msgid ""
 "\n"
 "\twhile trying to add journal to device %s"
 msgstr ""
+"\n"
+"\tjurnal %s e eklenmeye çalýþýlýrken hata oluþtu"
 
 #: misc/mke2fs.c:1287 misc/mke2fs.c:1311 misc/tune2fs.c:362 misc/tune2fs.c:376
 msgid "done\n"
-msgstr ""
+msgstr "tamam\n"
 
 #: misc/mke2fs.c:1299
 #, c-format
 msgid "Creating journal (%d blocks): "
-msgstr ""
+msgstr "Jurnal oluþturuluyor (%d blok): "
 
 #: misc/mke2fs.c:1307
 msgid ""
 "\n"
 "\twhile trying to create journal"
 msgstr ""
+"\n"
+"\tjurnal oluþturulmaya çalýþýlýrken hata oluþtu"
 
 #: misc/mke2fs.c:1316
 msgid "Writing superblocks and filesystem accounting information: "
-msgstr ""
+msgstr "Süperbloklarýn ve dosya sisteminin hesap bilgileri yazýlýyor: "
 
 #: misc/mke2fs.c:1320
 msgid ""
 "\n"
 "Warning, had trouble writing out superblocks."
 msgstr ""
+"\n"
+"Uyarý, süperbloklarýn tamamýna yazma sorunu var."
 
 #: misc/mke2fs.c:1323
 msgid ""
 "done\n"
 "\n"
 msgstr ""
+"bitti\n"
+"\n"
 
 #: misc/mklost+found.c:47
 msgid "Usage: mklost+found\n"
-msgstr ""
+msgstr "Kullanýmý: mklost+found\n"
 
 #: misc/partinfo.c:21
 #, c-format
 msgid "%s failed for %s: %s\n"
-msgstr ""
+msgstr "%s %s için baþarýsýz: %s\n"
 
 #: misc/partinfo.c:37
 #, c-format
@@ -2839,18 +3284,25 @@ msgid ""
 "\t%s /dev/hda?\n"
 "\n"
 msgstr ""
+"Kullanýmý: %s <aygýt1> <aygýt2> <aygýt3>\n"
+"\n"
+"Bir aygýt kümesi için disk bölümleme bilgilerini gösterir\n"
+"Bu uygulamanýn çok kullanýlan biçimi:\n"
+"\n"
+"\t%s /dev/hda?\n"
+"\n"
 
 #: misc/partinfo.c:54
 msgid "HDIO_GETGEO ioctl"
-msgstr ""
+msgstr "HDIO_GETGEO ioctl"
 
 #: misc/partinfo.c:61
 msgid "BLKGETSIZE ioctl"
-msgstr ""
+msgstr "BLKGETSIZE ioctl"
 
 #: misc/tune2fs.c:72
 msgid "Please run e2fsck on the filesystem.\n"
-msgstr ""
+msgstr "Lütfen dosya sisteminde e2fsck çalýþtýrýn.\n"
 
 #: misc/tune2fs.c:77
 #, c-format
@@ -2862,63 +3314,126 @@ msgid ""
 "\t[-L volume-label] [-M last-mounted-dir] [-U UUID]\n"
 "\t[-O [^]feature[,...]] device\n"
 msgstr ""
+"Kullanýmý: %s [seçenekler] aygýt\n"
+"\n"
+"Dosya sisteminin ayarlanabilir parametrelerini deðiþtirmekte kullanýlýr.\n"
+"\n"
+"Seçenekler:\n"
+"   -c SAYI                Ýki dosya sistemi denetimi arasýnda dosya "
+"sisteminin\n"
+"                          en çok kaç defa baðlanabileceði belirtilir.\n"
+"   -C SAYI                -c ile ayný\n"
+"   -e hata-davranýþý      Hata oluþtuðunda ne yapýlacaðý belirtilir.\n"
+"                          'continue': hata yoksayýlýr. 'remount-ro': dosya\n"
+"                          sistemi salt-okunur olarak baðlanýr. 'panic':\n"
+"                          çekirdek paniði oluþur.\n"
+"   -g grup                Yedek bloklarýn hangi kullanýcý grubuna "
+"ayrýlacaðý\n"
+"                          belirtilir. Grup ismi ya da numarasý verilebilir.\n"
+"   -u kullanýcý           Yedek bloklarýn hangi kullanýcýya ayrýlacaðý\n"
+"                          belirtilir. Kull. ismi ya da numarasý "
+"verilebilir.\n"
+"   -i süre[d|m|w]         Ýki denetim arasýndaki en büyük süre belirtilir.\n"
+"                          Gün(d), ay(m), hafta(w) olarak verilebilir. 0 ile\n"
+"                          zamana baðlý denetim ayarý kaldýrýlýr.\n"
+"   -j                     Dosya sistemine jurnal dosyasý eklenir. -J\n"
+"                          seçeneði ile seçenekler belirtilmezse dosya\n"
+"                          öntanýmlý özelliklerle oluþtururlur.\n"
+"   -J seçenek[,...]       Aþaðýda açýklamalarý verilen seçenekler burada\n"
+"                          virgüllerle ayrýlarak verilebilir.\n"
+"   -l                     Dosya sisteminin özellikleri listelenir.\n"
+"   -L etiket              Dosya sisteminin bölüm ismi belirtilir.\n"
+"   -m yedek-blok-yüzdesi  Yedek bloklarýn yüzdesi belirtilir. Öntanýmlý %%5\n"
+"   -M DÝZÝN               Dosya sistemine son baðlanan dizin belirtilir.\n"
+"   -O [^]özellik[,...]    Aþaðýda açýklamalarý verilen özellikler burada\n"
+"                          virgüllerle ayrýlarak verilebilir.\n"
+"   -r                     Yedek bloklarýn sayýsý belirtilir.\n"
+"   -s [0|1]               Çok büyük dosya sistemlerinde yer kazandýrýr.\n"
+"                          -O sparse_super ile aynýdýr.\n"
+"   -U clear|random|time   Dosya sisteminin evrensel tek kimliðinin (UUID)\n"
+"                          hangi yöntemle belirleneceði belirtilir.'clear' "
+"ile\n"
+"                          silinir; 'random' rasgele, 'time' zamana göre bir\n"
+"                          kimlik üretir.\n"
+"\n"
+"Jurnal seçenekleri:\n"
+"     size=jurnal-uzunluðu     Jurnal dosyasýnýn uzunluðu MB olarak "
+"belirtilir\n"
+"     device=dýþ-jurnal-aygýtý Baþka bir aygýt üzerindeki jurnal dosyasýnýn\n"
+"                              kullanýlmasý saðlanýr.\n"
+"\n"
+"Özellikler:\n"
+"'^' öneki ile verilen özellikler süperbloða eskiler kaldýrýlarak yazýlýr.\n"
+"'+' önekiyle ya da öneksiz verilen özellikler süperbloktaki özelliklere\n"
+"eklenir.\n"
+"     sparse_super    Yedek süperbloklarýn sayýsýný sýnýrlamakta kullanýlýr.\n"
+"     filetype        Dizin kayýtlarýnda dosya türü bilgisi saklanýr.\n"
+"     has_journal     -j seçeneði ile ayný. Bir ext3 jurnal dosyasý "
+"oluþturur.\n"
+"\n"
+"Çeviri hatalarýný <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
+"\n"
 
 #: misc/tune2fs.c:124
 msgid "while trying to open external journal"
-msgstr ""
+msgstr "- dýþ jurnal açýlmaya çalýþýlýrken hata oluþtu"
 
 #: misc/tune2fs.c:128
 #, c-format
 msgid "%s is not a journal device.\n"
-msgstr ""
+msgstr "%s bir jurnal aygýtý deðil.\n"
 
 #: misc/tune2fs.c:143
 msgid "Journal superblock not found!\n"
-msgstr ""
+msgstr "Jurnal süperbloðu yok!\n"
 
 #: misc/tune2fs.c:156
 msgid "Filesystem's UUID not found on journal device.\n"
-msgstr ""
+msgstr "Jurnal aygýtýnda dosya sisteminin evrensel tek kimliði (UUID) yok.\n"
 
 #: misc/tune2fs.c:176
 msgid "Journal NOT removed\n"
-msgstr ""
+msgstr "Jurnal silinMEdi\n"
 
 #: misc/tune2fs.c:183
 msgid "Journal removed\n"
-msgstr ""
+msgstr "Jurnal silindi\n"
 
 #: misc/tune2fs.c:214
 msgid "while reading journal inode"
-msgstr ""
+msgstr "- jurnal düðümü okunurken hata oluþtu"
 
 #: misc/tune2fs.c:221
 msgid "while reading bitmaps"
-msgstr ""
+msgstr "- biteþlemler okunurken hata oluþtu"
 
 #: misc/tune2fs.c:228
 msgid "while clearing journal inode"
-msgstr ""
+msgstr "- jurnal düðümü temizlenirken hata oluþtu"
 
 #: misc/tune2fs.c:239
 msgid "while writing journal inode"
-msgstr ""
+msgstr "- jurnal düðümü yazýlýrken hata oluþtu"
 
 #: misc/tune2fs.c:279
 msgid ""
 "The has_journal flag may only be cleared when the filesystem is\n"
 "unmounted or mounted read-only.\n"
 msgstr ""
+"has_journal bayraðý sadece dosya sistemi baðlý deðilken ya da salt-okunur\n"
+"baðlýyken temizlenebilir.\n"
 
 #: misc/tune2fs.c:288
 msgid ""
 "The needs_recovery flag is set.  Please run e2fsck before clearing\n"
 "the has_journal flag.\n"
 msgstr ""
+"needs_recovery bayraðý gerekiyor. Lütfen has_journal bayraðý\n"
+"temizlenmeden önce e2fsck çalýþtýrýn.\n"
 
 #: misc/tune2fs.c:335
 msgid "The filesystem already has a journal.\n"
-msgstr ""
+msgstr "Dosya sisteminde bir jurnal dosyasý zaten var.\n"
 
 #: misc/tune2fs.c:346
 #, c-format
@@ -2926,111 +3441,117 @@ msgid ""
 "\n"
 "\twhile trying to open journal on %s\n"
 msgstr ""
+"\n"
+"\t%s üzerindeki jurnal açýlmaya çalýþýlýrken hata oluþtu\n"
 
 #: misc/tune2fs.c:350
 #, c-format
 msgid "Creating journal on device %s: "
-msgstr ""
+msgstr "%s üzerinde jurnal dosyasý oluþturuluyor: "
 
 #: misc/tune2fs.c:358
 #, c-format
 msgid "while adding filesystem to journal on %s"
-msgstr ""
+msgstr "- %s üzerindeki jurnal dosyasýna dosya sistemi eklenirken hata oluþtu"
 
 #: misc/tune2fs.c:364
 msgid "Creating journal inode: "
-msgstr ""
+msgstr "Jurnal düðümü oluþturuluyor: "
 
 #: misc/tune2fs.c:373
 msgid ""
 "\n"
 "\twhile trying to create journal file"
 msgstr ""
+"\n"
+"\tjurnal dosyasý oluþturulmaya çalýþýlýrken hata oluþtu"
 
 #: misc/tune2fs.c:439 misc/tune2fs.c:452
 #, c-format
 msgid "bad mounts count - %s"
-msgstr ""
+msgstr "baðlama sayýsý hatalý - %s"
 
 #: misc/tune2fs.c:468
 #, c-format
 msgid "bad error behavior - %s"
-msgstr ""
+msgstr "hata davranýþý hatalý - %s"
 
 #: misc/tune2fs.c:491
 #, c-format
 msgid "bad gid/group name - %s"
-msgstr ""
+msgstr "grup ismi/numarasý hatalý -%s"
 
 #: misc/tune2fs.c:524
 #, c-format
 msgid "bad interval - %s"
-msgstr ""
+msgstr "süre hatalý - %s"
 
 #: misc/tune2fs.c:552
 #, c-format
 msgid "bad reserved block ratio - %s"
-msgstr ""
+msgstr "yedek blok oraný hatalý - %s"
 
 #: misc/tune2fs.c:567
 msgid "-O may only be specified once"
-msgstr ""
+msgstr "-O virgüllerle ayrýlmýþ özellikleriyle yalnýz bir kere kullanýlabilir"
 
 #: misc/tune2fs.c:577
 #, c-format
 msgid "bad reserved blocks count - %s"
-msgstr ""
+msgstr "yedek blok sayýsý hatalý - %s"
 
 #: misc/tune2fs.c:601
 #, c-format
 msgid "bad uid/user name - %s"
-msgstr ""
+msgstr "kullanýcý ismi/numarasý hatalý - %s"
 
 #: misc/tune2fs.c:675
 #, c-format
 msgid "Setting maximal mount count to %d\n"
-msgstr ""
+msgstr "En fazla baðlama sayýsý %d olarak belirleniyor\n"
 
 #: misc/tune2fs.c:681
 #, c-format
 msgid "Setting current mount count to %d\n"
-msgstr ""
+msgstr "Þimdiki baðlama sayýsý %d olarak belirleniyor\n"
 
 #: misc/tune2fs.c:686
 #, c-format
 msgid "Setting error behavior to %d\n"
-msgstr ""
+msgstr "Hata davranýþý %d olarak belirleniyor\n"
 
 #: misc/tune2fs.c:691
 #, c-format
 msgid "Setting reserved blocks gid to %lu\n"
-msgstr ""
+msgstr "Yedek bloklarýn grup numarasý %lu olarak belirleniyor\n"
 
 #: misc/tune2fs.c:696
 #, c-format
 msgid "Setting interval between check %lu seconds\n"
-msgstr ""
+msgstr "Denetimler arasýndaki süre %lu saniye olarak belirleniyor\n"
 
 #: misc/tune2fs.c:702
 #, c-format
 msgid "Setting reserved blocks percentage to %lu (%u blocks)\n"
-msgstr ""
+msgstr "Yedek bloklarýn yüzdesi %lu (%u blok) olarak belirleniyor\n"
 
 #: misc/tune2fs.c:708
 #, c-format
 msgid "reserved blocks count is too big (%ul)"
-msgstr ""
+msgstr "yedek blok sayýsý çok büyük (%ul)"
 
 #: misc/tune2fs.c:714
 #, c-format
 msgid "Setting reserved blocks count to %lu\n"
-msgstr ""
+msgstr "Yedek blok sayýsý %lu olarak belirleniyor\n"
 
 #: misc/tune2fs.c:720
 msgid ""
 "\n"
 "The filesystem already has sparse superblocks.\n"
 msgstr ""
+"\n"
+"Dosya sistemindeki süperbloklar zaten azaltýlmýþ.\n"
 
 #: misc/tune2fs.c:727
 #, c-format
@@ -3038,12 +3559,16 @@ msgid ""
 "\n"
 "Sparse superblock flag set.  %s"
 msgstr ""
+"\n"
+"Süperblok azaltma bayraðý konuldu.  %s"
 
 #: misc/tune2fs.c:734
 msgid ""
 "\n"
 "The filesystem already has sparse superblocks disabled.\n"
 msgstr ""
+"\n"
+"Dosya sisteminde süperblok azaltma bayraðý zaten etkin deðil.\n"
 
 #: misc/tune2fs.c:742
 #, c-format
@@ -3051,58 +3576,72 @@ msgid ""
 "\n"
 "Sparse superblock flag cleared.  %s"
 msgstr ""
+"\n"
+"Süperblok azaltma bayraðý temizlendi.  %s"
 
 #: misc/tune2fs.c:749
 #, c-format
 msgid "Setting reserved blocks uid to %lu\n"
-msgstr ""
+msgstr "Ayrýlan bloklarýn kullanýcý numarasý %lu olarak ayarlanýyor\n"
 
 #: misc/tune2fs.c:780
 msgid "Invalid UUID format\n"
-msgstr ""
+msgstr "Geçersiz UUID biçemi\n"
 
 #: misc/uuidgen.c:30
 #, c-format
 msgid "Usage: %s [-r] [-t]\n"
 msgstr ""
+"Kullanýmý: %s [seçenek]\n"
+"Evrendeki tek tanýmlayýcýyý (UUID) oluþturur.\n"
+"\n"
+"Seçenekler:\n"
+"   -r      rasgele sayý üreteci kullanýlarak rasgele bir numara üretilir\n"
+"   -t      varsa eternet kartýnýn adresi ve sistem zamanýna göre bir\n"
+"           numara üretir\n"
+"\n"
+"Çeviri hatalarýný <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
+"\n"
 
 #: misc/util.c:55
 msgid "Proceed anyway? (y,n) "
-msgstr ""
+msgstr "Yine de devam edilsin mi? (e/h) "
 
 #: misc/util.c:70
 #, c-format
 msgid "Could not stat %s --- %s\n"
-msgstr ""
+msgstr "stat %s yapýlamadý --- %s\n"
 
 #: misc/util.c:73
 msgid ""
 "\n"
 "The device apparently does not exist; did you specify it correctly?\n"
 msgstr ""
+"\n"
+"Aygýt görünmüyor; doðru belirttiðinize emin misiniz?\n"
 
 #: misc/util.c:78
 #, c-format
 msgid "%s is not a block special device.\n"
-msgstr ""
+msgstr "%s blok özellikli bir aygýt deðil.\n"
 
 #: misc/util.c:95
 #, c-format
 msgid "%s is entire device, not just one partition!\n"
-msgstr ""
+msgstr "%s diskin tamamý! Bir disk bölümü deðil!\n"
 
 #: misc/util.c:119
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"
-msgstr ""
+msgstr "mke2fs n'olursa olsun çalýþtýrýlacak. Ýnþallah /etc/mtab yanlýþtýr.\n"
 
 #: misc/util.c:122
 #, c-format
 msgid "will not make a %s here!\n"
-msgstr ""
+msgstr "burada bir %s yapýlmayacak!\n"
 
 #: misc/util.c:136
 msgid "Couldn't allocate memory to parse journal options!\n"
-msgstr ""
+msgstr "Jurnal seçenekleri için bellek ayrýlamadý!\n"
 
 #: misc/util.c:178
 msgid ""
@@ -3119,12 +3658,26 @@ msgid ""
 "The journal size must be between 1024 and 102400 filesystem blocks.\n"
 "\n"
 msgstr ""
+"\n"
+"Jurnal seçenekleri hatalý belirtilmiþ.\n"
+"\n"
+"Jurnal seçenekleri '=' iþaretli çiftler halinde\n"
+"virgüllerle ayrýlarak verilir.\n"
+"\n"
+"Geçerli jurnal seçenekleri:\n"
+"\tsize=<MB olarak jurnal uzunluðu>\n"
+"\tdevice=<jurnal dosyasýnýn bulunacaðý aygýt>\n"
+"\n"
+"Jurnal dosyasýnýn uzunluðu 1024 ile 102400 blok arasýnda seçilebilir.\n"
+"\n"
 
 #: misc/util.c:205
 msgid ""
 "\n"
 "Filesystem too small for a journal\n"
 msgstr ""
+"\n"
+"Dosya sistemi bir jurnal için çok küçük\n"
 
 #: misc/util.c:213
 #, c-format
@@ -3133,12 +3686,17 @@ msgid ""
 "The requested journal size is %d blocks; it must be\n"
 "between 1024 and 102400 blocks.  Aborting.\n"
 msgstr ""
+"\n"
+"Jurnal dosyasýnýn uzunluðu %d blok olarak belirtilmiþ.\n"
+"1024 ile 102400 blok arasýnda olmalý.  Çýkýlýyor.\n"
 
 #: misc/util.c:221
 msgid ""
 "\n"
 "Journal size too big for filesystem.\n"
 msgstr ""
+"\n"
+"Jurnal dosyasý dosya sistemi için çok büyük.\n"
 
 #: misc/util.c:240
 #, c-format
@@ -3146,6 +3704,9 @@ msgid ""
 "This filesystem will be automatically checked every %d mounts or\n"
 "%g days, whichever comes first.  Use tune2fs -c or -i to override.\n"
 msgstr ""
+"Bu dosya sistemi her %d baðlamada bir ya da %g günde bir, hangisi önce\n"
+"gerçekleþirse, otomatik olarak denetlenecektir. Bu deðerleri deðiþtirmek\n"
+"için tune2fs'yi -c veya -i seçeneði ile çalýþtýrýnýz.\n"
 
 #: resize/main.c:31
 #, c-format
@@ -3153,56 +3714,71 @@ msgid ""
 "usage: %s [-d debug_flags] [-f] [-F] [-p] device [new-size]\n"
 "\n"
 msgstr ""
+"kullanýmý: %s [seçenekler] aygýt [yeni-boyut]\n"
+"\n"
+"Dosya sistemini yeniden boyutlandýrýr.\n"
+"\n"
+"Seçenekler:\n"
+"   -d bayraklar    hata ayýklama seçeneði ile derlenmiþse hata ayýklama\n"
+"                   seviyeleri belirtilir\n"
+"   -f              bazý güvenlik denetimlerini engelleyerek boyutlandýrmaya\n"
+"                   zorlar\n"
+"   -F              baþlamadan önce dosya sisteminin tampon belleklerini\n"
+"                   boþaltýr\n"
+"   -p              iþlem ilerleyiþini gösteren bir çubuk üretir\n"
+"\n"
+"Çeviri hatalarýný <gnu-tr-u12a@lists.sourceforge.net> adresine bildiriniz.\n"
+"\n"
 
 #: resize/main.c:52
 msgid "Extending the inode table"
-msgstr ""
+msgstr "Dosya indeksi tablosu geniþletiliyor"
 
 #: resize/main.c:55
 msgid "Relocating blocks"
-msgstr ""
+msgstr "Bloklar yeniden konumlandýrýlýyor"
 
 #: resize/main.c:58
 msgid "Scanning inode table"
-msgstr ""
+msgstr "Dosya indeksi tablosu taranýyor"
 
 #: resize/main.c:61
 msgid "Updating inode references"
-msgstr ""
+msgstr "Dosya indeksi baþvurularý güncelleniyor"
 
 #: resize/main.c:64
 msgid "Moving inode table"
-msgstr ""
+msgstr "Dosya indeksi tablosu taþýnýyor"
 
 #: resize/main.c:67
 msgid "Unknown pass?!?"
-msgstr ""
+msgstr "bilinmeyen geçiþ?!?"
 
 #: resize/main.c:70
 #, c-format
 msgid "Begin pass %d (max = %lu)\n"
-msgstr ""
+msgstr "Geçiþ %d baþlýyor (en çok = %lu)\n"
 
 #: resize/main.c:95
 msgid "ext2fs_check_if_mount"
-msgstr ""
+msgstr "ext2fs_check_if_mount"
 
 #: resize/main.c:103
 #, c-format
 msgid ""
 "%s is mounted; can't resize a mounted filesystem!\n"
 "\n"
-msgstr ""
+msgstr "%s baðlý; baðlý bir dosya sistemi yeniden boyutlandýrýlamaz!\n"
 
 #: resize/main.c:125
 #, c-format
 msgid "resize2fs %s (%s)\n"
-msgstr ""
+msgstr "resize2fs %s (%s)\n"
 
 #: resize/main.c:158
 #, c-format
 msgid "bad filesystem size - %s"
-msgstr ""
+msgstr "dosya sistemi uzunluðu hatalý - %s"
 
 #: resize/main.c:227
 #, c-format
@@ -3211,6 +3787,9 @@ msgid ""
 "You requested a new size of %d blocks.\n"
 "\n"
 msgstr ""
+"Ýstenen %d blokluk uzunluk mümkün deðil.\n"
+"Disk bölümü (ya da disk) zaten %d blok uzunlukta.\n"
+"\n"
 
 #: resize/main.c:234
 #, c-format
@@ -3218,6 +3797,8 @@ msgid ""
 "The filesystem is already %d blocks long.  Nothing to do!\n"
 "\n"
 msgstr ""
+"Dosya sistemi zaten %d blok uzunlukta.  Hiçbir þey yapýlmadý!\n"
+"\n"
 
 #: resize/main.c:239
 #, c-format
@@ -3225,11 +3806,13 @@ msgid ""
 "Please run 'e2fsck -f %s' first.\n"
 "\n"
 msgstr ""
+"Lütfen önce 'e2fsck -f %s' komutunu çalýþtýrýn.\n"
+"\n"
 
 #: resize/main.c:247
 #, c-format
 msgid "while trying to resize %s"
-msgstr ""
+msgstr "- %s yeniden boyutlandýrýlýrken hata oluþtu"
 
 #: resize/main.c:251
 #, c-format
@@ -3237,72 +3820,75 @@ msgid ""
 "The filesystem on %s is now %d blocks long.\n"
 "\n"
 msgstr ""
+"%s üzerindeki dosya sistemi þimdi %d blok uzunlukta.\n"
+"\n"
 
 #: resize/resize2fs.c:108
 #, c-format
 msgid "Number of free blocks: %d/%d, Needed: %d\n"
-msgstr ""
+msgstr "Serbest blok sayýsý: %d/%d, Gereken: %d\n"
 
 #: resize/resize2fs.c:426
 msgid "meta-data blocks"
-msgstr ""
+msgstr "meta-veri bloklarý"
 
 #: resize/resize2fs.c:489
 msgid "reserved blocks"
-msgstr ""
+msgstr "yedek bloklar"
 
 #: resize/resize2fs.c:494
 msgid "blocks to be moved"
-msgstr ""
+msgstr "taþýnacak bloklar"
 
 #: resize/resize2fs.c:725
 msgid "Going into desperation mode for block allocations\n"
-msgstr ""
+msgstr "Blok tahsislerinde umutsuz kipe geçiliyor\n"
 
 #: resize/resize2fs.c:814
 #, c-format
 msgid "Moving %d blocks %u->%u\n"
-msgstr ""
+msgstr "%d blok taþýnýyor %u->%u\n"
 
 #: resize/resize2fs.c:884
 #, c-format
 msgid "ino=%ld, blockcnt=%ld, %u->%u\n"
-msgstr ""
+msgstr "düðüm = %ld, block sayýsý = %ld, %u -> %u\n"
 
 #: resize/resize2fs.c:1040
 #, c-format
 msgid "Inode moved %ld->%ld\n"
-msgstr ""
+msgstr "Düðüm taþýndý %ld->%ld\n"
 
 #: resize/resize2fs.c:1103
 #, c-format
 msgid "Inode translate (dir=%ld, name=%.*s, %u->%ld)\n"
-msgstr ""
+msgstr "Düðüm çevirisi (dizin = %ld, isim= %.*s, %u -> %ld)\n"
 
 #: resize/resize2fs.c:1222
 #, c-format
 msgid "Itable move group %d block %u->%u (diff %d)\n"
 msgstr ""
+"Düðüm tablosu %d. grubun bloklarý %u -> %u arasýnda taþýnýyor (fark %d)\n"
 
 #: resize/resize2fs.c:1248
 #, c-format
 msgid "%d blocks of zeros...\n"
-msgstr ""
+msgstr "%d sýfýrlý blok...\n"
 
 #: resize/resize2fs.c:1283
 msgid "Inode table move finished.\n"
-msgstr ""
+msgstr "Düðüm tablosunun taþýnmasý tamamlandý.\n"
 
 #: resize/extent.c:197
 msgid "# Extent dump:\n"
-msgstr ""
+msgstr "# Ek döküm:\n"
 
 #: resize/extent.c:198
 #, c-format
 msgid "#\tNum=%d, Size=%d, Cursor=%d, Sorted=%d\n"
-msgstr ""
+msgstr "#\tNum = %d, Boy = %d, Ýmleç = %d, Sýralý = %d\n"
 
 #: resize/extent.c:201
 #, c-format
 msgid "#\t\t %u -> %u (%d)\n"
-msgstr ""
+msgstr "#\t\t %u -> %u (%d)\n"

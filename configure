@@ -1368,7 +1368,7 @@ EOF
 
 
 
-ALL_LINGUAS="it nyc"
+ALL_LINGUAS="it nyc tr"
 echo $ac_n "checking whether ${MAKE-make} sets \${MAKE}""... $ac_c" 1>&6
 echo "configure:1374: checking whether ${MAKE-make} sets \${MAKE}" >&5
 set dummy ${MAKE-make}; ac_make=`echo "$2" | sed 'y%./+-%__p_%'`

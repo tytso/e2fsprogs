@@ -14,6 +14,7 @@ e2fsck/pass5.c
 e2fsck/problem.c
 e2fsck/recovery.c
 e2fsck/scantest.c
+e2fsck/super.c
 e2fsck/swapfs.c
 e2fsck/unix.c
 e2fsck/util.c
