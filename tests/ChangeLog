@@ -1,3 +1,8 @@
+1998-07-05  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* f_swapfs: Fix script to ignore the version string header which
+		debugfs now prints when it starts up.
+
 1998-03-23  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* f_messy_inode: Modify test to deal with changes to support

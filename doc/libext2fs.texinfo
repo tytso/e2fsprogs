@@ -30,7 +30,7 @@ END-INFO-DIR-ENTRY
 This file documents the ext2fs library, a library for manipulating the
 ext2 filesystem.
 
-Copyright (C) 1997 Theodore Ts'o
+Copyright (C) 1997, 1998 Theodore Ts'o
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -61,7 +61,7 @@ by the author.
 @title The EXT2FS Library
 @subtitle The EXT2FS Library
 @subtitle Version 1.12
-@subtitle April 1997
+@subtitle July 1998
 
 @author by Theodore Ts'o
 
@@ -76,7 +76,7 @@ by the author.
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1997 Theodore Ts'o
+Copyright @copyright{} 1997, 1998 Theodore Ts'o
 
 @sp 2
 

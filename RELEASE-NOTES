@@ -1,4 +1,4 @@
-E2fsprogs 1.12 (February 20, 1998)
+E2fsprogs 1.12 (July 4, 1998)
 ==================================
 
 E2fsprogs now works with glibc (at least with the version shipped wtih
@@ -9,7 +9,12 @@ explicitly do a configure test to see if (a) llseek is in libc, and
 complaints about libc developers don't understand the concept of
 compatibility with previous versions of libc.)
 
-Added support for the EXT2_FEATURE_INCOMPAT_DIRNAME_SIZE feature,
+The ext2fs library now writes out the block group number in each of
+the superblock copies.  This makes it easier to automatically
+determine the starting block group of the filesystem when the block
+group information is trashed.
+
+Added support for the EXT2_FEATURE_INCOMPAT_FILETYPE feature,
 which means that e2fsprogs will ignore the high 8 bits of the
 directory entry's name_len field, so that it can be used for other
 purposes.
@@ -30,6 +35,12 @@ backup blocks are printed (not just the first one).
 Mke2fs will check the size of the device, and if the user specifies a
 filesystem size larger than the apparent size of the device it will
 print a warning message and ask if the user wants to proceed.
+
+E2fsck has a new option -C, which sends completion information to the
+specified file descriptor.  For the most part, this is intended for
+programs to use, although -C 0 will print a spinning character to the
+stdout device, which may be useful for users who want to see something
+happening while e2fsck goes about its business.
 
 Fixed a bug in e2fsck which could cause a core dump when it needs to
 expand the /lost+found directory, and sometimes the bitmaps haven't
