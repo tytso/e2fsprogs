@@ -8,8 +8,8 @@
 	version.h
 	README
 	RELEASE-NOTES
-	e2fsprogs-VER.lsm
-	e2fsprogs-VER.spec
+	e2fsprogs.lsm
+	e2fsprogs.spec
 	doc/libext2fs.texinfo (three places)
 
 5)  Update ChangeLog files using ./.fix-ChangeLogs
@@ -18,7 +18,7 @@
 
 7)  Build RPM files
 
-8)  Build ELF binary distribution
+8)  Build ELF and DLL binary distributions
 
 9)  Adjust sizes in e2fsprogs-VER.lsm; rebuild source files; rebuild RPM files
 
