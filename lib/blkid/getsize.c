@@ -89,7 +89,6 @@ blkid_loff_t blkid_get_dev_size(int fd)
 		if ((sizeof(blkid_loff_t) < sizeof(unsigned long long))
 		    && ((size64 / (blocksize / 512)) > 0xFFFFFFFF))
 			return 0; /* EFBIG */
-		close(fd);
 		return (blkid_loff_t) size64 << 9;
 	}
 #endif
@@ -106,7 +105,6 @@ blkid_loff_t blkid_get_dev_size(int fd)
 		if ((sizeof(blkid_loff_t) < sizeof(unsigned long long))
 		    && ((size64) > 0xFFFFFFFF))
 			return 0; /* EFBIG */
-		close(fd);
 		return size64;
 	}
 #endif

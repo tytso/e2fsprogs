@@ -1,3 +1,10 @@
+2004-03-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* getsize.c (blkid_get_dev_size): Don't close the file descriptor
+		when determining the size.  This bug was introduced in the
+		previous getsize changes, and was screwing up the blkid
+		library probe functions.  (Addresses Debian Bug #239191)
+
 2004-03-08  Theodore Ts'o  <tytso@mit.edu>
 
 	* getsize.c (blkid_get_dev_size): Only use the BLKGETSIZE64 ioctl
