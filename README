@@ -1,4 +1,4 @@
-	This is the new version (1.14) of the second extended file system
+	This is the new version (1.15) of the second extended file system
 management programs.
 
 	From time to time, I release new versions of e2fsprogs, to fix
@@ -17,6 +17,8 @@ installing e2fsprogs.  This is important!  Note that your /etc/fstab
 file may need modifying before you install the new fsck program.  See
 the INSTALL file for more details.
 
-	In case of bugs in these programs, please contact Ted Ts'o
-<tytso@mit.edu>.  See the e2fsck man page for suggestions of what sort
-of information to include when submitting bug reports for e2fsck.
+	In case of bugs in these programs, please contact Ted Ts'o at
+tytso@valinux.com or tytso@alum.mit.edu.  See the e2fsck man page for
+suggestions of what sort of information to include when submitting bug
+reports for these programs.
+

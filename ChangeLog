@@ -1,5 +1,8 @@
 1999-07-03    <tytso@valinux.com>
 
+	* depfix.sed: Remove all line continuations from the dependencies;
+		the word wrapping is now done by wordwrap.pl.
+
 	* MCONFIG.in (BUILD_CC):
 	* configure.in (BUILD_CC): If cross compiling, find the native C
 		compiler and set it to BUILD_CC so that we can
@@ -7,8 +10,6 @@
 		size when cross compiling to be 8 (instead of 0).  Also
 		change the Hurd's defaults so that root files are placed
 		in / instead of /usr/local.
-
-1999-07-03    <tytso@valinux.com>
 
 	* Makefile.in (depend): Make "make depend" at the top-level
 		automatically recurse through all subdirectories.
@@ -20,8 +21,6 @@
 		$(PERL).
 
 	* wordwrap.pl: New file which does the word wrapping.
-
-1999-07-03    <tytso@valinux.com>
 
 	* MCONFIG.in (subst): Add rule to build the util/subst program if
 		necessary (by cd'ing to $(top_builddir)/util and making it.)

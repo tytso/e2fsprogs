@@ -11,16 +11,16 @@
 #
 # Remove line continuations....
 #
-#:FIRST
-#y/	/ /
-#s/^ *//
-#/\\$/{
-#N
-#y/	/ /
-#s/\\\n */ /
-#bFIRST
-#}
-#s/  */ /g
+:FIRST
+y/	/ /
+s/^ *//
+/\\$/{
+N
+y/	/ /
+s/\\\n */ /
+bFIRST
+}
+s/  */ /g
 
 s;/usr/include/[^ ]* *;;g
 s;/usr/lib/[^ ]* *;;g

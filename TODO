@@ -21,11 +21,6 @@ appropriate error message.
 Put code into e2fsck to support imagic inodes....
 
 ---------------------------------
-
-Deal with the case where /lost+found isn't a directory....
-
-
---------------------------------------
 Date: Mon, 08 Mar 1999 21:46:14 +0100
 From: Sergio Polini <s.polini@mclink.it>
 
@@ -45,11 +40,5 @@ because "whatever & 0xFF" can never be "> 0xFF".
 Am I wrong?
 --------------------------------------
 
-debugfs --- ls of a corrupt directory (or a non-directory inode) with
-inconsistent lengths can cause it to core dump!  Should fix to make it
-more robust.
-
--------------------------------------
-
-
+Add chmod command to debugfs.
 
