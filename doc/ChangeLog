@@ -1,3 +1,7 @@
+2001-08-30  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.24
+
 2001-08-30  Theodore Tso  <tytso@valinux.com>
 
 	* libext2fs.texinfo: Remove texinfo warnings by adding white space

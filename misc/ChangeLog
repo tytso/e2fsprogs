@@ -1,3 +1,7 @@
+2001-08-30  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.24
+
 2001-08-30  Theodore Tso  <tytso@valinux.com>
 
 	* badblocks.8.in: Fix spelling typo.  (Addresses Debian bug #110621)
