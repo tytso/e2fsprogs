@@ -255,7 +255,8 @@ static void reserve_stdio_fds(NOARGS)
 		if (fd > 2)
 			break;
 		if (fd < 0) {
-			fprintf(stderr, "ERROR: Couldn't open /dev/null (%s)\n",
+			fprintf(stderr, "ERROR: Couldn't open "
+				"/dev/null (%s)\n",
 				strerror(errno));
 			break;
 		}
@@ -556,7 +557,7 @@ restart:
 			printf("Possibly non-existent or swap device?\n");
 #ifdef EROFS
 		else if (retval == EROFS)
-			printf("Disk write-protected; use the -n option"
+			printf("Disk write-protected; use the -n option "
 			       "to do a read-only\n"
 			       "check of the device.\n");
 #endif

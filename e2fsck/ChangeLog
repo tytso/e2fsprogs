@@ -1,3 +1,8 @@
+1999-06-21    <tytso@rsts-11.mit.edu>
+
+	* unix.c (main): Add missing space in the disk write-protected
+		message. 
+
 1999-05-22    <tytso@rsts-11.mit.edu>
 
 	* problem.c, problem.h (PR_0_INODE_COUNT_WRONG): Add new problem

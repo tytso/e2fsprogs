@@ -98,6 +98,12 @@ int ext2fs_process_dir_block(ext2_filsys  	fs,
 
 	while (offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (ctx->buf + offset);
+		if (((offset + dirent->rec_len) > fs->blocksize) ||
+		    (dirent->rec_len < 8) ||
+		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
+			ctx->errcode = EXT2_ET_DIR_CORRUPTED;
+			return BLOCK_ABORT;
+		}
 		if (!dirent->inode &&
 		    !(ctx->flags & DIRENT_FLAG_INCLUDE_EMPTY))
 			goto next;
@@ -120,12 +126,6 @@ int ext2fs_process_dir_block(ext2_filsys  	fs,
 			break;
 		}
 next:		
-		if (((offset + dirent->rec_len) > fs->blocksize) ||
-		    (dirent->rec_len < 8) ||
-		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
-			ctx->errcode = EXT2_ET_DIR_CORRUPTED;
-			return BLOCK_ABORT;
-		}
 		offset += dirent->rec_len;
 	}
 
