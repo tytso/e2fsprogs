@@ -20,12 +20,10 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-const char * fix_msg[2] = { "IGNORED", "FIXED" };
-
 void fatal_error (const char *msg)
 {
 	if (msg) 
-		fprintf (stderr, "%s: %s\n", program_name, msg);
+		fprintf (stderr, "e2fsck: %s\n", msg);
 	exit(FSCK_ERROR);
 }
 
@@ -45,7 +43,6 @@ void *allocate_memory(int size, const char *description)
 	memset(ret, 0, size);
 	return ret;
 }
-
 
 int ask_yn(const char * string, int def)
 {
@@ -91,31 +88,32 @@ int ask_yn(const char * string, int def)
 	return def;
 }
 
-int ask (const char * string, int def)
+int ask (e2fsck_t ctx, const char * string, int def)
 {
-	if (nflag) {
+	if (ctx->options & E2F_OPT_NO) {
 		printf ("%s? no\n\n", string);
 		return 0;
 	}
-	if (yflag) {
+	if (ctx->options & E2F_OPT_YES) {
 		printf ("%s? yes\n\n", string);
 		return 1;
 	}
-	if (preen) {
+	if (ctx->options & E2F_OPT_PREEN) {
 		printf ("%s? %s\n\n", string, def ? "yes" : "no");
 		return def;
 	}
 	return ask_yn(string, def);
 }
 
-void read_bitmaps(ext2_filsys fs)
+void read_bitmaps(e2fsck_t ctx)
 {
+	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
 
-	if (invalid_bitmaps) {
-		com_err(program_name, 0,
+	if (ctx->invalid_bitmaps) {
+		com_err(ctx->program_name, 0,
 			"read_bitmaps: illegal bitmap block(s) for %s",
-			device_name);
+			ctx->device_name);
 		fatal_error(0);
 	}
 
@@ -123,15 +121,16 @@ void read_bitmaps(ext2_filsys fs)
 	retval = ext2fs_read_bitmaps(fs);
 	ehandler_operation(0);
 	if (retval) {
-		com_err(program_name, retval,
+		com_err(ctx->program_name, retval,
 			"while retrying to read bitmaps for %s",
-			device_name);
+			ctx->device_name);
 		fatal_error(0);
 	}
 }
 
-void write_bitmaps(ext2_filsys fs)
+void write_bitmaps(e2fsck_t ctx)
 {
+	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
 
 	if (ext2fs_test_bb_dirty(fs)) {
@@ -139,9 +138,9 @@ void write_bitmaps(ext2_filsys fs)
 		retval = ext2fs_write_block_bitmap(fs);
 		ehandler_operation(0);
 		if (retval) {
-			com_err(program_name, retval,
+			com_err(ctx->program_name, retval,
 				"while retrying to write block bitmaps for %s",
-				device_name);
+				ctx->device_name);
 			fatal_error(0);
 		}
 	}
@@ -151,21 +150,23 @@ void write_bitmaps(ext2_filsys fs)
 		retval = ext2fs_write_inode_bitmap(fs);
 		ehandler_operation(0);
 		if (retval) {
-			com_err(program_name, retval,
+			com_err(ctx->program_name, retval,
 				"while retrying to write inode bitmaps for %s",
-				device_name);
+				ctx->device_name);
 			fatal_error(0);
 		}
 	}
 }
 
-void preenhalt(ext2_filsys fs)
+void preenhalt(e2fsck_t ctx)
 {
-	if (!preen)
+	ext2_filsys fs = ctx->fs;
+
+	if (!(ctx->options & E2F_OPT_PREEN))
 		return;
 	fprintf(stderr, "\n\n%s: UNEXPECTED INCONSISTENCY; "
 		"RUN fsck MANUALLY.\n\t(i.e., without -a or -p options)\n",
-	       device_name);
+	       ctx->device_name);
 	if (fs != NULL) {
 		fs->super->s_state |= EXT2_ERROR_FS;
 		ext2fs_mark_super_dirty(fs);
@@ -183,6 +184,9 @@ void init_resource_track(struct resource_track *track)
 	track->brk_start = sbrk(0);
 	gettimeofday(&track->time_start, 0);
 #ifdef HAVE_GETRUSAGE
+#ifdef solaris
+	memcpy(&r, 0, sizeof(struct rusage));
+#endif
 	getrusage(RUSAGE_SELF, &r);
 	track->user_start = r.ru_utime;
 	track->system_start = r.ru_stime;
@@ -205,7 +209,7 @@ static _INLINE_ float timeval_subtract(struct timeval *tv1,
 		((float) (tv1->tv_usec - tv2->tv_usec)) / 1000000);
 }
 
-void print_resource_track(struct resource_track *track)
+void print_resource_track(const char *desc, struct resource_track *track)
 {
 #ifdef HAVE_GETRUSAGE
 	struct rusage r;
@@ -213,6 +217,10 @@ void print_resource_track(struct resource_track *track)
 	struct timeval time_end;
 
 	gettimeofday(&time_end, 0);
+
+	if (desc)
+		printf("%s :", desc);
+	
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
 
@@ -265,4 +273,10 @@ void mtrace_print(char *mesg)
 }
 #endif
 
+blk_t get_backup_sb(ext2_filsys fs)
+{
+	if (!fs || !fs->super)
+		return 8193;
+	return fs->super->s_blocks_per_group + 1;
+}
 

@@ -29,6 +29,10 @@ static errcode_t e2fsck_handle_read_error(io_channel channel,
 {
 	int	i;
 	char	*p;
+	ext2_filsys fs = channel->app_data;
+	e2fsck_t ctx;
+
+	ctx = fs->private;
 
 	/*
 	 * If more than one block was read, try reading each block
@@ -51,8 +55,8 @@ static errcode_t e2fsck_handle_read_error(io_channel channel,
 	else
 		printf("Error reading block %lu (%s).  ", block,
 		       error_message(error));
-	preenhalt(NULL);
-	if (ask("Ignore error", 1))
+	preenhalt(ctx);
+	if (ask(ctx, "Ignore error", 1))
 		return 0;
 
 	return error;
@@ -68,7 +72,11 @@ static errcode_t e2fsck_handle_write_error(io_channel channel,
 {
 	int		i;
 	const char	*p;
+	ext2_filsys fs = channel->app_data;
+	e2fsck_t ctx;
 	
+	ctx = fs->private;
+
 	/*
 	 * If more than one block was written, try writing each block
 	 * separately.  We could use the actual bytes read to figure
@@ -91,8 +99,8 @@ static errcode_t e2fsck_handle_write_error(io_channel channel,
 	else
 		printf("Error writing block %lu (%s).  ", block,
 		       error_message(error));
-	preenhalt(NULL);
-	if (ask("Ignore error", 1))
+	preenhalt(ctx);
+	if (ask(ctx, "Ignore error", 1))
 		return 0;
 
 	return error;

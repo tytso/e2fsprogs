@@ -45,12 +45,6 @@
 #define E2FSCK_CURRENT_REV	1
 
 /*
- * Inode count arrays
- */
-extern ext2_icount_t	inode_count;
-extern ext2_icount_t	inode_link_info;
-
-/*
  * The directory information structure; stores directory information
  * collected in earlier passes, to avoid disk i/o in fetching the
  * directory information.
@@ -73,85 +67,110 @@ struct resource_track {
 };
 
 /*
- * Variables
+ * E2fsck options
  */
-extern const char * program_name;
-extern const char * device_name;
-
-extern ext2fs_inode_bitmap inode_used_map; /* Inodes which are in use */
-extern ext2fs_inode_bitmap inode_bad_map; /* Inodes which are bad somehow */
-extern ext2fs_inode_bitmap inode_dir_map; /* Inodes which are directories */
-extern ext2fs_inode_bitmap inode_bb_map; /* Inodes which are in bad blocks */
-
-extern ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
-extern ext2fs_block_bitmap block_dup_map; /* Blocks which are used by more than once */
-extern ext2fs_block_bitmap block_illegal_map; /* Meta-data blocks */
-
-extern const char *fix_msg[2];	/* Fixed or ignored! */
-extern const char *clear_msg[2]; /* Cleared or ignored! */
-
-extern int *invalid_inode_bitmap;
-extern int *invalid_block_bitmap;
-extern int *invalid_inode_table;
-extern int restart_e2fsck;
-
-/* Command line options */
-extern int nflag;
-extern int yflag;
-extern int tflag;
-extern int preen;
-extern int verbose;
-extern int list;
-extern int debug;
-extern int force;
-
-extern int rwflag;
-
-extern int inode_buffer_blocks;
-extern int process_inode_size;
-extern int directory_blocks;
-
-extern int no_bad_inode;
-extern int no_lpf;
-extern int lpf_corrupted;
-
-/* Files counts */
-extern int fs_directory_count;
-extern int fs_regular_count;
-extern int fs_blockdev_count;
-extern int fs_chardev_count;
-extern int fs_links_count;
-extern int fs_symlinks_count;
-extern int fs_fast_symlinks_count;
-extern int fs_fifo_count;
-extern int fs_total_count;
-extern int fs_badblocks_count;
-extern int fs_sockets_count;
-extern int fs_ind_count;
-extern int fs_dind_count;
-extern int fs_tind_count;
-extern int fs_fragmented;
-
-extern struct resource_track	global_rtrack;
-
-extern int invalid_bitmaps;
+#define E2F_OPT_READONLY	0x0001
+#define E2F_OPT_PREEN		0x0002
+#define E2F_OPT_YES		0x0004
+#define E2F_OPT_NO		0x0008
+#define E2F_OPT_TIME		0x0010
+#define E2F_OPT_TIME2		0x0020
+#define E2F_OPT_CHECKBLOCKS	0x0040
+#define E2F_OPT_DEBUG		0x0080
 
 /*
- * For pass1_check_directory and pass1_get_blocks
+ * This is the global e2fsck structure.
  */
-extern ino_t stashed_ino;
-extern struct ext2_inode *stashed_inode;
+struct e2fsck_struct {
+	ext2_filsys fs;
+	const char *program_name;
+	const char *filesystem_name;
+	const char *device_name;
+	int	options;
+	blk_t	use_superblock;	/* sb requested by user */
+	blk_t	superblock;	/* sb used to open fs */
+
+	ext2fs_inode_bitmap inode_used_map; /* Inodes which are in use */
+	ext2fs_inode_bitmap inode_bad_map; /* Inodes which are bad somehow */
+	ext2fs_inode_bitmap inode_dir_map; /* Inodes which are directories */
+	ext2fs_inode_bitmap inode_bb_map; /* Inodes which are in bad blocks */
+
+	ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
+	ext2fs_block_bitmap block_dup_map; /* Blks referenced more than once */
+	ext2fs_block_bitmap block_illegal_map; /* Meta-data blocks */
+
+	/*
+	 * Inode count arrays
+	 */
+	ext2_icount_t	inode_count;
+	ext2_icount_t inode_link_info;
+
+	/*
+	 * Array of flags indicating whether an inode bitmap, block
+	 * bitmap, or inode table is invalid
+	 */
+	int *invalid_inode_bitmap_flag;
+	int *invalid_block_bitmap_flag;
+	int *invalid_inode_table_flag;
+	int invalid_bitmaps;	/* There are invalid bitmaps/itable */
+
+	/*
+	 * For pass1_check_directory and pass1_get_blocks
+	 */
+	ino_t stashed_ino;
+	struct ext2_inode *stashed_inode;
+
+	/*
+	 * Tuning parameters
+	 */
+	int process_inode_size;
+	int inode_buffer_blocks;
+
+	/*
+	 * For timing purposes
+	 */
+	struct resource_track	global_rtrack;
+
+	/* File counts */
+	int fs_directory_count;
+	int fs_regular_count;
+	int fs_blockdev_count;
+	int fs_chardev_count;
+	int fs_links_count;
+	int fs_symlinks_count;
+	int fs_fast_symlinks_count;
+	int fs_fifo_count;
+	int fs_total_count;
+	int fs_badblocks_count;
+	int fs_sockets_count;
+	int fs_ind_count;
+	int fs_dind_count;
+	int fs_tind_count;
+	int fs_fragmented;
+};
+
+typedef struct e2fsck_struct *e2fsck_t;
+
+/*
+ * Variables
+ */
+extern int restart_e2fsck;
 
 /*
  * Procedure declarations
  */
 
-extern void pass1(ext2_filsys fs);
-extern void pass1_dupblocks(ext2_filsys fs, char *block_buf);
-extern void pass2(ext2_filsys fs);
-extern void pass3(ext2_filsys fs);
-extern void pass4(ext2_filsys fs);
-extern void pass5(ext2_filsys fs);
+extern void pass1(e2fsck_t ctx);
+extern void pass1_dupblocks(e2fsck_t ctx, char *block_buf);
+extern void pass2(e2fsck_t ctx);
+extern void pass3(e2fsck_t ctx);
+extern void pass4(e2fsck_t ctx);
+extern void pass5(e2fsck_t ctx);
+
+/* e2fsck.c */
+errcode_t e2fsck_allocate_context(e2fsck_t *ret);
+errcode_t e2fsck_reset_context(e2fsck_t ctx);
+void e2fsck_free_context(e2fsck_t ctx);
 
 /* pass1.c */
 extern errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino);
@@ -163,9 +182,9 @@ extern errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
 extern int e2fsck_pass1_check_device_inode(struct ext2_inode *inode);
 
 /* badblock.c */
-extern void read_bad_blocks_file(ext2_filsys fs, const char *bad_blocks_file,
+extern void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 				 int replace_bad_blocks);
-extern void test_disk(ext2_filsys fs);
+extern void test_disk(e2fsck_t ctx);
 
 /* dirinfo.c */
 extern void add_dir_info(ext2_filsys fs, ino_t ino, ino_t parent);
@@ -178,18 +197,22 @@ extern struct dir_info *dir_info_iter(int *control);
 extern const char *ehandler_operation(const char *op);
 extern void ehandler_init(io_channel channel);
 
+/* super.c */
+void check_super_block(e2fsck_t ctx);
+
 /* swapfs.c */
-void swap_filesys(ext2_filsys fs);
+void swap_filesys(e2fsck_t ctx);
 
 /* util.c */
 extern void *allocate_memory(int size, const char *description);
-extern int ask(const char * string, int def);
+extern int ask(e2fsck_t ctx, const char * string, int def);
 extern int ask_yn(const char * string, int def);
 extern void fatal_error (const char * fmt_string);
-extern void read_bitmaps(ext2_filsys fs);
-extern void write_bitmaps(ext2_filsys fs);
-extern void preenhalt(ext2_filsys fs);
-extern void print_resource_track(struct resource_track *track);
+extern void read_bitmaps(e2fsck_t ctx);
+extern void write_bitmaps(e2fsck_t ctx);
+extern void preenhalt(e2fsck_t ctx);
+extern void print_resource_track(const char *desc,
+				 struct resource_track *track);
 extern void init_resource_track(struct resource_track *track);
 extern int inode_has_valid_blocks(struct ext2_inode *inode);
 extern void e2fsck_read_inode(ext2_filsys fs, unsigned long ino,
@@ -199,10 +222,11 @@ extern void e2fsck_write_inode(ext2_filsys fs, unsigned long ino,
 #ifdef MTRACE
 extern void mtrace_print(char *mesg);
 #endif
+extern blk_t get_backup_sb(ext2_filsys fs);
 
 #define die(str)	fatal_error(str)
 
 /*
  * pass3.c
  */
-extern int reconnect_file(ext2_filsys fs, ino_t inode);
+extern int reconnect_file(e2fsck_t ctx, ino_t inode);

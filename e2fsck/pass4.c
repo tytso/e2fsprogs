@@ -22,8 +22,9 @@
  * This subroutine returns 1 then the caller shouldn't bother with the
  * rest of the pass 4 tests.
  */
-static int disconnect_inode(ext2_filsys fs, ino_t i)
+static int disconnect_inode(e2fsck_t ctx, ino_t i)
 {
+	ext2_filsys fs = ctx->fs;
 	struct ext2_inode	inode;
 	struct problem_context	pctx;
 
@@ -37,8 +38,8 @@ static int disconnect_inode(ext2_filsys fs, ino_t i)
 		/*
 		 * This is a zero-length file; prompt to delete it...
 		 */
-		if (fix_problem(fs, PR_4_ZERO_LEN_INODE, &pctx)) {
-			ext2fs_icount_store(inode_link_info, i, 0);
+		if (fix_problem(ctx, PR_4_ZERO_LEN_INODE, &pctx)) {
+			ext2fs_icount_store(ctx->inode_link_info, i, 0);
 			inode.i_links_count = 0;
 			inode.i_dtime = time(0);
 			e2fsck_write_inode(fs, i, &inode,
@@ -46,9 +47,9 @@ static int disconnect_inode(ext2_filsys fs, ino_t i)
 			/*
 			 * Fix up the bitmaps...
 			 */
-			read_bitmaps(fs);
-			ext2fs_unmark_inode_bitmap(inode_used_map, i);
-			ext2fs_unmark_inode_bitmap(inode_dir_map, i);
+			read_bitmaps(ctx);
+			ext2fs_unmark_inode_bitmap(ctx->inode_used_map, i);
+			ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, i);
 			ext2fs_unmark_inode_bitmap(fs->inode_map, i);
 			ext2fs_mark_ib_dirty(fs);
 			return 0;
@@ -58,8 +59,8 @@ static int disconnect_inode(ext2_filsys fs, ino_t i)
 	/*
 	 * Prompt to reconnect.
 	 */
-	if (fix_problem(fs, PR_4_UNATTACHED_INODE, &pctx)) {
-		if (reconnect_file(fs, i))
+	if (fix_problem(ctx, PR_4_UNATTACHED_INODE, &pctx)) {
+		if (reconnect_file(ctx, i))
 			ext2fs_unmark_valid(fs);
 	} else {
 		/*
@@ -74,8 +75,9 @@ static int disconnect_inode(ext2_filsys fs, ino_t i)
 }
 
 
-void pass4(ext2_filsys fs)
+void pass4(e2fsck_t ctx)
 {
+	ext2_filsys fs = ctx->fs;
 	ino_t	i;
 	struct ext2_inode	inode;
 	struct resource_track	rtrack;
@@ -88,52 +90,50 @@ void pass4(ext2_filsys fs)
 	mtrace_print("Pass 4");
 #endif
 
-	if (!preen)
-		printf("Pass 4: Checking reference counts\n");
 	clear_problem_context(&pctx);
+
+	if (!(ctx->options & E2F_OPT_PREEN))
+		fix_problem(ctx, PR_4_PASS_HEADER, &pctx);
+
 	for (i=1; i <= fs->super->s_inodes_count; i++) {
 		if (i == EXT2_BAD_INO ||
 		    (i > EXT2_ROOT_INO && i < EXT2_FIRST_INODE(fs->super)))
 			continue;
-		if (!(ext2fs_test_inode_bitmap(inode_used_map, i)) ||
-		    (inode_bb_map &&
-		     ext2fs_test_inode_bitmap(inode_bb_map, i)))
+		if (!(ext2fs_test_inode_bitmap(ctx->inode_used_map, i)) ||
+		    (ctx->inode_bb_map &&
+		     ext2fs_test_inode_bitmap(ctx->inode_bb_map, i)))
 			continue;
-		ext2fs_icount_fetch(inode_link_info, i, &link_count);
-		ext2fs_icount_fetch(inode_count, i, &link_counted);
+		ext2fs_icount_fetch(ctx->inode_link_info, i, &link_count);
+		ext2fs_icount_fetch(ctx->inode_count, i, &link_counted);
 		if (link_counted == 0) {
-			if (disconnect_inode(fs, i))
+			if (disconnect_inode(ctx, i))
 				continue;
-			ext2fs_icount_fetch(inode_link_info, i, &link_count);
-			ext2fs_icount_fetch(inode_count, i, &link_counted);
+			ext2fs_icount_fetch(ctx->inode_link_info, i,
+					    &link_count);
+			ext2fs_icount_fetch(ctx->inode_count, i,
+					    &link_counted);
 		}
 		if (link_counted != link_count) {
 			e2fsck_read_inode(fs, i, &inode, "pass4");
 			pctx.ino = i;
 			pctx.inode = &inode;
 			if (link_count != inode.i_links_count) {
-				printf("WARNING: PROGRAMMING BUG IN E2FSCK!\n");
-				printf("\tOR SOME BONEHEAD (YOU) IS CHECKING "
-				       "A MOUNTED (LIVE) FILESYSTEM.\n"); 
-				printf("inode_link_info[%ld] is %u, "
-				       "inode.i_links_count is %d.  "
-				       "They should be the same!\n",
-				       i, link_count,
-				       inode.i_links_count);
+				pctx.num = link_count;
+				fix_problem(ctx,
+					    PR_4_INCONSISTENT_COUNT, &pctx);
 			}
 			pctx.num = link_counted;
-			if (fix_problem(fs, PR_4_BAD_REF_COUNT, &pctx)) {
+			if (fix_problem(ctx, PR_4_BAD_REF_COUNT, &pctx)) {
 				inode.i_links_count = link_counted;
 				e2fsck_write_inode(fs, i, &inode, "pass4");
 			}
 		}
 	}
-	ext2fs_free_icount(inode_link_info); inode_link_info = 0;
-	ext2fs_free_icount(inode_count); inode_count = 0;
-	ext2fs_free_inode_bitmap(inode_bb_map);
-	if (tflag > 1) {
-		printf("Pass 4: ");
-		print_resource_track(&rtrack);
-	}
+	ext2fs_free_icount(ctx->inode_link_info); ctx->inode_link_info = 0;
+	ext2fs_free_icount(ctx->inode_count); ctx->inode_count = 0;
+	ext2fs_free_inode_bitmap(ctx->inode_bb_map);
+	ctx->inode_bb_map = 0;
+	if (ctx->options & E2F_OPT_TIME2)
+		print_resource_track("Pass 4", &rtrack);
 }
 

@@ -27,13 +27,21 @@ Inode 12 ref count is 4, should be 3.  Fix? yes
 Unattached zero-length inode 15.  Clear? yes
 
 Pass 5: Checking group summary information
-Fix summary information? yes
+Free blocks count wrong for group #0 (75, counted=74).
+Fix? yes
 
-Free blocks count wrong for group 0 (75, counted=74).  FIXED
-Free blocks count wrong (75, counted=74).  FIXED
-Free inodes count wrong for group #0 (17, counted=16).  FIXED
-Directories count wrong for group #0 (4, counted=5).  FIXED
-Free inodes count wrong (17, counted=16).  FIXED
+Free blocks count wrong (75, counted=74).
+Fix? yes
+
+Free inodes count wrong for group #0 (17, counted=16).
+Fix? yes
+
+Directories count wrong for group #0 (4, counted=5).
+Fix? yes
+
+Free inodes count wrong (17, counted=16).
+Fix? yes
+
 
 test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
 test_filesys: 16/32 files (0.0% non-contiguous), 26/100 blocks

@@ -102,8 +102,9 @@ static void swap_inode_blocks(ext2_filsys fs, ino_t ino, char *block_buf,
 	}
 }
 
-static void swap_inodes(ext2_filsys fs)
+static void swap_inodes(e2fsck_t ctx)
 {
+	ext2_filsys fs = ctx->fs;
 	int			i, group;
 	ino_t			ino = 1;
 	char 			*buf, *block_buf;
@@ -135,8 +136,8 @@ static void swap_inodes(ext2_filsys fs)
 		inode = (struct ext2_inode *) buf;
 		for (i=0; i < fs->super->s_inodes_per_group;
 		     i++, ino++, inode++) {
-			stashed_ino = ino;
-			stashed_inode = inode;
+			ctx->stashed_ino = ino;
+			ctx->stashed_inode = inode;
 			
 			if (fs->flags & EXT2_FLAG_SWAP_BYTES_READ)
 				ext2fs_swap_inode(fs, inode, inode, 0);
@@ -173,13 +174,14 @@ static void swap_inodes(ext2_filsys fs)
 	fs->get_blocks = 0;
 }
 
-void swap_filesys(ext2_filsys fs)
+void swap_filesys(e2fsck_t ctx)
 {
+	ext2_filsys fs = ctx->fs;
 	struct resource_track	rtrack;
 
 	init_resource_track(&rtrack);
 
-	if (!preen)
+	if (!(ctx->options & E2F_OPT_PREEN))
 		printf("Pass 0: Doing byte-swap of filesystem\n");
 	
 #ifdef MTRACE
@@ -190,7 +192,7 @@ void swap_filesys(ext2_filsys fs)
 		fprintf(stderr, "%s: the filesystem must be freshly "
 			"checked using fsck\n"
 			"and not mounted before trying to "
-			"byte-swap it.\n", device_name);
+			"byte-swap it.\n", ctx->device_name);
 		fatal_error(0);
 	}
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
@@ -201,17 +203,15 @@ void swap_filesys(ext2_filsys fs)
 		fs->flags &= ~EXT2_FLAG_SWAP_BYTES_READ;
 		fs->flags |= EXT2_FLAG_SWAP_BYTES_WRITE;
 	}
-	swap_inodes(fs);
+	swap_inodes(ctx);
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)
 		fs->flags |= EXT2_FLAG_SWAP_BYTES;
 	fs->flags &= ~(EXT2_FLAG_SWAP_BYTES_READ|
 		       EXT2_FLAG_SWAP_BYTES_WRITE);
 	ext2fs_flush(fs);
 	
-	if (tflag > 1) {
-		printf("Byte swap: ");
-		print_resource_track(&rtrack);
-	}
+	if (ctx->options & E2F_OPT_TIME2)
+		print_resource_track("Byte swap", &rtrack);
 }
 
 

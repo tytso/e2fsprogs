@@ -9,26 +9,43 @@
  * %End-Header%
  */
 
+typedef __u32 problem_t;
+
 struct problem_context {
+	errcode_t	errcode;
 	ino_t ino, ino2, dir;
 	struct ext2_inode *inode;
 	struct ext2_dir_entry *dirent;
-	blk_t	blk;
+	blk_t	blk, blk2;
 	int	blkcount, group;
 	__u32	num;
+	const char *str;
 };
 
 struct e2fsck_problem {
-	int		e2p_code;
+	problem_t	e2p_code;
 	const char *	e2p_description;
 	char		prompt;
 	short		flags;
+	problem_t	second_code;
+};
+
+struct latch_descr {
+	int		latch_code;
+	problem_t	question;
+	problem_t	end_message;
+	int		flags;
 };
 
 #define PR_PREEN_OK	0x0001	/* Don't need to do preenhalt */
 #define PR_NO_OK	0x0002	/* If user answers no, don't make fs invalid */
 #define PR_NO_DEFAULT	0x0004	/* Default to no */
 #define PR_MSG_ONLY	0x0008	/* Print message only */
+#define PR_FATAL	0x0080	/* Fatal error */
+#define PR_AFTER_CODE	0x0100	/* After asking the first question, */
+				/* ask another */
+#define PR_PREEN_NOMSG	0x0200	/* Don't print a message if we're preening */
+#define PR_NOCOLLATE	0x0400	/* Don't collate answers for this latch */
 
 /*
  * We define a set of "latch groups"; these are problems which are
@@ -38,8 +55,22 @@ struct e2fsck_problem {
 #define PR_LATCH_MASK	0x0070  /* Latch mask */
 #define PR_LATCH_BLOCK	0x0010	/* Latch for illegal blocks (pass 1) */
 #define PR_LATCH_BBLOCK	0x0020	/* Latch for bad block inode blocks (pass 1) */
+#define PR_LATCH_IBITMAP 0x0030 /* Latch for pass 5 inode bitmap proc. */
+#define PR_LATCH_BBITMAP 0x0040 /* Latch for pass 5 inode bitmap proc. */
+#define PR_LATCH_RELOC	0x0050  /* Latch for superblock relocate hint */
+#define PR_LATCH_DBLOCK	0x0060	/* Latch for pass 1b dup block headers */
 
 #define PR_LATCH(x)	((((x) & PR_LATCH_MASK) >> 4) - 1)
+
+/*
+ * Latch group descriptor flags
+ */
+#define PRL_YES		0x0001	/* Answer yes */
+#define PRL_NO		0x0002	/* Answer no */
+#define PRL_LATCHED	0x0004	/* The latch group is latched */
+#define PRL_SUPPRESS	0x0008	/* Suppress all latch group questions */
+
+#define PRL_VARIABLE	0x000f	/* All the flags that need to be reset */
 
 /*
  * Pre-Pass 1 errors
@@ -54,83 +85,233 @@ struct e2fsck_problem {
 /* Inode table not in group */
 #define PR_0_ITABLE_NOT_GROUP	0x000003
 
+/* Superblock corrupt */
+#define PR_0_SB_CORRUPT		0x000004
+
+/* Filesystem size is wrong */
+#define PR_0_FS_SIZE_WRONG	0x000005
+
+/* Fragments not supported */
+#define PR_0_NO_FRAGMENTS	0x000006
+
+/* Bad blocks_per_group */
+#define PR_0_BLOCKS_PER_GROUP	0x000007
+
+/* Bad first_data_block */
+#define PR_0_FIRST_DATA_BLOCK	0x000008
+
+/* Adding UUID to filesystem */
+#define PR_0_ADD_UUID		0x000009
+
+/* Relocate hint */	
+#define PR_0_RELOCATE_HINT	0x00000A
+
+/* Miscellaneous superblock corruption */
+#define PR_0_MISC_CORRUPT_SUPER	0x00000B
+	
+/* Error determing physical device size of filesystem */
+#define PR_0_GETSIZE_ERROR	0x00000C
+
 /*
  * Pass 1 errors
  */
 
+/* Pass 1: Checking inodes, blocks, and sizes */
+#define PR_1_PASS_HEADER		0x010000
+
 /* Root directory is not an inode */
-#define PR_1_ROOT_NO_DIR	0x010001
+#define PR_1_ROOT_NO_DIR		0x010001
 
 /* Root directory has dtime set */
-#define PR_1_ROOT_DTIME		0x010002
+#define PR_1_ROOT_DTIME			0x010002
 
 /* Reserved inode has bad mode */
-#define PR_1_RESERVED_BAD_MODE	0x010003
+#define PR_1_RESERVED_BAD_MODE		0x010003
 
 /* Deleted inode has zero dtime */
-#define PR_1_ZERO_DTIME		0x010004
+#define PR_1_ZERO_DTIME			0x010004
 
 /* Inode in use, but dtime set */
-#define PR_1_SET_DTIME		0x010005
+#define PR_1_SET_DTIME			0x010005
 
 /* Zero-length directory */
-#define PR_1_ZERO_LENGTH_DIR	0x010006
+#define PR_1_ZERO_LENGTH_DIR		0x010006
 
 /* Block bitmap conflicts with some other fs block */
-#define PR_1_BB_CONFLICT	0x010007
+#define PR_1_BB_CONFLICT		0x010007
 
 /* Inode bitmap conflicts with some other fs block */
-#define PR_1_IB_CONFLICT	0x010008
+#define PR_1_IB_CONFLICT		0x010008
 
 /* Inode table conflicts with some other fs block */
-#define PR_1_ITABLE_CONFLICT	0x010009
+#define PR_1_ITABLE_CONFLICT		0x010009
 
 /* Block bitmap is on a bad block */
-#define PR_1_BB_BAD_BLOCK	0x01000A
+#define PR_1_BB_BAD_BLOCK		0x01000A
 
 /* Inode bitmap is on a bad block */
-#define PR_1_IB_BAD_BLOCK	0x01000B
+#define PR_1_IB_BAD_BLOCK		0x01000B
 
 /* Inode has incorrect i_size */
-#define PR_1_BAD_I_SIZE		0x01000C
+#define PR_1_BAD_I_SIZE			0x01000C
 
 /* Inode has incorrect i_blocks */
-#define PR_1_BAD_I_BLOCKS	0x01000D
+#define PR_1_BAD_I_BLOCKS		0x01000D
 
 /* Illegal block number in inode */
-#define PR_1_ILLEGAL_BLOCK_NUM	0x01000E
+#define PR_1_ILLEGAL_BLOCK_NUM		0x01000E
 
 /* Block number overlaps fs metadata */
 #define PR_1_BLOCK_OVERLAPS_METADATA	0x01000F
 
 /* Inode has illegal blocks (latch question) */
-#define PR_1_INODE_BLOCK_LATCH	0x010010
+#define PR_1_INODE_BLOCK_LATCH		0x010010
 
 /* Too many bad blocks in inode */
-#define	PR_1_TOO_MANY_BAD_BLOCKS 0x010011
+#define	PR_1_TOO_MANY_BAD_BLOCKS 	0x010011
 	
 /* Illegal block number in bad block inode */
-#define PR_1_BB_ILLEGAL_BLOCK_NUM 0x010012
+#define PR_1_BB_ILLEGAL_BLOCK_NUM 	0x010012
 
 /* Bad block inode has illegal blocks (latch question) */
-#define PR_1_INODE_BBLOCK_LATCH	0x010013
+#define PR_1_INODE_BBLOCK_LATCH		0x010013
+
+/* Duplicate or bad blocks in use! */
+#define PR_1_DUP_BLOCKS_PREENSTOP	0x010014
+	
+/* Bad block used as bad block indirect block */	  
+#define PR_1_BBINODE_BAD_METABLOCK	0x010015
+
+/* Inconsistency can't be fixed prompt */
+#define PR_1_BBINODE_BAD_METABLOCK_PROMPT 0x010016
+	
+/* Bad primary block */
+#define PR_1_BAD_PRIMARY_BLOCK		0x0100017
+		  
+/* Bad primary block prompt */
+#define PR_1_BAD_PRIMARY_BLOCK_PROMPT	0x0100018
+
+/* Bad primary superblock */
+#define PR_1_BAD_PRIMARY_SUPERBLOCK	0x0100019
+
+/* Bad primary block group descriptors */
+#define PR_1_BAD_PRIMARY_GROUP_DESCRIPTOR 0x010001A
+
+/* Bad superblock in group */
+#define PR_1_BAD_SUPERBLOCK		0x010001B
+
+/* Bad block group descriptors in group */
+#define PR_1_BAD_GROUP_DESCRIPTORS	0x010001C
+
+/* Block claimed for no reason */	  
+#define PR_1_PROGERR_CLAIMED_BLOCK	0x010001D
+
+/* Could not allocate blocks for relocating metadata */
+#define PR_1_RELOC_BLOCK_ALLOCATE	0x010001E
+		
+/* Could not allocate memory during relocation process */
+#define PR_1_RELOC_MEMORY_ALLOCATE	0x010001F
+		
+/* Relocating metadata group information from X to Y */	
+#define PR_1_RELOC_FROM_TO		0x0100020
+		
+/* Relocating metatdata group information to X */
+#define PR_1_RELOC_TO			0x0100021
+		
+/* Block read error during relocation process */
+#define PR_1_RELOC_READ_ERR		0x0100022
+		
+/* Block write error during relocation process */
+#define PR_1_RELOC_WRITE_ERR		0x0100023
+
+/* Error allocating inode bitmap */
+#define PR_1_ALLOCATE_IBITMAP_ERROR	0x0100024
+
+/* Error allocating block bitmap */
+#define PR_1_ALLOCATE_BBITMAP_ERROR	0x0100025
+
+/* Error allocating icount structure */
+#define PR_1_ALLOCATE_ICOUNT		0x0100026
+	
+/* Error allocating dbcount */
+#define PR_1_ALLOCATE_DBCOUNT		0x0100027
+
+/* Error while scanning inodes */
+#define PR_1_ISCAN_ERROR		0x0100028
+
+/* Error while iterating over blocks */
+#define PR_1_BLOCK_ITERATE		0x0100029
+
+/* Error while storing inode count information */	  
+#define PR_1_ICOUNT_STORE		0x010002A
+
+/* Error while storing directory block information */	  
+#define PR_1_ADD_DBLOCK			0x010002B
+
+/* Error while reading inode (for clearing) */
+#define PR_1_READ_INODE			0x010002C
+
 
 /*
  * Pass 1b errors
  */
 
+/* Pass 1B: Rescan for duplicate/bad blocks */
+#define PR_1B_PASS_HEADER	0x011000
+
+/* Duplicate/bad block(s) header */
+#define PR_1B_DUP_BLOCK_HEADER	0x011001
+
+/* Duplicate/bad block(s) in inode */
+#define PR_1B_DUP_BLOCK		0x011002
+
+/* Duplicate/bad block(s) end */
+#define PR_1B_DUP_BLOCK_END	0x011003
+	
+/* Error while scanning inodes */
+#define PR_1B_ISCAN_ERROR	0x011004
+
+/* Error allocating inode bitmap */
+#define PR_1B_ALLOCATE_IBITMAP_ERROR 0x011005
+
+
+/* Pass 1C: Scan directories for inodes with dup blocks. */
+#define PR_1C_PASS_HEADER	0x012000
+
+
+/* Pass 1D: Reconciling duplicate blocks */
+#define PR_1D_PASS_HEADER	0x013000
+
 /* File has duplicate blocks */
-#define PR_1B_DUP_FILE		0x011001
+#define PR_1D_DUP_FILE		0x013001
 
 /* List of files sharing duplicate blocks */	
-#define PR_1B_DUP_FILE_LIST	0x011002
+#define PR_1D_DUP_FILE_LIST	0x013002
 
 /* File sharing blocks with filesystem metadata  */	
-#define PR_1B_SHARE_METADATA	0x011003
+#define PR_1D_SHARE_METADATA	0x013003
 
+/* Report of how many duplicate/bad inodes */	
+#define PR_1D_NUM_DUP_INODES	0x013004
+
+/* Duplicated blocks already reassigned or cloned. */
+#define PR_1D_DUP_BLOCKS_DEALT	0x013005
+
+/* Clone duplicate/bad blocks? */
+#define PR_1D_CLONE_QUESTION	0x013006
+
+/* Delete file? */
+#define PR_1D_DELETE_QUESTION	0x013007
+
+/* Couldn't clone file (error) */
+#define PR_1D_CLONE_ERROR	0x013008
+		
 /*
  * Pass 2 errors
  */
+
+/* Pass 2: Checking directory structure */
+#define PR_2_PASS_HEADER	0x020000
 
 /* Bad inode number for '.' */
 #define PR_2_BAD_INODE_DOT	0x020001
@@ -207,29 +388,106 @@ struct e2fsck_problem {
 /* Illegal block device in inode */
 #define PR_2_BAD_BLOCK_DEV	0x020019
 
+/* Duplicate '.' entry */
+#define PR_2_DUP_DOT		0x02001A
+
+/* Duplicate '..' entry */
+#define PR_2_DUP_DOT_DOT	0x02001B
+	
+/* Internal error: couldn't find dir_info */
+#define PR_2_NO_DIRINFO		0x02001C
+
+/* Final rec_len is wrong */
+#define PR_2_FINAL_RECLEN	0x02001D
+
+/* Error allocating icount structure */
+#define PR_2_ALLOCATE_ICOUNT	0x02001E
+
+/* Error iterating over directory blocks */
+#define PR_2_DBLIST_ITERATE	0x02001F
+
+/* Error reading directory block */
+#define PR_2_READ_DIRBLOCK	0x020020
+
+/* Error writing directory block */
+#define PR_2_WRITE_DIRBLOCK	0x020021
+
+/* Error allocating new directory block */
+#define PR_2_ALLOC_DIRBOCK	0x020022
+
+/* Error deallocating inode */
+#define PR_2_DEALLOC_INODE	0x020023
+
 /*
  * Pass 3 errors
  */
 
+/* Pass 3: Checking directory connectivity */
+#define PR_3_PASS_HEADER		0x030000
+
 /* Root inode not allocated */
-#define PR_3_NO_ROOT_INODE	0x030001
+#define PR_3_NO_ROOT_INODE		0x030001
 
 /* No room in lost+found */
-#define PR_3_EXPAND_LF_DIR	0x030002
+#define PR_3_EXPAND_LF_DIR		0x030002
 
 /* Unconnected directory inode */
-#define PR_3_UNCONNECTED_DIR	0x030003
+#define PR_3_UNCONNECTED_DIR		0x030003
 
 /* /lost+found not found */
-#define PR_3_NO_LF_DIR		0x030004
+#define PR_3_NO_LF_DIR			0x030004
 
 /* .. entry is incorrect */
-#define PR_3_BAD_DOT_DOT	0x030005
+#define PR_3_BAD_DOT_DOT		0x030005
 
+/* Bad or non-existent /lost+found.  Cannot reconnect */
+#define PR_3_NO_LPF			0x030006
+
+/* Could not expand /lost+found */
+#define PR_3_CANT_EXPAND_LPF		0x030007
+
+/* Could not reconnect inode */
+#define PR_3_CANT_RECONNECT		0x030008
+
+/* Error while trying to find /lost+found */
+#define PR_3_ERR_FIND_LPF		0x030009
+
+/* Error in ext2fs_new_block while creating /lost+found */
+#define PR_3_ERR_LPF_NEW_BLOCK		0x03000A
+
+/* Error in ext2fs_new_inode while creating /lost+found */
+#define PR_3_ERR_LPF_NEW_INODE		0x03000B
+
+/* Error in ext2fs_new_dir_block while creating /lost+found */	  
+#define PR_3_ERR_LPF_NEW_DIR_BLOCK	0x03000C
+		  
+/* Error while writing directory block for /lost+found */
+#define PR_3_ERR_LPF_WRITE_BLOCK	0x03000D
+
+/* Error while adjusting inode count */
+#define PR_3_ADJUST_INODE		0x03000E
+
+/* Couldn't fix parent directory -- error */
+#define PR_3_FIX_PARENT_ERR		0x03000F
+
+/* Couldn't fix parent directory -- couldn't find it */	  
+#define PR_3_FIX_PARENT_NOFIND		0x030010
+	
+/* Error allocating inode bitmap */
+#define PR_3_ALLOCATE_IBITMAP_ERROR	0x030011
+		  
+/* Error creating root directory */
+#define PR_3_CREATE_ROOT_ERROR		0x030012
+
+/* Error creating lost and found directory */
+#define PR_3_CREATE_LPF_ERROR		0x030013
 
 /*
  * Pass 4 errors
  */
+
+/* Pass 4: Checking reference counts */
+#define PR_4_PASS_HEADER	0x040000
 
 /* Unattached zero-length inode */
 #define PR_4_ZERO_LEN_INODE	0x040001
@@ -240,19 +498,77 @@ struct e2fsck_problem {
 /* Inode ref count wrong */
 #define PR_4_BAD_REF_COUNT	0x040003
 
+/* Inconsistent inode count information cached */
+#define PR_4_INCONSISTENT_COUNT	0x040004
+
 /*
  * Pass 5 errors
  */
 
+/* Pass 5: Checking group summary information */
+#define PR_5_PASS_HEADER		0x050000
+	
+/* Padding at end of inode bitmap is not set. */
+#define PR_5_INODE_BMAP_PADDING		0x050001
+
+/* Padding at end of block bitmap is not set. */
+#define PR_5_BLOCK_BMAP_PADDING		0x050002
+
+/* Block bitmap differences header */
+#define PR_5_BLOCK_BITMAP_HEADER 	0x050003
+
+/* Block not used, but marked in bitmap */
+#define PR_5_UNUSED_BLOCK		0x050004
+	  
+/* Block used, but not marked used in bitmap */
+#define PR_5_BLOCK_USED			0x050005
+
+/* Block bitmap differences end */	  
+#define PR_5_BLOCK_BITMAP_END		0x050006
+
+/* Inode bitmap differences header */
+#define PR_5_INODE_BITMAP_HEADER	0x050007
+
+/* Inode not used, but marked in bitmap */
+#define PR_5_UNUSED_INODE		0x050008
+	  
+/* Inode used, but not marked used in bitmap */
+#define PR_5_INODE_USED			0x050009
+
+/* Inode bitmap differences end */	  
+#define PR_5_INODE_BITMAP_END		0x05000A
+
+/* Free inodes count for group wrong */
+#define PR_5_FREE_INODE_COUNT_GROUP	0x05000B
+
+/* Directories count for group wrong */
+#define PR_5_FREE_DIR_COUNT_GROUP	0x05000C
+
+/* Free inodes count wrong */
+#define PR_5_FREE_INODE_COUNT	0x05000D
+
+/* Free blocks count for group wrong */
+#define PR_5_FREE_BLOCK_COUNT_GROUP	0x05000E
+
+/* Free blocks count wrong */
+#define PR_5_FREE_BLOCK_COUNT		0x05000F
+
+/* Programming error: bitmap endpoints don't match */
+#define PR_5_BMAP_ENDPOINTS		0x050010
+	
+/* Internal error: fudging end of bitmap */
+#define PR_5_FUDGE_BITMAP_ERROR		0x050011
+	
 /*
  * Function declarations
  */
-int fix_problem(ext2_filsys fs, int code, struct problem_context *ctx);
-void reset_problem_latch(int mask);
-void suppress_latch_group(int mask, int value);
+int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx);
+int end_problem_latch(e2fsck_t ctx, int mask);
+int set_latch_flags(int mask, int setflags, int clearflags);
+int get_latch_flags(int mask, int *value);
 void clear_problem_context(struct problem_context *ctx);
 
 /* message.c */
-void print_e2fsck_message(ext2_filsys fs, const char *msg,
-			  struct problem_context *ctx, int first);
+void print_e2fsck_message(e2fsck_t ctx, const char *msg,
+			  struct problem_context *pctx, int first);
 

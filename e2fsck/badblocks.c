@@ -23,15 +23,16 @@ static void invalid_block(ext2_filsys fs, blk_t blk)
 	return;
 }
 
-void read_bad_blocks_file(ext2_filsys fs, const char *bad_blocks_file,
+void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 			  int replace_bad_blocks)
 {
+	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
 	badblocks_list	bb_list = 0;
 	FILE		*f;
 	char		buf[1024];
 
-	read_bitmaps(fs);
+	read_bitmaps(ctx);
 
 	/*
 	 * Make sure the bad block inode is sane.  If there are any
@@ -72,8 +73,8 @@ void read_bad_blocks_file(ext2_filsys fs, const char *bad_blocks_file,
 		}
 	} else {
 		sprintf(buf, "badblocks -b %d %s%s %d", fs->blocksize,
-			preen ? "" : "-s ", fs->device_name,
-			fs->super->s_blocks_count);
+			(ctx->options & E2F_OPT_PREEN) ? "" : "-s ",
+			fs->device_name, fs->super->s_blocks_count);
 		f = popen(buf, "r");
 		if (!f) {
 			com_err("read_bad_blocks_file", errno,
@@ -106,9 +107,9 @@ void read_bad_blocks_file(ext2_filsys fs, const char *bad_blocks_file,
 	return;
 }
 
-void test_disk(ext2_filsys fs)
+void test_disk(e2fsck_t ctx)
 {
-	read_bad_blocks_file(fs, 0, 1);
+	read_bad_blocks_file(ctx, 0, 1);
 }
 
 static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,

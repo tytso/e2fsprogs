@@ -15,8 +15,11 @@
  *
  * 	%b	<blk>			block number
  * 	%B	<blkcount>		integer
+ * 	%c	<blk2>			block number
  * 	%di	<dirent>->ino		inode number
  * 	%dn	<dirent>->name		string
+ * 	%dr	<dirent>->rec_len
+ * 	%dl	<dirent>->name_len
  * 	%D	<dir> 			inode number
  * 	%g	<group>			integer
  * 	%i	<ino>			inode number
@@ -29,6 +32,7 @@
  * 	%If	<inode> -> i_file_acl
  * 	%Id	<inode> -> i_dir_acl
  * 	%j	<ino2>			inode number
+ * 	%m	<com_err error message>
  * 	%N	<num>
  *	%p	ext2fs_get_pathname of directory <ino>
  * 	%P	ext2fs_get_pathname of <dirent>->ino with <ino2> as
@@ -37,6 +41,8 @@
  * 	%q	ext2fs_get_pathname of directory <dir>
  * 	%Q	ext2fs_get_pathname of directory <ino> with <dir> as
  * 			the containing directory.
+ * 	%s	<str>			miscellaneous string
+ * 	%S	backup superblock
  *
  * The following '@' expansions are supported:
  *
@@ -49,12 +55,15 @@
  * 	@d	directory
  * 	@e	entry
  * 	@E	Entry '%Dn' in %p (%i)
+ * 	@f	filesystem
  * 	@F	for @i %i (%Q) is
  * 	@g	group
  * 	@l	lost+found
  * 	@L	is a link
  * 	@u	unattached
  * 	@r	root inode
+ * 	@s	should be 
+ * 	@S	superblock
  * 	@z	zero-length
  */
 
@@ -90,6 +99,7 @@ static const char *abbrevs[] = {
 	"ddirectory",
 	"eentry",
 	"E@e '%Dn' in %p (%i)",
+	"ffilesystem",
 	"Ffor @i %i (%Q) is",
 	"ggroup",
 	"llost+found",
@@ -97,6 +107,7 @@ static const char *abbrevs[] = {
 	"uunattached",
 	"rroot @i",
 	"sshould be",
+	"Ssuper@b",
 	"zzero-length",
 	"@@",
 	0
@@ -145,8 +156,8 @@ static void print_pathname(ext2_filsys fs, ino_t dir, ino_t ino)
  * expansion; an @ expression can contain further '@' and '%'
  * expressions. 
  */
-static _INLINE_ void expand_at_expression(ext2_filsys fs, char ch,
-					  struct problem_context *ctx,
+static _INLINE_ void expand_at_expression(e2fsck_t ctx, char ch,
+					  struct problem_context *pctx,
 					  int *first)
 {
 	const char **cpp, *str;
@@ -162,7 +173,7 @@ static _INLINE_ void expand_at_expression(ext2_filsys fs, char ch,
 			*first = 0;
 			fputc(toupper(*str++), stdout);
 		}
-		print_e2fsck_message(fs, str, ctx, *first);
+		print_e2fsck_message(ctx, str, pctx, *first);
 	} else
 		printf("@%c", ch);
 }
@@ -242,6 +253,12 @@ static _INLINE_ void expand_dirent_expression(char ch,
 			len = dirent->rec_len;
 		printf("%.*s", dirent->name_len, dirent->name);
 		break;
+	case 'r':
+		printf("%u", dirent->rec_len);
+		break;
+	case 'l':
+		printf("%u", dirent->name_len);
+		break;
 	default:
 	no_dirent:
 		printf("%%D%c", ch);
@@ -265,6 +282,9 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 	case 'B':
 		printf("%d", ctx->blkcount);
 		break;
+	case 'c':
+		printf("%u", ctx->blk2);
+		break;
 	case 'd':
 		printf("%lu", ctx->dir);
 		break;
@@ -276,6 +296,9 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		break;
 	case 'j':
 		printf("%lu", ctx->ino2);
+		break;
+	case 'm':
+		printf("%s", error_message(ctx->errcode));
 		break;
 	case 'N':
 		printf("%u", ctx->num);
@@ -293,6 +316,12 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 	case 'Q':
 		print_pathname(fs, ctx->dir, ctx->ino);
 		break;
+	case 'S':
+		printf("%d", get_backup_sb(fs));
+		break;
+	case 's':
+		printf("%s", ctx->str);
+		break;
 	default:
 	no_context:
 		printf("%%%c", ch);
@@ -300,25 +329,26 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 	}
 }	
 
-void print_e2fsck_message(ext2_filsys fs, const char *msg,
-			  struct problem_context *ctx, int first)
+void print_e2fsck_message(e2fsck_t ctx, const char *msg,
+			  struct problem_context *pctx, int first)
 {
+	ext2_filsys fs = ctx->fs;
 	const char *	cp;
 	int		i;
 	
 	for (cp = msg; *cp; cp++) {
 		if (cp[0] == '@') {
 			cp++;
-			expand_at_expression(fs, *cp, ctx, &first);
+			expand_at_expression(ctx, *cp, pctx, &first);
 		} else if (cp[0] == '%' && cp[1] == 'I') {
 			cp += 2;
-			expand_inode_expression(*cp, ctx);
+			expand_inode_expression(*cp, pctx);
 		} else if (cp[0] == '%' && cp[1] == 'D') {
 			cp += 2;
-			expand_dirent_expression(*cp, ctx);
+			expand_dirent_expression(*cp, pctx);
 		} else if ((cp[0] == '%')) {
 			cp++;
-			expand_percent_expression(fs, *cp, ctx);
+			expand_percent_expression(fs, *cp, pctx);
 		} else {
 			for (i=0; cp[i]; i++)
 				if ((cp[i] == '@') || cp[i] == '%')

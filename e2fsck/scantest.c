@@ -72,7 +72,7 @@ static __inline__ float timeval_subtract(struct timeval *tv1,
 		((float) (tv1->tv_usec - tv2->tv_usec)) / 1000000);
 }
 
-void print_resource_track(struct resource_track *track)
+static void print_resource_track(struct resource_track *track)
 {
 	struct rusage r;
 	struct timeval time_end;

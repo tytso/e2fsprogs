@@ -1,3 +1,43 @@
+Fri Oct  3 13:40:03 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass*.c, super.c: Massive changes to avoid using printf and
+		com_err routines.   All diagnostic messages are now routed
+		through the fix_problem interface.
+
+Sat Sep  6 17:13:28 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass2.c (check_dir_block): Check for duplicate '.' and '..'
+		entries. 
+
+	* problem.c, problem.h: Add new problem codes PR_2_DUP_DOT and
+	 	PR_2_DUP_DOT_DOT.
+
+Tue Sep  2 09:04:51 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* problem.c: Added new problem codes for some of the
+		superblock corruption checks, and for the pass header
+		messages.  ("Pass 1: xxxxx")
+
+	* util.c (print_resource_track): Now takes a description
+		argument. 
+
+Mon Aug 25 10:23:13 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* super.c, unix.c, e2fsck.c: New files to separate out the
+		operating-specific operations out from e2fsck.c.  
+		e2fsck.c now contains the global e2fsck context management
+		routines, and super.c contains the "pass 0" initial
+		validation of the superblock and global block group
+		descriptors. 
+
+	* pass1.c, pass2.c, pass3.c, pass4.c, pass5.c, util.c: Eliminate
+		(nearly) all global variables and moved them to the e2fsck
+		context structure.
+
+	* problem.c, problem.h: Added new problem codes PR_0_SB_CORRUPT,
+ 		PR_0_FS_SIZE_WRONG, PR_0_NO_FRAGMENTS,
+ 		PR_0_BLOCKS_PER_GROUP, PR_0_FIRST_DATA_BLOCK
+
 Thu Aug 14 10:55:21 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* message.c: Add compression for the word "Illegal"

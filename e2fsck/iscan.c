@@ -139,7 +139,7 @@ int main (int argc, char *argv[])
 		num_inodes++;
 	}
 	
-	print_resource_track(&global_rtrack);
+	print_resource_track(NULL, &global_rtrack);
 	printf("%d inodes scanned.\n", num_inodes);
 	
 	exit(0);

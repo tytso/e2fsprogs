@@ -13,7 +13,6 @@ File /foo (inode #12, mod time Thu Apr 28 17:57:53 1994)
 	<filesystem metadata>
 Clone duplicate/bad blocks? yes
 
-
 Pass 2: Checking directory structure
 Directory inode 12, block 1, offset 0: directory corrupted
 Salvage? yes
@@ -27,10 +26,12 @@ Salvage? yes
 Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts
 Pass 5: Checking group summary information
-Fix summary information? yes
+Free blocks count wrong for group #0 (77, counted=74).
+Fix? yes
 
-Free blocks count wrong for group 0 (77, counted=74).  FIXED
-Free blocks count wrong (77, counted=74).  FIXED
+Free blocks count wrong (77, counted=74).
+Fix? yes
+
 
 test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
 test_filesys: 12/32 files (8.3% non-contiguous), 26/100 blocks
