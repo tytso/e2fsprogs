@@ -38,7 +38,7 @@ int invalid_bitmaps = 0;
 
 struct resource_track	global_rtrack;
 
-static void usage(NOARGS)
+static void usage(void)
 {
 	fprintf(stderr,
 		_("Usage: %s [-F] [-I inode_buffer_blocks] device\n"),
@@ -63,12 +63,7 @@ static void PRS(int argc, char *argv[])
 	while ((c = getopt (argc, argv, "FI")) != EOF)
 		switch (c) {
 		case 'F':
-#ifdef BLKFLSBUF
 			flush = 1;
-#else
-			fprintf(stderr, _("-F not supported"));
-			exit(1);
-#endif
 			break;
 		case 'I':
 			inode_buffer_blocks = atoi(optarg);
@@ -78,7 +73,6 @@ static void PRS(int argc, char *argv[])
 		}
 	device_name = argv[optind];
 	if (flush) {
-#ifdef BLKFLSBUF
 		int	fd = open(device_name, O_RDONLY, 0);
 
 		if (fd < 0) {
@@ -86,16 +80,12 @@ static void PRS(int argc, char *argv[])
 			    _("while opening %s for flushing"), device_name);
 			exit(FSCK_ERROR);
 		}
-		if (ioctl(fd, BLKFLSBUF, 0) < 0) {
-			com_err("BLKFLSBUF", errno,
+		if ((retval = ext2fs_sync_device(fd, 1))) {
+			com_err("ext2fs_sync_device", retval,
 				_("while trying to flush %s"), device_name);
 			exit(FSCK_ERROR);
 		}
 		close(fd);
-#else
-		fprintf(stderr, _("BLKFLSBUF not supported"));
-		exit(1);
-#endif /* BLKFLSBUF */
 	}
 }
 					

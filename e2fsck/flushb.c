@@ -31,13 +31,6 @@
 #include <sys/ioctl.h>
 #include "../misc/nls-enable.h"
 
-#ifdef __STDC__
-#define NOARGS void
-#else
-#define NOARGS
-#define const
-#endif
-
 /* For Linux/i386, define BLKFLSBUF */
 #if (!defined(BLKFLSBUF) && defined(__i386__))
 #define BLKFLSBUF  0x1261	/* flush buffer cache */
@@ -45,7 +38,7 @@
 
 const char *progname;
 
-static void usage(NOARGS)
+static void usage(void)
 {
 	fprintf(stderr, _("Usage: %s disk\n"), progname);
 	exit(1);

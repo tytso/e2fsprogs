@@ -1107,8 +1107,6 @@ static int process_block(ext2_filsys fs,
 			goto mark_dir;
 		} else
 			return 0;
-		pctx->blk = 0;
-		pctx->blkcount = -1;
 	}
 
 	mark_block_used(ctx, blk);

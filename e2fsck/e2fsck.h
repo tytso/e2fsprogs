@@ -49,14 +49,6 @@
 #define N_(a) a
 #endif
 
-/* For Linux/i386, define BLKFLSBUF */
-#if (!defined(BLKFLSBUF) && defined(__i386__))
-#define BLKFLSBUF  0x1261	/* flush buffer cache */
-#endif
-
-/* Everything is STDC, these days */
-#define NOARGS void
-
 /*
  * Exit codes used by fsck-type programs
  */

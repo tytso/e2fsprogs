@@ -393,7 +393,7 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 
 #define PATH_SET "PATH=/sbin"
 
-static void reserve_stdio_fds(NOARGS)
+static void reserve_stdio_fds(void)
 {
 	int	fd;
 
@@ -543,11 +543,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			force = 1;
 			break;
 		case 'F':
-#ifdef BLKFLSBUF
 			flush = 1;
-#else
-			fatal_error(ctx, _("-F not supported"));
-#endif
 			break;
 		case 'v':
 			verbose = 1;
@@ -579,7 +575,6 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	    !cflag && !swapfs)
 		ctx->options |= E2F_OPT_READONLY;
 	ctx->filesystem_name = argv[optind];
-#ifdef BLKFLSBUF
 	if (flush) {
 		int	fd = open(ctx->filesystem_name, O_RDONLY, 0);
 
@@ -589,21 +584,14 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 				ctx->filesystem_name);
 			fatal_error(ctx, 0);
 		}
-		if (fsync(fd) < 0) {
-			com_err("fsync", errno,
-				_("while trying to flush %s"),
-				ctx->filesystem_name);
-			fatal_error(ctx, 0);
-		}
-		if (ioctl(fd, BLKFLSBUF, 0) < 0) {
-			com_err("BLKFLSBUF", errno,
+		if ((retval == ext2fs_sync_device(fd, 1))) {
+			com_err("ext2fs_sync_device", retval,
 				_("while trying to flush %s"),
 				ctx->filesystem_name);
 			fatal_error(ctx, 0);
 		}
 		close(fd);
 	}
-#endif /* BLKFLSBUF */
 	if (swapfs) {
 		if (cflag || bad_blocks_file) {
 			fprintf(stderr, _("Incompatible options not "

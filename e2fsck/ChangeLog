@@ -1,5 +1,13 @@
 2001-01-11    <tytso@snap.thunk.org>
 
+	* pass1.c (process_block): Remove dead code which was never
+		getting executed.
+
+	* iscan.c, unix.c, e2fsck.h: Don't use NOARGS, and use
+		ext2fs_sync_device() instead of using BLKFLSBUF.
+
+	* flushb.c: Don't use NOARGS anymore; everything is STDC these days.
+	
 	* dirinfo.c, e2fsck.h, emptydir.c, iscan.c, jfs_user.h, journal.c,
 		message.c, pass1.c, pass1b.c, pass2.c, pass3.c, pass4.c,
 		pass5.c, problem.h, scantest.c, super.c, swapfs.c: Change
