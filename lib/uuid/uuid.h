@@ -32,6 +32,8 @@ void uuid_copy(uuid_t uu1, uuid_t uu2);
 
 /* gen_uuid.c */
 void uuid_generate(uuid_t out);
+void uuid_generate_random(uuid_t out);
+void uuid_generate_time(uuid_t out);
 
 /* isnull.c */
 int uuid_is_null(uuid_t uu);

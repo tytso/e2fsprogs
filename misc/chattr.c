@@ -32,6 +32,14 @@
 #include <sys/stat.h>
 #include <linux/ext2_fs.h>
 
+#ifndef S_ISLNK			/* So we can compile even with gcc-warn */
+# ifdef __S_IFLNK
+#  define S_ISLNK(mode)	 __S_ISTYPE((mode), __S_IFLNK)
+# else
+#  define S_ISLNK(mode)  0
+# endif
+#endif
+
 #include "et/com_err.h"
 #include "e2p/e2p.h"
 

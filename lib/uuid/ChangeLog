@@ -1,3 +1,11 @@
+1999-10-26    <tytso@valinux.com>
+
+	* uuid_time.c (variant_string): Declare to be static to avoid gcc
+		warnings.
+
+	* uuid.h: Add function prototypes for uuid_generate_random() and
+		uuid_generate_time().
+
 1999-10-25    <tytso@valinux.com>
 
 	* gen_uuid_nt.c (uuid_generate): W2K strikes again!  An

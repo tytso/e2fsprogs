@@ -1,3 +1,8 @@
+1999-10-26    <tytso@valinux.com>
+
+	* chattr.c: Add hack to compile in a definition for S_ISLNK so we
+		can successfully compile even with warnings turned on.
+
 1999-10-25    <tytso@valinux.com>
 
 	* mke2fs.c (show_stats): Capitalized Hurd to make the GNU types

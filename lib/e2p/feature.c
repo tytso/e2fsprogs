@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <errno.h>
 
 #include "e2p.h"
@@ -59,7 +60,7 @@
 struct feature {
 	int		compat;
 	unsigned int	mask;
-	char		*string;
+	const char	*string;
 };
 
 struct feature feature_list[] = {
@@ -84,7 +85,7 @@ struct feature feature_list[] = {
 	{	0, 0, 0 },
 };
 
-char *e2p_feature2string(int compat, unsigned int mask)
+const char *e2p_feature2string(int compat, unsigned int mask)
 {
 	struct feature  *f;
 	static char buf[20];
@@ -115,7 +116,7 @@ char *e2p_feature2string(int compat, unsigned int mask)
 	return buf;
 }
 
-int e2p_string2feature(char *string, int *compat, unsigned int *mask)
+int e2p_string2feature(char *string, int *compat_type, unsigned int *mask)
 {
 	struct feature  *f;
 	char		*eptr;
@@ -123,7 +124,7 @@ int e2p_string2feature(char *string, int *compat, unsigned int *mask)
 
 	for (f = feature_list; f->string; f++) {
 		if (!strcasecmp(string, f->string)) {
-			*compat = f->compat;
+			*compat_type = f->compat;
 			*mask = f->mask;
 			return 0;
 		}
@@ -134,15 +135,15 @@ int e2p_string2feature(char *string, int *compat, unsigned int *mask)
 	switch (string[8]) {
 	case 'c':
 	case 'C':
-		*compat = E2P_FEATURE_COMPAT;
+		*compat_type = E2P_FEATURE_COMPAT;
 		break;
 	case 'i':
 	case 'I':
-		*compat = E2P_FEATURE_INCOMPAT;
+		*compat_type = E2P_FEATURE_INCOMPAT;
 		break;
 	case 'r':
 	case 'R':
-		*compat = E2P_FEATURE_RO_INCOMPAT;
+		*compat_type = E2P_FEATURE_RO_INCOMPAT;
 		break;
 	default:
 		return 1;
@@ -165,7 +166,7 @@ static char *skip_over_blanks(char *cp)
 	return cp;
 }
 
-char *skip_over_word(char *cp)
+static char *skip_over_word(char *cp)
 {
 	while (*cp && !isspace(*cp) && *cp != ',')
 		cp++;
@@ -177,11 +178,12 @@ char *skip_over_word(char *cp)
  * if set, allows the application to limit what features the user is
  * allowed to set or clear using this function.
  */
-int e2p_edit_feature(char *str, __u32 *compat_array, __u32 *ok_array)
+int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array)
 {
 	char	*cp, *buf, *next;
 	int	neg;
-	unsigned int	compat, mask;
+	unsigned int	mask;
+	int		compat_type;
 
 	buf = malloc(strlen(str)+1);
 	if (!buf)
@@ -204,14 +206,14 @@ int e2p_edit_feature(char *str, __u32 *compat_array, __u32 *ok_array)
 			cp++;
 			break;
 		}
-		if (e2p_string2feature(cp, &compat, &mask))
+		if (e2p_string2feature(cp, &compat_type, &mask))
 			return 1;
-		if (ok_array && !(ok_array[compat] & mask))
+		if (ok_array && !(ok_array[compat_type] & mask))
 			return 1;
 		if (neg)
-			compat_array[compat] &= ~mask;
+			compat_array[compat_type] &= ~mask;
 		else
-			compat_array[compat] |= mask;
+			compat_array[compat_type] |= mask;
 		cp = next ? next+1 : 0;
 	}
 	return 0;

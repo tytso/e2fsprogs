@@ -69,7 +69,7 @@ int uuid_variant(uuid_t uu)
 }
 
 #ifdef DEBUG
-const char *variant_string(int variant)
+static const char *variant_string(int variant)
 {
 	switch (variant) {
 	case UUID_VARIANT_NCS:
