@@ -62,18 +62,18 @@ errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
 		jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V2);
 	jsb->s_blocksize = htonl(fs->blocksize);
 	jsb->s_maxlen = htonl(size);
+	jsb->s_nr_users = htonl(1);
 	jsb->s_first = htonl(1);
 	jsb->s_sequence = htonl(1);
 	memcpy(jsb->s_uuid, fs->super->s_uuid, sizeof(fs->super->s_uuid));
-	jsb->s_nr_users = 1;
 	/*
-	 * Now for the special settings if we're creating an external
-	 * journal device
+	 * If we're creating an external journal device, we need to
+	 * adjust these fields.
 	 */
 	if (fs->super->s_feature_incompat &
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		jsb->s_nr_users = 0;
-		jsb->s_first = htonl(fs->super->s_first_data_block+2);
+		jsb->s_first = htonl(1);
 	}
 
 	*ret_jsb = (char *) jsb;
