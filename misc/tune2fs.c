@@ -430,9 +430,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	struct group * gr;
 	struct passwd * pw;
 
-	printf(_("tune2fs %s, %s for EXT2 FS %s, %s\n"),
-		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
-		 EXT2FS_VERSION, EXT2FS_DATE);
+	printf("tune2fs %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	while ((c = getopt (argc, argv, "c:e:fg:i:jlm:r:s:u:C:J:L:M:O:U:")) != EOF)
 		switch (c)
 		{

@@ -809,9 +809,8 @@ static void PRS(int argc, char *argv[])
 		param.s_feature_ro_compat = 0;
 	}
 #endif
-	fprintf (stderr, _("mke2fs %s, %s for EXT2 FS %s, %s\n"),
-		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
-		 EXT2FS_VERSION, EXT2FS_DATE);
+	fprintf (stderr, "mke2fs %s (%s)\n", E2FSPROGS_VERSION,
+		 E2FSPROGS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv,

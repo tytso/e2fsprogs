@@ -410,9 +410,8 @@ int main (int argc, char ** argv)
 	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
 	textdomain(NLS_CAT_NAME);
 #endif
-	fprintf (stderr, _("e2image %s, %s for EXT2 FS %s, %s\n"),
-		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
-		 EXT2FS_VERSION, EXT2FS_DATE);
+	fprintf (stderr, "e2image %s (%s)\n", E2FSPROGS_VERSION,
+		 E2FSPROGS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
 	initialize_ext2_error_table();

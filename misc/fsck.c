@@ -1074,8 +1074,7 @@ int main(int argc, char *argv[])
 	PRS(argc, argv);
 
 	if (!notitle)
-		printf(_("Parallelizing fsck version %s (%s)\n"),
-			E2FSPROGS_VERSION, E2FSPROGS_DATE);
+		printf("fsck %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
 	fstab = getenv("FSTAB_FILE");
 	if (!fstab)

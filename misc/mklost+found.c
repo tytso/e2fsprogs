@@ -41,9 +41,8 @@ int main (int argc, char ** argv)
 	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
 	textdomain(NLS_CAT_NAME);
 #endif
-	fprintf (stderr, _("mklost+found %s, %s for EXT2 FS %s, %s\n"),
-		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
-		 EXT2FS_VERSION, EXT2FS_DATE);
+	fprintf (stderr, "mklost+found %s (%s)\n", E2FSPROGS_VERSION,
+		 E2FSPROGS_DATE);
 	if (argc != 1) {
 		fprintf (stderr, _("Usage: mklost+found\n"));
 		exit(1);

@@ -1537,9 +1537,8 @@ int main(int argc, char **argv)
 	char		*tmp;
 	
 	initialize_ext2_error_table();
-	fprintf (stderr, "debugfs %s, %s for EXT2 FS %s, %s\n",
-		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
-		 EXT2FS_VERSION, EXT2FS_DATE);
+	fprintf (stderr, "debugfs %s (%s)\n", E2FSPROGS_VERSION,
+		 E2FSPROGS_DATE);
 
 	while ((c = getopt (argc, argv, "iwcR:f:b:s:V")) != EOF) {
 		switch (c) {

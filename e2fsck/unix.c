@@ -701,9 +701,8 @@ int main (int argc, char *argv[])
 #endif
 
 	if (!(ctx->options & E2F_OPT_PREEN) || show_version_only)
-		fprintf (stderr, _("e2fsck %s, %s for EXT2 FS %s, %s\n"),
-			 my_ver_string, my_ver_date, EXT2FS_VERSION,
-			 EXT2FS_DATE);
+		fprintf (stderr, "e2fsck %s (%s)\n", my_ver_string,
+			 my_ver_date);
 
 	if (show_version_only) {
 		fprintf(stderr, _("\tUsing %s, %s\n"),

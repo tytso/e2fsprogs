@@ -1,3 +1,8 @@
+2001-08-27  Theodore Tso  <tytso@valinux.com>
+
+	* debugfs.c (main): Remove EXT2FS_VERSION from the version
+		display, since it only confuses people.
+
 2001-08-15  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.23

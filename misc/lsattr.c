@@ -178,9 +178,8 @@ int main (int argc, char ** argv)
 		}
 
 	if (verbose)
-		fprintf (stderr, _("lsattr %s, %s for EXT2 FS %s, %s\n"),
-			 E2FSPROGS_VERSION, E2FSPROGS_DATE,
-			 EXT2FS_VERSION, EXT2FS_DATE);
+		fprintf (stderr, "lsattr %s (%s)\n",
+			 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	if (optind > argc - 1)
 		lsattr_args (".");
 	else
