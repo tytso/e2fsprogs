@@ -1,3 +1,7 @@
+2001-06-15  Theodore Tso  <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.21
+
 2001-06-02  Theodore Tso  <tytso@valinux.com>
 
 	* f_badinode: Added a fast symlink with an invalid size to test

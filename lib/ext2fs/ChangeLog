@@ -1,5 +1,9 @@
 2001-06-15  Theodore Tso  <tytso@valinux.com>
 
+	* Release of E2fsprogs 1.21
+
+2001-06-15  Theodore Tso  <tytso@valinux.com>
+
 	* Makefile.in: Fix bug in installation of ext2_types.h.  It is a
 		file which is generated and is therefore found in the
 		build directory, not source directory.
