@@ -6,6 +6,8 @@
 		(PRS): Only update the path to include /sbin at the
 		beginning if the -c option is given, again to make it
 		easier to find memory leaks.
+		(main): Move the final print_resource_track call after the
+		filesystem and the context are freed.
 
 	* journal.c (e2fsck_journal_init_dev): Avoid memory leak if we
 		need to search for the journal device.
