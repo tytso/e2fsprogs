@@ -1,3 +1,10 @@
+2001-05-01  Theodore Tso  <tytso@valinux.com>
+
+	* dir_iterate.c (ext2fs_process_dir_block): Add a double-check to
+		make sure the rec_len is a multiple of 4, to prevent
+		bus-errors on architectures which care about mis-aligned
+		pointer references.
+
 2001-04-25  Theodore Tso  <tytso@valinux.com>
 
 	* getsize.c (ext2fs_get_device_size): Use an unsigned long to
