@@ -51,9 +51,6 @@ static int verbose = 0;
 static int replace_bad_blocks = 0;
 static char *bad_blocks_file = 0;
 
-static int root_filesystem = 0;
-static int read_only_root = 0;
-
 e2fsck_t e2fsck_global_ctx;	/* Try your very best not to use this! */
 
 static void usage(e2fsck_t ctx)
@@ -201,9 +198,10 @@ static void show_stats(e2fsck_t	ctx)
 static void check_mount(e2fsck_t ctx)
 {
 	errcode_t	retval;
-	int		mount_flags, cont;
+	int		cont;
 
-	retval = ext2fs_check_if_mounted(ctx->filesystem_name, &mount_flags);
+	retval = ext2fs_check_if_mounted(ctx->filesystem_name,
+					 &ctx->mount_flags);
 	if (retval) {
 		com_err("ext2fs_check_if_mount", retval,
 			_("while determining whether %s is mounted."),
@@ -215,9 +213,9 @@ static void check_mount(e2fsck_t ctx)
 	 * If the filesystem isn't mounted, or it's the root filesystem
 	 * and it's mounted read-only, then everything's fine.
 	 */
-	if ((!(mount_flags & EXT2_MF_MOUNTED)) ||
-	    ((mount_flags & EXT2_MF_ISROOT) &&
-	     (mount_flags & EXT2_MF_READONLY)))
+	if ((!(ctx->mount_flags & EXT2_MF_MOUNTED)) ||
+	    ((ctx->mount_flags & EXT2_MF_ISROOT) &&
+	     (ctx->mount_flags & EXT2_MF_READONLY)))
 		return;
 
 	if (ctx->options & E2F_OPT_READONLY) {
@@ -1055,7 +1053,7 @@ restart:
 		if (!(ctx->options & E2F_OPT_PREEN))
 		    printf(_("\n%s: ***** FILE SYSTEM WAS MODIFIED *****\n"),
 			       ctx->device_name);
-		if (root_filesystem && !read_only_root) {
+		if (ctx->mount_flags & EXT2_MF_ISROOT) {
 			printf(_("%s: ***** REBOOT LINUX *****\n"),
 			       ctx->device_name);
 			exit_value |= FSCK_REBOOT;

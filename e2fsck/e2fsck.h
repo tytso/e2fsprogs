@@ -188,6 +188,7 @@ struct e2fsck_struct {
 	blk_t	superblock;	/* sb used to open fs */
 	int	blocksize;	/* blocksize */
 	blk_t	num_blocks;	/* Total number of blocks */
+	int	mount_flags;
 
 #ifdef HAVE_SETJMP_H
 	jmp_buf	abort_loc;

@@ -1,3 +1,10 @@
+2002-11-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.h, unix.c (main, check_mount): Fix e2fsck so that it
+		returns the appropriate exit code, so that the boot
+		scripts will be told that they need to automatically
+		reboot.
+
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.30
