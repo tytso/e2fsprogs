@@ -1,4 +1,8 @@
-2002-01-03  Theodore Tso  <tytso@valinux.com>
+2002-02-03  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.26
+
+2002-01-03  Theodore Tso  <tytso@mit.edu>
 
 	* dir_iterate.c (ext2fs_dir_iterate2, ext2fs_process_dir_block):
 		Add support for a new flag, DIRENT_FLAG_INCLUDE_REMOVED,
@@ -20,7 +24,7 @@
 		ext2fs_update_bb_inode), alloc.c (ext2fs_alloc_block):
 		Update to use new block/inode allocation statistics.
 
-2001-12-24  Theodore Tso  <tytso@valinux.com>
+2001-12-24  Theodore Tso  <tytso@mit.edu>
 
 	* ismounted.c (is_swap_device): New function used by
 		ext2fs_check_if_mounted and ext2fs_check_mount_point which
@@ -41,7 +45,7 @@
 		system administrators who might have created alias
 		devices.
  
-2001-12-23  Theodore Tso  <tytso@valinux.com>
+2001-12-23  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in, jfs_user.h: Move linux/jbd.h to
 		ext2fs/kernel-jbd.h, to avoid using the system header
@@ -52,7 +56,7 @@
 	* kernel-jbd.h, kernel-list.h, jfs_compat.h: Move files from
 		include/linux directory.
 
-2001-12-16  Theodore Tso  <tytso@valinux.com>
+2001-12-16  Theodore Tso  <tytso@mit.edu>
 
 	* bitops.h (ext2fs_mark_generic_bitmap, ext2fs_unmark_generic_bitmap),
 		ext_attr.c (ext2fs_read_ext_attr, ext2fs_write_ext_attr),
@@ -61,13 +65,13 @@
 	* Makefile.in, jfs_user.h: linux/jfs.h has been renamed to
 		linux/jbd.h
 
-2001-12-03  Theodore Tso  <tytso@valinux.com>
+2001-12-03  Theodore Tso  <tytso@mit.edu>
 
 	* unix_io.c (unix_open): Make sure the ulimit workaround works
 		regardless of the version of glibc which is used to
 		compild e2fsprogs.
 
-2001-11-26  Theodore Tso  <tytso@valinux.com>
+2001-11-26  Theodore Tso  <tytso@mit.edu>
 
 	* unix_io.c (unix_open): Work around a bug in 2.4.10+ kernels by
 		trying to unset the filesize limit if at all possible,
@@ -75,7 +79,7 @@
 		shouldn't be applied against writes to a block device, but
 		starting in 2.4.10, the kernel is doing this.)
 	
-2001-11-05  Theodore Tso  <tytso@valinux.com>
+2001-11-05  Theodore Tso  <tytso@mit.edu>
 
 	* mkjournal.c (ext2fs_add_journal_inode): When creating a .journal
 		file on adding a journal to an already-mounted filesystem,
@@ -92,13 +96,13 @@
 
 	* Release of E2fsprogs 1.25
 
-2001-09-16  Theodore Tso  <tytso@valinux.com>
+2001-09-16  Theodore Tso  <tytso@mit.edu>
 
 	* ext2_ext_attr.h: Remove unneeded #include of <linux/config.h>
 		which was breaking the build on the Hurd.  (Addresses
 		Debian bug #112414).
 
-2001-09-13  Theodore Ts'o  <tytso@valinux.com>
+2001-09-13  Theodore Ts'o  <tytso@mit.edu>
 
 	* ismounted.c (check_mntent_file): We now validate the entry in
 		/etc/mtab to make sure the filesystem is really mounted,

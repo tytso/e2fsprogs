@@ -1,4 +1,8 @@
-2001-12-24  Theodore Tso  <tytso@valinux.com>
+2002-02-03  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.26
+
+2001-12-24  Theodore Tso  <tytso@mit.edu>
 
 	* unix.c (PRS): Don't allow the -c and -l/-L options to be
 		specified at the same time.
@@ -12,7 +16,7 @@
 		to use -c instead of the -l/-L options since it's too hard
 		for users to get things like the blocksize parameter correct.
 
-2001-12-23  Theodore Tso  <tytso@valinux.com>
+2001-12-23  Theodore Tso  <tytso@mit.edu>
 
 	* util.c (get_backup_sb): This function now searches for the
 		backup superblock by iterating over possible blocksizes
@@ -34,7 +38,7 @@
 		forcibly adds /usr/include to the beginning of the
 		include search path.)
 
-2001-12-21  Theodore Tso  <tytso@valinux.com>
+2001-12-21  Theodore Tso  <tytso@mit.edu>
 
 	* problem.c (fix_problem): Use ctx->filesystem_name if the
 		ctx->device_name is NULL.
@@ -54,7 +58,7 @@
 		PR_0_JOURNAL_RUN and PR_0_JOURNAL_RUN_DEFAULT.  Update
 		problem decription texts.
 
-2001-12-16  Theodore Tso  <tytso@valinux.com>
+2001-12-16  Theodore Tso  <tytso@mit.edu>
 
 	* e2fsck.h (ext2fs_get_refcount_size), unix.c (check_mount, PRS), 
 		pass1.c (adjust_extattr_refcount), 
@@ -70,19 +74,19 @@
 
 	* journal.c (e2fsck_journal_load): Fix an endianness bug.
 
-2001-11-26  Theodore Tso  <tytso@valinux.com>
+2001-11-26  Theodore Tso  <tytso@mit.edu>
 
 	* super.c (check_super_block): Make sure that if the inode table
 		or allocation bitmap is zero, that it is marked as
 		invalid, so that in pass #1, a new bitmap/inode table gets
 		properly allocated.  (Addresses Debian Bug #116975)
 
-2001-11-24  Theodore Tso  <tytso@valinux.com>
+2001-11-24  Theodore Tso  <tytso@mit.edu>
 
 	* e2fsck.8.in: Fix minor typo in man page and clarify device
 		specification.
 
-2001-10-07  Theodore Tso  <tytso@valinux.com>
+2001-10-07  Theodore Tso  <tytso@mit.edu>
 
 	* journal.c (clear_v2_journal_fields, e2fsck_journal_load): If the
 		V2 fields are set on a V1 journal superblock, or an
@@ -92,7 +96,7 @@
 
 	* problem.c, problem.h (PR_0_CLEAR_V2_JOURNAL): Add new problem code.
 
-2001-09-20  Theodore Tso  <tytso@valinux.com>
+2001-09-20  Theodore Tso  <tytso@mit.edu>
 
 	* e2fsck.h, journal.c (e2fsck_move_ext3_journal): Add new function
 		which will automatically relocate the ext3 journal from a
@@ -108,7 +112,7 @@
 
 	* Release of E2fsprogs 1.25
 
-2001-09-19  Theodore Tso  <tytso@valinux.com>
+2001-09-19  Theodore Tso  <tytso@mit.edu>
 
 	* unix.c (main): If a superblock is specified explicitly by the
 		user, don't try to automatically fall back to an

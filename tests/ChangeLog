@@ -1,3 +1,7 @@
+2002-02-03  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.26
+
 2002-01-06  Andreas Dilger  <adilger@turbolinux.com>
 
 	* Makefile: Add new target "make testnew" which will create a new
@@ -5,7 +9,7 @@
 		the test filesystem is appropriately "broken" the new
 		target "make testend" will create expect files for it.
 
-2001-12-16  Theodore Tso  <tytso@valinux.com>
+2001-12-16  Theodore Tso  <tytso@mit.edu>
 
 	* f_ext_journal: Add new test which checks e2fsck's ability to use
 		an external journal.
@@ -14,19 +18,19 @@
 
 	* f_badorphan: Revert previous, erroneous change.
 
-2001-11-30  Theodore Tso  <tytso@valinux.com>
+2001-11-30  Theodore Tso  <tytso@mit.edu>
 
 	* f_badorphan, f_journal: Update expect files to reflect the fact
 		that new e2fsck's will move the .journal file to a hidden
 		inode.
 
-2001-11-26  Theodore Tso  <tytso@valinux.com>
+2001-11-26  Theodore Tso  <tytso@mit.edu>
 
 	* f_miss_blk_bmap: Add new test which checks for bug in e2fsck
 		where it wouldn't allocate a missing block bitmap on
 		filesystems with a blocksize of 2k or 4k.
 
-2001-10-07  Theodore Tso  <tytso@valinux.com>
+2001-10-07  Theodore Tso  <tytso@mit.edu>
 
 	* f_bad_local_jnl: New test which tests for a V2 journal with bad
 		fields caused by a botched V1->V2 upgrade.

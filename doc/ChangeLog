@@ -1,3 +1,7 @@
+2002-02-03  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.26
+
 2001-12-11  Theodore Tso  <tytso@valinux.com>
 
 	* Add new descriptions for the following functions: 

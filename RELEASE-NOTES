@@ -1,5 +1,5 @@
-E2fsprogs 1.26-WIP (December 24, 2001)
-======================================
+E2fsprogs 1.26 (February 3, 2001)
+=================================
 
 Dumpe2fs will keep going now if the bad block inode can't be read.
 (Previously it stopped with a fatal error.)
@@ -43,6 +43,12 @@ stupid operators with superuser bits, etc.
 Fix a bug in fsck where it would not support a filesystem type of
 "auto" if the device was specified in terms of LABEL=xxx or UUID=xxx.
 
+Fsck now supports fstab entries of the form "ext3,ext2".  It will also
+automatically identify reiserfs filesystems.
+
+The number of processes spawned by fsck can now be limited using the
+FSCK_MAX_INST environment variable.
+
 Fsck now searchs the LVM proc hierarchy to find logical volumes which
 should be searched for  UUID and label information.
 
@@ -76,6 +82,9 @@ system administrator has done something stupid like creating device
 file aliases in their home directory.  Also now checks for swap devices
 by using /proc/swaps.  (Addresses Debian bug #106622)
 
+Added a new option (-T) to tune2fs which sets the time a filesystem
+was last checked.
+
 Speed up e2image when creating sparse raw image files by optimizing
 away excess lseek() system calls.
 
@@ -90,6 +99,18 @@ superblock fields which can be set using the command.
 
 Debugfs's rm and kill_file command now updates the superblock free block
 and inode counts, thus keeping the filesystem consistent.
+
+Debugfs's lsdel command now takes an optional argument which allows
+the user to only see the most recently deleted files.
+
+A new command (undel) was added to debugfs which automates
+undeleting a deleted inode and linking it back to a directory.
+
+Debugfs's ls command now takes a new option, -d, which lists 
+deleted directory entries.
+
+Debugfs's testb, freeb, setb, and find_free_block commands now take an
+optional count argument.
 
 Add support for a new ext2 file attribute, EXT2_NOTAIL_FL, which will
 be used to signal that a particular inode should not be eligible for
@@ -122,6 +143,24 @@ Added a umask structure to struct_ext2_filsys, which currently only
 modifies the behaviour of ext2fs_mkdir(), but if we add any file
 creation functions to libext2fs, we should also make sure they respect
 the umask setting.
+
+The build-rpm script was fixed to be a bit more safe.
+
+The tests' Makefile now has a way of automating test case creation 
+for e2fsck, using "make testnew".
+
+Created a new function, ext2fs_dir_iterate2 which passes more
+information to the callback function (identical to the one used by
+ext2fs_dblist_dir_iterate).  The directory iterator functions take a
+new flag, DIRENT_FLAG_INCLUDE_REMOVED, which will return deleted
+directory entries.  If the directory entry is deleted, the callback
+function will be called with the entry paraemter set to
+DIRENT_DELETED_FILE.
+  
+Added new functions, ext2fs_inode_alloc_stats and
+ext2fs_block_alloc_stats, which takes updates block/inode allocation
+statistics in the bitmaps, block group descriptors, and superblock
+when inodes or blocks are allocated or deallocated.
 
 
 E2fsprogs 1.25 (September 20, 2001)

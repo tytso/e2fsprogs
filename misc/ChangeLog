@@ -1,4 +1,8 @@
-2002-02-03  Theodore Tso  <tytso@valinux.com>
+2002-02-03  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.26
+
+2002-02-03  Theodore Tso  <tytso@mit.edu>
 
 	* fsck.c (interpret_type): Allow filesystems types of the form
 		"ext3,ext2", etc.
@@ -7,7 +11,7 @@
 		specified list of filesystems.  Also add support for
 		identifying reiserfs filesystems.
 
-2002-01-29  Theodore Tso  <tytso@valinux.com>
+2002-01-29  Theodore Tso  <tytso@mit.edu>
 
 	* fsck.c: Allow the number of outstanding processes fs-specific
 		fsck programs to be capped via the FSCK_MAX_INST
@@ -15,23 +19,23 @@
 
 	* fsck.8.in: Document all of the environment variables used by fsck.
 
-2002-01-27  Theodore Tso  <tytso@valinux.com>
+2002-01-27  Theodore Tso  <tytso@mit.edu>
 
 	* tune2fs.8.in: Document the -f flag to tune2fs.
 
-2002-01-02  Theodore Tso  <tytso@valinux.com>
+2002-01-02  Theodore Tso  <tytso@mit.edu>
 
 	* badblocks.c (main): Open the device as O_RDWR if possible, since
 		fsync() isn't guaranteed to work if the filesystem is
 		opened read-only.
 
-2001-12-26  Theodore Tso  <tytso@valinux.com>
+2001-12-26  Theodore Tso  <tytso@mit.edu>
 
 	* tune2fs.8.in, tune2fs.c (parse_tune2fs_options, main): Add
 		support for new option, -T, which allows the user to set
 		the last checked time on the filesystem.
 
-2001-12-24  Theodore Tso  <tytso@valinux.com>
+2001-12-24  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (main, test_disk): If two -c options are
 		specified, then perform a destructive read/write test
@@ -50,7 +54,7 @@
 		directory, and the system administrator may not deal with
 		immediately.  (Addresses Debian bug #118443)
 
-2001-12-23  Theodore Tso  <tytso@valinux.com>
+2001-12-23  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in, jfs_user.h: Move linux/jbd.h to
 		ext2fs/kernel-jbd.h, to avoid using the system header
@@ -58,20 +62,20 @@
 		forcibly adds /usr/include to the beginning of the
 		include search path.)
 
-2001-12-22  Theodore Tso  <tytso@valinux.com>
+2001-12-22  Theodore Tso  <tytso@mit.edu>
 
 	* get_device_by_label.c (init_lvm): Add support to read out
 		information from the LVM proc hierarchy, so that the UUID
 		cache can search the LVM logical volumes for UUID's,
 		labels, etc.
 
-2001-12-21  Theodore Tso  <tytso@valinux.com>
+2001-12-21  Theodore Tso  <tytso@mit.edu>
 
 	* dumpe2fs.c (list_bad_blocks): Change to not die if the listing
 		of the bad blocks can't be found.  Slimmed down dumpe2fs
 		by eliminating duplicate code paths.  
 
-2001-12-16  Theodore Tso  <tytso@valinux.com>
+2001-12-16  Theodore Tso  <tytso@mit.edu>
 
 	* dumpe2fs.c (list_desc), fsck.c (fs_match),
 		get_device_by_label.c (get_label_uuid), 
@@ -85,23 +89,23 @@
 	* Makefile.in, jfs_user.h: linux/jfs.h has been renamed to
 		linux/jbd.h
 
-2001-12-02  Theodore Tso  <tytso@valinux.com>
+2001-12-02  Theodore Tso  <tytso@mit.edu>
 
 	* dumpe2fs.c: Don't print the offset to the bitmap and inode table
 		if it's negative.  Also did some generalized code clean up
 		to slim it down the support of the -x option.
 
-2001-11-24  Theodore Tso  <tytso@valinux.com>
+2001-11-24  Theodore Tso  <tytso@mit.edu>
 
 	* e2image.8.in: Fix cut-and-paste typo (Addresses Debian bug
 		#119624)
 
-2001-11-13  Theodore Tso  <tytso@valinux.com>
+2001-11-13  Theodore Tso  <tytso@mit.edu>
 
 	* util.c (check_plausibility): Use stat64 if available so that
 		check_plausibility() works with files > 2GB.
 
-2001-11-05  Theodore Tso  <tytso@valinux.com>
+2001-11-05  Theodore Tso  <tytso@mit.edu>
 
 	* chattr.1.in: Update the man page to document the EXT2_NOTAIL_FL
 		flag.
@@ -113,7 +117,7 @@
 		specifications which use LABEL= or UUID= are translated
 		into a real device name.
 
-2001-10-12  Theodore Tso  <tytso@valinux.com>
+2001-10-12  Theodore Tso  <tytso@mit.edu>
 
 	* e2image.c (output_meta_data_blocks): Optimize away excess
 		lseek() calls when creating a sparse file.  Fewer system
@@ -129,7 +133,7 @@
 
 	* Release of E2fsprogs 1.25
 
-2001-09-19  Theodore Tso  <tytso@valinux.com>
+2001-09-19  Theodore Tso  <tytso@mit.edu>
 
 	* tune2fs.c (remove_journal_inode): Remove dead code that wasn't
 		in use.
@@ -137,7 +141,7 @@
 	* tune2fs.8.in: Update man page to reflect the fact that adding or
 		removing a journal doesn't require running e2fsck.
 
-2001-09-13  Theodore Tso  <tytso@valinux.com>
+2001-09-13  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (zap_sector): Allocate sufficient space for 
 		zero-filled buffer.
