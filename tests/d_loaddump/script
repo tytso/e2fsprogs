@@ -7,15 +7,15 @@ VERIFY_DATA=test.verify
 
 echo "debugfs load/dump test" > $OUT
 
-dd if=/dev/zero of=$TMPFILE bs=1k count=512 >& /dev/null
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
 
-echo "mke2fs -Fq $TMPFILE 512" >> $OUT
+echo "mke2fs -Fq -b 1024 $TMPFILE 512" >> $OUT
 
-$MKE2FS -Fq $TMPFILE 512 >& /dev/null
+$MKE2FS -Fq $TMPFILE 512 > /dev/null 2>&1
 status=$?
 echo Exit status is $status >> $OUT
 
-dd if=$DEBUGFS of=$TEST_DATA bs=1k count=128 >& /dev/null
+dd if=$DEBUGFS of=$TEST_DATA bs=128k count=1 conv=sync > /dev/null 2>&1 
 echo "file fragment odd size" >> $TEST_DATA
 
 echo "debugfs -R ''write $TEST_DATA test_data'' -w $TMPFILE" > $OUT.new

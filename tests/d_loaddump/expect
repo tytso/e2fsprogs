@@ -1,5 +1,5 @@
 debugfs load/dump test
-mke2fs -Fq ./test.img 512
+mke2fs -Fq -b 1024 ./test.img 512
 Exit status is 0
 debugfs -R ''write test.data test_data'' -w ./test.img
 Allocated inode: 12

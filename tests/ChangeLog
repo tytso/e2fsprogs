@@ -1,3 +1,12 @@
+2001-06-01  Theodore Tso  <tytso@valinux.com>
+
+	* d_loaddump: Fix test script to remove bash'isms, and make the
+		shell script more robust in cases where the user has
+		overridden CFLAGS so that the debugfs binary isn't
+		compiled with -g, and is smaller than 128k.  Also specify
+		the blocksize to be used explictly to avoid problems with
+		people who change the mke2fs default parameters.
+
 2001-05-25  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.20
