@@ -1,4 +1,4 @@
-de2fsprogs 1.36-rc2 (January 11, 2005)
+E2fsprogs 1.36-rc3 (January 18, 2005)
 ======================================
 
 All of the patches that were applied to Fedore Core 3's
@@ -68,6 +68,14 @@ specifiers, via the syntax: "/tmp/test.img?offset=1024".
 E2fsprogs programs will now accept blocksizes up to 65536; kernel
 support on the x86 doesn't exist for now, but it can be useful on
 other architectures with page sizes greater than 4k.
+
+The e2image command now takes the -s option which will scramble
+directory entries for raw image files.
+
+Fix a file descriptor leak in the filefrag program.
+
+Make sure e2fsck doesn't crash when /proc/acpi/ac_adapter is not
+present.
 
 Fix bug in debugfs where kill_file would lead to errors when deleting
 devices and symlinks.  (Sourceforge Bugs #954741 and #957244)
@@ -212,6 +220,8 @@ Update gettext files to version 0.14.1.
 Update to use autoconf 2.5x.
 
 Improved support for compiling e2fsprogs under dietlibc.
+
+Make e2fsprogs portable to Solaris and FreeBSD systems.
 
 
 E2fsprogs 1.35 (February 28, 2004) 

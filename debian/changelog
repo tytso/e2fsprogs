@@ -1,3 +1,16 @@
+e2fsprogs (1.36rc3-1) unstable; urgency=low
+
+  * New upstream release
+  * Update Italian, French, and Turkish translations
+  * Fixed file descriptor leak in the filefrag program
+  * Add -s option to e2image which scrambles directory entries when making
+        raw image files
+  * Make sure e2fsck doesn't crash if /proc/acpi/ac_adapter does not
+        exist
+  * Added Solaris, FreeBSD portability fixes
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 19 Jan 2005 00:33:31 -0500
+
 e2fsprogs (1.36rc2-1) unstable; urgency=low
 
   * New upstream release
