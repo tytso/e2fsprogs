@@ -3,7 +3,8 @@
  *
  * Implements a one-block write-through cache.
  *
- * Copyright (C) 1993, 1994, 1995 Theodore Ts'o.
+ * Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+ * 	2002 by Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -337,6 +338,14 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 		retval = errno;
 		goto cleanup;
 	}
+
+#ifdef __linux__
+#undef RLIM_INFINITY
+#if (defined(__alpha__) || ((defined(__sparc__) || defined(__mips__)) && (SIZEOF_LONG == 4)))
+#define RLIM_INFINITY	((unsigned long)(~0UL>>1))
+#else
+#define RLIM_INFINITY  (~0UL)
+#endif
 	/*
 	 * Work around a bug in 2.4.10+ kernels where writes to block
 	 * devices are wrongly getting hit by the filesize limit.
@@ -346,7 +355,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 	    (S_ISBLK(st.st_mode))) {
 		struct rlimit	rlim;
 		
-		rlim.rlim_cur = rlim.rlim_max = ((unsigned long)(~0UL));
+		rlim.rlim_cur = rlim.rlim_max = (unsigned long) RLIM_INFINITY;
 		setrlimit(RLIMIT_FSIZE, &rlim);
 		getrlimit(RLIMIT_FSIZE, &rlim);
 		if (((unsigned long) rlim.rlim_cur) <
@@ -355,6 +364,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 			setrlimit(RLIMIT_FSIZE, &rlim);
 		}
 	}
+#endif
 	*channel = io;
 	return 0;
 
