@@ -124,7 +124,7 @@ static void list_desc (ext2_filsys fs)
 			"Inode table at %04x-%04x (+%d)\n"):
 		        _("  Block bitmap at %u (+%d), "
 			"Inode bitmap at %u (+%d)\n  "
-			"Inode table at %u (+%d)\n"),
+			"Inode table at %u-%u (+%d)\n"),
 			fs->group_desc[i].bg_block_bitmap,
 			fs->group_desc[i].bg_block_bitmap - group_blk,
 			fs->group_desc[i].bg_inode_bitmap,
