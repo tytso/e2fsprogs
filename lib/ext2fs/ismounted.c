@@ -146,6 +146,45 @@ exit:
 	return retval;
 }
 
+/*
+ * Check to see if we're dealing with the swap device.
+ */
+static int is_swap_device(const char *file)
+{
+	FILE		*f;
+	char		buf[1024], *cp;
+	dev_t		file_dev;
+	struct stat	st_buf;
+
+	file_dev = 0;
+#ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
+	if (stat(file, &st_buf) == 0)
+		file_dev = st_buf.st_rdev;
+#endif	
+
+	f = fopen("/proc/swaps", "r");
+	if (!f)
+		return;
+	/* Skip the first line */
+	fgets(buf, sizeof(buf), f);
+	while (!feof(f)) {
+		if (!fgets(buf, sizeof(buf), f))
+			break;
+		if ((cp = strchr(buf, ' ')) != NULL)
+			*cp = 0;
+		if ((cp = strchr(buf, '\t')) != NULL)
+			*cp = 0;
+		if (strcmp(buf, file) == 0)
+			return 1;
+#ifndef __GNU__
+		if (file_dev && (stat(buf, &st_buf) == 0) &&
+		    file_dev == st_buf.st_rdev)
+			return 1;
+#endif
+	}
+	return 0;
+}
+
 static errcode_t check_mntent(const char *file, int *mount_flags,
 			      char *mtpt, int mtlen)
 {
@@ -217,6 +256,11 @@ static errcode_t check_getmntinfo(const char *file, int *mount_flags,
 errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 				  char *mtpt, int mtlen)
 {
+	if (is_swap_device(device)) {
+		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_SWAP;
+		strncpy(mtpt, "<swap>", mtlen);
+		return 0;
+	}
 #ifdef HAVE_MNTENT_H
 	return check_mntent(device, mount_flags, mtpt, mtlen);
 #else 
@@ -262,7 +306,10 @@ int main(int argc, char **argv)
 	printf("Device %s reports flags %02x\n", argv[1], mount_flags);
 	if (mount_flags & EXT2_MF_MOUNTED)
 		printf("\t%s is mounted.\n", argv[1]);
-	
+
+	if (mount_flags & EXT2_MF_SWAP)
+		printf("\t%s is a swap device.\n", argv[1]);
+
 	if (mount_flags & EXT2_MF_READONLY)
 		printf("\t%s is read-only.\n", argv[1]);
 	

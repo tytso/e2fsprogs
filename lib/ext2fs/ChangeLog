@@ -1,5 +1,11 @@
 2001-12-24  Theodore Tso  <tytso@valinux.com>
 
+	* ismounted.c (is_swap_device): New function used by
+		ext2fs_check_if_mounted and ext2fs_check_mount_point which
+		determines whether or not the specified device is a swap
+		device by using /proc/swaps.  More bulletproofing for
+		idiotic/careless system administrators!
+
 	* ext2fs.h, openfs.c (ext2fs_open), initialize.c
 		(ext2fs_initialize), mkdir.c (ext2fs_mkdir): Add a new
 		field to struct_ext2_filsys, umask.  This field is

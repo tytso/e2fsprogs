@@ -190,11 +190,6 @@ TODO list.
 
 							- Ted
 
-----------------------------------------------------------------
-
-check_if_mounted() should check to see if the file is in /proc/swaps,
-to avoid mkfs's or checking a active swap partition.
-
 -----------------------------------------------------------------
 
 Debugfs's link command should set the file type information
