@@ -3,18 +3,18 @@
 	* mke2fs.c: Add check for mkfs.ext3 and create a journal in
 		this case.
 
-2002-02-24  Theodore Tso  <tytso@valinux.com>
+2002-02-24  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in (install): Install hard links for man pages for
 		mkfs.ext2 and mkfs.ext3.  Also install hard link for
 		mkfs.ext3.  Remove any compressed man pages before
 		installing the man pages.
 
-2002-02-23  Theodore Tso  <tytso@valinux.com>
+2002-02-23  Theodore Tso  <tytso@mit.edu>
 
 	* badblocks.8.in: Clarify man page's description of the -f option
 
-2002-02-12  Theodore Tso  <tytso@valinux.com>
+2002-02-12  Theodore Tso  <tytso@mit.edu>
 
 	* get_device_by_label.c: Since on non-STDC compilers, we define
 		away const, include get_device_by_label.h after we include

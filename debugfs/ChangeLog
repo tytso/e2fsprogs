@@ -1,4 +1,4 @@
-2002-02-25  Theodore Tso  <tytso@valinux.com>
+2002-02-25  Theodore Tso  <tytso@mit.edu>
 
 	* util.c (open_pager): If the PAGER environment is set to __none__
 		then don't use a pager at all, and ship it all to stdout.
@@ -7,7 +7,7 @@
 		implements the three new commands, htree_dump, dx_hash,
 		and dirsearch.
 
-2002-02-24  Theodore Tso  <tytso@valinux.com>
+2002-02-24  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in (install): Remove any compressed man pages before
 		installing the man pages.
@@ -16,7 +16,7 @@
 
 	* Release of E2fsprogs 1.26
 
-2002-01-03  Theodore Tso  <tytso@valinux.com>
+2002-01-03  Theodore Tso  <tytso@mit.edu>
 
 	* lsdel.c (do_lsdel): New optional argument which allows the user
 		to only see the most recently deleted files.
@@ -42,7 +42,7 @@
 		subroutines for ease of maintenance and to make the
 		executable size smaller.
 
-2001-12-23  Theodore Tso  <tytso@valinux.com>
+2001-12-23  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in, jfs_user.h: Move linux/jbd.h to
 		ext2fs/kernel-jbd.h, to avoid using the system header
@@ -50,13 +50,13 @@
 		forcibly adds /usr/include to the beginning of the
 		include search path.)
 
-2001-12-22  Theodore Tso  <tytso@valinux.com>
+2001-12-22  Theodore Tso  <tytso@mit.edu>
 
 	* debugfs.c (kill_file_by_inode, release_blocks_proc): Update the
 		group descriptor free block and inode counts when deleting
 		or killing a file.
 
-2001-12-16  Theodore Tso  <tytso@valinux.com>
+2001-12-16  Theodore Tso  <tytso@mit.edu>
 
 	* setsuper.c (print_possible_fields), 
 		logdump.c (dump_journal): Fix gcc -Wall nits
@@ -64,18 +64,18 @@
 	* Makefile.in, jfs_user.h: linux/jfs.h has been renamed to
 		linux/jbd.h
 
-2001-12-02  Theodore Tso  <tytso@valinux.com>
+2001-12-02  Theodore Tso  <tytso@mit.edu>
 
 	* util.c (close_pager): Use pclose() instead of fclose() when
 		closing the pager stream.
 
-2001-11-30  Theodore Tso  <tytso@valinux.com>
+2001-11-30  Theodore Tso  <tytso@mit.edu>
 
 	* debugfs.c (finish_range, dump_blocks): Fixed bug in Andreas's >
 		2GB support changes: you need to use %lld when printf'ing
 		an long long variable.
 
-2001-11-24  Theodore Tso  <tytso@valinux.com>
+2001-11-24  Theodore Tso  <tytso@mit.edu>
 
 	* debugfs.8.in: Update manual page to document the set_super_value
 		and logdump commands, and move the "specifying files"

@@ -1,10 +1,10 @@
-2002-02-24  Theodore Tso  <tytso@valinux.com>
+2002-02-24  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in (install): Install hard links for man pages for
 		fsck.ext2 and fsck.ext3.  Remove any compressed man
 		pages before installing the man pages.
 
-2002-02-22  Theodore Tso  <tytso@valinux.com>
+2002-02-22  Theodore Tso  <tytso@mit.edu>
 
 	* journal.c: Improve code maintainability and reduce code size by 
 		moving common code paths in e2fsck_journal_init_dev() and

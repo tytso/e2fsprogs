@@ -1,4 +1,4 @@
-2002-02-24  Theodore Tso  <tytso@valinux.com>
+2002-02-24  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in (install): Remove any compressed man pages before
 		installing the man pages.

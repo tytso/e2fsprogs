@@ -1,4 +1,4 @@
-2002-02-23  Theodore Tso  <tytso@valinux.com>
+2002-02-23  Theodore Tso  <tytso@mit.edu>
 
 	* com_err.texinfo: Fix up the com_err info file so that it
 		includes the directory node information.  (Taken from the
@@ -8,7 +8,7 @@
 
 	* Release of E2fsprogs 1.26
 
-2001-12-02  Theodore Tso  <tytso@valinux.com>
+2001-12-02  Theodore Tso  <tytso@mit.edu>
 
 	* com_err.c (default_com_err_proc): Work around bug in diet libc
 		which core dumps when using fputc on stderr; besides, it
@@ -19,12 +19,12 @@
 
 	* Release of E2fsprogs 1.25
 
-2001-09-16  Theodore Tso  <tytso@valinux.com>
+2001-09-16  Theodore Tso  <tytso@mit.edu>
 
 	* compile_et.sh.in: Make the shell script safe from directory
 		pathnames with spaces.
 
-2001-09-10  Theodore Tso  <tytso@valinux.com>
+2001-09-10  Theodore Tso  <tytso@mit.edu>
 
 	* com_err.texinfo: Add appropriate @node and @menu lines so that
 		the a valid .info file can be made.  Use @deftypefun to

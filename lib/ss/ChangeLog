@@ -1,4 +1,4 @@
-2002-02-12  Theodore Tso  <tytso@valinux.com>
+2002-02-12  Theodore Tso  <tytso@mit.edu>
 
 	* requests.c (DECLARE): Fix bug in non-STDC declaration --- we
 		had a mismatch in the function signature and parameter
@@ -12,7 +12,7 @@
 
 	* Release of E2fsprogs 1.25
 
-2001-09-16  Theodore Tso  <tytso@valinux.com>
+2001-09-16  Theodore Tso  <tytso@mit.edu>
 
 	* mk_cmds.sh.in: Make the shell script safe from directory
 		pathnames with spaces.

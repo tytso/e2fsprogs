@@ -1,4 +1,4 @@
-2002-02-24  Theodore Tso  <tytso@valinux.com>
+2002-02-24  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in (install): Install hard links to man pages for
 		uuid_generate_random and uuid_generate_time.  Remove
@@ -12,7 +12,7 @@
 
 	* Release of E2fsprogs 1.25
 
-2001-09-10  Theodore Tso  <tytso@valinux.com>
+2001-09-10  Theodore Tso  <tytso@mit.edu>
 
 	* compare.c (uuid_compare), copy.c (uuid_copy), 
 		isnull.c (uuid_is_null), pack.c (uuid_pack), 

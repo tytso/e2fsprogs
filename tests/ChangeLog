@@ -1,4 +1,4 @@
-2002-02-12  Theodore Tso  <tytso@valinux.com>
+2002-02-12  Theodore Tso  <tytso@mit.edu>
 
 	* run_e2fsck (status): Use separate sed invocations for greater
 		portabilty.  AIX's sed doesn't support multiple -e
