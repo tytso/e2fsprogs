@@ -9,17 +9,42 @@
 .SH NAME
 uuidgen \- command\-line utility to create a new UUID value
 .SH SYNOPSIS
-.nf
-.B uuidgen
-.fi
+.B uuidgen 
+[
+.B -r
+] [
+.B -t
+]
 .SH DESCRIPTION
 The
 .B uuidgen
 program creates a new universally unique identifier (UUID) using the
-.BR libuuid "(3) functions " uuid_generate "(3) and " uuid_unparse "(3)."
-The new UUID can reasonably be considered unique among all UUIDs created
-on the local system, and among UUIDs created on other systems in the past
+.BR libuuid (3)
+library.  The new UUID can reasonably be considered unique among 
+all UUIDs created on the local system, 
+and among UUIDs created on other systems in the past
 and in the future.
+.PP
+There are two types of UUID's which 
+.B uuidgen
+can generate: time-based UUID's and random-based UUID's.  By 
+default 
+.B uuidgen
+will generatea random-based UUID if a high-quality random number
+generator is present.  Otherwise, it will chose a time-based UUID.  It 
+is possible to force the generation of one of these two 
+UUID types by using the
+.IR -r " or " -t " options."
+.SH "OPTIONS"
+.TP
+.I -r
+Generate a random-based UUID.  This method creates a UUID consisting mostly
+of random bits.  It requires that the operating system have a high
+quality random number generator, such as /dev/random.
+.TP
+.I -t
+Generate a time-based UUID.  This method creates a UUID based on the system 
+clock plus the system's ethernet hardware address, if present.
 .SH RETURN VALUE
 The UUID of the form 1b4e28ba\-2fa1\-11d2\-883f\-b9a761bde3fb (in
 .BR printf (3)
