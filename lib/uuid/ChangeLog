@@ -1,3 +1,11 @@
+2004-03-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen_uuid.c (get_clock): Use 14 bits for the clock sequence,
+		instead of just 13 bits.
+
+	* gen_uuid.c (get_node_id): Fix so that Darwin will actually get
+		the ethernet address correctly.
+
 2004-02-29  Brian Bergstrand  <brian@bergstrand.org>
 
 	* Makefile.in: Use $(BSDLIB_PIC_FLAG) to determine whether to use

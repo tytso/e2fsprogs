@@ -1,3 +1,8 @@
+2004-03-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Add tests for sa_len in struct sockaddr and test
+		for net/if_dl.h for better Darwin support.
+
 2004-03-04  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsprogs.spec.in: Mostly synchronize spec file with the one
