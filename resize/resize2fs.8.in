@@ -1,0 +1,32 @@
+.\" -*- nroff -*-
+.\" Copyright 1997 by Theodore Ts'o.  All Rights Reserved.
+.\" 
+.TH RESIZE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+resize2fs \- ext2 file system resizer
+.SH SYNOPSIS
+.B resize2fs
+[
+device
+]
+.SH DESCRIPTION
+The 
+.B resize2fs
+program will resize ext2 file systems.  It can be used to enlarge or
+shrink an ext2 file system.
+.br
+.I device
+is the special file corresponding to the device containing the ext2
+file system (e.g /dev/hdXX).
+.SH OPTIONS
+.TP
+.I -h
+Displays a help message.
+.SH AUTHOR
+.B debugfs
+was written by Theodore Ts'o <tytso@mit.edu>.
+.SH SEE ALSO
+.BR dumpe2fs (8),
+.BR tune2fs (8), 
+.BR e2fsck (8),
+.BR mke2fs (8)

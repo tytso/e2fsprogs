@@ -8,7 +8,7 @@ INSTALL = @INSTALL@
 @MCONFIG@
 
 LIB_SUBDIRS=lib/et lib/ss lib/ext2fs lib/e2p lib/uuid
-PROG_SUBDIRS=e2fsck debugfs misc tests/progs 
+PROG_SUBDIRS=e2fsck debugfs misc resize tests/progs 
 SUBDIRS=$(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
 SUBS= include/linux/types.h
@@ -35,23 +35,29 @@ install-libs: install-libs-recursive
 TAGS clean-recursive distclean-recursive \
 	    mostlyclean-recursive realclean-recursive install-recursive:
 	for subdir in $(SUBDIRS); do \
-	  target=`echo $@|$(SED) 's/-recursive//'`; \
-	  echo making $$target in $$subdir; \
-	  (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	  if test -d $$subdir ; then \
+	    target=`echo $@|$(SED) 's/-recursive//'`; \
+	    echo making $$target in $$subdir; \
+	    (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	  fi ; \
 	done
 
 all-progs-recursive install-progs-recursive:
 	for subdir in $(PROG_SUBDIRS); do \
-	  target=`echo $@|$(SED) 's/-progs-recursive//'`; \
-	  echo making $$target in $$subdir; \
-	  (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	  if test -d $$subdir ; then \
+	    target=`echo $@|$(SED) 's/-progs-recursive//'`; \
+	    echo making $$target in $$subdir; \
+	    (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	  fi ; \
 	done
 
 all-libs-recursive install-libs-recursive install-shlibs-libs-recursive:
 	for subdir in $(LIB_SUBDIRS); do \
-	  target=`echo $@|$(SED) 's/-libs-recursive//'`; \
-	  echo making $$target in $$subdir; \
-	  (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	  if test -d $$subdir ; then \
+	    target=`echo $@|$(SED) 's/-libs-recursive//'`; \
+	    echo making $$target in $$subdir; \
+	    (cd $$subdir && $(MAKE) $$target) || exit 1; \
+	  fi ; \
 	done
 
 mostlyclean: mostlyclean-recursive mostlyclean-local
@@ -98,6 +104,7 @@ $(srcdir)/.exclude-file:
 		> $(srcdir)/.exclude-file)
 	echo "$(SRCROOT)/build" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/rpm.log" >> $(srcdir)/.exclude-file
+	echo "$(SRCROOT)/resize" >> $(srcdir)/.exclude-file
 	echo "$(SRCROOT)/.exclude-file" >> $(srcdir)/.exclude-file
 	echo $(SRCROOT)/e2fsprogs-@E2FSPROGS_VERSION@.tar.gz \
 		>> $(srcdir)/.exclude-file

@@ -1,0 +1,70 @@
+#
+# Standard e2fsprogs prologue....
+#
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+top_builddir = ..
+my_dir = resize
+INSTALL = @INSTALL@
+
+@MCONFIG@
+
+PROGS=		resize2fs
+MANPAGES=	resize2fs.8
+
+RESIZE_OBJS= banalysis.o resize2fs.o main.o
+
+SRCS= $(srcdir)/banalysis.c \
+	$(srcdir)/resize2fs.c \
+	$(srcdir)/main.c 
+
+LIBS= $(LIBEXT2FS) $(LIBCOM_ERR)  $(LIBUUID)
+DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR)  $(LIBUUID)
+
+.c.o:
+	$(CC) -c $(ALL_CFLAGS) $< -o $@
+
+all:: $(PROGS) $(MANPAGES)
+
+resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
+	$(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS)
+
+resize2fs.8: $(SUBSTITUTE) $(srcdir)/resize2fs.8.in
+	-$(CHMOD) +x $(SUBSTITUTE)
+	$(SUBSTITUTE) $(srcdir)/resize2fs.8.in resize2fs.8
+
+installdirs:
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(usbindir) \
+		$(DESTDIR)$(man8dir) $(DESTDIR)$(cat8dir)
+
+install: $(PROGS) $(MANPAGES) installdirs
+	for i in $(PROGS); do \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(usbindir)/$$i; \
+		$(STRIP) $(DESTDIR)$(usbindir)/$$i; \
+	done
+	for i in $(MANPAGES); do \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
+	done
+
+uninstall:
+	for i in $(PROGS); do \
+		$(RM) -f $(usbindir)/$$i; \
+	done
+	for i in $(MANPAGES); do \
+		$(RM) -f $(man8dir)/$$i; \
+	done
+
+clean:
+	$(RM) -f $(PROGS) $(MANPAGES) \#* *.s *.o *.a *~ core
+
+mostlyclean: clean
+distclean: clean
+	$(RM) -f .depend Makefile
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
