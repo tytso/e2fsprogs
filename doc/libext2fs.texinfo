@@ -492,10 +492,89 @@ EXT2_ET_MISSING_INODE_TABLE.
 @comment  node-name,  next,  previous,  up
 @subsection Iterating over blocks in an inode
 
-@deftypefun errcode_t ext2fs_block_iterate (ext2_filsys @var{fs}, ext2_ino_t @var{ino}, int @var{flags}, char *block_buf, int (*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, int @var{blockcnt}, void *@var{private}), void *@var{private})
+@deftypefun errcode_t ext2fs_block_iterate (ext2_filsys @var{fs},
+ext2_ino_t @var{ino}, int @var{flags}, char *block_buf, int
+(*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, int @var{blockcnt},
+void *@var{private}), void *@var{private})
+
+Iterate over all of the blocks in inode number @var{ino} in filesystem
+@var{fs}, by calling the function @var{func} for each block in the
+inode.  The @var{block_buf} parameter should either be NULL, or if the
+@code{ext2fs_block_iterate} function is called repeatedly, the overhead
+of allocating and freeing scratch memory can be avoided by passing a
+pointer to a scratch buffer which must be at least as big as three times the
+filesystem's blocksize.  
+
+The @var{flags} parameter controls how the iterator will function:
+
+@table @samp
+
+@item BLOCK_FLAG_HOLE
+This flag indiciates that the interator function should be called on
+blocks where the block number is zero (also known as ``holes''.)  It is
+also known as BLOCK_FLAG_APPEND, since it is also used by functions
+such as ext2fs_expand_dir() to add a new block to an inode.
+
+@item BLOCK_FLAG_TRAVERSE
+This flag indicates that the iterator function for the
+indirect, doubly indirect, etc. blocks should be called after all
+of the blocks containined in the indirect blocks are processed.
+This is useful if you are going to be deallocating blocks from an
+inode.
+
+@item BLOCK_FLAG_DATA_ONLY
+This flag indicates that the iterator function should be
+called for data blocks only.
+
+@end table
+
+The callback function @var{func} is called with a number of parameters;
+the @var{fs} and @var{private} parameters are self-explanatory, and
+their values are taken from the parameters to
+@code{ext2fs_block_iterate}.  (The @var{private} data structure is
+generally used by callers to @code{ext2fs_block_iterate} so that some
+private data structure can be passed to the callback function.  The 
+@var{blockcnt} parameter, if non-negative, indicates the logical block
+number of a data block in the inode.  If @var{blockcnt} is less than
+zero, then @var{func} was called on a metadata block, and @var{blockcnt}
+will be one of the following values:  BLOCK_COUNT_IND, BLOCK_COUNT_DIND,
+BLOCK_COUNT_TIND, or BLOCK_COUNT_TRANSLATOR.  The @var{blocknr} is a
+pointer to the inode or indirect block entry listing physical block
+number.  The callback function may modify the physical block number, if
+it returns the @var{BLOCK_CHANGED} flag.
+
+
+The callback function @var{func} returns a result code which is composed of
+the logical OR of the following flags:
+
+@table @samp
+
+@item BLOCK_CHANGED
+
+This flag indicates that callback function has modified the physical
+block number pointed to by @var{blocknr}.
+
+@item BLOCK_ABORT
+
+This flag requests that @code{ext2fs_block_iterate} to stop immediately
+and return to the caller.
+
+@end table
+
 @end deftypefun
 
 @deftypefun errcode_t ext2fs_block_iterate2 (ext2_filsys @var{fs}, ext2_ino_t @var{ino}, int @var{flags}, char *@var{block}_buf, int (*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, e2_blkcnt_t @var{blockcnt}, blk_t @var{ref_blk}, int  @var{ref_offset}, void *@var{private}), void *@var{private})
+
+This function is much like @code{ext2fs_block_iterate2}, except that the
+@var{blockcnt} type is a 64-bit signed quantity, to support larger
+files, and the addition of the @var{ref_blk} and @var{ref_offset}
+arguments passed to the callback function, which identify the location
+of the physical block pointed to by pointer @var{blocknr}.  If
+@var{ref_blk} is zero, then @var{ref_offset} contains the offset into
+the @code{i_blocks} array.  If @var{ref_blk} is non-zero, then the physical
+block location is contained inside an indirect block group, and
+@var{ref_offset} contains the offset into the indirect block.
+
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -544,12 +623,24 @@ contain valid block entries.
 @subsection Directory block functions
 
 @deftypefun errcode_t ext2fs_read_dir_block (ext2_filsys @var{fs}, blk_t @var{block}, void *@var{buf})
+
+This function reads a directory block, performing any necessary
+byte swapping if necessary.
 @end deftypefun
 
 @deftypefun errcode_t ext2fs_write_dir_block (ext2_filsys @var{fs}, blk_t @var{block}, void *@var{buf})
+
+This function writes a directory block, performing any necessary
+byte swapping if necessary.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_new_dir_block (ext2_filsys @var{fs}, ext2_ino_t @var{dir}_ino, ext2_ino_t @var{parent_ino}, char **@var{block})
+@deftypefun errcode_t ext2fs_new_dir_block (ext2_filsys @var{fs},
+ext2_ino_t @var{dir_ino}, ext2_ino_t @var{parent_ino}, char
+**@var{block})
+
+This function creates a new directory block in @var{block}.  If
+@var{dir_ino} is non-zero, then @var{dir_info} and @var{parent_ino} is used
+to initialize directory entries for @file{.} and @file{..}, respectively.
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -559,6 +650,26 @@ contain valid block entries.
 @subsection Iterating over a directory
 
 @deftypefun errcode_t ext2fs_dir_iterate (ext2_filsys @var{fs}, ext2_ino_t @var{dir}, int @var{flags}, char *@var{block_buf}, int (*@var{func})(struct ext2_dir_entry *@var{dirent}, int @var{offset}, int @var{blocksize}, char *@var{buf}, void *@var{private}), void *@var{private})
+
+This function interates over all of the directory entries in the
+directory @var{dir}, calling the callback function @var{func} for each
+directory entry in the directory.  The @var{block_buf} parameter should
+either be NULL, or if the @code{ext2fs_dir_iterate} function is 
+called repeatedly, the overhead of allocating and freeing 
+scratch memory can be avoided by passing a pointer to a scratch buffer
+which must be at least as big as the filesystem's blocksize.  
+
+The @var{flags} parameter controls how the iterator will function:
+
+@table @samp
+
+@item DIRENT_FLAG_INCLUDE_EMPTY
+
+This flag indicates that the callback function should be called even 
+for deleted or empty directory entries.
+
+@end table
+
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -568,9 +679,20 @@ contain valid block entries.
 @subsection Creating and expanding directories
 
 @deftypefun errcode_t ext2fs_mkdir (ext2_filsys @var{fs}, ext2_ino_t @var{parent}, ext2_ino_t @var{inum}, const char *@var{name})
+
+This function creates a new directory.  If @var{inum} is zero, then a
+new inode will be allocated; otherwise, the directory will be created in
+the inode specified by @var{inum}.  If @var{name} specifies the name of
+the new directory; if it is non-NULL, then the new directory will be
+linked into the parent directory @var{parent}.
 @end deftypefun
 
 @deftypefun errcode_t ext2fs_expand_dir (ext2_filsys @var{fs}, ext2_ino_t @var{dir})
+
+This function adds a new empty directory block and appends it to 
+the directory @var{dir}.  This allows functions such as
+@code{ext2fs_link} to add new directory entries to a directory which is full.
+
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -580,9 +702,61 @@ contain valid block entries.
 @subsection Creating and removing directory entries
 
 @deftypefun errcode_t ext2fs_link (ext2_filsys @var{fs}, ext2_ino_t @var{dir}, const char *@var{name}, ext2_ino_t @var{ino}, int flags)
+
+This function adds a new directory entry to the directory @var{dir}, 
+with @var{name} and @var{ino} specifying the name and inode number in
+the directory entry, respectively.  
+
+The low 3 bits of the flags field is used to specify the file type of
+inode:   (No other flags are currently defined.)
+
+@table @samp
+
+@item EXT2_FT_UNKNOWN
+
+The file type is unknown.
+
+@item EXT2_FT_REG_FILE
+
+The file type is a normal file.
+
+@item EXT2_FT_DIR
+
+The file type is a directory.
+
+@item EXT2_FT_CHRDEV
+
+The file type is a character device.
+
+@item EXT2_FT_BLKDEV
+
+The file type is a block device.
+
+@item EXT2_FT_FIFO
+
+The file type is a named pipe.
+
+@item EXT2_FT_SOCK
+
+The file type is a unix domain socket.
+
+@item EXT2_FT_SYMLINK
+
+The file type is a symbolic link.
+@end table 
+
 @end deftypefun
 
 @deftypefun errcode_t ext2fs_unlink (ext2_filsys @var{fs}, ext2_ino_t @var{dir}, const char *@var{name}, ext2_ino_t @var{ino}, int @var{flags})
+
+This function removes a directory entry from @var{dir}.
+The directory entry to be removed is the first one which is
+matched by @var{name} and @var{ino}.  If @var{name} is non-NULL, 
+the directory entry's name must match @var{name}.  If @var{ino} is
+non-zero, the directory entry's inode number must match @var{ino}.
+No flags are currently defined for @code{ext2fs_unlink}; callers should
+pass in zero to this parameter.
+
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -738,7 +912,7 @@ Return the first inode or block which is stored in the bitmap.
 @deftypefun blk_t ext2fs_get_block_bitmap_end (ext2fs_block_bitmap @var{bitmap})
 @deftypefunx ext2_ino_t ext2fs_get_inode_bitmap_end (ext2fs_inode_bitmap @var{bitmap})
 
-Return the first inode or block which is stored in the bitmap.
+Return the last inode or block which is stored in the bitmap.
 @end deftypefun
 
 
@@ -790,9 +964,16 @@ Return the first inode or block which is stored in the bitmap.
 @subsection Clearing Bitmaps
 
 @deftypefun void ext2fs_clear_inode_bitmap (ext2fs_inode_bitmap @var{bitmap})
+
+This function sets all of the bits in the inode bitmap @var{bitmap} to 
+be zero.
+
 @end deftypefun
 
 @deftypefun void ext2fs_clear_block_bitmap (ext2fs_block_bitmap @var{bitmap})
+
+This function sets all of the bits in the block bitmap @var{bitmap} to 
+be zero.
 @end deftypefun
 
 
@@ -1050,9 +1231,14 @@ up-to-date ext2 shared library.
 
 /* inline functions */
 @deftypefun int ext2fs_group_of_blk (ext2_filsys @var{fs}, blk_t @var{blk})
+
+This function returns the block group which contains the block @var{blk}.
+
 @end deftypefun
 
 @deftypefun int ext2fs_group_of_ino (ext2_filsys @var{fs}, ext2_ino_t @var{ino})
+
+This function returns the block group which contains the inode @var{ino}.
 @end deftypefun
 
 
