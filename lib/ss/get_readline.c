@@ -49,10 +49,15 @@ void ss_get_readline(int sci_idx)
 		return;
 
 	info->readline_handle = handle;
-	info->readline = dlsym(handle, "readline");
-	info->add_history = dlsym(handle, "add_history");
-	info->redisplay = dlsym(handle, "rl_forced_update_display");
-	info->rl_completion_matches = dlsym(handle, "rl_completion_matches");
+	info->readline = (char *(*)(const char *))
+		dlsym(handle, "readline");
+	info->add_history = (void (*)(const char *))
+		dlsym(handle, "add_history");
+	info->redisplay = (void (*)(void))
+		dlsym(handle, "rl_forced_update_display");
+	info->rl_completion_matches = (char **(*)(const char *,
+				    char *(*)(const char *, int)))
+		dlsym(handle, "rl_completion_matches");
 	if ((t = dlsym(handle, "rl_readline_name")) != NULL)
 		*t = info->subsystem_name;
 	if ((completion_func =

@@ -25,13 +25,8 @@
 
 #include <ss/ss_err.h>
 
-#ifdef __STDC__
 #define __SS_CONST const
 #define __SS_PROTO (int, const char * const *, int, void *)
-#else
-#define __SS_CONST
-#define __SS_PROTO ()
-#endif
 
 typedef __SS_CONST struct _ss_request_entry {
     __SS_CONST char * __SS_CONST *command_names; /* whatever */
@@ -63,7 +58,7 @@ void ss_help __SS_PROTO;
 #if 0
 char *ss_current_request();	/* This is actually a macro */
 #endif
-#ifdef __STDC__
+
 char *ss_name(int sci_idx);
 void ss_error (int, long, char const *, ...);
 void ss_perror (int, long, char const *);
@@ -86,25 +81,6 @@ void ss_unimplemented(int argc, const char * const *argv,
 void ss_set_prompt(int sci_idx, char *new_prompt);
 char *ss_get_prompt(int sci_idx);
 void ss_get_readline(int sci_idx);
-#else
-char *ss_name();
-void ss_error ();
-void ss_perror ();
-int ss_create_invocation();
-void ss_delete_invocation();
-int ss_listen();
-int ss_execute_line();
-void ss_add_request_table();
-void ss_delete_request_table();
-void ss_abort_subsystem();
-void ss_quit();
-void ss_self_identify();
-void ss_subsystem_name();
-void ss_subsystem_version();
-void ss_unimplemented();
-void ss_set_prompt;
-char *ss_get_prompt;
-void ss_get_readline();
-#endif
+
 extern ss_request_table ss_std_requests;
 #endif /* _ss_h */

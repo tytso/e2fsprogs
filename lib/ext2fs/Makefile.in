@@ -168,7 +168,7 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
 @BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) -fpic -o pic/$*.o -c $<
 
-COMPILE_ET=../et/compile_et
+COMPILE_ET=../et/compile_et --build-tree
 
 DISTFILES= Makefile *.c *.h image
 

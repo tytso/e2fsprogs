@@ -17,45 +17,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef __STDC__
-
-#define NOARGS void
 #define PROTOTYPE(p) p
 typedef void * pointer;
 
-#else
-
-#define NOARGS
-#define const
-#define volatile
-#define PROTOTYPE(p) ()
-typedef char * pointer;
-
-#endif /* not __STDC__ */
-
 #include "ss.h"
-
-#if defined(__GNUC__)
-#define LOCAL_ALLOC(x) __builtin_alloca(x)
-#define LOCAL_FREE(x)
-#else
-#if defined(vax)
-#define LOCAL_ALLOC(x) alloca(x)
-#define LOCAL_FREE(x)
-extern pointer alloca PROTOTYPE((unsigned));
-#else
-#if defined(__HIGHC__)	/* Barf! */
-pragma on(alloca);
-#define LOCAL_ALLOC(x) alloca(x)
-#define LOCAL_FREE(x)
-extern pointer alloca PROTOTYPE((unsigned));
-#else
-/* no alloca? */
-#define LOCAL_ALLOC(x) malloc(x)
-#define LOCAL_FREE(x) free(x)
-#endif
-#endif
-#endif				/* LOCAL_ALLOC stuff */
 
 typedef char BOOL;
 
@@ -102,7 +67,7 @@ typedef struct _ss_data {	/* init values */
     void (*readline_shutdown)(struct _ss_data *info);
     char *(*readline)(const char *);
     void (*add_history)(const char *);
-    void (*redisplay)();
+    void (*redisplay)(void);
     char **(*rl_completion_matches)(const char *,
 				    char *(*completer)(const char *, int));
     /* to get out */
@@ -115,17 +80,15 @@ typedef struct _ss_data {	/* init values */
 #define	ss_info(sci_idx)	(_ss_table[sci_idx])
 #define	ss_current_request(sci_idx,code_ptr)	\
      (*code_ptr=0,ss_info(sci_idx)->current_request)
-void ss_add_info_dir PROTOTYPE((int sci_idx, char *info_dir,
-				int *code_ptr));
-void ss_delete_info_dir PROTOTYPE((int sci_idx, char *info_dir,
-				   int *code_ptr));
-int ss_execute_line PROTOTYPE((int sci_idx, char *line_ptr));
-char **ss_parse PROTOTYPE((int sci_idx, char *line_ptr, int *argc_ptr));
-ss_abbrev_info *ss_abbrev_initialize PROTOTYPE((char *, int *));
-void ss_page_stdin(NOARGS);
-void ss_list_requests PROTOTYPE((int, char const * const *, int, pointer));
-int ss_execute_command PROTOTYPE((int sci_idx, char *argv[]));
-int ss_pager_create(NOARGS);
+void ss_add_info_dir (int sci_idx, char *info_dir, int *code_ptr);
+void ss_delete_info_dir (int sci_idx, char *info_dir, int *code_ptr);
+int ss_execute_line(int sci_idx, char *line_ptr);
+char **ss_parse(int sci_idx, char *line_ptr, int *argc_ptr);
+ss_abbrev_info *ss_abbrev_initialize(char *, int *);
+void ss_page_stdin(void);
+void ss_list_requests(int, char const * const *, int, pointer);
+int ss_execute_command(int sci_idx, char *argv[]);
+int ss_pager_create(void);
 char **ss_rl_completion(const char *text, int start, int end);
 
 extern ss_data **_ss_table;

@@ -21,14 +21,6 @@
 #include <setjmp.h>
 #include <signal.h>
 #include <sys/param.h>
-#ifdef BSD
-#include <sgtty.h>
-#endif
-
-#ifndef	lint
-static char const rcs_id[] =
-    "$Header$";
-#endif
 
 typedef void sigret_t;
 
@@ -38,16 +30,6 @@ static sigret_t (*sig_cont)(int);
 
 static sigret_t print_prompt(int sig)
 {
-#ifdef BSD
-    /* put input into a reasonable mode */
-    struct sgttyb ttyb;
-    if (ioctl(fileno(stdin), TIOCGETP, &ttyb) != -1) {
-	if (ttyb.sg_flags & (CBREAK|RAW)) {
-	    ttyb.sg_flags &= ~(CBREAK|RAW);
-	    (void) ioctl(0, TIOCSETP, &ttyb);
-	}
-    }
-#endif
     if (current_info->redisplay)
 	    (*current_info->redisplay)();
     else {
@@ -69,11 +51,7 @@ int ss_listen (int sci_idx)
     ss_data *info;
     sigret_t (*sig_int)(int), (*old_sig_cont)(int);
     char input[BUFSIZ];
-#ifdef POSIX_SIGNALS
     sigset_t omask, igmask;
-#else
-    int mask;
-#endif
     int code;
     jmp_buf old_jmpb;
     ss_data *old_info = current_info;
@@ -82,21 +60,14 @@ int ss_listen (int sci_idx)
     current_info = info = ss_info(sci_idx);
     sig_cont = (sigret_t (*)(int)) 0;
     info->abort = 0;
-#ifdef POSIX_SIGNALS
     sigemptyset(&igmask);
     sigaddset(&igmask, SIGINT);
     sigprocmask(SIG_BLOCK, &igmask, &omask);
-#else
-    mask = sigblock(sigmask(SIGINT));
-#endif
     memcpy(old_jmpb, listen_jmpb, sizeof(jmp_buf));
     sig_int = signal(SIGINT, listen_int_handler);
     setjmp(listen_jmpb);
-#ifdef POSIX_SIGNALS
     sigprocmask(SIG_SETMASK, &omask, (sigset_t *) 0);
-#else
-    (void) sigsetmask(mask);
-#endif
+
     while(!info->abort) {
 	old_sig_cont = sig_cont;
 	sig_cont = signal(SIGCONT, print_prompt);

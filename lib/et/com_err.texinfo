@@ -256,14 +256,6 @@ included in the source of a module which wishes to reference the error
 codes defined; the object module generated from the C code may be linked in
 to a program which wishes to use the printed forms of the error codes.
 
-This translator accepts a @kbd{-language @var{lang}} argument, which
-determines for which language (or language variant) the output should be
-written.  At the moment, @var{lang} is currently limited to @kbd{ANSI-C}
-and @kbd{K&R-C}, and some abbreviated forms of each.  Eventually, this will
-be extended to include some support for C++.  The default is currently
-@kbd{K&R-C}, though the generated sources will have ANSI-C code
-conditionalized on the symbol @t{__STDC__}.
-
 @node Run-time support routines, Coding Conventions, The error-table compiler, Top
 @section Run-time support routines
 
@@ -522,35 +514,6 @@ error-table compiler.  The files @samp{libcom_err.a},
 @samp{libcom_err_p.a}, @samp{com_err.h}, and @samp{compile_et} should be
 installed for use; @samp{com_err.3} and @samp{compile_et.1} can also be
 installed as manual pages.
-
-Potential problems:
-
-@itemize @bullet
-
-@item Use of @code{strcasecmp}, a routine provided in BSD for
-case-insensitive string comparisons.  If an equivalent routine is
-available, you can modify @code{CFLAGS} in the makefile to define
-@code{strcasecmp} to the name of that routine.
-
-@item Compilers that defined @code{__STDC__} without providing the header
-file @code{<stdarg.h>}.  One such example is Metaware's High ``C''
-compiler, as provided at Project Athena on the IBM RT/PC workstation; if
-@code{__HIGHC__} is defined, it is assumed that @code{<stdarg.h>} is not
-available, and therefore @code{<varargs.h>} must be used.  If the symbol
-@code{VARARGS} is defined (e.g., in the makefile), @code{<varargs.h>} will
-be used.
-
-@item If your linker rejects symbols that are simultaneously defined in two
-library files, edit @samp{Makefile} to remove @samp{perror.c} from the
-library.  This file contains a version of @cite{perror(3)} which calls
-@code{com_err} instead of calling @code{write} directly.
-
-@end itemize
-
-As I do not have access to non-BSD systems, there are probably
-bugs present that may interfere with building or using this package on
-other systems.  If they are reported to me, they can probably be fixed for
-the next version.
 
 @node Bug Reports, Acknowledgements, Building and Installation, Top
 @section Bug Reports

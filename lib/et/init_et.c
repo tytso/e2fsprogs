@@ -24,10 +24,6 @@
 #include "com_err.h"
 #include "error_table.h"
 
-#ifndef __STDC__
-#define const
-#endif
-
 struct foobar {
     struct et_list etl;
     struct error_table et;
@@ -35,14 +31,7 @@ struct foobar {
 
 extern struct et_list * _et_list;
 
-#ifdef __STDC__
 int init_error_table(const char * const *msgs, int base, int count)
-#else
-int init_error_table(msgs, base, count)
-    const char * const * msgs;
-    int base;
-    int count;
-#endif
 {
     struct foobar * new_et;
 

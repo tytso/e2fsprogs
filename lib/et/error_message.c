@@ -17,6 +17,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include "com_err.h"
@@ -28,12 +29,7 @@ static char buffer[25];
 struct et_list * _et_list = (struct et_list *) NULL;
 
 
-#ifdef __STDC__
 const char * error_message (errcode_t code)
-#else
-const char * error_message (code)
-	errcode_t	code;
-#endif
 {
     int offset;
     struct et_list *et;
@@ -90,8 +86,7 @@ oops:
 /*
  * New interface provided by krb5's com_err library
  */
-errcode_t add_error_table(et)
-	const struct error_table * et;
+errcode_t add_error_table(const struct error_table * et)
 {
 	struct et_list *el = _et_list;
 
@@ -114,8 +109,7 @@ errcode_t add_error_table(et)
 /*
  * New interface provided by krb5's com_err library
  */
-errcode_t remove_error_table(et)
-	const struct error_table * et;
+errcode_t remove_error_table(const struct error_table * et)
 {
 	struct et_list *el = _et_list;
 	struct et_list *el2 = 0;

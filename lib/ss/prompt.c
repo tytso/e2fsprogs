@@ -19,23 +19,12 @@
 #include <stdio.h>
 #include "ss_internal.h"
 
-#ifdef __STDC__
 void ss_set_prompt(int sci_idx, char *new_prompt)
-#else
-void ss_set_prompt(sci_idx, new_prompt)
-     int sci_idx;
-     char *new_prompt;
-#endif
 {
      ss_info(sci_idx)->prompt = new_prompt;
 }
 
-#ifdef __STDC__
 char *ss_get_prompt(int sci_idx)
-#else
-char *ss_get_prompt(sci_idx)
-     int sci_idx;
-#endif
 {
      return(ss_info(sci_idx)->prompt);
 }

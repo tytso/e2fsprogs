@@ -16,22 +16,9 @@
 #include "error_table.h"
 #include "internal.h"
 
-#if !defined(__STDC__) && !defined(STDARG_PROTOTYPES)
-#include <varargs.h>
-#define VARARGS
-#endif
-
 static void
-#ifdef __STDC__
-    default_com_err_proc (const char *whoami, errcode_t code, const
-			  char *fmt, va_list args)
-#else
-    default_com_err_proc (whoami, code, fmt, args)
-    const char *whoami;
-    errcode_t code;
-    const char *fmt;
-    va_list args;
-#endif
+default_com_err_proc (const char *whoami, errcode_t code, const
+		      char *fmt, va_list args)
 {
     if (whoami) {
 	fputs(whoami, stderr);
@@ -49,52 +36,25 @@ static void
     fflush(stderr);
 }
 
-#ifdef __STDC__
 typedef void (*errf) (const char *, errcode_t, const char *, va_list);
-#else
-typedef void (*errf) ();
-#endif
 
 errf com_err_hook = default_com_err_proc;
 
-#ifdef __STDC__
 void com_err_va (const char *whoami, errcode_t code, const char *fmt,
 		 va_list args)
-#else
-void com_err_va (whoami, code, fmt, args)
-    const char *whoami;
-    errcode_t code;
-    const char *fmt;
-    va_list args;
-#endif
 {
     (*com_err_hook) (whoami, code, fmt, args);
 }
 
-#ifndef VARARGS
 void com_err (const char *whoami,
 	      errcode_t code,
 	      const char *fmt, ...)
 {
-#else
-void com_err (va_alist)
-    va_dcl
-{
-    const char *whoami, *fmt;
-    errcode_t code;
-#endif
     va_list pvar;
 
     if (!com_err_hook)
 	com_err_hook = default_com_err_proc;
-#ifdef VARARGS
-    va_start (pvar);
-    whoami = va_arg (pvar, const char *);
-    code = va_arg (pvar, errcode_t);
-    fmt = va_arg (pvar, const char *);
-#else
     va_start(pvar, fmt);
-#endif
     com_err_va (whoami, code, fmt, pvar);
     va_end(pvar);
 }

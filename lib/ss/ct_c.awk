@@ -4,10 +4,6 @@
 		rootname, rootname > outfile
 	print "#include <ss/ss.h>" > outfile
 	print "" >outfile
-	print "#ifndef __STDC__" > outfile
-	print "#define const" > outfile
-	print "#endif" > outfile
-	print "" > outfile
 }
 	
 /^BOR$/ {

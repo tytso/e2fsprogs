@@ -10,10 +10,6 @@
  * this software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  */
-#ifndef __STDC__
-#undef const
-#define const
-#endif
 
 #include <errno.h>
 

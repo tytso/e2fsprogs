@@ -30,7 +30,6 @@ int ss_create_invocation(subsystem_name, version_string, info_ptr,
 	register int sci_idx;
 	register ss_data *new_table;
 	register ss_data **table;
-	void *handle;
 
 	*code_ptr = 0;
 	table = _ss_table;
@@ -92,13 +91,13 @@ ss_delete_invocation(sci_idx)
 
 	t = ss_info(sci_idx);
 	free(t->prompt);
-	free((char *)t->rqt_tables);
+	free(t->rqt_tables);
 	while(t->info_dirs[0] != (char *)NULL)
 		ss_delete_info_dir(sci_idx, t->info_dirs[0], &ignored_code);
-	free((char *)t->info_dirs);
+	free(t->info_dirs);
 #if defined(HAVE_DLOPEN) && defined(SHARED_ELF_LIB)
 	if (t->readline_shutdown)
 		(*t->readline_shutdown)(t);
 #endif
-	free((char *)t);
+	free(t);
 }

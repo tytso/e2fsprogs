@@ -5,6 +5,11 @@ AWK=@AWK@
 DIR="${DIR-@datadir@/et}"
 ET_DIR="@ET_DIR@"
 
+if test "$1" = "--build-tree" ; then
+    shift;
+    DIR="$ET_DIR"
+fi
+
 if test "x$1" = x ; then
     echo "Usage: compile_et file"
     exit 1

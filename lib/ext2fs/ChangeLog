@@ -1,3 +1,7 @@
+2003-03-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Use the compile_et --build-tree option.
+
 2003-03-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* getsize.c: Add support for Apple Darwin's ioctl to get the hard

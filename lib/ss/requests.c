@@ -16,18 +16,14 @@
 #include <stdio.h>
 #include "ss_internal.h"
 
-#ifdef __STDC__
 #define	DECLARE(name) void name(int argc,const char * const *argv, \
 				int sci_idx, void *infop)
-#else
-#define	DECLARE(name) void name(argc,argv,sci_idx,infop) \
-	int argc,sci_idx;char **argv;void *infop;
-#endif
 	
 /*
  * ss_self_identify -- assigned by default to the "." request
  */
-DECLARE(ss_self_identify)
+void ss_self_identify(int argc,const char * const *argv,
+		      int sci_idx, void *infop)
 {
      register ss_data *info = ss_info(sci_idx);
      printf("%s version %s\n", info->subsystem_name,
@@ -37,7 +33,8 @@ DECLARE(ss_self_identify)
 /*
  * ss_subsystem_name -- print name of subsystem
  */
-DECLARE(ss_subsystem_name)
+void ss_subsystem_name(int argc,const char * const *argv,
+		       int sci_idx, void *infop)
 {
      printf("%s\n", ss_info(sci_idx)->subsystem_name);
 }
@@ -45,7 +42,8 @@ DECLARE(ss_subsystem_name)
 /*
  * ss_subsystem_version -- print version of subsystem
  */
-DECLARE(ss_subsystem_version)
+void ss_subsystem_version(int argc,const char * const *argv,
+			  int sci_idx, void *infop)
 {
      printf("%s\n", ss_info(sci_idx)->subsystem_version);
 }
@@ -54,7 +52,8 @@ DECLARE(ss_subsystem_version)
  * ss_unimplemented -- routine not implemented (should be
  * set up as (dont_list,dont_summarize))
  */
-DECLARE(ss_unimplemented)
+void ss_unimplemented(int argc,const char * const *argv,
+		      int sci_idx, void *infop)
 {
      ss_perror(sci_idx, SS_ET_UNIMPLEMENTED, "");
 }

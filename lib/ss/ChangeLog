@@ -1,3 +1,12 @@
+2003-03-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* pager.c, listen.c, requests.c, list_rqs.c, ct_c.awk, prompt.c, 
+		error.c, request_tbl.c, ss_internal.h, invocation.c, ss.h,
+		get_readline.c: Remove old support for K&R C and Varargs.
+		Fix gcc -Wall nits.
+
+	* Makefile.in: Use the compile_et --build-tree option.
+
 2003-03-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* mk_cmds.1, Makefile.in: Add (bare-bone) man page

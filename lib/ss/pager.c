@@ -42,7 +42,7 @@ extern char *getenv PROTOTYPE((const char *));
  */
 
 #ifndef NO_FORK
-int ss_pager_create(NOARGS) 
+int ss_pager_create(void) 
 {
 	int filedes[2];
      
@@ -80,22 +80,14 @@ int ss_pager_create()
 void ss_page_stdin()
 {
 	int i;
+	sigset_t mask;
+	
 	for (i = 3; i < 32; i++)
 		(void) close(i);
 	(void) signal(SIGINT, SIG_DFL);
-	{
-#ifdef POSIX_SIGNALS
-		sigset_t mask;
-		
-		sigprocmask(SIG_BLOCK, 0, &mask);
-		sigdelset(&mask, SIGINT);
-		sigprocmask(SIG_SETMASK, &mask, 0);
-#else
-		int mask = sigblock(0);
-		mask &= ~sigmask(SIGINT);
-		sigsetmask(mask);
-#endif
-	}
+	sigprocmask(SIG_BLOCK, 0, &mask);
+	sigdelset(&mask, SIGINT);
+	sigprocmask(SIG_SETMASK, &mask, 0);
 	if (_ss_pager_name == (char *)NULL) {
 		if ((_ss_pager_name = getenv("PAGER")) == (char *)NULL)
 			_ss_pager_name = MORE;
