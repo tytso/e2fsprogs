@@ -218,8 +218,8 @@ Got rid of struct ext2fs_sb and replaced it with the standard struct
 ext2_super_block from include/linux/ext2_fs.h.  Note: this may break
 source (but not binary) compatibility of some users of the ext2
 library.  Those applications should just simply do a global search and
-replace of struct ext2fs_sb with struct ext2_super_block, and use
-their own private copy of ext2_fs.h if they aren't already.
+replace of struct ext2fs_sb with struct ext2_super_block, and include
+the new header file <ext2fs/ext2_fs.h> which defines it.
 
 The ino_t type has been renamed ext2_ino_t to protect applications
 that attempt to compile -D_FILE_OFFSET_BITS=64, since this
