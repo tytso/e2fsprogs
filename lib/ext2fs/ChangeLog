@@ -1,3 +1,7 @@
+2003-04-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* getsize.c: Add Cygwin/Windows version of ext2fs_get_device_size()
+
 2003-04-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix_io.c (raw_read_blk): Add Cygwin support (the Windows block
