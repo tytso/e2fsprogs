@@ -25,6 +25,7 @@
  * 	%g	<group>			integer
  * 	%i	<ino>			inode number
  * 	%Is	<inode> -> i_size
+ * 	%IS	<inode> -> i_extra_isize
  * 	%Ib	<inode> -> i_blocks
  * 	%Il	<inode> -> i_links_count
  * 	%Im	<inode> -> i_mode
@@ -235,6 +236,7 @@ static _INLINE_ void expand_inode_expression(char ch,
 					     struct problem_context *ctx)
 {
 	struct ext2_inode	*inode;
+	struct ext2_inode_large	*large_inode;
 	char *			time_str;
 	time_t			t;
 	int			do_gmt = -1;
@@ -243,7 +245,8 @@ static _INLINE_ void expand_inode_expression(char ch,
 		goto no_inode;
 	
 	inode = ctx->inode;
-	
+	large_inode = (struct ext2_inode_large *) inode;
+
 	switch (ch) {
 	case 's':
 		if (LINUX_S_ISDIR(inode->i_mode))
@@ -260,6 +263,9 @@ static _INLINE_ void expand_inode_expression(char ch,
 					((__u64) inode->i_size_high << 32)));
 #endif
 		}
+		break;
+	case 'S':
+		printf("%u", large_inode->i_extra_isize);
 		break;
 	case 'b':
 		printf("%u", inode->i_blocks);

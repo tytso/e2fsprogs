@@ -1,3 +1,27 @@
+2005-03-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* message.c, pass1.c, problem.c, problem.h, util.c: Integrate code
+		from Alex Thomas at Clusterfs to check extended attributes
+		stored in inodes.
+
+	* message.c (expand_inode_expression): Add support for %IS in
+		problem descriptions.  Note that this only works if the
+		problem context has a pointer to a large inode!
+
+	* problem.h, problem.c (PR_1_EXTRA_ISIZE, PR_1_ATTR_NAME_LEN,
+		PR_1_ATTR_VALUE_OFFSET, PR_1_ATTR_VALUE_BLOCK,
+		PR_1_ATTR_VALUE_SIZE, PR_1_ATTR_HASH): Add new problem
+		codes.
+
+	* util.c (e2fsck_write_inode_full): New function.
+
+	* pass1.c (check_ea_in_inode, check_inode_extra_space): New
+		function which tests the validity of extended attributes
+		stored in a large inode.
+		(e2fsck_pass1): Call ext2fs_get_next_inode_full() instead
+		of get_next_inode(), and use an allocated inode which is
+		big enough to store extra portion of large inodes.
+
 2005-03-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* super.c (check_super_block): Add sanity checks for the

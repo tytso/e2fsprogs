@@ -67,7 +67,7 @@ static const char *prompt[] = {
 	N_("Unlink"),		/* 17 */
 	N_("Clear HTree index"),/* 18 */
 	N_("Recreate"),		/* 19 */
-	"",			/* 29 */
+	"",			/* 20 */
 };
 
 /*
@@ -731,6 +731,36 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_1_RESIZE_INODE_CREATE,
 	  N_("Resize @i (re)creation failed: %m."),
 	  PROMPT_ABORT, 0 },
+
+	/* invalid inode->i_extra_isize */	
+	{ PR_1_EXTRA_ISIZE,
+	  N_("@i %i has a extra size (%IS) which is invalid\n"),
+	  PROMPT_FIX, PR_PREEN_OK },
+
+	/* invalid ea entry->e_name_len */	
+	{ PR_1_ATTR_NAME_LEN,
+	  N_("@a in @i %i has a namelen (%N) which is invalid\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* invalid ea entry->e_value_size */	
+	{ PR_1_ATTR_VALUE_SIZE,
+	  N_("@a in @i %i has a value size (%N) which is invalid\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* invalid ea entry->e_value_offs */	
+	{ PR_1_ATTR_VALUE_OFFSET,
+	  N_("@a in @i %i has a value offset (%N) which is invalid\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* invalid ea entry->e_value_block */	
+	{ PR_1_ATTR_VALUE_BLOCK,
+	  N_("@a in @i %i has a value block (%N) which is invalid (must be 0)\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* invalid ea entry->e_hash */	
+	{ PR_1_ATTR_HASH,
+	  N_("@a in @i %i has a hash (%N) which is invalid (must be 0)\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Pass 1b errors */
 

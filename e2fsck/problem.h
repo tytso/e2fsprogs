@@ -422,6 +422,24 @@ struct problem_context {
 /* Resize inode failed */
 #define PR_1_RESIZE_INODE_CREATE	0x01004E
 
+/* inode->i_size is too long */	
+#define PR_1_EXTRA_ISIZE		0x01004F
+
+/* attribute name is too long */
+#define PR_1_ATTR_NAME_LEN		0x010050
+
+/* wrong EA value offset */
+#define PR_1_ATTR_VALUE_OFFSET		0x010051
+
+/* wrong EA blocknumber */
+#define PR_1_ATTR_VALUE_BLOCK		0x010052
+
+/* wrong EA value size */
+#define PR_1_ATTR_VALUE_SIZE		0x010053
+
+/* wrong EA hash value */
+#define PR_1_ATTR_HASH			0x010054
+
 /*
  * Pass 1b errors
  */
