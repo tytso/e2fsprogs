@@ -328,7 +328,8 @@ extern void e2fsck_clear_progbar(e2fsck_t ctx)
 	if (!(ctx->flags & E2F_FLAG_PROG_BAR))
 		return;
 	
-	printf("%s\r", spaces + (sizeof(spaces) - 80));
+	printf("\001%s\r\002", spaces + (sizeof(spaces) - 80));
+	fflush(stdout);
 	ctx->flags &= ~E2F_FLAG_PROG_BAR;
 }
 
@@ -379,16 +380,16 @@ int e2fsck_simple_progress(e2fsck_t ctx, char *label, float percent,
 		dpywidth -= 8;
 
 	i = ((percent * dpywidth) + 50) / 100;
-	printf("%s: |%s%s", label, bar + (sizeof(bar) - (i+1)),
+	printf("\001%s: |%s%s", label, bar + (sizeof(bar) - (i+1)),
 	       spaces + (sizeof(spaces) - (dpywidth - i + 1)));
 	if (percent == 100.0)
 		fputc('|', stdout);
 	else
 		fputc(spinner[ctx->progress_pos & 3], stdout);
 	if (dpynum)
-		printf(" %4.1f%%  %u\r", percent, dpynum);
+		printf(" %4.1f%%  %u\r\002", percent, dpynum);
 	else
-		printf(" %4.1f%%   \r", percent);
+		printf(" %4.1f%%   \r\002", percent);
 	
 	if (percent == 100.0)
 		e2fsck_clear_progbar(ctx);

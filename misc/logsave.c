@@ -30,6 +30,8 @@ int	outfd = -1;
 int	outbufsize = 0;
 void	*outbuf = 0;
 int	verbose = 0;
+int	do_skip = 0;
+int	skip_mode = 0;
 
 static void usage(char *progname)
 {
@@ -37,14 +39,21 @@ static void usage(char *progname)
 	exit(1);
 }
 
-static void process_output(const char *buffer, int c)
+#define SEND_LOG	0x01
+#define SEND_CONSOLE	0x02
+#define SEND_BOTH	0x03
+
+static void send_output(const char *buffer, int c, int flag)
 {
 	char	*n;
 	
 	if (c == 0)
 		c = strlen(buffer);
 	
-	write(1, buffer, c);
+	if (flag & SEND_CONSOLE)
+		write(1, buffer, c);
+	if (!(flag & SEND_LOG))
+		return;
 	if (outfd > 0)
 		write(outfd, buffer, c);
 	else {
@@ -57,40 +66,53 @@ static void process_output(const char *buffer, int c)
 	}
 }
 
-static void do_read(int fd)
+static int do_read(int fd)
 {
 	int	c;
-	char	buffer[4096];
+	char	buffer[4096], *cp, *sep;
 
-	c = read(fd, buffer, sizeof(buffer));
-	process_output(buffer, c);
+	c = read(fd, buffer, sizeof(buffer)-1);
+	if (c <= 0)
+		return c;
+	if (do_skip) {
+		send_output(buffer, c, SEND_CONSOLE);
+		buffer[c] = 0;
+		cp = buffer;
+		while (*cp) {
+			if (skip_mode) {
+				cp = strchr(cp, '\002');
+				if (!cp)
+					return 0;
+				cp++;
+				skip_mode = 0;
+				continue;
+			}
+			sep = strchr(cp, '\001');
+			if (sep)
+				*sep = 0;
+			send_output(cp, 0, SEND_LOG);
+			if (sep) {
+				cp = sep + 1;
+				skip_mode = 1;
+			} else
+				break;
+		}
+	} else
+		send_output(buffer, c, SEND_BOTH);
+	return c;
 }
 
 static int run_program(char **argv)
 {
 	int	fds[2];
-	char	**cpp;
 	int	status, rc, pid;
 	char	buffer[80];
-	time_t	t;
 
 	if (pipe(fds) < 0) {
 		perror("pipe");
 		exit(1);
 	}
 
-	if (verbose) {
-		process_output("Log of ", 0);
-		for (cpp = argv; *cpp; cpp++) {
-			process_output(*cpp, 0);
-			process_output(" ", 0);
-		}
-		process_output("\n", 0);
-		t = time(0);
-		process_output(ctime(&t), 0);
-		process_output("\n", 0);
-	}
-	
 	pid = fork();
 	if (pid < 0) {
 		perror("vfork");
@@ -116,16 +138,16 @@ static int run_program(char **argv)
 	if ( WIFEXITED(status) ) {
 		rc = WEXITSTATUS(status);
 		if (rc) {
-			process_output(argv[0], 0);
+			send_output(argv[0], 0, SEND_BOTH);
 			sprintf(buffer, " died with exit status %d", rc);
-			process_output(buffer, 0);
+			send_output(buffer, 0, SEND_BOTH);
 		}
 	} else {
 		if (WIFSIGNALED(status)) {
-			process_output(argv[0], 0);
+			send_output(argv[0], 0, SEND_BOTH);
 			sprintf(buffer, "died with signal %d",
 				WTERMSIG(status));
-			process_output(buffer, 0);
+			send_output(buffer, 0, SEND_BOTH);
 			rc = 1;
 		}
 		rc = 0;
@@ -135,12 +157,10 @@ static int run_program(char **argv)
 
 static int copy_from_stdin(void)
 {
-	char	buffer[4096];
-	int	c;
-	int	bad_read = 0;
+	int	c, bad_read = 0;
 
 	while (1) {
-		c = read(0, buffer, sizeof(buffer));
+		c = do_read(0);
 		if ((c == 0 ) ||
 		    ((c < 0) && ((errno == EAGAIN) || (errno == EINTR)))) {
 			if (bad_read++ > 3)
@@ -151,7 +171,6 @@ static int copy_from_stdin(void)
 			perror("read");
 			exit(1);
 		}
-		process_output(buffer, c);
 		bad_read = 0;
 	}
 	return 0;
@@ -162,17 +181,24 @@ static int copy_from_stdin(void)
 int main(int argc, char **argv)
 {
 	int	c, pid, rc;
-	char	*outfn;
+	char	*outfn, **cpp;
 	int	openflags = O_CREAT|O_WRONLY|O_TRUNC;
+	int	send_flag = SEND_LOG;
+	int	do_stdin;
+	time_t	t;
 	
-	while ((c = getopt(argc, argv, "+v")) != EOF) {
+	while ((c = getopt(argc, argv, "+asv")) != EOF) {
 		switch (c) {
 		case 'a':
 			openflags &= ~O_TRUNC;
 			openflags |= O_APPEND;
 			break;
+		case 's':
+			do_skip = 1;
+			break;
 		case 'v':
 			verbose++;
+			send_flag |= SEND_CONSOLE;
 			break;
 		}
 	}
@@ -183,13 +209,33 @@ int main(int argc, char **argv)
 	argv += optind;
 	argc -= optind;
 
-	outfd = open(outfn, O_CREAT|O_WRONLY|O_TRUNC, 0644);
-
-	if (strcmp(argv[0], "-"))
-		rc = run_program(argv);
-	else
-		rc = copy_from_stdin();
+	outfd = open(outfn, openflags, 0644);
+	do_stdin = !strcmp(argv[0], "-");
 	
+	send_output("Log of ", 0, send_flag);
+	if (do_stdin)
+		send_output("stdin", 0, send_flag);
+	else {
+		for (cpp = argv; *cpp; cpp++) {
+			send_output(*cpp, 0, send_flag);
+			send_output(" ", 0, send_flag);
+		}
+	}
+	send_output("\n", 0, send_flag);
+	t = time(0);
+	send_output(ctime(&t), 0, send_flag);
+	send_output("\n", 0, send_flag);
+
+	if (do_stdin)
+		rc = copy_from_stdin();
+	else
+		rc = run_program(argv);
+	
+	send_output("\n", 0, send_flag);
+	t = time(0);
+	send_output(ctime(&t), 0, send_flag);
+	send_output("----------------\n", 0, send_flag);
+
 	if (outbuf) {
 		pid = fork();
 		if (pid < 0) {
@@ -203,7 +249,7 @@ int main(int argc, char **argv)
 			exit(rc);
 		}
 		while (outfd < 0) {
-			outfd = open(outfn, O_CREAT|O_WRONLY|O_TRUNC, 0644);
+			outfd = open(outfn, openflags, 0644);
 			sleep(1);
 		} 
 		write(outfd, outbuf, outbufsize);

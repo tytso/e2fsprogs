@@ -1,3 +1,11 @@
+2003-04-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* logsave.c: Add support for the -a option (only partially
+		implemented previously).  Always log the command-line and
+		start and stop time to the log file.  Add support for the
+		-s option, which skips text bracketed between control-A
+		and control-B characters.
+
 2003-04-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* logsave.c: New program which saves the output of a command in a

@@ -1,3 +1,10 @@
+2003-04-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c: Bracket progress bar output with control-A and control-B
+		characters.  These characters are used as in-band
+		signalling to allow a logging program to filter out the
+		progress bar.
+
 2003-04-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c: Add #ifdef around #include <sys/ioctl.h>
