@@ -1,5 +1,7 @@
 2004-02-26  Theodore Ts'o  <tytso@mit.edu>
 
+	* filefrag.c: Fix gcc -Wall nits.
+
 	* badblocks.c (pattern_fill): Fix bug accidentally added when
 		fixing up gcc -Wall nits.  badblocks -t random was not
 		getting handled properly because ~0 needed to be cast to

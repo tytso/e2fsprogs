@@ -27,6 +27,12 @@ int main(void) {
 #include <time.h>
 #include <fcntl.h>
 #include <errno.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#else
+extern char *optarg;
+extern int optind;
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/vfs.h>
@@ -57,11 +63,11 @@ static unsigned long get_bmap(int fd, unsigned long block)
 
 #define EXT2_DIRECT	12
 
-void frag_report(const char *filename)
+static void frag_report(const char *filename)
 {
 	struct statfs	fsinfo;
 	struct stat64	fileinfo;
-	long		i, fd, bs, block, last_block, numblocks;
+	long		i, fd, bs, block, last_block = 0, numblocks;
 	long		bpib;	/* Blocks per indirect block */
 	long		cylgroups;
 	int		discont = 0, expected;
@@ -138,7 +144,7 @@ void frag_report(const char *filename)
 	
 }
 
-void usage(const char *progname)
+static void usage(const char *progname)
 {
 	fprintf(stderr, "Usage: %s [-v] file ...\n", progname);
 	exit(1);
