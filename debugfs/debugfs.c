@@ -1576,6 +1576,7 @@ int main(int argc, char **argv)
 		ss_perror(sci_idx, retval, "creating invocation");
 		exit(1);
 	}
+	ss_get_readline(sci_idx);
 
 	(void) ss_add_request_table (sci_idx, &ss_std_requests, 1, &retval);
 	if (retval) {

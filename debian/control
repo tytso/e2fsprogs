@@ -11,7 +11,7 @@ Priority: optional
 Depends: e2fsprogs (= ${Source-Version}), ${misc:Depends}
 Recommends: sash | zsh-static | busybox-static | zsh30-static
 Architecture: any
-Description: A statically-linked version of the ext2 filesystem checker.
+Description: A statically-linked version of the ext2 filesystem checker
  This may be of some help to you if your filesystem gets corrupted enough
  to break the shared libraries used by the dynamically linked checker.
  .
@@ -28,7 +28,7 @@ Depends: ${libcdev:Depends}, libcomerr2, ${misc:Depends}
 Suggests: doc-base
 Conflicts: e2fsprogs (<< 1.10-6)
 Architecture: any
-Description: The Common Error Description library - headers and static libraries.
+Description: The Common Error Description library - headers and static libraries
  libcomerr is an attempt to present a common error-handling mechanism to
  manipulate the most common form of error code in a fashion that does not
  have the problems identified with mechanisms commonly in use.
@@ -39,7 +39,7 @@ Priority: extra
 Depends: ${libcdev:Depends}, libss2, ${misc:Depends}
 Conflicts: e2fsprogs (<< 1.10-6)
 Architecture: any
-Description: Command-line interface parsing library - headers and static libraries.
+Description: Command-line interface parsing library - headers and static libraries
  This package includes a tool that parses a command table to generate
  a simple command-line interface parser, the include files needed to
  compile and use it, and the static libs.
@@ -53,7 +53,7 @@ Depends: ${libcdev:Depends}, e2fsprogs (= ${Source-Version}), ${misc:Depends}
 Conflicts: e2fsprogs (<< 1.10-6)
 Replaces: e2fslibs-dev (<< 1.15)
 Architecture: any
-Description: Universally unique id library - headers and static libraries.
+Description: Universally unique id library - headers and static libraries
  libuuid generates and parses 128-bit universally unique id's (UUID's),
  using a standard which is blessed by both Microsoft and DCE, and is
  being proposed as an internet standard.  See the internet-draft:
@@ -61,6 +61,32 @@ Description: Universally unique id library - headers and static libraries.
                 draft-leach-uuids-guids-01.txt
  .
  for more information.
+
+Package: libblkid
+Section: libs
+Priority: required
+Depends: ${libcdev:Depends}
+Architecture: any
+Description: Block device id library
+ The blkid library which allows system programs like fsck and 
+ mount to quickly and easily find block devices by filesystem UUID and 
+ LABEL.  This allows system administrators to avoid specifiying 
+ filesystems by hard-coded device names, but via a logical naming 
+ system instead.
+
+Package: libblkid-dev
+Section: devel
+Priority: extra
+Depends: libblkid (= ${Source-Version})
+Architecture: any
+Description: Block device id library - headers and static libraries
+ The blkid library which allows system programs like fsck and 
+ mount to quickly and easily find block devices by filesystem UUID and 
+ LABEL.  This allows system administrators to avoid specifiying 
+ filesystems by hard-coded device names, but via a logical naming 
+ system instead.
+ .
+ This package contains the development environment for the blkid library.
 
 Package: e2fsprogs-bf
 Section: devel
@@ -91,12 +117,12 @@ Description: A stripped-down versions of e2fsprogs, for debian-installer
 Package: e2fsprogs
 Essential: yes
 Pre-Depends: ${shlibs:Depends}
-Depends: ${misc:Depends}
+Depends: ${misc:Depends}, libblkid
 Suggests: gpart, parted, e2fsck-static
 Conflicts: e2fslibsg, dump (<< 0.4b4-4), quota (<< 1.55-8.1)
 Provides: libcomerr2, libss2, libext2fs2, libe2p2, libuuid1
 Architecture: any
-Description: The EXT2 file system utilities and libraries.
+Description: The EXT2 file system utilities and libraries
  EXT2 stands for "Extended Filesystem", version 2. It's the main
  filesystem type used for hard disks on Debian and other Linux systems.
  .
@@ -111,7 +137,7 @@ Suggests: doc-base
 Provides: ext2fs-dev, e2p-dev
 Conflicts: e2fsprogs (<< 1.10-6)
 Architecture: any
-Description: The headers and static libraries for ext2fs-aware tools-development.
+Description: The headers and static libraries for ext2fs-aware tools-development
  EXT2FS stands for "Extended Filesystem", version 2. It's the filesystem
  type used for hard disks on Debian and other Linux systems.
  .

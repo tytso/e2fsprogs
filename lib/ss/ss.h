@@ -85,6 +85,7 @@ void ss_unimplemented(int argc, const char * const *argv,
 		      int sci_idx, void *infop);
 void ss_set_prompt(int sci_idx, char *new_prompt);
 char *ss_get_prompt(int sci_idx);
+void ss_get_readline(int sci_idx);
 #else
 char *ss_name();
 void ss_error ();
@@ -103,6 +104,7 @@ void ss_subsystem_version();
 void ss_unimplemented();
 void ss_set_prompt;
 char *ss_get_prompt;
+void ss_get_readline();
 #endif
 extern ss_request_table ss_std_requests;
 #endif /* _ss_h */

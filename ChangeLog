@@ -1,3 +1,7 @@
+2003-03-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Check to see if libdl exists for the sake of dlopen
+
 2003-03-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Add support for Apple/Darwin shared libraries.

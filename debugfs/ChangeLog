@@ -1,3 +1,11 @@
+2003-03-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in (DLOPEN_LIB): Link in the libdl library if it is
+		present on the system.
+
+	* debugfs.c (main): Call ss_get_readline() to attempt to pull in
+		the readline library.
+
 2003-03-06  Theodore Tso  <tytso@mit.edu>
 
 	* debugfs.c (do_open_filesys, do_show_super_stats), 

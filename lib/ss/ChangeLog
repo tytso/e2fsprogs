@@ -1,3 +1,23 @@
+2003-03-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in (DLOPEN_LIB): Include the dlopen library if it is
+		present on shared libraries.
+
+	* ss_internal.h: Add pointers to dynamic readline functions in the
+		ss_info data structure.
+
+	* listen.c (ss_listen): Use readline instead of fgets if the
+		readline library is present.  Define helper functions to
+		provide command completion from the ss request tables.
+
+	* invocation.c (ss_create_invocation, ss_delete_invocation): If
+		HAVE_DLOPEN is defined, call ss_get_readline() to automatically
+		try to load the readline library.
+
+	* get_readline.c (ss_get_readline): New function which uses dlopen()
+		to dynamically load the readline library if it is present 
+		on the system.
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32

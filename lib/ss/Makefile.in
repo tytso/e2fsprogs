@@ -8,6 +8,7 @@ VPATH = @srcdir@
 top_builddir = ../..
 my_dir = lib/ss
 INSTALL = @INSTALL@
+DLOPEN_LIB = @DLOPEN_LIB@
 
 @MCONFIG@
 
@@ -20,7 +21,7 @@ DLL_GOTSIZE  = 0x1000
 DLL_VERSION = 1.0
 DLL_IMAGE = libss
 DLL_STUB = libss
-DLL_LIBS = -L../.. -lcom_err
+DLL_LIBS = -L../.. -lcom_err $(DLOPEN_LIB)
 DLL_MYDIR = ss
 DLL_INSTALL_DIR = $(root_libdir)
 
@@ -29,7 +30,7 @@ ELF_SO_VERSION = 2
 ELF_IMAGE = libss
 ELF_MYDIR = ss
 ELF_INSTALL_DIR = $(root_libdir)
-ELF_OTHER_LIBS = -L../.. -lcom_err
+ELF_OTHER_LIBS = -L../.. -lcom_err $(DLOPEN_LIB)
 
 BSDLIB_VERSION = 1.0
 BSDLIB_IMAGE = libss
@@ -51,7 +52,7 @@ XTRA_CFLAGS=-DPOSIX_SIGNALS -I$(srcdir)/../et
 @CHECKER_CMT@	$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
 @DLL_CMT@	(export JUMP_DIR=`pwd`/jump; $(CC) -B$(JUMP_PREFIX) \
 @DLL_CMT@		$(ALL_CFLAGS) -o jump/$*.o -c $<)
-@ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+@ELF_CMT@	$(CC) $(ALL_CFLAGS) -DSHARED_ELF_LIB -fPIC -o elfshared/$*.o -c $<
 @BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) -fpic -o pic/$*.o -c $<
 
 # for the library
@@ -65,13 +66,13 @@ OBJS=	ss_err.o \
 	invocation.o help.o \
 	execute_cmd.o listen.o parse.o error.o prompt.o \
 	request_tbl.o list_rqs.o pager.o requests.o \
-	data.o
+	data.o get_readline.o
 
 SRCS=	$(srcdir)/invocation.c $(srcdir)/help.c \
 	$(srcdir)/execute_cmd.c $(srcdir)/listen.c $(srcdir)/parse.c \
 	$(srcdir)/error.c $(srcdir)/prompt.c $(srcdir)/request_tbl.c \
 	$(srcdir)/list_rqs.c $(srcdir)/pager.c $(srcdir)/requests.c \
-	$(srcdir)/data.c 
+	$(srcdir)/data.c $(srcdir)/get_readline.c
 
 all:: mk_cmds
 

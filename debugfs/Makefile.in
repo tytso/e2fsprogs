@@ -8,6 +8,7 @@ VPATH = @srcdir@
 top_builddir = ..
 my_dir = debugfs
 INSTALL = @INSTALL@
+DLOPEN_LIB = @DLOPEN_LIB@
 
 @MCONFIG@
 
@@ -24,7 +25,8 @@ SRCS= debug_cmds.c $(srcdir)/debugfs.c $(srcdir)/util.c $(srcdir)/ls.c \
 	$(srcdir)/dump.c $(srcdir)/setsuper.c ${srcdir}/logdump.c \
 	$(srcdir)/htree.c
 
-LIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(LIBBLKID) $(LIBUUID)
+LIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(LIBBLKID) \
+	$(LIBUUID) $(DLOPEN_LIB)
 DEPLIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(LIBBLKID) $(DEPLIBUUID)
 
 .c.o:

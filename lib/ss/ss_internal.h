@@ -95,6 +95,16 @@ typedef struct _ss_data {	/* init values */
 	unsigned int  escape_disabled : 1,
 		      abbrevs_disabled : 1;
     } flags;
+    /*
+     * Dynamic usage of readline library if present
+     */
+    void *readline_handle;
+    void (*readline_shutdown)(struct _ss_data *info);
+    char *(*readline)(const char *);
+    void (*add_history)(const char *);
+    void (*redisplay)();
+    char **(*rl_completion_matches)(const char *,
+				    char *(*completer)(const char *, int));
     /* to get out */
     int abort;			/* exit subsystem */
     int exit_status;
@@ -116,6 +126,7 @@ void ss_page_stdin(NOARGS);
 void ss_list_requests PROTOTYPE((int, char const * const *, int, pointer));
 int ss_execute_command PROTOTYPE((int sci_idx, char *argv[]));
 int ss_pager_create(NOARGS);
+char **ss_rl_completion(const char *text, int start, int end);
 
 extern ss_data **_ss_table;
 extern char *ss_et_msgs[];
