@@ -23,8 +23,8 @@ static errcode_t e2fsck_handle_read_error(io_channel channel,
 					  unsigned long block,
 					  int count,
 					  void *data,
-					  size_t size,
-					  int actual,
+					  size_t size EXT2FS_ATTR((unused)),
+					  int actual EXT2FS_ATTR((unused)),
 					  errcode_t error)
 {
 	int	i;
@@ -69,8 +69,8 @@ static errcode_t e2fsck_handle_write_error(io_channel channel,
 					    unsigned long block,
 					    int count,
 					    const void *data,
-					    size_t size,
-					    int actual,
+					    size_t size EXT2FS_ATTR((unused)),
+					    int actual EXT2FS_ATTR((unused)),
 					    errcode_t error)
 {
 	int		i;

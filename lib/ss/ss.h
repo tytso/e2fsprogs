@@ -28,6 +28,13 @@
 #define __SS_CONST const
 #define __SS_PROTO (int, const char * const *, int, void *)
 
+#ifdef __GNUC__
+#define __SS_ATTR(x) __attribute__(x)
+#else
+#define __SS_ATTR(x)
+#endif
+
+
 typedef __SS_CONST struct _ss_request_entry {
     __SS_CONST char * __SS_CONST *command_names; /* whatever */
     void (* __SS_CONST function) __SS_PROTO; /* foo */
@@ -60,8 +67,10 @@ char *ss_current_request();	/* This is actually a macro */
 #endif
 
 char *ss_name(int sci_idx);
-void ss_error (int, long, char const *, ...);
+void ss_error (int, long, char const *, ...)
+	__SS_ATTR((format(printf, 3, 4)));
 void ss_perror (int, long, char const *);
+
 int ss_create_invocation(const char *, const char *, void *,
 			 ss_request_table *, int *);
 void ss_delete_invocation(int);

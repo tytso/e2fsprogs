@@ -45,6 +45,12 @@ extern char *optarg;
 #include "../version.h"
 #include "nls-enable.h"
 
+#ifdef __GNUC__
+#define EXT2FS_ATTR(x) __attribute__(x)
+#else
+#define EXT2FS_ATTR(x)
+#endif
+
 static const char * program_name = "lsattr";
 
 static int all;
@@ -114,7 +120,8 @@ static void lsattr_args (const char * name)
 	}
 }
 
-static int lsattr_dir_proc (const char * dir_name, struct dirent * de, void * private)
+static int lsattr_dir_proc (const char * dir_name, struct dirent * de, 
+			    void * private EXT2FS_ATTR((unused)))
 {
 	STRUCT_STAT	st;
 	char *path;

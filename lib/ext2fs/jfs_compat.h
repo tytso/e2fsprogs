@@ -18,7 +18,7 @@
 #define cpu_to_be32(n) htonl(n)
 #define be32_to_cpu(n) ntohl(n)
 
-typedef int tid_t;
+typedef unsigned int tid_t;
 typedef struct journal_s journal_t;
 
 struct buffer_head;

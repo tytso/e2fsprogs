@@ -199,7 +199,7 @@ static void check_mount(e2fsck_t ctx)
 	return;
 }
 
-static int is_on_batt()
+static int is_on_batt(void)
 {
 	FILE	*f;
 	char	tmp[80], tmp2[80];
@@ -254,12 +254,12 @@ static void check_if_skip(e2fsck_t ctx)
 			     (unsigned) fs->super->s_max_mnt_count*2))
 			reason = 0;
 	} else if (fs->super->s_checkinterval &&
-		 now >= (fs->super->s_lastcheck +
-			     fs->super->s_checkinterval)) {
+		   ((now - fs->super->s_lastcheck) >= 
+		    fs->super->s_checkinterval)) {
 		reason = _(" has gone %u days without being checked");
 		reason_arg = (now - fs->super->s_lastcheck)/(3600*24);
-		if (batt && (now < (fs->super->s_lastcheck +
-				    fs->super->s_checkinterval*2)))
+		if (batt && ((now - fs->super->s_lastcheck) < 
+			     fs->super->s_checkinterval*2))
 			reason = 0;
 	}
 	if (reason) {
@@ -279,13 +279,13 @@ static void check_if_skip(e2fsck_t ctx)
 		if (next_check <= 0) 
 			next_check = 1;
 	}
-	if (now >= (fs->super->s_lastcheck + fs->super->s_checkinterval))
+	if ((now - fs->super->s_lastcheck) >= fs->super->s_checkinterval)
 		next_check = 1;
 	if (next_check <= 5) {
 		if (next_check == 1)
 			fputs(_(" (check after next mount)"), stdout);
 		else
-			printf(_(" (check in %d mounts)"), next_check);
+			printf(_(" (check in %ld mounts)"), next_check);
 	}
 	fputc('\n', stdout);
 	ext2fs_close(fs);
@@ -336,7 +336,7 @@ int e2fsck_simple_progress(e2fsck_t ctx, const char *label, float percent,
 {
 	static const char spinner[] = "\\|/-";
 	int	i;
-	int	tick;
+	unsigned int	tick;
 	struct timeval	tv;
 	int dpywidth;
 
@@ -437,7 +437,7 @@ static void reserve_stdio_fds(void)
 }
 
 #ifdef HAVE_SIGNAL_H
-static void signal_progress_on(int sig)
+static void signal_progress_on(int sig EXT2FS_ATTR((unused)))
 {
 	e2fsck_t ctx = e2fsck_global_ctx;
 
@@ -448,7 +448,7 @@ static void signal_progress_on(int sig)
 	ctx->progress_fd = 0;
 }
 
-static void signal_progress_off(int sig)
+static void signal_progress_off(int sig EXT2FS_ATTR((unused)))
 {
 	e2fsck_t ctx = e2fsck_global_ctx;
 
@@ -459,7 +459,7 @@ static void signal_progress_off(int sig)
 	ctx->progress = 0;
 }
 
-static void signal_cancel(int sig)
+static void signal_cancel(int sig EXT2FS_ATTR((unused)))
 {
 	e2fsck_t ctx = e2fsck_global_ctx;
 

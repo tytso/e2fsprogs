@@ -34,6 +34,12 @@
 #include <sys/stat.h>
 #include "ext2fs/ext2_fs.h"
 
+#ifdef __GNUC__
+#define EXT2FS_ATTR(x) __attribute__(x)
+#else
+#define EXT2FS_ATTR(x)
+#endif
+
 #ifndef S_ISLNK			/* So we can compile even with gcc-warn */
 # ifdef __S_IFLNK
 #  define S_ISLNK(mode)	 __S_ISTYPE((mode), __S_IFLNK)
@@ -239,7 +245,7 @@ static void change_attributes (const char * name)
 }
 
 static int chattr_dir_proc (const char * dir_name, struct dirent * de,
-			    void * unused_private)
+			    void * private EXT2FS_ATTR((unused)))
 {
 	if (strcmp (de->d_name, ".") && strcmp (de->d_name, "..")) {
 	        char *path;
@@ -278,15 +284,15 @@ int main (int argc, char ** argv)
 	if (i >= argc)
 		usage ();
 	if (set && (add || rem)) {
-		fprintf (stderr, _("= is incompatible with - and +\n"));
+		fputs(_("= is incompatible with - and +\n"), stderr);
 		exit (1);
 	}
 	if ((rf & af) != 0) {
-		fprintf (stderr, "Can't both set and unset same flag.\n");
+		fputs("Can't both set and unset same flag.\n", stderr);
 		exit (1);
 	}
 	if (!(add || rem || set || set_version)) {
-		fprintf (stderr, _("Must use '-v', =, - or +\n"));
+		fputs(_("Must use '-v', =, - or +\n"), stderr);
 		exit (1);
 	}
 	if (verbose)

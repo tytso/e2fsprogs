@@ -96,9 +96,9 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 {
 	dgrp_t 		i;
-	int		j;
+	unsigned int	j;
 	int		nbytes;
-	int		nbits;
+	unsigned int	nbits;
 	errcode_t	retval;
 	char * block_bitmap = fs->block_map->bitmap;
 	char * bitmap_block = NULL;
@@ -119,9 +119,9 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 		memcpy(bitmap_block, block_bitmap, nbytes);
 		if (i == fs->group_desc_count - 1) {
 			/* Force bitmap padding for the last group */
-			nbits = (int) ((fs->super->s_blocks_count
-					- fs->super->s_first_data_block)
-				       % EXT2_BLOCKS_PER_GROUP(fs->super));
+			nbits = ((fs->super->s_blocks_count
+				  - fs->super->s_first_data_block)
+				 % EXT2_BLOCKS_PER_GROUP(fs->super));
 			if (nbits)
 				for (j = nbits; j < fs->blocksize * 8; j++)
 					ext2fs_set_bit(j, bitmap_block);

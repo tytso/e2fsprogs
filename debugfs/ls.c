@@ -40,12 +40,12 @@ struct list_dir_struct {
 static const char *monstr[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 				"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 					
-static int list_dir_proc(ext2_ino_t dir,
+static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 			 int	entry,
 			 struct ext2_dir_entry *dirent,
-			 int	offset,
-			 int	blocksize,
-			 char	*buf,
+			 int	offset EXT2FS_ATTR((unused)),
+			 int	blocksize EXT2FS_ATTR((unused)),
+			 char	*buf EXT2FS_ATTR((unused)),
 			 void	*private)
 {
 	struct ext2_inode	inode;

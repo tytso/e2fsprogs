@@ -30,9 +30,9 @@ struct link_struct  {
  #pragma argsused
 #endif
 static int unlink_proc(struct ext2_dir_entry *dirent,
-		     int	offset,
-		     int	blocksize,
-		     char	*buf,
+		     int	offset EXT2FS_ATTR((unused)),
+		     int	blocksize EXT2FS_ATTR((unused)),
+		     char	*buf EXT2FS_ATTR((unused)),
 		     void	*priv_data)
 {
 	struct link_struct *ls = (struct link_struct *) priv_data;
@@ -55,7 +55,7 @@ static int unlink_proc(struct ext2_dir_entry *dirent,
 #endif
 errcode_t ext2fs_unlink(ext2_filsys fs, ext2_ino_t dir,
 			const char *name, ext2_ino_t ino,
-			int flags)
+			int flags EXT2FS_ATTR((unused)))
 {
 	errcode_t	retval;
 	struct link_struct ls;

@@ -151,7 +151,8 @@ cleanup:
 #endif
 static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 				e2_blkcnt_t blockcnt,
-				blk_t ref_block, int ref_offset,
+				blk_t ref_block EXT2FS_ATTR((unused)),
+				int ref_offset EXT2FS_ATTR((unused)),
 				void *priv_data)
 {
 	struct set_badblock_record *rec = (struct set_badblock_record *)
@@ -206,8 +207,10 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
  #pragma argsused
 #endif
 static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
-			      e2_blkcnt_t blockcnt, blk_t ref_block, 
-			      int ref_offset, void *priv_data)
+			      e2_blkcnt_t blockcnt,
+			      blk_t ref_block EXT2FS_ATTR((unused)),
+			      int ref_offset EXT2FS_ATTR((unused)),
+			      void *priv_data)
 {
 	struct set_badblock_record *rec = (struct set_badblock_record *)
 		priv_data;

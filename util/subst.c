@@ -74,7 +74,7 @@ static struct subst_entry *fetch_subst_entry(char *name)
  * Given the starting and ending position of the replacement name,
  * check to see if it is valid, and pull it out if it is.
  */
-static char *get_subst_symbol(const char *begin, int len, char prefix)
+static char *get_subst_symbol(const char *begin, size_t len, char prefix)
 {
 	static char replace_name[128];
 	char *cp, *start;
@@ -121,7 +121,7 @@ static void substitute_line(char *line)
 	char	*ptr, *name_ptr, *end_ptr;
 	struct subst_entry *ent;
 	char	*replace_name;
-	int	len;
+	size_t	len;
 
 	/*
 	 * Expand all @FOO@ substitutions

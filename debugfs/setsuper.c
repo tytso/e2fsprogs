@@ -25,7 +25,7 @@ static struct ext2_super_block set_sb;
 struct super_set_info {
 	const char	*name;
 	void	*ptr;
-	int	size;
+	unsigned int	size;
 	errcode_t (*func)(struct super_set_info *info, char *arg);
 };
 

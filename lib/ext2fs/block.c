@@ -467,7 +467,9 @@ struct xlate {
  #pragma argsused
 #endif
 static int xlate_func(ext2_filsys fs, blk_t *blocknr, e2_blkcnt_t blockcnt,
-		      blk_t ref_block, int ref_offset, void *priv_data)
+		      blk_t ref_block EXT2FS_ATTR((unused)),
+		      int ref_offset EXT2FS_ATTR((unused)),
+		      void *priv_data)
 {
 	struct xlate *xl = (struct xlate *) priv_data;
 

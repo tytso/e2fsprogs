@@ -113,7 +113,7 @@ static errcode_t raw_read_blk(io_channel channel,
 			      int count, void *buf)
 {
 	errcode_t	retval;
-	size_t		size;
+	ssize_t		size;
 	ext2_loff_t	location;
 	int		actual = 0;
 
@@ -199,7 +199,7 @@ static errcode_t raw_write_blk(io_channel channel,
 			       unsigned long block,
 			       int count, const void *buf)
 {
-	size_t		size;
+	ssize_t		size;
 	ext2_loff_t	location;
 	int		actual = 0;
 	errcode_t	retval;
@@ -260,8 +260,7 @@ static errcode_t alloc_cache(io_channel channel,
 }
 
 /* Free the cache buffers */
-static void free_cache(io_channel channel, 
-		       struct unix_private_data *data)
+static void free_cache(struct unix_private_data *data)
 {
 	struct unix_cache	*cache;
 	int			i;
@@ -284,8 +283,7 @@ static void free_cache(io_channel channel,
  * eldest is a non-zero pointer, then fill in eldest with the cache
  * entry to that should be reused.
  */
-static struct unix_cache *find_cached_block(io_channel channel,
-					    struct unix_private_data *data,
+static struct unix_cache *find_cached_block(struct unix_private_data *data,
 					    unsigned long block,
 					    struct unix_cache **eldest)
 {
@@ -451,7 +449,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 
 cleanup:
 	if (data) {
-		free_cache(io, data);
+		free_cache(data);
 		ext2fs_free_mem(&data);
 	}
 	if (io)
@@ -477,7 +475,7 @@ static errcode_t unix_close(io_channel channel)
 
 	if (close(data->dev) < 0)
 		retval = errno;
-	free_cache(channel, data);
+	free_cache(data);
 
 	ext2fs_free_mem(&channel->private_data);
 	if (channel->name)
@@ -502,7 +500,7 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 #endif
 		
 		channel->block_size = blksize;
-		free_cache(channel, data);
+		free_cache(data);
 		if ((retval = alloc_cache(channel, data)))
 			return retval;
 	}
@@ -539,8 +537,7 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 	cp = buf;
 	while (count > 0) {
 		/* If it's in the cache, use it! */
-		if ((cache = find_cached_block(channel, data, block,
-					       &reuse[0]))) {
+		if ((cache = find_cached_block(data, block, &reuse[0]))) {
 #ifdef DEBUG
 			printf("Using cached block %d\n", block);
 #endif
@@ -555,8 +552,7 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 		 * single read request
 		 */
 		for (i=1; i < count; i++)
-			if (find_cached_block(channel, data, block+i,
-					      &reuse[i]))
+			if (find_cached_block(data, block+i, &reuse[i]))
 				break;
 #ifdef DEBUG
 		printf("Reading %d blocks starting at %d\n", i, block);
@@ -614,7 +610,7 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 	
 	cp = buf;
 	while (count > 0) {
-		cache = find_cached_block(channel, data, block, &reuse);
+		cache = find_cached_block(data, block, &reuse);
 		if (!cache) {
 			cache = reuse;
 			reuse_cache(channel, data, cache, block);
@@ -634,7 +630,7 @@ static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 {
 	struct unix_private_data *data;
 	errcode_t	retval = 0;
-	size_t		actual;
+	ssize_t		actual;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;

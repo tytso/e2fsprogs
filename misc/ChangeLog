@@ -1,3 +1,9 @@
+2003-12-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* badblocks.c, blkid.c, chattr.c, dumpe2fs.c, e2image.c, fsck.c,
+		fsck.h, lsattr.c, mke2fs.c, nls-enable.h, tune2fs.c,
+		util.c: Fix gcc -Wall nitpicks.
+
 2003-09-13  Theodore Ts'o  <tytso@mit.edu>
  
         * tune2fs.c (parse_e2label_options, parse_tune2fs_options,

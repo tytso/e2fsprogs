@@ -71,9 +71,9 @@ void ext2fs_warn_bitmap(errcode_t errcode, unsigned long arg,
 {
 #ifndef OMIT_COM_ERR
 	if (description)
-		com_err(0, errcode, "#%u for %s", arg, description);
+		com_err(0, errcode, "#%lu for %s", arg, description);
 	else
-		com_err(0, errcode, "#%u", arg);
+		com_err(0, errcode, "#%lu", arg);
 #endif
 }
 
@@ -83,9 +83,9 @@ void ext2fs_warn_bitmap2(ext2fs_generic_bitmap bitmap,
 #ifndef OMIT_COM_ERR
 	if (bitmap->description)
 		com_err(0, bitmap->base_error_code+code,
-			"#%u for %s", arg, bitmap->description);
+			"#%lu for %s", arg, bitmap->description);
 	else
-		com_err(0, bitmap->base_error_code + code, "#%u", arg);
+		com_err(0, bitmap->base_error_code + code, "#%lu", arg);
 #endif
 }
 

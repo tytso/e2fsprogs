@@ -66,11 +66,11 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	errcode_t	retval;
 	struct ext2_super_block *super;
 	int		frags_per_block;
-	int		rem;
-	int		overhead = 0;
+	unsigned int	rem;
+	unsigned int	overhead = 0;
 	blk_t		group_block;
-	int		ipg;
-	int		i, j;
+	unsigned int	ipg;
+	dgrp_t		i;
 	blk_t		numblocks;
 	char		*buf;
 
@@ -205,7 +205,7 @@ retry:
 			return EXT2_ET_TOO_MANY_INODES;
 	}
 
-	if (ipg > EXT2_MAX_INODES_PER_GROUP(super))
+	if (ipg > (unsigned) EXT2_MAX_INODES_PER_GROUP(super))
 		ipg = EXT2_MAX_INODES_PER_GROUP(super);
 
 	super->s_inodes_per_group = ipg;
@@ -262,8 +262,8 @@ retry:
 	 * necessary data structures.  If not, we need to get rid of
 	 * it.
 	 */
-	rem = (int) ((super->s_blocks_count - super->s_first_data_block) %
-		     super->s_blocks_per_group);
+	rem = ((super->s_blocks_count - super->s_first_data_block) %
+	       super->s_blocks_per_group);
 	if ((fs->group_desc_count == 1) && rem && (rem < overhead))
 		return EXT2_ET_TOOSMALL;
 	if (rem && (rem < overhead+50)) {

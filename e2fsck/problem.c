@@ -1440,7 +1440,7 @@ static struct latch_descr pr_latch_info[] = {
 	{ -1, 0, 0 },
 };
 
-static const struct e2fsck_problem *find_problem(int code)
+static const struct e2fsck_problem *find_problem(problem_t code)
 {
 	int 	i;
 

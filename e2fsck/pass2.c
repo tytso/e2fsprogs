@@ -96,7 +96,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	struct check_dir_struct cd;
 	struct dx_dir_info	*dx_dir;
 	struct dx_dirblock_info	*dx_db, *dx_parent;
-	blk_t			b;
+	int			b;
 	int			i, depth;
 	problem_t		code;
 	int			bad_dir;
@@ -459,7 +459,8 @@ static int check_dotdot(e2fsck_t ctx,
  */
 static int check_name(e2fsck_t ctx,
 		      struct ext2_dir_entry *dirent,
-		      ext2_ino_t dir_ino, struct problem_context *pctx)
+		      ext2_ino_t dir_ino EXT2FS_ATTR((unused)), 
+		      struct problem_context *pctx)
 {
 	int	i;
 	int	fixup = -1;
@@ -483,8 +484,9 @@ static int check_name(e2fsck_t ctx,
  * Check the directory filetype (if present)
  */
 static _INLINE_ int check_filetype(e2fsck_t ctx,
-		      struct ext2_dir_entry *dirent,
-		      ext2_ino_t dir_ino, struct problem_context *pctx)
+				   struct ext2_dir_entry *dirent,
+				   ext2_ino_t dir_ino EXT2FS_ATTR((unused)),
+				   struct problem_context *pctx)
 {
 	int	filetype = dirent->name_len >> 8;
 	int	should_be = EXT2_FT_UNKNOWN;
@@ -591,7 +593,7 @@ static void parse_int_node(ext2_filsys fs,
 #endif
 		blk = ext2fs_le32_to_cpu(ent[i].block) & 0x0ffffff;
 		/* Check to make sure the block is valid */
-		if (blk > dx_dir->numblocks) {
+		if (blk > (blk_t) dx_dir->numblocks) {
 			cd->pctx.blk = blk;
 			if (fix_problem(cd->ctx, PR_2_HTREE_BADBLK,
 					&cd->pctx))
@@ -644,7 +646,7 @@ clear_and_exit:
 static void salvage_directory(ext2_filsys fs,
 			      struct ext2_dir_entry *dirent,
 			      struct ext2_dir_entry *prev,
-			      int *offset)
+			      unsigned int *offset)
 {
 	char	*cp = (char *) dirent;
 	int left = fs->blocksize - *offset - dirent->rec_len;
@@ -708,7 +710,7 @@ static int check_dir_block(ext2_filsys fs,
 #endif /* ENABLE_HTREE */
 	struct ext2_dir_entry 	*dirent, *prev;
 	ext2_dirhash_t		hash;
-	int			offset = 0;
+	unsigned int		offset = 0;
 	int			dir_modified = 0;
 	int			dot_state;
 	blk_t			block_nr = db->blk;
@@ -1071,9 +1073,9 @@ abort_free_dict:
  */
 static int deallocate_inode_block(ext2_filsys fs,
 				  blk_t	*block_nr,
-				  e2_blkcnt_t blockcnt,
-				  blk_t ref_block,
-				  int ref_offset, 
+				  e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+				  blk_t ref_block EXT2FS_ATTR((unused)),
+				  int ref_offset EXT2FS_ATTR((unused)),
 				  void *priv_data)
 {
 	e2fsck_t	ctx = (e2fsck_t) priv_data;
@@ -1287,7 +1289,8 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
  */
 static int allocate_dir_block(e2fsck_t ctx,
 			      struct ext2_db_entry *db,
-			      char *buf, struct problem_context *pctx)
+			      char *buf EXT2FS_ATTR((unused)), 
+			      struct problem_context *pctx)
 {
 	ext2_filsys fs = ctx->fs;
 	blk_t			blk;
@@ -1366,11 +1369,11 @@ static int allocate_dir_block(e2fsck_t ctx,
 /*
  * This is a helper function for allocate_dir_block().
  */
-static int update_dir_block(ext2_filsys fs,
+static int update_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 			    blk_t	*block_nr,
 			    e2_blkcnt_t blockcnt,
-			    blk_t ref_block,
-			    int ref_offset, 
+			    blk_t ref_block EXT2FS_ATTR((unused)),
+			    int ref_offset EXT2FS_ATTR((unused)), 
 			    void *priv_data)
 {
 	struct ext2_db_entry *db;

@@ -73,6 +73,9 @@ extern void do_ncheck(int argc, char **argv);
 /* set_super.c */
 extern void do_set_super(int argc, char **);
 
+/* unused.c */
+extern void do_dump_unused(int argc, char **argv);
+
 /* debugfs.c */
 extern void internal_dump_inode(FILE *, const char *, ext2_ino_t, 
 				struct ext2_inode *, int);

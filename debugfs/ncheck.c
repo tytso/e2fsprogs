@@ -33,9 +33,9 @@ struct inode_walk_struct {
 };
 
 static int ncheck_proc(struct ext2_dir_entry *dirent,
-		       int	offset,
-		       int	blocksize,
-		       char	*buf,
+		       int	offset EXT2FS_ATTR((unused)),
+		       int	blocksize EXT2FS_ATTR((unused)),
+		       char	*buf EXT2FS_ATTR((unused)),
 		       void	*private)
 {
 	struct inode_walk_struct *iw = (struct inode_walk_struct *) private;

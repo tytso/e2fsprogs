@@ -353,10 +353,10 @@ static void load_fs_info(const char *filename)
 	fclose(f);
 	
 	if (old_fstab) {
-		fprintf(stderr, _("\007\007\007"
+		fputs(_("\007\007\007"
 		"WARNING: Your /etc/fstab does not contain the fsck passno\n"
 		"	field.  I will kludge around things for you, but you\n"
-		"	should fix your /etc/fstab file as soon as you can.\n\n"));
+		"	should fix your /etc/fstab file as soon as you can.\n\n"), stderr);
 		
 		for (fs = filesys_info; fs; fs = fs->next) {
 			fs->passno = 1;
@@ -729,8 +729,8 @@ static void compile_fs_type(char *fs_type, struct fs_type_compile *cmp)
 	cmp->list = malloc(num * sizeof(char *));
 	cmp->type = malloc(num * sizeof(int));
 	if (!cmp->list || !cmp->type) {
-		fprintf(stderr, _("Couldn't allocate memory for "
-				  "filesystem types\n"));
+		fputs(_("Couldn't allocate memory for filesystem types\n"), 
+		      stderr);
 		exit(EXIT_ERROR);
 	}
 	memset(cmp->list, 0, num * sizeof(char *));
@@ -766,7 +766,7 @@ static void compile_fs_type(char *fs_type, struct fs_type_compile *cmp)
 			}
 			if ((negate && !cmp->negate) ||
 			    (!negate && cmp->negate)) {
-				fprintf(stderr, _(fs_type_syntax_error));
+				fputs(_(fs_type_syntax_error), stderr);
 				exit(EXIT_USAGE);
 			}
 		}
@@ -925,7 +925,7 @@ static int check_all(NOARGS)
 	int pass_done;
 
 	if (verbose)
-		printf(_("Checking all file systems.\n"));
+		fputs(_("Checking all file systems.\n"), stdout);
 
 	/*
 	 * Do an initial scan over the filesystem; mark filesystems
@@ -1031,13 +1031,12 @@ static int check_all(NOARGS)
 
 static void usage(NOARGS)
 {
-	fprintf(stderr,
-		_("Usage: fsck [-ACNPRTV] [-t fstype] [fs-options] [filesys ...]\n"));
+	fputs(_("Usage: fsck [-ACNPRTV] [-t fstype] [fs-options] [filesys ...]\n"), stderr);
 	exit(EXIT_USAGE);
 }
 
 #ifdef HAVE_SIGNAL_H
-static void signal_cancel(int sig)
+static void signal_cancel(int sig FSCK_ATTR((unused)))
 {
 	cancel_requested++;
 }

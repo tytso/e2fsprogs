@@ -189,7 +189,7 @@ static void set_fs_defaults(const char *fs_type,
 /*
  * Helper function for read_bb_file and test_disk
  */
-static void invalid_block(ext2_filsys fs, blk_t blk)
+static void invalid_block(ext2_filsys fs EXT2FS_ATTR((unused)), blk_t blk)
 {
 	fprintf(stderr, _("Bad block %u out of range; ignored.\n"), blk);
 	return;
@@ -250,8 +250,9 @@ static void test_disk(ext2_filsys fs, badblocks_list *bb_list)
 
 static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 {
-	int			i, j;
-	int			must_be_good;
+	dgrp_t			i;
+	blk_t			j;
+	unsigned 		must_be_good;
 	blk_t			blk;
 	badblocks_iterate	bb_iter;
 	errcode_t		retval;
@@ -274,7 +275,7 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 			fprintf(stderr, _("Blocks %d through %d must be good "
 				"in order to build a filesystem.\n"),
 				fs->super->s_first_data_block, must_be_good);
-			fprintf(stderr, _("Aborting....\n"));
+			fputs(_("Aborting....\n"), stderr);
 			exit(1);
 		}
 	}
@@ -346,7 +347,7 @@ static void progress_init(struct progress_struct *progress,
 	sprintf(progress->format, "%%%dd/%%%dld", i, i);
 	memset(progress->backup, '\b', sizeof(progress->backup)-1);
 	progress->backup[sizeof(progress->backup)-1] = 0;
-	if ((2*i)+1 < sizeof(progress->backup))
+	if ((2*i)+1 < (int) sizeof(progress->backup))
 		progress->backup[(2*i)+1] = 0;
 	progress->max = max;
 
@@ -439,7 +440,8 @@ static void write_inode_tables(ext2_filsys fs)
 {
 	errcode_t	retval;
 	blk_t		blk;
-	int		i, num;
+	dgrp_t		i;
+	int		num;
 	struct progress_struct progress;
 
 	if (quiet)
@@ -655,7 +657,8 @@ static void show_stats(ext2_filsys fs)
 	struct ext2_super_block *s = fs->super;
 	char 			buf[80];
 	blk_t			group_block;
-	int			i, need, col_left;
+	dgrp_t			i;
+	int			need, col_left;
 	
 	if (param.s_blocks_count != s->s_blocks_count)
 		fprintf(stderr, _("warning: %d blocks unused.\n\n"),
@@ -664,12 +667,12 @@ static void show_stats(ext2_filsys fs)
 	memset(buf, 0, sizeof(buf));
 	strncpy(buf, s->s_volume_name, sizeof(s->s_volume_name));
 	printf(_("Filesystem label=%s\n"), buf);
-	printf(_("OS type: "));
+	fputs(_("OS type: "), stdout);
 	switch (fs->super->s_creator_os) {
-	    case EXT2_OS_LINUX: printf ("Linux"); break;
-	    case EXT2_OS_HURD:  printf ("GNU/Hurd");   break;
-	    case EXT2_OS_MASIX: printf ("Masix"); break;
-	    default:		printf (_("(unknown os)"));
+	    case EXT2_OS_LINUX: fputs("Linux", stdout); break;
+	    case EXT2_OS_HURD:  fputs("GNU/Hurd", stdout);   break;
+	    case EXT2_OS_MASIX: fputs ("Masix", stdout); break;
+	    default:		fputs(_("(unknown os)"), stdout);
         }
 	printf("\n");
 	printf(_("Block size=%u (log=%u)\n"), fs->blocksize,
@@ -1104,7 +1107,7 @@ static void PRS(int argc, char *argv[])
 				journal_device);
 			exit(1);
 		}
-		if ((blocksize < 0) && (jfs->blocksize < -blocksize)) {
+		if ((blocksize < 0) && (jfs->blocksize < (unsigned) (-blocksize))) {
 			com_err(program_name, 0,
 				_("Journal dev blocksize (%d) smaller than "
 				  "minimum blocksize %d\n"), jfs->blocksize,
@@ -1219,7 +1222,7 @@ static void PRS(int argc, char *argv[])
 		exit(1);
 	}
 
-	if (tmp = getenv("MKE2FS_DEVICE_SECTSIZE"))
+	if ((tmp = getenv("MKE2FS_DEVICE_SECTSIZE")) != NULL)
 		sector_size = atoi(tmp);
 	
 	set_fs_defaults(fs_type, &param, blocksize, sector_size, &inode_ratio);
@@ -1227,7 +1230,7 @@ static void PRS(int argc, char *argv[])
 	
 	if (param.s_blocks_per_group) {
 		if (param.s_blocks_per_group < 256 ||
-		    param.s_blocks_per_group > 8 * blocksize) {
+		    param.s_blocks_per_group > 8 * (unsigned) blocksize) {
 			com_err(program_name, 0,
 				_("blocks per group count out of range"));
 			exit(1);
@@ -1271,7 +1274,8 @@ int main (int argc, char *argv[])
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
 	int		journal_blocks;
-	int		i, val;
+	unsigned int	i;
+	int		val;
 	io_manager	io_ptr;
 
 #ifdef ENABLE_NLS
@@ -1391,7 +1395,7 @@ int main (int argc, char *argv[])
 		fs->flags &= ~(EXT2_FLAG_IB_DIRTY|EXT2_FLAG_BB_DIRTY);
 	} else {
 		/* rsv must be a power of two (64kB is MD RAID sb alignment) */
-		int rsv = 65536 / fs->blocksize;
+		unsigned int rsv = 65536 / fs->blocksize;
 		unsigned long blocks = fs->super->s_blocks_count;
 		unsigned long start;
 		blk_t ret_blk;

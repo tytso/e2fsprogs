@@ -146,7 +146,7 @@ static void print_status(void)
 	fflush (stderr);
 }
 
-static void alarm_intr(int alnum)
+static void alarm_intr(int alnum EXT2FS_ATTR((unused)))
 {
 	signal (SIGALRM, alarm_intr);
 	alarm(1);
@@ -159,7 +159,7 @@ static void alarm_intr(int alnum)
 
 static void *terminate_addr = NULL;
 
-static void terminate_intr(int signo)
+static void terminate_intr(int signo EXT2FS_ATTR((unused)))
 {
 	if (terminate_addr)
 		longjmp(terminate_addr,1);
@@ -216,15 +216,15 @@ static void set_o_direct(int dev, unsigned char *buffer, size_t size,
 static void pattern_fill(unsigned char *buffer, unsigned long pattern,
 			 size_t n)
 {
-	int	i, nb;
+	unsigned int	i, nb;
 	unsigned char	bpattern[sizeof(pattern)], *ptr;
 	
-	if (pattern == ~0) {
+	if (pattern == (unsigned char) ~0) {
 		for (ptr = buffer; ptr < buffer + n; ptr++) {
 			(*ptr) = random() % (1 << (8 * sizeof(char)));
 		}
 		if (s_flag | v_flag)
-			fprintf(stderr, _("Testing with random pattern: "));
+			fputs(_("Testing with random pattern: "), stderr);
 	} else {
 		bpattern[0] = 0;
 		for (i = 0; i < sizeof(bpattern); i++) {
@@ -235,15 +235,17 @@ static void pattern_fill(unsigned char *buffer, unsigned long pattern,
 		}
 		nb = i ? (i-1) : 0;
 		for (ptr = buffer, i = nb; ptr < buffer + n; ptr++) {
-			*ptr = bpattern[i--];
-			if (i < 0)
+			*ptr = bpattern[i];
+			if (i == 0)
 				i = nb;
+			else
+				i--;
 		}
 		if (s_flag | v_flag) {
-			fprintf(stderr, _("Testing with pattern 0x"));
+			fputs(_("Testing with pattern 0x"), stderr);
 			for (i = 0; i <= nb; i++)
 				fprintf(stderr, "%02x", buffer[i]);
-			fprintf(stderr, ": ");
+			fputs(": ", stderr);
 		}
 	}
 }
@@ -301,8 +303,7 @@ static long do_write (int dev, unsigned char * buffer, int try, int block_size,
 	if (got < 0)
 		got = 0;	
 	if (got & 511)
-		fprintf (stderr,
-			 "Weird value (%ld) in do_write\n", got);
+		fprintf(stderr, "Weird value (%ld) in do_write\n", got);
 	got /= block_size;
 	return got;
 }
@@ -353,7 +354,7 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 		     last_block);
 	}
 	if (t_flag) {
-		fprintf(stderr, _("Checking for bad blocks in read-only mode\n"));
+		fputs(_("Checking for bad blocks in read-only mode\n"), stderr);
 		pattern_fill(blkbuf + blocks_at_once * block_size,
 			     t_patts[0], block_size);
 	}
@@ -362,8 +363,7 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 	currently_testing = from_count;
 	num_blocks = last_block;
 	if (!t_flag && (s_flag || v_flag)) {
-		fprintf(stderr,
-			_("Checking for bad blocks (read-only test): "));
+		fputs(_("Checking for bad blocks (read-only test): "), stderr);
 		if (v_flag <= 1)
 			alarm_intr(SIGALRM);
 	}
@@ -396,7 +396,7 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 		if (got == try) {
 			try = blocks_at_once;
 			/* recover page-aligned offset for O_DIRECT */
-			if ( blocks_at_once >= (sys_page_size >> 9)
+			if ( blocks_at_once >= (unsigned long) (sys_page_size >> 9)
 			     && (currently_testing % (sys_page_size >> 9)!= 0))
 				try -= (sys_page_size >> 9)
 					- (currently_testing 
@@ -443,8 +443,8 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 	flush_bufs();
 
 	if (v_flag) {
-		fprintf(stderr,
-			_("Checking for bad blocks in read-write mode\n"));
+		fputs(_("Checking for bad blocks in read-write mode\n"), 
+		      stderr);
 		fprintf(stderr, _("From block %lu to %lu\n"),
 			 from_count, last_block);
 	}
@@ -476,7 +476,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 			if (got == try) {
 				try = blocks_at_once;
 				/* recover page-aligned offset for O_DIRECT */
-				if ( blocks_at_once >= (sys_page_size >> 9)
+				if ( blocks_at_once >= (unsigned long) (sys_page_size >> 9)
 				     && (currently_testing % 
 					 (sys_page_size >> 9)!= 0))
 					try -= (sys_page_size >> 9)
@@ -496,7 +496,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 			fputs(done_string, stderr);
 		flush_bufs();
 		if (s_flag | v_flag)
-			fprintf (stderr, _("Reading and comparing: "));
+			fputs(_("Reading and comparing: "), stderr);
 		num_blocks = last_block;
 		currently_testing = from_count;
 		if (s_flag && v_flag <= 1)
@@ -520,7 +520,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 			}
 			currently_testing += got;
 			/* recover page-aligned offset for O_DIRECT */
-			if ( blocks_at_once >= (sys_page_size >> 9)
+			if ( blocks_at_once >= (unsigned long) (sys_page_size >> 9)
 			     && (currently_testing % (sys_page_size >> 9)!= 0))
 				try = blocks_at_once - (sys_page_size >> 9)
 					- (currently_testing 
@@ -563,9 +563,10 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 	static int num_saved;
 	jmp_buf terminate_env;
 	errcode_t errcode;
-	long buf_used;
-	unsigned int bb_count = 0;
+	unsigned long buf_used;
+	static unsigned int bb_count;
 
+	bb_count = 0;
 	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
 	if (errcode) {
 		com_err (program_name, errcode,
@@ -591,19 +592,18 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 
 	flush_bufs();
 	if (v_flag) {
-	    fprintf (stderr,
-		     _("Checking for bad blocks in non-destructive read-write mode\n"));
+	    fputs(_("Checking for bad blocks in non-destructive read-write mode\n"), stderr);
 	    fprintf (stderr, _("From block %lu to %lu\n"), from_count, last_block);
 	}
 	if (s_flag || v_flag > 1) {
-		fprintf(stderr, _("Checking for bad blocks (non-destructive read-write test)\n"));
+		fputs(_("Checking for bad blocks (non-destructive read-write test)\n"), stderr);
 	}
 	if (setjmp(terminate_env)) {
 		/*
 		 * Abnormal termination by a signal is handled here.
 		 */
 		signal (SIGALRM, SIG_IGN);
-		fprintf(stderr, _("\nInterrupt caught, cleaning up\n"));
+		fputs(_("\nInterrupt caught, cleaning up\n"), stderr);
 
 		save_ptr = save_base;
 		for (i=0; i < num_saved; i++) {
@@ -787,11 +787,11 @@ static void check_mount(char *device_name)
 
 	fprintf(stderr, _("%s is mounted; "), device_name);
 	if (force) {
-		fprintf(stderr, _("badblocks forced anyway.  "
-			"Hope /etc/mtab is incorrect.\n"));
+		fputs(_("badblocks forced anyway.  "
+			"Hope /etc/mtab is incorrect.\n"), stderr);
 		return;
 	}
-	fprintf(stderr, _("it's not safe to run badblocks!\n"));
+	fputs(_("it's not safe to run badblocks!\n"), stderr);
 	exit(1);
 }
 
@@ -925,7 +925,7 @@ int main (int argc, char ** argv)
 						optarg);
 					exit(1);
 				}
-				if (pattern == ~0)
+				if (pattern == (unsigned long) ~0)
 					pattern = 0xffff;
 				t_patts[t_flag++] = pattern;
 			}
@@ -941,7 +941,7 @@ int main (int argc, char ** argv)
 			  "in read-only mode"));
 			exit(1);
 		}
-		if (t_patts && (t_patts[0] == ~0)) {
+		if (t_patts && (t_patts[0] == (unsigned long) ~0)) {
 			com_err(program_name, 0,
 			_("Random test_pattern is not allowed "
 			  "in read-only mode"));
@@ -985,7 +985,7 @@ int main (int argc, char ** argv)
 	} else from_count = 0;
 	if (from_count >= last_block) {
 	    com_err (program_name, 0, _("bad blocks range: %lu-%lu"),
-		     from_count, last_block);
+		     (unsigned long) from_count, (unsigned long) last_block);
 	    exit (1);
 	}
 	if (w_flag)

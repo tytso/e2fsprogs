@@ -159,7 +159,8 @@ static void add_dupe(e2fsck_t ctx, ext2_ino_t ino, blk_t blk,
 /*
  * Free a duplicate inode record
  */
-static void inode_dnode_free(dnode_t *node, void *context)
+static void inode_dnode_free(dnode_t *node, 
+			     void *context EXT2FS_ATTR((unused)))
 {
 	struct dup_inode	*di;
 	struct block_el		*p, *next;
@@ -175,7 +176,8 @@ static void inode_dnode_free(dnode_t *node, void *context)
 /*
  * Free a duplicate block record
  */
-static void block_dnode_free(dnode_t *node, void *context)
+static void block_dnode_free(dnode_t *node, 
+			     void *context EXT2FS_ATTR((unused)))
 {
 	struct dup_block	*db;
 	struct inode_el		*p, *next;
@@ -298,11 +300,11 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 	e2fsck_use_inode_shortcuts(ctx, 0);
 }
 
-static int process_pass1b_block(ext2_filsys fs,
+static int process_pass1b_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 				blk_t	*block_nr,
-				e2_blkcnt_t blockcnt,
-				blk_t ref_blk, 
-				int ref_offset, 			 
+				e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+				blk_t ref_blk EXT2FS_ATTR((unused)), 
+				int ref_offset EXT2FS_ATTR((unused)),
 				void *priv_data)
 {
 	struct process_block_struct *p;
@@ -342,8 +344,10 @@ struct search_dir_struct {
 
 static int search_dirent_proc(ext2_ino_t dir, int entry,
 			      struct ext2_dir_entry *dirent,
-			      int offset, int blocksize,
-			      char *buf, void *priv_data)
+			      int offset EXT2FS_ATTR((unused)), 
+			      int blocksize EXT2FS_ATTR((unused)),
+			      char *buf EXT2FS_ATTR((unused)), 
+			      void *priv_data)
 {
 	struct search_dir_struct *sd;
 	struct dup_inode	*p;
@@ -521,9 +525,9 @@ static void decrement_badcount(e2fsck_t ctx, blk_t block, struct dup_block *p)
 
 static int delete_file_block(ext2_filsys fs,
 			     blk_t	*block_nr,
-			     e2_blkcnt_t blockcnt,
-			     blk_t ref_block,
-			     int ref_offset, 
+			     e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+			     blk_t ref_block EXT2FS_ATTR((unused)),
+			     int ref_offset EXT2FS_ATTR((unused)),
 			     void *priv_data)
 {
 	struct process_block_struct *pb;
@@ -623,8 +627,8 @@ struct clone_struct {
 static int clone_file_block(ext2_filsys fs,
 			    blk_t	*block_nr,
 			    e2_blkcnt_t blockcnt,
-			    blk_t ref_block,
-			    int ref_offset, 
+			    blk_t ref_block EXT2FS_ATTR((unused)),
+			    int ref_offset EXT2FS_ATTR((unused)),
 			    void *priv_data)
 {
 	struct dup_block *p;
@@ -769,7 +773,7 @@ static int check_if_fs_block(e2fsck_t ctx, blk_t test_block)
 {
 	ext2_filsys fs = ctx->fs;
 	blk_t	block;
-	int	i;
+	dgrp_t	i;
 	
 	block = fs->super->s_first_data_block;
 	for (i = 0; i < fs->group_desc_count; i++) {

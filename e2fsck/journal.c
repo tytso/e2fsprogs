@@ -101,8 +101,8 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 						     1, bh->b_data);
 			if (retval) {
 				com_err(bh->b_ctx->device_name, retval,
-					"while reading block %ld\n", 
-					bh->b_blocknr);
+					"while reading block %lu\n", 
+					(unsigned long) bh->b_blocknr);
 				bh->b_err = retval;
 				continue;
 			}
@@ -115,8 +115,8 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 						      1, bh->b_data);
 			if (retval) {
 				com_err(bh->b_ctx->device_name, retval,
-					"while writing block %ld\n", 
-					bh->b_blocknr);
+					"while writing block %lu\n", 
+					(unsigned long) bh->b_blocknr);
 				bh->b_err = retval;
 				continue;
 			}

@@ -31,7 +31,7 @@
  */
 errcode_t ext2fs_check_desc(ext2_filsys fs)
 {
-	int i;
+	dgrp_t i;
 	blk_t block = fs->super->s_first_data_block;
 	blk_t next;
 

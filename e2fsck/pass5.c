@@ -114,8 +114,8 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	blk_t	i;
 	int	*free_array;
 	int	group = 0;
-	int	blocks = 0;
-	int	free_blocks = 0;
+	unsigned int	blocks = 0;
+	unsigned int	free_blocks = 0;
 	int	group_free = 0;
 	int	actual, bitmap;
 	struct problem_context	pctx;
@@ -275,17 +275,17 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	ext2_ino_t	i;
-	int	free_inodes = 0;
-	int	group_free = 0;
-	int	dirs_count = 0;
-	int	group = 0;
-	int	inodes = 0;
-	int	*free_array;
-	int	*dir_array;
-	int	actual, bitmap;
+	unsigned int	free_inodes = 0;
+	int		group_free = 0;
+	int		dirs_count = 0;
+	int		group = 0;
+	unsigned int	inodes = 0;
+	int		*free_array;
+	int		*dir_array;
+	int		actual, bitmap;
 	errcode_t	retval;
 	struct problem_context	pctx;
-	int	problem, save_problem, fixit, had_problem;
+	int		problem, save_problem, fixit, had_problem;
 	
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,

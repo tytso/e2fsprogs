@@ -113,7 +113,7 @@ static __u64 ext2_max_sizes[EXT2_MAX_BLOCK_LOG_SIZE -
  * Free all memory allocated by pass1 in preparation for restarting
  * things.
  */
-static void unwind_pass1(ext2_filsys fs)
+static void unwind_pass1(ext2_filsys fs EXT2FS_ATTR((unused)))
 {
 	ext2fs_free_mem(&inodes_to_process);
 	inodes_to_process = 0;
@@ -165,7 +165,7 @@ int e2fsck_pass1_check_device_inode(ext2_filsys fs, struct ext2_inode *inode)
 int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode,
 			       char *buf)
 {
-	int len;
+	unsigned int len;
 	int i;
 	blk_t	blocks;
 
@@ -757,7 +757,8 @@ endit:
  * When the inode_scan routines call this callback at the end of the
  * glock group, call process_inodes.
  */
-static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
+static errcode_t scan_callback(ext2_filsys fs, 
+			       ext2_inode_scan scan EXT2FS_ATTR((unused)),
 			       dgrp_t group, void * priv_data)
 {
 	struct scan_callback_struct *scan_struct;
@@ -1144,7 +1145,8 @@ clear_extattr:
 
 /* Returns 1 if bad htree, 0 if OK */
 static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
-			ext2_ino_t ino, struct ext2_inode *inode,
+			ext2_ino_t ino EXT2FS_ATTR((unused)),
+			struct ext2_inode *inode,
 			char *block_buf)
 {
 	struct ext2_dx_root_info	*root;
@@ -1320,7 +1322,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	} else {
 		size = EXT2_I_SIZE(inode);
 		if ((pb.last_block >= 0) &&
-		    (size < pb.last_block * fs->blocksize))
+		    (size < (__u64) pb.last_block * fs->blocksize))
 			bad_size = 3;
 		else if (size > ext2_max_sizes[fs->super->s_log_block_size])
 			bad_size = 4;
@@ -1410,8 +1412,8 @@ static char *describe_illegal_block(ext2_filsys fs, blk_t block)
 static int process_block(ext2_filsys fs,
 		  blk_t	*block_nr,
 		  e2_blkcnt_t blockcnt,
-		  blk_t ref_block,
-		  int ref_offset, 
+		  blk_t ref_block EXT2FS_ATTR((unused)),
+		  int ref_offset EXT2FS_ATTR((unused)),
 		  void *priv_data)
 {
 	struct process_block_struct *p;
@@ -1545,14 +1547,14 @@ mark_dir:
 static int process_bad_block(ext2_filsys fs,
 		      blk_t *block_nr,
 		      e2_blkcnt_t blockcnt,
-		      blk_t ref_block,
-		      int ref_offset,
+		      blk_t ref_block EXT2FS_ATTR((unused)),
+		      int ref_offset EXT2FS_ATTR((unused)),
 		      void *priv_data)
 {
 	struct process_block_struct *p;
 	blk_t		blk = *block_nr;
-	int		first_block;
-	int		i;
+	blk_t		first_block;
+	dgrp_t		i;
 	struct problem_context *pctx;
 	e2fsck_t	ctx;
 
@@ -1772,7 +1774,7 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 static void handle_fs_bad_blocks(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	int		i;
+	dgrp_t		i;
 	int		first_block = fs->super->s_first_data_block;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
@@ -1803,7 +1805,8 @@ static void mark_table_blocks(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	blk_t	block, b;
-	int	i, j;
+	dgrp_t	i;
+	int	j;
 	struct problem_context pctx;
 	
 	clear_problem_context(&pctx);

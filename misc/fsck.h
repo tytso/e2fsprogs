@@ -11,6 +11,13 @@
 #define const
 #endif
 
+#ifdef __GNUC__
+#define FSCK_ATTR(x) __attribute__(x)
+#else
+#define FSCK_ATTR(x)
+#endif
+
+
 #ifndef DEFAULT_FSTYPE
 #define DEFAULT_FSTYPE	"ext2"
 #endif

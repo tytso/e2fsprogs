@@ -20,6 +20,13 @@
 
 #include <blkid/list.h>
 
+#ifdef __GNUC__
+#define __BLKID_ATTR(x) __attribute__(x)
+#else
+#define __BLKID_ATTR(x)
+#endif
+
+
 /*
  * This describes the attributes of a specific device.
  * We can traverse all of the tags by bid_tags (linking to the tag bit_names).

@@ -32,7 +32,8 @@
  *
  * Should have a special policy for directories.
  */
-errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir, int mode,
+errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir, 
+			   int mode EXT2FS_ATTR((unused)),
 			   ext2fs_inode_bitmap map, ext2_ino_t *ret)
 {
 	ext2_ino_t	dir_group = 0;

@@ -56,6 +56,11 @@ static void usage(void)
 	exit (1);
 }
 
+static void print_number (unsigned long num)
+{
+	printf(num_format, num);
+}
+
 static void print_free (unsigned long group, char * bitmap,
 			unsigned long nbytes, unsigned long offset)
 {
@@ -69,12 +74,12 @@ static void print_free (unsigned long group, char * bitmap,
 		{
 			if (p)
 				printf (", ");
-			printf (num_format, i + offset);
+			print_number(i + offset);
 			for (j = i; j < nbytes && !in_use (bitmap, j); j++)
 				;
 			if (--j != i) {
 				fputc('-', stdout);
-				printf(num_format, j + offset);
+				print_number(j + offset);
 				i = j;
 			}
 			p = 1;
@@ -119,7 +124,7 @@ static void list_desc (ext2_filsys fs)
 		if (has_super) {
 			printf (_("  %s superblock at "),
 				i == 0 ? _("Primary") : _("Backup"));
-			printf(num_format, super_blk);
+			print_number(super_blk);
 		}
 		if (old_desc_blk) {
 			printf(_(", Group descriptors at "));
@@ -128,18 +133,18 @@ static void list_desc (ext2_filsys fs)
 		} else if (new_desc_blk) {
 			fputc(has_super ? ',' : ' ', stdout);
 			printf(_(" Group descriptor at "));
-			printf(num_format, new_desc_blk);
+			print_number(new_desc_blk);
 			has_super++;
 		}
 		if (has_super)
 			fputc('\n', stdout);
 		fputs(_("  Block bitmap at "), stdout);
-		printf(num_format, fs->group_desc[i].bg_block_bitmap);
+		print_number(fs->group_desc[i].bg_block_bitmap);
 		diff = fs->group_desc[i].bg_block_bitmap - group_blk;
 		if (diff >= 0)
 			printf(" (+%ld)", diff);
 		fputs(_(", Inode bitmap at "), stdout);
-		printf(num_format, fs->group_desc[i].bg_inode_bitmap);
+		print_number(fs->group_desc[i].bg_inode_bitmap);
 		diff = fs->group_desc[i].bg_inode_bitmap - group_blk;
 		if (diff >= 0)
 			printf(" (+%ld)", diff);
@@ -213,7 +218,7 @@ static void print_journal_information(ext2_filsys fs)
 	errcode_t	retval;
 	char		buf[1024];
 	char		str[80];
-	int		i;
+	unsigned int	i;
 	journal_superblock_t	*jsb;
 
 	/* Get the journal superblock */

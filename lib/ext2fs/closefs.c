@@ -53,7 +53,8 @@ int ext2fs_super_and_bgd_loc(ext2_filsys fs,
 			     int *ret_meta_bg)
 {
 	blk_t	group_block, super_blk = 0, old_desc_blk = 0, new_desc_blk = 0;
-	int	numblocks, j, has_super, meta_bg_size, meta_bg;
+	unsigned int meta_bg, meta_bg_size;
+	int	numblocks, has_super;
 	int	old_desc_blocks;
 
 	group_block = fs->super->s_first_data_block +

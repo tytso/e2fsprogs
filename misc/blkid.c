@@ -25,7 +25,7 @@ const char *progname = "blkid";
 
 static void print_version(FILE *out)
 {
-	fprintf(stderr, "%s %s (%s)\n", progname, BLKID_VERSION, BLKID_DATE);
+	fprintf(out, "%s %s (%s)\n", progname, BLKID_VERSION, BLKID_DATE);
 }
 
 static void usage(int error)
@@ -85,10 +85,10 @@ int main(int argc, char **argv)
 	char *search_type = NULL, *search_value = NULL;
 	char *read = NULL;
 	char *write = NULL;
-	int numdev = 0, numtag = 0;
+	unsigned int numdev = 0, numtag = 0;
 	int version = 0;
 	int err = 4;
-	int i;
+	unsigned int i;
 	char c;
 
 	while ((c = getopt (argc, argv, "c:f:hps:t:w:v")) != EOF)

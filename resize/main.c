@@ -138,7 +138,7 @@ int main (int argc, char ** argv)
 	io_manager	io_ptr;
 	char		*tmp;
 	struct stat	st_buf;
-	int		sys_page_size = 4096;
+	unsigned int	sys_page_size = 4096;
 	long		sysval;
 
 #ifdef ENABLE_NLS
@@ -265,9 +265,9 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 	if (units) {
-		if (units < fs->blocksize)
+		if ((unsigned) units < fs->blocksize)
 			new_size = (new_size * units) / fs->blocksize;
-		else if (units > fs->blocksize)
+		else if ((unsigned) units > fs->blocksize)
 			new_size = new_size * (units / fs->blocksize);
 	}
 	if (!new_size) {

@@ -12,6 +12,12 @@
 #ifndef _EXT2FS_EXT2FS_H
 #define _EXT2FS_EXT2FS_H
 
+#ifdef __GNUC__
+#define EXT2FS_ATTR(x) __attribute__(x)
+#else
+#define EXT2FS_ATTR(x)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -201,7 +207,7 @@ struct struct_ext2_filsys {
 	int				flags;
 	char *				device_name;
 	struct ext2_super_block	* 	super;
-	int				blocksize;
+	unsigned int			blocksize;
 	int				fragsize;
 	dgrp_t				group_desc_count;
 	unsigned long			desc_blocks;
@@ -482,6 +488,7 @@ extern errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 /* badblocks.c */
 extern errcode_t ext2fs_u32_list_create(ext2_u32_list *ret, int size);
 extern errcode_t ext2fs_u32_list_add(ext2_u32_list bb, __u32 blk);
+extern int ext2fs_u32_list_find(ext2_u32_list bb, __u32 blk);
 extern int ext2fs_u32_list_test(ext2_u32_list bb, blk_t blk);
 extern errcode_t ext2fs_u32_list_iterate_begin(ext2_u32_list bb,
 					       ext2_u32_iterate *ret);
@@ -754,9 +761,11 @@ extern errcode_t ext2fs_initialize(const char *name, int flags,
 
 /* icount.c */
 extern void ext2fs_free_icount(ext2_icount_t icount);
-extern errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
+extern errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, 
+				       unsigned int size,
 				       ext2_icount_t hint, ext2_icount_t *ret);
-extern errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, int size,
+extern errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, 
+				      unsigned int size,
 				      ext2_icount_t *ret);
 extern errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ext2_ino_t ino,
 				     __u16 *ret);
@@ -839,7 +848,7 @@ extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size,
 
 /* openfs.c */
 extern errcode_t ext2fs_open(const char *name, int flags, int superblock,
-			     int block_size, io_manager manager,
+			     unsigned int block_size, io_manager manager,
 			     ext2_filsys *ret_fs);
 extern blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, 
 					 dgrp_t i);
@@ -968,7 +977,7 @@ _INLINE_ errcode_t ext2fs_free_mem(void *ptr)
 /*
  *  Resize memory
  */
-_INLINE_ errcode_t ext2fs_resize_mem(unsigned long old_size,
+_INLINE_ errcode_t ext2fs_resize_mem(unsigned long old_size EXT2FS_ATTR((unused)),
 				     unsigned long size, void *ptr)
 {
 	void *p;

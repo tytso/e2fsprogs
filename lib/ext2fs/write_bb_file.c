@@ -15,7 +15,7 @@
 #include "ext2fs.h"
 
 errcode_t ext2fs_write_bb_FILE(ext2_badblocks_list bb_list,
-			       unsigned int flags,
+			       unsigned int flags EXT2FS_ATTR((unused)),
 			       FILE *f)
 {
 	badblocks_iterate	bb_iter;

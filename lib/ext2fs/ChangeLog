@@ -1,3 +1,13 @@
+2003-12-02  Theodore Ts'o  <tytso@mit.edu>
+
+	* alloc.c, bb_inode.c, bitops.c, block.c, check_desc.c, closefs.c,
+		dir_iterate.c, dirblock.c, expanddir.c, ext2fs.h,
+		get_pathname.c, icount.c, imager.c, initalize.c, inode.c,
+		lookup.c, openfs.c, read_bb.c, read_bb_file.c,
+		rw_bitmaps.c, unix_io.c, unlink.c, write_bb_file.c: Fix
+		gcc -Wall complaints.  Mainly marking variables as being
+		unsued, and catching signed vs. unsigned comparisons.
+
 2003-09-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* closefs.c (ext2fs_super_and_bgd_loc): New function which

@@ -36,6 +36,8 @@ extern char *optarg;
 
 enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
 
+#define ANY_BLOCK ((unsigned int) -1)
+
 int		dump_all, dump_contents, dump_descriptors;
 unsigned int	block_to_dump, group_to_dump, bitmap_to_dump;
 unsigned int	inode_block_to_dump, inode_offset_to_dump, bitmap_to_dump;
@@ -96,9 +98,9 @@ void do_logdump(int argc, char **argv)
 	dump_all = 0;
 	dump_contents = 0;
 	dump_descriptors = 1;
-	block_to_dump = -1;
+	block_to_dump = ANY_BLOCK;
 	bitmap_to_dump = -1;
-	inode_block_to_dump = -1;
+	inode_block_to_dump = ANY_BLOCK;
 	inode_to_dump = -1;
 	
 	reset_getopt();
@@ -181,7 +183,7 @@ void do_logdump(int argc, char **argv)
 		}
 	}
 
-	if (block_to_dump != -1 && current_fs != NULL) {
+	if (block_to_dump != ANY_BLOCK && current_fs != NULL) {
 		group_to_dump = ((block_to_dump - 
 				  es->s_first_data_block)
 				 / es->s_blocks_per_group);
@@ -299,7 +301,7 @@ static int read_journal_block(const char *cmd, struct journal_source *source,
 	
 	if (retval)
 		com_err(cmd, retval, "while while reading journal");
-	else if (*got != size) {
+	else if (*got != (unsigned int) size) {
 		com_err(cmd, 0, "short read (read %d, expected %d) while while reading journal", *got, size);
 		retval = -1;
 	}
@@ -332,7 +334,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	char			jsb_buffer[1024];
 	char			buf[8192];
 	journal_superblock_t	*jsb;
-	int			blocksize = 1024;
+	unsigned int		blocksize = 1024;
 	unsigned int		got;
 	int			retval;
 	__u32			magic, sequence, blocktype;
@@ -513,9 +515,10 @@ static void dump_descriptor_block(FILE *out_file,
 
 
 static void dump_revoke_block(FILE *out_file, char *buf,
-				  journal_superblock_t *jsb, 
-				  unsigned int blocknr, int blocksize,
-				  tid_t transaction)
+			      journal_superblock_t *jsb EXT2FS_ATTR((unused)), 
+			      unsigned int blocknr, 
+			      int blocksize EXT2FS_ATTR((unused)),
+			      tid_t transaction)
 {
 	int			offset, max;
 	journal_revoke_header_t *header;
@@ -561,7 +564,7 @@ static void show_indirect(FILE *out_file, const char *name, __u32 where)
 
 
 static void dump_metadata_block(FILE *out_file, struct journal_source *source,
-				journal_superblock_t *jsb,
+				journal_superblock_t *jsb EXT2FS_ATTR((unused)),
 				unsigned int log_blocknr, 
 				unsigned int fs_blocknr, 
 				int blocksize,

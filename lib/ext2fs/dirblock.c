@@ -20,7 +20,7 @@
 #include "ext2fs.h"
 
 errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
-				 void *buf, int flags)
+				 void *buf, int flags EXT2FS_ATTR((unused)))
 {
 	errcode_t	retval;
 	char		*p, *end;
@@ -71,7 +71,7 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 
 
 errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
-				  void *inbuf, int flags)
+				  void *inbuf, int flags EXT2FS_ATTR((unused)))
 {
 #ifdef EXT2FS_ENABLE_SWAPFS
 	int		do_swap = 0;

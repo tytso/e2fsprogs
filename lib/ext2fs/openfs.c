@@ -71,11 +71,13 @@ blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
  *	EXT2_FLAG_JOURNAL_DEV_OK - Open an ext3 journal device
  */
 errcode_t ext2fs_open(const char *name, int flags, int superblock,
-		      int block_size, io_manager manager, ext2_filsys *ret_fs)
+		      unsigned int block_size, io_manager manager, 
+		      ext2_filsys *ret_fs)
 {
 	ext2_filsys	fs;
 	errcode_t	retval;
-	int		i, j, groups_per_block, blocks_per_group;
+	unsigned long	i;
+	int		j, groups_per_block, blocks_per_group;
 	blk_t		group_block, blk;
 	char		*dest;
 	struct ext2_group_desc *gdp;

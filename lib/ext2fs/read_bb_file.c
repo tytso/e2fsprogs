@@ -72,7 +72,8 @@ errcode_t ext2fs_read_bb_FILE2(ext2_filsys fs, FILE *f,
 }
 
 static void call_compat_invalid(ext2_filsys fs, blk_t blk,
-				char *badstr, void *priv_data)
+				char *badstr EXT2FS_ATTR((unused)), 
+				void *priv_data)
 {
 	void (*invalid)(ext2_filsys, blk_t);
 

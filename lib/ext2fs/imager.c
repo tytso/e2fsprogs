@@ -108,7 +108,7 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 					retval = errno;
 					goto errout;
 				}
-				if (actual != fs->blocksize * d) {
+				if (actual != (ssize_t) (fs->blocksize * d)) {
 					retval = EXT2_ET_SHORT_WRITE;
 					goto errout;
 				}
@@ -129,7 +129,8 @@ errout:
 /*
  * Read in the inode table and stuff it into place
  */
-errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd, int flags)
+errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd, 
+				  int flags EXT2FS_ATTR((unused)))
 {
 	unsigned int	group, c, left;
 	char		*buf;
@@ -157,7 +158,7 @@ errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd, int flags)
 				retval = errno;
 				goto errout;
 			}
-			if (actual != fs->blocksize * c) {
+			if (actual != (ssize_t) (fs->blocksize * c)) {
 				retval = EXT2_ET_SHORT_READ;
 				goto errout;
 			}
@@ -179,7 +180,8 @@ errout:
 /*
  * Write out superblock and group descriptors
  */
-errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd, int flags)
+errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd, 
+				   int flags EXT2FS_ATTR((unused)))
 {
 	char		*buf, *cp;
 	ssize_t		actual;
@@ -199,7 +201,7 @@ errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd, int flags)
 		retval = errno;
 		goto errout;
 	}
-	if (actual != fs->blocksize) {
+	if (actual != (ssize_t) fs->blocksize) {
 		retval = EXT2_ET_SHORT_WRITE;
 		goto errout;
 	}
@@ -213,7 +215,7 @@ errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd, int flags)
 		retval = errno;
 		goto errout;
 	}
-	if (actual != fs->blocksize * fs->desc_blocks) {
+	if (actual != (ssize_t) (fs->blocksize * fs->desc_blocks)) {
 		retval = EXT2_ET_SHORT_WRITE;
 		goto errout;
 	}
@@ -228,7 +230,8 @@ errout:
 /*
  * Read the superblock and group descriptors and overwrite them.
  */
-errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd, int flags)
+errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd, 
+				  int flags EXT2FS_ATTR((unused)))
 {
 	char		*buf;
 	ssize_t		actual, size;
@@ -312,7 +315,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		size = fs->blocksize - size;
 		while (size) {
 			c = size;
-			if (c > sizeof(zero_buf))
+			if (c > (int) sizeof(zero_buf))
 				c = sizeof(zero_buf);
 			actual = write(fd, zero_buf, c);
 			if (actual == -1) {

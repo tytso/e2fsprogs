@@ -120,7 +120,7 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
 		if (got == 0)
 			break;
 		nbytes = write(fd, buf, got);
-		if (nbytes != got)
+		if ((unsigned) nbytes != got)
 			com_err(cmdname, errno, "while writing file");
 	}
 	retval = ext2fs_file_close(e2_file);
@@ -287,8 +287,10 @@ errout:
 	free(fullname);
 }
 
-static int rdump_dirent(struct ext2_dir_entry *dirent, int offset,
-			 int blocksize, char *buf, void *private)
+static int rdump_dirent(struct ext2_dir_entry *dirent, 
+			int offset EXT2FS_ATTR((unused)),
+			int blocksize EXT2FS_ATTR((unused)),
+			char *buf EXT2FS_ATTR((unused)), void *private)
 {
 	char name[EXT2_NAME_LEN];
 	int thislen;

@@ -483,7 +483,8 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
 	unsigned long 	group, block, block_nr, offset;
 	char 		*ptr;
 	errcode_t	retval;
-	int 		clen, length, i, inodes_per_block;
+	int 		clen, i, inodes_per_block;
+	unsigned int	length;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -539,7 +540,7 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
 	if (length > sizeof(struct ext2_inode))
 		length = sizeof(struct ext2_inode);
 	
-	if ((offset + length) > EXT2_BLOCK_SIZE(fs->super)) {
+	if ((offset + length) > (unsigned) EXT2_BLOCK_SIZE(fs->super)) {
 		clen = (int) (EXT2_BLOCK_SIZE(fs->super) - offset);
 		memcpy((char *) inode, ptr, clen);
 		length -= clen;
@@ -579,7 +580,8 @@ errcode_t ext2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
 	errcode_t	retval;
 	struct ext2_inode temp_inode;
 	char *ptr;
-	int clen, length, i;
+	int clen, i;
+	unsigned int length;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -641,7 +643,7 @@ errcode_t ext2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
 		fs->icache->buffer_blk = block_nr;
 	}
 	
-	if ((offset + length) > EXT2_BLOCK_SIZE(fs->super)) {
+	if ((offset + length) > (unsigned) EXT2_BLOCK_SIZE(fs->super)) {
 		clen = (int) (EXT2_BLOCK_SIZE(fs->super) - offset);
 		length -= clen;
 	} else {

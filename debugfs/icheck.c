@@ -30,11 +30,11 @@ struct block_walk_struct {
 	ext2_ino_t		inode;
 };
 
-static int icheck_proc(ext2_filsys fs,
+static int icheck_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 		       blk_t	*block_nr,
-		       e2_blkcnt_t blockcnt,
-		       blk_t ref_block,
-		       int ref_offset,
+		       e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+		       blk_t ref_block EXT2FS_ATTR((unused)),
+		       int ref_offset EXT2FS_ATTR((unused)),
 		       void *private)
 {
 	struct block_walk_struct *bw = (struct block_walk_struct *) private;

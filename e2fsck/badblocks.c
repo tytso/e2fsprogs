@@ -17,7 +17,7 @@ static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 				 void *priv_data);
 
 
-static void invalid_block(ext2_filsys fs, blk_t blk)
+static void invalid_block(ext2_filsys fs EXT2FS_ATTR((unused)), blk_t blk)
 {
 	printf(_("Bad block %u out of range; ignored.\n"), blk);
 	return;
@@ -113,8 +113,10 @@ fatal:
 	
 }
 
-static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
-				 void *priv_data)
+static int check_bb_inode_blocks(ext2_filsys fs, 
+				 blk_t *block_nr, 
+				 int blockcnt EXT2FS_ATTR((unused)),
+				 void *priv_data EXT2FS_ATTR((unused)))
 {
 	if (!*block_nr)
 		return 0;

@@ -49,7 +49,7 @@ static int deleted_info_compare(const void *a, const void *b)
 
 static int lsdel_proc(ext2_filsys fs,
 		      blk_t	*block_nr,
-		      int blockcnt,
+		      int blockcnt EXT2FS_ATTR((unused)),
 		      void *private)
 {
 	struct lsdel_struct *lsd = (struct lsdel_struct *) private;
@@ -128,7 +128,7 @@ void do_lsdel(int argc, char **argv)
 	
 	while (ino) {
 		if ((inode.i_dtime == 0) ||
-		    (secs && ((now - secs) > inode.i_dtime)))
+		    (secs && ((unsigned) abs(now - secs) > inode.i_dtime)))
 			goto next;
 
 		lsd.inode = ino;

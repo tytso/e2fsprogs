@@ -1,3 +1,10 @@
+2003-12-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* subst.c: Fix gcc -Wall nitpicks.
+
+	* gcc-wall-cleanup: Remove missing initalizer, zero-length format
+		string, and some more long long warnings.
+
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.34

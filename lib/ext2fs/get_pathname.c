@@ -38,9 +38,9 @@ struct get_pathname_struct {
  #pragma argsused
 #endif
 static int get_pathname_proc(struct ext2_dir_entry *dirent,
-			     int	offset,
-			     int	blocksize,
-			     char	*buf,
+			     int	offset EXT2FS_ATTR((unused)),
+			     int	blocksize EXT2FS_ATTR((unused)),
+			     char	*buf EXT2FS_ATTR((unused)),
 			     void	*priv_data)
 {
 	struct get_pathname_struct	*gp;

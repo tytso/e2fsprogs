@@ -58,7 +58,7 @@ static void write_header(int fd, struct ext2_image_hdr *hdr, int blocksize)
 
 	header_buf = malloc(blocksize);
 	if (!header_buf) {
-		fprintf(stderr, _("Couldn't allocate header buffer\n"));
+		fputs(_("Couldn't allocate header buffer\n"), stderr);
 		exit(1);
 	}
 
@@ -160,8 +160,9 @@ struct process_block_struct {
 static ino_t stashed_ino = 0;
 static struct ext2_inode *stashed_inode;
 
-static errcode_t meta_get_blocks(ext2_filsys fs, ext2_ino_t ino,
-				  blk_t *blocks)
+static errcode_t meta_get_blocks(ext2_filsys fs EXT2FS_ATTR((unused)), 
+				 ext2_ino_t ino,
+				 blk_t *blocks)
 {
 	int	i;
 	
@@ -173,7 +174,8 @@ static errcode_t meta_get_blocks(ext2_filsys fs, ext2_ino_t ino,
 	return 0;
 }
 
-static errcode_t meta_check_directory(ext2_filsys fs, ext2_ino_t ino)
+static errcode_t meta_check_directory(ext2_filsys fs EXT2FS_ATTR((unused)), 
+				      ext2_ino_t ino)
 {
 	if ((ino != stashed_ino) || !stashed_inode)
 		return EXT2_ET_CALLBACK_NOTHANDLED;
@@ -183,7 +185,8 @@ static errcode_t meta_check_directory(ext2_filsys fs, ext2_ino_t ino)
 	return 0;
 }
 
-static errcode_t meta_read_inode(ext2_filsys fs, ext2_ino_t ino,
+static errcode_t meta_read_inode(ext2_filsys fs EXT2FS_ATTR((unused)), 
+				 ext2_ino_t ino,
 				 struct ext2_inode *inode)
 {
 	if ((ino != stashed_ino) || !stashed_inode)
@@ -206,17 +209,23 @@ static void use_inode_shortcuts(ext2_filsys fs, int bool)
 	}
 }
 
-static int process_dir_block(ext2_filsys fs, blk_t *block_nr,
-			     e2_blkcnt_t blockcnt, blk_t ref_block,
-			     int ref_offset, void *priv_data)
+static int process_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)), 
+			     blk_t *block_nr,
+			     e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)), 
+			     blk_t ref_block EXT2FS_ATTR((unused)),
+			     int ref_offset EXT2FS_ATTR((unused)), 
+			     void *priv_data EXT2FS_ATTR((unused)))
 {
 	ext2fs_mark_block_bitmap(meta_block_map, *block_nr);
 	return 0;
 }
 
-static int process_file_block(ext2_filsys fs, blk_t *block_nr,
-			     e2_blkcnt_t blockcnt, blk_t ref_block,
-			     int ref_offset, void *priv_data)
+static int process_file_block(ext2_filsys fs EXT2FS_ATTR((unused)), 
+			      blk_t *block_nr,
+			      e2_blkcnt_t blockcnt, 
+			      blk_t ref_block EXT2FS_ATTR((unused)),
+			      int ref_offset EXT2FS_ATTR((unused)), 
+			      void *priv_data EXT2FS_ATTR((unused)))
 {
 	if (blockcnt < 0) {
 		ext2fs_mark_block_bitmap(meta_block_map, *block_nr);
@@ -227,7 +236,7 @@ static int process_file_block(ext2_filsys fs, blk_t *block_nr,
 static void mark_table_blocks(ext2_filsys fs)
 {
 	blk_t	block, b;
-	int	i,j;
+	unsigned int	i,j;
 	
 	block = fs->super->s_first_data_block;
 	/*
@@ -249,7 +258,7 @@ static void mark_table_blocks(ext2_filsys fs)
 		 */
 		if (fs->group_desc[i].bg_inode_table) {
 			for (j = 0, b = fs->group_desc[i].bg_inode_table;
-			     j < fs->inode_blocks_per_group;
+			     j < (unsigned) fs->inode_blocks_per_group;
 			     j++, b++)
 				ext2fs_mark_block_bitmap(meta_block_map, b);
 		}
@@ -476,7 +485,7 @@ int main (int argc, char ** argv)
         if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
-		printf(_("Couldn't find valid filesystem superblock.\n"));
+		fputs(_("Couldn't find valid filesystem superblock.\n"), stdout);
 		exit(1);
 	}
 

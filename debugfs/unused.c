@@ -24,11 +24,11 @@ extern char *optarg;
 
 #include "debugfs.h"
 
-void do_dump_unused(int argc, char **argv)
+void do_dump_unused(int argc EXT2FS_ATTR((unused)), char **argv)
 {
 	unsigned long	blk;
 	unsigned char buf[32768];
-	int	i;
+	unsigned int	i;
 	errcode_t	retval;
 
 	for (blk=current_fs->super->s_first_data_block;

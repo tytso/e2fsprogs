@@ -49,7 +49,7 @@ struct ext2_icount {
 	ext2_ino_t		count;
 	ext2_ino_t		size;
 	ext2_ino_t		num_inodes;
-	int			cursor;
+	ext2_ino_t		cursor;
 	struct ext2_icount_el	*list;
 };
 
@@ -68,13 +68,13 @@ void ext2fs_free_icount(ext2_icount_t icount)
 	ext2fs_free_mem(&icount);
 }
 
-errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
+errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, unsigned int size,
 				ext2_icount_t hint, ext2_icount_t *ret)
 {
 	ext2_icount_t	icount;
 	errcode_t	retval;
 	size_t		bytes;
-	int		i;
+	ext2_ino_t	i;
 
 	if (hint) {
 		EXT2_CHECK_MAGIC(hint, EXT2_ET_MAGIC_ICOUNT);
@@ -148,7 +148,8 @@ errout:
 	return(retval);
 }
 
-errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, int size,
+errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, 
+			       unsigned int size,
 			       ext2_icount_t *ret)
 {
 	return ext2fs_create_icount2(fs, flags, size, 0, ret);
@@ -273,7 +274,7 @@ static struct ext2_icount_el *get_icount_el(ext2_icount_t icount,
 errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *out)
 {
 	errcode_t	ret = 0;
-	int		i;
+	unsigned int	i;
 	const char *bad = "bad icount";
 	
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);

@@ -33,7 +33,8 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 {
 	errcode_t	errcode;
 	struct ext2_dir_entry *dirent;
-	int		thislen, col = 0, offset = 0;
+	int		thislen, col = 0;
+	unsigned int	offset = 0;
 	char		name[EXT2_NAME_LEN];
 	char		tmp[EXT2_NAME_LEN + 16];
 	blk_t		pblk;
@@ -341,13 +342,15 @@ void do_dirsearch(int argc, char *argv[])
 
 
 static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
-			    e2_blkcnt_t blockcnt, blk_t ref_blk, 
-			    int ref_offset, void *priv_data)
+			    e2_blkcnt_t blockcnt, 
+			    blk_t ref_blk EXT2FS_ATTR((unused)),
+			    int ref_offset EXT2FS_ATTR((unused)),
+			    void *priv_data)
 {
 	struct process_block_struct *p;
 	struct ext2_dir_entry *dirent;
 	errcode_t	       	errcode;
-	int			offset = 0;
+	unsigned int		offset = 0;
 
 	if (blockcnt < 0)
 		return 0;
@@ -357,7 +360,7 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 	errcode = io_channel_read_blk(current_fs->io, *blocknr, 1, p->buf);
 	if (errcode) {
 		com_err("search_dir_block", errcode,
-			"while reading block %lu", *blocknr);
+			"while reading block %lu", (unsigned long) *blocknr);
 		return BLOCK_ABORT;
 	}
 

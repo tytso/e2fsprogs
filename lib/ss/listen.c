@@ -28,7 +28,7 @@ static ss_data *current_info;
 static jmp_buf listen_jmpb;
 static sigret_t (*sig_cont)(int);
 
-static sigret_t print_prompt(int sig)
+static sigret_t print_prompt(int sig __SS_ATTR((unused)))
 {
     if (current_info->redisplay)
 	    (*current_info->redisplay)();
@@ -38,7 +38,7 @@ static sigret_t print_prompt(int sig)
     }
 }
 
-static sigret_t listen_int_handler(int sig)
+static sigret_t listen_int_handler(int sig __SS_ATTR((unused)))
 {
     putc('\n', stdout);
     signal(SIGINT, listen_int_handler);
@@ -133,7 +133,9 @@ void ss_abort_subsystem(int sci_idx, int code)
     
 }
 
-void ss_quit(int argc, const char * const *argv, int sci_idx, pointer infop)
+void ss_quit(int argc __SS_ATTR((unused)), 
+	     const char * const *argv __SS_ATTR((unused)), 
+	     int sci_idx, pointer infop __SS_ATTR((unused)))
 {
     ss_abort_subsystem(sci_idx, 0);
 }
@@ -185,7 +187,8 @@ static char *cmd_generator(const char *text, int state)
 	return 0;
 }
 
-char **ss_rl_completion(const char *text, int start, int end)
+char **ss_rl_completion(const char *text, int start, 
+			int end __SS_ATTR((unused)))
 {
 	if ((start == 0) && current_info->rl_completion_matches)
 		return (*current_info->rl_completion_matches)

@@ -79,15 +79,15 @@ struct out_dir {
 static int fill_dir_block(ext2_filsys fs,
 			  blk_t	*block_nr,
 			  e2_blkcnt_t blockcnt,
-			  blk_t ref_block,
-			  int ref_offset, 
+			  blk_t ref_block EXT2FS_ATTR((unused)),
+			  int ref_offset EXT2FS_ATTR((unused)),
 			  void *priv_data)
 {
 	struct fill_dir_struct	*fd = (struct fill_dir_struct *) priv_data;
 	struct hash_entry 	*new_array, *ent;
 	struct ext2_dir_entry 	*dirent;
 	char			*dir;
-	int			offset, dir_offset;
+	unsigned int		offset, dir_offset;
 	
 	if (blockcnt < 0)
 		return 0;
@@ -589,8 +589,8 @@ struct write_dir_struct {
 static int write_dir_block(ext2_filsys fs,
 			   blk_t	*block_nr,
 			   e2_blkcnt_t blockcnt,
-			   blk_t ref_block,
-			   int ref_offset, 
+			   blk_t ref_block EXT2FS_ATTR((unused)),
+			   int ref_offset EXT2FS_ATTR((unused)), 
 			   void *priv_data)
 {
 	struct write_dir_struct	*wd = (struct write_dir_struct *) priv_data;

@@ -28,7 +28,7 @@ struct ea_refcount_el {
 struct ea_refcount {
 	blk_t		count;
 	blk_t		size;
-	int		cursor;
+	blk_t		cursor;
 	struct ea_refcount_el	*list;
 };
 
@@ -83,7 +83,7 @@ errout:
  */
 static void refcount_collapse(ext2_refcount_t refcount)
 {
-	int	i, j;
+	unsigned int	i, j;
 	struct ea_refcount_el	*list;
 
 	list = refcount->list;

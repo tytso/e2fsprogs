@@ -60,7 +60,7 @@ struct process_block_struct {
 	struct problem_context *pctx;
 	int		truncating;
 	int		truncate_offset;
-	blk_t		truncate_block;
+	e2_blkcnt_t	truncate_block;
 	int		truncated_blocks;
 	int		abort;
 	errcode_t	errcode;
@@ -68,7 +68,9 @@ struct process_block_struct {
 
 static int release_inode_block(ext2_filsys fs,
 			       blk_t	*block_nr,
-			       int blockcnt,
+			       e2_blkcnt_t blockcnt,
+			       blk_t	ref_blk EXT2FS_ATTR((unused)),
+			       int	ref_offset EXT2FS_ATTR((unused)),
 			       void *priv_data)
 {
 	struct process_block_struct *pb;
@@ -180,7 +182,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	pb.pctx = pctx;
 	if (inode->i_links_count) {
 		pb.truncating = 1;
-		pb.truncate_block = (blk_t)
+		pb.truncate_block = (e2_blkcnt_t)
 			((((long long)inode->i_size_high << 32) +
 			  inode->i_size + fs->blocksize - 1) /
 			 fs->blocksize);
@@ -191,7 +193,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		pb.truncate_offset = 0;
 	}
 	pb.truncated_blocks = 0;
-	retval = ext2fs_block_iterate(fs, ino, BLOCK_FLAG_DEPTH_TRAVERSE, 
+	retval = ext2fs_block_iterate2(fs, ino, BLOCK_FLAG_DEPTH_TRAVERSE, 
 				      block_buf, release_inode_block, &pb);
 	if (retval) {
 		com_err("release_inode_blocks", retval,
@@ -384,7 +386,7 @@ void check_super_block(e2fsck_t ctx)
 		}
 	}
 
-	if (sb->s_log_block_size != sb->s_log_frag_size) {
+	if (sb->s_log_block_size != (__u32) sb->s_log_frag_size) {
 		pctx.blk = EXT2_BLOCK_SIZE(sb);
 		pctx.blk2 = EXT2_FRAG_SIZE(sb);
 		fix_problem(ctx, PR_0_NO_FRAGMENTS, &pctx);

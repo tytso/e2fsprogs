@@ -611,9 +611,9 @@ struct fix_dotdot_struct {
 };
 
 static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
-			   int	offset,
-			   int	blocksize,
-			   char	*buf,
+			   int	offset EXT2FS_ATTR((unused)),
+			   int	blocksize EXT2FS_ATTR((unused)),
+			   char	*buf EXT2FS_ATTR((unused)),
 			   void	*priv_data)
 {
 	struct fix_dotdot_struct *fp = (struct fix_dotdot_struct *) priv_data;
@@ -691,8 +691,8 @@ struct expand_dir_struct {
 static int expand_dir_proc(ext2_filsys fs,
 			   blk_t	*blocknr,
 			   e2_blkcnt_t	blockcnt,
-			   blk_t ref_block,
-			   int ref_offset, 
+			   blk_t ref_block EXT2FS_ATTR((unused)),
+			   int ref_offset EXT2FS_ATTR((unused)),
 			   void	*priv_data)
 {
 	struct expand_dir_struct *es = (struct expand_dir_struct *) priv_data;

@@ -20,6 +20,12 @@
 
 #define NDEBUG
 
+#ifdef __GNUC__
+#define EXT2FS_ATTR(x) __attribute__(x)
+#else
+#define EXT2FS_ATTR(x)
+#endif
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <assert.h>
@@ -963,12 +969,12 @@ int dict_contains(dict_t *dict, dnode_t *node)
     return verify_dict_has_node(dict_nil(dict), dict_root(dict), node);
 }
 
-static dnode_t *dnode_alloc(void *context)
+static dnode_t *dnode_alloc(void *context EXT2FS_ATTR((unused)))
 {
     return malloc(sizeof *dnode_alloc(NULL));
 }
 
-static void dnode_free(dnode_t *node, void *context)
+static void dnode_free(dnode_t *node, void *context EXT2FS_ATTR((unused)))
 {
     free(node);
 }

@@ -24,12 +24,12 @@ struct expand_dir_struct {
 	errcode_t	err;
 };
 
-static int expand_dir_proc(ext2_filsys		fs,
-			   blk_t		*blocknr,
-			   e2_blkcnt_t		blockcnt,
-			   blk_t		ref_block,
-			   int			ref_offset,
-			   void			*priv_data)
+static int expand_dir_proc(ext2_filsys	fs,
+			   blk_t	*blocknr,
+			   e2_blkcnt_t	blockcnt,
+			   blk_t	ref_block EXT2FS_ATTR((unused)),
+			   int		ref_offset EXT2FS_ATTR((unused)),
+			   void		*priv_data)
 {
 	struct expand_dir_struct *es = (struct expand_dir_struct *) priv_data;
 	blk_t	new_blk;

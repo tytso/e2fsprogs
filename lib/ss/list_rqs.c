@@ -17,26 +17,18 @@
 
 typedef void sigret_t;
 
-#ifdef lint     /* "lint returns a value which is sometimes ignored" */
-#define DONT_USE(x)     x=x;
-#else /* !lint */
-#define DONT_USE(x)     ;
-#endif /* lint */
-
 static char const twentyfive_spaces[26] =
     "                         ";
 static char const NL[2] = "\n";
 
-void ss_list_requests(argc, argv, sci_idx, info_ptr)
-    int argc;
-    char const * const * argv;
-    int sci_idx;
-    pointer info_ptr;
+void ss_list_requests(int argc __SS_ATTR((unused)),
+		      const char * const *argv __SS_ATTR((unused)),
+		      int sci_idx, void *infop __SS_ATTR((unused)))
 {
-    register ss_request_entry *entry;
-    register char const * const *name;
-    register int spacing;
-    register ss_request_table **table;
+    ss_request_entry *entry;
+    char const * const *name;
+    int spacing;
+    ss_request_table **table;
 
     char buffer[BUFSIZ];
     FILE *output;
@@ -46,9 +38,6 @@ void ss_list_requests(argc, argv, sci_idx, info_ptr)
 #ifndef NO_FORK
     int waitb;
 #endif
-
-    DONT_USE(argc);
-    DONT_USE(argv);
 
     sigemptyset(&igmask);
     sigaddset(&igmask, SIGINT);
@@ -69,7 +58,7 @@ void ss_list_requests(argc, argv, sci_idx, info_ptr)
             if (entry->flags & SS_OPT_DONT_LIST)
                 continue;
             for (name = entry->command_names; *name; name++) {
-                register int len = strlen(*name);
+                int len = strlen(*name);
                 strncat(buffer, *name, len);
                 spacing += len + 2;
                 if (name[1]) {

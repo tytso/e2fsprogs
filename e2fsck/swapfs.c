@@ -110,7 +110,8 @@ static void swap_inode_blocks(e2fsck_t ctx, ext2_ino_t ino, char *block_buf,
 static void swap_inodes(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	int			i, group;
+	dgrp_t			group;
+	unsigned int		i;
 	ext2_ino_t		ino = 1;
 	char 			*buf, *block_buf;
 	errcode_t		retval;

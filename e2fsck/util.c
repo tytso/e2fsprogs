@@ -70,7 +70,8 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
 	return ret;
 }
 
-char *string_copy(e2fsck_t ctx, const char *str, int len)
+char *string_copy(e2fsck_t ctx EXT2FS_ATTR((unused)), 
+		  const char *str, int len)
 {
 	char	*ret;
 	
