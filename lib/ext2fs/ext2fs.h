@@ -159,7 +159,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_SEEK_END	2
 
 /*
- * Flags for the ext2_filsys structure
+ * Flags for the ext2_filsys structure and for ext2fs_open()
  */
 #define EXT2_FLAG_RW			0x01
 #define EXT2_FLAG_CHANGED		0x02
@@ -173,6 +173,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_MASTER_SB_ONLY	0x200
 #define EXT2_FLAG_FORCE			0x400
 #define EXT2_FLAG_SUPER_ONLY		0x800
+#define EXT2_FLAG_JOURNAL_DEV_OK	0x1000
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is
@@ -412,9 +413,11 @@ typedef struct ext2_icount *ext2_icount_t;
 #endif
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE|\
 					 EXT2_FEATURE_INCOMPAT_COMPRESSION|\
+					 EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|\
 					 EXT3_FEATURE_INCOMPAT_RECOVER)
 #else
 #define EXT2_LIB_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE|\
+					 EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|\
 					 EXT3_FEATURE_INCOMPAT_RECOVER)
 #endif
 #define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|\
@@ -717,8 +720,11 @@ extern errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum
 			      const char *name);
 
 /* mkjournal.c */
-extern errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
-					   blk_t size, int flags);
+extern errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
+						  __u32 size, int flags,
+						  char  **ret_jsb);
+extern errcode_t ext2fs_add_journal_device(ext2_filsys fs,
+					   ext2_filsys journal_dev);
 extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size,
 					  int flags);
 

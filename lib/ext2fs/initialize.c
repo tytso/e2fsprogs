@@ -144,6 +144,18 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		goto cleanup;
 	}
 
+	/*
+	 * If we're creating an external journal device, we don't need
+	 * to bother with the rest.
+	 */
+	if (super->s_feature_incompat &
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+		fs->group_desc_count = 0;
+		ext2fs_mark_super_dirty(fs);
+		*ret_fs = fs;
+		return 0;
+	}
+
 retry:
 	fs->group_desc_count = (super->s_blocks_count -
 				super->s_first_data_block +

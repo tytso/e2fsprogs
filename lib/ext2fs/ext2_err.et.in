@@ -260,5 +260,8 @@ ec	EXT2_ET_FILE_TOO_BIG,
 ec	EXT2_JOURNAL_NOT_BLOCK,
 	"Supplied journal device not a block device"
 
+ec	EXT2_NO_JOURNAL_SB,
+	"Journal superblock not found"
+
 	end
 

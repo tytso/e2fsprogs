@@ -39,20 +39,45 @@
 #include "ext2fs.h"
 #include "jfs_user.h"
 
-static void init_journal_superblock(journal_superblock_t *jsb,
-				    __u32 blocksize, __u32 size, int flags)
+/*
+ * This function automatically sets up the journal superblock and
+ * returns it as an allocated block.
+ */
+errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
+					   __u32 size, int flags,
+					   char  **ret_jsb)
 {
-	memset (jsb, 0, sizeof(*jsb));
+	errcode_t		retval;
+	journal_superblock_t	*jsb;
+	
+	if ((retval = ext2fs_get_mem(fs->blocksize, (void **) &jsb)))
+		return retval;
+
+	memset (jsb, 0, fs->blocksize);
 
 	jsb->s_header.h_magic = htonl(JFS_MAGIC_NUMBER);
 	if (flags & EXT2_MKJOURNAL_V1_SUPER)
 		jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V1);
 	else
 		jsb->s_header.h_blocktype = htonl(JFS_SUPERBLOCK_V2);
-	jsb->s_blocksize = htonl(blocksize);
+	jsb->s_blocksize = htonl(fs->blocksize);
 	jsb->s_maxlen = htonl(size);
 	jsb->s_first = htonl(1);
 	jsb->s_sequence = htonl(1);
+	memcpy(jsb->s_uuid, fs->super->s_uuid, sizeof(fs->super->s_uuid));
+	jsb->s_nr_users = 1;
+	/*
+	 * Now for the special settings if we're creating an external
+	 * journal device
+	 */
+	if (fs->super->s_feature_incompat &
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+		jsb->s_nr_users = 0;
+		jsb->s_first = htonl(fs->super->s_first_data_block+2);
+	}
+
+	*ret_jsb = (char *) jsb;
+	return 0;
 }
 
 /*
@@ -60,34 +85,27 @@ static void init_journal_superblock(journal_superblock_t *jsb,
  * for creating external journals and creating journals on live
  * filesystems.
  */
-static errcode_t write_journal_file(ext2_filsys fs, char *device,
+static errcode_t write_journal_file(ext2_filsys fs, char *filename,
 				    blk_t size, int flags)
 {
 	errcode_t	retval;
 	char		*buf = 0;
-	journal_superblock_t	jsb;
 	int		i, fd, ret_size;
 
-	init_journal_superblock(&jsb, fs->blocksize, size, flags);
+	if ((retval = ext2fs_create_journal_superblock(fs, size, flags, &buf)))
+		return retval;
 
-	/* Create a block buffer */
-	buf = malloc(fs->blocksize);
-	if (!buf)
-		return ENOMEM;
-
-	/* Open the device */
-	if ((fd = open(device, O_WRONLY)) < 0) {
+	/* Open the device or journal file */
+	if ((fd = open(filename, O_WRONLY)) < 0) {
 		retval = errno;
 		goto errout;
 	}
 
 	/* Write the superblock out */
-	memset(buf, 0, fs->blocksize);
-	memcpy(buf, &jsb, sizeof(jsb));
 	retval = EXT2_ET_SHORT_WRITE;
 	ret_size = write(fd, buf, fs->blocksize);
 	if (ret_size < 0) {
-		errno = retval;
+		retval = errno;
 		goto errout;
 	}
 	if (ret_size != fs->blocksize)
@@ -107,7 +125,7 @@ static errcode_t write_journal_file(ext2_filsys fs, char *device,
 
 	retval = 0;
 errout:
-	free(buf);
+	ext2fs_free_mem((void **) &buf);
 	return retval;
 }
 
@@ -177,14 +195,14 @@ static int mkjournal_proc(ext2_filsys		fs,
 static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 				     blk_t size, int flags)
 {
-	journal_superblock_t	jsb;
+	char			*buf;
 	errcode_t		retval;
 	struct ext2_inode	inode;
 	struct mkjournal_struct	es;
-	char			*buf;
 
-	init_journal_superblock(&jsb, fs->blocksize, size, flags);
-
+	if ((retval = ext2fs_create_journal_superblock(fs, size, flags, &buf)))
+		return retval;
+	
 	if ((retval = ext2fs_read_bitmaps(fs)))
 		return retval;
 
@@ -194,14 +212,6 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	if (inode.i_blocks > 0)
 		return EEXIST;
 
-	/* Create the block buffer */
-	buf = malloc(fs->blocksize);
-	if (!buf)
-		return ENOMEM;
-
-	memset(buf, 0, fs->blocksize);
-	memcpy(buf, &jsb, sizeof(jsb));
-
 	es.num_blocks = size;
 	es.newblocks = 0;
 	es.buf = buf;
@@ -209,12 +219,13 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 
 	retval = ext2fs_block_iterate2(fs, journal_ino, BLOCK_FLAG_APPEND,
 				       0, mkjournal_proc, &es);
-	free(buf);
-	if (es.err)
-		return es.err;
+	if (es.err) {
+		retval = es.err;
+		goto errout;
+	}
 
 	if ((retval = ext2fs_read_inode(fs, journal_ino, &inode)))
-		return retval;
+		goto errout;
 
  	inode.i_size += fs->blocksize * size;
 	inode.i_blocks += (fs->blocksize / 512) * es.newblocks;
@@ -223,44 +234,65 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	inode.i_mode = LINUX_S_IFREG | 0600;
 
 	if ((retval = ext2fs_write_inode(fs, journal_ino, &inode)))
-		return retval;
+		goto errout;
+	retval = 0;
 
-	return 0;
+errout:
+	ext2fs_free_mem((void **) &buf);
+	return retval;
 }
 
 /*
  * This function adds a journal device to a filesystem
  */
-errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
-				    blk_t size, int flags)
+errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 {
 	struct stat	st;
 	errcode_t	retval;
-	blk_t		dev_size;
+	char		buf[1024];
+	journal_superblock_t	*jsb;
+	int		i;
+	__u32		nr_users;
 
 	/* Make sure the device exists and is a block device */
-	if (stat(device, &st) < 0)
+	if (stat(fs->device_name, &st) < 0)
 		return errno;
+	
 	if (!S_ISBLK(st.st_mode))
 		return EXT2_JOURNAL_NOT_BLOCK;	/* Must be a block device */
 
-	/* Get the size of the device */
-	if ((retval = ext2fs_get_device_size(device, fs->blocksize,
-					     &dev_size)))
+	/* Get the journal superblock */
+	if ((retval = io_channel_read_blk(journal_dev->io, 1, -1024, buf)))
 		return retval;
 
-	if (!size)
-		size = dev_size; /* Default to the size of the device */
-	else if (size > dev_size)
-		return EINVAL;	/* Requested size bigger than device */
+	jsb = (journal_superblock_t *) buf;
+	if ((jsb->s_header.h_magic != (unsigned) ntohl(JFS_MAGIC_NUMBER)) ||
+	    (jsb->s_header.h_blocktype != (unsigned) ntohl(JFS_SUPERBLOCK_V2)))
+		return EXT2_NO_JOURNAL_SB;
 
-	retval = write_journal_file(fs, device, size, flags);
-	if (retval)
+	if (ntohl(jsb->s_blocksize) != fs->blocksize)
+		return EXT2_ET_UNEXPECTED_BLOCK_SIZE;
+
+	/* Check and see if this filesystem has already been added */
+	nr_users = ntohl(jsb->s_nr_users);
+	for (i=0; i < nr_users; i++) {
+		if (memcmp(fs->super->s_uuid,
+			   &jsb->s_users[i*16], 16) == 0)
+			break;
+	}
+	if (i >= nr_users) {
+		memcpy(&jsb->s_users[nr_users*16],
+		       fs->super->s_uuid, 16);
+		jsb->s_nr_users = htonl(nr_users+1);
+	}
+
+	/* Writeback the journal superblock */
+	if ((retval = io_channel_write_blk(journal_dev->io, 1, -1024, buf)))
 		return retval;
 	
 	fs->super->s_journal_inum = 0;
 	fs->super->s_journal_dev = st.st_rdev;
-	memset(fs->super->s_journal_uuid, 0,
+	memcpy(fs->super->s_journal_uuid, jsb->s_uuid,
 	       sizeof(fs->super->s_journal_uuid));
 	fs->super->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 	ext2fs_mark_super_dirty(fs);

@@ -138,6 +138,12 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			retval = EXT2_ET_RO_UNSUPP_FEATURE;
 			goto cleanup;
 		}
+		if (!(flags & EXT2_FLAG_JOURNAL_DEV_OK) &&
+		    (fs->super->s_feature_incompat &
+		     EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+			retval = EXT2_ET_UNSUPP_FEATURE;
+			goto cleanup;
+		}
 	}
 	
 	fs->blocksize = EXT2_BLOCK_SIZE(fs->super);
@@ -160,6 +166,17 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	 * Set the blocksize to the filesystem's blocksize.
 	 */
 	io_channel_set_blksize(fs->io, fs->blocksize);
+
+	/*
+	 * If this is an external journal device, don't try to read
+	 * the group descriptors, because they're not there.
+	 */
+	if (fs->super->s_feature_incompat &
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+		fs->group_desc_count = 0;
+		*ret_fs = fs;
+		return 0;
+	}
 	
 	/*
 	 * Read group descriptors

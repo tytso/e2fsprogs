@@ -1,3 +1,30 @@
+2001-01-15  Theodore Ts'o  <tytso@valinux.com>
+
+	* initialize.c (ext2fs_initialize): Add support for initializing
+		the ext2 superblock for external journal devices.  This
+		basically means we don't bother to allocate any block
+		group descriptors.
+
+	* openfs.c (ext2fs_open): Only open external journal devices if
+		the new flag EXT2_FLAG_JOURNAL_DEV_OK is passed to
+		ext2fs_open.  When opening such devices, don't try to read
+		the block group descriptors, since they're not there.
+
+	* ext2_err.et.in (EXT2_NO_JOURNAL_SB): Add new error code 
+	
+	* mkjournal.c: Export a new function,
+		ext2fs_create_journal_superblock(), which allocates and
+		returns a buffer containing a journal superblock.  This is
+		needed by mke2fs to create an external journal.  Rewrote
+		ext2fs_add_journal_device() so that it no longer creates
+		the external journal, but rather adds a filesystem to an
+		existing external journal.  It handles all of the UUID
+		manipulation.
+
+	* ext2fs.h: List the EXT3_FEATURE_JOURNAL_DEV as a flag supported
+		by the library.  Define the EXT2_FLAG_JOURNAL_DEV_OK.
+		Changed function prototype for ext2fs_add_journal_device().
+		
 2001-01-14  Theodore Ts'o  <tytso@valinux.com>
 
 	* closefs.c (ext2fs_flush): Don't write out anything beyond the
