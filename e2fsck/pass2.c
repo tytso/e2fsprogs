@@ -48,7 +48,6 @@
  */
 static void deallocate_inode(e2fsck_t ctx, ino_t ino,
 			     char* block_buf);
-static int process_bad_inode(e2fsck_t ctx, ino_t dir, ino_t ino);
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry *dir_blocks_info,
 			   void *priv_data);
@@ -451,7 +450,8 @@ static int check_dir_block(ext2_filsys fs,
 		if (ctx->inode_bad_map &&
 		    ext2fs_test_inode_bitmap(ctx->inode_bad_map,
 					     dirent->inode)) {
-			if (process_bad_inode(ctx, ino, dirent->inode)) {
+			if (e2fsck_process_bad_inode(ctx, ino,
+						     dirent->inode)) {
 				dirent->inode = 0;
 				dir_modified++;
 				goto next;
@@ -585,7 +585,7 @@ static void deallocate_inode(e2fsck_t ctx, ino_t ino,
 	}
 }
 
-static int process_bad_inode(e2fsck_t ctx, ino_t dir, ino_t ino)
+extern int e2fsck_process_bad_inode(e2fsck_t ctx, ino_t dir, ino_t ino)
 {
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode	inode;

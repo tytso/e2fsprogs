@@ -123,6 +123,8 @@ void e2fsck_pass4(e2fsck_t ctx)
 		ext2fs_icount_fetch(ctx->inode_link_info, i, &link_count);
 		ext2fs_icount_fetch(ctx->inode_count, i, &link_counted);
 		if (link_counted == 0) {
+			if (e2fsck_process_bad_inode(ctx, 0, i))
+				continue;
 			if (disconnect_inode(ctx, i))
 				continue;
 			ext2fs_icount_fetch(ctx->inode_link_info, i,

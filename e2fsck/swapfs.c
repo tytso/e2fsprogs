@@ -114,8 +114,7 @@ static void swap_inodes(e2fsck_t ctx)
 	errcode_t		retval;
 	struct ext2_inode *	inode;
 
-	fs->read_inode = pass1_read_inode;
-	fs->get_blocks = pass1_get_blocks;
+	e2fsck_use_inode_shortcuts(ctx, 1);
 	
 	retval = ext2fs_get_mem(fs->blocksize * fs->inode_blocks_per_group,
 				(void **) &buf);
@@ -179,8 +178,7 @@ static void swap_inodes(e2fsck_t ctx)
 	}
 	ext2fs_free_mem((void **) &buf);
 	ext2fs_free_mem((void **) &block_buf);
-	fs->read_inode = 0;
-	fs->get_blocks = 0;
+	e2fsck_use_inode_shortcuts(ctx, 0);
 }
 
 void swap_filesys(e2fsck_t ctx)

@@ -1,4 +1,10 @@
-1999-06-21    <tytso@rsts-11.mit.edu>
+1999-06-23    <tytso@valinux.com>
+
+	* swapfs.c (ext2fs_swap_inode): Add compatibility for Linux 2.3
+		kernels that use i_generation instead of i_version.  Patch
+		supplied by Jon Bright <sircus@sircus.demon.co.uk>.
+
+1999-06-21    <tytso@valinux.com>
 
 	* dir_iterate.c (ext2fs_process_dir_block): Check for corrupted
 		directory entry before calling the callback function.

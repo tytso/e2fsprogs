@@ -208,7 +208,7 @@ There may be some other ones.  Please, report them to the author.
 is part of the e2fsprogs package and is available for anonymous 
 ftp from tsx-11.mit.edu in /pub/linux/packages/ext2fs.
 .SH SEE ALSO
-.BT badblocks (8),
+.BR badblocks (8),
 .BR dumpe2fs (8),
 .BR e2fsck (8),
 .BR tune2fs (8)

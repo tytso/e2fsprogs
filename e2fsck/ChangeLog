@@ -1,4 +1,22 @@
-1999-06-21    <tytso@rsts-11.mit.edu>
+1999-06-25    <tytso@rsts-11.mit.edu>
+
+	* e2fsck.h:
+	* pass1.c (pass1_get_blocks, pass1_read_inode, pass1_write_inode, 
+		pass1_check_directory, e2fsck_use_inode_shortcuts): Make
+		pass1_* be private static functions, and create new
+		function e2fsck_use_inode_shortcuts which sets and clears
+		the inode shortcut functions in the fs structure.
+
+	* e2fsck.h:	
+	* pass2.c (e2fsck_process_bad_inode): Make process_bad_inode() an
+		exported function.
+
+	* pass4.c (e2fsck_pass4): Call e2fsck_process_bad_inode to check
+		if a disconnected inode has any problems before
+		connecting it to /lost+found.  Bug and suggested fix by 
+		Pavel Machek <pavel@bug.ucw.cz>
+
+1999-06-21    <tytso@valinux.com>
 
 	* unix.c (main): Add missing space in the disk write-protected
 		message. 

@@ -239,10 +239,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	mark_table_blocks(ctx);
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
 						    "block interate buffer");
-	fs->get_blocks = pass1_get_blocks;
-	fs->check_directory = pass1_check_directory;
-	fs->read_inode = pass1_read_inode;
-	fs->write_inode = pass1_write_inode;
+	e2fsck_use_inode_shortcuts(ctx, 1);
 	ehandler_operation("doing inode scan");
 	pctx.errcode = ext2fs_open_inode_scan(fs, ctx->inode_buffer_blocks, 
 					      &scan);
@@ -501,10 +498,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	}
 	ext2fs_free_mem((void **) &inodes_to_process);
 endit:
-	fs->get_blocks = 0;
-	fs->check_directory = 0;
-	fs->read_inode = 0;
-	fs->write_inode = 0;
+	e2fsck_use_inode_shortcuts(ctx, 0);
 	
 	ext2fs_free_mem((void **) &block_buf);
 	ext2fs_free_block_bitmap(ctx->block_illegal_map);
@@ -1313,12 +1307,12 @@ static void mark_table_blocks(e2fsck_t ctx)
 }
 	
 /*
- * This subroutines short circuits ext2fs_get_blocks and
+ * Thes subroutines short circuits ext2fs_get_blocks and
  * ext2fs_check_directory; we use them since we already have the inode
  * structure, so there's no point in letting the ext2fs library read
  * the inode again.
  */
-errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
+static errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 	int	i;
@@ -1331,7 +1325,8 @@ errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 	return 0;
 }
 
-errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino, struct ext2_inode *inode)
+static errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino,
+				  struct ext2_inode *inode)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
@@ -1341,7 +1336,7 @@ errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino, struct ext2_inode *inode)
 	return 0;
 }
 
-errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
+static errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
 			    struct ext2_inode *inode)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
@@ -1351,7 +1346,7 @@ errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
 	return EXT2_ET_CALLBACK_NOTHANDLED;
 }
 
-errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino)
+static errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
@@ -1362,3 +1357,23 @@ errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino)
 		return EXT2_ET_NO_DIRECTORY;
 	return 0;
 }
+
+void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool)
+{
+	ext2_filsys fs = ctx->fs;
+
+	if (bool) {
+		fs->get_blocks = pass1_get_blocks;
+		fs->check_directory = pass1_check_directory;
+		fs->read_inode = pass1_read_inode;
+		fs->write_inode = pass1_write_inode;
+		ctx->stashed_ino = 0;
+	} else {
+		fs->get_blocks = 0;
+		fs->check_directory = 0;
+		fs->read_inode = 0;
+		fs->write_inode = 0;
+	}
+}
+
+		

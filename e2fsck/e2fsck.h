@@ -241,15 +241,6 @@ extern void e2fsck_free_context(e2fsck_t ctx);
 extern int e2fsck_run(e2fsck_t ctx);
 
 
-/* pass1.c */
-extern errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino);
-extern errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks);
-extern errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino,
-				  struct ext2_inode *inode);
-extern errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
-				   struct ext2_inode *inode);
-extern int e2fsck_pass1_check_device_inode(struct ext2_inode *inode);
-
 /* badblock.c */
 extern void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 				 int replace_bad_blocks);
@@ -266,6 +257,16 @@ extern struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, int *control);
 /* ehandler.c */
 extern const char *ehandler_operation(const char *op);
 extern void ehandler_init(io_channel channel);
+
+/* pass1.c */
+extern void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool);
+extern int e2fsck_pass1_check_device_inode(struct ext2_inode *inode);
+
+/* pass2.c */
+extern int e2fsck_process_bad_inode(e2fsck_t ctx, ino_t dir, ino_t ino);
+
+/* pass3.c */
+extern int e2fsck_reconnect_file(e2fsck_t ctx, ino_t inode);
 
 /* super.c */
 void check_super_block(e2fsck_t ctx);
@@ -298,7 +299,3 @@ extern void mtrace_print(char *mesg);
 #endif
 extern blk_t get_backup_sb(ext2_filsys fs);
 
-/*
- * pass3.c
- */
-extern int e2fsck_reconnect_file(e2fsck_t ctx, ino_t inode);
