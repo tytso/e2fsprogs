@@ -219,9 +219,9 @@ static int fs_get_fs_size( logical_volume_t * volume,
  * Get the size limits for this volume.
  */
 static int fs_get_fs_limits( logical_volume_t * volume,
-               				 sector_count_t   * min_size,
-               				 sector_count_t   * max_volume_size,
-               				 sector_count_t   * max_object_size)
+               				 sector_count_t   * fs_min_size,
+               				 sector_count_t   * fs_max_size,
+               				 sector_count_t   * vol_max_size)
 {
 	int rc = EINVAL;
 	struct ext2_super_block *sb_ptr = (struct ext2_super_block *) volume->private_data;
@@ -237,13 +237,13 @@ static int fs_get_fs_limits( logical_volume_t * volume,
     rc = fsim_get_ext2_superblock( volume, sb_ptr );
     
     if ( !rc ) {
-	    rc = fsim_get_volume_limits( sb_ptr, min_size, max_volume_size, max_object_size);
-	    LOG_EXTRA("volume:%s, min:%lld, max:%lld\n",EVMS_GET_DEVNAME(volume), *min_size, *max_volume_size);
+	    rc = fsim_get_volume_limits( sb_ptr, fs_min_size, fs_max_size, vol_max_size);
+	    LOG_EXTRA("volume:%s, min:%lld, max:%lld\n",EVMS_GET_DEVNAME(volume), *fs_min_size, *fs_max_size);
 	    LOG_EXTRA("fssize:%lld, vol_size:%lld\n",volume->fs_size,volume->vol_size );
 
-	    if (*min_size > volume->vol_size) {
+	    if (*fs_min_size > volume->vol_size) {
 		    LOG_ERROR("EXT2 FSIM returned min size > volume size, setting min size to volume size\n");
-		    *min_size = volume->vol_size;
+		    *fs_min_size = volume->vol_size;
 	    }
     }
 
@@ -649,7 +649,7 @@ static int fs_init_task( task_context_t * context )
 			/* only mkfs unformatted volumes */
 			if ((volume->file_system_manager == NULL) &&
 			    !EVMS_IS_MOUNTED(volume) &&
-			    (volume->vol_size > MINEXT2)) {
+			    ((volume->vol_size * PBSIZE) > MINEXT2)) {
 				rc = InsertObject(context->acceptable_objects, sizeof(logical_volume_t), volume, VOLUME_TAG, NULL, InsertAtStart, TRUE, (void **)&waste);
 			}
 			break;
@@ -662,7 +662,7 @@ static int fs_init_task( task_context_t * context )
 			break;
 
 		default:
-			rc = ENOSYS;
+			rc = EINVAL;
 			break;
 		}
 	}
@@ -840,6 +840,7 @@ static int fs_init_task( task_context_t * context )
 		break;
 
 	default:
+		rc = EINVAL;
 		break;
 	}
 
@@ -1078,7 +1079,7 @@ static int fs_get_volume_info( logical_volume_t        * volume,
 
 	/* reset limits. */
 	fs_get_fs_limits( volume, &volume->min_fs_size,
-			 &volume->max_vol_size, &volume->max_fs_size);
+			  &volume->max_fs_size, &volume->max_vol_size);
 
 	Info = EngFncs->engine_alloc( sizeof(extended_info_array_t) + ( 5 * sizeof(extended_info_t) ) );
 
@@ -1094,7 +1095,7 @@ static int fs_get_volume_info( logical_volume_t        * volume,
 	SET_STRING_FIELD( Info->info[0].desc, "Ext2 Revision Number.");
 	Info->info[0].type               = EVMS_Type_Unsigned_Int32;
 	Info->info[0].unit               = EVMS_Unit_None;
-	Info->info[0].value.ui64         = sb_ptr->s_rev_level;
+	Info->info[0].value.ui32         = sb_ptr->s_rev_level;
 	Info->info[0].collection_type    = EVMS_Collection_None;
 	memset( &Info->info[0].group, 0, sizeof(group_info_t));
 
@@ -1326,8 +1327,8 @@ static int fs_can_expand_by(logical_volume_t * volume,
 	} 
 	fs_get_fs_limits( volume,	/* reset limits */
 			 &volume->min_fs_size,
-			 &volume->max_vol_size,
-			 &volume->max_fs_size);
+			 &volume->max_fs_size,
+			 &volume->max_vol_size);
 	if (volume->fs_size + *delta > volume->max_fs_size) {
 		*delta = volume->max_fs_size - volume->fs_size;
 	}
@@ -1352,8 +1353,8 @@ static int fs_can_shrink_by(logical_volume_t * volume,
 	} 
 	fs_get_fs_limits( volume,	/* reset limits */
 			 &volume->min_fs_size,
-			 &volume->max_vol_size,
-			 &volume->max_fs_size);
+			 &volume->max_fs_size,
+			 &volume->max_vol_size);
 	if (volume->fs_size - *delta < volume->min_fs_size) {
 		*delta = volume->fs_size - volume->min_fs_size;
 	}
@@ -1411,12 +1412,12 @@ plugin_record_t  ext2_plugrec = {
 					   ENGINE_PLUGIN_API_MINOR_VERION,
 					   ENGINE_PLUGIN_API_PATCH_LEVEL},
 #else
-	required_engine_api_version:      {8, 
-					   0,
-					   0},
-	required_plugin_api_version: {fsim: {8, 
-					   0,
-					   0} },
+	required_engine_api_version:      {ENGINE_SERVICES_API_MAJOR_VERION, 
+					   ENGINE_SERVICES_API_MINOR_VERION,
+					   ENGINE_SERVICES_API_PATCH_LEVEL},
+	required_plugin_api_version: {fsim: {ENGINE_FSIM_API_MAJOR_VERION, 
+					   ENGINE_FSIM_API_MINOR_VERION,
+					   ENGINE_FSIM_API_PATCH_LEVEL} },
 #endif
 	short_name:                       "Ext2/3",
 	long_name:                        "Ext2 File System Interface Module",

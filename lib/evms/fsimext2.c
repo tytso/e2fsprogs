@@ -63,15 +63,11 @@ int fsim_get_volume_limits( struct ext2_super_block * sb,
 	sector_count_t fs_size;
 	int		blk_to_sect;
 
-	/* 
-	 * Since ext2/3 does not yet support shrink or expand,
-	 * all values are actual file system size.
-	 */
 	blk_to_sect = (1 + sb->s_log_block_size);
 	fs_size = sb->s_blocks_count << blk_to_sect;
 	*fs_min_size = (sb->s_blocks_count - sb->s_free_blocks_count) << blk_to_sect;
 	*fs_max_size = (sector_count_t) 1 << (32+blk_to_sect);
-	*vol_max_size = 0xffffffff;
+	*vol_max_size = 0xffffffffff;
 
 	return rc;
 }
@@ -492,6 +488,57 @@ void set_fsck_options( option_array_t * options, char ** argv, logical_volume_t 
     
     return;
 }
+/*
+ * NAME:ext2fs_swap_super
+ *
+ * FUNCTION: Swap all fields in the super block to CPU format.
+ *
+ * PARAMETERS:
+ *      sb   - pointer to superblock
+ *
+ * RETURNS:
+ *        void
+ */                        
+static void ext2fs_swap_super(struct ext2_super_block * sb)
+{
+	sb->s_inodes_count = DISK_TO_CPU32(sb->s_inodes_count);
+	sb->s_blocks_count = DISK_TO_CPU32(sb->s_blocks_count);
+	sb->s_r_blocks_count = DISK_TO_CPU32(sb->s_r_blocks_count);
+	sb->s_free_blocks_count = DISK_TO_CPU32(sb->s_free_blocks_count);
+	sb->s_free_inodes_count = DISK_TO_CPU32(sb->s_free_inodes_count);
+	sb->s_first_data_block = DISK_TO_CPU32(sb->s_first_data_block);
+	sb->s_log_block_size = DISK_TO_CPU32(sb->s_log_block_size);
+	sb->s_log_frag_size = DISK_TO_CPU32(sb->s_log_frag_size);
+	sb->s_blocks_per_group = DISK_TO_CPU32(sb->s_blocks_per_group);
+	sb->s_frags_per_group = DISK_TO_CPU32(sb->s_frags_per_group);
+	sb->s_inodes_per_group = DISK_TO_CPU32(sb->s_inodes_per_group);
+	sb->s_mtime = DISK_TO_CPU32(sb->s_mtime);
+	sb->s_wtime = DISK_TO_CPU32(sb->s_wtime);
+	sb->s_mnt_count = DISK_TO_CPU16(sb->s_mnt_count);
+	sb->s_max_mnt_count = DISK_TO_CPU16(sb->s_max_mnt_count);
+	sb->s_magic = DISK_TO_CPU16(sb->s_magic);
+	sb->s_state = DISK_TO_CPU16(sb->s_state);
+	sb->s_errors = DISK_TO_CPU16(sb->s_errors);
+	sb->s_minor_rev_level = DISK_TO_CPU16(sb->s_minor_rev_level);
+	sb->s_lastcheck = DISK_TO_CPU32(sb->s_lastcheck);
+	sb->s_checkinterval = DISK_TO_CPU32(sb->s_checkinterval);
+	sb->s_creator_os = DISK_TO_CPU32(sb->s_creator_os);
+	sb->s_rev_level = DISK_TO_CPU32(sb->s_rev_level);
+	sb->s_def_resuid = DISK_TO_CPU16(sb->s_def_resuid);
+	sb->s_def_resgid = DISK_TO_CPU16(sb->s_def_resgid);
+	sb->s_first_ino = DISK_TO_CPU32(sb->s_first_ino);
+	sb->s_inode_size = DISK_TO_CPU16(sb->s_inode_size);
+	sb->s_block_group_nr = DISK_TO_CPU16(sb->s_block_group_nr);
+	sb->s_feature_compat = DISK_TO_CPU32(sb->s_feature_compat);
+	sb->s_feature_incompat = DISK_TO_CPU32(sb->s_feature_incompat);
+	sb->s_feature_ro_compat = DISK_TO_CPU32(sb->s_feature_ro_compat);
+	sb->s_algorithm_usage_bitmap = DISK_TO_CPU32(sb->s_algorithm_usage_bitmap);
+	sb->s_journal_inum = DISK_TO_CPU32(sb->s_journal_inum);
+	sb->s_journal_dev = DISK_TO_CPU32(sb->s_journal_dev);
+	sb->s_last_orphan = DISK_TO_CPU32(sb->s_last_orphan);
+
+	return;
+}
 
 
 /*
@@ -520,6 +567,7 @@ int fsim_get_ext2_superblock( logical_volume_t *volume, struct ext2_super_block 
     rc = fsim_rw_diskblocks( fd, EXT2_SUPER_LOC, SIZE_OF_SUPER, sb_ptr, GET );
 
     if( rc == 0 ) {
+	ext2fs_swap_super(sb_ptr);
         /* see if superblock is ext2/3 */
         if (( sb_ptr->s_magic != EXT2_SUPER_MAGIC ) ||
 	    ( sb_ptr->s_rev_level > 1 ))

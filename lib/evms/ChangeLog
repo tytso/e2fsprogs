@@ -1,5 +1,14 @@
 2002-08-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* fs_ext2.c, fsimext2.c: Synchronize with EVMS CVS tree.
+		Fixed up confusion caused by bad parameter names for
+		get_fs_limits().  Added missing conversion of
+		volume->vol_size from sectors to bytes.  Fix up error 
+		returns for unsupported tasks as EINVAL, not ENOSYS.
+		Use logical names for the API version numbers, since 
+		the ABI is much more dependent on the headers.  Add
+		code to byte-swap the superblock if necessary.
+
 	* common.h, dlist.h, enginestructs.h, options.h, plugfuncs.c, 
 		fs_ext2.c: Synchronize with ABI of EVMS 1.1.
 
