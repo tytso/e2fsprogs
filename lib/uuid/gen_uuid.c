@@ -183,14 +183,17 @@ try_again:
 	     (tv.tv_usec < last.tv_usec))) {
 		clock_seq = (clock_seq+1) & 0x1FFF;
 		adjustment = 0;
+		last = tv;
 	} else if ((tv.tv_sec == last.tv_sec) &&
 	    (tv.tv_usec == last.tv_usec)) {
 		if (adjustment >= MAX_ADJUSTMENT)
 			goto try_again;
 		adjustment++;
-	} else
+	} else {
 		adjustment = 0;
-	
+		last = tv;
+	}
+		
 	clock_reg = tv.tv_usec*10 + adjustment;
 	clock_reg += ((unsigned long long) tv.tv_sec)*10000000;
 	clock_reg += (((unsigned long long) 0x01B21DD2) << 32) + 0x13814000;
