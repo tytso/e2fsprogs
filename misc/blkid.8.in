@@ -10,27 +10,24 @@
 blkid \- command\-line utility to locate/print block device attributes
 .SH SYNOPSIS
 .B blkid 
-]...
 [
-.B \-h
+.B \-hpv
 ]
 [
 [
 .B \-c
 .I cachefile
 ]
-.B \-s
-.I savecachefile
+.B \-w
+.I writecachefile
 ]
 [
-.B \-p
+.B \-s
+.I tag
 ]
 [
 .B \-t
-.I token
-]...
-[
-.B \-v
+.IR NAME = value
 ]
 [
 .I device ...
@@ -51,7 +48,6 @@ more devices.
 .SH OPTIONS
 .TP
 .B \-c
-.I <cachefile>
 Read from
 .I cachefile
 instead of reading from the default cache file
@@ -71,13 +67,10 @@ cache coherency) and all devices are probed only if the token cannot
 be found in the cache.
 .TP
 .B \-s
-.I tag
-.I tag
-is of the form
-.I NAME
-and the resulting token is shown for each (specified) device that has
-such a tag.  It is possible to specify multiple
-.I tag
+Show only the tags for each (specified) device that match
+.IR tag .
+It is possible to specify multiple
+.B \-s 
 options.  If no tag is specified, then all tokens are shown for all
 (specified) devices.
 In order to just refresh the cache without showing any tokens use
@@ -85,13 +78,13 @@ In order to just refresh the cache without showing any tokens use
 with no other options.
 .TP
 .B \-t
-.I token
-.I token
-is of the form
-.IB NAME = value
-and that specific token is searched for in the cache or among all visible
-block devices and additionally any specified devices.  If that token is
-not found, no output is shown.  Common values for
+Search the blkid cache (plus any devices specifed on the command line) 
+for all visible block devices with tokens named
+.I NAME
+that have the value 
+.IR value ,
+and print the name of any devices that are found.
+Common values for
 .I NAME
 include
 .BR TYPE ,
@@ -101,10 +94,6 @@ and
 .TP
 .B \-v
 Display version number and exit.
-.SH RETURN VALUE
-The UUID of the form 1b4e28ba-2fa1-11d2-883f-b9a761bde3fb (in
-.BR printf (3)
-format "%08x-%04x-%04x-%04x-%012x") is output to the standard output.
 .TP
 .B \-w
 .I <writecachefile>
@@ -129,8 +118,8 @@ are shown, if they are recognized.
 .SH "RETURN CODE"
 If the specified token was found, or if any tags were shown from (specified)
 devices 0 is returned.  If the specified token was not found, or no
-(specified) devices could be identified return 2.  For usage or other errors
-return 4.
+(specified) devices could be identified, an exit code of 2 is returned.  
+For usage or other errors, an exit code of 4 is returned.
 .SH AUTHOR
 .B blkid
 was written by Andreas Dilger for libblkid.
