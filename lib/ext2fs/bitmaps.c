@@ -174,7 +174,7 @@ errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
 }
 
 errcode_t ext2fs_fudge_inode_bitmap_end(ext2fs_inode_bitmap bitmap,
-					ino_t end, ino_t *oend)
+					ext2_ino_t end, ext2_ino_t *oend)
 {
 	EXT2_CHECK_MAGIC(bitmap, EXT2_ET_MAGIC_INODE_BITMAP);
 	

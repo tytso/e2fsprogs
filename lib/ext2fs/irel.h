@@ -15,10 +15,10 @@ struct ext2_inode_reference {
 };
 
 struct ext2_inode_relocate_entry {
-	ino_t	new;
-	ino_t	orig;
-	__u16	flags;
-	__u16	max_refs;
+	ext2_ino_t	new;
+	ext2_ino_t	orig;
+	__u16		flags;
+	__u16		max_refs;
 };
 
 typedef struct ext2_inode_relocation_table *ext2_irel;
@@ -26,24 +26,24 @@ typedef struct ext2_inode_relocation_table *ext2_irel;
 struct ext2_inode_relocation_table {
 	__u32	magic;
 	char	*name;
-	ino_t	current;
+	ext2_ino_t	current;
 	void	*priv_data;
 
 	/*
 	 * Add an inode relocation entry.
 	 */
-	errcode_t (*put)(ext2_irel irel, ino_t old,
+	errcode_t (*put)(ext2_irel irel, ext2_ino_t old,
 			      struct ext2_inode_relocate_entry *ent);
 	/*
 	 * Get an inode relocation entry.
 	 */
-	errcode_t (*get)(ext2_irel irel, ino_t old,
+	errcode_t (*get)(ext2_irel irel, ext2_ino_t old,
 			      struct ext2_inode_relocate_entry *ent);
 
 	/*
 	 * Get an inode relocation entry by its original inode number
 	 */
-	errcode_t (*get_by_orig)(ext2_irel irel, ino_t orig, ino_t *old,
+	errcode_t (*get_by_orig)(ext2_irel irel, ext2_ino_t orig, ext2_ino_t *old,
 				 struct ext2_inode_relocate_entry *ent);
 
 	/*
@@ -55,21 +55,21 @@ struct ext2_inode_relocation_table {
 	 * The iterator function for the inode relocation entries.
 	 * Returns an inode number of 0 when out of entries.
 	 */
-	errcode_t (*next)(ext2_irel irel, ino_t *old,
+	errcode_t (*next)(ext2_irel irel, ext2_ino_t *old,
 			  struct ext2_inode_relocate_entry *ent);
 
 	/*
 	 * Add an inode reference (i.e., note the fact that a
 	 * particular block/offset contains a reference to an inode)
 	 */
-	errcode_t (*add_ref)(ext2_irel irel, ino_t ino,
+	errcode_t (*add_ref)(ext2_irel irel, ext2_ino_t ino,
 			     struct ext2_inode_reference *ref);
 
 	/*
 	 * Initialize for iterating over the inode references for a
 	 * particular inode.
 	 */
-	errcode_t (*start_iter_ref)(ext2_irel irel, ino_t ino);
+	errcode_t (*start_iter_ref)(ext2_irel irel, ext2_ino_t ino);
 
 	/*
 	 * The iterator function for the inode references for an
@@ -83,13 +83,13 @@ struct ext2_inode_relocation_table {
 	 * Move the inode relocation table from one inode number to
 	 * another.  Note that the inode references also must move.
 	 */
-	errcode_t (*move)(ext2_irel irel, ino_t old, ino_t new);
+	errcode_t (*move)(ext2_irel irel, ext2_ino_t old, ext2_ino_t new);
 
 	/*
 	 * Remove an inode relocation entry, along with all of the
 	 * inode references.
 	 */
-	errcode_t (*delete)(ext2_irel irel, ino_t old);
+	errcode_t (*delete)(ext2_irel irel, ext2_ino_t old);
 
 	/*
 	 * Free the inode relocation table.
@@ -97,7 +97,7 @@ struct ext2_inode_relocation_table {
 	errcode_t (*free)(ext2_irel irel);
 };
 
-errcode_t ext2fs_irel_memarray_create(char *name, ino_t max_inode,
+errcode_t ext2fs_irel_memarray_create(char *name, ext2_ino_t max_inode,
 				    ext2_irel *irel);
 
 #define ext2fs_irel_put(irel, old, ent) ((irel)->put((irel), old, ent))

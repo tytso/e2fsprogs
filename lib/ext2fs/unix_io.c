@@ -215,18 +215,18 @@ static void free_cache(io_channel channel,
  * if the block isn't in the cache, evict the oldest block in the
  * cache and create a new cache entry for the requested block.
  */
-struct unix_cache *find_cached_block(io_channel channel,
-				     struct unix_private_data *data,
-				     unsigned long block,
-				     int get_cache)
+static struct unix_cache *find_cached_block(io_channel channel,
+					    struct unix_private_data *data,
+					    unsigned long block,
+					    int get_cache)
 {
-	struct unix_cache	*cache, *free_cache, *oldest_cache;
+	struct unix_cache	*cache, *unused_cache, *oldest_cache;
 	int			i;
 	
-	free_cache = oldest_cache = 0;
+	unused_cache = oldest_cache = 0;
 	for (i=0, cache = data->cache; i < CACHE_SIZE; i++, cache++) {
 		if (!cache->in_use) {
-			free_cache = cache;
+			unused_cache = cache;
 			continue;
 		}
 		if (cache->block == block) {
@@ -243,8 +243,8 @@ struct unix_cache *find_cached_block(io_channel channel,
 	/*
 	 * Try to allocate cache slot.
 	 */
-	if (free_cache)
-		cache = free_cache;
+	if (unused_cache)
+		cache = unused_cache;
 	else {
 		cache = oldest_cache;
 		if (cache->dirty)
@@ -406,6 +406,7 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 	struct unix_private_data *data;
 	struct unix_cache *cache;
 	errcode_t	retval;
+	char		*cp;
 	int		i, j;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
@@ -422,16 +423,17 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 		return raw_read_blk(channel, data, block, count, buf);
 	}
 
+	cp = buf;
 	while (count > 0) {
 		/* If it's in the cache, use it! */
 		if ((cache = find_cached_block(channel, data, block, 0))) {
 #ifdef DEBUG
 			printf("Using cached block %d\n", block);
 #endif
-			memcpy(buf, cache->buf, channel->block_size);
+			memcpy(cp, cache->buf, channel->block_size);
 			count--;
 			block++;
-			buf += channel->block_size;
+			cp += channel->block_size;
 			continue;
 		}
 		/*
@@ -444,7 +446,7 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 #ifdef DEBUG
 		printf("Reading %d blocks starting at %d\n", i, block);
 #endif
-		if ((retval = raw_read_blk(channel, data, block, i, buf)))
+		if ((retval = raw_read_blk(channel, data, block, i, cp)))
 			return retval;
 		
 		/* Save the results in the cache */
@@ -452,8 +454,8 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 			count--;
 			cache = find_cached_block(channel, data, block++, 1);
 			if (cache)
-				memcpy(cache->buf, buf, channel->block_size);
-			buf += channel->block_size;
+				memcpy(cache->buf, cp, channel->block_size);
+			cp += channel->block_size;
 		}
 	}
 	return 0;
@@ -465,8 +467,8 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 	struct unix_private_data *data;
 	struct unix_cache *cache;
 	errcode_t	retval = 0, retval2;
-	char		*cp;
-	int		i, writethrough;
+	const char	*cp;
+	int		writethrough;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct unix_private_data *) channel->private_data;
@@ -491,6 +493,7 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 	if (writethrough)
 		retval = raw_write_blk(channel, data, block, count, buf);
 	
+	cp = buf;
 	while (count > 0) {
 		cache = find_cached_block(channel, data, block, 1);
 		if (!cache) {
@@ -499,15 +502,15 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 			 * Force the write directly.
 			 */
 			if ((retval2 = raw_write_blk(channel, data, block,
-						1, buf)))
+						1, cp)))
 				retval = retval2;
 		} else {
-			memcpy(cache->buf, buf, channel->block_size);
+			memcpy(cache->buf, cp, channel->block_size);
 			cache->dirty = !writethrough;
 		}
 		count--;
 		block++;
-		buf += channel->block_size;
+		cp += channel->block_size;
 	}
 	return retval;
 }
@@ -516,10 +519,7 @@ static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 				 int size, const void *buf)
 {
 	struct unix_private_data *data;
-	struct unix_cache *cache;
-	errcode_t	retval = 0, retval2;
-	char		*cp;
-	int		i, writethrough;
+	errcode_t	retval = 0;
 	size_t		actual;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);

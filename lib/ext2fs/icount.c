@@ -43,7 +43,7 @@
  */
 
 struct ext2_icount_el {
-	ino_t	ino;
+	ext2_ino_t	ino;
 	__u16	count;
 };
 
@@ -51,9 +51,9 @@ struct ext2_icount {
 	errcode_t		magic;
 	ext2fs_inode_bitmap	single;
 	ext2fs_inode_bitmap	multiple;
-	ino_t			count;
-	ino_t			size;
-	ino_t			num_inodes;
+	ext2_ino_t		count;
+	ext2_ino_t		size;
+	ext2_ino_t		num_inodes;
 	int			cursor;
 	struct ext2_icount_el	*list;
 };
@@ -164,17 +164,17 @@ errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, int size,
  * 	specified position.
  */
 static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
-					    ino_t ino, int pos)
+					    ext2_ino_t ino, int pos)
 {
 	struct ext2_icount_el 	*el;
 	errcode_t		retval;
-	ino_t			new_size = 0;
+	ext2_ino_t			new_size = 0;
 	int			num;
 
 	if (icount->count >= icount->size) {
 		if (icount->count) {
 			new_size = icount->list[(unsigned)icount->count-1].ino;
-			new_size = (ino_t) (icount->count * 
+			new_size = (ext2_ino_t) (icount->count * 
 				((float) new_size / icount->num_inodes));
 		}
 		if (new_size < (icount->size + 100))
@@ -211,11 +211,11 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
  * 	and we can't find an entry, create one in the sorted list.
  */
 static struct ext2_icount_el *get_icount_el(ext2_icount_t icount,
-					    ino_t ino, int create)
+					    ext2_ino_t ino, int create)
 {
 	float	range;
 	int	low, high, mid;
-	ino_t	lowval, highval;
+	ext2_ino_t	lowval, highval;
 
 	if (!icount || !icount->list)
 		return 0;
@@ -289,7 +289,7 @@ errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *out)
 	}
 	for (i=1; i < icount->count; i++) {
 		if (icount->list[i-1].ino >= icount->list[i].ino) {
-			fprintf(out, "%s: list[%d].ino=%ld, list[%d].ino=%ld\n",
+			fprintf(out, "%s: list[%d].ino=%u, list[%d].ino=%u\n",
 				bad, i-1, icount->list[i-1].ino,
 				i, icount->list[i].ino);
 			ret = EXT2_ET_INVALID_ARGUMENT;
@@ -298,7 +298,7 @@ errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *out)
 	return ret;
 }
 
-errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ino_t ino, __u16 *ret)
+errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ext2_ino_t ino, __u16 *ret)
 {
 	struct ext2_icount_el	*el;
 	
@@ -325,7 +325,7 @@ errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ino_t ino, __u16 *ret)
 	return 0;
 }
 
-errcode_t ext2fs_icount_increment(ext2_icount_t icount, ino_t ino,
+errcode_t ext2fs_icount_increment(ext2_icount_t icount, ext2_ino_t ino,
 				  __u16 *ret)
 {
 	struct ext2_icount_el	*el;
@@ -390,7 +390,7 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ino_t ino,
 	return 0;
 }
 
-errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ino_t ino,
+errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ext2_ino_t ino,
 				  __u16 *ret)
 {
 	struct ext2_icount_el	*el;
@@ -433,7 +433,7 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ino_t ino,
 	return 0;
 }
 
-errcode_t ext2fs_icount_store(ext2_icount_t icount, ino_t ino,
+errcode_t ext2fs_icount_store(ext2_icount_t icount, ext2_ino_t ino,
 			      __u16 count)
 {
 	struct ext2_icount_el	*el;
@@ -478,7 +478,7 @@ errcode_t ext2fs_icount_store(ext2_icount_t icount, ino_t ino,
 	return 0;
 }
 
-ino_t ext2fs_get_icount_size(ext2_icount_t icount)
+ext2_ino_t ext2fs_get_icount_size(ext2_icount_t icount)
 {
 	if (!icount || icount->magic != EXT2_ET_MAGIC_ICOUNT)
 		return 0;

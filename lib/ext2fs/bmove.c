@@ -27,7 +27,7 @@
 #include "ext2fsP.h"
 
 struct process_block_struct {
-	ino_t			ino;
+	ext2_ino_t		ino;
 	struct ext2_inode *	inode;
 	ext2fs_block_bitmap	reserve;
 	ext2fs_block_bitmap	alloc_map;
@@ -97,7 +97,7 @@ errcode_t ext2fs_move_blocks(ext2_filsys fs,
 			     ext2fs_block_bitmap alloc_map,
 			     int flags)
 {
-	ino_t	ino;
+	ext2_ino_t	ino;
 	struct ext2_inode inode;
 	errcode_t	retval;
 	struct process_block_struct pb;

@@ -29,7 +29,7 @@
 #define _BMAP_INLINE_
 #endif
 
-extern errcode_t ext2fs_bmap(ext2_filsys fs, ino_t ino,
+extern errcode_t ext2fs_bmap(ext2_filsys fs, ext2_ino_t ino,
 			     struct ext2_inode *inode, 
 			     char *block_buf, int bmap_flags,
 			     blk_t block, blk_t *phys_blk);
@@ -124,7 +124,7 @@ static errcode_t _BMAP_INLINE_ block_tind_bmap(ext2_filsys fs, int flags,
 	return retval;
 }
 
-errcode_t ext2fs_bmap(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
+errcode_t ext2fs_bmap(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 		      char *block_buf, int bmap_flags, blk_t block,
 		      blk_t *phys_blk)
 {

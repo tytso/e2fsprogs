@@ -28,21 +28,21 @@
 #include "ext2fs.h"
 #include "irel.h"
 
-static errcode_t ima_put(ext2_irel irel, ino_t old,
+static errcode_t ima_put(ext2_irel irel, ext2_ino_t old,
 			 struct ext2_inode_relocate_entry *ent);
-static errcode_t ima_get(ext2_irel irel, ino_t old,
+static errcode_t ima_get(ext2_irel irel, ext2_ino_t old,
 			 struct ext2_inode_relocate_entry *ent);
-static errcode_t ima_get_by_orig(ext2_irel irel, ino_t orig, ino_t *old,
+static errcode_t ima_get_by_orig(ext2_irel irel, ext2_ino_t orig, ext2_ino_t *old,
 				 struct ext2_inode_relocate_entry *ent);
 static errcode_t ima_start_iter(ext2_irel irel);
-static errcode_t ima_next(ext2_irel irel, ino_t *old,
+static errcode_t ima_next(ext2_irel irel, ext2_ino_t *old,
 			  struct ext2_inode_relocate_entry *ent);
-static errcode_t ima_add_ref(ext2_irel irel, ino_t ino,
+static errcode_t ima_add_ref(ext2_irel irel, ext2_ino_t ino,
 			     struct ext2_inode_reference *ref);
-static errcode_t ima_start_iter_ref(ext2_irel irel, ino_t ino);
+static errcode_t ima_start_iter_ref(ext2_irel irel, ext2_ino_t ino);
 static errcode_t ima_next_ref(ext2_irel irel, struct ext2_inode_reference *ref);
-static errcode_t ima_move(ext2_irel irel, ino_t old, ino_t new);
-static errcode_t ima_delete(ext2_irel irel, ino_t old);
+static errcode_t ima_move(ext2_irel irel, ext2_ino_t old, ext2_ino_t new);
+static errcode_t ima_delete(ext2_irel irel, ext2_ino_t old);
 static errcode_t ima_free(ext2_irel irel);
 
 /*
@@ -56,15 +56,15 @@ struct inode_reference_entry {
 
 struct irel_ma {
 	__u32 magic;
-	ino_t max_inode;
-	ino_t ref_current;
+	ext2_ino_t max_inode;
+	ext2_ino_t ref_current;
 	int   ref_iter;
-	ino_t	*orig_map;
+	ext2_ino_t	*orig_map;
 	struct ext2_inode_relocate_entry *entries;
 	struct inode_reference_entry *ref_entries;
 };
 
-errcode_t ext2fs_irel_memarray_create(char *name, ino_t max_inode,
+errcode_t ext2fs_irel_memarray_create(char *name, ext2_ino_t max_inode,
 				      ext2_irel *new_irel)
 {
 	ext2_irel		irel = 0;
@@ -94,7 +94,7 @@ errcode_t ext2fs_irel_memarray_create(char *name, ino_t max_inode,
 	memset(ma, 0, sizeof(struct irel_ma));
 	irel->priv_data = ma;
 	
-	size = (size_t) (sizeof(ino_t) * (max_inode+1));
+	size = (size_t) (sizeof(ext2_ino_t) * (max_inode+1));
 	retval = ext2fs_get_mem(size, (void **) &ma->orig_map);
 	if (retval)
 		goto errout;
@@ -138,7 +138,7 @@ errout:
 	return retval;
 }
 
-static errcode_t ima_put(ext2_irel irel, ino_t old,
+static errcode_t ima_put(ext2_irel irel, ext2_ino_t old,
 			struct ext2_inode_relocate_entry *ent)
 {
 	struct inode_reference_entry	*ref_ent;
@@ -179,7 +179,7 @@ static errcode_t ima_put(ext2_irel irel, ino_t old,
 	return 0;
 }
 
-static errcode_t ima_get(ext2_irel irel, ino_t old,
+static errcode_t ima_get(ext2_irel irel, ext2_ino_t old,
 			struct ext2_inode_relocate_entry *ent)
 {
 	struct irel_ma 	*ma;
@@ -193,11 +193,11 @@ static errcode_t ima_get(ext2_irel irel, ino_t old,
 	return 0;
 }
 
-static errcode_t ima_get_by_orig(ext2_irel irel, ino_t orig, ino_t *old,
+static errcode_t ima_get_by_orig(ext2_irel irel, ext2_ino_t orig, ext2_ino_t *old,
 			struct ext2_inode_relocate_entry *ent)
 {
 	struct irel_ma 	*ma;
-	ino_t	ino;
+	ext2_ino_t	ino;
 
 	ma = irel->priv_data;
 	if (orig > ma->max_inode)
@@ -216,7 +216,7 @@ static errcode_t ima_start_iter(ext2_irel irel)
 	return 0;
 }
 
-static errcode_t ima_next(ext2_irel irel, ino_t *old,
+static errcode_t ima_next(ext2_irel irel, ext2_ino_t *old,
 			 struct ext2_inode_relocate_entry *ent)
 {
 	struct irel_ma 	*ma;
@@ -233,7 +233,7 @@ static errcode_t ima_next(ext2_irel irel, ino_t *old,
 	return 0;
 }
 
-static errcode_t ima_add_ref(ext2_irel irel, ino_t ino,
+static errcode_t ima_add_ref(ext2_irel irel, ext2_ino_t ino,
 			     struct ext2_inode_reference *ref)
 {
 	struct irel_ma 	*ma;
@@ -269,7 +269,7 @@ static errcode_t ima_add_ref(ext2_irel irel, ino_t ino,
 	return 0;
 }
 
-static errcode_t ima_start_iter_ref(ext2_irel irel, ino_t ino)
+static errcode_t ima_start_iter_ref(ext2_irel irel, ext2_ino_t ino)
 {
 	struct irel_ma 	*ma;
 
@@ -304,7 +304,7 @@ static errcode_t ima_next_ref(ext2_irel irel,
 }
 
 
-static errcode_t ima_move(ext2_irel irel, ino_t old, ino_t new)
+static errcode_t ima_move(ext2_irel irel, ext2_ino_t old, ext2_ino_t new)
 {
 	struct irel_ma 	*ma;
 
@@ -327,7 +327,7 @@ static errcode_t ima_move(ext2_irel irel, ino_t old, ino_t new)
 	return 0;
 }
 
-static errcode_t ima_delete(ext2_irel irel, ino_t old)
+static errcode_t ima_delete(ext2_irel irel, ext2_ino_t old)
 {
 	struct irel_ma 	*ma;
 
@@ -350,7 +350,7 @@ static errcode_t ima_delete(ext2_irel irel, ino_t old)
 static errcode_t ima_free(ext2_irel irel)
 {
 	struct irel_ma 	*ma;
-	ino_t	ino;
+	ext2_ino_t	ino;
 
 	if (!irel)
 		return 0;

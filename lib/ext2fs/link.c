@@ -26,7 +26,7 @@
 struct link_struct  {
 	const char	*name;
 	int		namelen;
-	ino_t		inode;
+	ext2_ino_t	inode;
 	int		flags;
 	int		done;
 	struct ext2_super_block *sb;
@@ -97,10 +97,10 @@ static int link_proc(struct ext2_dir_entry *dirent,
  * entry filetype.
  */
 #ifdef __TURBOC__
-#pragma argsused
+ #pragma argsused
 #endif
-errcode_t ext2fs_link(ext2_filsys fs, ino_t dir, const char *name, ino_t ino,
-		      int flags)
+errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name, 
+		      ext2_ino_t ino, int flags)
 {
 	errcode_t	retval;
 	struct link_struct ls;

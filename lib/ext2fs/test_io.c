@@ -55,6 +55,8 @@ static errcode_t test_read_blk(io_channel channel, unsigned long block,
 static errcode_t test_write_blk(io_channel channel, unsigned long block,
 				int count, const void *data);
 static errcode_t test_flush(io_channel channel);
+static errcode_t test_write_byte(io_channel channel, unsigned long offset,
+				 int count, const void *buf);
 
 static struct struct_io_manager struct_test_manager = {
 	EXT2_ET_MAGIC_IO_MANAGER,
@@ -64,7 +66,9 @@ static struct struct_io_manager struct_test_manager = {
 	test_set_blksize,
 	test_read_blk,
 	test_write_blk,
-	test_flush
+	test_flush,
+	test_write_byte
+	
 };
 
 io_manager test_io_manager = &struct_test_manager;

@@ -174,7 +174,7 @@ static int mkjournal_proc(ext2_filsys		fs,
 /*
  * This function creates a journal using direct I/O routines.
  */
-static errcode_t write_journal_inode(ext2_filsys fs, ino_t journal_ino,
+static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 				     blk_t size, int flags)
 {
 	journal_superblock_t	jsb;
@@ -275,7 +275,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
 errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 {
 	errcode_t		retval;
-	ino_t			journal_ino;
+	ext2_ino_t		journal_ino;
 	struct stat		st;
 	char			jfile[1024];
 	int			fd, mount_flags;

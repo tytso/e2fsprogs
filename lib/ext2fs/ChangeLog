@@ -1,3 +1,17 @@
+2001-01-10    <tytso@snap.thunk.org>
+
+	* alloc.c, bb_inode.c, bitmaps.c, bitops.h, block.c, bmap.c, 
+		bmove.c, brel.h, cmp_bitmaps.c, dblist.c, dblist_dir.c, 
+		dir_iterate.c, expanddir.c, ext2fs.h, ext2fsP.h, fileio.c,
+		finddev.c, get_pathname.c, icount.c, inode.c, irel.h, 
+		irel_ma.c, ismounted.c, link.c, lookup.c, mkdir.c, 
+		mkjournal.c, namei.c, newdir.c, read_bb_file.c, test_io.c,
+		tst_iscan.c, unix_io.c, unlink.c: Change use of ino_t to
+		ext2_ino_t, to protect applications that attempt to
+		compile -D_FILE_OFFSET_BITS=64, since this inexplicably
+		changes ino_t(!?).  So we use ext2_ino_t  to avoid an
+		unexpected ABI change.
+
 2001-01-05    <tytso@snap.thunk.org>
 
 	* dirblock.c (ext2fs_read_dir_block): Fix a potential case where

@@ -26,7 +26,7 @@
 struct ext2_file {
 	errcode_t		magic;
 	ext2_filsys 		fs;
-	ino_t			ino;
+	ext2_ino_t		ino;
 	struct ext2_inode	inode;
 	int 			flags;
 	ext2_off_t		pos;
@@ -35,7 +35,7 @@ struct ext2_file {
 	char 			*buf;
 };
 
-errcode_t ext2fs_file_open(ext2_filsys fs, ino_t ino,
+errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 			   int flags, ext2_file_t *ret)
 {
 	ext2_file_t 	file;

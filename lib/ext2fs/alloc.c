@@ -37,12 +37,12 @@
  *
  * Should have a special policy for directories.
  */
-errcode_t ext2fs_new_inode(ext2_filsys fs, ino_t dir, int mode,
-			   ext2fs_inode_bitmap map, ino_t *ret)
+errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir, int mode,
+			   ext2fs_inode_bitmap map, ext2_ino_t *ret)
 {
-	ino_t	dir_group = 0;
-	ino_t	i;
-	ino_t	start_inode;
+	ext2_ino_t	dir_group = 0;
+	ext2_ino_t	i;
+	ext2_ino_t	start_inode;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 	

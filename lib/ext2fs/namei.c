@@ -25,13 +25,13 @@
 
 #include "ext2fs.h"
 
-static errcode_t open_namei(ext2_filsys fs, ino_t root, ino_t base,
+static errcode_t open_namei(ext2_filsys fs, ext2_ino_t root, ext2_ino_t base,
 			    const char *pathname, size_t pathlen, int follow,
-			    int link_count, char *buf, ino_t *res_inode);
+			    int link_count, char *buf, ext2_ino_t *res_inode);
 
-static errcode_t follow_link(ext2_filsys fs, ino_t root, ino_t dir,
-			     ino_t inode, int link_count,
-			     char *buf, ino_t *res_inode)
+static errcode_t follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
+			     ext2_ino_t inode, int link_count,
+			     char *buf, ext2_ino_t *res_inode)
 {
 	char *pathname;
 	char *buffer = 0;
@@ -77,15 +77,16 @@ static errcode_t follow_link(ext2_filsys fs, ino_t root, ino_t dir,
  * containing directory, and a pointer to the filename of the file
  * (pointing into the pathname) and the length of the filename.
  */
-static errcode_t dir_namei(ext2_filsys fs, ino_t root, ino_t dir,
+static errcode_t dir_namei(ext2_filsys fs, ext2_ino_t root, ext2_ino_t dir,
 			   const char *pathname, int pathlen,
 			   int link_count, char *buf,
-			   const char **name, int *namelen, ino_t *res_inode)
+			   const char **name, int *namelen,
+			   ext2_ino_t *res_inode)
 {
 	char c;
 	const char *thisname;
 	int len;
-	ino_t inode;
+	ext2_ino_t inode;
 	errcode_t retval;
 
 	if ((c = *pathname) == '/') {
@@ -114,13 +115,13 @@ static errcode_t dir_namei(ext2_filsys fs, ino_t root, ino_t dir,
 	return 0;
 }
 
-static errcode_t open_namei(ext2_filsys fs, ino_t root, ino_t base,
+static errcode_t open_namei(ext2_filsys fs, ext2_ino_t root, ext2_ino_t base,
 			    const char *pathname, size_t pathlen, int follow,
-			    int link_count, char *buf, ino_t *res_inode)
+			    int link_count, char *buf, ext2_ino_t *res_inode)
 {
 	const char *basename;
 	int namelen;
-	ino_t dir, inode;
+	ext2_ino_t dir, inode;
 	errcode_t retval;
 
 #ifdef NAMEI_DEBUG
@@ -151,8 +152,8 @@ static errcode_t open_namei(ext2_filsys fs, ino_t root, ino_t base,
 	return 0;
 }
 
-errcode_t ext2fs_namei(ext2_filsys fs, ino_t root, ino_t cwd,
-		       const char *name, ino_t *inode)
+errcode_t ext2fs_namei(ext2_filsys fs, ext2_ino_t root, ext2_ino_t cwd,
+		       const char *name, ext2_ino_t *inode)
 {
 	char *buf;
 	errcode_t retval;
@@ -170,8 +171,8 @@ errcode_t ext2fs_namei(ext2_filsys fs, ino_t root, ino_t cwd,
 	return retval;
 }
 
-errcode_t ext2fs_namei_follow(ext2_filsys fs, ino_t root, ino_t cwd,
-			      const char *name, ino_t *inode)
+errcode_t ext2fs_namei_follow(ext2_filsys fs, ext2_ino_t root, ext2_ino_t cwd,
+			      const char *name, ext2_ino_t *inode)
 {
 	char *buf;
 	errcode_t retval;
@@ -189,8 +190,8 @@ errcode_t ext2fs_namei_follow(ext2_filsys fs, ino_t root, ino_t cwd,
 	return retval;
 }
 
-errcode_t ext2fs_follow_link(ext2_filsys fs, ino_t root, ino_t cwd,
-			ino_t inode, ino_t *res_inode)
+errcode_t ext2fs_follow_link(ext2_filsys fs, ext2_ino_t root, ext2_ino_t cwd,
+			ext2_ino_t inode, ext2_ino_t *res_inode)
 {
 	char *buf;
 	errcode_t retval;

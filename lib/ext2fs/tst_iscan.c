@@ -141,7 +141,7 @@ static void iterate(void)
 	struct ext2_inode inode;
 	ext2_inode_scan	scan;
 	errcode_t	retval;
-	ino_t		ino;
+	ext2_ino_t	ino;
 
 	retval = ext2fs_open_inode_scan(test_fs, 8, &scan);
 	if (retval) {

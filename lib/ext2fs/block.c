@@ -302,7 +302,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 }
 	
 errcode_t ext2fs_block_iterate2(ext2_filsys fs,
-				ino_t	ino,
+				ext2_ino_t ino,
 				int	flags,
 				char *block_buf,
 				int (*func)(ext2_filsys fs,
@@ -366,7 +366,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 	    !(flags & BLOCK_FLAG_DATA_ONLY)) {
 		ctx.errcode = ext2fs_read_inode(fs, ino, &inode);
 		if (ctx.errcode)
-			goto abort;
+			goto abort_exit;
 		got_inode = 1;
 		if (inode.osd1.hurd1.h_i_translator) {
 			ret |= (*ctx.func)(fs,
@@ -374,7 +374,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 					   BLOCK_COUNT_TRANSLATOR,
 					   0, 0, priv_data);
 			if (ret & BLOCK_ABORT)
-				goto abort;
+				goto abort_exit;
 		}
 	}
 	
@@ -386,31 +386,31 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 			ret |= (*ctx.func)(fs, &blocks[i],
 					    ctx.bcount, 0, i, priv_data);
 			if (ret & BLOCK_ABORT)
-				goto abort;
+				goto abort_exit;
 		}
 	}
 	if (*(blocks + EXT2_IND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
 		ret |= block_iterate_ind(blocks + EXT2_IND_BLOCK,
 					 0, EXT2_IND_BLOCK, &ctx);
 		if (ret & BLOCK_ABORT)
-			goto abort;
+			goto abort_exit;
 	} else
 		ctx.bcount += limit;
 	if (*(blocks + EXT2_DIND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
 		ret |= block_iterate_dind(blocks + EXT2_DIND_BLOCK,
 					  0, EXT2_DIND_BLOCK, &ctx);
 		if (ret & BLOCK_ABORT)
-			goto abort;
+			goto abort_exit;
 	} else
 		ctx.bcount += limit * limit;
 	if (*(blocks + EXT2_TIND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
 		ret |= block_iterate_tind(blocks + EXT2_TIND_BLOCK,
 					  0, EXT2_TIND_BLOCK, &ctx);
 		if (ret & BLOCK_ABORT)
-			goto abort;
+			goto abort_exit;
 	}
 
-abort:
+abort_exit:
 	if (ret & BLOCK_CHANGED) {
 		if (!got_inode) {
 			retval = ext2fs_read_inode(fs, ino, &inode);
@@ -443,7 +443,7 @@ struct xlate {
 };
 
 #ifdef __TURBOC__
-#pragma argsused
+ #pragma argsused
 #endif
 static int xlate_func(ext2_filsys fs, blk_t *blocknr, e2_blkcnt_t blockcnt,
 		      blk_t ref_block, int ref_offset, void *priv_data)
@@ -454,7 +454,7 @@ static int xlate_func(ext2_filsys fs, blk_t *blocknr, e2_blkcnt_t blockcnt,
 }
 
 errcode_t ext2fs_block_iterate(ext2_filsys fs,
-			       ino_t	ino,
+			       ext2_ino_t ino,
 			       int	flags,
 			       char *block_buf,
 			       int (*func)(ext2_filsys fs,

@@ -32,10 +32,10 @@ static EXT2_QSORT_TYPE dir_block_cmp(const void *a, const void *b);
  * the group descriptors.  Of course, the group descriptors could be
  * wrong!
  */
-errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ino_t *ret_num_dirs)
+errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ext2_ino_t *ret_num_dirs)
 {
 	dgrp_t	i;
-	ino_t	num_dirs, max_dirs;
+	ext2_ino_t	num_dirs, max_dirs;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 	
@@ -59,7 +59,7 @@ errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ino_t *ret_num_dirs)
  * helper function for making a new directory block list (for
  * initialize and copy).
  */
-static errcode_t make_dblist(ext2_filsys fs, ino_t size, ino_t count,
+static errcode_t make_dblist(ext2_filsys fs, ext2_ino_t size, ext2_ino_t count,
 			     struct ext2_db_entry *list,
 			     ext2_dblist *ret_dblist)
 {
@@ -158,7 +158,7 @@ errcode_t ext2fs_copy_dblist(ext2_dblist src, ext2_dblist *dest)
 /*
  * Add a directory block to the directory block list
  */
-errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
+errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ext2_ino_t ino, blk_t blk,
 			       int blockcnt)
 {
 	struct ext2_db_entry 	*new_entry;
@@ -191,7 +191,7 @@ errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
 /*
  * Change the directory block to the directory block list
  */
-errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ino_t ino, blk_t blk,
+errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ext2_ino_t ino, blk_t blk,
 			       int blockcnt)
 {
 	dgrp_t			i;
@@ -218,8 +218,8 @@ errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 					    void	*priv_data),
 				void *priv_data)
 {
-	ino_t	i;
-	int	ret;
+	ext2_ino_t	i;
+	int		ret;
 	
 	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
 

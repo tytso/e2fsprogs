@@ -79,7 +79,7 @@ errcode_t ext2fs_read_bb_FILE2(ext2_filsys fs, FILE *f,
 static void call_compat_invalid(ext2_filsys fs, blk_t blk,
 				char *badstr, void *private)
 {
-	void (*invalid)(ext2_filsys fs, blk_t blk);
+	void (*invalid)(ext2_filsys, blk_t);
 
 	invalid = (void (*)(ext2_filsys, blk_t)) private;
 	if (invalid)
@@ -94,7 +94,7 @@ errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 			      ext2_badblocks_list *bb_list,
 			      void (*invalid)(ext2_filsys fs, blk_t blk))
 {
-	return ext2fs_read_bb_FILE2(fs, f, bb_list, invalid,
+	return ext2fs_read_bb_FILE2(fs, f, bb_list, (void *) invalid,
 				    call_compat_invalid);
 }
 

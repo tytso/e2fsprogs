@@ -35,8 +35,8 @@ struct ext2_struct_badblocks_iterate {
 struct ext2_struct_dblist {
 	int			magic;
 	ext2_filsys		fs;
-	ino_t			size;
-	ino_t			count;
+	ext2_ino_t		size;
+	ext2_ino_t		count;
 	int			sorted;
 	struct ext2_db_entry *	list;
 };
@@ -45,7 +45,7 @@ struct ext2_struct_dblist {
  * For directory iterators
  */
 struct dir_context {
-	ino_t		dir;
+	ext2_ino_t		dir;
 	int		flags;
 	char		*buf;
 	int (*func)(struct ext2_dir_entry *dirent,
@@ -53,7 +53,7 @@ struct dir_context {
 		    int	blocksize,
 		    char	*buf,
 		    void	*priv_data);
-	int (*func2)(ino_t	dir,
+	int (*func2)(ext2_ino_t	dir,
 		     int	entry,
 		     struct ext2_dir_entry *dirent,
 		     int	offset,
@@ -77,8 +77,8 @@ struct ext2_inode_cache {
 };
 
 struct ext2_inode_cache_ent {
-	ino_t	ino;
-	struct ext2_inode inode;
+	ext2_ino_t		ino;
+	struct ext2_inode	inode;
 };
 
 /* Function prototypes */

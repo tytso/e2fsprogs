@@ -27,7 +27,7 @@
 #include "ext2fsP.h"
 
 errcode_t ext2fs_dir_iterate(ext2_filsys fs,
-			     ino_t dir,
+			     ext2_ino_t dir,
 			     int flags,
 			     char *block_buf,
 			     int (*func)(struct ext2_dir_entry *dirent,

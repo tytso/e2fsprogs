@@ -28,6 +28,7 @@
 #include <sys/param.h>
 #include <sys/mount.h>
 #endif /* HAVE_GETMNTINFO */
+#include <string.h>
 
 #if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
@@ -120,7 +121,7 @@ static errcode_t check_getmntinfo(const char *file, int *mount_flags,
  * characters.
  */
 #ifdef __TURBOC__
-#pragma argsused
+ #pragma argsused
 #endif
 errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 				  char *mtpt, int mtlen)
@@ -143,7 +144,7 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
  * 
  */
 #ifdef __TURBOC__
-#pragma argsused
+ #pragma argsused
 #endif
 errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags)
 {

@@ -30,8 +30,8 @@
 /*
  * Create new directory block
  */
-errcode_t ext2fs_new_dir_block(ext2_filsys fs, ino_t dir_ino, ino_t parent_ino,
-			       char **block)
+errcode_t ext2fs_new_dir_block(ext2_filsys fs, ext2_ino_t dir_ino,
+			       ext2_ino_t parent_ino, char **block)
 {
 	struct ext2_dir_entry 	*dir = NULL;
 	errcode_t		retval;

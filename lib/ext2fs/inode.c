@@ -32,10 +32,10 @@
 struct ext2_struct_inode_scan {
 	errcode_t		magic;
 	ext2_filsys		fs;
-	ino_t			current_inode;
+	ext2_ino_t		current_inode;
 	blk_t			current_block;
 	dgrp_t			current_group;
-	ino_t			inodes_left;
+	ext2_ino_t		inodes_left;
 	blk_t			blocks_left;
 	dgrp_t			groups_left;
 	blk_t			inode_buffer_blocks;
@@ -108,7 +108,7 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 {
 	ext2_inode_scan	scan;
 	errcode_t	retval;
-	errcode_t (*save_get_blocks)(ext2_filsys f, ino_t ino, blk_t *blocks);
+	errcode_t (*save_get_blocks)(ext2_filsys f, ext2_ino_t ino, blk_t *blocks);
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -381,7 +381,7 @@ static inline int is_empty_scan(ext2_inode_scan scan)
 }
 #endif
 
-errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
+errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ext2_ino_t *ino,
 				struct ext2_inode *inode)
 {
 	errcode_t	retval;
@@ -480,7 +480,7 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 /*
  * Functions to read and write a single inode.
  */
-errcode_t ext2fs_read_inode (ext2_filsys fs, ino_t ino,
+errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
 			     struct ext2_inode * inode)
 {
 	unsigned long 	group, block, block_nr, offset;
@@ -564,7 +564,7 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, ino_t ino,
 	return 0;
 }
 
-errcode_t ext2fs_write_inode(ext2_filsys fs, ino_t ino,
+errcode_t ext2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
 			     struct ext2_inode * inode)
 {
 	unsigned long group, block, block_nr, offset;
@@ -663,7 +663,7 @@ errcode_t ext2fs_write_inode(ext2_filsys fs, ino_t ino,
 	return 0;
 }
 
-errcode_t ext2fs_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
+errcode_t ext2fs_get_blocks(ext2_filsys fs, ext2_ino_t ino, blk_t *blocks)
 {
 	struct ext2_inode	inode;
 	int			i;
@@ -686,7 +686,7 @@ errcode_t ext2fs_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 	return 0;
 }
 
-errcode_t ext2fs_check_directory(ext2_filsys fs, ino_t ino)
+errcode_t ext2fs_check_directory(ext2_filsys fs, ext2_ino_t ino)
 {
 	struct	ext2_inode	inode;
 	errcode_t		retval;

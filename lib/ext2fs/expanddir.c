@@ -89,7 +89,7 @@ static int expand_dir_proc(ext2_filsys		fs,
 		return BLOCK_CHANGED;
 }
 
-errcode_t ext2fs_expand_dir(ext2_filsys fs, ino_t dir)
+errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir)
 {
 	errcode_t	retval;
 	struct expand_dir_struct es;

@@ -31,6 +31,14 @@
 #include <sys/mkdev.h>
 #endif
 
+#if EXT2_FLAT_INCLUDES
+#include "ext2_fs.h"
+#else
+#include <linux/ext2_fs.h>
+#endif
+
+#include "ext2fs.h"
+
 struct dir_list {
 	char	*name;
 	struct dir_list *next;
@@ -39,7 +47,7 @@ struct dir_list {
 /*
  * This function adds an entry to the directory list
  */
-static void add_to_dirlist(char *name, struct dir_list **list)
+static void add_to_dirlist(const char *name, struct dir_list **list)
 {
 	struct dir_list *dp;
 
@@ -89,7 +97,7 @@ static int scan_dir(char *dirname, dev_t device, struct dir_list **list,
 			goto skip_to_next;
 		if (dp->d_name[0] == '.' &&
 		    ((dp->d_name[1] == 0) ||
-		     (dp->d_name[1] == '.') && (dp->d_name[2] == 0)))
+		     ((dp->d_name[1] == '.') && (dp->d_name[2] == 0))))
 			goto skip_to_next;
 		sprintf(path, "%s/%s", dirname, dp->d_name);
 		if (stat(path, &st) < 0)
@@ -149,7 +157,6 @@ char *ext2fs_find_block_device(dev_t device)
 			new_list = 0;
 		}
 	}
-found_it:
 	free_dirlist(&list);
 	free_dirlist(&new_list);
 	return ret_path;

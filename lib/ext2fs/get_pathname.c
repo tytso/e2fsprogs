@@ -33,14 +33,14 @@
 #include "ext2fs.h"
 
 struct get_pathname_struct {
-	ino_t		search_ino;
-	ino_t		parent;
+	ext2_ino_t	search_ino;
+	ext2_ino_t	parent;
 	char		*name;
 	errcode_t	errcode;
 };
 
 #ifdef __TURBOC__
-#pragma argsused
+ #pragma argsused
 #endif
 static int get_pathname_proc(struct ext2_dir_entry *dirent,
 			     int	offset,
@@ -70,8 +70,9 @@ static int get_pathname_proc(struct ext2_dir_entry *dirent,
 	return 0;
 }
 
-static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ino_t dir, ino_t ino,
-					 int maxdepth, char *buf, char **name)
+static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ext2_ino_t dir, 
+					 ext2_ino_t ino, int maxdepth, 
+					 char *buf, char **name)
 {
 	struct get_pathname_struct gp;
 	char	*parent_name, *ret;
@@ -142,7 +143,7 @@ cleanup:
 	return retval;
 }
 
-errcode_t ext2fs_get_pathname(ext2_filsys fs, ino_t dir, ino_t ino,
+errcode_t ext2fs_get_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino,
 			      char **name)
 {
 	char	*buf;

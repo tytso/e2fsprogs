@@ -163,7 +163,7 @@ cleanup:
  * indirect blocks.
  */
 #ifdef __TURBOC__
-#pragma argsused
+ #pragma argsused
 #endif
 static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 				e2_blkcnt_t blockcnt,
@@ -225,7 +225,7 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
  * Set the block list in the bad block inode, using the supplied bitmap.
  */
 #ifdef __TURBOC__
-#pragma argsused
+ #pragma argsused
 #endif
 static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 			      e2_blkcnt_t blockcnt, blk_t ref_block, 

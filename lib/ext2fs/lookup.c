@@ -26,7 +26,7 @@
 struct lookup_struct  {
 	const char	*name;
 	int		len;
-	ino_t		*inode;
+	ext2_ino_t	*inode;
 	int		found;
 };	
 
@@ -51,8 +51,8 @@ static int lookup_proc(struct ext2_dir_entry *dirent,
 }
 
 
-errcode_t ext2fs_lookup(ext2_filsys fs, ino_t dir, const char *name,
-			int namelen, char *buf, ino_t *inode)
+errcode_t ext2fs_lookup(ext2_filsys fs, ext2_ino_t dir, const char *name,
+			int namelen, char *buf, ext2_ino_t *inode)
 {
 	errcode_t	retval;
 	struct lookup_struct ls;

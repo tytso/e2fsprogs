@@ -26,13 +26,13 @@
 struct link_struct  {
 	const char	*name;
 	int		namelen;
-	ino_t		inode;
+	ext2_ino_t	inode;
 	int		flags;
 	int		done;
 };	
 
 #ifdef __TURBOC__
-#pragma argsused
+ #pragma argsused
 #endif
 static int unlink_proc(struct ext2_dir_entry *dirent,
 		     int	offset,
@@ -56,9 +56,10 @@ static int unlink_proc(struct ext2_dir_entry *dirent,
 }
 
 #ifdef __TURBOC__
-#pragma argsused
+ #pragma argsused
 #endif
-errcode_t ext2fs_unlink(ext2_filsys fs, ino_t dir, const char *name, ino_t ino,
+errcode_t ext2fs_unlink(ext2_filsys fs, ext2_ino_t dir,
+			const char *name, ext2_ino_t ino,
 			int flags)
 {
 	errcode_t	retval;

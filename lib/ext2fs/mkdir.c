@@ -35,13 +35,13 @@
 #define EXT2_FT_DIR		2
 #endif
 
-errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
+errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 		       const char *name)
 {
 	errcode_t		retval;
 	struct ext2_inode	parent_inode, inode;
-	ino_t			ino = inum;
-	ino_t			scratch_ino;
+	ext2_ino_t		ino = inum;
+	ext2_ino_t		scratch_ino;
 	blk_t			blk;
 	char			*block = 0;
 	int			group;

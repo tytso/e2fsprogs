@@ -14,8 +14,8 @@ struct ext2_block_relocate_entry {
 	__s16	offset;
 	__u16	flags;
 	union {
-		blk_t	block_ref;
-		ino_t	inode_ref;
+		blk_t		block_ref;
+		ext2_ino_t	inode_ref;
 	} owner;
 };
 

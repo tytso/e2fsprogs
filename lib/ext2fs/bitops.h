@@ -40,10 +40,10 @@ extern int ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
 				       blk_t block);
 extern int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
 
-extern int ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap, ino_t inode);
+extern int ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap, ext2_ino_t inode);
 extern int ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
-				       ino_t inode);
-extern int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap, ino_t inode);
+				       ext2_ino_t inode);
+extern int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap, ext2_ino_t inode);
 
 extern void ext2fs_fast_mark_block_bitmap(ext2fs_block_bitmap bitmap,
 					  blk_t block);
@@ -53,15 +53,15 @@ extern int ext2fs_fast_test_block_bitmap(ext2fs_block_bitmap bitmap,
 					 blk_t block);
 
 extern void ext2fs_fast_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
-					  ino_t inode);
+					  ext2_ino_t inode);
 extern void ext2fs_fast_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
-					    ino_t inode);
+					    ext2_ino_t inode);
 extern int ext2fs_fast_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
-					 ino_t inode);
+					 ext2_ino_t inode);
 extern blk_t ext2fs_get_block_bitmap_start(ext2fs_block_bitmap bitmap);
-extern ino_t ext2fs_get_inode_bitmap_start(ext2fs_inode_bitmap bitmap);
+extern ext2_ino_t ext2fs_get_inode_bitmap_start(ext2fs_inode_bitmap bitmap);
 extern blk_t ext2fs_get_block_bitmap_end(ext2fs_block_bitmap bitmap);
-extern ino_t ext2fs_get_inode_bitmap_end(ext2fs_inode_bitmap bitmap);
+extern ext2_ino_t ext2fs_get_inode_bitmap_end(ext2fs_inode_bitmap bitmap);
 
 extern void ext2fs_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
 					   blk_t block, int num);
@@ -389,21 +389,21 @@ _INLINE_ int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap,
 }
 
 _INLINE_ int ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
-				       ino_t inode)
+				       ext2_ino_t inode)
 {
 	return ext2fs_mark_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
 					  inode);
 }
 
 _INLINE_ int ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
-					 ino_t inode)
+					 ext2_ino_t inode)
 {
 	return ext2fs_unmark_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
 				     inode);
 }
 
 _INLINE_ int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
-				       ino_t inode)
+				       ext2_ino_t inode)
 {
 	return ext2fs_test_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
 					  inode);
@@ -449,7 +449,7 @@ _INLINE_ int ext2fs_fast_test_block_bitmap(ext2fs_block_bitmap bitmap,
 }
 
 _INLINE_ void ext2fs_fast_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
-					    ino_t inode)
+					    ext2_ino_t inode)
 {
 #ifdef EXT2FS_DEBUG_FAST_OPS
 	if ((inode < bitmap->start) || (inode > bitmap->end)) {
@@ -462,7 +462,7 @@ _INLINE_ void ext2fs_fast_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
 }
 
 _INLINE_ void ext2fs_fast_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
-					      ino_t inode)
+					      ext2_ino_t inode)
 {
 #ifdef EXT2FS_DEBUG_FAST_OPS
 	if ((inode < bitmap->start) || (inode > bitmap->end)) {
@@ -475,7 +475,7 @@ _INLINE_ void ext2fs_fast_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
 }
 
 _INLINE_ int ext2fs_fast_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
-					   ino_t inode)
+					   ext2_ino_t inode)
 {
 #ifdef EXT2FS_DEBUG_FAST_OPS
 	if ((inode < bitmap->start) || (inode > bitmap->end)) {
@@ -492,7 +492,7 @@ _INLINE_ blk_t ext2fs_get_block_bitmap_start(ext2fs_block_bitmap bitmap)
 	return bitmap->start;
 }
 
-_INLINE_ ino_t ext2fs_get_inode_bitmap_start(ext2fs_inode_bitmap bitmap)
+_INLINE_ ext2_ino_t ext2fs_get_inode_bitmap_start(ext2fs_inode_bitmap bitmap)
 {
 	return bitmap->start;
 }
@@ -502,7 +502,7 @@ _INLINE_ blk_t ext2fs_get_block_bitmap_end(ext2fs_block_bitmap bitmap)
 	return bitmap->end;
 }
 
-_INLINE_ ino_t ext2fs_get_inode_bitmap_end(ext2fs_inode_bitmap bitmap)
+_INLINE_ ext2_ino_t ext2fs_get_inode_bitmap_end(ext2fs_inode_bitmap bitmap)
 {
 	return bitmap->end;
 }
