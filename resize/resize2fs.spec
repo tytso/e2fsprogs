@@ -1,6 +1,6 @@
 Summary: ext2 filesystem resizer
 Name: resize2fs
-Version: 1.00
+Version: 1.01
 Release: 0
 Vendor: PowerQuest
 Copyright: Licensed to Registered Users of Partition Magic(tm)

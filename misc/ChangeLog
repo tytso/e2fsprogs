@@ -1,3 +1,8 @@
+1998-03-21  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (check_plausibility): Fixed spelling typo in warning
+		message.  Fixed up -Wall warnings in file.
+
 Sun Mar  8 22:21:48 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* partinfo.c (main): The ioctl BLKGETSIZE requires a long, not an

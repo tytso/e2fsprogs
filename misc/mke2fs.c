@@ -53,6 +53,9 @@
 #include "ext2fs/ext2fs.h"
 #include "../version.h"
 
+/* Everything is STDC, these days */
+#define NOARGS void
+
 #define STRIDE_LENGTH 8
 
 #ifndef sparc
@@ -78,6 +81,8 @@ struct ext2_super_block param;
 char *creator_os = NULL;
 char *volume_label = NULL;
 char *mount_dir = NULL;
+
+static void usage(NOARGS), check_plausibility(NOARGS), check_mount(NOARGS);
 
 static void usage(NOARGS)
 {
@@ -116,7 +121,7 @@ static void check_plausibility(NOARGS)
 		       error_message(errno));
 		if (errno == ENOENT)
 			printf("\nThe device apparently does not exist; "
-			       "did yo specify it correctly?\n");
+			       "did you specify it correctly?\n");
 		exit(1);
 	}
 	if(!S_ISBLK(s.st_mode)) {
@@ -796,7 +801,7 @@ static void PRS(int argc, char *argv[])
 #ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 	if ((sparse_option == 1)
 #ifdef EXT2_DYNAMIC_REV
-	    || (param.s_rev_level >= EXT2_DYNAMIC_REV) && (!sparse_option)
+	    || ((param.s_rev_level >= EXT2_DYNAMIC_REV) && (!sparse_option))
 #endif
 	    ) 
 		param_ext2->s_feature_ro_compat |=
