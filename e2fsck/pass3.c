@@ -581,9 +581,8 @@ static errcode_t adjust_inode_count(e2fsck_t ctx, ino_t ino, int adj)
 		inode.i_links_count--;
 	} else {
 		/* Should never happen */
-		printf(_("Debug error in e2fsck adjust_inode_count, "
-		       "should never happen.\n"));
-		exit(1);
+		fatal_error(ctx, _("Debug error in e2fsck adjust_inode_count, "
+				   "should never happen.\n"));
 	}
 	
 	retval = ext2fs_write_inode(fs, ino, &inode);

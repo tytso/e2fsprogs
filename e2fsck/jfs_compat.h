@@ -43,12 +43,15 @@ void wait_on_buffer(struct buffer_head *bh);
 #define fsync_dev(dev) do {} while(0)
 #define buffer_req(bh) 1
 #define do_readahead(journal, start) do {} while(0)
+	
+extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
+
 #define J_ASSERT(assert)						\
 	do { if (!(assert)) {						\
 		printf ("Assertion failure in %s() at %s line %d: "	\
 			"\"%s\"\n",					\
 			__FUNCTION__, __FILE__, __LINE__, # assert);	\
-		exit(FSCK_ERROR);					\
+		fatal_error(e2fsck_global_ctx, 0);			\
 	} } while (0)
 
 #endif /* _JFS_COMPAT_H */

@@ -1,5 +1,12 @@
 2000-08-22    <tytso@valinux.com>
 
+	* super.c (release_orphan_inodes): Fix typo; should do bounds
+		checking on next_ino instead of ino.
+
+	* jfs_compat.h (J_ASSERT): 
+	* journal.c (e2fsck_run_ext3_journal): 
+	* pass3.c (adjust_inode_count): Use fatal_error() instead of exit().
+
 	* unix.c: Use fatal_error() instead of exit() whenever possible.
 		Also fix the fsck exit codes so that we use FSCK_USAGE
 		when it is appropriate.  Rename global_signal_ctx to

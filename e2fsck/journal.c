@@ -616,7 +616,7 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 		com_err(ctx->program_name, retval,
 			_("while trying to re-open %s"),
 			ctx->device_name);
-		exit(FSCK_ERROR);
+		fatal_error(ctx, 0);
 	}
 	ctx->fs->priv_data = ctx;
 
