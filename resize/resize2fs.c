@@ -790,6 +790,10 @@ static errcode_t block_mover(ext2_resize_t rfs)
 	}
 	
 	if (to_move == 0) {
+		if (rfs->bmap) {
+			ext2fs_free_extent_table(rfs->bmap);
+			rfs->bmap = 0;
+		}
 		retval = 0;
 		goto errout;
 	}
