@@ -34,8 +34,8 @@ file system (e.g /dev/hdXX).
 .SH OPTIONS
 .TP
 .I -w
-Specify that the file system should be open in read-write mode. Without this
-option, the file system is open in read-only mode.
+Specifies that the file system should be opened in read-write mode.
+Without this option, the file system is opened in read-only mode.
 .TP
 .I -f cmd_file
 Causes 
@@ -44,7 +44,7 @@ to read in commands from
 .IR cmd_file , 
 and execute them.  When 
 .B debugfs
-is finsihed executing those commands, it will exit.
+is finished executing those commands, it will exit.
 .TP 
 .I -R request
 Causes 
@@ -95,10 +95,10 @@ Expand the directory
 .I find_free_block [goal]
 Find the first free block, starting from
 .I goal
-and allocates it.
+and allocate it.
 .TP
 .I find_free_inode [dir [mode]]
-Find a free inode and allocates it.  If present, 
+Find a free inode and allocate it.  If present, 
 .I dir
 specifies the inode number of the directory 
 which the inode is to be located.  The second 
@@ -114,14 +114,14 @@ as not allocated.
 .TP
 .I freei filespec
 Free the inode specified by 
-.I filespec
+.IR filespec .
 .TP
 .I help
 Print a list of commands understood by 
 .BR debugfs (8).
 .TP
 .I icheck block ...
-Print a listing of the inodes which use the one or more block specified
+Print a listing of the inodes which use the one or more blocks specified
 on the command line.
 .TP
 .I initialize device blocksize
@@ -136,11 +136,11 @@ program.  This is just a call to the low-level library, which sets up
 the superblock and block descriptors.
 .TP
 .I kill_file filespec
-Dellocate the inode 
+Deallocate the inode 
 .I filespec
 and its blocks.  Note that this does not remove any directory
 entries (if any) to this inode.  See the 
-.I rm
+.BR rm (1)
 command if you wish to unlink a file.
 .TP
 .I ln filespec dest_file
@@ -170,7 +170,7 @@ and
 device numbers must be specified.
 .TP
 .I ncheck inode_num ...
-Take the requested list of inode numbers, and print a listing of pathnams
+Take the requested list of inode numbers, and print a listing of pathnames
 to those inodes.
 .TP
 .I open [-w] device
@@ -186,7 +186,7 @@ Quit
 .I rm pathname
 Unlink 
 .IR pathname .
-If this cuases the inode pointed to by 
+If this causes the inode pointed to by 
 .I pathname
 to have no other references, deallocate the file.  This command functions
 as the unlink() system call.
@@ -241,16 +241,23 @@ Many
 commands take a
 .I filespec
 as an argument to specify an inode (as opposed to a pathname) 
-in the filesystem which is currently opened by debugfs. The
+in the filesystem which is currently opened by 
+.BR debugfs . 
+The
 .I filespec
 argument may be specified in two forms.  The first form is an inode 
 number surrounded by angle brackets, e.g., 
 .IR <2> .
 The second form is a pathname; if the pathname is prefixed by a forward slash
 ('/'), then it is interpreted relative to the root of the filesystem 
-which is currently opened by debugfs.  If not, the pathname is 
-interpreted relative to the current working directory as maintained 
-by debugfs.  This may be modified by using the debugfs command
+which is currently opened by 
+.BR debugfs .
+If not, the pathname is 
+interpreted relative to the current working directory as maintained by 
+.BR debugfs .  
+This may be modified by using the 
+.B debugfs
+command
 .IR cd .
 .SH AUTHOR
 .B debugfs

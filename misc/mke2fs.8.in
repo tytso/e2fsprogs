@@ -104,7 +104,7 @@ must be at least 1024.
 .TP
 .I -l filename
 Read the bad blocks list from
-.I filename
+.I filename.
 \.
 .TP
 .I -m reserved-blocks-percentage
@@ -118,10 +118,14 @@ defaults to 5%.
 .I -o
 Manually override the default value of the "creator os" field of the 
 filesystem.  Normally the creator field is set by default to the native OS
-of the mke2fs executable.
+of the
+.B mke2fs
+executable.
 .TP
 .I -q
-Quiet execution.  Useful if mke2fs is run in a script.
+Quiet execution.  Useful if 
+.B mke2fs
+is run in a script.
 .TP
 .I -s sparse-super-flag
 If sparse-super-flag is 1, then turn on the sparse superblock flag.  
@@ -136,7 +140,9 @@ doing!
 Verbose execution.
 .TP
 .I -F
-Force mke2fs to run, even if the specified device is not a 
+Force 
+.B mke2fs
+to run, even if the specified device is not a 
 block special device.
 .TP
 .I -L
@@ -161,7 +167,9 @@ which takes as its argument the number of blocks in a RAID stripe.
 .I -S
 Write superblock and group descriptors only.  This is useful if all of
 the superblock and backup superblocks are corrupted, and a last-ditch
-recovery method is desired.  It causes mke2fs to reinitialize the
+recovery method is desired.  It causes 
+.B mke2fs
+to reinitialize the 
 superblock and group descriptors, while not touching the inode table
 and the block and inode bitmaps.  The
 .B e2fsck

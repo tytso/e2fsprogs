@@ -52,10 +52,10 @@ Never use the `-w' option on an device containing an existing file system.
 This option erases data!
 .SH AUTHOR
 .B badblocks
-has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
+was written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
 of the ext2 fs.
 .SH BUGS
-I had no chance to make reals tests of this program since I use IDE drives
+I had no chance to make real tests of this program since I use IDE drives,
 which remap bad blocks. I only made some tests on floppies.
 .SH AVAILABILITY
 .B badblocks

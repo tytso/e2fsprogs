@@ -30,13 +30,15 @@ program for the BSD Fast File System.
 print the blocks which are reserved as bad in the filesystem.
 .TP
 .I -V
-print the version number of dumpe2fs and exit.
+print the version number of 
+.B dumpe2fs
+and exit.
 .SH BUGS
 You need to know the physical filesystem structure to understand the
 output.
 .SH AUTHOR
 .B dumpe2fs 
-has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
+was written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
 of the ext2 fs.
 .SH AVAILABILITY
 .B dumpe2fs

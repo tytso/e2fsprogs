@@ -1,5 +1,9 @@
 Thu May  8 22:22:08 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
+	* badblocks.8.in, chattr.1.in, dumpe2fs.8.in, fsck.8.in, 
+		mke2fs.8.in, tune2fs.8.in: Fix minor typos and grammer
+		oops found by Bill Hawes (whawes@star.net).
+
 	* mke2fs.c (test_disk): Pass the blocksize to the bad blocks
  		command so that all of the filesystem gets tested in the
  		case where the blocksize 2048 or 4096.

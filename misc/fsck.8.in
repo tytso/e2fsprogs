@@ -26,11 +26,14 @@ fsck \- check and repair a Linux file system
 is used to check and optionally repair a Linux file system.  
 .I filesys
 is either the device name (e.g. /dev/hda1, /dev/sdb2) or the mount point
-(e.g. /, /usr, /home) for the file system.  If this fsck has several
-filesystems on different physical disk drives to check, this fsck will
-try to run them in parallel.  This reduces the total amount time it
-takes to check all of the filesystems, since fsck takes advantage of the
-parallelism of multiple disk spindles.
+(e.g. /, /usr, /home) for the file system.  If this invocation of 
+.B fsck 
+has several filesystems on different physical disk drives to check, then
+.B fsck 
+will try to run them in parallel.  This reduces the total amount time it
+takes to check all of the filesystems, since 
+.B fsck
+takes advantage of the parallelism of multiple disk spindles.
 .PP
 The exit code returned by
 .B fsck
@@ -90,17 +93,20 @@ When the
 .B -A
 flag is set, check the root filesystem in parallel with the other filesystems.
 This is not the safest thing in the world to do,
-since if the root filesystem is in doubt things like
-the e2fsck executable might be corrupted!  This option is mainly provided
+since if the root filesystem is in doubt things like the 
+.BR e2fsck (8) 
+executable might be corrupted!  This option is mainly provided
 for those sysadmins who don't want to repartition the root
 filesystem to be small and compact (which is really the right solution).
 .TP
 .B -s
-Serialize fsck operations.  This is a good idea if you checking multiple
-filesystems in and the checkers are in an interactive mode.  (Note:
-.B e2fsck
+Serialize 
+.B fsck 
+operations.  This is a good idea if you checking multiple
+filesystems and the checkers are in an interactive mode.  (Note:
+.BR e2fsck (8)
 runs in an interactive mode by default.  To make 
-.B e2fsck
+.BR e2fsck (8)
 run in a non-interactive mode, you must either specify the
 .B -p
 or
@@ -123,7 +129,7 @@ are checked.  If
 .I fstype
 is prefixed with 
 .B no
-only filesystems whose filesystem do not match
+then only filesystems whose type does not match
 .I fstype
 are checked.
 .sp
@@ -137,8 +143,7 @@ If the type can not be deduced,
 will use the type specified by the 
 .B \-t
 option if it specifies a unique filesystem type.  If this type is not
-available, the the default file system type
-(currently ext2) is used. 
+available, then the default file system type (currently ext2) is used. 
 .TP
 .B fs-options
 Any options which are not understood by 
@@ -150,15 +155,16 @@ file system-specific checker.
 .PP
 Currently, standardized file system-specific options are somewhat in
 flux.  Although not guaranteed, the following options are supported
-by most file system checkers.
+by most file system checkers:
 .TP
 .B -a
 Automatically repair the file system without any questions (use
 this option with caution).  Note that 
-.B e2fsck
+.BR e2fsck (8)
 supports 
 .B -a
-for backwards compatibility only.  This option is mapped to e2fsck's
+for backwards compatibility only.  This option is mapped to 
+.BR e2fsck 's
 .B -p
 option which is safe to use, unlike the 
 .B -a 
@@ -168,14 +174,16 @@ option that most file system checkers support.
 Interactively repair the filesystem (ask for confirmations).  Note: It
 is generally a bad idea to use this option if multiple fsck's are being
 run in parallel.  Also note that this is 
-.B e2fsck
+.BR e2fsck 's
 default behavior; it supports this option for backwards compatibility
 reasons only.
 .SH AUTHOR
 Theodore Ts'o (tytso@mit.edu)
 .PP
 The manual page was shamelessly adapted from David Engel and Fred van
-Kempen's generic fsck front end program, which was in turn shamelessly
+Kempen's generic 
+.B fsck
+front end program, which was in turn shamelessly
 adapted from Remy Card's version for the ext2 file system.
 .SH FILES
 .IR /etc/fstab .

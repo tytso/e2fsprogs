@@ -62,23 +62,23 @@ device
 .BI tune2fs
 adjusts tunable filesystem parameters on a Linux second extended filesystem.
 .PP
-.B Never use tune2fs on a read/write mounted filesystem to change parameters!
+.B Never use tune2fs to change parameters of a read/write mounted filesystem! 
 .PP
 .SH OPTIONS
 .TP
 .I -c max-mount-counts
 adjust the maximal mounts count between two filesystem checks.
 .TP
-.I -e errors-behavior
+.I -e error-behavior
 change the behavior of the kernel code when errors are detected.
-.I errors-behavior
-can be one of the followings:
+.I error-behavior
+can be one of the following:
 .br
 \	continue\	\	Continue normal execution.
 .br
 \	remount-ro\	Remount the filesystem read-only.
 .br
-\	panic\	\	Causes a kernel panic.
+\	panic\	\	Cause a kernel panic.
 .TP
 .I -g group
 set the user group which can benefit from the reserved blocks.
@@ -101,7 +101,7 @@ adjust the reserved blocks percentage on the given device.
 adjust the reserved blocks count on the given device.
 .TP
 .I -s sparse_super_flag
-sets and resets the sparse_superblock flag.  The sparse_superblock feature
+set or reset the sparse_superblock flag.  The sparse_superblock feature
 saves space on really big filesystems.
 .B Warning:
 The Linux 2.0 kernel does not properly support this feature.  Neither do
@@ -120,7 +120,7 @@ set the number of times the filesystem has been mounted.
 set the volume label of the filesystem.
 .TP
 .I -M last-mounted-directory
-set the last-mounted direcctory for the filesystem.
+set the last-mounted directory for the filesystem.
 .TP
 .I -U UUID
 set the UUID of the filesystem.  A sample UUID looks like this: 
@@ -129,13 +129,13 @@ which will set the filesystem UUID to the null UUID.  The uuid may also
 be "random", which will generate a new random UUID for the filesystem.
 .PP
 .SH BUGS
-We didn't find any bugs yet. Perhaps there are bugs but it's unlikely.
+We haven't found any bugs yet. Perhaps there are bugs but it's unlikely.
 .PP
 .SH WARNING
-.B Use this utility on your own risk. You're modifying filesystems.
+.B Use this utility at your own risk. You're modifying a filesystem!
 .SH AUTHOR
 .B tune2fs 
-has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
+was written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
 of the ext2 fs.
 .br
 .B tune2fs
