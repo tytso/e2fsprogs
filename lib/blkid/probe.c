@@ -437,6 +437,17 @@ found_type:
 	return dev;
 }
 
+int blkid_known_fstype(const char *fstype)
+{
+	struct blkid_magic *id;
+
+	for (id = type_array; id->bim_type; id++) {
+		if (strcmp(fstype, id->bim_type) == 0)
+			return 1;
+	}
+	return 0;
+}
+
 #ifdef TEST_PROGRAM
 int main(int argc, char **argv)
 {

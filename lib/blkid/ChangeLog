@@ -1,3 +1,8 @@
+2003-07-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c (blkid_known_fstype): New function which returns true if
+		the filesystem type is one which this blkid library supports.
+
 2003-07-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c: When revalidating a filesystem, delete the LABEL tag if
