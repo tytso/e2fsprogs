@@ -79,7 +79,7 @@ install:: all installdirs
 	$(CHMOD) 644 $(DESTDIR)$(libdir)/libe2p.a
 	-$(RANLIB) $(DESTDIR)$(libdir)/libe2p.a
 	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libe2p.a
-	for i in $(HFILES); do \
+	set -e; for i in $(HFILES); do \
 	  $(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/e2p/$$i; \
 	done
 

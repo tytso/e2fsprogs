@@ -1,3 +1,10 @@
+2000-04-03  Theodore Ts'o  <tytso@valinux.com>
+
+	* pf.c (print_flags): Rename EXT2_NOCOMP_FL to 	EXT2_NOCOMPR_FL.
+
+	* Makefile.in: Add "set -e" so that any errors in installing
+		header files causes an immediate exit.
+
 2000-02-10  Theodore Ts'o  <tytso@valinux.com>
 
 	* Makefile.in: Install the e2p.h header.

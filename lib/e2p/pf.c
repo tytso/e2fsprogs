@@ -35,7 +35,7 @@ static struct flags_name flags_array[] = {
 	{ EXT2_COMPR_FL, "c", "Compression_requested" },
 	{ EXT2_COMPRBLK_FL, "B", "Compressed_file" },
 	{ EXT2_DIRTY_FL, "D", "Compressed dirty file" },
-	{ EXT2_NOCOMP_FL, "X", "Raw_access" },
+	{ EXT2_NOCOMPR_FL, "X", "Raw_access" },
 	{ EXT2_ECOMPR_FL, "E", "Compression_Error" },
 	{ 0, NULL, NULL }
 };
