@@ -1,3 +1,8 @@
+2005-01-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (show_stats, set_os): Interpret OS Creator values for
+		FreeBSD and Lites.
+
 2005-01-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2image.c, e2image.8.in: Add support for the -s option which

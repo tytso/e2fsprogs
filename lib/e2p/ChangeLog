@@ -1,3 +1,8 @@
+2005-01-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* ls.c (list_super2): Interpret OS Creator values for FreeBSD and
+		Lites.
+	
 2005-01-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* parse_num.c (parse_num_blocks): New file which adds a standard
