@@ -1,0 +1,53 @@
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+top_builddir = ../..
+my_dir = lib/evms
+INSTALL = @INSTALL@
+
+XTRA_CFLAGS= -I@srcdir@
+
+@MCONFIG@
+
+OBJS= fs_ext2.o fsimext2.o
+
+SRCS= $(srcdir)/fs_ext2.c $(srcdir)/fsimext2.c
+
+
+LIBRARY= libext2fsim
+LIBDIR= evms
+
+ELF_VERSION = 1.0.0
+ELF_SO_VERSION = 1
+ELF_IMAGE = libe2fsim
+ELF_MYDIR = evms
+ELF_INSTALL_DIR = $(root_libdir)
+#ELF_OTHER_LIBS = -L../.. -lcom_err
+
+@MAKEFILE_LIBRARY@
+@MAKEFILE_ELF@
+
+.c.o:
+	$(CC) $(ALL_CFLAGS) -c $< -o $@
+@ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+
+clean::
+	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/* 
+
+mostlyclean:: clean
+distclean:: clean
+	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old
+
+# +++ Dependency line eater +++
+# 
+# Makefile dependencies follow.  This must be the last section in
+# the Makefile.in file
+#
+fs_ext2.o: $(srcdir)/fs_ext2.c $(srcdir)/plugin.h $(srcdir)/dlist.h \
+ $(srcdir)/common.h $(srcdir)/evms_user.h $(srcdir)/evms_common.h \
+ $(srcdir)/evms_ioctl.h $(srcdir)/options.h $(srcdir)/enginestructs.h \
+ $(srcdir)/plugfuncs.h $(srcdir)/fsimext2.h
+fsimext2.o: $(srcdir)/fsimext2.c $(srcdir)/plugin.h $(srcdir)/dlist.h \
+ $(srcdir)/common.h $(srcdir)/evms_user.h $(srcdir)/evms_common.h \
+ $(srcdir)/evms_ioctl.h $(srcdir)/options.h $(srcdir)/enginestructs.h \
+ $(srcdir)/plugfuncs.h $(srcdir)/fsimext2.h

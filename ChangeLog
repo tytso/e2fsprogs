@@ -1,3 +1,9 @@
+2002-05-24    <tytso@snap.thunk.org>
+
+	* configure.in: Add makefile for lib/evms for the EVMS FSIM
+		plugin.  Add --enable-old-evms configure option which uses
+		the EVMS 1.0.0 ABI, instead of the ABI used by EVMS 1.1.0.
+
 2002-05-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: On Linux systems, if the prefix is defaulted to
