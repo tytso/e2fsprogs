@@ -135,20 +135,27 @@ The following journal options are supported:
 .TP
 .BI size= journal-size
 Create a journal stored in the filesystem of size
-.IR journal-size .
-The size of the journal must be between 1024 and 10,240 filesystem blocks and
-there must be sufficient free space in the filesystem to create a journal of
+.I journal-size
+megabytes.   The size of the journal must be at least 1024 filesystem blocks
+(i.e., 1MB if using 1k blocks, 4MB if using 4k blocks, etc.)
+and may be no more than 102,400 filesystem blocks.
+There must be enough free space in the filesystem to create a journal of
 that size.
 @JDEV@.TP
 @JDEV@.BI device= external-journal
-@JDEV@Add an external journal found on a block device
-@JDEV@named by 
-@JDEV@.I external-journal 
+@JDEV@Attach the filesystem to the journal block device located on
+@JDEV@.IR external-journal .
 @JDEV@to the filesystem.
 @JDEV@The external 
 @JDEV@journal must have been already created using the command
+@JDEV@.IP
 @JDEV@.B mke2fs -O journal_dev 
-@JDEV@.IR journal-device.
+@JDEV@.IR external-journal.
+@JDEV@.IP
+@JDEV@Note that
+@JDEV@.I external-journal
+@JDEV@must be formatted with the same block
+@JDEV@size as filesystems which will be using it.
 .RE
 @JDEV@.IP
 @JDEV@Only one of the
@@ -172,8 +179,8 @@ Set the percentage of reserved filesystem blocks.
 .BI \-M " last-mounted-directory"
 Set the last-mounted directory for the filesystem.
 .TP
-.BI \-O " \fR[^]\fIfeature\fR[,...]"
-set or clear the indicated filesystem features (options) in the filesystem.
+.BR \-O " [^]\fIfeature\fR[,...]"
+Set or clear the indicated filesystem features (options) in the filesystem.
 More than one filesystem feature can be cleared or set by separating
 features with commas.  Filesystem features prefixed with a 
 caret character ('^') will be cleared in the filesystem's superblock; 
@@ -181,16 +188,14 @@ filesystem features without a prefix character or prefixed with a plus
 character ('+') will be added to the filesystem.
 .IP
 The following filesystem features can be set or cleared using
-.BR
-tune2fs :
+.BR tune2fs :
 .RS 1.2i
 .TP
 .B sparse_super
 Limit the number of backup superblocks to save space on large filesystems.
 .TP
 .B filetype
-Store file type information in 
-directory entries.
+Store file type information in directory entries.
 .TP
 .B has_journal
 Create an ext3 journal (as if using the
@@ -200,27 +205,25 @@ option).
 .IP
 After setting or clearing any filesystem feature,
 .BR e2fsck (8)
-must be run on the filesystem to return the filesystem to a 
-consistent state.
-This option must not be used on mounted filesystems.
+must be run on the filesystem to return the filesystem to a consistent state.
 .IP
 .B Warning:
-Linux kernels before 2.0.39 do not support the sparse_super 
-or filetype features; neither do all Linux 2.1 kernels.  
-Enabling certain filesystem features
-may prevent the filesystem from being mounted on older kernels.
+Linux kernels before 2.0.39 and many 2.1 series kernels do not support
+the filesystems that use any of these features.
+Enabling certain filesystem features may prevent the filesystem from
+being mounted by kernels which do not support those features.
 .TP
 .BI \-r " reserved-blocks-count"
 Set the number of reserved filesystem blocks.
 .TP
-.BI \-s " sparse_super_flag"
-set or reset the sparse_superblock flag.  The sparse_super feature
+.BR \-s " [" 0 | 1 ]
+Turn the sparse super feature off or on.  Turning this feature on
 saves space on really big filesystems.  This is the same as using the
 .B "\-O sparse_super"
 option.
 .IP
 .B Warning:
-The Linux kernels before 2.0.39 do not support this feature.  Neither do
+Linux kernels before 2.0.39 do not support this feature.  Neither do
 all Linux 2.1 kernels; please don't use this unless you know what you're
 doing!  You need to run
 .BR e2fsck (8)
