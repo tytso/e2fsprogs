@@ -1,3 +1,9 @@
+1999-10-25    <tytso@valinux.com>
+
+	* gen_uuid_nt.c (uuid_generate): W2K strikes again!  An
+		incompatible interface change means we need to detect
+		whether the code is running on an NT4 or NT5 system.
+
 1999-10-22    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.16

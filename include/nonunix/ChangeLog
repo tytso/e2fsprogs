@@ -1,0 +1,3 @@
+1999-10-25    <tytso@valinux.com>
+
+	* config.h: Add #define's for strcasecmp and strncasecmp
