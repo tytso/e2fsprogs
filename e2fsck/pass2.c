@@ -53,8 +53,7 @@
 /*
  * Keeps track of how many times an inode is referenced.
  */
-static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino,
-			     char* block_buf);
+static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf);
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry *dir_blocks_info,
 			   void *priv_data);
@@ -64,9 +63,9 @@ static int allocate_dir_block(e2fsck_t ctx,
 static int update_dir_block(ext2_filsys fs,
 			    blk_t	*block_nr,
 			    e2_blkcnt_t blockcnt,
-			    blk_t ref_block,
-			    int ref_offset, 
-			    void *priv_data);
+			    blk_t	ref_block,
+			    int		ref_offset, 
+			    void	*priv_data);
 
 struct check_dir_struct {
 	char *buf;
@@ -619,8 +618,7 @@ static int deallocate_inode_block(ext2_filsys fs,
 /*
  * This fuction deallocates an inode
  */
-static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino,
-			     char* block_buf)
+static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 {
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode	inode;

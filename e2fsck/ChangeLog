@@ -1,5 +1,7 @@
 2001-01-12  Theodore Ts'o  <tytso@valinux.com>
 
+	* pass2.c: Minor whitespace cleanups, from Andreas Dilger.
+
 	* journal.c (e2fsck_journal_fix_bad_inode): Set pctx->ino to the
 		bad journal number.
 
