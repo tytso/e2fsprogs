@@ -76,12 +76,12 @@ static const char *find_pager(char *buf)
 FILE *open_pager(void)
 {
 	FILE *outfile = 0;
-	const char *pager = getenv("PAGER");
+	const char *pager = getenv("DEBUGFS_PAGER");
 	char buf[80];
 
 	signal(SIGPIPE, SIG_IGN);
 	if (!pager)
-		pager = getenv("DEBUGFS_PAGER");
+		pager = getenv("PAGER");
 	if (!pager)
 		pager = find_pager(buf);
 	if (!pager || 

@@ -1,3 +1,8 @@
+2004-04-11  Theodore Ts'o  <tytso@mit.edu>
+
+	* util.c (open_pager): Use DEBUGFS_PAGER in preference to PAGER
+		(Addresses Debian Bug #239547)
+
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Update the modtime even if subst doesn't need to
