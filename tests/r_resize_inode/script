@@ -26,10 +26,10 @@ echo Exit status is $status >> $OUT.new
 sed -e '1d' $OUT.new | sed -e '/^JFS DEBUG:/d'  | tr -d \\015 >> $OUT
 rm -f $OUT.new
 
-$DEBUGFS -w $TMPFILE -R "set_super_value lastcheck 0" >& /dev/null
-$DEBUGFS -w $TMPFILE -R "set_super_value hash_seed null" >& /dev/null
-$DEBUGFS -w $TMPFILE -R "set_super_value mkfs_time 0" >& /dev/null
-$TUNE2FS -c 20 -U clear $TMPFILE  >& /dev/null
+$DEBUGFS -R "set_super_value lastcheck 0" -w $TMPFILE >/dev/null 2>&1
+$DEBUGFS -R "set_super_value hash_seed null" -w $TMPFILE >/dev/null 2>&1
+$DEBUGFS -R "set_super_value mkfs_time 0" -w $TMPFILE >/dev/null 2>&1
+$TUNE2FS -c 20 -U clear $TMPFILE  >/dev/null 2>&1
 
 echo dumpe2fs test.img >> $OUT
 $DUMPE2FS $TMPFILE 2>&1 | sed -e '1d' | grep -v "time: " >> $OUT
@@ -50,10 +50,10 @@ echo Exit status is $status >> $OUT.new
 sed -e '1d' $OUT.new | sed -e '/^JFS DEBUG:/d'  | tr -d \\015 >> $OUT
 rm -f $OUT.new
 
-$DEBUGFS -w $TMPFILE -R "set_super_value lastcheck 0" >& /dev/null
-$DEBUGFS -w $TMPFILE -R "set_super_value hash_seed null" >& /dev/null
-$DEBUGFS -w $TMPFILE -R "set_super_value mkfs_time 0" >& /dev/null
-$TUNE2FS -c 20 -U clear $TMPFILE  >& /dev/null
+$DEBUGFS -R "set_super_value lastcheck 0" -w $TMPFILE >/dev/null 2>&1
+$DEBUGFS -R "set_super_value hash_seed null" -w $TMPFILE >/dev/null 2>&1
+$DEBUGFS -R "set_super_value mkfs_time 0" -w $TMPFILE >/dev/null 2>&1
+$TUNE2FS -c 20 -U clear $TMPFILE  >/dev/null 2>&1
 
 echo dumpe2fs test.img >> $OUT
 $DUMPE2FS $TMPFILE 2>&1 | sed -e '1d' | grep -v "time: " >> $OUT
@@ -69,10 +69,10 @@ echo Exit status is $status >> $OUT.new
 sed -e '1d' $OUT.new | sed -e '/^JFS DEBUG:/d'  | tr -d \\015 >> $OUT
 rm -f $OUT.new
 
-$DEBUGFS -w $TMPFILE -R "set_super_value lastcheck 0" >& /dev/null
-$DEBUGFS -w $TMPFILE -R "set_super_value hash_seed null" >& /dev/null
-$DEBUGFS -w $TMPFILE -R "set_super_value mkfs_time 0" >& /dev/null
-$TUNE2FS -c 20 -U clear $TMPFILE  >& /dev/null
+$DEBUGFS -R "set_super_value lastcheck 0" -w $TMPFILE >/dev/null 2>&1
+$DEBUGFS -R "set_super_value hash_seed null" -w $TMPFILE >/dev/null 2>&1
+$DEBUGFS -R "set_super_value mkfs_time 0" -w $TMPFILE >/dev/null 2>&1
+$TUNE2FS -c 20 -U clear $TMPFILE  >/dev/null 2>&1
 
 echo dumpe2fs test.img >> $OUT
 $DUMPE2FS $TMPFILE 2>&1 | sed -e '1d' | grep -v "time: " >> $OUT

@@ -1,3 +1,11 @@
+2005-01-13  Matthias Andree  <matthias.andree@gmx.de>
+
+	* f_dup_de, r_resize_inode: change ">& /dev/null" to ">/dev/null 2>&1"
+		for compatibility with FreeBSD. In $DEBUGFS commands, move the
+		-R arg argument first so that systems with non-GNU getopt()
+		can see the request argument (they would otherwise stop
+		parsing at the first non-option argument).
+
 2004-12-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_resize_inode, r_resize_inode: New tests to e2fsck and
