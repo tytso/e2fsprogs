@@ -1,5 +1,14 @@
 2002-10-31  Theodore Ts'o  <tytso@mit.edu>
 
+	* ismounted.c (check_mntent, check_mntent_file): Add better
+		support for loopback-mounted filesystems.  Check /etc/mtab
+		if /proc/mounts doesn't turn up any mount flags, since
+		/etc/mtab has the loopback image filename, instead of
+		/dev/loop0.  Also, check based on st_dev and st_ino, so
+		that if a relative pathname or a pathnames using symbolic
+		links are used, we can detect the the filesystem correctly
+		in those cases.  (Addresses Sourceforge bug #619119)
+
 	* flushb.c (ext2fs_sync_device): If the BLKFLSBUF ioctl succeeds,
 		don't try the FDFLUSH ioctl that was required for floppies
 		with older kernels.  This avoids needless whining from the

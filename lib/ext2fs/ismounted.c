@@ -46,28 +46,39 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	struct mntent 	*mnt;
 	struct stat	st_buf;
 	errcode_t	retval = 0;
-	dev_t		file_dev;
+	dev_t		file_dev=0, file_rdev=0;
+	ino_t		file_ino=0;
 	FILE 		*f;
 	int		fd;
 
 	*mount_flags = 0;
 	if ((f = setmntent (mtab_file, "r")) == NULL)
 		return errno;
-	file_dev = 0;
+	if (stat(file, &st_buf) == 0) {
+		if (S_ISBLK(st_buf.st_mode)) {
 #ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
-	if ((stat(file, &st_buf) == 0) &&
-	    S_ISBLK(st_buf.st_mode))
-		file_dev = st_buf.st_rdev;
+			file_rdev = st_buf.st_rdev;
 #endif	/* __GNU__ */
+		} else {
+			file_dev = st_buf.st_dev;
+			file_ino = st_buf.st_ino;
+		}
+	}
 	while ((mnt = getmntent (f)) != NULL) {
 		if (strcmp(file, mnt->mnt_fsname) == 0)
 			break;
+		if (stat(mnt->mnt_fsname, &st_buf) == 0) {
+			if (S_ISBLK(st_buf.st_mode)) {
 #ifndef __GNU__
-		if (file_dev && (stat(mnt->mnt_fsname, &st_buf) == 0) &&
-		    S_ISBLK(st_buf.st_mode) &&
-		    (file_dev == st_buf.st_rdev))
-			break;
+				if (file_rdev && (file_rdev == st_buf.st_rdev))
+					break;
 #endif	/* __GNU__ */
+			} else {
+				if (file_dev && ((file_dev == st_buf.st_dev) &&
+						 (file_ino == st_buf.st_ino)))
+					break;
+			}
+		}
 	}
 
 	if (mnt == 0) {
@@ -79,8 +90,8 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 		 * check if the given device has the same major/minor number
 		 * as the device that the root directory is on.
 		 */
-		if (file_dev && stat("/", &st_buf) == 0) {
-			if (st_buf.st_dev == file_dev) {
+		if (file_rdev && stat("/", &st_buf) == 0) {
+			if (st_buf.st_dev == file_rdev) {
 				*mount_flags = EXT2_MF_MOUNTED;
 				if (mtpt)
 					strncpy(mtpt, "/", mtlen);
@@ -108,7 +119,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 		}
 		goto exit;
 	}
-	if (file_dev && (st_buf.st_dev != file_dev)) {
+	if (file_rdev && (st_buf.st_dev != file_rdev)) {
 #ifdef DEBUG
 		printf("Bogus entry in %s!  (%s not mounted on %s)\n",
 		       mtab_file, file, mnt->mnt_dir);
@@ -162,7 +173,7 @@ static errcode_t check_mntent(const char *file, int *mount_flags,
 #ifdef __linux__
 	retval = check_mntent_file("/proc/mounts", file, mount_flags,
 				   mtpt, mtlen);
-	if (retval == 0)
+	if (retval == 0 && (*mount_flags != 0))
 		return 0;
 #endif /* __linux__ */
 #if defined(MOUNTED) || defined(_PATH_MOUNTED)
