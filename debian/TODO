@@ -3,9 +3,6 @@ This file may or may not be up to date.
 
 * Report to Ted: inconsistent "et/com_err.h", <et/com_err.h>, <com_err.h>
   under lib/
-* Does <ext2fs/ext2fs.h> really need "et/com_err.h" and other awful ""
-  includes ?
-* Include file not installed for libe2p ?
 * What about making com_err more self-consistant ("et" / "com_err")
 
 * Suppress as many references as possible to the libcom_err version number in

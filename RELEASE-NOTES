@@ -1,4 +1,4 @@
-E2fsprogs 1.20 (May 14, 2001)
+E2fsprogs 1.20 (May 20, 2001)
 =============================
 
 Add support for replaying the ext3 journal purely in user mode,
@@ -80,6 +80,12 @@ additional IDE disks and the DAC 960 device names.  (Debian bug #94159)
 
 Fixed a bug in fsck which caused it not deal properly with 16
 byte long filesystem labels.
+
+Fsck's -t option has been made a lot more flexible.  The semantics for
+what happens if a comma-separated list to fsck has been regularized,
+and it is now possible to filter what filesystems will get checked
+based what is in the filesystem's fstab entry's option field.  (Debian
+bug #89483.)
 
 The dumpe2fs program can now print out the group description
 information in hex, and also prints the location of the superblock and

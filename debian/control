@@ -26,7 +26,7 @@ Depends: e2fsprogs (= ${Source-Version})
 Recommends: sash | zsh30-static | busybox-static
 Architecture: any
 Description: A statically-linked version of the ext2 filesystem checker.
- This may be of some help to you if you filesystem gets corrupted enough
+ This may be of some help to you if your filesystem gets corrupted enough
  to break the shared libraries used by the dynamically linked checker.
  .
  This binary takes much more space than its dynamic counterpart located
