@@ -44,6 +44,9 @@ struct ext2_ext_attr_entry {
 	  (char *)(entry) + EXT2_EXT_ATTR_LEN((entry)->e_name_len)) )
 #define EXT2_EXT_ATTR_SIZE(size) \
 	(((size) + EXT2_EXT_ATTR_ROUND) & ~EXT2_EXT_ATTR_ROUND)
+#define EXT2_EXT_IS_LAST_ENTRY(entry) (*((__u32 *)(entry)) == 0UL)
+#define EXT2_EXT_ATTR_NAME(entry) \
+	(((char *) (entry)) + sizeof(struct ext2_ext_attr_entry))
 
 #ifdef __KERNEL__
 # ifdef CONFIG_EXT2_FS_EXT_ATTR

@@ -1,3 +1,10 @@
+2005-03-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c (do_stat): Add support for dumping extended attributes
+		which are stored in the inode body.
+
+	* util.c (debugfs_read_inode_full): new function
+
 2006-02-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.36

@@ -33,6 +33,8 @@ extern char *optarg;
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
 
+#include <ext2fs/ext2_ext_attr.h>
+
 #include "../version.h"
 
 extern ss_request_table debug_cmds;
@@ -401,6 +403,69 @@ static int list_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 	return 0;
 }
 
+void dump_xattr_string(FILE *out, const unsigned char *str, int len)
+{
+	int printable = 1;
+	int i;
+	
+	/* check is string printable? */
+	for (i = 0; i < len; i++)
+		if (!isprint(str[i])) {
+			printable = 0;
+			break;
+		}
+
+	for (i = 0; i < len; i++)
+		if (printable)
+			fprintf(out, "%c", str[i]);
+		else
+			fprintf(out, "%02x ", str[i]);
+}
+
+void internal_dump_inode_extra(FILE *out, const char *prefix,
+			 ext2_ino_t inode_num, struct ext2_inode_large *inode)
+{
+	struct ext2_ext_attr_entry *entry;
+	__u32 *magic;
+	char *start, *end;
+	int storage_size;
+	int i;
+
+	if (inode->i_extra_isize > EXT2_INODE_SIZE(current_fs->super) -
+			EXT2_GOOD_OLD_INODE_SIZE) {
+		fprintf(stderr, "invalid inode->i_extra_isize (%u)\n",
+				inode->i_extra_isize);
+		return;
+	}
+	storage_size = EXT2_INODE_SIZE(current_fs->super) -
+			EXT2_GOOD_OLD_INODE_SIZE -
+			inode->i_extra_isize;
+	magic = (__u32 *)((char *)inode + EXT2_GOOD_OLD_INODE_SIZE +
+			inode->i_extra_isize);
+	if (*magic == EXT2_EXT_ATTR_MAGIC) {
+		fprintf(out, "Extended attributes stored in inode body: \n");
+		end = (char *) inode + EXT2_INODE_SIZE(current_fs->super);
+		start = (char *) magic + sizeof(__u32);
+		entry = (struct ext2_ext_attr_entry *) start;
+		while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
+			struct ext2_ext_attr_entry *next =
+				EXT2_EXT_ATTR_NEXT(entry);
+			if (entry->e_value_size > storage_size ||
+					(char *) next >= end) {
+				fprintf(out, "invalid EA entry in inode\n");
+				return;
+			}
+			fprintf(out, "  ");
+			dump_xattr_string(out, EXT2_EXT_ATTR_NAME(entry), 
+					  entry->e_name_len);
+			fprintf(out, " = \"");
+			dump_xattr_string(out, start + entry->e_value_offs,
+						entry->e_value_size);
+			fprintf(out, "\" (%d)\n", entry->e_value_size);
+			entry = next;
+		}
+	}
+}
 
 static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)
 {
@@ -488,6 +553,9 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	if (inode->i_dtime) 
 	  fprintf(out, "%sdtime: 0x%08x -- %s", prefix, inode->i_dtime,
 		  time_to_string(inode->i_dtime));
+	if (EXT2_INODE_SIZE(current_fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
+		internal_dump_inode_extra(out, prefix, inode_num,
+					  (struct ext2_inode_large *) inode);
 	if (LINUX_S_ISLNK(inode->i_mode) && ext2fs_inode_data_blocks(current_fs,inode) == 0)
 		fprintf(out, "%sFast_link_dest: %.*s\n", prefix,
 			(int) inode->i_size, (char *)inode->i_block);
@@ -512,27 +580,40 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		dump_blocks(out, prefix, inode_num);
 }
 
-static void dump_inode(ext2_ino_t inode_num, struct ext2_inode inode)
+static void dump_inode(ext2_ino_t inode_num, struct ext2_inode *inode)
 {
 	FILE	*out;
 	
 	out = open_pager();
-	internal_dump_inode(out, "", inode_num, &inode, 1);
+	internal_dump_inode(out, "", inode_num, inode, 1);
 	close_pager(out);
 }
 
 void do_stat(int argc, char *argv[])
 {
 	ext2_ino_t	inode;
-	struct ext2_inode inode_buf;
+	struct ext2_inode * inode_buf;
 
-	if (common_inode_args_process(argc, argv, &inode, 0))
+	inode_buf = (struct ext2_inode *)
+			malloc(EXT2_INODE_SIZE(current_fs->super));
+	if (!inode_buf) {
+		fprintf(stderr, "do_stat: can't allocate buffer\n");
 		return;
+	}
 
-	if (debugfs_read_inode(inode, &inode_buf, argv[0]))
+	if (common_inode_args_process(argc, argv, &inode, 0)) {
+		free(inode_buf);
 		return;
+	}
 
-	dump_inode(inode,inode_buf);
+	if (debugfs_read_inode_full(inode, inode_buf, argv[0],
+					EXT2_INODE_SIZE(current_fs->super))) {
+		free(inode_buf);
+		return;
+	}
+
+	dump_inode(inode, inode_buf);
+	free(inode_buf);
 	return;
 }
 
