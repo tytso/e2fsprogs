@@ -1,5 +1,6 @@
 AC_INIT(version.h)
-AC_PREREQ(2.12)
+AC_PREREQ(2.50)
+AC_CONFIG_AUX_DIR(config)
 MCONFIG=./MCONFIG
 AC_SUBST_FILE(MCONFIG)
 BINARY_TYPE=bin
@@ -502,10 +503,13 @@ echo "Using standard bitmask operations by default"
 dnl
 dnl Add internationalization support, using gettext.
 dnl
+GETTEXT_PACKAGE=e2fsprogs
 PACKAGE=e2fsprogs
 VERSION="$E2FSPROGS_VERSION"
+VERSION=0.14.1
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_SUBST(GETTEXT_PACKAGE)
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 

@@ -91,7 +91,8 @@ LTV_AGE=2
 .SUFFIXES:
 .SUFFIXES: .c .y .o .lo .sin .sed
 .c.o:
-	$(COMPILE) $<
+	@echo "	CC $<"
+	@$(COMPILE) $<
 .c.lo:
 	$(LIBTOOL) --mode=compile $(COMPILE) $<
 
@@ -112,9 +113,10 @@ all-no-yes: libgnuintl.$la
 all-no-no:
 
 libintl.a libgnuintl.a: $(OBJECTS)
-	rm -f $@
-	$(AR) cru $@ $(OBJECTS)
-	$(RANLIB) $@
+	@echo "	GEN_LIB $<"
+	@rm -f $@
+	@$(AR) cru $@ $(OBJECTS)
+	@$(RANLIB) $@
 
 libintl.la libgnuintl.la: $(OBJECTS)
 	$(LIBTOOL) --mode=link \
