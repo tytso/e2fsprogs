@@ -777,18 +777,13 @@ int main (int argc, char ** argv)
 		       sb->s_volume_name);
 		exit(0);
 	}
-	if (getenv("TUNE2FS_SKIP_MOUNT_CHECK")) {
-		mount_flags = 0;
-	} else {
-		retval = ext2fs_check_if_mounted(device_name, &mount_flags);
-		if (retval) {
-			com_err("ext2fs_check_if_mount", retval,
-				_("while determining whether %s is mounted."),
-				device_name);
-			exit(1);
-		}
+	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+	if (retval) {
+		com_err("ext2fs_check_if_mount", retval,
+			_("while determining whether %s is mounted."),
+			device_name);
+		exit(1);
 	}
-
 	/* Normally we only need to write out the superblock */
 	fs->flags |= EXT2_FLAG_SUPER_ONLY;
 
