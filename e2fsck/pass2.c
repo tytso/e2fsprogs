@@ -53,7 +53,7 @@
 /*
  * Keeps track of how many times an inode is referenced.
  */
-static void deallocate_inode(e2fsck_t ctx, ino_t ino,
+static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino,
 			     char* block_buf);
 static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry *dir_blocks_info,
@@ -161,7 +161,7 @@ void e2fsck_pass2(e2fsck_t ctx)
  */
 static int check_dot(e2fsck_t ctx,
 		     struct ext2_dir_entry *dirent,
-		     ino_t ino, struct problem_context *pctx)
+		     ext2_ino_t ino, struct problem_context *pctx)
 {
 	struct ext2_dir_entry *nextdir;
 	int	status = 0;
@@ -261,7 +261,7 @@ static int check_dotdot(e2fsck_t ctx,
  */
 static int check_name(e2fsck_t ctx,
 		      struct ext2_dir_entry *dirent,
-		      ino_t dir_ino, struct problem_context *pctx)
+		      ext2_ino_t dir_ino, struct problem_context *pctx)
 {
 	int	i;
 	int	fixup = -1;
@@ -286,7 +286,7 @@ static int check_name(e2fsck_t ctx,
  */
 static _INLINE_ int check_filetype(e2fsck_t ctx,
 		      struct ext2_dir_entry *dirent,
-		      ino_t dir_ino, struct problem_context *pctx)
+		      ext2_ino_t dir_ino, struct problem_context *pctx)
 {
 	int	filetype = dirent->name_len >> 8;
 	int	should_be = EXT2_FT_UNKNOWN;
@@ -338,7 +338,7 @@ static int check_dir_block(ext2_filsys fs,
 	int			dir_modified = 0;
 	int			dot_state;
 	blk_t			block_nr = db->blk;
-	ino_t 			ino = db->ino;
+	ext2_ino_t 		ino = db->ino;
 	__u16			links;
 	struct check_dir_struct	*cd;
 	char 			*buf;
@@ -619,7 +619,7 @@ static int deallocate_inode_block(ext2_filsys fs,
 /*
  * This fuction deallocates an inode
  */
-static void deallocate_inode(e2fsck_t ctx, ino_t ino,
+static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino,
 			     char* block_buf)
 {
 	ext2_filsys fs = ctx->fs;
@@ -658,7 +658,8 @@ static void deallocate_inode(e2fsck_t ctx, ino_t ino,
 	}
 }
 
-extern int e2fsck_process_bad_inode(e2fsck_t ctx, ino_t dir, ino_t ino)
+extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
+				    ext2_ino_t ino)
 {
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode	inode;

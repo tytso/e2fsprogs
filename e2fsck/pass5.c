@@ -223,7 +223,7 @@ redo_counts:
 static void check_inode_bitmaps(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	ino_t	i;
+	ext2_ino_t	i;
 	int	free_inodes = 0;
 	int	group_free = 0;
 	int	dirs_count = 0;
@@ -392,7 +392,7 @@ do_counts:
 static void check_inode_end(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	ino_t	end, save_inodes_count, i;
+	ext2_ino_t	end, save_inodes_count, i;
 	struct problem_context	pctx;
 
 	clear_problem_context(&pctx);

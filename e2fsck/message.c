@@ -172,7 +172,7 @@ static void safe_print(const char *cp, int len)
  * This function prints a pathname, using the ext2fs_get_pathname
  * function
  */
-static void print_pathname(ext2_filsys fs, ino_t dir, ino_t ino)
+static void print_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino)
 {
 	errcode_t	retval;
 	char		*path;
@@ -355,16 +355,16 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		printf("%u", ctx->blk2);
 		break;
 	case 'd':
-		printf("%lu", ctx->dir);
+		printf("%u", ctx->dir);
 		break;
 	case 'g':
 		printf("%d", ctx->group);
 		break;
 	case 'i':
-		printf("%lu", ctx->ino);
+		printf("%u", ctx->ino);
 		break;
 	case 'j':
-		printf("%lu", ctx->ino2);
+		printf("%u", ctx->ino2);
 		break;
 	case 'm':
 		printf("%s", error_message(ctx->errcode));

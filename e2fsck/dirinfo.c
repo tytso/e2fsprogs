@@ -12,11 +12,11 @@
  * entry.  During pass1, the passed-in parent is 0; it will get filled
  * in during pass2.  
  */
-void e2fsck_add_dir_info(e2fsck_t ctx, ino_t ino, ino_t parent)
+void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 {
 	struct dir_info *dir;
 	int		i, j;
-	ino_t		num_dirs;
+	ext2_ino_t	num_dirs;
 	errcode_t	retval;
 	unsigned long	old_size;
 
@@ -77,7 +77,7 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ino_t ino, ino_t parent)
  * get_dir_info() --- given an inode number, try to find the directory
  * information entry for it.
  */
-struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ino_t ino)
+struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ext2_ino_t ino)
 {
 	int	low, high, mid;
 

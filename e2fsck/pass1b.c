@@ -65,7 +65,7 @@
  */
 struct dup_block {
 	blk_t		block;		/* Block number */
-	ino_t		ino;		/* Inode number */
+	ext2_ino_t	ino;		/* Inode number */
 	int		num_bad;
 	/* Pointer to next dup record with different block */
 	struct dup_block *next_block;
@@ -81,7 +81,7 @@ struct dup_block {
  * of multiply-claimed blocks.
  */
 struct dup_inode {
-	ino_t			ino, dir;
+	ext2_ino_t		ino, dir;
 	int			num_dupblocks;
 	struct ext2_inode	inode;
 	struct dup_inode	*next;
@@ -152,16 +152,16 @@ void e2fsck_pass1_dupblocks(e2fsck_t ctx, char *block_buf)
  * Scan the inodes looking for inodes that contain duplicate blocks.
  */
 struct process_block_struct {
-	ino_t	ino;
-	int	dup_blocks;
-	e2fsck_t ctx;
+	ext2_ino_t	ino;
+	int		dup_blocks;
+	e2fsck_t	ctx;
 	struct problem_context *pctx;
 };
 
 static void pass1b(e2fsck_t ctx, char *block_buf)
 {
 	ext2_filsys fs = ctx->fs;
-	ino_t	ino;
+	ext2_ino_t ino;
 	struct ext2_inode inode;
 	ext2_inode_scan	scan;
 	struct process_block_struct pb;
@@ -295,11 +295,11 @@ static int process_pass1b_block(ext2_filsys fs,
  */
 struct search_dir_struct {
 	int		count;
-	ino_t		first_inode;
-	ino_t		max_inode;
+	ext2_ino_t	first_inode;
+	ext2_ino_t	max_inode;
 };
 
-static int search_dirent_proc(ino_t dir, int entry,
+static int search_dirent_proc(ext2_ino_t dir, int entry,
 			      struct ext2_dir_entry *dirent,
 			      int offset, int blocksize,
 			      char *buf, void *priv_data)
@@ -372,7 +372,7 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 	ext2_filsys fs = ctx->fs;
 	struct dup_inode	*p, *s;
 	struct dup_block	*q, *r;
-	ino_t	*shared;
+	ext2_ino_t		*shared;
 	int	shared_len;
 	int	i;
 	int	file_ok;
@@ -386,8 +386,8 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 
 	pctx.num = dup_inode_count;
 	fix_problem(ctx, PR_1D_NUM_DUP_INODES, &pctx);
-	shared = (ino_t *) e2fsck_allocate_memory(ctx,
-				sizeof(ino_t) * dup_inode_count,
+	shared = (ext2_ino_t *) e2fsck_allocate_memory(ctx,
+				sizeof(ext2_ino_t) * dup_inode_count,
 				"Shared inode list");
 	for (p = dup_ino; p; p = p->next) {
 		shared_len = 0;
@@ -552,7 +552,7 @@ static void delete_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 
 struct clone_struct {
 	errcode_t	errcode;
-	ino_t		dir;
+	ext2_ino_t	dir;
 	char	*buf;
 	e2fsck_t ctx;
 };

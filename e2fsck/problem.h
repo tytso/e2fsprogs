@@ -13,7 +13,7 @@ typedef __u32 problem_t;
 
 struct problem_context {
 	errcode_t	errcode;
-	ino_t ino, ino2, dir;
+	ext2_ino_t ino, ino2, dir;
 	struct ext2_inode *inode;
 	struct ext2_dir_entry *dirent;
 	blk_t	blk, blk2;

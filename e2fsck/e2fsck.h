@@ -80,9 +80,9 @@
  * directory information.
  */
 struct dir_info {
-	ino_t			ino;	/* Inode number */
-	ino_t			dotdot;	/* Parent according to '..' */
-	ino_t			parent; /* Parent according to treewalk */
+	ext2_ino_t		ino;	/* Inode number */
+	ext2_ino_t		dotdot;	/* Parent according to '..' */
+	ext2_ino_t		parent; /* Parent according to treewalk */
 };
 
 #ifdef RESOURCE_TRACK
@@ -190,7 +190,7 @@ struct e2fsck_struct {
 	/*
 	 * For pass1_check_directory and pass1_get_blocks
 	 */
-	ino_t stashed_ino;
+	ext2_ino_t stashed_ino;
 	struct ext2_inode *stashed_inode;
 
 	/*
@@ -271,8 +271,8 @@ extern void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 extern void test_disk(e2fsck_t ctx);
 
 /* dirinfo.c */
-extern void e2fsck_add_dir_info(e2fsck_t ctx, ino_t ino, ino_t parent);
-extern struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ino_t ino);
+extern void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent);
+extern struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ext2_ino_t ino);
 extern void e2fsck_free_dir_info(e2fsck_t ctx);
 extern int e2fsck_get_num_dirs(e2fsck_t ctx);
 extern int e2fsck_get_num_dirinfo(e2fsck_t ctx);
@@ -291,10 +291,10 @@ extern void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool);
 extern int e2fsck_pass1_check_device_inode(struct ext2_inode *inode);
 
 /* pass2.c */
-extern int e2fsck_process_bad_inode(e2fsck_t ctx, ino_t dir, ino_t ino);
+extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir, ext2_ino_t ino);
 
 /* pass3.c */
-extern int e2fsck_reconnect_file(e2fsck_t ctx, ino_t inode);
+extern int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t inode);
 
 /* super.c */
 void check_super_block(e2fsck_t ctx);

@@ -93,7 +93,7 @@ int main (int argc, char *argv[])
 	int		i;
 	ext2_filsys	fs;
 	ext2_inode_scan	scan;
-	ino_t	ino;
+	ext2_ino_t	ino;
 	struct ext2_inode inode;
 
 	printf(_("size of inode=%d\n"), sizeof(inode));

@@ -164,7 +164,7 @@ static int release_inode_block(ext2_filsys fs,
  * found.  If the inode has a link count, then it is being truncated and
  * not deleted.
  */
-static int release_inode_blocks(e2fsck_t ctx, ino_t ino,
+static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 				struct ext2_inode *inode, char* block_buf,
 				struct problem_context *pctx)
 {
@@ -220,7 +220,7 @@ static int release_orphan_inodes(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	int group;
-	ino_t	ino, next_ino;
+	ext2_ino_t	ino, next_ino;
 	struct ext2_inode inode;
 	struct problem_context pctx;
 	char *block_buf;

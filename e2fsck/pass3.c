@@ -44,12 +44,12 @@
 static void check_root(e2fsck_t ctx);
 static int check_directory(e2fsck_t ctx, struct dir_info *dir,
 			   struct problem_context *pctx);
-static ino_t get_lost_and_found(e2fsck_t ctx);
-static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ino_t parent);
-static errcode_t adjust_inode_count(e2fsck_t ctx, ino_t ino, int adj);
-static errcode_t expand_directory(e2fsck_t ctx, ino_t dir);
+static ext2_ino_t get_lost_and_found(e2fsck_t ctx);
+static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ext2_ino_t parent);
+static errcode_t adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, int adj);
+static errcode_t expand_directory(e2fsck_t ctx, ext2_ino_t dir);
 
-static ino_t lost_and_found = 0;
+static ext2_ino_t lost_and_found = 0;
 static int bad_lost_and_found = 0;
 
 static ext2fs_inode_bitmap inode_loop_detect = 0;
@@ -359,10 +359,10 @@ static int check_directory(e2fsck_t ctx, struct dir_info *dir,
  * This routine gets the lost_and_found inode, making it a directory
  * if necessary
  */
-static ino_t get_lost_and_found(e2fsck_t ctx)
+static ext2_ino_t get_lost_and_found(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	ino_t			ino;
+	ext2_ino_t			ino;
 	blk_t			blk;
 	errcode_t		retval;
 	struct ext2_inode	inode;
@@ -499,7 +499,7 @@ static ino_t get_lost_and_found(e2fsck_t ctx)
 /*
  * This routine will connect a file to lost+found
  */
-int e2fsck_reconnect_file(e2fsck_t ctx, ino_t ino)
+int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t ino)
 {
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
@@ -521,7 +521,7 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ino_t ino)
 		return 1;
 	}
 	
-	sprintf(name, "#%lu", ino);
+	sprintf(name, "#%u", ino);
 	if (ext2fs_read_inode(fs, ino, &inode) == 0)
 		file_type = ext2_file_type(inode.i_mode);
 	retval = ext2fs_link(fs, lost_and_found, name, ino, file_type);
@@ -549,7 +549,7 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ino_t ino)
 /*
  * Utility routine to adjust the inode counts on an inode.
  */
-static errcode_t adjust_inode_count(e2fsck_t ctx, ino_t ino, int adj)
+static errcode_t adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, int adj)
 {
 	ext2_filsys fs = ctx->fs;
 	errcode_t		retval;
@@ -597,7 +597,7 @@ static errcode_t adjust_inode_count(e2fsck_t ctx, ino_t ino, int adj)
  */
 struct fix_dotdot_struct {
 	ext2_filsys	fs;
-	ino_t		parent;
+	ext2_ino_t	parent;
 	int		done;
 	e2fsck_t	ctx;
 };
@@ -635,7 +635,7 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 	return DIRENT_ABORT | DIRENT_CHANGED;
 }
 
-static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ino_t parent)
+static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ext2_ino_t parent)
 {
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
@@ -738,7 +738,7 @@ static int expand_dir_proc(ext2_filsys fs,
 		return BLOCK_CHANGED;
 }
 
-static errcode_t expand_directory(e2fsck_t ctx, ino_t dir)
+static errcode_t expand_directory(e2fsck_t ctx, ext2_ino_t dir)
 {
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;

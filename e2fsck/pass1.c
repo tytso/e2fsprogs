@@ -71,7 +71,7 @@ static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
 /* static char *describe_illegal_block(ext2_filsys fs, blk_t block); */
 
 struct process_block_struct {
-	ino_t		ino;
+	ext2_ino_t	ino;
 	int		is_dir:1, clear:1, suppress:1,
 				fragmented:1, compressed:1;
 	blk_t		num_blocks;
@@ -84,7 +84,7 @@ struct process_block_struct {
 };
 
 struct process_inode_block {
-	ino_t	ino;
+	ext2_ino_t ino;
 	struct ext2_inode inode;
 };
 
@@ -186,7 +186,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	int	i;
 	__u64	max_sizes;
 	ext2_filsys fs = ctx->fs;
-	ino_t	ino;
+	ext2_ino_t	ino;
 	struct ext2_inode inode;
 	ext2_inode_scan	scan;
 	char		*block_buf;
@@ -672,7 +672,7 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 {
 	int			i;
 	struct ext2_inode	*old_stashed_inode;
-	ino_t			old_stashed_ino;
+	ext2_ino_t		old_stashed_ino;
 	const char		*old_operation;
 	char			buf[80];
 	struct problem_context	pctx;
@@ -695,7 +695,7 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 #if 0
 		printf("%u ", pctx.ino);
 #endif
-		sprintf(buf, _("reading indirect blocks of inode %lu"),
+		sprintf(buf, _("reading indirect blocks of inode %u"),
 			pctx.ino);
 		ehandler_operation(buf);
 		check_blocks(ctx, &pctx, block_buf);
@@ -824,7 +824,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 {
 	ext2_filsys fs = ctx->fs;
 	struct process_block_struct pb;
-	ino_t		ino = pctx->ino;
+	ext2_ino_t	ino = pctx->ino;
 	struct ext2_inode *inode = pctx->inode;
 	int		bad_size = 0;
 	__u64		size;
@@ -1475,7 +1475,8 @@ static void mark_table_blocks(e2fsck_t ctx)
  * structure, so there's no point in letting the ext2fs library read
  * the inode again.
  */
-static errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
+static errcode_t pass1_get_blocks(ext2_filsys fs, ext2_ino_t ino,
+				  blk_t *blocks)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 	int	i;
@@ -1488,7 +1489,7 @@ static errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 	return 0;
 }
 
-static errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino,
+static errcode_t pass1_read_inode(ext2_filsys fs, ext2_ino_t ino,
 				  struct ext2_inode *inode)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
@@ -1499,7 +1500,7 @@ static errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino,
 	return 0;
 }
 
-static errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
+static errcode_t pass1_write_inode(ext2_filsys fs, ext2_ino_t ino,
 			    struct ext2_inode *inode)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
@@ -1509,7 +1510,7 @@ static errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
 	return EXT2_ET_CALLBACK_NOTHANDLED;
 }
 
-static errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino)
+static errcode_t pass1_check_directory(ext2_filsys fs, ext2_ino_t ino)
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 

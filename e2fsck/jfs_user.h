@@ -26,8 +26,8 @@ struct buffer_head {
 };
 
 struct inode {
-	e2fsck_t i_ctx;
-	ino_t	 i_ino;
+	e2fsck_t	i_ctx;
+	ext2_ino_t	i_ino;
 	struct ext2_inode i_ext2;
 };
 

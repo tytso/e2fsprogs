@@ -104,7 +104,7 @@ int main (int argc, char *argv[])
 	errcode_t	retval = 0;
 	int		exit_value = FSCK_OK;
 	ext2_filsys	fs;
-	ino_t	ino;
+	ext2_ino_t	ino;
 	int	num_inodes = 0;
 	struct ext2_inode inode;
 	ext2_inode_scan	scan;

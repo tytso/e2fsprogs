@@ -17,7 +17,7 @@
 #include "e2fsck.h"
 
 struct swap_block_struct {
-	ino_t		ino;
+	ext2_ino_t	ino;
 	int		isdir;
 	errcode_t	errcode;
 	char		*dir_buf;
@@ -75,7 +75,7 @@ static int swap_block(ext2_filsys fs, blk_t *block_nr, int blockcnt,
  * This function is responsible for byte-swapping all of the indirect,
  * block pointers.  It is also responsible for byte-swapping directories.
  */
-static void swap_inode_blocks(e2fsck_t ctx, ino_t ino, char *block_buf,
+static void swap_inode_blocks(e2fsck_t ctx, ext2_ino_t ino, char *block_buf,
 			      struct ext2_inode *inode)
 {
 	errcode_t			retval;
@@ -109,7 +109,7 @@ static void swap_inodes(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	int			i, group;
-	ino_t			ino = 1;
+	ext2_ino_t		ino = 1;
 	char 			*buf, *block_buf;
 	errcode_t		retval;
 	struct ext2_inode *	inode;

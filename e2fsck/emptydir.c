@@ -23,7 +23,7 @@ struct empty_dir_info_struct {
 	ext2fs_block_bitmap empty_dir_blocks;
 	ext2fs_inode_bitmap dir_map;
 	char *block_buf;
-	ino_t	ino;
+	ext2_ino_t ino;
 	struct ext2_inode inode;
 	blk_t	logblk;
 	blk_t	freed_blocks;

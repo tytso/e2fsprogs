@@ -149,14 +149,15 @@ static void e2fsck_clear_recover(e2fsck_t ctx, int error)
 
 static int e2fsck_journal_init_inode(e2fsck_t ctx,
 				     struct ext2_super_block *s,
-				     ino_t journal_inum, journal_t **journal)
+				     ext2_ino_t journal_inum,
+				     journal_t **journal)
 {
 	struct inode *inode;
 	struct buffer_head *bh;
 	blk_t start;
 	int retval;
 
-	jfs_debug(1, "Using journal inode %lu\n", journal_inum);
+	jfs_debug(1, "Using journal inode %u\n", journal_inum);
 	*journal = e2fsck_allocate_memory(ctx, sizeof(journal_t), "journal");
 	if (!*journal) {
 		return EXT2_ET_NO_MEMORY;

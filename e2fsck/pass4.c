@@ -23,7 +23,7 @@
  * This subroutine returns 1 then the caller shouldn't bother with the
  * rest of the pass 4 tests.
  */
-static int disconnect_inode(e2fsck_t ctx, ino_t i)
+static int disconnect_inode(e2fsck_t ctx, ext2_ino_t i)
 {
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode	inode;
@@ -79,7 +79,7 @@ static int disconnect_inode(e2fsck_t ctx, ino_t i)
 void e2fsck_pass4(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	ino_t	i;
+	ext2_ino_t	i;
 	struct ext2_inode	inode;
 #ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
