@@ -422,6 +422,8 @@ void blkid_read_cache(blkid_cache cache)
 			continue;
 		}
 	}
+	fclose(file);
+
 	/*
 	 * Initially we do not need to write out the cache file.
 	 */
