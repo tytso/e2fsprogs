@@ -27,6 +27,7 @@ OBJS= ext2_err.o \
 	dupfs.o \
 	expanddir.o \
 	fileio.o \
+	finddev.o \
 	freefs.o \
 	get_pathname.o \
 	getsize.o \
@@ -75,6 +76,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/dupfs.c \
 	$(srcdir)/expanddir.c \
 	$(srcdir)/fileio.c \
+	$(srcidr)/finddev.c \
 	$(srcdir)/freefs.c \
 	$(srcdir)/get_pathname.c \
 	$(srcdir)/getsize.c \

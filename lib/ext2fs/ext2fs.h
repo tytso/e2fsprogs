@@ -708,6 +708,9 @@ extern errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
 extern ext2_off_t ext2fs_file_get_size(ext2_file_t file);
 extern errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size);
 
+/* finddev.c */
+extern char *ext2fs_find_block_device(dev_t device);
+
 /* freefs.c */
 extern void ext2fs_free(ext2_filsys fs);
 extern void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap);
