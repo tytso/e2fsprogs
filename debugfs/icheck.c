@@ -108,6 +108,8 @@ void do_icheck(int argc, char **argv)
 	while (ino) {
 		if (!inode.i_links_count)
 			goto next;
+		if (!ext2fs_inode_has_valid_blocks(&inode))
+			goto next;
 		/*
 		 * To handle filesystems touched by 0.3c extfs; can be
 		 * removed later.
