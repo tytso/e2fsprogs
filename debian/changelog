@@ -1,3 +1,19 @@
+e2fsprogs (1.35-4) unstable; urgency=low
+
+  * Fix bug in the blkid library (introduced in 1.35-3) which caused
+    the probe function to completely malfunction.  (Closes: #239191)
+  * Make the debugfs command's link command set the filetype information
+    correctly.
+  * Update the Polish, Sweedish, and Turkish translations
+  * Add an -o option to the blkid program which allows the user to 
+    control the output format of blkid.
+  * Fixed and cleaned up the tune2fs and blkid man pages (Closes: #238741)
+  * Improve UUID generation algorithm (use all 14 bits in the clock sequence)
+  * Change the license on the UUID library to be 3-clause BSD.
+  * Remove the only-partially-implemented -p option to blkid.	
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 21 Mar 2004 20:17:03 -0500
+
 e2fsprogs (1.35-3) unstable; urgency=low
 
   * Mention e2image's limitation in writing a normal image file to
@@ -401,7 +417,7 @@ e2fsprogs (1.29-1) unstable; urgency=low
   * New upstream release (Closes: #159423).
   * Fixed typo in chattr manpage (Philipp Matthias Hahn, Closes:
     #162297).
-  * Generate udeb package for debian-installer (Martin Sjögren, Closes:
+  * Generate udeb package for debian-installer (Martin Sjoegren, Closes:
     #162212).
   * Fixed installation of mkinitrd script (don't use dh_install).  Remove
     it from the wrong location where it was, in preinst.  Hopefully noone
