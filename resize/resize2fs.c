@@ -66,7 +66,7 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs);
 /*
  * This is the top-level routine which does the dirty deed....
  */
-errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags,
+errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 		    errcode_t (*progress)(ext2_resize_t rfs, int pass,
 				     unsigned long cur,
 				     unsigned long max_val))
@@ -95,9 +95,11 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags,
 	if (retval)
 		goto errout;
 
-	retval = adjust_superblock(rfs, new_size);
+	retval = adjust_superblock(rfs, *new_size);
 	if (retval)
 		goto errout;
+
+	*new_size = rfs->new_fs->super->s_blocks_count;
 
 	retval = blocks_to_move(rfs);
 	if (retval)

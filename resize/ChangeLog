@@ -1,3 +1,20 @@
+2002-03-31    <tytso@mit.edu>
+
+	* main.c (main): If we are resizing a plain file which is smaller
+		than the requested size, then we will attempt to
+		transparently extend the filesize in a sparse fashion by
+		writing a block at the end of the requested part of the
+		filesystem.
+
+	* main.c (main), resize2fs.c (resize_fs), resize2fs.h: Change the
+		function prototype of resize_fs() so that it can modify
+		the new_size parameter with the actual new size of the
+		filesystem after the resize operation.  (This can
+		sometimes be less than the requested new size if there
+		isn't enough space to create the necessary block group
+		metadata for that last bit of disk space.)  Resize2fs now
+		prints the actual new size of the filesystem when it finishes.
+
 2002-03-08  Theodore Tso  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.27

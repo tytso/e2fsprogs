@@ -19,6 +19,7 @@ extern char *optarg;
 extern int optind;
 #endif
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #include "resize2fs.h"
 
@@ -119,6 +120,7 @@ int main (int argc, char ** argv)
 	blk_t		max_size = 0;
 	io_manager	io_ptr;
 	char		*tmp;
+	struct stat	st_buf;
 	
 	initialize_ext2_error_table();
 
@@ -223,6 +225,21 @@ int main (int argc, char ** argv)
 	}
 	if (!new_size)
 		new_size = max_size;
+	/*
+	 * If we are resizing a plain file, and it's not big enough,
+	 * automatically extend it in a sparse fashion by writing the
+	 * last requested block.
+	 */
+	if ((new_size > max_size) &&
+	    (stat(device_name, &st_buf) == 0) &&
+	    S_ISREG(st_buf.st_mode) &&
+	    ((tmp = malloc(fs->blocksize)) != 0)) {
+		memset(tmp, 0, fs->blocksize);
+		retval = io_channel_write_blk(fs->io, new_size-1, 1, tmp);
+		if (retval == 0)
+			max_size = new_size;
+		free(tmp);
+	}
 	if (!force && (new_size > max_size)) {
 		fprintf(stderr, _("The containing partition (or device)"
 			" is only %d blocks.\nYou requested a new size"
@@ -240,7 +257,7 @@ int main (int argc, char ** argv)
 			device_name);
 		exit(1);
 	}
-	retval = resize_fs(fs, new_size, flags,
+	retval = resize_fs(fs, &new_size, flags,
 			   ((flags & RESIZE_PERCENT_COMPLETE) ?
 			    resize_progress_func : 0));
 	if (retval) {
