@@ -1,3 +1,9 @@
+2004-09-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* tune2fs.8.in: Mention that e2fsck -D might be useful after
+		setting the dir_index filesystem feature.  (Addresses
+		Debian Bug #268148)
+
 2004-07-28  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2image.c, e2image.8.in: Add new option -I which allows the

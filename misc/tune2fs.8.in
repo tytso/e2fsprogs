@@ -358,7 +358,11 @@ must be run on the filesystem to return the filesystem to a consistent state.
 .B Tune2fs
 will print a message requesting that the system administrator run
 .BR e2fsck (8)
-if necessary.
+if necessary.  After setting the 
+.B dir_index
+feature, 
+.B e2fsck -D
+can be run to convert existing directories to the hashed B-tree format.
 .IP
 .B Warning:
 Linux kernels before 2.0.39 and many 2.1 series kernels do not support
