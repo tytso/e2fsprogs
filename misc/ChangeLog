@@ -1,3 +1,98 @@
+2000-01-18  Theodore Ts'o  <tytso@valinux.com>
+
+	* badblocks.c: Folded in patches David Beattie <dbeattie@usa.net>.
+		Need to do cleanup before release: use of GCC extensions
+		(dynamic arrays); unclean coding tricks (use of || instead
+		of if statements, etc.).  Comments from David Beattie:
+
+		"I added non-destructive write-testing, and quite a few
+		other features.  The non-destructive write testing,
+		triggered by new "-n" command-line option, will write test
+		patterns to the disk, but only after reading data off the
+		disk into memory.  Then, comparing the test patterns gives
+		a result as to whether or not those sectors are reliable.
+		Finally, the original data is written back.
+
+		To streamline this operation, I added another option, "-c
+		blocks_at_once", which will give the number of disk blocks
+		to process at one time (mnemonic--"count").  I made this
+		default to 16 (as in the read-only testing mode), and also
+		affect the read-only testing mode.  Of course, read-only
+		mode needs (count * block_size) amount of memory, and
+		non-destructive read-write needs 3 times that much, so it
+		makes sense to do the calculations and not overrun
+		available RAM...I would have liked to implement and
+		auto-memory-usage heuristic, but I have no idea if it's
+		even possible to determine the amount of free memory on a
+		Unix system except by reading /proc entries, and that
+		didn't seem portable.  I did NOT make this blocks_at_once
+		affect the behavior of the test_rw routine, as it is
+		processing the whole disk at once, anyway.
+
+		I *think* that I got higher detection rates on my hard
+		drive using random test data than patterned test data, so
+		my non-destructive mode initializes its test data buffer
+		randomly.
+
+		I fixed a typo in flush_bufs that caused the ioctl
+		BLKFLSBUF to never get compiled into the program.
+
+		Also, I added an "undocumented" (I didn't put it into the
+		usage message; you can if you think it's useful) "-h"
+		option to specify the host device to flush--useful if you
+		want to test out my "non-destructive" code on something
+		other than a hard drive, such as a file on a hard drive,
+		and want the host hard drive to flush.
+
+		I provided support for an "input" file (via option "-i",
+		similar to the "-o" option)...containing a list of
+		already-known bad blocks; it will skip testing those
+		blocks, thus adding speed to the bad block scan (on my
+		computer, hitting a physically bad block causes a
+		half-second-or-more freeze as the kernel waits for the
+		hard drive to give up and reset itself; pretty annoying
+		when you already know the block is bad from a previous
+		scan).
+	
+		Finally, the real killer, the persistent re-scan (option:
+		"-p num_passes") that I created will, if desired,
+		persistently re-scan the drive until it has completed a
+		user-decidable number of passes in a row during which no 
+		new bad blocks are found.  On my drive, I would see
+		behavior that a certain percentage of bad blocks would be
+		found with each pass (it was not reliable in the defective
+		areas!), so I wanted it to check it over and over again
+		until it didn't find any more, several times.  Perhaps
+		this will be useful to others.  Defaults of course to
+		zero, meaning it will stop after the first pass.  I used
+		"-p 2" on my drive, and it ran for 2 1/2 days...then used
+		"-p 3" a couple days later and it ran for a few more
+		hours, and since then the rest of my drive has been
+		completely reliable.
+
+		Implementation of these last two features, "-i" and "-p",
+		I did using a bb_list from libext2fs.  I debated whether
+		bad blocks input through "-i" should be output into the
+		"-o" file (or stdout, of course), and decided against it,
+		but left the code to do so in place, commented out, just
+		for your information.
+
+		In order to maintain data integrity upon interruption of a
+		non-destructive-write test, I created a signal handler
+		which I install which will write back whatever original
+		disk data is in the buffers upon any of the fatal signals
+		(except SIGKILL, of course).
+
+		Of course, ideally, the new options would be reflected in
+		the badblocks manual page, but I am not experienced at
+		manual page modification; if you decide my patch to
+		badblocks should be incorporated into the distribution, I
+		could learn how to update the manpage and other
+		documentation, or you could do it for me after exercising
+		your opinions, if you have any, on exactly what the
+		command-line parameters should be called and which ones
+		should be in the distribution."
+
 2000-01-07  Theodore Ts'o  <tytso@valinux.com>
 
 	* Really fix the bug where "fsck -As" will actually allow
