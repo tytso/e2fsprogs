@@ -1,3 +1,9 @@
+2002-02-12  Theodore Tso  <tytso@valinux.com>
+
+	* requests.c (DECLARE): Fix bug in non-STDC declaration --- we
+		had a mismatch in the function signature and parameter
+		declaration sections for info/infop.
+
 2002-02-03  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.26

@@ -1,3 +1,17 @@
+2002-02-12  Theodore Tso  <tytso@valinux.com>
+
+	* Makefile.in (tst_badblocks): Add some extra .o files when
+		linking the debugging program tst_badblocks which are
+		needed if we aren't compiling with inline functions enable.
+
+	* kernel-list.h (__inline__): On non-gcc and non-Watcom compilers,
+		define away __inline__ since it may not be supported.
+
+	* kernel-jbd.h (jbd_debug): For systems that don't do STDC, use a
+		stripped down jbd_debug that doesn't use variadic
+		arguments.  This will cause warnings under AIX, but things
+		should still build.
+
 2002-02-03  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.26

@@ -1,3 +1,12 @@
+2002-02-12  Theodore Tso  <tytso@valinux.com>
+
+	* get_device_by_label.c: Since on non-STDC compilers, we define
+		away const, include get_device_by_label.h after we include
+		fsck.h.
+
+	* Makefile.in (base_device): Remove use of $<, which is
+		non-portable.
+
 2002-02-03  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.26

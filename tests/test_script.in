@@ -37,9 +37,9 @@ do
 	fi
 	if [ -f $test_dir/name ]; then
 		test_description=`cat $test_dir/name`
-		echo -n "$test_name: $test_description: "
+		printf "%s: %s: " "$test_name" "$test_description"
 	else
-		echo -n "$test_name: "
+		printf "%s: " "$test_name"
 	fi
 	if [ -f $test_dir/script ]; then
 		. $test_dir/script

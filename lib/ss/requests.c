@@ -20,8 +20,8 @@
 #define	DECLARE(name) void name(int argc,const char * const *argv, \
 				int sci_idx, void *infop)
 #else
-#define	DECLARE(name) void name(argc,argv,sci_idx,info)int argc,sci_idx;char **argv;void *infop;
-
+#define	DECLARE(name) void name(argc,argv,sci_idx,infop) \
+	int argc,sci_idx;char **argv;void *infop;
 #endif
 	
 /*

@@ -30,8 +30,8 @@
 #endif
 #include <dirent.h>
 #include "nls-enable.h"
-#include "get_device_by_label.h"
 #include "fsck.h"
+#include "get_device_by_label.h"
 
 /* function prototype from libext2 */
 extern char *ext2fs_find_block_device(dev_t device);

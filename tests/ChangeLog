@@ -1,3 +1,14 @@
+2002-02-12  Theodore Tso  <tytso@valinux.com>
+
+	* run_e2fsck (status): Use separate sed invocations for greater
+		portabilty.  AIX's sed doesn't support multiple -e
+		specifications, even though it's required by Unix 98.
+
+	* test_script.in: Use printf instead of "echo -n", since the -n
+		option to echo is a BSD'ism which isn't specified by the
+		Unix 98 / SUSv3 specification.  (And which of course, AIX
+		doesn't implement as a result.)
+
 2002-02-03  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.26

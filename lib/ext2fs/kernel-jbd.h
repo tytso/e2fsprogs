@@ -32,6 +32,7 @@
 
 #define journal_oom_retry 1
 
+#ifdef __STDC__
 #ifdef CONFIG_JBD_DEBUG
 /*
  * Define JBD_EXPENSIVE_CHECKING to enable more expensive internal
@@ -51,6 +52,9 @@ extern int journal_enable_debug;
 	} while (0)
 #else
 #define jbd_debug(f, a...)	/**/
+#endif
+#else
+#define jbd_debug(x)		/* AIX doesn't do STDC */
 #endif
 
 extern void * __jbd_kmalloc (char *where, size_t size, int flags, int retry);
