@@ -1,7 +1,7 @@
 2001-06-13  Theodore Tso  <tytso@valinux.com>
 
 	* ismounted.c (check_mntent_file): Work around GNU hurd brain
-		damage.
+		damage.  Addresses Debian bug #100304.
 
 	* Makefile.in: Limit some .o files from being included into the
 		library if --disable-debugfs, --disable-swapfs,

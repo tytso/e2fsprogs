@@ -14,7 +14,7 @@
 
 	* fsck.c (device_already_active): Fixed bug which can cause fsck
 		to core dump if there are a mix of devices with standard
-		and non-standard names.
+		and non-standard names.  (Addresses Debian bug #100559)
 
 2001-06-07  Theodore Tso  <tytso@valinux.com>
 
