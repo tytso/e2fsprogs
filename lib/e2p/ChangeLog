@@ -1,3 +1,8 @@
+2001-05-20  Theodore Tso  <tytso@valinux.com>
+
+	* e2p.h: #include <> instead of "" for ext2fs and et header files,
+		since they will be installed in /usr/include
+
 2001-05-14  Theodore Tso  <tytso@valinux.com>
 
 	* e2p.h: Change location of ext2_fs.h to be ext2fs/ext2_fs.h

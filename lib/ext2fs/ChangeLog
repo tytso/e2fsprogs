@@ -1,3 +1,8 @@
+2001-05-20  Theodore Tso  <tytso@valinux.com>
+
+	* ext2fs.h: #include <> instead of "" for ext2fs and et header
+		files, since they will be installed in /usr/include
+
 2001-05-14  Theodore Tso  <tytso@valinux.com>
 
 	* alloc.c, alloc_tables.c, badblocks.c, bb_compat.c, bb_inode.c,
