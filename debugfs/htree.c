@@ -207,7 +207,7 @@ void do_htree_dump(int argc, char *argv[])
 
 	if (argc > optind+1) {
 		com_err(0, 0, "Usage: htree_dump [-l] file");
-		return;
+		goto errout;
 	}
 
 	if (argc == optind)
@@ -215,25 +215,25 @@ void do_htree_dump(int argc, char *argv[])
 	else
 		ino = string_to_inode(argv[optind]);
 	if (!ino)
-		return;
+		goto errout;
 
 	if (debugfs_read_inode(ino, &inode, argv[1]))
-		return;
+		goto errout;
 
 	if (!LINUX_S_ISDIR(inode.i_mode)) {
 		com_err(argv[0], 0, "Not a directory");
-		return;
+		goto errout;
 	}
 	
 	if ((inode.i_flags & EXT2_BTREE_FL) == 0) {
 		com_err(argv[0], 0, "Not a hash-indexed directory");
-		return;
+		goto errout;
 	}
 
 	buf = malloc(2*current_fs->blocksize);
 	if (!buf) {
 		com_err(argv[0], 0, "Couldn't allocate htree buffer");
-		return;
+		goto errout;
 	}
 
 	errcode = io_channel_read_blk(current_fs->io, inode.i_block[0], 

@@ -1,3 +1,9 @@
+2002-07-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* htree.c (do_htree_dump): Fix a bug where we were not cleanly
+		closing the pager after errors, which would leave the
+		tty in noecho mode.
+
 2002-07-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* htree.c (htree_dump_int_node): Add byte swapping code sot that
