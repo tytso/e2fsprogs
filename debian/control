@@ -93,6 +93,7 @@ Package: libuuid1-udeb
 Section: debian-installer
 Priority: required
 Depends: ${shlibs:Depends}
+Provides: libuuid1
 Replaces: libuuid1
 Architecture: any
 Description: Universally unique id library
