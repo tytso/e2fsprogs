@@ -22,8 +22,7 @@ errcode_t e2fsck_allocate_context(e2fsck_t *ret)
 	e2fsck_t	context;
 	errcode_t	retval;
 
-	retval = ext2fs_get_mem(sizeof(struct e2fsck_struct),
-				(void **) &context);
+	retval = ext2fs_get_mem(sizeof(struct e2fsck_struct), &context);
 	if (retval)
 		return retval;
 	
@@ -115,15 +114,15 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 	 * Clear the array of invalid meta-data flags
 	 */
 	if (ctx->invalid_inode_bitmap_flag) {
-		ext2fs_free_mem((void **) &ctx->invalid_inode_bitmap_flag);
+		ext2fs_free_mem(&ctx->invalid_inode_bitmap_flag);
 		ctx->invalid_inode_bitmap_flag = 0;
 	}
 	if (ctx->invalid_block_bitmap_flag) {
-		ext2fs_free_mem((void **) &ctx->invalid_block_bitmap_flag);
+		ext2fs_free_mem(&ctx->invalid_block_bitmap_flag);
 		ctx->invalid_block_bitmap_flag = 0;
 	}
 	if (ctx->invalid_inode_table_flag) {
-		ext2fs_free_mem((void **) &ctx->invalid_inode_table_flag);
+		ext2fs_free_mem(&ctx->invalid_inode_table_flag);
 		ctx->invalid_inode_table_flag = 0;
 	}
 
@@ -160,7 +159,7 @@ void e2fsck_free_context(e2fsck_t ctx)
 	if (ctx->blkid)
 		blkid_put_cache(ctx->blkid);
 			
-	ext2fs_free_mem((void **) &ctx);
+	ext2fs_free_mem(&ctx);
 }
 
 /*

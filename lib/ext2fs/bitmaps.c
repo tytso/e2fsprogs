@@ -35,8 +35,8 @@ static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
 	errcode_t		retval;
 	size_t			size;
 
-	retval = ext2fs_get_mem(sizeof(struct ext2fs_struct_generic_bitmap),
-				(void **) &bitmap);
+	retval = ext2fs_get_mem(sizeof(struct ext2fs_struct_generic_bitmap), 
+				&bitmap);
 	if (retval)
 		return retval;
 
@@ -47,10 +47,9 @@ static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
 	bitmap->real_end = real_end;
 	bitmap->base_error_code = EXT2_ET_BAD_GENERIC_MARK;
 	if (descr) {
-		retval = ext2fs_get_mem(strlen(descr)+1,
-					(void **) &bitmap->description);
+		retval = ext2fs_get_mem(strlen(descr)+1, &bitmap->description);
 		if (retval) {
-			ext2fs_free_mem((void **) &bitmap);
+			ext2fs_free_mem(&bitmap);
 			return retval;
 		}
 		strcpy(bitmap->description, descr);
@@ -58,10 +57,10 @@ static errcode_t make_bitmap(__u32 start, __u32 end, __u32 real_end,
 		bitmap->description = 0;
 
 	size = (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1);
-	retval = ext2fs_get_mem(size, (void **) &bitmap->bitmap);
+	retval = ext2fs_get_mem(size, &bitmap->bitmap);
 	if (retval) {
-		ext2fs_free_mem((void **) &bitmap->description);
-		ext2fs_free_mem((void **) &bitmap);
+		ext2fs_free_mem(&bitmap->description);
+		ext2fs_free_mem(&bitmap);
 		return retval;
 	}
 

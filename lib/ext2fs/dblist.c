@@ -68,8 +68,7 @@ static errcode_t make_dblist(ext2_filsys fs, ext2_ino_t size, ext2_ino_t count,
 	    (fs->dblist->magic == EXT2_ET_MAGIC_DBLIST))
 		return 0;
 
-	retval = ext2fs_get_mem(sizeof(struct ext2_struct_dblist),
-				(void **) &dblist);
+	retval = ext2fs_get_mem(sizeof(struct ext2_struct_dblist), &dblist);
 	if (retval)
 		return retval;
 	memset(dblist, 0, sizeof(struct ext2_struct_dblist));
@@ -86,7 +85,7 @@ static errcode_t make_dblist(ext2_filsys fs, ext2_ino_t size, ext2_ino_t count,
 	}
 	len = (size_t) sizeof(struct ext2_db_entry) * dblist->size;
 	dblist->count = count;
-	retval = ext2fs_get_mem(len, (void **) &dblist->list);
+	retval = ext2fs_get_mem(len, &dblist->list);
 	if (retval)
 		goto cleanup;
 	
@@ -101,7 +100,7 @@ static errcode_t make_dblist(ext2_filsys fs, ext2_ino_t size, ext2_ino_t count,
 	return 0;
 cleanup:
 	if (dblist)
-		ext2fs_free_mem((void **) &dblist);
+		ext2fs_free_mem(&dblist);
 	return retval;
 }
 
@@ -167,7 +166,7 @@ errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ext2_ino_t ino, blk_t blk,
 		dblist->size += 100;
 		retval = ext2fs_resize_mem(old_size, (size_t) dblist->size *
 					   sizeof(struct ext2_db_entry),
-					   (void **) &dblist->list);
+					   &dblist->list);
 		if (retval) {
 			dblist->size -= 100;
 			return retval;

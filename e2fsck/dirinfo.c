@@ -40,7 +40,7 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 		ctx->dir_info_size += 10;
 		retval = ext2fs_resize_mem(old_size, ctx->dir_info_size *
 					   sizeof(struct dir_info),
-					   (void **) &ctx->dir_info);
+					   &ctx->dir_info);
 		if (retval) {
 			ctx->dir_info_size -= 10;
 			return;
@@ -110,7 +110,7 @@ struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ext2_ino_t ino)
 void e2fsck_free_dir_info(e2fsck_t ctx)
 {
 	if (ctx->dir_info) {
-		ext2fs_free_mem((void **) &ctx->dir_info);
+		ext2fs_free_mem(&ctx->dir_info);
 		ctx->dir_info = 0;
 	}
 	ctx->dir_info_size = 0;

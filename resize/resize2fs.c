@@ -81,8 +81,7 @@ errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 	/*
 	 * Create the data structure
 	 */
-	retval = ext2fs_get_mem(sizeof(struct ext2_resize_struct),
-				(void **) &rfs);
+	retval = ext2fs_get_mem(sizeof(struct ext2_resize_struct), &rfs);
 	if (retval)
 		return retval;
 	memset(rfs, 0, sizeof(struct ext2_resize_struct));
@@ -141,8 +140,8 @@ errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 	
 	ext2fs_free(rfs->old_fs);
 	if (rfs->itable_buf)
-		ext2fs_free_mem((void **) &rfs->itable_buf);
-	ext2fs_free_mem((void **) &rfs);
+		ext2fs_free_mem(&rfs->itable_buf);
+	ext2fs_free_mem(&rfs);
 	
 	return 0;
 
@@ -150,8 +149,8 @@ errout:
 	if (rfs->new_fs)
 		ext2fs_free(rfs->new_fs);
 	if (rfs->itable_buf)
-		ext2fs_free_mem((void **) &rfs->itable_buf);
-	ext2fs_free_mem((void **) &rfs);
+		ext2fs_free_mem(&rfs->itable_buf);
+	ext2fs_free_mem(&rfs);
 	return retval;
 }
 
@@ -271,7 +270,7 @@ retry:
 		retval = ext2fs_resize_mem(rfs->old_fs->desc_blocks *
 					   fs->blocksize,
 					   fs->desc_blocks * fs->blocksize,
-					   (void **) &fs->group_desc);
+					   &fs->group_desc);
 		if (retval)
 			goto errout;
 	}
@@ -326,7 +325,7 @@ retry:
 	 * Initialize the new block group descriptors
 	 */
 	retval = ext2fs_get_mem(fs->blocksize * fs->inode_blocks_per_group,
-				(void **) &rfs->itable_buf);
+				&rfs->itable_buf);
 	if (retval)
 		goto errout;
 
@@ -848,7 +847,7 @@ static errcode_t block_mover(ext2_resize_t rfs)
 	if (!rfs->itable_buf) {
 		retval = ext2fs_get_mem(fs->blocksize *
 					fs->inode_blocks_per_group,
-					(void **) &rfs->itable_buf);
+					&rfs->itable_buf);
 		if (retval)
 			return retval;
 	}
@@ -1065,8 +1064,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 
 	retval = ext2fs_init_dblist(rfs->old_fs, 0);
 	if (retval) goto errout;
-	retval = ext2fs_get_mem(rfs->old_fs->blocksize * 3,
-				(void **) &block_buf);
+	retval = ext2fs_get_mem(rfs->old_fs->blocksize * 3, &block_buf);
 	if (retval) goto errout;
 
 	start_to_move = (rfs->new_fs->group_desc_count *
@@ -1176,7 +1174,7 @@ errout:
 	if (scan)
 		ext2fs_close_inode_scan(scan);
 	if (block_buf)
-		ext2fs_free_mem((void **) &block_buf);
+		ext2fs_free_mem(&block_buf);
 	return retval;
 }
 
@@ -1314,7 +1312,7 @@ static errcode_t move_itables(ext2_resize_t rfs)
 
 	size = fs->blocksize * fs->inode_blocks_per_group;
 	if (!rfs->itable_buf) {
-		retval = ext2fs_get_mem(size, (void **) &rfs->itable_buf);
+		retval = ext2fs_get_mem(size, &rfs->itable_buf);
 		if (retval)
 			return retval;
 	}

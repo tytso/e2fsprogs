@@ -60,12 +60,12 @@ void ext2fs_free_icount(ext2_icount_t icount)
 
 	icount->magic = 0;
 	if (icount->list)
-		ext2fs_free_mem((void **) &icount->list);
+		ext2fs_free_mem(&icount->list);
 	if (icount->single)
 		ext2fs_free_inode_bitmap(icount->single);
 	if (icount->multiple)
 		ext2fs_free_inode_bitmap(icount->multiple);
-	ext2fs_free_mem((void **) &icount);
+	ext2fs_free_mem(&icount);
 }
 
 errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
@@ -82,7 +82,7 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
 			size = (size_t) hint->size;
 	}
 	
-	retval = ext2fs_get_mem(sizeof(struct ext2_icount), (void **) &icount);
+	retval = ext2fs_get_mem(sizeof(struct ext2_icount), &icount);
 	if (retval)
 		return retval;
 	memset(icount, 0, sizeof(struct ext2_icount));
@@ -119,7 +119,7 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, int size,
 	printf("Icount allocated %d entries, %d bytes.\n",
 	       icount->size, bytes);
 #endif
-	retval = ext2fs_get_mem(bytes, (void **) &icount->list);
+	retval = ext2fs_get_mem(bytes, &icount->list);
 	if (retval)
 		goto errout;
 	memset(icount->list, 0, bytes);
@@ -181,7 +181,7 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 					   sizeof(struct ext2_icount_el),
 					   (size_t) new_size *
 					   sizeof(struct ext2_icount_el),
-					   (void **) &icount->list);
+					   &icount->list);
 		if (retval)
 			return 0;
 		icount->size = new_size;

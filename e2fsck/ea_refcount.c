@@ -38,8 +38,8 @@ void ea_refcount_free(ext2_refcount_t refcount)
 		return;
 
 	if (refcount->list)
-		ext2fs_free_mem((void **) &refcount->list);
-	ext2fs_free_mem((void **) &refcount);
+		ext2fs_free_mem(&refcount->list);
+	ext2fs_free_mem(&refcount);
 }
 
 errcode_t ea_refcount_create(int size, ext2_refcount_t *ret)
@@ -48,8 +48,7 @@ errcode_t ea_refcount_create(int size, ext2_refcount_t *ret)
 	errcode_t	retval;
 	size_t		bytes;
 
-	retval = ext2fs_get_mem(sizeof(struct ea_refcount),
-				(void **) &refcount);
+	retval = ext2fs_get_mem(sizeof(struct ea_refcount), &refcount);
 	if (retval)
 		return retval;
 	memset(refcount, 0, sizeof(struct ea_refcount));
@@ -62,7 +61,7 @@ errcode_t ea_refcount_create(int size, ext2_refcount_t *ret)
 	printf("Refcount allocated %d entries, %d bytes.\n",
 	       refcount->size, bytes);
 #endif
-	retval = ext2fs_get_mem(bytes, (void **) &refcount->list);
+	retval = ext2fs_get_mem(bytes, &refcount->list);
 	if (retval)
 		goto errout;
 	memset(refcount->list, 0, bytes);
@@ -124,7 +123,7 @@ static struct ea_refcount_el *insert_refcount_el(ext2_refcount_t refcount,
 					   sizeof(struct ea_refcount_el),
 					   (size_t) new_size *
 					   sizeof(struct ea_refcount_el),
-					   (void **) &refcount->list);
+					   &refcount->list);
 		if (retval)
 			return 0;
 		refcount->size = new_size;

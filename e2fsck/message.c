@@ -197,7 +197,7 @@ static void print_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino)
 		fputs("???", stdout);
 	else {
 		safe_print(path, -1);
-		ext2fs_free_mem((void **) &path);
+		ext2fs_free_mem(&path);
 	}
 }
 

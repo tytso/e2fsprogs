@@ -37,7 +37,7 @@ void e2fsck_add_dx_dir(e2fsck_t ctx, ext2_ino_t ino, int num_blocks)
 		ctx->dx_dir_info_size += 10;
 		retval = ext2fs_resize_mem(old_size, ctx->dx_dir_info_size *
 					   sizeof(struct dx_dir_info),
-					   (void **) &ctx->dx_dir_info);
+					   &ctx->dx_dir_info);
 		if (retval) {
 			ctx->dx_dir_info_size -= 10;
 			return;
@@ -117,11 +117,11 @@ void e2fsck_free_dx_dir_info(e2fsck_t ctx)
 		dir = ctx->dx_dir_info;
 		for (i=0; i < ctx->dx_dir_info_count; i++) {
 			if (dir->dx_block) {
-				ext2fs_free_mem((void **) &dir->dx_block);
+				ext2fs_free_mem(&dir->dx_block);
 				dir->dx_block = 0;
 			}
 		}
-		ext2fs_free_mem((void **) &ctx->dx_dir_info);
+		ext2fs_free_mem(&ctx->dx_dir_info);
 		ctx->dx_dir_info = 0;
 	}
 	ctx->dx_dir_info_size = 0;

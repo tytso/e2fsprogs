@@ -69,11 +69,11 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	rec.ind_blocks_size = rec.ind_blocks_ptr = 0;
 	rec.max_ind_blocks = 10;
 	retval = ext2fs_get_mem(rec.max_ind_blocks * sizeof(blk_t),
-				(void **) &rec.ind_blocks);
+				&rec.ind_blocks);
 	if (retval)
 		return retval;
 	memset(rec.ind_blocks, 0, rec.max_ind_blocks * sizeof(blk_t));
-	retval = ext2fs_get_mem(fs->blocksize, (void **) &rec.block_buf);
+	retval = ext2fs_get_mem(fs->blocksize, &rec.block_buf);
 	if (retval)
 		goto cleanup;
 	memset(rec.block_buf, 0, fs->blocksize);
@@ -135,8 +135,8 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 		goto cleanup;
 	
 cleanup:
-	ext2fs_free_mem((void **) &rec.ind_blocks);
-	ext2fs_free_mem((void **) &rec.block_buf);
+	ext2fs_free_mem(&rec.ind_blocks);
+	ext2fs_free_mem(&rec.block_buf);
 	return retval;
 }
 
@@ -177,7 +177,7 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 			rec->max_ind_blocks += 10;
 			retval = ext2fs_resize_mem(old_size, 
 				   rec->max_ind_blocks * sizeof(blk_t),
-				   (void **) &rec->ind_blocks);
+				   &rec->ind_blocks);
 			if (retval) {
 				rec->max_ind_blocks -= 10;
 				rec->err = retval;

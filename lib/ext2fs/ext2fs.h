@@ -886,10 +886,10 @@ extern errcode_t ext2fs_write_bb_FILE(ext2_badblocks_list bb_list,
 
 
 /* inline functions */
-extern errcode_t ext2fs_get_mem(unsigned long size, void **ptr);
-extern errcode_t ext2fs_free_mem(void **ptr);
+extern errcode_t ext2fs_get_mem(unsigned long size, void *ptr);
+extern errcode_t ext2fs_free_mem(void *ptr);
 extern errcode_t ext2fs_resize_mem(unsigned long old_size,
-				   unsigned long size, void **ptr);
+				   unsigned long size, void *ptr);
 extern void ext2fs_mark_super_dirty(ext2_filsys fs);
 extern void ext2fs_mark_changed(ext2_filsys fs);
 extern int ext2fs_test_changed(ext2_filsys fs);
@@ -926,10 +926,12 @@ extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 /*
  *  Allocate memory
  */
-_INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void **ptr)
+_INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void *ptr)
 {
-	*ptr = malloc(size);
-	if (!*ptr)
+	void **pp = (void **)ptr;
+
+	*pp = malloc(size);
+	if (!*pp)
 		return EXT2_ET_NO_MEMORY;
 	return 0;
 }
@@ -937,10 +939,12 @@ _INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void **ptr)
 /*
  * Free memory
  */
-_INLINE_ errcode_t ext2fs_free_mem(void **ptr)
+_INLINE_ errcode_t ext2fs_free_mem(void *ptr)
 {
-	free(*ptr);
-	*ptr = 0;
+	void **pp = (void **)ptr;
+
+	free(*pp);
+	*pp = 0;
 	return 0;
 }
 	
@@ -948,14 +952,15 @@ _INLINE_ errcode_t ext2fs_free_mem(void **ptr)
  *  Resize memory
  */
 _INLINE_ errcode_t ext2fs_resize_mem(unsigned long old_size,
-				     unsigned long size, void **ptr)
+				     unsigned long size, void *ptr)
 {
 	void *p;
+	void **pp = (void **)ptr;
 
-	p = realloc(*ptr, size);
+	p = realloc(*pp, size);
 	if (!p)
 		return EXT2_ET_NO_MEMORY;
-	*ptr = p;
+	*pp = p;
 	return 0;
 }
 #endif	/* Custom memory routines */

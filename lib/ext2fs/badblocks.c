@@ -35,17 +35,16 @@ static errcode_t make_u32_list(int size, int num, __u32 *list,
 	ext2_u32_list	bb;
 	errcode_t	retval;
 	
-	retval = ext2fs_get_mem(sizeof(struct ext2_struct_u32_list),
-				(void **) &bb);
+	retval = ext2fs_get_mem(sizeof(struct ext2_struct_u32_list), &bb);
 	if (retval)
 		return retval;
 	memset(bb, 0, sizeof(struct ext2_struct_u32_list));
 	bb->magic = EXT2_ET_MAGIC_BADBLOCKS_LIST;
 	bb->size = size ? size : 10;
 	bb->num = num;
-	retval = ext2fs_get_mem(bb->size * sizeof(blk_t), (void **) &bb->list);
+	retval = ext2fs_get_mem(bb->size * sizeof(blk_t), &bb->list);
 	if (!bb->list) {
-		ext2fs_free_mem((void **) &bb);
+		ext2fs_free_mem(&bb);
 		return retval;
 	}
 	if (list)
@@ -117,7 +116,7 @@ errcode_t ext2fs_u32_list_add(ext2_u32_list bb, __u32 blk)
 		old_size = bb->size * sizeof(__u32);
 		bb->size += 100;
 		retval = ext2fs_resize_mem(old_size, bb->size * sizeof(__u32),
-					   (void **) &bb->list);
+					   &bb->list);
 		if (retval) {
 			bb->size -= 100;
 			return retval;
@@ -242,8 +241,7 @@ errcode_t ext2fs_u32_list_iterate_begin(ext2_u32_list bb,
 
 	EXT2_CHECK_MAGIC(bb, EXT2_ET_MAGIC_BADBLOCKS_LIST);
 
-	retval = ext2fs_get_mem(sizeof(struct ext2_struct_u32_iterate),
-			      (void **) &iter);
+	retval = ext2fs_get_mem(sizeof(struct ext2_struct_u32_iterate), &iter);
 	if (retval)
 		return retval;
 
@@ -295,7 +293,7 @@ void ext2fs_u32_list_iterate_end(ext2_u32_iterate iter)
 		return;
 
 	iter->bb = 0;
-	ext2fs_free_mem((void **) &iter);
+	ext2fs_free_mem(&iter);
 }
 
 void ext2fs_badblocks_list_iterate_end(ext2_badblocks_iterate iter)

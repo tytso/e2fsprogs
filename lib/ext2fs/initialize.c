@@ -78,8 +78,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	if (!param || !param->s_blocks_count)
 		return EXT2_ET_INVALID_ARGUMENT;
 	
-	retval = ext2fs_get_mem(sizeof(struct struct_ext2_filsys),
-				(void **) &fs);
+	retval = ext2fs_get_mem(sizeof(struct struct_ext2_filsys), &fs);
 	if (retval)
 		return retval;
 	
@@ -94,12 +93,12 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	if (retval)
 		goto cleanup;
 	fs->io->app_data = fs;
-	retval = ext2fs_get_mem(strlen(name)+1, (void **) &fs->device_name);
+	retval = ext2fs_get_mem(strlen(name)+1, &fs->device_name);
 	if (retval)
 		goto cleanup;
 
 	strcpy(fs->device_name, name);
-	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, (void **) &super);
+	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, &super);
 	if (retval)
 		goto cleanup;
 	fs->super = super;
@@ -279,8 +278,7 @@ retry:
 	 * count.
 	 */
 
-	retval = ext2fs_get_mem(strlen(fs->device_name) + 80,
-				(void **) &buf);
+	retval = ext2fs_get_mem(strlen(fs->device_name) + 80, &buf);
 	if (retval)
 		goto cleanup;
 	
@@ -294,10 +292,10 @@ retry:
 	if (retval)
 		goto cleanup;
 
-	ext2fs_free_mem((void **) &buf);
+	ext2fs_free_mem(&buf);
 
 	retval = ext2fs_get_mem((size_t) fs->desc_blocks * fs->blocksize,
-				(void **) &fs->group_desc);
+				&fs->group_desc);
 	if (retval)
 		goto cleanup;
 

@@ -55,7 +55,7 @@ static int expand_dir_proc(ext2_filsys		fs,
 		es->done = 1;
 		retval = ext2fs_write_dir_block(fs, new_blk, block);
 	} else {
-		retval = ext2fs_get_mem(fs->blocksize, (void **) &block);
+		retval = ext2fs_get_mem(fs->blocksize, &block);
 		if (retval) {
 			es->err = retval;
 			return BLOCK_ABORT;
@@ -67,7 +67,7 @@ static int expand_dir_proc(ext2_filsys		fs,
 		es->err = retval;
 		return BLOCK_ABORT;
 	}
-	ext2fs_free_mem((void **) &block);
+	ext2fs_free_mem(&block);
 	*blocknr = new_blk;
 	ext2fs_block_alloc_stats(fs, new_blk, +1);
 	es->newblocks++;

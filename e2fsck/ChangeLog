@@ -1,3 +1,12 @@
+2003-08-01  Philipp Thomas <pthomas@suse.de>
+
+	* dirinfo.c, dx_dirinfo.c, e2fsck.c, ea_refcount.c, journal.c,
+		message.c, pass1.c, pass1b.c, pass2.c, pass3.c, pass4.c,
+		pass5.c, super.c, swapfs.c: ext2fs_getmem(),
+		ext2fs_free_mem(), and ext2fs_resize_mem() all now take a
+		'void *' instead of a 'void **' in order to avoid pointer
+		aliasing problems with GCC 3.x.
+
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.34

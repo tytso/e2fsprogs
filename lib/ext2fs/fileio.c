@@ -46,7 +46,7 @@ errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 	    !(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
 
-	retval = ext2fs_get_mem(sizeof(struct ext2_file), (void **) &file);
+	retval = ext2fs_get_mem(sizeof(struct ext2_file), &file);
 	if (retval)
 		return retval;
 	
@@ -60,7 +60,7 @@ errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 	if (retval)
 		goto fail;
 	
-	retval = ext2fs_get_mem(fs->blocksize * 3, (void **) &file->buf);
+	retval = ext2fs_get_mem(fs->blocksize * 3, &file->buf);
 	if (retval)
 		goto fail;
 
@@ -69,8 +69,8 @@ errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 	
 fail:
 	if (file->buf)
-		ext2fs_free_mem((void **) &file->buf);
-	ext2fs_free_mem((void **) &file);
+		ext2fs_free_mem(&file->buf);
+	ext2fs_free_mem(&file);
 	return retval;
 }
 
@@ -187,8 +187,8 @@ errcode_t ext2fs_file_close(ext2_file_t file)
 	retval = ext2fs_file_flush(file);
 	
 	if (file->buf)
-		ext2fs_free_mem((void **) &file->buf);
-	ext2fs_free_mem((void **) &file);
+		ext2fs_free_mem(&file->buf);
+	ext2fs_free_mem(&file);
 
 	return retval;
 }

@@ -26,8 +26,7 @@ errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)
 
 	EXT2_CHECK_MAGIC(src, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 	
-	retval = ext2fs_get_mem(sizeof(struct struct_ext2_filsys),
-				(void **) &fs);
+	retval = ext2fs_get_mem(sizeof(struct struct_ext2_filsys), &fs);
 	if (retval)
 		return retval;
 
@@ -44,19 +43,18 @@ errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)
 	if (fs->icache)
 		fs->icache->refcount++;
 
-	retval = ext2fs_get_mem(strlen(src->device_name)+1,
-				(void **) &fs->device_name);
+	retval = ext2fs_get_mem(strlen(src->device_name)+1, &fs->device_name);
 	if (retval)
 		goto errout;
 	strcpy(fs->device_name, src->device_name);
 
-	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, (void **) &fs->super);
+	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, &fs->super);
 	if (retval)
 		goto errout;
 	memcpy(fs->super, src->super, SUPERBLOCK_SIZE);
 
 	retval = ext2fs_get_mem((size_t) fs->desc_blocks * fs->blocksize,
-				(void **) &fs->group_desc);
+				&fs->group_desc);
 	if (retval)
 		goto errout;
 	memcpy(fs->group_desc, src->group_desc,

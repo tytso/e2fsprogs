@@ -199,13 +199,12 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 #ifdef EXT2FS_ENABLE_SWAPFS
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		retval = EXT2_ET_NO_MEMORY;
-		retval = ext2fs_get_mem(SUPERBLOCK_SIZE,
-					(void **) &super_shadow);
+		retval = ext2fs_get_mem(SUPERBLOCK_SIZE, &super_shadow);
 		if (retval)
 			goto errout;
 		retval = ext2fs_get_mem((size_t)(fs->blocksize *
 						 fs->desc_blocks),
-					(void **) &group_shadow);
+					&group_shadow);
 		if (retval)
 			goto errout;
 		memset(group_shadow, 0, (size_t) fs->blocksize *
@@ -306,9 +305,9 @@ errout:
 	fs->super->s_state = fs_state;
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
 		if (super_shadow)
-			ext2fs_free_mem((void **) &super_shadow);
+			ext2fs_free_mem(&super_shadow);
 		if (group_shadow)
-			ext2fs_free_mem((void **) &group_shadow);
+			ext2fs_free_mem(&group_shadow);
 	}
 	return retval;
 }

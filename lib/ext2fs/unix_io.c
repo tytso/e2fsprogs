@@ -253,7 +253,7 @@ static errcode_t alloc_cache(io_channel channel,
 		cache->dirty = 0;
 		cache->in_use = 0;
 		if ((retval = ext2fs_get_mem(channel->block_size,
-					     (void **) &cache->buf)))
+					     &cache->buf)))
 			return retval;
 	}
 	return 0;
@@ -273,7 +273,7 @@ static void free_cache(io_channel channel,
 		cache->dirty = 0;
 		cache->in_use = 0;
 		if (cache->buf)
-			ext2fs_free_mem((void **) &cache->buf);
+			ext2fs_free_mem(&cache->buf);
 		cache->buf = 0;
 	}
 }
@@ -374,19 +374,17 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 
 	if (name == 0)
 		return EXT2_ET_BAD_DEVICE_NAME;
-	retval = ext2fs_get_mem(sizeof(struct struct_io_channel),
-				(void **) &io);
+	retval = ext2fs_get_mem(sizeof(struct struct_io_channel), &io);
 	if (retval)
 		return retval;
 	memset(io, 0, sizeof(struct struct_io_channel));
 	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
-	retval = ext2fs_get_mem(sizeof(struct unix_private_data),
-				(void **) &data);
+	retval = ext2fs_get_mem(sizeof(struct unix_private_data), &data);
 	if (retval)
 		goto cleanup;
 
 	io->manager = unix_io_manager;
-	retval = ext2fs_get_mem(strlen(name)+1, (void **) &io->name);
+	retval = ext2fs_get_mem(strlen(name)+1, &io->name);
 	if (retval)
 		goto cleanup;
 
@@ -454,10 +452,10 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 cleanup:
 	if (data) {
 		free_cache(io, data);
-		ext2fs_free_mem((void **) &data);
+		ext2fs_free_mem(&data);
 	}
 	if (io)
-		ext2fs_free_mem((void **) &io);
+		ext2fs_free_mem(&io);
 	return retval;
 }
 
@@ -481,10 +479,10 @@ static errcode_t unix_close(io_channel channel)
 		retval = errno;
 	free_cache(channel, data);
 
-	ext2fs_free_mem((void **) &channel->private_data);
+	ext2fs_free_mem(&channel->private_data);
 	if (channel->name)
-		ext2fs_free_mem((void **) &channel->name);
-	ext2fs_free_mem((void **) &channel);
+		ext2fs_free_mem(&channel->name);
+	ext2fs_free_mem(&channel);
 	return retval;
 }
 

@@ -53,7 +53,7 @@ static int get_pathname_proc(struct ext2_dir_entry *dirent,
 		gp->parent = dirent->inode;
 	if (dirent->inode == gp->search_ino) {
 		retval = ext2fs_get_mem((dirent->name_len & 0xFF) + 1,
-					(void **) &gp->name);
+					&gp->name);
 		if (retval) {
 			gp->errcode = retval;
 			return DIRENT_ABORT;
@@ -74,7 +74,7 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ext2_ino_t dir,
 	errcode_t	retval;
 
 	if (dir == ino) {
-		retval = ext2fs_get_mem(2, (void **)name);
+		retval = ext2fs_get_mem(2, name);
 		if (retval)
 			return retval;
 		strcpy(*name, (dir == EXT2_ROOT_INO) ? "/" : ".");
@@ -82,7 +82,7 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ext2_ino_t dir,
 	}
 
 	if (!dir || (maxdepth < 0)) {
-		retval = ext2fs_get_mem(4, (void **)name);
+		retval = ext2fs_get_mem(4, name);
 		if (retval)
 			return retval;
 		strcpy(*name, "...");
@@ -113,10 +113,9 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ext2_ino_t dir,
 	
 	if (gp.name) 
 		retval = ext2fs_get_mem(strlen(parent_name)+strlen(gp.name)+2,
-					(void **) &ret);
+					&ret);
 	else
-		retval = ext2fs_get_mem(strlen(parent_name)+5,
-					(void **) &ret);
+		retval = ext2fs_get_mem(strlen(parent_name)+5, &ret);
 	if (retval)
 		goto cleanup;
 	
@@ -129,12 +128,12 @@ static errcode_t ext2fs_get_pathname_int(ext2_filsys fs, ext2_ino_t dir,
 	else
 		strcat(ret, "???");
 	*name = ret;
-	ext2fs_free_mem((void **) &parent_name);
+	ext2fs_free_mem(&parent_name);
 	retval = 0;
 	
 cleanup:
 	if (gp.name)
-		ext2fs_free_mem((void **) &gp.name);
+		ext2fs_free_mem(&gp.name);
 	return retval;
 }
 
@@ -146,13 +145,13 @@ errcode_t ext2fs_get_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino,
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
-	retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+	retval = ext2fs_get_mem(fs->blocksize, &buf);
 	if (retval)
 		return retval;
 	if (dir == ino)
 		ino = 0;
 	retval = ext2fs_get_pathname_int(fs, dir, ino, 32, buf, name);
-	ext2fs_free_mem((void **) &buf);
+	ext2fs_free_mem(&buf);
 	return retval;
 	
 }

@@ -71,7 +71,7 @@ errcode_t ext2fs_dir_iterate2(ext2_filsys fs,
 	if (block_buf)
 		ctx.buf = block_buf;
 	else {
-		retval = ext2fs_get_mem(fs->blocksize, (void **) &ctx.buf);
+		retval = ext2fs_get_mem(fs->blocksize, &ctx.buf);
 		if (retval)
 			return retval;
 	}
@@ -81,7 +81,7 @@ errcode_t ext2fs_dir_iterate2(ext2_filsys fs,
 	retval = ext2fs_block_iterate2(fs, dir, 0, 0,
 				       ext2fs_process_dir_block, &ctx);
 	if (!block_buf)
-		ext2fs_free_mem((void **) &ctx.buf);
+		ext2fs_free_mem(&ctx.buf);
 	if (retval)
 		return retval;
 	return ctx.errcode;

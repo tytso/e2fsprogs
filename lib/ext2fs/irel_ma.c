@@ -73,38 +73,38 @@ errcode_t ext2fs_irel_memarray_create(char *name, ext2_ino_t max_inode,
 	 * Allocate memory structures
 	 */
 	retval = ext2fs_get_mem(sizeof(struct ext2_inode_relocation_table),
-		  (void **) &irel);
+				&irel);
 	if (retval)
 		goto errout;
 	memset(irel, 0, sizeof(struct ext2_inode_relocation_table));
 	
-	retval = ext2fs_get_mem(strlen(name)+1, (void **) &irel->name);
+	retval = ext2fs_get_mem(strlen(name)+1, &irel->name);
 	if (retval)
 		goto errout;
 	strcpy(irel->name, name);
 	
-	retval = ext2fs_get_mem(sizeof(struct irel_ma), (void **) &ma);
+	retval = ext2fs_get_mem(sizeof(struct irel_ma), &ma);
 	if (retval)
 		goto errout;
 	memset(ma, 0, sizeof(struct irel_ma));
 	irel->priv_data = ma;
 	
 	size = (size_t) (sizeof(ext2_ino_t) * (max_inode+1));
-	retval = ext2fs_get_mem(size, (void **) &ma->orig_map);
+	retval = ext2fs_get_mem(size, &ma->orig_map);
 	if (retval)
 		goto errout;
 	memset(ma->orig_map, 0, size);
 
 	size = (size_t) (sizeof(struct ext2_inode_relocate_entry) *
 			 (max_inode+1));
-	retval = ext2fs_get_mem(size, (void **) &ma->entries);
+	retval = ext2fs_get_mem(size, &ma->entries);
 	if (retval)
 		goto errout;
 	memset(ma->entries, 0, size);
 
 	size = (size_t) (sizeof(struct inode_reference_entry) *
 			 (max_inode+1));
-	retval = ext2fs_get_mem(size, (void **) &ma->ref_entries);
+	retval = ext2fs_get_mem(size, &ma->ref_entries);
 	if (retval)
 		goto errout;
 	memset(ma->ref_entries, 0, size);
@@ -163,8 +163,7 @@ static errcode_t ima_put(ext2_irel irel, ext2_ino_t old,
 		size = (sizeof(struct ext2_inode_reference) * ent->max_refs);
 		old_size = (sizeof(struct ext2_inode_reference) *
 			    ma->entries[(unsigned) old].max_refs);
-		retval = ext2fs_resize_mem(old_size, size,
-					   (void **) &ref_ent->refs);
+		retval = ext2fs_resize_mem(old_size, size, &ref_ent->refs);
 		if (retval)
 			return retval;
 	}
@@ -250,7 +249,7 @@ static errcode_t ima_add_ref(ext2_irel irel, ext2_ino_t ino,
 	if (ref_ent->refs == 0) {
 		size = (size_t) ((sizeof(struct ext2_inode_reference) * 
 				  ent->max_refs));
-		retval = ext2fs_get_mem(size, (void **) &ref_ent->refs);
+		retval = ext2fs_get_mem(size, &ref_ent->refs);
 		if (retval)
 			return retval;
 		memset(ref_ent->refs, 0, size);
@@ -311,7 +310,7 @@ static errcode_t ima_move(ext2_irel irel, ext2_ino_t old, ext2_ino_t new)
 	
 	ma->entries[(unsigned) new] = ma->entries[(unsigned) old];
 	if (ma->ref_entries[(unsigned) new].refs)
-		ext2fs_free_mem((void **) &ma->ref_entries[(unsigned) new].refs);
+		ext2fs_free_mem(&ma->ref_entries[(unsigned) new].refs);
 	ma->ref_entries[(unsigned) new] = ma->ref_entries[(unsigned) old];
 	
 	ma->entries[(unsigned) old].new = 0;
@@ -334,7 +333,7 @@ static errcode_t ima_delete(ext2_irel irel, ext2_ino_t old)
 	
 	ma->entries[old].new = 0;
 	if (ma->ref_entries[(unsigned) old].refs)
-		ext2fs_free_mem((void **) &ma->ref_entries[(unsigned) old].refs);
+		ext2fs_free_mem(&ma->ref_entries[(unsigned) old].refs);
 	ma->orig_map[ma->entries[(unsigned) old].orig] = 0;
 	
 	ma->ref_entries[(unsigned) old].num = 0;
@@ -354,20 +353,20 @@ static errcode_t ima_free(ext2_irel irel)
 
 	if (ma) {
 		if (ma->orig_map)
-			ext2fs_free_mem((void **) &ma->orig_map);
+			ext2fs_free_mem(&ma->orig_map);
 		if (ma->entries)
-			ext2fs_free_mem((void **) &ma->entries);
+			ext2fs_free_mem(&ma->entries);
 		if (ma->ref_entries) {
 			for (ino = 0; ino <= ma->max_inode; ino++) {
 				if (ma->ref_entries[(unsigned) ino].refs)
-					ext2fs_free_mem((void **) &ma->ref_entries[(unsigned) ino].refs);
+					ext2fs_free_mem(&ma->ref_entries[(unsigned) ino].refs);
 			}
-			ext2fs_free_mem((void **) &ma->ref_entries);
+			ext2fs_free_mem(&ma->ref_entries);
 		}
-		ext2fs_free_mem((void **) &ma);
+		ext2fs_free_mem(&ma);
 	}
 	if (irel->name)
-		ext2fs_free_mem((void **) &irel->name);
-	ext2fs_free_mem((void **) &irel);
+		ext2fs_free_mem(&irel->name);
+	ext2fs_free_mem(&irel);
 	return 0;
 }

@@ -83,7 +83,7 @@ errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *inbuf)
 #ifdef EXT2FS_ENABLE_SWAPFS
 	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
 	    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)) {
-		retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+		retval = ext2fs_get_mem(fs->blocksize, &buf);
 		if (retval)
 			return retval;
 		write_buf = buf;
@@ -93,7 +93,7 @@ errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *inbuf)
 		write_buf = (char *) inbuf;
  	retval = io_channel_write_blk(fs->io, block, 1, write_buf);
 	if (buf)
-		ext2fs_free_mem((void **) &buf);
+		ext2fs_free_mem(&buf);
 	if (!retval)
 		ext2fs_mark_changed(fs);
 	return retval;
@@ -115,7 +115,7 @@ errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
 		return EXT2_ET_BAD_EA_BLOCK_NUM;
 
 	if (!block_buf) {
-		retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+		retval = ext2fs_get_mem(fs->blocksize, &buf);
 		if (retval)
 			return retval;
 		block_buf = buf;
@@ -136,6 +136,6 @@ errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
 
 errout:
 	if (buf)
-		ext2fs_free_mem((void **) &buf);
+		ext2fs_free_mem(&buf);
 	return retval;
 }

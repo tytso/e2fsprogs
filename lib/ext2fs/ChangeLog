@@ -1,3 +1,16 @@
+2003-08-01  Philipp Thomas <pthomas@suse.de>
+
+	* alloc.c, badblocks.c, bb_inode.c, bitmaps.c, block.c, bmap.c,
+		bmove.c, brel_ma.c, closefs.c, dblist.c, dblist_dir.c,
+		dir_iterate.c, dirblock.c, dupfs.c, expanddir.c, ext2fs.h,
+		ext_attr.c, fileio.c, freefs.c, get_pathname.c, icount.c,
+		initialize.c, inode.c, inode_io.c, irel_ma.c, mkdir.c,
+		mkjournal.c, namei.c, newdir.c, openfs.c, rs_bitmap.c,
+		rw_bitmaps.c, test_io.c, unix_io.c: ext2fs_getmem(),
+		ext2fs_free_mem(), and ext2fs_resize_mem() all now take a
+		'void *' instead of a 'void **' in order to avoid pointer
+		aliasing problems with GCC 3.x.
+
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.34

@@ -27,13 +27,13 @@ void ext2fs_free(ext2_filsys fs)
 		io_channel_close(fs->io);
 	}
 	if (fs->device_name)
-		ext2fs_free_mem((void **) &fs->device_name);
+		ext2fs_free_mem(&fs->device_name);
 	if (fs->super)
-		ext2fs_free_mem((void **) &fs->super);
+		ext2fs_free_mem(&fs->super);
 	if (fs->orig_super)
-		ext2fs_free_mem((void **) &fs->orig_super);
+		ext2fs_free_mem(&fs->orig_super);
 	if (fs->group_desc)
-		ext2fs_free_mem((void **) &fs->group_desc);
+		ext2fs_free_mem(&fs->group_desc);
 	if (fs->block_map)
 		ext2fs_free_block_bitmap(fs->block_map);
 	if (fs->inode_map)
@@ -51,7 +51,7 @@ void ext2fs_free(ext2_filsys fs)
 	
 	fs->magic = 0;
 
-	ext2fs_free_mem((void **) &fs);
+	ext2fs_free_mem(&fs);
 }
 
 void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap)
@@ -61,14 +61,14 @@ void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap)
 
 	bitmap->magic = 0;
 	if (bitmap->description) {
-		ext2fs_free_mem((void **) &bitmap->description);
+		ext2fs_free_mem(&bitmap->description);
 		bitmap->description = 0;
 	}
 	if (bitmap->bitmap) {
-		ext2fs_free_mem((void **) &bitmap->bitmap);
+		ext2fs_free_mem(&bitmap->bitmap);
 		bitmap->bitmap = 0;
 	}
-	ext2fs_free_mem((void **) &bitmap);
+	ext2fs_free_mem(&bitmap);
 }
 
 void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap)
@@ -97,11 +97,11 @@ static void ext2fs_free_inode_cache(struct ext2_inode_cache *icache)
 	if (--icache->refcount)
 		return;
 	if (icache->buffer)
-		ext2fs_free_mem((void **) &icache->buffer);
+		ext2fs_free_mem(&icache->buffer);
 	if (icache->cache)
-		ext2fs_free_mem((void **) &icache->cache);
+		ext2fs_free_mem(&icache->cache);
 	icache->buffer_blk = 0;
-	ext2fs_free_mem((void **) &icache);
+	ext2fs_free_mem(&icache);
 }
 
 /*
@@ -113,9 +113,9 @@ void ext2fs_u32_list_free(ext2_u32_list bb)
 		return;
 
 	if (bb->list)
-		ext2fs_free_mem((void **) &bb->list);
+		ext2fs_free_mem(&bb->list);
 	bb->list = 0;
-	ext2fs_free_mem((void **) &bb);
+	ext2fs_free_mem(&bb);
 }
 
 void ext2fs_badblocks_list_free(ext2_badblocks_list bb)
@@ -133,11 +133,11 @@ void ext2fs_free_dblist(ext2_dblist dblist)
 		return;
 
 	if (dblist->list)
-		ext2fs_free_mem((void **) &dblist->list);
+		ext2fs_free_mem(&dblist->list);
 	dblist->list = 0;
 	if (dblist->fs && dblist->fs->dblist == dblist)
 		dblist->fs->dblist = 0;
 	dblist->magic = 0;
-	ext2fs_free_mem((void **) &dblist);
+	ext2fs_free_mem(&dblist);
 }
 

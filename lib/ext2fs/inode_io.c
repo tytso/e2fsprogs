@@ -75,7 +75,7 @@ errcode_t ext2fs_inode_io_intern(ext2_filsys fs, ext2_ino_t ino,
 	errcode_t			retval;
 
 	if ((retval = ext2fs_get_mem(sizeof(struct inode_private_data),
-				     (void **) &data)))
+				     &data)))
 		return retval;
 	data->magic = EXT2_ET_MAGIC_INODE_IO_CHANNEL;
 	sprintf(data->name, "%u:%d", ino, ino_unique++);
@@ -111,15 +111,14 @@ static errcode_t inode_open(const char *name, int flags, io_channel *channel)
 	else
 		top_intern = data->next;
 
-	retval = ext2fs_get_mem(sizeof(struct struct_io_channel),
-				(void **) &io);
+	retval = ext2fs_get_mem(sizeof(struct struct_io_channel), &io);
 	if (retval)
 		goto cleanup;
 	memset(io, 0, sizeof(struct struct_io_channel));
 
 	io->magic = EXT2_ET_MAGIC_IO_CHANNEL;
 	io->manager = inode_io_manager;
-	retval = ext2fs_get_mem(strlen(name)+1, (void **) &io->name);
+	retval = ext2fs_get_mem(strlen(name)+1, &io->name);
 	if (retval)
 		goto cleanup;
 
@@ -141,10 +140,10 @@ static errcode_t inode_open(const char *name, int flags, io_channel *channel)
 
 cleanup:
 	if (data) {
-		ext2fs_free_mem((void **) &data);
+		ext2fs_free_mem(&data);
 	}
 	if (io)
-		ext2fs_free_mem((void **) &io);
+		ext2fs_free_mem(&io);
 	return retval;
 }
 
@@ -162,10 +161,10 @@ static errcode_t inode_close(io_channel channel)
 
 	retval = ext2fs_file_close(data->file);
 	
-	ext2fs_free_mem((void **) &channel->private_data);
+	ext2fs_free_mem(&channel->private_data);
 	if (channel->name)
-		ext2fs_free_mem((void **) &channel->name);
-	ext2fs_free_mem((void **) &channel);
+		ext2fs_free_mem(&channel->name);
+	ext2fs_free_mem(&channel);
 	return retval;
 }
 

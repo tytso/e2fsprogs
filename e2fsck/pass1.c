@@ -114,7 +114,7 @@ static __u64 ext2_max_sizes[EXT2_MAX_BLOCK_LOG_SIZE -
  */
 static void unwind_pass1(ext2_filsys fs)
 {
-	ext2fs_free_mem((void **) &inodes_to_process);
+	ext2fs_free_mem(&inodes_to_process);
 	inodes_to_process = 0;
 }
 
@@ -724,11 +724,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 		}
 		e2fsck_pass1_dupblocks(ctx, block_buf);
 	}
-	ext2fs_free_mem((void **) &inodes_to_process);
+	ext2fs_free_mem(&inodes_to_process);
 endit:
 	e2fsck_use_inode_shortcuts(ctx, 0);
 	
-	ext2fs_free_mem((void **) &block_buf);
+	ext2fs_free_mem(&block_buf);
 
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
@@ -1710,7 +1710,7 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 		ext2fs_unmark_valid(fs);
 		return;
 	}
-	pctx.errcode = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+	pctx.errcode = ext2fs_get_mem(fs->blocksize, &buf);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_RELOC_MEMORY_ALLOCATE, &pctx);
 		ext2fs_unmark_valid(fs);
@@ -1739,7 +1739,7 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 		if (pctx.errcode)
 			fix_problem(ctx, PR_1_RELOC_WRITE_ERR, &pctx);
 	}
-	ext2fs_free_mem((void **) &buf);
+	ext2fs_free_mem(&buf);
 }
 
 /*

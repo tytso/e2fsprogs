@@ -72,15 +72,14 @@ static errcode_t create_icache(ext2_filsys fs)
 	
 	if (fs->icache)
 		return 0;
-	retval = ext2fs_get_mem(sizeof(struct ext2_inode_cache), 
-				(void **) &fs->icache);
+	retval = ext2fs_get_mem(sizeof(struct ext2_inode_cache), &fs->icache);
 	if (retval)
 		return retval;
 
 	memset(fs->icache, 0, sizeof(struct ext2_inode_cache));
-	retval = ext2fs_get_mem(fs->blocksize, (void **) &fs->icache->buffer);
+	retval = ext2fs_get_mem(fs->blocksize, &fs->icache->buffer);
 	if (retval) {
-		ext2fs_free_mem((void **) &fs->icache);
+		ext2fs_free_mem(&fs->icache);
 		return retval;
 	}
 	fs->icache->buffer_blk = 0;
@@ -89,10 +88,10 @@ static errcode_t create_icache(ext2_filsys fs)
 	fs->icache->refcount = 1;
 	retval = ext2fs_get_mem(sizeof(struct ext2_inode_cache_ent)
 				* fs->icache->cache_size,
-				(void **) &fs->icache->cache);
+				&fs->icache->cache);
 	if (retval) {
-		ext2fs_free_mem((void **) &fs->icache->buffer);
-		ext2fs_free_mem((void **) &fs->icache);
+		ext2fs_free_mem(&fs->icache->buffer);
+		ext2fs_free_mem(&fs->icache);
 		return retval;
 	}
 	ext2fs_flush_icache(fs);
@@ -127,8 +126,7 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 		fs->get_blocks = save_get_blocks;
 	}
 
-	retval = ext2fs_get_mem(sizeof(struct ext2_struct_inode_scan),
-				(void **) &scan);
+	retval = ext2fs_get_mem(sizeof(struct ext2_struct_inode_scan), &scan);
 	if (retval)
 		return retval;
 	memset(scan, 0, sizeof(struct ext2_struct_inode_scan));
@@ -146,19 +144,18 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 	scan->blocks_left = scan->fs->inode_blocks_per_group;
 	retval = ext2fs_get_mem((size_t) (scan->inode_buffer_blocks * 
 					  fs->blocksize),
-				(void **) &scan->inode_buffer);
+				&scan->inode_buffer);
 	scan->done_group = 0;
 	scan->done_group_data = 0;
 	scan->bad_block_ptr = 0;
 	if (retval) {
-		ext2fs_free_mem((void **) &scan);
+		ext2fs_free_mem(&scan);
 		return retval;
 	}
-	retval = ext2fs_get_mem(scan->inode_size,
-				(void **) &scan->temp_buffer);
+	retval = ext2fs_get_mem(scan->inode_size, &scan->temp_buffer);
 	if (retval) {
-		ext2fs_free_mem((void **) &scan->inode_buffer);
-		ext2fs_free_mem((void **) &scan);
+		ext2fs_free_mem(&scan->inode_buffer);
+		ext2fs_free_mem(&scan);
 		return retval;
 	}
 	if (scan->fs->badblocks && scan->fs->badblocks->num)
@@ -172,11 +169,11 @@ void ext2fs_close_inode_scan(ext2_inode_scan scan)
 	if (!scan || (scan->magic != EXT2_ET_MAGIC_INODE_SCAN))
 		return;
 	
-	ext2fs_free_mem((void **) &scan->inode_buffer);
+	ext2fs_free_mem(&scan->inode_buffer);
 	scan->inode_buffer = NULL;
-	ext2fs_free_mem((void **) &scan->temp_buffer);
+	ext2fs_free_mem(&scan->temp_buffer);
 	scan->temp_buffer = NULL;
-	ext2fs_free_mem((void **) &scan);
+	ext2fs_free_mem(&scan);
 	return;
 }
 

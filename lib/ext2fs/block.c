@@ -373,8 +373,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 	if (block_buf) {
 		ctx.ind_buf = block_buf;
 	} else {
-		retval = ext2fs_get_mem(fs->blocksize * 3,
-					(void **) &ctx.ind_buf);
+		retval = ext2fs_get_mem(fs->blocksize * 3, &ctx.ind_buf);
 		if (retval)
 			return retval;
 	}
@@ -447,7 +446,7 @@ abort_exit:
 	}
 
 	if (!block_buf)
-		ext2fs_free_mem((void **) &ctx.ind_buf);
+		ext2fs_free_mem(&ctx.ind_buf);
 
 	return (ret & BLOCK_ERROR) ? ctx.errcode : 0;
 }

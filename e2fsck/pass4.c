@@ -167,7 +167,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 	ext2fs_free_inode_bitmap(ctx->inode_imagic_map);
 	ctx->inode_imagic_map = 0;
 	if (buf)
-		ext2fs_free_mem((void **) &buf);
+		ext2fs_free_mem(&buf);
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);

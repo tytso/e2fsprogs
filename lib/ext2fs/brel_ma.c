@@ -57,17 +57,17 @@ errcode_t ext2fs_brel_memarray_create(char *name, blk_t max_block,
 	 * Allocate memory structures
 	 */
 	retval = ext2fs_get_mem(sizeof(struct ext2_block_relocation_table),
-				(void **) &brel);
+				&brel);
 	if (retval)
 		goto errout;
 	memset(brel, 0, sizeof(struct ext2_block_relocation_table));
 	
-	retval = ext2fs_get_mem(strlen(name)+1, (void **) &brel->name);
+	retval = ext2fs_get_mem(strlen(name)+1, &brel->name);
 	if (retval)
 		goto errout;
 	strcpy(brel->name, name);
 	
-	retval = ext2fs_get_mem(sizeof(struct brel_ma), (void **) &ma);
+	retval = ext2fs_get_mem(sizeof(struct brel_ma), &ma);
 	if (retval)
 		goto errout;
 	memset(ma, 0, sizeof(struct brel_ma));
@@ -75,7 +75,7 @@ errcode_t ext2fs_brel_memarray_create(char *name, blk_t max_block,
 	
 	size = (size_t) (sizeof(struct ext2_block_relocate_entry) *
 			 (max_block+1));
-	retval = ext2fs_get_mem(size, (void **) &ma->entries);
+	retval = ext2fs_get_mem(size, &ma->entries);
 	if (retval)
 		goto errout;
 	memset(ma->entries, 0, size);
@@ -187,11 +187,11 @@ static errcode_t bma_free(ext2_brel brel)
 
 	if (ma) {
 		if (ma->entries)
-			ext2fs_free_mem((void **) &ma->entries);
-		ext2fs_free_mem((void **) &ma);
+			ext2fs_free_mem(&ma->entries);
+		ext2fs_free_mem(&ma);
 	}
 	if (brel->name)
-		ext2fs_free_mem((void **) &brel->name);
-	ext2fs_free_mem((void **) &brel);
+		ext2fs_free_mem(&brel->name);
+	ext2fs_free_mem(&brel);
 	return 0;
 }

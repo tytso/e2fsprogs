@@ -39,8 +39,7 @@ errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent, int size)
 	ext2_extent	extent;
 	errcode_t	retval;
 	
-	retval = ext2fs_get_mem(sizeof(struct _ext2_extent),
-				(void **) &extent);
+	retval = ext2fs_get_mem(sizeof(struct _ext2_extent), &extent);
 	if (retval)
 		return retval;
 	memset(extent, 0, sizeof(struct _ext2_extent));
@@ -51,9 +50,9 @@ errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent, int size)
 	extent->sorted = 1;
 
 	retval = ext2fs_get_mem(sizeof(struct ext2_extent_entry) *
-				extent->size, (void **) &extent->list);
+				extent->size, &extent->list);
 	if (retval) {
-		ext2fs_free_mem((void **) &extent);
+		ext2fs_free_mem(&extent);
 		return retval;
 	}
 	memset(extent->list, 0,
@@ -68,11 +67,11 @@ errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent, int size)
 void ext2fs_free_extent_table(ext2_extent extent)
 {
 	if (extent->list)
-		ext2fs_free_mem((void **) &extent->list);
+		ext2fs_free_mem(&extent->list);
 	extent->list = 0;
 	extent->size = 0;
 	extent->num = 0;
-	ext2fs_free_mem((void **) &extent);
+	ext2fs_free_mem(&extent);
 }
 
 /*
@@ -90,7 +89,7 @@ errcode_t ext2fs_add_extent_entry(ext2_extent extent, __u32 old_loc, __u32 new_l
 		retval = ext2fs_resize_mem(sizeof(struct ext2_extent_entry) * 
 					   extent->size, 
 					   sizeof(struct ext2_extent_entry) * 
-					   newsize, (void **) &extent->list);
+					   newsize, &extent->list);
 		if (retval)
 			return retval;
 		extent->size = newsize;

@@ -82,8 +82,7 @@ errcode_t ext2fs_progress_init(ext2_sim_progmeter *ret_prog,
 	ext2_sim_progmeter	prog;
 	errcode_t		retval;
 
-	retval = ext2fs_get_mem(sizeof(struct ext2_sim_progress),
-				(void **) &prog);
+	retval = ext2fs_get_mem(sizeof(struct ext2_sim_progress), &prog);
 	if (!prog)
 		return retval;
 	memset(prog, 0, sizeof(struct ext2_sim_progress));
@@ -111,8 +110,8 @@ void ext2fs_progress_close(ext2_sim_progmeter prog)
 {
 
 	if (prog->label)
-		ext2fs_free_mem((void **) &prog->label);
-	ext2fs_free_mem((void **) &prog);
+		ext2fs_free_mem(&prog->label);
+	ext2fs_free_mem(&prog);
 	printf("\n");
 	return;
 }

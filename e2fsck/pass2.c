@@ -251,7 +251,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 #endif
 	}
 #endif
-	ext2fs_free_mem((void **) &buf);
+	ext2fs_free_mem(&buf);
 	ext2fs_free_dblist(fs->dblist);
 
 	if (ctx->inode_bad_map) {
@@ -1332,7 +1332,7 @@ static int allocate_dir_block(e2fsck_t ctx,
 	}
 
 	pctx->errcode = ext2fs_write_dir_block(fs, blk, block);
-	ext2fs_free_mem((void **) &block);
+	ext2fs_free_mem(&block);
 	if (pctx->errcode) {
 		pctx->str = "ext2fs_write_dir_block";
 		fix_problem(ctx, PR_2_ALLOC_DIRBOCK, pctx);

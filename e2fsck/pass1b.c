@@ -496,7 +496,7 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 		else
 			ext2fs_unmark_valid(fs);
 	}
-	ext2fs_free_mem((void **) &shared);
+	ext2fs_free_mem(&shared);
 }
 
 /*
@@ -696,7 +696,7 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 	cs.errcode = 0;
 	cs.dir = 0;
 	cs.ctx = ctx;
-	retval = ext2fs_get_mem(fs->blocksize, (void **) &cs.buf);
+	retval = ext2fs_get_mem(fs->blocksize, &cs.buf);
 	if (retval)
 		return retval;
 
@@ -749,7 +749,7 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 	}
 	retval = 0;
 errout:
-	ext2fs_free_mem((void **) &cs.buf);
+	ext2fs_free_mem(&cs.buf);
 	return retval;
 }
 

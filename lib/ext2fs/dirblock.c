@@ -89,7 +89,7 @@ errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
 		return io_channel_write_blk(fs->io, block, 1, (char *) inbuf);
 #endif
 
-	retval = ext2fs_get_mem(fs->blocksize, (void **) &buf);
+	retval = ext2fs_get_mem(fs->blocksize, &buf);
 	if (retval)
 		return retval;
 	memcpy(buf, inbuf, fs->blocksize);
@@ -99,7 +99,7 @@ errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
 		dirent = (struct ext2_dir_entry *) p;
 		if ((dirent->rec_len < 8) ||
 		    (dirent->rec_len % 4)) {
-			ext2fs_free_mem((void **) &buf);
+			ext2fs_free_mem(&buf);
 			return (EXT2_ET_DIR_CORRUPTED);
 		}
 		p += dirent->rec_len;
@@ -114,7 +114,7 @@ errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
 #endif
 	}
  	retval = io_channel_write_blk(fs->io, block, 1, buf);
-	ext2fs_free_mem((void **) &buf);
+	ext2fs_free_mem(&buf);
 	return retval;
 #else
  	return io_channel_write_blk(fs->io, block, 1, (char *) inbuf);

@@ -51,7 +51,7 @@ errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
 	if (size < 1024)
 		return EXT2_ET_JOURNAL_TOO_SMALL;
 
-	if ((retval = ext2fs_get_mem(fs->blocksize, (void **) &jsb)))
+	if ((retval = ext2fs_get_mem(fs->blocksize, &jsb)))
 		return retval;
 
 	memset (jsb, 0, fs->blocksize);
@@ -129,7 +129,7 @@ static errcode_t write_journal_file(ext2_filsys fs, char *filename,
 
 	retval = 0;
 errout:
-	ext2fs_free_mem((void **) &buf);
+	ext2fs_free_mem(&buf);
 	return retval;
 }
 
@@ -237,7 +237,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	retval = 0;
 
 errout:
-	ext2fs_free_mem((void **) &buf);
+	ext2fs_free_mem(&buf);
 	return retval;
 }
 

@@ -145,7 +145,7 @@ void brelse(struct buffer_head *bh)
 		ll_rw_block(WRITE, 1, &bh);
 	jfs_debug(3, "freeing block %lu/%p (total %d)\n",
 		  (unsigned long) bh->b_blocknr, (void *) bh, --bh_count);
-	ext2fs_free_mem((void **) &bh);
+	ext2fs_free_mem(&bh);
 }
 
 int buffer_uptodate(struct buffer_head *bh)
@@ -338,7 +338,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 	
 #ifdef USE_INODE_IO
 	if (j_inode)
-		ext2fs_free_mem((void **)&j_inode);
+		ext2fs_free_mem(&j_inode);
 #endif
 
 	*ret_journal = journal;
@@ -346,11 +346,11 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 
 errout:
 	if (dev_fs)
-		ext2fs_free_mem((void **)&dev_fs);
+		ext2fs_free_mem(&dev_fs);
 	if (j_inode)
-		ext2fs_free_mem((void **)&j_inode);
+		ext2fs_free_mem(&j_inode);
 	if (journal)
-		ext2fs_free_mem((void **)&journal);
+		ext2fs_free_mem(&journal);
 	return retval;
 	
 }
@@ -588,11 +588,11 @@ static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal,
 	
 #ifndef USE_INODE_IO
 	if (journal->j_inode)
-		ext2fs_free_mem((void **)&journal->j_inode);
+		ext2fs_free_mem(&journal->j_inode);
 #endif
 	if (journal->j_fs_dev)
-		ext2fs_free_mem((void **)&journal->j_fs_dev);
-	ext2fs_free_mem((void **)&journal);
+		ext2fs_free_mem(&journal->j_fs_dev);
+	ext2fs_free_mem(&journal);
 }
 
 /*

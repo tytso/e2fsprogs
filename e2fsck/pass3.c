@@ -214,7 +214,7 @@ static void check_root(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	ext2fs_free_mem((void **) &block);
+	ext2fs_free_mem(&block);
 
 	/*
 	 * Set up the inode structure
@@ -456,7 +456,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	}
 
 	retval = ext2fs_write_dir_block(fs, blk, block);
-	ext2fs_free_mem((void **) &block);
+	ext2fs_free_mem(&block);
 	if (retval) {
 		pctx.errcode = retval;
 		fix_problem(ctx, PR_3_ERR_LPF_WRITE_BLOCK, &pctx);
@@ -728,7 +728,7 @@ static int expand_dir_proc(ext2_filsys fs,
 		es->num--;
 		retval = ext2fs_write_dir_block(fs, new_blk, block);
 	} else {
-		retval = ext2fs_get_mem(fs->blocksize, (void **) &block);
+		retval = ext2fs_get_mem(fs->blocksize, &block);
 		if (retval) {
 			es->err = retval;
 			return BLOCK_ABORT;
@@ -740,7 +740,7 @@ static int expand_dir_proc(ext2_filsys fs,
 		es->err = retval;
 		return BLOCK_ABORT;
 	}
-	ext2fs_free_mem((void **) &block);
+	ext2fs_free_mem(&block);
 	*blocknr = new_blk;
 	ext2fs_mark_block_bitmap(ctx->block_found_map, new_blk);
 	ext2fs_block_alloc_stats(fs, new_blk, +1);

@@ -268,7 +268,7 @@ redo_counts:
 		} else
 			ext2fs_unmark_valid(fs);
 	}
-	ext2fs_free_mem((void **) &free_array);
+	ext2fs_free_mem(&free_array);
 }
 			
 static void check_inode_bitmaps(e2fsck_t ctx)
@@ -452,8 +452,8 @@ do_counts:
 		} else
 			ext2fs_unmark_valid(fs);
 	}
-	ext2fs_free_mem((void **) &free_array);
-	ext2fs_free_mem((void **) &dir_array);
+	ext2fs_free_mem(&free_array);
+	ext2fs_free_mem(&dir_array);
 }
 
 static void check_inode_end(e2fsck_t ctx)
