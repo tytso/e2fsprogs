@@ -338,9 +338,9 @@ static void finish_range(struct list_blocks_struct *lb)
 	else
 		fprintf(lb->f, ", ");
 	if (lb->first_block == lb->last_block)
-		fprintf(lb->f, "(%d):%d", lb->first_bcnt, lb->first_block);
+		fprintf(lb->f, "(%lld):%d", lb->first_bcnt, lb->first_block);
 	else
-		fprintf(lb->f, "(%d-%d):%d-%d", lb->first_bcnt,
+		fprintf(lb->f, "(%lld-%lld):%d-%d", lb->first_bcnt,
 			lb->last_bcnt, lb->first_block, lb->last_block);
 	lb->first_block = 0;
 }
@@ -402,7 +402,7 @@ static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)
 			     list_blocks_proc, (void *)&lb);
 	finish_range(&lb);
 	if (lb.total)
-		fprintf(f, "\n%sTOTAL: %d\n", prefix, lb.total);
+		fprintf(f, "\n%sTOTAL: %lld\n", prefix, lb.total);
 	fprintf(f,"\n");
 }
 
