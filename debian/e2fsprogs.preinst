@@ -1,0 +1,25 @@
+#!/bin/sh
+
+dpkg --assert-support-predepends 2> /dev/null
+
+case $? in
+ 0) ;; # fine, supported
+ 1) exit 1 ;; # dpkg writes an error message to stdio
+ 2) cat <<EOT
+This package requires features of dpkg unavailable in this version.
+Please upgrade to a more recent version (>=1.1.0) of dpkg.
+EOT
+    exit 1 ;; # dpkg didn't recognise the option
+ *) exit 2 ;;
+esac
+
+#  # turn around bug in dpkg (Bug#17624)
+#  if [ -L /usr/doc/e2fsprogs ]
+#  then
+#      echo 'preinst: removing buggy /usr/doc/e2fsprogs symlink (Bug#17624)'
+#      rm -f /usr/doc/e2fsprogs
+#  fi
+
+#DEBHELPER#
+
+exit 0

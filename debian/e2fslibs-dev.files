@@ -1,0 +1,4 @@
+usr/lib/*.so
+usr/lib/*.a
+usr/include/ext2fs/*
+usr/include/e2p/*

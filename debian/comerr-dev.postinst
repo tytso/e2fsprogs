@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+#  install-info --description='The Common Error Description library.' \
+#      --section "Devel.*" "Development" --quiet /usr/info/com_err.info
+
+#DEBHELPER#

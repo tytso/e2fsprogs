@@ -1,0 +1,71 @@
+e2fsprogs for Debian
+====================
+
+e2fsprogs includes the uuidgen(1) program, although it is not directly
+to e2fsprogs - it would belong to the libuuid package, but the uuid
+shared lib is currently part of the e2fsprogs package.  See below for
+more details.
+
+
+Here's the documentation for the Conflicts/Provides fields:
+
+* old dump and quota packages used to depend on old (libc5) e2fsprogs
+itself, as it contained the shared libs. We must conflict with these
+incompatible versions.
+
+
+* All -g package names were a transient experiment during hamm
+development.
+
+
+* Here's the reasonning for not having the libs outside of the e2fsprogs package:
+
+If we have:
+
+e2fsprogs_1.10-2 is essential
+
+e2fsprogs_1.10-11 is essential
+ predepends on comerr2g
+
+comerr2g_2.0-1.10-11:
+ is not essential
+ conflicts with e2fsprogs_1.10-2
+
+...then e2fsprogs_1.10-11 can't be installed before comerr2g because
+of the predependency, and comerr2g cannot be installed before
+e2fsprogs_1.10-11 because of the conflict.
+
+This totally comes from the fact that e2fsprogs was initially built as
+an *essential package with shared libs*.
+
+My initial solution, namely changing the predependency into a simple
+dependency, turns out to be a system-integrity problem:
+
+$ dpkg -i e2fsprogs_1.10-11*deb comerr2g_2.0-1.10-11*deb
+
+...will, if comerr2g fails to unpack or configure, let e2fsprogs in an
+unusable state.
+
+
+* This raises the problem that most of these libs are general-purpose
+libs, and will be used by more and more packages.  The lib-dependency
+mechanism requires for proper fonctionning that we keep track of these
+libs changing version, as well as infos such as libc5/6 issues.
+
+The standard way to do it is using standalone packages for those libs,
+which is not possible here (see above).
+
+My solution in this case is the use of the following virtual packages:
+
+	libss2, libcomerr2, libe2p2, libuuid1, libext2fs2
+
+These are automatically referenced thanks to the shlibs file.  They
+are currently provided by e2fsprogs.
+
+
+* e2fsprogs still Provides/Conflicts with e2fslibsg to allow upgrading
+from pre 1.10-13 releases (from unstable hamm).  This does not seem to
+be possible for ss2g and comerr2g for some still-to-be-investigated
+reason.
+
+Yann Dirson <dirson@debian.org>

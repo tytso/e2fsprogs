@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+#  install-info --description='The ext2fs library.' \
+#      --section "Devel.*" "Development" --quiet /usr/info/libext2fs.info
+
+#DEBHELPER#

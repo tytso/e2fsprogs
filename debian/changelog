@@ -1,0 +1,526 @@
+e2fsprogs (1.19-4) unstable; urgency=medium
+
+  * Added texinfo to build-deps (Closes: #87685).
+
+ -- Yann Dirson <dirson@debian.org>  Tue,  3 Apr 2001 09:03:13 +0200
+
+e2fsprogs (1.19-3) unstable; urgency=low
+
+  * Drop findsuper binary, and suggest gpart (Closes: #74034).
+  * Drop flushb and extend at upstream request (Closes: #39506).
+  * Applied upstream fix for chattr on large files (Closes: #72690).
+  * Applied clarification patch to tune2fs.8 (Closes: #67446).
+  * Applied typo patch to compile_et.1 (Closes: #63786).
+  * Include <sys/mount.h> in e2fsck/journal.c (Closes: #71775).
+  * Suggest parted.
+
+ -- Yann Dirson <dirson@debian.org>  Mon,  4 Dec 2000 22:08:06 +0100
+
+e2fsprogs (1.19-2) unstable; urgency=low
+
+  * Clarified libuuid copyright to LGPL-2, excluding LGPL-2.1.
+  * Added build-dependency on debhelper (Closes: #67532).
+  * Don't paralelize fsck runs on same drive for hd[efgh] (Closes:
+    #59103).
+  * Upload pristine source, -1 was erroneously uploaded as a
+    debian-specific package.
+
+ -- Yann Dirson <dirson@debian.org>  Thu,  3 Aug 2000 00:30:49 +0200
+
+e2fsprogs (1.19-1) unstable; urgency=low
+
+  * New upstream release:
+  ** new program: resize2fs.
+  ** ext3 support.
+  ** NLS support (non-default, activated).
+  ** Compression support (non-default, activated).
+  ** Progress bar nice to serial console (Closes: #66079)
+  ** Ensure filetype feature is turned off for Hurd filesystems (Closes:
+    #61863)
+  * Updated main copyright file for a number of things.
+  * Fixed NLS support for flushb and extend.
+  * Started to add build-depends.
+  * Include new e2p header.
+
+ -- Yann Dirson <dirson@debian.org>  Wed, 19 Jul 2000 01:55:27 +0200
+
+e2fsprogs (1.18-3) frozen unstable; urgency=medium
+
+  * Fix Y2K display-only bug in debugfs - "ls -l" displayed raw tm_year,
+    causing 2000 to be displayed as "100" (Closes: #57135).  Potato should
+    be y2k-clean.
+  * Remove empty dirs /usr/share/et/ and /usr/share/ss/ from package
+    e2fsprogs (Closes: #52900).
+
+ -- Yann Dirson <dirson@debian.org>  Mon, 21 Feb 2000 23:06:47 +0100
+
+e2fsprogs (1.18-2) unstable; urgency=low
+
+  * Test for "__sparc__" instead of "sparc" as a cpp macro in mke2fs.c
+    (tests in other places are correct) (Closes: #50012).
+
+ -- Yann Dirson <dirson@debian.org>  Fri, 12 Nov 1999 21:40:27 +0100
+
+e2fsprogs (1.18-1) unstable; urgency=low
+
+  * New upstream (bugfix) release.
+
+ -- Yann Dirson <dirson@debian.org>  Fri, 12 Nov 1999 17:27:20 +0100
+
+e2fsprogs (1.17-2) unstable; urgency=low
+
+  * Applied upstream patch to fix segfault (Closes: #49535).
+
+ -- Yann Dirson <dirson@debian.org>  Tue,  9 Nov 1999 22:14:53 +0100
+
+e2fsprogs (1.17-1) unstable; urgency=low
+
+  * New upstream (bugfix) release.
+
+ -- Yann Dirson <dirson@debian.org>  Wed, 27 Oct 1999 23:46:39 +0200
+
+e2fsprogs (1.16-2) unstable; urgency=low
+
+  * Fixed build of a link list in fsck.c (Closes: #48312).
+
+ -- Yann Dirson <dirson@debian.org>  Tue, 26 Oct 1999 01:17:36 +0200
+
+e2fsprogs (1.16-1) unstable; urgency=low
+
+  * New upstream release.
+  * Re-applied Hurd patches that did not seem to have been received
+    upstream.
+
+ -- Yann Dirson <dirson@debian.org>  Sun, 24 Oct 1999 16:11:59 +0200
+
+e2fsprogs (1.15-3) unstable; urgency=low
+
+  * Fixed minor typo for the Hurd.
+  * Fixed various Hurd defines to __GNU__ (Closes: #44407).
+  * Switched doc/ and info/ to FHS.
+  * Cleaned up debian/rules to use new debhelper features.
+  * Bounced Standards-Version to 3.0.1.
+  * Do not install buggy com_err.info, shipped as HTML.
+  * Removed partinfo from the package, following the wish of upstream
+    author, because of duplicate functionality with "fdisk -l" (Closes:
+    #42139).
+
+ -- Yann Dirson <dirson@debian.org>  Mon, 20 Sep 1999 23:04:06 +0200
+
+e2fsprogs (1.15-2) unstable; urgency=medium
+
+  * Changed build directory do debian/BUILD/ - related cleanups in
+    debian/rules.
+  * Fixed partinfo.c to have it compiled, and fixed display of partition
+    device in error messages.
+  * Added /usr/sbin/partinfo to the package (Closes: #42139).
+  * Added note about uuidgen(1) in README.Debian.
+  * Documented in manpage that default mke2fs behaviour is now -r1 -s1
+    (Closes: #44478).
+  * Documented in mke2fs.8 that -r1 forces -s1, thus ignoring -s0.
+  * Added warning message when -s0 is ignored because of -r1.
+  * Documented -n option of mke2fs.
+  * Fixed display buglet causing trailing commas in list of superblock
+    backups when sparse flag is on and last group has no superblock
+    backup.
+  * Closes: #42434, #43134.
+
+ -- Yann Dirson <dirson@debian.org>  Wed,  8 Sep 1999 00:46:38 +0200
+
+e2fsprogs (1.15-1) unstable; urgency=low
+
+  * New upstream release (Closes: Bug#41763).
+  * All changes to upstream files in 1.14-3 were integrated upstream.
+  * Separated libuuid-dev from e2fslibs-dev because it now has manpages.
+  * Fixed debian/rules for POSIX "rmdir -p"
+  * Corrected the location of the GPL in copyright file.
+  * Moved the manpages to /usr/share/.
+  * Bumped Standards-Version to 3.0.0.
+
+ -- Yann Dirson <dirson@debian.org>  Fri, 23 Jul 1999 01:37:51 +0200
+
+e2fsprogs (1.14-3) unstable; urgency=low
+
+  * Fail with error message when /dev/null cannot be opened (Fixes:
+    Bug#35595).
+  * Fixed typo in e2fsck/unix.c (Fixes: Bug#36960).
+  * Added "emeregency help" options summary to e2fsck (Fixes: Bug#11372).
+  * Prepared debian/rules for usr/share/man/.
+
+ -- Yann Dirson <dirson@debian.org>  Tue,  1 Jun 1999 23:37:12 +0200
+
+e2fsprogs (1.14-2) unstable; urgency=low
+
+  * Fixed fsck(1) not to coredump when it does not find its argument in
+    /etc/fstab (Fixes: Bug#33533, Bug#34320, part of Bug#34131).
+  * Fixed spelling of upstream author's name.
+  * Cleaned debian/*.files up.
+  * Undid the <linux/types.h> changes.
+  * Changed "rmdir -p" invocations in debian/rules into "-rmdir -p" to
+    turn around changed behaviour in fileutils_4.0.
+  
+ -- Yann Dirson <dirson@debian.org>  Fri, 12 Mar 1999 23:50:47 +0100
+
+e2fsprogs (1.14-1) unstable; urgency=low
+
+  * New upstream release (Fixes: Bug#33113).
+  * All patches we used for 1.12 are obsoleted by 1.14.
+  * Still have to install com_err.info from debian/rules though.
+  * Incorporated patches from Gordon Matzigkeit for hurd cross-compilation:
+  * - configure.in: Change cross-compile default for sizeof (long
+      long) to 8, so that __s64 and __u64 get defined in ext2fs.h.
+      (BUILD_CC): Discover a native compiler if we are cross-compling
+      (used for util/subst).
+    - Include linux/types.h instead of asm/types.h, so that
+      non-Linux platforms use the stubbed version provided with this
+      package.
+    - misc/Makefile.in (findsuper): Add a rule so that findsuper gets built
+      with the right compiler flags.
+    - etc.
+
+ -- Yann Dirson <dirson@debian.org>  Wed, 10 Feb 1999 23:23:03 +0100
+
+e2fsprogs (1.12-4) frozen unstable; urgency=low
+
+  * Ship flushb(8) and extend(8) were missing in all 1.12 packages
+    (Fixes: Bug#28771).
+  * Add extend.8 link to undocumented.7.
+  * Replaced my (ad-hoc) fix for Bug#25684 with (really better) one
+    from upstream.
+
+ -- Yann Dirson <dirson@debian.org>  Mon,  2 Nov 1998 20:53:28 +0100
+
+e2fsprogs (1.12-3) frozen unstable; urgency=low
+
+  * Fixed <ext2fs/ext2fs.h> to use angle brackets instead of double
+    quotes when including files from /usr/include/.
+  * Made e2fslibs-dev depend on comerr-dev (Fixes: Bug#26282,
+    Bug#27497).
+  * Fixed mke2fs' display with inode numbers > 9999 (Fixes: Bug#25684).
+  * Use -D__NO_STRING_INLINES on powerpc to allow building the boot
+    blocks in QUIK, the powermac boot loader - reported by Matt
+    McLean.
+  * Removed unsupported info and texi entries from docbase files.
+
+ -- Yann Dirson <dirson@debian.org>  Mon, 19 Oct 1998 23:32:41 +0200
+
+e2fsprogs (1.12-2.1) unstable; urgency=low
+
+  * Non-maintainer upload
+    config.guess and config.sub files modified, to recognize a Arm
+    architecture.
+      
+ -- Turbo Fredriksson <turbo@debian.org>  Thu, 13 Aug 1998 19:15:56 -0400
+       
+e2fsprogs (1.12-2) unstable; urgency=low
+
+  * Really install e2label.8 manpage.
+  * Removed path from ldconfig invocation, obeying packaging manual.
+  * Improved the subst.c patch (thanks to Peter Moulder).
+
+ -- Yann Dirson <dirson@debian.org>  Thu, 14 Jul 1998 14:10:06 +0200
+
+e2fsprogs (1.12-1) unstable; urgency=low
+
+  * New upstream release - at last out of alpha status !
+  * Removed some obsolete files from debian/attic.
+  * Patched util/subst.c to expand env variables, and MCONFIG.in to
+    have ${prefix} exported to the `subst' process, so that we get
+    correct paths in mk_cmds and compile_et.  Forwarded upstream.
+  * Debian-specific /usr/share/comerr/ renamed to /usr/share/et/, now
+    installed upstream.
+  * Removed -isp from dh_gencontrol invocation - now the default.
+  * Passed lintian 0.5.0.
+
+ -- Yann Dirson <dirson@debian.org>  Fri, 10 Jul 1998 22:49:18 +0200
+
+e2fsprogs (1.10-17) frozen unstable; urgency=low
+
+  * Commented out obsolete code in fsck.c that assumed fstab entries
+    declared `noauto' should not be checked - successfully forwarded
+    upstream (Fixes: Bug#17244).
+
+ -- Yann Dirson <dirson@debian.org>  Fri, 15 May 1998 01:14:54 +0200
+
+e2fsprogs (1.10-16) frozen unstable; urgency=low
+
+  * Changed <linux/types.h> to <asm/types.h> in lib/uuid/uuidP.h to
+    allow compilation with glibc 2.0.7pre1 (Fixes: Bug#22039).
+  * Use "build-stamp" as a stamp file instead of "build".
+  * Restored "Provides: e2fslibsg" in order to allow upgrade from
+    unstable hamm.  Documented in README.Debian so that it does not
+    get removed again (Fixes: Bug#22019).
+
+ -- Yann Dirson <dirson@debian.org>  Mon,  4 May 1998 21:11:38 +0200
+
+e2fsprogs (1.10-15) frozen unstable; urgency=low
+
+  * Added call to ldconfig in e2fsprogs.postinst.
+  * Fixes checks for install-docs in postinst/prerm (Fixes: Bug#20303,
+    Bug#20304, Bug#20590).
+  * Removed e2fslibsg from what e2fsprogs provides (was just forgotten).
+  * Passed lintian 0.4.2.
+
+ -- Yann Dirson <dirson@debian.org>  Sun, 26 Apr 1998 22:27:11 +0200
+
+e2fsprogs (1.10-14) frozen unstable; urgency=low
+
+  * Fixed checks for install-docs to use -x.
+  * Applied patch for sparc from Juan to fsck.c to compile with glibc
+    2.1 (Fixes: Bug#20841).
+
+ -- Yann Dirson <dirson@debian.org>  Tue, 14 Apr 1998 17:12:19 +0200
+
+e2fsprogs (1.10-13) frozen unstable; urgency=low
+
+  * test for /usr/sbin/install-docs before trying to run it in
+    postinst and prerm (Fixes: Bug#19461, Bug#19469, Bug#19949,
+    Bug#20006).
+  * comerrg-dev now suggests doc-base.
+  * moved binary packages ss2g, comerr2g and e2fslibsg back into
+    binary package e2fsprogs.
+  * use new virtual packages libcomerr2, libss2, libext2fs2, libe2p2,
+    libuuid1 in shlibs and dependencies.
+  * Changed e2fsprogs dependency on libs to a Pre-Depends (Fixes:
+    Bug#18221).
+  * Not conflicting with old ss2g and comerr2g - these will have to be
+    removed by hand.
+  * Turned around dpkg's bug #17624 in e2fsprogs.preinst.
+  * Updated README.Debian to explain the new package architecture.
+  * Passed lintian 0.3.4.
+
+ -- Yann Dirson <dirson@debian.org>  Fri, 20 Mar 1998 13:03:11 +0100
+
+e2fsprogs (1.10-12) unstable; urgency=low
+
+  * Corrected doc menu entries to point to the real documents' places.
+  * Fixed mk_cmds to really find its support scripts (Fixes: Bug#18779).
+  * Made mk_cmds and compile_et use "sh -e".
+  * Have missing file /usr/include/ss/ss_err.h installed (Fixes: Bug#18778).
+  * Corrected typo in Description (Fixes: Bug#18890).
+  * Fixed descriptions for ss* packages, thanks to Greg Stark (Fixes:
+    Bug#18373, Bug#18447).
+  * Added description of e2p and uuid libs in e2fslibsg-dev description.
+  * Included texinfo sources.
+  * Added doc-base support - suppressed direct menu/dwww support.
+  * Complies with standards version 2.4.0.0.
+  * Passed lintian 0.3.0:
+  *  removed .du control file.
+  *  updated FSF address.
+  *  fixed in *.files nasty ldconfig-symlink-before-shlib-in-deb's.
+  *  turned relative links from /usr/lib into /lib into absolute ones.
+
+ -- Yann Dirson <dirson@debian.org>  Sun,  8 Mar 1998 19:42:58 +0100
+
+e2fsprogs (1.10-11) unstable; urgency=low
+
+  * Switched to debhelper (Fixes:Bug#16307).
+  * Updated standards to 2.3.0.1
+  * Changed maintainer's mail address.
+  * Added conflicts with old versions of dump and quota.
+  * Added html-converted texi docs for libs, with menu(dwww) support.
+  * Added findsuper.8 link to undocumented.
+  * Changed version number of lib packages to reflect the lib versions.
+  * Moved libss into its own packages; added mk_cmds script and
+    support files for libss development (Fixes:Bug#17233).
+  * Added README.Debian file documenting all those dependency stuff.
+  * Included example error tables from libext2fs and libss in
+    comerr-dev.
+  * Included example command tables from debugfs in ss-dev.
+  * Added section/priority files in packages (-isp).
+  * Changed names/relations for doc dirs to comply with policy.
+  * Removed call to ldconfig from e2fsprogs.postinst.
+
+ -- Yann Dirson <dirson@debian.org>  Thu, 29 Jan 1998 18:10:03 +0100
+
+e2fsprogs (1.10-10) unstable; urgency=low
+
+  * Added patch from Michael Alan Dorman for compilation on alpha-Linux
+    (Closes:Bug#15596).
+  * Added '-fsigned-char' to COPTS to allow compilation on ppc-Linux
+    (Closes:Bug#15976).
+  * Suppressed Essential flag on libs, as well as useless Replaces
+    (Closes: Bug#16480).
+  * Suppressed reference to obsolete package `e2fsprogsg' in control
+    info, but Conflicts for security (Closes:Bug#16791).
+
+ -- Yann Dirson <dirson@univ-mlv.fr>  Wed,  7 Jan 1998 22:35:08 +0100
+
+e2fsprogs (1.10-9) unstable; urgency=low
+
+  * Fixed comerr2g.shlibs to reflect package-name change.
+  * Fixed problem with ss include files being removed from /usr on make
+    install (indeed fixed in 1.10-8).
+  * Added changelog file to comerr2g package (indeed fixed in 1.10-8).
+  * Corrected link from flushb.8 to undocumented (Closes:Bug#15335,Bug#15660,Bug#15675).
+  * Added /sbin/findsuper (Closes:Bug#15224).
+  * Fixed /usr/bin/compile_et script (Closes:Bug#15487).
+  * Included awk scripts in /usr/share/comerr, for use by compile_et.
+  * Changed back the name from "e2fsprogsg" to "e2fsprogs" to get better
+    dependencies.
+  * Strip libraries (Closes:Bug#15667).
+
+ -- Yann Dirson <dirson@univ-mlv.fr>  Tue,  9 Dec 1997 22:52:42 +0100
+
+e2fsprogs (1.10-8) unstable; urgency=low
+
+  * Added latest patch from Ted for autodetection of llseek() proto.
+  * Switched to libc6, without libc5 compatibility (yet ?).
+  * Turned Pre-Depends into Depends to allow installation. Dirty
+    though. But what were Pre-Depends for anyway ?
+
+ -- Yann Dirson <dirson@univ-mlv.fr>  Sun, 23 Nov 1997 23:03:02 +0100
+
+e2fsprogs (1.10-7) unstable; urgency=HIGH
+
+  * Turned "#if (__GLIBC__ == 2)" into "#if 1" to turn around missing llseek()
+    prototype in libc_5.4.33-5 as well as libc6.
+    
+ -- Yann Dirson <dirson@univ-mlv.fr>  Tue, 21 Oct 1997 12:53:27 +0200
+ 
+e2fsprogs (1.10-6) unstable; urgency=low
+
+  * Official libc6 patches from Ted.
+  * Converted to debstd - let it do the stripping stuff.
+  * Separated libcomerr into a standalone lib - includes full doc and tools.
+  * Separated development files into e2fslibs-dev, which Provides the 4 other
+    -dev packages.
+  * Now Provides the 4 other lib packages, to make it possible not to depend
+    upon e2fsprogs itself. These libs WILL be taken out of "progs" in the
+    next release.
+
+ -- Yann Dirson <dirson@univ-mlv.fr>  Wed, 24 Sep 1997 10:46:00 +0200
+ 
+e2fsprogs (1.10-5.1) experimental; urgency=low
+
+  * Applied patch from Ted for libc6 compatibility, for test purpose.
+
+ -- Yann Dirson <dirson@univ-mlv.fr>  Thu, 11 Sep 1997 09:09:42 +0200
+ 
+e2fsprogs (1.10-5) unstable; urgency=medium
+
+  * Switched back to libc5 because of possible bug in libc6-2.0.4-provided
+    llseek() causing problem with partitions > 2Gb.
+  * Switched back to libc-provided llseek().
+
+ -- Yann Dirson <dirson@univ-mlv.fr>  Tue,  5 Aug 1997 16:54:40 +0200
+
+e2fsprogs (1.10-4.1) unstable; urgency=low
+
+  * Make use of shipped llseek instead of glibc's which seems buggy
+    [unreleased - could not compile due to possible gcc bug].
+  * Corrected compiler-options handling in debian/rules (use CCOPTS instead
+    of CFLAGS which is messed with in configure.in).
+
+ -- Yann Dirson <dirson@univ-mlv.fr>  Mon, 28 Jul 1997 19:47:02 +0200
+
+e2fsprogs (1.10-4) unstable; urgency=low
+
+  * Switched to libc6.
+  * Added calls to update-info in postins/prerm.
+  * Misc changes to debian/rules; some cleanup in Makefiles.
+
+ -- Yann Dirson <dirson@univ-mlv.fr>  Thu, 10 Jul 1997 19:42:54 +0200
+
+e2fsprogs (1.10-3) stable unstable; urgency=low
+
+  * New maintainer (closed many obsolete bug-reports).
+  * updated "copyright" to show new location on tsx-11.
+  * started debian/rules cleanup, towards new policy conformance.
+  * Added flushb.8 link to undocumented.7 (bug #8644).
+  * Added {fsck,mkfs}.ext2.8 links to existing manpages (bugs #5598,
+    #6286).
+
+ -- Yann Dirson <dirson@univ-mlv.fr>  Wed, 25 Jun 1997 14:59:58 +0200
+
+e2fsprogs (1.10-2) frozen unstable; urgency=low
+
+  * Add 'ldconfig' to postinst (should fix #9020).
+  * Define HAVE_NETINET_IN_H on alpha/glibc.
+
+ -- Klee Dienes <klee@debian.org>  Tue, 29 Apr 1997 17:24:12 -0400
+
+e2fsprogs (1.10-1) frozen unstable; urgency=medium
+
+  * Upstream bug-fix release.
+
+ -- Klee Dienes <klee@debian.org>  Thu, 24 Apr 1997 14:54:12 -0400
+
+e2fsprogs (1.09-1) frozen; urgency=medium
+
+  * Upstream bug-fix release.
+
+ -- Klee Dienes <klee@debian.org>  Thu, 24 Apr 1997 14:54:12 -0400
+
+e2fsprogs (1.06-4) unstable; urgency=low
+
+  * Added empty entries to shlibs.local, to neatly solve the pre-depends
+    problem, as suggested by Ian Jackson.
+
+ -- Michael Nonweiler <mrn20@cam.ac.uk>  Wed, 13 Nov 1996 08:13:28 +0000
+
+e2fsprogs (1.06-3) unstable; urgency=low
+
+  * Hard coded Pre-Depends line, as a temporary fix for the pre-depends
+    contains e2fsprogs problem.
+
+ -- Michael Nonweiler <mrn20@cam.ac.uk>  Sat, 9 Nov 1996 12:57:44 +0000
+
+e2fsprogs (1.06-2) unstable; urgency=low
+
+  * New packaging format
+  * Fixes packaging bugs -
+      Files in /lib are now stripped of all unneeded symbols (Bug#5121)
+      Calls to ldconfig in maintainer scripts have been removed (Bug#4247)
+
+ -- Michael Nonweiler <mrn20@cam.ac.uk>  Tue, 5 Nov 1996 21:14:54 +0000
+
+ * Oct 18 1996 Michael Meskes <meskes@debian.org>
+  	upgraded to latest upstream version, to 1.06 from 1.05
+ * Oct 18 1996 Michael Meskes <meskes@debian.org>
+  	upgraded to latest upstream version, to 1.05 from 1.04
+   gzip manpages
+   minor changes to debian.rules
+  * Jun 23 1996 Michael R. Nonweiler <mrn20@cam.ac.uk>
+	upgraded to latest upstream version, to 1.04 from 1.02
+   another tidy-up of debian.rules
+   section and priority added to debian.control,
+       since this is an essential base package.
+
+ * Mar  5 1996 Michael R. Nonweiler <mrn20@cam.ac.uk>
+	upgraded to latest upstream version, to 1.02 from 1.01
+ * copied "configure" usr_prefix change (see below), into configure.in
+ * updated debian.control file, added Pre-Depends field
+   created preinst script to check dpkg --assert-predepends
+   tidyed and fixed debian.rules
+ * set e2fsck to link shared, as suggested by Bruce Perens
+   in Bug#2332
+ * corrected problem in e2fsck error message, Bug#2534
+ * added Architecture field
+ * very minor correction to expected output of a build time test
+
+ * Nov 20 1995 Andrew D. Fernandes <adfernan@cnd.mcgill.ca>
+	removed debugging symbols from libs and enabled more
+	optimization as suggested by Rolf Rossius
+	also removed the /var/catman pages
+
+ * Nov 19 1995 Andrew D. Fernandes <adfernan@cnd.mcgill.ca>
+	changed to elf compilation
+
+ * Oct  7 1995 Andrew D. Fernandes <adfernan@cnd.mcgill.ca>
+	Upgraded to latest version, to 1.01 from 0.5b.
+ * changed the installation groups from bin to root in MCONFIG.in
+ * changed configure to set usr_prefix="\${prefix}/usr"
+ * moved the cat pages to /var/catman in MCONFIG.in
+
+ * Aug  3 1995 Bruce Perens <Bruce@Pixar.com>
+   Made "fsck -t <filesystem-type> <device>" work correctly. Formerly
+   the -t argument was overriden by the filesystem type listed for the
+   device in /etc/fstab.
+ * added Debian GNU/Linux package maintenance system files
+
+
+Local variables:
+mode: debian-changelog
+add-log-mailing-address: "dirson@debian.org"
+End:

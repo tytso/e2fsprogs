@@ -1,0 +1,52 @@
+This is the Debian GNU/Linux prepackaged version of the EXT2 file
+system utilities (e2fsck, mke2fs, etc.).  The EXT2 utilities were
+written by Theodore Ts'o <tytso@mit.edu> and Remy Card <card@masi.ibp.fr>.
+
+This package was put together by Yann Dirson <dirson@debian.org>,
+from sources obtained from a mirror of:
+ tsx-11.mit.edu:/pub/linux/packages/ext2fs/
+
+Copyright notice:
+
+This package, the EXT2 filesystem utilities, are protected by the GNU
+Public License, with the following exception --- 
+
+	If the version string in the file version.h contains the
+	string "pre-", then this package must be distributed in source
+	form only.  You can give a copy of the binary for e2fsck to
+	help a friend recover his or her filesystem, as the need
+	arises.  However, "pre" indicates that this release is under
+	development, and available for ALPHA testing.  So for your
+	protection as much as mine, I'd rather not have it appear in a
+	some distribution --- especially not a CD-ROM distribution!
+
+The most recent officially distributed version can be found on
+tsx-11.mit.edu, in /pub/linux/packages/ext2fs.  If you need to make a
+distribution, that's the one you should use.  If there is some reason
+why you'd like a more recent version that is still in ALPHA testing
+for your distribution, please contact me (tytso@mit.edu), and we can
+see if we can't come to an arrangement.  The release schedules for
+this package are flexible, if you give me enough lead time.
+
+
+					Theodore Ts'o
+					26-Mar-97
+
+On Debian GNU systems, the complete text of the GNU General
+Public License can be found in `/usr/share/common-licenses/GPL'.
+
+
+The 1.19 RELEASE-NOTES mentions that the UUID library (libuuid) is
+covered by the LGPL.  After clarification from upstream author, it
+appears to refer to the so-called "Library General Public License"
+(aka LGPL v2), and not the "Lesser General Public License" (aka LGPL
+v2.1).
+
+On Debian GNU systems, the complete text of the GNU LGPL v2 can be
+found in `/usr/share/common-licenses/LGPL-2'.
+
+
+The ss and com_err libraries, available in separate packages, fall
+under another licence.  Please refer to the relevant copyright files
+for these libs.
+

@@ -1,0 +1,5 @@
+usr/lib/libss.so
+usr/lib/libss.a
+usr/include/ss/*
+usr/bin/mk_cmds
+usr/share/ss/*
