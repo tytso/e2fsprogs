@@ -42,8 +42,8 @@
 #include "problem.h"
 
 static void check_root(e2fsck_t ctx);
-static void check_directory(e2fsck_t ctx, struct dir_info *dir,
-			    struct problem_context *pctx);
+static int check_directory(e2fsck_t ctx, struct dir_info *dir,
+			   struct problem_context *pctx);
 static ino_t get_lost_and_found(e2fsck_t ctx);
 static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ino_t parent);
 static errcode_t adjust_inode_count(e2fsck_t ctx, ino_t ino, int adj);
@@ -82,14 +82,6 @@ void e2fsck_pass3(e2fsck_t ctx)
 	/*
 	 * Allocate some bitmaps to do loop detection.
 	 */
-	pctx.errcode = ext2fs_allocate_inode_bitmap(fs,
-		    _("inode loop detection bitmap"), &inode_loop_detect);
-	if (pctx.errcode) {
-		pctx.num = 1;
-		fix_problem(ctx, PR_3_ALLOCATE_IBITMAP_ERROR, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		goto abort_exit;
-	}
 	pctx.errcode = ext2fs_allocate_inode_bitmap(fs, _("inode done bitmap"),
 						    &inode_done_map);
 	if (pctx.errcode) {
@@ -123,7 +115,8 @@ void e2fsck_pass3(e2fsck_t ctx)
 			if ((ctx->progress)(ctx, 3, count++, maxdirs))
 				goto abort_exit;
 		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dir->ino))
-			check_directory(ctx, dir, &pctx);
+			if (check_directory(ctx, dir, &pctx))
+				goto abort_exit;
 	}
 
 	/*
@@ -134,10 +127,14 @@ void e2fsck_pass3(e2fsck_t ctx)
 
 abort_exit:
 	e2fsck_free_dir_info(ctx);
-	if (inode_loop_detect)
+	if (inode_loop_detect) {
 		ext2fs_free_inode_bitmap(inode_loop_detect);
-	if (inode_done_map)
+		inode_loop_detect = 0;
+	}
+	if (inode_done_map) {
 		ext2fs_free_inode_bitmap(inode_done_map);
+		inode_done_map = 0;
+	}
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
@@ -259,34 +256,38 @@ static void check_root(e2fsck_t ctx)
  * the lost+found.  We have to do loop detection; if we ever discover
  * a loop, we treat that as a disconnected directory and offer to
  * reparent it to lost+found.
+ * 
+ * However, loop detection is expensive, because for very large
+ * filesystems, the inode_loop_detect bitmap is huge, and clearing it
+ * is non-trivial.  Loops in filesystems are also a rare error case,
+ * and we shouldn't optimize for error cases.  So we try two passes of
+ * the algorithm.  The first time, we ignore loop detection and merely
+ * increment a counter; if the counter exceeds some extreme threshold,
+ * then we try again with the loop detection bitmap enabled.
  */
-static void check_directory(e2fsck_t ctx, struct dir_info *dir,
-			    struct problem_context *pctx)
+static int check_directory(e2fsck_t ctx, struct dir_info *dir,
+			   struct problem_context *pctx)
 {
-	ext2_filsys fs = ctx->fs;
+	ext2_filsys 	fs = ctx->fs;
 	struct dir_info *p = dir;
+	int		loop_pass = 0, parent_count = 0;
 
 	if (!p)
-		return;
+		return 0;
 
-	ext2fs_clear_inode_bitmap(inode_loop_detect);
-
-	/*
-	 * Keep going until we find a parent which we've already
-	 * checked.  We know it's either already connected to the
-	 * directory tree, or it isn't but the user has already told
-	 * us he doesn't want us to reconnect the disconnected
-	 * subtree.
-	 */
-	while (!ext2fs_test_inode_bitmap(inode_done_map, p->ino)) {
+	while (1) {
 		/*
 		 * Mark this inode as being "done"; by the time we
 		 * return from this function, the inode we either be
 		 * verified as being connected to the directory tree,
 		 * or we will have offered to reconnect this to
 		 * lost+found.
+		 *
+		 * If it was marked done already, then we've reached a
+		 * parent we've already checked.
 		 */
-		ext2fs_mark_inode_bitmap(inode_done_map, p->ino);
+	  	if (ext2fs_mark_inode_bitmap(inode_done_map, p->ino))
+			break;
 
 		/*
 		 * If this directory doesn't have a parent, or we've
@@ -294,8 +295,9 @@ static void check_directory(e2fsck_t ctx, struct dir_info *dir,
 		 * reparent it to lost+found
 		 */
 		if (!p->parent ||
-		    (ext2fs_test_inode_bitmap(inode_loop_detect,
-					      p->parent))) {
+		    (loop_pass && 
+		     (ext2fs_test_inode_bitmap(inode_loop_detect,
+					      p->parent)))) {
 			pctx->ino = p->ino;
 			if (fix_problem(ctx, PR_3_UNCONNECTED_DIR, pctx)) {
 				if (e2fsck_reconnect_file(ctx, p->ino))
@@ -307,13 +309,35 @@ static void check_directory(e2fsck_t ctx, struct dir_info *dir,
 			}
 			break;
 		}
-		ext2fs_mark_inode_bitmap(inode_loop_detect,
-					 p->parent);
-		pctx->ino = p->parent;
 		p = e2fsck_get_dir_info(ctx, p->parent);
 		if (!p) {
 			fix_problem(ctx, PR_3_NO_DIRINFO, pctx);
-			return;
+			return 0;
+		}
+		if (loop_pass) {
+			ext2fs_mark_inode_bitmap(inode_loop_detect,
+						 p->ino);
+		} else if (parent_count++ > 2048) {
+			/*
+			 * If we've run into a path depth that's
+			 * greater than 2048, try again with the inode
+			 * loop bitmap turned on and start from the
+			 * top.
+			 */
+			loop_pass = 1;
+			if (inode_loop_detect)
+				ext2fs_clear_inode_bitmap(inode_loop_detect);
+			else {
+				pctx->errcode = ext2fs_allocate_inode_bitmap(fs, _("inode loop detection bitmap"), &inode_loop_detect);
+				if (pctx->errcode) {
+					pctx->num = 1;
+					fix_problem(ctx, 
+				    PR_3_ALLOCATE_IBITMAP_ERROR, pctx);
+					ctx->flags |= E2F_FLAG_ABORT;
+					return -1;
+				}
+			}
+			p = dir;
 		}
 	}
 
@@ -328,6 +352,7 @@ static void check_directory(e2fsck_t ctx, struct dir_info *dir,
 		if (fix_problem(ctx, PR_3_BAD_DOT_DOT, pctx))
 			fix_dotdot(ctx, dir, dir->parent);
 	}
+	return 0;
 }	
 
 /*

@@ -1,3 +1,24 @@
+2000-02-08    <tytso@snap.thunk.org>
+
+	* Makefile.in: Call sync after finishing building all in this
+		directory. 
+	
+	* unix.c (PRS): sync the filesystem before trying to use
+		BLKFLSBUF, to minimize the chance of causing dirty blocks
+		to get dropped.
+
+	* e2fsck.h: Manually define BLKFLSBUF if not defined, and we're on
+		a Linux/i386 system.
+	
+	* pass3.c (check_directory): Only do the loop detection algorithm
+		if we've searched over 2048 parent directories and haven't
+		found the end yet.  This means that in the common case, we
+		don't allocate or clear the inode_loop_detection bitmap,
+		which for large systems, merely clearing the bitmap for
+		each directory was turning out to be quite expensive.
+		Thanks to Jani Jaakkola (jjaakkol@cs.helsinki.fi) for
+		identifying this problem.
+
 2000-02-06  Theodore Ts'o  <tytso@valinux.com>
 
 	* badblocks.c, e2fsck.h, ehandler.c, emptydir.c, extend.c,

@@ -82,6 +82,7 @@ SRCS= $(srcdir)/e2fsck.c \
 	$(MTRACE_SRC)
 
 all:: profiled $(PROGS) e2fsck.static e2fsck.shared $(MANPAGES)
+	@sync
 
 @PROFILE_CMT@all:: e2fsck.profiled
 

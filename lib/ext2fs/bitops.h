@@ -35,13 +35,13 @@ extern void ext2fs_warn_bitmap(errcode_t errcode, unsigned long arg,
 extern void ext2fs_warn_bitmap2(ext2fs_generic_bitmap bitmap,
 				int code, unsigned long arg);
 
-extern void ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
-extern void ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
+extern int ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
+extern int ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
 				       blk_t block);
 extern int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
 
-extern void ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap, ino_t inode);
-extern void ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+extern int ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap, ino_t inode);
+extern int ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
 				       ino_t inode);
 extern int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap, ino_t inode);
 
@@ -329,31 +329,31 @@ _INLINE_ __u32 ext2fs_swab32(__u32 val)
 
 #endif /* !_EXT2_HAVE_ASM_SWAB */
 
-_INLINE_ void ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
+_INLINE_ int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					 __u32 bitno);
-_INLINE_ void ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
+_INLINE_ int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					   blk_t bitno);
 _INLINE_ int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					blk_t bitno);
 
-_INLINE_ void ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
+_INLINE_ int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					 __u32 bitno)
 {
 	if ((bitno < bitmap->start) || (bitno > bitmap->end)) {
 		ext2fs_warn_bitmap2(bitmap, EXT2FS_MARK_ERROR, bitno);
-		return;
+		return 0;
 	}
-	ext2fs_set_bit(bitno - bitmap->start, bitmap->bitmap);
+	return ext2fs_set_bit(bitno - bitmap->start, bitmap->bitmap);
 }
 
-_INLINE_ void ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
+_INLINE_ int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					   blk_t bitno)
 {
 	if ((bitno < bitmap->start) || (bitno > bitmap->end)) {
 		ext2fs_warn_bitmap2(bitmap, EXT2FS_UNMARK_ERROR, bitno);
-		return;
+		return 0;
 	}
-	ext2fs_clear_bit(bitno - bitmap->start, bitmap->bitmap);
+	return ext2fs_clear_bit(bitno - bitmap->start, bitmap->bitmap);
 }
 
 _INLINE_ int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
@@ -366,16 +366,19 @@ _INLINE_ int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
 	return ext2fs_test_bit(bitno - bitmap->start, bitmap->bitmap);
 }
 
-_INLINE_ void ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap,
+_INLINE_ int ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap,
 				       blk_t block)
 {
-	ext2fs_mark_generic_bitmap((ext2fs_generic_bitmap) bitmap, block);
+	return ext2fs_mark_generic_bitmap((ext2fs_generic_bitmap)
+				       bitmap,
+					  block);
 }
 
-_INLINE_ void ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
+_INLINE_ int ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
 					 blk_t block)
 {
-	ext2fs_unmark_generic_bitmap((ext2fs_generic_bitmap) bitmap, block);
+	return ext2fs_unmark_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
+					    block);
 }
 
 _INLINE_ int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap,
@@ -385,16 +388,18 @@ _INLINE_ int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap,
 					  block);
 }
 
-_INLINE_ void ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+_INLINE_ int ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
 				       ino_t inode)
 {
-	ext2fs_mark_generic_bitmap((ext2fs_generic_bitmap) bitmap, inode);
+	return ext2fs_mark_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
+					  inode);
 }
 
-_INLINE_ void ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+_INLINE_ int ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
 					 ino_t inode)
 {
-	ext2fs_unmark_generic_bitmap((ext2fs_generic_bitmap) bitmap, inode);
+	return ext2fs_unmark_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
+				     inode);
 }
 
 _INLINE_ int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap,

@@ -547,13 +547,19 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	    !cflag && !swapfs)
 		ctx->options |= E2F_OPT_READONLY;
 	ctx->filesystem_name = argv[optind];
-	if (flush) {
 #ifdef BLKFLSBUF
+	if (flush) {
 		int	fd = open(ctx->filesystem_name, O_RDONLY, 0);
 
 		if (fd < 0) {
 			com_err("open", errno,
 				_("while opening %s for flushing"),
+				ctx->filesystem_name);
+			exit(FSCK_ERROR);
+		}
+		if (fsync(fd) < 0) {
+			com_err("fsync", errno,
+				_("while trying to flush %s"),
 				ctx->filesystem_name);
 			exit(FSCK_ERROR);
 		}
@@ -564,10 +570,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			exit(FSCK_ERROR);
 		}
 		close(fd);
-#else
-		fatal_error(ctx, _("BLKFLSBUF not supported"));
-#endif /* BLKFLSBUF */
 	}
+#endif /* BLKFLSBUF */
 	if (swapfs) {
 		if (cflag || bad_blocks_file) {
 			fprintf(stderr, _("Incompatible options not "

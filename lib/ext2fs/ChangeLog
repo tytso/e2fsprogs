@@ -1,3 +1,11 @@
+2000-02-08    <tytso@snap.thunk.org>
+
+	* bitops.h (ext2fs_mark_generic_bitmap, ext2fs_unmark_generic_bitmap,
+		ext2fs_mark_block_bitmap, ext2fs_unmark_block_bitmap,
+		ext2fs_mark_inode_bitmap, ext2fs_unmark_inode_bitmap):
+		Change to return the previous state of the bit that is
+		being marked or unmarked.  For speed optimization.
+	
 2000-02-02  Theodore Ts'o  <tytso@valinux.com>
 
 	* getsize.c, ismounted.c: Remove unneeded include of linux/fs.h
