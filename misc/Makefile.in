@@ -29,7 +29,7 @@ DUMPE2FS_OBJS=	dumpe2fs.o
 BADBLOCKS_OBJS=	badblocks.o
 E2LABEL_OBJS=	e2label.o
 E2IMAGE_OBJS=	e2image.o
-FSCK_OBJS=	fsck.o get_device_by_label.o
+FSCK_OBJS=	fsck.o get_device_by_label.o base_device.o
 
 SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/chattr.c $(srcdir)/lsattr.c $(srcdir)/dumpe2fs.c \
@@ -60,6 +60,13 @@ e2label: $(E2LABEL_OBJS)
 
 e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS)
+
+base_device: base_device.c
+	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $< -DDEBUG -o $@
+
+check:: base_device
+	./base_device < $(srcdir)/base_device.tst > base_device.out
+	cmp $(srcdir)/base_device.tst base_device.out
 
 mklost+found: $(MKLPF_OBJS)
 	$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS)
@@ -169,7 +176,8 @@ uninstall:
 
 clean:
 	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) $(UMANPAGES) $(SMANPAGES) \
-		mke2fs.static \#* *.s *.o *.a *~ core
+		base_device base_device.out mke2fs.static \
+		\#* *.s *.o *.a *~ core 
 
 mostlyclean: clean
 distclean: clean

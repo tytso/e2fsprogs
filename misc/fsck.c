@@ -79,55 +79,7 @@ static const char *really_wanted[] = {
 	NULL
 };
 
-#ifdef DEV_DSK_DEVICES
-static const char *base_devices[] = {
-	"/dev/dsk/hda",
-	"/dev/dsk/hdb",
-	"/dev/dsk/hdc",
-	"/dev/dsk/hdd",
-	"/dev/dsk/hde",
-	"/dev/dsk/hdf",
-	"/dev/dsk/hdg",
-	"/dev/dsk/hdh",
-	"/dev/dsk/hd1a",
-	"/dev/dsk/hd1b",
-	"/dev/dsk/hd1c",
-	"/dev/dsk/hd1d",
-	"/dev/dsk/sda",
-	"/dev/dsk/sdb",
-	"/dev/dsk/sdc",
-	"/dev/dsk/sdd",
-	"/dev/dsk/sde",
-	"/dev/dsk/sdf",
-	"/dev/dsk/sdg",
-	NULL
-};
-#else
 #define BASE_MD "/dev/md"
-static const char *base_devices[] = {
-	"/dev/hda",
-	"/dev/hdb",
-	"/dev/hdc",
-	"/dev/hdd",
-	"/dev/hde",
-	"/dev/hdf",
-	"/dev/hdg",
-	"/dev/hdh",
-	"/dev/hd1a",
-	"/dev/hd1b",
-	"/dev/hd1c",
-	"/dev/hd1d",
-	"/dev/sda",
-	"/dev/sdb",
-	"/dev/sdc",
-	"/dev/sdd",
-	"/dev/sde",
-	"/dev/sdf",
-	"/dev/sdg",
-	BASE_MD,
-	NULL
-};
-#endif
 
 /*
  * Global variables for options
@@ -213,6 +165,8 @@ static void free_instance(struct fsck_instance *i)
 		free(i->prog);
 	if (i->device)
 		free(i->device);
+	if (i->base_device)
+		free(i->base_device);
 	free(i);
 	return;
 }
@@ -486,6 +440,7 @@ static int execute(const char *type, char *device, char *mntpt,
 	inst->prog = string_copy(prog);
 	inst->type = string_copy(type);
 	inst->device = string_copy(device);
+	inst->base_device = base_device(device);
 	inst->start_time = time(0);
 	inst->next = NULL;
 
@@ -723,30 +678,13 @@ static int ignore(struct fs_info *fs)
 }
 
 /*
- * Return the "base device" given a particular device; this is used to
- * assure that we only fsck one partition on a particular drive at any
- * one time.  Otherwise, the disk heads will be seeking all over the
- * place.
- */
-static const char *base_device(char *device)
-{
-	const char **base;
-
-	for (base = base_devices; *base; base++) {
-		if (!strncmp(*base, device, strlen(*base)))
-			return *base;
-	}
-	return device;
-}
-
-/*
  * Returns TRUE if a partition on the same disk is already being
  * checked.
  */
 static int device_already_active(char *device)
 {
 	struct fsck_instance *inst;
-	const char *base = base_device(device);
+	char *base;
 
 	if (force_all_parallel)
 		return 0;
@@ -759,10 +697,14 @@ static int device_already_active(char *device)
 		return 1;
 #endif
 
+	base = base_device(device);
 	for (inst = instance_list; inst; inst = inst->next) {
-		if (!strcmp(base, base_device(inst->device)))
+		if (!strcmp(base, inst->base_device)) {
+			free(base);
 			return 1;
+		}
 	}
+	free(base);
 	return 0;
 }
 

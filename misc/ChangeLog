@@ -1,3 +1,14 @@
+2000-12-03    <tytso@snap.thunk.org>
+
+	* fsck.c (device_already_active): Change to use new version of
+		base_device() which now returns dynamically allocated
+		memory.
+
+	* base_device.c (base_device): New version moved from fsck.c which
+		now understands ugly devfs names.  (Debian bug #65181)
+
+	* base_device.tst: Test case for base_device.c
+
 2000-12-02    <tytso@snap.thunk.org>
 
 	* fsck.8.in: Add clarification that filesystems with a fs_passno

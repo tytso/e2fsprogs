@@ -53,8 +53,9 @@ struct fsck_instance {
 	char *	prog;
 	char *	type;
 	char *	device;
+	char *	base_device;
 	struct fsck_instance *next;
 };
 
-
+extern char *base_device(char *device);
 
