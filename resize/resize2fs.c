@@ -1126,6 +1126,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 			retval = ext2fs_read_inode(rfs->old_fs, ino, &inode);
 			if (retval) goto errout;
 		}
+		inode.i_ctime = time(0);
 		retval = ext2fs_write_inode(rfs->old_fs, new_inode, &inode);
 		if (retval) goto errout;
 
@@ -1178,7 +1179,9 @@ static int check_and_change_inodes(ext2_ino_t dir, int entry,
 				   int	blocksize, char *buf, void *priv_data)
 {
 	struct istruct *is = (struct istruct *) priv_data;
-	ext2_ino_t	new_inode;
+	struct ext2_inode 	inode;
+	ext2_ino_t		new_inode;
+	errcode_t		retval;
 
 	if (is->rfs->progress && offset == 0) {
 		io_channel_flush(is->rfs->old_fs->io);
@@ -1204,6 +1207,13 @@ static int check_and_change_inodes(ext2_ino_t dir, int entry,
 #endif
 
 	dirent->inode = new_inode;
+
+	/* Update the directory mtime and ctime */
+	retval = ext2fs_read_inode(is->rfs->old_fs, dir, &inode);
+	if (retval == 0) {
+		inode.i_mtime = inode.i_ctime = time(0);
+		ext2fs_write_inode(is->rfs->old_fs, dir, &inode);
+	}
 
 	return DIRENT_CHANGED;
 }

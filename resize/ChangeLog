@@ -1,3 +1,11 @@
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* resize2fs.c (inode_scan_and_fix, check_and_change_inodes): When
+		moving an inode, set the ctime field so that people using
+		dump/restore will backup the changed inode.  Also update
+		the mtime and ctime of directories which get updated when
+		we need to move an inode.
+
 2002-10-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in (install): Search all compression extensions when
