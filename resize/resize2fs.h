@@ -24,10 +24,6 @@
 #include <errno.h>
 #endif
 
-#ifdef HAVE_LINUX_FS_H
-#include <linux/fs.h>
-#endif
-
 #if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
 #include "ext2fs.h"

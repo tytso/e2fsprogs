@@ -130,7 +130,7 @@ static void check_expire_time(const char *progname)
 	
 
 
-void main (int argc, char ** argv)
+int main (int argc, char ** argv)
 {
 	errcode_t	retval;
 	ext2_filsys	fs;
@@ -283,5 +283,5 @@ void main (int argc, char ** argv)
 	}
 	printf("The filesystem on %s is now %d blocks long.\n\n",
 	       device_name, new_size);
-	exit (0);
+	return (0);
 }
