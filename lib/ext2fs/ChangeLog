@@ -1,3 +1,7 @@
+2005-02-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Remove ext2fs.pc on a "make distclean"
+
 2005-02-04  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in (clean): Remove tst_getsize when doing a make clean

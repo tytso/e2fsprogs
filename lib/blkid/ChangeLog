@@ -1,3 +1,7 @@
+2005-02-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Remove blkid.pc on a "make distclean"
+
 2005-01-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid.h, blkidP.h: Rename blkid_verify_devname() to be

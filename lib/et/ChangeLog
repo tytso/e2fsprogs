@@ -1,3 +1,7 @@
+2005-02-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Remove com_err.pc on a "make distclean"
+
 2005-01-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* com_err.pc.in: Add pkg-config files.

@@ -160,12 +160,13 @@ uninstall::
 	$(RM) -rf $(DESTDIR)$(includedir)/ss $(DESTDIR)$(datadir)/ss
 
 clean::
-	$(RM) -f ../libss.a libss.a mk_cmds ss_err.h ss_err.c std_rqs.c ss.pc \
+	$(RM) -f ../libss.a libss.a mk_cmds ss_err.h ss_err.c std_rqs.c \
 		*.o *~ \#* *.bak core 
 
 mostlyclean:: clean
 distclean:: clean
-	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old
+	$(RM) -f .depend Makefile ss.pc \
+		$(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
 #
 # Hack to parallel makes recognize dependencies correctly.

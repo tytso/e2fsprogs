@@ -1,5 +1,7 @@
 2005-02-05  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Remove emacs backup files on "make clean"
+
 	* Makefile.in, f_h_badnode, f_dup_de, f_h_reindex, f_h_normal,
 		f_h_badroot: Remove support for --enable-htree-clear
 

@@ -169,7 +169,8 @@ check:: tst_uuid
 
 mostlyclean:: clean
 distclean:: clean
-	$(RM) -f .depend Makefile $(srcdir)/TAGS $(srcdir)/Makefile.in.old
+	$(RM) -f .depend Makefile uuid.pc \
+		$(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
 #
 # Hack to parallel makes recognize dependencies correctly.
