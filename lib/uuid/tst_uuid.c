@@ -24,22 +24,71 @@ main(int argc, char **argv)
 	unsigned char	*cp;
 	int i;
 	int failed = 0;
+	int type, variant;
 
 	uuid_generate(buf);
 	uuid_unparse(buf, str);
-	printf("UUID string = %s\n", str);
+	printf("UUID generate = %s\n", str);
 	printf("UUID: ");
 	for (i=0, cp = (unsigned char *) &buf; i < 16; i++) {
 		printf("%02x", *cp++);
 	}
 	printf("\n");
+	type = uuid_type(buf); 	variant = uuid_variant(buf);
+	printf("UUID type = %d, UUID variant = %d\n", type, variant);
+	if (variant != UUID_VARIANT_DCE) {
+		printf("Incorrect UUID Variant; was expecting DCE!\n");
+		failed++;
+	}
+	printf("\n");
+
+	uuid_generate_random(buf);
+	uuid_unparse(buf, str);
+	printf("UUID random string = %s\n", str);
+	printf("UUID: ");
+	for (i=0, cp = (unsigned char *) &buf; i < 16; i++) {
+		printf("%02x", *cp++);
+	}
+	printf("\n");
+	type = uuid_type(buf); 	variant = uuid_variant(buf);
+	printf("UUID type = %d, UUID variant = %d\n", type, variant);
+	if (variant != UUID_VARIANT_DCE) {
+		printf("Incorrect UUID Variant; was expecting DCE!\n");
+		failed++;
+	}
+	if (type != 4) {
+		printf("Incorrect UUID type; was expecting "
+		       "4 (random type)!\n");
+		failed++;
+	}
+	printf("\n");
+	
+	uuid_generate_time(buf);
+	uuid_unparse(buf, str);
+	printf("UUID string = %s\n", str);
+	printf("UUID time: ");
+	for (i=0, cp = (unsigned char *) &buf; i < 16; i++) {
+		printf("%02x", *cp++);
+	}
+	printf("\n");
+	type = uuid_type(buf); 	variant = uuid_variant(buf);
+	printf("UUID type = %d, UUID variant = %d\n", type, variant);
+	if (variant != UUID_VARIANT_DCE) {
+		printf("Incorrect UUID Variant; was expecting DCE!\n");
+		failed++;
+	}
+	if (type != 1) {
+		printf("Incorrect UUID type; was expecting "
+		       "1 (time-based type)!\\n");
+		failed++;
+	}
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 	time_reg = uuid_time(buf, &tv);
 	printf("UUID time is: (%d, %d): %s\n", tv.tv_sec, tv.tv_usec,
 	       ctime(&time_reg));
 	uuid_parse(str, tst);
-	if (uuid_compare(buf, tst))
+	if (!uuid_compare(buf, tst))
 		printf("UUID parse and compare succeeded.\n");
 	else {
 		printf("UUID parse and compare failed!\n");
@@ -53,7 +102,7 @@ main(int argc, char **argv)
 		failed++;
 	}
 	uuid_copy(buf, tst);
-	if (uuid_compare(buf, tst))
+	if (!uuid_compare(buf, tst))
 		printf("UUID copy and compare succeeded.\n");
 	else {
 		printf("UUID copy and compare failed!\n");

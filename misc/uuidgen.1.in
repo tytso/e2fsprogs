@@ -5,9 +5,9 @@
 .\" This file may be copied under the terms of the GNU Public License.
 .\" 
 .\" Created  Wed Mar 10 17:42:12 1999, Andreas Dilger
-.TH UUIDGEN "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.TH UUIDGEN 1 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-uuidgen \- command\-line utility to create a new unique UUID value
+uuidgen \- command\-line utility to create a new UUID value
 .SH SYNOPSIS
 .nf
 .B uuidgen
@@ -15,7 +15,7 @@ uuidgen \- command\-line utility to create a new unique UUID value
 .SH DESCRIPTION
 The
 .B uuidgen
-program creates a new universally unique identifier using the
+program creates a new universally unique identifier (UUID) using the
 .BR libuuid "(3) functions " uuid_generate "(3) and " uuid_unparse "(3)."
 The new UUID can reasonably be considered unique among all UUIDs created
 on the local system, and among UUIDs created on other systems in the past

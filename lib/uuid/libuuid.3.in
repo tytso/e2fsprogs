@@ -12,6 +12,8 @@ libuuid \- DCE compatible Universally Unique Identifier library
 .nf
 .B #include <uuid/uuid.h>
 .sp
+cc
+.I file.c
 .B \-luuid
 .SH DESCRIPTION
 The

@@ -15,6 +15,12 @@
 
 typedef unsigned char uuid_t[16];
 
+/* UUID Variant definitions */
+#define UUID_VARIANT_NCS 	0
+#define UUID_VARIANT_DCE 	1
+#define UUID_VARIANT_MICROSOFT	2
+#define UUID_VARIANT_OTHER	3
+
 /* clear.c */
 void uuid_clear(uuid_t uu);
 
@@ -38,5 +44,5 @@ void uuid_unparse(uuid_t uu, char *out);
 
 /* uuid_time.c */
 time_t uuid_time(uuid_t uu, struct timeval *ret_tv);
-
-
+int uuid_type(uuid_t uu);
+int uuid_variant(uuid_t uu);

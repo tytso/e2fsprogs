@@ -13,16 +13,42 @@ uuid_generate \- create a new unique UUID value
 .B #include <uuid/uuid.h>
 .sp
 .BI "void uuid_generate(uuid_t " out );
+.BI "void uuid_generate_random(uuid_t " out );
+.BI "void uuid_generate_time(uuid_t " out );
 .fi
 .SH DESCRIPTION
 The
 .B uuid_generate
-function creates a new universally unique identifier.  Depending on
-compile\- and run\-time availability, the UUID will be based on the
-local ethernet MAC address (if available), random data from /dev/urandom
-or a pseudo\-random generator
-.BR rand "(3) or " random "(3),"
-and the current time.
+function creates a new universally unique identifier (UUID).  The uuid will
+be generated based on high-quality randomness from 
+.IR /dev/urandom , 
+if available.  If it is not available, then 
+.B uuid_generate 
+will use an alternative algorithm which uses the current time, the
+local ethernet MAC address (if available), and random data generated
+using a pseudo-random generator.
+.sp
+The 
+.B uuid_generate_random
+function forces the use of the all-random UUID format, even if
+a high-quality random number generator (i.e., 
+.IR /dev/urandom )
+is not available, in which case a pseudo-random
+generator will be subsituted.  Note that the use of a pseudo-random
+generator may compromise the uniqueness of UUID's
+generated in this fashion.
+.sp
+The
+.B uuid_generate_time 
+function forces the use of the alternative algorithm which uses the
+current time and the local ethernet MAC address (if available).
+This algorithm used to be the default one used to generate UUID, but
+because of the use of the ethernet MAC address, it can leak
+information about when and where the UUID was generated.  This can cause
+privacy problems in some applications, so the
+.B uuid_generate
+function only uses this algorithm if a high-quality source of
+randomness is not available.  
 .sp
 The UUID is 16 bytes (128 bits) long, which gives approximately 3.4x10^38
 unique values (there are approximately 10^80 elemntary particles in

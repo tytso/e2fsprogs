@@ -17,6 +17,7 @@
 #endif
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
@@ -54,17 +55,26 @@ static void get_random_bytes(void *buf, int nbytes)
 		fd = open("/dev/urandom", O_RDONLY);
 		srand((getpid() << 16) ^ getuid() ^ time(0));
 	}
-	if (fd > 0) {
-		i = read(fd, cp, nbytes);
-		if (i == nbytes)
-			return;
-		if (i > 0) {
+	if (fd >= 0) {
+		while (nbytes > 0) {
+			i = read(fd, cp, nbytes);
+			if (i < 0) {
+				if ((errno == EINTR) || (errno == EAGAIN))
+					continue;
+				break;
+			}
 			nbytes -= i;
 			cp += i;
 		}
 	}
+	if (nbytes == 0)
+		return;
+
+	/* XXX put something better here if no /dev/random! */
 	for (i=0; i < nbytes; i++)
 		*cp++ = rand() & 0xFF;
+	return;
+	
 }
 
 /*
@@ -184,7 +194,7 @@ try_again:
 	return 0;
 }
 
-void uuid_generate(uuid_t out)
+void uuid_generate_time(uuid_t out)
 {
 	static unsigned char node_id[6];
 	static int has_init = 0;
@@ -210,3 +220,39 @@ void uuid_generate(uuid_t out)
 	memcpy(uu.node, node_id, 6);
 	uuid_pack(&uu, out);
 }
+
+void uuid_generate_random(uuid_t out)
+{
+	uuid_t	buf;
+	struct uuid uu;
+
+	get_random_bytes(buf, sizeof(buf));
+	uuid_unpack(buf, &uu);
+
+	uu.clock_seq = (uu.clock_seq & 0x3FFF) | 0x8000;
+	uu.time_hi_and_version = (uu.time_hi_and_version & 0x0FFF) | 0x4000;
+	uuid_pack(&uu, out);
+}
+
+/*
+ * This is the generic front-end to uuid_generate_random and
+ * uuid_generate_time.  It uses uuid_generate_random only if
+ * /dev/urandom is available, since otherwise we won't have
+ * high-quality randomness.
+ */
+void uuid_generate(uuid_t out)
+{
+	static int	has_random = -1;
+
+	if (has_random < 0) {
+		if (access("/dev/urandom", R_OK) == 0)
+			has_random = 1;
+		else
+			has_random = 0;
+	}
+	if (has_random)
+		uuid_generate_random(out);
+	else
+		uuid_generate_time(out);
+}
+

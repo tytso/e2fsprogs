@@ -1,7 +1,9 @@
 /*
- * uuid_time.c --- Interpret the time field from a uuid
- *
- * Copyright (C) 1998 Theodore Ts'o.
+ * uuid_time.c --- Interpret the time field from a uuid.  This program
+ * 	violates the UUID abstraction barrier by reaching into the guts
+ *	of a UUID and interpreting it.
+ * 
+ * Copyright (C) 1998, 1999 Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -41,13 +43,54 @@ time_t uuid_time(uuid_t uu, struct timeval *ret_tv)
 	return tv.tv_sec;
 }
 
+int uuid_type(uuid_t uu)
+{
+	struct uuid		uuid;
+
+	uuid_unpack(uu, &uuid);	
+	return ((uuid.time_hi_and_version >> 12) & 0xF);
+}
+
+int uuid_variant(uuid_t uu)
+{
+	struct uuid		uuid;
+	int			var;
+
+	uuid_unpack(uu, &uuid);	
+	var = uuid.clock_seq;
+
+	if ((var & 0x8000) == 0)
+		return UUID_VARIANT_NCS;
+	if ((var & 0x4000) == 0)
+		return UUID_VARIANT_DCE;
+	if ((var & 0x2000) == 0)
+		return UUID_VARIANT_MICROSOFT;
+	return UUID_VARIANT_OTHER;
+}
+
 #ifdef DEBUG
+const char *variant_string(int variant)
+{
+	switch (variant) {
+	case UUID_VARIANT_NCS:
+		return "NCS";
+	case UUID_VARIANT_DCE:
+		return "DCE";
+	case UUID_VARIANT_MICROSOFT:
+		return "Microsoft";
+	default:
+		return "Other";
+	}
+}
+
+	
 int
 main(int argc, char **argv)
 {
 	uuid_t		buf;
 	time_t		time_reg;
 	struct timeval	tv;
+	int		type, variant;
 
 	if (argc != 2) {
 		fprintf(stderr, "Usage: %s uuid\n", argv[0]);
@@ -57,8 +100,37 @@ main(int argc, char **argv)
 		fprintf(stderr, "Invalid UUID: %s\n", argv[1]);
 		exit(1);
 	}
+	variant = uuid_variant(buf);
+	type = uuid_type(buf);
 	time_reg = uuid_time(buf, &tv);
 
+	printf("UUID variant is %d (%s)\n", variant, variant_string(variant));
+	if (variant != UUID_VARIANT_DCE) {
+		printf("Warning: This program only knows how to interpret "
+		       "DCE UUIDs.\n\tThe rest of the output is likely "
+		       "to be incorrect!!\n");
+	}
+	printf("UUID type is %d", type);
+	switch (type) {
+	case 1:
+		printf(" (time based)\n");
+		break;
+	case 2:
+		printf(" (DCE)\n");
+		break;
+	case 3:
+		printf(" (name-based)\n");
+		break;
+	case 4:
+		printf(" (random)\n");
+		break;
+	default:
+		printf("\n");
+	}
+	if (type != 1) {
+		printf("Warning: not a time-based UUID, so UUID time "
+		       "decoding will likely not work!\n");
+	}
 	printf("UUID time is: (%d, %d): %s\n", tv.tv_sec, tv.tv_usec,
 	       ctime(&time_reg));
 	

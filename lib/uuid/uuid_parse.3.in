@@ -17,7 +17,7 @@ uuid_parse \- convert an input UUID string into the libuuid internal format
 .SH DESCRIPTION
 The
 .B uuid_parse
-function converts the supplied UUID string given by
+function converts the UUID string given by
 .I in
 into the internal
 .B uuid_t

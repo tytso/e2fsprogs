@@ -1,3 +1,33 @@
+1999-05-17    <tytso@rsts-11.mit.edu>
+
+	* gen_uuid.c (get_random_bytes): Use a while loop when reading
+		from /dev/urandom so that if we get interrupted while
+		reading the right thing happens.
+		(uuid_generate_random): Add new function which uses the
+		new UUID format which uses 122 random bits to form the
+		128-bit UUID. 
+		(uuid_generate): Rename the old uuid_generate to be
+		uuid_generate_time, and create a new uuid_generate
+		function which calls either uuid_generate_random or
+		uuid_genereate_time depending on whether /dev/urandom is
+		present. 
+
+	* uuid_generate.3.in: Update to reflect changesin uuid_generate
+		and its two new variants.
+
+	* tst_uuid.c: Updated to test new uuid_generate functions, and to
+		reflect new semantics of uuid_compare.  Added tests to
+		make sure the UUID type and variant created by UUID
+		generate is correct.
+
+	* uuid_time.c (uuid_variant, uuid_type): Added new functions to 
+		return the UUID variant and type information.  The
+		debugging program now prints the UUID variant and type, 
+		and warns if the unparsed time information is likely to be
+		incorrect.
+
+	* uuid_parse.3.in, libuuid.3.in: Miscellaneous text cleanups.
+
 1999-05-03    <tytso@rsts-11.mit.edu>
 
 	* compare.c (uuid_compare): Change sense of uuid_compare so that
