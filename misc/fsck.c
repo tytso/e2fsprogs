@@ -106,16 +106,6 @@ const char *fsck_prefix_path = "/sbin:/sbin/fs.d:/sbin/fs:/etc/fs:/etc";
 char *fsck_path = 0;
 static int ignore(struct fs_info *);
 
-char *string_copy(const char *s)
-{
-	char	*ret;
-
-	ret = malloc(strlen(s)+1);
-	if (ret)
-		strcpy(ret, s);
-	return ret;
-}
-
 static char *skip_over_blank(char *cp)
 {
 	while (*cp && isspace(*cp))
@@ -217,18 +207,11 @@ static int parse_fstab_line(char *line, struct fs_info **ret_fs)
  */
 static char *interpret_device(char *spec)
 {
-	char *dev = NULL;
-	
-	if (!strncmp(spec, "UUID=", 5))
-		dev = get_spec_by_uuid(spec+5);
-	else if (!strncmp(spec, "LABEL=", 6))
-		dev = get_spec_by_volume_label(spec+6);
-	else
-		return spec;
-	if (dev) {
-		free(spec);
-		return (dev);
-	}
+	char *dev = interpret_spec(spec);
+
+	if (dev)
+		return dev;
+
 	/*
 	 * Check to see if this was because /proc/partitions isn't
 	 * found.
@@ -243,10 +226,11 @@ static char *interpret_device(char *spec)
 	 * Check to see if this is because we're not running as root
 	 */
 	if (geteuid())
-		fprintf(stderr, "Must be root to scan for matching "
-			"filesystems: %s\n", spec);
+		fprintf(stderr,
+			"Must be root to scan for matching filesystems: %s\n",
+			spec);
 	else
-		fprintf(stderr, "Couldn't find matching filesystem: %s\n", 
+		fprintf(stderr, "Couldn't find matching filesystem: %s\n",
 			spec);
 	exit(EXIT_ERROR);
 }

@@ -115,6 +115,9 @@ mke2fs \- create a Linux second extended file system
 @JDEV@.B \-v
 @JDEV@]
 @JDEV@.I external-journal
+@JDEV@[
+@JDEV@.I blocks-count
+@JDEV@]
 .SH DESCRIPTION
 .B mke2fs
 is used to create a Linux second extended file system on a device (usually
@@ -193,13 +196,27 @@ The journal must fit within the newly created filesystem.
 @JDEV@The external
 @JDEV@journal must already have been created using the command
 @JDEV@.IP
-@JDEV@.B mke2fs -O journal_dev 
-@JDEV@.IR external-journal
+@JDEV@.B mke2fs -O journal_dev
+@JDEV@.I external-journal
 @JDEV@.IP
 @JDEV@Note that
 @JDEV@.I external-journal
 @JDEV@must have been created with the
 @JDEV@same block size as the new filesystem.
+@JDEV@.IP
+@JDEV@Instead of specifying a device name directly,
+@JDEV@.I external-journal
+@JDEV@can also be specified by either
+@JDEV@.BI LABEL= label
+@JDEV@or
+@JDEV@.BI UUID= UUID
+@JDEV@to locate the external journal by either the volume label or UUID
+@JDEV@stored in the ext2 superblock at the start of the journal.  Use
+@JDEV@.BR dumpe2fs (8)
+@JDEV@to display a journal device's volume label and UUID.  See also the
+@JDEV@.B -L
+@JDEV@option of
+@JDEV@.BR tune2fs (8).
 .RE
 @JDEV@.IP
 @JDEV@Only one of the

@@ -48,6 +48,7 @@ extern int optind;
 #include "e2p/e2p.h"
 #include "jfs_user.h"
 #include "util.h"
+#include "get_device_by_label.h"
 
 #include "../version.h"
 #include "nls-enable.h"
@@ -101,13 +102,20 @@ static void remove_journal_device(ext2_filsys fs)
 	int		i, nr_users;
 	errcode_t	retval;
 	int		commit_remove_journal = 0;
+	int		check_uuid = 1;
 
 	if (f_flag)
 		commit_remove_journal = 1; /* force removal even if error */
 
-	journal_device = ext2fs_find_block_device(fs->super->s_journal_dev);
-	if (!journal_device)
-		return;
+	uuid_unparse(fs->super->s_journal_uuid, buf);
+	journal_device = get_spec_by_uuid(buf);
+
+	if (!journal_device) {
+		journal_device =
+			ext2fs_find_block_device(fs->super->s_journal_dev);
+		if (!journal_device)
+			return;
+	}
 
 	retval = ext2fs_open(journal_device, EXT2_FLAG_RW|
 			     EXT2_FLAG_JOURNAL_DEV_OK, 0,
@@ -174,6 +182,7 @@ no_valid_journal:
 	       sizeof(fs->super->s_journal_uuid));
 	ext2fs_mark_super_dirty(fs);
 	printf(_("Journal removed\n"));
+	free(journal_device);
 }
 
 /* Helper function for remove_journal_inode */
@@ -327,7 +336,7 @@ static void add_journal(ext2_filsys fs)
 	if (fs->super->s_feature_compat &
 	    EXT3_FEATURE_COMPAT_HAS_JOURNAL) {
 		fprintf(stderr, _("The filesystem already has a journal.\n"));
-		exit(1);
+		goto err;
 	}
 	if (journal_device) {
 		check_plausibility(journal_device);
@@ -339,21 +348,21 @@ static void add_journal(ext2_filsys fs)
 			com_err(program_name, retval,
 				_("\n\twhile trying to open journal on %s\n"),
 				journal_device);
-			exit(1);
+			goto err;
 		}
 		printf(_("Creating journal on device %s: "),
 		       journal_device);
 		fflush(stdout);
-		
+
 		retval = ext2fs_add_journal_device(fs, jfs);
+		ext2fs_close(jfs);
 		if (retval) {
 			com_err (program_name, retval,
 				 _("while adding filesystem to journal on %s"),
 				 journal_device);
-			exit(1);
+			goto err;
 		}
 		printf(_("done\n"));
-		ext2fs_close(jfs);
 	} else if (journal_size) {
 		printf(_("Creating journal inode: "));
 		fflush(stdout);
@@ -376,6 +385,12 @@ static void add_journal(ext2_filsys fs)
 			fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	}
 	print_check_message(fs);
+	return;
+
+err:
+	if (journal_device)
+		free(journal_device);
+	exit(1);
 }
 
 /*
@@ -401,7 +416,7 @@ static void parse_e2label_options(int argc, char ** argv)
 	}
 	device_name = argv[1];
 	if (argc == 3) {
-		open_flag = EXT2_FLAG_RW;
+		open_flag = EXT2_FLAG_RW | EXT2_FLAG_JOURNAL_DEV_OK;
 		L_flag = 1;
 		new_label = argv[2];
 	} else 
@@ -532,7 +547,8 @@ static void parse_tune2fs_options(int argc, char **argv)
 			case 'L':
 				new_label = optarg;
 				L_flag = 1;
-				open_flag = EXT2_FLAG_RW;
+				open_flag = EXT2_FLAG_RW |
+					EXT2_FLAG_JOURNAL_DEV_OK;
 				break;
 			case 'm':
 				reserved_ratio = strtoul (optarg, &tmp, 0);
@@ -597,7 +613,8 @@ static void parse_tune2fs_options(int argc, char **argv)
 			case 'U':
 				new_UUID = optarg;
 				U_flag = 1;
-				open_flag = EXT2_FLAG_RW;
+				open_flag = EXT2_FLAG_RW |
+					EXT2_FLAG_JOURNAL_DEV_OK;
 				break;
 			default:
 				usage();

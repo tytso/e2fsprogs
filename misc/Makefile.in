@@ -22,9 +22,9 @@ SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 UPROGS=		chattr lsattr uuidgen
 UMANPAGES=	chattr.1 lsattr.1 uuidgen.1
 
-TUNE2FS_OBJS=	tune2fs.o util.o
+TUNE2FS_OBJS=	tune2fs.o util.o get_device_by_label.o
 MKLPF_OBJS=	mklost+found.o
-MKE2FS_OBJS=	mke2fs.o util.o
+MKE2FS_OBJS=	mke2fs.o util.o get_device_by_label.o
 CHATTR_OBJS=	chattr.o
 LSATTR_OBJS=	lsattr.o
 UUIDGEN_OBJS=	uuidgen.o
@@ -235,6 +235,7 @@ util.o: $(srcdir)/util.c $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
- $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/nls-enable.h $(srcdir)/util.h
+ $(top_srcdir)/lib/ext2fs/bitops.h $(srcdir)/nls-enable.h $(srcdir)/util.h \
+ $(srcdir)/get_device_by_label.h
 uuidgen.o: $(srcdir)/uuidgen.c $(top_srcdir)/lib/uuid/uuid.h \
  $(srcdir)/nls-enable.h

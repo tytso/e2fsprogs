@@ -26,6 +26,7 @@
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "nls-enable.h"
+#include "get_device_by_label.h"
 #include "util.h"
 
 #ifndef HAVE_STRCASECMP
@@ -154,11 +155,11 @@ void parse_journal_opts(const char *opts)
 		       arg ? arg : "NONE");
 #endif
 		if (strcmp(token, "device") == 0) {
-			if (!arg) {
+			journal_device = interpret_spec(arg);
+			if (!journal_device) {
 				journal_usage++;
 				continue;
 			}
-			journal_device = arg;
 		} else if (strcmp(token, "size") == 0) {
 			if (!arg) {
 				journal_usage++;

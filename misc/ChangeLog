@@ -1,3 +1,18 @@
+2001-08-17  Andreas Dilger  <adilger@turbolinux.com>
+
+	* get_device_by_label.[ch], fsck.c, util.c:  New interpret_spec()
+		function in get_device_by_label.c to allow the use of
+		UUID= or LABEL= when creating filesystems which use external
+		journal dev (e.g.  mke2fs -J device=LABEL=<journal_label>).
+
+	* tune2fs.c: Use superblock s_journal_uuid to locate an external
+		journal device instead of s_journal_dev when removing it.
+		Allow opening journal devices to set the label and UUID
+		in the ext2 superblock.
+
+	* mke2fs.c, tune2fs.c: Free journal_device after use, as it is
+		malloc'd in interpret spec.
+ 
 2001-08-15  Theodore Tso  <tytso@valinux.com>
 
 	* tune2fs.c: Make sure that error messages are sent to stderr, and

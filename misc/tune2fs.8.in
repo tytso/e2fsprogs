@@ -189,6 +189,20 @@ that size.
 @JDEV@.I external-journal
 @JDEV@must be formatted with the same block
 @JDEV@size as filesystems which will be using it.
+@JDEV@.IP
+@JDEV@Instead of specifying a device name directly,
+@JDEV@.I external-journal
+@JDEV@can also be specified by either
+@JDEV@.BI LABEL= label
+@JDEV@or
+@JDEV@.BI UUID= UUID
+@JDEV@to locate the external journal by either the volume label or UUID
+@JDEV@stored in the ext2 superblock at the start of the journal.  Use
+@JDEV@.BR dumpe2fs (8)
+@JDEV@to display a journal device's volume label and UUID.  See also the
+@JDEV@.B -L
+@JDEV@option of
+@JDEV@.BR tune2fs (8).
 .RE
 @JDEV@.IP
 @JDEV@Only one of the
@@ -204,7 +218,16 @@ Ext2 filesystem labels can be at most 16 characters long; if
 .I volume-label 
 is longer than 16 characters, 
 .B tune2fs
-will truncate it and print a warning.  
+will truncate it and print a warning.  The volume label can be used
+by
+.BR mount (8),
+.BR fsck (8),
+and
+.BR /etc/fstab (5)
+(and possibly others) by specifying
+.BI LABEL= volume_label
+instead of a block special device name like
+.BR /dev/hda5 .
 .TP
 .BI \-m " reserved-blocks-percentage"
 Set the percentage of reserved filesystem blocks.
@@ -289,6 +312,16 @@ generate a new randomly-generated UUID
 .I time
 generate a new time-based UUID
 .RE
+.IP
+The UUID may be used by
+.BR mount (8),
+.BR fsck (8),
+and
+.BR /etc/fstab (5)
+(and possibly others) by specifying
+.BI UUID= uuid
+instead of a block special device name like
+.BR /dev/hda1 .
 .IP
 See
 .BR uuidgen (8)

@@ -1280,6 +1280,7 @@ int main (int argc, char *argv[])
 		if (!quiet)
 			printf(_("done\n"));
 		ext2fs_close(jfs);
+		free(journal_device);
 	} else if (journal_size) {
 		journal_blocks = figure_journal_size(journal_size, fs);
 

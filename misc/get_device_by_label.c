@@ -64,6 +64,16 @@ static struct uuidCache_s {
 	char *device;
 } *uuidCache = NULL;
 
+char *string_copy(const char *s)
+{
+	char	*ret;
+
+	ret = malloc(strlen(s)+1);
+	if (ret)
+		strcpy(ret, s);
+	return ret;
+}
+
 /* for now, only ext2 and xfs are supported */
 static int
 get_label_uuid(const char *device, char **label, char *uuid) {
@@ -204,6 +214,9 @@ get_spec_by_x(int n, const char *t) {
 	uuidcache_init();
 	uc = uuidCache;
 
+	if (t == NULL)
+		return NULL;
+
 	while(uc) {
 		switch (n) {
 		case UUID:
@@ -271,4 +284,24 @@ get_volume_label_by_spec(const char *spec) {
 		uc = uc->next;
 	}
 	return NULL;
+}
+
+/*
+ * Interpret the device name if necessary.
+ * Frees the pointer passed to it if we return a different device string.
+ */
+char *interpret_spec(char *spec)
+{
+	char *dev = NULL;
+
+	if (!spec)
+		return NULL;
+
+	if (!strncmp(spec, "UUID=", 5))
+		dev = get_spec_by_uuid(spec+5);
+	else if (!strncmp(spec, "LABEL=", 6))
+		dev = get_spec_by_volume_label(spec+6);
+	else
+		dev = string_copy(spec);
+	return dev;
 }
