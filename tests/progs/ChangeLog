@@ -1,3 +1,7 @@
+2001-01-11    <tytso@snap.thunk.org>
+
+	* test_icount.c, test_rel.c: Change ino_t to ext2_ino_t
+
 2000-12-08    <tytso@snap.thunk.org>
 
 	* Makefile.in (srcdir): Fix so that top-level "make check" works

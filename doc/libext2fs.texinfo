@@ -416,11 +416,11 @@ to be written when the filesystem is closed or flushed.
 @comment  node-name,  next,  previous,  up
 @subsection Reading and writing inodes
 
-@deftypefun errcode_t ext2fs_read_inode (ext2_filsys @var{fs}, ino_t @var{ino}, struct ext2_inode *@var{inode})
+@deftypefun errcode_t ext2fs_read_inode (ext2_filsys @var{fs}, ext2_ino_t @var{ino}, struct ext2_inode *@var{inode})
 Read the inode number @var{ino} into @var{inode}.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_write_inode(ext2_filsys @var{fs}, ino_t @var{ino}, struct ext2_inode *@var{inode})
+@deftypefun errcode_t ext2fs_write_inode(ext2_filsys @var{fs}, ext2_ino_t @var{ino}, struct ext2_inode *@var{inode})
 Write @var{inode} to inode @var{ino}.
 @end deftypefun
 
@@ -447,7 +447,7 @@ suitable default value will be used.
 Release the memory associated with @var{scan} and invalidate it.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_get_next_inode (ext2_inode_scan @var{scan}, ino_t *@var{ino}, struct ext2_inode *@var{inode})
+@deftypefun errcode_t ext2fs_get_next_inode (ext2_inode_scan @var{scan}, ext2_ino_t *@var{ino}, struct ext2_inode *@var{inode})
 
 This function returns the next inode from the filesystem; the inode
 number of the inode is stored in @var{ino}, and the inode is stored in
@@ -491,10 +491,10 @@ EXT2_ET_MISSING_INODE_TABLE.
 @comment  node-name,  next,  previous,  up
 @subsection Iterating over blocks in an inode
 
-@deftypefun errcode_t ext2fs_block_iterate (ext2_filsys @var{fs}, ino_t @var{ino}, int @var{flags}, char *block_buf, int (*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, int @var{blockcnt}, void *@var{private}), void *@var{private})
+@deftypefun errcode_t ext2fs_block_iterate (ext2_filsys @var{fs}, ext2_ino_t @var{ino}, int @var{flags}, char *block_buf, int (*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, int @var{blockcnt}, void *@var{private}), void *@var{private})
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_block_iterate2 (ext2_filsys @var{fs}, ino_t @var{ino}, int @var{flags}, char *@var{block}_buf, int (*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, e2_blkcnt_t @var{blockcnt}, blk_t @var{ref_blk}, int  @var{ref_offset}, void *@var{private}), void *@var{private})
+@deftypefun errcode_t ext2fs_block_iterate2 (ext2_filsys @var{fs}, ext2_ino_t @var{ino}, int @var{flags}, char *@var{block}_buf, int (*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, e2_blkcnt_t @var{blockcnt}, blk_t @var{ref_blk}, int  @var{ref_offset}, void *@var{private}), void *@var{private})
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -503,14 +503,14 @@ EXT2_ET_MISSING_INODE_TABLE.
 @comment  node-name,  next,  previous,  up
 @subsection Convenience functions for Inodes
 
-@deftypefun errcode_t ext2fs_get_blocks (ext2_filsys @var{fs}, ino_t @var{ino}, blk_t *@var{blocks})
+@deftypefun errcode_t ext2fs_get_blocks (ext2_filsys @var{fs}, ext2_ino_t @var{ino}, blk_t *@var{blocks})
 
 Returns an array of blocks corresponding to the direct,
 indirect, doubly indirect, and triply indirect blocks as stored in the
 inode structure.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_check_directory (ext2_filsys @var{fs}, ino_t @var{ino})
+@deftypefun errcode_t ext2fs_check_directory (ext2_filsys @var{fs}, ext2_ino_t @var{ino})
 Returns 0 if @var{ino} is a directory, and @code{ENOTDIR} if it is not.
 @end deftypefun
 
@@ -548,7 +548,7 @@ contain valid block entries.
 @deftypefun errcode_t ext2fs_write_dir_block (ext2_filsys @var{fs}, blk_t @var{block}, void *@var{buf})
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_new_dir_block (ext2_filsys @var{fs}, ino_t @var{dir}_ino, ino_t @var{parent_ino}, char **@var{block})
+@deftypefun errcode_t ext2fs_new_dir_block (ext2_filsys @var{fs}, ext2_ino_t @var{dir}_ino, ext2_ino_t @var{parent_ino}, char **@var{block})
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -557,7 +557,7 @@ contain valid block entries.
 @comment  node-name,  next,  previous,  up
 @subsection Iterating over a directory
 
-@deftypefun errcode_t ext2fs_dir_iterate (ext2_filsys @var{fs}, ino_t @var{dir}, int @var{flags}, char *@var{block_buf}, int (*@var{func})(struct ext2_dir_entry *@var{dirent}, int @var{offset}, int @var{blocksize}, char *@var{buf}, void *@var{private}), void *@var{private})
+@deftypefun errcode_t ext2fs_dir_iterate (ext2_filsys @var{fs}, ext2_ino_t @var{dir}, int @var{flags}, char *@var{block_buf}, int (*@var{func})(struct ext2_dir_entry *@var{dirent}, int @var{offset}, int @var{blocksize}, char *@var{buf}, void *@var{private}), void *@var{private})
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -566,10 +566,10 @@ contain valid block entries.
 @comment  node-name,  next,  previous,  up
 @subsection Creating and expanding directories
 
-@deftypefun errcode_t ext2fs_mkdir (ext2_filsys @var{fs}, ino_t @var{parent}, ino_t @var{inum}, const char *@var{name})
+@deftypefun errcode_t ext2fs_mkdir (ext2_filsys @var{fs}, ext2_ino_t @var{parent}, ext2_ino_t @var{inum}, const char *@var{name})
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_expand_dir (ext2_filsys @var{fs}, ino_t @var{dir})
+@deftypefun errcode_t ext2fs_expand_dir (ext2_filsys @var{fs}, ext2_ino_t @var{dir})
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -578,10 +578,10 @@ contain valid block entries.
 @comment  node-name,  next,  previous,  up
 @subsection Creating and removing directory entries
 
-@deftypefun errcode_t ext2fs_link (ext2_filsys @var{fs}, ino_t @var{dir}, const char *@var{name}, ino_t @var{ino}, int flags)
+@deftypefun errcode_t ext2fs_link (ext2_filsys @var{fs}, ext2_ino_t @var{dir}, const char *@var{name}, ext2_ino_t @var{ino}, int flags)
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_unlink (ext2_filsys @var{fs}, ino_t @var{dir}, const char *@var{name}, ino_t @var{ino}, int @var{flags})
+@deftypefun errcode_t ext2fs_unlink (ext2_filsys @var{fs}, ext2_ino_t @var{dir}, const char *@var{name}, ext2_ino_t @var{ino}, int @var{flags})
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -590,16 +590,16 @@ contain valid block entries.
 @comment  node-name,  next,  previous,  up
 @subsection Looking up filenames
 
-@deftypefun errcode_t ext2fs_lookup (ext2_filsys @var{fs}, ino_t @var{dir}, const char *@var{name}, int @var{namelen}, char *@var{buf}, ino_t *@var{inode})
+@deftypefun errcode_t ext2fs_lookup (ext2_filsys @var{fs}, ext2_ino_t @var{dir}, const char *@var{name}, int @var{namelen}, char *@var{buf}, ext2_ino_t *@var{inode})
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_namei (ext2_filsys @var{fs}, ino_t @var{root}, ino_t @var{cwd}, const char *@var{name}, ino_t *@var{inode})
+@deftypefun errcode_t ext2fs_namei (ext2_filsys @var{fs}, ext2_ino_t @var{root}, ext2_ino_t @var{cwd}, const char *@var{name}, ext2_ino_t *@var{inode})
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_namei_follow (ext2_filsys @var{fs}, ino_t @var{root}, ino_t @var{cwd}, const char *@var{name}, ino_t *@var{inode})
+@deftypefun errcode_t ext2fs_namei_follow (ext2_filsys @var{fs}, ext2_ino_t @var{root}, ext2_ino_t @var{cwd}, const char *@var{name}, ext2_ino_t *@var{inode})
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_follow_link (ext2_filsys @var{fs}, ino_t @var{root}, ino_t @var{cwd}, ino_t @var{inode}, ino_t *@var{res}_inode)
+@deftypefun errcode_t ext2fs_follow_link (ext2_filsys @var{fs}, ext2_ino_t @var{root}, ext2_ino_t @var{cwd}, ext2_ino_t @var{inode}, ext2_ino_t *@var{res}_inode)
 @end deftypefun
 
 @c ----------------------------------------------------------------------
@@ -608,7 +608,7 @@ contain valid block entries.
 @comment  node-name,  next,  previous,  up
 @subsection Translating inode numbers to filenames
 
-@deftypefun errcode_t ext2fs_get_pathname (ext2_filsys @var{fs}, ino_t @var{dir}, ino_t @var{ino}, char **@var{name})
+@deftypefun errcode_t ext2fs_get_pathname (ext2_filsys @var{fs}, ext2_ino_t @var{dir}, ext2_ino_t @var{ino}, char **@var{name})
 @end deftypefun
 
 
@@ -701,11 +701,11 @@ These functions set, clear, and test bits in a block bitmap @var{bitmap}.
 @end deftypefun
 
 
-@deftypefun void ext2fs_mark_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ino_t @var{inode})
+@deftypefun void ext2fs_mark_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ext2_ino_t @var{inode})
 
-@deftypefunx void ext2fs_unmark_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ino_t @var{inode})
+@deftypefunx void ext2fs_unmark_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ext2_ino_t @var{inode})
 
-@deftypefunx int ext2fs_test_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ino_t @var{inode})
+@deftypefunx int ext2fs_test_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ext2_ino_t @var{inode})
 
 These functions set, clear, and test bits in an inode bitmap @var{bitmap}.
 @end deftypefun
@@ -716,11 +716,11 @@ These functions set, clear, and test bits in an inode bitmap @var{bitmap}.
 
 @deftypefunx int ext2fs_fast_test_block_bitmap (ext2fs_block_bitmap @var{bitmap}, blk_t @var{block})
 
-@deftypefunx void ext2fs_fast_mark_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ino_t @var{inode})
+@deftypefunx void ext2fs_fast_mark_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ext2_ino_t @var{inode})
 
-@deftypefunx void ext2fs_fast_unmark_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ino_t @var{inode})
+@deftypefunx void ext2fs_fast_unmark_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ext2_ino_t @var{inode})
 
-@deftypefunx int ext2fs_fast_test_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ino_t @var{inode})
+@deftypefunx int ext2fs_fast_test_inode_bitmap (ext2fs_inode_bitmap @var{bitmap}, ext2_ino_t @var{inode})
 
 These ``fast'' functions are like their normal counterparts; however,
 they are implemented as inline functions and do not perform bounds
@@ -730,12 +730,12 @@ the inode or block number has already been validated by other means.
 @end deftypefun
 
 @deftypefun blk_t ext2fs_get_block_bitmap_start (ext2fs_block_bitmap @var{bitmap})
-@deftypefunx ino_t ext2fs_get_inode_bitmap_start (ext2fs_inode_bitmap @var{bitmap})
+@deftypefunx ext2_ino_t ext2fs_get_inode_bitmap_start (ext2fs_inode_bitmap @var{bitmap})
 Return the first inode or block which is stored in the bitmap.
 @end deftypefun
 
 @deftypefun blk_t ext2fs_get_block_bitmap_end (ext2fs_block_bitmap @var{bitmap})
-@deftypefunx ino_t ext2fs_get_inode_bitmap_end (ext2fs_inode_bitmap @var{bitmap})
+@deftypefunx ext2_ino_t ext2fs_get_inode_bitmap_end (ext2fs_inode_bitmap @var{bitmap})
 
 Return the first inode or block which is stored in the bitmap.
 @end deftypefun
@@ -760,7 +760,7 @@ Return the first inode or block which is stored in the bitmap.
 @comment  node-name,  next,  previous,  up
 @subsection Modifying Bitmaps
 
-@deftypefun errcode_t ext2fs_fudge_inode_bitmap_end (ext2fs_inode_bitmap @var{bitmap}, ino_t @var{end}, ino_t *@var{oend})
+@deftypefun errcode_t ext2fs_fudge_inode_bitmap_end (ext2fs_inode_bitmap @var{bitmap}, ext2_ino_t @var{end}, ext2_ino_t *@var{oend})
 @end deftypefun
 
 @deftypefun errcode_t ext2fs_fudge_block_bitmap_end (ext2fs_block_bitmap @var{bitmap}, blk_t @var{end}, blk_t *@var{oend})
@@ -870,14 +870,14 @@ Creates a dblist data structure and return it in @var{ret_dblist}.
 Free a dblist data structure.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_add_dir_block (ext2_dblist @var{dblist}, ino_t @var{ino}, blk_t @var{blk}, int @var{blockcnt})
+@deftypefun errcode_t ext2fs_add_dir_block (ext2_dblist @var{dblist}, ext2_ino_t @var{ino}, blk_t @var{blk}, int @var{blockcnt})
 
 Add an entry to the dblist data structure.  This call records the fact
 that block number @var{blockcnt} of directory inode @var{ino} is stored
 in block @var{blk}.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_set_dir_block (ext2_dblist @var{dblist}, ino_t @var{ino}, blk_t @var{blk}, int @var{blockcnt})
+@deftypefun errcode_t ext2fs_set_dir_block (ext2_dblist @var{dblist}, ext2_ino_t @var{ino}, blk_t @var{blk}, int @var{blockcnt})
 
 Change an entry in the dblist data structure; this changes the location
 of block number @var{blockcnt} of directory indoe @var{ino} to be block
@@ -889,7 +889,7 @@ of block number @var{blockcnt} of directory indoe @var{ino} to be block
 This iterator calls @var{func} for every entry in the dblist data structure.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_dblist_dir_iterate (ext2_dblist @var{dblist}, int flags, char *@var{block_buf}, int (*func)(ino_t @var{dir}, int  @var{entry}, struct ext2_dir_entry *@var{dirent}, int @var{offset}, int @var{blocksize}, char *@var{buf}, void *@var{private}), void *@var{private})
+@deftypefun errcode_t ext2fs_dblist_dir_iterate (ext2_dblist @var{dblist}, int flags, char *@var{block_buf}, int (*func)(ext2_ino_t @var{dir}, int  @var{entry}, struct ext2_dir_entry *@var{dirent}, int @var{offset}, int @var{blocksize}, char *@var{buf}, void *@var{private}), void *@var{private})
 
 This iterator takes reads in the directory block indicated in each
 dblist entry, and calls @var{func} for each directory entry in each
@@ -937,27 +937,27 @@ likely to contain a count grater than 1.
 Frees an icount structure.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_icount_fetch(ext2_icount_t @var{icount}, ino_t @var{ino}, __u16 *@var{ret})
+@deftypefun errcode_t ext2fs_icount_fetch(ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})
 
 Returns in @var{ret} fetches the count for a particular inode @var{ino}.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_icount_increment(ext2_icount_t @var{icount}, ino_t @var{ino}, __u16 *@var{ret})
+@deftypefun errcode_t ext2fs_icount_increment(ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})
 
 Increments the ref count for inode @var{ino}.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_icount_decrement(ext2_icount_t @var{icount}, ino_t @var{ino}, __u16 *@var{ret})
+@deftypefun errcode_t ext2fs_icount_decrement(ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 *@var{ret})
 
 Decrements the ref count for inode @var{ino}.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_icount_store(ext2_icount_t @var{icount}, ino_t @var{ino}, __u16 @var{count})
+@deftypefun errcode_t ext2fs_icount_store(ext2_icount_t @var{icount}, ext2_ino_t @var{ino}, __u16 @var{count})
 
 Sets the reference count for inode @var{ino} to be @var{count}.
 @end deftypefun
 
-@deftypefun ino_t ext2fs_get_icount_size(ext2_icount_t @var{icount})
+@deftypefun ext2_ino_t ext2fs_get_icount_size(ext2_icount_t @var{icount})
 
 Returns the current number of inodes in @var{icount} which has a count
 greater than 1.
@@ -997,7 +997,7 @@ intended for debugging and testing use only.
 @section Other functions
 
 /* alloc.c */
-@deftypefun errcode_t ext2fs_new_inode (ext2_filsys @var{fs}, ino_t @var{dir}, int @var{mode}, ext2fs_inode_bitmap @var{map}, ino_t *@var{ret})
+@deftypefun errcode_t ext2fs_new_inode (ext2_filsys @var{fs}, ext2_ino_t @var{dir}, int @var{mode}, ext2fs_inode_bitmap @var{map}, ext2_ino_t *@var{ret})
 @end deftypefun
 
 @deftypefun errcode_t ext2fs_new_block (ext2_filsys @var{fs}, blk_t @var{goal}, ext2fs_block_bitmap @var{map}, blk_t *@var{ret})
@@ -1010,7 +1010,7 @@ intended for debugging and testing use only.
 @deftypefun errcode_t ext2fs_check_desc (ext2_filsys @var{fs})
 @end deftypefun
 
-@deftypefun errcode_t ext2_get_num_dirs (ext2_filsys @var{fs}, ino_t *@var{ret_num_dirs})
+@deftypefun errcode_t ext2_get_num_dirs (ext2_filsys @var{fs}, ext2_ino_t *@var{ret_num_dirs})
 @end deftypefun
 
 
@@ -1051,7 +1051,7 @@ up-to-date ext2 shared library.
 @deftypefun int ext2fs_group_of_blk (ext2_filsys @var{fs}, blk_t @var{blk})
 @end deftypefun
 
-@deftypefun int ext2fs_group_of_ino (ext2_filsys @var{fs}, ino_t @var{ino})
+@deftypefun int ext2fs_group_of_ino (ext2_filsys @var{fs}, ext2_ino_t @var{ino})
 @end deftypefun
 
 

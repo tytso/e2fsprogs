@@ -1,3 +1,7 @@
+2001-01-11    <tytso@snap.thunk.org>
+
+	* mke2fs.c: Change ino_t to ext2_ino_t.
+
 2001-01-08    <tytso@snap.thunk.org>
 
 	* Makefile.in, tune2fs.c: Move e2label functionality into tune2fs,

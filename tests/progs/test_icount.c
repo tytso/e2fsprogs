@@ -48,7 +48,7 @@ static int check_icount(char *request)
  * Helper function which parses an inode number.
  */
 static int parse_inode(const char *request, const char *desc,
-		       const char *str, ino_t *ino)
+		       const char *str, ext2_ino_t *ino)
 {
 	char *tmp;
 	
@@ -62,10 +62,10 @@ static int parse_inode(const char *request, const char *desc,
 
 void do_create_icount(int argc, char **argv)
 {
-	errcode_t retval;
-	char *progname;
-	int	flags = 0;
-	ino_t	size = 5;
+	errcode_t	retval;
+	char		*progname;
+	int		flags = 0;
+	ext2_ino_t	size = 5;
 
 	progname = *argv;
 	argv++; argc --;
@@ -101,10 +101,10 @@ void do_free_icount(int argc, char **argv)
 
 void do_fetch(int argc, char **argv)
 {
-	const char *usage = "usage: %s inode";
-	errcode_t retval;
-	ino_t	ino;
-	__u16	count;
+	const char	*usage = "usage: %s inode";
+	errcode_t	retval;
+	ext2_ino_t	ino;
+	__u16		count;
 	
 	if (argc < 2) {
 		printf(usage, argv[0]);
@@ -124,10 +124,10 @@ void do_fetch(int argc, char **argv)
 
 void do_increment(int argc, char **argv)
 {
-	const char *usage = "usage: %s inode";
-	errcode_t retval;
-	ino_t	ino;
-	__u16	count;
+	const char	*usage = "usage: %s inode";
+	errcode_t	retval;
+	ext2_ino_t	ino;
+	__u16		count;
 	
 	if (argc < 2) {
 		printf(usage, argv[0]);
@@ -148,10 +148,10 @@ void do_increment(int argc, char **argv)
 
 void do_decrement(int argc, char **argv)
 {
-	const char *usage = "usage: %s inode";
-	errcode_t retval;
-	ino_t	ino;
-	__u16	count;
+	const char	*usage = "usage: %s inode";
+	errcode_t	retval;
+	ext2_ino_t	ino;
+	__u16		count;
 	
 	if (argc < 2) {
 		printf(usage, argv[0]);
@@ -172,10 +172,10 @@ void do_decrement(int argc, char **argv)
 
 void do_store(int argc, char **argv)
 {
-	const char *usage = "usage: %s inode count";
-	errcode_t retval;
-	ino_t	ino;
-	ino_t	count;
+	const char	*usage = "usage: %s inode count";
+	errcode_t	retval;
+	ext2_ino_t	ino;
+	ext2_ino_t	count;
 	
 	if (argc < 3) {
 		printf(usage, argv[0]);
@@ -202,7 +202,7 @@ void do_store(int argc, char **argv)
 void do_dump(int argc, char **argv)
 {
 	errcode_t	retval;
-	ino_t		i;
+	ext2_ino_t	i;
 	__u16		count;
 
 	if (check_icount(argv[0]))
@@ -235,7 +235,7 @@ void do_validate(int argc, char **argv)
 
 void do_get_size(int argc, char **argv)
 {
-	ino_t	size;
+	ext2_ino_t	size;
 	
 	if (check_icount(argv[0]))
 		return;

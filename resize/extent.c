@@ -143,7 +143,7 @@ static EXT2_QSORT_TYPE extent_cmp(const void *a, const void *b)
 __u32 ext2fs_extent_translate(ext2_extent extent, __u32 old_loc)
 {
 	int	low, high, mid;
-	ino_t	lowval, highval;
+	__u32	lowval, highval;
 	float	range;
 
 	if (!extent->sorted) {

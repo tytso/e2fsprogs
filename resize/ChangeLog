@@ -1,3 +1,7 @@
+2001-01-11    <tytso@snap.thunk.org>
+
+	* extent.c, main.c, resize2fs.c: Change ino_t to ext2_ino_t.
+
 2001-01-01    <tytso@snap.thunk.org>
 
 	* main.c (main): Replace use of struct ext2fs_sb with struct

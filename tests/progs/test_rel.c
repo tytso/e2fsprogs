@@ -37,7 +37,7 @@ ext2_brel brel = NULL;
  * Helper function which parses an inode number.
  */
 static int parse_inode(const char *request, const char *desc,
-		       const char *str, ino_t *ino)
+		       const char *str, ext2_ino_t *ino)
 {
 	char *tmp;
 	
@@ -100,7 +100,7 @@ static void display_brel_entry(blk_t old,
 /*
  * Helper function which displays an irel entry
  */
-static void display_irel_entry(ino_t old,
+static void display_irel_entry(ext2_ino_t old,
 			       struct ext2_inode_relocate_entry *ent,
 			       int do_refs)
 {
@@ -350,9 +350,9 @@ void do_brel_delete(int argc, char **argv)
 
 void do_irel_ma_create(int argc, char **argv)
 {
-	const char *usage = "Usage: %s name max_inode\n";
+	const char	*usage = "Usage: %s name max_inode\n";
 	errcode_t	retval;
-	ino_t		max_ino;
+	ext2_ino_t	max_ino;
 	
 	if (argc < 3) {
 		printf(usage, argv[0]);
@@ -380,10 +380,10 @@ void do_irel_free(int argc, char **argv)
 
 void do_irel_put(int argc, char **argv)
 {
-	const char *usage = "%s old new max_refs";
+	const char	*usage = "%s old new max_refs";
+	errcode_t	retval;
+	ext2_ino_t	old, new, max_refs;
 	struct ext2_inode_relocate_entry ent;
-	errcode_t retval;
-	ino_t	old, new, max_refs;
 
 	if (check_irel(argv[0]))
 		return;
@@ -416,10 +416,10 @@ void do_irel_put(int argc, char **argv)
 
 void do_irel_get(int argc, char **argv)
 {
-	const char *usage = "%s inode";
+	const char	*usage = "%s inode";
+	errcode_t	retval;
+	ext2_ino_t	old;
 	struct ext2_inode_relocate_entry ent;
-	errcode_t retval;
-	ino_t	old;
 
 	if (check_irel(argv[0]))
 		return;
@@ -442,10 +442,10 @@ void do_irel_get(int argc, char **argv)
 
 void do_irel_get_by_orig(int argc, char **argv)
 {
-	const char *usage = "%s orig_inode";
-	errcode_t retval;
+	const char	*usage = "%s orig_inode";
+	errcode_t	retval;
+	ext2_ino_t	orig, old;
 	struct ext2_inode_relocate_entry ent;
-	ino_t	orig, old;
 
 	if (check_irel(argv[0]))
 		return;
@@ -483,9 +483,9 @@ void do_irel_start_iter(int argc, char **argv)
 
 void do_irel_next(int argc, char **argv)
 {
-	errcode_t retval;
+	errcode_t	retval;
+	ext2_ino_t	old;
 	struct ext2_inode_relocate_entry ent;
-	ino_t	old;
 
 	if (check_irel(argv[0]))
 		return;
@@ -505,9 +505,9 @@ void do_irel_next(int argc, char **argv)
 
 void do_irel_dump(int argc, char **argv)
 {
-	errcode_t retval;
+	errcode_t	retval;
+	ext2_ino_t	ino;
 	struct ext2_inode_relocate_entry ent;
-	ino_t	ino;
 
 	if (check_irel(argv[0]))
 		return;
@@ -534,11 +534,11 @@ void do_irel_dump(int argc, char **argv)
 
 void do_irel_add_ref(int argc, char **argv)
 {
-	const char *usage = "%s inode block offset";
-	errcode_t retval;
+	const char	*usage = "%s inode block offset";
+	errcode_t	retval;
+	blk_t		block, offset;
+	ext2_ino_t	ino;
 	struct ext2_inode_reference ref;
-	blk_t	block, offset;
-	ino_t	ino;
 	
 
 	if (check_irel(argv[0]))
@@ -571,9 +571,9 @@ void do_irel_add_ref(int argc, char **argv)
 
 void do_irel_start_iter_ref(int argc, char **argv)
 {
-	const char *usage = "%s inode";
-	errcode_t retval;
-	ino_t	ino;
+	const char	*usage = "%s inode";
+	errcode_t	retval;
+	ext2_ino_t	ino;
 
 	if (check_irel(argv[0]))
 		return;
@@ -612,9 +612,9 @@ void do_irel_next_ref(int argc, char **argv)
 
 void do_irel_move(int argc, char **argv)
 {
-	const char *usage = "%s old new";
-	errcode_t retval;
-	ino_t	old, new;
+	const char	*usage = "%s old new";
+	errcode_t	retval;
+	ext2_ino_t	old, new;
 
 	if (check_irel(argv[0]))
 		return;
@@ -638,9 +638,9 @@ void do_irel_move(int argc, char **argv)
 
 void do_irel_delete(int argc, char **argv)
 {
-	const char *usage = "%s inode";
-	errcode_t retval;
-	ino_t	ino;
+	const char	*usage = "%s inode";
+	errcode_t	retval;
+	ext2_ino_t	ino;
 
 	if (check_irel(argv[0]))
 		return;

@@ -403,7 +403,7 @@ static void create_root_dir(ext2_filsys fs)
 static void create_lost_and_found(ext2_filsys fs)
 {
 	errcode_t		retval;
-	ino_t			ino;
+	ext2_ino_t		ino;
 	const char		*name = "lost+found";
 	int			i;
 	int			lpf_size = 0;
@@ -452,8 +452,8 @@ static void create_bad_block_inode(ext2_filsys fs, badblocks_list bb_list)
 
 static void reserve_inodes(ext2_filsys fs)
 {
-	ino_t	i;
-	int	group;
+	ext2_ino_t	i;
+	int		group;
 
 	for (i = EXT2_ROOT_INO + 1; i < EXT2_FIRST_INODE(fs->super); i++) {
 		ext2fs_mark_inode_bitmap(fs->inode_map, i);
@@ -634,7 +634,7 @@ static void PRS(int argc, char *argv[])
 	int		blocksize = 0;
 	int		inode_ratio = 0;
 	int		reserved_ratio = 5;
-	ino_t		num_inodes = 0;
+	ext2_ino_t	num_inodes = 0;
 	errcode_t	retval;
 	int		sparse_option = 1;
 	char *		oldpath = getenv("PATH");

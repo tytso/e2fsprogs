@@ -27,7 +27,7 @@ extern int optind;
 
 char *program_name, *device_name;
 
-static volatile void usage (char *prog)
+static void usage (char *prog)
 {
 	fprintf (stderr, _("usage: %s [-d debug_flags] [-f] [-F] [-p] device [new-size]\n\n"), prog);
 
@@ -184,7 +184,7 @@ int main (int argc, char ** argv)
 		}
 		close(fd);
 #else
-		fprintf(stderr, _("BLKFLSBUF not supported"));
+		fprintf(stderr, _("BLKFLSBUF not supported\n"));
 		exit(1);
 #endif /* BLKFLSBUF */
 	}

@@ -1,3 +1,7 @@
+2001-01-11    <tytso@snap.thunk.org>
+
+	* libext2fs.texinfo: Change ino_t to ext2_ino_t
+
 2000-07-13    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.19

@@ -173,7 +173,7 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk_t new_size)
 	int		overhead = 0;
 	int		rem, adj = 0;
 	errcode_t	retval;
-	ino_t		real_end;
+	ext2_ino_t	real_end;
 	blk_t		blk, group_block;
 	unsigned long	i, j;
 	int		old_numblocks, numblocks, adjblocks;
@@ -855,7 +855,7 @@ errout:
 
 struct process_block_struct {
 	ext2_resize_t 		rfs;
-	ino_t			ino;
+	ext2_ino_t		ino;
 	struct ext2_inode *	inode;
 	errcode_t		error;
 	int			is_dir;
@@ -928,13 +928,13 @@ static errcode_t progress_callback(ext2_filsys fs, ext2_inode_scan scan,
 static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 {
 	struct process_block_struct	pb;
-	ino_t			ino, new_inode;
+	ext2_ino_t		ino, new_inode;
 	struct ext2_inode 	inode;
 	ext2_inode_scan 	scan = NULL;
 	errcode_t		retval;
 	int			group;
 	char			*block_buf = 0;
-	ino_t			start_to_move;
+	ext2_ino_t		start_to_move;
 	blk_t			orig_size;
 	
 	if ((rfs->old_fs->group_desc_count <=
@@ -1075,12 +1075,12 @@ struct istruct {
 	int		num;
 };
 
-static int check_and_change_inodes(ino_t dir, int entry,
+static int check_and_change_inodes(ext2_ino_t dir, int entry,
 				   struct ext2_dir_entry *dirent, int offset,
 				   int	blocksize, char *buf, void *priv_data)
 {
 	struct istruct *is = (struct istruct *) priv_data;
-	ino_t		new_inode;
+	ext2_ino_t	new_inode;
 
 	if (is->rfs->progress && offset == 0) {
 		io_channel_flush(is->rfs->old_fs->io);
@@ -1293,12 +1293,12 @@ errout:
  */
 static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 {
-	blk_t	blk;
-	ino_t	ino;
-	int	group = 0;
-	int	count = 0;
-	int	total_free = 0;
-	int	group_free = 0;
+	blk_t		blk;
+	ext2_ino_t	ino;
+	int		group = 0;
+	int		count = 0;
+	int		total_free = 0;
+	int		group_free = 0;
 
 	/*
 	 * First calculate the block statistics
