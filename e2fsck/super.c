@@ -290,6 +290,8 @@ static int release_orphan_inodes(e2fsck_t ctx)
 				fs->group_desc[group].bg_used_dirs_count--;
 			
 			inode.i_dtime = time(0);
+		} else {
+			inode.i_dtime = 0;
 		}
 		e2fsck_write_inode(ctx, ino, &inode, "delete_file");
 		ino = next_ino;
