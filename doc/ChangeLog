@@ -1,3 +1,9 @@
+2005-01-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* libblkid.txt: Fix minor typo's --- thanks to Mike Castle
+		(dalgoda at ix.netcom.com) for pointing them out --- and
+		clarify the text describing blkid_put_cache().
+
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in (install-doc-libs): Use $(MKINSTALLDIRS) macro
