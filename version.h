@@ -7,4 +7,4 @@
  */
 
 #define E2FSPROGS_VERSION "1.26-WIP"
-#define E2FSPROGS_DATE "27-Nov-2001"
+#define E2FSPROGS_DATE "30-Nov-2001"
