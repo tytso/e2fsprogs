@@ -1,5 +1,14 @@
 2000-12-13  Theodore Ts'o  <tytso@valinux.com>
 
+	* journal.c (e2fsck_check_ext3_journal): Check to make sure the
+		journal fields are consistent if any of the superblock
+		fields are set.  (Backs out erroneous change made by sct,
+		pointed out by Andreas.)
+
+	* unix.c (main): Clarify coments (no code changes)
+
+	* super.c (release_orphan_inodes): Fix spelling typo in error message.
+
 	* pass1.c (e2fsck_pass1): Offer to update the filesystem revision
 		level if we need to set large files flag.  Patch from
 		Andreas Dilger.

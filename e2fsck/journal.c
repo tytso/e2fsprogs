@@ -465,6 +465,10 @@ static void e2fsck_journal_release(e2fsck_t ctx, journal_t *journal, int reset)
 	ext2fs_free_mem((void **)&journal);
 }
 
+/*
+ * This function makes sure that the superblock fields regarding the
+ * journal are consistent.
+ */
 int e2fsck_check_ext3_journal(e2fsck_t ctx)
 {
 	struct ext2fs_sb *s = (struct ext2fs_sb *)ctx->fs->super;
@@ -475,8 +479,10 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 	int retval;
 
 	/* If we don't have any journal features, don't do anything more */
-	if (!(s->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
-		return 0;
+	if (!(s->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+	    !recover && s->s_journal_inum == 0 && s->s_journal_dev == 0 &&
+	    uuid_is_null(s->s_journal_uuid))
+ 		return 0;
 
 #ifdef JFS_DEBUG
 	journal_enable_debug = 2;

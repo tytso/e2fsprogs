@@ -795,8 +795,7 @@ restart:
 		ctx->device_name = ctx->filesystem_name;
 
 	/*
-	 * Check to see if we need to do ext3-style recovery.  If so,
-	 * do it, and then restart the fsck.
+	 * Make sure the ext3 superblock fields are consistent.
 	 */
 	retval = e2fsck_check_ext3_journal(ctx);
 	if (retval) {
@@ -807,6 +806,10 @@ restart:
 		fatal_error(ctx, 0);
 	}
 
+	/*
+	 * Check to see if we need to do ext3-style recovery.  If so,
+	 * do it, and then restart the fsck.
+	 */
 	if (s->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) {
 		if (ctx->options & E2F_OPT_READONLY) {
 			printf(_("Warning: skipping journal recovery "

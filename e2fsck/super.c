@@ -244,7 +244,7 @@ static int release_orphan_inodes(e2fsck_t ctx)
 	}
 
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 4,
-						    "block interate buffer");
+						    "block iterate buffer");
 	e2fsck_read_bitmaps(ctx);
 	
 	while (ino) {
