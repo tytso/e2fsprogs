@@ -3,6 +3,8 @@
 	* feature.c: Remove backward compatibility #ifdef's for old
 		ext2_fs.h header files.
 
+	* feature.c: Add definition for EXT3_FEATURE_INCOMPAT_JOURNAL_DEV
+
 2001-01-11  Theodore Ts'o  <tytso@valinux.com>
 
 	* pf.c: Clarified name of the Compression_Raw_Access flag, and

@@ -41,6 +41,8 @@ static struct feature feature_list[] = {
 			"filetype" },
 	{	E2P_FEATURE_INCOMPAT, EXT3_FEATURE_INCOMPAT_RECOVER,
 			"needs_recovery" },
+	{	E2P_FEATURE_INCOMPAT, EXT3_FEATURE_INCOMPAT_JOURNAL_DEV,
+			"journal_dev" },
 	{	0, 0, 0 },
 };
 
