@@ -135,8 +135,10 @@ void e2fsck_pass2(e2fsck_t ctx)
 		ctx->inode_bad_map = 0;
 	}
 #ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2)
+	if (ctx->options & E2F_OPT_TIME2) {
+		e2fsck_clear_progbar(ctx);
 		print_resource_track("Pass 2", &rtrack);
+	}
 #endif
 }
 

@@ -524,8 +524,10 @@ endit:
 	}
 	
 #ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2)
+	if (ctx->options & E2F_OPT_TIME2) {
+		e2fsck_clear_progbar(ctx);
 		print_resource_track("Pass 1", &rtrack);
+	}
 #endif
 }
 

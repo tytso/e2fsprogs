@@ -385,7 +385,8 @@ void print_e2fsck_message(e2fsck_t ctx, const char *msg,
 	ext2_filsys fs = ctx->fs;
 	const char *	cp;
 	int		i;
-	
+
+	e2fsck_clear_progbar(ctx);
 	for (cp = msg; *cp; cp++) {
 		if (cp[0] == '@') {
 			cp++;

@@ -99,8 +99,10 @@ void e2fsck_pass3(e2fsck_t ctx)
 		goto abort_exit;
 	}
 #ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME)
+	if (ctx->options & E2F_OPT_TIME) {
+		e2fsck_clear_progbar(ctx);
 		print_resource_track("Peak memory", &ctx->global_rtrack);
+	}
 #endif
 
 	check_root(ctx);
@@ -137,8 +139,10 @@ abort_exit:
 	if (inode_done_map)
 		ext2fs_free_inode_bitmap(inode_done_map);
 #ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2)
+	if (ctx->options & E2F_OPT_TIME2) {
+		e2fsck_clear_progbar(ctx);
 		print_resource_track("Pass 3", &rtrack);
+	}
 #endif
 }
 

@@ -1,3 +1,34 @@
+1999-07-18    <tytso@valinux.com>
+
+	* unix.c: Add support for calculating a progress bar if the -C0
+		option is given.   The function e2fsck_clear_progbar()
+		clears the progress bar and must be called before any
+		message is issued.  SIGUSR1 will enable the progress bar,
+		and SIGUSR2 will disable the progress bar.  This is used
+		by fsck to handle parallel filesystem checks.  Also, set
+		the device_name from the filesystem label if it is
+		available. 
+
+	* e2fsck.h: Add new flags E2F_FLAG_PROG_BAR and
+		E2F_FLAG_PROG_SUPRESS.  Add new field in the e2fsck
+		structure which contains the last tenth of a percent
+		printed for the user.
+
+	* message.c (print_e2fsck_message): Add call to
+		e2fsck_clear_progbar(). 
+
+	* pass1.c (e2fsck_pass1):
+	* pass2.c (e2fsck_pass2):
+	* pass3.c (e2fsck_pass3):
+	* pass4.c (e2fsck_pass4):
+	* pass5.c (e2fsck_pass5): Add call to e2fsck_clear_progbar when
+		printing the resource tracking information.
+
+	* pass5.c (check_block_bitmaps, check_inode_bitmaps): If there is
+		an error in the bitmaps, suppress printing the progress
+		bar using the suppression flag for the remainder of the
+		check, in order to clean up the display.
+
 1999-06-30    <tytso@valinux.com>
 
 	* unix.c (check_mount): Clean up the abort message displayed when

@@ -102,6 +102,9 @@ struct resource_track {
 
 #define E2F_FLAG_SETJMP_OK	0x0010 /* Setjmp valid for abort */
 
+#define E2F_FLAG_PROG_BAR	0x0020 /* Progress bar on screen */
+#define E2F_FLAG_PROG_SUPPRESS	0x0040 /* Progress suspended */
+
 /*
  * Defines for indicating the e2fsck pass number
  */
@@ -196,6 +199,7 @@ struct e2fsck_struct {
 	 */
 	int progress_fd;
 	int progress_pos;
+	int progress_last_percent;
 
 	/* File counts */
 	int fs_directory_count;
@@ -299,3 +303,5 @@ extern void mtrace_print(char *mesg);
 #endif
 extern blk_t get_backup_sb(ext2_filsys fs);
 
+/* unix.c */
+extern void e2fsck_clear_progbar(e2fsck_t ctx);

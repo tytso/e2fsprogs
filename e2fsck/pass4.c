@@ -153,8 +153,10 @@ void e2fsck_pass4(e2fsck_t ctx)
 	ext2fs_free_inode_bitmap(ctx->inode_bb_map);
 	ctx->inode_bb_map = 0;
 #ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2)
+	if (ctx->options & E2F_OPT_TIME2) {
+		e2fsck_clear_progbar(ctx);
 		print_resource_track("Pass 4", &rtrack);
+	}
 #endif
 }
 

@@ -18,6 +18,7 @@
 #include <ctype.h>
 #include <termios.h>
 #include <time.h>
+#include <signal.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
@@ -60,7 +61,8 @@ static void usage(e2fsck_t ctx)
 	fprintf(stderr,
 		"Usage: %s [-panyrcdfvstFSV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-I inode_buffer_blocks] [-P process_inode_size]\n"
-		"\t\t[-l|-L bad_blocks_file] device\n", ctx->program_name);
+		"\t\t[-l|-L bad_blocks_file] [-C fd] device\n",
+		ctx->program_name);
 	exit(FSCK_USAGE);
 }
 
@@ -165,11 +167,11 @@ static void check_mount(e2fsck_t ctx)
 #endif
 	
 	if (ctx->options & E2F_OPT_READONLY) {
-		printf("Warning!  %s is mounted.\n", ctx->device_name);
+		printf("Warning!  %s is mounted.\n", ctx->filesystem_name);
 		return;
 	}
 
-	printf("%s is mounted.  ", ctx->device_name);
+	printf("%s is mounted.  ", ctx->filesystem_name);
 	if (!isatty(0) || !isatty(1)) {
 		printf("Cannot continue, aborting.\n\n");
 		exit(FSCK_ERROR);
@@ -225,11 +227,51 @@ static void check_if_skip(e2fsck_t ctx)
 /*
  * For completion notice
  */
+struct percent_tbl {
+	int	max_pass;
+	int	table[32];
+};
+struct percent_tbl e2fsck_tbl = {
+	5, { 0, 70, 90, 92,  95, 100 }
+};
+static int dpywidth = 50;
+static char bar[] =
+	"==============================================================="
+	"===============================================================";
+static char spaces[] =
+	"                                                               "
+	"                                                               ";
+
+static float calc_percent(struct percent_tbl *tbl, int pass, int curr,
+			  int max)
+{
+	float	percent;
+	
+	if (pass <= 0)
+		return 0.0;
+	if (pass > tbl->max_pass)
+		return 100.0;
+	percent = ((float) curr) / ((float) max);
+	return ((percent * (tbl->table[pass] - tbl->table[pass-1]))
+		+ tbl->table[pass-1]);
+}
+
+extern void e2fsck_clear_progbar(e2fsck_t ctx)
+{
+	if (!(ctx->flags & E2F_FLAG_PROG_BAR))
+		return;
+	
+	printf("%s\r", spaces + (sizeof(spaces) - 80));
+	ctx->flags &= ~E2F_FLAG_PROG_BAR;
+}
+
 static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 				  unsigned long cur, unsigned long max)
 {
 	const char spinner[] = "\\|/-";
 	char buf[80];
+	int	i;
+	float percent;
 
 	if (pass == 0)
 		return 0;
@@ -238,9 +280,25 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 		sprintf(buf, "%d %lu %lu\n", pass, cur, max);
 		write(ctx->progress_fd, buf, strlen(buf));
 	} else {
+		if (ctx->flags & E2F_FLAG_PROG_SUPPRESS)
+			return 0;
 		ctx->progress_pos = (ctx->progress_pos+1) & 3;
-		fputc(spinner[ctx->progress_pos], stdout);
-		fputc('\b', stdout);
+		ctx->flags |= E2F_FLAG_PROG_BAR;
+		percent = calc_percent(&e2fsck_tbl, pass, cur, max);
+		if (ctx->progress_last_percent == (int) 1000 * percent)
+			return 0;
+		ctx->progress_last_percent = (int) 1000 * percent;
+		i = ((percent * dpywidth) + 50) / 100;
+		printf("%s: |%s%s", ctx->device_name,
+		       bar + (sizeof(bar) - (i+1)),
+		       spaces + (sizeof(spaces) - (dpywidth - i + 1)));
+		if (percent == 100.0)
+			fputc('|', stdout);
+		else
+			fputc(spinner[ctx->progress_pos & 3], stdout);
+		printf(" %4.1f%%   \r", percent);
+		if (percent == 100.0)
+			e2fsck_clear_progbar(ctx);
 		fflush(stdout);
 	}
 	return 0;
@@ -266,6 +324,30 @@ static void reserve_stdio_fds(NOARGS)
 	close(fd);
 }
 
+static e2fsck_t global_signal_ctx;
+
+static void signal_progress_on(int sig)
+{
+	e2fsck_t ctx = global_signal_ctx;
+
+	if (!ctx)
+		return;
+
+	ctx->progress = e2fsck_update_progress;
+	ctx->progress_fd = 0;
+}
+
+static void signal_progress_off(int sig)
+{
+	e2fsck_t ctx = global_signal_ctx;
+
+	if (!ctx)
+		return;
+
+	e2fsck_clear_progbar(ctx);
+	ctx->progress = 0;
+}
+
 static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 {
 	int		flush = 0;
@@ -276,6 +358,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	char		*oldpath = getenv("PATH");
 	e2fsck_t	ctx;
 	errcode_t	retval;
+	struct sigaction	sa;
 
 	retval = e2fsck_allocate_context(&ctx);
 	if (retval)
@@ -407,8 +490,6 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	    !cflag && !swapfs)
 		ctx->options |= E2F_OPT_READONLY;
 	ctx->filesystem_name = argv[optind];
-	if (ctx->device_name == 0)
-		ctx->device_name = ctx->filesystem_name;
 	if (flush) {
 #ifdef BLKFLSBUF
 		int	fd = open(ctx->filesystem_name, O_RDONLY, 0);
@@ -435,6 +516,18 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			exit(FSCK_ERROR);
 		}
 	}
+	/*
+	 * Set up signal action
+	 */
+	memset(&sa, 0, sizeof(struct sigaction));
+#ifdef SA_RESTART
+	sa.sa_flags = SA_RESTART;
+#endif
+	global_signal_ctx = ctx;
+	sa.sa_handler = signal_progress_on;
+	sigaction(SIGUSR1, &sa, 0);
+	sa.sa_handler = signal_progress_off;
+	sigaction(SIGUSR2, &sa, 0);
 	return 0;
 }
 
@@ -594,6 +687,18 @@ restart:
 			"(%s)", ctx->filesystem_name);
 		goto get_newer;
 	}
+	if (ctx->device_name == 0 &&
+	    (s->s_volume_name[0] != 0)) {
+		char *cp = malloc(sizeof(s->s_volume_name)+1);
+		if (cp) {
+			strncpy(cp, s->s_volume_name,
+				sizeof(s->s_volume_name));
+			cp[sizeof(s->s_volume_name)] = 0;
+			ctx->device_name = cp;
+		}
+	}
+	if (ctx->device_name == 0)
+		ctx->device_name = ctx->filesystem_name;
 	
 	/*
 	 * If the user specified a specific superblock, presumably the
@@ -653,6 +758,7 @@ restart:
 	}
 
 	run_result = e2fsck_run(ctx);
+	e2fsck_clear_progbar(ctx);
 	if (run_result == E2F_FLAG_RESTART) {
 		printf("Restarting e2fsck from the beginning...\n");
 		retval = e2fsck_reset_context(ctx);

@@ -65,8 +65,10 @@ void e2fsck_pass5(e2fsck_t ctx)
 	ctx->block_found_map = 0;
 
 #ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2)
+	if (ctx->options & E2F_OPT_TIME2) {
+		e2fsck_clear_progbar(ctx);
 		print_resource_track("Pass 5", &rtrack);
+	}
 #endif
 }
 
@@ -142,6 +144,7 @@ redo_counts:
 		}
 		pctx.blk = i;
 		fix_problem(ctx, problem, &pctx);
+		ctx->flags |= E2F_FLAG_PROG_SUPPRESS;
 		had_problem++;
 		
 	do_counts:
@@ -166,6 +169,8 @@ redo_counts:
 		fixit = end_problem_latch(ctx, 	PR_LATCH_BBITMAP);
 	else
 		fixit = -1;
+	ctx->flags &= ~E2F_FLAG_PROG_SUPPRESS;
+	
 	if (fixit == 1) {
 		ext2fs_free_block_bitmap(fs->block_map);
 		retval = ext2fs_copy_bitmap(ctx->block_found_map,
@@ -282,6 +287,7 @@ redo_counts:
 		}
 		pctx.ino = i;
 		fix_problem(ctx, problem, &pctx);
+		ctx->flags |= E2F_FLAG_PROG_SUPPRESS;
 		had_problem++;
 		
 do_counts:
@@ -312,6 +318,8 @@ do_counts:
 		fixit = end_problem_latch(ctx, PR_LATCH_IBITMAP);
 	else
 		fixit = -1;
+	ctx->flags &= ~E2F_FLAG_PROG_SUPPRESS;
+	
 	if (fixit == 1) {
 		ext2fs_free_inode_bitmap(fs->inode_map);
 		retval = ext2fs_copy_bitmap(ctx->inode_used_map,
