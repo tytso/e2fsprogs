@@ -1,5 +1,8 @@
 2002-03-11  Theodore Tso  <tytso@mit.edu>
 
+	* ls.c (list_dir_proc): Fix bug: ls -l fails to print the file
+		type correctly if running on big-endian systems.
+
 	* htree.c (htree_dump_leaf_node): Use the ext2_dirhash function
 		instead of a local static function.
 

@@ -1,5 +1,14 @@
 2002-03-11  Theodore Tso  <tytso@mit.edu>
 
+	* dirblock.c (ext2fs_read_dir_block2, ext2fs_write_dir_block): New
+		functions which take an extra flags argument.  The flag
+		EXT2_DIRBLOCK_V2_STRUCT will reverse when the name_len
+		field is byte swampped on big-endian machines, since in
+		the V2 structure, name_len is a char field which is
+		doesn't need to be byte swapped --- except if an
+		old-style kernel had byte-swapped the name_len field
+		as part of the V1 structure.
+
 	* ext2_err.et.in (EXT2_ET_DIRHASH_UNSUPP): New error code
 
 	* dirhash.c (ext2fs_dirhash): New function which calculates the

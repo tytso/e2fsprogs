@@ -290,6 +290,11 @@ struct struct_ext2_filsys {
 #endif
 
 /*
+ * Flags for directory block reading and writing functions
+ */
+#define EXT2_DIRBLOCK_V2_STRUCT	0x0001
+
+/*
  * Return flags for the directory iterator functions
  */
 #define DIRENT_CHANGED	1
@@ -598,8 +603,12 @@ extern errcode_t
 /* dirblock.c */
 extern errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 				       void *buf);
+extern errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
+					void *buf, int flags);
 extern errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 					void *buf);
+extern errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
+					 void *buf, int flags);
 
 /* dirhash.c */
 extern errcode_t ext2fs_dirhash(int version, const char *name, int len,
