@@ -172,6 +172,9 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	errcode_t			retval;
 	struct process_block_struct 	pb;
 
+	if (!ext2fs_inode_has_valid_blocks(inode))
+		return 0;
+
 	pb.buf = block_buf + 3 * ctx->fs->blocksize;
 	pb.ctx = ctx;
 	pb.abort = 0;
