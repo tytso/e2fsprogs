@@ -1,3 +1,10 @@
+Mon Oct 30 20:31:17 1995    <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (check_mount): For Linux systems, the check to see if
+		the root is mounted read-only has to be done for all
+		filesystems, not just for the root filesystem, due to the
+		way that some /etc/rc scripts are set up.
+
 Thu Oct 26 12:05:30 1995    <tytso@rsts-11.mit.edu>
 
 	* Makefile.in (install): Strip programs when they are installed.

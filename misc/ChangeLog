@@ -1,3 +1,8 @@
+Mon Oct 30 20:21:18 1995    <tytso@rsts-11.mit.edu>
+
+	* fsck.c (fsck_device): Check fstype instead of type; this was a
+		stupid typo which caused coredumps in some cases.
+
 Thu Oct 26 12:05:18 1995    <tytso@rsts-11.mit.edu>
 
 	* Makefile.in (install): Strip programs when they are installed.

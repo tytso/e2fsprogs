@@ -410,7 +410,7 @@ static void fsck_device(char *device)
 	int retval;
 	char prog[80];
 
-	if (fstype && strncmp(type, "no", 2) && !strchr(type, ','))
+	if (fstype && strncmp(fstype, "no", 2) && !strchr(fstype, ','))
 		type = fstype;
 
 	if ((fsent = lookup(device))) {

@@ -39,6 +39,7 @@ DLL_MYDIR = e2p
 DLL_INSTALL_DIR = $(libdir)
 
 ELF_VERSION = 2.1
+ELF_SO_VERSION = 2
 ELF_IMAGE = libe2p
 ELF_MYDIR = e2p
 ELF_INSTALL_DIR = $(libdir)

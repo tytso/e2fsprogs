@@ -144,7 +144,7 @@ static void show_stats(ext2_filsys fs)
 static void check_mount(NOARGS)
 {
 	errcode_t	retval;
-	int		mount_flags, cont;
+	int		mount_flags, cont, fd;
 
 	retval = ext2fs_check_if_mounted(filesystem_name, &mount_flags);
 	if (retval) {
@@ -155,14 +155,20 @@ static void check_mount(NOARGS)
 	}
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		return;
+
+#if (defined(linux) && defined(HAVE_MNTENT_H))
 	/*
 	 * If the root is mounted read-only, then /etc/mtab is
 	 * probably not correct; so we won't issue a warning based on
 	 * it.
 	 */
-	if ((mount_flags & EXT2_MF_ISROOT) &&
-	    (mount_flags & EXT2_MF_READONLY))
-		return;
+	fd = open(MOUNTED, O_RDWR);
+	if (fd < 0) {
+		if (errno == EROFS)
+			return;
+	} else
+		close(fd);
+#endif
 	
 	if (!rwflag) {
 		printf("Warning!  %s is mounted.\n", device_name);

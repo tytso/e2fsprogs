@@ -1,3 +1,9 @@
+Mon Oct 30 21:11:47 1995    <tytso@rsts-11.mit.edu>
+
+	* Makefile.elf-lib: Changes to pass -soname to the linker, so that
+		ld.so knows which version of the library to load when
+		there's more than one major version of the shared library.
+
 Mon Sep  4 21:42:46 1995  Remy Card  <card@bbj>
 
 	* Makefile.bsd-lib: New file containing support for BSD shared

@@ -62,6 +62,9 @@ $(DLL_IMAGE).so.$(DLL_VERSION): $(OBJS)
 		-a $(DLL_ADDRESS) -j $(DLL_JUMPSIZE) -g $(DLL_GOTSIZE) -- \
 		$(OBJS) -lc $(DLL_LIBS) $(DLL_LIBGCC) -lc)
 	$(MV) jump/$(DLL_IMAGE).so.$(DLL_VERSION) .
+	$(LN) -f $(DLL_IMAGE).so.$(DLL_VERSION) \
+		`echo ../$(DLL_IMAGE).so.$(DLL_VERSION) | \
+		sed -e 's/\.[0-9]*\$$//'`
 
 $(DLL_STUB).sa:
 	(cd jump; export JUMP_DIR=`pwd`; \
@@ -87,5 +90,8 @@ install:: $(DLL_STUB).sa
 	$(CHMOD) $(LIBMODE) $(DESTDIR)$(ulibdir)/$(DLL_STUB).sa
 
 clean::
-	$(RM) -f ../$(DLL_STUB).sa $(DLL_STUB).sa $(DLL_IMAGE).so.$(DLL_VERSION)
+	$(RM) -f ../$(DLL_STUB).sa $(DLL_STUB).sa \
+		$(DLL_IMAGE).so.$(DLL_VERSION) ../$(DLL_IMAGE).so.*
 	$(RM) -rf jump
+
+

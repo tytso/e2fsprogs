@@ -80,6 +80,6 @@ void list_super (struct ext2_super_block * s)
 	printf ("Reserved blocks uid:      ");
 	print_user (s->s_def_resuid);
 	printf ("Reserved blocks gid:      ");
-	print_group (s->s_def_resuid);
+	print_group (s->s_def_resgid);
 #endif
 }

@@ -31,6 +31,7 @@ DLL_MYDIR = et
 DLL_INSTALL_DIR = $(libdir)
 
 ELF_VERSION = 2.0
+ELF_SO_VERSION = 2
 ELF_IMAGE = libcom_err
 ELF_MYDIR = et
 ELF_INSTALL_DIR = $(libdir)

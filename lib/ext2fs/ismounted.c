@@ -37,7 +37,7 @@
 #ifdef HAVE_MNTENT_H
 /*
  * XXX we only check to see if the mount is readonly when it's the
- * root filesystem EXT2_FS_READONLY.
+ * root filesystem.
  */
 static errcode_t check_mntent(const char *file, int *mount_flags)
 {

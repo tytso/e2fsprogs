@@ -24,6 +24,7 @@ DLL_MYDIR = ss
 DLL_INSTALL_DIR = $(libdir)
 
 ELF_VERSION = 2.0
+ELF_SO_VERSION = 2
 ELF_IMAGE = libss
 ELF_MYDIR = ss
 ELF_INSTALL_DIR = $(libdir)
