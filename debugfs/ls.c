@@ -53,7 +53,6 @@ static int list_dir_proc(ext2_ino_t dir,
 {
 	struct ext2_inode	inode;
 	ext2_ino_t		ino;
-	errcode_t		retval;
 	struct tm		*tm_p;
 	time_t			modtime;
 	char			name[EXT2_NAME_LEN];
@@ -79,7 +78,7 @@ static int list_dir_proc(ext2_ino_t dir,
 	if (ls->options & LONG_OPT) {
 		if (ino) {
 			if (debugfs_read_inode(ino, &inode, name))
-				return;
+				return 0;
 			modtime = inode.i_mtime;
 			tm_p = localtime(&modtime);
 			sprintf(datestr, "%2d-%s-%4d %02d:%02d",

@@ -296,7 +296,6 @@ static int rdump_dirent(struct ext2_dir_entry *dirent, int offset,
 	int thislen;
 	const char *dumproot = private;
 	struct ext2_inode inode;
-	errcode_t retval;
 
 	thislen = ((dirent->name_len & 0xFF) < EXT2_NAME_LEN
 		   ? (dirent->name_len & 0xFF) : EXT2_NAME_LEN);
@@ -315,7 +314,6 @@ void do_rdump(int argc, char **argv)
 {
 	ext2_ino_t ino;
 	struct ext2_inode inode;
-	errcode_t retval;
 	struct stat st;
 	int i;
 	char *p;

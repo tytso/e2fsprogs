@@ -80,6 +80,7 @@ extern void do_show_super_stats(int argc, char **argv);
 extern void do_kill_file(int argc, char **argv);
 extern void do_rm(int argc, char **argv);
 extern void do_link(int argc, char **argv);
+extern void do_undel(int argc, char **argv);
 extern void do_unlink(int argc, char **argv);
 extern void do_find_free_block(int argc, char **argv);
 extern void do_find_free_inode(int argc, char **argv);

@@ -478,7 +478,6 @@ void do_stat(int argc, char *argv[])
 {
 	ext2_ino_t	inode;
 	struct ext2_inode inode_buf;
-	int 		retval;
 
 	if (common_inode_args_process(argc, argv, &inode, 0))
 		return;
@@ -509,7 +508,6 @@ void do_chroot(int argc, char *argv[])
 void do_clri(int argc, char *argv[])
 {
 	ext2_ino_t inode;
-	int retval;
 	struct ext2_inode inode_buf;
 
 	if (common_inode_args_process(argc, argv, &inode, CHECK_FS_RW))
@@ -686,7 +684,6 @@ void do_modify_inode(int argc, char *argv[])
 	struct ext2_inode inode;
 	ext2_ino_t	inode_num;
 	int 		i;
-	errcode_t	retval;
 	unsigned char	*frag, *fsize;
 	char		buf[80];
 	int 		os = current_fs->super->s_creator_os;
@@ -866,7 +863,6 @@ static int mark_blocks_proc(ext2_filsys fs, blk_t *blocknr,
 			    int blockcnt, void *private)
 {
 	blk_t	block;
-	dgrp_t	group;
 
 	block = *blocknr;
 	ext2fs_block_alloc_stats(fs, block, +1);
@@ -877,8 +873,6 @@ void do_undel(int argc, char *argv[])
 {
 	ext2_ino_t	ino;
 	struct ext2_inode inode;
-	int		retval;
-	dgrp_t group;
 
 	if (common_args_process(argc, argv, 3, 3, "undelete",
 				"<inode_num> <dest_name>",
@@ -1081,7 +1075,6 @@ void do_write(int argc, char *argv[])
 	ext2_ino_t	newfile;
 	errcode_t	retval;
 	struct ext2_inode inode;
-	dgrp_t		group;
 
 	if (common_args_process(argc, argv, 3, 3, "write",
 				"<native file> <new file>", CHECK_FS_RW))
@@ -1255,7 +1248,6 @@ static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
 			       int blockcnt, void *private)
 {
 	blk_t	block;
-	dgrp_t	group;
 
 	block = *blocknr;
 	ext2fs_block_alloc_stats(fs, block, -1);
@@ -1265,7 +1257,6 @@ static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
 static void kill_file_by_inode(ext2_ino_t inode)
 {
 	struct ext2_inode inode_buf;
-	int	group;
 
 	if (debugfs_read_inode(inode, &inode_buf, 0))
 		return;
