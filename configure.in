@@ -452,6 +452,19 @@ if test "$e2fsprogs_cv_ioctl_ext2" = yes; then
   AC_DEFINE(HAVE_EXT2_IOCTLS)
 fi
 dnl
+dnl Check if ext2_inode has i_version (changed to i_generation in Linux 2.3)
+dnl
+AC_MSG_CHECKING(whether struct ext2_inode has an i_version field)
+AC_CACHE_VAL(e2fsprogs_cv_ext2_inode_version,
+	AC_TRY_COMPILE([#include <linux/ext2_fs.h>],
+		[struct ext2_inode e2i; e2i.i_version=0;],
+		[e2fsprogs_cv_ext2_inode_version=yes],
+		[e2fsprogs_cv_ext2_inode_version=no]))
+AC_MSG_RESULT($e2fsprogs_cv_ext2_inode_version)
+if test "$e2fsprogs_cv_ext2_inode_version" = yes; then
+  AC_DEFINE(HAVE_EXT2_INODE_VERSION)
+fi
+dnl
 dnl Linux places root files in the / by default
 dnl
 case "$host_os" in

@@ -1,3 +1,9 @@
+1999-06-23    <tytso@valinux.com>
+
+	* configure.in: Check for the presence of i_generation field
+		versus i_version in the ext2_inode to support compiling
+		e2fsprogs in Linux 2.3.
+
 1999-04-17    <tytso@rsts-11.mit.edu>
 
 	* MCONFIG.in: Define man1dir, man3dir, and man8dir in terms of

@@ -2441,6 +2441,38 @@ if test "$e2fsprogs_cv_ioctl_ext2" = yes; then
 EOF
 
 fi
+echo $ac_n "checking whether struct ext2_inode has an i_version field""... $ac_c" 1>&6
+echo "configure:2446: checking whether struct ext2_inode has an i_version field" >&5
+if eval "test \"`echo '$''{'e2fsprogs_cv_ext2_inode_version'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2451 "configure"
+#include "confdefs.h"
+#include <linux/ext2_fs.h>
+int main() {
+struct ext2_inode e2i; e2i.i_version=0;
+; return 0; }
+EOF
+if { (eval echo configure:2458: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  e2fsprogs_cv_ext2_inode_version=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  e2fsprogs_cv_ext2_inode_version=no
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$e2fsprogs_cv_ext2_inode_version" 1>&6
+if test "$e2fsprogs_cv_ext2_inode_version" = yes; then
+  cat >> confdefs.h <<\EOF
+#define HAVE_EXT2_INODE_VERSION 1
+EOF
+
+fi
 case "$host_os" in
 linux*)
 	if test "$prefix" = NONE -a "$root_prefix" = NONE ; then
@@ -2466,20 +2498,20 @@ if test "$root_prefix" = NONE ; then
 fi
 
 echo $ac_n "checking whether linker accepts -static""... $ac_c" 1>&6
-echo "configure:2470: checking whether linker accepts -static" >&5
+echo "configure:2502: checking whether linker accepts -static" >&5
 if eval "test \"`echo '$''{'ac_cv_e2fsprogs_use_static'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   SAVE_LDFLAGS=$LDFLAGS; LDFLAGS="$LDFLAGS -static"
 cat > conftest.$ac_ext <<EOF
-#line 2476 "configure"
+#line 2508 "configure"
 #include "confdefs.h"
 #include <stdio.h>
 int main() {
 fflush(stdout);
 ; return 0; }
 EOF
-if { (eval echo configure:2483: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2515: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_e2fsprogs_use_static=yes
 else
