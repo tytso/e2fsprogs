@@ -269,7 +269,12 @@ Set the volume label for the filesystem.
 .TP
 .BI \-m " reserved-blocks-percentage"
 Specify the percentage of the filesystem blocks reserved for 
-the super-user.  This value defaults to 5%.
+the super-user.  This avoids fragmentation, and allows root-owned
+daemons, such as 
+.BR syslogd (8),
+to continue to function correctly after non-privileged processes are 
+prevented from writing to the filesystem.  The default percentage 
+is 5%.
 .TP
 .B \-M
 Set the last mounted directory for the filesystem.  This might be useful 

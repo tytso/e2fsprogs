@@ -1,3 +1,8 @@
+2004-10-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.8.in: Add an explanation about why reserved blocks in a
+		filesystem is a good thing.
+
 2004-09-28  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.8.in: Document the default block size.  (Addresses
