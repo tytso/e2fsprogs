@@ -113,9 +113,22 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 {
 	int	i;
 
-	for (i=4; i < EXT2_N_BLOCKS; i++) 
-		if (inode->i_block[i])
-			return 0;
+	/*
+	 * We should be able to do the test below all the time, but
+	 * because the kernel doesn't forcibly clear the device
+	 * inode's additional i_block fields, there are some rare
+	 * occasions when a legitimate device inode will have non-zero
+	 * additional i_block fields.  So for now, we only complain
+	 * when the immutable flag is set, which should never happen
+	 * for devices.  (And that's when the problem is caused, since
+	 * you can't set or clear immutable flags for devices.)  Once
+	 * the kernel has been fixed we can change this...
+	 */
+	if (inode->i_flags & EXT2_IMMUTABLE_FL) {
+		for (i=4; i < EXT2_N_BLOCKS; i++) 
+			if (inode->i_block[i])
+				return 0;
+	}
 	return 1;
 }
 

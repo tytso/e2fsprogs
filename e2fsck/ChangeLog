@@ -1,3 +1,13 @@
+Mon Nov 24 06:48:00 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (e2fsck_pass1_check_device_inode): For now, only check
+		to make sure the extra i_blocks in a device are cleared if
+		the immutable flag is set.
+
+	* util.c (print_resource_track): Fix typo which caused the
+ 		time/resource tracking to print "Pass 1 :" instead of
+ 		"Pass 1: ".
+
 Thu Nov 20 16:02:23 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass3.c (expand_directory): Fix bug which could cause core dump

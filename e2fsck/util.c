@@ -224,7 +224,7 @@ void print_resource_track(const char *desc, struct resource_track *track)
 	gettimeofday(&time_end, 0);
 
 	if (desc)
-		printf("%s :", desc);
+		printf("%s: ", desc);
 	
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
