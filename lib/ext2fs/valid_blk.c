@@ -38,8 +38,7 @@ int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode)
 	 * If the symbolic link is a "fast symlink", then the symlink
 	 * target is stored in the block entries.
 	 */
-	if (LINUX_S_ISLNK (inode->i_mode) && inode->i_blocks == 0 &&
-	    inode->i_size < EXT2_N_BLOCKS * sizeof (unsigned long))
+	if (LINUX_S_ISLNK (inode->i_mode) && inode->i_blocks == 0)
 		return 0;
 
 	return 1;

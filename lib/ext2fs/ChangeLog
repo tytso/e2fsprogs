@@ -1,3 +1,8 @@
+2001-06-02  Theodore Tso  <tytso@valinux.com>
+
+	* valid_blk.c (ext2fs_inode_has_valid_blocks): Only check i_blocks
+		for a symlink to determine whether it is a fast symlink.
+
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in, dosio.c, ext2_fs.h, ext2_types.h.in, ext2fs.h:
