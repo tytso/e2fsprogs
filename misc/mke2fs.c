@@ -492,7 +492,7 @@ static void show_stats(ext2_filsys fs)
 			continue;
 		if (!col_left--) {
 			printf("\n\t");
-			col_left = 8;
+			col_left = 6;
 		}
 		printf("%u", group_block);
 		if (i != fs->group_desc_count - 1)

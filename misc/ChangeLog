@@ -1,3 +1,9 @@
+Mon Jun 16 23:37:54 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (show_stats): Adjust the number of columns printed when
+		displaying the superblock backups to avoid running over 
+		80 columns when making a really big disk.
+
 Thu May  8 22:22:08 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* badblocks.8.in, chattr.1.in, dumpe2fs.8.in, fsck.8.in, 
