@@ -1372,6 +1372,8 @@ static void kill_file_by_inode(ext2_ino_t inode)
 	inode_buf.i_dtime = time(NULL);
 	if (debugfs_write_inode(inode, &inode_buf, 0))
 		return;
+	if (!ext2fs_inode_has_valid_blocks(&inode_buf))
+		return;
 
 	ext2fs_block_iterate(current_fs, inode, 0, NULL,
 			     release_blocks_proc, NULL);

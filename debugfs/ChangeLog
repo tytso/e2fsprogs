@@ -1,3 +1,10 @@
+2004-11-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c (kill_file_by_inode): Only iterate over the inode to
+		release blocks if the inode has them; otherwise attempting
+		to rm devices and fast symlinks will lead to errors.
+		(Addresses Sourceforge Bug #954741 and #957244)
+
 2004-07-28  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c, debugfs.8.in: Add new option -d which allows the
