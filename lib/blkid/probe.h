@@ -252,6 +252,15 @@ struct ocfs2_super_block {
 
 #define OCFS2_SUPER_BLOCK_SIGNATURE     "OCFSV2"
 
+struct oracle_asm_disk_label {
+	char dummy[32];
+	char dl_tag[8];
+	char dl_id[24];
+};
+
+#define ORACLE_ASM_DISK_LABEL_MARKED    "ORCLDISK"
+#define ORACLE_ASM_DISK_LABEL_OFFSET    32
+
 #define ISODCL(from, to) (to - from + 1)
 struct iso_volume_descriptor {
 	char type[ISODCL(1,1)]; /* 711 */

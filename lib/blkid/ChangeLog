@@ -1,3 +1,9 @@
+2005-01-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c (probe_oracleasm): Add support for recognizing Oracle
+		ASM volumes.  Thanks to Manish Singh (manish.singh at
+		oracle.com) for supplying this patch.
+
 2005-01-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Fix the kernel compile-time echo commands to be

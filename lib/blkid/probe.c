@@ -422,10 +422,10 @@ static int probe_ocfs(int fd __BLKID_ATTR((unused)),
 }
 
 static int probe_ocfs2(int fd __BLKID_ATTR((unused)), 
-		      blkid_cache cache __BLKID_ATTR((unused)), 
-		      blkid_dev dev,
-		      struct blkid_magic *id __BLKID_ATTR((unused)), 
-		      unsigned char *buf)
+		       blkid_cache cache __BLKID_ATTR((unused)), 
+		       blkid_dev dev,
+		       struct blkid_magic *id __BLKID_ATTR((unused)), 
+		       unsigned char *buf)
 {
 	struct ocfs2_super_block *osb;
 
@@ -433,6 +433,20 @@ static int probe_ocfs2(int fd __BLKID_ATTR((unused)),
 
 	blkid_set_tag(dev, "LABEL", osb->s_label, sizeof(osb->s_label));
 	set_uuid(dev, osb->s_uuid);
+	return 0;
+}
+
+static int probe_oracleasm(int fd __BLKID_ATTR((unused)), 
+			   blkid_cache cache __BLKID_ATTR((unused)), 
+			   blkid_dev dev,
+			   struct blkid_magic *id __BLKID_ATTR((unused)), 
+			   unsigned char *buf)
+{
+	struct oracle_asm_disk_label *dl;
+
+	dl = (struct oracle_asm_disk_label *)buf;
+
+	blkid_set_tag(dev, "LABEL", dl->dl_id, sizeof(dl->dl_id));
 	return 0;
 }
 
@@ -452,6 +466,7 @@ static int probe_ocfs2(int fd __BLKID_ATTR((unused)),
  */
 static struct blkid_magic type_array[] = {
 /*  type     kboff   sboff len  magic			probe */
+  { "oracleasm", 0,	32,  8, "ORCLDISK",		probe_oracleasm },
   { "jbd",	 1,   0x38,  2, "\123\357",		probe_jbd },
   { "ext3",	 1,   0x38,  2, "\123\357",		probe_ext3 },
   { "ext2",	 1,   0x38,  2, "\123\357",		probe_ext2 },
@@ -500,11 +515,11 @@ static struct blkid_magic type_array[] = {
   { "swap",	 0, 0x7ff6, 10, "SWAPSPACE2",		probe_swap1 },
   { "swap",	 0, 0xfff6, 10, "SWAP-SPACE",		probe_swap0 },
   { "swap",	 0, 0xfff6, 10, "SWAPSPACE2",		probe_swap1 },
-  { "ocfs",	 0,	 8,  9,	 "OracleCFS",		probe_ocfs },
-  { "ocfs2",	 1,	 0,  6,	 "OCFSV2",		probe_ocfs2 },
-  { "ocfs2",	 2,	 0,  6,	 "OCFSV2",		probe_ocfs2 },
-  { "ocfs2",	 4,	 0,  6,	 "OCFSV2",		probe_ocfs2 },
-  { "ocfs2",	 8,	 0,  6,	 "OCFSV2",		probe_ocfs2 },
+  { "ocfs",	 0,	 8,  9,	"OracleCFS",		probe_ocfs },
+  { "ocfs2",	 1,	 0,  6,	"OCFSV2",		probe_ocfs2 },
+  { "ocfs2",	 2,	 0,  6,	"OCFSV2",		probe_ocfs2 },
+  { "ocfs2",	 4,	 0,  6,	"OCFSV2",		probe_ocfs2 },
+  { "ocfs2",	 8,	 0,  6,	"OCFSV2",		probe_ocfs2 },
   {   NULL,	 0,	 0,  0, NULL,			NULL }
 };
 
