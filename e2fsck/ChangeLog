@@ -1,3 +1,10 @@
+2001-06-13  Theodore Tso  <tytso@valinux.com>
+
+	* unix.c (check_if_skip): Adapted patch from Andreas Dilger which
+		prints the number of mounts or days elapsed since the last
+		check when e2fsck is forced to check an otherwise clean
+		filesystem.
+
 2001-06-12  Theodore Tso  <tytso@valinux.com>
 
 	* badblocks.c: Stop using the compatibility badblocks function,

@@ -253,24 +253,30 @@ static void check_if_skip(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	const char *reason = NULL;
+	unsigned int reason_arg = 0;
 	
 	if (force || bad_blocks_file || cflag || swapfs)
 		return;
 	
 	if (fs->super->s_state & EXT2_ERROR_FS)
-		reason = _("contains a file system with errors");
+		reason = _(" contains a file system with errors");
 	else if ((fs->super->s_state & EXT2_VALID_FS) == 0)
-		reason = _("was not cleanly unmounted");
+		reason = _(" was not cleanly unmounted");
 	else if ((fs->super->s_max_mnt_count > 0) &&
 		 (fs->super->s_mnt_count >=
-		  (unsigned) fs->super->s_max_mnt_count))
-		reason = _("has reached maximal mount count");
-	else if (fs->super->s_checkinterval &&
+		  (unsigned) fs->super->s_max_mnt_count)) {
+		reason = _(" has been mounted %u times without being checked");
+		reason_arg = fs->super->s_mnt_count;
+	} else if (fs->super->s_checkinterval &&
 		 time(0) >= (fs->super->s_lastcheck +
-			     fs->super->s_checkinterval))
-		reason = _("has gone too long without being checked");
+			     fs->super->s_checkinterval)) {
+		reason = _(" has gone %u days without being checked");
+		reason_arg = (time(0) - fs->super->s_lastcheck)/(3600*24);
+	}
 	if (reason) {
-		printf(_("%s %s, check forced.\n"), ctx->device_name, reason);
+		fputs(ctx->device_name, stdout);
+		printf(reason, reason_arg);
+		fputs(_(", check forced.\n"), stdout);
 		return;
 	}
 	printf(_("%s: clean, %d/%d files, %d/%d blocks\n"), ctx->device_name,
