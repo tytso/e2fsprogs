@@ -43,6 +43,7 @@ extern int optind;
 #include <string.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <time.h>
 
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -382,6 +383,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 		flush_bufs();
 	}
 
+	free(buffer);
 	return bb_count;
 }
 
@@ -431,7 +433,7 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 	for(ptr = blkbuf + blocks_at_once * block_size;
 	    ptr < blkbuf + 2 * blocks_at_once * block_size;
 	    ++ptr) {
-		(*ptr) = random() % (1 << sizeof(char));
+		(*ptr) = random() % (1 << (8 * sizeof(char)));
 	}
 
 	flush_bufs();
@@ -656,6 +658,7 @@ int main (int argc, char ** argv)
 	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
 	textdomain(NLS_CAT_NAME);
 #endif
+	srandom((unsigned int)time(NULL));  /* simple randomness is enough */
 	test_func = test_ro;
 
 	if (argc && *argv)

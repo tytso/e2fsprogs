@@ -1,3 +1,14 @@
+2003-05-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* badblocks.c (test_rw): Fix minor memory leak with test_rw() is
+		called for multiple passes.
+		(test_nd): Fix bug in chosing randomness for the
+		non-destructive test.  We were only using 1 bit of
+		randomness per byte instead of 8 due to a bit-shift bug.
+		Also, initialize the random number generator from the time
+		in main().  Thanks to Thayne Harbaugh for pointing out
+		these bugs.
+
 2003-05-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.c (main, add_journal_device, remove_journal_device): If
