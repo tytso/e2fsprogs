@@ -1,3 +1,11 @@
+Thu Nov 20 16:02:23 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass3.c (expand_directory): Fix bug which could cause core dump
+ 		when expanding the directory, and the bitmaps hadn't yet
+ 		been read in.  Also, only use ext2fs_write_dir_block when
+		writing a directory block, not when writing out a fresh
+		indirect block.
+
 Wed Nov 19 16:15:44 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass1.c (process_bad_block): Fix bug where first_block wasn't
