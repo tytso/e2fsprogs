@@ -1,0 +1,5 @@
+#!/bin/sh
+ext3root=`awk '{ if (($2 == "/") && ($3 == "ext3")) {print $1;}}' /etc/fstab`
+if test -n "$ext3root" ; then
+    /sbin/tune2fs -j $ext3root > /dev/null
+fi

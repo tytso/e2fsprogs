@@ -1,5 +1,10 @@
 2002-08-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Remove inode_io.o from the standard object files,
+		and only build it if debugfs is enabled (it requires
+		fileio.o, which is only built if --disable-debugfs isn't
+		specified to configure).
+
 	* dirhash.c (ext2fs_dirhash): Change the MD4 hash in a backwards
 		incompatible way so that it is no longer
 		endian-dependent.  Add the TEA hash.  Allow the seed

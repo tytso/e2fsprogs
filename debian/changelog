@@ -1,3 +1,68 @@
+e2fsprogs (1.27+1.28-WIP-0626-2) experimental; urgency=low
+
+  * Remove bogus shlibs deps on "e2fsprogs (>= <current>)"
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 17 Aug 2002 17:59:17 -0400
+
+e2fsprogs (1.27+1.28-WIP-0626-1) experimental; urgency=low
+
+  * New upstream pre-release:
+  ** Supports v2 ACL format (Closes: #138160).
+  * Removed explicit --mandir flag, as it now uses FHS man location by
+    default.
+  * Added mkinitrd script, "upstream-contributed" ;) by Ted Ts'o (Closes:
+    #148064).
+  * Build a no-pic version of libext2fs.a on mips and mipsel, patch by
+    Florian Lohoff, adapted for style consistency (Closes: #145432).
+  * Removed presumably-useless and presumably-broken CFLAGS propagation.
+    If someone misses that, I'll add ${CFLAGS} to --ccopts.
+  
+  * Switched to debhelper v4.
+  * Added ${misc:Depends} to all packages' Depends field.
+  
+  * Fixed typos in fsck.8, added an example for clarity (Closes:
+    #145044).
+  * Fixed typo in chattr manpage (Closes: #141938).
+  * Fixed typo in tune2fs manpage (Closes: #148514).
+
+ -- Yann Dirson <dirson@debian.org>  Tue, 23 Jul 2002 00:12:33 +0200
+
+e2fsprogs (1.27-2) unstable; urgency=medium
+
+  * Urgency medium since this fixes a RC bug.
+  * Generate the shlibs file instead of just copying it in place, and make
+    it produce deps on "e2fsprogs (>= <current>)" as well, to cope with
+    new functions introduced in the libs (Closes: #139274).
+  * Added a note on this in README.Debian.
+
+ -- Yann Dirson <dirson@debian.org>  Thu, 21 Mar 2002 23:58:48 +0100
+
+e2fsprogs (1.27-1) unstable; urgency=low
+
+  * New upstream release (Closes: #136737).
+  * No more use for dh_link'ing *.ext[23], it's now done by upstream
+    Makefiles.
+  * Only include (new) inode_io.o from libext2fs when fileio.o is, or the
+    BF build fails because of this additional (unused) member (upstream
+    hint).
+
+ -- Yann Dirson <dirson@debian.org>  Mon, 11 Mar 2002 00:17:32 +0100
+
+e2fsprogs (1.26-3) unstable; urgency=low
+
+  * Simple rebuild after fixing the settings of my computer's clock, so
+    that katie accepts to install the package.
+
+ -- Yann Dirson <dirson@debian.org>  Sat, 23 Feb 2002 14:53:15 +0100
+
+e2fsprogs (1.26-2) unstable; urgency=low
+
+  * Applied upstream patch dealing with the rlimit filesize variation
+    among archs and kernel versions (Closes: #133909).
+  * Create fsck.ext3.8 symlink (Closes: #121526).
+
+ -- Yann Dirson <dirson@debian.org>  Sat, 23 Feb 2002 06:44:02 +0100
+
 e2fsprogs (1.26-1) unstable; urgency=low
 
   * This uploads fixes 10 bugs, including data-corruption problems, and

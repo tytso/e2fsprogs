@@ -8,7 +8,7 @@ INSTALL = @INSTALL@
 @MCONFIG@
 
 @DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o cmp_bitmaps.o fileio.o \
-@DEBUGFS_CMT@	namei.o write_bb_file.o 
+@DEBUGFS_CMT@	inode_io.o namei.o write_bb_file.o 
 
 @RESIZER_CMT@RESIZE_LIB_OBJS = rs_bitmap.o dupfs.o test_io.o 
 
@@ -44,7 +44,6 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	initialize.o \
 	inline.o \
 	inode.o \
-	inode_io.o \
 	ismounted.o \
 	link.o \
 	llseek.o \

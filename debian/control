@@ -2,13 +2,13 @@ Source: e2fsprogs
 Section: base
 Priority: required
 Maintainer: Yann Dirson <dirson@debian.org>
-Build-Depends: texi2html, texinfo, debhelper (>= 3)
+Build-Depends: texi2html, texinfo, debhelper (>= 4)
 Standards-Version: 3.5.4
 
 Package: e2fsck-static
 Section: admin
 Priority: optional
-Depends: e2fsprogs (= ${Source-Version})
+Depends: e2fsprogs (= ${Source-Version}), ${misc:Depends}
 Recommends: sash | zsh-static | busybox-static | zsh30-static
 Architecture: any
 Description: A statically-linked version of the ext2 filesystem checker.
@@ -24,7 +24,7 @@ Description: A statically-linked version of the ext2 filesystem checker.
 Package: comerr-dev
 Section: devel
 Priority: extra
-Depends: ${libcdev:Depends}, libcomerr2
+Depends: ${libcdev:Depends}, libcomerr2, ${misc:Depends}
 Suggests: doc-base
 Conflicts: e2fsprogs (<< 1.10-6)
 Architecture: any
@@ -36,7 +36,7 @@ Description: The Common Error Description library - headers and static libraries
 Package: ss-dev
 Section: devel
 Priority: extra
-Depends: ${libcdev:Depends}, libss2
+Depends: ${libcdev:Depends}, libss2, ${misc:Depends}
 Conflicts: e2fsprogs (<< 1.10-6)
 Architecture: any
 Description: Command-line interface parsing library - headers and static libraries.
@@ -49,7 +49,7 @@ Description: Command-line interface parsing library - headers and static librari
 Package: uuid-dev
 Section: devel
 Priority: extra
-Depends: ${libcdev:Depends}, e2fsprogs (= ${Source-Version})
+Depends: ${libcdev:Depends}, e2fsprogs (= ${Source-Version}), ${misc:Depends}
 Conflicts: e2fsprogs (<< 1.10-6)
 Replaces: e2fslibs-dev (<< 1.15)
 Architecture: any
@@ -65,7 +65,7 @@ Description: Universally unique id library - headers and static libraries.
 Package: e2fsprogs-bf
 Section: devel
 Priority: extra
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Conflicts: e2fsprogs
 Architecture: any
 Description: A stripped-down versions of e2fsprogs, for boot-floppies
@@ -78,6 +78,7 @@ Description: A stripped-down versions of e2fsprogs, for boot-floppies
 Package: e2fsprogs
 Essential: yes
 Pre-Depends: ${shlibs:Depends}
+Depends: ${misc:Depends}
 Suggests: gpart, parted, e2fsck-static
 Conflicts: e2fslibsg, dump (<< 0.4b4-4), quota (<< 1.55-8.1)
 Provides: libcomerr2, libss2, libext2fs2, libe2p2, libuuid1
@@ -92,7 +93,7 @@ Description: The EXT2 file system utilities and libraries.
 Package: e2fslibs-dev
 Section: devel
 Priority: extra
-Depends: ${libcdev:Depends}, comerr-dev, e2fsprogs (= ${Source-Version})
+Depends: ${libcdev:Depends}, comerr-dev, e2fsprogs (= ${Source-Version}), ${misc:Depends}
 Suggests: doc-base
 Provides: ext2fs-dev, e2p-dev
 Conflicts: e2fsprogs (<< 1.10-6)

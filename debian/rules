@@ -10,8 +10,6 @@
 # be paranoid
 export LC_ALL=C
 
-export DH_COMPAT=3
-
 DEB_BUILD_ARCH := $(shell dpkg --print-architecture)
 DEB_BUILD_GNU_TYPE := $(shell ./config.guess)
 ifndef DEB_HOST_ARCH
@@ -21,7 +19,7 @@ DEB_HOST_GNU_CPU := $(patsubst hurd-%,%,$(DEB_HOST_ARCH))
 ifeq ($(filter-out hurd-%,${DEB_HOST_ARCH}),)
   DEB_HOST_GNU_SYSTEM := gnu
 else
-# FIXME: we won't always have only Hurd and Linux
+# FIXME: we won't have always just Hurd and Linux
   DEB_HOST_GNU_SYSTEM := linux
 endif
 DEB_HOST_GNU_TYPE := ${DEB_HOST_GNU_CPU}-${DEB_HOST_GNU_SYSTEM}
@@ -29,13 +27,16 @@ DEB_HOST_GNU_TYPE := ${DEB_HOST_GNU_CPU}-${DEB_HOST_GNU_SYSTEM}
 
 # find the version for the main package, from changelog file
 MAIN_VERSION = $(shell head -1 debian/changelog | cut '-d ' -f 2 | sed 's/[()]//g')
-# find versions for libraries going into their own packages, from their Makefile.in's
+# find versions for libraries going into their own packages, from their Makefile.in's,
+# and sonames for all libs
 COMERR_VERSION = $(shell grep ELF_VERSION lib/et/Makefile.in | cut '-d ' -f3)
-COMERR_MAJOR = $(word 1,$(subst ., ,${COMERR_VERSION}))
+COMERR_SOVERSION = $(shell grep ELF_SO_VERSION lib/et/Makefile.in | cut '-d ' -f3)
 SS_VERSION = $(shell grep ELF_VERSION lib/ss/Makefile.in | cut '-d ' -f3)
-SS_MAJOR = $(word 1,$(subst ., ,${SS_VERSION}))
+SS_SOVERSION = $(shell grep ELF_SO_VERSION lib/ss/Makefile.in | cut '-d ' -f3)
 UUID_VERSION = $(shell grep ELF_VERSION lib/uuid/Makefile.in | cut '-d ' -f3)
-# UUID_MAJOR = $(word 1,$(subst ., ,${UUID_VERSION}))
+UUID_SOVERSION = $(shell grep ELF_SO_VERSION lib/uuid/Makefile.in | cut '-d ' -f3)
+EXT2FS_SOVERSION = $(shell grep ELF_SO_VERSION lib/ext2fs/Makefile.in | cut '-d ' -f3)
+E2P_SOVERSION = $(shell grep ELF_SO_VERSION lib/e2p/Makefile.in | cut '-d ' -f3)
 
 package=e2fsprogs
 
@@ -46,6 +47,7 @@ bfdir=${debdir}/e2fsprogs-bf
 maindir=${debdir}/e2fsprogs
 stdbuilddir=${debdir}/BUILD-STD
 bfbuilddir=${debdir}/BUILD-BF
+mipsbuilddir=${debdir}/BUILD-MIPS
 # docdir=${maindir}/usr/share/doc/${package}
 MANDIR=/usr/share/man
 mandir=${tmpdir}${MANDIR}
@@ -78,13 +80,12 @@ else
 CCOPTS += -D__NO_STRING_INLINES
 endif
 
-# Try -Os
 BF_CCOPTS = -Os -fomit-frame-pointer
 
 COMMON_CONF_FLAGS =  \
                 --enable-elf-shlibs --enable-dynamic-e2fsck \
                 --enable-nls \
-                --mandir=${MANDIR} --infodir=/usr/share/info
+                --infodir=/usr/share/info
 
 STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression
 
@@ -92,18 +93,36 @@ BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
 	--disable-swapfs --disable-imager \
 	--disable-resizer --disable-debugfs
 
+MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS} -G 0 -fno-pic -mno-abicalls" \
+	--disable-swapfs --disable-imager \
+        --disable-resizer --disable-debugfs
+
+ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
+ifneq (,$(findstring $(DEB_BUILD_ARCH),mips mipsel))
+ismips=ismips
+endif
+endif
+
 ${CFGSTDSTAMP}:
 	dh_testdir
 
 	mkdir -p ${stdbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
-	cd ${stdbuilddir} && CFLAGS="${CFLAGS}" \
+	cd ${stdbuilddir} && \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS}
 else
-	cd ${stdbuilddir} && CFLAGS="${CFLAGS}" CC="${DEB_HOST_GNU_TYPE}-gcc" \
+	cd ${stdbuilddir} && CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
 endif
+
+  # specially-built MIPS lib
+	if [ ismips = "${ismips}" ]; then \
+		mkdir -p ${mipsbuilddir} ; \
+		cd ${mipsbuilddir} && \
+			${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} ; \
+	fi
+
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTDSTAMP}
 
@@ -113,10 +132,10 @@ ${CFGBFSTAMP}:
 
 	mkdir -p ${bfbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
-	cd ${bfbuilddir} && CFLAGS="${CFLAGS}" \
+	cd ${bfbuilddir} && \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS}
 else
-	cd ${bfbuilddir} && CFLAGS="${CFLAGS}" CC="${DEB_HOST_GNU_TYPE}-gcc" \
+	cd ${bfbuilddir} && CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
 endif
@@ -129,10 +148,18 @@ build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
 	make -C ${stdbuilddir} all
+
 	( cd ${stdbuilddir}/doc && \
 	  texi2html -split_chapter ${topdir}/doc/libext2fs.texinfo )
 	( cd ${stdbuilddir}/lib/et && make com_err.info && \
 	  texi2html -split_chapter -expandinfo ${topdir}/lib/et/com_err.texinfo )
+
+  # specially-built MIPS lib
+	if [ ismips = "${ismips}" ]; then \
+		make -C ${mipsbuilddir}/util ; \
+		make -C ${mipsbuilddir} libs LIB_SUBDIRS="lib/et lib/ext2fs" ; \
+	fi
+
 	touch ${BUILDSTDSTAMP}
 
 build-bf: ${BUILDBFSTAMP}
@@ -176,6 +203,12 @@ install-std: build
 	${INSTALL_PROGRAM} ${stdbuilddir}/e2fsck/e2fsck.static ${tmpdir}/sbin
 	ln -s e2fsck.8.gz ${mandir}/man8/e2fsck.static.8.gz
 
+  # specially-built MIPS lib
+	if [ ismips = "${ismips}" ]; then \
+		cp ${mipsbuilddir}/lib/libext2fs.a \
+			${debdir}/e2fslibs-dev/usr/lib/libext2fs-nopic.a ; \
+	fi
+
 	dh_movefiles
 	test -z `find ${tmpdir} -type f`
 
@@ -203,13 +236,17 @@ binary-arch: install
 
   # remove obsolete maint-scripts provided by 1.26 upstream
 	cd debian && rm -f comerr-dev.postinst e2fslibs-dev.postinst \
-		e2fsprogs.postinst e2fsprogs.shlibs
+		e2fsprogs.postinst e2fsprogs.shlibs e2fsprogs.shlibs.in
 
   # lintian overrides
 	for i in $$(cd debian && echo *.lintian-overrides); do \
 		pkg=$${i%.lintian-overrides} ;\
 		install -m644 -D -p debian/$$i ${debdir}/$${pkg}/usr/share/lintian/overrides/$${pkg} ;\
 	done
+
+  # mkinitrd script
+	dh_install -p e2fsprogs debian/e2fsprogs.mkinitrd \
+		/etc/mkinitrd/scripts
 
   # symlinks to prepare dh_installdocs run
 	mkdir -p ${debdir}/e2fsck-static/usr/share/doc/
@@ -222,15 +259,15 @@ binary-arch: install
 	ln -sf e2fsprogs ${debdir}/uuid-dev/usr/share/doc/uuid-dev
 
   # comerr and ss have their own copyright notices
-	mkdir -p ${maindir}/usr/share/doc/libcomerr${COMERR_MAJOR}
-	mkdir -p ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_MAJOR}
-	ln -sf libcomerr${COMERR_MAJOR} ${debdir}/comerr-dev/usr/share/doc/comerr-dev
+	mkdir -p ${maindir}/usr/share/doc/libcomerr${COMERR_SOVERSION}
+	mkdir -p ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}
+	ln -sf libcomerr${COMERR_SOVERSION} ${debdir}/comerr-dev/usr/share/doc/comerr-dev
 
-	mkdir -p ${maindir}/usr/share/doc/libss${SS_MAJOR}
-	mkdir -p ${debdir}/ss-dev/usr/share/doc/libss${SS_MAJOR}
-	ln -sf libss${SS_MAJOR} ${debdir}/ss-dev/usr/share/doc/ss-dev
+	mkdir -p ${maindir}/usr/share/doc/libss${SS_SOVERSION}
+	mkdir -p ${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}
+	ln -sf libss${SS_SOVERSION} ${debdir}/ss-dev/usr/share/doc/ss-dev
 
-	for i in libcomerr${COMERR_MAJOR} libss${SS_MAJOR}; do \
+	for i in libcomerr${COMERR_SOVERSION} libss${SS_SOVERSION}; do \
 	  install -m 644 debian/$$i.copyright \
 	    ${maindir}/usr/share/doc/$$i/copyright ; \
 	done
@@ -252,7 +289,7 @@ binary-arch: install
 	install -p ${topdir}/doc/libext2fs.texinfo \
 	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev/libext2fs.texi
 	install -p ${topdir}/lib/et/com_err.texinfo \
-	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_MAJOR}/com_err.texi
+	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/com_err.texi
 
 	dh_installexamples
 
@@ -263,7 +300,7 @@ binary-arch: install
 
 	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -pe2fsprogs-bf ChangeLog
 
-	for i in libcomerr${COMERR_MAJOR} libss${SS_MAJOR} ; do \
+	for i in libcomerr${COMERR_SOVERSION} libss${SS_SOVERSION} ; do \
 	  mkdir -p ${maindir}/usr/share/doc/$$i ; \
 	  ln -s ../e2fsprogs/changelog.Debian.gz ${maindir}/usr/share/doc/$$i/ ; \
 	  ln -s ../e2fsprogs/changelog.gz ${maindir}/usr/share/doc/$$i/ ; \
@@ -282,7 +319,17 @@ binary-arch: install
 # Call this mostly to get the maintainer-script snippets
 	dh_makeshlibs -pe2fsprogs
 # We overwrite the shlibs by hand because of virtual packages used
-	cp debian/e2fsprogs.shlibs.in debian/e2fsprogs/DEBIAN/shlibs
+	: > debian/e2fsprogs/DEBIAN/shlibs
+	echo "libext2fs ${EXT2FS_SOVERSION} libext2fs${EXT2FS_SOVERSION}" \
+		>> debian/e2fsprogs/DEBIAN/shlibs
+	echo "libe2p ${E2P_SOVERSION} libe2p${E2P_SOVERSION}" \
+		>> debian/e2fsprogs/DEBIAN/shlibs
+	echo "libuuid ${UUID_SOVERSION} libuuid${UUID_SOVERSION}" \
+		>> debian/e2fsprogs/DEBIAN/shlibs
+	echo "libcom_err ${COMERR_SOVERSION} libcomerr${COMERR_SOVERSION}" \
+		>> debian/e2fsprogs/DEBIAN/shlibs
+	echo "libss ${SS_SOVERSION} libss${SS_SOVERSION}" \
+		>> debian/e2fsprogs/DEBIAN/shlibs
 
 	dh_installdeb
 	dh_shlibdeps -l${stdbuilddir}/lib

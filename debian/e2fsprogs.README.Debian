@@ -18,7 +18,8 @@ incompatible versions.
 development.
 
 
-* Here's the reasonning for not having the libs outside of the e2fsprogs package:
+* Here's the reasonning for not moving the libs outside of the
+e2fsprogs package (this may be partly obsolete):
 
 If we have:
 
@@ -61,6 +62,35 @@ My solution in this case is the use of the following virtual packages:
 
 These are automatically referenced thanks to the shlibs file.  They
 are currently provided by e2fsprogs.
+
+
+* Additionally, we must add to the shlibs file a dep on "e2fsprogs (>=
+<current-version>)", so that programs using new functions from those
+libs will not break (see #139274).  Note that this will be superceeded
+by versionned Provides: when they will come in dpkg.
+
+We can see the reality of the problem:
+
+$ diff <(nm -D 1.18/lib/libuuid.so.1 | cut -c10- | grep -v ^U) \
+       <(nm -D 1.27/lib/libuuid.so.1 | cut -c10- | grep -v ^U)
+3a4
+> w __cxa_finalize
+6a8,9
+> T __udivdi3
+> T __umoddi3
+
+<=== Actually, there are **no** API changes in libuuid between
+	e2fsprogs 1.27 and 1.18.  The observant reader will notice
+	that the "reality of the problem" show above shows symbol
+	names which are are prefixed with "__".  This means no program
+	should be using them.  In point of fact, these are functions
+	created by gcc, and the incompatibility reported in #139274
+	was much more likely casued by glibc or gcc incompatibilities,
+	not changes in the libuuid library.  Hence, I am removing the
+	shlibs hack, because it does far more harm than it does good.
+	(Next time, *please* consult me before making changes like
+	this.)  
+	-- Theodore Ts'o, tytso@mit.edu.
 
 
 * e2fsprogs still Provides/Conflicts with e2fslibsg to allow upgrading
