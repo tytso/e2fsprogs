@@ -1,3 +1,8 @@
+2001-04-25  Theodore Tso  <tytso@valinux.com>
+
+	* getsize.c (ext2fs_get_device_size): Use an unsigned long to
+		query the device sizes using the BLKGETSIZE ioctl.
+
 2001-04-16  Theodore Tso  <tytso@valinux.com>
 
 	* ismounted.c (check_mntent): Check /proc/mounts on Linux systems

@@ -60,7 +60,7 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 {
 	int	fd;
 #ifdef BLKGETSIZE
-	long	size;
+	unsigned long	size;
 #endif
 	ext2_loff_t high, low;
 #ifdef FDGETPRM
