@@ -138,3 +138,25 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	*retblocks = (low + 1) / blocksize;
 	return 0;
 }
+
+#ifdef DEBUG
+int main(int argc, char **argv)
+{
+	blk_t	blocks;
+	int	retval;
+	
+	if (argc < 2) {
+		fprintf(stderr, "Usage: %s device\n", argv[0]);
+		exit(1);
+	}
+
+	retval = ext2fs_get_device_size(argv[1], 1024, &blocks);
+	if (retval) {
+		com_err(argv[0], retval,
+			"while calling ext2fs_get_device_size");
+		exit(1);
+	}
+	printf("Device %s has %d 1k blocks.\n", argv[1], blocks);
+	exit(0);
+}
+#endif
