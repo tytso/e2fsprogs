@@ -47,7 +47,7 @@ char * device_name = NULL;
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-r] device file\n"), program_name);
+	fprintf(stderr, _("Usage: %s [-r] device image_file\n"), program_name);
 	exit (1);
 }
 
@@ -447,14 +447,83 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 	output_meta_data_blocks(fs, fd);
 }
 
+void install_image(char *device_name, char *image_fn, int raw_flag)
+{
+	int c;
+	errcode_t retval;
+	ext2_filsys fs;
+	int open_flag = EXT2_FLAG_IMAGE_FILE;
+	int fd = 0;
+	io_manager	io_ptr;
+	io_channel	io, image_io;
+
+	if (raw_flag) {
+		com_err(program_name, 0, "Raw images cannot be installed");
+		exit(1);
+	}
+	
+#ifdef CONFIG_TESTIO_DEBUG
+	io_ptr = test_io_manager;
+	test_io_backing_manager = unix_io_manager;
+#else
+	io_ptr = unix_io_manager;
+#endif
+
+	retval = ext2fs_open (image_fn, open_flag, 0, 0,
+			      io_ptr, &fs);
+        if (retval) {
+		com_err (program_name, retval, _("while trying to open %s"),
+			 image_fn);
+		exit(1);
+	}
+
+	retval = ext2fs_read_bitmaps (fs);
+	if (retval) {
+		com_err(program_name, retval, "error reading bitmaps");
+		exit(1);
+	}
+
+
+	fd = open(image_fn, O_RDONLY);
+	if (fd < 0) {
+		perror(image_fn);
+		exit(1);
+	}
+
+	retval = io_ptr->open(device_name, IO_FLAG_RW, &io); 
+	if (retval) {
+		com_err(device_name, 0, "while opening device file");
+		exit(1);
+	}
+
+	image_io = fs->io;
+
+	ext2fs_rewrite_to_io(fs, io);
+
+	if (lseek(fd, fs->image_header->offset_inode, SEEK_SET) < 0) {
+		perror("lseek");
+		exit(1);
+	}
+
+	retval = ext2fs_image_inode_read(fs, fd, 0);
+	if (retval) {
+		com_err(image_fn, 0, "while restoring the image table");
+		exit(1);
+	}
+
+	ext2fs_close (fs);
+	exit (0);
+}
+
 int main (int argc, char ** argv)
 {
 	int c;
 	errcode_t retval;
 	ext2_filsys fs;
-	char *outfn;
+	char *image_fn;
 	int open_flag = 0;
 	int raw_flag = 0;
+	int install_flag = 0;
 	int fd = 0;
 
 #ifdef ENABLE_NLS
@@ -468,10 +537,13 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	initialize_ext2_error_table();
-	while ((c = getopt (argc, argv, "r")) != EOF)
+	while ((c = getopt (argc, argv, "rI")) != EOF)
 		switch (c) {
 		case 'r':
 			raw_flag++;
+			break;
+		case 'I':
+			install_flag++;
 			break;
 		default:
 			usage();
@@ -479,7 +551,13 @@ int main (int argc, char ** argv)
 	if (optind != argc - 2 )
 		usage();
 	device_name = argv[optind];
-	outfn = argv[optind+1];
+	image_fn = argv[optind+1];
+
+	if (install_flag) {
+		install_image(device_name, image_fn, raw_flag);
+		return;
+	}
+
 	retval = ext2fs_open (device_name, open_flag, 0, 0,
 			      unix_io_manager, &fs);
         if (retval) {
@@ -489,13 +567,13 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 
-	if (strcmp(outfn, "-") == 0)
+	if (strcmp(image_fn, "-") == 0)
 		fd = 1;
 	else {
 #ifdef HAVE_OPEN64
-		fd = open64(outfn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
+		fd = open64(image_fn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
 #else
-		fd = open(outfn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
+		fd = open(image_fn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
 #endif
 		if (fd < 0) {
 			com_err(program_name, errno,

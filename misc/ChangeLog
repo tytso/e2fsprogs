@@ -1,3 +1,10 @@
+2004-07-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2image.c, e2image.8.in: Add new option -I which allows the
+		administrator to install an metadata stored in an e2image
+		file to a filesystem.  Obviously, this can be very
+		dangerous!
+
 2004-06-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in (mke2fs.static): Add the blkid library to so

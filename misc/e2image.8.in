@@ -8,7 +8,7 @@ e2image \- Save critical ext2/ext3 filesystem data to a file
 .SH SYNOPSIS
 .B e2image
 [
-.B \-r
+.B \-rI
 ]
 .I device
 .I image-file
@@ -44,6 +44,23 @@ option, since the process of creating a normal image file currently
 requires random-access access to the file, which can not be done using a
 pipe.  This restriction will hopefully be lifted in a future version of
 .BR e2image .)
+.PP
+The 
+.B \-I 
+option will cause e2image to install the metadata stored in the image
+file to the device.    It can be used to restore the filesystem metadata
+back to the device in emergency situations.
+.PP
+.B WARNING!!!!
+The
+.B \-I 
+option should only be used as desperation measure when other
+alternatives have failed.  If the filesystem has changed since the image
+file was created, data
+.B will
+be lost.  In general, you should make a full image
+backup of the filesystem first, in case you wish to try other recovery
+strategies afterwards.
 .PP
 The 
 .B \-r
