@@ -115,7 +115,7 @@ void e2fsck_pass1_dupblocks(e2fsck_t ctx, char *block_buf)
 	clear_problem_context(&pctx);
 	
 	pctx.errcode = ext2fs_allocate_inode_bitmap(fs,
-		      "multiply claimed inode map", &inode_dup_map);
+		      _("multiply claimed inode map"), &inode_dup_map);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1B_ALLOCATE_IBITMAP_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
@@ -212,7 +212,7 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		}
 		if (retval)
 			com_err(ctx->program_name, retval,
-				"while calling ext2fs_block_iterate in pass1b");
+			    _("while calling ext2fs_block_iterate in pass1b"));
 		
 	next:
 		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
@@ -506,7 +506,7 @@ static int delete_file_block(ext2_filsys fs,
 							   *block_nr);
 		} else
 			com_err("delete_file_block", 0,
-				"internal error; can't find dup_blk for %d\n",
+			    _("internal error; can't find dup_blk for %d\n"),
 				*block_nr);
 	} else {
 		ext2fs_unmark_block_bitmap(ctx->block_found_map, *block_nr);
@@ -531,7 +531,7 @@ static void delete_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 				      delete_file_block, &pb);
 	if (retval)
 		com_err("delete_file", retval,
-			"while calling ext2fs_block_iterate for inode %d",
+			_("while calling ext2fs_block_iterate for inode %d"),
 			dp->ino);
 	ext2fs_unmark_inode_bitmap(ctx->inode_used_map, dp->ino);
 	ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, dp->ino);
@@ -613,7 +613,7 @@ static int clone_file_block(ext2_filsys fs,
 			return BLOCK_CHANGED;
 		} else
 			com_err("clone_file_block", 0,
-				"internal error; can't find dup_blk for %d\n",
+			    _("internal error; can't find dup_blk for %d\n"),
 				*block_nr);
 	}
 	return 0;
@@ -641,13 +641,13 @@ static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 	ext2fs_free_mem((void **) &cs.buf);
 	if (retval) {
 		com_err("clone_file", retval,
-			"while calling ext2fs_block_iterate for inode %d",
+			_("while calling ext2fs_block_iterate for inode %d"),
 			dp->ino);
 		return retval;
 	}
 	if (cs.errcode) {
 		com_err("clone_file", cs.errcode,
-			"returned from clone_file_block");
+			_("returned from clone_file_block"));
 		return retval;
 	}
 	return 0;

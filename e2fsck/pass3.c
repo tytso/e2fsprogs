@@ -83,14 +83,14 @@ void e2fsck_pass3(e2fsck_t ctx)
 	 * Allocate some bitmaps to do loop detection.
 	 */
 	pctx.errcode = ext2fs_allocate_inode_bitmap(fs,
-		    "inode loop detection bitmap", &inode_loop_detect);
+		    _("inode loop detection bitmap"), &inode_loop_detect);
 	if (pctx.errcode) {
 		pctx.num = 1;
 		fix_problem(ctx, PR_3_ALLOCATE_IBITMAP_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		goto abort_exit;
 	}
-	pctx.errcode = ext2fs_allocate_inode_bitmap(fs, "inode done bitmap",
+	pctx.errcode = ext2fs_allocate_inode_bitmap(fs, _("inode done bitmap"),
 						    &inode_done_map);
 	if (pctx.errcode) {
 		pctx.num = 2;
@@ -101,7 +101,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME) {
 		e2fsck_clear_progbar(ctx);
-		print_resource_track("Peak memory", &ctx->global_rtrack);
+		print_resource_track(_("Peak memory"), &ctx->global_rtrack);
 	}
 #endif
 
@@ -141,7 +141,7 @@ abort_exit:
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
-		print_resource_track("Pass 3", &rtrack);
+		print_resource_track(_("Pass 3"), &rtrack);
 	}
 #endif
 }
@@ -556,8 +556,8 @@ static errcode_t adjust_inode_count(e2fsck_t ctx, ino_t ino, int adj)
 		inode.i_links_count--;
 	} else {
 		/* Should never happen */
-		printf("Debug error in e2fsck adjust_inode_count, "
-		       "should never happen.\n");
+		printf(_("Debug error in e2fsck adjust_inode_count, "
+		       "should never happen.\n"));
 		exit(1);
 	}
 	

@@ -41,7 +41,7 @@ struct resource_track	global_rtrack;
 static void usage(NOARGS)
 {
 	fprintf(stderr,
-		"Usage: %s [-F] [-I inode_buffer_blocks] device\n",
+		_("Usage: %s [-F] [-I inode_buffer_blocks] device\n"),
 		program_name);
 	exit(1);
 }
@@ -66,7 +66,7 @@ static void PRS(int argc, char *argv[])
 #ifdef BLKFLSBUF
 			flush = 1;
 #else
-			fprintf(stderr, "-F not supported");
+			fprintf(stderr, _("-F not supported"));
 			exit(1);
 #endif
 			break;
@@ -82,18 +82,18 @@ static void PRS(int argc, char *argv[])
 		int	fd = open(device_name, O_RDONLY, 0);
 
 		if (fd < 0) {
-			com_err("open", errno, "while opening %s for flushing",
-				device_name);
+			com_err("open", errno,
+			    _("while opening %s for flushing"), device_name);
 			exit(FSCK_ERROR);
 		}
 		if (ioctl(fd, BLKFLSBUF, 0) < 0) {
-			com_err("BLKFLSBUF", errno, "while trying to flush %s",
-				device_name);
+			com_err("BLKFLSBUF", errno,
+				_("while trying to flush %s"), device_name);
 			exit(FSCK_ERROR);
 		}
 		close(fd);
 #else
-		fprintf(stderr, "BLKFLSBUF not supported");
+		fprintf(stderr, _("BLKFLSBUF not supported"));
 		exit(1);
 #endif /* BLKFLSBUF */
 	}
@@ -116,7 +116,7 @@ int main (int argc, char *argv[])
 	retval = ext2fs_open(device_name, 0,
 			     0, 0, unix_io_manager, &fs);
 	if (retval) {
-		com_err(program_name, retval, "while trying to open %s",
+		com_err(program_name, retval, _("while trying to open %s"),
 			device_name);
 		exit(1);
 	}
@@ -125,7 +125,7 @@ int main (int argc, char *argv[])
 	
 	retval = ext2fs_open_inode_scan(fs, inode_buffer_blocks, &scan);
 	if (retval) {
-		com_err(program_name, retval, "while opening inode scan");
+		com_err(program_name, retval, _("while opening inode scan"));
 		exit(1);
 	}
 
@@ -133,7 +133,7 @@ int main (int argc, char *argv[])
 		retval = ext2fs_get_next_inode(scan, &ino, &inode);
 		if (retval) {
 			com_err(program_name, retval,
-				"while getting next inode");
+				_("while getting next inode"));
 			exit(1);
 		}
 		if (ino == 0)
@@ -142,7 +142,7 @@ int main (int argc, char *argv[])
 	}
 	
 	print_resource_track(NULL, &global_rtrack);
-	printf("%d inodes scanned.\n", num_inodes);
+	printf(_("%d inodes scanned.\n"), num_inodes);
 	
 	exit(0);
 }

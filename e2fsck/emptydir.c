@@ -53,12 +53,12 @@ empty_dir_info init_empty_dir(e2fsck_t ctx)
 	if (retval)
 		goto errout;
 	
-	retval = ext2fs_allocate_block_bitmap(ctx->fs, "empty dirblocks",
+	retval = ext2fs_allocate_block_bitmap(ctx->fs, _("empty dirblocks"),
 					      &edi->empty_dir_blocks);
 	if (retval)
 		goto errout;
 
-	retval = ext2fs_allocate_inode_bitmap(ctx->fs, "empty dir map",
+	retval = ext2fs_allocate_inode_bitmap(ctx->fs, _("empty dir map"),
 					      &edi->dir_map);
 	if (retval)
 		goto errout;
@@ -94,7 +94,7 @@ void add_empty_dirblock(empty_dir_info edi,
 	if (db->ino == 11)
 		return;		/* Inode number 11 is usually lost+found */
 
-	printf("Empty directory block %d (#%d) in inode %d\n",
+	printf(_("Empty directory block %d (#%d) in inode %d\n"),
 	       db->blk, db->blockcnt, db->ino);
 
 	ext2fs_mark_block_bitmap(edi->empty_dir_blocks, db->blk);

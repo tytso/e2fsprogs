@@ -20,7 +20,7 @@ const char *progname;
 
 static void usage(NOARGS)
 {
-	fprintf(stderr, "Usage: %s disk\n", progname);
+	fprintf(stderr, _("Usage: %s disk\n"), progname);
 	exit(1);
 }	
 	
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 	return 0;
 #else
 	fprintf(stderr,
-		"BLKFLSBUF ioctl not supported!  Can't flush buffers.\n");
+		_("BLKFLSBUF ioctl not supported!  Can't flush buffers.\n"));
 	return 1;
 #endif
 }

@@ -92,26 +92,26 @@
  * letter <i> in the table below.
  */
 static const char *abbrevs[] = {
-	"Aerror allocating",
-	"bblock",
-	"Bbitmap",
-	"Cconflicts with some other fs @b",
-	"iinode",
-	"Iillegal",
-	"Ddeleted",
-	"ddirectory",
-	"eentry",
-	"E@e '%Dn' in %p (%i)",
-	"ffilesystem",
-	"Ffor @i %i (%Q) is",
-	"ggroup",
-	"llost+found",
-	"Lis a link",
-	"uunattached",
-	"rroot @i",
-	"sshould be",
-	"Ssuper@b",
-	"zzero-length",
+	N_("Aerror allocating"),
+	N_("bblock"),
+	N_("Bbitmap"),
+	N_("Cconflicts with some other fs @b"),
+	N_("iinode"),
+	N_("Iillegal"),
+	N_("Ddeleted"),
+	N_("ddirectory"),
+	N_("eentry"),
+	N_("E@e '%Dn' in %p (%i)"),
+	N_("ffilesystem"),
+	N_("Ffor @i %i (%Q) is"),
+	N_("ggroup"),
+	N_("llost+found"),
+	N_("Lis a link"),
+	N_("uunattached"),
+	N_("rroot @i"),
+	N_("sshould be"),
+	N_("Ssuper@b"),
+	N_("zzero-length"),
 	"@@",
 	0
 	};
@@ -122,13 +122,13 @@ static const char *abbrevs[] = {
 #define num_special_inodes	7
 static const char *special_inode_name[] =
 {
-	"<The NULL inode>",			/* 0 */
-	"<The bad blocks inode>", 		/* 1 */
+	N_("<The NULL inode>"),			/* 0 */
+	N_("<The bad blocks inode>"),		/* 1 */
 	"/",					/* 2 */
-	"<The ACL index inode>",		/* 3 */
-	"<The ACL data inode>",			/* 4 */
-	"<The boot loader inode>",		/* 5 */
-	"<The undelete directory inode>"	/* 6 */
+	N_("<The ACL index inode>"),		/* 3 */
+	N_("<The ACL data inode>"),		/* 4 */
+	N_("<The boot loader inode>"),		/* 5 */
+	N_("<The undelete directory inode>")	/* 6 */
 };
 
 /*
@@ -167,7 +167,7 @@ static void print_pathname(ext2_filsys fs, ino_t dir, ino_t ino)
 	char		*path;
 
 	if (!dir && (ino < num_special_inodes)) {
-		fputs(special_inode_name[ino], stdout);
+		fputs(_(special_inode_name[ino]), stdout);
 		return;
 	}
 	
@@ -202,7 +202,7 @@ static _INLINE_ void expand_at_expression(e2fsck_t ctx, char ch,
 			*first = 0;
 			fputc(toupper(*str++), stdout);
 		}
-		print_e2fsck_message(ctx, str, pctx, *first);
+		print_e2fsck_message(ctx, _(str), pctx, *first);
 	} else
 		printf("@%c", ch);
 }

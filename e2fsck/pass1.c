@@ -206,7 +206,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	/*
 	 * Allocate bitmaps structures
 	 */
-	pctx.errcode = ext2fs_allocate_inode_bitmap(fs, "in-use inode map",
+	pctx.errcode = ext2fs_allocate_inode_bitmap(fs, _("in-use inode map"),
 					      &ctx->inode_used_map);
 	if (pctx.errcode) {
 		pctx.num = 1;
@@ -214,8 +214,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	pctx.errcode = ext2fs_allocate_inode_bitmap(fs, "directory inode map",
-					      &ctx->inode_dir_map);
+	pctx.errcode = ext2fs_allocate_inode_bitmap(fs,
+				_("directory inode map"), &ctx->inode_dir_map);
 	if (pctx.errcode) {
 		pctx.num = 2;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
@@ -223,15 +223,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 		return;
 	}
 	pctx.errcode = ext2fs_allocate_inode_bitmap(fs,
-						    "regular file inode map",
-					      &ctx->inode_reg_map);
+			_("regular file inode map"), &ctx->inode_reg_map);
 	if (pctx.errcode) {
 		pctx.num = 6;
 		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	pctx.errcode = ext2fs_allocate_block_bitmap(fs, "in-use block map",
+	pctx.errcode = ext2fs_allocate_block_bitmap(fs, _("in-use block map"),
 					      &ctx->block_found_map);
 	if (pctx.errcode) {
 		pctx.num = 1;
@@ -239,7 +238,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	pctx.errcode = ext2fs_allocate_block_bitmap(fs, "illegal block map",
+	pctx.errcode = ext2fs_allocate_block_bitmap(fs, _("illegal block map"),
 					      &ctx->block_illegal_map);
 	if (pctx.errcode) {
 		pctx.num = 2;
@@ -272,7 +271,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
 						    "block interate buffer");
 	e2fsck_use_inode_shortcuts(ctx, 1);
-	ehandler_operation("doing inode scan");
+	ehandler_operation(_("doing inode scan"));
 	pctx.errcode = ext2fs_open_inode_scan(fs, ctx->inode_buffer_blocks, 
 					      &scan);
 	if (pctx.errcode) {
@@ -583,7 +582,7 @@ endit:
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
-		print_resource_track("Pass 1", &rtrack);
+		print_resource_track(_("Pass 1"), &rtrack);
 	}
 #endif
 }
@@ -641,7 +640,8 @@ static void process_inodes(e2fsck_t ctx, char *block_buf)
 #if 0
 		printf("%u ", pctx.ino);
 #endif
-		sprintf(buf, "reading indirect blocks of inode %lu", pctx.ino);
+		sprintf(buf, _("reading indirect blocks of inode %lu"),
+			pctx.ino);
 		ehandler_operation(buf);
 		check_blocks(ctx, &pctx, block_buf);
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
@@ -676,7 +676,7 @@ static void alloc_bad_map(e2fsck_t ctx)
 	
 	clear_problem_context(&pctx);
 	
-	pctx.errcode = ext2fs_allocate_inode_bitmap(ctx->fs, "bad inode map",
+	pctx.errcode = ext2fs_allocate_inode_bitmap(ctx->fs, _("bad inode map"),
 					      &ctx->inode_bad_map);
 	if (pctx.errcode) {
 		pctx.num = 3;
@@ -696,7 +696,7 @@ static void alloc_bb_map(e2fsck_t ctx)
 	
 	clear_problem_context(&pctx);
 	pctx.errcode = ext2fs_allocate_inode_bitmap(ctx->fs,
-					      "inode in bad block map",
+					      _("inode in bad block map"),
 					      &ctx->inode_bb_map);
 	if (pctx.errcode) {
 		pctx.num = 4;
@@ -716,7 +716,7 @@ static void alloc_imagic_map(e2fsck_t ctx)
 	
 	clear_problem_context(&pctx);
 	pctx.errcode = ext2fs_allocate_inode_bitmap(ctx->fs,
-					      "imagic inode map",
+					      _("imagic inode map"),
 					      &ctx->inode_imagic_map);
 	if (pctx.errcode) {
 		pctx.num = 5;
@@ -743,7 +743,7 @@ static _INLINE_ void mark_block_used(e2fsck_t ctx, blk_t block)
 	if (ext2fs_fast_test_block_bitmap(ctx->block_found_map, block)) {
 		if (!ctx->block_dup_map) {
 			pctx.errcode = ext2fs_allocate_block_bitmap(ctx->fs,
-			      "multiply claimed block map",
+			      _("multiply claimed block map"),
 			      &ctx->block_dup_map);
 			if (pctx.errcode) {
 				pctx.num = 3;
@@ -1270,15 +1270,15 @@ static void handle_fs_bad_blocks(e2fsck_t ctx)
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (ctx->invalid_block_bitmap_flag[i]) {
-			new_table_block(ctx, first_block, i, "block bitmap", 
+			new_table_block(ctx, first_block, i, _("block bitmap"),
 					1, &fs->group_desc[i].bg_block_bitmap);
 		}
 		if (ctx->invalid_inode_bitmap_flag[i]) {
-			new_table_block(ctx, first_block, i, "inode bitmap", 
+			new_table_block(ctx, first_block, i, _("inode bitmap"),
 					1, &fs->group_desc[i].bg_inode_bitmap);
 		}
 		if (ctx->invalid_inode_table_flag[i]) {
-			new_table_block(ctx, first_block, i, "inode table",
+			new_table_block(ctx, first_block, i, _("inode table"),
 					fs->inode_blocks_per_group, 
 					&fs->group_desc[i].bg_inode_table);
 			ctx->flags |= E2F_FLAG_RESTART;

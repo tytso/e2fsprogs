@@ -93,13 +93,13 @@ static void swap_inode_blocks(e2fsck_t ctx, ino_t ino, char *block_buf,
 				      swap_block, &sb);
 	if (retval) {
 		com_err("swap_inode_blocks", retval,
-			"while calling ext2fs_block_iterate");
+			_("while calling ext2fs_block_iterate"));
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
 	if (sb.errcode) {
 		com_err("swap_inode_blocks", sb.errcode,
-			"while calling iterator function");
+			_("while calling iterator function"));
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
@@ -120,7 +120,7 @@ static void swap_inodes(e2fsck_t ctx)
 				(void **) &buf);
 	if (retval) {
 		com_err("swap_inodes", retval,
-			"while allocating inode buffer");
+			_("while allocating inode buffer"));
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
@@ -132,7 +132,7 @@ static void swap_inodes(e2fsck_t ctx)
 		      fs->inode_blocks_per_group, buf);
 		if (retval) {
 			com_err("swap_inodes", retval,
-				"while reading inode table (group %d)",
+				_("while reading inode table (group %d)"),
 				group);
 			ctx->flags |= E2F_FLAG_ABORT;
 			return;
@@ -170,7 +170,7 @@ static void swap_inodes(e2fsck_t ctx)
 		      fs->inode_blocks_per_group, buf);
 		if (retval) {
 			com_err("swap_inodes", retval,
-				"while writing inode table (group %d)",
+				_("while writing inode table (group %d)"),
 				group);
 			ctx->flags |= E2F_FLAG_ABORT;
 			return;
@@ -191,17 +191,17 @@ void swap_filesys(e2fsck_t ctx)
 #endif
 
 	if (!(ctx->options & E2F_OPT_PREEN))
-		printf("Pass 0: Doing byte-swap of filesystem\n");
+		printf(_("Pass 0: Doing byte-swap of filesystem\n"));
 	
 #ifdef MTRACE
 	mtrace_print("Byte swap");
 #endif
 
 	if (fs->super->s_mnt_count) {
-		fprintf(stderr, "%s: the filesystem must be freshly "
+		fprintf(stderr, _("%s: the filesystem must be freshly "
 			"checked using fsck\n"
 			"and not mounted before trying to "
-			"byte-swap it.\n", ctx->device_name);
+			"byte-swap it.\n"), ctx->device_name);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
@@ -224,7 +224,7 @@ void swap_filesys(e2fsck_t ctx)
 	
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
-		print_resource_track("Byte swap", &rtrack);
+		print_resource_track(_("Byte swap"), &rtrack);
 #endif
 }
 

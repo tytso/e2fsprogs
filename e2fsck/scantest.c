@@ -77,7 +77,7 @@ static void print_resource_track(struct resource_track *track)
 	gettimeofday(&time_end, 0);
 	getrusage(RUSAGE_SELF, &r);
 
-	printf("Memory used: %d, elapsed time: %6.3f/%6.3f/%6.3f\n",
+	printf(_("Memory used: %d, elapsed time: %6.3f/%6.3f/%6.3f\n"),
 	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)),
 	       timeval_subtract(&time_end, &track->time_start),
 	       timeval_subtract(&r.ru_utime, &track->user_start),
@@ -96,7 +96,7 @@ int main (int argc, char *argv[])
 	ino_t	ino;
 	struct ext2_inode inode;
 
-	printf("size of inode=%d\n", sizeof(inode));
+	printf(_("size of inode=%d\n"), sizeof(inode));
 
 	device_name = "/dev/hda3";
 	
@@ -105,19 +105,19 @@ int main (int argc, char *argv[])
 	retval = ext2fs_open(device_name, 0,
 			     0, 0, unix_io_manager, &fs);
 	if (retval) {
-		com_err(argv[0], retval, "while trying to open %s",
+		com_err(argv[0], retval, _("while trying to open %s"),
 			device_name);
 		exit(1);
 	}
 
 	retval = ext2fs_open_inode_scan(fs, 0, &scan);
 	if (retval) {
-		com_err(argv[0], retval, "while opening inode scan");
+		com_err(argv[0], retval, _("while opening inode scan"));
 		exit(1);
 	}
 	retval = ext2fs_get_next_inode(scan, &ino, &inode);
 	if (retval) {
-		com_err(argv[0], retval, "while starting inode scan");
+		com_err(argv[0], retval, _("while starting inode scan"));
 		exit(1);
 	}
 	while (ino) {
@@ -128,7 +128,7 @@ int main (int argc, char *argv[])
 		retval = ext2fs_get_next_inode(scan, &ino, &inode);
 		if (retval) {
 			com_err(argv[0], retval,
-				"while doing inode scan");
+				_("while doing inode scan"));
 			exit(1);
 		}
 	}

@@ -67,6 +67,8 @@ int ask_yn(const char * string, int def)
 {
 	int		c;
 	const char	*defstr;
+	char		*short_yes = _("yY");
+	char		*short_no = _("nN");
 
 #ifdef HAVE_TERMIOS_H
 	struct termios	termios, tmp;
@@ -80,22 +82,21 @@ int ask_yn(const char * string, int def)
 #endif
 
 	if (def == 1)
-		defstr = "<y>";
+		defstr = _("<y>");
 	else if (def == 0)
-		defstr = "<n>";
+		defstr = _("<n>");
 	else
-		defstr = " (y/n)";
+		defstr = _(" (y/n)");
 	printf("%s%s? ", string, defstr);
 	while (1) {
 		fflush (stdout);
 		if ((c = read_a_char()) == EOF)
 			break;
-		c = toupper(c);
-		if (c == 'Y') {
+		if (strchr(short_yes, (char) c)) {
 			def = 1;
 			break;
 		}
-		else if (c == 'N') {
+		else if (strchr(short_no, (char) c)) {
 			def = 0;
 			break;
 		}
@@ -115,15 +116,15 @@ int ask_yn(const char * string, int def)
 int ask (e2fsck_t ctx, const char * string, int def)
 {
 	if (ctx->options & E2F_OPT_NO) {
-		printf ("%s? no\n\n", string);
+		printf (_("%s? no\n\n"), string);
 		return 0;
 	}
 	if (ctx->options & E2F_OPT_YES) {
-		printf ("%s? yes\n\n", string);
+		printf (_("%s? yes\n\n"), string);
 		return 1;
 	}
 	if (ctx->options & E2F_OPT_PREEN) {
-		printf ("%s? %s\n\n", string, def ? "yes" : "no");
+		printf ("%s? %s\n\n", string, def ? _("yes") : _("no"));
 		return def;
 	}
 	return ask_yn(string, def);
@@ -136,17 +137,17 @@ void e2fsck_read_bitmaps(e2fsck_t ctx)
 
 	if (ctx->invalid_bitmaps) {
 		com_err(ctx->program_name, 0,
-			"e2fsck_read_bitmaps: illegal bitmap block(s) for %s",
+		    _("e2fsck_read_bitmaps: illegal bitmap block(s) for %s"),
 			ctx->device_name);
 		fatal_error(ctx, 0);
 	}
 
-	ehandler_operation("reading inode and block bitmaps");
+	ehandler_operation(_("reading inode and block bitmaps"));
 	retval = ext2fs_read_bitmaps(fs);
 	ehandler_operation(0);
 	if (retval) {
 		com_err(ctx->program_name, retval,
-			"while retrying to read bitmaps for %s",
+			_("while retrying to read bitmaps for %s"),
 			ctx->device_name);
 		fatal_error(ctx, 0);
 	}
@@ -158,24 +159,24 @@ void e2fsck_write_bitmaps(e2fsck_t ctx)
 	errcode_t	retval;
 
 	if (ext2fs_test_bb_dirty(fs)) {
-		ehandler_operation("writing block bitmaps");
+		ehandler_operation(_("writing block bitmaps"));
 		retval = ext2fs_write_block_bitmap(fs);
 		ehandler_operation(0);
 		if (retval) {
 			com_err(ctx->program_name, retval,
-				"while retrying to write block bitmaps for %s",
+			    _("while retrying to write block bitmaps for %s"),
 				ctx->device_name);
 			fatal_error(ctx, 0);
 		}
 	}
 
 	if (ext2fs_test_ib_dirty(fs)) {
-		ehandler_operation("writing inode bitmaps");
+		ehandler_operation(_("writing inode bitmaps"));
 		retval = ext2fs_write_inode_bitmap(fs);
 		ehandler_operation(0);
 		if (retval) {
 			com_err(ctx->program_name, retval,
-				"while retrying to write inode bitmaps for %s",
+			    _("while retrying to write inode bitmaps for %s"),
 				ctx->device_name);
 			fatal_error(ctx, 0);
 		}
@@ -188,8 +189,8 @@ void preenhalt(e2fsck_t ctx)
 
 	if (!(ctx->options & E2F_OPT_PREEN))
 		return;
-	fprintf(stderr, "\n\n%s: UNEXPECTED INCONSISTENCY; "
-		"RUN fsck MANUALLY.\n\t(i.e., without -a or -p options)\n",
+	fprintf(stderr, _("\n\n%s: UNEXPECTED INCONSISTENCY; "
+		"RUN fsck MANUALLY.\n\t(i.e., without -a or -p options)\n"),
 	       ctx->device_name);
 	if (fs != NULL) {
 		fs->super->s_state |= EXT2_ERROR_FS;
@@ -251,20 +252,21 @@ void print_resource_track(const char *desc, struct resource_track *track)
 
 #ifdef HAVE_MALLINFO
 	malloc_info = mallinfo();
-	printf("Memory used: %d/%d, ", malloc_info.arena, malloc_info.hblkhd);
+	printf(_("Memory used: %d/%d, "),
+		malloc_info.arena, malloc_info.hblkhd);
 #else
-	printf("Memory used: %d, ",
+	printf(_("Memory used: %d, "),
 	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)));
 #endif	
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
 
-	printf("elapsed time: %6.3f/%6.3f/%6.3f\n",
+	printf(_("elapsed time: %6.3f/%6.3f/%6.3f\n"),
 	       timeval_subtract(&time_end, &track->time_start),
 	       timeval_subtract(&r.ru_utime, &track->user_start),
 	       timeval_subtract(&r.ru_stime, &track->system_start));
 #else
-	printf("elapsed time: %6.3f\n",
+	printf(_("elapsed time: %6.3f\n"),
 	       timeval_subtract(&time_end, &track->time_start));
 #endif
 }
@@ -278,7 +280,7 @@ void e2fsck_read_inode(e2fsck_t ctx, unsigned long ino,
 	retval = ext2fs_read_inode(ctx->fs, ino, inode);
 	if (retval) {
 		com_err("ext2fs_read_inode", retval,
-			"while reading inode %ld in %s", ino, proc);
+			_("while reading inode %ld in %s"), ino, proc);
 		fatal_error(ctx, 0);
 	}
 }
@@ -291,7 +293,7 @@ extern void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
 	retval = ext2fs_write_inode(ctx->fs, ino, inode);
 	if (retval) {
 		com_err("ext2fs_write_inode", retval,
-			"while writing inode %ld in %s", ino, proc);
+			_("while writing inode %ld in %s"), ino, proc);
 		fatal_error(ctx, 0);
 	}
 }

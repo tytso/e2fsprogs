@@ -1,3 +1,11 @@
+2000-02-06  Theodore Ts'o  <tytso@valinux.com>
+
+	* badblocks.c, e2fsck.h, ehandler.c, emptydir.c, extend.c,
+		flushb.c, iscan.c, message.c, pass1.c, pass1b.c, pass3.c
+		pass4.c, pass5.c, problem.c, scantest.c, swapfs.c, 
+		unix.c, util.c: Add Internationalization support as 
+		suggested by Marco d'Itri <md@linux.it>.
+
 2000-02-02  Theodore Ts'o  <tytso@valinux.com>
 
 	* e2fsck.h, flushb.c, scantest.c: Remove uneeded include of

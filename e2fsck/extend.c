@@ -17,7 +17,7 @@
 
 static void usage(char *progname)
 {
-	fprintf(stderr, "%s: %s filename nblocks blocksize\n",
+	fprintf(stderr, _("%s: %s filename nblocks blocksize\n"),
 		progname, progname);
 	exit(1);
 }
@@ -39,13 +39,13 @@ int main(int argc, char **argv)
 	blocksize = strtoul(argv[3], 0, 0);
 
 	if (nblocks < 0) {
-		fprintf(stderr, "Illegal number of blocks!\n");
+		fprintf(stderr, _("Illegal number of blocks!\n"));
 		exit(1);
 	}
 
 	block = malloc(blocksize);
 	if (block == 0) {
-		fprintf(stderr, "Couldn't allocate block buffer(size=%d)\n",
+		fprintf(stderr, _("Couldn't allocate block buffer (size=%d)\n"),
 			blocksize);
 		exit(1);
 	}

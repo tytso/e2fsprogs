@@ -19,7 +19,7 @@ static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 
 static void invalid_block(ext2_filsys fs, blk_t blk)
 {
-	printf("Bad block %u out of range; ignored.\n", blk);
+	printf(_("Bad block %u out of range; ignored.\n"), blk);
 	return;
 }
 
@@ -42,7 +42,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 				      check_bb_inode_blocks, 0);
 	if (retval) {
 		com_err("ext2fs_block_iterate", retval,
-			"while sanity checking the bad blocks inode");
+			_("while sanity checking the bad blocks inode"));
 		goto fatal;
 	}
 	
@@ -54,7 +54,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 		retval = ext2fs_read_bb_inode(fs, &bb_list);
 		if (retval) {
 			com_err("ext2fs_read_bb_inode", retval,
-				"while reading the bad blocks inode");
+				_("while reading the bad blocks inode"));
 			goto fatal;
 		}
 	}
@@ -68,7 +68,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 		f = fopen(bad_blocks_file, "r");
 		if (!f) {
 			com_err("read_bad_blocks_file", errno,
-				"while trying to open %s", bad_blocks_file);
+				_("while trying to open %s"), bad_blocks_file);
 			goto fatal;
 		}
 	} else {
@@ -78,7 +78,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 		f = popen(buf, "r");
 		if (!f) {
 			com_err("read_bad_blocks_file", errno,
-				"while trying popen '%s'", buf);
+				_("while trying popen '%s'"), buf);
 			goto fatal;
 		}
 	}
@@ -89,7 +89,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 		pclose(f);
 	if (retval) {
 		com_err("ext2fs_read_bb_FILE", retval,
-			"while reading in list of bad blocks from file");
+			_("while reading in list of bad blocks from file"));
 		goto fatal;
 	}
 	
@@ -99,7 +99,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 	retval = ext2fs_update_bb_inode(fs, bb_list);
 	if (retval) {
 		com_err("ext2fs_update_bb_inode", retval,
-			"while updating bad block inode");
+			_("while updating bad block inode"));
 		goto fatal;
 	}
 
@@ -128,7 +128,7 @@ static int check_bb_inode_blocks(ext2_filsys fs, blk_t *block_nr, int blockcnt,
 	 */
 	if (*block_nr >= fs->super->s_blocks_count ||
 	    *block_nr < fs->super->s_first_data_block) {
-		printf("Warning illegal block %u found in bad block inode.  Cleared.\n", *block_nr);
+		printf(_("Warning illegal block %u found in bad block inode.  Cleared.\n"), *block_nr);
 		*block_nr = 0;
 		return BLOCK_CHANGED;
 	}

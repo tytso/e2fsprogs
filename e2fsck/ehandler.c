@@ -50,13 +50,13 @@ static errcode_t e2fsck_handle_read_error(io_channel channel,
 		return 0;
 	}
 	if (operation)
-		printf("Error reading block %lu (%s) while %s.  ", block,
+		printf(_("Error reading block %lu (%s) while %s.  "), block,
 		       error_message(error), operation);
 	else
-		printf("Error reading block %lu (%s).  ", block,
+		printf(_("Error reading block %lu (%s).  "), block,
 		       error_message(error));
 	preenhalt(ctx);
-	if (ask(ctx, "Ignore error", 1))
+	if (ask(ctx, _("Ignore error"), 1))
 		return 0;
 
 	return error;
@@ -94,13 +94,13 @@ static errcode_t e2fsck_handle_write_error(io_channel channel,
 	}
 	
 	if (operation)
-		printf("Error writing block %lu (%s) while %s.  ", block,
+		printf(_("Error writing block %lu (%s) while %s.  "), block,
 		       error_message(error), operation);
 	else
-		printf("Error writing block %lu (%s).  ", block,
+		printf(_("Error writing block %lu (%s).  "), block,
 		       error_message(error));
 	preenhalt(ctx);
-	if (ask(ctx, "Ignore error", 1))
+	if (ask(ctx, _("Ignore error"), 1))
 		return 0;
 
 	return error;

@@ -160,7 +160,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
-		print_resource_track("Pass 4", &rtrack);
+		print_resource_track(_("Pass 4"), &rtrack);
 	}
 #endif
 }
