@@ -1,3 +1,64 @@
+E2fsprogs 1.26-WIP (November 26, 2001)
+======================================
+
+Fixed a bug in e2fsck where it wasn't allocating a new block or inode
+bitmap if it wasn't present and the blocksize was 2k or 4k.
+(Addresses Debian Bug #116975)
+
+E2fsck will check and fix botched ext3 V1 to V2 superblock updates by
+clearing the new V2 fields if they do not make sense or if the ext3
+superblock is version 1 superblock.
+
+E2fsck will automatically relocate the ext3 journal from a visible
+file (i.e., /.journal) to an hidden inode if the filesystem has been
+opened read/write.  This allows the users to add a journal while the
+filesystem is mounted, but the next time the system is rebooted, the
+journal file will disappear.  This avoids problems with backups,
+stupid operators with superuser bits, etc.
+
+Fix a bug in fsck where it would not support a filesystem type of
+"auto" if the device was specified in terms of LABEL=xxx or UUID=xxx.
+
+Work around a bug in 2.4.10+ kernels by trying to unset the filesize
+limit if at all possible, when opening a block device.  (The filesize
+limit shouldn't be applied against writes to a block device.)
+
+Mke2fs now automatically clears the immutable attribute on a
+pre-existing .journal file left over from a previous failed attempt to
+add a journal to an alreadyy-mounted filesystem.
+
+Fixed mke2fs's exit codes to consistently indicate when the mke2fs
+operation failed.
+
+Speed up e2image when creating sparse raw image files by optimizing
+away excess lseek() system calls.
+
+Fix support of large (> 2GB) files when used as a filesystem in
+mke2fs, tune2fs, debugfs, and findsuper.
+
+Debugfs's stat and icheck commands now properly deals with large (>
+2GB) files.
+
+Debugfs's set_super_value command now prints out the list of valid
+superblock fields which can be set using the command.
+
+Add support for a new ext2 file attribute, EXT2_NOTAIL_FL, which will
+be used to signal that a particular inode should not be eligible for
+tail-merging --- this is needed for programs like LILO.
+
+The findsuper (an unreleased, uninstalled utility program) has been
+improved to add extra validity checks and to add a progress meter.
+(It is still an unsupported program; the officially supported way to
+recover from a trashed partition table is to use gpart; findsuper is
+for wizards only.  :-)
+
+Debugfs was fixed to compile with "configure --disable-swapfs".
+
+Cleaned up various manual pages.   (Addresses Debian bug #119624)
+
+Added new translation file for Turkish.
+
+
 E2fsprogs 1.25 (September 20, 2001)
 ===================================
 
