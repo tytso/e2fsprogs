@@ -161,8 +161,7 @@ Never use tune2fs to change parameters of a read/write mounted filesystem!
 You're modifying a filesystem!
 .SH AUTHOR
 .B tune2fs 
-was written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
-of the ext2 fs.
+was written by Remy Card <Remy.Card@linux.org>.
 .B tune2fs
 uses the ext2fs library written by Theodore Ts'o <tytso@mit.edu>.
 This manual page was written by Christian Kuhtz <chk@data-hh.Hanse.DE>.

@@ -73,12 +73,10 @@ This allows the user to ask for its undeletion.
 .PP
 .SH AUTHOR
 .B chattr
-was written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
-of the ext2 fs.
+was written by Remy Card <Remy.Card@linux.org>.
 .SH BUGS AND LIMITATIONS
-As of ext2 fs 0.5a, the `c' and `u' attribute are not honoured by the kernel
-code.  As of the Linux 2.0 kernel, the 'A' attribute is not yet supported by
-the kernel code.  (The noatime code is still in testing.)
+As of Linux 2.2, the `c', 's',  and `u' attribute are not honored 
+by the kernel code.  
 .PP
 These attributes will be implemented in a future ext2 fs version.
 .SH AVAILABILITY

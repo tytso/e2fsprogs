@@ -87,10 +87,9 @@ option on an device containing an existing file system.
 This option erases data!
 .SH AUTHOR
 .B badblocks
-was written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
-of the ext2 fs.  Current maintainer is Theodore Ts'o <tytso@alum.mit.edu>. 
-Non-destructive read/write test implemented 
-by David Beattie <dbeattie@usa.net>.
+was written by Remy Card <Remy.Card@linux.org>.  Current maintainer is
+Theodore Ts'o <tytso@alum.mit.edu>.  Non-destructive read/write test
+implemented by David Beattie <dbeattie@usa.net>.
 .SH AVAILABILITY
 .B badblocks
 is part of the e2fsprogs package and is available for anonymous 

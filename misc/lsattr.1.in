@@ -31,8 +31,7 @@ List directories like other files, rather than listing their contents.
 List the file's version/generation number.
 .SH AUTHOR
 .B lsattr
-has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
-of the ext2 fs.
+was written by Remy Card <Remy.Card@linux.org>.
 .SH BUGS
 There are none :-).
 .SH AVAILABILITY

@@ -30,8 +30,7 @@ will not have to allocate data blocks in the filesystem during recovery.
 There are none.
 .SH AUTHOR
 .B mklost+found
-has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer
-of the ext2 fs.
+has been written by Remy Card <Remy.Card@linux.org>.
 .SH BUGS
 There are none :-)
 .SH AVAILABILITY

@@ -1,3 +1,10 @@
+2000-04-03  Theodore Ts'o  <tytso@valinux.com>
+
+	* badblocks.8.in, chattr.1.in, dumpe2fs.8.in, lsattr.1.in,
+		mklost+found.8.in, tune2fs.8.in: Update Remy Card's e-mail
+		address.  
+		chattr.1.in: Update which attributes aren't supported.
+
 2000-02-09  Theodore Ts'o  <tytso@valinux.com>
 
 	* chattr.1.in: 
