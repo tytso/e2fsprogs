@@ -1,5 +1,11 @@
 2000-12-09    <tytso@snap.thunk.org>
 
+	* flushb.c: Fix flushb so that it does something other than waste
+		disk space when built on systems with modern header files
+		and add a non-subtle Copyright Licensing restriction so
+		Yann will remove it from the Debian Distribution.  (Now
+		violates the Debian Free Software Guidelines, on purpose.)
+
 	* journal.c (e2fsck_check_ext3_journal): If JFS_DEBUG is defined
 		at the top level, set the JFS debuging level to 2.
 
