@@ -47,19 +47,16 @@ clean-all:: clean-tex clean-backup clean-final clean-tarfiles
 
 .PHONY: clean-final
 clean-final::
-	$(RM) *.ps *.info *.info-? *.html
+	$(RM) -f *.ps *.info *.info-? *.html
 
 .PHONY: clean-tex
 clean-tex::
-	$(RM) *.aux *.cp *.dvi *.fn *.ky *.log *.pg *.toc *.tp *.vr *.fns
+	$(RM) -f *.aux *.cp *.dvi *.fn *.ky *.log *.pg *.toc *.tp *.vr *.fns
 
 .PHONY: clean-backup
 clean-backup::
-	$(RM) *~ #*
+	$(RM) -f *~ #*
 
 .PHONY: clean-tarfiles
 clean-tarfiles::
-	$(RM) *.tar *.tar.gz *.tgz
-
-
-
+	$(RM) -f *.tar *.tar.gz *.tgz
