@@ -45,7 +45,7 @@ ino_t string_to_inode(char *str)
 {
 	ino_t	ino;
 	int	len = strlen(str);
-	int	i;
+	char	*end;
 	int	retval;
 
 	/*
@@ -53,11 +53,9 @@ ino_t string_to_inode(char *str)
 	 * inode number.
 	 */
 	if ((len > 2) && (str[0] == '<') && (str[len-1] == '>')) {
-		for (i = 1; i < len-1; i++)
-			if (!isdigit(str[i]))
-				break;
-		if (i == len-1)
-			return(atoi(str+1));
+		ino = strtoul(str+1, &end, 0);
+		if (*end=='>')
+			return ino;
 	}
 
 	retval = ext2fs_namei(current_fs, root, cwd, str, &ino);
