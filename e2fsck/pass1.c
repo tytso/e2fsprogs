@@ -103,7 +103,7 @@ static int process_inode_count;
 	   EXT2_BPP(bits) * EXT2_BPP(bits) * EXT2_BPP(bits)) * \
 	  (1UL << bits)) - 1)
 
-static long long ext2_max_sizes[] = {
+static __s64 ext2_max_sizes[] = {
 EXT2_MAX_SIZE(10), EXT2_MAX_SIZE(11), EXT2_MAX_SIZE(12), EXT2_MAX_SIZE(13)
 };
 
