@@ -60,9 +60,9 @@ static int process_bad_block(ext2_filsys fs, blk_t *block_nr,
 static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 char *block_buf);
 static void mark_table_blocks(e2fsck_t ctx);
-static void alloc_bad_map(e2fsck_t ctx);
 static void alloc_bb_map(e2fsck_t ctx);
 static void alloc_imagic_map(e2fsck_t ctx);
+static void mark_inode_bad(e2fsck_t ctx, ino_t ino);
 static void handle_fs_bad_blocks(e2fsck_t ctx);
 static void process_inodes(e2fsck_t ctx, char *block_buf);
 static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b);
@@ -170,13 +170,14 @@ static void check_size(e2fsck_t ctx, struct problem_context *pctx)
 	     LINUX_S_ISCHR(inode->i_mode) ||
 	     LINUX_S_ISFIFO(inode->i_mode) ||
 	     LINUX_S_ISSOCK(inode->i_mode)) && 
-	    !inode->i_size)
+	    !inode->i_size || !inode->i_size_high)
 		return;
 	
 	if(!fix_problem(ctx, PR_1_SET_NONZSIZE, pctx))
 		return;
 	
 	inode->i_size = 0;
+	inode->i_size_high = 0;
 	e2fsck_write_inode(ctx, pctx->ino, pctx->inode, "pass1");
 }
 	
@@ -520,11 +521,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 		
 		if (inode.i_faddr || frag || fsize
 		    || inode.i_file_acl ||
-		    (LINUX_S_ISDIR(inode.i_mode) && inode.i_dir_acl)) {
-			if (!ctx->inode_bad_map)
-				alloc_bad_map(ctx);
-			ext2fs_mark_inode_bitmap(ctx->inode_bad_map, ino);
-		}
+		    (LINUX_S_ISDIR(inode.i_mode) && inode.i_dir_acl))
+			mark_inode_bad(ctx, ino);
 		if (inode.i_flags & EXT2_IMAGIC_FL) {
 			if (imagic_fs) {
 				if (!ctx->inode_imagic_map)
@@ -560,6 +558,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 		} else if (LINUX_S_ISLNK (inode.i_mode)) {
 			ctx->fs_symlinks_count++;
 			if (!inode.i_blocks) {
+				if (inode.i_size_high ||
+				    (inode.i_size > EXT2_N_BLOCKS*4))
+					mark_inode_bad(ctx, ino);
 				ctx->fs_fast_symlinks_count++;
 				goto next;
 			}
@@ -574,11 +575,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 			check_immutable(ctx, &pctx);
 			check_size(ctx, &pctx);
 			ctx->fs_sockets_count++;
-		} else {
-			if (!ctx->inode_bad_map)
-				alloc_bad_map(ctx);
-			ext2fs_mark_inode_bitmap(ctx->inode_bad_map, ino);
-		}
+		} else
+			mark_inode_bad(ctx, ino);
 		if (inode.i_block[EXT2_IND_BLOCK])
 			ctx->fs_ind_count++;
 		if (inode.i_block[EXT2_DIND_BLOCK])
@@ -764,24 +762,28 @@ static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b)
 }
 
 /*
- * This procedure will allocate the inode bad map table
+ * Mark an inode as being bad in some what
  */
-static void alloc_bad_map(e2fsck_t ctx)
+static void mark_inode_bad(e2fsck_t ctx, ino_t ino)
 {
 	struct		problem_context pctx;
+
+	if (!ctx->inode_bad_map) {
+		clear_problem_context(&pctx);
 	
-	clear_problem_context(&pctx);
-	
-	pctx.errcode = ext2fs_allocate_inode_bitmap(ctx->fs, _("bad inode map"),
-					      &ctx->inode_bad_map);
-	if (pctx.errcode) {
-		pctx.num = 3;
-		fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
-		/* Should never get here */
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
+		pctx.errcode = ext2fs_allocate_inode_bitmap(ctx->fs,
+			    _("bad inode map"), &ctx->inode_bad_map);
+		if (pctx.errcode) {
+			pctx.num = 3;
+			fix_problem(ctx, PR_1_ALLOCATE_IBITMAP_ERROR, &pctx);
+			/* Should never get here */
+			ctx->flags |= E2F_FLAG_ABORT;
+			return;
+		}
 	}
+	ext2fs_mark_inode_bitmap(ctx->inode_bad_map, ino);
 }
+
 
 /*
  * This procedure will allocate the inode "bb" (badblock) map table

@@ -1,3 +1,16 @@
+2001-06-02  Theodore Tso  <tytso@valinux.com>
+
+	* pass1.c (mark_inode_bad): Replace alloc_bad_map with a function
+		which sets the bit in the bad inode bitmap.
+		(e2fsck_pass1): Check for fast symlinks with an invalid
+		size, and set the bad inode map in that case.
+
+	* pass2.c (e2fsck_process_bad_inode): Check for fast symlinks with
+		an invalid size and prompt the user if the inode should be
+		cleared.
+
+	* problem.h, problem.c (PR_2_SYMLINK_SIZE): Added new problem code.
+
 2001-06-01  Theodore Tso  <tytso@valinux.com>
 
 	* problem.c, problem.h: Change PR_0_JOURNAL_UNSUPP_INCOMPAT and

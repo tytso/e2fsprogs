@@ -517,6 +517,9 @@ struct problem_context {
 /* Directory filename can't be zero-length  */
 #define PR_2_NULL_NAME		0x020030
 
+/* Invalid fast symlink size */
+#define PR_2_SYMLINK_SIZE	0x020031
+
 /*
  * Pass 3 errors
  */

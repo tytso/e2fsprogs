@@ -871,6 +871,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@E has a zero-length name\n"),
 	  PROMPT_CLEAR, 0 },
 
+	/* Invalid fast symlink size */
+	{ PR_2_SYMLINK_SIZE,
+	  N_("@i %i (%Q) is a fast symlink with an invalid size (%Is)\n"),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */
