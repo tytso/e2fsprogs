@@ -86,6 +86,7 @@ fi
 /sbin/fsck.ext3
 /sbin/mke2fs
 /sbin/mkfs.ext2
+/sbin/mkfs.ext3
 /sbin/tune2fs
 /sbin/resize2fs
 /usr/sbin/mklost+found

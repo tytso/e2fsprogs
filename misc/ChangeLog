@@ -1,3 +1,8 @@
+2002-02-25  Andreas Dilger  <adilger@clusterfs.com>
+
+	* mke2fs.c: Add check for mkfs.ext3 and create a journal in
+		this case.
+
 2002-02-24  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in (install): Install hard links for man pages for

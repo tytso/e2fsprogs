@@ -390,20 +390,6 @@ err:
 	exit(1);
 }
 
-/*
- * Given argv[0], return the program name.
- */
-static char *get_progname(char *argv_zero)
-{
-	char	*cp;
-
-	cp = strrchr(argv_zero, '/');
-	if (!cp )
-		return argv_zero;
-	else
-		return cp+1;
-}
-
 
 static void parse_e2label_options(int argc, char ** argv)
 {

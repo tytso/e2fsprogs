@@ -48,6 +48,20 @@ int strcasecmp (char *s1, char *s2)
 }
 #endif
 
+/*
+ * Given argv[0], return the program name.
+ */
+char *get_progname(char *argv_zero)
+{
+	char	*cp;
+
+	cp = strrchr(argv_zero, '/');
+	if (!cp )
+		return argv_zero;
+	else
+		return cp+1;
+}
+
 void proceed_question(void)
 {
 	char buf[256];

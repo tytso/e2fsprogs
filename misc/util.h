@@ -17,6 +17,7 @@ extern char	*journal_device;
 #ifndef HAVE_STRCASECMP
 extern int strcasecmp (char *s1, char *s2);
 #endif
+extern char *get_progname(char *argv_zero);
 extern void proceed_question(void);
 extern void check_plausibility(const char *device);
 extern void parse_journal_opts(const char *opts);

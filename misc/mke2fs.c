@@ -820,8 +820,15 @@ static void PRS(int argc, char *argv[])
 #endif
 	fprintf (stderr, "mke2fs %s (%s)\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
-	if (argc && *argv)
-		program_name = *argv;
+
+	if (argc && *argv) {
+		program_name = get_progname(*argv);
+
+		/* If called as mkfs.ext3, create a journal inode */
+		if (!strcmp(program_name, "mkfs.ext3"))
+			journal_size = -1;
+	}
+
 	while ((c = getopt (argc, argv,
 		    "b:cf:g:i:jl:m:no:qr:R:s:tvI:J:ST:FL:M:N:O:V")) != EOF)
 		switch (c) {
