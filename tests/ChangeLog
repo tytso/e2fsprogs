@@ -1,3 +1,9 @@
+2001-11-26  Theodore Tso  <tytso@valinux.com>
+
+	* f_miss_blk_bmap: Add new test which checks for bug in e2fsck
+		where it wouldn't allocate a missing block bitmap on
+		filesystems with a blocksize of 2k or 4k.
+
 2001-10-07  Theodore Tso  <tytso@valinux.com>
 
 	* f_bad_local_jnl: New test which tests for a V2 journal with bad
