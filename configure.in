@@ -137,11 +137,11 @@ else
 	HTREE_CMT=
 	AC_DEFINE(ENABLE_HTREE)
 	echo "Enabling htree directory support"
-	echo "WARNING: htree support is experimental"
 fi
 ,
-HTREE_CMT=#
-echo "Disabling htree directory support by default"
+HTREE_CMT=
+AC_DEFINE(ENABLE_HTREE)
+echo "Enabling htree directory support by default"
 )
 AC_SUBST(HTREE_CMT)
 dnl

@@ -2,7 +2,7 @@
 
 	* configure.in, configure: Add new substitution variable,
 		LINUX_CMT, which is '' on Linux systems, and '#' on
-		non-Linux systems.
+		non-Linux systems.  Enable HTREE support by default.
 
 	* Makefile.in: On Linux systems, build lib/evms.
 
