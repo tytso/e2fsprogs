@@ -50,10 +50,10 @@
 #endif
 
 static int process_block(ext2_filsys fs, blk_t	*blocknr,
-			 blkcnt_t blockcnt, blk_t ref_blk, 
+			 e2_blkcnt_t blockcnt, blk_t ref_blk, 
 			 int ref_offset, void *priv_data);
 static int process_bad_block(ext2_filsys fs, blk_t *block_nr,
-			     blkcnt_t blockcnt, blk_t ref_blk,
+			     e2_blkcnt_t blockcnt, blk_t ref_blk,
 			     int ref_offset, void *priv_data);
 static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 char *block_buf);
@@ -71,7 +71,7 @@ struct process_block_struct {
 	ino_t		ino;
 	int		is_dir:1, clear:1, suppress:1, fragmented:1;
 	blk_t		num_blocks;
-	blkcnt_t	last_block;
+	e2_blkcnt_t	last_block;
 	int		num_illegal_blocks;
 	blk_t		previous_block;
 	struct ext2_inode *inode;
@@ -95,19 +95,7 @@ struct scan_callback_struct {
 static struct process_inode_block *inodes_to_process;
 static int process_inode_count;
 
-#define EXT2_BPP(bits) (1UL << ((bits) - 2))
-
-#define EXT2_MAX_SIZE(bits) \
-	(((EXT2_NDIR_BLOCKS + EXT2_BPP(bits) +	\
-	   EXT2_BPP(bits) * EXT2_BPP(bits) +	\
-	   EXT2_BPP(bits) * EXT2_BPP(bits) * EXT2_BPP(bits)) * \
-	  (1UL << bits)) - 1)
-
-static __s64 ext2_max_sizes[] = {
-EXT2_MAX_SIZE(10), EXT2_MAX_SIZE(11), EXT2_MAX_SIZE(12), EXT2_MAX_SIZE(13)
-};
-
-#undef EXT2_BPP
+static __u64 ext2_max_sizes[4];
 
 /*
  * Free all memory allocated by pass1 in preparation for restarting
@@ -148,6 +136,8 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 
 void e2fsck_pass1(e2fsck_t ctx)
 {
+	int	i;
+	__u64	max_sizes;
 	ext2_filsys fs = ctx->fs;
 	ino_t	ino;
 	struct ext2_inode inode;
@@ -172,6 +162,19 @@ void e2fsck_pass1(e2fsck_t ctx)
 	mtrace_print("Pass 1");
 #endif
 
+#define EXT2_BPP(bits) (1UL << ((bits) - 2))
+
+	for (i=0; i < 4; i++) {
+		max_sizes = EXT2_NDIR_BLOCKS + EXT2_BPP(10+i);
+		max_sizes = max_sizes + EXT2_BPP(10+i) * EXT2_BPP(10+i);
+		max_sizes = (max_sizes +
+			     (__u64) EXT2_BPP(10+i) * EXT2_BPP(10+i) *
+			     EXT2_BPP(10+i));
+		max_sizes = (max_sizes * (1UL << (10+i))) - 1;
+		ext2_max_sizes[i] = max_sizes;
+	}
+#undef EXT2_BPP
+	
 	/*
 	 * Allocate bitmaps structures
 	 */
@@ -326,15 +329,13 @@ void e2fsck_pass1(e2fsck_t ctx)
 				}
 			}
 		}
-		if (ino == EXT2_BOOT_LOADER_INO) {
-			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
-			check_blocks(ctx, &pctx, block_buf);
-			goto next;
-		}
 		if ((ino != EXT2_ROOT_INO) &&
 		    (ino < EXT2_FIRST_INODE(fs->super))) {
 			ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
-			if (inode.i_mode != 0) {
+			if (((ino == EXT2_BOOT_LOADER_INO) &&
+			     LINUX_S_ISDIR(inode.i_mode)) ||
+			    ((ino != EXT2_BOOT_LOADER_INO) &&
+			     (inode.i_mode != 0))) {
 				if (fix_problem(ctx,
 					    PR_1_RESERVED_BAD_MODE, &pctx)) {
 					inode.i_mode = 0;
@@ -761,14 +762,14 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			sb = (struct ext2fs_sb *) fs->super;
 			if (((pb.last_block + 1) - nblock) >
 			    sb->s_prealloc_dir_blocks)
-				bad_size = 1;
+				bad_size = 2;
 		}
 	} else {
 		size = inode->i_size + ((__u64) inode->i_size_high << 32);
 		if ((size < pb.last_block * fs->blocksize))
-			bad_size = 1;
+			bad_size = 3;
 		else if (size > ext2_max_sizes[fs->super->s_log_block_size])
-			bad_size = 1;
+			bad_size = 4;
 	}
 	if (bad_size) {
 		pctx->num = (pb.last_block+1) * fs->blocksize;
@@ -849,7 +850,7 @@ static char *describe_illegal_block(ext2_filsys fs, blk_t block)
  */
 int process_block(ext2_filsys fs,
 		  blk_t	*block_nr,
-		  blkcnt_t blockcnt,
+		  e2_blkcnt_t blockcnt,
 		  blk_t ref_block,
 		  int ref_offset, 
 		  void *priv_data)
@@ -974,7 +975,7 @@ static void bad_block_indirect(e2fsck_t ctx, blk_t blk)
 
 int process_bad_block(ext2_filsys fs,
 		      blk_t *block_nr,
-		      blkcnt_t blockcnt,
+		      e2_blkcnt_t blockcnt,
 		      blk_t ref_block,
 		      int ref_offset,
 		      void *priv_data)

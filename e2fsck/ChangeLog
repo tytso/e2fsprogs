@@ -1,3 +1,13 @@
+1998-06-10  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c, problem.h: Change blkcnt_t to be e2_blkcnt_t to avoid
+		collision with LFS API.
+
+	* pass1.c (e2fsck_pass1): Fix bug so that ext2_max_sizes is
+		properly initialized.  
+		(e2fsck_pass1): Don't allow the the boot loader inode to
+		be a directory (clear the inode mode field if so).
+
 1998-05-07  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* unix.c (PRS): Added new option -C, which causes e2fsck to print

@@ -17,7 +17,7 @@ struct problem_context {
 	struct ext2_inode *inode;
 	struct ext2_dir_entry *dirent;
 	blk_t	blk, blk2;
-	blkcnt_t	blkcount;
+	e2_blkcnt_t	blkcount;
 	int		group;
 	__u64	num;
 	const char *str;
