@@ -169,7 +169,7 @@ static void show_stats(e2fsck_t	ctx)
 		(blocks_used != 1) ? "s" : "",
 		100 * blocks_used / blocks, ctx->fs_badblocks_count,
 		ctx->fs_badblocks_count != 1 ? "s" : "");
-	printf(_("%8d large file%s\n"), ctx->large_files,
+	printf("%8d large file%s\n", ctx->large_files,
 	       (ctx->large_files != 1) ? "s" : "");
 	printf ("\n%8d regular file%s\n"
 		"%8d director%s\n"

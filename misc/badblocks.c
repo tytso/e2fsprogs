@@ -64,7 +64,7 @@ static int force = 0;			/* force check of mounted device */
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] device [last_block [start_count]]\n"),
+	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] device [last_block [start_block]]\n"),
 		 program_name);
 	exit (1);
 }

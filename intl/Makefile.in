@@ -230,6 +230,8 @@ installdirs:
 # Define this as empty until I found a useful application.
 installcheck:
 
+install-shlibs:
+
 uninstall:
 	if test "$(PACKAGE)" = "gettext" \
 	   && test '@INTLOBJS@' = '$(GETTOBJS)'; then \

@@ -1,5 +1,13 @@
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
+	* uuidgen.c (main): Add setup functions for NLS support.
+
+	* e2image.c (write_header), mke2fs.c (PRS): Add missing space in
+		displayed message.
+
+	* badblocks.c (usage), findsuper.c (main), util.c
+		(parse_journal_opts): Fix typo in usage string.
+
 	* tune2fs.c (parse_time): Add portability code to work around lack
 		of strptime().
 

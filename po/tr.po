@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.32\n"
-"POT-Creation-Date: 2003-05-03 14:59-0400\n"
+"POT-Creation-Date: 2003-05-03 16:48-0400\n"
 "PO-Revision-Date: 2003-03-24 05:58+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -31,7 +31,7 @@ msgstr "- hatalý bloklar düðümü okunurken hata oluþtu"
 #: e2fsck/unix.c:869 e2fsck/unix.c:901 misc/badblocks.c:772
 #: misc/badblocks.c:783 misc/badblocks.c:797 misc/badblocks.c:809
 #: misc/dumpe2fs.c:337 misc/e2image.c:477 misc/e2image.c:493 misc/mke2fs.c:207
-#: misc/tune2fs.c:728 resize/main.c:198
+#: misc/tune2fs.c:728 resize/main.c:205
 #, c-format
 msgid "while trying to open %s"
 msgstr "- %s açýlmaya çalýþýlýrken hata oluþtu"
@@ -124,12 +124,12 @@ msgstr "BLKFLSBUF ioctl desteklenmiyor!  Tamponlar boþaltýlamadý.\n"
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 msgstr "Kullanýmý: %s [-F] [-I düðüm_tampon_bloklarý] aygýt\n"
 
-#: e2fsck/iscan.c:83 e2fsck/unix.c:689 resize/main.c:175
+#: e2fsck/iscan.c:83 e2fsck/unix.c:689 resize/main.c:182
 #, c-format
 msgid "while opening %s for flushing"
 msgstr "%s temizlik için açýlýrken hata oluþtu"
 
-#: e2fsck/iscan.c:88 e2fsck/unix.c:695 resize/main.c:182
+#: e2fsck/iscan.c:88 e2fsck/unix.c:695 resize/main.c:189
 #, c-format
 msgid "while trying to flush %s"
 msgstr "%s boþaltýlmaya çalýþýlýrken hata oluþtu"
@@ -1430,7 +1430,8 @@ msgid "Symlink %Q (@i #%i) is invalid.\n"
 msgstr "%Q sembolik baðýnýn (düðüm #%i) uzunluðu geçersiz.\n"
 
 #: e2fsck/problem.c:1018
-msgid "@a @b @F is invalid (%If).\n"
+#, fuzzy
+msgid "@a @b @F invalid (%If).\n"
 msgstr "@F ek özellik bloðu geçersiz (%If).\n"
 
 #: e2fsck/problem.c:1023
@@ -1502,7 +1503,7 @@ msgid "Duplicate @E found.  "
 msgstr "Düðüm %i içindeki tekrarlanmýþ/hatalý blok(lar):"
 
 #: e2fsck/problem.c:1097
-#, c-format
+#, no-c-format
 msgid ""
 "@E has a non-unique filename.\n"
 "Rename to %s"
@@ -1951,13 +1952,6 @@ msgstr ""
 "--------\n"
 "%8d dosya\n"
 
-#: e2fsck/unix.c:172
-#, c-format
-msgid "%8d large file%s\n"
-msgstr ""
-"%8d büyük dosya\n"
-"%s\n"
-
 #: e2fsck/unix.c:215 misc/badblocks.c:613 misc/tune2fs.c:744 misc/util.c:133
 #: resize/main.c:97
 #, c-format
@@ -2377,10 +2371,10 @@ msgid "done                        \n"
 msgstr "bitti                       \n"
 
 #: misc/badblocks.c:67
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-" [-c blocks_at_once] [-p num_passes] device [last_block [start_count]]\n"
+" [-c blocks_at_once] [-p num_passes] device [last_block [start_block]]\n"
 msgstr ""
 "Kullanýmý: %s [seçenekler] aygýt [bitiþ_bloðu [baþlangýç_bloðu]]\n"
 "\n"
@@ -2770,7 +2764,7 @@ msgstr ""
 msgid "\tUsing %s\n"
 msgstr "\t%s kullanýlýyor\n"
 
-#: misc/dumpe2fs.c:339 misc/e2image.c:479 misc/tune2fs.c:731 resize/main.c:200
+#: misc/dumpe2fs.c:339 misc/e2image.c:479 misc/tune2fs.c:731 resize/main.c:207
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Geçerli süperblok bulunamadý.\n"
 
@@ -2807,8 +2801,8 @@ msgid "Couldn't allocate header buffer\n"
 msgstr "Baþlýk için tampon bellek ayrýlamadý\n"
 
 #: misc/e2image.c:80
-#, c-format
-msgid "short write (only %d bytes) forwriting image header"
+#, fuzzy, c-format
+msgid "short write (only %d bytes) for writing image header"
 msgstr "görüntü baþlýðýný yazmak için kýsa yazma (sadece %d bayt)"
 
 #: misc/e2image.c:99
@@ -2869,8 +2863,8 @@ msgid "Usage:  findsuper device [skipbytes [startkb]]\n"
 msgstr "Kullanýmý:  findsuper aygýt [atlanacak_baytlar [baþlangýç_kb]]\n"
 
 #: misc/findsuper.c:132
-#, c-format
-msgid "skiprate should be a number, not %s\n"
+#, fuzzy, c-format
+msgid "skipbytes should be a number, not %s\n"
 msgstr "atlama_oraný bir sayý olmalý, %s deðil\n"
 
 #: misc/findsuper.c:137
@@ -3409,7 +3403,7 @@ msgstr "- %s jurnal aygýtý açýlmaya çalýþýlýrken hata\n"
 
 #: misc/mke2fs.c:1093
 #, c-format
-msgid "Journal dev blocksize (%d) smaller thanminimum blocksize %d\n"
+msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
 msgstr ""
 
 #: misc/mke2fs.c:1107
@@ -3429,7 +3423,7 @@ msgstr ""
 msgid "filesystem"
 msgstr "dosya sistemi"
 
-#: misc/mke2fs.c:1144 resize/main.c:222
+#: misc/mke2fs.c:1144 resize/main.c:229
 msgid "while trying to determine filesystem size"
 msgstr "- dosya sistemi uzunluðu saptanmaya çalýþýlýrken hata oluþtu"
 
@@ -3933,6 +3927,7 @@ msgid "Couldn't allocate memory to parse journal options!\n"
 msgstr "Jurnal seçenekleri için bellek ayrýlamadý!\n"
 
 #: misc/util.c:201
+#, fuzzy
 msgid ""
 "\n"
 "Bad journal options specified.\n"
@@ -3940,7 +3935,7 @@ msgid ""
 "Journal options are separated by commas, and may take an argument which\n"
 "\tis set off by an equals ('=') sign.\n"
 "\n"
-"Valid raid options are:\n"
+"Valid journal options are:\n"
 "\tsize=<journal size in megabytes>\n"
 "\tdevice=<journal device>\n"
 "\n"
@@ -4077,10 +4072,6 @@ msgstr "bilinmeyen geçiþ?!?"
 msgid "Begin pass %d (max = %lu)\n"
 msgstr "Geçiþ %d baþlýyor (en çok = %lu)\n"
 
-#: resize/main.c:96
-msgid "ext2fs_check_if_mount"
-msgstr "ext2fs_check_if_mount"
-
 #: resize/main.c:104
 #, c-format
 msgid ""
@@ -4088,17 +4079,17 @@ msgid ""
 "\n"
 msgstr "%s baðlý; baðlý bir dosya sistemi yeniden boyutlandýrýlamaz!\n"
 
-#: resize/main.c:127
+#: resize/main.c:134
 #, c-format
 msgid "resize2fs %s (%s)\n"
 msgstr "resize2fs %s (%s)\n"
 
-#: resize/main.c:160
+#: resize/main.c:167
 #, c-format
 msgid "bad filesystem size - %s"
 msgstr "dosya sistemi uzunluðu hatalý - %s"
 
-#: resize/main.c:243
+#: resize/main.c:250
 #, c-format
 msgid ""
 "The containing partition (or device) is only %d blocks.\n"
@@ -4109,7 +4100,7 @@ msgstr ""
 "Disk bölümü (ya da disk) zaten %d blok uzunlukta.\n"
 "\n"
 
-#: resize/main.c:250
+#: resize/main.c:257
 #, c-format
 msgid ""
 "The filesystem is already %d blocks long.  Nothing to do!\n"
@@ -4118,7 +4109,7 @@ msgstr ""
 "Dosya sistemi zaten %d blok uzunlukta.  Hiçbir þey yapýlmadý!\n"
 "\n"
 
-#: resize/main.c:257
+#: resize/main.c:264
 #, c-format
 msgid ""
 "Please run 'e2fsck -f %s' first.\n"
@@ -4127,12 +4118,12 @@ msgstr ""
 "Lütfen önce 'e2fsck -f %s' komutunu çalýþtýrýn.\n"
 "\n"
 
-#: resize/main.c:265
+#: resize/main.c:272
 #, c-format
 msgid "while trying to resize %s"
 msgstr "- %s yeniden boyutlandýrýlýrken hata oluþtu"
 
-#: resize/main.c:270
+#: resize/main.c:277
 #, c-format
 msgid ""
 "The filesystem on %s is now %d blocks long.\n"
@@ -4196,6 +4187,14 @@ msgstr "%d sýfýrlý blok...\n"
 #: resize/resize2fs.c:1394
 msgid "Inode table move finished.\n"
 msgstr "Düðüm tablosunun taþýnmasý tamamlandý.\n"
+
+#~ msgid "%8d large file%s\n"
+#~ msgstr ""
+#~ "%8d büyük dosya\n"
+#~ "%s\n"
+
+#~ msgid "ext2fs_check_if_mount"
+#~ msgstr "ext2fs_check_if_mount"
 
 #~ msgid "Couldn't allocate memory to parse extended options!\n"
 #~ msgstr "Ek seçenekleri çözümlemek için bellek ayrýlamadý!\n"

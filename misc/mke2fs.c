@@ -1090,7 +1090,7 @@ static void PRS(int argc, char *argv[])
 		}
 		if ((blocksize < 0) && (jfs->blocksize < -blocksize)) {
 			com_err(program_name, 0,
-				_("Journal dev blocksize (%d) smaller than"
+				_("Journal dev blocksize (%d) smaller than "
 				  "minimum blocksize %d\n"), jfs->blocksize,
 				-blocksize);
 			exit(1);

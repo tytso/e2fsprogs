@@ -1,5 +1,12 @@
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
+	* unix.c (show_stats): Remove uneeded use of _() around string
+		under #ifndef NLS
+
+	* problem.c: Mark two strings (PR_1_RELOC_TO and
+		PR_2_NON_UNIQUE_FILE) as not being printf format strings.
+		Fix typo (doubled 'is') in PR_2_FILE_ACL_BAD.
+
 	* Makefile.in: Add $(LIBINTL) to the link line so we can support
 		using the internal gettext library.
 

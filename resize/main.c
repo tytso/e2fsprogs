@@ -93,7 +93,7 @@ static void check_mount(char *device)
 
 	retval = ext2fs_check_if_mounted(device, &mount_flags);
 	if (retval) {
-		com_err(_("ext2fs_check_if_mount"), retval,
+		com_err("ext2fs_check_if_mount", retval,
 			_("while determining whether %s is mounted."),
 			device);
 		return;
@@ -121,7 +121,14 @@ int main (int argc, char ** argv)
 	io_manager	io_ptr;
 	char		*tmp;
 	struct stat	st_buf;
-	
+
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	setlocale(LC_CTYPE, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
+
 	initialize_ext2_error_table();
 
 	fprintf (stderr, _("resize2fs %s (%s)\n"),

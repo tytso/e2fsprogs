@@ -485,7 +485,7 @@ static const struct e2fsck_problem problem_table[] = {
 		
 	/* Relocating metatdata group information to X */
 	{ PR_1_RELOC_TO,
-	  N_("Relocating @g %g's %s to %c...\n"),
+	  N_("Relocating @g %g's %s to %c...\n"), /* xgettext:no-c-format */
 	  PROMPT_NONE, PR_PREEN_OK },
 		
 	/* Block read error during relocation process */
@@ -1015,7 +1015,7 @@ static const struct e2fsck_problem problem_table[] = {
 
   	/* i_file_acl (extended attribute block) is bad */
 	{ PR_2_FILE_ACL_BAD,
-	  N_("@a @b @F is invalid (%If).\n"),
+	  N_("@a @b @F invalid (%If).\n"),
 	  PROMPT_CLEAR, 0 },
 
 	/* Filesystem contains large files, but has no such flag in sb */
@@ -1093,7 +1093,7 @@ static const struct e2fsck_problem problem_table[] = {
 	  PROMPT_CLEAR, 0 },
 	
 	/* Non-unique filename found */
-	{ PR_2_NON_UNIQUE_FILE,
+	{ PR_2_NON_UNIQUE_FILE, /* xgettext: no-c-format */
 	  N_("@E has a non-unique filename.\nRename to %s"),
 	  PROMPT_NULL, 0 },
 	

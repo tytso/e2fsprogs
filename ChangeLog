@@ -1,5 +1,7 @@
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Install the message catalog files
+
 	* ABOUT-NLS, MCONFIG.in, Makefile.in, aclocal.m4, configure,
 		configure.in: Update to using version 0.11.5 of the
 		gettext library.  We now enable NLS by default.

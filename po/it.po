@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.18\n"
-"POT-Creation-Date: 2003-05-03 14:59-0400\n"
+"POT-Creation-Date: 2003-05-03 16:48-0400\n"
 "PO-Revision-Date: 2000-01-15 14:21+01:00\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <it@li.org>\n"
@@ -30,7 +30,7 @@ msgstr ""
 #: e2fsck/unix.c:869 e2fsck/unix.c:901 misc/badblocks.c:772
 #: misc/badblocks.c:783 misc/badblocks.c:797 misc/badblocks.c:809
 #: misc/dumpe2fs.c:337 misc/e2image.c:477 misc/e2image.c:493 misc/mke2fs.c:207
-#: misc/tune2fs.c:728 resize/main.c:198
+#: misc/tune2fs.c:728 resize/main.c:205
 #, c-format
 msgid "while trying to open %s"
 msgstr ""
@@ -122,12 +122,12 @@ msgstr ""
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 msgstr ""
 
-#: e2fsck/iscan.c:83 e2fsck/unix.c:689 resize/main.c:175
+#: e2fsck/iscan.c:83 e2fsck/unix.c:689 resize/main.c:182
 #, c-format
 msgid "while opening %s for flushing"
 msgstr ""
 
-#: e2fsck/iscan.c:88 e2fsck/unix.c:695 resize/main.c:182
+#: e2fsck/iscan.c:88 e2fsck/unix.c:695 resize/main.c:189
 #, c-format
 msgid "while trying to flush %s"
 msgstr ""
@@ -1337,7 +1337,7 @@ msgid "Symlink %Q (@i #%i) is invalid.\n"
 msgstr ""
 
 #: e2fsck/problem.c:1018
-msgid "@a @b @F is invalid (%If).\n"
+msgid "@a @b @F invalid (%If).\n"
 msgstr ""
 
 #: e2fsck/problem.c:1023
@@ -1398,7 +1398,7 @@ msgid "Duplicate @E found.  "
 msgstr ""
 
 #: e2fsck/problem.c:1097
-#, c-format
+#, no-c-format
 msgid ""
 "@E has a non-unique filename.\n"
 "Rename to %s"
@@ -1764,11 +1764,6 @@ msgid ""
 "%8d sockets\n"
 "--------\n"
 "%8d files\n"
-msgstr ""
-
-#: e2fsck/unix.c:172
-#, c-format
-msgid "%8d large file%s\n"
 msgstr ""
 
 #: e2fsck/unix.c:215 misc/badblocks.c:613 misc/tune2fs.c:744 misc/util.c:133
@@ -2158,7 +2153,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-" [-c blocks_at_once] [-p num_passes] device [last_block [start_count]]\n"
+" [-c blocks_at_once] [-p num_passes] device [last_block [start_block]]\n"
 msgstr ""
 
 #: misc/badblocks.c:172 misc/badblocks.c:199
@@ -2438,7 +2433,7 @@ msgstr ""
 msgid "\tUsing %s\n"
 msgstr ""
 
-#: misc/dumpe2fs.c:339 misc/e2image.c:479 misc/tune2fs.c:731 resize/main.c:200
+#: misc/dumpe2fs.c:339 misc/e2image.c:479 misc/tune2fs.c:731 resize/main.c:207
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr ""
 
@@ -2464,7 +2459,7 @@ msgstr ""
 
 #: misc/e2image.c:80
 #, c-format
-msgid "short write (only %d bytes) forwriting image header"
+msgid "short write (only %d bytes) for writing image header"
 msgstr ""
 
 #: misc/e2image.c:99
@@ -2522,7 +2517,7 @@ msgstr ""
 
 #: misc/findsuper.c:132
 #, c-format
-msgid "skiprate should be a number, not %s\n"
+msgid "skipbytes should be a number, not %s\n"
 msgstr ""
 
 #: misc/findsuper.c:137
@@ -2928,7 +2923,7 @@ msgstr ""
 
 #: misc/mke2fs.c:1093
 #, c-format
-msgid "Journal dev blocksize (%d) smaller thanminimum blocksize %d\n"
+msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
 msgstr ""
 
 #: misc/mke2fs.c:1107
@@ -2946,7 +2941,7 @@ msgstr ""
 msgid "filesystem"
 msgstr ""
 
-#: misc/mke2fs.c:1144 resize/main.c:222
+#: misc/mke2fs.c:1144 resize/main.c:229
 msgid "while trying to determine filesystem size"
 msgstr ""
 
@@ -3354,7 +3349,7 @@ msgid ""
 "Journal options are separated by commas, and may take an argument which\n"
 "\tis set off by an equals ('=') sign.\n"
 "\n"
-"Valid raid options are:\n"
+"Valid journal options are:\n"
 "\tsize=<journal size in megabytes>\n"
 "\tdevice=<journal device>\n"
 "\n"
@@ -3444,10 +3439,6 @@ msgstr ""
 msgid "Begin pass %d (max = %lu)\n"
 msgstr ""
 
-#: resize/main.c:96
-msgid "ext2fs_check_if_mount"
-msgstr ""
-
 #: resize/main.c:104
 #, c-format
 msgid ""
@@ -3455,17 +3446,17 @@ msgid ""
 "\n"
 msgstr ""
 
-#: resize/main.c:127
+#: resize/main.c:134
 #, c-format
 msgid "resize2fs %s (%s)\n"
 msgstr ""
 
-#: resize/main.c:160
+#: resize/main.c:167
 #, c-format
 msgid "bad filesystem size - %s"
 msgstr ""
 
-#: resize/main.c:243
+#: resize/main.c:250
 #, c-format
 msgid ""
 "The containing partition (or device) is only %d blocks.\n"
@@ -3473,26 +3464,26 @@ msgid ""
 "\n"
 msgstr ""
 
-#: resize/main.c:250
+#: resize/main.c:257
 #, c-format
 msgid ""
 "The filesystem is already %d blocks long.  Nothing to do!\n"
 "\n"
 msgstr ""
 
-#: resize/main.c:257
+#: resize/main.c:264
 #, c-format
 msgid ""
 "Please run 'e2fsck -f %s' first.\n"
 "\n"
 msgstr ""
 
-#: resize/main.c:265
+#: resize/main.c:272
 #, c-format
 msgid "while trying to resize %s"
 msgstr ""
 
-#: resize/main.c:270
+#: resize/main.c:277
 #, c-format
 msgid ""
 "The filesystem on %s is now %d blocks long.\n"

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs-1.28\n"
-"POT-Creation-Date: 2003-05-03 14:59-0400\n"
+"POT-Creation-Date: 2003-05-03 16:48-0400\n"
 "PO-Revision-Date: 2002-09-28 13:29MET\n"
 "Last-Translator: Olaf Klemke <olke@users.sourceforge.net>\n"
 "Language-Team: deutsch <gnome-de@gnome.org>\n"
@@ -31,7 +31,7 @@ msgstr "während des Lesen des Bad-Block-Inode"
 #: e2fsck/unix.c:869 e2fsck/unix.c:901 misc/badblocks.c:772
 #: misc/badblocks.c:783 misc/badblocks.c:797 misc/badblocks.c:809
 #: misc/dumpe2fs.c:337 misc/e2image.c:477 misc/e2image.c:493 misc/mke2fs.c:207
-#: misc/tune2fs.c:728 resize/main.c:198
+#: misc/tune2fs.c:728 resize/main.c:205
 #, c-format
 msgid "while trying to open %s"
 msgstr "while trying to open %s"
@@ -124,12 +124,12 @@ msgstr "BLKFLSBUF ioctl nicht unterstützt!  Can't flush buffers.\n"
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 msgstr "Verwendung: %s [-F] [-I inode_buffer_blocks] Gerät\n"
 
-#: e2fsck/iscan.c:83 e2fsck/unix.c:689 resize/main.c:175
+#: e2fsck/iscan.c:83 e2fsck/unix.c:689 resize/main.c:182
 #, c-format
 msgid "while opening %s for flushing"
 msgstr "während des Öffnens von %s zum Rückschreiben."
 
-#: e2fsck/iscan.c:88 e2fsck/unix.c:695 resize/main.c:182
+#: e2fsck/iscan.c:88 e2fsck/unix.c:695 resize/main.c:189
 #, c-format
 msgid "while trying to flush %s"
 msgstr "während des Rückschreibeversuches auf %s."
@@ -399,9 +399,8 @@ msgid "inode table"
 msgstr "Inoden-Tabelle"
 
 #: e2fsck/pass2.c:291
-#, fuzzy
 msgid "Pass 2"
-msgstr "Durchgang 1"
+msgstr "Durchgang 2"
 
 #: e2fsck/pass3.c:79
 msgid "inode done bitmap"
@@ -1395,7 +1394,8 @@ msgid "Symlink %Q (@i #%i) is invalid.\n"
 msgstr "Symlink %Q (@i #%i) is invalid.\n"
 
 #: e2fsck/problem.c:1018
-msgid "@a @b @F is invalid (%If).\n"
+#, fuzzy
+msgid "@a @b @F invalid (%If).\n"
 msgstr "@a @b @F ist falsch (%If).\n"
 
 #: e2fsck/problem.c:1023
@@ -1463,7 +1463,7 @@ msgid "Duplicate @E found.  "
 msgstr "Doppelte/bad @b(s) in @i %i:"
 
 #: e2fsck/problem.c:1097
-#, c-format
+#, no-c-format
 msgid ""
 "@E has a non-unique filename.\n"
 "Rename to %s"
@@ -1804,12 +1804,12 @@ msgid ""
 " -l bad_blocks_file   Add to badblocks list\n"
 " -L bad_blocks_file   Set badblocks list\n"
 msgstr ""
-"-v                             sei gesprächig\n"
-" -b Superblock          Nutze Superblockkopie\n"
-".-B Blockgrösse        erzwinge Blockgrösse beim Suchen vom Superblock\n"
-".-j externes-Journal  Angabe des Speicherortes des externen Jounals\n"
-" -l bad_blocks_file    zur Liste der defekten Blöcke hinzufügen\n"
-".-L bad_blocks_file   Liste der defekten Blöcke definieren\n"
+" -v                   sei gesprächig\n"
+" -b Superbloc         Nutze Superblockkopie\n"
+" -B Blockgröss        erzwinge Blockgrösse beim Suchen vom Superblock\n"
+" -j externes-Journal  Angabe des Speicherortes des externen Jounals\n"
+" -l bad_blocks_file   zur Liste der defekten Blöcke hinzufügen\n"
+" -L bad_blocks_file   Liste der defekten Blöcke definieren\n"
 
 #: e2fsck/unix.c:113
 #, c-format
@@ -1875,11 +1875,6 @@ msgstr ""
 "%8d sockets\n"
 "--------\n"
 "%8d Dateien\n"
-
-#: e2fsck/unix.c:172
-#, c-format
-msgid "%8d large file%s\n"
-msgstr "%8d grosse Dateien %s\n"
 
 #: e2fsck/unix.c:215 misc/badblocks.c:613 misc/tune2fs.c:744 misc/util.c:133
 #: resize/main.c:97
@@ -2303,10 +2298,10 @@ msgid "done                        \n"
 msgstr "erledigt                     \n"
 
 #: misc/badblocks.c:67
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-" [-c blocks_at_once] [-p num_passes] device [last_block [start_count]]\n"
+" [-c blocks_at_once] [-p num_passes] device [last_block [start_block]]\n"
 msgstr ""
 "Verwendung: %s [-b Block_Grösse] [-i Eingangsdatei] [-o Ausgabedatei] [-"
 "svwnf]\n"
@@ -2525,12 +2520,10 @@ msgid "Backup"
 msgstr "Backup"
 
 #: misc/dumpe2fs.c:128
-#, fuzzy
 msgid ", Group descriptors at "
 msgstr ", Gruppen Descriptoren in "
 
 #: misc/dumpe2fs.c:140
-#, fuzzy
 msgid " Group descriptor at "
 msgstr ", Gruppen Descriptoren in "
 
@@ -2612,7 +2605,7 @@ msgstr ""
 msgid "\tUsing %s\n"
 msgstr "\tBenutze %s\n"
 
-#: misc/dumpe2fs.c:339 misc/e2image.c:479 misc/tune2fs.c:731 resize/main.c:200
+#: misc/dumpe2fs.c:339 misc/e2image.c:479 misc/tune2fs.c:731 resize/main.c:207
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Kann keinen gültigen Dateisystem-Superblock finden.\n"
 
@@ -2638,8 +2631,8 @@ msgstr "Couldn't allocate header buffer\n"
 
 #: misc/e2image.c:80
 #, c-format
-msgid "short write (only %d bytes) forwriting image header"
-msgstr "short write (only %d bytes) forwriting image header"
+msgid "short write (only %d bytes) for writing image header"
+msgstr "short write (only %d bytes) for writing image header"
 
 #: misc/e2image.c:99
 msgid "while writing superblock"
@@ -2696,8 +2689,8 @@ msgstr "Verwendung:  findsuper Gerät [skipbytes [startkb]]\n"
 
 #: misc/findsuper.c:132
 #, c-format
-msgid "skiprate should be a number, not %s\n"
-msgstr "skiprate sollte eine Zahl sein, nicht %s\n"
+msgid "skipbytes should be a number, not %s\n"
+msgstr "skipbytes sollte eine Zahl sein, nicht %s\n"
 
 #: misc/findsuper.c:137
 msgid "skipbytes must be a multiple of the sector size\n"
@@ -3137,7 +3130,7 @@ msgstr "while trying to open journal device %s\n"
 
 #: misc/mke2fs.c:1093
 #, c-format
-msgid "Journal dev blocksize (%d) smaller thanminimum blocksize %d\n"
+msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
 msgstr ""
 
 #: misc/mke2fs.c:1107
@@ -3155,7 +3148,7 @@ msgstr "Warnung:%d-byte Blöcke zu gross für's System (max %d), erzwinge sie\n"
 msgid "filesystem"
 msgstr "Dateisystem"
 
-#: misc/mke2fs.c:1144 resize/main.c:222
+#: misc/mke2fs.c:1144 resize/main.c:229
 msgid "while trying to determine filesystem size"
 msgstr "while trying to determine filesystem size"
 
@@ -3607,6 +3600,7 @@ msgid "Couldn't allocate memory to parse journal options!\n"
 msgstr "Couldn't allocate memory to parse journal options!\n"
 
 #: misc/util.c:201
+#, fuzzy
 msgid ""
 "\n"
 "Bad journal options specified.\n"
@@ -3614,7 +3608,7 @@ msgid ""
 "Journal options are separated by commas, and may take an argument which\n"
 "\tis set off by an equals ('=') sign.\n"
 "\n"
-"Valid raid options are:\n"
+"Valid journal options are:\n"
 "\tsize=<journal size in megabytes>\n"
 "\tdevice=<journal device>\n"
 "\n"
@@ -3728,10 +3722,6 @@ msgstr "Unbekannter Durchgang?!?"
 msgid "Begin pass %d (max = %lu)\n"
 msgstr "Begin pass %d (max = %lu)\n"
 
-#: resize/main.c:96
-msgid "ext2fs_check_if_mount"
-msgstr "ext2fs_check_if_mount"
-
 #: resize/main.c:104
 #, c-format
 msgid ""
@@ -3741,17 +3731,17 @@ msgstr ""
 "%s ist eingehängt, Kann die Grösse deshalb nicht verändern!\n"
 "\n"
 
-#: resize/main.c:127
+#: resize/main.c:134
 #, c-format
 msgid "resize2fs %s (%s)\n"
 msgstr "resize2fs %s (%s)\n"
 
-#: resize/main.c:160
+#: resize/main.c:167
 #, c-format
 msgid "bad filesystem size - %s"
 msgstr "bad filesystem size - %s"
 
-#: resize/main.c:243
+#: resize/main.c:250
 #, c-format
 msgid ""
 "The containing partition (or device) is only %d blocks.\n"
@@ -3762,7 +3752,7 @@ msgstr ""
 "Die geforderte neue Grösse ist %d Blöcke.\n"
 "\n"
 
-#: resize/main.c:250
+#: resize/main.c:257
 #, c-format
 msgid ""
 "The filesystem is already %d blocks long.  Nothing to do!\n"
@@ -3771,7 +3761,7 @@ msgstr ""
 "Das Dateisystem ist schon %d Blöcke gross. Nichts zu tun!\n"
 "\n"
 
-#: resize/main.c:257
+#: resize/main.c:264
 #, c-format
 msgid ""
 "Please run 'e2fsck -f %s' first.\n"
@@ -3780,12 +3770,12 @@ msgstr ""
 "Bitte zuerst 'e2fsck -f %s ' laufen lassen.\n"
 "\n"
 
-#: resize/main.c:265
+#: resize/main.c:272
 #, c-format
 msgid "while trying to resize %s"
 msgstr "while trying to resize %s"
 
-#: resize/main.c:270
+#: resize/main.c:277
 #, c-format
 msgid ""
 "The filesystem on %s is now %d blocks long.\n"
@@ -3848,6 +3838,12 @@ msgstr "%d blocks of zeros...\n"
 #: resize/resize2fs.c:1394
 msgid "Inode table move finished.\n"
 msgstr "Inode table move finished.\n"
+
+#~ msgid "%8d large file%s\n"
+#~ msgstr "%8d grosse Dateien %s\n"
+
+#~ msgid "ext2fs_check_if_mount"
+#~ msgstr "ext2fs_check_if_mount"
 
 #~ msgid "Couldn't allocate memory to parse extended options!\n"
 #~ msgstr "Couldn't allocate memory to parse extended options!\n"

@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 	if (argc>2)
 		skiprate = strtol(argv[2], &s, 0);
 	if (s == argv[2]) {
-		fprintf(stderr,_("skiprate should be a number, not %s\n"), s);
+		fprintf(stderr,_("skipbytes should be a number, not %s\n"), s);
 		exit(1);
 	}
 	if (skiprate & 0x1ff) {

@@ -77,7 +77,7 @@ static void write_header(int fd, struct ext2_image_hdr *hdr, int blocksize)
 		exit(1);
 	}
 	if (actual != blocksize) {
-		fprintf(stderr, _("short write (only %d bytes) for"
+		fprintf(stderr, _("short write (only %d bytes) for "
 				  "writing image header"), actual);
 		exit(1);
 	}

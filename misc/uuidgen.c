@@ -39,6 +39,13 @@ main (int argc, char *argv[])
 	char   str[37];
 	uuid_t uu;
 
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	setlocale(LC_CTYPE, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
+
 	while ((c = getopt (argc, argv, "tr")) != EOF)
 		switch (c) {
 		case 't':

@@ -202,7 +202,7 @@ void parse_journal_opts(const char *opts)
 			"Journal options are separated by commas, "
 			"and may take an argument which\n"
 			"\tis set off by an equals ('=') sign.\n\n"
-			"Valid raid options are:\n"
+			"Valid journal options are:\n"
 			"\tsize=<journal size in megabytes>\n"
 			"\tdevice=<journal device>\n\n"
 			"The journal size must be between "

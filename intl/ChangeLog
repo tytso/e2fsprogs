@@ -1,5 +1,8 @@
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Add dummy install-shlibs target so that the
+		top-level "make install" is happy.
+
 	* Update to use gettext version 0.11.5 (released 2002-08-06)
 
 2003-04-21  Theodore Ts'o  <tytso@mit.edu>
