@@ -53,6 +53,7 @@
 #include <malloc.h>
 
 #include "../version.h"
+#include "nls-enable.h"
 #include "fsck.h"
 #include "get_device_by_label.h"
 
@@ -289,7 +290,7 @@ static void load_fs_info(const char *filename)
 
 	filesys_info = NULL;
 	if ((f = fopen(filename, "r")) == NULL) {
-		fprintf(stderr, "WARNING: couldn't open %s: %s\n",
+		fprintf(stderr, _("WARNING: couldn't open %s: %s\n"),
 			filename, strerror(errno));
 		return;
 	}
@@ -299,8 +300,8 @@ static void load_fs_info(const char *filename)
 			break;
 		buf[sizeof(buf)-1] = 0;
 		if (parse_fstab_line(buf, &fs) < 0) {
-			fprintf(stderr, "WARNING: bad format "
-				"on line %d of %s\n", lineno, filename);
+			fprintf(stderr, _("WARNING: bad format "
+				"on line %d of %s\n"), lineno, filename);
 			continue;
 		}
 		if (!fs)
@@ -320,12 +321,10 @@ static void load_fs_info(const char *filename)
 	fclose(f);
 	
 	if (old_fstab) {
-		fprintf(stderr, "\007\007\007"
-	"WARNING: Your /etc/fstab does not contain the fsck passno\n");
-		fprintf(stderr,
-	"	field.  I will kludge around things for you, but you\n");
-		fprintf(stderr,
-	"	should fix your /etc/fstab file as soon as you can.\n\n");
+		fprintf(stderr, _("\007\007\007"
+		"WARNING: Your /etc/fstab does not contain the fsck passno\n"
+		"	field.  I will kludge around things for you, but you\n"
+		"	should fix your /etc/fstab file as soon as you can.\n\n"));
 		
 		for (fs = filesys_info; fs; fs = fs->next) {
 			fs->passno = 1;
@@ -420,7 +419,7 @@ static int execute(const char *type, char *device, char *mntpt,
 
 	s = find_fsck(prog);
 	if (s == NULL) {
-		fprintf(stderr, "fsck: %s: not found\n", prog);
+		fprintf(stderr, _("fsck: %s: not found\n"), prog);
 		return ENOENT;
 	}
 
@@ -502,7 +501,7 @@ static struct fsck_instance *wait_one(NOARGS)
 				continue;
 			if (errno == ECHILD) {
 				fprintf(stderr,
-					"%s: wait: No more child process?!?\n",
+					_("%s: wait: No more child process?!?\n"),
 					progname);
 				return NULL;
 			}
@@ -524,13 +523,13 @@ static struct fsck_instance *wait_one(NOARGS)
 		if (sig == SIGINT) {
 			status = EXIT_UNCORRECTED;
 		} else {
-			printf("Warning... %s for device %s exited "
-			       "with signal %d.\n",
+			printf(_("Warning... %s for device %s exited "
+			       "with signal %d.\n"),
 			       inst->prog, inst->device, sig);
 			status = EXIT_ERROR;
 		}
 	} else {
-		printf("%s %s: status is %x, should never happen.\n",
+		printf(_("%s %s: status is %x, should never happen.\n"),
 		       inst->prog, inst->device, status);
 		status = EXIT_ERROR;
 	}
@@ -614,8 +613,8 @@ static void fsck_device(char *device, int interactive)
 	retval = execute(type, device, fsent ? fsent->mountpt : 0,
 			 interactive);
 	if (retval) {
-		fprintf(stderr, "%s: Error %d while executing fsck.%s "
-			"for %s\n", progname, retval, type, device);
+		fprintf(stderr, _("%s: Error %d while executing fsck.%s "
+			"for %s\n"), progname, retval, type, device);
 	}
 }
 
@@ -677,7 +676,7 @@ static int ignore(struct fs_info *fs)
 	/* See if the <fsck.fs> program is available. */
 	if (find_fsck(fs->type) == NULL) {
 		if (wanted)
-			fprintf(stderr, "fsck: cannot check %s: fsck.%s not found\n",
+			fprintf(stderr, _("fsck: cannot check %s: fsck.%s not found\n"),
 				fs->device, fs->type);
 		return(1);
 	}
@@ -733,7 +732,7 @@ static int check_all(NOARGS)
 	int pass_done;
 
 	if (verbose)
-		printf("Checking all file systems.\n");
+		printf(_("Checking all file systems.\n"));
 
 	/*
 	 * Find and check the root filesystem first.
@@ -798,7 +797,7 @@ static int check_all(NOARGS)
 			}
 		}
 		if (verbose > 1)
-			printf("--waiting-- (pass %d)\n", passno);
+			printf(_("--waiting-- (pass %d)\n"), passno);
 		inst = wait_one();
 		if (inst) {
 			status |= inst->exit_status;
@@ -819,7 +818,7 @@ static int check_all(NOARGS)
 static void usage(NOARGS)
 {
 	fprintf(stderr,
-		"Usage: fsck [-ACNPRTV] [-t fstype] [fs-options] filesys\n");
+		_("Usage: fsck [-ACNPRTV] [-t fstype] [fs-options] filesys\n"));
 	exit(EXIT_USAGE);
 }
 
@@ -845,7 +844,7 @@ static void PRS(int argc, char *argv[])
 		    (strncmp(arg, "LABEL=", 6) == 0) ||
 		    (strncmp(arg, "UUID=", 5) == 0)) {
 			if (num_devices >= MAX_DEVICES) {
-				fprintf(stderr, "%s: too many devices\n",
+				fprintf(stderr, _("%s: too many devices\n"),
 					progname);
 				exit(1);
 			}
@@ -855,7 +854,7 @@ static void PRS(int argc, char *argv[])
 		}
 		if (arg[0] != '-' || opts_for_fsck) {
 			if (num_args >= MAX_ARGS) {
-				fprintf(stderr, "%s: too many arguments\n",
+				fprintf(stderr, _("%s: too many arguments\n"),
 					progname);
 				exit(1);
 			}
@@ -921,7 +920,7 @@ static void PRS(int argc, char *argv[])
 			options[++opt] = '\0';
 			if (num_args >= MAX_ARGS) {
 				fprintf(stderr,
-					"%s: too many arguments\n",
+					_("%s: too many arguments\n"),
 					progname);
 				exit(1);
 			}
@@ -941,10 +940,15 @@ int main(int argc, char *argv[])
 	char *oldpath = getenv("PATH");
 	const char *fstab;
 
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
 	PRS(argc, argv);
 
 	if (!notitle)
-		printf("Parallelizing fsck version %s (%s)\n",
+		printf(_("Parallelizing fsck version %s (%s)\n"),
 			E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
 	fstab = getenv("FSTAB_FILE");

@@ -24,6 +24,7 @@
 #include <linux/ext2_fs.h>
 
 #include "../version.h"
+#include "nls-enable.h"
 
 #define LPF "lost+found"
 
@@ -35,11 +36,16 @@ int main (int argc, char ** argv)
 	int i, j;
 	int d;
 
-	fprintf (stderr, "mklost+found %s, %s for EXT2 FS %s, %s\n",
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
+	fprintf (stderr, _("mklost+found %s, %s for EXT2 FS %s, %s\n"),
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc != 1) {
-		fprintf (stderr, "Usage: mklost+found\n");
+		fprintf (stderr, _("Usage: mklost+found\n"));
 		exit(1);
 	}
 	if (mkdir (LPF, 0755) == -1) {

@@ -35,6 +35,7 @@
 #include "e2p/e2p.h"
 
 #include "../version.h"
+#include "nls-enable.h"
 
 #define in_use(m, x)	(ext2fs_test_bit ((x), (m)))
 
@@ -43,8 +44,8 @@ char * device_name = NULL;
 
 static void usage(void)
 {
-	fprintf (stderr, "usage: %s [-bV] [-ob superblock] "
-		 "[-oB blocksize] device\n", program_name);
+	fprintf (stderr, _("Usage: %s [-bV] [-ob superblock] "
+		 "[-oB blocksize] device\n"), program_name);
 	exit (1);
 }
 
@@ -88,27 +89,27 @@ static void list_desc (ext2_filsys fs)
 		next_blk = group_blk + fs->super->s_blocks_per_group;
 		if (next_blk > fs->super->s_blocks_count)
 			next_blk = fs->super->s_blocks_count;
-		printf ("Group %lu: (Blocks %u -- %u)\n", i,
+		printf (_("Group %lu: (Blocks %u -- %u)\n"), i,
 			group_blk, next_blk -1 );
-		printf ("  Block bitmap at %u (+%d), "
+		printf (_("  Block bitmap at %u (+%d), "
 			"Inode bitmap at %u (+%d)\n  "
-			"Inode table at %u (+%d)\n",
+			"Inode table at %u (+%d)\n"),
 			fs->group_desc[i].bg_block_bitmap,
 			fs->group_desc[i].bg_block_bitmap - group_blk,
 			fs->group_desc[i].bg_inode_bitmap,
 			fs->group_desc[i].bg_inode_bitmap - group_blk,
 			fs->group_desc[i].bg_inode_table,
 			fs->group_desc[i].bg_inode_table - group_blk);
-		printf ("  %d free blocks, %d free inodes, %d directories\n",
+		printf (_("  %d free blocks, %d free inodes, %d directories\n"),
 			fs->group_desc[i].bg_free_blocks_count,
 			fs->group_desc[i].bg_free_inodes_count,
 			fs->group_desc[i].bg_used_dirs_count);
-		printf ("  Free blocks: ");
+		printf (_("  Free blocks: "));
 		print_free (i, block_bitmap, fs->super->s_blocks_per_group,
 			    fs->super->s_first_data_block);
 		block_bitmap += fs->super->s_blocks_per_group / 8;
 		printf ("\n");
-		printf ("  Free inodes: ");
+		printf (_("  Free inodes: "));
 		print_free (i, inode_bitmap, fs->super->s_inodes_per_group, 1);
 		inode_bitmap += fs->super->s_inodes_per_group / 8;
 		printf ("\n");
@@ -131,11 +132,11 @@ static void list_bad_blocks(ext2_filsys fs)
 	retval = badblocks_list_iterate_begin(bb_list, &bb_iter);
 	if (retval) {
 		com_err("badblocks_list_iterate_begin", retval,
-			"while printing bad block list");
+			_("while printing bad block list"));
 		exit(1);
 	}
 	if (badblocks_list_iterate(bb_iter, &blk))
-		printf("Bad blocks: %d", blk);
+		printf(_("Bad blocks: %d"), blk);
 	while (badblocks_list_iterate(bb_iter, &blk))
 		printf(", %d", blk);
 	badblocks_list_iterate_end(bb_iter);
@@ -157,7 +158,7 @@ static void dump_bad_blocks(ext2_filsys fs)
 	retval = badblocks_list_iterate_begin(bb_list, &bb_iter);
 	if (retval) {
 		com_err("badblocks_list_iterate_begin", retval,
-			"while printing bad block list");
+			_("while printing bad block list"));
 		exit(1);
 	}
 	while (badblocks_list_iterate(bb_iter, &blk))
@@ -185,8 +186,13 @@ int main (int argc, char ** argv)
 	int		big_endian;
 	int		c;
 
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
 	initialize_ext2_error_table();
-	fprintf (stderr, "dumpe2fs %s, %s for EXT2 FS %s, %s\n",
+	fprintf (stderr, _("dumpe2fs %s, %s for EXT2 FS %s, %s\n"),
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
@@ -213,7 +219,7 @@ int main (int argc, char ** argv)
 			break;
 		case 'V':
 			/* Print version number and exit */
-			fprintf(stderr, "\tUsing %s\n",
+			fprintf(stderr, _("\tUsing %s\n"),
 				error_message(EXT2_ET_BASE));
 			exit(0);
 		default:
@@ -229,9 +235,9 @@ int main (int argc, char ** argv)
 			      use_superblock, use_blocksize,
 			      unix_io_manager, &fs);
 	if (retval) {
-		com_err (program_name, retval, "while trying to open %s",
+		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
-		printf ("Couldn't find valid filesystem superblock.\n");
+		printf (_("Couldn't find valid filesystem superblock.\n"));
 		exit (1);
 	}
 	if (print_badblocks) {
@@ -241,7 +247,7 @@ int main (int argc, char ** argv)
 		if (!i386_byteorder())
 			big_endian = !big_endian;
 		if (big_endian)
-			printf("Note: This is a byte-swapped filesystem\n");
+			printf(_("Note: This is a byte-swapped filesystem\n"));
 		list_super (fs->super);
 		list_bad_blocks (fs);
 		if (header_only) {
@@ -251,7 +257,7 @@ int main (int argc, char ** argv)
 		retval = ext2fs_read_bitmaps (fs);
 		if (retval) {
 			com_err (program_name, retval,
-				 "while trying to read the bitmaps",
+				 _("while trying to read the bitmaps"),
 				 device_name);
 			ext2fs_close (fs);
 			exit (1);

@@ -14,13 +14,14 @@
 #include <getopt.h>
 #endif
 #include "uuid/uuid.h"
+#include "nls-enable.h"
 
 #define DO_TYPE_TIME	1
 #define DO_TYPE_RANDOM	2
 
 void usage(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [-r] [-t]\n", progname);
+	fprintf(stderr, _("Usage: %s [-r] [-t]\n"), progname);
 	exit(1);
 }
 

@@ -44,6 +44,7 @@
 #include "e2p/e2p.h"
 
 #include "../version.h"
+#include "nls-enable.h"
 
 const char * program_name = "chattr";
 
@@ -67,7 +68,7 @@ static void fatal_error(const char * fmt_string, int errcode)
 	exit (errcode);
 }
 
-#define usage() fatal_error("usage: %s [-RV] [-+=AacdisSu] [-v version] files...\n", \
+#define usage() fatal_error(_("usage: %s [-RV] [-+=AacdisSu] [-v version] files...\n"), \
 			     1)
 
 static int decode_arg (int * i, int argc, char ** argv)
@@ -135,13 +136,13 @@ static int decode_arg (int * i, int argc, char ** argv)
 				if (*tmp)
 				{
 					com_err (program_name, 0,
-						 "bad version - %s\n", argv[*i]);
+						 _("bad version - %s\n"), argv[*i]);
 					usage ();
 				}
 				set_version = 1;
 				break;
 			default:
-				fprintf (stderr, "%s: Unrecognized argument: %c\n",
+				fprintf (stderr, _("%s: Unrecognized argument: %c\n"),
 					 program_name, *p);
 				usage ();
 			}
@@ -244,7 +245,7 @@ static void change_attributes (const char * name)
 
 	if (lstat (name, &st) == -1)
 	{
-		com_err (program_name, errno, "while stating %s", name);
+		com_err (program_name, errno, _("while stating %s"), name);
 		return;
 	}
 	if (S_ISLNK(st.st_mode) && recursive)
@@ -253,7 +254,7 @@ static void change_attributes (const char * name)
 	{
 		if (verbose)
 		{
-			printf ("Flags of %s set as ", name);
+			printf (_("Flags of %s set as "), name);
 			print_flags (stdout, sf, 0);
 			printf ("\n");
 		}
@@ -264,7 +265,7 @@ static void change_attributes (const char * name)
 	{
 		if (fgetflags (name, &flags) == -1)
 			com_err (program_name, errno,
-			         "while reading flags on %s", name);
+			         _("while reading flags on %s"), name);
 		else
 		{
 			if (rem)
@@ -273,22 +274,22 @@ static void change_attributes (const char * name)
 				flags |= af;
 			if (verbose)
 			{
-				printf ("Flags of %s set as ", name);
+				printf (_("Flags of %s set as "), name);
 				print_flags (stdout, flags, 0);
 				printf ("\n");
 			}
 			if (fsetflags (name, flags) == -1)
 				com_err (program_name, errno,
-				         "while setting flags on %s", name);
+				         _("while setting flags on %s"), name);
 		}
 	}
 	if (set_version)
 	{
 		if (verbose)
-			printf ("Version of %s set as %lu\n", name, version);
+			printf (_("Version of %s set as %lu\n"), name, version);
 		if (fsetversion (name, version) == -1)
 			com_err (program_name, errno,
-			         "while setting version on %s", name);
+			         _("while setting version on %s"), name);
 	}
 	if (S_ISDIR(st.st_mode) && recursive)
 		iterate_on_dir (name, chattr_dir_proc, (void *) NULL);
@@ -302,8 +303,8 @@ static int chattr_dir_proc (const char * dir_name, struct dirent * de, void * pr
 
 		path = malloc(strlen (dir_name) + 1 + strlen (de->d_name) + 1);
 		if (!path)
-			fatal_error("Couldn't allocate path variable "
-				    "in chattr_dir_proc", 1);
+			fatal_error(_("Couldn't allocate path variable "
+				    "in chattr_dir_proc"), 1);
 		sprintf (path, "%s/%s", dir_name, de->d_name);
 		change_attributes (path);
 		free(path);
@@ -316,6 +317,11 @@ int main (int argc, char ** argv)
 	int i, j;
 	int end_arg = 0;
 
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
 	if (argc && *argv)
 		program_name = *argv;
 	i = 1;
@@ -330,16 +336,16 @@ int main (int argc, char ** argv)
 		usage ();
 	if (set && (add || rem))
 	{
-		fprintf (stderr, "= is incompatible with - and +\n");
+		fprintf (stderr, _("= is incompatible with - and +\n"));
 		exit (1);
 	}
 	if (!(add || rem || set || set_version))
 	{
-		fprintf (stderr, "Must use '-v', =, - or +\n");
+		fprintf (stderr, _("Must use '-v', =, - or +\n"));
 		exit (1);
 	}
 	if (verbose)
-		fprintf (stderr, "chattr %s, %s for EXT2 FS %s, %s\n",
+		fprintf (stderr, _("chattr %s, %s for EXT2 FS %s, %s\n"),
 			 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 			 EXT2FS_VERSION, EXT2FS_DATE);
 	for (j = i; j < argc; j++)

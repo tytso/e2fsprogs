@@ -14,10 +14,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
+#include "nls-enable.h"
 
 void print_error(char *operation, int error, char *device)
 {
-	fprintf(stderr, "%s failed for %s: %s\n", operation, device,
+	fprintf(stderr, _("%s failed for %s: %s\n"), operation, device,
 		strerror(error));
 }
 
@@ -27,12 +28,17 @@ int main(int argc, char **argv)
 	int fd, i;
 	long size;
 
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
 	if (argc == 1) {
-		fprintf(stderr, "Usage: %s <dev1> <dev2> <dev3>\n\n"
+		fprintf(stderr, _("Usage: %s <dev1> <dev2> <dev3>\n\n"
 			"This program prints out the partition information "
 			"for a set of devices\n"
-			"A common way to use this progrma is:\n\n\t"
-			"%s /dev/hda?\n\n", argv[0], argv[0]);
+			"A common way to use this program is:\n\n\t"
+			"%s /dev/hda?\n\n"), argv[0], argv[0]);
 		exit(1);
 	}
     
@@ -45,14 +51,14 @@ int main(int argc, char **argv)
 		}
     
 		if (ioctl(fd, HDIO_GETGEO, &loc) < 0) {
-			print_error("HDIO_GETGEO ioctl", errno, argv[i]);
+			print_error(_("HDIO_GETGEO ioctl"), errno, argv[i]);
 			close(fd);
 			continue;
 		}
     
     
 		if (ioctl(fd, BLKGETSIZE, &size) < 0) {
-			print_error("BLKGETSIZE ioctl", errno, argv[i]);
+			print_error(_("BLKGETSIZE ioctl"), errno, argv[i]);
 			close(fd);
 			continue;
 		}

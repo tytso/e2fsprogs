@@ -47,6 +47,7 @@
 #include "e2p/e2p.h"
 
 #include "../version.h"
+#include "nls-enable.h"
 
 const char * program_name = "tune2fs";
 char * device_name = NULL;
@@ -92,13 +93,13 @@ static int strcasecmp (char *s1, char *s2)
 
 static void usage(void)
 {
-	fprintf(stderr, "Usage: %s [-c max-mounts-count] [-e errors-behavior] "
+	fprintf(stderr, _("Usage: %s [-c max-mounts-count] [-e errors-behavior] "
 		 "[-g group]\n"
 		 "\t[-i interval[d|m|w]] [-l] [-s sparse-flag] "
 		"[-m reserved-blocks-percent]\n"
 		 "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
 		 "\t[-L volume-label] [-M last-mounted-dir] [-U UUID]\n"
-		 "\t[-O [^]feature[,...]] device\n", program_name);
+		 "\t[-O [^]feature[,...]] device\n"), program_name);
 	exit (1);
 }
 
@@ -108,7 +109,7 @@ static __u32 ok_features[3] = {
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
 };
 
-static const char *please_fsck = "Please run e2fsck on the filesystem.\n";
+static const char *please_fsck = _("Please run e2fsck on the filesystem.\n");
 
 int main (int argc, char ** argv)
 {
@@ -122,7 +123,12 @@ int main (int argc, char ** argv)
 	int open_flag = 0;
 	char *features_cmd = 0;
 
-	fprintf (stderr, "tune2fs %s, %s for EXT2 FS %s, %s\n",
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
+	fprintf (stderr, _("tune2fs %s, %s for EXT2 FS %s, %s\n"),
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
@@ -135,7 +141,7 @@ int main (int argc, char ** argv)
 				max_mount_count = strtoul (optarg, &tmp, 0);
 				if (*tmp || max_mount_count > 16000) {
 					com_err (program_name, 0,
-						 "bad mounts count - %s",
+						 _("bad mounts count - %s"),
 						 optarg);
 					usage();
 				}
@@ -146,7 +152,7 @@ int main (int argc, char ** argv)
 				mount_count = strtoul (optarg, &tmp, 0);
 				if (*tmp || mount_count > 16000) {
 					com_err (program_name, 0,
-						 "bad mounts count - %s",
+						 _("bad mounts count - %s"),
 						 optarg);
 					usage();
 				}
@@ -162,7 +168,7 @@ int main (int argc, char ** argv)
 					errors = EXT2_ERRORS_PANIC;
 				else {
 					com_err (program_name, 0,
-						 "bad error behavior - %s",
+						 _("bad error behavior - %s"),
 						 optarg);
 					usage();
 				}
@@ -182,7 +188,7 @@ int main (int argc, char ** argv)
 				}
 				if (*tmp) {
 					com_err (program_name, 0,
-						 "bad gid/group name - %s",
+						 _("bad gid/group name - %s"),
 						 optarg);
 					usage();
 				}
@@ -215,7 +221,7 @@ int main (int argc, char ** argv)
 				}
 				if (*tmp || interval > (365 * 86400)) {
 					com_err (program_name, 0,
-						 "bad interval - %s", optarg);
+						_("bad interval - %s"), optarg);
 					usage();
 				}
 				i_flag = 1;
@@ -233,7 +239,7 @@ int main (int argc, char ** argv)
 				reserved_ratio = strtoul (optarg, &tmp, 0);
 				if (*tmp || reserved_ratio > 50) {
 					com_err (program_name, 0,
-						 "bad reserved block ratio - %s",
+						 _("bad reserved block ratio - %s"),
 						 optarg);
 					usage();
 				}
@@ -253,7 +259,7 @@ int main (int argc, char ** argv)
 				reserved_blocks = strtoul (optarg, &tmp, 0);
 				if (*tmp) {
 					com_err (program_name, 0,
-						 "bad reserved blocks count - %s",
+						 _("bad reserved blocks count - %s"),
 						 optarg);
 					usage();
 				}
@@ -277,7 +283,7 @@ int main (int argc, char ** argv)
 				}
 				if (*tmp) {
 					com_err (program_name, 0,
-						 "bad uid/user name - %s",
+						 _("bad uid/user name - %s"),
 						 optarg);
 					usage();
 				}
@@ -300,9 +306,9 @@ int main (int argc, char ** argv)
 	retval = ext2fs_open (device_name, open_flag, 0, 0,
 			      unix_io_manager, &fs);
         if (retval) {
-		com_err (program_name, retval, "while trying to open %s",
+		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
-		printf("Couldn't find valid filesystem superblock.\n");
+		printf(_("Couldn't find valid filesystem superblock.\n"));
 		exit(1);
 	}
 	sb = (struct ext2fs_sb *) fs->super;
@@ -310,94 +316,94 @@ int main (int argc, char ** argv)
 	if (c_flag) {
 		fs->super->s_max_mnt_count = max_mount_count;
 		ext2fs_mark_super_dirty(fs);
-		printf ("Setting maximal mount count to %d\n",
+		printf (_("Setting maximal mount count to %d\n"),
 			max_mount_count);
 	}
 	if (C_flag) {
 		fs->super->s_mnt_count = mount_count;
 		ext2fs_mark_super_dirty(fs);
-		printf ("Setting current mount count to %d\n", mount_count);
+		printf (_("Setting current mount count to %d\n"), mount_count);
 	}
 	if (e_flag) {
 		fs->super->s_errors = errors;
 		ext2fs_mark_super_dirty(fs);
-		printf ("Setting error behavior to %d\n", errors);
+		printf (_("Setting error behavior to %d\n"), errors);
 	}
 	if (g_flag)
 #ifdef	EXT2_DEF_RESGID
 	{
 		fs->super->s_def_resgid = resgid;
 		ext2fs_mark_super_dirty(fs);
-		printf ("Setting reserved blocks gid to %lu\n", resgid);
+		printf (_("Setting reserved blocks gid to %lu\n"), resgid);
 	}
 #else
 		com_err (program_name, 0,
-			 "The -g option is not supported by this version -- "
-			 "Recompile with a newer kernel");
+			 _("The -g option is not supported by this version -- "
+			 "Recompile with a newer kernel"));
 #endif
 	if (i_flag) {
 		fs->super->s_checkinterval = interval;
 		ext2fs_mark_super_dirty(fs);
-		printf ("Setting interval between check %lu seconds\n", interval);
+		printf (_("Setting interval between check %lu seconds\n"), interval);
 	}
 	if (m_flag) {
 		fs->super->s_r_blocks_count = (fs->super->s_blocks_count / 100)
 			* reserved_ratio;
 		ext2fs_mark_super_dirty(fs);
-		printf ("Setting reserved blocks percentage to %lu (%u blocks)\n",
+		printf (_("Setting reserved blocks percentage to %lu (%u blocks)\n"),
 			reserved_ratio, fs->super->s_r_blocks_count);
 	}
 	if (r_flag) {
 		if (reserved_blocks >= fs->super->s_blocks_count) {
 			com_err (program_name, 0,
-				 "reserved blocks count is too big (%ul)",
+				 _("reserved blocks count is too big (%ul)"),
 				 reserved_blocks);
 			exit (1);
 		}
 		fs->super->s_r_blocks_count = reserved_blocks;
 		ext2fs_mark_super_dirty(fs);
-		printf ("Setting reserved blocks count to %lu\n",
+		printf (_("Setting reserved blocks count to %lu\n"),
 			reserved_blocks);
 	}
 	if (s_flag == 1) {
 #ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 		if (sb->s_feature_ro_compat &
 		    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)
-			fprintf(stderr, "\nThe filesystem already"
-				" has spare superblocks.\n");
+			fprintf(stderr, _("\nThe filesystem already"
+				" has spare superblocks.\n"));
 		else {
 			sb->s_feature_ro_compat |=
 				EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 			fs->super->s_state &= ~EXT2_VALID_FS;
 			ext2fs_mark_super_dirty(fs);
-			printf("\nSparse superblock flag set.  %s",
+			printf(_("\nSparse superblock flag set.  %s"),
 			       please_fsck);
 		}
 #else /* !EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
 		com_err (program_name, 0,
-			 "The -s option is not supported by this version -- "
-			 "Recompile with a newer kernel");
+			 _("The -s option is not supported by this version -- "
+			 "Recompile with a newer kernel"));
 #endif /* EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
 	}
 	if (s_flag == 0) {
 #ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 		if (!(sb->s_feature_ro_compat &
 		      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
-			fprintf(stderr, "\nThe filesystem already"
-				" does not support spare superblocks.\n");
+			fprintf(stderr, _("\nThe filesystem already"
+				" does not support spare superblocks.\n"));
 		else {
 			sb->s_feature_ro_compat &=
 				~EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 			fs->super->s_state &= ~EXT2_VALID_FS;
 			fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 			ext2fs_mark_super_dirty(fs);
-			printf("\nSparse superblock flag cleared.  %s",
+			printf(_("\nSparse superblock flag cleared.  %s"),
 			       please_fsck);
 		}
 #else /* !EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
 		com_err (program_name, 0,
-			 "The -s option is not supported by this version -- "
-			 "Recompile with a newer kernel");
+			 _("The -s option is not supported by this version -- "
+			 "Recompile with a newer kernel"));
 #endif /* EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
 	}
 	
@@ -406,17 +412,17 @@ int main (int argc, char ** argv)
 	{
 		fs->super->s_def_resuid = resuid;
 		ext2fs_mark_super_dirty(fs);
-		printf ("Setting reserved blocks uid to %lu\n", resuid);
+		printf (_("Setting reserved blocks uid to %lu\n"), resuid);
 	}
 #else
 		com_err (program_name, 0,
-			 "The -u option is not supported by this version -- "
-			 "Recompile with a newer kernel");
+			 _("The -u option is not supported by this version -- "
+			 "Recompile with a newer kernel"));
 #endif
 	if (L_flag) {
 		if (strlen(new_label) > sizeof(sb->s_volume_name))
-			fprintf(stderr, "Warning: label too "
-				"long, truncating.\n");
+			fprintf(stderr, _("Warning: label too "
+				"long, truncating.\n"));
 		memset(sb->s_volume_name, 0, sizeof(sb->s_volume_name));
 		strncpy(sb->s_volume_name, new_label,
 			sizeof(sb->s_volume_name));
@@ -438,7 +444,7 @@ int main (int argc, char ** argv)
 		if (e2p_edit_feature(features_cmd,
 				     &sb->s_feature_compat,
 				     ok_features)) {
-			fprintf(stderr, "Invalid filesystem option set: %s\n",
+			fprintf(stderr, _("Invalid filesystem option set: %s\n"),
 				features_cmd);
 			exit(1);
 		}
@@ -459,7 +465,7 @@ int main (int argc, char ** argv)
 		} else if (strcasecmp(new_UUID, "random") == 0) {
 			uuid_generate(sb->s_uuid);
 		} else if (uuid_parse(new_UUID, sb->s_uuid)) {
-			com_err(program_name, 0, "Invalid UUID format\n");
+			com_err(program_name, 0, _("Invalid UUID format\n"));
 			exit(1);
 		}
 		ext2fs_mark_super_dirty(fs);

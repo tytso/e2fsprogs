@@ -68,6 +68,7 @@
 #include <time.h>
 
 #include <linux/ext2_fs.h>
+#include "nls-enable.h"
 
 
 main(int argc, char *argv[])
@@ -82,23 +83,28 @@ main(int argc, char *argv[])
 	struct ext2_super_block ext2;
 	/* interesting fields: EXT2_SUPER_MAGIC
 	 *      s_blocks_count s_log_block_size s_mtime s_magic s_lastcheck */
-  
+
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
 	if (argc<2) {
 		fprintf(stderr,
-			"Usage:  findsuper device [skiprate [start]]\n");
+			_("Usage:  findsuper device [skiprate [start]]\n"));
 		exit(1);
 	}
 	if (argc>2)
 		skiprate=atoi(argv[2]);
 	if (skiprate<512) {
 		fprintf(stderr,
-			"Do you really want to skip less than a sector??\n");
+			_("Do you really want to skip less than a sector??\n"));
 		exit(2);
 	}
 	if (argc>3)
 		sk=atol(argv[3]);
 	if (sk<0) {
-		fprintf(stderr,"Have to start at 0 or greater,not %ld\n",sk);
+		fprintf(stderr,_("Have to start at 0 or greater,not %ld\n"),sk);
 		exit(1);
 	}
 	f=fopen(argv[1],"r");
@@ -111,7 +117,7 @@ main(int argc, char *argv[])
 	printf("  thisoff     block fs_blk_sz  blksz grp last_mount\n");
 	for (;!feof(f) &&  (i=fseek(f,sk,SEEK_SET))!= -1; sk+=skiprate){
 		if (i=fread(&ext2,sizeof(ext2),1, f)!=1) {
-			perror("read failed");
+			perror(_("read failed"));
 		}
 		if (ext2.s_magic != EXT2_SUPER_MAGIC)
 			continue;
@@ -124,6 +130,6 @@ main(int argc, char *argv[])
 		       ext2.s_log_block_size,
 		       ext2.s_block_group_nr, s);
 	}
-	printf("Failed on %d at %ld\n", i, sk);
+	printf(_("Failed on %d at %ld\n"), i, sk);
 	fclose(f);
 }

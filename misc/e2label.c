@@ -29,6 +29,7 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#include "nls-enable.h"
 
 #define EXT2_SUPER_MAGIC 0xEF53
 
@@ -50,21 +51,21 @@ static int open_e2fs (char *dev, int mode)
 	fd = open(dev, mode);
 	if (fd < 0) {
 	     perror(dev);
-	     fprintf (stderr, "e2label: cannot open %s\n", dev);
+	     fprintf (stderr, _("e2label: cannot open %s\n"), dev);
 	     exit(1);
 	}
 	if (lseek(fd, 1024, SEEK_SET) != 1024) {
 	     perror(dev);
-	     fprintf (stderr, "e2label: cannot seek to superblock\n");
+	     fprintf (stderr, _("e2label: cannot seek to superblock\n"));
 	     exit(1);
 	}
 	if (read(fd, (char *) &sb, sizeof(sb)) != sizeof(sb)) {
 	     perror(dev);
-	     fprintf (stderr, "e2label: error reading superblock\n");
+	     fprintf (stderr, _("e2label: error reading superblock\n"));
 	     exit(1);
 	}
 	if (sb.s_magic[0] + 256*sb.s_magic[1] != EXT2_SUPER_MAGIC) {
-	     fprintf (stderr, "e2label: not an ext2 filesystem\n");
+	     fprintf (stderr, _("e2label: not an ext2 filesystem\n"));
 	     exit(1);
 	}
 
@@ -89,15 +90,15 @@ static void change_label (char *dev, char *label)
 	memset(sb.s_volume_name, 0, VOLNAMSZ);
 	strncpy(sb.s_volume_name, label, VOLNAMSZ);
 	if (strlen(label) > VOLNAMSZ)
-		fprintf(stderr, "Warning: label too long, truncating.\n");
+		fprintf(stderr, _("Warning: label too long, truncating.\n"));
 	if (lseek(fd, 1024, SEEK_SET) != 1024) {
 	     perror(dev);
-	     fprintf (stderr, "e2label: cannot seek to superblock again\n");
+	     fprintf (stderr, _("e2label: cannot seek to superblock again\n"));
 	     exit(1);
 	}
 	if (write(fd, (char *) &sb, sizeof(sb)) != sizeof(sb)) {
 	     perror(dev);
-	     fprintf (stderr, "e2label: error writing superblock\n");
+	     fprintf (stderr, _("e2label: error writing superblock\n"));
 	     exit(1);
 	}
 }
@@ -109,7 +110,7 @@ int main (int argc, char ** argv)
 	else if (argc == 3)
 	     change_label(argv[1], argv[2]);
 	else {
-	     fprintf(stderr, "Usage: e2label device [newlabel]\n");
+	     fprintf(stderr, _("Usage: e2label device [newlabel]\n"));
 	     exit(1);
 	}
 	return 0;

@@ -1,5 +1,11 @@
 2000-02-06  Theodore Ts'o  <tytso@valinux.com>
 
+	* badblocks.c, chattr.c, dumpe2fs.c, e2label.c, findsuper.c,
+		fsck.c, get_device_by_label.c, lsattr.c, mke2fs.c, 
+		mklost+found.c, nls-enable.h, partinfo.c, tune2fs.c,
+		uuidgen.c: Add Internationalization support as 
+		suggested by Marco d'Itri <md@linux.it>.
+
 	* badblocks.c: Fix non-destructive read/write patches from David
 		Beattie.  Non-standard variable-length automatic arrays
 		removed.  Non-destrutive write test fixed so that logic is

@@ -14,6 +14,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include "nls-enable.h"
 #include "get_device_by_label.h"
 
 #define PROC_PARTITIONS "/proc/partitions"
@@ -155,7 +156,7 @@ get_spec_by_uuid(const char *s0) {
 	return get_spec_by_x(UUID, uuid);
 
  bad_uuid:
-	fprintf(stderr, "WARNING: %s: bad UUID", s0);
+	fprintf(stderr, _("WARNING: %s: bad UUID"), s0);
 	return NULL;
 }
 

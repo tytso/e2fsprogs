@@ -52,9 +52,10 @@
 #include "ext2fs/ext2_io.h"
 #include <linux/ext2_fs.h>
 #include "ext2fs/ext2fs.h"
+#include "nls-enable.h"
 
 const char * program_name = "badblocks";
-const char * done_string = "done                        \n";
+const char * done_string = _("done                        \n");
 
 int v_flag = 0;			/* verbose */
 int w_flag = 0;			/* do r/w test: 0=no, 1=yes, 2=non-destructive */
@@ -62,7 +63,7 @@ int s_flag = 0;			/* show progress of test */
 
 static void usage(void)
 {
-	fprintf (stderr, "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwn]\n [-c blocks_at_once] [-p num_passes] device blocks_count [start_count]\n",
+	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwn]\n [-c blocks_at_once] [-p num_passes] device blocks_count [start_count]\n"),
 		 program_name);
 	exit (1);
 }
@@ -155,15 +156,14 @@ static long do_read (int dev, char * buffer, int try, int block_size,
 	/* Seek to the correct loc. */
 	if (ext2fs_llseek (dev, (ext2_loff_t) current_block * block_size,
 			 SEEK_SET) != (ext2_loff_t) current_block * block_size)
-		com_err (program_name, errno, "during seek");
+		com_err (program_name, errno, _("during seek"));
 
 	/* Try the read */
 	got = read (dev, buffer, try * block_size);
 	if (got < 0)
 		got = 0;	
 	if (got & 511)
-		fprintf (stderr,
-			 "Weird value (%ld) in do_read\n", got);
+		fprintf(stderr, _("Weird value (%ld) in do_read\n"), got);
 	got /= block_size;
 	return got;
 }
@@ -183,7 +183,7 @@ static long do_write (int dev, char * buffer, int try, int block_size,
 	/* Seek to the correct loc. */
 	if (ext2fs_llseek (dev, (ext2_loff_t) current_block * block_size,
 			 SEEK_SET) != (ext2_loff_t) current_block * block_size)
-		com_err (program_name, errno, "during seek");
+		com_err (program_name, errno, _("during seek"));
 
 	/* Try the write */
 	got = write (dev, buffer, try * block_size);
@@ -205,10 +205,10 @@ static void flush_bufs (int dev, int sync)
       && sync
 #endif
       )
-    fprintf (stderr, "Flushing buffers\n");
+    fprintf (stderr, _("Flushing buffers\n"));
 
   if (sync && fdatasync (dev) == -1)
-    com_err (program_name, errno, "during fsync");
+    com_err (program_name, errno, _("during fsync"));
 
 #ifdef BLKFLSBUF
   ioctl (host_dev, BLKFLSBUF, 0);   /* In case this is a HD */
@@ -230,7 +230,8 @@ static unsigned int test_ro (int dev, unsigned long blocks_count,
 
 	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
 	if (errcode) {
-		com_err (program_name, errcode, "while beginning bad block list iteration");
+		com_err (program_name, errcode,
+			 _("while beginning bad block list iteration"));
 		exit (1);
 	}
 	do {
@@ -240,20 +241,21 @@ static unsigned int test_ro (int dev, unsigned long blocks_count,
 	blkbuf = malloc (blocks_at_once * block_size);
 	if (!blkbuf)
 	{
-		com_err (program_name, ENOMEM, "while allocating buffers");
+		com_err (program_name, ENOMEM, _("while allocating buffers"));
 		exit (1);
 	}
 	flush_bufs (dev, 0);
 	if (v_flag) {
-	    fprintf (stderr,
-		     "Checking for bad blocks in read-only mode\n");
-	    fprintf (stderr, "From block %lu to %lu\n", from_count, blocks_count);
+	    fprintf(stderr, _("Checking for bad blocks in read-only mode\n"));
+	    fprintf (stderr, _("From block %lu to %lu\n"), from_count,
+		     blocks_count);
 	}
 	try = blocks_at_once;
 	currently_testing = from_count;
 	num_blocks = blocks_count;
 	if (s_flag || v_flag > 1) {
-		fprintf(stderr, "Checking for bad blocks (read-only test): ");
+		fprintf(stderr,
+			_("Checking for bad blocks (read-only test): "));
 		if (v_flag <= 1)
 			alarm_intr(SIGALRM);
 	}
@@ -308,7 +310,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 	buffer = malloc (2 * block_size);
 	if (!buffer)
 	{
-		com_err (program_name, ENOMEM, "while allocating buffers");
+		com_err (program_name, ENOMEM, _("while allocating buffers"));
 		exit (1);
 	}
 
@@ -316,14 +318,14 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 
 	if (v_flag) {
 		fprintf(stderr,
-			"Checking for bad blocks in read-write mode\n");
-		fprintf(stderr, "From block %lu to %lu\n",
+			_("Checking for bad blocks in read-write mode\n"));
+		fprintf(stderr, _("From block %lu to %lu\n"),
 			 from_count, blocks_count);
 	}
 	for (i = 0; i < sizeof (pattern); i++) {
 		memset (buffer, pattern[i], block_size);
 		if (s_flag | v_flag)
-			fprintf (stderr, "Writing pattern 0x%08x: ",
+			fprintf (stderr, _("Writing pattern 0x%08x: "),
 				 *((int *) buffer));
 		num_blocks = blocks_count;
 		currently_testing = from_count;
@@ -337,7 +339,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 					 block_size, SEEK_SET) !=
 			    (ext2_loff_t) currently_testing * block_size)
 				com_err (program_name, errno,
-					 "during seek on block %d",
+					 _("during seek on block %d"),
 					 currently_testing);
 			if (v_flag > 1)
 				print_status();
@@ -349,7 +351,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 			fprintf(stderr, done_string);
 		flush_bufs (dev, 1);
 		if (s_flag | v_flag)
-			fprintf (stderr, "Reading and comparing: ");
+			fprintf (stderr, _("Reading and comparing: "));
 		num_blocks = blocks_count;
 		currently_testing = from_count;
 		if (s_flag && v_flag <= 1)
@@ -362,7 +364,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 					 block_size, SEEK_SET) !=
 			    (ext2_loff_t) currently_testing * block_size)
 				com_err (program_name, errno,
-					 "during seek on block %d",
+					 _("during seek on block %d"),
 					 currently_testing);
 			if (v_flag > 1)
 				print_status();
@@ -403,7 +405,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
 	if (errcode) {
 		com_err (program_name, errcode,
-			 "while beginning bad block list iteration");
+			 _("while beginning bad block list iteration"));
 		exit (1);
 	}
 	do {
@@ -414,13 +416,13 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	bufblk = malloc (blocks_at_once * sizeof(unsigned long));
 	bufblks = malloc (blocks_at_once * sizeof(unsigned long));
 	if (!blkbuf || !bufblk || !bufblks) {
-		com_err (program_name, ENOMEM, "while allocating buffers");
+		com_err(program_name, ENOMEM, _("while allocating buffers"));
 		exit (1);
 	}
 
 	/* inititalize the test data randomly: */
 	if (v_flag) {
-		fprintf (stderr, "Initializing random test data\n");
+		fprintf (stderr, _("Initializing random test data\n"));
 	}
 	for(ptr = blkbuf + blocks_at_once * block_size;
 	    ptr < blkbuf + 2 * blocks_at_once * block_size;
@@ -431,11 +433,11 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	flush_bufs (dev, 0);
 	if (v_flag) {
 	    fprintf (stderr,
-		     "Checking for bad blocks in non-destructive read-write mode\n");
-	    fprintf (stderr, "From block %lu to %lu\n", from_count, blocks_count);
+		     _("Checking for bad blocks in non-destructive read-write mode\n"));
+	    fprintf (stderr, _("From block %lu to %lu\n"), from_count, blocks_count);
 	}
 	if (s_flag || v_flag > 1) {
-		fprintf (stderr, "Checking for bad blocks (non-destructive read-write test): ");
+		fprintf(stderr, _("Checking for bad blocks (non-destructive read-write test): "));
 		if (v_flag <= 1)
 			alarm_intr(SIGALRM);
 	}
@@ -474,7 +476,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 						    currently_testing);
 				if (written != got)
 					com_err (program_name, errno,
-				 "during test data write, block %lu",
+				 _("during test data write, block %lu"),
 						 currently_testing + written);
 			}
 
@@ -558,7 +560,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		num_blocks = 0;
 		alarm(0);
 		if (s_flag || v_flag > 1)
-			fprintf(stderr, "done               \n");
+			fprintf(stderr, done_string);
 
 	} else {
 		/* abnormal termination by a signal is handled here */
@@ -567,7 +569,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		   abort. */
 		long buf_written;
 
-		fprintf(stderr, "Interrupt caught, cleaning up\n");
+		fprintf(stderr, _("Interrupt caught, cleaning up\n"));
 
 		for (buf_written = 0;
 		        buf_written < buf_used;
@@ -609,6 +611,11 @@ int main (int argc, char ** argv)
 
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv, "b:i:o:svwnc:p:h:")) != EOF) {
@@ -617,7 +624,7 @@ int main (int argc, char ** argv)
 			block_size = strtoul (optarg, &tmp, 0);
 			if (*tmp || block_size > 4096) {
 				com_err (program_name, 0,
-					 "bad block size - %s", optarg);
+					 _("bad block size - %s"), optarg);
 				exit (1);
 			}
 			break;
@@ -671,21 +678,22 @@ int main (int argc, char ** argv)
 	blocks_count = strtoul (argv[optind], &tmp, 0);
 	if (*tmp)
 	{
-		com_err (program_name, 0, "bad blocks count - %s", argv[optind]);
+		com_err (program_name, 0, _("bad blocks count - %s"),
+			 argv[optind]);
 		exit (1);
 	}
 	if (++optind <= argc-1) {
 		from_count = strtoul (argv[optind], &tmp, 0);
 	} else from_count = 0;
 	if (from_count >= blocks_count) {
-	    com_err (program_name, 0, "bad blocks range: %lu-%lu",
+	    com_err (program_name, 0, _("bad blocks range: %lu-%lu"),
 		     from_count, blocks_count);
 	    exit (1);
 	}
 	dev = open (device_name, w_flag ? O_RDWR : O_RDONLY);
 	if (dev == -1)
 	{
-		com_err (program_name, errno, "while trying to open %s",
+		com_err (program_name, errno, _("while trying to open %s"),
 			 device_name);
 		exit (1);
 	}
@@ -693,8 +701,9 @@ int main (int argc, char ** argv)
 		host_dev = open (host_device_name, O_RDONLY);
 		if (host_dev == -1)
 		{
-			com_err (program_name, errno, "while trying to open %s",
-			    host_device_name);
+			com_err (program_name, errno,
+				 _("while trying to open %s"),
+				 host_device_name);
 			exit (1);
 		}
 	} else
@@ -706,7 +715,8 @@ int main (int argc, char ** argv)
 			in = fopen (input_file, "r");
 			if (in == NULL)
 			{
-				com_err (program_name, errno,"while trying to open %s",
+				com_err (program_name, errno,
+					 _("while trying to open %s"),
 					 input_file);
 				exit (1);
 			}
@@ -716,7 +726,8 @@ int main (int argc, char ** argv)
 		out = fopen (output_file, "w");
 		if (out == NULL)
 		{
-			com_err (program_name, errno,"while trying to open %s",
+			com_err (program_name, errno,
+				 _("while trying to open %s"),
 				 output_file);
 			exit (1);
 		}
@@ -726,7 +737,8 @@ int main (int argc, char ** argv)
 
 	errcode = ext2fs_badblocks_list_create(&bb_list,0);
 	if (errcode) {
-		com_err (program_name, errcode, "creating in-memory bad blocks list");
+		com_err (program_name, errcode,
+			 _("creating in-memory bad blocks list"));
 		exit (1);
 	}
 
@@ -741,7 +753,7 @@ int main (int argc, char ** argv)
 				default:
 					errcode = ext2fs_badblocks_list_add(bb_list,next_bad);
 					if (errcode) {
-						com_err (program_name, errcode, "adding to in-memory bad block list");
+						com_err (program_name, errcode, _("adding to in-memory bad block list"));
 						exit (1);
 					}
 					continue;
@@ -766,7 +778,9 @@ int main (int argc, char ** argv)
 		)	? passes_clean = 0 : ++passes_clean;
 
 		if (v_flag)
-			fprintf(stderr,"Pass completed, %u bad blocks found.\n", bb_count);
+			fprintf(stderr,
+				_("Pass completed, %u bad blocks found.\n"), 
+				bb_count);
 
 	} while (passes_clean < num_passes);
 
@@ -775,3 +789,4 @@ int main (int argc, char ** argv)
 		fclose (out);
 	return 0;
 }
+

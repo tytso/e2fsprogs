@@ -41,6 +41,7 @@ extern char *optarg;
 #include "e2p/e2p.h"
 
 #include "../version.h"
+#include "nls-enable.h"
 
 const char * program_name = "lsattr";
 
@@ -53,7 +54,7 @@ int v_opt = 0;
 
 static void usage(void)
 {
-	fprintf(stderr, "Usage: %s [-RVadlv] [files...]\n", program_name);
+	fprintf(stderr, _("Usage: %s [-RVadlv] [files...]\n"), program_name);
 	exit(1);
 }
 
@@ -63,10 +64,10 @@ static void list_attributes (const char * name)
 	unsigned long version;
 
 	if (fgetflags (name, &flags) == -1)
-		com_err (program_name, errno, "While reading flags on %s",
+		com_err (program_name, errno, _("While reading flags on %s"),
 			 name);
 	else if (fgetversion (name, &version) == -1)
-		com_err (program_name, errno, "While reading version on %s",
+		com_err (program_name, errno, _("While reading version on %s"),
 			 name);
 	else
 	{
@@ -84,7 +85,7 @@ static void lsattr_args (const char * name)
 	struct stat st;
 
 	if (lstat (name, &st) == -1)
-		com_err (program_name, errno, "while stating %s", name);
+		com_err (program_name, errno, _("while stating %s"), name);
 	else
 	{
 		if (S_ISDIR(st.st_mode) && !d_opt)
@@ -126,6 +127,11 @@ int main (int argc, char ** argv)
 	int c;
 	int i;
 
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv, "RVadlv")) != EOF)
@@ -154,7 +160,7 @@ int main (int argc, char ** argv)
 		}
 
 	if (verbose)
-		fprintf (stderr, "lsattr %s, %s for EXT2 FS %s, %s\n",
+		fprintf (stderr, _("lsattr %s, %s for EXT2 FS %s, %s\n"),
 			 E2FSPROGS_VERSION, E2FSPROGS_DATE,
 			 EXT2FS_VERSION, EXT2FS_DATE);
 	if (optind > argc - 1)
