@@ -1,3 +1,14 @@
+2003-08-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.h, unix.c (PRS, e2fsck_clear_progbar, 
+		e2fsck_simple_progress): Don't print the ^A and ^B
+		characters which bracket the progress bar when the e2fsck
+		program is talking directly to a tty, but only when it is
+		being piped to another program.  (Addresses Debian bug
+		#204137)
+	* unix.c: Move some initialized variables to the BSS segment to 
+		shrink the size of the e2fsck executable.
+
 2003-08-01  Philipp Thomas <pthomas@suse.de>
 
 	* Include inttypes.h if present.  New macros INT_TO_VOIDPTR and

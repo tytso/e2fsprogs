@@ -46,14 +46,14 @@ extern int optind;
 #include "../version.h"
 
 /* Command line options */
-static int swapfs = 0;
-static int normalize_swapfs = 0;
-static int cflag = 0;		/* check disk */
-static int show_version_only = 0;
-static int verbose = 0;
+static int swapfs;
+static int normalize_swapfs;
+static int cflag;		/* check disk */
+static int show_version_only;
+static int verbose;
 
-static int replace_bad_blocks = 0;
-static char *bad_blocks_file = 0;
+static int replace_bad_blocks;
+static char *bad_blocks_file;
 
 e2fsck_t e2fsck_global_ctx;	/* Try your very best not to use this! */
 
@@ -186,7 +186,7 @@ static void check_mount(e2fsck_t ctx)
 	}
 
 	printf(_("%s is mounted.  "), ctx->filesystem_name);
-	if (!isatty(0) || !isatty(1))
+	if (!ctx->interactive)
 		fatal_error(ctx, _("Cannot continue, aborting.\n\n"));
 	printf(_("\n\n\007\007\007\007WARNING!!!  "
 	       "Running e2fsck on a mounted filesystem may cause\n"
@@ -256,12 +256,7 @@ struct percent_tbl {
 struct percent_tbl e2fsck_tbl = {
 	5, { 0, 70, 90, 92,  95, 100 }
 };
-static char bar[] =
-	"==============================================================="
-	"===============================================================";
-static char spaces[] =
-	"                                                               "
-	"                                                               ";
+static char bar[128], spaces[128];
 
 static float calc_percent(struct percent_tbl *tbl, int pass, int curr,
 			  int max)
@@ -282,7 +277,8 @@ extern void e2fsck_clear_progbar(e2fsck_t ctx)
 	if (!(ctx->flags & E2F_FLAG_PROG_BAR))
 		return;
 	
-	printf("\001%s\r\002", spaces + (sizeof(spaces) - 80));
+	printf("%s%s\r%s", ctx->start_meta, spaces + (sizeof(spaces) - 80),
+	       ctx->stop_meta);
 	fflush(stdout);
 	ctx->flags &= ~E2F_FLAG_PROG_BAR;
 }
@@ -333,16 +329,17 @@ int e2fsck_simple_progress(e2fsck_t ctx, const char *label, float percent,
 		dpywidth -= 8;
 
 	i = ((percent * dpywidth) + 50) / 100;
-	printf("\001%s: |%s%s", label, bar + (sizeof(bar) - (i+1)),
+	printf("%s%s: |%s%s", ctx->start_meta, label,
+	       bar + (sizeof(bar) - (i+1)),
 	       spaces + (sizeof(spaces) - (dpywidth - i + 1)));
 	if (percent == 100.0)
 		fputc('|', stdout);
 	else
 		fputc(spinner[ctx->progress_pos & 3], stdout);
 	if (dpynum)
-		printf(" %4.1f%%  %u\r\002", percent, dpynum);
+		printf(" %4.1f%%  %u\r%s", percent, dpynum, ctx->stop_meta);
 	else
-		printf(" %4.1f%%   \r\002", percent);
+		printf(" %4.1f%%   \r%s", percent, ctx->stop_meta);
 	
 	if (percent == 100.0)
 		e2fsck_clear_progbar(ctx);
@@ -494,6 +491,14 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 
 	setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 	setvbuf(stderr, NULL, _IONBF, BUFSIZ);
+	if (isatty(0) && isatty(1)) {
+		ctx->interactive = 1;
+	} else {
+		ctx->start_meta[0] = '\001';
+		ctx->stop_meta[0] = '\002';
+	}
+	memset(bar, '=', sizeof(bar)-1);
+	memset(spaces, ' ', sizeof(spaces)-1);
 	initialize_ext2_error_table();
 	blkid_get_cache(&ctx->blkid, NULL);
 	
@@ -772,7 +777,7 @@ int main (int argc, char *argv[])
 	if (!(ctx->options & E2F_OPT_PREEN) &&
 	    !(ctx->options & E2F_OPT_NO) &&
 	    !(ctx->options & E2F_OPT_YES)) {
-		if (!isatty (0) || !isatty (1))
+		if (!ctx->interactive)
 			fatal_error(ctx,
 				    _("need terminal for interactive repairs"));
 	}

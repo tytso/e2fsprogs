@@ -297,7 +297,9 @@ struct e2fsck_struct {
 	int progress_pos;
 	int progress_last_percent;
 	unsigned int progress_last_time;
-
+	int interactive;	/* Are we connected directly to a tty? */
+	char start_meta[2], stop_meta[2];
+	
 	/* File counts */
 	int fs_directory_count;
 	int fs_regular_count;
