@@ -762,11 +762,11 @@ static void PRS(int argc, char *argv[])
 	int		reserved_ratio = 5;
 	ext2_ino_t	num_inodes = 0;
 	errcode_t	retval;
-	int		sparse_option = 1;
+	int		sparse_option = 0;
 	char *		oldpath = getenv("PATH");
 	char *		raid_opts = 0;
 	char *		fs_type = 0;
-	const char *	feature_set = "filetype";
+	const char *	feature_set = "sparse_super,filetype";
 	blk_t		dev_size;
 #ifdef linux
 	struct 		utsname ut;
