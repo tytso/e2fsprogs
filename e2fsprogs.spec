@@ -1,6 +1,6 @@
 Summary: Utilities for managing the second extended (ext2) filesystem.
 Name: e2fsprogs
-Version: 1.20.WIP
+Version: 1.20
 Release: 0
 Copyright: GPL
 Group: System Environment/Base
@@ -80,6 +80,7 @@ fi
 /sbin/dumpe2fs
 /sbin/e2fsck
 /sbin/e2label
+/sbin/e2image
 /sbin/fsck
 /sbin/fsck.ext2
 /sbin/fsck.ext3
@@ -107,6 +108,7 @@ fi
 %{_mandir}/man8/dumpe2fs.8*
 %{_mandir}/man8/e2fsck.8*
 %{_mandir}/man8/e2label.8*
+%{_mandir}/man8/e2image.8*
 %{_mandir}/man8/fsck.8*
 %{_mandir}/man8/mke2fs.8*
 %{_mandir}/man8/mklost+found.8*

@@ -1,3 +1,18 @@
+e2fsprogs (1.20-1) unstable; urgency=low
+
+  * New upstream release:
+  ** new program: e2image.
+  ** e2fsck validates file descriptor specified in -C (Closes: #55220)
+  ** Fix multiple progress bar fsck bug (Closes: #65267)
+  ** Add devfs support to fsck (Closes: #94159)
+  ** Fix debugfs dump cmd looping on disk errors (Closes: #79163)
+  ** Miscellaneous manual page clarifications (Closes: #63442, #67446,
+     and #87216)
+  ** Improved ext3 support
+  ** tune2fs can now safely modify mounted filesystems
+
+ -- Theodore Tso <tytso@think.thunk.org>  Wed, 11 May 2001 00:51:14 -0400
+
 e2fsprogs (1.19-4) unstable; urgency=medium
 
   * Added texinfo to build-deps (Closes: #87685).
