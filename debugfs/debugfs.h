@@ -111,4 +111,5 @@ extern void do_show_debugfs_params(int argc, char **argv);
 extern void do_expand_dir(int argc, char **argv);
 extern void do_features(int argc, char **argv);
 extern void do_bmap(int argc, char **argv);
+extern void do_imap(int argc, char **argv);
 

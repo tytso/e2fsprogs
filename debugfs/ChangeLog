@@ -1,3 +1,9 @@
+2003-05-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c (do_imap), debugfs.h, debug_cmds.ct, debugfs.8.in:
+		Added new command, imap, which prints the location of a
+		specified inode in the inode table.
+
 2003-04-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.33

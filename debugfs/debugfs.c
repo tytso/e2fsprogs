@@ -1463,6 +1463,8 @@ void do_bmap(int argc, char *argv[])
 		return;
 
 	ino = string_to_inode(argv[1]);
+	if (!ino)
+		return;
 	blk = parse_ulong(argv[2], argv[0], "logical_block", &err);
 
 	errcode = ext2fs_bmap(current_fs, ino, 0, 0, 0, blk, &pblk);
@@ -1473,6 +1475,38 @@ void do_bmap(int argc, char *argv[])
 	}
 	printf("%d\n", pblk);
 }
+
+void do_imap(int argc, char *argv[])
+{
+	ext2_ino_t	ino;
+	unsigned long 	group, block, block_nr, offset;
+
+	if (common_args_process(argc, argv, 2, 2, argv[0],
+				"<file>", 0))
+		return;
+	ino = string_to_inode(argv[1]);
+	if (!ino)
+		return 0;
+
+	group = (ino - 1) / EXT2_INODES_PER_GROUP(current_fs->super);
+	offset = ((ino - 1) % EXT2_INODES_PER_GROUP(current_fs->super)) *
+		EXT2_INODE_SIZE(current_fs->super);
+	block = offset >> EXT2_BLOCK_SIZE_BITS(current_fs->super);
+	if (!current_fs->group_desc[(unsigned)group].bg_inode_table) {
+		com_err(argv[0], 0, "Inode table for group %d is missing\n",
+			group);
+		return;
+	}
+	block_nr = current_fs->group_desc[(unsigned)group].bg_inode_table + 
+		block;
+	offset &= (EXT2_BLOCK_SIZE(current_fs->super) - 1);
+
+	printf("Inode %d is part of block group %d\n"
+	       "\tlocated at block %d, offset 0x%04x\n", ino, group,
+	       block_nr, offset);
+
+}
+
 
 
 static int source_file(const char *cmd_file, int sci_idx)

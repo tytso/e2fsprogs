@@ -144,6 +144,12 @@ This is a list of the commands which
 .B debugfs
 supports.
 .TP
+.I bmap filespec logical_block
+Print the physical block number corresponding to the logical block number
+.I logical_block
+in the inode
+.IR filespec .
+.TP
 .I cat filespec
 Dump the contents of the inode 
 .I filespec
@@ -225,6 +231,11 @@ Print a list of commands understood by
 .I icheck block ...
 Print a listing of the inodes which use the one or more blocks specified
 on the command line.
+.TP
+.I imap filespec
+Print the location of the inode data structure (in the inode table) 
+of the inode
+.IR filespec .
 .TP
 .I initialize device blocksize
 Create an ext2 file system on
