@@ -94,7 +94,7 @@ static struct struct_io_manager struct_unix_manager = {
 	unix_read_blk,
 	unix_write_blk,
 	unix_flush,
-#ifdef CYGWIN
+#ifdef __CYGWIN__
 	0
 #else
 	unix_write_byte
@@ -106,7 +106,7 @@ io_manager unix_io_manager = &struct_unix_manager;
 /*
  * Here are the raw I/O functions
  */
-#ifndef CYGWIN
+#ifndef __CYGWIN__
 static errcode_t raw_read_blk(io_channel channel,
 			      struct unix_private_data *data,
 			      unsigned long block,
@@ -139,7 +139,7 @@ error_out:
 					       size, actual, retval);
 	return retval;
 }
-#else /* CYGWIN */
+#else /* __CYGWIN__ */
 /*
  * Windows block devices only allow sector alignment IO in offset and size
  */

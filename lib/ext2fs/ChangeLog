@@ -1,3 +1,7 @@
+2003-04-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix_io.c: Use __CYGWIN__ instead of CYGWIN.
+
 2003-04-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* getsize.c: Add Cygwin/Windows version of ext2fs_get_device_size()

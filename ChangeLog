@@ -1,3 +1,8 @@
+2003-04-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Remove CYGWIN definition; we will use the
+		automatically defined __CYGWIN__ instead.
+
 2003-03-22  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Add E2FSPROGS_DAY expansion.  Add
