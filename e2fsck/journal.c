@@ -652,6 +652,16 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 		goto errout;
 	
 	retval = -journal_recover(journal);
+	if (retval)
+		goto errout;
+	
+	if (journal->j_superblock->s_errno) {
+		ctx->fs->super->s_state |= EXT2_ERROR_FS;
+		ext2fs_mark_super_dirty(ctx->fs);
+		journal->j_superblock->s_errno = 0;
+		mark_buffer_dirty(journal->j_sb_buffer, 1);
+	}
+		
 errout:
 	e2fsck_journal_release(ctx, journal, 1, 0);
 	return retval;
