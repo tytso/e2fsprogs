@@ -307,10 +307,10 @@ static void dump_inode(ino_t inode_num, struct ext2_inode inode)
 	else i_type = "bad type";
 	fprintf(out, "Inode: %ld   Type: %s    ", inode_num, i_type);
 #if defined(HAVE_EXT2_INODE_VERSION)
-	fprintf(out, "Mode:  %04o   Flags: 0x%x   Version: %d\n",
+	fprintf(out, "Mode:  %04o   Flags: 0x%x   Version/Generation: %d\n",
 		inode.i_mode & 0777, inode.i_flags, inode.i_version);
 #else
-	fprintf(out, "Mode:  %04o   Flags: 0x%x   Generation: %d\n",
+	fprintf(out, "Mode:  %04o   Flags: 0x%x   Version/Generation: %d\n",
 		inode.i_mode & 0777, inode.i_flags, inode.i_generation);
 #endif
 	fprintf(out, "User: %5d   Group: %5d   Size: ",

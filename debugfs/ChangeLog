@@ -1,3 +1,10 @@
+1999-07-30    <tytso@rsts-11.mit.edu>
+
+	* debugfs.c (dump_inode): Fix debugfs message so it is the same
+		for when compiled under either Linux 2.2 or 2.3.  This
+		allows for the f_swapfs regression test suite to work
+		regardless of which OS e2fsprogs was compiled on.
+
 1999-07-18  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.15
