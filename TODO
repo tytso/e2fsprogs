@@ -42,3 +42,13 @@ Am I wrong?
 
 Add chmod command to debugfs.
 
+--------------------------------------
+
+block_illegal_map should be only created in pass1b.c, since it isn't
+used anywhere else.
+
+------------------------------------------
+
+fix up get_backup_sb, so that it doesn't choose something bogus if
+fs->super->.... is ridiculous
+
