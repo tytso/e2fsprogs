@@ -40,8 +40,8 @@ extern int optreset;		/* defined by BSD, but not others */
 
 extern ss_request_table debug_cmds;
 
-ext2_filsys current_fs = NULL;
-ino_t	root, cwd;
+ext2_filsys	current_fs = NULL;
+ext2_ino_t	root, cwd;
 
 static void open_filesystem(char *device, int open_flags, blk_t superblock,
 			    blk_t blocksize, int catastrophic)
@@ -253,8 +253,6 @@ void do_show_super_stats(int argc, char *argv[])
 	FILE 	*out;
 	struct ext2_group_desc *gdp;
 	int	c, header_only = 0;
-	char buf[80];
-	const char *none = "(none)";
 	const char *usage = "Usage: show_super [-h]";
 
 	optind = 0;
@@ -386,7 +384,7 @@ static int list_blocks_proc(ext2_filsys fs, blk_t *blocknr, int blockcnt,
 }
 
 
-static void dump_blocks(FILE *f, ino_t inode)
+static void dump_blocks(FILE *f, ext2_ino_t inode)
 {
 	struct list_blocks_struct lb;
 
@@ -404,7 +402,7 @@ static void dump_blocks(FILE *f, ino_t inode)
 }
 
 
-static void dump_inode(ino_t inode_num, struct ext2_inode inode)
+static void dump_inode(ext2_ino_t inode_num, struct ext2_inode inode)
 {
 	const char *i_type;
 	FILE	*out;
@@ -420,7 +418,7 @@ static void dump_inode(ino_t inode_num, struct ext2_inode inode)
 	else if (LINUX_S_ISFIFO(inode.i_mode)) i_type = "FIFO";
 	else if (LINUX_S_ISSOCK(inode.i_mode)) i_type = "socket";
 	else i_type = "bad type";
-	fprintf(out, "Inode: %ld   Type: %s    ", inode_num, i_type);
+	fprintf(out, "Inode: %u   Type: %s    ", inode_num, i_type);
 	fprintf(out, "Mode:  %04o   Flags: 0x%x   Generation: %u\n",
 		inode.i_mode & 0777, inode.i_flags, inode.i_generation);
 	fprintf(out, "User: %5d   Group: %5d   Size: ",
@@ -481,9 +479,9 @@ static void dump_inode(ino_t inode_num, struct ext2_inode inode)
 
 void do_stat(int argc, char *argv[])
 {
-	ino_t	inode;
+	ext2_ino_t	inode;
 	struct ext2_inode inode_buf;
-	int retval;
+	int 		retval;
 
 	if (argc != 2) {
 		com_err(argv[0], 0, "Usage: stat <file>");
@@ -508,7 +506,7 @@ void do_stat(int argc, char *argv[])
 
 void do_chroot(int argc, char *argv[])
 {
-	ino_t inode;
+	ext2_ino_t inode;
 	int retval;
 
 	if (argc != 2) {
@@ -531,7 +529,7 @@ void do_chroot(int argc, char *argv[])
 
 void do_clri(int argc, char *argv[])
 {
-	ino_t inode;
+	ext2_ino_t inode;
 	int retval;
 	struct ext2_inode inode_buf;
 
@@ -564,7 +562,7 @@ void do_clri(int argc, char *argv[])
 
 void do_freei(int argc, char *argv[])
 {
-	ino_t inode;
+	ext2_ino_t inode;
 
 	if (argc != 2) {
 		com_err(argv[0], 0, "Usage: freei <file>");
@@ -586,7 +584,7 @@ void do_freei(int argc, char *argv[])
 
 void do_seti(int argc, char *argv[])
 {
-	ino_t inode;
+	ext2_ino_t inode;
 
 	if (argc != 2) {
 		com_err(argv[0], 0, "Usage: seti <file>");
@@ -608,7 +606,7 @@ void do_seti(int argc, char *argv[])
 
 void do_testi(int argc, char *argv[])
 {
-	ino_t inode;
+	ext2_ino_t inode;
 
 	if (argc != 2) {
 		com_err(argv[0], 0, "Usage: testi <file>");
@@ -623,9 +621,9 @@ void do_testi(int argc, char *argv[])
 		return;
 
 	if (ext2fs_test_inode_bitmap(current_fs->inode_map,inode))
-		printf("Inode %ld is marked in use\n", inode);
+		printf("Inode %u is marked in use\n", inode);
 	else
-		printf("Inode %ld is not in use\n", inode);
+		printf("Inode %u is not in use\n", inode);
 }
 
 
@@ -767,15 +765,15 @@ static void modify_u32(char *com, const char *prompt,
 void do_modify_inode(int argc, char *argv[])
 {
 	struct ext2_inode inode;
-	ino_t inode_num;
-	int i;
+	ext2_ino_t	inode_num;
+	int 		i;
 	errcode_t	retval;
-	unsigned char *frag, *fsize;
-	char	buf[80];
-	int os = current_fs->super->s_creator_os;
-	const char *hex_format = "0x%x";
-	const char *octal_format = "0%o";
-	const char *decimal_format = "%d";
+	unsigned char	*frag, *fsize;
+	char		buf[80];
+	int 		os = current_fs->super->s_creator_os;
+	const char	*hex_format = "0x%x";
+	const char	*octal_format = "0%o";
+	const char	*decimal_format = "%d";
 	
 	if (argc != 2) {
 		com_err(argv[0], 0, "Usage: modify_inode <file>");
@@ -864,8 +862,8 @@ void do_modify_inode(int argc, char *argv[])
 
 void do_change_working_dir(int argc, char *argv[])
 {
-	ino_t	inode;
-	int	retval;
+	ext2_ino_t	inode;
+	int		retval;
 	
 	if (argc != 2) {
 		com_err(argv[0], 0, "Usage: cd <file>");
@@ -904,24 +902,24 @@ void do_print_working_directory(int argc, char *argv[])
 		com_err(argv[0], retval,
 			"while trying to get pathname of cwd");
 	}
-	printf("[pwd]   INODE: %6ld  PATH: %s\n", cwd, pathname);
+	printf("[pwd]   INODE: %6u  PATH: %s\n", cwd, pathname);
 	free(pathname);
 	retval = ext2fs_get_pathname(current_fs, root, 0, &pathname);
 	if (retval) {
 		com_err(argv[0], retval,
 			"while trying to get pathname of root");
 	}
-	printf("[root]  INODE: %6ld  PATH: %s\n", root, pathname);
+	printf("[root]  INODE: %6u  PATH: %s\n", root, pathname);
 	free(pathname);
 	return;
 }
 
 static void make_link(char *sourcename, char *destname)
 {
-	ino_t	inode;
-	int	retval;
-	ino_t	dir;
-	char	*dest, *cp, *basename;
+	ext2_ino_t	inode;
+	int		retval;
+	ext2_ino_t	dir;
+	char		*dest, *cp, *basename;
 
 	/*
 	 * Get the source inode
@@ -979,9 +977,9 @@ void do_link(int argc, char *argv[])
 
 static void unlink_file_by_name(char *filename)
 {
-	int	retval;
-	ino_t	dir;
-	char	*basename;
+	int		retval;
+	ext2_ino_t	dir;
+	char		*basename;
 	
 	basename = strrchr(filename, '/');
 	if (basename) {
@@ -1044,10 +1042,10 @@ void do_find_free_block(int argc, char *argv[])
 
 void do_find_free_inode(int argc, char *argv[])
 {
-	ino_t	free_inode, dir;
-	int	mode;
-	int	retval;
-	char	*tmp;
+	ext2_ino_t	free_inode, dir;
+	int		mode;
+	int		retval;
+	char		*tmp;
 	
 	if (argc > 3 || (argc>1 && *argv[1] == '?')) {
 		com_err(argv[0], 0, "Usage: find_free_inode [dir] [mode]");
@@ -1078,10 +1076,10 @@ void do_find_free_inode(int argc, char *argv[])
 	if (retval)
 		com_err("ext2fs_new_inode", retval, "");
 	else
-		printf("Free inode found: %ld\n", free_inode);
+		printf("Free inode found: %u\n", free_inode);
 }
 
-static errcode_t copy_file(int fd, ino_t newfile)
+static errcode_t copy_file(int fd, ext2_ino_t newfile)
 {
 	ext2_file_t	e2_file;
 	errcode_t	retval;
@@ -1125,12 +1123,12 @@ fail:
 
 void do_write(int argc, char *argv[])
 {
-	int	fd;
-	struct stat statbuf;
-	ino_t	newfile;
-	errcode_t retval;
+	int		fd;
+	struct stat	statbuf;
+	ext2_ino_t	newfile;
+	errcode_t	retval;
 	struct ext2_inode inode;
-	dgrp_t group;
+	dgrp_t		group;
 
 	if (check_fs_open(argv[0]))
 		return;
@@ -1161,7 +1159,7 @@ void do_write(int argc, char *argv[])
 	current_fs->group_desc[group].bg_free_inodes_count--;
 	current_fs->super->s_free_inodes_count--;
 	ext2fs_mark_super_dirty(current_fs);
-	printf("Allocated inode: %ld\n", newfile);
+	printf("Allocated inode: %u\n", newfile);
 	retval = ext2fs_link(current_fs, cwd, argv[2], newfile, 0);
 	if (retval) {
 		com_err(argv[2], retval, "");
@@ -1195,9 +1193,9 @@ void do_write(int argc, char *argv[])
 
 void do_mknod(int argc, char *argv[])
 {
-	unsigned long mode, major, minor, nr;
-	ino_t	newfile;
-	errcode_t retval;
+	unsigned long	mode, major, minor, nr;
+	ext2_ino_t	newfile;
+	errcode_t 	retval;
 	struct ext2_inode inode;
 
 	if (check_fs_open(argv[0]))
@@ -1240,7 +1238,7 @@ void do_mknod(int argc, char *argv[])
 		com_err(argv[0], retval, "");
 		return;
 	}
-	printf("Allocated inode: %ld\n", newfile);
+	printf("Allocated inode: %u\n", newfile);
 	retval = ext2fs_link(current_fs, cwd, argv[1], newfile, 0);
 	if (retval) {
 		if (retval == EXT2_ET_DIR_NO_SPACE) {
@@ -1274,7 +1272,7 @@ void do_mknod(int argc, char *argv[])
 void do_mkdir(int argc, char *argv[])
 {
 	char	*cp;
-	ino_t	parent;
+	ext2_ino_t	parent;
 	char	*name;
 	errcode_t retval;
 
@@ -1326,7 +1324,7 @@ static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
 	return 0;
 }
 
-static void kill_file_by_inode(ino_t inode)
+static void kill_file_by_inode(ext2_ino_t inode)
 {
 	struct ext2_inode inode_buf;
 
@@ -1334,7 +1332,7 @@ static void kill_file_by_inode(ino_t inode)
 	inode_buf.i_dtime = time(NULL);
 	ext2fs_write_inode(current_fs, inode, &inode_buf);
 
-	printf("Kill file by inode %ld\n", inode);
+	printf("Kill file by inode %u\n", inode);
 	ext2fs_block_iterate(current_fs, inode, 0, NULL,
 			     release_blocks_proc, NULL);
 	printf("\n");
@@ -1347,7 +1345,7 @@ static void kill_file_by_inode(ino_t inode)
 
 void do_kill_file(int argc, char *argv[])
 {
-	ino_t inode_num;
+	ext2_ino_t inode_num;
 
 	if (argc != 2) {
 		com_err(argv[0], 0, "Usage: kill_file <file>");
@@ -1370,7 +1368,7 @@ void do_kill_file(int argc, char *argv[])
 void do_rm(int argc, char *argv[])
 {
 	int retval;
-	ino_t inode_num;
+	ext2_ino_t inode_num;
 	struct ext2_inode inode;
 
 	if (argc != 2) {
@@ -1425,7 +1423,7 @@ void do_show_debugfs_params(int argc, char *argv[])
 
 void do_expand_dir(int argc, char *argv[])
 {
-	ino_t inode;
+	ext2_ino_t inode;
 	int retval;
 
 	if (argc != 2) {

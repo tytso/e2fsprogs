@@ -20,17 +20,17 @@
 #include "debugfs.h"
 
 struct deleted_info {
-	ino_t	ino;
-	unsigned short mode;
-	unsigned short uid;
-	__u64	size;
-	time_t	dtime;
-	int	num_blocks;
-	int	free_blocks;
+	ext2_ino_t	ino;
+	unsigned short	mode;
+	unsigned short	uid;
+	__u64		size;
+	time_t		dtime;
+	int		num_blocks;
+	int		free_blocks;
 };
 
 struct lsdel_struct {
-	ino_t			inode;
+	ext2_ino_t		inode;
 	int			num_blocks;
 	int			free_blocks;
 	int			bad_blocks;
@@ -73,7 +73,7 @@ void do_lsdel(int argc, char **argv)
 	struct deleted_info	*delarray;
 	int			num_delarray, max_delarray;
 	ext2_inode_scan		scan = 0;
-	ino_t			ino;
+	ext2_ino_t		ino;
 	struct ext2_inode	inode;
 	errcode_t		retval;
 	char			*block_buf;
@@ -177,7 +177,7 @@ void do_lsdel(int argc, char **argv)
 	      deleted_info_compare);
 	
 	for (i = 0; i < num_delarray; i++) {
-		printf("%6lu %6d %6o %6llu %4d/%4d %s", delarray[i].ino,
+		printf("%6u %6d %6o %6llu %4d/%4d %s", delarray[i].ino,
 		       delarray[i].uid, delarray[i].mode, delarray[i].size,
 		       delarray[i].free_blocks, delarray[i].num_blocks, 
 		       time_to_string(delarray[i].dtime));

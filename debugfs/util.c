@@ -19,7 +19,7 @@
 FILE *open_pager(void)
 {
 	FILE *outfile;
-	char *pager = getenv("PAGER");
+	const char *pager = getenv("PAGER");
 
 	signal(SIGPIPE, SIG_IGN);
 	if (!pager)
@@ -41,12 +41,12 @@ void close_pager(FILE *stream)
  * This routine is used whenever a command needs to turn a string into
  * an inode.
  */
-ino_t string_to_inode(char *str)
+ext2_ino_t string_to_inode(char *str)
 {
-	ino_t	ino;
-	int	len = strlen(str);
-	char	*end;
-	int	retval;
+	ext2_ino_t	ino;
+	int		len = strlen(str);
+	char		*end;
+	int		retval;
 
 	/*
 	 * If the string is of the form <ino>, then treat it as an

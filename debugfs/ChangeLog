@@ -1,3 +1,9 @@
+2001-01-11    <tytso@snap.thunk.org>
+
+	* debugfs.c, debugfs.h, dump.c, icheck.c, ls.c, lsdel.c, ncheck.c,
+		setsuper.c, util.c: Change ino_t to ext2_ino_t.  Fix a few
+		minor gcc-wall complaints while we're at it.
+
 2001-01-01    <tytso@snap.thunk.org>
 
 	* debugfs.c Replace use of struct ext2fs_sb with struct

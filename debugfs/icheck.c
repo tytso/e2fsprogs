@@ -19,15 +19,15 @@
 #include "debugfs.h"
 
 struct block_info {
-	blk_t	blk;
-	ino_t	ino;
+	blk_t		blk;
+	ext2_ino_t	ino;
 };
 
 struct block_walk_struct {
 	struct block_info	*barray;
 	int			blocks_left;
 	int			num_blocks;
-	ino_t			inode;
+	ext2_ino_t		inode;
 };
 
 static int icheck_proc(ext2_filsys fs,
@@ -56,7 +56,7 @@ void do_icheck(int argc, char **argv)
 	struct block_info	*binfo;
 	int			i;
 	ext2_inode_scan		scan = 0;
-	ino_t			ino;
+	ext2_ino_t		ino;
 	struct ext2_inode	inode;
 	errcode_t		retval;
 	char			*tmp;
@@ -149,7 +149,7 @@ void do_icheck(int argc, char **argv)
 			printf("%u\t<block not found>\n", binfo->blk);
 			continue;
 		}
-		printf("%u\t%ld\n", binfo->blk, binfo->ino);
+		printf("%u\t%u\n", binfo->blk, binfo->ino);
 	}
 
 error_out:

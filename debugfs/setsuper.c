@@ -21,7 +21,7 @@
 static struct ext2_super_block set_sb;
 
 struct super_set_info {
-	char	*name;
+	const char	*name;
 	void	*ptr;
 	int	size;
 	errcode_t (*func)(struct super_set_info *info, char *arg);
@@ -170,10 +170,6 @@ static errcode_t parse_string(struct super_set_info *info, char *arg)
 
 void do_set_super(int argc, char *argv[])
 {
-	char	*cp;
-	ino_t	parent;
-	char	*name;
-	errcode_t retval;
 	static struct super_set_info *ss;
 	
 	if (check_fs_open(argv[0]))

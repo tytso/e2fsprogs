@@ -94,12 +94,11 @@ static void fix_perms(const char *cmd, const struct ext2_inode *inode,
 		com_err(cmd, errno, "while setting times of %s", name);
 }
 
-static void dump_file(char *cmdname, ino_t ino, int fd, int preserve,
-		      char *outname)
+static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
+		      int preserve, char *outname)
 {
 	errcode_t retval;
 	struct ext2_inode	inode;
-	struct utimbuf	ut;
 	char 		buf[8192];
 	ext2_file_t	e2_file;
 	int		nbytes;
@@ -143,12 +142,12 @@ static void dump_file(char *cmdname, ino_t ino, int fd, int preserve,
 
 void do_dump(int argc, char **argv)
 {
-	ino_t	inode;
-	int	fd;
-	int	c;
-	int	preserve = 0;
+	ext2_ino_t	inode;
+	int		fd;
+	int		c;
+	int		preserve = 0;
 	const char *dump_usage = "Usage: dump_inode [-p] <file> <output_file>";
-	char	*in_fn, *out_fn;
+	char		*in_fn, *out_fn;
 	
 	optind = 0;
 #ifdef HAVE_OPTRESET
@@ -191,7 +190,7 @@ void do_dump(int argc, char **argv)
 	return;
 }
 
-static void rdump_symlink(ino_t ino, struct ext2_inode *inode,
+static void rdump_symlink(ext2_ino_t ino, struct ext2_inode *inode,
 			  const char *fullname)
 {
 	ext2_file_t e2_file;
@@ -245,11 +244,10 @@ errout:
 
 static int rdump_dirent(struct ext2_dir_entry *, int, int, char *, void *);
 
-static void rdump_inode(ino_t ino, struct ext2_inode *inode,
+static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
 			const char *name, const char *dumproot)
 {
 	char *fullname;
-	struct utimbuf ut;
 
 	/* There are more efficient ways to do this, but this method
 	 * requires only minimal debugging. */
@@ -322,7 +320,7 @@ static int rdump_dirent(struct ext2_dir_entry *dirent, int offset,
 
 void do_rdump(int argc, char **argv)
 {
-	ino_t ino;
+	ext2_ino_t ino;
 	struct ext2_inode inode;
 	errcode_t retval;
 	struct stat st;
@@ -369,7 +367,7 @@ void do_rdump(int argc, char **argv)
 
 void do_cat(int argc, char **argv)
 {
-	ino_t	inode;
+	ext2_ino_t	inode;
 
 	if (argc != 2) {
 		com_err(argv[0], 0, "Usage: cat <file>");

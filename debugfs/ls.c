@@ -33,7 +33,7 @@ struct list_dir_struct {
 static const char *monstr[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 				"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 					
-static void ls_l_file(struct list_dir_struct *ls, char *name, ino_t ino)
+static void ls_l_file(struct list_dir_struct *ls, char *name, ext2_ino_t ino)
 {
 	struct ext2_inode	inode;
 	errcode_t		retval;
@@ -51,7 +51,7 @@ static void ls_l_file(struct list_dir_struct *ls, char *name, ino_t ino)
 	sprintf(datestr, "%2d-%s-%4d %02d:%02d",
 		tm_p->tm_mday, monstr[tm_p->tm_mon], 1900 + tm_p->tm_year,
 		tm_p->tm_hour, tm_p->tm_min);
- 	fprintf(ls->f, "%6ld %6o  %5d  %5d   ", ino, inode.i_mode,
+ 	fprintf(ls->f, "%6u %6o  %5d  %5d   ", ino, inode.i_mode,
  	       inode.i_uid, inode.i_gid);
  	if (LINUX_S_ISDIR(inode.i_mode))
  		fprintf(ls->f, "%5d", inode.i_size);
@@ -62,12 +62,12 @@ static void ls_l_file(struct list_dir_struct *ls, char *name, ino_t ino)
 }
 
 static void ls_file(struct list_dir_struct *ls, char *name,
-		    ino_t ino, int rec_len)
+		    ext2_ino_t ino, int rec_len)
 {
 	char	tmp[EXT2_NAME_LEN + 16];
 	int	thislen;
 
-	sprintf(tmp, "%ld (%d) %s   ", ino, rec_len, name);
+	sprintf(tmp, "%u (%d) %s   ", ino, rec_len, name);
 	thislen = strlen(tmp);
 
 	if (ls->col + thislen > 80) {
@@ -105,10 +105,10 @@ static int list_dir_proc(struct ext2_dir_entry *dirent,
 
 void do_list_dir(int argc, char *argv[])
 {
-	ino_t	inode;
-	int	retval;
+	ext2_ino_t	inode;
+	int		retval;
 	struct list_dir_struct ls;
-	int	argptr = 1;
+	int		argptr = 1;
 	
 	ls.options = 0;
 	if (check_fs_open(argv[0]))

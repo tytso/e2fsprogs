@@ -19,9 +19,9 @@
 #include "debugfs.h"
 
 struct inode_info {
-	ino_t	ino;
-	ino_t	parent;
-	char	*pathname;
+	ext2_ino_t	ino;
+	ext2_ino_t	parent;
+	char		*pathname;
 };
 
 struct inode_walk_struct {
@@ -29,7 +29,7 @@ struct inode_walk_struct {
 	int			inodes_left;
 	int			num_inodes;
 	int			position;
-	ino_t			parent;
+	ext2_ino_t		parent;
 };
 
 static int ncheck_proc(struct ext2_dir_entry *dirent,
@@ -62,7 +62,7 @@ void do_ncheck(int argc, char **argv)
 	struct inode_info	*iinfo;
 	int			i;
 	ext2_inode_scan		scan = 0;
-	ino_t			ino;
+	ext2_ino_t		ino;
 	struct ext2_inode	inode;
 	errcode_t		retval;
 	char			*tmp;
@@ -159,10 +159,10 @@ void do_ncheck(int argc, char **argv)
 	printf("Inode\tPathname\n");
 	for (i=0, iinfo = iw.iarray; i < iw.num_inodes; i++, iinfo++) {
 		if (iinfo->parent == 0) {
-			printf("%ld\t<inode not found>\n", iinfo->ino);
+			printf("%u\t<inode not found>\n", iinfo->ino);
 			continue;
 		}
-		printf("%ld\t%s\n", iinfo->ino, iinfo->pathname ?
+		printf("%u\t%s\n", iinfo->ino, iinfo->pathname ?
 		       iinfo->pathname : "<unknown pathname>");
 		if (iinfo->pathname)
 			free(iinfo->pathname);
