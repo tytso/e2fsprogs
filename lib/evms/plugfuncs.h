@@ -832,8 +832,12 @@ typedef struct plugin_functions_s {
 #endif
 
 typedef struct fsim_functions_s {
+#if (EVMS_ABI_CODE >= 120)
+    int (*setup_evms_plugin)(engine_functions_t * functions);
+#else	
     int (*setup_evms_plugin)(engine_mode_t        mode,
                              engine_functions_t * functions);
+#endif
 
     void (*cleanup_evms_plugin)(void);
 
