@@ -1,5 +1,8 @@
 2002-07-14  Theodore Ts'o  <tytso@mit.edu>
 
+	* ext2fs.h, read_bb_file.c: Change private to priv_data, to avoid
+		using a C++ reserved word.
+
 	* unix_io.c (unix_open): Only attempt the setrlimit workaround if
 		the kernel version is 2.4.10 -- 2.4.17, since otherwise an
 		old version of glibc (built against 2.2 headers) will

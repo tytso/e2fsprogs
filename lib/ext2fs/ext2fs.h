@@ -801,11 +801,11 @@ extern errcode_t ext2fs_read_bb_inode(ext2_filsys fs,
 /* read_bb_file.c */
 extern errcode_t ext2fs_read_bb_FILE2(ext2_filsys fs, FILE *f, 
 				      ext2_badblocks_list *bb_list,
-				      void *private,
+				      void *priv_data,
 				      void (*invalid)(ext2_filsys fs,
 						      blk_t blk,
 						      char *badstr,
-						      void *private));
+						      void *priv_data));
 extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f, 
 				     ext2_badblocks_list *bb_list,
 				     void (*invalid)(ext2_filsys fs,

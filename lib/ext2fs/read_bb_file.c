@@ -31,11 +31,11 @@
  */
 errcode_t ext2fs_read_bb_FILE2(ext2_filsys fs, FILE *f, 
 			       ext2_badblocks_list *bb_list,
-			       void *private,
+			       void *priv_data,
 			       void (*invalid)(ext2_filsys fs,
 					       blk_t blk,
 					       char *badstr,
-					       void *private))
+					       void *priv_data))
 {
 	errcode_t	retval;
 	blk_t		blockno;
@@ -61,7 +61,7 @@ errcode_t ext2fs_read_bb_FILE2(ext2_filsys fs, FILE *f,
 		    ((blockno < fs->super->s_first_data_block) ||
 		    (blockno >= fs->super->s_blocks_count))) {
 			if (invalid)
-				(invalid)(fs, blockno, buf, private);
+				(invalid)(fs, blockno, buf, priv_data);
 			continue;
 		}
 		retval = ext2fs_badblocks_list_add(*bb_list, blockno);
@@ -72,11 +72,11 @@ errcode_t ext2fs_read_bb_FILE2(ext2_filsys fs, FILE *f,
 }
 
 static void call_compat_invalid(ext2_filsys fs, blk_t blk,
-				char *badstr, void *private)
+				char *badstr, void *priv_data)
 {
 	void (*invalid)(ext2_filsys, blk_t);
 
-	invalid = (void (*)(ext2_filsys, blk_t)) private;
+	invalid = (void (*)(ext2_filsys, blk_t)) priv_data;
 	if (invalid)
 		invalid(fs, blk);
 }
