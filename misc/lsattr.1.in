@@ -38,7 +38,7 @@ was written by Remy Card <Remy.Card@linux.org>.
 There are none :-).
 .SH AVAILABILITY
 .B lsattr
-is part of the e2fsprogs package and is available for anonymous 
-ftp from tsx-11.mit.edu in /pub/linux/packages/ext2fs.
+is part of the e2fsprogs package and is available from
+http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR chattr (1)

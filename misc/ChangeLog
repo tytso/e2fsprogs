@@ -1,3 +1,8 @@
+2001-05-12  Theodore Tso  <tytso@valinux.com>
+
+	* chattr.1.in, lsattr.1.in, uuidgen.1.in: Update URL location of
+		e2fsprogs package.
+
 2001-05-07  Theodore Tso  <tytso@valinux.com>
 
 	* util.c: Use specific check for HAVE_SYS_STAT_H.
