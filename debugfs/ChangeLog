@@ -1,3 +1,13 @@
+2003-05-13  root  <tytso@mit.edu>
+
+	* util.c (reset_getopt), debugfs.c (do_open_filesys,
+	do_show_super_stats), ls.c (do_list_dir), dump.c (do_dump),
+	htree.c (do_htree_dump, do_dx_hash), logdump.c (do_logdump):
+	Define and use a new function, reset_getopt(), which does whatever
+	is necessary to reset getopt() again.  This is different for
+	different implementations, so the portabilty issues are a bit of a
+	nightmare.  (Addresses Debian bug #192834)
+	
 2003-05-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c (do_imap), debugfs.h, debug_cmds.ct, debugfs.8.in:

@@ -13,8 +13,48 @@
 #include <string.h>
 #include <time.h>
 #include <signal.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#else 
+extern int optind;
+extern char *optarg;
+#endif
+#ifdef HAVE_OPTRESET
+extern int optreset;		/* defined by BSD, but not others */
+#endif
 
 #include "debugfs.h"
+
+/*
+ * This function resets the libc getopt() function, which keeps
+ * internal state.  Bad design!  Stupid libc API designers!  No
+ * biscuit!
+ *
+ * BSD-derived getopt() functions require that optind be reset to 1 in
+ * order to reset getopt() state.  This used to be generally accepted
+ * way of resetting getopt().  However, glibc's getopt()
+ * has additional getopt() state beyond optind, and requires that
+ * optind be set zero to reset its state.  So the unfortunate state of
+ * affairs is that BSD-derived versions of getopt() misbehave if
+ * optind is set to 0 in order to reset getopt(), and glibc's getopt()
+ * will core ump if optind is set 1 in order to reset getopt().
+ * 
+ * More modern versions of BSD require that optreset be set to 1 in
+ * order to reset getopt().   Sigh.  Standards, anyone?
+ *
+ * We hide the hair here.
+ */
+void reset_getopt(void)
+{
+#ifdef __GLIBC__
+	optind = 0;
+#else
+	optind = 1;
+#endif
+#ifdef HAVE_OPTRESET
+	optreset = 1;		/* Makes BSD getopt happy */
+#endif
+}	
 
 FILE *open_pager(void)
 {

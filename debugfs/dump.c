@@ -24,9 +24,6 @@
 extern int optind;
 extern char *optarg;
 #endif
-#ifdef HAVE_OPTRESET
-extern int optreset;		/* defined by BSD, but not others */
-#endif
 
 #include "debugfs.h"
 
@@ -149,10 +146,7 @@ void do_dump(int argc, char **argv)
 	const char *dump_usage = "Usage: dump_inode [-p] <file> <output_file>";
 	char		*in_fn, *out_fn;
 	
-	optind = 1;
-#ifdef HAVE_OPTRESET
-	optreset = 1;		/* Makes BSD getopt happy */
-#endif
+	reset_getopt();
 	while ((c = getopt (argc, argv, "p")) != EOF) {
 		switch (c) {
 		case 'p':

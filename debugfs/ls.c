@@ -21,9 +21,6 @@
 extern int optind;
 extern char *optarg;
 #endif
-#ifdef HAVE_OPTRESET
-extern int optreset;		/* defined by BSD, but not others */
-#endif
 
 #include "debugfs.h"
 
@@ -125,10 +122,7 @@ void do_list_dir(int argc, char *argv[])
 	if (check_fs_open(argv[0]))
 		return;
 
-	optind = 1;
-#ifdef HAVE_OPTRESET
-	optreset = 1;		/* Makes BSD getopt happy */
-#endif
+	reset_getopt();
 	while ((c = getopt (argc, argv, "dl")) != EOF) {
 		switch (c) {
 		case 'l':

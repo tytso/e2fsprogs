@@ -21,9 +21,6 @@
 extern int optind;
 extern char *optarg;
 #endif
-#ifdef HAVE_OPTRESET
-extern int optreset;		/* defined by BSD, but not others */
-#endif
 
 #include "debugfs.h"
 
@@ -193,10 +190,7 @@ void do_htree_dump(int argc, char *argv[])
 
 	pager = open_pager();
 
-	optind = 1;
-#ifdef HAVE_OPTRESET
-	optreset = 1;		/* Makes BSD getopt happy */
-#endif
+	reset_getopt();
 	while ((c = getopt (argc, argv, "l")) != EOF) {
 		switch (c) {
 		case 'l':
@@ -277,10 +271,8 @@ void do_dx_hash(int argc, char *argv[])
 	__u32		hash_seed[4];
 	
 	hash_seed[0] = hash_seed[1] = hash_seed[2] = hash_seed[3] = 0;
-	optind = 1;
-#ifdef HAVE_OPTRESET
-	optreset = 1;		/* Makes BSD getopt happy */
-#endif
+
+	reset_getopt();
 	while ((c = getopt (argc, argv, "h:")) != EOF) {
 		switch (c) {
 		case 'h':

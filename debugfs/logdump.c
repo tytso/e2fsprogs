@@ -28,9 +28,6 @@
 extern int optind;
 extern char *optarg;
 #endif
-#ifdef HAVE_OPTRESET
-extern int optreset;		/* defined by BSD, but not others */
-#endif
 
 #include "debugfs.h"
 #include "blkid/blkid.h"
@@ -92,10 +89,6 @@ void do_logdump(int argc, char **argv)
 	struct journal_source journal_source;
 	struct ext2_super_block *es = NULL;
 	
-	optind = 1;
-#ifdef HAVE_OPTRESET
-	optreset = 1;		/* Makes BSD getopt happy */
-#endif
 	journal_source.where = 0;
 	journal_source.fd = 0;
 	journal_source.file = 0;
@@ -107,6 +100,7 @@ void do_logdump(int argc, char **argv)
 	inode_block_to_dump = -1;
 	inode_to_dump = -1;
 	
+	reset_getopt();
 	while ((c = getopt (argc, argv, "ab:ci:f:")) != EOF) {
 		switch (c) {
 		case 'a':

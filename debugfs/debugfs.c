@@ -20,9 +20,6 @@
 extern int optind;
 extern char *optarg;
 #endif
-#ifdef HAVE_OPTRESET
-extern int optreset;		/* defined by BSD, but not others */
-#endif
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -101,10 +98,7 @@ void do_open_filesys(int argc, char **argv)
 	blk_t	blocksize = 0;
 	int open_flags = 0;
 	
-	optind = 1;
-#ifdef HAVE_OPTRESET
-	optreset = 1;		/* Makes BSD getopt happy */
-#endif
+	reset_getopt();
 	while ((c = getopt (argc, argv, "iwfcb:s:")) != EOF) {
 		switch (c) {
 		case 'i':
@@ -242,10 +236,7 @@ void do_show_super_stats(int argc, char *argv[])
 	int	numdirs = 0;
 	const char *usage = "Usage: show_super [-h]";
 
-	optind = 1;
-#ifdef HAVE_OPTRESET
-	optreset = 1;		/* Makes BSD getopt happy */
-#endif
+	reset_getopt();
 	while ((c = getopt (argc, argv, "h")) != EOF) {
 		switch (c) {
 		case 'h':
@@ -1486,7 +1477,7 @@ void do_imap(int argc, char *argv[])
 		return;
 	ino = string_to_inode(argv[1]);
 	if (!ino)
-		return 0;
+		return;
 
 	group = (ino - 1) / EXT2_INODES_PER_GROUP(current_fs->super);
 	offset = ((ino - 1) % EXT2_INODES_PER_GROUP(current_fs->super)) *

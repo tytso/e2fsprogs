@@ -22,6 +22,7 @@
 extern ext2_filsys current_fs;
 extern ext2_ino_t	root, cwd;
 
+extern void reset_getopt(void);
 extern FILE *open_pager(void);
 extern void close_pager(FILE *stream);
 extern int check_fs_open(char *name);
