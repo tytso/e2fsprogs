@@ -1,5 +1,7 @@
 2004-03-19  Theodore Ts'o  <tytso@mit.edu>
 
+	* Change the license to be the 3-clause BSD-style license
+
 	* uuid.h (UUID_DEFINE): Add UUID type #define's, and add an CPP
 		macro to define UUID constants.
 

@@ -1,9 +1,5 @@
-# Makefile for the second extended file system utility functions
+# Makefile for the UUID library
 #
-# Copyright (C) 1993 Remy Card (card@masi.ibp.fr)
-#
-# This file can be redistributed under the terms of the GNU General
-# Public License
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
