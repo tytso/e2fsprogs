@@ -18,13 +18,22 @@ SRCS = $(srcdir)/subst.c
 
 PROGS=		subst
 
-all:: $(PROGS)
+all:: $(PROGS) gen-tarball
 
 subst: subst.o
 	$(BUILD_CC) $(ALL_LDFLAGS) -o subst subst.o
 
+gen-tarball: $(srcdir)/gen-tarball.in $(top_builddir)/config.status
+	cd $(top_builddir); CONFIG_FILES=util/gen-tarball ./config.status
+	chmod +x gen-tarball
+
+tarballs: gen-tarball
+	sh gen-tarball debian
+	sh gen-tarball all
+	sh gen-tarball subset
+
 clean:
-	$(RM) -f $(PROGS) \#* *.s *.o *.a *~ core
+	$(RM) -f $(PROGS) \#* *.s *.o *.a *~ core *.tar.gz
 
 mostlyclean: clean
 

@@ -1,3 +1,9 @@
+2003-03-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen-tarball.in, all.exclude, subset.exclude: New files for
+		managing the automatic generation of distribution
+		tarballs.
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32
