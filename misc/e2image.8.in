@@ -31,9 +31,16 @@ the recovery of catastrophically corrupted filesystems.  In the future,
 e2fsck will be enhanced to be able to use the image file to help
 recover a badly damaged filesystem.
 .PP
+If  
+.I image-file
+is -, then the output of 
+.B e2image
+will be sent to standard output.
+.PP
 The 
 .B \-r
-option will create a raw image file instead.  A raw image file differs
+option will create a raw image file instead of a normal image file.  
+A raw image file differs
 from a normal image file in two ways.  First, the filesystem metadata is
 placed in the proper position so that e2fsck, dumpe2fs, debugfs,
 etc. can be run directly on the raw image file.  In order to minimize
@@ -42,7 +49,7 @@ created as a sparse file.  (Beware of copying or
 compressing/decompressing this file with utilities that don't understand
 how to create sparse files; the file will become as large as the
 filesystem itself!)  Secondly, the raw image file also includes indirect
-blocks and data blocks, which the current image file does not have ---
+blocks and data blocks, which the current image file does not have,
 although this may change in the future.
 .PP
 It is a very good idea to periodically (at boot time and 

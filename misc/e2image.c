@@ -362,7 +362,8 @@ static void write_raw_image_file(ext2_filsys fs, int fd)
 			continue;
 		
 		stashed_ino = ino;
-		if (LINUX_S_ISDIR(inode.i_mode)) {
+		if (LINUX_S_ISDIR(inode.i_mode) ||
+		    ino == fs->super->s_journal_inum) {
 			retval = ext2fs_block_iterate2(fs, ino, 0, 
 				       block_buf, process_dir_block, &pb);
 			if (retval) {
@@ -436,15 +437,19 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 
+	if (strcmp(outfn, "-") == 0)
+		fd = 1;
+	else {
 #ifdef HAVE_OPEN64
-	fd = open64(outfn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
+		fd = open64(outfn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
 #else
-	fd = open(outfn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
+		fd = open(outfn, O_CREAT|O_TRUNC|O_WRONLY, 0600);
 #endif
-	if (fd < 0) {
-		com_err(program_name, errno, _("while trying to open %s"),
-			argv[optind+1]);
-		exit(1);
+		if (fd < 0) {
+			com_err(program_name, errno,
+				_("while trying to open %s"), argv[optind+1]);
+			exit(1);
+		}
 	}
 
 	if (raw_flag)
@@ -455,5 +460,3 @@ int main (int argc, char ** argv)
 	ext2fs_close (fs);
 	exit (0);
 }
-
-
