@@ -164,10 +164,11 @@ static void init_lvm(void)
 		}
 		sprintf(vdirname, "%s/%s/LVs", VG_DIR, vname);
 
-		if ((lv_list = opendir(vdirname)) != NULL)
-			return;
+		lv_list = opendir(vdirname);
 		free(vdirname);
-		
+		if (lv_list != NULL)
+			return;
+
 		while ((lv_iter = readdir(lv_list)) != 0) {
 			lname = lv_iter->d_name;
 			if (!strcmp(lname, ".") || !strcmp(lname, ".."))
