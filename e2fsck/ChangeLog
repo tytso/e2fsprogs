@@ -1,6 +1,7 @@
 2001-01-03    <tytso@snap.thunk.org>
 
-	* message.c: Add @j abbreviation for journal.
+	* message.c: Add @j abbreviation for journal, and @d abbreviation
+		for device.
 
 	* jfs_user.h: Moved contents of jfs_e2fsck.h into jfs_user.h.
 

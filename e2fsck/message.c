@@ -55,6 +55,7 @@
  * 	@B	bitmap
  * 	@c	compress
  * 	@C	conflicts with some other fs block
+ * 	@d	device
  * 	@i	inode
  * 	@I	illegal
  * 	@j	journal
@@ -103,6 +104,7 @@ static const char *abbrevs[] = {
 	N_("Bbitmap"),
 	N_("ccompress"),
 	N_("Cconflicts with some other fs @b"),
+	N_("ddevice"),
 	N_("iinode"),
 	N_("Iillegal"),
 	N_("jjournal"),
