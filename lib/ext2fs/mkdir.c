@@ -107,7 +107,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 		retval = ext2fs_lookup(fs, parent, name, strlen(name), 0,
 				       &scratch_ino);
 		if (!retval) {
-			retval = EEXIST;
+			retval = EXT2_DIR_EXISTS;
 			name = 0;
 			goto cleanup;
 		}

@@ -20,7 +20,7 @@
 
 #include "ext2fs.h"
 
-#ifdef NO_INLINE_FUNCS
+#if defined(__GNUC__) && !defined(NO_INLINE_FUNCS)
 #define _BMAP_INLINE_	__inline__
 #else
 #define _BMAP_INLINE_

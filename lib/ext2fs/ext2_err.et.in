@@ -138,7 +138,7 @@ ec	EXT2_ET_NO_INODE_BITMAP,
 	"Inode bitmap not loaded"
 
 ec	EXT2_ET_NO_BLOCK_BITMAP,
-	"BLOCK bitmap not loaded"
+	"Block bitmap not loaded"
 
 ec	EXT2_ET_BAD_INODE_NUM,
 	"Illegal inode number"
@@ -250,5 +250,11 @@ ec	EXT2_FILE_NOT_FOUND,
 
 ec	EXT2_FILE_RO,
 	"File open read-only"
+
+ec	EXT2_DB_NOT_FOUND,
+	"Ext2 directory block not found"
+
+ec	EXT2_DIR_EXISTS,
+	"Ext2 directory already exists"
 
 	end
