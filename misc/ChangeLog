@@ -1,5 +1,10 @@
 2001-05-20  Theodore Tso  <tytso@valinux.com>
 
+	* fsck.8.in, fsck.c (compile_fs_type, fs_type, ignore): Fix
+		handling of -t option to be more intuitive.  Also add
+		support for the Mandrake -t loop hack.  See man page
+		for description of new -t semantics.
+
 	* fsck.c (device_already_active): Fix bug in
 		device_already_active which could cause infinite loops if
 		we don't know the base_device of the filesystem.

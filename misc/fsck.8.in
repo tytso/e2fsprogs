@@ -86,29 +86,67 @@ option, if you wish for errors to be corrected automatically, or the
 .B \-n
 option if you do not.)
 .TP
-.BI \-t " fstype"
-Specifies the type of file system to be checked.  When the
+.BI \-t " fslist"
+Specifies the type(s) of file system to be checked.  When the
 .B \-A 
 flag is specified, only filesystems that match 
-.I fstype
-are checked.  If 
-.I fstype
-is prefixed with 
-.I no
-then only filesystems whose type does not match
-.I fstype
-are checked.
+.I fslist
+are checked.  The
+.I fslist
+parameter is a comma-separated list of filesystems and options
+specifiers.  All of the filesystems in this comma-separated list may be
+prefixed by a negation operator 
+.RB ' no '
+or 
+.RB ' ! ',
+which requests that only those filesystems not listed in
+.I fslist
+will be checked.  If all of the filesystems in 
+.I fslist
+are not prefixed by a negation operator, then only those filesystems
+listed
+in
+.I fslist
+will be checked.
+.sp
+Options specifiers may be included in the comma separated
+.IR fslist .
+They must have the format 
+.BI opts= fs-option\fR,
+and may be prefixed by a negation operator.  If an options specifier is
+present, then only filesystems whose 
+.B /etc/fstab
+entry do (or do not, if the options specifier was prefixed by a negation
+operator) contain 
+.I fs-option
+in their options field of the
+.B /etc/fstab 
+file will be checked.
+.sp
+For compatibility with Mandrake distributions whose boot scripts
+depend upon an unauthorized UI change to the
+.B fsck
+program, if a filesystem type of
+.B loop
+is found in
+.IR fslist ,
+it is treated as if
+.B opts=loop
+were specified as an argument to the
+.B \-t
+option.
 .sp
 Normally, the filesystem type is deduced by searching for
 .I filesys
 in the 
 .I /etc/fstab 
 file and using the corresponding entry.
-If the type can not be deduced, 
+If the type can not be deduced, and there is only a single filesystem 
+given as an argument to the 
+.B \-t 
+option, 
 .B fsck
-will use the type specified by the 
-.B \-t
-option if it specifies a unique filesystem type.  If this type is not
+will use the specified filesystem type.  If this type is not
 available, then the default file system type (currently ext2) is used. 
 .TP
 .B \-A

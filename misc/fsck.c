@@ -591,7 +591,9 @@ static void fsck_device(char *device, int interactive)
 	struct fs_info *fsent;
 	int retval;
 
-	if (fstype && strncmp(fstype, "no", 2) && !strchr(fstype, ','))
+	if (fstype && strncmp(fstype, "no", 2) &&
+	    strncmp(fstype, "opts=", 5) && strncmp(fstype, "loop", 4) && 
+	    !strchr(fstype, ','))
 		type = fstype;
 
 	if ((fsent = lookup(device))) {
@@ -610,31 +612,145 @@ static void fsck_device(char *device, int interactive)
 	}
 }
 
-/* See if filesystem type matches the list. */
-static int fs_match(char *type, char *fs_type)
+
+/*
+ * Deal with the fsck -t argument.
+ */
+struct fs_type_compile {
+	char **list;
+	int *type;
+	int  negate;
+} fs_type_compiled;
+
+#define FS_TYPE_NORMAL	0
+#define FS_TYPE_OPT	1
+#define FS_TYPE_NEGOPT	2
+
+static const char *fs_type_syntax_error =
+_("Either all or none of the filesystem types passed to -t must be prefixed\n"
+  "with 'no' or '!'.\n");
+
+static void compile_fs_type(char *fs_type, struct fs_type_compile *cmp)
 {
-  int ret = 0, negate = 0;
-  char list[128];
-  char *s;
+	char 	*cp, *list, *s;
+	int	num = 2;
+	int	negate, first_negate = 1;
 
-  if (!fs_type) return(1);
-
-  if (strncmp(fs_type, "no", 2) == 0) {
-	fs_type += 2;
-	negate = 1;
-  }
-  strcpy(list, fs_type);
-  s = strtok(list, ",");
-  while(s) {
-	if (strcmp(s, type) == 0) {
-		ret = 1;
-		break;
+	if (fs_type) {
+		for (cp=fs_type; *cp; cp++) {
+			if (*cp == ',')
+				num++;
+		}
 	}
-	s = strtok(NULL, ",");
-  }
-  return(negate ? !ret : ret);
+
+	cmp->list = malloc(num * sizeof(char *));
+	cmp->type = malloc(num * sizeof(int));
+	if (!cmp->list || !cmp->type) {
+		fprintf(stderr, _("Couldn't allocate memory for "
+				  "filesystem types\n"));
+		exit(EXIT_ERROR);
+	}
+	memset(cmp->list, 0, num * sizeof(char *));
+	memset(cmp->type, 0, num * sizeof(int));
+	cmp->negate = 0;
+
+	if (!fs_type)
+		return;
+	
+	list = string_copy(fs_type);
+	num = 0;
+	s = strtok(list, ",");
+	while(s) {
+		negate = 0;
+		if (strncmp(s, "no", 2) == 0) {
+			s += 2;
+			negate = 1;
+		} else if (*s == '!') {
+			s++;
+			negate = 1;
+		}
+		if (strcmp(s, "loop") == 0)
+			/* loop is really short-hand for opts=loop */
+			goto loop_special_case;
+		else if (strncmp(s, "opts=", 5) == 0) {
+			s += 5;
+		loop_special_case:
+			cmp->type[num] = negate ? FS_TYPE_NEGOPT : FS_TYPE_OPT;
+		} else {
+			if (first_negate) {
+				cmp->negate = negate;
+				first_negate = 0;
+			}
+			if ((negate && !cmp->negate) ||
+			    (!negate && cmp->negate)) {
+				fprintf(stderr, fs_type_syntax_error);
+				exit(EXIT_USAGE);
+			}
+		}
+#if 0
+		printf("Adding %s to list (type %d).\n", s, cmp->type[num]);
+#endif
+	        cmp->list[num++] = string_copy(s);
+		s = strtok(NULL, ",");
+	}
+	free(list);
 }
 
+/*
+ * This function returns true if a particular option appears in a
+ * comma-delimited options list
+ */
+static int opt_in_list(char *opt, char *optlist)
+{
+	char	*list, *s;
+
+	if (!optlist)
+		return 0;
+	list = string_copy(optlist);
+	
+	s = strtok(list, ",");
+	while(s) {
+		if (strcmp(s, opt) == 0) {
+			free(list);
+			return 1;
+		}
+		s = strtok(NULL, ",");
+	}
+        free(list);
+	return 0;
+}
+
+/* See if the filesystem matches the criteria given by the -t option */
+static int fs_match(struct fs_info *fs, struct fs_type_compile *cmp)
+{
+	int n, ret = 0, checked_type = 0;
+	char *cp;
+
+	if (cmp->list == 0 || cmp->list[0] == 0)
+		return 1;
+
+	for (n=0; cp = cmp->list[n]; n++) {
+		switch (cmp->type[n]) {
+		case FS_TYPE_NORMAL:
+			checked_type++;
+			if (strcmp(cp, fs->type) == 0) {
+				ret = 1;
+			}
+			break;
+		case FS_TYPE_NEGOPT:
+			if (opt_in_list(cp, fs->opts))
+				return 0;
+			break;
+		case FS_TYPE_OPT:
+			if (!opt_in_list(cp, fs->opts))
+				return 0;
+			break;
+		}
+	}
+	if (checked_type == 0)
+		return 1;
+	return (cmp->negate ? !ret : ret);
+}
 
 /* Check if we should ignore this filesystem. */
 static int ignore(struct fs_info *fs)
@@ -652,7 +768,7 @@ static int ignore(struct fs_info *fs)
 	 * If a specific fstype is specified, and it doesn't match,
 	 * ignore it.
 	 */
-	if (!fs_match(fs->type, fstype)) return 1;
+	if (!fs_match(fs, &fs_type_compiled)) return 1;
 	
 	/* Are we ignoring this type? */
 	for(ip = ignored_types; *ip; ip++)
@@ -894,11 +1010,13 @@ static void PRS(int argc, char *argv[])
 			case 't':
 				if (arg[j+1]) {
 					fstype = string_copy(arg+j+1);
+					compile_fs_type(fstype, &fs_type_compiled);
 					goto next_arg;
 				}
 				if ((i+1) < argc) {
 					i++;
 					fstype = string_copy(argv[i]);
+					compile_fs_type(fstype, &fs_type_compiled);
 					goto next_arg;
 				}
 				usage();
