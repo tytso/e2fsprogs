@@ -1,3 +1,8 @@
+2000-08-22    <tytso@valinux.com>
+
+	* util.c (fatal_error): Try to flush the I/O manager before
+		forcing an exit.
+
 2000-08-20    <tytso@valinux.com>
 
 	* journal.c (e2fsck_journal_load): Fix **nasty** bug which caused

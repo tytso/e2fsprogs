@@ -39,6 +39,8 @@ void fatal_error(e2fsck_t ctx, const char *msg)
 {
 	if (msg) 
 		fprintf (stderr, "e2fsck: %s\n", msg);
+	if (ctx->fs && ctx->fs->io)
+		io_channel_flush(ctx->fs->io);
 	ctx->flags |= E2F_FLAG_ABORT;
 	if (ctx->flags & E2F_FLAG_SETJMP_OK)
 		longjmp(ctx->abort_loc, 1);
