@@ -13,9 +13,6 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 #include <fcntl.h>
 #ifdef HAVE_LINUX_FS_H
 #include <linux/fs.h>

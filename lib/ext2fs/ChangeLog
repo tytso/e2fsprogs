@@ -1,3 +1,12 @@
+Fri Nov 28 09:26:31 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dblist.c (ext2fs_get_num_dirs): Make ext2fs_get_num_dirs more
+		paranoid about validating the directory counts from the
+		block group information.
+
+	* all files: Don't include stdlib.h anymore; include it in
+		ext2_fs.h, since that file requires stdlib.h
+
 Thu Nov 20 16:07:38 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* expanddir.c (ext2fs_expand_dir): Check to make sure the block

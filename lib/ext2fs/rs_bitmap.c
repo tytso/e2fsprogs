@@ -14,7 +14,6 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <stdlib.h>
 #include <fcntl.h>
 #include <time.h>
 #ifdef HAVE_SYS_STAT_H

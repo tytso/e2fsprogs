@@ -1,3 +1,7 @@
+Mon Dec  1 13:21:09 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in: Install debugfs in /sbin, instead of /usr/sbin.
+
 Sat Oct 25 18:35:30 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* debugfs.c (copy_file), dump.c (dump_file): Change to use the new

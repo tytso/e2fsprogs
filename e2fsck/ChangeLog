@@ -1,3 +1,13 @@
+Fri Nov 28 09:30:26 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* dirinfo.c (e2fsck_add_dir_info): Use ext2fs_get_num_dirs instead
+		of e2fsck_get_num_dirs, which has been removed.
+
+Tue Nov 25 15:54:35 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (PROGS): Remove @EXTRA_PROGS@, since we don't want
+		to compile and install flushb.
+
 Mon Nov 24 06:48:00 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* pass1.c (e2fsck_pass1_check_device_inode): For now, only check

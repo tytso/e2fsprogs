@@ -1,3 +1,8 @@
+Tue Nov 25 15:56:29 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* configure.in: Remove @EXTRA_PROGS@, since we aren't using it in
+	 	e2fsck/Makefile.in.
+
 Tue Nov  4 10:46:18 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* configure.in: Add check for setjmp.h

@@ -14,7 +14,6 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -32,13 +31,20 @@ static int dir_block_cmp(const void *a, const void *b);
 errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ino_t *ret_num_dirs)
 {
 	int	i;
-	ino_t	num_dirs;
+	ino_t	num_dirs, max_dirs;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 	
 	num_dirs = 0;
-	for (i = 0; i < fs->group_desc_count; i++)
-		num_dirs += fs->group_desc[i].bg_used_dirs_count;
+	max_dirs = 8 * fs->blocksize;
+	for (i = 0; i < fs->group_desc_count; i++) {
+		if (fs->group_desc[i].bg_used_dirs_count > max_dirs)
+			num_dirs += max_dirs;
+		else
+			num_dirs += fs->group_desc[i].bg_used_dirs_count;
+	}
+	if (num_dirs > fs->super->s_inodes_count)
+		num_dirs = fs->super->s_inodes_count;
 
 	*ret_num_dirs = num_dirs;
 

@@ -45,8 +45,8 @@ installdirs:
 
 install: $(PROGS) $(MANPAGES) installdirs
 	for i in $(PROGS); do \
-		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(usbindir)/$$i; \
-		$(STRIP) $(DESTDIR)$(usbindir)/$$i; \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(sbindir)/$$i; \
+		$(STRIP) $(DESTDIR)$(sbindir)/$$i; \
 	done
 	for i in $(MANPAGES); do \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \

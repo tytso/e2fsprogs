@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <bios.h>
 #include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include <io.h>
 #ifdef HAVE_ERRNO_H

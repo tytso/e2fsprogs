@@ -8,18 +8,6 @@
 #include <et/com_err.h>
 #include "e2fsck.h"
 
-int e2fsck_get_num_dirs(e2fsck_t ctx)
-{
-	ext2_filsys fs = ctx->fs;
-	int	i, num_dirs;
-
-	num_dirs = 0;
-	for (i = 0; i < fs->group_desc_count; i++)
-		num_dirs += fs->group_desc[i].bg_used_dirs_count;
-
-	return num_dirs;
-}
-
 /*
  * This subroutine is called during pass1 to create a directory info
  * entry.  During pass1, the passed-in parent is 0; it will get filled
@@ -29,6 +17,7 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ino_t ino, ino_t parent)
 {
 	struct dir_info *dir;
 	int		i, j;
+	ino_t		num_dirs;
 	errcode_t	retval;
 
 #if 0
@@ -36,8 +25,10 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ino_t ino, ino_t parent)
 #endif
 	if (!ctx->dir_info) {
 		ctx->dir_info_count = 0;
-		ctx->dir_info_size = e2fsck_get_num_dirs(ctx) + 10;
-
+		retval = ext2fs_get_num_dirs(ctx->fs, &num_dirs);
+		if (retval)
+			num_dirs = 1024;	/* Guess */
+		ctx->dir_info_size = num_dirs + 10;
 		ctx->dir_info  = e2fsck_allocate_memory(ctx,
 			ctx->dir_info_size * sizeof (struct dir_info),
 			"directory map");

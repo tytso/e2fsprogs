@@ -408,12 +408,8 @@ dnl that holds enough to fake it (hopefully).  Note that the $(top_srcdir) here
 dnl is quoted so that it gets expanded by make, not by configure.
 dnl
 AC_CHECK_HEADER(linux/fs.h, [linux_headers=yes], [linux_headers=no])
-AC_SUBST(EXTRA_PROGS)
 if test "$linux_headers" = yes; then
   AC_DEFINE(HAVE_LINUX_FS_H)
-  # These are some programs that depend on having linux headers around, and
-  # won't work otherwise.  So we only compile them if we can.
-  EXTRA_PROGS="$EXTRA_PROGS flushb"
 else
   LINUX_INCLUDE='-I$(top_srcdir)/include -I$(top_builddir)/include'
   # Use this include directory with test compiles in the configure script too.

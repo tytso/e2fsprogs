@@ -36,6 +36,7 @@
 #include <sys/types.h>
 #endif
 
+#include <stdlib.h>
 #include <linux/types.h>
 
 typedef __u32		blk_t;

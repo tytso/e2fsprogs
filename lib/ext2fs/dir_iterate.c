@@ -14,7 +14,6 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <stdlib.h>
 #if HAVE_ERRNO_H
 #include <errno.h>
 #endif
