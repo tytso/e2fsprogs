@@ -30,7 +30,7 @@ mke2fs \- create a Linux second extended file system
 ]
 [
 .B \-j
-.I megabytes-for-journal
+.I journal-options
 ]
 [
 .B \-N
@@ -138,11 +138,26 @@ Be warned that is not possible to expand the number of inodes on a
 filesystem after it is created, so be careful decided the correct
 value for this parameter. 
 .TP
-.BI \-j " megabytes-for-journal"
+.BI \-j " journal options"
 Build the ext2 filesystem with the ext3 journaling feature enabled.  
-Megabyts-for-journal specifies the size of the journal in MB 
-(1024*1024 bytes).  Any size between 4MB and 100MB may be used.
-Of course, the journal must be small enough to fit into the filesystem.
+Journal options are comma
+separated, and may take an argument using the equals ('=')  sign.
+Currently two options are supported,
+.I size
+and
+.IR device .
+One of these two options must be specified when building the journal.
+The 
+.I size 
+option takes a numerical argument which specifies the size of the 
+journal in MB (1024*1024 bytes).  Any size between 4MB and 100MB may be used.
+Use of this option implies that the journal will be stored in the 
+filesystem, so it must be small enough to fit into the filesystem.
+The 
+.I device
+option takes a filename which specifies a block device which will contain 
+the journal.  This option of course implies that the journal will be 
+stored external to the filesystem.
 .TP
 .B \-n
 causes mke2fs to not actually create a filesystem, but display what it 

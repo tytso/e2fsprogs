@@ -1,3 +1,11 @@
+2000-11-16  Theodore Ts'o  <tytso@valinux.com>
+
+	* mke2fs.c(main): Expand the -j option so that it parses
+		option=argument style options, and add support for
+		creating filesystems with external journals.
+
+	* mke2fs.8.in: Document new syntax for the -j option.
+
 2000-11-05    <tytso@snap.thunk.org>
 
 	* e2image.c, Makefile.in: New program which saves ext2 metadata to

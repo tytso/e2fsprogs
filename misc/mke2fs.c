@@ -87,8 +87,11 @@ struct ext2_super_block param;
 char *creator_os = NULL;
 char *volume_label = NULL;
 char *mount_dir = NULL;
+char *journal_device = NULL;
 
-static void usage(NOARGS), check_plausibility(NOARGS), check_mount(NOARGS);
+static void usage(NOARGS);
+static void check_plausibility(const char *device);
+static void check_mount(const char *device);
 
 static void usage(NOARGS)
 {
@@ -142,7 +145,7 @@ static void proceed_question(NOARGS)
 #define SCSI_BLK_MAJOR(M)  ((M) == SCSI_DISK_MAJOR || (M) == SCSI_CDROM_MAJOR)
 #endif
 
-static void check_plausibility(NOARGS)
+static void check_plausibility(const char *device)
 {
 #ifdef HAVE_LINUX_MAJOR_H
 #ifndef MAJOR
@@ -153,18 +156,18 @@ static void check_plausibility(NOARGS)
 	int val;
 	struct stat s;
 	
-	val = stat(device_name, &s);
+	val = stat(device, &s);
 	
 	if(val == -1) {
 		fprintf(stderr, _("Could not stat %s --- %s\n"),
-			device_name, error_message(errno));
+			device, error_message(errno));
 		if (errno == ENOENT)
 			fprintf(stderr, _("\nThe device apparently does "
 			       "not exist; did you specify it correctly?\n"));
 		exit(1);
 	}
 	if(!S_ISBLK(s.st_mode)) {
-		printf(_("%s is not a block special device.\n"), device_name);
+		printf(_("%s is not a block special device.\n"), device);
 		proceed_question();
 		return;
 	} else if ((MAJOR(s.st_rdev) == HD_MAJOR &&
@@ -172,28 +175,28 @@ static void check_plausibility(NOARGS)
 		   (SCSI_BLK_MAJOR(MAJOR(s.st_rdev)) &&
 		       MINOR(s.st_rdev)%16 == 0)) {
 		printf(_("%s is entire device, not just one partition!\n"),
-		       device_name);
+		       device);
 		proceed_question();
 	}
 #endif
 }
 
-static void check_mount(NOARGS)
+static void check_mount(const char *device)
 {
 	errcode_t	retval;
 	int		mount_flags;
 
-	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
+	retval = ext2fs_check_if_mounted(device, &mount_flags);
 	if (retval) {
 		com_err("ext2fs_check_if_mount", retval,
 			_("while determining whether %s is mounted."),
-			device_name);
+			device);
 		return;
 	}
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		return;
 
-	fprintf(stderr, _("%s is mounted; "), device_name);
+	fprintf(stderr, _("%s is mounted; "), device);
 	if (force) {
 		fprintf(stderr, _("mke2fs forced anyway.  "
 			"Hope /etc/mtab is incorrect.\n"));
@@ -719,6 +722,76 @@ static void parse_raid_opts(const char *opts)
 	}
 }	
 
+static void parse_journal_opts(const char *opts)
+{
+	char	*buf, *token, *next, *p, *arg;
+	int	len;
+	int	journal_usage = 0;
+
+	len = strlen(opts);
+	buf = malloc(len+1);
+	if (!buf) {
+		fprintf(stderr, _("Couldn't allocate memory to parse "
+			"journal options!\n"));
+		exit(1);
+	}
+	strcpy(buf, opts);
+	for (token = buf; token && *token; token = next) {
+		p = strchr(token, ',');
+		next = 0;
+		if (p) {
+			*p = 0;
+			next = p+1;
+		} 
+		arg = strchr(token, '=');
+		if (arg) {
+			*arg = 0;
+			arg++;
+		}
+		printf("Journal option=%s, argument=%s\n", token,
+		       arg ? arg : "NONE");
+		if (strcmp(token, "device") == 0) {
+			if (!arg) {
+				journal_usage++;
+				continue;
+			}
+			journal_device = arg;
+		} else if (strcmp(token, "size") == 0) {
+			if (!arg) {
+				journal_usage++;
+				continue;
+			}
+			journal_size = strtoul(arg, &p, 0);
+		journal_size_check:
+			if (*p || (journal_size < 4 || journal_size > 100)) {
+				fprintf(stderr,
+				_("Invalid journal size parameter - %s.\n"),
+					arg);
+				journal_usage++;
+				continue;
+			}
+		} else {
+			journal_size = strtoul(token, &p, 0);
+			if (*p)
+				journal_usage++;
+			else
+				goto journal_size_check;
+		}
+	}
+	if (journal_usage) {
+		fprintf(stderr, _("\nBad journal options specified.\n\n"
+			"Journal options are separated by commas, "
+			"and may take an argument which\n"
+			"\tis set off by an equals ('=') sign.\n\n"
+			"Valid raid options are:\n"
+			"\tsize=<journal size in megabytes>\n"
+			"\tdevice=<journal device>\n\n"
+			"Journal size must be between "
+			"4 and 100 megabytes.\n\n" ));
+		exit(1);
+	}
+}	
+
 static __u32 ok_features[3] = {
 	0,					/* Compat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE,		/* Incompat */
@@ -741,6 +814,7 @@ static void PRS(int argc, char *argv[])
 	char *		oldpath = getenv("PATH");
 	struct ext2fs_sb *param_ext2 = (struct ext2fs_sb *) &param;
 	char *		raid_opts = 0;
+	char *		journal_opts = 0;
 	char *		fs_type = 0;
 	const char *	feature_set = "filetype";
 	blk_t		dev_size;
@@ -833,12 +907,16 @@ static void PRS(int argc, char *argv[])
 			}
 			break;
 		case 'j':
+			journal_opts = optarg;
+			break;
+#if 0
 			journal_size = strtoul(optarg, &tmp, 0);
 			if (journal_size < 4 || journal_size > 100 || *tmp) {
 				com_err(program_name, 0,
 					_("bad journal size - %s"), optarg);
 				exit(1);
 			}
+#endif
 			break;
 		case 'l':
 			bad_blocks_filename = malloc(strlen(optarg)+1);
@@ -933,9 +1011,12 @@ static void PRS(int argc, char *argv[])
 	if (raid_opts)
 		parse_raid_opts(raid_opts);
 
+	if (journal_opts)
+		parse_journal_opts(journal_opts);
+	
 	if (!force)
-		check_plausibility();
-	check_mount();
+		check_plausibility(device_name);
+	check_mount(device_name);
 
 	param.s_log_frag_size = param.s_log_block_size;
 
@@ -1125,7 +1206,25 @@ int main (int argc, char *argv[])
 		zap_sector(fs, 0);
 #endif
 	}
-	if (journal_size) {
+
+	if (journal_device) { 
+		if (!force)
+			check_plausibility(journal_device); 
+		check_mount(journal_device);
+
+		if (!quiet)
+			printf(_("Creating journal on device %s: "), 
+			       journal_device);
+		retval = ext2fs_add_journal_device(fs, journal_device, 0);
+		if(retval) { 
+			com_err (program_name, retval, 
+				 _("while trying to create journal on device %s"), 
+				 journal_device);
+			exit(1);
+		}
+		if (!quiet)
+			printf(_("done\n"));
+	} else if (journal_size) {
 		if (!quiet)
 			printf(_("Creating journal: "));
 		journal_blocks = journal_size * 1024 /
