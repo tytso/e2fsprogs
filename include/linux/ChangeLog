@@ -1,6 +1,10 @@
 Sun Oct 19 19:08:03 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
-	* Fix the type definitions of __s64 and __u64 if long long is used.
+	* ext2_fs.h: #if 0 out the EXT2_DEBUG code, since it's only needed
+		for the kernel and the ... notation makes some cpp's complain.
+
+	* types.h.in: Fix the type definitions of __s64 and __u64 if long
+	 	long is used.
 
 Tue Jun 17 01:33:20 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 

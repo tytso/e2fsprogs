@@ -41,6 +41,7 @@
 /*
  * Debug code
  */
+#if 0
 #ifdef EXT2FS_DEBUG
 #	define ext2_debug(f, a...)	{ \
 					printk ("EXT2-fs DEBUG (%s, %d): %s:", \
@@ -49,6 +50,7 @@
 					}
 #else
 #	define ext2_debug(f, a...)	/**/
+#endif
 #endif
 
 /*
