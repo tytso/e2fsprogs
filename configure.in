@@ -163,6 +163,11 @@ then
 else
 	ELF_CMT=
 	MAKEFILE_ELF=$srcdir/lib/Makefile.elf-lib
+	[case "$host_os" in
+	solaris2.*)
+		MAKEFILE_ELF=$srcdir/lib/Makefile.solaris-lib
+	;;
+	esac]
 	BINARY_TYPE=elfbin
 	LIB_EXT=.so
 	echo "Enabling ELF shared libraries"

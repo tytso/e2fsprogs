@@ -1,11 +1,11 @@
 Summary: Utilities for managing the second extended (ext2) filesystem.
 Name: e2fsprogs
-Version: 1.19
+Version: 1.20-WIP
 Release: 0
 Copyright: GPL
 Group: System Environment/Base
 Buildroot: /var/tmp/%{name}-root
-Source: ftp://download.sourceforge.net/pub/sourceforge/e2fsprogs/e2fsprogs-1.19.tar.gz
+Source: ftp://download.sourceforge.net/pub/sourceforge/e2fsprogs/e2fsprogs-%{version}.tar.gz
 Prereq: /sbin/ldconfig
 
 %description
@@ -41,7 +41,8 @@ also need to install e2fsprogs.
 %setup
 
 %build
-CFLAGS="$RPM_OPT_FLAGS" ./configure --enable-elf-shlibs
+CFLAGS="$RPM_OPT_FLAGS" ; export CFLAGS
+./configure --enable-elf-shlibs --mandir=%{_mandir} --infodir=%{_infodir}
 
 make libs progs docs
 
@@ -62,12 +63,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %post devel
 if [ -x /sbin/install-info ]; then
-   /sbin/install-info /usr/info/libext2fs.info.gz /usr/info/dir
+   /sbin/install-info %{_infodir}/libext2fs.info.gz %{_infodir}/dir
 fi
 
 %postun devel
 if [ $1 = 0 -a -x /sbin/install-info ]; then
-   /sbin/install-info --delete /usr/info/libext2fs.info.gz /usr/info/dir
+   /sbin/install-info --delete %{_infodir}/libext2fs.info.gz %{_infodir}/dir
 fi
 
 %files
@@ -97,24 +98,24 @@ fi
 /usr/bin/chattr
 /usr/bin/lsattr
 /usr/bin/uuidgen
-/usr/man/man1/chattr.1*
-/usr/man/man1/lsattr.1*
-/usr/man/man1/uuidgen.1*
+{_mandir}/man1/chattr.1*
+{_mandir}/man1/lsattr.1*
+{_mandir}/man1/uuidgen.1*
 
-/usr/man/man8/badblocks.8*
-/usr/man/man8/debugfs.8*
-/usr/man/man8/dumpe2fs.8*
-/usr/man/man8/e2fsck.8*
-/usr/man/man8/e2label.8*
-/usr/man/man8/fsck.8*
-/usr/man/man8/mke2fs.8*
-/usr/man/man8/mklost+found.8*
-/usr/man/man8/resize2fs.8*
-/usr/man/man8/tune2fs.8*
+{_mandir}/man8/badblocks.8*
+{_mandir}/man8/debugfs.8*
+{_mandir}/man8/dumpe2fs.8*
+{_mandir}/man8/e2fsck.8*
+{_mandir}/man8/e2label.8*
+{_mandir}/man8/fsck.8*
+{_mandir}/man8/mke2fs.8*
+{_mandir}/man8/mklost+found.8*
+{_mandir}/man8/resize2fs.8*
+{_mandir}/man8/tune2fs.8*
 
 %files devel
 %defattr(-,root,root)
-/usr/info/libext2fs.info*
+%{_infodir}/libext2fs.info*
 /usr/bin/compile_et
 /usr/bin/mk_cmds
 
@@ -135,6 +136,6 @@ fi
 /usr/include/ext2fs
 /usr/include/ss
 /usr/include/uuid
-/usr/man/man1/compile_et.1*
-/usr/man/man3/com_err.3*
+{_mandir}/man1/compile_et.1*
+{_mandir}/man3/com_err.3*
 
