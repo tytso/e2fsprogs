@@ -25,6 +25,10 @@ subst: subst.o
 	@echo "	LD $@"
 	@$(BUILD_CC) $(ALL_LDFLAGS) -o subst subst.o
 
+copy_sparse: copy_sparse.o
+	@echo "	LD $@"
+	@$(BUILD_CC) $(ALL_LDFLAGS) -o copy_sparse copy_sparse.o
+
 gen-tarball: $(srcdir)/gen-tarball.in $(top_builddir)/config.status
 	@echo "	CONFIG.STATUS $@"
 	@cd $(top_builddir); CONFIG_FILES=util/gen-tarball ./config.status
@@ -36,7 +40,8 @@ tarballs: gen-tarball
 	sh gen-tarball subset
 
 clean:
-	$(RM) -f $(PROGS) \#* *.s *.o *.a *~ core *.tar.gz gen-tarball
+	$(RM) -f $(PROGS) \#* *.s *.o *.a *~ core *.tar.gz gen-tarball \
+		copy-sparse
 
 mostlyclean: clean
 
