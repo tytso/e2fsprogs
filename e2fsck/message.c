@@ -231,12 +231,13 @@ static _INLINE_ void expand_at_expression(e2fsck_t ctx, char ch,
 /*
  * This function expands '%IX' expressions
  */
-static _INLINE_ void expand_inode_expression(char ch,
-					       struct problem_context *ctx)
+static _INLINE_ void expand_inode_expression(char ch, 
+					     struct problem_context *ctx)
 {
 	struct ext2_inode	*inode;
 	char *			time_str;
 	time_t			t;
+	int			do_gmt = -1;
 
 	if (!ctx || !ctx->inode)
 		goto no_inode;
@@ -270,8 +271,12 @@ static _INLINE_ void expand_inode_expression(char ch,
 		printf("0%o", inode->i_mode);
 		break;
 	case 'M':
+		/* The diet libc doesn't respect the TZ environemnt variable */
+		if (do_gmt == -1) {
+			do_gmt = !strcmp(getenv("TZ"), "GMT");
+		}
 		t = inode->i_mtime;
-		time_str = ctime(&t);
+		time_str = asctime(do_gmt ? gmtime(&t) : localtime(&t));
 		printf("%.24s", time_str);
 		break;
 	case 'F':

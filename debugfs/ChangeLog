@@ -1,5 +1,10 @@
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 
+	* util.c (time_to_string): If the TZ environment variable is set
+		to GMT, use gmtime() instead of localtime() or ctime() to
+		force the use of GMT.  This is because the dietlibc
+		doesn't honor the TZ environment variable.
+
 	* Makefile.in: Use Linux-kernel-style makefile output to make it
 		easier to see errors/warnings.
 

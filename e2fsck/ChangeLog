@@ -1,5 +1,11 @@
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 
+	* message.c (expand_inode_expression): If the TZ environment
+		variable is set to GMT, use gmtime() instead of
+		localtime() or ctime() to force the use of GMT.  This is
+		because the dietlibc doesn't honor the TZ environment
+		variable.
+	
 	* e2fsck.h: Add io_options to e2fsck_struct
 
 	* unix.c: If there is a question mark in the device name, separate
