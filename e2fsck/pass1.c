@@ -238,14 +238,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	pctx.errcode = ext2fs_allocate_block_bitmap(fs, _("illegal block map"),
-					      &ctx->block_illegal_map);
-	if (pctx.errcode) {
-		pctx.num = 2;
-		fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
 	pctx.errcode = ext2fs_create_icount2(fs, 0, 0, 0,
 					     &ctx->inode_link_info);
 	if (pctx.errcode) {
@@ -558,8 +550,6 @@ endit:
 	e2fsck_use_inode_shortcuts(ctx, 0);
 	
 	ext2fs_free_mem((void **) &block_buf);
-	ext2fs_free_block_bitmap(ctx->block_illegal_map);
-	ctx->block_illegal_map = 0;
 
 	if (ctx->large_files && 
 	    !(sb->s_feature_ro_compat & 
@@ -995,11 +985,6 @@ int process_block(ext2_filsys fs,
 	if (blk < fs->super->s_first_data_block ||
 	    blk >= fs->super->s_blocks_count)
 		problem = PR_1_ILLEGAL_BLOCK_NUM;
-#if 0
-	else
-		if (ext2fs_test_block_bitmap(block_illegal_map, blk))
-			problem = PR_1_BLOCK_OVERLAPS_METADATA;
-#endif
 
 	if (problem) {
 		p->num_illegal_blocks++;
@@ -1310,16 +1295,12 @@ static void mark_table_blocks(e2fsck_t ctx)
 			 * Mark this group's copy of the superblock
 			 */
 			ext2fs_mark_block_bitmap(ctx->block_found_map, block);
-			ext2fs_mark_block_bitmap(ctx->block_illegal_map,
-						 block);
 		
 			/*
 			 * Mark this group's copy of the descriptors
 			 */
 			for (j = 0; j < fs->desc_blocks; j++) {
 				ext2fs_mark_block_bitmap(ctx->block_found_map,
-							 block + j + 1);
-				ext2fs_mark_block_bitmap(ctx->block_illegal_map,
 							 block + j + 1);
 			}
 		}
@@ -1342,8 +1323,6 @@ static void mark_table_blocks(e2fsck_t ctx)
 				} else {
 				    ext2fs_mark_block_bitmap(ctx->block_found_map,
 							     b);
-				    ext2fs_mark_block_bitmap(ctx->block_illegal_map,
-							     b);
 			    	}
 			}
 		}
@@ -1362,8 +1341,6 @@ static void mark_table_blocks(e2fsck_t ctx)
 			} else {
 			    ext2fs_mark_block_bitmap(ctx->block_found_map,
 				     fs->group_desc[i].bg_block_bitmap);
-			    ext2fs_mark_block_bitmap(ctx->block_illegal_map,
-				     fs->group_desc[i].bg_block_bitmap);
 		    }
 			
 		}
@@ -1380,8 +1357,6 @@ static void mark_table_blocks(e2fsck_t ctx)
 				} 
 			} else {
 			    ext2fs_mark_block_bitmap(ctx->block_found_map,
-				     fs->group_desc[i].bg_inode_bitmap);
-			    ext2fs_mark_block_bitmap(ctx->block_illegal_map,
 				     fs->group_desc[i].bg_inode_bitmap);
 			}
 		}

@@ -92,6 +92,8 @@ static int process_pass1b_block(ext2_filsys fs, blk_t	*blocknr,
 static void delete_file(e2fsck_t ctx, struct dup_inode *dp,
 			char *block_buf);
 static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf);
+static int check_if_fs_block(e2fsck_t ctx, blk_t test_blk);
+
 static void pass1b(e2fsck_t ctx, char *block_buf);
 static void pass1c(e2fsck_t ctx, char *block_buf);
 static void pass1d(e2fsck_t ctx, char *block_buf);
@@ -408,8 +410,7 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 				continue;
 			if (q->num_bad > 1)
 				file_ok = 0;
-			if (ext2fs_test_block_bitmap(ctx->block_illegal_map,
-						     q->block)) {
+			if (check_if_fs_block(ctx, q->block)) {
 				file_ok = 0;
 				meta_data = 1;
 			}
@@ -602,8 +603,7 @@ static int clone_file_block(ext2_filsys fs,
 			}
 			p->num_bad--;
 			if (p->num_bad == 1 &&
-			    !ext2fs_test_block_bitmap(ctx->block_illegal_map,
-						      *block_nr))
+			    !check_if_fs_block(ctx, *block_nr))
 				ext2fs_unmark_block_bitmap(ctx->block_dup_map,
 							   *block_nr);
 			*block_nr = new_block;
@@ -649,6 +649,43 @@ static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 		com_err("clone_file", cs.errcode,
 			_("returned from clone_file_block"));
 		return retval;
+	}
+	return 0;
+}
+
+/*
+ * This routine returns 1 if a block overlaps with one of the superblocks,
+ * group descriptors, inode bitmaps, or block bitmaps.
+ */
+static int check_if_fs_block(e2fsck_t ctx, blk_t test_block)
+{
+	ext2_filsys fs = ctx->fs;
+	blk_t	block;
+	int	i;
+	
+	block = fs->super->s_first_data_block;
+	for (i = 0; i < fs->group_desc_count; i++) {
+
+		/* Check superblocks/block group descriptros */
+		if (ext2fs_bg_has_super(fs, i)) {
+			if (test_block >= block &&
+			    (test_block <= block + fs->desc_blocks))
+				return 1;
+		}
+		
+		/* Check the inode table */
+		if ((fs->group_desc[i].bg_inode_table) &&
+		    (test_block >= fs->group_desc[i].bg_inode_table) &&
+		    (test_block < (fs->group_desc[i].bg_inode_table +
+				   fs->inode_blocks_per_group)))
+			return 1;
+
+		/* Check the bitmap blocks */
+		if ((test_block == fs->group_desc[i].bg_block_bitmap) ||
+		    (test_block == fs->group_desc[i].bg_inode_bitmap))
+			return 1;
+		
+		block += fs->super->s_blocks_per_group;
 	}
 	return 0;
 }

@@ -166,7 +166,6 @@ struct e2fsck_struct {
 
 	ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
 	ext2fs_block_bitmap block_dup_map; /* Blks referenced more than once */
-	ext2fs_block_bitmap block_illegal_map; /* Meta-data blocks */
 
 	/*
 	 * Inode count arrays

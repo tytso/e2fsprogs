@@ -1,5 +1,15 @@
 2000-02-08    <tytso@snap.thunk.org>
 
+	* e2fsck.h:
+	* pass1.c (mark_table_blocks, e2fsck_pass1): Remove
+		ctx->block_illegal_map, since it's not needed by pass1,
+		and pass1b has been modified to calculate it manually if
+		needed.   This reduces the memory footprint needed by e2fsck.
+
+	* pass1b.c (check_if_fs_block): New static function which returns
+		whether or not a block overlaps with filesystem metadata.
+		This replaces consulting the block_illegal_map bitmap.
+
 	* Makefile.in: Call sync after finishing building all in this
 		directory. 
 	

@@ -251,9 +251,12 @@ void print_resource_track(const char *desc, struct resource_track *track)
 		printf("%s: ", desc);
 
 #ifdef HAVE_MALLINFO
+#define kbytes(x)	(((x) + 1023) / 1024)
+	
 	malloc_info = mallinfo();
-	printf(_("Memory used: %d/%d, "),
-		malloc_info.arena, malloc_info.hblkhd);
+	printf(_("Memory used: %dk/%dk (%dk/%dk), "),
+	       kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
+	       kbytes(malloc_info.uordblks), kbytes(malloc_info.fordblks));
 #else
 	printf(_("Memory used: %d, "),
 	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)));
@@ -261,7 +264,7 @@ void print_resource_track(const char *desc, struct resource_track *track)
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
 
-	printf(_("elapsed time: %6.3f/%6.3f/%6.3f\n"),
+	printf(_("time: %5.2f/%5.2f/%5.2f\n"),
 	       timeval_subtract(&time_end, &track->time_start),
 	       timeval_subtract(&r.ru_utime, &track->user_start),
 	       timeval_subtract(&r.ru_stime, &track->system_start));
