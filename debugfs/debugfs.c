@@ -378,7 +378,7 @@ static int list_blocks_proc(ext2_filsys fs, blk_t *blocknr, int blockcnt,
 	if (lb->first)
 		lb->first = 0;
 	else
-		printf(", ");
+		fprintf(lb->f, ", ");
 	if (blockcnt == -1)
 		fprintf(lb->f, "(IND):%d", *blocknr);
 	else if (blockcnt == -2)

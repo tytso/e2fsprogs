@@ -1,3 +1,8 @@
+2000-08-19    <tytso@valinux.com>
+
+	* util.c (open_pager): Set SIGPIPE to be ignored, so that quitting
+		out of the pager doesn't blow away debugfs.
+
 2000-08-14    <tytso@valinux.com>
 
 	* debugfs.c (do_show_super_stats): Use list_super2() instead of

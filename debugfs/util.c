@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#include <signal.h>
 
 #include "debugfs.h"
 
@@ -20,6 +21,7 @@ FILE *open_pager(void)
 	FILE *outfile;
 	char *pager = getenv("PAGER");
 
+	signal(SIGPIPE, SIG_IGN);
 	if (!pager)
 		pager = "more";
 
