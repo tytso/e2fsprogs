@@ -1,3 +1,8 @@
+2000-07-04  Theodore Ts'o  <tytso@valinux.com>
+
+	* Makefile.in: Remove explicit link of -lc in the shared library.
+		(It shouldn't be necessary, and is harmful in some cases).
+
 2000-06-12  Theodore Ts'o  <tytso@valinux.com>
 
 	* gen_uuid.c (get_random_bytes): Use O_NONBLOCK when trying to

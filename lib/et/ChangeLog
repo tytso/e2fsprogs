@@ -1,3 +1,8 @@
+2000-07-04  Theodore Ts'o  <tytso@valinux.com>
+
+	* Makefile.in: Remove explicit link of -lc in the shared library.
+		(It shouldn't be necessary, and is harmful in some cases).
+
 1999-11-19    <tytso@valinux.com>
 
 	* Makefile.in (distclean): Remove TAGS and Makefile.in.old from
