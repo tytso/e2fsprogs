@@ -1,4 +1,4 @@
-E2fsprogs 1.23-WIP (July 20, 2001)  (up to Changeset 1.789)
+E2fsprogs 1.23-WIP (July 20, 2001)  (up to 1.23-WIP-0620)
 ==================================
 
 Add initial support for extended attributes (EA); e2fsck will
@@ -9,6 +9,11 @@ Speed up the check of an ext3 filesystems by avoiding a needless flush
 of all of the superblock and block group descriptors.
 
 Add support in fsck for the filesystem type "auto".
+
+E2fsck now gives an explicit warning if there filesystem still has
+errors at the end of the run. (Addresses Debian bug #104502)
+
+Some minor man pages updates. (Addresses Debian bug #30833)
 
 
 E2fsprogs 1.22 (June 22, 2001)
