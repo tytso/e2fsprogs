@@ -48,16 +48,6 @@ Add chmod command to debugfs.
 
 ------------------------------------------
 
-Maybe a bug in debugfs v.1.14:
-if a file has more than one hardlink, only the first filename is shown when
-using command
-        ncheck <inode>
-
-------------------------------------
-
-Add a filesystem creation date to the superblock
-
------------------------------------
 Date: Tue, 18 Jan 2000 17:54:53 -0800 (PST)
 From: Alan Blanchard <alan@abraxas.to>
 To: tytso@MIT.EDU
@@ -205,5 +195,84 @@ easier to translate LBA to filesystem block numbers.
 
 -------------------------------------------------------
 
-Move creator_os string parsing and unparsing from mke2fs and e2p/ls.c
-to a centralized e2p library function.
+
+
+List of projects for e2fsprogs:
+
+
+1)  Move creator_os string parsing and unparsing from mke2fs and e2p/ls.c
+to a centralized e2p library function.  (Good intro project; patch 
+should be under 20 lines :-)
+
+	Difficulty: Low		Priority: Low
+
+
+2) Make debugfs's "ncheck <inode>" command list all of the pathnames
+to an inode, not just only the first link to the inode which is found.
+(Another good "intro to libext2fs programming interfaces project)
+
+	Difficulty: Low		Priority: Low
+
+3) Use a code coverage tool such as Rational's PureCoverage to see
+what kind of code coverage we have for e2fsck, and try to add test
+cases to increase the code coverage for e2fsck.
+
+	Difficulty: Medium	Priorty: Low
+
+4) Use a code coverage tool such as Rational's PureCoverage to see
+what kind of code coverage we have for resize2fs, and try to add test
+cases to increase the code coverage for resize2fs.
+
+	Difficulty: Medium	Priorty: Medium
+
+5) Create a new I/O manager (i.e., test_io.c, unix_io.c, et.al.) which
+layers on top of an existing I/O manager which provides copy-on-write
+functionality.  This COW I/O manager takes will take two open I/O
+managers, call them "base" and "changed".  The "base" I/O manager is
+opened read/only, so any changes are written instead to the "changed"
+I/O manager, in a compact, non-sparse format containing the intended
+modification to the "base" filesystem.  
+
+This will allow resize2fs to figure out what changes need to made to
+extend a filesystem, or expand the size of inodes in the inode table,
+and the changes can be pushed the filesystem in one fell swoop.  (If
+the system crashes; the program which runs the "changed" file can be
+re-run, much like a journal replay.  My assumption is that the COW
+file will contain the filesystem UUID in a the COW superblock, and the
+COW file will be stored in some place such as /var/state/e2fsprogs,
+with an init.d file to automate the replay so we can recover cleanly
+from a crash during the resize2fs process.)
+
+	Difficulty: Medium	Priority: Medium
+
+6) Create a new I/O manager (i.e., test_io.c, unix_io.c, et.al.) which
+layers on top of an existing I/O manager which provides an "undo"
+functionality.  This undo I/O manager takes will take two open I/O
+managers, call them "base" and "undo".  The "base" I/O manager is be
+opened read/write, and when any writes are sent to the I/O manager,
+the I/O manager will check the "undo" I/O manager, using a file format
+identical to the one found in (5) above.  
+
+This is useful for allowing e2fsck to create an "undo" file, which
+would make things like "e2fsck -y" much safer.
+
+	Difficulty: Low (once 5 is done)  Priority: Low
+
+7) Modify resize2fs so that it can relocate and reorganize the
+filesystem in the following ways: (1) increase the inode size, so that
+an existing filesystem can use the EA-in-inode kernel patch, (2)
+reserve blocks in the resize inode to allow for on-line resizing.  Use
+the COW I/O manager described in (5) in order to provide robustness in
+case of a crash during the resize/reorganization operation.  
+
+	Difficulty: High	Priority: Medium
+
+8) Review the EA-in-inode patches to e2fsck for correctness/code
+cleanliness.  (I will probably have to do this myself -- Ted)
+
+	Difficulty: High	Priorty: Medium
+
+9) Add support for extent maps to e2fsprogs.  I need to review the
+extent maps first/in parallel. 
+
+	Difficulty: High	Priority: Medium
