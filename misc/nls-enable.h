@@ -1,5 +1,4 @@
 #ifdef ENABLE_NLS
-#warning Using NLS
 #include <libintl.h>
 #include <locale.h>
 #define _(a) (gettext (a))
