@@ -101,7 +101,7 @@ static volatile void usage (void)
 	exit (1);
 }
 
-void main (int argc, char ** argv)
+int main (int argc, char ** argv)
 {
 	char c;
 	char * tmp;

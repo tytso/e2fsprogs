@@ -27,7 +27,7 @@
 
 #define LPF "lost+found"
 
-void main (int argc, char ** argv)
+int main (int argc, char ** argv)
 {
 	char name [EXT2_NAME_LEN];
 	char path [sizeof (LPF) + 1 + 256];

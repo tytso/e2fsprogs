@@ -260,7 +260,7 @@ static void test_rw (int dev, unsigned long blocks_count,
 	}
 }
 
-void main (int argc, char ** argv)
+int main (int argc, char ** argv)
 {
 	char c;
 	char * tmp;
@@ -346,4 +346,5 @@ void main (int argc, char ** argv)
 	close (dev);
 	if (out != stdout)
 		fclose (out);
+	exit(0);
 }

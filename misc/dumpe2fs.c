@@ -172,7 +172,7 @@ static int i386_byteorder(void)
 	return (*cp == 1);
 }
 
-void main (int argc, char ** argv)
+int main (int argc, char ** argv)
 {
 	errcode_t	retval;
 	ext2_filsys	fs;

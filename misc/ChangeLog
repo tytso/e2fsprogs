@@ -1,3 +1,15 @@
+Mon Sep 15 22:07:12 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* tune2fs.c (main): 
+	* mklost+found.c (main): 
+	* lsattr.c (main): 
+	* dumpe2fs.c (main): 
+	* chattr.c (main): 
+	* badblocks.c (main): Declare main to return an int, as required.
+		Make sure main always ends with an exit(0).  (Some
+		programs weren't doing this, and thus were returning a
+		random exit value.)
+
 Mon Jul 14 15:27:29 1997  Theodore Y. Ts'o  <tytso@mit.edu>
 
 	* e2label.c: New file contributed by Andries Brouwer which

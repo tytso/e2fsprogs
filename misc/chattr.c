@@ -302,7 +302,7 @@ static int chattr_dir_proc (const char * dir_name, struct dirent * de, void * pr
 	return 0;
 }
 
-void main (int argc, char ** argv)
+int main (int argc, char ** argv)
 {
 	int i, j;
 	int end_arg = 0;
@@ -334,4 +334,5 @@ void main (int argc, char ** argv)
 	}
 	for (j = i; j < argc; j++)
 		change_attributes (argv[j]);
+	exit(0);
 }

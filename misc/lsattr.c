@@ -119,7 +119,7 @@ static int lsattr_dir_proc (const char * dir_name, struct dirent * de, void * pr
 	return 0;
 }
 
-void main (int argc, char ** argv)
+int main (int argc, char ** argv)
 {
 	char c;
 	int i;
@@ -156,4 +156,5 @@ void main (int argc, char ** argv)
 	else
 		for (i = optind; i < argc; i++)
 			lsattr_args (argv[i]);
+	exit(0);
 }
