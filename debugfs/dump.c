@@ -149,7 +149,7 @@ void do_dump(int argc, char **argv)
 	const char *dump_usage = "Usage: dump_inode [-p] <file> <output_file>";
 	char		*in_fn, *out_fn;
 	
-	optind = 0;
+	optind = 1;
 #ifdef HAVE_OPTRESET
 	optreset = 1;		/* Makes BSD getopt happy */
 #endif

@@ -1,3 +1,19 @@
+2003-03-06  Theodore Tso  <tytso@mit.edu>
+
+	* ext2_types.h.in: Don't redefine types if other e2fsprogs
+		*_types.h files have been included already.
+
+	* kernel-jbd.h: Use C99 variadic cpp macros if not using GCC.
+		(Older GCC's don't support the C99 variadic macros.)
+
+	* flushb.c (ext2fs_sync_device), 
+	ismounted.c (ext2fs_check_mount_point): Avoid GCC extension: 
+	#warning not supported by Solaris suncc
+
+	* ext2_ext_attr.h: Avoid GCC extension: 0 length arrays in
+		structure definition.  Not needed for now in 
+		ext2_ext_attr_entry.
+
 2003-01-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* dirhash.c: Fix gcc -Wall nits.

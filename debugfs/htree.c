@@ -193,7 +193,7 @@ void do_htree_dump(int argc, char *argv[])
 
 	pager = open_pager();
 
-	optind = 0;
+	optind = 1;
 #ifdef HAVE_OPTRESET
 	optreset = 1;		/* Makes BSD getopt happy */
 #endif
@@ -277,7 +277,7 @@ void do_dx_hash(int argc, char *argv[])
 	__u32		hash_seed[4];
 	
 	hash_seed[0] = hash_seed[1] = hash_seed[2] = hash_seed[3] = 0;
-	optind = 0;
+	optind = 1;
 #ifdef HAVE_OPTRESET
 	optreset = 1;		/* Makes BSD getopt happy */
 #endif

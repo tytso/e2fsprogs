@@ -1,3 +1,8 @@
+2003-03-06  Theodore Tso  <tytso@mit.edu>
+
+	* Makefile.in (DEPLIBS_BLKID): Use DEPLIBUUID, not LIBUUID to
+		avoid depending on -lsocket on Solaris.
+
 2003-03-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* fsck.c, util.c, tune2fs.c, Makefile.in: Use the blkid library

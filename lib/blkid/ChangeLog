@@ -1,3 +1,18 @@
+2003-03-06  Theodore Tso  <tytso@mit.edu>
+
+	* blkid_types.h.in: Don't redefine types if other e2fsprogs
+		*_types.h files have been included already.
+
+	* list.h, probe.h: Use static inline instead of extern inline to
+		comply with C99 inline support.
+
+	* devname.c (blkid_probe_all): Avoid GCC extension; don't
+		initialize an array with the address of an automatic
+		variable.
+
+	* Makefile.in: Eliminate -Wall as a C compiler option by default;
+		it's not portable.
+
 2003-03-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Don't install list.h, since it's not used by the

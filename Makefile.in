@@ -179,7 +179,6 @@ $(srcdir)/.exclude-subset:
 	echo "$(SSROOT)/misc" >> $(srcdir)/.exclude-subset
 	echo "$(SSROOT)/tests" >> $(srcdir)/.exclude-subset
 	echo "$(SSROOT)/resize" >> $(srcdir)/.exclude-subset
-	echo "$(SSROOT)/doc" >> $(srcdir)/.exclude-subset
 	echo "$(SSROOT)/contrib" >> $(srcdir)/.exclude-subset
 	echo "$(SSROOT)/po" >> $(srcdir)/.exclude-subset
 	echo "$(SSROOT)/include" >> $(srcdir)/.exclude-subset

@@ -1,3 +1,8 @@
+2003-03-06  Theodore Tso  <tytso@mit.edu>
+
+	* Makefile.in: Don't bomb out if makeinfo or texinfo aren't
+		present.  They aren't on all systems.
+
 2003-03-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* libblkid.txt (token): New file which gives basic

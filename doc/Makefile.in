@@ -30,10 +30,10 @@ uninstall-doc-libs:
 	$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
 
 libext2fs.info: $(srcdir)/libext2fs.texinfo
-	$(INFO) $(srcdir)/libext2fs.texinfo
+	-$(INFO) $(srcdir)/libext2fs.texinfo
 
 libext2fs.dvi: $(srcdir)/libext2fs.texinfo
-	$(DVI) $(srcdir)/libext2fs.texinfo
+	-$(DVI) $(srcdir)/libext2fs.texinfo
 
 .PHONY: distclean
 distclean:: clean

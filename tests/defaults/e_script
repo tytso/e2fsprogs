@@ -29,7 +29,7 @@ else
 fi
 
 cat $SRCDIR/progs/test_data/$instance.setup $SRCDIR/progs/test_data/test.$class \
-    | $TEST_PROG -f - 2>&1 | tr -d '\r' > $OUT 
+    | $TEST_PROG -f - 2>&1 | tr -d \\015 > $OUT 
 
 cmp -s $EXPECT $OUT
 status=$?

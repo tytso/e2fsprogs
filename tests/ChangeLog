@@ -1,3 +1,11 @@
+2003-03-06  Theodore Tso  <tytso@mit.edu>
+
+	* run_e2fsck, defaults/e_script: Solaris doesn't support "tr -d \r",
+		so use "tr -d \015" instead.
+
+	* tests/f_swapfs/script: Avoid bash'ism; Solaris doesn't support
+		put a ! character in a "if ! cmd ; then .. fi" construct.
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32

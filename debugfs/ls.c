@@ -125,7 +125,7 @@ void do_list_dir(int argc, char *argv[])
 	if (check_fs_open(argv[0]))
 		return;
 
-	optind = 0;
+	optind = 1;
 #ifdef HAVE_OPTRESET
 	optreset = 1;		/* Makes BSD getopt happy */
 #endif

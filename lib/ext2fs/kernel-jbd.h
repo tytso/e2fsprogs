@@ -30,6 +30,10 @@
 #include <asm/semaphore.h>
 #endif
 
+#ifndef __GNUC__
+#define __FUNCTION__ ""
+#endif
+
 #define journal_oom_retry 1
 
 #ifdef __STDC__
@@ -51,7 +55,11 @@ extern int journal_enable_debug;
 		}							\
 	} while (0)
 #else
+#ifdef __GNUC__
 #define jbd_debug(f, a...)	/**/
+#else
+#define jbd_debug(f, ...)	/**/
+#endif	
 #endif
 #else
 #define jbd_debug(x)		/* AIX doesn't do STDC */

@@ -90,8 +90,8 @@ $(top_builddir)/lib/uuid/uuid_types.h: $(srcdir)/uuid_types.h.in $(top_builddir)
 tst_uuid.o: $(srcdir)/tst_uuid.c
 	$(CC) $(ALL_CFLAGS) -c $(srcdir)/tst_uuid.c -o tst_uuid.o
 
-tst_uuid: tst_uuid.o $(DEPLIBUUID)
-	$(CC) $(ALL_LDFLAGS) -o tst_uuid tst_uuid.o $(OBJS)
+tst_uuid: tst_uuid.o $(DEPSTATIC_LIBUUID)
+	$(CC) $(ALL_LDFLAGS) -o tst_uuid tst_uuid.o $(STATIC_LIBUUID)
 
 uuid_time: $(srcdir)/uuid_time.c $(DEPLIBUUID)
 	$(CC) $(ALL_CFLAGS) -DDEBUG -o uuid_time $(srcdir)/uuid_time.c \

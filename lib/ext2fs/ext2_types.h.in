@@ -1,11 +1,11 @@
-#ifndef _EXT2_TYPES_H
-#define _EXT2_TYPES_H
-
 /* 
  * If linux/types.h is already been included, assume it has defined
- * everything we need.  (cross fingers)
+ * everything we need.  (cross fingers)  Other header files may have 
+ * also defined the types that we need.
  */
-#ifndef _LINUX_TYPES_H
+#if (!defined(_LINUX_TYPES_H) && !defined(_BLKID_TYPES_H) && \
+	!defined(_UUID_TYPES) && !defined(_EXT2_TYPES_H))
+#define _EXT2_TYPES_H
 
 typedef unsigned char __u8;
 typedef signed char __s8;
@@ -48,6 +48,4 @@ typedef	unsigned short	__u32;
  ?== error: undefined 32 bit type
 #endif
 
-#endif /* LINUX_TYPES_H */
-
-#endif /* EXT2_TYPES_H */
+#endif /* _*_TYPES_H */

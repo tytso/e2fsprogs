@@ -1,3 +1,8 @@
+2003-03-06  Theodore Tso  <tytso@thunk.org>
+
+	* Makefile.in (.exclude-subset): Include the doc directory in the
+		subset distribution.
+
 2003-03-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in, Makefile.in: Ignore missing directories so we can

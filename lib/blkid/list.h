@@ -5,6 +5,12 @@
 extern "C" {
 #endif
 
+#ifdef __GNUC__
+#define _INLINE_ static __inline__
+#else                         /* For Watcom C */
+#define _INLINE_ static inline
+#endif
+
 /*
  * Simple doubly linked list implementation.
  *
@@ -34,7 +40,7 @@ struct list_head {
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
-static __inline__ void __list_add(struct list_head * add,
+_INLINE_ void __list_add(struct list_head * add,
 	struct list_head * prev,
 	struct list_head * next)
 {
@@ -52,7 +58,7 @@ static __inline__ void __list_add(struct list_head * add,
  * Insert a new entry after the specified head.
  * This is good for implementing stacks.
  */
-static __inline__ void list_add(struct list_head *add, struct list_head *head)
+_INLINE_ void list_add(struct list_head *add, struct list_head *head)
 {
 	__list_add(add, head, head->next);
 }
@@ -65,7 +71,7 @@ static __inline__ void list_add(struct list_head *add, struct list_head *head)
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
  */
-static __inline__ void list_add_tail(struct list_head *add, struct list_head *head)
+_INLINE_ void list_add_tail(struct list_head *add, struct list_head *head)
 {
 	__list_add(add, head->prev, head);
 }
@@ -77,7 +83,7 @@ static __inline__ void list_add_tail(struct list_head *add, struct list_head *he
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
-static __inline__ void __list_del(struct list_head * prev,
+_INLINE_ void __list_del(struct list_head * prev,
 				  struct list_head * next)
 {
 	next->prev = prev;
@@ -91,7 +97,7 @@ static __inline__ void __list_del(struct list_head * prev,
  * list_empty() on @entry does not return true after this, @entry is
  * in an undefined state.
  */
-static __inline__ void list_del(struct list_head *entry)
+_INLINE_ void list_del(struct list_head *entry)
 {
 	__list_del(entry->prev, entry->next);
 }
@@ -100,7 +106,7 @@ static __inline__ void list_del(struct list_head *entry)
  * list_del_init - deletes entry from list and reinitialize it.
  * @entry:	the element to delete from the list.
  */
-static __inline__ void list_del_init(struct list_head *entry)
+_INLINE_ void list_del_init(struct list_head *entry)
 {
 	__list_del(entry->prev, entry->next);
 	INIT_LIST_HEAD(entry);
@@ -110,7 +116,7 @@ static __inline__ void list_del_init(struct list_head *entry)
  * list_empty - tests whether a list is empty
  * @head:	the list to test.
  */
-static __inline__ int list_empty(struct list_head *head)
+_INLINE_ int list_empty(struct list_head *head)
 {
 	return head->next == head;
 }
@@ -120,7 +126,7 @@ static __inline__ int list_empty(struct list_head *head)
  * @list:	the new list to add.
  * @head:	the place to add it in the first list.
  */
-static __inline__ void list_splice(struct list_head *list, struct list_head *head)
+_INLINE_ void list_splice(struct list_head *list, struct list_head *head)
 {
 	struct list_head *first = list->next;
 
@@ -163,6 +169,8 @@ static __inline__ void list_splice(struct list_head *list, struct list_head *hea
 #define list_for_each_safe(pos, pnext, head) \
 	for (pos = (head)->next, pnext = pos->next; pos != (head); \
 	     pos = pnext, pnext = pos->next)
+
+#undef _INLINE_
 
 #ifdef __cplusplus
 }

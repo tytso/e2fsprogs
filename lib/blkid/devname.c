@@ -266,12 +266,15 @@ int blkid_probe_all(blkid_cache cache)
 	FILE *proc;
 	char line[1024];
 	char ptname0[128], ptname1[128], *ptname = 0;
-	char *ptnames[2] = { ptname0, ptname1 };
+	char *ptnames[2];
 	dev_t devs[2];
 	int ma, mi;
 	unsigned long long sz;
 	int lens[2] = { 0, 0 };
 	int which = 0, last = 0;
+
+	ptnames[0] = ptname0;
+	ptnames[1] = ptname1;
 
 	if (!cache)
 		return -BLKID_ERR_PARAM;

@@ -1,3 +1,10 @@
+2003-03-06  Theodore Tso  <tytso@mit.edu>
+
+	* debugfs.c (do_open_filesys, do_show_super_stats), 
+	ls.c (do_list_dir), dump.c (do_dump), htree.c (do_htree_dump, 
+	do_dx_hash), logdump.c (do_logdump): Reset optind to 1 for better
+	compatibility with non-glibc implementations of getopt.
+
 2003-03-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in, logdump.c (do_logdump): Use the blkid functions to

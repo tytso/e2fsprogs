@@ -194,14 +194,14 @@ struct hfs_super_block {
  * Byte swap functions
  */
 #ifdef __GNUC__
-#define _INLINE_ extern __inline__
+#define _INLINE_ static __inline__
 #else				/* For Watcom C */
-#define _INLINE_ extern inline
+#define _INLINE_ static inline
 #endif
 
-extern __u16 blkid_swab16(__u16 val);
-extern __u32 blkid_swab32(__u32 val);
-extern __u64 blkid_swab64(__u64 val);
+static __u16 blkid_swab16(__u16 val);
+static __u32 blkid_swab32(__u32 val);
+static __u64 blkid_swab64(__u64 val);
 
 #if ((defined __GNUC__) && \
      (defined(__i386__) || defined(__i486__) || defined(__i586__)))
@@ -250,7 +250,7 @@ _INLINE_ __u32 blkid_swab32(__u32 val)
 		((val<<8)&0xFF0000) | (val<<24));
 }
 
-_INLINE_ u64 blkid_swab64(__u64 val)
+_INLINE_ __u64 blkid_swab64(__u64 val)
 {
 	return (blkid_swab32(val >> 32) |
 		(((__u64) blkid_swab32(val & 0xFFFFFFFFUL)) << 32));
@@ -274,5 +274,7 @@ _INLINE_ u64 blkid_swab64(__u64 val)
 #define blkid_be32(x) blkid_swab32(x)
 #define blkid_be64(x) blkid_swab64(x)
 #endif
+
+#undef _INLINE_
 
 #endif /* _BLKID_PROBE_H */

@@ -296,7 +296,9 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 #ifdef HAVE_GETMNTINFO
 	return check_getmntinfo(device, mount_flags, mtpt, mtlen);
 #else
+#ifdef __GNUC__
 #warning "Can't use getmntent or getmntinfo to check for mounted filesystems!"
+#endif
 	*mount_flags = 0;
 	return 0;
 #endif /* HAVE_GETMNTINFO */

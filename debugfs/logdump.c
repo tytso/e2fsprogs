@@ -92,7 +92,7 @@ void do_logdump(int argc, char **argv)
 	struct journal_source journal_source;
 	struct ext2_super_block *es = NULL;
 	
-	optind = 0;
+	optind = 1;
 #ifdef HAVE_OPTRESET
 	optreset = 1;		/* Makes BSD getopt happy */
 #endif
