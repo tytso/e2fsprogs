@@ -126,6 +126,8 @@ install: $(PROGS) $(MANPAGES) installdirs
 	done
 	$(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
 			$(DESTDIR)$(root_sbindir)/fsck.ext2
+	$(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
+			$(DESTDIR)$(root_sbindir)/fsck.ext3
 	for i in $(MANPAGES); do \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
 	done
@@ -134,7 +136,8 @@ uninstall:
 	for i in $(PROGS); do \
 		$(RM) -f $(DESTDIR)$(root_sbindir)/$$i; \
 	done
-	$(RM) -f $(DESTDIR)$(root_sbindir)/fsck.ext2
+	$(RM) -f $(DESTDIR)$(root_sbindir)/fsck.ext2 \
+		$(DESTDIR)$(root_sbindir)/fsck.ext3
 	for i in $(MANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man8dir)/$$i; \
 	done

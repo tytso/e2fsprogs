@@ -1,3 +1,7 @@
+2000-05-18  Theodore Ts'o  <tytso@valinux.com>
+
+	* e2fsprogs.spec (fsck.ext3): Add /sbin/fsck.ext3 to the spec file.
+
 2000-04-06  Theodore Ts'o  <tytso@valinux.com>
 
 	* Makefile.in (source_tar_file): Remove the resize directory from

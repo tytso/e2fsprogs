@@ -1,3 +1,8 @@
+2000-05-18  Theodore Ts'o  <tytso@valinux.com>
+
+	* Makefile.in (install): Create a symbolic link for fsck.ext3 as
+		well.
+
 2000-05-08  Theodore Ts'o  <tytso@valinux.com>
 
 	* problem.c, problem.h (PR_0_HURD_CLEAR_FILETYPE): Add new problem

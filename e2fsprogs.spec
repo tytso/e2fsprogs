@@ -62,6 +62,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(-, root, root) /sbin/e2fsck
 %attr(-, root, root) /sbin/e2label
 %attr(-, root, root) /sbin/fsck.ext2
+%attr(-, root, root) /sbin/fsck.ext3
 %attr(-, root, root) /sbin/debugfs
 %attr(-, root, root) /sbin/mke2fs
 %attr(-, root, root) /sbin/badblocks
