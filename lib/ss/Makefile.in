@@ -37,11 +37,12 @@ MK_CMDS=_SS_DIR_OVERRIDE=. ./mk_cmds
 XTRA_CFLAGS= -I$(srcdir)/../et
 
 .c.o:
-	$(CC) $(ALL_CFLAGS) -c $<
-@PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@CHECKER_CMT@	$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@ELF_CMT@	$(CC) $(ALL_CFLAGS) -DSHARED_ELF_LIB -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $<
+@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+@CHECKER_CMT@	@$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
+@ELF_CMT@	@$(CC) $(ALL_CFLAGS) -DSHARED_ELF_LIB -fPIC -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 # for the library
 
@@ -97,10 +98,12 @@ FILES=	$(SRCS) $(MKCMDSFILES) $(HFILES) \
 all::	libss.a # libss_p.a lint
 
 std_rqs.c: std_rqs.ct mk_cmds
-	DIR=$(srcdir) $(MK_CMDS) $(srcdir)/std_rqs.ct
+	@echo "	MK_CMDS $@"
+	@DIR=$(srcdir) $(MK_CMDS) $(srcdir)/std_rqs.ct
 
 ss_err.c ss_err.h: ss_err.et
-	$(COMPILE_ET) $(srcdir)/ss_err.et
+	@echo "	COMPILE_ET $<"
+	@$(COMPILE_ET) $(srcdir)/ss_err.et
 
 ct.tab.c ct.tab.h: ct.y
 	$(RM) -f ct.tab.* y.*
@@ -113,8 +116,9 @@ ct.tab.c ct.tab.h: ct.y
 #	$(CHMOD) -x $@
 
 mk_cmds: $(DEP_SUBSTITUTE) $(srcdir)/mk_cmds.sh.in
-	$(SUBSTITUTE) $(srcdir)/mk_cmds.sh.in mk_cmds
-	$(CHMOD) +x mk_cmds
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE) $(srcdir)/mk_cmds.sh.in mk_cmds
+	@$(CHMOD) +x mk_cmds
 
 installdirs::
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir) \

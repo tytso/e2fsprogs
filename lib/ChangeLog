@@ -1,3 +1,10 @@
+2004-11-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.elf-lib, Makefile.library, Makefile.profile,
+		Makefile.solaris, Makefile.darwin-lib, Makefile.checker:
+		Use Linux-kernel-style makefile output to make it easier
+		to see errors/warnings.
+
 2004-09-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.dll-lib (jump): Remove XSI:isms for greater portability.

@@ -24,22 +24,22 @@ all:: subs
 	$(MAKE) docs
 
 subs:
-	for i in $(SUBS) ; do if test -d `dirname $$i` ; then $(MAKE) $$i ; fi ; done
+	@for i in $(SUBS) ; do if test -d `dirname $$i` ; then $(MAKE) $$i ; fi ; done
 
 progs: subs all-progs-recursive
 libs: subs all-libs-recursive
 
 docs:
-	-test -d doc && cd doc && $(MAKE) libext2fs.info
+	-@test -d doc && cd doc && $(MAKE) libext2fs.info
 
 install-doc-libs:
-	-test -d doc && cd doc && $(MAKE) install-doc-libs
+	-@test -d doc && cd doc && $(MAKE) install-doc-libs
 
 uninstall-doc-libs:
-	-test -d doc && cd doc && $(MAKE) uninstall-doc-libs
+	-@test -d doc && cd doc && $(MAKE) uninstall-doc-libs
 
 clean-doc:
-	-test -d doc && cd doc && $(MAKE) clean
+	-@test -d doc && cd doc && $(MAKE) clean
 
 distclean-doc:
 	-test -d doc && cd doc && $(MAKE) distclean
@@ -57,7 +57,7 @@ uninstall-libs: uninstall-libs-recursive
 
 TAGS clean-recursive distclean-recursive depend-recursive check-recursive \
 	    mostlyclean-recursive realclean-recursive install-recursive:
-	for subdir in $(SUBDIRS); do \
+	@for subdir in $(SUBDIRS); do \
 	  if test -d $$subdir ; then \
 	    target=`echo $@|$(SED) 's/-recursive//'`; \
 	    echo making $$target in $$subdir; \
@@ -66,7 +66,7 @@ TAGS clean-recursive distclean-recursive depend-recursive check-recursive \
 	done
 
 all-progs-recursive install-progs-recursive uninstall-progs-recursive:
-	for subdir in $(PROG_SUBDIRS); do \
+	@for subdir in $(PROG_SUBDIRS); do \
 	  if test -d $$subdir ; then \
 	    target=`echo $@|$(SED) 's/-progs-recursive//'`; \
 	    echo making $$target in $$subdir; \
@@ -75,7 +75,7 @@ all-progs-recursive install-progs-recursive uninstall-progs-recursive:
 	done
 
 all-libs-recursive install-libs-recursive uninstall-libs-recursive install-shlibs-libs-recursive uninstall-shlibs-libs-recursive:
-	for subdir in $(LIB_SUBDIRS); do \
+	@for subdir in $(LIB_SUBDIRS); do \
 	  if test -d $$subdir ; then \
 	    target=`echo $@|$(SED) 's/-libs-recursive//'`; \
 	    echo making $$target in $$subdir; \
@@ -95,15 +95,18 @@ realclean: realclean-recursive realclean-local
 depend:: depend-recursive
 
 lib/ext2fs/ext2_types.h: $(DEP_SUBSTITUTE) $(srcdir)/lib/ext2fs/ext2_types.h.in
-	$(SUBSTITUTE) $(srcdir)/lib/ext2fs/ext2_types.h.in \
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE) $(srcdir)/lib/ext2fs/ext2_types.h.in \
 	> lib/ext2fs/ext2_types.h
 
 lib/blkid/blkid_types.h: $(DEP_SUBSTITUTE) $(srcdir)/lib/blkid/blkid_types.h.in
-	$(SUBSTITUTE) $(srcdir)/lib/blkid/blkid_types.h.in \
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE) $(srcdir)/lib/blkid/blkid_types.h.in \
 	> lib/blkid/blkid_types.h
 
 lib/uuid/uuid_types.h: $(DEP_SUBSTITUTE) $(srcdir)/lib/uuid/uuid_types.h.in
-	$(SUBSTITUTE) $(srcdir)/lib/uuid/uuid_types.h.in \
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE) $(srcdir)/lib/uuid/uuid_types.h.in \
 	> lib/uuid/uuid_types.h
 
 mostlyclean-local:

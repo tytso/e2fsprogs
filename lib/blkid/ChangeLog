@@ -1,3 +1,8 @@
+2004-11-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Use Linux-kernel-style makefile output to make it
+		easier to see errors/warnings.
+
 2004-11-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c (probe_ocfs): Fix bug where the wrong size for "ocfs1"

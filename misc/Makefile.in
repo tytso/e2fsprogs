@@ -58,29 +58,36 @@ LIBS_E2P= $(LIBE2P) $(LIBCOM_ERR)
 DEPLIBS_E2P= $(LIBE2P) $(LIBCOM_ERR) 
 
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $< -o $@
+	@echo "	CC $<"
+	@$(CC) -c $(ALL_CFLAGS) $< -o $@
 
 all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) $(LPROGS)
 
 findsuper: findsuper.o
-	$(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o
 
 e2initrd_helper: e2initrd_helper.o $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBS_BLKID)
-	$(CC) $(ALL_LDFLAGS) -o e2initrd_helper e2initrd_helper.o $(LIBS) \
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o e2initrd_helper e2initrd_helper.o $(LIBS) \
 		$(LIBS_BLKID) $(LIBS_E2P) $(LIBINTL)
 
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBS_BLKID)
-	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS) \
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS) \
 		$(LIBS_BLKID) $(LIBS_E2P) $(LIBINTL)
 
 blkid: $(BLKID_OBJS) $(DEPLIBS_BLKID)
-	$(CC) $(ALL_LDFLAGS) -o blkid $(BLKID_OBJS) $(LIBS_BLKID) $(LIBINTL)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o blkid $(BLKID_OBJS) $(LIBS_BLKID) $(LIBINTL)
 
 e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS) $(LIBINTL)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS) $(LIBINTL)
 
 base_device: base_device.c
-	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $(srcdir)/base_device.c \
+	@echo "	LD $@"
+	@$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) $(srcdir)/base_device.c \
 		-DDEBUG -o base_device
 
 check:: base_device
@@ -88,92 +95,120 @@ check:: base_device
 	cmp $(srcdir)/base_device.tst base_device.out
 
 mklost+found: $(MKLPF_OBJS)
-	$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS) $(LIBINTL)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS) $(LIBINTL)
 
 mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(DEPLIBUUID) $(DEPLIBS_BLKID)
-	$(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBS_BLKID) \
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBS_BLKID) \
 		$(LIBE2P) $(LIBUUID) $(LIBINTL)
 
 mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBUUID) $(DEPSTATIC_LIBBLKID)
-	$(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
 		$(STATIC_LIBS) $(STATIC_LIBE2P) $(STATIC_LIBBLKID) \
 		$(STATIC_LIBUUID) $(LIBINTL)
 
 resize2fs: resize2fs.o $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o resize2fs resize2fs.o $(LIBS) $(LIBINTL)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o resize2fs resize2fs.o $(LIBS) $(LIBINTL)
 
 chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
-	$(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS_E2P) $(LIBINTL)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS_E2P) $(LIBINTL)
 
 lsattr: $(LSATTR_OBJS) $(DEPLIBS_E2P)
-	$(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS_E2P) $(LIBINTL)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o lsattr $(LSATTR_OBJS) $(LIBS_E2P) $(LIBINTL)
 
 uuidgen: $(UUIDGEN_OBJS) $(DEPLIBUUID)
-	$(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID) $(LIBINTL)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID) $(LIBINTL)
 
 dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBUUID)
-	$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS) \
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS) \
 		$(LIBS_E2P) $(LIBUUID) $(LIBINTL)
 
 fsck: $(FSCK_OBJS) $(DEBLIBS_BLKID)
-	$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS_BLKID) $(LIBINTL)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBS_BLKID) $(LIBINTL)
 
 badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS) $(LIBINTL)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS) $(LIBINTL)
 
 logsave: logsave.o
-	$(CC) $(ALL_LDFLAGS) -o logsave logsave.o
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o logsave logsave.o
 
 filefrag: $(FILEFRAG_OBJS)
-	$(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) 
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) 
 
 tune2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/tune2fs.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/tune2fs.8.in tune2fs.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/tune2fs.8.in tune2fs.8
 
 mklost+found.8: $(DEP_SUBSTITUTE) $(srcdir)/mklost+found.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/mklost+found.8.in mklost+found.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/mklost+found.8.in mklost+found.8
 
 mke2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/mke2fs.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/mke2fs.8.in mke2fs.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/mke2fs.8.in mke2fs.8
 
 e2label.8: $(DEP_SUBSTITUTE) $(srcdir)/e2label.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/e2label.8.in e2label.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2label.8.in e2label.8
 
 findfs.8: $(DEP_SUBSTITUTE) $(srcdir)/findfs.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/findfs.8.in findfs.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/findfs.8.in findfs.8
 
 e2image.8: $(DEP_SUBSTITUTE) $(srcdir)/e2image.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/e2image.8.in e2image.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2image.8.in e2image.8
 
 dumpe2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/dumpe2fs.8.in 
-	$(SUBSTITUTE_UPTIME) $(srcdir)/dumpe2fs.8.in dumpe2fs.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/dumpe2fs.8.in dumpe2fs.8
 
 badblocks.8: $(DEP_SUBSTITUTE) $(srcdir)/badblocks.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/badblocks.8.in badblocks.8	
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/badblocks.8.in badblocks.8	
 
 fsck.8: $(DEP_SUBSTITUTE) $(srcdir)/fsck.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/fsck.8.in fsck.8 
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/fsck.8.in fsck.8 
 
 blkid.8: $(DEP_SUBSTITUTE) $(srcdir)/blkid.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/blkid.8.in blkid.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/blkid.8.in blkid.8
 
 logsave.8: $(DEP_SUBSTITUTE) $(srcdir)/logsave.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/logsave.8.in logsave.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/logsave.8.in logsave.8
 
 chattr.1: $(DEP_SUBSTITUTE) $(srcdir)/chattr.1.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/chattr.1.in chattr.1 
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/chattr.1.in chattr.1 
 
 lsattr.1: $(DEP_SUBSTITUTE) $(srcdir)/lsattr.1.in 
-	$(SUBSTITUTE_UPTIME) $(srcdir)/lsattr.1.in lsattr.1 
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/lsattr.1.in lsattr.1 
 
 uuidgen.1: $(DEP_SUBSTITUTE) $(srcdir)/uuidgen.1.in 
-	$(SUBSTITUTE_UPTIME) $(srcdir)/uuidgen.1.in uuidgen.1 
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuidgen.1.in uuidgen.1 
 
 blkid.1: $(DEP_SUBSTITUTE) $(srcdir)/blkid.1.in 
-	$(SUBSTITUTE_UPTIME) $(srcdir)/blkid.1.in blkid.1 
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/blkid.1.in blkid.1 
 
 filefrag.8: $(DEP_SUBSTITUTE) $(srcdir)/filefrag.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/filefrag.8.in filefrag.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/filefrag.8.in filefrag.8
 
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(sbindir) \

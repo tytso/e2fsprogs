@@ -25,21 +25,26 @@ LIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR)
 DEPLIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR)
 
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $< -o $@
+	@echo "	CC $<"
+	@$(CC) -c $(ALL_CFLAGS) $< -o $@
 
 all:: $(PROGS)
 
 test_rel: $(TEST_REL_OBJS) $(DEPLIBS)
-	$(LD) $(ALL_LDFLAGS) -o test_rel $(TEST_REL_OBJS) $(LIBS)
+	@echo "	LD $@"
+	@$(LD) $(ALL_LDFLAGS) -o test_rel $(TEST_REL_OBJS) $(LIBS)
 
 test_rel_cmds.c: test_rel_cmds.ct
-	$(MK_CMDS) $(srcdir)/test_rel_cmds.ct
+	@echo "	MK_CMDS $@"
+	@$(MK_CMDS) $(srcdir)/test_rel_cmds.ct
 
 test_icount: $(TEST_ICOUNT_OBJS) $(DEPLIBS)
-	$(LD) $(ALL_LDFLAGS) -o test_icount $(TEST_ICOUNT_OBJS) $(LIBS)
+	@echo "	LD $@"
+	@$(LD) $(ALL_LDFLAGS) -o test_icount $(TEST_ICOUNT_OBJS) $(LIBS)
 
 test_icount_cmds.c: test_icount_cmds.ct
-	$(MK_CMDS) $(srcdir)/test_icount_cmds.ct
+	@echo "	MK_CMDS $@"
+	@$(MK_CMDS) $(srcdir)/test_icount_cmds.ct
 
 clean:
 	$(RM) -f $(PROGS) test_rel_cmds.c test_icount_cmds.c \

@@ -53,53 +53,68 @@ LIBS_BLKID=	$(STATIC_LIBBLKID) $(STATIC_LIBUUID)
 DEPLIBS_BLKID=	$(DEPSTATIC_LIBBLKID) $(DEPSTATIC_LIBUUID)
 
 .c.o:
-	$(CC) $(ALL_CFLAGS) -c $< -o $@
-@PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@CHECKER_CMT@	$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+@CHECKER_CMT@	@$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
+@ELF_CMT@	@$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 all:: $(SMANPAGES)
 
 $(top_builddir)/lib/blkid/blkid_types.h: $(srcdir)/blkid_types.h.in $(top_builddir)/config.status
-	cd $(top_builddir); CONFIG_FILES=$(my_dir)/blkid_types.h ./config.status
+	@echo "	CONFIG.STATUS $<"
+	@cd $(top_builddir); \
+		CONFIG_FILES=$(my_dir)/blkid_types.h ./config.status
 
 libblkid.3: $(DEP_SUBSTITUTE) $(srcdir)/libblkid.3.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/libblkid.3.in libblkid.3
+	@echo "	CC $<"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/libblkid.3.in libblkid.3
 
 tst_cache: $(srcdir)/cache.c $(DEPLIBS_BLKID)
-	$(CC) -o tst_cache -DTEST_PROGRAM $(srcdir)/cache.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	@echo "	LD $<"
+	@$(CC) -o tst_cache -DTEST_PROGRAM $(srcdir)/cache.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_dev: $(srcdir)/dev.c $(DEPLIBS_BLKID)
-	$(CC) -o tst_dev -DTEST_PROGRAM $(srcdir)/dev.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	@echo "	LD $<"
+	@$(CC) -o tst_dev -DTEST_PROGRAM $(srcdir)/dev.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_devname: $(srcdir)/devname.c $(DEPLIBS_BLKID)
-	$(CC) -o tst_devname -DTEST_PROGRAM $(srcdir)/devname.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	@echo "	LD $<"
+	@$(CC) -o tst_devname -DTEST_PROGRAM $(srcdir)/devname.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_devno: $(srcdir)/devno.c $(DEPLIBS_BLKID)
-	$(CC) -o tst_devno -DTEST_PROGRAM $(srcdir)/devno.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	@echo "	LD $<"
+	@$(CC) -o tst_devno -DTEST_PROGRAM $(srcdir)/devno.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_getsize: $(srcdir)/getsize.c $(DEPLIBS_BLKID)
-	$(CC) -o tst_getsize -DTEST_PROGRAM $(srcdir)/getsize.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	@echo "	LD $<"
+	@$(CC) -o tst_getsize -DTEST_PROGRAM $(srcdir)/getsize.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_probe: $(srcdir)/probe.c $(DEPLIBS_BLKID)
-	$(CC) -o tst_probe -DTEST_PROGRAM $(srcdir)/probe.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	@echo "	LD $<"
+	@$(CC) -o tst_probe -DTEST_PROGRAM $(srcdir)/probe.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_read: $(srcdir)/read.c $(DEPLIBS_BLKID)
-	$(CC) -o tst_read -DTEST_PROGRAM $(srcdir)/read.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	@echo "	LD $<"
+	@$(CC) -o tst_read -DTEST_PROGRAM $(srcdir)/read.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_resolve: $(srcdir)/resolve.c $(DEPLIBS_BLKID)
-	$(CC) -o tst_resolve -DTEST_PROGRAM $(srcdir)/resolve.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	@echo "	LD $<"
+	@$(CC) -o tst_resolve -DTEST_PROGRAM $(srcdir)/resolve.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_save: $(srcdir)/save.c $(DEPLIBS_BLKID)
-	$(CC) -o tst_save -DTEST_PROGRAM $(srcdir)/save.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	@echo "	LD $<"
+	@$(CC) -o tst_save -DTEST_PROGRAM $(srcdir)/save.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 ../../misc/blkid.o: $(top_srcdir)/misc/blkid.c blkid.h
-	$(CC) $(ALL_CFLAGS) -c $(top_srcdir)/misc/blkid.c \
+	@echo "	CC $@"
+	@$(CC) $(ALL_CFLAGS) -c $(top_srcdir)/misc/blkid.c \
 		-o ../../misc/blkid.o
 
 blkid: ../../misc/blkid.o libblkid.a $(DEPLIBUUID)
-	$(CC) -o blkid ../../misc/blkid.o libblkid.a $(LIBUUID)
+	@echo "	LD $<"
+	@$(CC) -o blkid ../../misc/blkid.o libblkid.a $(LIBUUID)
 
 check:: all tst_cache tst_devname tst_devno tst_getsize tst_probe \
  tst_read tst_resolve tst_save

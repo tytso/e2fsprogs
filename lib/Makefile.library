@@ -5,9 +5,10 @@ install-shlibs::
 subdirs::
 
 $(LIBRARY).a: $(OBJS)
-	(if test -r $@; then $(RM) -f $@.bak && $(MV) $@ $@.bak; fi)
-	$(ARUPD) $@ $(OBJS)
-	-$(RANLIB) $@
-	$(RM) -f ../$@
-	$(LN) $@ ../$@
+	@echo "	GEN_LIB $@"
+	@(if test -r $@; then $(RM) -f $@.bak && $(MV) $@ $@.bak; fi)
+	@$(ARGEN) $@ $(OBJS)
+	-@$(RANLIB) $@
+	@$(RM) -f ../$@
+	@$(LN) $@ ../$@
 

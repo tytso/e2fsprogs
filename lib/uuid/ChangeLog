@@ -1,3 +1,8 @@
+2004-11-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Use Linux-kernel-style makefile output to make it
+		easier to see errors/warnings.
+
 2004-09-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* gen_uuid.c (get_node_id): glibc always defines AF_LINK, so only

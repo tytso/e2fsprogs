@@ -60,11 +60,12 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @MAKEFILE_CHECKER@
 
 .c.o:
-	$(CC) $(ALL_CFLAGS) -c $< -o $@
-@PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@CHECKER_CMT@	$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+@CHECKER_CMT@	@$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
+@ELF_CMT@	@$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 all:: tst_uuid uuid_time $(SMANPAGES)
 
@@ -72,41 +73,53 @@ $(top_builddir)/lib/uuid/uuid_types.h: $(srcdir)/uuid_types.h.in $(top_builddir)
 	cd $(top_builddir); CONFIG_FILES=$(my_dir)/uuid_types.h ./config.status
 
 tst_uuid.o: $(srcdir)/tst_uuid.c
-	$(CC) $(ALL_CFLAGS) -c $(srcdir)/tst_uuid.c -o tst_uuid.o
+	@echo "	CC $@"
+	@$(CC) $(ALL_CFLAGS) -c $(srcdir)/tst_uuid.c -o tst_uuid.o
 
 tst_uuid: tst_uuid.o $(DEPSTATIC_LIBUUID)
-	$(CC) $(ALL_LDFLAGS) -o tst_uuid tst_uuid.o $(STATIC_LIBUUID)
+	@echo "	LD $<"
+	@$(CC) $(ALL_LDFLAGS) -o tst_uuid tst_uuid.o $(STATIC_LIBUUID)
 
 uuid_time: $(srcdir)/uuid_time.c $(DEPLIBUUID)
-	$(CC) $(ALL_CFLAGS) -DDEBUG -o uuid_time $(srcdir)/uuid_time.c \
+	@echo "	LD $<"
+	@$(CC) $(ALL_CFLAGS) -DDEBUG -o uuid_time $(srcdir)/uuid_time.c \
 		$(LIBUUID)
 
 uuid.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid.3.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/uuid.3.in uuid.3
+	@echo "	SUBST $<"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid.3.in uuid.3
 
 uuid_clear.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_clear.3.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_clear.3.in uuid_clear.3
+	@echo "	SUBST $<"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_clear.3.in uuid_clear.3
 
 uuid_compare.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_compare.3.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_compare.3.in uuid_compare.3
+	@echo "	SUBST $<"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_compare.3.in uuid_compare.3
 
 uuid_copy.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_copy.3.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_copy.3.in uuid_copy.3
+	@echo "	SUBST $<"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_copy.3.in uuid_copy.3
 
 uuid_generate.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_generate.3.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_generate.3.in uuid_generate.3
+	@echo "	SUBST $<"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_generate.3.in uuid_generate.3
 
 uuid_is_null.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_is_null.3.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_is_null.3.in uuid_is_null.3
+	@echo "	SUBST $<"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_is_null.3.in uuid_is_null.3
 
 uuid_parse.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_parse.3.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_parse.3.in uuid_parse.3
+	@echo "	SUBST $<"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_parse.3.in uuid_parse.3
 
 uuid_time.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_time.3.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_time.3.in uuid_time.3
+	@echo "	SUBST $<"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_time.3.in uuid_time.3
 
 uuid_unparse.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_unparse.3.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_unparse.3.in uuid_unparse.3
+	@echo "	SUBST $<"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_unparse.3.in uuid_unparse.3
 
 installdirs::
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir)  \

@@ -57,6 +57,7 @@ RANLIB = @RANLIB@
 STRIP = @STRIP@
 LD = $(PURE) @CC@
 ARUPD = $(AR) r
+ARGEN = $(AR) rc
 LDCONFIG = @LDCONFIG@
 
 #

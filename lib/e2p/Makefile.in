@@ -52,11 +52,12 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @MAKEFILE_CHECKER@
 
 .c.o:
-	$(CC) $(ALL_CFLAGS) -c $< -o $@
-@PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@CHECKER_CMT@	$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+@CHECKER_CMT@	@$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
+@ELF_CMT@	@$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 installdirs::
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(libdir) \

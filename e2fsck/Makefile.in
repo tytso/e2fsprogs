@@ -30,8 +30,9 @@ PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR) \
 	$(PROFILED_LIBBLKID) $(DEPPROFILED_LIBUUID)
 
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $< -o $@
-@PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+	@echo "	CC $<"
+	@$(CC) -c $(ALL_CFLAGS) $< -o $@
+@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 
 #
 # Flags for using Checker
@@ -103,41 +104,52 @@ all:: profiled $(PROGS) e2fsck.static e2fsck.shared $(MANPAGES)
 @PROFILE_CMT@all:: e2fsck.profiled
 
 e2fsck: e2fsck.@E2FSCK_TYPE@
-	$(CP) e2fsck.@E2FSCK_TYPE@ e2fsck
+	@echo "	CP $@"
+	@$(CP) e2fsck.@E2FSCK_TYPE@ e2fsck
 
 e2fsck.static: $(OBJS)  $(STATIC_DEPLIBS)
-	$(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o e2fsck.static $(OBJS) \
+	@echo "	LD $@"
+	@$(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o e2fsck.static $(OBJS) \
 		$(STATIC_LIBS) 
 
 e2fsck.shared: $(OBJS)  $(DEPLIBS)
-	$(LD) $(ALL_LDFLAGS) -o e2fsck.shared $(OBJS) $(LIBS) 
+	@echo "	LD $@"
+	@$(LD) $(ALL_LDFLAGS) -o e2fsck.shared $(OBJS) $(LIBS) 
 
 e2fsck.profiled: $(PROFILED_OBJS)  $(PROFILED_DEPLIBS)
-	$(LD) $(ALL_LDFLAGS) -g -pg -o e2fsck.profiled $(PROFILED_OBJS) \
+	@echo "	LD $@"
+	@$(LD) $(ALL_LDFLAGS) -g -pg -o e2fsck.profiled $(PROFILED_OBJS) \
 		$(PROFILED_LIBS) 
 
 tst_refcount: ea_refcount.c
-	$(CC) -o tst_refcount $(srcdir)/ea_refcount.c \
+	@echo "	LD $@"
+	@$(CC) -o tst_refcount $(srcdir)/ea_refcount.c \
 		$(ALL_CFLAGS) -DTEST_PROGRAM -lcom_err
 
 tst_region: region.c
-	$(CC) -o tst_region $(srcdir)/region.c \
+	@echo "	LD $@"
+	@$(CC) -o tst_region $(srcdir)/region.c \
 		$(ALL_CFLAGS) -DTEST_PROGRAM -lcom_err
 
 extend: extend.o
-	$(LD) $(ALL_LDFLAGS) -o extend extend.o $(CHECKLIB)
+	@echo "	LD $@"
+	@$(LD) $(ALL_LDFLAGS) -o extend extend.o $(CHECKLIB)
 
 flushb: flushb.o
-	$(LD) $(ALL_LDFLAGS) -o flushb flushb.o $(CHECKLIB)
+	@echo "	LD $@"
+	@$(LD) $(ALL_LDFLAGS) -o flushb flushb.o $(CHECKLIB)
 
 iscan: iscan.o util.o ehandler.o $(DEPLIBS)
-	$(LD) $(ALL_LDFLAGS) -o iscan iscan.o util.o ehandler.o $(LIBS)
+	@echo "	LD $@"
+	@$(LD) $(ALL_LDFLAGS) -o iscan iscan.o util.o ehandler.o $(LIBS)
 
 profiled:
-	mkdir profiled
+	@echo "	MKDIR $@"
+	@mkdir profiled
 
 e2fsck.8: $(DEP_SUBSTITUTE) $(srcdir)/e2fsck.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/e2fsck.8.in e2fsck.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2fsck.8.in e2fsck.8
 
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(root_sbindir) \

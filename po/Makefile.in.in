@@ -64,7 +64,7 @@ CATALOGS = @CATALOGS@
 .po.gmo:
 	@lang=`echo $* | sed -e 's,.*/,,'`; \
 	test "$(srcdir)" = . && cdcmd="" || cdcmd="cd $(srcdir) && "; \
-	echo "$${cdcmd}rm -f $${lang}.gmo && $(GMSGFMT) -c --statistics -o $${lang}.gmo $${lang}.po"; \
+	echo "	MSGFMT $${lang}.po"; \
 	$(GMSGFMT) -c --statistics -o t-$${lang}.gmo $(srcdir)/$${lang}.po && mv t-$${lang}.gmo $${lang}.gmo
 
 .sin.sed:
@@ -108,8 +108,8 @@ $(srcdir)/$(DOMAIN).pot:
 $(POFILES): $(srcdir)/$(DOMAIN).pot
 	@lang=`echo $@ | sed -e 's,.*/,,' -e 's/\.po$$//'`; \
 	test "$(srcdir)" = . && cdcmd="" || cdcmd="cd $(srcdir) && "; \
-	echo "$${cdcmd}$(MSGMERGE_UPDATE) $${lang}.po $(DOMAIN).pot"; \
-	cd $(srcdir) && $(MSGMERGE_UPDATE) $${lang}.po $(DOMAIN).pot
+	echo "	MSGMERGE $${lang}.po"; \
+	cd $(srcdir) && $(MSGMERGE_UPDATE) -q $${lang}.po $(DOMAIN).pot
 
 
 install: install-exec install-data
@@ -283,7 +283,7 @@ update-po: Makefile
 	tmpdir=`pwd`; \
 	echo "$$lang:"; \
 	test "$(srcdir)" = . && cdcmd="" || cdcmd="cd $(srcdir) && "; \
-	echo "$${cdcmd}$(MSGMERGE) $$lang.po $(DOMAIN).pot -o $$lang.new.po"; \
+	echo "	MSGMERGE $$lang.po"; \
 	cd $(srcdir); \
 	if $(MSGMERGE) $$lang.po $(DOMAIN).pot -o $$tmpdir/$$lang.new.po; then \
 	  if cmp $$lang.po $$tmpdir/$$lang.new.po >/dev/null 2>&1; then \

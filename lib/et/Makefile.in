@@ -41,11 +41,12 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 # what to build...
 #
 .c.o:
-	$(CC) $(ALL_CFLAGS) -c $< -o $@
-@PROFILE_CMT@	$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@CHECKER_CMT@	$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@ELF_CMT@	$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+@CHECKER_CMT@	@$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
+@ELF_CMT@	@$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 @MAKEFILE_LIBRARY@
 @MAKEFILE_ELF@
@@ -54,8 +55,9 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @MAKEFILE_CHECKER@
 
 compile_et: $(DEP_SUBSTITUTE) $(srcdir)/compile_et.sh.in
-	$(SUBSTITUTE) $(srcdir)/compile_et.sh.in compile_et
-	$(CHMOD) +x compile_et
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE) $(srcdir)/compile_et.sh.in compile_et
+	@$(CHMOD) +x compile_et
 
 com_err.ps : com_err.dvi
 com_err.dvi: com_err.texinfo

@@ -1,3 +1,10 @@
+2004-11-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Use Linux-kernel-style makefile output to make it
+		easier to see errors/warnings.
+
+	* MCONFIG.in: Add definition for ARGEN
+
 2004-09-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in: Add --disable-e2initrd-helper flag to control

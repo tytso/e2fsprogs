@@ -32,22 +32,27 @@ STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(LIBINTL)
 STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
 
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $< -o $@
+	@echo "	CC $<"
+	@$(CC) -c $(ALL_CFLAGS) $< -o $@
 
 all:: $(PROGS) $(TEST_PROGS) $(MANPAGES) 
 
 resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
-	$(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS) 
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS) 
 
 resize2fs.static: $(RESIZE_OBJS)  $(STATIC_DEPLIBS)
-	$(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o resize2fs.static \
+	@echo "	LD $@"
+	@$(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o resize2fs.static \
 		$(RESIZE_OBJS) $(STATIC_LIBS) 
 
 resize2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/resize2fs.8.in
-	$(SUBSTITUTE_UPTIME) $(srcdir)/resize2fs.8.in resize2fs.8
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/resize2fs.8.in resize2fs.8
 
 test_extent: $(TEST_EXTENT_OBJS)
-	$(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS) 
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS) 
 
 installdirs:
 	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(root_sbindir) \
