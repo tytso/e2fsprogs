@@ -1,3 +1,8 @@
+2003-11-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* et_c.awk: Add declaration of the Heimdal initialization routine
+		to avoid gcc -Wall complaints
+
 2003-11-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* com_err.h, com_err.c: Use GCC attributes to mark com_err and

@@ -37,6 +37,8 @@ void initialize_h3test_error_table(void) {
 }
 
 /* For Heimdal compatibility */
+void initialize_h3test_error_table_r(struct et_list **list);
+
 void initialize_h3test_error_table_r(struct et_list **list)
 {
     struct et_list *et, **end;

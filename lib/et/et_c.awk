@@ -245,6 +245,8 @@ END {
 	print "}" > outfile
 	print "" > outfile
 	print "/* For Heimdal compatibility */" > outfile
+	print "void initialize_" table_name "_error_table_r(struct et_list **list);" > outfile
+	print "" > outfile
 	print "void initialize_" table_name "_error_table_r(struct et_list **list)" > outfile
 	print "{" > outfile
 	print "    struct et_list *et, **end;" > outfile
