@@ -606,12 +606,17 @@ endit:
 	
 	ext2fs_free_mem((void **) &block_buf);
 
-	if (ctx->large_files && 
-	    !(sb->s_feature_ro_compat & 
-	      EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
-		if (fix_problem(ctx, PR_1_FEATURE_LARGE_FILES, &pctx)) {
-			sb->s_feature_ro_compat |= 
+	if (ctx->large_files) {
+		if (!EXT2_HAS_RO_COMPAT_FEATURE(sb, 
+			EXT2_FEATURE_RO_COMPAT_LARGE_FILE) &&
+		    fix_problem(ctx, PR_1_FEATURE_LARGE_FILES, &pctx)) {
+			sb->s_feature_ro_compat |=
 				EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
+			ext2fs_mark_super_dirty(fs);
+		}
+		if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
+		    fix_problem(ctx, PR_1_FS_REV_LEVEL, &pctx)) {
+			ext2fs_update_dynamic_rev(fs);
 			ext2fs_mark_super_dirty(fs);
 		}
 	} else if (!ctx->large_files &&

@@ -1,5 +1,9 @@
 2000-12-13  Theodore Ts'o  <tytso@valinux.com>
 
+	* pass1.c (e2fsck_pass1): Offer to update the filesystem revision
+		level if we need to set large files flag.  Patch from
+		Andreas Dilger.
+
 	* super.c (check_super_block): If we have any of the compatibility
 		 flags set, we need to have a revision 1 filesystem.  Most
 		 kernels will not check the flags on a rev 0 filesystem
