@@ -32,6 +32,7 @@ OBJS= ext2_err.o \
 	get_pathname.o \
 	getsize.o \
 	icount.o \
+	imager.o \
 	initialize.o \
 	inline.o \
 	inode.o \
@@ -82,6 +83,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/get_pathname.c \
 	$(srcdir)/getsize.c \
 	$(srcdir)/icount.c \
+	$(srcdir)/imager.o \
 	$(srcdir)/initialize.c \
 	$(srcdir)/inline.c \
 	$(srcdir)/inode.c \

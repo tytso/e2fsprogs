@@ -56,8 +56,8 @@ ec	EXT2_ET_MAGIC_PQ_IO_CHANNEL,
 ec	EXT2_ET_MAGIC_EXT2_FILE,
 	"Wrong magic number for ext2 file structure"
 
-ec	EXT2_ET_MAGIC_RESERVED_7,
-	"Wrong magic number --- RESERVED_7"
+ec	EXT2_ET_MAGIC_E2IMAGE,
+	"Wrong magic number for Ext2 Image Header"
 
 ec	EXT2_ET_MAGIC_RESERVED_8,
 	"Wrong magic number --- RESERVED_8"

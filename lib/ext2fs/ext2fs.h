@@ -368,6 +368,12 @@ typedef struct ext2_icount *ext2_icount_t;
 #define BMAP_ALLOC	1
 
 /*
+ * Flags for imager.c functions
+ */
+#define IMAGER_FLAG_INODEMAP	1
+#define IMAGER_FLAG_SPARSEWRITE	2
+
+/*
  * For checking structure magic numbers...
  */
 
@@ -724,12 +730,21 @@ extern void ext2fs_badblocks_list_free(badblocks_list bb);
 extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 					blk_t *retblocks);
 
+/* imager.c */
+extern errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags);
+extern errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd, int flags);
+extern errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd, int flags);
+extern errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd, int flags);
+extern errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags);
+extern errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags);
+
 /* initialize.c */
 extern errcode_t ext2fs_initialize(const char *name, int flags,
 				   struct ext2_super_block *param,
 				   io_manager manager, ext2_filsys *ret_fs);
 
 /* inode.c */
+extern errcode_t ext2fs_flush_icache(ext2_filsys fs);
 extern errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 				  ext2_inode_scan *ret_scan);
 extern void ext2fs_close_inode_scan(ext2_inode_scan scan);

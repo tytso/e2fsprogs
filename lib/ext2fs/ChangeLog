@@ -1,3 +1,15 @@
+2000-11-05    <tytso@snap.thunk.org>
+
+	* imager.c (ext2fs_image_{inode,super,bitmap}_{read,write},
+		ext2_fs.h, Makefile.in: New file that has routines that
+		save ext2fs metadata to a file.
+
+	* ext2_err.et.in (EXT2_ET_MAGIC_E2IMAGE): New error code assigned.
+
+	* e2image.h: New file which defines the file format for the ext2
+		image file.  (Saved copy of ext2 metadata to a file as a
+		saving throw against worst-case damage.)
+
 2000-11-01    <tytso@snap.thunk.org>
 
 	* inode.c (ext2fs_flush_icache): Add new function

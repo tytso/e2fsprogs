@@ -11,7 +11,7 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-SPROGS=		mke2fs badblocks tune2fs dumpe2fs e2label @FSCK_PROG@
+SPROGS=		mke2fs badblocks tune2fs dumpe2fs e2label e2image @FSCK_PROG@
 USPROGS=	mklost+found
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			e2label.8 @FSCK_MAN@
@@ -28,6 +28,7 @@ UUIDGEN_OBJS=	uuidgen.o
 DUMPE2FS_OBJS=	dumpe2fs.o
 BADBLOCKS_OBJS=	badblocks.o
 E2LABEL_OBJS=	e2label.o
+E2IMAGE_OBJS=	e2image.o
 FSCK_OBJS=	fsck.o get_device_by_label.o
 
 SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
@@ -56,6 +57,9 @@ tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS_E2P) $(DEPLIBUUID)
 
 e2label: $(E2LABEL_OBJS) 
 	$(CC) $(ALL_LDFLAGS) -o e2label $(E2LABEL_OBJS) 
+
+e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
+	$(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS)
 
 mklost+found: $(MKLPF_OBJS)
 	$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS)
