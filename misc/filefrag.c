@@ -123,7 +123,7 @@ static void frag_report(const char *filename)
 				last_block++;
 		}
 		block = get_bmap(fd, i);
-		if (i && (block != last_block +1) ) {
+		if (i && block && (block != last_block +1) ) {
 			if (verbose)
 				printf("Discontinuity: Block %ld is at %ld (was %ld)\n",
 				       i, block, last_block);

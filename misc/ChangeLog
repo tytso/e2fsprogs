@@ -1,3 +1,9 @@
+2005-01-20    <tytso@snap.thunk.org>
+
+	* filefrag.c (frag_report): Fix filefrag so that it works
+		correctly with sparse files; unallocated blocks should not
+		be treated as a discontinuity.
+
 2005-01-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (show_stats, set_os): Interpret OS Creator values for
