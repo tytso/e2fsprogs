@@ -37,6 +37,7 @@
  * found.
  */
 
+#define _GNU_SOURCE 1 /* get strnlen() */
 #include <string.h>
 #include <time.h>
 #ifdef HAVE_ERRNO_H

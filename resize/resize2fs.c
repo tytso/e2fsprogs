@@ -34,6 +34,7 @@
  */
 
 #include "resize2fs.h"
+#include <time.h>
 
 #ifdef __linux__			/* Kludge for debugging */
 #define RESIZE2FS_DEBUG

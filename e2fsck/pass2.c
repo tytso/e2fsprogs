@@ -41,6 +41,7 @@
  * 	- The inode_reg_map bitmap
  */
 
+#define _GNU_SOURCE 1 /* get strnlen() */
 #include <string.h>
 
 #include "e2fsck.h"

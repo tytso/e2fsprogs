@@ -45,6 +45,7 @@ int main (int argc, char ** argv)
 	fprintf (stderr, "mklost+found %s (%s)\n", E2FSPROGS_VERSION,
 		 E2FSPROGS_DATE);
 	if (argc != 1) {
+		(void)argv; /* avoid unused argument warning */
 		fprintf (stderr, _("Usage: mklost+found\n"));
 		exit(1);
 	}

@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "uuid.h"
 
@@ -20,7 +21,7 @@ static int test_uuid(const char * uuid, int isValid)
 	int parsedOk;
 
 	parsedOk = uuid_parse(uuid, uuidBits) == 0;
-	
+
 	printf("%s is %s", uuid, validStr[isValid]);
 	if (parsedOk != isValid) {
 		printf(" but uuid_parse says %s\n", validStr[parsedOk]);
@@ -78,7 +79,7 @@ main(int argc, char **argv)
 		failed++;
 	}
 	printf("\n");
-	
+
 	uuid_generate_time(buf);
 	uuid_unparse(buf, str);
 	printf("UUID string = %s\n", str);
@@ -135,13 +136,10 @@ main(int argc, char **argv)
 	failed += test_uuid("84949cc5-4701-4a84-895b0354c584a981b", 0);
 	failed += test_uuid("g4949cc5-4701-4a84-895b-354c584a981b", 0);
 	failed += test_uuid("84949cc5-4701-4a84-895b-354c584a981g", 0);
-	
+
 	if (failed) {
 		printf("%d failures.\n", failed);
 		exit(1);
 	}
 	return 0;
 }
-
-	
-

@@ -25,6 +25,8 @@
  * 94/03/06	- Added the checks interval from Uwe Ohse (uwe@tirka.gun.de)
  */
 
+#define _XOPEN_SOURCE /* for inclusion of strptime() */
+#define _BSD_SOURCE /* for inclusion of strcasecmp() */
 #include <fcntl.h>
 #include <grp.h>
 #ifdef HAVE_GETOPT_H

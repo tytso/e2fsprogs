@@ -211,11 +211,11 @@ void do_dump(int argc, char **argv)
 		retval = ext2fs_icount_fetch(test_icount, i, &count);
 		if (retval) {
 			com_err(argv[0], retval,
-				"while fetching icount for %lu", i);
+				"while fetching icount for %lu", (unsigned long)i);
 			return;
 		}
 		if (count)
-			printf("%lu: %u\n", i, count);
+			printf("%lu: %u\n", (unsigned long)i, count);
 	}
 }
 
@@ -236,11 +236,11 @@ void do_validate(int argc, char **argv)
 void do_get_size(int argc, char **argv)
 {
 	ext2_ino_t	size;
-	
+
 	if (check_icount(argv[0]))
 		return;
 	size = ext2fs_get_icount_size(test_icount);
-	printf("Size of icount is: %lu\n", size);
+	printf("Size of icount is: %lu\n", (unsigned long)size);
 }
 
 static int source_file(const char *cmd_file, int sci_idx)

@@ -122,10 +122,11 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 			}
 			bh->b_dirty = 0;
 			bh->b_uptodate = 1;
-		} else
+		} else {
 			jfs_debug(3, "no-op %s for block %lu\n",
 				  rw == READ ? "read" : "write", 
 				  (unsigned long) bh->b_blocknr);
+		}
 	}
 }
 
