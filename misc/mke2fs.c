@@ -94,8 +94,9 @@ static void usage(NOARGS)
 	"[-f fragment-size]\n\t[-i bytes-per-inode] "
 	" [-N number-of-inodes]\n\t[-m reserved-blocks-percentage] "
 	"[-o creator-os] [-g blocks-per-group]\n\t[-L volume-label] "
-	"[-M last-mounted-directory] [-r fs-revision]\n\t[-R raid_opts]"
-	"[-s sparse-super-flag] [-qvSV] device [blocks-count]\n",
+	"[-M last-mounted-directory] [-O feature[,...]]\n\t"
+	"[-r fs-revision] [-R raid_opts] [-s sparse-super-flag]\n\t"
+	"[-qvSV] device [blocks-count]\n", 
 		program_name);
 	exit(1);
 }
