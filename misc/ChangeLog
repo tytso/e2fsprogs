@@ -1,3 +1,8 @@
+2003-03-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* chattr.1.in: Clarified the description of the 't' (no tail) 
+		attribute.  (Addresses Debian bug #185945)
+
 2003-03-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* fsck.c: And #ifdef protection around #include of malloc.h

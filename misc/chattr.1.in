@@ -101,10 +101,11 @@ directory hierarchies for the purposes of the Orlov block allocator
 (which is used in on systems with Linux 2.5.46 or later).
 .PP
 A file with the 't' attribute will not have a partial block fragment at
-the of the file merged with other files (for those filesystems which
+the end of the file merged with other files (for those filesystems which
 support tail-merging).  This is necessary for applications such as LILO 
-which read the filesystem directly, and who don't understand tail-merged
-files.
+which read the filesystem directly, and which don't understand tail-merged
+files.  Note: As of this writing, the ext2 or ext3 filesystems do not
+(yet, except in very experimental patches) support tail-merging.
 .PP
 When a file with the `u' attribute set is deleted, its contents are saved.
 This allows the user to ask for its undeletion.

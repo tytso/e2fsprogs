@@ -55,7 +55,7 @@ Mke2fs no longer creates filesystems with the dir_index flag set by
 default; the user has to specifically request it.
 
 Update and clarified various man pages. (Addresses Debian bugs
-#173612, #175233, #175113, and #170497)
+#173612, #175233, #175113, and #170497, #185945)
 
 Created man page for the mk_cmds program (from the libss library).
 
