@@ -1,3 +1,10 @@
+2004-09-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* resize2fs.c (check_and_change_inodes): Fix debugging printf to
+		mask off the high 256 bits of dirent->name_len (which is
+		where the file type information is stored).  (Addresses
+		Debian Bug #271605)
+
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Update the modtime even if subst doesn't need to
