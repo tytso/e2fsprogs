@@ -1385,7 +1385,7 @@ void do_features(int argc, char *argv[])
 		return;
 	for (i=1; i < argc; i++) {
 		if (e2p_edit_feature(argv[i],
-				     &current_fs->super->s_feature_compat))
+				     &current_fs->super->s_feature_compat, 0))
 			com_err(argv[0], 0, "Unknown feature: %s\n",
 				argv[i]);
 		else

@@ -105,7 +105,12 @@ automagically figures the file system size.
 .TP
 .BI \-b " block-size"
 Specify the size of blocks in bytes.  Valid block size vales are 1024, 
-2048 and 4096 bytes per block.
+2048 and 4096 bytes per block.  If omitted,
+.B mke2fs
+block-size is determined by the file system size and the expected usage
+of the filesystem (see the
+.B \-T
+option).
 .TP
 .B \-c
 Check the device for bad blocks before creating the file system, using a
