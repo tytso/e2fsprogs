@@ -1,3 +1,8 @@
+2003-03-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.darwin-lib: New file to provide support for e2fsprogs
+		on Apple Darwin.
+
 2002-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.32

@@ -1,5 +1,8 @@
 2003-03-14  Theodore Ts'o  <tytso@mit.edu>
 
+	* getsize.c: Add support for Apple Darwin's ioctl to get the hard
+		disk size.
+
 	* badblocks.c (ext2fs_u32_list_count), ext2fs.h: Add new function
 		which returns the number of entries in the list.
 

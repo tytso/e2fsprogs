@@ -167,6 +167,7 @@ distclean:: clean
 #
 ../../lib/libuuid.a: libuuid.a
 ../../lib/libuuid.so: image
+../../lib/libuuid.dylib: image
 
 # +++ Dependency line eater +++
 # 

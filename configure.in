@@ -258,6 +258,12 @@ else
 	BSDLIB_CMT=
 	MAKEFILE_BSDLIB=$srcdir/lib/Makefile.bsd-lib
 	LIB_EXT=.so
+	[case "$host_os" in
+	darwin.*)
+		MAKEFILE_BSDLIB=$srcdir/lib/Makefile.darwin-lib
+		LIB_EXT=.dylib
+	;;
+	esac]
 	echo "Enabling BSD shared libraries"
 fi
 ,

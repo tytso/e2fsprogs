@@ -50,7 +50,9 @@
 #if HAVE_ERRNO_H
 #include <errno.h>
 #endif
+#if HAVE_MALLOC_H
 #include <malloc.h>
+#endif
 
 #include "../version.h"
 #include "nls-enable.h"

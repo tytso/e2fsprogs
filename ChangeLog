@@ -1,3 +1,7 @@
+2003-03-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Add support for Apple/Darwin shared libraries.
+
 2003-03-06  Theodore Tso  <tytso@thunk.org>
 
 	* Makefile.in (.exclude-subset): Include the doc directory in the

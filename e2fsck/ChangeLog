@@ -1,5 +1,8 @@
 2003-03-14  Theodore Ts'o  <tytso@mit.edu>
 
+	* iscan.c, scantest.c, unix.c: And #ifdef protection around
+		#include of malloc.h
+
 	* rehash.c (duplicate_search_and_fix): Now search for duplicates
 		filenames, and either prompt to remove a complete
 		duplicate entry, or to rename a duplicate filename.

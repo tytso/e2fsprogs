@@ -1,3 +1,7 @@
+2003-03-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Add support for Apple Darwin
+
 2003-03-06  Theodore Tso  <tytso@mit.edu>
 
 	* uuid_types.h.in: Don't redefine types if other e2fsprogs

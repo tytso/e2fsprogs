@@ -15,7 +15,9 @@
 #include <mntent.h>
 #endif
 #include <sys/ioctl.h>
+#ifdef HAVE_MALLOC_H
 #include <malloc.h>
+#endif
 #include <sys/resource.h>
 
 #include "et/com_err.h"
