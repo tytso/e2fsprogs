@@ -85,8 +85,9 @@ extern void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map);
  * inline.c
  */
 #ifdef NO_INLINE_FUNCS
-#if (defined(__i386__) || defined(__i486__) || defined(__i586__) || \
-     defined(__mc68000__) || defined(__sparc__))
+#if (defined(__GNUC__) && (defined(__i386__) || defined(__i486__) || \
+			   defined(__i586__) || defined(__mc68000__) || \
+			   defined(__sparc__)))
 	/* This prevents bitops.c from trying to include the C */
 	/* function version of these functions */
 #define _EXT2_HAVE_ASM_BITOPS_
@@ -100,7 +101,8 @@ extern void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map);
 #define _INLINE_ extern __inline__
 #endif
 
-#if (defined(__i386__) || defined(__i486__) || defined(__i586__))
+#if ((defined __GNUC__) && (defined(__i386__) || defined(__i486__) || \
+			    defined(__i586__)))
 
 #define _EXT2_HAVE_ASM_BITOPS_
 	

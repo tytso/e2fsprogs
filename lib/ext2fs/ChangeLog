@@ -1,3 +1,15 @@
+Sun Feb  1 08:20:24 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* bitops.h: Don't try to do i386 inline asm functions if the
+ 		compiler isn't GCC.
+
+	* ext2fs.h: If EXT2_FLAT_INCLUDES is defined, #include e2_types.h,
+ 		instead of linux/types.h, and e2_bitops.h instead of
+ 		ext2fs/bitops.h.
+
+	* icount.c, version.c: Don't #include <et/com_err.h>, as it isn't
+		necessary. 
+
 Sat Jan 17 13:13:31 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* inode.c (ext2fs_open_inode_scan): Initialize the group variables

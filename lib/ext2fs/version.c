@@ -9,7 +9,6 @@
  * %End-Header%
  */
 
-#include <et/com_err.h>
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
