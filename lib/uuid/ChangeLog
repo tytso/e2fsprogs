@@ -1,3 +1,10 @@
+2001-05-12  Theodore Tso  <tytso@valinux.com>
+
+	* libuuid.3.in, uuid_clear.3.in, uuid_compare.3.in, uuid_copy.3.in,
+		uuid_generate.3.in, uuid_is_null.3.in, uuid_parse.3.in,
+		uuid_time.3.in, uuid_unparse.3.in: Update URL location of
+		e2fsprogs package.
+
 2001-05-01  Theodore Tso  <tytso@valinux.com>
 
 	* parse.c, compare.c: Include string.h to fix gcc -Wall

@@ -27,8 +27,8 @@ The copied UUID is returned in the location pointed to by
 was written by Theodore Y. Ts'o for the ext2 filesystem utilties.
 .SH AVAILABILITY
 .B uuid_copy
-is part of libuuid from the e2fsprogs package and is available for anonymous
-ftp from tsx\-11.mit.edu (and its mirrors) in /pub/linux/packages/ext2fs.
+is part of libuuid from the e2fsprogs package and is available from
+http://e2fsprogs.sourceforge.net.
 .SH "SEE ALSO"
 .BR libuuid (3),
 .BR uuid_clear (3),
