@@ -34,9 +34,9 @@
 #include "blkid/blkid.h"
 
 #ifdef DEBUG_DEVNO
-#define DEB_DEVNO(fmt, arg...) printf("devno: " fmt, ## arg)
+#define DBG(x)	x
 #else
-#define DEB_DEVNO(fmt, arg...) do {} while (0)
+#define DBG(x)
 #endif
 
 struct dir_list {
@@ -138,8 +138,8 @@ static int scan_dir(char *dirname, dev_t devno, struct dir_list **list,
 			add_to_dirlist(path, list);
 		else if (S_ISBLK(st.st_mode) && st.st_rdev == devno) {
 			*devname = string_copy(path);
-			DEB_DEVNO("found 0x%Lx at %s (%p)\n", devno,
-				 *devname, *devname);
+			DBG(printf("found 0x%Lx at %s (%p)\n", devno,
+				   *devname, *devname));
 			if (!*devname)
 				ret = -BLKID_ERR_MEM;
 			break;
@@ -181,7 +181,7 @@ char *blkid_devno_to_devname(dev_t devno)
 		struct dir_list *current = list;
 
 		list = list->next;
-		DEB_DEVNO("directory %s\n", current->name);
+		DBG(printf("directory %s\n", current->name));
 		scan_dir(current->name, devno, &new_list, &devname);
 		string_free(current->name);
 		free(current);
@@ -200,9 +200,10 @@ char *blkid_devno_to_devname(dev_t devno)
 	free_dirlist(&new_list);
 
 	if (!devname)
-		fprintf(stderr, "blkid: couldn't find devno 0x%04Lx\n", devno);
+		fprintf(stderr, "blkid: couldn't find devno 0x%04lx\n", 
+			(unsigned long) devno);
 	else
-		DEB_DEVNO("found devno 0x%04Lx as %s\n", devno, devname);
+		DBG(printf("found devno 0x%04Lx as %s\n", devno, devname));
 
 	return devname;
 }
@@ -234,8 +235,8 @@ blkid_dev *blkid_find_devno(blkid_cache *cache, dev_t devno)
 	}
 
 	if (dev)
-		DEB_DEVNO("found devno 0x%04LX in cache as %s\n",
-			  devno, dev->bid_name);
+		DBG(printf("found devno 0x%04LX in cache as %s\n",
+			   devno, dev->bid_name));
 
 	return dev;
 }

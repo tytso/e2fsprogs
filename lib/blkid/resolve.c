@@ -22,9 +22,9 @@
 #include "probe.h"
 
 #ifdef DEBUG_RESOLVE
-#define DEB_RESOLVE(fmt, arg...) printf("resolve: " fmt, ## arg)
+#define DBG(x)	x
 #else
-#define DEB_RESOLVE(fmt, arg...) do {} while (0)
+#define DBG(x)
 #endif
 
 
@@ -38,7 +38,7 @@ char *blkid_get_tagname_devname(blkid_cache *cache, const char *tagname,
 	blkid_dev *dev;
 	char *ret = NULL;
 
-	DEB_RESOLVE("looking for %s on %s\n", tagname, devname);
+	DBG(printf("looking for %s on %s\n", tagname, devname));
 
 	if (!devname)
 		return NULL;
@@ -47,7 +47,7 @@ char *blkid_get_tagname_devname(blkid_cache *cache, const char *tagname,
 		return NULL;
 
 	if (!cache)
-		DEB_RESOLVE("no cache given, direct device probe\n");
+		DBG(printf("no cache given, direct device probe\n"));
 
 	if ((dev = blkid_get_devname(cache, devname)) &&
 	    (found = blkid_find_tag_dev(dev, tag)))
@@ -74,8 +74,8 @@ char *blkid_get_token(blkid_cache *cache, const char *token,
 	blkid_cache *c = cache;
 	char *name = NULL;
 
-	DEB_RESOLVE("looking for %s%c%s %s\n", token, value ? '=' : ' ',
-		    value ? value : "", cache ? "in cache" : "from disk");
+	DBG(printf("looking for %s%c%s %s\n", token, value ? '=' : ' ',
+		   value ? value : "", cache ? "in cache" : "from disk"));
 
 	if (!(tag = blkid_token_to_tag(token))) {
 		if (!value)

@@ -37,9 +37,9 @@
 
 /* #define DEBUG_DEVNAME */
 #ifdef DEBUG_DEVNAME
-#define DEB_DEV(fmt, arg...) printf("devname: " fmt, ## arg)
+#define DBG(x)	x
 #else
-#define DEB_DEV(fmt, arg...) do {} while (0)
+#define DBG(x)
 #endif
 
 /*
@@ -59,7 +59,7 @@ blkid_dev *blkid_find_devname(blkid_cache *cache, const char *devname)
 		if (strcmp(tmp->bid_name, devname))
 			continue;
 
-		DEB_DEV("found devname %s in cache\n", tmp->bid_name);
+		DBG(printf("found devname %s in cache\n", tmp->bid_name));
 		dev = blkid_verify_devname(cache, tmp);
 		break;
 	}
@@ -149,15 +149,15 @@ static int lvm_get_devno(const char *lvm_device, int *major, int *minor,
 	*major = *minor = 0;
 	*size = 0;
 
-	DEB_DEV("opening %s\n", lvm_device);
+	DBG(printf("opening %s\n", lvm_device));
 	if ((lvf = fopen(lvm_device, "r")) == NULL) {
 		ret = errno;
-		DEB_DEV("%s: (%d) %s\n", lvm_device, ret, strerror(ret));
+		DBG(printf("%s: (%d) %s\n", lvm_device, ret, strerror(ret)));
 		return -ret;
 	}
 
 	while (fgets(buf, sizeof(buf), lvf)) {
-		if (sscanf(buf, "size: %Ld", size) == 1) { /* sectors */
+		if (sscanf(buf, "size: %llu", size) == 1) { /* sectors */
 			*size <<= 9;
 		}
 		if (sscanf(buf, "device: %d:%d", major, minor) == 2) {
@@ -179,7 +179,7 @@ static void lvm_probe_all(blkid_cache **cache)
 	if ((vg_list = opendir(VG_DIR)) == NULL)
 		return;
 
-	DEB_DEV("probing LVM devices under %s\n", VG_DIR);
+	DBG(printf("probing LVM devices under %s\n", VG_DIR));
 
 	while ((vg_iter = readdir(vg_list)) != NULL) {
 		DIR		*lv_list;
@@ -222,8 +222,8 @@ static void lvm_probe_all(blkid_cache **cache)
 				continue;
 			}
 			sprintf(lvm_device, "%s/%s", vg_name, lv_name);
-			DEB_DEV("LVM dev %s: devno 0x%02X%02X, size %Ld\n",
-				lvm_device, major, minor, size);
+			DBG(printf("LVM dev %s: devno 0x%02X%02X, size %Ld\n",
+				   lvm_device, major, minor, size));
 			probe_one(*cache, lvm_device, major, minor, size);
 			free(lvm_device);
 		}
@@ -279,12 +279,12 @@ int blkid_probe_all(blkid_cache **cache)
 			last = which;
 			which ^= 1;
 
-			if (sscanf(line, " %d %d %Ld %128[^\n ]",
+			if (sscanf(line, " %d %d %lld %128[^\n ]",
 				   &majors[which], &minors[which],
 				   &sizes[which], ptnames[which]) != 4)
 				continue;
 
-			DEB_DEV("read partition name %s\n", ptnames[which]);
+			DBG(printf("read partition name %s\n", ptnames[which]));
 
 			/* look only at md devices on first pass */
 			handleOnFirst = !strncmp(ptnames[which], "md", 2);
@@ -304,9 +304,9 @@ int blkid_probe_all(blkid_cache **cache)
 
 			lens[which] = strlen(ptnames[which]);
 			if (isdigit(ptnames[which][lens[which] - 1])) {
-				DEB_DEV("partition dev %s, devno 0x%02X%02X\n",
-					ptnames[which], majors[which],
-					minors[which]);
+				DBG(printf("partition dev %s, devno 0x%02X%02X\n",
+					   ptnames[which], majors[which],
+					   minors[which]));
 
 				if (sizes[which] > 1)
 					probe_one(*cache, ptnames[which],
@@ -317,9 +317,9 @@ int blkid_probe_all(blkid_cache **cache)
 			} else if (lens[last] &&
 				   strncmp(ptnames[last], ptnames[which],
 					   lens[last])) {
-				DEB_DEV("whole dev %s, devno 0x%02X%02X\n",
-					ptnames[last], majors[last],
-					minors[last]);
+				DBG(printf("whole dev %s, devno 0x%02X%02X\n",
+					   ptnames[last], majors[last],
+					   minors[last]));
 				probe_one(*cache, ptnames[last], majors[last],
 					  minors[last], sizes[last] << 10);
 				lens[last] = 0;

@@ -24,9 +24,9 @@
 #include "uuid/uuid.h"
 
 #ifdef DEBUG_CACHE
-#define DEB_CACHE(fmt, arg...)	printf("cache:" fmt, ##arg)
+#define DBG(x)	x
 #else
-#define DEB_CACHE(fmt, arg...)	do {} while (0)
+#define DBG(x)
 #endif
 
 #ifdef HAVE_STRTOULL
@@ -146,7 +146,7 @@ static int parse_start(char **cp)
 		return 0;
 
 	if (!strncmp(p, "<device", 7)) {
-		DEB_CACHE("found device header: %8s\n", p);
+		DBG(printf("found device header: %8s\n", p));
 		p += 7;
 
 		*cp = p;
@@ -165,7 +165,7 @@ static int parse_end(char **cp)
 	*cp = skip_over_blank(*cp);
 
 	if (!strncmp(*cp, "</device>", 9)) {
-		DEB_CACHE("found device trailer %9s\n", *cp);
+		DBG(printf("found device trailer %9s\n", *cp));
 		*cp += 9;
 		return 0;
 	}
@@ -196,7 +196,7 @@ static int parse_dev(blkid_dev **dev, char **cp)
 	start = skip_over_blank(start + 1);
 	end = skip_over_word(start);
 
-	DEB_CACHE("device should be %*s\n", end - start, start);
+	DBG(printf("device should be %*s\n", end - start, start));
 
 	if (**cp == '>')
 		*cp = end;
@@ -228,7 +228,7 @@ static int parse_dev(blkid_dev **dev, char **cp)
 	memcpy(*name, start, end - start);
 	(*name)[end - start] = '\0';
 
-	DEB_CACHE("found dev %s\n", *name);
+	DBG(printf("found dev %s\n", *name));
 
 	return 1;
 }
@@ -344,7 +344,7 @@ static int parse_tag(blkid_cache *cache, blkid_dev *dev, blkid_tag **tag,
  * If a valid device was read, *dev_p is non-NULL, otherwise it is NULL
  * (e.g. comment lines, unknown XML content, etc).
  */
-int blkid_parse_line(blkid_cache *cache, blkid_dev **dev_p, char *cp)
+static int blkid_parse_line(blkid_cache *cache, blkid_dev **dev_p, char *cp)
 {
 	blkid_dev *dev;
 	blkid_tag *tag;
@@ -355,7 +355,7 @@ int blkid_parse_line(blkid_cache *cache, blkid_dev **dev_p, char *cp)
 
 	*dev_p = NULL;
 
-	DEB_CACHE("line: %s\n", cp);
+	DBG(printf("line: %s\n", cp));
 
 	if ((ret = parse_dev(dev_p, &cp)) <= 0)
 		return ret;
@@ -447,7 +447,7 @@ int blkid_read_cache(blkid_cache **cache, const char *filename)
 	if (!filename || !strlen(filename))
 		filename = BLKID_CACHE_FILE;
 
-	DEB_CACHE("cache file %s\n", filename);
+	DBG(printf("cache file %s\n", filename));
 
 	/* If we read the standard cache file, do not do so again */
 	if (!strcmp(filename, BLKID_CACHE_FILE) && (*cache) &&

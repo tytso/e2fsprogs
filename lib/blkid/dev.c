@@ -16,9 +16,9 @@
 
 #ifdef DEBUG_DEV
 #include <stdio.h>
-#define DEB_DEV(fmt, arg...) printf("dev: " fmt, ## arg)
+#define DBG(x)	x
 #else
-#define DEB_DEV(fmt, arg...) do {} while (0)
+#define DBG(x)
 #endif
 
 blkid_dev *blkid_new_dev(void)
@@ -39,7 +39,7 @@ void blkid_free_dev(blkid_dev *dev)
 	if (!dev)
 		return;
 
-	DEB_DEV("  freeing dev %s (%s)\n", dev->bid_name, dev->bid_type);
+	DBG(printf("  freeing dev %s (%s)\n", dev->bid_name, dev->bid_type));
 	DEB_DUMP_DEV(dev);
 
 	list_del(&dev->bid_devs);
@@ -73,7 +73,7 @@ void blkid_free_dev(blkid_dev *dev)
 #define SC_NONE	0x0003
 #define SC_SAME	0x0002
 
-int string_compare(char *s1, char *s2)
+static int string_compare(char *s1, char *s2)
 {
 	if (!s1 && !s2)
 		return SC_NONE;
@@ -97,14 +97,14 @@ static int add_tag_to_cache(blkid_cache *cache, blkid_tag *tag)
 	if (!cache || !tag)
 		return 0;
 
-	DEB_DEV("    adding tag %s=%s to cache\n", tag->bit_name, tag->bit_val);
+	DBG(printf("    adding tag %s=%s to cache\n", tag->bit_name, tag->bit_val));
 
 	if (!(head = blkid_find_head_cache(cache, tag))) {
 		head = blkid_new_tag();
 		if (!head)
 			return -BLKID_ERR_MEM;
 
-		DEB_DEV("    creating new cache tag head %s\n",tag->bit_name);
+		DBG(printf("    creating new cache tag head %s\n",tag->bit_name));
 		head->bit_name = string_copy(tag->bit_name);
 		if (!head->bit_name) {
 			blkid_free_tag(head);
@@ -157,7 +157,7 @@ blkid_dev *blkid_add_dev_to_cache(blkid_cache *cache, blkid_dev *dev)
 
 		/* If the UUIDs are the same but one is unverified discard it */
 		if (dup_uuid == SC_SAME) {
-			DEB_DEV("  duplicate uuid %s\n", dev->bid_uuid);
+			DBG(printf("  duplicate uuid %s\n", dev->bid_uuid));
 			if (!(odev->bid_flags & BLKID_BID_FL_VERIFIED)) {
 				dev->bid_id = odev->bid_id; /* keep old id */
 				blkid_free_dev(odev);
@@ -177,7 +177,7 @@ blkid_dev *blkid_add_dev_to_cache(blkid_cache *cache, blkid_dev *dev)
 		 * (prefer one that has been validated, or the first one).
 		 */
 		if (dup_name == SC_SAME) {
-			DEB_DEV("  duplicate devname %s\n", dev->bid_name);
+			DBG(printf("  duplicate devname %s\n", dev->bid_name));
 			if (odev->bid_flags & BLKID_BID_FL_VERIFIED ||
 			    !(dev->bid_flags & BLKID_BID_FL_VERIFIED)) {
 				if ((dup_uuid & SC_SAME) &&
@@ -195,7 +195,7 @@ blkid_dev *blkid_add_dev_to_cache(blkid_cache *cache, blkid_dev *dev)
 		dup_type = string_compare(odev->bid_type, dev->bid_type);
 
 		if (dup_label == SC_SAME && dup_type == SC_SAME) {
-			DEB_DEV("  duplicate label %s\n", dev->bid_label);
+			DBG(printf("  duplicate label %s\n", dev->bid_label));
 			if (!(odev->bid_flags & BLKID_BID_FL_VERIFIED)) {
 				blkid_free_dev(odev);
 				goto exit_new;
@@ -210,7 +210,7 @@ blkid_dev *blkid_add_dev_to_cache(blkid_cache *cache, blkid_dev *dev)
 	}
 
 exit_new:
-	DEB_DEV("  adding new devname %s to cache\n", dev->bid_name);
+	DBG(printf("  adding new devname %s to cache\n", dev->bid_name));
 
 	cache->bic_flags |= BLKID_BIC_FL_CHANGED;
 
@@ -222,7 +222,7 @@ exit_new:
 	return dev;
 
 exit_old:
-	DEB_DEV("  using old devname %s from cache\n", dev->bid_name);
+	DBG(printf("  using old devname %s from cache\n", dev->bid_name));
 	return dev;
 }
 

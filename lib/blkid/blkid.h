@@ -215,7 +215,7 @@ int blkid_read_cache(blkid_cache **cache, const char *filename);
  * Save data to the cache file: save.c
  */
 int blkid_save_cache_file(blkid_cache *cache, FILE *file);
-int blkid_save_cache(blkid_cache *cache, char *filename);
+int blkid_save_cache(blkid_cache *cache, const char *filename);
 
 /*
  * Identify a device by inode name: probe.c

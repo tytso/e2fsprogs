@@ -12,6 +12,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "ext2_fs.h"
 #include "ext2fs.h"

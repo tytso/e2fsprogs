@@ -33,9 +33,9 @@
 
 /* #define DEBUG_PROBE */
 #ifdef DEBUG_PROBE
-#define DEB_PROBE(fmt, arg...) printf("probe: " fmt, ## arg)
+#define DBG(x)	x
 #else
-#define DEB_PROBE(fmt, arg...) do {} while (0)
+#define DBG(x)
 #endif
 
 /*
@@ -94,8 +94,8 @@ static int probe_default(int fd, blkid_dev **dev_p, const char *devname,
 		blkid_create_tag(dev, NULL, "TYPE", id->bim_type,
 				 strlen(id->bim_type));
 
-	DEB_PROBE("%s: devno 0x%04Lx, type %s\n", devname,
-		  st.st_rdev, id->bim_type);
+	DBG(printf("%s: devno 0x%04Lx, type %s\n", devname,
+		   st.st_rdev, id->bim_type));
 
 	return 0;
 exit_dev:
@@ -116,10 +116,10 @@ static int probe_ext2(int fd, blkid_dev **dev_p, const char *devname,
 
 	es = (struct ext2_super_block *)buf;
 
-	DEB_PROBE("size = %Ld, ext2_sb.compat = %08X:%08X:%08X\n", size,
-		  le32_to_cpu(es->s_feature_compat),
-		  le32_to_cpu(es->s_feature_incompat),
-		  le32_to_cpu(es->s_feature_ro_compat));
+	DBG(printf("size = %Ld, ext2_sb.compat = %08X:%08X:%08X\n", size,
+		   le32_to_cpu(es->s_feature_compat),
+		   le32_to_cpu(es->s_feature_incompat),
+		   le32_to_cpu(es->s_feature_ro_compat)));
 
 	/* Make sure we don't keep re-probing as ext2 for a journaled fs */
 	if (!strcmp(id->bim_type, "ext2") &&
@@ -147,7 +147,7 @@ static int probe_ext2(int fd, blkid_dev **dev_p, const char *devname,
 	}
 
 	if (!uuid_is_null(es->s_uuid)) {
-		unsigned char uuid[37];
+		char uuid[37];
 		uuid_unparse(es->s_uuid, uuid);
 		blkid_create_tag(dev, NULL, "UUID", uuid, sizeof(uuid));
 	}
@@ -234,10 +234,10 @@ static int probe_vfat(int fd, blkid_dev **dev_p, const char *devname,
 		sectors = vs->vs_total_sect;
 	cluster_size = ((vs->vs_sector_size[1] << 8) | vs->vs_sector_size[0]);
 	dev->bid_size = sectors * cluster_size;
-	DEB_PROBE("%Ld %d byte sectors\n", sectors, cluster_size);
+	DBG(printf("%lld %d byte sectors\n", sectors, cluster_size));
 
 	if (strncmp(vs->vs_label, "NO NAME", 7)) {
-		unsigned char *end = vs->vs_label + sizeof(vs->vs_label) - 1;
+		char *end = vs->vs_label + sizeof(vs->vs_label) - 1;
 
 		while (*end == ' ' && end >= vs->vs_label)
 			--end;
@@ -278,10 +278,10 @@ static int probe_msdos(int fd, blkid_dev **dev_p, const char *devname,
 		sectors = ms->ms_total_sect;
 	cluster_size = ((ms->ms_sector_size[1] << 8) | ms->ms_sector_size[0]);
 	dev->bid_size = sectors * cluster_size;
-	DEB_PROBE("%Ld %d byte sectors\n", sectors, cluster_size);
+	DBG(printf("%Ld %d byte sectors\n", sectors, cluster_size));
 
 	if (strncmp(ms->ms_label, "NO NAME", 7)) {
-		unsigned char *end = ms->ms_label + sizeof(ms->ms_label) - 1;
+		char *end = ms->ms_label + sizeof(ms->ms_label) - 1;
 
 		while (*end == ' ' && end >= ms->ms_label)
 			--end;
@@ -369,7 +369,7 @@ static int probe_reiserfs(int fd, blkid_dev **dev_p, const char *devname,
 		}
 
 		if (!uuid_is_null(rs->rs_uuid)) {
-			unsigned char uuid[37];
+			char uuid[37];
 			uuid_unparse(rs->rs_uuid, uuid);
 			blkid_create_tag(dev, NULL, "UUID", uuid, sizeof(uuid));
 		}
@@ -449,7 +449,7 @@ static int probe_mdraid(int fd, blkid_dev **dev_p, const char *devname,
 	/* The MD UUID is not contiguous in the superblock, make it so */
 	if (md->set_uuid0 || md->set_uuid1 || md->set_uuid2 || md->set_uuid3) {
 		unsigned char md_uuid[16];
-		unsigned char uuid[37];
+		char uuid[37];
 
 		memcpy(md_uuid, &md->set_uuid0, 4);
 		memcpy(md_uuid + 4, &md->set_uuid1, 12);
@@ -558,7 +558,7 @@ struct blkid_magic type_array[] = {
  */
 static unsigned char *read_one_buf(int fd, blkid_loff_t offset)
 {
-	char *buf;
+	unsigned char *buf;
 
 	if (lseek(fd, offset, SEEK_SET) < 0)
 		return NULL;
@@ -577,16 +577,16 @@ static unsigned char *read_one_buf(int fd, blkid_loff_t offset)
 static unsigned char *read_sb_buf(int fd, unsigned char **bufs, int kboff,
 				  blkid_loff_t start)
 {
-	int index = kboff >> BLKID_BLK_KBITS;
+	int idx = kboff >> BLKID_BLK_KBITS;
 	unsigned char **buf;
 
-	if (index > BLKID_BLK_OFFS || index < -BLKID_BLK_OFFS) {
+	if (idx > BLKID_BLK_OFFS || idx < -BLKID_BLK_OFFS) {
 		fprintf(stderr, "reading from invalid offset %d (%d)!\n",
-			kboff, index);
+			kboff, idx);
 		return NULL;
 	}
 
-	buf = bufs + index;
+	buf = bufs + idx;
 	if (!*buf)
 		*buf = read_one_buf(fd, start);
 
@@ -679,8 +679,8 @@ blkid_dev *blkid_devname_to_dev(const char *devname, blkid_loff_t size)
 		int new_sb;
 		blkid_loff_t diff_dev;
 
-		DEB_PROBE("found type %s (#%d) on %s, probing\n",
-			  id->bim_type, id - type_array, devname);
+		DBG(printf("found type %s (#%d) on %s, probing\n",
+			   id->bim_type, id - type_array, devname));
 
 		new_sb = id->bim_kbsize << 10;
 		if (sb_size < new_sb) {
@@ -696,9 +696,9 @@ blkid_dev *blkid_devname_to_dev(const char *devname, blkid_loff_t size)
 			continue;
 
 		diff_dev = size - dev->bid_size;
-		DEB_PROBE("size = %Lu, fs size = %Lu\n", size, dev->bid_size);
-		DEB_PROBE("checking best match: old %Ld, new %Ld\n",
-			  diff_last, diff_dev);
+		DBG(printf("size = %Lu, fs size = %Lu\n", size, dev->bid_size));
+		DBG(printf("checking best match: old %Ld, new %Ld\n",
+			   diff_last, diff_dev));
 		/* See which type is a better match by checking size */
 		if ((diff_last < 0 && diff_dev > diff_last) ||
 		    (diff_last > 0 && diff_dev >= 0 && diff_dev < diff_last)) {
@@ -711,9 +711,9 @@ blkid_dev *blkid_devname_to_dev(const char *devname, blkid_loff_t size)
 	}
 
 	if (!last)
-		DEB_PROBE("unknown device type on %s\n", devname);
+		DBG(printf("unknown device type on %s\n", devname));
 	else
-		DEB_DUMP_DEV(last);
+		DBG(printf(last));
 
 	/* Free up any buffers we allocated */
 	for (bufs = buf_array; bufs - buf_array < sizeof(buf_array) /
@@ -743,7 +743,7 @@ blkid_dev *blkid_verify_devname(blkid_cache *cache, blkid_dev *dev)
 	blkid_loff_t size;
 	struct blkid_magic *id;
 	blkid_dev *new = NULL;
-	char *sb_buf = NULL;
+	unsigned char *sb_buf = NULL;
 	int sb_size = 0;
 	time_t diff;
 	int fd;
@@ -757,7 +757,7 @@ blkid_dev *blkid_verify_devname(blkid_cache *cache, blkid_dev *dev)
 				       diff < BLKID_PROBE_INTERVAL))
 		return dev;
 
-	DEB_PROBE("need to revalidate %s\n", dev->bid_name);
+	DBG(printf("need to revalidate %s\n", dev->bid_name));
 
 	if ((fd = open(dev->bid_name, O_RDONLY)) < 0) {
 		if (errno == ENXIO || errno == ENODEV) {
@@ -767,7 +767,7 @@ blkid_dev *blkid_verify_devname(blkid_cache *cache, blkid_dev *dev)
 			return NULL;
 		}
 		/* We don't have read permission, just return cache data. */
-		DEB_PROBE("returning unverified data for %s\n", dev->bid_name);
+		DBG(printf("returning unverified data for %s\n", dev->bid_name));
 		return dev;
 	}
 
@@ -779,7 +779,7 @@ blkid_dev *blkid_verify_devname(blkid_cache *cache, blkid_dev *dev)
 			int new_sb = id->bim_kbsize << 10;
 			/* See if we need to allocate a larger sb buffer */
 			if (sb_size < new_sb) {
-				char *sav = sb_buf;
+				unsigned char *sav = sb_buf;
 
 				/* We can't revalidate, return old dev */
 				if (!(sb_buf = realloc(sb_buf, new_sb))) {

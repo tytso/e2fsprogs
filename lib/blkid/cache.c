@@ -14,9 +14,9 @@
 
 #ifdef DEBUG_CACHE
 #include <stdio.h>
-#define DEB_CACHE(fmt, arg...) printf("cache: " fmt, ## arg)
+#define DBG(x)	x
 #else
-#define DEB_CACHE(fmt, arg...) do {} while (0)
+#define DBG(x)
 #endif
 
 blkid_cache *blkid_new_cache(void)
@@ -37,7 +37,7 @@ void blkid_free_cache(blkid_cache *cache)
 	if (!cache)
 		return;
 
-	DEB_CACHE("freeing cache struct\n");
+	DBG(printf("freeing cache struct\n"));
 	/* DEB_DUMP_CACHE(cache); */
 
 	while (!list_empty(&cache->bic_devs)) {
@@ -54,8 +54,8 @@ void blkid_free_cache(blkid_cache *cache)
 			blkid_tag *bad = list_entry(tag->bit_names.next,
 						    blkid_tag, bit_names);
 
-			DEB_CACHE("warning: unfreed tag %s=%s\n",
-				 bad->bit_name, bad->bit_val);
+			DBG(printf("warning: unfreed tag %s=%s\n",
+				   bad->bit_name, bad->bit_val));
 			blkid_free_tag(bad);
 		}
 		blkid_free_tag(tag);

@@ -26,9 +26,9 @@
 #include "blkid/blkid.h"
 
 #ifdef DEBUG_SAVE
-#define DEB_SAVE(fmt, arg...) printf("save: " fmt, ## arg)
+#define DBG(x)	x
 #else
-#define DEB_SAVE(fmt, arg...) do {} while (0)
+#define DBG(x)
 #endif
 
 static int save_dev(blkid_dev *dev, FILE *file)
@@ -38,12 +38,12 @@ static int save_dev(blkid_dev *dev, FILE *file)
 	if (!dev)
 		return 0;
 
-	DEB_SAVE("device %s, type %s\n", dev->bid_name, dev->bid_type);
+	DBG(printf("device %s, type %s\n", dev->bid_name, dev->bid_type));
 
 	fprintf(file,
-		"<device TYPE=\"%s\" DEVNO=\"0x%04Lx\" ID=\"%d\" TIME=\"%Ld\"",
-		dev->bid_type, dev->bid_devno,
-		dev->bid_id, (long long)dev->bid_time);
+		"<device TYPE=\"%s\" DEVNO=\"0x%04lx\" ID=\"%d\" TIME=\"%lu\"",
+		dev->bid_type, (unsigned long) dev->bid_devno,
+		dev->bid_id, dev->bid_time);
 	list_for_each(p, &dev->bid_tags) {
 		blkid_tag *tag = list_entry(p, blkid_tag, bit_tags);
 		if (strcmp(tag->bit_name, "TYPE"))
@@ -83,10 +83,10 @@ int blkid_save_cache_file(blkid_cache *cache, FILE *file)
 /*
  * Write out the cache struct to the cache file on disk.
  */
-int blkid_save_cache(blkid_cache *cache, char *filename)
+int blkid_save_cache(blkid_cache *cache, const char *filename)
 {
-	char tmp[4096] = { '\0', };
-	char *opened = NULL;
+	char *tmp = NULL;
+	const char *opened = NULL;
 	FILE *file = NULL;
 	int fd, ret;
 
@@ -95,7 +95,7 @@ int blkid_save_cache(blkid_cache *cache, char *filename)
 
 	if (list_empty(&cache->bic_devs) ||
 	    !(cache->bic_flags & BLKID_BIC_FL_CHANGED)) {
-		DEB_SAVE("empty cache, not saving\n");
+		DBG(printf("empty cache, not saving\n"));
 		return 0;
 	}
 
@@ -110,7 +110,7 @@ int blkid_save_cache(blkid_cache *cache, char *filename)
 		/* If we can't write to the cache file, then don't even try */
 		if (((ret = stat(filename, &st)) < 0 && errno != ENOENT) ||
 		    (ret == 0 && access(filename, W_OK) < 0)) {
-			DEB_SAVE("can't write to cache file %s\n", filename);
+			DBG(printf("can't write to cache file %s\n", filename));
 			return 0;
 		}
 
@@ -122,11 +122,14 @@ int blkid_save_cache(blkid_cache *cache, char *filename)
 		 * a temporary file then we open it directly.
 		 */
 		if (ret == 0 && S_ISREG(st.st_mode)) {
-			snprintf(tmp, sizeof(tmp) - 1, "%s-XXXXXX", filename);
-			fd = mkstemp(tmp);
-			if (fd >= 0) {
-				file = fdopen(fd, "w");
-				opened = tmp;
+			tmp = malloc(strlen(filename) + 8);
+			if (tmp) {
+				sprintf(tmp, "%s-XXXXXX", filename);
+				fd = mkstemp(tmp);
+				if (fd >= 0) {
+					file = fdopen(fd, "w");
+					opened = tmp;
+				}
 			}
 		}
 
@@ -135,10 +138,12 @@ int blkid_save_cache(blkid_cache *cache, char *filename)
 			opened = filename;
 		}
 
-		DEB_SAVE("cache file %s (really %s)\n", filename, opened);
+		DBG(printf("cache file %s (really %s)\n", filename, opened));
 
 		if (!file) {
 			perror(opened);
+			if (tmp)
+				free(tmp);
 			return errno;
 		}
 	}
@@ -150,20 +155,25 @@ int blkid_save_cache(blkid_cache *cache, char *filename)
 		if (opened != filename) {
 			if (ret < 0) {
 				unlink(opened);
-				DEB_SAVE("unlinked temp cache %s\n", opened);
+				DBG(printf("unlinked temp cache %s\n", opened));
 			} else {
-				char backup[4096];
+				char *backup;
 
-				snprintf(backup, sizeof(backup) - 1, "%s.old",
-					 filename);
-				unlink(backup);
-				link(filename, backup);
+				backup = malloc(strlen(filename) + 5);
+				if (backup) {
+					sprintf(backup, "%s.old", filename);
+					unlink(backup);
+					link(filename, backup);
+					free(backup);
+				}
 				rename(opened, filename);
-				DEB_SAVE("moved temp cache %s\n", opened);
+				DBG(printf("moved temp cache %s\n", opened));
 			}
 		}
 	}
 
+	if (tmp)
+		free(tmp);
 	return ret;
 }
 

@@ -27,7 +27,7 @@ struct blkid_magic {
 	long		bim_kboff;	/* kilobyte offset of superblock */
 	unsigned	bim_sboff;	/* byte offset within superblock */
 	unsigned	bim_len;	/* length of magic */
-	unsigned char	*bim_magic;	/* magic string */
+	const char	*bim_magic;	/* magic string */
 	unsigned	bim_align;	/* byte alignment of superblock */
 	unsigned	bim_kbsize;	/* size of superblock in kilobytes */
 	blkid_probe_t	bim_probe;	/* probe function */
@@ -55,7 +55,7 @@ struct ext2_super_block {
 	__u32		s_feature_incompat;
 	__u32		s_feature_ro_compat;
 	unsigned char   s_uuid[16];
-	unsigned char   s_volume_name[16];
+	char	   s_volume_name[16];
 };
 #define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x00000004
 #define EXT3_FEATURE_INCOMPAT_RECOVER		0x00000004
@@ -69,7 +69,7 @@ struct xfs_super_block {
 	__u32		xs_dummy1[8];
 	unsigned char	xs_uuid[16];
 	__u32		xs_dummy2[15];
-	unsigned char	xs_fname[12];
+	char		xs_fname[12];
 	__u32		xs_dummy3[2];
 	__u64		xs_icount;
 	__u64		xs_ifree;
@@ -89,7 +89,7 @@ struct reiserfs_super_block {
 	unsigned char	rs_magic[12];
 	__u32		rs_dummy4[5];
 	unsigned char	rs_uuid[16];
-	unsigned char	rs_label[16];
+	char		rs_label[16];
 };
 
 /* Yucky misaligned values */
@@ -117,7 +117,7 @@ struct vfat_super_block {
 /* 34*/	__u16		vs_reserved2[6];
 /* 40*/	unsigned char	vs_unknown[3];
 /* 43*/	unsigned char	vs_serno[4];
-/* 47*/	unsigned char   vs_label[11];
+/* 47*/	char		vs_label[11];
 /* 52*/	unsigned char   vs_magic[8];
 /* 5a*/	unsigned char	vs_dummy2[164];
 /*1fe*/	unsigned char	vs_pmagic[2];
@@ -141,7 +141,7 @@ struct msdos_super_block {
 /* 20*/	__u32		ms_total_sect;
 /* 24*/	unsigned char	ms_unknown[3];
 /* 27*/	unsigned char	ms_serno[4];
-/* 2b*/	unsigned char   ms_label[11];
+/* 2b*/	char		ms_label[11];
 /* 36*/	unsigned char   ms_magic[8];
 /* 3d*/	unsigned char	ms_dummy2[192];
 /*1fe*/	unsigned char	ms_pmagic[2];

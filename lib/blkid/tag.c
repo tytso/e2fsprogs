@@ -16,9 +16,9 @@
 #include "blkid/blkid.h"
 
 #ifdef DEBUG_TAG
-#define DEB_TAG(fmt, arg...) printf("tag: " fmt, ## arg)
+#define DBG(x)	x
 #else
-#define DEB_TAG(fmt, arg...) do {} while (0)
+#define DBG(x)
 #endif
 
 blkid_tag *blkid_new_tag(void)
@@ -39,7 +39,7 @@ void blkid_free_tag(blkid_tag *tag)
 	if (!tag)
 		return;
 
-	DEB_TAG("    freeing tag %s=%s\n", tag->bit_name, tag->bit_val);
+	DBG(printf("    freeing tag %s=%s\n", tag->bit_name, tag->bit_val));
 	DEB_DUMP_TAG(tag);
 
 	list_del(&tag->bit_tags);	/* list of tags for this device */
@@ -64,7 +64,7 @@ blkid_tag *blkid_find_tv_tags(blkid_tag *head, const char *value)
 	if (!head || !value)
 		return NULL;
 
-	DEB_TAG("looking for %s in %s list\n", value, head->bit_name);
+	DBG(printf("looking for %s in %s list\n", value, head->bit_name));
 
 	list_for_each(p, &head->bit_names) {
 		blkid_tag *tmp = list_entry(p, blkid_tag, bit_names);
@@ -119,7 +119,7 @@ blkid_tag *blkid_find_head_cache(blkid_cache *cache, blkid_tag *tag)
 		blkid_tag *tmp = list_entry(p, blkid_tag, bit_tags);
 
 		if (!strcmp(tmp->bit_name, tag->bit_name)) {
-			DEB_TAG("    found cache tag head %s\n", tag->bit_name);
+			DBG(printf("    found cache tag head %s\n", tag->bit_name));
 			head = tmp;
 			break;
 		}
@@ -135,7 +135,7 @@ blkid_tag *blkid_find_tag_cache(blkid_cache *cache, blkid_tag *tag)
 {
 	blkid_tag *head;
 
-	DEB_TAG("looking for %s=%s in cache\n", tag->bit_name, tag->bit_val);
+	DBG(printf("looking for %s=%s in cache\n", tag->bit_name, tag->bit_val));
 
 	head = blkid_find_head_cache(cache, tag);
 
@@ -153,7 +153,7 @@ blkid_tag *blkid_get_tag_cache(blkid_cache *cache, blkid_tag *tag)
 	if (!tag || !cache)
 		return NULL;
 
-	DEB_TAG("looking for %s=%s in cache\n", tag->bit_name, tag->bit_val);
+	DBG(printf("looking for %s=%s in cache\n", tag->bit_name, tag->bit_val));
 
 	head = blkid_find_head_cache(cache, tag);
 	found = blkid_find_tv_tags(head, tag->bit_val);
@@ -181,7 +181,7 @@ static void add_tag_to_dev(blkid_dev *dev, blkid_tag *tag)
 	if (!dev)
 		return;
 
-	DEB_TAG("adding tag %s=%s\n", tag->bit_name, tag->bit_val);
+	DBG(printf("adding tag %s=%s\n", tag->bit_name, tag->bit_val));
 
 	tag->bit_dev = dev;
 
@@ -247,7 +247,7 @@ blkid_tag *blkid_token_to_tag(const char *token)
 	blkid_tag *tag = NULL;
 	int len;
 
-	DEB_TAG("trying to make '%s' into a tag\n", token);
+	DBG(printf("trying to make '%s' into a tag\n", token));
 	if (!token || !(cp = strchr(token, '=')))
 		return NULL;
 
