@@ -149,8 +149,7 @@ static void print_mntopts(struct ext2_super_block * s, FILE *f)
 void list_super2(struct ext2_super_block * sb, FILE *f)
 {
 	int inode_blocks_per_group;
-	char buf[80];
-	const char *os;
+	char buf[80], *str;
 	time_t	tm;
 
 	inode_blocks_per_group = (((sb->s_inodes_per_group *
@@ -188,15 +187,9 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	fprintf(f, "Errors behavior:          ");
 	print_fs_errors(f, sb->s_errors);
 	fprintf(f, "\n");
-	switch (sb->s_creator_os) {
-	    case EXT2_OS_LINUX: os = "Linux"; break;
-	    case EXT2_OS_HURD:  os = "GNU/Hurd"; break;
-	    case EXT2_OS_MASIX: os = "Masix"; break;
-	    case EXT2_OS_FREEBSD: os = "FreeBSD"; break;
-	    case EXT2_OS_LITES:	os = "Lites"; break;
-	    default:		os = "unknown"; break;
-	}
-	fprintf(f, "Filesystem OS type:       %s\n", os);
+	str = e2p_os2string(sb->s_creator_os);
+	fprintf(f, "Filesystem OS type:       %s\n", str);
+	free(str);
 	fprintf(f, "Inode count:              %u\n", sb->s_inodes_count);
 	fprintf(f, "Block count:              %u\n", sb->s_blocks_count);
 	fprintf(f, "Reserved block count:     %u\n", sb->s_r_blocks_count);

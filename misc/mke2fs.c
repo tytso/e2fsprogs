@@ -686,6 +686,7 @@ static void show_stats(ext2_filsys fs)
 {
 	struct ext2_super_block *s = fs->super;
 	char 			buf[80];
+        char                    *os;
 	blk_t			group_block;
 	dgrp_t			i;
 	int			need, col_left;
@@ -698,14 +699,9 @@ static void show_stats(ext2_filsys fs)
 	strncpy(buf, s->s_volume_name, sizeof(s->s_volume_name));
 	printf(_("Filesystem label=%s\n"), buf);
 	fputs(_("OS type: "), stdout);
-	switch (fs->super->s_creator_os) {
-	    case EXT2_OS_LINUX: fputs("Linux", stdout); break;
-	    case EXT2_OS_HURD:  fputs("GNU/Hurd", stdout);   break;
-	    case EXT2_OS_MASIX: fputs ("Masix", stdout); break;
-	    case EXT2_OS_FREEBSD: fputs ("FreeBSD", stdout); break;
-	    case EXT2_OS_LITES: fputs ("Lites", stdout); break;
-	    default:		fputs(_("(unknown os)"), stdout);
-        }
+        os = e2p_os2string(fs->super->s_creator_os);
+	fputs(os, stdout);
+	free(os);
 	printf("\n");
 	printf(_("Block size=%u (log=%u)\n"), fs->blocksize,
 		s->s_log_block_size);

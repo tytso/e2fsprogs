@@ -1,3 +1,10 @@
+2005-03-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* ls.c (list_super2): Use the new e2p_os2string() function
+
+	* ostype.c: New file which converts between an integer os_type and
+		a string.
+
 2006-02-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.36

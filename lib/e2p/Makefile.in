@@ -18,7 +18,8 @@ all::	e2p.pc
 
 OBJS=		feature.o fgetflags.o fsetflags.o fgetversion.o fsetversion.o \
 		getflags.o getversion.o hashstr.o iod.o ls.o mntopts.o \
-		parse_num.o pe.o pf.o ps.o setflags.o setversion.o uuid.o 
+		parse_num.o pe.o pf.o ps.o setflags.o setversion.o uuid.o \
+		ostype.o 
 
 SRCS=		$(srcdir)/feature.c $(srcdir)/fgetflags.c \
 		$(srcdir)/fsetflags.c $(srcdir)/fgetversion.c \
@@ -26,8 +27,8 @@ SRCS=		$(srcdir)/feature.c $(srcdir)/fgetflags.c \
 		$(srcdir)/getversion.c $(srcdir)/hashstr.c $(srcdir)/iod.c \
 		$(srcdir)/ls.c $(srcdir)/mntopts.c $(srcdir)/parse_num.c \
 		$(srcdir)/pe.c $(srcdir)/pf.c $(srcdir)/ps.c \
-		$(srcdir)/setflags.c $(srcdir)/setversion.c $(srcdir)/uuid.c
-
+		$(srcdir)/setflags.c $(srcdir)/setversion.c $(srcdir)/uuid.c \
+		$(srcdir)/ostype.c
 HFILES= e2p.h
 
 LIBRARY= libe2p
@@ -63,6 +64,13 @@ e2p.pc: $(srcdir)/e2p.pc.in $(top_builddir)/config.status
 	@echo "	CONFIG.STATUS $@"
 	@cd $(top_builddir); CONFIG_FILES=lib/e2p/e2p.pc ./config.status
 
+tst_ostype: $(srcdir)/ostype.c
+	@echo "	LD $@"
+	@$(CC) -DTEST_PROGRAM -o tst_ostype $(srcdir)/ostype.c
+
+check::	tst_ostype
+	./tst_ostype
+
 installdirs::
 	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/e2p"
 	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
@@ -87,7 +95,8 @@ uninstall::
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/*
-	$(RM) -f ../libe2p.a ../libe2p_p.a
+	$(RM) -f ../libe2p.a ../libe2p_p.a tst_ostype
+
 mostlyclean:: clean
 distclean:: clean
 	$(RM) -f .depend Makefile e2p.pc \
@@ -132,3 +141,4 @@ setversion.o: $(srcdir)/setversion.c $(srcdir)/e2p.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
 uuid.o: $(srcdir)/uuid.c $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(srcdir)/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h
+ostype.o: $(srcdir)/ostype.c $(srcdir)/e2p.h

@@ -1,3 +1,7 @@
+2005-03-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (show_stats): Use the new e2p_os2string() function
+
 2005-03-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* filefrag.c (frag_report): Automatically detect files that are
