@@ -1,3 +1,7 @@
+2001-05-25  Theodore Tso  <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.20
+
 2001-05-14  Theodore Tso  <tytso@valinux.com>
 
 	* debugfs.h: Change location of ext2_fs.h to be ext2fs/ext2_fs.h

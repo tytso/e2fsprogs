@@ -1,3 +1,7 @@
+2001-05-25  Theodore Tso  <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.20
+
 2001-05-20  Theodore Tso  <tytso@valinux.com>
 
 	* e2p.h: #include <> instead of "" for ext2fs and et header files,

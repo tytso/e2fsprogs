@@ -1,3 +1,7 @@
+2001-05-25  Theodore Tso  <tytso@valinux.com>
+
+	* Release of E2fsprogs 1.20
+
 2000-12-04    <tytso@snap.thunk.org>
 
 	* compile_et.1: Fix simple typo in the man page.
