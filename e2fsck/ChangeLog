@@ -1,3 +1,10 @@
+2001-01-03    <tytso@snap.thunk.org>
+
+	* journal.c (e2fsck_check_ext3_journal): Force a fsck if we remove
+		the journal stored on a reserved inode.  Also force a fsck
+		if the journal appears to exist while !NEEDS_RECOVERY, and
+		we forcibly reset the journal.
+
 2001-01-01    <tytso@snap.thunk.org>
 
 	* journal.c, pass1.c, super.c, unix.c: Replace use of struct

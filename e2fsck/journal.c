@@ -479,7 +479,7 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 	int recover = ctx->fs->super->s_feature_incompat &
 		EXT3_FEATURE_INCOMPAT_RECOVER;
 	struct problem_context pctx;
-	int reset = 0;
+	int reset = 0, force_fsck = 0;
 	int retval;
 
 	/* If we don't have any journal features, don't do anything more */
@@ -488,7 +488,7 @@ int e2fsck_check_ext3_journal(e2fsck_t ctx)
 	    uuid_is_null(sb->s_journal_uuid))
  		return 0;
 
-#ifdef JFS_DEBUG
+#ifdef JFS_DEBUG		/* Enabled by configure --enable-jfs-debug */
 	journal_enable_debug = 2;
 #endif
 	clear_problem_context(&pctx);
@@ -522,8 +522,18 @@ no_has_journal:
 			if (recover &&
 			    !fix_problem(ctx, PR_0_JOURNAL_RECOVER_SET, &pctx))
 				goto no_has_journal;
+			/*
+			 * Need a full fsck if we are releasing a
+			 * journal on a reserved inode.
+			 */
+			force_fsck = recover ||
+				(sb->s_journal_inum < EXT2_FIRST_INODE(sb));
+			/* Clear all of the journal fields */
 			sb->s_journal_inum = 0;
-			e2fsck_clear_recover(ctx, recover);
+			sb->s_journal_dev = 0;
+			memset(sb->s_journal_uuid, 0,
+			       sizeof(sb->s_journal_uuid));
+			e2fsck_clear_recover(ctx, force_fsck);
 		} else if (!(ctx->options & E2F_OPT_READONLY)) {
 			sb->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 			ext2fs_mark_super_dirty(ctx->fs);
@@ -533,9 +543,22 @@ no_has_journal:
 	if (sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL &&
 	    !(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER) &&
 	    journal->j_superblock->s_start != 0) {
-		if (fix_problem(ctx, PR_0_JOURNAL_RESET_JOURNAL, &pctx))
+		if (fix_problem(ctx, PR_0_JOURNAL_RESET_JOURNAL, &pctx)) {
 			reset = 1;
-		/* I refuse to enable recovery for journal */
+			sb->s_state &= ~EXT2_VALID_FS;
+			ext2fs_mark_super_dirty(ctx->fs);
+		}
+		/*
+		 * If the user answers no to the above question, we
+		 * ignore the fact that journal apparently has data;
+		 * accidentally replaying over valid data would be far
+		 * worse than skipping a questionable recovery.
+		 * 
+		 * XXX should we abort with a fatal error here?  What
+		 * will the ext3 kernel code do if a filesystem with
+		 * !NEEDS_RECOVERY but with a non-zero
+		 * journal->j_superblock->s_start is mounted?
+		 */
 	}
 
 	e2fsck_journal_release(ctx, journal, reset);
