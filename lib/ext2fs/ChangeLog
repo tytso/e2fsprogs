@@ -1,3 +1,13 @@
+1998-06-10  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* alloc_tables.c (ext2fs_allocate_group_table): Fix bug so that if
+		the stride length hits a bad value, we retry the block
+		allocation starting at the beginning of the block group.
+
+	* ext2fs.h, bb_inode.c, block.c, bmove.c, dir_iterate.c,
+		expanddir.c, ext2fsP.h, read_bb.c: Change blkcnt_t to be
+		e2_blkcnt_t to avoid collision with LFS API.
+
 1998-05-01  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* initialize.c (ext2fs_initialize): Initialize s_inodes_count in a

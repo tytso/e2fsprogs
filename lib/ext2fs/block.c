@@ -27,11 +27,11 @@ struct block_context {
 	ext2_filsys	fs;
 	int (*func)(ext2_filsys	fs,
 		    blk_t	*blocknr,
-		    blkcnt_t	bcount,
+		    e2_blkcnt_t	bcount,
 		    blk_t	ref_blk,
 		    int		ref_offset,
 		    void	*priv_data);
-	blkcnt_t	bcount;
+	e2_blkcnt_t	bcount;
 	int		bsize;
 	int		flags;
 	errcode_t	errcode;
@@ -307,7 +307,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 				char *block_buf,
 				int (*func)(ext2_filsys fs,
 					    blk_t	*blocknr,
-					    blkcnt_t	blockcnt,
+					    e2_blkcnt_t	blockcnt,
 					    blk_t	ref_blk,
 					    int		ref_offset,
 					    void	*priv_data),
@@ -445,7 +445,7 @@ struct xlate {
 #ifdef __TURBOC__
 #pragma argsused
 #endif
-static int xlate_func(ext2_filsys fs, blk_t *blocknr, blkcnt_t blockcnt,
+static int xlate_func(ext2_filsys fs, blk_t *blocknr, e2_blkcnt_t blockcnt,
 		      blk_t ref_block, int ref_offset, void *priv_data)
 {
 	struct xlate *xl = (struct xlate *) priv_data;

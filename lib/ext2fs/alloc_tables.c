@@ -85,6 +85,9 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, int group,
 	if (!fs->group_desc[group].bg_block_bitmap) {
 		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
 						1, bmap, &new_blk);
+		if (retval == EXT2_ET_BLOCK_ALLOC_FAIL) 
+			retval = ext2fs_get_free_blocks(fs, group_blk,
+					last_blk, 1, bmap, &new_blk);
 		if (retval)
 			return retval;
 		ext2fs_mark_block_bitmap(bmap, new_blk);
@@ -94,6 +97,9 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, int group,
 	if (!fs->group_desc[group].bg_inode_bitmap) {
 		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
 						1, bmap, &new_blk);
+		if (retval == EXT2_ET_BLOCK_ALLOC_FAIL) 
+			retval = ext2fs_get_free_blocks(fs, group_blk,
+					last_blk, 1, bmap, &new_blk);
 		if (retval)
 			return retval;
 		ext2fs_mark_block_bitmap(bmap, new_blk);

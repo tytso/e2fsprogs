@@ -54,7 +54,7 @@ typedef unsigned long long __u64;
 typedef __u32		blk_t;
 typedef unsigned int	dgrp_t;
 typedef __u32		ext2_off_t;
-typedef __s64		blkcnt_t;
+typedef __s64		e2_blkcnt_t;
 
 #if EXT2_FLAT_INCLUDES
 #include "com_err.h"
@@ -554,7 +554,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 				char *block_buf,
 				int (*func)(ext2_filsys fs,
 					    blk_t	*blocknr,
-					    blkcnt_t	blockcnt,
+					    e2_blkcnt_t	blockcnt,
 					    blk_t	ref_blk,
 					    int		ref_offset,
 					    void	*priv_data),

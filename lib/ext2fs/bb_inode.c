@@ -47,11 +47,11 @@ struct set_badblock_record {
 };
 
 static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
-			      blkcnt_t blockcnt,
+			      e2_blkcnt_t blockcnt,
 			      blk_t ref_block, int ref_offset,
 			      void *priv_data);
 static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
-				blkcnt_t blockcnt,
+				e2_blkcnt_t blockcnt,
 				blk_t ref_block, int ref_offset,
 				void *priv_data);
 	
@@ -166,7 +166,7 @@ cleanup:
 #pragma argsused
 #endif
 static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
-				blkcnt_t blockcnt,
+				e2_blkcnt_t blockcnt,
 				blk_t ref_block, int ref_offset,
 				void *priv_data)
 {
@@ -228,7 +228,7 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 #pragma argsused
 #endif
 static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
-			      blkcnt_t blockcnt, blk_t ref_block, 
+			      e2_blkcnt_t blockcnt, blk_t ref_block, 
 			      int ref_offset, void *priv_data)
 {
 	struct set_badblock_record *rec = (struct set_badblock_record *)

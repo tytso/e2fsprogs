@@ -43,7 +43,7 @@ struct read_bb_record {
 #pragma argsused
 #endif
 static int mark_bad_block(ext2_filsys fs, blk_t *block_nr,
-			  blkcnt_t blockcnt, blk_t ref_block,
+			  e2_blkcnt_t blockcnt, blk_t ref_block,
 			  int ref_offset, void *priv_data)
 {
 	struct read_bb_record *rb = (struct read_bb_record *) priv_data;

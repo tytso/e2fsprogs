@@ -38,7 +38,7 @@ struct process_block_struct {
 };
 
 static int process_block(ext2_filsys fs, blk_t	*block_nr,
-			 blkcnt_t blockcnt, blk_t ref_block,
+			 e2_blkcnt_t blockcnt, blk_t ref_block,
 			 int ref_offset, void *priv_data)
 {
 	struct process_block_struct *pb;

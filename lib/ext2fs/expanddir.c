@@ -30,7 +30,7 @@ struct expand_dir_struct {
 
 static int expand_dir_proc(ext2_filsys		fs,
 			   blk_t		*blocknr,
-			   blkcnt_t		blockcnt,
+			   e2_blkcnt_t		blockcnt,
 			   blk_t		ref_block,
 			   int			ref_offset,
 			   void			*priv_data)
