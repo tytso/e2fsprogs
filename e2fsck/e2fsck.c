@@ -103,6 +103,10 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ext2fs_free_inode_bitmap(ctx->inode_imagic_map);
 		ctx->inode_imagic_map = 0;
 	}
+	if (ctx->dirs_to_hash) {
+		ext2fs_u32_list_free(ctx->dirs_to_hash);
+		ctx->dirs_to_hash = 0;
+	}
 
 	/*
 	 * Clear the array of invalid meta-data flags

@@ -118,12 +118,15 @@ typedef struct ext2fs_struct_generic_bitmap *ext2fs_block_bitmap;
  * badblocks list definitions
  */
 
-typedef struct ext2_struct_badblocks_list *ext2_badblocks_list;
-typedef struct ext2_struct_badblocks_iterate *ext2_badblocks_iterate;
+typedef struct ext2_struct_u32_list *ext2_badblocks_list;
+typedef struct ext2_struct_u32_iterate *ext2_badblocks_iterate;
+
+typedef struct ext2_struct_u32_list *ext2_u32_list;
+typedef struct ext2_struct_u32_iterate *ext2_u32_iterate;
 
 /* old */
-typedef struct ext2_struct_badblocks_list *badblocks_list;
-typedef struct ext2_struct_badblocks_iterate *badblocks_iterate;
+typedef struct ext2_struct_u32_list *badblocks_list;
+typedef struct ext2_struct_u32_iterate *badblocks_iterate;
 
 #define BADBLOCKS_FLAG_DIRTY	1
 
@@ -210,7 +213,7 @@ struct struct_ext2_filsys {
 				struct ext2_inode *inode);
 	errcode_t (*write_inode)(ext2_filsys fs, ext2_ino_t ino,
 				struct ext2_inode *inode);
-	badblocks_list			badblocks;
+	ext2_badblocks_list		badblocks;
 	ext2_dblist			dblist;
 	__u32				stride;	/* for mke2fs */
 	struct ext2_super_block *	orig_super;
@@ -462,6 +465,16 @@ extern errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 					     ext2fs_block_bitmap bmap);
 
 /* badblocks.c */
+extern errcode_t ext2fs_u32_list_create(ext2_u32_list *ret, int size);
+extern errcode_t ext2fs_u32_list_add(ext2_u32_list bb, __u32 blk);
+extern int ext2fs_u32_list_test(ext2_u32_list bb, blk_t blk);
+extern errcode_t ext2fs_u32_list_iterate_begin(ext2_u32_list bb,
+					       ext2_u32_iterate *ret);
+extern int ext2fs_u32_list_iterate(ext2_u32_iterate iter, blk_t *blk);
+extern void ext2fs_u32_list_iterate_end(ext2_u32_iterate iter);
+extern errcode_t ext2fs_u32_copy(ext2_u32_list src, ext2_u32_list *dest);
+extern int ext2fs_u32_list_equal(ext2_u32_list bb1, ext2_u32_list bb2);
+
 extern errcode_t ext2fs_badblocks_list_create(ext2_badblocks_list *ret,
 					    int size);
 extern errcode_t ext2fs_badblocks_list_add(ext2_badblocks_list bb,
@@ -678,7 +691,8 @@ extern void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap);
 extern void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap);
 extern void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap);
 extern void ext2fs_free_dblist(ext2_dblist dblist);
-extern void ext2fs_badblocks_list_free(badblocks_list bb);
+extern void ext2fs_badblocks_list_free(ext2_badblocks_list bb);
+extern void ext2fs_u32_list_free(ext2_u32_list bb);
 
 /* getsize.c */
 extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,

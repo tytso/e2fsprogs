@@ -249,6 +249,11 @@ struct e2fsck_struct {
 	struct dx_dir_info *dx_dir_info;
 
 	/*
+	 * Directories to hash
+	 */
+	ext2_u32_list	dirs_to_hash;
+
+	/*
 	 * Tuning parameters
 	 */
 	int process_inode_size;
@@ -379,11 +384,18 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 
 /* pass3.c */
 extern int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t inode);
+extern errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
+					 int num, int gauranteed_size);
+
 
 /* region.c */
 extern region_t region_create(region_addr_t min, region_addr_t max);
 extern void region_free(region_t region);
 extern int region_allocate(region_t region, region_addr_t start, int n);
+
+/* rehash.c */
+errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino);
+void e2fsck_rehash_directories(e2fsck_t ctx);
 
 /* super.c */
 void check_super_block(e2fsck_t ctx);

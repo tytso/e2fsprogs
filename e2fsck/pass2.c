@@ -500,6 +500,7 @@ static void parse_int_node(ext2_filsys fs,
 		blk = ent[i].block & 0x0ffffff;
 		/* Check to make sure the block is valid */
 		if (blk > dx_dir->numblocks) {
+			cd->pctx.blk = blk;
 			if (fix_problem(cd->ctx, PR_2_HTREE_BADBLK,
 					&cd->pctx)) {
 				clear_htree(cd->ctx, cd->pctx.ino);
@@ -838,6 +839,7 @@ static int check_dir_block(ext2_filsys fs,
 		       db->blockcnt, dx_db->type,
 		       dx_db->min_hash, dx_db->max_hash);
 #endif
+		cd->pctx.dir = cd->pctx.ino;
 		if ((dx_db->type == DX_DIRBLOCK_ROOT) ||
 		    (dx_db->type == DX_DIRBLOCK_NODE))
 			parse_int_node(fs, db, cd, dx_dir, buf);
@@ -946,6 +948,8 @@ static void clear_htree(e2fsck_t ctx, ext2_ino_t ino)
 	e2fsck_read_inode(ctx, ino, &inode, "clear_htree");
 	inode.i_flags = inode.i_flags & ~EXT2_INDEX_FL;
 	e2fsck_write_inode(ctx, ino, &inode, "clear_htree");
+	if (ctx->dirs_to_hash)
+		ext2fs_u32_list_add(ctx->dirs_to_hash, ino);
 }
 
 

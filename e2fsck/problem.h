@@ -37,6 +37,7 @@ struct problem_context {
 #define PR_LATCH_DBLOCK	0x0060	/* Latch for pass 1b dup block headers */
 #define PR_LATCH_LOW_DTIME 0x0070 /* Latch for pass1 orphaned list refugees */
 #define PR_LATCH_TOOBIG	0x0080	/* Latch for file to big errors */
+#define PR_LATCH_REHASH_DIR 0x0090 /* Latch for rehashing directories */
 
 #define PR_LATCH(x)	((((x) & PR_LATCH_MASK) >> 4) - 1)
 
@@ -699,6 +700,27 @@ struct problem_context {
 /* Lost+found is not a directory */
 #define PR_3_LPF_NOTDIR			0x030017
 
+/*
+ * Pass 3a --- rehashing diretories
+ */
+/* Pass 3a: Reindexing directories */
+#define PR_3A_PASS_HEADER		0x031000
+
+/* Error iterating over directories */
+#define PR_3A_REHASH_ITER		0x031001
+
+/* Error rehash directory */
+#define PR_3A_REHASH_DIR_ERR		0x031002		
+
+/* Rehashing dir header */
+#define PR_3A_REHASH_DIR_HEADER		0x031003
+
+/* Rehashing directory %d */
+#define PR_3A_REHASH_DIR		0x031004
+		  
+/* Rehashing dir end */	  
+#define PR_3A_REHASH_DIR_END		0x031005
+	
 /*
  * Pass 4 errors
  */

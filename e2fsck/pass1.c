@@ -277,6 +277,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (!(ctx->options & E2F_OPT_PREEN))
 		fix_problem(ctx, PR_1_PASS_HEADER, &pctx);
 
+	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) {
+		if (ext2fs_u32_list_create(&ctx->dirs_to_hash, 50))
+			ctx->dirs_to_hash = 0;
+	}
+
 #ifdef MTRACE
 	mtrace_print("Pass 1");
 #endif
@@ -1269,7 +1274,11 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 #endif
 		}
 	}
-	
+	if (ctx->dirs_to_hash && pb.is_dir &&
+	    !(inode->i_flags & EXT2_INDEX_FL) &&
+	    ((inode->i_size / fs->blocksize) >= 3))
+		ext2fs_u32_list_add(ctx->dirs_to_hash, ino);
+		
 	if (inode->i_file_acl && check_ext_attr(ctx, pctx, block_buf))
 		pb.num_blocks++;
 

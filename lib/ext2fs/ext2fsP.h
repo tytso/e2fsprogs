@@ -14,18 +14,18 @@
 /*
  * Badblocks list
  */
-struct ext2_struct_badblocks_list {
+struct ext2_struct_u32_list {
 	int	magic;
 	int	num;
 	int	size;
-	blk_t	*list;
+	__u32	*list;
 	int	badblocks_flags;
 };
 
-struct ext2_struct_badblocks_iterate {
-	int		magic;
-	badblocks_list	bb;
-	int		ptr;
+struct ext2_struct_u32_iterate {
+	int			magic;
+	ext2_u32_list		bb;
+	int			ptr;
 };
 
 

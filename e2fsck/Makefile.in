@@ -57,7 +57,7 @@ PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR) \
 OBJS= unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o pass3.o pass4.o \
 	pass5.o journal.o swapfs.o badblocks.o util.o dirinfo.o dx_dirinfo.o \
 	ehandler.o problem.o message.o recovery.o region.o revoke.o \
-	ea_refcount.o $(MTRACE_OBJ)
+	ea_refcount.o rehash.o $(MTRACE_OBJ)
 
 PROFILED_OBJS= profiled/unix.o profiled/e2fsck.o profiled/super.o \
 	profiled/pass1.o profiled/pass1b.o \
@@ -66,7 +66,7 @@ PROFILED_OBJS= profiled/unix.o profiled/e2fsck.o profiled/super.o \
 	profiled/dirinfo.o profiled/dx_dirinfo.o profiled/ehandler.o \
 	profiled/message.o profiled/problem.o profiled/swapfs.o \
 	profiled/recovery.o profiled/region.o profiled/revoke.o \
-	profiled/ea_refcount.o
+	profiled/ea_refcount.o profiled/rehash.o
 
 SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/super.c \
@@ -89,6 +89,7 @@ SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/message.c \
 	$(srcdir)/swapfs.c \
 	$(srcdir)/ea_refcount.c \
+	$(srcdir)/rehash.c \
 	$(srcdir)/region.c \
 	$(MTRACE_SRC)
 

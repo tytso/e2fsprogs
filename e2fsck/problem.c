@@ -1048,7 +1048,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Bad block in htree interior node */
 	{ PR_2_HTREE_BADBLK,
-	  N_("@p @h %d (%q): bad @b number %B.\n"),
+	  N_("@p @h %d (%q): bad @b number %b.\n"),
 	  PROMPT_CLEAR_HTREE, 0 },
 
 	/* Pass 3 errors */
@@ -1171,7 +1171,39 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Lost+found not a directory */
 	{ PR_3_LPF_NOTDIR,
 	  N_("/@l is not a @d (ino=%i)\n"),
-	  PROMPT_UNLINK, 0 }, 
+	  PROMPT_UNLINK, 0 },
+
+	/* Pass 3a (rehashing directory) errors	*/
+
+	/* Pass 3a: Reindexing directories */
+	{ PR_3A_PASS_HEADER,
+	  N_("Pass 3a: Reindexing directories\n"),
+	  PROMPT_NONE, PR_PREEN_NOMSG },
+
+	/* Error iterating over directories */
+	{ PR_3A_REHASH_ITER,
+	  N_("Failed to create dirs_to_hash iterator: %m"),
+	  PROMPT_NONE, 0 },
+
+	/* Error rehash directory */
+	{ PR_3A_REHASH_DIR_ERR,
+	  N_("Failed to rehash directory %q (%d): %m"),
+	  PROMPT_NONE, 0 },
+
+	/* Rehashing dir header */
+	{ PR_3A_REHASH_DIR_HEADER,
+	  N_("Rehashing directories: "),
+	  PROMPT_NONE, PR_MSG_ONLY },
+
+	/* Rehashing directory %d */
+	{ PR_3A_REHASH_DIR,
+	  " %d",
+	  PROMPT_NONE, PR_LATCH_REHASH_DIR | PR_PREEN_NOHDR},
+		  
+	/* Rehashing dir end */	  
+	{ PR_3A_REHASH_DIR_END,
+	  "\n",
+	  PROMPT_NONE, PR_PREEN_NOHDR },
 
 	/* Pass 4 errors */
 	
@@ -1343,6 +1375,7 @@ static struct latch_descr pr_latch_info[] = {
 	{ PR_LATCH_DBLOCK, PR_1B_DUP_BLOCK_HEADER, PR_1B_DUP_BLOCK_END },
 	{ PR_LATCH_LOW_DTIME, PR_1_ORPHAN_LIST_REFUGEES, 0 },
 	{ PR_LATCH_TOOBIG, PR_1_INODE_TOOBIG, 0 },
+	{ PR_LATCH_REHASH_DIR, PR_3A_REHASH_DIR_HEADER, PR_3A_REHASH_DIR_END },
 	{ -1, 0, 0 },
 };
 
@@ -1459,13 +1492,10 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		suppress++;
 	if (!suppress) {
 		message = ptr->e2p_description;
-		if (ctx->options & E2F_OPT_PREEN) {
+		if ((ctx->options & E2F_OPT_PREEN) &&
+		    !(ptr->flags & PR_PREEN_NOHDR)) {
 			printf("%s: ", ctx->device_name ?
 			       ctx->device_name : ctx->filesystem_name);
-#if 0
-			if (ptr->e2p_preen_msg)
-				message = ptr->e2p_preen_msg;
-#endif
 		}
 		print_e2fsck_message(ctx, _(message), pctx, 1);
 	}

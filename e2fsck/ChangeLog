@@ -1,3 +1,39 @@
+2002-07-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* rehash.c, Makefile.in: New file which rewrites directories using
+		the htree format.
+	
+	* problem.c (fix_problem), problemP.h (PR_PREEN_NOHDR): Add option
+		which suppresses the header printed when in preen mode.
+
+	* pass3.c (e2fsck_pass3): If there are entries on the dirs_to_hash
+		list, call e2fsck_rehash_directories to reindex those
+		directories.
+		(e2fsck_expand_directory): Generalize the old
+		expand_dirctory() function so it can expand a directory to
+		a guaranteed minimum size. 
+
+	* e2fsck.h (struct e2fsck_struct): Add the dirs_to_hash list.  Add
+		new function prototypes for rehash.c and for
+		e2fsck_expand_directory().
+	
+	* e2fsck.c (e2fsck_reset_context): Free the dirs_to_hash list.
+
+	* pass1.c (e2fsck_pass1): Initialize the dirs_to_hash list if the
+		htree feature is present in the filesystem.
+		(check_blocks): If a non-htree directory has more than 2
+		blocks, put it on the dirs_to_hash list.
+
+	* pass2.c (clear_htree): Add corrupt htree directories to the
+		dirs_to_hash list.
+
+	* problem.h, problem.c (PR_3A_PASS_HEADER, PR_3A_REHASH_ITER, 
+		PR_3A_REHASH_DIR_ERR, PR_3A_REHASH_DIR_HEADER,
+		PR_3A_REHASH_DIR, PR_3A_REHASH_DIR_END): Add new problem codes
+
+	* pass2.c (parse_int_node), problem.c (PR_2_HTREE_BADBLK): Fix
+		problem display.
+	
 2002-07-15  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass2.c (e2fsck_pass2): Use dx_dir->numblocks instead of

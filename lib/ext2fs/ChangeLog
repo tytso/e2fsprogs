@@ -1,5 +1,11 @@
 2002-07-19  Theodore Ts'o  <tytso@mit.edu>
 
+	* ext2_fs.h: Add s_hash_seed and s_def_hash_version to the
+		superblock definition.
+
+	* badblocks.c, freefs.c, ext2fs.h: Use the badblocks functions to
+		create a set of u32_list functions.
+
 	* dirhash.c (halfMD4Transform): Shift the hash by one bit,
 		since that's required by the directory indexing code.
 
