@@ -1,3 +1,14 @@
+1998-06-30  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* closefs.c (ext2fs_flush): Update the s_block_group_nr field as
+		appropriate for all of the block group copies, so that
+		it's clear where the beginning of the filesystem is on the
+		disk.  (For when the partition table gets scrod.)
+
+	* ext2fs.h: Change the name of the feature from
+		EXT2_FEATURE_INCOMPAT_DIRNAME_SIZE to
+		EXT2_FEATURE_INCOMPAT_FILESIZE (to match with the kernel).
+
 1998-06-18  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* inode.c (get_next_blockgroup): Fix bug where if
