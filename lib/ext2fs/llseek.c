@@ -1,7 +1,7 @@
 /*
  * llseek.c -- stub calling the llseek system call
  *
- * Copyright (C) 1994, 1995, 1996 Theodore Ts'o.
+ * Copyright (C) 1994, 1995, 1996, 1997 Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -30,6 +30,12 @@
 #endif
 #include <syscall.h>
 
+#if (__GLIBC__ == 2)
+ext2_loff_t llseek (int fd, ext2_loff_t offset, int origin)
+#endif
+
+#define my_llseek llseek
+
 #else	/* HAVE_LLSEEK */
 
 #ifdef __alpha__
@@ -44,21 +50,26 @@
 #define __NR__llseek            140
 #endif
 
+#ifndef __i386__
 static int _llseek (unsigned int, unsigned long,
 		   unsigned long, ext2_loff_t *, unsigned int);
 
 static _syscall5(int,_llseek,unsigned int,fd,unsigned long,offset_high,
 		 unsigned long, offset_low,ext2_loff_t *,result,
 		 unsigned int, origin)
+#endif
 
-static ext2_loff_t llseek (unsigned int fd, ext2_loff_t offset,
-		unsigned int origin)
+static ext2_loff_t my_llseek (int fd, ext2_loff_t offset, int origin)
 {
 	ext2_loff_t result;
 	int retval;
 
-	retval = _llseek (fd, ((unsigned long long) offset) >> 32,
-			((unsigned long long) offset) & 0xffffffff,
+#ifndef __i386__
+	retval = _llseek(fd, ((unsigned long long) offset) >> 32,
+#else			  
+	retval = syscall(__NR__llseek, fd, (unsigned long long) (offset >> 32),
+#endif
+			  ((unsigned long long) offset) & 0xffffffff,
 			&result, origin);
 	return (retval == -1 ? (ext2_loff_t) retval : result);
 }
@@ -67,8 +78,7 @@ static ext2_loff_t llseek (unsigned int fd, ext2_loff_t offset,
 
 #endif /* __alpha__ */
 
-ext2_loff_t ext2fs_llseek (unsigned int fd, ext2_loff_t offset,
-			 unsigned int origin)
+ext2_loff_t ext2fs_llseek (int fd, ext2_loff_t offset, int origin)
 {
 	ext2_loff_t result;
 	static int do_compat = 0;
@@ -82,7 +92,7 @@ ext2_loff_t ext2fs_llseek (unsigned int fd, ext2_loff_t offset,
 		return -1;
 	}
 	
-	result = llseek (fd, offset, origin);
+	result = my_llseek (fd, offset, origin);
 	if (result == -1 && errno == ENOSYS) {
 		/*
 		 * Just in case this code runs on top of an old kernel

@@ -27,6 +27,30 @@
 
 #include "ext2fs.h"
 
+#ifdef __powerpc__
+/*
+ * On the PowerPC, the big-endian variant of the ext2 filesystem
+ * has its bitmaps stored as 32-bit words with bit 0 as the LSB
+ * of each word.  Thus a bitmap with only bit 0 set would be, as
+ * a string of bytes, 00 00 00 01 00 ...
+ * To cope with this, we byte-reverse each word of a bitmap if
+ * we have a big-endian filesystem, that is, if we are *not*
+ * byte-swapping other word-sized numbers.
+ */
+#define EXT2_BIG_ENDIAN_BITMAPS
+#endif
+
+#ifdef EXT2_BIG_ENDIAN_BITMAPS
+void ext2fs_swap_bitmap(ext2_filsys fs, char *bitmap, int nbytes)
+{
+	__u32 *p = (__u32 *) bitmap;
+	int n;
+		
+	for (n = nbytes / sizeof(__u32); n > 0; --n, ++p)
+		*p = ext2fs_swab32(*p);
+}
+#endif
+
 errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 {
 	int 		i;
@@ -52,6 +76,11 @@ errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs)
 		memcpy(bitmap_block, inode_bitmap, nbytes);
 		blk = fs->group_desc[i].bg_inode_bitmap;
 		if (blk) {
+#ifdef EXT2_BIG_ENDIAN_BITMAPS
+			if (!((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+			      (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)))
+				ext2fs_swap_bitmap(fs, bitmap_block, nbytes);
+#endif
 			retval = io_channel_write_blk(fs->io, blk, 1,
 						      bitmap_block);
 			if (retval)
@@ -100,6 +129,11 @@ errcode_t ext2fs_write_block_bitmap (ext2_filsys fs)
 		}
 		blk = fs->group_desc[i].bg_block_bitmap;
 		if (blk) {
+#ifdef EXT2_BIG_ENDIAN_BITMAPS
+			if (!((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+			      (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)))
+				ext2fs_swap_bitmap(fs, bitmap_block, nbytes);
+#endif
 			retval = io_channel_write_blk(fs->io, blk, 1,
 						      bitmap_block);
 			if (retval)
@@ -158,6 +192,11 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 					retval = EXT2_ET_BLOCK_BITMAP_READ;
 					goto cleanup;
 				}
+#ifdef EXT2_BIG_ENDIAN_BITMAPS
+				if (!((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+				      (fs->flags & EXT2_FLAG_SWAP_BYTES_READ)))
+					ext2fs_swap_bitmap(fs, block_bitmap, block_nbytes);
+#endif
 			} else
 				memset(block_bitmap, 0, block_nbytes);
 			block_bitmap += block_nbytes;
@@ -171,6 +210,11 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 					retval = EXT2_ET_INODE_BITMAP_READ;
 					goto cleanup;
 				}
+#ifdef EXT2_BIG_ENDIAN_BITMAPS
+				if (!((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
+				      (fs->flags & EXT2_FLAG_SWAP_BYTES_READ)))
+					ext2fs_swap_bitmap(fs, inode_bitmap, inode_nbytes);
+#endif
 			} else
 				memset(inode_bitmap, 0, inode_nbytes);
 			inode_bitmap += inode_nbytes;

@@ -336,7 +336,7 @@ static errcode_t ima_delete(ext2_irel irel, ino_t old)
 		free(ma->ref_entries[(unsigned) old].refs);
 	ma->orig_map[ma->entries[(unsigned) old].orig] = 0;
 	
-	ma->ref_entries[(unsinged) old].num = 0;
+	ma->ref_entries[(unsigned) old].num = 0;
 	ma->ref_entries[(unsigned) old].refs = 0;
 	return 0;
 }

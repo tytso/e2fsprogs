@@ -19,7 +19,7 @@ typedef long		ext2_loff_t;
 #endif
 
 /* llseek.c */
-ext2_loff_t ext2fs_llseek (unsigned int, ext2_loff_t, unsigned int);
+ext2_loff_t ext2fs_llseek (int, ext2_loff_t, int);
 
 typedef struct struct_io_manager *io_manager;
 typedef struct struct_io_channel *io_channel;

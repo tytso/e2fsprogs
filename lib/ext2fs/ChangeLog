@@ -1,3 +1,19 @@
+Thu Aug 14 08:14:17 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* io.h: Change the prototype of ext2fs_llseek() to use int's
+		instead of unsigned int's.
+
+	* llseek.c: Change to allow PIC and !HAVE_LLSEEK.  Add a prototype
+		to make life easer for GNU Libc 2.
+
+	* rw_bitmaps.c: On the PowerPC, the big-endian variant of the ext2
+ 		filesystem has its bitmaps stored as 32-bit words with bit
+ 		0 as the LSB of each word.  Thus a bitmap with only bit 0
+ 		set would be, as a string of bytes, 00 00 00 01 00 ...  To
+ 		cope with this, we byte-reverse each word of a bitmap if
+ 		we have a big-endian filesystem, that is, if we are *not*
+ 		byte-swapping other word-sized numbers.
+
 Mon Aug 11 03:30:48 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* dosio.c: New file to do DOS/BIOS disk accesses.
