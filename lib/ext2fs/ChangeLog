@@ -1,3 +1,7 @@
+2005-02-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in (clean): Remove tst_getsize when doing a make clean
+
 2005-02-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* bitops.c: Make the generic functions more efficient.
