@@ -1,3 +1,13 @@
+2003-08-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_salveage_dir: Remove HTREE flag from the test image's
+		superblock.  (It is not needed).
+
+	* f_h_reindex: Skip this test of the htree is not enabled
+
+	* f_dup_de: If htree is not enabled, clear the htree flag, and use
+		alternate expect scripts for the test.
+
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.34
