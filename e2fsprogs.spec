@@ -64,6 +64,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %attr(-, root, root) /usr/bin/chattr
 %attr(-, root, root) /usr/bin/lsattr
+%attr(-, root, root) /usr/bin/uuidgen
 %attr(-, root, root) /usr/man/man8/e2fsck.8
 %attr(-, root, root) /usr/man/man8/e2label.8
 %attr(-, root, root) /usr/man/man8/debugfs.8
@@ -75,6 +76,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(-, root, root) /usr/man/man8/fsck.8
 %attr(-, root, root) /usr/man/man1/chattr.1
 %attr(-, root, root) /usr/man/man1/lsattr.1
+%attr(-, root, root) /usr/man/man1/uuidgen.1
 
 %files devel
 %attr(-, root, root) /usr/info/libext2fs.info*

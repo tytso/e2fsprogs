@@ -1,4 +1,4 @@
-E2fsprogs 1.15 (July 16, 1999)
+E2fsprogs 1.15 (July 18, 1999)
 ==============================
 
 Add configuration checks so that e2fsprogs will compile cleanly on
@@ -15,6 +15,12 @@ Mke2fs now has better automatic hueristics to determine the filesystem
 parameters to be used for a particular filesystem.  Added a new option
 -T which allows the user to specify how the filesystem is to be used,
 which helps mke2fs do a better job selecting the filesystem parameters.
+
+Mke2fs now creates revision 1 filesystems by default, and with the
+sparse superblock feature enabled.  The sparse superblock feature is
+not understood by Linux 2.0 kernels, so they will report errors when
+mounting the filesystem.  This can be worked around by using the mount
+options "check=none".
 
 Fix bug where if /dev/null couldn't be opened (should never happen),
 e2fsck would hang in a tight loop.
@@ -76,7 +82,8 @@ larger than 1k.
 Mke2fs will sync the disk device every MKE2FS_SYNC block groups if the
 MKE2FS_SYNC environment variable is set.  This is to work around a VM
 bug in the 2.0 kernel.  I've heard a report that a RAID user was able
-to trigger it even using a 2.2 kernel.
+to trigger it even using a 2.2 kernel, but hopefully it will not be
+needed for most Linux 2.2 users.
 
 Fixed miscellaneous documentation and man pages.
 
