@@ -535,7 +535,7 @@ static const struct e2fsck_problem problem_table[] = {
 	  
 	/* Journal has bad mode */
 	{ PR_1_JOURNAL_BAD_MODE,
-	  N_("Journal is not regular file.  "),
+	  N_("@j is not regular file.  "),
 	  PROMPT_FIX, PR_PREEN_OK },
 
 	/* Pass 1b errors */
