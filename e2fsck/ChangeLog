@@ -1,5 +1,7 @@
 2000-02-08    <tytso@snap.thunk.org>
 
+	* util.c: Make resource tracking message more concise.
+
 	* e2fsck.h:
 	* pass1.c (mark_table_blocks, e2fsck_pass1): Remove
 		ctx->block_illegal_map, since it's not needed by pass1,
