@@ -1,3 +1,8 @@
+2002-07-15  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass2.c (e2fsck_pass2): Use dx_dir->numblocks instead of
+		dx_dir->ino to indicate that a bad inode was cleared.
+
 2002-06-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1.c (check_blocks): Move htree handling to handle_htree().

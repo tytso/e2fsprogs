@@ -148,7 +148,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 
 #ifdef ENABLE_HTREE
 	for (i=0; (dx_dir = e2fsck_dx_dir_info_iter(ctx, &i)) != 0;) {
-		if (dx_dir->ino == 0)
+		if (dx_dir->numblocks == 0)
 			continue;
 		clear_problem_context(&pctx);
 		bad_dir = 0;
@@ -221,13 +221,13 @@ void e2fsck_pass2(e2fsck_t ctx)
 		}
 		if (bad_dir && fix_problem(ctx, PR_2_HTREE_CLEAR, &pctx)) {
 			clear_htree(ctx, dx_dir->ino);
-			dx_dir->ino = 0;
+			dx_dir->numblocks = 0;
 		}
 #ifdef ENABLE_HTREE_CLEAR
-		if (dx_dir->ino) {
+		if (dx_dir->numblocks) {
 			fix_problem(ctx, PR_2_HTREE_FCLR, &pctx);
 			clear_htree(ctx, dx_dir->ino);
-			dx_dir->ino = 0;
+			dx_dir->numblocks = 0;
 		}
 #endif
 	}
@@ -503,7 +503,7 @@ static void parse_int_node(ext2_filsys fs,
 			if (fix_problem(cd->ctx, PR_2_HTREE_BADBLK,
 					&cd->pctx)) {
 				clear_htree(cd->ctx, cd->pctx.ino);
-				dx_dir->ino = 0;
+				dx_dir->numblocks = 0;
 				return;
 			}
 		}
@@ -610,7 +610,7 @@ static int check_dir_block(ext2_filsys fs,
 	}
 #ifdef ENABLE_HTREE
 	dx_dir = e2fsck_get_dx_dir_info(ctx, ino);
-	if (dx_dir && dx_dir->ino) {
+	if (dx_dir && dx_dir->numblocks) {
 		if (db->blockcnt >= dx_dir->numblocks) {
 			printf("XXX should never happen!!!\n");
 			abort();
