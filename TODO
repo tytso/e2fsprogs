@@ -16,10 +16,6 @@ ext2fs_flush() should return a different error message for primary
 versus backup superblock flushing, so that mke2fs can print an
 appropriate error message.
 
------------------------------------
-
-Put code into e2fsck to support imagic inodes....
-
 ---------------------------------
 Date: Mon, 08 Mar 1999 21:46:14 +0100
 From: Sergio Polini <s.polini@mclink.it>
@@ -42,11 +38,6 @@ Am I wrong?
 
 Add chmod command to debugfs.
 
---------------------------------------
-
-block_illegal_map should be only created in pass1b.c, since it isn't
-used anywhere else.
-
 ------------------------------------------
 
 fix up get_backup_sb, so that it doesn't choose something bogus if
@@ -60,3 +51,54 @@ using command
         ncheck <inode>
 
 ------------------------------------
+
+Add a filesystem creation date to the superblock
+
+-----------------------------------
+Date: Tue, 18 Jan 2000 17:54:53 -0800 (PST)
+From: Alan Blanchard <alan@abraxas.to>
+To: tytso@MIT.EDU
+Subject: DEBUGFS - thanks and a feature idea
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+
+Theodore:
+
+First, let me thank you for writing debugfs. Recently, my Linux box
+(RH 6.0, 400 MHz PIII, on a DSL line) was hacked into.  The intruder did
+an "rm -Rf" on a 34 GB drive with about 5GB of data on it.  I was able to
+restore essentially the entire thing with debugfs and a bit of C code and Perl.
+Actually, I could have done the entire thing with debugfs and Perl, but I
+thought it would be too slow.
+
+During this exercise, I noticed that one small feature was lacking that would
+have made my job a bit easier.  The length of a deleted directory is
+reported as 0, hence debugfs won't dump the contents of the directory to a
+file using the "dump" command.  The only thing that saved me was that the
+list of disk blocks is not zeroed out.  I was able to dump the contents of the
+directories by using debugfs to get the relevant block numbers, then
+using dd to get the actual data.
+
+If debugfs had a feature where it ignored the size of a directory reported by
+the inode and instead just dumped all the blocks, it would have facilited
+things a bit. This seems like a very easy feature to add.
+
+Again, thanks for writing debugfs (and all the other Linux stuff you've written!).
+
+Cheers,
+Alan Blanchard
+alan@abraxas.to
+
+
+-------------------------------------------------------------------
+
+Date: Fri, 21 Jan 2000 14:07:12 -0800
+From: "H. Peter Anvin" <hpa@www.transmeta.com>
+Subject: mkfs -cc and fsck -c
+
+a) An option to mkfs to run badblocks in read/write mode.  The
+filesystem is blank, so this is the perfect time to run the read/write
+test.
+
+b) An option to mkfs to zero the partition.  Yes, it can be done with
+dd, but it would be a nicer way of doing it.
+
