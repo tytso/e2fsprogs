@@ -1,3 +1,8 @@
+2002-10-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in (install): Search all compression extensions when
+		deleting old man pages.
+
 2002-10-13  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.h, htree.c, setsuper.c: Fix gcc -Wall nits.

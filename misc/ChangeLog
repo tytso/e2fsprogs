@@ -1,5 +1,8 @@
 2002-10-30  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in (install): Search all compression extensions when
+		deleting old man pages.
+
 	* dumpe2fs.c (list_desc): Fix bug in algorithm which determined
 		which blocks are used as backup superblock and block group
 		descriptors.

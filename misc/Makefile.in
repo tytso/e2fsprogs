@@ -167,7 +167,9 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		$(STRIP) $(DESTDIR)$(bindir)/$$i; \
 	done
 	for i in $(SMANPAGES); do \
-		$(RM) -f $(DESTDIR)$(man8dir)/$$i.gz; \
+		for j in $(COMPRESS_EXT); do \
+			$(RM) -f $(DESTDIR)$(man8dir)/$$i.$$j; \
+		done; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
 	done
 	$(RM) -f $(DESTDIR)$(man8dir)/mkfs.ext2.8.gz \

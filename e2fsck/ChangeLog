@@ -1,5 +1,8 @@
 2002-10-30  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in (install): Search all compression extensions when
+		deleting old man pages.
+
 	* pass1.c (mark_table_blocks): Fix bug in meta_bg support; only
 		mark blocks legacy group descriptor blocks up to 
 		s_first_meta_bg.

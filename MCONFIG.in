@@ -6,6 +6,8 @@ check::
 
 SHELL = /bin/sh
 
+COMPRESS_EXT = gz bz2 bz Z
+
 prefix = @prefix@
 root_prefix = @root_prefix@
 exec_prefix = @exec_prefix@

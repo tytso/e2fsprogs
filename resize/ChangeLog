@@ -1,5 +1,8 @@
 2002-10-30  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in (install): Search all compression extensions when
+		deleting old man pages.
+
 	* resize2fs.c (adjust_superblock, mark_table_blocks,
 		blocks_to_move): Add support for resizing filesystems that
 		use the meta block group layout.
