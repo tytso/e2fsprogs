@@ -61,67 +61,16 @@ static mode_t mode_xlate(__u16 lmode)
 	return mode;
 }
 
-struct dump_block_struct {
-	int		fd;
-	char		*buf;
-	int		left;
-	errcode_t	errcode;
-};
-
-static int dump_block(ext2_filsys fs, blk_t *blocknr, int blockcnt,
-		      void *private)
-{
-	int nbytes, left;
-	off_t	ret_off;
-	
-	struct dump_block_struct *rec = (struct dump_block_struct *) private;
-	
-	if (blockcnt < 0)
-		return 0;
-
-	if (*blocknr) {
-		rec->errcode = io_channel_read_blk(fs->io, *blocknr,
-						   1, rec->buf);
-		if (rec->errcode)
-			return BLOCK_ABORT;
-	} else {
-		/*
-		 * OK, the file has a hole.  Let's try to seek past
-		 * the hole in the destination file, so that the
-		 * destination file has a hole too.
-		 */
-		ret_off = lseek(rec->fd, fs->blocksize, SEEK_CUR);
-		if (ret_off >= 0)
-			return 0;
-		memset(rec->buf, 0, fs->blocksize);
-	}
-
-	left = (rec->left > fs->blocksize) ? fs->blocksize : rec->left;
-	rec->left -= left;
-	
-	while (left > 0) {
-		nbytes = write(rec->fd, rec->buf, left);
-		if (nbytes == -1) {
-			if (errno == EINTR)
-				continue;
-			rec->errcode = errno;
-			return BLOCK_ABORT;
-		}
-		left -= nbytes;
-	}
-	if (rec->left <= 0)
-		return BLOCK_ABORT;
-	return 0;
-}
-
 static void dump_file(char *cmdname, ino_t ino, int fd, int preserve,
 		      char *outname)
 {
 	errcode_t retval;
-	struct dump_block_struct rec;
 	struct ext2_inode	inode;
 	struct utimbuf	ut;
-
+	char 		buf[8192];
+	ext2_file_t	e2_file;
+	int		nbytes, got;
+	
 	retval = ext2fs_read_inode(current_fs, ino, &inode);
 	if (retval) {
 		com_err(cmdname, retval,
@@ -129,32 +78,27 @@ static void dump_file(char *cmdname, ino_t ino, int fd, int preserve,
 		return;
 	}
 
-	rec.fd = fd;
-	rec.errcode = 0;
-	rec.buf = malloc(current_fs->blocksize);
-	rec.left = inode.i_size;
-
-	if (rec.buf == 0) {
-		com_err(cmdname, ENOMEM,
-			"while allocating block buffer for dump_inode");
+	retval = ext2fs_file_open(current_fs, ino, 0, &e2_file);
+	if (retval) {
+		com_err(cmdname, retval, "while opening ext2 file");
 		return;
 	}
-	
-	retval = ext2fs_block_iterate(current_fs, ino,
-				      BLOCK_FLAG_HOLE|BLOCK_FLAG_DATA_ONLY,
-				      NULL, dump_block, &rec);
+	while (1) {
+		retval = ext2fs_file_read(e2_file, buf, sizeof(buf), &got);
+		if (retval) 
+			com_err(cmdname, retval, "while reading ext2 file");
+		if (got == 0)
+			break;
+		nbytes = write(fd, buf, got);
+		if (nbytes != got)
+			com_err(cmdname, errno, "while writing file");
+	}
+	retval = ext2fs_file_close(e2_file);
 	if (retval) {
-		com_err(cmdname, retval, "while iterating over blocks in %s",
-			outname);
-		goto cleanup;
+		com_err(cmdname, retval, "while closing ext2 file");
+		return;
 	}
-	if (rec.errcode) {
-		com_err(cmdname, retval, "in dump_block while dumping %s",
-			outname);
-		goto cleanup;
-	}
-	
-cleanup:
+		
 	if (preserve) {
 #ifdef HAVE_FCHOWN
 		if (fchown(fd, inode.i_uid, inode.i_gid) < 0)
@@ -178,7 +122,6 @@ cleanup:
 	} else if (fd != 1)
 		close(fd);
 				    
-	free(rec.buf);
 	return;
 }
 

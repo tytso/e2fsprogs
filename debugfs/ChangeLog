@@ -1,3 +1,8 @@
+Sat Oct 25 18:35:30 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* debugfs.c (copy_file), dump.c (dump_file): Change to use the new
+		fileio primitives in libext2.
+
 Fri Oct 24 23:47:43 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* debugfs.c (main, do_open_filesys): 

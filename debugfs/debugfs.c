@@ -946,118 +946,47 @@ void do_find_free_inode(int argc, char *argv[])
 		printf("Free inode found: %ld\n", free_inode);
 }
 
-struct copy_file_struct {
-	unsigned long size;
-	int	done, fd, blocks;
-	errcode_t err;
-};
-
-static int copy_file_proc(ext2_filsys to_fs,
-			   blk_t	*blocknr,
-			   int	blockcnt,
-			   void	*private)
-{
-	struct copy_file_struct *cs = (struct copy_file_struct *) private;
-	blk_t	new_blk;
-	static blk_t	last_blk = 0;
-	char		*block;
-	errcode_t	retval;
-	int		group;
-	int		nr;
-	
-	if (*blocknr) {
-		new_blk = *blocknr;
-	} else {
-		retval = ext2fs_new_block(to_fs, last_blk, 0, &new_blk);
-		if (retval) {
-			cs->err = retval;
-			return BLOCK_ABORT;
-		}
-	}
-	last_blk = new_blk;
-	block = malloc(to_fs->blocksize);
-	if (!block) {
-		cs->err = ENOMEM;
-		return BLOCK_ABORT;
-	}
-	if (blockcnt >= 0) {
-		nr = read(cs->fd, block, to_fs->blocksize);
-	} else {
-		nr = to_fs->blocksize;
-		memset(block, 0, nr);
-	}
-	if (nr == 0) {
-		cs->done = 1;
-		return BLOCK_ABORT;
-	}
-	if (nr < 0) {
-		cs->err = nr;
-		return BLOCK_ABORT;
-	}
-	retval = io_channel_write_blk(to_fs->io, new_blk, 1, block);
-	if (retval) {
-		cs->err = retval;
-		return BLOCK_ABORT;
-	}
-	free(block);
-	if (blockcnt >= 0)
-		cs->size += nr;
-	cs->blocks += to_fs->blocksize / 512;
-	printf("%ld(%d) ", cs->size, blockcnt);
-	fflush(stdout);
-	if (nr < to_fs->blocksize) {
-		cs->done = 1;
-		printf("\n");
-	}
-	*blocknr = new_blk;
-	ext2fs_mark_block_bitmap(to_fs->block_map, new_blk);
-	ext2fs_mark_bb_dirty(to_fs);
-	group = ext2fs_group_of_blk(to_fs, new_blk);
-	to_fs->group_desc[group].bg_free_blocks_count--;
-	to_fs->super->s_free_blocks_count--;
-	ext2fs_mark_super_dirty(to_fs);
-	if (cs->done)
-		return (BLOCK_CHANGED | BLOCK_ABORT);
-	else
-		return BLOCK_CHANGED;
-}
-
 static errcode_t copy_file(int fd, ino_t newfile)
 {
+	ext2_file_t	e2_file;
 	errcode_t	retval;
-	struct	copy_file_struct cs;
-	struct ext2_inode	inode;
+	int		got, written;
+	char		buf[8192];
+	char		*ptr;
 
-	cs.fd = fd;
-	cs.done = 0;
-	cs.err = 0;
-	cs.size = 0;
-	cs.blocks = 0;
-	
-	retval = ext2fs_block_iterate(current_fs, newfile,
-				      BLOCK_FLAG_APPEND,
-				      0, copy_file_proc, &cs);
-
-	if (cs.err)
-		return cs.err;
-	if (!cs.done)
-		return EXT2_ET_EXPAND_DIR_ERR;
-
-	/*
-	 * Update the size and block count fields in the inode.
-	 */
-	retval = ext2fs_read_inode(current_fs, newfile, &inode);
-	if (retval)
-		return retval;
-	
-	inode.i_blocks += cs.blocks;
-
-	retval = ext2fs_write_inode(current_fs, newfile, &inode);
+	retval = ext2fs_file_open(current_fs, newfile,
+				  EXT2_FILE_WRITE, &e2_file);
 	if (retval)
 		return retval;
 
-	return 0;
+	while (1) {
+		got = read(fd, buf, sizeof(buf));
+		if (got == 0)
+			break;
+		if (got < 0) {
+			retval = errno;
+			goto fail;
+		}
+		ptr = buf;
+		while (got > 0) {
+			retval = ext2fs_file_write(e2_file, ptr,
+						   got, &written);
+			if (retval)
+				goto fail;
+
+			got -= written;
+			ptr += written;
+		}
+	}
+	retval = ext2fs_file_close(e2_file);
+
+	return retval;
+
+fail:
+	(void) ext2fs_file_close(e2_file);
+	return retval;
 }
+
 
 void do_write(int argc, char *argv[])
 {
@@ -1066,6 +995,7 @@ void do_write(int argc, char *argv[])
 	ino_t	newfile;
 	errcode_t retval;
 	struct ext2_inode inode;
+	dgrp_t group;
 
 	if (check_fs_open(argv[0]))
 		return;
@@ -1092,6 +1022,10 @@ void do_write(int argc, char *argv[])
 		close(fd);
 		return;
 	}
+	group = ext2fs_group_of_ino(current_fs, newfile);
+	current_fs->group_desc[group].bg_free_inodes_count--;
+	current_fs->super->s_free_inodes_count--;
+	ext2fs_mark_super_dirty(current_fs);
 	printf("Allocated inode: %ld\n", newfile);
 	retval = ext2fs_link(current_fs, cwd, argv[2], newfile, 0);
 	if (retval) {
