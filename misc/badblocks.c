@@ -216,15 +216,8 @@ static long do_write (int dev, char * buffer, int try, int block_size,
 
 static int host_dev;
 
-static void flush_bufs (int dev, int sync)
+static void flush_bufs (int dev)
 {
-  if (v_flag
-#if !defined (BLKFLSBUF) && !defined (FDFLUSH)
-      && sync
-#endif
-      )
-    fprintf (stderr, _("Flushing buffers\n"));
-
 #ifdef HAVE_FDATASYNC
   if (sync && fdatasync (dev) == -1)
     com_err (program_name, errno, _("during fdatasync"));
@@ -267,7 +260,7 @@ static unsigned int test_ro (int dev, unsigned long blocks_count,
 		com_err (program_name, ENOMEM, _("while allocating buffers"));
 		exit (1);
 	}
-	flush_bufs (dev, 0);
+	flush_bufs(dev);
 	if (v_flag) {
 	    fprintf(stderr, _("Checking for bad blocks in read-only mode\n"));
 	    fprintf (stderr, _("From block %lu to %lu\n"), from_count,
@@ -337,7 +330,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 		exit (1);
 	}
 
-	flush_bufs (dev, 0);
+	flush_bufs(dev);
 
 	if (v_flag) {
 		fprintf(stderr,
@@ -372,7 +365,7 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 		alarm (0);
 		if (s_flag | v_flag)
 			fprintf(stderr, _(done_string));
-		flush_bufs (dev, 1);
+		flush_bufs(dev);
 		if (s_flag | v_flag)
 			fprintf (stderr, _("Reading and comparing: "));
 		num_blocks = blocks_count;
@@ -400,11 +393,16 @@ static unsigned int test_rw (int dev, unsigned long blocks_count,
 		alarm (0);
 		if (s_flag | v_flag)
 			fprintf(stderr, _(done_string));
-		flush_bufs (dev, 0);
+		flush_bufs(dev);
 	}
 
 	return bb_count;
 }
+
+struct saved_blk_record {
+	blk_t	block;
+	int	num;
+};
 
 static unsigned int test_nd (int dev, unsigned long blocks_count,
 			     int block_size, unsigned long from_count,
@@ -413,9 +411,9 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	char *blkbuf, *save_ptr, *test_ptr, *read_ptr;
 	char * ptr;
 	int try, i;
-	long got, used2;
-	unsigned long *bufblk;
-	unsigned long *bufblks;
+	long got, used2, written;
+	struct saved_blk_record *test_record;
+	int	num_saved;
 	jmp_buf terminate_env;
 	errcode_t errcode;
 	/* These are static to prevent being clobbered by the longjmp */
@@ -433,12 +431,12 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	} while (next_bad && next_bad < from_count);
 
 	blkbuf = malloc (3 * blocks_at_once * block_size);
-	bufblk = malloc (blocks_at_once * sizeof(unsigned long));
-	bufblks = malloc (blocks_at_once * sizeof(unsigned long));
-	if (!blkbuf || !bufblk || !bufblks) {
+	test_record = malloc (blocks_at_once*sizeof(struct saved_blk_record));
+	if (!blkbuf || !test_record) {
 		com_err(program_name, ENOMEM, _("while allocating buffers"));
 		exit (1);
 	}
+	num_saved = 0;
 
 	/* inititalize the test data randomly: */
 	if (v_flag) {
@@ -450,7 +448,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		(*ptr) = random() % (1 << sizeof(char));
 	}
 
-	flush_bufs (dev, 0);
+	flush_bufs(dev);
 	if (v_flag) {
 	    fprintf (stderr,
 		     _("Checking for bad blocks in non-destructive read-write mode\n"));
@@ -464,21 +462,16 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	if (setjmp(terminate_env)) {
 		/*
 		 * Abnormal termination by a signal is handled here.
-		 * buf_used will always contain the number of blocks
-		 * saved in a non-destructive test, so they can be
-		 * rewritten back to the disk.
 		 */
-		long buf_written;
 
 		fprintf(stderr, _("Interrupt caught, cleaning up\n"));
 
-		for (buf_written = 0;
-		        buf_written < buf_used;
-		           buf_written += bufblks[buf_written])
-			do_write (dev, blkbuf + buf_written * block_size,
-				  bufblks[buf_written], block_size, 
-				  bufblk[buf_written]);
-
+		save_ptr = blkbuf;
+		for (i=0; i < num_saved; i++) {
+			do_write(dev, save_ptr, test_record[i].num,
+				 block_size, test_record[i].block);
+			save_ptr += test_record[i].num * block_size;
+		}
 		fflush (out);
 		exit(1);
 	}
@@ -486,7 +479,8 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 	/* set up abend handler */
 	capture_terminate(terminate_env);
 
-	buf_used = 0; save_ptr = blkbuf;
+	buf_used = 0;
+	save_ptr = blkbuf;
 	test_ptr = blkbuf + (blocks_at_once * block_size);
 	currently_testing = from_count;
 	num_blocks = blocks_count;
@@ -497,8 +491,8 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 			if (currently_testing == next_bad) {
 				/* fprintf (out, "%lu\n", nextbad); */
 				ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
-				bufblk[buf_used] = currently_testing++;
-				goto test_full_buf;
+				currently_testing++;
+				goto check_for_more;
 			}
 			else if (currently_testing + try > next_bad)
 				try = next_bad - currently_testing;
@@ -507,21 +501,28 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 			try = blocks_count - currently_testing;
 		got = do_read (dev, save_ptr, try, block_size,
 			       currently_testing);
-
-		/* if reading succeeded, write the test data */
-		if (got) {
-			long written;
-
-			written = do_write (dev, test_ptr, got, block_size,
-					    currently_testing);
-			if (written != got)
-				com_err (program_name, errno,
-				 _("during test data write, block %lu"),
-					 currently_testing + written);
+		if (got == 0) {
+			/* First block must have been bad. */
+			bb_count += bb_output(currently_testing++);
+			goto check_for_more;
 		}
 
-		bufblk[buf_used] = currently_testing;
-		bufblks[buf_used] = got;
+		/*
+		 * Note the fact that we've saved this much data
+		 * *before* we overwrite it with test data
+		 */
+		test_record[num_saved].block = currently_testing;
+		test_record[num_saved].num = got;
+		num_saved++;
+
+		/* Write the test data */
+		written = do_write (dev, test_ptr, got, block_size,
+				    currently_testing);
+		if (written != got)
+			com_err (program_name, errno,
+				 _("during test data write, block %lu"),
+				 currently_testing + written);
+
 		buf_used += got;
 		save_ptr += got * block_size;
 		test_ptr += got * block_size;
@@ -529,17 +530,17 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		if (got != try)
 			bb_count += bb_output(currently_testing++);
 
-	test_full_buf:
+	check_for_more:
 		/*
 		 * If there's room for more blocks to be tested this
 		 * around, and we're not done yet testing the disk, go
 		 * back and get some more blocks.
 		 */
 		if ((buf_used != blocks_at_once) &&
-		    (currently_testing != blocks_count))
+		    (currently_testing < blocks_count))
 			continue;
 
-		flush_bufs (dev, 1);
+		flush_bufs(dev);
 
 		/*
 		 * for each contiguous block that we read into the
@@ -555,10 +556,17 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 		save_ptr = blkbuf;
 		test_ptr = blkbuf + (blocks_at_once * block_size);
 		read_ptr = blkbuf + (2 * blocks_at_once * block_size);
-		currently_testing = bufblk[0];
-		try = bufblks[0];
+		try = 0;
 
-		while (currently_testing < blocks_count) {
+		while (1) {
+			if (try == 0) {
+				if (used2 >= num_saved)
+					break;
+				currently_testing = test_record[used2].block;
+				try = test_record[used2].num;
+				used2++;
+			}
+				
 			got = do_read (dev, read_ptr, try,
 				       block_size, currently_testing);
 
@@ -582,18 +590,13 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 			test_ptr += got * block_size;
 			read_ptr += got * block_size;
 			try -= got;
-
-			if (try == 0) {
-				used2 += bufblks[used2];
-				if (used2 >= blocks_at_once)
-					break;
-				currently_testing = bufblk[used2];
-				try = bufblks[used2];
-			}
 		}
 
 		/* empty the buffer so it can be reused */
+		num_saved = 0;
 		buf_used = 0;
+		save_ptr = blkbuf;
+		test_ptr = blkbuf + (blocks_at_once * block_size);
 	}
 	num_blocks = 0;
 	alarm(0);
@@ -603,8 +606,7 @@ static unsigned int test_nd (int dev, unsigned long blocks_count,
 
 	fflush(stderr);
 	free(blkbuf);
-	free(bufblk);
-	free(bufblks);
+	free(test_record);
 
 	ext2fs_badblocks_list_iterate_end(bb_iter);
 

@@ -1,3 +1,13 @@
+2000-07-05  Theodore Ts'o  <tytso@valinux.com>
+
+	* badblocks.c (test_nd): Significantly simplify the logic so that
+		it's more obviously what's going on.  Fixed a few
+		potential cases which weren't handled correctly in the
+		old, overly complicated logic.
+		(flush_bufs): Now doesn't take a second argument, and
+		always forces a sync; this is required before it's really
+		safe to call BLKFLSBUF, at least for some kernels.
+
 2000-05-29  Theodore Ts'o  <tytso@valinux.com>
 
 	* mke2fs.c (PRS): Add a much more specific error message if the
