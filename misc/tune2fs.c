@@ -168,7 +168,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		 */
 		if (!journal_opts)
 			journal_opts = "size=16";
-		sb->s_feature_compat &=~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+		sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 		journal = old_journal;
 	}
 	
@@ -371,12 +371,12 @@ static void parse_tune2fs_options(int argc, char **argv)
 				i_flag = 1;
 				open_flag = EXT2_FLAG_RW;
 				break;
-			case 'l':
-				l_flag = 1;
-				break;
 			case 'j':
 				journal_opts = optarg;
 				open_flag = EXT2_FLAG_RW;
+				break;
+			case 'l':
+				l_flag = 1;
 				break;
 			case 'L':
 				new_label = optarg;

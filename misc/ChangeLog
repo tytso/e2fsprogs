@@ -1,5 +1,7 @@
 2001-01-14  Theodore Ts'o  <tytso@valinux.com>
 
+	* tune2fs.8.in: Add description of the -j option.
+
 	* tune2fs.c (add_journal): Minor fixes from Andreas Dilger. Flush
 		stdout after printing in-progress message.  
 		(main): Exit with status code 1 if we failed to determine

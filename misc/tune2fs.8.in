@@ -23,6 +23,10 @@ tune2fs \- adjust tunable filesystem parameters on second extended filesystems
 .I interval-between-checks
 ]
 [
+.B \-j
+.I journal-options
+]
+[
 .B \-m
 .I reserved-blocks-percentage
 ]
@@ -101,6 +105,27 @@ result in days,
 in months, and
 .B w
 in weeks.  A value of zero will disable the timedependent checking.
+.TP
+.BR \-j " journal_options"
+add a journal inode or device to the filesystem.  
+Journal options are comma
+separated, and may take an argument using the equals ('=')  sign.
+Currently two options are supported,
+.I size
+and
+.IR device .
+One these two options must be specified when 
+building the journal.
+The 
+.I size 
+option takes a numerical argument which specifies the size of the 
+journal in MB (1024*1024 bytes).  Any size between 4MB and 100MB may be used.
+Use of this option implies that the journal will be stored in the 
+filesystem, so it must be small enough to fit into the filesystem.
+The 
+.I device
+option takes a filename which specifies a block device (external 
+to the filesystem) which will contain the external journal.  
 .TP
 .B \-l
 list the contents of the filesystem superblock.
