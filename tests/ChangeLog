@@ -1,3 +1,19 @@
+1999-11-10    <tytso@valinux.com>
+
+	* f_imagic: New test case which tests handling of imagic inodes in
+		an non-imagic-enabled filessystem.
+
+	* f_imagic_fs: New test case which tests handling of imagic inodes
+		in an imagic-enabled filesystem.
+
+	* f_filetype: New test case which tests setting filetype
+		information in a filesystem.  Also tests handling of
+		immutable special files (device/fifo).
+
+	* run_e2fsck: Add support for PREP_CMD, which allows a test case
+		to specify some commands which will be run (via eval)
+		after the image is compressed and before running e2fsck.
+
 1999-10-26    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.17

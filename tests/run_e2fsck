@@ -28,6 +28,8 @@ fi
 
 gunzip < $IMAGE > $TMPFILE
 
+eval $PREP_CMD
+
 $FSCK $FSCK_OPT  -N test_filesys $TMPFILE > $OUT1.new 2>&1
 status=$?
 echo Exit status is $status >> $OUT1.new
@@ -68,6 +70,6 @@ if [ "$SKIP_VERIFY" != "true" ] ; then
 fi
 
 if [ "$SKIP_CLEANUP" != "true" ] ; then
-	unset IMAGE FSCK_OPT SECOND_FSCK_OPT OUT1 OUT2 EXP1 EXP2 ONE_PASS_ONLY
+	unset IMAGE FSCK_OPT SECOND_FSCK_OPT OUT1 OUT2 EXP1 EXP2 ONE_PASS_ONLY PREP_CMD
 fi
 
