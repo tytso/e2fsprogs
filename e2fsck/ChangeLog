@@ -1,3 +1,8 @@
+2001-07-26  Theodore Tso  <tytso@valinux.com>
+
+	* pass1.c (e2fsck_pass1): Free ctx->block_ea_map at the end of
+		pass 1.
+
 2001-07-25  Theodore Tso  <tytso@valinux.com>
 
 	* pass1.c (check_ext_attr): Skip zero-length EA entries.

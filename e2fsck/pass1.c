@@ -646,6 +646,12 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (ctx->invalid_bitmaps)
 		handle_fs_bad_blocks(ctx);
 
+	/* We don't need the block_ea_map any more */
+	if (ctx->block_ea_map) {
+		ext2fs_free_block_bitmap(ctx->block_ea_map);
+		ctx->block_ea_map = 0;
+	}
+
 	if (ctx->flags & E2F_FLAG_RESTART) {
 		/*
 		 * Only the master copy of the superblock and block
