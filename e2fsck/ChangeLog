@@ -1,3 +1,8 @@
+2001-06-29  Theodore Tso  <tytso@valinux.com>
+
+	* unix.c (show_stats): Use long long to calculate the percentage
+		of the number of blocks in use in the filesystem.
+
 2001-06-23  Theodore Tso  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.22

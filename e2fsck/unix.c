@@ -130,7 +130,8 @@ static void show_stats(e2fsck_t	ctx)
 		ctx->fs_ind_count, ctx->fs_dind_count, ctx->fs_tind_count);
 	printf (_("%8d blocks used (%d%%)\n"
 		"%8d bad blocks\n"), blocks_used,
-		100 * blocks_used / blocks, ctx->fs_badblocks_count);
+		(int) ((long long) 100 * blocks_used / blocks),
+		ctx->fs_badblocks_count);
 	printf (_("\n%8d regular files\n"
 		"%8d directories\n"
 		"%8d character device files\n"
