@@ -127,22 +127,24 @@ struct problem_context {
 /* Superblock recovery flag clear - journal needs to be reset */
 #define PR_0_JOURNAL_RESET_PROMPT 0x000019
 
+/* Clearing orphan inode */
+#define PR_0_CLEAR_ORPHAN_INODE			0x000020
+	
 /* Illegal block found in orphaned inode */
-#define PR_0_ORPHAN_ILLEGAL_BLOCK_NUM		0x000020
+#define PR_0_ORPHAN_ILLEGAL_BLOCK_NUM		0x000021
 
 /* Already cleared block found in orphaned inode */
-#define PR_0_ORPHAN_ALREADY_CLEARED_BLOCK	0x000021
+#define PR_0_ORPHAN_ALREADY_CLEARED_BLOCK	0x000022
 	
 /* Illegal orphan inode in superblock */
-#define PR_0_ORPHAN_ILLEGAL_HEAD_INODE		0x000022
+#define PR_0_ORPHAN_ILLEGAL_HEAD_INODE		0x000023
 
 /* Illegal inode in orphaned inode list */
-#define PR_0_ORPHAN_ILLEGAL_INODE 		0x000023
+#define PR_0_ORPHAN_ILLEGAL_INODE 		0x000024
 
 /* Orphan inode has a non-zero link count */
-#define PR_0_ORPHAN_INODE_INUSE			0x000024
+#define PR_0_ORPHAN_INODE_INUSE			0x000025
 
-	
 /*
  * Pass 1 errors
  */

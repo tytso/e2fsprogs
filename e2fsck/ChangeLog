@@ -1,3 +1,30 @@
+2000-08-20    <tytso@valinux.com>
+
+	* journal.c (e2fsck_journal_load): Fix **nasty** bug which caused
+		e2fsck_check_ext3_journal to smash the journal because
+		journal->j_transaction_sequence wasn't getting
+		initialized.
+
+	* journal.c: (recover_ext3_journal, e2fsck_run_ext3_journal): Move
+		call to e2fsck_clear_recover from recover_ext3_journal to
+		after the filesystem has been closed and reopened.
+		Otherwise, the superblock in the filesystem handle will
+		probably be stale, and will overwrite the newer version of
+		the superblock written by the log recovery.
+
+	* message.c (expand_inode_expression): Add support for %Iu and %Ig
+
+	* problem.h (PR_0_CLEAR_ORPHAN_INODE): Add new problem code.
+
+	* super.c (release_orphan_inodes, release_inode_block,
+		release_inode_blocks): Update the block group descriptor
+		counts when freeing the orphan inode.  Use
+		PR_0_CLEAR_ORPHAN_INODE to report when we clear an orphan.
+
+	* journal.c (e2fsck_run_ext3_journal): Fix a bug where we
+		attempted to reopen the filesystem using the device name
+		instead of the filesystem name.
+
 2000-08-18    <tytso@valinux.com>
 
 	* Makefile.in: Update the make dependencies

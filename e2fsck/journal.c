@@ -339,6 +339,7 @@ static int e2fsck_journal_load(journal_t *journal)
 	}
 
 	journal->j_tail_sequence = ntohl(jsb->s_sequence);
+	journal->j_transaction_sequence = journal->j_tail_sequence;
 	journal->j_tail = ntohl(jsb->s_start);
 	journal->j_first = ntohl(jsb->s_first);
 	journal->j_last = ntohl(jsb->s_maxlen);
@@ -474,19 +475,14 @@ static int recover_ext3_journal(e2fsck_t ctx)
 
 	retval = e2fsck_get_journal(ctx, &journal);
 	if (retval)
-		goto exit;
+		return retval;
+
 	retval = e2fsck_journal_load(journal);
 	if (retval)
-		goto exit;
+		return retval;
 
 	retval = -journal_recover(journal);
-
 	e2fsck_journal_release(ctx, journal, 1);
-	if (retval)
-		goto exit;
-
-exit:
-	e2fsck_clear_recover(ctx, retval);
 	return retval;
 }
 
@@ -597,17 +593,22 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 {
 	io_manager io_ptr = ctx->fs->io->manager;
 	int blocksize = ctx->fs->blocksize;
-	errcode_t	retval;
+	errcode_t	retval, recover_retval;
 	
-	if ((retval = recover_ext3_journal(ctx)))
-		return retval;
+	if (ctx->options & E2F_OPT_READONLY) {
+		printf("%s: won't do journal recovery while read-only\n",
+		       ctx->device_name);
+		return EXT2_ET_FILE_RO;
+	}
+
+	recover_retval = recover_ext3_journal(ctx);
 	
 	/*
 	 * Reload the filesystem context to get up-to-date data from disk
 	 * because journal recovery will change the filesystem under us.
 	 */
 	ext2fs_close(ctx->fs);
-	retval = ext2fs_open(ctx->device_name, EXT2_FLAG_RW,
+	retval = ext2fs_open(ctx->filesystem_name, EXT2_FLAG_RW,
 			     ctx->superblock, blocksize, io_ptr,
 			     &ctx->fs);
 
@@ -619,5 +620,7 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 	}
 	ctx->fs->priv_data = ctx;
 
-	return 0;
+	/* Set the superblock flags */
+	e2fsck_clear_recover(ctx, recover_retval);
+	return recover_retval;
 }

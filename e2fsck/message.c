@@ -32,6 +32,8 @@
  * 	%IF	<inode> -> i_faddr
  * 	%If	<inode> -> i_file_acl
  * 	%Id	<inode> -> i_dir_acl
+ * 	%Iu	<inode> -> i_uid
+ * 	%Ig	<inode> -> i_gid
  * 	%j	<ino2>			inode number
  * 	%m	<com_err error message>
  * 	%N	<num>
@@ -213,7 +215,7 @@ static _INLINE_ void expand_at_expression(e2fsck_t ctx, char ch,
 }
 
 /*
- * This function expands '%kX' expressions
+ * This function expands '%IX' expressions
  */
 static _INLINE_ void expand_inode_expression(char ch,
 					       struct problem_context *ctx)
@@ -267,6 +269,14 @@ static _INLINE_ void expand_inode_expression(char ch,
 	case 'd':
 		printf("%u", (LINUX_S_ISDIR(inode->i_mode) ?
 			      inode->i_dir_acl : 0));
+		break;
+	case 'u':
+		printf("%d", (inode->i_uid |
+			      (inode->osd2.linux2.l_i_uid_high << 16)));
+		break;
+	case 'g':
+		printf("%d", (inode->i_gid |
+			      (inode->osd2.linux2.l_i_gid_high << 16)));
 		break;
 	default:
 	no_inode:

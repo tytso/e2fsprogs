@@ -95,6 +95,8 @@ static int release_inode_block(ext2_filsys fs,
 	}
 	
 	ext2fs_unmark_block_bitmap(fs->block_map, blk);
+	fs->group_desc[ext2fs_group_of_blk(fs, blk)].bg_free_blocks_count++;
+	fs->super->s_free_blocks_count++;
 	
 	return 0;
 }
@@ -125,8 +127,6 @@ static int release_inode_blocks(e2fsck_t ctx, ino_t ino, char* block_buf,
 	if (pb.abort)
 		return 1;
 
-	ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
-	ext2fs_mark_ib_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
 	return 0;
 }
@@ -138,6 +138,7 @@ static int release_inode_blocks(e2fsck_t ctx, ino_t ino, char* block_buf,
 static int release_orphan_inodes(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
+	int group;
 	ino_t	ino, next_ino;
 	struct ext2_inode inode;
 	struct problem_context pctx;
@@ -166,14 +167,12 @@ static int release_orphan_inodes(e2fsck_t ctx)
 	e2fsck_read_bitmaps(ctx);
 	
 	while (ino) {
-#ifdef JFS_DEBUG
-		printf("Clearing orphan inode %d\n", ino);
-#endif
-
 		e2fsck_read_inode(ctx, ino, &inode, "delete_file");
 		clear_problem_context(&pctx);
-		pctx.ino;
+		pctx.ino = ino;
 		pctx.inode = &inode;
+
+		fix_problem(ctx, PR_0_CLEAR_ORPHAN_INODE, &pctx);
 
 		if (inode.i_links_count) {
 			fix_problem(ctx, PR_0_ORPHAN_INODE_INUSE, &pctx);
@@ -192,6 +191,15 @@ static int release_orphan_inodes(e2fsck_t ctx)
 		
 		inode.i_dtime = time(0);
 		e2fsck_write_inode(ctx, ino, &inode, "delete_file");
+
+		ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
+		ext2fs_mark_ib_dirty(fs);
+		group = ext2fs_group_of_ino(fs, ino);
+		fs->group_desc[group].bg_free_inodes_count++;
+		fs->super->s_free_inodes_count++;
+		if (LINUX_S_ISDIR(inode.i_mode))
+			fs->group_desc[group].bg_used_dirs_count--;
+		
 		ino = next_ino;
 	}
 	return 0;

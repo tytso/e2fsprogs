@@ -229,6 +229,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("ext3 recovery flag clear, but journal has data.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK|PR_PREEN_NOMSG },
 
+	/* Clearing orphan inode */
+	{ PR_0_CLEAR_ORPHAN_INODE,
+	  N_("Clearing @o @i %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Illegal block found in orphaned inode */
 	{ PR_0_ORPHAN_ILLEGAL_BLOCK_NUM,
 	   N_("@I @b #%B (%b) found in @o @i %i.\n"),
