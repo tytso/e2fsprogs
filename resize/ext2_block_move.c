@@ -67,7 +67,6 @@ errcode_t ext2fs_block_move(ext2_resize_t rfs)
 	char			*block_buf = 0;
 	int			size, c;
 	int			to_move, moved;
-	ext2_sim_progmeter progress = 0;
 
 	new_blk = fs->super->s_first_data_block;
 	if (!rfs->itable_buf) {
@@ -116,13 +115,9 @@ errcode_t ext2fs_block_move(ext2_resize_t rfs)
 	retval =  ext2fs_iterate_extent(bmap, 0, 0, 0);
 	if (retval) goto errout;
 
-	if (rfs->flags & RESIZE_PERCENT_COMPLETE) {
-		retval = ext2fs_progress_init(&progress,
-		      "Relocating blocks", 30, 40, to_move, 0);
-		if (retval)
-			return retval;
-	}
-	
+	if (rfs->progress)
+		(rfs->progress)(rfs, E2_RSZ_BLOCK_RELOC_PASS, 0, to_move);
+
 	while (1) {
 		retval = ext2fs_iterate_extent(bmap, &old_blk, &new_blk, &size);
 		if (retval) goto errout;
@@ -148,14 +143,11 @@ errcode_t ext2fs_block_move(ext2_resize_t rfs)
 			old_blk += c;
 			moved += c;
 			io_channel_flush(fs->io);
-			if (progress)
-				ext2fs_progress_update(progress, moved);
+			if (rfs->progress)
+				(rfs->progress)(rfs, E2_RSZ_BLOCK_RELOC_PASS, 
+						moved, to_move);
 		} while (size > 0);
 		io_channel_flush(fs->io);
-	}
-	if (progress) {
-		ext2fs_progress_close(progress);
-		progress = 0;
 	}
 	
 	/*
@@ -185,14 +177,10 @@ errcode_t ext2fs_block_move(ext2_resize_t rfs)
 
 	retval = ext2fs_get_next_inode(scan, &ino, &inode);
 	if (retval) goto errout;
-	
-	if (rfs->flags & RESIZE_PERCENT_COMPLETE) {
-		retval = ext2fs_progress_init(&progress,
-		      "Updating block references", 30, 40,
-		      old_fs->super->s_inodes_count, 0);
-		if (retval)
-			return retval;
-	}
+
+	if (rfs->progress)
+		(rfs->progress)(rfs, E2_RSZ_BLOCK_REF_UPD_PASS,
+				0, old_fs->super->s_inodes_count);
 	
 	while (ino) {
 		if ((inode.i_links_count == 0) ||
@@ -214,16 +202,15 @@ errcode_t ext2fs_block_move(ext2_resize_t rfs)
 		}
 
 	next:
-		if (progress)
-			ext2fs_progress_update(progress, ino);
+		if (rfs->progress)
+			(rfs->progress)(rfs, E2_RSZ_BLOCK_REF_UPD_PASS,
+					ino, old_fs->super->s_inodes_count);
 		retval = ext2fs_get_next_inode(scan, &ino, &inode);
 		if (retval == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
 			goto next;
 	}
 	retval = 0;
 errout:
-	if (progress)
-		ext2fs_progress_close(progress);
 	
 	ext2fs_free_extent_table(bmap);
 	if (scan)

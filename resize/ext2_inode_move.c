@@ -10,29 +10,9 @@
 
 #include "resize2fs.h"
 
-/*
- * Progress callback
- */
-struct callback_info {
-	ext2_sim_progmeter progress;
-	int	offset;
-};
-		
-static errcode_t progress_callback(ext2_filsys fs, ext2_inode_scan scan,
-				   dgrp_t group, void * priv_data)
-{
-	struct callback_info *cb = (struct callback_info *) priv_data;
-
-	if (!cb->progress)
-		return 0;
-
-	ext2fs_progress_update(cb->progress, group - cb->offset + 1);
-	return 0;
-}
-
-
 struct istruct {
-	ext2_sim_progmeter progress;
+	ext2_resize_t rfs;
+	unsigned long	max;
 	ext2_extent	imap;
 	int		flags;
 	int		num;
@@ -45,8 +25,9 @@ static int check_and_change_inodes(ino_t dir, int entry,
 	struct istruct *is = (struct istruct *) priv_data;
 	ino_t	new_inode;
 
-	if (is->progress && offset == 0) {
-		ext2fs_progress_update(is->progress, ++is->num);
+	if (is->rfs->progress && offset == 0) {
+		(is->rfs->progress)(is->rfs, E2_RSZ_INODE_REF_UPD_PASS,
+				++is->num, is->max);
 	}
 
 	if (!dirent->inode)
@@ -96,15 +77,15 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 	return ret;
 }
 
-static errcode_t get_dblist(ext2_filsys fs, int flags)
+static errcode_t get_dblist(ext2_resize_t rfs)
 {
 	ext2_inode_scan		scan = 0;
 	errcode_t		retval;
 	char			*block_buf = 0;
 	struct process_block_struct	pb;
-	ext2_sim_progmeter 	progress = 0; 
 	ino_t			ino;
 	struct ext2_inode 	inode;
+	ext2_filsys 		fs = rfs->old_fs;
 
 	retval = ext2fs_open_inode_scan(fs, 0, &scan);
 	if (retval) goto errout;
@@ -128,14 +109,10 @@ static errcode_t get_dblist(ext2_filsys fs, int flags)
 
 	retval = ext2fs_get_next_inode(scan, &ino, &inode);
 	if (retval) goto errout;
-	
-	if (flags & RESIZE_PERCENT_COMPLETE) {
-		retval = ext2fs_progress_init(&progress,
-		      "Finding directories", 30, 40,
-		      fs->super->s_inodes_count, 0);
-		if (retval)
-			return retval;
-	}
+
+	if (rfs->progress)
+		(rfs->progress)(rfs, E2_RSZ_INODE_FIND_DIR_PASS,
+				0, fs->super->s_inodes_count);
 	
 	while (ino) {
 		if ((inode.i_links_count == 0) ||
@@ -156,8 +133,9 @@ static errcode_t get_dblist(ext2_filsys fs, int flags)
 		}
 
 	next:
-		if (progress)
-			ext2fs_progress_update(progress, ino);
+		if (rfs->progress)
+			(rfs->progress)(rfs, E2_RSZ_INODE_FIND_DIR_PASS,
+					ino, fs->super->s_inodes_count);
 		retval = ext2fs_get_next_inode(scan, &ino, &inode);
 		if (retval == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE)
 			goto next;
@@ -165,8 +143,6 @@ static errcode_t get_dblist(ext2_filsys fs, int flags)
 	retval = 0;
 
 errout:
-	if (progress)
-		ext2fs_progress_close(progress);
 	if (scan)
 		ext2fs_close_inode_scan(scan);
 	if (block_buf)
@@ -174,6 +150,26 @@ errout:
 	return retval;
 }
 
+/*
+ * Progress callback
+ */
+struct callback_info {
+	ext2_resize_t rfs;
+	unsigned long	max;
+	int	offset;
+};
+		
+static errcode_t progress_callback(ext2_filsys fs, ext2_inode_scan scan,
+				   dgrp_t group, void * priv_data)
+{
+	struct callback_info *cb = (struct callback_info *) priv_data;
+
+	if (cb->rfs->progress)
+		(cb->rfs->progress)(cb->rfs, E2_RSZ_INODE_RELOC_PASS,
+				group - cb->offset + 1, cb->max);
+	
+	return 0;
+}
 
 errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 {
@@ -185,7 +181,6 @@ errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 	int			group;
 	struct istruct 		is;
 	struct callback_info	callback_info;
-	ext2_sim_progmeter 	progress = 0; 
 
 	if (rfs->old_fs->group_desc_count <=
 	    rfs->new_fs->group_desc_count)
@@ -202,21 +197,16 @@ errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 				   rfs->new_fs->group_desc_count);
 	if (retval) goto errout;
 
+	callback_info.offset = rfs->new_fs->group_desc_count;
+	callback_info.max = (rfs->old_fs->group_desc_count -
+			     rfs->new_fs->group_desc_count);
+	callback_info.rfs = rfs;
+	if (rfs->progress)
+		(rfs->progress)(rfs, E2_RSZ_INODE_RELOC_PASS,
+				0, callback_info.max);
 	
-	if (rfs->flags & RESIZE_PERCENT_COMPLETE) {
-		callback_info.offset = rfs->new_fs->group_desc_count;
-	
-		group = (rfs->old_fs->group_desc_count -
-			 rfs->new_fs->group_desc_count);
-	
-		retval = ext2fs_progress_init(&progress,
-		      "Moving inodes", 30, 40, group, 0);
-		if (retval)
-			return retval;
-		ext2fs_set_inode_callback(scan, progress_callback,
-					  &callback_info);
-	}
-	callback_info.progress = progress;
+	ext2fs_set_inode_callback(scan, progress_callback,
+				  &callback_info);
 
 	new_inode = EXT2_FIRST_INODE(rfs->new_fs->super);
 	/*
@@ -262,41 +252,33 @@ errcode_t ext2fs_inode_move(ext2_resize_t rfs)
 		ext2fs_add_extent_entry(imap, ino, new_inode);
 	}
 	io_channel_flush(rfs->new_fs->io);
-	if (progress) {
-		ext2fs_progress_close(progress);
-		progress = 0;
-	}
 	/*
 	 * Get the list of directory blocks, if necessary
 	 */
 	if (!rfs->old_fs->dblist) {
-		retval = get_dblist(rfs->old_fs, rfs->flags);
+		retval = get_dblist(rfs);
 		if (retval) goto errout;
 	}
 	/*
 	 * Now, we iterate over all of the directories to update the
 	 * inode references
 	 */
-	if (rfs->flags & RESIZE_PERCENT_COMPLETE) {
-		retval = ext2fs_progress_init(&progress,
-		      "Updating inode references", 30, 40,
-		      ext2fs_dblist_count(rfs->old_fs->dblist), 0);
-		if (retval)
-			return retval;
-	}
 	is.imap = imap;
 	is.flags = rfs->flags;
 	is.num = 0;
-	is.progress = progress;
+	is.max = ext2fs_dblist_count(rfs->old_fs->dblist);
+	is.rfs = rfs;
 
+	if (rfs->progress)
+		(rfs->progress)(rfs, E2_RSZ_INODE_REF_UPD_PASS,
+				0, is.max);
+	
 	retval = ext2fs_dblist_dir_iterate(rfs->old_fs->dblist,
 					   DIRENT_FLAG_INCLUDE_EMPTY, 0,
 					   check_and_change_inodes, &is);
 	/* if (retval) goto errout; */
 
 errout:
-	if (progress)
-		ext2fs_progress_close(progress);
 	ext2fs_free_extent_table(imap);
 	if (scan)
 		ext2fs_close_inode_scan(scan);

@@ -28,6 +28,58 @@ static volatile void usage (char *prog)
 	exit (1);
 }
 
+static void resize_progress_func(ext2_resize_t rfs, int pass,
+				 unsigned long cur, unsigned long max)
+{
+	ext2_sim_progmeter progress;
+	const char	*label;
+	errcode_t	retval;
+
+	progress = (ext2_sim_progmeter) rfs->prog_data;
+	if (cur == 0) {
+		if (progress)
+			ext2fs_progress_close(progress);
+		progress = 0;
+		switch (pass) {
+		case E2_RSZ_ADJUST_SUPERBLOCK_PASS:
+			label = "Initializing inode table";
+			break;
+		case E2_RSZ_BLOCK_RELOC_PASS:
+			label = "Relocating blocks";
+			break;
+		case E2_RSZ_BLOCK_REF_UPD_PASS:
+			label = "Updating block references";
+			break;
+		case E2_RSZ_INODE_FIND_DIR_PASS:
+			label = "Finding directories";
+			break;
+		case E2_RSZ_INODE_RELOC_PASS:
+			label = "Moving inodes";
+			break;
+		case E2_RSZ_INODE_REF_UPD_PASS:
+			label = "Updating inode references";
+			break;
+		case E2_RSZ_MOVE_ITABLE_PASS:
+			label = "Moving inode table";
+			break;
+		}
+		printf("Begin pass %d (max = %lu)\n", pass, max);
+		retval = ext2fs_progress_init(&progress, label, 30,
+					      40, max, 0);
+		if (retval)
+			progress = 0;
+		rfs->prog_data = (void *) progress;
+	}
+	if (progress)
+		ext2fs_progress_update(progress, cur);
+	if (cur >= max) {
+		if (progress)
+			ext2fs_progress_close(progress);
+		progress = 0;
+		rfs->prog_data = 0;
+	}
+}
+
 void main (int argc, char ** argv)
 {
 	errcode_t	retval;
@@ -104,7 +156,7 @@ void main (int argc, char ** argv)
 		printf ("Couldn't find valid filesystem superblock.\n");
 		exit (1);
 	}
-	retval = resize_fs(fs, new_size, flags);
+	retval = resize_fs(fs, new_size, flags, resize_progress_func);
 	if (retval) {
 		com_err(program_name, retval, "while trying to resize %s",
 			device_name);

@@ -35,7 +35,7 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk_t new_size)
 	blk_t		blk, group_block;
 	unsigned long	i, j;
 	int		old_numblocks, numblocks, adjblocks;
-	ext2_sim_progmeter progress = 0;
+	unsigned long	max_group;
 	
 	fs = rfs->new_fs;
 	fs->super->s_blocks_count = new_size;
@@ -168,13 +168,11 @@ retry:
 	group_block = fs->super->s_first_data_block +
 		rfs->old_fs->group_desc_count * fs->super->s_blocks_per_group;
 
-	if (rfs->flags & RESIZE_PERCENT_COMPLETE) {
-		adj = rfs->old_fs->group_desc_count;
-		retval = ext2fs_progress_init(&progress,
-		      "Initializing inode table", 30, 40,
-		      fs->group_desc_count - adj, 0);
-		if (retval) goto errout;
-	}
+	adj = rfs->old_fs->group_desc_count;
+	max_group = fs->group_desc_count - adj;
+	if (rfs->progress)
+		rfs->progress(rfs, E2_RSZ_ADJUST_SUPERBLOCK_PASS,
+			      0, max_group);
 	for (i = rfs->old_fs->group_desc_count;
 	     i < fs->group_desc_count; i++) {
 		memset(&fs->group_desc[i], 0,
@@ -220,8 +218,9 @@ retry:
 		if (retval) goto errout;
 
 		/* io_channel_flush(fs->io); */
-		if (progress)
-			ext2fs_progress_update(progress, i - adj + 1);
+		if (rfs->progress)
+			rfs->progress(rfs, E2_RSZ_ADJUST_SUPERBLOCK_PASS,
+				      i - adj + 1, max_group);
 		
 		group_block += fs->super->s_blocks_per_group;
 	}
@@ -229,8 +228,6 @@ retry:
 	retval = 0;
 
 errout:
-	if (progress)
-		ext2fs_progress_close(progress);
 	return retval;
 }
 
@@ -534,7 +531,6 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	char		*cp;
 	blk_t		old_blk, new_blk;
 	errcode_t	retval, err;
-	ext2_sim_progmeter progress = 0;
 	int		to_move, moved;
 
 	max = fs->group_desc_count;
@@ -560,13 +556,9 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	if (to_move == 0)
 		return 0;
 
-	if (rfs->flags & RESIZE_PERCENT_COMPLETE) {
-		retval = ext2fs_progress_init(&progress,
-		      "Moving inode table", 30, 40, to_move, 0);
-		if (retval)
-			return retval;
-	}
-	
+	if (rfs->progress)
+		rfs->progress(rfs, E2_RSZ_MOVE_ITABLE_PASS, 0, to_move);
+
 	for (i=0; i < max; i++) {
 		old_blk = rfs->old_fs->group_desc[i].bg_inode_table;
 		new_blk = fs->group_desc[i].bg_inode_table;
@@ -619,8 +611,9 @@ static errcode_t move_itables(ext2_resize_t rfs)
 				goto backout;
 		}
 		io_channel_flush(fs->io);
-		if (progress)
-			ext2fs_progress_update(progress, ++moved);
+		if (rfs->progress)
+			rfs->progress(rfs, E2_RSZ_MOVE_ITABLE_PASS,
+				      ++moved, to_move);
 	}
 	ext2fs_flush(rfs->new_fs);
 	io_channel_flush(fs->io);
@@ -628,13 +621,9 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
 		printf("Inode table move finished.\n");
 #endif
-	if (progress)
-		ext2fs_progress_close(progress);
 	return 0;
 	
 backout:
-	if (progress)
-		ext2fs_progress_close(progress);
 #ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & RESIZE_DEBUG_ITABLEMOVE) 
 		printf("Error: %s; now backing out!\n", error_message(retval));
@@ -717,12 +706,13 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 	return 0;
 }
 
-
-
 /*
  * This is the top-level routine which does the dirty deed....
  */
-errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags)
+errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags,
+		    void (*progress)(ext2_resize_t rfs, int pass,
+				     unsigned long cur,
+				     unsigned long max))
 {
 	ext2_resize_t	rfs;
 	errcode_t	retval;
@@ -743,6 +733,7 @@ errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags)
 	rfs->old_fs = fs;
 	rfs->flags = flags;
 	rfs->itable_buf	 = 0;
+	rfs->progress = progress;
 	retval = ext2fs_dup_handle(fs, &rfs->new_fs);
 	if (retval)
 		goto errout;

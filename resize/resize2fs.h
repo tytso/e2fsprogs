@@ -59,6 +59,7 @@ typedef struct ext2_sim_progress *ext2_sim_progmeter;
 /*
  * The core state structure for the ext2 resizer
  */
+typedef struct ext2_resize_struct *ext2_resize_t;
 
 struct ext2_resize_struct {
 	ext2_filsys	old_fs;
@@ -68,12 +69,30 @@ struct ext2_resize_struct {
 	int		needed_blocks;
 	int		flags;
 	char		*itable_buf;
+	void		(*progress)(ext2_resize_t rfs, int pass,
+				    unsigned long cur,
+				    unsigned long max);
+	void		*prog_data;
 };
 
-typedef struct ext2_resize_struct *ext2_resize_t;
+/*
+ * Progress pass numbers...
+ */
+#define E2_RSZ_ADJUST_SUPERBLOCK_PASS	1
+#define E2_RSZ_BLOCK_RELOC_PASS		2
+#define E2_RSZ_BLOCK_REF_UPD_PASS	3
+#define E2_RSZ_INODE_FIND_DIR_PASS	4
+#define E2_RSZ_INODE_RELOC_PASS		5
+#define E2_RSZ_INODE_REF_UPD_PASS	6
+#define E2_RSZ_MOVE_ITABLE_PASS		7
+
 
 /* prototypes */
-extern errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags);
+extern errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags,
+			   void	(*progress)(ext2_resize_t rfs, int pass,
+					    unsigned long cur,
+					    unsigned long max));
+
 extern errcode_t ext2fs_inode_move(ext2_resize_t rfs);
 extern errcode_t ext2fs_block_move(ext2_resize_t rfs);
 
