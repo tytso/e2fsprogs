@@ -1,3 +1,8 @@
+2004-06-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in (mke2fs.static): Add the blkid library to so
+		mke2fs.static builds correctly.
+
 2004-04-11  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.8.in: Fixed spelling error (Addresses Debian Bug #242995)
