@@ -1,3 +1,15 @@
+2001-09-20  Theodore Tso  <tytso@valinux.com>
+
+	* e2fsck.h, journal.c (e2fsck_move_ext3_journal): Add new function
+		which will automatically relocate the ext3 journal from a
+		visible file to an invisible journal file if the
+		filesystem has been opened read/write.
+
+	* super.c (check_super_block): Add call to e2fsck_move_ext3_journal
+
+	* problem.c, problem.h (PR_0_MOVE_JOURNAL, PR_0_ERR_MOVE_JOURNAL):
+		Add new problem codes.
+
 2001-09-20  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.25

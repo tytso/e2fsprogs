@@ -155,6 +155,12 @@ struct problem_context {
 /* Journal has unsupported version number */
 #define PR_0_JOURNAL_UNSUPP_VERSION		0x000027
 
+/* Moving journal to hidden file */
+#define	PR_0_MOVE_JOURNAL			0x000028
+
+/* Error moving journal */
+#define	PR_0_ERR_MOVE_JOURNAL			0x000029
+
 /*
  * Pass 1 errors
  */

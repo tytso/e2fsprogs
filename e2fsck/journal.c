@@ -706,3 +706,103 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 	e2fsck_clear_recover(ctx, recover_retval);
 	return recover_retval;
 }
+
+/*
+ * This function will move the journal inode from a visible file in
+ * the filesystem directory hierarchy to the reserved inode if necessary.
+ */
+const static char * const journal_names[] = {
+	".journal", "journal", ".journal.dat", "journal.dat", 0 };
+
+void e2fsck_move_ext3_journal(e2fsck_t ctx)
+{
+	struct ext2_super_block *sb = ctx->fs->super;
+	struct problem_context	pctx;
+	struct ext2_inode 	inode;
+	ext2_filsys		fs = ctx->fs;
+	ext2_ino_t		ino;
+	errcode_t		retval;
+	const char * const *	cpp;
+	int			group, mount_flags;
+	
+	/*
+	 * If the filesystem is opened read-only, or there is no
+	 * journal, or the journal is already in the hidden inode,
+	 * then do nothing.
+	 */
+	if ((ctx->options & E2F_OPT_READONLY) ||
+	    (sb->s_journal_inum == 0) ||
+	    (sb->s_journal_inum == EXT2_JOURNAL_INO) ||
+	    !(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+		return;
+
+	/*
+	 * If the filesystem is mounted, or we can't tell whether
+	 * or not it's mounted, do nothing.
+	 */
+	retval = ext2fs_check_if_mounted(ctx->filesystem_name, &mount_flags);
+	if (retval || (mount_flags & EXT2_MF_MOUNTED))
+		return;
+
+	/*
+	 * If we can't find the name of the journal inode, then do
+	 * nothing.
+	 */
+	for (cpp = journal_names; *cpp; cpp++) {
+		retval = ext2fs_lookup(fs, EXT2_ROOT_INO, *cpp,
+				       strlen(*cpp), 0, &ino);
+		if ((retval == 0) && (ino == sb->s_journal_inum))
+			break;
+	}
+	if (*cpp == 0)
+		return;
+
+	/*
+	 * The inode had better have only one link and not be readable.
+	 */
+	if (ext2fs_read_inode(fs, ino, &inode) != 0)
+		return;
+	if (inode.i_links_count != 1)
+		return;
+
+	/* We need the inode bitmap to be loaded */
+	retval = ext2fs_read_bitmaps(fs);
+	if (retval)
+		return;
+
+	clear_problem_context(&pctx);
+	pctx.str = *cpp;
+	if (!fix_problem(ctx, PR_0_MOVE_JOURNAL, &pctx))
+		return;
+		
+	/*
+	 * OK, we've done all the checks, let's actually move the
+	 * journal inode.  Errors at this point mean we need to force
+	 * an ext2 filesystem check.
+	 */
+	if ((retval = ext2fs_unlink(fs, EXT2_ROOT_INO, *cpp, ino, 0)) != 0)
+		goto err_out;
+	if ((retval = ext2fs_write_inode(fs, EXT2_JOURNAL_INO, &inode)) != 0)
+		goto err_out;
+	sb->s_journal_inum = EXT2_JOURNAL_INO;
+	ext2fs_mark_super_dirty(fs);
+	inode.i_links_count = 0;
+	inode.i_dtime = time(0);
+	if ((retval = ext2fs_write_inode(fs, ino, &inode)) != 0)
+		goto err_out;
+
+	group = ext2fs_group_of_ino(fs, ino);
+	ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
+	ext2fs_mark_ib_dirty(fs);
+	fs->group_desc[group].bg_free_inodes_count++;
+	fs->super->s_free_inodes_count++;
+	return;
+
+err_out:
+	pctx.errcode = retval;
+	fix_problem(ctx, PR_0_ERR_MOVE_JOURNAL, &pctx);
+	fs->super->s_state &= ~EXT2_VALID_FS;
+	ext2fs_mark_super_dirty(fs);
+	return;
+}
+

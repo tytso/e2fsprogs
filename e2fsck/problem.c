@@ -276,7 +276,17 @@ static const struct e2fsck_problem problem_table[] = {
 	{ PR_0_JOURNAL_UNSUPP_VERSION,
 	  N_("@j version not supported by this e2fsck.\n"),
 	  PROMPT_ABORT, 0 },
- 
+
+	/* Moving journal to hidden file */
+	{ PR_0_MOVE_JOURNAL,
+	  N_("Moving @j from /%s to hidden inode.\n\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Error moving journal to hidden file */
+	{ PR_0_ERR_MOVE_JOURNAL,
+	  N_("Error moving @j: %m\n\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */

@@ -509,6 +509,10 @@ void check_super_block(e2fsck_t ctx)
 		ext2fs_mark_super_dirty(fs);
 	}
 
+	/*
+	 * Move the ext3 journal file, if necessary.
+	 */
+	e2fsck_move_ext3_journal(ctx);
 	return;
 }
 
