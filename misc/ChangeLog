@@ -1,3 +1,7 @@
+2001-08-30  Theodore Tso  <tytso@valinux.com>
+
+	* badblocks.8.in: Fix spelling typo.  (Addresses Debian bug #110621)
+
 2001-08-27  Theodore Tso  <tytso@valinux.com>
 
 	* fsck.c (main): Make version display consisstent with the other

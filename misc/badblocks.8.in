@@ -129,7 +129,7 @@ Use write-mode test. With this option,
 .B badblocks
 scans for bad blocks by writing some patterns (0xaa, 0x55, 0xff, 0x00) on
 every block of the device, reading every block and comparing the contents.  
-This option may not be compiled with the 
+This option may not be combined with the 
 .B \-n 
 option, as they are mutually exclusive.
 .SH WARNING
