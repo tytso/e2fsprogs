@@ -272,6 +272,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	struct		scan_callback_struct scan_struct;
 	struct ext2_super_block *sb = ctx->fs->super;
 	int		imagic_fs;
+	int		busted_fs_time = 0;
 	
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
@@ -394,6 +395,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (ctx->progress)
 		if ((ctx->progress)(ctx, 1, 0, ctx->fs->group_desc_count))
 			return;
+	if (fs->super->s_wtime < fs->super->s_inodes_count)
+		busted_fs_time = 1;
+
 	while (1) {
 		pctx.errcode = ext2fs_get_next_inode(scan, &ino, &inode);
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
@@ -543,7 +547,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		 * than nothing.  The right answer is that there
 		 * shouldn't be any bugs in the orphan list handling.  :-)
 		 */
-		if (inode.i_dtime &&
+		if (inode.i_dtime && !busted_fs_time &&
 		    inode.i_dtime < ctx->fs->super->s_inodes_count) {
 			if (fix_problem(ctx, PR_1_LOW_DTIME, &pctx)) {
 				inode.i_dtime = inode.i_links_count ?

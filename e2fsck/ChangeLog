@@ -1,3 +1,9 @@
+2002-10-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (e2fsck_pass1): Check the superblock write time to see
+		whether or not we can safely do the LOW_DTIME checks.
+		(Addresses Sourceforge bug #620980)
+
 2002-10-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in (install): Search all compression extensions when
