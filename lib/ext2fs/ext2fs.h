@@ -171,6 +171,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_SWAP_BYTES_WRITE	0x100
 #define EXT2_FLAG_MASTER_SB_ONLY	0x200
 #define EXT2_FLAG_FORCE			0x400
+#define EXT2_FLAG_SUPER_ONLY		0x800
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is
@@ -687,6 +688,8 @@ errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *);
 
 /* ismounted.c */
 extern errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags);
+extern errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
+					  char *mtpt, int mtlen);
 
 /* namei.c */
 extern errcode_t ext2fs_lookup(ext2_filsys fs, ino_t dir, const char *name,

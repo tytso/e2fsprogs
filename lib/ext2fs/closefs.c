@@ -209,6 +209,8 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 			if (retval)
 				goto errout;
 		}
+		if (fs->flags & EXT2_FLAG_SUPER_ONLY)
+			goto next_group;
 		group_ptr = (char *) group_shadow;
 		for (j=0; j < fs->desc_blocks; j++) {
 			retval = io_channel_write_blk(fs->io,

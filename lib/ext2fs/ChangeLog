@@ -1,3 +1,14 @@
+2001-01-03    <tytso@snap.thunk.org>
+
+	* ext2fs.h, closefs.c (ext2fs_flush): Add new flag,
+		EXT2_FLAG_SUPER_ONLY, which the close routines to only
+		update the superblock, and not the group descriptors.
+
+2000-12-30  Andreas Dilger  <adilger@turbolinux.com>
+
+	* ismounted.c: add ext2fs_check_mount_point() function, which will
+		optionally return the mount point of a device if mounted
+
 2000-12-14  Andreas Dilger  <adilger@turbolinux.com>
 
 	* mkjournal.c: rename ext2fs_add_journal_fs() to the more descriptive

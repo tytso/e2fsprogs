@@ -39,10 +39,12 @@
 
 #ifdef HAVE_MNTENT_H
 /*
- * XXX we only check to see if the mount is readonly when it's the
- * root filesystem.
+ * XXX we assume that /etc/mtab is located on the root filesystem, and
+ * we only check to see if the mount is readonly for the root
+ * filesystem.
  */
-static errcode_t check_mntent(const char *file, int *mount_flags)
+static errcode_t check_mntent(const char *file, int *mount_flags,
+			      char *mtpt, int mtlen)
 {
 	FILE * f;
 	struct mntent * mnt;
@@ -68,12 +70,15 @@ static errcode_t check_mntent(const char *file, int *mount_flags)
 		} else
 			close(fd);
 	}
+	if (mtpt)
+		strncpy(mtpt, mnt->mnt_dir, mtlen);
 	return 0;
 }
 #endif
 
 #ifdef HAVE_GETMNTINFO
-static errcode_t check_getmntinfo(const char *file, int *mount_flags)
+static errcode_t check_getmntinfo(const char *file, int *mount_flags,
+				  char *mtpt, int mtlen)
 {
 	struct statfs *mp;
         int    len, n;
@@ -102,12 +107,40 @@ static errcode_t check_getmntinfo(const char *file, int *mount_flags)
 		}
                 ++mp;
 	}
+	if (mtpt)
+		strncpy(mtpt, mp->f_mntonname, mtlen);
 	return 0;
 }
 #endif /* HAVE_GETMNTINFO */
 
 /*
- * Is_mounted is set to 1 if the device is mounted, 0 otherwise
+ * ext2fs_check_mount_point() returns 1 if the device is mounted, 0
+ * otherwise.  If mtpt is non-NULL, the directory where the device is
+ * mounted is copied to where mtpt is pointing, up to mtlen
+ * characters.
+ */
+#ifdef __TURBOC__
+#pragma argsused
+#endif
+errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
+				  char *mtpt, int mtlen)
+{
+#ifdef HAVE_MNTENT_H
+	return check_mntent(device, mount_flags, mtpt, mtlen);
+#else 
+#ifdef HAVE_GETMNTINFO
+	return check_getmntinfo(device, mount_flags, mtpt, mtlen);
+#else
+	*mount_flags = 0;
+	return 0;
+#endif /* HAVE_GETMNTINFO */
+#endif /* HAVE_MNTENT_H */
+}
+
+/*
+ * ext2fs_check_if_mounted() sets the mount_flags EXT2_MF_MOUNTED and
+ * EXT2_MF_READONLY
+ * 
  */
 #ifdef __TURBOC__
 #pragma argsused
@@ -115,10 +148,10 @@ static errcode_t check_getmntinfo(const char *file, int *mount_flags)
 errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags)
 {
 #ifdef HAVE_MNTENT_H
-	return check_mntent(file, mount_flags);
+	return check_mntent(file, mount_flags, NULL, 0);
 #else 
 #ifdef HAVE_GETMNTINFO
-	return check_getmntinfo(file, mount_flags);
+	return check_getmntinfo(file, mount_flags, NULL, 0);
 #else
 	*mount_flags = 0;
 	return 0;
