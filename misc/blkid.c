@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
@@ -19,13 +20,14 @@ extern int optind;
 
 #include "blkid/blkid.h"
 
-char *progname = "blkid";
-void print_version(FILE *out)
+const char *progname = "blkid";
+
+static void print_version(FILE *out)
 {
 	fprintf(stderr, "%s %s (%s)\n", progname, BLKID_VERSION, BLKID_DATE);
 }
 
-void usage(int error)
+static void usage(int error)
 {
 	FILE *out = error ? stderr : stdout;
 
@@ -44,57 +46,47 @@ void usage(int error)
 	exit(error);
 }
 
-#define PT_FL_START	0x0001
-#define PT_FL_TYPE	0x0002
-
-static void print_tag(blkid_dev *dev, blkid_tag *tag, int *flags)
+static void print_tags(blkid_dev dev, char *show[], int numtag)
 {
-	/* Print only one "dev:" per device */
-	if (!*flags & PT_FL_START) {
-		printf("%s: ", dev->bid_name);
-		*flags |= PT_FL_START;
-	}
-	/* Print only the primary TYPE per device */
-	if (!strcmp(tag->bit_name, "TYPE")) {
-		if (*flags & PT_FL_TYPE)
-			return;
-		*flags |= PT_FL_TYPE;
-	}
-	printf("%s=\"%s\" ", tag->bit_name, tag->bit_val);
-}
-
-void print_tags(blkid_dev *dev, char *show[], int numtag)
-{
-	struct list_head *p;
-	int flags = 0;
+	blkid_tag_iterate	iter;
+	const char		*type, *value;
+	int 			i, first = 1, printed_type = 0;
 
 	if (!dev)
 		return;
 
-	list_for_each(p, &dev->bid_tags) {
-		blkid_tag *tag = list_entry(p, blkid_tag, bit_tags);
-		int i;
-
-		/* Print all tokens if none is specified */
-		if (numtag == 0 || !show) {
-			print_tag(dev, tag, &flags);
-		/* Otherwise, only print specific tokens */
-		} else for (i = 0; i < numtag; i++) {
-			if (!strcmp(tag->bit_name, show[i]))
-				print_tag(dev, tag, &flags);
+	iter = blkid_tag_iterate_begin(dev);
+	while (blkid_tag_next(iter, &type, &value) == 0) {
+		if (numtag && show) {
+			for (i=0; i < numtag; i++)
+				if (!strcmp(type, show[i]))
+					break;
+			if (i >= numtag)
+				continue;
 		}
+		if (first) {
+			printf("%s: ", blkid_devname_name(dev));
+			first = 0;
+		}
+		if (!strcmp(type, "TYPE")) {
+			if (printed_type)
+				return;
+			printed_type = 1;
+		}
+		printf("%s=\"%s\" ", type, value);
 	}
+	blkid_tag_iterate_end(iter);
 
-	if (flags)
+	if (!first)
 		printf("\n");
 }
 
 int main(int argc, char **argv)
 {
-	blkid_cache *cache = NULL;
+	blkid_cache cache = NULL;
 	char *devices[128] = { NULL, };
 	char *show[128] = { NULL, };
-	blkid_tag *tag = NULL;
+	char *search_type = NULL, *search_value = NULL;
 	char *read = NULL;
 	char *write = NULL;
 	int numdev = 0, numtag = 0;
@@ -129,12 +121,14 @@ int main(int argc, char **argv)
 			show[numtag++] = optarg;
 			break;
 		case 't':
-			if (tag) {
+			if (search_type) {
 				fprintf(stderr, "Can only search for "
 						"one NAME=value pair\n");
 				usage(err);
 			}
-			if (!(tag = blkid_token_to_tag(optarg))) {
+			if (blkid_parse_tag_string(optarg,
+						   &search_type,
+						   &search_value)) {
 				fprintf(stderr, "-t needs NAME=value pair\n");
 				usage(err);
 			}
@@ -167,31 +161,34 @@ int main(int argc, char **argv)
 
 	err = 2;
 	/* If looking for a specific NAME=value pair, print only that */
-	if (tag) {
-		blkid_tag *found = NULL;
+	if (search_type) {
+		blkid_dev dev;
 
 		/* Load any additional devices not in the cache */
 		for (i = 0; i < numdev; i++)
 			blkid_get_devname(cache, devices[i]);
 
-		if ((found = blkid_get_tag_cache(cache, tag))) {
-			print_tags(found->bit_dev, show, numtag);
+		if ((dev = blkid_find_dev_with_tag(cache, search_type,
+						   search_value))) {
+			print_tags(dev, show, numtag);
 			err = 0;
 		}
 	/* If we didn't specify a single device, show all available devices */
 	} else if (!numdev) {
-		struct list_head *p;
+		blkid_dev_iterate	iter;
+		blkid_dev		dev;
 
 		blkid_probe_all(&cache);
 
-		list_for_each(p, &cache->bic_devs) {
-			blkid_dev *dev = list_entry(p, blkid_dev, bid_devs);
+		iter = blkid_dev_iterate_begin(cache);
+		while (blkid_dev_next(iter, &dev) == 0) {
 			print_tags(dev, show, numtag);
 			err = 0;
 		}
+		blkid_dev_iterate_end(iter);
 	/* Add all specified devices to cache (optionally display tags) */
 	} else for (i = 0; i < numdev; i++) {
-		blkid_dev *dev = blkid_get_devname(cache, devices[i]);
+		blkid_dev dev = blkid_get_devname(cache, devices[i]);
 
 		if (dev) {
 			print_tags(dev, show, numtag);
@@ -200,7 +197,10 @@ int main(int argc, char **argv)
 	}
 
 exit:
-	blkid_free_tag(tag);
+	if (search_type)
+		free(search_type);
+	if (search_value)
+		free(search_value);
 	blkid_save_cache(cache, write);
 	blkid_free_cache(cache);
 	return err;

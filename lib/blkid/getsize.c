@@ -29,7 +29,7 @@
 #include <sys/disklabel.h>
 #endif /* HAVE_SYS_DISKLABEL_H */
 
-#include "blkid/blkid.h"
+#include "blkidP.h"
 
 #if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */

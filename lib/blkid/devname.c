@@ -33,7 +33,7 @@
 #endif
 #include <time.h>
 
-#include "blkid/blkid.h"
+#include "blkidP.h"
 
 /* #define DEBUG_DEVNAME */
 #ifdef DEBUG_DEVNAME
@@ -45,16 +45,16 @@
 /*
  * Find a dev struct in the cache by device name, if available.
  */
-blkid_dev *blkid_find_devname(blkid_cache *cache, const char *devname)
+blkid_dev blkid_find_devname(blkid_cache cache, const char *devname)
 {
-	blkid_dev *dev = NULL;
+	blkid_dev dev = NULL;
 	struct list_head *p;
 
 	if (!cache || !devname)
 		return NULL;
 
 	list_for_each(p, &cache->bic_devs) {
-		blkid_dev *tmp = list_entry(p, blkid_dev, bid_devs);
+		blkid_dev tmp = list_entry(p, struct blkid_struct_dev, bid_devs);
 
 		if (strcmp(tmp->bid_name, devname))
 			continue;
@@ -70,9 +70,9 @@ blkid_dev *blkid_find_devname(blkid_cache *cache, const char *devname)
 /*
  * Return a pointer to an dev struct, either from cache or by probing.
  */
-blkid_dev *blkid_get_devname(blkid_cache *cache, const char *devname)
+blkid_dev blkid_get_devname(blkid_cache cache, const char *devname)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 
 	if ((dev = blkid_find_devname(cache, devname)))
 		return dev;
@@ -85,11 +85,11 @@ blkid_dev *blkid_get_devname(blkid_cache *cache, const char *devname)
  * Probe a single block device to add to the device cache.
  * If the size is not specified, it will be found in blkid_devname_to_dev().
  */
-static blkid_dev *probe_one(blkid_cache *cache, const char *ptname,
+static blkid_dev probe_one(blkid_cache cache, const char *ptname,
 			    int major, int minor, unsigned long long size)
 {
 	dev_t devno = makedev(major, minor);
-	blkid_dev *dev;
+	blkid_dev dev;
 	const char **dir;
 	char *devname = NULL;
 
@@ -170,7 +170,7 @@ static int lvm_get_devno(const char *lvm_device, int *major, int *minor,
 	return ret;
 }
 
-static void lvm_probe_all(blkid_cache **cache)
+static void lvm_probe_all(blkid_cache *cache)
 {
 	DIR		*vg_list;
 	struct dirent	*vg_iter;
@@ -237,7 +237,7 @@ exit:
 #define PROC_EVMS_VOLUMES "/proc/evms/volumes"
 
 static int
-evms_probe_all(blkid_cache **cache)
+evms_probe_all(blkid_cache *cache)
 {
 	char line[100];
 	int ma, mi, sz, num = 0;
@@ -265,7 +265,7 @@ evms_probe_all(blkid_cache **cache)
 /*
  * Read the device data for all available block devices in the system.
  */
-int blkid_probe_all(blkid_cache **cache)
+int blkid_probe_all(blkid_cache *cache)
 {
 	FILE *proc;
 	int firstPass;
@@ -374,7 +374,7 @@ finish:
 #ifdef TEST_PROGRAM
 int main(int argc, char **argv)
 {
-	blkid_cache *cache = NULL;
+	blkid_cache cache = NULL;
 
 	if (argc != 1) {
 		fprintf(stderr, "Usage: %s\n"

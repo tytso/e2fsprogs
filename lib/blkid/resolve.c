@@ -18,7 +18,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "blkid/blkid.h"
+#include "blkidP.h"
 #include "probe.h"
 
 #ifdef DEBUG_RESOLVE
@@ -31,11 +31,11 @@
 /*
  * Find a tagname (e.g. LABEL or UUID) on a specific device.
  */
-char *blkid_get_tagname_devname(blkid_cache *cache, const char *tagname,
+char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,
 				const char *devname)
 {
-	blkid_tag *tag, *found;
-	blkid_dev *dev;
+	blkid_tag tag, found;
+	blkid_dev dev;
 	char *ret = NULL;
 
 	DBG(printf("looking for %s on %s\n", tagname, devname));
@@ -67,11 +67,11 @@ char *blkid_get_tagname_devname(blkid_cache *cache, const char *tagname,
  *
  * The string returned must be freed with string_free().
  */
-char *blkid_get_token(blkid_cache *cache, const char *token,
+char *blkid_get_token(blkid_cache cache, const char *token,
 		      const char *value)
 {
-	blkid_tag *tag = NULL, *found = NULL;
-	blkid_cache *c = cache;
+	blkid_tag tag = NULL, found = NULL;
+	blkid_cache c = cache;
 	char *name = NULL;
 
 	DBG(printf("looking for %s%c%s %s\n", token, value ? '=' : ' ',

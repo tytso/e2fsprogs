@@ -26,7 +26,7 @@
 #include <io.h>
 #endif
 
-#include "blkid/blkid.h"
+#include "blkidP.h"
 
 #ifdef __linux__
 

@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "blkid/blkid.h"
+#include "blkidP.h"
 
 #ifdef DEBUG_DEV
 #include <stdio.h>
@@ -21,11 +21,11 @@
 #define DBG(x)
 #endif
 
-blkid_dev *blkid_new_dev(void)
+blkid_dev blkid_new_dev(void)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 
-	if (!(dev = (blkid_dev *)calloc(1, sizeof(blkid_dev))))
+	if (!(dev = (blkid_dev) calloc(1, sizeof(struct blkid_struct_dev))))
 		return NULL;
 
 	INIT_LIST_HEAD(&dev->bid_devs);
@@ -34,7 +34,7 @@ blkid_dev *blkid_new_dev(void)
 	return dev;
 }
 
-void blkid_free_dev(blkid_dev *dev)
+void blkid_free_dev(blkid_dev dev)
 {
 	if (!dev)
 		return;
@@ -44,8 +44,9 @@ void blkid_free_dev(blkid_dev *dev)
 
 	list_del(&dev->bid_devs);
 	while (!list_empty(&dev->bid_tags)) {
-		blkid_tag *tag = list_entry(dev->bid_tags.next, blkid_tag,
-					    bit_tags);
+		blkid_tag tag = list_entry(dev->bid_tags.next,
+					   struct blkid_struct_tag,
+					   bit_tags);
 		blkid_free_tag(tag);
 	}
 	if (dev->bid_name)
@@ -90,9 +91,9 @@ static int string_compare(char *s1, char *s2)
 /*
  * Add a tag to the global cache tag list.
  */
-static int add_tag_to_cache(blkid_cache *cache, blkid_tag *tag)
+static int add_tag_to_cache(blkid_cache cache, blkid_tag tag)
 {
-	blkid_tag *head = NULL;
+	blkid_tag head = NULL;
 
 	if (!cache || !tag)
 		return 0;
@@ -121,9 +122,76 @@ static int add_tag_to_cache(blkid_cache *cache, blkid_tag *tag)
 }
 
 /*
+ * Given a blkid device, return its name
+ */
+extern const char *blkid_devname_name(blkid_dev dev)
+{
+	return dev->bid_name;
+}
+
+/*
+ * dev iteration routines for the public libblkid interface.
+ *
+ * These routines do not expose the list.h implementation, which are a
+ * contamination of the namespace, and which force us to reveal far, far
+ * too much of our internal implemenation.  I'm not convinced I want
+ * to keep list.h in the long term, anyway.  It's fine for kernel
+ * programming, but performance is not the #1 priority for this
+ * library, and I really don't like the tradeoff of type-safety for
+ * performance for this application.  [tytso:20030125.2007EST]
+ */
+
+/*
+ * This series of functions iterate over all devices in a blkid cache
+ */
+#define DEV_ITERATE_MAGIC	0x01a5284c
+	
+struct blkid_struct_dev_iterate {
+	int			magic;
+	blkid_cache		cache;
+	struct list_head	*p;
+};
+
+extern blkid_dev_iterate blkid_dev_iterate_begin(blkid_cache cache)
+{
+	blkid_dev_iterate	iter;
+
+	iter = malloc(sizeof(struct blkid_struct_dev_iterate));
+	if (iter) {
+		iter->magic = DEV_ITERATE_MAGIC;
+		iter->cache = cache;
+		iter->p	= cache->bic_devs.next;
+	}
+	return (iter);
+}
+
+/*
+ * Return 0 on success, -1 on error
+ */
+extern int blkid_dev_next(blkid_dev_iterate iter,
+			  blkid_dev *dev)
+{
+	*dev = 0;
+	if (!iter || iter->magic != DEV_ITERATE_MAGIC ||
+	    iter->p == &iter->cache->bic_devs)
+		return -1;
+	*dev = list_entry(iter->p, struct blkid_struct_dev, bid_devs);
+	iter->p = iter->p->next;
+	return 0;
+}
+
+extern void blkid_dev_iterate_end(blkid_dev_iterate iter)
+{
+	if (!iter || iter->magic != DEV_ITERATE_MAGIC)
+		return;
+	iter->magic = 0;
+	free(iter);
+}
+
+/*
  * Add a device to the global cache list, along with all its tags.
  */
-blkid_dev *blkid_add_dev_to_cache(blkid_cache *cache, blkid_dev *dev)
+blkid_dev blkid_add_dev_to_cache(blkid_cache cache, blkid_dev dev)
 {
 	struct list_head *p;
 
@@ -134,7 +202,7 @@ blkid_dev *blkid_add_dev_to_cache(blkid_cache *cache, blkid_dev *dev)
 		dev->bid_id = ++(cache->bic_idmax);
 
 	list_for_each(p, &cache->bic_devs) {
-		blkid_dev *odev = list_entry(p, blkid_dev, bid_devs);
+		blkid_dev odev = list_entry(p, struct blkid_struct_dev, bid_devs);
 		int dup_uuid, dup_label, dup_name, dup_type;
 
 		dup_name = string_compare(odev->bid_name, dev->bid_name);
@@ -216,7 +284,8 @@ exit_new:
 
 	list_add_tail(&dev->bid_devs, &cache->bic_devs);
 	list_for_each(p, &dev->bid_tags) {
-		blkid_tag *tag = list_entry(p, blkid_tag, bit_tags);
+		blkid_tag tag = list_entry(p, struct blkid_struct_tag, 
+					   bit_tags);
 		add_tag_to_cache(cache, tag);
 	}
 	return dev;
@@ -229,8 +298,8 @@ exit_old:
 #ifdef TEST_PROGRAM
 int main(int argc, char** argv)
 {
-	blkid_cache *cache;
-	blkid_dev *dev, *newdev;
+	blkid_cache cache;
+	blkid_dev dev, newdev;
 
 	if ((argc != 3)) {
 		fprintf(stderr, "Usage:\t%s dev1 dev2\n"

@@ -23,7 +23,7 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
-#include "blkid/blkid.h"
+#include "blkidP.h"
 
 #ifdef DEBUG_SAVE
 #define DBG(x)	x
@@ -31,7 +31,7 @@
 #define DBG(x)
 #endif
 
-static int save_dev(blkid_dev *dev, FILE *file)
+static int save_dev(blkid_dev dev, FILE *file)
 {
 	struct list_head *p;
 
@@ -45,7 +45,7 @@ static int save_dev(blkid_dev *dev, FILE *file)
 		dev->bid_type, (unsigned long) dev->bid_devno,
 		dev->bid_id, dev->bid_time);
 	list_for_each(p, &dev->bid_tags) {
-		blkid_tag *tag = list_entry(p, blkid_tag, bit_tags);
+		blkid_tag tag = list_entry(p, struct blkid_struct_tag, bit_tags);
 		if (strcmp(tag->bit_name, "TYPE"))
 			fprintf(file, " %s=\"%s\"", tag->bit_name,tag->bit_val);
 	}
@@ -54,7 +54,7 @@ static int save_dev(blkid_dev *dev, FILE *file)
 	return 0;
 }
 
-int blkid_save_cache_file(blkid_cache *cache, FILE *file)
+int blkid_save_cache_file(blkid_cache cache, FILE *file)
 {
 	struct list_head *p;
 	int ret = 0;
@@ -67,7 +67,7 @@ int blkid_save_cache_file(blkid_cache *cache, FILE *file)
 		return 0;
 
 	list_for_each(p, &cache->bic_devs) {
-		blkid_dev *dev = list_entry(p, blkid_dev, bid_devs);
+		blkid_dev dev = list_entry(p, struct blkid_struct_dev, bid_devs);
 		if ((ret = save_dev(dev, file)) < 0)
 			break;
 	}
@@ -83,7 +83,7 @@ int blkid_save_cache_file(blkid_cache *cache, FILE *file)
 /*
  * Write out the cache struct to the cache file on disk.
  */
-int blkid_save_cache(blkid_cache *cache, const char *filename)
+int blkid_save_cache(blkid_cache cache, const char *filename)
 {
 	char *tmp = NULL;
 	const char *opened = NULL;
@@ -180,7 +180,7 @@ int blkid_save_cache(blkid_cache *cache, const char *filename)
 #ifdef TEST_PROGRAM
 int main(int argc, char **argv)
 {
-	blkid_cache *cache = NULL;
+	blkid_cache cache = NULL;
 	int ret;
 
 	if (argc > 2) {

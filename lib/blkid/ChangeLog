@@ -1,5 +1,12 @@
 2003-01-25  Theodore Ts'o  <tytso@mit.edu>
 
+	* cache.c, dev.c, devname.c, devno.c, getsize.c, llseek.c, 
+		probe.c, probe.h, read.c, resolve.c, save.c, tag.c, 
+		blkid.h, blkidP.h: Separate public and private
+		interfaces into separate header files.  Start
+		separating internal implementation details from the
+		publically exported interface.
+
 	* devname.c: Add support for EVMS
 
 	* blkid.h, cache.c, dev.c, devname.c, devno.c, probe.c, probe.h,

@@ -18,7 +18,7 @@
 
 struct blkid_magic;
 
-typedef int (*blkid_probe_t)(int fd, blkid_dev **dev_p, const char *devname,
+typedef int (*blkid_probe_t)(int fd, blkid_dev *dev_p, const char *devname,
 			     struct blkid_magic *id, unsigned char *buf,
 			     blkid_loff_t size);
 

@@ -20,7 +20,7 @@
 #include <errno.h>
 #endif
 
-#include "blkid/blkid.h"
+#include "blkidP.h"
 #include "uuid/uuid.h"
 
 #ifdef DEBUG_CACHE
@@ -179,7 +179,7 @@ static int parse_end(char **cp)
  * <device foo=bar>devname</device>
  * <device>devname<foo>bar</foo></device>
  */
-static int parse_dev(blkid_dev **dev, char **cp)
+static int parse_dev(blkid_dev *dev, char **cp)
 {
 	char **name;
 	char *start, *tmp, *end;
@@ -299,7 +299,7 @@ static int parse_xml(char **name, char **value, char **cp)
  * Return 0 if no tag found.
  * Return -ve error code.
  */
-static int parse_tag(blkid_cache *cache, blkid_dev *dev, blkid_tag **tag,
+static int parse_tag(blkid_cache cache, blkid_dev dev, blkid_tag *tag,
 		     char **cp)
 {
 	char *name;
@@ -344,10 +344,10 @@ static int parse_tag(blkid_cache *cache, blkid_dev *dev, blkid_tag **tag,
  * If a valid device was read, *dev_p is non-NULL, otherwise it is NULL
  * (e.g. comment lines, unknown XML content, etc).
  */
-static int blkid_parse_line(blkid_cache *cache, blkid_dev **dev_p, char *cp)
+static int blkid_parse_line(blkid_cache cache, blkid_dev *dev_p, char *cp)
 {
-	blkid_dev *dev;
-	blkid_tag *tag;
+	blkid_dev dev;
+	blkid_tag tag;
 	int ret;
 
 	if (!cache || !dev_p)
@@ -385,7 +385,7 @@ static int blkid_parse_line(blkid_cache *cache, blkid_dev **dev_p, char *cp)
  *
  * Returns 0 on success, or -ve error value.
  */
-int blkid_read_cache_file(blkid_cache **cache, FILE *file)
+int blkid_read_cache_file(blkid_cache *cache, FILE *file)
 {
 	char buf[4096];
 	int lineno = 0;
@@ -400,7 +400,7 @@ int blkid_read_cache_file(blkid_cache **cache, FILE *file)
 		return -BLKID_ERR_MEM;
 
 	while (fgets(buf, sizeof(buf), file)) {
-		blkid_dev *dev;
+		blkid_dev dev;
 
 		int end = strlen(buf) - 1;
 
@@ -436,7 +436,7 @@ int blkid_read_cache_file(blkid_cache **cache, FILE *file)
  * a newly allocated cache struct.  If the file doesn't exist, return a
  * new empty cache struct.
  */
-int blkid_read_cache(blkid_cache **cache, const char *filename)
+int blkid_read_cache(blkid_cache *cache, const char *filename)
 {
 	FILE *file;
 	int ret;
@@ -489,7 +489,7 @@ int blkid_read_cache(blkid_cache **cache, const char *filename)
 #ifdef TEST_PROGRAM
 int main(int argc, char**argv)
 {
-	blkid_cache *cache = NULL;
+	blkid_cache cache = NULL;
 	int ret;
 
 	if (argc > 2) {

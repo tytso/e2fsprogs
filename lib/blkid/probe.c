@@ -27,7 +27,7 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
-#include "blkid/blkid.h"
+#include "blkidP.h"
 #include "uuid/uuid.h"
 #include "probe.h"
 
@@ -46,12 +46,12 @@
  * The devname, dev_p, and id fields are required.  The buf is
  * a buffer to return superblock data in.
  */
-static int probe_default(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_default(int fd, blkid_dev *dev_p, const char *devname,
 			 struct blkid_magic *id, unsigned char *buf,
 			 blkid_loff_t size)
 {
 	blkid_loff_t offset;
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct stat st;
 	int ret;
 
@@ -103,11 +103,11 @@ exit_dev:
 	return ret;
 }
 
-static int probe_ext2(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_ext2(int fd, blkid_dev *dev_p, const char *devname,
 		      struct blkid_magic *id, unsigned char *buf,
 		      blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct ext2_super_block *es;
 	int ret;
 
@@ -155,11 +155,11 @@ static int probe_ext2(int fd, blkid_dev **dev_p, const char *devname,
 	return 0;
 }
 
-static int probe_jbd(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_jbd(int fd, blkid_dev *dev_p, const char *devname,
 		     struct blkid_magic *id, unsigned char *buf,
 		     blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct ext2_super_block *es;
 	int ret;
 
@@ -179,11 +179,11 @@ static int probe_jbd(int fd, blkid_dev **dev_p, const char *devname,
 	return 0;
 }
 
-static int probe_ext3(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_ext3(int fd, blkid_dev *dev_p, const char *devname,
 		     struct blkid_magic *id, unsigned char *buf,
 		     blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct ext2_super_block *es;
 	int ret;
 
@@ -210,11 +210,11 @@ static int probe_ext3(int fd, blkid_dev **dev_p, const char *devname,
 	return 0;
 }
 
-static int probe_vfat(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_vfat(int fd, blkid_dev *dev_p, const char *devname,
 		      struct blkid_magic *id, unsigned char *buf,
 		      blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct vfat_super_block *vs;
 	char serno[10];
 	blkid_loff_t sectors;
@@ -254,11 +254,11 @@ static int probe_vfat(int fd, blkid_dev **dev_p, const char *devname,
 	return 0;
 }
 
-static int probe_msdos(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_msdos(int fd, blkid_dev *dev_p, const char *devname,
 		       struct blkid_magic *id, unsigned char *buf,
 		       blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct msdos_super_block *ms;
 	char serno[10];
 	int cluster_size;
@@ -298,11 +298,11 @@ static int probe_msdos(int fd, blkid_dev **dev_p, const char *devname,
 	return 0;
 }
 
-static int probe_xfs(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_xfs(int fd, blkid_dev *dev_p, const char *devname,
 		     struct blkid_magic *id, unsigned char *buf,
 		     blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct xfs_super_block *xs;
 	int ret;
 
@@ -331,11 +331,11 @@ static int probe_xfs(int fd, blkid_dev **dev_p, const char *devname,
 	return 0;
 }
 
-static int probe_reiserfs(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_reiserfs(int fd, blkid_dev *dev_p, const char *devname,
 			  struct blkid_magic *id, unsigned char *buf,
 			  blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct reiserfs_super_block *rs;
 	unsigned int blocksize;
 	int ret;
@@ -378,11 +378,11 @@ static int probe_reiserfs(int fd, blkid_dev **dev_p, const char *devname,
 	return 0;
 }
 
-static int probe_minix(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_minix(int fd, blkid_dev *dev_p, const char *devname,
 		       struct blkid_magic *id, unsigned char *buf,
 		       blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct minix_super_block *ms;
 	int ret;
 
@@ -397,11 +397,11 @@ static int probe_minix(int fd, blkid_dev **dev_p, const char *devname,
 	return 0;
 }
 
-static int probe_swap(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_swap(int fd, blkid_dev *dev_p, const char *devname,
 		      struct blkid_magic *id, unsigned char *buf,
 		      blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct swap_header *sh;
 	int psize;
 	int ret;
@@ -428,11 +428,11 @@ static int probe_swap(int fd, blkid_dev **dev_p, const char *devname,
 	return 0;
 }
 
-static int probe_mdraid(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_mdraid(int fd, blkid_dev *dev_p, const char *devname,
 			struct blkid_magic *id, unsigned char *buf,
 			blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct mdp_superblock_s *md;
 	int ret;
 
@@ -460,11 +460,11 @@ static int probe_mdraid(int fd, blkid_dev **dev_p, const char *devname,
 	return 0;
 }
 
-static int probe_hfs(int fd, blkid_dev **dev_p, const char *devname,
+static int probe_hfs(int fd, blkid_dev *dev_p, const char *devname,
 		     struct blkid_magic *id, unsigned char *buf,
 		     blkid_loff_t size)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 	struct hfs_super_block *hfs;
 	int ret;
 
@@ -649,11 +649,11 @@ static struct blkid_magic *devname_to_magic(const char *devname, int fd,
  * Return a blkid_dev with at least the device type and size set.
  * If the passed-in size is zero, then we get the device size here.
  */
-blkid_dev *blkid_devname_to_dev(const char *devname, blkid_loff_t size)
+blkid_dev blkid_devname_to_dev(const char *devname, blkid_loff_t size)
 {
 	unsigned char *buf_array[BLKID_BLK_OFFS * 2 + 1];
 	unsigned char **bufs = buf_array + BLKID_BLK_OFFS;
-	blkid_dev *dev = NULL, *last = NULL;
+	blkid_dev dev = NULL, last = NULL;
 	unsigned char *sb_buf = NULL;
 	int sb_size = 0;
 	struct blkid_magic *id = NULL;
@@ -738,11 +738,11 @@ exit_fd:
  * If we are unable to revalidate the data, we return the old data and
  * do not set the BLKID_BID_FL_VERIFIED flag on it.
  */
-blkid_dev *blkid_verify_devname(blkid_cache *cache, blkid_dev *dev)
+blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev)
 {
 	blkid_loff_t size;
 	struct blkid_magic *id;
-	blkid_dev *new = NULL;
+	blkid_dev new = NULL;
 	unsigned char *sb_buf = NULL;
 	int sb_size = 0;
 	time_t diff;
@@ -821,7 +821,7 @@ exit_fd:
 #ifdef TEST_PROGRAM
 int main(int argc, char **argv)
 {
-	blkid_dev *dev;
+	blkid_dev dev;
 
 	if (argc != 2) {
 		fprintf(stderr, "Usage: %s device\n"

@@ -64,6 +64,9 @@ DEPLIBS_BLKID=	$(DEPSTATIC_LIBBLKID) $(DEPSTATIC_LIBUUID)
 
 all:: $(SMANPAGES)
 
+$(top_builddir)/lib/blkid/blkid_types.h: $(srcdir)/blkid_types.h.in $(top_builddir)/config.status
+	cd $(top_builddir); CONFIG_FILES=$(my_dir)/blkid_types.h ./config.status
+
 libblkid.3: $(DEP_SUBSTITUTE) $(srcdir)/libblkid.3.in
 	$(SUBSTITUTE) $(srcdir)/libblkid.3.in libblkid.3
 
@@ -124,8 +127,9 @@ uninstall::
 	done
 
 clean::
-	$(RM) -f \#* *.s *.o *.orig *.a *~ *.bak tst_* core profiled/* checker/*
-	$(RM) -f ../libblkid.a ../libblkid_p.a $(SMANPAGES)
+	$(RM) -f \#* *.s *.o *.orig *.a *~ *.bak tst_* core profiled/* \
+		checker/* blkid_types.h ../libblkid.a ../libblkid_p.a \
+		$(SMANPAGES)
 
 mostlyclean:: clean
 distclean:: clean

@@ -31,7 +31,7 @@
 #include <sys/mkdev.h>
 #endif
 
-#include "blkid/blkid.h"
+#include "blkidP.h"
 
 #ifdef DEBUG_DEVNO
 #define DBG(x)	x
@@ -208,9 +208,9 @@ char *blkid_devno_to_devname(dev_t devno)
 	return devname;
 }
 
-blkid_dev *blkid_find_devno(blkid_cache *cache, dev_t devno)
+blkid_dev blkid_find_devno(blkid_cache cache, dev_t devno)
 {
-	blkid_dev *dev = NULL;
+	blkid_dev dev = NULL;
 	struct list_head *p, *n;
 
 	if (!cache)
@@ -222,7 +222,7 @@ blkid_dev *blkid_find_devno(blkid_cache *cache, dev_t devno)
 	 * would point to freed memory.
 	 */
 	list_for_each_safe(p, n, &cache->bic_devs) {
-		blkid_dev *tmp = list_entry(p, blkid_dev, bid_devs);
+		blkid_dev tmp = list_entry(p, struct blkid_struct_dev, bid_devs);
 		if (tmp->bid_devno != devno)
 			continue;
 
@@ -241,10 +241,10 @@ blkid_dev *blkid_find_devno(blkid_cache *cache, dev_t devno)
 	return dev;
 }
 
-blkid_dev *blkid_get_devno(blkid_cache *cache, dev_t devno)
+blkid_dev blkid_get_devno(blkid_cache cache, dev_t devno)
 {
 	char *devname;
-	blkid_dev *dev;
+	blkid_dev dev;
 
 	if (!(dev = blkid_find_devno(cache, devno)) &&
 	    (devname = blkid_devno_to_devname(devno))) {

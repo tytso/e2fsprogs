@@ -1,3 +1,8 @@
+2003-01-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid.c (main): Modify blkid to use the new libblkid public
+		interfaces.
+
 2003-01-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Integrate in new blkid library.

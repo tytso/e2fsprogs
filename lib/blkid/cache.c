@@ -10,7 +10,7 @@
  */
 
 #include <stdlib.h>
-#include "blkid/blkid.h"
+#include "blkidP.h"
 
 #ifdef DEBUG_CACHE
 #include <stdio.h>
@@ -19,11 +19,11 @@
 #define DBG(x)
 #endif
 
-blkid_cache *blkid_new_cache(void)
+blkid_cache blkid_new_cache(void)
 {
-	blkid_cache *cache;
+	blkid_cache cache;
 
-	if (!(cache = (blkid_cache *)calloc(1, sizeof(blkid_cache))))
+	if (!(cache = (blkid_cache) calloc(1, sizeof(struct blkid_struct_cache))))
 		return NULL;
 
 	INIT_LIST_HEAD(&cache->bic_devs);
@@ -32,7 +32,7 @@ blkid_cache *blkid_new_cache(void)
 	return cache;
 }
 
-void blkid_free_cache(blkid_cache *cache)
+void blkid_free_cache(blkid_cache cache)
 {
 	if (!cache)
 		return;
@@ -41,18 +41,21 @@ void blkid_free_cache(blkid_cache *cache)
 	/* DEB_DUMP_CACHE(cache); */
 
 	while (!list_empty(&cache->bic_devs)) {
-		blkid_dev *dev = list_entry(cache->bic_devs.next, blkid_dev,
+		blkid_dev dev = list_entry(cache->bic_devs.next,
+					   struct blkid_struct_dev,
 					    bid_devs);
 		blkid_free_dev(dev);
 	}
 
 	while (!list_empty(&cache->bic_tags)) {
-		blkid_tag *tag = list_entry(cache->bic_tags.next, blkid_tag,
-					    bit_tags);
+		blkid_tag tag = list_entry(cache->bic_tags.next,
+					   struct blkid_struct_tag,
+					   bit_tags);
 
 		while (!list_empty(&tag->bit_names)) {
-			blkid_tag *bad = list_entry(tag->bit_names.next,
-						    blkid_tag, bit_names);
+			blkid_tag bad = list_entry(tag->bit_names.next,
+						   struct blkid_struct_tag, 
+						   bit_names);
 
 			DBG(printf("warning: unfreed tag %s=%s\n",
 				   bad->bit_name, bad->bit_val));
@@ -66,7 +69,7 @@ void blkid_free_cache(blkid_cache *cache)
 #ifdef TEST_PROGRAM
 int main(int argc, char** argv)
 {
-	blkid_cache *cache = NULL;
+	blkid_cache cache = NULL;
 	int ret;
 
 	if ((argc > 2)) {
