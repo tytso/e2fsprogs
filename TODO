@@ -1,3 +1,11 @@
+Need to process the bad block inode *before* doing the inod scan.
+
+Also check to see if the first block of the inode table is not on the
+bad block scan, and fix that.  We need to check for an inaccurate
+blocks, and fix them before we start doing anything else with the
+filesystem!
+
+---------------------------------------------------
 User request:
 
 BTW: Could you please add some sort of deleted and possibly corrupted file

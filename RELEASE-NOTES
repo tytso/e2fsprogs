@@ -1,5 +1,34 @@
-E2fsprogs 1.35-WIP (August 21, 2003)
-===================================
+E2fsprogs 1.35-WIP (December 7, 2003) 
+=====================================
+
+Fix a bug in mke2fs which caused -T largefile or -T largefile4 to core
+dump due to a division by zero error.  (Addresses Debian bug #207082)
+
+E2fsck will give an extra grace period before actually forcing a check
+if the laptop is running on battery.  The next time fsck runs while
+the system is on the AC mains, or after the grace period is exceeded,
+the filesystem will be checked.  (Addresses Debian bug #205177)
+
+E2fsck will inform the user when there are 5 or fewer mounts before a
+filesystem check will be forced.  (Addresses Debian bug #157194)
+
+Fix e2fsck's handling of corrupted indirect blocks in the bad block.
+We now correctly handle the case where there is an overlap between a
+block group descriptor or a superblock and a bad block indirect block.
+In the case where the indirect block is corrupted, we now suggest
+"e2fsck -c".
+
+E2fsck -c now replaces the current list of bad blocks with the ones
+found by badblocks.
+
+Fix bugs in e2fsck and tune2fs which could cause a core dump if a
+non-existent LABEL or UUID specifier is to e2fsck or tune2fs.
+
+Fix a potential bug in e2fsck which could cause it to core dump when
+trying to print the location of the backup superblock.
+
+Protect against a potential core dump in e2fsck when printing a
+message about backup superblocks.
 
 Add support for backing up the journal inode location in the
 superblock.  E2fsck will automatically save the journal information in
@@ -10,6 +39,8 @@ by mke2fs and filesystems that have journals added via tune2fs will
 also have journal location written to the superblock as well.
 Debugfs's logdump command has been enhanced so that it can use the
 journal information in the superblock.
+
+E2fsck will now update all superblocks when moving the journal inode.
   
 Shrink the size of the e2fsck executable by moving some initialized
 variables to the BSS segment.
@@ -30,12 +61,17 @@ read-write tests, we try to recover after an error so that we can
 continue reading on page-aligned boundaries.  (Addresses Debian Bug
 #203713)
   
-Update and clarified various man pages.
+Updated and clarified various man pages.  (Addresses Debian Bug #206845)
+
+Updated and fixed translations.   (Addresses Debian bug #200086)
 
 Fixed various Debian packaging issues (see debian/changelog).
 
 Programmer's notes: 
 -------------------
+
+Centralize code which calculates the location of the superblock
+and block group descriptors so that it is in a single library routine.
 
 Added two new functions, ext2fs_file_open2() and
 ext2fs_inode_io_intern2() which take a pointer to an inode structure.
@@ -57,6 +93,10 @@ modify the EVMS interfaces.
 
 Make sure all Makefiles use $(MAKE) rather than hardcoded "make", to
 aid build process on systems can use invoke GNU make as "gmake".
+
+Added regression testing for mke2fs.
+
+Fixed gcc -Wall nitpicks.
 
 
 E2fsprogs 1.34 (July 25, 2003)
