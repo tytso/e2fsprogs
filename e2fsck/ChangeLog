@@ -1,3 +1,12 @@
+2004-12-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* super.c (check_super_block): If the resize_inode feature is not
+		set, check to make sure that s_reserved_gdt_blocks is
+		zero, and that the resize inode is clear.
+
+	* problem.h (PR_0_NONZERO_RESERVED_GDT_BLOCKS,
+		PR_0_CLEAR_RESIZE_INODE): Add new problem codes.
+
 2004-12-15  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1.c (process_block): Applied resize inode patch.  Mark the

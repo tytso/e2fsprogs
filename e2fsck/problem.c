@@ -314,6 +314,17 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("Backing up @j @i @b information.\n\n"),
 	  PROMPT_NONE, 0 },
 
+	/* Reserved blocks w/o resize_inode */
+	{ PR_0_NONZERO_RESERVED_GDT_BLOCKS,
+	  N_("@f does not have resize_@i enabled, but s_reserved_gdt_@bs\n"
+	     "is %N; @s zero.  "),
+	  PROMPT_FIX, 0 },
+
+	/* Resize_inode not enabled, but resize inode is non-zero */
+	{ PR_0_CLEAR_RESIZE_INODE,
+	  N_("Resize_@i not enabled, but the resize inode is non-zero.  "),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */

@@ -175,6 +175,12 @@ struct problem_context {
 /* Backup journal inode blocks */
 #define PR_0_BACKUP_JNL				0x00002D
 
+/* Reserved blocks w/o resize_inode */
+#define PR_0_NONZERO_RESERVED_GDT_BLOCKS	0x00002E
+
+/* Resize_inode not enabled, but resize inode is non-zero */
+#define PR_0_CLEAR_RESIZE_INODE			0x00002F
+
 /*
  * Pass 1 errors
  */

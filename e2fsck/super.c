@@ -325,6 +325,7 @@ void check_super_block(e2fsck_t ctx)
 	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
+	struct ext2_inode inode;
 	__u32	free_blocks = 0, free_inodes = 0;
 
 	inodes_per_block = EXT2_INODES_PER_BLOCK(fs->super);
@@ -541,6 +542,39 @@ void check_super_block(e2fsck_t ctx)
 		ext2fs_mark_super_dirty(fs);
 	}
 
+	/* 
+	 * If the resize inode feature isn't set, then
+	 * s_reserved_gdt_blocks must be zero, and the resize inode
+	 * must be cleared.
+	 */
+	if (!(fs->super->s_feature_compat & 
+	      EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
+		if (fs->super->s_reserved_gdt_blocks) {
+			pctx.num = fs->super->s_reserved_gdt_blocks;
+			if (fix_problem(ctx, PR_0_NONZERO_RESERVED_GDT_BLOCKS,
+					&pctx)) {
+				fs->super->s_reserved_gdt_blocks = 0;
+				ext2fs_mark_super_dirty(fs);
+			}
+		}
+		e2fsck_read_inode(ctx, EXT2_RESIZE_INO, &inode, 
+				  "check_resize");
+		for (i=0; i < EXT2_N_BLOCKS; i++) {
+			if (inode.i_block[i])
+				break;
+		}
+		pctx.ino = EXT2_RESIZE_INO;
+		if ((i < EXT2_N_BLOCKS) &&
+		    fix_problem(ctx, PR_0_CLEAR_RESIZE_INODE, &pctx)) {
+			for (i=0; i < EXT2_N_BLOCKS; i++) {
+				inode.i_block[i] = 0;
+			}
+			inode.i_blocks = 0;
+			e2fsck_write_inode(ctx, EXT2_RESIZE_INO, &inode,
+					   "clear_resize");
+		}
+	}
+
 	/*
 	 * Clean up any orphan inodes, if present.
 	 */
@@ -555,5 +589,3 @@ void check_super_block(e2fsck_t ctx)
 	e2fsck_move_ext3_journal(ctx);
 	return;
 }
-
-
