@@ -2,6 +2,10 @@
 
 	* ls.c (list_super): Use better description of s_last_orphan
 
+	* ls.c (list_super, list_super2): Added new API function which
+		takes a FILE * so that the output can be redirected to a
+		stream. 
+
 2000-07-13    <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.19
