@@ -2,11 +2,12 @@ e2fsprogs (1.34-2) unstable; urgency=low
 
   * Fix erroneous reference to /usr/share/doc/e2fsprogs/html-info in
     /usr/share/doc-base/libext2fs (Closes: #203157)
-  * Explicitly specify the version of libblkid1 needed in 
+  * Explicitly specify the version of libblkid1 needed in
     e2fsprogs.shlibs.local in order to avoid picking up the wrong depedency.
     (Closes: #203157)
+  * Changed priority of libblkid1-udeb to be standard, not required.
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 29 Jul 2003 23:14:32 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 30 Jul 2003 19:47:32 -0400
 
 e2fsprogs (1.34-1.1) unstable; urgency=low
 
