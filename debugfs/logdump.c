@@ -186,9 +186,11 @@ void do_logdump(int argc, char **argv)
 				 / current_fs->super->s_blocks_per_group);
 		bitmap_to_dump = current_fs->group_desc[group_to_dump].bg_block_bitmap;
 	}
-				 
-	if (journal_fn) {
 
+	if (!journal_fn && check_fs_open(argv[0]))
+		return;
+
+	if (journal_fn) {
 		/* Set up to read journal from a regular file somewhere */
 		journal_fd = open(journal_fn, O_RDONLY, 0);
 		if (journal_fd < 0) {
@@ -199,18 +201,7 @@ void do_logdump(int argc, char **argv)
 		
 		journal_source.where = JOURNAL_IS_EXTERNAL;
 		journal_source.fd = journal_fd;
-
-	} else {
-
-		/* Set up to read journal from the open filesystem */
-		if (check_fs_open(argv[0]))
-			return;
-		journal_inum = current_fs->super->s_journal_inum;
-		if (!journal_inum) {
-			com_err(argv[0], 0, "filesystem has no journal");
-			return;
-		}
-
+	} else if ((journal_inum = current_fs->super->s_journal_inum)) {
 		retval = ext2fs_read_inode(current_fs, journal_inum, 
 					   &journal_inode);
 		if (retval) {
@@ -218,16 +209,32 @@ void do_logdump(int argc, char **argv)
 				"while reading inode %u", journal_inum);
 			return;
 		}
-		
+
 		retval = ext2fs_file_open(current_fs, journal_inum,
 					  0, &journal_file);
 		if (retval) {
 			com_err(argv[0], retval, "while opening ext2 file");
 			return;
 		}
-		
 		journal_source.where = JOURNAL_IS_INTERNAL;
 		journal_source.file = journal_file;
+	} else if ((journal_fn =
+	    ext2fs_find_block_device(current_fs->super->s_journal_dev))) {
+		journal_fd = open(journal_fn, O_RDONLY, 0);
+		if (journal_fd < 0) {
+			com_err(argv[0], errno, "while opening %s for logdump",
+				journal_fn);
+			free(journal_fn);
+			return;
+		}
+		fprintf(out_file, "Using external journal found at %s\n",
+			journal_fn);
+		free(journal_fn);
+		journal_source.where = JOURNAL_IS_EXTERNAL;
+		journal_source.fd = journal_fd;
+	} else {
+		com_err(argv[0], 0, "filesystem has no journal");
+		return;
 	}
 
 	dump_journal(argv[0], out_file, &journal_source);
@@ -260,8 +267,8 @@ static int read_journal_block(const char *cmd, struct journal_source *source,
 		if (retval >= 0) {
 			*got = retval;
 			retval = 0;
-		}
-		retval = errno;
+		} else
+			retval = errno;
 	} else {
 		retval = ext2fs_file_lseek(source->file, offset, 
 					   EXT2_SEEK_SET, NULL);
@@ -304,26 +311,58 @@ static const char *type_to_name(int btype)
 static void dump_journal(char *cmdname, FILE *out_file, 
 			 struct journal_source *source)
 {
+	struct ext2_super_block *sb;
 	char			jsb_buffer[1024];
 	char			buf[8192];
 	journal_superblock_t	*jsb;
-	int			blocksize;
+	int			blocksize = 1024;
 	unsigned int		got;
 	int			retval;
 	__u32			magic, sequence, blocktype;
 	journal_header_t	*header;
 	
 	tid_t			transaction;
-	unsigned int		blocknr;
+	unsigned int		blocknr = 0;
 	
-	/* First: locate the journal superblock */
-
+	/* First, check to see if there's an ext2 superblock header */
 	retval = read_journal_block(cmdname, source, 0, 
+				    buf, 2048, &got);
+	if (retval)
+		return;
+
+	jsb = (journal_superblock_t *) buf;
+	sb = (struct ext2_super_block *) (buf+1024);
+	if (sb->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC)) 
+		ext2fs_swap_super(sb);
+	
+	if ((be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) &&
+	    (sb->s_magic == EXT2_SUPER_MAGIC) &&
+	    (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
+		blocksize = EXT2_BLOCK_SIZE(sb);
+		blocknr = (blocksize == 1024) ? 2 : 1;
+		uuid_unparse(&sb->s_uuid, jsb_buffer);
+		fprintf(out_file, "Ext2 superblock header found.\n");
+		if (dump_all) {
+			fprintf(out_file, "\tuuid=%s\n", jsb_buffer);
+			fprintf(out_file, "\tblocksize=%d\n", blocksize);
+			fprintf(out_file, "\tjournal data size %ld\n",
+				sb->s_blocks_count);
+		}
+	}
+	
+	/* Next, read the journal superblock */
+
+	retval = read_journal_block(cmdname, source, blocknr*blocksize, 
 				    jsb_buffer, 1024, &got);
 	if (retval)
 		return;
-	
+
 	jsb = (journal_superblock_t *) jsb_buffer;
+	if (be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) {
+		fprintf(out_file,
+			"Journal superblock magic number invalid!\n");
+		return;
+	}
 	blocksize = be32_to_cpu(jsb->s_blocksize);
 	transaction = be32_to_cpu(jsb->s_sequence);
 	blocknr = be32_to_cpu(jsb->s_start);
