@@ -1,3 +1,9 @@
+2001-07-20  Theodore Tso  <tytso@valinux.com>
+
+	* unix.c (main): Add an explicit warning when the filesystem is
+		left not completely fixed when e2fsck exits.  (Addresses
+		Debian bug #104502.)
+
 2001-07-19  Theodore Tso  <tytso@valinux.com>
 
 	* pass1.c (check_ext_attr): The entire EA block is now checked to

@@ -962,8 +962,11 @@ restart:
 	}
 	if (ext2fs_test_valid(fs))
 		fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
-	else
+	else {
+		printf(_("\n%s: ********** WARNING: Filesystem still has "
+			 "errors **********\n\n"), ctx->device_name);
 		exit_value = FSCK_UNCORRECTED;
+	}
 	if (!(ctx->options & E2F_OPT_READONLY)) {
 		if (ext2fs_test_valid(fs)) {
 			if (!(sb->s_state & EXT2_VALID_FS))
