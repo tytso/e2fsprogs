@@ -1,3 +1,9 @@
+2001-07-04  Theodore Tso  <tytso@valinux.com>
+
+	* bitops.h (ext2fs_find_first_bit_set, ext2fs_find_next_bit_set):
+		Add new functions (C and in i386 assembler) which quickly
+		find bits set in a bitmask.
+
 2001-06-23  Theodore Tso  <tytso@valinux.com>
 
 	* Makefile.in, ext_attr.c, ext2_attr.c, ext2fs.h: Add new files

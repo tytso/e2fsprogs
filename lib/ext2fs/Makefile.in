@@ -112,7 +112,12 @@ SRCS= ext2_err.c \
 	$(srcdir)/unlink.c \
 	$(srcdir)/valid_blk.c \
 	$(srcdir)/version.c \
-	$(srcdir)/write_bb_file.c
+	$(srcdir)/write_bb_file.c \
+	$(srcdir)/tst_badblocks.c \
+	$(srcdir)/tst_bitops.c \
+	$(srcdir)/tst_byteswap.c \
+	$(srcdir)/tst_getsize.c \
+	$(srcdir)/tst_iscan.c
 
 HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h ext2_ext_attr.h
 HFILES_IN=  ext2_err.h ext2_types.h
@@ -187,6 +192,10 @@ tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS)
 tst_byteswap: tst_byteswap.o bitops.o $(STATIC_LIBEXT2FS)
 	$(CC) -o tst_byteswap tst_byteswap.o bitops.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
+
+tst_bitops: tst_bitops.o inline.o $(STATIC_LIBEXT2FS)
+	$(CC) -o tst_bitops tst_bitops.o inline.o \
+		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 mkjournal: mkjournal.c $(STATIC_LIBEXT2FS)
 	$(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
@@ -308,6 +317,10 @@ dupfs.o: $(srcdir)/dupfs.c $(srcdir)/ext2_fs.h \
 expanddir.o: $(srcdir)/expanddir.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+ext_attr.o: $(srcdir)/ext_attr.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2_ext_attr.h \
+ $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 fileio.o: $(srcdir)/fileio.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
@@ -439,6 +452,26 @@ version.o: $(srcdir)/version.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h \
  $(top_srcdir)/version.h
 write_bb_file.o: $(srcdir)/write_bb_file.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+tst_badblocks.o: $(srcdir)/tst_badblocks.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+tst_bitops.o: $(srcdir)/tst_bitops.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+tst_byteswap.o: $(srcdir)/tst_byteswap.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+tst_getsize.o: $(srcdir)/tst_getsize.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+tst_iscan.o: $(srcdir)/tst_iscan.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
