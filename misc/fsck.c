@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include <time.h>
 #if HAVE_STDLIB_H
@@ -203,14 +204,14 @@ static void free_instance(struct fsck_instance *i)
 	return;
 }
 
-int parse_fstab_line(char *line, struct fs_info **ret_fs)
+static int parse_fstab_line(char *line, struct fs_info **ret_fs)
 {
 	char	*device, *mntpnt, *type, *opts, *freq, *passno, *cp;
 	struct fs_info *fs;
 
 	*ret_fs = 0;
 	strip_line(line);
-	if (cp = strchr(line, '#'))
+	if ((cp = strchr(line, '#')))
 		*cp = 0;	/* Ignore everything after the comment char */
 	cp = line;
 
@@ -265,7 +266,7 @@ static char *interpret_device(char *spec)
 /*
  * Load the filesystem database from /etc/fstab
  */
-static void load_fs_info(char *filename)
+static void load_fs_info(const char *filename)
 {
 	FILE	*f;
 	char	buf[1024];
@@ -357,7 +358,7 @@ static char *find_fsck(char *type)
   return(s ? prog : NULL);
 }
 
-static int progress_active()
+static int progress_active(NOARGS)
 {
 	struct fsck_instance *inst;
 
@@ -374,7 +375,8 @@ static int progress_active()
  * Execute a particular fsck program, and link it into the list of
  * child processes we are waiting for.
  */
-static int execute(char *type, char *device, char *mntpt, int interactive)
+static int execute(const char *type, char *device, char *mntpt,
+		   int interactive)
 {
 	char *s, *argv[80], prog[80];
 	int  argc, i;
@@ -395,7 +397,7 @@ static int execute(char *type, char *device, char *mntpt, int interactive)
 
 	if (progress & !progress_active()) {
 		if (strcmp(type, "ext2") == 0) {
-			argv[argc++] = "-C0";
+			argv[argc++] = string_copy("-C0");
 			inst->flags |= FLAG_PROGRESS;
 		}
 	}
@@ -430,6 +432,9 @@ static int execute(char *type, char *device, char *mntpt, int interactive)
 		exit(EXIT_ERROR);
 	}
 
+	for (i=0; i < argc; i++)
+		free(argv[i]);
+	
 	inst->pid = pid;
 	inst->prog = string_copy(prog);
 	inst->type = string_copy(type);
@@ -471,6 +476,12 @@ static struct fsck_instance *wait_one(NOARGS)
 		return(inst);
 	}
 
+	/*
+	 * gcc -Wall fails saving throw against stupidity
+	 * (inst and prev are thought to be uninitialized variables)
+	 */
+	inst = prev = NULL;
+	
 	do {
 		pid = wait(&status);
 		if (pid < 0) {
@@ -572,7 +583,7 @@ static int wait_all(NOARGS)
  */
 static void fsck_device(char *device, int interactive)
 {
-	char	*type = 0;
+	const char *type = 0;
 	struct fs_info *fsent;
 	int retval;
 
@@ -911,7 +922,7 @@ int main(int argc, char *argv[])
 	int status = 0;
 	int interactive = 0;
 	char *oldpath = getenv("PATH");
-	char *fstab;
+	const char *fstab;
 
 	PRS(argc, argv);
 
