@@ -60,12 +60,12 @@ e2label: $(E2LABEL_OBJS)
 mklost+found: $(MKLPF_OBJS)
 	$(CC) $(ALL_LDFLAGS) -o mklost+found $(MKLPF_OBJS)
 
-mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBUUID)
-	$(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBUUID)
+mke2fs: $(MKE2FS_OBJS) $(DEPLIBS) $(LIBE2P) $(LIBUUID)
+	$(CC) $(ALL_LDFLAGS) -o mke2fs $(MKE2FS_OBJS) $(LIBS) $(LIBE2P) $(LIBUUID)
 
-mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBUUID)
+mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(STATIC_LIBUUID)
 	$(CC) $(ALL_LDFLAGS) -static -o mke2fs.static $(MKE2FS_OBJS) \
-		$(STATIC_LIBS) $(STATIC_LIBUUID)
+		$(STATIC_LIBS) $(STATIC_LIBE2P) $(STATIC_LIBUUID)
 
 resize2fs: resize2fs.o $(DEPLIBS)
 	$(CC) $(ALL_LDFLAGS) -o resize2fs resize2fs.o $(LIBS)

@@ -52,6 +52,7 @@
 
 #include "et/com_err.h"
 #include "uuid/uuid.h"
+#include "e2p/e2p.h"
 #include "ext2fs/ext2fs.h"
 #include "../version.h"
 
@@ -699,6 +700,11 @@ static void parse_raid_opts(const char *opts)
 	}
 }	
 
+static __u32 ok_features[3] = {
+	0,					/* Compat */
+	EXT2_FEATURE_INCOMPAT_FILETYPE,		/* Incompat */
+	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
+};
 
 
 static void PRS(int argc, char *argv[])
@@ -712,11 +718,12 @@ static void PRS(int argc, char *argv[])
 	int	reserved_ratio = 5;
 	ino_t	num_inodes = 0;
 	errcode_t	retval;
-	int	sparse_option = 1;
+	int	sparse_option = 0;
 	char	*oldpath = getenv("PATH");
 	struct ext2fs_sb *param_ext2 = (struct ext2fs_sb *) &param;
 	char	*raid_opts = 0;
 	char	*fs_type = 0;
+	char	*feature_set = "filetype,sparse_super";
 	blk_t	dev_size;
 #ifdef linux
 	struct utsname ut;
@@ -725,9 +732,10 @@ static void PRS(int argc, char *argv[])
 		perror("uname");
 		exit(1);
 	}
-	if (ut.release[0] == '2' && ut.release[1] == '.' &&
-	    ut.release[2] < '2' && ut.release[3] == '.')
-		sparse_option = 0;
+	if ((ut.release[0] == '1') ||
+	    (ut.release[0] == '2' && ut.release[1] == '.' &&
+	     ut.release[2] < '2' && ut.release[3] == '.'))
+		feature_set = 0;
 #endif
 	/* Update our PATH to include /sbin  */
 	if (oldpath) {
@@ -753,7 +761,7 @@ static void PRS(int argc, char *argv[])
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv,
-			    "b:cf:g:i:l:m:no:qr:R:s:tvI:ST:FL:M:N:V")) != EOF)
+		    "b:cf:g:i:l:m:no:qr:R:s:tvI:ST:FL:M:N:O:V")) != EOF)
 		switch (c) {
 		case 'b':
 			blocksize = strtoul(optarg, &tmp, 0);
@@ -857,6 +865,9 @@ static void PRS(int argc, char *argv[])
 		case 'M':
 			mount_dir = optarg;
 			break;
+		case 'O':
+			feature_set = optarg;
+			break;
 		case 'R':
 			raid_opts = optarg;
 			break;
@@ -953,6 +964,15 @@ static void PRS(int argc, char *argv[])
 		param_ext2->s_feature_ro_compat |=
 			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 #endif
+	if (feature_set && !strncasecmp(feature_set, "none", 4))
+		feature_set = 0;
+	if (feature_set && e2p_edit_feature(feature_set,
+					    &param_ext2->s_feature_compat,
+					    ok_features)) {
+		fprintf(stderr, "Invalid filesystem option set: %s\n",
+			feature_set);
+		exit(1);
+	}
 }
 					
 int main (int argc, char *argv[])

@@ -1,3 +1,15 @@
+1999-10-22    <tytso@valinux.com>
+
+	* tune2fs.c (main): Add a new option -O which allows the user to
+		set and clear certain "safe" filsystem feature flags.
+		Currently, the only ones which are supported for
+		modification are sparse_superblock and filetype.
+
+	* mke2fs.c (PRS): Add new option -O which allows the user to
+		request filesystems with specific filesystem options.  By
+		default on 2.2 and later systems, create filesystems that
+		have both file type information and sparse superblocks.
+
 1999-10-21    <tytso@valinux.com>
 
 	* badblocks.8.in, chattr.1.in, dumpe2fs.8.in, e2label.8.in,

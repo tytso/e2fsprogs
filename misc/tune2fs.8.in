@@ -55,6 +55,10 @@ tune2fs \- adjust tunable filesystem parameters on second extended filesystems
 .I last-mounted-directory
 ]
 [
+.B \-O 
+\fR[^]\fIfeature\fR[,...]
+]
+[
 .B \-U
 .I UUID
 ]
@@ -129,6 +133,17 @@ will truncate it and print a warning message.
 .TP
 .BI \-M " last-mounted-directory"
 set the last-mounted directory for the filesystem.
+.TP
+.BI \-O " \fR[^]\fIfeature\fR[,...]"
+set or clear the indicated filesystem features (options) in the filesystem.
+.I Feature
+can be one of the following supported filesystem options: 
+.IR sparse ,
+which cause the filesystem to use sparse superblocks, and
+.IR filetype ,
+which will cause the filesystem to store file type information in 
+directory entries.  After setting or clearing either filesystem feature,
+e2fsck must be run on the filesystem.
 .TP
 .BI \-U " UUID"
 set the UUID of the filesystem.  A sample UUID looks like this: 

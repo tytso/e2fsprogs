@@ -96,10 +96,18 @@ static void usage(void)
 		 "[-g group]\n"
 		 "\t[-i interval[d|m|w]] [-l] [-s] [-m reserved-blocks-percent]\n"
 		 "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
-		 "\t[-L volume-label] [-M last-mounted-dir] [-U UUID] "
-		 "device\n", program_name);
+		 "\t[-L volume-label] [-M last-mounted-dir] [-U UUID]\n"
+		 "\t[-O [-]feature[,...]] device\n", program_name);
 	exit (1);
 }
+
+static __u32 ok_features[3] = {
+	0,					/* Compat */
+	EXT2_FEATURE_INCOMPAT_FILETYPE,		/* Incompat */
+	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
+};
+
+static const char *please_fsck = "Please run e2fsck on the filesystem.\n";
 
 int main (int argc, char ** argv)
 {
@@ -111,6 +119,7 @@ int main (int argc, char ** argv)
 	struct group * gr;
 	struct passwd * pw;
 	int open_flag = 0;
+	char *features_cmd = 0;
 
 	fprintf (stderr, "tune2fs %s, %s for EXT2 FS %s, %s\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
@@ -118,7 +127,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	initialize_ext2_error_table();
-	while ((c = getopt (argc, argv, "c:e:g:i:lm:r:s:u:C:L:M:U:")) != EOF)
+	while ((c = getopt (argc, argv, "c:e:g:i:lm:r:s:u:C:L:M:O:U:")) != EOF)
 		switch (c)
 		{
 			case 'c':
@@ -233,6 +242,10 @@ int main (int argc, char ** argv)
 			case 'M':
 				new_last_mounted = optarg;
 				M_flag = 1;
+				open_flag = EXT2_FLAG_RW;
+				break;
+			case 'O':
+				features_cmd = optarg;
 				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'r':
@@ -356,8 +369,8 @@ int main (int argc, char ** argv)
 				EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 			fs->super->s_state &= ~EXT2_VALID_FS;
 			ext2fs_mark_super_dirty(fs);
-			printf("\nSparse superblock flag set.  "
-			       "Please run e2fsck on the filesystem.\n");
+			printf("\nSparse superblock flag set.  %s",
+			       please_fsck);
 		}
 #else /* !EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
 		com_err (program_name, 0,
@@ -377,8 +390,8 @@ int main (int argc, char ** argv)
 			fs->super->s_state &= ~EXT2_VALID_FS;
 			fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 			ext2fs_mark_super_dirty(fs);
-			printf("\nSparse superblock flag cleared.  "
-			       "Please run e2fsck on the filesystem.\n");
+			printf("\nSparse superblock flag cleared.  %s",
+			       please_fsck);
 		}
 #else /* !EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER */
 		com_err (program_name, 0,
@@ -412,6 +425,31 @@ int main (int argc, char ** argv)
 		memset(sb->s_last_mounted, 0, sizeof(sb->s_last_mounted));
 		strncpy(sb->s_last_mounted, new_last_mounted,
 			sizeof(sb->s_last_mounted));
+		ext2fs_mark_super_dirty(fs);
+	}
+	if (features_cmd) {
+		int sparse, old_sparse, filetype, old_filetype;
+
+		old_sparse = sb->s_feature_ro_compat &
+			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+		old_filetype = sb->s_feature_incompat &
+			EXT2_FEATURE_INCOMPAT_FILETYPE;
+		if (e2p_edit_feature(features_cmd,
+				     &sb->s_feature_compat,
+				     ok_features)) {
+			fprintf(stderr, "Invalid filesystem option set: %s\n",
+				features_cmd);
+			exit(1);
+		}
+		sparse = sb->s_feature_ro_compat &
+			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+		filetype = sb->s_feature_incompat &
+			EXT2_FEATURE_INCOMPAT_FILETYPE;
+		if ((sparse != old_sparse) ||
+		    (filetype != old_filetype)) {
+			fs->super->s_state &= ~EXT2_VALID_FS;
+			printf("\n%s\n", please_fsck);
+		}
 		ext2fs_mark_super_dirty(fs);
 	}
 	if (U_flag) {

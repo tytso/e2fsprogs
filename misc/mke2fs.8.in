@@ -44,6 +44,10 @@ mke2fs \- create a Linux second extended file system
 .I creator-os
 ]
 [
+.B \-O 
+.IR feature [,...]
+]
+[
 .B \-q
 ]
 [
@@ -137,6 +141,27 @@ the
 ratio).  This allows the user to specify the number 
 of desired inodes directly.
 .TP
+.BI \-O " feature\fR[,...]"
+Create the filesystem with the listed set of features 
+(filesystem options).  The following features are supported: 
+.IR sparse ,
+which cause the filesystem to use sparse superblocks, and
+.IR filetype ,
+which will cause the filesystem to store file type information in 
+directory entries.   Currently, both features are turned on by default
+unless 
+.B mke2fs
+is run on a system with a pre-2.2 Linux kernel.
+.B Warning:
+Pre-2.2 Linux kernels do not properly 
+support the filesystems that use either of these two features.   Filesystems 
+that may need to mounted on pre-2.2 kernels should be created with 
+.B -O
+.I none
+which will disable both of these features, even if 
+.B mke2fs 
+is run on a system which can support these features.
+.TP
 .BI \-l " filename"
 Read the bad blocks list from
 .I filename.
@@ -166,15 +191,10 @@ is run in a script.
 If 
 .I sparse-super-flag
 is 1, then turn on the sparse superblock flag in the superblock.  
-If 0, then turn off the sparse superblock flag in the superblock.  
-(Currently, the sparse 
-superblock flag is off by default if the kernel version is less than 
-2.2; otherwise it defaults to on.)  
-.B Warning:
-The Linux 2.0 kernel (and some Linux 2.1 kernel) does not properly 
-support sparse superblocks.  Filesystems that may need to mounted
-on pre-2.2 kernels should not be created with the sparse superblocks 
-feature.
+.B Note:
+This option is deprecated; use the 
+.B \-O
+option instead.
 .TP
 .B \-v
 Verbose execution.
