@@ -60,6 +60,7 @@ void ext2fs_swap_super(struct ext2_super_block * super)
 	s->s_feature_compat = ext2fs_swab32(s->s_feature_compat);
 	s->s_feature_incompat = ext2fs_swab32(s->s_feature_incompat);
 	s->s_feature_ro_compat = ext2fs_swab32(s->s_feature_ro_compat);
+	s->s_algorithm_usage_bitmap = ext2fs_swab32(s->s_algorithm_usage_bitmap);
 }
 
 void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
