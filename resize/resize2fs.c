@@ -46,6 +46,7 @@ static errcode_t block_mover(ext2_resize_t rfs);
 static errcode_t inode_scan_and_fix(ext2_resize_t rfs);
 static errcode_t inode_ref_fix(ext2_resize_t rfs);
 static errcode_t move_itables(ext2_resize_t rfs);
+static errcode_t fix_resize_inode(ext2_filsys fs);
 static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs);
 
 /*
@@ -133,6 +134,10 @@ errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 	if (retval)
 		goto errout;
 
+	retval = fix_resize_inode(rfs->new_fs);
+	if (retval)
+		goto errout;
+
 	retval = ext2fs_close(rfs->new_fs);
 	if (retval)
 		goto errout;
@@ -205,12 +210,13 @@ retry:
 	 * includes the superblock backup, the group descriptor
 	 * backups, the inode bitmap, the block bitmap, and the inode
 	 * table.
-	 *
-	 * XXX Not all block groups need the descriptor blocks, but
-	 * being clever is tricky...
 	 */
-	overhead = 3 + fs->desc_blocks + fs->inode_blocks_per_group;
-	
+	overhead = (int) (2 + fs->inode_blocks_per_group);
+
+	if (ext2fs_bg_has_super(fs, fs->group_desc_count - 1))
+		overhead += 1 + fs->desc_blocks + 
+			fs->super->s_reserved_gdt_blocks;
+
 	/*
 	 * See if the last group is big enough to support the
 	 * necessary data structures.  If not, we need to get rid of
@@ -288,6 +294,29 @@ retry:
 	}
 
 	/*
+	 * If the resize_inode feature is set, and we are changing the
+	 * number of descriptor blocks, then adjust
+	 * s_reserved_gdt_blocks if possible to avoid needing to move
+	 * the inode table either now or in the future.
+	 */
+	if ((fs->super->s_feature_compat & 
+	     EXT2_FEATURE_COMPAT_RESIZE_INODE) &&
+	    (rfs->old_fs->desc_blocks != fs->desc_blocks)) {
+		int new;
+
+		new = ((int) fs->super->s_reserved_gdt_blocks) + 
+			(rfs->old_fs->desc_blocks - fs->desc_blocks);
+		if (new < 0)
+			new = 0;
+		if (new > fs->blocksize/4)
+			new = fs->blocksize/4;
+		fs->super->s_reserved_gdt_blocks = new;
+		if (new == 0)
+			fs->super->s_feature_compat &= 
+				~EXT2_FEATURE_COMPAT_RESIZE_INODE;
+	}
+
+	/*
 	 * If we are shrinking the number block groups, we're done and
 	 * can exit now.
 	 */
@@ -346,7 +375,8 @@ retry:
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
-		old_desc_blocks = fs->desc_blocks;
+		old_desc_blocks = fs->desc_blocks + 
+			fs->super->s_reserved_gdt_blocks;
 	for (i = rfs->old_fs->group_desc_count;
 	     i < fs->group_desc_count; i++) {
 		memset(&fs->group_desc[i], 0,
@@ -466,7 +496,8 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
-		old_desc_blocks = fs->desc_blocks;
+		old_desc_blocks = fs->desc_blocks + 
+			fs->super->s_reserved_gdt_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		has_super = ext2fs_bg_has_super(fs, i);
 		if (has_super)
@@ -613,8 +644,8 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		old_blocks = old_fs->super->s_first_meta_bg;
 		new_blocks = fs->super->s_first_meta_bg;
 	} else {
-		old_blocks = old_fs->desc_blocks;
-		new_blocks = fs->desc_blocks;
+		old_blocks = old_fs->desc_blocks + old_fs->super->s_reserved_gdt_blocks;
+		new_blocks = fs->desc_blocks + fs->super->s_reserved_gdt_blocks;
 	}
 	
 	if (old_blocks == new_blocks) {
@@ -1100,7 +1131,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		if (!ino)
 			break;
 
-		if (inode.i_links_count == 0)
+		if (inode.i_links_count == 0 && ino != EXT2_RESIZE_INO)
 			continue; /* inode not in use */
 
 		pb.is_dir = LINUX_S_ISDIR(inode.i_mode);
@@ -1424,6 +1455,57 @@ static errcode_t move_itables(ext2_resize_t rfs)
 	return 0;
 	
 errout:
+	return retval;
+}
+
+/*
+ * Fix the resize inode 
+ */
+static errcode_t fix_resize_inode(ext2_filsys fs)
+{
+	struct ext2_inode	inode;
+	errcode_t		retval;
+	char *			block_buf;
+
+	if (!(fs->super->s_feature_compat & 
+	      EXT2_FEATURE_COMPAT_RESIZE_INODE))
+		return 0;
+
+	retval = ext2fs_get_mem(fs->blocksize, &block_buf);
+	if (retval) goto errout;
+
+	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);
+	if (retval) goto errout;
+
+	inode.i_blocks = fs->blocksize/512;
+
+	retval = ext2fs_write_inode(fs, EXT2_RESIZE_INO, &inode);
+	if (retval) goto errout;
+
+	if (!inode.i_block[EXT2_DIND_BLOCK]) {
+		/* 
+		 * Avoid zeroing out block #0; that's rude.  This
+		 * should never happen anyway since the filesystem
+		 * should be fsck'ed and we assume it is consistent.
+		 */
+		fprintf(stderr, 
+			_("Should never happen resize inode corrupt!\n"));
+		exit(1);
+	}
+
+	memset(block_buf, 0, fs->blocksize);
+
+	retval = io_channel_write_blk(fs->io, inode.i_block[EXT2_DIND_BLOCK],
+				      1, block_buf);
+	if (retval) goto errout;
+	
+	retval = ext2fs_create_resize_inode(fs);
+	if (retval)
+		goto errout;
+
+errout:
+	if (block_buf)
+		ext2fs_free_mem(&block_buf);
 	return retval;
 }
 

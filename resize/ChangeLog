@@ -1,3 +1,10 @@
+2004-12-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* resize2fs.c (resize_fs): Call ext2fs_create_resize_inode to
+		fill in the necessary fields in the resize inode.
+		(adjust_superblock): Reserve blocks that are needed for
+		on-line resizing if that feature is enabled.
+
 2004-12-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Move strip command to install-strip target.
