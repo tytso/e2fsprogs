@@ -1,3 +1,7 @@
+1998-12-03  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in: Updated dependencies.
+
 1998-09-29  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* main.c (main): Print a feedback message stating the new size of
