@@ -45,7 +45,6 @@ package=e2fsprogs
 topdir=$(shell pwd)
 debdir=${topdir}/debian
 tmpdir=${debdir}/tmp
-bfdir=${debdir}/e2fsprogs-bf
 udebdir=${debdir}/e2fsprogs-udeb
 blkidudebdir=${debdir}/libblkid1-udeb
 maindir=${debdir}/e2fsprogs
@@ -93,14 +92,13 @@ endif
 BF_CCOPTS = -Os -fomit-frame-pointer
 
 COMMON_CONF_FLAGS =  \
-                --enable-elf-shlibs --enable-dynamic-e2fsck \
-                --enable-nls \
+                --enable-elf-shlibs --enable-dynamic-e2fsck --disable-evms \
                 --infodir=/usr/share/info
 
-STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression
+STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression 
 
 BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
-	--disable-swapfs --disable-imager \
+	--disable-nls --disable-swapfs --disable-imager \
 	--disable-resizer --disable-debugfs
 
 MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
@@ -180,7 +178,9 @@ ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 build-bf: ${BUILDBFSTAMP}
 ${BUILDBFSTAMP}: ${CFGBFSTAMP}
 	dh_testdir
-	make -C ${bfbuilddir} all
+	make -C ${bfbuilddir} libs
+	make -C ${bfbuilddir}/e2fsck all
+	make -C ${bfbuilddir}/misc all
 	touch ${BUILDBFSTAMP}
 
 clean:
@@ -192,7 +192,7 @@ clean:
 	rm -f doc/libext2fs_*.html lib/et/com_err_*.html debian/*.substvars
 	dh_clean
 
-install: cleanup install-std install-bf
+install: cleanup install-std
 
 # This rule allows to factorize the dh_clean between the 2 install rules
 # This must be launched before install-* (if launching them by hand, for
@@ -214,9 +214,6 @@ install-std: build
   # static libs and .h files
 	make -C ${stdbuilddir} install-libs DESTDIR=${tmpdir} LDCONFIG=true
 
-  # remove FSIM for now.
-	-rm ${tmpdir}/lib/evms/libe2fsim.*.so
-
   # statically-linked fsck
 	${INSTALL_PROGRAM} ${stdbuilddir}/e2fsck/e2fsck.static ${tmpdir}/sbin
 	ln -s e2fsck.8.gz ${mandir}/man8/e2fsck.static.8.gz
@@ -232,35 +229,22 @@ install-std: build
 			${debdir}/e2fslibs-dev/usr/lib/libext2fs-nopic.a ; \
 	fi
 
-install-bf: DH_OPTIONS=
-install-bf: build
+install-udeb: DH_OPTIONS=
+install-udeb: build
 	dh_testdir
 	dh_testroot
-	dh_installdirs
 
-	mkdir -p ${bfdir}/sbin
-	make -C ${bfbuilddir} install DESTDIR=${bfdir} \
+	make -C ${bfbuilddir} install-shlibs-libs-recursive DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	rm -rf ${bfdir}/usr/share ${bfdir}/usr/lib
-	cd ${bfdir}/sbin && rm -f e2label
-	cd ${bfdir}/usr/bin && rm -f uuidgen
+	make -C ${bfbuilddir}/e2fsck install DESTDIR=${udebdir} \
+		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
+	make -C ${bfbuilddir}/misc install DESTDIR=${udebdir} \
+		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
 
-  # remove FSIM for now.
-	-rm ${bfdir}/lib/evms/libe2fsim.*.so
+	rm -rf ${udebdir}/usr
+	find ${udebdir}/sbin -type f -a ! -name mkfs.\*  -a ! -name fsck.\* \
+		-a ! -name e2fsck -a ! -name mke2fs -print | xargs rm
 
-install-udeb: install-bf
-	dh_testdir
-	dh_testroot
-	dh_installdirs
-
-	cp -a ${bfdir}/lib ${udebdir}/
-	mkdir -p ${udebdir}/sbin
-	cp -a ${bfdir}/sbin/mke2fs ${udebdir}/sbin/
-	ln -s mke2fs ${udebdir}/sbin/mkfs.ext2
-	ln -s mke2fs ${udebdir}/sbin/mkfs.ext3
-	cp -a ${bfdir}/sbin/e2fsck ${udebdir}/sbin/
-	ln -s e2fsck ${udebdir}/sbin/fsck.ext2
-	ln -s e2fsck ${udebdir}/sbin/fsck.ext3
 	mkdir -p ${blkidudebdir}/lib
 	mv ${udebdir}/lib/libblkid.* ${blkidudebdir}/lib
 
@@ -316,9 +300,6 @@ binary-arch: install install-udeb
 
 	dh_installdocs -Ne2fsprogs-udeb -Nlibblkid1-udeb
 
-	install -m 644 debian/e2fsprogs.copyright \
-	  ${bfdir}/usr/share/doc/e2fsprogs-bf/copyright
-
   # libblkid is under the the LGPL
 
   # HTML docs
@@ -342,7 +323,7 @@ binary-arch: install install-udeb
 
 	dh_undocumented
 
-	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -pe2fsprogs-bf -plibblkid${BLKID_SOVERSION} ChangeLog
+	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibblkid${BLKID_SOVERSION} ChangeLog
 
 	for i in libcomerr${COMERR_SOVERSION} libss${SS_SOVERSION} ; do \
 	  mkdir -p ${maindir}/usr/share/doc/$$i ; \

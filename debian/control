@@ -104,19 +104,6 @@ Description: Block device id library - headers and static libraries
  .
  This package contains the development environment for the blkid library.
 
-Package: e2fsprogs-bf
-Section: devel
-Priority: extra
-Depends: ${shlibs:Depends}
-Conflicts: e2fsprogs
-Architecture: any
-Description: A stripped-down versions of e2fsprogs, for boot-floppies
- This package is an e2fsprogs package built for a reduced size, so that
- it can help to save space on installation boot-floppies.
- .
- Don't attempt to install this package, it has no support for a couple of
- features you surely want.  Anyway it should refuse to install.
-
 Package: e2fsprogs-udeb
 Section: debian-installer
 Priority: standard

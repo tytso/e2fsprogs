@@ -3,8 +3,11 @@ e2fsprogs (1.33-4) unstable; urgency=low
   * Add replaces field to comerr-dev to resolve a file conflict with
     /usr/include/com_err.h and the libkrb5-dev package.  (Closes: #192277)
   * Add -t option to badblocks to control the test pattern used.
+  * Remove e2fsprogs-bf package, as it is obsolete. (Closes: #183453)
+  * Remove NLS support from e2fsprogs-udeb.  Save 5.5k on the boot
+    floppies / install media.
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu,  8 May 2003 03:29:47 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu,  8 May 2003 10:25:05 -0400
 
 e2fsprogs (1.33-3) unstable; urgency=low
 
