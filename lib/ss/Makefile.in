@@ -148,6 +148,7 @@ install:: libss.a $(INSTALL_HFILES) installdirs ss_err.h mk_cmds
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(datadir)/ss/$$i; \
 	done
 	$(INSTALL) mk_cmds $(DESTDIR)$(bindir)/mk_cmds
+	$(INSTALL_DATA) $(srcdir)/mk_cmds.1 $(DESTDIR)$(man1dir)/mk_cmds.1
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libss.a $(DESTDIR)$(bindir)/mk_cmds

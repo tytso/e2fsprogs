@@ -35,6 +35,8 @@ SS_VERSION = $(shell grep ELF_VERSION lib/ss/Makefile.in | cut '-d ' -f3)
 SS_SOVERSION = $(shell grep ELF_SO_VERSION lib/ss/Makefile.in | cut '-d ' -f3)
 UUID_VERSION = $(shell grep ELF_VERSION lib/uuid/Makefile.in | cut '-d ' -f3)
 UUID_SOVERSION = $(shell grep ELF_SO_VERSION lib/uuid/Makefile.in | cut '-d ' -f3)
+BLKID_VERSION = $(shell grep ELF_VERSION lib/blkid/Makefile.in | cut '-d ' -f3)
+BLKID_SOVERSION = $(shell grep ELF_SO_VERSION lib/blkid/Makefile.in | cut '-d ' -f3)
 EXT2FS_SOVERSION = $(shell grep ELF_SO_VERSION lib/ext2fs/Makefile.in | cut '-d ' -f3)
 E2P_SOVERSION = $(shell grep ELF_SO_VERSION lib/e2p/Makefile.in | cut '-d ' -f3)
 
@@ -262,10 +264,6 @@ binary-arch: install install-udeb
 	dh_testdir
 	dh_testroot
 
-  # remove obsolete maint-scripts provided by 1.26 upstream
-	cd debian && rm -f comerr-dev.postinst e2fslibs-dev.postinst \
-		e2fsprogs.postinst e2fsprogs.shlibs e2fsprogs.shlibs.in
-
   # lintian overrides
 	for i in $$(cd debian && echo *.lintian-overrides); do \
 		pkg=$${i%.lintian-overrides} ;\
@@ -296,15 +294,24 @@ binary-arch: install install-udeb
 	mkdir -p ${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}
 	ln -sf libss${SS_SOVERSION} ${debdir}/ss-dev/usr/share/doc/ss-dev
 
+	mkdir -p ${debdir}/libblkid${BLKID_SOVERSION}/usr/share/doc/libblkid${BLKID_SOVERSION}
+	mkdir -p ${debdir}/libblkid-dev/usr/share/doc
+	ln -sf libblkid${BLKID_SOVERSION} ${debdir}/libblkid-dev/usr/share/doc/libblkid-dev
+
 	for i in libcomerr${COMERR_SOVERSION} libss${SS_SOVERSION}; do \
 	  install -m 644 debian/$$i.copyright \
 	    ${maindir}/usr/share/doc/$$i/copyright ; \
 	done
 
+	install -m 644 debian/libblkid.copyright \
+		${debdir}/libblkid${BLKID_SOVERSION}/usr/share/doc/libblkid${BLKID_SOVERSION}/copyright
+
 	dh_installdocs -Ne2fsprogs-udeb
 
 	install -m 644 debian/e2fsprogs.copyright \
 	  ${bfdir}/usr/share/doc/e2fsprogs-bf/copyright
+
+  # libblkid is under the the LGPL
 
   # HTML docs
 	install -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev/html-info/
@@ -327,7 +334,7 @@ binary-arch: install install-udeb
 
 	dh_undocumented
 
-	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -pe2fsprogs-bf ChangeLog
+	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -pe2fsprogs-bf -plibblkid${BLKID_SOVERSION} ChangeLog
 
 	for i in libcomerr${COMERR_SOVERSION} libss${SS_SOVERSION} ; do \
 	  mkdir -p ${maindir}/usr/share/doc/$$i ; \
@@ -343,6 +350,7 @@ binary-arch: install install-udeb
 	echo "libcdev:Depends=${LIBC-DEV}" > debian/comerr-dev.substvars
 	echo "libcdev:Depends=${LIBC-DEV}" > debian/ss-dev.substvars
 	echo "libcdev:Depends=${LIBC-DEV}" > debian/uuid-dev.substvars
+	echo "libcdev:Depends=${LIBC-DEV}" > debian/blkid-dev.substvars
 	echo "libcdev:Depends=${LIBC-DEV}" > debian/e2fslibs-dev.substvars
 
 # Call this mostly to get the maintainer-script snippets
@@ -360,6 +368,8 @@ binary-arch: install install-udeb
 	echo "libss ${SS_SOVERSION} libss${SS_SOVERSION}" \
 		>> debian/e2fsprogs/DEBIAN/shlibs
 
+	dh_makeshlibs -plibblkid${BLKID_SOVERSION}
+
 	dh_installdeb
 	dh_shlibdeps -l${stdbuilddir}/lib
 
@@ -370,6 +380,10 @@ binary-arch: install install-udeb
 	  -u '-v${SS_VERSION}-${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -puuid-dev \
 	  -u '-v${UUID_VERSION}-${MAIN_VERSION}'
+	DH_OPTIONS= dh_gencontrol -plibblkid-dev \
+	  -u '-v${MAIN_VERSION}'
+	DH_OPTIONS= dh_gencontrol -plibblkid${BLKID_SOVERSION} \
+	  -u '-v${MAIN_VERSION}'
 
 	dh_md5sums -Ne2fsprogs-udeb
 	dh_builddeb -Ne2fsprogs-udeb

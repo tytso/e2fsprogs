@@ -1,3 +1,10 @@
+e2fsprogs (1.32+1.30-WIP-0314-1) unstable; urgency=low
+
+  * New upstream release (Closes: #176814, #174766, #166048, #179671,
+	#173612, #175233, #175113, #170497)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 16 Mar 2003 18:05:08 -0500
+
 e2fsprogs (1.32-2) unstable; urgency=high
 
   * Applied upstream patch to fix htree problems, and to deactivate it by

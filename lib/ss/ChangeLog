@@ -1,5 +1,7 @@
 2003-03-16  Theodore Ts'o  <tytso@mit.edu>
 
+	* mk_cmds.1, Makefile.in: Add (bare-bone) man page
+
 	* Makefile.in (DLOPEN_LIB): Include the dlopen library if it is
 		present on shared libraries.
 
