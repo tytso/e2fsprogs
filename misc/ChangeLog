@@ -1,3 +1,7 @@
+2001-08-31  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.28
+
 2002-08-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* findfs.8.in: New man page.

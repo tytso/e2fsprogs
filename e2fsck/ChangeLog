@@ -1,3 +1,7 @@
+2001-08-31  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.28
+
 2002-08-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* ehandler.c (e2fsck_handle_read_error): If the user asks to

@@ -1,3 +1,7 @@
+2001-08-31  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.28
+
 2002-05-11    <tytso@snap.thunk.org>
 
 	* ext2fs-overview.sgml, ext2ed-design.sgml, user-guide.sgml:

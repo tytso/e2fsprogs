@@ -1,3 +1,7 @@
+2001-08-31  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.28
+
 2002-08-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* ls.c (list_super2): Print the default hash version and the hash
