@@ -201,3 +201,9 @@ check_if_mounted() should check to see if the file is in /proc/swaps,
 to avoid mkfs's or checking a active swap partition.
 
 ----------------------------------------------------------------
+
+Add a check in configure.in on Linux systems making sure that
+/usr/include/linux and /usr/include/asm exist.  Otherwise you can have
+some very obscure errors!
+
+-----------------------------------------------------------------

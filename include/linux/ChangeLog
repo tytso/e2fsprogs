@@ -1,3 +1,8 @@
+2000-10-24    <tytso@valinux.com>
+
+	* ext2_fs.h (EXT2_JOURNAL_INO): Add definition for
+		EXT2_JOURNAL_INO; reserve inode #7 for EXT2_RESIZE_INO.
+
 2000-08-14    <tytso@valinux.com>
 
 	* ext2_fs.h: Add comment explaining when journal fields are valid.

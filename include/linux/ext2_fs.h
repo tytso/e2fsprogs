@@ -48,6 +48,13 @@
 #define EXT2_ACL_DATA_INO	 4	/* ACL inode */
 #define EXT2_BOOT_LOADER_INO	 5	/* Boot loader inode */
 #define EXT2_UNDEL_DIR_INO	 6	/* Undelete directory inode */
+/*
+ * 7 is reserved for EXT2_RESIZE_INO; was used for this in the past
+ * for the on-line resizing patches, but there is a better way of
+ * doing this which sct, andreas, and tytso discussed at the
+ * Filesystem/Storage Management Workshop in Miami (October, 2000).
+ */
+#define EXT2_JOURNAL_INO	 8	/* Journal inode */
 
 /* First non-reserved inode for old ext2 filesystems */
 #define EXT2_GOOD_OLD_FIRST_INO	11

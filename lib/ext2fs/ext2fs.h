@@ -793,6 +793,11 @@ extern errcode_t ext2fs_new_dir_block(ext2_filsys fs, ino_t dir_ino,
 extern errcode_t ext2fs_mkdir(ext2_filsys fs, ino_t parent, ino_t inum,
 			      const char *name);
 
+/* mkjournal.c */
+extern errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
+					   blk_t size);
+extern errcode_t ext2fs_add_journal_fs(ext2_filsys fs, blk_t size);
+
 /* openfs.c */
 extern errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			     int block_size, io_manager manager,

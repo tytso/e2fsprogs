@@ -257,5 +257,8 @@ ec	EXT2_ET_CANCEL_REQUESTED,
 ec	EXT2_ET_FILE_TOO_BIG,
 	"Ext2 file too big"
 
+ec	EXT2_JOURNAL_NOT_BLOCK,
+	"Supplied journal device not a block device"
+
 	end
 

@@ -1,3 +1,12 @@
+2000-10-24    <tytso@valinux.com>
+
+	* Makefile.in, ext2fs.h, jfs_dat.h, mkjournal.c: Add functions for
+		creating an ext3 journal on a filesystem.
+
+2000-08-21    <tytso@valinux.com>
+
+	* ext2_err.et.in (EXT2_JOURNAL_NOT_BLOCK): Add new error code.
+
 2000-08-22    <tytso@valinux.com>
 
 	* unix_io.c: Make massive changes to support a multiple block

@@ -40,6 +40,7 @@ OBJS= ext2_err.o \
 	llseek.o \
 	lookup.o \
 	mkdir.o \
+	mkjournal.o \
 	namei.o \
 	native.o \
 	newdir.o \
@@ -89,6 +90,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/llseek.c \
 	$(srcdir)/lookup.c \
 	$(srcdir)/mkdir.c \
+	$(srcdir)/mkjournal.c \
 	$(srcdir)/namei.c \
 	$(srcdir)/native.c \
 	$(srcdir)/newdir.c \
@@ -170,6 +172,9 @@ tst_iscan: tst_iscan.o inode.o $(STATIC_LIBEXT2FS)
 tst_getsize: tst_getsize.o getsize.o $(STATIC_LIBEXT2FS)
 	$(CC) -o tst_getsize tst_getsize.o getsize.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
+
+mkjournal: mkjournal.c $(STATIC_LIBEXT2FS)
+	$(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
 
 check:: tst_badblocks tst_iscan
 	./tst_badblocks
