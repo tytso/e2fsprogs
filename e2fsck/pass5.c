@@ -86,7 +86,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	int	group_free = 0;
 	int	actual, bitmap;
 	struct problem_context	pctx;
-	int	problem, fixit;
+	int	problem, fixit, had_problem;
 	errcode_t	retval;
 	
 	clear_problem_context(&pctx);
@@ -123,7 +123,8 @@ static void check_block_bitmaps(e2fsck_t ctx)
 		return;
 	}
 		       
-redo_counts:		       
+redo_counts:
+	had_problem = 0;
 	for (i = fs->super->s_first_data_block;
 	     i < fs->super->s_blocks_count;
 	     i++) {
@@ -146,6 +147,7 @@ redo_counts:
 		}
 		pctx.blk = i;
 		fix_problem(ctx, problem, &pctx);
+		had_problem++;
 		
 	do_counts:
 		if (!bitmap) {
@@ -161,7 +163,10 @@ redo_counts:
 			group_free = 0;
 		}
 	}
-	fixit = end_problem_latch(ctx, 	PR_LATCH_BBITMAP);
+	if (had_problem)
+		fixit = end_problem_latch(ctx, 	PR_LATCH_BBITMAP);
+	else
+		fixit = -1;
 	if (fixit == 1) {
 		ext2fs_free_block_bitmap(fs->block_map);
 		retval = ext2fs_copy_bitmap(ctx->block_found_map,
@@ -220,7 +225,7 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int	actual, bitmap;
 	errcode_t	retval;
 	struct problem_context	pctx;
-	int	problem, fixit;
+	int	problem, fixit, had_problem;
 	
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,
@@ -257,6 +262,7 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	}
 
 redo_counts:
+	had_problem = 0;
 	for (i = 1; i <= fs->super->s_inodes_count; i++) {
 		actual = ext2fs_fast_test_inode_bitmap(ctx->inode_used_map, i);
 		bitmap = ext2fs_fast_test_inode_bitmap(fs->inode_map, i);
@@ -277,6 +283,7 @@ redo_counts:
 		}
 		pctx.ino = i;
 		fix_problem(ctx, problem, &pctx);
+		had_problem++;
 		
 do_counts:
 		if (!bitmap) {
@@ -297,7 +304,10 @@ do_counts:
 			dirs_count = 0;
 		}
 	}
-	fixit = end_problem_latch(ctx, PR_LATCH_IBITMAP);
+	if (had_problem)
+		fixit = end_problem_latch(ctx, PR_LATCH_IBITMAP);
+	else
+		fixit = -1;
 	if (fixit == 1) {
 		ext2fs_free_inode_bitmap(fs->inode_map);
 		retval = ext2fs_copy_bitmap(ctx->inode_used_map,
