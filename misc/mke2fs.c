@@ -97,7 +97,7 @@ static void check_mount(const char *device);
 static void usage(NOARGS)
 {
 	fprintf(stderr, _("Usage: %s [-c|-t|-l filename] [-b block-size] "
-	"[-f fragment-size]\n\t[-i bytes-per-inode] "
+	"[-f fragment-size]\n\t[-i bytes-per-inode] [-j journal-options]"
 	" [-N number-of-inodes]\n\t[-m reserved-blocks-percentage] "
 	"[-o creator-os] [-g blocks-per-group]\n\t[-L volume-label] "
 	"[-M last-mounted-directory] [-O feature[,...]]\n\t"
@@ -1224,7 +1224,8 @@ int main (int argc, char *argv[])
 			printf(_("done\n"));
 	} else if (journal_size) {
 		if (!quiet)
-			printf(_("Creating journal: "));
+			printf(_("Creating journal (%d blocks): "),
+			       journal_blocks);
 		retval = ext2fs_add_journal_fs(fs, journal_blocks,
 					       journal_flags);
 		if (retval) {

@@ -146,7 +146,8 @@ Currently two options are supported,
 .I size
 and
 .IR device .
-One of these two options must be specified when building the journal.
+One these two options must be specified when 
+building the journal.
 The 
 .I size 
 option takes a numerical argument which specifies the size of the 
@@ -155,9 +156,8 @@ Use of this option implies that the journal will be stored in the
 filesystem, so it must be small enough to fit into the filesystem.
 The 
 .I device
-option takes a filename which specifies a block device which will contain 
-the journal.  This option of course implies that the journal will be 
-stored external to the filesystem.
+option takes a filename which specifies a block device (external 
+to the filesystem) which will contain the external journal.  
 .TP
 .B \-n
 causes mke2fs to not actually create a filesystem, but display what it 

@@ -1,3 +1,10 @@
+2000-12-30    <tytso@snap.thunk.org>
+
+	* mke2fs.8.in: Minor clarity edit.
+
+	* mke2fs.c (usage): Document the -j option.
+		(main): Print the number blocks used in the journal.
+
 2000-12-28    <tytso@snap.thunk.org>
 
 	* base_device.c (base_device): Add support for DAC960 device
