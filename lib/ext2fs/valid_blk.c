@@ -47,8 +47,8 @@ int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode)
 			/* With an EA block, life gets more tricky */
 			if (inode->i_size >= EXT2_N_BLOCKS*4)
 				return 1; /* definitely using i_block[] */
-			if (inode->i_size > 3 && inode->i_block[1] != 0)
-				return 1; /* probably using i_block[] */
+			if (inode->i_size > 4 && inode->i_block[1] == 0)
+				return 1; /* definitely using i_block[] */
 			return 0; /* Probably a fast symlink */
 		}
 	}
