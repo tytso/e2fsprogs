@@ -811,6 +811,7 @@ void do_modify_inode(int argc, char *argv[])
 	modify_u16(argv[0], "Link count", decimal_format, &inode.i_links_count);
 	modify_u32(argv[0], "Block count", decimal_format, &inode.i_blocks);
 	modify_u32(argv[0], "File flags", hex_format, &inode.i_flags);
+	modify_u32(argv[0], "Generation", hex_format, &inode.i_generation);
 #if 0
 	modify_u32(argv[0], "Reserved1", decimal_format, &inode.i_reserved1);
 #endif

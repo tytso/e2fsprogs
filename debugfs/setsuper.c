@@ -84,6 +84,8 @@ static struct super_set_info *find_field(char *field)
 {
 	struct super_set_info *ss;
 
+	if (strncmp(field, "s_", 2) == 0)
+		field += 2;
 	for (ss = super_fields ; ss->name ; ss++) {
 		if (strcmp(ss->name, field) == 0)
 			return ss;

@@ -1,3 +1,11 @@
+2000-12-30    <tytso@snap.thunk.org>
+
+	* setsuper.c (find_field): Strip the s_prefix if given for ssv
+		fields.   (Suggested by Andreas Dilger)
+
+	* debugfs.c (do_modify_inode): Add the ability to set the inode
+		generation number.  (Suggested by Andreas Dilger)
+
 2000-08-23    <tytso@valinux.com>
 
 	* util.c (string_to_inode): Use strtoul instead of atoi, so that
