@@ -1,3 +1,11 @@
+2003-09-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (is_on_batt, check_if_skip): If running on battery, then
+		give an extra grace period before actually forcing a
+		check.  That way the laptop will be biased to waiting
+		until we are on AC power before doing the filesystem
+		check.  (Addresses Debian bug #205177)
+
 2003-09-13  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (check_if_skip): If the number of mounts until the next

@@ -199,6 +199,30 @@ static void check_mount(e2fsck_t ctx)
 	return;
 }
 
+static int is_on_batt()
+{
+	FILE	*f;
+	char	tmp[80], tmp2[80];
+	unsigned int	acflag;
+
+	f = fopen("/proc/apm", "r");
+	if (f) {
+		if (fscanf(f, "%s %s %s %x", tmp, tmp, tmp, &acflag) != 4) 
+			acflag = 1;
+		fclose(f);
+		return (acflag != 1);
+	}
+	f = fopen("/proc/acpi/ac_adapter/AC/state", "r");
+	if (f) {
+		if (fscanf(f, "%s %s", tmp2, tmp) != 2)
+			tmp[0] = 0;
+		fclose(f);
+		if (strncmp(tmp, "off-line", 8) == 0)
+			return 1;
+	}
+	return 0;
+}
+
 /*
  * This routine checks to see if a filesystem can be skipped; if so,
  * it will exit with E2FSCK_OK.  Under some conditions it will print a
@@ -210,6 +234,7 @@ static void check_if_skip(e2fsck_t ctx)
 	const char *reason = NULL;
 	unsigned int reason_arg = 0;
 	long next_check;
+	int batt = is_on_batt();
 	time_t now = time(0);
 	
 	if ((ctx->options & E2F_OPT_FORCE) || bad_blocks_file ||
@@ -225,11 +250,17 @@ static void check_if_skip(e2fsck_t ctx)
 		  (unsigned) fs->super->s_max_mnt_count)) {
 		reason = _(" has been mounted %u times without being checked");
 		reason_arg = fs->super->s_mnt_count;
+		if (batt && (fs->super->s_mnt_count < 
+			     (unsigned) fs->super->s_max_mnt_count*2))
+			reason = 0;
 	} else if (fs->super->s_checkinterval &&
 		 now >= (fs->super->s_lastcheck +
 			     fs->super->s_checkinterval)) {
 		reason = _(" has gone %u days without being checked");
 		reason_arg = (now - fs->super->s_lastcheck)/(3600*24);
+		if (batt && (now < (fs->super->s_lastcheck +
+				    fs->super->s_checkinterval*2)))
+			reason = 0;
 	}
 	if (reason) {
 		fputs(ctx->device_name, stdout);
