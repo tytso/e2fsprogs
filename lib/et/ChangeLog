@@ -1,3 +1,7 @@
+2003-08-01  Philipp Thomas <pthomas@suse.de>
+
+	* et_c.awk, et_h.awk: Add Heimdal compile_et extensions
+
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.34

@@ -68,10 +68,16 @@ c2n["_"]=63
 /^#/ { next }
 /^[ \t]*(error_table|et)[ \t]+[a-zA-Z][a-zA-Z0-9_]+/ {
 	table_number = 0
-	table_name = $2
 	mod_base = 1000000
-	for(i=1; i<=length(table_name); i++) {
-	    table_number=(table_number*char_shift)+c2n[substr(table_name,i,1)]
+	if (NF > 2) {
+	    table_name = $3
+	    base_name = $2
+	} else {
+	    table_name = $2
+	    base_name = table_name
+	}
+	for(i=1; i<=length(base_name); i++) {
+	    table_number=(table_number*char_shift)+c2n[substr(base_name,i,1)]
 	}
 	# We start playing *_high, *low games here because the some
 	# awk programs do not have the necessary precision (sigh)
@@ -126,6 +132,9 @@ c2n["_"]=63
 }
 
 /^[ \t]*(error_code|ec)[ \t]+[A-Z_0-9]+,/ {
+	# Be tolerant to missing whitespace after `,' ...
+	sub(/,/, ", ")
+
 	tag=prefix_str substr($2,1,length($2)-1)
 	if (curr_high == 0) {
 		printf "#define %-40s (%dL)\n", tag, \
@@ -144,6 +153,10 @@ c2n["_"]=63
 		cur_low += mod_base
 		cur_high--
 	}
+}
+
+/^[ \t]*(prefix)$/ {
+	prefix_str = ""
 }
 
 /^[ \t]*(prefix)[ \t]+[A-Z_0-9]+/ {
@@ -168,6 +181,10 @@ c2n["_"]=63
 END {
 	print "extern const struct error_table et_" table_name "_error_table;" > outfile
 	print "extern void initialize_" table_name "_error_table(void);" > outfile
+	print "" > outfile
+	print "/* For compatibility with Heimdal */" > outfile
+	print "extern void initialize_" table_name "_error_table_r(void);" > outfile
+	print "" > outfile
 	if (tab_base_high == 0) {
 		print "#define ERROR_TABLE_BASE_" table_name " (" \
 			sprintf("%d", tab_base_sign*tab_base_low) \

@@ -53,6 +53,10 @@
 #define KRBET_KNAME_FMT                          (39525457L)
 extern const struct error_table et_krb_error_table;
 extern void initialize_krb_error_table(void);
+
+/* For compatibility with Heimdal */
+extern void initialize_krb_error_table_r(void);
+
 #define ERROR_TABLE_BASE_krb (39525376L)
 
 /* for compatibility with older versions... */

@@ -68,10 +68,16 @@ c2n["_"]=63
 /^#/ { next }
 /^[ \t]*(error_table|et)[ \t]+[a-zA-Z][a-zA-Z0-9_]+/ {
 	table_number = 0
-	table_name = $2
 	mod_base = 1000000
-	for(i=1; i<=length(table_name); i++) {
-	    table_number=(table_number*char_shift)+c2n[substr(table_name,i,1)]
+	if (NF > 2) {
+	    table_name = $3
+	    base_name = $2
+	} else {
+	    table_name = $2
+	    base_name = table_name
+	}
+	for(i=1; i<=length(base_name); i++) {
+	    table_number=(table_number*char_shift)+c2n[substr(base_name,i,1)]
 	}
 
 	# We start playing *_high, *low games here because the some
@@ -136,6 +142,11 @@ c2n["_"]=63
 	continuation = 0;
 }
 
+/^[ \t]*(error_code|ec)[ \t]+[A-Z_0-9]+,[^ \t]/ {
+	# Be tolerant to missing whitespace after `,' ...
+	sub(/,/, ", ")
+}
+
 /^[ \t]*(error_code|ec)[ \t]+[A-Z_0-9]+,[ \t]*$/ {
 	table_item_count++
 	skipone=1
@@ -178,6 +189,10 @@ c2n["_"]=63
 	    printf "\t%s,\n", $0 > outfile
 	}
 	skipone=0
+}
+
+/^[ \t]*(prefix)$/ {
+	prefix_str = ""
 }
 
 /^[ \t]*(prefix)[ \t]+[A-Z_0-9]+/ {
@@ -229,7 +244,7 @@ END {
 	print "    }" > outfile
 	print "}" > outfile
 	print "" > outfile
-	print "/* For Heimdall compatibility */" > outfile
+	print "/* For Heimdal compatibility */" > outfile
 	print "void initialize_" table_name "_error_table_r(struct et_list **list)" > outfile
 	print "{" > outfile
 	print "    struct et_list *et, **end;" > outfile

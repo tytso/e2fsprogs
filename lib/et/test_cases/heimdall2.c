@@ -102,7 +102,7 @@ void initialize_kadm_error_table(void) {
     }
 }
 
-/* For Heimdall compatibility */
+/* For Heimdal compatibility */
 void initialize_kadm_error_table_r(struct et_list **list)
 {
     struct et_list *et, **end;

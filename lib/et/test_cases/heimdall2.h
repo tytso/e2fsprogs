@@ -47,6 +47,10 @@
 #define KADM_PASS_Q_DICT                         (-1783126205L)
 extern const struct error_table et_kadm_error_table;
 extern void initialize_kadm_error_table(void);
+
+/* For compatibility with Heimdal */
+extern void initialize_kadm_error_table_r(void);
+
 #define ERROR_TABLE_BASE_kadm (-1783126272L)
 
 /* for compatibility with older versions... */
