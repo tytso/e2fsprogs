@@ -3,7 +3,7 @@ Section: base
 Priority: required
 Maintainer: Yann Dirson <dirson@debian.org>
 Build-Depends: texi2html, texinfo, debhelper (>= 4)
-Standards-Version: 3.5.4
+Standards-Version: 3.5.6
 
 Package: e2fsck-static
 Section: admin
@@ -71,6 +71,19 @@ Architecture: any
 Description: A stripped-down versions of e2fsprogs, for boot-floppies
  This package is an e2fsprogs package built for a reduced size, so that
  it can help to save space on installation boot-floppies.
+ .
+ Don't attempt to install this package, it has no support for a couple of
+ features you surely want.  Anyway it should refuse to install.
+
+Package: e2fsprogs-udeb
+Section: debian-installer
+Priority: standard
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: e2fsprogs
+Architecture: any
+Description: A stripped-down versions of e2fsprogs, for debian-installer
+ This package is an e2fsprogs package built for a reduced size, so that
+ it can help to save space in debian-installer.
  .
  Don't attempt to install this package, it has no support for a couple of
  features you surely want.  Anyway it should refuse to install.

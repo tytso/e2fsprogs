@@ -1,5 +1,5 @@
 #!/bin/sh
-ext3root=`awk '{ if (($2 == "/") && ($3 == "ext3")) {print $1;}}' /etc/fstab`
+ext3root=`grep -v '^ *#' /etc/fstab | awk '{ if (($2 == "/") && ($3 == "ext3")) {print $1;}}'`
 if test -n "$ext3root" ; then
-    /sbin/tune2fs -j $ext3root > /dev/null
+    /sbin/tune2fs -O has_journal $ext3root > /dev/null
 fi

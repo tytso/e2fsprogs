@@ -1,3 +1,34 @@
+e2fsprogs (1.29+1.30-WIP-0930-2) unstable; urgency=low
+
+  * Made mkinitrd script to skip commented-out lines (Closes: #163251).
+
+ -- Yann Dirson <dirson@debian.org>  Tue, 15 Oct 2002 00:16:08 +0200
+
+e2fsprogs (1.29+1.30-WIP-0930-1) unstable; urgency=low
+
+  * New upstream prerelease.
+  * Replaced in mkinitrd script "tune2fs -j" with "tune2fs -O
+    has_journal", as suggested by Theodore Ts'o (Closes: #162949).
+  * Remove --disable-debugfs from mips-nopic flags (Closes: #162674).
+
+ -- Yann Dirson <dirson@debian.org>  Thu,  3 Oct 2002 00:05:36 +0200
+
+e2fsprogs (1.29-1) unstable; urgency=low
+
+  * New upstream release (Closes: #159423).
+  * Fixed typo in chattr manpage (Philipp Matthias Hahn, Closes:
+    #162297).
+  * Generate udeb package for debian-installer (Martin Sjögren, Closes:
+    #162212).
+  * Fixed installation of mkinitrd script (don't use dh_install).  Remove
+    it from the wrong location where it was, in preinst.  Hopefully noone
+    noticed.
+  * Also have old scripts/e2fsprogs.mkinitrd removed.
+  * Bumped Standards-Version to 3.5.6, no change.  3.5.7 will need a bit
+    of work but not tonight.
+
+ -- Yann Dirson <dirson@debian.org>  Thu, 26 Sep 2002 01:46:25 +0200
+
 e2fsprogs (1.28-5) unstable; urgency=low
 
   * The "this time it will work ! (famous last words)" release.
