@@ -1,3 +1,8 @@
+2001-05-05  Theodore Tso  <tytso@valinux.com>
+
+	* config.guess, config.sub: Update to use latest version from FSF
+		(2001-04-20)
+
 2001-01-11  Theodore Ts'o  <tytso@valinux.com>
 
 	* Makefile.in (PROG_SUBDIRS): Build lib/e2p before lib/ext2fs
