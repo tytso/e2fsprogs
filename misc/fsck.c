@@ -98,6 +98,8 @@ int notitle = 0;
 int parallel_root = 0;
 int progress = 0;
 int force_all_parallel = 0;
+int num_running = 0;
+int max_running = 0;
 char *progname;
 char *fstype = NULL;
 struct fs_info *filesys_info;
@@ -419,7 +421,8 @@ static int execute(const char *type, char *device, char *mntpt,
 	}
 
 	if (verbose || noexecute) {
-		printf("[%s -- %s] ", s, mntpt ? mntpt : device);
+		printf("[%s (%d) -- %s] ", s, num_running,
+		       mntpt ? mntpt : device);
 		for (i=0; i < argc; i++)
 			printf("%s ", argv[i]);
 		printf("\n");
@@ -467,7 +470,7 @@ static int execute(const char *type, char *device, char *mntpt,
  * Wait for one child process to exit; when it does, unlink it from
  * the list of executing child processes, and return it.
  */
-static struct fsck_instance *wait_one(NOARGS)
+static struct fsck_instance *wait_one(int flags)
 {
 	int	status;
 	int	sig;
@@ -479,9 +482,15 @@ static struct fsck_instance *wait_one(NOARGS)
 
 	if (noexecute) {
 		inst = instance_list;
-		instance_list = inst->next;
+		prev = 0;
+#ifdef RANDOM_DEBUG
+		while (inst->next && (random() & 1)) {
+			prev = inst;
+			inst = inst->next;
+		}
+#endif
 		inst->exit_status = 0;
-		return(inst);
+		goto ret_inst;
 	}
 
 	/*
@@ -491,7 +500,9 @@ static struct fsck_instance *wait_one(NOARGS)
 	inst = prev = NULL;
 	
 	do {
-		pid = wait(&status);
+		pid = waitpid(-1, &status, flags);
+		if ((pid == 0) && (flags & WNOHANG))
+			return NULL;
 		if (pid < 0) {
 			if ((errno == EINTR) || (errno == EAGAIN))
 				continue;
@@ -530,10 +541,6 @@ static struct fsck_instance *wait_one(NOARGS)
 		status = EXIT_ERROR;
 	}
 	inst->exit_status = status;
-	if (prev)
-		prev->next = inst->next;
-	else
-		instance_list = inst->next;
 	if (progress && (inst->flags & FLAG_PROGRESS) &&
 	    !progress_active()) {
 		for (inst2 = instance_list; inst2; inst2 = inst2->next) {
@@ -559,6 +566,15 @@ static struct fsck_instance *wait_one(NOARGS)
 			break;
 		}
 	}
+ret_inst:
+	if (prev)
+		prev->next = inst->next;
+	else
+		instance_list = inst->next;
+	if (verbose > 1)
+		printf(_("Finished with %s (exit status %d)\n"),
+		       inst->device, inst->exit_status);
+	num_running--;
 	return inst;
 }
 
@@ -566,17 +582,18 @@ static struct fsck_instance *wait_one(NOARGS)
  * Wait until all executing child processes have exited; return the
  * logical OR of all of their exit code values.
  */
-static int wait_all(NOARGS)
+static int wait_all(int flags)
 {
 	struct fsck_instance *inst;
 	int	global_status = 0;
 
-	while (instance_list) {
-		inst = wait_one();
-		if (!inst)
-			break;
+	while ((inst = wait_one(flags))) {
 		global_status |= inst->exit_status;
 		free_instance(inst);
+#ifdef RANDOM_DEBUG
+		if (noexecute && (flags & WNOHANG) && !(random() % 3))
+			break;
+#endif
 	}
 	return global_status;
 }
@@ -611,11 +628,13 @@ static void fsck_device(char *device, int interactive)
 	if (!type)
 		type = DEFAULT_FSTYPE;
 
+	num_running++;
 	retval = execute(type, device, fsent ? fsent->mountpt : 0,
 			 interactive);
 	if (retval) {
 		fprintf(stderr, _("%s: Error %d while executing fsck.%s "
 			"for %s\n"), progname, retval, type, device);
+		num_running--;
 	}
 }
 
@@ -875,7 +894,7 @@ static int check_all(NOARGS)
 		if (fs) {
 			if (!skip_root && !ignore(fs)) {
 				fsck_device(fs->device, 1);
-				status |= wait_all();
+				status |= wait_all(0);
 				if (status > EXIT_NONDESTRUCT)
 					return status;
 			}
@@ -914,27 +933,28 @@ static int check_all(NOARGS)
 			fsck_device(fs->device, serialize);
 			fs->flags |= FLAG_DONE;
 
-			if (serialize) {
+			/*
+			 * Only do one filesystem at a time, or if we
+			 * have a limit on the number of fsck's extant
+			 * at one time, apply that limit.
+			 */
+			if (serialize ||
+			    (max_running && (num_running >= max_running))) {
 				pass_done = 0;
-				break; /* Only do one filesystem at a time */
+				break;
 			}
 		}
 		if (verbose > 1)
 			printf(_("--waiting-- (pass %d)\n"), passno);
-		inst = wait_one();
-		if (inst) {
-			status |= inst->exit_status;
-			free_instance(inst);
-		}
+		status |= wait_all(pass_done ? 0 : WNOHANG);
 		if (pass_done) {
-			status |= wait_all();
 			if (verbose > 1) 
 				printf("----------------------------------\n");
 			passno++;
 		} else
 			not_done_yet++;
 	}
-	status |= wait_all();
+	status |= wait_all(0);
 	return status;
 }
 
@@ -948,7 +968,7 @@ static void usage(NOARGS)
 static void PRS(int argc, char *argv[])
 {
 	int	i, j;
-	char	*arg;
+	char	*arg, *tmp;
 	char	options[128];
 	int	opt = 0;
 	int     opts_for_fsck = 0;
@@ -1018,19 +1038,17 @@ static void PRS(int argc, char *argv[])
 				serialize++;
 				break;
 			case 't':
-				if (arg[j+1]) {
-					fstype = string_copy(arg+j+1);
-					compile_fs_type(fstype, &fs_type_compiled);
-					goto next_arg;
-				}
-				if ((i+1) < argc) {
-					i++;
-					fstype = string_copy(argv[i]);
-					compile_fs_type(fstype, &fs_type_compiled);
-					goto next_arg;
-				}
-				usage();
-				break;
+				if (fstype)
+					usage();
+				if (arg[j+1])
+					tmp = arg+j+1;
+				else if ((i+1) < argc)
+					tmp = argv[++i];
+				else
+					usage();
+				fstype = string_copy(tmp);
+				compile_fs_type(fstype, &fs_type_compiled);
+				goto next_arg;
 			case '-':
 				opts_for_fsck++;
 				break;
@@ -1058,6 +1076,8 @@ static void PRS(int argc, char *argv[])
 	}
 	if (getenv("FSCK_FORCE_ALL_PARALLEL"))
 		force_all_parallel++;
+	if ((tmp = getenv("FSCK_MAX_INST")))
+	    max_running = atoi(tmp);
 }
 
 int main(int argc, char *argv[])
@@ -1107,17 +1127,17 @@ int main(int argc, char *argv[])
 	}
 	for (i = 0 ; i < num_devices; i++) {
 		fsck_device(devices[i], interactive);
-		if (serialize) {
+		if (serialize || (num_running >= max_running)) {
 			struct fsck_instance *inst;
 
-			inst = wait_one();
+			inst = wait_one(0);
 			if (inst) {
 				status |= inst->exit_status;
 				free_instance(inst);
 			}
 		}
 	}
-	status |= wait_all();
+	status |= wait_all(0);
 	free(fsck_path);
 	return status;
 }

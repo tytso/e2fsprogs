@@ -1,3 +1,11 @@
+2002-01-29  Theodore Tso  <tytso@valinux.com>
+
+	* fsck.c: Allow the number of outstanding processes fs-specific
+		fsck programs to be capped via the FSCK_MAX_INST
+		envrionment variable.
+
+	* fsck.8.in: Document all of the environment variables used by fsck.
+
 2002-01-27  Theodore Tso  <tytso@valinux.com>
 
 	* tune2fs.8.in: Document the -f flag to tune2fs.

@@ -280,14 +280,55 @@ default behavior; it supports this option for backwards compatibility
 reasons only.
 .SH AUTHOR
 Theodore Ts'o (tytso@mit.edu)
-.PP
-The manual page was shamelessly adapted from David Engel and Fred van
-Kempen's generic 
-.B fsck
-front end program, which was in turn shamelessly
-adapted from Remy Card's version for the ext2 file system.
 .SH FILES
 .IR /etc/fstab .
+.SH ENVIRONMENT VARIABLES
+The
+.B fsck
+program's behavior is affected by the following environment variables:
+.TP
+.B FSCK_FORCE_ALL_PARALLEL
+If this environment variable is set, 
+.B fsck
+will attempt to run all of the specified filesystems in parallel,
+regardless of whether the filesystems appear to be on the same
+device.  (This is useful for RAID systems or high-end storage systems
+such as those sold by companies such as IBM or EMC.)
+.TP
+.B FSCK_MAX_INST
+This environment variable will limit the maximum number of file system
+checkers that can be running at one time.  This allows configurations
+which have a large number of disks to avoid 
+.B fsck
+starting too many file system checkers at once, which might overload
+CPU and memory resources available on the system.  If this value is
+zero, then an unlimited number of processes can be spawned.  This is
+currently the default, but future versions of
+.B fsck
+may attempt to automatically determine how many file system checks can
+be run based on gathering accounting data from the operating system.
+.TP
+.B PATH
+The 
+.B PATH
+environment variable is used to find file system checkers.  A set of
+system directories are searched first: 
+.BR /sbin ,
+.BR /sbin/fs.d ,
+.BR  /sbin/fs ,
+.BR /etc/fs ,
+and 
+.BR /etc .
+Then the set of directories found in the
+.B PATH
+environment are searched.
+.TP
+.B FSTAB_FILE
+This environment variable allows the system administrator 
+to override the standard location of the 
+.B /etc/fstab
+file.  It is also use for developers who are testing
+.BR fsck .
 .SH SEE ALSO
 .BR fstab (5),
 .BR mkfs (8),
