@@ -1,3 +1,7 @@
+2003-01-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (usage): Make descripton -c be a bit more explicit
+
 2003-01-22  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1.c (check_blocks): Use the EXT2_I_SIZE macro.

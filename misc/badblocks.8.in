@@ -55,7 +55,7 @@ is going to be fed to the
 or 
 .B mke2fs
 programs, it is important that the block size is properly specified,
-since the block numbers which are generated is very dependent on the 
+since the block numbers which are generated are very dependent on the 
 block size in use.   For this reason, it is strongly recommended that
 users 
 .B not

@@ -70,7 +70,7 @@ static void usage(e2fsck_t ctx)
 		" -p                   Automatic repair (no questions)\n"
 		" -n                   Make no changes to the filesystem\n"
 		" -y                   Assume \"yes\" to all questions\n"
-		" -c                   Check for bad blocks\n"
+		" -c                   Check for bad blocks and add them to the badblock list\n"
 		" -f                   Force checking even if filesystem is marked clean\n"));
 	fprintf(stderr, _(""
 		" -v                   Be verbose\n"
