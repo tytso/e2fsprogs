@@ -1,3 +1,9 @@
+2000-10-24    <tytso@snap.thunk.org>
+
+	* mke2fs.c (PRS, main), mke2fs.8.in: Add support for the -j
+		option, which builds an ext2/3 filesystem with an ext3
+		journal.
+
 2000-10-24    <tytso@valinux.com>
 
 	* mke2fs.c (zap_sector): Fix really stupid typo which gcc 2.95

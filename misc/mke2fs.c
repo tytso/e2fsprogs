@@ -79,6 +79,7 @@ int	quiet = 0;
 int	super_only = 0;
 int	force = 0;
 int	noaction = 0;
+int	journal_size = 0;
 char	*bad_blocks_filename = 0;
 __u32	fs_stride = 0;
 
@@ -779,7 +780,7 @@ static void PRS(int argc, char *argv[])
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv,
-		    "b:cf:g:i:l:m:no:qr:R:s:tvI:ST:FL:M:N:O:V")) != EOF)
+		    "b:cf:g:i:j:l:m:no:qr:R:s:tvI:ST:FL:M:N:O:V")) != EOF)
 		switch (c) {
 		case 'b':
 			blocksize = strtoul(optarg, &tmp, 0);
@@ -828,6 +829,14 @@ static void PRS(int argc, char *argv[])
 			    *tmp) {
 				com_err(program_name, 0,
 					_("bad inode ratio - %s"), optarg);
+				exit(1);
+			}
+			break;
+		case 'j':
+			journal_size = strtoul(optarg, &tmp, 0);
+			if (journal_size < 4 || journal_size > 100 || *tmp) {
+				com_err(program_name, 0,
+					_("bad journal size - %s"), optarg);
 				exit(1);
 			}
 			break;
@@ -1015,6 +1024,7 @@ int main (int argc, char *argv[])
 	errcode_t	retval = 0;
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
+	int		journal_blocks;
 	struct ext2fs_sb *s;
 
 #ifdef ENABLE_NLS
@@ -1110,6 +1120,20 @@ int main (int argc, char *argv[])
 #ifdef ZAP_BOOTBLOCK
 		zap_sector(fs, 0);
 #endif
+	}
+	if (journal_size) {
+		if (!quiet)
+			printf(_("Creating journal: "));
+		journal_blocks = journal_size * 1024 /
+			(fs->blocksize 	/ 1024);
+		retval = ext2fs_add_journal_fs(fs, journal_blocks);
+		if (retval) {
+			com_err (program_name, retval,
+				 _("while trying to create journal"));
+			exit(1);
+		}
+		if (!quiet)
+			printf(_("done\n"));
 	}
 	
 	if (!quiet)

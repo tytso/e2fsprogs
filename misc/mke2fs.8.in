@@ -29,6 +29,10 @@ mke2fs \- create a Linux second extended file system
 .I bytes-per-inode
 ]
 [
+.B \-j
+.I megabytes-for-journal
+]
+[
 .B \-N
 .I number-of-inodes
 ]
@@ -133,6 +137,12 @@ the blocksize of the filesystem, since then too many inodes will be made.
 Be warned that is not possible to expand the number of inodes on a 
 filesystem after it is created, so be careful decided the correct
 value for this parameter. 
+.TP
+.BI \-j " megabytes-for-journal"
+Build the ext2 filesystem with the ext3 journaling feature enabled.  
+Megabyts-for-journal specifies the size of the journal in MB 
+(1024*1024 bytes).  Any size between 4MB and 100MB may be used.
+Of course, the journal must be small enough to fit into the filesystem.
 .TP
 .B \-n
 causes mke2fs to not actually create a filesystem, but display what it 
