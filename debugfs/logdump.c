@@ -249,7 +249,12 @@ int read_journal_block(char *cmd, struct journal_source *source, off_t offset,
 	int retval;
 	
 	if (source->where == JOURNAL_IS_EXTERNAL) {
-		retval = pread(source->fd, buf, size, offset);
+		if (lseek(source->fd, offset, SEEK_SET) < 0) {
+			retval = errno;
+			com_err(cmd, retval, "while seeking in reading journal");
+			return retval;
+		}
+		retval = read(source->fd, buf, size);
 		if (retval >= 0) {
 			*got = retval;
 			retval = 0;
