@@ -446,8 +446,8 @@ struct ext2_super_block {
 	__u32	s_default_mount_opts;
 	__u32	s_first_meta_bg;	/* First metablock group */
 	__u32	s_mkfs_time;		/* When the filesystem was created */
-	__u32	s_jnl_blocks[16]; 	/* Backup of the journal inode */
-	__u32	s_reserved[173];	/* Padding to the end of the block */
+	__u32	s_jnl_blocks[17]; 	/* Backup of the journal inode */
+	__u32	s_reserved[172];	/* Padding to the end of the block */
 };
 
 /*

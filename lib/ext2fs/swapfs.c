@@ -57,9 +57,14 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 	sb->s_journal_inum = ext2fs_swab32(sb->s_journal_inum);
 	sb->s_journal_dev = ext2fs_swab32(sb->s_journal_dev);
 	sb->s_last_orphan = ext2fs_swab32(sb->s_last_orphan);
+	sb->s_default_mount_opts = ext2fs_swab32(sb->s_default_mount_opts);
 	sb->s_first_meta_bg = ext2fs_swab32(sb->s_first_meta_bg);
+	sb->s_mkfs_time = ext2fs_swab32(sb->s_mkfs_time);
 	for (i=0; i < 4; i++)
 		sb->s_hash_seed[i] = ext2fs_swab32(sb->s_hash_seed[i]);
+	for (i=0; i < 17; i++)
+		sb->s_jnl_blocks[i] = ext2fs_swab32(sb->s_jnl_blocks[i]);
+
 }
 
 void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
@@ -93,7 +98,9 @@ void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
 	t->i_links_count = ext2fs_swab16(f->i_links_count);
 	t->i_blocks = ext2fs_swab32(f->i_blocks);
 	t->i_flags = ext2fs_swab32(f->i_flags);
-	if (!islnk || f->i_blocks) {
+	t->i_file_acl = ext2fs_swab32(f->i_file_acl);
+	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
+	if (!islnk || ext2fs_inode_data_blocks(fs, t)) {
 		for (i = 0; i < EXT2_N_BLOCKS; i++)
 			t->i_block[i] = ext2fs_swab32(f->i_block[i]);
 	} else if (t != f) {
@@ -101,8 +108,6 @@ void ext2fs_swap_inode(ext2_filsys fs, struct ext2_inode *t,
 			t->i_block[i] = f->i_block[i];
 	}
 	t->i_generation = ext2fs_swab32(f->i_generation);
-	t->i_file_acl = ext2fs_swab32(f->i_file_acl);
-	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
 	t->i_faddr = ext2fs_swab32(f->i_faddr);
 
 	switch (fs->super->s_creator_os) {

@@ -1,3 +1,15 @@
+2004-01-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2_fs.h: Reserve an extra 4 bytes for the journal backup,
+		which we're using due to a typo in the e2fsck code.  (Oops)
+
+	* swapfs.c (ext2fs_swap_inode): Fix byte swap bug which causes SE
+		Linux created symlinks with mandatory attributes to fail
+		to be properly handled on big endian systems.  (Addresses
+		Debian Bug #228723).
+		(ext2fs_swap_super): Byte swap some new fields in the
+		superblock, including the journal backup fields.
+
 2003-12-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* alloc.c, bb_inode.c, bitops.c, block.c, check_desc.c, closefs.c,

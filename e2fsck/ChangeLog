@@ -1,3 +1,9 @@
+2004-01-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass2.c (deallocate_inode_block): Check to make sure the block
+		number is invalid before deallocating it, to avoid core
+		dumping e2fsck.
+
 2003-12-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass3.c (check_directory): When reconnecting a directory, we may

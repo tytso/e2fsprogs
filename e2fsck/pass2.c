@@ -1083,6 +1083,9 @@ static int deallocate_inode_block(ext2_filsys fs,
 	
 	if (HOLE_BLKADDR(*block_nr))
 		return 0;
+	if ((*block_nr < fs->super->s_first_data_block) ||
+	    (*block_nr >= fs->super->s_blocks_count))
+		return 0;
 	ext2fs_unmark_block_bitmap(ctx->block_found_map, *block_nr);
 	ext2fs_block_alloc_stats(fs, *block_nr, -1);
 	return 0;
