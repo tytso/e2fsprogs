@@ -147,7 +147,7 @@ Theodore Ts'o <tytso@alum.mit.edu>.  Non-destructive read/write test
 implemented by David Beattie <dbeattie@softhome.net>.
 .SH AVAILABILITY
 .B badblocks
-is part of the e2fsprogs package and is available from anonymous 
+is part of the e2fsprogs package and is available from 
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR e2fsck (8),

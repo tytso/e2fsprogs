@@ -1,5 +1,9 @@
 2001-05-12  Theodore Tso  <tytso@valinux.com>
 
+	* badblocks.8.in, dumpe2fs.8.in, e2label.8.in, mke2fs.8.in, 
+		mklost+found.8.in, tune2fs.8.in: Fix typo; removed
+		excess "anonymous" in the AVAILABILITY section.
+
 	* chattr.1.in, lsattr.1.in, uuidgen.1.in: Update URL location of
 		e2fsprogs package.
 

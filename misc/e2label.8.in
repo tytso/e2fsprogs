@@ -44,7 +44,7 @@ option of
 was written by Theodore Ts'o (tytso@mit.edu).
 .SH AVAILABILITY
 .B e2label
-is part of the e2fsprogs package and is available from anonymous 
+is part of the e2fsprogs package and is available from 
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR mke2fs (8),

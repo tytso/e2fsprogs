@@ -274,7 +274,7 @@ This manual page was written by Christian Kuhtz <chk@data-hh.Hanse.DE>.
 Timedependent checking was added by Uwe Ohse <uwe@tirka.gun.de>.
 .SH AVAILABILITY
 .B tune2fs
-is part of the e2fsprogs package and is available from anonymous 
+is part of the e2fsprogs package and is available from 
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR dumpe2fs (8),

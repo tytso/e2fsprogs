@@ -35,7 +35,7 @@ has been written by Remy Card <Remy.Card@linux.org>.
 There are none :-)
 .SH AVAILABILITY
 .B mklost+found
-is part of the e2fsprogs package and is available from anonymous 
+is part of the e2fsprogs package and is available from 
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR e2fsck (8),

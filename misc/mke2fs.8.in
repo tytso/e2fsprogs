@@ -354,7 +354,7 @@ extended file system does not support fragments yet.
 There may be other ones.  Please, report them to the author.
 .SH AVAILABILITY
 .B mke2fs
-is part of the e2fsprogs package and is available from anonymous 
+is part of the e2fsprogs package and is available from 
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
 .BR badblocks (8),
