@@ -1,3 +1,8 @@
+if ! $FSCK -SV > /dev/null 2>&1 ; then
+	rm -f $test_name.ok $test_name.failed
+	echo "skipped"
+else
+
 IMAGE=$test_dir/image.gz
 VERIFY_FSCK_OPT=-yf
 SWAP_FSCK_OPT=-Sy
@@ -71,3 +76,5 @@ else
 fi
 
 unset IMAGE VERIFY_FSCK_OPT SWAP_FSCK_OPT NATIVE_FSCK_OPT OUT EXP 
+
+fi

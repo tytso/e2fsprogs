@@ -1,5 +1,9 @@
 2002-11-08  Theodore Ts'o  <tytso@mit.edu>
 
+	* configure.in, configure: Add new substitution variable,
+		SWAPFS_CMT, which is '' if swapfs has been enabled, and
+		'#' if it has been disabled.
+	
 	* configure.in, configure: Add support for EVMS ABI 1.2.
 		Changed configure option from --enable-old-evms
 		to --enable-evms-10 and --enable-evms-11

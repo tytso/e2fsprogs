@@ -1,3 +1,8 @@
+2002-11-08    <tytso@snap.thunk.org>
+
+	* Makefile.in (check): Skip trying to compile test_byteswap
+		if --disable-byteswaap had been given to configure.
+
 2002-11-07    <tytso@snap.thunk.org>
 
 	* closefs.c (write_bgdesc, ext2fs_flush): Fix bug in meta_bg
