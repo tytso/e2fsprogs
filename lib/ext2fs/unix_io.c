@@ -68,6 +68,7 @@ struct unix_private_data {
 	int	dev;
 	int	flags;
 	int	access_time;
+	ext2_loff_t offset;
 	struct unix_cache cache[CACHE_SIZE];
 };
 
@@ -81,6 +82,8 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 static errcode_t unix_flush(io_channel channel);
 static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 				int size, const void *data);
+static errcode_t unix_set_option(io_channel channel, const char *option, 
+				 const char *arg);
 
 static void reuse_cache(io_channel channel, struct unix_private_data *data,
 		 struct unix_cache *cache, unsigned long block);
@@ -103,10 +106,11 @@ static struct struct_io_manager struct_unix_manager = {
 	unix_write_blk,
 	unix_flush,
 #ifdef NEED_BOUNCE_BUFFER
-	0
+	0,
 #else
-	unix_write_byte
+	unix_write_byte,
 #endif
+	unix_set_option
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
@@ -126,7 +130,7 @@ static errcode_t raw_read_blk(io_channel channel,
 	int		actual = 0;
 
 	size = (count < 0) ? -count : count * channel->block_size;
-	location = (ext2_loff_t) block * channel->block_size;
+	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
 		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 		goto error_out;
@@ -164,7 +168,7 @@ static errcode_t raw_read_blk(io_channel channel,
 	char		sector[BLOCKALIGN];
 
 	size = (count < 0) ? -count : count * channel->block_size;
-	location = (ext2_loff_t) block * channel->block_size;
+	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 #ifdef DEBUG
 	printf("count=%d, size=%d, block=%d, blk_size=%d, location=%lx\n",
 	 		count, size, block, channel->block_size, location);
@@ -221,7 +225,7 @@ static errcode_t raw_write_blk(io_channel channel,
 			size = count * channel->block_size;
 	}
 
-	location = (ext2_loff_t) block * channel->block_size;
+	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
 		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
 		goto error_out;
@@ -406,12 +410,12 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 
 	if ((retval = alloc_cache(io, data)))
 		goto cleanup;
-	
+
 	open_flags = (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY;
 #ifdef HAVE_OPEN64
-	data->dev = open64(name, open_flags);
+	data->dev = open64(io->name, open_flags);
 #else
-	data->dev = open(name, open_flags);
+	data->dev = open(io->name, open_flags);
 #endif
 	if (data->dev < 0) {
 		retval = errno;
@@ -652,7 +656,7 @@ static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 		return retval;
 #endif
 
-	if (lseek(data->dev, offset, SEEK_SET) < 0)
+	if (lseek(data->dev, offset + data->offset, SEEK_SET) < 0)
 		return errno;
 	
 	actual = write(data->dev, buf, size);
@@ -681,3 +685,26 @@ static errcode_t unix_flush(io_channel channel)
 	return retval;
 }
 
+static errcode_t unix_set_option(io_channel channel, const char *option, 
+				 const char *arg)
+{
+	struct unix_private_data *data;
+	unsigned long tmp;
+	char *end;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	if (!strcmp(option, "offset")) {
+		if (!arg)
+			return EXT2_ET_INVALID_ARGUMENT;
+
+		tmp = strtoul(arg, &end, 0);
+		if (*end)
+			return EXT2_ET_INVALID_ARGUMENT;
+		data->offset = tmp;
+		return 0;
+	}
+	return EXT2_ET_INVALID_ARGUMENT;
+}

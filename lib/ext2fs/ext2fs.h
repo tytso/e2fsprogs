@@ -851,6 +851,10 @@ extern errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size,
 extern errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			     unsigned int block_size, io_manager manager,
 			     ext2_filsys *ret_fs);
+extern errcode_t ext2fs_open2(const char *name, const char *io_options, 
+			      int flags, int superblock, 
+			      unsigned int block_size, io_manager manager,
+			      ext2_filsys *ret_fs);
 extern blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, 
 					 dgrp_t i);
 errcode_t ext2fs_get_data_io(ext2_filsys fs, io_channel *old_io);

@@ -58,6 +58,7 @@ extern int optind;
 const char * program_name = "tune2fs";
 char * device_name;
 char * new_label, *new_last_mounted, *new_UUID;
+char * io_options;
 static int c_flag, C_flag, e_flag, f_flag, g_flag, i_flag, l_flag, L_flag;
 static int m_flag, M_flag, r_flag, s_flag = -1, u_flag, U_flag, T_flag;
 static time_t last_check_time;
@@ -449,6 +450,9 @@ static void parse_e2label_options(int argc, char ** argv)
 		fputs(_("Usage: e2label device [newlabel]\n"), stderr);
 		exit(1);
 	}
+	io_options = strchr(argv[1], '?');
+	if (io_options)
+		*io_options++ = 0;
 	device_name = blkid_get_devname(NULL, argv[1], NULL);
 	if (!device_name) {
 		com_err("e2label", 0, _("Unable to resolve '%s'"), 
@@ -704,6 +708,9 @@ static void parse_tune2fs_options(int argc, char **argv)
 		usage();
 	if (!open_flag && !l_flag)
 		usage();
+	io_options = strchr(argv[optind], '?');
+	if (io_options)
+		*io_options++ = 0;
 	device_name = blkid_get_devname(NULL, argv[optind], NULL);
 	if (!device_name) {
 		com_err("tune2fs", 0, _("Unable to resolve '%s'"), 
@@ -762,7 +769,8 @@ int main (int argc, char ** argv)
 #else
 	io_ptr = unix_io_manager;
 #endif
-	retval = ext2fs_open (device_name, open_flag, 0, 0, io_ptr, &fs);
+	retval = ext2fs_open2(device_name, io_options, open_flag, 
+			      0, 0, io_ptr, &fs);
         if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);

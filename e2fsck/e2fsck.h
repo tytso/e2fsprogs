@@ -189,6 +189,7 @@ struct e2fsck_struct {
 	const char *program_name;
 	char *filesystem_name;
 	char *device_name;
+	char *io_options;
 	int	flags;		/* E2fsck internal flags */
 	int	options;
 	blk_t	use_superblock;	/* sb requested by user */

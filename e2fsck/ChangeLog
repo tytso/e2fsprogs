@@ -1,5 +1,11 @@
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 
+	* e2fsck.h: Add io_options to e2fsck_struct
+
+	* unix.c: If there is a question mark in the device name, separate
+		out the options to the IO layer, and pass it on to
+		ext2fs_open2().
+
 	* Makefile.in: Use Linux-kernel-style makefile output to make it
 		easier to see errors/warnings.
 

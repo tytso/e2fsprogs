@@ -708,6 +708,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	if ((ctx->options & E2F_OPT_NO) && !bad_blocks_file &&
 	    !cflag && !swapfs && !(ctx->options & E2F_OPT_COMPRESS_DIRS))
 		ctx->options |= E2F_OPT_READONLY;
+	ctx->io_options = strchr(argv[optind], '?');
+	if (ctx->io_options) 
+		*ctx->io_options++ = 0;
 	ctx->filesystem_name = blkid_get_devname(ctx->blkid, argv[optind], 0);
 	if (!ctx->filesystem_name) {
 		com_err(ctx->program_name, 0, _("Unable to resolve '%s'"), 
@@ -869,23 +872,29 @@ restart:
 	if ((ctx->options & E2F_OPT_READONLY) == 0)
 		flags |= EXT2_FLAG_RW;
 
+	if (ctx->io_options) {
+		int len = strlen(ctx->filesystem_name) + 
+			strlen(ctx->io_options) + 2;
+	}
+
 	if (ctx->superblock && ctx->blocksize) {
-		retval = ext2fs_open(ctx->filesystem_name, flags,
-				     ctx->superblock, ctx->blocksize,
-				     io_ptr, &fs);
+		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options, 
+				      flags, ctx->superblock, ctx->blocksize,
+				      io_ptr, &fs);
 	} else if (ctx->superblock) {
 		int blocksize;
 		for (blocksize = EXT2_MIN_BLOCK_SIZE;
 		     blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
-			retval = ext2fs_open(ctx->filesystem_name, flags,
-					     ctx->superblock, blocksize,
-					     io_ptr, &fs);
+			retval = ext2fs_open2(ctx->filesystem_name, 
+					      ctx->io_options, flags,
+					      ctx->superblock, blocksize,
+					      io_ptr, &fs);
 			if (!retval)
 				break;
 		}
 	} else 
-		retval = ext2fs_open(ctx->filesystem_name, flags, 
-				     0, 0, io_ptr, &fs);
+		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options, 
+				      flags, 0, 0, io_ptr, &fs);
 	if (!ctx->superblock && !(ctx->options & E2F_OPT_PREEN) &&
 	    !(ctx->flags & E2F_FLAG_SB_SPECIFIED) &&
 	    ((retval == EXT2_ET_BAD_MAGIC) ||

@@ -25,7 +25,7 @@ extern int optind;
 
 #include "../version.h"
 
-char *program_name, *device_name;
+char *program_name, *device_name, *io_options;
 
 static void usage (char *prog)
 {
@@ -195,6 +195,10 @@ int main (int argc, char ** argv)
 	if (optind < argc)
 		usage(program_name);
 	
+	io_options = strchr(device_name, '?');
+	if (io_options)
+		*io_options++ = 0;
+
 	check_mount(device_name);
 	
 	if (flush) {
@@ -222,8 +226,8 @@ int main (int argc, char ** argv)
 	} else 
 		io_ptr = unix_io_manager;
 
-	retval = ext2fs_open (device_name, EXT2_FLAG_RW, 0, 0,
-			      io_ptr, &fs);
+	retval = ext2fs_open2(device_name, io_options, EXT2_FLAG_RW, 
+			      0, 0, io_ptr, &fs);
 	if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);

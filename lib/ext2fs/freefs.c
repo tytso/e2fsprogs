@@ -24,7 +24,8 @@ void ext2fs_free(ext2_filsys fs)
 	if (!fs || (fs->magic != EXT2_ET_MAGIC_EXT2FS_FILSYS))
 		return;
 	if (fs->image_io != fs->io) {
-		io_channel_close(fs->image_io);
+		if (fs->image_io)
+			io_channel_close(fs->image_io);
 	}
 	if (fs->io) {
 		io_channel_close(fs->io);

@@ -56,6 +56,8 @@ static errcode_t test_write_blk(io_channel channel, unsigned long block,
 static errcode_t test_flush(io_channel channel);
 static errcode_t test_write_byte(io_channel channel, unsigned long offset,
 				 int count, const void *buf);
+static errcode_t test_set_option(io_channel channel, const char *option, 
+				 const char *arg);
 
 static struct struct_io_manager struct_test_manager = {
 	EXT2_ET_MAGIC_IO_MANAGER,
@@ -66,8 +68,8 @@ static struct struct_io_manager struct_test_manager = {
 	test_read_blk,
 	test_write_blk,
 	test_flush,
-	test_write_byte
-	
+	test_write_byte,
+	test_set_option
 };
 
 io_manager test_io_manager = &struct_test_manager;
@@ -94,6 +96,7 @@ void (*test_io_cb_write_byte)
 #define TEST_FLAG_SET_BLKSIZE		0x04
 #define TEST_FLAG_FLUSH			0x08
 #define TEST_FLAG_DUMP			0x10
+#define TEST_FLAG_SET_OPTION		0x20
 
 static void test_dump_block(io_channel channel,
 			    struct test_private_data *data,
@@ -351,3 +354,29 @@ static errcode_t test_flush(io_channel channel)
 	return retval;
 }
 
+static errcode_t test_set_option(io_channel channel, const char *option, 
+				 const char *arg)
+{
+	struct test_private_data *data;
+	errcode_t	retval = 0;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct test_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_TEST_IO_CHANNEL);
+
+
+	if (data->flags & TEST_FLAG_SET_OPTION)
+		fprintf(data->outfile, "Test_io: set_option(%s, %s) ", 
+			option, arg);
+	if (data->real && data->real->manager->set_option) {
+		retval = (data->real->manager->set_option)(data->real, 
+							   option, arg);
+		if (data->flags & TEST_FLAG_SET_OPTION)
+			fprintf(data->outfile, "returned %s\n",
+				retval ? error_message(retval) : "OK");
+	} else {
+		if (data->flags & TEST_FLAG_SET_OPTION)
+			fprintf(data->outfile, "not implemented\n");
+	}
+	return retval;
+}

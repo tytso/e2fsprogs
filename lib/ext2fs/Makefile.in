@@ -46,6 +46,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	initialize.o \
 	inline.o \
 	inode.o \
+	io_manager.o \
 	ismounted.o \
 	link.o \
 	llseek.o \
@@ -96,11 +97,12 @@ SRCS= ext2_err.c \
 	$(srcdir)/getsize.c \
 	$(srcdir)/getsectsize.c \
 	$(srcdir)/icount.c \
-	$(srcdir)/imager.c \
 	$(srcdir)/initialize.c \
 	$(srcdir)/inline.c \
 	$(srcdir)/inode.c \
 	$(srcdir)/inode_io.c \
+	$(srcdir)/imager.c \
+	$(srcdir)/io_manager.c \
 	$(srcdir)/ismounted.c \
 	$(srcdir)/link.c \
 	$(srcdir)/llseek.c \

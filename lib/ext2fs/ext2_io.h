@@ -68,7 +68,9 @@ struct struct_io_manager {
 	errcode_t (*flush)(io_channel channel);
 	errcode_t (*write_byte)(io_channel channel, unsigned long offset,
 				int count, const void *data);
-	int		reserved[15];
+	errcode_t (*set_option)(io_channel channel, const char *option, 
+				const char *arg);
+	int		reserved[14];
 };
 
 #define IO_FLAG_RW	1
@@ -81,9 +83,15 @@ struct struct_io_manager {
 #define io_channel_read_blk(c,b,n,d)	((c)->manager->read_blk((c),b,n,d))
 #define io_channel_write_blk(c,b,n,d)	((c)->manager->write_blk((c),b,n,d))
 #define io_channel_flush(c) 		((c)->manager->flush((c)))
-#define io_channel_write_byte(c,b,n,d)	((c)->manager->write_byte((c),b,n,d))
 #define io_channel_bumpcount(c)		((c)->refcount++)
 	
+/* io_manager.c */
+extern errcode_t io_channel_set_options(io_channel channel, 
+					const char *options);
+extern errcode_t io_channel_write_byte(io_channel channel, 
+				       unsigned long offset,
+				       int count, const void *data);
+
 /* unix_io.c */
 extern io_manager unix_io_manager;
 

@@ -1,5 +1,24 @@
 2004-11-30  Theodore Ts'o  <tytso@mit.edu>
 
+	* unix_io.c (unix_set_option): Add support for the offset option.
+
+	* test_io.c (test_set_option): Add support for the set_option method.
+
+	* ext2_io.h: Add new io_channel method, set_option(), and change
+		io_channel_write_byte() from a macro to a library function.
+
+	* ext2fs.h, openfs.c(ext2fs_open2): New version of ext2fs_open
+		which adds a new parameter, io_options.
+		(ext2fs_open): If there is a question mark in the
+		filename, and no io_options are specified, assumed that
+		the text following the question mark are io_options.
+	
+	* io_manager.c, Makefile.in: New source file which contains
+		high-level functions for the io_channel layer.
+
+	* freefs.c (ext2fs_free): Make sure we don't free the io_channel
+		if image_io is NULL.
+
 	* Makefile.in: Use Linux-kernel-style makefile output to make it
 		easier to see errors/warnings.
 

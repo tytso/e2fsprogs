@@ -59,6 +59,14 @@ blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
 	return ret_blk;
 }
 
+errcode_t ext2fs_open(const char *name, int flags, int superblock,
+		      unsigned int block_size, io_manager manager, 
+		      ext2_filsys *ret_fs)
+{
+	return ext2fs_open2(name, 0, flags, superblock, block_size, 
+			    manager, ret_fs);
+}
+
 /*
  *  Note: if superblock is non-zero, block-size must also be non-zero.
  * 	Superblock and block_size can be zero to use the default size.
@@ -70,16 +78,17 @@ blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
  *				features aren't supported.
  *	EXT2_FLAG_JOURNAL_DEV_OK - Open an ext3 journal device
  */
-errcode_t ext2fs_open(const char *name, int flags, int superblock,
-		      unsigned int block_size, io_manager manager, 
-		      ext2_filsys *ret_fs)
+errcode_t ext2fs_open2(const char *name, const char *io_options,
+		       int flags, int superblock,
+		       unsigned int block_size, io_manager manager, 
+		       ext2_filsys *ret_fs)
 {
 	ext2_filsys	fs;
 	errcode_t	retval;
 	unsigned long	i;
 	int		j, groups_per_block, blocks_per_group;
 	blk_t		group_block, blk;
-	char		*dest;
+	char		*dest, *cp;
 	struct ext2_group_desc *gdp;
 	
 	EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
@@ -92,16 +101,26 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
 	fs->flags = flags;
 	fs->umask = 022;
-	retval = manager->open(name, (flags & EXT2_FLAG_RW) ? IO_FLAG_RW : 0,
-			       &fs->io);
-	if (retval)
-		goto cleanup;
-	fs->image_io = fs->io;
-	fs->io->app_data = fs;
 	retval = ext2fs_get_mem(strlen(name)+1, &fs->device_name);
 	if (retval)
 		goto cleanup;
 	strcpy(fs->device_name, name);
+	cp = strchr(fs->device_name, '?');
+	if (!io_options && cp) {
+		*cp++ = 0;
+		io_options = cp;
+	}
+		
+	retval = manager->open(fs->device_name, 
+			       (flags & EXT2_FLAG_RW) ? IO_FLAG_RW : 0,
+			       &fs->io);
+	if (retval)
+		goto cleanup;
+	if (io_options && 
+	    (retval = io_channel_set_options(fs->io, io_options)))
+		goto cleanup;
+	fs->image_io = fs->io;
+	fs->io->app_data = fs;
 	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, &fs->super);
 	if (retval)
 		goto cleanup;
