@@ -1,3 +1,10 @@
+2002-09-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* rehash.c (e2fsck_rehash_dir): Apply patch from Christopher Li
+		which avoids creating an empty directory entry at the end
+		of the directory block.  This screws up earlier versions
+		of the indexed directory patch.
+	
 2002-09-28  Theodore Ts'o  <tytso@mit.edu>
 
 	* rehash.c (write_directory): Clear the index flag if by

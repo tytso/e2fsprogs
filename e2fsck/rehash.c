@@ -278,22 +278,16 @@ static errcode_t copy_dir_entries(ext2_filsys fs,
 	for (i=0; i < fd->num_array; i++) {
 		ent = fd->harray + i;
 		rec_len = EXT2_DIR_REC_LEN(ent->dir->name_len & 0xFF);
-		dirent = (struct ext2_dir_entry *) (block_start + offset);
-		left = fs->blocksize - offset;
 		if (rec_len > left) {
-			if (left) {
-				dirent->rec_len = left;
-				dirent->inode = 0;
-				dirent->name_len = 0;
-				offset += left;
-				left = 0;
-			}
+			if (left)
+				dirent->rec_len += left;
 			if ((retval = get_next_block(fs, outdir,
 						      &block_start)))
 				return retval;
-			offset = 0; left = fs->blocksize;
-			dirent = (struct ext2_dir_entry *) block_start;
+			offset = 0;
 		}
+		left = fs->blocksize - offset;
+		dirent = (struct ext2_dir_entry *) (block_start + offset);
 		if (offset == 0) {
 			if (ent->hash == prev_hash)
 				outdir->hashes[outdir->num-1] = ent->hash | 1;
