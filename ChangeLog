@@ -1,6 +1,6 @@
 Mon Jan 19 10:01:39 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
-	* e2fsprogs-1.12.spec: Update spec file in preparataion for 1.12
+	* e2fsprogs-1.12.spec: Update spec file in preparation for 1.12
 		release. 
 
 Tue Nov 25 15:56:29 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
