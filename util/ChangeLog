@@ -1,3 +1,9 @@
+2001-04-17  Theodore Tso  <tytso@valinux.com>
+
+	* subst.c (replace_string): Fix replace_string so that it
+		correctly handles replacing a substitution variable with a
+		zero-length string.
+
 2001-01-14  Theodore Ts'o  <tytso@valinux.com>
 
 	* gcc-wall-cleanup: Remove additional annoying warning messages

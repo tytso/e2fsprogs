@@ -108,7 +108,9 @@ static void replace_string(char *begin, char *end, char *newstr)
 
 	replace_len = strlen(newstr);
 	len = end - begin;
-	if (replace_len != len+1)
+	if (replace_len == 0)
+		memmove(begin, end+1, strlen(end)+1);
+	else if (replace_len != len+1)
 		memmove(end+(replace_len-len-1), end,
 			strlen(end)+1);
 	memcpy(begin, newstr, replace_len);
@@ -248,7 +250,7 @@ static void parse_config_file(FILE *f)
 			if (!isspace(*cp))
 				break;
 #if 0
-		printf("Substitute: '%s' for '%s'\n", ptr, cp);
+		printf("Substitute: '%s' for '%s'\n", ptr, cp ? cp : "<NULL>");
 #endif
 		add_subst(ptr, cp);
 	}
