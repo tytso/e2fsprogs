@@ -1,3 +1,9 @@
+2005-04-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (e2fsck_pass1): If the superblock last mount time (not
+		just the last write time) looks insane, then assume that
+		we can't do the LOW_DTIME checks.
+
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.37

@@ -518,7 +518,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (ctx->progress)
 		if ((ctx->progress)(ctx, 1, 0, ctx->fs->group_desc_count))
 			return;
-	if (fs->super->s_wtime < fs->super->s_inodes_count)
+	if ((fs->super->s_wtime < fs->super->s_inodes_count) ||
+	    (fs->super->s_mtime < fs->super->s_inodes_count))
 		busted_fs_time = 1;
 
 	while (1) {
