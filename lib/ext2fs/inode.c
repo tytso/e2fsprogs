@@ -371,13 +371,18 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 		retval = get_next_blockgroup(scan);
 		if (retval)
 			return retval;
-		if (scan->current_block == 0) {
-			if (scan->scan_flags & EXT2_SF_SKIP_MISSING_ITABLE) {
-				goto retry;
-			} else
-				return EXT2_ET_MISSING_INODE_TABLE;
-		}
 	}
+	/*
+	 * This is done outside the above if statement so that the
+	 * check can be done for block group #0.
+	 */
+	if (scan->current_block == 0) {
+		if (scan->scan_flags & EXT2_SF_SKIP_MISSING_ITABLE) {
+			goto retry;
+		} else
+			return EXT2_ET_MISSING_INODE_TABLE;
+	}
+	
 
 	/*
 	 * Have we run out of space in the inode buffer?  If so, we

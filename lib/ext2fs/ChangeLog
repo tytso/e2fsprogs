@@ -1,5 +1,9 @@
 1998-02-20  Theodore Y. Ts'o  <tytso@edt.mit.edu>
 
+	* inode.c (ext2fs_get_next_inode): Always do the check to see if the
+		inode table is missing so that we catch the case where the
+		first block group is missing.
+
 	* getsize.c, ismounted.c, unix_io.c: #include errno.h since it's
 		needed.
 
