@@ -1,3 +1,52 @@
+e2fsprogs (1.28-5) unstable; urgency=low
+
+  * The "this time it will work ! (famous last words)" release.
+  * Now that it builds, ensure the dir in which we install this damn mips
+    non-pic lib exists.
+
+ -- Yann Dirson <dirson@debian.org>  Tue, 17 Sep 2002 00:04:49 +0200
+
+e2fsprogs (1.28-4) unstable; urgency=low
+
+  * Moved setting of CFLAGS to the correct place when building the special
+    mips non-pic lib (Closes: #159757 again).
+
+ -- Yann Dirson <dirson@debian.org>  Sun, 15 Sep 2002 21:19:19 +0200
+
+e2fsprogs (1.28-3) unstable; urgency=low
+
+  * Don't use special cflags at configure time when building the special
+    mips non-pic lib, in yet another attempt to fix my adaptation of the
+    patch from the mips team.  Also added --disable-nls which was present
+    in the original patch.  
+  * Remove debian/BUILD-MIPS on clean.
+  * Install mkinitrd script as scripts/e2fsprogs, not as
+    scripts/e2fsprogs.mkinitrd.
+
+ -- Yann Dirson <dirson@debian.org>  Mon,  9 Sep 2002 23:01:31 +0200
+
+e2fsprogs (1.28-2) unstable; urgency=low
+
+  * Fixed my adapation of the mips non-pic build (Closes: #159757).
+
+ -- Yann Dirson <dirson@debian.org>  Fri,  6 Sep 2002 00:03:45 +0200
+
+e2fsprogs (1.28-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Yann Dirson <dirson@debian.org>  Mon,  2 Sep 2002 23:34:55 +0200
+
+e2fsprogs (1.27+1.28-WIP-0817-1) unstable; urgency=low
+
+  * New upstream pre-release.  Closes: #138003, #144621, #145044, #151990,
+    #152029, #152891, #155007, #131350, #147256, #153102.
+  * New binary: findfs.
+  * Added execute permissions to the mkinitrd script (thanks lintian).
+  * Don't ship FSIM for EVMS for now.
+
+ -- Yann Dirson <dirson@debian.org>  Sun, 25 Aug 2002 19:32:12 +0200
+
 e2fsprogs (1.27+1.28-WIP-0626-2) experimental; urgency=low
 
   * Remove bogus shlibs deps on "e2fsprogs (>= <current>)"

@@ -93,9 +93,12 @@ BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
 	--disable-swapfs --disable-imager \
 	--disable-resizer --disable-debugfs
 
-MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS} -G 0 -fno-pic -mno-abicalls" \
+MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
+	--disable-nls \
 	--disable-swapfs --disable-imager \
         --disable-resizer --disable-debugfs
+# we can't use those flags at configure time
+MIPS_CFLAGS= -G 0 -fno-pic -mno-abicalls
 
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 ifneq (,$(findstring $(DEB_BUILD_ARCH),mips mipsel))
@@ -157,7 +160,9 @@ ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
   # specially-built MIPS lib
 	if [ ismips = "${ismips}" ]; then \
 		make -C ${mipsbuilddir}/util ; \
-		make -C ${mipsbuilddir} libs LIB_SUBDIRS="lib/et lib/ext2fs" ; \
+		make -C ${mipsbuilddir} libs \
+			CFLAGS="${CCOPTS} ${MIPS_CFLAGS}" \
+			LIB_SUBDIRS="lib/et lib/ext2fs" ; \
 	fi
 
 	touch ${BUILDSTDSTAMP}
@@ -173,7 +178,7 @@ clean:
 	rm -rf ${STAMPSDIR}
 	-make -C ${stdbuilddir} -i distclean
 	-make -C ${bfbuilddir} -i distclean
-	rm -rf ${stdbuilddir} ${bfbuilddir}
+	rm -rf ${stdbuilddir} ${bfbuilddir} ${mipsbuilddir}
 	rm -f doc/libext2fs_*.html lib/et/com_err_*.html debian/*.substvars
 	dh_clean
 
@@ -199,18 +204,21 @@ install-std: build
   # static libs and .h files
 	make -C ${stdbuilddir} install-libs DESTDIR=${tmpdir} LDCONFIG=true
 
+  # remove FSIM for now.
+	rm ${tmpdir}/lib/evms/libe2fsim.1.1.1.so
+
   # statically-linked fsck
 	${INSTALL_PROGRAM} ${stdbuilddir}/e2fsck/e2fsck.static ${tmpdir}/sbin
 	ln -s e2fsck.8.gz ${mandir}/man8/e2fsck.static.8.gz
+
+	dh_movefiles
+	test -z `find ${tmpdir} -type f`
 
   # specially-built MIPS lib
 	if [ ismips = "${ismips}" ]; then \
 		cp ${mipsbuilddir}/lib/libext2fs.a \
 			${debdir}/e2fslibs-dev/usr/lib/libext2fs-nopic.a ; \
 	fi
-
-	dh_movefiles
-	test -z `find ${tmpdir} -type f`
 
 install-bf: DH_OPTIONS=
 install-bf: build
@@ -224,6 +232,9 @@ install-bf: build
 	rm -rf ${bfdir}/usr/share ${bfdir}/usr/lib
 	cd ${bfdir}/sbin && rm -f e2label
 	cd ${bfdir}/usr/bin && rm -f uuidgen
+
+  # remove FSIM for now.
+	rm ${bfdir}/lib/evms/libe2fsim.1.1.1.so
 
 
 binary-indep: 
@@ -246,7 +257,8 @@ binary-arch: install
 
   # mkinitrd script
 	dh_install -p e2fsprogs debian/e2fsprogs.mkinitrd \
-		/etc/mkinitrd/scripts
+		/etc/mkinitrd/scripts/e2fsprogs
+	chmod +x ${debdir}/e2fsprogs/etc/mkinitrd/scripts/*
 
   # symlinks to prepare dh_installdocs run
 	mkdir -p ${debdir}/e2fsck-static/usr/share/doc/
