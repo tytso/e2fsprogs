@@ -864,8 +864,6 @@ static void PRS(int argc, char *argv[])
 		param.s_feature_ro_compat = 0;
 	}
 #endif
-	fprintf (stderr, "mke2fs %s (%s)\n",
-		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
 	if (argc && *argv) {
 		program_name = get_progname(*argv);
@@ -1066,6 +1064,10 @@ static void PRS(int argc, char *argv[])
 	}
 	if (optind < argc)
 		usage();
+
+	if (!quiet)
+		fprintf (stderr, "mke2fs %s (%s)\n", E2FSPROGS_VERSION, 
+			 E2FSPROGS_DATE);
 
 	if (raid_opts)
 		parse_raid_opts(raid_opts);

@@ -1,5 +1,8 @@
 2003-04-16  Theodore Ts'o  <tytso@mit.edu>
 
+	* mke2fs.c (PRS): Avoid printing the version banner for mke2fs if
+		the -q option is specified.  (Addresses Debian bug #172716) 
+
 	* logsave.c: Add support for the -a option (only partially
 		implemented previously).  Always log the command-line and
 		start and stop time to the log file.  Add support for the
