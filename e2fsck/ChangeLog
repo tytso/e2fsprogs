@@ -3,6 +3,9 @@
 	* pass1.c (check_size): Fix logic in check_size; the previous code
 		only offered to clear the inode size fields if both size
 		and i_size_high were zero.
+		(e2fsck_pass1_check_device_inode): If i_blocks is
+		non-zero, then assume that the device/socket/fifo inode
+		is bogus.
 
 2001-08-09  Theodore Tso  <tytso@valinux.com>
 

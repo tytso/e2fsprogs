@@ -128,6 +128,11 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 	int	i;
 
 	/*
+	 * If i_blocks is non-zero, then this is a bogus device/fifo/socket
+	 */
+	if (inode->i_blocks)
+		return 1;
+	/*
 	 * We should be able to do the test below all the time, but
 	 * because the kernel doesn't forcibly clear the device
 	 * inode's additional i_block fields, there are some rare
