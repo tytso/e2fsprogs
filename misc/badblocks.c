@@ -99,10 +99,9 @@ static long do_test (int dev, char * buffer, int try, unsigned long block_size,
 	got = read (dev, buffer, try * block_size);
 	if (got < 0)
 		got = 0;	
-	if (got & (block_size - 1))
+	if (got & 511)
 		fprintf (stderr,
-			 "Weird value (%ld) in do_test: probably bugs\n",
-			 got);
+			 "Weird value (%ld) in do_test\n", got);
 	got /= block_size;
 	return got;
 }

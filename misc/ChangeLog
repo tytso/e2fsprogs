@@ -1,3 +1,9 @@
+1999-07-08    <tytso@rsts-11.mit.edu>
+
+	* badblocks.c (do_test): Don't complain if the write error occurs
+		on a non-block boundary.  This is perfectly common when
+		using blocksizes larger than 1k.
+
 1999-07-03    <tytso@valinux.com>
 
 	* uuidgen.c: Add option parsing so that user can ask for either a
