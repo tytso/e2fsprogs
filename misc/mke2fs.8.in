@@ -33,6 +33,9 @@ mke2fs \- create a Linux second extended file system
 .I number-of-inodes
 ]
 [
+.B -n
+]
+[
 .B \-m
 .I reserved-blocks-percentage
 ]
@@ -95,7 +98,8 @@ automagically figures the file system size.
 .SH OPTIONS
 .TP
 .I -b block-size
-Specify the size of blocks in bytes.
+Specify the size of blocks in bytes.  Valid block size vales are 1024, 
+2048 and 4096 bytes per block.
 .TP
 .I -c
 Check the device for bad blocks before creating the file system, using a
@@ -116,6 +120,10 @@ the blocksize of the filesystem, since then too many inodes will be made.
 Be warned that is not possible to expand the number of inodes on a 
 filesystem after it is created, so be careful decided the correct
 value for this parameter. 
+.TP
+.I -n
+causes mke2fs to not actually create a filesystem, but display what it 
+would do if it were to create a filesystem.
 .TP
 .I -N number-of-inodes
 overrides the default calculation of the number of inodes that should be 
@@ -151,11 +159,13 @@ is run in a script.
 .I -s sparse-super-flag
 If sparse-super-flag is 1, then turn on the sparse superblock flag.  
 If 0, then turn off the sparse superblock flag.  (Currently, the sparse 
-superblock flag defaults to off.)  
+superblock flag is off by default if the kernel version is less than 
+2.2; otherwise it defaults to on.)  
 .B Warning:
-The Linux 2.0 kernel does not properly support this feature.  Neither do
-all Linux 2.1 kernels; please don't use this unless you know what you're
-doing!
+The Linux 2.0 kernel (and some Linux 2.1 kernel) does not properly 
+support sparse superblocks.  Filesystems that may need to mounted
+on pre-2.2 kernels should not be created with the sparse superblocks 
+feature.
 .TP
 .I -v
 Verbose execution.

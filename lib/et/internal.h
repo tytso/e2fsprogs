@@ -1,7 +1,8 @@
 /*
  * internal include file for com_err package
+ *
+ * This file may be copied under the terms of the GNU Public License.
  */
-#include "mit-sipb-copyright.h"
 #ifndef __STDC__
 #undef const
 #define const

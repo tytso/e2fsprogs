@@ -91,10 +91,10 @@ MKCMDSFILES=	mk_cmds.c utils.c options.c ct.y cmd_tbl.lex.l
 MKCMDSCSRCS=	mk_cmds.c utils.c options.c ct.tab.c cmd_tbl.lex.c
 
 
-HFILES=	ss.h ss_internal.h copyright.h 
+HFILES=	ss.h ss_internal.h
 SHARE_FILES= ct_c.awk ct_c.sed
 
-INSTALL_HFILES=	ss.h copyright.h 
+INSTALL_HFILES=	ss.h 
 
 # for 'tags' and dependencies
 
@@ -104,7 +104,7 @@ CFILES=	$(SRCS) $(MKCMDSCSRCS) test_ss.c
 
 FILES=	$(SRCS) $(MKCMDSFILES) $(HFILES) \
 	ss_err.et std_rqs.ct Makefile \
-	test_ss.c ss copyright.h
+	test_ss.c ss 
 
 all::	libss.a # libss_p.a lint
 
@@ -133,13 +133,13 @@ installdirs::
 		$(DESTDIR)$(includedir)/ss $(DESTDIR)$(datadir)/ss \
 		$(DESTDIR)$(bindir)
 
-install:: libss.a $(INSTALL_HFILES) copyright.h installdirs ss_err.h mk_cmds
+install:: libss.a $(INSTALL_HFILES) installdirs ss_err.h mk_cmds
 	$(INSTALL_DATA) libss.a $(DESTDIR)$(libdir)/libss.a
 	$(CHMOD) 644 $(DESTDIR)$(libdir)/libss.a
 	-$(RANLIB) $(DESTDIR)$(libdir)/libss.a
 	$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libss.a
 	$(RM) -f $(DESTDIR)$(includedir)/ss/*
-	for i in $(INSTALL_HFILES) copyright.h; do \
+	for i in $(INSTALL_HFILES); do \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/ss/$$i; \
 	done
 	$(INSTALL_DATA) ss_err.h $(DESTDIR)$(includedir)/ss/ss_err.h
@@ -166,26 +166,26 @@ distclean:: clean
 # the Makefile.in file
 #
 invocation.o: $(srcdir)/invocation.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h
 help.o: $(srcdir)/help.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h
 execute_cmd.o: $(srcdir)/execute_cmd.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
-listen.o: $(srcdir)/listen.c $(srcdir)/copyright.h $(srcdir)/ss_internal.h \
- $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h
+listen.o: $(srcdir)/listen.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
+ $(top_builddir)/lib/ss/ss_err.h
 parse.o: $(srcdir)/parse.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
-error.o: $(srcdir)/error.c $(srcdir)/copyright.h $(srcdir)/../et/com_err.h \
- $(srcdir)/ss_internal.h $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
-prompt.o: $(srcdir)/prompt.c $(srcdir)/copyright.h $(srcdir)/ss_internal.h \
+ $(top_builddir)/lib/ss/ss_err.h
+error.o: $(srcdir)/error.c $(srcdir)/../et/com_err.h $(srcdir)/ss_internal.h \
  $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
-request_tbl.o: $(srcdir)/request_tbl.c $(srcdir)/copyright.h \
- $(srcdir)/ss_internal.h $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
-list_rqs.o: $(srcdir)/list_rqs.c $(srcdir)/copyright.h \
- $(srcdir)/ss_internal.h $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
+prompt.o: $(srcdir)/prompt.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
+ $(top_builddir)/lib/ss/ss_err.h
+request_tbl.o: $(srcdir)/request_tbl.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
+ $(top_builddir)/lib/ss/ss_err.h
+list_rqs.o: $(srcdir)/list_rqs.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
+ $(top_builddir)/lib/ss/ss_err.h
 pager.o: $(srcdir)/pager.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
-requests.o: $(srcdir)/requests.c $(srcdir)/copyright.h \
- $(srcdir)/ss_internal.h $(srcdir)/ss.h $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h
+requests.o: $(srcdir)/requests.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
+ $(top_builddir)/lib/ss/ss_err.h
 data.o: $(srcdir)/data.c $(srcdir)/ss_internal.h $(srcdir)/ss.h \
- $(srcdir)/copyright.h $(top_builddir)/lib/ss/ss_err.h
+ $(top_builddir)/lib/ss/ss_err.h

@@ -1,7 +1,7 @@
 /*
  * Copyright 1987, 1988 by MIT Student Information Processing Board
  *
- * For copyright info, see copyright.h.
+ * This file may be copied under the terms of the GNU Public License.
  */
 
 #ifdef HAVE_UNISTD_H
@@ -25,7 +25,6 @@ extern int errno;
 #endif
 #include <sys/wait.h>
 #include "ss_internal.h"
-#include "copyright.h"
 
 void ss_help (argc, argv, sci_idx, info_ptr)
     int argc;

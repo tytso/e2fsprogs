@@ -1,7 +1,7 @@
 /*
  * Copyright 1987, 1988 by MIT Student Information Processing Board
  *
- * For copyright info, see copyright.h.
+ * This file may be copied under the terms of the GNU Public License.
  */
 
 #ifdef HAS_STDLIB_H
@@ -13,7 +13,6 @@
 #endif
 
 #include "ss_internal.h"
-#include "copyright.h"
 
 enum parse_mode { WHITESPACE, TOKEN, QUOTED_STRING };
 

@@ -3,10 +3,9 @@
  *
  * Copyright 1987, 1988, 1989 by MIT
  *
- * For copyright information, see copyright.h.
+ * This file may be copied under the terms of the GNU Public License.
  */
 
-#include "copyright.h"
 #include <stdio.h>
 #include "ss_internal.h"
 

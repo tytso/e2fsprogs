@@ -1,14 +1,13 @@
 /*
  * Copyright 1987, 1988 by MIT Student Information Processing Board
  *
- * For copyright information, see copyright.h.
+ * This file may be copied under the terms of the GNU Public License.
  */
 
 #ifdef HAS_STDLIB_H
 #include <stdlib.h>
 #endif
 #include "ss_internal.h"
-#include "copyright.h"
 #define	size	sizeof(ss_data *)
 
 int ss_create_invocation(subsystem_name, version_string, info_ptr,

@@ -6,7 +6,7 @@
  * Copyright 1987 by the Student Information Processing Board
  * of the Massachusetts Institute of Technology
  *
- * For copyright info, see "mit-sipb-copyright.h".
+ * This file may be copied under the terms of the GNU Public License.
  */
 
 #include <stdio.h>
@@ -14,7 +14,6 @@
 #include <errno.h>
 #include "com_err.h"
 #include "error_table.h"
-#include "mit-sipb-copyright.h"
 #include "internal.h"
 
 static char buffer[25];

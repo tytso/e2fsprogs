@@ -2,12 +2,11 @@
  * Copyright 1987, 1988, 1989 Massachusetts Institute of Technology
  * (Student Information Processing Board)
  *
- * For copyright info, see copyright.h.
+ * This file may be copied under the terms of the GNU Public License.
  */
 
 #include <stdio.h>
 #include "ss_internal.h"
-#include "copyright.h"
 
 static const char copyright[] =
     "Copyright 1987, 1988, 1989 by the Massachusetts Institute of Technology";

@@ -180,6 +180,8 @@ int main (int argc, char ** argv)
 	int		print_badblocks = 0;
 	int		use_superblock = 0;
 	int		use_blocksize = 0;
+	int		force = 0;
+	int		header_only = 0;
 	int		big_endian;
 	int		c;
 
@@ -190,10 +192,16 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	
-	while ((c = getopt (argc, argv, "bVo:")) != EOF) {
+	while ((c = getopt (argc, argv, "bfhVo:")) != EOF) {
 		switch (c) {
 		case 'b':
 			print_badblocks++;
+			break;
+		case 'f':
+			force++;
+			break;
+		case 'h':
+			header_only++;
 			break;
 		case 'o':
 			if (optarg[0] == 'b')
@@ -217,8 +225,9 @@ int main (int argc, char ** argv)
 	device_name = argv[optind++];
 	if (use_superblock && !use_blocksize)
 		use_blocksize = 1024;
-	retval = ext2fs_open (device_name, 0, use_superblock,
-			      use_blocksize, unix_io_manager, &fs);
+	retval = ext2fs_open (device_name, force ? EXT2_FLAG_FORCE : 0,
+			      use_superblock, use_blocksize,
+			      unix_io_manager, &fs);
 	if (retval) {
 		com_err (program_name, retval, "while trying to open %s",
 			 device_name);
@@ -228,6 +237,17 @@ int main (int argc, char ** argv)
 	if (print_badblocks) {
 		dump_bad_blocks(fs);
 	} else {
+		big_endian = ((fs->flags & EXT2_FLAG_SWAP_BYTES) != 0);
+		if (!i386_byteorder())
+			big_endian = !big_endian;
+		if (big_endian)
+			printf("Note: This is a byte-swapped filesystem\n");
+		list_super (fs->super);
+		list_bad_blocks (fs);
+		if (header_only) {
+			ext2fs_close (fs);
+			exit (0);
+		}
 		retval = ext2fs_read_bitmaps (fs);
 		if (retval) {
 			com_err (program_name, retval,
@@ -236,13 +256,6 @@ int main (int argc, char ** argv)
 			ext2fs_close (fs);
 			exit (1);
 		}
-		big_endian = ((fs->flags & EXT2_FLAG_SWAP_BYTES) != 0);
-		if (!i386_byteorder())
-			big_endian = !big_endian;
-		if (big_endian)
-			printf("Note: This is a byte-swapped filesystem\n");
-		list_super (fs->super);
-		list_bad_blocks (fs);
 		list_desc (fs);
 	}
 	ext2fs_close (fs);

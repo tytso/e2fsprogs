@@ -14,6 +14,7 @@
 #include <linux/hdreg.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
 
 void print_error(char *operation, int error, char *device)
 {
@@ -40,19 +41,19 @@ int main(int argc, char **argv)
 		fd = open(argv[i], O_RDONLY);
 
 		if (fd < 0) {
-			print_error("open", errno, argv[1]);
+			print_error("open", errno, argv[i]);
 			continue;
 		}
     
 		if (ioctl(fd, HDIO_GETGEO, &loc) < 0) {
-			print_error("HDIO_GETGEO ioctl", errno, argv[1]);
+			print_error("HDIO_GETGEO ioctl", errno, argv[i]);
 			close(fd);
 			continue;
 		}
     
     
 		if (ioctl(fd, BLKGETSIZE, &size) < 0) {
-			print_error("BLKGETSIZE ioctl", errno, argv[1]);
+			print_error("BLKGETSIZE ioctl", errno, argv[i]);
 			close(fd);
 			continue;
 		}

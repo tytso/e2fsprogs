@@ -1,4 +1,24 @@
-1999-07-18  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+1999-09-08    <tytso@valinux.com>
+
+	* partinfo.c: Fix minor compilation bugs pointed out by Yann
+		Dirson.
+
+	* mke2fs.c: Don't turn on sparse superblocks by default on pre-2.2
+		kernels. 
+
+	* mke2fs.8.in: Add the possible valid block sizes for mke2fs.
+		Document the -n flag, and the new defaults for the -s
+		flag.
+
+	* dumpe2fs.c, dumpe2fs.8.in: Add new options -f (force) and -h
+		(header-only).
+
+1999-08-13    <tytso@valinux.com>
+
+	* mke2fs.c (PRS): Fix logic for turning on/off the sparse
+		superblock option.
+
+1999-07-18  Theodore Ts'o  <tytso@valinux.com>
 
 	* Release of E2fsprogs 1.15
 

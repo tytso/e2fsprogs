@@ -1,12 +1,11 @@
 /*
  * Copyright 1987, 1988 by MIT Student Information Processing Board.
  *
- * For copyright info, see mit-sipb-copyright.h.
+ * This file may be copied under the terms of the GNU Public License.
  */
 
 #include <stdio.h>
 #include "com_err.h"
-#include "mit-sipb-copyright.h"
 #include "error_table.h"
 #include "internal.h"
 

@@ -1,14 +1,13 @@
 /*
  * Copyright 1987, 1988, 1989 by Massachusetts Institute of Technology
  *
- * For copyright info, see copyright.h.
+ * This file may be copied under the terms of the GNU Public License.
  */
 
 #ifdef HAS_STDLIB_H
 #include <stdlib.h>
 #endif
 #include "ss_internal.h"
-#include "copyright.h"
 #include <stdio.h>
 
 /*

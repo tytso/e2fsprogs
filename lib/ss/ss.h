@@ -1,13 +1,12 @@
 /*
  * Copyright 1987, 1988 by MIT Student Information Processing Board
  *
- * For copyright information, see copyright.h.
+ * This file may be copied under the terms of the GNU Public License.
  */
 
 #ifndef _ss_h
 #define _ss_h __FILE__
 
-#include <ss/copyright.h>
 #include <ss/ss_err.h>
 
 #ifdef __STDC__

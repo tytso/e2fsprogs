@@ -1,14 +1,13 @@
 /*
  * Copyright 1987, 1988 by MIT Student Information Processing Board
  *
- * For copyright information, see copyright.h.
+ * This file may be copied under the terms of the GNU Public License.
  */
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
 
-#include "copyright.h"
 #include "ss_internal.h"
 
 #define ssrt ss_request_table	/* for some readable code... */

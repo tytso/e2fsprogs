@@ -1,12 +1,11 @@
 /*
  * Copyright 1987 by MIT Student Information Processing Board
  *
- * For copyright info, see mit-sipb-copyright.h.
+ * This file may be copied under the terms of the GNU Public License.
  */
 
 #include "com_err.h"
 #include "error_table.h"
-#include "mit-sipb-copyright.h"
 #include "internal.h"
 
 static const char char_set[] =

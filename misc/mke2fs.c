@@ -21,6 +21,9 @@
 #include <ctype.h>
 #include <termios.h>
 #include <time.h>
+#ifdef linux
+#include <sys/utsname.h>
+#endif
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
@@ -190,10 +193,10 @@ static void check_mount(NOARGS)
 /*
  * This function sets the default parameters for a filesystem
  *
- * The type is specified by the user.  The size is minimum size for
- * which a set of parameters applies, with a size of zero meaning that
- * it is the default parameter for the type.  Note that order is
- * important in the table below.
+ * The type is specified by the user.  The size is the maximum size
+ * (in megabytes) for which a set of parameters applies, with a size
+ * of zero meaning that it is the default parameter for the type.
+ * Note that order is important in the table below.
  */
 static char default_str[] = "default";
 struct mke2fs_defaults {
@@ -716,7 +719,17 @@ static void PRS(int argc, char *argv[])
 	char	*raid_opts = 0;
 	char	*fs_type = 0;
 	blk_t	dev_size;
-	
+#ifdef linux
+	struct utsname ut;
+
+	if (uname(&ut)) {
+		perror("uname");
+		exit(1);
+	}
+	if (ut.release[0] == '2' && ut.release[1] == '.' &&
+	    ut.release[2] < '2' && ut.release[3] == '.')
+		sparse_option = 0;
+#endif
 	/* Update our PATH to include /sbin  */
 	if (oldpath) {
 		char *newpath;
@@ -936,16 +949,8 @@ static void PRS(int argc, char *argv[])
 	 */
 	param.s_r_blocks_count = (param.s_blocks_count * reserved_ratio) / 100;
 
-	/*
-	 * If we are using revision #1, use the sparse super feature
-	 * by default
-	 */
 #ifdef EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
-	if ((sparse_option == 1)
-#ifdef EXT2_DYNAMIC_REV
-	    || ((param.s_rev_level >= EXT2_DYNAMIC_REV) && (!sparse_option))
-#endif
-	    ) 
+	if (sparse_option)
 		param_ext2->s_feature_ro_compat |=
 			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 #endif
