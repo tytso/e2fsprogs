@@ -1,3 +1,8 @@
+2003-03-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_h_badnode, f_h_badroot, f_h_reindex: Updated expect script to
+		remove the optimizing directories message.
+
 2003-03-15  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_dup_de: Added test case provided from Debian bug report #176814
