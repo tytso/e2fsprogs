@@ -14,6 +14,7 @@
  * 93/10/30	- Creation
  * 93/11/13	- Replace stat() calls by lstat() to avoid loops
  * 94/02/27	- Integrated in Ted's distribution
+ * 98/12/29	- Display version info only when -V specified (G M Sipe)
  */
 
 #include <sys/types.h>
@@ -47,11 +48,12 @@ int all = 0;
 int d_opt = 0;
 int l_opt = 0;
 int recursive = 0;
+int verbose = 0;
 int v_opt = 0;
 
 static void usage(void)
 {
-	fprintf(stderr, "Usage: %s [-Radlv] [files...]\n", program_name);
+	fprintf(stderr, "Usage: %s [-RVadlv] [files...]\n", program_name);
 	exit(1);
 }
 
@@ -124,16 +126,16 @@ int main (int argc, char ** argv)
 	int c;
 	int i;
 
-	fprintf (stderr, "lsattr %s, %s for EXT2 FS %s, %s\n",
-		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
-		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "Radlv")) != EOF)
+	while ((c = getopt (argc, argv, "RVadlv")) != EOF)
 		switch (c)
 		{
 			case 'R':
 				recursive = 1;
+				break;
+			case 'V':
+				verbose = 1;
 				break;
 			case 'a':
 				all = 1;
@@ -151,6 +153,10 @@ int main (int argc, char ** argv)
 				usage();
 		}
 
+	if (verbose)
+		fprintf (stderr, "lsattr %s, %s for EXT2 FS %s, %s\n",
+			 E2FSPROGS_VERSION, E2FSPROGS_DATE,
+			 EXT2FS_VERSION, EXT2FS_DATE);
 	if (optind > argc - 1)
 		lsattr_args (".");
 	else

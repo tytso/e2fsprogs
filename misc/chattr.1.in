@@ -33,9 +33,11 @@ secure deletion (s), and undeletable (u).
 .TP
 .I -R
 Recursively change attributes of directories and their contents.
+Symbolic links encountered during recursive directory traversals are
+ignored.
 .TP
 .I -V
-Verbosely describe changed attributes.
+Be verbose with chattr's output and print the program version.
 .TP
 .I -v version
 Set the files version.

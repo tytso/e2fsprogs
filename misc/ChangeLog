@@ -1,3 +1,11 @@
+1999-01-05  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* chattr.c, lsattr.c: Only print the version information for the
+		program if the -V option is given.
+
+	* chattr.c: Ignore symbolic links when doing a recursive descent
+		through a directory.
+
 1999-01-01  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* fsck.c (load_fs_info, parse_fstab_line): Ignore fstab lines

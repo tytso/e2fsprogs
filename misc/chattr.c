@@ -14,6 +14,8 @@
  * 93/10/30	- Creation
  * 93/11/13	- Replace stat() calls by lstat() to avoid loops
  * 94/02/27	- Integrated in Ted's distribution
+ * 98/12/29	- Ignore symlinks when working recursively (G M Sipe)
+ * 98/12/29	- Display version info only when -V specified (G M Sipe)
  */
 
 #include <sys/types.h>
@@ -237,6 +239,8 @@ static void change_attributes (const char * name)
 		com_err (program_name, errno, "while stating %s", name);
 		return;
 	}
+	if (S_ISLNK(st.st_mode) && recursive)
+		return;
 	if (set)
 	{
 		if (verbose)
@@ -304,9 +308,6 @@ int main (int argc, char ** argv)
 	int i, j;
 	int end_arg = 0;
 
-	fprintf (stderr, "chattr %s, %s for EXT2 FS %s, %s\n",
-		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
-		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
 	i = 1;
@@ -329,6 +330,10 @@ int main (int argc, char ** argv)
 		fprintf (stderr, "Must use '-v', =, - or +\n");
 		exit (1);
 	}
+	if (verbose)
+		fprintf (stderr, "chattr %s, %s for EXT2 FS %s, %s\n",
+			 E2FSPROGS_VERSION, E2FSPROGS_DATE,
+			 EXT2FS_VERSION, EXT2FS_DATE);
 	for (j = i; j < argc; j++)
 		change_attributes (argv[j]);
 	exit(0);
