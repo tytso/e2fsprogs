@@ -1,3 +1,21 @@
+e2fsprogs (1.34+1.35-WIP-2004.01.31-2) unstable; urgency=low
+
+  * Add a new -k option to e2fsck which keeps the existing badblocks 
+    list when using the -c option.  (Closes: #229103)
+  * Update debugfs to support new large major/minor device numbers
+    supported by Linux 2.6.  (Closes: #865289)
+  * Fix makefiles so that it will build correctly with --enable-profile.
+  * Add -mieee when compiling with GCC on an Alpha.
+  * Fix e2fsck preen mode messages using pass 1B/C/D.
+  * Fix the debugfs man page.  (Closes: #232406)
+  * Fix the ext2fs.h header file to work correctly with C++. 
+  * e2fsck and debugfs now correctly deals with symlinks that have
+    extended attribute information, such as those created by SE Linux.
+    (Closes: #232328)
+  * Make sure filefrag actually gets compiled under Linux (Closes: #230992)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 24 Feb 2004 00:16:43 -0500
+
 e2fsprogs (1.34+1.35-WIP-2004.01.31-1) unstable; urgency=medium
 
   * Fix byte swap bugs in e2fsck that caused the journal backup location 
