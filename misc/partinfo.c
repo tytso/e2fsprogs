@@ -24,7 +24,8 @@ void print_error(char *operation, int error, char *device)
 int main(int argc, char **argv)
 {
 	struct hd_geometry loc;
-	int fd, size, i;
+	int fd, i;
+	long size;
 
 	if (argc == 1) {
 		fprintf(stderr, "Usage: %s <dev1> <dev2> <dev3>\n\n"
