@@ -1,5 +1,10 @@
 2004-04-03  Theodore Ts'o  <tytso@mit.edu>
 
+	* libuuid.3.in, uuid_clear.3.in, uuid_compare.3.in, uuid_copy.3.in,
+		uuid_generate.3.in, uuid_is_null.3.in, uuid_parse.3.in,
+		uuid_time.3.in, uuid_unparse.3.in: Change licensing of man
+		pages from GPL to 3-clause BSD-style.
+
 	* uuid_parse.3.in, uuid_unparse.3.in: Change the use of the term
 		"internal format" to "binary representation".
 
