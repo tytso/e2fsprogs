@@ -78,20 +78,7 @@ programs.
 Specify the size of blocks in bytes.
 .TP
 .BI \-c " number of blocks"
-is the number of blocks which are tested at a time.  The default is 16.
-Increasing this number will increase the efficiency of
-.B badblocks
-but also will increase its memory usage.
-.B Badblocks
-needs memory proportional to the number of blocks tested at once, in
-read-only mode, proportional to twice that number in read-write mode,
-and proportional to three times that number in non-destructive read-write
-mode.  If you set the number-of-blocks parameter to too high a value,
-.B badblocks
-will exit almost immediately with an out-of-memory error "while allocating
-buffers".  If you set it too low, however, for a non-destructive-write-mode
-test, then it's possble for questionable blocks on an unreliable
-hard drive to be hidden by the effects of the hard disk track buffer.
+is the number of blocks which are tested at a time.  The default is 64.
 .TP
 .B \-f
 Normally, badblocks will refuse to do a read/write or a non-destructive

@@ -806,7 +806,7 @@ int main (int argc, char ** argv)
 	char * output_file = NULL;
 	FILE * in = NULL;
 	int block_size = 1024;
-	unsigned long blocks_at_once = 16;
+	unsigned long blocks_at_once = 64;
 	blk_t last_block, from_count;
 	int num_passes = 0;
 	int passes_clean = 0;
