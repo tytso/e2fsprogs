@@ -1,5 +1,8 @@
 2002-11-08  Theodore Ts'o  <tytso@mit.edu>
 
+	* fsimext2.c (set_mkfs_options): If the hard sector size is 1024,
+		don't force a blocksize of 1024; there's no need to do so.
+
 	* fs_ext2.c (fs_setup): Synchronize with EVMS CVS rev 1.14 
 		(2002/10/17): Changed function to correspond with EVMS ABI
 		1.2

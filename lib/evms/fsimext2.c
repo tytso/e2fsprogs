@@ -179,10 +179,6 @@ void set_mkfs_options( option_array_t * options,
     /* set block size */
     if (volume->object->geometry.bytes_per_sector != EVMS_VSECTOR_SIZE) {
 	    switch (volume->object->geometry.bytes_per_sector) {
-	    case 1024:
-		    argv[2] = "-b1024";
-		    opt_count++;
-		    break;
 	    case 2048:
 		    argv[2] = "-b2048";
 		    opt_count++;
