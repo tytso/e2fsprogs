@@ -1,3 +1,8 @@
+2003-04-11  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2_fs.h (EXT2_FEATURE_RO_COMPAT_BTREE_DIR): Comment out unused
+		feature flag
+
 2003-03-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Use the compile_et --build-tree option.
