@@ -8,12 +8,12 @@ Keywords:       utilities, fsck, filesystem, Ext2fs
 Author:         tytso@mit.edu (Theodore Tso)
 Maintained-by:  tytso@mit.edu (Theodore Tso)
 Primary-site:   tsx-11.mit.edu /pub/linux/packages/ext2fs
-		651kB e2fsprogs-1.12.tar.gz
-		240kB e2fsprogs-1.12-elfbin.tar.gz
-		182kB e2fsprogs-1.12-dllbin.tar.gz
-		216kB e2fsprogs-1.12-0.i386.rpm
-		73kB  e2fsprogs-devel-1.12-0.i386.rpm
-		653kB e2fsprogs-1.12-0.src.rpm
+		686kB e2fsprogs-1.12.tar.gz
+		237kB e2fsprogs-1.12-elfbin.tar.gz
+		166kB e2fsprogs-1.12-dllbin.tar.gz
+		237kB e2fsprogs-1.12-0.i386.rpm
+		82kB  e2fsprogs-devel-1.12-0.i386.rpm
+		688kB e2fsprogs-1.12-0.src.rpm
                 1kB   e2fsprogs-1.12.lsm
 Alternate-site: 
 Platforms:	linux 1.2.x/1.3.x/2.0.x/2.1.x
