@@ -44,10 +44,11 @@ extern int optind;
 
 const char * program_name = "dumpe2fs";
 char * device_name = NULL;
+int opt_hex = 0;
 
 static void usage(void)
 {
-	fprintf (stderr, _("Usage: %s [-bV] [-ob superblock] "
+	fprintf (stderr, _("Usage: %s [-bfhxV] [-ob superblock] "
 		 "[-oB blocksize] device\n"), program_name);
 	exit (1);
 }
@@ -65,13 +66,15 @@ static void print_free (unsigned long group, char * bitmap,
 			if (p)
 				printf (", ");
 			if (i == nbytes - 1 || in_use (bitmap, i + 1))
-				printf ("%lu", group * nbytes + i + offset);
+				printf (opt_hex ? "0x%04x" : "%lu",
+					group * nbytes + i + offset);
 			else
 			{
 				for (j = i; j < nbytes && !in_use (bitmap, j);
 				     j++)
 					;
-				printf ("%lu-%lu", group * nbytes + i + offset,
+				printf (opt_hex ? "0x%04lx-0x%04lx" :
+					"%lu-%lu", group * nbytes + i + offset,
 					group * nbytes + (j - 1) + offset);
 				i = j - 1;
 			}
@@ -85,6 +88,19 @@ static void list_desc (ext2_filsys fs)
 	blk_t	group_blk, next_blk;
 	char * block_bitmap = fs->block_map->bitmap;
 	char * inode_bitmap = fs->inode_map->bitmap;
+	int inode_blocks_per_group;
+	int group_desc_blocks;
+
+	inode_blocks_per_group = ((fs->super->s_inodes_per_group *
+				   EXT2_INODE_SIZE(fs->super)) +
+				  EXT2_BLOCK_SIZE(fs->super) - 1) /
+				 EXT2_BLOCK_SIZE(fs->super);
+	group_desc_blocks = ((fs->super->s_blocks_count -
+			      fs->super->s_first_data_block +
+			      EXT2_BLOCKS_PER_GROUP(fs->super) - 1) /
+			     EXT2_BLOCKS_PER_GROUP(fs->super) +
+			     EXT2_DESC_PER_BLOCK(fs->super) - 1) /
+			    EXT2_DESC_PER_BLOCK(fs->super);
 
 	printf ("\n");
 	group_blk = fs->super->s_first_data_block;
@@ -92,9 +108,21 @@ static void list_desc (ext2_filsys fs)
 		next_blk = group_blk + fs->super->s_blocks_per_group;
 		if (next_blk > fs->super->s_blocks_count)
 			next_blk = fs->super->s_blocks_count;
-		printf (_("Group %lu: (Blocks %u -- %u)\n"), i,
+		printf (opt_hex ? _("Group %lu: (Blocks %04x -- %04x)\n"):
+			 _("Group %lu: (Blocks %u -- %u)\n"), i,
 			group_blk, next_blk -1 );
-		printf (_("  Block bitmap at %u (+%d), "
+		if (ext2fs_bg_has_super (fs, i))
+			printf (opt_hex ? _("  %s Superblock at 0x%04x,"
+				"  Group Descriptors at 0x%04x-0x%04x\n"):
+				_("  %s Superblock at %u,"
+				"  Group Descriptors at %u-%u\n"),
+				i == 0 ? _("Primary") : _("Backup"),
+				group_blk, group_blk + 1,
+				group_blk + group_desc_blocks);
+		printf (opt_hex ? _("  Block bitmap at %04x (+%d), "
+			"Inode bitmap at %04x (+%d)\n  "
+			"Inode table at %04x-%04x (+%d)\n"):
+		        _("  Block bitmap at %u (+%d), "
 			"Inode bitmap at %u (+%d)\n  "
 			"Inode table at %u (+%d)\n"),
 			fs->group_desc[i].bg_block_bitmap,
@@ -102,6 +130,8 @@ static void list_desc (ext2_filsys fs)
 			fs->group_desc[i].bg_inode_bitmap,
 			fs->group_desc[i].bg_inode_bitmap - group_blk,
 			fs->group_desc[i].bg_inode_table,
+			fs->group_desc[i].bg_inode_table +
+				inode_blocks_per_group,
 			fs->group_desc[i].bg_inode_table - group_blk);
 		printf (_("  %d free blocks, %d free inodes, %d directories\n"),
 			fs->group_desc[i].bg_free_blocks_count,
@@ -201,7 +231,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	
-	while ((c = getopt (argc, argv, "bfhVo:")) != EOF) {
+	while ((c = getopt (argc, argv, "bfhxVo:")) != EOF) {
 		switch (c) {
 		case 'b':
 			print_badblocks++;
@@ -225,6 +255,9 @@ int main (int argc, char ** argv)
 			fprintf(stderr, _("\tUsing %s\n"),
 				error_message(EXT2_ET_BASE));
 			exit(0);
+		case 'x':
+			opt_hex=1;
+			break;
 		default:
 			usage();
 		}

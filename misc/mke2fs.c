@@ -730,7 +730,7 @@ static void PRS(int argc, char *argv[])
 	int		c;
 	int		size;
 	char *		tmp;
-	blk_t		max = 8192;
+	blk_t		group_blk_max = 8192;
 	int		blocksize = 0;
 	int		inode_ratio = 0;
 	int		reserved_ratio = 5;
@@ -753,7 +753,7 @@ static void PRS(int argc, char *argv[])
 	if ((ut.release[0] == '1') ||
 	    (ut.release[0] == '2' && ut.release[1] == '.' &&
 	     ut.release[2] < '2' && ut.release[3] == '.'))
-		feature_set = 0;
+		feature_set = NULL;
 #endif
 	/* Update our PATH to include /sbin  */
 	if (oldpath) {
@@ -790,7 +790,7 @@ static void PRS(int argc, char *argv[])
 			}
 			param.s_log_block_size =
 				int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
-			max = blocksize * 8;
+			group_blk_max = blocksize * 8;
 			break;
 		case 'c':
 		case 't':	/* Check for bad blocks */
@@ -975,7 +975,7 @@ static void PRS(int argc, char *argv[])
 
 	if (param.s_blocks_per_group) {
 		if (param.s_blocks_per_group < 256 ||
-		    param.s_blocks_per_group > max || *tmp) {
+		    param.s_blocks_per_group > group_blk_max || *tmp) {
 			com_err(program_name, 0,
 				_("blocks per group count out of range"));
 			exit(1);
@@ -1000,7 +1000,7 @@ static void PRS(int argc, char *argv[])
 			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 #endif
 	if (feature_set && !strncasecmp(feature_set, "none", 4))
-		feature_set = 0;
+		feature_set = NULL;
 	if (feature_set && e2p_edit_feature(feature_set,
 					    &param_ext2->s_feature_compat,
 					    ok_features)) {

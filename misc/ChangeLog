@@ -1,3 +1,11 @@
+2000-06-27  Andreas Dilger <adilger@turbolabs.com>
+
+	* dumpe2fs.c (usage): add fhx options to usage message, add -x option
+		to print out the per-group block numbers in hex, add line for
+		location of primary/backup superblock and group descriptors
+
+	* mke2fs.c: rename max to group_blk_max avoid potential macro conflict
+
 2000-08-14    <tytso@valinux.com>
 
 	* mke2fs.c (zap_sector): Change zap_bootsect to more general

@@ -8,7 +8,7 @@ dumpe2fs \- dump filesystem information
 .SH SYNOPSIS
 .B dumpe2fs
 [
-.B \-bfhV
+.B \-bfhxV
 ]
 [
 .B \-ob 
@@ -56,6 +56,9 @@ can cause some of dumpe2fs's display to be suspect).
 .B \-h
 only display the superblock information and not any of the block
 group descriptor detail information.
+.TP
+.B \-x
+print the detailed group information block numbers in hexadecimal format
 .TP
 .B \-V
 print the version number of 
