@@ -16,6 +16,9 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include <fcntl.h>
 #include <time.h>
 #if HAVE_SYS_STAT_H

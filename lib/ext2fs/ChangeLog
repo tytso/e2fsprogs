@@ -1,3 +1,8 @@
+1998-02-20  Theodore Y. Ts'o  <tytso@edt.mit.edu>
+
+	* getsize.c, ismounted.c, unix_io.c: #include errno.h since it's
+		needed.
+
 Mon Feb 16 16:16:00 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* ext2_io.h, ext2fs.h: Protect against being included multiple times.
