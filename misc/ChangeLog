@@ -1,3 +1,10 @@
+2001-07-31  Theodore Tso  <tytso@valinux.com>
+
+	* tune2fs.c (update_feature_set, remove_journal_inode): If
+		removing an in-filesystem journal, clear out the journal
+		inode and update the filesystem accounting structures so
+		we don't have to run e2fsck to clean up after ourselves
+
 2001-07-30  Theodore Tso  <tytso@valinux.com>
 
 	* tune2fs.c (update_feature_set): Don't require a forced fsck if

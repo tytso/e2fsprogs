@@ -175,6 +175,66 @@ no_valid_journal:
 	printf(_("Journal removed\n"));
 }
 
+/* Helper function for remove_journal_inode */
+static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
+			       int blockcnt, void *private)
+{
+	blk_t	block;
+	int	group;
+
+	block = *blocknr;
+	ext2fs_unmark_block_bitmap(fs->block_map,block);
+	group = ext2fs_group_of_blk(fs, block);
+	fs->group_desc[group].bg_free_blocks_count++;
+	fs->super->s_free_blocks_count++;
+	return 0;
+}
+
+/*
+ * Remove the journal inode from the filesystem
+ */
+static void remove_journal_inode(ext2_filsys fs)
+{
+	struct ext2_inode	inode;
+	errcode_t		retval;
+	ino_t			ino = fs->super->s_journal_inum;
+	int			group;
+	
+	retval = ext2fs_read_inode(fs, ino,  &inode);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while reading journal inode"));
+		exit(1);
+	}
+	if (ino == EXT2_JOURNAL_INO) {
+		retval = ext2fs_read_bitmaps(fs);
+		if (retval) {
+			com_err(program_name, retval,
+				_("while reading bitmaps"));
+			exit(1);
+		}
+		retval = ext2fs_block_iterate(fs, ino, 0, NULL,
+					      release_blocks_proc, NULL);
+		if (retval) {
+			com_err(program_name, retval,
+				_("while clearing journal inode"));
+			exit(1);
+		}
+		memset(&inode, 0, sizeof(inode));
+		ext2fs_mark_bb_dirty(fs);
+		group = ext2fs_group_of_ino(fs, ino);
+		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+	} else
+		inode.i_flags &= ~EXT2_IMMUTABLE_FL;
+	retval = ext2fs_write_inode(fs, ino, &inode);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while writing journal inode"));
+		exit(1);
+	}
+	fs->super->s_journal_inum = 0;
+	ext2fs_mark_super_dirty(fs);
+}
 
 /*
  * Update the feature set as provided by the user.
@@ -223,29 +283,11 @@ static void update_feature_set(ext2_filsys fs, char *features)
 				  "the has_journal flag.\n"));
 			exit(1);
 		}
-		/*
-		 * Remove the immutable flag on the journal inode
-		 */
 		if (sb->s_journal_inum) {
-			retval = ext2fs_read_inode(fs, sb->s_journal_inum, 
-						   &inode);
-			if (retval) {
-				com_err(program_name, retval,
-					"while reading journal inode");
-				exit(1);
-			}
-			inode.i_flags &= ~EXT2_IMMUTABLE_FL;
-			retval = ext2fs_write_inode(fs, sb->s_journal_inum, 
-						    &inode);
-			if (retval) {
-				com_err(program_name, retval,
-					"while writing journal inode");
-				exit(1);
-			}
+			remove_journal_inode(fs);
 		}
 		if (sb->s_journal_dev) {
 			remove_journal_device(fs);
-			journal = old_journal;
 		}
 	}
 	if (journal && !old_journal) {
@@ -258,7 +300,6 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		if (!journal_size)
 			journal_size = -1;
 		sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
-		journal = old_journal;
 	}
 
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
@@ -266,8 +307,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 	     sb->s_feature_incompat))
 		ext2fs_update_dynamic_rev(fs);
 	if ((sparse != old_sparse) ||
-	    (filetype != old_filetype) ||
-	    (journal != old_journal)) {
+	    (filetype != old_filetype)) {
 		sb->s_state &= ~EXT2_VALID_FS;
 		printf("\n%s\n", _(please_fsck));
 	}
