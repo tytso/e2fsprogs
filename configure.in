@@ -77,6 +77,20 @@ CFLAGS="$CFLAGS $withval",
 CCOPTS=)dnl
 AC_SUBST(CCOPTS)
 dnl
+dnl On systems without linux header files, we add an extra include directory
+dnl that holds enough to fake it (hopefully).  Note that the $(top_srcdir) here
+dnl is quoted so that it gets expanded by make, not by configure.
+dnl
+AC_CHECK_HEADER(linux/fs.h, [linux_headers=yes], [linux_headers=no])
+if test "$linux_headers" = yes; then
+  AC_DEFINE(HAVE_LINUX_FS_H)
+else
+  LINUX_INCLUDE='-I$(top_srcdir)/include -I$(top_builddir)/include'
+  # Use this include directory with test compiles in the configure script too.
+  CPPFLAGS="$CPPFLAGS -I$srcdir/include -I./include"
+fi
+AC_SUBST(LINUX_INCLUDE)
+dnl
 dnl Set default values for library extentions.  Will be dealt with after
 dnl parsing configuration opions, which may modify these
 dnl
@@ -422,20 +436,6 @@ AC_MSG_RESULT($e2fsprogs_cv_ino_t)
 if test "$e2fsprogs_cv_ino_t" = yes; then
    AC_DEFINE(HAVE_INO_T)
 fi
-dnl
-dnl On systems without linux header files, we add an extra include directory
-dnl that holds enough to fake it (hopefully).  Note that the $(top_srcdir) here
-dnl is quoted so that it gets expanded by make, not by configure.
-dnl
-AC_CHECK_HEADER(linux/fs.h, [linux_headers=yes], [linux_headers=no])
-if test "$linux_headers" = yes; then
-  AC_DEFINE(HAVE_LINUX_FS_H)
-else
-  LINUX_INCLUDE='-I$(top_srcdir)/include -I$(top_builddir)/include'
-  # Use this include directory with test compiles in the configure script too.
-  CPPFLAGS="$CPPFLAGS -I$srcdir/include -I./include"
-fi
-AC_SUBST(LINUX_INCLUDE)
 dnl
 dnl Check to see if -lsocket is required (solaris) to make something
 dnl that uses socket() to compile; this is needed for the UUID library

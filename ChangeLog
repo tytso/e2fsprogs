@@ -1,3 +1,10 @@
+1999-10-26    <tytso@valinux.com>
+
+	* configure.in: Move the code that checks for the presence of
+		Linux header files, to earlier in the config file, since
+		it adds a directory to the include path, and that needs to
+		happen before any compile tests are run.
+
 1999-10-25    <tytso@valinux.com>
 
 	* configure.in: Capitalized Hurd to make the GNU folks happy.
