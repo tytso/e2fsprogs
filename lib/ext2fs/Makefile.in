@@ -346,10 +346,9 @@ get_pathname.o: $(srcdir)/get_pathname.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
-getsize.o: $(srcdir)/getsize.c /usr/src/linux/include/linux/fd.h \
- /usr/src/linux/include/linux/ioctl.h /usr/src/linux/include/asm/ioctl.h \
- $(srcdir)/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
- $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+getsize.o: $(srcdir)/getsize.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 icount.o: $(srcdir)/icount.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
@@ -371,10 +370,9 @@ inode.o: $(srcdir)/inode.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fsP.h \
  $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h $(srcdir)/e2image.h
-ismounted.o: $(srcdir)/ismounted.c /usr/src/linux/include/linux/fd.h \
- /usr/src/linux/include/linux/ioctl.h /usr/src/linux/include/asm/ioctl.h \
- $(srcdir)/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
- $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ismounted.o: $(srcdir)/ismounted.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 link.o: $(srcdir)/link.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
@@ -390,6 +388,12 @@ mkdir.o: $(srcdir)/mkdir.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+mkjournal.o: $(srcdir)/mkjournal.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/e2p/e2p.h \
+ $(srcdir)/ext2fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h \
+ $(srcdir)/jfs_user.h $(srcdir)/kernel-jbd.h $(srcdir)/jfs_compat.h \
+ $(srcdir)/kernel-list.h
 namei.o: $(srcdir)/namei.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
