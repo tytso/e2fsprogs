@@ -34,7 +34,16 @@ If
 .I image-file
 is -, then the output of 
 .B e2image
-will be sent to standard output.
+will be sent to standard output, so that the output can be piped to
+another program, such as 
+.BR gzip (1).  
+(Note that is currently only supported when
+creating a raw image file using the 
+.B \-r
+option, since the process of creating a normal image file currently
+requires random-access access to the file, which can not be done using a
+pipe.  This restriction will hopefully be lifted in a future version of
+.BR e2image .)
 .PP
 The 
 .B \-r
