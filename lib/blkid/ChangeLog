@@ -1,3 +1,8 @@
+2005-01-13  Matthias Andree  <matthias.andree@gmx.de>
+
+	* getsize.c: Move #include "blkidP.h" before <sys/queues.h> to avoid a
+	clash with the LIST_HEAD in the latter file.
+
 2005-01-10  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c: Integrate and fix up Janos Farkas's patch.  Version 0

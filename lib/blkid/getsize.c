@@ -12,6 +12,9 @@
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
+/* include this before sys/queues.h! */
+#include "blkidP.h"
+
 #include <stdio.h>
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -39,9 +42,6 @@
 #ifdef __linux__
 #include <sys/utsname.h>
 #endif
-
-#include "blkidP.h"
-
 
 #if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */
