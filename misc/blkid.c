@@ -38,7 +38,7 @@ static void usage(int error)
 	print_version(out);
 	fprintf(out,
 		"usage:\t%s [-c <file>] [-h] [-o format] "
-		"[-p] [-s <tag>] [-t <token>]\n    [-v] [-w <file>] [dev ...]\n"
+		"[-s <tag>] [-t <token>]\n    [-v] [-w <file>] [dev ...]\n"
 		"\t-c\tcache file (default: /etc/blkid.tab, /dev/null = none)\n"
 		"\t-h\tprint this usage message and exit\n"
 		"\t-s\tshow specified tag(s) (default show all tags)\n"
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 	int output_format = 0;
 	char c;
 
-	while ((c = getopt (argc, argv, "c:f:ho:ps:t:w:v")) != EOF)
+	while ((c = getopt (argc, argv, "c:f:ho:s:t:w:v")) != EOF)
 		switch (c) {
 		case 'c':
 			if (optarg && !*optarg)

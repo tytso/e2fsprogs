@@ -1,3 +1,9 @@
+2004-03-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid.c: Remove the partially implemented -p option (it never
+		did anything, but was documented in the man page and the
+		usage display).
+
 2004-03-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid.c (main, print_tags): Add new option -o which allows the
