@@ -1,5 +1,8 @@
 2001-09-19  Theodore Tso  <tytso@valinux.com>
 
+	* tune2fs.c (remove_journal_inode): Remove dead code that wasn't
+		in use.
+
 	* tune2fs.8.in: Update man page to reflect the fact that adding or
 		removing a journal doesn't require running e2fsck.
 

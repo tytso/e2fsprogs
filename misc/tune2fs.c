@@ -207,7 +207,6 @@ static void remove_journal_inode(ext2_filsys fs)
 	struct ext2_inode	inode;
 	errcode_t		retval;
 	ino_t			ino = fs->super->s_journal_inum;
-	int			group;
 	
 	retval = ext2fs_read_inode(fs, ino,  &inode);
 	if (retval) {
@@ -231,7 +230,6 @@ static void remove_journal_inode(ext2_filsys fs)
 		}
 		memset(&inode, 0, sizeof(inode));
 		ext2fs_mark_bb_dirty(fs);
-		group = ext2fs_group_of_ino(fs, ino);
 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 	} else
 		inode.i_flags &= ~EXT2_IMMUTABLE_FL;
