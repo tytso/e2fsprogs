@@ -80,20 +80,15 @@ FILE *open_pager(void)
 	char buf[80];
 
 	signal(SIGPIPE, SIG_IGN);
-	if (pager) {
-		if (strcmp(pager, "__none__") == 0) {
-			return stdout;
-		}
-	} else
+	if (!pager)
+		pager = getenv("DEBUGFS_PAGER");
+	if (!pager)
 		pager = find_pager(buf);
-
-	if (pager)
-		outfile = popen(pager, "w");
-
-	if (!outfile)
-		outfile = stdout;
-
-	return (outfile);
+	if (!pager || 
+	    (strcmp(pager, "__none__") == 0) ||
+	    ((outfile = popen(pager, "w")) == 0))
+		return stdout;
+	return outfile;
 }
 
 void close_pager(FILE *stream)

@@ -1,3 +1,10 @@
+2003-12-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* util.c (open_pager): Try to use the DEBUGFS_PAGER environment
+		variable first, and then fall back to the PAGER
+		environment variable.  Finally, search for an appropriate
+		pager executable.
+
 2003-12-11  Theodore Ts'o  <tytso@thunk.org>
 
 	* debugfs.c (do_write, do_mkdir): If the directory is full,
