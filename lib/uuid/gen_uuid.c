@@ -1,11 +1,11 @@
 /*
  * gen_uuid.c --- generate a DCE-compatible uuid
  *
- * Copyright (C) 1996, 1997 Theodore Ts'o.
+ * Copyright (C) 1996, 1997, 1998, 1999 Theodore Ts'o.
  *
  * %Begin-Header%
- * This file may be redistributed under the terms of the GNU Public
- * License.
+ * This file may be redistributed under the terms of the GNU 
+ * Library General Public License.
  * %End-Header%
  */
 
