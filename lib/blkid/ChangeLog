@@ -1,3 +1,10 @@
+2003-07-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* tag.c (blkid_find_dev_with_tag): If blkid_probe_all() returns an
+		error, then reflect that error upwards; don't try again
+		(forever).  This prevents an infinite loop when /proc and
+		the /etc/blkid.tab file are not present.
+
 2003-07-06  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid_types.h.in: Fix gcc -Wall nitpicks (don't use #elsif)

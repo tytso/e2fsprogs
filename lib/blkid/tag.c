@@ -332,7 +332,8 @@ try_again:
 	}
 
 	if (!dev && !(cache->bic_flags & BLKID_BIC_FL_PROBED)) {
-		blkid_probe_all(cache);
+		if (blkid_probe_all(cache) < 0)
+			return NULL;
 		goto try_again;
 	}
 	return dev;
