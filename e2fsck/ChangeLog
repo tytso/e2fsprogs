@@ -1,5 +1,18 @@
 2001-07-07  Theodore Tso  <tytso@valinux.com>
 
+	* pass1b.c (clone_file_block): Fix bugs when cloning extended
+		attribute blocks.  Moved free of block_buf to after the
+		code which clones the extattr block, and fixed logic for
+		changing pointers to the extended attribute field in the
+		inodes which were affected.
+		(decrement_badcount): New function which is used whenever
+		we need to decrement the number of files which claim a
+		particular bad block.  Fixed bug where delete_file wasn't
+		checking check_if_fs_block() before clearing the entry in
+		block_dup_map.  This could cause a block which was claimed
+		by multiple files as well as the filesystem metadata to
+		not be completely fixed.
+
 	* pass1.c (adjust_extattr_refcount): Add new function which
 		adjusts the reference counts of extended attribute blocks
 		if needed, both up and down.
