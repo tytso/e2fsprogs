@@ -166,6 +166,13 @@ exit 0
 %{_libdir}/libuuid.a
 %{_libdir}/libuuid.so
 
+%{_libdir}/pkgconfig/blkid.pc
+%{_libdir}/pkgconfig/com_err.pc
+%{_libdir}/pkgconfig/e2p.pc
+%{_libdir}/pkgconfig/ext2fs.pc
+%{_libdir}/pkgconfig/ss.pc
+%{_libdir}/pkgconfig/uuid.pc
+
 %{_datadir}/et
 %{_datadir}/ss
 %{_includedir}/blkid

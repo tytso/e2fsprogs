@@ -95,7 +95,7 @@ FILES=	$(SRCS) $(MKCMDSFILES) $(HFILES) \
 	ss_err.et std_rqs.ct Makefile \
 	test_ss.c ss 
 
-all::	libss.a # libss_p.a lint
+all::	libss.a ss.pc # libss_p.a lint
 
 std_rqs.c: std_rqs.ct mk_cmds
 	@echo "	MK_CMDS $@"
@@ -120,13 +120,17 @@ mk_cmds: $(DEP_SUBSTITUTE) $(srcdir)/mk_cmds.sh.in
 	@$(SUBSTITUTE) $(srcdir)/mk_cmds.sh.in mk_cmds
 	@$(CHMOD) +x mk_cmds
 
+ss.pc: $(srcdir)/ss.pc.in $(top_builddir)/config.status
+	@echo "	CONFIG.STATUS $@"
+	@cd $(top_builddir); CONFIG_FILES=lib/ss/ss.pc ./config.status
+
 installdirs::
 	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/ss $(datadir)/ss $(bindir)"
 	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/ss $(DESTDIR)$(datadir)/ss \
-		$(DESTDIR)$(bindir)
+		$(DESTDIR)$(bindir) $(DESTDIR)$(libdir)/pkgconfig
 
-install:: libss.a $(INSTALL_HFILES) installdirs ss_err.h mk_cmds
+install:: libss.a $(INSTALL_HFILES) installdirs ss_err.h mk_cmds ss.pc
 	@echo "	INSTALL_DATA $(DESTDIR)$(libdir)/libss.a"
 	@$(INSTALL_DATA) libss.a $(DESTDIR)$(libdir)/libss.a
 	@-$(RANLIB) $(DESTDIR)$(libdir)/libss.a
@@ -146,13 +150,17 @@ install:: libss.a $(INSTALL_HFILES) installdirs ss_err.h mk_cmds
 	@$(INSTALL) mk_cmds $(DESTDIR)$(bindir)/mk_cmds
 	@echo "	INSTALL_DATA $(man1dir)/mk_cmds.1"
 	@$(INSTALL_DATA) $(srcdir)/mk_cmds.1 $(DESTDIR)$(man1dir)/mk_cmds.1
+	@echo "	INSTALL_DATA $(libdir)/pkgconfig/ss.pc"
+	@$(INSTALL_DATA) ss.pc $(DESTDIR)$(libdir)/pkgconfig/ss.pc
 
 uninstall::
-	$(RM) -f $(DESTDIR)$(libdir)/libss.a $(DESTDIR)$(bindir)/mk_cmds
+	$(RM) -f $(DESTDIR)$(libdir)/libss.a $(DESTDIR)$(bindir)/mk_cmds \
+		$(DESTDIR)$(libdir)/pkgconfig/ss.pc \
+		$(DESTDIR)$(man1dir)/mk_cmds.1 
 	$(RM) -rf $(DESTDIR)$(includedir)/ss $(DESTDIR)$(datadir)/ss
 
 clean::
-	$(RM) -f ../libss.a libss.a mk_cmds ss_err.h ss_err.c std_rqs.c \
+	$(RM) -f ../libss.a libss.a mk_cmds ss_err.h ss_err.c std_rqs.c ss.pc \
 		*.o *~ \#* *.bak core 
 
 mostlyclean:: clean

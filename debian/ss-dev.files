@@ -4,3 +4,4 @@ usr/include/ss/*
 usr/bin/mk_cmds
 usr/share/ss/*
 usr/share/man/man1/mk_cmds*
+usr/lib/pkgconfig/ss.pc

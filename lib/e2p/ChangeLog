@@ -1,3 +1,7 @@
+2005-01-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2p.pc.in: Add pkg-config files.
+
 2005-01-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* ls.c (list_super2): Interpret OS Creator values for FreeBSD and

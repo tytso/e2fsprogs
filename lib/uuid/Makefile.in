@@ -67,7 +67,7 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @ELF_CMT@	@$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
 @BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
-all:: tst_uuid uuid_time $(SMANPAGES)
+all:: tst_uuid uuid_time $(SMANPAGES) uuid.pc
 
 $(top_builddir)/lib/uuid/uuid_types.h: $(srcdir)/uuid_types.h.in $(top_builddir)/config.status
 	cd $(top_builddir); CONFIG_FILES=$(my_dir)/uuid_types.h ./config.status
@@ -121,10 +121,15 @@ uuid_unparse.3: $(DEP_SUBSTITUTE) $(srcdir)/uuid_unparse.3.in
 	@echo "	SUBST $@"
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/uuid_unparse.3.in uuid_unparse.3
 
+uuid.pc: $(srcdir)/uuid.pc.in $(top_builddir)/config.status
+	@echo "	CONFIG.STATUS $@"
+	@cd $(top_builddir); CONFIG_FILES=lib/uuid/uuid.pc ./config.status
+
 installdirs::
 	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/uuid $(man3dir)"
 	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir)  \
-		$(DESTDIR)$(includedir)/uuid $(DESTDIR)$(man3dir)
+		$(DESTDIR)$(includedir)/uuid $(DESTDIR)$(man3dir) \
+		$(DESTDIR)$(libdir)/pkgconfig
 
 install:: all installdirs 
 	@echo "	INSTALL_DATA $(libdir)/libuuid.a"
@@ -144,9 +149,12 @@ install:: all installdirs
 	@$(LN) -f $(DESTDIR)$(man3dir)/uuid_generate.3 $(DESTDIR)$(man3dir)/uuid_generate_random.3
 	@echo "	LINK $(man3dir)/uuid_generate_time.3"
 	@$(LN) -f $(DESTDIR)$(man3dir)/uuid_generate.3 $(DESTDIR)$(man3dir)/uuid_generate_time.3
+	@echo "	INSTALL_DATA $(libdir)/pkgconfig/uuid.pc"
+	@$(INSTALL_DATA) uuid.pc $(DESTDIR)$(libdir)/pkgconfig/uuid.pc
 
 uninstall::
-	$(RM) -f $(DESTDIR)$(libdir)/libuuid.a
+	$(RM) -f $(DESTDIR)$(libdir)/libuuid.a \
+		$(DESTDIR)$(libdir)/pkgconfig/uuid.pc
 	for i in $(SMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man3dir)/$$i; \
 	done

@@ -1,3 +1,7 @@
+2005-01-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* ss.pc.in: Add pkg-config files.
+
 2005-01-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Fix the kernel compile-time echo commands to be

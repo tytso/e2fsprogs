@@ -158,6 +158,8 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @MAKEFILE_PROFILE@
 @MAKEFILE_CHECKER@
 
+all:: ext2fs.pc
+
 .c.o:
 	@echo "	CC $<"
 	@$(CC) $(ALL_CFLAGS) -c $< -o $@
@@ -177,6 +179,10 @@ ext2_err.et: $(DEP_SUBSTITUTE) $(srcdir)/ext2_err.et.in
 ext2_err.c ext2_err.h: ext2_err.et
 	@echo "	COMPILE_ET ex2_err.et"
 	@$(COMPILE_ET) ext2_err.et
+
+ext2fs.pc: $(srcdir)/ext2fs.pc.in $(top_builddir)/config.status
+	@echo "	CONFIG.STATUS $@"
+	@cd $(top_builddir); CONFIG_FILES=lib/ext2fs/ext2fs.pc ./config.status
 
 tst_badblocks: tst_badblocks.o freefs.o \
 		read_bb_file.o write_bb_file.o badblocks.o 
@@ -226,9 +232,9 @@ check:: tst_badblocks tst_iscan @SWAPFS_CMT@ tst_byteswap
 installdirs::
 	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/ext2fs"
 	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
-		$(DESTDIR)$(includedir)/ext2fs
+		$(DESTDIR)$(includedir)/ext2fs $(DESTDIR)$(libdir)/pkgconfig
 
-install:: all $(HFILES) $(HFILES_IN) installdirs 
+install:: all $(HFILES) $(HFILES_IN) installdirs ext2fs.pc
 	@echo "	INSTALL_DATA $(libdir)/libext2fs.a"
 	@$(INSTALL_DATA) libext2fs.a $(DESTDIR)$(libdir)/libext2fs.a
 	@-$(RANLIB) $(DESTDIR)$(libdir)/libext2fs.a
@@ -241,10 +247,13 @@ install:: all $(HFILES) $(HFILES_IN) installdirs
 		echo "	INSTALL_DATA $(includedir)/ext2fs/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(includedir)/ext2fs/$$i; \
 	done
+	@echo "	INSTALL_DATA $(libdir)/pkgconfig/ext2fs.pc"
+	@$(INSTALL_DATA) ext2fs.pc $(DESTDIR)$(libdir)/pkgconfig/ext2fs.pc
 
 uninstall::
-	$(RM) -f $(DESTDIR)$(libdir)/libext2fs.a
-	$(RM) -rf $(DESTDIR)$(includedir)/ext2fs
+	$(RM) -f $(DESTDIR)$(libdir)/libext2fs.a \
+		$(DESTDIR)$(libdir)/pkgconfig/ext2fs.pc
+	$(RM) -rf $(DESTDIR)$(includedir)/ext2fs 
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/* \

@@ -13,7 +13,7 @@ DEP_MAKEFILE = $(DEP_LIB_MAKEFILES)
 
 @MCONFIG@
 
-all:: compile_et
+all:: compile_et com_err.pc
 
 OBJS= error_message.o et_name.o init_et.o com_err.o com_right.o
 SRCS = $(srcdir)/error_message.c $(srcdir)/et_name.c $(srcdir)/init_et.c \
@@ -62,6 +62,10 @@ compile_et: $(DEP_SUBSTITUTE) $(srcdir)/compile_et.sh.in
 com_err.ps : com_err.dvi
 com_err.dvi: com_err.texinfo
 
+com_err.pc: $(srcdir)/com_err.pc.in $(top_builddir)/config.status
+	@echo "	CONFIG.STATUS $@"
+	@cd $(top_builddir); CONFIG_FILES=lib/et/com_err.pc ./config.status
+
 #libcom_err.o:	$(LIBOBJS)
 #	$(LD) -r -s -o libcom_err.o $(LIBOBJS)
 #	chmod -x libcom_err.o
@@ -74,9 +78,9 @@ installdirs::
 	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/et $(DESTDIR)$(datadir)/et \
 		$(DESTDIR)$(bindir) $(DESTDIR)$(man1dir) \
-		$(DESTDIR)$(man3dir)
+		$(DESTDIR)$(man3dir) $(DESTDIR)$(libdir)/pkgconfig
 
-install:: compile_et libcom_err.a $(HFILES) installdirs
+install:: compile_et libcom_err.a $(HFILES) installdirs com_err.pc
 	@echo "	INSTALL_DATA $(libdir)/libcom_err.a"
 	@$(INSTALL_DATA) libcom_err.a $(DESTDIR)$(libdir)/libcom_err.a
 	@-$(RANLIB) $(DESTDIR)$(libdir)/libcom_err.a
@@ -96,10 +100,13 @@ install:: compile_et libcom_err.a $(HFILES) installdirs
 	@echo "	INSTALL_DATA $(man1dir)/compile_et.1"
 	@$(INSTALL_DATA) $(srcdir)/compile_et.1 \
 			$(DESTDIR)$(man1dir)/compile_et.1
+	@echo "	INSTALL_DATA $(libdir)/pkgconfig/com_err.pc"
+	@$(INSTALL_DATA) com_err.pc $(DESTDIR)$(libdir)/pkgconfig/com_err.pc
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libcom_err.a \
-			$(DESTDIR)$(bindir)/compile_et
+		$(DESTDIR)$(bindir)/compile_et \
+		$(DESTDIR)$(libdir)/pkgconfig/com_err.pc
 	$(RM) -rf $(DESTDIR)$(includedir)/et $(DESTDIR)$(datadir)/et
 
 check:: compile_et
