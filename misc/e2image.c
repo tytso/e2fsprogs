@@ -2,7 +2,7 @@
  * e2image.c --- Program which writes an image file backing up
  * critical metadata for the filesystem.
  *
- * Copyright 2000 by Theodore Ts'o.
+ * Copyright 2000, 2001 by Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
