@@ -1,5 +1,11 @@
 2004-12-23  Theodore Ts'o  <tytso@mit.edu>
 
+	* ext2fs.h (BMAP_SET), bmap.c (ext2fs_bmap): Add support for new
+		flag, BMAP_SET, which allows the caller to set a
+		particular logical->physical block mapping.
+
+	* ext2_err.et.in (EXT2_ET_SET_BMAP_NO_IND): New error code
+
 	* initialize.c (calc_reserved_gdt_blocks): #ifdef out all
 		debugging printf statements.
 	

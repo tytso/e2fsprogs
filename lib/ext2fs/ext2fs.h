@@ -402,7 +402,8 @@ typedef struct ext2_icount *ext2_icount_t;
 /*
  * Flags for ext2fs_bmap
  */
-#define BMAP_ALLOC	1
+#define BMAP_ALLOC	0x0001
+#define BMAP_SET	0x0002
 
 /*
  * Flags for imager.c functions

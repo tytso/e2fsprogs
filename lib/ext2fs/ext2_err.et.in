@@ -293,5 +293,8 @@ ec	EXT2_ET_RES_GDT_BLOCKS,
 ec	EXT2_ET_RESIZE_INODE_CORRUPT,
 	"Resize inode is corrupt"
 
+ec	EXT2_ET_SET_BMAP_NO_IND,
+	"Missing indirect block not present"
+
 	end
 
