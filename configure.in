@@ -47,6 +47,20 @@ AC_SUBST(E2FSPROGS_DAY)
 AC_SUBST(E2FSPROGS_VERSION)
 AC_CANONICAL_HOST
 dnl
+dnl Should we compile EVMS plugin or not.  Complicated logic, spread
+dnl over several different command-line options...
+dnl
+EVMS_CMT=
+AC_SUBST([EVMS_CMT])
+dnl
+dnl Use diet libc
+dnl 
+AC_ARG_WITH([diet-libc],
+[  --with-diet-libc      Use diet libc],
+CC="diet cc -nostdinc"
+EVMS_CMT="#"
+AC_MSG_RESULT(CC=$CC))dnl
+dnl
 dnl set $(CC) from --with-cc=value
 dnl
 AC_ARG_WITH([cc],
@@ -165,6 +179,17 @@ HTREE_CLR_CMT=#
 echo "Disabling htree clearing by default"
 )
 AC_SUBST(HTREE_CLR_CMT)
+dnl
+dnl handle --enable-evms
+dnl
+AC_ARG_ENABLE([evms],
+[  --disable-evms   	  don't build EVMS plugin],
+if test "$enableval" != "no"
+then
+	EVMS_CMT="#"
+	echo "Disabling EVMS plugin"
+fi
+)
 dnl
 dnl handle --enable-emvs-10
 dnl
@@ -345,7 +370,7 @@ dnl
 dnl handle --enable-blkid-debug
 dnl
 AC_ARG_ENABLE([blkid-debug],
-[  --enable-blkid-debug  	  enable blkid debugging],
+[  --enable-blkid-debug    enable blkid debugging],
 if test "$enableval" = "no"
 then
 	echo "Disabling blkid debugging"
@@ -688,7 +713,10 @@ linux*)
 cygwin)
 	CYGWIN_CMT=
 	UNIX_CMT="#"
+	EVMS_CMT="#"
 	;;
+*)
+	EVMS_CMT="#"
 esac
 AC_SUBST(LINUX_CMT)
 AC_SUBST(CYGWIN_CMT)

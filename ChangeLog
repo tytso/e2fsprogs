@@ -1,3 +1,8 @@
+2003-05-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in, configure, Makefile.in: Add --with-diet-libc
+		convenience option.  Add --disable-evms option.
+
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Install the message catalog files
