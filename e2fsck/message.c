@@ -50,6 +50,7 @@
  *
  * The following '@' expansions are supported:
  *
+ * 	@a	extended attribute
  * 	@A	error allocating
  * 	@b	block
  * 	@B	bitmap
@@ -99,6 +100,7 @@
  * letter <i> in the table below.
  */
 static const char *abbrevs[] = {
+	N_("aextended attribute"),
 	N_("Aerror allocating"),
 	N_("bblock"),
 	N_("Bbitmap"),

@@ -127,6 +127,11 @@ struct resource_track {
 #define E2F_PASS_1B	6
 
 /*
+ * Define the extended attribute refcount structure
+ */
+typedef struct ea_refcount *ext2_refcount_t;
+
+/*
  * This is the global e2fsck structure.
  */
 typedef struct e2fsck_struct *e2fsck_t;
@@ -159,12 +164,16 @@ struct e2fsck_struct {
 
 	ext2fs_block_bitmap block_found_map; /* Blocks which are in use */
 	ext2fs_block_bitmap block_dup_map; /* Blks referenced more than once */
+	ext2fs_block_bitmap block_ea_map; /* Blocks which are used by EA's */
 
 	/*
 	 * Inode count arrays
 	 */
 	ext2_icount_t	inode_count;
 	ext2_icount_t inode_link_info;
+
+	ext2_refcount_t	refcount;
+	ext2_refcount_t refcount_extra;
 
 	/*
 	 * Array of flags indicating whether an inode bitmap, block
@@ -231,6 +240,8 @@ struct e2fsck_struct {
 	int fs_tind_count;
 	int fs_fragmented;
 	int large_files;
+	int fs_ext_attr_inodes;
+	int fs_ext_attr_blocks;
 
 	/*
 	 * For the use of callers of the e2fsck functions; not used by
@@ -270,6 +281,20 @@ extern void e2fsck_free_dir_info(e2fsck_t ctx);
 extern int e2fsck_get_num_dirs(e2fsck_t ctx);
 extern int e2fsck_get_num_dirinfo(e2fsck_t ctx);
 extern struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, int *control);
+
+/* ea_refcount.c */
+extern errcode_t ea_refcount_create(int size, ext2_refcount_t *ret);
+extern void ea_refcount_free(ext2_refcount_t refcount);
+extern errcode_t ea_refcount_fetch(ext2_refcount_t refcount, blk_t blk,
+				   int *ret);
+extern errcode_t ea_refcount_increment(ext2_refcount_t refcount,
+				       blk_t blk, int *ret);
+extern errcode_t ea_refcount_decrement(ext2_refcount_t refcount,
+				       blk_t blk, int *ret);
+extern errcode_t ea_refcount_store(ext2_refcount_t refcount,
+				   blk_t blk, int count);
+extern void ea_refcount_intr_begin(ext2_refcount_t refcount);
+extern blk_t ea_refcount_intr_next(ext2_refcount_t refcount, int *ret);
 
 /* ehandler.c */
 extern const char *ehandler_operation(const char *op);

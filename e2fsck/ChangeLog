@@ -1,3 +1,37 @@
+2001-07-02  Theodore Tso  <tytso@valinux.com>
+
+	* pass1.c (e2fsck_pass1, check_ext_attr, check_blocks): Add
+		initial support for scanning extended attribute blocks.
+
+	* e2fsck.c (e2fsck_reset_context): free extended attribute
+		refcount structure.
+
+	* e2fsck.h: Add new fields for accounting for the extended
+		attribute blocks.
+
+	* Makefile.in, ea_refcount.c, e2fsck.h: Add new file which
+		implements a reference count abstraction.
+
+	* problem.c, problem.h: Add new problem codes PR_1_ALLOCATE_REFCOUNT,
+		PR_1_READ_EA_BLOCK, PR_1_BAD_EA_BLOCK, PR_2_FILE_ACL_BAD
+
+	* message.c: Add "@a" as an abbreviation for "extended attribute"
+
+	* pass1b.c (clone_file): Add code which handles cloning an
+		extended attribute block.
+
+	* pass1b.c (delete_file): 
+	* pass2.c (deallocate_inode): If the inode contains an extended
+		attribute block in the file_acl field, clear it and
+		deallocate the block.
+
+2001-06-28  Theodore Tso  <tytso@valinux.com>
+
+	* pass2.c (e2fsck_process_bad_inode): Deal with inodes which are
+		marked bad because of an invalid file_acl (either because
+		EXT2_FEATURE_COMPAT_EXT_ATTR is not set, or because the
+		block number in file_acl is bad.
+
 2001-06-29  Theodore Tso  <tytso@valinux.com>
 
 	* unix.c (show_stats): Use long long to calculate the percentage

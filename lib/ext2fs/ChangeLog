@@ -1,5 +1,9 @@
 2001-06-23  Theodore Tso  <tytso@valinux.com>
 
+	* Makefile.in, ext_attr.c, ext2_attr.c, ext2fs.h: Add new files
+		ext2_ext_attr.h and ext_attr.c for extended attributes
+		support.
+
 	* Release of E2fsprogs 1.22
 
 2001-06-22  Theodore Tso  <tytso@valinux.com>

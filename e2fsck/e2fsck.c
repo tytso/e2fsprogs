@@ -67,9 +67,21 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 		ctx->fs->dblist = 0;
 	}
 	e2fsck_free_dir_info(ctx);
+	if (ctx->refcount) {
+		ea_refcount_free(ctx->refcount);
+		ctx->refcount = 0;
+	}
+	if (ctx->refcount_extra) {
+		ea_refcount_free(ctx->refcount_extra);
+		ctx->refcount_extra = 0;
+	}
 	if (ctx->block_dup_map) {
 		ext2fs_free_block_bitmap(ctx->block_dup_map);
 		ctx->block_dup_map = 0;
+	}
+	if (ctx->block_ea_map) {
+		ext2fs_free_block_bitmap(ctx->block_ea_map);
+		ctx->block_ea_map = 0;
 	}
 	if (ctx->inode_bb_map) {
 		ext2fs_free_inode_bitmap(ctx->inode_bb_map);

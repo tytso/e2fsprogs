@@ -402,7 +402,8 @@ typedef struct ext2_icount *ext2_icount_t;
  */
 #define EXT2_LIB_FEATURE_COMPAT_SUPP	(EXT2_FEATURE_COMPAT_DIR_PREALLOC|\
 					 EXT2_FEATURE_COMPAT_IMAGIC_INODES|\
-					 EXT3_FEATURE_COMPAT_HAS_JOURNAL)
+					 EXT3_FEATURE_COMPAT_HAS_JOURNAL|\
+					 EXT2_FEATURE_COMPAT_EXT_ATTR)
 
 /* This #ifdef is temporary until compression is fully supported */
 #ifdef ENABLE_COMPRESSION
@@ -607,6 +608,10 @@ extern errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest);
 /* expanddir.c */
 extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir);
 
+/* ext_attr.c */
+void ext2fs_swap_ext_attr(ext2_filsys fs, char *to, char *from);
+extern errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf);
+extern errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *buf); 
 /* fileio.c */
 extern errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 				  int flags, ext2_file_t *ret);

@@ -567,6 +567,21 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@is that were part of a corrupted orphan linked list found.  "),
 	  PROMPT_FIX, 0 },		  
 		  
+	/* Error allocating refcount structure */
+	{ PR_1_ALLOCATE_REFCOUNT,
+	  "@A refcount structure (%N): %m\n",
+	  PROMPT_NONE, PR_FATAL },
+
+	/* Error reading extended attribute block */
+	{ PR_1_READ_EA_BLOCK,
+	  N_("Error reading @a @b %b for @i %i.  "),
+	  PROMPT_CLEAR, 0 },
+
+	  /* Invalid extended attribute block */
+	{ PR_1_BAD_EA_BLOCK,
+	  N_("@i %i has a bad @a @b %b.  "),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
@@ -873,7 +888,12 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Invalid fast symlink size */
 	{ PR_2_SYMLINK_SIZE,
-	  N_("@i %i (%Q) is a fast symlink with an invalid size (%Is)\n"),
+	  N_("@i %i (%Q) is a fast symlink with a bad size (%Is)\n"),
+	  PROMPT_CLEAR, 0 },
+
+  	/* i_file_acl (extended attribute block) is bad */
+	{ PR_2_FILE_ACL_BAD,
+	  N_("@a @b @F is invalid (%If).\n"),
 	  PROMPT_CLEAR, 0 },
 
 	/* Pass 3 errors */

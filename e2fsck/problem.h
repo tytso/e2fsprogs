@@ -326,7 +326,16 @@ struct problem_context {
 
 /* Latch question which asks how to deal with low dtime inodes */
 #define PR_1_ORPHAN_LIST_REFUGEES	0x010037
+
+/* Error allocating refcount structure */
+#define PR_1_ALLOCATE_REFCOUNT		0x010038
 	
+/* Error reading Extended Attribute block */
+#define PR_1_READ_EA_BLOCK		0x010039
+
+/* Invalid Extended Attribute block */
+#define PR_1_BAD_EA_BLOCK		0x01003A
+
 /*
  * Pass 1b errors
  */
@@ -519,6 +528,9 @@ struct problem_context {
 
 /* Invalid fast symlink size */
 #define PR_2_SYMLINK_SIZE	0x020031
+
+/* i_file_acl (extended attribute) is bad */
+#define PR_2_FILE_ACL_BAD	0x020032
 
 /*
  * Pass 3 errors

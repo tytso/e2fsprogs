@@ -648,6 +648,12 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	if (!ext2fs_inode_has_valid_blocks(&inode))
 		return;
 	
+	if (inode.i_file_acl) {
+		ext2fs_unmark_block_bitmap(ctx->block_found_map,
+					   inode.i_file_acl);
+		ext2fs_unmark_block_bitmap(fs->block_map, inode.i_file_acl);
+	}
+	
 	ext2fs_mark_bb_dirty(fs);
 	pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
 					    deallocate_inode_block, ctx);
@@ -747,7 +753,15 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	}
 
 	if (inode.i_file_acl &&
+	    !(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR) &&
 	    fix_problem(ctx, PR_2_FILE_ACL_ZERO, &pctx)) {
+		inode.i_file_acl = 0;
+		inode_modified++;
+	}
+	if (inode.i_file_acl &&
+	    ((inode.i_file_acl < fs->super->s_first_data_block) ||
+	     (inode.i_file_acl >= fs->super->s_blocks_count)) &&
+	    fix_problem(ctx, PR_2_FILE_ACL_BAD, &pctx)) {
 		inode.i_file_acl = 0;
 		inode_modified++;
 	}

@@ -56,7 +56,7 @@ PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR) \
 
 OBJS= unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o pass3.o pass4.o \
 	pass5.o journal.o swapfs.o badblocks.o util.o dirinfo.o ehandler.o \
-	problem.o message.o recovery.o revoke.o $(MTRACE_OBJ)
+	problem.o message.o recovery.o revoke.o ea_refcount.o $(MTRACE_OBJ)
 
 PROFILED_OBJS= profiled/unix.o profiled/e2fsck.o profiled/super.o \
 	profiled/pass1.o profiled/pass1b.o \
@@ -64,7 +64,7 @@ PROFILED_OBJS= profiled/unix.o profiled/e2fsck.o profiled/super.o \
 	profiled/journal.o profiled/badblocks.o profiled/util.o \
 	profiled/dirinfo.o profiled/ehandler.o profiled/message.o \
 	profiled/problem.o profiled/swapfs.o profiled/recovery.o \
-	profiled/revoke.o
+	profiled/revoke.o profiled/ea_refcount.o
 
 SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/super.c \
@@ -85,6 +85,7 @@ SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/problem.c \
 	$(srcdir)/message.c \
 	$(srcdir)/swapfs.c \
+	$(srcdir)/ea_refcount.c \
 	$(MTRACE_SRC)
 
 all:: profiled $(PROGS) e2fsck.static e2fsck.shared $(MANPAGES)
@@ -105,6 +106,10 @@ e2fsck.shared: $(OBJS)  $(DEPLIBS)
 e2fsck.profiled: $(PROFILED_OBJS)  $(PROFILED_DEPLIBS)
 	$(LD) $(ALL_LDFLAGS) -g -pg -o e2fsck.profiled $(PROFILED_OBJS) \
 		$(PROFILED_LIBS) 
+
+tst_refcount: ea_refcount.c
+	$(CC) -o tst_refcount $(srcdir)/ea_refcount.c \
+		$(ALL_CFLAGS) -DTEST_PROGRAM -lcom_err
 
 extend: extend.o
 	$(LD) $(ALL_LDFLAGS) -o extend extend.o $(CHECKLIB)

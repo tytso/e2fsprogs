@@ -37,6 +37,9 @@
 
 #include "problem.h"
 
+/* Define an extension to the ext2 library's block count information */
+#define BLOCK_COUNT_EXTATTR	(-5)
+
 /*
  * This is structure is allocated for each time that a block is
  * claimed by more than one file.  So if a particular block is claimed
@@ -67,11 +70,14 @@ struct dup_block {
 	blk_t		block;		/* Block number */
 	ext2_ino_t	ino;		/* Inode number */
 	int		num_bad;
+	int		flags;
 	/* Pointer to next dup record with different block */
 	struct dup_block *next_block;
 	/* Pointer to next dup record with different inode */
 	struct dup_block *next_inode;
 };
+
+#define FLAG_EXTATTR	(1)
 
 /*
  * This structure stores information about a particular inode which
@@ -199,6 +205,9 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		pb.dup_blocks = 0;
 		pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
 					      process_pass1b_block, &pb);
+		if (inode.i_file_acl)
+			process_pass1b_block(fs, &inode.i_file_acl,
+					     BLOCK_COUNT_EXTATTR, 0, 0, &pb);
 		if (pb.dup_blocks) {
 			end_problem_latch(ctx, PR_LATCH_DBLOCK);
 			dp = (struct dup_inode *) e2fsck_allocate_memory(ctx,
@@ -261,6 +270,8 @@ static int process_pass1b_block(ext2_filsys fs,
 		dp->block = *block_nr;
 		dp->ino = p->ino;
 		dp->num_bad = 0;
+		dp->flags = (blockcnt == BLOCK_COUNT_EXTATTR) ?
+			FLAG_EXTATTR : 0;
 		q = dup_blk;
 		while (q) {
 			if (q->block == *block_nr)
@@ -546,6 +557,9 @@ static void delete_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 	e2fsck_read_inode(ctx, dp->ino, &inode, "delete_file");
 	inode.i_links_count = 0;
 	inode.i_dtime = time(0);
+	if (inode.i_file_acl)
+		delete_file_block(fs, &inode.i_file_acl,
+				  BLOCK_COUNT_EXTATTR, 0, 0, &pb);
 	e2fsck_write_inode(ctx, dp->ino, &inode, "delete_file");
 }
 
@@ -656,6 +670,32 @@ static int clone_file(e2fsck_t ctx, struct dup_inode *dp, char* block_buf)
 			_("returned from clone_file_block"));
 		return cs.errcode;
 	}
+	if (dp->inode.i_file_acl && 
+	    (clone_file_block(fs, &dp->inode.i_file_acl,
+			      BLOCK_COUNT_EXTATTR, 0, 0, &cs) ==
+	     BLOCK_CHANGED)) {
+		struct dup_block *p;
+		struct dup_inode *q;
+
+		/*
+		 * If we cloned the EA block, find all other inodes
+		 * which refered to that EA block, and modify
+		 * them to point to the new EA block.
+		 */
+		for (p = dup_blk; p; p = p->next_block) {
+			if (!(p->flags & FLAG_EXTATTR))
+				continue;
+			for (q = dup_ino; q; q = q->next)
+				if (p->ino == q->ino)
+					break;
+			if (!q)
+				continue; /* Should never happen */
+			q->inode.i_file_acl = dp->inode.i_file_acl;
+			e2fsck_write_inode(ctx, q->ino, &q->inode,
+					   "clone file EA");
+		}
+	}
+	
 	return 0;
 }
 

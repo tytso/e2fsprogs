@@ -31,6 +31,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	dirblock.o \
 	dir_iterate.o \
 	expanddir.o \
+	ext_attr.o \
 	finddev.o \
 	flushb.o \
 	freefs.o \
@@ -78,6 +79,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/dir_iterate.c \
 	$(srcdir)/dupfs.c \
 	$(srcdir)/expanddir.c \
+	$(srcdir)/ext_attr.c \
 	$(srcdir)/fileio.c \
 	$(srcdir)/finddev.c \
 	$(srcdir)/flushb.c \
@@ -112,7 +114,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/version.c \
 	$(srcdir)/write_bb_file.c
 
-HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h
+HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h ext2_ext_attr.h
 HFILES_IN=  ext2_err.h ext2_types.h
 
 LIBRARY= libext2fs

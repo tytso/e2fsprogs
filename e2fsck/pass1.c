@@ -43,6 +43,8 @@
 #endif
 
 #include "e2fsck.h"
+#include <ext2fs/ext2_ext_attr.h>
+
 #include "problem.h"
 
 #ifdef NO_INLINE_FUNCS
@@ -519,8 +521,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			frag = fsize = 0;
 		}
 		
-		if (inode.i_faddr || frag || fsize
-		    || inode.i_file_acl ||
+		if (inode.i_faddr || frag || fsize ||
 		    (LINUX_S_ISDIR(inode.i_mode) && inode.i_dir_acl))
 			mark_inode_bad(ctx, ino);
 		if (inode.i_flags & EXT2_IMAGIC_FL) {
@@ -859,6 +860,114 @@ static _INLINE_ void mark_block_used(e2fsck_t ctx, blk_t block)
 }
 
 /*
+ * Handle processing the extended attribute blocks
+ */
+static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
+			   char *block_buf)
+{
+	ext2_filsys fs = ctx->fs;
+	ext2_ino_t	ino = pctx->ino;
+	struct ext2_inode *inode = pctx->inode;
+	blk_t		blk;
+	static struct ext2_ext_attr_header *header;
+	int		count;
+	
+	blk = inode->i_file_acl;
+	if (blk == 0)
+		return 0;
+
+	/*
+	 * If the Extended attribute flag isn't set, then a non-zero
+	 * file acl means that the inode is corrupted.
+	 *
+	 * Or if the extended attribute block is an invalid block,
+	 * then the inode is also corrupted.
+	 */
+	if (!(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR) ||
+	    (blk < fs->super->s_first_data_block) ||
+	    (blk >= fs->super->s_blocks_count)) {
+		mark_inode_bad(ctx, ino);
+		return 0;
+	}
+
+	/* If ea bitmap hasn't been allocated, create it */
+	if (!ctx->block_ea_map) {
+		pctx->errcode = ext2fs_allocate_block_bitmap(fs,
+						      _("ext attr block map"),
+						      &ctx->block_ea_map);
+		if (pctx->errcode) {
+			pctx->num = 2;
+			fix_problem(ctx, PR_1_ALLOCATE_BBITMAP_ERROR, pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return 0;
+		}
+	}
+
+	/* Create the EA refcount structure if necessary */
+	if (!ctx->refcount) {
+		pctx->errcode = ea_refcount_create(0, &ctx->refcount);
+		if (pctx->errcode) {
+			pctx->num = 1;
+			fix_problem(ctx, PR_1_ALLOCATE_REFCOUNT, pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			return 0;
+		}
+	}
+
+	/* Have we seen this EA block before? */
+	if (ext2fs_fast_test_block_bitmap(ctx->block_ea_map, blk)) {
+		if (ea_refcount_decrement(ctx->refcount, blk, 0) == 0)
+			return 1;
+		/* Ooops, this EA was referenced more than it stated */
+		if (!ctx->refcount_extra) {
+			pctx->errcode = ea_refcount_create(0,
+					   &ctx->refcount_extra);
+			if (pctx->errcode) {
+				pctx->num = 2;
+				fix_problem(ctx, PR_1_ALLOCATE_REFCOUNT, pctx);
+				ctx->flags |= E2F_FLAG_ABORT;
+				return 1;
+			}
+		}
+		ea_refcount_increment(ctx->refcount_extra, blk, 0);
+		return 1;
+	}
+	
+	/*
+	 * OK, we haven't seen this EA block yet.  So we need to
+	 * validate it
+	 */
+	pctx->blk = blk;
+	pctx->errcode = ext2fs_read_ext_attr(fs, blk, block_buf);
+	if (pctx->errcode && fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx))
+		goto clear_extattr;
+	/* XXX what if read_ext_attr returns an error */
+	header = (struct ext2_ext_attr_header *) block_buf;
+
+	if (header->h_magic != EXT2_EXT_ATTR_MAGIC) {
+		pctx->blk = inode->i_file_acl;
+		if (fix_problem, ctx, PR_1_BAD_EA_BLOCK, pctx)
+			goto clear_extattr;
+	}
+	
+	/* @@@ validate the contents of the EA block */
+
+	count = header->h_refcount - 1;
+	if (count)
+		ea_refcount_store(ctx->refcount, blk, count);
+	mark_block_used(ctx, blk);
+	ext2fs_fast_mark_block_bitmap(ctx->block_ea_map, blk);
+	
+	return 1;
+
+clear_extattr:
+	inode->i_file_acl = 0;
+	e2fsck_write_inode(ctx, ino, inode, "check_ext_attr");
+	return 0;
+}
+
+
+/*
  * This subroutine is called on each inode to account for all of the
  * blocks used by that inode.
  */
@@ -930,6 +1039,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		ctx->flags |= E2F_FLAG_RESTART;
 		return;
 	}
+	if (inode->i_file_acl && check_ext_attr(ctx, pctx, block_buf))
+		pb.num_blocks++;
 
 	pb.num_blocks *= (fs->blocksize / 512);
 #if 0

@@ -1,5 +1,8 @@
 2001-06-23  Theodore Tso  <tytso@valinux.com>
 
+	* feature.c: Add entry in feature table to interpret
+		EXT2_FEATURE_COMPAT_EXT_ATTR.
+
 	* Release of E2fsprogs 1.22
 
 2001-06-15  Theodore Tso  <tytso@valinux.com>
