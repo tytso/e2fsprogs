@@ -1,3 +1,15 @@
+2002-08-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* fs_ext2.c (fs_fsck, fs_shrink, fs_expand): Change to use new
+		calling convention of fsim_fsck.  Fixed bug in fs_shrink
+		and f_expand where the shrink or expand would get aborted
+		if fsck returned an exit status code of 1 (which is normal).
+
+	* fsimext2.c (fsim_fsck): Add new parameter ret_status, and return
+		the exit status there.  The return code now returns 0 for
+		success, and an error code in case of failure, which
+		removes a lot of the ambiguity.
+
 2002-08-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* fs_ext2.c, fsimext2.c: Synchronize with EVMS CVS tree.

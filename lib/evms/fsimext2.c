@@ -267,7 +267,8 @@ void set_mkfs_options( option_array_t * options,
 /*
  * Run fsck on the volume.
  */
-int fsim_fsck(logical_volume_t * volume, option_array_t * options )
+int fsim_fsck(logical_volume_t * volume, option_array_t * options,
+	      int *ret_status)
 {
 	int     rc = FSIM_ERROR;
 	char   *argv[FSCK_EXT2_OPTIONS_COUNT + 3];
@@ -280,7 +281,7 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options )
 	/* open pipe, alloc buffer for collecting fsck.jfs output */
 	rc = pipe(fds2);
 	if (rc) {
-	    return(rc);
+	    return(errno);
 	}
 	if (!(buffer = EngFncs->engine_alloc(MAX_USER_MESSAGE_LEN))) {
 	    return(ENOMEM);
@@ -295,28 +296,17 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options )
 
         /* child */
         case 0:  
-            set_fsck_options( options, argv, volume );
+		set_fsck_options( options, argv, volume );
 
             /* pipe stderr, stdout */
-		    dup2(fds2[1],1);	/* fds2[1] replaces stdout */
-		    dup2(fds2[1],2);  	/* fds2[1] replaces stderr */
-		    close(fds2[0]);	/* don't need this here */
+		dup2(fds2[1],1);	/* fds2[1] replaces stdout */
+		dup2(fds2[1],2);  	/* fds2[1] replaces stderr */
+		close(fds2[0]);	/* don't need this here */
 
-            rc = execvp( argv[0], argv );
-
-            /*
-             * The value of fsck exit code FSCK_CORRECTED is the same
-             * as errno EPERM.  Thus, if EPERM is returned from execv,
-             * exit out of the child with rc = -1 instead of EPERM.
-             */
-            if( rc && (errno == EPERM) ) {
-                /* using exit() can hang GUI, use _exit */
-                _exit(-1);
-            } else {
-                /* using exit() can hang GUI, use _exit */
-                _exit(errno);
-            }
-
+		execvp( argv[0], argv );
+		/* should never get here */
+		_exit(8);	/* FSCK_ERROR -- operational error */
+		
         /* parent */
         default:
 		close(fds2[1]);
@@ -345,8 +335,10 @@ int fsim_fsck(logical_volume_t * volume, option_array_t * options )
 		}
 		if ( WIFEXITED(status) ) {
 			/* get e2fsck exit code */
-			rc = WEXITSTATUS(status);
-			LOG("e2fsck completed with exit code %d \n", rc);
+			*ret_status = WEXITSTATUS(status);
+			LOG("e2fsck completed with exit code %d \n",
+			    *ret_status);
+			rc = 0;
 		}
 	}
 

@@ -265,7 +265,7 @@ struct ext2_super_block {
 int fsim_get_ext2_superblock( logical_volume_t *, struct ext2_super_block * );
 int fsim_unmkfs( logical_volume_t * );
 int fsim_mkfs( logical_volume_t *, option_array_t * );
-int fsim_fsck( logical_volume_t *, option_array_t * );
+int fsim_fsck( logical_volume_t *, option_array_t *, int * );
 int fsim_get_volume_limits( struct ext2_super_block *, sector_count_t *,
 			                   sector_count_t *, sector_count_t * );
 int fsim_test_version( void );

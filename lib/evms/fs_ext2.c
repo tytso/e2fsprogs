@@ -279,9 +279,17 @@ static int fs_expand( logical_volume_t * volume,
 	    (sb->s_state & EXT2_ERROR_FS) ||
 	    ((sb->s_state & EXT2_VALID_FS) == 0)) {
 		MESSAGE("Running fsck before expanding volume");
-		rc = fsim_fsck(volume, NULL );
-		if (rc)
+		rc = fsim_fsck(volume, NULL, &status );
+		if (rc) {
+			MESSAGE("Attempt to execute fsck failed (%d)", rc);
+			MESSAGE("Aborting volume expand");
 			goto errout;
+		}
+		if (status >= 4) {
+			MESSAGE("Aborting volume expand");
+			rc = status;
+			goto errout;
+		}
 	}
 	
 	/* don't expand if mounted */
@@ -428,9 +436,17 @@ static int fs_shrink( logical_volume_t * volume,
 	    (sb->s_state & EXT2_ERROR_FS) ||
 	    ((sb->s_state & EXT2_VALID_FS) == 0)) {
 		MESSAGE("Running fsck before shrinking volume");
-		rc = fsim_fsck(volume, NULL );
-		if (rc)
+		rc = fsim_fsck(volume, NULL, &status );
+		if (rc) {
+			MESSAGE("Attempt to execute fsck failed (%d)", rc);
+			MESSAGE("Aborting volume shrink");
 			goto errout;
+		}
+		if (status >= 4) {
+			MESSAGE("Aborting volume shrink");
+			rc = status;
+			goto errout;
+		}
 	}
 	    
 	if (pipe(fds1)) {
@@ -551,36 +567,30 @@ static int fs_mkfs(logical_volume_t * volume, option_array_t * options )
 static int fs_fsck(logical_volume_t * volume, option_array_t * options )
 {
 	int rc = EINVAL;
+	int status;
 
 	LOGENTRY();
 
-	rc = fsim_fsck( volume, options );
+	rc = fsim_fsck( volume, options, &status );
+	if (rc)
+		goto errout;
+		
+	/*
+	 * If the volume is mounted, e2fsck checked READ ONLY
+	 * regardless of options specified.  If the check was READ
+	 * ONLY and errors were found, let the user know how to fix
+	 * them.
+	 */
+	if (EVMS_IS_MOUNTED(volume) && (status & FSCK_ERRORS_UNCORRECTED)) {
+		MESSAGE( "%s is mounted.", EVMS_GET_DEVNAME(volume) );
+		MESSAGE( "e2fsck checked the volume READ ONLY and found, but did not fix, errors." );
+		MESSAGE( "Unmount %s and run e2fsck again to repair the file system.", EVMS_GET_DEVNAME(volume) );
+	}
+	if (status > 4) {
+		MESSAGE( "e2fsck exited with status code %d.", status);
+	}
 
-    /*
-     * If fsck.ext2 returns FSCK_CORRECTED, the
-     * file system is clean, so return FSCK_OK.
-     */
-    if ( rc == FSCK_CORRECTED ) {
-        rc = FSCK_OK;
-    /*
-     * The value of FSCK_CORRECTED is the same as
-     * EPERM, so fsim_fsck will return -1 for EPERM.
-     */
-    } else if (rc == -1) {
-        rc = EPERM;
-    }
-
-    /*
-     * If the volume is mounted, e2fsck checked READ ONLY 
-     * regardless of options specified.  If the check was READ ONLY
-     * and errors were found, let the user know how to fix them.
-     */
-    if (EVMS_IS_MOUNTED(volume) && rc) {
-        MESSAGE( "%s is mounted.", EVMS_GET_DEVNAME(volume) );
-        MESSAGE( "e2fsck checked the volume READ ONLY and found, but did not fix, errors." );
-        MESSAGE( "Unmount %s and run e2fsck again to repair the file system.", EVMS_GET_DEVNAME(volume) );
-    }
-
+errout:
 	LOGEXITRC();
 	return rc;
 }
