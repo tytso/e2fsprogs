@@ -1,3 +1,36 @@
+E2fsprogs 1.35-WIP (August 1, 2003)
+===================================
+
+Fix regression tests so they work correctly when e2fsprogs is compiled
+with configure --disable-htree.
+
+Add compile_et extensions from Heimdall that were missed the first time
+arounded.
+
+Fix bug in badblocks when using O_DIRECT; we need to make sure that
+we're reading from an offset which is page aligned.  For read-only and
+read-write tests, we try to recover after an error so that we can
+continue reading on page-aligned boundaries.  (Addresses Debian Bug
+#203713)
+  
+Fixed various Debian packaging issues (see debian/changelog).
+
+Programmer's notes: 
+-------------------
+
+Fix 64-bit warnings in e2fsprogs pass1b by using inttypes.h if
+present.  This is for when we try stuffing an int into void * pointer.
+
+Fix type-punning which can cause gcc 3.x to miscompile code by getting
+confused about pointer aliasing.  ext2fs_getmem(), ext2fs_free_mem(),
+and ext2fs_resize_mem() all now take a 'void *' instead of a 'void
+**'.  The EVMS code uses an ugly union approach since we don't want to
+modify the EVMS interfaces. 
+
+Make sure all Makefiles use $(MAKE) rather than hardcoded "make", to
+aid build process on systems can use invoke GNU make as "gmake".
+
+
 E2fsprogs 1.34 (July 25, 2003)
 ===============================
 
