@@ -28,3 +28,6 @@ misc/mklost+found.c
 misc/partinfo.c
 misc/tune2fs.c
 misc/uuidgen.c
+resize/main.c
+resize/resize2fs.c
+resize/extent.c
