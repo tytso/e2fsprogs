@@ -541,7 +541,7 @@ if test "$e2fsprogs_cv_struct_st_flags" = yes; then
 	  AC_DEFINE(HAVE_STAT_FLAGS)
   fi
 fi
-AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 strdup getmntinfo strcasecmp srandom fchown mallinfo fdatasync)
+AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 getmntinfo strcasecmp srandom fchown mallinfo fdatasync strnlen)
 dnl
 dnl Check to see if -lsocket is required (solaris) to make something
 dnl that uses socket() to compile; this is needed for the UUID library

@@ -131,7 +131,7 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 	 * If i_blocks is non-zero, then this is a bogus device/fifo/socket
 	 */
 	if (inode->i_blocks)
-		return 1;
+		return 0;
 	/*
 	 * We should be able to do the test below all the time, but
 	 * because the kernel doesn't forcibly clear the device
@@ -150,6 +150,21 @@ int e2fsck_pass1_check_device_inode(struct ext2_inode *inode)
 	}
 	return 1;
 }
+
+#ifndef HAVE_STRNLEN
+/*
+ * Incredibly, libc5 doesn't appear to have strncpy.  So we have to
+ * provide our own.
+ */
+static int strnlen(const char * s, int count)
+{
+	const char *cp = s;
+
+	while (count-- && *cp)
+		cp++;
+	return cp - s;
+}
+#endif
 
 /*
  * Check to make sure a symlink inode is real.  Returns 1 if the symlink
