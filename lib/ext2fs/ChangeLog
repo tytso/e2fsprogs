@@ -1,3 +1,10 @@
+Thu May  8 22:19:09 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* badblocks.c (ext2fs_badblocks_list_test): Fix bug where
+ 		ext2fs_badblocks_list_test would test the list (and exceed
+ 		array boundaries) if there were no bad blocks on the bad
+ 		blocks list.  (Showed up when user tried: mke2fs -c -b 4096).
+
 Thu Apr 24 12:16:42 1997  Theodre Ts'o  <tytso@localhost.mit.edu>
 
 	* Release of E2fsprogs version 1.10

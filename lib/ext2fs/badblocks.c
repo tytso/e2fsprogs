@@ -131,6 +131,9 @@ int ext2fs_badblocks_list_test(ext2_badblocks_list bb, blk_t blk)
 	if (bb->magic != EXT2_ET_MAGIC_BADBLOCKS_LIST)
 		return 0;
 
+	if (bb->num == 0)
+		return 0;
+
 	low = 0;
 	high = bb->num-1;
 	if (blk == bb->list[low])

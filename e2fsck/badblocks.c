@@ -71,8 +71,8 @@ void read_bad_blocks_file(ext2_filsys fs, const char *bad_blocks_file,
 			fatal_error(0);
 		}
 	} else {
-		sprintf(buf, "badblocks %s%s %d", preen ? "" : "-s ",
-			fs->device_name,
+		sprintf(buf, "badblocks -b %d %s%s %d", fs->blocksize,
+			preen ? "" : "-s ", fs->device_name,
 			fs->super->s_blocks_count);
 		f = popen(buf, "r");
 		if (!f) {
