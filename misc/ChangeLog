@@ -1,3 +1,7 @@
+2001-09-02  Theodore Tso  <tytso@thunk.org>
+
+	* Release of E2fsprogs 1.24a
+
 2001-08-31  Andreas Dilger  <adilger@turbolinux.com>
 
 	* mke2fs.c (main): Fix version format string.
