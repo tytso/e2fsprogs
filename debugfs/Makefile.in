@@ -85,8 +85,13 @@ util.o: $(srcdir)/util.c $(srcdir)/debugfs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h
-ncheck.o: $(srcdir)/ncheck.c $(srcdir)/debugfs.h \
+ls.o: $(srcdir)/ls.c $(srcdir)/debugfs.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/et/com_err.h \
+ $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
+ncheck.o: $(srcdir)/ncheck.c \
+ $(srcdir)/debugfs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/ext2fs/io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(top_srcdir)/lib/ext2fs/bitops.h
 icheck.o: $(srcdir)/icheck.c $(srcdir)/debugfs.h \

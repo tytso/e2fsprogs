@@ -1,3 +1,14 @@
+Fri Apr 11 18:57:24 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* chattr.1.in: Updated man page so that the 'A' attribute is
+		specified everywhere.
+
+	* chattr.c (usage): Added usage message for the 'A' attribute.
+
+Fri Apr 11 18:56:26 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.08
+
 Thu Apr 10 07:08:03 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* dumpe2fs.c (list_desc): List the offsets of the inode and block

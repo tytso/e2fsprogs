@@ -1,10 +1,10 @@
 Summary: Tools for the second extended (ext2) filesystem 
 Name: e2fsprogs
-Version: 1.08
+Version: 1.09
 Release: 0
 Copyright: GPL
 Group: Utilities/System
-Source: tsx-11.mit.edu:/pub/linux/packages/ext2fs/e2fsprogs-1.08.tar.gz
+Source: tsx-11.mit.edu:/pub/linux/packages/ext2fs/e2fsprogs-1.09.tar.gz
 BuildRoot: /tmp/e2fsprogs-root
 
 %description

@@ -32,7 +32,7 @@ int ext2fs_parse_version_string(const char *ver_string)
 	const char *cp;
 	int version = 0;
 
-	for (cp = lib_version; *cp; cp++) {
+	for (cp = ver_string; *cp; cp++) {
 		if (!isdigit(*cp))
 			continue;
 		version = (version * 10) + (*cp - '0');

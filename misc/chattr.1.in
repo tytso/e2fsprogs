@@ -19,14 +19,15 @@ mode
 .B chattr
 changes the files attributes on an second extended file system.
 .PP
-The format of a symbolic mode is +-=[Sacdisu].
+The format of a symbolic mode is +-=[ASacdisu].
 .PP
 The operator `+' causes the selected attributes to be added to the
 existing attributes of the files; `-' causes them to be removed; and
 `=' causes them to be the only attributes that the files have.
 .PP
-The letters `Sacdisu' select the new attributes for the files: synchronous
-updates (S), append only (a), compressed (c), immutable (i), no dump (d),
+The letters `ASacdisu' select the new attributes for the files: 
+don't update atime (A), synchronous updates (S), append only (a), 
+compressed (c), immutable (i), no dump (d),
 secure deletion (s), and undeletable (u).
 .SH OPTIONS
 .TP
@@ -39,6 +40,10 @@ Verbosely describe changed attributes.
 .I -v version
 Set the files version.
 .SH ATTRIBUTES
+When a file with the 'A' attribute set is modified, its atime record is
+not modified.  This avoid a certain amount of disk I/O for laptop
+systems.
+
 A file with the `a' attribute set can only be open in append mode for writing.
 
 A file with the `c' attribute set is automatically compressed on the disk
@@ -63,9 +68,6 @@ the `sync' mount option applied to a subset of the files.
 When a file with the `u' attribute set is deleted, its contents is saved.
 This allows the user to ask for its undeletion.
 
-When a file with the 'A' attribute set is modified, its atime record is
-not modified.  This avoid a certain amount of disk I/O for laptop
-systems.
 .SH AUTHOR
 .B chattr
 has been written by Remy Card <card@masi.ibp.fr>, the developer and maintainer

@@ -60,7 +60,7 @@ static void volatile fatal_error (const char * fmt_string, int errcode)
 	exit (errcode);
 }
 
-#define usage() fatal_error ("usage: %s [-RV] [-+=acdisSu] [-v version] files...\n", \
+#define usage() fatal_error ("usage: %s [-RV] [-+=AacdisSu] [-v version] files...\n", \
 			     1)
 
 static int decode_arg (int * i, int argc, char ** argv)

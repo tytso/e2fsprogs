@@ -199,6 +199,17 @@ retry:
 	super->s_free_inodes_count = super->s_inodes_count;
 
 	/*
+	 * Overhead is the number of bookkeeping blocks per group.  It
+	 * includes the superblock backup, the group descriptor
+	 * backups, the inode bitmap, the block bitmap, and the inode
+	 * table.
+	 *
+	 * XXX Not all block groups need the descriptor blocks, but
+	 * being clever is tricky...
+	 */
+	overhead = 3 + fs->desc_blocks + fs->inode_blocks_per_group;
+	
+	/*
 	 * See if the last group is big enough to support the
 	 * necessary data structures.  If not, we need to get rid of
 	 * it.

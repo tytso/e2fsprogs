@@ -35,6 +35,9 @@ errcode_t ext2fs_allocate_tables(ext2_filsys fs)
 	group_blk = fs->super->s_first_data_block;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		last_blk = group_blk + fs->super->s_blocks_per_group;
+		if (last_blk >= fs->super->s_blocks_count)
+			last_blk = fs->super->s_blocks_count - 1;
+
 		/*
 		 * Allocate the inode table
 		 */

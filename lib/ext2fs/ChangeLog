@@ -1,3 +1,19 @@
+Mon Apr 14 20:38:56 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* version.c (ext2fs_parse_version_string): Check the passed in
+		version string (instead of the hard-coded one).
+
+	* alloc_tables.c (ext2fs_allocate_tables): If the last block is
+		greater filesystem size, clamp it to prevent allocating a
+		block or inode bitmap beyond the filesystem.
+
+	* initialize.c (ext2fs_initialize): Fix bug where the metatdata
+	 	overhead calculation was accidentally removed.
+
+Fri Apr 11 18:56:26 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.08
+
 Thu Apr 10 13:15:15 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* dblist.c (ext2fs_set_dir_block): New function which sets the
