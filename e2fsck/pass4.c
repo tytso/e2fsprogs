@@ -38,13 +38,23 @@ void pass4(ext2_filsys fs)
 			if (ask("Connect to /lost+found", 1)) {
 				if (reconnect_file(fs, i))
 					ext2fs_unmark_valid(fs);
-			} else
+			} else {
+				/*
+				 * If we don't attach the inode, then
+				 * skip the i_links_test since there's
+				 * no point in trying to force
+				 * i_links_count to zero.
+				 */
 				ext2fs_unmark_valid(fs);
+				continue;
+			}
 		}
 		if (inode_count[i] != inode_link_info[i]) {
 			e2fsck_read_inode(fs, i, &inode, "pass4");
 			if (inode_link_info[i] != inode.i_links_count) {
 				printf("WARNING: PROGRAMMING BUG IN E2FSCK!\n");
+				printf("\tOR SOME BONEHEAD (YOU) IS CHECKING "
+				       "A MOUNTED (LIVE) FILESYSTEM.\n"); 
 				printf("inode_link_info[%ld] is %u, "
 				       "inode.i_links_count is %d.  "
 				       "They should be the same!\n",

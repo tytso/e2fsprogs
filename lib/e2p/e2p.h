@@ -19,3 +19,6 @@ void print_flags (FILE * f, unsigned long flags, int long_format);
 void print_fs_state (FILE * f, unsigned short state);
 int setflags (int fd, unsigned long flags);
 int setversion (int fd, unsigned long version);
+
+int e2p_is_null_uuid(void *uu);
+void e2p_uuid_to_str(void *uu, char *out);

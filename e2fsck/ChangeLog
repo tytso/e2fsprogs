@@ -1,3 +1,60 @@
+Fri Aug 30 20:24:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass4.c (pass4): If the user refuses to connect an unattached
+		inode to lost+found, don't try to set i_links_count.  This
+		is bad, since if the user says yes, the inode will be
+		marked as unused, which is not necessarily the right
+		thing, especially since the rest of the cleanup doesn't
+		happen here.
+
+	* pass2.c (deallocate_inode): Set inode_link_info[ino] when
+		dellocating an inode.  (Not strictly necessary, but...)
+
+	* pass4.c (pass4): Add "bonehead" explanation to the "programming
+		error" message.
+
+Tue Aug 27 11:26:32 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (PRS,main): Added new options -s and -S.  -s will
+ 		byte-swap the filesystem so that it is normalized.  -S
+ 		will byte-swap the filesystem regardless of its current
+ 		byte-order.
+
+	* swapfs.c: New file, which will byte-swap a filesystem.
+
+Tue Aug 20 09:41:37 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (pass1): Change handling on files with non-zero dtime
+		and non-zero i_link_count; before we treated them as
+		deleted file per botched ext2 0.3c kernel behavior.  We
+		now clear dtime instead.
+
+Mon Aug 19 23:33:57 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (main): If e2fsck sets the clean bit, even if
+		nothing else is changed, make sure FSCK_NONDESTRUCT is
+		set (since after all having the filesystem set to
+		invalid is an error.  :-)
+
+Fri Aug  9 10:25:13 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* pass1.c (process_block): Make sure that meta data doesn't get
+		accidentally set in the dir_blocks array (which could
+		happen in some error condtions).
+	
+	* pass1.c (pass1): 
+	* pass2.c (process_bad_inode): Check for fragments in a
+		OS-independent fashion.
+
+Thu Aug  8 15:20:54 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c (check_if_skip): Close the filesystem when skipping the
+		cleanup for the filesystem.
+
+Mon Jul 22 22:03:28 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* e2fsck.c: Improve corrupt_msg, so that it's less confusing.
+
 Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.04

@@ -1,3 +1,15 @@
+Fri Aug 30 22:36:48 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* invocation.c (ss_create_invocation): Change function prototype
+ 		of invocation so that the first two arguments are const
+ 		char *, and that the info_ptr is a void *, not a char *.
+
+	* ss.h: Added declaration of ss_execute_line()
+
+Sat Aug 10 00:17:14 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* listen.c (ss_listen): Fix -Wall flames.
+
 Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.04

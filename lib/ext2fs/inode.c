@@ -19,8 +19,6 @@
 
 #include "ext2fs.h"
 
-static void inocpy_with_swap(struct ext2_inode *t, struct ext2_inode *f);
-
 errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 				 ext2_inode_scan *ret_scan)
 {
@@ -151,15 +149,17 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 		scan->ptr += scan->inode_size - extra_bytes;
 		scan->bytes_left -= scan->inode_size - extra_bytes;
 
-		if (scan->fs->flags & EXT2_SWAP_BYTES)
-			inocpy_with_swap(inode, (struct ext2_inode *)
-					 scan->temp_buffer);
+		if ((scan->fs->flags & EXT2_SWAP_BYTES) ||
+		    (scan->fs->flags & EXT2_SWAP_BYTES_READ))
+			ext2fs_swap_inode(scan->fs, inode,
+				 (struct ext2_inode *) scan->temp_buffer, 0);
 		else
 			*inode = *((struct ext2_inode *) scan->temp_buffer);
 	} else {
-		if (scan->fs->flags & EXT2_SWAP_BYTES)
-			inocpy_with_swap(inode, (struct ext2_inode *)
-					 scan->ptr);
+		if ((scan->fs->flags & EXT2_SWAP_BYTES) ||
+		    (scan->fs->flags & EXT2_SWAP_BYTES_READ))
+			ext2fs_swap_inode(scan->fs, inode,
+				 (struct ext2_inode *) scan->ptr, 0);
 		else
 			*inode = *((struct ext2_inode *) scan->ptr);
 		scan->ptr += scan->inode_size;
@@ -178,6 +178,15 @@ errcode_t ext2fs_get_next_inode(ext2_inode_scan scan, ino_t *ino,
 static char *inode_buffer = 0;
 static blk_t inode_buffer_block = 0;
 static int inode_buffer_size = 0;
+#define INODE_CACHE_SIZE 4
+#ifdef INODE_CACHE_SIZE
+static int cache_last = -1;
+static struct {
+	ino_t	inode;
+	struct ext2_inode value;
+} inode_cache[INODE_CACHE_SIZE];
+#endif
+
 
 errcode_t ext2fs_read_inode (ext2_filsys fs, unsigned long ino,
 			     struct ext2_inode * inode)
@@ -185,10 +194,29 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, unsigned long ino,
 	unsigned long 	group, block, block_nr, offset;
 	char 		*ptr;
 	errcode_t	retval;
-	int 		clen, length;
+	int 		clen, length, i;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
+	/* Check to see if user has an override function */
+	if (fs->read_inode) {
+		retval = (fs->read_inode)(fs, ino, inode);
+		if (retval != EXT2_ET_CALLBACK_NOTHANDLED)
+			return retval;
+	}
+	/* Check to see if it's in the inode cache */
+#ifdef INODE_CACHE_SIZE
+	if (cache_last == -1) {
+		for (i=0; i < INODE_CACHE_SIZE; i++)
+			inode_cache[i].inode = 0;
+		cache_last = INODE_CACHE_SIZE-1;
+	} else for (i=0; i < INODE_CACHE_SIZE; i++) {
+		if (inode_cache[i].inode == ino) {
+			*inode = inode_cache[i].value;
+			return 0;
+		}
+	}
+#endif
 	if (ino > fs->super->s_inodes_count)
 		return EXT2_ET_BAD_INODE_NUM;
 	if (inode_buffer_size != fs->blocksize) {
@@ -238,8 +266,16 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, unsigned long ino,
 	} else
 		memcpy((char *) inode, ptr, length);
 	
-	if (fs->flags & EXT2_SWAP_BYTES)
-		inocpy_with_swap(inode, inode);
+	if ((fs->flags & EXT2_SWAP_BYTES) ||
+	    (fs->flags & EXT2_SWAP_BYTES_READ))
+		ext2fs_swap_inode(fs, inode, inode, 0);
+
+	/* Update the inode cache */
+#ifdef INODE_CACHE_SIZE
+	cache_last = (cache_last + 1) % INODE_CACHE_SIZE;
+	inode_cache[cache_last].inode = ino;
+	inode_cache[cache_last].value = *inode;
+#endif
 
 	return 0;
 }
@@ -251,10 +287,25 @@ errcode_t ext2fs_write_inode(ext2_filsys fs, unsigned long ino,
 	errcode_t	retval;
 	struct ext2_inode temp_inode;
 	char *ptr;
-	int i, clen, length;
+	int clen, length, i;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
+	/* Check to see if user provided an override function */
+	if (fs->write_inode) {
+		retval = (fs->write_inode)(fs, ino, inode);
+		if (retval != EXT2_ET_CALLBACK_NOTHANDLED)
+			return retval;
+	}
+	/* Check to see if the inode cache needs to be updated */
+#ifdef INODE_CACHE_SIZE
+	for (i=0; i < INODE_CACHE_SIZE; i++) {
+		if (inode_cache[i].inode == ino) {
+			inode_cache[i].value = *inode;
+			break;
+		}
+	}
+#endif
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
 
@@ -271,8 +322,9 @@ errcode_t ext2fs_write_inode(ext2_filsys fs, unsigned long ino,
 		inode_buffer_size = fs->blocksize;
 		inode_buffer_block = 0;
 	}
-	if (fs->flags & EXT2_SWAP_BYTES)
-		inocpy_with_swap(&temp_inode, inode);
+	if ((fs->flags & EXT2_SWAP_BYTES) ||
+	    (fs->flags & EXT2_SWAP_BYTES_WRITE))
+		ext2fs_swap_inode(fs, &temp_inode, inode, 1);
 	else
 		memcpy(&temp_inode, inode, sizeof(struct ext2_inode));
 	
@@ -367,32 +419,7 @@ errcode_t ext2fs_check_directory(ext2_filsys fs, ino_t ino)
 	if (retval)
 		return retval;
 	if (!LINUX_S_ISDIR(inode.i_mode))
-		return ENOTDIR;
+	return ENOTDIR;
 	return 0;
 }
 
-static void inocpy_with_swap(struct ext2_inode *t, struct ext2_inode *f)
-{
-	unsigned i;
-	
-	t->i_mode = ext2fs_swab16(f->i_mode);
-	t->i_uid = ext2fs_swab16(f->i_uid);
-	t->i_size = ext2fs_swab32(f->i_size);
-	t->i_atime = ext2fs_swab32(f->i_atime);
-	t->i_ctime = ext2fs_swab32(f->i_ctime);
-	t->i_mtime = ext2fs_swab32(f->i_mtime);
-	t->i_dtime = ext2fs_swab32(f->i_dtime);
-	t->i_gid = ext2fs_swab16(f->i_gid);
-	t->i_links_count = ext2fs_swab16(f->i_links_count);
-	t->i_blocks = ext2fs_swab32(f->i_blocks);
-	t->i_flags = ext2fs_swab32(f->i_flags);
-	for (i = 0; i < EXT2_N_BLOCKS; i++)
-		t->i_block[i] = ext2fs_swab32(f->i_block[i]);
-	t->i_version = ext2fs_swab32(f->i_version);
-	t->i_file_acl = ext2fs_swab32(f->i_file_acl);
-	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
-	t->i_faddr = ext2fs_swab32(f->i_faddr);
-	t->osd2.linux2.l_i_frag = f->osd2.linux2.l_i_frag;
-	t->osd2.linux2.l_i_fsize = f->osd2.linux2.l_i_fsize;
-	t->osd2.linux2.i_pad1 = ext2fs_swab16(f->osd2.linux2.i_pad1);
-}

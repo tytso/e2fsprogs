@@ -530,6 +530,7 @@ static void deallocate_inode(ext2_filsys fs, ino_t ino,
 	errcode_t		retval;
 	struct ext2_inode	inode;
 
+	inode_link_info[ino] = 0;
 	e2fsck_read_inode(fs, ino, &inode, "deallocate_inode");
 	inode.i_links_count = 0;
 	inode.i_dtime = time(0);
@@ -609,6 +610,7 @@ static int process_bad_inode(ext2_filsys fs, ino_t dir, ino_t ino)
 	errcode_t		retval;
 	int			inode_modified = 0;
 	char			*pathname;
+	unsigned char		*frag, *fsize;
 
 	e2fsck_read_inode(fs, ino, &inode, "process_bad_inode");
 	retval = ext2fs_get_pathname(fs, dir, ino, &pathname);
@@ -634,23 +636,30 @@ static int process_bad_inode(ext2_filsys fs, ino_t dir, ino_t ino)
 	}
 	check_for_zero_u32(fs, ino, pathname, "i_faddr", &inode.i_faddr,
 			    &inode_modified);
-#if HAVE_EXT2_FRAGS
-	check_for_zero_u8(fs, ino, pathname, "i_frag", &inode.i_frag,
-			    &inode_modified);
-	check_for_zero_u8(fs, ino, pathname, "i_fsize", &inode.i_fsize,
-			    &inode_modified);
-#else
-	/*
-	 * Even if the OS specific fields don't support i_frag and
-	 * i_fsize, make sure they are set to zero anyway.  This may
-	 * cause problems if on some other OS these fields are reused
-	 * for something else, but that's probably a bad idea....
-	 */
-	check_for_zero_u8(fs, ino, pathname, "i_frag",
-			  &inode.osd2.linux2.l_i_frag, &inode_modified);
-	check_for_zero_u8(fs, ino, pathname, "i_fsize",
-			  &inode.osd2.linux2.l_i_fsize, &inode_modified);
-#endif
+
+	switch (fs->super->s_creator_os) {
+	    case EXT2_OS_LINUX:
+		frag = &inode.osd2.linux2.l_i_frag;
+		fsize = &inode.osd2.linux2.l_i_fsize;
+		break;
+	    case EXT2_OS_HURD:
+		frag = &inode.osd2.hurd2.h_i_frag;
+		fsize = &inode.osd2.hurd2.h_i_fsize;
+		break;
+	    case EXT2_OS_MASIX:
+		frag = &inode.osd2.masix2.m_i_frag;
+		fsize = &inode.osd2.masix2.m_i_fsize;
+		break;
+	    default:
+		frag = fsize = 0;
+	}
+	if (frag)
+		check_for_zero_u8(fs, ino, pathname, "i_frag", frag,
+				  &inode_modified);
+	if (fsize)
+		check_for_zero_u8(fs, ino, pathname, "i_fsize", fsize,
+				  &inode_modified);
+
 	check_for_zero_u32(fs, ino, pathname, "i_file_acl", &inode.i_file_acl,
 			    &inode_modified);
 	check_for_zero_u32(fs, ino, pathname, "i_dir_acl", &inode.i_dir_acl,

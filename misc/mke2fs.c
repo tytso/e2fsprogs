@@ -47,10 +47,15 @@
 #endif
 
 #include "et/com_err.h"
+#include "uuid/uuid.h"
 #include "ext2fs/ext2fs.h"
 #include "../version.h"
 
 #define STRIDE_LENGTH 8
+
+#ifndef sparc
+#define ZAP_BOOTBLOCK
+#endif
 
 extern int isatty(int);
 extern FILE *fpopen(const char *cmd, const char *mode);
@@ -67,14 +72,17 @@ int	force = 0;
 char	*bad_blocks_filename = 0;
 
 struct ext2_super_block param;
+char *creator_os = NULL;
+char *volume_label = NULL;
+char *mount_dir = NULL;
 
 static void usage(NOARGS)
 {
-	fprintf(stderr,
-		"Usage: %s [-c|-t|-l filename] [-b block-size] "
-		"[-f fragment-size]\n\t[-i bytes-per-inode] "
-		"[-m reserved-blocks-percentage] [-qvS]\n"
-		"\t[-g blocks-per-group] device [blocks-count]\n",
+	fprintf(stderr, "Usage: %s [-c|-t|-l filename] [-b block-size] "
+	"[-f fragment-size]\n\t[-i bytes-per-inode] "
+	"[-m reserved-blocks-percentage] [-qvS]\n\t"
+	"[-o creator-os] [-g blocks-per-group] [-L volume-label]\n\t"
+	"[-M last-mounted-directory] device [blocks-count]\n",
 		program_name);
 	exit(1);
 }
@@ -437,6 +445,7 @@ static void reserve_inodes(ext2_filsys fs)
 	ext2fs_mark_ib_dirty(fs);
 }
 
+#ifdef ZAP_BOOTBLOCK
 static void zap_bootblock(ext2_filsys fs)
 {
 	char buf[512];
@@ -449,11 +458,13 @@ static void zap_bootblock(ext2_filsys fs)
 		printf("Warning: could not erase block 0: %s\n", 
 		       error_message(retval));
 }
+#endif
 	
 
 static void show_stats(ext2_filsys fs)
 {
-	struct ext2_super_block	*s = fs->super;
+	struct ext2fs_sb 	*s = (struct ext2fs_sb *) fs->super;
+	char 			buf[80];
 	blk_t			group_block;
 	int			i, col_left;
 	
@@ -461,6 +472,16 @@ static void show_stats(ext2_filsys fs)
 		printf("warning: %d blocks unused.\n\n",
 		       param.s_blocks_count - s->s_blocks_count);
 	
+	switch (fs->super->s_creator_os) {
+	    case EXT2_OS_LINUX: printf ("Linux"); break;
+	    case EXT2_OS_HURD:  printf ("GNU/hurd");   break;
+	    case EXT2_OS_MASIX: printf ("Masix"); break;
+	    default:		printf ("(unknown os)");
+        }
+	printf (" ext2 filesystem format\n");
+	memset(buf, 0, sizeof(buf));
+	strncpy(buf, s->s_volume_name, sizeof(s->s_volume_name));
+	printf("Filesystem label=%s\n", buf);
 	printf("%u inodes, %u blocks\n", s->s_inodes_count,
 	       s->s_blocks_count);
 	printf("%u blocks (%2.2f%%) reserved for the super user\n",
@@ -498,6 +519,41 @@ static void show_stats(ext2_filsys fs)
 	printf("\n\n");
 }
 
+#ifndef HAVE_STRCASECMP
+static int strcasecmp (char *s1, char *s2)
+{
+	while (*s1 && *s2) {
+		int ch1 = *s1++, ch2 = *s2++;
+		if (isupper (ch1))
+			ch1 = tolower (ch1);
+		if (isupper (ch2))
+			ch2 = tolower (ch2);
+		if (ch1 != ch2)
+			return ch1 - ch2;
+	}
+	return *s1 ? 1 : *s2 ? -1 : 0;
+}
+#endif
+
+/*
+ * Set the S_CREATOR_OS field.  Return true if OS is known,
+ * otherwise, 0.
+ */
+static int set_os(struct ext2_super_block *sb, char *os)
+{
+	if (isdigit (*os))
+		sb->s_creator_os = atoi (os);
+	else if (strcasecmp(os, "linux") == 0)
+		sb->s_creator_os = EXT2_OS_LINUX;
+	else if (strcasecmp(os, "GNU") == 0 || strcasecmp(os, "hurd") == 0)
+		sb->s_creator_os = EXT2_OS_HURD;
+	else if (strcasecmp(os, "masix") == 0)
+		sb->s_creator_os = EXT2_OS_MASIX;
+	else
+		return 0;
+	return 1;
+}
+
 #define PATH_SET "PATH=/sbin"
 
 static void PRS(int argc, char *argv[])
@@ -532,7 +588,8 @@ static void PRS(int argc, char *argv[])
 		 EXT2FS_VERSION, EXT2FS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:cf:g:i:l:m:qr:tvI:SF")) != EOF)
+	while ((c = getopt (argc, argv,
+			    "b:cf:g:i:l:m:o:qr:tvI:SFL:M:")) != EOF)
 		switch (c) {
 		case 'b':
 			size = strtoul(optarg, &tmp, 0);
@@ -606,6 +663,9 @@ static void PRS(int argc, char *argv[])
 				exit(1);
 			}
 			break;
+		case 'o':
+			creator_os = optarg;
+			break;
 		case 'r':
 			param.s_rev_level = atoi(optarg);
 			break;
@@ -622,6 +682,12 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'F':
 			force = 1;
+			break;
+		case 'L':
+			volume_label = optarg;
+			break;
+		case 'M':
+			mount_dir = optarg;
 			break;
 		case 'S':
 			super_only = 1;
@@ -655,7 +721,7 @@ static void PRS(int argc, char *argv[])
 						EXT2_BLOCK_SIZE(&param),
 						&param.s_blocks_count);
 		if (retval) {
-			com_err(program_name, 0,
+			com_err(program_name, retval,
 				"while trying to determine filesystem size");
 			exit(1);
 		}
@@ -679,6 +745,7 @@ int main (int argc, char *argv[])
 	errcode_t	retval = 0;
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
+	struct ext2fs_sb *s;
 	
 	PRS(argc, argv);
 
@@ -692,6 +759,38 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
+	/*
+	 * Generate a UUID for it...
+	 */
+	s = (struct ext2fs_sb *) fs->super;
+	uuid_generate(s->s_uuid);
+
+	/*
+	 * Override the creator OS, if applicable
+	 */
+	if (creator_os && !set_os(fs->super, creator_os)) {
+		com_err (program_name, 0, "unknown os - %s", creator_os);
+		exit(1);
+	}
+
+	/*
+	 * Set the volume label...
+	 */
+	if (volume_label) {
+		memset(s->s_volume_name, 0, sizeof(s->s_volume_name));
+		strncpy(s->s_volume_name, volume_label,
+			sizeof(s->s_volume_name));
+	}
+
+	/*
+	 * Set the last mount directory
+	 */
+	if (mount_dir) {
+		memset(s->s_last_mounted, 0, sizeof(s->s_last_mounted));
+		strncpy(s->s_last_mounted, mount_dir,
+			sizeof(s->s_last_mounted));
+	}
+	
 	if (!quiet)
 		show_stats(fs);
 
@@ -710,7 +809,9 @@ int main (int argc, char *argv[])
 		create_lost_and_found(fs);
 		reserve_inodes(fs);
 		create_bad_block_inode(fs, bb_list);
+#ifdef ZAP_BOOTBLOCK
 		zap_bootblock(fs);
+#endif
 	}
 	
 	if (!quiet)

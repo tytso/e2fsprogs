@@ -1,6 +1,11 @@
 /*
  * initialize.c --- initialize a filesystem handle given superblock
  * 	parameters.  Used by mke2fs when initializing a filesystem.
+ * 
+ * Copyright (C) 1994, 1995, 1996 Theodore Ts'o.
+ * 
+ * This file may be redistributed under the terms of the GNU Public
+ * License.
  */
 
 #include <stdio.h>
@@ -31,6 +36,19 @@
 #define CREATOR_OS EXT2_OS_LINUX /* by default */
 #endif
 
+/*
+ * Note we override the kernel include file's idea of what the default
+ * check interval (never) should be.  It's a good idea to check at
+ * least *occasionally*, specially since servers will never rarely get
+ * to reboot, since Linux is so robust these days.  :-)
+ * 
+ * 180 days (six months) seems like a good value.
+ */
+#ifdef EXT2_DFL_CHECKINTERVAL
+#undef EXT2_DFL_CHECKINTERVAL
+#endif
+#define EXT2_DFL_CHECKINTERVAL (86400 * 180)
+
 errcode_t ext2fs_initialize(const char *name, int flags,
 			    struct ext2_super_block *param,
 			    io_manager manager, ext2_filsys *ret_fs)
@@ -55,7 +73,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
-	fs->flags = flags | EXT2_FLAG_RW;
+	fs->flags = flags | EXT2_FLAG_RW | ext2fs_native_flag();
 	retval = manager->open(name, IO_FLAG_RW, &fs->io);
 	if (retval)
 		goto cleanup;

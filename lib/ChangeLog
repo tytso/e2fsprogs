@@ -1,3 +1,16 @@
+Wed Aug 28 15:20:26 1996  Miles Bader  <miles@gnu.ai.mit.edu>
+
+	* Makefile.elf-lib (installdirs-elf-lib): Renamed from installdirs
+	to avoid making random directories only neeeded when installing
+	normal libraries.
+	(install-shlibs): Use installdirs-elf-lib instead of installdirs.
+
+Thu May 23 12:40:12 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.elf-lib: Install the .so files in /usr/lib, since the
+		.a files are stored there.  (We were installing the .so
+		files in the wrong place before.)
+
 Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.04

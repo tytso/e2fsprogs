@@ -1,3 +1,20 @@
+Sat Sep  7 14:48:35 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ls.c (interval_string): Pretty print the check interval.
+
+Tue Aug  6 14:12:36 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ls.c (list_super): Display the OS, volume label, last mounted,
+ 		and UUID field if present.
+
+Mon Jun 24 09:55:58 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ps.c, pf.c, pe.c, ls.c, setversion.c, setflags.c, getversion.c, 
+		fsetversion.c, fsetflags.c, fgetversion.c, fgetflags.c,
+		getflags.c: Remove include of ext2_fs.h, since it's
+		included by e2p.h; this also solves a sys/types.h vs
+		linux/types.h inclusion ordering problem with the GNU libc.
+
 Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.04

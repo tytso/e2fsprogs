@@ -29,7 +29,7 @@ typedef void sigret_t;
 static ss_data *current_info;
 static jmp_buf listen_jmpb;
 
-static sigret_t print_prompt()
+static sigret_t print_prompt(int sig)
 {
 #ifdef BSD
     /* put input into a reasonable mode */
@@ -45,19 +45,18 @@ static sigret_t print_prompt()
     (void) fflush(stdout);
 }
 
-static sigret_t listen_int_handler()
+static sigret_t listen_int_handler(int sig)
 {
     putc('\n', stdout);
     signal(SIGINT, listen_int_handler);
     longjmp(listen_jmpb, 1);
 }
 
-int ss_listen (sci_idx)
-    int sci_idx;
+int ss_listen (int sci_idx)
 {
     char *cp;
     ss_data *info;
-    sigret_t (*sig_int)(), (*sig_cont)(), (*old_sig_cont)();
+    sigret_t (*sig_int)(int), (*sig_cont)(int), (*old_sig_cont)(int);
     char input[BUFSIZ];
     char buffer[BUFSIZ];
     char *end = buffer;
@@ -71,7 +70,7 @@ int ss_listen (sci_idx)
     ss_data *old_info = current_info;
     
     current_info = info = ss_info(sci_idx);
-    sig_cont = (sigret_t (*)()) 0;
+    sig_cont = (sigret_t (*)(int)) 0;
     info->abort = 0;
 #ifdef POSIX_SIGNALS
     sigemptyset(&igmask);
@@ -89,7 +88,7 @@ int ss_listen (sci_idx)
     (void) sigsetmask(mask);
 #endif
     while(!info->abort) {
-	print_prompt();
+	print_prompt(0);
 	*end = '\0';
 	old_sig_cont = sig_cont;
 	sig_cont = signal(SIGCONT, print_prompt);
@@ -133,20 +132,14 @@ egress:
     return code;
 }
 
-void ss_abort_subsystem(sci_idx, code)
-    int sci_idx;
-    int code;
+void ss_abort_subsystem(int sci_idx, int code)
 {
     ss_info(sci_idx)->abort = 1;
     ss_info(sci_idx)->exit_status = code;
     
 }
 
-int ss_quit(argc, argv, sci_idx, infop)
-    int argc;
-    char **argv;
-    int sci_idx;
-    pointer infop;
+void ss_quit(int argc, const char * const *argv, int sci_idx, pointer infop)
 {
     ss_abort_subsystem(sci_idx, 0);
 }

@@ -98,12 +98,6 @@ static struct dup_block *dup_blk = 0;
 static struct dup_inode *dup_ino = 0;
 static int dup_inode_count = 0;
 
-/*
- * For pass1_check_directory and pass1_get_blocks
- */
-extern ino_t stashed_ino;
-extern struct ext2_inode *stashed_inode;
-
 static ext2fs_inode_bitmap inode_dup_map;
 
 /*

@@ -38,6 +38,22 @@ tune2fs \- adjust tunable filesystem parameters on second extended filesystems
 .B -g
 .I group
 ]
+[
+.B -C
+.I mount-count
+]
+[
+.B -L
+.I volume-name
+]
+[
+.B -M
+.I last-mounted-directory
+]
+[
+.B -U
+.I UUID
+]
 device
 .SH DESCRIPTION
 .BI tune2fs
@@ -85,6 +101,21 @@ adjust the reserved blocks count on the given device.
 set the user who can benefit from the reserved blocks.
 .I user
 can be a numerical uid or a user name.
+.IP
+.I -C mount-count
+set the number of times the filesystem has been mounted.
+.TP
+.I -L volume-label
+set the volume label of the filesystem.
+.TP
+.I -M last-mounted-directory
+set the last-mounted direcctory for the filesystem.
+.TP
+.I -U UUID
+set the UUID of the filesystem.  A sample UUID looks like this: 
+"c1b9d5a2-f162-11cf-9ece-0020afc76f16".  The uuid may also be "null", 
+which will set the filesystem UUID to the null UUID.  The uuid may also 
+be "random", which will generate a new random UUID for the filesystem.
 .PP
 .SH BUGS
 We didn't find any bugs yet. Perhaps there are bugs but it's unlikely.

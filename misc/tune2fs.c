@@ -39,21 +39,29 @@
 
 #include "ext2fs/ext2fs.h"
 #include "et/com_err.h"
+#include "uuid/uuid.h"
 #include "e2p/e2p.h"
 
 #include "../version.h"
 
 const char * program_name = "tune2fs";
 char * device_name = NULL;
+char * new_label = NULL;
+char * new_last_mounted = NULL;
+char * new_UUID = NULL;
 int c_flag = 0;
+int C_flag = 0;
 int e_flag = 0;
 int g_flag = 0;
 int i_flag = 0;
 int l_flag = 0;
+int L_flag = 0;
 int m_flag = 0;
+int M_flag = 0;
 int r_flag = 0;
 int u_flag = 0;
-int max_mount_count;
+int U_flag = 0;
+int max_mount_count, mount_count;
 unsigned long interval;
 unsigned long reserved_ratio = 0;
 unsigned long reserved_blocks = 0;
@@ -61,12 +69,30 @@ unsigned short errors;
 unsigned long resgid = 0;
 unsigned long resuid = 0;
 
+#ifndef HAVE_STRCASECMP
+static int strcasecmp (char *s1, char *s2)
+{
+	while (*s1 && *s2) {
+		int ch1 = *s1++, ch2 = *s2++;
+		if (isupper (ch1))
+			ch1 = tolower (ch1);
+		if (isupper (ch2))
+			ch2 = tolower (ch2);
+		if (ch1 != ch2)
+			return ch1 - ch2;
+	}
+	return *s1 ? 1 : *s2 ? -1 : 0;
+}
+#endif
+
 static volatile void usage (void)
 {
 	fprintf (stderr, "Usage: %s [-c max-mounts-count] [-e errors-behavior] "
 		 "[-g group]\n"
 		 "\t[-i interval[d|m|w]] [-l] [-m reserved-blocks-percent]\n"
-		 "\t[-r reserved-blocks-count] [-u user] device\n", program_name);
+		 "\t[-r reserved-blocks-count] [-u user] [-C mount-count]\n"
+		 "\t[-L volume-label] [-M last-mounted-dir] [-U UUID] "
+		 "device\n", program_name);
 	exit (1);
 }
 
@@ -76,8 +102,10 @@ void main (int argc, char ** argv)
 	char * tmp;
 	errcode_t retval;
 	ext2_filsys fs;
+	struct ext2fs_sb *sb;
 	struct group * gr;
 	struct passwd * pw;
+	int open_flag = 0;
 
 	fprintf (stderr, "tune2fs %s, %s for EXT2 FS %s, %s\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE,
@@ -85,7 +113,7 @@ void main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 	initialize_ext2_error_table();
-	while ((c = getopt (argc, argv, "c:e:g:i:lm:r:u:")) != EOF)
+	while ((c = getopt (argc, argv, "c:e:g:i:lm:r:u:C:L:M:U:")) != EOF)
 		switch (c)
 		{
 			case 'c':
@@ -98,6 +126,19 @@ void main (int argc, char ** argv)
 					usage ();
 				}
 				c_flag = 1;
+				open_flag = EXT2_FLAG_RW;
+				break;
+			case 'C':
+				mount_count = strtoul (optarg, &tmp, 0);
+				if (*tmp || mount_count > 16000)
+				{
+					com_err (program_name, 0,
+						 "bad mounts count - %s",
+						 optarg);
+					usage ();
+				}
+				C_flag = 1;
+				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'e':
 				if (strcmp (optarg, "continue") == 0)
@@ -114,6 +155,7 @@ void main (int argc, char ** argv)
 					usage ();
 				}
 				e_flag = 1;
+				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'g':
 				resgid = strtoul (optarg, &tmp, 0);
@@ -135,28 +177,31 @@ void main (int argc, char ** argv)
 					usage ();
 				}
 				g_flag = 1;
+				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'i':
 				interval = strtoul (optarg, &tmp, 0);
-				switch (*tmp)
-				{
-					case '\0':
-					case 'd':
-					case 'D': /* days */
-						interval *= 86400;
-						if (*tmp != '\0')
-							tmp++;
-						break;
-					case 'm':
-					case 'M': /* months! */
-						interval *= 86400 * 30;
+				switch (*tmp) {
+				case 's':
+					tmp++;
+					break;
+				case '\0':
+				case 'd':
+				case 'D': /* days */
+					interval *= 86400;
+					if (*tmp != '\0')
 						tmp++;
-						break;
-					case 'w':
-					case 'W': /* weeks */
-						interval *= 86400 * 7;
-						tmp++;
-						break;
+					break;
+				case 'm':
+				case 'M': /* months! */
+					interval *= 86400 * 30;
+					tmp++;
+					break;
+				case 'w':
+				case 'W': /* weeks */
+					interval *= 86400 * 7;
+					tmp++;
+					break;
 				}
 				if (*tmp || interval > (365 * 86400))
 				{
@@ -165,9 +210,15 @@ void main (int argc, char ** argv)
 					usage ();
 				}
 				i_flag = 1;
+				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'l':
 				l_flag = 1;
+				break;
+			case 'L':
+				new_label = optarg;
+				L_flag = 1;
+				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'm':
 				reserved_ratio = strtoul (optarg, &tmp, 0);
@@ -179,6 +230,12 @@ void main (int argc, char ** argv)
 					usage ();
 				}
 				m_flag = 1;
+				open_flag = EXT2_FLAG_RW;
+				break;
+			case 'M':
+				new_last_mounted = optarg;
+				M_flag = 1;
+				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'r':
 				reserved_blocks = strtoul (optarg, &tmp, 0);
@@ -190,6 +247,7 @@ void main (int argc, char ** argv)
 					usage ();
 				}
 				r_flag = 1;
+				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'u':
 				resuid = strtoul (optarg, &tmp, 0);
@@ -211,20 +269,23 @@ void main (int argc, char ** argv)
 					usage ();
 				}
 				u_flag = 1;
+				open_flag = EXT2_FLAG_RW;
+				break;
+			case 'U':
+				new_UUID = optarg;
+				U_flag = 1;
+				open_flag = EXT2_FLAG_RW;
 				break;
 			default:
 				usage ();
 		}
 	if (optind < argc - 1 || optind == argc)
 		usage ();
-	if (!c_flag && !e_flag && !g_flag && !i_flag && !l_flag && !m_flag
-	    && !r_flag && !u_flag)
-		usage ();
+	if (!open_flag && !l_flag)
+		usage();
 	device_name = argv[optind];
-	retval = ext2fs_open (device_name,
-			      (c_flag || e_flag || g_flag || i_flag || m_flag
-			       || r_flag || u_flag) ? EXT2_FLAG_RW : 0,
-			      0, 0, unix_io_manager, &fs);
+	retval = ext2fs_open (device_name, open_flag, 0, 0,
+			      unix_io_manager, &fs);
         if (retval)
 	{
 		com_err (program_name, retval, "while trying to open %s",
@@ -232,15 +293,20 @@ void main (int argc, char ** argv)
 		printf("Couldn't find valid filesystem superblock.\n");
 		exit(1);
 	}
+	sb = (struct ext2fs_sb *) fs->super;
 
-	if (c_flag)
-	{
+	if (c_flag) {
 		fs->super->s_max_mnt_count = max_mount_count;
 		ext2fs_mark_super_dirty(fs);
-		printf ("Setting maximal mount count to %d\n", max_mount_count);
+		printf ("Setting maximal mount count to %d\n",
+			max_mount_count);
 	}
-	if (e_flag)
-	{
+	if (C_flag) {
+		fs->super->s_mnt_count = mount_count;
+		ext2fs_mark_super_dirty(fs);
+		printf ("Setting current mount count to %d\n", mount_count);
+	}
+	if (e_flag) {
 		fs->super->s_errors = errors;
 		ext2fs_mark_super_dirty(fs);
 		printf ("Setting error behavior to %d\n", errors);
@@ -268,7 +334,7 @@ void main (int argc, char ** argv)
 		fs->super->s_r_blocks_count = (fs->super->s_blocks_count / 100)
 			* reserved_ratio;
 		ext2fs_mark_super_dirty(fs);
-		printf ("Setting reserved blocks percentage to %lu (%lu blocks)\n",
+		printf ("Setting reserved blocks percentage to %lu (%u blocks)\n",
 			reserved_ratio, fs->super->s_r_blocks_count);
 	}
 	if (r_flag)
@@ -297,6 +363,30 @@ void main (int argc, char ** argv)
 			 "The -u option is not supported by this version -- "
 			 "Recompile with a newer kernel");
 #endif
+	if (L_flag) {
+		memset(sb->s_volume_name, 0, sizeof(sb->s_volume_name));
+		strncpy(sb->s_volume_name, new_label,
+			sizeof(sb->s_volume_name));
+		ext2fs_mark_super_dirty(fs);
+	}
+	if (M_flag) {
+		memset(sb->s_last_mounted, 0, sizeof(sb->s_last_mounted));
+		strncpy(sb->s_last_mounted, new_last_mounted,
+			sizeof(sb->s_last_mounted));
+		ext2fs_mark_super_dirty(fs);
+	}
+	if (U_flag) {
+		if (strcasecmp(new_UUID, "null") == 0) {
+			uuid_clear(sb->s_uuid);
+		} else if (strcasecmp(new_UUID, "random") == 0) {
+			uuid_generate(sb->s_uuid);
+		} else if (uuid_parse(new_UUID, sb->s_uuid)) {
+			com_err(program_name, 0, "Invalid UUID format\n");
+			exit(1);
+		}
+		ext2fs_mark_super_dirty(fs);
+	}
+
 	if (l_flag)
 		list_super (fs->super);
 	ext2fs_close (fs);

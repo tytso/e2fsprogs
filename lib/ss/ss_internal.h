@@ -70,8 +70,8 @@ typedef struct {
 
 typedef struct _ss_data {	/* init values */
     /* this subsystem */
-    char *subsystem_name;
-    char *subsystem_version;
+    const char *subsystem_name;
+    const char *subsystem_version;
     /* current request info */
     int argc;
     char **argv;		/* arg list */

@@ -23,8 +23,6 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#include <linux/ext2_fs.h>
-
 #include "e2p.h"
 
 int fgetversion (const char * name, unsigned long * version)

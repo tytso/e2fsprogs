@@ -33,9 +33,9 @@ void ext2fs_free(ext2_filsys fs)
 	free(fs);
 }
 
-void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap)
+void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap)
 {
-	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_INODE_BITMAP))
+	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_GENERIC_BITMAP))
 		return;
 
 	bitmap->magic = 0;
@@ -50,20 +50,21 @@ void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap)
 	free(bitmap);
 }
 
+void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap)
+{
+	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_INODE_BITMAP))
+		return;
+
+	bitmap->magic = EXT2_ET_MAGIC_GENERIC_BITMAP;
+	ext2fs_free_generic_bitmap(bitmap);
+}
+
 void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap)
 {
 	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_BLOCK_BITMAP))
 		return;
 
-	bitmap->magic = 0;
-	if (bitmap->description) {
-		free(bitmap->description);
-		bitmap->description = 0;
-	}
-	if (bitmap->bitmap) {
-		free(bitmap->bitmap);
-		bitmap->bitmap = 0;
-	}
-	free(bitmap);
+	bitmap->magic = EXT2_ET_MAGIC_GENERIC_BITMAP;
+	ext2fs_free_generic_bitmap(bitmap);
 }
 

@@ -22,27 +22,25 @@
 
 #include "ext2fs.h"
 
-errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
-				       const char *descr,
-				       ext2fs_inode_bitmap *ret)
+errcode_t ext2fs_allocate_generic_bitmap(__u32 start,
+					 __u32 end,
+					 __u32 real_end,
+					 const char *descr,
+					 ext2fs_generic_bitmap *ret)
 {
 	ext2fs_inode_bitmap bitmap;
 	int	size;
 
-	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
-
-	fs->write_bitmaps = ext2fs_write_bitmaps;
-
-	bitmap = malloc(sizeof(struct ext2fs_struct_inode_bitmap));
+	bitmap = malloc(sizeof(struct ext2fs_struct_generic_bitmap));
 	if (!bitmap)
 		return ENOMEM;
 
-	bitmap->magic = EXT2_ET_MAGIC_INODE_BITMAP;
-	bitmap->fs = fs;
-	bitmap->start = 1;
-	bitmap->end = fs->super->s_inodes_count;
-	bitmap->real_end = (EXT2_INODES_PER_GROUP(fs->super)
-			    * fs->group_desc_count);
+	bitmap->magic = EXT2_ET_MAGIC_GENERIC_BITMAP;
+	bitmap->fs = NULL;
+	bitmap->start = start;
+	bitmap->end = end;
+	bitmap->real_end = real_end;
+	bitmap->base_error_code = EXT2_ET_BAD_GENERIC_MARK;
 	if (descr) {
 		bitmap->description = malloc(strlen(descr)+1);
 		if (!bitmap->description) {
@@ -66,46 +64,61 @@ errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
 	return 0;
 }
 
-errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
+errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
 				       const char *descr,
-				       ext2fs_block_bitmap *ret)
+				       ext2fs_inode_bitmap *ret)
 {
-	ext2fs_block_bitmap bitmap;
-	int	size;
+	ext2fs_inode_bitmap bitmap;
+	errcode_t	retval;
+	__u32		start, end, real_end;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	fs->write_bitmaps = ext2fs_write_bitmaps;
 
-	bitmap = malloc(sizeof(struct ext2fs_struct_inode_bitmap));
-	if (!bitmap)
-		return ENOMEM;
+	start = 1;
+	end = fs->super->s_inodes_count;
+	real_end = (EXT2_INODES_PER_GROUP(fs->super) * fs->group_desc_count);
+
+	retval = ext2fs_allocate_generic_bitmap(start, end, real_end,
+						descr, &bitmap);
+	if (retval)
+		return retval;
+	
+	bitmap->magic = EXT2_ET_MAGIC_INODE_BITMAP;
+	bitmap->fs = fs;
+	bitmap->base_error_code = EXT2_ET_BAD_INODE_MARK;
+	
+	*ret = bitmap;
+	return 0;
+}
+
+errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
+				       const char *descr,
+				       ext2fs_block_bitmap *ret)
+{
+	ext2fs_block_bitmap bitmap;
+	errcode_t	retval;
+	__u32		start, end, real_end;
+
+	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
+
+	fs->write_bitmaps = ext2fs_write_bitmaps;
+
+	start = fs->super->s_first_data_block;
+	end = fs->super->s_blocks_count-1;
+	real_end = (EXT2_BLOCKS_PER_GROUP(fs->super)  
+		    * fs->group_desc_count)-1 + start;
+	
+	retval = ext2fs_allocate_generic_bitmap(start, end, real_end,
+						descr, &bitmap);
+	if (retval)
+		return retval;
 
 	bitmap->magic = EXT2_ET_MAGIC_BLOCK_BITMAP;
 	bitmap->fs = fs;
-	bitmap->start = fs->super->s_first_data_block;
-	bitmap->end = fs->super->s_blocks_count-1;
-	bitmap->real_end = (EXT2_BLOCKS_PER_GROUP(fs->super) 
-			    * fs->group_desc_count)-1 + bitmap->start;
-	if (descr) {
-		bitmap->description = malloc(strlen(descr)+1);
-		if (!bitmap->description) {
-			free(bitmap);
-			return ENOMEM;
-		}
-		strcpy(bitmap->description, descr);
-	} else
-		bitmap->description = 0;
-
-	size = ((bitmap->real_end - bitmap->start) / 8) + 1;
-	bitmap->bitmap = malloc(size);
-	if (!bitmap->bitmap) {
-		free(bitmap->description);
-		free(bitmap);
-		return ENOMEM;
-	}
-
-	memset(bitmap->bitmap, 0, size);
+	bitmap->base_error_code = EXT2_ET_BAD_BLOCK_MARK;
+	
 	*ret = bitmap;
 	return 0;
 }

@@ -150,12 +150,20 @@ static void dump_bad_blocks(ext2_filsys fs)
 	badblocks_list_iterate_end(bb_iter);
 }
 
+static int i386_byteorder(void)
+{
+	int one = 1;
+	char *cp = (char *) &one;
+
+	return (*cp == 1);
+}
 
 void main (int argc, char ** argv)
 {
 	errcode_t	retval;
 	ext2_filsys	fs;
 	int		print_badblocks = 0;
+	int		big_endian;
 	char		c;
 
 	fprintf (stderr, "dumpe2fs %s, %s for EXT2 FS %s, %s\n",
@@ -195,6 +203,11 @@ void main (int argc, char ** argv)
 			ext2fs_close (fs);
 			exit (1);
 		}
+		big_endian = ((fs->flags & EXT2_SWAP_BYTES) != 0);
+		if (!i386_byteorder())
+			big_endian = !big_endian;
+		if (big_endian)
+			printf("Note: This is a byte-swapped filesystem\n");
 		list_super (fs->super);
 		list_bad_blocks (fs);
 		list_desc (fs);

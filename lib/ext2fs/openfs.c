@@ -113,6 +113,10 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 #endif
 #endif
 	fs->blocksize = EXT2_BLOCK_SIZE(fs->super);
+	if (fs->blocksize == 0) {
+		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
+		goto cleanup;
+	}
 	fs->fragsize = EXT2_FRAG_SIZE(fs->super);
 	fs->inode_blocks_per_group = ((fs->super->s_inodes_per_group *
 				       EXT2_INODE_SIZE(fs->super) +

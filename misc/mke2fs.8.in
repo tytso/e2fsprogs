@@ -14,23 +14,27 @@ mke2fs \- create a Linux second extended file system
 .\" test
 .\" |
 .B \-l
-filename
+.I filename
 ]
 [
 .B \-b
-block-size
+.I block-size
 ]
 [
 .B \-f
-fragment-size
+.I fragment-size
 ]
 [
 .B \-i
-bytes-per-inode
+.I bytes-per-inode
 ]
 [
 .B \-m
-reserved-blocks-percentage
+.I reserved-blocks-percentage
+]
+[
+.B \-o
+.I creator-os
 ]
 [
 .B \-q
@@ -42,11 +46,19 @@ reserved-blocks-percentage
 .B \-F
 ]
 [
+.B \-L
+.I volume-label
+]
+[
+.B \-M
+.I last-mounted-directory
+]
+[
 .B \-S
 ]
-device
+.I device
 [
-blocks-count
+.I blocks-count
 ]
 .SH DESCRIPTION
 .B mke2fs
@@ -94,6 +106,11 @@ defaults to 5%.
 .\" Check the device for bad blocks before creating the file system
 .\" using the specified test.
 .TP
+.I -o
+Manually override the default value of the "creator os" field of the 
+filesystem.  Normally the creator field is set by default to the native OS
+of the mke2fs executable.
+.TP
 .I -q
 Quiet execution.  Useful if mke2fs is run in a script.
 .TP
@@ -103,6 +120,14 @@ Verbose execution.
 .I -F
 Force mke2fs to run, even if the specified device is not a 
 block special device.
+.TP
+.I -L
+Set the volume label for the filesystem.
+.TP
+.I -M
+Set the last mounted directory for the filesystem.  This might be useful 
+for the sake of utilities that key off of the last mounted directory to 
+determine where the filesytem should be mounted.
 .TP
 .I -S
 Write superblock and group descriptors only.  This is useful if all of

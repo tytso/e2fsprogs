@@ -16,8 +16,6 @@
 
 #include <stdio.h>
 
-#include <linux/ext2_fs.h>
-
 #include "e2p.h"
 
 void print_fs_state (FILE * f, unsigned short state)

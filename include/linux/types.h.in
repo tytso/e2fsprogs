@@ -4,6 +4,17 @@
 typedef unsigned char __u8;
 typedef signed char __s8;
 
+#if (@SIZEOF_INT@ == 8)
+typedef int		__s64;
+typedef unsigned int	__u64;
+#elif (@SIZEOF_LONG@ == 8)
+typedef long		__s64;
+typedef unsigned long	__u64;
+#elif (@SIZEOF_LONG_LONG@ == 8)
+typedef long		__s64;
+typedef unsigned long	__u64;
+#endif
+
 #if (@SIZEOF_INT@ == 2)
 typedef	int		__s16;
 typedef	unsigned int	__u16;
@@ -25,6 +36,10 @@ typedef	short		__s32;
 typedef	unsigned short	__u32;
 #else
  ?== error: undefined 32 bit type
+#endif
+
+#ifndef HAVE_INO_T
+typedef __u32 ino_t;
 #endif
 
 #endif /* LINUX_TYPES_H */

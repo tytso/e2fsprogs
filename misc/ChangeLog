@@ -1,3 +1,45 @@
+Sat Sep  7 07:34:11 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* tune2fs.c (main): Add support for new option -C, which sets the 
+		current number of mounts.
+		(main): Allow the interval to be specified in seconds,
+		mostly for debugging.
+
+Tue Aug 27 17:27:43 1996  Miles Bader  <miles@gnu.ai.mit.edu>
+
+	* Makefile.in (SMANPAGES): Use @FSCK_MAN@ instead of fsck.8.
+	(SPROGS): Use @FSCK_PROG@ instead of fsck.
+
+Thu Aug 22 00:51:44 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* mke2fs.c (zap_bootblock): Don't do zap_bootblock on a
+	 	sparc.
+
+Tue Aug 20 00:15:46 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* chattr.c (main): Fixed bug so that chattr -v works.  (Bug report
+ 		and fix sent by Charles Howes, chowes@eznet.ca)
+
+Fri Aug  9 11:52:42 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* tune2fs.8.in:
+	* tune2fs.c: Added support for the -L option which sets the volume
+		label, the -M option which sets the last mounted
+		directory, and the -U option which sets the filesystem UUID.
+
+	* mke2fs.8.in:
+	* mke2fs.c: Added support for the -o option, which overrides the
+		creator OS.  Generate a UUID for the filesystem, if
+		applicable.  Added support for the -L option which sets
+		the volume label, and the -M option which sets the last
+		mounted directory.
+
+Sat Jun 22 17:43:17 1996  Remy Card  <card@bbj.linux.eu.org>
+
+	* chattr.c (decode_arg): Integrated Michael Nonweiler's fix to
+		avoid a segmentation fault when the "-v" option is used
+		and no version number is specified.
+	
 Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.04

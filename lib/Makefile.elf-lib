@@ -31,15 +31,19 @@ $(ELF_LIB): $(OBJS)
 	$(LN) ../$(ELF_LIB) ../$(ELF_IMAGE).so
 	$(LN) ../$(ELF_LIB) ../$(ELF_SONAME)
 
-installdirs::
-	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(ELF_INSTALL_DIR)
+installdirs-elf-lib::
+	$(top_srcdir)/mkinstalldirs $(DESTDIR)$(ELF_INSTALL_DIR) \
+		$(DESTDIR)$(ulibdir)
 
-install-shlibs install:: $(ELF_LIB) installdirs
+installdirs:: installdirs-elf-lib
+
+install-shlibs install:: $(ELF_LIB) installdirs-elf-lib
 	$(INSTALL_PROGRAM) $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
 	$(STRIP) --strip-debug \
 		$(DESTDIR)$(DLL_INSTALL_DIR)/$(ELF_LIB)
-	$(LN) -sf $(ELF_LIB) $(DESTDIR)$(DLL_INSTALL_DIR)/$(ELF_SONAME)
-	$(LN) -sf $(ELF_SONAME) $(DESTDIR)$(DLL_INSTALL_DIR)/$(ELF_IMAGE).so
+	$(LN_S) -f $(ELF_LIB) $(DESTDIR)$(DLL_INSTALL_DIR)/$(ELF_SONAME)
+	$(LN_S) -f $(DLL_INSTALL_DIR)/$(ELF_SONAME) \
+		$(DESTDIR)$(ulibdir)/$(ELF_IMAGE).so
 	-ldconfig
 
 clean::

@@ -4,9 +4,13 @@
 #
 
 if test "$1"x = x ; then
-SRCDIR=.
+  TESTS=$SRCDIR/[a-zA-Z]_*
 else
-SRCDIR=$1
+  TESTS=
+  for i 
+  do
+    TESTS="$TESTS $SRCDIR/$i"
+  done
 fi
 
 cmd_dir=$SRCDIR
@@ -14,7 +18,7 @@ TMPFILE=./test.img
 
 . $SRCDIR/test_config
 
-for test_dir in $SRCDIR/[a-zA-Z]_*
+for test_dir in $TESTS
 do
 	test_name=`echo $test_dir | sed -e 's;.*/;;'`
 	if [ -f $test_dir/name ]; then
@@ -36,7 +40,7 @@ do
 	fi
 done
 
-num_ok=`ls *.ok | wc -l`
+num_ok=`ls *.ok 2>/dev/null | wc -l`
 num_failed=`ls *.failed 2>/dev/null | wc -l`
 
 echo "$num_ok tests succeeded	$num_failed tests failed"

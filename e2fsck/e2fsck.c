@@ -17,6 +17,10 @@
  * enforced (but it's not much fun on a character device :-). 
  */
 
+#include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <string.h>
 #include <fcntl.h>
 #include <ctype.h>
@@ -36,6 +40,7 @@
 #include <malloc.h>
 
 #include "et/com_err.h"
+#include "uuid/uuid.h"
 #include "e2fsck.h"
 #include "../version.h"
 
@@ -52,6 +57,8 @@ int tflag = 0;			/* Do timing */
 int cflag = 0;			/* check disk */
 int preen = 0;
 int rwflag = 1;
+int swapfs = 0;
+int normalize_swapfs = 0;
 int inode_buffer_blocks = 0;
 blk_t superblock;
 int blocksize = 0;
@@ -80,7 +87,7 @@ int restart_e2fsck = 0;
 static void usage(NOARGS)
 {
 	fprintf(stderr,
-		"Usage: %s [-panyrcdfvtFV] [-b superblock] [-B blocksize]\n"
+		"Usage: %s [-panyrcdfvstFSV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-I inode_buffer_blocks] [-P process_inode_size]\n"
 		"\t\t[-l|-L bad_blocks_file] device\n", program_name);
 	exit(FSCK_USAGE);
@@ -206,11 +213,12 @@ static void sync_disks(NOARGS)
 #define MIN_CHECK 1
 #define MAX_CHECK 2
 
-static const char *corrupt_msg = "\nThe filesystem superblock is corrupt.  "
-	"Try running e2fsck with an alternate\n"
-	"superblock using the -b option.  "
-	"(8193 is commonly an alternate superblock;\n"
-	"Hence, 'e2fsck -b 8193 <device>' may recover the filesystem.)\n\n";
+static const char *corrupt_msg =
+"\nThe superblock could not be read or does not describe a correct ext2\n"
+"filesystem.  If the device is valid and it really contains an ext2\n"
+"filesystem (and not swap or ufs or something else), then the superblock\n"
+"is corrupt, and you might try running e2fsck with an alternate superblock:\n"
+"    e2fsck -b 8193 <device>\n\n";
 
 static void check_super_value(const char *descr, unsigned long value,
 			      int flags, unsigned long min, unsigned long max)
@@ -224,7 +232,7 @@ static void check_super_value(const char *descr, unsigned long value,
 	}
 }
 
-static void relocate_hint()
+static void relocate_hint(void)
 {
 	static hint_issued = 0;
 
@@ -245,7 +253,7 @@ static void relocate_hint()
 static void check_super_block(ext2_filsys fs)
 {
 	blk_t	first_block, last_block;
-	struct ext2_super_block *s = fs->super;
+	struct ext2fs_sb *s = (struct ext2fs_sb *) fs->super;
 	blk_t	blocks_per_group = fs->super->s_blocks_per_group;
 	int	i;
 	blk_t	should_be;
@@ -375,6 +383,20 @@ static void check_super_block(ext2_filsys fs)
 		first_block += fs->super->s_blocks_per_group;
 		last_block += fs->super->s_blocks_per_group;
 	}
+
+	/*
+	 * If the UUID field isn't assigned, assign it.
+	 */
+	if (rwflag && uuid_is_null(s->s_uuid)) {
+		if (preen)
+			printf("%s: Adding UUID to filesystem.\n",
+			       device_name);
+		else
+			printf("Filesystem did not have a UUID; "
+			       "generating one.\n\n");
+		uuid_generate(s->s_uuid);
+		ext2fs_mark_super_dirty(fs);
+	}
 	return;
 }
 
@@ -387,7 +409,7 @@ static void check_if_skip(ext2_filsys fs)
 {
 	const char *reason = NULL;
 	
-	if (force || bad_blocks_file || cflag)
+	if (force || bad_blocks_file || cflag || swapfs)
 		return;
 	
 	if (fs->super->s_state & EXT2_ERROR_FS)
@@ -409,6 +431,7 @@ static void check_if_skip(ext2_filsys fs)
 		       fs->super->s_inodes_count,
 		       fs->super->s_blocks_count - fs->super->s_free_blocks_count,
 		       fs->super->s_blocks_count);
+		ext2fs_close(fs);
 		exit(FSCK_OK);
 	}
 }	
@@ -444,7 +467,7 @@ static void PRS(int argc, char *argv[])
 	
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "panyrcB:dfvtFVM:b:I:P:l:L:N:")) != EOF)
+	while ((c = getopt (argc, argv, "panyrcB:dfvtFVM:b:I:P:l:L:N:Ss")) != EOF)
 		switch (c) {
 		case 'p':
 		case 'a':
@@ -515,6 +538,11 @@ static void PRS(int argc, char *argv[])
 		case 'N':
 			device_name = optarg;
 			break;
+		case 's':
+			normalize_swapfs = 1;
+		case 'S':
+			swapfs = 1;
+			break;
 		default:
 			usage ();
 		}
@@ -522,7 +550,7 @@ static void PRS(int argc, char *argv[])
 		return;
 	if (optind != argc - 1)
 		usage ();
-	if (nflag && !bad_blocks_file && !cflag)
+	if (nflag && !bad_blocks_file && !cflag && !swapfs)
 		rwflag = 0;
 	filesystem_name = argv[optind];
 	if (device_name == 0)
@@ -545,6 +573,13 @@ static void PRS(int argc, char *argv[])
 #else
 		fatal_error ("BLKFLSBUF not supported");
 #endif /* BLKFLSBUF */
+	}
+	if (swapfs) {
+		if (cflag || bad_blocks_file) {
+			fprintf(stderr, "Incompatible options not "
+				"allowed when byte-swapping.\n");
+			fatal_error(0);
+		}
 	}
 }
 					
@@ -604,25 +639,18 @@ restart:
 	if (retval) {
 		com_err(program_name, retval, "while trying to open %s",
 			filesystem_name);
-		switch (retval) {
-		case EXT2_ET_REV_TOO_HIGH:
+		if (retval == EXT2_ET_REV_TOO_HIGH)
 			printf ("Get a newer version of e2fsck!\n");
-			break;
-		case EXT2_ET_SHORT_READ:
+		else if (retval == EXT2_ET_SHORT_READ)
 			printf ("Could this be a zero-length partition?\n");
-			break;
-		case EPERM:
-		case EACCES:
+		else if ((retval == EPERM) || (retval == EACCES))
 			printf("You must have %s access to the "
 			       "filesystem or be root\n",
 			       rwflag ? "r/w" : "r/o");
-			break;
-		case ENXIO:
+		else if (retval == ENXIO)
 			printf("Possibly non-existent or swap device?\n");
-			break;
-		default:
+		else
 			printf(corrupt_msg);
-		}
 		fatal_error(0);
 	}
 
@@ -662,11 +690,21 @@ restart:
 	else if (cflag)
 		test_disk(fs);
 
+	if (normalize_swapfs) {
+		if ((fs->flags & EXT2_SWAP_BYTES) == ext2fs_native_flag()) {
+			fprintf(stderr, "%s: Filesystem byte order "
+				"already normalized.\n", device_name);
+			fatal_error(0);
+		}
+	}
+	if (swapfs)
+		swap_filesys(fs);
+
 	/*
 	 * Mark the system as valid, 'til proven otherwise
 	 */
 	ext2fs_mark_valid(fs);
-	
+
 	pass1(fs);
 	free(invalid_inode_bitmap);
 	free(invalid_block_bitmap);
@@ -698,9 +736,11 @@ restart:
 	if (!ext2fs_test_valid(fs))
 		exit_value = FSCK_UNCORRECTED;
 	if (rwflag) {
-		if (ext2fs_test_valid(fs))
+		if (ext2fs_test_valid(fs)) {
+			if (!(fs->super->s_state & EXT2_VALID_FS))
+				exit_value = FSCK_NONDESTRUCT;
 			fs->super->s_state = EXT2_VALID_FS;
-		else
+		} else
 			fs->super->s_state &= ~EXT2_VALID_FS;
 		fs->super->s_mnt_count = 0;
 		fs->super->s_lastcheck = time(NULL);

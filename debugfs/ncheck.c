@@ -92,7 +92,7 @@ void do_ncheck(int argc, char **argv)
 
 	iw.num_inodes = iw.inodes_left = argc-1;
 
-	retval = ext2fs_open_inode_scan(fs, 0, &scan);
+	retval = ext2fs_open_inode_scan(current_fs, 0, &scan);
 	if (retval) {
 		com_err("ncheck", retval, "while opening inode scan");
 		goto error_out;
@@ -120,7 +120,7 @@ void do_ncheck(int argc, char **argv)
 		iw.position = 0;
 		iw.parent = ino;
 		
-		retval = ext2fs_dir_iterate(fs, ino, 0, 0,
+		retval = ext2fs_dir_iterate(current_fs, ino, 0, 0,
 					    ncheck_proc, &iw);
 		if (retval) {
 			com_err("ncheck", retval,
@@ -143,7 +143,7 @@ void do_ncheck(int argc, char **argv)
 	for (i=0, iinfo = iw.iarray; i < iw.num_inodes; i++, iinfo++) {
 		if (iinfo->parent == 0)
 			continue;
-		retval = ext2fs_get_pathname(fs, iinfo->parent,
+		retval = ext2fs_get_pathname(current_fs, iinfo->parent,
 					     iinfo->ino, &iinfo->pathname);
 		if (retval)
 			com_err("ncheck", retval,

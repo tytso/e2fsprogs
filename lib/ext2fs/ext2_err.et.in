@@ -34,8 +34,8 @@ ec	EXT2_ET_MAGIC_BLOCK_BITMAP,
 ec	EXT2_ET_MAGIC_INODE_BITMAP,
 	"Wrong magic number for inode_bitmap structure"
 
-ec	EXT2_ET_MAGIC_RESERVED_1,
-	"Wrong magic number --- RESERVED_1"
+ec	EXT2_ET_MAGIC_GENERIC_BITMAP,
+	"Wrong magic number for generic_bitmap structure"
 
 ec	EXT2_ET_MAGIC_RESERVED_2,
 	"Wrong magic number --- RESERVED_2"
@@ -191,7 +191,24 @@ ec	EXT2_ET_BAD_DEVICE_NAME,
 	"Illegal or malformed device name"
 
 ec	EXT2_ET_MISSING_INODE_TABLE,
-	"A block group is missing an inode table."
+	"A block group is missing an inode table"
+
+ec	EXT2_ET_CORRUPT_SUPERBLOCK,
+	"The ext2 superblock is corrupt"
+
+ec	EXT2_ET_BAD_GENERIC_MARK,
+	"Illegal generic bit number passed to ext2fs_mark_generic_bitmap"
+
+ec	EXT2_ET_BAD_GENERIC_UNMARK,
+	"Illegal generic bit number passed to ext2fs_unmark_generic_bitmap"
+
+ec	EXT2_ET_BAD_GENERIC_TEST,
+	"Illegal generic bit number passed to ext2fs_test_generic_bitmap"
+
+ec	EXT2_ET_SYMLINK_LOOP,
+	"Too many symbolic links encountered."
+
+ec	EXT2_ET_CALLBACK_NOTHANDLED,
+	"The callback function will not handle this case"
 
 	end
-

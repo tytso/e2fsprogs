@@ -1,0 +1,34 @@
+#
+# Relocation e2fsprogs prologue....
+#
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+top_builddir = ..
+my_dir = relocate
+INSTALL = @INSTALL@
+
+@MCONFIG@
+
+SRCS=	$(srcdir)/resize2fs.c 
+
+LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
+DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
+
+STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
+STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
+
+LIBS_E2P= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR) 
+DEPLIBS_E2P= $(LIBEXT2FS) $(LIBE2P) $(LIBCOM_ERR) 
+
+.c.o:
+	$(CC) -c $(ALL_CFLAGS) $< -o $@
+
+all:: resize2fs
+
+resize2fs: resize2fs.o $(DEPLIBS)
+	$(CC) $(ALL_LDFLAGS) -o resize2fs resize2fs.o $(LIBS)
+
+clean::
+	$(RM) -f resize2fs \#* *.s *.o *.a *~ core

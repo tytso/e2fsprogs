@@ -9,6 +9,7 @@ srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
 top_builddir = ../..
+my_dir = lib/e2p
 INSTALL = @INSTALL@
 
 @MCONFIG@
@@ -17,14 +18,15 @@ all::
 
 OBJS=		fgetflags.o fsetflags.o fgetversion.o fsetversion.o \
 		getflags.o getversion.o iod.o ls.o pe.o pf.o ps.o \
-		setflags.o setversion.o
+		setflags.o setversion.o uuid.o
 
 SRCS=		$(srcdir)/fgetflags.c $(srcdir)/fsetflags.c \
 		$(srcdir)/fgetversion.c $(srcdir)/fsetversion.c \
 		$(srcdir)/getflags.c $(srcdir)/getversion.c \
 		$(srcdir)/iod.c $(srcdir)/ls.c $(srcdir)/pe.c \
 		$(srcdir)/pf.c $(srcdir)/ps.c \
-		$(srcdir)/setflags.c $(srcdir)/setversion.c
+		$(srcdir)/setflags.c $(srcdir)/setversion.c \
+		$(srcdir)/uuid.c
 
 LIBRARY= libe2p
 LIBDIR= e2p
@@ -38,7 +40,7 @@ DLL_STUB = libe2p
 DLL_MYDIR = e2p
 DLL_INSTALL_DIR = $(libdir)
 
-ELF_VERSION = 2.1
+ELF_VERSION = 2.2
 ELF_SO_VERSION = 2
 ELF_IMAGE = libe2p
 ELF_MYDIR = e2p
@@ -90,15 +92,16 @@ distclean:: clean
 # the Makefile.in file
 #
 fgetflags.o: $(srcdir)/fgetflags.c $(srcdir)/e2p.h
-fsetflags.o: $(srcdir)/fsetflags.c $(srcdir)/e2p.h
+fsetflags.o: $(srcdir)/fsetflags.c $(srcdir)/e2p.h 
 fgetversion.o: $(srcdir)/fgetversion.c $(srcdir)/e2p.h
 fsetversion.o: $(srcdir)/fsetversion.c $(srcdir)/e2p.h
 getflags.o: $(srcdir)/getflags.c $(srcdir)/e2p.h
 getversion.o: $(srcdir)/getversion.c $(srcdir)/e2p.h
 iod.o: $(srcdir)/iod.c $(srcdir)/e2p.h
-ls.o: $(srcdir)/ls.c  $(srcdir)/e2p.h
+ls.o: $(srcdir)/ls.c $(srcdir)/e2p.h
 pe.o: $(srcdir)/pe.c $(srcdir)/e2p.h
 pf.o: $(srcdir)/pf.c $(srcdir)/e2p.h
 ps.o: $(srcdir)/ps.c $(srcdir)/e2p.h
 setflags.o: $(srcdir)/setflags.c $(srcdir)/e2p.h
 setversion.o: $(srcdir)/setversion.c $(srcdir)/e2p.h
+uuid.o: $(srcdir)/uuid.c

@@ -114,9 +114,9 @@ static int decode_arg (int * i, int argc, char ** argv)
 				rem = 1;
 				break;
 			case 'v':
+				(*i)++;
 				if (*i >= argc)
 					usage ();
-				(*i)++;
 				version = strtol (argv[*i], &tmp, 0);
 				if (*tmp)
 				{
@@ -310,9 +310,9 @@ void main (int argc, char ** argv)
 		fprintf (stderr, "= is incompatible with - and +\n");
 		exit (1);
 	}
-	if (!(add || rem || set))
+	if (!(add || rem || set || set_version))
 	{
-		fprintf (stderr, "Must use =, - or +\n");
+		fprintf (stderr, "Must use '-v', =, - or +\n");
 		exit (1);
 	}
 	for (j = i; j < argc; j++)

@@ -3,7 +3,9 @@
 #
 
 FSCK=../e2fsck/e2fsck
+DEBUGFS=../debugfs/debugfs
 LD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss
 export LD_LIBRARY_PATH
 TZ=GMT
 export TZ
+unset PAGER

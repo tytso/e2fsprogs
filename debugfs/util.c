@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <time.h>
 
 #include "debugfs.h"
 
@@ -56,7 +57,7 @@ ino_t string_to_inode(char *str)
 			return(atoi(str+1));
 	}
 
-	retval = ext2fs_namei(fs, root, cwd, str, &ino);
+	retval = ext2fs_namei(current_fs, root, cwd, str, &ino);
 	if (retval) {
 		com_err(str, retval, "");
 		return 0;
@@ -70,7 +71,7 @@ ino_t string_to_inode(char *str)
  */
 int check_fs_open(char *name)
 {
-	if (!fs) {
+	if (!current_fs) {
 		com_err(name, 0, "Filesystem not open");
 		return 1;
 	}
@@ -83,12 +84,39 @@ int check_fs_open(char *name)
  */
 int check_fs_not_open(char *name)
 {
-	if (fs) {
+	if (current_fs) {
 		com_err(name, 0,
 			"Filesystem %s is still open.  Close it first.\n",
-			fs->device_name);
+			current_fs->device_name);
 		return 1;
 	}
 	return 0;
 }
+
+/*
+ * This routine returns 1 if a filesystem is not opened read/write,
+ * and prints an error message to that effect.
+ */
+int check_fs_read_write(char *name)
+{
+	if (!(current_fs->flags & EXT2_FLAG_RW)) {
+		com_err(name, 0, "Filesystem opened read/only");
+		return 1;
+	}
+	return 0;
+}
+
+/*
+ * This function takes a __u32 time value and converts it to a string,
+ * using ctime
+ */
+char *time_to_string(__u32 cl)
+{
+	time_t	t = (time_t) cl;
+
+	return ctime(&t);
+}
+
+
+	
 

@@ -69,8 +69,6 @@ ext2fs_block_bitmap block_found_map = 0;
 ext2fs_block_bitmap block_dup_map = 0;
 ext2fs_block_bitmap block_illegal_map = 0;
 
-static int fix_link_count = -1;
-
 unsigned short * inode_link_info = NULL;
 
 static int process_block(ext2_filsys fs, blk_t	*blocknr,
@@ -80,8 +78,6 @@ static int process_bad_block(ext2_filsys fs, blk_t *block_nr,
 static void check_blocks(ext2_filsys fs, ino_t ino, struct ext2_inode *inode,
 			 char *block_buf);
 static void mark_table_blocks(ext2_filsys fs);
-static errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino);
-static errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks);
 static void alloc_bad_map(ext2_filsys fs);
 static void handle_fs_bad_blocks(ext2_filsys fs);
 static void process_inodes(ext2_filsys fs, char *block_buf);
@@ -170,6 +166,7 @@ void pass1(ext2_filsys fs)
 	char		*block_buf;
 	errcode_t	retval;
 	struct resource_track	rtrack;
+	unsigned char	frag, fsize;
 	
 	init_resource_track(&rtrack);
 	
@@ -229,6 +226,8 @@ void pass1(ext2_filsys fs)
 	block_buf = allocate_memory(fs->blocksize * 3, "block interate buffer");
 	fs->get_blocks = pass1_get_blocks;
 	fs->check_directory = pass1_check_directory;
+	fs->read_inode = pass1_read_inode;
+	fs->write_inode = pass1_write_inode;
 	ehandler_operation("doing inode scan");
 	retval = ext2fs_open_inode_scan(fs, inode_buffer_blocks, &scan);
 	if (retval) {
@@ -297,12 +296,6 @@ void pass1(ext2_filsys fs)
 					inode.i_dtime = 0;
 					e2fsck_write_inode(fs, ino, &inode,
 							   "pass1");
-					printf("Note: /lost+found will "
-					       "probably be deleted as well, "
-					       "due to the mke2fs bug.\n"
-					       "Be sure to run mklost+found "
-					       "to recreate it after e2fsck "
-					       "finishes.\n\n");
 				} else
 					ext2fs_unmark_valid(fs);
 			}
@@ -340,37 +333,44 @@ void pass1(ext2_filsys fs)
 			goto next;
 		}
 		/*
-		 * 0.3c ext2fs code didn't clear i_links_count for
+		 * n.b.  0.3c ext2fs code didn't clear i_links_count for
 		 * deleted files.  Oops.
+		 *
+		 * Since all new ext2 implementations get this right,
+		 * we now assume that the case of non-zero
+		 * i_links_count and non-zero dtime means that we
+		 * should keep the file, not delete it.
 		 * 
-		 * In the future, when the new ext2fs behavior is the
-		 * norm, we may want to handle the case of a non-zero
-		 * i_links_count and non-zero dtime by clearing dtime
-		 * and assuming the inode is in use, instead of
-		 * assuming the inode is not in use.
 		 */
 		if (inode.i_dtime) {
-			if (fix_link_count == -1) {
-				printf("\nDeleted inode detected with non-zero link count.\n");
-				printf("This is probably due to old ext2fs kernel code.  \n");
-				fix_link_count = ask("Fix inode(s)", 1);
-			}
-			printf("Inode %lu is deleted w/ non-zero link_count.  %s\n",
-			       ino, clear_msg[fix_link_count]);
-			if (fix_link_count) {
-				inode.i_links_count = 0;
-				inode_link_info[ino] = 0;
+			printf("Inode %lu is in use, but has dtime set\n",
+			       ino);
+			if (ask("Clear dtime", 1)) {
+				inode.i_dtime = 0;
 				e2fsck_write_inode(fs, ino, &inode, "pass1");
 			} else
 				ext2fs_unmark_valid(fs);
-			goto next;
 		}
 		
 		ext2fs_mark_inode_bitmap(inode_used_map, ino);
-		if (inode.i_faddr
-#if HAVE_EXT2_FRAGS
-		    || inode.i_frag || inode.i_fsize
-#endif
+		switch (fs->super->s_creator_os) {
+		    case EXT2_OS_LINUX:
+			frag = inode.osd2.linux2.l_i_frag;
+			fsize = inode.osd2.linux2.l_i_fsize;
+			break;
+		    case EXT2_OS_HURD:
+			frag = inode.osd2.hurd2.h_i_frag;
+			fsize = inode.osd2.hurd2.h_i_fsize;
+			break;
+		    case EXT2_OS_MASIX:
+			frag = inode.osd2.masix2.m_i_frag;
+			fsize = inode.osd2.masix2.m_i_fsize;
+			break;
+		    default:
+			frag = fsize = 0;
+		}
+		
+		if (inode.i_faddr || frag || fsize
 		    || inode.i_file_acl || inode.i_dir_acl) {
 			if (!inode_bad_map)
 				alloc_bad_map(fs);
@@ -448,10 +448,13 @@ void pass1(ext2_filsys fs)
 		}
 		pass1_dupblocks(fs, block_buf);
 	}
-	fs->get_blocks = 0;
-	fs->check_directory = 0;
 	free(inodes_to_process);
 endit:
+	fs->get_blocks = 0;
+	fs->check_directory = 0;
+	fs->read_inode = 0;
+	fs->write_inode = 0;
+	
 	free(block_buf);
 	ext2fs_free_block_bitmap(block_illegal_map);
 	block_illegal_map = 0;
@@ -747,6 +750,10 @@ int process_block(ext2_filsys fs,
 
 	if (blk == 0) {
 		if (p->is_dir == 0) {
+			/*
+			 * Should never happen, since only directories
+			 * get called with BLOCK_FLAG_HOLE
+			 */
 			printf("process_block() called with blk == 0, "
 			       "inode %lu???", p->ino);
 			return 0;
@@ -818,12 +825,10 @@ int process_block(ext2_filsys fs,
 
 	mark_block_used(fs, blk);
 	p->num_blocks++;
-	if (blockcnt < 0)
-		return 0;
-	
-	p->last_block = blockcnt;
+	if (blockcnt >= 0)
+		p->last_block = blockcnt;
 mark_dir:
-	if (p->is_dir) {
+	if (p->is_dir && (blockcnt >= 0)) {
 		if (dir_block_count >= dir_block_size) {
 			dir_block_size += 100;
 			dir_blocks = realloc(dir_blocks,
@@ -1208,7 +1213,7 @@ static void mark_table_blocks(ext2_filsys fs)
  * structure, so there's no point in letting the ext2fs library read
  * the inode again.
  */
-static errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
+errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 {
 	int	i;
 	
@@ -1223,7 +1228,23 @@ static errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks)
 	exit(FSCK_ERROR);
 }
 
-static errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino)
+errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino, struct ext2_inode *inode)
+{
+	if (ino != stashed_ino)
+		return EXT2_ET_CALLBACK_NOTHANDLED;
+	*inode = *stashed_inode;
+	return 0;
+}
+
+errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
+			    struct ext2_inode *inode)
+{
+	if (ino == stashed_ino)
+		*stashed_inode = *inode;
+	return EXT2_ET_CALLBACK_NOTHANDLED;
+}
+
+errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino)
 {
 	if (ino == stashed_ino) {
 		if (!LINUX_S_ISDIR(stashed_inode->i_mode))

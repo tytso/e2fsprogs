@@ -42,7 +42,7 @@
  * The last ext2fs revision level that this version of e2fsck is able to
  * support
  */
-#define E2FSCK_CURRENT_REV	0
+#define E2FSCK_CURRENT_REV	1
 
 /*
  * Inode count arrays
@@ -145,6 +145,12 @@ extern struct resource_track	global_rtrack;
 extern int invalid_bitmaps;
 
 /*
+ * For pass1_check_directory and pass1_get_blocks
+ */
+extern ino_t stashed_ino;
+extern struct ext2_inode *stashed_inode;
+
+/*
  * Procedure declarations
  */
 
@@ -154,6 +160,14 @@ extern void pass2(ext2_filsys fs);
 extern void pass3(ext2_filsys fs);
 extern void pass4(ext2_filsys fs);
 extern void pass5(ext2_filsys fs);
+
+/* pass1.c */
+extern errcode_t pass1_check_directory(ext2_filsys fs, ino_t ino);
+extern errcode_t pass1_get_blocks(ext2_filsys fs, ino_t ino, blk_t *blocks);
+extern errcode_t pass1_read_inode(ext2_filsys fs, ino_t ino,
+				  struct ext2_inode *inode);
+extern errcode_t pass1_write_inode(ext2_filsys fs, ino_t ino,
+				   struct ext2_inode *inode);
 
 /* badblock.c */
 extern void read_bad_blocks_file(ext2_filsys fs, const char *bad_blocks_file,
@@ -170,6 +184,9 @@ extern int get_num_dirs(ext2_filsys fs);
 /* ehandler.c */
 extern const char *ehandler_operation(const char *op);
 extern void ehandler_init(io_channel channel);
+
+/* swapfs.c */
+void swap_filesys(ext2_filsys fs);
 
 /* util.c */
 extern void *allocate_memory(int size, const char *description);

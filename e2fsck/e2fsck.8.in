@@ -8,7 +8,7 @@ e2fsck \- check a Linux second extended file system
 .SH SYNOPSIS
 .B e2fsck
 [
-.B \-pacnyrdfvtFV
+.B \-pacnyrdfvstFSV
 ]
 [
 .B \-b
@@ -104,6 +104,15 @@ Automatically repair ("preen") the file system without any questions.
 .I -r
 This option does nothing at all; it is provided only for backwards
 compatibility.
+.IP 
+.I -s
+This option will byte-swap the filesystem so that it is using the normalized, 
+standard byte-order (which is i386 or little endian).  If the filesystem is
+already in the standard byte-order, e2fsck will take no action.
+.TP
+.I -S
+This option will byte-swap the filesystem, regardless of its current 
+byte-order.
 .TP
 .I -t
 Print timing statistics for

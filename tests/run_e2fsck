@@ -68,5 +68,6 @@ if [ "$SKIP_VERIFY" != "true" ] ; then
 fi
 
 if [ "$SKIP_CLEANUP" != "true" ] ; then
-	unset IMAGE FSCK_OPT SECOND_FSCK_OPT OUT1 OUT2 EXP1 EXP2
+	unset IMAGE FSCK_OPT SECOND_FSCK_OPT OUT1 OUT2 EXP1 EXP2 ONE_PASS_ONLY
 fi
+

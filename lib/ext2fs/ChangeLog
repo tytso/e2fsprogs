@@ -1,3 +1,87 @@
+Sat Sep  7 07:36:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* initialize.c: Override the kernel's idea of default
+		checkinterval from 0 (never) to 180 days.
+
+Wed Aug 28 03:20:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* namei.c (ext2fs_namei_follow): New function which follows
+		symbolic link (if any) at the target.
+
+Tue Aug 27 01:48:43 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* inode.c (ext2fs_read_inode, ext2fs_write_inode): Add support
+		for shortcut function fs->read_inode() and fs->write_inode().
+		Added inode_cache to reduce CPU time spent in doing
+		byte swapping.
+
+	* swapfs.c (ext2fs_swap_super): Swap the new fields in a V2
+	 	superblock.
+
+	* namei.c (ext2fs_follow_link): New function.
+		(ext2fs_namei): Extended to have support for chasing
+ 		symbolic links.  ext2fs_namei() still returns an inode
+ 		which is a symbolic link.  Symbolic links are only chased
+ 		while resolving the containing directory.  To chase
+ 		symbolic links of the final result, use
+ 		ext2fs_follow_link().
+
+Mon Aug 26 23:46:07 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2_err.et.in: Added new error code EXT2_ET_SYMLINK_LOOP.
+
+	* bitops.h (ext2fs_set_bit, ext2fs_celar_bit): Use asm inlines
+		provided by Pete A. Zaitcev (zaitcev@lab.sun.mcst.ru).
+
+Thu Aug 22 00:40:18 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* initialize.c (ext2fs_initialize): On systems where the byte
+		order is not i386 compatible, set the swap_byte flag.
+
+	* inode.c (inocpy_with_swap): Check to see if inode contains a
+		fast symlink before swapping the inode block fields.  This
+		required adding a new argument to inocpy_with_swap to
+		determine whether the mode field is in host order or not.
+
+Wed Aug 21 00:45:42 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* bitops.h (ext2fs_set_bit, ext2fs_clear_bit, ext2fs_test_bit): On
+		the sparc, if EXT2_STD_BITOPS set, use the standard
+		i386-compatible bitmask operations, instead on the
+		non-standard native bitmask operators.
+
+Fri Aug  9 11:11:35 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* block.c (ext2fs_block_iterate): Cause block iterator to return
+		the HURD translator block (along with everything else).
+		If the flag BLOCK_FLAG_DATA_ONLY is passed to the block
+		iterator, then don't return any meta data blocks
+		(including the HURD translator).
+
+Wed Jul 17 17:13:34 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* gen_uuid.c: New file, which generates DCE-compatible UUIDs.
+
+	* uuid.c: New file, containing UUID utility functions.
+
+Tue Jul 16 10:19:16 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2fs.h: Add a definition of the "real" ext2 superblock.
+
+Fri May 24 14:54:55 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* ext2fs.h: Fix erroneous ino_t type used in block_bitmap type.
+
+Sun May 19 15:39:03 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* openfs.c (ext2fs_open): If the blocksize in the superblock is
+		zero, return the error EXT2_ET_CORRUPT_SUPERBLOCK, since
+		that's a basic value that must be correct for the rest of
+		the library to work.
+
+	* ext2_err.et.in (EXT2_ET_CORRUPT_SUPERBLOCK): Added new error
+	 	code.
+
 Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.04

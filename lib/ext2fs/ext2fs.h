@@ -21,6 +21,7 @@
  */
 #define EXT2_LIB_CURRENT_REV	0
 
+#include <sys/types.h>
 #include <linux/types.h>
 
 typedef __u32		blk_t;
@@ -32,29 +33,26 @@ typedef unsigned int	dgrp_t;
 
 typedef struct struct_ext2_filsys *ext2_filsys;
 
-struct ext2fs_struct_inode_bitmap {
-	int	magic;
-	ext2_filsys fs;
-	ino_t	start, end;
-	ino_t	real_end;
-	char	*description;
-	char	*bitmap;
-	int	reserved[8];
+struct ext2fs_struct_generic_bitmap {
+	int		magic;
+	ext2_filsys 	fs;
+	__u32		start, end;
+	__u32		real_end;
+	char	*	description;
+	char	*	bitmap;
+	errcode_t	base_error_code;
+	__u32		reserved[7];
 };
 
-typedef struct ext2fs_struct_inode_bitmap *ext2fs_inode_bitmap;
+#define EXT2FS_MARK_ERROR 	0
+#define EXT2FS_UNMARK_ERROR 	1
+#define EXT2FS_TEST_ERROR	2
 
-struct ext2fs_struct_block_bitmap {
-	int	magic;
-	ext2_filsys fs;
-	blk_t	start, end;
-	ino_t	real_end;
-	char	*description;
-	char	*bitmap;
-	int	reserved[8];
-};
+typedef struct ext2fs_struct_generic_bitmap *ext2fs_generic_bitmap;
 
-typedef struct ext2fs_struct_block_bitmap *ext2fs_block_bitmap;
+typedef struct ext2fs_struct_generic_bitmap *ext2fs_inode_bitmap;
+
+typedef struct ext2fs_struct_generic_bitmap *ext2fs_block_bitmap;
 
 #ifdef EXT2_DYNAMIC_REV
 #define EXT2_FIRST_INODE(s)	EXT2_FIRST_INO(s)
@@ -74,6 +72,8 @@ typedef struct ext2fs_struct_block_bitmap *ext2fs_block_bitmap;
 #define EXT2_FLAG_IB_DIRTY	0x10
 #define EXT2_FLAG_BB_DIRTY	0x20
 #define EXT2_SWAP_BYTES		0x40
+#define EXT2_SWAP_BYTES_READ	0x80
+#define EXT2_SWAP_BYTES_WRITE	0x100
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is
@@ -98,7 +98,11 @@ struct struct_ext2_filsys {
 	errcode_t (*get_blocks)(ext2_filsys fs, ino_t ino, blk_t *blocks);
 	errcode_t (*check_directory)(ext2_filsys fs, ino_t ino);
 	errcode_t (*write_bitmaps)(ext2_filsys fs);
-	int				reserved[16];
+	errcode_t (*read_inode)(ext2_filsys fs, ino_t ino,
+				struct ext2_inode *inode);
+	errcode_t (*write_inode)(ext2_filsys fs, ino_t ino,
+				struct ext2_inode *inode);
+	__u32				reserved[14];
 
 	/*
 	 * Not used by ext2fs library; reserved for the use of the
@@ -156,10 +160,22 @@ struct struct_badblocks_iterate {
  * of the blocks containined in the indirect blocks are processed.
  * This is useful if you are going to be deallocating blocks from an
  * inode.
+ *
+ * BLOCK_FLAG_DATA_ONLY indicates that the iterator function should be
+ * called for data blocks only.
  */
 #define BLOCK_FLAG_APPEND	1
 #define BLOCK_FLAG_HOLE		1
 #define BLOCK_FLAG_DEPTH_TRAVERSE	2
+#define BLOCK_FLAG_DATA_ONLY	4
+
+/*
+ * Magic "block count" return values for the block iterator function.
+ */
+#define BLOCK_COUNT_IND		(-1)
+#define BLOCK_COUNT_DIND	(-2)
+#define BLOCK_COUNT_TIND	(-3)
+#define BLOCK_COUNT_TRANSLATOR	(-4)
 
 /*
  * Return flags for the directory iterator functions
@@ -224,6 +240,21 @@ struct ext2_struct_inode_scan {
 #define LINUX_S_ISGID  0002000
 #define LINUX_S_ISVTX  0001000
 
+#define LINUX_S_IRWXU 00700
+#define LINUX_S_IRUSR 00400
+#define LINUX_S_IWUSR 00200
+#define LINUX_S_IXUSR 00100
+
+#define LINUX_S_IRWXG 00070
+#define LINUX_S_IRGRP 00040
+#define LINUX_S_IWGRP 00020
+#define LINUX_S_IXGRP 00010
+
+#define LINUX_S_IRWXO 00007
+#define LINUX_S_IROTH 00004
+#define LINUX_S_IWOTH 00002
+#define LINUX_S_IXOTH 00001
+
 #define LINUX_S_ISLNK(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFLNK)
 #define LINUX_S_ISREG(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFREG)
 #define LINUX_S_ISDIR(m)	(((m) & LINUX_S_IFMT) == LINUX_S_IFDIR)
@@ -238,6 +269,63 @@ struct ext2_struct_inode_scan {
 
 #define EXT2_CHECK_MAGIC(struct, code) \
 	  if ((struct)->magic != (code)) return (code)
+
+
+/*
+ * The ext2fs library private definition of the ext2 superblock, so we
+ * don't have to depend on the kernel's definition of the superblock,
+ * which might not have the latest features.
+ */
+struct ext2fs_sb {
+	__u32	s_inodes_count;		/* Inodes count */
+	__u32	s_blocks_count;		/* Blocks count */
+	__u32	s_r_blocks_count;	/* Reserved blocks count */
+	__u32	s_free_blocks_count;	/* Free blocks count */
+	__u32	s_free_inodes_count;	/* Free inodes count */
+	__u32	s_first_data_block;	/* First Data Block */
+	__u32	s_log_block_size;	/* Block size */
+	__s32	s_log_frag_size;	/* Fragment size */
+	__u32	s_blocks_per_group;	/* # Blocks per group */
+	__u32	s_frags_per_group;	/* # Fragments per group */
+	__u32	s_inodes_per_group;	/* # Inodes per group */
+	__u32	s_mtime;		/* Mount time */
+	__u32	s_wtime;		/* Write time */
+	__u16	s_mnt_count;		/* Mount count */
+	__s16	s_max_mnt_count;	/* Maximal mount count */
+	__u16	s_magic;		/* Magic signature */
+	__u16	s_state;		/* File system state */
+	__u16	s_errors;		/* Behaviour when detecting errors */
+	__u16	s_minor_rev_level; 	/* minor revision level */
+	__u32	s_lastcheck;		/* time of last check */
+	__u32	s_checkinterval;	/* max. time between checks */
+	__u32	s_creator_os;		/* OS */
+	__u32	s_rev_level;		/* Revision level */
+	__u16	s_def_resuid;		/* Default uid for reserved blocks */
+	__u16	s_def_resgid;		/* Default gid for reserved blocks */
+	/*
+	 * These fields are for EXT2_DYNAMIC_REV superblocks only.
+	 *
+	 * Note: the difference between the compatible feature set and
+	 * the incompatible feature set is that if there is a bit set
+	 * in the incompatible feature set that the kernel doesn't
+	 * know about, it should refuse to mount the filesystem.
+	 * 
+	 * e2fsck's requirements are more strict; if it doesn't know
+	 * about a feature in either the compatible or incompatible
+	 * feature set, it must abort and not try to meddle with
+	 * things it doesn't understand...
+	 */
+	__u32	s_first_ino; 		/* First non-reserved inode */
+	__u16   s_inode_size; 		/* size of inode structure */
+	__u16	s_block_group_nr; 	/* block group # of this superblock */
+	__u32	s_feature_compat; 	/* compatible feature set */
+	__u32	s_feature_incompat; 	/* incompatible feature set */
+	__u32	s_feature_ro_compat; 	/* readonly-compatible feature set */
+	__u8	s_uuid[16];		/* 128-bit uuid for volume */
+	char	s_volume_name[16]; 	/* volume name */
+	char	s_last_mounted[64]; 	/* directory where last mounted */
+	__u32	s_reserved[206];	/* Padding to the end of the block */
+};
   
 /*
  * function prototypes
@@ -272,6 +360,11 @@ extern errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs);
 extern errcode_t ext2fs_write_block_bitmap (ext2_filsys fs);
 extern errcode_t ext2fs_read_inode_bitmap (ext2_filsys fs);
 extern errcode_t ext2fs_read_block_bitmap(ext2_filsys fs);
+extern errcode_t ext2fs_allocate_generic_bitmap(__u32 start,
+						__u32 end,
+						__u32 real_end,
+						const char *descr,
+						ext2fs_generic_bitmap *ret);
 extern errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
 					      const char *descr,
 					      ext2fs_block_bitmap *ret);
@@ -323,6 +416,7 @@ extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ino_t dir);
 
 /* freefs.c */
 extern void ext2fs_free(ext2_filsys fs);
+extern void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap);
 extern void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap);
 extern void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap);
 
@@ -378,6 +472,13 @@ extern errcode_t ext2fs_lookup(ext2_filsys fs, ino_t dir, const char *name,
 			 int namelen, char *buf, ino_t *inode);
 extern errcode_t ext2fs_namei(ext2_filsys fs, ino_t root, ino_t cwd,
 			const char *name, ino_t *inode);
+errcode_t ext2fs_namei_follow(ext2_filsys fs, ino_t root, ino_t cwd,
+			      const char *name, ino_t *inode);
+extern errcode_t ext2fs_follow_link(ext2_filsys fs, ino_t root, ino_t cwd,
+			ino_t inode, ino_t *res_inode);
+
+/* native.c */
+int ext2fs_native_flag(void);
 
 /* newdir.c */
 extern errcode_t ext2fs_new_dir_block(ext2_filsys fs, ino_t dir_ino,
@@ -414,6 +515,9 @@ extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 /* swapfs.c */
 extern void ext2fs_swap_super(struct ext2_super_block * super);
 extern void ext2fs_swap_group_desc(struct ext2_group_desc *gdp);
+extern void ext2fs_swap_inode(ext2_filsys fs,struct ext2_inode *t,
+			      struct ext2_inode *f, int hostorder);
+
 
 /* inline functions */
 extern void ext2fs_mark_super_dirty(ext2_filsys fs);

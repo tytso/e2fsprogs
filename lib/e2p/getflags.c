@@ -23,8 +23,6 @@
 #include <sys/ioctl.h>
 #endif
 
-#include <linux/ext2_fs.h>
-
 #include "e2p.h"
 
 int getflags (int fd, unsigned long * flags)

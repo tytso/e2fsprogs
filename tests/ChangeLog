@@ -1,3 +1,22 @@
+Mon Sep  9 23:09:47 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Makefile.in (check): Add explicit ./ to test_script invokation,
+		since not all people will have "." in their path.
+
+Tue Sep  3 15:13:05 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* test_config (PAGER): Unset pager to prevent debugfs forking a
+ 		pager, since the escape sequences confuse the expect
+ 		script.
+
+Sun May 19 23:37:35 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* test_script: New feature; second optional argument allows
+		developers to only run one test case.
+
+	* f_crashdisk: New test case which contains a patently illegal
+		superblock with a valid magic number.
+
 Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.04

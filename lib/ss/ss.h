@@ -54,12 +54,22 @@ char *ss_current_request();	/* This is actually a macro */
 char *ss_name(int sci_idx);
 void ss_error (int, long, char const *, ...);
 void ss_perror (int, long, char const *);
-int ss_create_invocation(char *, char *, char *, ss_request_table *, int *);
+int ss_create_invocation(const char *, const char *, void *,
+			 ss_request_table *, int *);
 void ss_delete_invocation(int);
 int ss_listen(int);
+int ss_execute_line(int, char *);
 void ss_add_request_table(int, ss_request_table *, int, int *);
 void ss_delete_request_table(int, ss_request_table *, int *);
 void ss_abort_subsystem(int sci_idx, int code);
+void ss_quit(int argc, const char * const *argv, int sci_idx, void *infop);
+void ss_self_identify(int argc, const char * const *argv, int sci_idx, void *infop);
+void ss_subsystem_name(int argc, const char * const *argv,
+		       int sci_idx, void *infop);
+void ss_subsystem_version(int argc, const char * const *argv,
+			  int sci_idx, void *infop);
+void ss_unimplemented(int argc, const char * const *argv,
+		      int sci_idx, void *infop);
 #else
 char *ss_name();
 void ss_error ();
@@ -67,9 +77,15 @@ void ss_perror ();
 int ss_create_invocation();
 void ss_delete_invocation();
 int ss_listen();
+int ss_execute_line();
 void ss_add_request_table();
 void ss_delete_request_table();
 void ss_abort_subsystem();
+void ss_quit();
+void ss_self_identify();
+void ss_subsystem_name();
+void ss_subsystem_version();
+void ss_unimplemented();
 #endif
 extern ss_request_table ss_std_requests;
 #endif /* _ss_h */

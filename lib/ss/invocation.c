@@ -13,8 +13,8 @@
 
 int ss_create_invocation(subsystem_name, version_string, info_ptr,
 			 request_table_ptr, code_ptr)
-	char *subsystem_name, *version_string;
-	char *info_ptr;
+	const char *subsystem_name, *version_string;
+	void *info_ptr;
 	ss_request_table *request_table_ptr;
 	int *code_ptr;
 {
