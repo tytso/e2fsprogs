@@ -15,14 +15,11 @@ PROGS=		resize2fs
 TEST_PROGS=	test_extent
 MANPAGES=	resize2fs.8
 
-RESIZE_OBJS= extent.o ext2_block_move.o ext2_inode_move.o resize2fs.o \
-	main.o sim_progress.o 
+RESIZE_OBJS= extent.o resize2fs.o main.o sim_progress.o 
 
 TEST_EXTENT_OBJS= extent.o test_extent.o
 
 SRCS= $(srcdir)/extent.c \
-	$(srcdir)/ext2_block_move.c \
-	$(srcdir)/ext2_inode_move.c \
 	$(srcdir)/resize2fs.c \
 	$(srcdir)/main.c \
 	$(srcdir)/sim_progress.c

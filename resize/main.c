@@ -41,26 +41,23 @@ static void resize_progress_func(ext2_resize_t rfs, int pass,
 			ext2fs_progress_close(progress);
 		progress = 0;
 		switch (pass) {
-		case E2_RSZ_ADJUST_SUPERBLOCK_PASS:
-			label = "Initializing inode table";
+		case E2_RSZ_EXTEND_ITABLE_PASS:
+			label = "Extending the inode table";
 			break;
 		case E2_RSZ_BLOCK_RELOC_PASS:
 			label = "Relocating blocks";
 			break;
-		case E2_RSZ_BLOCK_REF_UPD_PASS:
-			label = "Updating block references";
-			break;
-		case E2_RSZ_INODE_FIND_DIR_PASS:
-			label = "Finding directories";
-			break;
-		case E2_RSZ_INODE_RELOC_PASS:
-			label = "Moving inodes";
+		case E2_RSZ_INODE_SCAN_PASS:
+			label = "Scanning inode table";
 			break;
 		case E2_RSZ_INODE_REF_UPD_PASS:
 			label = "Updating inode references";
 			break;
 		case E2_RSZ_MOVE_ITABLE_PASS:
 			label = "Moving inode table";
+			break;
+		default:
+			label = "Unknown pass?!?";
 			break;
 		}
 		printf("Begin pass %d (max = %lu)\n", pass, max);
@@ -156,7 +153,9 @@ void main (int argc, char ** argv)
 		printf ("Couldn't find valid filesystem superblock.\n");
 		exit (1);
 	}
-	retval = resize_fs(fs, new_size, flags, resize_progress_func);
+	retval = resize_fs(fs, new_size, flags,
+			   ((flags & RESIZE_PERCENT_COMPLETE) ?
+			    resize_progress_func : 0));
 	if (retval) {
 		com_err(program_name, retval, "while trying to resize %s",
 			device_name);

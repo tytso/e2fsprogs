@@ -66,9 +66,21 @@ struct ext2_resize_struct {
 	ext2_filsys	new_fs;
 	ext2fs_block_bitmap reserve_blocks;
 	ext2fs_block_bitmap move_blocks;
+	ext2_extent	bmap;
+	ext2_extent	imap;
 	int		needed_blocks;
 	int		flags;
 	char		*itable_buf;
+
+	/*
+	 * For the block allocator
+	 */
+	blk_t		new_blk;
+	int		alloc_state;
+
+	/*
+	 * For the progress meter
+	 */
 	void		(*progress)(ext2_resize_t rfs, int pass,
 				    unsigned long cur,
 				    unsigned long max);
@@ -78,13 +90,11 @@ struct ext2_resize_struct {
 /*
  * Progress pass numbers...
  */
-#define E2_RSZ_ADJUST_SUPERBLOCK_PASS	1
+#define E2_RSZ_EXTEND_ITABLE_PASS	1
 #define E2_RSZ_BLOCK_RELOC_PASS		2
-#define E2_RSZ_BLOCK_REF_UPD_PASS	3
-#define E2_RSZ_INODE_FIND_DIR_PASS	4
-#define E2_RSZ_INODE_RELOC_PASS		5
-#define E2_RSZ_INODE_REF_UPD_PASS	6
-#define E2_RSZ_MOVE_ITABLE_PASS		7
+#define E2_RSZ_INODE_SCAN_PASS		3
+#define E2_RSZ_INODE_REF_UPD_PASS	4
+#define E2_RSZ_MOVE_ITABLE_PASS		5
 
 
 /* prototypes */
@@ -92,9 +102,6 @@ extern errcode_t resize_fs(ext2_filsys fs, blk_t new_size, int flags,
 			   void	(*progress)(ext2_resize_t rfs, int pass,
 					    unsigned long cur,
 					    unsigned long max));
-
-extern errcode_t ext2fs_inode_move(ext2_resize_t rfs);
-extern errcode_t ext2fs_block_move(ext2_resize_t rfs);
 
 /* extent.c */
 extern errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent,

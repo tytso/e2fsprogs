@@ -1,3 +1,16 @@
+Mon Feb 16 17:13:01 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* resize2fs.c, resize2fs.h, main.c, ext2_block_move.c,
+	 	ext2_inode_move.c: Major reoganization of how resizing
+	 	works.  Functions in ext2_block_move.c, and
+	 	ext2_inode_move.c moved into resize2fs.c.  Multiple passes
+	 	in those two files also combined into a single inode
+	 	scanning pass.  Made the inode table moving function
+	 	better handling the case where it needs to abort
+	 	mid-operation.  When moving blocks around, made the block
+	 	allocation function preferentially avoid the old group
+	 	descriptor blocks, to make resize2fs more robust.
+
 Fri Feb 13 17:15:43 1998  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* resize2fs.c, resize2fs.h, ext2_block_move.c, ext2_inode_move.c,
