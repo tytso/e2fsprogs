@@ -438,7 +438,7 @@ static void signal_progress_off(int sig)
 static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 {
 	int		flush = 0;
-	int		c;
+	int		c, fd;
 #ifdef MTRACE
 	extern void	*mallwatch;
 #endif
@@ -483,6 +483,17 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		case 'C':
 			ctx->progress = e2fsck_update_progress;
 			ctx->progress_fd = atoi(optarg);
+			/* Validate the file descriptor to avoid disasters */
+			fd = dup(ctx->progress_fd);
+			if (fd < 0) {
+				fprintf(stderr,
+				_("Error validating file descriptor %d: %s\n"),
+					ctx->progress_fd,
+					error_message(errno));
+				fatal_error(ctx,
+			_("Invalid completion information file descriptor"));
+			} else
+				close(fd);
 			break;
 		case 'p':
 		case 'a':
