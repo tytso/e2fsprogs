@@ -1,3 +1,17 @@
+e2fsprogs (1.36rc5-1) unstable; urgency=low
+
+  * Make blkid -t work more consistently even when the cache file is not
+    available or set to /dev/null.  (Closes: #292425)
+  * Don't ever use a blocksize greater than 4k, since not all 2.6 kernels
+    will support this.
+  * Fix bug where mke2fs would not correctly create filesystems greater
+    than 4TB.
+  * Fix e2fsck so it won't delete symlinks that contain an extended
+    attribute after the ext_attr feature flag has been cleared.
+  * Fix e2fsck's resize inode handling in some additional corner cases.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 27 Jan 2005 22:44:31 -0500
+
 e2fsprogs (1.36rc4-1) unstable; urgency=low
 
   * Fix a bug in resize2fs where we don't release the blocks belonging to
