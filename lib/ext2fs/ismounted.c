@@ -55,6 +55,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 			break;
 
 	if (mnt == 0) {
+#ifndef __GNU__ /* The GNU hurd is broken with respect to stat devices */
 		struct stat st_root, st_file;
 		/*
 		 * Do an extra check to see if this is the root device.  We
@@ -71,6 +72,7 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 				goto is_root;
 			}
 		}
+#endif
 		endmntent (f);
 		return 0;
 	}
