@@ -1,0 +1,3 @@
+e2fsprogs-bf: binary-without-manpage
+e2fsprogs-bf: no-shlibs-control-file
+e2fsprogs-bf: postinst-must-call-ldconfig

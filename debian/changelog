@@ -1,3 +1,48 @@
+e2fsprogs (1.26-1) unstable; urgency=low
+
+  * This uploads fixes 10 bugs, including data-corruption problems, and
+    adds much to the ease of maintainance and problem tracking.  Good
+    choice for woody.
+  
+  * New upstream release (Closes: #106622, #116975, #118443, #119624,
+    #120171, #120077, #129828, #132764).
+  ** Fixes for data-corruption bugs not reported to the BTS: e2fsck
+    trashed external journals needing to be replayed, e2fsck now hides
+    visible journal files (data corruption problems when not excluded from
+    a backup and then restored) (Closes: #132654).
+  ** Other noticable bugs fixed include: e2fsck null pointer
+    dereferencing, fsck did not finds LVM volumes by UUID or by label,
+    largefile support (ie. dealing with filesystems inside 2GB+ files) was
+    broken in several programs.
+  * Switch to debhelper v3 to get ldconfig automatically handled
+    (lintian reported that it was broken).  Now call dh_makeshlibs, but
+    still override its generated shlibs file with ours, to get compiled
+    packages depend of the correct virtual packages, which include
+    full sonames.
+  * Removed call do dh_installman (Closes: #115526).
+  * Cleaned up maintainer scripts with dead code - most things are now
+    more properly handled by debhelper.  Removed an "exit 0" lurking in
+    preinst - can't find a reason for it in the changelog, it was probably
+    here for ages.
+  * Remove obsolete maint-scripts in binary-arch, as they are provided by
+    upstream.
+  * Also remove upstream-shipped config.cache before configuring.  That
+    shouldn't impact us, but well, that makes lintian happy :)
+
+ -- Yann Dirson <dirson@debian.org>  Fri,  8 Feb 2002 06:12:35 +0100
+
+e2fsprogs (1.25-1) unstable; urgency=high
+
+  * New upstream bugfix release (Closes: #112414), targeted to woody.
+  * com_err.info provided again now that it was fixed upstream.
+  * Added metainfo to com_err.texinfo so that it gets indexed correctly
+    (thanks lintian).  Moved @setfilename and @settitle to the top so that
+    things get output as expected.
+  * Added lintian overrides for -bf and -static packages.
+  * Put all stamp files in debian/stampdir.
+
+ -- Yann Dirson <dirson@debian.org>  Sat, 22 Sep 2001 16:22:47 +0200
+
 e2fsprogs (1.24a-1) unstable; urgency=high
 
   * New upstream release (Closes: #109577).

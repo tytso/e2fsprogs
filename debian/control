@@ -2,7 +2,7 @@ Source: e2fsprogs
 Section: base
 Priority: required
 Maintainer: Yann Dirson <dirson@debian.org>
-Build-Depends: texi2html, texinfo, debhelper (>= 3.0.30)
+Build-Depends: texi2html, texinfo, debhelper (>= 3)
 Standards-Version: 3.5.4
 
 Package: e2fsck-static

@@ -10,7 +10,7 @@
 # be paranoid
 export LC_ALL=C
 
-export DH_COMPAT=2
+export DH_COMPAT=3
 
 DEB_BUILD_ARCH := $(shell dpkg --print-architecture)
 DEB_BUILD_GNU_TYPE := $(shell ./config.guess)
@@ -52,6 +52,12 @@ mandir=${tmpdir}${MANDIR}
 
 SUBPACKAGES_DIRS = tmp e2fslibs-dev comerr-dev ss-dev
 
+STAMPSDIR=debian/stampdir
+CFGSTDSTAMP=${STAMPSDIR}/configure-std-stamp
+CFGBFSTAMP=${STAMPSDIR}/configure-bf-stamp
+BUILDSTDSTAMP=${STAMPSDIR}/build-std-stamp
+BUILDBFSTAMP=${STAMPSDIR}/build-bf-stamp
+
 CCOPTS = -O2 -fsigned-char
 LIBC-DEV = libc6-dev
 
@@ -86,8 +92,9 @@ BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
 	--disable-swapfs --disable-imager \
 	--disable-resizer --disable-debugfs
 
-configure-std-stamp:
+${CFGSTDSTAMP}:
 	dh_testdir
+
 	mkdir -p ${stdbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${stdbuilddir} && CFLAGS="${CFLAGS}" \
@@ -97,10 +104,13 @@ else
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
 endif
-	touch configure-std-stamp
+	mkdir -p ${STAMPSDIR}
+	touch ${CFGSTDSTAMP}
 
-configure-bf-stamp:
+${CFGBFSTAMP}:
 	dh_testdir
+	rm -f config.cache
+
 	mkdir -p ${bfbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${bfbuilddir} && CFLAGS="${CFLAGS}" \
@@ -110,29 +120,30 @@ else
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
 endif
-	touch configure-bf-stamp
+	mkdir -p ${STAMPSDIR}
+	touch ${CFGBFSTAMP}
 
 build: build-std build-bf
 
-build-std: build-std-stamp
-build-std-stamp: configure-std-stamp
+build-std: ${BUILDSTDSTAMP}
+${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
 	make -C ${stdbuilddir} all
 	( cd ${stdbuilddir}/doc && \
 	  texi2html -split_chapter ${topdir}/doc/libext2fs.texinfo )
 	( cd ${stdbuilddir}/lib/et && make com_err.info && \
 	  texi2html -split_chapter -expandinfo ${topdir}/lib/et/com_err.texinfo )
-	touch build-std-stamp
+	touch ${BUILDSTDSTAMP}
 
-build-bf: build-bf-stamp
-build-bf-stamp: configure-bf-stamp
+build-bf: ${BUILDBFSTAMP}
+${BUILDBFSTAMP}: ${CFGBFSTAMP}
 	dh_testdir
 	make -C ${bfbuilddir} all
-	touch build-bf-stamp
+	touch ${BUILDBFSTAMP}
 
 clean:
 	dh_testdir
-	rm -f build-std-stamp configure-std-stamp build-bf-stamp configure-bf-stamp install
+	rm -rf ${STAMPSDIR}
 	-make -C ${stdbuilddir} -i distclean
 	-make -C ${bfbuilddir} -i distclean
 	rm -rf ${stdbuilddir} ${bfbuilddir}
@@ -190,7 +201,15 @@ binary-arch: install
 	dh_testdir
 	dh_testroot
 
-	rm -f debian/TODO debian/README.Debian
+  # remove obsolete maint-scripts provided by 1.26 upstream
+	cd debian && rm -f comerr-dev.postinst e2fslibs-dev.postinst \
+		e2fsprogs.postinst e2fsprogs.shlibs
+
+  # lintian overrides
+	for i in $$(cd debian && echo *.lintian-overrides); do \
+		pkg=$${i%.lintian-overrides} ;\
+		install -m644 -D -p debian/$$i ${debdir}/$${pkg}/usr/share/lintian/overrides/$${pkg} ;\
+	done
 
   # symlinks to prepare dh_installdocs run
 	mkdir -p ${debdir}/e2fsck-static/usr/share/doc/
@@ -236,9 +255,8 @@ binary-arch: install
 	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_MAJOR}/com_err.texi
 
 	dh_installexamples
-	dh_installman
 
-#	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
+	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
 	dh_installinfo -pe2fslibs-dev ${stdbuilddir}/doc/libext2fs.info
 
 	dh_undocumented
@@ -268,8 +286,10 @@ binary-arch: install
 	echo "libcdev:Depends=${LIBC-DEV}" > debian/uuid-dev.substvars
 	echo "libcdev:Depends=${LIBC-DEV}" > debian/e2fslibs-dev.substvars
 
-# We do this one by hand
-#	dh_makeshlibs
+# Call this mostly to get the maintainer-script snippets
+	dh_makeshlibs -pe2fsprogs
+# We overwrite the shlibs by hand because of virtual packages used
+	cp debian/e2fsprogs.shlibs.in debian/e2fsprogs/DEBIAN/shlibs
 
 	dh_installdeb
 	dh_shlibdeps -l${stdbuilddir}/lib

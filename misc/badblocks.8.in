@@ -91,12 +91,16 @@ hard drive to be hidden by the effects of the hard disk track buffer.
 .TP
 .B \-f
 Normally, badblocks will refuse to do a read/write or a non-destructive
-test on a device which is mounted, since this can cause the system to 
-potentially crash.  This can be overriden using the
-.B \-
-flag, but this should not be done under normal circumstances.  The only time
-when this option might be safe is if the /etc/mtab file is incorrect, and
-the device really isn't mounted.
+test on a device which is mounted, since either can cause the system to
+potentially crash; even a non-destructive test can damage a mounted
+filesystem.  This can be overriden using the
+.B \-f
+flag, but should almost never be used --- if you think you're smarter
+than the 
+.B badblocks
+program, you almost certainly aren't.  The only time when this option 
+might be safe to use is if the /etc/mtab file is incorrect, and the device
+really isn't mounted.
 .TP
 .BI \-i " input_file"
 Read a list of already existing known bad blocks.

@@ -14,8 +14,16 @@
 @c Software Foundation, and is under different copyright restrictions
 @c from the rest of this package.)
 
+@setfilename com_err
+@settitle A Common Error Description Library for UNIX
+
 @ifinfo
-@barfo
+@dircategory Development
+@format
+START-INFO-DIR-ENTRY
+* com_err: (com_err.info).   A Common Error Description Library for UNIX.
+END-INFO-DIR-ENTRY
+@end format
 @end ifinfo
 
 @iftex
@@ -27,9 +35,6 @@
   @gdef@secheading#1#2#3{@secheadingi {#3@enspace #1}}
 @endgroup
 @end iftex
-
-@setfilename com_err
-@settitle A Common Error Description Library for UNIX
 
 @ifinfo
 This file documents the use of the Common Error Description library.

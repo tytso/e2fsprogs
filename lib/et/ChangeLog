@@ -1,3 +1,9 @@
+2002-02-23  Theodore Tso  <tytso@valinux.com>
+
+	* com_err.texinfo: Fix up the com_err info file so that it
+		includes the directory node information.  (Taken from the
+		Debian diff file.)
+
 2002-02-03  Theodore Tso  <tytso@thunk.org>
 
 	* Release of E2fsprogs 1.26

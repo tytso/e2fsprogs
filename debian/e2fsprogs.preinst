@@ -13,13 +13,4 @@ EOT
  *) exit 2 ;;
 esac
 
-#  # turn around bug in dpkg (Bug#17624)
-#  if [ -L /usr/doc/e2fsprogs ]
-#  then
-#      echo 'preinst: removing buggy /usr/doc/e2fsprogs symlink (Bug#17624)'
-#      rm -f /usr/doc/e2fsprogs
-#  fi
-
 #DEBHELPER#
-
-exit 0
