@@ -237,6 +237,14 @@ static int release_orphan_inodes(e2fsck_t ctx)
 	 */
 	fs->super->s_last_orphan = 0;
 	ext2fs_mark_super_dirty(fs);
+
+	/*
+	 * If the filesystem contains errors, don't run the orphan
+	 * list, since the orphan list can't be trusted; and we're
+	 * going to be running a full e2fsck run anyway...
+	 */
+	if (fs->super->s_state & EXT2_ERROR_FS)
+		return 0;
 	
 	if ((ino < EXT2_FIRST_INODE(fs->super)) ||
 	    (ino > fs->super->s_inodes_count)) {

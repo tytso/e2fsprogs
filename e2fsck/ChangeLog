@@ -1,5 +1,9 @@
 2001-08-13  Theodore Tso  <tytso@valinux.com>
 
+	* super.c (release_orphan_inodes): If the filesystem contains
+		errors, don't run the orphan * list, since the orphan list
+		can't be trusted.
+
 	* pass1.c (check_size): Fix logic in check_size; the previous code
 		only offered to clear the inode size fields if both size
 		and i_size_high were zero.
