@@ -1,3 +1,10 @@
+2003-03-15  Theodore Ts'o  <tytso@mit.edu>
+
+	* rehash.c (e2fsck_rehash_dir): If user specified the -n option,
+		skip trying to write out directory.
+		(e2fsck_rehash_directories): Fix the percentage
+		calculation in the progress bar.
+
 2003-03-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* problem.c, problem.h (PR_2_REPORT_DUP_DIRENT): Add new problem code.

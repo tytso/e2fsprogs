@@ -228,8 +228,10 @@ static errcode_t alloc_size_dir(ext2_filsys fs, struct out_dir *outdir,
 
 static void free_out_dir(struct out_dir *outdir)
 {
-	free(outdir->buf);
-	free(outdir->hashes);
+	if (outdir->buf)
+		free(outdir->buf);
+	if (outdir->hashes)
+		free(outdir->hashes);
 	outdir->max = 0;
 	outdir->num =0;
 }
@@ -659,6 +661,9 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino)
 	struct fill_dir_struct	fd;
 	struct out_dir		outdir;
 	
+	outdir.max = outdir.num = 0;
+	outdir.buf = 0;
+	outdir.hashes = 0;
 	e2fsck_read_inode(ctx, ino, &inode, "rehash_dir");
 
 	retval = ENOMEM;
@@ -711,6 +716,11 @@ resort:
 	 */
 	if (duplicate_search_and_fix(ctx, fs, ino, &fd))
 		goto resort;
+
+	if (ctx->options & E2F_OPT_NO) {
+		retval = 0;
+		goto errout;
+	}
 
 	/*
 	 * Copy the directory entries.  In a htree directory these
@@ -809,7 +819,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 		}
 		if (ctx->progress && !ctx->progress_fd)
 			e2fsck_simple_progress(ctx, "Rebuilding directory",
-			       (float) (++cur) / (float) max, ino);
+			       100.0 * (float) (++cur) / (float) max, ino);
 	}
 	end_problem_latch(ctx, PR_LATCH_OPTIMIZE_DIR);
 	if (!all_dirs)
