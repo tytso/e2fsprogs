@@ -186,7 +186,7 @@ void do_dump(int argc, char **argv)
 {
 	ino_t	inode;
 	int	fd;
-	char	c;
+	int	c;
 	int	preserve = 0;
 	const char *dump_usage = "Usage: dump_inode [-p] <file> <output_file>";
 	char	*in_fn, *out_fn;

@@ -74,7 +74,7 @@ errout:
 void do_open_filesys(int argc, char **argv)
 {
 	const char	*usage = "Usage: open [-w] <device>";
-	char	c;
+	int	c;
 	int open_flags = 0;
 	
 	optind = 0;
@@ -1409,7 +1409,7 @@ int main(int argc, char **argv)
 	int		retval;
 	int		sci_idx;
 	const char	*usage = "Usage: debugfs [[-w] device]";
-	char		c;
+	int		c;
 	int		open_flags = 0;
 	char		*request = 0;
 	int		exit_status = 0;

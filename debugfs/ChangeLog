@@ -1,3 +1,10 @@
+Fri Oct 24 23:47:43 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* debugfs.c (main, do_open_filesys): 
+	* dump.c (do_dump): Make the variable which getopt returns into be
+		an int, so that it won't lose on platforms where char is
+		unsigned. 
+
 Tue Oct 14 21:50:24 1997  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* debugfs.c (main): When printing a usage message, have main

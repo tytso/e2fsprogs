@@ -43,7 +43,7 @@ static void ls_l_file(struct list_dir_struct *ls, char *name, ino_t ino)
 
 	retval = ext2fs_read_inode(current_fs, ino, &inode);
 	if (retval) {
-		fprintf(ls->f, "%5d --- error ---  %s\n", name);
+		fprintf(ls->f, "%5ld --- error ---  %s\n", retval, name);
 		return;
 	}
 	modtime = inode.i_mtime;
@@ -51,7 +51,7 @@ static void ls_l_file(struct list_dir_struct *ls, char *name, ino_t ino)
 	sprintf(datestr, "%2d-%s-%2d %02d:%02d",
 		tm_p->tm_mday, monstr[tm_p->tm_mon], tm_p->tm_year,
 		tm_p->tm_hour, tm_p->tm_min);
-	fprintf(ls->f, "%6d %6o  %5d  %5d   %5d %s %s\n", ino, inode.i_mode,
+	fprintf(ls->f, "%6ld %6o  %5d  %5d   %5d %s %s\n", ino, inode.i_mode,
 	       inode.i_uid, inode.i_gid, inode.i_size, datestr, name);
 }
 
@@ -61,7 +61,7 @@ static void ls_file(struct list_dir_struct *ls, char *name,
 	char	tmp[EXT2_NAME_LEN + 16];
 	int	thislen;
 
-	sprintf(tmp, "%d (%d) %s   ", ino, rec_len, name);
+	sprintf(tmp, "%ld (%d) %s   ", ino, rec_len, name);
 	thislen = strlen(tmp);
 
 	if (ls->col + thislen > 80) {
@@ -80,7 +80,6 @@ static int list_dir_proc(struct ext2_dir_entry *dirent,
 			 void	*private)
 {
 	char	name[EXT2_NAME_LEN];
-	char	tmp[EXT2_NAME_LEN + 16];
 
 	struct list_dir_struct *ls = (struct list_dir_struct *) private;
 	int	thislen;
