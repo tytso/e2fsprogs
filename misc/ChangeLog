@@ -1,3 +1,9 @@
+2004-09-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* tune2fs.8.in: Add a description of the .journal file, why it
+		is created, and how e2fsck converts it to an invisible
+		journal.  (Addresses Debian Bug #256760)
+
 2004-09-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2initrd_helper.c: New program which allows initrd scripts to
