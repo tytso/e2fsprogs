@@ -646,7 +646,6 @@ restart:
 
 	run_result = e2fsck_run(ctx);
 	if (run_result == E2F_FLAG_RESTART) {
-		ext2fs_close(fs);
 		printf("Restarting e2fsck from the beginning...\n");
 		retval = e2fsck_reset_context(ctx);
 		if (retval) {
@@ -654,6 +653,7 @@ restart:
 				"while resetting context");
 			exit(1);
 		}
+		ext2fs_close(fs);
 		goto restart;
 	}
 	if (run_result & E2F_FLAG_SIGNAL_MASK)

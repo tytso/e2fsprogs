@@ -1,3 +1,10 @@
+Mon Jan  4 02:32:09 1999  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* llseek.c (ext2fs_llseek): Change ext2fs_llseek() in the
+ 		non-Linux case to use EINVAL by default, unless it isn't
+ 		defined, in which case we use EXT2_ET_INVALID_ARGUMENT
+ 		instead.
+
 1998-12-15  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.13

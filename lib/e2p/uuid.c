@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <linux/types.h>
+#include <asm/types.h>
 
 #include "e2p.h"
 

@@ -109,11 +109,15 @@ ext2_loff_t ext2fs_llseek (int fd, ext2_loff_t offset, int origin)
 
 #else /* !linux */
 
+#ifndef EINVAL
+#define EINVAL EXT2_ET_INVALID_ARGUMENT
+#endif
+
 ext2_loff_t ext2fs_llseek (int fd, ext2_loff_t offset, int origin)
 {
 	if ((sizeof(off_t) < sizeof(ext2_loff_t)) &&
 	    (offset >= ((ext2_loff_t) 1 << ((sizeof(off_t)*8) -1)))) {
-		errno = EXT2_ET_INVALID_ARGUMENT;
+		errno = EINVAL;
 		return -1;
 	}
 	return lseek (fd, (off_t) offset, origin);

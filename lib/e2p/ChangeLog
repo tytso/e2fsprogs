@@ -1,3 +1,9 @@
+Mon Jan  4 02:34:53 1999  Theodore Y. Ts'o  <tytso@mit.edu>
+
+	* uuid.c: Use asm/types.h instead of linux/types.h, to be
+		consistent with other locations where we've had to do this
+		to work around glibc.
+
 1998-12-15  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs 1.13

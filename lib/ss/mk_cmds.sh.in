@@ -26,7 +26,7 @@ ROOT=`echo $1 | sed -e s/.ct$//`
 BASE=`basename $ROOT`
 TMP=ct$$.c
 
-if ! test -f $FILE ; then
+if test ! -f $FILE ; then
     echo "$FILE: File not found"
     exit 1;
 fi
