@@ -1,3 +1,11 @@
+2002-07-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in, configure: Remove test for the presence (or
+		absence of d_namlen in the struct dirent) and replace it
+		with a check for pathconf().  lib/e2p/iod.c now uses a
+		different technique for providing struct dirent
+		compatibility.
+
 2002-06-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in, configure: Add --enable-htree and --enable-clear-htree

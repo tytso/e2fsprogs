@@ -15,52 +15,54 @@
  */
 
 #include "e2p.h"
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 int iterate_on_dir (const char * dir_name,
 		    int (*func) (const char *, struct dirent *, void *),
 		    void * private)
 {
 	DIR * dir;
-#if HAVE_DIRENT_NAMELEN
-	/* Declare DE_BUF with some extra room for the name.  */
-	char de_buf[sizeof (struct dirent) + 32];
-	struct dirent *de = (struct dirent *)&de_buf;
-#else
-	struct dirent de_buf, *de = &de_buf;
+	struct dirent *de, *dep;
+	int	max_len = -1, len;
+
+#if HAVE_PATHCONF && defined(_PC_NAME_MAX) 
+	max_len = pathconf(dir_name, _PC_NAME_MAX);
 #endif
-	struct dirent *dep;
+	if (max_len == -1) {
+#ifdef _POSIX_NAME_MAX
+		max_len = _POSIX_NAME_MAX;
+#else
+#ifdef NAME_MAX
+		max_len = NAME_MAX;
+#else
+		max_len = 256;
+#endif /* NAME_MAX */
+#endif /* _POSIX_NAME_MAX */
+	}
+	max_len += sizeof(struct dirent);
+
+	de = malloc(max_len+1);
+	if (!de)
+		return -1;
+	memset(de, 0, max_len+1);
 
 	dir = opendir (dir_name);
-	if (dir == NULL)
+	if (dir == NULL) {
+		free(de);
 		return -1;
-	while ((dep = readdir (dir)))
-	{
-#if HAVE_DIRENT_NAMELEN
-	  /* See if there's enough room for this entry in DE, and grow if
-	     not.  */
-	  if (de_len < dep->d_reclen)
-	    {
-	      de_len = dep->d_reclen + 32;
-	      de =
-		(de == (struct dirent *)&de_buf
-		 ? malloc (de_len)
-		 : realloc (de, de_len));
-	      if (de == NULL)
-		{
-		  errno = ENOMEM;
-		  return -1;
-		}
-	    }
-	  memcpy (de, dep, dep->d_reclen);
-#else
-	  *de = *dep;
-#endif
-	  (*func) (dir_name, de, private);
 	}
-#if HAVE_DIRENT_NAMELEN
-	if (de != (struct dirent *)&de_buf)
-	  free (de);
-#endif
-	closedir (dir);
+	while ((dep = readdir (dir))) {
+		len = dep->d_reclen;
+		if (len < (sizeof(struct dirent)))
+			len = sizeof(struct dirent);
+		if (len > max_len)
+			len = max_len;
+		memcpy(de, dep, len);
+		(*func) (dir_name, de, private);
+	}
+	free(de);
+	closedir(dir);
 	return 0;
 }

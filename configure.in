@@ -494,23 +494,6 @@ fi
 AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h signal.h termios.h linux/fd.h linux/major.h sys/disklabel.h sys/ioctl.h sys/mkdev.h sys/mount.h sys/sockio.h sys/sysmacros.h sys/time.h sys/stat.h sys/types.h net/if.h netinet/in.h)
 AC_FUNC_VPRINTF
 dnl
-dnl See if struct dirent has a d_namlen field (like bsd systems), implying
-dnl that the actual length of the structure may be grater than the declared
-dnl length. 
-dnl
-AC_MSG_CHECKING(whether struct dirent has a d_namlen field)
-AC_CACHE_VAL(e2fsprogs_cv_struct_d_namlen,
-	AC_TRY_COMPILE(
-[#include <sys/types.h>
-#include <dirent.h>],
-		[struct dirent de; de.d_namlen = 0;],
-		[e2fsprogs_cv_struct_d_namlen=yes],
-		[e2fsprogs_cv_struct_d_namlen=no]))
-AC_MSG_RESULT($e2fsprogs_cv_struct_d_namlen)
-if test "$e2fsprogs_cv_struct_d_namlen" = yes; then
-  AC_DEFINE(HAVE_DIRENT_NAMLEN)
-fi
-dnl
 dnl Check to see if llseek() is declared in unistd.h.  On some libc's 
 dnl it is, and on others it isn't..... Thank you glibc developers....
 dnl
@@ -595,7 +578,7 @@ if test "$e2fsprogs_cv_struct_st_flags" = yes; then
 	  AC_DEFINE(HAVE_STAT_FLAGS)
   fi
 fi
-AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 getmntinfo strcasecmp srandom fchown mallinfo fdatasync strnlen sysconf)
+AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 getmntinfo strcasecmp srandom fchown mallinfo fdatasync strnlen sysconf pathconf)
 dnl
 dnl Check to see if -lsocket is required (solaris) to make something
 dnl that uses socket() to compile; this is needed for the UUID library
