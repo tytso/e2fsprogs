@@ -70,8 +70,6 @@ char *blkid_get_devname(blkid_cache cache, const char *token,
 
 	if (!cache) {
 		if (blkid_get_cache(&c, NULL) < 0)
-			c = blkid_new_cache();
-		if (!c)
 			return NULL;
 	}
 
@@ -115,7 +113,7 @@ int main(int argc, char **argv)
 			argv[0], argv[0]);
 		exit(1);
 	}
-	if (blkid_get_cache(&cache, 0) < 0) {
+	if (blkid_get_cache(&cache, "/dev/null") < 0) {
 		fprintf(stderr, "Couldn't get blkid cache\n");
 		exit(1);
 	}

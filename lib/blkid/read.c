@@ -14,7 +14,9 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #if HAVE_ERRNO_H
 #include <errno.h>
@@ -312,7 +314,7 @@ static int parse_tag(blkid_cache cache, blkid_dev dev, char **cp)
 		/* FIXME: need to parse a long long eventually */
 		dev->bid_time = strtol(value, 0, 0);
 	else
-		ret = blkid_set_tag(dev, name, value, strlen(value), 0);
+		ret = blkid_set_tag(dev, name, value, strlen(value));
 
 	DBG(DEBUG_READ, printf("    tag: %s=\"%s\"\n", name, value));
 
@@ -367,40 +369,37 @@ static int blkid_parse_line(blkid_cache cache, blkid_dev *dev_p, char *cp)
  * a newly allocated cache struct.  If the file doesn't exist, return a
  * new empty cache struct.
  */
-int blkid_get_cache(blkid_cache *cache, const char *filename)
+void blkid_read_cache(blkid_cache cache)
 {
 	FILE *file;
 	char buf[4096];
-	int lineno = 0;
+	int fd, lineno = 0;
+	struct stat st;
 
 	if (!cache)
-		return -BLKID_ERR_PARAM;
+		return;
 
-	if ((*cache = blkid_new_cache()) == NULL)
-		return -BLKID_ERR_MEM;
-
-	if (!filename || !strlen(filename))
-		filename = BLKID_CACHE_FILE;
-	else
-		(*cache)->bic_filename = blkid_strdup(filename);
-
-	DBG(DEBUG_READ|DEBUG_CACHE, printf("reading cache file %s\n",
-					   filename));
-
-	if (!strcmp(filename, "-"))
-		file = stdin;
-	else {
-		/*
-		 * If the file doesn't exist, then we just return an empty
-		 * struct so that the cache can be populated.
-		 */
-		if (access(filename, R_OK) < 0)
-			return 0;
-
-		file = fopen(filename, "r");
-		if (!file)
-			return errno; /* Should never happen */
+	/*
+	 * If the file doesn't exist, then we just return an empty
+	 * struct so that the cache can be populated.
+	 */
+	if ((fd = open(cache->bic_filename, O_RDONLY)) < 0)
+		return 0;
+	if (fstat(fd, &st) < 0)
+		goto errout;
+	if ((st.st_mtime == cache->bic_ftime) ||
+	    (cache->bic_flags & BLKID_BIC_FL_CHANGED)) {
+		DBG(DEBUG_CACHE, printf("skipping re-read of %s\n",
+					cache->bic_filename));
+		goto errout;
 	}
+	
+	DBG(DEBUG_CACHE, printf("reading cache file %s\n",
+				cache->bic_filename));
+
+	file = fdopen(fd, "r");
+	if (!file)
+		goto errout;
 
 	while (fgets(buf, sizeof(buf), file)) {
 		blkid_dev dev;
@@ -410,12 +409,12 @@ int blkid_get_cache(blkid_cache *cache, const char *filename)
 		lineno++;
 		/* Continue reading next line if it ends with a backslash */
 		while (buf[end] == '\\' && end < sizeof(buf) - 2 &&
-		       fgets(buf + end, sizeof(buf) - end, stdin)) {
+		       fgets(buf + end, sizeof(buf) - end, file)) {
 			end = strlen(buf) - 1;
 			lineno++;
 		}
 
-		if (blkid_parse_line(*cache, &dev, buf) < 0) {
+		if (blkid_parse_line(cache, &dev, buf) < 0) {
 			DBG(DEBUG_READ,
 			    printf("blkid: bad format on line %d\n", lineno));
 			continue;
@@ -424,12 +423,13 @@ int blkid_get_cache(blkid_cache *cache, const char *filename)
 	/*
 	 * Initially we do not need to write out the cache file.
 	 */
-	(*cache)->bic_flags &= ~BLKID_BIC_FL_CHANGED;
-
-	if (file != stdin)
-		fclose(file);
+	cache->bic_flags &= ~BLKID_BIC_FL_CHANGED;
+	cache->bic_ftime = st.st_mtime;
 
 	return 0;
+errout:
+	close(fd);
+	return;
 }
 
 #ifdef TEST_PROGRAM

@@ -74,15 +74,15 @@ static void set_uuid(blkid_dev dev, uuid_t uuid)
 
 	if (!uuid_is_null(uuid)) {
 		uuid_unparse(uuid, str);
-		blkid_set_tag(dev, "UUID", str, sizeof(str), 1);
+		blkid_set_tag(dev, "UUID", str, sizeof(str));
 	}
 }
 
 static int probe_ext2(int fd, blkid_cache cache, blkid_dev dev,
-		      struct blkid_magic *id, unsigned char *buf,
-		      const char **ret_sectype)
+		      struct blkid_magic *id, unsigned char *buf)
 {
 	struct ext2_super_block *es;
+	const char *sec_type = 0;
 
 	es = (struct ext2_super_block *)buf;
 
@@ -91,26 +91,28 @@ static int probe_ext2(int fd, blkid_cache cache, blkid_dev dev,
 		   blkid_le32(es->s_feature_incompat),
 		   blkid_le32(es->s_feature_ro_compat)));
 
-	/* Make sure we don't keep re-probing as ext2 for a journaled fs */
-	if (!strcmp(id->bim_type, "ext2") &&
-	    ((blkid_le32(es->s_feature_compat) &
-	      EXT3_FEATURE_COMPAT_HAS_JOURNAL) ||
-	     (blkid_le32(es->s_feature_incompat) &
-	      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)))
+	/* Distinguish between jbd and ext2/3 fs */
+	if (id && (blkid_le32(es->s_feature_incompat) &
+		   EXT3_FEATURE_INCOMPAT_JOURNAL_DEV))
 		return -BLKID_ERR_PARAM;
 
 	if (strlen(es->s_volume_name))
 		blkid_set_tag(dev, "LABEL", es->s_volume_name,
-			      sizeof(es->s_volume_name), 1);
+			      sizeof(es->s_volume_name));
 
 	set_uuid(dev, es->s_uuid);
+
+	if (blkid_le32(es->s_feature_compat) &
+	    EXT3_FEATURE_COMPAT_HAS_JOURNAL)
+		sec_type = "ext3";
+	
+	blkid_set_tag(dev, "SEC_TYPE", sec_type, 0);
 
 	return 0;
 }
 
 static int probe_jbd(int fd, blkid_cache cache, blkid_dev dev, 
-		     struct blkid_magic *id, unsigned char *buf,
-		     const char **ret_sectype)
+		     struct blkid_magic *id, unsigned char *buf)
 {
 	struct ext2_super_block *es = (struct ext2_super_block *) buf;
 
@@ -118,33 +120,11 @@ static int probe_jbd(int fd, blkid_cache cache, blkid_dev dev,
 	      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV))
 		return -BLKID_ERR_PARAM;
 
-	return (probe_ext2(fd, cache, dev, id, buf, ret_sectype));
-}
-
-static int probe_ext3(int fd, blkid_cache cache, blkid_dev dev,
-		      struct blkid_magic *id, unsigned char *buf,
-		      const char **ret_sectype)
-{
-	struct ext2_super_block *es = (struct ext2_super_block *) buf;
-	int ret;
-
-	if (!(blkid_le32(es->s_feature_compat) &
-	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
-		return -BLKID_ERR_PARAM;
-
-	if ((ret = probe_ext2(fd, cache, dev, id, buf, ret_sectype)) < 0)
-		return ret;
-
-	if (!(blkid_le32(es->s_feature_incompat) &
-	      EXT3_FEATURE_INCOMPAT_RECOVER))
-		*ret_sectype = "ext2";
-
-	return 0;
+	return (probe_ext2(fd, cache, dev, 0, buf));
 }
 
 static int probe_vfat(int fd, blkid_cache cache, blkid_dev dev,
-		      struct blkid_magic *id, unsigned char *buf,
-		      const char **ret_sectype)
+		      struct blkid_magic *id, unsigned char *buf)
 {
 	struct vfat_super_block *vs;
 	char serno[10];
@@ -158,20 +138,19 @@ static int probe_vfat(int fd, blkid_cache cache, blkid_dev dev,
 			--end;
 		if (end >= vs->vs_label)
 			blkid_set_tag(dev, "LABEL", vs->vs_label,
-				      end - vs->vs_label + 1, 1);
+				      end - vs->vs_label + 1);
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */
 	sprintf(serno, "%02X%02X-%02X%02X", vs->vs_serno[3], vs->vs_serno[2],
 		vs->vs_serno[1], vs->vs_serno[0]);
-	blkid_set_tag(dev, "UUID", serno, sizeof(serno), 1);
+	blkid_set_tag(dev, "UUID", serno, sizeof(serno));
 
 	return 0;
 }
 
 static int probe_msdos(int fd, blkid_cache cache, blkid_dev dev,
-		       struct blkid_magic *id, unsigned char *buf,
-		       const char **ret_sectype)
+		       struct blkid_magic *id, unsigned char *buf)
 {
 	struct msdos_super_block *ms = (struct msdos_super_block *) buf;
 	char serno[10];
@@ -183,20 +162,19 @@ static int probe_msdos(int fd, blkid_cache cache, blkid_dev dev,
 			--end;
 		if (end >= ms->ms_label)
 			blkid_set_tag(dev, "LABEL", ms->ms_label,
-				      end - ms->ms_label + 1, 1);
+				      end - ms->ms_label + 1);
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */
 	sprintf(serno, "%02X%02X-%02X%02X", ms->ms_serno[3], ms->ms_serno[2],
 		ms->ms_serno[1], ms->ms_serno[0]);
-	blkid_set_tag(dev, "UUID", serno, 0, 1);
+	blkid_set_tag(dev, "UUID", serno, 0);
 
 	return 0;
 }
 
 static int probe_xfs(int fd, blkid_cache cache, blkid_dev dev,
-		     struct blkid_magic *id, unsigned char *buf,
-		     const char **ret_sectype)
+		     struct blkid_magic *id, unsigned char *buf)
 {
 	struct xfs_super_block *xs;
 
@@ -204,14 +182,13 @@ static int probe_xfs(int fd, blkid_cache cache, blkid_dev dev,
 
 	if (strlen(xs->xs_fname))
 		blkid_set_tag(dev, "LABEL", xs->xs_fname,
-			      sizeof(xs->xs_fname), 1);
+			      sizeof(xs->xs_fname));
 	set_uuid(dev, xs->xs_uuid);
 	return 0;
 }
 
 static int probe_reiserfs(int fd, blkid_cache cache, blkid_dev dev,
-			  struct blkid_magic *id, unsigned char *buf,
-			  const char **ret_sectype)
+			  struct blkid_magic *id, unsigned char *buf)
 {
 	struct reiserfs_super_block *rs = (struct reiserfs_super_block *) buf;
 	unsigned int blocksize;
@@ -227,7 +204,7 @@ static int probe_reiserfs(int fd, blkid_cache cache, blkid_dev dev,
 	    !strcmp(id->bim_magic, "ReIsEr3Fs")) {
 		if (strlen(rs->rs_label)) {
 			blkid_set_tag(dev, "LABEL", rs->rs_label,
-				      sizeof(rs->rs_label), 1);
+				      sizeof(rs->rs_label));
 		}
 
 		set_uuid(dev, rs->rs_uuid);
@@ -253,7 +230,6 @@ static int probe_reiserfs(int fd, blkid_cache cache, blkid_dev dev,
 static struct blkid_magic type_array[] = {
 /*  type     kboff   sboff len  magic			probe */
   { "jbd",	 1,   0x38,  2, "\123\357",		probe_jbd },
-  { "ext3",	 1,   0x38,  2, "\123\357",		probe_ext3 },
   { "ext2",	 1,   0x38,  2, "\123\357",		probe_ext2 },
   { "reiserfs",	 8,   0x34,  8, "ReIsErFs",		probe_reiserfs },
   { "reiserfs", 64,   0x34,  9, "ReIsEr2Fs",		probe_reiserfs },
@@ -300,17 +276,6 @@ static struct blkid_magic type_array[] = {
 };
 
 /*
- * If a device's filesystem no longer checks out, we need to nuke
- * information about it from the entry.
- */
-static void blkid_invalidate_fs(blkid_dev dev)
-{
-	blkid_set_tag(dev, "TYPE", 0, 0, 0);
-	blkid_set_tag(dev, "LABEL", 0, 0, 0);
-	blkid_set_tag(dev, "UUID", 0, 0, 0);
-}	
-
-/*
  * Verify that the data in dev is consistent with what is on the actual
  * block device (using the devname field only).  Normally this will be
  * called when finding items in the cache, but for long running processes
@@ -323,7 +288,7 @@ blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev)
 {
 	struct blkid_magic *id;
 	unsigned char *bufs[BLKID_BLK_OFFS + 1], *buf;
-	const char *sec_type, *type;
+	const char *type;
 	struct stat st;
 	time_t diff;
 	int fd, idx;
@@ -364,7 +329,6 @@ blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev)
 	 */
 try_again:
 	type = 0;
-	sec_type = 0;
 	if (!dev->bid_type || !strcmp(dev->bid_type, "mdraid")) {
 		uuid_t	uuid;
 
@@ -402,7 +366,7 @@ try_again:
 			continue;
 
 		if ((id->bim_probe == NULL) ||
-		    (id->bim_probe(fd, cache, dev, id, buf, &sec_type) == 0)) {
+		    (id->bim_probe(fd, cache, dev, id, buf) == 0)) {
 			type = id->bim_type;
 			goto found_type;
 		}
@@ -412,7 +376,10 @@ try_again:
 		/*
 		 * Zap the device filesystem type and try again
 		 */
-		blkid_invalidate_fs(dev);
+		blkid_set_tag(dev, "TYPE", 0, 0);
+		blkid_set_tag(dev, "SEC_TYPE", 0, 0);
+		blkid_set_tag(dev, "LABEL", 0, 0);
+		blkid_set_tag(dev, "UUID", 0, 0);
 		goto try_again;
 	}
 
@@ -428,9 +395,7 @@ found_type:
 		dev->bid_flags |= BLKID_BID_FL_VERIFIED;
 		cache->bic_flags |= BLKID_BIC_FL_CHANGED;
 
-		blkid_set_tag(dev, "TYPE", type, 0, 1);
-		if (sec_type)
-			blkid_set_tag(dev, "TYPE", sec_type, 0, 0);
+		blkid_set_tag(dev, "TYPE", type, 0);
 				
 		DBG(DEBUG_PROBE, printf("%s: devno 0x%04Lx, type %s\n",
 			   dev->bid_name, st.st_rdev, type));
@@ -446,6 +411,7 @@ int main(int argc, char **argv)
 {
 	blkid_dev dev;
 	blkid_cache cache;
+	int ret;
 
 	blkid_debug_mask = DEBUG_ALL;
 	if (argc != 2) {
@@ -453,7 +419,11 @@ int main(int argc, char **argv)
 			"Probe a single device to determine type\n", argv[0]);
 		exit(1);
 	}
-	cache = blkid_new_cache();
+	if ((ret = blkid_get_cache(&cache, "/dev/null")) != 0) {
+		fprintf(stderr, "%s: error creating cache (%d)\n",
+			argv[0], ret);
+		exit(1);
+	}
 	dev = blkid_get_dev(cache, argv[1], BLKID_DEV_NORMAL);
 	if (!dev) {
 		printf("%s: %s has an unsupported type\n", argv[0], argv[1]);

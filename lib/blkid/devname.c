@@ -280,6 +280,7 @@ int blkid_probe_all(blkid_cache cache)
 	    time(0) - cache->bic_time < BLKID_PROBE_INTERVAL)
 		return 0;
 
+	blkid_read_cache(cache);
 	evms_probe_all(cache);
 #ifdef VG_DIR
 	lvm_probe_all(cache);
@@ -340,6 +341,7 @@ int blkid_probe_all(blkid_cache cache)
 
 	cache->bic_time = time(0);
 	cache->bic_flags |= BLKID_BIC_FL_PROBED;
+	blkid_flush_cache(cache);
 	return 0;
 }
 
@@ -347,6 +349,7 @@ int blkid_probe_all(blkid_cache cache)
 int main(int argc, char **argv)
 {
 	blkid_cache cache = NULL;
+	int ret;
 
 	blkid_debug_mask = DEBUG_ALL;
 	if (argc != 1) {
@@ -354,8 +357,9 @@ int main(int argc, char **argv)
 			"Probe all devices and exit\n", argv[0]);
 		exit(1);
 	}
-	if ((cache = blkid_new_cache()) == NULL) {
-		fprintf(stderr, "%s: error creating cache\n", argv[0]);
+	if ((ret = blkid_get_cache(&cache, "/dev/null")) != 0) {
+		fprintf(stderr, "%s: error creating cache (%d)\n",
+			argv[0], ret);
 		exit(1);
 	}
 	if (blkid_probe_all(cache) < 0)

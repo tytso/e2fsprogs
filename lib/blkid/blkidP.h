@@ -42,7 +42,6 @@ struct blkid_struct_dev
 };
 
 #define BLKID_BID_FL_VERIFIED	0x0001	/* Device data validated from disk */
-#define BLKID_BID_FL_MTYPE	0x0002	/* Device has multiple type matches */
 #define BLKID_BID_FL_INVALID	0x0004	/* Device is invalid */
 
 /*
@@ -87,6 +86,7 @@ struct blkid_struct_cache
 	struct list_head	bic_devs;	/* List head of all devices */
 	struct list_head	bic_tags;	/* List head of all tag types */
 	time_t			bic_time;	/* Last probe time */
+	time_t			bic_ftime; 	/* Mod time of the cachefile */
 	unsigned int		bic_flags;	/* Status flags of the cache */
 	char			*bic_filename;	/* filename of cache */
 };
@@ -96,7 +96,6 @@ struct blkid_struct_cache
 
 extern char *blkid_strdup(const char *s);
 extern char *blkid_strndup(const char *s, const int length);
-extern blkid_cache blkid_new_cache(void);
 
 #define BLKID_CACHE_FILE "/etc/blkid.tab"
 extern const char *blkid_devdirs[];
@@ -209,6 +208,9 @@ extern blkid_loff_t blkid_llseek(int fd, blkid_loff_t offset, int whence);
 /* probe.c */
 extern blkid_dev blkid_verify_devname(blkid_cache cache, blkid_dev dev);
 
+/* read.c */
+extern void blkid_read_cache(blkid_cache cache);
+
 /* save.c */
 extern int blkid_flush_cache(blkid_cache cache);
 
@@ -218,7 +220,7 @@ extern int blkid_flush_cache(blkid_cache cache);
 extern void blkid_free_tag(blkid_tag tag);
 extern blkid_tag blkid_find_tag_dev(blkid_dev dev, const char *type);
 extern int blkid_set_tag(blkid_dev dev, const char *name,
-			 const char *value, const int vlength, int replace);
+			 const char *value, const int vlength);
 
 /*
  * Functions to create and find a specific tag type: dev.c

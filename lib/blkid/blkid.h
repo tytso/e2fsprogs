@@ -48,6 +48,7 @@ typedef struct blkid_struct_dev_iterate *blkid_dev_iterate;
 
 /* cache.c */
 extern void blkid_put_cache(blkid_cache cache);
+extern int blkid_get_cache(blkid_cache *cache, const char *filename);
 
 /* dev.c */
 extern const char *blkid_dev_devname(blkid_dev dev);
@@ -68,7 +69,6 @@ extern blkid_dev blkid_get_dev(blkid_cache cache, const char *devname,
 extern blkid_loff_t blkid_get_dev_size(int fd);
 
 /* read.c */
-int blkid_get_cache(blkid_cache *cache, const char *filename);
 
 /* resolve.c */
 extern char *blkid_get_tagname_devname(blkid_cache cache, const char *tagname,

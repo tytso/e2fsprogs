@@ -15,7 +15,7 @@
 
 int blkid_debug_mask;
 
-blkid_cache blkid_new_cache(void)
+int blkid_get_cache(blkid_cache *ret_cache, const char *filename)
 {
 	blkid_cache cache;
 
@@ -29,15 +29,23 @@ blkid_cache blkid_new_cache(void)
 	}
 #endif
 
-	DBG(DEBUG_CACHE, printf("initializing empty cache\n"));
+	DBG(DEBUG_CACHE, printf("creating blkid cache (using %s)\n",
+				filename ? filename : "default cache"));
 
 	if (!(cache = (blkid_cache) calloc(1, sizeof(struct blkid_struct_cache))))
-		return NULL;
+		return -BLKID_ERR_MEM;
 
 	INIT_LIST_HEAD(&cache->bic_devs);
 	INIT_LIST_HEAD(&cache->bic_tags);
 
-	return cache;
+	if (!filename || !strlen(filename))
+		filename = BLKID_CACHE_FILE;
+	cache->bic_filename = blkid_strdup(filename);
+	
+	blkid_read_cache(cache);
+	
+	*ret_cache = cache;
+	return 0;
 }
 
 void blkid_put_cache(blkid_cache cache)
@@ -97,8 +105,9 @@ int main(int argc, char** argv)
 			argv[1] ? argv[1] : BLKID_CACHE_FILE);
 		exit(1);
 	}
-	if ((cache = blkid_new_cache()) == NULL) {
-		fprintf(stderr, "%s: error creating cache\n", argv[0]);
+	if ((ret = blkid_get_cache(&cache, "/dev/null")) != 0) {
+		fprintf(stderr, "%s: error creating cache (%d)\n",
+			argv[0], ret);
 		exit(1);
 	}
 	if ((ret = blkid_probe_all(cache) < 0))

@@ -97,15 +97,10 @@ static blkid_tag blkid_find_head_cache(blkid_cache cache, const char *type)
 /*
  * Set a tag on an existing device.
  * 
- * If replace is non-zero, blkid_set_tag() will replace the existing
- * tag with the specified value.  Otherwise, it will add the specified
- * tag to the device.
- *
- * If value is NULL, then delete all tags with that name from the
- * device.
+ * If value is NULL, then delete the tagsfrom the device.
  */
 int blkid_set_tag(blkid_dev dev, const char *name,
-		  const char *value, const int vlength, int replace)
+		  const char *value, const int vlength)
 {
 	blkid_tag	t = 0, head = 0;
 	char		*val = 0;
@@ -113,64 +108,52 @@ int blkid_set_tag(blkid_dev dev, const char *name,
 	if (!dev || !name)
 		return -BLKID_ERR_PARAM;
 
-repeat:
+	if (!(val = blkid_strndup(value, vlength)))
+		return -BLKID_ERR_MEM;
 	t = blkid_find_tag_dev(dev, name);
-	val = blkid_strndup(value, vlength);
 	if (!value) {
-		if (t) {
+		if (t)
 			blkid_free_tag(t);
-			goto repeat;
-		} else
-			goto link_tags;
-	}
-	if (!val)
-		goto errout;
-	if (t) {
+	} else if (t) {
 		if (!strcmp(t->bit_val, val)) {
 			/* Same thing, exit */
 			free(val);
 			return 0;
 		}
-		if (replace) {
-			free(t->bit_val);
-			t->bit_val = val;
-			goto link_tags;
-		}
-		dev->bid_flags |= BLKID_BID_FL_MTYPE;
-	}
+		free(t->bit_val);
+		t->bit_val = val;
+	} else {
+		/* Existing tag not present, add to device */
+		if (!(t = blkid_new_tag()))
+			goto errout;
+		t->bit_name = blkid_strdup(name);
+		t->bit_val = val;
+		t->bit_dev = dev;
 
-	/* Existing tag not present, add to device */
-	t = blkid_new_tag();
-	if (!t)
-		goto errout;
-	t->bit_name = blkid_strdup(name);
-	t->bit_val = val;
-	t->bit_dev = dev;
-
-	list_add_tail(&t->bit_tags, &dev->bid_tags);
+		list_add_tail(&t->bit_tags, &dev->bid_tags);
 		
-	if (dev->bid_cache) {
-		head = blkid_find_head_cache(dev->bid_cache, t->bit_name);
-		if (!head) {
-			head = blkid_new_tag();
-			if (!head)
-				goto errout;
+		if (dev->bid_cache) {
+			head = blkid_find_head_cache(dev->bid_cache,
+						     t->bit_name);
+			if (!head) {
+				head = blkid_new_tag();
+				if (!head)
+					goto errout;
 
-			DBG(DEBUG_TAG,
-			    printf("    creating new cache tag head %s\n",
-				   name));
-			head->bit_name = blkid_strdup(name);
-			if (!head->bit_name)
-				goto errout;
-			list_add_tail(&head->bit_tags,
-				      &dev->bid_cache->bic_tags);
+				DBG(DEBUG_TAG,
+				    printf("    creating new cache tag head %s\n", name));
+				head->bit_name = blkid_strdup(name);
+				if (!head->bit_name)
+					goto errout;
+				list_add_tail(&head->bit_tags,
+					      &dev->bid_cache->bic_tags);
+			}
+			list_add_tail(&t->bit_names, &head->bit_names);
 		}
-		list_add_tail(&t->bit_names, &head->bit_names);
 	}
 	
-link_tags:
 	/* Link common tags directly to the device struct */
-	if (!strcmp(name, "TYPE") && (!val || !dev->bid_type))
+	if (!strcmp(name, "TYPE"))
 		dev->bid_type = val;
 	else if (!strcmp(name, "LABEL"))
 		dev->bid_label = val;
@@ -313,7 +296,7 @@ extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache,
 					 const char *type,
 					 const char *value)
 {
-	blkid_tag	head, found;
+	blkid_tag	head;
 	blkid_dev	dev;
 	int		pri;
 	struct list_head *p;
@@ -321,11 +304,12 @@ extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache,
 	if (!cache || !type || !value)
 		return NULL;
 
+	blkid_read_cache(cache);
+	
 	DBG(DEBUG_TAG, printf("looking for %s=%s in cache\n", type, value));
 	
 try_again:
 	pri = -1;
-	found = 0;
 	dev = 0;
 	head = blkid_find_head_cache(cache, type);
 
@@ -336,15 +320,16 @@ try_again:
 
 			if (!strcmp(tmp->bit_val, value) &&
 			    tmp->bit_dev->bid_pri > pri) {
-				found = tmp;
-				dev = found->bit_dev;
+				dev = tmp->bit_dev;
 				pri = dev->bid_pri;
 			}
 		}
 	}
-	dev = blkid_verify_devname(cache, dev);
-	if (dev && strcmp(found->bit_val, value))
-		dev = 0;
+	if (dev && !(dev->bid_flags & BLKID_BID_FL_VERIFIED)) {
+		dev = blkid_verify_devname(cache, dev);
+		if (dev && (dev->bid_flags & BLKID_BID_FL_VERIFIED))
+			goto try_again;
+	}
 
 	if (!dev && !(cache->bic_flags & BLKID_BIC_FL_PROBED)) {
 		blkid_probe_all(cache);
