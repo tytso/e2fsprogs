@@ -44,6 +44,25 @@ LD = $(PURE) @CC@
 ARUPD = $(AR) r
 
 #
+# Library definitions
+#
+LIB = $(top_builddir)/lib
+LIBSS = $(LIB)/libss@LIB_EXT@
+LIBCOM_ERR = $(LIB)/libcom_err@LIB_EXT@
+LIBE2P = $(LIB)/libe2p@LIB_EXT@
+LIBEXT2FS = $(LIB)/libext2fs@LIB_EXT@
+
+STATIC_LIBSS = $(LIB)/libss@STATIC_LIB_EXT@
+STATIC_LIBCOM_ERR = $(LIB)/libcom_err@STATIC_LIB_EXT@
+STATIC_LIBE2P = $(LIB)/libe2p@STATIC_LIB_EXT@
+STATIC_LIBEXT2FS = $(LIB)/libext2fs@STATIC_LIB_EXT@
+
+PROFILED_LIBSS = $(LIB)/libss@PROFILED_LIB_EXT@
+PROFILED_LIBCOM_ERR = $(LIB)/libcom_err@PROFILED_LIB_EXT@
+PROFILED_LIBE2P = $(LIB)/libe2p@PROFILED_LIB_EXT@
+PROFILED_LIBEXT2FS = $(LIB)/libext2fs@PROFILED_LIB_EXT@
+
+#
 # Use these definitions is you use tools 2.x, x < 16
 #
 #DLL_BIN=/usr/dll/bin
@@ -58,6 +77,11 @@ JUMP_PREFIX=/usr/bin/jump
 # An include directive pointing to a directory holding enough linux-like
 # include files to satisfy some programs here
 LINUX_INCLUDE=@LINUX_INCLUDE@
+
+#
+# A fast substitution command for fixing up man pages, shell scripts, etc.
+#
+SUBSTITUTE= $(top_builddir)/lib/substitute_sh
 
 #
 # Warning flags

@@ -10,10 +10,12 @@ LIB_SUBDIRS=lib/et lib/ss lib/ext2fs lib/e2p
 PROG_SUBDIRS=e2fsck debugfs misc
 SUBDIRS=$(LIB_SUBDIRS) $(PROG_SUBDIRS) tests
 
-all:: libs progs check
+SUBS= include/linux/types.h
 
-progs: all-progs-recursive
-libs: all-libs-recursive
+all:: $(SUBS) libs progs check
+
+progs: $(SUBS) all-progs-recursive
+libs: $(SUBS) all-libs-recursive
 
 install: all-libs-recursive install-progs-recursive \
 	install-shlibs-libs-recursive
@@ -44,9 +46,18 @@ all-libs-recursive install-libs-recursive install-shlibs-libs-recursive:
 	done
 
 mostlyclean: mostlyclean-recursive mostlyclean-local
+
 clean: clean-recursive clean-local
+	$(RM) -f $(SUBS)
+
 distclean: distclean-recursive distclean-local
+
 realclean: realclean-recursive realclean-local
+
+include/linux/types.h: $(SUBSTITUTE) $(srcdir)/include/linux/types.h.in
+	-chmod +x $(SUBSTITUTE)
+	$(SUBSTITUTE) $(srcdir)/include/linux/types.h.in \
+		include/linux/types.h.in
 
 mostlyclean-local:
 	$(RM) -f \#* *~ core MAKELOG 

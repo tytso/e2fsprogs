@@ -73,6 +73,13 @@ CFLAGS="$CFLAGS $withval",
 CCOPTS=)dnl
 AC_SUBST(CCOPTS)
 dnl
+dnl Set default values for library extentions.  Will be dealt with after
+dnl parsing configuration opions, which may modify these
+dnl
+LIB_EXT=.a
+STATIC_LIB_EXT=.a
+PROFILE_LIB_EXT=.a
+dnl
 dnl set $(LDFLAGS) from --with-ldopts=value
 dnl
 AC_ARG_WITH([ldopts],
@@ -85,7 +92,7 @@ dnl
 dnl handle --enable-dll-shlibs
 dnl
 AC_ARG_ENABLE([dll-shlibs],
-[  --enable-dll-shlibs	select DLL libraries],
+[  --enable-dll-shlibs	  select DLL libraries],
 if test "$enableval" = "no"
 then
 	DLL_CMT=#
@@ -95,6 +102,7 @@ else
 	DLL_CMT=
 	MAKEFILE_DLL=$srcdir/lib/Makefile.dll-lib
 	BINARY_TYPE=dllbin
+	LIB_EXT=.sa
 	echo "Enabling DLL shared libraries"
 fi
 ,
@@ -108,7 +116,7 @@ dnl
 dnl handle --enable-elf-shlibs
 dnl
 AC_ARG_ENABLE([elf-shlibs],
-[  --enable-elf-shlibs	select ELF shared libraries],
+[  --enable-elf-shlibs	  select ELF shared libraries],
 if test "$enableval" = "no"
 then
 	ELF_CMT=#
@@ -118,6 +126,7 @@ else
 	ELF_CMT=
 	MAKEFILE_ELF=$srcdir/lib/Makefile.elf-lib
 	BINARY_TYPE=elfbin
+	LIB_EXT=.so
 	echo "Enabling ELF shared libraries"
 fi
 ,
@@ -131,7 +140,7 @@ dnl
 dnl handle --enable-bsd-shlibs
 dnl
 AC_ARG_ENABLE([bsd-shlibs],
-[  --enable-bsd-shlibs	select BSD shared libraries],
+[  --enable-bsd-shlibs	  select BSD shared libraries],
 if test "$enableval" = "no"
 then
 	BSDLIB_CMT=#
@@ -140,6 +149,7 @@ then
 else
 	BSDLIB_CMT=
 	MAKEFILE_BSDLIB=$srcdir/lib/Makefile.bsd-lib
+	LIB_EXT=.so
 	echo "Enabling BSD shared libraries"
 fi
 ,
@@ -153,7 +163,7 @@ dnl
 dnl handle --enable-profile
 dnl
 AC_ARG_ENABLE([profile],
-[  --enable-profile	build profiling libraries],
+[  --enable-profile	  build profiling libraries],
 if test "$enableval" = "no"
 then
 	PROFILE_CMT=#
@@ -162,6 +172,7 @@ then
 else
 	PROFILE_CMT=
 	MAKEFILE_PROFILE=$srcdir/lib/Makefile.profile
+	PROFILED_LIB_EXT=_p.a
 	echo "Building profiling libraries"
 fi
 ,
@@ -175,7 +186,7 @@ dnl
 dnl handle --enable-checker
 dnl
 AC_ARG_ENABLE([checker],
-[  --enable-checker	build checker libraries],
+[  --enable-checker	  build checker libraries],
 if test "$enableval" = "no"
 then
 	CHECKER_CMT=#
@@ -194,10 +205,16 @@ echo "Disabling checker libraries by default"
 AC_SUBST(CHECKER_CMT)
 AC_SUBST_FILE(MAKEFILE_CHECKER)
 dnl
+dnl Substitute library extensions
+dnl
+AC_SUBST(LIB_EXT)
+AC_SUBST(STATIC_LIB_EXT)
+AC_SUBST(PROFILED_LIB_EXT)
+dnl
 dnl handle --enable-gcc-wall
 dnl
 AC_ARG_ENABLE([gcc-wall],
-[  --enable-gcc-wall	enable GCC anal warnings],
+[  --enable-gcc-wall	  enable GCC anal warnings],
 if test "$enableval" = "no"
 then
 	W=#
@@ -211,6 +228,21 @@ W=#
 echo "Disabling GCC warnings by default"
 )
 AC_SUBST(W)
+AC_ARG_ENABLE([dynamic-e2fsck],
+[  --enable-dynamic-e2fsck build e2fsck dynamically],
+if test "$enableval" = "no"
+then
+	E2FSCK_TYPE=static
+	echo "Building e2fsck statically"
+else
+	E2FSCK_TYPE=shared
+	echo "Building e2fsck dynamically"
+fi
+,
+E2FSCK_TYPE=static
+echo "Building e2fsck statically by default"
+)
+AC_SUBST(E2FSCK_TYPE)
 dnl
 dnl
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
@@ -393,16 +425,17 @@ else
 fi
 AC_SUBST(DO_TEST_SUITE)
 dnl
+dnl
+dnl
+DO_SUBSTITUTE_SCRIPT=$srcdir/lib/do_substitute
+AC_SUBST_FILE(DO_SUBSTITUTE_SCRIPT)
+dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
 dnl directories
 dnl
 test -d lib || mkdir lib
 test -d include || mkdir include
 test -d include/linux || mkdir include/linux
-AC_OUTPUT(MCONFIG include/linux/types.h Makefile lib/et/Makefile 
-	lib/et/compile_et.sh lib/ss/Makefile lib/ss/mk_cmds.sh 
-	lib/ext2fs/Makefile lib/e2p/Makefile misc/Makefile 
-	e2fsck/Makefile debugfs/Makefile tests/Makefile lib/ext2fs/ext2_err.et 
-	debugfs/debugfs.8 e2fsck/e2fsck.8 misc/tune2fs.8 misc/lsattr.1
-	misc/chattr.1 misc/badblocks.8 misc/dumpe2fs.8 misc/mke2fs.8
-	misc/fsck.8 misc/mklost+found.8)
+AC_OUTPUT(MCONFIG lib/substitute_sh Makefile lib/et/Makefile 
+	lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile misc/Makefile 
+	e2fsck/Makefile debugfs/Makefile tests/Makefile)

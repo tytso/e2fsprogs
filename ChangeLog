@@ -1,3 +1,32 @@
+Thu May 16 11:12:30 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* Release of E2fsprogs version 1.04
+
+Thu May 16 09:38:40 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* configure.in: 
+	  MCONFIG.in: Man pages, shell scripts and include files are now
+		generated using the lib/substitute_sh script.  This is
+		faster than the configure substitution, and it doesn't
+		change the mod time of the file if it hasn't changed,
+		which prevents needless compilation of files.
+
+		Define new sets of Makefile variables: LIBSS, LIBCOM_ERR,
+ 		LIBEXT2FS, LIBE2P, and their static and profiled variants,
+ 		STATIC_* and PROFILED_*, which point to the actual file of
+ 		the shared or static library.  This way makefiles can link
+ 		directly with exactly the library they want.  Many ld's
+		(include GNU ld) have a really broken idea of how -L
+		works, and will link against an older library in /usr/lib
+		even though there is a newer on in a specified -L directory.
+		  
+Wed May 15 21:40:22 1996  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* configure.in: Add support for --enable-dynamic-e2fsck, for
+ 		people who don't want to link e2fsck statically.  This
+ 		saves space, at the cost of increasing the reliance of
+ 		e2fsck other files (3-4 shared libraries).
+
 Wed Mar 27 00:33:40 1996    <tytso@rsts-11.mit.edu>
 
 	* Release of E2fsprogs version 1.03

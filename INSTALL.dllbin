@@ -1,7 +1,7 @@
 NOTE: This is the DLL version of the binary distribution.  If you have
 an ELF system, please either compile e2fsprogs from sources yourself,
 or get the ELF version of the binary distribution.  The ELF version
-will have a filename of e2fsprogs-1.01-elfbin.tar.gz
+will have a filename of e2fsprogs-1.04-elfbin.tar.gz
 
 
 	To install the binary distribution of the second extended file
@@ -9,7 +9,7 @@ system management programs, just follow the steps:
 
 1) Install this tar file using the following command:
 
-	gunzip < e2fsprogs-1.01-dllbin.tar.gz | (cd /; tar xvf - )
+	gunzip < e2fsprogs-1.04-dllbin.tar.gz | (cd /; tar xvf - )
 
 2) Run ldconfig to update the shared library pointers.
 
