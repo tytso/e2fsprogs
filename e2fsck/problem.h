@@ -297,9 +297,6 @@ struct problem_context {
 /* Suppress messages prompt */
 #define PR_1_SUPPRESS_MESSAGES		0x01002D
 
-/* Filesystem contains large files, but has no such flag in sb */
-#define PR_1_FEATURE_LARGE_FILES 	0x01002E
-
 /* Imagic flag set on an inode when filesystem doesn't support it */
 #define PR_1_SET_IMAGIC			0x01002F
 
@@ -555,6 +552,9 @@ struct problem_context {
 
 /* i_file_acl (extended attribute) is bad */
 #define PR_2_FILE_ACL_BAD	0x020032
+
+/* Filesystem contains large files, but has no such flag in sb */
+#define PR_2_FEATURE_LARGE_FILES 0x020033
 
 /*
  * Pass 3 errors

@@ -515,11 +515,6 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Suppress messages prompt */
 	{ PR_1_SUPPRESS_MESSAGES, "", PROMPT_SUPPRESS, PR_NO_OK },
 		  
-	/* Filesystem contains large files, but has no such flag in sb */
-	{ PR_1_FEATURE_LARGE_FILES,
-	  N_("@f contains large files, but lacks LARGE_FILE flag in @S.\n"),
-	  PROMPT_FIX, 0 },
-	  
 	/* Imagic flag set on an inode when filesystem doesn't support it */
 	{ PR_1_SET_IMAGIC,
 	  N_("@i %i has imagic flag set.  "),
@@ -936,6 +931,11 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("@a @b @F is invalid (%If).\n"),
 	  PROMPT_CLEAR, 0 },
 
+	/* Filesystem contains large files, but has no such flag in sb */
+	{ PR_2_FEATURE_LARGE_FILES,
+	  N_("@f contains large files, but lacks LARGE_FILE flag in @S.\n"),
+	  PROMPT_FIX, 0 },
+	  
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

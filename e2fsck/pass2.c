@@ -76,12 +76,14 @@ struct check_dir_struct {
 
 void e2fsck_pass2(e2fsck_t ctx)
 {
-	ext2_filsys 	fs = ctx->fs;
-	char	*buf;
+	struct ext2_super_block *sb = ctx->fs->super;
+	struct problem_context	pctx;
+	ext2_filsys 		fs = ctx->fs;
+	char			*buf;
 #ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
 #endif
-	struct dir_info *dir;
+	struct dir_info 	*dir;
 	struct check_dir_struct cd;
 		
 #ifdef RESOURCE_TRACK
@@ -146,6 +148,31 @@ void e2fsck_pass2(e2fsck_t ctx)
 		ext2fs_free_inode_bitmap(ctx->inode_reg_map);
 		ctx->inode_reg_map = 0;
 	}
+
+	clear_problem_context(&pctx);
+	if (ctx->large_files) {
+		if (!(sb->s_feature_ro_compat &
+		      EXT2_FEATURE_RO_COMPAT_LARGE_FILE) &&
+		    fix_problem(ctx, PR_2_FEATURE_LARGE_FILES, &pctx)) {
+			sb->s_feature_ro_compat |=
+				EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
+			ext2fs_mark_super_dirty(fs);
+		}
+		if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
+		    fix_problem(ctx, PR_1_FS_REV_LEVEL, &pctx)) {
+			ext2fs_update_dynamic_rev(fs);
+			ext2fs_mark_super_dirty(fs);
+		}
+	} else if (!ctx->large_files &&
+	    (sb->s_feature_ro_compat &
+	      EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
+		if (fs->flags & EXT2_FLAG_RW) {
+			sb->s_feature_ro_compat &= 
+				~EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
+	
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
@@ -647,13 +674,17 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 
 	if (!ext2fs_inode_has_valid_blocks(&inode))
 		return;
-	
+
+	if (!LINUX_S_ISDIR(inode.i_mode) &&
+	    (inode.i_size_high || inode.i_size & 0x80000000UL))
+		ctx->large_files--;
+
 	if (inode.i_file_acl) {
 		ext2fs_unmark_block_bitmap(ctx->block_found_map,
 					   inode.i_file_acl);
 		ext2fs_unmark_block_bitmap(fs->block_map, inode.i_file_acl);
 	}
-	
+
 	ext2fs_mark_bb_dirty(fs);
 	pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
 					    deallocate_inode_block, ctx);
