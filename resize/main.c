@@ -106,6 +106,22 @@ static void check_mount(char *device)
 	exit(1);
 }
 
+static int get_units(const char *s)
+{
+	if (strlen(s) != 1)
+		return -1;
+	switch(s[0]) {
+	case 's':
+		return 512;
+	case 'K':
+		return 1024;
+	case 'M':
+		return 1024*1024;
+	case 'G':
+		return 1024*1024*1024;
+	}
+	return -1;
+}
 
 int main (int argc, char ** argv)
 {
@@ -118,6 +134,7 @@ int main (int argc, char ** argv)
 	int		fd;
 	blk_t		new_size = 0;
 	blk_t		max_size = 0;
+	int		units = 0;
 	io_manager	io_ptr;
 	char		*tmp;
 	struct stat	st_buf;
@@ -164,9 +181,13 @@ int main (int argc, char ** argv)
 	if (optind < argc) {
 		new_size = strtoul(argv[optind++], &tmp, 0);
 		if (*tmp) {
-			com_err(program_name, 0, _("bad filesystem size - %s"),
-				argv[optind - 1]);
-			exit(1);
+			units = get_units(tmp);
+			if (units < 0) {
+				com_err(program_name, 0, 
+					_("bad filesystem size - %s"),
+					argv[optind - 1]);
+				exit(1);
+			}
 		}
 	}
 	if (optind < argc)
@@ -229,8 +250,15 @@ int main (int argc, char ** argv)
 			_("while trying to determine filesystem size"));
 		exit(1);
 	}
+	if (units) {
+		if (units < fs->blocksize)
+			new_size = (new_size * units) / fs->blocksize;
+		else if (units > fs->blocksize)
+			new_size = new_size * (units / fs->blocksize);
+	}
 	if (!new_size)
 		new_size = max_size;
+	
 	/*
 	 * If we are resizing a plain file, and it's not big enough,
 	 * automatically extend it in a sparse fashion by writing the
@@ -248,9 +276,9 @@ int main (int argc, char ** argv)
 	}
 	if (!force && (new_size > max_size)) {
 		fprintf(stderr, _("The containing partition (or device)"
-			" is only %d blocks.\nYou requested a new size"
+			" is only %d (%dk) blocks.\nYou requested a new size"
 			" of %d blocks.\n\n"), max_size,
-			new_size);
+			fs->blocksize / 1024, new_size);
 		exit(1);
 	}
 	if (new_size == fs->super->s_blocks_count) {
@@ -265,6 +293,8 @@ int main (int argc, char ** argv)
 			device_name);
 		exit(1);
 	}
+	printf("Resizing the filesystem on %s to %d (%dk) blocks.\n",
+	       device_name, new_size, fs->blocksize / 1024);
 	retval = resize_fs(fs, &new_size, flags,
 			   ((flags & RESIZE_PERCENT_COMPLETE) ?
 			    resize_progress_func : 0));

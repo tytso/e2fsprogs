@@ -1,3 +1,10 @@
+2003-05-13  root  <tytso@mit.edu>
+
+	* main.c (main): Add the ability to specify units to the size
+		parameter, and make the error and information messages
+		display explicitly the blocksize used by the filesystem,
+		to avoid confusion.  (Addresses Debian bug: #189814)
+
 2003-05-03  Theodore Ts'o  <tytso@mit.edu>
 
 	* main.c (main): Add calls to setup functions for NLS support.

@@ -28,17 +28,25 @@ resize2fs \- ext2 file system resizer
 The 
 .B resize2fs 
 program will resize ext2 file systems.  It can be used to enlarge or
-shrink an ext2 file system located on
-.I device 
-so that it will have 
-.I size 
-blocks.
-If the
-.I size
-parameter is not specified, it will default to the size of the partition.
+shrink an ext2 file system located on 
+.IR device .
 The 
 .I size
-parameter may never be larger than the size of the partition.
+parameter specifies the requested new size of the filesystem.
+If no units are specified, the units of the
+.I size
+parameter shall be the filesystem blocksize of the filesystem.
+Optionally, the 
+.I size
+parameter may be suffixed by one of the following the units 
+designators: 's', 'K', 'M', or 'G',
+for 512 byte sectors, kilobytes, megabytes, or gigabytes, respectively.
+The 
+.I size
+of the filesystem may never be larger than the size of the partition.
+If 
+.I size
+parameter is not specified, it will default to the size of the partition.
 .PP
 The
 .B resize2fs
