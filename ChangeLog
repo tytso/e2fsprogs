@@ -1,3 +1,11 @@
+2000-02-11  Theodore Ts'o  <tytso@valinux.com>
+
+	* configure.in: Define HAVE_EXT2_IOCTLS based solely on the OS
+		type, instead of basising on whether a test program
+		compiles.  This was screwing up on some Linux kernel
+		header files, and we know the Hurd doesn't support the
+		ext2 ioctls anyway.
+
 2000-02-08  Theodore Ts'o  <tytso@valinux.com>
 
 	* configure.in, aclocal.m4: Add support for GNU gettext

@@ -462,19 +462,13 @@ if test $ac_cv_have_optreset = yes; then
   AC_DEFINE(HAVE_OPTRESET)
 fi
 dnl
-dnl See if using the EXT2 ioctls causes a compile-time barf (as on the Hurd).
+dnl We use the EXT2 ioctls only under Linux
 dnl
-AC_MSG_CHECKING(whether the ext2 ioctls compile)
-AC_CACHE_VAL(e2fsprogs_cv_ioctl_ext2,
-	AC_TRY_COMPILE([#include <linux/ext2_fs.h>
-#include <sys/ioctl.h>],
-		[ioctl (0, EXT2_IOC_SETVERSION, 0);],
-		[e2fsprogs_cv_ioctl_ext2=yes],
-		[e2fsprogs_cv_ioctl_ext2=no]))
-AC_MSG_RESULT($e2fsprogs_cv_ioctl_ext2)
-if test "$e2fsprogs_cv_ioctl_ext2" = yes; then
-  AC_DEFINE(HAVE_EXT2_IOCTLS)
-fi
+case "$host_os" in
+linux*)
+	AC_DEFINE(HAVE_EXT2_IOCTLS)
+	;;
+esac
 dnl
 dnl Linux and Hurd places root files in the / by default
 dnl
