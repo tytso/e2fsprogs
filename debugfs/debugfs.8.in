@@ -8,6 +8,9 @@ debugfs \- ext2/ext3 file system debugger
 .SH SYNOPSIS
 .B debugfs
 [
+.B \-Vwci
+]
+[
 .B \-b
 blocksize
 ]
@@ -24,21 +27,11 @@ cmd_file
 request
 ]
 [
-.B \-V
-]
-[
-[
-.B \-w
-]
-[
-.B \-c
-]
-[
-.B \-i
+.B \-d
+data_source_device
 ]
 [
 device
-]
 ]
 .SH DESCRIPTION
 The 
@@ -76,9 +69,21 @@ no safety checks are in place, and
 .B debugfs 
 may fail in interesting ways if commands such as
 .IR ls ", " dump ", " 
-etc. are tried.  
+etc. are tried without specifying the 
+.I data_source_device
+using the 
+.I \-d
+option.
 .B debugfs 
 is a debugging tool.  It has rough edges!
+.TP
+.I -d data_source_device
+Used with the 
+.I \-i
+option, specifies that
+.I data_source_device
+should be used when reading blocks not found in the ext2 image file.
+This includes data, directory, and indirect blocks.
 .TP
 .I -b blocksize
 Forces the use of the given block size for the file system, rather than

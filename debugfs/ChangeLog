@@ -1,3 +1,9 @@
+2004-07-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c, debugfs.8.in: Add new option -d which allows the
+		system administrator to specify data source of a
+		filesystem being opened via an e2image file.
+
 2004-04-11  Theodore Ts'o  <tytso@mit.edu>
 
 	* util.c (open_pager): Use DEBUGFS_PAGER in preference to PAGER

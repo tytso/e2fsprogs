@@ -186,7 +186,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (inode_bitmap) {
 			blk = (fs->image_header->offset_inodemap /
 			       fs->blocksize);
-			retval = io_channel_read_blk(fs->io, blk,
+			retval = io_channel_read_blk(fs->image_io, blk,
 			     -(inode_nbytes * fs->group_desc_count),
 			     inode_bitmap);
 			if (retval)
@@ -195,7 +195,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (block_bitmap) {
 			blk = (fs->image_header->offset_blockmap /
 			       fs->blocksize);
-			retval = io_channel_read_blk(fs->io, blk, 
+			retval = io_channel_read_blk(fs->image_io, blk, 
 			     -(block_nbytes * fs->group_desc_count),
 			     block_bitmap);
 			if (retval)

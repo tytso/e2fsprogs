@@ -91,6 +91,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	retval = manager->open(name, IO_FLAG_RW, &fs->io);
 	if (retval)
 		goto cleanup;
+	fs->image_io = fs->io;
 	fs->io->app_data = fs;
 	retval = ext2fs_get_mem(strlen(name)+1, &fs->device_name);
 	if (retval)

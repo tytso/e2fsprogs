@@ -485,6 +485,7 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
 	errcode_t	retval;
 	int 		clen, i, inodes_per_block;
 	unsigned int	length;
+	io_channel	io;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -515,6 +516,7 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
 		block_nr += (ino - 1) / inodes_per_block;
 		offset = ((ino - 1) % inodes_per_block) *
 			EXT2_INODE_SIZE(fs->super);
+		io = fs->image_io;
 	} else {
 		group = (ino - 1) / EXT2_INODES_PER_GROUP(fs->super);
 		offset = ((ino - 1) % EXT2_INODES_PER_GROUP(fs->super)) *
@@ -524,9 +526,10 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
 			return EXT2_ET_MISSING_INODE_TABLE;
 		block_nr = fs->group_desc[(unsigned)group].bg_inode_table + 
 			block;
+		io = fs->io;
 	}
 	if (block_nr != fs->icache->buffer_blk) {
-		retval = io_channel_read_blk(fs->io, block_nr, 1,
+		retval = io_channel_read_blk(io, block_nr, 1,
 					     fs->icache->buffer);
 		if (retval)
 			return retval;
@@ -545,7 +548,7 @@ errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
 		memcpy((char *) inode, ptr, clen);
 		length -= clen;
 		
-		retval = io_channel_read_blk(fs->io, block_nr+1, 1,
+		retval = io_channel_read_blk(io, block_nr+1, 1,
 					     fs->icache->buffer);
 		if (retval) {
 			fs->icache->buffer_blk = 0;

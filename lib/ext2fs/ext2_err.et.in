@@ -284,5 +284,8 @@ ec	EXT2_ET_BAD_EA_BLOCK_NUM,
 ec	EXT2_ET_TOO_MANY_INODES,
 	"Cannot create filesystem with requested number of inodes"
 
+ec	EXT2_ET_NOT_IMAGE_FILE,
+	"E2image snapshot not in use"
+
 	end
 

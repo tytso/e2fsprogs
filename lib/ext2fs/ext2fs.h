@@ -242,6 +242,7 @@ struct struct_ext2_filsys {
 	 * Inode cache
 	 */
 	struct ext2_inode_cache		*icache;
+	io_channel			image_io;
 };
 
 #if EXT2_FLAT_INCLUDES
@@ -852,6 +853,9 @@ extern errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			     ext2_filsys *ret_fs);
 extern blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, 
 					 dgrp_t i);
+errcode_t ext2fs_get_data_io(ext2_filsys fs, io_channel *old_io);
+errcode_t ext2fs_set_data_io(ext2_filsys fs, io_channel new_io);
+errcode_t ext2fs_rewrite_to_io(ext2_filsys fs, io_channel new_io);
 
 /* get_pathname.c */
 extern errcode_t ext2fs_get_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino,

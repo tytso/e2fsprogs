@@ -96,6 +96,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
 			       &fs->io);
 	if (retval)
 		goto cleanup;
+	fs->image_io = fs->io;
 	fs->io->app_data = fs;
 	retval = ext2fs_get_mem(strlen(name)+1, &fs->device_name);
 	if (retval)
@@ -271,3 +272,36 @@ cleanup:
 	return retval;
 }
 
+/*
+ * Set/get the filesystem data I/O channel.
+ * 
+ * These functions are only valid if EXT2_FLAG_IMAGE_FILE is true.
+ */
+errcode_t ext2fs_get_data_io(ext2_filsys fs, io_channel *old_io)
+{
+	if ((fs->flags & EXT2_FLAG_IMAGE_FILE) == 0)
+		return EXT2_ET_NOT_IMAGE_FILE;
+	if (old_io) {
+		*old_io = (fs->image_io == fs->io) ? 0 : fs->io;
+	}
+	return 0;
+}
+
+errcode_t ext2fs_set_data_io(ext2_filsys fs, io_channel new_io)
+{
+	if ((fs->flags & EXT2_FLAG_IMAGE_FILE) == 0)
+		return EXT2_ET_NOT_IMAGE_FILE;
+	fs->io = new_io ? new_io : fs->image_io;
+	return 0;
+}
+
+errcode_t ext2fs_rewrite_to_io(ext2_filsys fs, io_channel new_io)
+{
+	if ((fs->flags & EXT2_FLAG_IMAGE_FILE) == 0)
+		return EXT2_ET_NOT_IMAGE_FILE;
+	fs->io = fs->image_io = new_io;
+	fs->flags |= EXT2_FLAG_DIRTY | EXT2_FLAG_RW | 
+		EXT2_FLAG_BB_DIRTY | EXT2_FLAG_IB_DIRTY;
+	fs->flags &= ~EXT2_FLAG_IMAGE_FILE;
+	return 0;
+}

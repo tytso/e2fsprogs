@@ -1,3 +1,26 @@
+2004-07-28  Theodore Ts'o  <tytso@mit.edu>
+
+	* rw_bitmaps.c (read_bitmaps), block.c (block_iterate_ind,
+		block_iterate_dind, block_iterate_tind), inode.c
+		(ext2fs_read_inode): If EXT2_FLAG_IMAGE_FILE is set, so
+		read the metadata from fs->image_io instead of fs->io.
+
+	* initialize.c (ext2fs_initialize), openfs.c (ext2fs_open):
+		Initialize fs->image_io to be the same as fs->io.
+	
+	* ext2_err.et.in (EXT2_ET_NOT_IMAGE_FILE): Add new error code. 
+
+	* openfs.c (ext2fs_get_data_io, ext2fs_set_data_io,
+		ext2fs_rewrite_to_io): New functions that allow
+		applications to manipulate fs->image_io and fs->io safely.
+
+	* freefs.c (ext2fs_free): If fs->image_io is different fs->io,
+		then call io_channel_close on fs->image_io.
+
+	* ext2fs.h: Add image_io element to the ext2_filsys data
+		structure.  Add ext2fs_get_data_io() ext2fs_set_data_io(),
+		and ext2fs_rewrite_to_io() prototypes.
+
 2004-05-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* closefs.c (ext2fs_flush): Make sure the master superblock is

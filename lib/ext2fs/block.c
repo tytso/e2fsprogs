@@ -59,7 +59,8 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	if (ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) {
+	if ((ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
+	    (ctx->fs->io != ctx->fs->image_io)) {
 		ctx->errcode = 0;
 		memset(ctx->ind_buf, 0, ctx->fs->blocksize);
 	} else
@@ -153,7 +154,8 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	if (ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) {
+	if ((ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
+	    (ctx->fs->io != ctx->fs->image_io)) {
 		ctx->errcode = 0;
 		memset(ctx->dind_buf, 0, ctx->fs->blocksize);
 	} else
@@ -249,7 +251,8 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 		ret |= BLOCK_ERROR;
 		return ret;
 	}
-	if (ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) {
+	if ((ctx->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
+	    (ctx->fs->io != ctx->fs->image_io)) {
 		ctx->errcode = 0;
 		memset(ctx->tind_buf, 0, ctx->fs->blocksize);
 	} else

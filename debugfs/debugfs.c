@@ -41,14 +41,31 @@ ext2_filsys	current_fs = NULL;
 ext2_ino_t	root, cwd;
 
 static void open_filesystem(char *device, int open_flags, blk_t superblock,
-			    blk_t blocksize, int catastrophic)
+			    blk_t blocksize, int catastrophic, 
+			    char *data_filename)
 {
 	int	retval;
+	io_channel data_io = 0;
 
 	if (superblock != 0 && blocksize == 0) {
 		com_err(device, 0, "if you specify the superblock, you must also specify the block size");
 		current_fs = NULL;
 		return;
+	}
+
+	if (data_filename) {
+		if ((open_flags & EXT2_FLAG_IMAGE_FILE) == 0) {
+			com_err(device, 0, 
+				"The -d option is only valid when reading an e2image file");
+			current_fs = NULL;
+			return;
+		}
+		retval = unix_io_manager->open(data_filename, 0, &data_io);
+		if (retval) {
+			com_err(data_filename, 0, "while opening data source");
+			current_fs = NULL;
+			return;
+		}
 	}
 
 	if (catastrophic && (open_flags & EXT2_FLAG_RW)) {
@@ -79,6 +96,16 @@ static void open_filesystem(char *device, int open_flags, blk_t superblock,
 			goto errout;
 		}
 	}
+
+	if (data_io) {
+		retval = ext2fs_set_data_io(current_fs, data_io);
+		if (retval) {
+			com_err(device, retval, 
+				"while setting data source");
+			goto errout;
+		}
+	}
+
 	root = cwd = EXT2_ROOT_INO;
 	return;
 
@@ -96,10 +123,11 @@ void do_open_filesys(int argc, char **argv)
 	int	catastrophic = 0;
 	blk_t	superblock = 0;
 	blk_t	blocksize = 0;
-	int open_flags = 0;
+	int	open_flags = 0;
+	char	*data_filename;
 	
 	reset_getopt();
-	while ((c = getopt (argc, argv, "iwfcb:s:")) != EOF) {
+	while ((c = getopt (argc, argv, "iwfcb:s:d:")) != EOF) {
 		switch (c) {
 		case 'i':
 			open_flags |= EXT2_FLAG_IMAGE_FILE;
@@ -112,6 +140,9 @@ void do_open_filesys(int argc, char **argv)
 			break;
 		case 'c':
 			catastrophic = 1;
+			break;
+		case 'd':
+			data_filename = optarg;
 			break;
 		case 'b':
 			blocksize = parse_ulong(optarg, argv[0],
@@ -137,7 +168,8 @@ void do_open_filesys(int argc, char **argv)
 	if (check_fs_not_open(argv[0]))
 		return;
 	open_filesystem(argv[optind], open_flags,
-			superblock, blocksize, catastrophic);
+			superblock, blocksize, catastrophic, 
+			data_filename);
 }
 
 void do_lcd(int argc, char **argv)
@@ -1631,18 +1663,22 @@ int main(int argc, char **argv)
 	blk_t		superblock = 0;
 	blk_t		blocksize = 0;
 	int		catastrophic = 0;
+	char		*data_filename = 0;
 	
 	initialize_ext2_error_table();
 	fprintf (stderr, "debugfs %s (%s)\n", E2FSPROGS_VERSION,
 		 E2FSPROGS_DATE);
 
-	while ((c = getopt (argc, argv, "iwcR:f:b:s:V")) != EOF) {
+	while ((c = getopt (argc, argv, "iwcR:f:b:s:Vd:")) != EOF) {
 		switch (c) {
 		case 'R':
 			request = optarg;
 			break;
 		case 'f':
 			cmd_file = optarg;
+			break;
+		case 'd':
+			data_filename = optarg;
 			break;
 		case 'i':
 			open_flags |= EXT2_FLAG_IMAGE_FILE;
@@ -1673,7 +1709,8 @@ int main(int argc, char **argv)
 	}
 	if (optind < argc)
 		open_filesystem(argv[optind], open_flags,
-				superblock, blocksize, catastrophic);
+				superblock, blocksize, catastrophic,
+				data_filename);
 	
 	sci_idx = ss_create_invocation("debugfs", "0.0", (char *) NULL,
 				       &debug_cmds, &retval);
