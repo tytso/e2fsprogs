@@ -1,5 +1,12 @@
 2001-01-03    <tytso@snap.thunk.org>
 
+	* Makefile.in: Link in libe2p when creating libext2fs as a shared
+		library, since mkjournal.c now references fsetflags().
+
+	* mkjournal.c (ext2fs_add_journal_inode): Folded in Andreas
+		Dilger's changes (with fixups) to allow on-line creation
+		of a journal file.
+
 	* ext2fs.h, closefs.c (ext2fs_flush): Add new flag,
 		EXT2_FLAG_SUPER_ONLY, which the close routines to only
 		update the superblock, and not the group descriptors.

@@ -53,35 +53,19 @@ static void init_journal_superblock(journal_superblock_t *jsb,
 	jsb->s_first = htonl(1);
 	jsb->s_sequence = htonl(1);
 }
-	
+
 /*
- * This function adds a journal device to a filesystem
+ * This function writes a journal using POSIX routines.  It is used
+ * for creating external journals and creating journals on live
+ * filesystems.
  */
-errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
+static errcode_t write_journal_file(ext2_filsys fs, char *device,
 				    blk_t size, int flags)
 {
-	journal_superblock_t	jsb;
-	struct stat	st;
 	errcode_t	retval;
 	char		*buf = 0;
-	blk_t		dev_size;
+	journal_superblock_t	jsb;
 	int		i, fd, ret_size;
-
-	/* Make sure the device exists and is a block device */
-	if (stat(device, &st) < 0)
-		return errno;
-	if (!S_ISBLK(st.st_mode))
-		return EXT2_JOURNAL_NOT_BLOCK;	/* Must be a block device */
-	
-	/* Get the size of the device */
-	if ((retval = ext2fs_get_device_size(device, fs->blocksize,
-					     &dev_size)))
-		return retval;
-	
-	if (!size)
-		size = dev_size; /* Default to the size of the device */
-	else if (size > dev_size) 
-		return EINVAL;	/* Requested size bigger than device */
 
 	init_journal_superblock(&jsb, fs->blocksize, size, flags);
 
@@ -108,8 +92,8 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
 	if (ret_size != fs->blocksize)
 		goto errout;
 	memset(buf, 0, fs->blocksize);
-	
-	for (i=1; i < size; i++) {
+
+	for (i = 1; i < size; i++) {
 		ret_size = write(fd, buf, fs->blocksize);
 		if (ret_size < 0) {
 			retval = errno;
@@ -120,19 +104,14 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
 	}
 	close(fd);
 
-	fs->super->s_journal_dev = st.st_rdev;
-	fs->super->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
-	ext2fs_mark_super_dirty(fs);
-
-	return 0;
+	retval = 0;
 errout:
-	if (buf)
-		free(buf);
+	free(buf);
 	return retval;
 }
 
 /*
- * Helper function for creating the journal in the filesystem
+ * Helper function for creating the journal using direct I/O routines
  */
 struct mkjournal_struct {
 	int		num_blocks;
@@ -193,9 +172,10 @@ static int mkjournal_proc(ext2_filsys		fs,
 }
 
 /*
- * This function adds a journal inode to a filesystem
+ * This function creates a journal using direct I/O routines.
  */
-errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
+static errcode_t write_journal_inode(ext2_filsys fs, ino_t journal_ino,
+				     blk_t size, int flags)
 {
 	journal_superblock_t	jsb;
 	errcode_t		retval;
@@ -208,7 +188,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 	if ((retval = ext2fs_read_bitmaps(fs)))
 		return retval;
 
-	if ((retval = ext2fs_read_inode(fs, EXT2_JOURNAL_INO, &inode)))
+	if ((retval = ext2fs_read_inode(fs, journal_ino, &inode)))
 		return retval;
 
 	if (inode.i_blocks > 0)
@@ -227,13 +207,13 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 	es.buf = buf;
 	es.err = 0;
 
-	retval = ext2fs_block_iterate2(fs, EXT2_JOURNAL_INO, BLOCK_FLAG_APPEND,
+	retval = ext2fs_block_iterate2(fs, journal_ino, BLOCK_FLAG_APPEND,
 				       0, mkjournal_proc, &es);
 	free(buf);
 	if (es.err)
 		return es.err;
 
-	if ((retval = ext2fs_read_inode(fs, EXT2_JOURNAL_INO, &inode)))
+	if ((retval = ext2fs_read_inode(fs, journal_ino, &inode)))
 		return retval;
 
  	inode.i_size += fs->blocksize * size;
@@ -242,11 +222,99 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 	inode.i_links_count = 1;
 	inode.i_mode = LINUX_S_IFREG | 0600;
 
-	if ((retval = ext2fs_write_inode(fs, EXT2_JOURNAL_INO, &inode)))
+	if ((retval = ext2fs_write_inode(fs, journal_ino, &inode)))
 		return retval;
 
+	return 0;
+}
+
+/*
+ * This function adds a journal device to a filesystem
+ */
+errcode_t ext2fs_add_journal_device(ext2_filsys fs, char *device,
+				    blk_t size, int flags)
+{
+	struct stat	st;
+	errcode_t	retval;
+	blk_t		dev_size;
+
+	/* Make sure the device exists and is a block device */
+	if (stat(device, &st) < 0)
+		return errno;
+	if (!S_ISBLK(st.st_mode))
+		return EXT2_JOURNAL_NOT_BLOCK;	/* Must be a block device */
+
+	/* Get the size of the device */
+	if ((retval = ext2fs_get_device_size(device, fs->blocksize,
+					     &dev_size)))
+		return retval;
+
+	if (!size)
+		size = dev_size; /* Default to the size of the device */
+	else if (size > dev_size)
+		return EINVAL;	/* Requested size bigger than device */
+
+	retval = write_journal_file(fs, device, size, flags);
+	if (retval)
+		return retval;
+	
+	fs->super->s_journal_inum = 0;
+	fs->super->s_journal_dev = st.st_rdev;
+	memset(fs->super->s_journal_uuid, 0,
+	       sizeof(fs->super->s_journal_uuid));
 	fs->super->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
-	fs->super->s_journal_inum = EXT2_JOURNAL_INO;
+	ext2fs_mark_super_dirty(fs);
+}
+
+/*
+ * This function adds a journal inode to a filesystem, using either
+ * POSIX routines if the filesystem is mounted, or using direct I/O
+ * functions if it is not.
+ */
+errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
+{
+	errcode_t		retval;
+	ino_t			journal_ino;
+	struct stat		st;
+	char			jfile[1024];
+	int			fd, mount_flags;
+
+	if (retval = ext2fs_check_mount_point(fs->device_name, &mount_flags,
+					      jfile, sizeof(jfile)-10))
+		return retval;
+
+	if (mount_flags & EXT2_MF_MOUNTED) {
+		strcat(jfile, "/.journal");
+
+		/* Create the journal file */
+		if ((fd = open(jfile, O_CREAT|O_WRONLY, 0600)) < 0)
+			return errno;
+		close(fd);
+
+		if ((retval = write_journal_file(fs, jfile, size, flags)))
+			return retval;
+
+		/* Get inode number of the journal file */
+		if (stat(jfile, &st) < 0)
+			return errno;
+
+		if ((retval = fsetflags(jfile,
+					EXT2_NODUMP_FL | EXT2_IMMUTABLE_FL)))
+			return retval;
+		
+		journal_ino = st.st_ino;
+	} else {
+		journal_ino = EXT2_JOURNAL_INO;
+		if ((retval = write_journal_inode(fs, journal_ino,
+						  size, flags)))
+			return retval;
+	}
+	
+	fs->super->s_journal_inum = journal_ino;
+	fs->super->s_journal_dev = 0;
+	memset(fs->super->s_journal_uuid, 0,
+	       sizeof(fs->super->s_journal_uuid));
+	fs->super->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 
 	ext2fs_mark_super_dirty(fs);
 	return 0;

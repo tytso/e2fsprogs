@@ -1,5 +1,5 @@
-#ifndef _LINUX_TYPES_H
-#define _LINUX_TYPES_H
+#ifndef _ASM_TYPES_H
+#define _ASM_TYPES_H
 
 typedef unsigned char __u8;
 typedef signed char __s8;
