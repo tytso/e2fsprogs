@@ -1,5 +1,12 @@
 2003-07-06  Theodore Ts'o  <tytso@mit.edu>
 
+	* mke2fs.c (PRS, main): If CONFIG_TESTIO_DEBUG, then use the
+		testio manager.
+
+	* mke2fs.c (PRS): Round down the default filesystem size so that
+		it is an even multiple of the page size, to work around
+		buffer cache kernel bug.
+
 	* badblocks.c: Fix gcc -Wall nitpicks (signed/unsigned type issues)
 
 	* blkid.c: Fix gcc -Wall nitpicks (missing #include <string.h>)

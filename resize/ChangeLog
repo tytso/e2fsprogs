@@ -1,3 +1,9 @@
+2003-07-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* main.c (main): Round the default size of the filesystem to be an
+		even multiple of the pagesize to work around a potential
+		Linux kernel bug.
+
 2003-06-24    <tytso@snap.thunk.org>
 
 	* resize2fs.c (block_mover): Don't move blocks associated with the

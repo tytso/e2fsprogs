@@ -138,6 +138,8 @@ int main (int argc, char ** argv)
 	io_manager	io_ptr;
 	char		*tmp;
 	struct stat	st_buf;
+	int		sys_page_size = 4096;
+	long		sysval;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -238,6 +240,18 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 	
+	/* Determine the system page size if possible */
+#ifdef HAVE_SYSCONF
+#if (!defined(_SC_PAGESIZE) && defined(_SC_PAGE_SIZE))
+#define _SC_PAGESIZE _SC_PAGE_SIZE
+#endif
+#ifdef _SC_PAGESIZE
+	sysval = sysconf(_SC_PAGESIZE);
+	if (sysval > 0)
+		sys_page_size = sysval;
+#endif /* _SC_PAGESIZE */
+#endif /* HAVE_SYSCONF */
+
 	/*
 	 * Get the size of the containing partition, and use this for
 	 * defaults and for making sure the new filesystme doesn't
@@ -256,8 +270,12 @@ int main (int argc, char ** argv)
 		else if (units > fs->blocksize)
 			new_size = new_size * (units / fs->blocksize);
 	}
-	if (!new_size)
+	if (!new_size) {
 		new_size = max_size;
+		/* Round down to an even multiple of a pagesize */
+		if (sys_page_size > fs->blocksize)
+			new_size &= ~((sys_page_size / fs->blocksize)-1);
+	}
 	
 	/*
 	 * If we are resizing a plain file, and it's not big enough,

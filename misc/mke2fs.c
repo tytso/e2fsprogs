@@ -1082,10 +1082,17 @@ static void PRS(int argc, char *argv[])
 	 */
 	if (blocksize <= 0 && journal_device) {
 		ext2_filsys	jfs;
+		io_manager	io_ptr;
 
+#ifdef CONFIG_TESTIO_DEBUG
+		io_ptr = test_io_manager;
+		test_io_backing_manager = unix_io_manager;
+#else
+		io_ptr = unix_io_manager;
+#endif
 		retval = ext2fs_open(journal_device,
 				     EXT2_FLAG_JOURNAL_DEV_OK, 0,
-				     0, unix_io_manager, &jfs);
+				     0, io_ptr, &jfs);
 		if (retval) {
 			com_err(program_name, retval,
 				_("while trying to open journal device %s\n"),
@@ -1169,6 +1176,9 @@ static void PRS(int argc, char *argv[])
 				exit(1);
 			}
 			param.s_blocks_count = dev_size;
+			if (sys_page_size > EXT2_BLOCK_SIZE(&param))
+				param.s_blocks_count &= ~((sys_page_size /
+							   EXT2_BLOCK_SIZE(&param))-1);
 		}
 		
 	} else if (!force && (param.s_blocks_count > dev_size)) {
@@ -1249,6 +1259,7 @@ int main (int argc, char *argv[])
 	badblocks_list	bb_list = 0;
 	int		journal_blocks;
 	int		i, val;
+	io_manager	io_ptr;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -1258,11 +1269,18 @@ int main (int argc, char *argv[])
 #endif
 	PRS(argc, argv);
 
+#ifdef CONFIG_TESTIO_DEBUG
+	io_ptr = test_io_manager;
+	test_io_backing_manager = unix_io_manager;
+#else
+	io_ptr = unix_io_manager;
+#endif
+
 	/*
 	 * Initialize the superblock....
 	 */
 	retval = ext2fs_initialize(device_name, 0, &param,
-				   unix_io_manager, &fs);
+				   io_ptr, &fs);
 	if (retval) {
 		com_err(device_name, retval, _("while setting up superblock"));
 		exit(1);
