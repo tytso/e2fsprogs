@@ -1,3 +1,9 @@
+e2fsprogs (1.36rc3-2) unstable; urgency=low
+
+  * Remove debugging printf's from e2image's -s code.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 19 Jan 2005 02:25:53 -0500
+
 e2fsprogs (1.36rc3-1) unstable; urgency=low
 
   * New upstream release

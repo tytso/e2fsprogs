@@ -223,8 +223,6 @@ static int process_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 
 	p = (struct process_block_struct *) priv_data;
 
-	printf("block %d, ino %d, is_dir=%d\n", *block_nr, p->ino, p->is_dir);
-
 	ext2fs_mark_block_bitmap(meta_block_map, *block_nr);
 	if (scramble_block_map && p->is_dir && blockcnt >= 0) 
 		ext2fs_mark_block_bitmap(scramble_block_map, *block_nr);
@@ -344,8 +342,6 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 	char *p, *end, *cp;
 	struct ext2_dir_entry_2 *dirent;
 	int rec_len, id, len;
-
-	printf("Scrambling directory block %d\n", blk);
 
 	end = buf + fs->blocksize;
 	for (p = buf; p < end-8; p += rec_len) {
