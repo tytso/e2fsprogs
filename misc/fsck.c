@@ -699,7 +699,7 @@ static int device_already_active(char *device)
 
 	base = base_device(device);
 	if (!base)
-		return 0;
+		return 1;
 	for (inst = instance_list; inst; inst = inst->next) {
 		if (!strcmp(base, inst->base_device)) {
 			free(base);

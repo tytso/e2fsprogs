@@ -1,3 +1,9 @@
+2001-05-01  Theodore Tso  <tytso@valinux.com>
+
+	* fsck.c (device_already_active): If we're not able to determine
+		the base device, we should assume that the device is
+		already active in order to force serialization.
+
 2001-04-26  Theodore Tso  <tytso@valinux.com>
 
 	* tune2fs.c (parse_tune2fs_options): Interpret -c 0 as -c -1 (for
