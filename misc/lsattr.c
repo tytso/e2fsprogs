@@ -125,10 +125,14 @@ static int lsattr_dir_proc (const char * dir_name, struct dirent * de,
 {
 	STRUCT_STAT	st;
 	char *path;
+	int dir_len = strlen(dir_name);
 
-	path = malloc(strlen (dir_name) + 1 + strlen (de->d_name) + 1);
+	path = malloc(dir_len + strlen (de->d_name) + 2);
 
-	sprintf (path, "%s/%s", dir_name, de->d_name);
+	if (dir_len && dir_name[dir_len-1] == '/')
+		sprintf (path, "%s%s", dir_name, de->d_name);
+	else
+		sprintf (path, "%s/%s", dir_name, de->d_name);
 	if (LSTAT (path, &st) == -1)
 		perror (path);
 	else {

@@ -1,5 +1,9 @@
 2004-09-24  Theodore Ts'o  <tytso@mit.edu>
 
+	* lsattr.c (lsattr_dir_proc): Avoid double // when listing the
+		root directory, or when there is a trailing '/' in the
+		directory name.  (Addresses Debian Bug #272943)
+
 	* Makefile.in: Make sure /usr/lib is created for when we install
 		e2initrd_helper.
 
