@@ -34,7 +34,7 @@ ac_help="$ac_help
 ac_help="$ac_help
   --enable-evms-10	  use EVMS 1.0 ABI (instead of EVMS 1.2)"
 ac_help="$ac_help
-  --enable-evms-11	  use EVMS 1.1 ABI (instead of EVMS 1.1)"
+  --enable-evms-11	  use EVMS 1.1 ABI (instead of EVMS 1.2)"
 ac_help="$ac_help
   --enable-dll-shlibs	  select DLL libraries"
 ac_help="$ac_help

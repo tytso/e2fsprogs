@@ -1,3 +1,7 @@
+2003-05-13  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Fix typo in help message for --enable-evms-11
+
 2003-05-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* configure.in, configure: Add --enable-testio-debug configure option. 
