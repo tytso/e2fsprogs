@@ -1,3 +1,9 @@
+1999-05-03    <tytso@rsts-11.mit.edu>
+
+	* compare.c (uuid_compare): Change sense of uuid_compare so that
+		its return values match that of memcpy and the
+		uuid_compare() found in Paul Leach's internet-draft.
+
 1999-03-11  Andreas Dilger <adilger@enel.ucalgary.ca>
 
 	* Created man pages for libuuid functions.
