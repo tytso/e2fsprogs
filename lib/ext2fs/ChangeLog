@@ -1,7 +1,9 @@
 2000-05-25    <tytso@snap.thunk.org>
 
 	* getsize.c (ext2fs_get_device_size): Use open64() instead of
-		open() if it exists.
+		open() if it exists.  Under linux, manually define the
+		ioctl for BLKGETSIZE if it isn't already defined and it's
+		safe to do so.
 
 	* unix_io.c (unix_open): Use open64() instead of open() if it
 		exists. 

@@ -29,6 +29,10 @@
 #include <sys/disklabel.h>
 #endif /* HAVE_SYS_DISKLABEL_H */
 
+#if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
+#define BLKGETSIZE _IO(0x12,96)	/* return device size */
+#endif
+
 #if EXT2_FLAT_INCLUDES
 #include "ext2_fs.h"
 #else
