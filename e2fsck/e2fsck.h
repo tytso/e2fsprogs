@@ -261,6 +261,7 @@ extern void ehandler_init(io_channel channel);
 
 /* super.c */
 void check_super_block(e2fsck_t ctx);
+errcode_t e2fsck_get_device_size(e2fsck_t ctx);
 
 /* swapfs.c */
 void swap_filesys(e2fsck_t ctx);

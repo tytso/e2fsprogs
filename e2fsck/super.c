@@ -62,8 +62,6 @@ errcode_t e2fsck_get_device_size(e2fsck_t ctx)
 				       EXT2_BLOCK_SIZE(ctx->fs->super),
 				       &ctx->num_blocks));
 }
-#else
-extern errcode_t e2fsck_get_device_size(e2fsck_t ctx);
 #endif
 
 void check_super_block(e2fsck_t ctx)
@@ -134,8 +132,8 @@ void check_super_block(e2fsck_t ctx)
 		return;
 	}
 
-	should_be = s->s_frags_per_group /
-		(s->s_log_block_size - s->s_log_frag_size + 1);
+	should_be = s->s_frags_per_group >>
+		(s->s_log_block_size - s->s_log_frag_size);		
 	if (s->s_blocks_per_group != should_be) {
 		pctx.blk = s->s_blocks_per_group;
 		pctx.blk2 = should_be;

@@ -85,7 +85,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 #endif
 	struct problem_context	pctx;
 	__u16	link_count, link_counted;
-	int	group, max, j;
+	int	group, max;
 	
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);

@@ -33,7 +33,7 @@ int fgetversion (const char * name, unsigned long * version)
 	fd = open (name, O_RDONLY|O_NONBLOCK);
 	if (fd == -1)
 		return - 1;
-	r = ioctl (fd, EXT2_IOC_GETVERSION, ver);
+	r = ioctl (fd, EXT2_IOC_GETVERSION, &ver);
 	*version = ver;
 	close (fd);
 	return r;

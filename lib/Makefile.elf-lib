@@ -41,9 +41,9 @@ installdirs:: installdirs-elf-lib
 install-shlibs install:: $(ELF_LIB) installdirs-elf-lib
 	$(INSTALL_PROGRAM) $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
 	$(STRIP) --strip-debug \
-		$(DESTDIR)$(DLL_INSTALL_DIR)/$(ELF_LIB)
-	$(LN_S) -f $(ELF_LIB) $(DESTDIR)$(DLL_INSTALL_DIR)/$(ELF_SONAME)
-	$(LN_S) -f $(DLL_INSTALL_DIR)/$(ELF_SONAME) \
+		$(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_LIB)
+	$(LN_S) -f $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_SONAME)
+	$(LN_S) -f $(ELF_INSTALL_DIR)/$(ELF_SONAME) \
 		$(DESTDIR)$(ulibdir)/$(ELF_IMAGE).so
 	-ldconfig
 

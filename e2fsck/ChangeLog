@@ -1,3 +1,17 @@
+1998-03-29  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* super.c, e2fsck.h: Always declare e2fsck_get_device_size() as an
+		extern in e2fsck.h to prevent -Wall warnings.
+
+	* pass4.c (e2fsck_pass4): Remove unused variable 'j'.
+
+1998-03-28  Theodore Ts'o  <tytso@rsts-11.mit.edu>
+
+	* super.c (check_super_block): Fix broken superblock sanity check
+		when calculating blocks_per_group if s_log_frag_size !=
+		s_log_block_size.  Since we don't support fragments, this
+		isn't a bug deal, but it's good to get it fixed.
+
 1998-03-23  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
 	* unix.c: Fix bug in check of feature set, to make sure we can
