@@ -25,9 +25,9 @@ The operator `+' causes the selected attributes to be added to the
 existing attributes of the files; `-' causes them to be removed; and
 `=' causes them to be the only attributes that the files have.
 .PP
-The letters `ASacdisu' select the new attributes for the files: 
+The letters `ASacdijsu' select the new attributes for the files: 
 don't update atime (A), synchronous updates (S), append only (a), 
-compressed (c), immutable (i), no dump (d),
+compressed (c), no dump (d), immutable (i), data journalling (j),
 secure deletion (s), and undeletable (u).
 .SH OPTIONS
 .TP
@@ -61,6 +61,12 @@ A file with the `i' attribute cannot be modified: it cannot be deleted or
 renamed, no link can be created to this file and no data can be written
 to the file. Only the superuser can set or clear this attribute.
 .PP
+A file with the `j' attribute has all of its data written to the ext3
+journal before being written to the file itself, if the filesystem is
+mounted with the "data=ordered" or "data=writeback" options.  When the
+filesystem is mounted with the "data=journalled" option all file data
+is already journalled and this attribute has no effect.
+.PP
 When a file with the `s' attribute set is deleted, its blocks are zeroed and
 written back to the disk.
 .PP
@@ -76,9 +82,10 @@ This allows the user to ask for its undeletion.
 was written by Remy Card <Remy.Card@linux.org>.
 .SH BUGS AND LIMITATIONS
 As of Linux 2.2, the `c', 's',  and `u' attribute are not honored 
-by the kernel code.  
+by the kernel filesystem code.    These attributes will be implemented
+in a future ext2 fs version.
 .PP
-These attributes will be implemented in a future ext2 fs version.
+The `j' option is only useful if the filesystem is mounted as ext3.
 .SH AVAILABILITY
 .B chattr
 is part of the e2fsprogs package and is available for anonymous 

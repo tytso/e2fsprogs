@@ -48,15 +48,15 @@
 
 static const char * program_name = "chattr";
 
-static int add = 0;
-static int rem = 0;
-static int set = 0;
-static int set_version = 0;
+static int add;
+static int rem;
+static int set;
+static int set_version;
 
 static unsigned long version;
 
-static int recursive = 0;
-static int verbose = 0;
+static int recursive;
+static int verbose;
 
 static unsigned long af;
 static unsigned long rf;
@@ -68,142 +68,92 @@ static void fatal_error(const char * fmt_string, int errcode)
 	exit (errcode);
 }
 
-#define usage() fatal_error(_("usage: %s [-RV] [-+=AacdisSu] [-v version] files...\n"), \
+#define usage() fatal_error(_("usage: %s [-RV] [-+=AacdijsSu] [-v version] files...\n"), \
 			     1)
+
+struct flags_char {
+	unsigned long	flag;
+	char 		optchar;
+};
+
+static const struct flags_char flags_array[] = {
+	{ EXT2_NOATIME_FL, 'A' },
+	{ EXT2_SYNC_FL, 'S' },
+	{ EXT2_APPEND_FL, 'a' },
+	{ EXT2_COMPR_FL, 'c' },
+	{ EXT2_NODUMP_FL, 'd' },
+	{ EXT2_IMMUTABLE_FL, 'i' },
+	{ EXT3_JOURNAL_DATA_FL, 'j' },
+	{ EXT2_SECRM_FL, 's' },
+	{ EXT2_UNRM_FL, 'u' },
+	{ 0, 0 }
+};
+
+static unsigned long get_flag(char c)
+{
+	const struct flags_char *fp;
+	
+	for (fp = flags_array; fp->flag != 0; fp++) {
+		if (fp->optchar == c)
+			return fp->flag;
+	}
+	return 0;
+}
+
 
 static int decode_arg (int * i, int argc, char ** argv)
 {
 	char * p;
 	char * tmp;
+	unsigned long fl;
 
 	switch (argv[*i][0])
 	{
 	case '-':
-		for (p = &argv[*i][1]; *p; p++)
-			switch (*p)
-			{
-			case 'A':
-				rf |= EXT2_NOATIME_FL;
-				rem = 1;
-				break;
-			case 'R':
+		for (p = &argv[*i][1]; *p; p++) {
+			if (*p == 'R') {
 				recursive = 1;
-				break;
-			case 'S':
-				rf |= EXT2_SYNC_FL;
-				rem = 1;
-				break;
-			case 'V':
+				continue;
+			}
+			if (*p == 'V') {
 				verbose = 1;
-				break;
-			case 'a':
-				rf |= EXT2_APPEND_FL;
-				rem = 1;
-				break;
-			case 'c':
-				rf |= EXT2_COMPR_FL;
-				rem = 1;
-				break;
-			case 'd':
-				rf |= EXT2_NODUMP_FL;
-				rem = 1;
-				break;
-			case 'i':
-				rf |= EXT2_IMMUTABLE_FL;
-				rem = 1;
-				break;
-			case 's':
-				rf |= EXT2_SECRM_FL;
-				rem = 1;
-				break;
-			case 'u':
-				rf |= EXT2_UNRM_FL;
-				rem = 1;
-				break;
-			case 'v':
+				continue;
+			}
+			if (*p == 'v') {
 				(*i)++;
 				if (*i >= argc)
 					usage ();
 				version = strtol (argv[*i], &tmp, 0);
-				if (*tmp)
-				{
+				if (*tmp) {
 					com_err (program_name, 0,
-						 _("bad version - %s\n"), argv[*i]);
+						 _("bad version - %s\n"), 
+						 argv[*i]);
 					usage ();
 				}
 				set_version = 1;
-				break;
-			default:
-				fprintf (stderr, _("%s: Unrecognized argument: %c\n"),
-					 program_name, *p);
-				usage ();
+				continue;
 			}
+			if ((fl = get_flag(*p)) == 0)
+				usage();
+			rf |= fl;
+			rem = 1;
+		}
 		break;
 	case '+':
 		add = 1;
-		for (p = &argv[*i][1]; *p; p++)
-			switch (*p)
-			{
-			case 'A':
-				af |= EXT2_NOATIME_FL;
-				break;
-			case 'S':
-				af |= EXT2_SYNC_FL;
-				break;
-			case 'a':
-				af |= EXT2_APPEND_FL;
-				break;
-			case 'c':
-				af |= EXT2_COMPR_FL;
-				break;
-			case 'd':
-				af |= EXT2_NODUMP_FL;
-				break;
-			case 'i':
-				af |= EXT2_IMMUTABLE_FL;
-				break;
-			case 's':
-				af |= EXT2_SECRM_FL;
-				break;
-			case 'u':
-				af |= EXT2_UNRM_FL;
-				break;
-			default:
-				usage ();
-			}
+		for (p = &argv[*i][1]; *p; p++) {
+			if ((fl = get_flag(*p)) == 0)
+				usage();
+			af |= fl;
+		}
 		break;
 	case '=':
 		set = 1;
-		for (p = &argv[*i][1]; *p; p++)
-			switch (*p)
-			{
-			case 'A':
-				sf |= EXT2_NOATIME_FL;
-				break;
-			case 'S':
-				sf |= EXT2_SYNC_FL;
-				break;
-			case 'a':
-				sf |= EXT2_APPEND_FL;
-				break;
-			case 'c':
-				sf |= EXT2_COMPR_FL;
-				break;
-			case 'd':
-				sf |= EXT2_NODUMP_FL;
-				break;
-			case 'i':
-				sf |= EXT2_IMMUTABLE_FL;
-				break;
-			case 's':
-				sf |= EXT2_SECRM_FL;
-				break;
-			case 'u':
-				sf |= EXT2_UNRM_FL;
-				break;
-			default:
-				usage ();
-			}
+		for (p = &argv[*i][1]; *p; p++) {
+			if ((fl = get_flag(*p)) == 0)
+				usage();
+			sf |= fl;
+		}
 		break;
 	default:
 		return EOF;

@@ -1,3 +1,11 @@
+2000-12-31    <tytso@snap.thunk.org>
+
+	* chattr.c (decode_arg, get_flag): Use a table-driven method for
+		decoding the ext2 file flags character options.  Add
+		support for the journaled data flag.
+
+	* chattr.1.in: Document the -j/+j/=j flag.
+
 2000-12-30    <tytso@snap.thunk.org>
 
 	* mke2fs.8.in: Minor clarity edit.
