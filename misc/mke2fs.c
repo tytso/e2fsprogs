@@ -571,7 +571,6 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 		       sect, sect + nsect - 1);
 		exit(1);
 	}
-	memset(buf, 0, 512*nsect);
 
 	if (sect == 0) {
 		/* Check for a BSD disklabel, and don't erase it if so */
@@ -588,6 +587,7 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 		}
 	}
 
+	memset(buf, 0, 512*nsect);
 	io_channel_set_blksize(fs->io, 512);
 	retval = io_channel_write_blk(fs->io, sect, -512*nsect, buf);
 	io_channel_set_blksize(fs->io, fs->blocksize);

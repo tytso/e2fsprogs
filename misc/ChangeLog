@@ -1,3 +1,9 @@
+2002-07-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (zap_sector): Clear the buffer *after* testing for the
+		BSD sector label.  Otherwise the first 512 bytes don't get
+		zapped.  (Addresses Debian bug #147256.)
+
 2002-07-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.8.in: Cleaned up man page, and made it a bit more
