@@ -172,8 +172,10 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 	ext2_inode_scan	scan;
 	struct process_block_struct pb;
 	struct dup_inode *dp;
+	struct dup_block *q, *r;
 	struct problem_context pctx;
-
+	int	i, ea_flag;
+	
 	clear_problem_context(&pctx);
 	
 	fix_problem(ctx, PR_1B_PASS_HEADER, &pctx);
@@ -236,6 +238,21 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 	}
 	ext2fs_close_inode_scan(scan);
 	e2fsck_use_inode_shortcuts(ctx, 0);
+	/*
+	 * Set the num_bad field
+	 */
+	for (q = dup_blk; q; q = q->next_block) {
+		i = 0;
+		ea_flag = 0;
+		for (r = q; r; r = r->next_inode) {
+			if (r->flags & FLAG_EXTATTR) {
+				if (ea_flag++)
+					continue;
+			}
+			i++;
+		}
+		q->num_bad = i;
+	}
 }
 
 static int process_pass1b_block(ext2_filsys fs,
@@ -246,8 +263,7 @@ static int process_pass1b_block(ext2_filsys fs,
 				void *priv_data)
 {
 	struct process_block_struct *p;
-	struct dup_block *dp, *q, *r;
-	int i;
+	struct dup_block *dp, *q;
 	e2fsck_t ctx;
 
 	if (HOLE_BLKADDR(*block_nr))
@@ -285,15 +301,6 @@ static int process_pass1b_block(ext2_filsys fs,
 			dp->next_block = dup_blk;
 			dup_blk = dp;
 		}
-	}
-	/*
-	 * Set the num_bad field
-	 */
-	for (q = dup_blk; q; q = q->next_block) {
-		i = 0;
-		for (r = q; r; r = r->next_inode)
-			i++;
-		q->num_bad = i;
 	}
 	return 0;
 }
@@ -616,6 +623,10 @@ static int clone_file_block(ext2_filsys fs,
 					return BLOCK_ABORT;
 				}
 			}
+#if 0
+			printf("Cloning block %u to %u\n", *block_nr,
+			       new_block);
+#endif
 			retval = io_channel_read_blk(fs->io, *block_nr, 1,
 						     cs->buf);
 			if (retval) {

@@ -1,5 +1,23 @@
 2001-07-07  Theodore Tso  <tytso@valinux.com>
 
+	* pass1b.c (pass1b, process_pass1b_block): Change the num_bad
+		field calculation so that it only counts EA block entries
+		as a single multiply claimed block (since once we clone
+		the EA blocks for one inode, we fix the problem for all of
+		the other inodes).  Also, I moved the num_bad calculation
+		from process_pass1b_block to the end of pass1b.  This
+		fixes a *significant* performance bug in pass1b which hit
+		people who had to had a lot of multiply claimed blocks.
+		(Can you say O(n**3) boys and girls?  I knew you could...
+		Fortunately, this case didn't happen that much in actual
+		practice.)
+
+	* pass1.c (e2fsck_pass1): Defer inodes which have an extended
+		attribute block for later processing to avoid extra seeks
+		across the disk.
+		(process_inode_cmp): If there is no indirect block, sort
+		by the extended attribute (i_file_acl) block.
+
 	* pass1b.c (clone_file_block): Fix bugs when cloning extended
 		attribute blocks.  Moved free of block_buf to after the
 		code which clones the extattr block, and fixed logic for
