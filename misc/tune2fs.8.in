@@ -122,12 +122,12 @@ in weeks.  A value of zero will disable the timedependent checking.
 .B -j
 Add an ext3 journal to the filesystem.  If the 
 .B \-J
-option is not specified, the default journal parameters will used will create
+option is not specified, the default journal parameters will be used to create
 an appropriately sized journal (given the size of the filesystem) 
 stored within the filesystem.  Note that you must be using a kernel
 which has ext3 support in order to actually make use of the journal.
 .TP
-.BR \-J " journal_options"
+.BR \-J " journal-options"
 Override the default ext3 journal parameters. Journal options are comma
 separated, and may take an argument using the equals ('=')  sign.
 The following journal options are supported:
@@ -234,7 +234,7 @@ can be a numerical uid or a user name.  If a user name is given, it
 is converted to a numerical uid before it is stored in the superblock.
 .TP
 .BI \-U " UUID"
-set the universally unique identifier (UUID) of the filesystem to
+Set the universally unique identifier (UUID) of the filesystem to
 .IR UUID .
 The format of the UUID is a series of hex digits separated by hypthens, 
 like this: 

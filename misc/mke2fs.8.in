@@ -91,12 +91,12 @@ mke2fs \- create a Linux second extended file system
 .I blocks-count
 ]
 @JDEV@.sp
-@JDEV@.B "mke2fs \-O journal-dev"
+@JDEV@.B "mke2fs \-O journal_dev"
 @JDEV@[
 @JDEV@.B \-b
 @JDEV@.I block-size
 @JDEV@]
-.\" No journal-device specific journal options yet (size is ignored)
+.\" No external-journal specific journal options yet (size is ignored)
 .\" @JDEV@[
 .\" @JDEV@.B \-J
 .\" @JDEV@.I journal-options
@@ -114,7 +114,7 @@ mke2fs \- create a Linux second extended file system
 @JDEV@[
 @JDEV@.B \-v
 @JDEV@]
-@JDEV@.I journal-device
+@JDEV@.I external-journal
 .SH DESCRIPTION
 .B mke2fs
 is used to create a Linux second extended file system on a device (usually
@@ -180,25 +180,31 @@ The following journal options are supported:
 .TP
 .BI size= journal-size
 Create a journal stored in the filesystem of size
-.IR journal-size .
+.I journal-size 
+megabytes.
 The size of the journal must be at least 1024 filesystem blocks 
 (i.e., 1MB if using 1k blocks, 4MB if using 4k blocks, etc.) 
-and may be no more than 10,240 filesystem blocks.  
+and may be no more than 102,400 filesystem blocks.  
 The journal must fit within the newly created filesystem.  
 @JDEV@.TP
 @JDEV@.BI device= external-journal
-@JDEV@Add an external journal found on a block device named by 
-@JDEV@.I external-journal 
-@JDEV@to the filesystem.  The external 
-@JDEV@journal must have been already created using the command
-@JDEV@.sp
-@JDEV@.B mke2fs \-O journal-dev 
-@JDEV@.IR journal\-device
-@JDEV@.sp
+@JDEV@Attach the filesystem to the journal block device located on
+@JDEV@.IR external-journal .
+@JDEV@The external
+@JDEV@journal must already have been created using the command
+@JDEV@.IP
+@JDEV@.B mke2fs -O journal_dev 
+@JDEV@.IR external-journal
+@JDEV@.IP
+@JDEV@Note that
+@JDEV@.I external-journal
+@JDEV@must have been created with the
+@JDEV@same block size as the new filesystem.
+.RE
+@JDEV@.IP
 @JDEV@Only one of the
 @JDEV@.BR size " or " device
 @JDEV@options can be given for a filesystem.
-.RE
 .TP
 .BI \-l " filename"
 Read the bad blocks list from
@@ -210,10 +216,6 @@ Set the volume label for the filesystem.
 .BI \-m " reserved-blocks-percentage"
 Specify the percentage of the filesystem blocks reserved for 
 the super-user.  This value defaults to 5%.
-.\" .TP
-.\" .BI \-t " test"
-.\" Check the device for bad blocks before creating the file system
-.\" using the specified test.
 .TP
 .B \-M
 Set the last mounted directory for the filesystem.  This might be useful 
@@ -239,7 +241,7 @@ of the
 .B mke2fs
 executable.
 .TP
-.B \-O "\fIfeature\fR[,...]"
+.B "\-O \fIfeature\fR[,...]"
 Create filesystem with given features (filesystem options).
 Currently, the
 .B sparse_super
@@ -252,7 +254,7 @@ is run on a system with a pre-2.2 Linux kernel.
 .B Warning:
 Linux kernels before 2.0.39 and many 2.1 series kernels do not support
 filesystems that use any of these features.  Filesystems that
-may need to mounted on pre-2.2 kernels should be created with the
+may need to mounted on pre-2.2 kernels should be created with 
 .B "\-O none"
 (or
 .B "\-r 0"
@@ -275,11 +277,19 @@ Create an ext3 journal (as if using the
 .B \-j
 option).
 @JDEV@.TP
-@JDEV@.B journal-dev
+@JDEV@.B journal_dev
 @JDEV@Create an external ext3 journal on the given device
-@JDEV@instead of a regular ext2 filesystem.  The external ext3
-@JDEV@journal can be shared by multiple ext2 filesystems.
+@JDEV@instead of a regular ext2 filesystem.
+@JDEV@Note that
+@JDEV@.I external-journal
+@JDEV@must be created with the same
+@JDEV@block size as the filesystems that will be using it.
 .RE
+.TP
+.B \-q
+Quiet execution.  Useful if 
+.B mke2fs
+is run in a script.
 .TP
 .BI \-r " revision"
 Set the filesystem revision for the new filesystem.  Note that 1.2
@@ -288,20 +298,15 @@ create revision 1 filesystems.
 .TP
 .BI \-R " raid-options"
 Set raid-related options for the filesystem.  Raid options are comma
-separated, and may take an argument using the equals ('=')  sign.  The 
+separated, and may take an argument using the equals ('=') sign.  The 
 following options are supported:
 .RS 1.2i
 .TP
 .BI stride= stripe-size
 Configure the filesystem for a RAID array with
-.I strip-size
+.I stripe-size
 filesystem blocks per stripe.
 .RE
-.TP
-.B \-q
-Quiet execution.  Useful if 
-.B mke2fs
-is run in a script.
 .TP
 .B \-S
 Write superblock and group descriptors only.  This is useful if all of
@@ -316,6 +321,10 @@ program should be run immediately after this option is used, and there
 is no guarantee that any data will be salvageable.  It is critical to
 specify the correct filesystem blocksize when using this option,
 or there is no chance of recovery.
+.\" .TP
+.\" .BI \-t " test"
+.\" Check the device for bad blocks before creating the file system
+.\" using the specified test.
 .TP
 .BI \-T " fs-type"
 Specify how the filesystem is going to be used, so that mke2fs can 

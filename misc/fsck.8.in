@@ -132,10 +132,9 @@ Filesystems with a
 .I fs_passno
 value of 0 are skipped and are not checked at all.
 If there are multiple filesystems with the same pass number, 
-e2fsck will attempt to check them in parallel, although it will avoid running 
+fsck will attempt to check them in parallel, although it will avoid running 
 multiple filesystem checks on the same physical disk.  
-Hence, 
-a very common configuration in 
+Hence, a very common configuration in 
 .I /etc/fstab
 files is to set the root filesystem to have a 
 .I fs_passno
@@ -146,7 +145,7 @@ value of 2.  This will allow
 .B fsck
 to automatically run filesystem checkers in parallel if it is advantageous
 to do so.  System administrators might choose
-not to use this configuration  if they need to avoid multiple filesystem
+not to use this configuration if they need to avoid multiple filesystem
 checks running in parallel for some reason --- for example, if the
 machine in question is short on memory so that
 excessive paging is a concern.

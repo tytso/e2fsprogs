@@ -210,7 +210,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		if ((mount_flags & EXT2_MF_MOUNTED) &&
 		    !(mount_flags & EXT2_MF_READONLY)) {
 			fprintf(stderr,
-				_("The HAS_JOURNAL flag may only be "
+				_("The has_journal flag may only be "
 				  "cleared when the filesystem is\n"
 				  "unmounted or mounted "
 				  "read-only.\n"));
@@ -219,7 +219,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		if (sb->s_feature_incompat &
 		    EXT3_FEATURE_INCOMPAT_RECOVER) {
 			fprintf(stderr,
-				_("The NEEDS_RECOVERY flag is set.  "
+				_("The needs_recovery flag is set.  "
 				  "Please run e2fsck before clearing\n"
 				  "the HAS_JOURNAL flag.\n"));
 			exit(1);
@@ -306,7 +306,7 @@ static void add_journal(ext2_filsys fs)
 		retval = ext2fs_add_journal_device(fs, jfs);
 		if (retval) {
 			com_err (program_name, retval,
-				 _("while trying to create journal on device %s"),
+				 _("while adding filesystem to journal on %s"),
 				 journal_device);
 			exit(1);
 		}

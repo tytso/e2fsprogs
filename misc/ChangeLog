@@ -1,3 +1,10 @@
+2001-05-14  Theodore Tso  <tytso@valinux.com>
+
+	* tune2fs.c (update_feature_set): Clean up some printf messages.
+
+	* fsck.8.in, mke2fs.8.in, tune2fs.8.in: Fix typo's and make other
+		clarifications suggested by Andreas Dilger.
+
 2001-05-13  Theodore Tso  <tytso@valinux.com>
 
 	* mke2fs.c (PRS): Integrated changes from Andreas Dilger which
@@ -96,7 +103,7 @@
 2001-03-26  Theodore Tso  <tytso@valinux.com>
 
 	* mke2fs.8.in, tune2fs.8.in: Change man paegs to document that the
-		journal must be bewteen 1024 and 10,240 file system
+		journal must be bewteen 1024 and 102,400 file system
 		blocks.
 
 	* mke2fs.c, tune2fs.c: Change to use figure_journal_size()
@@ -934,8 +941,8 @@ Thu Apr  6 17:50:25 2000  Theodore Y. Ts'o  <tytso@signal.thunk.org>
 
 1999-01-05  Theodore Ts'o  <tytso@rsts-11.mit.edu>
 
-	* mke2fs.c (PRS): Allow the user to specify exactly how many
-		inodes he/she wishes.
+	* mke2fs.c (PRS): Add -N option to allow the user to specify
+		exactly how many inodes he/she wishes.
 
 	* chattr.c, lsattr.c: Only print the version information for the
 		program if the -V option is given.
