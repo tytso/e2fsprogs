@@ -169,13 +169,15 @@ static void check_mount(e2fsck_t ctx)
 		return;
 	}
 
-	printf("%s is mounted.\n\n", ctx->device_name);
-	printf("\007\007\007\007WARNING!!!  Running e2fsck on a mounted filesystem "
-	       "may cause\nSEVERE filesystem damage.\007\007\007\n\n");
-	if (isatty (0) && isatty (1))
-		cont = ask_yn("Do you really want to continue", -1);
-	else
-		cont = 0;
+	printf("%s is mounted.  ", ctx->device_name);
+	if (!isatty(0) || !isatty(1)) {
+		printf("Cannot continue, aborting.\n\n");
+		exit(FSCK_ERROR);
+	}
+	printf("\n\n\007\007\007\007WARNING!!!  "
+	       "Running e2fsck on a mounted filesystem may cause\n"
+	       "SEVERE filesystem damage.\007\007\007\n\n");
+	cont = ask_yn("Do you really want to continue", -1);
 	if (!cont) {
 		printf ("check aborted.\n");
 		exit (0);
