@@ -28,7 +28,7 @@ char *program_name, *device_name;
 
 static volatile void usage (char *prog)
 {
-	fprintf (stderr, "usage: %s [-d debug_flags] [-f] [-F] [-p] device new-size\n\n", prog);
+	fprintf (stderr, "usage: %s [-d debug_flags] [-f] [-F] [-p] device [new-size]\n\n", prog);
 
 #ifdef EXPIRE_TIME
 	check_expire_time(program_name);
@@ -281,5 +281,7 @@ void main (int argc, char ** argv)
 			device_name);
 		ext2fs_close (fs);
 	}
+	printf("The filesystem on %s is now %d blocks long.\n\n",
+	       device_name, new_size);
 	exit (0);
 }
