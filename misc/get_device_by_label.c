@@ -21,13 +21,13 @@
 
 #define EXT2_SUPER_MAGIC    0xEF53
 struct ext2_super_block {
-        u_char   s_dummy1[56];
-        u_char   s_magic[2];
-        u_char   s_dummy2[46];
-        u_char   s_uuid[16];
-        u_char   s_volume_name[16];
+        unsigned char   s_dummy1[56];
+        unsigned char   s_magic[2];
+        unsigned char   s_dummy2[46];
+        unsigned char   s_uuid[16];
+        unsigned char   s_volume_name[16];
 };
-#define ext2magic(s)    ((uint) s.s_magic[0] + (((uint) s.s_magic[1]) << 8))
+#define ext2magic(s)    ((unsigned int) s.s_magic[0] + (((unsigned int) s.s_magic[1]) << 8))
 
 
 static FILE *procpt;
@@ -73,11 +73,10 @@ procptnext(void) {
 
 /* for now, only ext2 is supported */
 static int
-has_right_label(const char *device, int n, const char *label) {
+has_right_label(const char *device, int n, const void *label) {
 
 	/* start with a test for ext2, taken from mount_guess_fstype */
 	int fd;
-	char *s;
 	struct ext2_super_block e2sb;
 
 	fd = open(device, O_RDONLY);
@@ -94,12 +93,15 @@ has_right_label(const char *device, int n, const char *label) {
 	close(fd);
 
 	/* superblock is ext2 - now what is its label? */
-	s = ((n == UUID) ? e2sb.s_uuid : e2sb.s_volume_name);
-	return (strncmp(s, label, 16) == 0);
+	if (n == UUID)
+		return (memcmp(e2sb.s_uuid, label, 16) == 0);
+	else
+		return (strncmp(e2sb.s_volume_name,
+				(const char *) label, 16) == 0);
 }
 
 static char *
-get_spec_by_x(int n, const char *t) {
+get_spec_by_x(int n, const void *t) {
 	char *pt;
 	char device[110];
 
@@ -124,7 +126,7 @@ get_spec_by_x(int n, const char *t) {
 	return NULL;
 }
 
-static u_char
+static unsigned char
 fromhex(char c) {
 	if (isdigit(c))
 		return (c - '0');
@@ -136,7 +138,7 @@ fromhex(char c) {
 
 char *
 get_spec_by_uuid(const char *s0) {
-	u_char uuid[16];
+	unsigned char uuid[16];
 	int i;
 	const char *s = s0;
 

@@ -1,5 +1,10 @@
 1999-10-26    <tytso@valinux.com>
 
+	* get_device_by_label.c (has_right_label): Fixed bug where code
+		used a strncmp to compare a binary UUID value which may
+		contain a NULL.  Fixed GCC warnings; added const to char *
+		typed variables.  Eliminated non-portable use of u_char.
+
 	* mke2fs.c (PRS): Fix gcc warnings; add const to some char *
 		variables, including in struct mke2fs_defaults.
 
