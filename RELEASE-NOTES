@@ -1,9 +1,16 @@
-E2fsprogs 1.35-WIP (December 7, 2003) 
-=====================================
+E2fsprogs 1.35-WIP (December 26, 2003) 
+======================================
 
 Fix a bug in mke2fs which caused -T largefile or -T largefile4 to core
 dump due to a division by zero error.  (Addresses Debian bug #207082)
 
+Fixed a bug in e2fsck which caused it to incorrectly fix a filesystem
+when reconnecting a directory requires creating a lost+found
+directory.  (Addresses Debian bug #219640).
+
+Fixed a bug where e2fsck would bomb out if a journal needed to be
+replayed when using an alternate superblock.
+ 
 E2fsck will give an extra grace period before actually forcing a check
 if the laptop is running on battery.  The next time fsck runs while
 the system is on the AC mains, or after the grace period is exceeded,
@@ -49,6 +56,17 @@ E2fsck will avoid printing the ^A and ^B characters which bracket the
 progress bar when stdout and stdin are a tty device instead of a pipe
 to another program.  (Addresses Debian bug #204137)
 
+Debugfs's mkdir command will automatically expand the directory if
+necessary.  (Addresses Debian Bug: #217892)
+ 
+Fixed a bug in debugfs so that copying a file from /dev/null uses the
+correct mode bits.  (Addresses Debian Bug: #217456)
+ 
+If the environment variables DEBUFS_PAGER and PAGER are not set,
+debugfs now searches for the appropriate pager to use, beginning with
+/usr/bin/pager, and then falling back to 'less' and 'more'.
+(Addresses Debian Bug: #221977)
+
 Fix regression tests so they work correctly when e2fsprogs is compiled
 with configure --disable-htree.
 
@@ -61,9 +79,10 @@ read-write tests, we try to recover after an error so that we can
 continue reading on page-aligned boundaries.  (Addresses Debian Bug
 #203713)
   
-Updated and clarified various man pages.  (Addresses Debian Bug #206845)
+Updated and clarified various man pages.  (Addresses Debian Bug
+#206845, #222606, #214920)
 
-Updated and fixed translations.   (Addresses Debian bug #200086)
+Updated and fixed translations.   (Addresses Debian bugs #200086, #214633)
 
 Fixed various Debian packaging issues (see debian/changelog).
 
