@@ -1,3 +1,10 @@
+2004-09-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2initrd_helper.c: New program which allows initrd scripts to
+		check on the contents of /etc/fstab without (a) needing to
+		mount the root filesystem, and (b) needing /bin/awk in the
+		initrd environment.  (Addresses Debian Bug #247775)
+
 2004-09-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.8.in: Mention that e2fsck -D might be useful after

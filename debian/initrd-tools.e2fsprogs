@@ -1,8 +1,11 @@
 #!/bin/sh
+#
+# /usr/share/initrd-tools/scripts/e2fsprogs
+#
 cp /usr/share/e2fsprogs/initrd.ext3-add-journal \
     $INITRDDIR/scripts/ext3-add-journal.sh
 cp /sbin/tune2fs $INITRDDIR/sbin
-cp /usr/bin/awk $INITRDDIR/bin/awk
+cp /usr/lib/e2initrd_helper $INITRDDIR/bin/e2initrd_helper
 
 case "$VERSION" in
     2.4.*)

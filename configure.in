@@ -531,6 +531,25 @@ esac]
 AC_SUBST(FSCK_PROG)
 AC_SUBST(FSCK_MAN)
 dnl
+dnl See whether to install the `e2initrd-helper' program
+dnl
+AC_ARG_ENABLE([e2initrd-helper],
+[  --enable-e2initrd-helper build e2initrd-helper program],
+[if test "$enableval" = "no"
+then
+	E2INITRD_PROG='' E2INITRD_MAN=''
+	echo "Not building e2initrd helper"
+else
+	E2INITRD_PROG=e2initrd_helper E2INITRD_MAN=e2initrd_helper.8
+	echo "Building e2initrd helper"
+fi]
+,
+E2INITRD_PROG=e2initrd_helper E2INITRD_MAN=e2initrd_helper.8
+echo "Building e2initrd helper by default"
+)
+AC_SUBST(E2INITRD_PROG)
+AC_SUBST(E2INITRD_MAN)
+dnl
 dnl
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
 AC_SUBST_FILE(MAKEFILE_LIBRARY)

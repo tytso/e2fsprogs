@@ -91,7 +91,7 @@ STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression
 
 BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
 	--disable-nls --disable-swapfs --disable-imager \
-	--disable-resizer --disable-debugfs
+	--disable-resizer --disable-debugfs  --disable-e2initrd-helper
 
 MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
 	--disable-nls \
@@ -263,12 +263,12 @@ binary-arch: install install-udeb
 
   # mkinitrd script
 	mkdir -p debian/e2fsprogs/usr/share/initrd-tools/scripts
-	install -m755 debian/e2fsprogs.mkinitrd \
+	install -m755 debian/initrd-tools.e2fsprogs \
 		debian/e2fsprogs/usr/share/initrd-tools/scripts/e2fsprogs
 
   # initrd script
 	mkdir -p debian/e2fsprogs/usr/share/e2fsprogs
-	install -m755 debian/e2fsprogs.initrd \
+	install -m755 debian/initrd.ext3-add-journal \
 		debian/e2fsprogs/usr/share/e2fsprogs/initrd.ext3-add-journal
 
 

@@ -1,3 +1,27 @@
+e2fsprogs (1.35-7) unstable; urgency=low
+
+  * Change the initrd scripts to be use a helper program which avoids
+       needing to mount the root filesystem and use awk to query the
+       /etc/fstab file.  (Closes: #247775)
+  * Add support for the ocfs2 filesystem to the blkid library.
+  * Various portability fixes for Hurd and FreeBsd, as well as
+        removing XSI:isms.  (Closes: #256669, #264630, #269044, #255589)
+  * Update config.guess and config.sub from the FSF.
+  * Minor manual page clarifications (Closes: #268148)
+  * Fix write ordering problems to make e2fsck more robust in the face
+       of system crashes while replaying the journal, etc.
+  * Fix debugging printf in resize2fs.  (Closes: #271605)
+  * Add debugfs -d option to use a separate source of data blocks when
+       reading from an e2image file.
+  * Add e2image -I option which allows the e2image metadata to be
+       installed into a filesystem.
+  * Change e2fsck to accept directories greater than 32MB.
+  * Add test_io mechanisms to abort after reading or writing to a
+       particular block.
+  * Fix blkid file descriptor and memory leak.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 18 Sep 2004 09:58:46 -0400
+
 e2fsprogs (1.35-6) unstable; urgency=low
 
   * In the mkinitrd script, make sure the directories exist before

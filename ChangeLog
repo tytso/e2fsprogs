@@ -1,3 +1,9 @@
+2004-09-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in: Add --disable-e2initrd-helper flag to control
+		whether or not e2initrd_helper program should be
+		built/installed.
+
 2004-09-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Remove XSI:isms for greater portability.

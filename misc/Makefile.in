@@ -24,6 +24,8 @@ SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 UPROGS=		chattr lsattr uuidgen
 UMANPAGES=	chattr.1 lsattr.1 uuidgen.1
 
+LPROGS=		@E2INITRD_PROG@
+
 TUNE2FS_OBJS=	tune2fs.o util.o
 MKLPF_OBJS=	mklost+found.o
 MKE2FS_OBJS=	mke2fs.o util.o 
@@ -58,10 +60,14 @@ DEPLIBS_E2P= $(LIBE2P) $(LIBCOM_ERR)
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES)
+all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) $(LPROGS)
 
 findsuper: findsuper.o
 	$(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o
+
+e2initrd_helper: e2initrd_helper.o $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBS_BLKID)
+	$(CC) $(ALL_LDFLAGS) -o e2initrd_helper e2initrd_helper.o $(LIBS) \
+		$(LIBS_BLKID) $(LIBS_E2P) $(LIBINTL)
 
 tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBS_BLKID)
 	$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS) \
@@ -194,6 +200,10 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	for i in $(UPROGS); do \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(bindir)/$$i; \
 		$(STRIP) $(DESTDIR)$(bindir)/$$i; \
+	done
+	for i in $(LPROGS); do \
+		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(libdir)/$$i; \
+		$(STRIP) $(DESTDIR)$(libdir)/$$i; \
 	done
 	for i in $(SMANPAGES); do \
 		for j in $(COMPRESS_EXT); do \
