@@ -865,6 +865,7 @@ void e2fsck_move_ext3_journal(e2fsck_t ctx)
 			sb->s_jnl_blocks[16] = inode.i_size;
 			sb->s_jnl_backup_type = EXT3_JNL_BACKUP_BLOCKS;
 			ext2fs_mark_super_dirty(fs);
+			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 		}
 	}
 
@@ -921,6 +922,7 @@ void e2fsck_move_ext3_journal(e2fsck_t ctx)
 		goto err_out;
 	sb->s_journal_inum = EXT2_JOURNAL_INO;
 	ext2fs_mark_super_dirty(fs);
+	fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 	inode.i_links_count = 0;
 	inode.i_dtime = time(0);
 	if ((retval = ext2fs_write_inode(fs, ino, &inode)) != 0)

@@ -1,3 +1,9 @@
+2003-08-21  Theodore Ts'o  <tytso@mit.edu>
+
+	* journal.c (e2fsck_move_ext3_journal): When moving the journal or
+		backing up the journal inode, make sure it gets written to
+		all the superblocks.
+
 2003-08-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* journal.c (e2fsck_move_ext3_journal): If the superblock's backup
