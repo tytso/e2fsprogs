@@ -41,7 +41,7 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 	p = (char *) buf;
 	end = (char *) buf + fs->blocksize;
 	while (p < end-8) {
-		dirent = (struct ext2_dir_entry_2 *) p;
+		dirent = (struct ext2_dir_entry *) p;
 		if (do_swap) {
 			dirent->inode = ext2fs_swab32(dirent->inode);
 			dirent->rec_len = ext2fs_swab16(dirent->rec_len);
@@ -52,7 +52,7 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 			rec_len = 8;
 			retval = EXT2_ET_DIR_CORRUPTED;
 		}
-		dirent2 = dirent;
+		dirent2 = (struct ext2_dir_entry_2 *) dirent;
 		if ((dirent2->name_len +8) > dirent2->rec_len)
 			retval = EXT2_ET_DIR_CORRUPTED;
 		p += rec_len;

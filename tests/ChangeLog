@@ -1,3 +1,8 @@
+2001-05-05  Theodore Tso  <tytso@valinux.com>
+
+	* d_loaddump: New test which verifies debugfs's dump and load
+		routines.
+
 2000-10-24    <tytso@snap.thunk.org>
 
 	* f_journal: Update to take into account new printing by the
