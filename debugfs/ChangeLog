@@ -1,3 +1,8 @@
+2000-07-04    <tytso@snap.thunk.org>
+
+	* Makefile.in: Use _SS_DIR_OVERRIDE to make sure we get the
+		mk_cmds support files from the source tree.
+
 2000-06-09    <tytso@snap.thunk.org>
 
 	* lsdel.c (do_lsdel): Handle bad bad blocks in inode table.
