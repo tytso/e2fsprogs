@@ -298,7 +298,8 @@ static void check_if_skip(e2fsck_t ctx)
 		if (next_check <= 0) 
 			next_check = 1;
 	}
-	if ((now - fs->super->s_lastcheck) >= fs->super->s_checkinterval)
+	if (fs->super->s_checkinterval &&
+	    ((now - fs->super->s_lastcheck) >= fs->super->s_checkinterval))
 		next_check = 1;
 	if (next_check <= 5) {
 		if (next_check == 1)
