@@ -110,11 +110,8 @@ static void frag_report(const char *filename)
 		close(fd);
 		return;
 	}
-	if (ioctl(fd, EXT3_IOC_GETFLAGS, &flags) < 0) {
-		perror("EXT3_IOC_GETFLAGS");
-		close(fd);
-		return;
-	}
+	if (ioctl(fd, EXT3_IOC_GETFLAGS, &flags) < 0)
+		flags = 0;
 	if (flags & EXT3_EXTENTS_FL) {
 		printf("File is stored in extents format\n");
 		is_ext2 = 0;

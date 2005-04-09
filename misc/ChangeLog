@@ -1,5 +1,10 @@
 2005-04-09  Theodore Ts'o  <tytso@mit.edu>
 
+	* filefrag.c (frag_report): Don't abort filefrag if
+		EXT3_IOC_GETFLAGS ioctl is not supported, so that filefrag
+		can work on non-ext2/3 filesystems, as advertised.
+		(Addresses Debian Bug: #303509)
+
 	* mke2fs.8.in: Fix minor spelling typo.  (Addresses SourceForge
 		Bug #1177804)
 
