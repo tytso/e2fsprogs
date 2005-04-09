@@ -305,7 +305,7 @@ is 5%.
 .B \-M
 Set the last mounted directory for the filesystem.  This might be useful 
 for the sake of utilities that key off of the last mounted directory to 
-determine where the filesytem should be mounted.
+determine where the filesystem should be mounted.
 .TP
 .B \-n
 causes mke2fs to not actually create a filesystem, but display what it
