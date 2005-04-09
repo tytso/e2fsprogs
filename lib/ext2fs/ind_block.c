@@ -32,7 +32,7 @@ errcode_t ext2fs_read_ind_block(ext2_filsys fs, blk_t blk, void *buf)
 	else {
 		retval = io_channel_read_blk(fs->io, blk, 1, buf);
 		if (retval)
-			retval;
+			return retval;
 	}
 #ifdef EXT2FS_ENABLE_SWAPFS
 	if (fs->flags & (EXT2_FLAG_SWAP_BYTES | EXT2_FLAG_SWAP_BYTES_READ)) {

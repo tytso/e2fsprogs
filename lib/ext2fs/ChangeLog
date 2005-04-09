@@ -1,3 +1,10 @@
+2005-04-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* inode.c (ext2fs_write_new_inode), 
+		ind_block.c (ext2fs_read_ind_block): Add missing return
+		value in error return case.  (Otherwise we return garbage
+		instead of the error code.)
+
 2005-03-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* test_io.c (test_open): If called by a setuid/setgid or an
