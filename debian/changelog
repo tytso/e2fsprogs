@@ -1,3 +1,20 @@
+e2fsprogs (1.37-2) unstable; urgency=low
+
+  * Fix filefrag so that it works non ext2/3 filesystems again.
+    (Closes: #303509)
+  * Make sure we include stdlib.h to fix a core dump bug in mke2fs on the
+    IA64 architecture (or other platforms where sizeof(ptr) > sizeof(int))
+    (Closes: #302200)
+  * Add missing return values so that we don't return garbage in certain
+    error cases in ext2fs_write_new_inode() and ext2fs_read_int_block().
+  * Fix minor spelling typo in the mke2fs man page
+  * Avoid doing the LOW_DTIME checks if the superblock last mount time
+    indicates that the system clock may not be set correctly.
+  * Add further paranoia checks to the blkid, ext2fs, and ss libraries to
+    make them safe to call from setuid or setgid applications.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat,  9 Apr 2005 11:08:04 -0400
+
 e2fsprogs (1.37-1) unstable; urgency=low
 
   * New upstream release.
