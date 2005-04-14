@@ -432,7 +432,7 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
 		shared_len = 0;
 		file_ok = 1;
 		ino = (ext2_ino_t)VOIDPTR_TO_INT(dnode_getkey(n));
-		if (ino == EXT2_BAD_INO)
+		if (ino == EXT2_BAD_INO || ino == EXT2_RESIZE_INO)
 			continue;
 
 		/*

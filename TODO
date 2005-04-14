@@ -276,3 +276,9 @@ cleanliness.  (I will probably have to do this myself -- Ted)
 extent maps first/in parallel. 
 
 	Difficulty: High	Priority: Medium
+
+----------------------------------
+
+Need to deal with the case where the resize inode overlaps with the
+bad blocks inode.
+

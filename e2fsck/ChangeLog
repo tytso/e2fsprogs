@@ -1,5 +1,8 @@
 2005-04-14  Theodore Ts'o  <tytso@mit.edu>
 
+	* pass1b.c (pass1d): Don't offer to clone or delete the resize
+		inode; it's not allowed!
+
 	* e2fsck.c, e2fsck.h, journal.c, pass1.c, pass1b.c, pass2.c,
 		pass3.c, pass4.c, super.c, unix.c: Use a centrally stored
 		current time for "now" which can be overridden using the

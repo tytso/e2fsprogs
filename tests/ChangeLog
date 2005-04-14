@@ -1,3 +1,7 @@
+2005-04-14  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_dup_resize: New test case
+
 2005-04-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* test_script.in: Make the test script driver exit with a non-zero
