@@ -597,7 +597,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			 */
 			if (!LINUX_S_ISDIR(inode->i_mode)) {
 				if (fix_problem(ctx, PR_1_ROOT_NO_DIR, &pctx)) {
-					inode->i_dtime = time(0);
+					inode->i_dtime = ctx->now;
 					inode->i_links_count = 0;
 					ext2fs_icount_store(ctx->inode_link_info,
 							    ino, 0);
@@ -691,7 +691,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		    inode->i_dtime < ctx->fs->super->s_inodes_count) {
 			if (fix_problem(ctx, PR_1_LOW_DTIME, &pctx)) {
 				inode->i_dtime = inode->i_links_count ?
-					0 : time(0);
+					0 : ctx->now;
 				e2fsck_write_inode(ctx, ino, inode,
 						   "pass1");
 			}
@@ -705,7 +705,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			if (!inode->i_dtime && inode->i_mode) {
 				if (fix_problem(ctx,
 					    PR_1_ZERO_DTIME, &pctx)) {
-					inode->i_dtime = time(0);
+					inode->i_dtime = ctx->now;
 					e2fsck_write_inode(ctx, ino, inode,
 							   "pass1");
 				}
@@ -876,6 +876,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ctx->flags |= E2F_FLAG_ABORT;
 			return;
 		}
+		e2fsck_read_inode(ctx, EXT2_RESIZE_INO, inode,
+				  "recreate inode");
+		inode->i_mtime = ctx->now;
+		e2fsck_write_inode(ctx, EXT2_RESIZE_INO, inode, 
+				   "recreate inode");
 		fs->block_map = save_bmap;
 		ctx->flags &= ~E2F_FLAG_RESIZE_INODE;
 	}
@@ -1422,7 +1427,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (pb.clear) {
 		inode->i_links_count = 0;
 		ext2fs_icount_store(ctx->inode_link_info, ino, 0);
-		inode->i_dtime = time(0);
+		inode->i_dtime = ctx->now;
 		dirty_inode++;
 		ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
 		ext2fs_unmark_inode_bitmap(ctx->inode_reg_map, ino);
@@ -1455,7 +1460,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		if (fix_problem(ctx, PR_1_ZERO_LENGTH_DIR, pctx)) {
 			inode->i_links_count = 0;
 			ext2fs_icount_store(ctx->inode_link_info, ino, 0);
-			inode->i_dtime = time(0);
+			inode->i_dtime = ctx->now;
 			dirty_inode++;
 			ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
 			ext2fs_unmark_inode_bitmap(ctx->inode_reg_map, ino);

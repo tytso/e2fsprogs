@@ -322,6 +322,8 @@ struct e2fsck_struct {
 	int fs_ext_attr_inodes;
 	int fs_ext_attr_blocks;
 
+	time_t now;
+
 	int ext_attr_ver;
 
 	/*

@@ -298,7 +298,7 @@ static int release_orphan_inodes(e2fsck_t ctx)
 		if (!inode.i_links_count) {
 			ext2fs_inode_alloc_stats2(fs, ino, -1,
 						  LINUX_S_ISDIR(inode.i_mode));
-			inode.i_dtime = time(0);
+			inode.i_dtime = ctx->now;
 		} else {
 			inode.i_dtime = 0;
 		}
@@ -346,7 +346,7 @@ void check_resize_inode(e2fsck_t ctx)
 		}
 	}
 
-	/* Read the resizde inode */
+	/* Read the resize inode */
 	pctx.ino = EXT2_RESIZE_INO;
 	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);
 	if (retval) {

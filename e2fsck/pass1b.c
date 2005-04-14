@@ -595,7 +595,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	/* Inode may have changed by block_iterate, so reread it */
 	e2fsck_read_inode(ctx, ino, &inode, "delete_file");
 	inode.i_links_count = 0;
-	inode.i_dtime = time(0);
+	inode.i_dtime = ctx->now;
 	if (inode.i_file_acl &&
 	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
 		count = 1;

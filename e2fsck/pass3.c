@@ -222,7 +222,7 @@ static void check_root(e2fsck_t ctx)
 	memset(&inode, 0, sizeof(inode));
 	inode.i_mode = 040755;
 	inode.i_size = fs->blocksize;
-	inode.i_atime = inode.i_ctime = inode.i_mtime = time(0);
+	inode.i_atime = inode.i_ctime = inode.i_mtime = ctx->now;
 	inode.i_links_count = 2;
 	inode.i_blocks = fs->blocksize / 512;
 	inode.i_block[0] = blk;
@@ -470,7 +470,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	memset(&inode, 0, sizeof(inode));
 	inode.i_mode = 040700;
 	inode.i_size = fs->blocksize;
-	inode.i_atime = inode.i_ctime = inode.i_mtime = time(0);
+	inode.i_atime = inode.i_ctime = inode.i_mtime = ctx->now;
 	inode.i_links_count = 2;
 	inode.i_blocks = fs->blocksize / 512;
 	inode.i_block[0] = blk;

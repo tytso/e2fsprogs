@@ -256,7 +256,6 @@ static void check_if_skip(e2fsck_t ctx)
 	unsigned int reason_arg = 0;
 	long next_check;
 	int batt = is_on_batt();
-	time_t now = time(0);
 	
 	if ((ctx->options & E2F_OPT_FORCE) || bad_blocks_file ||
 	    cflag || swapfs)
@@ -276,11 +275,11 @@ static void check_if_skip(e2fsck_t ctx)
 			     (unsigned) fs->super->s_max_mnt_count*2))
 			reason = 0;
 	} else if (fs->super->s_checkinterval &&
-		   ((now - fs->super->s_lastcheck) >= 
+		   ((ctx->now - fs->super->s_lastcheck) >= 
 		    fs->super->s_checkinterval)) {
 		reason = _(" has gone %u days without being checked");
-		reason_arg = (now - fs->super->s_lastcheck)/(3600*24);
-		if (batt && ((now - fs->super->s_lastcheck) < 
+		reason_arg = (ctx->now - fs->super->s_lastcheck)/(3600*24);
+		if (batt && ((ctx->now - fs->super->s_lastcheck) < 
 			     fs->super->s_checkinterval*2))
 			reason = 0;
 	}
@@ -302,7 +301,7 @@ static void check_if_skip(e2fsck_t ctx)
 			next_check = 1;
 	}
 	if (fs->super->s_checkinterval &&
-	    ((now - fs->super->s_lastcheck) >= fs->super->s_checkinterval))
+	    ((ctx->now - fs->super->s_lastcheck) >= fs->super->s_checkinterval))
 		next_check = 1;
 	if (next_check <= 5) {
 		if (next_check == 1)
@@ -1155,7 +1154,7 @@ restart:
 			} else
 				sb->s_state &= ~EXT2_VALID_FS;
 			sb->s_mnt_count = 0;
-			sb->s_lastcheck = time(NULL);
+			sb->s_lastcheck = ctx->now;
 			ext2fs_mark_super_dirty(fs);
 		}
 	}

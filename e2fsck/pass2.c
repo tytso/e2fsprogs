@@ -1097,7 +1097,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	ext2fs_icount_store(ctx->inode_link_info, ino, 0);
 	e2fsck_read_inode(ctx, ino, &inode, "deallocate_inode");
 	inode.i_links_count = 0;
-	inode.i_dtime = time(0);
+	inode.i_dtime = ctx->now;
 	e2fsck_write_inode(ctx, ino, &inode, "deallocate_inode");
 	clear_problem_context(&pctx);
 	pctx.ino = ino;

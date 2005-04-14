@@ -45,7 +45,7 @@ static int disconnect_inode(e2fsck_t ctx, ext2_ino_t i)
 		if (fix_problem(ctx, PR_4_ZERO_LEN_INODE, &pctx)) {
 			ext2fs_icount_store(ctx->inode_link_info, i, 0);
 			inode.i_links_count = 0;
-			inode.i_dtime = time(0);
+			inode.i_dtime = ctx->now;
 			e2fsck_write_inode(ctx, i, &inode,
 					   "disconnect_inode");
 			/*
