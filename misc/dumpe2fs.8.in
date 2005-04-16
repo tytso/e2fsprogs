@@ -39,14 +39,14 @@ use the block
 .I superblock
 when examining the filesystem.
 This option is not usually needed except by a filesystem wizard who 
-is examining the remains of a very badly corupted filesystem.
+is examining the remains of a very badly corrupted filesystem.
 .TP
 .BI \-oB " blocksize"
 use blocks of
 .I blocksize
 bytes when examining the filesystem.
 This option is not usually needed except by a filesystem wizard who 
-is examining the remains of a very badly corupted filesystem.
+is examining the remains of a very badly corrupted filesystem.
 .TP
 .B \-f
 force dumpe2fs to display a filesystem even though it may have some 

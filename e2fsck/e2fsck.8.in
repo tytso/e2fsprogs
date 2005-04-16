@@ -40,7 +40,7 @@ e2fsck \- check a Linux ext2/ext3 file system
 is used to check a Linux second extended file system (ext2fs).  
 .B E2fsck
 also 
-supports ext2 filesystems countaining a journal, which are
+supports ext2 filesystems containing a journal, which are
 also sometimes known as ext3 filesystems, by first applying the journal 
 to the filesystem before continuing with normal 
 .B e2fsck
@@ -293,7 +293,7 @@ Please include as much information as possible in your bug report.
 Ideally, include a complete transcript of the
 .B e2fsck
 run, so I can see exactly what error messages are displayed.  If you
-have a writeable filesystem where the transcript can be stored, the 
+have a writable filesystem where the transcript can be stored, the 
 .BR script (1)
 program is a handy way to save the output of
 .B e2fsck

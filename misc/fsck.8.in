@@ -185,7 +185,7 @@ Walk through the
 file and try to check all file systems in one run.  This option is
 typically used from the
 .I /etc/rc
-system initalization file, instead of multiple commands for checking
+system initialization file, instead of multiple commands for checking
 a single file system.
 .sp
 The root filesystem will be checked first unless the

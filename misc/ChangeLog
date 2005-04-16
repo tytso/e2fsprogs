@@ -1,3 +1,9 @@
+2005-04-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* badblocks.8.in, dumpe2fs.8.in, fsck.8.in, tune2fs.8.in: Fix
+		spelling mistakes in man pages.  (Addresses Debian Bugs:
+		#304591, #304592, #304594, #304597)
+
 2005-04-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* filefrag.c (frag_report): Don't abort filefrag if

@@ -290,7 +290,7 @@ Set the last-mounted directory for the filesystem.
 .TP
 .BR \-o " [^]\fImount-option\fR[,...]"
 Set or clear the indicated default mount options in the filesystem.
-Default mount options can be overriden by mount options specified 
+Default mount options can be overridden by mount options specified 
 either in 
 .BR /etc/fstab (5)
 or on the command line arguments to
@@ -316,7 +316,7 @@ Enable debugging code for this filesystem.
 Emulate BSD behaviour when creating new files: they will take the group-id
 of the directory in which they were created.  The standard System V behaviour
 is the default, where newly created files take on the fsgid of the current
-process, unless the directry has the setgid bit set, in which case it takes 
+process, unless the directory has the setgid bit set, in which case it takes 
 the gid from the parent directory, and also gets the setgid bit set if it is 
 directory itself.
 .TP

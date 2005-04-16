@@ -1,3 +1,8 @@
+2005-04-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.8.in: Fix spelling mistakes in man pages.  (Addresses
+		Debian Bugs: #304593)
+
 2005-04-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* pass1b.c (pass1d): Don't offer to clone or delete the resize

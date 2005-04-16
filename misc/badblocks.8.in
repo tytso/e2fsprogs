@@ -85,7 +85,7 @@ is the number of blocks which are tested at a time.  The default is 64.
 Normally, badblocks will refuse to do a read/write or a non-destructive
 test on a device which is mounted, since either can cause the system to
 potentially crash and/or damage the filesystem even if it is mounted
-read-only.  This can be overriden using the
+read-only.  This can be overridden using the
 .B \-f
 flag, but should almost never be used --- if you think you're smarter
 than the 
@@ -136,7 +136,7 @@ may either be a numeric value between 0 and ULONG_MAX-1 inclusive, or the word
 "random", which specifies that the block should be filled with a random
 bit pattern.
 For read/write (\fB-w\fR) and non-destructive (\fB-n\fR) modes,
-one or more test patterns may be specified by specifiying the
+one or more test patterns may be specified by specifying the
 .B -t
 option for each test pattern desired.  For
 read-only mode only a single pattern may be specified and it may not be
