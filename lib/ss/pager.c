@@ -43,7 +43,7 @@ extern char *getenv PROTOTYPE((const char *));
 
 char *ss_safe_getenv(const char *arg)
 {
-	if ((getuid() != geteuid()) || (getgid() != getgid()))
+	if ((getuid() != geteuid()) || (getgid() != getegid()))
 		return NULL;
 #if HAVE_PRCTL
 	if (prctl(PR_GET_DUMPABLE) == 0)

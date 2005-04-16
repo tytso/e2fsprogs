@@ -142,7 +142,7 @@ static void test_abort(io_channel channel, unsigned long block)
 
 static char *safe_getenv(const char *arg)
 {
-	if ((getuid() != geteuid()) || (getgid() != getgid()))
+	if ((getuid() != geteuid()) || (getgid() != getegid()))
 		return NULL;
 #if HAVE_PRCTL
 	if (prctl(PR_GET_DUMPABLE) == 0)
