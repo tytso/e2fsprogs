@@ -1,3 +1,9 @@
+2005-05-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c (do_stat): Check to make sure a filesystem is open
+		and abort if with an error if not, to prevent a seg fault
+		in that case.
+
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.37
