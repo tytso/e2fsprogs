@@ -108,6 +108,21 @@ struct romfs_super_block {
 	unsigned char	ros_volume[16];
 };
 
+struct cramfs_super_block {
+	__u8		magic[4];
+	__u32		size;
+	__u32		flags;
+	__u32		future;
+	__u8		signature[16];
+	struct cramfs_info {
+		__u32		crc;
+		__u32		edition;
+		__u32		blocks;
+		__u32		files;
+	} info;
+	__u8		name[16];
+};
+
 struct swap_id_block {
 /*	unsigned char	sws_boot[1024]; */
 	__u32		sws_version;

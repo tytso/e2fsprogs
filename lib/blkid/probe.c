@@ -303,6 +303,23 @@ static int probe_romfs(int fd __BLKID_ATTR((unused)),
 	return 0;
 }
 
+static int probe_cramfs(int fd __BLKID_ATTR((unused)), 
+		       blkid_cache cache __BLKID_ATTR((unused)), 
+		       blkid_dev dev,
+		       struct blkid_magic *id __BLKID_ATTR((unused)), 
+		       unsigned char *buf)
+{
+	struct cramfs_super_block *csb;
+	const char *label = 0;
+
+	csb = (struct cramfs_super_block *)buf;
+
+	if (strlen((char *) csb->name))
+		label = (char *) csb->name;
+	blkid_set_tag(dev, "LABEL", label, 0);
+	return 0;
+}
+
 static int probe_swap0(int fd __BLKID_ATTR((unused)),
 		       blkid_cache cache __BLKID_ATTR((unused)),
 		       blkid_dev dev,
@@ -489,7 +506,7 @@ static struct blkid_magic type_array[] = {
   { "xfs",	 0,	 0,  4, "XFSB",			probe_xfs },
   { "romfs",	 0,	 0,  8, "-rom1fs-",		probe_romfs },
   { "bfs",	 0,	 0,  4, "\316\372\173\033",	0 },
-  { "cramfs",	 0,	 0,  4, "E=\315\034",		0 },
+  { "cramfs",	 0,	 0,  4, "E=\315\050",		probe_cramfs },
   { "qnx4",	 0,	 4,  6, "QNX4FS",		0 },
   { "udf",	32,	 1,  5, "BEA01",		probe_udf },
   { "udf",	32,	 1,  5, "BOOT2",		probe_udf },

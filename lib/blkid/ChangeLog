@@ -1,3 +1,10 @@
+2005-05-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c (probe_cramfs), probe.h: Fix magic number recognition
+		for the cramfs filesystem, and add support to pull out the
+		label for cramfs filesystems.  Thanks to Karel Zak (kzak
+		at redhat.com) for the patch.
+
 2005-03-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* cache.c (blkid_get_cache): Use a much more paranoid
