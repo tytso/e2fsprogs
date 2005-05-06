@@ -127,7 +127,7 @@ static void frag_report(const char *filename)
 		       get_bmap(fd, 0), get_bmap(fd, numblocks - 1));
 	}
 	for (i=0; i < numblocks; i++) {
-		if (is_ext2) {
+		if (is_ext2 && last_block) {
 			if (((i-EXT2_DIRECT) % bpib) == 0)
 				last_block++;
 			if (((i-EXT2_DIRECT-bpib) % (bpib*bpib)) == 0)

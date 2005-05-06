@@ -1,3 +1,9 @@
+2005-05-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* filefrag.c (frag_report): Fix so that when the first block to be
+		found is an indirect block, we don't falsely count an
+		extra discontinuity.  (Addresses Debian Bug: #307607)
+
 2005-04-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.8.in, dumpe2fs.8.in, fsck.8.in, tune2fs.8.in: Fix
