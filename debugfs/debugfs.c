@@ -596,7 +596,7 @@ void do_stat(int argc, char *argv[])
 	struct ext2_inode * inode_buf;
 
 	if (check_fs_open(argv[0]))
-		return 1;
+		return;
 
 	inode_buf = (struct ext2_inode *)
 			malloc(EXT2_INODE_SIZE(current_fs->super));
