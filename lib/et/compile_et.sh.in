@@ -32,5 +32,15 @@ if test ! -f "$ROOT.et" ; then
     exit 1;
 fi
 
-$AWK -f "${DIR}/et_h.awk" "outfile=${BASE}.h" "$ROOT.et"
-$AWK -f "${DIR}/et_c.awk" "outfile=${BASE}.c" "$ROOT.et"
+$AWK -f "${DIR}/et_h.awk" "outfile=${BASE}.h.$$" "outfn=${BASE}.h" "$ROOT.et"
+if test -f ${BASE}.h && cmp -s ${BASE}.h.$$ ${BASE}.h ; then
+    rm ${BASE}.h.$$
+else
+    mv ${BASE}.h.$$ ${BASE}.h
+fi
+$AWK -f "${DIR}/et_c.awk" "outfile=${BASE}.c.$$" "outfn=${BASE}.c" "$ROOT.et"
+if test -f ${BASE}.c && cmp -s ${BASE}.c.$$ ${BASE}.c ; then
+    rm ${BASE}.c.$$
+else
+    mv ${BASE}.c.$$ ${BASE}.c
+fi
