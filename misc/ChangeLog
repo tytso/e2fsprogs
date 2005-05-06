@@ -1,3 +1,10 @@
+2005-05-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid.c (main): Use an int instead of an char to store the
+		return value from getopt() for better portability on
+		systems where char types are unsigned.  (Addresses
+		Sourceforge Bug: #1180585)
+
 2005-05-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.c (main), mke2fs.c (PRS): Fix error messages by

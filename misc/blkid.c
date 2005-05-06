@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 	int err = 4;
 	unsigned int i;
 	int output_format = 0;
-	char c;
+	int c;
 
 	while ((c = getopt (argc, argv, "c:f:ho:s:t:w:v")) != EOF)
 		switch (c) {
