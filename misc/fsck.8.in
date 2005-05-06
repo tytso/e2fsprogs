@@ -36,8 +36,9 @@ or an ext2 label or UUID specifier (e.g.
 UUID=8868abf6-88c5-4a83-98b8-bfc24057f7bd or LABEL=root).  
 Normally, the 
 .B fsck 
-program will try to run filesystems on different physical disk drives 
-in parallel to reduce total amount time to check all of the filesystems.
+program will try to handle filesystems on different physical disk drives 
+in parallel to reduce the total amount of time needed to check all of the
+filesystems.
 .PP
 If no filesystems are specified on the command line, and the 
 .B \-A 
@@ -45,7 +46,7 @@ option is not specified,
 .B fsck
 will default to checking filesystems in
 .B /etc/fstab
-serial.  This is equivalent to the 
+serially.  This is equivalent to the 
 .B \-As
 options.
 .PP
@@ -127,7 +128,7 @@ in
 .I fslist
 will be checked.
 .sp
-Options specifiers may be included in the comma separated
+Options specifiers may be included in the comma-separated
 .IR fslist .
 They must have the format 
 .BI opts= fs-option\fR.
@@ -213,7 +214,7 @@ Hence, a very common configuration in
 files is to set the root filesystem to have a 
 .I fs_passno
 value of 1
-and to set all filesystems to have a
+and to set all other filesystems to have a
 .I fs_passno
 value of 2.  This will allow
 .B fsck
@@ -230,7 +231,7 @@ only for ext2 and ext3) which support them.   Fsck will manage the
 filesystem checkers so that only one of them will display  
 a progress bar at a time.  GUI front-ends may specify a file descriptor
 .IR fd ,
-in which case the progress bar information will be sent that file descriptor.
+in which case the progress bar information will be sent to that file descriptor.
 .TP
 .B \-N
 Don't execute, just show what would be done.
@@ -388,7 +389,7 @@ environment are searched.
 This environment variable allows the system administrator 
 to override the standard location of the 
 .B /etc/fstab
-file.  It is also use for developers who are testing
+file.  It is also useful for developers who are testing
 .BR fsck .
 .SH SEE ALSO
 .BR fstab (5),

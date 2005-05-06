@@ -1,3 +1,9 @@
+2005-05-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* badblocks.c (check_bb_inode_blocks): Clean up warning printf.
+		Thanks to Benno Schulenberg for the patch.  (Addresses
+		Sourceforge Bug: #1189803)
+
 2005-04-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.8.in: Fix spelling mistakes in man pages.  (Addresses

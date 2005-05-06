@@ -967,7 +967,7 @@ int main (int argc, char ** argv)
 	} else {
 		last_block = strtoul (argv[optind], &tmp, 0);
 		if (*tmp) {
-			com_err (program_name, 0, _("bad blocks count - %s"),
+			com_err (program_name, 0, _("invalid blocks count - %s"),
 				 argv[optind]);
 			exit (1);
 		}
@@ -976,13 +976,13 @@ int main (int argc, char ** argv)
 	if (optind <= argc-1) {
 		from_count = strtoul (argv[optind], &tmp, 0);
 		if (*tmp) {
-			com_err (program_name, 0, _("bad starting block - %s"),
+			com_err (program_name, 0, _("invalid starting block - %s"),
 				 argv[optind]);
 			exit (1);
 		}
 	} else from_count = 0;
 	if (from_count >= last_block) {
-	    com_err (program_name, 0, _("bad blocks range: %lu-%lu"),
+	    com_err (program_name, 0, _("invalid blocks range: %lu-%lu"),
 		     (unsigned long) from_count, (unsigned long) last_block);
 	    exit (1);
 	}

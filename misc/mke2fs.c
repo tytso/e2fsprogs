@@ -266,7 +266,7 @@ static void test_disk(ext2_filsys fs, badblocks_list *bb_list)
 	f = popen(buf, "r");
 	if (!f) {
 		com_err("popen", errno,
-			_("while trying run '%s'"), buf);
+			_("while trying to run '%s'"), buf);
 		exit(1);
 	}
 	retval = ext2fs_read_bb_FILE(fs, f, bb_list, invalid_block);
@@ -811,7 +811,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			fs_stride = strtoul(arg, &p, 0);
 			if (*p || (fs_stride == 0)) {
 				fprintf(stderr,
-					_("Invalid stride parameter.\n"));
+					_("Invalid stride parameter: %s\n"),
+					arg);
 				r_usage++;
 				continue;
 			}
@@ -838,7 +839,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			}
 			if (resize <= param->s_blocks_count) {
 				fprintf(stderr, 
-					_("The resize maximum must be greater than the filesystem size.\n"));
+					_("The resize maximum must be greater "
+					  "than the filesystem size.\n"));
 				r_usage++;
 				continue;
 			}
@@ -982,7 +984,7 @@ static void PRS(int argc, char *argv[])
 			if (b < EXT2_MIN_BLOCK_SIZE ||
 			    b > EXT2_MAX_BLOCK_SIZE || *tmp) {
 				com_err(program_name, 0,
-					_("bad block size - %s"), optarg);
+					_("invalid block size - %s"), optarg);
 				exit(1);
 			}
 			if (blocksize > 4096)
@@ -1218,7 +1220,7 @@ static void PRS(int argc, char *argv[])
 		param.s_blocks_count = parse_num_blocks(argv[optind++], 
 				param.s_log_block_size);
 		if (!param.s_blocks_count) {
-			com_err(program_name, 0, _("bad blocks count - %s"),
+			com_err(program_name, 0, _("invalid blocks count - %s"),
 				argv[optind - 1]);
 			exit(1);
 		}

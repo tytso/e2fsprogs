@@ -1,5 +1,20 @@
 2005-05-05  Theodore Ts'o  <tytso@mit.edu>
 
+	* badblocks.c (main), mke2fs.c (PRS): Fix error messages by
+		substituting "bad" with "invalid" to avoid confusion with
+		"bad blocks".  Thanks to Benno Schulenberg for the patch.
+		(Addresses Sourceforge Bug: #1189803)
+
+	* mke2fs.c (test_disk): Fix grammatical error in error message.
+		Thanks to Benno Schulenberg.
+
+	* mke2fs.c (parse_extended_opts): Print the invalid stride
+		parameter in the error message.  Thanks to Benno
+		Schulenberg.
+
+	* fsck.8.in: Fix a few spelling/grammatical errors.  Thanks to
+		Benno Schulenberg.
+
 	* filefrag.c (frag_report): Fix so that when the first block to be
 		found is an indirect block, we don't falsely count an
 		extra discontinuity.  (Addresses Debian Bug: #307607)
