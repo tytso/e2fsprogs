@@ -177,7 +177,7 @@ ext2_err.et: $(DEP_SUBSTITUTE) $(srcdir)/ext2_err.et.in
 	@$(SUBSTITUTE) $(srcdir)/ext2_err.et.in ext2_err.et
 
 ext2_err.c ext2_err.h: ext2_err.et
-	@echo "	COMPILE_ET ex2_err.et"
+	@echo "	COMPILE_ET ext2_err.et"
 	@$(COMPILE_ET) ext2_err.et
 
 ext2fs.pc: $(srcdir)/ext2fs.pc.in $(top_builddir)/config.status
@@ -400,6 +400,10 @@ icount.o: $(srcdir)/icount.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+ind_block.o: $(srcdir)/ind_block.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(srcdir)/ext2_fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 initialize.o: $(srcdir)/initialize.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
@@ -475,8 +479,8 @@ read_bb_file.o: $(srcdir)/read_bb_file.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 res_gdt.o: $(srcdir)/res_gdt.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
- $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h
+ $(srcdir)/ext2_fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 rs_bitmap.o: $(srcdir)/rs_bitmap.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
@@ -488,7 +492,8 @@ rw_bitmaps.o: $(srcdir)/rw_bitmaps.c $(srcdir)/ext2_fs.h \
 swapfs.o: $(srcdir)/swapfs.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h \
+ $(srcdir)/ext2_ext_attr.h
 test_io.o: $(srcdir)/test_io.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \

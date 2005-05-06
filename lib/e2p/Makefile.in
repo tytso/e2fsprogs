@@ -129,6 +129,8 @@ ls.o: $(srcdir)/ls.c $(srcdir)/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h
 mntopts.o: $(srcdir)/mntopts.c $(srcdir)/e2p.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
+parse_num.o: $(srcdir)/parse_num.c $(srcdir)/e2p.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
 pe.o: $(srcdir)/pe.c $(srcdir)/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h
 pf.o: $(srcdir)/pf.c $(srcdir)/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
@@ -141,4 +143,5 @@ setversion.o: $(srcdir)/setversion.c $(srcdir)/e2p.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
 uuid.o: $(srcdir)/uuid.c $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(srcdir)/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h
-ostype.o: $(srcdir)/ostype.c $(srcdir)/e2p.h
+ostype.o: $(srcdir)/ostype.c $(srcdir)/e2p.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h
