@@ -1,3 +1,9 @@
+2005-05-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in (tst_ostype): Add $(ALL_CFLAGS) to the tst_ostype
+		rule so it can find the header files.  (Addresses
+		Sourceforge Bug: #1180572)
+
 2005-04-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* ls.c: Add stdlib.h header file since list_super2() uses the
