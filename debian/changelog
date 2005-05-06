@@ -1,3 +1,22 @@
+e2fsprogs (1.37-3) unstable; urgency=low
+
+  * Minor man page spelling/typo fixes.  (Closes: #304591, #304592, 
+  	#304594, #304597, #304593)
+  * Fix libblkid's recognition of cramfs filesystems, and add support for
+    cramfs labels.
+  * Fix filefrag to give correct results when the first block found is an
+    indirect block.  (Closes: #307607)
+  * Fix debugfs seg fault when the stat command is given and a filesystem
+    is not open.
+  * Improve environment variable paranoia checks
+  * Fix e2fsck's handling of multiply claimed blocks involving the resize
+    inode.
+  * When determining the libraries needed for the initrd, unset LD_PRELOAD
+    and LD_LIBRARY_PATH and filter out libraries found in
+    /etc/ld.so.preload.  (Closes: #304003)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri,  6 May 2005 10:39:50 -0400
+
 e2fsprogs (1.37-2) unstable; urgency=low
 
   * Fix filefrag so that it works non ext2/3 filesystems again.
