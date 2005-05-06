@@ -73,7 +73,7 @@ have been corrected.
 E2fsck can also also fix filesystems trashed by Fedora's resize2fs
 program.  In order to do this, the user must run the commands:
 
-	debugfs -w /dev/hdXXX -R "features ^resize_inode
+	debugfs -w /dev/hdXXX -R "features ^resize_inode"
         e2fsck -f /dev/hdXXX
 
 Optionally, the ext2prepare command can be used to re-enable online
