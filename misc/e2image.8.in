@@ -114,7 +114,7 @@ of bug reports to e2fsprogs.  When used in this capacity, the
 recommended command is (replace hda1 with appropriate device):
 .PP
 .br
-\	\fBe2image -r /dev/hda1 - | bzip2 > hda1.e2i.bz2\fR
+\	\fBe2image \-r /dev/hda1 \- | bzip2 > hda1.e2i.bz2\fR
 .PP
 This will only send the metadata information, without any data blocks.  
 However, the filenames in the directory blocks can still reveal

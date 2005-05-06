@@ -90,7 +90,7 @@ parameters on Linux ext2/ext3 filesystems.
 .BI \-c " max-mount-counts"
 Adjust the maximal mounts count between two filesystem checks.  If 
 .I max-mount-counts
-is 0 or -1, the number of times the filesystem is mounted will be disregarded 
+is 0 or \-1, the number of times the filesystem is mounted will be disregarded 
 by
 .BR e2fsck (8)
 and the kernel.
@@ -116,7 +116,7 @@ option for time-dependent checking.
 .TP
 .BI \-C " mount-count"
 Set the number of times the filesystem has been mounted.
-Can be used in conjunction with -c to force an fsck on
+Can be used in conjunction with \-c to force an fsck on
 the filesystem at the next reboot.
 .TP
 .BI \-e " error-behavior"
