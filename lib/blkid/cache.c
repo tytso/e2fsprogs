@@ -52,6 +52,26 @@ static char *safe_getenv(const char *arg)
 #endif
 }
 
+#if 0 /* ifdef CONFIG_BLKID_DEBUG */
+static blkid_debug_dump_cache(int mask, blkid_cache cache)
+{
+	struct list_head *p;
+
+	if (!cache) {
+		printf("cache: NULL\n");
+		return;
+	}
+
+	printf("cache: time = %lu\n", cache->bic_time);
+	printf("cache: flags = 0x%08X\n", cache->bic_flags);
+
+	list_for_each(p, &cache->bic_devs) {
+		blkid_dev dev = list_entry(p, struct blkid_struct_dev, bid_devs);
+		blkid_debug_dump_dev(dev);
+	}
+}
+#endif
+
 int blkid_get_cache(blkid_cache *ret_cache, const char *filename)
 {
 	blkid_cache cache;
@@ -98,7 +118,7 @@ void blkid_put_cache(blkid_cache cache)
 
 	DBG(DEBUG_CACHE, printf("freeing cache struct\n"));
 	
-	/* DEB_DUMP_CACHE(cache); */
+	/* DBG(DEBUG_CACHE, blkid_debug_dump_cache(cache)); */
 
 	while (!list_empty(&cache->bic_devs)) {
 		blkid_dev dev = list_entry(cache->bic_devs.next,

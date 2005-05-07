@@ -359,7 +359,7 @@ static int blkid_parse_line(blkid_cache cache, blkid_dev *dev_p, char *cp)
 		blkid_free_dev(dev);
 	}
 
-	DEB_DUMP_DEV(DEBUG_READ, dev);
+	DBG(DEBUG_READ, blkid_debug_dump_dev(dev));
 
 	return ret;
 }

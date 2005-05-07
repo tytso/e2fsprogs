@@ -35,7 +35,7 @@ void blkid_free_dev(blkid_dev dev)
 
 	DBG(DEBUG_DEV,
 	    printf("  freeing dev %s (%s)\n", dev->bid_name, dev->bid_type));
-	DEB_DUMP_DEV(DEBUG_DEV, dev);
+	DBG(DEBUG_DEV, blkid_debug_dump_dev(dev));
 
 	list_del(&dev->bid_devs);
 	while (!list_empty(&dev->bid_tags)) {
@@ -56,6 +56,30 @@ extern const char *blkid_dev_devname(blkid_dev dev)
 {
 	return dev->bid_name;
 }
+
+#ifdef CONFIG_BLKID_DEBUG
+void blkid_debug_dump_dev(blkid_dev dev)
+{
+	struct list_head *p;
+
+	if (!dev) {
+		printf("  dev: NULL\n");
+		return;
+	}
+
+	printf("  dev: name = %s\n", dev->bid_name);
+	printf("  dev: DEVNO=\"0x%0Lx\"\n", dev->bid_devno);
+	printf("  dev: TIME=\"%lu\"\n", dev->bid_time);
+	printf("  dev: PRI=\"%d\"\n", dev->bid_pri);
+	printf("  dev: flags = 0x%08X\n", dev->bid_flags);
+
+	list_for_each(p, &dev->bid_tags) {
+		blkid_tag tag = list_entry(p, struct blkid_struct_tag, bit_tags);
+		blkid_debug_dump_tag(tag);
+	}
+	printf("\n");
+}
+#endif
 
 /*
  * dev iteration routines for the public libblkid interface.
