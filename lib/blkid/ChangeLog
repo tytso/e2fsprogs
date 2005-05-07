@@ -1,5 +1,7 @@
 2005-05-07  Theodore Ts'o  <tytso@mit.edu>
 
+	* cache.c, dev.c, devno.c, probe.c, probe.h: Fix gcc -Wall nits.
+
 	* blkidP.h, cache.c, dev.c, read.c, tag.c: Clean up the debugging
 		code so that we don't use the inline functions DEB_DUMP_*
 		and instead use the private functions blkid_debug_dump_*().

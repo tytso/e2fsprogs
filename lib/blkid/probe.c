@@ -98,7 +98,8 @@ static void get_ext2_info(blkid_dev dev, unsigned char *buf)
 static int probe_ext3(int fd __BLKID_ATTR((unused)), 
 		      blkid_cache cache __BLKID_ATTR((unused)), 
 		      blkid_dev dev,
-		      struct blkid_magic *id, unsigned char *buf)
+		      struct blkid_magic *id __BLKID_ATTR((unused)), 
+		      unsigned char *buf)
 {
 	struct ext2_super_block *es;
 
@@ -124,10 +125,10 @@ static int probe_ext3(int fd __BLKID_ATTR((unused)),
 static int probe_ext2(int fd __BLKID_ATTR((unused)), 
 		      blkid_cache cache __BLKID_ATTR((unused)), 
 		      blkid_dev dev,
-		      struct blkid_magic *id, unsigned char *buf)
+		      struct blkid_magic *id __BLKID_ATTR((unused)), 
+		      unsigned char *buf)
 {
 	struct ext2_super_block *es;
-	const char *sec_type = 0, *label = 0;
 
 	es = (struct ext2_super_block *)buf;
 
@@ -338,7 +339,6 @@ static int probe_swap1(int fd,
 		       unsigned char *buf __BLKID_ATTR((unused)))
 {
 	struct swap_id_block *sws;
-	const char *label = 0;
 
 	probe_swap0(fd, cache, dev, id, buf);
 	/*
@@ -665,7 +665,7 @@ found_type:
 
 		blkid_set_tag(dev, "TYPE", type, 0);
 				
-		DBG(DEBUG_PROBE, printf("%s: devno 0x%04Lx, type %s\n",
+		DBG(DEBUG_PROBE, printf("%s: devno 0x%04llx, type %s\n",
 			   dev->bid_name, st.st_rdev, type));
 	}
 

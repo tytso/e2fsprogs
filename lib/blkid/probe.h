@@ -129,7 +129,7 @@ struct swap_id_block {
 	__u32		sws_lastpage;
 	__u32		sws_nrbad;
 	unsigned char	sws_uuid[16];
-	unsigned char	sws_volume[16];
+	char		sws_volume[16];
 	unsigned char	sws_pad[117];
 	__u32		sws_badpg;
 };
@@ -231,13 +231,13 @@ struct ocfs_volume_header {
 	unsigned char	minor_version[4];
 	unsigned char	major_version[4];
 	unsigned char	signature[128];
-	unsigned char  mount[128];
-	unsigned char  mount_len[2];
+	char		mount[128];
+	unsigned char   mount_len[2];
 };
 
 struct ocfs_volume_label {
 	unsigned char	disk_lock[48];
-	unsigned char	label[64];	
+	char		label[64];	
 	unsigned char	label_len[2];
 	unsigned char  vol_id[16];
 	unsigned char  vol_id_len[2];
@@ -256,7 +256,7 @@ struct ocfs2_super_block {
 	unsigned char  signature[8];
 	unsigned char  s_dummy1[184];
 	unsigned char  s_dummy2[80];
-	unsigned char  s_label[64];
+	char	       s_label[64];
 	unsigned char  s_uuid[16];
 };
 

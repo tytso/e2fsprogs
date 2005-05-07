@@ -46,9 +46,9 @@ static char *safe_getenv(const char *arg)
 #endif
 
 #ifdef HAVE___SECURE_GETENV
-	return __secure_getenv("BLKID_FILE");
+	return __secure_getenv(arg);
 #else
-	return getenv("BLKID_FILE");
+	return getenv(arg);
 #endif
 }
 
