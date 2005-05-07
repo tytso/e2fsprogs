@@ -1,3 +1,14 @@
+2005-05-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* tag.c (blkid_dev_has_tag): New function which returns 1 if a tag
+		has a particular type and possibly value.
+
+	* blkid.h, dev.c (blkid_dev_set_search, blkid_dev_next): Added new
+		function, blkid_dev_set_search(), which filters the
+		devices returned by the blkid_dev_next() iterator.
+
+	* tag.c, dev.c, Makefile.in: Add debugging test program code.
+
 2005-05-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c (probe_cramfs), probe.h: Fix magic number recognition

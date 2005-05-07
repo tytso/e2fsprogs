@@ -1,3 +1,9 @@
+2005-05-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid.c (main): Use the new functions blkid_dev_set_search() and
+		blkid_dev_has_tag().  Remove compare_search_type() since
+		it has been obseleted by blkid_dev_has_tag().
+
 2005-05-06  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid.c (main): Use an int instead of an char to store the

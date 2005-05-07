@@ -77,6 +77,8 @@ extern const char *blkid_dev_devname(blkid_dev dev)
 struct blkid_struct_dev_iterate {
 	int			magic;
 	blkid_cache		cache;
+	char			*search_type;
+	char			*search_value;
 	struct list_head	*p;
 };
 
@@ -89,23 +91,62 @@ extern blkid_dev_iterate blkid_dev_iterate_begin(blkid_cache cache)
 		iter->magic = DEV_ITERATE_MAGIC;
 		iter->cache = cache;
 		iter->p	= cache->bic_devs.next;
+		iter->search_type = 0;
+		iter->search_value = 0;
 	}
 	return (iter);
+}
+
+extern int blkid_dev_set_search(blkid_dev_iterate iter,
+				 char *search_type, char *search_value)
+{
+	char *new_type, *new_value;
+
+	if (!iter || iter->magic != DEV_ITERATE_MAGIC || !search_type || 
+	    !search_value)
+		return -1;
+	new_type = malloc(strlen(search_type)+1);
+	new_value = malloc(strlen(search_value)+1);
+	if (!new_type || !new_value) {
+		if (new_type)
+			free(new_type);
+		if (new_value)
+			free(new_value);
+		return -1;
+	}
+	strcpy(new_type, search_type);
+	strcpy(new_value, search_value);
+	if (iter->search_type)
+		free(iter->search_type);
+	if (iter->search_value)
+		free(iter->search_value);
+	iter->search_type = new_type;
+	iter->search_value = new_value;
+	return 0;
 }
 
 /*
  * Return 0 on success, -1 on error
  */
 extern int blkid_dev_next(blkid_dev_iterate iter,
-			  blkid_dev *dev)
+			  blkid_dev *ret_dev)
 {
-	*dev = 0;
-	if (!iter || iter->magic != DEV_ITERATE_MAGIC ||
-	    iter->p == &iter->cache->bic_devs)
+	blkid_dev		dev;
+
+	*ret_dev = 0;
+	if (!iter || iter->magic != DEV_ITERATE_MAGIC)
 		return -1;
-	*dev = list_entry(iter->p, struct blkid_struct_dev, bid_devs);
-	iter->p = iter->p->next;
-	return 0;
+	while (iter->p != &iter->cache->bic_devs) {
+		dev = list_entry(iter->p, struct blkid_struct_dev, bid_devs);
+		iter->p = iter->p->next;
+		if (iter->search_type && 
+		    !blkid_dev_has_tag(dev, iter->search_type, 
+				       iter->search_value))
+			continue;
+		*ret_dev = dev;
+		return 0;
+	}
+	return -1;
 }
 
 extern void blkid_dev_iterate_end(blkid_dev_iterate iter)
@@ -116,3 +157,72 @@ extern void blkid_dev_iterate_end(blkid_dev_iterate iter)
 	free(iter);
 }
 
+#ifdef TEST_PROGRAM
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#else
+extern char *optarg;
+extern int optind;
+#endif
+
+void usage(char *prog)
+{
+	fprintf(stderr, "Usage: %s [-f blkid_file] [-m debug_mask]\n", prog);
+	fprintf(stderr, "\tList all devices and exit\n", prog);
+	exit(1);
+}
+
+int main(int argc, char **argv)
+{
+	blkid_dev_iterate	iter;
+	blkid_cache 		cache = NULL;
+	blkid_dev		dev;
+	int			c, ret;
+	char			*tmp;
+	char			*file = NULL;
+	char			*search_type = NULL;
+	char			*search_value = NULL;
+
+	while ((c = getopt (argc, argv, "m:f:")) != EOF)
+		switch (c) {
+		case 'f':
+			file = optarg;
+			break;
+		case 'm':
+			blkid_debug_mask = strtoul (optarg, &tmp, 0);
+			if (*tmp) {
+				fprintf(stderr, "Invalid debug mask: %d\n", 
+					optarg);
+				exit(1);
+			}
+			break;
+		case '?':
+			usage(argv[0]);
+		}
+	if (argc >= optind+2) {
+		search_type = argv[optind];
+		search_value = argv[optind+1];
+		optind += 2;
+	}
+	if (argc != optind)
+		usage(argv[0]);
+
+	if ((ret = blkid_get_cache(&cache, file)) != 0) {
+		fprintf(stderr, "%s: error creating cache (%d)\n",
+			argv[0], ret);
+		exit(1);
+	}
+
+	iter = blkid_dev_iterate_begin(cache);
+	if (search_type)
+		blkid_dev_set_search(iter, search_type, search_value);
+	while (blkid_dev_next(iter, &dev) == 0) {
+		printf("Device: %s\n", blkid_dev_devname(dev));
+	}
+	blkid_dev_iterate_end(iter);
+
+
+	blkid_put_cache(cache);
+	return (0);
+}
+#endif

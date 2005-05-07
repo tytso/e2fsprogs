@@ -88,26 +88,6 @@ static void print_tags(blkid_dev dev, char *show[], int numtag, int output)
 		printf("\n");
 }
 
-int compare_search_type(blkid_dev dev, const char *search_type, 
-			const char *search_value)
-{
-	blkid_tag_iterate	tag_iter;
-	const char		*type, *value;
-	int			found = 0;
-
-	tag_iter = blkid_tag_iterate_begin(dev);
-	while (blkid_tag_next(tag_iter, &type, &value) == 0) {
-		if (!strcmp(type, search_type) &&
-		    !strcmp(value, search_value)) {
-			found++;
-			break;
-		}
-	}
-	blkid_tag_iterate_end(tag_iter);
-
-	return found;
-}
-
 int main(int argc, char **argv)
 {
 	blkid_cache cache = NULL;
@@ -200,13 +180,10 @@ int main(int argc, char **argv)
 		blkid_probe_all(cache);
 
 		iter = blkid_dev_iterate_begin(cache);
+		blkid_dev_set_search(iter, search_type, search_value);
 		while (blkid_dev_next(iter, &dev) == 0) {
 			dev = blkid_verify(cache, dev);
 			if (!dev)
-				continue;
-			if (search_type &&
-			    !compare_search_type(dev, search_type, 
-						 search_value))
 				continue;
 			print_tags(dev, show, numtag, output_format);
 			err = 0;
@@ -218,9 +195,9 @@ int main(int argc, char **argv)
 						  BLKID_DEV_NORMAL);
 
 		if (dev) {
-			if (search_type &&
-			    !compare_search_type(dev, search_type, 
-						 search_value))
+			if (search_type && 
+			    !blkid_dev_has_tag(dev, search_type, 
+					       search_value))
 				continue;
 			print_tags(dev, show, numtag, output_format);
 			err = 0;
