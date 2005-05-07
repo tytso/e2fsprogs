@@ -11,7 +11,7 @@ blkid \- command\-line utility to locate/print block device attributes
 .SH SYNOPSIS
 .B blkid 
 [
-.B \-hv
+.B \-hlv
 ]
 [
 [
@@ -62,6 +62,32 @@ scanned but not necessarily available at this time), specify
 .TP
 .B \-h
 Display a usage message and exit.
+.TP
+.B \-l
+Lookup the device that matches the search parameter specified using
+the 
+.B \-t
+option, assuming that there is only one matching the search parameter.  
+For a system with a large number of disks, this will be more 
+efficient by avoiding the need to revalidate devices unless absolutely 
+necessary.  If this option is not specified, 
+.B blkid
+will use a less efficient approach, which allows 
+.B blkid
+to print all of the devices that match the search parameter.
+.IP
+This option is best used for tag searches such as 
+.I LABEL=data_vol
+or
+.IR UUID=e280469a-d06f-4c0b-b068-44f3b576029e .
+If you want 
+.B blkid
+to print all of the ext3 filesystems using a search parameter 
+such as
+.IR TYPE=ext3 ,
+then this option should 
+.I not
+be used.
 .TP
 .B \-o 
 Display 
@@ -117,7 +143,7 @@ instead of writing it to the default cache file
 If you don't want to save the cache to the default file, specify
 .IR /dev/null.
 If not specified it will be the same file as that given by the
-.B -c
+.B \-c
 option.
 .TP
 .I <device>

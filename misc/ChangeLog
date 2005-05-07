@@ -4,6 +4,10 @@
 		blkid_dev_has_tag().  Remove compare_search_type() since
 		it has been obseleted by blkid_dev_has_tag().
 
+	* blkid.c (main): Add a new flag, -l, which will use a more
+		efficient method to find the device that matches a
+		particular tag specifier.
+
 2005-05-06  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid.c (main): Use an int instead of an char to store the

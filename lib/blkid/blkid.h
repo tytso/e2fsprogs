@@ -65,6 +65,7 @@ extern char *blkid_devno_to_devname(dev_t devno);
 
 /* devname.c */
 extern int blkid_probe_all(blkid_cache cache);
+extern int blkid_probe_all_new(blkid_cache cache);
 extern blkid_dev blkid_get_dev(blkid_cache cache, const char *devname,
 			       int flags);
 

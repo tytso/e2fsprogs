@@ -37,12 +37,13 @@ static void usage(int error)
 
 	print_version(out);
 	fprintf(out,
-		"usage:\t%s [-c <file>] [-h] [-o format] "
+		"usage:\t%s [-c <file>] [-hl] [-o format] "
 		"[-s <tag>] [-t <token>]\n    [-v] [-w <file>] [dev ...]\n"
 		"\t-c\tcache file (default: /etc/blkid.tab, /dev/null = none)\n"
 		"\t-h\tprint this usage message and exit\n"
 		"\t-s\tshow specified tag(s) (default show all tags)\n"
 		"\t-t\tfind device with a specific token (NAME=value pair)\n"
+		"\t-l\tlookup the the first device with arguments specified by -t\n"
 		"\t-v\tprint version and exit\n"
 		"\t-w\twrite cache to different file (/dev/null = no write)\n"
 		"\tdev\tspecify device(s) to probe (default: all devices)\n",
@@ -101,9 +102,10 @@ int main(int argc, char **argv)
 	int err = 4;
 	unsigned int i;
 	int output_format = 0;
+	int lookup = 0;
 	int c;
 
-	while ((c = getopt (argc, argv, "c:f:ho:s:t:w:v")) != EOF)
+	while ((c = getopt (argc, argv, "c:f:hlo:s:t:w:v")) != EOF)
 		switch (c) {
 		case 'c':
 			if (optarg && !*optarg)
@@ -112,6 +114,9 @@ int main(int argc, char **argv)
 				read = optarg;
 			if (!write)
 				write = read;
+			break;
+		case 'l':
+			lookup++;
 			break;
 		case 'o':
 			if (!strcmp(optarg, "value"))
@@ -172,8 +177,25 @@ int main(int argc, char **argv)
 		goto exit;
 
 	err = 2;
+	if (lookup) {
+		blkid_dev dev;
+
+		if (!search_type) {
+			fprintf(stderr, "The lookup option requires a "
+				"search type specified using -t\n");
+			exit(1);
+		}
+		/* Load any additional devices not in the cache */
+		for (i = 0; i < numdev; i++)
+			blkid_get_dev(cache, devices[i], BLKID_DEV_NORMAL);
+
+		if ((dev = blkid_find_dev_with_tag(cache, search_type,
+						   search_value))) {
+			print_tags(dev, show, numtag, output_format);
+			err = 0;
+		}
 	/* If we didn't specify a single device, show all available devices */
-	if (!numdev) {
+	} else if (!numdev) {
 		blkid_dev_iterate	iter;
 		blkid_dev		dev;
 

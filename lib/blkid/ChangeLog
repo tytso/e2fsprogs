@@ -1,5 +1,14 @@
 2005-05-07  Theodore Ts'o  <tytso@mit.edu>
 
+	* tag.c (blkid_find_dev_with_tag): If a device can't be found with
+		the specified search arguments, probe all new devices
+		before trying to verify existing devices, as a speed
+		optimization.
+
+	* devname.c (blkid_probe_all_new): New function which only probes
+		devices are not known in the blkid cache.  This takes
+		much less time than a full probe of all devices.
+
 	* cache.c, dev.c, devno.c, probe.c, probe.h: Fix gcc -Wall nits.
 
 	* blkidP.h, cache.c, dev.c, read.c, tag.c: Clean up the debugging

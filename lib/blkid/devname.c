@@ -79,7 +79,7 @@ blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
  * Probe a single block device to add to the device cache.
  */
 static void probe_one(blkid_cache cache, const char *ptname,
-		      dev_t devno, int pri)
+		      dev_t devno, int pri, int only_if_new)
 {
 	blkid_dev dev = NULL;
 	struct list_head *p;
@@ -91,6 +91,8 @@ static void probe_one(blkid_cache cache, const char *ptname,
 		blkid_dev tmp = list_entry(p, struct blkid_struct_dev,
 					   bid_devs);
 		if (tmp->bid_devno == devno) {
+			if (only_if_new)
+				return;
 			dev = blkid_verify(cache, tmp);
 			break;
 		}
@@ -171,7 +173,7 @@ static dev_t lvm_get_devno(const char *lvm_device)
 	return ret;
 }
 
-static void lvm_probe_all(blkid_cache cache)
+static void lvm_probe_all(blkid_cache cache, int only_if_new)
 {
 	DIR		*vg_list;
 	struct dirent	*vg_iter;
@@ -222,7 +224,8 @@ static void lvm_probe_all(blkid_cache cache)
 			DBG(DEBUG_DEVNAME, printf("LVM dev %s: devno 0x%04X\n",
 						  lvm_device,
 						  (unsigned int) dev));
-			probe_one(cache, lvm_device, dev, BLKID_PRI_LVM);
+			probe_one(cache, lvm_device, dev, BLKID_PRI_LVM, 
+				  only_if_new);
 			free(lvm_device);
 		}
 		closedir(lv_list);
@@ -235,7 +238,7 @@ exit:
 #define PROC_EVMS_VOLUMES "/proc/evms/volumes"
 
 static int
-evms_probe_all(blkid_cache cache)
+evms_probe_all(blkid_cache cache, int only_if_new)
 {
 	char line[100];
 	int ma, mi, sz, num = 0;
@@ -253,7 +256,8 @@ evms_probe_all(blkid_cache cache)
 		DBG(DEBUG_DEVNAME, printf("Checking partition %s (%d, %d)\n",
 					  device, ma, mi));
 
-		probe_one(cache, device, makedev(ma, mi), BLKID_PRI_EVMS);
+		probe_one(cache, device, makedev(ma, mi), BLKID_PRI_EVMS,
+			  only_if_new);
 		num++;
 	}
 	fclose(procpt);
@@ -263,7 +267,7 @@ evms_probe_all(blkid_cache cache)
 /*
  * Read the device data for all available block devices in the system.
  */
-int blkid_probe_all(blkid_cache cache)
+static int probe_all(blkid_cache cache, int only_if_new)
 {
 	FILE *proc;
 	char line[1024];
@@ -286,9 +290,9 @@ int blkid_probe_all(blkid_cache cache)
 		return 0;
 
 	blkid_read_cache(cache);
-	evms_probe_all(cache);
+	evms_probe_all(cache, only_if_new);
 #ifdef VG_DIR
-	lvm_probe_all(cache);
+	lvm_probe_all(cache, only_if_new);
 #endif
 
 	proc = fopen(PROC_PARTITIONS, "r");
@@ -325,7 +329,8 @@ int blkid_probe_all(blkid_cache cache)
 				   ptname, (unsigned int) devs[which]));
 
 			if (sz > 1)
-				probe_one(cache, ptname, devs[which], 0);
+				probe_one(cache, ptname, devs[which], 0, 
+					  only_if_new);
 			lens[which] = 0;
 			lens[last] = 0;
 		} else if (lens[last] && strncmp(ptnames[last], ptname,
@@ -333,22 +338,43 @@ int blkid_probe_all(blkid_cache cache)
 			DBG(DEBUG_DEVNAME,
 			    printf("whole dev %s, devno 0x%04X\n",
 				   ptnames[last], (unsigned int) devs[last]));
-			probe_one(cache, ptnames[last], devs[last], 0);
+			probe_one(cache, ptnames[last], devs[last], 0,
+				  only_if_new);
 			lens[last] = 0;
 		}
 	}
 
 	/* Handle the last device if it wasn't partitioned */
 	if (lens[which])
-		probe_one(cache, ptname, devs[which], 0);
+		probe_one(cache, ptname, devs[which], 0, only_if_new);
 
 	fclose(proc);
-
-	cache->bic_time = time(0);
-	cache->bic_flags |= BLKID_BIC_FL_PROBED;
 	blkid_flush_cache(cache);
 	return 0;
 }
+
+int blkid_probe_all(blkid_cache cache)
+{
+	int ret;
+
+	DBG(DEBUG_PROBE, printf("Begin blkid_probe_all()\n"));
+	ret = probe_all(cache, 0);
+	cache->bic_time = time(0);
+	cache->bic_flags |= BLKID_BIC_FL_PROBED;
+	DBG(DEBUG_PROBE, printf("End blkid_probe_all()\n"));
+	return ret;
+}
+
+int blkid_probe_all_new(blkid_cache cache)
+{
+	int ret;
+
+	DBG(DEBUG_PROBE, printf("Begin blkid_probe_all_new()\n"));
+	ret = probe_all(cache, 1);
+	DBG(DEBUG_PROBE, printf("End blkid_probe_all_new()\n"));
+	return ret;
+}
+
 
 #ifdef TEST_PROGRAM
 int main(int argc, char **argv)

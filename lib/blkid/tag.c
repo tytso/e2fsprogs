@@ -316,9 +316,6 @@ extern void blkid_tag_iterate_end(blkid_tag_iterate iter)
  * type/value pair.  If there is more than one device that matches the
  * search specification, it returns the one with the highest priority
  * value.  This allows us to give preference to EVMS or LVM devices.
- *
- * XXX there should also be an interface which uses an iterator so we
- * can get all of the devices which match a type/value search parameter.
  */
 extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache,
 					 const char *type,
@@ -328,6 +325,7 @@ extern blkid_dev blkid_find_dev_with_tag(blkid_cache cache,
 	blkid_dev	dev;
 	int		pri;
 	struct list_head *p;
+	int		probe_new = 0;
 
 	if (!cache || !type || !value)
 		return NULL;
@@ -357,6 +355,13 @@ try_again:
 		dev = blkid_verify(cache, dev);
 		if (dev && (dev->bid_flags & BLKID_BID_FL_VERIFIED))
 			goto try_again;
+	}
+
+	if (!dev && !probe_new) {
+		if (blkid_probe_all_new(cache) < 0)
+			return NULL;
+		probe_new++;
+		goto try_again;
 	}
 
 	if (!dev && !(cache->bic_flags & BLKID_BIC_FL_PROBED)) {
