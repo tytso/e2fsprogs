@@ -169,7 +169,6 @@ Package: e2fsprogs-udeb
 Section: debian-installer
 Priority: standard
 Depends: ${shlibs:Depends}
-Conflicts: e2fsprogs
 Architecture: any
 Description: stripped-down versions of e2fsprogs, for debian-installer
  This package is an e2fsprogs package built for a reduced size, so that
