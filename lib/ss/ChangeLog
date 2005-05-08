@@ -1,3 +1,8 @@
+2005-05-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* pager.c (ss_safe_getenv): Fix bug so it would fetch the right
+		environment variable.
+
 2005-03-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* get_readline.c (ss_get_readline), pager.c (ss_page_stdin): If
