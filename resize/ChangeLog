@@ -1,3 +1,11 @@
+2005-05-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* resize2fs.c (fix_resize_inode): Don't bother to translate
+		debugging printf's.
+
+	* main.c: Fix case on usage message, and remove _() from messages
+		from a version string that doesn't need translation.
+
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.37

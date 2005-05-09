@@ -819,7 +819,7 @@ int main (int argc, char ** argv)
 	if (i_flag) {
 		sb->s_checkinterval = interval;
 		ext2fs_mark_super_dirty(fs);
-		printf (_("Setting interval between check %lu seconds\n"), interval);
+		printf (_("Setting interval between checks to %lu seconds\n"), interval);
 	}
 	if (m_flag) {
 		sb->s_r_blocks_count = (sb->s_blocks_count / 100)

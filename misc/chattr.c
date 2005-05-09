@@ -84,7 +84,7 @@ static void fatal_error(const char * fmt_string, int errcode)
 	exit (errcode);
 }
 
-#define usage() fatal_error(_("usage: %s [-RV] [-+=AacDdijsSu] [-v version] files...\n"), \
+#define usage() fatal_error(_("Usage: %s [-RV] [-+=AacDdijsSu] [-v version] files...\n"), \
 			     1)
 
 struct flags_char {

@@ -1,3 +1,10 @@
+2005-05-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* tune2fs.c (main): Fix grammar in message printed when setting
+		the check interval (tune2fs -i)
+
+	* chattr.c: Fix case on usage message.
+
 2005-05-07  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid.c (main): Use the new functions blkid_dev_set_search() and

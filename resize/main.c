@@ -31,7 +31,8 @@ char *program_name, *device_name, *io_options;
 
 static void usage (char *prog)
 {
-	fprintf (stderr, _("usage: %s [-d debug_flags] [-f] [-F] [-p] device [new-size]\n\n"), prog);
+	fprintf (stderr, _("Usage: %s [-d debug_flags] [-f] [-F] [-p] "
+			   "device [new_size]\n\n"), prog);
 
 	exit (1);
 }
@@ -135,7 +136,7 @@ int main (int argc, char ** argv)
 
 	initialize_ext2_error_table();
 
-	fprintf (stderr, _("resize2fs %s (%s)\n"),
+	fprintf (stderr, "resize2fs %s (%s)\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
