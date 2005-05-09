@@ -1,3 +1,9 @@
+2005-05-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* rw.po: Add Rwandan translation
+
+	* sv.po: Update Sweedish translation.
+
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.37
