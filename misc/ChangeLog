@@ -1,5 +1,10 @@
 2005-05-09  Theodore Ts'o  <tytso@mit.edu>
 
+	* util.c (figure_journal_size): Change the default journal size to
+		be bigger for larger filesystems, given modern memory
+		sizes.  Now, for filesystems greater than 4GB, we use a
+		journal of 128 MB instead 32 MB.
+
 	* tune2fs.c (main): Fix grammar in message printed when setting
 		the check interval (tune2fs -i)
 
