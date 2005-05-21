@@ -50,10 +50,10 @@ int verbose = 0;
 static unsigned long get_bmap(int fd, unsigned long block)
 {
 	int	ret;
-	unsigned long b;
+	unsigned int b;
 
 	b = block;
-	ret = ioctl(fd, FIBMAP, &b);
+	ret = ioctl(fd, FIBMAP, &b); /* FIBMAP takes a pointer to an integer */
 	if (ret < 0) {
 		if (errno == EPERM) {
 			fprintf(stderr, "No permission to use FIBMAP ioctl; must have root privileges\n");
@@ -70,7 +70,8 @@ static void frag_report(const char *filename)
 {
 	struct statfs	fsinfo;
 	struct stat64	fileinfo;
-	long		i, fd, bs, block, last_block = 0, numblocks;
+	int		bs;
+	long		i, fd, block, last_block = 0, numblocks;
 	long		bpib;	/* Blocks per indirect block */
 	long		cylgroups;
 	int		discont = 0, expected;
@@ -105,7 +106,7 @@ static void frag_report(const char *filename)
 		perror("open");
 		return;
 	}
-	if (ioctl(fd, FIGETBSZ, &bs) < 0) {
+	if (ioctl(fd, FIGETBSZ, &bs) < 0) { /* FIGETBSZ takes an int */
 		perror("FIGETBSZ");
 		close(fd);
 		return;

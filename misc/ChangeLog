@@ -1,3 +1,11 @@
+2005-05-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* filefrag.c (frag_report, get_bmap): The FIBMAP and FIGETBSZ
+		ioctls return an integer, not an unsigned long.  Fix this
+		to avoid problems on 64-bit platforms where the size of an
+		integer != the size of a long.  (Addresses Debian Bug
+		#309655)
+
 2005-05-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* util.c (figure_journal_size): Change the default journal size to
