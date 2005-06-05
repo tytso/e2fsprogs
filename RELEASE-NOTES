@@ -586,7 +586,7 @@ honors the -c option, and to use O_DIRECT when possible to avoid
 thrashing the system block buffer cache.
 
 Fixed various NLS issues.
- - Added Czech and Sweedish translations
+ - Added Czech and Swedish translations
  - Removed testing NYC translation
  - Fixed NLS support for message abbrevations in e2fsck
  - Remove de-utf.po, since we shouldn't have two versions using different

@@ -2,7 +2,7 @@
 
 	* rw.po: Add Rwandan translation
 
-	* sv.po: Update Sweedish translation.
+	* sv.po: Update Swedish translation.
 
 2005-03-21  Theodore Ts'o  <tytso@mit.edu>
 
@@ -43,7 +43,7 @@
 
 2004-03-20  Theodore Ts'o  <tytso@mit.edu>
 
-	* pl.po, sv.po, tr.po: Update Polish, Sweedish, and Turkish
+	* pl.po, sv.po, tr.po: Update Polish, Swedish, and Turkish
 		translations.
 
 2004-02-28  Theodore Ts'o  <tytso@mit.edu>
@@ -59,7 +59,7 @@
 
 	* pl.po: Added new Polish translation.
 
-	* sv.po: Updated Sweedish translation
+	* sv.po: Updated Swedish translation
 
 	* de.po: Fixed and updated German translations from Marc Langer.
 		(Addresses Debian bug #200086)
@@ -70,7 +70,7 @@
 
 2003-07-25  Theodore Ts'o  <tytso@mit.edu>
 
-	* LINGUAS, sv.po: Added Sweedish translation from Göran Uddeborg
+	* LINGUAS, sv.po: Added Swedish translation from Göran Uddeborg
 		<goeran@uddeborg.se>
 
 2003-05-17  Theodore Ts'o  <tytso@mit.edu>

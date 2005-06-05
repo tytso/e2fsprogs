@@ -17,7 +17,7 @@ e2fsprogs (1.37+1.38-WIP-0509-1) unstable; urgency=low
   * When determining the libraries needed for the initrd, unset LD_PRELOAD
     and LD_LIBRARY_PATH and filter out libraries found in
     /etc/ld.so.preload.  (Closes: #304003)
-  * Update Sweedish translation, and added translation for Rwanda.
+  * Update Swedish translation, and added translation for Rwanda.
   * Minor man page spelling/typo fixes.  (Closes: #304591, #304592,
   	#304594, #304597, #304593)
 
@@ -282,7 +282,7 @@ e2fsprogs (1.35-4) unstable; urgency=low
     the probe function to completely malfunction.  (Closes: #239191)
   * Make the debugfs command's link command set the filetype information
     correctly.
-  * Update the Polish, Sweedish, and Turkish translations
+  * Update the Polish, Swedish, and Turkish translations
   * Add an -o option to the blkid program which allows the user to 
     control the output format of blkid.
   * Fixed and cleaned up the tune2fs and blkid man pages (Closes: #238741)
