@@ -292,7 +292,18 @@ is unable to repair, please report it to the author.
 Please include as much information as possible in your bug report.
 Ideally, include a complete transcript of the
 .B e2fsck
-run, so I can see exactly what error messages are displayed.  If you
+run, so I can see exactly what error messages are displayed.  (Make sure
+the messages printed by 
+.B e2fsck 
+are in English; if your system has been
+configured so that 
+.BR e2fsck 's
+messages have been translated into another language, please set the the
+.B LC_ALL
+environment variable to
+.B C
+so that the transcript of e2fsck's output will be useful to me.)
+If you
 have a writable filesystem where the transcript can be stored, the 
 .BR script (1)
 program is a handy way to save the output of
@@ -312,7 +323,13 @@ command run on the relevant inode(s).  If the inode is a directory, the
 .I dump
 command will allow you to extract the contents of the directory inode,
 which can sent to me after being first run through
-.BR uuencode (1).
+.BR uuencode (1).  
+The most useful data you can send to help reproduce
+the bug is a compressed raw image dump of the filesyste, generated using
+.BR e2image (8).
+See the 
+.BR e2image (8)
+man page for more details.
 .PP
 Always include the full version string which 
 .B e2fsck
@@ -325,4 +342,5 @@ was written by Theodore Ts'o <tytso@mit.edu>.
 .BR mke2fs (8),
 .BR tune2fs (8),
 .BR dumpe2fs (8),
-.BR debugfs (8)
+.BR debugfs (8),
+.BR e2image (8)

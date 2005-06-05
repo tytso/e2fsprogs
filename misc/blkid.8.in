@@ -64,7 +64,7 @@ scanned but not necessarily available at this time), specify
 Display a usage message and exit.
 .TP
 .B \-l
-Lookup the device that matches the search parameter specified using
+Look up the device that matches the search parameter specified using
 the 
 .B \-t
 option, assuming that there is only one matching the search parameter.  

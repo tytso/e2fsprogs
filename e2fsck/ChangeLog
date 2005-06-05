@@ -1,3 +1,10 @@
+2005-06-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.8.in: Add a request to the REPORTING BUGS section of the
+		man page to make sure that e2fsck's messages are printed
+		in English, and to send a raw e2image filesystem dump if
+		possible.
+
 2005-05-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* badblocks.c (check_bb_inode_blocks): Clean up warning printf.

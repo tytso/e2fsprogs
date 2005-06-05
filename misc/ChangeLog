@@ -1,3 +1,7 @@
+2005-06-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid.8.in: Minor spelling fix.
+
 2005-05-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* util.c (check_mount): Check the new EXT2_MF_BUSY flag to
