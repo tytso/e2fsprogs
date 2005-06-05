@@ -152,16 +152,25 @@ void check_mount(const char *device, int force, const char *type)
 			device);
 		return;
 	}
-	if (!(mount_flags & EXT2_MF_MOUNTED))
-		return;
-
-	fprintf(stderr, _("%s is mounted; "), device);
-	if (force) {
-		fputs(_("mke2fs forced anyway.  Hope /etc/mtab is "
-			"incorrect.\n"), stderr);
-	} else {
+	if (mount_flags & EXT2_MF_MOUNTED) {
+		fprintf(stderr, _("%s is mounted; "), device);
+		if (force) {
+			fputs(_("mke2fs forced anyway.  Hope /etc/mtab is "
+				"incorrect.\n"), stderr);
+			return;
+		}
+	abort_mke2fs:
 		fprintf(stderr, _("will not make a %s here!\n"), type);
 		exit(1);
+	}
+	if (mount_flags & EXT2_MF_BUSY) {
+		fprintf(stderr, _("%s is apparently in use by the system; "),
+			device);
+		if (force) {
+			fputs(_("mke2fs forced anyway.\n"), stderr);
+			return;
+		}
+		goto abort_mke2fs;
 	}
 }
 

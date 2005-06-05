@@ -278,10 +278,12 @@ static int is_swap_device(const char *file)
 
 
 /*
- * ext2fs_check_mount_point() returns 1 if the device is mounted, 0
- * otherwise.  If mtpt is non-NULL, the directory where the device is
- * mounted is copied to where mtpt is pointing, up to mtlen
- * characters.
+ * ext2fs_check_mount_point() fills determines if the device is
+ * mounted or otherwise busy, and fills in mount_flags with one or
+ * more of the following flags: EXT2_MF_MOUNTED, EXT2_MF_ISROOT,
+ * EXT2_MF_READONLY, EXT2_MF_SWAP, and EXT2_MF_BUSY.  If mtpt is
+ * non-NULL, the directory where the device is mounted is copied to
+ * where mtpt is pointing, up to mtlen characters.
  */
 #ifdef __TURBOC__
  #pragma argsused
@@ -289,24 +291,43 @@ static int is_swap_device(const char *file)
 errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 				  char *mtpt, int mtlen)
 {
+	struct stat	st_buf;
+	errcode_t	retval = 0;
+	int		fd;
+
 	if (is_swap_device(device)) {
 		*mount_flags = EXT2_MF_MOUNTED | EXT2_MF_SWAP;
 		strncpy(mtpt, "<swap>", mtlen);
-		return 0;
-	}
+	} else {
 #ifdef HAVE_MNTENT_H
-	return check_mntent(device, mount_flags, mtpt, mtlen);
+		retval = check_mntent(device, mount_flags, mtpt, mtlen);
 #else 
 #ifdef HAVE_GETMNTINFO
-	return check_getmntinfo(device, mount_flags, mtpt, mtlen);
+		retval = check_getmntinfo(device, mount_flags, mtpt, mtlen);
 #else
 #ifdef __GNUC__
  #warning "Can't use getmntent or getmntinfo to check for mounted filesystems!"
 #endif
-	*mount_flags = 0;
-	return 0;
+		*mount_flags = 0;
 #endif /* HAVE_GETMNTINFO */
 #endif /* HAVE_MNTENT_H */
+	}
+	if (retval)
+		return retval;
+
+#ifdef __linux__ /* This only works on Linux 2.6+ systems */
+	if ((stat(device, &st_buf) != 0) ||
+	    !S_ISBLK(st_buf.st_mode))
+		return 0;
+	fd = open(device, O_RDONLY | O_EXCL);
+	if (fd < 0) {
+		if (errno == EBUSY)
+			*mount_flags |= EXT2_MF_BUSY;
+	} else
+		close(fd);
+
+	return 0;
+#endif
 }
 
 /*
@@ -339,20 +360,18 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	printf("Device %s reports flags %02x\n", argv[1], mount_flags);
+	if (mount_flags & EXT2_MF_BUSY)
+		printf("\t%s is apparently in use.\n", argv[1]);
 	if (mount_flags & EXT2_MF_MOUNTED)
 		printf("\t%s is mounted.\n", argv[1]);
-
 	if (mount_flags & EXT2_MF_SWAP)
 		printf("\t%s is a swap device.\n", argv[1]);
-
 	if (mount_flags & EXT2_MF_READONLY)
 		printf("\t%s is read-only.\n", argv[1]);
-	
 	if (mount_flags & EXT2_MF_ISROOT)
 		printf("\t%s is the root filesystem.\n", argv[1]);
 	if (mntpt[0])
 		printf("\t%s is mounted on %s.\n", argv[1], mntpt);
-	
 	exit(0);
 }
 #endif /* DEBUG */

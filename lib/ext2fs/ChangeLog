@@ -1,3 +1,10 @@
+2005-05-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* ismounted.c (ext2fs_check_mount_point): Add test to see if the
+		device appears to be busy; this only works on Linux 2.6+
+		systems, but provides some additional bullet-proofing in
+		those cases.
+
 2005-05-08  Theodore Ts'o  <tytso@mit.edu>
 
 	* test_io.c (safe_getenv): Fix bug so it would fetch the right

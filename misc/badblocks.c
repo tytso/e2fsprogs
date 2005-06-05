@@ -780,17 +780,27 @@ static void check_mount(char *device_name)
 			device_name);
 		return;
 	}
-	if (!(mount_flags & EXT2_MF_MOUNTED))
-		return;
-
-	fprintf(stderr, _("%s is mounted; "), device_name);
-	if (force) {
-		fputs(_("badblocks forced anyway.  "
-			"Hope /etc/mtab is incorrect.\n"), stderr);
-		return;
+	if (mount_flags & EXT2_MF_MOUNTED) {
+		fprintf(stderr, _("%s is mounted; "), device_name);
+		if (force) {
+			fputs(_("badblocks forced anyway.  "
+				"Hope /etc/mtab is incorrect.\n"), stderr);
+			return;
+		}
+	abort_badblocks:
+		fputs(_("it's not safe to run badblocks!\n"), stderr);
+		exit(1);
 	}
-	fputs(_("it's not safe to run badblocks!\n"), stderr);
-	exit(1);
+
+	if (mount_flags & EXT2_MF_BUSY) {
+		fprintf(stderr, _("%s is apparently in use by the system; "),
+			device_name);
+		if (force)
+			fputs(_("badblocks forced anyway.\n"), stderr);
+		else
+			goto abort_badblocks;
+	}
+
 }
 
 

@@ -1,3 +1,12 @@
+2005-05-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* util.c (check_mount): Check the new EXT2_MF_BUSY flag to
+		see if the device is in use by the system.
+
+	* badblocks.c (check_mount): Check the new EXT2_MF_BUSY flag to
+		see if the device is in use by the system.  (Works only
+		for Linux 2.6 systems, addresses Debian Bug #308594).
+
 2005-05-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* filefrag.c (frag_report, get_bmap): The FIBMAP and FIGETBSZ
