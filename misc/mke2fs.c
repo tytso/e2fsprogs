@@ -1033,7 +1033,7 @@ static void PRS(int argc, char *argv[])
 			    inode_ratio > EXT2_MAX_BLOCK_SIZE * 1024 ||
 			    *tmp) {
 				com_err(program_name, 0,
-					_("bad inode ratio %s (min %d/max %d"),
+					_("bad inode ratio %s (min %d/max %d)"),
 					optarg, EXT2_MIN_BLOCK_SIZE,
 					EXT2_MAX_BLOCK_SIZE);
 				exit(1);
