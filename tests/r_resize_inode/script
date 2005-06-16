@@ -90,7 +90,7 @@ if [ "$status" = 0 ] ; then
 	touch $test_name.ok
 else
 	echo "failed"
-	diff -c $EXP $OUT > $test_name.failed
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
 	rm -f tmp_expect
 fi
 

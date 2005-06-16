@@ -41,7 +41,7 @@ if [ "$status" = 0 ] ; then
     touch $test_name.ok
 else
     echo "failed"
-    diff -c $EXPECT $OUT > $test_name.failed
+    diff $DIFF_OPTS $EXPECT $OUT > $test_name.failed
 fi
 
 unset EXPECT OUT class instance

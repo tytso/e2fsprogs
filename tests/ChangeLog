@@ -1,3 +1,12 @@
+2005-06-16  Theodore Ts'o  <tytso@mit.edu>
+
+	* defaults/e_script, run_e2fsck, d_loaddump, f_resize_inode,
+		f_swapfs, f_move_itable, f_resize_inode, test_config:
+		Allow the diff options to be set in test_config so that
+		diff -u can be used on platforms that have it.  (To be
+		done: checking whether diff can support -u in the
+		configure script.)
+
 2005-04-14  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_dup_resize: New test case

@@ -68,7 +68,7 @@ if $FSCK -SV > /dev/null 2>&1 ; then
 	    touch $test_name.ok
     else
 	    echo "failed"
-	    diff -c $EXP $OUT > $test_name.failed
+	    diff $DIFF_OPTS $EXP $OUT > $test_name.failed
     fi
     
     unset IMAGE VERIFY_FSCK_OPT SWAP_FSCK_OPT NATIVE_FSCK_OPT OUT EXP 

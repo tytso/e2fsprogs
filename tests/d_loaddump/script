@@ -54,7 +54,7 @@ if [ "$status" = 0 ] ; then
 	touch $test_name.ok
 else
 	echo "failed"
-	diff -c $EXP $OUT > $test_name.failed
+	diff $DIFF_OPTS $EXP $OUT > $test_name.failed
 fi
 
 unset VERIFY_FSCK_OPT NATIVE_FSCK_OPT OUT EXP TEST_DATA VERIFY_DATA

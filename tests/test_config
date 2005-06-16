@@ -15,6 +15,7 @@ TEST_ICOUNT=../tests/progs/test_icount
 LD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss
 DYLD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss
 TMPFILE=./test.img
+DIFF_OPTS=-c
 export LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH
 TZ=GMT

@@ -83,9 +83,9 @@ if [ "$SKIP_VERIFY" != "true" ] ; then
 		touch $test_name.ok
 	else
 		echo "failed"
-		diff -c $EXP1 $OUT1 > $test_name.failed
+		diff $DIFF_OPTS $EXP1 $OUT1 > $test_name.failed
 		if [ "$ONE_PASS_ONLY" != "true" ]; then
-			diff -c $EXP2 $OUT2 >> $test_name.failed
+			diff $DIFF_OPTS $EXP2 $OUT2 >> $test_name.failed
 		fi
 	fi
 	rm -f tmp_expect
