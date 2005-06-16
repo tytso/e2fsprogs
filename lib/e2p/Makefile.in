@@ -66,7 +66,8 @@ e2p.pc: $(srcdir)/e2p.pc.in $(top_builddir)/config.status
 
 tst_ostype: $(srcdir)/ostype.c
 	@echo "	LD $@"
-	@$(CC) -DTEST_PROGRAM -o tst_ostype $(srcdir)/ostype.c $(ALL_CFLAGS)
+	@$(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_ostype \
+		$(srcdir)/ostype.c $(ALL_CFLAGS)
 
 check::	tst_ostype
 	./tst_ostype
