@@ -2,11 +2,69 @@
 # Copyright (C) 2003 Free Software Foundation, Inc.
 # Max de Mendizábal <max@upn.mx>, 2003.
 #
+#. The strings in e2fsck's problem.c can be very hard to translate,
+#. since the strings are expanded in two different ways.  First of all,
+#. there is an @-expansion, where strings like "@i" are expanded to
+#. "inode", and so on.  In order to make it easier for translators, the
+#. e2fsprogs po template file has been enhanced with comments that show
+#. the @-expansion, for the strings in the problem.c file.
+#.
+#. Translators are free to use the @-expansion facility if they so
+#. choose, by providing translations for strings in e2fsck/message.c.
+#. These translation can completely replace an expansion; for example,
+#. if "bblock" (which indicated that "@b" would be expanded to "block")
+#. is translated as "ddatenverlust", then "@d" will be expanded to
+#. "datenverlust".  Alternatively, translators can simply not use the
+#. @-expansion facility at all.
+#.
+#. The second expansion which is done for e2fsck's problem.c messages is
+#. a dynamic %-expansion, which expands %i as an inode number, and so
+#. on.  A table of these expansions can be found below.  Note that
+#. %-expressions that begin with "%D" and "%I" are two-character
+#. expansions; so for example, "%Iu" expands to the inode's user id
+#. ownership field (inode->i_uid).
+#.  
+#. 	%b	<blk>			block number
+#. 	%B	<blkcount>		integer
+#. 	%c	<blk2>			block number
+#. 	%Di	<dirent> -> ino		inode number
+#. 	%Dn	<dirent> -> name	string
+#. 	%Dr	<dirent> -> rec_len
+#. 	%Dl	<dirent> -> name_len
+#. 	%Dt	<dirent> -> filetype
+#. 	%d	<dir> 			inode number
+#. 	%g	<group>			integer
+#. 	%i	<ino>			inode number
+#. 	%Is	<inode> -> i_size
+#. 	%IS	<inode> -> i_extra_isize
+#. 	%Ib	<inode> -> i_blocks
+#. 	%Il	<inode> -> i_links_count
+#. 	%Im	<inode> -> i_mode
+#. 	%IM	<inode> -> i_mtime
+#. 	%IF	<inode> -> i_faddr
+#. 	%If	<inode> -> i_file_acl
+#. 	%Id	<inode> -> i_dir_acl
+#. 	%Iu	<inode> -> i_uid
+#. 	%Ig	<inode> -> i_gid
+#. 	%j	<ino2>			inode number
+#. 	%m	<com_err error message>
+#. 	%N	<num>
+#. 	%p		ext2fs_get_pathname of directory <ino>
+#. 	%P		ext2fs_get_pathname of <dirent>->ino with <ino2> as
+#. 				the containing directory.  (If dirent is NULL
+#. 				then return the pathname of directory <ino2>)
+#. 	%q		ext2fs_get_pathname of directory <dir>
+#. 	%Q		ext2fs_get_pathname of directory <ino> with <dir> as
+#. 				the containing directory.
+#. 	%s	<str>			miscellaneous string
+#. 	%S		backup superblock
+#. 	%X	<num>	hexadecimal format
+#.
 msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.34\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2005-05-09 18:04-0400\n"
+"POT-Creation-Date: 2005-06-16 20:50-0400\n"
 "PO-Revision-Date: 2003-12-24 14:12-0500\n"
 "Last-Translator: Max de Mendizábal <max@upn.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -29,8 +87,8 @@ msgid "while reading the bad blocks inode"
 msgstr "mientras se leía el nodo i de bloques malos"
 
 #: e2fsck/badblocks.c:71 e2fsck/iscan.c:112 e2fsck/scantest.c:109
-#: e2fsck/unix.c:914 e2fsck/unix.c:946 misc/badblocks.c:995
-#: misc/badblocks.c:1003 misc/badblocks.c:1017 misc/badblocks.c:1029
+#: e2fsck/unix.c:914 e2fsck/unix.c:946 misc/badblocks.c:1005
+#: misc/badblocks.c:1013 misc/badblocks.c:1027 misc/badblocks.c:1039
 #: misc/dumpe2fs.c:340 misc/e2image.c:565 misc/e2image.c:658
 #: misc/e2image.c:674 misc/mke2fs.c:240 misc/tune2fs.c:775 resize/main.c:208
 #, c-format
@@ -183,151 +241,160 @@ msgstr ""
 msgid "while trying to re-open %s"
 msgstr "mientras se intentaba reabrir %s"
 
-#: e2fsck/message.c:106
+#: e2fsck/message.c:108
 msgid "aextended attribute"
 msgstr "aatributo extendido"
 
-#: e2fsck/message.c:107
+#: e2fsck/message.c:109
 msgid "Aerror allocating"
 msgstr "Aerror en la reserva"
 
-#: e2fsck/message.c:108
+#: e2fsck/message.c:110
 msgid "bblock"
 msgstr "bbloque"
 
-#: e2fsck/message.c:109
+#: e2fsck/message.c:111
 msgid "Bbitmap"
 msgstr "Bmapa de bits"
 
-#: e2fsck/message.c:110
+#: e2fsck/message.c:112
 msgid "ccompress"
 msgstr "ccompresión"
 
-#: e2fsck/message.c:111
+#: e2fsck/message.c:113
 msgid "Cconflicts with some other fs @b"
 msgstr "Cconflictúa con algún otro sistema de ficheros @b"
 
-#: e2fsck/message.c:112
+#: e2fsck/message.c:114
 msgid "iinode"
 msgstr "inodo i"
 
-#: e2fsck/message.c:113
+#: e2fsck/message.c:115
 msgid "Iillegal"
 msgstr "Iilegal"
 
-#: e2fsck/message.c:114
+#: e2fsck/message.c:116
 msgid "jjournal"
 msgstr "jfichero de transacciones"
 
-#: e2fsck/message.c:115
+#: e2fsck/message.c:117
 msgid "Ddeleted"
 msgstr "Dborrado"
 
-#: e2fsck/message.c:116
+#: e2fsck/message.c:118
 msgid "ddirectory"
 msgstr "ddirectorio"
 
-#: e2fsck/message.c:117
+#: e2fsck/message.c:119
 msgid "eentry"
 msgstr "eentrada"
 
-#: e2fsck/message.c:118
+#: e2fsck/message.c:120
 msgid "E@e '%Dn' in %p (%i)"
 msgstr "ELa @e '%Dn' que está en %p (%i)"
 
-#: e2fsck/message.c:119
+#: e2fsck/message.c:121
 msgid "ffilesystem"
 msgstr "fsistema de ficheros"
 
-#: e2fsck/message.c:120
+#: e2fsck/message.c:122
 msgid "Ffor @i %i (%Q) is"
 msgstr "Fpara el @i %i (%Q) es"
 
-#: e2fsck/message.c:121
+#: e2fsck/message.c:123
 msgid "ggroup"
 msgstr "ggrupo"
 
-#: e2fsck/message.c:122
+#: e2fsck/message.c:124
 msgid "hHTREE @d @i"
 msgstr "hEl ÁRBOL-H del @i del @d"
 
-#: e2fsck/message.c:123
+#: e2fsck/message.c:125
 msgid "llost+found"
 msgstr "llost+found"
 
-#: e2fsck/message.c:124
+#: e2fsck/message.c:126
 msgid "Lis a link"
 msgstr "Les un vínculo"
 
-#: e2fsck/message.c:125
+#: e2fsck/message.c:127
+#, fuzzy
+msgid "mmultiply-claimed"
+msgstr "<El mapa de nodos i reclamado muchas veces>"
+
+#: e2fsck/message.c:128
+msgid "ninvalid"
+msgstr ""
+
+#: e2fsck/message.c:129
 msgid "oorphaned"
 msgstr "ohuérfano"
 
-#: e2fsck/message.c:126
+#: e2fsck/message.c:130
 msgid "pproblem in"
 msgstr "pproblema en"
 
-#: e2fsck/message.c:127
+#: e2fsck/message.c:131
 msgid "rroot @i"
 msgstr "r@i raíz"
 
-#: e2fsck/message.c:128
+#: e2fsck/message.c:132
 msgid "sshould be"
 msgstr "sdebería ser"
 
-#: e2fsck/message.c:129
+#: e2fsck/message.c:133
 msgid "Ssuper@b"
 msgstr "Ssúper @b"
 
-#: e2fsck/message.c:130
+#: e2fsck/message.c:134
 msgid "uunattached"
 msgstr "udesacoplado"
 
-#: e2fsck/message.c:131
+#: e2fsck/message.c:135
 msgid "vdevice"
 msgstr "vdispositivo"
 
-#: e2fsck/message.c:132
+#: e2fsck/message.c:136
 msgid "zzero-length"
 msgstr "zlongitud cero"
 
-#: e2fsck/message.c:143
+#: e2fsck/message.c:147
 msgid "<The NULL inode>"
 msgstr "<El nodo i NULO>"
 
-#: e2fsck/message.c:144
+#: e2fsck/message.c:148
 msgid "<The bad blocks inode>"
 msgstr "<Los bloques malos del nodo i>"
 
-#: e2fsck/message.c:146
+#: e2fsck/message.c:150
 msgid "<The ACL index inode>"
 msgstr "<El índice ACL del nodo i>"
 
-#: e2fsck/message.c:147
+#: e2fsck/message.c:151
 msgid "<The ACL data inode>"
 msgstr "<La información ACL del nodo i>"
 
-#: e2fsck/message.c:148
+#: e2fsck/message.c:152
 msgid "<The boot loader inode>"
 msgstr "<El nodo i del cargador de inicio>"
 
-#: e2fsck/message.c:149
+#: e2fsck/message.c:153
 msgid "<The undelete directory inode>"
 msgstr "<El nodo i del directorio de desborrado>"
 
-#: e2fsck/message.c:150
+#: e2fsck/message.c:154
 msgid "<The group descriptor inode>"
 msgstr "<El nodo i descriptor del grupo>"
 
-#: e2fsck/message.c:151
+#: e2fsck/message.c:155
 msgid "<The journal inode>"
 msgstr "<El nodo i del fichero de transacciones>"
 
-#: e2fsck/message.c:152
+#: e2fsck/message.c:156
 msgid "<Reserved inode 9>"
 msgstr "<El nodo i 9 reservado>"
 
-#: e2fsck/message.c:153
+#: e2fsck/message.c:157
 msgid "<Reserved inode 10>"
 msgstr "<El nodo i 10 reservado>"
 
@@ -490,8 +557,9 @@ msgid "Continue"
 msgstr "Continuar"
 
 #: e2fsck/problem.c:64
-msgid "Clone duplicate/bad blocks"
-msgstr "Colonar bloques duplicados/malos"
+#, fuzzy
+msgid "Clone multiply-claimed blocks"
+msgstr "mapa de bloques reclamado muchas veces"
 
 #: e2fsck/problem.c:65
 msgid "Delete file"
@@ -571,7 +639,8 @@ msgid "CONTINUING"
 msgstr "CONTINUANDO"
 
 #: e2fsck/problem.c:92
-msgid "DUPLICATE/BAD BLOCKS CLONED"
+#, fuzzy
+msgid "MULTIPLY-CLAIMED BLOCKS CLONED"
 msgstr "SE CLONARON LOS BLOQUES DUPLICADOS/MALOS"
 
 #: e2fsck/problem.c:93
@@ -595,18 +664,18 @@ msgstr "SE BORRÓ EL ÍNDICE DEL ÁRBOL-H"
 msgid "WILL RECREATE"
 msgstr "CREADO"
 
-#. @-expand: block bitmap for group %g is not in group.  (block %b)\n
+#. @-expanded: block bitmap for group %g is not in group.  (block %b)\n
 #: e2fsck/problem.c:106
 msgid "@b @B for @g %g is not in @g.  (@b %b)\n"
 msgstr "El @B del @b para el @g %g no está en el @g.  (@b %b)\n"
 
-#. @-expand: inode bitmap for group %g is not in group.  (block %b)\n
+#. @-expanded: inode bitmap for group %g is not in group.  (block %b)\n
 #: e2fsck/problem.c:110
 msgid "@i @B for @g %g is not in @g.  (@b %b)\n"
 msgstr "El @B del @i para el @g no está en el @g.  (@b %b)\n"
 
-#. @-expand: inode table for group %g is not in group.  (block %b)\n
-#. @-expand: WARNING: SEVERE DATA LOSS POSSIBLE.\n
+#. @-expanded: inode table for group %g is not in group.  (block %b)\n
+#. @-expanded: WARNING: SEVERE DATA LOSS POSSIBLE.\n
 #: e2fsck/problem.c:115
 msgid ""
 "@i table for @g %g is not in @g.  (@b %b)\n"
@@ -615,13 +684,13 @@ msgstr ""
 "La tabla del @i para el @g %g no está en el @g.  (@b %b)\n"
 "CUIDADO: ES POSIBLE QUE HAYA UNA PÉRDIDA DE DATOS SEVERA.\n"
 
-#. @-expand: \n
-#. @-expand: The superblock could not be read or does not describe a correct ext2\n
-#. @-expand: filesystem.  If the device is valid and it really contains an ext2\n
-#. @-expand: filesystem (and not swap or ufs or something else), then the superblock\n
-#. @-expand: is corrupt, and you might try running e2fsck with an alternate superblock:\n
-#. @-expand:     e2fsck -b %S <device>\n
-#. @-expand: \n
+#. @-expanded: \n
+#. @-expanded: The superblock could not be read or does not describe a correct ext2\n
+#. @-expanded: filesystem.  If the device is valid and it really contains an ext2\n
+#. @-expanded: filesystem (and not swap or ufs or something else), then the superblock\n
+#. @-expanded: is corrupt, and you might try running e2fsck with an alternate superblock:\n
+#. @-expanded:     e2fsck -b %S <device>\n
+#. @-expanded: \n
 #: e2fsck/problem.c:121
 #, c-format
 msgid ""
@@ -641,9 +710,9 @@ msgstr ""
 "   e2fsck -b %S <@v>\n"
 "\n"
 
-#. @-expand: The filesystem size (according to the superblock) is %b blocks\n
-#. @-expand: The physical size of the device is %c blocks\n
-#. @-expand: Either the superblock or the partition table is likely to be corrupt!\n
+#. @-expanded: The filesystem size (according to the superblock) is %b blocks\n
+#. @-expanded: The physical size of the device is %c blocks\n
+#. @-expanded: Either the superblock or the partition table is likely to be corrupt!\n
 #: e2fsck/problem.c:130
 msgid ""
 "The @f size (according to the @S) is %b @bs\n"
@@ -654,9 +723,9 @@ msgstr ""
 "El tamaño físico del @v es de %c @bs\n"
 "¡Puede ser que, o el @S, o la tabla de partición, estén corrompidos!\n"
 
-#. @-expand: superblock block_size = %b, fragsize = %c.\n
-#. @-expand: This version of e2fsck does not support fragment sizes different\n
-#. @-expand: from the block size.\n
+#. @-expanded: superblock block_size = %b, fragsize = %c.\n
+#. @-expanded: This version of e2fsck does not support fragment sizes different\n
+#. @-expanded: from the block size.\n
 #: e2fsck/problem.c:137
 msgid ""
 "@S @b_size = %b, fragsize = %c.\n"
@@ -667,18 +736,18 @@ msgstr ""
 "Esta versión de e2fsck no tiene implementado el manejo de tamaños de\n"
 "fragmentos distintos al tamaño del @b.\n"
 
-#. @-expand: superblock blocks_per_group = %b, should have been %c\n
+#. @-expanded: superblock blocks_per_group = %b, should have been %c\n
 #: e2fsck/problem.c:144
 msgid "@S @bs_per_group = %b, should have been %c\n"
 msgstr "@bs_per_group = %b del @S, debería haber sido %c\n"
 
-#. @-expand: superblock first_data_block = %b, should have been %c\n
+#. @-expanded: superblock first_data_block = %b, should have been %c\n
 #: e2fsck/problem.c:149
 msgid "@S first_data_@b = %b, should have been %c\n"
 msgstr "first_data_@b = %b del @S, debería haber sido %c\n"
 
-#. @-expand: filesystem did not have a UUID; generating one.\n
-#. @-expand: \n
+#. @-expanded: filesystem did not have a UUID; generating one.\n
+#. @-expanded: \n
 #: e2fsck/problem.c:154
 msgid ""
 "@f did not have a UUID; generating one.\n"
@@ -686,14 +755,13 @@ msgid ""
 msgstr "El @f no tiene un UUID; se generará uno.\n"
 
 #: e2fsck/problem.c:159
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Note: if there is several inode or block bitmap blocks\n"
-"which require relocation, or one part of the inode table\n"
-"which must be moved, you may wish to try running e2fsck\n"
-"with the '-b %S' option first.  The problem may lie only\n"
-"with the primary block group descriptor, and the backup\n"
-"block group descriptor may be OK.\n"
+"Note: if several inode or block bitmap blocks or part\n"
+"of the inode table require relocation, you may wish to try\n"
+"running e2fsck with the '-b %S' option first.  The problem\n"
+"may lie only with the primary block group descriptors, and\n"
+"the backup block group descriptors may be OK.\n"
 "\n"
 msgstr ""
 "Nota: si hay varios bloques de mapas de bits o nodos i que\n"
@@ -705,57 +773,58 @@ msgstr ""
 "respaldo podría estar bien.\n"
 "\n"
 
-#. @-expand: Corruption found in superblock.  (%s = %N).\n
-#: e2fsck/problem.c:169
+#. @-expanded: Corruption found in superblock.  (%s = %N).\n
+#: e2fsck/problem.c:168
 msgid "Corruption found in @S.  (%s = %N).\n"
 msgstr "Se encontró una corrupción en el @S.  (%s = %N).\n"
 
-#. @-expand: Error determining size of the physical device: %m\n
-#: e2fsck/problem.c:174
+#. @-expanded: Error determining size of the physical device: %m\n
+#: e2fsck/problem.c:173
 #, c-format
 msgid "Error determining size of the physical @v: %m\n"
 msgstr "Error al determinar el tamaño del @v físico: %m\n"
 
-#. @-expand: inode count in superblock is %i, should be %j.\n
-#: e2fsck/problem.c:179
-msgid "@i count in @S is %i, should be %j.\n"
+#. @-expanded: inode count in superblock is %i, should be %j.\n
+#: e2fsck/problem.c:178
+#, fuzzy
+msgid "@i count in @S is %i, @s %j.\n"
 msgstr "La cuenta @i en el @S es %i, y debería ser %j.\n"
 
-#: e2fsck/problem.c:183
+#: e2fsck/problem.c:182
 msgid "The Hurd does not support the filetype feature.\n"
 msgstr "Hurd no tiene implementada la opción de tipos de fichero.\n"
 
-#. @-expand: superblock has a bad ext3 journal (inode %i).\n
-#: e2fsck/problem.c:188
-#, c-format
-msgid "@S has a bad ext3 @j (@i %i).\n"
+#. @-expanded: superblock has an invalid ext3 journal (inode %i).\n
+#: e2fsck/problem.c:187
+#, fuzzy, c-format
+msgid "@S has an @n ext3 @j (@i %i).\n"
 msgstr "@S tiene un @j ext3 malo (@i %i).\n"
 
-#. @-expand: External journal has multiple filesystem users (unsupported).\n
-#: e2fsck/problem.c:193
+#. @-expanded: External journal has multiple filesystem users (unsupported).\n
+#: e2fsck/problem.c:192
 msgid "External @j has multiple @f users (unsupported).\n"
 msgstr "El @j externo tiene varios usuarios del @f (no implementado).\n"
 
-#. @-expand: Can't find external journal\n
-#: e2fsck/problem.c:198
+#. @-expanded: Can't find external journal\n
+#: e2fsck/problem.c:197
 msgid "Can't find external @j\n"
 msgstr "No puedo encontrar un @j externo\n"
 
-#. @-expand: External journal has bad superblock\n
-#: e2fsck/problem.c:203
+#. @-expanded: External journal has bad superblock\n
+#: e2fsck/problem.c:202
 msgid "External @j has bad @S\n"
 msgstr "El @j externo tiene un @S malo\n"
 
-#. @-expand: External journal does not support this filesystem\n
-#: e2fsck/problem.c:208
+#. @-expanded: External journal does not support this filesystem\n
+#: e2fsck/problem.c:207
 msgid "External @j does not support this @f\n"
 msgstr "El @j externo no tiene implementado este @f\n"
 
-#. @-expand: Ext3 journal superblock is unknown type %N (unsupported).\n
-#. @-expand: It is likely that your copy of e2fsck is old and/or doesn't support this journal 
-#. @-expand: format.\n
-#. @-expand: It is also possible the journal superblock is corrupt.\n
-#: e2fsck/problem.c:213
+#. @-expanded: Ext3 journal superblock is unknown type %N (unsupported).\n
+#. @-expanded: It is likely that your copy of e2fsck is old and/or doesn't support this journal 
+#. @-expanded: format.\n
+#. @-expanded: It is also possible the journal superblock is corrupt.\n
+#: e2fsck/problem.c:212
 msgid ""
 "Ext3 @j @S is unknown type %N (unsupported).\n"
 "It is likely that your copy of e2fsck is old and/or doesn't support this @j "
@@ -767,106 +836,112 @@ msgstr ""
 "este formato de @j.\n"
 "También es posible que el @S del @j esté corrompido.\n"
 
-#. @-expand: Ext3 journal superblock is corrupt.\n
-#: e2fsck/problem.c:221
+#. @-expanded: Ext3 journal superblock is corrupt.\n
+#: e2fsck/problem.c:220
 msgid "Ext3 @j @S is corrupt.\n"
 msgstr "El @S del @j ext3 está corrompido.\n"
 
-#. @-expand: superblock doesn't have has_journal flag, but has ext3 journal %s.\n
-#: e2fsck/problem.c:226
+#. @-expanded: superblock doesn't have has_journal flag, but has ext3 journal %s.\n
+#: e2fsck/problem.c:225
 #, c-format
 msgid "@S doesn't have has_@j flag, but has ext3 @j %s.\n"
 msgstr "El @S no tiene la bandera has_journal, pero tiene un @j ext3 %s.\n"
 
-#. @-expand: superblock has ext3 needs_recovery flag set, but no journal.\n
-#: e2fsck/problem.c:231
+#. @-expanded: superblock has ext3 needs_recovery flag set, but no journal.\n
+#: e2fsck/problem.c:230
 msgid "@S has ext3 needs_recovery flag set, but no @j.\n"
 msgstr ""
 "El @S tiene ext3 y la bandera need_recovery está activada, pero no hay @j.\n"
 
-#. @-expand: ext3 recovery flag clear, but journal has data.\n
-#: e2fsck/problem.c:236
-msgid "ext3 recovery flag clear, but @j has data.\n"
+#. @-expanded: ext3 recovery flag is clear, but journal has data.\n
+#: e2fsck/problem.c:235
+#, fuzzy
+msgid "ext3 recovery flag is clear, but @j has data.\n"
 msgstr ""
 "La bandera de recuperación del ext3 está limpia, pero el @j tiene "
 "información.\n"
 
-#. @-expand: Clear journal
-#: e2fsck/problem.c:241
+#. @-expanded: Clear journal
+#: e2fsck/problem.c:240
 msgid "Clear @j"
 msgstr "Borra el @j"
 
-#. @-expand: Run journal anyway
-#: e2fsck/problem.c:246
+#. @-expanded: Run journal anyway
+#: e2fsck/problem.c:245
 msgid "Run @j anyway"
 msgstr "Corre el @j de todas formas"
 
-#. @-expand: Recovery flag not set in backup superblock, so running journal anyway.\n
-#: e2fsck/problem.c:251
+#. @-expanded: Recovery flag not set in backup superblock, so running journal anyway.\n
+#: e2fsck/problem.c:250
 msgid "Recovery flag not set in backup @S, so running @j anyway.\n"
 msgstr ""
 "La bandera de recuperación no está activada en el @S de respaldo, por ello\n"
 "se corre el @j de todas formas.\n"
 
-#. @-expand: %s orphaned inode %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n
-#: e2fsck/problem.c:256
+#. @-expanded: %s orphaned inode %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n
+#: e2fsck/problem.c:255
 msgid "%s @o @i %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n"
 msgstr "%s @i @o %i (uid=%Iu, gid=%Ig, modo=%Im, tamaño=%Is)\n"
 
-#. @-expand: illegal block #%B (%b) found in orphaned inode %i.\n
-#: e2fsck/problem.c:261
+#. @-expanded: illegal block #%B (%b) found in orphaned inode %i.\n
+#: e2fsck/problem.c:260
 msgid "@I @b #%B (%b) found in @o @i %i.\n"
 msgstr "@b @I #%B (%b) encontrado en un @i @o %i.\n"
 
-#. @-expand: Already cleared block #%B (%b) found in orphaned inode %i.\n
-#: e2fsck/problem.c:266
+#. @-expanded: Already cleared block #%B (%b) found in orphaned inode %i.\n
+#: e2fsck/problem.c:265
 msgid "Already cleared @b #%B (%b) found in @o @i %i.\n"
 msgstr "Ya se borró el @b #%B (%b) encontrado en el @i @o %i.\n"
 
-#. @-expand: illegal orphaned inode %i in superblock.\n
-#: e2fsck/problem.c:271
+#. @-expanded: illegal orphaned inode %i in superblock.\n
+#: e2fsck/problem.c:270
 #, c-format
 msgid "@I @o @i %i in @S.\n"
 msgstr "@i @o @I %i en el @S.\n"
 
-#. @-expand: illegal inode %i in orphaned inode list.\n
-#: e2fsck/problem.c:276
+#. @-expanded: illegal inode %i in orphaned inode list.\n
+#: e2fsck/problem.c:275
 #, c-format
 msgid "@I @i %i in @o @i list.\n"
 msgstr "@i @I %i en la lista de @i @o.\n"
 
-#. @-expand: Ext3 journal superblock has an unknown read-only feature flag set.\n
-#: e2fsck/problem.c:286
+#. @-expanded: filesystem has feature flag(s) set, but is a revision 0 filesystem.  
+#: e2fsck/problem.c:280 e2fsck/problem.c:594
+msgid "@f has feature flag(s) set, but is a revision 0 @f.  "
+msgstr ""
+
+#. @-expanded: Ext3 journal superblock has an unknown read-only feature flag set.\n
+#: e2fsck/problem.c:285
 msgid "Ext3 @j @S has an unknown read-only feature flag set.\n"
 msgstr ""
 "El @S del @j ext3 tiene una bandera desconocida en modo de sólo lectura.\n"
 
-#. @-expand: Ext3 journal superblock has an unknown incompatible feature flag set.\n
-#: e2fsck/problem.c:291
+#. @-expanded: Ext3 journal superblock has an unknown incompatible feature flag set.\n
+#: e2fsck/problem.c:290
 msgid "Ext3 @j @S has an unknown incompatible feature flag set.\n"
 msgstr ""
 "El @S del @j ext3 tiene puesta una bandera con una característica "
 "desconocida incompatible.\n"
 
-#. @-expand: journal version not supported by this e2fsck.\n
-#: e2fsck/problem.c:296
+#. @-expanded: journal version not supported by this e2fsck.\n
+#: e2fsck/problem.c:295
 msgid "@j version not supported by this e2fsck.\n"
 msgstr "La versión del @j no está implementada en este e2fsck.\n"
 
-#. @-expand: Moving journal from /%s to hidden inode.\n
-#. @-expand: \n
-#: e2fsck/problem.c:301
-#, c-format
+#. @-expanded: Moving journal from /%s to hidden inode.\n
+#. @-expanded: \n
+#: e2fsck/problem.c:300
+#, fuzzy, c-format
 msgid ""
-"Moving @j from /%s to hidden inode.\n"
+"Moving @j from /%s to hidden @i.\n"
 "\n"
 msgstr ""
 "Moviendo el @j de /%s a un nodo i oculto.\n"
 "\n"
 
-#. @-expand: Error moving journal: %m\n
-#. @-expand: \n
-#: e2fsck/problem.c:306
+#. @-expanded: Error moving journal: %m\n
+#. @-expanded: \n
+#: e2fsck/problem.c:305
 #, c-format
 msgid ""
 "Error moving @j: %m\n"
@@ -875,12 +950,13 @@ msgstr ""
 "Error moviendo el @j: %m\n"
 "\n"
 
-#. @-expand: Found invalid V2 journal superblock fields (from V1 journal).\n
-#. @-expand: Clearing fields beyond the V1 journal superblock...\n
-#. @-expand: \n
-#: e2fsck/problem.c:311
+#. @-expanded: Found invalid V2 journal superblock fields (from V1 journal).\n
+#. @-expanded: Clearing fields beyond the V1 journal superblock...\n
+#. @-expanded: \n
+#: e2fsck/problem.c:310
+#, fuzzy
 msgid ""
-"Found invalid V2 @j @S fields (from V1 journal).\n"
+"Found @n V2 @j @S fields (from V1 @j).\n"
 "Clearing fields beyond the V1 @j @S...\n"
 "\n"
 msgstr ""
@@ -889,156 +965,157 @@ msgstr ""
 "Borrando los campos más allá de la V1 del @S del @j...\n"
 "\n"
 
-#. @-expand: Backing up journal inode block information.\n
-#. @-expand: \n
-#: e2fsck/problem.c:317
+#. @-expanded: Backing up journal inode block information.\n
+#. @-expanded: \n
+#: e2fsck/problem.c:316
 msgid ""
 "Backing up @j @i @b information.\n"
 "\n"
 msgstr ""
 
-#. @-expand: filesystem does not have resize_inode enabled, but s_reserved_gdt_blocks\n
-#. @-expand: is %N; should be zero.  
-#: e2fsck/problem.c:322
+#. @-expanded: filesystem does not have resize_inode enabled, but s_reserved_gdt_blocks\n
+#. @-expanded: is %N; should be zero.  
+#: e2fsck/problem.c:321
 msgid ""
 "@f does not have resize_@i enabled, but s_reserved_gdt_@bs\n"
 "is %N; @s zero.  "
 msgstr ""
 
-#. @-expand: Resize_inode not enabled, but the resize inode is non-zero.  
-#: e2fsck/problem.c:328
-msgid "Resize_@i not enabled, but the resize inode is non-zero.  "
+#. @-expanded: Resize_inode not enabled, but the resize inode is non-zero.  
+#: e2fsck/problem.c:327
+msgid "Resize_@i not enabled, but the resize @i is non-zero.  "
 msgstr ""
 
-#. @-expand: Resize inode not valid.  
-#: e2fsck/problem.c:333
+#. @-expanded: Resize inode not valid.  
+#: e2fsck/problem.c:332
 #, fuzzy
 msgid "Resize @i not valid.  "
 msgstr "el @r no es un @d.  "
 
-#. @-expand: Pass 1: Checking inodes, blocks, and sizes\n
-#: e2fsck/problem.c:340
+#. @-expanded: Pass 1: Checking inodes, blocks, and sizes\n
+#: e2fsck/problem.c:339
 msgid "Pass 1: Checking @is, @bs, and sizes\n"
 msgstr "Paso 1: revisando nodos i, @bs y tamaños\n"
 
-#. @-expand: root inode is not a directory.  
-#: e2fsck/problem.c:344
+#. @-expanded: root inode is not a directory.  
+#: e2fsck/problem.c:343
 msgid "@r is not a @d.  "
 msgstr "el @r no es un @d.  "
 
-#. @-expand: root inode has dtime set (probably due to old mke2fs).  
-#: e2fsck/problem.c:349
+#. @-expanded: root inode has dtime set (probably due to old mke2fs).  
+#: e2fsck/problem.c:348
 msgid "@r has dtime set (probably due to old mke2fs).  "
 msgstr ""
 "el @r tiene puesto el dtime (probablemente debido a una versión vieja del "
 "mke2fs).  "
 
-#. @-expand: Reserved inode %i %Q has bad mode.  
-#: e2fsck/problem.c:354
-msgid "Reserved @i %i %Q has bad mode.  "
+#. @-expanded: Reserved inode %i (%Q) has invalid mode.  
+#: e2fsck/problem.c:353
+#, fuzzy
+msgid "Reserved @i %i (%Q) has @n mode.  "
 msgstr "Se resevó el @i %i %Q que tiene un modo incorrecto.  "
 
-#. @-expand: deleted inode %i has zero dtime.  
-#: e2fsck/problem.c:359
+#. @-expanded: deleted inode %i has zero dtime.  
+#: e2fsck/problem.c:358
 #, c-format
 msgid "@D @i %i has zero dtime.  "
 msgstr "@i %i @D, tenía un dtime cero.  "
 
-#. @-expand: inode %i is in use, but has dtime set.  
-#: e2fsck/problem.c:364
+#. @-expanded: inode %i is in use, but has dtime set.  
+#: e2fsck/problem.c:363
 #, c-format
 msgid "@i %i is in use, but has dtime set.  "
 msgstr "@i %i en uso, aunque tiene puesto un dtime.  "
 
-#. @-expand: inode %i is a zero-length directory.  
-#: e2fsck/problem.c:369
+#. @-expanded: inode %i is a zero-length directory.  
+#: e2fsck/problem.c:368
 #, c-format
 msgid "@i %i is a @z @d.  "
 msgstr "@i %i es un @d con @z.  "
 
-#. @-expand: group %g's block bitmap at %b conflicts with some other fs block.\n
-#: e2fsck/problem.c:374
+#. @-expanded: group %g's block bitmap at %b conflicts with some other fs block.\n
+#: e2fsck/problem.c:373
 msgid "@g %g's @b @B at %b @C.\n"
 msgstr "@b del @B del @g %g @C en %b.\n"
 
-#. @-expand: group %g's inode bitmap at %b conflicts with some other fs block.\n
-#: e2fsck/problem.c:379
+#. @-expanded: group %g's inode bitmap at %b conflicts with some other fs block.\n
+#: e2fsck/problem.c:378
 msgid "@g %g's @i @B at %b @C.\n"
 msgstr "El @i del @B del @g %g @C en %b.\n"
 
-#. @-expand: group %g's inode table at %b conflicts with some other fs block.\n
-#: e2fsck/problem.c:384
+#. @-expanded: group %g's inode table at %b conflicts with some other fs block.\n
+#: e2fsck/problem.c:383
 msgid "@g %g's @i table at %b @C.\n"
 msgstr "La tabla de @i del @g %g @C en %b.\n"
 
-#. @-expand: group %g's block bitmap (%b) is bad.  
-#: e2fsck/problem.c:389
+#. @-expanded: group %g's block bitmap (%b) is bad.  
+#: e2fsck/problem.c:388
 msgid "@g %g's @b @B (%b) is bad.  "
 msgstr "El @b del @B (%B) del @g %g está dañado.  "
 
-#. @-expand: group %g's inode bitmap (%b) is bad.  
-#: e2fsck/problem.c:394
+#. @-expanded: group %g's inode bitmap (%b) is bad.  
+#: e2fsck/problem.c:393
 msgid "@g %g's @i @B (%b) is bad.  "
 msgstr "El @i del @B (%B) del @g %g está dañado.  "
 
-#. @-expand: inode %i, i_size is %Is, should be %N.  
-#: e2fsck/problem.c:399
+#. @-expanded: inode %i, i_size is %Is, should be %N.  
+#: e2fsck/problem.c:398
 msgid "@i %i, i_size is %Is, @s %N.  "
 msgstr "@i %i, i_size es %Is, @s %N.  "
 
-#. @-expand: inode %i, i_blocks is %Ib, should be %N.  
-#: e2fsck/problem.c:404
+#. @-expanded: inode %i, i_blocks is %Ib, should be %N.  
+#: e2fsck/problem.c:403
 msgid "@i %i, i_@bs is %Ib, @s %N.  "
 msgstr "@i %i, i_@bs es %Ib, @s %N.  "
 
-#. @-expand: illegal block #%B (%b) in inode %i.  
-#: e2fsck/problem.c:409
+#. @-expanded: illegal block #%B (%b) in inode %i.  
+#: e2fsck/problem.c:408
 msgid "@I @b #%B (%b) in @i %i.  "
 msgstr "@I @b #%B (%b) en @i %i.  "
 
-#. @-expand: block #%B (%b) overlaps filesystem metadata in inode %i.  
-#: e2fsck/problem.c:414
+#. @-expanded: block #%B (%b) overlaps filesystem metadata in inode %i.  
+#: e2fsck/problem.c:413
 msgid "@b #%B (%b) overlaps @f metadata in @i %i.  "
 msgstr "@b #%B (%b) se encima con los metadatos del @f en el @i %i.  "
 
-#. @-expand: inode %i has illegal block(s).  
-#: e2fsck/problem.c:419
+#. @-expanded: inode %i has illegal block(s).  
+#: e2fsck/problem.c:418
 #, c-format
 msgid "@i %i has illegal @b(s).  "
 msgstr "@i %i tiene un(unos) @b(s) ilegal(es).  "
 
-#. @-expand: Too many illegal blocks in inode %i.\n
-#: e2fsck/problem.c:424
+#. @-expanded: Too many illegal blocks in inode %i.\n
+#: e2fsck/problem.c:423
 #, c-format
 msgid "Too many illegal @bs in @i %i.\n"
 msgstr "Demasiados @bs ilegales en el @i %i.\n"
 
-#. @-expand: illegal block #%B (%b) in bad block inode.  
-#: e2fsck/problem.c:429
+#. @-expanded: illegal block #%B (%b) in bad block inode.  
+#: e2fsck/problem.c:428
 msgid "@I @b #%B (%b) in bad @b @i.  "
 msgstr "@b @I #%B (%b) en el @b del @i dañado.  "
 
-#. @-expand: Bad block inode has illegal block(s).  
-#: e2fsck/problem.c:434
+#. @-expanded: Bad block inode has illegal block(s).  
+#: e2fsck/problem.c:433
 msgid "Bad @b @i has illegal @b(s).  "
 msgstr "@b del @i malo tiene @b(s) ilegal(es).  "
 
-#. @-expand: Duplicate or bad block in use!\n
-#: e2fsck/problem.c:439
+#. @-expanded: Duplicate or bad block in use!\n
+#: e2fsck/problem.c:438
 msgid "Duplicate or bad @b in use!\n"
 msgstr "¡@b duplicado o dañado en uso!\n"
 
-#. @-expand: Bad block %b used as bad block inode indirect block.  
-#: e2fsck/problem.c:444
+#. @-expanded: Bad block %b used as bad block inode indirect block.  
+#: e2fsck/problem.c:443
 #, fuzzy
 msgid "Bad @b %b used as bad @b @i indirect @b.  "
 msgstr "¿¡¿El @b %b dañado se usa como @b malo de un @b indirecto?!?\n"
 
-#. @-expand: \n
-#. @-expand: The bad block inode has probably been corrupted.  You probably\n
-#. @-expand: should stop now and run e2fsck -c to scan for bad blocks\n
-#. @-expand: in the filesystem.\n
-#: e2fsck/problem.c:449
+#. @-expanded: \n
+#. @-expanded: The bad block inode has probably been corrupted.  You probably\n
+#. @-expanded: should stop now and run e2fsck -c to scan for bad blocks\n
+#. @-expanded: in the filesystem.\n
+#: e2fsck/problem.c:448
 msgid ""
 "\n"
 "The bad @b @i has probably been corrupted.  You probably\n"
@@ -1046,9 +1123,9 @@ msgid ""
 "in the @f.\n"
 msgstr ""
 
-#. @-expand: \n
-#. @-expand: If the block is really bad, the filesystem can not be fixed.\n
-#: e2fsck/problem.c:456
+#. @-expanded: \n
+#. @-expanded: If the block is really bad, the filesystem can not be fixed.\n
+#: e2fsck/problem.c:455
 msgid ""
 "\n"
 "If the @b is really bad, the @f can not be fixed.\n"
@@ -1056,15 +1133,14 @@ msgstr ""
 "\n"
 "Si el @b está realmente dañado, el @f no puede ser arreglado.\n"
 
-#. @-expand: You can clear the this block (and hope for the best) from the\n
-#. @-expand: bad block list and hope that block is really OK, but there are no\n
-#. @-expand: guarantees.\n
-#. @-expand: \n
-#: e2fsck/problem.c:461
+#. @-expanded: You can remove this block from the bad block list and hope\n
+#. @-expanded: that the block is really OK.  But there are no guarantees.\n
+#. @-expanded: \n
+#: e2fsck/problem.c:460
+#, fuzzy
 msgid ""
-"You can clear the this @b (and hope for the best) from the\n"
-"bad @b list and hope that @b is really OK, but there are no\n"
-"guarantees.\n"
+"You can remove this @b from the bad @b list and hope\n"
+"that the @b is really OK.  But there are no guarantees.\n"
 "\n"
 msgstr ""
 "puede borrar este @b (y esperar lo mejor) de la lista de\n"
@@ -1072,120 +1148,131 @@ msgstr ""
 "ninguna garantía.\n"
 "\n"
 
-#. @-expand: The primary superblock (%b) is on the bad block list.\n
-#: e2fsck/problem.c:468
+#. @-expanded: The primary superblock (%b) is on the bad block list.\n
+#: e2fsck/problem.c:466
 msgid "The primary @S (%b) is on the bad @b list.\n"
 msgstr "El @S primario (%b) está en la lista de @bs dañados.\n"
 
-#. @-expand: Block %b in the primary group descriptors is on the bad block list\n
-#: e2fsck/problem.c:473
+#. @-expanded: Block %b in the primary group descriptors is on the bad block list\n
+#: e2fsck/problem.c:471
 msgid "Block %b in the primary @g descriptors is on the bad @b list\n"
 msgstr ""
 "El bloque %b en los descriptores primarios del @g está en la lista de @bs "
 "dañados\n"
 
-#. @-expand: Warning: Group %g's superblock (%b) is bad.\n
-#: e2fsck/problem.c:479
+#. @-expanded: Warning: Group %g's superblock (%b) is bad.\n
+#: e2fsck/problem.c:477
 msgid "Warning: Group %g's @S (%b) is bad.\n"
 msgstr "Atención: el @S (%B) del grupo %g está dañado.\n"
 
-#. @-expand: Warning: Group %g's copy of the group descriptors has a bad block (%b).\n
-#: e2fsck/problem.c:484
+#. @-expanded: Warning: Group %g's copy of the group descriptors has a bad block (%b).\n
+#: e2fsck/problem.c:482
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
 msgstr ""
 "Atención: la copia de los descriptores grupales del @g %g tiene un @b (%b) "
 "dañado.\n"
 
-#. @-expand: Programming error?  block #%b claimed for no reason in process_bad_block.\n
-#: e2fsck/problem.c:490
+#. @-expanded: Programming error?  block #%b claimed for no reason in process_bad_block.\n
+#: e2fsck/problem.c:488
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
 msgstr ""
 "¿Error de programación?  El @b #%b reclama sin razón en el "
 "process_bad_block.\n"
 
-#. @-expand: error allocating %N contiguous block(s) in block group %g for %s: %m\n
-#: e2fsck/problem.c:496
+#. @-expanded: error allocating %N contiguous block(s) in block group %g for %s: %m\n
+#: e2fsck/problem.c:494
 msgid "@A %N contiguous @b(s) in @b @g %g for %s: %m\n"
 msgstr "@A %N, es contigua a los @b(s) en el @b del @g %g para %s: %m\n"
 
-#. @-expand: error allocating block buffer for relocating %s\n
-#: e2fsck/problem.c:501
+#. @-expanded: error allocating block buffer for relocating %s\n
+#: e2fsck/problem.c:499
 #, c-format
 msgid "@A @b buffer for relocating %s\n"
 msgstr "@A del búfer del @b para reubicar %s\n"
 
-#. @-expand: Relocating group %g's %s from %b to %c...\n
-#: e2fsck/problem.c:506
+#. @-expanded: Relocating group %g's %s from %b to %c...\n
+#: e2fsck/problem.c:504
 msgid "Relocating @g %g's %s from %b to %c...\n"
 msgstr "Reubicando %s del @g %g de %b a %c...\n"
 
-#. @-expand: Relocating group %g's %s to %c...\n
-#: e2fsck/problem.c:511
+#. @-expanded: Relocating group %g's %s to %c...\n
+#: e2fsck/problem.c:509
 #, c-format
 msgid "Relocating @g %g's %s to %c...\n"
 msgstr "Reubicando el @g %g de %s hacia %c...\n"
 
-#. @-expand: Warning: could not read block %b of %s: %m\n
-#: e2fsck/problem.c:516
+#. @-expanded: Warning: could not read block %b of %s: %m\n
+#: e2fsck/problem.c:514
 msgid "Warning: could not read @b %b of %s: %m\n"
 msgstr "Cuidado: no se puede leer el @b %b de %s: %m\n"
 
-#. @-expand: Warning: could not write block %b for %s: %m\n
-#: e2fsck/problem.c:521
+#. @-expanded: Warning: could not write block %b for %s: %m\n
+#: e2fsck/problem.c:519
 msgid "Warning: could not write @b %b for %s: %m\n"
 msgstr "Cuidado: no se puede escribir el @b %b para %s: %m\n"
 
-#. @-expand: error allocating icount link information: %m\n
-#: e2fsck/problem.c:536
+#. @-expanded: error allocating inode bitmap (%N): %m\n
+#: e2fsck/problem.c:524 e2fsck/problem.c:1251
+msgid "@A @i @B (%N): %m\n"
+msgstr "Hay un @A del @B del @i (%N): %m\n"
+
+#. @-expanded: error allocating block bitmap (%N): %m\n
+#: e2fsck/problem.c:529
+#, fuzzy
+msgid "@A @b @B (%N): %m\n"
+msgstr "Hay un @A del @B del @i (%N): %m\n"
+
+#. @-expanded: error allocating icount link information: %m\n
+#: e2fsck/problem.c:534
 #, c-format
 msgid "@A icount link information: %m\n"
 msgstr "@A de cuenta i en la información del vínculo: %m\n"
 
-#. @-expand: error allocating directory block array: %m\n
-#: e2fsck/problem.c:541
+#. @-expanded: error allocating directory block array: %m\n
+#: e2fsck/problem.c:539
 #, c-format
 msgid "@A @d @b array: %m\n"
 msgstr "@A el arreglo del @b de @ds: %m\n"
 
-#. @-expand: Error while scanning inodes (%i): %m\n
-#: e2fsck/problem.c:546
+#. @-expanded: Error while scanning inodes (%i): %m\n
+#: e2fsck/problem.c:544
 #, c-format
 msgid "Error while scanning @is (%i): %m\n"
 msgstr "Error mientras se está explorando el @i (%i): %m\n"
 
-#. @-expand: Error while iterating over blocks in inode %i: %m\n
-#: e2fsck/problem.c:551
+#. @-expanded: Error while iterating over blocks in inode %i: %m\n
+#: e2fsck/problem.c:549
 #, c-format
 msgid "Error while iterating over @bs in @i %i: %m\n"
 msgstr "Error mientras se está iterando sobre @bs en el @i %i: %m\n"
 
-#. @-expand: Error storing inode count information (inode=%i, count=%N): %m\n
-#: e2fsck/problem.c:556
+#. @-expanded: Error storing inode count information (inode=%i, count=%N): %m\n
+#: e2fsck/problem.c:554
 msgid "Error storing @i count information (@i=%i, count=%N): %m\n"
 msgstr ""
 "Error al guardar la información de la cuenta del @i (@i=%i, cuenta=%N): %m\n"
 
-#. @-expand: Error storing directory block information (inode=%i, block=%b, num=%N): %m\n
-#: e2fsck/problem.c:561
+#. @-expanded: Error storing directory block information (inode=%i, block=%b, num=%N): %m\n
+#: e2fsck/problem.c:559
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
 msgstr ""
 "Error guardando la información del @b de @ds (@i=%i, @b=%b, núm=%N): %m\n"
 
-#. @-expand: Error reading inode %i: %m\n
-#: e2fsck/problem.c:567
+#. @-expanded: Error reading inode %i: %m\n
+#: e2fsck/problem.c:565
 #, c-format
 msgid "Error reading @i %i: %m\n"
 msgstr "Error leyendo el @i %i: %m\n"
 
-#. @-expand: inode %i has imagic flag set.  
-#: e2fsck/problem.c:575
+#. @-expanded: inode %i has imagic flag set.  
+#: e2fsck/problem.c:573
 #, c-format
 msgid "@i %i has imagic flag set.  "
 msgstr "@i %i tiene la bandera imagic puesta.  "
 
-#. @-expand: Special (device/socket/fifo/symlink) file (inode %i) has immutable\n
-#. @-expand: or append-only flag set.  
-#: e2fsck/problem.c:580
+#. @-expanded: Special (device/socket/fifo/symlink) file (inode %i) has immutable\n
+#. @-expanded: or append-only flag set.  
+#: e2fsck/problem.c:578
 #, c-format
 msgid ""
 "Special (@v/socket/fifo/symlink) file (@i %i) has immutable\n"
@@ -1194,593 +1281,641 @@ msgstr ""
 "El fichero especial (@v/socket/fifo/symlink) (@i %i) es inmodificable\n"
 "o tiene la bandera sólo-añadir.  "
 
-#. @-expand: inode %i has compression flag set on filesystem without compression support.  
-#: e2fsck/problem.c:586
+#. @-expanded: inode %i has compression flag set on filesystem without compression support.  
+#: e2fsck/problem.c:584
 #, c-format
 msgid "@i %i has @cion flag set on @f without @cion support.  "
 msgstr ""
 "@i %i tiene la bandera de @c puesta en el @f sin que la @c esté "
 "implementada.  "
 
-#. @-expand: journal is not regular file.  
-#: e2fsck/problem.c:606
+#. @-expanded: Special (device/socket/fifo) inode %i has non-zero size.  
+#: e2fsck/problem.c:589
+#, fuzzy, c-format
+msgid "Special (@v/socket/fifo) @i %i has non-zero size.  "
+msgstr ""
+"El fichero especial (@v/socket/fifo/symlink) (@i %i) es inmodificable\n"
+"o tiene la bandera sólo-añadir.  "
+
+#. @-expanded: journal inode is not in use, but contains data.  
+#: e2fsck/problem.c:599
+#, fuzzy
+msgid "@j @i is not in use, but contains data.  "
+msgstr "@i %i en uso, aunque tiene puesto un dtime.  "
+
+#. @-expanded: journal is not regular file.  
+#: e2fsck/problem.c:604
 msgid "@j is not regular file.  "
 msgstr "El @j no es un fichero regular.  "
 
-#. @-expand: inode %i was part of the orphaned inode list.  
-#: e2fsck/problem.c:611
-#, c-format
-msgid "@i %i was part of the orphaned @i list.  "
+#. @-expanded: inode %i was part of the orphaned inode list.  
+#: e2fsck/problem.c:609
+#, fuzzy, c-format
+msgid "@i %i was part of the @o @i list.  "
 msgstr "@i %i era parte de la lista de nodos i huérfanos.  "
 
-#. @-expand: inodes that were part of a corrupted orphan linked list found.  
-#: e2fsck/problem.c:617
+#. @-expanded: inodes that were part of a corrupted orphan linked list found.  
+#: e2fsck/problem.c:615
 msgid "@is that were part of a corrupted orphan linked list found.  "
 msgstr ""
 "Los nodos i fueron parte de una lista vinculada huérfana y corrupta "
 "encontrada. "
 
-#. @-expand: Error reading extended attribute block %b for inode %i.  
-#: e2fsck/problem.c:627
+#. @-expanded: error allocating refcount structure (%N): %m\n
+#: e2fsck/problem.c:620
+#, fuzzy
+msgid "@A refcount structure (%N): %m\n"
+msgstr "@A de la estructura icount: %m\n"
+
+#. @-expanded: Error reading extended attribute block %b for inode %i.  
+#: e2fsck/problem.c:625
 msgid "Error reading @a @b %b for @i %i.  "
 msgstr "Error leyendo el @b de @a %b para el @i %i.  "
 
-#. @-expand: inode %i has a bad extended attribute block %b.  
-#: e2fsck/problem.c:632
+#. @-expanded: inode %i has a bad extended attribute block %b.  
+#: e2fsck/problem.c:630
 msgid "@i %i has a bad @a @b %b.  "
 msgstr "@i %i tiene un @b de @a %b dañado.  "
 
-#. @-expand: Error reading extended attribute block %b (%m).  
-#: e2fsck/problem.c:637
+#. @-expanded: Error reading extended attribute block %b (%m).  
+#: e2fsck/problem.c:635
 msgid "Error reading @a @b %b (%m).  "
 msgstr "Error leyendo el @b de @a %b (%m).  "
 
-#. @-expand: extended attribute block %b has reference count %B, should be %N.  
-#: e2fsck/problem.c:642
-msgid "@a @b %b has reference count %B, should be %N.  "
+#. @-expanded: extended attribute block %b has reference count %B, should be %N.  
+#: e2fsck/problem.c:640
+#, fuzzy
+msgid "@a @b %b has reference count %B, @s %N.  "
 msgstr "El @b de @a %b tiene una cuenta de referencia %B y debería ser %N.  "
 
-#. @-expand: Error writing extended attribute block %b (%m).  
-#: e2fsck/problem.c:647
+#. @-expanded: Error writing extended attribute block %b (%m).  
+#: e2fsck/problem.c:645
 msgid "Error writing @a @b %b (%m).  "
 msgstr "Error escribiendo el @b de @a %b (%m).  "
 
-#. @-expand: extended attribute block %b has h_blocks > 1.  
-#: e2fsck/problem.c:652
-msgid "@a @b %b has h_blocks > 1.  "
+#. @-expanded: extended attribute block %b has h_blocks > 1.  
+#: e2fsck/problem.c:650
+#, fuzzy
+msgid "@a @b %b has h_@bs > 1.  "
 msgstr "El @b de @a %b tiene h_blocks > 1.  "
 
-#. @-expand: Error allocating extended attribute block %b.  
-#: e2fsck/problem.c:657
-msgid "Error allocating @a @b %b.  "
-msgstr "Error reservando el @b de @a %b.  "
+#. @-expanded: error allocating extended attribute block %b.  
+#: e2fsck/problem.c:655
+#, fuzzy
+msgid "@A @a @b %b.  "
+msgstr "@i @o @I %i en el @S.\n"
 
-#. @-expand: extended attribute block %b is corrupt (allocation collision).  
-#: e2fsck/problem.c:662
+#. @-expanded: extended attribute block %b is corrupt (allocation collision).  
+#: e2fsck/problem.c:660
 msgid "@a @b %b is corrupt (allocation collision).  "
 msgstr "el @b de @a %b está corrupto (colisión en la reserva).  "
 
-#. @-expand: extended attribute block %b is corrupt (invalid name).  
-#: e2fsck/problem.c:667
-msgid "@a @b %b is corrupt (invalid name).  "
+#. @-expanded: extended attribute block %b is corrupt (invalid name).  
+#: e2fsck/problem.c:665
+#, fuzzy
+msgid "@a @b %b is corrupt (@n name).  "
 msgstr "el @b de @a %b está corrupto (nombre inválido).  "
 
-#. @-expand: extended attribute block %b is corrupt (invalid value).  
-#: e2fsck/problem.c:672
-msgid "@a @b %b is corrupt (invalid value).  "
+#. @-expanded: extended attribute block %b is corrupt (invalid value).  
+#: e2fsck/problem.c:670
+#, fuzzy
+msgid "@a @b %b is corrupt (@n value).  "
 msgstr "el @b de @a %b está corrupto (valor inválido).  "
 
-#. @-expand: inode %i is too big.  
-#: e2fsck/problem.c:677
+#. @-expanded: inode %i is too big.  
+#: e2fsck/problem.c:675
 #, c-format
 msgid "@i %i is too big.  "
 msgstr "el @i %i es muy grande.  "
 
-#. @-expand: block #%B (%b) causes directory to be too big.  
-#: e2fsck/problem.c:681
+#. @-expanded: block #%B (%b) causes directory to be too big.  
+#: e2fsck/problem.c:679
 msgid "@b #%B (%b) causes @d to be too big.  "
 msgstr "el @b #%B (%b) causa que el @d sea muy grande.  "
 
-#. @-expand: block #%B (%b) causes file to be too big.  
-#: e2fsck/problem.c:686
+#. @-expanded: block #%B (%b) causes file to be too big.  
+#: e2fsck/problem.c:684
 msgid "@b #%B (%b) causes file to be too big.  "
 msgstr "el @b #%B (%b) causa que el fichero sea muy grande.  "
 
-#. @-expand: block #%B (%b) causes symlink to be too big.  
-#: e2fsck/problem.c:691
+#. @-expanded: block #%B (%b) causes symlink to be too big.  
+#: e2fsck/problem.c:689
 msgid "@b #%B (%b) causes symlink to be too big.  "
 msgstr "el @b #%B (%b) causa que el vínculo simbólico sea muy grande.  "
 
-#. @-expand: inode %i has INDEX_FL flag set on filesystem without htree support.\n
-#: e2fsck/problem.c:696
+#. @-expanded: inode %i has INDEX_FL flag set on filesystem without htree support.\n
+#: e2fsck/problem.c:694
 #, c-format
 msgid "@i %i has INDEX_FL flag set on @f without htree support.\n"
 msgstr ""
 "el @i %i tiene la bandera INDEX_FL puesta en el @f sin el árbol-h "
 "implementado.\n"
 
-#. @-expand: inode %i has INDEX_FL flag set but is not a directory.\n
-#: e2fsck/problem.c:701
+#. @-expanded: inode %i has INDEX_FL flag set but is not a directory.\n
+#: e2fsck/problem.c:699
 #, c-format
 msgid "@i %i has INDEX_FL flag set but is not a @d.\n"
 msgstr "@i %i tiene la bandera INDEX_FL puesta pero no es un @d.\n"
 
-#. @-expand: HTREE directory inode %i has an invalid root node.\n
-#: e2fsck/problem.c:706
-#, c-format
-msgid "@h %i has an invalid root node.\n"
+#. @-expanded: HTREE directory inode %i has an invalid root node.\n
+#: e2fsck/problem.c:704
+#, fuzzy, c-format
+msgid "@h %i has an @n root node.\n"
 msgstr "El @h %i tiene un nodo raíz no válido.\n"
 
-#. @-expand: HTREE directory inode %i has an unsupported hash version (%N)\n
-#: e2fsck/problem.c:711
+#. @-expanded: HTREE directory inode %i has an unsupported hash version (%N)\n
+#: e2fsck/problem.c:709
 msgid "@h %i has an unsupported hash version (%N)\n"
 msgstr "El @h %i tiene una versión de hash no implementada (%N)\n"
 
-#. @-expand: HTREE directory inode %i uses an incompatible htree root node flag.\n
-#: e2fsck/problem.c:716
+#. @-expanded: HTREE directory inode %i uses an incompatible htree root node flag.\n
+#: e2fsck/problem.c:714
 #, c-format
 msgid "@h %i uses an incompatible htree root node flag.\n"
 msgstr ""
 "El @h %i utiliza una bandera incompatible para el nodo raíz del árbol h.\n"
 
-#. @-expand: HTREE directory inode %i has a tree depth (%N) which is too big\n
-#: e2fsck/problem.c:721
+#. @-expanded: HTREE directory inode %i has a tree depth (%N) which is too big\n
+#: e2fsck/problem.c:719
 msgid "@h %i has a tree depth (%N) which is too big\n"
 msgstr "El @h %i tiene una profundidad (%N) muy grande\n"
 
-#. @-expand: Bad block inode has an indirect block (%b) that conflicts with\n
-#. @-expand: filesystem metadata.  
-#: e2fsck/problem.c:726
+#. @-expanded: Bad block inode has an indirect block (%b) that conflicts with\n
+#. @-expanded: filesystem metadata.  
+#: e2fsck/problem.c:724
 msgid ""
 "Bad @b @i has an indirect @b (%b) that conflicts with\n"
 "@f metadata.  "
 msgstr ""
 
-#. @-expand: Resize inode (re)creation failed: %m.
-#: e2fsck/problem.c:732
+#. @-expanded: Resize inode (re)creation failed: %m.
+#: e2fsck/problem.c:730
 #, c-format
 msgid "Resize @i (re)creation failed: %m."
 msgstr ""
 
-#. @-expand: inode %i has a extra size (%IS) which is invalid\n
-#: e2fsck/problem.c:737
+#. @-expanded: inode %i has a extra size (%IS) which is invalid\n
+#: e2fsck/problem.c:735
 #, fuzzy
-msgid "@i %i has a extra size (%IS) which is invalid\n"
+msgid "@i %i has a extra size (%IS) which is @n\n"
 msgstr "El @h %i tiene una profundidad (%N) muy grande\n"
 
-#. @-expand: extended attribute in inode %i has a namelen (%N) which is invalid\n
-#: e2fsck/problem.c:742
+#. @-expanded: extended attribute in inode %i has a namelen (%N) which is invalid\n
+#: e2fsck/problem.c:740
 #, fuzzy
-msgid "@a in @i %i has a namelen (%N) which is invalid\n"
+msgid "@a in @i %i has a namelen (%N) which is @n\n"
 msgstr "El @h %i tiene una profundidad (%N) muy grande\n"
 
-#. @-expand: extended attribute in inode %i has a value size (%N) which is invalid\n
-#: e2fsck/problem.c:747
+#. @-expanded: extended attribute in inode %i has a value size (%N) which is invalid\n
+#: e2fsck/problem.c:745
 #, fuzzy
-msgid "@a in @i %i has a value size (%N) which is invalid\n"
+msgid "@a in @i %i has a value size (%N) which is @n\n"
 msgstr "El @h %i tiene una profundidad (%N) muy grande\n"
 
-#. @-expand: extended attribute in inode %i has a value offset (%N) which is invalid\n
-#: e2fsck/problem.c:752
+#. @-expanded: extended attribute in inode %i has a value offset (%N) which is invalid\n
+#: e2fsck/problem.c:750
 #, fuzzy
-msgid "@a in @i %i has a value offset (%N) which is invalid\n"
+msgid "@a in @i %i has a value offset (%N) which is @n\n"
 msgstr "El @h %i tiene una profundidad (%N) muy grande\n"
 
-#. @-expand: extended attribute in inode %i has a value block (%N) which is invalid (must be 0)\n
-#: e2fsck/problem.c:757
-msgid "@a in @i %i has a value block (%N) which is invalid (must be 0)\n"
-msgstr ""
-
-#. @-expand: extended attribute in inode %i has a hash (%N) which is invalid (must be 0)\n
-#: e2fsck/problem.c:762
+#. @-expanded: extended attribute in inode %i has a value block (%N) which is invalid (must be 0)\n
+#: e2fsck/problem.c:755
 #, fuzzy
-msgid "@a in @i %i has a hash (%N) which is invalid (must be 0)\n"
+msgid "@a in @i %i has a value @b (%N) which is @n (must be 0)\n"
 msgstr "El @h %i tiene una profundidad (%N) muy grande\n"
 
-#. @-expand: Duplicate blocks found... invoking duplicate block passes.\n
-#. @-expand: Pass 1B: Rescan for duplicate/bad blocks\n
-#: e2fsck/problem.c:769
+#. @-expanded: extended attribute in inode %i has a hash (%N) which is invalid (must be 0)\n
+#: e2fsck/problem.c:760
+#, fuzzy
+msgid "@a in @i %i has a hash (%N) which is @n (must be 0)\n"
+msgstr "El @h %i tiene una profundidad (%N) muy grande\n"
+
+#. @-expanded: \n
+#. @-expanded: Running additional passes to resolve blocks claimed by more than one inode...\n
+#. @-expanded: Pass 1B: Rescanning for multiply-claimed blocks\n
+#: e2fsck/problem.c:767
+#, fuzzy
 msgid ""
-"Duplicate @bs found... invoking duplicate @b passes.\n"
-"Pass 1B: Rescan for duplicate/bad @bs\n"
+"\n"
+"Running additional passes to resolve @bs claimed by more than one @i...\n"
+"Pass 1B: Rescanning for @m @bs\n"
 msgstr ""
 "Se encontró un @b duplicado... invocando pasos para @bs duplicados.\n"
 "Paso 1B: Reexploración para @bs duplicados/dañados\n"
 
-#. @-expand: Duplicate/bad block(s) in inode %i:
-#: e2fsck/problem.c:775
-#, c-format
-msgid "Duplicate/bad @b(s) in @i %i:"
-msgstr "Hay @b(s) duplicados/dañados en el @i %i:"
+#. @-expanded: multiply-claimed block(s) in inode %i:
+#: e2fsck/problem.c:773
+#, fuzzy, c-format
+msgid "@m @b(s) in @i %i:"
+msgstr "@I @b #%B (%b) en @i %i.  "
 
-#: e2fsck/problem.c:790
+#: e2fsck/problem.c:788
 #, c-format
 msgid "Error while scanning inodes (%i): %m\n"
 msgstr "Error mientras se exploraban los nodos i (%i): %m\n"
 
-#. @-expand: error allocating inode bitmap (inode_dup_map): %m\n
-#: e2fsck/problem.c:795
-#, c-format
-msgid "@A @i @B (inode_dup_map): %m\n"
+#. @-expanded: error allocating inode bitmap (inode_dup_map): %m\n
+#: e2fsck/problem.c:793
+#, fuzzy, c-format
+msgid "@A @i @B (@i_dup_map): %m\n"
 msgstr "@A del @B del @i (inode_dup_map): %m\n"
 
-#. @-expand: Error while iterating over blocks in inode %i (%s): %m\n
-#: e2fsck/problem.c:800
+#. @-expanded: Error while iterating over blocks in inode %i (%s): %m\n
+#: e2fsck/problem.c:798
 #, c-format
 msgid "Error while iterating over @bs in @i %i (%s): %m\n"
 msgstr "Error mientras se iteraba sobre los @bs en el @i %i (%s): %m\n"
 
-#. @-expand: Error addjusting refcount for extended attribute block %b (inode %i): %m\n
-#: e2fsck/problem.c:805 e2fsck/problem.c:1121
-msgid "Error addjusting refcount for @a @b %b (@i %i): %m\n"
+#. @-expanded: Error adjusting refcount for extended attribute block %b (inode %i): %m\n
+#: e2fsck/problem.c:803 e2fsck/problem.c:1119
+#, fuzzy
+msgid "Error adjusting refcount for @a @b %b (@i %i): %m\n"
 msgstr ""
 "Error ajustando la cuenta de referencia para el @b de @a %b (@i %i): %m\n"
 
-#. @-expand: Pass 1C: Scan directories for inodes with dup blocks.\n
-#: e2fsck/problem.c:811
-msgid "Pass 1C: Scan directories for @is with dup @bs.\n"
+#. @-expanded: Pass 1C: Scanning directories for inodes with multiply-claimed blocks.\n
+#: e2fsck/problem.c:809
+#, fuzzy
+msgid "Pass 1C: Scanning directories for @is with @m @bs.\n"
 msgstr ""
 "Paso 1C: Explora los directorios para los nodos i con @bs duplicados.\n"
 
-#. @-expand: Pass 1D: Reconciling duplicate blocks\n
-#: e2fsck/problem.c:817
-msgid "Pass 1D: Reconciling duplicate @bs\n"
+#. @-expanded: Pass 1D: Reconciling multiply-claimed blocks\n
+#: e2fsck/problem.c:815
+#, fuzzy
+msgid "Pass 1D: Reconciling @m @bs\n"
 msgstr "Paso 1D: Reconciliando @bs duplicados\n"
 
-#. @-expand: File %Q (inode #%i, mod time %IM) \n
-#. @-expand:   has %B duplicate block(s), shared with %N file(s):\n
-#: e2fsck/problem.c:822
+#. @-expanded: File %Q (inode #%i, mod time %IM) \n
+#. @-expanded:   has %B multiply-claimed block(s), shared with %N file(s):\n
+#: e2fsck/problem.c:820
+#, fuzzy
 msgid ""
 "File %Q (@i #%i, mod time %IM) \n"
-"  has %B duplicate @b(s), shared with %N file(s):\n"
+"  has %B @m @b(s), shared with %N file(s):\n"
 msgstr ""
 "El fichero %Q (@i #%i, fecha de modificación %IM) \n"
 " tiene %B @b(s) duplicado(s), compartido(s) con %N fichero(s):\n"
 
-#. @-expand: \t%Q (inode #%i, mod time %IM)\n
-#: e2fsck/problem.c:828
+#. @-expanded: \t%Q (inode #%i, mod time %IM)\n
+#: e2fsck/problem.c:826
 msgid "\t%Q (@i #%i, mod time %IM)\n"
 msgstr "\t%Q (@i #%i, fecha de modificación %IM)\n"
 
-#. @-expand: \t<filesystem metadata>\n
-#: e2fsck/problem.c:833
+#. @-expanded: \t<filesystem metadata>\n
+#: e2fsck/problem.c:831
 msgid "\t<@f metadata>\n"
 msgstr "\t<metadatos del @f>\n"
 
-#. @-expand: (There are %N inodes containing duplicate/bad blocks.)\n
-#. @-expand: \n
-#: e2fsck/problem.c:838
+#. @-expanded: (There are %N inodes containing multiply-claimed blocks.)\n
+#. @-expanded: \n
+#: e2fsck/problem.c:836
+#, fuzzy
 msgid ""
-"(There are %N @is containing duplicate/bad @bs.)\n"
+"(There are %N @is containing @m @bs.)\n"
 "\n"
 msgstr ""
 "(Hay %N nodos i que contienen @bs duplicados/dañados.)\n"
 "\n"
 
-#. @-expand: Duplicated blocks already reassigned or cloned.\n
-#. @-expand: \n
-#: e2fsck/problem.c:843
+#. @-expanded: multiply-claimed blocks already reassigned or cloned.\n
+#. @-expanded: \n
+#: e2fsck/problem.c:841
+#, fuzzy
 msgid ""
-"Duplicated @bs already reassigned or cloned.\n"
+"@m @bs already reassigned or cloned.\n"
 "\n"
 msgstr "Los @bs duplicados se reasignaron o clonaron.\n"
 
-#: e2fsck/problem.c:856
+#: e2fsck/problem.c:854
 #, c-format
 msgid "Couldn't clone file: %m\n"
 msgstr "No se puede clonar el fichero: %m\n"
 
-#. @-expand: Pass 2: Checking directory structure\n
-#: e2fsck/problem.c:862
+#. @-expanded: Pass 2: Checking directory structure\n
+#: e2fsck/problem.c:860
 msgid "Pass 2: Checking @d structure\n"
 msgstr "Paso 2: revisando la estructura de @ds\n"
 
-#. @-expand: Bad inode number for '.' in directory inode %i.\n
-#: e2fsck/problem.c:867
-#, c-format
-msgid "Bad @i number for '.' in @d @i %i.\n"
+#. @-expanded: invalid inode number for '.' in directory inode %i.\n
+#: e2fsck/problem.c:865
+#, fuzzy, c-format
+msgid "@n @i number for '.' in @d @i %i.\n"
 msgstr "Número incorrecto de @i para '.' en el @i del @d %i.\n"
 
-#. @-expand: entry '%Dn' in %p (%i) has bad inode #: %Di.\n
-#: e2fsck/problem.c:872
-msgid "@E has bad @i #: %Di.\n"
+#. @-expanded: entry '%Dn' in %p (%i) has invalid inode #: %Di.\n
+#: e2fsck/problem.c:870
+#, fuzzy
+msgid "@E has @n @i #: %Di.\n"
 msgstr "@E tiene un @i dañado #: %Di.\n"
 
-#. @-expand: entry '%Dn' in %p (%i) has deleted/unused inode %Di.  
-#: e2fsck/problem.c:877
+#. @-expanded: entry '%Dn' in %p (%i) has deleted/unused inode %Di.  
+#: e2fsck/problem.c:875
 msgid "@E has @D/unused @i %Di.  "
 msgstr "@E tiene un @i @D/noutilizado.  "
 
-#. @-expand: entry '%Dn' in %p (%i) is a link to '.'  
-#: e2fsck/problem.c:882
+#. @-expanded: entry '%Dn' in %p (%i) is a link to '.'  
+#: e2fsck/problem.c:880
 msgid "@E @L to '.'  "
 msgstr "@E @L a '.'  "
 
-#. @-expand: entry '%Dn' in %p (%i) points to inode (%Di) located in a bad block.\n
-#: e2fsck/problem.c:887
+#. @-expanded: entry '%Dn' in %p (%i) points to inode (%Di) located in a bad block.\n
+#: e2fsck/problem.c:885
 msgid "@E points to @i (%Di) located in a bad @b.\n"
 msgstr "@E apunta a @i (%Di) ubicado en un @b malo.\n"
 
-#. @-expand: entry '%Dn' in %p (%i) is a link to directory %P (%Di).\n
-#: e2fsck/problem.c:892
+#. @-expanded: entry '%Dn' in %p (%i) is a link to directory %P (%Di).\n
+#: e2fsck/problem.c:890
 msgid "@E @L to @d %P (%Di).\n"
 msgstr "@E @L al @d %P (%Di).\n"
 
-#. @-expand: entry '%Dn' in %p (%i) is a link to the root inode.\n
-#: e2fsck/problem.c:897
+#. @-expanded: entry '%Dn' in %p (%i) is a link to the root inode.\n
+#: e2fsck/problem.c:895
 msgid "@E @L to the @r.\n"
 msgstr "@E @L al @r.\n"
 
-#. @-expand: entry '%Dn' in %p (%i) has illegal characters in its name.\n
-#: e2fsck/problem.c:902
+#. @-expanded: entry '%Dn' in %p (%i) has illegal characters in its name.\n
+#: e2fsck/problem.c:900
 msgid "@E has illegal characters in its name.\n"
 msgstr "La @E tiene carácteres ilegales en su nombre.\n"
 
-#. @-expand: Missing '.' in directory inode %i.\n
-#: e2fsck/problem.c:907
+#. @-expanded: Missing '.' in directory inode %i.\n
+#: e2fsck/problem.c:905
 #, c-format
 msgid "Missing '.' in @d @i %i.\n"
 msgstr "Falta un '.' en el @d @i %i.\n"
 
-#. @-expand: Missing '..' in directory inode %i.\n
-#: e2fsck/problem.c:912
+#. @-expanded: Missing '..' in directory inode %i.\n
+#: e2fsck/problem.c:910
 #, c-format
 msgid "Missing '..' in @d @i %i.\n"
 msgstr "Falta '..' en el @i del @d %i.\n"
 
-#. @-expand: First entry '%Dn' (inode=%Di) in directory inode %i (%p) should be '.'\n
-#: e2fsck/problem.c:917
-msgid "First @e '%Dn' (inode=%Di) in @d @i %i (%p) @s '.'\n"
+#. @-expanded: First entry '%Dn' (inode=%Di) in directory inode %i (%p) should be '.'\n
+#: e2fsck/problem.c:915
+#, fuzzy
+msgid "First @e '%Dn' (@i=%Di) in @d @i %i (%p) @s '.'\n"
 msgstr "La primera @e '%Dn' (nodo i=%Di) en el @i del @d %i (%p) @s '.'\n"
 
-#. @-expand: Second entry '%Dn' (inode=%Di) in directory inode %i should be '..'\n
-#: e2fsck/problem.c:922
-msgid "Second @e '%Dn' (inode=%Di) in @d @i %i @s '..'\n"
+#. @-expanded: Second entry '%Dn' (inode=%Di) in directory inode %i should be '..'\n
+#: e2fsck/problem.c:920
+#, fuzzy
+msgid "Second @e '%Dn' (@i=%Di) in @d @i %i @s '..'\n"
 msgstr "La segunda @e '%Dn' (nodo i=%Di) en el @i del @d %i @s '..'\n"
 
-#. @-expand: i_faddr for inode %i (%Q) is %IF, should be zero.\n
-#: e2fsck/problem.c:927
+#. @-expanded: i_faddr for inode %i (%Q) is %IF, should be zero.\n
+#: e2fsck/problem.c:925
 msgid "i_faddr @F %IF, @s zero.\n"
 msgstr "El i_faddr @F %IF, @s cero.\n"
 
-#. @-expand: i_file_acl for inode %i (%Q) is %If, should be zero.\n
-#: e2fsck/problem.c:932
+#. @-expanded: i_file_acl for inode %i (%Q) is %If, should be zero.\n
+#: e2fsck/problem.c:930
 msgid "i_file_acl @F %If, @s zero.\n"
 msgstr "El i_file_acl @F %If, %s cero.\n"
 
-#. @-expand: i_dir_acl for inode %i (%Q) is %Id, should be zero.\n
-#: e2fsck/problem.c:937
+#. @-expanded: i_dir_acl for inode %i (%Q) is %Id, should be zero.\n
+#: e2fsck/problem.c:935
 msgid "i_dir_acl @F %Id, @s zero.\n"
 msgstr "El i_dir_acl @F %Id, @s cero.\n"
 
-#. @-expand: i_frag for inode %i (%Q) is %N, should be zero.\n
-#: e2fsck/problem.c:942
+#. @-expanded: i_frag for inode %i (%Q) is %N, should be zero.\n
+#: e2fsck/problem.c:940
 msgid "i_frag @F %N, @s zero.\n"
 msgstr "El i_frag @F %N, @s cero.\n"
 
-#. @-expand: i_fsize for inode %i (%Q) is %N, should be zero.\n
-#: e2fsck/problem.c:947
+#. @-expanded: i_fsize for inode %i (%Q) is %N, should be zero.\n
+#: e2fsck/problem.c:945
 msgid "i_fsize @F %N, @s zero.\n"
 msgstr "El i_fsize @F %N, @s cero.\n"
 
-#. @-expand: inode %i (%Q) has a bad mode (%Im).\n
-#: e2fsck/problem.c:952
-msgid "@i %i (%Q) has a bad mode (%Im).\n"
+#. @-expanded: inode %i (%Q) has invalid mode (%Im).\n
+#: e2fsck/problem.c:950
+#, fuzzy
+msgid "@i %i (%Q) has @n mode (%Im).\n"
 msgstr "El @i %i (%Q) tiene un modo incorrecto (%Im).\n"
 
-#. @-expand: directory inode %i, block %B, offset %N: directory corrupted\n
-#: e2fsck/problem.c:957
+#. @-expanded: directory inode %i, block %B, offset %N: directory corrupted\n
+#: e2fsck/problem.c:955
 msgid "@d @i %i, @b %B, offset %N: @d corrupted\n"
 msgstr "@i del @d %i, @b %B, desplazamiento %N: el @d está corrupto\n"
 
-#. @-expand: directory inode %i, block %B, offset %N: filename too long\n
-#: e2fsck/problem.c:962
+#. @-expanded: directory inode %i, block %B, offset %N: filename too long\n
+#: e2fsck/problem.c:960
 msgid "@d @i %i, @b %B, offset %N: filename too long\n"
 msgstr ""
 "El @i del @d %i, @b %B, desplazamiento %N: el nombre del fichero es muy "
 "largo\n"
 
-#. @-expand: directory inode %i has an unallocated block #%B.  
-#: e2fsck/problem.c:967
+#. @-expanded: directory inode %i has an unallocated block #%B.  
+#: e2fsck/problem.c:965
 msgid "@d @i %i has an unallocated @b #%B.  "
 msgstr "El @i del @d %i tiene un @b #%B no reservado.  "
 
-#. @-expand: '.' directory entry in directory inode %i is not NULL terminated\n
-#: e2fsck/problem.c:972
+#. @-expanded: '.' directory entry in directory inode %i is not NULL terminated\n
+#: e2fsck/problem.c:970
 #, c-format
 msgid "'.' @d @e in @d @i %i is not NULL terminated\n"
 msgstr "La @e en el @d '.' en el @i del @d %i no está terminada con NULL\n"
 
-#. @-expand: '..' directory entry in directory inode %i is not NULL terminated\n
-#: e2fsck/problem.c:977
+#. @-expanded: '..' directory entry in directory inode %i is not NULL terminated\n
+#: e2fsck/problem.c:975
 #, c-format
 msgid "'..' @d @e in @d @i %i is not NULL terminated\n"
 msgstr "La @e al @d '..' en el @i del @d %i no está terminada con NULL\n"
 
-#. @-expand: inode %i (%Q) is an illegal character device.\n
-#: e2fsck/problem.c:982
+#. @-expanded: inode %i (%Q) is an illegal character device.\n
+#: e2fsck/problem.c:980
 msgid "@i %i (%Q) is an @I character @v.\n"
 msgstr "El @i %i (%Q) es un @v de carácter @I.\n"
 
-#. @-expand: inode %i (%Q) is an illegal block device.\n
-#: e2fsck/problem.c:987
+#. @-expanded: inode %i (%Q) is an illegal block device.\n
+#: e2fsck/problem.c:985
 msgid "@i %i (%Q) is an @I @b @v.\n"
 msgstr "El @i %i (%Q) es un @v de @b @I.\n"
 
-#. @-expand: entry '%Dn' in %p (%i) is duplicate '.' entry.\n
-#: e2fsck/problem.c:992
+#. @-expanded: entry '%Dn' in %p (%i) is duplicate '.' entry.\n
+#: e2fsck/problem.c:990
 msgid "@E is duplicate '.' @e.\n"
 msgstr "La @E está duplicada en la @e '.'.\n"
 
-#. @-expand: entry '%Dn' in %p (%i) is duplicate '..' entry.\n
-#: e2fsck/problem.c:997
+#. @-expanded: entry '%Dn' in %p (%i) is duplicate '..' entry.\n
+#: e2fsck/problem.c:995
 msgid "@E is duplicate '..' @e.\n"
 msgstr "La @E está duplicada en la @e '..'.\n"
 
-#: e2fsck/problem.c:1002 e2fsck/problem.c:1278
+#: e2fsck/problem.c:1000 e2fsck/problem.c:1276
 #, c-format
 msgid "Internal error: couldn't find dir_info for %i.\n"
 msgstr "Error interno: no se puede encontrar el dir_info para %i.\n"
 
-#. @-expand: entry '%Dn' in %p (%i) has rec_len of %Dr, should be %N.\n
-#: e2fsck/problem.c:1007
-msgid "@E has rec_len of %Dr, should be %N.\n"
+#. @-expanded: entry '%Dn' in %p (%i) has rec_len of %Dr, should be %N.\n
+#: e2fsck/problem.c:1005
+#, fuzzy
+msgid "@E has rec_len of %Dr, @s %N.\n"
 msgstr "La @E tiene un rec_len de %Dr y debería ser %N.\n"
 
-#. @-expand: error allocating icount structure: %m\n
-#: e2fsck/problem.c:1012
+#. @-expanded: error allocating icount structure: %m\n
+#: e2fsck/problem.c:1010
 #, c-format
 msgid "@A icount structure: %m\n"
 msgstr "@A de la estructura icount: %m\n"
 
-#. @-expand: Error iterating over directory blocks: %m\n
-#: e2fsck/problem.c:1017
+#. @-expanded: Error iterating over directory blocks: %m\n
+#: e2fsck/problem.c:1015
 #, c-format
 msgid "Error iterating over @d @bs: %m\n"
 msgstr "Error iterando sobre los @bs del @d: %m\n"
 
-#. @-expand: Error reading directory block %b (inode %i): %m\n
-#: e2fsck/problem.c:1022
+#. @-expanded: Error reading directory block %b (inode %i): %m\n
+#: e2fsck/problem.c:1020
 msgid "Error reading @d @b %b (@i %i): %m\n"
 msgstr "Error leyendo el @b del @d %b (@i %i): %m\n"
 
-#. @-expand: Error writing directory block %b (inode %i): %m\n
-#: e2fsck/problem.c:1027
+#. @-expanded: Error writing directory block %b (inode %i): %m\n
+#: e2fsck/problem.c:1025
 msgid "Error writing @d @b %b (@i %i): %m\n"
 msgstr "Error escribiendo el @b del @d %b (@i %i): %m\n"
 
-#. @-expand: error allocating new directory block for inode %i (%s): %m\n
-#: e2fsck/problem.c:1032
+#. @-expanded: error allocating new directory block for inode %i (%s): %m\n
+#: e2fsck/problem.c:1030
 #, c-format
 msgid "@A new @d @b for @i %i (%s): %m\n"
 msgstr "@A del @b del @d para el @i %i (%s): %m\n"
 
-#. @-expand: Error deallocating inode %i: %m\n
-#: e2fsck/problem.c:1037
+#. @-expanded: Error deallocating inode %i: %m\n
+#: e2fsck/problem.c:1035
 #, c-format
 msgid "Error deallocating @i %i: %m\n"
 msgstr "Error al liberar el @i %i: %m\n"
 
-#. @-expand: directory entry for '.' is big.  
-#: e2fsck/problem.c:1042
+#. @-expanded: directory entry for '.' is big.  
+#: e2fsck/problem.c:1040
 msgid "@d @e for '.' is big.  "
 msgstr "La @e del @d para '.' es grande.  "
 
-#. @-expand: inode %i (%Q) is an illegal FIFO.\n
-#: e2fsck/problem.c:1047
+#. @-expanded: inode %i (%Q) is an illegal FIFO.\n
+#: e2fsck/problem.c:1045
 msgid "@i %i (%Q) is an @I FIFO.\n"
 msgstr "El @i %i (%Q) tiene un FIFO @I.\n"
 
-#. @-expand: inode %i (%Q) is an illegal socket.\n
-#: e2fsck/problem.c:1052
+#. @-expanded: inode %i (%Q) is an illegal socket.\n
+#: e2fsck/problem.c:1050
 msgid "@i %i (%Q) is an @I socket.\n"
 msgstr "El @i %i (%Q) es un socket @I.\n"
 
-#. @-expand: Setting filetype for entry '%Dn' in %p (%i) to %N.\n
-#: e2fsck/problem.c:1057
+#. @-expanded: Setting filetype for entry '%Dn' in %p (%i) to %N.\n
+#: e2fsck/problem.c:1055
 msgid "Setting filetype for @E to %N.\n"
 msgstr "Se pone el tipo de fichero para la @E a %N.\n"
 
-#. @-expand: entry '%Dn' in %p (%i) has an incorrect filetype (was %Dt, should be %N).\n
-#: e2fsck/problem.c:1062
-msgid "@E has an incorrect filetype (was %Dt, should be %N).\n"
+#. @-expanded: entry '%Dn' in %p (%i) has an incorrect filetype (was %Dt, should be %N).\n
+#: e2fsck/problem.c:1060
+#, fuzzy
+msgid "@E has an incorrect filetype (was %Dt, @s %N).\n"
 msgstr ""
 "La @E tiene un tipo de fichero incorrecto (era %Dt y debería ser %N).\n"
 
-#. @-expand: entry '%Dn' in %p (%i) has filetype set.\n
-#: e2fsck/problem.c:1067
+#. @-expanded: entry '%Dn' in %p (%i) has filetype set.\n
+#: e2fsck/problem.c:1065
 msgid "@E has filetype set.\n"
 msgstr "La @E tiene puesto el tipo de fichero.\n"
 
-#. @-expand: entry '%Dn' in %p (%i) has a zero-length name.\n
-#: e2fsck/problem.c:1072
-msgid "@E has a zero-length name.\n"
+#. @-expanded: entry '%Dn' in %p (%i) has a zero-length name.\n
+#: e2fsck/problem.c:1070
+#, fuzzy
+msgid "@E has a @z name.\n"
 msgstr "La @E tiene un nombre de longitudo cero.\n"
 
-#. @-expand: Symlink %Q (inode #%i) is invalid.\n
-#: e2fsck/problem.c:1077
-msgid "Symlink %Q (@i #%i) is invalid.\n"
+#. @-expanded: Symlink %Q (inode #%i) is invalid.\n
+#: e2fsck/problem.c:1075
+#, fuzzy
+msgid "Symlink %Q (@i #%i) is @n.\n"
 msgstr "El vínculo simbólico %Q (@i #%i) no es válido.\n"
 
-#. @-expand: extended attribute block for inode %i (%Q) is invalid (%If).\n
-#: e2fsck/problem.c:1082
-msgid "@a @b @F invalid (%If).\n"
+#. @-expanded: extended attribute block for inode %i (%Q) is invalid (%If).\n
+#: e2fsck/problem.c:1080
+#, fuzzy
+msgid "@a @b @F @n (%If).\n"
 msgstr "El @b del @a @F no es válido (%If).\n"
 
-#. @-expand: filesystem contains large files, but lacks LARGE_FILE flag in superblock.\n
-#: e2fsck/problem.c:1087
+#. @-expanded: filesystem contains large files, but lacks LARGE_FILE flag in superblock.\n
+#: e2fsck/problem.c:1085
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
 msgstr ""
 "El @f contiene ficheros muy grandes, pero no tiene la bandera LARGE_FILE en "
 "el @S.\n"
 
-#. @-expand: problem in HTREE directory inode %d: node (%B) not referenced\n
-#: e2fsck/problem.c:1092
+#. @-expanded: problem in HTREE directory inode %d: node (%B) not referenced\n
+#: e2fsck/problem.c:1090
 msgid "@p @h %d: node (%B) not referenced\n"
 msgstr "Hay un @p en el @h %d: el nodo (%B) no ha sido referenciado.\n"
 
-#. @-expand: problem in HTREE directory inode %d: node (%B) referenced twice\n
-#: e2fsck/problem.c:1097
+#. @-expanded: problem in HTREE directory inode %d: node (%B) referenced twice\n
+#: e2fsck/problem.c:1095
 msgid "@p @h %d: node (%B) referenced twice\n"
 msgstr "Hay un @p en el @h %d: el nodo (%B) ha sido referenciado dos veces.\n"
 
-#. @-expand: problem in HTREE directory inode %d: node (%B) has bad min hash\n
-#: e2fsck/problem.c:1102
+#. @-expanded: problem in HTREE directory inode %d: node (%B) has bad min hash\n
+#: e2fsck/problem.c:1100
 msgid "@p @h %d: node (%B) has bad min hash\n"
 msgstr "Hay un @p en el @h %d: el nodo (%B) tiene un hash mínimo incorrecto.\n"
 
-#. @-expand: problem in HTREE directory inode %d: node (%B) has bad max hash\n
-#: e2fsck/problem.c:1107
+#. @-expanded: problem in HTREE directory inode %d: node (%B) has bad max hash\n
+#: e2fsck/problem.c:1105
 msgid "@p @h %d: node (%B) has bad max hash\n"
 msgstr "Hay un @p en el @h %d: el nodo (%B) tiene un hash máximo incorrecto.\n"
 
-#. @-expand: Invalid HTREE directory inode %d (%q).  
-#: e2fsck/problem.c:1112
-msgid "Invalid @h %d (%q).  "
+#. @-expanded: invalid HTREE directory inode %d (%q).  
+#: e2fsck/problem.c:1110
+#, fuzzy
+msgid "@n @h %d (%q).  "
 msgstr "El @h %d no es válido (%q).  "
 
-#. @-expand: problem in HTREE directory inode %d (%q): bad block number %b.\n
-#: e2fsck/problem.c:1116
+#. @-expanded: problem in HTREE directory inode %d (%q): bad block number %b.\n
+#: e2fsck/problem.c:1114
 msgid "@p @h %d (%q): bad @b number %b.\n"
 msgstr "Hay un @p en el @h %d (%q): el número del @b %b es incorrecto.\n"
 
-#. @-expand: problem in HTREE directory inode %d: root node is invalid\n
-#: e2fsck/problem.c:1126
-#, c-format
-msgid "@p @h %d: root node is invalid\n"
+#. @-expanded: problem in HTREE directory inode %d: root node is invalid\n
+#: e2fsck/problem.c:1124
+#, fuzzy, c-format
+msgid "@p @h %d: root node is @n\n"
 msgstr "Hay un @p en el @h %d: el nodo raíz no es válido.\n"
 
-#. @-expand: problem in HTREE directory inode %d: node (%B) has bad limit (%N)\n
-#: e2fsck/problem.c:1131
-msgid "@p @h %d: node (%B) has bad limit (%N)\n"
+#. @-expanded: problem in HTREE directory inode %d: node (%B) has invalid limit (%N)\n
+#: e2fsck/problem.c:1129
+#, fuzzy
+msgid "@p @h %d: node (%B) has @n limit (%N)\n"
 msgstr "Hay un @p en el @h %d: el nodo (%B) tiene un límite incorrecto (%N).\n"
 
-#. @-expand: problem in HTREE directory inode %d: node (%B) has bad count (%N)\n
-#: e2fsck/problem.c:1136
-msgid "@p @h %d: node (%B) has bad count (%N)\n"
+#. @-expanded: problem in HTREE directory inode %d: node (%B) has invalid count (%N)\n
+#: e2fsck/problem.c:1134
+#, fuzzy
+msgid "@p @h %d: node (%B) has @n count (%N)\n"
 msgstr ""
 "Hay un @p en el @h %d: el nodo (%b) tiene una cuenta incorrecta (%N).\n"
 
-#. @-expand: problem in HTREE directory inode %d: node (%B) has an unordered hash table\n
-#: e2fsck/problem.c:1141
+#. @-expanded: problem in HTREE directory inode %d: node (%B) has an unordered hash table\n
+#: e2fsck/problem.c:1139
 msgid "@p @h %d: node (%B) has an unordered hash table\n"
 msgstr ""
 "Hay un @p en el @h %d: el nodo (%B) tiene una tabla de hash no ordenada.\n"
 
-#. @-expand: problem in HTREE directory inode %d: node (%B) has bad depth\n
-#: e2fsck/problem.c:1146
-msgid "@p @h %d: node (%B) has bad depth\n"
+#. @-expanded: problem in HTREE directory inode %d: node (%B) has invalid depth\n
+#: e2fsck/problem.c:1144
+#, fuzzy
+msgid "@p @h %d: node (%B) has @n depth\n"
 msgstr ""
 "Hay un @p en el @h %d: el nodo (%B) tiene una profundidad incorrecta.\n"
 
-#. @-expand: Duplicate entry '%Dn' in %p (%i) found.  
-#: e2fsck/problem.c:1151
+#. @-expanded: Duplicate entry '%Dn' in %p (%i) found.  
+#: e2fsck/problem.c:1149
 msgid "Duplicate @E found.  "
 msgstr "@E está duplicada.  "
 
-#. @-expand: entry '%Dn' in %p (%i) has a non-unique filename.\n
-#. @-expand: Rename to %s
-#: e2fsck/problem.c:1156
+#. @-expanded: entry '%Dn' in %p (%i) has a non-unique filename.\n
+#. @-expanded: Rename to %s
+#: e2fsck/problem.c:1154
 #, no-c-format
 msgid ""
 "@E has a non-unique filename.\n"
@@ -1789,10 +1924,10 @@ msgstr ""
 "La @E tiene un nombre de fichero no único.\n"
 "Se cambia el nombre a %s"
 
-#. @-expand: Duplicate entry '%Dn' found.\n
-#. @-expand: \tMarking %p (%i) to be rebuilt.\n
-#. @-expand: \n
-#: e2fsck/problem.c:1161
+#. @-expanded: Duplicate entry '%Dn' found.\n
+#. @-expanded: \tMarking %p (%i) to be rebuilt.\n
+#. @-expanded: \n
+#: e2fsck/problem.c:1159
 msgid ""
 "Duplicate @e '%Dn' found.\n"
 "\tMarking %p (%i) to be rebuilt.\n"
@@ -1802,92 +1937,92 @@ msgstr ""
 "\tMarcando %p (%) para ser reconstruido.\n"
 "\n"
 
-#. @-expand: Pass 3: Checking directory connectivity\n
-#: e2fsck/problem.c:1168
+#. @-expanded: Pass 3: Checking directory connectivity\n
+#: e2fsck/problem.c:1166
 msgid "Pass 3: Checking @d connectivity\n"
 msgstr "Paso 3: revisando la conectividad del @d.\n"
 
-#. @-expand: root inode not allocated.  
-#: e2fsck/problem.c:1173
+#. @-expanded: root inode not allocated.  
+#: e2fsck/problem.c:1171
 msgid "@r not allocated.  "
 msgstr "El @r no ha sido reservado.  "
 
-#. @-expand: No room in lost+found directory.  
-#: e2fsck/problem.c:1178
+#. @-expanded: No room in lost+found directory.  
+#: e2fsck/problem.c:1176
 msgid "No room in @l @d.  "
 msgstr "No hay espacio en el @d @l.  "
 
-#. @-expand: Unconnected directory inode %i (%p)\n
-#: e2fsck/problem.c:1183
+#. @-expanded: Unconnected directory inode %i (%p)\n
+#: e2fsck/problem.c:1181
 #, c-format
 msgid "Unconnected @d @i %i (%p)\n"
 msgstr "El @d del @i %i (%p) está desconectado\n"
 
-#. @-expand: /lost+found not found.  
-#: e2fsck/problem.c:1188
+#. @-expanded: /lost+found not found.  
+#: e2fsck/problem.c:1186
 msgid "/@l not found.  "
 msgstr "No se encontró /@l.  "
 
-#. @-expand: '..' in %Q (%i) is %P (%j), should be %q (%d).\n
-#: e2fsck/problem.c:1193
+#. @-expanded: '..' in %Q (%i) is %P (%j), should be %q (%d).\n
+#: e2fsck/problem.c:1191
 msgid "'..' in %Q (%i) is %P (%j), @s %q (%d).\n"
 msgstr "'..' en %Q (i) es %P (%j) y debería ser %q (%d).\n"
 
-#. @-expand: Bad or non-existent /lost+found.  Cannot reconnect.\n
-#: e2fsck/problem.c:1198
+#. @-expanded: Bad or non-existent /lost+found.  Cannot reconnect.\n
+#: e2fsck/problem.c:1196
 msgid "Bad or non-existent /@l.  Cannot reconnect.\n"
 msgstr "El /@l no existe o está dañado.  No se puede reconectar.\n"
 
-#. @-expand: Could not expand /lost+found: %m\n
-#: e2fsck/problem.c:1203
+#. @-expanded: Could not expand /lost+found: %m\n
+#: e2fsck/problem.c:1201
 #, c-format
 msgid "Could not expand /@l: %m\n"
 msgstr "No se puede expandir /@l: %m\n"
 
-#: e2fsck/problem.c:1208
+#: e2fsck/problem.c:1206
 #, c-format
 msgid "Could not reconnect %i: %m\n"
 msgstr "No se puede reconectar %i: %m\n"
 
-#. @-expand: Error while trying to find /lost+found: %m\n
-#: e2fsck/problem.c:1213
+#. @-expanded: Error while trying to find /lost+found: %m\n
+#: e2fsck/problem.c:1211
 #, c-format
 msgid "Error while trying to find /@l: %m\n"
 msgstr "Error mientras se intentaba encontrar /@l: %m\n"
 
-#. @-expand: ext2fs_new_block: %m while trying to create /lost+found directory\n
-#: e2fsck/problem.c:1218
+#. @-expanded: ext2fs_new_block: %m while trying to create /lost+found directory\n
+#: e2fsck/problem.c:1216
 #, c-format
 msgid "ext2fs_new_@b: %m while trying to create /@l @d\n"
 msgstr "ext2fs_new_block: %m mientras se intentaba crear el @d /@l.\n"
 
-#. @-expand: ext2fs_new_inode: %m while trying to create /lost+found directory\n
-#: e2fsck/problem.c:1223
+#. @-expanded: ext2fs_new_inode: %m while trying to create /lost+found directory\n
+#: e2fsck/problem.c:1221
 #, c-format
 msgid "ext2fs_new_@i: %m while trying to create /@l @d\n"
 msgstr "ext2fs_new_inode: %m cuando se intentaba crear el @d /@l.\n"
 
-#. @-expand: ext2fs_new_dir_block: %m while creating new directory block\n
-#: e2fsck/problem.c:1228
+#. @-expanded: ext2fs_new_dir_block: %m while creating new directory block\n
+#: e2fsck/problem.c:1226
 #, c-format
 msgid "ext2fs_new_dir_@b: %m while creating new @d @b\n"
 msgstr "ext2fs_new_dir_block: %m mientras se creaba un nuevo @b de @d.\n"
 
-#. @-expand: ext2fs_write_dir_block: %m while writing the directory block for /lost+found\n
-#: e2fsck/problem.c:1233
+#. @-expanded: ext2fs_write_dir_block: %m while writing the directory block for /lost+found\n
+#: e2fsck/problem.c:1231
 #, c-format
 msgid "ext2fs_write_dir_@b: %m while writing the @d @b for /@l\n"
 msgstr "ext2fs_write_dir_block: %m mientras se escribía el @b de @d para /@l\n"
 
-#. @-expand: Error while adjusting inode count on inode %i\n
-#: e2fsck/problem.c:1238
+#. @-expanded: Error while adjusting inode count on inode %i\n
+#: e2fsck/problem.c:1236
 #, c-format
 msgid "Error while adjusting @i count on @i %i\n"
 msgstr "Error mientras se ajustaba la cuenta del @i en el @i %i\n"
 
-#. @-expand: Couldn't fix parent of inode %i: %m\n
-#. @-expand: \n
-#: e2fsck/problem.c:1243
+#. @-expanded: Couldn't fix parent of inode %i: %m\n
+#. @-expanded: \n
+#: e2fsck/problem.c:1241
 #, c-format
 msgid ""
 "Couldn't fix parent of @i %i: %m\n"
@@ -1896,147 +2031,155 @@ msgstr ""
 "No se puede arreglar al padre del @i %i: %m\n"
 "\n"
 
-#. @-expand: Couldn't fix parent of inode %i: Couldn't find parent directory entry\n
-#. @-expand: \n
-#: e2fsck/problem.c:1248
-#, c-format
+#. @-expanded: Couldn't fix parent of inode %i: Couldn't find parent directory entry\n
+#. @-expanded: \n
+#: e2fsck/problem.c:1246
+#, fuzzy, c-format
 msgid ""
-"Couldn't fix parent of @i %i: Couldn't find parent @d entry\n"
+"Couldn't fix parent of @i %i: Couldn't find parent @d @e\n"
 "\n"
 msgstr ""
 "No se puede arreglar al padre del @i %i: no se puede encontrar la entrada al "
 "@d padre\n"
 "\n"
 
-#. @-expand: error allocating inode bitmap (%N): %m\n
-#: e2fsck/problem.c:1253
-msgid "@A @i @B (%N): %m\n"
-msgstr "Hay un @A del @B del @i (%N): %m\n"
-
-#. @-expand: Error creating root directory (%s): %m\n
-#: e2fsck/problem.c:1258
+#. @-expanded: Error creating root directory (%s): %m\n
+#: e2fsck/problem.c:1256
 #, c-format
 msgid "Error creating root @d (%s): %m\n"
 msgstr "Error creando el @d raíz (%s): %m\n"
 
-#. @-expand: Error creating /lost+found directory (%s): %m\n
-#: e2fsck/problem.c:1263
+#. @-expanded: Error creating /lost+found directory (%s): %m\n
+#: e2fsck/problem.c:1261
 #, c-format
 msgid "Error creating /@l @d (%s): %m\n"
 msgstr "Error creando el @d /@l (%s): %m\n"
 
-#. @-expand: root inode is not a directory; aborting.\n
-#: e2fsck/problem.c:1268
+#. @-expanded: root inode is not a directory; aborting.\n
+#: e2fsck/problem.c:1266
 msgid "@r is not a @d; aborting.\n"
 msgstr "El @r no es un @d; se finaliza la operación.\n"
 
-#. @-expand: Cannot proceed without a root inode.\n
-#: e2fsck/problem.c:1273
+#. @-expanded: Cannot proceed without a root inode.\n
+#: e2fsck/problem.c:1271
 msgid "Cannot proceed without a @r.\n"
 msgstr "No se puede proceder sin un @r.\n"
 
-#. @-expand: /lost+found is not a directory (ino=%i)\n
-#: e2fsck/problem.c:1283
+#. @-expanded: /lost+found is not a directory (ino=%i)\n
+#: e2fsck/problem.c:1281
 #, c-format
 msgid "/@l is not a @d (ino=%i)\n"
 msgstr "El /@l no es un @d (ino=%i)\n"
 
-#: e2fsck/problem.c:1290
+#: e2fsck/problem.c:1288
 msgid "Pass 3A: Optimizing directories\n"
 msgstr "Paso 3A: optimizando directorios\n"
 
-#: e2fsck/problem.c:1295
+#: e2fsck/problem.c:1293
 #, c-format
 msgid "Failed to create dirs_to_hash iterator: %m"
 msgstr "Falla al crear el iterador dirs_to_hash: %m"
 
-#: e2fsck/problem.c:1300
+#: e2fsck/problem.c:1298
 msgid "Failed to optimize directory %q (%d): %m"
 msgstr "Fallo al optimizar el directorio %q (%d): %m"
 
-#: e2fsck/problem.c:1305
+#: e2fsck/problem.c:1303
 msgid "Optimizing directories: "
 msgstr "Optimizando directorios: "
 
-#: e2fsck/problem.c:1322
+#: e2fsck/problem.c:1320
 msgid "Pass 4: Checking reference counts\n"
 msgstr "Paso 4: revisando las cuentas de referencia\n"
 
-#. @-expand: inode %i ref count is %Il, should be %N.  
-#: e2fsck/problem.c:1337
+#. @-expanded: unattached zero-length inode %i.  
+#: e2fsck/problem.c:1325
+#, fuzzy, c-format
+msgid "@u @z @i %i.  "
+msgstr "@i @o @I %i en el @S.\n"
+
+#. @-expanded: unattached inode %i\n
+#: e2fsck/problem.c:1330
+#, c-format
+msgid "@u @i %i\n"
+msgstr ""
+
+#. @-expanded: inode %i ref count is %Il, should be %N.  
+#: e2fsck/problem.c:1335
 msgid "@i %i ref count is %Il, @s %N.  "
 msgstr "La cuenta de referencia del @i %i es %Il, y @s %N.  "
 
-#. @-expand: WARNING: PROGRAMMING BUG IN E2FSCK!\n
-#. @-expand: \tOR SOME BONEHEAD (YOU) IS CHECKING A MOUNTED (LIVE) FILESYSTEM.\n
-#. @-expand: inode_link_info[%i] is %N, inode.i_links_count is %Il.  They should be the same!\n
-#: e2fsck/problem.c:1341
+#. @-expanded: WARNING: PROGRAMMING BUG IN E2FSCK!\n
+#. @-expanded: \tOR SOME BONEHEAD (YOU) IS CHECKING A MOUNTED (LIVE) FILESYSTEM.\n
+#. @-expanded: inode_link_info[%i] is %N, inode.i_links_count is %Il.  They should be the same!\n
+#: e2fsck/problem.c:1339
+#, fuzzy
 msgid ""
 "WARNING: PROGRAMMING BUG IN E2FSCK!\n"
 "\tOR SOME BONEHEAD (YOU) IS CHECKING A MOUNTED (LIVE) FILESYSTEM.\n"
-"@i_link_info[%i] is %N, @i.i_links_count is %Il.  They should be the same!\n"
+"@i_link_info[%i] is %N, @i.i_links_count is %Il.  They @s the same!\n"
 msgstr ""
 "¡CUIDADO: ERROR DE PROGRAMACIÓN EN EL E2FSCK!\n"
 "\tO ALGÚN TARADO (TU) ESTÁ REVISANDO UN SISTEMA DE ARCHIVOS MONTADO (VIVO).\n"
 "inode_link_info[%i] es %N, inode.i_links_count es %Il.  ¡Y deberían ser el "
 "mismo!\n"
 
-#. @-expand: Pass 5: Checking group summary information\n
-#: e2fsck/problem.c:1351
+#. @-expanded: Pass 5: Checking group summary information\n
+#: e2fsck/problem.c:1349
 msgid "Pass 5: Checking @g summary information\n"
 msgstr "Paso 5: revisando el resumen de información del @g\n"
 
-#. @-expand: Padding at end of inode bitmap is not set. 
-#: e2fsck/problem.c:1356
+#. @-expanded: Padding at end of inode bitmap is not set. 
+#: e2fsck/problem.c:1354
 msgid "Padding at end of @i @B is not set. "
 msgstr "No está puesto el relleno al final del @B del @i. "
 
-#. @-expand: Padding at end of block bitmap is not set. 
-#: e2fsck/problem.c:1361
+#. @-expanded: Padding at end of block bitmap is not set. 
+#: e2fsck/problem.c:1359
 msgid "Padding at end of @b @B is not set. "
 msgstr "No está puesto el relleno al final del @B del @b. "
 
-#. @-expand: block bitmap differences: 
-#: e2fsck/problem.c:1366
+#. @-expanded: block bitmap differences: 
+#: e2fsck/problem.c:1364
 msgid "@b @B differences: "
 msgstr "Diferencias del @B del @b: "
 
-#. @-expand: inode bitmap differences: 
-#: e2fsck/problem.c:1386
+#. @-expanded: inode bitmap differences: 
+#: e2fsck/problem.c:1384
 msgid "@i @B differences: "
 msgstr "Diferencias del @B del @i: "
 
-#. @-expand: Free inodes count wrong for group #%g (%i, counted=%j).\n
-#: e2fsck/problem.c:1406
+#. @-expanded: Free inodes count wrong for group #%g (%i, counted=%j).\n
+#: e2fsck/problem.c:1404
 msgid "Free @is count wrong for @g #%g (%i, counted=%j).\n"
 msgstr ""
 "La cuenta de nodos i libres es incorrecta para el @g #%g (%i, contados=%j).\n"
 
-#. @-expand: Directories count wrong for group #%g (%i, counted=%j).\n
-#: e2fsck/problem.c:1411
+#. @-expanded: Directories count wrong for group #%g (%i, counted=%j).\n
+#: e2fsck/problem.c:1409
 msgid "Directories count wrong for @g #%g (%i, counted=%j).\n"
 msgstr ""
 "La cuenta de directorios es incorrecta para @g #%g (%i, contados=%j).\n"
 
-#. @-expand: Free inodes count wrong (%i, counted=%j).\n
-#: e2fsck/problem.c:1416
+#. @-expanded: Free inodes count wrong (%i, counted=%j).\n
+#: e2fsck/problem.c:1414
 msgid "Free @is count wrong (%i, counted=%j).\n"
 msgstr "La cuenta de nodos i libres es incorrecta (%i, contados=%j).\n"
 
-#. @-expand: Free blocks count wrong for group #%g (%b, counted=%c).\n
-#: e2fsck/problem.c:1421
+#. @-expanded: Free blocks count wrong for group #%g (%b, counted=%c).\n
+#: e2fsck/problem.c:1419
 msgid "Free @bs count wrong for @g #%g (%b, counted=%c).\n"
 msgstr ""
 "La cuenta de @bs libres es incorrecta para el @g #%g (%b, contados=%c).\n"
 
-#. @-expand: Free blocks count wrong (%b, counted=%c).\n
-#: e2fsck/problem.c:1426
+#. @-expanded: Free blocks count wrong (%b, counted=%c).\n
+#: e2fsck/problem.c:1424
 msgid "Free @bs count wrong (%b, counted=%c).\n"
 msgstr "La cuenta de @bs libres es incorrecta (%b, contados=%c).\n"
 
-#. @-expand: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
-#. @-expand: endpoints (%i, %j)\n
-#: e2fsck/problem.c:1431
+#. @-expanded: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
+#. @-expanded: endpoints (%i, %j)\n
+#: e2fsck/problem.c:1429
 msgid ""
 "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
 "endpoints (%i, %j)\n"
@@ -2044,16 +2187,28 @@ msgstr ""
 "ERROR DE PROGRAMACIÓN: el @f (#%N) los puntos finales del %B (%b, %c) no "
 "coinciden con los puntos finales del @B calculados (%i, %j)\n"
 
-#: e2fsck/problem.c:1437
+#: e2fsck/problem.c:1435
 msgid "Internal error: fudging end of bitmap (%N)\n"
 msgstr "Error interno: el final del bitmap no tiene sentido (%N)\n"
 
-#: e2fsck/problem.c:1571
+#. @-expanded: Error copying in replacement inode bitmap: %m\n
+#: e2fsck/problem.c:1440
+#, fuzzy, c-format
+msgid "Error copying in replacement @i @B: %m\n"
+msgstr "Error leyendo el @i %i: %m\n"
+
+#. @-expanded: Error copying in replacement block bitmap: %m\n
+#: e2fsck/problem.c:1445
+#, c-format
+msgid "Error copying in replacement @b @B: %m\n"
+msgstr ""
+
+#: e2fsck/problem.c:1569
 #, c-format
 msgid "Unhandled error code (0x%x)!\n"
 msgstr "¡Código de error no previsto (0x%x)!\n"
 
-#: e2fsck/problem.c:1644
+#: e2fsck/problem.c:1642
 msgid "IGNORED"
 msgstr "IGNORADO"
 
@@ -2746,47 +2901,59 @@ msgstr ""
 msgid "during test data write, block %lu"
 msgstr "durante la prueba de escritura de datos del bloque %lu"
 
-#: misc/badblocks.c:786 misc/util.c:158
+#: misc/badblocks.c:784 misc/util.c:156
 #, c-format
 msgid "%s is mounted; "
 msgstr "%s está montado; "
 
-#: misc/badblocks.c:788
+#: misc/badblocks.c:786
 msgid "badblocks forced anyway.  Hope /etc/mtab is incorrect.\n"
 msgstr ""
 "bloques malos se fuerzan de todas formas.  Se tiene esperanza de que /etc/"
 "mtab esté incorrecto.\n"
 
-#: misc/badblocks.c:792
+#: misc/badblocks.c:791
 msgid "it's not safe to run badblocks!\n"
 msgstr "¡No es seguro correr los bloques malos!\n"
 
-#: misc/badblocks.c:851
+#: misc/badblocks.c:796 misc/util.c:167
+#, c-format
+msgid "%s is apparently in use by the system; "
+msgstr ""
+
+#: misc/badblocks.c:799
+#, fuzzy
+msgid "badblocks forced anyway.\n"
+msgstr ""
+"bloques malos se fuerzan de todas formas.  Se tiene esperanza de que /etc/"
+"mtab esté incorrecto.\n"
+
+#: misc/badblocks.c:861
 #, c-format
 msgid "bad block size - %s"
 msgstr "tamaño de los bloques malos - %s"
 
-#: misc/badblocks.c:908
+#: misc/badblocks.c:918
 #, c-format
 msgid "can't allocate memory for test_pattern - %s"
 msgstr "no se puede reservar memoria para el patrón_de_prueba - %s"
 
-#: misc/badblocks.c:922
+#: misc/badblocks.c:932
 #, c-format
 msgid "invalid test_pattern: %s\n"
 msgstr "patrón_de_prueba no válido: %s\n"
 
-#: misc/badblocks.c:938
+#: misc/badblocks.c:948
 msgid "Maximum of one test_pattern may be specified in read-only mode"
 msgstr ""
 "Sólo un máximo de un patrón_de_prueba puede ser especificado en modo sólo "
 "lectura"
 
-#: misc/badblocks.c:944
+#: misc/badblocks.c:954
 msgid "Random test_pattern is not allowed in read-only mode"
 msgstr "El patrón_de_prueba aleatorio no está permitido en modo sólo lectura"
 
-#: misc/badblocks.c:958
+#: misc/badblocks.c:968
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size manually\n"
@@ -2794,34 +2961,34 @@ msgstr ""
 "No se puede determinar el tamaño del dispositivo; se debe especificar\n"
 "el tamaño manualmente\n"
 
-#: misc/badblocks.c:964
+#: misc/badblocks.c:974
 msgid "while trying to determine device size"
 msgstr "mientras se intentaba determinar el tamaño del dispositivo"
 
-#: misc/badblocks.c:970 misc/mke2fs.c:1223
+#: misc/badblocks.c:980 misc/mke2fs.c:1223
 #, fuzzy, c-format
 msgid "invalid blocks count - %s"
 msgstr "cuenta de bloques malos - %s"
 
-#: misc/badblocks.c:979
+#: misc/badblocks.c:989
 #, fuzzy, c-format
 msgid "invalid starting block - %s"
 msgstr "bloque inicial malo - %s"
 
-#: misc/badblocks.c:985
+#: misc/badblocks.c:995
 #, fuzzy, c-format
 msgid "invalid blocks range: %lu-%lu"
 msgstr "intervalo de bloques malos: %lu-%lu"
 
-#: misc/badblocks.c:1040
+#: misc/badblocks.c:1050
 msgid "creating in-memory bad blocks list"
 msgstr "creando la lista de bloques malos en memoria"
 
-#: misc/badblocks.c:1055
+#: misc/badblocks.c:1065
 msgid "adding to in-memory bad block list"
 msgstr "añadiendo a la lista de bloques malos en memoria"
 
-#: misc/badblocks.c:1079
+#: misc/badblocks.c:1089
 #, c-format
 msgid "Pass completed, %u bad blocks found.\n"
 msgstr "Paso terminado, se encontraron %u bloques malos.\n"
@@ -3544,8 +3711,8 @@ msgid "blocks per group must be multiple of 8"
 msgstr "los bloques por grupo deben ser un múltiplo de 8"
 
 #: misc/mke2fs.c:1036
-#, c-format
-msgid "bad inode ratio %s (min %d/max %d"
+#, fuzzy, c-format
+msgid "bad inode ratio %s (min %d/max %d)"
 msgstr "proporción de nodos i malos %s (min %d/max %d"
 
 #: misc/mke2fs.c:1055
@@ -4058,7 +4225,7 @@ msgstr "%s no es un dispositivo especial de bloques.\n"
 msgid "%s is entire device, not just one partition!\n"
 msgstr "¡%s es todo el dispositivo, no sólo una partición!\n"
 
-#: misc/util.c:160
+#: misc/util.c:158
 msgid "mke2fs forced anyway.  Hope /etc/mtab is incorrect.\n"
 msgstr ""
 "Se fuerza de todas formas mke2fs.  Se espera que /etc/mtab esté incorrecta.\n"
@@ -4068,13 +4235,17 @@ msgstr ""
 msgid "will not make a %s here!\n"
 msgstr "¡No se hará un %s aquí!\n"
 
-#: misc/util.c:177
+#: misc/util.c:170
+msgid "mke2fs forced anyway.\n"
+msgstr ""
+
+#: misc/util.c:186
 msgid "Couldn't allocate memory to parse journal options!\n"
 msgstr ""
 "¡No se puede reservar memoria para la revisión sintáctica de las opciones "
 "del fichero de transacciones!\n"
 
-#: misc/util.c:219
+#: misc/util.c:228
 msgid ""
 "\n"
 "Bad journal options specified.\n"
@@ -4103,7 +4274,7 @@ msgstr ""
 "bloques del sistema de ficheros.\n"
 "\n"
 
-#: misc/util.c:246
+#: misc/util.c:255
 msgid ""
 "\n"
 "Filesystem too small for a journal\n"
@@ -4112,7 +4283,7 @@ msgstr ""
 "El sistema de ficheros es demasiado pequeño para un fichero de "
 "transacciones\n"
 
-#: misc/util.c:253
+#: misc/util.c:262
 #, c-format
 msgid ""
 "\n"
@@ -4124,7 +4295,7 @@ msgstr ""
 "debería\n"
 "estar entre 1024 y 102400 bloques.  Finalizando.\n"
 
-#: misc/util.c:261
+#: misc/util.c:270
 msgid ""
 "\n"
 "Journal size too big for filesystem.\n"
@@ -4133,7 +4304,7 @@ msgstr ""
 "El tamaño del fichero de transacciones es muy grande para el sistema de "
 "ficheros.\n"
 
-#: misc/util.c:280
+#: misc/util.c:294
 #, c-format
 msgid ""
 "This filesystem will be automatically checked every %d mounts or\n"
@@ -4274,6 +4445,15 @@ msgstr "bloques de meta-datos"
 #, c-format
 msgid "Should never happen: resize inode corrupt!\n"
 msgstr ""
+
+#~ msgid "Clone duplicate/bad blocks"
+#~ msgstr "Colonar bloques duplicados/malos"
+
+#~ msgid "Duplicate/bad @b(s) in @i %i:"
+#~ msgstr "Hay @b(s) duplicados/dañados en el @i %i:"
+
+#~ msgid "Error allocating @a @b %b.  "
+#~ msgstr "Error reservando el @b de @a %b.  "
 
 #~ msgid "resize2fs %s (%s)\n"
 #~ msgstr "resize2fs %s (%s)\n"

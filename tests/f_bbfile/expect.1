@@ -4,29 +4,30 @@ Pass 1: Checking inodes, blocks, and sizes
 Group 0's inode bitmap (4) is bad.  Relocate? yes
 
 Relocating group 0's inode bitmap from 4 to 43...
-Duplicate blocks found... invoking duplicate block passes.
-Pass 1B: Rescan for duplicate/bad blocks
-Duplicate/bad block(s) in inode 2: 21
-Duplicate/bad block(s) in inode 11: 9 10 11 12 13 14 15 16 17 18 19 20
-Duplicate/bad block(s) in inode 12: 25 26
-Pass 1C: Scan directories for inodes with dup blocks.
-Pass 1D: Reconciling duplicate blocks
-(There are 3 inodes containing duplicate/bad blocks.)
+
+Running additional passes to resolve blocks claimed by more than one inode...
+Pass 1B: Rescanning for multiply-claimed blocks
+Multiply-claimed block(s) in inode 2: 21
+Multiply-claimed block(s) in inode 11: 9 10 11 12 13 14 15 16 17 18 19 20
+Multiply-claimed block(s) in inode 12: 25 26
+Pass 1C: Scanning directories for inodes with multiply-claimed blocks.
+Pass 1D: Reconciling multiply-claimed blocks
+(There are 3 inodes containing multiply-claimed blocks.)
 
 File / (inode #2, mod time Sun Jan  2 08:29:13 1994) 
-  has 1 duplicate block(s), shared with 1 file(s):
+  has 1 multiply-claimed block(s), shared with 1 file(s):
 	<The bad blocks inode> (inode #1, mod time Sun Jul 17 00:47:58 1994)
-Clone duplicate/bad blocks? yes
+Clone multiply-claimed blocks? yes
 
 File /lost+found (inode #11, mod time Sun Jan  2 08:28:40 1994) 
-  has 12 duplicate block(s), shared with 1 file(s):
+  has 12 multiply-claimed block(s), shared with 1 file(s):
 	<The bad blocks inode> (inode #1, mod time Sun Jul 17 00:47:58 1994)
-Clone duplicate/bad blocks? yes
+Clone multiply-claimed blocks? yes
 
 File /termcap (inode #12, mod time Sun Jan  2 08:29:13 1994) 
-  has 2 duplicate block(s), shared with 1 file(s):
+  has 2 multiply-claimed block(s), shared with 1 file(s):
 	<The bad blocks inode> (inode #1, mod time Sun Jul 17 00:47:58 1994)
-Clone duplicate/bad blocks? yes
+Clone multiply-claimed blocks? yes
 
 Pass 2: Checking directory structure
 Pass 3: Checking directory connectivity

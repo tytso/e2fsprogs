@@ -70,6 +70,8 @@
  * 	@j	journal
  * 	@l	lost+found
  * 	@L	is a link
+ *	@m	multiply-claimed
+ *	@n	invalid
  * 	@o	orphaned
  * 	@p	problem in
  * 	@r	root inode
@@ -122,6 +124,8 @@ static const char *abbrevs[] = {
 	N_("hHTREE @d @i"),
 	N_("llost+found"),
 	N_("Lis a link"),
+	N_("mmultiply-claimed"),
+	N_("ninvalid"),
 	N_("oorphaned"),
 	N_("pproblem in"),
 	N_("rroot @i"),

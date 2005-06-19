@@ -5,33 +5,34 @@ Inode 12, i_size is 4096, should be 5120.  Fix? yes
 
 Inode 13, i_size is 0, should be 2048.  Fix? yes
 
-Duplicate blocks found... invoking duplicate block passes.
-Pass 1B: Rescan for duplicate/bad blocks
-Duplicate/bad block(s) in inode 12: 3 4 6 1
-Duplicate/bad block(s) in inode 13: 2 3
-Duplicate/bad block(s) in inode 14: 2
-Pass 1C: Scan directories for inodes with dup blocks.
-Pass 1D: Reconciling duplicate blocks
-(There are 3 inodes containing duplicate/bad blocks.)
+
+Running additional passes to resolve blocks claimed by more than one inode...
+Pass 1B: Rescanning for multiply-claimed blocks
+Multiply-claimed block(s) in inode 12: 3 4 6 1
+Multiply-claimed block(s) in inode 13: 2 3
+Multiply-claimed block(s) in inode 14: 2
+Pass 1C: Scanning directories for inodes with multiply-claimed blocks.
+Pass 1D: Reconciling multiply-claimed blocks
+(There are 3 inodes containing multiply-claimed blocks.)
 
 File /foo (inode #12, mod time Thu Apr 28 17:57:53 1994) 
-  has 4 duplicate block(s), shared with 2 file(s):
+  has 4 multiply-claimed block(s), shared with 2 file(s):
 	<filesystem metadata>
 	/bar (inode #13, mod time Thu Aug  5 07:17:17 1999)
-Clone duplicate/bad blocks? yes
+Clone multiply-claimed blocks? yes
 
 File /bar (inode #13, mod time Thu Aug  5 07:17:17 1999) 
-  has 2 duplicate block(s), shared with 3 file(s):
+  has 2 multiply-claimed block(s), shared with 3 file(s):
 	<filesystem metadata>
 	/foo (inode #12, mod time Thu Apr 28 17:57:53 1994)
 	/quux (inode #14, mod time Thu Aug  5 07:18:09 1999)
-Clone duplicate/bad blocks? yes
+Clone multiply-claimed blocks? yes
 
 File /quux (inode #14, mod time Thu Aug  5 07:18:09 1999) 
-  has 1 duplicate block(s), shared with 2 file(s):
+  has 1 multiply-claimed block(s), shared with 2 file(s):
 	<filesystem metadata>
 	/bar (inode #13, mod time Thu Aug  5 07:17:17 1999)
-Clone duplicate/bad blocks? yes
+Clone multiply-claimed blocks? yes
 
 Pass 2: Checking directory structure
 Directory inode 12, block 1, offset 0: directory corrupted
