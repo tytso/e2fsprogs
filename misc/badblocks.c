@@ -1047,7 +1047,7 @@ int main (int argc, char ** argv)
 	errcode = ext2fs_badblocks_list_create(&bb_list,0);
 	if (errcode) {
 		com_err (program_name, errcode,
-			 _("creating in-memory bad blocks list"));
+			 _("while creating in-memory bad blocks list"));
 		exit (1);
 	}
 
@@ -1062,7 +1062,7 @@ int main (int argc, char ** argv)
 				default:
 					errcode = ext2fs_badblocks_list_add(bb_list,next_bad);
 					if (errcode) {
-						com_err (program_name, errcode, _("adding to in-memory bad block list"));
+						com_err (program_name, errcode, _("while adding to in-memory bad block list"));
 						exit (1);
 					}
 					continue;

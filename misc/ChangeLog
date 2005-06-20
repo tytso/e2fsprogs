@@ -1,5 +1,17 @@
 2005-06-20  Theodore Ts'o  <tytso@mit.edu>
 
+	* partinfo.c: Add ioctl definition for BLKGETSIZE so it can be
+		compiled cleanly.
+
+	* findsuper.c: Fix up comments for grammar.
+
+	* dumpe2fs.c (print_journal_information), partinfo.c (main): Add
+		missing _() so all strings can be internationalized.
+
+	* badblocks.c (main), mke2fs.c (parse_extended_opts, PRS),
+		partinfo.c (main), tune2fs.c (usage): Clean up printed
+		messages for grammar and consistency.
+
 	* e2image.8.in: Clean up e2image man page, mostly based on
 		suggestions from Benno Schulenberg.
 

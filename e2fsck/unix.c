@@ -73,7 +73,7 @@ static void usage(e2fsck_t ctx)
 	fprintf(stderr,
 		_("Usage: %s [-panyrcdfvstDFSV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-I inode_buffer_blocks] [-P process_inode_size]\n"
-		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j ext-journal]\n"
+		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j external_journal]\n"
 		"\t\t[-E extended-options] device\n"),
 		ctx->program_name);
 
@@ -87,7 +87,7 @@ static void usage(e2fsck_t ctx)
 		" -v                   Be verbose\n"
 		" -b superblock        Use alternative superblock\n"
 		" -B blocksize         Force blocksize when looking for superblock\n"
-		" -j external-journal  Set location of the external journal\n"
+		" -j external_journal  Set location of the external journal\n"
 		" -l bad_blocks_file   Add to badblocks list\n"
 		" -L bad_blocks_file   Set badblocks list\n"
 		));
@@ -529,15 +529,18 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 				continue;
 			}
 			ctx->ext_attr_ver = ea_ver;
-		} else
+		} else {
+			fprintf(stderr, _("Unknown extended option: %s\n"),
+				token);
 			extended_usage++;
+		}
 	}
 	if (extended_usage) {
-		fprintf(stderr, _("Extended options are separated by commas, "
-			"and may take an argument which\n"
-			"is set off by an equals ('=') sign.  "
-			"Valid raid options are:\n"
-			"\tea_ver=<ea_version (1 or 2)\n\n"));
+		fputs(("\nExtended options are separated by commas, "
+		       "and may take an argument which\n"
+		       "is set off by an equals ('=') sign.  "
+			"Valid extended options are:\n"
+		       "\tea_ver=<ea_version (1 or 2)>\n\n"), stderr);
 		exit(1);
 	}
 }	

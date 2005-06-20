@@ -9,12 +9,19 @@
 
 #include <sys/types.h>
 #include <fcntl.h>
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
 #include <stdio.h>
 #include <linux/hdreg.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
 #include "nls-enable.h"
+
+#if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
+#define BLKGETSIZE _IO(0x12,96)	/* return device size */
+#endif
 
 void print_error(char *operation, int error, char *device)
 {
@@ -35,11 +42,9 @@ int main(int argc, char **argv)
 	textdomain(NLS_CAT_NAME);
 #endif
 	if (argc == 1) {
-		fprintf(stderr, _("Usage: %s <dev1> <dev2> <dev3>\n\n"
-			"This program prints out the partition information "
-			"for a set of devices\n"
-			"A common way to use this program is:\n\n\t"
-			"%s /dev/hda?\n\n"), argv[0], argv[0]);
+		fprintf(stderr, _("Usage:  %s device...\n\nPrints out the"
+			"partition information for each given device.\n"),
+			"For example: %s /dev/hda\n\n", argv[0], argv[0]);
 		exit(1);
 	}
     
@@ -47,7 +52,7 @@ int main(int argc, char **argv)
 		fd = open(argv[i], O_RDONLY);
 
 		if (fd < 0) {
-			print_error("open", errno, argv[i]);
+			print_error(_("open"), errno, argv[i]);
 			continue;
 		}
     

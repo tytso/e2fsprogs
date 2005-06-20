@@ -257,7 +257,7 @@ static void print_journal_information(ext2_filsys fs)
 	for (i=0; i < ntohl(jsb->s_nr_users); i++) {
 		uuid_unparse(&jsb->s_users[i*16], str);
 		printf(i ? "                          %s\n"
-		       : "Journal users:            %s\n",
+		       : _("Journal users:            %s\n"),
 		       str);
 	}
 }

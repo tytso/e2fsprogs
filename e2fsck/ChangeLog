@@ -1,3 +1,8 @@
+2005-06-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (usage, parse_extended_opts): Clean up messages printed
+		by e2fsck for grammer and consistency.
+
 2005-06-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.8.in: Make it clear that the -c, -l, and -L options are

@@ -81,14 +81,14 @@ void do_findfs(int argc, char **argv);
 static void usage(void)
 {
 	fprintf(stderr,
-		_("Usage: %s [-c max-mounts-count] [-e errors-behavior] "
+		_("Usage: %s [-c max_mounts_count] [-e errors_behavior] "
 		  "[-g group]\n"
-		  "\t[-i interval[d|m|w]] [-j] [-J journal-options]\n"
-		  "\t[-l] [-s sparse-flag] [-m reserved-blocks-percent]\n"
-		  "\t[-o [^]mount-options[,...]] [-r reserved-blocks-count]\n"
-		  "\t[-u user] [-C mount-count] [-L volume-label] "
-		  "[-M last-mounted-dir]\n"
-		  "\t[-O [^]feature[,...]] [-T last-check-time] [-U UUID]"
+		  "\t[-i interval[d|m|w]] [-j] [-J journal_options]\n"
+		  "\t[-l] [-s sparse_flag] [-m reserved_blocks_percent]\n"
+		  "\t[-o [^]mount_options[,...]] [-r reserved_blocks_count]\n"
+		  "\t[-u user] [-C mount_count] [-L volume_label] "
+		  "[-M last_mounted_dir]\n"
+		  "\t[-O [^]feature[,...]] [-T last_check_time] [-U UUID]"
 		  " device\n"), program_name);
 	exit (1);
 }

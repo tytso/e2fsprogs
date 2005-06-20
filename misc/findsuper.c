@@ -61,10 +61,10 @@
  * Documentation addendum added by Andreas dwguest@win.tue.nl/aeb@cwi.nl
  * 
  * The program findsuper is a utility that scans a disk and finds
- * copies of ext2 superblocks (by checking for the ext2 signature
+ * copies of ext2 superblocks (by checking for the ext2 signature).
  * 
  * For each superblock found, it prints the offset in bytes, the
- * offset in 1024-byte blocks, the size of ext2 partition in fs
+ * offset in 1024-byte blocks, the size of the ext2 partition in fs
  * blocks, the filesystem blocksize (in bytes), the block group number
  * (always 0 for older ext2 systems), and a timestamp (s_mtime).
  * 

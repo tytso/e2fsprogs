@@ -871,10 +871,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
 	}
 	if (r_usage) {
 		fprintf(stderr, _("\nBad options specified.\n\n"
-			"Options are separated by commas, "
+			"Extended options are separated by commas, "
 			"and may take an argument which\n"
 			"\tis set off by an equals ('=') sign.\n\n"
-			"Valid raid options are:\n"
+			"Valid extended options are:\n"
 			"\tstride=<stride length in blocks>\n"
 			"\tresize=<resize maximum size in blocks>\n\n"));
 		exit(1);
@@ -1005,7 +1005,7 @@ static void PRS(int argc, char *argv[])
 			if (size < EXT2_MIN_BLOCK_SIZE ||
 			    size > EXT2_MAX_BLOCK_SIZE || *tmp) {
 				com_err(program_name, 0,
-					_("bad fragment size - %s"),
+					_("invalid fragment size - %s"),
 					optarg);
 				exit(1);
 			}
@@ -1033,7 +1033,7 @@ static void PRS(int argc, char *argv[])
 			    inode_ratio > EXT2_MAX_BLOCK_SIZE * 1024 ||
 			    *tmp) {
 				com_err(program_name, 0,
-					_("bad inode ratio %s (min %d/max %d)"),
+					_("invalid inode ratio %s (min %d/max %d)"),
 					optarg, EXT2_MIN_BLOCK_SIZE,
 					EXT2_MAX_BLOCK_SIZE);
 				exit(1);
@@ -1061,7 +1061,7 @@ static void PRS(int argc, char *argv[])
 			reserved_ratio = strtoul(optarg, &tmp, 0);
 			if (reserved_ratio > 50 || *tmp) {
 				com_err(program_name, 0,
-					_("bad reserved blocks percent - %s"),
+					_("invalid reserved blocks percent - %s"),
 					optarg);
 				exit(1);
 			}
@@ -1093,7 +1093,7 @@ static void PRS(int argc, char *argv[])
 			inode_size = strtoul(optarg, &tmp, 0);
 			if (*tmp) {
 				com_err(program_name, 0,
-					_("bad inode size - %s"), optarg);
+					_("invalid inode size - %s"), optarg);
 				exit(1);
 			}
 			break;
@@ -1212,9 +1212,9 @@ static void PRS(int argc, char *argv[])
 	}
 	if ((blocksize > 4096) &&
 	    (param.s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
-		fprintf(stderr, "\nWarning: some 2.4 kernels do not support "
-			"blocksizes greater than 4096 \n\tusing ext3."
-			"  Use -b 4096 if this is an issue for you.\n\n");
+		fprintf(stderr, _("\nWarning: some 2.4 kernels do not support "
+			"blocksizes greater than 4096\n\tusing ext3.  "
+			"Use -b 4096 if this is an issue for you.\n\n"));
 
 	if (optind < argc) {
 		param.s_blocks_count = parse_num_blocks(argv[optind++], 
@@ -1357,7 +1357,7 @@ static void PRS(int argc, char *argv[])
 		    inode_size > EXT2_BLOCK_SIZE(&param) ||
 		    inode_size & (inode_size - 1)) {
 			com_err(program_name, 0,
-				_("bad inode size %d (min %d/max %d)"),
+				_("invalid inode size %d (min %d/max %d)"),
 				inode_size, EXT2_GOOD_OLD_INODE_SIZE,
 				blocksize);
 			exit(1);
