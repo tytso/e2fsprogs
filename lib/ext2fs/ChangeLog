@@ -1,3 +1,8 @@
+2005-06-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* getsectsize.c (BLKSSZGET): Clean up test for when to manually
+		define the BLKSSZGET ioctl.
+
 2005-05-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* ismounted.c (ext2fs_check_mount_point): Add test to see if the
