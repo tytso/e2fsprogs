@@ -67,6 +67,10 @@ findsuper: findsuper.o
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o
 
+partinfo: partinfo.o
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o partinfo partinfo.o
+
 e2initrd_helper: e2initrd_helper.o $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBS_BLKID)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o e2initrd_helper e2initrd_helper.o $(LIBS) \
@@ -309,7 +313,7 @@ uninstall:
 clean:
 	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) $(UMANPAGES) $(SMANPAGES) \
 		base_device base_device.out mke2fs.static filefrag \
-		e2initrd_helper \#* *.s *.o *.a *~ core 
+		e2initrd_helper partinfo \#* *.s *.o *.a *~ core 
 
 mostlyclean: clean
 distclean: clean
