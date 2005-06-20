@@ -29,7 +29,7 @@ struct foobar {
     struct error_table et;
 };
 
-extern struct et_list * _et_list;
+extern struct et_list * _et_dynamic_list;
 
 int init_error_table(const char * const *msgs, long base, int count)
 {
@@ -46,7 +46,7 @@ int init_error_table(const char * const *msgs, long base, int count)
     new_et->et.base = base;
     new_et->et.n_msgs= count;
 
-    new_et->etl.next = _et_list;
-    _et_list = &new_et->etl;
+    new_et->etl.next = _et_dynamic_list;
+    _et_dynamic_list = &new_et->etl;
     return 0;
 }

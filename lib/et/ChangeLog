@@ -1,5 +1,12 @@
 2005-06-20  Theodore Ts'o  <tytso@mit.edu>
 
+	* error_message.c, init_et.c: Segregate error tables registered
+		via add_error_table() and the other dynamic methods from
+		the ones allocated via initialize_xxx_error_table() so
+		that we won't fail even for error tables created using old
+		versions of compile_et.  Thanks to Nalin Dahyabhai for
+		this suggested patch.
+
 	* et_c.awk: Use a dynamically allocated structure in
 		initialize_xxx_error_table(), to prevent segfaults if an
 		old library calls initialize_xxx_error_table, and another
