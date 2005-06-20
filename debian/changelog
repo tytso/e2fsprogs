@@ -1,3 +1,20 @@
+e2fsprogs (1.37+1.38-WIP-0620-1) unstable; urgency=low
+
+  * Update and clarify man pages.
+  * Clarify and clean up e2fsck's problem descriptions
+  * Add Dutch translation, and update French, Polish, Sweedish, and
+    Turkish translation.
+  * mke2fs and badblocks will check to see if the device appears to be
+    busy and abort if so; this feature only works on Linux 2.6 systems.
+    (Closes: #308594)
+  * Fix filefrag so that it works on 64-bit platforms where the size of
+    an integer != the size of a long.  (Closes: #309655)
+  * Change the default journal size to be bigger for larger filesystems,
+    given modern memory sizes.
+  * Fix com_err library so it is compatible with MIT krb5 1.4.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 20 Jun 2005 17:11:29 -0400
+
 e2fsprogs (1.37+1.38-WIP-0509-1) unstable; urgency=low
 
   * Make the blkid library much more efficient when a new device is added
