@@ -237,19 +237,14 @@ END {
 	print "" > outfile
 	print "static struct et_list link = { 0, 0 };" > outfile
 	print "" > outfile
+	print "void initialize_" table_name "_error_table_r(struct et_list **list);" > outfile
 	print "void initialize_" table_name "_error_table(void);" > outfile
 	print "" > outfile
 	print "void initialize_" table_name "_error_table(void) {" > outfile
-	print "    if (!link.table) {" > outfile
-	print "        link.next = _et_list;" > outfile
-	print "        link.table = &et_" table_name "_error_table;" > outfile
-	print "        _et_list = &link;" > outfile
-	print "    }" > outfile
+	print "    initialize_" table_name "_error_table_r(&_et_list);" > outfile
 	print "}" > outfile
 	print "" > outfile
 	print "/* For Heimdal compatibility */" > outfile
-	print "void initialize_" table_name "_error_table_r(struct et_list **list);" > outfile
-	print "" > outfile
 	print "void initialize_" table_name "_error_table_r(struct et_list **list)" > outfile
 	print "{" > outfile
 	print "    struct et_list *et, **end;" > outfile
@@ -258,8 +253,12 @@ END {
 	print "        if (et->table->msgs == text)" > outfile
 	print "            return;" > outfile
 	print "    et = malloc(sizeof(struct et_list));" > outfile
-	print "    if (et == 0)" > outfile
-	print "        return;" > outfile
+	print "    if (et == 0) {" > outfile
+	print "        if (!link.table)" > outfile
+	print "            et = &link;" > outfile
+	print "        else" > outfile
+	print "            return;" > outfile
+	print "    }" > outfile
 	print "    et->table = &et_" table_name "_error_table;" > outfile
 	print "    et->next = 0;" > outfile
 	print "    *end = et;" > outfile
