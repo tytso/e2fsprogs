@@ -53,6 +53,25 @@ indicates that further checking is required.
 .I device
 is the device file where the filesystem is stored (e.g.
 .IR /dev/hdc1 ).
+.PP
+Note that in general it is not safe to run
+.B e2fsck
+on mounted filesystems.  The only exception is if the
+.B \-n
+option is specified, and 
+.BR \-c , 
+.BR \-l ,
+or
+.B -L
+options are 
+.I not
+specified.   However, even if it is safe to do so, the results printed by
+.B e2fsck
+are not valid if the filesystem is mounted.   If 
+.B e2fsck
+asks whether or not you should check a filesystem which is mounted, 
+the only correct answer is ``no''.  Only experts who really know what
+they are doing should consider answering this question in other way.
 .SH OPTIONS
 .TP
 .B \-a 
