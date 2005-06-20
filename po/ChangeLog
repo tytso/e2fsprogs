@@ -1,5 +1,8 @@
 2005-06-19  Theodore Ts'o  <tytso@mit.edu>
 
+	* POTFILES.in: remove the findsuper and partinfo programs, as they
+		are not installed anywhere (and shouldn't be).
+
 	* at-expand.pl: Add an explanation of how the @-expansion and
 		%-expansion works in e2fsck/problem.c as part of the
 		"translator help".
