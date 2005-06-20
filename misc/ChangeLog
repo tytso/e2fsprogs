@@ -1,3 +1,8 @@
+2005-06-20  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2image.8.in: Clean up e2image man page, mostly based on
+		suggestions from Benno Schulenberg.
+
 2005-06-16  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (PRS): Fix missing close parenthesis from bad inode
