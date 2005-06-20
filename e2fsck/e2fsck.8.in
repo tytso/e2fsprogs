@@ -71,7 +71,7 @@ are not valid if the filesystem is mounted.   If
 .B e2fsck
 asks whether or not you should check a filesystem which is mounted, 
 the only correct answer is ``no''.  Only experts who really know what
-they are doing should consider answering this question in other way.
+they are doing should consider answering this question in any other way.
 .SH OPTIONS
 .TP
 .B \-a 
