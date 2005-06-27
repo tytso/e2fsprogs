@@ -1,3 +1,10 @@
+2005-06-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* read.c, dev.c: Fix the debugging/TEST_PROGRAM code so that it is
+		sufficiently standalone that "make check" will compile
+		without errors even when configure "--enable-blkid-debug"
+		is not specified.
+
 2005-05-07  Theodore Ts'o  <tytso@mit.edu>
 
 	* tag.c (blkid_find_dev_with_tag): If a device can't be found with
