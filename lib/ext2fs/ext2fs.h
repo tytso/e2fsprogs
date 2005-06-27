@@ -1015,12 +1015,14 @@ _INLINE_ errcode_t ext2fs_resize_mem(unsigned long EXT2FS_ATTR((unused)) old_siz
 				     unsigned long size, void *ptr)
 {
 	void *p;
-	void **pp = (void **)ptr;
 
-	p = realloc(*pp, size);
+	/* Use "memcpy" for pointer assignments here to avoid problems
+	 * with C99 strict type aliasing rules. */
+	memcpy(&p, ptr, sizeof (p));
+	p = realloc(p, size);
 	if (!p)
 		return EXT2_ET_NO_MEMORY;
-	*pp = p;
+	memcpy(ptr, &p, sizeof (p));
 	return 0;
 }
 #endif	/* Custom memory routines */
