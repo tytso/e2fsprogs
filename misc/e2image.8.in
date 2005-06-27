@@ -50,9 +50,8 @@ filesystems on a system and save the partition
 layout (which can be generated using the 
 .B fdisk \-l
 command) at regular intervals --- at boot time, and/or every week or so.
-The image file should be stored on some filesystem
-other that
-the filesystem whose data it contains, to ensure that its data is
+The image file should be stored on some filesystem other than
+the filesystem whose data it contains, to ensure that this data is
 accessible in the case where the filesystem has been badly damaged.
 .PP
 To save disk space, 

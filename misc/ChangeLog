@@ -1,3 +1,7 @@
+2005-06-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* tune2fs.8.in: Fix minor typos pointed out by Benno Schulenberg.
+
 2005-06-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* partinfo.c: Add ioctl definition for BLKGETSIZE so it can be
