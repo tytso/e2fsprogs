@@ -2,7 +2,7 @@ e2fsprogs (1.37+1.38-WIP-0620-1) unstable; urgency=low
 
   * Update and clarify man pages.
   * Clarify and clean up e2fsck's problem descriptions
-  * Add Dutch translation, and update French, Polish, Sweedish, and
+  * Add Dutch translation, and update French, Polish, Swedish, and
     Turkish translation.
   * mke2fs and badblocks will check to see if the device appears to be
     busy and abort if so; this feature only works on Linux 2.6 systems.

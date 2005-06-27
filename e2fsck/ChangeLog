@@ -1,7 +1,7 @@
 2005-06-20  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (usage, parse_extended_opts): Clean up messages printed
-		by e2fsck for grammer and consistency.
+		by e2fsck for grammar and consistency.
 
 2005-06-19  Theodore Ts'o  <tytso@mit.edu>
 
@@ -14,7 +14,8 @@
 	* message.c: Add @m (multiply-claimed) and @n (invalid)
 		expansions.
 
-	* problem.c: Clean up the problem messages displayed by e2fsck.
+	* problem.c: Clean up the problem messages displayed by e2fsck,
+		mostly based on	suggestions from Benno Schulenberg.
 
 2005-06-05  Theodore Ts'o  <tytso@mit.edu>
 
