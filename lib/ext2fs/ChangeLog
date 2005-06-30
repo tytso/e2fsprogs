@@ -1,3 +1,12 @@
+2005-06-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* bitops.h, bitops.c (ext2fs_set_bit, ext2fs_clear_bit,
+		ext2fs_test_bit): Change these function prototypes to be
+		unsigned int's.  Negative bit numbers were never allowed
+		(and never made any sense), so this should be a safe
+		change.  This is needed to allow safe use of block numbers
+		greater than or equal to 2**31.
+
 2005-06-27  Stephen Tweedie  <sct@redhat.com>
 
 	* ext2fs.h (ext2fs_resize_mem): Fix C99 strict type aliasing

@@ -14,9 +14,9 @@
  */
 
 
-extern int ext2fs_set_bit(int nr,void * addr);
-extern int ext2fs_clear_bit(int nr, void * addr);
-extern int ext2fs_test_bit(int nr, const void * addr);
+extern int ext2fs_set_bit(unsigned int nr,void * addr);
+extern int ext2fs_clear_bit(unsigned int nr, void * addr);
+extern int ext2fs_test_bit(unsigned int nr, const void * addr);
 extern __u16 ext2fs_swab16(__u16 val);
 extern __u32 ext2fs_swab32(__u32 val);
 
@@ -152,7 +152,7 @@ struct __dummy_h { unsigned long a[100]; };
 #define EXT2FS_ADDR (*(struct __dummy_h *) addr)
 #define EXT2FS_CONST_ADDR (*(const struct __dummy_h *) addr)	
 
-_INLINE_ int ext2fs_set_bit(int nr, void * addr)
+_INLINE_ int ext2fs_set_bit(unsigned int nr, void * addr)
 {
 	int oldbit;
 
@@ -162,7 +162,7 @@ _INLINE_ int ext2fs_set_bit(int nr, void * addr)
 	return oldbit;
 }
 
-_INLINE_ int ext2fs_clear_bit(int nr, void * addr)
+_INLINE_ int ext2fs_clear_bit(unsigned int nr, void * addr)
 {
 	int oldbit;
 
@@ -172,7 +172,7 @@ _INLINE_ int ext2fs_clear_bit(int nr, void * addr)
 	return oldbit;
 }
 
-_INLINE_ int ext2fs_test_bit(int nr, const void * addr)
+_INLINE_ int ext2fs_test_bit(unsigned int nr, const void * addr)
 {
 	int oldbit;
 
@@ -268,7 +268,7 @@ _INLINE_ __u16 ext2fs_swab16(__u16 val)
 
 #define _EXT2_HAVE_ASM_BITOPS_
 
-_INLINE_ int ext2fs_set_bit(int nr,void * addr)
+_INLINE_ int ext2fs_set_bit(unsigned int nr,void * addr)
 {
 	char retval;
 
@@ -278,7 +278,7 @@ _INLINE_ int ext2fs_set_bit(int nr,void * addr)
 	return retval;
 }
 
-_INLINE_ int ext2fs_clear_bit(int nr, void * addr)
+_INLINE_ int ext2fs_clear_bit(unsigned int nr, void * addr)
 {
 	char retval;
 
@@ -288,7 +288,7 @@ _INLINE_ int ext2fs_clear_bit(int nr, void * addr)
 	return retval;
 }
 
-_INLINE_ int ext2fs_test_bit(int nr, const void * addr)
+_INLINE_ int ext2fs_test_bit(unsigned int nr, const void * addr)
 {
 	char retval;
 
