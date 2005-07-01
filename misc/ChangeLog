@@ -1,3 +1,7 @@
+2006-06-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.38
+
 2005-06-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.c (PRS): Do not support filesystems with more 2**31-1

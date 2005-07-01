@@ -1,3 +1,7 @@
+2006-06-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.38
+
 2005-06-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* read.c, dev.c: Fix the debugging/TEST_PROGRAM code so that it is

@@ -1,3 +1,17 @@
+e2fsprogs (1.38-1) unstable; urgency=low
+
+  * New upstream version
+  * Fix ia64 core dump bug caused by e2fsprogs running afoul of C99 strict
+    type aliasing rules on newer gcc compilers.  (Addresses Red Hat
+    Bugzilla ##161183.)
+  * Fix minor typo's in tune2fs man page.
+  * Mke2fs will refuse to create filesystems greater than 2**31-1 blocks, 
+    unless forced, to avoid kernel bugs that still need to be fixed as 
+    of this release.
+  * Update French, Dutch, Polish, Swedish, and Turkish translations.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 30 Jun 2005 20:02:42 -0400
+
 e2fsprogs (1.37+1.38-WIP-0620-1) unstable; urgency=low
 
   * Update and clarify man pages.

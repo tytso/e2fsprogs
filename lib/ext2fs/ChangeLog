@@ -1,3 +1,7 @@
+2006-06-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.38
+
 2005-06-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* bitops.h, bitops.c (ext2fs_set_bit, ext2fs_clear_bit,

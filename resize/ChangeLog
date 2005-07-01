@@ -1,3 +1,7 @@
+2006-06-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.38
+
 2005-05-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* resize2fs.c (fix_resize_inode): Don't bother to translate
