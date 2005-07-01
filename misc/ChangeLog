@@ -1,3 +1,9 @@
+2005-06-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (PRS): Do not support filesystems with more 2**31-1
+		blocks, since there may be kernel bugs with such
+		filesystems.
+
 2005-06-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.8.in: Fix minor typos pointed out by Benno Schulenberg.

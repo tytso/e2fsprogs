@@ -1352,6 +1352,13 @@ static void PRS(int argc, char *argv[])
 		}
 	}
 
+	if (!force && param.s_blocks_count >= (1 << 31)) {
+		com_err(program_name, 0,
+			_("Filesystem too large.  No more than 2**31-1 blocks\n"
+			  "\t (8TB using a blocksize of 4k) are currently supported."));
+             exit(1);
+	}
+
 	if (inode_size) {
 		if (inode_size < EXT2_GOOD_OLD_INODE_SIZE ||
 		    inode_size > EXT2_BLOCK_SIZE(&param) ||
