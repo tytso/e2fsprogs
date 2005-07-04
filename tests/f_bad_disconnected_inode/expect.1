@@ -1,0 +1,69 @@
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+/lost+found not found.  Create? yes
+
+Pass 4: Checking reference counts
+Inode 2 ref count is 4, should be 3.  Fix? yes
+
+i_file_acl for inode 13 (...) is 4218798225, should be zero.
+Clear? yes
+
+Inode 13 (...) has invalid mode (0117003).
+Clear? yes
+
+i_file_acl for inode 14 (...) is 2892851642, should be zero.
+Clear? yes
+
+Inode 14 (...) has invalid mode (0154247).
+Clear? yes
+
+i_file_acl for inode 15 (...) is 1143674715, should be zero.
+Clear? yes
+
+Inode 15 (...) has invalid mode (074044).
+Clear? yes
+
+i_file_acl for inode 16 (...) is 2007517039, should be zero.
+Clear? yes
+
+i_faddr for inode 16 (...) is 1003914917, should be zero.
+Clear? yes
+
+i_frag for inode 16 (...) is 42, should be zero.
+Clear? yes
+
+i_fsize for inode 16 (...) is 245, should be zero.
+Clear? yes
+
+Unattached inode 16
+Connect to /lost+found? yes
+
+Inode 16 ref count is 5925, should be 1.  Fix? yes
+
+Pass 5: Checking group summary information
+Block bitmap differences:  -(9--19)
+Fix? yes
+
+Free blocks count wrong for group #0 (79, counted=91).
+Fix? yes
+
+Free blocks count wrong (79, counted=91).
+Fix? yes
+
+Inode bitmap differences:  +16
+Fix? yes
+
+Free inodes count wrong for group #0 (7, counted=4).
+Fix? yes
+
+Directories count wrong for group #0 (3, counted=2).
+Fix? yes
+
+Free inodes count wrong (7, counted=4).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 12/16 files (0.0% non-contiguous), 9/100 blocks
+Exit status is 1

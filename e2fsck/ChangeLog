@@ -1,3 +1,19 @@
+2005-07-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass2.c (e2fsck_process_bad_inode): Fixed bug which could cause
+		e2fsck to core dump if a disconnected inode contained an
+		extended attribute.  This was actually caused by two bugs.
+		The first bug is that if the inode has been fully fixed
+		up, the code will attempt to remove the inode from the
+		inode_bad_map without checking to see if this bitmap is
+		present.  Since it is cleared at the end of pass 2, if
+		e2fsck_process_bad_inode is called in pass 4 (as it is for
+		disconnected inodes), this would result in a core dump.
+		This bug was mostly hidden by a second bug, which caused
+		e2fsck_process_bad_inode() to consider all inodes without
+		an extended attribute to be not fixed.  (Addresses Debian
+		Bug: #316736)
+
 2006-06-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.38
