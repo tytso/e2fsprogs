@@ -1,3 +1,9 @@
+2005-07-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* set_fields.c: Fix a bug which caused set_inode_field to silently
+		fail when setting the following fields: frag, fsize,
+		uid_high, gid_high, and author.
+
 2006-06-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.38

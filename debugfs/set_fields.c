@@ -136,11 +136,11 @@ static struct field_set_info inode_fields[] = {
 	{ "file_acl", &set_inode.i_file_acl, 4, parse_uint },
 	{ "dir_acl", &set_inode.i_dir_acl, 4, parse_uint },
 	{ "faddr", &set_inode.i_faddr, 4, parse_uint },
-	{ "frag", &set_inode.osd2.linux2.l_i_frag, 8, parse_uint },
-	{ "fsize", &set_inode.osd2.linux2.l_i_fsize, 8, parse_uint },
-	{ "uid_high", &set_inode.osd2.linux2.l_i_uid_high, 8, parse_uint },
-	{ "gid_high", &set_inode.osd2.linux2.l_i_gid_high, 8, parse_uint },
-	{ "author", &set_inode.osd2.hurd2.h_i_author, 8, parse_uint },
+	{ "frag", &set_inode.osd2.linux2.l_i_frag, 1, parse_uint },
+	{ "fsize", &set_inode.osd2.linux2.l_i_fsize, 1, parse_uint },
+	{ "uid_high", &set_inode.osd2.linux2.l_i_uid_high, 2, parse_uint },
+	{ "gid_high", &set_inode.osd2.linux2.l_i_gid_high, 2, parse_uint },
+	{ "author", &set_inode.osd2.hurd2.h_i_author, 4, parse_uint },
 	{ "bmap", NULL, 4, parse_bmap, FLAG_ARRAY },
 	{ 0, 0, 0, 0 }
 };
