@@ -806,7 +806,7 @@ static const struct e2fsck_problem problem_table[] = {
 
 	/* Pass 1C: Scan directories for inodes with multiply-claimed blocks. */
 	{ PR_1C_PASS_HEADER,
-	  N_("Pass 1C: Scanning directories for @is with @m @bs.\n"),
+	  N_("Pass 1C: Scanning directories for @is with @m @bs\n"),
 	  PROMPT_NONE, 0 },
 
 		  

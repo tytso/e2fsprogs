@@ -1,5 +1,8 @@
 2005-07-04  Theodore Ts'o  <tytso@mit.edu>
 
+	* problem.c: Remove period from the Pass 1C header, to be
+		consistent with the other Pass headers.
+
 	* pass2.c (e2fsck_process_bad_inode): Fixed bug which could cause
 		e2fsck to core dump if a disconnected inode contained an
 		extended attribute.  This was actually caused by two bugs.

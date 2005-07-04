@@ -1,5 +1,9 @@
 2005-07-04  Theodore Ts'o  <tytso@mit.edu>
 
+	* f_bbfile, f_dup, f_dup2, f_dup3, f_dup_resize, f_dupfsblks,
+		f_dupsuper: Update expect files to remove period from the
+		Pass 1C header.
+
 	* f_bad_disconnected_inode: New test case
 
 2006-06-30  Theodore Ts'o  <tytso@mit.edu>
