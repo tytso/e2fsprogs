@@ -900,7 +900,7 @@ static void PRS(int argc, char *argv[])
 	int		blocksize = 0;
 	int		inode_ratio = 0;
 	int		inode_size = 0;
-	int		reserved_ratio = 5;
+	double		reserved_ratio = 5.0;
 	int		sector_size = 0;
 	int		show_version_only = 0;
 	ext2_ino_t	num_inodes = 0;
@@ -1058,7 +1058,7 @@ static void PRS(int argc, char *argv[])
 			strcpy(bad_blocks_filename, optarg);
 			break;
 		case 'm':
-			reserved_ratio = strtoul(optarg, &tmp, 0);
+			reserved_ratio = strtod(optarg, &tmp);
 			if (reserved_ratio > 50 || *tmp) {
 				com_err(program_name, 0,
 					_("invalid reserved blocks percent - %s"),

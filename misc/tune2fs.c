@@ -64,7 +64,8 @@ static int m_flag, M_flag, r_flag, s_flag = -1, u_flag, U_flag, T_flag;
 static time_t last_check_time;
 static int print_label;
 static int max_mount_count, mount_count, mount_flags;
-static unsigned long interval, reserved_ratio, reserved_blocks;
+static unsigned long interval, reserved_blocks;
+static double reserved_ratio;
 static unsigned long resgid, resuid;
 static unsigned short errors;
 static int open_flag;
@@ -621,7 +622,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 					EXT2_FLAG_JOURNAL_DEV_OK;
 				break;
 			case 'm':
-				reserved_ratio = strtoul (optarg, &tmp, 0);
+				reserved_ratio = strtod(optarg, &tmp);
 				if (*tmp || reserved_ratio > 50) {
 					com_err (program_name, 0,
 						 _("bad reserved block ratio - %s"),
@@ -822,10 +823,9 @@ int main (int argc, char ** argv)
 		printf (_("Setting interval between checks to %lu seconds\n"), interval);
 	}
 	if (m_flag) {
-		sb->s_r_blocks_count = (sb->s_blocks_count / 100)
-			* reserved_ratio;
+		sb->s_r_blocks_count = sb->s_blocks_count * reserved_ratio /100;
 		ext2fs_mark_super_dirty(fs);
-		printf (_("Setting reserved blocks percentage to %lu (%u blocks)\n"),
+		printf (_("Setting reserved blocks percentage to %g%% (%u blocks)\n"),
 			reserved_ratio, sb->s_r_blocks_count);
 	}
 	if (r_flag) {

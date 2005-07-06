@@ -1,3 +1,9 @@
+2005-07-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* tune2fs.c, mke2fs.c: Allow fractional percentages when
+		specifying the reserved ratio.  (Addresses Debian Bug
+		#80205).
+
 2006-06-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.38
