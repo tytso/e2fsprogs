@@ -976,7 +976,7 @@ static void PRS(int argc, char *argv[])
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cE:f:g:i:jl:m:no:qr:R:s:tvI:J:ST:FL:M:N:O:V")) != EOF) {
+		    "b:cf:g:i:jl:m:no:qr:s:tvE:FI:J:L:M:N:O:R:ST:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = strtol(optarg, &tmp, 0);
@@ -1072,8 +1072,16 @@ static void PRS(int argc, char *argv[])
 		case 'o':
 			creator_os = optarg;
 			break;
+		case 'q':
+			quiet = 1;
+			break;
 		case 'r':
-			param.s_rev_level = atoi(optarg);
+			param.s_rev_level = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(program_name, 0,
+					_("bad revision level - %s"), optarg);
+				exit(1);
+			}
 			if (param.s_rev_level == EXT2_GOOD_OLD_REV) {
 				param.s_feature_incompat = 0;
 				param.s_feature_compat = 0;
@@ -1098,14 +1106,8 @@ static void PRS(int argc, char *argv[])
 			}
 			break;
 #endif
-		case 'N':
-			num_inodes = atoi(optarg);
-			break;
 		case 'v':
 			verbose = 1;
-			break;
-		case 'q':
-			quiet = 1;
 			break;
 		case 'F':
 			force = 1;
@@ -1115,6 +1117,14 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'M':
 			mount_dir = optarg;
+			break;
+		case 'N':
+			num_inodes = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(program_name, 0,
+					_("bad num inodes - %s"), optarg);
+					exit(1);
+			}
 			break;
 		case 'O':
 			if (!strcmp(optarg, "none")) {
