@@ -41,6 +41,9 @@
 #ifdef __linux__
 #include <sys/utsname.h>
 #endif
+#if HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 
 #if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */
@@ -137,7 +140,7 @@ static int valid_offset (int fd, ext2_loff_t offset)
 errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 				 blk_t *retblocks)
 {
-	int	fd;
+	int	fd, rc = 0;
 	int valid_blkgetsize64 = 1;
 #ifdef __linux__
 	struct 		utsname ut;
@@ -168,9 +171,8 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 		if ((sizeof(*retblocks) < sizeof(unsigned long long))
 		    && ((size64 / (blocksize / 512)) > 0xFFFFFFFF))
 			return EFBIG;
-		close(fd);
 		*retblocks = size64 / (blocksize / 512);
-		return 0;
+		goto out;
 	}
 #endif
 
@@ -183,28 +185,27 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 #endif
 	if (valid_blkgetsize64 &&
 	    ioctl(fd, BLKGETSIZE64, &size64) >= 0) {
-		if ((sizeof(*retblocks) < sizeof(unsigned long long))
-		    && ((size64 / blocksize) > 0xFFFFFFFF))
-			return EFBIG;
-		close(fd);
+		if ((sizeof(*retblocks) < sizeof(unsigned long long)) &&
+		    ((size64 / blocksize) > 0xFFFFFFFF)) {
+			rc = EFBIG;
+			goto out;
+		}
 		*retblocks = size64 / blocksize;
-		return 0;
+		goto out;
 	}
 #endif
 
 #ifdef BLKGETSIZE
 	if (ioctl(fd, BLKGETSIZE, &size) >= 0) {
-		close(fd);
 		*retblocks = size / (blocksize / 512);
-		return 0;
+		goto out;
 	}
 #endif
 
 #ifdef FDGETPRM
 	if (ioctl(fd, FDGETPRM, &this_floppy) >= 0) {
-		close(fd);
 		*retblocks = this_floppy.size / (blocksize / 512);
-		return 0;
+		goto out;
 	}
 #endif
 
@@ -215,7 +216,7 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	    u_int bs;
 	    if (ioctl(fd, DIOCGMEDIASIZE, &ms) >= 0) {
 		*retblocks = ms / blocksize;
-		return 0;
+		goto out;
 	    }
 	}
 #elif defined(DIOCGDINFO)
@@ -233,13 +234,26 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	if (part >= 0 && (ioctl(fd, DIOCGDINFO, (char *)&lab) >= 0)) {
 		pp = &lab.d_partitions[part];
 		if (pp->p_size) {
-			close(fd);
 			*retblocks = pp->p_size / (blocksize / 512);
-			return 0;
+			goto out;
 		}
 	}
 #endif /* defined(DIOCG*) */
 #endif /* HAVE_SYS_DISKLABEL_H */
+
+	{
+#ifdef HAVE_FSTAT64
+		struct stat64   st;
+		if (fstat64(fd, &st) == 0)
+#else
+		struct stat	st;
+		if (fstat(fd, &st) == 0)
+#endif
+			if (S_ISREG(st.st_mode)) {
+				*retblocks = st.st_size / blocksize;
+				goto out;
+			}
+	}
 
 	/*
 	 * OK, we couldn't figure it out by using a specialized ioctl,
@@ -259,13 +273,14 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 			high = mid;
 	}
 	valid_offset (fd, 0);
-	close(fd);
 	size64 = low + 1;
 	if ((sizeof(*retblocks) < sizeof(unsigned long long))
 	    && ((size64 / blocksize) > 0xFFFFFFFF))
 		return EFBIG;
 	*retblocks = size64 / blocksize;
-	return 0;
+out:
+	close(fd);
+	return rc;
 }
 
 #endif /* WIN32 */

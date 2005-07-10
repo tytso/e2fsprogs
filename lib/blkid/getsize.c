@@ -31,7 +31,6 @@
 #endif
 #ifdef HAVE_SYS_DISKLABEL_H
 #include <sys/disklabel.h>
-#include <sys/stat.h>
 #endif
 #ifdef HAVE_SYS_DISK_H
 #ifdef HAVE_SYS_QUEUE_H
@@ -42,6 +41,10 @@
 #ifdef __linux__
 #include <sys/utsname.h>
 #endif
+#if HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+
 
 #if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
 #define BLKGETSIZE _IO(0x12,96)	/* return device size */
@@ -139,6 +142,18 @@ blkid_loff_t blkid_get_dev_size(int fd)
 	}
 #endif
 #endif /* HAVE_SYS_DISKLABEL_H */
+	{
+#ifdef HAVE_FSTAT64
+		struct stat64   st;
+		if (fstat64(fd, &st) == 0)
+#else
+		struct stat	st;
+		if (fstat(fd, &st) == 0)
+#endif
+			if (S_ISREG(st.st_mode))
+				return st.st_size;
+	}
+
 
 	/*
 	 * OK, we couldn't figure it out by using a specialized ioctl,

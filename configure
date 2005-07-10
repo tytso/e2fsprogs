@@ -13819,7 +13819,8 @@ fi
 
 
 
-for ac_func in chflags getrusage llseek lseek64 open64 getmntinfo strtoull strcasecmp srandom fchown mallinfo fdatasync strnlen strptime sysconf pathconf posix_memalign memalign valloc __secure_getenv prctl
+
+for ac_func in chflags getrusage llseek lseek64 open64 fstat64 getmntinfo strtoull strcasecmp srandom fchown mallinfo fdatasync strnlen strptime sysconf pathconf posix_memalign memalign valloc __secure_getenv prctl
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 echo "$as_me:$LINENO: checking for $ac_func" >&5
