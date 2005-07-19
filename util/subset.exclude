@@ -1,4 +1,7 @@
-BitKeeper
+.hg
+.hgignore
+.pc
+patches
 build
 rpm.log
 TODO

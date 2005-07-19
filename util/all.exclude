@@ -1,4 +1,7 @@
-BitKeeper
+.hg
+.hgignore
+.pc
+patches
 README.subset
 build
 rpm.log
