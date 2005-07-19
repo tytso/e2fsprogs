@@ -1,3 +1,12 @@
+2005-07-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* mkjournal.c (ext2fs_add_journal_inode): Check for the case where
+		the filesystem is apparently not mounted, but the device
+		is still busy.  This can happy when the luser doesn't
+		bother to mount /proc and has a bogus /etc/mtab.  Add a
+		safety check to save him from his own stupidity, at least
+		on 2.6 kernels.  (Addresses Debian Bug #319002)
+
 2005-07-09  Andreas Dilger <adilger@clusterfs.com>
 
 	* getsize.c (ext2fs_get_device_size): Use fstat/fstat64 to get
