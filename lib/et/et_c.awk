@@ -174,6 +174,7 @@ c2n["_"]=63
 	text=substr(text,2,length(text)-2);
 #	printf "\t%s\"\n", text > outfile
 	cont_buf=text
+	table_item_count++
 	continuation++;
 }
 
