@@ -184,7 +184,7 @@ clean:
 	-make -C ${stdbuilddir} -i distclean
 	-make -C ${bfbuilddir} -i distclean
 	rm -rf ${stdbuilddir} ${bfbuilddir} ${mipsbuilddir}
-	rm -f doc/libext2fs_*.html lib/et/com_err_*.html debian/*.substvars
+	rm -f doc/libext2fs/*.html lib/et/com_err/*.html debian/*.substvars
 	dh_clean
 
 install: cleanup install-std
@@ -306,10 +306,10 @@ binary-arch: install install-udeb
 
   # HTML docs
 	install -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
-	install -p ${stdbuilddir}/doc/libext2fs_*.html \
+	install -p ${stdbuilddir}/doc/libext2fs/*.html \
 	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
 	install -d ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
-	install -p ${stdbuilddir}/lib/et/com_err_*.html \
+	install -p ${stdbuilddir}/lib/et/com_err/*.html \
 	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
 
   # texinfo docs
