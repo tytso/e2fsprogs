@@ -2089,7 +2089,8 @@ static errcode_t pass1_write_inode(ext2_filsys fs, ext2_ino_t ino,
 {
 	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
 
-	if ((ino == ctx->stashed_ino) && ctx->stashed_inode)
+	if ((ino == ctx->stashed_ino) && ctx->stashed_inode &&
+		(inode != ctx->stashed_inode))
 		*ctx->stashed_inode = *inode;
 	return EXT2_ET_CALLBACK_NOTHANDLED;
 }

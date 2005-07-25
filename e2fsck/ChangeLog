@@ -1,3 +1,9 @@
+2005-07-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* pass1.c (pass1_write_inode): Fix false positive from valgrind;
+		don't do a needless structure copy via an assignment when
+		it is a no-op.
+
 2005-07-04  Theodore Ts'o  <tytso@mit.edu>
 
 	* problem.c: Remove period from the Pass 1C header, to be
