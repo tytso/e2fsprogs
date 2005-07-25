@@ -1,11 +1,18 @@
+2005-07-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* test_io.c (safe_getenv): Pass in zero to the unusued arguments
+		of prctl(PR_GET_DUMPABLE) to avoid false positives from
+		valgrind.
+
 2005-07-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* mkjournal.c (ext2fs_add_journal_inode): Check for the case where
 		the filesystem is apparently not mounted, but the device
-		is still busy.  This can happy when the luser doesn't
-		bother to mount /proc and has a bogus /etc/mtab.  Add a
-		safety check to save him from his own stupidity, at least
-		on 2.6 kernels.  (Addresses Debian Bug #319002)
+		is still busy.  This can happen when the luser doesn't
+		bother to mount /proc and has a bogus /etc/mtab, but still
+		wants to mount the filesystem before using tune2fs(?!?).
+		Add a safety check to save him from his own stupidity, at
+		least on 2.6 kernels.  (Addresses Debian Bug #319002)
 
 2005-07-09  Andreas Dilger <adilger@clusterfs.com>
 

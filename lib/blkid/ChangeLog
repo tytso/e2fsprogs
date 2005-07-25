@@ -1,3 +1,9 @@
+2005-07-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* cache.c (safe_getenv): Pass in zero to the unusued arguments of
+		prctl(PR_GET_DUMPABLE) to avoid false positives from
+		valgrind.
+
 2005-07-09  Andreas Dilger <adilger@clusterfs.com>
 
 	* getsize.c (blkid_get_dev_size): Use fstat/fstat64 to get size of

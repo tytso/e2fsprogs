@@ -1,3 +1,9 @@
+2005-07-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* pager.c (ss_safe_getenv): Pass in zero to the unusued arguments
+		of prctl(PR_GET_DUMPABLE) to avoid false positives from
+		valgrind.
+
 2006-06-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.38
