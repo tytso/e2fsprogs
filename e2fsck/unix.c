@@ -1168,12 +1168,11 @@ restart:
 	ctx->fs = NULL;
 	free(ctx->filesystem_name);
 	free(ctx->journal_name);
-	e2fsck_free_context(ctx);
-	
+
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME)
 		print_resource_track(NULL, &ctx->global_rtrack);
 #endif
-
+	e2fsck_free_context(ctx);
 	return exit_value;
 }

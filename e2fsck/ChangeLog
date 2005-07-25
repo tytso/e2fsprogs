@@ -1,5 +1,8 @@
 2005-07-25  Theodore Ts'o  <tytso@mit.edu>
 
+	* unix.c (main): Fix a use-after-free bug of the e2fsck context
+		structure at the very end of the e2fsck run.
+
 	* pass1.c (pass1_write_inode): Fix false positive from valgrind;
 		don't do a needless structure copy via an assignment when
 		it is a no-op.
