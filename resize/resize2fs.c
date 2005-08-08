@@ -281,6 +281,11 @@ retry:
 					   &fs->group_desc);
 		if (retval)
 			goto errout;
+		if (fs->desc_blocks > rfs->old_fs->desc_blocks) 
+			memset((char *) fs->group_desc + 
+			       (rfs->old_fs->desc_blocks * fs->blocksize), 0,
+			       (fs->desc_blocks - rfs->old_fs->desc_blocks) *
+			       fs->blocksize);
 	}
 
 	/*
@@ -1379,7 +1384,7 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		 * things by not rewriting blocks that we know to be zero
 		 * already.
 		 */
-		for (cp = rfs->itable_buf+size, n=0; n < size; n++, cp--)
+		for (cp = rfs->itable_buf+size-1, n=0; n < size; n++, cp--)
 			if (*cp)
 				break;
 		n = n >> EXT2_BLOCK_SIZE_BITS(fs->super);

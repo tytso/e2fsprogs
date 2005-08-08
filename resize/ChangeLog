@@ -1,3 +1,12 @@
+2005-08-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* resize2fs.c (move_itables): Fix fencepost error caught by valgrind.
+		(adjust_superblock): Clear the newly allocated descriptor
+		blocks when we allocate them to avoid false positives from
+		valgrind (and so that the unusued descriptors at the tail
+		end of the newly allocated descriptor blocks are zero'ed
+		out, include of random garbage).
+
 2006-06-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.38
