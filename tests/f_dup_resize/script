@@ -1,7 +1,7 @@
 SKIP_GUNZIP="true"
 TEST_DATA="test.data"
 
-dd if=$DEBUGFS of=$TEST_DATA bs=63k count=1 conv=sync > /dev/null 2>&1
+dd if=$TEST_BITS of=$TEST_DATA bs=63k count=1 conv=sync > /dev/null 2>&1
 
 touch $TMPFILE
 $MKE2FS -F -O resize_inode $TMPFILE 10240 > /dev/null 2>&1

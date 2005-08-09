@@ -1,3 +1,10 @@
+2005-08-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* test_config, test_script.in, d_loaddump, f_dup_resize,
+		r_move_itable, r_resize_inode: Add the --valgrind option
+		to the tests/test_script which allows us to run the
+		e2fsprogs regression test suite under valgrind.
+
 2005-07-04  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_bbfile, f_dup, f_dup2, f_dup3, f_dup_resize, f_dupfsblks,

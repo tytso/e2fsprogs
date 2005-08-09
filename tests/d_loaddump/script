@@ -15,7 +15,7 @@ $MKE2FS -Fq $TMPFILE 512 > /dev/null 2>&1
 status=$?
 echo Exit status is $status >> $OUT
 
-dd if=$DEBUGFS of=$TEST_DATA bs=128k count=1 conv=sync > /dev/null 2>&1 
+dd if=$TEST_BITS of=$TEST_DATA bs=128k count=1 conv=sync > /dev/null 2>&1 
 echo "file fragment odd size" >> $TEST_DATA
 
 echo "debugfs -R ''write $TEST_DATA test_data'' -w $TMPFILE" > $OUT.new

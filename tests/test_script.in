@@ -3,6 +3,12 @@
 # Test script for e2fsck
 #
 
+case "$1" in 
+    --valgrind)
+    	export USE_VALGRIND="valgrind -q --weird-hacks=lax-ioctls"
+	shift;
+esac
+
 if test "$1"x = x ; then
   TESTS=`ls -d $SRCDIR/[a-zA-Z]_* | $EGREP -v "\.failed|\.new"`
 else

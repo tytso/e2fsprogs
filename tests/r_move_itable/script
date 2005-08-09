@@ -1,6 +1,6 @@
 echo -n "resize2fs with resize_inode: "
 
-if test -x $RESIZE2FS; then
+if test -x $RESIZE2FS_EXE; then
 
 FSCK_OPT=-yf
 OUT=$test_name.log
