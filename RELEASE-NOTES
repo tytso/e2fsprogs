@@ -1,3 +1,43 @@
+E2fsprogs 1.39-WIP (August 21, 2005)
+====================================
+
+Fix debugfs's set_inode_fields command so it can properly set the
+frag, fsize, uid_high, gid_high, and author fields in the inode
+instead of silently failing.
+
+Fix e2fsck from segfaulting on disconnected inodes that contain one or
+more extended attributes.  (Addresses Debian Bug: #316736, #318463)
+
+Allow fractional percentages to the -m option in mke2fs and tune2fs
+(Addresses Debian Bug: #80205)
+
+Use fstat/fstat64 in getsize.c if the the target is a regular file,
+instead of attempting to do a binary search.  Fix some fd leaks in
+error cases.
+
+Fix a compile_et bug which miscount the number of error messages if
+continuations are used in the .et file.
+
+Add extra sanity checks to protect users from unusual cirucmstances
+where /etc/mtab may not be sane, by checking to see if the device is
+reported busy (works on Linux 2.6) kernels.  (Addresses Debian Bug
+#319002)
+
+Fix use-after-free bug in e2fsck when finishing up the use of the
+e2fsck context structure.
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bugs #317862, #320389)
+
+Programmer's notes:
+-------------------
+
+Add valgrind support to the regression test suites, and eliminate
+false positives from valgrind.
+
+Fix a fencepost error in resize2fs caught by valgrind.  
+
+
 E2fsprogs 1.38 (June 30, 2005)
 ==============================
 

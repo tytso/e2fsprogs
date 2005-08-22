@@ -1,3 +1,32 @@
+e2fsprogs (1.38-2) unstable; urgency=low
+
+  * Previous NMU acknowledged (Closes: #317862, #320389)
+  * Fix debugfs's set_inode_fields command so it doesn't silently fail
+    when setting certain inode fields.
+  * Fix e2fsck from segfaulting on disconnected inodes that contain one or
+    more extended attributes.  (Closes: #316736, #318463)
+  * Allow mke2fs and tune2fs to take fractional percentages to the -m
+    option in mke2fs and tune2fs.  (Closes: #80205)
+  * Fix a compile_et bug which miscount the number of error messages if
+    continuations are used in the .et file, and fix compatibility problems
+    with MIT Kerberos 1.4
+  * Add extra sanity checks to protect users from unusual cirucmstances
+    where /etc/mtab may not be sane, by checking to see if the device is
+    reported busy (works on Linux 2.6) kernels.  (Closes: #319002)
+  * Fix use-after-free bug in e2fsck when finishing up the use of the
+    e2fsck context structure.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 21 Aug 2005 23:35:29 -0400
+
+e2fsprogs (1.38-1.1) unstable; urgency=low
+
+  * NMU for RC bug durring bug squishing party
+  * Fix for changes to texi2html, patch by Matt Kraai
+    (Closes: #317862, #320389)
+  * version build-depend on texi2html, won't work with older one anymore
+	
+ -- Blars Blarson <blarson@blars.org>  Fri,  5 Aug 2005 04:46:54 +0000
+
 e2fsprogs (1.38-1) unstable; urgency=low
 
   * New upstream version
