@@ -136,6 +136,11 @@ static int probe_ext2(int fd __BLKID_ATTR((unused)),
 	if (blkid_le32(es->s_feature_incompat) & 
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
 		return -BLKID_ERR_PARAM;
+	
+	/* Distinguish between ext3 and ext2 */
+	if ((blkid_le32(es->s_feature_compat) &
+	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+		return -BLKID_ERR_PARAM;
 
 	get_ext2_info(dev, buf);
 
