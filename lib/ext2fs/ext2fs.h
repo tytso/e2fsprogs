@@ -983,6 +983,7 @@ extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 #endif
 
 #ifndef EXT2_CUSTOM_MEMORY_ROUTINES
+#include <string.h>
 /*
  *  Allocate memory
  */

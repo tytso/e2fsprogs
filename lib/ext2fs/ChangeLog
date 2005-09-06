@@ -1,3 +1,7 @@
+2005-08-28  Matthias Andree <matthias.andree@gmx.de>
+
+	* Fix compiler warnings about missing memcpy prototypes.
+
 2005-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* test_io.c (safe_getenv): Pass in zero to the unusued arguments
