@@ -1,5 +1,9 @@
 2005-09-05  Karel Zak <kzak@redhat.com>
 
+	* probe.c (probe_vfat_nomagic): Add support for detecting VFAT
+		filesystems even when the magic string isn't in the FAT
+		super block.
+
 	* probe.c: Add support for detecting software suspend partitions
 
 	* probe.c (probe_ext2): Check to see if a journal has been added

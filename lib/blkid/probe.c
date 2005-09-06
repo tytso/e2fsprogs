@@ -229,6 +229,84 @@ static int probe_msdos(int fd __BLKID_ATTR((unused)),
 	return 0;
 }
 
+/*
+ * The FAT filesystem could be without a magic string in superblock
+ * (e.g. old floppies).  This heuristic for FAT detection is inspired
+ * by http://vrfy.org/projects/volume_id/ and Linux kernel.
+ * [7-Jul-2005, Karel Zak <kzak@redhat.com>]
+ */
+static int probe_vfat_nomagic(int fd __BLKID_ATTR((unused)), 
+		      blkid_cache cache __BLKID_ATTR((unused)), 
+		      blkid_dev dev,
+		      struct blkid_magic *id __BLKID_ATTR((unused)), 
+		      unsigned char *buf)
+{
+	struct vfat_super_block *vs;
+	__u16 sector_size;
+	__u16 dir_entries;
+	__u32 sect_count;
+	__u16 reserved;
+	__u32 fat_size;
+	__u32 dir_size;
+	__u32 cluster_count;
+	__u32 fat_length;
+
+	vs = (struct vfat_super_block *)buf;
+
+	/* boot jump address check */
+	if ((vs->vs_ignored[0] != 0xeb || vs->vs_ignored[2] != 0x90) &&
+	     vs->vs_ignored[0] != 0xe9)
+		return 1;
+
+	/* heads check */
+	if (vs->vs_heads == 0)
+		return 1;
+
+	/* cluster size check*/	
+	if (vs->vs_cluster_size == 0 ||
+	    (vs->vs_cluster_size & (vs->vs_cluster_size-1)))
+		return 1;
+
+	/* media check */
+	if (vs->vs_media < 0xf8 && vs->vs_media != 0xf0)
+		return 1;
+
+	/* fat counts(Linux kernel expects at least 1 FAT table) */
+	if (!vs->vs_fats)
+		return 1;
+
+	/* sector size check */
+	sector_size = blkid_le16(*((__u16 *) &vs->vs_sector_size));
+	if (sector_size != 0x200 && sector_size != 0x400 &&
+	    sector_size != 0x800 && sector_size != 0x1000)
+		return 1;
+
+	dir_entries = blkid_le16(*((__u16 *) &vs->vs_dir_entries));
+	reserved =  blkid_le16(vs->vs_reserved);
+	sect_count = blkid_le16(*((__u16 *) &vs->vs_sectors));
+	if (sect_count == 0)
+		sect_count = blkid_le32(vs->vs_total_sect);
+
+	fat_length = blkid_le16(vs->vs_fat_length);
+	if (fat_length == 0)
+		fat_length = blkid_le32(vs->vs_fat32_length);
+
+	fat_size = fat_length * vs->vs_fats;
+	dir_size = ((dir_entries * sizeof(struct vfat_dir_entry)) +
+			(sector_size-1)) / sector_size;
+
+	cluster_count = sect_count - (reserved + fat_size + dir_size);
+	cluster_count /= vs->vs_cluster_size;
+
+	if (cluster_count <= FAT12_MAX || cluster_count <= FAT16_MAX)
+		return probe_msdos(fd, cache, dev, id, buf);
+
+	else if (cluster_count <= FAT32_MAX)
+		return probe_vfat(fd, cache, dev, id, buf);
+	
+	return 1; 	/* FAT detection failed */
+}
+
 static int probe_xfs(int fd __BLKID_ATTR((unused)), 
 		     blkid_cache cache __BLKID_ATTR((unused)), 
 		     blkid_dev dev,
@@ -503,6 +581,8 @@ static struct blkid_magic type_array[] = {
   { "vfat",      0,   0x36,  5, "MSDOS",                probe_msdos },
   { "vfat",      0,   0x36,  8, "FAT16   ",             probe_msdos },
   { "vfat",      0,   0x36,  8, "FAT12   ",             probe_msdos },
+  { "vfat",      0,      0,  1, "\353",                 probe_vfat_nomagic },
+  { "vfat",      0,      0,  1, "\351",                 probe_vfat_nomagic },
   { "minix",     1,   0x10,  2, "\177\023",             0 },
   { "minix",     1,   0x10,  2, "\217\023",             0 },
   { "minix",	 1,   0x10,  2, "\150\044",		0 },

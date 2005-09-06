@@ -189,6 +189,25 @@ struct msdos_super_block {
 /*1fe*/	unsigned char	ms_pmagic[2];
 };
 
+struct vfat_dir_entry {
+	__u8	name[11];
+	__u8	attr;
+	__u16	time_creat;
+	__u16	date_creat;
+	__u16	time_acc;
+	__u16	date_acc;
+	__u16	cluster_high;
+	__u16	time_write;
+	__u16	date_write;
+	__u16	cluster_low;
+	__u32	size;
+};
+
+/* maximum number of clusters */
+#define FAT12_MAX 0xFF4
+#define FAT16_MAX 0xFFF4
+#define FAT32_MAX 0x0FFFFFF6
+
 struct minix_super_block {
 	__u16		ms_ninodes;
 	__u16		ms_nzones;
