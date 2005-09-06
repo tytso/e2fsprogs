@@ -1,5 +1,7 @@
 2005-09-05  Karel Zak <kzak@redhat.com>
 
+	* probe.c: Add support for detecting software suspend partitions
+
 	* probe.c (probe_ext2): Check to see if a journal has been added
 		to an ext2 filesystem when revalidating cached information
 		about an ext2 device.
