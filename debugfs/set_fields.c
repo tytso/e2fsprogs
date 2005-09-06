@@ -117,7 +117,7 @@ static struct field_set_info inode_fields[] = {
 	{ "inodes_count", &set_sb.s_inodes_count, 4, parse_uint },
 	{ "mode", &set_inode.i_mode, 2, parse_uint },
 	{ "uid", &set_inode.i_uid, 2, parse_uint },
-	{ "size", &set_inode.i_uid, 4, parse_uint },
+	{ "size", &set_inode.i_size, 4, parse_uint },
 	{ "atime", &set_inode.i_atime, 4, parse_time },
 	{ "ctime", &set_inode.i_ctime, 4, parse_time },
 	{ "mtime", &set_inode.i_mtime, 4, parse_time },

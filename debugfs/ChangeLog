@@ -1,3 +1,9 @@
+2005-09-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* set_fields.c: Fix set_inode_field so it can properly set the
+		i_size field.  Thanks to James Nelson for pointing this
+		out.
+
 2005-07-04  Theodore Ts'o  <tytso@mit.edu>
 
 	* set_fields.c: Fix a bug which caused set_inode_field to silently
