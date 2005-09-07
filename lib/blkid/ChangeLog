@@ -1,3 +1,7 @@
+2005-09-07  Theodore Ts'o  <tytso@mit.edu>
+
+	* resolve.c: Remove unneeded probe.h header file.
+
 2005-09-05  Karel Zak <kzak@redhat.com>
 
 	* probe.c (probe_vfat_nomagic): Add support for detecting VFAT

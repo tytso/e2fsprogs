@@ -20,7 +20,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "blkidP.h"
-#include "probe.h"
 
 /*
  * Find a tagname (e.g. LABEL or UUID) on a specific device.
