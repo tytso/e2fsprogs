@@ -1,5 +1,8 @@
 2005-09-07  Theodore Ts'o  <tytso@mit.edu>
 
+	* probe.c: Collapse vfat and fat code and make it more paranoid
+		when probing for vat/fat filesystems.
+
 	* resolve.c: Remove unneeded probe.h header file.
 
 2005-09-05  Karel Zak <kzak@redhat.com>

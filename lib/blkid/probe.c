@@ -164,67 +164,80 @@ static int probe_jbd(int fd __BLKID_ATTR((unused)),
 	return 0;
 }
 
-static int probe_vfat(int fd __BLKID_ATTR((unused)), 
+static int probe_fat(int fd __BLKID_ATTR((unused)), 
 		      blkid_cache cache __BLKID_ATTR((unused)), 
 		      blkid_dev dev,
 		      struct blkid_magic *id __BLKID_ATTR((unused)), 
 		      unsigned char *buf)
 {
-	struct vfat_super_block *vs;
-	char serno[10];
-	const char *label = 0;
-	int label_len = 0;
-
-	vs = (struct vfat_super_block *)buf;
-
-	if (strncmp(vs->vs_label, "NO NAME", 7)) {
-		char *end = vs->vs_label + sizeof(vs->vs_label) - 1;
-
-		while (*end == ' ' && end >= vs->vs_label)
-			--end;
-		if (end >= vs->vs_label) {
-			label = vs->vs_label;
-			label_len = end - vs->vs_label + 1;
-		}
-	}
-
-	/* We can't just print them as %04X, because they are unaligned */
-	sprintf(serno, "%02X%02X-%02X%02X", vs->vs_serno[3], vs->vs_serno[2],
-		vs->vs_serno[1], vs->vs_serno[0]);
-	blkid_set_tag(dev, "LABEL", label, label_len);
-	blkid_set_tag(dev, "UUID", serno, sizeof(serno));
-
-	return 0;
-}
-
-static int probe_msdos(int fd __BLKID_ATTR((unused)), 
-		       blkid_cache cache __BLKID_ATTR((unused)), 
-		       blkid_dev dev,
-		       struct blkid_magic *id __BLKID_ATTR((unused)), 
-		       unsigned char *buf)
-{
+	struct vfat_super_block *vs = (struct vfat_super_block *) buf;
 	struct msdos_super_block *ms = (struct msdos_super_block *) buf;
 	char serno[10];
-	const char *label = 0;
+	const char *label = 0, *vol_label = 0;
+	unsigned char	*vol_serno;
 	int label_len = 0;
+	__u16 sector_size;
+	__u16 dir_entries;
+	__u32 sect_count;
+	__u16 reserved;
+	__u32 fat_size;
+	__u32 dir_size;
+	__u32 cluster_count;
+	__u32 fat_length;
 
-	if (strncmp(ms->ms_label, "NO NAME", 7)) {
-		char *end = ms->ms_label + sizeof(ms->ms_label) - 1;
+	/* sector size check */
+	sector_size = blkid_le16(*((__u16 *) &ms->ms_sector_size));
+	if (sector_size != 0x200 && sector_size != 0x400 &&
+	    sector_size != 0x800 && sector_size != 0x1000)
+		return 1;
 
-		while (*end == ' ' && end >= ms->ms_label)
+	dir_entries = blkid_le16(*((__u16 *) &ms->ms_dir_entries));
+	reserved =  blkid_le16(ms->ms_reserved);
+	sect_count = blkid_le16(*((__u16 *) &ms->ms_sectors));
+	if (sect_count == 0)
+		sect_count = blkid_le32(ms->ms_total_sect);
+
+	fat_length = blkid_le16(ms->ms_fat_length);
+	if (fat_length == 0)
+		fat_length = blkid_le32(vs->vs_fat32_length);
+
+	fat_size = fat_length * ms->ms_fats;
+	dir_size = ((dir_entries * sizeof(struct vfat_dir_entry)) +
+			(sector_size-1)) / sector_size;
+
+	cluster_count = sect_count - (reserved + fat_size + dir_size);
+	cluster_count /= ms->ms_cluster_size;
+
+	if (cluster_count > FAT32_MAX)
+		return 1;
+
+	if (ms->ms_fat_length) {
+		vol_label = ms->ms_label;
+		vol_serno = ms->ms_serno;
+
+		blkid_set_tag(dev, "SEC_TYPE", "msdos", sizeof("msdos"));
+	} else {
+		vol_label = vs->vs_label;
+		vol_serno = vs->vs_serno;
+	}
+
+	if (vol_label && memcmp(vol_label, "NO NAME    ", 11)) {
+		const char *end = vol_label + 10;
+
+		while (*end == ' ' && end >= vol_label)
 			--end;
-		if (end >= ms->ms_label) {
-			label = ms->ms_label;
-			label_len = end - ms->ms_label + 1;
+		if (end >= vol_label) {
+			label = vol_label;
+			label_len = end - vol_label + 1;
 		}
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */
-	sprintf(serno, "%02X%02X-%02X%02X", ms->ms_serno[3], ms->ms_serno[2],
-		ms->ms_serno[1], ms->ms_serno[0]);
-	blkid_set_tag(dev, "UUID", serno, 0);
+	sprintf(serno, "%02X%02X-%02X%02X", vol_serno[3], vol_serno[2],
+		vol_serno[1], vol_serno[0]);
+
 	blkid_set_tag(dev, "LABEL", label, label_len);
-	blkid_set_tag(dev, "SEC_TYPE", "msdos", sizeof("msdos"));
+	blkid_set_tag(dev, "UUID", serno, sizeof(serno)-1);
 
 	return 0;
 }
@@ -235,28 +248,15 @@ static int probe_msdos(int fd __BLKID_ATTR((unused)),
  * by http://vrfy.org/projects/volume_id/ and Linux kernel.
  * [7-Jul-2005, Karel Zak <kzak@redhat.com>]
  */
-static int probe_vfat_nomagic(int fd __BLKID_ATTR((unused)), 
-		      blkid_cache cache __BLKID_ATTR((unused)), 
-		      blkid_dev dev,
-		      struct blkid_magic *id __BLKID_ATTR((unused)), 
-		      unsigned char *buf)
+static int probe_fat_nomagic(int fd __BLKID_ATTR((unused)), 
+			     blkid_cache cache __BLKID_ATTR((unused)), 
+			     blkid_dev dev,
+			     struct blkid_magic *id __BLKID_ATTR((unused)), 
+			     unsigned char *buf)
 {
 	struct vfat_super_block *vs;
-	__u16 sector_size;
-	__u16 dir_entries;
-	__u32 sect_count;
-	__u16 reserved;
-	__u32 fat_size;
-	__u32 dir_size;
-	__u32 cluster_count;
-	__u32 fat_length;
 
 	vs = (struct vfat_super_block *)buf;
-
-	/* boot jump address check */
-	if ((vs->vs_ignored[0] != 0xeb || vs->vs_ignored[2] != 0x90) &&
-	     vs->vs_ignored[0] != 0xe9)
-		return 1;
 
 	/* heads check */
 	if (vs->vs_heads == 0)
@@ -275,36 +275,7 @@ static int probe_vfat_nomagic(int fd __BLKID_ATTR((unused)),
 	if (!vs->vs_fats)
 		return 1;
 
-	/* sector size check */
-	sector_size = blkid_le16(*((__u16 *) &vs->vs_sector_size));
-	if (sector_size != 0x200 && sector_size != 0x400 &&
-	    sector_size != 0x800 && sector_size != 0x1000)
-		return 1;
-
-	dir_entries = blkid_le16(*((__u16 *) &vs->vs_dir_entries));
-	reserved =  blkid_le16(vs->vs_reserved);
-	sect_count = blkid_le16(*((__u16 *) &vs->vs_sectors));
-	if (sect_count == 0)
-		sect_count = blkid_le32(vs->vs_total_sect);
-
-	fat_length = blkid_le16(vs->vs_fat_length);
-	if (fat_length == 0)
-		fat_length = blkid_le32(vs->vs_fat32_length);
-
-	fat_size = fat_length * vs->vs_fats;
-	dir_size = ((dir_entries * sizeof(struct vfat_dir_entry)) +
-			(sector_size-1)) / sector_size;
-
-	cluster_count = sect_count - (reserved + fat_size + dir_size);
-	cluster_count /= vs->vs_cluster_size;
-
-	if (cluster_count <= FAT12_MAX || cluster_count <= FAT16_MAX)
-		return probe_msdos(fd, cache, dev, id, buf);
-
-	else if (cluster_count <= FAT32_MAX)
-		return probe_vfat(fd, cache, dev, id, buf);
-	
-	return 1; 	/* FAT detection failed */
+	return probe_fat(fd, cache, dev, id, buf);
 }
 
 static int probe_xfs(int fd __BLKID_ATTR((unused)), 
@@ -576,13 +547,13 @@ static struct blkid_magic type_array[] = {
   { "reiserfs", 64,   0x34,  9, "ReIsEr3Fs",		probe_reiserfs },
   { "reiserfs", 64,   0x34,  8, "ReIsErFs",		probe_reiserfs },
   { "reiserfs",	 8,	20,  8, "ReIsErFs",		probe_reiserfs },
-  { "vfat",      0,   0x52,  5, "MSWIN",                probe_vfat },
-  { "vfat",      0,   0x52,  8, "FAT32   ",             probe_vfat },
-  { "vfat",      0,   0x36,  5, "MSDOS",                probe_msdos },
-  { "vfat",      0,   0x36,  8, "FAT16   ",             probe_msdos },
-  { "vfat",      0,   0x36,  8, "FAT12   ",             probe_msdos },
-  { "vfat",      0,      0,  1, "\353",                 probe_vfat_nomagic },
-  { "vfat",      0,      0,  1, "\351",                 probe_vfat_nomagic },
+  { "vfat",      0,   0x52,  5, "MSWIN",                probe_fat },
+  { "vfat",      0,   0x52,  8, "FAT32   ",             probe_fat },
+  { "vfat",      0,   0x36,  5, "MSDOS",                probe_fat },
+  { "vfat",      0,   0x36,  8, "FAT16   ",             probe_fat },
+  { "vfat",      0,   0x36,  8, "FAT12   ",             probe_fat },
+  { "vfat",      0,      0,  2, "\353\220",             probe_fat_nomagic },
+  { "vfat",      0,      0,  1, "\351",                 probe_fat_nomagic },
   { "minix",     1,   0x10,  2, "\177\023",             0 },
   { "minix",     1,   0x10,  2, "\217\023",             0 },
   { "minix",	 1,   0x10,  2, "\150\044",		0 },
