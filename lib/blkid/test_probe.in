@@ -1,0 +1,40 @@
+
+TESTS=$*
+
+if test "$TESTS"x = x ; then
+	for i in $SRCDIR/tests/*.img.bz2
+	do
+		TESTS="$TESTS `basename $i .img.bz2`"
+	done
+fi
+
+mkdir -p tests
+
+for i in $TESTS
+do
+	echo -n "$i: "
+	if test ! -f $SRCDIR/tests/$i.img.bz2 -a \
+		! -f $SRCDIR/tests/$i.results ; 
+	then
+		echo "non-existent"
+		continue
+	fi
+	bunzip2 < $SRCDIR/tests/$i.img.bz2 > /tmp/test.img.$$
+	./tst_probe /tmp/test.img.$$ > tests/$i.out
+	/bin/rm -f /tmp/test.img.$$ tests/$i.ok tests/$i.failed
+	cmp -s tests/$i.out $SRCDIR/tests/$i.results
+	if [ $? = 0 ];  then
+		echo ok
+		touch tests/$i.ok
+	else	
+		echo failed
+		diff -c tests/$i.out $SRCDIR/tests/$i.results > tests/$i.failed
+	fi
+done
+
+num_ok=`ls tests/*.ok 2>/dev/null | wc -l`
+num_failed=`ls tests/*.failed 2>/dev/null | wc -l`
+
+echo "$num_ok tests succeeded	$num_failed tests failed"
+
+test "$num_failed" -eq 0 || exit 1

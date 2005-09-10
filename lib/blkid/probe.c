@@ -800,7 +800,6 @@ int main(int argc, char **argv)
 	blkid_cache cache;
 	int ret;
 
-	blkid_debug_mask = DEBUG_ALL;
 	if (argc != 2) {
 		fprintf(stderr, "Usage: %s device\n"
 			"Probe a single device to determine type\n", argv[0]);
@@ -816,12 +815,11 @@ int main(int argc, char **argv)
 		printf("%s: %s has an unsupported type\n", argv[0], argv[1]);
 		return (1);
 	}
-	printf("%s is type %s\n", argv[1], dev->bid_type ?
-		dev->bid_type : "(null)");
+	printf("TYPE='%s'\n", dev->bid_type ? dev->bid_type : "(null)");
 	if (dev->bid_label)
-		printf("\tlabel is '%s'\n", dev->bid_label);
+		printf("LABEL='%s'\n", dev->bid_label);
 	if (dev->bid_uuid)
-		printf("\tuuid is %s\n", dev->bid_uuid);
+		printf("UUID='%s'\n", dev->bid_uuid);
 	
 	blkid_free_dev(dev);
 	return (0);

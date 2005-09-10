@@ -121,8 +121,16 @@ blkid: ../../misc/blkid.o libblkid.a $(DEPLIBUUID)
 	@echo "	LD $@"
 	@$(CC) -o blkid ../../misc/blkid.o libblkid.a $(LIBUUID)
 
+test_probe: test_probe.in Makefile
+	@echo "Creating test_probe..."
+	@echo "#!/bin/sh" > test_probe
+	@echo "SRCDIR=@srcdir@" >> test_probe
+	@cat $(srcdir)/test_probe.in >> test_probe
+	@chmod +x test_probe
+
 check:: all tst_cache tst_dev tst_devname tst_devno tst_getsize tst_probe \
- tst_read tst_resolve tst_save tst_tag
+ tst_read tst_resolve tst_save tst_tag test_probe
+	./test_probe
 
 blkid.pc: $(srcdir)/blkid.pc.in $(top_builddir)/config.status
 	@echo "	CONFIG.STATUS $@"
@@ -162,9 +170,11 @@ uninstall::
 	done
 
 clean::
-	$(RM) -f \#* *.s *.o *.orig *.a *~ *.bak tst_* core profiled/* \
+	$(RM) -f \#* *.s *.o *.orig *.a *~ *.bak tst_* tests/*.out tests/*.ok \
+		tests/*.img results test_probe core profiled/* \
 		checker/* blkid_types.h ../libblkid.a ../libblkid_p.a \
 		$(SMANPAGES) blkid
+	-rmdir tests
 
 mostlyclean:: clean
 distclean:: clean
