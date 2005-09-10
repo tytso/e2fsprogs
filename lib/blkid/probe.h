@@ -89,6 +89,14 @@ struct reiserfs_super_block {
 	char		rs_label[16];
 };
 
+struct reiser4_super_block {
+	unsigned char	rs4_magic[16];
+	__u16		rs4_dummy[2];
+	unsigned char	rs4_uuid[16];
+	unsigned char	rs4_label[16];
+	__u64		rs4_dummy2;
+};
+
 struct jfs_super_block {
 	unsigned char	js_magic[4];
 	__u32		js_version;

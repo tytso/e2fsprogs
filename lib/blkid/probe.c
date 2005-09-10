@@ -323,6 +323,23 @@ static int probe_reiserfs(int fd __BLKID_ATTR((unused)),
 	return 0;
 }
 
+static int probe_reiserfs4(int fd __BLKID_ATTR((unused)), 
+			   blkid_cache cache __BLKID_ATTR((unused)), 
+			   blkid_dev dev,
+			   struct blkid_magic *id, unsigned char *buf)
+{
+	struct reiser4_super_block *rs4 = (struct reiser4_super_block *) buf;
+	unsigned int blocksize;
+	const char *label = 0;
+
+	if (strlen(rs4->rs4_label))
+		label = rs4->rs4_label;
+	set_uuid(dev, rs4->rs4_uuid);
+	blkid_set_tag(dev, "LABEL", label, sizeof(rs4->rs4_label));
+
+	return 0;
+}
+
 static int probe_jfs(int fd __BLKID_ATTR((unused)), 
 		     blkid_cache cache __BLKID_ATTR((unused)), 
 		     blkid_dev dev,
@@ -547,6 +564,7 @@ static struct blkid_magic type_array[] = {
   { "reiserfs", 64,   0x34,  9, "ReIsEr3Fs",		probe_reiserfs },
   { "reiserfs", 64,   0x34,  8, "ReIsErFs",		probe_reiserfs },
   { "reiserfs",	 8,	20,  8, "ReIsErFs",		probe_reiserfs },
+  { "reiser4",  64,	 0,  7, "ReIsEr4",		probe_reiserfs4 },
   { "vfat",      0,   0x52,  5, "MSWIN",                probe_fat },
   { "vfat",      0,   0x52,  8, "FAT32   ",             probe_fat },
   { "vfat",      0,   0x36,  5, "MSDOS",                probe_fat },
