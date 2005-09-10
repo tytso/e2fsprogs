@@ -303,12 +303,16 @@ struct oracle_asm_disk_label {
 #define ORACLE_ASM_DISK_LABEL_MARKED    "ORCLDISK"
 #define ORACLE_ASM_DISK_LABEL_OFFSET    32
 
-#define ISODCL(from, to) (to - from + 1)
 struct iso_volume_descriptor {
-	char type[ISODCL(1,1)]; /* 711 */
-	char id[ISODCL(2,6)];
-	char version[ISODCL(7,7)];
-	char data[ISODCL(8,2048)];
+	unsigned char	vd_type;
+	unsigned char	vd_id[5];
+	unsigned char	vd_version;
+	unsigned char	flags;
+	unsigned char	system_id[32];
+	unsigned char	volume_id[32];
+	unsigned char	unused[8];
+	unsigned char	space_size[8];
+	unsigned char	escape_sequences[8];
 };
 
 /*

@@ -31,6 +31,19 @@
 #include "uuid/uuid.h"
 #include "probe.h"
 
+static int figure_label_len(const unsigned char *label, int len)
+{
+	const unsigned char *end = label + len - 1;
+
+	while ((*end == ' ' || *end == 0) && end >= label)
+		--end;
+	if (end >= label) {
+		label = label;
+		return end - label + 1;
+	}
+	return 0;
+}
+
 /*
  * This is a special case code to check for an MDRAID device.  We do
  * this special since it requires checking for a superblock at the end
@@ -222,14 +235,8 @@ static int probe_fat(int fd __BLKID_ATTR((unused)),
 	}
 
 	if (vol_label && memcmp(vol_label, "NO NAME    ", 11)) {
-		const char *end = vol_label + 10;
-
-		while (*end == ' ' && end >= vol_label)
-			--end;
-		if (end >= vol_label) {
-			label = vol_label;
-			label_len = end - vol_label + 1;
-		}
+		label = vol_label;
+		label_len = figure_label_len(vol_label, 11);
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */
@@ -438,6 +445,23 @@ static int probe_swap1(int fd,
 	return 0;
 }
 
+static int probe_iso9660(int fd, blkid_cache cache __BLKID_ATTR((unused)), 
+			 blkid_dev dev __BLKID_ATTR((unused)),
+			 struct blkid_magic *id __BLKID_ATTR((unused)), 
+			 unsigned char *buf)
+{
+	struct iso_volume_descriptor *iso;
+	const unsigned char *label;
+
+	iso = (struct iso_volume_descriptor *) buf;
+
+	label = iso->volume_id;
+
+	blkid_set_tag(dev, "LABEL", label, figure_label_len(label, 32));
+	return 0;
+}
+
+
 static const char
 *udf_magic[] = { "BEA01", "BOOT2", "CD001", "CDW02", "NSR02",
 		 "NSR03", "TEA01", 0 };
@@ -457,7 +481,7 @@ static int probe_udf(int fd, blkid_cache cache __BLKID_ATTR((unused)),
 		lseek(fd, bs*2048+32768, SEEK_SET);
 		if (read(fd, (char *)&isosb, sizeof(isosb)) != sizeof(isosb))
 			return 1;
-		if (isosb.id[0])
+		if (isosb.vd_id[0])
 			break;
 	}
 
@@ -473,10 +497,10 @@ static int probe_udf(int fd, blkid_cache cache __BLKID_ATTR((unused)),
 		   NSR01 for UDF 1.00
 		   NSR02 for UDF 1.50
 		   NSR03 for UDF 2.00 */
-		if (!strncmp(isosb.id, "NSR0", 4))
+		if (!strncmp(isosb.vd_id, "NSR0", 4))
 			return 0;
 		for (m = udf_magic; *m; m++)
-			if (!strncmp(*m, isosb.id, 5))
+			if (!strncmp(*m, isosb.vd_id, 5))
 				break;
 		if (*m == 0)
 			return 1;
@@ -589,8 +613,8 @@ static struct blkid_magic type_array[] = {
   { "udf",	32,	 1,  5, "NSR02",		probe_udf },
   { "udf",	32,	 1,  5, "NSR03",		probe_udf },
   { "udf",	32,	 1,  5, "TEA01",		probe_udf },
-  { "iso9660",	32,	 1,  5, "CD001",		0 },
-  { "iso9660",	32,	 9,  5, "CDROM",		0 },
+  { "iso9660",	32,	 1,  5, "CD001",		probe_iso9660 },
+  { "iso9660",	32,	 9,  5, "CDROM",		probe_iso9660 },
   { "jfs",	32,	 0,  4, "JFS1",			probe_jfs },
   { "hfs",	 1,	 0,  2, "BD",			0 },
   { "ufs",	 8,  0x55c,  4, "T\031\001\000",	0 },

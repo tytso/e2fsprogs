@@ -1,5 +1,7 @@
 2005-09-10  Theodore Ts'o  <tytso@mit.edu>
 
+	* probe.c, probe.h: Extract basic iso9660 label information.
+
 	* probe.c, probe.h: Add support for resier4 filesystem.
 
 2005-09-07  Theodore Ts'o  <tytso@mit.edu>
