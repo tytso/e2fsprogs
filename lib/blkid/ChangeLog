@@ -1,5 +1,8 @@
 2005-09-10  Theodore Ts'o  <tytso@mit.edu>
 
+	* probe.c (probe_fat): Search the root directory of FAT
+		filesystems for the label information.
+
 	* probe.c, probe.h: Change superblock and generic i/o functions to
 		be more generic.  Clean up interface to the probe
 		function.  Fix memory leak.

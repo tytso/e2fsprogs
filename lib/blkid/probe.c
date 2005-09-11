@@ -5,6 +5,7 @@
  * Copyright (C) 1999 by Andries Brouwer
  * Copyright (C) 1999, 2000, 2003 by Theodore Ts'o
  * Copyright (C) 2001 by Andreas Dilger
+ * Copyright (C) 2004 Kay Sievers <kay.sievers@vrfy.org>
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the
@@ -210,24 +211,51 @@ static int probe_jbd(struct blkid_probe *probe,
 	return 0;
 }
 
+#define FAT_ATTR_VOLUME_ID		0x08
+#define FAT_ATTR_DIR			0x10
+#define FAT_ATTR_LONG_NAME		0x0f
+#define FAT_ATTR_MASK			0x3f
+#define FAT_ENTRY_FREE			0xe5
+
+static char *no_name = "NO NAME    ";
+
+static unsigned char *search_fat_label(struct vfat_dir_entry *dir, int count)
+{
+	unsigned int i;
+
+	for (i = 0; i < count; i++) {
+		if (dir[i].name[0] == 0x00)
+			break;
+		
+		if ((dir[i].name[0] == FAT_ENTRY_FREE) ||
+		    (dir[i].cluster_high != 0 || dir[i].cluster_low != 0) ||
+		    ((dir[i].attr & FAT_ATTR_MASK) == FAT_ATTR_LONG_NAME))
+			continue;
+
+		if ((dir[i].attr & (FAT_ATTR_VOLUME_ID | FAT_ATTR_DIR)) == 
+		    FAT_ATTR_VOLUME_ID) {
+			return dir[i].name;
+		}
+	}
+	return 0;
+}
+
+/* FAT label extraction from the root directory taken from Kay
+ * Sievers's volume_id library */
 static int probe_fat(struct blkid_probe *probe,
 		      struct blkid_magic *id __BLKID_ATTR((unused)), 
 		      unsigned char *buf)
 {
 	struct vfat_super_block *vs = (struct vfat_super_block *) buf;
 	struct msdos_super_block *ms = (struct msdos_super_block *) buf;
+	struct vfat_dir_entry *dir;
 	char serno[10];
 	const unsigned char *label = 0, *vol_label = 0;
 	unsigned char	*vol_serno;
-	int label_len = 0;
-	__u16 sector_size;
-	__u16 dir_entries;
-	__u32 sect_count;
-	__u16 reserved;
-	__u32 fat_size;
-	__u32 dir_size;
-	__u32 cluster_count;
-	__u32 fat_length;
+	int label_len = 0, maxloop = 100;
+	__u16 sector_size, dir_entries, reserved;
+	__u32 sect_count, fat_size, dir_size, cluster_count, fat_length;
+	__u32 buf_size, start_data_sect, next, root_start, root_dir_entries;
 
 	/* sector size check */
 	sector_size = blkid_le16(*((__u16 *) &ms->ms_sector_size));
@@ -256,16 +284,66 @@ static int probe_fat(struct blkid_probe *probe,
 		return 1;
 
 	if (ms->ms_fat_length) {
-		vol_label = ms->ms_label;
+		/* the label may be an attribute in the root directory */
+		root_start = (reserved + fat_size) * sector_size;
+		root_dir_entries = vs->vs_dir_entries[0] + 
+			(vs->vs_dir_entries[1] << 8);
+
+		buf_size = root_dir_entries * sizeof(struct vfat_dir_entry);
+		dir = (struct vfat_dir_entry *) get_buffer(probe, root_start, 
+							   buf_size);
+		if (dir)
+			vol_label = search_fat_label(dir, root_dir_entries);
+
+		if (!vol_label || !memcmp(vol_label, no_name, 11))
+			vol_label = ms->ms_label;
 		vol_serno = ms->ms_serno;
 
-		blkid_set_tag(probe->dev, "SEC_TYPE", "msdos", sizeof("msdos"));
+		blkid_set_tag(probe->dev, "SEC_TYPE", "msdos", 
+			      sizeof("msdos"));
 	} else {
-		vol_label = vs->vs_label;
+		/* Search the FAT32 root dir for the label attribute */
+		buf_size = vs->vs_cluster_size * sector_size;
+		start_data_sect = reserved + fat_size;
+
+		next = blkid_le32(vs->vs_root_cluster);
+		while (next && --maxloop) {
+			__u32 next_sect_off;
+			__u64 next_off, fat_entry_off;
+			int count;
+
+			next_sect_off = (next - 2) * vs->vs_cluster_size;
+			next_off = (start_data_sect + next_sect_off) * 
+				sector_size;
+
+			dir = (struct vfat_dir_entry *) 
+				get_buffer(probe, next_off, buf_size);
+			if (dir == NULL)
+				break;
+
+			count = buf_size / sizeof(struct vfat_dir_entry);
+
+			vol_label = search_fat_label(dir, count);
+			if (vol_label)
+				break;
+
+			/* get FAT entry */
+			fat_entry_off = (reserved * sector_size) + 
+				(next * sizeof(__u32));
+			buf = get_buffer(probe, fat_entry_off, buf_size);
+			if (buf == NULL)
+				break;
+
+			/* set next cluster */
+			next = blkid_le32(*((__u32 *) buf) & 0x0fffffff);
+		}
+
+		if (!vol_label || !memcmp(vol_label, no_name, 11))
+			vol_label = vs->vs_label;
 		vol_serno = vs->vs_serno;
 	}
 
-	if (vol_label && memcmp(vol_label, "NO NAME    ", 11)) {
+	if (vol_label && memcmp(vol_label, no_name, 11)) {
 		label = vol_label;
 		label_len = figure_label_len(vol_label, 11);
 	}
