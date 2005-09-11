@@ -1,5 +1,9 @@
 2005-09-10  Theodore Ts'o  <tytso@mit.edu>
 
+	* probe.c, probe.h: Change superblock and generic i/o functions to
+		be more generic.  Clean up interface to the probe
+		function.  Fix memory leak.
+
 	* probe.c, probe.h: Extract basic iso9660 label information.
 
 	* probe.c, probe.h: Add support for resier4 filesystem.

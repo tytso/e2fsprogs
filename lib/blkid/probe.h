@@ -18,7 +18,19 @@
 
 struct blkid_magic;
 
-typedef int (*blkid_probe_t)(int fd, blkid_cache cache, blkid_dev dev, 
+#define SB_BUFFER_SIZE		0x11000
+
+struct blkid_probe {
+	int			fd;
+	blkid_cache		cache;
+	blkid_dev		dev;
+	unsigned char		*sbbuf;
+	size_t			sb_valid;
+	unsigned char		*buf;
+	size_t			buf_max;
+};
+
+typedef int (*blkid_probe_t)(struct blkid_probe *probe, 
 			     struct blkid_magic *id, unsigned char *buf);
 
 struct blkid_magic {
@@ -167,7 +179,7 @@ struct vfat_super_block {
 /* 34*/	__u16		vs_reserved2[6];
 /* 40*/	unsigned char	vs_unknown[3];
 /* 43*/	unsigned char	vs_serno[4];
-/* 47*/	char		vs_label[11];
+/* 47*/	unsigned char	vs_label[11];
 /* 52*/	unsigned char   vs_magic[8];
 /* 5a*/	unsigned char	vs_dummy2[164];
 /*1fe*/	unsigned char	vs_pmagic[2];
@@ -191,7 +203,7 @@ struct msdos_super_block {
 /* 20*/	__u32		ms_total_sect;
 /* 24*/	unsigned char	ms_unknown[3];
 /* 27*/	unsigned char	ms_serno[4];
-/* 2b*/	char		ms_label[11];
+/* 2b*/	unsigned char	ms_label[11];
 /* 36*/	unsigned char   ms_magic[8];
 /* 3d*/	unsigned char	ms_dummy2[192];
 /*1fe*/	unsigned char	ms_pmagic[2];

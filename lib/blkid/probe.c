@@ -44,6 +44,45 @@ static int figure_label_len(const unsigned char *label, int len)
 	return 0;
 }
 
+static unsigned char *get_buffer(struct blkid_probe *pr, 
+			  unsigned off, size_t len)
+{
+	ssize_t		ret_read;
+	unsigned char	*newbuf;
+
+	if (off + len <= SB_BUFFER_SIZE) {
+		if (!pr->sbbuf) {
+			pr->sbbuf = malloc(SB_BUFFER_SIZE);
+			if (!pr->sbbuf)
+				return NULL;
+			if (lseek(pr->fd, 0, SEEK_SET) < 0)
+				return NULL;
+			ret_read = read(pr->fd, pr->sbbuf, SB_BUFFER_SIZE);
+			if (ret_read < 0)
+				ret_read = 0;
+			pr->sb_valid = ret_read;
+		}
+		if (off+len > pr->sb_valid)
+			return NULL;
+		return pr->sbbuf + off;
+	} else {
+		if (len > pr->buf_max) {
+			newbuf = realloc(pr->buf, len);
+			if (newbuf == NULL)
+				return NULL;
+			pr->buf = newbuf;
+			pr->buf_max = len;
+		}
+		if (lseek(pr->fd, off, SEEK_SET) < 0)
+			return NULL;
+		ret_read = read(pr->fd, pr->buf, len);
+		if (ret_read != (ssize_t) len)
+			return NULL;
+		return pr->buf;
+	}
+}
+
+
 /*
  * This is a special case code to check for an MDRAID device.  We do
  * this special since it requires checking for a superblock at the end
@@ -108,9 +147,7 @@ static void get_ext2_info(blkid_dev dev, unsigned char *buf)
 	set_uuid(dev, es->s_uuid);
 }
 
-static int probe_ext3(int fd __BLKID_ATTR((unused)), 
-		      blkid_cache cache __BLKID_ATTR((unused)), 
-		      blkid_dev dev,
+static int probe_ext3(struct blkid_probe *probe, 
 		      struct blkid_magic *id __BLKID_ATTR((unused)), 
 		      unsigned char *buf)
 {
@@ -128,16 +165,14 @@ static int probe_ext3(int fd __BLKID_ATTR((unused)),
 	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
 		return -BLKID_ERR_PARAM;
 
-	get_ext2_info(dev, buf);
+	get_ext2_info(probe->dev, buf);
 
-	blkid_set_tag(dev, "SEC_TYPE", "ext2", sizeof("ext2"));
+	blkid_set_tag(probe->dev, "SEC_TYPE", "ext2", sizeof("ext2"));
 
 	return 0;
 }
 
-static int probe_ext2(int fd __BLKID_ATTR((unused)), 
-		      blkid_cache cache __BLKID_ATTR((unused)), 
-		      blkid_dev dev,
+static int probe_ext2(struct blkid_probe *probe,
 		      struct blkid_magic *id __BLKID_ATTR((unused)), 
 		      unsigned char *buf)
 {
@@ -155,14 +190,12 @@ static int probe_ext2(int fd __BLKID_ATTR((unused)),
 	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
 		return -BLKID_ERR_PARAM;
 
-	get_ext2_info(dev, buf);
+	get_ext2_info(probe->dev, buf);
 
 	return 0;
 }
 
-static int probe_jbd(int fd __BLKID_ATTR((unused)), 
-		     blkid_cache cache __BLKID_ATTR((unused)), 
-		     blkid_dev dev, 
+static int probe_jbd(struct blkid_probe *probe,
 		     struct blkid_magic *id __BLKID_ATTR((unused)), 
 		     unsigned char *buf)
 {
@@ -172,21 +205,19 @@ static int probe_jbd(int fd __BLKID_ATTR((unused)),
 	      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV))
 		return -BLKID_ERR_PARAM;
 
-	get_ext2_info(dev, buf);
+	get_ext2_info(probe->dev, buf);
 
 	return 0;
 }
 
-static int probe_fat(int fd __BLKID_ATTR((unused)), 
-		      blkid_cache cache __BLKID_ATTR((unused)), 
-		      blkid_dev dev,
+static int probe_fat(struct blkid_probe *probe,
 		      struct blkid_magic *id __BLKID_ATTR((unused)), 
 		      unsigned char *buf)
 {
 	struct vfat_super_block *vs = (struct vfat_super_block *) buf;
 	struct msdos_super_block *ms = (struct msdos_super_block *) buf;
 	char serno[10];
-	const char *label = 0, *vol_label = 0;
+	const unsigned char *label = 0, *vol_label = 0;
 	unsigned char	*vol_serno;
 	int label_len = 0;
 	__u16 sector_size;
@@ -228,7 +259,7 @@ static int probe_fat(int fd __BLKID_ATTR((unused)),
 		vol_label = ms->ms_label;
 		vol_serno = ms->ms_serno;
 
-		blkid_set_tag(dev, "SEC_TYPE", "msdos", sizeof("msdos"));
+		blkid_set_tag(probe->dev, "SEC_TYPE", "msdos", sizeof("msdos"));
 	} else {
 		vol_label = vs->vs_label;
 		vol_serno = vs->vs_serno;
@@ -243,8 +274,8 @@ static int probe_fat(int fd __BLKID_ATTR((unused)),
 	sprintf(serno, "%02X%02X-%02X%02X", vol_serno[3], vol_serno[2],
 		vol_serno[1], vol_serno[0]);
 
-	blkid_set_tag(dev, "LABEL", label, label_len);
-	blkid_set_tag(dev, "UUID", serno, sizeof(serno)-1);
+	blkid_set_tag(probe->dev, "LABEL", (const char *) label, label_len);
+	blkid_set_tag(probe->dev, "UUID", serno, sizeof(serno)-1);
 
 	return 0;
 }
@@ -255,9 +286,7 @@ static int probe_fat(int fd __BLKID_ATTR((unused)),
  * by http://vrfy.org/projects/volume_id/ and Linux kernel.
  * [7-Jul-2005, Karel Zak <kzak@redhat.com>]
  */
-static int probe_fat_nomagic(int fd __BLKID_ATTR((unused)), 
-			     blkid_cache cache __BLKID_ATTR((unused)), 
-			     blkid_dev dev,
+static int probe_fat_nomagic(struct blkid_probe *probe,
 			     struct blkid_magic *id __BLKID_ATTR((unused)), 
 			     unsigned char *buf)
 {
@@ -282,12 +311,10 @@ static int probe_fat_nomagic(int fd __BLKID_ATTR((unused)),
 	if (!vs->vs_fats)
 		return 1;
 
-	return probe_fat(fd, cache, dev, id, buf);
+	return probe_fat(probe, id, buf);
 }
 
-static int probe_xfs(int fd __BLKID_ATTR((unused)), 
-		     blkid_cache cache __BLKID_ATTR((unused)), 
-		     blkid_dev dev,
+static int probe_xfs(struct blkid_probe *probe,
 		     struct blkid_magic *id __BLKID_ATTR((unused)), 
 		     unsigned char *buf)
 {
@@ -298,14 +325,12 @@ static int probe_xfs(int fd __BLKID_ATTR((unused)),
 
 	if (strlen(xs->xs_fname))
 		label = xs->xs_fname;
-	blkid_set_tag(dev, "LABEL", label, sizeof(xs->xs_fname));
-	set_uuid(dev, xs->xs_uuid);
+	blkid_set_tag(probe->dev, "LABEL", label, sizeof(xs->xs_fname));
+	set_uuid(probe->dev, xs->xs_uuid);
 	return 0;
 }
 
-static int probe_reiserfs(int fd __BLKID_ATTR((unused)), 
-			  blkid_cache cache __BLKID_ATTR((unused)), 
-			  blkid_dev dev,
+static int probe_reiserfs(struct blkid_probe *probe,
 			  struct blkid_magic *id, unsigned char *buf)
 {
 	struct reiserfs_super_block *rs = (struct reiserfs_super_block *) buf;
@@ -319,37 +344,33 @@ static int probe_reiserfs(int fd __BLKID_ATTR((unused)),
 		return -BLKID_ERR_BIG;
 
 	/* LABEL/UUID are only valid for later versions of Reiserfs v3.6. */
-	if (!strcmp(id->bim_magic, "ReIsEr2Fs") ||
-	    !strcmp(id->bim_magic, "ReIsEr3Fs")) {
+	if (id->bim_magic[6] == '2' || id->bim_magic[6] == '3') {
 		if (strlen(rs->rs_label))
 			label = rs->rs_label;
-		set_uuid(dev, rs->rs_uuid);
+		set_uuid(probe->dev, rs->rs_uuid);
 	}
-	blkid_set_tag(dev, "LABEL", label, sizeof(rs->rs_label));
+	blkid_set_tag(probe->dev, "LABEL", label, sizeof(rs->rs_label));
 
 	return 0;
 }
 
-static int probe_reiserfs4(int fd __BLKID_ATTR((unused)), 
-			   blkid_cache cache __BLKID_ATTR((unused)), 
-			   blkid_dev dev,
-			   struct blkid_magic *id, unsigned char *buf)
+static int probe_reiserfs4(struct blkid_probe *probe,
+			   struct blkid_magic *id __BLKID_ATTR((unused)), 
+			   unsigned char *buf)
 {
 	struct reiser4_super_block *rs4 = (struct reiser4_super_block *) buf;
-	unsigned int blocksize;
-	const char *label = 0;
+	const unsigned char *label = 0;
 
-	if (strlen(rs4->rs4_label))
+	if (strlen((char *) rs4->rs4_label))
 		label = rs4->rs4_label;
-	set_uuid(dev, rs4->rs4_uuid);
-	blkid_set_tag(dev, "LABEL", label, sizeof(rs4->rs4_label));
+	set_uuid(probe->dev, rs4->rs4_uuid);
+	blkid_set_tag(probe->dev, "LABEL", (const char *) label, 
+		      sizeof(rs4->rs4_label));
 
 	return 0;
 }
 
-static int probe_jfs(int fd __BLKID_ATTR((unused)), 
-		     blkid_cache cache __BLKID_ATTR((unused)), 
-		     blkid_dev dev,
+static int probe_jfs(struct blkid_probe *probe,
 		     struct blkid_magic *id __BLKID_ATTR((unused)), 
 		     unsigned char *buf)
 {
@@ -360,14 +381,12 @@ static int probe_jfs(int fd __BLKID_ATTR((unused)),
 
 	if (strlen((char *) js->js_label))
 		label = (char *) js->js_label;
-	blkid_set_tag(dev, "LABEL", label, sizeof(js->js_label));
-	set_uuid(dev, js->js_uuid);
+	blkid_set_tag(probe->dev, "LABEL", label, sizeof(js->js_label));
+	set_uuid(probe->dev, js->js_uuid);
 	return 0;
 }
 
-static int probe_romfs(int fd __BLKID_ATTR((unused)), 
-		       blkid_cache cache __BLKID_ATTR((unused)), 
-		       blkid_dev dev,
+static int probe_romfs(struct blkid_probe *probe,
 		       struct blkid_magic *id __BLKID_ATTR((unused)), 
 		       unsigned char *buf)
 {
@@ -378,15 +397,13 @@ static int probe_romfs(int fd __BLKID_ATTR((unused)),
 
 	if (strlen((char *) ros->ros_volume))
 		label = (char *) ros->ros_volume;
-	blkid_set_tag(dev, "LABEL", label, 0);
+	blkid_set_tag(probe->dev, "LABEL", label, 0);
 	return 0;
 }
 
-static int probe_cramfs(int fd __BLKID_ATTR((unused)), 
-		       blkid_cache cache __BLKID_ATTR((unused)), 
-		       blkid_dev dev,
-		       struct blkid_magic *id __BLKID_ATTR((unused)), 
-		       unsigned char *buf)
+static int probe_cramfs(struct blkid_probe *probe,
+			struct blkid_magic *id __BLKID_ATTR((unused)), 
+			unsigned char *buf)
 {
 	struct cramfs_super_block *csb;
 	const char *label = 0;
@@ -395,58 +412,48 @@ static int probe_cramfs(int fd __BLKID_ATTR((unused)),
 
 	if (strlen((char *) csb->name))
 		label = (char *) csb->name;
-	blkid_set_tag(dev, "LABEL", label, 0);
+	blkid_set_tag(probe->dev, "LABEL", label, 0);
 	return 0;
 }
 
-static int probe_swap0(int fd __BLKID_ATTR((unused)),
-		       blkid_cache cache __BLKID_ATTR((unused)),
-		       blkid_dev dev,
+static int probe_swap0(struct blkid_probe *probe,
 		       struct blkid_magic *id __BLKID_ATTR((unused)),
 		       unsigned char *buf __BLKID_ATTR((unused)))
 {
-	blkid_set_tag(dev, "UUID", 0, 0);
-	blkid_set_tag(dev, "LABEL", 0, 0);
+	blkid_set_tag(probe->dev, "UUID", 0, 0);
+	blkid_set_tag(probe->dev, "LABEL", 0, 0);
 	return 0;
 }
 
-static int probe_swap1(int fd,
-		       blkid_cache cache __BLKID_ATTR((unused)),
-		       blkid_dev dev,
+static int probe_swap1(struct blkid_probe *probe,
 		       struct blkid_magic *id __BLKID_ATTR((unused)),
 		       unsigned char *buf __BLKID_ATTR((unused)))
 {
 	struct swap_id_block *sws;
 
-	probe_swap0(fd, cache, dev, id, buf);
+	probe_swap0(probe, id, buf);
 	/*
 	 * Version 1 swap headers are always located at offset of 1024
 	 * bytes, although the swap signature itself is located at the
 	 * end of the page (which may vary depending on hardware
 	 * pagesize).
 	 */
-	if (lseek(fd, 1024, SEEK_SET) < 0) return 1;
-	if (!(sws = (struct swap_id_block *)malloc(1024))) return 1;
-	if (read(fd, sws, 1024) != 1024) {
-		free(sws);
+	sws = (struct swap_id_block *) get_buffer(probe, 1024, 1024);
+	if (!sws)
 		return 1;
-	}
 
 	/* arbitrary sanity check.. is there any garbage down there? */
 	if (sws->sws_pad[32] == 0 && sws->sws_pad[33] == 0)  {
 		if (sws->sws_volume[0])
-			blkid_set_tag(dev, "LABEL", sws->sws_volume, 
+			blkid_set_tag(probe->dev, "LABEL", sws->sws_volume, 
 				      sizeof(sws->sws_volume));
 		if (sws->sws_uuid[0])
-			set_uuid(dev, sws->sws_uuid);
+			set_uuid(probe->dev, sws->sws_uuid);
 	}
-	free(sws);
-
 	return 0;
 }
 
-static int probe_iso9660(int fd, blkid_cache cache __BLKID_ATTR((unused)), 
-			 blkid_dev dev __BLKID_ATTR((unused)),
+static int probe_iso9660(struct blkid_probe *probe,
 			 struct blkid_magic *id __BLKID_ATTR((unused)), 
 			 unsigned char *buf)
 {
@@ -454,10 +461,10 @@ static int probe_iso9660(int fd, blkid_cache cache __BLKID_ATTR((unused)),
 	const unsigned char *label;
 
 	iso = (struct iso_volume_descriptor *) buf;
-
 	label = iso->volume_id;
 
-	blkid_set_tag(dev, "LABEL", label, figure_label_len(label, 32));
+	blkid_set_tag(probe->dev, "LABEL", (const char *) label, 
+		      figure_label_len(label, 32));
 	return 0;
 }
 
@@ -466,41 +473,42 @@ static const char
 *udf_magic[] = { "BEA01", "BOOT2", "CD001", "CDW02", "NSR02",
 		 "NSR03", "TEA01", 0 };
 
-static int probe_udf(int fd, blkid_cache cache __BLKID_ATTR((unused)), 
-		     blkid_dev dev __BLKID_ATTR((unused)),
-		       struct blkid_magic *id __BLKID_ATTR((unused)), 
+static int probe_udf(struct blkid_probe *probe,
+		     struct blkid_magic *id __BLKID_ATTR((unused)), 
 		     unsigned char *buf __BLKID_ATTR((unused)))
 {
 	int j, bs;
-	struct iso_volume_descriptor isosb;
+	struct iso_volume_descriptor *isosb;
 	const char ** m;
 
 	/* determine the block size by scanning in 2K increments
 	   (block sizes larger than 2K will be null padded) */
 	for (bs = 1; bs < 16; bs++) {
-		lseek(fd, bs*2048+32768, SEEK_SET);
-		if (read(fd, (char *)&isosb, sizeof(isosb)) != sizeof(isosb))
+		isosb = (struct iso_volume_descriptor *) 
+			get_buffer(probe, bs*2048+32768, sizeof(isosb));
+		if (!isosb)
 			return 1;
-		if (isosb.vd_id[0])
+		if (isosb->vd_id[0])
 			break;
 	}
 
 	/* Scan up to another 64 blocks looking for additional VSD's */
 	for (j = 1; j < 64; j++) {
 		if (j > 1) {
-			lseek(fd, j*bs*2048+32768, SEEK_SET);
-			if (read(fd, (char *)&isosb, sizeof(isosb))
-			    != sizeof(isosb))
+			isosb = (struct iso_volume_descriptor *) 
+				get_buffer(probe, j*bs*2048+32768, 
+					   sizeof(isosb));
+			if (!isosb)
 				return 1;
 		}
 		/* If we find NSR0x then call it udf:
 		   NSR01 for UDF 1.00
 		   NSR02 for UDF 1.50
 		   NSR03 for UDF 2.00 */
-		if (!strncmp(isosb.vd_id, "NSR0", 4))
+		if (!strncmp(isosb->vd_id, "NSR0", 4))
 			return 0;
 		for (m = udf_magic; *m; m++)
-			if (!strncmp(*m, isosb.vd_id, 5))
+			if (!strncmp(*m, isosb->vd_id, 5))
 				break;
 		if (*m == 0)
 			return 1;
@@ -508,9 +516,7 @@ static int probe_udf(int fd, blkid_cache cache __BLKID_ATTR((unused)),
 	return 1;
 }
 
-static int probe_ocfs(int fd __BLKID_ATTR((unused)), 
-		      blkid_cache cache __BLKID_ATTR((unused)), 
-		      blkid_dev dev,
+static int probe_ocfs(struct blkid_probe *probe,
 		      struct blkid_magic *id __BLKID_ATTR((unused)), 
 		      unsigned char *buf)
 {
@@ -523,19 +529,17 @@ static int probe_ocfs(int fd __BLKID_ATTR((unused)),
 
 	major = ocfsmajor(ovh);
 	if (major == 1)
-		blkid_set_tag(dev,"SEC_TYPE","ocfs1",sizeof("ocfs1"));
+		blkid_set_tag(probe->dev,"SEC_TYPE","ocfs1",sizeof("ocfs1"));
 	else if (major >= 9)
-		blkid_set_tag(dev,"SEC_TYPE","ntocfs",sizeof("ntocfs"));
+		blkid_set_tag(probe->dev,"SEC_TYPE","ntocfs",sizeof("ntocfs"));
 	
-	blkid_set_tag(dev, "LABEL", ovl.label, ocfslabellen(ovl));
-	blkid_set_tag(dev, "MOUNT", ovh.mount, ocfsmountlen(ovh));
-	set_uuid(dev, ovl.vol_id);
+	blkid_set_tag(probe->dev, "LABEL", ovl.label, ocfslabellen(ovl));
+	blkid_set_tag(probe->dev, "MOUNT", ovh.mount, ocfsmountlen(ovh));
+	set_uuid(probe->dev, ovl.vol_id);
 	return 0;
 }
 
-static int probe_ocfs2(int fd __BLKID_ATTR((unused)), 
-		       blkid_cache cache __BLKID_ATTR((unused)), 
-		       blkid_dev dev,
+static int probe_ocfs2(struct blkid_probe *probe,
 		       struct blkid_magic *id __BLKID_ATTR((unused)), 
 		       unsigned char *buf)
 {
@@ -543,14 +547,12 @@ static int probe_ocfs2(int fd __BLKID_ATTR((unused)),
 
 	osb = (struct ocfs2_super_block *)buf;
 
-	blkid_set_tag(dev, "LABEL", osb->s_label, sizeof(osb->s_label));
-	set_uuid(dev, osb->s_uuid);
+	blkid_set_tag(probe->dev, "LABEL", osb->s_label, sizeof(osb->s_label));
+	set_uuid(probe->dev, osb->s_uuid);
 	return 0;
 }
 
-static int probe_oracleasm(int fd __BLKID_ATTR((unused)), 
-			   blkid_cache cache __BLKID_ATTR((unused)), 
-			   blkid_dev dev,
+static int probe_oracleasm(struct blkid_probe *probe,
 			   struct blkid_magic *id __BLKID_ATTR((unused)), 
 			   unsigned char *buf)
 {
@@ -558,7 +560,7 @@ static int probe_oracleasm(int fd __BLKID_ATTR((unused)),
 
 	dl = (struct oracle_asm_disk_label *)buf;
 
-	blkid_set_tag(dev, "LABEL", dl->dl_id, sizeof(dl->dl_id));
+	blkid_set_tag(probe->dev, "LABEL", dl->dl_id, sizeof(dl->dl_id));
 	return 0;
 }
 
@@ -660,11 +662,12 @@ static struct blkid_magic type_array[] = {
 blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 {
 	struct blkid_magic *id;
-	unsigned char *bufs[BLKID_BLK_OFFS + 1], *buf;
+	struct blkid_probe probe;
+	unsigned char *buf;
 	const char *type;
 	struct stat st;
 	time_t diff, now;
-	int fd, idx;
+	int idx;
 
 	if (!dev)
 		return NULL;
@@ -682,8 +685,8 @@ blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 	    printf("need to revalidate %s (time since last check %lu)\n", 
 		   dev->bid_name, diff));
 
-	if (((fd = open(dev->bid_name, O_RDONLY)) < 0) ||
-	    (fstat(fd, &st) < 0)) {
+	if (((probe.fd = open(dev->bid_name, O_RDONLY)) < 0) ||
+	    (fstat(probe.fd, &st) < 0)) {
 		if (errno == ENXIO || errno == ENODEV || errno == ENOENT) {
 			blkid_free_dev(dev);
 			return NULL;
@@ -695,7 +698,11 @@ blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 		return dev;
 	}
 
-	memset(bufs, 0, sizeof(bufs));
+	probe.cache = cache;
+	probe.dev = dev;
+	probe.sbbuf = 0;
+	probe.buf = 0;
+	probe.buf_max = 0;
 	
 	/*
 	 * Iterate over the type array.  If we already know the type,
@@ -708,7 +715,7 @@ try_again:
 	if (!dev->bid_type || !strcmp(dev->bid_type, "mdraid")) {
 		uuid_t	uuid;
 
-		if (check_mdraid(fd, uuid) == 0) {
+		if (check_mdraid(probe.fd, uuid) == 0) {
 			set_uuid(dev, uuid);
 			type = "mdraid";
 			goto found_type;
@@ -720,29 +727,16 @@ try_again:
 			continue;
 
 		idx = id->bim_kboff + (id->bim_sboff >> 10);
-		if (idx > BLKID_BLK_OFFS || idx < 0)
+		buf = get_buffer(&probe, idx << 10, 1024);
+		if (!buf)
 			continue;
-		buf = bufs[idx];
-		if (!buf) {
-			if (lseek(fd, idx << 10, SEEK_SET) < 0)
-				continue;
-
-			if (!(buf = (unsigned char *)malloc(1024)))
-				continue;
-			
-			if (read(fd, buf, 1024) != 1024) {
-				free(buf);
-				continue;
-			}
-			bufs[idx] = buf;
-		}
 
 		if (memcmp(id->bim_magic, buf + (id->bim_sboff&0x3ff),
 			   id->bim_len))
 			continue;
 
 		if ((id->bim_probe == NULL) ||
-		    (id->bim_probe(fd, cache, dev, id, buf) == 0)) {
+		    (id->bim_probe(&probe, id, buf) == 0)) {
 			type = id->bim_type;
 			goto found_type;
 		}
@@ -777,7 +771,11 @@ found_type:
 			   dev->bid_name, st.st_rdev, type));
 	}
 
-	close(fd);
+	if (probe.sbbuf)
+		free(probe.sbbuf);
+	if (probe.buf)
+		free(probe.buf);
+	close(probe.fd);
 
 	return dev;
 }
