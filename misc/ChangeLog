@@ -1,5 +1,9 @@
 2005-09-24  Theodore Ts'o  <tytso@mit.edu>
 
+	* mke2fs.8.in: Fix mke2fs man page to properly document the fact
+		that mke2fs -L takes an argument.  (Addresses Debian Bug
+		#322188)
+
 	* badblocks.c: Add extra spaces when printing the "done" message
 		to clear out the block number to fix a display corruption
 		when the -s option is used to display the progress of the

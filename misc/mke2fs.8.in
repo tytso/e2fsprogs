@@ -290,8 +290,11 @@ will automatically pass the correct parameters to the
 .B badblocks
 program.
 .TP
-.B \-L
-Set the volume label for the filesystem.
+.BI \-L " new-volume-label"
+Set the volume label for the filesystem to
+.IR new-volume-label .
+The maximum length of the
+volume label is 16 bytes.
 .TP
 .BI \-m " reserved-blocks-percentage"
 Specify the percentage of the filesystem blocks reserved for 
