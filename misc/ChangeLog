@@ -1,3 +1,10 @@
+2005-09-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* badblocks.c: Add extra spaces when printing the "done" message
+		to clear out the block number to fix a display corruption
+		when the -s option is used to display the progress of the
+		test.  (Addresses Debian Bug #322231)
+
 2005-07-05  Theodore Ts'o  <tytso@mit.edu>
 
 	* tune2fs.c, mke2fs.c: Allow fractional percentages when

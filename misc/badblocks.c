@@ -57,7 +57,7 @@ extern int optind;
 #include "nls-enable.h"
 
 const char * program_name = "badblocks";
-const char * done_string = N_("done                        \n");
+const char * done_string = N_("done                             \n");
 
 static int v_flag = 0;			/* verbose */
 static int w_flag = 0;			/* do r/w test: 0=no, 1=yes,
