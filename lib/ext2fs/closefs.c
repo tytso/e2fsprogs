@@ -219,7 +219,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 
 	fs_state = fs->super->s_state;
 
-	fs->super->s_wtime = time(NULL);
+	fs->super->s_wtime = fs->now ? fs->now : time(NULL);
 	fs->super->s_block_group_nr = 0;
 #ifdef EXT2FS_ENABLE_SWAPFS
 	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {

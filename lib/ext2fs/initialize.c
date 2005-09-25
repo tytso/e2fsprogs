@@ -168,7 +168,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	}
 
 	set_field(s_checkinterval, EXT2_DFL_CHECKINTERVAL);
-	super->s_mkfs_time = super->s_lastcheck = time(NULL);
+	super->s_mkfs_time = super->s_lastcheck = fs->now ? fs->now : time(NULL);
 
 	super->s_creator_os = CREATOR_OS;
 

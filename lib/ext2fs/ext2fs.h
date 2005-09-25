@@ -228,10 +228,11 @@ struct struct_ext2_filsys {
 	struct ext2_super_block *	orig_super;
 	struct ext2_image_hdr *		image_header;
 	__u32				umask;
+	__u32				now;
 	/*
 	 * Reserved for future expansion
 	 */
-	__u32				reserved[8];
+	__u32				reserved[7];
 
 	/*
 	 * Reserved for the use of the calling application.
