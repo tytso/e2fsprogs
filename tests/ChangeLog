@@ -1,3 +1,9 @@
+2005-09-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* f_dup_resize: Set the current time to in debugfs to a value
+		which avoids triggering the "s_mtime in the future"
+		warning from e2fsck.
+
 2005-08-08  Theodore Ts'o  <tytso@mit.edu>
 
 	* test_config, test_script.in, d_loaddump, f_dup_resize,

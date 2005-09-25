@@ -943,6 +943,7 @@ restart:
 	}
 	ctx->fs = fs;
 	fs->priv_data = ctx;
+	fs->now = ctx->now;
 	sb = fs->super;
 	if (sb->s_rev_level > E2FSCK_CURRENT_REV) {
 		com_err(ctx->program_name, EXT2_ET_REV_TOO_HIGH,

@@ -705,6 +705,25 @@ void check_super_block(e2fsck_t ctx)
 		ext2fs_mark_super_dirty(fs);
 	}
 
+	/* 
+	 * Check to see if the superblock last mount time or last
+	 * write time is in the future.
+	 */
+	if (fs->super->s_mtime > ctx->now) {
+		pctx.num = fs->super->s_mtime;
+		if (fix_problem(ctx, PR_0_FUTURE_SB_LAST_MOUNT, &pctx)) {
+			fs->super->s_mtime = ctx->now;
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
+	if (fs->super->s_wtime > ctx->now) {
+		pctx.num = fs->super->s_wtime;
+		if (fix_problem(ctx, PR_0_FUTURE_SB_LAST_WRITE, &pctx)) {
+			fs->super->s_wtime = ctx->now;
+			ext2fs_mark_super_dirty(fs);
+		}
+	}
+
 	/*
 	 * Move the ext3 journal file, if necessary.
 	 */

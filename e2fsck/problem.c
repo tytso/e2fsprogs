@@ -332,6 +332,16 @@ static const struct e2fsck_problem problem_table[] = {
 	  N_("Resize @i not valid.  "),
 	  PROMPT_RECREATE, 0 },
 
+	/* Last mount time is in the future */
+	{ PR_0_FUTURE_SB_LAST_MOUNT,
+	  N_("@S last mount time is in the future.  "),
+	  PROMPT_FIX, 0 },
+
+	/* Last write time is in the future */
+	{ PR_0_FUTURE_SB_LAST_WRITE,
+	  N_("@S last write time is in the future.  "),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */

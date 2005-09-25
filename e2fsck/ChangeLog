@@ -1,3 +1,10 @@
+2005-09-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* super.c (check_super_block), problem.c, problem.h: Detect if the
+		superblock's last mount field or last write field is in
+		the future, and offer to fix if so.  (Addresses Debian Bug
+		#327580)
+
 2005-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (main): Fix a use-after-free bug of the e2fsck context
