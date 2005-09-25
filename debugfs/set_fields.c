@@ -278,33 +278,18 @@ static errcode_t parse_string(struct field_set_info *info, char *arg)
 
 static errcode_t parse_time(struct field_set_info *info, char *arg)
 {
-	struct	tm	ts;
-	__u32		*ptr32;
+	__u32		*ptr32, t;
 
 	ptr32 = (__u32 *) info->ptr;
 
-	if (strcmp(arg, "now") == 0) {
-		*ptr32 = time(0);
-		return 0;
+	t = string_to_time(arg);
+
+	if (t == ((time_t) -1)) {
+		fprintf(stderr, "Couldn't parse '%s' for field %s.\n",
+			arg, info->name);
+		return EINVAL;
 	}
-	memset(&ts, 0, sizeof(ts));
-#ifdef HAVE_STRPTIME
-	strptime(arg, "%Y%m%d%H%M%S", &ts);
-#else
-	sscanf(arg, "%4d%2d%2d%2d%2d%2d", &ts.tm_year, &ts.tm_mon,
-	       &ts.tm_mday, &ts.tm_hour, &ts.tm_min, &ts.tm_sec);
-	ts.tm_year -= 1900;
-	ts.tm_mon -= 1;
-	if (ts.tm_year < 0 || ts.tm_mon < 0 || ts.tm_mon > 11 ||
-	    ts.tm_mday < 0 || ts.tm_mday > 31 || ts.tm_hour > 23 ||
-	    ts.tm_min > 59 || ts.tm_sec > 61)
-		ts.tm_mday = 0;
-#endif
-	if (ts.tm_mday == 0) {
-		/* Try it as an integer... */
-		return parse_uint(info, arg);
-	}
-	*ptr32 = mktime(&ts);
+	*ptr32 = t;
 	return 0;
 }
 

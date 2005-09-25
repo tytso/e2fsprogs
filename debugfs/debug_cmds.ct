@@ -148,5 +148,8 @@ request do_imap, "Calculate the location of an inode",
 request	do_dump_unused, "Dump unused blocks",
 	dump_unused;
 
+request do_set_current_time, "Set current time to use when setting filesystme fields",
+	set_current_time;
+
 end;
 

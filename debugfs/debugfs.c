@@ -1295,7 +1295,8 @@ void do_write(int argc, char *argv[])
 	ext2fs_inode_alloc_stats2(current_fs, newfile, +1, 0);
 	memset(&inode, 0, sizeof(inode));
 	inode.i_mode = (statbuf.st_mode & ~LINUX_S_IFMT) | LINUX_S_IFREG;
-	inode.i_atime = inode.i_ctime = inode.i_mtime = time(NULL);
+	inode.i_atime = inode.i_ctime = inode.i_mtime = 
+		current_fs->now ? current_fs->now : time(0);
 	inode.i_links_count = 1;
 	inode.i_size = statbuf.st_size;
 	if (debugfs_write_new_inode(newfile, &inode, argv[0])) {
@@ -1382,7 +1383,8 @@ void do_mknod(int argc, char *argv[])
 	ext2fs_mark_ib_dirty(current_fs);
 	memset(&inode, 0, sizeof(inode));
 	inode.i_mode = mode;
-	inode.i_atime = inode.i_ctime = inode.i_mtime = time(NULL);
+	inode.i_atime = inode.i_ctime = inode.i_mtime = 
+		current_fs->now ? current_fs->now : time(0);
 	if ((major < 256) && (minor < 256)) {
 		inode.i_block[0] = major*256+minor;
 		inode.i_block[1] = 0;
@@ -1454,7 +1456,7 @@ static void kill_file_by_inode(ext2_ino_t inode)
 
 	if (debugfs_read_inode(inode, &inode_buf, 0))
 		return;
-	inode_buf.i_dtime = time(NULL);
+	inode_buf.i_dtime = current_fs->now ? current_fs->now : time(0);
 	if (debugfs_write_inode(inode, &inode_buf, 0))
 		return;
 	if (!ext2fs_inode_has_valid_blocks(&inode_buf))
@@ -1697,7 +1699,27 @@ void do_imap(int argc, char *argv[])
 
 }
 
+void do_set_current_time(int argc, char *argv[])
+{
+	ext2_ino_t	ino;
+	unsigned long 	group, block, block_nr, offset;
+	time_t now;
 
+	if (common_args_process(argc, argv, 2, 2, argv[0],
+				"<time>", 0))
+		return;
+
+	now = string_to_time(argv[1]);
+	if (now == ((time_t) -1)) {
+		com_err(argv[0], 0, "Couldn't parse argument as a time: %s\n",
+			argv[1]);
+		return;
+
+	} else {
+		printf("Setting current time to %s\n", time_to_string(now));
+		current_fs->now = now;
+	}
+}
 
 static int source_file(const char *cmd_file, int sci_idx)
 {

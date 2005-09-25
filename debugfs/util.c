@@ -202,6 +202,42 @@ char *time_to_string(__u32 cl)
 }
 
 /*
+ * Parse a string as a time.  Return ((time_t)-1) if the string
+ * doesn't appear to be a sane time.
+ */
+extern time_t string_to_time(const char *arg)
+{
+	struct	tm	ts;
+	unsigned long	ret;
+	char *tmp;
+
+	if (strcmp(arg, "now") == 0) {
+		return time(0);
+	}
+	memset(&ts, 0, sizeof(ts));
+#ifdef HAVE_STRPTIME
+	strptime(arg, "%Y%m%d%H%M%S", &ts);
+#else
+	sscanf(arg, "%4d%2d%2d%2d%2d%2d", &ts.tm_year, &ts.tm_mon,
+	       &ts.tm_mday, &ts.tm_hour, &ts.tm_min, &ts.tm_sec);
+	ts.tm_year -= 1900;
+	ts.tm_mon -= 1;
+	if (ts.tm_year < 0 || ts.tm_mon < 0 || ts.tm_mon > 11 ||
+	    ts.tm_mday < 0 || ts.tm_mday > 31 || ts.tm_hour > 23 ||
+	    ts.tm_min > 59 || ts.tm_sec > 61)
+		ts.tm_mday = 0;
+#endif
+	if (ts.tm_mday == 0) {
+		/* Try it as an integer... */
+
+		ret = strtoul(arg, &tmp, 0);
+		if (*tmp)
+			return ((time_t) -1);
+	}
+	return mktime(&ts);
+}
+
+/*
  * This function will convert a string to an unsigned long, printing
  * an error message if it fails, and returning success or failure in err.
  */

@@ -1,3 +1,11 @@
+2005-09-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* set_fields.c (parse_time), util.c (string_to_time), debugfs.c
+		(do_set_current_time): Generalize the time parsing code
+		and move it to util.c:string_to_time().  Add new command,
+		set_current_time, which sets the time used to set the
+		filesystems's time fields.
+
 2005-09-06  Theodore Ts'o  <tytso@mit.edu>
 
 	* set_fields.c: Fix set_inode_field so it can properly set the
