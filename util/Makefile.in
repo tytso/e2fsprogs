@@ -15,7 +15,7 @@ SRCS = $(srcdir)/subst.c
 
 .c.o:
 	@echo "	CC $<"
-	@$(BUILD_CC) -c $(ALL_CFLAGS) $< -o $@
+	@$(BUILD_CC) -c $(BUILD_CFLAGS) $< -o $@
 
 PROGS=		subst
 
@@ -23,11 +23,11 @@ all:: $(PROGS) gen-tarball
 
 subst: subst.o
 	@echo "	LD $@"
-	@$(BUILD_CC) $(ALL_LDFLAGS) -o subst subst.o
+	@$(BUILD_CC) $(BUILD_LDFLAGS) -o subst subst.o
 
 copy_sparse: copy_sparse.o
 	@echo "	LD $@"
-	@$(BUILD_CC) $(ALL_LDFLAGS) -o copy_sparse copy_sparse.o
+	@$(BUILD_CC) $(BUILD_LDFLAGS) -o copy_sparse copy_sparse.o
 
 gen-tarball: $(srcdir)/gen-tarball.in $(top_builddir)/config.status
 	@echo "	CONFIG.STATUS $@"

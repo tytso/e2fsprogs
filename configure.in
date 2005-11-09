@@ -791,6 +791,18 @@ if test "$USE_INCLUDED_LIBINTL" = "yes" ; then
 fi
 AC_SUBST(INTL_FLAGS)
 dnl
+dnl Build CFLAGS
+dnl
+if test $cross_compiling = no; then
+   BUILD_CFLAGS="$CFLAGS"
+   BUILD_LDFLAGS="$LDFLAGS"
+else
+   BUILD_CFLAGS=
+   BUILD_LDFLAGS=
+fi
+AC_SUBST(BUILD_CFLAGS)
+AC_SUBST(BUILD_LDFLAGS)
+dnl
 dnl Make our output files, being sure that we create the some miscellaneous 
 dnl directories
 dnl

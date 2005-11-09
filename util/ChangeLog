@@ -1,3 +1,11 @@
+2005-10-26  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Use BUILD_CCFLAGS and BUILD_LDFLAGS instead of
+		CCFLAGS and LDFLAGS when to avoid potential problems when
+		cross-compiling some of the options are not recognized as
+		valid by the host compiler.  (Addresses Sourceforge Bug
+		#1261547)
+
 2005-07-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* all.exclude, subset.exclude: Remove BitKeeper and add
