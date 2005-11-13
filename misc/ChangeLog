@@ -1,3 +1,9 @@
+2005-11-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* fsck.8.in: Add additional fsck.* programs to the SEE ALSO
+		section.  Fix missing commas in list.  (Addresses Debian
+		Bug #329859)
+
 2005-09-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.8.in: Fix mke2fs man page to properly document the fact

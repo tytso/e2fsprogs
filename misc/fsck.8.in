@@ -396,10 +396,15 @@ file.  It is also useful for developers who are testing
 .BR mkfs (8),
 .BR fsck.ext2 (8)
 or
+.BR fsck.ext3 (8)
+or
 .BR e2fsck (8),
-.BR cramfsck (8)
+.BR cramfsck (8),
 .BR fsck.minix (8),
-.BR fsck.jfs (8)
+.BR fsck.msdos (8),
+.BR fsck.jfs (8),
+.BR fsck.nfs (8),
+.BR fsck.vfat (8),
 .BR fsck.xfs (8),
-.BR fsck.xiafs (8)
+.BR fsck.xiafs (8),
 .BR reiserfsck (8).
