@@ -251,14 +251,6 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 #endif
 	
 	/*
-	 * If this is an external journal device, don't write out the
-	 * block group descriptors or any of the backup superblocks
-	 */
-	if (fs->super->s_feature_incompat &
-	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
-		goto write_primary_superblock_only;
-
-	/*
 	 * Set the state of the FS to be non-valid.  (The state has
 	 * already been backed up earlier, and will be restored after
 	 * we write out the backup superblocks.)
@@ -270,6 +262,14 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		ext2fs_swap_super(super_shadow);
 	}
 #endif
+
+	/*
+	 * If this is an external journal device, don't write out the
+	 * block group descriptors or any of the backup superblocks
+	 */
+	if (fs->super->s_feature_incompat &
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
+		goto write_primary_superblock_only;
 
 	/*
 	 * Write out the master group descriptors, and the backup
@@ -311,14 +311,6 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 				goto errout;
 		}
 	}
-	fs->super->s_block_group_nr = 0;
-	fs->super->s_state = fs_state;
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
-		*super_shadow = *fs->super;
-		ext2fs_swap_super(super_shadow);
-	}
-#endif
 
 	/*
 	 * If the write_bitmaps() function is present, call it to
@@ -340,6 +332,16 @@ write_primary_superblock_only:
 	 * out to disk first, just to avoid a race condition with an
 	 * insy-tinsy window....
 	 */
+
+	fs->super->s_block_group_nr = 0;
+	fs->super->s_state = fs_state;
+#ifdef EXT2FS_ENABLE_SWAPFS
+	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
+		*super_shadow = *fs->super;
+		ext2fs_swap_super(super_shadow);
+	}
+#endif
+
 	retval = io_channel_flush(fs->io);
 	retval = write_primary_superblock(fs, super_shadow);
 	if (retval)

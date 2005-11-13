@@ -1,3 +1,10 @@
+2005-11-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* Fix a bug when writing an external journal device on an big
+		endian machine (such as a S/390), where when the number of
+		block groups is zero, we never end up writing out the
+		primary superblock at all.
+
 2005-09-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2fs.h, bb_inode.c, closefs.c, initialize.c, mkdir.c,
