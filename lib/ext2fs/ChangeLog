@@ -1,3 +1,8 @@
+2005-11-13  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2fs.h: Add #include <string.h> since the inline functions use
+		memcpy().  (Addresses Sourceforge Bug #1251062)
+
 2005-11-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* Fix a bug when writing an external journal device on an big

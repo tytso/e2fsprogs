@@ -60,6 +60,7 @@ extern "C" {
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if EXT2_FLAT_INCLUDES
 #include "e2_types.h"
