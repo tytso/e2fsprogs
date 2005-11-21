@@ -111,8 +111,7 @@ extern int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
  */
 #ifdef NO_INLINE_FUNCS
 #if (defined(__GNUC__) && (defined(__i386__) || defined(__i486__) || \
-			   defined(__i586__) || defined(__mc68000__) || \
-			   defined(__sparc__)))
+			   defined(__i586__) || defined(__mc68000__)))
 	/* This prevents bitops.c from trying to include the C */
 	/* function version of these functions */
 #define _EXT2_HAVE_ASM_BITOPS_
