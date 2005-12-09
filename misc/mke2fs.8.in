@@ -409,9 +409,16 @@ or there is no chance of recovery.
 .\" using the specified test.
 .TP
 .BI \-T " fs-type"
-Specify how the filesystem is going to be used, so that mke2fs can 
-chose optimal filesystem parameters for that use.  The supported
-filesystem types are:
+Specify how the filesystem is going to be used, so that 
+.B mke2fs 
+can choose optimal filesystem parameters for that use.  Currently, the
+primary filesystem parameter which is manipulated is the number of
+inodes contained the filesystem, but in the future other filesystem
+parameters may also changed for specific filesystem usage scenarios.  If
+no filesystem type is specified, filesystem meant for general purpose
+use will be created, with default values for the blocksize, number of
+inodes, etc. based on the size of the filesystem to be created.  The
+supported filesystem types are:
 .RS 1.2i
 .TP 1.2i
 news

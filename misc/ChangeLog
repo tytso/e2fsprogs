@@ -1,3 +1,8 @@
+2005-12-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.8.in: Add more text describing the mke2fs -T option.
+		(Addresses Debian Bug #316811)
+
 2005-11-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* fsck.8.in: Add additional fsck.* programs to the SEE ALSO
