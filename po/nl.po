@@ -1,4 +1,4 @@
-# Translation of e2fsprogs-1.38-b3 to Dutch.
+# Translation of e2fsprogs-1.38 to Dutch.
 # Copyright (C) 2005 Free Software Foundation, Inc.
 # Benno Schulenberg <benno@nietvergeten.nl>, 2005.
 #
@@ -62,16 +62,17 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.38-b3\n"
+"Project-Id-Version: e2fsprogs-1.38\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2005-06-20 17:51-0400\n"
-"PO-Revision-Date: 2005-06-22 21:29+0200\n"
+"PO-Revision-Date: 2005-09-13 19:42+0200\n"
 "Last-Translator: Benno Schulenberg <benno@nietvergeten.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.10.1\n"
+"X-Generator: KBabel 1.10.2\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 #: e2fsck/badblocks.c:22 misc/mke2fs.c:224
 #, c-format
@@ -246,7 +247,7 @@ msgstr "A<fout>"
 
 #: e2fsck/message.c:110
 msgid "bblock"
-msgstr "bblock"
+msgstr "bblok"
 
 #: e2fsck/message.c:111
 msgid "Bbitmap"
@@ -793,23 +794,23 @@ msgstr "Superblok heeft een ongeldig ext3-journal (inode %i).\n"
 #: e2fsck/problem.c:192
 msgid "External @j has multiple @f users (unsupported).\n"
 msgstr ""
-"Het extern journal heeft meerdere bestandssysteem-gebruikers;\n"
+"Het externe journal heeft meerdere bestandssysteem-gebruikers;\n"
 "dit wordt niet ondersteund.\n"
 
 #. @-expanded: Can't find external journal\n
 #: e2fsck/problem.c:197
 msgid "Can't find external @j\n"
-msgstr "Kan extern journal niet vinden.\n"
+msgstr "Kan geen extern journal vinden.\n"
 
 #. @-expanded: External journal has bad superblock\n
 #: e2fsck/problem.c:202
 msgid "External @j has bad @S\n"
-msgstr "Het extern journal heeft een slecht superblok.\n"
+msgstr "Het externe journal heeft een slecht superblok.\n"
 
 #. @-expanded: External journal does not support this filesystem\n
 #: e2fsck/problem.c:207
 msgid "External @j does not support this @f\n"
-msgstr "Extern journal ondersteund dit bestandssysteem niet.\n"
+msgstr "Het externe journal ondersteund dit bestandssysteem niet.\n"
 
 #. @-expanded: Ext3 journal superblock is unknown type %N (unsupported).\n
 #. @-expanded: It is likely that your copy of e2fsck is old and/or doesn't support this journal 
@@ -952,7 +953,7 @@ msgid ""
 "Backing up @j @i @b information.\n"
 "\n"
 msgstr ""
-"Bezig met reserkopie maken van informatie in journal-inodeblokken.\n"
+"Bezig met reservekopie maken van informatie in journal-inodeblokken.\n"
 "\n"
 
 #. @-expanded: filesystem does not have resize_inode enabled, but s_reserved_gdt_blocks\n
@@ -1016,17 +1017,17 @@ msgstr "Inode %i is een map met lengte nul.  "
 #. @-expanded: group %g's block bitmap at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:373
 msgid "@g %g's @b @B at %b @C.\n"
-msgstr "De blok-bitkaart van groep %g botst bij %b met een bestandssyssteemblok.\n"
+msgstr "De blok-bitkaart van groep %g botst bij %b met een bestandssysteemblok.\n"
 
 #. @-expanded: group %g's inode bitmap at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:378
 msgid "@g %g's @i @B at %b @C.\n"
-msgstr "De inode-bitkaart van groep %g botst bij %b met een bestandssyssteemblok.\n"
+msgstr "De inode-bitkaart van groep %g botst bij %b met een bestandssysteemblok.\n"
 
 #. @-expanded: group %g's inode table at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:383
 msgid "@g %g's @i table at %b @C.\n"
-msgstr "De inodetabel van groep %g botst bij %b met een bestandssyssteemblok.\n"
+msgstr "De inodetabel van groep %g botst bij %b met een bestandssysteemblok.\n"
 
 #. @-expanded: group %g's block bitmap (%b) is bad.  
 #: e2fsck/problem.c:388
@@ -1848,7 +1849,7 @@ msgid ""
 "@E has a non-unique filename.\n"
 "Rename to %s"
 msgstr ""
-"@E heeft een niet-uniek bestandsnaam.\n"
+"@E heeft een niet-unieke bestandsnaam.\n"
 "Hernoemen tot %s"
 
 #. @-expanded: Duplicate entry '%Dn' found.\n
@@ -2236,8 +2237,8 @@ msgstr ""
 " -p   Automatische reparatie (zonder vragen)\n"
 " -n   Bestandssyteem niet veranderen\n"
 " -y   Als antwoord op alle vragen \"ja\" aannemen\n"
-" -c   Op slechte blokken controleren en aan lijst toevoegen\n"
-" -f   Controle forceren ook als bestandssysstem schoon is\n"
+" -c   Op slechte blokken controleren en deze aan lijst toevoegen\n"
+" -f   Controle forceren ook als bestandssysteem schoon is\n"
 
 #: e2fsck/unix.c:86
 #, c-format
@@ -2249,10 +2250,10 @@ msgid ""
 " -l bad_blocks_file   Add to badblocks list\n"
 " -L bad_blocks_file   Set badblocks list\n"
 msgstr ""
-" -v                  Breedsprakige uitvoer\n"
+" -v   Breedsprakige uitvoer\n"
 " -b superblok        Dit superblok gebruiken\n"
 " -B blokgrootte      Deze blokgrootte gebruiken bij zoeken naar superblok\n"
-" -j extern_journal   Dit extern journal gebruiken\n"
+" -j extern_journal   Dit externe journal gebruiken\n"
 " -l slechte_blokkenbestand   Deze lijst aan de slechte_blokkenlijst toevoegen\n"
 " -L slechte_blokkenbestand   Deze slechte_blokkenlijst gebruiken\n"
 
@@ -3076,7 +3077,7 @@ msgstr ""
 #: misc/e2image.c:50
 #, c-format
 msgid "Usage: %s [-rsI] device image_file\n"
-msgstr "Gebruik:  %s [-r] apparaat imagebestand\n"
+msgstr "Gebruik:  %s [-rsI] apparaat imagebestand\n"
 
 #: misc/e2image.c:62
 msgid "Couldn't allocate header buffer\n"
@@ -3225,7 +3226,7 @@ msgstr "--wachten-- (doorloop %d)\n"
 msgid "Usage: fsck [-ANPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
 msgstr ""
 "Gebruik:  fsck [-ANPRTV] [-C [descriptor]] [-t bestandssysteemsoort]\n"
-"          [bestandssyssteemopties] [bestandssysteem...]\n"
+"          [bestandssysteemopties] [bestandssysteem...]\n"
 
 #: misc/fsck.c:1093
 #, c-format
@@ -3561,7 +3562,7 @@ msgstr "ongeldige grootte van inode - %s"
 #: misc/mke2fs.c:1130 misc/tune2fs.c:302
 #, c-format
 msgid "Invalid filesystem option set: %s\n"
-msgstr "Ongeldige optie van bestandssyssteem: %s\n"
+msgstr "Ongeldige optie van bestandssysteem: %s\n"
 
 #: misc/mke2fs.c:1185 misc/mke2fs.c:1566
 #, c-format
@@ -3714,7 +3715,7 @@ msgstr ""
 #: misc/mke2fs.c:1612
 #, c-format
 msgid "Writing superblocks and filesystem accounting information: "
-msgstr "Schrijven van superblokken en bestandssyssteem-metagegevens: "
+msgstr "Schrijven van superblokken en bestandssysteem-metagegevens: "
 
 #: misc/mke2fs.c:1617
 #, c-format
