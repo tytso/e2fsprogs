@@ -613,7 +613,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			if (ctx->options & (E2F_OPT_YES|E2F_OPT_NO)) {
 			conflict_opt:
 				fatal_error(ctx, 
-	_("Only one the options -p/-a, -n or -y may be specified."));
+	_("Only one of the options -p/-a, -n or -y may be specified."));
 			}
 			ctx->options |= E2F_OPT_PREEN;
 			break;

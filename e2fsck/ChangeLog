@@ -1,5 +1,8 @@
 2005-12-09  Theodore Ts'o  <tytso@mit.edu>
 
+	* unix.c (PRS): Fix typo in error message; thanks to Solar
+		Designer for pointing out the missing proposition.
+
 	* e2fsck.8.in: Clarify description of differences between the -p,
 		-n, and -y options.
 
