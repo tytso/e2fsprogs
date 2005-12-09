@@ -1,3 +1,8 @@
+2005-12-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.8.in: Clarify description of differences between the -p,
+		-n, and -y options.
+
 2005-09-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* super.c (check_super_block), problem.c, problem.h: Detect if the

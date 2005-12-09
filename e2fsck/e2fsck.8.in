@@ -226,10 +226,31 @@ options are specified in addition to the
 .B \-n
 option, then the filesystem will be opened read-write, to permit the
 bad-blocks list to be updated.  However, no other changes will be made
-to the filesystem.)
+to the filesystem.)  This option
+may not be specified at the same time as the 
+.B \-p
+or
+.B \-y
+options.
 .TP
 .B \-p
-Automatically repair ("preen") the file system without any questions.
+Automatically repair ("preen") the file system.  This option will case
+.B e2fsck
+to automatically
+fix any filesystem problems that can be safely fixed without human
+intervention.  If 
+.B e2fsck
+discovers a problem which may require the system administrator
+to take additional corrective action, 
+.B e2fsck
+will print a description of the problem and then exit with the value 4
+logically or'ed into the exit code.  (See the \fBEXIT CODE\fR section.)
+This option is normally used by the system's boot scripts.  It may not 
+be specified at the same time as the
+.B \-n
+or
+.B \-y
+options.
 .TP
 .B \-r
 This option does nothing at all; it is provided only for backwards
@@ -261,7 +282,12 @@ Print version information and exit.
 .B \-y
 Assume an answer of `yes' to all questions; allows 
 .B e2fsck
-to be used non-interactively.
+to be used non-interactively.  This option
+may not be specified at the same time as the 
+.B \-n
+or
+.B \-p
+options.
 .SH EXIT CODE
 The exit code returned by
 .B e2fsck
