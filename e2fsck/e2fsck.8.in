@@ -123,11 +123,12 @@ will terminate with a fatal error.
 .B \-c
 This option causes 
 .B e2fsck 
-to run the 
+to use 
 .BR badblocks (8)
-program to find any blocks which are bad on the filesystem, 
-and then marks them as bad by adding them to the bad block inode.
-If this option is specified twice, then the bad block scan will be done
+program to do a read-only scan of the device in order to find any bad
+blocks.  If any bad blocks are found, they are added to the bad block
+inode to prevent them from being allocated to a file or directory.  If
+this option is specified twice, then the bad block scan will be done
 using a non-destructive read-write test.
 .TP
 .BI \-C " fd"

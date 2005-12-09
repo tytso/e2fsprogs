@@ -1,5 +1,8 @@
 2005-12-09  Theodore Ts'o  <tytso@mit.edu>
 
+	* e2fsck.8.in: Clarify that e2fsck -c does a read-only scan of the
+		device.
+
 	* unix.c (PRS): Fix typo in error message; thanks to Solar
 		Designer for pointing out the missing preposition.
 		(check_mount): Don't let the user run e2fsck -ccn on the
