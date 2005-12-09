@@ -1,7 +1,10 @@
 2005-12-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (PRS): Fix typo in error message; thanks to Solar
-		Designer for pointing out the missing proposition.
+		Designer for pointing out the missing preposition.
+		(check_mount): Don't let the user run e2fsck -ccn on the
+		root partition, without warning that he or she might
+		be doing something Really Stupid.
 
 	* e2fsck.8.in: Clarify description of differences between the -p,
 		-n, and -y options.

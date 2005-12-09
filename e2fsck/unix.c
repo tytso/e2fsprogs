@@ -179,15 +179,18 @@ static void check_mount(e2fsck_t ctx)
 	}
 
 	/*
-	 * If the filesystem isn't mounted, or it's the root filesystem
-	 * and it's mounted read-only, then everything's fine.
+	 * If the filesystem isn't mounted, or it's the root
+	 * filesystem and it's mounted read-only, and we're not doing
+	 * a read/write check, then everything's fine.
 	 */
 	if ((!(ctx->mount_flags & EXT2_MF_MOUNTED)) ||
 	    ((ctx->mount_flags & EXT2_MF_ISROOT) &&
-	     (ctx->mount_flags & EXT2_MF_READONLY)))
+	     (ctx->mount_flags & EXT2_MF_READONLY) &&
+	     !(ctx->options & E2F_OPT_WRITECHECK)))
 		return;
 
-	if (ctx->options & E2F_OPT_READONLY) {
+	if ((ctx->options & E2F_OPT_READONLY) &&
+	    !(ctx->options & E2F_OPT_WRITECHECK)) {
 		printf(_("Warning!  %s is mounted.\n"), ctx->filesystem_name);
 		return;
 	}
