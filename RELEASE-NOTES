@@ -1,12 +1,31 @@
-E2fsprogs 1.39-WIP (August 21, 2005)
-====================================
+E2fsprogs 1.39-WIP (December 9, 2005)
+=====================================
 
-Fix debugfs's set_inode_fields command so it can properly set the
-frag, fsize, uid_high, gid_high, and author fields in the inode
-instead of silently failing.
+E2fsck will detect if the superblock's last mount field or last write
+field is in the future, and offer to fix if so.  (Addresses Debian Bug
+#327580)
 
 Fix e2fsck from segfaulting on disconnected inodes that contain one or
 more extended attributes.  (Addresses Debian Bug: #316736, #318463)
+
+E2fsck will stop and print a warning if the user tries running a
+read/write badblocks test on a read-only mounted root filesystem.
+
+Fix mke2fs so that it correctly creates external journals on
+big-endian machines (such as a S/390).  
+
+Fix debugfs's set_inode_field command so it can properly set the frag,
+fsize, uid_high, gid_high, and author fields in the inode instead of
+silently failing, and so that setting the i_size actually sets i_size
+correctly.
+
+Add a new debugfs command, set_current_time, which sets fs->now so
+that regression test suites can repeatedly modify the filesystem's
+last_write fields.
+
+Fix a display bug in "badblocks -sv" so that the done message properly
+clears the block number at the end of the test.  (Addresses Debian Bug
+#322231)
 
 Allow fractional percentages to the -m option in mke2fs and tune2fs
 (Addresses Debian Bug: #80205)
@@ -14,6 +33,17 @@ Allow fractional percentages to the -m option in mke2fs and tune2fs
 Use fstat/fstat64 in getsize.c if the the target is a regular file,
 instead of attempting to do a binary search.  Fix some fd leaks in
 error cases.
+
+Fix the blkid library so that it notices when an ext2 filesystem is
+upgraded to ext3.
+
+Improve the blkid's library VFAT/FAT detection; it now understands
+labels stored in the root directory, and is more paranoid about
+checking the FAT superblock values.
+
+Add support for the reiser4 and software suspend partitions to the
+blkid library.  Also add support for extract the label from iso9660
+filesystems.
 
 Fix a compile_et bug which miscount the number of error messages if
 continuations are used in the .et file.
@@ -23,8 +53,13 @@ where /etc/mtab may not be sane, by checking to see if the device is
 reported busy (works on Linux 2.6) kernels.  (Addresses Debian Bug
 #319002)
 
+Updated Dutch translation.
+
 Fix use-after-free bug in e2fsck when finishing up the use of the
 e2fsck context structure.
+
+Fixed spelling mistakes, typos, and otherwise clarified man pages.
+(Addresses Debian Bugs: #329859, #322188, #316811)
 
 Fixed various Debian packaging issues --- see debian/changelog for
 details.  (Addresses Debian Bugs #317862, #320389)
@@ -35,7 +70,35 @@ Programmer's notes:
 Add valgrind support to the regression test suites, and eliminate
 false positives from valgrind.
 
+Add a regression test suite for the blkid library.
+
 Fix a fencepost error in resize2fs caught by valgrind.  
+
+Fix compiler warnings about missing memcpy prototypes.
+
+We no longer have the sparc assembly code in the header file any more,
+so we shouldn't set _EXT2_HAVE_HAS_BITOPS_ for the sparc.  This would
+break compiles on the sparc architectures when using gcc.
+
+In the libext2fs library, add the new field fs->now which if non-zero
+is used instead of the system time when setting various filesystem
+fields (last modified time, last write time, etc.)
+
+Fix gcc 4.01 complaints by adding a missing #include <string.h> to
+ext2fs.h which is needed since the inline functions use memcpy().
+(Addresses Sourceforge Bug #1251062)
+
+Use BUILD_CFLAGS and BUILD_LDFLAGS instead of CFLAGS and LDFLAGS in
+the build system when building files in the util directory which are
+needed during the build process.  This avoids potential problems when
+cross-compiling and some of the options specified in CFLAGS or LDFLAGS
+are not recognized as valid by the host compiler.  (Addresses
+Sourceforge Bug #1261547)
+
+Clean up the blkid library by making the superblock and generic i/o
+functions to be more generic.  Clean up interface to the probe
+function, and fix memory leak.  Finallly, remove an unneeded reference
+to probe.h in the lib/blkid/resolve.c
 
 
 E2fsprogs 1.38 (June 30, 2005)

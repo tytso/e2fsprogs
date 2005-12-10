@@ -1,3 +1,27 @@
+e2fsprogs (1.38-3) unstable; urgency=low
+
+  * Update and clarify man pages (Closes: #329859, #322188, #316811)
+  * Fix bug creating external journals on big-endian machines.
+  * Detect if the superblock's last mount time or last write time is in
+    the future, and offer to fix it if this is the case (Closes: #327580)
+  * Add new debugfs command, set_current_time which sets the time used to
+    update the filesystems's time fields.
+  * Fix display bug in badblocks -sw when printing the "done" message.
+    (Closes: #322231)
+  * Improve blkid's FAT/VFAT filesystem detection code so that it can find
+    labels stored the root directory and to be more correct/paranoid.
+  * Add support to extract iso9660 label information to the blkid library.
+  * Add support to detect the reiser4 filesystem to the blkid library.
+  * Add support for detecting software suspend partitions to the blkid library.
+  * Fix the blkid library to notice when an ext2 filesystem is upgraded to
+    ext3.
+  * Fix debugfs's set_inode_field so that successfully sets the i_size field
+  * Updated Dutch translation
+  * E2fsck will stop and print a warning if the user tries running a
+    read/write badblocks test on a read-only mounted root filesystem.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri,  9 Dec 2005 18:49:23 -0500
+
 e2fsprogs (1.38-2) unstable; urgency=low
 
   * Previous NMU acknowledged (Closes: #317862, #320389)
