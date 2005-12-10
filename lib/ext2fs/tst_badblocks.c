@@ -63,6 +63,7 @@ blk_t test5a[] = {
 		
 
 static int test_fail = 0;
+static int test_expected_fail = 0;
 
 static errcode_t create_test_list(blk_t *vec, badblocks_list *ret)
 {
@@ -202,6 +203,67 @@ int file_test(badblocks_list bb)
 	return 0;
 }
 
+static void invalid_proc(ext2_filsys fs, blk_t blk)
+{
+	if (blk == 34500) {
+		printf("Expected invalid block\n");
+		test_expected_fail++;
+	} else {
+		printf("Invalid block #: %d\n", blk);
+		test_fail++;
+	}
+}
+
+int file_test_invalid(badblocks_list bb)
+{
+	badblocks_list new_bb = 0;
+	errcode_t	retval;
+	ext2_filsys 	fs;
+	FILE	*f;
+
+	fs = malloc(sizeof(struct struct_ext2_filsys));
+	memset(fs, 0, sizeof(struct struct_ext2_filsys));
+	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
+	fs->super = malloc(SUPERBLOCK_SIZE);
+	memset(fs->super, 0, SUPERBLOCK_SIZE);
+	fs->super->s_first_data_block = 1;
+	fs->super->s_blocks_count = 100;
+
+	f = tmpfile();
+	if (!f) {
+		fprintf(stderr, "Error opening temp file: %s\n",
+			error_message(errno));
+		return 1;
+	}
+	retval = ext2fs_write_bb_FILE(bb, 0, f);
+	if (retval) {
+		com_err("file_test", retval, "while writing bad blocks");
+		return 1;
+	}
+	fprintf(f, "34500\n");
+
+	rewind(f);
+	test_expected_fail = 0;
+	retval = ext2fs_read_bb_FILE(fs, f, &new_bb, invalid_proc);
+	if (retval) {
+		com_err("file_test", retval, "while reading bad blocks");
+		return 1;
+	}
+	fclose(f);
+	if (!test_expected_fail) {
+		printf("Expected test failure didn't happen!\n");
+		test_fail++;
+	}
+		
+
+	if (ext2fs_badblocks_equal(bb, new_bb)) {
+		printf("Block bitmap matched after reading and writing.\n");
+	} else {
+		printf("Block bitmap NOT matched.\n");
+		test_fail++;
+	}
+	return 0;
+}
 
 int main(int argc, char **argv)
 {
@@ -275,6 +337,8 @@ int main(int argc, char **argv)
 	}
 	
 	file_test(bb4);
+
+	file_test_invalid(bb4);
 	
 	if (test_fail == 0)
 		printf("ext2fs library badblocks tests checks out OK!\n");
