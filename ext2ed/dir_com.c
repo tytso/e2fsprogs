@@ -19,7 +19,7 @@ the functions here are a superset of those in the file_com.c source.
 We assume that the user reached here using the dir command of the inode type and not by using settype dir, so
 that init_dir_info is indeed called to gather the required information.
 
-type_data is not changed ! It still contains the inode of the file - We handle the directory in our own
+type_data is not changed! It still contains the inode of the file - We handle the directory in our own
 variables, so that settype ext2_inode will "go back" to the inode of this directory.
 
 First written on: April 28 1995

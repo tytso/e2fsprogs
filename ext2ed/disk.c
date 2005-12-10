@@ -158,7 +158,7 @@ The hex bytes are converted to text, so that they will be readable with a standa
 	original=(unsigned char *) malloc (length*sizeof (unsigned char));
 
 	if (original==NULL) {
-		wprintw (command_win,"Fatal error - Can\'t allocate %lu bytes !");
+		wprintw (command_win,"Fatal error - Can\'t allocate %lu bytes!");
 		refresh_command_win ();fclose (fp);return (0);
 	}
 	

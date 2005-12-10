@@ -109,7 +109,7 @@ technology.
 
 <Para>
 However, I didn't have the luxury of choice when I started my project -
-Linux is a relatively new (and great !) operating system. The extended-2
+Linux is a relatively new (and great!) operating system. The extended-2
 filesystem is even newer - Its first release lies somewhere in 1993 - Only
 passed two years until I started working on my project.
 </Para>
@@ -143,7 +143,7 @@ more than just the principles.
 </Para>
 
 <Para>
-The kernel sources are a rare bonus ! You don't get everyday the full
+The kernel sources are a rare bonus! You don't get everyday the full
 sources of the operating system. There is so much that can be learned from
 them, and it is the ultimate source - The exact answer how the kernel
 works is there, with all the fine details. At the first week I started to
@@ -155,7 +155,7 @@ who starts to build a large puzzle.
 </Para>
 
 <Para>
-However, this was exactly the interesting part ! It is frustrating to know
+However, this was exactly the interesting part! It is frustrating to know
 it all from advance - I think that the discovery itself, bit by bit, is the
 key to a true learning and understanding.
 </Para>
@@ -238,7 +238,7 @@ looking at the sources, of-course).
 <Para>
 I didn't know almost anything of the structure of the ext2 filesystem.
 Reading the sources was not enough - I needed to experiment. However, a tool
-for experiments in the ext2 filesystem was exactly my project ! - Kind of a
+for experiments in the ext2 filesystem was exactly my project! - Kind of a
 paradox.
 </Para>
 
@@ -1106,7 +1106,7 @@ places at the code.
 The various commands are reached by the user through the <Literal remap="tt">dispatch</Literal>
 function. This is not surprising. The fact that can be surprising, at least in
 a first look, is that <Literal remap="tt">you'll find the dispatch call in many of my
-own functions !</Literal>.
+own functions!</Literal>.
 </Para>
 
 <Para>
@@ -2321,7 +2321,7 @@ cd command is a path from <Literal remap="tt">/</Literal>.
 <Para>
 <Literal remap="tt">This is one of the best examples of the power of the object oriented
 design and of the dispatching mechanism. The operation is complicated, yet the
-implementation is surprisingly short !</Literal>
+implementation is surprisingly short!</Literal>
 </Para>
 
 <Para>
@@ -2355,7 +2355,7 @@ void type_ext2___cd (char *command_line)
 </Para>
 
 <Para>
-Note the number of the dispatch calls ! 
+Note the number of the dispatch calls! 
 </Para>
 
 <Para>
@@ -2366,13 +2366,13 @@ a <Literal remap="tt">dir</Literal> command "enters" the directory, and then we 
 specific cd command</Literal> to take us from there (The object is <Literal remap="tt">dir</Literal>, so
 that <Literal remap="tt">dispatch</Literal> will call the <Literal remap="tt">cd</Literal> command of the <Literal remap="tt">dir</Literal> type).
 Note that a symbolic link following could bring us back to the root directory,
-thus the innocent calls above treats nicely such a recursive case !
+thus the innocent calls above treats nicely such a recursive case!
 </Para>
 
 <Para>
 I feel that the above is <Literal remap="tt">intuitive</Literal> - I was expressing myself "in the
 language" of the ext2 filesystem - (Go to the inode, etc), and the code was
-written exactly in this spirit !
+written exactly in this spirit!
 </Para>
 
 <Para>
@@ -3136,7 +3136,7 @@ int action_count (struct struct_file_info *info)
 
 It will just <Literal remap="tt">CONTINUE</Literal> until the last entry. The returned structure
 (of type <Literal remap="tt">struct&lowbar;file&lowbar;info</Literal>) will have its number in the
-<Literal remap="tt">dir&lowbar;entry&lowbar;num</Literal> field, and this is exactly the required number !
+<Literal remap="tt">dir&lowbar;entry&lowbar;num</Literal> field, and this is exactly the required number!
 </Para>
 
 </Sect2>

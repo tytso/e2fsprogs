@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
  
-	/* Now, go looking for the superblock ! */
+	/* Now, go looking for the superblock! */
 	printf(_("starting at %Ld, with %d byte increments\n"), sk, skiprate);
 	printf(_("       thisoff     block fs_blk_sz  blksz grp last_mount\n"));
 	for (; lseek64(fd, sk, SEEK_SET) != -1 &&

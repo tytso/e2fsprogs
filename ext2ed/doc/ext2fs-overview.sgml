@@ -126,7 +126,7 @@ ext2 filesystem in Linux 1.3, so stay tuned.
 </Sect1>
 
 <Sect1>
-<Title>A filesystem - Why do we need it ?</Title>
+<Title>A filesystem - Why do we need it?</Title>
 
 <Para>
 I thought that before we dive into the various small details, I'll reserve a
@@ -139,7 +139,7 @@ A <Literal remap="tt">filesystem</Literal> consists of two word - <Literal remap
 
 <Para>
 Everyone knows the meaning of the word <Literal remap="tt">file</Literal> - A bunch of data put
-somewhere. where ? This is an important question. I, for example, usually
+somewhere. where? This is an important question. I, for example, usually
 throw almost everything into a single drawer, and have difficulties finding
 something later.
 </Para>

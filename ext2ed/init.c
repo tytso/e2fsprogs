@@ -476,7 +476,7 @@ void signal_SIGSEGV_handler (int sig_num)
 
 {
 	prepare_to_close ();
-	printf ("Killed by signal %d !\n",sig_num);
+	printf ("Killed by signal %d!\n",sig_num);
 	exit (1);
 }
 
