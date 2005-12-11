@@ -1,4 +1,4 @@
-E2fsprogs 1.39-WIP (December 9, 2005)
+E2fsprogs 1.39-WIP (December 10, 2005)
 =====================================
 
 E2fsck will detect if the superblock's last mount field or last write
@@ -62,7 +62,8 @@ Fixed spelling mistakes, typos, and otherwise clarified man pages.
 (Addresses Debian Bugs: #329859, #322188, #316811)
 
 Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs #317862, #320389)
+details.  (Addresses Debian Bugs #317862, #320389, #290429, #310950,
+#310428)
 
 Programmer's notes:
 -------------------
@@ -99,6 +100,21 @@ Clean up the blkid library by making the superblock and generic i/o
 functions to be more generic.  Clean up interface to the probe
 function, and fix memory leak.  Finallly, remove an unneeded reference
 to probe.h in the lib/blkid/resolve.c
+
+Add an ext2fs_read_bb_FILE regression test to confirm proper detection
+of invalid block #'s.
+
+Fix various gcc -Wall complaints.
+
+Add a dependency to make sure that the subdirectories are created
+before creating all of the object files, in order to address parallel
+build problem in the library Makefiles.  (Addresses Sourceforge Bug:
+#1261553)
+
+Add $(LDFLAGS) to the command line argument when generating an ELF or
+Solaris shared library, to allow cross-compile and other builds that
+might need to specify -L paths to needed libraries.  (Addresses
+Sourceforge Bug #1261549)
 
 
 E2fsprogs 1.38 (June 30, 2005)

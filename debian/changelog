@@ -1,4 +1,4 @@
-e2fsprogs (1.38-3) unstable; urgency=low
+e2fsprogs (1.38+1.39-WIP-1210-1) unstable; urgency=low
 
   * Update and clarify man pages (Closes: #329859, #322188, #316811)
   * Fix bug creating external journals on big-endian machines.
@@ -19,8 +19,12 @@ e2fsprogs (1.38-3) unstable; urgency=low
   * Updated Dutch translation
   * E2fsck will stop and print a warning if the user tries running a
     read/write badblocks test on a read-only mounted root filesystem.
+  * Add resize2fs and badblocks to the e2fsprogs udeb 
+    (Closes: #290429, #310950)
+  * Avoid trying to mount the root device if it is an NFS device.
+    (Closes: #310428)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Fri,  9 Dec 2005 18:49:23 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 10 Dec 2005 22:49:47 -0500
 
 e2fsprogs (1.38-2) unstable; urgency=low
 
