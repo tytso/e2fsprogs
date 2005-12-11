@@ -1,4 +1,4 @@
-e2fsprogs (1.38+1.39-WIP-1210-1) unstable; urgency=low
+e2fsprogs (1.38+1.39-WIP-2005.12.10-1) unstable; urgency=low
 
   * Update and clarify man pages (Closes: #329859, #322188, #316811)
   * Fix bug creating external journals on big-endian machines.
