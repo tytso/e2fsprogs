@@ -1,3 +1,9 @@
+2005-12-10  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Add a dependency to make sure that the
+		subdirectories are created before creating all of the
+		object files.
+
 2005-07-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* pager.c (ss_safe_getenv): Pass in zero to the unusued arguments

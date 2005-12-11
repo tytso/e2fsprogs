@@ -179,6 +179,8 @@ distclean:: clean
 ../../lib/libuuid.so: image
 ../../lib/libuuid.dylib: image
 
+$(OBJS): subdirs
+
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in

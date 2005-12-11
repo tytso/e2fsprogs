@@ -132,6 +132,8 @@ distclean:: clean
 	$(RM) -f .depend Makefile com_err.pc \
 		$(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
+$(OBJS): subdirs
+
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in

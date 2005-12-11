@@ -173,6 +173,8 @@ distclean:: clean
 #
 $(top_builddir)/lib/ss/ss_err.h: ss_err.h
 
+$(OBJS): subdirs
+
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in

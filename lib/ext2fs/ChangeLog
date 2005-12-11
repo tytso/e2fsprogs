@@ -1,5 +1,11 @@
 2005-12-10  Theodore Ts'o  <tytso@mit.edu>
 
+	* Makefile.in: Add a dependency to make sure that the
+		subdirectories are created before creating all of the
+		object files.
+
+2005-12-10  Theodore Ts'o  <tytso@mit.edu>
+
 	* res_gdt.c (ext2fs_create_resize_inode): Fix type-punning warning.
 
 	* read_bb_file.c (ext2fs_read_bb_FILE): Use a data structure

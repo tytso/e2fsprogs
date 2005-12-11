@@ -181,6 +181,8 @@ distclean:: clean
 	$(RM) -f .depend Makefile blkid.pc \
 		$(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
+$(OBJS): subdirs
+
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in
@@ -205,7 +207,7 @@ read.o: $(srcdir)/read.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
  $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h \
  $(top_srcdir)/lib/uuid/uuid.h
 resolve.o: $(srcdir)/resolve.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h $(srcdir)/probe.h
+ $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
 save.o: $(srcdir)/save.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
  $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
 tag.o: $(srcdir)/tag.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \

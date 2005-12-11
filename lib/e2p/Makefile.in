@@ -103,6 +103,8 @@ distclean:: clean
 	$(RM) -f .depend Makefile e2p.pc \
 		$(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
+$(OBJS): subdirs
+
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in
