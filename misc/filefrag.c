@@ -118,7 +118,7 @@ static void frag_report(const char *filename)
 		is_ext2 = 0;
 	}
 	if (verbose)
-		printf("Blocksize of file %s is %ld\n", filename, bs);
+		printf("Blocksize of file %s is %d\n", filename, bs);
 	bpib = bs / 4;
 	numblocks = (fileinfo.st_size + (bs-1)) / bs;
 	if (verbose) {

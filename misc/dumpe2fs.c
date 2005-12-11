@@ -46,8 +46,7 @@ extern int optind;
 
 const char * program_name = "dumpe2fs";
 char * device_name = NULL;
-const char *num_format = "%lu";
-char range_format[16];
+int hex_format = 0;
 
 static void usage(void)
 {
@@ -56,9 +55,20 @@ static void usage(void)
 	exit (1);
 }
 
-static void print_number (unsigned long num)
+static void print_number(unsigned long num)
 {
-	printf(num_format, num);
+	if (hex_format) 
+		printf("0x%04lx", num);
+	else
+		printf("%lu", num);
+}
+
+static void print_range(unsigned long a, unsigned long b)
+{
+	if (hex_format) 
+		printf("0x%04lx-0x%04lx", a, b);
+	else
+		printf("%lu-%lu", a, b);
 }
 
 static void print_free (unsigned long group, char * bitmap,
@@ -119,7 +129,7 @@ static void list_desc (ext2_filsys fs)
 		if (next_blk > fs->super->s_blocks_count)
 			next_blk = fs->super->s_blocks_count;
 		printf (_("Group %lu: (Blocks "), i);
-		printf(range_format, group_blk, next_blk - 1);
+		print_range(group_blk, next_blk - 1);
 		fputs(")\n", stdout);
 		has_super = ((i==0) || super_blk);
 		if (has_super) {
@@ -129,14 +139,13 @@ static void list_desc (ext2_filsys fs)
 		}
 		if (old_desc_blk) {
 			printf(_(", Group descriptors at "));
-			printf(range_format, old_desc_blk,
-			       old_desc_blk + old_desc_blocks - 1);
+			print_range(old_desc_blk, 
+				    old_desc_blk + old_desc_blocks - 1);
 			if (reserved_gdt) {
 				printf(_("\n  Reserved GDT blocks at "));
-				printf(range_format, 
-				       old_desc_blk + old_desc_blocks,
-				       old_desc_blk + old_desc_blocks + 
-				       reserved_gdt - 1);
+				print_range(old_desc_blk + old_desc_blocks,
+					    old_desc_blk + old_desc_blocks + 
+					    reserved_gdt - 1);
 			}
 		} else if (new_desc_blk) {
 			fputc(has_super ? ',' : ' ', stdout);
@@ -157,9 +166,9 @@ static void list_desc (ext2_filsys fs)
 		if (diff >= 0)
 			printf(" (+%ld)", diff);
 		fputs(_("\n  Inode table at "), stdout);
-		printf(range_format, fs->group_desc[i].bg_inode_table,
-		       fs->group_desc[i].bg_inode_table +
-		       inode_blocks_per_group - 1);
+		print_range(fs->group_desc[i].bg_inode_table,
+			    fs->group_desc[i].bg_inode_table +
+			    inode_blocks_per_group - 1);
 		diff = fs->group_desc[i].bg_inode_table - group_blk;
 		if (diff > 0)
 			printf(" (+%ld)", diff);
@@ -197,7 +206,7 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 
 	retval = ext2fs_read_bb_inode(fs, &bb_list);
 	if (retval) {
-		com_err("ext2fs_read_bb_inode", retval, "");
+		com_err("ext2fs_read_bb_inode", retval, 0);
 		return;
 	}
 	retval = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
@@ -316,7 +325,7 @@ int main (int argc, char ** argv)
 				error_message(EXT2_ET_BASE));
 			exit(0);
 		case 'x':
-			num_format = "0x%04x";
+			hex_format++;
 			break;
 		default:
 			usage();
@@ -324,7 +333,6 @@ int main (int argc, char ** argv)
 	}
 	if (optind > argc - 1)
 		usage();
-	sprintf(range_format, "%s-%s", num_format, num_format);
 	device_name = argv[optind++];
 	if (use_superblock && !use_blocksize)
 		use_blocksize = 1024;

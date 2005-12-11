@@ -1,5 +1,23 @@
 2005-12-10  Theodore Ts'o  <tytso@mit.edu>
 
+	* res_gdt.c (ext2fs_create_resize_inode): Fix type-punning warning.
+
+	* read_bb_file.c (ext2fs_read_bb_FILE): Use a data structure
+		instead of stuffing a function pointer dirctly into a void
+		pointer, since that isn't portable.
+
+	* mkjournal.c (ext2fs_add_journal_inode): Fix possiblely
+		uninitialized use of variable warning.
+
+	* initialize.c (calc_reserved_gdt_blocks): Fix signed vs. unsigned
+		type complaint.
+
+	* ext2fs.h: Make the type of the 'now' field to be time_t to avoid
+		gcc -Wall complaints.
+
+	* bitops.h (ext2fs_find_first_bit_set): Fix signed vs unsigned
+		type error.
+
 	* tst_badblocks.c (file_test_invalid): Add test which confirms
 		proper detection of invalid block numbers in
 		ext2fs_read_bb_FILE().

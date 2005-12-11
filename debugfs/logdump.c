@@ -70,7 +70,6 @@ static void do_hexdump (FILE *, char *, int);
 		blocknr -= (be32_to_cpu((jsb)->s_maxlen) -	\
 			    be32_to_cpu((jsb)->s_first));
 
-
 void do_logdump(int argc, char **argv)
 {
 	int		c;
@@ -86,9 +85,6 @@ void do_logdump(int argc, char **argv)
 	struct ext2_inode journal_inode;
 	ext2_file_t 	journal_file;
 	char		*tmp;
-	const char	*logdump_usage = ("Usage: logdump "
-					  "[-ac] [-b<block>] [-i<inode>] "
-					  "[-f<journal_file>] [output_file]");
 	struct journal_source journal_source;
 	struct ext2_super_block *es = NULL;
 	
@@ -132,13 +128,11 @@ void do_logdump(int argc, char **argv)
 			use_sb++;
 			break;
 		default:
-			com_err(argv[0], 0, logdump_usage);
-			return;
+			goto print_usage;
 		}
 	}
 	if (optind != argc && optind != argc-1) {
-		com_err(argv[0], 0, logdump_usage);
-		return;
+		goto print_usage;
 	}
 
 	if (current_fs)
@@ -267,6 +261,10 @@ void do_logdump(int argc, char **argv)
 		fclose(out_file);
 
 	return;
+
+print_usage:
+	fprintf(stderr, "%s: Usage: logdump [-ac] [-b<block>] [-i<inode>]\n\t"
+		"[-f<journal_file>] [output_file]\n", argv[0]);
 }
 
 

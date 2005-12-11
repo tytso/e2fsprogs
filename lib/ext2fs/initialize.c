@@ -79,7 +79,7 @@ static int calc_reserved_gdt_blocks(ext2_filsys fs)
 		max_blocks = sb->s_blocks_count * 1024;
 	rsv_groups = (max_blocks - sb->s_first_data_block + bpg - 1) / bpg;
 	rsv_gdb = (rsv_groups + gdpb - 1) / gdpb - fs->desc_blocks;
-	if (rsv_gdb > EXT2_ADDR_PER_BLOCK(sb))
+	if (rsv_gdb > (int) EXT2_ADDR_PER_BLOCK(sb))
 		rsv_gdb = EXT2_ADDR_PER_BLOCK(sb);
 #ifdef RES_GDT_DEBUG
 	printf("max_blocks %lu, rsv_groups = %lu, rsv_gdb = %lu\n",

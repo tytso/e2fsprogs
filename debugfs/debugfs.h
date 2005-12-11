@@ -44,6 +44,8 @@ extern int common_block_args_process(int argc, char *argv[],
 				     blk_t *block, int *count);
 extern int debugfs_read_inode(ext2_ino_t ino, struct ext2_inode * inode,
 			      const char *cmd);
+extern int debugfs_read_inode_full(ext2_ino_t ino, struct ext2_inode * inode,
+				   const char *cmd, int bufsize);
 extern int debugfs_write_inode(ext2_ino_t ino, struct ext2_inode * inode,
 			       const char *cmd);
 extern int debugfs_write_new_inode(ext2_ino_t ino, struct ext2_inode * inode,
@@ -120,4 +122,5 @@ extern void do_expand_dir(int argc, char **argv);
 extern void do_features(int argc, char **argv);
 extern void do_bmap(int argc, char **argv);
 extern void do_imap(int argc, char **argv);
+extern void do_set_current_time(int argc, char **argv);
 

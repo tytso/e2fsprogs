@@ -357,7 +357,8 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 		if (rec_len < 8 || (rec_len % 4) ||
 		    (p+rec_len > end)) {
 			printf("Corrupt directory block %lu: "
-			       "bad rec_len (%d)\n", blk, rec_len);
+			       "bad rec_len (%d)\n", (unsigned long) blk, 
+			       rec_len);
 			rec_len = end - p;
 #ifdef EXT2FS_ENABLE_SWAPFS
 			if (fs->flags & EXT2_FLAG_SWAP_BYTES) 
@@ -367,7 +368,8 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 		}
 		if (dirent->name_len + 8 > rec_len) {
 			printf("Corrupt directory block %lu: "
-			       "bad name_len (%d)\n", blk, dirent->name_len);
+			       "bad name_len (%d)\n", (unsigned long) blk, 
+			       dirent->name_len);
 			dirent->name_len = rec_len - 8;
 			continue;
 		}

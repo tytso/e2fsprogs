@@ -1,3 +1,8 @@
+2005-12-10  Theodore Ts'o  <tytso@mit.edu>
+
+	* dumpe2fs.c, e2image.c, filefrag.c, mke2fs.c: Fix various gcc
+		-Wall complaints.
+
 2005-12-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* mke2fs.8.in: Add more text describing the mke2fs -T option.

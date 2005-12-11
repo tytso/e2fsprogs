@@ -120,7 +120,6 @@ errout:
 
 void do_open_filesys(int argc, char **argv)
 {
-	const char *usage = "Usage: open [-s superblock] [-b blocksize] [-c] [-w] <device>";
 	int	c, err;
 	int	catastrophic = 0;
 	blk_t	superblock = 0;
@@ -159,19 +158,22 @@ void do_open_filesys(int argc, char **argv)
 				return;
 			break;
 		default:
-			com_err(argv[0], 0, usage);
-			return;
+			goto print_usage;
 		}
 	}
 	if (optind != argc-1) {
-		com_err(argv[0], 0, usage);
-		return;
+		goto print_usage;
 	}
 	if (check_fs_not_open(argv[0]))
 		return;
 	open_filesystem(argv[optind], open_flags,
 			superblock, blocksize, catastrophic, 
 			data_filename);
+	return;
+
+print_usage:
+	fprintf(stderr, "%s: Usage: open [-s superblock] [-b blocksize] "
+		"[-c] [-w] <device>\n", argv[0]);
 }
 
 void do_lcd(int argc, char **argv)
@@ -195,16 +197,16 @@ static void close_filesystem(NOARGS)
 	if (current_fs->flags & EXT2_FLAG_IB_DIRTY) {
 		retval = ext2fs_write_inode_bitmap(current_fs);
 		if (retval)
-			com_err("ext2fs_write_inode_bitmap", retval, "");
+			com_err("ext2fs_write_inode_bitmap", retval, 0);
 	}
 	if (current_fs->flags & EXT2_FLAG_BB_DIRTY) {
 		retval = ext2fs_write_block_bitmap(current_fs);
 		if (retval)
-			com_err("ext2fs_write_block_bitmap", retval, "");
+			com_err("ext2fs_write_block_bitmap", retval, 0);
 	}
 	retval = ext2fs_close(current_fs);
 	if (retval)
-		com_err("ext2fs_close", retval, "");
+		com_err("ext2fs_close", retval, 0);
 	current_fs = NULL;
 	return;
 }
@@ -268,7 +270,6 @@ void do_show_super_stats(int argc, char *argv[])
 	struct ext2_group_desc *gdp;
 	int	c, header_only = 0;
 	int	numdirs = 0;
-	const char *usage = "Usage: show_super [-h]";
 
 	reset_getopt();
 	while ((c = getopt (argc, argv, "h")) != EOF) {
@@ -277,13 +278,11 @@ void do_show_super_stats(int argc, char *argv[])
 			header_only++;
 			break;
 		default:
-			com_err(argv[0], 0, usage);
-			return;
+			goto print_usage;
 		}
 	}
 	if (optind != argc) {
-		com_err(argv[0], 0, usage);
-		return;
+		goto print_usage;
 	}
 	if (check_fs_open(argv[0]))
 		return;
@@ -317,6 +316,9 @@ void do_show_super_stats(int argc, char *argv[])
 		        gdp->bg_used_dirs_count != 1 ? "directories"
 				: "directory");
 	close_pager(out);
+	return;
+print_usage:
+	fprintf(stderr, "%s: Usage: show_super [-h]\n", argv[0]);
 }
 
 void do_dirty_filesys(int argc EXT2FS_ATTR((unused)), 
@@ -403,7 +405,7 @@ static int list_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 	return 0;
 }
 
-void dump_xattr_string(FILE *out, const unsigned char *str, int len)
+static void dump_xattr_string(FILE *out, const char *str, int len)
 {
 	int printable = 1;
 	int i;
@@ -422,14 +424,14 @@ void dump_xattr_string(FILE *out, const unsigned char *str, int len)
 			fprintf(out, "%02x ", str[i]);
 }
 
-void internal_dump_inode_extra(FILE *out, const char *prefix,
-			 ext2_ino_t inode_num, struct ext2_inode_large *inode)
+static void internal_dump_inode_extra(FILE *out, const char *prefix,
+				      ext2_ino_t inode_num, 
+				      struct ext2_inode_large *inode)
 {
 	struct ext2_ext_attr_entry *entry;
 	__u32 *magic;
 	char *start, *end;
-	int storage_size;
-	int i;
+	unsigned int storage_size;
 
 	fprintf(out, "Size of extra inode fields: %d\n", inode->i_extra_isize);
 	if (inode->i_extra_isize > EXT2_INODE_SIZE(current_fs->super) -
@@ -631,7 +633,7 @@ void do_chroot(int argc, char *argv[])
 
 	retval = ext2fs_check_directory(current_fs, inode);
 	if (retval)  {
-		com_err(argv[1], retval, "");
+		com_err(argv[1], retval, 0);
 		return;
 	}
 	root = inode;
@@ -902,7 +904,7 @@ void do_change_working_dir(int argc, char *argv[])
 
 	retval = ext2fs_check_directory(current_fs, inode);
 	if (retval) {
-		com_err(argv[1], retval, "");
+		com_err(argv[1], retval, 0);
 		return;
 	}
 	cwd = inode;
@@ -1013,7 +1015,7 @@ static void make_link(char *sourcename, char *destname)
 	retval = ext2fs_link(current_fs, dir, dest, ino, 
 			     ext2_file_type(inode.i_mode));
 	if (retval)
-		com_err("make_link", retval, "");
+		com_err("make_link", retval, 0);
 	return;
 }
 
@@ -1096,7 +1098,7 @@ static void unlink_file_by_name(char *filename)
 	}
 	retval = ext2fs_unlink(current_fs, dir, basename, 0, 0);
 	if (retval)
-		com_err("unlink_file_by_name", retval, "");
+		com_err("unlink_file_by_name", retval, 0);
 	return;
 }
 
@@ -1148,7 +1150,7 @@ void do_find_free_block(int argc, char *argv[])
 		retval = ext2fs_new_block(current_fs, free_blk + 1, 0,
 					  &free_blk);
 		if (retval) {
-			com_err("ext2fs_new_block", retval, "");
+			com_err("ext2fs_new_block", retval, 0);
 			return;
 		} else
 			printf("%d ", free_blk);
@@ -1190,7 +1192,7 @@ void do_find_free_inode(int argc, char *argv[])
 
 	retval = ext2fs_new_inode(current_fs, dir, mode, 0, &free_inode);
 	if (retval)
-		com_err("ext2fs_new_inode", retval, "");
+		com_err("ext2fs_new_inode", retval, 0);
 	else
 		printf("Free inode found: %u\n", free_inode);
 }
@@ -1251,11 +1253,11 @@ void do_write(int argc, char *argv[])
 
 	fd = open(argv[1], O_RDONLY);
 	if (fd < 0) {
-		com_err(argv[1], errno, "");
+		com_err(argv[1], errno, 0);
 		return;
 	}
 	if (fstat(fd, &statbuf) < 0) {
-		com_err(argv[1], errno, "");
+		com_err(argv[1], errno, 0);
 		close(fd);
 		return;
 	}
@@ -1269,7 +1271,7 @@ void do_write(int argc, char *argv[])
 
 	retval = ext2fs_new_inode(current_fs, cwd, 010755, 0, &newfile);
 	if (retval) {
-		com_err(argv[0], retval, "");
+		com_err(argv[0], retval, 0);
 		close(fd);
 		return;
 	}
@@ -1286,7 +1288,7 @@ void do_write(int argc, char *argv[])
 				     EXT2_FT_REG_FILE);
 	}
 	if (retval) {
-		com_err(argv[2], retval, "");
+		com_err(argv[2], retval, 0);
 		close(fd);
 		return;
 	}
@@ -1306,7 +1308,7 @@ void do_write(int argc, char *argv[])
 	if (LINUX_S_ISREG(inode.i_mode)) {
 		retval = copy_file(fd, newfile);
 		if (retval)
-			com_err("copy_file", retval, "");
+			com_err("copy_file", retval, 0);
 	}
 	close(fd);
 }
@@ -1359,7 +1361,7 @@ void do_mknod(int argc, char *argv[])
 		return;
 	retval = ext2fs_new_inode(current_fs, cwd, 010755, 0, &newfile);
 	if (retval) {
-		com_err(argv[0], retval, "");
+		com_err(argv[0], retval, 0);
 		return;
 	}
 	printf("Allocated inode: %u\n", newfile);
@@ -1374,7 +1376,7 @@ void do_mknod(int argc, char *argv[])
 				     filetype);
 	}
 	if (retval) {
-		com_err(argv[1], retval, "");
+		com_err(argv[1], retval, 0);
 		return;
 	}
         if (ext2fs_test_inode_bitmap(current_fs->inode_map,newfile))
@@ -1413,7 +1415,7 @@ void do_mkdir(int argc, char *argv[])
 		*cp = 0;
 		parent = string_to_inode(argv[1]);
 		if (!parent) {
-			com_err(argv[1], ENOENT, "");
+			com_err(argv[1], ENOENT, 0);
 			return;
 		}
 		name = cp+1;
@@ -1433,7 +1435,7 @@ try_again:
 		goto try_again;
 	}
 	if (retval) {
-		com_err("ext2fs_mkdir", retval, "");
+		com_err("ext2fs_mkdir", retval, 0);
 		return;
 	}
 
@@ -1619,7 +1621,7 @@ void do_expand_dir(int argc, char *argv[])
 
 	retval = ext2fs_expand_dir(current_fs, inode);
 	if (retval)
-		com_err("ext2fs_expand_dir", retval, "");
+		com_err("ext2fs_expand_dir", retval, 0);
 	return;
 }
 
@@ -1701,8 +1703,6 @@ void do_imap(int argc, char *argv[])
 
 void do_set_current_time(int argc, char *argv[])
 {
-	ext2_ino_t	ino;
-	unsigned long 	group, block, block_nr, offset;
 	time_t now;
 
 	if (common_args_process(argc, argv, 2, 2, argv[0],

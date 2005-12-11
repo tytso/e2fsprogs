@@ -71,15 +71,19 @@ errcode_t ext2fs_read_bb_FILE2(ext2_filsys fs, FILE *f,
 	return 0;
 }
 
+struct compat_struct {
+	void (*invalid)(ext2_filsys, blk_t);
+};
+
 static void call_compat_invalid(ext2_filsys fs, blk_t blk,
 				char *badstr EXT2FS_ATTR((unused)), 
 				void *priv_data)
 {
-	void (*invalid)(ext2_filsys, blk_t);
+	struct compat_struct *st;
 
-	invalid = (void (*)(ext2_filsys, blk_t)) priv_data;
-	if (invalid)
-		invalid(fs, blk);
+	st = (struct compat_struct *) priv_data;
+	if (st->invalid)
+		(st->invalid)(fs, blk);
 }
 
 
@@ -90,7 +94,11 @@ errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 			      ext2_badblocks_list *bb_list,
 			      void (*invalid)(ext2_filsys fs, blk_t blk))
 {
-	return ext2fs_read_bb_FILE2(fs, f, bb_list, (void *) invalid,
+	struct compat_struct st;
+
+	st.invalid = invalid;
+
+	return ext2fs_read_bb_FILE2(fs, f, bb_list, &st,
 				    call_compat_invalid);
 }
 

@@ -157,7 +157,7 @@ void do_list_dir(int argc, char *argv[])
 	fprintf(ls.f, "\n");
 	close_pager(ls.f);
 	if (retval)
-		com_err(argv[1], retval, "");
+		com_err(argv[1], retval, 0);
 
 	return;
 }
