@@ -1,3 +1,11 @@
+2005-12-10  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.elf-lib, Makefile.solaris-lib: Add $(LDFLAGS) to the
+		command line argument when generating the shared library,
+		to allow cross-compile and other builds that might need to
+		specify -L paths to needed libraries.  (Addresses
+		Sourceforge Bug #1261549)
+
 2006-06-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.38

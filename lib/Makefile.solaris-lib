@@ -25,8 +25,8 @@ image:		$(ELF_LIB)
 
 $(ELF_LIB): $(OBJS)
 	@echo "	GEN_ELF_SOLIB $(ELF_LIB)"
-	@(cd elfshared; $(CC) --shared -o $(ELF_LIB) -Wl,-h,$(ELF_SONAME) \
-		$(OBJS) $(ELF_OTHER_LIBS))
+	@(cd elfshared; $(CC) --shared -o $(ELF_LIB) $(LDFLAGS) \
+		-Wl,-h,$(ELF_SONAME) $(OBJS) $(ELF_OTHER_LIBS))
 	@$(MV) elfshared/$(ELF_LIB) .
 	@$(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so ../$(ELF_SONAME)
 	@$(LN) $(ELF_LIB) ../$(ELF_LIB)
