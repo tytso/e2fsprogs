@@ -91,7 +91,7 @@ STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression
 
 BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
 	--disable-nls --disable-swapfs --disable-imager \
-	--disable-resizer --disable-debugfs  --disable-e2initrd-helper
+	--disable-debugfs  --disable-e2initrd-helper
 
 MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
 	--disable-nls \
@@ -235,10 +235,13 @@ install-udeb: build
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
 	make -C ${bfbuilddir}/misc install DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
+	make -C ${bfbuilddir}/resize install DESTDIR=${udebdir} \
+		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
 
 	rm -rf ${udebdir}/usr
 	find ${udebdir}/sbin -type f -a ! -name e2fsck \
-		-a ! -name mke2fs -a ! -name tune2fs -print | xargs rm
+		-a ! -name mke2fs -a ! -name tune2fs \
+		-a ! -name resize2fs -a ! -name badblocks -print | xargs rm
 
 	(cd ${udebdir}/sbin; ln -s e2fsck fsck.ext2 ; \
 		ln -s e2fsck fsck.ext3 ; ln -s mke2fs mkfs.ext2 ; \
