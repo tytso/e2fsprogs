@@ -7,7 +7,7 @@ mount -nt proc proc proc
 rootdev=$(cat proc/sys/kernel/real-root-dev)
 cmdline=$(cat /proc/cmdline)
 umount -n proc
-if [ $rootdev != 256 ]; then
+if [ $rootdev != 256 -a $rootdev != 255 ]; then
     mount -nt tmpfs tmpfs /dev2
     get_device
     roottype=`/bin/e2initrd_helper -r /dev2/root2`
