@@ -1599,46 +1599,46 @@ e2fsprogs (1.06-2) unstable; urgency=low
 
  -- Michael Nonweiler <mrn20@cam.ac.uk>  Tue, 5 Nov 1996 21:14:54 +0000
 
- * Oct 18 1996 Michael Meskes <meskes@debian.org>
-  	upgraded to latest upstream version, to 1.06 from 1.05
- * Oct 18 1996 Michael Meskes <meskes@debian.org>
-  	upgraded to latest upstream version, to 1.05 from 1.04
-   gzip manpages
-   minor changes to debian.rules
-  * Jun 23 1996 Michael R. Nonweiler <mrn20@cam.ac.uk>
-	upgraded to latest upstream version, to 1.04 from 1.02
-   another tidy-up of debian.rules
-   section and priority added to debian.control,
-       since this is an essential base package.
+  * Oct 18 1996 Michael Meskes <meskes@debian.org>
+   	upgraded to latest upstream version, to 1.06 from 1.05
+  * Oct 18 1996 Michael Meskes <meskes@debian.org>
+   	upgraded to latest upstream version, to 1.05 from 1.04
+    gzip manpages
+    minor changes to debian.rules
+   * Jun 23 1996 Michael R. Nonweiler <mrn20@cam.ac.uk>
+ 	upgraded to latest upstream version, to 1.04 from 1.02
+    another tidy-up of debian.rules
+    section and priority added to debian.control,
+        since this is an essential base package.
 
- * Mar  5 1996 Michael R. Nonweiler <mrn20@cam.ac.uk>
-	upgraded to latest upstream version, to 1.02 from 1.01
- * copied "configure" usr_prefix change (see below), into configure.in
- * updated debian.control file, added Pre-Depends field
-   created preinst script to check dpkg --assert-predepends
-   tidyed and fixed debian.rules
- * set e2fsck to link shared, as suggested by Bruce Perens
-   in Bug#2332
- * corrected problem in e2fsck error message, Bug#2534
- * added Architecture field
- * very minor correction to expected output of a build time test
+  * Mar  5 1996 Michael R. Nonweiler <mrn20@cam.ac.uk>
+ 	upgraded to latest upstream version, to 1.02 from 1.01
+  * copied "configure" usr_prefix change (see below), into configure.in
+  * updated debian.control file, added Pre-Depends field
+    created preinst script to check dpkg --assert-predepends
+    tidyed and fixed debian.rules
+  * set e2fsck to link shared, as suggested by Bruce Perens
+    in Bug#2332
+  * corrected problem in e2fsck error message, Bug#2534
+  * added Architecture field
+  * very minor correction to expected output of a build time test
 
- * Nov 20 1995 Andrew D. Fernandes <adfernan@cnd.mcgill.ca>
-	removed debugging symbols from libs and enabled more
-	optimization as suggested by Rolf Rossius
-	also removed the /var/catman pages
+  * Nov 20 1995 Andrew D. Fernandes <adfernan@cnd.mcgill.ca>
+ 	removed debugging symbols from libs and enabled more
+ 	optimization as suggested by Rolf Rossius
+ 	also removed the /var/catman pages
 
- * Nov 19 1995 Andrew D. Fernandes <adfernan@cnd.mcgill.ca>
-	changed to elf compilation
+  * Nov 19 1995 Andrew D. Fernandes <adfernan@cnd.mcgill.ca>
+ 	changed to elf compilation
 
- * Oct  7 1995 Andrew D. Fernandes <adfernan@cnd.mcgill.ca>
-	Upgraded to latest version, to 1.01 from 0.5b.
- * changed the installation groups from bin to root in MCONFIG.in
- * changed configure to set usr_prefix="\${prefix}/usr"
- * moved the cat pages to /var/catman in MCONFIG.in
+  * Oct  7 1995 Andrew D. Fernandes <adfernan@cnd.mcgill.ca>
+ 	Upgraded to latest version, to 1.01 from 0.5b.
+  * changed the installation groups from bin to root in MCONFIG.in
+  * changed configure to set usr_prefix="\${prefix}/usr"
+  * moved the cat pages to /var/catman in MCONFIG.in
 
- * Aug  3 1995 Bruce Perens <Bruce@Pixar.com>
-   Made "fsck -t <filesystem-type> <device>" work correctly. Formerly
-   the -t argument was overriden by the filesystem type listed for the
-   device in /etc/fstab.
- * added Debian GNU/Linux package maintenance system files
+  * Aug  3 1995 Bruce Perens <Bruce@Pixar.com>
+    Made "fsck -t <filesystem-type> <device>" work correctly. Formerly
+    the -t argument was overriden by the filesystem type listed for the
+    device in /etc/fstab.
+  * added Debian GNU/Linux package maintenance system files
