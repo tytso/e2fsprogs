@@ -335,12 +335,12 @@ static const struct e2fsck_problem problem_table[] = {
 	/* Last mount time is in the future */
 	{ PR_0_FUTURE_SB_LAST_MOUNT,
 	  N_("@S last mount time is in the future.  "),
-	  PROMPT_FIX, 0 },
+	  PROMPT_FIX, PR_PREEN_OK },
 
 	/* Last write time is in the future */
 	{ PR_0_FUTURE_SB_LAST_WRITE,
 	  N_("@S last write time is in the future.  "),
-	  PROMPT_FIX, 0 },
+	  PROMPT_FIX, PR_PREEN_OK },
 
 	/* Pass 1 errors */
 	

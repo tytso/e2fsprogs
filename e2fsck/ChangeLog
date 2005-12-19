@@ -1,3 +1,13 @@
+2005-12-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* problem.c (PR_0_FUTURE_SB_LAST_MOUNT,
+		PR_0_FUTURE_SB_LAST_WRITE): Make these problems things
+		which can be fixd by preen, since Debian's boot sequence
+		bogusly doesn't set the time correctly until potentially
+		very late in the bootup process, and this can cause false
+		positives that will cause users' systems to fail to
+		booting.  (Addresses Debian Bugs #343662 and #343645)
+
 2005-12-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.8.in: Clarify that e2fsck -c does a read-only scan of the
