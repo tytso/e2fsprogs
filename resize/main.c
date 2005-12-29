@@ -12,14 +12,19 @@
  * %End-Header%
  */
 
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
 extern char *optarg;
 extern int optind;
 #endif
-#include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include "e2p/e2p.h"
 
@@ -117,13 +122,17 @@ int main (int argc, char ** argv)
 	int		flags = 0;
 	int		flush = 0;
 	int		force = 0;
-	int		fd;
+	int		fd, ret;
 	blk_t		new_size = 0;
 	blk_t		max_size = 0;
 	io_manager	io_ptr;
-	char		*tmp;
 	char		*new_size_str = 0;
+#ifdef HAVE_FSTAT64
+	struct stat64	st_buf;
+#else
 	struct stat	st_buf;
+#endif
+	__s64		new_file_size;
 	unsigned int	sys_page_size = 4096;
 	long		sysval;
 
@@ -176,16 +185,31 @@ int main (int argc, char ** argv)
 		*io_options++ = 0;
 
 	check_mount(device_name);
+
+#ifdef HAVE_OPEN64
+	fd = open64(device_name, O_RDWR);
+#else
+	fd = open(device_name, O_RDWR);
+#endif
+	if (fd < 0) {
+		com_err("open", errno, _("while opening %s"),
+			device_name);
+		exit(1);
+	}
+
+#ifdef HAVE_FSTAT64
+	ret = fstat64(fd, &st_buf);
+#else
+	ret = fstat(fd, &st_buf);
+#endif
+	if (ret < 0) {
+		com_err("open", errno, 
+			_("while getting stat information for %s"),
+			device_name);
+		exit(1);
+	}
 	
 	if (flush) {
-		fd = open(device_name, O_RDONLY, 0);
-
-		if (fd < 0) {
-			com_err("open", errno,
-				_("while opening %s for flushing"),
-				device_name);
-			exit(1);
-		}
 		retval = ext2fs_sync_device(fd, 1);
 		if (retval) {
 			com_err(argv[0], retval, 
@@ -193,7 +217,11 @@ int main (int argc, char ** argv)
 				device_name);
 			exit(1);
 		}
+	}
+
+	if (!S_ISREG(st_buf.st_mode )) {
 		close(fd);
+		fd = -1;
 	}
 
 	if (flags & RESIZE_DEBUG_IO) {
@@ -234,7 +262,7 @@ int main (int argc, char ** argv)
 
 	/*
 	 * Get the size of the containing partition, and use this for
-	 * defaults and for making sure the new filesystme doesn't
+	 * defaults and for making sure the new filesystem doesn't
 	 * exceed the partition size.
 	 */
 	retval = ext2fs_get_device_size(device_name, fs->blocksize,
@@ -264,15 +292,15 @@ int main (int argc, char ** argv)
 	 * automatically extend it in a sparse fashion by writing the
 	 * last requested block.
 	 */
-	if ((new_size > max_size) &&
-	    (stat(device_name, &st_buf) == 0) &&
-	    S_ISREG(st_buf.st_mode) &&
-	    ((tmp = malloc(fs->blocksize)) != 0)) {
-		memset(tmp, 0, fs->blocksize);
-		retval = io_channel_write_blk(fs->io, new_size-1, 1, tmp);
-		if (retval == 0)
+	new_file_size = ((__u64) new_size) * fs->blocksize;
+	if ((__u64) new_file_size > 
+	    (((__u64) 1) << (sizeof(st_buf.st_size)*8 - 1)) - 1)
+		fd = -1;
+	if ((new_file_size > st_buf.st_size) &&
+	    (fd > 0)) {
+		if ((ext2fs_llseek(fd, new_file_size-1, SEEK_SET) >= 0) &&
+		    (write(fd, "0", 1) == 1))
 			max_size = new_size;
-		free(tmp);
 	}
 	if (!force && (new_size > max_size)) {
 		fprintf(stderr, _("The containing partition (or device)"
@@ -306,5 +334,16 @@ int main (int argc, char ** argv)
 	}
 	printf(_("The filesystem on %s is now %d blocks long.\n\n"),
 	       device_name, new_size);
+
+	if ((st_buf.st_size > new_file_size) &&
+	    (fd > 0)) {
+#ifdef HAVE_FSTAT64
+		ftruncate64(fd, new_file_size);
+#else
+		ftruncate(fd, (off_t) new_file_size);
+#endif
+	}
+	if (fd > 0)
+		close(fd);
 	return (0);
 }
