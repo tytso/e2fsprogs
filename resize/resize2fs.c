@@ -485,10 +485,8 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 	blk_t			block, b;
 	unsigned int		j;
 	dgrp_t			i;
-	unsigned long		meta_bg, meta_bg_size;
-	int			has_super;
+	unsigned long		meta_bg_size;
 	unsigned int		old_desc_blocks;
-	errcode_t		retval;
 
 	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
 	block = fs->super->s_first_data_block;

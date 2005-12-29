@@ -1,5 +1,8 @@
 2005-12-29  Theodore Ts'o  <tytso@mit.edu>
 
+	* resize2fs.c (mark_table_blocks): Remove unused variables to
+		clean up gcc -Wall complaints.
+
 	* main.c (main): If the filesystem being resized is a regular
 		file, truncate or expand the file to match the new
 		filesystem size.  (Addresses Debian Bug: #271607)
