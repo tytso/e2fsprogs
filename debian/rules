@@ -44,6 +44,7 @@ maindir=${debdir}/e2fsprogs
 stdbuilddir=${debdir}/BUILD-STD
 bfbuilddir=${debdir}/BUILD-BF
 mipsbuilddir=${debdir}/BUILD-MIPS
+mipsbuilddir64=${debdir}/BUILD-MIPS-64
 # docdir=${maindir}/usr/share/doc/${package}
 MANDIR=/usr/share/man
 mandir=${tmpdir}${MANDIR}
@@ -66,7 +67,7 @@ BUILDBFSTAMP=${STAMPSDIR}/build-bf-stamp
 CCOPTS = -g -fsigned-char
 
 INSTALL = install
-INSTALL_PROGRAM = $(INSTALL) -p -o root -g root  -m  755
+INSTALL_PROGRAM = $(INSTALL) -p -o root -g root -m 0755
 
 ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
 CCOPTS += -O2
@@ -97,8 +98,10 @@ MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
 	--disable-nls \
 	--disable-swapfs --disable-imager \
         --disable-resizer # --disable-debugfs
+
 # we can't use those flags at configure time
 MIPS_CFLAGS= -G 0 -fno-pic -mno-abicalls
+MIPS_CFLAGS_64= -mabi=64 -G 0 -fno-pic -mno-abicalls
 
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 ifneq (,$(findstring $(DEB_BUILD_ARCH),mips mipsel))
@@ -122,12 +125,14 @@ else
 		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
 endif
 
-  # specially-built MIPS lib
-	if [ ismips = "${ismips}" ]; then \
-		mkdir -p ${mipsbuilddir} ; \
-		cd ${mipsbuilddir} && AWK=/usr/bin/awk \
-			${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} ; \
-	fi
+  # specially-built MIPS libs
+ifneq ($(ismips),)
+	mkdir -p ${mipsbuilddir} ${mipsbuilddir64}
+	cd ${mipsbuilddir} && AWK=/usr/bin/awk \
+		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS}
+	cd ${mipsbuilddir64} && AWK=/usr/bin/awk \
+		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS}
+endif
 
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTDSTAMP}
@@ -160,13 +165,17 @@ ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	( cd ${stdbuilddir}/lib/et && make com_err.info && \
 	  texi2html -split_chapter -expandinfo ${topdir}/lib/et/com_err.texinfo )
 
-  # specially-built MIPS lib
-	if [ ismips = "${ismips}" ]; then \
-		make -C ${mipsbuilddir}/util ; \
-		make -C ${mipsbuilddir} libs \
-			CFLAGS="${CCOPTS} ${MIPS_CFLAGS}" \
-			LIB_SUBDIRS="lib/et lib/ext2fs" ; \
-	fi
+  # specially-built MIPS libs
+ifneq ($(ismips),)
+	make -C ${mipsbuilddir}/util
+	make -C ${mipsbuilddir} \
+		CFLAGS="${CCOPTS} ${MIPS_CFLAGS}" \
+		LIB_SUBDIRS="lib/et lib/ext2fs" libs
+	make -C ${mipsbuilddir64}/util
+	make -C ${mipsbuilddir64} \
+		CFLAGS="${CCOPTS} ${MIPS_CFLAGS_64}" \
+		LIB_SUBDIRS="lib/et lib/ext2fs" libs
+endif
 
 	touch ${BUILDSTDSTAMP}
 
@@ -183,7 +192,7 @@ clean:
 	rm -rf ${STAMPSDIR}
 	-make -C ${stdbuilddir} -i distclean
 	-make -C ${bfbuilddir} -i distclean
-	rm -rf ${stdbuilddir} ${bfbuilddir} ${mipsbuilddir}
+	rm -rf ${stdbuilddir} ${bfbuilddir} ${mipsbuilddir} ${mipsbuilddir64}
 	rm -f doc/libext2fs/*.html lib/et/com_err/*.html debian/*.substvars
 	dh_clean
 
@@ -218,11 +227,13 @@ install-std: build
 	dh_movefiles
 	test -z `find ${tmpdir} -type f`
 
-  # specially-built MIPS lib
-	if [ ismips = "${ismips}" ]; then \
-		cp ${mipsbuilddir}/lib/libext2fs.a \
-			${debdir}/e2fslibs-dev/usr/lib/libext2fs-nopic.a ; \
-	fi
+  # specially-built MIPS libs
+ifneq ($(ismips),)
+	$(INSTALL) -p -m 0644 ${mipsbuilddir}/lib/libext2fs.a \
+		${debdir}/e2fslibs-dev/usr/lib/libext2fs-nopic.a
+	$(INSTALL) -p -m 0644 ${mipsbuilddir64}/lib/libext2fs.a \
+		${debdir}/e2fslibs-dev/usr/lib/lib64ext2fs-nopic.a
+endif
 
 install-udeb: DH_OPTIONS=
 install-udeb: build
@@ -264,17 +275,17 @@ binary-arch: install install-udeb
   # lintian overrides
 	for i in $$(cd debian && echo *.lintian-overrides); do \
 		pkg=$${i%.lintian-overrides} ;\
-		install -m644 -D -p debian/$$i ${debdir}/$${pkg}/usr/share/lintian/overrides/$${pkg} ;\
+		$(INSTALL) -m 0644 -D -p debian/$$i ${debdir}/$${pkg}/usr/share/lintian/overrides/$${pkg} ;\
 	done
 
   # mkinitrd script
 	mkdir -p debian/e2fsprogs/usr/share/initrd-tools/scripts
-	install -m755 debian/initrd-tools.e2fsprogs \
+	$(INSTALL) -p -o root -g root -m 0755 debian/initrd-tools.e2fsprogs \
 		debian/e2fsprogs/usr/share/initrd-tools/scripts/e2fsprogs
 
   # initrd script
 	mkdir -p debian/e2fsprogs/usr/share/e2fsprogs
-	install -m755 debian/initrd.ext3-add-journal \
+	$(INSTALL) -p -o root -g root -m 0755 debian/initrd.ext3-add-journal \
 		debian/e2fsprogs/usr/share/e2fsprogs/initrd.ext3-add-journal
 
 
@@ -302,36 +313,36 @@ binary-arch: install install-udeb
 	mkdir -p ${debdir}/e2fslibs-dev/usr/share/doc
 	ln -sf e2fslibs ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs-dev
 
-	install -m 644 debian/libblkid.copyright \
+	$(INSTALL) -p -m 0644 debian/libblkid.copyright \
 		${debdir}/libblkid${BLKID_SOVERSION}/usr/share/doc/libblkid${BLKID_SOVERSION}/copyright
 
 	dh_installdocs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 
   # HTML docs
-	install -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
-	install -p ${stdbuilddir}/doc/libext2fs/*.html \
+	$(INSTALL) -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
+	$(INSTALL) -p -m 0644 ${stdbuilddir}/doc/libext2fs/*.html \
 	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
-	install -d ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
-	install -p ${stdbuilddir}/lib/et/com_err/*.html \
+	$(INSTALL) -d ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
+	$(INSTALL) -p -m 0644 ${stdbuilddir}/lib/et/com_err/*.html \
 	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
 
   # texinfo docs
 	mkdir -p ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}
-	install -p ${topdir}/doc/libext2fs.texinfo \
+	$(INSTALL) -p -m 0644 ${topdir}/doc/libext2fs.texinfo \
 	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/libext2fs.texi
-	install -p ${topdir}/lib/et/com_err.texinfo \
+	$(INSTALL) -p -m 0644 ${topdir}/lib/et/com_err.texinfo \
 	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/com_err.texi
 
-	install -d ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/examples
-	install -p -m 0644 lib/ss/ss_err.et \
+	$(INSTALL) -d ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/examples
+	$(INSTALL) -p -m 0644 lib/ss/ss_err.et \
 		${stdbuilddir}/lib/ext2fs/ext2_err.et \
 		${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/examples
-	install -d ${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}/examples
-	install -p -m 0644 debugfs/debug_cmds.ct \
+	$(INSTALL) -d ${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}/examples
+	$(INSTALL) -p -m 0644 debugfs/debug_cmds.ct \
 		${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}/examples
 
-	install -d ${debdir}/uuid-dev/usr/share/doc/libuuid${UUID_SOVERSION}
-	install -p -m 0644 doc/draft-leach-uuids-guids-01.txt \
+	$(INSTALL) -d ${debdir}/uuid-dev/usr/share/doc/libuuid${UUID_SOVERSION}
+	$(INSTALL) -p -m 0644 doc/draft-leach-uuids-guids-01.txt \
 		${debdir}/uuid-dev/usr/share/doc/libuuid${UUID_SOVERSION}
 
 	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
@@ -343,7 +354,11 @@ binary-arch: install install-udeb
 	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibuuid${UUID_SOVERSION}
 	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -pe2fslibs
 
+ifneq ($(ismips),)
+	dh_strip -Xlib64ext2fs-nopic.a
+else
 	dh_strip
+endif
 
 	dh_compress
 	dh_fixperms
