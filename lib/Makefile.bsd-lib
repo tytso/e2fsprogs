@@ -13,9 +13,8 @@
 all:: pic image
 
 subdirs:: pic
-
-pic:
-	mkdir pic
+	@echo "	MKDIR pic"
+	@mkdir -p pic
 
 BSD_LIB = $(BSDLIB_IMAGE).so.$(BSDLIB_VERSION)
 BSDLIB_PIC_FLAG = -fpic

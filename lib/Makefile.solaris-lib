@@ -13,10 +13,9 @@
 
 all:: elfshared image
 
-subdirs:: elfshared
-
-elfshared:
-	mkdir elfshared
+subdirs:: Makefile
+	@echo "	MKDIR elfshared"
+	@mkdir -p elfshared
 
 ELF_LIB = $(ELF_IMAGE).so.$(ELF_VERSION)
 ELF_SONAME = $(ELF_IMAGE).so.$(ELF_SO_VERSION)

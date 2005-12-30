@@ -12,10 +12,9 @@
 
 all:: pic image
 
-subdirs:: pic
-
-pic:
-	mkdir pic
+subdirs:: Makefile
+	@echo "	MKDIR pic"
+	@mkdir -p pic
 
 BSD_LIB = $(BSDLIB_IMAGE).$(BSDLIB_VERSION).dylib
 BSDLIB_PIC_FLAG = -fPIC

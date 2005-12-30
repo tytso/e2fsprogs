@@ -1,3 +1,10 @@
+2005-12-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.bsd-lib, Makefile.checker, Makefile.darwin-lib,
+		Makefile.elf-lib, Makefile.library, Makefile.profile,
+		Makefile.solaris-lib: Revamp subdirs target so to avoid
+		needless recompilation of library object files.
+
 2005-12-10  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.elf-lib, Makefile.solaris-lib: Add $(LDFLAGS) to the
