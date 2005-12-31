@@ -74,7 +74,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.36-b2\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2005-06-20 17:51-0400\n"
+"POT-Creation-Date: 2005-12-31 16:34-0500\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -98,10 +98,10 @@ msgid "while reading the bad blocks inode"
 msgstr "i"
 
 #: e2fsck/badblocks.c:71 e2fsck/iscan.c:112 e2fsck/scantest.c:109
-#: e2fsck/unix.c:917 e2fsck/unix.c:949 misc/badblocks.c:1005
+#: e2fsck/unix.c:927 e2fsck/unix.c:960 misc/badblocks.c:1005
 #: misc/badblocks.c:1013 misc/badblocks.c:1027 misc/badblocks.c:1039
-#: misc/dumpe2fs.c:340 misc/e2image.c:565 misc/e2image.c:658
-#: misc/e2image.c:674 misc/mke2fs.c:240 misc/tune2fs.c:775 resize/main.c:208
+#: misc/dumpe2fs.c:348 misc/e2image.c:567 misc/e2image.c:660
+#: misc/e2image.c:676 misc/mke2fs.c:240 misc/tune2fs.c:776 resize/main.c:236
 #, fuzzy, c-format
 msgid "while trying to open %s"
 msgstr "Kuri Gufungura"
@@ -200,22 +200,22 @@ msgstr "OYA"
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 msgstr ""
 
-#: e2fsck/iscan.c:83 e2fsck/unix.c:736 resize/main.c:185
+#: e2fsck/iscan.c:83 e2fsck/unix.c:746
 #, fuzzy, c-format
 msgid "while opening %s for flushing"
 msgstr "Gufungura %s%S kugirango"
 
-#: e2fsck/iscan.c:88 e2fsck/unix.c:742 resize/main.c:192
+#: e2fsck/iscan.c:88 e2fsck/unix.c:752 resize/main.c:216
 #, fuzzy, c-format
 msgid "while trying to flush %s"
 msgstr "Kuri"
 
-#: e2fsck/iscan.c:121 e2fsck/scantest.c:116 misc/e2image.c:475
+#: e2fsck/iscan.c:121 e2fsck/scantest.c:116 misc/e2image.c:477
 #, fuzzy
 msgid "while opening inode scan"
 msgstr "Gufungura%S Gusikana"
 
-#: e2fsck/iscan.c:129 misc/e2image.c:493
+#: e2fsck/iscan.c:129 misc/e2image.c:495
 #, fuzzy
 msgid "while getting next inode"
 msgstr "Komeza>>"
@@ -974,7 +974,7 @@ msgid "@I @i %i in @o @i list.\n"
 msgstr "@i in o i Urutonde"
 
 #. @-expanded: filesystem has feature flag(s) set, but is a revision 0 filesystem.  
-#: e2fsck/problem.c:280 e2fsck/problem.c:594
+#: e2fsck/problem.c:280 e2fsck/problem.c:604
 msgid "@f has feature flag(s) set, but is a revision 0 @f.  "
 msgstr ""
 
@@ -1055,134 +1055,144 @@ msgstr "i OYA Bikora i Ihindurangero ni Zeru"
 msgid "Resize @i not valid.  "
 msgstr "i OYA Byemewe"
 
+#. @-expanded: superblock last mount time is in the future.  
+#: e2fsck/problem.c:337
+msgid "@S last mount time is in the future.  "
+msgstr ""
+
+#. @-expanded: superblock last write time is in the future.  
+#: e2fsck/problem.c:342
+msgid "@S last write time is in the future.  "
+msgstr ""
+
 #. @-expanded: Pass 1: Checking inodes, blocks, and sizes\n
-#: e2fsck/problem.c:339
+#: e2fsck/problem.c:349
 #, fuzzy
 msgid "Pass 1: Checking @is, @bs, and sizes\n"
 msgstr "1. ni Na"
 
 #. @-expanded: root inode is not a directory.  
-#: e2fsck/problem.c:343
+#: e2fsck/problem.c:353
 #, fuzzy
 msgid "@r is not a @d.  "
 msgstr "@R ni OYA a D"
 
 #. @-expanded: root inode has dtime set (probably due to old mke2fs).  
-#: e2fsck/problem.c:348
+#: e2fsck/problem.c:358
 #, fuzzy
 msgid "@r has dtime set (probably due to old mke2fs).  "
 msgstr "@R Gushyiraho Kuri ki/ bishaje"
 
 #. @-expanded: Reserved inode %i (%Q) has invalid mode.  
-#: e2fsck/problem.c:353
+#: e2fsck/problem.c:363
 #, fuzzy
 msgid "Reserved @i %i (%Q) has @n mode.  "
 msgstr "i Ubwoko"
 
 #. @-expanded: deleted inode %i has zero dtime.  
-#: e2fsck/problem.c:358
+#: e2fsck/problem.c:368
 #, fuzzy, c-format
 msgid "@D @i %i has zero dtime.  "
 msgstr "@i Zeru"
 
 #. @-expanded: inode %i is in use, but has dtime set.  
-#: e2fsck/problem.c:363
+#: e2fsck/problem.c:373
 #, fuzzy, c-format
 msgid "@i %i is in use, but has dtime set.  "
 msgstr "@i ni in Gukoresha Gushyiraho"
 
 #. @-expanded: inode %i is a zero-length directory.  
-#: e2fsck/problem.c:368
+#: e2fsck/problem.c:378
 #, fuzzy, c-format
 msgid "@i %i is a @z @d.  "
 msgstr "@i ni a Z D"
 
 #. @-expanded: group %g's block bitmap at %b conflicts with some other fs block.\n
-#: e2fsck/problem.c:373
+#: e2fsck/problem.c:383
 #, fuzzy
 msgid "@g %g's @b @B at %b @C.\n"
 msgstr "@g S B ku C"
 
 #. @-expanded: group %g's inode bitmap at %b conflicts with some other fs block.\n
-#: e2fsck/problem.c:378
+#: e2fsck/problem.c:388
 #, fuzzy
 msgid "@g %g's @i @B at %b @C.\n"
 msgstr "@g S i ku C"
 
 #. @-expanded: group %g's inode table at %b conflicts with some other fs block.\n
-#: e2fsck/problem.c:383
+#: e2fsck/problem.c:393
 #, fuzzy
 msgid "@g %g's @i table at %b @C.\n"
 msgstr "@g S i imbonerahamwe# ku C"
 
 #. @-expanded: group %g's block bitmap (%b) is bad.  
-#: e2fsck/problem.c:388
+#: e2fsck/problem.c:398
 #, fuzzy
 msgid "@g %g's @b @B (%b) is bad.  "
 msgstr "@g S B ni"
 
 #. @-expanded: group %g's inode bitmap (%b) is bad.  
-#: e2fsck/problem.c:393
+#: e2fsck/problem.c:403
 #, fuzzy
 msgid "@g %g's @i @B (%b) is bad.  "
 msgstr "@g S i ni"
 
 #. @-expanded: inode %i, i_size is %Is, should be %N.  
-#: e2fsck/problem.c:398
+#: e2fsck/problem.c:408
 #, fuzzy
 msgid "@i %i, i_size is %Is, @s %N.  "
 msgstr "@i ni S"
 
 #. @-expanded: inode %i, i_blocks is %Ib, should be %N.  
-#: e2fsck/problem.c:403
+#: e2fsck/problem.c:413
 #, fuzzy
 msgid "@i %i, i_@bs is %Ib, @s %N.  "
 msgstr "@i ni S"
 
 #. @-expanded: illegal block #%B (%b) in inode %i.  
-#: e2fsck/problem.c:408
+#: e2fsck/problem.c:418
 #, fuzzy
 msgid "@I @b #%B (%b) in @i %i.  "
 msgstr "@B in i"
 
 #. @-expanded: block #%B (%b) overlaps filesystem metadata in inode %i.  
-#: e2fsck/problem.c:413
+#: e2fsck/problem.c:423
 #, fuzzy
 msgid "@b #%B (%b) overlaps @f metadata in @i %i.  "
 msgstr "@B F in i"
 
 #. @-expanded: inode %i has illegal block(s).  
-#: e2fsck/problem.c:418
+#: e2fsck/problem.c:428
 #, fuzzy, c-format
 msgid "@i %i has illegal @b(s).  "
 msgstr "@i B S"
 
 #. @-expanded: Too many illegal blocks in inode %i.\n
-#: e2fsck/problem.c:423
+#: e2fsck/problem.c:433
 #, fuzzy, c-format
 msgid "Too many illegal @bs in @i %i.\n"
 msgstr "in i"
 
 #. @-expanded: illegal block #%B (%b) in bad block inode.  
-#: e2fsck/problem.c:428
+#: e2fsck/problem.c:438
 #, fuzzy
 msgid "@I @b #%B (%b) in bad @b @i.  "
 msgstr "@B in B i"
 
 #. @-expanded: Bad block inode has illegal block(s).  
-#: e2fsck/problem.c:433
+#: e2fsck/problem.c:443
 #, fuzzy
 msgid "Bad @b @i has illegal @b(s).  "
 msgstr "B i B S"
 
 #. @-expanded: Duplicate or bad block in use!\n
-#: e2fsck/problem.c:438
+#: e2fsck/problem.c:448
 #, fuzzy
 msgid "Duplicate or bad @b in use!\n"
 msgstr "Cyangwa B in Gukoresha"
 
 #. @-expanded: Bad block %b used as bad block inode indirect block.  
-#: e2fsck/problem.c:443
+#: e2fsck/problem.c:453
 #, fuzzy
 msgid "Bad @b %b used as bad @b @i indirect @b.  "
 msgstr "B Nka B i BUZIGUYE B"
@@ -1191,7 +1201,7 @@ msgstr "B Nka B i BUZIGUYE B"
 #. @-expanded: The bad block inode has probably been corrupted.  You probably\n
 #. @-expanded: should stop now and run e2fsck -c to scan for bad blocks\n
 #. @-expanded: in the filesystem.\n
-#: e2fsck/problem.c:448
+#: e2fsck/problem.c:458
 #, fuzzy
 msgid ""
 "\n"
@@ -1202,7 +1212,7 @@ msgstr "B i Guhagarara NONEAHA Na Gukoresha C Kuri Gusikana kugirango i F"
 
 #. @-expanded: \n
 #. @-expanded: If the block is really bad, the filesystem can not be fixed.\n
-#: e2fsck/problem.c:455
+#: e2fsck/problem.c:465
 #, fuzzy
 msgid ""
 "\n"
@@ -1212,7 +1222,7 @@ msgstr "i B ni i F OYA BIHAMYE"
 #. @-expanded: You can remove this block from the bad block list and hope\n
 #. @-expanded: that the block is really OK.  But there are no guarantees.\n
 #. @-expanded: \n
-#: e2fsck/problem.c:460
+#: e2fsck/problem.c:470
 #, fuzzy
 msgid ""
 "You can remove this @b from the bad @b list and hope\n"
@@ -1221,134 +1231,134 @@ msgid ""
 msgstr "Gusiba i iyi B Na kugirango i Bivuye B Urutonde Na B ni"
 
 #. @-expanded: The primary superblock (%b) is on the bad block list.\n
-#: e2fsck/problem.c:466
+#: e2fsck/problem.c:476
 #, fuzzy
 msgid "The primary @S (%b) is on the bad @b list.\n"
 msgstr "ni ku i B Urutonde"
 
 #. @-expanded: Block %b in the primary group descriptors is on the bad block list\n
-#: e2fsck/problem.c:471
+#: e2fsck/problem.c:481
 #, fuzzy
 msgid "Block %b in the primary @g descriptors is on the bad @b list\n"
 msgstr "in i g ni ku i B"
 
 #. @-expanded: Warning: Group %g's superblock (%b) is bad.\n
-#: e2fsck/problem.c:477
+#: e2fsck/problem.c:487
 #, fuzzy
 msgid "Warning: Group %g's @S (%b) is bad.\n"
 msgstr "S ni"
 
 #. @-expanded: Warning: Group %g's copy of the group descriptors has a bad block (%b).\n
-#: e2fsck/problem.c:482
+#: e2fsck/problem.c:492
 #, fuzzy
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
 msgstr "S Gukoporora Bya i g a B"
 
 #. @-expanded: Programming error?  block #%b claimed for no reason in process_bad_block.\n
-#: e2fsck/problem.c:488
+#: e2fsck/problem.c:498
 #, fuzzy
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
 msgstr "Ikosa B kugirango Oya in B"
 
 #. @-expanded: error allocating %N contiguous block(s) in block group %g for %s: %m\n
-#: e2fsck/problem.c:494
+#: e2fsck/problem.c:504
 #, fuzzy
 msgid "@A %N contiguous @b(s) in @b @g %g for %s: %m\n"
 msgstr "@A B S in B g kugirango"
 
 #. @-expanded: error allocating block buffer for relocating %s\n
-#: e2fsck/problem.c:499
+#: e2fsck/problem.c:509
 #, fuzzy, c-format
 msgid "@A @b buffer for relocating %s\n"
 msgstr "@A B kugirango"
 
 #. @-expanded: Relocating group %g's %s from %b to %c...\n
-#: e2fsck/problem.c:504
+#: e2fsck/problem.c:514
 #, fuzzy
 msgid "Relocating @g %g's %s from %b to %c...\n"
 msgstr "g S Bivuye Kuri"
 
 #. @-expanded: Relocating group %g's %s to %c...\n
-#: e2fsck/problem.c:509
+#: e2fsck/problem.c:519
 #, fuzzy, c-format
 msgid "Relocating @g %g's %s to %c...\n"
 msgstr "g S Kuri"
 
 #. @-expanded: Warning: could not read block %b of %s: %m\n
-#: e2fsck/problem.c:514
+#: e2fsck/problem.c:524
 #, fuzzy
 msgid "Warning: could not read @b %b of %s: %m\n"
 msgstr "OYA Gusoma B Bya"
 
 #. @-expanded: Warning: could not write block %b for %s: %m\n
-#: e2fsck/problem.c:519
+#: e2fsck/problem.c:529
 #, fuzzy
 msgid "Warning: could not write @b %b for %s: %m\n"
 msgstr "OYA Kwandika B kugirango"
 
 #. @-expanded: error allocating inode bitmap (%N): %m\n
-#: e2fsck/problem.c:524 e2fsck/problem.c:1251
+#: e2fsck/problem.c:534 e2fsck/problem.c:1261
 #, fuzzy
 msgid "@A @i @B (%N): %m\n"
 msgstr "@A i"
 
 #. @-expanded: error allocating block bitmap (%N): %m\n
-#: e2fsck/problem.c:529
+#: e2fsck/problem.c:539
 #, fuzzy
 msgid "@A @b @B (%N): %m\n"
 msgstr "@A i"
 
 #. @-expanded: error allocating icount link information: %m\n
-#: e2fsck/problem.c:534
+#: e2fsck/problem.c:544
 #, fuzzy, c-format
 msgid "@A icount link information: %m\n"
 msgstr "@A Ihuza Ibisobanuro"
 
 #. @-expanded: error allocating directory block array: %m\n
-#: e2fsck/problem.c:539
+#: e2fsck/problem.c:549
 #, fuzzy, c-format
 msgid "@A @d @b array: %m\n"
 msgstr "@A D B Imbonerahamwe"
 
 #. @-expanded: Error while scanning inodes (%i): %m\n
-#: e2fsck/problem.c:544
+#: e2fsck/problem.c:554
 #, fuzzy, c-format
 msgid "Error while scanning @is (%i): %m\n"
 msgstr "ni"
 
 #. @-expanded: Error while iterating over blocks in inode %i: %m\n
-#: e2fsck/problem.c:549
+#: e2fsck/problem.c:559
 #, fuzzy, c-format
 msgid "Error while iterating over @bs in @i %i: %m\n"
 msgstr "KURI in i"
 
 #. @-expanded: Error storing inode count information (inode=%i, count=%N): %m\n
-#: e2fsck/problem.c:554
+#: e2fsck/problem.c:564
 #, fuzzy
 msgid "Error storing @i count information (@i=%i, count=%N): %m\n"
 msgstr "i IBARA Ibisobanuro i IBARA"
 
 #. @-expanded: Error storing directory block information (inode=%i, block=%b, num=%N): %m\n
-#: e2fsck/problem.c:559
+#: e2fsck/problem.c:569
 #, fuzzy
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
 msgstr "D B Ibisobanuro i B"
 
 #. @-expanded: Error reading inode %i: %m\n
-#: e2fsck/problem.c:565
+#: e2fsck/problem.c:575
 #, fuzzy, c-format
 msgid "Error reading @i %i: %m\n"
 msgstr "i"
 
 #. @-expanded: inode %i has imagic flag set.  
-#: e2fsck/problem.c:573
+#: e2fsck/problem.c:583
 #, fuzzy, c-format
 msgid "@i %i has imagic flag set.  "
 msgstr "@i Ibendera Gushyiraho"
 
 #. @-expanded: Special (device/socket/fifo/symlink) file (inode %i) has immutable\n
 #. @-expanded: or append-only flag set.  
-#: e2fsck/problem.c:578
+#: e2fsck/problem.c:588
 #, fuzzy, c-format
 msgid ""
 "Special (@v/socket/fifo/symlink) file (@i %i) has immutable\n"
@@ -1356,170 +1366,170 @@ msgid ""
 msgstr "v IDOSIYE i Kongeraho... Ibendera Gushyiraho"
 
 #. @-expanded: inode %i has compression flag set on filesystem without compression support.  
-#: e2fsck/problem.c:584
+#: e2fsck/problem.c:594
 #, fuzzy, c-format
 msgid "@i %i has @cion flag set on @f without @cion support.  "
 msgstr "@i Ibendera Gushyiraho ku F Gushigikira"
 
 #. @-expanded: Special (device/socket/fifo) inode %i has non-zero size.  
-#: e2fsck/problem.c:589
+#: e2fsck/problem.c:599
 #, fuzzy, c-format
 msgid "Special (@v/socket/fifo) @i %i has non-zero size.  "
 msgstr "v IDOSIYE i Kongeraho... Ibendera Gushyiraho"
 
 #. @-expanded: journal inode is not in use, but contains data.  
-#: e2fsck/problem.c:599
+#: e2fsck/problem.c:609
 #, fuzzy
 msgid "@j @i is not in use, but contains data.  "
 msgstr "@i ni in Gukoresha Gushyiraho"
 
 #. @-expanded: journal is not regular file.  
-#: e2fsck/problem.c:604
+#: e2fsck/problem.c:614
 #, fuzzy
 msgid "@j is not regular file.  "
 msgstr "@j ni OYA Ibisanzwe IDOSIYE"
 
 #. @-expanded: inode %i was part of the orphaned inode list.  
-#: e2fsck/problem.c:609
+#: e2fsck/problem.c:619
 #, fuzzy, c-format
 msgid "@i %i was part of the @o @i list.  "
 msgstr "@i Bya i i Urutonde"
 
 #. @-expanded: inodes that were part of a corrupted orphan linked list found.  
-#: e2fsck/problem.c:615
+#: e2fsck/problem.c:625
 #, fuzzy
 msgid "@is that were part of a corrupted orphan linked list found.  "
 msgstr "@ni Bya a Urutonde Byabonetse"
 
 #. @-expanded: error allocating refcount structure (%N): %m\n
-#: e2fsck/problem.c:620
+#: e2fsck/problem.c:630
 #, fuzzy
 msgid "@A refcount structure (%N): %m\n"
 msgstr "@A Imiterere"
 
 #. @-expanded: Error reading extended attribute block %b for inode %i.  
-#: e2fsck/problem.c:625
+#: e2fsck/problem.c:635
 #, fuzzy
 msgid "Error reading @a @b %b for @i %i.  "
 msgstr "a B kugirango i"
 
 #. @-expanded: inode %i has a bad extended attribute block %b.  
-#: e2fsck/problem.c:630
+#: e2fsck/problem.c:640
 #, fuzzy
 msgid "@i %i has a bad @a @b %b.  "
 msgstr "@i a a B"
 
 #. @-expanded: Error reading extended attribute block %b (%m).  
-#: e2fsck/problem.c:635
+#: e2fsck/problem.c:645
 #, fuzzy
 msgid "Error reading @a @b %b (%m).  "
 msgstr "a B"
 
 #. @-expanded: extended attribute block %b has reference count %B, should be %N.  
-#: e2fsck/problem.c:640
+#: e2fsck/problem.c:650
 #, fuzzy
 msgid "@a @b %b has reference count %B, @s %N.  "
 msgstr "@a B Indango IBARA"
 
 #. @-expanded: Error writing extended attribute block %b (%m).  
-#: e2fsck/problem.c:645
+#: e2fsck/problem.c:655
 #, fuzzy
 msgid "Error writing @a @b %b (%m).  "
 msgstr "a B"
 
 #. @-expanded: extended attribute block %b has h_blocks > 1.  
-#: e2fsck/problem.c:650
+#: e2fsck/problem.c:660
 #, fuzzy
 msgid "@a @b %b has h_@bs > 1.  "
 msgstr "@a B 1."
 
 #. @-expanded: error allocating extended attribute block %b.  
-#: e2fsck/problem.c:655
+#: e2fsck/problem.c:665
 #, fuzzy
 msgid "@A @a @b %b.  "
 msgstr "@o i in"
 
 #. @-expanded: extended attribute block %b is corrupt (allocation collision).  
-#: e2fsck/problem.c:660
+#: e2fsck/problem.c:670
 #, fuzzy
 msgid "@a @b %b is corrupt (allocation collision).  "
 msgstr "@a B ni"
 
 #. @-expanded: extended attribute block %b is corrupt (invalid name).  
-#: e2fsck/problem.c:665
+#: e2fsck/problem.c:675
 #, fuzzy
 msgid "@a @b %b is corrupt (@n name).  "
 msgstr "@a B ni Sibyo Izina:"
 
 #. @-expanded: extended attribute block %b is corrupt (invalid value).  
-#: e2fsck/problem.c:670
+#: e2fsck/problem.c:680
 #, fuzzy
 msgid "@a @b %b is corrupt (@n value).  "
 msgstr "@a B ni Sibyo Agaciro"
 
 #. @-expanded: inode %i is too big.  
-#: e2fsck/problem.c:675
+#: e2fsck/problem.c:685
 #, fuzzy, c-format
 msgid "@i %i is too big.  "
 msgstr "@i ni"
 
 #. @-expanded: block #%B (%b) causes directory to be too big.  
-#: e2fsck/problem.c:679
+#: e2fsck/problem.c:689
 #, fuzzy
 msgid "@b #%B (%b) causes @d to be too big.  "
 msgstr "@B D Kuri"
 
 #. @-expanded: block #%B (%b) causes file to be too big.  
-#: e2fsck/problem.c:684
+#: e2fsck/problem.c:694
 #, fuzzy
 msgid "@b #%B (%b) causes file to be too big.  "
 msgstr "@B IDOSIYE Kuri"
 
 #. @-expanded: block #%B (%b) causes symlink to be too big.  
-#: e2fsck/problem.c:689
+#: e2fsck/problem.c:699
 #, fuzzy
 msgid "@b #%B (%b) causes symlink to be too big.  "
 msgstr "@B Kuri"
 
 #. @-expanded: inode %i has INDEX_FL flag set on filesystem without htree support.\n
-#: e2fsck/problem.c:694
+#: e2fsck/problem.c:704
 #, fuzzy, c-format
 msgid "@i %i has INDEX_FL flag set on @f without htree support.\n"
 msgstr "@i Ibendera Gushyiraho ku F Gushigikira"
 
 #. @-expanded: inode %i has INDEX_FL flag set but is not a directory.\n
-#: e2fsck/problem.c:699
+#: e2fsck/problem.c:709
 #, fuzzy, c-format
 msgid "@i %i has INDEX_FL flag set but is not a @d.\n"
 msgstr "@i Ibendera Gushyiraho ni OYA a D"
 
 #. @-expanded: HTREE directory inode %i has an invalid root node.\n
-#: e2fsck/problem.c:704
+#: e2fsck/problem.c:714
 #, fuzzy, c-format
 msgid "@h %i has an @n root node.\n"
 msgstr "@h Sibyo Imizi"
 
 #. @-expanded: HTREE directory inode %i has an unsupported hash version (%N)\n
-#: e2fsck/problem.c:709
+#: e2fsck/problem.c:719
 #, fuzzy
 msgid "@h %i has an unsupported hash version (%N)\n"
 msgstr "@h Verisiyo"
 
 #. @-expanded: HTREE directory inode %i uses an incompatible htree root node flag.\n
-#: e2fsck/problem.c:714
+#: e2fsck/problem.c:724
 #, fuzzy, c-format
 msgid "@h %i uses an incompatible htree root node flag.\n"
 msgstr "@h Imizi Ibendera"
 
 #. @-expanded: HTREE directory inode %i has a tree depth (%N) which is too big\n
-#: e2fsck/problem.c:719
+#: e2fsck/problem.c:729
 #, fuzzy
 msgid "@h %i has a tree depth (%N) which is too big\n"
 msgstr "@h a Ubujyakuzimu ni"
 
 #. @-expanded: Bad block inode has an indirect block (%b) that conflicts with\n
 #. @-expanded: filesystem metadata.  
-#: e2fsck/problem.c:724
+#: e2fsck/problem.c:734
 #, fuzzy
 msgid ""
 "Bad @b @i has an indirect @b (%b) that conflicts with\n"
@@ -1527,43 +1537,43 @@ msgid ""
 msgstr "B i BUZIGUYE B F"
 
 #. @-expanded: Resize inode (re)creation failed: %m.
-#: e2fsck/problem.c:730
+#: e2fsck/problem.c:740
 #, fuzzy, c-format
 msgid "Resize @i (re)creation failed: %m."
 msgstr "i Byanze"
 
 #. @-expanded: inode %i has a extra size (%IS) which is invalid\n
-#: e2fsck/problem.c:735
+#: e2fsck/problem.c:745
 #, fuzzy
 msgid "@i %i has a extra size (%IS) which is @n\n"
 msgstr "@h a Ubujyakuzimu ni"
 
 #. @-expanded: extended attribute in inode %i has a namelen (%N) which is invalid\n
-#: e2fsck/problem.c:740
+#: e2fsck/problem.c:750
 #, fuzzy
 msgid "@a in @i %i has a namelen (%N) which is @n\n"
 msgstr "@h a Ubujyakuzimu ni"
 
 #. @-expanded: extended attribute in inode %i has a value size (%N) which is invalid\n
-#: e2fsck/problem.c:745
+#: e2fsck/problem.c:755
 #, fuzzy
 msgid "@a in @i %i has a value size (%N) which is @n\n"
 msgstr "@h a Ubujyakuzimu ni"
 
 #. @-expanded: extended attribute in inode %i has a value offset (%N) which is invalid\n
-#: e2fsck/problem.c:750
+#: e2fsck/problem.c:760
 #, fuzzy
 msgid "@a in @i %i has a value offset (%N) which is @n\n"
 msgstr "@h a Ubujyakuzimu ni"
 
 #. @-expanded: extended attribute in inode %i has a value block (%N) which is invalid (must be 0)\n
-#: e2fsck/problem.c:755
+#: e2fsck/problem.c:765
 #, fuzzy
 msgid "@a in @i %i has a value @b (%N) which is @n (must be 0)\n"
 msgstr "@h a Ubujyakuzimu ni"
 
 #. @-expanded: extended attribute in inode %i has a hash (%N) which is invalid (must be 0)\n
-#: e2fsck/problem.c:760
+#: e2fsck/problem.c:770
 #, fuzzy
 msgid "@a in @i %i has a hash (%N) which is @n (must be 0)\n"
 msgstr "@h a Ubujyakuzimu ni"
@@ -1571,7 +1581,7 @@ msgstr "@h a Ubujyakuzimu ni"
 #. @-expanded: \n
 #. @-expanded: Running additional passes to resolve blocks claimed by more than one inode...\n
 #. @-expanded: Pass 1B: Rescanning for multiply-claimed blocks\n
-#: e2fsck/problem.c:767
+#: e2fsck/problem.c:777
 #, fuzzy
 msgid ""
 "\n"
@@ -1580,49 +1590,49 @@ msgid ""
 msgstr "Byabonetse Gusubiramo B kugirango Gusubiramo"
 
 #. @-expanded: multiply-claimed block(s) in inode %i:
-#: e2fsck/problem.c:773
+#: e2fsck/problem.c:783
 #, fuzzy, c-format
 msgid "@m @b(s) in @i %i:"
 msgstr "@B in i"
 
-#: e2fsck/problem.c:788
+#: e2fsck/problem.c:798
 #, c-format
 msgid "Error while scanning inodes (%i): %m\n"
 msgstr ""
 
 #. @-expanded: error allocating inode bitmap (inode_dup_map): %m\n
-#: e2fsck/problem.c:793
+#: e2fsck/problem.c:803
 #, fuzzy, c-format
 msgid "@A @i @B (@i_dup_map): %m\n"
 msgstr "@A i"
 
 #. @-expanded: Error while iterating over blocks in inode %i (%s): %m\n
-#: e2fsck/problem.c:798
+#: e2fsck/problem.c:808
 #, fuzzy, c-format
 msgid "Error while iterating over @bs in @i %i (%s): %m\n"
 msgstr "KURI in i"
 
 #. @-expanded: Error adjusting refcount for extended attribute block %b (inode %i): %m\n
-#: e2fsck/problem.c:803 e2fsck/problem.c:1119
+#: e2fsck/problem.c:813 e2fsck/problem.c:1129
 #, fuzzy
 msgid "Error adjusting refcount for @a @b %b (@i %i): %m\n"
 msgstr "kugirango a B i"
 
-#. @-expanded: Pass 1C: Scanning directories for inodes with multiply-claimed blocks.\n
-#: e2fsck/problem.c:809
+#. @-expanded: Pass 1C: Scanning directories for inodes with multiply-claimed blocks\n
+#: e2fsck/problem.c:819
 #, fuzzy
-msgid "Pass 1C: Scanning directories for @is with @m @bs.\n"
+msgid "Pass 1C: Scanning directories for @is with @m @bs\n"
 msgstr "ububiko bw'amaderese kugirango ni Na:"
 
 #. @-expanded: Pass 1D: Reconciling multiply-claimed blocks\n
-#: e2fsck/problem.c:815
+#: e2fsck/problem.c:825
 #, fuzzy
 msgid "Pass 1D: Reconciling @m @bs\n"
 msgstr "Gusubiramo"
 
 #. @-expanded: File %Q (inode #%i, mod time %IM) \n
 #. @-expanded:   has %B multiply-claimed block(s), shared with %N file(s):\n
-#: e2fsck/problem.c:820
+#: e2fsck/problem.c:830
 #, fuzzy
 msgid ""
 "File %Q (@i #%i, mod time %IM) \n"
@@ -1630,20 +1640,20 @@ msgid ""
 msgstr "Idosiye i MOD Igihe Gusubiramo B S Na: IDOSIYE S"
 
 #. @-expanded: \t%Q (inode #%i, mod time %IM)\n
-#: e2fsck/problem.c:826
+#: e2fsck/problem.c:836
 #, fuzzy
 msgid "\t%Q (@i #%i, mod time %IM)\n"
 msgstr "%Q(@i MOD Igihe"
 
 #. @-expanded: \t<filesystem metadata>\n
-#: e2fsck/problem.c:831
+#: e2fsck/problem.c:841
 #, fuzzy
 msgid "\t<@f metadata>\n"
 msgstr "<@F"
 
 #. @-expanded: (There are %N inodes containing multiply-claimed blocks.)\n
 #. @-expanded: \n
-#: e2fsck/problem.c:836
+#: e2fsck/problem.c:846
 #, fuzzy
 msgid ""
 "(There are %N @is containing @m @bs.)\n"
@@ -1652,80 +1662,80 @@ msgstr "(ni Gusubiramo"
 
 #. @-expanded: multiply-claimed blocks already reassigned or cloned.\n
 #. @-expanded: \n
-#: e2fsck/problem.c:841
+#: e2fsck/problem.c:851
 #, fuzzy
 msgid ""
 "@m @bs already reassigned or cloned.\n"
 "\n"
 msgstr "Cyangwa"
 
-#: e2fsck/problem.c:854
+#: e2fsck/problem.c:864
 #, fuzzy, c-format
 msgid "Couldn't clone file: %m\n"
 msgstr "IDOSIYE"
 
 #. @-expanded: Pass 2: Checking directory structure\n
-#: e2fsck/problem.c:860
+#: e2fsck/problem.c:870
 #, fuzzy
 msgid "Pass 2: Checking @d structure\n"
 msgstr "2. D"
 
 #. @-expanded: invalid inode number for '.' in directory inode %i.\n
-#: e2fsck/problem.c:865
+#: e2fsck/problem.c:875
 #, fuzzy, c-format
 msgid "@n @i number for '.' in @d @i %i.\n"
 msgstr "i Umubare kugirango in D i"
 
 #. @-expanded: entry '%Dn' in %p (%i) has invalid inode #: %Di.\n
-#: e2fsck/problem.c:870
+#: e2fsck/problem.c:880
 #, fuzzy
 msgid "@E has @n @i #: %Di.\n"
 msgstr "@E i"
 
 #. @-expanded: entry '%Dn' in %p (%i) has deleted/unused inode %Di.  
-#: e2fsck/problem.c:875
+#: e2fsck/problem.c:885
 #, fuzzy
 msgid "@E has @D/unused @i %Di.  "
 msgstr "@E Kidakoreshwa i"
 
 #. @-expanded: entry '%Dn' in %p (%i) is a link to '.'  
-#: e2fsck/problem.c:880
+#: e2fsck/problem.c:890
 #, fuzzy
 msgid "@E @L to '.'  "
 msgstr "@E Kuri"
 
 #. @-expanded: entry '%Dn' in %p (%i) points to inode (%Di) located in a bad block.\n
-#: e2fsck/problem.c:885
+#: e2fsck/problem.c:895
 #, fuzzy
 msgid "@E points to @i (%Di) located in a bad @b.\n"
 msgstr "@E Utudomo Kuri i in a B"
 
 #. @-expanded: entry '%Dn' in %p (%i) is a link to directory %P (%Di).\n
-#: e2fsck/problem.c:890
+#: e2fsck/problem.c:900
 #, fuzzy
 msgid "@E @L to @d %P (%Di).\n"
 msgstr "@E Kuri D"
 
 #. @-expanded: entry '%Dn' in %p (%i) is a link to the root inode.\n
-#: e2fsck/problem.c:895
+#: e2fsck/problem.c:905
 #, fuzzy
 msgid "@E @L to the @r.\n"
 msgstr "@E Kuri i R"
 
 #. @-expanded: entry '%Dn' in %p (%i) has illegal characters in its name.\n
-#: e2fsck/problem.c:900
+#: e2fsck/problem.c:910
 #, fuzzy
 msgid "@E has illegal characters in its name.\n"
 msgstr "@E Inyuguti in Izina:"
 
 #. @-expanded: Missing '.' in directory inode %i.\n
-#: e2fsck/problem.c:905
+#: e2fsck/problem.c:915
 #, fuzzy, c-format
 msgid "Missing '.' in @d @i %i.\n"
 msgstr "in D i"
 
 #. @-expanded: Missing '..' in directory inode %i.\n
-#: e2fsck/problem.c:910
+#: e2fsck/problem.c:920
 #, fuzzy, c-format
 msgid "Missing '..' in @d @i %i.\n"
 msgstr ""
@@ -1739,13 +1749,13 @@ msgstr ""
 "."
 
 #. @-expanded: First entry '%Dn' (inode=%Di) in directory inode %i (%p) should be '.'\n
-#: e2fsck/problem.c:915
+#: e2fsck/problem.c:925
 #, fuzzy
 msgid "First @e '%Dn' (@i=%Di) in @d @i %i (%p) @s '.'\n"
 msgstr "E in D i S"
 
 #. @-expanded: Second entry '%Dn' (inode=%Di) in directory inode %i should be '..'\n
-#: e2fsck/problem.c:920
+#: e2fsck/problem.c:930
 #, fuzzy
 msgid "Second @e '%Dn' (@i=%Di) in @d @i %i @s '..'\n"
 msgstr ""
@@ -1759,61 +1769,61 @@ msgstr ""
 "."
 
 #. @-expanded: i_faddr for inode %i (%Q) is %IF, should be zero.\n
-#: e2fsck/problem.c:925
+#: e2fsck/problem.c:935
 #, fuzzy
 msgid "i_faddr @F %IF, @s zero.\n"
 msgstr "S Zeru"
 
 #. @-expanded: i_file_acl for inode %i (%Q) is %If, should be zero.\n
-#: e2fsck/problem.c:930
+#: e2fsck/problem.c:940
 #, fuzzy
 msgid "i_file_acl @F %If, @s zero.\n"
 msgstr "S Zeru"
 
 #. @-expanded: i_dir_acl for inode %i (%Q) is %Id, should be zero.\n
-#: e2fsck/problem.c:935
+#: e2fsck/problem.c:945
 #, fuzzy
 msgid "i_dir_acl @F %Id, @s zero.\n"
 msgstr "S Zeru"
 
 #. @-expanded: i_frag for inode %i (%Q) is %N, should be zero.\n
-#: e2fsck/problem.c:940
+#: e2fsck/problem.c:950
 #, fuzzy
 msgid "i_frag @F %N, @s zero.\n"
 msgstr "S Zeru"
 
 #. @-expanded: i_fsize for inode %i (%Q) is %N, should be zero.\n
-#: e2fsck/problem.c:945
+#: e2fsck/problem.c:955
 #, fuzzy
 msgid "i_fsize @F %N, @s zero.\n"
 msgstr "S Zeru"
 
 #. @-expanded: inode %i (%Q) has invalid mode (%Im).\n
-#: e2fsck/problem.c:950
+#: e2fsck/problem.c:960
 #, fuzzy
 msgid "@i %i (%Q) has @n mode (%Im).\n"
 msgstr "@i a Ubwoko"
 
 #. @-expanded: directory inode %i, block %B, offset %N: directory corrupted\n
-#: e2fsck/problem.c:955
+#: e2fsck/problem.c:965
 #, fuzzy
 msgid "@d @i %i, @b %B, offset %N: @d corrupted\n"
 msgstr "@D i B Nta- boneza D"
 
 #. @-expanded: directory inode %i, block %B, offset %N: filename too long\n
-#: e2fsck/problem.c:960
+#: e2fsck/problem.c:970
 #, fuzzy
 msgid "@d @i %i, @b %B, offset %N: filename too long\n"
 msgstr "@D i B Nta- boneza Izina ry'idosiye:"
 
 #. @-expanded: directory inode %i has an unallocated block #%B.  
-#: e2fsck/problem.c:965
+#: e2fsck/problem.c:975
 #, fuzzy
 msgid "@d @i %i has an unallocated @b #%B.  "
 msgstr "@D i B"
 
 #. @-expanded: '.' directory entry in directory inode %i is not NULL terminated\n
-#: e2fsck/problem.c:970
+#: e2fsck/problem.c:980
 #, fuzzy, c-format
 msgid "'.' @d @e in @d @i %i is not NULL terminated\n"
 msgstr ""
@@ -1827,7 +1837,7 @@ msgstr ""
 "."
 
 #. @-expanded: '..' directory entry in directory inode %i is not NULL terminated\n
-#: e2fsck/problem.c:975
+#: e2fsck/problem.c:985
 #, fuzzy, c-format
 msgid "'..' @d @e in @d @i %i is not NULL terminated\n"
 msgstr ""
@@ -1848,25 +1858,25 @@ msgstr ""
 "."
 
 #. @-expanded: inode %i (%Q) is an illegal character device.\n
-#: e2fsck/problem.c:980
+#: e2fsck/problem.c:990
 #, fuzzy
 msgid "@i %i (%Q) is an @I character @v.\n"
 msgstr "@i ni Inyuguti v"
 
 #. @-expanded: inode %i (%Q) is an illegal block device.\n
-#: e2fsck/problem.c:985
+#: e2fsck/problem.c:995
 #, fuzzy
 msgid "@i %i (%Q) is an @I @b @v.\n"
 msgstr "@i ni B v"
 
 #. @-expanded: entry '%Dn' in %p (%i) is duplicate '.' entry.\n
-#: e2fsck/problem.c:990
+#: e2fsck/problem.c:1000
 #, fuzzy
 msgid "@E is duplicate '.' @e.\n"
 msgstr "@E."
 
 #. @-expanded: entry '%Dn' in %p (%i) is duplicate '..' entry.\n
-#: e2fsck/problem.c:995
+#: e2fsck/problem.c:1005
 #, fuzzy
 msgid "@E is duplicate '..' @e.\n"
 msgstr ""
@@ -1879,188 +1889,188 @@ msgstr ""
 "X- Generator: KBabel 1. 0\n"
 ". E."
 
-#: e2fsck/problem.c:1000 e2fsck/problem.c:1276
+#: e2fsck/problem.c:1010 e2fsck/problem.c:1286
 #, fuzzy, c-format
 msgid "Internal error: couldn't find dir_info for %i.\n"
 msgstr "Ikosa Gushaka kugirango"
 
 #. @-expanded: entry '%Dn' in %p (%i) has rec_len of %Dr, should be %N.\n
-#: e2fsck/problem.c:1005
+#: e2fsck/problem.c:1015
 #, fuzzy
 msgid "@E has rec_len of %Dr, @s %N.\n"
 msgstr "@E Bya"
 
 #. @-expanded: error allocating icount structure: %m\n
-#: e2fsck/problem.c:1010
+#: e2fsck/problem.c:1020
 #, fuzzy, c-format
 msgid "@A icount structure: %m\n"
 msgstr "@A Imiterere"
 
 #. @-expanded: Error iterating over directory blocks: %m\n
-#: e2fsck/problem.c:1015
+#: e2fsck/problem.c:1025
 #, fuzzy, c-format
 msgid "Error iterating over @d @bs: %m\n"
 msgstr "KURI D"
 
 #. @-expanded: Error reading directory block %b (inode %i): %m\n
-#: e2fsck/problem.c:1020
+#: e2fsck/problem.c:1030
 #, fuzzy
 msgid "Error reading @d @b %b (@i %i): %m\n"
 msgstr "D B i"
 
 #. @-expanded: Error writing directory block %b (inode %i): %m\n
-#: e2fsck/problem.c:1025
+#: e2fsck/problem.c:1035
 #, fuzzy
 msgid "Error writing @d @b %b (@i %i): %m\n"
 msgstr "D B i"
 
 #. @-expanded: error allocating new directory block for inode %i (%s): %m\n
-#: e2fsck/problem.c:1030
+#: e2fsck/problem.c:1040
 #, fuzzy, c-format
 msgid "@A new @d @b for @i %i (%s): %m\n"
 msgstr "@A Gishya D B kugirango i"
 
 #. @-expanded: Error deallocating inode %i: %m\n
-#: e2fsck/problem.c:1035
+#: e2fsck/problem.c:1045
 #, fuzzy, c-format
 msgid "Error deallocating @i %i: %m\n"
 msgstr "i"
 
 #. @-expanded: directory entry for '.' is big.  
-#: e2fsck/problem.c:1040
+#: e2fsck/problem.c:1050
 #, fuzzy
 msgid "@d @e for '.' is big.  "
 msgstr "@D E kugirango ni"
 
 #. @-expanded: inode %i (%Q) is an illegal FIFO.\n
-#: e2fsck/problem.c:1045
+#: e2fsck/problem.c:1055
 #, fuzzy
 msgid "@i %i (%Q) is an @I FIFO.\n"
 msgstr "@i ni"
 
 #. @-expanded: inode %i (%Q) is an illegal socket.\n
-#: e2fsck/problem.c:1050
+#: e2fsck/problem.c:1060
 #, fuzzy
 msgid "@i %i (%Q) is an @I socket.\n"
 msgstr "@i ni"
 
 #. @-expanded: Setting filetype for entry '%Dn' in %p (%i) to %N.\n
-#: e2fsck/problem.c:1055
+#: e2fsck/problem.c:1065
 #, fuzzy
 msgid "Setting filetype for @E to %N.\n"
 msgstr "kugirango E Kuri"
 
 #. @-expanded: entry '%Dn' in %p (%i) has an incorrect filetype (was %Dt, should be %N).\n
-#: e2fsck/problem.c:1060
+#: e2fsck/problem.c:1070
 #, fuzzy
 msgid "@E has an incorrect filetype (was %Dt, @s %N).\n"
 msgstr "@E"
 
 #. @-expanded: entry '%Dn' in %p (%i) has filetype set.\n
-#: e2fsck/problem.c:1065
+#: e2fsck/problem.c:1075
 #, fuzzy
 msgid "@E has filetype set.\n"
 msgstr "@E Gushyiraho"
 
 #. @-expanded: entry '%Dn' in %p (%i) has a zero-length name.\n
-#: e2fsck/problem.c:1070
+#: e2fsck/problem.c:1080
 #, fuzzy
 msgid "@E has a @z name.\n"
 msgstr "@E a Zeru Uburebure Izina:"
 
 #. @-expanded: Symlink %Q (inode #%i) is invalid.\n
-#: e2fsck/problem.c:1075
+#: e2fsck/problem.c:1085
 #, fuzzy
 msgid "Symlink %Q (@i #%i) is @n.\n"
 msgstr "i ni Sibyo"
 
 #. @-expanded: extended attribute block for inode %i (%Q) is invalid (%If).\n
-#: e2fsck/problem.c:1080
+#: e2fsck/problem.c:1090
 #, fuzzy
 msgid "@a @b @F @n (%If).\n"
 msgstr "@a B Sibyo"
 
 #. @-expanded: filesystem contains large files, but lacks LARGE_FILE flag in superblock.\n
-#: e2fsck/problem.c:1085
+#: e2fsck/problem.c:1095
 #, fuzzy
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
 msgstr "@F Kirimo Binini Idosiye Ibendera in"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) not referenced\n
-#: e2fsck/problem.c:1090
+#: e2fsck/problem.c:1100
 #, fuzzy
 msgid "@p @h %d: node (%B) not referenced\n"
 msgstr "@P h OYA"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) referenced twice\n
-#: e2fsck/problem.c:1095
+#: e2fsck/problem.c:1105
 #, fuzzy
 msgid "@p @h %d: node (%B) referenced twice\n"
 msgstr "@P h"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has bad min hash\n
-#: e2fsck/problem.c:1100
+#: e2fsck/problem.c:1110
 #, fuzzy
 msgid "@p @h %d: node (%B) has bad min hash\n"
 msgstr "@P h GITO"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has bad max hash\n
-#: e2fsck/problem.c:1105
+#: e2fsck/problem.c:1115
 #, fuzzy
 msgid "@p @h %d: node (%B) has bad max hash\n"
 msgstr "@P h KININI"
 
 #. @-expanded: invalid HTREE directory inode %d (%q).  
-#: e2fsck/problem.c:1110
+#: e2fsck/problem.c:1120
 #, fuzzy
 msgid "@n @h %d (%q).  "
 msgstr "h"
 
 #. @-expanded: problem in HTREE directory inode %d (%q): bad block number %b.\n
-#: e2fsck/problem.c:1114
+#: e2fsck/problem.c:1124
 #, fuzzy
 msgid "@p @h %d (%q): bad @b number %b.\n"
 msgstr "@P h B Umubare"
 
 #. @-expanded: problem in HTREE directory inode %d: root node is invalid\n
-#: e2fsck/problem.c:1124
+#: e2fsck/problem.c:1134
 #, fuzzy, c-format
 msgid "@p @h %d: root node is @n\n"
 msgstr "@P h Imizi ni"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has invalid limit (%N)\n
-#: e2fsck/problem.c:1129
+#: e2fsck/problem.c:1139
 #, fuzzy
 msgid "@p @h %d: node (%B) has @n limit (%N)\n"
 msgstr "@P h"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has invalid count (%N)\n
-#: e2fsck/problem.c:1134
+#: e2fsck/problem.c:1144
 #, fuzzy
 msgid "@p @h %d: node (%B) has @n count (%N)\n"
 msgstr "@P h IBARA"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has an unordered hash table\n
-#: e2fsck/problem.c:1139
+#: e2fsck/problem.c:1149
 #, fuzzy
 msgid "@p @h %d: node (%B) has an unordered hash table\n"
 msgstr "@P h"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has invalid depth\n
-#: e2fsck/problem.c:1144
+#: e2fsck/problem.c:1154
 #, fuzzy
 msgid "@p @h %d: node (%B) has @n depth\n"
 msgstr "@P h"
 
 #. @-expanded: Duplicate entry '%Dn' in %p (%i) found.  
-#: e2fsck/problem.c:1149
+#: e2fsck/problem.c:1159
 #, fuzzy
 msgid "Duplicate @E found.  "
 msgstr "E Byabonetse"
 
 #. @-expanded: entry '%Dn' in %p (%i) has a non-unique filename.\n
 #. @-expanded: Rename to %s
-#: e2fsck/problem.c:1154
+#: e2fsck/problem.c:1164
 #, fuzzy, no-c-format
 msgid ""
 "@E has a non-unique filename.\n"
@@ -2070,7 +2080,7 @@ msgstr "@E a Cyo nyine Izina ry'idosiye: Kuri"
 #. @-expanded: Duplicate entry '%Dn' found.\n
 #. @-expanded: \tMarking %p (%i) to be rebuilt.\n
 #. @-expanded: \n
-#: e2fsck/problem.c:1159
+#: e2fsck/problem.c:1169
 #, fuzzy
 msgid ""
 "Duplicate @e '%Dn' found.\n"
@@ -2079,37 +2089,37 @@ msgid ""
 msgstr "E Byabonetse Kuri"
 
 #. @-expanded: Pass 3: Checking directory connectivity\n
-#: e2fsck/problem.c:1166
+#: e2fsck/problem.c:1176
 #, fuzzy
 msgid "Pass 3: Checking @d connectivity\n"
 msgstr "3. D"
 
 #. @-expanded: root inode not allocated.  
-#: e2fsck/problem.c:1171
+#: e2fsck/problem.c:1181
 #, fuzzy
 msgid "@r not allocated.  "
 msgstr "@R OYA"
 
 #. @-expanded: No room in lost+found directory.  
-#: e2fsck/problem.c:1176
+#: e2fsck/problem.c:1186
 #, fuzzy
 msgid "No room in @l @d.  "
 msgstr "in L D"
 
 #. @-expanded: Unconnected directory inode %i (%p)\n
-#: e2fsck/problem.c:1181
+#: e2fsck/problem.c:1191
 #, fuzzy, c-format
 msgid "Unconnected @d @i %i (%p)\n"
 msgstr "D i"
 
 #. @-expanded: /lost+found not found.  
-#: e2fsck/problem.c:1186
+#: e2fsck/problem.c:1196
 #, fuzzy
 msgid "/@l not found.  "
 msgstr "/@L OYA Byabonetse"
 
 #. @-expanded: '..' in %Q (%i) is %P (%j), should be %q (%d).\n
-#: e2fsck/problem.c:1191
+#: e2fsck/problem.c:1201
 #, fuzzy
 msgid "'..' in %Q (%i) is %P (%j), @s %q (%d).\n"
 msgstr ""
@@ -2130,61 +2140,61 @@ msgstr ""
 "."
 
 #. @-expanded: Bad or non-existent /lost+found.  Cannot reconnect.\n
-#: e2fsck/problem.c:1196
+#: e2fsck/problem.c:1206
 #, fuzzy
 msgid "Bad or non-existent /@l.  Cannot reconnect.\n"
 msgstr "Cyangwa L"
 
 #. @-expanded: Could not expand /lost+found: %m\n
-#: e2fsck/problem.c:1201
+#: e2fsck/problem.c:1211
 #, fuzzy, c-format
 msgid "Could not expand /@l: %m\n"
 msgstr "OYA Kwagura L"
 
-#: e2fsck/problem.c:1206
+#: e2fsck/problem.c:1216
 #, fuzzy, c-format
 msgid "Could not reconnect %i: %m\n"
 msgstr "OYA"
 
 #. @-expanded: Error while trying to find /lost+found: %m\n
-#: e2fsck/problem.c:1211
+#: e2fsck/problem.c:1221
 #, fuzzy, c-format
 msgid "Error while trying to find /@l: %m\n"
 msgstr "Kuri Gushaka L"
 
 #. @-expanded: ext2fs_new_block: %m while trying to create /lost+found directory\n
-#: e2fsck/problem.c:1216
+#: e2fsck/problem.c:1226
 #, fuzzy, c-format
 msgid "ext2fs_new_@b: %m while trying to create /@l @d\n"
 msgstr "B Kuri Kurema L"
 
 #. @-expanded: ext2fs_new_inode: %m while trying to create /lost+found directory\n
-#: e2fsck/problem.c:1221
+#: e2fsck/problem.c:1231
 #, fuzzy, c-format
 msgid "ext2fs_new_@i: %m while trying to create /@l @d\n"
 msgstr "i Kuri Kurema L"
 
 #. @-expanded: ext2fs_new_dir_block: %m while creating new directory block\n
-#: e2fsck/problem.c:1226
+#: e2fsck/problem.c:1236
 #, fuzzy, c-format
 msgid "ext2fs_new_dir_@b: %m while creating new @d @b\n"
 msgstr "B Gishya D"
 
 #. @-expanded: ext2fs_write_dir_block: %m while writing the directory block for /lost+found\n
-#: e2fsck/problem.c:1231
+#: e2fsck/problem.c:1241
 #, fuzzy, c-format
 msgid "ext2fs_write_dir_@b: %m while writing the @d @b for /@l\n"
 msgstr "B i D B kugirango"
 
 #. @-expanded: Error while adjusting inode count on inode %i\n
-#: e2fsck/problem.c:1236
+#: e2fsck/problem.c:1246
 #, fuzzy, c-format
 msgid "Error while adjusting @i count on @i %i\n"
 msgstr "i IBARA ku i"
 
 #. @-expanded: Couldn't fix parent of inode %i: %m\n
 #. @-expanded: \n
-#: e2fsck/problem.c:1241
+#: e2fsck/problem.c:1251
 #, fuzzy, c-format
 msgid ""
 "Couldn't fix parent of @i %i: %m\n"
@@ -2193,7 +2203,7 @@ msgstr "Bya i"
 
 #. @-expanded: Couldn't fix parent of inode %i: Couldn't find parent directory entry\n
 #. @-expanded: \n
-#: e2fsck/problem.c:1246
+#: e2fsck/problem.c:1256
 #, fuzzy, c-format
 msgid ""
 "Couldn't fix parent of @i %i: Couldn't find parent @d @e\n"
@@ -2201,73 +2211,73 @@ msgid ""
 msgstr "Bya i Gushaka D"
 
 #. @-expanded: Error creating root directory (%s): %m\n
-#: e2fsck/problem.c:1256
+#: e2fsck/problem.c:1266
 #, fuzzy, c-format
 msgid "Error creating root @d (%s): %m\n"
 msgstr "Imizi D"
 
 #. @-expanded: Error creating /lost+found directory (%s): %m\n
-#: e2fsck/problem.c:1261
+#: e2fsck/problem.c:1271
 #, fuzzy, c-format
 msgid "Error creating /@l @d (%s): %m\n"
 msgstr "L D"
 
 #. @-expanded: root inode is not a directory; aborting.\n
-#: e2fsck/problem.c:1266
+#: e2fsck/problem.c:1276
 #, fuzzy
 msgid "@r is not a @d; aborting.\n"
 msgstr "@R ni OYA a D"
 
 #. @-expanded: Cannot proceed without a root inode.\n
-#: e2fsck/problem.c:1271
+#: e2fsck/problem.c:1281
 #, fuzzy
 msgid "Cannot proceed without a @r.\n"
 msgstr "a R"
 
 #. @-expanded: /lost+found is not a directory (ino=%i)\n
-#: e2fsck/problem.c:1281
+#: e2fsck/problem.c:1291
 #, fuzzy, c-format
 msgid "/@l is not a @d (ino=%i)\n"
 msgstr "/@L ni OYA a D"
 
-#: e2fsck/problem.c:1288
+#: e2fsck/problem.c:1298
 msgid "Pass 3A: Optimizing directories\n"
 msgstr ""
 
-#: e2fsck/problem.c:1293
+#: e2fsck/problem.c:1303
 #, fuzzy, c-format
 msgid "Failed to create dirs_to_hash iterator: %m"
 msgstr "Kuri Kurema"
 
-#: e2fsck/problem.c:1298
+#: e2fsck/problem.c:1308
 #, fuzzy
 msgid "Failed to optimize directory %q (%d): %m"
 msgstr "Kuri Kugeza ku ndunduro bushyinguro"
 
-#: e2fsck/problem.c:1303
+#: e2fsck/problem.c:1313
 #, fuzzy
 msgid "Optimizing directories: "
 msgstr "ububiko bw'amaderese"
 
-#: e2fsck/problem.c:1320
+#: e2fsck/problem.c:1330
 #, fuzzy
 msgid "Pass 4: Checking reference counts\n"
 msgstr "4. Indango"
 
 #. @-expanded: unattached zero-length inode %i.  
-#: e2fsck/problem.c:1325
+#: e2fsck/problem.c:1335
 #, fuzzy, c-format
 msgid "@u @z @i %i.  "
 msgstr "@o i in"
 
 #. @-expanded: unattached inode %i\n
-#: e2fsck/problem.c:1330
+#: e2fsck/problem.c:1340
 #, c-format
 msgid "@u @i %i\n"
 msgstr ""
 
 #. @-expanded: inode %i ref count is %Il, should be %N.  
-#: e2fsck/problem.c:1335
+#: e2fsck/problem.c:1345
 #, fuzzy
 msgid "@i %i ref count is %Il, @s %N.  "
 msgstr "@i indango IBARA ni S"
@@ -2275,7 +2285,7 @@ msgstr "@i indango IBARA ni S"
 #. @-expanded: WARNING: PROGRAMMING BUG IN E2FSCK!\n
 #. @-expanded: \tOR SOME BONEHEAD (YOU) IS CHECKING A MOUNTED (LIVE) FILESYSTEM.\n
 #. @-expanded: inode_link_info[%i] is %N, inode.i_links_count is %Il.  They should be the same!\n
-#: e2fsck/problem.c:1339
+#: e2fsck/problem.c:1349
 #, fuzzy
 msgid ""
 "WARNING: PROGRAMMING BUG IN E2FSCK!\n"
@@ -2284,97 +2294,97 @@ msgid ""
 msgstr "A ni i ni i"
 
 #. @-expanded: Pass 5: Checking group summary information\n
-#: e2fsck/problem.c:1349
+#: e2fsck/problem.c:1359
 #, fuzzy
 msgid "Pass 5: Checking @g summary information\n"
 msgstr "5 g Inshamake"
 
 #. @-expanded: Padding at end of inode bitmap is not set. 
-#: e2fsck/problem.c:1354
+#: e2fsck/problem.c:1364
 #, fuzzy
 msgid "Padding at end of @i @B is not set. "
 msgstr "ku Impera Bya i ni OYA Gushyiraho"
 
 #. @-expanded: Padding at end of block bitmap is not set. 
-#: e2fsck/problem.c:1359
+#: e2fsck/problem.c:1369
 #, fuzzy
 msgid "Padding at end of @b @B is not set. "
 msgstr "ku Impera Bya B ni OYA Gushyiraho"
 
 #. @-expanded: block bitmap differences: 
-#: e2fsck/problem.c:1364
+#: e2fsck/problem.c:1374
 #, fuzzy
 msgid "@b @B differences: "
 msgstr "@B"
 
 #. @-expanded: inode bitmap differences: 
-#: e2fsck/problem.c:1384
+#: e2fsck/problem.c:1394
 #, fuzzy
 msgid "@i @B differences: "
 msgstr "@i"
 
 #. @-expanded: Free inodes count wrong for group #%g (%i, counted=%j).\n
-#: e2fsck/problem.c:1404
+#: e2fsck/problem.c:1414
 #, fuzzy
 msgid "Free @is count wrong for @g #%g (%i, counted=%j).\n"
 msgstr "ni IBARA kugirango g"
 
 #. @-expanded: Directories count wrong for group #%g (%i, counted=%j).\n
-#: e2fsck/problem.c:1409
+#: e2fsck/problem.c:1419
 #, fuzzy
 msgid "Directories count wrong for @g #%g (%i, counted=%j).\n"
 msgstr "IBARA kugirango g"
 
 #. @-expanded: Free inodes count wrong (%i, counted=%j).\n
-#: e2fsck/problem.c:1414
+#: e2fsck/problem.c:1424
 #, fuzzy
 msgid "Free @is count wrong (%i, counted=%j).\n"
 msgstr "ni IBARA"
 
 #. @-expanded: Free blocks count wrong for group #%g (%b, counted=%c).\n
-#: e2fsck/problem.c:1419
+#: e2fsck/problem.c:1429
 #, fuzzy
 msgid "Free @bs count wrong for @g #%g (%b, counted=%c).\n"
 msgstr "IBARA kugirango g"
 
 #. @-expanded: Free blocks count wrong (%b, counted=%c).\n
-#: e2fsck/problem.c:1424
+#: e2fsck/problem.c:1434
 #, fuzzy
 msgid "Free @bs count wrong (%b, counted=%c).\n"
 msgstr "IBARA"
 
 #. @-expanded: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
 #. @-expanded: endpoints (%i, %j)\n
-#: e2fsck/problem.c:1429
+#: e2fsck/problem.c:1439
 #, fuzzy
 msgid ""
 "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
 "endpoints (%i, %j)\n"
 msgstr "F BIHUYE"
 
-#: e2fsck/problem.c:1435
+#: e2fsck/problem.c:1445
 #, fuzzy
 msgid "Internal error: fudging end of bitmap (%N)\n"
 msgstr "Ikosa Impera Bya Bitimapu"
 
 #. @-expanded: Error copying in replacement inode bitmap: %m\n
-#: e2fsck/problem.c:1440
+#: e2fsck/problem.c:1450
 #, fuzzy, c-format
 msgid "Error copying in replacement @i @B: %m\n"
 msgstr "i"
 
 #. @-expanded: Error copying in replacement block bitmap: %m\n
-#: e2fsck/problem.c:1445
+#: e2fsck/problem.c:1455
 #, c-format
 msgid "Error copying in replacement @b @B: %m\n"
 msgstr ""
 
-#: e2fsck/problem.c:1569
+#: e2fsck/problem.c:1593
 #, fuzzy, c-format
 msgid "Unhandled error code (0x%x)!\n"
 msgstr "Ikosa ITEGEKONGENGA"
 
-#: e2fsck/problem.c:1642
+#: e2fsck/problem.c:1687
 msgid "IGNORED"
 msgstr ""
 
@@ -2501,30 +2511,30 @@ msgstr "%s:%d/%dIdosiye."
 msgid "         # of inodes with ind/dind/tind blocks: %d/%d/%d\n"
 msgstr "#Bya Na:"
 
-#: e2fsck/unix.c:176 misc/badblocks.c:779 misc/tune2fs.c:791 misc/util.c:151
-#: resize/main.c:100
+#: e2fsck/unix.c:176 misc/badblocks.c:779 misc/tune2fs.c:792 misc/util.c:151
+#: resize/main.c:105
 #, fuzzy, c-format
 msgid "while determining whether %s is mounted."
 msgstr "ni"
 
-#: e2fsck/unix.c:191
+#: e2fsck/unix.c:194
 #, fuzzy, c-format
 msgid "Warning!  %s is mounted.\n"
 msgstr "ni"
 
-#: e2fsck/unix.c:195
+#: e2fsck/unix.c:198
 #, fuzzy, c-format
 msgid "%s is mounted.  "
 msgstr "%sni"
 
-#: e2fsck/unix.c:197
+#: e2fsck/unix.c:200
 #, fuzzy
 msgid ""
 "Cannot continue, aborting.\n"
 "\n"
 msgstr "urifuzagukomeza"
 
-#: e2fsck/unix.c:198
+#: e2fsck/unix.c:201
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -2534,146 +2544,146 @@ msgid ""
 "\n"
 msgstr "ku a Gicurasi"
 
-#: e2fsck/unix.c:201
+#: e2fsck/unix.c:204
 #, fuzzy
 msgid "Do you really want to continue"
 msgstr "Kuri urifuzagukomeza"
 
-#: e2fsck/unix.c:203
+#: e2fsck/unix.c:206
 #, fuzzy, c-format
 msgid "check aborted.\n"
 msgstr "Kugenzura..."
 
-#: e2fsck/unix.c:266
+#: e2fsck/unix.c:269
 #, fuzzy
 msgid " contains a file system with errors"
 msgstr "Kirimo a IDOSIYE Sisitemu Na: Amakosa"
 
-#: e2fsck/unix.c:268
+#: e2fsck/unix.c:271
 #, fuzzy
 msgid " was not cleanly unmounted"
 msgstr "OYA"
 
-#: e2fsck/unix.c:272
+#: e2fsck/unix.c:275
 #, fuzzy, c-format
 msgid " has been mounted %u times without being checked"
 msgstr "Times Ivivuwe"
 
-#: e2fsck/unix.c:280
+#: e2fsck/unix.c:283
 #, fuzzy, c-format
 msgid " has gone %u days without being checked"
 msgstr "Iminsi Ivivuwe"
 
-#: e2fsck/unix.c:289
+#: e2fsck/unix.c:292
 #, fuzzy
 msgid ", check forced.\n"
 msgstr ",Kugenzura..."
 
-#: e2fsck/unix.c:292
+#: e2fsck/unix.c:295
 #, fuzzy, c-format
 msgid "%s: clean, %d/%d files, %d/%d blocks"
 msgstr "%s:GUSUKURA Idosiye"
 
-#: e2fsck/unix.c:308
+#: e2fsck/unix.c:311
 #, fuzzy
 msgid " (check after next mount)"
 msgstr "(Kugenzura... Nyuma Komeza>>"
 
-#: e2fsck/unix.c:310
+#: e2fsck/unix.c:313
 #, fuzzy, c-format
 msgid " (check in %ld mounts)"
 msgstr "(Kugenzura... in"
 
-#: e2fsck/unix.c:456
+#: e2fsck/unix.c:459
 #, fuzzy, c-format
 msgid "ERROR: Couldn't open /dev/null (%s)\n"
 msgstr "Gufungura NTAGIHARI"
 
-#: e2fsck/unix.c:527
+#: e2fsck/unix.c:530
 #, fuzzy, c-format
 msgid "Invalid EA version.\n"
 msgstr "Verisiyo"
 
-#: e2fsck/unix.c:533
+#: e2fsck/unix.c:536
 #, c-format
 msgid "Unknown extended option: %s\n"
 msgstr ""
 
-#: e2fsck/unix.c:597
+#: e2fsck/unix.c:603
 #, fuzzy, c-format
 msgid "Error validating file descriptor %d: %s\n"
 msgstr "IDOSIYE"
 
-#: e2fsck/unix.c:601
+#: e2fsck/unix.c:607
 #, fuzzy
 msgid "Invalid completion information file descriptor"
 msgstr "Ibisobanuro IDOSIYE"
 
-#: e2fsck/unix.c:616
+#: e2fsck/unix.c:622
 #, fuzzy
-msgid "Only one the options -p/-a, -n or -y may be specified."
+msgid "Only one of the options -p/-a, -n or -y may be specified."
 msgstr "i Amahitamo P a N Cyangwa Y Gicurasi"
 
-#: e2fsck/unix.c:637
+#: e2fsck/unix.c:643
 #, fuzzy, c-format
 msgid "The -t option is not supported on this version of e2fsck.\n"
 msgstr "T Ihitamo ni OYA ku iyi Verisiyo Bya"
 
-#: e2fsck/unix.c:702
+#: e2fsck/unix.c:708
 #, fuzzy, c-format
 msgid "Byte-swapping filesystems not compiled in this version of e2fsck\n"
 msgstr "OYA in iyi Verisiyo Bya"
 
-#: e2fsck/unix.c:725 misc/tune2fs.c:458 misc/tune2fs.c:716 misc/tune2fs.c:733
+#: e2fsck/unix.c:731 misc/tune2fs.c:459 misc/tune2fs.c:717 misc/tune2fs.c:734
 #, fuzzy, c-format
 msgid "Unable to resolve '%s'"
 msgstr "Kuri"
 
-#: e2fsck/unix.c:751
+#: e2fsck/unix.c:761
 #, fuzzy, c-format
 msgid "Incompatible options not allowed when byte-swapping.\n"
 msgstr "Amahitamo OYA Ryari: Bayite"
 
-#: e2fsck/unix.c:758
+#: e2fsck/unix.c:768
 #, fuzzy, c-format
 msgid "The -c and the -l/-L options may not be both used at the same time.\n"
 msgstr "C Na i L Amahitamo Gicurasi OYA Byombi ku i Igihe"
 
-#: e2fsck/unix.c:836
+#: e2fsck/unix.c:846
 #, fuzzy, c-format
 msgid "Error: ext2fs library version out of date!\n"
 msgstr "Isomero Verisiyo Inyuma Bya Itariki"
 
-#: e2fsck/unix.c:844
+#: e2fsck/unix.c:854
 #, fuzzy
 msgid "while trying to initialize program"
 msgstr "Kuri gutangiza Porogaramu"
 
-#: e2fsck/unix.c:858
+#: e2fsck/unix.c:868
 #, fuzzy, c-format
 msgid "\tUsing %s, %s\n"
 msgstr "ikoresha"
 
-#: e2fsck/unix.c:870
+#: e2fsck/unix.c:880
 #, fuzzy
 msgid "need terminal for interactive repairs"
 msgstr "kugirango Biganira"
 
-#: e2fsck/unix.c:907
+#: e2fsck/unix.c:917
 #, fuzzy, c-format
 msgid "%s trying backup blocks...\n"
 msgstr "%sInyibutsa"
 
-#: e2fsck/unix.c:908
+#: e2fsck/unix.c:918
 #, fuzzy
 msgid "Couldn't find ext2 superblock,"
 msgstr "Gushaka"
 
-#: e2fsck/unix.c:909
+#: e2fsck/unix.c:919
 msgid "Group descriptors look bad..."
 msgstr ""
 
-#: e2fsck/unix.c:920
+#: e2fsck/unix.c:930
 #, fuzzy, c-format
 msgid ""
 "The filesystem revision is apparently too high for this version of e2fsck.\n"
@@ -2681,113 +2691,113 @@ msgid ""
 "\n"
 msgstr "Isubiramo ni kirekire kugirango iyi Verisiyo Bya i ni"
 
-#: e2fsck/unix.c:926
+#: e2fsck/unix.c:936
 #, fuzzy, c-format
 msgid "Could this be a zero-length partition?\n"
 msgstr "iyi a Zeru Uburebure"
 
-#: e2fsck/unix.c:928
+#: e2fsck/unix.c:938
 #, fuzzy, c-format
 msgid "You must have %s access to the filesystem or be root\n"
 msgstr "Kuri i Cyangwa"
 
-#: e2fsck/unix.c:933
+#: e2fsck/unix.c:943
 #, fuzzy, c-format
 msgid "Possibly non-existent or swap device?\n"
 msgstr "Cyangwa APAREYE"
 
-#: e2fsck/unix.c:936
+#: e2fsck/unix.c:946
 #, fuzzy, c-format
 msgid ""
 "Disk write-protected; use the -n option to do a read-only\n"
 "check of the device.\n"
 msgstr "Kwandika Birinzwe Gukoresha i N Ihitamo Kuri a Gusoma Bya i APAREYE"
 
-#: e2fsck/unix.c:952
+#: e2fsck/unix.c:963
 #, fuzzy
 msgid "Get a newer version of e2fsck!"
 msgstr "a Verisiyo Bya"
 
-#: e2fsck/unix.c:973
+#: e2fsck/unix.c:984
 #, fuzzy, c-format
 msgid "while checking ext3 journal for %s"
 msgstr "Ikinyamakuru kugirango"
 
-#: e2fsck/unix.c:984
+#: e2fsck/unix.c:995
 #, fuzzy, c-format
 msgid ""
 "Warning: skipping journal recovery because doing a read-only filesystem "
 "check.\n"
 msgstr "Gusimbuka:%s Ikinyamakuru a Gusoma Kugenzura..."
 
-#: e2fsck/unix.c:997
+#: e2fsck/unix.c:1008
 #, fuzzy, c-format
 msgid "unable to set superblock flags on %s\n"
 msgstr "Kuri Gushyiraho Amabendera ku"
 
-#: e2fsck/unix.c:1003
+#: e2fsck/unix.c:1014
 #, fuzzy, c-format
 msgid "while recovering ext3 journal of %s"
 msgstr "Ikinyamakuru Bya"
 
-#: e2fsck/unix.c:1032
+#: e2fsck/unix.c:1043
 #, fuzzy
 msgid "Warning: compression support is experimental.\n"
 msgstr "igabanyangano Gushigikira ni Ifite uburambe"
 
-#: e2fsck/unix.c:1037
+#: e2fsck/unix.c:1048
 #, fuzzy, c-format
 msgid ""
 "E2fsck not compiled with HTREE support,\n"
 "\tbut filesystem %s has HTREE directories.\n"
 msgstr "OYA Na: Gushigikira ububiko bw'amaderese"
 
-#: e2fsck/unix.c:1081
+#: e2fsck/unix.c:1092
 #, fuzzy, c-format
 msgid "%s: Filesystem byte order already normalized.\n"
 msgstr "%s:Bayite Itondekanya"
 
-#: e2fsck/unix.c:1101
+#: e2fsck/unix.c:1112
 msgid "while reading bad blocks inode"
 msgstr ""
 
-#: e2fsck/unix.c:1103
+#: e2fsck/unix.c:1114
 #, fuzzy, c-format
 msgid "This doesn't bode well, but we'll try to go on...\n"
 msgstr "Kuri Gyayo ku"
 
-#: e2fsck/unix.c:1110
+#: e2fsck/unix.c:1121
 #, fuzzy, c-format
 msgid "Restarting e2fsck from the beginning...\n"
 msgstr "Bivuye i Itangiriro"
 
-#: e2fsck/unix.c:1114
+#: e2fsck/unix.c:1125
 #, fuzzy
 msgid "while resetting context"
 msgstr "Imvugiro"
 
-#: e2fsck/unix.c:1121
+#: e2fsck/unix.c:1132
 #, c-format
 msgid "%s: e2fsck canceled.\n"
 msgstr ""
 
-#: e2fsck/unix.c:1126
+#: e2fsck/unix.c:1137
 msgid "aborted"
 msgstr ""
 
-#: e2fsck/unix.c:1134
+#: e2fsck/unix.c:1145
 #, c-format
 msgid ""
 "\n"
 "%s: ***** FILE SYSTEM WAS MODIFIED *****\n"
 msgstr ""
 
-#: e2fsck/unix.c:1137
+#: e2fsck/unix.c:1148
 #, c-format
 msgid "%s: ***** REBOOT LINUX *****\n"
 msgstr ""
 
-#: e2fsck/unix.c:1143
+#: e2fsck/unix.c:1156
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -2947,7 +2957,7 @@ msgstr "in"
 # Statusbar
 #: misc/badblocks.c:60
 #, fuzzy
-msgid "done                        \n"
+msgid "done                             \n"
 msgstr "Byakozwe"
 
 #: misc/badblocks.c:78
@@ -3104,7 +3114,7 @@ msgstr "APAREYE Ingano Ingano"
 msgid "while trying to determine device size"
 msgstr "Kuri APAREYE Ingano"
 
-#: misc/badblocks.c:980 misc/mke2fs.c:1223
+#: misc/badblocks.c:980 misc/mke2fs.c:1233
 #, fuzzy, c-format
 msgid "invalid blocks count - %s"
 msgstr "IBARA"
@@ -3189,99 +3199,99 @@ msgstr "=ni Na: Na"
 msgid "Must use '-v', =, - or +\n"
 msgstr "Gukoresha Cyangwa"
 
-#: misc/dumpe2fs.c:54
+#: misc/dumpe2fs.c:53
 #, c-format
 msgid "Usage: %s [-bfhixV] [-ob superblock] [-oB blocksize] device\n"
 msgstr ""
 
-#: misc/dumpe2fs.c:121
+#: misc/dumpe2fs.c:131
 #, c-format
 msgid "Group %lu: (Blocks "
 msgstr ""
 
-#: misc/dumpe2fs.c:126
+#: misc/dumpe2fs.c:136
 #, fuzzy, c-format
 msgid "  %s superblock at "
 msgstr "%sku"
 
-#: misc/dumpe2fs.c:127
+#: misc/dumpe2fs.c:137
 msgid "Primary"
 msgstr ""
 
-#: misc/dumpe2fs.c:127
+#: misc/dumpe2fs.c:137
 msgid "Backup"
 msgstr "Inyibutsa"
 
-#: misc/dumpe2fs.c:131
+#: misc/dumpe2fs.c:141
 #, fuzzy, c-format
 msgid ", Group descriptors at "
 msgstr ",ku"
 
-#: misc/dumpe2fs.c:135
+#: misc/dumpe2fs.c:145
 #, fuzzy, c-format
 msgid ""
 "\n"
 "  Reserved GDT blocks at "
 msgstr "ku"
 
-#: misc/dumpe2fs.c:143
+#: misc/dumpe2fs.c:152
 #, fuzzy, c-format
 msgid " Group descriptor at "
 msgstr "ku"
 
-#: misc/dumpe2fs.c:149
+#: misc/dumpe2fs.c:158
 #, fuzzy
 msgid "  Block bitmap at "
 msgstr "Bitimapu ku"
 
-#: misc/dumpe2fs.c:154
+#: misc/dumpe2fs.c:163
 #, fuzzy
 msgid ", Inode bitmap at "
 msgstr ",Bitimapu ku"
 
-#: misc/dumpe2fs.c:159
+#: misc/dumpe2fs.c:168
 #, fuzzy
 msgid ""
 "\n"
 "  Inode table at "
 msgstr "imbonerahamwe# ku"
 
-#: misc/dumpe2fs.c:166
+#: misc/dumpe2fs.c:175
 #, fuzzy, c-format
 msgid ""
 "\n"
 "  %d free blocks, %d free inodes, %d directories\n"
 msgstr "%dKigenga Kigenga"
 
-#: misc/dumpe2fs.c:172
+#: misc/dumpe2fs.c:181
 msgid "  Free blocks: "
 msgstr ""
 
-#: misc/dumpe2fs.c:180
+#: misc/dumpe2fs.c:189
 msgid "  Free inodes: "
 msgstr ""
 
-#: misc/dumpe2fs.c:206
+#: misc/dumpe2fs.c:215
 #, fuzzy
 msgid "while printing bad block list"
 msgstr "Icapa... Funga Urutonde"
 
-#: misc/dumpe2fs.c:212
+#: misc/dumpe2fs.c:221
 #, c-format
 msgid "Bad blocks: %d"
 msgstr ""
 
-#: misc/dumpe2fs.c:235 misc/tune2fs.c:153
+#: misc/dumpe2fs.c:244 misc/tune2fs.c:154
 #, fuzzy
 msgid "while reading journal superblock"
 msgstr "Ikinyamakuru"
 
-#: misc/dumpe2fs.c:243
+#: misc/dumpe2fs.c:252
 #, fuzzy
 msgid "Couldn't find journal superblock magic numbers"
 msgstr "Gushaka Ikinyamakuru Imibare"
 
-#: misc/dumpe2fs.c:247
+#: misc/dumpe2fs.c:256
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -3293,27 +3303,27 @@ msgid ""
 "Journal number of users:  %d\n"
 msgstr "Funga Ingano Uburebure Itangira Funga Gutangira Umubare Bya"
 
-#: misc/dumpe2fs.c:260
+#: misc/dumpe2fs.c:269
 #, c-format
 msgid "Journal users:            %s\n"
 msgstr ""
 
-#: misc/dumpe2fs.c:315 misc/mke2fs.c:1161
+#: misc/dumpe2fs.c:324 misc/mke2fs.c:1171
 #, fuzzy, c-format
 msgid "\tUsing %s\n"
 msgstr "ikoresha"
 
-#: misc/dumpe2fs.c:342 misc/e2image.c:660 misc/tune2fs.c:778 resize/main.c:210
+#: misc/dumpe2fs.c:350 misc/e2image.c:662 misc/tune2fs.c:779 resize/main.c:238
 #, fuzzy, c-format
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Gushaka Byemewe"
 
-#: misc/dumpe2fs.c:353
+#: misc/dumpe2fs.c:361
 #, fuzzy, c-format
 msgid "Note: This is a byte-swapped filesystem\n"
 msgstr "ni a Bayite"
 
-#: misc/dumpe2fs.c:369
+#: misc/dumpe2fs.c:377
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -3389,7 +3399,7 @@ msgstr "Kuri"
 msgid "e2label: error writing superblock\n"
 msgstr "Ikosa"
 
-#: misc/e2label.c:116 misc/tune2fs.c:450
+#: misc/e2label.c:116 misc/tune2fs.c:451
 #, fuzzy, c-format
 msgid "Usage: e2label device [newlabel]\n"
 msgstr "APAREYE"
@@ -3810,38 +3820,48 @@ msgstr "in kugirango"
 msgid "invalid reserved blocks percent - %s"
 msgstr "Ku ijana"
 
-#: misc/mke2fs.c:1096
+#: misc/mke2fs.c:1082
+#, fuzzy, c-format
+msgid "bad revision level - %s"
+msgstr "Intera"
+
+#: misc/mke2fs.c:1104
 #, fuzzy, c-format
 msgid "invalid inode size - %s"
 msgstr "Ingano"
 
-#: misc/mke2fs.c:1130 misc/tune2fs.c:302
+#: misc/mke2fs.c:1125
+#, fuzzy, c-format
+msgid "bad num inodes - %s"
+msgstr "Intera"
+
+#: misc/mke2fs.c:1140 misc/tune2fs.c:303
 #, fuzzy, c-format
 msgid "Invalid filesystem option set: %s\n"
 msgstr "Ihitamo Gushyiraho"
 
-#: misc/mke2fs.c:1185 misc/mke2fs.c:1566
+#: misc/mke2fs.c:1195 misc/mke2fs.c:1585
 #, fuzzy, c-format
 msgid "while trying to open journal device %s\n"
 msgstr "Kuri Gufungura Ikinyamakuru APAREYE"
 
-#: misc/mke2fs.c:1191
+#: misc/mke2fs.c:1201
 #, fuzzy, c-format
 msgid "Journal dev blocksize (%d) smaller than minimum blocksize %d\n"
 msgstr "Gitoya Gito"
 
-#: misc/mke2fs.c:1205
+#: misc/mke2fs.c:1215
 #, fuzzy, c-format
 msgid "%d-byte blocks too big for system (max %d)"
 msgstr "%d-bytekugirango Sisitemu KININI"
 
-#: misc/mke2fs.c:1209
+#: misc/mke2fs.c:1219
 #, fuzzy, c-format
 msgid ""
 "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
 msgstr "kugirango Sisitemu KININI Kuri"
 
-#: misc/mke2fs.c:1215
+#: misc/mke2fs.c:1225
 #, c-format
 msgid ""
 "\n"
@@ -3850,23 +3870,23 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/mke2fs.c:1246
+#: misc/mke2fs.c:1256
 msgid "filesystem"
 msgstr ""
 
-#: misc/mke2fs.c:1269 resize/main.c:244
+#: misc/mke2fs.c:1279 resize/main.c:272
 #, fuzzy
 msgid "while trying to determine filesystem size"
 msgstr "Kuri Ingano"
 
-#: misc/mke2fs.c:1275
+#: misc/mke2fs.c:1285
 #, fuzzy
 msgid ""
 "Couldn't determine device size; you must specify\n"
 "the size of the filesystem\n"
 msgstr "APAREYE Ingano Ingano Bya i"
 
-#: misc/mke2fs.c:1282
+#: misc/mke2fs.c:1292
 #, fuzzy
 msgid ""
 "Device size reported to be zero.  Invalid partition specified, or\n"
@@ -3877,108 +3897,114 @@ msgstr ""
 "Ingano Kuri Zeru imbonerahamwe# Nyuma Byahinduwe Irahuze Na in Gukoresha "
 "Gicurasi Kuri Gusoma imbonerahamwe#"
 
-#: misc/mke2fs.c:1300
+#: misc/mke2fs.c:1310
 #, fuzzy
 msgid "Filesystem larger than apparent device size."
 msgstr "Kinini APAREYE Ingano"
 
-#: misc/mke2fs.c:1322
+#: misc/mke2fs.c:1332
 #, fuzzy
 msgid "while trying to determine hardware sector size"
 msgstr "Kuri Ingano"
 
-#: misc/mke2fs.c:1341
+#: misc/mke2fs.c:1352
 #, fuzzy
 msgid "reserved online resize blocks not supported on non-sparse filesystem"
 msgstr "kiri kuri interineti Ihindurangero OYA ku"
 
-#: misc/mke2fs.c:1350
+#: misc/mke2fs.c:1361
 #, fuzzy
 msgid "blocks per group count out of range"
 msgstr "Itsinda IBARA Inyuma Bya Urutonde"
 
-#: misc/mke2fs.c:1360
+#: misc/mke2fs.c:1368
+msgid ""
+"Filesystem too large.  No more than 2**31-1 blocks\n"
+"\t (8TB using a blocksize of 4k) are currently supported."
+msgstr ""
+
+#: misc/mke2fs.c:1378
 #, fuzzy, c-format
 msgid "invalid inode size %d (min %d/max %d)"
 msgstr "Ingano GITO KININI"
 
-#: misc/mke2fs.c:1366
+#: misc/mke2fs.c:1384
 #, fuzzy, c-format
 msgid "Warning: %d-byte inodes not usable on most systems\n"
 msgstr "OYA ku"
 
-#: misc/mke2fs.c:1416
+#: misc/mke2fs.c:1435
 #, fuzzy
 msgid "while setting up superblock"
 msgstr "Igenamiterere Hejuru"
 
-#: misc/mke2fs.c:1450
+#: misc/mke2fs.c:1469
 #, fuzzy, c-format
 msgid "unknown os - %s"
 msgstr "Kitazwi"
 
-#: misc/mke2fs.c:1504
+#: misc/mke2fs.c:1523
 #, fuzzy
 msgid "while trying to allocate filesystem tables"
 msgstr "Kuri Imbonerahamwe"
 
-#: misc/mke2fs.c:1535
+#: misc/mke2fs.c:1554
 #, fuzzy, c-format
 msgid "while zeroing block %u at end of filesystem"
 msgstr "Funga ku Impera Bya"
 
-#: misc/mke2fs.c:1548
+#: misc/mke2fs.c:1567
 #, fuzzy
 msgid "while reserving blocks for online resize"
 msgstr "kugirango kiri kuri interineti Ihindurangero"
 
-#: misc/mke2fs.c:1559 misc/tune2fs.c:387
+#: misc/mke2fs.c:1578 misc/tune2fs.c:388
 #, fuzzy
 msgid "journal"
 msgstr "Ikinyamakuru"
 
-#: misc/mke2fs.c:1571
+#: misc/mke2fs.c:1590
 #, fuzzy, c-format
 msgid "Adding journal to device %s: "
 msgstr "Ikinyamakuru Kuri APAREYE"
 
-#: misc/mke2fs.c:1578
+#: misc/mke2fs.c:1597
 #, fuzzy, c-format
 msgid ""
 "\n"
 "\twhile trying to add journal to device %s"
 msgstr "Kuri Kongeramo Ikinyamakuru Kuri APAREYE"
 
-#: misc/mke2fs.c:1583 misc/mke2fs.c:1607 misc/tune2fs.c:415 misc/tune2fs.c:429
+#: misc/mke2fs.c:1602 misc/mke2fs.c:1626 misc/tune2fs.c:416 misc/tune2fs.c:430
 #, c-format
 msgid "done\n"
 msgstr ""
 
-#: misc/mke2fs.c:1595
+#: misc/mke2fs.c:1614
 #, fuzzy, c-format
 msgid "Creating journal (%d blocks): "
 msgstr "Ikinyamakuru"
 
-#: misc/mke2fs.c:1603
+#: misc/mke2fs.c:1622
 #, fuzzy
 msgid ""
 "\n"
 "\twhile trying to create journal"
 msgstr "Kuri Kurema Ikinyamakuru"
 
-#: misc/mke2fs.c:1612
+#: misc/mke2fs.c:1631
 #, fuzzy, c-format
 msgid "Writing superblocks and filesystem accounting information: "
 msgstr "Na Ibisobanuro"
 
-#: misc/mke2fs.c:1617
+#: misc/mke2fs.c:1636
 #, fuzzy, c-format
 msgid ""
 "\n"
 "Warning, had trouble writing out superblocks."
 msgstr "Inyuma"
 
-#: misc/mke2fs.c:1620
+#: misc/mke2fs.c:1639
 #, c-format
 msgid ""
 "done\n"
@@ -3990,12 +4016,12 @@ msgstr ""
 msgid "Usage: mklost+found\n"
 msgstr ""
 
-#: misc/tune2fs.c:77
+#: misc/tune2fs.c:78
 #, fuzzy
 msgid "Please run e2fsck on the filesystem.\n"
 msgstr "Gukoresha ku i"
 
-#: misc/tune2fs.c:84
+#: misc/tune2fs.c:85
 #, fuzzy, c-format
 msgid ""
 "Usage: %s [-c max_mounts_count] [-e errors_behavior] [-g group]\n"
@@ -4009,185 +4035,185 @@ msgstr ""
 "Amahitamo L S Ibendera M Ku ijana o Amahitamo R IBARA u Ukoresha: C IBARA "
 "Igice Akarango Iheruka Iheruka Kugenzura... Igihe U"
 
-#: misc/tune2fs.c:141
+#: misc/tune2fs.c:142
 #, fuzzy
 msgid "while trying to open external journal"
 msgstr "Kuri Gufungura external Ikinyamakuru"
 
-#: misc/tune2fs.c:145
+#: misc/tune2fs.c:146
 #, fuzzy, c-format
 msgid "%s is not a journal device.\n"
 msgstr "%sni OYA a Ikinyamakuru APAREYE"
 
-#: misc/tune2fs.c:160
+#: misc/tune2fs.c:161
 #, fuzzy
 msgid "Journal superblock not found!\n"
 msgstr "OYA Byabonetse"
 
-#: misc/tune2fs.c:172
+#: misc/tune2fs.c:173
 #, fuzzy
 msgid "Filesystem's UUID not found on journal device.\n"
 msgstr "OYA Byabonetse ku Ikinyamakuru APAREYE"
 
-#: misc/tune2fs.c:193
+#: misc/tune2fs.c:194
 msgid "Journal NOT removed\n"
 msgstr ""
 
-#: misc/tune2fs.c:199
+#: misc/tune2fs.c:200
 msgid "Journal removed\n"
 msgstr ""
 
-#: misc/tune2fs.c:231
+#: misc/tune2fs.c:232
 #, fuzzy
 msgid "while reading journal inode"
 msgstr "Ikinyamakuru"
 
-#: misc/tune2fs.c:238
+#: misc/tune2fs.c:239
 #, fuzzy
 msgid "while reading bitmaps"
 msgstr "Bitimapu"
 
-#: misc/tune2fs.c:245
+#: misc/tune2fs.c:246
 #, fuzzy
 msgid "while clearing journal inode"
 msgstr "Ikinyamakuru"
 
-#: misc/tune2fs.c:256
+#: misc/tune2fs.c:257
 #, fuzzy
 msgid "while writing journal inode"
 msgstr "Ikinyamakuru"
 
-#: misc/tune2fs.c:271
+#: misc/tune2fs.c:272
 #, fuzzy, c-format
 msgid "Invalid mount option set: %s\n"
 msgstr "Ihitamo Gushyiraho"
 
-#: misc/tune2fs.c:317
+#: misc/tune2fs.c:318
 #, fuzzy
 msgid ""
 "The has_journal flag may only be cleared when the filesystem is\n"
 "unmounted or mounted read-only.\n"
 msgstr "Ibendera Gicurasi Ryari: i Cyangwa Gusoma"
 
-#: misc/tune2fs.c:325
+#: misc/tune2fs.c:326
 #, fuzzy
 msgid ""
 "The needs_recovery flag is set.  Please run e2fsck before clearing\n"
 "the has_journal flag.\n"
 msgstr "Ibendera ni Gushyiraho Gukoresha Mbere Ibendera"
 
-#: misc/tune2fs.c:382
+#: misc/tune2fs.c:383
 #, fuzzy
 msgid "The filesystem already has a journal.\n"
 msgstr "a Ikinyamakuru"
 
-#: misc/tune2fs.c:399
+#: misc/tune2fs.c:400
 #, fuzzy, c-format
 msgid ""
 "\n"
 "\twhile trying to open journal on %s\n"
 msgstr "Kuri Gufungura Ikinyamakuru ku"
 
-#: misc/tune2fs.c:403
+#: misc/tune2fs.c:404
 #, fuzzy, c-format
 msgid "Creating journal on device %s: "
 msgstr "Ikinyamakuru ku APAREYE"
 
-#: misc/tune2fs.c:411
+#: misc/tune2fs.c:412
 #, fuzzy, c-format
 msgid "while adding filesystem to journal on %s"
 msgstr "Wongera Kuri Ikinyamakuru ku"
 
-#: misc/tune2fs.c:417
+#: misc/tune2fs.c:418
 #, fuzzy
 msgid "Creating journal inode: "
 msgstr "Ikinyamakuru"
 
-#: misc/tune2fs.c:426
+#: misc/tune2fs.c:427
 #, fuzzy
 msgid ""
 "\n"
 "\twhile trying to create journal file"
 msgstr "Kuri Kurema Ikinyamakuru IDOSIYE"
 
-#: misc/tune2fs.c:492
+#: misc/tune2fs.c:493
 #, fuzzy, c-format
 msgid "Couldn't parse date/time specifier: %s"
 msgstr "Itariki Igihe"
 
-#: misc/tune2fs.c:514 misc/tune2fs.c:527
+#: misc/tune2fs.c:515 misc/tune2fs.c:528
 #, fuzzy, c-format
 msgid "bad mounts count - %s"
 msgstr "IBARA"
 
-#: misc/tune2fs.c:543
+#: misc/tune2fs.c:544
 #, fuzzy, c-format
 msgid "bad error behavior - %s"
 msgstr "Ikosa imyitwarire"
 
-#: misc/tune2fs.c:566
+#: misc/tune2fs.c:567
 #, fuzzy, c-format
 msgid "bad gid/group name - %s"
 msgstr "Itsinda Izina:"
 
-#: misc/tune2fs.c:599
+#: misc/tune2fs.c:600
 #, fuzzy, c-format
 msgid "bad interval - %s"
 msgstr "Intera"
 
-#: misc/tune2fs.c:627
+#: misc/tune2fs.c:628
 #, fuzzy, c-format
 msgid "bad reserved block ratio - %s"
 msgstr "Funga"
 
-#: misc/tune2fs.c:642
+#: misc/tune2fs.c:643
 #, fuzzy
 msgid "-o may only be specified once"
 msgstr "-o Gicurasi Rimwe"
 
-#: misc/tune2fs.c:652
+#: misc/tune2fs.c:653
 #, fuzzy
 msgid "-O may only be specified once"
 msgstr "-Gicurasi Rimwe"
 
-#: misc/tune2fs.c:662
+#: misc/tune2fs.c:663
 #, fuzzy, c-format
 msgid "bad reserved blocks count - %s"
 msgstr "IBARA"
 
-#: misc/tune2fs.c:691
+#: misc/tune2fs.c:692
 #, fuzzy, c-format
 msgid "bad uid/user name - %s"
 msgstr "UID Ukoresha: Izina:"
 
-#: misc/tune2fs.c:801
+#: misc/tune2fs.c:802
 #, fuzzy, c-format
 msgid "Setting maximal mount count to %d\n"
 msgstr "IBARA Kuri"
 
-#: misc/tune2fs.c:807
+#: misc/tune2fs.c:808
 #, fuzzy, c-format
 msgid "Setting current mount count to %d\n"
 msgstr "KIGEZWEHO IBARA Kuri"
 
-#: misc/tune2fs.c:812
+#: misc/tune2fs.c:813
 #, fuzzy, c-format
 msgid "Setting error behavior to %d\n"
 msgstr "Ikosa imyitwarire Kuri"
 
-#: misc/tune2fs.c:817
+#: misc/tune2fs.c:818
 #, fuzzy, c-format
 msgid "Setting reserved blocks gid to %lu\n"
 msgstr "Kuri"
 
-#: misc/tune2fs.c:822
+#: misc/tune2fs.c:823
 #, fuzzy, c-format
 msgid "Setting interval between checks to %lu seconds\n"
 msgstr "Intera hagati Kugenzura..."
 
 #: misc/tune2fs.c:828
 #, fuzzy, c-format
-msgid "Setting reserved blocks percentage to %lu (%u blocks)\n"
+msgid "Setting reserved blocks percentage to %g%% (%u blocks)\n"
 msgstr "Ijanisha Kuri"
 
 #: misc/tune2fs.c:834
@@ -4355,38 +4381,38 @@ msgstr ""
 msgid "#\t\t %u -> %u (%d)\n"
 msgstr "#%u->%u(%d)"
 
-#: resize/main.c:34
+#: resize/main.c:39
 #, fuzzy, c-format
 msgid ""
 "Usage: %s [-d debug_flags] [-f] [-F] [-p] device [new_size]\n"
 "\n"
 msgstr "Ikoresha: D F P APAREYE Gishya Ingano"
 
-#: resize/main.c:56
+#: resize/main.c:61
 #, fuzzy
 msgid "Extending the inode table"
 msgstr "i imbonerahamwe#"
 
-#: resize/main.c:59
+#: resize/main.c:64
 msgid "Relocating blocks"
 msgstr ""
 
-#: resize/main.c:62
+#: resize/main.c:67
 #, fuzzy
 msgid "Scanning inode table"
 msgstr "imbonerahamwe#"
 
-#: resize/main.c:65
+#: resize/main.c:70
 #, fuzzy
 msgid "Updating inode references"
 msgstr "Indango"
 
-#: resize/main.c:68
+#: resize/main.c:73
 #, fuzzy
 msgid "Moving inode table"
 msgstr "imbonerahamwe#"
 
-#: resize/main.c:71
+#: resize/main.c:76
 #, fuzzy
 msgid "Unknown pass?!?"
 msgstr ""
@@ -4399,24 +4425,34 @@ msgstr ""
 "X- Generator: KBabel 1. 0\n"
 "."
 
-#: resize/main.c:74
+#: resize/main.c:79
 #, fuzzy, c-format
 msgid "Begin pass %d (max = %lu)\n"
 msgstr "KININI"
 
-#: resize/main.c:107
+#: resize/main.c:112
 #, fuzzy, c-format
 msgid ""
 "%s is mounted; can't resize a mounted filesystem!\n"
 "\n"
 msgstr "%sni Ihindurangero a"
 
-#: resize/main.c:251
+#: resize/main.c:195
+#, fuzzy, c-format
+msgid "while opening %s"
+msgstr "Gufungura%S Gusikana"
+
+#: resize/main.c:207
+#, fuzzy, c-format
+msgid "while getting stat information for %s"
+msgstr "Igenamiterere Verisiyo ku"
+
+#: resize/main.c:279
 #, fuzzy, c-format
 msgid "bad filesystem size - %s"
 msgstr "Ingano"
 
-#: resize/main.c:278
+#: resize/main.c:306
 #, fuzzy, c-format
 msgid ""
 "The containing partition (or device) is only %d (%dk) blocks.\n"
@@ -4424,50 +4460,55 @@ msgid ""
 "\n"
 msgstr "Cyangwa APAREYE ni a Gishya Ingano Bya"
 
-#: resize/main.c:285
+#: resize/main.c:313
 #, fuzzy, c-format
 msgid ""
 "The filesystem is already %d blocks long.  Nothing to do!\n"
 "\n"
 msgstr "ni Kuri"
 
-#: resize/main.c:292
+#: resize/main.c:320
 #, fuzzy, c-format
 msgid ""
 "Please run 'e2fsck -f %s' first.\n"
 "\n"
 msgstr "Gukoresha F Itangira"
 
-#: resize/main.c:302
+#: resize/main.c:330
 #, fuzzy, c-format
 msgid "while trying to resize %s"
 msgstr "Kuri Ihindurangero"
 
-#: resize/main.c:307
+#: resize/main.c:335
 #, fuzzy, c-format
 msgid ""
 "The filesystem on %s is now %d blocks long.\n"
 "\n"
 msgstr "ku ni NONEAHA"
 
-#: resize/resize2fs.c:579
+#: resize/resize2fs.c:582
 msgid "reserved blocks"
 msgstr ""
 
-#: resize/resize2fs.c:584
+#: resize/resize2fs.c:587
 #, fuzzy
 msgid "blocks to be moved"
 msgstr "Kuri"
 
-#: resize/resize2fs.c:589
+#: resize/resize2fs.c:592
 #, fuzzy
 msgid "meta-data blocks"
 msgstr "Meta Ibyatanzwe"
 
-#: resize/resize2fs.c:1469
+#: resize/resize2fs.c:1472
 #, fuzzy, c-format
 msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Nta narimwe Ihindurangero"
+
+# Statusbar
+#, fuzzy
+#~ msgid "done                        \n"
+#~ msgstr "Byakozwe"
 
 #, fuzzy
 #~ msgid ""
