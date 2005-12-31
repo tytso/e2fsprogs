@@ -1,3 +1,24 @@
+e2fsprogs (1.38+1.39-WIP-2005.12.10-2) unstable; urgency=low
+
+  * Make resize2fs expand or truncate a file containing a filesystem.
+    (Closes: #271607)
+  * Add support for lib64ext2fs-nopic.a for the mips architecture
+    (Closes: #329074)
+  * Deal with the fact that Debian's boot sequence bogusly doesn't set the
+    time correctly until very late in the boot process; so if the
+    superblock's last mount or write time is in the future, don't treat
+    this as a fatal error.  (Closes: #343662, #343645)
+  * Move the blkid and uuidgen binaries out of libblkid1 and libuuid1 and
+    into the e2fsprogs package to support soname transitions and
+    simulaneous installs of multiarch flavors to coexist.  (It's not worth
+    creating two whole new packages for two separate binaries, so we just
+    fold them into e2fsprogs.)  (Closes: #330737, #330736)
+  * Optionally allow the user to interrupt e2fsck "safely" during a boot
+    sequence without causing the boot scripts to abort.  (Closes: #150295)
+  * Update and clarify man pages (Closes: #312515)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 31 Dec 2005 01:05:35 -0500
+
 e2fsprogs (1.38+1.39-WIP-2005.12.10-1) unstable; urgency=low
 
   * Update and clarify man pages (Closes: #329859, #322188, #316811)
