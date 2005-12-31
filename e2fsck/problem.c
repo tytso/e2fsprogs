@@ -98,7 +98,7 @@ static const char *preen_msg[] = {
 	"",			/* 20 */
 };
 
-static const struct e2fsck_problem problem_table[] = {
+static struct e2fsck_problem problem_table[] = {
 
 	/* Pre-Pass 1 errors */
 
@@ -1497,7 +1497,7 @@ static struct latch_descr pr_latch_info[] = {
 	{ -1, 0, 0 },
 };
 
-static const struct e2fsck_problem *find_problem(problem_t code)
+static struct e2fsck_problem *find_problem(problem_t code)
 {
 	int 	i;
 
@@ -1564,10 +1564,24 @@ void clear_problem_context(struct problem_context *ctx)
 	ctx->group = -1;
 }
 
+static void reconfigure_bool(e2fsck_t ctx, struct e2fsck_problem *ptr, 
+			     const char *key, int mask, const char *name)
+{
+	int	bool;
+
+	bool = (ptr->flags & mask);
+	profile_get_boolean(ctx->profile, "problems", key, name, bool, &bool);
+	if (bool)
+		ptr->flags |= mask;
+	else
+		ptr->flags &= ~mask;
+}
+
+
 int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 {
 	ext2_filsys fs = ctx->fs;
-	const struct e2fsck_problem *ptr;
+	struct e2fsck_problem *ptr;
 	struct latch_descr *ldesc = 0;
 	const char *message;
 	int 		def_yn, answer, ans;
@@ -1578,6 +1592,27 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	if (!ptr) {
 		printf(_("Unhandled error code (0x%x)!\n"), code);
 		return 0;
+	}
+	if (!(ptr->flags & PR_CONFIG)) {
+		char	key[9], *new_desc;
+
+		sprintf(key, "0x%06x", code);
+
+		profile_get_string(ctx->profile, "problems", key,
+				   "description", 0, &new_desc);
+		if (new_desc)
+			ptr->e2p_description = new_desc;
+
+		reconfigure_bool(ctx, ptr, key, PR_PREEN_OK, "preen_ok");
+		reconfigure_bool(ctx, ptr, key, PR_NO_OK, "no_ok");
+		reconfigure_bool(ctx, ptr, key, PR_NO_DEFAULT, "no_default");
+		reconfigure_bool(ctx, ptr, key, PR_MSG_ONLY, "print_message_only");
+		reconfigure_bool(ctx, ptr, key, PR_PREEN_NOMSG, "preen_nomessage");
+		reconfigure_bool(ctx, ptr, key, PR_NOCOLLATE, "no_collate");
+		reconfigure_bool(ctx, ptr, key, PR_NO_NOMSG, "no_nomsg");
+		reconfigure_bool(ctx, ptr, key, PR_PREEN_NOHDR, "preen_noheader");
+
+		ptr->flags |= PR_CONFIG;
 	}
 	def_yn = 1;
 	if ((ptr->flags & PR_NO_DEFAULT) ||

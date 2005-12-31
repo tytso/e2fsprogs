@@ -1,5 +1,13 @@
 2005-12-31  Theodore Ts'o  <tytso@mit.edu>
 
+	* problem.c (fix_problem), problemP.h: Add the ability for the
+		e2fsck configuration file to override the behaviour of
+		e2fsck when a particular filesystem problem is
+		encountered.  This allows reconnecting an inode to
+		lost+found to not stop the boot sequence, if a system
+		administrator really badly wants this behaviour for some
+		specialized reason, for example.
+
 	* unix.c (main): If the e2fsck configuration file sets the
 		allow_cancellation option to be true, then if the
 		filesystem does not have any known problems, and was known

@@ -39,4 +39,5 @@ struct latch_descr {
 #define PR_NO_NOMSG	0x010000 /* Don't print a message if e2fsck -n */
 #define PR_PREEN_NO	0x020000 /* Use No as an answer if preening */
 #define PR_PREEN_NOHDR	0x040000 /* Don't print the preen header */
-
+#define PR_CONFIG	0x080000 /* This problem has been customized 
+				    from the config file */
