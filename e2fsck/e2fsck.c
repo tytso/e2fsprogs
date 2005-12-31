@@ -165,6 +165,9 @@ void e2fsck_free_context(e2fsck_t ctx)
 	e2fsck_reset_context(ctx);
 	if (ctx->blkid)
 		blkid_put_cache(ctx->blkid);
+
+	if (ctx->profile)
+		profile_release(ctx->profile);
 			
 	ext2fs_free_mem(&ctx);
 }

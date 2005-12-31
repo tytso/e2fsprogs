@@ -33,6 +33,9 @@
 #include "blkid/blkid.h"
 #endif
 
+#include "profile.h"
+#include "prof_err.h"
+
 #ifdef ENABLE_NLS
 #include <libintl.h>
 #include <locale.h>
@@ -325,6 +328,8 @@ struct e2fsck_struct {
 	time_t now;
 
 	int ext_attr_ver;
+
+	profile_t	profile;
 
 	/*
 	 * For the use of callers of the e2fsck functions; not used by

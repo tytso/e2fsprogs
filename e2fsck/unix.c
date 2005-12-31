@@ -548,6 +548,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 	}
 }	
 
+static const char *config_fn[] = { "/etc/e2fsck.conf", 0 };
 
 static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 {
@@ -580,6 +581,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	memset(bar, '=', sizeof(bar)-1);
 	memset(spaces, ' ', sizeof(spaces)-1);
 	initialize_ext2_error_table();
+	initialize_prof_error_table();
 	blkid_get_cache(&ctx->blkid, NULL);
 	
 	if (argc && *argv)
@@ -731,7 +733,9 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	}
 	if (extended_opts)
 		parse_extended_opts(ctx, extended_opts);
-	
+
+	profile_init(config_fn, &ctx->profile);
+
 	if (flush) {
 		fd = open(ctx->filesystem_name, O_RDONLY, 0);
 		if (fd < 0) {
