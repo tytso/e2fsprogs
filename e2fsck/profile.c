@@ -67,10 +67,10 @@
 #include <pwd.h>
 #endif
 
-#include "ext2fs/prof_err.h"
-
 #include "com_err.h"
 #include "profile.h"
+#include "prof_err.h"
+
 
 #define STAT_ONCE_PER_SECOND
 

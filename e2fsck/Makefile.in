@@ -394,6 +394,6 @@ region.o: $(srcdir)/region.c $(srcdir)/e2fsck.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/lib/blkid/blkid.h $(top_builddir)/lib/blkid/blkid_types.h \
  $(srcdir)/profile.h prof_err.h
-profile.o: $(srcdir)/profile.c $(top_builddir)/lib/ext2fs/prof_err.h \
- $(top_srcdir)/lib/et/com_err.h $(srcdir)/profile.h
+profile.o: $(srcdir)/profile.c $(srcdir)/profile.h prof_err.h \
+ $(top_srcdir)/lib/et/com_err.h
 prof_err.o: prof_err.c
