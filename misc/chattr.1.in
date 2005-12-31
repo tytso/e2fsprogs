@@ -53,7 +53,9 @@ capability can set or clear this attribute.
 .PP
 A file with the `c' attribute set is automatically compressed on the disk
 by the kernel.  A read from this file returns uncompressed data.  A write to
-this file compresses data before storing them on the disk.
+this file compresses data before storing them on the disk.  Note: please 
+make sure to read the bugs and limitations section at the end of this
+document.
 .PP
 When a directory with the `D' attribute set is modified,
 the changes are written synchronously on the disk; this is equivalent to
@@ -89,8 +91,9 @@ is already journalled and this attribute has no effect.
 Only the superuser or a process possessing the CAP_SYS_RESOURCE
 capability can set or clear this attribute.
 .PP
-When a file with the `s' attribute set is deleted, its blocks are zeroed and
-written back to the disk.
+When a file with the `s' attribute set is deleted, its blocks are zeroed
+and written back to the disk.  Note: please make sure to read the bugs
+and limitations section at the end of this document.
 .PP
 When a file with the `S' attribute set is modified,
 the changes are written synchronously on the disk; this is equivalent to
@@ -107,8 +110,10 @@ which read the filesystem directly, and which don't understand tail-merged
 files.  Note: As of this writing, the ext2 or ext3 filesystems do not
 (yet, except in very experimental patches) support tail-merging.
 .PP
-When a file with the `u' attribute set is deleted, its contents are saved.
-This allows the user to ask for its undeletion.
+When a file with the `u' attribute set is deleted, its contents are
+saved.  This allows the user to ask for its undeletion.  Note: please
+make sure to read the bugs and limitations section at the end of this
+document.
 .PP
 The 'X' attribute is used by the experimental compression patches to 
 indicate that a raw contents of a compressed file can be accessed
@@ -131,7 +136,7 @@ maintained by Theodore Ts'o <tytso@alum.mit.edu>.
 The `c', 's',  and `u' attributes are not honored 
 by the ext2 and ext3 filesystems as implemented in the current mainline
 Linux kernels.    These attributes may be implemented
-in future versions ext2 and ext3.
+in future versions of the ext2 and ext3 filesystems.
 .PP
 The `j' option is only useful if the filesystem is mounted as ext3.
 .PP

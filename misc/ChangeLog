@@ -1,3 +1,10 @@
+2005-12-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* chattr.1.in: Add notes in the man page to make sure the reader
+		refers to the BUGS AND LIMITATIONS section so that even an
+		idiot will be able to see that some of these attributes
+		are not yet implemented.  (Addresses Debian Bug: #312515)
+
 2005-12-10  Theodore Ts'o  <tytso@mit.edu>
 
 	* dumpe2fs.c, e2image.c, filefrag.c, mke2fs.c: Fix various gcc
