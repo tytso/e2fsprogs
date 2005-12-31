@@ -1,3 +1,22 @@
+2005-12-30  Theodore Ts'o  <tytso@mit.edu>
+
+	* profile.c, profile.h, prof_err.et: Add the profile library code
+		to e2fsck.  The profile library was originally written by
+		Theodore Ts'o in 1995 for use in the MIT Kerberos v5
+		library.  It has been modified/enhanced/bug-fixed over
+		time by other members of the MIT Kerberos team.  This
+		version was originally taken from the Kerberos v5
+		distribution, version 1.4.2, and radically simplified for
+		use in e2fsprogs.  (Support for locking for multi-threaded
+		operations, being able to modify and update the
+		configuration file programmatically, and Mac/Windows
+		portability have been removed.  It has been folded into a
+		single C source file to make it easier to fold into an
+		application program.)
+
+	* argv_parse.c, argv_parse.h: Added auxiliary programs used only
+		for building the profile test program.
+
 2005-12-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* problem.c (PR_0_FUTURE_SB_LAST_MOUNT,
