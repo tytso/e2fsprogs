@@ -1,15 +1,68 @@
-E2fsprogs 1.39-WIP (December 10, 2005)
-=====================================
+E2fsprogs 1.39-WIP (December 31, 2005) 
+======================================
+
+E2fsck will now consult a configuration file, /etc/e2fsck.conf to
+control how various options should be handled.  The configuration file
+uses an extended Windows .ini file format.  A configuration file is
+broken into multiple stanza's, where a stanza is begun by a line
+containing the stanza label in square brackets, e.g., "[options]".
+After the stanza label, one or more key/value pairs can be specified
+using the syntax: "key = value".  The key may not contain any spaces,
+although whitespace may appear before the key, and spaces before or
+after the equal sign are also ignored.  
+
+Add support to /etc/e2fsck.conf for the boolean configuration
+parameter allow_cancellation in the options stanza:
+
+	[options]
+		allow_cancellation = true
+
+If allow_cancellation is specified, then if the user interrupts e2fsck
+with a ^C, if the filesystem does not have any known problems, and was
+known to be cleanly unmounted, then e2fsck will exit with a status
+code of 0 instead of 32 (FSCK_CANCELED) so that the bootup scripts
+will continue without stopping the boot.  (Addresses Debian Bug:
+#150295)
+
+
+Add support to /etc/e2fsck.conf for the problems stanza, which allows
+a system adminsitrator to customize how e2fsck will handle a
+particular filesystem problem.  For example the following will prevent
+orphaned files from stopping the boot process:
+
+	[problems]
+		0x040002 = {
+			preen_ok = true
+			description = "@u @i %i.  "
+		}
+
+(Of course, this is not always a good idea, since critical files that
+are needed for the security of the system could potentially end up in
+lost+found, and starting the system without first having a system
+administrator checkthings out may be dangerous.)  Currently, the
+following parameters are supported for each problem code: description,
+preen_ok, no_ok, no_default, print_message_only, preen_nomessage,
+no_collate, no_nomsg, preen_noheader.  It will be necessary to consult
+the e2fsck source code to find specific problem codes, and the
+meanings of the various problem handling flags.
+
 
 E2fsck will detect if the superblock's last mount field or last write
 field is in the future, and offer to fix if so.  (Addresses Debian Bug
-#327580)
+#327580) These problems will be fixed automatically in preen mode
+since Debian's boot sequence bogusly doesn't set the time correctly
+until potentially very late in the bootup process, and this can cause
+false positives which will cause users' systems to fail to boot.
+(Addresses Debian Bugs #343662 and #343645)
 
 Fix e2fsck from segfaulting on disconnected inodes that contain one or
 more extended attributes.  (Addresses Debian Bug: #316736, #318463)
 
 E2fsck will stop and print a warning if the user tries running a
 read/write badblocks test on a read-only mounted root filesystem.
+
+When resizing a file containing a filesystem, resize2fs will expand or
+truncate a file as necessary.  (Addresses Debian Bug: #271607)
 
 Fix mke2fs so that it correctly creates external journals on
 big-endian machines (such as a S/390).  
@@ -59,11 +112,11 @@ Fix use-after-free bug in e2fsck when finishing up the use of the
 e2fsck context structure.
 
 Fixed spelling mistakes, typos, and otherwise clarified man pages.
-(Addresses Debian Bugs: #329859, #322188, #316811)
+(Addresses Debian Bugs: #329859, #322188, #316811, #312515)
 
 Fixed various Debian packaging issues --- see debian/changelog for
 details.  (Addresses Debian Bugs #317862, #320389, #290429, #310950,
-#310428)
+#310428, #330737, #330736, #329074)
 
 Programmer's notes:
 -------------------
