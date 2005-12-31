@@ -25,3 +25,5 @@ export TZ
 LANG=C
 export LANG
 unset PAGER
+E2FSCK_CONFIG=/dev/null
+export E2FSCK_CONFIG

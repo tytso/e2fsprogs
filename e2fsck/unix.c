@@ -563,6 +563,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	struct sigaction	sa;
 #endif
 	char		*extended_opts = 0;
+	char		*cp;
 
 	retval = e2fsck_allocate_context(&ctx);
 	if (retval)
@@ -734,6 +735,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	if (extended_opts)
 		parse_extended_opts(ctx, extended_opts);
 
+	if ((cp = getenv("E2FSCK_CONFIG")) != NULL)
+		config_fn[0] = cp;
 	profile_init(config_fn, &ctx->profile);
 
 	if (flush) {
