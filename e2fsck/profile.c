@@ -71,8 +71,8 @@
 #include "profile.h"
 #include "prof_err.h"
 
-
-#define STAT_ONCE_PER_SECOND
+#undef STAT_ONCE_PER_SECOND
+#undef HAVE_STAT
 
 /* Begin prof_int.h */
 
@@ -303,6 +303,7 @@ profile_init(const char **files, profile_t *ret_profile)
         return 0;
 }
 
+#ifdef DEBUG_PROGRAM
 errcode_t 
 profile_init_path(const char * filepath,
 		  profile_t *ret_profile)
@@ -353,6 +354,7 @@ profile_init_path(const char * filepath,
 
 	return retval;
 }
+#endif
 
 void 
 profile_release(profile_t profile)
@@ -902,6 +904,7 @@ static void output_quoted_string(char *str, void (*cb)(const char *,void *),
 #define EOL "\n"
 #endif
 
+#ifdef DEBUG_PROGRAM
 /* Errors should be returned, not ignored!  */
 static void dump_profile(struct profile_node *root, int level,
 			 void (*cb)(const char *, void *), void *data)
@@ -963,7 +966,6 @@ static void dump_profile(struct profile_node *root, int level,
 	} while (iter != 0);
 }
 
-#ifdef DEBUG_PROGRAM
 static void dump_profile_to_file_cb(const char *str, void *data)
 {
 	fputs(str, data);
@@ -974,7 +976,6 @@ errcode_t profile_write_tree_file(struct profile_node *root, FILE *dstfile)
 	dump_profile(root, 0, dump_profile_to_file_cb, dstfile);
 	return 0;
 }
-#endif
 
 struct prof_buf {
 	char *base;
@@ -982,7 +983,6 @@ struct prof_buf {
 	int err;
 };
 
-#ifdef DEBUG_PROGRAM
 static void add_data_to_buffer(struct prof_buf *b, const void *d, size_t len)
 {
 	if (b->err)
