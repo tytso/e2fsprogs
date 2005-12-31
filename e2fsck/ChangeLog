@@ -1,3 +1,13 @@
+2005-12-31  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (main): If the e2fsck configuration file sets the
+		allow_cancellation option to be true, then if the
+		filesystem does not have any known problems, and was known
+		to be cleanly unmounted, then let e2fsck exit with a
+		status code of 0 instead of 32 (FSCK_CANCELED) so that the
+		bootup scripts will continue without stopping the boot.
+		(Addresses Debian Bug: #150295)
+
 2005-12-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.c (e2fsck_free_context), unix.c (PRS), e2fsck.h: Use

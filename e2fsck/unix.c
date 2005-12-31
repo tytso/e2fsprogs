@@ -1147,15 +1147,26 @@ restart:
 			exit_value |= FSCK_REBOOT;
 		}
 	}
-	if (!ext2fs_test_valid(fs)) {
+	if (!ext2fs_test_valid(fs) ||
+	    ((exit_value & FSCK_CANCELED) && 
+	     (sb->s_state & EXT2_ERROR_FS))) {
 		printf(_("\n%s: ********** WARNING: Filesystem still has "
 			 "errors **********\n\n"), ctx->device_name);
 		exit_value |= FSCK_UNCORRECTED;
 		exit_value &= ~FSCK_NONDESTRUCT;
 	}
-	if (exit_value & FSCK_CANCELED)
+	if (exit_value & FSCK_CANCELED) {
+		int	allow_cancellation;
+
+		profile_get_boolean(ctx->profile, "options",
+				    "allow_cancellation", 0, 0, 
+				    &allow_cancellation);
 		exit_value &= ~FSCK_NONDESTRUCT;
-	else {
+		if (allow_cancellation && ext2fs_test_valid(fs) &&
+		    (sb->s_state & EXT2_VALID_FS) && 
+		    !(sb->s_state & EXT2_ERROR_FS))
+			exit_value = 0;
+	} else {
 		show_stats(ctx);
 		if (!(ctx->options & E2F_OPT_READONLY)) {
 			if (ext2fs_test_valid(fs)) {
