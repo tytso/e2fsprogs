@@ -184,10 +184,10 @@ static errcode_t profile_add_node
 static errcode_t profile_make_node_final
 	(struct profile_node *node);
 	
+#ifdef DEBUG_PROGRAM
 static int profile_is_node_final
 	(struct profile_node *node);
 
-#ifdef DEBUG_PROGRAM
 static const char *profile_get_node_name
 	(struct profile_node *node);
 
@@ -201,10 +201,12 @@ static errcode_t profile_find_node
 		    int section_flag, void **state,
 		    struct profile_node **node);
 
+#ifdef DEBUG_PROGRAM
 static errcode_t profile_find_node_relation
 	(struct profile_node *section,
 		    const char *name, void **state,
 		    char **ret_name, char **value);
+#endif
 
 static errcode_t profile_find_node_subsection
 	(struct profile_node *section,
@@ -844,6 +846,7 @@ errcode_t profile_parse_file(FILE *f, struct profile_node **root)
 	return 0;
 }
 
+#ifdef DEBUG_PROGRAM
 /*
  * Return TRUE if the string begins or ends with whitespace
  */
@@ -904,7 +907,6 @@ static void output_quoted_string(char *str, void (*cb)(const char *,void *),
 #define EOL "\n"
 #endif
 
-#ifdef DEBUG_PROGRAM
 /* Errors should be returned, not ignored!  */
 static void dump_profile(struct profile_node *root, int level,
 			 void (*cb)(const char *, void *), void *data)
@@ -1224,6 +1226,7 @@ errcode_t profile_make_node_final(struct profile_node *node)
 	return 0;
 }
 
+#ifdef DEBUG_PROGRAM
 /*
  * Check the final flag on a node
  */
@@ -1232,7 +1235,6 @@ int profile_is_node_final(struct profile_node *node)
 	return (node->final != 0);
 }
 
-#ifdef DEBUG_PROGRAM
 /*
  * Return the name of a node.  (Note: this is for internal functions
  * only; if the name needs to be returned from an exported function,
@@ -1329,6 +1331,7 @@ errcode_t profile_find_node(struct profile_node *section, const char *name,
 }
 
 
+#ifdef DEBUG_PROGRAM
 /*
  * Iterate through the section, returning the relations which match
  * the given name.  If name is NULL, then interate through all the
@@ -1361,6 +1364,7 @@ errcode_t profile_find_node_relation(struct profile_node *section,
 	}
 	return 0;
 }
+#endif
 
 /*
  * Iterate through the section, returning the subsections which match
@@ -2071,16 +2075,82 @@ const char *program_name = "test_profile";
 #define PRINT_VALUE	1
 #define PRINT_VALUES	2
 
-static void do_batchmode(profile)
-	profile_t	profile;
+static void do_cmd(profile_t profile, char **argv)
 {
 	errcode_t	retval;
-	int		argc, ret;
-	char		**argv, **values, **cpp;
-	char		buf[256];
 	const char	**names, *value;
-	char		*cmd;
+	char		**values, **cpp;
+	char	*cmd;
 	int		print_status;
+
+	cmd = *(argv);
+	names = (const char **) argv + 1;
+	print_status = 0;
+	retval = 0;
+	if (cmd == 0)
+		return;
+	if (!strcmp(cmd, "query")) {
+		retval = profile_get_values(profile, names, &values);
+		print_status = PRINT_VALUES;
+	} else if (!strcmp(cmd, "query1")) {
+		retval = profile_get_value(profile, names, &value);
+		print_status = PRINT_VALUE;
+	} else if (!strcmp(cmd, "list_sections")) {
+		retval = profile_get_subsection_names(profile, names, 
+						      &values);
+		print_status = PRINT_VALUES;
+	} else if (!strcmp(cmd, "list_relations")) {
+		retval = profile_get_relation_names(profile, names, 
+						    &values);
+		print_status = PRINT_VALUES;
+	} else if (!strcmp(cmd, "dump")) {
+		retval = profile_write_tree_file
+			(profile->first_file->data->root, stdout);
+#if 0
+	} else if (!strcmp(cmd, "clear")) {
+		retval = profile_clear_relation(profile, names);
+	} else if (!strcmp(cmd, "update")) {
+		retval = profile_update_relation(profile, names+2,
+						 *names, *(names+1));
+#endif
+	} else if (!strcmp(cmd, "verify")) {
+		retval = profile_verify_node
+			(profile->first_file->data->root);
+#if 0
+	} else if (!strcmp(cmd, "rename_section")) {
+		retval = profile_rename_section(profile, names+1, *names);
+	} else if (!strcmp(cmd, "add")) {
+		value = *names;
+		if (strcmp(value, "NULL") == 0)
+			value = NULL;
+		retval = profile_add_relation(profile, names+1, value);
+	} else if (!strcmp(cmd, "flush")) {
+		retval = profile_flush(profile);
+#endif
+	} else {
+		printf("Invalid command.\n");
+	}
+	if (retval) {
+		com_err(cmd, retval, "");
+		print_status = 0;
+	}
+	switch (print_status) {
+	case PRINT_VALUE:
+		printf("%s\n", value);
+		break;
+	case PRINT_VALUES:
+		for (cpp = values; *cpp; cpp++)
+			printf("%s\n", *cpp);
+		profile_free_list(values);
+		break;
+	}
+}
+
+static void do_batchmode(profile_t profile)
+{
+	int		argc, ret;
+	char		**argv;
+	char		buf[256];
 
 	while (!feof(stdin)) {
 		if (fgets(buf, sizeof(buf), stdin) == NULL)
@@ -2091,71 +2161,7 @@ static void do_batchmode(profile)
 			printf("Argv_parse returned %d!\n", ret);
 			continue;
 		}
-		cmd = *(argv);
-		names = (const char **) argv + 1;
-		print_status = 0;
-		retval = 0;
-		if (cmd == 0) {
-			argv_free(argv);
-			continue;
-		}
-		if (!strcmp(cmd, "query")) {
-			retval = profile_get_values(profile, names, &values);
-			print_status = PRINT_VALUES;
-		} else if (!strcmp(cmd, "query1")) {
-			retval = profile_get_value(profile, names, &value);
-			print_status = PRINT_VALUE;
-		} else if (!strcmp(cmd, "list_sections")) {
-			retval = profile_get_subsection_names(profile, names, 
-							      &values);
-			print_status = PRINT_VALUES;
-		} else if (!strcmp(cmd, "list_relations")) {
-			retval = profile_get_relation_names(profile, names, 
-							    &values);
-			print_status = PRINT_VALUES;
-		} else if (!strcmp(cmd, "dump")) {
-			retval = profile_write_tree_file
-				(profile->first_file->data->root, stdout);
-#if 0
-		} else if (!strcmp(cmd, "clear")) {
-			retval = profile_clear_relation(profile, names);
-		} else if (!strcmp(cmd, "update")) {
-			retval = profile_update_relation(profile, names+2,
-							 *names, *(names+1));
-#endif
-		} else if (!strcmp(cmd, "verify")) {
-			retval = profile_verify_node
-				(profile->first_file->data->root);
-#if 0
-		} else if (!strcmp(cmd, "rename_section")) {
-			retval = profile_rename_section(profile, names+1,
-							*names);
-		} else if (!strcmp(cmd, "add")) {
-			value = *names;
-			if (strcmp(value, "NULL") == 0)
-				value = NULL;
-			retval = profile_add_relation(profile, names+1,
-						      value);
-		} else if (!strcmp(cmd, "flush")) {
-			retval = profile_flush(profile);
-#endif
-		} else {
-			printf("Invalid command.\n");
-		}
-		if (retval) {
-			com_err(cmd, retval, "");
-			print_status = 0;
-		}
-		switch (print_status) {
-		case PRINT_VALUE:
-			printf("%s\n", value);
-			break;
-		case PRINT_VALUES:
-			for (cpp = values; *cpp; cpp++)
-				printf("%s\n", *cpp);
-			profile_free_list(values);
-			break;
-		}
+		do_cmd(profile, argv);
 		printf("\n");
 		argv_free(argv);
 	}
@@ -2165,17 +2171,11 @@ static void do_batchmode(profile)
 }
 
 
-int main(argc, argv)
-    int		argc;
-    char	**argv;
+int main(int argc, char **argv)
 {
     profile_t	profile;
     long	retval;
-    char	**values, **cpp;
-    const char	*value;
-    const char	**names;
     char	*cmd;
-    int		print_value = 0;
     
     if (argc < 2) {
 	    fprintf(stderr, "Usage: %s filename [cmd argset]\n", program_name);
@@ -2190,34 +2190,10 @@ int main(argc, argv)
 	exit(1);
     }
     cmd = *(argv+2);
-    names = (const char **) argv+3;
     if (!cmd || !strcmp(cmd, "batch"))
 	    do_batchmode(profile);
-    if (!strcmp(cmd, "query")) {
-	    retval = profile_get_values(profile, names, &values);
-    } else if (!strcmp(cmd, "query1")) {
-	    retval = profile_get_value(profile, names, &value);
-	    print_value++;
-    } else if (!strcmp(cmd, "list_sections")) {
-	    retval = profile_get_subsection_names(profile, names, &values);
-    } else if (!strcmp(cmd, "list_relations")) {
-	    retval = profile_get_relation_names(profile, names, &values);
-    } else {
-	    fprintf(stderr, "Invalid command.\n");
-	    exit(1);
-    }
-    if (retval) {
-	    com_err(argv[0], retval, "while getting values");
-	    profile_release(profile);
-	    exit(1);
-    }
-    if (print_value) {
-	    printf("%s\n", value);
-    } else {
-	    for (cpp = values; *cpp; cpp++)
-		    printf("%s\n", *cpp);
-	    profile_free_list(values);
-    }
+    else
+	    do_cmd(profile, argv+2);
     profile_release(profile);
 
     return 0;
