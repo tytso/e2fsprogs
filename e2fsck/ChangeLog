@@ -1,3 +1,9 @@
+2006-01-01  Theodore Ts'o  <tytso@mit.edu>
+
+	* profile.c: Fix #include of com_err.h so that it isn't required
+		that the com_err development environment be installed.
+		(Addresses Debian Bug: #345519)
+
 2005-12-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* problem.c (fix_problem), problemP.h: Add the ability for the

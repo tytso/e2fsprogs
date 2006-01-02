@@ -67,7 +67,7 @@
 #include <pwd.h>
 #endif
 
-#include "com_err.h"
+#include <et/com_err.h>
 #include "profile.h"
 #include "prof_err.h"
 
