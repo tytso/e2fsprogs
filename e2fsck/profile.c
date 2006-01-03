@@ -107,7 +107,7 @@ struct _prf_data_t {
 };
 
 typedef struct _prf_data_t *prf_data_t;
-prf_data_t profile_make_prf_data(const char *);
+static prf_data_t profile_make_prf_data(const char *);
 
 struct _prf_file_t {
 	prf_magic_t	magic;
@@ -148,6 +148,22 @@ struct _profile_t {
 
 #define	PROFILE_LAST_FILESPEC(x) (((x) == NULL) || ((x)[0] == '\0'))
 
+struct profile_node {
+	errcode_t	magic;
+	char *name;
+	char *value;
+	int group_level;
+	int final:1;		/* Indicate don't search next file */
+	int deleted:1;
+	struct profile_node *first_child;
+	struct profile_node *parent;
+	struct profile_node *next, *prev;
+};
+
+#define CHECK_MAGIC(node) \
+	  if ((node)->magic != PROF_MAGIC_NODE) \
+		  return PROF_MAGIC_NODE;
+
 /* profile_parse.c */
 
 static errcode_t profile_parse_file
@@ -181,48 +197,11 @@ static errcode_t profile_add_node
 		    const char *name, const char *value,
 		    struct profile_node **ret_node);
 
-static errcode_t profile_make_node_final
-	(struct profile_node *node);
-	
-#ifdef DEBUG_PROGRAM
-static int profile_is_node_final
-	(struct profile_node *node);
-
-static const char *profile_get_node_name
-	(struct profile_node *node);
-
-static const char *profile_get_node_value
-	(struct profile_node *node);
-#endif
-
 static errcode_t profile_find_node
 	(struct profile_node *section,
 		    const char *name, const char *value,
 		    int section_flag, void **state,
 		    struct profile_node **node);
-
-#ifdef DEBUG_PROGRAM
-static errcode_t profile_find_node_relation
-	(struct profile_node *section,
-		    const char *name, void **state,
-		    char **ret_name, char **value);
-#endif
-
-static errcode_t profile_find_node_subsection
-	(struct profile_node *section,
-		    const char *name, void **state,
-		    char **ret_name, struct profile_node **subsection);
-		   
-static errcode_t profile_get_node_parent
-	(struct profile_node *section,
-		   struct profile_node **parent);
-		   
-static errcode_t profile_node_iterator_create
-	(profile_t profile, const char *const *names,
-		   int flags, void **ret_iter);
-
-static void profile_node_iterator_free
-	(void	**iter_p);
 
 static errcode_t profile_node_iterator
 	(void	**iter_p, struct profile_node **ret_node,
@@ -244,9 +223,10 @@ static void profile_free_file
 
 /* prof_get.c */
 
-static errcode_t profile_get_value
-	(profile_t profile, const char **names,
-		    const char	**ret_value);
+static errcode_t profile_get_value(profile_t profile, const char *name,
+				   const char *subname, const char *subsubname,
+				   const char **ret_value);
+
 /* Others included from profile.h */
 	
 /* prof_set.c -- included from profile.h */
@@ -305,59 +285,6 @@ profile_init(const char **files, profile_t *ret_profile)
         return 0;
 }
 
-#ifdef DEBUG_PROGRAM
-errcode_t 
-profile_init_path(const char * filepath,
-		  profile_t *ret_profile)
-{
-	int n_entries, i;
-	unsigned int ent_len;
-	const char *s, *t;
-	char **filenames;
-	errcode_t retval;
-
-	/* count the distinct filename components */
-	for(s = filepath, n_entries = 1; *s; s++) {
-		if (*s == ':')
-			n_entries++;
-	}
-	
-	/* the array is NULL terminated */
-	filenames = (char **) malloc((n_entries+1) * sizeof(char*));
-	if (filenames == 0)
-		return ENOMEM;
-
-	/* measure, copy, and skip each one */
-	for(s = filepath, i=0; (t = strchr(s, ':')) || (t=s+strlen(s)); s=t+1, i++) {
-		ent_len = t-s;
-		filenames[i] = (char*) malloc(ent_len + 1);
-		if (filenames[i] == 0) {
-			/* if malloc fails, free the ones that worked */
-			while(--i >= 0) free(filenames[i]);
-                        free(filenames);
-			return ENOMEM;
-		}
-		strncpy(filenames[i], s, ent_len);
-		filenames[i][ent_len] = 0;
-		if (*t == 0) {
-			i++;
-			break;
-		}
-	}
-	/* cap the array */
-	filenames[i] = 0;
-
-	retval = profile_init((const char **) filenames, 
-			      ret_profile);
-
-	/* count back down and free the entries */
-	while(--i >= 0) free(filenames[i]);
-	free(filenames);
-
-	return retval;
-}
-#endif
-
 void 
 profile_release(profile_t profile)
 {
@@ -382,7 +309,7 @@ profile_release(profile_t profile)
  * prof_file.c ---- routines that manipulate an individual profile file.
  */
 
-prf_data_t
+static prf_data_t
 profile_make_prf_data(const char *filename)
 {
     prf_data_t d;
@@ -644,9 +571,8 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 		if (p == NULL)
 			return PROF_SECTION_SYNTAX;
 		*p = '\0';
-		retval = profile_find_node_subsection(state->root_section,
-						 cp, &iter, 0,
-						 &state->current_section);
+		retval = profile_find_node(state->root_section, cp, 0, 1, 
+					   &iter, &state->current_section);
 		if (retval == PROF_NO_SECTION) {
 			retval = profile_add_node(state->root_section,
 						  cp, 0,
@@ -661,7 +587,7 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 		 */
 		cp = p+1;
 		if (*cp == '*') {
-			profile_make_node_final(state->current_section);
+			state->current_section->final = 1;
 			cp++;
 		}
 		/*
@@ -676,11 +602,8 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 		if (state->group_level == 0)
 			return PROF_EXTRA_CBRACE;
 		if (*(cp+1) == '*')
-			profile_make_node_final(state->current_section);
-		retval = profile_get_node_parent(state->current_section,
-						 &state->current_section);
-		if (retval)
-			return retval;
+			state->current_section->final = 1;
+		state->current_section = state->current_section->parent;
 		state->group_level--;
 		return 0;
 	}
@@ -732,7 +655,7 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 		if (retval)
 			return retval;
 		if (p)
-			profile_make_node_final(state->current_section);
+			state->current_section->final = 1;
 		state->group_level++;
 		return 0;
 	}
@@ -741,7 +664,7 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 		*p = '\0';
 	profile_add_node(state->current_section, tag, value, &node);
 	if (p)
-		profile_make_node_final(node);
+		node->final = 1;
 	return 0;
 }
 
@@ -915,54 +838,51 @@ static void dump_profile(struct profile_node *root, int level,
 	struct profile_node *p;
 	void *iter;
 	long retval;
-	char *name, *value;
 	
 	iter = 0;
 	do {
-		retval = profile_find_node_relation(root, 0, &iter,
-						    &name, &value);
+		retval = profile_find_node(root, 0, 0, 0, &iter, &p);
 		if (retval)
 			break;
 		for (i=0; i < level; i++)
 			cb("\t", data);
-		if (need_double_quotes(value)) {
-			cb(name, data);
+		if (need_double_quotes(p->value)) {
+			cb(p->name, data);
 			cb(" = ", data);
-			output_quoted_string(value, cb, data);
+			output_quoted_string(p->value, cb, data);
 			cb(EOL, data);
 		} else {
-			cb(name, data);
+			cb(p->name, data);
 			cb(" = ", data);
-			cb(value, data);
+			cb(p->value, data);
 			cb(EOL, data);
 		}
 	} while (iter != 0);
 
 	iter = 0;
 	do {
-		retval = profile_find_node_subsection(root, 0, &iter,
-						      &name, &p);
+		retval = profile_find_node(root, 0, 0, 1, &iter, &p);
 		if (retval)
 			break;
 		if (level == 0)	{ /* [xxx] */
 			cb("[", data);
-			cb(name, data);
+			cb(p->name, data);
 			cb("]", data);
-			cb(profile_is_node_final(p) ? "*" : "", data);
+			cb(p->final ? "*" : "", data);
 			cb(EOL, data);
 			dump_profile(p, level+1, cb, data);
 			cb(EOL, data);
 		} else { 	/* xxx = { ... } */
 			for (i=0; i < level; i++)
 				cb("\t", data);
-			cb(name, data);
+			cb(p->name, data);
 			cb(" = {", data);
 			cb(EOL, data);
 			dump_profile(p, level+1, cb, data);
 			for (i=0; i < level; i++)
 				cb("\t", data);
 			cb("}", data);
-			cb(profile_is_node_final(p) ? "*" : "", data);
+			cb(p->final ? "*" : "", data);
 			cb(EOL, data);
 		}
 	} while (iter != 0);
@@ -1053,22 +973,6 @@ errcode_t profile_write_tree_to_buffer(struct profile_node *root,
  * containing a string.  Its first_child pointer must be null.
  *
  */
-
-struct profile_node {
-	errcode_t	magic;
-	char *name;
-	char *value;
-	int group_level;
-	int final:1;		/* Indicate don't search next file */
-	int deleted:1;
-	struct profile_node *first_child;
-	struct profile_node *parent;
-	struct profile_node *next, *prev;
-};
-
-#define CHECK_MAGIC(node) \
-	  if ((node)->magic != PROF_MAGIC_NODE) \
-		  return PROF_MAGIC_NODE;
 
 /*
  * Free a node, and any children
@@ -1216,47 +1120,6 @@ errcode_t profile_add_node(struct profile_node *section, const char *name,
 }
 
 /*
- * Set the final flag on a particular node.
- */
-errcode_t profile_make_node_final(struct profile_node *node)
-{
-	CHECK_MAGIC(node);
-
-	node->final = 1;
-	return 0;
-}
-
-#ifdef DEBUG_PROGRAM
-/*
- * Check the final flag on a node
- */
-int profile_is_node_final(struct profile_node *node)
-{
-	return (node->final != 0);
-}
-
-/*
- * Return the name of a node.  (Note: this is for internal functions
- * only; if the name needs to be returned from an exported function,
- * strdup it first!)
- */
-const char *profile_get_node_name(struct profile_node *node)
-{
-	return node->name;
-}
-
-/*
- * Return the value of a node.  (Note: this is for internal functions
- * only; if the name needs to be returned from an exported function,
- * strdup it first!)
- */
-const char *profile_get_node_value(struct profile_node *node)
-{
-	return node->value;
-}
-#endif
-
-/*
  * Iterate through the section, returning the nodes which match
  * the given name.  If name is NULL, then interate through all the
  * nodes in the section.  If section_flag is non-zero, only return the
@@ -1330,85 +1193,6 @@ errcode_t profile_find_node(struct profile_node *section, const char *name,
 	return 0;
 }
 
-
-#ifdef DEBUG_PROGRAM
-/*
- * Iterate through the section, returning the relations which match
- * the given name.  If name is NULL, then interate through all the
- * relations in the section.  The first time this routine is called,
- * the state pointer must be null.  When this profile_find_node_relation()
- * returns, if the state pointer is non-NULL, then this routine should
- * be called again.
- *
- * The returned character string in value points to the stored
- * character string in the parse string.  Before this string value is
- * returned to a calling application (profile_find_node_relation is not an
- * exported interface), it should be strdup()'ed.
- */
-errcode_t profile_find_node_relation(struct profile_node *section,
-				     const char *name, void **state,
-				     char **ret_name, char **value)
-{
-	struct profile_node *p;
-	errcode_t	retval;
-
-	retval = profile_find_node(section, name, 0, 0, state, &p);
-	if (retval)
-		return retval;
-
-	if (p) {
-		if (value)
-			*value = p->value;
-		if (ret_name)
-			*ret_name = p->name;
-	}
-	return 0;
-}
-#endif
-
-/*
- * Iterate through the section, returning the subsections which match
- * the given name.  If name is NULL, then interate through all the
- * subsections in the section.  The first time this routine is called,
- * the state pointer must be null.  When this profile_find_node_subsection()
- * returns, if the state pointer is non-NULL, then this routine should
- * be called again.
- *
- * This is (plus accessor functions for the name and value given a
- * profile node) makes this function mostly syntactic sugar for
- * profile_find_node. 
- */
-errcode_t profile_find_node_subsection(struct profile_node *section,
-				       const char *name, void **state,
-				       char **ret_name,
-				       struct profile_node **subsection)
-{
-	struct profile_node *p;
-	errcode_t	retval;
-
-	retval = profile_find_node(section, name, 0, 1, state, &p);
-	if (retval)
-		return retval;
-
-	if (p) {
-		if (subsection)
-			*subsection = p;
-		if (ret_name)
-			*ret_name = p->name;
-	}
-	return 0;
-}
-
-/*
- * This function returns the parent of a particular node.
- */
-errcode_t profile_get_node_parent(struct profile_node *section,
-				  struct profile_node **parent)
-{
-	*parent = section->parent;
-	return 0;
-}
-
 /*
  * This is a general-purpose iterator for returning all nodes that
  * match the specified name array.  
@@ -1426,9 +1210,9 @@ struct profile_iterator {
 	int			num;
 };
 
-errcode_t profile_node_iterator_create(profile_t profile,
-				       const char *const *names, int flags,
-				       void **ret_iter)
+errcode_t 
+profile_iterator_create(profile_t profile, const char *const *names, int flags,
+			void **ret_iter)
 {
 	struct profile_iterator *iter;
 	int	done_idx = 0;
@@ -1460,7 +1244,7 @@ errcode_t profile_node_iterator_create(profile_t profile,
 	return 0;
 }
 
-void profile_node_iterator_free(void **iter_p)
+void profile_iterator_free(void **iter_p)
 {
 	struct profile_iterator *iter;
 
@@ -1511,7 +1295,7 @@ get_new_file:
 	if (iter->node == 0) {
 		if (iter->file == 0 ||
 		    (iter->flags & PROFILE_ITER_FINAL_SEEN)) {
-			profile_node_iterator_free(iter_p);
+			profile_iterator_free(iter_p);
 			if (ret_node)
 				*ret_node = 0;
 			if (ret_name)
@@ -1528,7 +1312,7 @@ get_new_file:
 			retval = 0;
 			goto get_new_file;
 		    } else {
-			profile_node_iterator_free(iter_p);
+			profile_iterator_free(iter_p);
 			return retval;
 		    }
 		}
@@ -1613,171 +1397,26 @@ get_new_file:
  */
 
 /*
- * These functions --- init_list(), end_list(), and add_to_list() are
- * internal functions used to build up a null-terminated char ** list
- * of strings to be returned by functions like profile_get_values.
- *
- * The profile_string_list structure is used for internal booking
- * purposes to build up the list, which is returned in *ret_list by
- * the end_list() function.
- *
- * The publicly exported interface for freeing char** list is
- * profile_free_list().
- */
-
-struct profile_string_list {
-	char	**list;
-	int	num;
-	int	max;
-};
-
-/*
- * Initialize the string list abstraction.
- */
-static errcode_t init_list(struct profile_string_list *list)
-{
-	list->num = 0;
-	list->max = 10;
-	list->list = malloc(list->max * sizeof(char *));
-	if (list->list == 0)
-		return ENOMEM;
-	list->list[0] = 0;
-	return 0;
-}
-
-/*
- * Free any memory left over in the string abstraction, returning the
- * built up list in *ret_list if it is non-null.
- */
-static void end_list(struct profile_string_list *list, char ***ret_list)
-{
-	char	**cp;
-
-	if (list == 0)
-		return;
-
-	if (ret_list) {
-		*ret_list = list->list;
-		return;
-	} else {
-		for (cp = list->list; *cp; cp++)
-			free(*cp);
-		free(list->list);
-	}
-	list->num = list->max = 0;
-	list->list = 0;
-}
-
-/*
- * Add a string to the list.
- */
-static errcode_t add_to_list(struct profile_string_list *list, const char *str)
-{
-	char 	*newstr, **newlist;
-	int	newmax;
-	
-	if (list->num+1 >= list->max) {
-		newmax = list->max + 10;
-		newlist = realloc(list->list, newmax * sizeof(char *));
-		if (newlist == 0)
-			return ENOMEM;
-		list->max = newmax;
-		list->list = newlist;
-	}
-	newstr = malloc(strlen(str)+1);
-	if (newstr == 0)
-		return ENOMEM;
-	strcpy(newstr, str);
-
-	list->list[list->num++] = newstr;
-	list->list[list->num] = 0;
-	return 0;
-}
-
-/*
- * Return TRUE if the string is already a member of the list.
- */
-static int is_list_member(struct profile_string_list *list, const char *str)
-{
-	char **cpp;
-
-	if (!list->list)
-		return 0;
-
-	for (cpp = list->list; *cpp; cpp++) {
-		if (!strcmp(*cpp, str))
-			return 1;
-	}
-	return 0;
-}	
-	
-/*
- * This function frees a null-terminated list as returned by
- * profile_get_values.
- */
-void profile_free_list(char **list)
-{
-    char	**cp;
-
-    if (list == 0)
-	    return;
-    
-    for (cp = list; *cp; cp++)
-	free(*cp);
-    free(list);
-}
-
-errcode_t
-profile_get_values(profile_t profile, const char *const *names,
-		   char ***ret_values)
-{
-	errcode_t		retval;
-	void			*state;
-	char			*value;
-	struct profile_string_list values;
-
-	if ((retval = profile_node_iterator_create(profile, names,
-						   PROFILE_ITER_RELATIONS_ONLY,
-						   &state)))
-		return retval;
-
-	if ((retval = init_list(&values)))
-		return retval;
-
-	do {
-		if ((retval = profile_node_iterator(&state, 0, 0, &value)))
-			goto cleanup;
-		if (value)
-			add_to_list(&values, value);
-	} while (state);
-
-	if (values.num == 0) {
-		retval = PROF_NO_RELATION;
-		goto cleanup;
-	}
-
-	end_list(&values, ret_values);
-	return 0;
-	
-cleanup:
-	end_list(&values, 0);
-	return retval;
-}
-
-/*
  * This function only gets the first value from the file; it is a
  * helper function for profile_get_string, profile_get_integer, etc.
  */
-errcode_t profile_get_value(profile_t profile, const char **names,
+errcode_t profile_get_value(profile_t profile, const char *name,
+			    const char *subname, const char *subsubname,
 			    const char **ret_value)
 {
 	errcode_t		retval;
 	void			*state;
 	char			*value;
+	const char		*names[4];
 
-	if ((retval = profile_node_iterator_create(profile, names,
-						   PROFILE_ITER_RELATIONS_ONLY,
-						   &state)))
+	names[0] = name;
+	names[1] = subname;
+	names[2] = subsubname;
+	names[3] = 0;
+
+	if ((retval = profile_iterator_create(profile, names,
+					      PROFILE_ITER_RELATIONS_ONLY,
+					      &state)))
 		return retval;
 
 	if ((retval = profile_node_iterator(&state, 0, 0, &value)))
@@ -1789,7 +1428,7 @@ errcode_t profile_get_value(profile_t profile, const char **names,
 		retval = PROF_NO_RELATION;
 	
 cleanup:
-	profile_node_iterator_free(&state);
+	profile_iterator_free(&state);
 	return retval;
 }
 
@@ -1800,14 +1439,10 @@ profile_get_string(profile_t profile, const char *name, const char *subname,
 {
 	const char	*value;
 	errcode_t	retval;
-	const char	*names[4];
 
 	if (profile) {
-		names[0] = name;
-		names[1] = subname;
-		names[2] = subsubname;
-		names[3] = 0;
-		retval = profile_get_value(profile, names, &value);
+		retval = profile_get_value(profile, name, subname, 
+					   subsubname, &value);
 		if (retval == PROF_NO_SECTION || retval == PROF_NO_RELATION)
 			value = def_val;
 		else if (retval)
@@ -1831,7 +1466,6 @@ profile_get_integer(profile_t profile, const char *name, const char *subname,
 {
 	const char	*value;
 	errcode_t	retval;
-	const char	*names[4];
 	char            *end_value;
 	long		ret_long;
 
@@ -1839,11 +1473,7 @@ profile_get_integer(profile_t profile, const char *name, const char *subname,
 	if (profile == 0)
 		return 0;
 
-	names[0] = name;
-	names[1] = subname;
-	names[2] = subsubname;
-	names[3] = 0;
-	retval = profile_get_value(profile, names, &value);
+	retval = profile_get_value(profile, name, subname, subsubname, &value);
 	if (retval == PROF_NO_SECTION || retval == PROF_NO_RELATION) {
 		*ret_int = def_val;
 		return 0;
@@ -1912,18 +1542,13 @@ profile_get_boolean(profile_t profile, const char *name, const char *subname,
 {
 	const char	*value;
 	errcode_t	retval;
-	const char	*names[4];
 
 	if (profile == 0) {
 		*ret_boolean = def_val;
 		return 0;
 	}
 
-	names[0] = name;
-	names[1] = subname;
-	names[2] = subsubname;
-	names[3] = 0;
-	retval = profile_get_value(profile, names, &value);
+	retval = profile_get_value(profile, name, subname, subsubname, &value);
 	if (retval == PROF_NO_SECTION || retval == PROF_NO_RELATION) {
 		*ret_boolean = def_val;
 		return 0;
@@ -1931,91 +1556,6 @@ profile_get_boolean(profile_t profile, const char *name, const char *subname,
 		return retval;
    
 	return profile_parse_boolean (value, ret_boolean);
-}
-
-/*
- * This function will return the list of the names of subections in the
- * under the specified section name.
- */
-errcode_t 
-profile_get_subsection_names(profile_t profile, const char **names,
-			     char ***ret_names)
-{
-	errcode_t		retval;
-	void			*state;
-	char			*name;
-	struct profile_string_list values;
-
-	if ((retval = profile_node_iterator_create(profile, names,
-		   PROFILE_ITER_LIST_SECTION | PROFILE_ITER_SECTIONS_ONLY,
-		   &state)))
-		return retval;
-
-	if ((retval = init_list(&values)))
-		return retval;
-
-	do {
-		if ((retval = profile_node_iterator(&state, 0, &name, 0)))
-			goto cleanup;
-		if (name)
-			add_to_list(&values, name);
-	} while (state);
-
-	end_list(&values, ret_names);
-	return 0;
-	
-cleanup:
-	end_list(&values, 0);
-	return retval;
-}
-
-/*
- * This function will return the list of the names of relations in the
- * under the specified section name.
- */
-errcode_t 
-profile_get_relation_names(profile_t profile, const char **names,
-			   char ***ret_names)
-{
-	errcode_t		retval;
-	void			*state;
-	char			*name;
-	struct profile_string_list values;
-
-	if ((retval = profile_node_iterator_create(profile, names,
-		   PROFILE_ITER_LIST_SECTION | PROFILE_ITER_RELATIONS_ONLY,
-		   &state)))
-		return retval;
-
-	if ((retval = init_list(&values)))
-		return retval;
-
-	do {
-		if ((retval = profile_node_iterator(&state, 0, &name, 0)))
-			goto cleanup;
-		if (name && !is_list_member(&values, name))
-			add_to_list(&values, name);
-	} while (state);
-
-	end_list(&values, ret_names);
-	return 0;
-	
-cleanup:
-	end_list(&values, 0);
-	return retval;
-}
-
-errcode_t 
-profile_iterator_create(profile_t profile, const char *const *names, int flags,
-			void **ret_iter)
-{
-	return profile_node_iterator_create(profile, names, flags, ret_iter);
-}
-
-void 
-profile_iterator_free(void **iter_p)
-{
-	profile_node_iterator_free(iter_p);
 }
 
 errcode_t 
@@ -2054,12 +1594,6 @@ profile_iterator(void **iter_p, char **ret_name, char **ret_value)
 	return 0;
 }
 
-void 
-profile_release_string(char *str)
-{
-	free(str);
-}
-
 /* End prof_get.c */
 
 #ifdef DEBUG_PROGRAM
@@ -2069,6 +1603,7 @@ profile_release_string(char *str)
  */
 
 #include "argv_parse.h"
+#include "profile_helpers.h"
 
 const char *program_name = "test_profile";
 
@@ -2093,7 +1628,22 @@ static void do_cmd(profile_t profile, char **argv)
 		retval = profile_get_values(profile, names, &values);
 		print_status = PRINT_VALUES;
 	} else if (!strcmp(cmd, "query1")) {
-		retval = profile_get_value(profile, names, &value);
+		const char *name = 0;
+		const char *subname = 0;
+		const char *subsubname = 0;
+
+		name = names[0];
+		if (name)
+			subname = names[1];
+		if (subname)
+			subsubname = names[2];
+		if (subsubname && names[3]) {
+			fprintf(stderr, 
+				"Only 3 levels are allowed with query1\n");
+			retval = EINVAL;
+		} else
+			retval = profile_get_value(profile, name, subname, 
+						   subsubname, &value);
 		print_status = PRINT_VALUE;
 	} else if (!strcmp(cmd, "list_sections")) {
 		retval = profile_get_subsection_names(profile, names, 

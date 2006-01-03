@@ -55,17 +55,8 @@ extern "C" {
 long profile_init
 	(const char * *files, profile_t *ret_profile);
 
-long profile_init_path
-	(const char * filelist, profile_t *ret_profile);
-
 void profile_release
 	(profile_t profile);
-
-long profile_get_values
-	(profile_t profile, const char *const *names, char ***ret_values);
-
-void profile_free_list
-	(char **list);
 
 long profile_get_string
 	(profile_t profile, const char *name, const char *subname, 
@@ -81,12 +72,6 @@ long profile_get_boolean
 			const char *subsubname, int def_val,
 			int *ret_default);
 
-long profile_get_relation_names
-	(profile_t profile, const char **names, char ***ret_names);
-
-long profile_get_subsection_names
-	(profile_t profile, const char **names, char ***ret_names);
-
 long profile_iterator_create
 	(profile_t profile, const char *const *names,
 		   int flags, void **ret_iter);
@@ -96,8 +81,6 @@ void profile_iterator_free
 	
 long profile_iterator
 	(void	**iter_p, char **ret_name, char **ret_value);
-
-void profile_release_string (char *str);
 
 #ifdef __cplusplus
 }

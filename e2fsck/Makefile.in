@@ -151,11 +151,12 @@ iscan: iscan.o util.o ehandler.o $(DEPLIBS)
 	@echo "	LD $@"
 	@$(LD) $(ALL_LDFLAGS) -o iscan iscan.o util.o ehandler.o $(LIBS)
 
-test_profile: $(srcdir)/profile.c argv_parse.o prof_err.o profile.h \
-		$(STATIC_LIBCOM_ERR)
+test_profile: $(srcdir)/profile.c profile_helpers.o argv_parse.o \
+		prof_err.o profile.h $(STATIC_LIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o test_profile -DDEBUG_PROGRAM $(srcdir)/profile.c prof_err.o \
-		argv_parse.o $(STATIC_LIBCOM_ERR) $(ALL_CFLAGS)
+		profile_helpers.o argv_parse.o $(STATIC_LIBCOM_ERR) \
+		$(ALL_CFLAGS)
 
 profiled:
 @PROFILE_CMT@	@echo "	MKDIR $@"

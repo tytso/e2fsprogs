@@ -1,3 +1,9 @@
+2006-01-02  Theodore Ts'o  <tytso@mit.edu>
+
+	* profile.c, profile_helpers.c, profile_helpers.h: Boil down and
+		simplify profile.c, and move extra functionality that's
+		not needed into profile_helpers.c
+
 2006-01-01  Theodore Ts'o  <tytso@mit.edu>
 
 	* profile.c: Fix #include of com_err.h so that it isn't required
