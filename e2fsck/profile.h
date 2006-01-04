@@ -41,6 +41,9 @@
 
 typedef struct _profile_t *profile_t;
 
+typedef void (*profile_syntax_err_cb_t)(const char *file, long err, 
+					int line_num);
+
 /*
  * Used by the profile iterator in prof_get.c
  */
@@ -81,6 +84,8 @@ void profile_iterator_free
 	
 long profile_iterator
 	(void	**iter_p, char **ret_name, char **ret_value);
+
+profile_syntax_err_cb_t profile_set_syntax_err_cb(profile_syntax_err_cb_t hook);
 
 #ifdef __cplusplus
 }

@@ -1,3 +1,12 @@
+2006-01-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* profile.c (profile_parse_file, profile_set_syntax_err_cb): Add
+		support for a syntax error callback to allow better error
+		reporting to the user.
+
+	* e2fsck(PRS): Set a profile syntax error callback so we can
+		report errors in /etc/e2fsck.conf.
+
 2006-01-02  Theodore Ts'o  <tytso@mit.edu>
 
 	* profile.c, profile_helpers.c, profile_helpers.h: Boil down and

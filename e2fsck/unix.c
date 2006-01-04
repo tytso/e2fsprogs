@@ -548,6 +548,14 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 	}
 }	
 
+static void syntax_err_report(const char *filename, long err, int line_num)
+{
+	fprintf(stderr, 
+		_("Syntax error in e2fsck config file (%s, line #%d)\n\t%s\n"),
+		filename, line_num, error_message(err));
+	exit(FSCK_ERROR);
+}
+
 static const char *config_fn[] = { "/etc/e2fsck.conf", 0 };
 
 static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
@@ -737,6 +745,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 
 	if ((cp = getenv("E2FSCK_CONFIG")) != NULL)
 		config_fn[0] = cp;
+	profile_set_syntax_err_cb(syntax_err_report);
 	profile_init(config_fn, &ctx->profile);
 
 	if (flush) {

@@ -167,7 +167,7 @@ struct profile_node {
 /* profile_parse.c */
 
 static errcode_t profile_parse_file
-	(FILE *f, struct profile_node **root);
+	(FILE *f, prf_data_t data);
 
 #ifdef DEBUG_PROGRAM
 static errcode_t profile_write_tree_file
@@ -452,7 +452,7 @@ errcode_t profile_update_file_data(prf_data_t data)
 		return retval;
 	}
 	data->upd_serial++;
-	retval = profile_parse_file(f, &data->root);
+	retval = profile_parse_file(f, data);
 	fclose(f);
 	if (retval) {
 	    return retval;
@@ -480,15 +480,27 @@ void profile_free_file(prf_file_t prf)
 
 /* Begin prof_parse.c */
 
+static profile_syntax_err_cb_t	syntax_err_cb;
+
+profile_syntax_err_cb_t profile_set_syntax_err_cb(profile_syntax_err_cb_t hook)
+{
+	profile_syntax_err_cb_t	old;
+
+	old = syntax_err_cb;
+	syntax_err_cb = hook;
+	return(old);
+}
+
 #define SECTION_SEP_CHAR '/'
 
-#define STATE_INIT_COMMENT	1
-#define STATE_STD_LINE		2
-#define STATE_GET_OBRACE	3
+#define STATE_INIT_COMMENT	0
+#define STATE_STD_LINE		1
+#define STATE_GET_OBRACE	2
 
 struct parse_state {
 	int	state;
 	int	group_level;
+	int	line_num;
 	struct profile_node *root_section;
 	struct profile_node *current_section;
 };
@@ -536,14 +548,6 @@ static void parse_quoted_string(char *str)
 	*to = '\0';
 }
 
-
-static errcode_t parse_init_state(struct parse_state *state)
-{
-	state->state = STATE_INIT_COMMENT;
-	state->group_level = 0;
-
-	return profile_create_node("(root)", 0, &state->root_section);
-}
 
 static errcode_t parse_std_line(char *line, struct parse_state *state)
 {
@@ -672,6 +676,7 @@ static errcode_t parse_line(char *line, struct parse_state *state)
 {
 	char	*cp;
 	
+	state->line_num++;
 	switch (state->state) {
 	case STATE_INIT_COMMENT:
 		if (line[0] != '[')
@@ -688,86 +693,34 @@ static errcode_t parse_line(char *line, struct parse_state *state)
 	return 0;
 }
 
-errcode_t profile_parse_file(FILE *f, struct profile_node **root)
+errcode_t profile_parse_file(FILE *f, prf_data_t data)
 {
-#define BUF_SIZE	2048
-	char *bptr;
+	char buf[2048];
 	errcode_t retval;
 	struct parse_state state;
 
-	bptr = malloc (BUF_SIZE);
-	if (!bptr)
-		return ENOMEM;
+	memset(&state, 0, sizeof(struct parse_state));
 
-	retval = parse_init_state(&state);
-	if (retval) {
-		free (bptr);
+	retval = profile_create_node("(root)", 0, &state.root_section);
+	if (retval)
 		return retval;
-	}
+
 	while (!feof(f)) {
-		if (fgets(bptr, BUF_SIZE, f) == NULL)
+		if (fgets(buf, sizeof(buf), f) == NULL)
 			break;
-#ifndef PROFILE_SUPPORTS_FOREIGN_NEWLINES
-		retval = parse_line(bptr, &state);
+		retval = parse_line(buf, &state);
 		if (retval) {
-			free (bptr);
+			if (syntax_err_cb)
+				(syntax_err_cb)(data->filespec, retval, 
+						state.line_num);
 			return retval;
 		}
-#else
-		{
-		    char *p, *end;
-
-		    if (strlen(bptr) >= BUF_SIZE - 1) {
-			/* The string may have foreign newlines and
-			   gotten chopped off on a non-newline
-			   boundary.  Seek backwards to the last known
-			   newline.  */
-			long offset;
-			char *c = bptr + strlen (bptr);
-			for (offset = 0; offset > -BUF_SIZE; offset--) {
-			    if (*c == '\r' || *c == '\n') {
-				*c = '\0';
-				fseek (f, offset, SEEK_CUR);
-				break;
-			    }
-			    c--;
-			}
-		    }
-
-		    /* First change all newlines to \n */
-		    for (p = bptr; *p != '\0'; p++) {
-			if (*p == '\r')
-                            *p = '\n';
-		    }
-		    /* Then parse all lines */
-		    p = bptr;
-		    end = bptr + strlen (bptr);
-		    while (p < end) {
-			char* newline;
-			char* newp;
-
-			newline = strchr (p, '\n');
-			if (newline != NULL)
-			    *newline = '\0';
-
-			/* parse_line modifies contents of p */
-			newp = p + strlen (p) + 1;
-			retval = parse_line (p, &state);
-			if (retval) {
-			    free (bptr);
-			    return retval;
-			}
-
-			p = newp;
-		    }
-		}
-#endif
 	}
-	*root = state.root_section;
+	data->root = state.root_section;
 
-	free (bptr);
 	return 0;
 }
+
 
 #ifdef DEBUG_PROGRAM
 /*
@@ -1720,6 +1673,12 @@ static void do_batchmode(profile_t profile)
 	
 }
 
+void syntax_err_report(const char *filename, long err, int line_num)
+{
+	fprintf(stderr, "Syntax error in %s, line number %d: %s\n",
+		filename, line_num, error_message(err));
+	exit(1);
+}
 
 int main(int argc, char **argv)
 {
@@ -1733,6 +1692,8 @@ int main(int argc, char **argv)
     }
 
     initialize_prof_error_table();
+
+    profile_set_syntax_err_cb(syntax_err_report);
     
     retval = profile_init_path(argv[1], &profile);
     if (retval) {
