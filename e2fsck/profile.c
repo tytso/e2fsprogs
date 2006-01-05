@@ -12,7 +12,7 @@
  * It has been folded into a single C source file to make it easier to
  * fold into an application program.)
  *
- * Copyright (C) 2005 by Theodore Ts'o.
+ * Copyright (C) 2005, 2006 by Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -74,8 +74,6 @@
 #undef STAT_ONCE_PER_SECOND
 #undef HAVE_STAT
 
-/* Begin prof_int.h */
-
 /*
  * prof_int.h
  */
@@ -86,32 +84,16 @@ typedef long prf_magic_t;
  * This is the structure which stores the profile information for a
  * particular configuration file.
  */
-struct _prf_data_t {
+struct _prf_file_t {
 	prf_magic_t	magic;
-	struct profile_node *root;
+	char		*filespec;
 #ifdef STAT_ONCE_PER_SECOND
 	time_t		last_stat;
 #endif
 	time_t		timestamp; /* time tree was last updated from file */
 	int		flags;	/* r/w, dirty */
 	int		upd_serial; /* incremented when data changes */
-	char		*comment;
-
-	size_t		fslen;
-
-	struct _prf_data_t *next;
-	/* Was: "profile_filespec_t filespec".  Now: flexible char
-	   array ... except, we need to work in C89, so an array
-	   length must be specified.  */
-	const char	filespec[sizeof("/etc/krb5.conf")];
-};
-
-typedef struct _prf_data_t *prf_data_t;
-static prf_data_t profile_make_prf_data(const char *);
-
-struct _prf_file_t {
-	prf_magic_t	magic;
-	struct _prf_data_t	*data;
+	struct profile_node *root;
 	struct _prf_file_t *next;
 };
 
@@ -164,10 +146,8 @@ struct profile_node {
 	  if ((node)->magic != PROF_MAGIC_NODE) \
 		  return PROF_MAGIC_NODE;
 
-/* profile_parse.c */
-
 static errcode_t profile_parse_file
-	(FILE *f, prf_data_t data);
+	(FILE *f, prf_file_t prf);
 
 #ifdef DEBUG_PROGRAM
 static errcode_t profile_write_tree_file
@@ -177,8 +157,6 @@ static errcode_t profile_write_tree_to_buffer
 	(struct profile_node *root, char **buf);
 #endif
 
-
-/* prof_tree.c */
 
 static void profile_free_node
 	(struct profile_node *relation);
@@ -207,33 +185,20 @@ static errcode_t profile_node_iterator
 	(void	**iter_p, struct profile_node **ret_node,
 		   char **ret_name, char **ret_value);
 
-/* prof_file.c */
-
 static errcode_t profile_open_file
 	(const char * file, prf_file_t *ret_prof);
 
-#define profile_update_file(P) profile_update_file_data((P)->data)
-static errcode_t profile_update_file_data
-	(prf_data_t profile);
+static errcode_t profile_update_file
+	(prf_file_t prf);
 
 static void profile_free_file
 	(prf_file_t profile);
-
-/* prof_init.c -- included from profile.h */
-
-/* prof_get.c */
 
 static errcode_t profile_get_value(profile_t profile, const char *name,
 				   const char *subname, const char *subsubname,
 				   const char **ret_value);
 
-/* Others included from profile.h */
-	
-/* prof_set.c -- included from profile.h */
 
-/* End prof_int.h */
-
-/* Begin prof_init.c */
 /*
  * prof_init.c --- routines that manipulate the user-visible profile_t
  * 	object.
@@ -302,38 +267,9 @@ profile_release(profile_t profile)
 }
 
 
-/* End prof_init.c */
-
-/* Begin prof_file.c */
 /*
  * prof_file.c ---- routines that manipulate an individual profile file.
  */
-
-static prf_data_t
-profile_make_prf_data(const char *filename)
-{
-    prf_data_t d;
-    size_t len, flen, slen;
-    char *fcopy;
-
-    flen = strlen(filename);
-    slen = offsetof(struct _prf_data_t, filespec);
-    len = slen + flen + 1;
-    if (len < sizeof(struct _prf_data_t))
-	len = sizeof(struct _prf_data_t);
-    d = malloc(len);
-    if (d == NULL)
-	return NULL;
-    memset(d, 0, len);
-    fcopy = (char *) d + slen;
-    strcpy(fcopy, filename);
-    d->comment = NULL;
-    d->magic = PROF_MAGIC_FILE_DATA;
-    d->root = NULL;
-    d->next = NULL;
-    d->fslen = flen;
-    return d;
-}
 
 errcode_t profile_open_file(const char * filespec,
 			    prf_file_t *ret_prof)
@@ -342,7 +278,6 @@ errcode_t profile_open_file(const char * filespec,
 	errcode_t	retval;
 	char		*home_env = 0;
 	unsigned int	len;
-	prf_data_t	data;
 	char		*expanded_filename;
 
 	prf = malloc(sizeof(struct _prf_file_t));
@@ -385,14 +320,7 @@ errcode_t profile_open_file(const char * filespec,
 	} else
 	    memcpy(expanded_filename, filespec, len);
 
-	data = profile_make_prf_data(expanded_filename);
-	if (data == NULL) {
-	    free(prf);
-	    free(expanded_filename);
-	    return ENOMEM;
-	}
-	free(expanded_filename);
-	prf->data = data;
+	prf->filespec = expanded_filename;
 
 	retval = profile_update_file(prf);
 	if (retval) {
@@ -404,7 +332,7 @@ errcode_t profile_open_file(const char * filespec,
 	return 0;
 }
 
-errcode_t profile_update_file_data(prf_data_t data)
+errcode_t profile_update_file(prf_file_t prf)
 {
 	errcode_t retval;
 #ifdef HAVE_STAT
@@ -418,27 +346,23 @@ errcode_t profile_update_file_data(prf_data_t data)
 #ifdef HAVE_STAT
 #ifdef STAT_ONCE_PER_SECOND
 	now = time(0);
-	if (now == data->last_stat && data->root != NULL) {
+	if (now == prf->last_stat && prf->root != NULL) {
 	    return 0;
 	}
 #endif
-	if (stat(data->filespec, &st)) {
+	if (stat(prf->filespec, &st)) {
 	    retval = errno;
 	    return retval;
 	}
 #ifdef STAT_ONCE_PER_SECOND
-	data->last_stat = now;
+	prf->last_stat = now;
 #endif
-	if (st.st_mtime == data->timestamp && data->root != NULL) {
+	if (st.st_mtime == prf->timestamp && prf->root != NULL) {
 	    return 0;
 	}
-	if (data->root) {
-		profile_free_node(data->root);
-		data->root = 0;
-	}
-	if (data->comment) {
-		free(data->comment);
-		data->comment = 0;
+	if (prf->root) {
+		profile_free_node(prf->root);
+		prf->root = 0;
 	}
 #else
 	/*
@@ -446,46 +370,40 @@ errcode_t profile_update_file_data(prf_data_t data)
 	 * memory image is correct.  That is, we won't reread the
 	 * profile file if it changes.
 	 */
-	if (data->root) {
+	if (prf->root) {
 	    return 0;
 	}
 #endif
 	errno = 0;
-	f = fopen(data->filespec, "r");
+	f = fopen(prf->filespec, "r");
 	if (f == NULL) {
 		retval = errno;
 		if (retval == 0)
 			retval = ENOENT;
 		return retval;
 	}
-	data->upd_serial++;
-	retval = profile_parse_file(f, data);
+	prf->upd_serial++;
+	retval = profile_parse_file(f, prf);
 	fclose(f);
 	if (retval) {
 	    return retval;
 	}
 #ifdef HAVE_STAT
-	data->timestamp = st.st_mtime;
+	prf->timestamp = st.st_mtime;
 #endif
 	return 0;
 }
 
 void profile_free_file(prf_file_t prf)
 {
-    prf_data_t data = prf->data;
-
-    if (data->root)
-	profile_free_node(data->root);
-    if (data->comment)
-	free(data->comment);
-    data->magic = 0;
-    free(data);
+    if (prf->root)
+	profile_free_node(prf->root);
+    if (prf->filespec)
+	    free(prf->filespec);
     free(prf);
 }
 
-/* End prof_file.c */
-
-/* Begin prof_parse.c */
+/* Begin the profile parser */
 
 static profile_syntax_err_cb_t	syntax_err_cb;
 
@@ -497,8 +415,6 @@ profile_syntax_err_cb_t profile_set_syntax_err_cb(profile_syntax_err_cb_t hook)
 	syntax_err_cb = hook;
 	return(old);
 }
-
-#define SECTION_SEP_CHAR '/'
 
 #define STATE_INIT_COMMENT	0
 #define STATE_STD_LINE		1
@@ -714,7 +630,7 @@ static errcode_t parse_line(char *line, struct parse_state *state)
 	return 0;
 }
 
-errcode_t profile_parse_file(FILE *f, prf_data_t data)
+errcode_t profile_parse_file(FILE *f, prf_file_t file)
 {
 	char buf[2048];
 	errcode_t retval;
@@ -732,12 +648,12 @@ errcode_t profile_parse_file(FILE *f, prf_data_t data)
 		retval = parse_line(buf, &state);
 		if (retval) {
 			if (syntax_err_cb)
-				(syntax_err_cb)(data->filespec, retval, 
+				(syntax_err_cb)(file->filespec, retval, 
 						state.line_num);
 			return retval;
 		}
 	}
-	data->root = state.root_section;
+	file->root = state.root_section;
 
 	return 0;
 }
@@ -926,10 +842,6 @@ errcode_t profile_write_tree_to_buffer(struct profile_node *root,
 	return 0;
 }
 #endif
-
-/* End prof_parse.c */
-
-/* Begin prof_tree.c */
 
 /*
  * prof_tree.c --- these routines maintain the parse tree of the
@@ -1252,13 +1164,11 @@ errcode_t profile_node_iterator(void **iter_p, struct profile_node **ret_node,
 		return PROF_MAGIC_ITERATOR;
 	if (iter->file && iter->file->magic != PROF_MAGIC_FILE)
 	    return PROF_MAGIC_FILE;
-	if (iter->file && iter->file->data->magic != PROF_MAGIC_FILE_DATA)
-	    return PROF_MAGIC_FILE_DATA;
 	/*
 	 * If the file has changed, then the node pointer is invalid,
 	 * so we'll have search the file again looking for it.
 	 */
-	if (iter->node && (iter->file->data->upd_serial != iter->file_serial)) {
+	if (iter->node && (iter->file->upd_serial != iter->file_serial)) {
 		iter->flags &= ~PROFILE_ITER_FINAL_SEEN;
 		skip_num = iter->num;
 		iter->node = 0;
@@ -1291,12 +1201,12 @@ get_new_file:
 			return retval;
 		    }
 		}
-		iter->file_serial = iter->file->data->upd_serial;
+		iter->file_serial = iter->file->upd_serial;
 		/*
 		 * Find the section to list if we are a LIST_SECTION,
 		 * or find the containing section if not.
 		 */
-		section = iter->file->data->root;
+		section = iter->file->root;
 		for (cpp = iter->names; cpp[iter->done_idx]; cpp++) {
 			for (p=section->first_child; p; p = p->next) {
 				if (!strcmp(p->name, *cpp) && !p->value)
@@ -1360,11 +1270,6 @@ get_new_file:
 }
 
 
-
-/* End prof_tree.c */
-
-
-/* Begin prof_get.c */
 /*
  * prof_get.c --- routines that expose the public interfaces for
  * 	querying items from the profile.
@@ -1569,8 +1474,6 @@ profile_iterator(void **iter_p, char **ret_name, char **ret_value)
 	return 0;
 }
 
-/* End prof_get.c */
-
 #ifdef DEBUG_PROGRAM
 
 /*
@@ -1630,7 +1533,7 @@ static void do_cmd(profile_t profile, char **argv)
 		print_status = PRINT_VALUES;
 	} else if (!strcmp(cmd, "dump")) {
 		retval = profile_write_tree_file
-			(profile->first_file->data->root, stdout);
+			(profile->first_file->root, stdout);
 #if 0
 	} else if (!strcmp(cmd, "clear")) {
 		retval = profile_clear_relation(profile, names);
@@ -1640,7 +1543,7 @@ static void do_cmd(profile_t profile, char **argv)
 #endif
 	} else if (!strcmp(cmd, "verify")) {
 		retval = profile_verify_node
-			(profile->first_file->data->root);
+			(profile->first_file->root);
 #if 0
 	} else if (!strcmp(cmd, "rename_section")) {
 		retval = profile_rename_section(profile, names+1, *names);

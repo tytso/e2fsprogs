@@ -1,5 +1,8 @@
 2006-01-04  Theodore Ts'o  <tytso@mit.edu>
 
+	* profile.c: Eliminate the prf_data_t data structure and fold it
+		back into prof_file_t.  Eschew needless complexity!
+
 	* profile.c: Change syntax accepted by the profile parser.  The
 		value of profile relations must not contain spaces unless
 		it is quoted; otherwise the parser will throw an error.
