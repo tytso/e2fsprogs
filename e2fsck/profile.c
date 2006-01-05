@@ -63,6 +63,7 @@
 #include <stddef.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #ifdef HAVE_PWD_H
 #include <pwd.h>
 #endif
@@ -204,50 +205,140 @@ static errcode_t profile_get_value(profile_t profile, const char *name,
  * 	object.
  */
 
+static int compstr(const void *m1, const void *m2) 
+{
+	const char *s1 = *((const char **) m1);
+	const char *s2 = *((const char **) m2);
+
+	return strcmp(s1, s2); 
+}
+
+static void free_list(char **list)
+{
+    char	**cp;
+
+    if (list == 0)
+	    return;
+    
+    for (cp = list; *cp; cp++)
+	free(*cp);
+    free(list);
+}
+
+static errcode_t get_dirlist(const char *dirname, char***ret_array)
+{
+	DIR *dir;
+	struct dirent *de;
+	struct stat st;
+	errcode_t retval;
+	char *fn, *cp;
+	char **array = 0, **new_array;
+	int max = 0, num = 0;
+
+	dir = opendir(dirname);
+	if (!dir)
+		return errno;
+
+	while ((de = readdir(dir)) != NULL) {
+		for (cp = de->d_name; *cp; cp++) {
+			if (!isalnum(*cp) &&
+			    (*cp != '-') &&
+			    (*cp != '_'))
+				break;
+		}
+		if (*cp)
+			continue;
+		fn = malloc(strlen(dirname) + strlen(de->d_name) + 2);
+		if (!fn) {
+			retval = ENOMEM;
+			goto errout;
+		}
+		sprintf(fn, "%s/%s", dirname, de->d_name);
+		if ((stat(fn, &st) < 0) || !S_ISREG(st.st_mode)) {
+			free(fn);
+			continue;
+		}
+		if (num >= max) {
+			max += 10;
+			new_array = realloc(array, sizeof(char *) * (max+1));
+			if (!new_array) {
+				retval = ENOMEM;
+				goto errout;
+			}
+			array = new_array;
+		}
+		array[num++] = fn;
+	}
+	qsort(array, num, sizeof(char *), compstr);
+	array[num++] = 0;
+	*ret_array = array;
+	closedir(dir);
+	return 0;
+errout:
+	closedir(dir);
+	free_list(array);
+	return retval;
+}
+
 errcode_t 
 profile_init(const char **files, profile_t *ret_profile)
 {
 	const char **fs;
 	profile_t profile;
-	prf_file_t  new_file, last = 0;
+	prf_file_t  new_file, *last;
 	errcode_t retval = 0;
+	char **cpp, *cp, **array = 0;
 
 	profile = malloc(sizeof(struct _profile_t));
 	if (!profile)
 		return ENOMEM;
 	memset(profile, 0, sizeof(struct _profile_t));
 	profile->magic = PROF_MAGIC_PROFILE;
+	last = &profile->first_file;
 
         /* if the filenames list is not specified return an empty profile */
         if ( files ) {
 	    for (fs = files; !PROFILE_LAST_FILESPEC(*fs); fs++) {
+		retval = get_dirlist(*fs, &array);
+		if (retval == 0) {
+			for (cpp = array; (cp = *cpp); cpp++) {
+				retval = profile_open_file(cp, &new_file);
+				if (retval == EACCES)
+					continue;
+				if (retval)
+					goto errout;
+				*last = new_file;
+				last = &new_file->next;
+			}
+		} else if (retval != ENOTDIR)
+			goto errout;
+
 		retval = profile_open_file(*fs, &new_file);
 		/* if this file is missing, skip to the next */
 		if (retval == ENOENT || retval == EACCES) {
 			continue;
 		}
-		if (retval) {
-			profile_release(profile);
-			return retval;
-		}
-		if (last)
-			last->next = new_file;
-		else
-			profile->first_file = new_file;
-		last = new_file;
+		if (retval)
+			goto errout;
+		*last = new_file;
+		last = &new_file->next;
 	    }
 	    /*
-	     * If last is still null after the loop, then all the files were
-	     * missing, so return the appropriate error.
+	     * If all the files were not found, return the appropriate error.
 	     */
-	    if (!last) {
+	    if (!profile->first_file) {
 		profile_release(profile);
 		return ENOENT;
 	    }
 	}
 
+	free_list(array);
         *ret_profile = profile;
         return 0;
+errout:
+	free_list(array);
+	profile_release(profile);
+	return retval;
 }
 
 void 

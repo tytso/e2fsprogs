@@ -1,3 +1,10 @@
+2006-01-05  Theodore Ts'o  <tytso@mit.edu>
+
+	* profile.c (profile_init): If a directory is passed to
+		profile_init, then read all files which match [0-9a-zA-Z]*
+		in sort order.  This allows handling of /etc/foo/conf.d
+		style directories.
+
 2006-01-04  Theodore Ts'o  <tytso@mit.edu>
 
 	* profile.c: Eliminate the prf_data_t data structure and fold it
