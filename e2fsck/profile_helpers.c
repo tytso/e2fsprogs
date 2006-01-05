@@ -85,7 +85,7 @@ static void end_list(struct profile_string_list *list, char ***ret_list)
 /*
  * Add a string to the list.
  */
-static errcode_t add_to_list(struct profile_string_list *list, const char *str)
+static errcode_t add_to_list(struct profile_string_list *list, char *str)
 {
 	char 	**newlist;
 	int	newmax;
