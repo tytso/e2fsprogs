@@ -356,14 +356,21 @@ errcode_t profile_open_file(const char * filespec,
 		home_env = getenv("HOME");
 #ifdef HAVE_PWD_H
 		if (home_env == NULL) {
-		    uid_t uid;
+#ifdef HAVE_GETWUID_R
 		    struct passwd *pw, pwx;
+		    uid_t uid;
 		    char pwbuf[BUFSIZ];
 
 		    uid = getuid();
-		    if (!k5_getpwuid_r(uid, &pwx, pwbuf, sizeof(pwbuf), &pw)
+		    if (!getpwuid_r(uid, &pwx, pwbuf, sizeof(pwbuf), &pw)
 			&& pw != NULL && pw->pw_dir[0] != 0)
 			home_env = pw->pw_dir;
+#else
+		    struct passwd *pw;
+
+		    pw = getpwuid(getuid());
+		    home_env = pw->pw_dir;
+#endif
 		}
 #endif
 		if (home_env)
@@ -512,6 +519,18 @@ static char *skip_over_blanks(char *cp)
 	return cp;
 }
 
+static int end_or_comment(char ch)
+{
+	return (ch == 0 || ch == '#' || ch == ';');
+}
+
+static char *skip_over_nonblanks(char *cp)
+{
+	while (!end_or_comment(*cp) && !isspace(*cp))
+		cp++;
+	return cp;
+}
+
 static void strip_line(char *line)
 {
 	char *p = line + strlen(line);
@@ -560,12 +579,10 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 	
 	if (*line == 0)
 		return 0;
-	if (line[0] == ';' || line[0] == '#')
-		return 0;
 	strip_line(line);
 	cp = skip_over_blanks(line);
 	ch = *cp;
-	if (ch == 0)
+	if (end_or_comment(ch))
 		return 0;
 	if (ch == '[') {
 		if (state->group_level > 0)
@@ -595,10 +612,10 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 			cp++;
 		}
 		/*
-		 * A space after ']' should not be fatal 
+		 * Spaces or comments after ']' should not be fatal 
 		 */
 		cp = skip_over_blanks(cp);
-		if (*cp)
+		if (!end_or_comment(*cp))
 			return PROF_SECTION_SYNTAX;
 		return 0;
 	}
@@ -621,34 +638,38 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 	if (cp == tag)
 	    return PROF_RELATION_SYNTAX;
 	*cp = '\0';
-	p = tag;
 	/* Look for whitespace on left-hand side.  */
-	while (p < cp && !isspace((int)*p))
-	    p++;
-	if (p < cp) {
-	    /* Found some sort of whitespace.  */
-	    *p++ = 0;
-	    /* If we have more non-whitespace, it's an error.  */
-	    while (p < cp) {
-		if (!isspace((int)*p))
-		    return PROF_RELATION_SYNTAX;
-		p++;
-	    }
-	}
+	p = skip_over_nonblanks(tag);
+	if (*p)
+		*p++ = 0;
+	p = skip_over_blanks(p);
+	/* If we have more non-whitespace, it's an error.  */
+	if (*p)
+		return PROF_RELATION_SYNTAX;
+
 	cp = skip_over_blanks(cp+1);
 	value = cp;
-	if (value[0] == '"') {
+	ch = value[0];
+	if (ch == '"') {
 		value++;
 		parse_quoted_string(value);
-	} else if (value[0] == 0) {
+	} else if (end_or_comment(ch)) {
 		do_subsection++;
 		state->state = STATE_GET_OBRACE;
-	} else if (value[0] == '{' && *(skip_over_blanks(value+1)) == 0)
-		do_subsection++;
-	else {
-		cp = value + strlen(value) - 1;
-		while ((cp > value) && isspace((int) (*cp)))
-			*cp-- = 0;
+	} else if (value[0] == '{') {
+		cp = skip_over_blanks(value+1);
+		ch = *cp;
+		if (end_or_comment(ch))
+			do_subsection++;
+		else
+			return PROF_RELATION_SYNTAX;
+	} else {
+		cp = skip_over_nonblanks(value);
+		p = skip_over_blanks(cp);
+		ch = *p;
+		*cp = 0;
+		if (!end_or_comment(ch))
+			return PROF_RELATION_SYNTAX;
 	}
 	if (do_subsection) {
 		p = strchr(tag, '*');
@@ -732,7 +753,8 @@ static int need_double_quotes(char *str)
 		return 0;
 	if (isspace((int) (*str)) ||isspace((int) (*(str + strlen(str) - 1))))
 		return 1;
-	if (strchr(str, '\n') || strchr(str, '\t') || strchr(str, '\b'))
+	if (strchr(str, '\n') || strchr(str, '\t') || strchr(str, '\b') ||
+	    strchr(str, ' ') || strchr(str, '#') || strchr(str, ';'))
 		return 1;
 	return 0;
 }

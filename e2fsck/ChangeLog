@@ -1,5 +1,13 @@
 2006-01-04  Theodore Ts'o  <tytso@mit.edu>
 
+	* profile.c: Change syntax accepted by the profile parser.  The
+		value of profile relations must not contain spaces unless
+		it is quoted; otherwise the parser will throw an error.
+		Comments are allowed anywhere and can be started with
+		either a ';' or a '#' character.  The only place where
+		comments will not be intepreted as beginning a comment is
+		in a quoted string.
+
 	* profile.c (profile_parse_file, profile_set_syntax_err_cb): Add
 		support for a syntax error callback to allow better error
 		reporting to the user.
