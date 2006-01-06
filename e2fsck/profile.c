@@ -595,10 +595,20 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 		if (state->group_level > 0)
 			return PROF_SECTION_NOTOP;
 		cp++;
+		cp = skip_over_blanks(cp);
 		p = strchr(cp, ']');
 		if (p == NULL)
 			return PROF_SECTION_SYNTAX;
-		*p = '\0';
+		if (*cp == '"') {
+			cp++;
+			parse_quoted_string(cp);
+		} else {
+			*p-- = '\0';
+			while (isspace(*p) && (p > cp))
+				*p-- = '\0';
+			if (*cp == 0)
+				return PROF_SECTION_SYNTAX;
+		}
 		retval = profile_find_node(state->root_section, cp, 0, 1, 
 					   &iter, &state->current_section);
 		if (retval == PROF_NO_SECTION) {
@@ -645,14 +655,19 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 	if (cp == tag)
 	    return PROF_RELATION_SYNTAX;
 	*cp = '\0';
-	/* Look for whitespace on left-hand side.  */
-	p = skip_over_nonblanks(tag);
-	if (*p)
-		*p++ = 0;
-	p = skip_over_blanks(p);
-	/* If we have more non-whitespace, it's an error.  */
-	if (*p)
-		return PROF_RELATION_SYNTAX;
+	if (*tag == '"') {
+		tag++;
+		parse_quoted_string(tag);
+	} else {
+		/* Look for whitespace on left-hand side.  */
+		p = skip_over_nonblanks(tag);
+		if (*p)
+			*p++ = 0;
+		p = skip_over_blanks(p);
+		/* If we have more non-whitespace, it's an error.  */
+		if (*p)
+			return PROF_RELATION_SYNTAX;
+	}
 
 	cp = skip_over_blanks(cp+1);
 	value = cp;
@@ -828,17 +843,16 @@ static void dump_profile(struct profile_node *root, int level,
 			break;
 		for (i=0; i < level; i++)
 			cb("\t", data);
-		if (need_double_quotes(p->value)) {
+		if (need_double_quotes(p->name))
+			output_quoted_string(p->name, cb, data);
+		else
 			cb(p->name, data);
-			cb(" = ", data);
+		cb(" = ", data);
+		if (need_double_quotes(p->value))
 			output_quoted_string(p->value, cb, data);
-			cb(EOL, data);
-		} else {
-			cb(p->name, data);
-			cb(" = ", data);
+		else
 			cb(p->value, data);
-			cb(EOL, data);
-		}
+		cb(EOL, data);
 	} while (iter != 0);
 
 	iter = 0;
@@ -848,7 +862,10 @@ static void dump_profile(struct profile_node *root, int level,
 			break;
 		if (level == 0)	{ /* [xxx] */
 			cb("[", data);
-			cb(p->name, data);
+			if (need_double_quotes(p->name))
+				output_quoted_string(p->name, cb, data);
+			else
+				cb(p->name, data);
 			cb("]", data);
 			cb(p->final ? "*" : "", data);
 			cb(EOL, data);
@@ -857,7 +874,10 @@ static void dump_profile(struct profile_node *root, int level,
 		} else { 	/* xxx = { ... } */
 			for (i=0; i < level; i++)
 				cb("\t", data);
-			cb(p->name, data);
+			if (need_double_quotes(p->name))
+				output_quoted_string(p->name, cb, data);
+			else
+				cb(p->name, data);
 			cb(" = {", data);
 			cb(EOL, data);
 			dump_profile(p, level+1, cb, data);
