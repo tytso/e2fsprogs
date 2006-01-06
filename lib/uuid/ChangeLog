@@ -1,3 +1,9 @@
+2006-01-06  Theodore Ts'o  <tytso@mit.edu>
+
+	* gen_uuid.c (get_random_fd): Set the FD_CLOEXEC flag on the file
+		descriptor so that it will get closed across an execve().
+		(Addresses Debian Bug #345832)
+
 2005-12-10  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Add a dependency to make sure that the

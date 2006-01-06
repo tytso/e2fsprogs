@@ -88,6 +88,11 @@ static int get_random_fd(void)
 		fd = open("/dev/urandom", O_RDONLY);
 		if (fd == -1)
 			fd = open("/dev/random", O_RDONLY | O_NONBLOCK);
+		if (fd >= 0) {
+			i = fcntl(fd, F_GETFD);
+			if (i >= 0) 
+				fcntl(fd, F_SETFD, i | FD_CLOEXEC);
+		}
 		srand((getpid() << 16) ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
 	}
 	/* Crank the random number generator a few times */
