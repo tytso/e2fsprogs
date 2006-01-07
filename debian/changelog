@@ -1,3 +1,24 @@
+e2fsprogs (1.38+1.39-WIP-2005.12.31-1) unstable; urgency=medium
+
+  * New upstream version
+  * Update profile library code base
+    - Allow tag and section names to have quoted strings
+    - Make the profile library support reading files in a conf.d directory
+    - Slightly change the parser to support comments at the end of all lines
+    - Add syntax error reporting
+    - Simplify profile code
+    - Add E2FSCK_CONFIG environment variable which overrides where to
+      find /etc/e2fsck.conf
+    - Make e2fsck's filesystem problem handing configurable
+    - Fix FTBFS bug if comerr-dev is not installed.  (Closes: #345519)
+  * Update Dutch, Polish, and Swedish translations.  (Closes: #343149)
+  * Fix a fd leak across an exec in libuuid.  (Closes: #345832)
+  * Address override file disparities
+  * Make urgency be medium to accelerate a workaround to Debian's buggy
+    initscripts (See Debian bugs: #343662, #343645)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri,  6 Jan 2006 21:41:06 -0500
+
 e2fsprogs (1.38+1.39-WIP-2005.12.10-2) unstable; urgency=low
 
   * Make resize2fs expand or truncate a file containing a filesystem.
