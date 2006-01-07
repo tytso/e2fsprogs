@@ -1,5 +1,5 @@
 Source: e2fsprogs
-Section: base
+Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
 Build-Depends: texi2html, gettext, texinfo, dc, debhelper (>= 4)
@@ -91,7 +91,7 @@ Description: universally unique id library
 
 Package: libuuid1-udeb
 Section: debian-installer
-Priority: required
+Priority: optional
 Depends: ${shlibs:Depends}
 Provides: libuuid1
 Replaces: libuuid1
@@ -138,7 +138,7 @@ Description: block device id library
 
 Package: libblkid1-udeb
 Section: debian-installer
-Priority: required
+Priority: optional
 Depends: ${shlibs:Depends}
 Provides: libblkid1
 Architecture: any
@@ -167,7 +167,7 @@ Description: block device id library - headers and static libraries
 
 Package: e2fsprogs-udeb
 Section: debian-installer
-Priority: standard
+Priority: optional
 Depends: ${shlibs:Depends}
 Architecture: any
 Description: stripped-down versions of e2fsprogs, for debian-installer
