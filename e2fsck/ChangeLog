@@ -1,7 +1,11 @@
 2006-01-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (check_if_skip): When skipping a check due to being on
-		battery, print an explanatory message to this effect.  
+		battery, print an explanatory message to this effect.  Add
+		an e2fsck configuration option defer_check_on_battery
+		which defaults to true.  If the configuration option is
+		turned off, then e2fsck will not attempt to defer
+		filesystem checks when the system is running on battery.
 		(Addresses Debain Bug: #350306)
 
 2006-01-06  Theodore Ts'o  <tytso@mit.edu>

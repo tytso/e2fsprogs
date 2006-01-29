@@ -259,7 +259,14 @@ static void check_if_skip(e2fsck_t ctx)
 	unsigned int reason_arg = 0;
 	long next_check;
 	int batt = is_on_batt();
-	
+	int defer_check_on_battery;
+
+	profile_get_boolean(ctx->profile, "options",
+			    "defer_check_on_battery", 0, 1, 
+			    &defer_check_on_battery);
+	if (!defer_check_on_battery)
+		batt = 0;
+
 	if ((ctx->options & E2F_OPT_FORCE) || bad_blocks_file ||
 	    cflag || swapfs)
 		return;
