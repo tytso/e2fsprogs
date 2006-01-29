@@ -307,9 +307,13 @@ static void check_if_skip(e2fsck_t ctx)
 	    ((ctx->now - fs->super->s_lastcheck) >= fs->super->s_checkinterval))
 		next_check = 1;
 	if (next_check <= 5) {
-		if (next_check == 1)
-			fputs(_(" (check after next mount)"), stdout);
-		else
+		if (next_check == 1) {
+			if (batt) 
+				fputs(_(" (check deferred; on battery)"),
+				      stdout);
+			else
+				fputs(_(" (check after next mount)"), stdout);
+		} else
 			printf(_(" (check in %ld mounts)"), next_check);
 	}
 	fputc('\n', stdout);

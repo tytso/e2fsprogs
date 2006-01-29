@@ -1,3 +1,9 @@
+2006-01-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (check_if_skip): When skipping a check due to being on
+		battery, print an explanatory message to this effect.  
+		(Addresses Debain Bug: #350306)
+
 2006-01-06  Theodore Ts'o  <tytso@mit.edu>
 
 	* profile.c (parse_std_line, dump_profile): Add support for
