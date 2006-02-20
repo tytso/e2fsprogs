@@ -2,7 +2,7 @@
 # Copyright © 2003, 2005, 2006 Free Software Foundation, Inc.
 # Göran Uddeborg <goeran@uddeborg.se>, 2003, 2005, 2006.
 #
-# $Revision: 1.24 $
+# $Revision: 1.25 $
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -67,7 +67,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs 1.39-b1\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2005-12-31 16:34-0500\n"
-"PO-Revision-Date: 2006-01-05 22:39+0100\n"
+"PO-Revision-Date: 2006-01-20 22:52+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -450,7 +450,7 @@ msgstr "Pass 1"
 #: e2fsck/pass1.c:976
 #, c-format
 msgid "reading indirect blocks of inode %u"
-msgstr "läser indirekt block för inod %u"
+msgstr "läser indirektblock för inod %u"
 
 #: e2fsck/pass1.c:1018
 msgid "bad inode map"
@@ -570,7 +570,7 @@ msgstr "Fortsätt"
 
 #: e2fsck/problem.c:64
 msgid "Clone multiply-claimed blocks"
-msgstr "Klona flerfaldig ianspråkstagna block"
+msgstr "Klona flerfaldigt ianspråkstagna block"
 
 #: e2fsck/problem.c:65
 msgid "Delete file"
@@ -1111,7 +1111,7 @@ msgstr "Duplicerat eller felaktigt block används!\n"
 #. @-expanded: Bad block %b used as bad block inode indirect block.  
 #: e2fsck/problem.c:453
 msgid "Bad @b %b used as bad @b @i indirect @b.  "
-msgstr "Felaktigt block %b använt som indirektblock för dåliga block.  "
+msgstr "Felaktigt block %b använt som indirektblock för inod för dåliga block.  "
 
 #. @-expanded: \n
 #. @-expanded: The bad block inode has probably been corrupted.  You probably\n
@@ -1126,7 +1126,7 @@ msgid ""
 msgstr ""
 "\n"
 "Inoden för dåliga block har antagligen blivit skadad.  Du bör\n"
-"antagligen sluta nu och köra e2fsck -c för att söka efter dålia block\n"
+"antagligen sluta nu och köra e2fsck -c för att söka efter dåliga block\n"
 "i filsystemet.\n"
 
 #. @-expanded: \n
@@ -1286,7 +1286,7 @@ msgstr "Inod %i har kompressionsflagga satt på filsystem utan kompressionsstöd. 
 #: e2fsck/problem.c:599
 #, c-format
 msgid "Special (@v/socket/fifo) @i %i has non-zero size.  "
-msgstr "Specialinod (enhet/uttag (socket)/fifo) %i storlek skild från noll.  "
+msgstr "Specialinod (enhet/uttag (socket)/fifo) %i har nollskild storlek.  "
 
 #. @-expanded: journal inode is not in use, but contains data.  
 #: e2fsck/problem.c:609
