@@ -118,6 +118,7 @@ extern const char *blkid_devdirs[];
 /*
  * Priority settings for different types of devices
  */
+#define BLKID_PRI_DM	40
 #define BLKID_PRI_EVMS	30
 #define BLKID_PRI_LVM	20
 #define BLKID_PRI_MD	10

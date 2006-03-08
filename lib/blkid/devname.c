@@ -11,6 +11,8 @@
  * %End-Header%
  */
 
+#define _GNU_SOURCE 1
+
 #include <stdio.h>
 #include <string.h>
 #if HAVE_UNISTD_H
@@ -34,6 +36,10 @@
 #include <time.h>
 
 #include "blkidP.h"
+
+#ifdef HAVE_DEVMAPPER
+#include <libdevmapper.h>
+#endif
 
 /*
  * Find a dev struct in the cache by device name, if available.
@@ -75,6 +81,10 @@ blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
 	return dev;
 }
 
+#ifdef HAVE_DEVMAPPER
+static int dm_device_is_leaf(const dev_t dev);
+#endif
+
 /*
  * Probe a single block device to add to the device cache.
  */
@@ -90,6 +100,10 @@ static void probe_one(blkid_cache cache, const char *ptname,
 	list_for_each(p, &cache->bic_devs) {
 		blkid_dev tmp = list_entry(p, struct blkid_struct_dev,
 					   bid_devs);
+#ifdef HAVE_DEVMAPPER
+		if (!dm_device_is_leaf(devno))
+			continue;
+#endif
 		if (tmp->bid_devno == devno) {
 			if (only_if_new)
 				return;
@@ -136,6 +150,155 @@ set_pri:
 		dev->bid_pri = pri;
 	return;
 }
+
+#ifdef HAVE_DEVMAPPER
+/* 
+ * device-mapper support 
+ */
+static int dm_device_has_dep(const dev_t dev, const char *name)
+{
+	struct dm_task *task;
+	struct dm_deps *deps;
+	struct dm_info info;
+	int i;
+
+	task = dm_task_create(DM_DEVICE_DEPS);
+	if (!task)
+		return 0;
+
+	dm_task_set_name(task, name);
+	dm_task_run(task);
+	dm_task_get_info(task, &info);
+
+	if (!info.exists) {
+		dm_task_destroy(task);
+		return 0;
+	}
+
+	deps = dm_task_get_deps(task);
+	if (!deps || deps->count == 0) {
+		dm_task_destroy(task);
+		return 0;
+	}
+
+	for (i = 0; i < deps->count; i++) {
+		dev_t dep_dev = deps->device[i];
+
+		if (dev == dep_dev) {
+			dm_task_destroy(task);
+			return 1;
+		}
+	}
+
+	dm_task_destroy(task);
+	return 0;
+}
+
+static int dm_device_is_leaf(const dev_t dev)
+{
+	struct dm_task *task;
+	struct dm_names *names;
+	unsigned int next = 0;
+	int n, ret = 1;
+
+	task = dm_task_create(DM_DEVICE_LIST);
+	if (!task)
+		return 1;
+
+	dm_task_run(task);
+	names = dm_task_get_names(task);
+	if (!names || !names->dev) {
+		dm_task_destroy(task);
+		return 1;
+	}
+
+	n = 0;
+	do {
+		names = (void *)names + next;
+
+		if (dm_device_has_dep(dev, names->name))
+			ret = 0;
+
+		next = names->next;
+	} while (next);
+
+	dm_task_destroy(task);
+
+	return ret;
+}
+
+static dev_t dm_get_devno(const char *name)
+{
+	struct dm_task *task;
+	struct dm_info info;
+	dev_t ret = 0;
+
+	task = dm_task_create(DM_DEVICE_INFO);
+	if (!task)
+		return ret;
+
+	dm_task_set_name(task, name);
+	dm_task_run(task);
+	dm_task_get_info(task, &info);
+
+	if (!info.exists) {
+		dm_task_destroy(task);
+		return ret;
+	}
+
+	ret = makedev(info.major, info.minor);
+
+	dm_task_destroy(task);
+	
+	return ret;
+}
+
+static void dm_probe_all(blkid_cache cache, int only_if_new)
+{
+	struct dm_task *task;
+	struct dm_names *names;
+	unsigned int next = 0;
+	int n;
+
+	task = dm_task_create(DM_DEVICE_LIST);
+	if (!task)
+		return;
+
+	dm_task_run(task);
+	names = dm_task_get_names(task);
+	if (!names || !names->dev) {
+		dm_task_destroy(task);
+		return;
+	}
+
+	n = 0;
+	do {
+		int rc;
+		char *device = NULL;
+		dev_t dev = 0;
+
+		names = (void *)names + next;
+
+		rc = asprintf(&device, "/dev/mapper/%s", names->name);
+		if (rc < 0)
+			goto try_next;
+
+		dev = dm_get_devno(names->name);
+		if (dev == 0)
+			goto try_next;
+
+		if (!dm_device_is_leaf(dev)) 
+			goto try_next;
+
+		probe_one(cache, device, dev, BLKID_PRI_DM, only_if_new);
+
+try_next:
+		next = names->next;
+	} while (next);
+
+	dm_task_destroy(task);
+}
+#endif /* HAVE_DEVMAPPER */
 
 #define PROC_PARTITIONS "/proc/partitions"
 #define VG_DIR		"/proc/lvm/VGs"
@@ -290,6 +453,9 @@ static int probe_all(blkid_cache cache, int only_if_new)
 		return 0;
 
 	blkid_read_cache(cache);
+#ifdef HAVE_DEVMAPPER
+	dm_probe_all(cache, only_if_new);
+#endif
 	evms_probe_all(cache, only_if_new);
 #ifdef VG_DIR
 	lvm_probe_all(cache, only_if_new);
