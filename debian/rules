@@ -88,7 +88,8 @@ COMMON_CONF_FLAGS =  \
                 --enable-elf-shlibs --enable-dynamic-e2fsck \
                 --infodir=/usr/share/info --enable-fsck
 
-STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression 
+STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression \
+		--enable-blkid-devmapper
 
 BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
 	--disable-nls --disable-swapfs --disable-imager \
