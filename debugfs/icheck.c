@@ -109,6 +109,8 @@ void do_icheck(int argc, char **argv)
 		if (!inode.i_links_count)
 			goto next;
 
+		bw.inode = ino;
+
 		if (inode.i_file_acl) {
 			icheck_proc(current_fs, &inode.i_file_acl, 0,
 				    0, 0, &bw);
@@ -124,8 +126,6 @@ void do_icheck(int argc, char **argv)
 		 */
 		if (inode.i_dtime)
 			goto next;
-
-		bw.inode = ino;
 
 		retval = ext2fs_block_iterate2(current_fs, ino, 0, block_buf,
 					       icheck_proc, &bw);

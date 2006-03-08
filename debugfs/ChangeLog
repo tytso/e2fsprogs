@@ -1,3 +1,8 @@
+2006-03-08  Theodore Ts'o  <tytso@mit.edu>
+
+	* Fix bug in icheck which incorrectly reports the last valid inode
+		number as the owner for an EA block.
+
 2005-12-10  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c, debugfs.h, logdump.c, ls.c: Clean up various gcc
