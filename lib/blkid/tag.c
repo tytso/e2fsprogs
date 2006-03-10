@@ -138,6 +138,15 @@ int blkid_set_tag(blkid_dev dev, const char *name,
 
 	if (!(val = blkid_strndup(value, vlength)) && value)
 		return -BLKID_ERR_MEM;
+
+	/* Link common tags directly to the device struct */
+	if (!strcmp(name, "TYPE"))
+		dev->bid_type = val;
+	else if (!strcmp(name, "LABEL"))
+		dev->bid_label = val;
+	else if (!strcmp(name, "UUID"))
+		dev->bid_uuid = val;
+		
 	t = blkid_find_tag_dev(dev, name);
 	if (!value) {
 		if (t)
@@ -180,14 +189,6 @@ int blkid_set_tag(blkid_dev dev, const char *name,
 		}
 	}
 	
-	/* Link common tags directly to the device struct */
-	if (!strcmp(name, "TYPE"))
-		dev->bid_type = val;
-	else if (!strcmp(name, "LABEL"))
-		dev->bid_label = val;
-	else if (!strcmp(name, "UUID"))
-		dev->bid_uuid = val;
-		
 	if (dev->bid_cache)
 		dev->bid_cache->bic_flags |= BLKID_BIC_FL_CHANGED;
 	return 0;

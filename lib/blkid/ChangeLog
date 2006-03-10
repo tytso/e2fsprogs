@@ -1,3 +1,16 @@
+2006-03-10  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c (probe_ext3): If the filesystem has an external journal,
+		store the UUID of the external journal in the tag
+		EXT_JOURNAL.
+		(blkid_verify): If the filesystem type has changed, clear
+		all the tags on the device, not just a preset list of
+		LABEL, UUID, TYPE, and SEC_TYPE.
+
+	* tag.c (blkid_set_tag): Fix a bug so that blkid_set_tag will work
+		correctly when freeing a tag when the input name parameter
+		comes from the tag that we are freeing.
+
 2005-12-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* tag.c (main): Add missing parameter in error-handling printf of

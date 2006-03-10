@@ -65,6 +65,24 @@ struct ext2_super_block {
 	__u32		s_feature_ro_compat;
 	unsigned char   s_uuid[16];
 	char	   s_volume_name[16];
+	char	s_last_mounted[64];
+	__u32	s_algorithm_usage_bitmap;
+	__u8	s_prealloc_blocks;
+	__u8	s_prealloc_dir_blocks;
+	__u16	s_reserved_gdt_blocks;
+	__u8	s_journal_uuid[16];
+	__u32	s_journal_inum;
+	__u32	s_journal_dev;
+	__u32	s_last_orphan;
+	__u32	s_hash_seed[4];
+	__u8	s_def_hash_version;
+	__u8	s_jnl_backup_type;
+	__u16	s_reserved_word_pad;
+	__u32	s_default_mount_opts;
+	__u32	s_first_meta_bg;
+	__u32	s_mkfs_time;
+	__u32	s_jnl_blocks[17];
+	__u32	s_reserved[172];
 };
 #define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x00000004
 #define EXT3_FEATURE_INCOMPAT_RECOVER		0x00000004

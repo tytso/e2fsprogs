@@ -121,13 +121,13 @@ static int check_mdraid(int fd, unsigned char *ret_uuid)
 	return 0;
 }
 
-static void set_uuid(blkid_dev dev, uuid_t uuid)
+static void set_uuid(blkid_dev dev, uuid_t uuid, char *tag)
 {
 	char	str[37];
 
 	if (!uuid_is_null(uuid)) {
 		uuid_unparse(uuid, str);
-		blkid_set_tag(dev, "UUID", str, sizeof(str));
+		blkid_set_tag(dev, tag ? tag : "UUID", str, sizeof(str));
 	}
 }
 
@@ -145,7 +145,7 @@ static void get_ext2_info(blkid_dev dev, unsigned char *buf)
 		label = es->s_volume_name;
 	blkid_set_tag(dev, "LABEL", label, sizeof(es->s_volume_name));
 
-	set_uuid(dev, es->s_uuid);
+	set_uuid(dev, es->s_uuid, 0);
 }
 
 static int probe_ext3(struct blkid_probe *probe, 
@@ -153,7 +153,7 @@ static int probe_ext3(struct blkid_probe *probe,
 		      unsigned char *buf)
 {
 	struct ext2_super_block *es;
-
+	char uuid[37];
 	es = (struct ext2_super_block *)buf;
 
 	/* Distinguish between jbd and ext2/3 fs */
@@ -167,6 +167,10 @@ static int probe_ext3(struct blkid_probe *probe,
 		return -BLKID_ERR_PARAM;
 
 	get_ext2_info(probe->dev, buf);
+
+	if ((es->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+	    !uuid_is_null(es->s_journal_uuid))
+		set_uuid(probe->dev, es->s_journal_uuid, "EXT_JOURNAL");
 
 	blkid_set_tag(probe->dev, "SEC_TYPE", "ext2", sizeof("ext2"));
 
@@ -404,7 +408,7 @@ static int probe_xfs(struct blkid_probe *probe,
 	if (strlen(xs->xs_fname))
 		label = xs->xs_fname;
 	blkid_set_tag(probe->dev, "LABEL", label, sizeof(xs->xs_fname));
-	set_uuid(probe->dev, xs->xs_uuid);
+	set_uuid(probe->dev, xs->xs_uuid, 0);
 	return 0;
 }
 
@@ -425,7 +429,7 @@ static int probe_reiserfs(struct blkid_probe *probe,
 	if (id->bim_magic[6] == '2' || id->bim_magic[6] == '3') {
 		if (strlen(rs->rs_label))
 			label = rs->rs_label;
-		set_uuid(probe->dev, rs->rs_uuid);
+		set_uuid(probe->dev, rs->rs_uuid, 0);
 	}
 	blkid_set_tag(probe->dev, "LABEL", label, sizeof(rs->rs_label));
 
@@ -441,7 +445,7 @@ static int probe_reiserfs4(struct blkid_probe *probe,
 
 	if (strlen((char *) rs4->rs4_label))
 		label = rs4->rs4_label;
-	set_uuid(probe->dev, rs4->rs4_uuid);
+	set_uuid(probe->dev, rs4->rs4_uuid, 0);
 	blkid_set_tag(probe->dev, "LABEL", (const char *) label, 
 		      sizeof(rs4->rs4_label));
 
@@ -460,7 +464,7 @@ static int probe_jfs(struct blkid_probe *probe,
 	if (strlen((char *) js->js_label))
 		label = (char *) js->js_label;
 	blkid_set_tag(probe->dev, "LABEL", label, sizeof(js->js_label));
-	set_uuid(probe->dev, js->js_uuid);
+	set_uuid(probe->dev, js->js_uuid, 0);
 	return 0;
 }
 
@@ -526,7 +530,7 @@ static int probe_swap1(struct blkid_probe *probe,
 			blkid_set_tag(probe->dev, "LABEL", sws->sws_volume, 
 				      sizeof(sws->sws_volume));
 		if (sws->sws_uuid[0])
-			set_uuid(probe->dev, sws->sws_uuid);
+			set_uuid(probe->dev, sws->sws_uuid, 0);
 	}
 	return 0;
 }
@@ -613,7 +617,7 @@ static int probe_ocfs(struct blkid_probe *probe,
 	
 	blkid_set_tag(probe->dev, "LABEL", ovl.label, ocfslabellen(ovl));
 	blkid_set_tag(probe->dev, "MOUNT", ovh.mount, ocfsmountlen(ovh));
-	set_uuid(probe->dev, ovl.vol_id);
+	set_uuid(probe->dev, ovl.vol_id, 0);
 	return 0;
 }
 
@@ -626,7 +630,7 @@ static int probe_ocfs2(struct blkid_probe *probe,
 	osb = (struct ocfs2_super_block *)buf;
 
 	blkid_set_tag(probe->dev, "LABEL", osb->s_label, sizeof(osb->s_label));
-	set_uuid(probe->dev, osb->s_uuid);
+	set_uuid(probe->dev, osb->s_uuid, 0);
 	return 0;
 }
 
@@ -741,8 +745,9 @@ blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 {
 	struct blkid_magic *id;
 	struct blkid_probe probe;
+	blkid_tag_iterate iter;
 	unsigned char *buf;
-	const char *type;
+	const char *type, *value;
 	struct stat st;
 	time_t diff, now;
 	int idx;
@@ -794,7 +799,7 @@ try_again:
 		uuid_t	uuid;
 
 		if (check_mdraid(probe.fd, uuid) == 0) {
-			set_uuid(dev, uuid);
+			set_uuid(dev, uuid, 0);
 			type = "mdraid";
 			goto found_type;
 		}
@@ -822,12 +827,12 @@ try_again:
 
 	if (!id->bim_type && dev->bid_type) {
 		/*
-		 * Zap the device filesystem type and try again
+		 * Zap the device filesystem information and try again
 		 */
-		blkid_set_tag(dev, "TYPE", 0, 0);
-		blkid_set_tag(dev, "SEC_TYPE", 0, 0);
-		blkid_set_tag(dev, "LABEL", 0, 0);
-		blkid_set_tag(dev, "UUID", 0, 0);
+		iter = blkid_tag_iterate_begin(dev);
+		while (blkid_tag_next(iter, &type, &value) == 0)
+			blkid_set_tag(dev, type, 0, 0);
+		blkid_tag_iterate_end(iter);
 		goto try_again;
 	}
 
