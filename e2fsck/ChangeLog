@@ -1,3 +1,12 @@
+2006-03-10  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsck.h, journal.c (e2fsck_fix_ext3_journal_hint), 
+		problem.c (PR_0_EXTERNAL_JOURNAL_HINT), 
+		problem.h (PR_0_EXTERNAL_JOURNAL_HINT), super.c: Check
+		to see if the superblock hint for the external journal
+		needs to be updated, and if so, offer to update it.
+		(Addresses Debian Bug: #355644)
+
 2006-01-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (check_if_skip): When skipping a check due to being on

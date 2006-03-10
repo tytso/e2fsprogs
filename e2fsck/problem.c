@@ -342,6 +342,10 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@S last write time is in the future.  "),
 	  PROMPT_FIX, PR_PREEN_OK },
 
+	{ PR_0_EXTERNAL_JOURNAL_HINT,
+	  N_("@S hint for external superblock @s %X.  "),
+	     PROMPT_FIX, PR_PREEN_OK },
+
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */

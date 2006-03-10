@@ -190,6 +190,9 @@ struct problem_context {
 /* Last write time is in the future */
 #define PR_0_FUTURE_SB_LAST_WRITE		0x000032
 
+/* Superblock hint for external journal incorrect */
+#define PR_0_EXTERNAL_JOURNAL_HINT		0x000033
+
 /*
  * Pass 1 errors
  */

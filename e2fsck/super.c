@@ -728,5 +728,11 @@ void check_super_block(e2fsck_t ctx)
 	 * Move the ext3 journal file, if necessary.
 	 */
 	e2fsck_move_ext3_journal(ctx);
+
+	/*
+	 * Fix journal hint, if necessary
+	 */
+	e2fsck_fix_ext3_journal_hint(ctx);
+
 	return;
 }
