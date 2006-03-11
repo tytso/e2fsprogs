@@ -12,7 +12,7 @@
 
 all:: pic image
 
-subdirs:: pic
+real-subdirs:: pic
 	@echo "	MKDIR pic"
 	@mkdir -p pic
 

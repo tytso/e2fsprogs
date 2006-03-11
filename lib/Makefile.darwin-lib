@@ -12,7 +12,7 @@
 
 all:: pic image
 
-subdirs:: Makefile
+real-subdirs:: Makefile
 	@echo "	MKDIR pic"
 	@mkdir -p pic
 

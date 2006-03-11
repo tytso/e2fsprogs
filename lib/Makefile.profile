@@ -1,6 +1,6 @@
 all:: profiled $(LIBRARY)_p.a
 
-subdirs:: Makefile
+real-subdirs:: Makefile
 	@echo "	MKDIR $@"
 	@mkdir -p profiled
 

@@ -13,7 +13,7 @@
 
 all:: elfshared image
 
-subdirs:: Makefile
+real-subdirs:: Makefile
 	@echo "	MKDIR elfshared"
 	@mkdir -p elfshared
 

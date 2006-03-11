@@ -5,6 +5,7 @@ install-shlibs::
 uninstall-shlibs::
 
 subdirs:: Makefile
+	@$(MAKE) -s real-subdirs
 	@touch subdirs
 
 clean::
