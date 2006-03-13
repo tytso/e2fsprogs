@@ -1,3 +1,19 @@
+2006-03-12  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c (blkid_verify): Fix the bid_time sanity checking logic,
+		so that if last verification time is more recent than the
+		current time, or the comparison between the last
+		verification time and the current time causes an overflow,
+		a device verification will take place.
+
+	* devname.c (blkid_get_dev): Set the initial bid_time to be
+		INT_MIN, to guarantee that blkid_verify will always be run
+		even when the system clock is insane.
+
+	* dev.c (blkid_debug_dump_dev), read.c (debug_dump_dev), 
+		save.c (save_dev): Fix the printf format for dev->bid_time
+		to match the fact that it is an signed type.
+
 2006-03-10  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c (probe_ext3): If the filesystem has an external journal,

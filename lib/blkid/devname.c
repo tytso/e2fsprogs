@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -70,6 +71,7 @@ blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
 		dev = blkid_new_dev();
 		if (!dev)
 			return NULL;
+		dev->bid_time = INT_MIN;
 		dev->bid_name = blkid_strdup(devname);
 		dev->bid_cache = cache;
 		list_add_tail(&dev->bid_devs, &cache->bic_devs);

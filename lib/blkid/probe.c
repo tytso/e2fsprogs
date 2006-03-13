@@ -758,10 +758,10 @@ blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 	now = time(0);
 	diff = now - dev->bid_time;
 
-	if ((now < dev->bid_time) ||
-	    (diff < BLKID_PROBE_MIN) || 
-	    (dev->bid_flags & BLKID_BID_FL_VERIFIED &&
-	     diff < BLKID_PROBE_INTERVAL))
+	if ((now > dev->bid_time) && (diff > 0) && 
+	    ((diff < BLKID_PROBE_MIN) || 
+	     (dev->bid_flags & BLKID_BID_FL_VERIFIED &&
+	      diff < BLKID_PROBE_INTERVAL)))
 		return dev;
 
 	DBG(DEBUG_PROBE,
