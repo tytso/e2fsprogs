@@ -63,14 +63,14 @@
  * The absolute maximum number of GDT blocks we can reserve is determined by
  * the number of block pointers that can fit into a single block.
  */
-static int calc_reserved_gdt_blocks(ext2_filsys fs)
+static unsigned int calc_reserved_gdt_blocks(ext2_filsys fs)
 {
 	struct ext2_super_block *sb = fs->super;
 	unsigned long bpg = sb->s_blocks_per_group;
 	unsigned int gdpb = fs->blocksize / sizeof(struct ext2_group_desc);
 	unsigned long max_blocks = 0xffffffff;
 	unsigned long rsv_groups;
-	int rsv_gdb;
+	unsigned int rsv_gdb;
 
 	/* We set it at 1024x the current filesystem size, or
 	 * the upper block count limit (2^32), whichever is lower.
@@ -79,10 +79,10 @@ static int calc_reserved_gdt_blocks(ext2_filsys fs)
 		max_blocks = sb->s_blocks_count * 1024;
 	rsv_groups = (max_blocks - sb->s_first_data_block + bpg - 1) / bpg;
 	rsv_gdb = (rsv_groups + gdpb - 1) / gdpb - fs->desc_blocks;
-	if (rsv_gdb > (int) EXT2_ADDR_PER_BLOCK(sb))
+	if (rsv_gdb > EXT2_ADDR_PER_BLOCK(sb))
 		rsv_gdb = EXT2_ADDR_PER_BLOCK(sb);
 #ifdef RES_GDT_DEBUG
-	printf("max_blocks %lu, rsv_groups = %lu, rsv_gdb = %lu\n",
+	printf("max_blocks %lu, rsv_groups = %lu, rsv_gdb = %u\n",
 	       max_blocks, rsv_groups, rsv_gdb);
 #endif
 

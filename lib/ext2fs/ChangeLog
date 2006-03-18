@@ -1,5 +1,10 @@
 2006-03-17  Theodore Ts'o  <tytso@mit.edu>
 
+	* initialize.c (calc_reserved_gdt_blocks): Fix a signed vs
+		unsigned problem which caused mke2fs -O resize_inode to
+		bomb out on large filesystems.  (Addresses Debian Bug
+		#346580)
+
 	* ext2_fs.h (EXT2_IOC_GETVERSION_NEW, EXT2_IOC_SETVERSION_NEW,
 		EXT2_IOC_GROUP_EXTEND, EXT2_IOC_GROUP_ADD): Add ioctl
 		definitions
