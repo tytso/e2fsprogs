@@ -73,7 +73,8 @@ struct struct_io_manager {
 	int		reserved[14];
 };
 
-#define IO_FLAG_RW	1
+#define IO_FLAG_RW		0x0001
+#define IO_FLAG_EXCLUSIVE	0x0002
 
 /*
  * Convenience functions....

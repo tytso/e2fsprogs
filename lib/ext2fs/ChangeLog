@@ -1,5 +1,9 @@
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
+	* ext2_io.h (IO_FLAG_EXCLUSIVE), unix_io.c (unix_open): Add new
+		io_channel open flag, IO_FLAG_EXCLUSIVE, which requests
+		that the device be opened in exclusive (O_EXCL) mode.
+
 	* ext2fs.h: Fix documentation so that BLOCK_FLAG_TRAVERSE is
 		BLOCK_FLAG_DEPTH_TRAVERSE.  (Addresses Debian Bug #351268)
 

@@ -412,6 +412,8 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 		goto cleanup;
 
 	open_flags = (flags & IO_FLAG_RW) ? O_RDWR : O_RDONLY;
+	if (flags & IO_FLAG_EXCLUSIVE)
+		open_flags |= O_EXCL;
 #ifdef HAVE_OPEN64
 	data->dev = open64(io->name, open_flags);
 #else
