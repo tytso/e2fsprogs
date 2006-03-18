@@ -28,8 +28,13 @@ resize2fs \- ext2/ext3 file system resizer
 The 
 .B resize2fs 
 program will resize ext2 file systems.  It can be used to enlarge or
-shrink an ext2 file system located on 
+shrink an unmounted ext2 file system located on 
 .IR device .
+If the filesystem is mounted, it can be used to expand the size of the
+mounted filesystem, assuming the kernel supports on-line resizing.  (As
+of this writing, the Linux 2.6 kernel supports on-line resize for
+filesystems mounted using ext3 only.).
+.PP
 The 
 .I size
 parameter specifies the requested new size of the filesystem.

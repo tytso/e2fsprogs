@@ -1,3 +1,24 @@
+2006-03-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* resize2fs.8.in: Update manpage to document that that resize2fs
+		can expand a mounted filesystem.
+
+	* online.c (online_resize_fs): New file which contains the on-line
+		resizing code.
+
+	* main.c (main): If the filesystem to be resized is already
+		mounted, determine the mountpoint, and call online_resize_fs().
+
+	* resize2fs.c (adjust_fs_info, adjust_superblock): Factor out code
+		which only adjusts the in-memory data structures from the
+		code which writes to the disk, since the former can be
+		used by the on-line resizing code.
+
+	* resize2fs.h: Add function prototypes for online_resize_fs() and 
+		adjust_fs_info().
+
+	* Makefile.in (RESIZE_OBJS): Add online.o to list of files to be built.
+
 2005-12-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* resize2fs.c (mark_table_blocks): Remove unused variables to

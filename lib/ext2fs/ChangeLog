@@ -1,3 +1,9 @@
+2006-03-17  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2_fs.h (EXT2_IOC_GETVERSION_NEW, EXT2_IOC_SETVERSION_NEW,
+		EXT2_IOC_GROUP_EXTEND, EXT2_IOC_GROUP_ADD): Add ioctl
+		definitions
+
 2005-12-10  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Add a dependency to make sure that the

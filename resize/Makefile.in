@@ -16,13 +16,14 @@ PROGS=		resize2fs
 TEST_PROGS=	test_extent
 MANPAGES=	resize2fs.8
 
-RESIZE_OBJS= extent.o resize2fs.o main.o sim_progress.o 
+RESIZE_OBJS= extent.o resize2fs.o main.o online.o sim_progress.o 
 
 TEST_EXTENT_OBJS= extent.o test_extent.o
 
 SRCS= $(srcdir)/extent.c \
 	$(srcdir)/resize2fs.c \
 	$(srcdir)/main.c \
+	$(srcdir)/online.c \
 	$(srcdir)/sim_progress.c
 
 LIBS= $(LIBE2P) $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBINTL)
@@ -159,6 +160,11 @@ main.o: $(srcdir)/main.c $(top_srcdir)/lib/e2p/e2p.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/version.h
+online.o: $(srcdir)/online.c $(srcdir)/resize2fs.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
+ $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
+ $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
+ $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h
 sim_progress.o: $(srcdir)/sim_progress.c $(srcdir)/resize2fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \

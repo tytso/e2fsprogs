@@ -94,26 +94,6 @@ static errcode_t resize_progress_func(ext2_resize_t rfs, int pass,
 	return 0;
 }
 
-static void check_mount(char *device)
-{
-	errcode_t	retval;
-	int		mount_flags;
-
-	retval = ext2fs_check_if_mounted(device, &mount_flags);
-	if (retval) {
-		com_err("ext2fs_check_if_mount", retval,
-			_("while determining whether %s is mounted."),
-			device);
-		return;
-	}
-	if (!(mount_flags & EXT2_MF_MOUNTED))
-		return;
-	
-	fprintf(stderr, _("%s is mounted; can't resize a "
-		"mounted filesystem!\n\n"), device);
-	exit(1);
-}
-
 int main (int argc, char ** argv)
 {
 	errcode_t	retval;
@@ -135,6 +115,8 @@ int main (int argc, char ** argv)
 	__s64		new_file_size;
 	unsigned int	sys_page_size = 4096;
 	long		sysval;
+	int		len, mount_flags;
+	char		*mtpt;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -184,7 +166,29 @@ int main (int argc, char ** argv)
 	if (io_options)
 		*io_options++ = 0;
 
-	check_mount(device_name);
+	/*
+	 * Figure out whether or not the device is mounted, and if it is
+	 * where it is mounted.
+	 */
+	len=80;
+	while (1) {
+		mtpt = malloc(len);
+		if (!mtpt)
+			return ENOMEM;
+		mtpt[len-1] = 0;
+		retval = ext2fs_check_mount_point(device_name, &mount_flags, 
+						  mtpt, len);
+		if (retval) {
+			com_err("ext2fs_check_mount_point", retval,
+				_("while determining whether %s is mounted."),
+				device_name);
+			exit(1);
+		}
+		if (!(mount_flags & EXT2_MF_MOUNTED) || (mtpt[len-1] == 0))
+			break;
+		free(mtpt);
+		len = 2 * len;
+	}
 
 #ifdef HAVE_OPEN64
 	fd = open64(device_name, O_RDWR);
@@ -314,18 +318,23 @@ int main (int argc, char ** argv)
 			"long.  Nothing to do!\n\n"), new_size);
 		exit(0);
 	}
-	if (!force && ((fs->super->s_lastcheck < fs->super->s_mtime) ||
-		       (fs->super->s_state & EXT2_ERROR_FS) ||
-		       ((fs->super->s_state & EXT2_VALID_FS) == 0))) {
-		fprintf(stderr, _("Please run 'e2fsck -f %s' first.\n\n"),
-			device_name);
-		exit(1);
+	if (mount_flags & EXT2_MF_MOUNTED) {
+		retval = online_resize_fs(fs, mtpt, &new_size, flags);
+	} else {
+		if (!force && ((fs->super->s_lastcheck < fs->super->s_mtime) ||
+			       (fs->super->s_state & EXT2_ERROR_FS) ||
+			       ((fs->super->s_state & EXT2_VALID_FS) == 0))) {
+			fprintf(stderr, 
+				_("Please run 'e2fsck -f %s' first.\n\n"),
+				device_name);
+			exit(1);
+		}
+		printf("Resizing the filesystem on %s to %d (%dk) blocks.\n",
+		       device_name, new_size, fs->blocksize / 1024);
+		retval = resize_fs(fs, &new_size, flags,
+				   ((flags & RESIZE_PERCENT_COMPLETE) ?
+				    resize_progress_func : 0));
 	}
-	printf("Resizing the filesystem on %s to %d (%dk) blocks.\n",
-	       device_name, new_size, fs->blocksize / 1024);
-	retval = resize_fs(fs, &new_size, flags,
-			   ((flags & RESIZE_PERCENT_COMPLETE) ?
-			    resize_progress_func : 0));
 	if (retval) {
 		com_err(program_name, retval, _("while trying to resize %s"),
 			device_name);

@@ -125,6 +125,10 @@ extern errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 					    int pass, unsigned long cur,
 					    unsigned long max));
 
+extern errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs, 
+				blk_t new_size);
+
+
 /* extent.c */
 extern errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent,
 					    int size);
@@ -135,6 +139,10 @@ extern __u32 ext2fs_extent_translate(ext2_extent extent, __u32 old_loc);
 extern void ext2fs_extent_dump(ext2_extent extent, FILE *out);
 extern errcode_t ext2fs_iterate_extent(ext2_extent extent, __u32 *old_loc,
 				       __u32 *new_loc, int *size);
+
+/* online.c */
+extern errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt, 
+				  blk_t *new_size, int flags);
 
 /* sim_progress.c */
 extern errcode_t ext2fs_progress_init(ext2_sim_progmeter *ret_prog,
