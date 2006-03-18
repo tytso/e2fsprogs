@@ -375,6 +375,18 @@ option).
 @JDEV@must be created with the same
 @JDEV@block size as the filesystems that will be using it.
 .TP
+.B resize_inode
+Reserve space so the block group descriptor table may grow in the future.
+Useful for online resizing using 
+.BR resize2fs .
+By default 
+.B mke2fs
+will attempt to reserve enough space so that the
+filesystem may grow to 1024 times its initial size.  This can be changed
+using
+.B resize
+extended option.
+.TP
 .B sparse_super
 Create a filesystem with fewer superblock backup copies
 (saves space on large filesystems).
