@@ -1,3 +1,8 @@
+2006-03-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* ext2fs.h: Fix documentation so that BLOCK_FLAG_TRAVERSE is
+		BLOCK_FLAG_DEPTH_TRAVERSE.  (Addresses Debian Bug #351268)
+
 2006-03-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* initialize.c (calc_reserved_gdt_blocks): Fix a signed vs

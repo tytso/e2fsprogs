@@ -269,9 +269,9 @@ struct struct_ext2_filsys {
  * to an inode.  It can also be used for programs that want to be able
  * to deal with files that contain "holes".
  * 
- * BLOCK_FLAG_TRAVERSE indicates that the iterator function for the
- * indirect, doubly indirect, etc. blocks should be called after all
- * of the blocks containined in the indirect blocks are processed.
+ * BLOCK_FLAG_DEPTH_TRAVERSE indicates that the iterator function for
+ * the indirect, doubly indirect, etc. blocks should be called after
+ * all of the blocks containined in the indirect blocks are processed.
  * This is useful if you are going to be deallocating blocks from an
  * inode.
  *

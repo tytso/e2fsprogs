@@ -516,7 +516,7 @@ blocks where the block number is zero (also known as ``holes''.)  It is
 also known as BLOCK_FLAG_APPEND, since it is also used by functions
 such as ext2fs_expand_dir() to add a new block to an inode.
 
-@item BLOCK_FLAG_TRAVERSE
+@item BLOCK_FLAG_DEPTH_TRAVERSE
 This flag indicates that the iterator function for the
 indirect, doubly indirect, etc. blocks should be called after all
 of the blocks containined in the indirect blocks are processed.

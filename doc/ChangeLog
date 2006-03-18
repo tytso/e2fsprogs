@@ -1,3 +1,9 @@
+2006-03-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* libext2fs.texinfo (Iterating over blocks in an inode): Fix
+		BLOCK_FLAG_TRAVERSE so it is the correct
+		BLOCK_FLAG_DEPTH_TRAVERSE.  (Addresses Debian Bug #351268)
+
 2006-06-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.38
