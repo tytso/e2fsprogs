@@ -335,18 +335,17 @@ device numbers must be specified.
 Take the requested list of inode numbers, and print a listing of pathnames
 to those inodes.
 .TP
-.I open [-w] [-f] [-i] [-c] [-b blocksize] [-s superblock] device
+.I open [-w] [-e] [-f] [-i] [-c] [-b blocksize] [-s superblock] device
 Open a filesystem for editing.  The 
-.I -w 
-flag causes the filesystem to be opened for writing.  The 
 .I -f 
 flag forces the filesystem to be opened even if there are some unknown 
 or incompatible filesystem features which would normally 
 prevent the filesystem from being opened.  The
-.IR -c ", " -b ", " -i ", " and " -s
-options behave the same as those to
-.B debugfs
-itself.
+.I -e
+flag causes the filesystem to be opened in exclusive mode.  The
+.IR -b ", " -c ", " -i ", " -s ", and " -w
+options behave the same as the command-line options to 
+.BR debugfs .
 .TP
 .I pwd
 Print the current working directory.

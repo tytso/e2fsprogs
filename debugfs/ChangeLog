@@ -1,3 +1,9 @@
+2006-03-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* debugfs.c (do_open_filesys), debugfs.8.in: Add the -e option to
+		the open_filesystem command, which requests that the
+		filesystem be opened in exclusive mode.
+
 2006-03-08  Theodore Ts'o  <tytso@mit.edu>
 
 	* Fix bug in icheck which incorrectly reports the last valid inode

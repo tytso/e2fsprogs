@@ -128,7 +128,7 @@ void do_open_filesys(int argc, char **argv)
 	char	*data_filename = 0;
 	
 	reset_getopt();
-	while ((c = getopt (argc, argv, "iwfcb:s:d:")) != EOF) {
+	while ((c = getopt (argc, argv, "iwfecb:s:d:")) != EOF) {
 		switch (c) {
 		case 'i':
 			open_flags |= EXT2_FLAG_IMAGE_FILE;
@@ -138,6 +138,9 @@ void do_open_filesys(int argc, char **argv)
 			break;
 		case 'f':
 			open_flags |= EXT2_FLAG_FORCE;
+			break;
+		case 'e':
+			open_flags |= EXT2_FLAG_EXCLUSIVE;
 			break;
 		case 'c':
 			catastrophic = 1;
