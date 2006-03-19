@@ -910,6 +910,8 @@ restart:
 	flags = 0;
 	if ((ctx->options & E2F_OPT_READONLY) == 0)
 		flags |= EXT2_FLAG_RW;
+	if ((ctx->mount_flags & EXT2_MF_MOUNTED) == 0)
+		flags |= EXT2_FLAG_EXCLUSIVE;
 
 	if (ctx->superblock && ctx->blocksize) {
 		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options, 
@@ -961,6 +963,9 @@ restart:
 			       "r/o" : "r/w");
 		else if (retval == ENXIO)
 			printf(_("Possibly non-existent or swap device?\n"));
+		else if (retval == EBUSY)
+			printf(_("Filesystem mounted or opened exclusively "
+				 "by another program?\n"));
 #ifdef EROFS
 		else if (retval == EROFS)
 			printf(_("Disk write-protected; use the -n option "

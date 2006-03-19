@@ -1,3 +1,9 @@
+2006-03-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* unix.c (main): If the filesystem is not mounted, open the
+		filesystem in exclusive mode (to prevent 2.6 kernels from
+		mounting the filesystem while it is being checked).
+
 2006-03-10  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.h, journal.c (e2fsck_fix_ext3_journal_hint), 
