@@ -1,3 +1,8 @@
+2006-03-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.c (main): Open the filesystem in exclusive mode while we
+		are initializing it.
+
 2005-12-31  Theodore Ts'o  <tytso@mit.edu>
 
 	* chattr.1.in: Add notes in the man page to make sure the reader

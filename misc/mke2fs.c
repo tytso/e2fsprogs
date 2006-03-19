@@ -1429,7 +1429,7 @@ int main (int argc, char *argv[])
 	/*
 	 * Initialize the superblock....
 	 */
-	retval = ext2fs_initialize(device_name, 0, &fs_param,
+	retval = ext2fs_initialize(device_name, EXT2_FLAG_EXCLUSIVE, &fs_param,
 				   io_ptr, &fs);
 	if (retval) {
 		com_err(device_name, retval, _("while setting up superblock"));
