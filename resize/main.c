@@ -102,6 +102,7 @@ int main (int argc, char ** argv)
 	int		flags = 0;
 	int		flush = 0;
 	int		force = 0;
+	int		io_flags = 0;
 	int		fd, ret;
 	blk_t		new_size = 0;
 	blk_t		max_size = 0;
@@ -234,7 +235,9 @@ int main (int argc, char ** argv)
 	} else 
 		io_ptr = unix_io_manager;
 
-	retval = ext2fs_open2(device_name, io_options, EXT2_FLAG_RW, 
+	if (!(mount_flags & EXT2_MF_MOUNTED))
+		io_flags = EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
+	retval = ext2fs_open2(device_name, io_options, io_flags, 
 			      0, 0, io_ptr, &fs);
 	if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
