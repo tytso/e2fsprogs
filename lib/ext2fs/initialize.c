@@ -104,6 +104,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	dgrp_t		i;
 	blk_t		numblocks;
 	int		rsv_gdt;
+	int		io_flags;
 	char		*buf;
 
 	if (!param || !param->s_blocks_count)
@@ -120,7 +121,10 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 #ifdef WORDS_BIGENDIAN
 	fs->flags |= EXT2_FLAG_SWAP_BYTES;
 #endif
-	retval = manager->open(name, IO_FLAG_RW, &fs->io);
+	io_flags = IO_FLAG_RW;
+	if (flags & EXT2_FLAG_EXCLUSIVE)
+		io_flags |= IO_FLAG_EXCLUSIVE;
+	retval = manager->open(name, io_flags, &fs->io);
 	if (retval)
 		goto cleanup;
 	fs->image_io = fs->io;

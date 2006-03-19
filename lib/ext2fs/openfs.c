@@ -86,7 +86,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	ext2_filsys	fs;
 	errcode_t	retval;
 	unsigned long	i;
-	int		j, groups_per_block, blocks_per_group;
+	int		j, groups_per_block, blocks_per_group, io_flags;
 	blk_t		group_block, blk;
 	char		*dest, *cp;
 	struct ext2_group_desc *gdp;
@@ -111,9 +111,12 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		io_options = cp;
 	}
 		
-	retval = manager->open(fs->device_name, 
-			       (flags & EXT2_FLAG_RW) ? IO_FLAG_RW : 0,
-			       &fs->io);
+	io_flags = 0;
+	if (flags & EXT2_FLAG_RW)
+		io_flags |= IO_FLAG_RW;
+	if (flags & EXT2_FLAG_EXCLUSIVE)
+		io_flags |= IO_FLAG_EXCLUSIVE;
+	retval = manager->open(fs->device_name, io_flags, &fs->io);
 	if (retval)
 		goto cleanup;
 	if (io_options && 

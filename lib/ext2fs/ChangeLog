@@ -1,5 +1,13 @@
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
+	* ext2fs.h (EXT2_FLAG_EXCLUSIVE): Define new flag which requests
+		that the io_channel be opened in exclusive mode.
+
+	* openfs.c (ext2fs_open2), initialize.c (ext2fs_initialize): If
+		EXT2_FLAG_EXCLUSIVE is passed to ext2fs_open or
+		ext2fs_initialize, then pass IO_FLAG_EXCLUSIVE to the
+		io_channel open routine.
+
 	* ext2_io.h (IO_FLAG_EXCLUSIVE), unix_io.c (unix_open): Add new
 		io_channel open flag, IO_FLAG_EXCLUSIVE, which requests
 		that the device be opened in exclusive (O_EXCL) mode.
