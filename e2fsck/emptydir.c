@@ -94,7 +94,7 @@ void add_empty_dirblock(empty_dir_info edi,
 	if (db->ino == 11)
 		return;		/* Inode number 11 is usually lost+found */
 
-	printf(_("Empty directory block %d (#%d) in inode %d\n"),
+	printf(_("Empty directory block %u (#%d) in inode %d\n"),
 	       db->blk, db->blockcnt, db->ino);
 
 	ext2fs_mark_block_bitmap(edi->empty_dir_blocks, db->blk);

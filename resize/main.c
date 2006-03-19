@@ -311,13 +311,13 @@ int main (int argc, char ** argv)
 	}
 	if (!force && (new_size > max_size)) {
 		fprintf(stderr, _("The containing partition (or device)"
-			" is only %d (%dk) blocks.\nYou requested a new size"
-			" of %d blocks.\n\n"), max_size,
+			" is only %u (%dk) blocks.\nYou requested a new size"
+			" of %u blocks.\n\n"), max_size,
 			fs->blocksize / 1024, new_size);
 		exit(1);
 	}
 	if (new_size == fs->super->s_blocks_count) {
-		fprintf(stderr, _("The filesystem is already %d blocks "
+		fprintf(stderr, _("The filesystem is already %u blocks "
 			"long.  Nothing to do!\n\n"), new_size);
 		exit(0);
 	}
@@ -332,7 +332,7 @@ int main (int argc, char ** argv)
 				device_name);
 			exit(1);
 		}
-		printf("Resizing the filesystem on %s to %d (%dk) blocks.\n",
+	printf("Resizing the filesystem on %s to %u (%dk) blocks.\n",
 		       device_name, new_size, fs->blocksize / 1024);
 		retval = resize_fs(fs, &new_size, flags,
 				   ((flags & RESIZE_PERCENT_COMPLETE) ?
@@ -344,7 +344,7 @@ int main (int argc, char ** argv)
 		ext2fs_close (fs);
 		exit(1);
 	}
-	printf(_("The filesystem on %s is now %d blocks long.\n\n"),
+	printf(_("The filesystem on %s is now %u blocks long.\n\n"),
 	       device_name, new_size);
 
 	if ((st_buf.st_size > new_file_size) &&

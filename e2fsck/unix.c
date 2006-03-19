@@ -98,7 +98,8 @@ static void usage(e2fsck_t ctx)
 static void show_stats(e2fsck_t	ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	int inodes, inodes_used, blocks, blocks_used;
+	int inodes, inodes_used;
+	blk_t blocks, blocks_used;
 	int dir_links;
 	int num_files, num_links;
 	int frag_percent;
@@ -117,7 +118,7 @@ static void show_stats(e2fsck_t	ctx)
 	frag_percent = (frag_percent + 5) / 10;
 	
 	if (!verbose) {
-		printf(_("%s: %d/%d files (%0d.%d%% non-contiguous), %d/%d blocks\n"),
+		printf(_("%s: %d/%d files (%0d.%d%% non-contiguous), %u/%u blocks\n"),
 		       ctx->device_name, inodes_used, inodes,
 		       frag_percent / 10, frag_percent % 10,
 		       blocks_used, blocks);
@@ -131,7 +132,7 @@ static void show_stats(e2fsck_t	ctx)
 		ctx->fs_fragmented, frag_percent / 10, frag_percent % 10);
 	printf (_("         # of inodes with ind/dind/tind blocks: %d/%d/%d\n"),
 		ctx->fs_ind_count, ctx->fs_dind_count, ctx->fs_tind_count);
-	printf (P_("%8d block used (%d%%)\n", "%8d blocks used (%d%%)\n",
+	printf (P_("%8u block used (%d%%)\n", "%8u blocks used (%d%%)\n",
 		   blocks_used),
 		blocks_used, (int) ((long long) 100 * blocks_used / blocks));
 	printf (P_("%8d bad block\n", "%8d bad blocks\n",
@@ -299,7 +300,7 @@ static void check_if_skip(e2fsck_t ctx)
 		fputs(_(", check forced.\n"), stdout);
 		return;
 	}
-	printf(_("%s: clean, %d/%d files, %d/%d blocks"), ctx->device_name,
+	printf(_("%s: clean, %d/%d files, %u/%u blocks"), ctx->device_name,
 	       fs->super->s_inodes_count - fs->super->s_free_inodes_count,
 	       fs->super->s_inodes_count,
 	       fs->super->s_blocks_count - fs->super->s_free_blocks_count,

@@ -182,15 +182,15 @@ int main(int argc, char *argv[])
 		if (ext2.s_magic != EXT2_SUPER_MAGIC)
 			continue;
 		if (ext2.s_log_block_size > 4)
-			WHY("log block size > 4 (%d)\n", ext2.s_log_block_size);
+			WHY("log block size > 4 (%u)\n", ext2.s_log_block_size);
 		if (ext2.s_r_blocks_count > ext2.s_blocks_count)
-			WHY("r_blocks_count > blocks_count (%d > %d)\n",
+			WHY("r_blocks_count > blocks_count (%u > %u)\n",
 			    ext2.s_r_blocks_count, ext2.s_blocks_count);
 		if (ext2.s_free_blocks_count > ext2.s_blocks_count)
-			WHY("free_blocks_count > blocks_count\n (%d > %d)\n",
+			WHY("free_blocks_count > blocks_count\n (%u > %u)\n",
 			    ext2.s_free_blocks_count, ext2.s_blocks_count);
 		if (ext2.s_free_inodes_count > ext2.s_inodes_count)
-			WHY("free_inodes_count > inodes_count (%d > %d)\n",
+			WHY("free_inodes_count > inodes_count (%u > %u)\n",
 			    ext2.s_free_inodes_count, ext2.s_inodes_count);
 
 		tm = ext2.s_mtime;

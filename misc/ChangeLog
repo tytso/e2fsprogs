@@ -1,5 +1,9 @@
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
+	* dumpe2fs.c, e2image.c, findsuper.c, mke2fs.c: Change printf
+		statements to use %u instead of %d when printing block
+		numbers.
+
 	* mke2fs.c (main): Open the filesystem in exclusive mode while we
 		are initializing it.
 

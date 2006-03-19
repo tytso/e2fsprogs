@@ -45,7 +45,7 @@ void do_dump_unused(int argc EXT2FS_ATTR((unused)), char **argv)
 				break;
 		if (i >= current_fs->blocksize)
 			continue;
-		printf("\nUnused block %ld contains non-zero data:\n\n",
+		printf("\nUnused block %lu contains non-zero data:\n\n",
 		       blk);
 		for (i=0; i < current_fs->blocksize; i++)
 			fputc(buf[i], stdout);

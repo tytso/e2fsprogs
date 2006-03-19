@@ -253,12 +253,12 @@ static void print_journal_information(ext2_filsys fs)
 		exit(1);
 	}
 
-	printf(_("\nJournal block size:       %d\n"
-		 "Journal length:           %d\n"
-		 "Journal first block:      %d\n"
+	printf(_("\nJournal block size:       %u\n"
+		 "Journal length:           %u\n"
+		 "Journal first block:      %u\n"
 		 "Journal sequence:         0x%08x\n"
-		 "Journal start:            %d\n"
-		 "Journal number of users:  %d\n"),
+		 "Journal start:            %u\n"
+		 "Journal number of users:  %lu\n"),
 	       ntohl(jsb->s_blocksize),  ntohl(jsb->s_maxlen),
 	       ntohl(jsb->s_first), ntohl(jsb->s_sequence),
 	       ntohl(jsb->s_start), ntohl(jsb->s_nr_users));

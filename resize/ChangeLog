@@ -1,5 +1,8 @@
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
+	* main.c, resize2fs.c: Change printf statements to use %u instead
+		of %d when printing block numbers.
+
 	* main.c (main): If the filesystem is mounted, open it in
 		read-only mode since the userspace program should not try
 		to modify it directly.  If the filesystem is not mounted,

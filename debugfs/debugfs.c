@@ -303,9 +303,9 @@ void do_show_super_stats(int argc, char *argv[])
 	
 	gdp = &current_fs->group_desc[0];
 	for (i = 0; i < current_fs->group_desc_count; i++, gdp++)
-		fprintf(out, " Group %2d: block bitmap at %d, "
-		        "inode bitmap at %d, "
-		        "inode table at %d\n"
+		fprintf(out, " Group %2d: block bitmap at %u, "
+		        "inode bitmap at %u, "
+		        "inode table at %u\n"
 		        "           %d free %s, "
 		        "%d free %s, "
 		        "%d used %s\n",
@@ -356,9 +356,9 @@ static void finish_range(struct list_blocks_struct *lb)
 	else
 		fprintf(lb->f, ", ");
 	if (lb->first_block == lb->last_block)
-		fprintf(lb->f, "(%lld):%d", lb->first_bcnt, lb->first_block);
+		fprintf(lb->f, "(%lld):%u", lb->first_bcnt, lb->first_block);
 	else
-		fprintf(lb->f, "(%lld-%lld):%d-%d", lb->first_bcnt,
+		fprintf(lb->f, "(%lld-%lld):%u-%u", lb->first_bcnt,
 			lb->last_bcnt, lb->first_block, lb->last_block);
 	lb->first_block = 0;
 }
@@ -400,11 +400,11 @@ static int list_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 	else
 		fprintf(lb->f, ", ");
 	if (blockcnt == -1)
-		fprintf(lb->f, "(IND):%d", *blocknr);
+		fprintf(lb->f, "(IND):%u", *blocknr);
 	else if (blockcnt == -2)
-		fprintf(lb->f, "(DIND):%d", *blocknr);
+		fprintf(lb->f, "(DIND):%u", *blocknr);
 	else if (blockcnt == -3)
-		fprintf(lb->f, "(TIND):%d", *blocknr);
+		fprintf(lb->f, "(TIND):%u", *blocknr);
 	return 0;
 }
 
@@ -436,7 +436,7 @@ static void internal_dump_inode_extra(FILE *out, const char *prefix,
 	char *start, *end;
 	unsigned int storage_size;
 
-	fprintf(out, "Size of extra inode fields: %d\n", inode->i_extra_isize);
+	fprintf(out, "Size of extra inode fields: %u\n", inode->i_extra_isize);
 	if (inode->i_extra_isize > EXT2_INODE_SIZE(current_fs->super) -
 			EXT2_GOOD_OLD_INODE_SIZE) {
 		fprintf(stderr, "invalid inode->i_extra_isize (%u)\n",
@@ -467,7 +467,7 @@ static void internal_dump_inode_extra(FILE *out, const char *prefix,
 			fprintf(out, " = \"");
 			dump_xattr_string(out, start + entry->e_value_offs,
 						entry->e_value_size);
-			fprintf(out, "\" (%d)\n", entry->e_value_size);
+			fprintf(out, "\" (%u)\n", entry->e_value_size);
 			entry = next;
 		}
 	}
@@ -530,7 +530,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		fprintf(out, "%sFile ACL: %d    Directory ACL: %d\n",
 			prefix,
 			inode->i_file_acl, LINUX_S_ISDIR(inode->i_mode) ? inode->i_dir_acl : 0);
-	fprintf(out, "%sLinks: %d   Blockcount: %d\n", 
+	fprintf(out, "%sLinks: %d   Blockcount: %u\n",
 		prefix, inode->i_links_count, inode->i_blocks);
 	switch (os) {
 	    case EXT2_OS_LINUX:
@@ -709,7 +709,7 @@ void do_freeb(int argc, char *argv[])
 		return;
 	while (count-- > 0) {
 		if (!ext2fs_test_block_bitmap(current_fs->block_map,block))
-			com_err(argv[0], 0, "Warning: block %d already clear",
+			com_err(argv[0], 0, "Warning: block %u already clear",
 				block);
 		ext2fs_unmark_block_bitmap(current_fs->block_map,block);
 		block++;
@@ -728,7 +728,7 @@ void do_setb(int argc, char *argv[])
 		return;
 	while (count-- > 0) {
 		if (ext2fs_test_block_bitmap(current_fs->block_map,block))
-			com_err(argv[0], 0, "Warning: block %d already set",
+			com_err(argv[0], 0, "Warning: block %u already set",
 				block);
 		ext2fs_mark_block_bitmap(current_fs->block_map,block);
 		block++;
@@ -745,9 +745,9 @@ void do_testb(int argc, char *argv[])
 		return;
 	while (count-- > 0) {
 		if (ext2fs_test_block_bitmap(current_fs->block_map,block))
-			printf("Block %d marked in use\n", block);
+			printf("Block %u marked in use\n", block);
 		else
-			printf("Block %d not in use\n", block);
+			printf("Block %u not in use\n", block);
 		block++;
 	}
 }
@@ -827,6 +827,7 @@ void do_modify_inode(int argc, char *argv[])
 	const char	*hex_format = "0x%x";
 	const char	*octal_format = "0%o";
 	const char	*decimal_format = "%d";
+	const char	*unsignedlong_format = "%lu";
 	
 	if (common_inode_args_process(argc, argv, &inode_num, CHECK_FS_RW))
 		return;
@@ -839,13 +840,13 @@ void do_modify_inode(int argc, char *argv[])
 	modify_u16(argv[0], "Mode", octal_format, &inode.i_mode);
 	modify_u16(argv[0], "User ID", decimal_format, &inode.i_uid);
 	modify_u16(argv[0], "Group ID", decimal_format, &inode.i_gid);
-	modify_u32(argv[0], "Size", decimal_format, &inode.i_size);
+	modify_u32(argv[0], "Size", unsignedlong_format, &inode.i_size);
 	modify_u32(argv[0], "Creation time", decimal_format, &inode.i_ctime);
 	modify_u32(argv[0], "Modification time", decimal_format, &inode.i_mtime);
 	modify_u32(argv[0], "Access time", decimal_format, &inode.i_atime);
 	modify_u32(argv[0], "Deletion time", decimal_format, &inode.i_dtime);
 	modify_u16(argv[0], "Link count", decimal_format, &inode.i_links_count);
-	modify_u32(argv[0], "Block count", decimal_format, &inode.i_blocks);
+	modify_u32(argv[0], "Block count", unsignedlong_format, &inode.i_blocks);
 	modify_u32(argv[0], "File flags", hex_format, &inode.i_flags);
 	modify_u32(argv[0], "Generation", hex_format, &inode.i_generation);
 #if 0
@@ -1156,7 +1157,7 @@ void do_find_free_block(int argc, char *argv[])
 			com_err("ext2fs_new_block", retval, 0);
 			return;
 		} else
-			printf("%d ", free_blk);
+			printf("%u ", free_blk);
 	}
  	printf("\n");
 }
@@ -1667,10 +1668,10 @@ void do_bmap(int argc, char *argv[])
 	errcode = ext2fs_bmap(current_fs, ino, 0, 0, 0, blk, &pblk);
 	if (errcode) {
 		com_err("argv[0]", errcode,
-			"while mapping logical block %d\n", blk);
+			"while mapping logical block %u\n", blk);
 		return;
 	}
-	printf("%d\n", pblk);
+	printf("%u\n", pblk);
 }
 
 void do_imap(int argc, char *argv[])

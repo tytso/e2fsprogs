@@ -108,7 +108,7 @@ errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 
 #ifdef RESIZE2FS_DEBUG
 	if (rfs->flags & RESIZE_DEBUG_BMOVE)
-		printf("Number of free blocks: %d/%d, Needed: %d\n",
+		printf("Number of free blocks: %u/%u, Needed: %d\n",
 		       rfs->old_fs->super->s_free_blocks_count,
 		       rfs->new_fs->super->s_free_blocks_count,
 		       rfs->needed_blocks);

@@ -1,5 +1,12 @@
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
+	* unix.c (show_stats): Use blk_t instead of int when referring to
+		block numbers.
+
+	* emptydir.c, message.c, pass1b.c, pass2.c, recovery.c, unix.c:
+		Change printf statements to use %u instead of %d when
+		printing block numbers.
+
 	* unix.c (main): If the filesystem is not mounted, open the
 		filesystem in exclusive mode (to prevent 2.6 kernels from
 		mounting the filesystem while it is being checked).

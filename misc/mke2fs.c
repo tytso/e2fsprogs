@@ -302,7 +302,7 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 		if (ext2fs_badblocks_list_test(bb_list, i)) {
 			fprintf(stderr, _("Block %d in primary "
 				"superblock/group descriptor area bad.\n"), i);
-			fprintf(stderr, _("Blocks %d through %d must be good "
+			fprintf(stderr, _("Blocks %u through %d must be good "
 				"in order to build a filesystem.\n"),
 				fs->super->s_first_data_block, must_be_good);
 			fputs(_("Aborting....\n"), stderr);
@@ -325,7 +325,7 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 						       group_block + j)) {
 				if (!group_bad) 
 					fprintf(stderr,
-_("Warning: the backup superblock/group descriptors at block %d contain\n"
+_("Warning: the backup superblock/group descriptors at block %u contain\n"
 "	bad blocks.\n\n"),
 						group_block);
 				group_bad++;
@@ -489,7 +489,7 @@ static void write_inode_tables(ext2_filsys fs)
 		retval = zero_blocks(fs, blk, num, 0, &blk, &num);
 		if (retval) {
 			fprintf(stderr, _("\nCould not write %d blocks "
-				"in inode table starting at %d: %s\n"),
+				"in inode table starting at %u: %s\n"),
 				num, blk, error_message(retval));
 			exit(1);
 		}
@@ -692,7 +692,7 @@ static void show_stats(ext2_filsys fs)
 	int			need, col_left;
 	
 	if (fs_param.s_blocks_count != s->s_blocks_count)
-		fprintf(stderr, _("warning: %d blocks unused.\n\n"),
+		fprintf(stderr, _("warning: %u blocks unused.\n\n"),
 		       fs_param.s_blocks_count - s->s_blocks_count);
 
 	memset(buf, 0, sizeof(buf));

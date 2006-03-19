@@ -43,14 +43,14 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	errcode = ext2fs_bmap(fs, ino, inode, buf, 0, blk, &pblk);
 	if (errcode) {
 		com_err("htree_dump_leaf_node", errcode,
-			"while mapping logical block %d\n", blk);
+			"while mapping logical block %u\n", blk);
 		return;
 	}
 
 	errcode = ext2fs_read_dir_block2(current_fs, pblk, buf, 0);
 	if (errcode) {
 		com_err("htree_dump_leaf_node", errcode,
-			"while 	reading block %d\n", blk);
+			"while 	reading block %u\n", blk);
 		return;
 	}
 
@@ -60,7 +60,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		    (dirent->rec_len < 8) ||
 		    ((dirent->rec_len % 4) != 0) ||
 		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
-			fprintf(pager, "Corrupted directory block (%d)!\n", blk);
+			fprintf(pager, "Corrupted directory block (%u)!\n", blk);
 			break;
 		}
 		thislen = ((dirent->name_len & 0xFF) < EXT2_NAME_LEN) ?
@@ -124,7 +124,7 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 	for (i=0; i < limit.count; i++) {
 		e.hash = ext2fs_le32_to_cpu(ent[i].hash);
 		e.block = ext2fs_le32_to_cpu(ent[i].block);
-		fprintf(pager, "Entry #%d: Hash 0x%08x, block %d\n", i,
+		fprintf(pager, "Entry #%d: Hash 0x%08x, block %u\n", i,
 		       i ? e.hash : 0, e.block);
 		if (level)
 			htree_dump_int_block(fs, ino, inode, rootnode,
@@ -155,14 +155,14 @@ static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 	errcode = ext2fs_bmap(fs, ino, inode, buf, 0, blk, &pblk);
 	if (errcode) {
 		com_err("htree_dump_int_block", errcode,
-			"while mapping logical block %d\n", blk);
+			"while mapping logical block %u\n", blk);
 		return;
 	}
 
 	errcode = io_channel_read_blk(current_fs->io, pblk, 1, buf);
 	if (errcode) {
 		com_err("htree_dump_int_block", errcode,
-			"while 	reading block %d\n", blk);
+			"while 	reading block %u\n", blk);
 		return;
 	}
 
@@ -241,7 +241,7 @@ void do_htree_dump(int argc, char *argv[])
 	rootnode = (struct ext2_dx_root_info *) (buf + 24);
 
 	fprintf(pager, "Root node dump:\n");
-	fprintf(pager, "\t Reserved zero: %d\n", rootnode->reserved_zero);
+	fprintf(pager, "\t Reserved zero: %u\n", rootnode->reserved_zero);
 	fprintf(pager, "\t Hash Version: %d\n", rootnode->hash_version);
 	fprintf(pager, "\t Info length: %d\n", rootnode->info_length);
 	fprintf(pager, "\t Indirect levels: %d\n", rootnode->indirect_levels);
@@ -372,9 +372,9 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 		    strncmp(p->search_name, dirent->name,
 			    p->len) == 0) {
 			printf("Entry found at logical block %lld, "
-			       "phys %d, offset %d\n", blockcnt,
+			       "phys %u, offset %u\n", blockcnt,
 			       *blocknr, offset);
-			printf("offset %d\n", offset);
+			printf("offset %u\n", offset);
 			return BLOCK_ABORT;
 		}
 		offset += dirent->rec_len;

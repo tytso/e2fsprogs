@@ -543,7 +543,7 @@ static void parse_int_node(ext2_filsys fs,
 		
 #ifdef DX_DEBUG
 		printf("Root node dump:\n");
-		printf("\t Reserved zero: %d\n", root->reserved_zero);
+		printf("\t Reserved zero: %u\n", root->reserved_zero);
 		printf("\t Hash Version: %d\n", root->hash_version);
 		printf("\t Info length: %d\n", root->info_length);
 		printf("\t Indirect levels: %d\n", root->indirect_levels);
@@ -582,7 +582,7 @@ static void parse_int_node(ext2_filsys fs,
 		prev_hash = hash;
 		hash = i ? (ext2fs_le32_to_cpu(ent[i].hash) & ~1) : 0;
 #ifdef DX_DEBUG
-		printf("Entry #%d: Hash 0x%08x, block %d\n", i,
+		printf("Entry #%d: Hash 0x%08x, block %u\n", i,
 		       hash, ext2fs_le32_to_cpu(ent[i].block));
 #endif
 		blk = ext2fs_le32_to_cpu(ent[i].block) & 0x0ffffff;
