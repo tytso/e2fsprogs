@@ -154,6 +154,12 @@ set_pri:
 }
 
 #ifdef HAVE_DEVMAPPER
+static void dm_quiet_log(int level, const char *file, int line,
+			 const char *f, ...)
+{
+	return;
+}
+
 /* 
  * device-mapper support 
  */
@@ -203,9 +209,11 @@ static int dm_device_is_leaf(const dev_t dev)
 	unsigned int next = 0;
 	int n, ret = 1;
 
+	dm_log_init(dm_quiet_log);
 	task = dm_task_create(DM_DEVICE_LIST);
 	if (!task)
 		return 1;
+	dm_log_init(0);
 
 	dm_task_run(task);
 	names = dm_task_get_names(task);
@@ -262,9 +270,11 @@ static void dm_probe_all(blkid_cache cache, int only_if_new)
 	unsigned int next = 0;
 	int n;
 
+	dm_log_init(dm_quiet_log);
 	task = dm_task_create(DM_DEVICE_LIST);
 	if (!task)
 		return;
+	dm_log_init(0);
 
 	dm_task_run(task);
 	names = dm_task_get_names(task);

@@ -1,3 +1,11 @@
+2006-03-19  Theodore Ts'o  <tytso@mit.edu>
+
+	* devname.c (dm_probe_all, dm_device_is_leaf): Make the
+		libdevmapper fail quietly if blkid is called without root
+		privileges or the kernel does not include device mapper
+		support.  (What is the device mapper _library_ doing
+		writing to stderr, anyway?)
+
 2006-03-12  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c (blkid_verify): Fix the bid_time sanity checking logic,
