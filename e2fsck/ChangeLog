@@ -1,3 +1,10 @@
+2006-03-22  Theodore Ts'o  <tytso@mit.edu>
+
+	* profile.c (profile_update_file, profile_parse_file, parse_line,
+		parse_std_line): Integrate profile_std_line() into
+		parse_line(), and profile_parse_file() into
+		profile_update_file() to make the code tighter.
+
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* unix.c (show_stats): Use blk_t instead of int when referring to

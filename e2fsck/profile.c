@@ -147,8 +147,18 @@ struct profile_node {
 	  if ((node)->magic != PROF_MAGIC_NODE) \
 		  return PROF_MAGIC_NODE;
 
-static errcode_t profile_parse_file
-	(FILE *f, prf_file_t prf);
+/* profile parser declarations */
+struct parse_state {
+	int	state;
+	int	group_level;
+	int	line_num;
+	struct profile_node *root_section;
+	struct profile_node *current_section;
+};
+
+static profile_syntax_err_cb_t	syntax_err_cb;
+
+static errcode_t parse_line(char *line, struct parse_state *state);
 
 #ifdef DEBUG_PROGRAM
 static errcode_t profile_write_tree_file
@@ -433,6 +443,8 @@ errcode_t profile_update_file(prf_file_t prf)
 #endif
 #endif
 	FILE *f;
+	char buf[2048];
+	struct parse_state state;
 
 #ifdef HAVE_STAT
 #ifdef STAT_ONCE_PER_SECOND
@@ -465,6 +477,10 @@ errcode_t profile_update_file(prf_file_t prf)
 	    return 0;
 	}
 #endif
+	memset(&state, 0, sizeof(struct parse_state));
+	retval = profile_create_node("(root)", 0, &state.root_section);
+	if (retval)
+		return retval;
 	errno = 0;
 	f = fopen(prf->filespec, "r");
 	if (f == NULL) {
@@ -474,11 +490,22 @@ errcode_t profile_update_file(prf_file_t prf)
 		return retval;
 	}
 	prf->upd_serial++;
-	retval = profile_parse_file(f, prf);
-	fclose(f);
-	if (retval) {
-	    return retval;
+	while (!feof(f)) {
+		if (fgets(buf, sizeof(buf), f) == NULL)
+			break;
+		retval = parse_line(buf, &state);
+		if (retval) {
+			if (syntax_err_cb)
+				(syntax_err_cb)(prf->filespec, retval, 
+						state.line_num);
+			fclose(f);
+			return retval;
+		}
 	}
+	prf->root = state.root_section;
+
+	fclose(f);
+
 #ifdef HAVE_STAT
 	prf->timestamp = st.st_mtime;
 #endif
@@ -496,8 +523,6 @@ void profile_free_file(prf_file_t prf)
 
 /* Begin the profile parser */
 
-static profile_syntax_err_cb_t	syntax_err_cb;
-
 profile_syntax_err_cb_t profile_set_syntax_err_cb(profile_syntax_err_cb_t hook)
 {
 	profile_syntax_err_cb_t	old;
@@ -510,14 +535,6 @@ profile_syntax_err_cb_t profile_set_syntax_err_cb(profile_syntax_err_cb_t hook)
 #define STATE_INIT_COMMENT	0
 #define STATE_STD_LINE		1
 #define STATE_GET_OBRACE	2
-
-struct parse_state {
-	int	state;
-	int	group_level;
-	int	line_num;
-	struct profile_node *root_section;
-	struct profile_node *current_section;
-};
 
 static char *skip_over_blanks(char *cp)
 {
@@ -574,8 +591,7 @@ static void parse_quoted_string(char *str)
 	*to = '\0';
 }
 
-
-static errcode_t parse_std_line(char *line, struct parse_state *state)
+static errcode_t parse_line(char *line, struct parse_state *state)
 {
 	char	*cp, ch, *tag, *value;
 	char	*p;
@@ -584,6 +600,20 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 	int do_subsection = 0;
 	void *iter = 0;
 	
+	state->line_num++;
+	if (state->state == STATE_GET_OBRACE) {
+		cp = skip_over_blanks(line);
+		if (*cp != '{')
+			return PROF_MISSING_OBRACE;
+		state->state = STATE_STD_LINE;
+		return 0;
+	}
+	if (state->state == STATE_INIT_COMMENT) {
+		if (line[0] != '[')
+			return 0;
+		state->state = STATE_STD_LINE;
+	}
+
 	if (*line == 0)
 		return 0;
 	strip_line(line);
@@ -714,56 +744,6 @@ static errcode_t parse_std_line(char *line, struct parse_state *state)
 		node->final = 1;
 	return 0;
 }
-
-static errcode_t parse_line(char *line, struct parse_state *state)
-{
-	char	*cp;
-	
-	state->line_num++;
-	switch (state->state) {
-	case STATE_INIT_COMMENT:
-		if (line[0] != '[')
-			return 0;
-		state->state = STATE_STD_LINE;
-	case STATE_STD_LINE:
-		return parse_std_line(line, state);
-	case STATE_GET_OBRACE:
-		cp = skip_over_blanks(line);
-		if (*cp != '{')
-			return PROF_MISSING_OBRACE;
-		state->state = STATE_STD_LINE;
-	}
-	return 0;
-}
-
-errcode_t profile_parse_file(FILE *f, prf_file_t file)
-{
-	char buf[2048];
-	errcode_t retval;
-	struct parse_state state;
-
-	memset(&state, 0, sizeof(struct parse_state));
-
-	retval = profile_create_node("(root)", 0, &state.root_section);
-	if (retval)
-		return retval;
-
-	while (!feof(f)) {
-		if (fgets(buf, sizeof(buf), f) == NULL)
-			break;
-		retval = parse_line(buf, &state);
-		if (retval) {
-			if (syntax_err_cb)
-				(syntax_err_cb)(file->filespec, retval, 
-						state.line_num);
-			return retval;
-		}
-	}
-	file->root = state.root_section;
-
-	return 0;
-}
-
 
 #ifdef DEBUG_PROGRAM
 /*
