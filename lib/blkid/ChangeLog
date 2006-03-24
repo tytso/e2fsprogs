@@ -1,3 +1,7 @@
+2006-03-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* probe.c (blkid_verify): Fix file descriptor leak on error. 
+
 2006-03-19  Theodore Ts'o  <tytso@mit.edu>
 
 	* devname.c (dm_probe_all, dm_device_is_leaf): Make the
