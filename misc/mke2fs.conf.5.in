@@ -1,0 +1,180 @@
+.\" -*- nroff -*-
+.\" Copyright 2006 by Theodore Ts'o.  All Rights Reserved.
+.\" This file may be copied under the terms of the GNU Public License.
+.\" 
+.TH mke2fs.conf 5 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
+.SH NAME
+mke2fs.conf \- Configuration file for mke2fs
+.SH DESCRIPTION
+.I mke2fs.conf
+is the configuration file for 
+.BR mke2fs (8).  
+It controls the default parameters used by 
+.BR mke2fs (8)
+when it is creating ext2 or ext3 filesystems.
+.PP
+The
+.I mke2fs.conf
+file uses an INI-style format.  Sections are delimited by 
+square braces: [ ].  Within each section, each line defines a 
+relation, which assigns tags to values, or to a subsection,
+which contains further relations or subsections.   
+.\" Tags can be assigned multiple values
+An example of the INI-style format used by this configuration file 
+follows below:
+.P
+[section1]
+.br
+	tag1 = value_a
+.br
+	tag1 = value_b
+.br
+	tag2 = value_c
+.P
+[section 2]
+.br
+	tag3 = {
+.br
+		subtag1 = subtag_value_a
+.br
+		subtag1 = subtag_value_b
+.br
+		subtag2 = subtag_value_c
+.br
+	}
+.br
+	tag1 = value_d
+.br
+	tag2 = value_e
+.br
+}
+.P
+The following sections are used in the 
+.I mke2fs.conf
+file.  They will be described in more detail in future sections of this
+document.
+.TP 
+.I [defaults]
+Contains relations which define the default parameters 
+used by
+.BR mke2fs (8).
+In general, these defaults may be overridden by a definition in the
+.B fs_types
+section, or by an command-line option provided by the user.
+.TP 
+.I [fs_types]
+Contains relations which define defaults that should be used for specific
+filesystem types.  The filesystem type can be specified explicitly using
+the 
+.B -T
+option to
+.BR mke2fs (8).
+If no filesystem type is specified, 
+.BR mke2fs (8)
+will use the filesystem type 
+.I floppy
+if the filesystem size is less than or equal to 3 megabytes.  
+If the filesystem size is greater than 3 but less than or equal to 
+512 megabytes, 
+.BR mke2fs (8)
+will use the filesystem
+.IR small .
+Otherwise, 
+.BR mke2fs (8)
+will use the default filesystem type
+.IR default .
+.SH THE [defaults] SECTION
+The following relations are defined in the 
+.I [defaults]
+section.
+.TP
+.I base_features
+This relation specifies the filesystems features which are enabled in
+newly created filesystems.  It may be overriden by the
+.I base_features
+relation found in the filesystem-type-specific subsection of
+the
+.I [fs_types] 
+section.
+.TP
+.I default_features
+This relation specifies a set of features that should be added or
+removed to the features listed in the
+.I base_features
+relation.  It may be overriden by the filesystem-specific 
+.I default_features
+in the filesystem-type subection of
+.IR [fs_types] ,
+and by the 
+.B -O
+command-line option
+to 
+.BR mke2fs (8).
+.TP
+.I blocksize
+This relation specifies the default blocksize if the user does not
+specify a blocksize on the command line, and the filesystem-type
+specific section of the configuration file does not specify a blocksize.
+.TP
+.I inode_ratio
+This relation specifies the default inode ratio if the user does not
+specify one on the command line, and the filesystem-type
+specific section of the configuration file does not specify a default
+inode ratio.
+.SH THE [fs_types] SECTION
+Each tag in the
+.I [fs_types] 
+section names a filesystem type which can be specified via the 
+.B -T
+option to
+.BR mke2fs (8).
+The value of the tag is a subsection where the relations in that
+subsection define the defaults for that filesystem type. For
+example:
+.P
+[fs_types]
+.br
+	small = {
+.br
+		blocksize = 1024
+.br
+		inode_ratio = 4096
+.br
+	}
+.br
+	floppy = {
+.br
+		blocksize = 1024
+.br
+	}
+.P
+For each filesystem type, the following tag may be used in that 
+fs_type's subsection:
+.TP
+.I base_features
+This relation specifies the features which are enabled for this
+filesystem type.
+.TP
+.I default_features
+This relation specifies set of features which should be enabled or 
+disabled to the features listed in the
+.I base_features
+relation.  It may be overriden by the 
+.B -O
+command-line option to
+.BR mke2fs (8).
+.TP
+.I blocksize
+This relation specifies the default blocksize if the user does not
+specify a blocksize on the command line.
+.TP
+.I inode_ratio
+This relation specifies the default inode ratio if the user does not
+specify one on the command line.
+.SH FILES
+.TP
+.I /etc/mke2fs.conf
+The configuration file for 
+.BR mke2fs (8).
+.SH SEE ALSO
+.BR mke2fs (8)

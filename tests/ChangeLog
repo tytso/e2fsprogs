@@ -1,3 +1,8 @@
+2006-03-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* test_config: Set up MKE2FS_CONFIG to point at the mke2fs.conf
+		file in the source tree.
+
 2005-09-24  Theodore Ts'o  <tytso@mit.edu>
 
 	* f_dup_resize: Set the current time to in debugfs to a value

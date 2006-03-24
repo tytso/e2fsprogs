@@ -256,7 +256,7 @@ int figure_journal_size(int size, ext2_filsys fs)
 		return 0;
 	}
 	
-	if (size >= 0) {
+	if (size > 0) {
 		j_blocks = size * 1024 / (fs->blocksize	/ 1024);
 		if (j_blocks < 1024 || j_blocks > 102400) {
 			fprintf(stderr, _("\nThe requested journal "

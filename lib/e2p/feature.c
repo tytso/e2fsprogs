@@ -158,15 +158,24 @@ int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array)
 	if (!buf)
 		return 1;
 	strcpy(buf, str);
-	cp = buf;
-	while (cp && *cp) {
+	for (cp = buf; cp && *cp; cp = next ? next+1 : 0) {
 		neg = 0;
 		cp = skip_over_blanks(cp);
 		next = skip_over_word(cp);
+		
 		if (*next == 0)
 			next = 0;
 		else
 			*next = 0;
+
+		if ((strcasecmp(cp, "none") == 0) ||
+		    (strcasecmp(cp, "clear") == 0)) {
+			compat_array[0] = 0;
+			compat_array[1] = 0;
+			compat_array[2] = 0;
+			continue;
+		}
+
 		switch (*cp) {
 		case '-':
 		case '^':
@@ -183,7 +192,6 @@ int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array)
 			compat_array[compat_type] &= ~mask;
 		else
 			compat_array[compat_type] |= mask;
-		cp = next ? next+1 : 0;
 	}
 	return 0;
 }

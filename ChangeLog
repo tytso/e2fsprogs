@@ -1,3 +1,7 @@
+2006-03-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* MCONFIG.in (mandir): Define $(man5dir)
+
 2005-10-26  Theodore Ts'o  <tytso@mit.edu>
 
 	* MCONFIG.in, configure.in: Use BUILD_CCFLAGS and BUILD_LDFLAGS

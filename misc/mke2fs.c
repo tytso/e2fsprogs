@@ -51,6 +51,7 @@ extern int optind;
 #include "e2p/e2p.h"
 #include "ext2fs/ext2fs.h"
 #include "util.h"
+#include "profile.h"
 #include "../version.h"
 #include "nls-enable.h"
 
@@ -84,6 +85,8 @@ char *volume_label;
 char *mount_dir;
 char *journal_device;
 int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
+
+profile_t	profile;
 
 int sys_page_size = 4096;
 int linux_version_code = 0;
@@ -142,79 +145,6 @@ static int parse_version_number(const char *s)
 		return 0;
 	return ((((major * 256) + minor) * 256) + rev);
 }
-
-
-
-/*
- * This function sets the default parameters for a filesystem
- *
- * The type is specified by the user.  The size is the maximum size
- * (in megabytes) for which a set of parameters applies, with a size
- * of zero meaning that it is the default parameter for the type.
- * Note that order is important in the table below.
- */
-#define DEF_MAX_BLOCKSIZE -1
-static char default_str[] = "default";
-struct mke2fs_defaults {
-	const char	*type;
-	int		size;
-	int		blocksize;
-	int		inode_ratio;
-} settings[] = {
-	{ default_str, 0, 4096, 8192 },
-	{ default_str, 512, 1024, 4096 },
-	{ default_str, 3, 1024, 8192 },
-	{ "journal", 0, 4096, 8192 },
-	{ "news", 0, 4096, 4096 },
-	{ "largefile", 0, 4096, 1024 * 1024 },
-	{ "largefile4", 0, 4096, 4096 * 1024 },
-	{ 0, 0, 0, 0},
-};
-
-static void set_fs_defaults(const char *fs_type,
-			    struct ext2_super_block *super,
-			    int blocksize, int sector_size,
-			    int *inode_ratio)
-{
-	int	megs;
-	int	ratio = 0;
-	struct mke2fs_defaults *p;
-	int	use_bsize = 1024;
-
-	megs = super->s_blocks_count * (EXT2_BLOCK_SIZE(super) / 1024) / 1024;
-	if (inode_ratio)
-		ratio = *inode_ratio;
-	if (!fs_type)
-		fs_type = default_str;
-	for (p = settings; p->type; p++) {
-		if ((strcmp(p->type, fs_type) != 0) &&
-		    (strcmp(p->type, default_str) != 0))
-			continue;
-		if ((p->size != 0) && (megs > p->size))
-			continue;
-		if (ratio == 0)
-			*inode_ratio = p->inode_ratio < blocksize ?
-				blocksize : p->inode_ratio;
-		use_bsize = p->blocksize;
-	}
-	if (blocksize <= 0) {
-		if (use_bsize == DEF_MAX_BLOCKSIZE) {
-			use_bsize = sys_page_size;
-			if ((linux_version_code < (2*65536 + 6*256)) &&
-			    (use_bsize > 4096))
-				use_bsize = 4096;
-		}
-		if (sector_size && use_bsize < sector_size)
-			use_bsize = sector_size;
-		if ((blocksize < 0) && (use_bsize < (-blocksize)))
-			use_bsize = -blocksize;
-		blocksize = use_bsize;
-		super->s_blocks_count /= blocksize / 1024;
-	}
-	super->s_log_frag_size = super->s_log_block_size =
-		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
-}
-
 
 /*
  * Helper function for read_bb_file and test_disk
@@ -892,11 +822,33 @@ static __u32 ok_features[3] = {
 };
 
 
+static void syntax_err_report(const char *filename, long err, int line_num)
+{
+	fprintf(stderr, 
+		_("Syntax error in mke2fs config file (%s, line #%d)\n\t%s\n"),
+		filename, line_num, error_message(err));
+	exit(1);
+}
+
+static const char *config_fn[] = { "/etc/mke2fs.conf", 0 };
+
+static void edit_feature(const char *str, __u32 *compat_array) 
+{
+	if (!str)
+		return;
+
+	if (e2p_edit_feature(str, compat_array, ok_features)) {
+		fprintf(stderr, _("Invalid filesystem option set: %s\n"), 
+			str);
+		exit(1);
+	}
+}
+
 static void PRS(int argc, char *argv[])
 {
 	int		b, c;
 	int		size;
-	char *		tmp;
+	char 		*tmp, *tmp2;
 	int		blocksize = 0;
 	int		inode_ratio = 0;
 	int		inode_size = 0;
@@ -913,6 +865,9 @@ static void PRS(int argc, char *argv[])
 	struct 		utsname ut;
 #endif
 	long		sysval;
+	int		s_opt = -1, r_opt = -1;
+	char		*fs_features = 0;
+	int		use_bsize;
 
 	/* Update our PATH to include /sbin  */
 	if (oldpath) {
@@ -941,17 +896,17 @@ static void PRS(int argc, char *argv[])
 		sys_page_size = sysval;
 #endif /* _SC_PAGESIZE */
 #endif /* HAVE_SYSCONF */
+
+	if ((tmp = getenv("MKE2FS_CONFIG")) != NULL)
+		config_fn[0] = tmp;
+	profile_set_syntax_err_cb(syntax_err_report);
+	profile_init(config_fn, &profile);
 	
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
 	initialize_ext2_error_table();
 	memset(&fs_param, 0, sizeof(struct ext2_super_block));
 	fs_param.s_rev_level = 1;  /* Create revision 1 filesystems now */
-	fs_param.s_feature_incompat |= EXT2_FEATURE_INCOMPAT_FILETYPE;
-	fs_param.s_feature_ro_compat |= EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-#if 0
-	fs_param.s_feature_compat |= EXT2_FEATURE_COMPAT_DIR_INDEX;
-#endif
 
 #ifdef __linux__
 	if (uname(&ut)) {
@@ -959,12 +914,8 @@ static void PRS(int argc, char *argv[])
 		exit(1);
 	}
 	linux_version_code = parse_version_number(ut.release);
-	if (linux_version_code && linux_version_code < (2*65536 + 2*256)) {
+	if (linux_version_code && linux_version_code < (2*65536 + 2*256))
 		fs_param.s_rev_level = 0;
-		fs_param.s_feature_incompat = 0;
-		fs_param.s_feature_compat = 0;
-		fs_param.s_feature_ro_compat = 0;
-	}
 #endif
 
 	if (argc && *argv) {
@@ -1043,8 +994,6 @@ static void PRS(int argc, char *argv[])
 			parse_journal_opts(optarg);
 			break;
 		case 'j':
-			fs_param.s_feature_compat |=
-				EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 			if (!journal_size)
 				journal_size = -1;
 			break;
@@ -1076,25 +1025,16 @@ static void PRS(int argc, char *argv[])
 			quiet = 1;
 			break;
 		case 'r':
-			fs_param.s_rev_level = strtoul(optarg, &tmp, 0);
+			r_opt = strtoul(optarg, &tmp, 0);
 			if (*tmp) {
 				com_err(program_name, 0,
 					_("bad revision level - %s"), optarg);
 				exit(1);
 			}
-			if (fs_param.s_rev_level == EXT2_GOOD_OLD_REV) {
-				fs_param.s_feature_incompat = 0;
-				fs_param.s_feature_compat = 0;
-				fs_param.s_feature_ro_compat = 0;
-			}
+			fs_param.s_rev_level = r_opt;
 			break;
 		case 's':	/* deprecated */
-			if (atoi(optarg))
-				fs_param.s_feature_ro_compat |=
-					EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-			else 
-				fs_param.s_feature_ro_compat &=
-					~EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+			s_opt = atoi(optarg);
 			break;
 #ifdef EXT2_DYNAMIC_REV
 		case 'I':
@@ -1127,19 +1067,7 @@ static void PRS(int argc, char *argv[])
 			}
 			break;
 		case 'O':
-			if (!strcmp(optarg, "none")) {
-				fs_param.s_feature_compat = 0;
-				fs_param.s_feature_incompat = 0;
-				fs_param.s_feature_ro_compat = 0;
-				break;
-			}
-			if (e2p_edit_feature(optarg,
-					    &fs_param.s_feature_compat,
-					    ok_features)) {
-				fprintf(stderr,
-					_("Invalid filesystem option set: %s\n"), optarg);
-				exit(1);
-			}
+			fs_features = optarg;
 			break;
 		case 'E':
 		case 'R':
@@ -1220,12 +1148,6 @@ static void PRS(int argc, char *argv[])
 				  "(max %d), forced to continue\n"),
 			blocksize, sys_page_size);
 	}
-	if ((blocksize > 4096) &&
-	    (fs_param.s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
-		fprintf(stderr, _("\nWarning: some 2.4 kernels do not support "
-			"blocksizes greater than 4096\n\tusing ext3.  "
-			"Use -b 4096 if this is an issue for you.\n\n"));
-
 	if (optind < argc) {
 		fs_param.s_blocks_count = parse_num_blocks(argv[optind++], 
 				fs_param.s_log_block_size);
@@ -1237,19 +1159,6 @@ static void PRS(int argc, char *argv[])
 	}
 	if (optind < argc)
 		usage();
-
-	if (fs_param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
-		if (!fs_type)
-			fs_type = "journal";
-		reserved_ratio = 0;
-		fs_param.s_feature_incompat = EXT3_FEATURE_INCOMPAT_JOURNAL_DEV;
-		fs_param.s_feature_compat = 0;
-		fs_param.s_feature_ro_compat = 0;
- 	}
-	if (fs_param.s_rev_level == EXT2_GOOD_OLD_REV &&
-	    (fs_param.s_feature_compat || fs_param.s_feature_ro_compat ||
-	     fs_param.s_feature_incompat))
-		fs_param.s_rev_level = 1;  /* Create a revision 1 filesystem */
 
 	if (!force)
 		check_plausibility(device_name);
@@ -1311,13 +1220,69 @@ static void PRS(int argc, char *argv[])
 		proceed_question();
 	}
 
-	/*
-	 * If the user asked for HAS_JOURNAL, then make sure a journal
-	 * gets created.
-	 */
-	if ((fs_param.s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
-	    !journal_size)
-		journal_size = -1;
+	if (!fs_type) {
+		int megs = fs_param.s_blocks_count * 
+			(EXT2_BLOCK_SIZE(&fs_param) / 1024) / 1024;
+
+		if (megs <= 3)
+			fs_type = "floppy";
+		else if (megs <= 512)
+			fs_type = "small";
+		else
+			fs_type = "default";
+	}
+
+	/* Figure out what features should be enabled */
+
+	if (r_opt == EXT2_GOOD_OLD_REV && fs_features) {
+		fprintf(stderr, _("Filesystem features not supported "
+				  "with revision 0 filesystems\n"));
+		exit(1);
+	}
+
+	profile_get_string(profile, "defaults", "base_features", 0,
+			   "filetype,sparse_super", &tmp);
+	profile_get_string(profile, "fs_types", fs_type, "base_features",
+			   tmp, &tmp2);
+	edit_feature(tmp2, &fs_param.s_feature_compat);
+	free(tmp);
+	free(tmp2);
+
+	profile_get_string(profile, "defaults", "default_features", 0,
+			   "", &tmp);
+	profile_get_string(profile, "fs_types", fs_type, 
+			   "default_features", tmp, &tmp2);
+	edit_feature(fs_features ? fs_features : tmp2, 
+		     &fs_param.s_feature_compat);
+	free(tmp);
+	free(tmp2);
+
+	if (s_opt > 0)
+		fs_param.s_feature_ro_compat |=
+			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+	else if (s_opt == 0)
+		fs_param.s_feature_ro_compat &=
+			~EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
+
+	if (journal_size != 0)
+		fs_param.s_feature_compat |= 
+			EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+
+	if (fs_param.s_feature_incompat & 
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+		if (!fs_type)
+			fs_type = "journal";
+		reserved_ratio = 0;
+		fs_param.s_feature_incompat = EXT3_FEATURE_INCOMPAT_JOURNAL_DEV;
+		fs_param.s_feature_compat = 0;
+		fs_param.s_feature_ro_compat = 0;
+ 	}
+	
+	if (fs_param.s_rev_level == EXT2_GOOD_OLD_REV) {
+		fs_param.s_feature_incompat = 0;
+		fs_param.s_feature_compat = 0;
+		fs_param.s_feature_ro_compat = 0;
+	}
 
 	/* Set first meta blockgroup via an environment variable */
 	/* (this is mostly for debugging purposes) */
@@ -1336,8 +1301,40 @@ static void PRS(int argc, char *argv[])
 	if ((tmp = getenv("MKE2FS_DEVICE_SECTSIZE")) != NULL)
 		sector_size = atoi(tmp);
 	
-	set_fs_defaults(fs_type, &fs_param, blocksize, sector_size, 
-			&inode_ratio);
+	if (blocksize <= 0) {
+		profile_get_integer(profile, "defaults", "blocksize", 0,
+				    1024, &use_bsize);
+		profile_get_integer(profile, "fs_types", fs_type, 
+				    "blocksize", use_bsize, &use_bsize);
+
+		if (use_bsize == -1) {
+			use_bsize = sys_page_size;
+			if ((linux_version_code < (2*65536 + 6*256)) &&
+			    (use_bsize > 4096))
+				use_bsize = 4096;
+		}
+		if (sector_size && use_bsize < sector_size)
+			use_bsize = sector_size;
+		if ((blocksize < 0) && (use_bsize < (-blocksize)))
+			use_bsize = -blocksize;
+		blocksize = use_bsize;
+		fs_param.s_blocks_count /= blocksize / 1024;
+	}
+
+	if (inode_ratio == 0) {
+		profile_get_integer(profile, "defaults", "inode_ratio", 0,
+				    8192, &inode_ratio);
+		profile_get_integer(profile, "fs_types", fs_type, 
+				    "inode_ratio", inode_ratio, 
+				    &inode_ratio);
+
+		if (inode_ratio < blocksize)
+			inode_ratio = blocksize;
+	}
+
+	fs_param.s_log_frag_size = fs_param.s_log_block_size =
+		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
 	
 	if (extended_opts)
@@ -1369,6 +1366,12 @@ static void PRS(int argc, char *argv[])
 			  "\t (8TB using a blocksize of 4k) are currently supported."));
              exit(1);
 	}
+
+	if ((blocksize > 4096) &&
+	    (fs_param.s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+		fprintf(stderr, _("\nWarning: some 2.4 kernels do not support "
+			"blocksizes greater than 4096\n\tusing ext3.  "
+			"Use -b 4096 if this is an issue for you.\n\n"));
 
 	if (inode_size) {
 		if (inode_size < EXT2_GOOD_OLD_INODE_SIZE ||
@@ -1602,7 +1605,9 @@ int main (int argc, char *argv[])
 			printf(_("done\n"));
 		ext2fs_close(jfs);
 		free(journal_device);
-	} else if (journal_size) {
+	} else if ((journal_size) ||
+		   (fs_param.s_feature_compat & 
+		    EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
 		journal_blocks = figure_journal_size(journal_size, fs);
 
 		if (!journal_blocks) {

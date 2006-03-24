@@ -20,6 +20,7 @@ USPROGS=	mklost+found filefrag
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			e2label.8 findfs.8 blkid.8 $(E2IMAGE_MAN) \
 			logsave.8 filefrag.8 @FSCK_MAN@ 
+FMANPAGES=	mke2fs.conf.5
 
 UPROGS=		chattr lsattr uuidgen
 UMANPAGES=	chattr.1 lsattr.1 uuidgen.1
@@ -28,7 +29,7 @@ LPROGS=		@E2INITRD_PROG@
 
 TUNE2FS_OBJS=	tune2fs.o util.o
 MKLPF_OBJS=	mklost+found.o
-MKE2FS_OBJS=	mke2fs.o util.o 
+MKE2FS_OBJS=	mke2fs.o util.o ../e2fsck/profile.o
 CHATTR_OBJS=	chattr.o
 LSATTR_OBJS=	lsattr.o
 UUIDGEN_OBJS=	uuidgen.o
@@ -38,6 +39,8 @@ E2IMAGE_OBJS=	e2image.o
 FSCK_OBJS=	fsck.o base_device.o
 BLKID_OBJS=	blkid.o
 FILEFRAG_OBJS=	filefrag.o
+
+XTRA_CFLAGS=	-I$(srcdir)/../e2fsck
 
 SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/chattr.c $(srcdir)/lsattr.c $(srcdir)/dumpe2fs.c \
@@ -61,7 +64,8 @@ DEPLIBS_E2P= $(LIBE2P) $(LIBCOM_ERR)
 	@echo "	CC $<"
 	@$(CC) -c $(ALL_CFLAGS) $< -o $@
 
-all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) $(LPROGS)
+all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) \
+	$(FMANPAGES) $(LPROGS)
 
 findsuper: findsuper.o
 	@echo "	LD $@"
@@ -162,6 +166,9 @@ mke2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/mke2fs.8.in
 	@echo "	SUBST $@"
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/mke2fs.8.in mke2fs.8
 
+mke2fs.conf.5: $(DEP_SUBSTITUTE) $(srcdir)/mke2fs.conf.5.in
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/mke2fs.conf.5.in mke2fs.conf.5
 e2label.8: $(DEP_SUBSTITUTE) $(srcdir)/e2label.8.in
 	@echo "	SUBST $@"
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2label.8.in e2label.8
@@ -269,6 +276,16 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		echo "	INSTALL_DATA $(man1dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man1dir)/$$i; \
 	done
+	@for i in $(FMANPAGES); do \
+		$(RM) -f $(DESTDIR)$(man1dir)/$$i.gz; \
+		echo "	INSTALL_DATA $(man5dir)/$$i"; \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(man5dir)/$$i; \
+	done
+	@if ! test -f $(DESTDIR)/etc/mke2fs.conf; then \
+		echo "	INSTALL_DATA /etc/mke2fs.conf"; \
+		$(INSTALL_DATA) $(srcdir)/mke2fs.conf \
+			$(DESTDIR)/etc/mke2fs.conf; \
+	fi
 
 install-strip: install
 	@for i in $(SPROGS); do \
@@ -309,9 +326,16 @@ uninstall:
 	for i in fsck.ext2.8 fsck.ext3.8 ; do \
 		$(RM) -f $(DESTDIR)$(man8dir)/$$i; \
 	done
+	for i in $(FMANPAGES); do \
+		$(RM) -f $(DESTDIR)$(man5dir)/$$i; \
+	done
+	if cmp -s $(srcdir)/mke2fs.conf $(DESTDIR)/etc/mke2fs.conf; then \
+		$(RM) $(DESTDIR)/etc/mke2fs.conf; \
+	fi
 
 clean:
 	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) $(UMANPAGES) $(SMANPAGES) \
+		$(FMANPAGES) \
 		base_device base_device.out mke2fs.static filefrag \
 		e2initrd_helper partinfo \#* *.s *.o *.a *~ core 
 

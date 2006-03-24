@@ -336,24 +336,35 @@ executable.
 .TP
 .B "\-O \fIfeature\fR[,...]"
 Create filesystem with given features (filesystem options), overriding 
-the default filesystem options.
-Currently, the
-.B sparse_super
-and
-.B filetype
-features are turned on by default when 
-.B mke2fs
-is run on a system with Linux 2.2 or later (unless creator-os is set to
-the Hurd).  Filesystems that may need to be mounted on pre-2.2 Linux or
-other kernels should be created with
-.B "\-O none"
-(or
-.B "\-r 0"
-for Linux 1.2) which will disable these features, even if 
-.B mke2fs 
-is run on a system which can support them.
+the default filesystem options.  The default features which are 
+enabled by default are specified by the
+.I base_features
+relation, either in the
+.I [libdefaults]
+section in the
+.B /etc/mke2fs.conf
+configuration file, or in the subsection of the 
+.I [fs_types]
+section for the filesystem type as specified by the
+.B -T
+option.  The filesystem type-specific configuration setting found in
+the 
+.I [fs_types]
+section will override the global default found in
+.IR [libdefaults] .
 .sp
-The following filesystem options are supported:
+The filesystem feature set will be further edited 
+using either the feature set specification specified by this option, 
+or if this option is not specified, by the
+.I default_features
+relation for the filesystem type being created, or in the 
+.I [libdefaults]
+section of the configuration file.
+.sp
+The filesystem feature set is comprised of a list of features, separated
+by commas, that are to be enabled.  To disable a feature, simply
+prefix the feature name with a  caret ('^') character.  The 
+pseudo-filesystem feature "none" will clear all filesystem features.
 .RS 1.2i
 .TP
 .B dir_index
@@ -423,25 +434,10 @@ or there is no chance of recovery.
 .BI \-T " fs-type"
 Specify how the filesystem is going to be used, so that 
 .B mke2fs 
-can choose optimal filesystem parameters for that use.  Currently, the
-primary filesystem parameter which is manipulated is the number of
-inodes contained the filesystem, but in the future other filesystem
-parameters may also changed for specific filesystem usage scenarios.  If
-no filesystem type is specified, filesystem meant for general purpose
-use will be created, with default values for the blocksize, number of
-inodes, etc. based on the size of the filesystem to be created.  The
-supported filesystem types are:
-.RS 1.2i
-.TP 1.2i
-news
-one inode per 4kb block
-.TP
-largefile
-one inode per megabyte
-.TP
-largefile4
-one inode per 4 megabytes
-.RE
+can choose optimal filesystem parameters for that use, as defined 
+filesystem type configuration settings found in the 
+.BR /etc/mke2fs.conf (5)
+file.
 .TP
 .B \-v
 Verbose execution.
@@ -467,6 +463,7 @@ There may be other ones.  Please, report them to the author.
 is part of the e2fsprogs package and is available from 
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
+.BR mke2fs.conf (5),
 .BR badblocks (8),
 .BR dumpe2fs (8),
 .BR e2fsck (8),

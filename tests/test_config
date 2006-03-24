@@ -27,3 +27,6 @@ export LANG
 unset PAGER
 E2FSCK_CONFIG=/dev/null
 export E2FSCK_CONFIG
+MKE2FS_CONFIG=$SRCDIR/../misc/mke2fs.conf
+export MKE2FS_CONFIG
+

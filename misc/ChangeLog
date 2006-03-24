@@ -1,3 +1,26 @@
+2006-03-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* mke2fs.conf, mke2fs.conf.5.in: New configuration file which when
+		installed, provides mke2fs's old behaviour.  It makes it
+		easier for distributions to change which filesystem
+		options are the default.
+
+	* mke2fs.8.in: Update man page to document how the filesystem
+		features are now set.
+
+	* mke2fs.c: Radically rework how the filesystem features are set
+		when creating filesystems.  Use the profile library to
+		read in a configuration file from /etc/mke2fs.conf.
+
+	* util.c (figure_journal_size): If the journal size is 0, assume
+		the journal size is unspecified and figure out the
+		approriate journal size instead of bombing out with an
+		error message.
+
+	* Makefile.in: Build and install the mke2fs.conf(5) man page.  Add
+		profile.o from the e2fsck directory to mke2fs executable.
+		Install the configuration file /etc/mke2fs.conf.
+
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* dumpe2fs.c, e2image.c, findsuper.c, mke2fs.c: Change printf
