@@ -55,9 +55,9 @@ int main (int argc, char ** argv)
 	}
 	
 	i = 0;
-	memset (name, 'x', 252);
+	memset (name, 'x', 246);
 	do {
-		sprintf (name + 252, "%02d", i);
+		sprintf (name + 246, "%08d", i);
 		strcpy (path, LPF);
 		strcat (path, "/");
 		strcat (path, name);
@@ -73,7 +73,7 @@ int main (int argc, char ** argv)
 		}
 	} while (st.st_size <= (EXT2_NDIR_BLOCKS - 1) * st.st_blksize);
 	for (j = 0; j < i; j++) {
-		sprintf (name + 252, "%02d", j);
+		sprintf (name + 246, "%08d", j);
 		strcpy (path, LPF);
 		strcat (path, "/");
 		strcat (path, name);

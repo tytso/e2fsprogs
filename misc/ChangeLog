@@ -1,5 +1,9 @@
 2006-03-23  Theodore Ts'o  <tytso@mit.edu>
 
+	* mklost+found.c (main): Use a larger counter field so that we can
+		create enough directory entries that we can make a full
+		lost+found directory with larger block sizes.
+
 	* mke2fs.conf, mke2fs.conf.5.in: New configuration file which when
 		installed, provides mke2fs's old behaviour.  It makes it
 		easier for distributions to change which filesystem
