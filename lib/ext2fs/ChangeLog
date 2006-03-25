@@ -1,3 +1,16 @@
+2006-03-25  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Check the bitfield operations much more carefully,
+		and arrange to have tst_bitops run from "make check"
+
+	* tst_bitops.c: Enahce tst_bitops program so that it is much more
+		thorough in testing bit optations.
+	
+	* bitops.h: Add new functions ext2fs_fast_set_bit() and
+		ext2fs_fast_clear_bit() and make the x86 functions 32-bit
+		clear.  Change the fast inode and block mark/unmark
+		functions to use ext2fs_fast_set/get_bit()
+
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2fs.h (EXT2_FLAG_EXCLUSIVE): Define new flag which requests

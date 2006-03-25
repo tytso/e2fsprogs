@@ -212,7 +212,7 @@ tst_byteswap: tst_byteswap.o bitops.o $(STATIC_LIBEXT2FS)
 
 tst_bitops: tst_bitops.o inline.o $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
-	@$(CC) -o tst_bitops tst_bitops.o inline.o \
+	@$(CC) -o tst_bitops tst_bitops.o inline.o $(ALL_CFLAGS) \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 tst_getsectsize: tst_getsectsize.o getsectsize.o $(STATIC_LIBEXT2FS)
@@ -224,7 +224,8 @@ mkjournal: mkjournal.c $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
 	@$(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
 
-check:: tst_badblocks tst_iscan @SWAPFS_CMT@ tst_byteswap
+check:: tst_bitops tst_badblocks tst_iscan @SWAPFS_CMT@ tst_byteswap
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_bitops
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_badblocks
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_iscan
 @SWAPFS_CMT@	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_byteswap
