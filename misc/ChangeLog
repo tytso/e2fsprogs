@@ -1,3 +1,9 @@
+2006-03-27  root  <tytso@mit.edu>
+
+	* mke2fs.8.in, tune2fs.8.in: Add note to man page explaning that
+		shared journals are not currently supported.  (Addresses
+		Debian Bug: #316040)
+
 2006-03-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Make sure $(DESTDIR)/usr/share/man/man5 exists when

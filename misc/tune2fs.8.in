@@ -242,6 +242,11 @@ that size.
 @JDEV@.I external-journal
 @JDEV@must be formatted with the same block
 @JDEV@size as filesystems which will be using it.
+@JDEV@In addition, while there is support for attaching
+@JDEV@multiple filesystems to a single external journal,
+@JDEV@the Linux kernel and 
+@JDEV@.BR e2fsck (8)
+@JDEV@do not currently support shared external journals yet.
 @JDEV@.IP
 @JDEV@Instead of specifying a device name directly,
 @JDEV@.I external-journal

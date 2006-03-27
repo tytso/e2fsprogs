@@ -255,6 +255,11 @@ and may be no more than 102,400 filesystem blocks.
 @JDEV@.I external-journal
 @JDEV@must have been created with the
 @JDEV@same block size as the new filesystem.
+@JDEV@In addition, while there is support for attaching
+@JDEV@multiple filesystems to a single external journal,
+@JDEV@the Linux kernel and 
+@JDEV@.BR e2fsck (8)
+@JDEV@do not currently support shared external journals yet.
 @JDEV@.IP
 @JDEV@Instead of specifying a device name directly,
 @JDEV@.I external-journal
