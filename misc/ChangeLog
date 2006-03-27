@@ -1,3 +1,8 @@
+2006-03-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* badblocks.8.in: Fix typo's in man page.  (Addresses Debian Bug:
+		#357951)
+
 2006-03-27  root  <tytso@mit.edu>
 
 	* mke2fs.8.in, tune2fs.8.in: Add note to man page explaning that

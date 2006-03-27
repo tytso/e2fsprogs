@@ -144,7 +144,7 @@ read-only mode only a single pattern may be specified and it may not be
 specified pattern has previously been written to the disk - if not, large
 numbers of blocks will fail verification.  
 If multiple patterns
-are specified then all blocks will be tested with an one pattern 
+are specified then all blocks will be tested with one pattern 
 before proceeding to the next pattern.
 .TP
 .B \-n
@@ -171,7 +171,7 @@ option, as they are mutually exclusive.
 .SH WARNING
 Never use the
 .B \-w
-option on an device containing an existing file system.
+option on a device containing an existing file system.
 This option erases data!  If you want to do write-mode testing on
 an existing file system, use the
 .B \-n
