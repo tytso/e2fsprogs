@@ -1,3 +1,10 @@
+2006-03-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in: Make sure $(DESTDIR)/usr/share/man/man5 exists when
+		installing the man page.  Make sure the compressed version
+		of the man pages are deleted when installing the man
+		pages.
+
 2006-03-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* mklost+found.c (main): Use a larger counter field so that we can

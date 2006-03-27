@@ -169,6 +169,7 @@ mke2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/mke2fs.8.in
 mke2fs.conf.5: $(DEP_SUBSTITUTE) $(srcdir)/mke2fs.conf.5.in
 	@echo "	SUBST $@"
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/mke2fs.conf.5.in mke2fs.conf.5
+
 e2label.8: $(DEP_SUBSTITUTE) $(srcdir)/e2label.8.in
 	@echo "	SUBST $@"
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2label.8.in e2label.8
@@ -225,7 +226,9 @@ installdirs:
 	@echo "	MKINSTALLDIRS $(sbindir) $(root_sbindir) $(bindir) $(man1dir) $(man8dir) $(libdir)"
 	@$(MKINSTALLDIRS) $(DESTDIR)$(sbindir) \
 		$(DESTDIR)$(root_sbindir) $(DESTDIR)$(bindir) \
-		$(DESTDIR)$(man1dir) $(DESTDIR)$(man8dir) $(DESTDIR)$(libdir)
+		$(DESTDIR)$(man1dir) $(DESTDIR)$(man8dir) \
+		$(DESTDIR)$(man1dir) $(DESTDIR)$(man5dir) \
+		$(DESTDIR)$(libdir) $(DESTDIR)/etc
 
 install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	@for i in $(SPROGS); do \
@@ -272,12 +275,16 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	@$(LN) -f $(DESTDIR)$(man8dir)/mke2fs.8 \
 		$(DESTDIR)$(man8dir)/mkfs.ext3.8
 	@for i in $(UMANPAGES); do \
-		$(RM) -f $(DESTDIR)$(man1dir)/$$i.gz; \
+		for j in $(COMPRESS_EXT); do \
+			$(RM) -f $(DESTDIR)$(man1dir)/$$i.$$j; \
+		done; \
 		echo "	INSTALL_DATA $(man1dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man1dir)/$$i; \
 	done
 	@for i in $(FMANPAGES); do \
-		$(RM) -f $(DESTDIR)$(man1dir)/$$i.gz; \
+		for j in $(COMPRESS_EXT); do \
+			$(RM) -f $(DESTDIR)$(man5dir)/$$i.$$j; \
+		done; \
 		echo "	INSTALL_DATA $(man5dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man5dir)/$$i; \
 	done
