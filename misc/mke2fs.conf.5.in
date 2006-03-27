@@ -15,41 +15,51 @@ when it is creating ext2 or ext3 filesystems.
 .PP
 The
 .I mke2fs.conf
-file uses an INI-style format.  Sections are delimited by 
-square braces: [ ].  Within each section, each line defines a 
-relation, which assigns tags to values, or to a subsection,
+file uses an INI-style format.  Stanzas, or top-level sections, are 
+delimited by square braces: [ ].  Within each section, each line 
+defines a relation, which assigns tags to values, or to a subsection,
 which contains further relations or subsections.   
 .\" Tags can be assigned multiple values
 An example of the INI-style format used by this configuration file 
 follows below:
 .P
-[section1]
+	[section1]
 .br
-	tag1 = value_a
+		tag1 = value_a
 .br
-	tag1 = value_b
+		tag1 = value_b
 .br
-	tag2 = value_c
+		tag2 = value_c
 .P
-[section 2]
+	[section 2]
 .br
-	tag3 = {
+		tag3 = {
 .br
-		subtag1 = subtag_value_a
+			subtag1 = subtag_value_a
 .br
-		subtag1 = subtag_value_b
+			subtag1 = subtag_value_b
 .br
-		subtag2 = subtag_value_c
+			subtag2 = subtag_value_c
+.br
+		}
+.br
+		tag1 = value_d
+.br
+		tag2 = value_e
 .br
 	}
-.br
-	tag1 = value_d
-.br
-	tag2 = value_e
-.br
-}
 .P
-The following sections are used in the 
+Comments are delimited by a semicolon (';') or a hash ('#') character 
+at the beginning of the comment, and are terminated by the end of 
+line character.
+.P
+Tags and values must be quoted using double quotes if they contain
+spaces.  Within a quoted string, the standard backslash interpretations 
+apply: "\en" (for the newline character), 
+"\et" (for the tab character), "\eb" (for the backspace character), 
+and "\e\e" (for the backslash character).
+.P
+The following stanzs are used in the 
 .I mke2fs.conf
 file.  They will be described in more detail in future sections of this
 document.
@@ -60,7 +70,7 @@ used by
 .BR mke2fs (8).
 In general, these defaults may be overridden by a definition in the
 .B fs_types
-section, or by an command-line option provided by the user.
+stanza, or by an command-line option provided by the user.
 .TP 
 .I [fs_types]
 Contains relations which define defaults that should be used for specific
@@ -83,10 +93,10 @@ Otherwise,
 .BR mke2fs (8)
 will use the default filesystem type
 .IR default .
-.SH THE [defaults] SECTION
+.SH THE [defaults] STANZA
 The following relations are defined in the 
 .I [defaults]
-section.
+stanza.
 .TP
 .I base_features
 This relation specifies the filesystems features which are enabled in
@@ -95,7 +105,7 @@ newly created filesystems.  It may be overriden by the
 relation found in the filesystem-type-specific subsection of
 the
 .I [fs_types] 
-section.
+stanza.
 .TP
 .I default_features
 This relation specifies a set of features that should be added or
@@ -121,10 +131,10 @@ This relation specifies the default inode ratio if the user does not
 specify one on the command line, and the filesystem-type
 specific section of the configuration file does not specify a default
 inode ratio.
-.SH THE [fs_types] SECTION
+.SH THE [fs_types] STANZA
 Each tag in the
 .I [fs_types] 
-section names a filesystem type which can be specified via the 
+stanza names a filesystem type which can be specified via the 
 .B -T
 option to
 .BR mke2fs (8).
@@ -148,7 +158,7 @@ example:
 .br
 	}
 .P
-For each filesystem type, the following tag may be used in that 
+For each filesystem type, the following tags may be used in that 
 fs_type's subsection:
 .TP
 .I base_features
