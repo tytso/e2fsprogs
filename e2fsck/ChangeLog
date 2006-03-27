@@ -1,3 +1,8 @@
+2006-03-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* Makefile.in, e2fsck.conf.5.in: Add man page documenting the
+		configuration file /etc/e2fsck.conf.
+
 2006-03-22  Theodore Ts'o  <tytso@mit.edu>
 
 	* profile.c (profile_update_file, profile_parse_file, parse_line,

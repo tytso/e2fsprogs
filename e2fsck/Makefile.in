@@ -14,6 +14,7 @@ LDFLAG_STATIC = @LDFLAG_STATIC@
 
 PROGS=		e2fsck
 MANPAGES=	e2fsck.8
+FMANPAGES=	e2fsck.conf.5
 XTRA_CFLAGS=	-DRESOURCE_TRACK -I.
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBBLKID) $(LIBUUID) $(LIBINTL)
@@ -103,7 +104,7 @@ SRCS= $(srcdir)/e2fsck.c \
 	prof_err.c \
 	$(MTRACE_SRC)
 
-all:: profiled $(PROGS) e2fsck.static e2fsck.shared $(MANPAGES)
+all:: profiled $(PROGS) e2fsck.static e2fsck.shared $(MANPAGES) $(FMANPAGES)
 
 @PROFILE_CMT@all:: e2fsck.profiled
 
@@ -166,10 +167,14 @@ e2fsck.8: $(DEP_SUBSTITUTE) $(srcdir)/e2fsck.8.in
 	@echo "	SUBST $@"
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2fsck.8.in e2fsck.8
 
+e2fsck.conf.5: $(DEP_SUBSTITUTE) $(srcdir)/e2fsck.conf.5.in
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2fsck.conf.5.in e2fsck.conf.5
+
 installdirs:
 	@echo "	MKINSTALLDIRS $(root_sbindir) $(man8dir)"
 	@$(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
-		$(DESTDIR)$(man8dir)
+		$(DESTDIR)$(man8dir) $(DESTDIR)$(man5dir)
 
 install: $(PROGS) $(MANPAGES) installdirs
 	@for i in $(PROGS); do \
@@ -188,6 +193,13 @@ install: $(PROGS) $(MANPAGES) installdirs
 		done; \
 		echo "	INSTALL_DATA $(man8dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man8dir)/$$i; \
+	done
+	@for i in $(FMANPAGES); do \
+		for j in $(COMPRESS_EXT); do \
+			$(RM) -f $(DESTDIR)$(man5dir)/$$i.$$j; \
+		done; \
+		echo "	INSTALL_DATA $(man5dir)/$$i"; \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(man5dir)/$$i; \
 	done
 	@echo "	LINK $(man8dir)/fsck.ext2.8"
 	@$(LN) -f $(DESTDIR)$(man8dir)/e2fsck.8 \
@@ -210,6 +222,9 @@ uninstall:
 		$(DESTDIR)$(root_sbindir)/fsck.ext3
 	for i in $(MANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man8dir)/$$i; \
+	done
+	for i in $(FMANPAGES); do \
+		$(RM) -f $(DESTDIR)$(man5dir)/$$i; \
 	done
 	$(RM) -f $(DESTDIR)$(root_sbindir)/fsck.ext2 \
 			$(DESTDIR)$(root_sbindir)/fsck.ext3
