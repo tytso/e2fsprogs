@@ -1,3 +1,9 @@
+2006-03-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* bitops.h (ext2fs_set_bit, ext2fs_clear_bit): Fix the constraints
+		so that GCC knows that the ext2fs_set/clear_bit reads and
+		writes the data.
+
 2006-03-25  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.in: Check the bitfield operations much more carefully,

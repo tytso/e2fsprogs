@@ -181,7 +181,7 @@ _INLINE_ int ext2fs_set_bit(unsigned int nr, void * addr)
 
 	addr = (void *) (((unsigned char *) addr) + (nr >> 3));
 	__asm__ __volatile__("btsl %2,%1\n\tsbbl %0,%0"
-		:"=r" (oldbit),"=m" (EXT2FS_ADDR)
+		:"=r" (oldbit),"+m" (EXT2FS_ADDR)
 		:"r" (nr & 7));
 	return oldbit;
 }
@@ -192,7 +192,7 @@ _INLINE_ int ext2fs_clear_bit(unsigned int nr, void * addr)
 
 	addr = (void *) (((unsigned char *) addr) + (nr >> 3));
 	__asm__ __volatile__("btrl %2,%1\n\tsbbl %0,%0"
-		:"=r" (oldbit),"=m" (EXT2FS_ADDR)
+		:"=r" (oldbit),"+m" (EXT2FS_ADDR)
 		:"r" (nr & 7));
 	return oldbit;
 }
