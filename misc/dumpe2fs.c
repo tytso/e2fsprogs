@@ -230,6 +230,27 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 		fputc('\n', stdout);
 }
 
+static void print_inline_journal_information(ext2_filsys fs)
+{
+	struct ext2_inode	inode;
+	errcode_t		retval;
+	ino_t			ino = fs->super->s_journal_inum;
+	int			size;
+	
+	retval = ext2fs_read_inode(fs, ino,  &inode);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while reading journal inode"));
+		exit(1);
+	}
+	fputs(_("Journal size:             "), stdout);
+	size = inode.i_blocks >> 1;
+	if (size < 8192)
+		printf("%uk\n", size);
+	else
+		printf("%uM\n", size >> 10);
+}
+
 static void print_journal_information(ext2_filsys fs)
 {
 	errcode_t	retval;
@@ -366,6 +387,9 @@ int main (int argc, char ** argv)
 			ext2fs_close(fs);
 			exit(0);
 		}
+		if (fs->super->s_feature_compat &
+		      EXT3_FEATURE_COMPAT_HAS_JOURNAL)
+			print_inline_journal_information(fs);
 		list_bad_blocks(fs, 0);
 		if (header_only) {
 			ext2fs_close (fs);
