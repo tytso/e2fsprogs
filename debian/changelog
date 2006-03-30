@@ -1,3 +1,37 @@
+e2fsprogs (1.38+1.39-WIP-2006.03.29-1) unstable; urgency=low
+
+  * Add udeb: lines to the Debian's shlibs files (Closes: #356293)
+  * Enhance dumpe2fs to print the size of the journal
+  * Fix e2sprogs so that it is 32-bit clean on x86 platorms.
+  * Fix mklost+ound so that it creates a full-sized directory on 4k and
+    larger block sizes.
+  * Add mke2fs.conf coniguration file to conigure mke2fs's defaults
+  * Add devmapper support to the blkid library.
+  * E2fsck, resize2fs and mke2fs will now open the filesystem device in
+    exclusive mode
+  * Fix documentation and man pages.  (Closes: #351268, #357951, #347295,
+    #316040)
+  * Cix "mke2fs -O resize_inode" for very large filesystems (Closes: #346580)
+  * Add on-line resizing support into resize2fs
+  * Fix blkid's handling of verification timeouts when the system clock is
+    insane
+  * Fix library Makefiles so they work with GNU make 3.81 as well as GNU
+    make 3.80.
+  * Enhance the blkid library to display the uuid of external journals for
+    ext3 filesystems
+  * Enhance e2fsck so it will fix the external journal hint in the
+    superblock if it is out of date.
+  * Fix debugfs's icheck to correctly report the owner of an EA block
+  * Update Sweedish translation
+  * Add a configuration parameter to e2fsck.conf to control whether or not
+    filesystem checks are done when the system is running on battery power.
+  * Print an explanation when skipping a check due being on battery
+    (Closes: #350306)
+  * Update French translation (Closes: #341911, #300871, #316604, #316782, 
+     #330789)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 29 Mar 2006 20:37:27 -0500
+
 e2fsprogs (1.38+1.39-WIP-2005.12.31-1) unstable; urgency=medium
 
   * New upstream version
