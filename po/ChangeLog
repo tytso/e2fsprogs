@@ -1,3 +1,10 @@
+2006-03-29  Theodore Ts'o  <tytso@mit.edu>
+
+	* e2fsprogs.pot: Update template file.
+
+	* fr.po: Update French translation file.  (Addresses Debian Bugs:
+		#341911, #300871, #316604, #316782, #330789)
+
 2006-01-06  Theodore Ts'o  <tytso@mit.edu>
 
 	* Update Dutch, Polish, and Swedish translations.  (Addresses
