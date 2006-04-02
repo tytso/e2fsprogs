@@ -1,3 +1,9 @@
+e2fsprogs (1.38+1.39-WIP-2006.03.29-2) unstable; urgency=low
+
+  * Added missing build dependency on libdevmapper-dev.  (Closes: #360046)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 30 Mar 2006 12:33:30 -0500
+
 e2fsprogs (1.38+1.39-WIP-2006.03.29-1) unstable; urgency=low
 
   * Add udeb: lines to the Debian's shlibs files (Closes: #356293)
