@@ -1,3 +1,11 @@
+2006-04-04  Theodore Ts'o  <tytso@mit.edu>
+
+	* mkjournal.c (ext2fs_add_journal_inode): If the filesystem is
+		opened in exclusive mode, then device will be busy by
+		definition, so don't return -EBUSY.  This caused mke2fs -j
+		to fail on the 1.39-WIP (29-Mar-2006) release.  (Addresses
+		Debian Bug: #360652)
+
 2006-03-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* bitops.h (ext2fs_set_bit, ext2fs_clear_bit): Fix the constraints

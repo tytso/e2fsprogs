@@ -370,7 +370,8 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 		close(fd);
 		journal_ino = st.st_ino;
 	} else {
-		if (mount_flags & EXT2_MF_BUSY) {
+		if ((mount_flags & EXT2_MF_BUSY) &&
+		    !(fs->flags & EXT2_FLAG_EXCLUSIVE)) {
 			retval = EBUSY;
 			goto errout;
 		}
