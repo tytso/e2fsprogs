@@ -620,6 +620,9 @@ AC_SUBST(SIZEOF_INT)
 AC_SUBST(SIZEOF_LONG)
 AC_SUBST(SIZEOF_LONG_LONG)
 AC_C_BIGENDIAN
+/bin/sh $ac_aux_dir/parse-types.sh
+ASM_TYPES_HEADER=./asm_types.h
+AC_SUBST_FILE(ASM_TYPES_HEADER)
 dnl
 dnl See if we have inttypes.h and if intptr_t is defined
 dnl
@@ -840,7 +843,8 @@ test -d include/linux || mkdir include/linux
 test -d include/asm || mkdir include/asm
 for i in MCONFIG Makefile e2fsprogs.spec \
 	util/Makefile util/subst.conf util/gen-tarball \
-	lib/et/Makefile lib/ss/Makefile lib/ext2fs/Makefile lib/e2p/Makefile \
+	lib/et/Makefile lib/ss/Makefile lib/e2p/Makefile \
+	lib/ext2fs/Makefile lib/ext2fs/ext2_types.h \
 	lib/uuid/Makefile lib/uuid/uuid_types.h \
 	lib/blkid/Makefile lib/blkid/blkid_types.h \
 	lib/ss/ss.pc lib/uuid/uuid.pc lib/et/com_err.pc \

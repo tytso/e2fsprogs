@@ -100,20 +100,17 @@ realclean: realclean-recursive realclean-local
 
 depend:: depend-recursive
 
-lib/ext2fs/ext2_types.h: $(DEP_SUBSTITUTE) $(srcdir)/lib/ext2fs/ext2_types.h.in
-	@echo "	SUBST $@"
-	@$(SUBSTITUTE) $(srcdir)/lib/ext2fs/ext2_types.h.in \
-	> lib/ext2fs/ext2_types.h
+lib/ext2fs/ext2_types.h: $(DEP_SUBSTITUTE) asm_types.h \
+		$(srcdir)/lib/ext2fs/ext2_types.h.in
+	cd $(top_builddir); CONFIG_FILES=./lib/ext2fs/ext2_types.h ./config.status
 
-lib/blkid/blkid_types.h: $(DEP_SUBSTITUTE) $(srcdir)/lib/blkid/blkid_types.h.in
-	@echo "	SUBST $@"
-	@$(SUBSTITUTE) $(srcdir)/lib/blkid/blkid_types.h.in \
-	> lib/blkid/blkid_types.h
+lib/blkid/blkid_types.h: $(DEP_SUBSTITUTE) asm_types.h \
+		$(srcdir)/lib/blkid/blkid_types.h.in
+	cd $(top_builddir); CONFIG_FILES=./lib/blkid/blkid_types.h ./config.status
 
-lib/uuid/uuid_types.h: $(DEP_SUBSTITUTE) $(srcdir)/lib/uuid/uuid_types.h.in
-	@echo "	SUBST $@"
-	@$(SUBSTITUTE) $(srcdir)/lib/uuid/uuid_types.h.in \
-	> lib/uuid/uuid_types.h
+lib/uuid/uuid_types.h: $(DEP_SUBSTITUTE) asm_types.h \
+		$(srcdir)/lib/uuid/uuid_types.h.in
+	cd $(top_builddir); CONFIG_FILES=./lib/uuid/uuid_types.h ./config.status
 
 mostlyclean-local:
 	$(RM) -f \#* *~ *.orig core MAKELOG 

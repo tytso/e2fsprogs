@@ -1,3 +1,9 @@
+2006-04-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* blkid_types.h.in, Makefile.in, tst_types.c: Use the asm_types.h
+		file to define the __[us]{8,16,32,64} types.  Add a
+		tst_types program to make sure the types are correct.
+
 2006-03-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* probe.c (blkid_verify): Fix file descriptor leak on error. 

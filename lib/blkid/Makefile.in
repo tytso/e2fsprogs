@@ -112,6 +112,10 @@ tst_tag: $(srcdir)/tag.c $(DEPLIBS_BLKID)
 	@echo "	LD $@"
 	@$(CC) -o tst_tag -DTEST_PROGRAM $(srcdir)/tag.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
+tst_types: tst_types.o blkid_types.h 
+	@echo "	LD $@"
+	@$(CC) -o tst_types tst_types.o 
+
 ../../misc/blkid.o: $(top_srcdir)/misc/blkid.c blkid.h
 	@echo "	CC $@"
 	@$(CC) $(ALL_CFLAGS) -c $(top_srcdir)/misc/blkid.c \
@@ -129,8 +133,9 @@ test_probe: test_probe.in Makefile
 	@chmod +x test_probe
 
 check:: all tst_cache tst_dev tst_devname tst_devno tst_getsize tst_probe \
- tst_read tst_resolve tst_save tst_tag test_probe
+ tst_read tst_resolve tst_save tst_tag test_probe tst_types
 	./test_probe
+	./tst_types
 
 blkid.pc: $(srcdir)/blkid.pc.in $(top_builddir)/config.status
 	@echo "	CONFIG.STATUS $@"

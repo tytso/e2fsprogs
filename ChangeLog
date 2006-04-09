@@ -1,3 +1,11 @@
+2006-04-09  Theodore Ts'o  <tytso@mit.edu>
+
+	* configure.in, Makefile.in, config/parse-types.sh: Make the
+		ext2_types.h.in and blkid_types.h.in from config.sys,
+		instead of using the subst program.  Create the
+		asm_types.h file from the system's
+		/usr/include/asm/types.h header file.
+
 2006-03-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* MCONFIG.in (mandir): Define $(man5dir)
