@@ -1,5 +1,8 @@
 2006-04-09  Theodore Ts'o  <tytso@mit.edu>
 
+	* config/config.guess, config/config.sub: Update to newer versions
+		from FSF (2006-02-23)
+
 	* configure.in, Makefile.in, config/parse-types.sh: Make the
 		ext2_types.h.in and blkid_types.h.in from config.sys,
 		instead of using the subst program.  Create the
