@@ -1,4 +1,4 @@
-E2fsprogs 1.39-WIP (March 29, 2006) 
+E2fsprogs 1.39-WIP (April 9, 2006) 
 ===================================
 
 Dumpe2fs will now print the size of the journal (if present).
@@ -128,10 +128,16 @@ documentation.  (Addresses Debian Bugs: #329859, #322188, #316811,
 
 Fixed various Debian packaging issues --- see debian/changelog for
 details.  (Addresses Debian Bugs #317862, #320389, #290429, #310950,
-#310428, #330737, #330736, #329074, #356293)
+#310428, #330737, #330736, #329074, #356293, #360046)
 
 Programmer's notes:
 -------------------
+
+Update config.guess and config.sub to latest version (2006-02-23) from
+FSF.
+
+Fix asm_types.h type conflicts on AMD 64 platforms.  (Addresses Debian
+Bugs: #360661, #360317)
 
 Fixed the Makefile so that they work correctly on newer versions of
 GNU make (i.e., 3.81).

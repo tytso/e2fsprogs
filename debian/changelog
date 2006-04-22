@@ -1,3 +1,14 @@
+e2fsprogs (1.38+1.39-WIP-2006.04.09-1) unstable; urgency=low
+
+  * Update config.guess and config.sub to latest version (2006-02-23) from FSF
+  * Update French, Dutch, Polish, Swedish, and Turkish translations
+  * Fix asm/types.h type conflicts on AMD64 to fix FTBFS problems.
+      (Closes: #360661, #360317)
+  * Fix bug which caused mke2fs -j to fail with an EBUSY error.  (Closes
+      #360652)
+  
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun,  9 Apr 2006 23:04:15 -0400
+
 e2fsprogs (1.38+1.39-WIP-2006.03.29-2) unstable; urgency=low
 
   * Added missing build dependency on libdevmapper-dev.  (Closes: #360046)
