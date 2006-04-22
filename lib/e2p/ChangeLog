@@ -1,3 +1,10 @@
+2006-04-18  Theodore Ts'o  <tytso@mit.edu>
+
+	* uuid.c (e2p_is_null_uuid): Fix really stupid bug which could
+		cause dumpe2fs to fail to display a the journal or hash
+		seed UUID.  (Thanks to Guillaume Chambraud for pointing
+		this out.)
+
 2006-03-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* feature.c (e2p_edit_feature): If the pseudo-feature "none" or

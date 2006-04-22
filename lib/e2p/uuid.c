@@ -23,7 +23,7 @@ int e2p_is_null_uuid(void *uu)
 	int	i;
 
 	for (i=0, cp = uu; i < 16; i++)
-		if (*cp)
+		if (*cp++)
 			return 0;
 	return 1;
 }
