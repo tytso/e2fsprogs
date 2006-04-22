@@ -71,7 +71,8 @@ static void frag_report(const char *filename)
 	struct statfs	fsinfo;
 	struct stat64	fileinfo;
 	int		bs;
-	long		i, fd, block, last_block = 0, numblocks;
+	long		i, fd;
+	unsigned long	block, last_block = 0, numblocks;
 	long		bpib;	/* Blocks per indirect block */
 	long		cylgroups;
 	int		discont = 0, expected;
@@ -124,7 +125,7 @@ static void frag_report(const char *filename)
 	if (verbose) {
 		printf("File size of %s is %lld (%ld blocks)\n", filename, 
 		       (long long) fileinfo.st_size, numblocks);
-		printf("First block: %ld\nLast block: %ld\n",
+		printf("First block: %lu\nLast block: %lu\n",
 		       get_bmap(fd, 0), get_bmap(fd, numblocks - 1));
 	}
 	for (i=0; i < numblocks; i++) {
@@ -141,7 +142,7 @@ static void frag_report(const char *filename)
 			continue;
 		if (last_block && (block != last_block +1) ) {
 			if (verbose)
-				printf("Discontinuity: Block %ld is at %ld (was %ld)\n",
+				printf("Discontinuity: Block %ld is at %lu (was %lu)\n",
 				       i, block, last_block);
 			discont++;
 		}

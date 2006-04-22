@@ -1,3 +1,8 @@
+2006-04-22  Theodore Ts'o  <tytso@mit.edu>
+
+	* filefrag.c: Make filefrag 32-bit clean, so that it works on 
+		filesystems > 8TB.
+
 2006-03-29  Theodore Ts'o  <tytso@mit.edu>
 
 	* dumpe2fs.c (print_inline_journal_information): Print the size of
