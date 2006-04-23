@@ -1,3 +1,10 @@
+2006-04-23  Theodore Ts'o  <tytso@mit.edu>
+
+	* rw_bitmaps.c (write_bitmaps, ext2fs_write_inode_bitmap,
+		ext2fs_write_block_bitmap, ext2fs_write_bitmaps): Reduce
+		disk seeks by writing the inode and block bitmaps in an
+		interleaved fashion.
+
 2006-04-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* ext2_types.h.in, Makefile.in, tst_types.c: Use the asm_types.h
