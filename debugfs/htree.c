@@ -197,10 +197,13 @@ void do_htree_dump(int argc, char *argv[])
 		case 'l':
 			long_opt++;
 			break;
+		default:
+			goto print_usage;
 		}
 	}
 
 	if (argc > optind+1) {
+	print_usage:
 		com_err(0, 0, "Usage: htree_dump [-l] file");
 		goto errout;
 	}
@@ -279,9 +282,12 @@ void do_dx_hash(int argc, char *argv[])
 		case 'h':
 			hash_version = atoi(optarg);
 			break;
+		default:
+			goto print_usage;
 		}
 	}
 	if (optind != argc-1) {
+	print_usage:
 		com_err(argv[0], 0, "usage: dx_hash filename");
 		return;
 	}

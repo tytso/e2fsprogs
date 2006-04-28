@@ -1,3 +1,10 @@
+2006-04-27  Theodore Ts'o  <tytso@mit.edu>
+
+	* htree.c (do_htree_dump, do_dx_hash), ls.c (do_list_dir): Add
+		missing default case in the getopt() while/switch loop so
+		that we print a usage() statement when the user specified
+		an illegal option.
+
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* debugfs.c, htree.c, unused.c: Change printf statements to use
