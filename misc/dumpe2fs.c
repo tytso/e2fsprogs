@@ -96,6 +96,36 @@ static void print_free (unsigned long group, char * bitmap,
 		}
 }
 
+static void print_bg_opt(int bg_flags, int mask,
+			  const char *str, int *first)
+{
+	if (bg_flags & mask) {
+		if (*first) {
+			fputs(" [", stdout);
+			*first = 0;
+		} else
+			fputs(", ", stdout);
+		fputs(str, stdout);
+	}
+}
+static void print_bg_opts(ext2_filsys fs, dgrp_t i)
+{
+	int first = 1, bg_flags;
+
+	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_LAZY_BG)
+		bg_flags = fs->group_desc[i].bg_flags;
+	else
+		bg_flags = 0;
+
+	print_bg_opt(bg_flags, EXT2_BG_INODE_UNINIT, "Inode not init",
+ 		     &first);
+	print_bg_opt(bg_flags, EXT2_BG_BLOCK_UNINIT, "Block not init",
+ 		     &first);
+	if (!first)
+		fputc(']', stdout);
+	fputc('\n', stdout);
+}
+
 static void list_desc (ext2_filsys fs)
 {
 	unsigned long i;
@@ -130,7 +160,8 @@ static void list_desc (ext2_filsys fs)
 			next_blk = fs->super->s_blocks_count;
 		printf (_("Group %lu: (Blocks "), i);
 		print_range(group_blk, next_blk - 1);
-		fputs(")\n", stdout);
+		fputs(")", stdout);
+		print_bg_opts(fs, i);
 		has_super = ((i==0) || super_blk);
 		if (has_super) {
 			printf (_("  %s superblock at "),

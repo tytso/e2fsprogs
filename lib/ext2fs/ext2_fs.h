@@ -143,9 +143,12 @@ struct ext2_group_desc
 	__u16	bg_free_blocks_count;	/* Free blocks count */
 	__u16	bg_free_inodes_count;	/* Free inodes count */
 	__u16	bg_used_dirs_count;	/* Directories count */
-	__u16	bg_pad;
+	__u16	bg_flags;
 	__u32	bg_reserved[3];
 };
+
+#define EXT2_BG_INODE_UNINIT	0x0001 /* Inode table/bitmap not initialized */
+#define EXT2_BG_BLOCK_UNINIT	0x0002 /* Block bitmap not initialized */
 
 /*
  * Data structures used by the directory indexing feature
@@ -568,6 +571,7 @@ struct ext2_super_block {
 #define EXT2_FEATURE_COMPAT_EXT_ATTR		0x0008
 #define EXT2_FEATURE_COMPAT_RESIZE_INODE	0x0010
 #define EXT2_FEATURE_COMPAT_DIR_INDEX		0x0020
+#define EXT2_FEATURE_COMPAT_LAZY_BG		0x0040
 
 #define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
 #define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002

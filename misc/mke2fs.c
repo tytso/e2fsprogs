@@ -403,6 +403,7 @@ static void write_inode_tables(ext2_filsys fs)
 	dgrp_t		i;
 	int		num;
 	struct progress_struct progress;
+	int		lazy_flag = 0;
 
 	if (quiet)
 		memset(&progress, 0, sizeof(progress));
@@ -410,18 +411,25 @@ static void write_inode_tables(ext2_filsys fs)
 		progress_init(&progress, _("Writing inode tables: "),
 			      fs->group_desc_count);
 
+	if (EXT2_HAS_COMPAT_FEATURE(fs->super, 
+				    EXT2_FEATURE_COMPAT_LAZY_BG))
+		lazy_flag = 1;
+
 	for (i = 0; i < fs->group_desc_count; i++) {
 		progress_update(&progress, i);
 		
 		blk = fs->group_desc[i].bg_inode_table;
 		num = fs->inode_blocks_per_group;
 
-		retval = zero_blocks(fs, blk, num, 0, &blk, &num);
-		if (retval) {
-			fprintf(stderr, _("\nCould not write %d blocks "
-				"in inode table starting at %u: %s\n"),
-				num, blk, error_message(retval));
-			exit(1);
+		if (!(lazy_flag &&
+		      (fs->group_desc[i].bg_flags & EXT2_BG_INODE_UNINIT))) {
+			retval = zero_blocks(fs, blk, num, 0, &blk, &num);
+			if (retval) {
+				fprintf(stderr, _("\nCould not write %d "
+				"blocks in inode table starting at %u: %s\n"),
+					num, blk, error_message(retval));
+				exit(1);
+			}
 		}
 		if (sync_kludge) {
 			if (sync_kludge == 1)
@@ -433,6 +441,37 @@ static void write_inode_tables(ext2_filsys fs)
 	zero_blocks(0, 0, 0, 0, 0, 0);
 	progress_close(&progress);
 }
+
+static void setup_lazy_bg(ext2_filsys fs)
+{
+	dgrp_t i;
+	int blks;
+	struct ext2_super_block *sb = fs->super;
+	struct ext2_group_desc *bg = fs->group_desc;
+
+	if (EXT2_HAS_COMPAT_FEATURE(fs->super, 
+				    EXT2_FEATURE_COMPAT_LAZY_BG)) {
+		for (i = 0; i < fs->group_desc_count; i++, bg++) {
+			if ((i == 0) ||
+			    (i == fs->group_desc_count-1))
+				continue;
+			if (bg->bg_free_inodes_count ==
+			    sb->s_inodes_per_group) {
+				bg->bg_free_inodes_count = 0;
+				bg->bg_flags |= EXT2_BG_INODE_UNINIT;
+				sb->s_free_inodes_count -= 
+					sb->s_inodes_per_group;
+			}
+			blks = ext2fs_super_and_bgd_loc(fs, i, 0, 0, 0, 0);
+			if (bg->bg_free_blocks_count == blks) {
+				bg->bg_free_blocks_count = 0;
+				bg->bg_flags |= EXT2_BG_BLOCK_UNINIT;
+				sb->s_free_blocks_count -= blks;
+			}
+		}
+	}
+}
+
 
 static void create_root_dir(ext2_filsys fs)
 {
@@ -814,7 +853,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 static __u32 ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
-		EXT2_FEATURE_COMPAT_DIR_INDEX,	/* Compat */
+		EXT2_FEATURE_COMPAT_DIR_INDEX |
+		EXT2_FEATURE_COMPAT_LAZY_BG,	/* Compat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
 		EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|
 		EXT2_FEATURE_INCOMPAT_META_BG,
@@ -1557,6 +1597,7 @@ int main (int argc, char *argv[])
 				_("while zeroing block %u at end of filesystem"),
 				ret_blk);
 		}
+		setup_lazy_bg(fs);
 		write_inode_tables(fs);
 		create_root_dir(fs);
 		create_lost_and_found(fs);

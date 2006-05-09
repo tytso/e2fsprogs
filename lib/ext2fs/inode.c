@@ -164,6 +164,9 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 	}
 	if (scan->fs->badblocks && scan->fs->badblocks->num)
 		scan->scan_flags |= EXT2_SF_CHK_BADBLOCKS;
+	if (EXT2_HAS_COMPAT_FEATURE(fs->super, 
+				    EXT2_FEATURE_COMPAT_LAZY_BG))
+		scan->scan_flags |= EXT2_SF_DO_LAZY;
 	*ret_scan = scan;
 	return 0;
 }
@@ -407,9 +410,13 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 			return retval;
 	}
 	/*
-	 * This is done outside the above if statement so that the
-	 * check can be done for block group #0.
+	 * These checks are done outside the above if statement so 
+	 * they can be done for block group #0.
 	 */
+	if ((scan->scan_flags & EXT2_SF_DO_LAZY) &&
+	    (scan->fs->group_desc[scan->current_group].bg_flags &
+	     EXT2_BG_INODE_UNINIT))
+		goto force_new_group;
 	if (scan->current_block == 0) {
 		if (scan->scan_flags & EXT2_SF_SKIP_MISSING_ITABLE) {
 			goto force_new_group;

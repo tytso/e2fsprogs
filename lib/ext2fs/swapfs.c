@@ -78,6 +78,7 @@ void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
 	gdp->bg_free_blocks_count = ext2fs_swab16(gdp->bg_free_blocks_count);
 	gdp->bg_free_inodes_count = ext2fs_swab16(gdp->bg_free_inodes_count);
 	gdp->bg_used_dirs_count = ext2fs_swab16(gdp->bg_used_dirs_count);
+	gdp->bg_flags = ext2fs_swab16(gdp->bg_flags);
 }
 
 void ext2fs_swap_ext_attr(char *to, char *from, int bufsize, int has_header)

@@ -1,3 +1,11 @@
+2006-05-08  Theodore Tso  <tytso@mit.edu>
+
+	* pass5.c (check_block_bitmaps, check_inode_bitmaps): Add support
+		for the lazy_bg feature; if the block group does not have
+		an initialized block or inode bitmaps/table, emulate what
+		the allocation bitmap would look like if no blocks or
+		inodes have been allocated.
+
 2006-03-27  Theodore Ts'o  <tytso@mit.edu>
 
 	* e2fsck.8.in: Add badblocks(8) to the See Also section.

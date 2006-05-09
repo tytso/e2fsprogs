@@ -341,6 +341,7 @@ typedef struct ext2_struct_inode_scan *ext2_inode_scan;
 #define EXT2_SF_BAD_INODE_BLK	0x0002
 #define EXT2_SF_BAD_EXTRA_BYTES	0x0004
 #define EXT2_SF_SKIP_MISSING_ITABLE	0x0008
+#define EXT2_SF_DO_LAZY		0x0010
 
 /*
  * ext2fs_check_if_mounted flags
@@ -437,6 +438,7 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT3_FEATURE_COMPAT_HAS_JOURNAL|\
 					 EXT2_FEATURE_COMPAT_RESIZE_INODE|\
 					 EXT2_FEATURE_COMPAT_DIR_INDEX|\
+					 EXT2_FEATURE_COMPAT_LAZY_BG|\
 					 EXT2_FEATURE_COMPAT_EXT_ATTR)
 
 /* This #ifdef is temporary until compression is fully supported */

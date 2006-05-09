@@ -266,13 +266,26 @@ static void print_features(struct ext2_super_block * s, FILE *f)
 	fputs("\n", f);
 }
 
+static void print_bg_opts(struct ext2_group_desc *gdp, int mask,
+			  const char *str, int *first, FILE *f)
+{
+	if (gdp->bg_flags & mask) {
+		if (*first) {
+			fputs("           [", f);
+			*first = 0;
+		} else
+			fputs(", ", f);
+		fputs(str, f);
+	}
+}
+
 void do_show_super_stats(int argc, char *argv[])
 {
 	dgrp_t	i;
 	FILE 	*out;
 	struct ext2_group_desc *gdp;
 	int	c, header_only = 0;
-	int	numdirs = 0;
+	int	numdirs = 0, first;
 
 	reset_getopt();
 	while ((c = getopt (argc, argv, "h")) != EOF) {
@@ -302,7 +315,7 @@ void do_show_super_stats(int argc, char *argv[])
 	}
 	
 	gdp = &current_fs->group_desc[0];
-	for (i = 0; i < current_fs->group_desc_count; i++, gdp++)
+	for (i = 0; i < current_fs->group_desc_count; i++, gdp++) {
 		fprintf(out, " Group %2d: block bitmap at %u, "
 		        "inode bitmap at %u, "
 		        "inode table at %u\n"
@@ -318,6 +331,14 @@ void do_show_super_stats(int argc, char *argv[])
 		        gdp->bg_used_dirs_count,
 		        gdp->bg_used_dirs_count != 1 ? "directories"
 				: "directory");
+		first = 1;
+		print_bg_opts(gdp, EXT2_BG_INODE_UNINIT, "Inode not init",
+			      &first, out);
+		print_bg_opts(gdp, EXT2_BG_BLOCK_UNINIT, "Block not init",
+			      &first, out);
+		if (!first)
+			fputs("]\n", out);
+	}
 	close_pager(out);
 	return;
 print_usage:

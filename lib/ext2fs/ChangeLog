@@ -1,3 +1,29 @@
+2006-05-08  Theodore Tso  <tytso@mit.edu>
+
+	* rw_bitmaps.c (write_bitmaps, read_bitmaps): Added support for
+		lazy blockgroups.  If a block group has flags indicating
+		that its block or inode data structures have not been
+		initialized, skip reading or writing that portion of the
+		bitmap.
+
+	* inode.c (ext2fs_open_inode_scan, ext2fs_read_inode_full): When
+		scanning a filesystem with lazy blockgroups, skip
+		uninitialized portions of the inode table when iterating
+		over the block group.
+
+	* swapfs.c (ext2fs_swap_group_desc): Byte swap the bg_flags field.
+
+	* ext2fs.h: Define the a new internal flag, EXT2_SF_DO_LAZY, so
+		that the inode interator knows compat_lazy_bg feature is
+		enabled.  Declare that this version of e2fsprogs supports
+		the EXT2_FEATURE_COMPAY_LAZY_BG feature.
+
+	* ext2_fs.h (struct ext2_group_desc): Use the bg_pad field for
+		bg_flags, and define the flags EXT2_BG_INODE_UNINIT and
+		EXT2_BG_BLOCK_UNINIT.  These flags are only honored if
+		EXT2_FEATURE_COMPAT_LAZY_BG feature is enabled (also
+		added).
+
 2006-04-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* rw_bitmaps.c (write_bitmaps, ext2fs_write_inode_bitmap,

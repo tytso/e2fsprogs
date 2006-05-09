@@ -1,3 +1,14 @@
+2006-05-08  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.c (write_inode_tables, setup_lazy_bg, main): Add support
+		for the COMPAT_LAZY_BG feature.  This is currently
+		intended for debugging purposes only, as a way to create
+		very large filesystems stored on sparse files for testing
+		purposes.
+
+	* dumpe2fs.c (list_desc): Print out the block group flags if they
+		are set.
+
 2006-04-22  Theodore Ts'o  <tytso@mit.edu>
 
 	* filefrag.c: Make filefrag 32-bit clean, so that it works on 
