@@ -9,8 +9,12 @@ cp /usr/lib/e2initrd_helper $INITRDDIR/bin/e2initrd_helper
 
 case "$VERSION" in
     2.4.*)
-    	LD_ASSUME_KERNEL=2.4
-	export LD_ASSUME_KERNEL
+        case "uname -r" in
+	    2.4.*)  :   ;;
+	    *)  LD_ASSUME_KERNEL=2.4.1
+	        export LD_ASSUME_KERNEL
+		;;
+        esac
 	;;
 esac
 
