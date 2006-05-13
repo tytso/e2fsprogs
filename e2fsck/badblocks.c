@@ -72,7 +72,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 			goto fatal;
 		}
 	} else {
-		sprintf(buf, "badblocks -b %d %s%s%s %d", fs->blocksize,
+		sprintf(buf, "badblocks -b %d -X %s%s%s %d", fs->blocksize,
 			(ctx->options & E2F_OPT_PREEN) ? "" : "-s ",
 			(ctx->options & E2F_OPT_WRITECHECK) ? "-n " : "",
 			fs->device_name, fs->super->s_blocks_count);

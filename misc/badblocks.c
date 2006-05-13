@@ -57,7 +57,7 @@ extern int optind;
 #include "nls-enable.h"
 
 const char * program_name = "badblocks";
-const char * done_string = N_("done                             \n");
+const char * done_string = N_("done                                \n");
 
 static int v_flag = 0;			/* verbose */
 static int w_flag = 0;			/* do r/w test: 0=no, 1=yes,
@@ -68,6 +68,7 @@ static int t_flag = 0;			/* number of test patterns */
 static int t_max = 0;			/* allocated test patterns */
 static unsigned long *t_patts = NULL;	/* test patterns */
 static int current_O_DIRECT = 0;	/* Current status of O_DIRECT flag */
+static int exclusive_ok = 0;
 
 #define T_INC 32
 
@@ -792,7 +793,7 @@ static void check_mount(char *device_name)
 		exit(1);
 	}
 
-	if (mount_flags & EXT2_MF_BUSY) {
+	if ((mount_flags & EXT2_MF_BUSY) && !exclusive_ok) {
 		fprintf(stderr, _("%s is apparently in use by the system; "),
 			device_name);
 		if (force)
@@ -852,7 +853,7 @@ int main (int argc, char ** argv)
 	
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:fi:o:svwnc:p:h:t:")) != EOF) {
+	while ((c = getopt (argc, argv, "b:fi:o:svwnc:p:h:t:X")) != EOF) {
 		switch (c) {
 		case 'b':
 			block_size = strtoul (optarg, &tmp, 0);
@@ -937,6 +938,9 @@ int main (int argc, char ** argv)
 					pattern = 0xffff;
 				t_patts[t_flag++] = pattern;
 			}
+			break;
+		case 'X':
+			exclusive_ok++;
 			break;
 		default:
 			usage();

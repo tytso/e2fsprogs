@@ -1,3 +1,15 @@
+2006-05-13  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.c (test_disk): Pass the private option -X to badblocks so
+		that mke2fs -cc works again.  (Addresses Debian bug:
+		#366017)
+
+	* badblocks.c (main, check_mount): Add a private option, -X, which
+		is only intended for use by mke2fs and e2fsck to signal
+		that it's OK to skip the EXT2_MF_BUSY test since mke2fs
+		and e2fsck already have the block device opened
+		exclusively (and therefore no one else does).
+
 2006-05-08  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (write_inode_tables, setup_lazy_bg, main): Add support
