@@ -48,7 +48,11 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	 * Allocate the block and inode bitmaps, if necessary
 	 */
 	if (fs->stride) {
-		start_blk = group_blk + fs->inode_blocks_per_group;
+		retval = ext2fs_get_free_blocks(fs, group_blk, last_blk,
+						1, bmap, &start_blk);
+		if (retval)
+			return retval;
+		start_blk += fs->inode_blocks_per_group;
 		start_blk += ((fs->stride * group) %
 			      (last_blk - start_blk));
 		if (start_blk > last_blk)

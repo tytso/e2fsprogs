@@ -1,3 +1,8 @@
+2006-05-13  Theodore Tso  <tytso@mit.edu>
+
+	* m_raid_opt: Update expect files to match with new mke2fs layout
+		used when the stride raid option is specified.
+
 2006-03-23  Theodore Ts'o  <tytso@mit.edu>
 
 	* test_config: Set up MKE2FS_CONFIG to point at the mke2fs.conf

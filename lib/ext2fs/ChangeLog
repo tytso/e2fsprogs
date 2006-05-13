@@ -1,3 +1,11 @@
+2006-05-12  Theodore Tso  <tytso@mit.edu>
+
+	* alloc_tables.c (ext2fs_allocate_group_table): When allocating
+		space for the RAID filesystems with the stride parameter,
+		place each portion of the group's inode table right up
+		after the superblock (if present) in order to minimize
+		fragmentation of the freespace.
+
 2006-05-08  Theodore Tso  <tytso@mit.edu>
 
 	* rw_bitmaps.c (write_bitmaps, read_bitmaps): Added support for
