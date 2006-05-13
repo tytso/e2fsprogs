@@ -200,32 +200,25 @@ easier to translate LBA to filesystem block numbers.
 List of projects for e2fsprogs:
 
 
-1)  Move creator_os string parsing and unparsing from mke2fs and e2p/ls.c
-to a centralized e2p library function.  (Good intro project; patch 
-should be under 20 lines :-)
-
-	Difficulty: Low		Priority: Low
-
-
-2) Make debugfs's "ncheck <inode>" command list all of the pathnames
+1) Make debugfs's "ncheck <inode>" command list all of the pathnames
 to an inode, not just only the first link to the inode which is found.
-(Another good "intro to libext2fs programming interfaces project)
+(A good "intro to libext2fs programming interfaces project)
 
 	Difficulty: Low		Priority: Low
 
-3) Use a code coverage tool such as Rational's PureCoverage to see
+2) Use a code coverage tool such as Rational's PureCoverage to see
 what kind of code coverage we have for e2fsck, and try to add test
 cases to increase the code coverage for e2fsck.
 
 	Difficulty: Medium	Priorty: Low
 
-4) Use a code coverage tool such as Rational's PureCoverage to see
+3) Use a code coverage tool such as Rational's PureCoverage to see
 what kind of code coverage we have for resize2fs, and try to add test
 cases to increase the code coverage for resize2fs.
 
 	Difficulty: Medium	Priorty: Medium
 
-5) Create a new I/O manager (i.e., test_io.c, unix_io.c, et.al.) which
+4) Create a new I/O manager (i.e., test_io.c, unix_io.c, et.al.) which
 layers on top of an existing I/O manager which provides copy-on-write
 functionality.  This COW I/O manager takes will take two open I/O
 managers, call them "base" and "changed".  The "base" I/O manager is
@@ -245,7 +238,7 @@ from a crash during the resize2fs process.)
 
 	Difficulty: Medium	Priority: Medium
 
-6) Create a new I/O manager (i.e., test_io.c, unix_io.c, et.al.) which
+5) Create a new I/O manager (i.e., test_io.c, unix_io.c, et.al.) which
 layers on top of an existing I/O manager which provides an "undo"
 functionality.  This undo I/O manager takes will take two open I/O
 managers, call them "base" and "undo".  The "base" I/O manager is be
@@ -258,7 +251,7 @@ would make things like "e2fsck -y" much safer.
 
 	Difficulty: Low (once 5 is done)  Priority: Low
 
-7) Modify resize2fs so that it can relocate and reorganize the
+6) Modify resize2fs so that it can relocate and reorganize the
 filesystem in the following ways: (1) increase the inode size, so that
 an existing filesystem can use the EA-in-inode kernel patch, (2)
 reserve blocks in the resize inode to allow for on-line resizing.  Use
@@ -267,12 +260,12 @@ case of a crash during the resize/reorganization operation.
 
 	Difficulty: High	Priority: Medium
 
-8) Review the EA-in-inode patches to e2fsck for correctness/code
+7) Review the EA-in-inode patches to e2fsck for correctness/code
 cleanliness.  (I will probably have to do this myself -- Ted)
 
 	Difficulty: High	Priorty: Medium
 
-9) Add support for extent maps to e2fsprogs.  I need to review the
+8) Add support for extent maps to e2fsprogs.  I need to review the
 extent maps first/in parallel. 
 
 	Difficulty: High	Priority: Medium
