@@ -526,6 +526,7 @@ static int do_one_pass(journal_t *journal,
 		default:
 			jbd_debug(3, "Unrecognised magic %d, end of scan.\n",
 				  blocktype);
+			brelse(bh);
 			goto done;
 		}
 	}

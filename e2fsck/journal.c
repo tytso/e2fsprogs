@@ -344,8 +344,10 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			goto errout;
 		}
 		ll_rw_block(READ, 1, &bh);
-		if ((retval = bh->b_err) != 0)
+		if ((retval = bh->b_err) != 0) {
+			brelse(bh);
 			goto errout;
+		}
 		memcpy(&jsuper, start ? bh->b_data :  bh->b_data + 1024,
 		       sizeof(jsuper));
 		brelse(bh);
