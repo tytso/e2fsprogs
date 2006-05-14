@@ -1,3 +1,8 @@
+2006-05-14  Theodore Tso  <tytso@mit.edu>
+
+	* probe.c (probe_udf): Fix signed vs. unsigned lint warning;
+		better to use memcmp() rather than strncmp() anyway.
+
 2006-04-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* blkid_types.h.in, Makefile.in, tst_types.c: Use the asm_types.h
