@@ -15,8 +15,9 @@ e2fsprogs (1.38+1.39-WIP-2006.04.09-2) unstable; urgency=low
   * Fix a bug in the e2p library which could cause dumpe2fs to
     (rarely) fail to print out the journal or hash seed UUID.
   * Fix memory leak in e2fsck's error paths.
+  * Fix comerr-dev's doc-base pointer to the top-level html file
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 14 May 2006 16:28:37 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 14 May 2006 18:09:20 -0400
 
 e2fsprogs (1.38+1.39-WIP-2006.04.09-1) unstable; urgency=low
 
