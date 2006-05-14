@@ -12,6 +12,10 @@ resize2fs \- ext2/ext3 file system resizer
 .I debug-flags
 ]
 [
+.B \-S
+.I RAID-stride
+]
+[
 .B \-f
 ]
 [
@@ -78,7 +82,7 @@ the partition, make sure you do not make it smaller than the new size
 of the ext2 filesystem!
 .SH OPTIONS
 .TP
-.I \-d debug-flags
+.B \-d \fIdebug-flags
 Turns on various resize2fs debugging features, if they have been compiled 
 into the binary.
 .I debug-flags
@@ -93,17 +97,24 @@ from the following list:
 .br
 \	16\	\-\ Debug moving the inode table
 .TP
-.I \-p
+.B \-S \fIRAID-stride
+The 
+.B resize2fs
+program will hueristically determine the RAID stride that was specified 
+when the filesystem was created.  This option allows the user to 
+explicitly specify a RAID stride setting to be used by resize2fs instead.
+.TP
+.B \-p
 Prints out a percentage completion bars for each 
 .B resize2fs
 operation, so that the user can keep track of what
 the program is doing.
 .TP 
-.I \-f
+.B \-f
 Forces resize2fs to proceed with the filesystem resize operation, overriding 
 some safety checks which resize2fs normally enforces.
 .TP
-.I \-F
+.B \-F
 Flush the filesystem device's buffer caches before beginning.  Only
 really useful for doing 
 .B resize2fs

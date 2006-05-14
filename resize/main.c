@@ -94,6 +94,50 @@ static errcode_t resize_progress_func(ext2_resize_t rfs, int pass,
 	return 0;
 }
 
+static void determine_fs_stride(ext2_filsys fs)
+{
+	unsigned int	group;
+	unsigned long long sum;
+	unsigned int	has_sb, prev_has_sb, num;
+	int		i_stride, b_stride;
+
+	num = 0; sum = 0;
+	for (group = 0; group < fs->group_desc_count; group++) {
+		has_sb = ext2fs_bg_has_super(fs, group);
+		if (group == 0 || has_sb != prev_has_sb)
+			goto next;
+		b_stride = fs->group_desc[group].bg_block_bitmap - 
+			fs->group_desc[group-1].bg_block_bitmap - 
+			fs->super->s_blocks_per_group;
+		i_stride = fs->group_desc[group].bg_inode_bitmap - 
+			fs->group_desc[group-1].bg_inode_bitmap - 
+			fs->super->s_blocks_per_group;
+		if (b_stride != i_stride ||
+		    b_stride < 0)
+			goto next;
+
+		/* printf("group %d has stride %d\n", group, b_stride); */
+		sum += b_stride;
+		num++;
+			
+	next:
+		prev_has_sb = has_sb;
+	}
+
+	if (fs->group_desc_count > 12 && num < 3)
+		sum = 0;
+
+	if (num)
+		fs->stride = sum / num;
+	else
+		fs->stride = 0;
+
+#if 0
+	if (fs->stride)
+		printf("Using RAID stride of %d\n", fs->stride);
+#endif
+}
+
 int main (int argc, char ** argv)
 {
 	errcode_t	retval;
@@ -108,6 +152,7 @@ int main (int argc, char ** argv)
 	blk_t		max_size = 0;
 	io_manager	io_ptr;
 	char		*new_size_str = 0;
+	int		use_stride = -1;
 #ifdef HAVE_FSTAT64
 	struct stat64	st_buf;
 #else
@@ -133,7 +178,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 
-	while ((c = getopt (argc, argv, "d:fFhp")) != EOF) {
+	while ((c = getopt (argc, argv, "d:fFhpS:")) != EOF) {
 		switch (c) {
 		case 'h':
 			usage(program_name);
@@ -149,6 +194,9 @@ int main (int argc, char ** argv)
 			break;
 		case 'p':
 			flags |= RESIZE_PERCENT_COMPLETE;
+			break;
+		case 'S':
+			use_stride = atoi(optarg);
 			break;
 		default:
 			usage(program_name);
@@ -293,6 +341,16 @@ int main (int argc, char ** argv)
 		if (sys_page_size > fs->blocksize)
 			new_size &= ~((sys_page_size / fs->blocksize)-1);
 	}
+
+	if (use_stride >= 0) {
+		if (use_stride >= fs->super->s_blocks_per_group) {
+			com_err(program_name, 0, 
+				_("Invalid stride length"));
+			exit(1);
+		}
+		fs->stride = use_stride;
+	} else
+		  determine_fs_stride(fs);
 	
 	/*
 	 * If we are resizing a plain file, and it's not big enough,

@@ -1,3 +1,12 @@
+2006-05-14  Theodore Tso  <tytso@mit.edu>
+
+	* main.c (main, determine_fs_stride), resize2fs.8.in: Add a new
+		option (-S) to resize2fs which allows the user to specify
+		the RAID stride parameter to be used on new block groups.
+		In addition, add code so that resize2fs can automatically
+		determine the RAID stride parameter that had been
+		previously used on the filesystem.
+
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* main.c, resize2fs.c: Change printf statements to use %u instead
