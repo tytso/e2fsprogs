@@ -1,3 +1,10 @@
+2006-05-14  Theodore Tso  <tytso@mit.edu>
+
+	* tune2fs.c (parse_tune2fs_options): Don't give a confusing error
+		message if the user specifies an check time interval
+		greater than a year; it's probably a bad idea, but it's
+		not worth it to complain.
+
 2006-05-13  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (test_disk): Pass the private option -X to badblocks so

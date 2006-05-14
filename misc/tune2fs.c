@@ -595,7 +595,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 					tmp++;
 					break;
 				}
-				if (*tmp || interval > (365 * 86400)) {
+				if (*tmp) {
 					com_err (program_name, 0,
 						_("bad interval - %s"), optarg);
 					usage();
