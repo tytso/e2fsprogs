@@ -1,3 +1,23 @@
+e2fsprogs (1.38+1.39-WIP-2006.04.09-2) unstable; urgency=low
+
+  * Resize2fs automatically detects the previously used RAID stride
+    parameter so that handling so that resized filesystems can be more
+    optimally laid out for RAID filesystems.
+  * Fix mke2fs -cc and e2fsck -cc (Closes: #366017)
+  * Fix initrd script to fix failure with 2.4 kernels (Closes: #364516)
+  * Mke2fs now uses an improved layout for RAID filesystems when the
+    stride parameter is specified.
+  * Fix the debugfs commands htree_dump, dx_hash, and list_dir so they
+    print a usage message when an illegal option character is given.
+  * Speed up mke2fs and e2fsck by writing inode and block bitmaps in one pass
+  * Fix filefrag to be 32-bit clean by using unsigned long instead of
+    a signed integer for block numbers.
+  * Fix a bug in the e2p library which could cause dumpe2fs to
+    (rarely) fail to print out the journal or hash seed UUID.
+  * Fix memory leak in e2fsck's error paths.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 14 May 2006 16:28:37 -0400
+
 e2fsprogs (1.38+1.39-WIP-2006.04.09-1) unstable; urgency=low
 
   * Update config.guess and config.sub to latest version (2006-02-23) from FSF

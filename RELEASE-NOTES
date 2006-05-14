@@ -1,15 +1,8 @@
-E2fsprogs 1.39-WIP (April 9, 2006) 
+E2fsprogs 1.39-WIP (May 14, 2006) 
 ===================================
-
-Dumpe2fs will now print the size of the journal (if present).
 
 Fix 32-bit cleanliness in e2fsprogs so that we can support filesystems
 between 2**31 and 2**32 blocks.
-
-Fix mklost+found so that it creates a full-sized directory on
-filesystems with larger block sizes.
-
-Fix a file descriptor leak in blkid library.
 
 Change mke2fs to use /etc/mke2fs.conf as a configuration file to
 configure the filesystem features, blocksize, and inode_ratio for
@@ -22,6 +15,15 @@ only use exclusive mode if the filesystem is not mounted.
 
 Fixed a bug in mke2fs which caused it to to fail when creating the
 resize inode for large filesystems.  (Addresses Debian Bug #346580)
+
+When allocating space for the RAID filesystems with the stride
+parameter, mke2fs will now place each portion of the group's inode
+table right up after the superblock (if present) in order to minimize
+fragmentation of the freespace.
+
+Speed up mke2fs and e2fsck by writing inode and block bitmaps more
+efficiently by writing the inode and block bitmaps in one pass, thus
+reducing the number of disk seeks required.
 
 Add support for on-line resizing to resize2fs.
 
@@ -62,11 +64,26 @@ more extended attributes.  (Addresses Debian Bug: #316736, #318463)
 E2fsck will stop and print a warning if the user tries running a
 read/write badblocks test on a read-only mounted root filesystem.
 
+Fix a memory leak in e2fsck's error paths.  (Thanks to Michael
+C. Thompson for pointing these out; they were originally found using
+Coverity.)
+
 When resizing a file containing a filesystem, resize2fs will expand or
 truncate a file as necessary.  (Addresses Debian Bug: #271607)
 
+Resize2fs will now automatically determine the RAID stride parameter that
+had been used to create the filesystem, and use that for newly created
+block groups.   The RAID stride parameter may also be manually specified
+on the command line using the new -S option to resize2fs.
+
 Fix mke2fs so that it correctly creates external journals on
 big-endian machines (such as a S/390).  
+
+Fix a bug in the e2p library which could cause dumpe2fs to (rarely)
+fail to print out the journal or hash seed UUID.  (Thanks to Guillaume
+Chambraud for pointing this out.)
+
+Dumpe2fs will now print the size of the journal (if present).
 
 Fix debugfs's set_inode_field command so it can properly set the frag,
 fsize, uid_high, gid_high, and author fields in the inode instead of
@@ -79,6 +96,14 @@ last_write fields.
 
 Fix a bug in debugfs's icheck which would incorrectly report the owner
 of an extended attribute block.
+
+Fix the debugfs commands htree_dump, dx_hash, and list_dir so they print a
+print a usage message when an illegal option character is given.
+
+Fix mklost+found so that it creates a full-sized directory on
+filesystems with larger block sizes.
+
+Fix a file descriptor leak in blkid library.
 
 Fix a display bug in "badblocks -sv" so that the done message properly
 clears the block number at the end of the test.  (Addresses Debian Bug
@@ -128,7 +153,8 @@ documentation.  (Addresses Debian Bugs: #329859, #322188, #316811,
 
 Fixed various Debian packaging issues --- see debian/changelog for
 details.  (Addresses Debian Bugs #317862, #320389, #290429, #310950,
-#310428, #330737, #330736, #329074, #356293, #360046)
+#310428, #330737, #330736, #329074, #356293, #360046, #366017, #364516)
+
 
 Programmer's notes:
 -------------------
@@ -192,6 +218,16 @@ Add $(LDFLAGS) to the command line argument when generating an ELF or
 Solaris shared library, to allow cross-compile and other builds that
 might need to specify -L paths to needed libraries.  (Addresses
 Sourceforge Bug #1261549)
+
+Add a new feature, EXT2_FEATURE_COMPAT_LAZY_BG, which is initially
+intended for testing purposes.  It allows an ext2/ext3 developer to
+create very large filesystems using sparse files where most of the
+block groups are not initialized and so do not require much disk
+space.  Eventually it could be used as a way of speeding up mke2fs and
+e2fsck for large filesystem, but that would be best done by adding an
+RO_COMPAT extension to the filesystem to allow the inode table to be
+lazily initialized on a per-block basis, instead of being entirely
+initialized or entirely unused on a per-blockgroup basis.
 
 
 E2fsprogs 1.38 (June 30, 2005)
