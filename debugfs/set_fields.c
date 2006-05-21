@@ -278,7 +278,8 @@ static errcode_t parse_string(struct field_set_info *info, char *arg)
 
 static errcode_t parse_time(struct field_set_info *info, char *arg)
 {
-	__u32		*ptr32, t;
+	time_t		t;
+	__u32		*ptr32;
 
 	ptr32 = (__u32 *) info->ptr;
 
