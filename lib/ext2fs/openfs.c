@@ -133,7 +133,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		if (retval)
 			goto cleanup;
 		retval = io_channel_read_blk(fs->io, 0,
-					     -sizeof(struct ext2_image_hdr),
+					     -(int)sizeof(struct ext2_image_hdr),
 					     fs->image_header);
 		if (retval)
 			goto cleanup;
