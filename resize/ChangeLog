@@ -1,3 +1,9 @@
+2006-05-21  Theodore Tso  <tytso@mit.edu>
+
+	* resize2fs.8.in: Clarify man page to indicate that supports ext2
+		and ext3 filesystems, and add reference to LVM.
+		(Addresses Debian Bug: #368179)
+
 2006-05-14  Theodore Tso  <tytso@mit.edu>
 
 	* main.c (main, determine_fs_stride), resize2fs.8.in: Add a new
