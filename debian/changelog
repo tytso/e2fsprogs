@@ -1,8 +1,8 @@
 e2fsprogs (1.38+1.39-WIP-2006.04.09-2) unstable; urgency=low
 
   * Resize2fs automatically detects the previously used RAID stride
-    parameter so that handling so that resized filesystems can be more
-    optimally laid out for RAID filesystems.
+    parameter so that resized filesystems can be more optimally laid 
+    out for RAID filesystems.
   * Fix mke2fs -cc and e2fsck -cc (Closes: #366017)
   * Fix initrd script to fix failure with 2.4 kernels (Closes: #364516)
   * Mke2fs now uses an improved layout for RAID filesystems when the
