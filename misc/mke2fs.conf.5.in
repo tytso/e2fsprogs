@@ -59,7 +59,7 @@ apply: "\en" (for the newline character),
 "\et" (for the tab character), "\eb" (for the backspace character), 
 and "\e\e" (for the backslash character).
 .P
-The following stanzs are used in the 
+The following stanzas are used in the 
 .I mke2fs.conf
 file.  They will be described in more detail in future sections of this
 document.
@@ -100,7 +100,7 @@ stanza.
 .TP
 .I base_features
 This relation specifies the filesystems features which are enabled in
-newly created filesystems.  It may be overriden by the
+newly created filesystems.  It may be overridden by the
 .I base_features
 relation found in the filesystem-type-specific subsection of
 the
@@ -111,9 +111,9 @@ stanza.
 This relation specifies a set of features that should be added or
 removed to the features listed in the
 .I base_features
-relation.  It may be overriden by the filesystem-specific 
+relation.  It may be overridden by the filesystem-specific 
 .I default_features
-in the filesystem-type subection of
+in the filesystem-type subsection of
 .IR [fs_types] ,
 and by the 
 .B -O
@@ -169,7 +169,7 @@ filesystem type.
 This relation specifies set of features which should be enabled or 
 disabled to the features listed in the
 .I base_features
-relation.  It may be overriden by the 
+relation.  It may be overridden by the 
 .B -O
 command-line option to
 .BR mke2fs (8).

@@ -103,7 +103,7 @@ from the following list:
 .B \-S \fIRAID-stride
 The 
 .B resize2fs
-program will hueristically determine the RAID stride that was specified 
+program will heuristically determine the RAID stride that was specified 
 when the filesystem was created.  This option allows the user to 
 explicitly specify a RAID stride setting to be used by resize2fs instead.
 .TP

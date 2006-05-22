@@ -371,7 +371,7 @@ command will allow you to extract the contents of the directory inode,
 which can sent to me after being first run through
 .BR uuencode (1).  
 The most useful data you can send to help reproduce
-the bug is a compressed raw image dump of the filesyste, generated using
+the bug is a compressed raw image dump of the filesystem, generated using
 .BR e2image (8).
 See the 
 .BR e2image (8)

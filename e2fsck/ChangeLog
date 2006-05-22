@@ -1,3 +1,8 @@
+2006-05-22  Theodore Tso  <tytso@mit.edu>
+
+	* e2fsck.8.in: Fixed spelling mistake.  (Addresses Debian Bug:
+		#368392)
+
 2006-05-14  Theodore Tso  <tytso@mit.edu>
 
 	* recovery.c (do_one_pass), journal.c (e2fsck_get_journal): Add

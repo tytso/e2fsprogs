@@ -1,3 +1,8 @@
+2006-05-22  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.conf.5.in: Fix spelling mistakes (Addresses Debian Bug:
+		#368394)
+
 2006-05-14  Theodore Tso  <tytso@mit.edu>
 
 	* tune2fs.8.in: Clarify how the -c and -C options work.
