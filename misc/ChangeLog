@@ -1,5 +1,8 @@
 2006-05-22  Theodore Tso  <tytso@mit.edu>
 
+	* mke2fs.conf: Make new filesystems with the following features
+		by default: dir_index and resize_inode.
+
 	* mke2fs.conf.5.in: Fix spelling mistakes (Addresses Debian Bug:
 		#368394)
 
