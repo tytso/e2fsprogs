@@ -5,6 +5,7 @@ Fragment size=1024 (log=0)
 32768 inodes, 131072 blocks
 6553 blocks (5.00%) reserved for the super user
 First data block=1
+Maximum filesystem blocks=8519680
 128 block groups
 1024 blocks per group, 1024 fragments per group
 256 inodes per group
@@ -14,21 +15,63 @@ Superblock backups stored on blocks:
 Writing inode tables: done                            
 Writing superblocks and filesystem accounting information: done
 
-Filesystem features: filetype meta_bg sparse_super
+Filesystem features: resize_inode dir_index filetype meta_bg sparse_super
  
 Pass 1: Checking inodes, blocks, and sizes
+Reserved inode 9 (<Reserved inode 9>) has invalid mode.  Clear? yes
+
+Inode 9, i_blocks is 50182, should be 0.  Fix? yes
+
 Pass 2: Checking directory structure
+Directory inode 2, block 0, offset 0: directory corrupted
+Salvage? yes
+
+First entry '' (inode=1061) in directory inode 2 (???) should be '.'
+Fix? yes
+
+Setting filetype for entry '.' in ??? (2) to 2.
+Missing '..' in directory inode 2.
+Fix? yes
+
+Setting filetype for entry '..' in ??? (2) to 2.
 Pass 3: Checking directory connectivity
+'..' in / (2) is <The NULL inode> (0), should be / (2).
+Fix? yes
+
+/lost+found not found.  Create? yes
+
 Pass 4: Checking reference counts
+Inode 2 ref count is 4, should be 3.  Fix? yes
+
 Pass 5: Checking group summary information
-test_filesys: 11/32768 files (0.0% non-contiguous), 4389/131072 blocks
-Exit status is 0
+Block bitmap differences:  -(39--49)
+Fix? yes
+
+Free blocks count wrong for group #0 (973, counted=985).
+Fix? yes
+
+Free blocks count wrong (126681, counted=126693).
+Fix? yes
+
+Free inodes count wrong for group #0 (244, counted=245).
+Fix? yes
+
+Directories count wrong for group #0 (3, counted=2).
+Fix? yes
+
+Free inodes count wrong (32756, counted=32757).
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 11/32768 files (0.0% non-contiguous), 4379/131072 blocks
+Exit status is 1
 
 Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
 Filesystem revision #:    1 (dynamic)
-Filesystem features:      filetype meta_bg sparse_super
+Filesystem features:      resize_inode dir_index filetype meta_bg sparse_super
 Default mount options:    (none)
 Filesystem state:         clean
 Errors behavior:          Continue
@@ -36,11 +79,12 @@ Filesystem OS type:       Linux
 Inode count:              32768
 Block count:              131072
 Reserved block count:     6553
-Free blocks:              126683
+Free blocks:              126693
 Free inodes:              32757
 First block:              1
 Block size:               1024
 Fragment size:            1024
+Reserved GDT blocks:      256
 Blocks per group:         1024
 Fragments per group:      1024
 Inodes per group:         256
@@ -58,8 +102,8 @@ Group 0: (Blocks 1-1024)
   Primary superblock at 1, Group descriptor at 2
   Block bitmap at 3 (+2), Inode bitmap at 4 (+3)
   Inode table at 5-36 (+4)
-  975 free blocks, 245 free inodes, 2 directories
-  Free blocks: 50-1024
+  985 free blocks, 245 free inodes, 2 directories
+  Free blocks: 39-294, 296-1024
   Free inodes: 12-256
 Group 1: (Blocks 1025-2048)
   Backup superblock at 1025, Group descriptor at 1026

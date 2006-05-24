@@ -5,6 +5,7 @@ Fragment size=4096 (log=2)
 64 inodes, 16384 blocks
 819 blocks (5.00%) reserved for the super user
 First data block=0
+Maximum filesystem blocks=16777216
 1 block group
 32768 blocks per group, 32768 fragments per group
 64 inodes per group
@@ -12,21 +13,21 @@ First data block=0
 Writing inode tables: done                            
 Writing superblocks and filesystem accounting information: done
 
-Filesystem features: filetype sparse_super
+Filesystem features: resize_inode dir_index filetype sparse_super large_file
  
 Pass 1: Checking inodes, blocks, and sizes
 Pass 2: Checking directory structure
 Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts
 Pass 5: Checking group summary information
-test_filesys: 11/64 files (0.0% non-contiguous), 11/16384 blocks
+test_filesys: 11/64 files (9.1% non-contiguous), 15/16384 blocks
 Exit status is 0
 
 Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
 Filesystem revision #:    1 (dynamic)
-Filesystem features:      filetype sparse_super
+Filesystem features:      resize_inode dir_index filetype sparse_super large_file
 Default mount options:    (none)
 Filesystem state:         clean
 Errors behavior:          Continue
@@ -34,11 +35,12 @@ Filesystem OS type:       Linux
 Inode count:              64
 Block count:              16384
 Reserved block count:     819
-Free blocks:              16373
+Free blocks:              16369
 Free inodes:              53
 First block:              0
 Block size:               4096
 Fragment size:            4096
+Reserved GDT blocks:      3
 Blocks per group:         32768
 Fragments per group:      32768
 Inodes per group:         64
@@ -54,8 +56,9 @@ Default directory hash:   tea
 
 Group 0: (Blocks 0-16383)
   Primary superblock at 0, Group descriptors at 1-1
-  Block bitmap at 2 (+2), Inode bitmap at 3 (+3)
-  Inode table at 4-5 (+4)
-  16373 free blocks, 53 free inodes, 2 directories
-  Free blocks: 11-16383
+  Reserved GDT blocks at 2-4
+  Block bitmap at 5 (+5), Inode bitmap at 6 (+6)
+  Inode table at 7-8 (+7)
+  16369 free blocks, 53 free inodes, 2 directories
+  Free blocks: 15-16383
   Free inodes: 12-64

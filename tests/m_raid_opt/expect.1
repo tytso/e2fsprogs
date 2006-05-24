@@ -5,6 +5,7 @@ Fragment size=1024 (log=0)
 32768 inodes, 131072 blocks
 6553 blocks (5.00%) reserved for the super user
 First data block=1
+Maximum filesystem blocks=8519680
 128 block groups
 1024 blocks per group, 1024 fragments per group
 256 inodes per group
@@ -14,21 +15,125 @@ Superblock backups stored on blocks:
 Writing inode tables: done                            
 Writing superblocks and filesystem accounting information: done
 
-Filesystem features: filetype meta_bg sparse_super
+Filesystem features: resize_inode dir_index filetype meta_bg sparse_super
  
+Resize inode not valid.  Recreate? yes
+
 Pass 1: Checking inodes, blocks, and sizes
 Pass 2: Checking directory structure
+Directory inode 2, block 0, offset 0: directory corrupted
+Salvage? yes
+
+First entry '' (inode=1061) in directory inode 2 (???) should be '.'
+Fix? yes
+
+Setting filetype for entry '.' in ??? (2) to 2.
+Missing '..' in directory inode 2.
+Fix? yes
+
+Setting filetype for entry '..' in ??? (2) to 2.
+Directory inode 11, block 0, offset 0: directory corrupted
+Salvage? yes
+
+First entry '' (inode=1062) in directory inode 11 (???) should be '.'
+Fix? yes
+
+Setting filetype for entry '.' in ??? (11) to 2.
+Missing '..' in directory inode 11.
+Fix? yes
+
+Setting filetype for entry '..' in ??? (11) to 2.
+Directory inode 11, block 1, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1063.  Clear? yes
+
+Directory inode 11, block 2, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1064.  Clear? yes
+
+Directory inode 11, block 3, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1065.  Clear? yes
+
+Directory inode 11, block 4, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1066.  Clear? yes
+
+Directory inode 11, block 5, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1067.  Clear? yes
+
+Directory inode 11, block 6, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1068.  Clear? yes
+
+Directory inode 11, block 7, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1069.  Clear? yes
+
+Directory inode 11, block 8, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1070.  Clear? yes
+
+Directory inode 11, block 9, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1071.  Clear? yes
+
+Directory inode 11, block 10, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1072.  Clear? yes
+
+Directory inode 11, block 11, offset 0: directory corrupted
+Salvage? yes
+
+Entry '' in ??? (11) has deleted/unused inode 1073.  Clear? yes
+
 Pass 3: Checking directory connectivity
+'..' in / (2) is <The NULL inode> (0), should be / (2).
+Fix? yes
+
+Unconnected directory inode 11 (/???)
+Connect to /lost+found? yes
+
+/lost+found not found.  Create? yes
+
+Pass 3A: Optimizing directories
 Pass 4: Checking reference counts
+Inode 11 ref count is 3, should be 2.  Fix? yes
+
 Pass 5: Checking group summary information
-test_filesys: 11/32768 files (0.0% non-contiguous), 4389/131072 blocks
-Exit status is 0
+Block bitmap differences:  +(3--5) +(7--10) +(12--32) +(35--37) +39 -(65--66) -70 -75 -77 -(97--98) -102 -(107--109) -(129--130) -134 -139 -142 -(161--162) -166 -171 -(174--175) -(193--194) -198 -(203--204) -(206--207) -(225--226) -230 -235 -(239--240) -(257--258) -262 -267 -271 -273 -(289--290) -294 +295 -299 -(301--305)
+Fix? yes
+
+Free blocks count wrong for group #0 (982, counted=983).
+Fix? yes
+
+Free blocks count wrong (126690, counted=126691).
+Fix? yes
+
+Inode bitmap differences:  +(1--2) +(4--5) +(7--10) -35 -38 -(43--44) -67 -70 -75 -77 -99 -102 -(107--109) -131 -134 -139 -142 -163 -166 -171 -(174--175) -195 -198 -(203--204) -(206--207) -227 -230 -235 -(239--240)
+Fix? yes
+
+
+test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
+test_filesys: 12/32768 files (0.0% non-contiguous), 4381/131072 blocks
+Exit status is 1
 
 Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
 Filesystem revision #:    1 (dynamic)
-Filesystem features:      filetype meta_bg sparse_super
+Filesystem features:      resize_inode dir_index filetype meta_bg sparse_super
 Default mount options:    (none)
 Filesystem state:         clean
 Errors behavior:          Continue
@@ -36,11 +141,12 @@ Filesystem OS type:       Linux
 Inode count:              32768
 Block count:              131072
 Reserved block count:     6553
-Free blocks:              126683
-Free inodes:              32757
+Free blocks:              126691
+Free inodes:              32756
 First block:              1
 Block size:               1024
 Fragment size:            1024
+Reserved GDT blocks:      256
 Blocks per group:         1024
 Fragments per group:      1024
 Inodes per group:         256
@@ -58,9 +164,9 @@ Group 0: (Blocks 1-1024)
   Primary superblock at 1, Group descriptor at 2
   Block bitmap at 35 (+34), Inode bitmap at 36 (+35)
   Inode table at 3-34 (+2)
-  975 free blocks, 245 free inodes, 2 directories
-  Free blocks: 50-1024
-  Free inodes: 12-256
+  983 free blocks, 244 free inodes, 3 directories
+  Free blocks: 40-49, 51-294, 296-1024
+  Free inodes: 13-256
 Group 1: (Blocks 1025-2048)
   Backup superblock at 1025, Group descriptor at 1026
   Block bitmap at 1072 (+47), Inode bitmap at 1073 (+48)

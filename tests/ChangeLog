@@ -1,3 +1,9 @@
+2006-05-24  Theodore Tso  <tytso@mit.edu>
+
+	* d_lodadump, m_dasd_bs, m_large_file, m_meta_bg, m_no_opt,
+		m_read_opt, m_std, r_move_itable, r_resize_inode: Update
+		expect files to reflect new mke2fs.conf defaults.
+
 2006-05-13  Theodore Tso  <tytso@mit.edu>
 
 	* m_raid_opt: Update expect files to match with new mke2fs layout
