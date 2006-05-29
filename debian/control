@@ -3,7 +3,7 @@ Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
 Build-Depends: texi2html, gettext, texinfo, dc, libsepol1-dev, libdevmapper-dev, libselinux1-dev, debhelper (>= 4)
-Standards-Version: 3.6.1
+Standards-Version: 3.7.2
 
 Package: e2fsck-static
 Section: admin

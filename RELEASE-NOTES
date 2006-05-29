@@ -1,5 +1,5 @@
-E2fsprogs 1.39-WIP (May 14, 2006) 
-===================================
+E2fsprogs 1.39 (May 29, 2006) 
+=============================
 
 Fix 32-bit cleanliness in e2fsprogs so that we can support filesystems
 between 2**31 and 2**32 blocks.
@@ -7,6 +7,9 @@ between 2**31 and 2**32 blocks.
 Change mke2fs to use /etc/mke2fs.conf as a configuration file to
 configure the filesystem features, blocksize, and inode_ratio for
 different filesystem types.
+
+Mke2fs will now create filesystems hash trees and on-line resizing
+enabled by default, based on the new /etc/mke2fs.conf file.
 
 The e2fsprogs tools (resize2fs, e2fsck, mke2fs) will open the
 filesystem device node in exclusive mode to prevent accidents by
@@ -100,6 +103,9 @@ of an extended attribute block.
 Fix the debugfs commands htree_dump, dx_hash, and list_dir so they print a
 print a usage message when an illegal option character is given.
 
+Fix debugfs's dump_unsued command on filesystems with a 64k blocksize
+so it won't core dump.  (Addresses SourceForge bug #1424311)
+
 Fix mklost+found so that it creates a full-sized directory on
 filesystems with larger block sizes.
 
@@ -149,11 +155,13 @@ e2fsck context structure.
 
 Fixed spelling mistakes, typos, and otherwise clarified man pages and
 documentation.  (Addresses Debian Bugs: #329859, #322188, #316811,
-#312515, #351268, #357951, #347295, #316040)
+#312515, #351268, #357951, #347295, #316040, #368392, #368393, #368394,
+#368179)
 
 Fixed various Debian packaging issues --- see debian/changelog for
 details.  (Addresses Debian Bugs #317862, #320389, #290429, #310950,
-#310428, #330737, #330736, #329074, #356293, #360046, #366017, #364516)
+#310428, #330737, #330736, #329074, #356293, #360046, #366017, #364516,
+#362544, #362970)
 
 
 Programmer's notes:
@@ -228,6 +236,15 @@ e2fsck for large filesystem, but that would be best done by adding an
 RO_COMPAT extension to the filesystem to allow the inode table to be
 lazily initialized on a per-block basis, instead of being entirely
 initialized or entirely unused on a per-blockgroup basis.
+
+Fix backwards compatibility so e2fsprogs will better compile on Linux
+2.0.35 systems.
+
+Make test scripts more robust against locale-related environment variables
+
+Fix type warning problem with sizeof() in ext2fs_open2().
+
+Fix type warning problem with time_t in debugfs.
 
 
 E2fsprogs 1.38 (June 30, 2005)

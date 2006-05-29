@@ -1,3 +1,17 @@
+e2fsprogs (1.39-1) unstable; urgency=low
+
+  * New upstream version
+  * Fix debugfs's dump_unused command so it will not core dump on
+    filesystems with a 64k blocksize
+  * Clarified and improved man pages, including spelling errors
+    (Closes: #368392, #368393, #368394, #368179)
+  * New filesystems are now created with directory indexing and
+    on-line resizing enabled by default
+  * Fix previously mangled wording in an older Debian changelog entry
+  * Fix doc-base pointer to the top-level html file (Closes: #362544, #362970)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 29 May 2006 11:07:53 -0400
+
 e2fsprogs (1.38+1.39-WIP-2006.04.09-2) unstable; urgency=low
 
   * Resize2fs automatically detects the previously used RAID stride
