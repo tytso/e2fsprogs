@@ -122,6 +122,12 @@ blkid_loff_t blkid_get_dev_size(int fd)
 		return (blkid_loff_t)size << 9;
 #endif
 
+/* tested on FreeBSD 6.1-RELEASE i386 */
+#ifdef DIOCGMEDIASIZE
+	if (ioctl(fd, DIOCGMEDIASIZE, &size64) >= 0)
+		return (off_t)size64;
+#endif /* DIOCGMEDIASIZE */
+
 #ifdef FDGETPRM
 	if (ioctl(fd, FDGETPRM, &this_floppy) >= 0)
 		return (blkid_loff_t)this_floppy.size << 9;
