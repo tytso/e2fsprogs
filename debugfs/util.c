@@ -37,7 +37,7 @@ extern int optreset;		/* defined by BSD, but not others */
  * optind be set zero to reset its state.  So the unfortunate state of
  * affairs is that BSD-derived versions of getopt() misbehave if
  * optind is set to 0 in order to reset getopt(), and glibc's getopt()
- * will core ump if optind is set 1 in order to reset getopt().
+ * will core dump if optind is set 1 in order to reset getopt().
  * 
  * More modern versions of BSD require that optreset be set to 1 in
  * order to reset getopt().   Sigh.  Standards, anyone?
@@ -46,7 +46,7 @@ extern int optreset;		/* defined by BSD, but not others */
  */
 void reset_getopt(void)
 {
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(__linux__)
 	optind = 0;
 #else
 	optind = 1;

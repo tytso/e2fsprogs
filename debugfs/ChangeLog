@@ -1,3 +1,10 @@
+2006-05-29  Theodore Tso  <tytso@mit.edu>
+
+	* util.c (reset_getopt): In order to support ancient Linux header
+		files that don't define __GLIBC__ (but which were using
+		glibc anyway), assume that any system that defines
+		__linux__ should use the glibc method of resetting getopt().
+
 2006-05-28  Theodore Tso  <tytso@mit.edu>
 
 	* unused.c (do_dump_unused): Use EXT2_MAX_BLOCK_SIZE instead of a

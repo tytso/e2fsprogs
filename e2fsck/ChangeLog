@@ -1,3 +1,7 @@
+2006-05-29  Theodore Tso  <tytso@mit.edu>
+
+	* pass1b.c: Add missing semicolon when HAVE_INTPTR_T is not defined
+
 2006-05-22  Theodore Tso  <tytso@mit.edu>
 
 	* e2fsck.8.in: Fixed spelling mistake.  (Addresses Debian Bug:

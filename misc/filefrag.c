@@ -69,7 +69,11 @@ static unsigned long get_bmap(int fd, unsigned long block)
 static void frag_report(const char *filename)
 {
 	struct statfs	fsinfo;
+#ifdef HAVE_FSTAT64
 	struct stat64	fileinfo;
+#else
+	struct stat	fileinfo;
+#endif
 	int		bs;
 	long		i, fd;
 	unsigned long	block, last_block = 0, numblocks;
@@ -83,7 +87,11 @@ static void frag_report(const char *filename)
 		perror("statfs");
 		return;
 	}
+#ifdef HAVE_FSTAT64
 	if (stat64(filename, &fileinfo) < 0) {
+#else
+	if (stat(filename, &fileinfo) < 0) {
+#endif
 		perror("stat");
 		return;
 	}
@@ -102,7 +110,11 @@ static void frag_report(const char *filename)
 		printf("Filesystem cylinder groups is approximately %ld\n", 
 		       cylgroups);
 	}
-	fd = open(filename, O_RDONLY | O_LARGEFILE);
+#ifdef HAVE_OPEN64
+	fd = open64(filename, O_RDONLY);
+#else
+	fd = open(filename, O_RDONLY);
+#endif
 	if (fd < 0) {
 		perror("open");
 		return;

@@ -37,7 +37,7 @@
 #endif
 
 #ifndef HAVE_INTPTR_T
-typedef long intptr_t
+typedef long intptr_t;
 #endif
 
 /* Needed for architectures where sizeof(int) != sizeof(void *) */
