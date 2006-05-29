@@ -153,7 +153,6 @@ static int probe_ext3(struct blkid_probe *probe,
 		      unsigned char *buf)
 {
 	struct ext2_super_block *es;
-	char uuid[37];
 	es = (struct ext2_super_block *)buf;
 
 	/* Distinguish between jbd and ext2/3 fs */
