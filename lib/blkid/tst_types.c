@@ -11,7 +11,10 @@
 
 #include "blkid/blkid_types.h"
 
-main(int argc, char **argv)
+#include <stdlib.h>
+#include <stdio.h>
+
+int main(int argc, char **argv)
 {
 	if (sizeof(__u8) != 1) {
 		printf("Sizeof(__u8) is %d should be 1\n", 

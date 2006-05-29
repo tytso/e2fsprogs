@@ -125,7 +125,7 @@ static void scan_dir(char *dirname, dev_t devno, struct dir_list **list,
 		else if (S_ISBLK(st.st_mode) && st.st_rdev == devno) {
 			*devname = blkid_strdup(path);
 			DBG(DEBUG_DEVNO,
-			    printf("found 0x%llx at %s (%p)\n", devno,
+			    printf("found 0x%llx at %s (%p)\n", (long long)devno,
 				   path, *devname));
 			break;
 		}
@@ -183,7 +183,7 @@ char *blkid_devno_to_devname(dev_t devno)
 			   (unsigned long) devno));
 	} else {
 		DBG(DEBUG_DEVNO,
-		    printf("found devno 0x%04llx as %s\n", devno, devname));
+		    printf("found devno 0x%04llx as %s\n", (long long)devno, devname));
 	}
 	
 
@@ -224,7 +224,7 @@ int main(int argc, char** argv)
 		}
 		devno = makedev(major, minor);
 	}
-	printf("Looking for device 0x%04Lx\n", devno);
+	printf("Looking for device 0x%04llx\n", (long long)devno);
 	devname = blkid_devno_to_devname(devno);
 	if (devname)
 		free(devname);

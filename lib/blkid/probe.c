@@ -224,7 +224,7 @@ static char *no_name = "NO NAME    ";
 
 static unsigned char *search_fat_label(struct vfat_dir_entry *dir, int count)
 {
-	unsigned int i;
+	int i;
 
 	for (i = 0; i < count; i++) {
 		if (dir[i].name[0] == 0x00)
@@ -764,8 +764,8 @@ blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 		return dev;
 
 	DBG(DEBUG_PROBE,
-	    printf("need to revalidate %s (time since last check %lu)\n", 
-		   dev->bid_name, diff));
+	    printf("need to revalidate %s (time since last check %llu)\n", 
+		   dev->bid_name, (unsigned long long)diff));
 
 	if (((probe.fd = open(dev->bid_name, O_RDONLY)) < 0) ||
 	    (fstat(probe.fd, &st) < 0)) {
@@ -852,7 +852,7 @@ found_type:
 		blkid_set_tag(dev, "TYPE", type, 0);
 				
 		DBG(DEBUG_PROBE, printf("%s: devno 0x%04llx, type %s\n",
-			   dev->bid_name, st.st_rdev, type));
+			   dev->bid_name, (long long)st.st_rdev, type));
 	}
 
 	if (probe.sbbuf)

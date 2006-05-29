@@ -68,8 +68,8 @@ void blkid_debug_dump_dev(blkid_dev dev)
 	}
 
 	printf("  dev: name = %s\n", dev->bid_name);
-	printf("  dev: DEVNO=\"0x%0llx\"\n", dev->bid_devno);
-	printf("  dev: TIME=\"%ld\"\n", dev->bid_time);
+	printf("  dev: DEVNO=\"0x%0llx\"\n", (long long)dev->bid_devno);
+	printf("  dev: TIME=\"%ld\"\n", (long)dev->bid_time);
 	printf("  dev: PRI=\"%d\"\n", dev->bid_pri);
 	printf("  dev: flags = 0x%08X\n", dev->bid_flags);
 
@@ -196,7 +196,7 @@ extern int optind;
 void usage(char *prog)
 {
 	fprintf(stderr, "Usage: %s [-f blkid_file] [-m debug_mask]\n", prog);
-	fprintf(stderr, "\tList all devices and exit\n", prog);
+	fprintf(stderr, "\tList all devices and exit\n");
 	exit(1);
 }
 
@@ -219,7 +219,7 @@ int main(int argc, char **argv)
 		case 'm':
 			blkid_debug_mask = strtoul (optarg, &tmp, 0);
 			if (*tmp) {
-				fprintf(stderr, "Invalid debug mask: %d\n", 
+				fprintf(stderr, "Invalid debug mask: %s\n", 
 					optarg);
 				exit(1);
 			}
