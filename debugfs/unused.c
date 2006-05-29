@@ -27,7 +27,7 @@ extern char *optarg;
 void do_dump_unused(int argc EXT2FS_ATTR((unused)), char **argv)
 {
 	unsigned long	blk;
-	unsigned char buf[32768];
+	unsigned char buf[EXT2_MAX_BLOCK_SIZE];
 	unsigned int	i;
 	errcode_t	retval;
 

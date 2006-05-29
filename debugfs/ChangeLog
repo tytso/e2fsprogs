@@ -1,3 +1,10 @@
+2006-05-28  Theodore Tso  <tytso@mit.edu>
+
+	* unused.c (do_dump_unused): Use EXT2_MAX_BLOCK_SIZE instead of a
+		hardcoded blocksize of 32768, since this will fail on a
+		filesystem with a 64k blocksize.  (Addresses SourceForge
+		bug #1424311)
+
 2006-05-21  Theodore Tso  <tytso@mit.edu>
 
 	* set_fields.c (parse_time): Fix type warning problem with time_t
