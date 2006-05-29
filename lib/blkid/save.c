@@ -38,7 +38,7 @@ static int save_dev(blkid_dev dev, FILE *file)
 
 	fprintf(file,
 		"<device DEVNO=\"0x%04lx\" TIME=\"%ld\"",
-		(unsigned long) dev->bid_devno, dev->bid_time);
+		(unsigned long) dev->bid_devno, (long) dev->bid_time);
 	if (dev->bid_pri)
 		fprintf(file, " PRI=\"%d\"", dev->bid_pri);
 	list_for_each(p, &dev->bid_tags) {
