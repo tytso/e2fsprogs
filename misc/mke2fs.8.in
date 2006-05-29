@@ -439,10 +439,11 @@ or there is no chance of recovery.
 .BI \-T " fs-type"
 Specify how the filesystem is going to be used, so that 
 .B mke2fs 
-can choose optimal filesystem parameters for that use, as defined 
-filesystem type configuration settings found in the 
-.BR /etc/mke2fs.conf (5)
-file.
+can choose optimal filesystem parameters for that use.  The filesystem
+types that are can be supported are defined in the configuration file 
+.BR /etc/mke2fs.conf (5).
+The default configuration file contains definitions for the filesystem
+types: small, floppy, news, largefile, and largefile4.  
 .TP
 .B \-v
 Verbose execution.

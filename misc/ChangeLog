@@ -1,3 +1,7 @@
+2006-05-28  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.8.in (types): Clarify -T option description.
+
 2006-05-22  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.conf: Make new filesystems with the following features
