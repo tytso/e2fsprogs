@@ -236,7 +236,7 @@ int journal_recover(journal_t *journal)
 
 	if (!sb->s_start) {
 		jbd_debug(1, "No recovery required, last transaction %d\n",
-			  ntohl(sb->s_sequence));
+			  (int)ntohl(sb->s_sequence));
 		journal->j_transaction_sequence = ntohl(sb->s_sequence) + 1;
 		return 0;
 	}

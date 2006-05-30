@@ -310,10 +310,10 @@ static void print_journal_information(ext2_filsys fs)
 		 "Journal first block:      %u\n"
 		 "Journal sequence:         0x%08x\n"
 		 "Journal start:            %u\n"
-		 "Journal number of users:  %lu\n"),
-	       ntohl(jsb->s_blocksize),  ntohl(jsb->s_maxlen),
-	       ntohl(jsb->s_first), ntohl(jsb->s_sequence),
-	       ntohl(jsb->s_start), ntohl(jsb->s_nr_users));
+		 "Journal number of users:  %u\n"),
+	       (unsigned int)ntohl(jsb->s_blocksize),  (unsigned int)ntohl(jsb->s_maxlen),
+	       (unsigned int)ntohl(jsb->s_first), (unsigned int)ntohl(jsb->s_sequence),
+	       (unsigned int)ntohl(jsb->s_start), (unsigned int)ntohl(jsb->s_nr_users));
 
 	for (i=0; i < ntohl(jsb->s_nr_users); i++) {
 		uuid_unparse(&jsb->s_users[i*16], str);
