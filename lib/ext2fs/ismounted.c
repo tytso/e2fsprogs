@@ -325,9 +325,9 @@ errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 			*mount_flags |= EXT2_MF_BUSY;
 	} else
 		close(fd);
+#endif
 
 	return 0;
-#endif
 }
 
 /*
