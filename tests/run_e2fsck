@@ -1,5 +1,5 @@
 if [ "$DESCRIPTION"x != x ]; then
-	echo -n "$DESCRIPTION: "
+	printf "%s" "$DESCRIPTION: "
 fi
 if [ "$IMAGE"x = x ]; then
 	IMAGE=$test_dir/image.gz

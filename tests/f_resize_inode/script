@@ -1,4 +1,4 @@
-echo -n "e2fsck with resize_inode: "
+printf "e2fsck with resize_inode: "
 FSCK_OPT=-yf
 OUT=$test_name.log
 if [ -f $test_dir/expect.gz ]; then

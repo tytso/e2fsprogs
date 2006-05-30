@@ -1,4 +1,4 @@
-echo -n "resize2fs with resize_inode: "
+printf "resize2fs with resize_inode: "
 
 if test -x $RESIZE2FS_EXE; then
 
