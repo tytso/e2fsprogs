@@ -464,6 +464,9 @@ extern void e2fsck_read_inode(e2fsck_t ctx, unsigned long ino,
 			      struct ext2_inode * inode, const char * proc);
 extern void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
 			       struct ext2_inode * inode, const char * proc);
+extern void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,
+                               struct ext2_inode * inode, int bufsize,
+                               const char *proc);
 #ifdef MTRACE
 extern void mtrace_print(char *mesg);
 #endif
