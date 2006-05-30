@@ -261,17 +261,17 @@ static int probe_fat(struct blkid_probe *probe,
 	__u32 buf_size, start_data_sect, next, root_start, root_dir_entries;
 
 	/* sector size check */
-	tmp = &ms->ms_sector_size;
-	sector_size = tmp[0] + tmp[1] << 8;
+	tmp = (unsigned char *)&ms->ms_sector_size;
+	sector_size = tmp[0] + (tmp[1] << 8);
 	if (sector_size != 0x200 && sector_size != 0x400 &&
 	    sector_size != 0x800 && sector_size != 0x1000)
 		return 1;
 
-	tmp = &ms->ms_dir_entries;
-	dir_entries = tmp[0] + tmp[1] << 8;
+	tmp = (unsigned char *)&ms->ms_dir_entries;
+	dir_entries = tmp[0] + (tmp[1] << 8);
 	reserved =  blkid_le16(ms->ms_reserved);
-	tmp = &ms->ms_sectors;
-	sect_count = tmp[0] + tmp[1] << 8;
+	tmp = (unsigned char *)&ms->ms_sectors;
+	sect_count = tmp[0] + (tmp[1] << 8);
 	if (sect_count == 0)
 		sect_count = blkid_le32(ms->ms_total_sect);
 
