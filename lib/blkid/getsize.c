@@ -133,13 +133,13 @@ blkid_loff_t blkid_get_dev_size(int fd)
 		return (blkid_loff_t)this_floppy.size << 9;
 #endif
 #ifdef HAVE_SYS_DISKLABEL_H
-#if 0
+#if 1
 	/*
 	 * This should work in theory but I haven't tested it.  Anyone
 	 * on a BSD system want to test this for me?  In the meantime,
 	 * binary search mechanism should work just fine.
 	 */
-	if ((fstat(fd, &st) >= 0) && S_ISBLK(st.st_mode))
+	if ((fstat(fd, &st) >= 0) && (S_ISBLK(st.st_mode) || S_ISCHR(st.st_mode)))
 		part = st.st_rdev & 7;
 	if (part >= 0 && (ioctl(fd, DIOCGDINFO, (char *)&lab) >= 0)) {
 		pp = &lab.d_partitions[part];
