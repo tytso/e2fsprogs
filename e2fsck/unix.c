@@ -568,7 +568,7 @@ static void syntax_err_report(const char *filename, long err, int line_num)
 	exit(FSCK_ERROR);
 }
 
-static const char *config_fn[] = { "/etc/e2fsck.conf", 0 };
+static const char *config_fn[] = { ROOT_SYSCONFDIR "/e2fsck.conf", 0 };
 
 static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 {

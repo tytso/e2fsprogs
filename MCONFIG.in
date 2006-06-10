@@ -33,7 +33,7 @@ datadir = @datadir@
 
 CC = @CC@
 BUILD_CC = @BUILD_CC@
-DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
+DEFS = -DLOCALEDIR=\"$(localedir)\" -DROOT_SYSCONFDIR=\"$(root_sysconfdir)\" @DEFS@
 CFLAGS = @CFLAGS@
 CPPFLAGS =  -I$(top_builddir)/lib -I$(top_srcdir)/lib @CPPFLAGS@
 INTL_FLAGS = @INTL_FLAGS@

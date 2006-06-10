@@ -870,7 +870,7 @@ static void syntax_err_report(const char *filename, long err, int line_num)
 	exit(1);
 }
 
-static const char *config_fn[] = { "/etc/mke2fs.conf", 0 };
+static const char *config_fn[] = { ROOT_SYSCONFDIR "/mke2fs.conf", 0 };
 
 static void edit_feature(const char *str, __u32 *compat_array) 
 {
