@@ -288,10 +288,10 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		echo "	INSTALL_DATA $(man5dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man5dir)/$$i; \
 	done
-	@if ! test -f $(DESTDIR)/etc/mke2fs.conf; then \
-		echo "	INSTALL_DATA /etc/mke2fs.conf"; \
+	@if ! test -f $(DESTDIR)$(root_sysconfdir)/mke2fs.conf; then \
+		echo "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf"; \
 		$(INSTALL_DATA) $(srcdir)/mke2fs.conf \
-			$(DESTDIR)/etc/mke2fs.conf; \
+			$(DESTDIR)$(root_sysconfdir)/mke2fs.conf; \
 	fi
 
 install-strip: install
