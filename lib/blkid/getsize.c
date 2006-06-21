@@ -70,7 +70,7 @@ static int valid_offset(int fd, blkid_loff_t offset)
 }
 
 /*
- * Returns the number of blocks in a partition
+ * Returns the number of bytes in a partition
  */
 blkid_loff_t blkid_get_dev_size(int fd)
 {
