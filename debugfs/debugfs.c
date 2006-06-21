@@ -443,9 +443,9 @@ static void dump_xattr_string(FILE *out, const char *str, int len)
 
 	for (i = 0; i < len; i++)
 		if (printable)
-			fprintf(out, "%c", str[i]);
+			fprintf(out, "%c", (unsigned char)str[i]);
 		else
-			fprintf(out, "%02x ", str[i]);
+			fprintf(out, "%02x ", (unsigned char)str[i]);
 }
 
 static void internal_dump_inode_extra(FILE *out, const char *prefix,
