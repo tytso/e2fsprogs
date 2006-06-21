@@ -29,6 +29,9 @@ subs:
 progs: subs all-progs-recursive
 libs: subs all-libs-recursive
 
+rpm:
+	sh contrib/build-rpm
+
 docs:
 	-@test -d doc && cd doc && $(MAKE) libext2fs.info
 
