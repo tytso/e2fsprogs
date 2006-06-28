@@ -6,6 +6,9 @@
  * 
  */
 
+#ifndef _E2FSCK_H
+#define _E2FSCK_H
+
 #include <stdio.h>
 #include <string.h>
 #ifdef HAVE_UNISTD_H
@@ -478,3 +481,4 @@ extern int ext2_file_type(unsigned int mode);
 extern void e2fsck_clear_progbar(e2fsck_t ctx);
 extern int e2fsck_simple_progress(e2fsck_t ctx, const char *label,
 				  float percent, unsigned int dpynum);
+#endif /* _E2FSCK_H */
