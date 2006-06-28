@@ -6,6 +6,8 @@
   (C) 2000 Andreas Gruenbacher, <a.gruenbacher@computer.org>
 */
 
+#ifndef _EXT2_EXT_ATTR_H
+#define _EXT2_EXT_ATTR_H
 /* Magic value in attribute blocks */
 #define EXT2_EXT_ATTR_MAGIC_v1		0xEA010000
 #define EXT2_EXT_ATTR_MAGIC		0xEA020000
@@ -66,4 +68,4 @@ extern void ext2_ext_attr_done(void);
 #  define ext2_set_ext_attr NULL
 # endif
 #endif  /* __KERNEL__ */
-
+#endif  /* _EXT2_EXT_ATTR_H */

@@ -1,3 +1,8 @@
+2006-06-28  Andreas Dilger <adilger@clusterfs.com>
+
+	* e2fsck.h, ext2_ext_attr.h: Protect header files from multiple
+		inclusion.
+
 2006-03-17  Theodore Ts'o  <tytso@mit.edu>
 
 	* Makefile.library (real-subdirs): Add real-subdirs:: target so
