@@ -1,3 +1,8 @@
+2006-07-15  Theodore Tso  <tytso@mit.edu>
+
+	* ext2fs.h: Remove unneeded #ifdef since EXT2_DYNAMIC_REV is
+		always defined in the e2fsprogs-provided ext2_fs.h
+
 2006-05-21  Theodore Tso  <tytso@mit.edu>
 
 	* openfs.c (ext2fs_open2): Fix type warning problem with sizeof()

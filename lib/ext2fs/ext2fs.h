@@ -117,15 +117,11 @@ typedef struct ext2fs_struct_generic_bitmap *ext2fs_generic_bitmap;
 typedef struct ext2fs_struct_generic_bitmap *ext2fs_inode_bitmap;
 typedef struct ext2fs_struct_generic_bitmap *ext2fs_block_bitmap;
 
-#ifdef EXT2_DYNAMIC_REV
 #define EXT2_FIRST_INODE(s)	EXT2_FIRST_INO(s)
-#else
-#define EXT2_FIRST_INODE(s)	EXT2_FIRST_INO
-#define EXT2_INODE_SIZE(s)	sizeof(struct ext2_inode)
-#endif
+
 
 /*
- * badblocks list definitions
+ * Badblocks list definitions
  */
 
 typedef struct ext2_struct_u32_list *ext2_badblocks_list;

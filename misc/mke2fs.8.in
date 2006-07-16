@@ -30,6 +30,10 @@ mke2fs \- create an ext2/ext3 filesystem
 .I bytes-per-inode
 ]
 [
+.B \-I
+.I inode-size
+]
+[
 .B \-j
 ]
 [
@@ -218,6 +222,23 @@ be smaller than the blocksize of the filesystem, since then too many
 inodes will be made.  Be warned that is not possible to expand the number 
 of inodes on a filesystem after it is created, so be careful deciding the
 correct value for this parameter. 
+.TP
+.BI \-I " inode-size"
+Specify the size of each inode in bytes. 
+.B mke2fs
+creates 128-byte inodes by default.  In kernels after 2.6.10 and some
+earlier vendor kernels it is possible to utilize larger inodes to store
+extended attributes for improved performance.  The 
+.I inode-size
+value must be a power of two larger or equal to 128.  The larger the 
+.I inode-size
+the more space the inode table will consume, and this reduces the usable
+space in the filesystem and can also negatively impact performance.  Using
+the default value is always safe, though it may be desirable to use 256-byte
+inodes if full backward compatibility is not a concern.  Extended attributes
+stored in large inodes are not visible with older kernels, and such
+filesystems will not be mountable with 2.4 kernels at all.  It is not
+possible to change this value after the filesystem is created.
 .TP 
 .B \-j
 Create the filesystem with an ext3 journal.  If the

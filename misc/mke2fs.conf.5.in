@@ -131,6 +131,12 @@ This relation specifies the default inode ratio if the user does not
 specify one on the command line, and the filesystem-type
 specific section of the configuration file does not specify a default
 inode ratio.
+.TP
+.I inode_size
+This relation specifies the default inode size if the user does not
+specify one on the command line, and the filesystem-type
+specific section of the configuration file does not specify a default
+inode size.
 .SH THE [fs_types] STANZA
 Each tag in the
 .I [fs_types] 
@@ -180,6 +186,10 @@ specify a blocksize on the command line.
 .TP
 .I inode_ratio
 This relation specifies the default inode ratio if the user does not
+specify one on the command line.
+.TP
+.I inode_size
+This relation specifies the default inode size if the user does not
 specify one on the command line.
 .SH FILES
 .TP

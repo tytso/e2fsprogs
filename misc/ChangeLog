@@ -1,5 +1,13 @@
 2006-07-15  Theodore Tso  <tytso@mit.edu>
 
+	* mke2fs.c (PRS): Look up the default inode size in the
+		mke2fs.conf file.
+
+	* mke2fs.8.in, mke2fs.c(usage): Document the -I option.	
+
+	* mke2fs.conf.5.in: Document the inode_size relation in [defaults]
+		and [fs_types].
+
 	* chattr.1.in: Fix spelling typo
 
 2006-05-29  Theodore Tso  <tytso@mit.edu>

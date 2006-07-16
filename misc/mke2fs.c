@@ -94,11 +94,12 @@ int linux_version_code = 0;
 static void usage(void)
 {
 	fprintf(stderr, _("Usage: %s [-c|-t|-l filename] [-b block-size] "
-	"[-f fragment-size]\n\t[-i bytes-per-inode] [-j] [-J journal-options]"
-	" [-N number-of-inodes]\n\t[-m reserved-blocks-percentage] "
-	"[-o creator-os] [-g blocks-per-group]\n\t[-L volume-label] "
-	"[-M last-mounted-directory] [-O feature[,...]]\n\t"
-	"[-r fs-revision] [-R options] [-qvSV] device [blocks-count]\n"),
+	"[-f fragment-size]\n\t[-i bytes-per-inode] [-I inode-size] "
+	"[-j] [-J journal-options]\n"
+	"\t[-N number-of-inodes] [-m reserved-blocks-percentage] "
+	"[-o creator-os]\n\t[-g blocks-per-group] [-L volume-label] "
+	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
+	"[-r fs-revision] [-R options] [-qvSV]\n\tdevice [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
@@ -1076,7 +1077,6 @@ static void PRS(int argc, char *argv[])
 		case 's':	/* deprecated */
 			s_opt = atoi(optarg);
 			break;
-#ifdef EXT2_DYNAMIC_REV
 		case 'I':
 			inode_size = strtoul(optarg, &tmp, 0);
 			if (*tmp) {
@@ -1085,7 +1085,6 @@ static void PRS(int argc, char *argv[])
 				exit(1);
 			}
 			break;
-#endif
 		case 'v':
 			verbose = 1;
 			break;
@@ -1413,7 +1412,15 @@ static void PRS(int argc, char *argv[])
 			"blocksizes greater than 4096\n\tusing ext3.  "
 			"Use -b 4096 if this is an issue for you.\n\n"));
 
-	if (inode_size) {
+	if (inode_size == 0) {
+		profile_get_integer(profile, "defaults", "inode_size", NULL,
+				    0, &inode_size);
+		profile_get_integer(profile, "fs_types", fs_type,
+				    "inode_size", inode_size,
+				    &inode_size);
+	}
+
+	if (inode_size && fs_param.s_rev_level >= EXT2_DYNAMIC_REV) {
 		if (inode_size < EXT2_GOOD_OLD_INODE_SIZE ||
 		    inode_size > EXT2_BLOCK_SIZE(&fs_param) ||
 		    inode_size & (inode_size - 1)) {
@@ -1425,7 +1432,7 @@ static void PRS(int argc, char *argv[])
 		}
 		if (inode_size != EXT2_GOOD_OLD_INODE_SIZE)
 			fprintf(stderr, _("Warning: %d-byte inodes not usable "
-				"on most systems\n"),
+				"on older systems\n"),
 				inode_size);
 		fs_param.s_inode_size = inode_size;
 	}
