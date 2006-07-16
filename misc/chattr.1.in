@@ -73,7 +73,7 @@ although it can be displayed by
 .BR lsattr (1).
 .PP
 The 'I' attribute is used by the htree code to indicate that a directory
-is behind indexed using hashed trees.  It may not be set or reset using 
+is being indexed using hashed trees.  It may not be set or reset using 
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
