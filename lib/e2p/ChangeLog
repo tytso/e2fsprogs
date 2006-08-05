@@ -1,3 +1,7 @@
+2006-08-05  Theodore Tso  <tytso@mit.edu>
+
+	* pf.c: Add support for EXT4_EXTENTS_FL flag.
+
 2006-05-08  Theodore Tso  <tytso@mit.edu>
 
 	* feature.c: Add support for EXT2_FEATURE_COMPAT_LAZY_BG feature.

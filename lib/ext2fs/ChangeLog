@@ -1,3 +1,9 @@
+2006-08-05  Theodore Tso  <tytso@mit.edu>
+
+	* ext2_fs.h (EXT4_EXTENTS_FL): Rename EXT3_EXTENTS_FL to
+		EXT4_EXTENTS_FL, and add EXT4_EXTENTS_FL to user visible
+		flags list.
+
 2006-07-15  Theodore Tso  <tytso@mit.edu>
 
 	* ext2fs.h: Remove unneeded #ifdef since EXT2_DYNAMIC_REV is

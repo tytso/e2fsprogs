@@ -44,7 +44,7 @@ int verbose = 0;
 #define FIBMAP	   _IO(0x00,1)	/* bmap access */
 #define FIGETBSZ   _IO(0x00,2)	/* get the block size used for bmap */
 
-#define EXT3_EXTENTS_FL			0x00080000 /* Inode uses extents */
+#define EXT4_EXTENTS_FL			0x00080000 /* Inode uses extents */
 #define	EXT3_IOC_GETFLAGS		_IOR('f', 1, long)
 
 static unsigned long get_bmap(int fd, unsigned long block)
@@ -126,7 +126,7 @@ static void frag_report(const char *filename)
 	}
 	if (ioctl(fd, EXT3_IOC_GETFLAGS, &flags) < 0)
 		flags = 0;
-	if (flags & EXT3_EXTENTS_FL) {
+	if (flags & EXT4_EXTENTS_FL) {
 		printf("File is stored in extents format\n");
 		is_ext2 = 0;
 	}

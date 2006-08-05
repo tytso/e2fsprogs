@@ -1,3 +1,7 @@
+2006-08-05  Theodore Tso  <tytso@mit.edu>
+
+	* filefrag.c: Change EXT3_EXTENTS_FL to EXT4_EXTENTS_FL
+
 2006-07-15  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (PRS): Look up the default inode size in the

@@ -44,6 +44,7 @@ static struct flags_name flags_array[] = {
 	{ EXT2_INDEX_FL, "I", "Indexed_direcctory" }, 
 	{ EXT2_NOTAIL_FL, "t", "No_Tailmerging" },
 	{ EXT2_TOPDIR_FL, "T", "Top_of_Directory_Hierarchies" },
+	{ EXT4_EXTENTS_FL, "e", "Extents" },
 	{ 0, NULL, NULL }
 };
 
