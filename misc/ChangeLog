@@ -1,5 +1,9 @@
 2006-08-05  Theodore Tso  <tytso@mit.edu>
 
+	* mke2fs.c (PRS), util.c (check_mount): In order to force mke2fs
+		to create a filesystem even though it appears to be in use
+		or mounted, the -F (force) flag must be specified twice.
+
 	* filefrag.c: Change EXT3_EXTENTS_FL to EXT4_EXTENTS_FL
 
 2006-07-15  Theodore Tso  <tytso@mit.edu>

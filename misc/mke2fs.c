@@ -1089,7 +1089,7 @@ static void PRS(int argc, char *argv[])
 			verbose = 1;
 			break;
 		case 'F':
-			force = 1;
+			force++;
 			break;
 		case 'L':
 			volume_label = optarg;

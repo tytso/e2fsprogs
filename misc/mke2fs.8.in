@@ -195,8 +195,13 @@ Specify the size of fragments in bytes.
 .B \-F
 Force 
 .B mke2fs
-to run, even if the specified device is not a 
-block special device, or appears to be mounted.
+to create a filesystem, even if the specified device is not a partition
+on a block special device, or if other parameters do not make sense.
+In order to force 
+.B mke2fs
+to create a filesystem even if the filesystem appears to be in use 
+or is mounted (a truly dangerous thing to do), this option must be
+specified twice.
 .TP
 .BI \-g " blocks-per-group"
 Specify the number of blocks in a block group.  There is generally no
