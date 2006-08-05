@@ -43,6 +43,7 @@ if grep "^#__ERROR_IN_FILE" "${TMP}" > /dev/null; then
 	exit 1
 else
 	rm -f "${BASE}.c"
-	mv "${TMP}" "${BASE}.c"
+	mv -f "${TMP}" "${BASE}.c"
+	chmod -w "${BASE}.c"
 	exit 0
 fi

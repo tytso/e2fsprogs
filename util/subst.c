@@ -367,6 +367,7 @@ int main(int argc, char **argv)
 	fclose(in);
 	fclose(out);
 	if (outfn) {
+		struct stat st;
 		if (compare_file(outfn, newfn)) {
 			if (verbose)
 				printf("No change, keeping %s.\n", outfn);
@@ -386,6 +387,9 @@ int main(int argc, char **argv)
 				printf("Creating or replacing %s.\n", outfn);
 			rename(newfn, outfn);
 		}
+		/* set read-only to alert user it is a generated file */
+		if (stat(outfn, &st) == 0)
+			chmod(outfn, st.st_mode & ~0222);
 	}
 	return (0);
 }
