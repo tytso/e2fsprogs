@@ -1,3 +1,8 @@
+2006-08-06  Andreas Dilger <adilger@clusterfs.com>
+
+	* bitops.h (ext2fs_cpu_to_le32, ext2fs_le64_to_cpu,
+		ext2fs_swab64): Add 64-bit byte swapping functions
+
 2006-08-05  Theodore Tso  <tytso@mit.edu>
 
 	* ext2_fs.h (EXT4_EXTENTS_FL): Rename EXT3_EXTENTS_FL to

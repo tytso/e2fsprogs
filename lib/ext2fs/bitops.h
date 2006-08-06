@@ -23,6 +23,8 @@ extern __u16 ext2fs_swab16(__u16 val);
 extern __u32 ext2fs_swab32(__u32 val);
 
 #ifdef WORDS_BIGENDIAN
+#define ext2fs_cpu_to_le64(x) ext2fs_swab64((x))
+#define ext2fs_le64_to_cpu(x) ext2fs_swab64((x))
 #define ext2fs_cpu_to_le32(x) ext2fs_swab32((x))
 #define ext2fs_le32_to_cpu(x) ext2fs_swab32((x))
 #define ext2fs_cpu_to_le16(x) ext2fs_swab16((x))
@@ -32,6 +34,8 @@ extern __u32 ext2fs_swab32(__u32 val);
 #define ext2fs_cpu_to_be16(x) ((__u16)(x))
 #define ext2fs_be16_to_cpu(x) ((__u16)(x))
 #else
+#define ext2fs_cpu_to_le64(x) ((__u64)(x))
+#define ext2fs_le64_to_cpu(x) ((__u64)(x))
 #define ext2fs_cpu_to_le32(x) ((__u32)(x))
 #define ext2fs_le32_to_cpu(x) ((__u32)(x))
 #define ext2fs_cpu_to_le16(x) ((__u16)(x))
@@ -285,6 +289,12 @@ _INLINE_ __u16 ext2fs_swab16(__u16 val)
 		return val;
 }
 #endif
+
+_INLINE_ __u64 ext2fs_swab64(__u64 val)
+{
+	return (ext2fs_swab32(val >> 32) |
+		(((__u64)ext2fs_swab32(val & 0xFFFFFFFFUL)) << 32));
+}
 
 #undef EXT2FS_ADDR
 
