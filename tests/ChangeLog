@@ -1,3 +1,8 @@
+2006-08-06  Theodore Tso  <tytso@mit.edu>
+
+	* Makefile.in, test_config: If available, use unified diffs to
+		report test failures
+
 2006-05-28  Theodore Tso  <tytso@mit.edu>
 
 	* test_config: Unset all locale-related environment variables

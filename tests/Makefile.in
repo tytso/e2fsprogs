@@ -19,6 +19,7 @@ test_script: test_script.in Makefile
 @HTREE_CMT@	@echo "HTREE=y" >> test_script
 	@echo 'EGREP="@EGREP@"' >> test_script
 	@echo "SRCDIR=@srcdir@" >> test_script
+	@echo "DIFF_OPTS=@UNI_DIFF_OPTS@" >> test_script
 	@cat $(srcdir)/test_script.in >> test_script
 	@chmod +x test_script
 

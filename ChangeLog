@@ -1,3 +1,7 @@
+2006-08-06  Theodore Tso  <tytso@mit.edu>
+
+	* configure.in: Add test to see if diff supports the -u option
+
 2006-04-09  Theodore Ts'o  <tytso@mit.edu>
 
 	* config/config.guess, config/config.sub: Update to newer versions

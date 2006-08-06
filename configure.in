@@ -687,6 +687,17 @@ if test $ac_cv_have_optreset = yes; then
   AC_DEFINE(HAVE_OPTRESET)
 fi
 dnl
+dnl Check for unified diff
+dnl
+AC_MSG_CHECKING(for unified diff option)
+if diff -u $0 $0 >& /dev/null ; then
+   UNI_DIFF_OPTS=-u
+else
+   UNI_DIFF_OPTS=-c
+fi
+AC_MSG_RESULT($UNI_DIFF_OPTS)
+AC_SUBST(UNI_DIFF_OPTS)
+dnl
 dnl We use the EXT2 ioctls only under Linux
 dnl
 case "$host_os" in
