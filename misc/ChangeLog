@@ -1,3 +1,12 @@
+2006-08-06  Theodore Tso  <tytso@mit.edu>
+
+	* findsuper.c (main): Improve findsuper program by printing the
+		uuid and label from the superblocks, as well as the
+		starting and ending offsets of the filesystem given the
+		information in the superblock.  Omit by default printing
+		superblocks that are likely found in located in an ext3
+		journal unless an explicit -j option is given.  
+ 
 2006-08-05  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (PRS), util.c (check_mount): In order to force mke2fs
