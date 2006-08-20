@@ -175,7 +175,9 @@ uninstall::
 	done
 
 clean::
-	$(RM) -f \#* *.s *.o *.orig *.a *~ *.bak tst_* tests/*.out tests/*.ok \
+	$(RM) -f \#* *.s *.o *.orig *.a *~ *.bak tst_cache tst_dev tst_devname \
+		tst_devno tst_getsize tst_probe tst_read tst_resolve tst_save \
+		tst_tag tst_types tests/*.out tests/*.ok \
 		tests/*.img results test_probe core profiled/* \
 		checker/* blkid_types.h ../libblkid.a ../libblkid_p.a \
 		$(SMANPAGES) blkid

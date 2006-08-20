@@ -1,3 +1,8 @@
+2006-08-19  Andreas Dilger <adilger@clusterfs.com>
+
+	* Makefile.in (clean): Avoid removing the tst_*.c files, but
+		instead list each of the tst_* binaries explicitly.
+
 2006-05-14  Theodore Tso  <tytso@mit.edu>
 
 	* probe.c (probe_udf): Fix signed vs. unsigned lint warning;
