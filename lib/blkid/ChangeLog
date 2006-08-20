@@ -1,5 +1,7 @@
 2006-08-19  Andreas Dilger <adilger@clusterfs.com>
 
+	* blkid.8.in: Make the description of the -l option more accurate.
+
 	* Makefile.in (clean): Avoid removing the tst_*.c files, but
 		instead list each of the tst_* binaries explicitly.
 

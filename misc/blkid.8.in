@@ -64,30 +64,16 @@ scanned but not necessarily available at this time), specify
 Display a usage message and exit.
 .TP
 .B \-l
-Look up the device that matches the search parameter specified using
+Look up one device that matches the search parameter specified using
 the 
 .B \-t
-option, assuming that there is only one matching the search parameter.  
-For a system with a large number of disks, this will be more 
-efficient by avoiding the need to revalidate devices unless absolutely 
-necessary.  If this option is not specified, 
+option.  If there are multiple devices that match the specified search
+parameter, then the device with the highest priority is returned, and/or
+the first device found at a given priority.  Device types in order of
+decreasing priority are Device Mapper, EVMS, LVM, MD, and finally regular
+block devices.  If this option is not specified, 
 .B blkid
-will use a less efficient approach, which allows 
-.B blkid
-to print all of the devices that match the search parameter.
-.IP
-This option is best used for tag searches such as 
-.I LABEL=data_vol
-or
-.IR UUID=e280469a-d06f-4c0b-b068-44f3b576029e .
-If you want 
-.B blkid
-to print all of the ext3 filesystems using a search parameter 
-such as
-.IR TYPE=ext3 ,
-then this option should 
-.I not
-be used.
+will print all of the devices that match the search parameter.
 .TP
 .B \-o 
 Display 
