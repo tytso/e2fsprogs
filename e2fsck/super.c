@@ -220,7 +220,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		}
 		if (retval) {
 			com_err("release_inode_blocks", retval,
-		_("while calling ext2fs_adjust_ea_refocunt for inode %d"),
+		_("while calling ext2fs_adjust_ea_refcount for inode %d"),
 				ino);
 			return 1;
 		}
