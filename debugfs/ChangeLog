@@ -1,3 +1,9 @@
+2006-08-29  Theodore Tso  <tytso@mit.edu>
+
+	* lsdel.c (do_lsdel): Fix core-dumping bug.  Don't depend on
+		current_fs being non-NULL until after the call to
+		common_args_process().  (Addresses Debian Bug: #378335)
+
 2006-05-29  Theodore Tso  <tytso@mit.edu>
 
 	* util.c (reset_getopt): In order to support ancient Linux header

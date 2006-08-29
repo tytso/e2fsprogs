@@ -81,12 +81,13 @@ void do_lsdel(int argc, char **argv)
 	int			i;
  	long			secs = 0;
  	char			*tmp;
-	time_t			now = current_fs->now ? current_fs->now : time(0);
+	time_t			now;
 	FILE			*out;
 	
 	if (common_args_process(argc, argv, 1, 2, "ls_deleted_inodes",
 				"[secs]", 0))
 		return;
+
 	if (argc > 1) {
 		secs = strtol(argv[1],&tmp,0);
 		if (*tmp) {
@@ -95,6 +96,7 @@ void do_lsdel(int argc, char **argv)
 		}
 	}
 
+	now = current_fs->now ? current_fs->now : time(0);
 	max_delarray = 100;
 	num_delarray = 0;
 	delarray = malloc(max_delarray * sizeof(struct deleted_info));
