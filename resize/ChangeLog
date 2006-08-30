@@ -1,3 +1,9 @@
+2006-08-30  Theodore Tso  <tytso@mit.edu>
+
+	* resize2fs.c (adjust_fs_info): Use ext2fs_div_ceil() instead of a
+		using an open-coded expression which was subject to
+		overflows.
+
 2006-05-22  Theodore Tso  <tytso@mit.edu>
 
 	* resize2fs.8.in: Fixed spelling mistake (Addresses Debian Bug:

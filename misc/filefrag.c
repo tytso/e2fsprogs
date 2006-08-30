@@ -47,6 +47,13 @@ int verbose = 0;
 #define EXT4_EXTENTS_FL			0x00080000 /* Inode uses extents */
 #define	EXT3_IOC_GETFLAGS		_IOR('f', 1, long)
 
+static unsigned int div_ceil(unsigned int a, unsigned int b)
+{
+	if (!a)
+		return 0;
+	return ((a - 1) / b) + 1;
+}
+
 static unsigned long get_bmap(int fd, unsigned long block)
 {
 	int	ret;
@@ -105,7 +112,7 @@ static void frag_report(const char *filename)
 	if (verbose) {
 		printf("Filesystem type is: %x\n", fsinfo.f_type);
 	}
-	cylgroups = (fsinfo.f_blocks + fsinfo.f_bsize*8-1) / fsinfo.f_bsize*8;
+	cylgroups = div_ceil(fsinfo.f_blocks, fsinfo.f_bsize*8);
 	if (verbose) {
 		printf("Filesystem cylinder groups is approximately %ld\n", 
 		       cylgroups);

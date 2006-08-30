@@ -1,3 +1,14 @@
+2006-08-30  Theodore Tso  <tytso@mit.edu>
+
+	* ext2fs.h (ext2fs_div_ceil): Add new function which safely
+		calculates an integer division where the result is always
+		rounded up while avoiding overflow errors.
+
+	* initialize.c (calc_reserved_gdt_blocks, ext2fs_initialize):
+	* openfs.c (ext2fs_open2): Use ext2fs_div_ceil() instead of a 
+		using an open-coded expression which was subject to 
+		overflows.
+
 2006-08-06  Andreas Dilger <adilger@clusterfs.com>
 
 	* bitops.h (ext2fs_cpu_to_le32, ext2fs_le64_to_cpu,

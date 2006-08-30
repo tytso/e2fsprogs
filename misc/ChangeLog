@@ -1,3 +1,12 @@
+2006-08-30  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.c (parse_extended_opts): Use ext2fs_div_ceil() instead of
+		a using an open-coded expression which was subject to
+		overflows.
+
+	* filefrag.c (div_ceil, frag_report): Fix potential overflow for
+		really big filesystems.
+
 2006-08-06  Theodore Tso  <tytso@mit.edu>
 
 	* findsuper.c (main): Improve findsuper program by printing the

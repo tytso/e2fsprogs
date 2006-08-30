@@ -77,8 +77,8 @@ static unsigned int calc_reserved_gdt_blocks(ext2_filsys fs)
 	 */
 	if (sb->s_blocks_count < max_blocks / 1024)
 		max_blocks = sb->s_blocks_count * 1024;
-	rsv_groups = (max_blocks - sb->s_first_data_block + bpg - 1) / bpg;
-	rsv_gdb = (rsv_groups + gdpb - 1) / gdpb - fs->desc_blocks;
+	rsv_groups = ext2fs_div_ceil(max_blocks - sb->s_first_data_block, bpg);
+	rsv_gdb = ext2fs_div_ceil(rsv_groups, gdpb) - fs->desc_blocks;
 	if (rsv_gdb > EXT2_ADDR_PER_BLOCK(sb))
 		rsv_gdb = EXT2_ADDR_PER_BLOCK(sb);
 #ifdef RES_GDT_DEBUG
@@ -205,17 +205,15 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	}
 
 retry:
-	fs->group_desc_count = (super->s_blocks_count -
-				super->s_first_data_block +
-				EXT2_BLOCKS_PER_GROUP(super) - 1)
-		/ EXT2_BLOCKS_PER_GROUP(super);
+	fs->group_desc_count = ext2fs_div_ceil(super->s_blocks_count -
+					       super->s_first_data_block,
+					       EXT2_BLOCKS_PER_GROUP(super));
 	if (fs->group_desc_count == 0) {
 		retval = EXT2_ET_TOOSMALL;
 		goto cleanup;
 	}
-	fs->desc_blocks = (fs->group_desc_count +
-			   EXT2_DESC_PER_BLOCK(super) - 1)
-		/ EXT2_DESC_PER_BLOCK(super);
+	fs->desc_blocks = ext2fs_div_ceil(fs->group_desc_count,
+					  EXT2_DESC_PER_BLOCK(super));
 
 	i = fs->blocksize >= 4096 ? 1 : 4096 / fs->blocksize;
 	set_field(s_inodes_count, super->s_blocks_count / i);
@@ -233,8 +231,7 @@ retry:
 	 * should be.  But make sure that we don't allocate more than
 	 * one bitmap's worth of inodes each group.
 	 */
-	ipg = (super->s_inodes_count + fs->group_desc_count - 1) /
-		fs->group_desc_count;
+	ipg = ext2fs_div_ceil(super->s_inodes_count, fs->group_desc_count);
 	if (ipg > fs->blocksize * 8) {
 		if (super->s_blocks_per_group >= 256) {
 			/* Try again with slightly different parameters */

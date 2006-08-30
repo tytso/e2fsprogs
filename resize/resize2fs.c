@@ -190,15 +190,13 @@ errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs, blk_t new_size)
 	fs->super->s_blocks_count = new_size;
 
 retry:
-	fs->group_desc_count = (fs->super->s_blocks_count -
-				fs->super->s_first_data_block +
-				EXT2_BLOCKS_PER_GROUP(fs->super) - 1)
-		/ EXT2_BLOCKS_PER_GROUP(fs->super);
+	fs->group_desc_count = ext2fs_div_ceil(fs->super->s_blocks_count -
+				       fs->super->s_first_data_block,
+				       EXT2_BLOCKS_PER_GROUP(fs->super));
 	if (fs->group_desc_count == 0)
 		return EXT2_ET_TOOSMALL;
-	fs->desc_blocks = (fs->group_desc_count +
-			   EXT2_DESC_PER_BLOCK(fs->super) - 1)
-		/ EXT2_DESC_PER_BLOCK(fs->super);
+	fs->desc_blocks = ext2fs_div_ceil(fs->group_desc_count, 
+					  EXT2_DESC_PER_BLOCK(fs->super));
 
 	/*
 	 * Overhead is the number of bookkeeping blocks per group.  It

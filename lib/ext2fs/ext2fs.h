@@ -965,6 +965,7 @@ extern int ext2fs_group_of_blk(ext2_filsys fs, blk_t blk);
 extern int ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino);
 extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 				      struct ext2_inode *inode);
+extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
 
 /*
  * The actual inlined functions definitions themselves...
@@ -1131,6 +1132,16 @@ _INLINE_ blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 {
        return inode->i_blocks -
               (inode->i_file_acl ? fs->blocksize >> 9 : 0);
+}
+
+/*
+ * This is an efficient, overflow safe way of calculating ceil((1.0 * a) / b)
+ */
+_INLINE_ unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b)
+{
+	if (!a)
+		return 0;
+	return ((a - 1) / b) + 1;
 }
 #undef _INLINE_
 #endif

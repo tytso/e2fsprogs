@@ -258,12 +258,11 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
-	fs->group_desc_count = (fs->super->s_blocks_count -
-				fs->super->s_first_data_block +
-				blocks_per_group - 1) / blocks_per_group;
-	fs->desc_blocks = (fs->group_desc_count +
-			   EXT2_DESC_PER_BLOCK(fs->super) - 1)
-		/ EXT2_DESC_PER_BLOCK(fs->super);
+	fs->group_desc_count = ext2fs_div_ceil(fs->super->s_blocks_count -
+					       fs->super->s_first_data_block,
+					       blocks_per_group);
+	fs->desc_blocks = ext2fs_div_ceil(fs->group_desc_count,
+					  EXT2_DESC_PER_BLOCK(fs->super));
 	retval = ext2fs_get_mem(fs->desc_blocks * fs->blocksize,
 				&fs->group_desc);
 	if (retval)

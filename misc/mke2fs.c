@@ -820,12 +820,12 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			if (!bpg)
 				bpg = blocksize * 8;
 			gdpb = blocksize / sizeof(struct ext2_group_desc);
-			group_desc_count = (param->s_blocks_count +
-					    bpg - 1) / bpg;
+			group_desc_count = 
+				ext2fs_div_ceil(param->s_blocks_count, bpg);
 			desc_blocks = (group_desc_count +
 				       gdpb - 1) / gdpb;
-			rsv_groups = (resize + bpg - 1) / bpg;
-			rsv_gdb = (rsv_groups + gdpb - 1) / gdpb - 
+			rsv_groups = ext2fs_div_ceil(resize, bpg);
+			rsv_gdb = ext2fs_div_ceil(rsv_groups, gdpb) - 
 				desc_blocks;
 			if (rsv_gdb > (int) EXT2_ADDR_PER_BLOCK(param))
 				rsv_gdb = EXT2_ADDR_PER_BLOCK(param);

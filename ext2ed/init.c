@@ -370,6 +370,13 @@ void add_user_command (struct struct_commands *ptr,char *name,char *description,
 	ptr->callback [num]=callback;
 }
 
+static unsigned int div_ceil(unsigned int a, unsigned int b)
+{
+	if (!a)
+		return 0;
+	return ((a - 1) / b) + 1;
+}
+
 int set_file_system_info (void)
 
 {
@@ -415,8 +422,8 @@ int set_file_system_info (void)
 			file_system_info.first_group_desc_offset=2*EXT2_MIN_BLOCK_SIZE;
 		else
 			file_system_info.first_group_desc_offset=file_system_info.block_size;
-		file_system_info.groups_count=(	sb->s_blocks_count-sb->s_first_data_block+sb->s_blocks_per_group-1) /
-						sb->s_blocks_per_group;
+		file_system_info.groups_count = div_ceil(sb->s_blocks_count, 
+						 sb->s_blocks_per_group);
 	
 		file_system_info.inodes_per_block=file_system_info.block_size/sizeof (struct ext2_inode);
 		file_system_info.blocks_per_group=sb->s_inodes_per_group/file_system_info.inodes_per_block;
