@@ -1,5 +1,9 @@
 2006-08-30  Theodore Tso  <tytso@mit.edu>
 
+	* resize2fs.c (ext2fs_calculate_summary_stats): Fix potential
+		overflow problems when the number of blocks is close to
+		2**31.
+
 	* resize2fs.c (adjust_fs_info): Use ext2fs_div_ceil() instead of a
 		using an open-coded expression which was subject to
 		overflows.

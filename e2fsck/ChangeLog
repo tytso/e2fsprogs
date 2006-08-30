@@ -1,3 +1,9 @@
+2006-08-30  Theodore Tso  <tytso@mit.edu>
+
+	* pass5.c (check_inode_bitmaps, check_inode_end, check_block_end):
+	* pass4.c (e2fsck_pass4): Fix potential overflow problems when the
+		number of blocks is close to 2**31.
+
 2006-08-29  Theodore Tso  <tytso@mit.edu>
 
 	* super.c (release_inode_blocks): Fix silly spelling error.

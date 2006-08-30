@@ -110,8 +110,9 @@ void e2fsck_pass4(e2fsck_t ctx)
 	if (ctx->progress)
 		if ((ctx->progress)(ctx, 4, 0, maxgroup))
 			return;
-	
-	for (i=1; i <= fs->super->s_inodes_count; i++) {
+
+	/* Protect loop from wrap-around if s_inodes_count maxed */
+	for (i=1; i <= fs->super->s_inodes_count && i > 0; i++) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return;
 		if ((i % fs->super->s_inodes_per_group) == 0) {

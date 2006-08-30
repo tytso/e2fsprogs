@@ -1582,7 +1582,9 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 	total_free = 0;
 	count = 0;
 	group = 0;
-	for (ino = 1; ino <= fs->super->s_inodes_count; ino++) {
+
+	/* Protect loop from wrap-around if s_inodes_count maxed */
+	for (ino = 1; ino <= fs->super->s_inodes_count && ino > 0; ino++) {
 		if (!ext2fs_fast_test_inode_bitmap(fs->inode_map, ino)) {
 			group_free++;
 			total_free++;

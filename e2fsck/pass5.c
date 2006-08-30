@@ -370,7 +370,8 @@ redo_counts:
 			EXT2_BG_INODE_UNINIT))
 		skip_group++;
 
-	for (i = 1; i <= fs->super->s_inodes_count; i++) {
+	/* Protect loop from wrap-around if inodes_count is maxed */
+	for (i = 1; i <= fs->super->s_inodes_count && i > 0; i++) {
 		actual = ext2fs_fast_test_inode_bitmap(ctx->inode_used_map, i);
 		if (skip_group) 
 			bitmap = 0;
@@ -528,8 +529,9 @@ static void check_inode_end(e2fsck_t ctx)
 	}
 	if (save_inodes_count == end)
 		return;
-	
-	for (i = save_inodes_count + 1; i <= end; i++) {
+
+	/* protect loop from wrap-around if end is maxed */	
+	for (i = save_inodes_count + 1; i <= end && i > save_inodes_count; i++) {
 		if (!ext2fs_test_inode_bitmap(fs->inode_map, i)) {
 			if (fix_problem(ctx, PR_5_INODE_BMAP_PADDING, &pctx)) {
 				for (i = save_inodes_count + 1; i <= end; i++)
@@ -572,8 +574,9 @@ static void check_block_end(e2fsck_t ctx)
 	}
 	if (save_blocks_count == end)
 		return;
-	
-	for (i = save_blocks_count + 1; i <= end; i++) {
+
+	/* Protect loop from wrap-around if end is maxed */	
+	for (i = save_blocks_count + 1; i <= end && i > save_blocks_count; i++) {
 		if (!ext2fs_test_block_bitmap(fs->block_map, i)) {
 			if (fix_problem(ctx, PR_5_BLOCK_BMAP_PADDING, &pctx)) {
 				for (i = save_blocks_count + 1; i <= end; i++)
