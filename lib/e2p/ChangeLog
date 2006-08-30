@@ -1,3 +1,9 @@
+2006-08-30  Theodore Tso  <tytso@mit.edu>
+
+	* percent.c (e2p_percent): Add a new function which accurate and
+		without risk of overflow calculates a percentage of a base
+		number.
+
 2006-08-05  Theodore Tso  <tytso@mit.edu>
 
 	* pf.c: Add support for EXT4_EXTENTS_FL flag.

@@ -107,7 +107,8 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 				sb->s_first_data_block - 
 				(i * sb->s_blocks_per_group);
 		}
-		input.reserved_blocks = input.blocks_count * r_frac / 100;
+		input.reserved_blocks = e2p_percent(r_frac, 
+						    input.blocks_count);
 
 #if 0
 		printf("new block bitmap is at 0x%04x\n", input.block_bitmap);

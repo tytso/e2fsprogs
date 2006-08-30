@@ -50,3 +50,5 @@ unsigned long parse_num_blocks(const char *arg, int log_block_size);
 
 char *e2p_os2string(int os_type);
 int e2p_string2os(char *str);
+
+unsigned int e2p_percent(int percent, unsigned int base);

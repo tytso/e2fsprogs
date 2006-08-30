@@ -1,5 +1,9 @@
 2006-08-30  Theodore Tso  <tytso@mit.edu>
 
+	* resize2fs.c (adjust_fs_info), online.c (online_resize_fs): Use
+		e2p_percent to properly calculate the number of reserved
+		blocks without worrying about overflow.
+
 	* resize2fs.c (ext2fs_calculate_summary_stats): Fix potential
 		overflow problems when the number of blocks is close to
 		2**31.

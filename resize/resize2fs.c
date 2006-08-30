@@ -245,8 +245,8 @@ retry:
 	 */
 	blk = old_fs->super->s_r_blocks_count * 100 /
 		old_fs->super->s_blocks_count;
-	fs->super->s_r_blocks_count = ((fs->super->s_blocks_count * blk)
-				       / 100);
+	fs->super->s_r_blocks_count = e2p_percent(blk, 
+						  fs->super->s_blocks_count);
 
 	/*
 	 * Adjust the bitmaps for size
