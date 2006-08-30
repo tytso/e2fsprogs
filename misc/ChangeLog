@@ -1,5 +1,8 @@
 2006-08-30  Theodore Tso  <tytso@mit.edu>
 
+	* Makefile.in (resize2fs): Remove unused (and bogus) resize2fs
+		rule, which shouldn't be in misc/Makefile.in
+
 	* mke2fs.c (parse_extended_opts): Use ext2fs_div_ceil() instead of
 		a using an open-coded expression which was subject to
 		overflows.

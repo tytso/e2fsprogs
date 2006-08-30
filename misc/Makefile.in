@@ -117,10 +117,6 @@ mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIB
 		$(STATIC_LIBS) $(STATIC_LIBE2P) $(STATIC_LIBBLKID) \
 		$(STATIC_LIBUUID) $(LIBINTL)
 
-resize2fs: resize2fs.o $(DEPLIBS)
-	@echo "	LD $@"
-	@$(CC) $(ALL_LDFLAGS) -o resize2fs resize2fs.o $(LIBS) $(LIBINTL)
-
 chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS_E2P) $(LIBINTL)
