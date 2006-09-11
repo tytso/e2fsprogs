@@ -1,3 +1,7 @@
+2006-09-11  Theodore Tso  <tytso@mit.edu>
+
+	* e2fsprogs.spec.in: Remove duplicate entry in the .spec file
+
 2006-08-06  Theodore Tso  <tytso@mit.edu>
 
 	* configure.in: Add test to see if diff supports the -u option

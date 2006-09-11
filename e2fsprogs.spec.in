@@ -181,7 +181,6 @@ exit 0
 %{_includedir}/ext2fs
 %{_includedir}/ss
 %{_includedir}/uuid
-%{_includedir}/e2p/e2p.h
 %{_mandir}/man1/compile_et.1*
 %{_mandir}/man1/mk_cmds.1*
 %{_mandir}/man3/com_err.3*
