@@ -98,7 +98,7 @@ static void usage(e2fsck_t ctx)
 static void show_stats(e2fsck_t	ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	__u32 inodes, inodes_used;
+	ext2_ino_t inodes, inodes_used;
 	blk_t blocks, blocks_used;
 	int dir_links;
 	int num_files, num_links;

@@ -1,5 +1,9 @@
 2006-08-30  Eric Sandeen  <esandeen@redhat.com>
 
+	* resize2fs.c (adjust_fs_info): Disallow > 2^32 indoes at resize time.
+
+2006-08-30  Eric Sandeen  <esandeen@redhat.com>
+
 	* online.c (online_resize_fs): Fix printf formats.
 
 2006-08-30  Eric Sandeen  <esandeen@redhat.com>

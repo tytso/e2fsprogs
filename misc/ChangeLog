@@ -1,5 +1,9 @@
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
+	* mke2fs.c (PRS): Disallow > 2^32 inodes at mkfs time.
+
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
 	* dumpe2fs.c (list_desc): Use new inlines to calculate group 
 		first & last blocks.
 

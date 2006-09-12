@@ -186,6 +186,7 @@ errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs, blk_t new_size)
 	unsigned long	i, j, old_desc_blocks, max_group;
 	unsigned int	meta_bg, meta_bg_size;
 	int		has_super;
+	__u64		new_inodes;	/* u64 to check for overflow */
 
 	fs->super->s_blocks_count = new_size;
 
@@ -226,6 +227,12 @@ retry:
 	/*
 	 * Adjust the number of inodes
 	 */
+	new_inodes =(__u64)fs->super->s_inodes_per_group * fs->group_desc_count;
+	if (new_inodes > ~0U) {
+		fprintf(stderr, _("inodes (%llu) must be less than %u"),
+				   new_inodes, ~0U);
+		return EXT2_ET_TOO_MANY_INODES;
+	}
 	fs->super->s_inodes_count = fs->super->s_inodes_per_group *
 		fs->group_desc_count;
 

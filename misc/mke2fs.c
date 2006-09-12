@@ -896,7 +896,7 @@ static void PRS(int argc, char *argv[])
 	double		reserved_ratio = 5.0;
 	int		sector_size = 0;
 	int		show_version_only = 0;
-	ext2_ino_t	num_inodes = 0;
+	__u64		num_inodes = 0;	/* u64 to catch too-large input */
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
 	char *		extended_opts = 0;
@@ -1437,6 +1437,21 @@ static void PRS(int argc, char *argv[])
 		fs_param.s_inode_size = inode_size;
 	}
 
+	/* Make sure number of inodes specified will fit in 32 bits */
+	if (num_inodes == 0) {
+		__u64 n;
+		n = (__u64) fs_param.s_blocks_count * blocksize / inode_ratio;
+		if (n > ~0U) {
+			com_err(program_name, 0,
+			    _("too many inodes (%llu), raise inode ratio?"), n);
+			exit(1);
+		}
+	} else if (num_inodes > ~0U) {
+		com_err(program_name, 0,
+			_("too many inodes (%llu), specify < 2^32 inodes"),
+			  (__u64)num_inodes);
+		exit(1);
+	}
 	/*
 	 * Calculate number of inodes based on the inode ratio
 	 */

@@ -1,5 +1,9 @@
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
+	* unix.c (show_stats): use ext2_ino_t for inode containers.
+
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
 	* pass1.c (new_table_block, handle_fs_bad_blocks):
 	* super.c (check_super_block):
 		Use new inlines to calculate group first & last blocks.

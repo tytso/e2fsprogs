@@ -246,9 +246,8 @@ retry:
 	if (ipg > (unsigned) EXT2_MAX_INODES_PER_GROUP(super))
 		ipg = EXT2_MAX_INODES_PER_GROUP(super);
 
+ipg_retry:
 	super->s_inodes_per_group = ipg;
-	if (super->s_inodes_count > ipg * fs->group_desc_count)
-		super->s_inodes_count = ipg * fs->group_desc_count;
 
 	/*
 	 * Make sure the number of inodes per group completely fills
@@ -276,6 +275,10 @@ retry:
 	/*
 	 * adjust inode count to reflect the adjusted inodes_per_group
 	 */
+	if ((__u64)super->s_inodes_per_group * fs->group_desc_count > ~0U) {
+		ipg--;
+		goto ipg_retry;
+	}
 	super->s_inodes_count = super->s_inodes_per_group *
 		fs->group_desc_count;
 	super->s_free_inodes_count = super->s_inodes_count;

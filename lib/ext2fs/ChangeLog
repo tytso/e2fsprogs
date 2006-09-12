@@ -1,5 +1,10 @@
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
+	* initialize.c (ext2fs_initialize): Make sure inode count does
+		not overflow 32 bits.
+
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
 	* alloc_tables.c (ext2fs_allocate_group_table):
 	* check_desc.c (ext2fs_check_desc):
 		Use new inlines to calculate group first & last blocks.
