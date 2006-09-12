@@ -1,3 +1,8 @@
+2006-09-12  Theodore Tso  <tytso@mit.edu>
+
+	* tune2fs.8.in, uuidgen.1: Fix minor grammar problems.  Addresses
+		Debian Bug #373004)
+
 2006-08-30  Theodore Tso  <tytso@mit.edu>
 
 	* tune2fs.c (main), mke2fs.c (PRS): Use e2p_percent to properly

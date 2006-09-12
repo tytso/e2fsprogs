@@ -34,6 +34,10 @@ will generate a random-based UUID if a high-quality random number
 generator is present.  Otherwise, it will chose a time-based UUID.  It 
 is possible to force the generation of one of these two 
 UUID types by using the
+.PP
+A UUID of the form 1b4e28ba-2fa1-11d2-883f-b9a761bde3fb (in
+.BR printf (3)
+format "%08x-%04x-%04x-%04x-%012x") is output to the standard output.
 .B \-r
 or
 .B \-t
@@ -49,10 +53,6 @@ quality random number generator, such as
 .B \-t
 Generate a time-based UUID.  This method creates a UUID based on the system 
 clock plus the system's ethernet hardware address, if present.
-.SH RETURN VALUE
-The UUID of the form 1b4e28ba-2fa1-11d2-883f-b9a761bde3fb (in
-.BR printf (3)
-format "%08x-%04x-%04x-%04x-%012x") is output to the standard output.
 .SH "CONFORMING TO"
 OSF DCE 1.1
 .SH AUTHOR

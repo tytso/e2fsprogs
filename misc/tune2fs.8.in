@@ -182,8 +182,8 @@ It is strongly recommended that either
 (time-dependent) checking be enabled to force periodic full
 .BR e2fsck (8)
 checking of the filesystem.  Failure to do so may lead to filesystem
-corruption due to bad disks, cables, memory, or kernel bugs to go
-unnoticed until they cause data loss or corruption.
+corruption (due to bad disks, cables, memory, or kernel bugs) going
+unnoticed, ultimately resulting in data loss or corruption.
 .TP
 .B \-j
 Add an ext3 journal to the filesystem.  If the 
@@ -329,7 +329,7 @@ of the directory in which they were created.  The standard System V behaviour
 is the default, where newly created files take on the fsgid of the current
 process, unless the directory has the setgid bit set, in which case it takes 
 the gid from the parent directory, and also gets the setgid bit set if it is 
-directory itself.
+a directory itself.
 .TP
 .B user_xattr
 Enable user-specified extended attributes.
@@ -436,7 +436,7 @@ be used to set the last checked time on the original filesystem.  The format
 of 
 .I time-last-checked
 is the international date format, with an optional time specifier, i.e.
-YYYYMMDD[[HHMM]SS].   The keyword 
+YYYYMMDD[HH[MM[SS]]].   The keyword 
 .B now
 is also accepted, in which case the last checked time will be set to the 
 current time.
