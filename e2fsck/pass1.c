@@ -1890,6 +1890,7 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 {
 	ext2_filsys fs = ctx->fs;
 	blk_t		old_block = *new_block;
+	blk_t		last_block;
 	int		i;
 	char		*buf;
 	struct problem_context	pctx;
@@ -1900,8 +1901,8 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 	pctx.blk = old_block;
 	pctx.str = name;
 
-	pctx.errcode = ext2fs_get_free_blocks(fs, first_block,
-			first_block + fs->super->s_blocks_per_group,
+	last_block = ext2fs_group_last_block(fs, group);
+	pctx.errcode = ext2fs_get_free_blocks(fs, first_block, last_block,
 					num, ctx->block_found_map, new_block);
 	if (pctx.errcode) {
 		pctx.num = num;
@@ -1952,9 +1953,11 @@ static void handle_fs_bad_blocks(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	dgrp_t		i;
-	int		first_block = fs->super->s_first_data_block;
+	int		first_block;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
+		first_block = ext2fs_group_first_block(fs, i);
+
 		if (ctx->invalid_block_bitmap_flag[i]) {
 			new_table_block(ctx, first_block, i, _("block bitmap"),
 					1, &fs->group_desc[i].bg_block_bitmap);
@@ -1969,7 +1972,6 @@ static void handle_fs_bad_blocks(e2fsck_t ctx)
 					&fs->group_desc[i].bg_inode_table);
 			ctx->flags |= E2F_FLAG_RESTART;
 		}
-		first_block += fs->super->s_blocks_per_group;
 	}
 	ctx->invalid_bitmaps = 0;
 }

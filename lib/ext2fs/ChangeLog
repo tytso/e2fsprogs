@@ -1,5 +1,13 @@
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
+	* alloc_tables.c (ext2fs_allocate_group_table):
+	* check_desc.c (ext2fs_check_desc):
+		Use new inlines to calculate group first & last blocks.
+	* ext2fs.h:
+		Create new inlines to calculate first/last group blocks.
+
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
 	* bmove.c (process_block):
 	* getsize.c (main):
 	* icount.c (ext2fs_create_icount2, insert_icount_el):

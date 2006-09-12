@@ -34,12 +34,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	blk_t		group_blk, start_blk, last_blk, new_blk, blk;
 	int		j;
 
-	group_blk = fs->super->s_first_data_block +
-		(group * fs->super->s_blocks_per_group);
-	
-	last_blk = group_blk + fs->super->s_blocks_per_group;
-	if (last_blk >= fs->super->s_blocks_count)
-		last_blk = fs->super->s_blocks_count - 1;
+	group_blk = ext2fs_group_first_block(fs, group);
+	last_blk = ext2fs_group_last_block(fs, group);
 
 	if (!bmap)
 		bmap = fs->block_map;
@@ -54,8 +50,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 			return retval;
 		start_blk += fs->inode_blocks_per_group;
 		start_blk += ((fs->stride * group) %
-			      (last_blk - start_blk));
-		if (start_blk > last_blk)
+			      (last_blk - start_blk + 1));
+		if (start_blk >= last_blk)
 			start_blk = group_blk;
 	} else
 		start_blk = group_blk;

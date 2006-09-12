@@ -38,11 +38,9 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		if (i == fs->group_desc_count - 1)
-			last_block = fs->super->s_blocks_count - 1;
-		else
-			last_block = first_block +
-				     fs->super->s_blocks_per_group - 1;
+		first_block = ext2fs_group_first_block(fs, i);
+		last_block = ext2fs_group_last_block(fs, i);
+
 		/*
 		 * Check to make sure block bitmap for group is
 		 * located within the group.
@@ -65,8 +63,6 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 		    ((fs->group_desc[i].bg_inode_table +
 		      fs->inode_blocks_per_group) > last_block))
 			return EXT2_ET_GDESC_BAD_INODE_TABLE;
-		
-		first_block += fs->super->s_blocks_per_group;
 	}
 	return 0;
 }

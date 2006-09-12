@@ -963,6 +963,8 @@ extern int ext2fs_test_ib_dirty(ext2_filsys fs);
 extern int ext2fs_test_bb_dirty(ext2_filsys fs);
 extern int ext2fs_group_of_blk(ext2_filsys fs, blk_t blk);
 extern int ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino);
+extern blk_t ext2fs_group_first_block(ext2_filsys fs, dgrp_t group);
+extern blk_t ext2fs_group_last_block(ext2_filsys fs, dgrp_t group);
 extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 				      struct ext2_inode *inode);
 extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
@@ -1125,6 +1127,26 @@ _INLINE_ int ext2fs_group_of_blk(ext2_filsys fs, blk_t blk)
 _INLINE_ int ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino)
 {
 	return (ino - 1) / fs->super->s_inodes_per_group;
+}
+
+/*
+ * Return the first block (inclusive) in a group
+ */
+_INLINE_ blk_t ext2fs_group_first_block(ext2_filsys fs, dgrp_t group)
+{
+	return fs->super->s_first_data_block +
+		(group * fs->super->s_blocks_per_group);
+}
+
+/*
+ * Return the last block (inclusive) in a group
+ */
+_INLINE_ blk_t ext2fs_group_last_block(ext2_filsys fs, dgrp_t group)
+{
+	return (group == fs->group_desc_count - 1 ?
+		fs->super->s_blocks_count - 1 :
+		ext2fs_group_first_block(fs, group) +
+			(fs->super->s_blocks_per_group - 1));
 }
 
 _INLINE_ blk_t ext2fs_inode_data_blocks(ext2_filsys fs,

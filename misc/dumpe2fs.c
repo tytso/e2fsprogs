@@ -153,13 +153,11 @@ static void list_desc (ext2_filsys fs)
 	else
 		old_desc_blocks = fs->desc_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
+		first_block = ext2fs_group_first_block(fs, i);
+		last_block = ext2fs_group_last_block(fs, i);
+
 		ext2fs_super_and_bgd_loc(fs, i, &super_blk, 
 					 &old_desc_blk, &new_desc_blk, 0);
-		if (i == fs->group_desc_count - 1)
-			last_block = fs->super->s_blocks_count - 1;
-		else
-			last_block = first_block +
-				     fs->super->s_blocks_per_group - 1;
 
 		printf (_("Group %lu: (Blocks "), i);
 		print_range(first_block, last_block);
@@ -226,7 +224,6 @@ static void list_desc (ext2_filsys fs)
 			fputc('\n', stdout);
 			inode_bitmap += fs->super->s_inodes_per_group / 8;
 		}
-		first_block += fs->super->s_blocks_per_group;
 	}
 }
 

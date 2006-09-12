@@ -1,3 +1,9 @@
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
+	* m_raid_opt/expect.1:
+		Change expected values for last group due to correctly
+		calculated last block when using strides.
+
 2006-08-06  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in, test_config: If available, use unified diffs to

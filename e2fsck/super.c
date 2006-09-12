@@ -569,11 +569,9 @@ void check_super_block(e2fsck_t ctx)
 
 	for (i = 0, gd=fs->group_desc; i < fs->group_desc_count; i++, gd++) {
 		pctx.group = i;
-		
-		if (i == fs->group_desc_count - 1)
-			last_block = sb->s_blocks_count - 1;
-		else
-			last_block = first_block + blocks_per_group - 1;
+
+		first_block = ext2fs_group_first_block(fs, i);
+		last_block = ext2fs_group_last_block(fs, i);
 
 		if ((gd->bg_block_bitmap < first_block) ||
 		    (gd->bg_block_bitmap > last_block)) {
@@ -608,7 +606,6 @@ void check_super_block(e2fsck_t ctx)
 		}
 		free_blocks += gd->bg_free_blocks_count;
 		free_inodes += gd->bg_free_inodes_count;
-		first_block += sb->s_blocks_per_group;
 
 		if ((gd->bg_free_blocks_count > sb->s_blocks_per_group) ||
 		    (gd->bg_free_inodes_count > sb->s_inodes_per_group) ||
