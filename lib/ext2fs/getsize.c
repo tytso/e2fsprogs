@@ -303,7 +303,7 @@ int main(int argc, char **argv)
 			"while calling ext2fs_get_device_size");
 		exit(1);
 	}
-	printf("Device %s has %d 1k blocks.\n", argv[1], blocks);
+	printf("Device %s has %u 1k blocks.\n", argv[1], blocks);
 	exit(0);
 }
 #endif

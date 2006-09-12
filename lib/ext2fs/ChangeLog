@@ -1,5 +1,17 @@
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
+	* bmove.c (process_block):
+	* getsize.c (main):
+	* icount.c (ext2fs_create_icount2, insert_icount_el):
+	* tst_badblocks.c (print_list, validate_test_seq, do_test_seq):
+	* tst_badblocks.c (invalid_proc):
+	* tst_getsize.c (main):
+	* tst_iscan.c (check_map):
+	* unix_io.c (raw_read_blk, unix_read_blk):
+	* write_bb_file.c (ext2fs_write_bb_FILE): Fix printf formats.
+
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
 	* closefs.c (write_backup_super):
 	* initialize.c (ext2fs_initialize): Remove unused variables.
 

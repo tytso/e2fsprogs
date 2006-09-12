@@ -27,7 +27,7 @@ errcode_t ext2fs_write_bb_FILE(ext2_badblocks_list bb_list,
 		return retval;
 
 	while (ext2fs_badblocks_list_iterate(bb_iter, &blk)) {
-		fprintf(f, "%d\n", blk);
+		fprintf(f, "%u\n", blk);
 	}
 	ext2fs_badblocks_list_iterate_end(bb_iter);
 	return 0;

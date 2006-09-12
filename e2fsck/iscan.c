@@ -98,7 +98,7 @@ int main (int argc, char *argv[])
 	int		exit_value = FSCK_OK;
 	ext2_filsys	fs;
 	ext2_ino_t	ino;
-	int	num_inodes = 0;
+	__u32	num_inodes = 0;
 	struct ext2_inode inode;
 	ext2_inode_scan	scan;
 	
@@ -135,7 +135,7 @@ int main (int argc, char *argv[])
 	}
 	
 	print_resource_track(NULL, &global_rtrack);
-	printf(_("%d inodes scanned.\n"), num_inodes);
+	printf(_("%u inodes scanned.\n"), num_inodes);
 	
 	exit(0);
 }

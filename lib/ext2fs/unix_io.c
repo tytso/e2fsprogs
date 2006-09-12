@@ -170,8 +170,8 @@ static errcode_t raw_read_blk(io_channel channel,
 	size = (count < 0) ? -count : count * channel->block_size;
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 #ifdef DEBUG
-	printf("count=%d, size=%d, block=%d, blk_size=%d, location=%lx\n",
-	 		count, size, block, channel->block_size, location);
+	printf("count=%d, size=%d, block=%lu, blk_size=%d, location=%llx\n",
+	 		count, size, block, channel->block_size, (long long)location);
 #endif
 	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
 		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
@@ -553,7 +553,7 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 		/* If it's in the cache, use it! */
 		if ((cache = find_cached_block(data, block, &reuse[0]))) {
 #ifdef DEBUG
-			printf("Using cached block %d\n", block);
+			printf("Using cached block %lu\n", block);
 #endif
 			memcpy(cp, cache->buf, channel->block_size);
 			count--;
@@ -569,7 +569,7 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 			if (find_cached_block(data, block+i, &reuse[i]))
 				break;
 #ifdef DEBUG
-		printf("Reading %d blocks starting at %d\n", i, block);
+		printf("Reading %d blocks starting at %lu\n", i, block);
 #endif
 		if ((retval = raw_read_blk(channel, data, block, i, cp)))
 			return retval;

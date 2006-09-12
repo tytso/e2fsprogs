@@ -189,7 +189,7 @@ static void test_disk(ext2_filsys fs, badblocks_list *bb_list)
 	errcode_t	retval;
 	char		buf[1024];
 
-	sprintf(buf, "badblocks -b %d -X %s%s%s %d", fs->blocksize,
+	sprintf(buf, "badblocks -b %d -X %s%s%s %u", fs->blocksize,
 		quiet ? "" : "-s ", (cflag > 1) ? "-w " : "",
 		fs->device_name, fs->super->s_blocks_count);
 	if (verbose)
@@ -233,7 +233,7 @@ static void handle_bad_blocks(ext2_filsys fs, badblocks_list bb_list)
 		if (ext2fs_badblocks_list_test(bb_list, i)) {
 			fprintf(stderr, _("Block %d in primary "
 				"superblock/group descriptor area bad.\n"), i);
-			fprintf(stderr, _("Blocks %u through %d must be good "
+			fprintf(stderr, _("Blocks %u through %u must be good "
 				"in order to build a filesystem.\n"),
 				fs->super->s_first_data_block, must_be_good);
 			fputs(_("Aborting....\n"), stderr);

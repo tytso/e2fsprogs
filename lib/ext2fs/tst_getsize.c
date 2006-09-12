@@ -39,6 +39,6 @@ int main(int argc, const char *argv[])
 		com_err(argv[0], retval, "while getting device size");
 		exit(1);
 	}
-	printf("%s is device has %d blocks.\n", argv[1], blocks);
+	printf("%s is device has %u blocks.\n", argv[1], blocks);
 	return 0;
 }

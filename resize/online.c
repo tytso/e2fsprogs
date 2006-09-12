@@ -74,7 +74,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	if (retval)
 		return retval;
 
-	printf(_("Performing an on-line resize of %s to %d (%dk) blocks.\n"), 
+	printf(_("Performing an on-line resize of %s to %u (%dk) blocks.\n"),
 	       fs->device_name, *new_size, fs->blocksize / 1024);
 
 	size = fs->group_desc_count * sb->s_blocks_per_group + 
@@ -116,7 +116,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		printf("new inode table is at 0x%04x-0x%04x\n", 
 		       input.inode_table,
 		       input.inode_table + new_fs->inode_blocks_per_group-1);
-		printf("new group has %d blocks\n", input.blocks_count);
+		printf("new group has %u blocks\n", input.blocks_count);
 		printf("new group will reserve %d blocks\n", 
 		       input.reserved_blocks);
 		printf("new group has %d free blocks\n", 

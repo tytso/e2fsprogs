@@ -1,3 +1,7 @@
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
+	* htree.c (htree_dump_int_node): Fix printf formats.
+
 2006-08-29  Theodore Tso  <tytso@mit.edu>
 
 	* lsdel.c (do_lsdel): Fix core-dumping bug.  Don't depend on

@@ -1,5 +1,12 @@
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
+	* e2fsck.h (e2fsck): Use unsigned types for filesystem counters.
+	* emptydir.c (add_empty_dirblock):
+	* iscan.c (main):
+	* unix.c (show_stats, check_if_skip): Fix printf formats.
+
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
 	* pass1.c (handle_fs_bad_blocks): Remove unused variables.
 
 2006-08-30  Eric Sandeen <esandeen@redhat.com>

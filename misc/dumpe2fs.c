@@ -250,10 +250,10 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 		return;
 	}
 	if (dump) {
-		header = fmt = "%d\n";
+		header = fmt = "%u\n";
 	} else {
-		header =  _("Bad blocks: %d");
-		fmt = ", %d";
+		header =  _("Bad blocks: %u");
+		fmt = ", %u";
 	}
 	while (ext2fs_badblocks_list_iterate(bb_iter, &blk)) {
 		printf(header ? header : fmt, blk);

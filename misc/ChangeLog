@@ -1,5 +1,11 @@
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
+	* dumpe2fs.c (list_bad_blocks):
+	* e2image.c (output_meta_data_blocks, write_raw_image_file):
+	* mke2fs.c (test_disk, handle_bad_blocks): Fix printf formats.
+
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
 	* e2image.c (mark_table_blocks): Remove unused first_block
 		incrementing from loop.
 

@@ -114,7 +114,7 @@ static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 
 	for (i=0; i < limit.count; i++) {
 		hash = i ? ext2fs_le32_to_cpu(ent[i].hash) : 0;
-		fprintf(pager, "Entry #%d: Hash 0x%08x%s, block %d\n", i,
+		fprintf(pager, "Entry #%d: Hash 0x%08x%s, block %u\n", i,
 			hash, (hash & 1) ? " (**)" : "",
 			ext2fs_le32_to_cpu(ent[i].block));
 		}

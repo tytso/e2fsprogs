@@ -309,24 +309,24 @@ struct e2fsck_struct {
 	char start_meta[2], stop_meta[2];
 	
 	/* File counts */
-	int fs_directory_count;
-	int fs_regular_count;
-	int fs_blockdev_count;
-	int fs_chardev_count;
-	int fs_links_count;
-	int fs_symlinks_count;
-	int fs_fast_symlinks_count;
-	int fs_fifo_count;
-	int fs_total_count;
-	int fs_badblocks_count;
-	int fs_sockets_count;
-	int fs_ind_count;
-	int fs_dind_count;
-	int fs_tind_count;
-	int fs_fragmented;
-	int large_files;
-	int fs_ext_attr_inodes;
-	int fs_ext_attr_blocks;
+	__u32 fs_directory_count;
+	__u32 fs_regular_count;
+	__u32 fs_blockdev_count;
+	__u32 fs_chardev_count;
+	__u32 fs_links_count;
+	__u32 fs_symlinks_count;
+	__u32 fs_fast_symlinks_count;
+	__u32 fs_fifo_count;
+	__u32 fs_total_count;
+	__u32 fs_badblocks_count;
+	__u32 fs_sockets_count;
+	__u32 fs_ind_count;
+	__u32 fs_dind_count;
+	__u32 fs_tind_count;
+	__u32 fs_fragmented;
+	__u32 large_files;
+	__u32 fs_ext_attr_inodes;
+	__u32 fs_ext_attr_blocks;
 
 	time_t now;
 

@@ -417,7 +417,7 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 			retval = io_channel_read_blk(fs->io, blk, 1, buf);
 			if (retval) {
 				com_err(program_name, retval,
-					"error reading block %d", blk);
+					"error reading block %u", blk);
 			}
 			if (scramble_block_map && 
 			    ext2fs_test_block_bitmap(scramble_block_map, blk))
@@ -516,7 +516,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 				       block_buf, process_dir_block, &pb);
 			if (retval) {
 				com_err(program_name, retval,
-					"while iterating over inode %d", 
+					"while iterating over inode %u",
 					ino);
 				exit(1);
 			}
@@ -529,7 +529,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 				       process_file_block, &pb);
 				if (retval) {
 					com_err(program_name, retval,
-					"while iterating over %d", ino);
+					"while iterating over inode %u", ino);
 					exit(1);
 				}
 			}

@@ -103,7 +103,7 @@ static void print_list(badblocks_list bb, int verify)
 	}
 	ok = i = 1;
 	while (ext2fs_badblocks_list_iterate(iter, &blk)) {
-		printf("%d ", blk);
+		printf("%u ", blk);
 		if (i++ != blk)
 			ok = 0;
 	}
@@ -130,7 +130,7 @@ static void validate_test_seq(badblocks_list bb, blk_t *vec)
 			ok = 0;
 			test_fail++;
 		}
-		printf("\tblock %d is %s --- %s\n", vec[i],
+		printf("\tblock %u is %s --- %s\n", vec[i],
 		       match ? "present" : "absent",
 		       ok ? "OK" : "NOT OK");
 	}
@@ -145,7 +145,7 @@ static void do_test_seq(badblocks_list bb, blk_t *vec)
 		case ADD_BLK:
 			ext2fs_badblocks_list_add(bb, vec[i]);
 			match = ext2fs_badblocks_list_test(bb, vec[i]);
-			printf("Adding block %d --- now %s\n", vec[i], 
+			printf("Adding block %u --- now %s\n", vec[i],
 			       match ? "present" : "absent");
 			if (!match) {
 				printf("FAILURE!\n");
@@ -155,7 +155,7 @@ static void do_test_seq(badblocks_list bb, blk_t *vec)
 		case DEL_BLK:
 			ext2fs_badblocks_list_del(bb, vec[i]);
 			match = ext2fs_badblocks_list_test(bb, vec[i]);
-			printf("Removing block %d --- now %s\n", vec[i], 
+			printf("Removing block %u --- now %s\n", vec[i],
 			       ext2fs_badblocks_list_test(bb, vec[i]) ? 
 			       "present" : "absent");
 			if (match) {
@@ -209,7 +209,7 @@ static void invalid_proc(ext2_filsys fs, blk_t blk)
 		printf("Expected invalid block\n");
 		test_expected_fail++;
 	} else {
-		printf("Invalid block #: %d\n", blk);
+		printf("Invalid block #: %u\n", blk);
 		test_fail++;
 	}
 }
