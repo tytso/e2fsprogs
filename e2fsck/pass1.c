@@ -1953,7 +1953,7 @@ static void handle_fs_bad_blocks(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	dgrp_t		i;
-	int		first_block;
+	blk_t		first_block;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		first_block = ext2fs_group_first_block(fs, i);

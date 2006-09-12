@@ -1,5 +1,9 @@
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
+	* mke2fs.c (PRS): Avoid overflow in megs calculation.
+
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
 	* mke2fs.c (PRS): Disallow > 2^32 inodes at mkfs time.
 
 2006-08-30  Eric Sandeen <esandeen@redhat.com>

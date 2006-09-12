@@ -59,8 +59,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		exit(1);
 	}
 
-	r_frac = ((100 * sb->s_r_blocks_count) + sb->s_blocks_count-1) /
-		sb->s_blocks_count;
+	r_frac = ext2fs_div_ceil(100 * sb->s_r_blocks_count, sb->s_blocks_count);
 
 	retval = ext2fs_read_bitmaps(fs);
 	if (retval)

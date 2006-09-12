@@ -250,7 +250,7 @@ retry:
 	/*
 	 * Adjust the number of reserved blocks
 	 */
-	blk = old_fs->super->s_r_blocks_count * 100 /
+	blk = (__u64)old_fs->super->s_r_blocks_count * 100 /
 		old_fs->super->s_blocks_count;
 	fs->super->s_r_blocks_count = e2p_percent(blk, 
 						  fs->super->s_blocks_count);

@@ -1,5 +1,11 @@
 2006-08-30  Eric Sandeen  <esandeen@redhat.com>
 
+	* online.c (online_resize_fs): use div_ceil for r_frac calculation.
+	* resize2fs.c (adjust_fs_info): avoid overflow in blk calculation
+		when figuring new reserved blocks count.
+
+2006-08-30  Eric Sandeen  <esandeen@redhat.com>
+
 	* resize2fs.c (adjust_fs_info): Disallow > 2^32 indoes at resize time.
 
 2006-08-30  Eric Sandeen  <esandeen@redhat.com>

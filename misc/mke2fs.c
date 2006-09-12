@@ -1260,7 +1260,7 @@ static void PRS(int argc, char *argv[])
 	}
 
 	if (!fs_type) {
-		int megs = fs_param.s_blocks_count * 
+		int megs = (__u64)fs_param.s_blocks_count *
 			(EXT2_BLOCK_SIZE(&fs_param) / 1024) / 1024;
 
 		if (megs <= 3)
