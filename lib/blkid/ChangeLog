@@ -1,3 +1,8 @@
+2006-09-12  Theodore Tso  <tytso@mit.edu>
+
+	* devname.c (dm_probe_all): probe_one expects device names passed
+		to it w/o the leading "/dev".
+
 2006-08-19  Andreas Dilger <adilger@clusterfs.com>
 
 	* blkid.8.in: Make the description of the -l option more accurate.

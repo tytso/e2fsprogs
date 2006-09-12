@@ -291,7 +291,7 @@ static void dm_probe_all(blkid_cache cache, int only_if_new)
 
 		names = (void *)names + next;
 
-		rc = asprintf(&device, "/dev/mapper/%s", names->name);
+		rc = asprintf(&device, "mapper/%s", names->name);
 		if (rc < 0)
 			goto try_next;
 
