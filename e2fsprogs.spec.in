@@ -6,7 +6,7 @@ Summary: Utilities for managing the second extended (ext2) filesystem.
 Name: e2fsprogs
 Version: @E2FSPROGS_VERSION@
 Release: 0
-Copyright: GPL
+License: GPLv2
 Group: System Environment/Base
 Source:  ftp://download.sourceforge.net/pub/sourceforge/e2fsprogs/e2fsprogs-%{version}.tar.gz
 Url: http://e2fsprogs.sourceforge.net/
