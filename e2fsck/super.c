@@ -566,15 +566,17 @@ void check_super_block(e2fsck_t ctx)
 	 * Verify the group descriptors....
 	 */
 	first_block =  sb->s_first_data_block;
-	last_block = first_block + blocks_per_group;
 
 	for (i = 0, gd=fs->group_desc; i < fs->group_desc_count; i++, gd++) {
 		pctx.group = i;
 		
 		if (i == fs->group_desc_count - 1)
-			last_block = sb->s_blocks_count;
+			last_block = sb->s_blocks_count - 1;
+		else
+			last_block = first_block + blocks_per_group - 1;
+
 		if ((gd->bg_block_bitmap < first_block) ||
-		    (gd->bg_block_bitmap >= last_block)) {
+		    (gd->bg_block_bitmap > last_block)) {
 			pctx.blk = gd->bg_block_bitmap;
 			if (fix_problem(ctx, PR_0_BB_NOT_GROUP, &pctx))
 				gd->bg_block_bitmap = 0;
@@ -584,7 +586,7 @@ void check_super_block(e2fsck_t ctx)
 			ctx->invalid_bitmaps++;
 		}
 		if ((gd->bg_inode_bitmap < first_block) ||
-		    (gd->bg_inode_bitmap >= last_block)) {
+		    (gd->bg_inode_bitmap > last_block)) {
 			pctx.blk = gd->bg_inode_bitmap;
 			if (fix_problem(ctx, PR_0_IB_NOT_GROUP, &pctx))
 				gd->bg_inode_bitmap = 0;
@@ -595,7 +597,7 @@ void check_super_block(e2fsck_t ctx)
 		}
 		if ((gd->bg_inode_table < first_block) ||
 		    ((gd->bg_inode_table +
-		      fs->inode_blocks_per_group - 1) >= last_block)) {
+		      fs->inode_blocks_per_group - 1) > last_block)) {
 			pctx.blk = gd->bg_inode_table;
 			if (fix_problem(ctx, PR_0_ITABLE_NOT_GROUP, &pctx))
 				gd->bg_inode_table = 0;
@@ -607,7 +609,6 @@ void check_super_block(e2fsck_t ctx)
 		free_blocks += gd->bg_free_blocks_count;
 		free_inodes += gd->bg_free_inodes_count;
 		first_block += sb->s_blocks_per_group;
-		last_block += sb->s_blocks_per_group;
 
 		if ((gd->bg_free_blocks_count > sb->s_blocks_per_group) ||
 		    (gd->bg_free_inodes_count > sb->s_inodes_per_group) ||

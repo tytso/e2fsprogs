@@ -1,3 +1,11 @@
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
+	* pass1b.c (check_if_fs_block): Change block group loop to use 
+		a common pattern of first_block/last_block, etc.
+	
+	* super.c (check_super_block): Avoid overflows when iterating over
+		group descriptors on very large filesystems
+
 2006-08-30  Theodore Tso  <tytso@mit.edu>
 
 	* pass5.c (check_inode_bitmaps, check_inode_end, check_block_end):

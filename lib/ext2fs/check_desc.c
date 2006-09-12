@@ -32,37 +32,41 @@
 errcode_t ext2fs_check_desc(ext2_filsys fs)
 {
 	dgrp_t i;
-	blk_t block = fs->super->s_first_data_block;
-	blk_t next;
+	blk_t first_block = fs->super->s_first_data_block;
+	blk_t last_block;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		next = block + fs->super->s_blocks_per_group;
+		if (i == fs->group_desc_count - 1)
+			last_block = fs->super->s_blocks_count - 1;
+		else
+			last_block = first_block +
+				     fs->super->s_blocks_per_group - 1;
 		/*
 		 * Check to make sure block bitmap for group is
 		 * located within the group.
 		 */
-		if (fs->group_desc[i].bg_block_bitmap < block ||
-		    fs->group_desc[i].bg_block_bitmap >= next)
+		if (fs->group_desc[i].bg_block_bitmap < first_block ||
+		    fs->group_desc[i].bg_block_bitmap > last_block)
 			return EXT2_ET_GDESC_BAD_BLOCK_MAP;
 		/*
 		 * Check to make sure inode bitmap for group is
 		 * located within the group
 		 */
-		if (fs->group_desc[i].bg_inode_bitmap < block ||
-		    fs->group_desc[i].bg_inode_bitmap >= next)
+		if (fs->group_desc[i].bg_inode_bitmap < first_block ||
+		    fs->group_desc[i].bg_inode_bitmap > last_block)
 			return EXT2_ET_GDESC_BAD_INODE_MAP;
 		/*
 		 * Check to make sure inode table for group is located
 		 * within the group
 		 */
-		if (fs->group_desc[i].bg_inode_table < block ||
+		if (fs->group_desc[i].bg_inode_table < first_block ||
 		    ((fs->group_desc[i].bg_inode_table +
-		      fs->inode_blocks_per_group) >= next))
+		      fs->inode_blocks_per_group) > last_block))
 			return EXT2_ET_GDESC_BAD_INODE_TABLE;
 		
-		block = next;
+		first_block += fs->super->s_blocks_per_group;
 	}
 	return 0;
 }

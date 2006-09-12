@@ -1,3 +1,12 @@
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
+	* dumpe2fs.c (list_desc, mark_table_blocks): Avoid overflows when
+		iterating over group descriptors on very large
+		filesystems.
+	
+	* e2image.c (mark_table_blocks): Change block group loop to use a
+		common pattern of first_block/last_block, etc.
+
 2006-09-12  Theodore Tso  <tytso@mit.edu>
 
 	* tune2fs.8.in, uuidgen.1: Fix minor grammar problems.  Addresses

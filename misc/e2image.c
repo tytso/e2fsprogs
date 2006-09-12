@@ -244,21 +244,21 @@ static int process_file_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 
 static void mark_table_blocks(ext2_filsys fs)
 {
-	blk_t	block, b;
+	blk_t	first_block, b;
 	unsigned int	i,j;
 	
-	block = fs->super->s_first_data_block;
+	first_block = fs->super->s_first_data_block;
 	/*
 	 * Mark primary superblock
 	 */
-	ext2fs_mark_block_bitmap(meta_block_map, block);
+	ext2fs_mark_block_bitmap(meta_block_map, first_block);
 			
 	/*
 	 * Mark the primary superblock descriptors
 	 */
 	for (j = 0; j < fs->desc_blocks; j++) {
 		ext2fs_mark_block_bitmap(meta_block_map,
-			 ext2fs_descriptor_block_loc(fs, block, j));
+			 ext2fs_descriptor_block_loc(fs, first_block, j));
 	}
 
 	for (i = 0; i < fs->group_desc_count; i++) {
@@ -287,7 +287,7 @@ static void mark_table_blocks(ext2_filsys fs)
 			ext2fs_mark_block_bitmap(meta_block_map,
 				 fs->group_desc[i].bg_inode_bitmap);
 		}
-		block += fs->super->s_blocks_per_group;
+		first_block += fs->super->s_blocks_per_group;
 	}
 }
 

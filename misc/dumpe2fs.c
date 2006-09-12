@@ -130,7 +130,7 @@ static void list_desc (ext2_filsys fs)
 {
 	unsigned long i;
 	long diff;
-	blk_t	group_blk, next_blk;
+	blk_t	first_block, last_block;
 	blk_t	super_blk, old_desc_blk, new_desc_blk;
 	char *block_bitmap=NULL, *inode_bitmap=NULL;
 	int inode_blocks_per_group, old_desc_blocks, reserved_gdt;
@@ -147,7 +147,7 @@ static void list_desc (ext2_filsys fs)
 				 EXT2_BLOCK_SIZE(fs->super);
 	reserved_gdt = fs->super->s_reserved_gdt_blocks;
 	fputc('\n', stdout);
-	group_blk = fs->super->s_first_data_block;
+	first_block = fs->super->s_first_data_block;
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
@@ -155,11 +155,14 @@ static void list_desc (ext2_filsys fs)
 	for (i = 0; i < fs->group_desc_count; i++) {
 		ext2fs_super_and_bgd_loc(fs, i, &super_blk, 
 					 &old_desc_blk, &new_desc_blk, 0);
-		next_blk = group_blk + fs->super->s_blocks_per_group;
-		if (next_blk > fs->super->s_blocks_count)
-			next_blk = fs->super->s_blocks_count;
+		if (i == fs->group_desc_count - 1)
+			last_block = fs->super->s_blocks_count - 1;
+		else
+			last_block = first_block +
+				     fs->super->s_blocks_per_group - 1;
+
 		printf (_("Group %lu: (Blocks "), i);
-		print_range(group_blk, next_blk - 1);
+		print_range(first_block, last_block);
 		fputs(")", stdout);
 		print_bg_opts(fs, i);
 		has_super = ((i==0) || super_blk);
@@ -188,19 +191,19 @@ static void list_desc (ext2_filsys fs)
 			fputc('\n', stdout);
 		fputs(_("  Block bitmap at "), stdout);
 		print_number(fs->group_desc[i].bg_block_bitmap);
-		diff = fs->group_desc[i].bg_block_bitmap - group_blk;
+		diff = fs->group_desc[i].bg_block_bitmap - first_block;
 		if (diff >= 0)
 			printf(" (+%ld)", diff);
 		fputs(_(", Inode bitmap at "), stdout);
 		print_number(fs->group_desc[i].bg_inode_bitmap);
-		diff = fs->group_desc[i].bg_inode_bitmap - group_blk;
+		diff = fs->group_desc[i].bg_inode_bitmap - first_block;
 		if (diff >= 0)
 			printf(" (+%ld)", diff);
 		fputs(_("\n  Inode table at "), stdout);
 		print_range(fs->group_desc[i].bg_inode_table,
 			    fs->group_desc[i].bg_inode_table +
 			    inode_blocks_per_group - 1);
-		diff = fs->group_desc[i].bg_inode_table - group_blk;
+		diff = fs->group_desc[i].bg_inode_table - first_block;
 		if (diff > 0)
 			printf(" (+%ld)", diff);
 		printf (_("\n  %d free blocks, %d free inodes, "
@@ -223,7 +226,7 @@ static void list_desc (ext2_filsys fs)
 			fputc('\n', stdout);
 			inode_bitmap += fs->super->s_inodes_per_group / 8;
 		}
-		group_blk = next_blk;
+		first_block += fs->super->s_blocks_per_group;
 	}
 }
 

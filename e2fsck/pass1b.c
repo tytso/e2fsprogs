@@ -779,16 +779,16 @@ errout:
 static int check_if_fs_block(e2fsck_t ctx, blk_t test_block)
 {
 	ext2_filsys fs = ctx->fs;
-	blk_t	block;
+	blk_t	first_block;
 	dgrp_t	i;
 	
-	block = fs->super->s_first_data_block;
+	first_block = fs->super->s_first_data_block;
 	for (i = 0; i < fs->group_desc_count; i++) {
 
-		/* Check superblocks/block group descriptros */
+		/* Check superblocks/block group descriptors */
 		if (ext2fs_bg_has_super(fs, i)) {
-			if (test_block >= block &&
-			    (test_block <= block + fs->desc_blocks))
+			if (test_block >= first_block &&
+			    (test_block <= first_block + fs->desc_blocks))
 				return 1;
 		}
 		
@@ -804,7 +804,7 @@ static int check_if_fs_block(e2fsck_t ctx, blk_t test_block)
 		    (test_block == fs->group_desc[i].bg_inode_bitmap))
 			return 1;
 		
-		block += fs->super->s_blocks_per_group;
+		first_block += fs->super->s_blocks_per_group;
 	}
 	return 0;
 }

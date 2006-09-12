@@ -1,3 +1,8 @@
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
+	* check_desc.c (ext2fs_check_desc): avoid overflows when iterating
+		over group descriptors on very large filesystems.
+
 2006-08-30  Theodore Tso  <tytso@mit.edu>
 
 	* bitmaps.c (ext2fs_set_bitmap_padding): Fix potential overflow
