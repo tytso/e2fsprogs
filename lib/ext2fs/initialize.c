@@ -99,7 +99,6 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	int		frags_per_block;
 	unsigned int	rem;
 	unsigned int	overhead = 0;
-	blk_t		group_block;
 	unsigned int	ipg;
 	dgrp_t		i;
 	blk_t		numblocks;
@@ -360,7 +359,6 @@ retry:
 	 * inode table have not been allocated (and in fact won't be
 	 * by this routine), they are accounted for nevertheless.
 	 */
-	group_block = super->s_first_data_block;
 	super->s_free_blocks_count = 0;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		numblocks = ext2fs_reserve_super_and_bgd(fs, i, fs->block_map);
@@ -370,8 +368,6 @@ retry:
 		fs->group_desc[i].bg_free_inodes_count =
 			fs->super->s_inodes_per_group;
 		fs->group_desc[i].bg_used_dirs_count = 0;
-		
-		group_block += super->s_blocks_per_group;
 	}
 	
 	ext2fs_mark_super_dirty(fs);

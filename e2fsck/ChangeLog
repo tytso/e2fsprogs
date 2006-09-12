@@ -1,5 +1,9 @@
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
+	* pass1.c (handle_fs_bad_blocks): Remove unused variables.
+
+2006-08-30  Eric Sandeen <esandeen@redhat.com>
+
 	* pass1b.c (check_if_fs_block): Change block group loop to use 
 		a common pattern of first_block/last_block, etc.
 	

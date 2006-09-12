@@ -1,3 +1,7 @@
+2006-08-30  Eric Sandeen  <esandeen@redhat.com>
+
+	* resize2fs.c (mark_table_blocks): Remove unused variable.
+
 2006-08-30  Theodore Tso  <tytso@mit.edu>
 
 	* resize2fs.c (adjust_fs_info), online.c (online_resize_fs): Use

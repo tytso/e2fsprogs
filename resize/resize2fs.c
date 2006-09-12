@@ -536,14 +536,13 @@ errout:
 static errcode_t mark_table_blocks(ext2_filsys fs,
 				   ext2fs_block_bitmap bmap)
 {
-	blk_t			block, b;
+	blk_t			b;
 	unsigned int		j;
 	dgrp_t			i;
 	unsigned long		meta_bg_size;
 	unsigned int		old_desc_blocks;
 
 	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
-	block = fs->super->s_first_data_block;
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
@@ -571,7 +570,6 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 		 */
 		ext2fs_mark_block_bitmap(bmap,
 					 fs->group_desc[i].bg_inode_bitmap);
-		block += fs->super->s_blocks_per_group;
 	}
 	return 0;
 }

@@ -287,7 +287,6 @@ static void mark_table_blocks(ext2_filsys fs)
 			ext2fs_mark_block_bitmap(meta_block_map,
 				 fs->group_desc[i].bg_inode_bitmap);
 		}
-		first_block += fs->super->s_blocks_per_group;
 	}
 }
 

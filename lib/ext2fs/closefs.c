@@ -206,7 +206,6 @@ static errcode_t write_backup_super(ext2_filsys fs, dgrp_t group,
 errcode_t ext2fs_flush(ext2_filsys fs)
 {
 	dgrp_t		i,j;
-	blk_t		group_block;
 	errcode_t	retval;
 	unsigned long	fs_state;
 	struct ext2_super_block *super_shadow = 0;
@@ -275,7 +274,6 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	 * Write out the master group descriptors, and the backup
 	 * superblocks and group descriptors.
 	 */
-	group_block = fs->super->s_first_data_block;
 	group_ptr = (char *) group_shadow;
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_desc_blocks = fs->super->s_first_meta_bg;

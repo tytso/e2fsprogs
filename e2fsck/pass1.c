@@ -1981,14 +1981,13 @@ static void handle_fs_bad_blocks(e2fsck_t ctx)
 static void mark_table_blocks(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	blk_t	block, b;
+	blk_t	b;
 	dgrp_t	i;
 	int	j;
 	struct problem_context pctx;
 	
 	clear_problem_context(&pctx);
 	
-	block = fs->super->s_first_data_block;
 	for (i = 0; i < fs->group_desc_count; i++) {
 		pctx.group = i;
 
@@ -2049,7 +2048,6 @@ static void mark_table_blocks(e2fsck_t ctx)
 				     fs->group_desc[i].bg_inode_bitmap);
 			}
 		}
-		block += fs->super->s_blocks_per_group;
 	}
 }
 	
