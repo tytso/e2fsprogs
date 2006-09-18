@@ -350,8 +350,8 @@ static int probe_fat(struct blkid_probe *probe,
 	}
 
 	if (vol_label && memcmp(vol_label, no_name, 11)) {
-		label = vol_label;
-		label_len = figure_label_len(vol_label, 11);
+		if ((label_len = figure_label_len(vol_label, 11)))
+			label = vol_label;
 	}
 
 	/* We can't just print them as %04X, because they are unaligned */

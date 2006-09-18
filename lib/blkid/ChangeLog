@@ -1,3 +1,7 @@
+2006-09-17  Karel Zak  <kzak@redhat.com> 
+
+	* probe.c (probe_fat): Fix problem with empty FAT label.
+
 2006-09-17  Karel Zak  <kzak@redhat.com>
 
 	* probe.c (probe_gfs, _gfs2), probe.h: Add support for GFS/GFS2 
