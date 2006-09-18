@@ -345,6 +345,54 @@ struct iso_volume_descriptor {
 	unsigned char	escape_sequences[8];
 };
 
+/* Common gfs/gfs2 constants: */
+#define GFS_MAGIC               0x01161970
+#define GFS_DEFAULT_BSIZE       4096
+#define GFS_SUPERBLOCK_OFFSET	(0x10 * GFS_DEFAULT_BSIZE)
+#define GFS_METATYPE_SB         1
+#define GFS_FORMAT_SB           100
+#define GFS_LOCKNAME_LEN        64
+
+/* gfs1 constants: */
+#define GFS_FORMAT_FS           1309
+#define GFS_FORMAT_MULTI        1401
+/* gfs2 constants: */
+#define GFS2_FORMAT_FS          1801
+#define GFS2_FORMAT_MULTI       1900
+
+struct gfs2_meta_header {
+	__u32 mh_magic;
+	__u32 mh_type;
+	__u64 __pad0;          /* Was generation number in gfs1 */
+	__u32 mh_format;
+	__u32 __pad1;          /* Was incarnation number in gfs1 */
+};
+
+struct gfs2_inum {
+	__u64 no_formal_ino;
+	__u64 no_addr;
+};
+
+struct gfs2_sb {
+	struct gfs2_meta_header sb_header;
+
+	__u32 sb_fs_format;
+	__u32 sb_multihost_format;
+	__u32  __pad0;  /* Was superblock flags in gfs1 */
+	
+	__u32 sb_bsize;
+	__u32 sb_bsize_shift;
+	__u32 __pad1;   /* Was journal segment size in gfs1 */
+	
+	struct gfs2_inum sb_master_dir; /* Was jindex dinode in gfs1 */
+	struct gfs2_inum __pad2; /* Was rindex dinode in gfs1 */
+	struct gfs2_inum sb_root_dir;
+	
+	char sb_lockproto[GFS_LOCKNAME_LEN];
+	char sb_locktable[GFS_LOCKNAME_LEN];
+	/* In gfs1, quota and license dinodes followed */
+};
+
 /*
  * Byte swap functions
  */

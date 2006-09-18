@@ -1,3 +1,7 @@
+2006-09-17  Karel Zak  <kzak@redhat.com>
+
+	* probe.c (probe_gfs, _gfs2), probe.h: Add support for GFS/GFS2 
+
 2006-09-12  Theodore Tso  <tytso@mit.edu>
 
 	* devname.c (dm_probe_all): probe_one expects device names passed

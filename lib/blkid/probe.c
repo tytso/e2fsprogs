@@ -648,6 +648,50 @@ static int probe_oracleasm(struct blkid_probe *probe,
 	return 0;
 }
 
+static int probe_gfs(struct blkid_probe *probe,
+		     struct blkid_magic *id __BLKID_ATTR((unused)),
+		     unsigned char *buf)
+{
+	struct gfs2_sb *sbd;
+	const char *label = 0;
+
+	sbd = (struct gfs2_sb *)buf;
+
+	if (blkid_be32(sbd->sb_fs_format) == GFS_FORMAT_FS &&
+	    blkid_be32(sbd->sb_multihost_format) == GFS_FORMAT_MULTI)
+	{	
+		blkid_set_tag(probe->dev, "UUID", 0, 0);
+	
+		if (strlen(sbd->sb_locktable))
+			label = sbd->sb_locktable;
+		blkid_set_tag(probe->dev, "LABEL", label, sizeof(sbd->sb_locktable));
+		return 0;
+	}
+	return 1;
+}
+
+static int probe_gfs2(struct blkid_probe *probe,
+		     struct blkid_magic *id __BLKID_ATTR((unused)),
+		     unsigned char *buf)
+{
+	struct gfs2_sb *sbd;
+	const char *label = 0;
+
+	sbd = (struct gfs2_sb *)buf;
+
+	if (blkid_be32(sbd->sb_fs_format) == GFS2_FORMAT_FS &&
+	    blkid_be32(sbd->sb_multihost_format) == GFS2_FORMAT_MULTI)
+	{	
+		blkid_set_tag(probe->dev, "UUID", 0, 0);
+	
+		if (strlen(sbd->sb_locktable))
+			label = sbd->sb_locktable;
+		blkid_set_tag(probe->dev, "LABEL", label, sizeof(sbd->sb_locktable));
+		return 0;
+	}
+	return 1;
+}
+
 /*
  * BLKID_BLK_OFFS is at least as large as the highest bim_kboff defined
  * in the type_array table below + bim_kbalign.
@@ -675,6 +719,8 @@ static struct blkid_magic type_array[] = {
   { "reiserfs", 64,   0x34,  8, "ReIsErFs",		probe_reiserfs },
   { "reiserfs",	 8,	20,  8, "ReIsErFs",		probe_reiserfs },
   { "reiser4",  64,	 0,  7, "ReIsEr4",		probe_reiserfs4 },
+  { "gfs2",     64,      0,  4, "\x01\x16\x19\x70",     probe_gfs2 },
+  { "gfs",      64,      0,  4, "\x01\x16\x19\x70",     probe_gfs },
   { "vfat",      0,   0x52,  5, "MSWIN",                probe_fat },
   { "vfat",      0,   0x52,  8, "FAT32   ",             probe_fat },
   { "vfat",      0,   0x36,  5, "MSDOS",                probe_fat },
