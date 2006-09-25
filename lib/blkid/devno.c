@@ -120,15 +120,16 @@ static void scan_dir(char *dirname, dev_t devno, struct dir_list **list,
 		if (stat(path, &st) < 0)
 			continue;
 
-		if (S_ISDIR(st.st_mode))
-			add_to_dirlist(path, list);
-		else if (S_ISBLK(st.st_mode) && st.st_rdev == devno) {
+		if (S_ISBLK(st.st_mode) && st.st_rdev == devno) {
 			*devname = blkid_strdup(path);
 			DBG(DEBUG_DEVNO,
 			    printf("found 0x%llx at %s (%p)\n", (long long)devno,
 				   path, *devname));
 			break;
 		}
+		if (S_ISDIR(st.st_mode) && !lstat(path, &st) && 
+		    S_ISDIR(st.st_mode))
+			add_to_dirlist(path, list);
 	}
 	closedir(dir);
 	return;

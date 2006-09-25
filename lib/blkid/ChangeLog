@@ -1,3 +1,8 @@
+2006-09-24  Theodore Tso  <tytso@mit.edu>
+
+	* devno.c (scan_dir): Don't follow symlinks when recursively
+		searching directories under /dev.
+
 2006-09-17  Karel Zak  <kzak@redhat.com> 
 
 	* probe.c (probe_fat): Fix problem with empty FAT label.
