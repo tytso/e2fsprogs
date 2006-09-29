@@ -19,6 +19,8 @@ unsigned int e2p_percent(int percent, unsigned int base)
 {
 	unsigned int mask = ~((1 << (sizeof(unsigned int) - 1) * 8) - 1);
 
+	if (!percent)
+		return 0;
 	if (100 % percent == 0)
 		return base / (100 / percent);
 	if (mask & base) 
