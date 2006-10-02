@@ -288,13 +288,13 @@ _INLINE_ __u16 ext2fs_swab16(__u16 val)
 		:  "0" (val)); \
 		return val;
 }
-#endif
 
 _INLINE_ __u64 ext2fs_swab64(__u64 val)
 {
 	return (ext2fs_swab32(val >> 32) |
 		(((__u64)ext2fs_swab32(val & 0xFFFFFFFFUL)) << 32));
 }
+#endif
 
 #undef EXT2FS_ADDR
 
