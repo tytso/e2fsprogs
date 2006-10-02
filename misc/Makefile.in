@@ -29,7 +29,7 @@ LPROGS=		@E2INITRD_PROG@
 
 TUNE2FS_OBJS=	tune2fs.o util.o
 MKLPF_OBJS=	mklost+found.o
-MKE2FS_OBJS=	mke2fs.o util.o ../e2fsck/profile.o
+MKE2FS_OBJS=	mke2fs.o util.o profile.o
 CHATTR_OBJS=	chattr.o
 LSATTR_OBJS=	lsattr.o
 UUIDGEN_OBJS=	uuidgen.o
@@ -40,13 +40,14 @@ FSCK_OBJS=	fsck.o base_device.o
 BLKID_OBJS=	blkid.o
 FILEFRAG_OBJS=	filefrag.o
 
-XTRA_CFLAGS=	-I$(srcdir)/../e2fsck
+XTRA_CFLAGS=	-I$(srcdir)/../e2fsck -I.
 
 SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/chattr.c $(srcdir)/lsattr.c $(srcdir)/dumpe2fs.c \
 		$(srcdir)/badblocks.c $(srcdir)/fsck.c $(srcdir)/util.c \
 		$(srcdir)/uuidgen.c $(srcdir)/blkid.c $(srcdir)/logsave.c \
-		$(srcdir)/filefrag.c $(srcdir)/base_device.c
+		$(srcdir)/filefrag.c $(srcdir)/base_device.c \
+		$(srcdir)/../e2fsck/profile.c
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
 DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
@@ -60,12 +61,22 @@ DEPLIBS_BLKID= $(LIBBLKID) $(DEPLIBUUID)
 LIBS_E2P= $(LIBE2P) $(LIBCOM_ERR) 
 DEPLIBS_E2P= $(LIBE2P) $(LIBCOM_ERR) 
 
+COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
+
 .c.o:
 	@echo "	CC $<"
 	@$(CC) -c $(ALL_CFLAGS) $< -o $@
 
 all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) \
 	$(FMANPAGES) $(LPROGS)
+
+prof_err.c prof_err.h: $(srcdir)/../e2fsck/prof_err.et
+	@echo "	COMPILE_ET prof_err.et"
+	@$(COMPILE_ET) $(srcdir)/../e2fsck/prof_err.et
+
+profile.o:
+	@echo "	CC $<"
+	@$(CC) -c $(ALL_CFLAGS) $(srcdir)/../e2fsck/profile.c -o $@
 
 findsuper: findsuper.o
 	@echo "	LD $@"
@@ -340,7 +351,7 @@ clean:
 	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) $(UMANPAGES) $(SMANPAGES) \
 		$(FMANPAGES) \
 		base_device base_device.out mke2fs.static filefrag \
-		e2initrd_helper partinfo \#* *.s *.o *.a *~ core 
+		e2initrd_helper partinfo prof_err.[ch] \#* *.s *.o *.a *~ core 
 
 mostlyclean: clean
 distclean: clean
@@ -370,7 +381,8 @@ mke2fs.o: $(srcdir)/mke2fs.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
  $(top_srcdir)/lib/et/com_err.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(srcdir)/util.h $(top_srcdir)/version.h $(srcdir)/nls-enable.h
+ $(srcdir)/util.h $(srcdir)/../e2fsck/profile.h $(top_srcdir)/version.h \
+ $(srcdir)/nls-enable.h
 chattr.o: $(srcdir)/chattr.c $(top_srcdir)/lib/ext2fs/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/et/com_err.h \
  $(top_srcdir)/lib/e2p/e2p.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
@@ -410,3 +422,5 @@ blkid.o: $(srcdir)/blkid.c $(top_srcdir)/lib/blkid/blkid.h \
 logsave.o: $(srcdir)/logsave.c
 filefrag.o: $(srcdir)/filefrag.c
 base_device.o: $(srcdir)/base_device.c $(srcdir)/fsck.h
+profile.o: $(srcdir)/../e2fsck/profile.c $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/../e2fsck/profile.h prof_err.h

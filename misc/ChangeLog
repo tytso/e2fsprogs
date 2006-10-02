@@ -1,3 +1,9 @@
+2006-09-29  Theodore Tso  <tytso@mit.edu>
+
+	* Makefile.in: Fix makefile so that it is robust if the e2fsck
+		directory hasn't been built yet.  (Addresses Sourceforge
+		bug #1565561)
+
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
 	* mke2fs.c (PRS): Avoid overflow in megs calculation.
