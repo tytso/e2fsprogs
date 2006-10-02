@@ -27,7 +27,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	errcode_t 		retval;
 	dgrp_t			i;
 	blk_t			size;
-	int			fd, r_frac, overhead;
+	int			fd, r_frac, overhead, new_desc_blocks;
 
 	printf(_("Filesystem at %s is mounted on %s; "
 		 "on-line resizing required\n"), fs->device_name, mtpt);
@@ -35,6 +35,25 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	if (*new_size < sb->s_blocks_count) {
 		printf(_("On-line shrinking from %u to %u not supported.\n"),
 		       sb->s_blocks_count, *new_size);
+		exit(1);
+	}
+
+	/*
+	 * If the number of descriptor blocks is going to increase, 
+	 * the on-line resizing inode must be present.
+	 */
+	new_desc_blocks = ext2fs_div_ceil(
+		ext2fs_div_ceil(*new_size -
+				fs->super->s_first_data_block,
+				EXT2_BLOCKS_PER_GROUP(fs->super)),
+		EXT2_DESC_PER_BLOCK(fs->super));
+	printf("old desc_blocks = %d, new_desc_blocks = %d\n", fs->desc_blocks,
+	       new_desc_blocks);
+	if (!(fs->super->s_feature_compat & 
+	      EXT2_FEATURE_COMPAT_RESIZE_INODE) &&
+	    new_desc_blocks != fs->desc_blocks) {
+		com_err(program_name, 0, 
+			_("Filesystem does not support online resizing"));
 		exit(1);
 	}
 
@@ -52,7 +71,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 				_("Permission denied to resize filesystem"));
 		else if (errno == ENOTTY)
 			com_err(program_name, 0, 
-			_("Filesystem does not support online resizing"));
+			_("Kernel does not support online resizing"));
 		else 
 			com_err(program_name, errno, 
 			_("While checking for on-line resizing support"));

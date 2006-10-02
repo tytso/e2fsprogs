@@ -1,3 +1,11 @@
+2006-10-01  Theodore Tso  <tytso@mit.edu>
+
+	* online.c (online_resize_fs): Check to make sure the filesystem
+		has a resize inode if it is needed to grow the filesystem.
+		Print the correct error message if the kernel returns an
+		ENOTTY error to the group extend ioctl.
+		(Addresses Debian bug #380548)
+
 2006-08-30  Eric Sandeen  <esandeen@redhat.com>
 
 	* online.c (online_resize_fs): use div_ceil for r_frac calculation.
