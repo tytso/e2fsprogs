@@ -275,7 +275,7 @@ int figure_journal_size(int size, ext2_filsys fs)
 	}
 
 	if (fs->super->s_blocks_count < 32768)
-		j_blocks = 1024;
+		j_blocks = 1400;
 	else if (fs->super->s_blocks_count < 256*1024)
 		j_blocks = 4096;
 	else if (fs->super->s_blocks_count < 512*1024)
