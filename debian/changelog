@@ -1,3 +1,38 @@
+e2fsprogs (1.39+1.40-WIP-2006.10.02-1) unstable; urgency=low
+
+  * Previous NMU acknowledged (Closes: #388718)
+  * Fix debugfs to print unsigned values for EA's
+  * Minor man page fixes (Closes: #373004, #369761)
+  * Allow the default inode size to be specified in mke2fs.conf
+  * Require mke2fs -F -F for really dangerous operations
+  * Add Vietnamese translation
+  * Update French and Dutch translations
+  * Fix debugfs coredump when lsdel is run without an open filesystem
+    (Closes: #378335)
+  * Fix spelling error in e2fsck output
+  * Fix overflow problems when the number of inodes and blocks is
+    close to 2**32-1
+  * Add GFS/GFS2 support to the blkid library.
+  * Fix blkid support of empty FAT filesystem labels
+  * Avoid recursing forever due to symlinks in /dev by the blkid library
+  * Fix bogus error messages from resize2fs caused by the filesystem
+    not containing a resize inode.  (Closes: #380548)
+  * Fixed device-mapper probing (it was failing due to an extra '/dev' being
+    added to the device pathname)
+  * Make sure the default minimum size journal is big enough to support
+    on-line resizing.
+  * Add a versioned build-dep on texi2html (Closes: #389554)
+  * Remove useful UUID specification thanks to License Nazi's (Closes: #390664)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon,  2 Oct 2006 13:04:27 -0400
+
+e2fsprogs (1.39-1.1) unstable; urgency=low
+
+  * Non-maintainer upload
+  * Added -pthreads to devmapper libraries (Closes: #388718)
+
+ -- Ben Hutchings <ben@decadent.org.uk>  Sat, 30 Sep 2006 12:49:47 +0100
+
 e2fsprogs (1.39-1) unstable; urgency=low
 
   * New upstream version

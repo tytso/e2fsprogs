@@ -1,3 +1,115 @@
+E2fsprogs 1.40-WIP (October 2, 2006)
+====================================
+
+Fixed overflow and signed/unsigned problems caused by the number of
+blocks or inodes exceeding 2**31 or being close to 2**32-1;.
+
+Fix resize2fs so that it gives user-intelligible error messages if the
+filesystem or the kernel does not support on-line resizing.
+(Addresses Debian Bug: #380548)
+
+Require mke2fs -F -F for really dangerous operations, since -F is
+needed for less dangerous operations such as creating filesystems
+images in regular files, or creating filesystems on whole block
+devices.  These relatively innocuous usages should NOT be confused
+with running mke2fs on an apparently-mounted or in-use filesystem.
+
+Allow the default inode size to be specified into the mke2fs.conf
+file.
+
+Make the smallest default journal size is big enough so that on-line
+resizing should always work.
+
+Fix silly spelling error in e2fsck.  (Addresses SourceForge bug:
+#1531372)
+
+Fix debugfs coredump when lsdel is run without an open filesystem
+(Addresses Debian Bug: #378335)
+
+Fix debugfs display bug us that bytes that have the high bit set are
+displayed as "ec" instead of "ffffffec".
+
+Add support in lsattr so it will display the EXT4_EXTENTS_FL flag.
+
+Device mapper scanning wasn't working in the blkid library because the
+pathnames had an extra "/dev" when they were being probed.
+
+Add GFS/GFS2 support to the blkid library.
+
+Fix blkid support of empty FAT filesystem labels.
+
+Avoid recursing forever (or for a long time) when the blkid library
+searches for a device and there are symlinks to directories in /dev.
+
+Avoid unaligned halfword access in blkid when accessing FAT
+superblocks, as this will cause Sparc/Solaris systems to throw a
+SIGBUS error.
+
+The latest devmapper libraries requires pthreads, add -lpthreads to
+the static link libraries for e2fsck.static if devmapper is enabled.
+(Addresses Debian bug: #388718)
+
+Improve the (non-installed, for experts only) findsuper program by
+printing the uuid and label from the superblocks, as well as the
+starting and ending offsets of the filesystem given the information in
+the superblock.  Omit by default printing superblocks that are likely
+found in located in an ext3 journal unless an explicit -j option is
+given.
+
+Updated French and Dutch translations and added Vietnamese translation.
+
+Use FreeBSD's DIOCGMEDIASIZE and DIOCGDINFO ioctls if available when
+determining a partition's size, since binary searching to determine
+the device doesn't work on FreeBSD.
+
+Fixed spelling mistakes, typos, and otherwise clarified man pages.
+(Addresses Debian Bug: #369761, #373004)
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bugs #389554, #390664)
+
+
+Programmer's notes:
+-------------------
+
+Fix misc/Makefile.in so that it builds even if e2fsck hasn't been built yet
+(Addresses Sourceforge Bug: #1565561)
+
+Remove unused variables and other lint/gcc -Wall cleanups
+
+Add check to ext2fs_get_device_size() so it will return EFBIG for for
+filesystems contained in regular files where the filesystem image size
+is returned by stat64().
+
+Added the 64-bit byte swapping function ext2fs_swab64().
+
+Added two new helper functions to prevent 2**31/2**32-1 overflow
+problems: ext2fs_div_ceil() and e2p_percent().
+
+Create new ext2fs library inline functions ext2fs_group_first_block()
+and ext2fs_group_last_block() in order to calculate the starting and
+ending blocks in a block group.
+
+Create the generated files read-only to remind developers not to edit them.
+
+Added an "make rpm" target to top-level Makefile
+
+Added various FreeBSD portability fixes.
+
+Exclude mercurial files from the RPM build tree to speed up copy/build.
+
+Use root_sysconfdir to define the locations of mke2fs.conf and
+e2fsck.conf instead of using a hard-coded /etc pathname.
+
+Prevent e2fsck.h and ext2_ext_attr.h from getting included multiple times.
+
+Fixed "make clean" in blkid's Makefile.in file from removing tst_*.c files.
+
+If diff -u is supported, use it to report test failures.
+
+Updates/improvements to RPM spec file
+
+
 E2fsprogs 1.39 (May 29, 2006) 
 =============================
 
