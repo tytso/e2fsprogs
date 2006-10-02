@@ -1,3 +1,8 @@
+2006-10-01  Theodore Tso  <tytso@mit.edu>
+
+	* Makefile.in (DEPLIBBLKID): Use DEPLIBBLKID not LIBBLKID to
+		define the dependencies used by the blkid library.
+
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
 	* htree.c (htree_dump_int_node): Fix printf formats.

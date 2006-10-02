@@ -1,3 +1,12 @@
+2006-10-01  Theodore Tso  <tytso@mit.edu>
+
+	* configure, configure.in: Include -lpthread if building with
+		devmapper support, since the latest devmapper library uses
+		-lpthread.  (Addresses Debian bug: #388718)
+
+	* MCONFIG.in: Define DEPLIBBLKID, DEPSTATIC_LIBBLKID, and 
+		DEPPROFILED_LIBBLKID.
+
 2006-09-12  Theodore Tso  <tytso@mit.edu>
 
 	* e2fsprogs.spec.in (Group): Use License tag instead of Copyright,

@@ -1,3 +1,8 @@
+2006-10-01  Theodore Tso  <tytso@mit.edu>
+
+	* Makefile.in (DEPLIBBLKID): Use DEPLIBBLKID not LIBBLKID to
+		define the dependencies used by the blkid library.
+
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
 	* pass1.c (handle_bad_fs_blocks): use blk_t, not int for first_block.
