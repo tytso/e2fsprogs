@@ -1,3 +1,8 @@
+2006-10-02  Theodore Tso  <tytso@mit.edu>
+
+	* e2fsck.conf.5.in: Minor correction to man page.
+		(Addresses Debian bug #369761)
+
 2006-10-01  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in (DEPLIBBLKID): Use DEPLIBBLKID not LIBBLKID to
