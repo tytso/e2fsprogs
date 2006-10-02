@@ -251,6 +251,11 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 		if (fstat(fd, &st) == 0)
 #endif
 			if (S_ISREG(st.st_mode)) {
+				if ((sizeof(*retblocks) < sizeof(unsigned long long)) &&
+				    ((st.st_size / blocksize) > 0xFFFFFFFF)) {
+					rc = EFBIG;
+					goto out;
+				}
 				*retblocks = st.st_size / blocksize;
 				goto out;
 			}
