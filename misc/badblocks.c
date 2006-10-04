@@ -350,7 +350,7 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 	}
 	if (v_flag) {
 	    fprintf (stderr, _("Checking blocks %lu to %lu\n"), from_count,
-		     last_block);
+		     last_block - 1);
 	}
 	if (t_flag) {
 		fputs(_("Checking for bad blocks in read-only mode\n"), stderr);
@@ -360,7 +360,7 @@ static unsigned int test_ro (int dev, unsigned long last_block,
 	flush_bufs();
 	try = blocks_at_once;
 	currently_testing = from_count;
-	num_blocks = last_block;
+	num_blocks = last_block - 1;
 	if (!t_flag && (s_flag || v_flag)) {
 		fputs(_("Checking for bad blocks (read-only test): "), stderr);
 		if (v_flag <= 1)
@@ -457,7 +457,7 @@ static unsigned int test_rw (int dev, unsigned long last_block,
 	for (pat_idx = 0; pat_idx < nr_pattern; pat_idx++) {
 		pattern_fill(buffer, pattern[pat_idx],
 			     blocks_at_once * block_size);
-		num_blocks = last_block;
+		num_blocks = last_block - 1;
 		currently_testing = from_count;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
@@ -633,7 +633,7 @@ static unsigned int test_nd (int dev, unsigned long last_block,
 		save_ptr = save_base;
 		test_ptr = test_base;
 		currently_testing = from_count;
-		num_blocks = last_block;
+		num_blocks = last_block - 1;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 
@@ -979,7 +979,7 @@ int main (int argc, char ** argv)
 			exit(1);
 		}
 	} else {
-		last_block = strtoul (argv[optind], &tmp, 0);
+		last_block = strtoul (argv[optind], &tmp, 0) + 1;
 		if (*tmp) {
 			com_err (program_name, 0, _("invalid blocks count - %s"),
 				 argv[optind]);

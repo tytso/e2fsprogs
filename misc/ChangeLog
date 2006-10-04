@@ -1,3 +1,10 @@
+2006-10-03  Theodore Tso  <tytso@mit.edu>
+
+	* badblocks.c: Fix the interpretation of the last_block parameter
+		on the command line, and adjust the last block count
+		displays in the progress messages.  
+		(Addresses Debian Bug #386475)
+
 2006-10-02  Theodore Tso  <tytso@mit.edu>
 
 	* util.c (figure_journal_size): Increase the smallest default
