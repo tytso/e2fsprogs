@@ -54,6 +54,26 @@ case $1 in
 	case @E2FSPROGS_VERSION@ in
 	*-WIP|pre-*)
 		deb_vers=`echo $base_ver 0.01 - p | dc`
+		SRCROOT="e2fsprogs-$deb_vers+$base_ver-WIP-$date_spec+dfsg"
+		;;
+	*-rc*)
+		deb_vers=`echo @E2FSPROGS_VERSION@ | sed -e 's/-rc/rc/'`
+		SRCROOT="e2fsprogs-$deb_vers+dfsg"
+		;;
+	*-PLUS)
+		SRCROOT="e2fsprogs-$base_ver+$date_spec+dfsg"
+		;;
+	*)
+		SRCROOT="e2fsprogs-$base_ver+dfsg"
+		;;
+        esac
+	list=debian
+	;;
+    ubuntu)
+	date_spec="@E2FSPROGS_YEAR@.$mon.@E2FSPROGS_DAY@"
+	case @E2FSPROGS_VERSION@ in
+	*-WIP|pre-*)
+		deb_vers=`echo $base_ver 0.01 - p | dc`
 		SRCROOT="e2fsprogs-$deb_vers+$base_ver-WIP-$date_spec"
 		;;
 	*-rc*)

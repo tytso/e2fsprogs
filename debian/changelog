@@ -1,3 +1,20 @@
+e2fsprogs (1.39+1.40-WIP-2006.10.02+dfsg-1) unstable; urgency=low
+
+  * New +dfsg source tarball that has useful documentation removed to
+    satisfy the DFSG License Nazi's.  (Closes: #390664)
+  * Remove dependency on e2fsprogs from the e2fsck-static package
+    (Closes: #383521)
+  * Fix badblocks interpretation of its first optional argument (last-block)
+    (Closes: #386475)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue,  3 Oct 2006 23:36:05 -0400
+
+e2fsprogs (1.39+1.40-WIP-2006.10.02-2) unstable; urgency=low
+
+  * Build using the sid version of libc, not experimental!
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon,  2 Oct 2006 21:43:44 -0400
+
 e2fsprogs (1.39+1.40-WIP-2006.10.02-1) unstable; urgency=low
 
   * Previous NMU acknowledged (Closes: #388718)

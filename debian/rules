@@ -221,7 +221,7 @@ install-std: build
 
   # statically-linked fsck
 	${INSTALL_PROGRAM} ${stdbuilddir}/e2fsck/e2fsck.static ${tmpdir}/sbin
-	ln -s e2fsck.8.gz ${mandir}/man8/e2fsck.static.8.gz
+	cp ${mandir}/man8/e2fsck.8 ${mandir}/man8/e2fsck.static.8
 
 	ln -s et/com_err.h ${tmpdir}/usr/include
 
@@ -291,8 +291,6 @@ binary-arch: install install-udeb
 
 
   # symlinks to prepare dh_installdocs run
-	mkdir -p ${debdir}/e2fsck-static/usr/share/doc/
-	ln -sf e2fsprogs ${debdir}/e2fsck-static/usr/share/doc/e2fsck-static
 
 	mkdir -p ${debdir}/libblkid${BLKID_SOVERSION}/usr/share/doc/libblkid${BLKID_SOVERSION}
 	mkdir -p ${debdir}/libblkid-dev/usr/share/doc
@@ -308,7 +306,7 @@ binary-arch: install install-udeb
 
 	mkdir -p ${debdir}/libuuid${UUID_SOVERSION}/usr/share/doc/libuuid${UUID_SOVERSION}
 	mkdir -p ${debdir}/uuid-dev/usr/share/doc
-	ln -sf libuuid${UUID_SOVERSION} ${debdir}/uuid-dev/usr/share/doc/uuid-dev
+#	ln -sf libuuid${UUID_SOVERSION} ${debdir}/uuid-dev/usr/share/doc/uuid-dev
 
 	mkdir -p ${debdir}/e2fslibs/usr/share/doc/e2fslibs
 	mkdir -p ${debdir}/e2fslibs-dev/usr/share/doc
@@ -352,11 +350,10 @@ binary-arch: install install-udeb
 	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
 	dh_installinfo -pe2fslibs-dev ${stdbuilddir}/doc/libext2fs.info
 
-	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibblkid${BLKID_SOVERSION}
-	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibcomerr${COMERR_SOVERSION}
-	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibss${SS_SOVERSION}
-	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -plibuuid${UUID_SOVERSION}
-	DH_OPTIONS= dh_installchangelogs -pe2fsprogs -pe2fslibs
+	DH_OPTIONS= dh_installchangelogs -pe2fsprogs \
+		-plibblkid${BLKID_SOVERSION} -plibcomerr${COMERR_SOVERSION} \
+		-plibss${SS_SOVERSION} -plibuuid${UUID_SOVERSION} \
+		-pe2fslibs -puuid-dev -pe2fsck-static
 
 ifneq ($(ismips),)
 	dh_strip -Xlib64ext2fs-nopic.a

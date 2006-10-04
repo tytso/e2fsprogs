@@ -8,7 +8,7 @@ Standards-Version: 3.7.2
 Package: e2fsck-static
 Section: admin
 Priority: optional
-Depends: e2fsprogs (= ${Source-Version})
+Depends:
 Recommends: sash | zsh-static | busybox-static | zsh30-static
 Architecture: any
 Description: statically-linked version of the ext2 filesystem checker
