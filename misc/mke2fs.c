@@ -831,6 +831,11 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				rsv_gdb = EXT2_ADDR_PER_BLOCK(param);
 
 			if (rsv_gdb > 0) {
+				if (param->s_rev_level == EXT2_GOOD_OLD_REV) {
+					fprintf(stderr, 
+	_("On-line resizing not supported with revision 0 filesystems\n"));
+					exit(1);
+				}
 				param->s_feature_compat |=
 					EXT2_FEATURE_COMPAT_RESIZE_INODE;
 
@@ -1273,39 +1278,58 @@ static void PRS(int argc, char *argv[])
 
 	/* Figure out what features should be enabled */
 
-	if (r_opt == EXT2_GOOD_OLD_REV && fs_features) {
+	tmp = tmp2 = NULL;
+	if (fs_param.s_rev_level != EXT2_GOOD_OLD_REV) {
+		profile_get_string(profile, "defaults", "base_features", 0,
+				   "filetype,sparse_super", &tmp);
+		profile_get_string(profile, "fs_types", fs_type, 
+				   "base_features", tmp, &tmp2);
+		edit_feature(tmp2, &fs_param.s_feature_compat);
+		free(tmp);
+		free(tmp2);
+
+		tmp = tmp2 = NULL;
+		profile_get_string(profile, "defaults", "default_features", 0,
+				   "", &tmp);
+		profile_get_string(profile, "fs_types", fs_type, 
+				   "default_features", tmp, &tmp2);
+	}
+	edit_feature(fs_features ? fs_features : tmp2, 
+		     &fs_param.s_feature_compat);
+	if (tmp)
+		free(tmp);
+	if (tmp2)
+		free(tmp2);
+
+	if (r_opt == EXT2_GOOD_OLD_REV && 
+	    (fs_param.s_feature_compat || fs_param.s_feature_incompat ||
+	     fs_param.s_feature_incompat)) {
 		fprintf(stderr, _("Filesystem features not supported "
 				  "with revision 0 filesystems\n"));
 		exit(1);
 	}
 
-	profile_get_string(profile, "defaults", "base_features", 0,
-			   "filetype,sparse_super", &tmp);
-	profile_get_string(profile, "fs_types", fs_type, "base_features",
-			   tmp, &tmp2);
-	edit_feature(tmp2, &fs_param.s_feature_compat);
-	free(tmp);
-	free(tmp2);
-
-	profile_get_string(profile, "defaults", "default_features", 0,
-			   "", &tmp);
-	profile_get_string(profile, "fs_types", fs_type, 
-			   "default_features", tmp, &tmp2);
-	edit_feature(fs_features ? fs_features : tmp2, 
-		     &fs_param.s_feature_compat);
-	free(tmp);
-	free(tmp2);
-
-	if (s_opt > 0)
+	if (s_opt > 0) {
+		if (r_opt == EXT2_GOOD_OLD_REV) {
+			fprintf(stderr, _("Sparse superblocks not supported "
+				  "with revision 0 filesystems\n"));
+			exit(1);
+		}
 		fs_param.s_feature_ro_compat |=
 			EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-	else if (s_opt == 0)
+	} else if (s_opt == 0)
 		fs_param.s_feature_ro_compat &=
 			~EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 
-	if (journal_size != 0)
+	if (journal_size != 0) {
+		if (r_opt == EXT2_GOOD_OLD_REV) {
+			fprintf(stderr, _("Journals not supported "
+				  "with revision 0 filesystems\n"));
+			exit(1);
+		}
 		fs_param.s_feature_compat |= 
 			EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+	}
 
 	if (fs_param.s_feature_incompat & 
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
@@ -1317,12 +1341,6 @@ static void PRS(int argc, char *argv[])
 		fs_param.s_feature_ro_compat = 0;
  	}
 	
-	if (fs_param.s_rev_level == EXT2_GOOD_OLD_REV) {
-		fs_param.s_feature_incompat = 0;
-		fs_param.s_feature_compat = 0;
-		fs_param.s_feature_ro_compat = 0;
-	}
-
 	/* Set first meta blockgroup via an environment variable */
 	/* (this is mostly for debugging purposes) */
 	if ((fs_param.s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&

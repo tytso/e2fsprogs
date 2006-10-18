@@ -1,3 +1,12 @@
+2006-10-18  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.c: Fix revision 0 error checking so that it doesn't give
+		a spurious error when the user gives a command-line option
+		of "-O none".  (Addresses Debian bug: #392107).  Add 
+		error checking so that "-r 0 -j", "-r 0 -s 1", and 
+		"-r 0 -E resize=XXX" will print an explanatory error
+		message and abort.
+
 2006-10-03  Theodore Tso  <tytso@mit.edu>
 
 	* badblocks.c: Fix the interpretation of the last_block parameter
