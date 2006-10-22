@@ -69,12 +69,20 @@
 #ifdef HAVE_NET_IF_DL_H
 #include <net/if_dl.h>
 #endif
+#ifdef __linux__
+#include <sys/syscall.h>
+#endif
 
 #include "uuidP.h"
 
 #ifdef HAVE_SRANDOM
 #define srand(x) 	srandom(x)
 #define rand() 		random()
+#endif
+
+#if defined(__linux__) && defined(__NR_gettid) && defined(HAVE_JRAND48)
+#define DO_JRAND_MIX
+static unsigned short jrand_seed[3];
 #endif
 
 static int get_random_fd(void)
@@ -94,6 +102,11 @@ static int get_random_fd(void)
 				fcntl(fd, F_SETFD, i | FD_CLOEXEC);
 		}
 		srand((getpid() << 16) ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
+#ifdef DO_JRAND_MIX
+		jrand_seed[0] = getpid() ^ (tv.tv_sec & 0xFFFF);
+		jrand_seed[1] = getppid() ^ (tv.tv_usec & 0xFFFF);
+		jrand_seed[2] = (tv.tv_sec ^ tv.tv_usec) >> 16;
+#endif
 	}
 	/* Crank the random number generator a few times */
 	gettimeofday(&tv, 0);
@@ -112,6 +125,7 @@ static void get_random_bytes(void *buf, int nbytes)
 	int i, n = nbytes, fd = get_random_fd();
 	int lose_counter = 0;
 	unsigned char *cp = (unsigned char *) buf;
+	unsigned short tmp_seed[3];
 
 	if (fd >= 0) {
 		while (n > 0) {
@@ -133,6 +147,15 @@ static void get_random_bytes(void *buf, int nbytes)
 	 */
 	for (cp = buf, i = 0; i < nbytes; i++)
 		*cp++ ^= (rand() >> 7) & 0xFF;
+#ifdef DO_JRAND_MIX
+	memcpy(tmp_seed, jrand_seed, sizeof(tmp_seed));
+	jrand_seed[2] = jrand_seed[2] ^ syscall(__NR_gettid);
+	for (cp = buf, i = 0; i < nbytes; i++)
+		*cp++ ^= (jrand48(tmp_seed) >> 7) & 0xFF;
+	memcpy(jrand_seed, tmp_seed, 
+	       sizeof(jrand_seed)-sizeof(unsigned short));
+#endif
+
 	return;
 }
 

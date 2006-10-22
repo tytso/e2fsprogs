@@ -1,5 +1,7 @@
 2006-10-22  Theodore Tso  <tytso@mit.edu>
 
+	* configure, configure.in: Add test for jrand48()
+
 	* MCONFIG.in: Add datarootdir definition for compatibility with
 		autoconf 2.60.
 
