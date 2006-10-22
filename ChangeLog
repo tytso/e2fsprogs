@@ -1,3 +1,8 @@
+2006-10-22  Theodore Tso  <tytso@mit.edu>
+
+	* MCONFIG.in: Add datarootdir definition for compatibility with
+		autoconf 2.60.
+
 2006-10-21  Theodore Tso  <tytso@mit.edu>
 
 	* configure, configure.in: Fix -lpthread ordering so that it

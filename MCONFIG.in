@@ -14,6 +14,7 @@ exec_prefix = @exec_prefix@
 root_bindir = @root_bindir@
 root_sbindir = @root_sbindir@
 root_libdir = @root_libdir@
+datarootdir = @datarootdir@
 bindir = @bindir@
 sbindir = @sbindir@
 libdir = @libdir@

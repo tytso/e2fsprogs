@@ -1,3 +1,8 @@
+2006-10-22  Theodore Tso  <tytso@mit.edu>
+
+	* mk_cmds.sh.in: Add datarootdir definition for compatibility with
+		autoconf 2.60.
+
 2006-08-05  Theodore Tso  <tytso@mit.edu>
 
 	* mk_cmds.sh.in: Create the generated .c files read-only to remind

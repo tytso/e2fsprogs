@@ -28,6 +28,7 @@ VPATH = $(srcdir)
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+datarootdir = @datarootdir@
 transform = @program_transform_name@
 libdir = @libdir@
 includedir = @includedir@

@@ -1,6 +1,8 @@
 #!/bin/sh
 #
 #
+
+datarootdir=@datarootdir@
 AWK=@AWK@
 DIR="${DIR-@datadir@/et}"
 ET_DIR="@ET_DIR@"

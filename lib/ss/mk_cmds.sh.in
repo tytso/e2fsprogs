@@ -2,6 +2,7 @@
 #
 #
 
+datarootdir=@datarootdir@
 DIR="${DIR-@datadir@/ss}"
 SS_DIR="@SS_DIR@"
 AWK=@AWK@
