@@ -1,3 +1,8 @@
+2006-10-21  Theodore Tso  <tytso@mit.edu>
+
+	* configure, configure.in: Fix -lpthread ordering so that it
+		doesn't break on amd64.  (Addresses Debian bug: #393680)
+
 2006-10-01  Theodore Tso  <tytso@mit.edu>
 
 	* configure, configure.in: Include -lpthread if building with

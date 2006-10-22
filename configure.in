@@ -496,8 +496,8 @@ else
 
 	DEVMAPPER_REQ='libselinux libsepol'
 	DEVMAPPER_PC_LIBS='-ldevmapper'
-	DEVMAPPER_LIBS='-lpthread -ldevmapper -lselinux -lsepol'
-	STATIC_DEVMAPPER_LIBS='-lpthread /usr/lib/libdevmapper.a /usr/lib/libselinux.a /usr/lib/libsepol.a'
+	DEVMAPPER_LIBS='-ldevmapper -lselinux -lsepol -lpthread'
+	STATIC_DEVMAPPER_LIBS='/usr/lib/libdevmapper.a /usr/lib/libselinux.a /usr/lib/libsepol.a -lpthread'
 
 fi]
 ,
