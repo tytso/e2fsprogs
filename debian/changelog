@@ -1,3 +1,14 @@
+e2fsprogs (1.39+1.40-WIP-2006.10.02+dfsg-2) unstable; urgency=low
+
+  * Add failsafes against duplicate UUID generation caused by threads
+  * Fix potential e2fsck -n crash caused by corrupt htrees
+  * Reorder the library line for static linking, to fix undefined
+    references to pthreads on amd64.  (Closes: #393680)
+  * Fix mke2fs's error checking when creating revision 0 filesystems.
+    (Closes #392107)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 22 Oct 2006 00:19:44 -0400
+
 e2fsprogs (1.39+1.40-WIP-2006.10.02+dfsg-1) unstable; urgency=low
 
   * New +dfsg source tarball that has useful documentation removed to
