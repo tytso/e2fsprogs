@@ -587,11 +587,12 @@ static void parse_int_node(ext2_filsys fs,
 #endif
 		blk = ext2fs_le32_to_cpu(ent[i].block) & 0x0ffffff;
 		/* Check to make sure the block is valid */
-		if (blk > (blk_t) dx_dir->numblocks) {
+		if (blk >= (blk_t) dx_dir->numblocks) {
 			cd->pctx.blk = blk;
 			if (fix_problem(cd->ctx, PR_2_HTREE_BADBLK,
 					&cd->pctx))
 				goto clear_and_exit;
+			continue;
 		}
 		if (hash < prev_hash &&
 		    fix_problem(cd->ctx, PR_2_HTREE_HASH_ORDER, &cd->pctx))

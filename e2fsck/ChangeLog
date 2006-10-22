@@ -1,3 +1,11 @@
+2006-10-21  Theodore Tso  <tytso@mit.edu>
+
+	* pass2.c (parse_int_node): Don't core dump if there is a corrupt
+		htree interior node.  If the block number is larger than
+		the number of blocks in the directory, don't write past
+		the end of malloc'ed memory.  (Addresses SourceForge Bug:
+		#1512778)
+
 2006-10-02  Theodore Tso  <tytso@mit.edu>
 
 	* e2fsck.conf.5.in: Minor correction to man page.
