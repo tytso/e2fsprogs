@@ -1,3 +1,9 @@
+2006-11-08  Theodore Tso  <tytso@mit.edu>
+
+	* badblocks.c (read_bad_blocks_file): Change the last_block
+		argument passed to the badblocks program to be consistent
+		with the change to badblocks.
+
 2006-10-21  Theodore Tso  <tytso@mit.edu>
 
 	* pass2.c (parse_int_node): Don't core dump if there is a corrupt

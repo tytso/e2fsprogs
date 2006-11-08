@@ -1,3 +1,9 @@
+2006-11-08  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.c (test_disk): Change the last_block argument passed to
+		the badblocks program to be consistent with the change to
+		badblocks.
+
 2006-10-18  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c: Fix revision 0 error checking so that it doesn't give

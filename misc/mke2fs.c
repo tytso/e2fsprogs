@@ -191,7 +191,7 @@ static void test_disk(ext2_filsys fs, badblocks_list *bb_list)
 
 	sprintf(buf, "badblocks -b %d -X %s%s%s %u", fs->blocksize,
 		quiet ? "" : "-s ", (cflag > 1) ? "-w " : "",
-		fs->device_name, fs->super->s_blocks_count);
+		fs->device_name, fs->super->s_blocks_count-1);
 	if (verbose)
 		printf(_("Running command: %s\n"), buf);
 	f = popen(buf, "r");
