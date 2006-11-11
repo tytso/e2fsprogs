@@ -71,7 +71,7 @@
 /*
  * Maximal count of links to a file
  */
-#define EXT2_LINK_MAX		32000
+#define EXT2_LINK_MAX		65000
 
 /*
  * Macro-instructions used to manage several block sizes
@@ -578,6 +578,7 @@ struct ext2_super_block {
 /* #define EXT2_FEATURE_RO_COMPAT_BTREE_DIR	0x0004 not used */
 #define EXT4_FEATURE_RO_COMPAT_HUGE_FILE	0x0008
 #define EXT4_FEATURE_RO_COMPAT_GDT_CSUM		0x0010
+#define EXT4_FEATURE_RO_COMPAT_DIR_NLINK	0x0020
 
 #define EXT2_FEATURE_INCOMPAT_COMPRESSION	0x0001
 #define EXT2_FEATURE_INCOMPAT_FILETYPE		0x0002

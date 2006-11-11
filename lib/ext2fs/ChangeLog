@@ -1,5 +1,11 @@
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
+	* ext2_fs.h: Add definition of EXT4_FEATURE_RO_COMPAT_DIR_NLINK,
+		which allow directories to have > 65000 subdirectories
+		(i_nlinks) by setting i_nlinks = 1 for such directories.
+		RO_COMPAT protects old filesystems from unlinking such
+		directories incorrectly and losing all files therein.
+	
 	* swapfs.c (ext2fs_swap_group_desc):  
 	  ext2_fs.h: Add definition of EXT4_FEATURE_RO_COMPAT_GDT_CSUM,
 		which adds a crc16 checksum in the group descriptor,
