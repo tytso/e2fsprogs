@@ -1,5 +1,14 @@
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
+	* swapfs.c (ext2fs_swap_super):
+	  ext2_fs.h: Add definition of EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE,
+	  	which adds s_min_extra_isize and s_want_extra_isize fields
+		to superblock, which allow specifying the minimum and 
+		desired i_extra_isize fields in large inodes 
+		(for nsec+epoch timestamps, potential other uses).  
+		Needs RO_COMPAT flag handling, needs e2fsck support, 
+		patch complete, little testing.
+
 	* swapfs.c (ext2fs_swap_super): 
 	  ext2_fs.h: Add definition of EXT4_FEATURE_INCOMPAT_64BIT, 
 	  	  which adds supports for 64-bit block count fields in the 

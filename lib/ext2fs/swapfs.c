@@ -64,6 +64,11 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 	sb->s_default_mount_opts = ext2fs_swab32(sb->s_default_mount_opts);
 	sb->s_first_meta_bg = ext2fs_swab32(sb->s_first_meta_bg);
 	sb->s_mkfs_time = ext2fs_swab32(sb->s_mkfs_time);
+	sb->s_blocks_count_hi = ext2fs_swab32(sb->s_blocks_count_hi);
+	sb->s_r_blocks_count_hi = ext2fs_swab32(sb->s_r_blocks_count_hi);
+	sb->s_free_blocks_hi = ext2fs_swab32(sb->s_free_blocks_hi);
+	sb->s_min_extra_isize = ext2fs_swab16(sb->s_min_extra_isize);
+	sb->s_want_extra_isize = ext2fs_swab16(sb->s_want_extra_isize);
 	for (i=0; i < 4; i++)
 		sb->s_hash_seed[i] = ext2fs_swab32(sb->s_hash_seed[i]);
 	for (i=0; i < 17; i++)
