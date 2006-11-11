@@ -28,6 +28,15 @@ check:: test_script
 	@echo " "
 	@./test_script
 
+check-failed:
+	@a=`/bin/ls *.failed 2> /dev/null | sed -e 's/.failed//'`; \
+	if test "$$a"x == x ; then \
+		echo "No failed tests" ; \
+	else \
+		./test_script $$a ; \
+	fi
+
+
 TDIR=f_testnew
 # Target which creates a new testcase to simplify adding new regression tests.
 testnew:

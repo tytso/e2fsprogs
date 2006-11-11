@@ -1,5 +1,8 @@
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
+	* Makefile.in (check-failed): New target which automatically
+		re-runs any failed tests
+
 	* f_badinode, f_bad_disconnected_inode: Update expect scripts to
 		show check for i_blocks_hi instead of i_frag and i_fsize.
 
