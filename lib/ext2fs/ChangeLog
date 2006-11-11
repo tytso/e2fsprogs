@@ -1,5 +1,12 @@
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
+	* swapfs.c (ext2fs_swap_super): 
+	  ext2_fs.h: Add definition of EXT4_FEATURE_INCOMPAT_64BIT, 
+	  	  which adds supports for 64-bit block count fields in the 
+		  superblock (s_blocks_count_hi, s_free_blocks_count_hi),
+		  large group descriptors (s_desc_size), extents with high 
+		  16 bits (ee_start_hi, ei_leaf_hi), inode ACL (i_file_acl_hi)
+
 	* ext2_fs.h: Add definition of EXT4_FEATURE_RO_COMPAT_DIR_NLINK,
 		which allow directories to have > 65000 subdirectories
 		(i_nlinks) by setting i_nlinks = 1 for such directories.

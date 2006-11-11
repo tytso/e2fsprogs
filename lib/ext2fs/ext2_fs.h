@@ -137,8 +137,8 @@ struct ext2_acl_entry	/* Access Control List Entry */
  */
 struct ext2_group_desc
 {
-	__u32	bg_block_bitmap;		/* Blocks bitmap block */
-	__u32	bg_inode_bitmap;		/* Inodes bitmap block */
+	__u32	bg_block_bitmap;	/* Blocks bitmap block */
+	__u32	bg_inode_bitmap;	/* Inodes bitmap block */
 	__u32	bg_inode_table;		/* Inodes table block */
 	__u16	bg_free_blocks_count;	/* Free blocks count */
 	__u16	bg_free_inodes_count;	/* Free inodes count */
@@ -147,6 +147,27 @@ struct ext2_group_desc
 	__u32	bg_reserved[2];
 	__u16	bg_itable_unused;	/* Unused inodes count */
 	__u16	bg_checksum;		/* crc16(s_uuid+grouo_num+group_desc)*/
+};
+
+struct ext4_group_desc
+{
+	__u32	bg_block_bitmap;	/* Blocks bitmap block */
+	__u32	bg_inode_bitmap;	/* Inodes bitmap block */
+	__u32	bg_inode_table;		/* Inodes table block */
+	__u16	bg_free_blocks_count;	/* Free blocks count */
+	__u16	bg_free_inodes_count;	/* Free inodes count */
+	__u16	bg_used_dirs_count;	/* Directories count */
+	__u16	bg_flags;
+	__u32	bg_reserved[2];
+	__u16	bg_itable_unused;	/* Unused inodes count */
+	__u16	bg_checksum;		/* crc16(s_uuid+grouo_num+group_desc)*/
+	__u32	bg_block_bitmap_hi;	/* Blocks bitmap block MSB */
+	__u32	bg_inode_bitmap_hi;	/* Inodes bitmap block MSB */
+	__u32	bg_inode_table_hi;	/* Inodes table block MSB */
+	__u16	bg_free_blocks_count_hi;/* Free blocks count MSB */
+	__u16	bg_free_inodes_count_hi;/* Free inodes count MSB */
+	__u16	bg_used_dirs_count_hi;	/* Directories count MSB */
+	__u32	bg_reserved2[3];
 };
 
 #define EXT2_BG_INODE_UNINIT	0x0001 /* Inode table/bitmap not initialized */
@@ -521,12 +542,15 @@ struct ext2_super_block {
 	__u32	s_hash_seed[4];		/* HTREE hash seed */
 	__u8	s_def_hash_version;	/* Default hash version to use */
 	__u8	s_jnl_backup_type; 	/* Default type of journal backup */
-	__u16	s_reserved_word_pad;
+	__u16	s_desc_size;		/* Group desc. size: INCOMPAT_64BIT */
 	__u32	s_default_mount_opts;
 	__u32	s_first_meta_bg;	/* First metablock group */
 	__u32	s_mkfs_time;		/* When the filesystem was created */
 	__u32	s_jnl_blocks[17]; 	/* Backup of the journal inode */
-	__u32	s_reserved[172];	/* Padding to the end of the block */
+	__u32	s_blocks_count_hi;	/* Blocks count high 32bits */
+	__u32	s_r_blocks_count_hi;	/* Reserved blocks count high 32 bits*/
+	__u32	s_free_blocks_hi; 	/* Free blocks count */
+	__u32	s_reserved[169];	/* Padding to the end of the block */
 };
 
 /*
@@ -586,6 +610,7 @@ struct ext2_super_block {
 #define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008 /* Journal device */
 #define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
 #define EXT3_FEATURE_INCOMPAT_EXTENTS		0x0040
+#define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
 
 
 #define EXT2_FEATURE_COMPAT_SUPP	0

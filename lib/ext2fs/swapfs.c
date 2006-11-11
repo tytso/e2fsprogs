@@ -60,6 +60,7 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 	sb->s_journal_inum = ext2fs_swab32(sb->s_journal_inum);
 	sb->s_journal_dev = ext2fs_swab32(sb->s_journal_dev);
 	sb->s_last_orphan = ext2fs_swab32(sb->s_last_orphan);
+	sb->s_desc_size = ext2fs_swab16(sb->s_desc_size);
 	sb->s_default_mount_opts = ext2fs_swab32(sb->s_default_mount_opts);
 	sb->s_first_meta_bg = ext2fs_swab32(sb->s_first_meta_bg);
 	sb->s_mkfs_time = ext2fs_swab32(sb->s_mkfs_time);
