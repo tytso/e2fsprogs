@@ -1173,6 +1173,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Duplicate @e '%Dn' found.\n\tMarking %p (%i) to be rebuilt.\n\n"),
 	  PROMPT_NONE, 0 },
 	
+  	/* i_blocks_hi should be zero */
+	{ PR_2_BLOCKS_HI_ZERO,
+	  N_("i_blocks_hi @F %N, @s zero.\n"),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

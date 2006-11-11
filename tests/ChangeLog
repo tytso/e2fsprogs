@@ -1,3 +1,8 @@
+2006-11-11  Theodore Tso  <tytso@mit.edu>
+
+	* f_badinode, f_bad_disconnected_inode: Update expect scripts to
+		show check for i_blocks_hi instead of i_frag and i_fsize.
+
 2006-08-30  Eric Sandeen <esandeen@redhat.com>
 
 	* m_raid_opt/expect.1:

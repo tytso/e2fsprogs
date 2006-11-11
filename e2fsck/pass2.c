@@ -1251,10 +1251,6 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	}
 
 	switch (fs->super->s_creator_os) {
-	    case EXT2_OS_LINUX:
-		frag = &inode.osd2.linux2.l_i_frag;
-		fsize = &inode.osd2.linux2.l_i_fsize;
-		break;
 	    case EXT2_OS_HURD:
 		frag = &inode.osd2.hurd2.h_i_frag;
 		fsize = &inode.osd2.hurd2.h_i_fsize;
@@ -1283,6 +1279,17 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		} else
 			not_fixed++;
 		pctx.num = 0;
+	}
+
+	if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
+	    !(fs->super->s_feature_ro_compat & 
+	      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
+	    (inode.osd2.linux2.l_i_blocks_hi != 0)) {
+		pctx.num = inode.osd2.linux2.l_i_blocks_hi;
+		if (fix_problem(ctx, PR_2_BLOCKS_HI_ZERO, &pctx)) {
+			inode.osd2.linux2.l_i_blocks_hi = 0;
+			inode_modified++;
+		}
 	}
 
 	if (inode.i_file_acl &&

@@ -541,7 +541,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		fprintf(out, "%lld\n", i_size);
 	} else
 		fprintf(out, "%d\n", inode->i_size);
-	if (current_fs->super->s_creator_os == EXT2_OS_HURD)
+	if (os == EXT2_OS_HURD)
 		fprintf(out,
 			"%sFile ACL: %d    Directory ACL: %d Translator: %d\n",
 			prefix,
@@ -551,13 +551,16 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		fprintf(out, "%sFile ACL: %d    Directory ACL: %d\n",
 			prefix,
 			inode->i_file_acl, LINUX_S_ISDIR(inode->i_mode) ? inode->i_dir_acl : 0);
-	fprintf(out, "%sLinks: %d   Blockcount: %u\n",
-		prefix, inode->i_links_count, inode->i_blocks);
+	if (os == EXT2_OS_LINUX) 
+		fprintf(out, "%sLinks: %d   Blockcount: %llu\n",
+			prefix, inode->i_links_count, 
+			(((unsigned long long) 
+			  inode->osd2.linux2.l_i_blocks_hi << 32)) + 
+			inode->i_blocks);
+	else
+		fprintf(out, "%sLinks: %d   Blockcount: %u\n",
+			prefix, inode->i_links_count, inode->i_blocks);
 	switch (os) {
-	    case EXT2_OS_LINUX:
-		frag = inode->osd2.linux2.l_i_frag;
-		fsize = inode->osd2.linux2.l_i_fsize;
-		break;
 	    case EXT2_OS_HURD:
 		frag = inode->osd2.hurd2.h_i_frag;
 		fsize = inode->osd2.hurd2.h_i_fsize;
@@ -867,6 +870,9 @@ void do_modify_inode(int argc, char *argv[])
 	modify_u32(argv[0], "Access time", decimal_format, &inode.i_atime);
 	modify_u32(argv[0], "Deletion time", decimal_format, &inode.i_dtime);
 	modify_u16(argv[0], "Link count", decimal_format, &inode.i_links_count);
+	if (os == EXT2_OS_LINUX)
+		modify_u16(argv[0], "Block count high", unsignedlong_format, 
+			   &inode.osd2.linux2.l_i_blocks_hi);
 	modify_u32(argv[0], "Block count", unsignedlong_format, &inode.i_blocks);
 	modify_u32(argv[0], "File flags", hex_format, &inode.i_flags);
 	modify_u32(argv[0], "Generation", hex_format, &inode.i_generation);
@@ -879,16 +885,12 @@ void do_modify_inode(int argc, char *argv[])
 	else
 		modify_u32(argv[0], "High 32bits of size", decimal_format, &inode.i_size_high);
 
-	if (current_fs->super->s_creator_os == EXT2_OS_HURD)
+	if (os == EXT2_OS_HURD)
 		modify_u32(argv[0], "Translator Block",
 			    decimal_format, &inode.osd1.hurd1.h_i_translator);
 	
 	modify_u32(argv[0], "Fragment address", decimal_format, &inode.i_faddr);
 	switch (os) {
-	    case EXT2_OS_LINUX:
-		frag = &inode.osd2.linux2.l_i_frag;
-		fsize = &inode.osd2.linux2.l_i_fsize;
-		break;
 	    case EXT2_OS_HURD:
 		frag = &inode.osd2.hurd2.h_i_frag;
 		fsize = &inode.osd2.hurd2.h_i_fsize;

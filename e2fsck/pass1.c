@@ -731,10 +731,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 		
 		ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
 		switch (fs->super->s_creator_os) {
-		    case EXT2_OS_LINUX:
-			frag = inode->osd2.linux2.l_i_frag;
-			fsize = inode->osd2.linux2.l_i_fsize;
-			break;
 		    case EXT2_OS_HURD:
 			frag = inode->osd2.hurd2.h_i_frag;
 			fsize = inode->osd2.hurd2.h_i_fsize;
@@ -749,6 +745,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 		
 		if (inode->i_faddr || frag || fsize ||
 		    (LINUX_S_ISDIR(inode->i_mode) && inode->i_dir_acl))
+			mark_inode_bad(ctx, ino);
+		if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
+		    !(fs->super->s_feature_ro_compat & 
+		      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
+		    (inode->osd2.linux2.l_i_blocks_hi != 0))
 			mark_inode_bad(ctx, ino);
 		if (inode->i_flags & EXT2_IMAGIC_FL) {
 			if (imagic_fs) {

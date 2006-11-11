@@ -1,3 +1,12 @@
+2006-11-11  Theodore Tso  <tytso@mit.edu>
+
+	* swapfs.c (ext2fs_swap_inode_full): Byte swap inode->l_i_blocks_hi
+
+	* ext2_fs.h: Add definition of EXT4_FEATURE_RO_COMPAT_HUGE_FILE,
+		which changes i_blocks to be in units of s_blocksize units
+		instead of 512-byte sectors, use l_i_frag and l_i_fsize as
+		i_blocks_hi.
+
 2006-10-02  Eric Sandeen <esandeen@sandeen.net>
 
 	* getsize.c (ext2fs_get_device_size): Check to make sure that the

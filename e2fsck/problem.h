@@ -699,6 +699,9 @@ struct problem_context {
 /* Duplicate directory entry found */
 #define PR_2_REPORT_DUP_DIRENT	0x020043
 
+/* i_blocks_hi should be zero */
+#define PR_2_BLOCKS_HI_ZERO	0x020044
+
 /*
  * Pass 3 errors
  */

@@ -159,8 +159,8 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 	case EXT2_OS_LINUX:
 		t->osd1.linux1.l_i_reserved1 =
 			ext2fs_swab32(f->osd1.linux1.l_i_reserved1);
-		t->osd2.linux2.l_i_frag = f->osd2.linux2.l_i_frag;
-		t->osd2.linux2.l_i_fsize = f->osd2.linux2.l_i_fsize;
+		t->osd2.linux2.l_i_blocks_hi = 
+			ext2fs_swab16(f->osd2.linux2.l_i_blocks_hi);
 		t->osd2.linux2.i_pad1 = ext2fs_swab16(f->osd2.linux2.i_pad1);
 		t->osd2.linux2.l_i_uid_high =
 		  ext2fs_swab16 (f->osd2.linux2.l_i_uid_high);

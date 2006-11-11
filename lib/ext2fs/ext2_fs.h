@@ -299,8 +299,7 @@ struct ext2_inode {
 	__u32	i_faddr;	/* Fragment address */
 	union {
 		struct {
-			__u8	l_i_frag;	/* Fragment number */
-			__u8	l_i_fsize;	/* Fragment size */
+			__u16	l_i_blocks_hi;
 			__u16	i_pad1;
 			__u16	l_i_uid_high;	/* these 2 fields    */
 			__u16	l_i_gid_high;	/* were reserved2[0] */
@@ -356,8 +355,7 @@ struct ext2_inode_large {
 	__u32	i_faddr;	/* Fragment address */
 	union {
 		struct {
-			__u8	l_i_frag;	/* Fragment number */
-			__u8	l_i_fsize;	/* Fragment size */
+			__u16	l_i_blocks_hi;
 			__u16	i_pad1;
 			__u16	l_i_uid_high;	/* these 2 fields    */
 			__u16	l_i_gid_high;	/* were reserved2[0] */
@@ -576,6 +574,7 @@ struct ext2_super_block {
 #define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
 #define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
 /* #define EXT2_FEATURE_RO_COMPAT_BTREE_DIR	0x0004 not used */
+#define EXT4_FEATURE_RO_COMPAT_HUGE_FILE	0x0008
 
 #define EXT2_FEATURE_INCOMPAT_COMPRESSION	0x0001
 #define EXT2_FEATURE_INCOMPAT_FILETYPE		0x0002
