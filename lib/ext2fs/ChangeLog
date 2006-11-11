@@ -1,8 +1,16 @@
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
-	* swapfs.c (ext2fs_swap_inode_full): Byte swap inode->l_i_blocks_hi
+	* swapfs.c (ext2fs_swap_group_desc):  
+	  ext2_fs.h: Add definition of EXT4_FEATURE_RO_COMPAT_GDT_CSUM,
+		which adds a crc16 checksum in the group descriptor,
+		(s_uuid[16] | __u32 group | ext3_group_desc
+		(excluding gd_checksum itself)).  This allows the kernel
+		to more safely manage UNINIT groups.  Also adds an 
+		bg_itable_unsued which indicates how many inodes are 
+		uninitialized in the block group.
 
-	* ext2_fs.h: Add definition of EXT4_FEATURE_RO_COMPAT_HUGE_FILE,
+	* swapfs.c (ext2fs_swap_inode_full): 
+	  ext2_fs.h: Add definition of EXT4_FEATURE_RO_COMPAT_HUGE_FILE,
 		which changes i_blocks to be in units of s_blocksize units
 		instead of 512-byte sectors, use l_i_frag and l_i_fsize as
 		i_blocks_hi.
