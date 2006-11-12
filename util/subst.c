@@ -165,6 +165,12 @@ static void substitute_line(char *line)
 #endif
 		ptr = name_ptr-1;
 		replace_string(ptr, end_ptr, ent->value);
+		if ((ent->value[0] == '@') &&
+		    (strlen(replace_name) == strlen(ent->value)-2) &&
+		    !strncmp(replace_name, ent->value+1, 
+			     strlen(ent->value)-2))
+			/* avoid an infinite loop */
+			ptr += strlen(ent->value);
 	}
 	/*
 	 * Now do a second pass to expand ${FOO}
