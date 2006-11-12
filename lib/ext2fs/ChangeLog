@@ -1,3 +1,8 @@
+2006-11-12  Theodore Tso  <tytso@mit.edu>
+
+	* unix_io.c (unix_flush): Allow offsets greater than 2G.
+		(Addresses SourceForge Bug #1547922)
+
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
 	* dirhash.c (str2hashbuf, ext2fs_dirhash): Add support for

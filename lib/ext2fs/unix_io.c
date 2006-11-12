@@ -691,7 +691,7 @@ static errcode_t unix_set_option(io_channel channel, const char *option,
 				 const char *arg)
 {
 	struct unix_private_data *data;
-	unsigned long tmp;
+	unsigned long long tmp;
 	char *end;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
@@ -702,10 +702,12 @@ static errcode_t unix_set_option(io_channel channel, const char *option,
 		if (!arg)
 			return EXT2_ET_INVALID_ARGUMENT;
 
-		tmp = strtoul(arg, &end, 0);
+		tmp = strtoull(arg, &end, 0);
 		if (*end)
 			return EXT2_ET_INVALID_ARGUMENT;
 		data->offset = tmp;
+		if (data->offset < 0)
+			return EXT2_ET_INVALID_ARGUMENT;
 		return 0;
 	}
 	return EXT2_ET_INVALID_ARGUMENT;
