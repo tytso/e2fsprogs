@@ -193,6 +193,9 @@ struct problem_context {
 /* Superblock hint for external journal incorrect */
 #define PR_0_EXTERNAL_JOURNAL_HINT		0x000033
 
+/* Superblock hint for external journal incorrect */
+#define PR_0_DIRHASH_HINT			0x000034
+
 /*
  * Pass 1 errors
  */

@@ -138,6 +138,28 @@ static void print_mntopts(struct ext2_super_block * s, FILE *f)
 #endif
 }
 
+static void print_super_flags(struct ext2_super_block * s, FILE *f)
+{
+	int	flags_found = 0;
+
+	if (s->s_flags == 0)
+		return;
+
+	fputs("Filesystem flags:         ", f);
+	if (s->s_flags & EXT2_FLAGS_SIGNED_HASH) {
+		fputs("signed directory hash ", f);
+		flags_found++;
+	}
+	if (s->s_flags & EXT2_FLAGS_UNSIGNED_HASH) {
+		fputs("unsigned directory hash ", f);
+		flags_found++;
+	}
+	if (flags_found)
+		fputs("\n", f);
+	else
+		fputs("(none)\n", f);
+}
+
 
 #ifndef EXT2_INODE_SIZE
 #define EXT2_INODE_SIZE(s) sizeof(struct ext2_inode)
@@ -181,6 +203,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	} else
 		fprintf(f, " (unknown)\n");
 	print_features(sb, f);
+	print_super_flags(sb, f);
 	print_mntopts(sb, f);
 	fprintf(f, "Filesystem state:        ");
 	print_fs_state (f, sb->s_state);

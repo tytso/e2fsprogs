@@ -116,11 +116,20 @@ static void halfMD4Transform (__u32 buf[4], __u32 const in[])
 #undef K3
 
 /* The old legacy hash */
-static ext2_dirhash_t dx_hack_hash (const char *name, int len)
+static ext2_dirhash_t dx_hack_hash (const char *name, int len,
+				    int unsigned_flag)
 {
-	__u32 hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
+	__u32 hash, hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
+	const unsigned char *ucp = (const unsigned char *) name;
+	const signed char *scp = (const signed char *) name;
+	int c;
+
 	while (len--) {
-		__u32 hash = hash1 + (hash0 ^ (*name++ * 7152373));
+		if (unsigned_flag)
+			c = (int) *ucp++;
+		else
+			c = (int) *scp++;
+		hash = hash1 + (hash0 ^ (c * 7152373));
 		
 		if (hash & 0x80000000) hash -= 0x7fffffff;
 		hash1 = hash0;
@@ -129,10 +138,13 @@ static ext2_dirhash_t dx_hack_hash (const char *name, int len)
 	return (hash0 << 1);
 }
 
-static void str2hashbuf(const char *msg, int len, __u32 *buf, int num)
+static void str2hashbuf(const char *msg, int len, __u32 *buf, int num,
+			int unsigned_flag)
 {
 	__u32	pad, val;
-	int	i;
+	int	i, c;
+	const unsigned char *ucp = (const unsigned char *) msg;
+	const signed char *scp = (const signed char *) msg;
 
 	pad = (__u32)len | ((__u32)len << 8);
 	pad |= pad << 16;
@@ -143,7 +155,12 @@ static void str2hashbuf(const char *msg, int len, __u32 *buf, int num)
 	for (i=0; i < len; i++) {
 		if ((i % 4) == 0)
 			val = pad;
-		val = msg[i] + (val << 8);
+		if (unsigned_flag)
+			c = (int) ucp[i];
+		else
+			c = (int) scp[i];
+
+		val = c + (val << 8);
 		if ((i % 4) == 3) {
 			*buf++ = val;
 			val = pad;
@@ -179,6 +196,7 @@ errcode_t ext2fs_dirhash(int version, const char *name, int len,
 	const char	*p;
 	int		i;
 	__u32 		in[8], buf[4];
+	int		unsigned_flag = 0;
 
 	/* Initialize the default seed for the hash checksum functions */
 	buf[0] = 0x67452301;
@@ -197,13 +215,17 @@ errcode_t ext2fs_dirhash(int version, const char *name, int len,
 	}
 		
 	switch (version) {
+	case EXT2_HASH_LEGACY_UNSIGNED:
+		unsigned_flag++;
 	case EXT2_HASH_LEGACY:
-		hash = dx_hack_hash(name, len);
+		hash = dx_hack_hash(name, len, unsigned_flag);
 		break;
+	case EXT2_HASH_HALF_MD4_UNSIGNED:
+		unsigned_flag++;
 	case EXT2_HASH_HALF_MD4:
 		p = name;
 		while (len > 0) {
-			str2hashbuf(p, len, in, 8);
+			str2hashbuf(p, len, in, 8, unsigned_flag);
 			halfMD4Transform(buf, in);
 			len -= 32;
 			p += 32;
@@ -211,10 +233,12 @@ errcode_t ext2fs_dirhash(int version, const char *name, int len,
 		minor_hash = buf[2];
 		hash = buf[1];
 		break;
+	case EXT2_HASH_TEA_UNSIGNED:
+		unsigned_flag++;
 	case EXT2_HASH_TEA:
 		p = name;
 		while (len > 0) {
-			str2hashbuf(p, len, in, 4);
+			str2hashbuf(p, len, in, 4, unsigned_flag);
 			TEA_transform(buf, in);
 			len -= 16;
 			p += 16;

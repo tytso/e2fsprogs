@@ -1,5 +1,20 @@
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
+	* filter_dumpe2fs: Filter out the filesystem flags field since it
+		will be different for filesystems created with unsigned
+		char types.
+
+	* f_dup_de, f_h_badnode, f_h_badroot, f_h_reindex: Set the
+		directory hash bits so that these images are known to be
+		using the standard signed dirhash algorithm.
+
+	* f_h_normal: Add an 8-bit filename so we can test to make sure the
+		directory hash is working correctly when using the signed
+		dirhash algorithm.
+
+	* f_h_unsigned: New test to test calculating an unsigned directory
+		hash algorithm.
+
 	* Makefile.in (check-failed): New target which automatically
 		re-runs any failed tests
 

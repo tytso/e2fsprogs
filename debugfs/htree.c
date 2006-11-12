@@ -39,6 +39,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	char		tmp[EXT2_NAME_LEN + 16];
 	blk_t		pblk;
 	ext2_dirhash_t 	hash;
+	int		hash_alg;
 	
 	errcode = ext2fs_bmap(fs, ino, inode, buf, 0, blk, &pblk);
 	if (errcode) {
@@ -53,6 +54,10 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 			"while 	reading block %u\n", blk);
 		return;
 	}
+	hash_alg = rootnode->hash_version;
+	if ((hash_alg <= EXT2_HASH_TEA) &&
+	    (fs->super->s_flags & EXT2_FLAGS_UNSIGNED_HASH))
+		hash_alg += 3;
 
 	while (offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (buf + offset);
@@ -67,7 +72,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 			(dirent->name_len & 0xFF) : EXT2_NAME_LEN;
 		strncpy(name, dirent->name, thislen);
 		name[thislen] = '\0';
-		errcode = ext2fs_dirhash(rootnode->hash_version, name,
+		errcode = ext2fs_dirhash(hash_alg, name,
 					 thislen, fs->super->s_hash_seed,
 					 &hash, 0);
 		if (errcode)

@@ -1,5 +1,19 @@
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
+	* dirhash.c (str2hashbuf, ext2fs_dirhash): Add support for
+		calculating the unsigned version of the directory hash.
+
+	* initialize.c (ext2fs_initialize): Set the dirhash
+		signed/unsigned hint in s_flags.
+
+	* swapfs.c (ext2fs_swap_super): Byte swap the s_flags superblock
+		field.
+
+	* ext2_fs.h: Define a new superblock field, s_flags, which is used
+		to store a signed vs. unsigned dirhash hint.  Define new
+		HTREE hash algorithm numbers to pass to userspace if the
+		unsigned algorithm are required.
+
 	* swapfs.c (ext2fs_swap_super):
 	  ext2_fs.h: Add definition of EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE,
 	  	which adds s_min_extra_isize and s_want_extra_isize fields

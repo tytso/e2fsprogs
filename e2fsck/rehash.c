@@ -88,6 +88,7 @@ static int fill_dir_block(ext2_filsys fs,
 	struct ext2_dir_entry 	*dirent;
 	char			*dir;
 	unsigned int		offset, dir_offset;
+	int			hash_alg;
 	
 	if (blockcnt < 0)
 		return 0;
@@ -107,6 +108,10 @@ static int fill_dir_block(ext2_filsys fs,
 		if (fd->err)
 			return BLOCK_ABORT;
 	}
+	hash_alg = fs->super->s_def_hash_version;
+	if ((hash_alg <= EXT2_HASH_TEA) &&
+	    (fs->super->s_flags & EXT2_FLAGS_UNSIGNED_HASH))
+		hash_alg += 3;
 	/* While the directory block is "hot", index it. */
 	dir_offset = 0;
 	while (dir_offset < fs->blocksize) {
@@ -145,8 +150,7 @@ static int fill_dir_block(ext2_filsys fs,
 		if (fd->compress)
 			ent->hash = ent->minor_hash = 0;
 		else {
-			fd->err = ext2fs_dirhash(fs->super->s_def_hash_version,
-						 dirent->name,
+			fd->err = ext2fs_dirhash(hash_alg, dirent->name,
 						 dirent->name_len & 0xFF,
 						 fs->super->s_hash_seed,
 						 &ent->hash, &ent->minor_hash);
@@ -323,9 +327,15 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 	int			fixed = 0;
 	char			new_name[256];
 	__u16			new_len;
+	int			hash_alg;
 	
 	clear_problem_context(&pctx);
 	pctx.ino = ino;
+
+	hash_alg = fs->super->s_def_hash_version;
+	if ((hash_alg <= EXT2_HASH_TEA) &&
+	    (fs->super->s_flags & EXT2_FLAGS_UNSIGNED_HASH))
+		hash_alg += 3;
 
 	for (i=1; i < fd->num_array; i++) {
 		ent = fd->harray + i;
@@ -363,8 +373,7 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 		if (fix_problem(ctx, PR_2_NON_UNIQUE_FILE, &pctx)) {
 			memcpy(ent->dir->name, new_name, new_len & 0xFF);
 			ent->dir->name_len = new_len;
-			ext2fs_dirhash(fs->super->s_def_hash_version,
-				       ent->dir->name,
+			ext2fs_dirhash(hash_alg, ent->dir->name,
 				       ent->dir->name_len & 0xFF,
 				       fs->super->s_hash_seed,
 				       &ent->hash, &ent->minor_hash);

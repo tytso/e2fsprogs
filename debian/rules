@@ -64,7 +64,7 @@ CFGBFSTAMP=${STAMPSDIR}/configure-bf-stamp
 BUILDSTDSTAMP=${STAMPSDIR}/build-std-stamp
 BUILDBFSTAMP=${STAMPSDIR}/build-bf-stamp
 
-CCOPTS = -g -fsigned-char
+CCOPTS = -g
 
 INSTALL = install
 INSTALL_PROGRAM = $(INSTALL) -p -o root -g root -m 0755

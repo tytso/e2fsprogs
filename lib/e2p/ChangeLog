@@ -1,3 +1,8 @@
+2006-11-11  Theodore Tso  <tytso@mit.edu>
+
+	* ls.c (print_super_flags, list_super2): Print the signed/unsigned
+		dirhash information from the superblock flags field.
+
 2006-09-29  Theodore Tso  <tytso@mit.edu>
 
 	* percent.c (e2p_percent): Fix bug which caused e2p_percent to

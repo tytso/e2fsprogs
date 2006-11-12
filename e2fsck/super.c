@@ -436,6 +436,36 @@ cleanup:
 
  }
 
+/*
+ * This function checks the dirhash signed/unsigned hint if necessary.
+ */
+void e2fsck_fix_dirhash_hint(e2fsck_t ctx)
+{
+	struct ext2_super_block *sb = ctx->fs->super;
+	struct problem_context pctx;
+	problem_t problem;
+	int retval;
+	char	c;
+
+	if ((ctx->options & E2F_OPT_READONLY) ||
+	    !(sb->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX) ||
+	    (sb->s_flags & (EXT2_FLAGS_SIGNED_HASH|EXT2_FLAGS_UNSIGNED_HASH)))
+		return;
+
+	c = (char) 255;
+
+	clear_problem_context(&pctx);
+	if (fix_problem(ctx, PR_0_DIRHASH_HINT, &pctx)) {
+		if (((int) c) == -1) {
+			sb->s_flags |= EXT2_FLAGS_SIGNED_HASH;
+		} else {
+			sb->s_flags |= EXT2_FLAGS_UNSIGNED_HASH;
+		}
+		ext2fs_mark_super_dirty(ctx->fs);
+	}
+}
+
+
 void check_super_block(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
@@ -731,6 +761,11 @@ void check_super_block(e2fsck_t ctx)
 	 * Fix journal hint, if necessary
 	 */
 	e2fsck_fix_ext3_journal_hint(ctx);
+
+	/*
+	 * Add dirhash hint if necessary
+	 */
+	e2fsck_fix_dirhash_hint(ctx);
 
 	return;
 }

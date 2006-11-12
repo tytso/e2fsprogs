@@ -1,3 +1,12 @@
+2006-11-11  Theodore Tso  <tytso@mit.edu>
+
+	* set_fields.c: Add the ability to use set_super_value to set the
+		superblock flags field.
+
+	* htree.c (htree_dump_leaf_node): Check the superblock flags to
+		determine whether to use the signed or unsigned version of
+		the hash should be used.
+
 2006-10-01  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in (DEPLIBBLKID): Use DEPLIBBLKID not LIBBLKID to

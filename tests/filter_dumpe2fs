@@ -1,6 +1,7 @@
 1s/^.*$//
 /^Filesystem UUID:/d
 /^Filesystem created:/d
+/^Filesystem flags:/d
 /^Last write time:/d
 /^Last mount time:/d
 /^Last checked:/d

@@ -105,6 +105,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	int		rsv_gdt;
 	int		io_flags;
 	char		*buf;
+	char		c;
 
 	if (!param || !param->s_blocks_count)
 		return EXT2_ET_INVALID_ARGUMENT;
@@ -373,6 +374,13 @@ ipg_retry:
 		fs->group_desc[i].bg_used_dirs_count = 0;
 	}
 	
+	c = (char) 255;
+	if (((int) c) == -1) {
+		super->s_flags |= EXT2_FLAGS_SIGNED_HASH;
+	} else {
+		super->s_flags |= EXT2_FLAGS_UNSIGNED_HASH;
+	}
+
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
 	ext2fs_mark_ib_dirty(fs);

@@ -110,6 +110,7 @@ static struct field_set_info super_fields[] = {
 	{ "mkfs_time", &set_sb.s_mkfs_time, 4, parse_time },
 	{ "jnl_blocks", &set_sb.s_jnl_blocks[0], 4, parse_uint, FLAG_ARRAY, 
 	  17 },
+	{ "flags", &set_sb.s_flags, 4, parse_uint },
 	{ 0, 0, 0, 0 }
 };
 

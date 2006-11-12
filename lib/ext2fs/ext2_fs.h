@@ -193,9 +193,12 @@ struct ext2_dx_root_info {
 	__u8 unused_flags;
 };
 
-#define EXT2_HASH_LEGACY	0
-#define EXT2_HASH_HALF_MD4	1
-#define EXT2_HASH_TEA		2
+#define EXT2_HASH_LEGACY		0
+#define EXT2_HASH_HALF_MD4		1
+#define EXT2_HASH_TEA			2
+#define EXT2_HASH_LEGACY_UNSIGNED	3 /* reserved for userspace lib */
+#define EXT2_HASH_HALF_MD4_UNSIGNED	4 /* reserved for userspace lib */
+#define EXT2_HASH_TEA_UNSIGNED		5 /* reserved for userspace lib */
 
 #define EXT2_HASH_FLAG_INCOMPAT	0x1
 
@@ -449,6 +452,12 @@ struct ext2_inode_large {
 #define EXT2_ERROR_FS			0x0002	/* Errors detected */
 
 /*
+ * Misc. filesystem flags
+ */
+#define EXT2_FLAGS_SIGNED_HASH		0x0001  /* Signed dirhash in use */
+#define EXT2_FLAGS_UNSIGNED_HASH	0x0002  /* Unsigned dirhash in use */
+
+/*
  * Mount flags
  */
 #define EXT2_MOUNT_CHECK		0x0001	/* Do mount-time checks */
@@ -557,7 +566,8 @@ struct ext2_super_block {
 	__u32	s_free_blocks_hi; 	/* Free blocks count */
 	__u16	s_min_extra_isize;	/* All inodes have at least # bytes */
 	__u16	s_want_extra_isize; 	/* New inodes should reserve # bytes */
-	__u32	s_reserved[168];	/* Padding to the end of the block */
+	__u32	s_flags;		/* Miscellaneous flags */
+	__u32	s_reserved[167];	/* Padding to the end of the block */
 };
 
 /*

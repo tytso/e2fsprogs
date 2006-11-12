@@ -801,8 +801,11 @@ static int check_dir_block(ext2_filsys fs,
 				clear_htree(ctx, ino);
 				dx_dir->numblocks = 0;
 				dx_db = 0;
-			} 
+			}
 			dx_dir->hashversion = root->hash_version;
+			if ((dx_dir->hashversion <= EXT2_HASH_TEA) &&
+			    (fs->super->s_flags & EXT2_FLAGS_UNSIGNED_HASH))
+				dx_dir->hashversion += 3;
 			dx_dir->depth = root->indirect_levels + 1;
 		} else if ((dirent->inode == 0) &&
 			   (dirent->rec_len == fs->blocksize) &&

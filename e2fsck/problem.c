@@ -346,6 +346,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@S hint for external superblock @s %X.  "),
 	     PROMPT_FIX, PR_PREEN_OK },
 
+	/* Adding dirhash hint */
+	{ PR_0_DIRHASH_HINT,
+	  N_("Adding dirhash hint to @f.\n\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 1 errors */
 	
 	/* Pass 1: Checking inodes, blocks, and sizes */

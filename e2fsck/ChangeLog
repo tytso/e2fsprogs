@@ -1,5 +1,16 @@
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
+	* super.c (e2fsck_fix_dirhash_hint, check_super_block): If neither
+		the signed or unsigned dirhash hint, set it based on
+		default signed vs. unsigned character type in use by the
+		platform.
+
+	* problem.c, problem.h (PR_0_DIRHASH_HINT): Add new problem code.
+
+	* pass2.c (check_dir_block), rehash.c (fill_dir_block): Check the
+		superblock flags to determine whether to use the signed or
+		unsigned version of the hash should be used.
+
 	* problem.c, problem.h (PR_2_BLOCKS_HI_ZERO): Add new problem code.
 
 	* pass1.c (e2fsck_pass1), pass2.c (e2fsck_process_bad_inode):
