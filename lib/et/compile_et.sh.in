@@ -17,6 +17,18 @@ if test "x$1" = x ; then
     exit 1
 fi
 
+for as_var in \
+  LANG LANGUAGE LC_ADDRESS LC_ALL LC_COLLATE LC_CTYPE LC_IDENTIFICATION \
+  LC_MEASUREMENT LC_MESSAGES LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER \
+  LC_TELEPHONE LC_TIME
+do
+  if (set +x; test -z "`(eval $as_var=C; export $as_var) 2>&1`"); then
+    eval $as_var=C; export $as_var
+  else
+    $as_unset $as_var
+  fi
+done
+
 if test ! -f "$DIR/et_h.awk" || test ! -f "$DIR/et_c.awk" ; then
     DIR="$ET_DIR"
 #    echo "Falling back to $DIR..."
