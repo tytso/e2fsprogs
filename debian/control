@@ -81,13 +81,8 @@ Depends: ${shlibs:Depends}
 Replaces: e2fsprogs (<< 1.34-1)
 Architecture: any
 Description: universally unique id library
- libuuid generates and parses 128-bit universally unique id's (UUID's),
- using a standard which is blessed by both Microsoft and DCE, and is
- being proposed as an internet standard.  See the internet-draft:
- .
-                draft-leach-uuids-guids-01.txt
- .
- for more information.
+ libuuid generates and parses 128-bit universally unique id's (UUID's).
+ See RFC 4122 for more information.
 
 Package: libuuid1-udeb
 Section: debian-installer
@@ -97,13 +92,8 @@ Provides: libuuid1
 Replaces: libuuid1
 Architecture: any
 Description: universally unique id library
- libuuid generates and parses 128-bit universally unique id's (UUID's),
- using a standard which is blessed by both Microsoft and DCE, and is
- being proposed as an internet standard.  See the internet-draft:
- .
-                draft-leach-uuids-guids-01.txt
- .
- for more information.
+ libuuid generates and parses 128-bit universally unique id's (UUID's).
+ See RFC 4122 for more information.
  .
  This is a minimal package for debian-installer.
 
@@ -114,13 +104,8 @@ Depends: libc6-dev | libc-dev, libuuid1 (= ${Source-Version})
 Replaces: e2fslibs-dev (<< 1.15)
 Architecture: any
 Description: universally unique id library - headers and static libraries
- libuuid generates and parses 128-bit universally unique id's (UUID's),
- using a standard which is blessed by both Microsoft and DCE, and is
- being proposed as an internet standard.  See the internet-draft:
- .
-                draft-leach-uuids-guids-01.txt
- .
- for more information.
+ libuuid generates and parses 128-bit universally unique id's (UUID's).
+ See RFC 4122 for more information.
  .
  This package contains the development environment for the uuid library.
 

@@ -343,7 +343,7 @@ binary-arch: install install-udeb
 	$(INSTALL) -d ${debdir}/uuid-dev/usr/share/doc/libuuid${UUID_SOVERSION}
 	if test -f /etc/lsb-release && \
 		grep -q DISTRIB_ID=Ubuntu /etc/lsb-release; then \
-	    $(INSTALL) -p -m 0644 doc/draft-leach-uuids-guids-01.txt \
+	    $(INSTALL) -p -m 0644 doc/rfc4122.txt \
 		${debdir}/uuid-dev/usr/share/doc/libuuid${UUID_SOVERSION}; \
 	fi
 

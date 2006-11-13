@@ -10,4 +10,4 @@ powerquest
 .exclude-file
 po/stamp-cat-id
 po/cat-id-tbl.c
-doc/draft-leach-uuids-guids-01.txt
+doc/rfc4122.txt
