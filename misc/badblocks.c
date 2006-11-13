@@ -81,6 +81,13 @@ static void usage(void)
 	exit (1);
 }
 
+static void exclusive_usage(void)
+{
+	fprintf(stderr, 
+		_("The -n and -w options are mutually exclusive.\n\n"));
+	usage();
+}
+
 static unsigned long currently_testing = 0;
 static unsigned long num_blocks = 0;
 static ext2_badblocks_list bb_list = NULL;
@@ -880,13 +887,13 @@ int main (int argc, char ** argv)
 			break;
 		case 'w':
 			if (w_flag)
-				usage();
+				exclusive_usage();
 			test_func = test_rw;
 			w_flag = 1;
 			break;
 		case 'n':
 			if (w_flag)
-				usage();
+				exclusive_usage();
 			test_func = test_nd;
 			w_flag = 2;
 			break;

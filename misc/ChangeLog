@@ -1,3 +1,10 @@
+2006-11-12  Theodore Tso  <tytso@mit.edu>
+
+	* badblocks.c (exclusive_usage): Add an explicit usage message
+		explaining to the user that the -n and -w message may not
+		be specified at the same time.  (Addresses Debian Bug:
+		#371869)
+
 2006-11-08  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (test_disk): Change the last_block argument passed to
