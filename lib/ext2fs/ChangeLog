@@ -1,5 +1,8 @@
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
+	* ext3_extents.h, ext2fs.h: Check in ext4 extent headers into the
+		source tree, in preparation for adding full extent support.
+
 	* badblocks.c (make_u32_list): Add workaround for GCC bug (ARM,
 		gcc version 4.1.1-17).  The inline function involved is
 		used all over the e2fsprogs sources, so hopefully this bug

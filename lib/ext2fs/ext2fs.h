@@ -65,9 +65,11 @@ extern "C" {
 #if EXT2_FLAT_INCLUDES
 #include "e2_types.h"
 #include "ext2_fs.h"
+#include "ext3_extents.h"
 #else
 #include <ext2fs/ext2_types.h>
 #include <ext2fs/ext2_fs.h>
+#include <ext2fs/ext3_extents.h>
 #endif /* EXT2_FLAT_INCLUDES */
 
 typedef __u32		ext2_ino_t;
