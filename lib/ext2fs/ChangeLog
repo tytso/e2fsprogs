@@ -1,5 +1,10 @@
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
+	* ext2_fs.h (EXT2_FLAG_SOFTSUPP_FEATURES), openfs.c
+		(ext2fs_open2): Add flag which indicates that it's OK to
+		open a filesystem which has features which are only
+		partially supported by e2fsprogs.
+
 	* ext3_extents.h, ext2fs.h: Check in ext4 extent headers into the
 		source tree, in preparation for adding full extent support.
 

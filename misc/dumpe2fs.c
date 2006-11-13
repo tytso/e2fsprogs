@@ -388,7 +388,7 @@ int main (int argc, char ** argv)
 	device_name = argv[optind++];
 	if (use_superblock && !use_blocksize)
 		use_blocksize = 1024;
-	flags = EXT2_FLAG_JOURNAL_DEV_OK;
+	flags = EXT2_FLAG_JOURNAL_DEV_OK | EXT2_FLAG_SOFTSUPP_FEATURES;
 	if (force)
 		flags |= EXT2_FLAG_FORCE;
 	if (image_dump)

@@ -86,6 +86,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	ext2_filsys	fs;
 	errcode_t	retval;
 	unsigned long	i;
+	__u32		features;
 	int		j, groups_per_block, blocks_per_group, io_flags;
 	blk_t		group_block, blk;
 	char		*dest, *cp;
@@ -197,17 +198,27 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	 * Check for feature set incompatibility
 	 */
 	if (!(flags & EXT2_FLAG_FORCE)) {
-		if (fs->super->s_feature_incompat &
-		    ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
+		features = fs->super->s_feature_incompat;
+#ifdef EXT2_LIB_SOFTSUPP_INCOMPAT
+		if (flags & EXT2_FLAG_SOFTSUPP_FEATURES)
+			features &= !EXT2_LIB_SOFTSUPP_INCOMPAT;
+#endif
+		if (features & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
 			retval = EXT2_ET_UNSUPP_FEATURE;
 			goto cleanup;
 		}
+
+		features = fs->super->s_feature_ro_compat;
+#ifdef EXT2_LIB_SOFTSUPP_RO_COMPAT
+		if (flags & EXT2_FLAG_SOFTSUPP_FEATURES)
+			features &= !EXT2_LIB_SOFTSUPP_RO_COMPAT;
+#endif
 		if ((flags & EXT2_FLAG_RW) &&
-		    (fs->super->s_feature_ro_compat &
-		     ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)) {
+		    (features & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP)) {
 			retval = EXT2_ET_RO_UNSUPP_FEATURE;
 			goto cleanup;
 		}
+
 		if (!(flags & EXT2_FLAG_JOURNAL_DEV_OK) &&
 		    (fs->super->s_feature_incompat &
 		     EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {

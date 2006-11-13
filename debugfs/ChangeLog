@@ -1,3 +1,9 @@
+2006-11-12  Theodore Tso  <tytso@mit.edu>
+
+	* debugfs.c (do_open_filesys, main): Open filesystems with the
+		SOFTSUPP flag, to make easier to work on filesystem
+		features that are still under development.
+
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
 	* set_fields.c: Add the ability to use set_super_value to set the

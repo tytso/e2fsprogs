@@ -1,5 +1,9 @@
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
+	* dumpe2fs.c (main): Open filesystems with the SOFTSUPP flag, to
+		make easier to work on filesystem features that are still
+		under development.
+
 	* badblocks.c (exclusive_usage): Add an explicit usage message
 		explaining to the user that the -n and -w message may not
 		be specified at the same time.  (Addresses Debian Bug:

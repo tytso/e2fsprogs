@@ -187,6 +187,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_JOURNAL_DEV_OK	0x1000
 #define EXT2_FLAG_IMAGE_FILE		0x2000
 #define EXT2_FLAG_EXCLUSIVE		0x4000
+#define EXT2_FLAG_SOFTSUPP_FEATURES	0x8000
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is
@@ -460,6 +461,17 @@ typedef struct ext2_icount *ext2_icount_t;
 #endif
 #define EXT2_LIB_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|\
 					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE)
+
+/*
+ * These features are only allowed if EXT2_FLAG_SOFTSUPP_FEATURES is passed
+ * to ext2fs_openfs()
+ */
+#define EXT2_LIB_SOFTSUPP_INCOMPAT	(EXT3_FEATURE_INCOMPAT_EXTENTS)
+#define EXT2_LIB_SOFTSUPP_RO_COMPAT	(EXT4_FEATURE_RO_COMPAT_HUGE_FILE|\
+					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM|\
+					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK|\
+					 EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE)
+
 /*
  * function prototypes
  */

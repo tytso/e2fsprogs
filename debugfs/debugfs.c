@@ -124,7 +124,7 @@ void do_open_filesys(int argc, char **argv)
 	int	catastrophic = 0;
 	blk_t	superblock = 0;
 	blk_t	blocksize = 0;
-	int	open_flags = 0;
+	int	open_flags = EXT2_FLAG_SOFTSUPP_FEATURES;
 	char	*data_filename = 0;
 	
 	reset_getopt();
@@ -1792,7 +1792,7 @@ int main(int argc, char **argv)
 	int		sci_idx;
 	const char	*usage = "Usage: debugfs [-b blocksize] [-s superblock] [-f cmd_file] [-R request] [-V] [[-w] [-c] device]";
 	int		c;
-	int		open_flags = 0;
+	int		open_flags = EXT2_FLAG_SOFTSUPP_FEATURES;
 	char		*request = 0;
 	int		exit_status = 0;
 	char		*cmd_file = 0;
