@@ -26,6 +26,10 @@
 #include "ext2_fs.h"
 #include "ext2fsP.h"
 
+#ifdef __arm__
+#define BUGGY_ARM_GCC
+#endif
+
 /*
  * Helper function for making a badblocks list
  */
@@ -42,11 +46,19 @@ static errcode_t make_u32_list(int size, int num, __u32 *list,
 	bb->magic = EXT2_ET_MAGIC_BADBLOCKS_LIST;
 	bb->size = size ? size : 10;
 	bb->num = num;
+#ifdef BUGGY_ARM_GCC
+	bb->list = malloc(bb->size * sizeof(blk_t));
+	if (!bb->list) {
+		free(bb);
+		return EXT2_ET_NO_MEMORY;
+	}
+#else
 	retval = ext2fs_get_mem(bb->size * sizeof(blk_t), &bb->list);
 	if (!bb->list) {
 		ext2fs_free_mem(&bb);
 		return retval;
 	}
+#endif
 	if (list)
 		memcpy(bb->list, list, bb->size * sizeof(blk_t));
 	else
