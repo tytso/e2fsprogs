@@ -1,5 +1,7 @@
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
+	* gen-tarball.in: Use E2FSPROGS_PKGVER to simplify script
+
 	* subst.c (substitute_line): Avoid infinite loop caused by a
 		substition such as @datarootdir@ --> @datarootdir@.  (This
 		was caused by autoconf versions before 2.60, which didn't

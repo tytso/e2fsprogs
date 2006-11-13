@@ -1,10 +1,11 @@
 %define	_root_sbindir	/sbin
 %define	_root_libdir	/%{_lib}
 %define	_root_localedir	/usr/share/locale
+%define	_root_etcdir	/etc
 
 Summary: Utilities for managing the second extended (ext2) filesystem.
 Name: e2fsprogs
-Version: @E2FSPROGS_VERSION@
+Version: @E2FSPROGS_PKGVER@
 Release: 0
 License: GPLv2
 Group: System Environment/Base
@@ -96,6 +97,7 @@ exit 0
 %{_root_sbindir}/fsck.ext3
 %{_root_sbindir}/logsave
 %{_root_sbindir}/mke2fs
+%{_root_etcdir}/mke2fs.conf
 %{_root_sbindir}/mkfs.ext2
 %{_root_sbindir}/mkfs.ext3
 %{_root_sbindir}/resize2fs
@@ -119,6 +121,9 @@ exit 0
 %{_mandir}/man1/lsattr.1*
 %{_mandir}/man1/uuidgen.1*
 
+%{_mandir}/man5/e2fsck.conf.5*
+%{_mandir}/man5/mke2fs.conf.5*
+
 %{_mandir}/man8/badblocks.8*
 %{_mandir}/man8/blkid.8*
 %{_mandir}/man8/debugfs.8*
@@ -138,14 +143,6 @@ exit 0
 %{_mandir}/man8/resize2fs.8*
 %{_mandir}/man8/tune2fs.8*
 %{_mandir}/man8/filefrag.8*
-
-%{_root_localedir}/cs/LC_MESSAGES/e2fsprogs.mo
-%{_root_localedir}/de/LC_MESSAGES/e2fsprogs.mo
-%{_root_localedir}/es/LC_MESSAGES/e2fsprogs.mo
-%{_root_localedir}/it/LC_MESSAGES/e2fsprogs.mo
-%{_root_localedir}/pl/LC_MESSAGES/e2fsprogs.mo
-%{_root_localedir}/sv/LC_MESSAGES/e2fsprogs.mo
-%{_root_localedir}/tr/LC_MESSAGES/e2fsprogs.mo
 
 %files devel
 %defattr(-,root,root)

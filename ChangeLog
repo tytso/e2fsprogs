@@ -1,3 +1,11 @@
+2006-11-12  Theodore Tso  <tytso@mit.edu>
+
+	* configure, configure.in (E2FSPROGS_PKGVER): Define
+		E2FSPROGS_PKGVER so e2fsprogs.spec can have an appropriate
+		version number for WIP releases.
+
+	* e2fsprogs.spec.in: Update/fix spec file so it will work on RHEL 4.
+
 2006-10-22  Theodore Tso  <tytso@mit.edu>
 
 	* configure, configure.in: Add test for jrand48()

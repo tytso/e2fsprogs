@@ -24,28 +24,44 @@ else
 fi
 
 case $MONTH in
-Jan)	E2FSPROGS_MONTH="January" ;;
-Feb)	E2FSPROGS_MONTH="February" ;;
-Mar)	E2FSPROGS_MONTH="March" ;;
-Apr)	E2FSPROGS_MONTH="April" ;;
-May)	E2FSPROGS_MONTH="May" ;;
-Jun)	E2FSPROGS_MONTH="June" ;;
-Jul)	E2FSPROGS_MONTH="July" ;;
-Aug)	E2FSPROGS_MONTH="August" ;;
-Sep)	E2FSPROGS_MONTH="September" ;;
-Oct)	E2FSPROGS_MONTH="October" ;;
-Nov)	E2FSPROGS_MONTH="November" ;;
-Dec)	E2FSPROGS_MONTH="December" ;;
+Jan)	MONTH_NUM=01; E2FSPROGS_MONTH="January" ;;
+Feb)	MONTH_NUM=02; E2FSPROGS_MONTH="February" ;;
+Mar)	MONTH_NUM=03; E2FSPROGS_MONTH="March" ;;
+Apr)	MONTH_NUM=04; E2FSPROGS_MONTH="April" ;;
+May)	MONTH_NUM=05; E2FSPROGS_MONTH="May" ;;
+Jun)	MONTH_NUM=06; E2FSPROGS_MONTH="June" ;;
+Jul)	MONTH_NUM=07; E2FSPROGS_MONTH="July" ;;
+Aug)	MONTH_NUM=08; E2FSPROGS_MONTH="August" ;;
+Sep)	MONTH_NUM=09; E2FSPROGS_MONTH="September" ;;
+Oct)	MONTH_NUM=10; E2FSPROGS_MONTH="October" ;;
+Nov)	MONTH_NUM=11; E2FSPROGS_MONTH="November" ;;
+Dec)	MONTH_NUM=12; E2FSPROGS_MONTH="December" ;;
 *)	echo "Unknown month $MONTH??" ;;
 esac
 
-unset DATE MONTH YEAR
+base_ver=`echo $E2FSPROGS_VERSION | \
+	       sed -e 's/-WIP//' -e 's/pre-//' -e 's/-PLUS//'`
+pre_vers=`echo $base_ver 0.01 - p | dc`
+
+date_spec=${E2FSPROGS_YEAR}.${MONTH_NUM}.${E2FSPROGS_DAY}
+
+case $E2FSPROGS_VERSION in
+*-WIP|pre-*)
+	E2FSPROGS_PKGVER="$pre_vers+${base_ver}_WIP_$date_spec"
+	;;
+*)
+	E2FSPROGS_PKGVER="$base_ver"
+	;;
+esac
+
+unset DATE MONTH YEAR base_ver pre_vers date_spec
 echo "Generating configuration file for e2fsprogs version $E2FSPROGS_VERSION"
 echo "Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}"
 AC_SUBST(E2FSPROGS_YEAR)
 AC_SUBST(E2FSPROGS_MONTH)
 AC_SUBST(E2FSPROGS_DAY)
 AC_SUBST(E2FSPROGS_VERSION)
+AC_SUBST(E2FSPROGS_PKGVER)
 AC_CANONICAL_HOST
 dnl
 dnl Use diet libc
