@@ -1,3 +1,10 @@
+2006-11-12  Theodore Tso  <tytso@mit.edu>
+
+	* f_extents: This test is currently skipped, but we are adding it
+		now so that the binary image file can be added into the
+		source tree, so that patch files can add extent support
+		without having to worry about manually adding a binary file
+
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
 	* filter_dumpe2fs: Filter out the filesystem flags field since it
