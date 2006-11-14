@@ -1007,11 +1007,12 @@ extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
  */
 _INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void *ptr)
 {
-	void **pp = (void **)ptr;
+	void *pp;
 
-	*pp = malloc(size);
-	if (!*pp)
+	pp = malloc(size);
+	if (!pp)
 		return EXT2_ET_NO_MEMORY;
+	memcpy(ptr, &pp, sizeof (pp));
 	return 0;
 }
 
@@ -1020,10 +1021,12 @@ _INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void *ptr)
  */
 _INLINE_ errcode_t ext2fs_free_mem(void *ptr)
 {
-	void **pp = (void **)ptr;
+	void *p;
 
-	free(*pp);
-	*pp = 0;
+	memcpy(&p, ptr, sizeof(p));
+	free(p);
+	p = 0;
+	memcpy(ptr, &p, sizeof(p));
 	return 0;
 }
 	
@@ -1037,11 +1040,11 @@ _INLINE_ errcode_t ext2fs_resize_mem(unsigned long EXT2FS_ATTR((unused)) old_siz
 
 	/* Use "memcpy" for pointer assignments here to avoid problems
 	 * with C99 strict type aliasing rules. */
-	memcpy(&p, ptr, sizeof (p));
+	memcpy(&p, ptr, sizeof(p));
 	p = realloc(p, size);
 	if (!p)
 		return EXT2_ET_NO_MEMORY;
-	memcpy(ptr, &p, sizeof (p));
+	memcpy(ptr, &p, sizeof(p));
 	return 0;
 }
 #endif	/* Custom memory routines */

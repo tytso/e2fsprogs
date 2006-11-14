@@ -1,3 +1,9 @@
+2006-11-14  Theodore Tso  <tytso@mit.edu>
+
+	* ext2fs.h (ext2fs_get_mem, ext2fs_free_mem): Avoid type punning
+		which causes problems on the ARM processor.  (Addresses
+		Debian Bug: #397044)
+
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
 	* ext2_fs.h (EXT2_FLAG_SOFTSUPP_FEATURES), openfs.c
@@ -7,15 +13,6 @@
 
 	* ext3_extents.h, ext2fs.h: Check in ext4 extent headers into the
 		source tree, in preparation for adding full extent support.
-
-	* badblocks.c (make_u32_list): Add workaround for GCC bug (ARM,
-		gcc version 4.1.1-17).  The inline function involved is
-		used all over the e2fsprogs sources, so hopefully this bug
-		won't hit us in other places, but with this one change the
-		e2fsprogs regression test suite is passing, so we'll cross
-		our fingers, report the GCC bug, and hope that it doesn't
-		cause any data corruption/loss.  (Addresses Debian Bug:
-		#397044; Gcc bug reported as Debian Bug #398316)
 
 	* unix_io.c (unix_flush): Allow offsets greater than 2G.
 		(Addresses SourceForge Bug #1547922)
