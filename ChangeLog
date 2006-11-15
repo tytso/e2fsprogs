@@ -1,3 +1,10 @@
+2006-11-14  Theodore Tso  <tytso@mit.edu>
+
+	* MCONFIG.in (WFLAGS): Add -fstrict-aliasing and
+		-Wno-variadic-macros.  Also use -std=c99 and
+		-D_XOPEN_SOURCE=600 and -D_GNU_SOURCE to suppress
+		spurious warnings.
+
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
 	* configure, configure.in (E2FSPROGS_PKGVER): Define
