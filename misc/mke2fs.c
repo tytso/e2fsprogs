@@ -914,18 +914,20 @@ static void PRS(int argc, char *argv[])
 	int		s_opt = -1, r_opt = -1;
 	char		*fs_features = 0;
 	int		use_bsize;
+	char		*newpath;
+	int		pathlen = sizeof(PATH_SET) + 1;
+
+	if (oldpath)
+		pathlen += strlen(oldpath);
+	newpath = malloc(pathlen);
+	strcpy(newpath, PATH_SET);
 
 	/* Update our PATH to include /sbin  */
 	if (oldpath) {
-		char *newpath;
-		
-		newpath = malloc(sizeof (PATH_SET) + 1 + strlen (oldpath));
-		strcpy (newpath, PATH_SET);
 		strcat (newpath, ":");
 		strcat (newpath, oldpath);
-		putenv (newpath);
-	} else
-		putenv (PATH_SET);
+	}
+	putenv (newpath);
 
 	tmp = getenv("MKE2FS_SYNC");
 	if (tmp)
@@ -1417,7 +1419,7 @@ static void PRS(int argc, char *argv[])
 		}
 	}
 
-	if (!force && fs_param.s_blocks_count >= (1 << 31)) {
+	if (!force && fs_param.s_blocks_count >= ((unsigned) 1 << 31)) {
 		com_err(program_name, 0,
 			_("Filesystem too large.  No more than 2**31-1 blocks\n"
 			  "\t (8TB using a blocksize of 4k) are currently supported."));

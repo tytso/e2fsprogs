@@ -810,19 +810,22 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	/* Update our PATH to include /sbin if we need to run badblocks  */
 	if (cflag) {
 		char *oldpath = getenv("PATH");
-		if (oldpath) {
-			char *newpath;
+		char *newpath;
+		int len = sizeof(PATH_SET) + 1;
 
-			newpath = (char *) malloc(sizeof (PATH_SET) + 1 +
-						  strlen (oldpath));
-			if (!newpath)
-				fatal_error(ctx, "Couldn't malloc() newpath");
-			strcpy (newpath, PATH_SET);
-			strcat (newpath, ":");
-			strcat (newpath, oldpath);
-			putenv (newpath);
-		} else
-			putenv (PATH_SET);
+		if (oldpath)
+			len += strlen(oldpath);
+
+		newpath = malloc(len);
+		if (!newpath)
+			fatal_error(ctx, "Couldn't malloc() newpath");
+		strcpy(newpath, PATH_SET);
+
+		if (oldpath) {
+			strcat(newpath, ":");
+			strcat(newpath, oldpath);
+		}
+		putenv(newpath);
 	}
 #ifdef CONFIG_JBD_DEBUG
 	if (getenv("E2FSCK_JBD_DEBUG"))

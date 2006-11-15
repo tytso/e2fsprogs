@@ -318,12 +318,13 @@ return_abort:
  * resize inode should be cleared) as well as the case where on-line
  * resizing is enabled.
  */
-void check_resize_inode(e2fsck_t ctx)
+static void check_resize_inode(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode inode;
 	struct problem_context	pctx;
-	int		i, j, gdt_off, ind_off;
+	int		i, gdt_off, ind_off;
+	dgrp_t		j;
 	blk_t		blk, pblk, expect;
 	__u32 		*dind_buf = 0, *ind_buf;
 	errcode_t	retval;
@@ -439,12 +440,10 @@ cleanup:
 /*
  * This function checks the dirhash signed/unsigned hint if necessary.
  */
-void e2fsck_fix_dirhash_hint(e2fsck_t ctx)
+static void e2fsck_fix_dirhash_hint(e2fsck_t ctx)
 {
 	struct ext2_super_block *sb = ctx->fs->super;
 	struct problem_context pctx;
-	problem_t problem;
-	int retval;
 	char	c;
 
 	if ((ctx->options & E2F_OPT_READONLY) ||
@@ -737,14 +736,14 @@ void check_super_block(e2fsck_t ctx)
 	 * Check to see if the superblock last mount time or last
 	 * write time is in the future.
 	 */
-	if (fs->super->s_mtime > ctx->now) {
+	if (fs->super->s_mtime > (__u32) ctx->now) {
 		pctx.num = fs->super->s_mtime;
 		if (fix_problem(ctx, PR_0_FUTURE_SB_LAST_MOUNT, &pctx)) {
 			fs->super->s_mtime = ctx->now;
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
-	if (fs->super->s_wtime > ctx->now) {
+	if (fs->super->s_wtime > (__u32) ctx->now) {
 		pctx.num = fs->super->s_wtime;
 		if (fix_problem(ctx, PR_0_FUTURE_SB_LAST_WRITE, &pctx)) {
 			fs->super->s_wtime = ctx->now;

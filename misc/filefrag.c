@@ -82,8 +82,8 @@ static void frag_report(const char *filename)
 	struct stat	fileinfo;
 #endif
 	int		bs;
-	long		i, fd;
-	unsigned long	block, last_block = 0, numblocks;
+	long		fd;
+	unsigned long	block, last_block = 0, numblocks, i;
 	long		bpib;	/* Blocks per indirect block */
 	long		cylgroups;
 	int		discont = 0, expected;

@@ -246,8 +246,8 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 	struct ext2_super_block *sb = ctx->fs->super;
 	struct ext2_inode_large *inode;
 	struct ext2_ext_attr_entry *entry;
-	char *start, *end, *name;
-	int storage_size, remain, offs;
+	char *start, *end;
+	unsigned int storage_size, remain, offs;
 	int problem = 0;
 
 	inode = (struct ext2_inode_large *) pctx->inode;
@@ -327,7 +327,7 @@ fix:
 
 	/* simple remove all possible EA(s) */
 	*((__u32 *)start) = 0UL;
-	e2fsck_write_inode_full(ctx, pctx->ino, inode,
+	e2fsck_write_inode_full(ctx, pctx->ino, (struct ext2_inode *) inode,
 				EXT2_INODE_SIZE(sb), "pass1");
 }
 
@@ -865,7 +865,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 
 	if (ctx->flags & E2F_FLAG_RESIZE_INODE) {
 		ext2fs_block_bitmap save_bmap;
-		errcode_t retval;
 
 		save_bmap = fs->block_map;
 		fs->block_map = ctx->block_found_map;

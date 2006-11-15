@@ -645,7 +645,7 @@ static void salvage_directory(ext2_filsys fs,
 {
 	char	*cp = (char *) dirent;
 	int left = fs->blocksize - *offset - dirent->rec_len;
-	int name_len = dirent->name_len & 0xFF;
+	unsigned int name_len = dirent->name_len & 0xFF;
 
 	/*
 	 * Special case of directory entry of size 8: copy what's left
@@ -662,7 +662,7 @@ static void salvage_directory(ext2_filsys fs,
 	 * record length.
 	 */
 	if ((left < 0) &&
-	    (name_len + 8 <= dirent->rec_len + left) &&
+	    (name_len + 8 <= dirent->rec_len + (unsigned) left) &&
 	    dirent->inode <= fs->super->s_inodes_count &&
 	    strnlen(dirent->name, name_len) == name_len) {
 		dirent->rec_len += left;

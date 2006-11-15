@@ -78,14 +78,13 @@ static unsigned long sf;
 #define STRUCT_STAT	struct stat
 #endif
 
-static void fatal_error(const char * fmt_string, int errcode)
+static void usage(void)
 {
-	fprintf (stderr, fmt_string, program_name);
-	exit (errcode);
+	fprintf(stderr, 
+		_("Usage: %s [-RV] [-+=AacDdijsSu] [-v version] files...\n"),
+		program_name);
+	exit(1);
 }
-
-#define usage() fatal_error(_("Usage: %s [-RV] [-+=AacDdijsSu] [-v version] files...\n"), \
-			     1)
 
 struct flags_char {
 	unsigned long	flag;
@@ -251,9 +250,11 @@ static int chattr_dir_proc (const char * dir_name, struct dirent * de,
 	        char *path;
 
 		path = malloc(strlen (dir_name) + 1 + strlen (de->d_name) + 1);
-		if (!path)
-			fatal_error(_("Couldn't allocate path variable "
-				    "in chattr_dir_proc"), 1);
+		if (!path) {
+			fprintf(stderr, _("Couldn't allocate path variable "
+					  "in chattr_dir_proc"));
+			exit(1);
+		}
 		sprintf (path, "%s/%s", dir_name, de->d_name);
 		change_attributes (path);
 		free(path);

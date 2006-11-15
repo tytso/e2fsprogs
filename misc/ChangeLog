@@ -1,3 +1,14 @@
+2006-11-14  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.c (PRS): Always allocate the replacement PATH environment
+		passed to putenv() to avoid gcc -Wall warning.  Fix signed
+		vs unsigned warning.
+
+	* filefrag.c: Fix signed vs. unsigned gcc -Wall warning
+
+	* chattr.c (usage, fatal_error): Rework functions to avoid gcc
+		-Wall complaints.
+
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
 	* dumpe2fs.c (main): Open filesystems with the SOFTSUPP flag, to

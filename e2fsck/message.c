@@ -241,7 +241,7 @@ static _INLINE_ void expand_inode_expression(char ch,
 {
 	struct ext2_inode	*inode;
 	struct ext2_inode_large	*large_inode;
-	char *			time_str;
+	const char *		time_str;
 	time_t			t;
 	int			do_gmt = -1;
 

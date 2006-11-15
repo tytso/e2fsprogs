@@ -1,3 +1,16 @@
+2006-11-14  Theodore Tso  <tytso@mit.edu>
+
+	* unix.c (PRS): Always allocate the replacement PATH environment
+		passed to putenv() to avoid gcc -Wall warning.
+
+	* pass1.c, pass2.c, profile.c, super.c: Remove unused variables
+		and fixed signed vs unsigned and const gcc -Wall warning.
+
+	* message.c (expand_inode_expression): Fix const gcc -Wall warning.
+
+	* journal.c (e2fsck_fix_ext3_journal_hint): Remove unusued
+		variables retval and problem.
+
 2006-11-11  Theodore Tso  <tytso@mit.edu>
 
 	* super.c (e2fsck_fix_dirhash_hint, check_super_block): If neither

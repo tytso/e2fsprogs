@@ -136,8 +136,8 @@ struct profile_node {
 	char *name;
 	char *value;
 	int group_level;
-	int final:1;		/* Indicate don't search next file */
-	int deleted:1;
+	unsigned int final:1;		/* Indicate don't search next file */
+	unsigned int deleted:1;
 	struct profile_node *first_child;
 	struct profile_node *parent;
 	struct profile_node *next, *prev;
@@ -217,8 +217,8 @@ static errcode_t profile_get_value(profile_t profile, const char *name,
 
 static int compstr(const void *m1, const void *m2) 
 {
-	const char *s1 = *((const char **) m1);
-	const char *s2 = *((const char **) m2);
+	const char *s1 = *((const char * const *) m1);
+	const char *s2 = *((const char * const *) m2);
 
 	return strcmp(s1, s2); 
 }

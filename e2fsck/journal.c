@@ -971,8 +971,6 @@ int e2fsck_fix_ext3_journal_hint(e2fsck_t ctx)
 	struct problem_context pctx;
 	char uuid[37], *journal_name;
 	struct stat st;
-	problem_t problem;
-	int retval;
 
 	if (!(sb->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) ||
 	    uuid_is_null(sb->s_journal_uuid))
