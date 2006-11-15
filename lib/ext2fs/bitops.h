@@ -21,6 +21,7 @@ extern void ext2fs_fast_set_bit(unsigned int nr,void * addr);
 extern void ext2fs_fast_clear_bit(unsigned int nr, void * addr);
 extern __u16 ext2fs_swab16(__u16 val);
 extern __u32 ext2fs_swab32(__u32 val);
+extern __u64 ext2fs_swab64(__u64 val);
 
 #ifdef WORDS_BIGENDIAN
 #define ext2fs_cpu_to_le64(x) ext2fs_swab64((x))
@@ -205,7 +206,7 @@ _INLINE_ int ext2fs_test_bit(unsigned int nr, const void * addr)
 {
 	int oldbit;
 
-	addr = (void *) (((unsigned char *) addr) + (nr >> 3));
+	addr = (const void *) (((const unsigned char *) addr) + (nr >> 3));
 	__asm__ __volatile__("btl %2,%1\n\tsbbl %0,%0"
 		:"=r" (oldbit)
 		:"m" (EXT2FS_CONST_ADDR),"r" (nr & 7));

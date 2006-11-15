@@ -36,7 +36,7 @@ struct ext2_ext_attr_entry {
 };
 
 #define EXT2_EXT_ATTR_PAD_BITS		2
-#define EXT2_EXT_ATTR_PAD		(1<<EXT2_EXT_ATTR_PAD_BITS)
+#define EXT2_EXT_ATTR_PAD		((unsigned) 1<<EXT2_EXT_ATTR_PAD_BITS)
 #define EXT2_EXT_ATTR_ROUND		(EXT2_EXT_ATTR_PAD-1)
 #define EXT2_EXT_ATTR_LEN(name_len) \
 	(((name_len) + EXT2_EXT_ATTR_ROUND + \

@@ -794,6 +794,9 @@ extern void	   journal_brelse_array(struct buffer_head *b[], int n);
 extern void	   journal_destroy_revoke(journal_t *);
 #endif /* __KERNEL__   */
 
+static inline int tid_gt(tid_t x, tid_t y) EXT2FS_ATTR((unused));
+static inline int tid_geq(tid_t x, tid_t y) EXT2FS_ATTR((unused));
+
 /* Comparison functions for transaction IDs: perform comparisons using
  * modulo arithmetic so that they work over sequence number wraps. */
 

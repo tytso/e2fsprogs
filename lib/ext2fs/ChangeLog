@@ -1,5 +1,17 @@
 2006-11-14  Theodore Tso  <tytso@mit.edu>
 
+	* namei.c (open_namei): Rename internal variable basename to
+		base_name to prevent gcc -Wall complaints.
+
+	* kernel-jbd.h (tid_gt, tid_geq): Add function declaration to
+		avoid gcc -Wall complaints.
+
+	* ext2_ext_attr.h (EXT2_EXT_ATTR_PAD): Make unsigned to fix gcc
+		-Wall complaints.
+
+	* bitops.h (ext2fs_test_bit): Add missing const to fix gcc -Wall
+		complaint.
+
 	* ext2fs.h (ext2fs_get_mem, ext2fs_free_mem): Avoid type punning
 		which causes problems on the ARM processor.  (Addresses
 		Debian Bug: #397044)
