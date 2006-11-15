@@ -1,8 +1,28 @@
-E2fsprogs 1.40-WIP (October 2, 2006)
-====================================
+E2fsprogs 1.40-WIP (November 14, 2006)
+======================================
+
+Fixed type-punning bug which caused dumpe2fs to crash on the Arm
+platform (Addresses Debian Bug: #397044)
+
+Add explanatory message to badblocks that -n and -w are mutually exclusive
+(Addresses Debian Bug: #371869)
+
+Allow debugfs and dumpe2fs to support fs features under development.
+
+Add support for the new flag EXT2_FLAG_SOFTSUPP_FEATURES flag to
+ext2fs_open() , which allows application to open filesystes with features
+which are currently only partially supported by e2fsprogs.
+
+Allow unix_io to support offsets greater than 2G (Addresses
+SourceForge Bug: #1547922)
 
 Fixed overflow and signed/unsigned problems caused by the number of
-blocks or inodes exceeding 2**31 or being close to 2**32-1;.
+blocks or inodes exceeding 2**31 or being close to 2**32-1.
+
+Add support for unsigned directory hash calculations with hints in the
+superblock to fix cross-architectural portability for htree
+directories with filenames where the high 8th bit is set.  (Addresses
+Debian: #389772)
 
 Fix resize2fs so that it gives user-intelligible error messages if the
 filesystem or the kernel does not support on-line resizing.
@@ -81,6 +101,9 @@ Add check to ext2fs_get_device_size() so it will return EFBIG for for
 filesystems contained in regular files where the filesystem image size
 is returned by stat64().
 
+Set local environment variables to C so mk_cmds and compile_et always
+work.  (Addresses SourceForge Bug: #1532177)
+
 Added the 64-bit byte swapping function ext2fs_swab64().
 
 Added two new helper functions to prevent 2**31/2**32-1 overflow
@@ -91,6 +114,9 @@ and ext2fs_group_last_block() in order to calculate the starting and
 ending blocks in a block group.
 
 Create the generated files read-only to remind developers not to edit them.
+
+Add support for autoconf 2.60 (with backwards compatibility for older
+versions of autoconf).
 
 Added an "make rpm" target to top-level Makefile
 
@@ -108,6 +134,16 @@ Fixed "make clean" in blkid's Makefile.in file from removing tst_*.c files.
 If diff -u is supported, use it to report test failures.
 
 Updates/improvements to RPM spec file
+
+Add on-disk format definitions for the following new features:
+EXT4_FEATURE_RO_COMPAT_HUGE_FILE, EXT4_FEATURE_RO_COMPAT_GDT_CSUM,
+EXT4_FEATURE_RO_COMPAT_DIR_NLINK, EXT4_FEATURE_INCOMPAT_64BIT,
+EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE
+
+Add a new make target "checked-failed" in the tests directory which
+reruns any failed tests
+
+Update draft-leach-uuids-guids-01.txt with rfc4122.txt
 
 
 E2fsprogs 1.39 (May 29, 2006) 

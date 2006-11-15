@@ -1,3 +1,19 @@
+e2fsprogs (1.39+1.40-WIP-2006.11.14+dfsg-1) unstable; urgency=low
+
+  * Fix spurious error from e2fsck -c and mke2fs -c caused by the fix
+    to #386475.
+  * Add dirhash signed/unsigned hint to superblock.  (Closes: #389772)
+  * Allow unix_io offsets greater than 2 gigabytes
+  * Make sure mk_cmds and compile_et work even in strange locales
+  * Fix type-punning bug which caused dumpe2fs to crash on the Arm platform
+    (Closes: #397044)
+  * Add explanatory message to badblocks that -n and -w are mutually 
+    exclusive.  (Closes: #371869)
+  * New +dfsg source tarball that has useful documentation REALLY
+    removed to satisfy the DFSG License Nazi's.  (Closes: #390664)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 14 Nov 2006 23:45:34 -0500
+
 e2fsprogs (1.39+1.40-WIP-2006.10.02+dfsg-2) unstable; urgency=low
 
   * Add failsafes against duplicate UUID generation caused by threads
