@@ -84,8 +84,9 @@ static void usage(void)
 static void exclusive_usage(void)
 {
 	fprintf(stderr, 
-		_("The -n and -w options are mutually exclusive.\n\n"));
-	usage();
+		_("%s: The -n and -w options are mutually exclusive.\n\n"), 
+		program_name);
+	exit(1);
 }
 
 static unsigned long currently_testing = 0;

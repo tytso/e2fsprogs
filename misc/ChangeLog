@@ -1,3 +1,9 @@
+2006-11-17  Theodore Tso  <tytso@mit.edu>
+
+	* badblocks.c (exclusive_usage): Print the program name in the
+		exclusive usage() and don't print the full usage message
+		if the user specifies -n and -w options simultaneously.
+
 2006-11-14  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (PRS): Always allocate the replacement PATH environment
