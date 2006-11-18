@@ -1,3 +1,8 @@
+2006-11-17  Theodore Tso  <tytso@mit.edu>
+
+	* get_readline.c (DEFAULT_LIBPATH): Add libreadline.so.5 to the
+		search path of viable readline libraries.
+
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
 	* mk_cmds.sh.in: Make sure locale environment variables are set to
