@@ -167,6 +167,7 @@ struct ext4_group_desc
 	__u16	bg_free_blocks_count_hi;/* Free blocks count MSB */
 	__u16	bg_free_inodes_count_hi;/* Free inodes count MSB */
 	__u16	bg_used_dirs_count_hi;	/* Directories count MSB */
+	__u16   bg_pad;
 	__u32	bg_reserved2[3];
 };
 
