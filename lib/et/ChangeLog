@@ -1,3 +1,9 @@
+2006-12-22  Theodore Tso  <tytso@mit.edu>
+
+	* error_message.c (add_error_table, remove_error_table): Add
+		debugging so we can see what happens when various shared
+		libraries are loading and unloading error tables.
+
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
 	* compile_et.sh.in: Make sure locale environment variables are set to
