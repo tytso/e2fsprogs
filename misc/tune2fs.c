@@ -755,7 +755,7 @@ int main (int argc, char ** argv)
 #endif
 	if (argc && *argv)
 		program_name = *argv;
-	initialize_ext2_error_table();
+	add_error_table(&et_ext2_error_table);
 
 	if (strcmp(get_progname(argv[0]), "findfs") == 0)
 		do_findfs(argc, argv);
@@ -784,6 +784,7 @@ int main (int argc, char ** argv)
 		/* For e2label emulation */
 		printf("%.*s\n", (int) sizeof(sb->s_volume_name),
 		       sb->s_volume_name);
+		remove_error_table(&et_ext2_error_table);
 		exit(0);
 	}
 	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
@@ -920,5 +921,6 @@ int main (int argc, char ** argv)
 
 	if (l_flag)
 		list_super (sb);
+	remove_error_table(&et_ext2_error_table);
 	return (ext2fs_close (fs) ? 1 : 0);
 }

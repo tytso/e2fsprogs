@@ -1801,7 +1801,7 @@ int main(int argc, char **argv)
 	int		catastrophic = 0;
 	char		*data_filename = 0;
 	
-	initialize_ext2_error_table();
+	add_error_table(&et_ext2_error_table);
 	fprintf (stderr, "debugfs %s (%s)\n", E2FSPROGS_VERSION,
 		 E2FSPROGS_DATE);
 
@@ -1877,5 +1877,6 @@ int main(int argc, char **argv)
 	if (current_fs)
 		close_filesystem();
 	
+	remove_error_table(&et_ext2_error_table);
 	return exit_status;
 }

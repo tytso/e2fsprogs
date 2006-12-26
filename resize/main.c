@@ -171,7 +171,7 @@ int main (int argc, char ** argv)
 	textdomain(NLS_CAT_NAME);
 #endif
 
-	initialize_ext2_error_table();
+	add_error_table(&et_ext2_error_table);
 
 	fprintf (stderr, "resize2fs %s (%s)\n",
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
@@ -415,5 +415,6 @@ int main (int argc, char ** argv)
 	}
 	if (fd > 0)
 		close(fd);
+	remove_error_table(&et_ext2_error_table);
 	return (0);
 }

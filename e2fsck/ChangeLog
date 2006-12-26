@@ -1,3 +1,8 @@
+2006-12-22  Theodore Tso  <tytso@mit.edu>
+
+	* unix.c (PRS, main): Use the new {add,remove}_error_table comerr
+		interfaces instead of initialize_*_error_table.
+
 2006-11-14  Theodore Tso  <tytso@mit.edu>
 
 	* unix.c (PRS): Always allocate the replacement PATH environment

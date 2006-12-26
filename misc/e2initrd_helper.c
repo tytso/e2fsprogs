@@ -364,7 +364,7 @@ int main (int argc, char ** argv)
 	ext2_filsys fs;
 	io_manager io_ptr;
 
-	initialize_ext2_error_table();
+	add_error_table(&et_ext2_error_table);
 
 	blkid_get_cache(&cache, NULL);
 	PRS(argc, argv);
@@ -382,5 +382,6 @@ int main (int argc, char ** argv)
 	if (root_type) 
 		get_root_type(fs);
 
+	remove_error_table(&et_ext2_error_table);
 	return (ext2fs_close (fs) ? 1 : 0);
 }

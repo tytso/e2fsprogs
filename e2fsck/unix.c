@@ -600,8 +600,8 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	}
 	memset(bar, '=', sizeof(bar)-1);
 	memset(spaces, ' ', sizeof(spaces)-1);
-	initialize_ext2_error_table();
-	initialize_prof_error_table();
+	add_error_table(&et_ext2_error_table);
+	add_error_table(&et_prof_error_table);
 	blkid_get_cache(&ctx->blkid, NULL);
 	
 	if (argc && *argv)
@@ -1224,5 +1224,7 @@ restart:
 		print_resource_track(NULL, &ctx->global_rtrack);
 #endif
 	e2fsck_free_context(ctx);
+	remove_error_table(&et_ext2_error_table);
+	remove_error_table(&et_prof_error_table);
 	return exit_value;
 }

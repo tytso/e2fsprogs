@@ -343,7 +343,7 @@ int main (int argc, char ** argv)
 	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
 	textdomain(NLS_CAT_NAME);
 #endif
-	initialize_ext2_error_table();
+	add_error_table(&et_ext2_error_table);
 	fprintf (stderr, "dumpe2fs %s (%s)\n", E2FSPROGS_VERSION,
 		 E2FSPROGS_DATE);
 	if (argc && *argv)
@@ -435,5 +435,6 @@ int main (int argc, char ** argv)
 		}
 	}
 	ext2fs_close (fs);
+	remove_error_table(&et_ext2_error_table);
 	exit (0);
 }

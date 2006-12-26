@@ -52,6 +52,7 @@ extern int optind;
 #include "ext2fs/ext2fs.h"
 #include "util.h"
 #include "profile.h"
+#include "prof_err.h"
 #include "../version.h"
 #include "nls-enable.h"
 
@@ -952,7 +953,8 @@ static void PRS(int argc, char *argv[])
 	
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
-	initialize_ext2_error_table();
+	add_error_table(&et_ext2_error_table);
+	add_error_table(&et_prof_error_table);
 	memset(&fs_param, 0, sizeof(struct ext2_super_block));
 	fs_param.s_rev_level = 1;  /* Create revision 1 filesystems now */
 
@@ -1729,5 +1731,7 @@ no_journal:
 			print_check_message(fs);
 	}
 	val = ext2fs_close(fs);
+	remove_error_table(&et_ext2_error_table);
+	remove_error_table(&et_prof_error_table);
 	return (retval || val) ? 1 : 0;
 }

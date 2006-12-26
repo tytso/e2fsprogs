@@ -628,7 +628,7 @@ int main (int argc, char ** argv)
 		 E2FSPROGS_DATE);
 	if (argc && *argv)
 		program_name = *argv;
-	initialize_ext2_error_table();
+	add_error_table(&et_ext2_error_table);
 	while ((c = getopt (argc, argv, "rsI")) != EOF)
 		switch (c) {
 		case 'r':
@@ -683,5 +683,6 @@ int main (int argc, char ** argv)
 		write_image_file(fs, fd);
 
 	ext2fs_close (fs);
+	remove_error_table(&et_ext2_error_table);
 	exit (0);
 }
