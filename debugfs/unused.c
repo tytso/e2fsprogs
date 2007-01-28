@@ -31,6 +31,10 @@ void do_dump_unused(int argc EXT2FS_ATTR((unused)), char **argv)
 	unsigned int	i;
 	errcode_t	retval;
 
+	if (common_args_process(argc, argv, 1, 1,
+				"dump_unused", "", 0))
+		return;
+
 	for (blk=current_fs->super->s_first_data_block;
 	     blk < current_fs->super->s_blocks_count; blk++) {
 		if (ext2fs_test_block_bitmap(current_fs->block_map,blk))
