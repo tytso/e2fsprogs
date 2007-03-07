@@ -1,3 +1,9 @@
+2007-03-07  Theodore Tso  <tytso@mit.edu>
+
+	* debugfs.c (do_lcd): Allow the lcd command when debugfs does not
+		currently have a filesystem open.  
+		(Addresses LTC Bugzilla #27513)
+
 2007-01-28  Theodore Tso  <tytso@mit.edu>
 
 	* unused.c: Fix bug so that the dump_unused command segfault if

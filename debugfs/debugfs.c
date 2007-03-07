@@ -181,9 +181,10 @@ print_usage:
 
 void do_lcd(int argc, char **argv)
 {
-	if (common_args_process(argc, argv, 2, 2, "lcd",
-				"<native dir>", 0))
+	if (argc != 2) {
+		com_err(argv[0], 0, "Usage: %s %s", argv[0], "<native dir>");
 		return;
+	}
 
 	if (chdir(argv[1]) == -1) {
 		com_err(argv[0], errno,
