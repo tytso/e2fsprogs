@@ -1,3 +1,8 @@
+2007-03-06  Theodore Tso  <tytso@mit.edu>
+
+	* devname.c (dm_probe_all), probe.c (blkid_verify): Fix memory
+		leak.  (Addresses Debian Bug #413661)
+
 2006-09-24  Theodore Tso  <tytso@mit.edu>
 
 	* devno.c (scan_dir): Don't follow symlinks when recursively

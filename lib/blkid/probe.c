@@ -886,9 +886,9 @@ try_again:
 	}
 
 	if (!dev->bid_type) {
-		if (probe.fd >= 0) close(probe.fd);
 		blkid_free_dev(dev);
-		return NULL;
+		dev = 0;
+		goto found_type;
 	}
 		
 found_type:
@@ -908,7 +908,8 @@ found_type:
 		free(probe.sbbuf);
 	if (probe.buf)
 		free(probe.buf);
-	close(probe.fd);
+	if (probe.fd >= 0) 
+		close(probe.fd);
 
 	return dev;
 }

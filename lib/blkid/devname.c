@@ -305,6 +305,7 @@ static void dm_probe_all(blkid_cache cache, int only_if_new)
 		probe_one(cache, device, dev, BLKID_PRI_DM, only_if_new);
 
 try_next:
+		free(device);
 		next = names->next;
 	} while (next);
 
