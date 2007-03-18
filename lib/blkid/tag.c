@@ -87,12 +87,12 @@ extern int blkid_dev_has_tag(blkid_dev dev, const char *type,
 {
 	blkid_tag		tag;
 
-	if (!dev || !type || !value)
+	if (!dev || !type)
 		return -1;
 
 	tag = blkid_find_tag_dev(dev, type);
 	if (!value)
-		return(tag != NULL);
+		return (tag != NULL);
 	if (!tag || strcmp(tag->bit_val, value))
 		return 0;
 	return 1;

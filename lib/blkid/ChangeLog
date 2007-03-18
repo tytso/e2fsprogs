@@ -1,3 +1,9 @@
+2007-03-18  Theodore Tso  <tytso@mit.edu>
+
+	* tag.c (blkid_dev_has_tag): Allow value to be NULL, in which case
+		blkid_dev_has_tag() will return TRUE if the passed-in tag
+		exists --- reasonable functionality given the function name.
+
 2007-03-06  Theodore Tso  <tytso@mit.edu>
 
 	* devname.c (dm_probe_all), probe.c (blkid_verify): Fix memory
