@@ -1306,7 +1306,9 @@ static int check_and_change_inodes(ext2_ino_t dir,
 	retval = ext2fs_read_inode(is->rfs->old_fs, dir, &inode);
 	if (retval == 0) {
 		inode.i_mtime = inode.i_ctime = time(0);
-		ext2fs_write_inode(is->rfs->old_fs, dir, &inode);
+		is->err = ext2fs_write_inode(is->rfs->old_fs, dir, &inode);
+		if (is->err)
+			return DIRENT_ABORT;
 	}
 
 	return DIRENT_CHANGED;

@@ -170,7 +170,9 @@ static int fix_directory(ext2_filsys fs,
 		edi->inode.i_size -= edi->freed_blocks * fs->blocksize;
 		edi->inode.i_blocks -= edi->freed_blocks *
 			(fs->blocksize / 512);
-		(void) ext2fs_write_inode(fs, db->ino, &edi->inode);
+		retval = ext2fs_write_inode(fs, db->ino, &edi->inode);
+		if (retval)
+			return 0;
 	}
 	return 0;
 }

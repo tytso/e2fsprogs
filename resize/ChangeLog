@@ -1,3 +1,8 @@
+2007-03-18  Theodore Tso  <tytso@mit.edu>
+
+	* resize2fs.c (check_and_change_inodes): Check to make sure the
+		inode write was sucessful.
+
 2006-12-22  Theodore Tso  <tytso@mit.edu>
 
 	* main.c (main): Use the new {add,remove}_error_table comerr
