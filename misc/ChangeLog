@@ -1,3 +1,11 @@
+2007-03-19  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.c (PRS): Fix deadcode bug detected by Coverity where if
+		the fs_type is not specified and we are creating a journal
+		device, to use a fs_type of "journal"; this used to be the
+		behavior before we added support for the /etc/mke2fs.conf
+		file, so let's fix it to restore the old behavior.
+
 2006-12-22  Theodore Tso  <tytso@mit.edu>
 
 	* tune2fs.c, mke2fs.c, e2initrd_helper.c, e2image.c, dumpe2fs.c:

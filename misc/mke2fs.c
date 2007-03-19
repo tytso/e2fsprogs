@@ -1272,7 +1272,10 @@ static void PRS(int argc, char *argv[])
 		int megs = (__u64)fs_param.s_blocks_count *
 			(EXT2_BLOCK_SIZE(&fs_param) / 1024) / 1024;
 
-		if (megs <= 3)
+		if (fs_param.s_feature_incompat & 
+		    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
+			fs_type = "journal";
+		else if (megs <= 3)
 			fs_type = "floppy";
 		else if (megs <= 512)
 			fs_type = "small";
@@ -1337,8 +1340,6 @@ static void PRS(int argc, char *argv[])
 
 	if (fs_param.s_feature_incompat & 
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
-		if (!fs_type)
-			fs_type = "journal";
 		reserved_ratio = 0;
 		fs_param.s_feature_incompat = EXT3_FEATURE_INCOMPAT_JOURNAL_DEV;
 		fs_param.s_feature_compat = 0;
