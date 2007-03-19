@@ -1,5 +1,9 @@
 2007-03-19  Theodore Tso  <tytso@mit.edu>
 
+	* pass1b.c (clone_file): Fix a coverity-found bug; add error
+		checking in case dict_lookup() returns NULL when looking up
+		an block or inode record after cloning the EA block.
+
 	* profile.c (profile_init, get_dirlist): Fix bug where if a
 		profile directory is completely empty, the profile library
 		would segfault.

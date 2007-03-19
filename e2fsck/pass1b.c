@@ -752,11 +752,26 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 		 * them to point to the new EA block.
 		 */
 		n = dict_lookup(&blk_dict, INT_TO_VOIDPTR(blk));
+		if (!n) {
+			com_err("clone_file", 0, 
+				_("internal error: couldn't lookup EA "
+				  "block record for %u"), blk);
+			retval = 0; /* OK to stumble on... */
+			goto errout;
+		}
 		db = (struct dup_block *) dnode_get(n);
 		for (ino_el = db->inode_list; ino_el; ino_el = ino_el->next) {
 			if (ino_el->inode == ino)
 				continue;
 			n = dict_lookup(&ino_dict, INT_TO_VOIDPTR(ino_el->inode));
+			if (!n) {
+				com_err("clone_file", 0, 
+					_("internal error: couldn't lookup EA "
+					  "inode record for %u"), 
+					ino_el->inode);
+				retval = 0; /* OK to stumble on... */
+				goto errout;
+			}
 			di = (struct dup_inode *) dnode_get(n);
 			if (di->inode.i_file_acl == blk) {
 				di->inode.i_file_acl = dp->inode.i_file_acl;
