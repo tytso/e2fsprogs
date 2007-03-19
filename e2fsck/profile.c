@@ -279,8 +279,10 @@ static errcode_t get_dirlist(const char *dirname, char***ret_array)
 		}
 		array[num++] = fn;
 	}
-	qsort(array, num, sizeof(char *), compstr);
-	array[num++] = 0;
+	if (array) {
+		qsort(array, num, sizeof(char *), compstr);
+		array[num++] = 0;
+	}
 	*ret_array = array;
 	closedir(dir);
 	return 0;
@@ -311,6 +313,8 @@ profile_init(const char **files, profile_t *ret_profile)
 	    for (fs = files; !PROFILE_LAST_FILESPEC(*fs); fs++) {
 		retval = get_dirlist(*fs, &array);
 		if (retval == 0) {
+			if (!array)
+				continue;
 			for (cpp = array; (cp = *cpp); cpp++) {
 				retval = profile_open_file(cp, &new_file);
 				if (retval == EACCES)

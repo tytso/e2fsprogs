@@ -1,3 +1,9 @@
+2007-03-19  Theodore Tso  <tytso@mit.edu>
+
+	* profile.c (profile_init, get_dirlist): Fix bug where if a
+		profile directory is completely empty, the profile library
+		would segfault.
+
 2006-12-22  Theodore Tso  <tytso@mit.edu>
 
 	* unix.c (PRS, main): Use the new {add,remove}_error_table comerr
