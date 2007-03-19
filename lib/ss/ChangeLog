@@ -1,3 +1,8 @@
+2007-03-19  Theodore Tso  <tytso@mit.edu>
+
+	* help.c (ss_add_info_dir): Fix error checking for NULL parameter
+		passed via info_dir.
+
 2006-11-17  Theodore Tso  <tytso@mit.edu>
 
 	* get_readline.c (DEFAULT_LIBPATH): Add libreadline.so.5 to the
