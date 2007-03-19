@@ -306,6 +306,11 @@ static int check_directory(e2fsck_t ctx, struct dir_info *dir,
 					ext2fs_unmark_valid(fs);
 				else {
 					p = e2fsck_get_dir_info(ctx, pctx->ino);
+					if (!p) {
+						fix_problem(ctx, 
+						    PR_3_NO_DIRINFO, pctx);
+						return 0;
+					}
 					p->parent = ctx->lost_and_found;
 					fix_dotdot(ctx, p, ctx->lost_and_found);
 				}
@@ -314,6 +319,7 @@ static int check_directory(e2fsck_t ctx, struct dir_info *dir,
 		}
 		p = e2fsck_get_dir_info(ctx, p->parent);
 		if (!p) {
+			pctx->ino = p->parent;
 			fix_problem(ctx, PR_3_NO_DIRINFO, pctx);
 			return 0;
 		}
