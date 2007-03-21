@@ -35,7 +35,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2_dir_entry *dirent;
 	int		thislen, col = 0;
 	unsigned int	offset = 0;
-	char		name[EXT2_NAME_LEN];
+	char		name[EXT2_NAME_LEN + 1];
 	char		tmp[EXT2_NAME_LEN + 16];
 	blk_t		pblk;
 	ext2_dirhash_t 	hash;

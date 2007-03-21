@@ -292,7 +292,7 @@ static int rdump_dirent(struct ext2_dir_entry *dirent,
 			int blocksize EXT2FS_ATTR((unused)),
 			char *buf EXT2FS_ATTR((unused)), void *private)
 {
-	char name[EXT2_NAME_LEN];
+	char name[EXT2_NAME_LEN + 1];
 	int thislen;
 	const char *dumproot = private;
 	struct ext2_inode inode;

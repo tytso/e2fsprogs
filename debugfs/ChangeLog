@@ -1,3 +1,10 @@
+2007-03-21  Theodore Tso  <tytso@mit.edu>
+
+	* dump.c (rdump_dirent), htree.c (htree_dump_leaf_node), 
+		ls.c (list_dir_proc): Add an extra byte to EXT2_NAME_LEN
+		to avoid the possibility of an array overrun if the
+		filename is exactly EXT2_NAME_LEN in size.
+
 2007-03-07  Theodore Tso  <tytso@mit.edu>
 
 	* debugfs.c (do_lcd): Allow the lcd command when debugfs does not

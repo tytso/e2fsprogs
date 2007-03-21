@@ -52,7 +52,7 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	ext2_ino_t		ino;
 	struct tm		*tm_p;
 	time_t			modtime;
-	char			name[EXT2_NAME_LEN];
+	char			name[EXT2_NAME_LEN + 1];
 	char			tmp[EXT2_NAME_LEN + 16];
 	char			datestr[80];
 	char			lbr, rbr;
