@@ -1,3 +1,7 @@
+2007-03-21  Theodore Tso  <tytso@mit.edu>
+
+	* resolve.c (blkid_get_devname): Fix memory leak.
+
 2007-03-18  Theodore Tso  <tytso@mit.edu>
 
 	* tag.c (blkid_dev_has_tag): Allow value to be NULL, in which case

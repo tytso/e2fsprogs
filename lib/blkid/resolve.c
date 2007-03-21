@@ -79,22 +79,24 @@ char *blkid_get_devname(blkid_cache cache, const char *token,
 		   value ? value : "", cache ? "in cache" : "from disk"));
 
 	if (!value) {
-		if (!strchr(token, '='))
-			return blkid_strdup(token);
+		if (!strchr(token, '=')) {
+			ret = blkid_strdup(token);
+			goto out;
+		}
 		blkid_parse_tag_string(token, &t, &v);
 		if (!t || !v)
-			goto errout;
+			goto out;
 		token = t;
 		value = v;
 	}
 
 	dev = blkid_find_dev_with_tag(c, token, value);
 	if (!dev)
-		goto errout;
+		goto out;
 
 	ret = blkid_strdup(blkid_dev_devname(dev));
 
-errout:
+out:
 	if (t)
 		free(t);
 	if (v)
