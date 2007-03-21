@@ -165,10 +165,11 @@ static char *skip_over_word(char *cp)
  */
 int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array)
 {
-	char	*cp, *buf, *next;
-	int	neg;
+	char		*cp, *buf, *next;
+	int		neg;
 	unsigned int	mask;
 	int		compat_type;
+	int		rc = 0;
 
 	buf = malloc(strlen(str)+1);
 	if (!buf)
@@ -200,15 +201,19 @@ int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array)
 			cp++;
 			break;
 		}
-		if (e2p_string2feature(cp, &compat_type, &mask))
-			return 1;
-		if (ok_array && !(ok_array[compat_type] & mask))
-			return 1;
+		if (e2p_string2feature(cp, &compat_type, &mask)) {
+			rc = 1;
+			break;
+		}
+		if (ok_array && !(ok_array[compat_type] & mask)) {
+			rc = 1;
+			break;
+		}
 		if (neg)
 			compat_array[compat_type] &= ~mask;
 		else
 			compat_array[compat_type] |= mask;
 	}
-	return 0;
+	free(buf);
+	return rc;
 }
-
