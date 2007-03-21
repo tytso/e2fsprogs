@@ -1,3 +1,7 @@
+2007-03-21  Theodore Tso  <tytso@mit.edu>
+
+	* e2image.c (output_meta_data_blocks): Fix memory leak.
+
 2007-03-19  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (PRS): Fix deadcode bug detected by Coverity where if

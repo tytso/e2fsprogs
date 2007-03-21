@@ -441,6 +441,8 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 		}
 	}
 	write_block(fd, zero_buf, sparse, 1, -1);
+	free(zero_buf);
+	free(buf);
 }
 
 static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
