@@ -539,6 +539,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 	}
 	use_inode_shortcuts(fs, 0);
 	output_meta_data_blocks(fs, fd);
+	free(block_buf);
 }
 
 static void install_image(char *device, char *image_fn, int raw_flag)
