@@ -1,3 +1,8 @@
+2007-03-21  Theodore Tso  <tytso@mit.edu>
+
+	* profile.c (profile_open_file): Fix memory leak if malloc() fails
+		while setting up the profile data structure.
+
 2007-03-19  Theodore Tso  <tytso@mit.edu>
 
 	* pass3.c (check_directory): Add error check in case

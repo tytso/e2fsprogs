@@ -417,8 +417,10 @@ errcode_t profile_open_file(const char * filespec,
 			len += strlen(home_env);
 	}
 	expanded_filename = malloc(len);
-	if (expanded_filename == 0)
+	if (expanded_filename == 0) {
+	    profile_free_file(prf);	
 	    return errno;
+	}
 	if (home_env) {
 	    strcpy(expanded_filename, home_env);
 	    strcat(expanded_filename, filespec+1);
