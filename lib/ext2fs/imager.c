@@ -72,8 +72,10 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 	
 	for (group = 0; group < fs->group_desc_count; group++) {
 		blk = fs->group_desc[(unsigned)group].bg_inode_table;
-		if (!blk)
-			return EXT2_ET_MISSING_INODE_TABLE;
+		if (!blk) {
+			retval = EXT2_ET_MISSING_INODE_TABLE;
+			goto errout;
+		}
 		left = fs->inode_blocks_per_group;
 		while (left) {
 			c = BUF_BLOCKS;
