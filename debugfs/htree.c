@@ -161,19 +161,20 @@ static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 	if (errcode) {
 		com_err("htree_dump_int_block", errcode,
 			"while mapping logical block %u\n", blk);
-		return;
+		goto errout;
 	}
 
 	errcode = io_channel_read_blk(current_fs->io, pblk, 1, buf);
 	if (errcode) {
 		com_err("htree_dump_int_block", errcode,
 			"while 	reading block %u\n", blk);
-		return;
+		goto errout;
 	}
 
 	htree_dump_int_node(fs, ino, inode, rootnode,
 			    (struct ext2_dx_entry *) (buf+8),
 			    cbuf, level);
+errout:
 	free(cbuf);
 }
 
