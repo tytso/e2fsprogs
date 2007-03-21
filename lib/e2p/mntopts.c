@@ -98,6 +98,7 @@ int e2p_edit_mntopts(const char *str, __u32 *mntopts, __u32 ok)
 	char	*cp, *buf, *next;
 	int	neg;
 	unsigned int	mask;
+	int	rc = 0;
 
 	buf = malloc(strlen(str)+1);
 	if (!buf)
@@ -120,10 +121,14 @@ int e2p_edit_mntopts(const char *str, __u32 *mntopts, __u32 ok)
 			cp++;
 			break;
 		}
-		if (e2p_string2mntopt(cp, &mask))
-			return 1;
-		if (ok && !(ok & mask))
-			return 1;
+		if (e2p_string2mntopt(cp, &mask)) {
+			rc = 1;
+			break;
+		}
+		if (ok && !(ok & mask)) {
+			rc = 1;
+			break;
+		}
 		if (mask & EXT3_DEFM_JMODE)
 			*mntopts &= ~EXT3_DEFM_JMODE;
 		if (neg)
@@ -132,5 +137,6 @@ int e2p_edit_mntopts(const char *str, __u32 *mntopts, __u32 ok)
 			*mntopts |= mask;
 		cp = next ? next+1 : 0;
 	}
-	return 0;
+	free(buf);
+	return rc;
 }

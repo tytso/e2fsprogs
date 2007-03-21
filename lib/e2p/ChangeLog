@@ -1,6 +1,7 @@
 2007-03-21  Theodore Tso  <tytso@mit.edu>
 
-	* feature.c (e2p_edit_feature): Fix memory leak.
+	* feature.c (e2p_edit_feature), mntopts.c (e2p_edit_mntopts): Fix
+		memory leak.
 
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
