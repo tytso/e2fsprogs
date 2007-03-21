@@ -1,3 +1,10 @@
+2007-03-21  Theodore Tso  <tytso@mit.edu>
+
+	* execute_cmd.c (ss_execute_line): Fix a memory leak by freeing
+		the argv[] array if ss_parse_line returns 0 for argc 0
+		(which will happen if the user his return and sends an
+		empty line to the application).
+
 2007-03-19  Theodore Tso  <tytso@mit.edu>
 
 	* help.c (ss_add_info_dir): Fix error checking for NULL parameter

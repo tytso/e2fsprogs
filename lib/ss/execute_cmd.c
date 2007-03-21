@@ -220,8 +220,11 @@ int ss_execute_line (sci_idx, line_ptr)
 
     /* parse it */
     argv = ss_parse(sci_idx, line_ptr, &argc);
-    if (argc == 0)
+    if (argc == 0) {
+	if (argv)
+	    free(argv);
         return 0;
+    }
 
     /* look it up in the request tables, execute if found */
     ret = really_execute_command (sci_idx, argc, &argv);
