@@ -669,8 +669,10 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	offset = ((ino - 1) % EXT2_INODES_PER_GROUP(fs->super)) *
 		EXT2_INODE_SIZE(fs->super);
 	block = offset >> EXT2_BLOCK_SIZE_BITS(fs->super);
-	if (!fs->group_desc[(unsigned) group].bg_inode_table)
-		return EXT2_ET_MISSING_INODE_TABLE;
+	if (!fs->group_desc[(unsigned) group].bg_inode_table) {
+		retval = EXT2_ET_MISSING_INODE_TABLE;
+		goto errout;
+	}
 	block_nr = fs->group_desc[(unsigned) group].bg_inode_table + block;
 
 	offset &= (EXT2_BLOCK_SIZE(fs->super) - 1);

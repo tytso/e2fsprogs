@@ -1,3 +1,8 @@
+2007-03-21  Theodore Tso  <tytso@mit.edu>
+
+	* inode.c (ext2fs_write_inode_full): Fix memory leak on error
+		return (when the inode table is missing).
+
 2006-11-30  Theodore Tso  <tytso@mit.edu>
 
 	* ext2_fs.h (struct ext4_group_desc): Fix missing bg_pad which
