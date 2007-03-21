@@ -1,3 +1,8 @@
+2007-03-21  Theodore Tso  <tytso@mit.edu>
+
+	* subst.c (compare_file): Close old FILE handle if the new FILE
+		handle open failed.
+
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
 	* gen-tarball.in: Use E2FSPROGS_PKGVER to simplify script

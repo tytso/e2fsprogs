@@ -279,8 +279,10 @@ static int compare_file(const char *outfn, const char *newfn)
 	if (!old_f)
 		return 0;
 	new_f = fopen(newfn, "r");
-	if (!new_f)
+	if (!new_f) {
+		fclose(old_f);
 		return 0;
+	}
 
 	while (1) {
 		oldcp = fgets(oldbuf, sizeof(oldbuf), old_f);
