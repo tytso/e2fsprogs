@@ -1,3 +1,7 @@
+2007-03-23  Theodore Tso  <tytso@mit.edu>
+
+	* read.c (parse_dev): Fix memory leak on error path.
+
 2007-03-21  Theodore Tso  <tytso@mit.edu>
 
 	* resolve.c (blkid_get_devname): Fix memory leak.

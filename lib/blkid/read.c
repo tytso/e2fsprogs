@@ -223,8 +223,10 @@ static int parse_dev(blkid_cache cache, blkid_dev *dev, char **cp)
 
 	DBG(DEBUG_READ, printf("found dev %s\n", name));
 
-	if (!(*dev = blkid_get_dev(cache, name, BLKID_DEV_CREATE)))
+	if (!(*dev = blkid_get_dev(cache, name, BLKID_DEV_CREATE))) {
+		free(name);
 		return -BLKID_ERR_MEM;
+	}
 
 	free(name);
 	return 1;
