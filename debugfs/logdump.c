@@ -170,10 +170,10 @@ void do_logdump(int argc, char **argv)
 	} else {
 		out_fn = argv[optind];
 		out_file = fopen(out_fn, "w");
-		if (!out_file < 0) {
+		if (!out_file) {
 			com_err(argv[0], errno, "while opening %s for logdump",
 				out_fn);
-			return;
+			goto errout;
 		}
 	}
 
@@ -185,7 +185,7 @@ void do_logdump(int argc, char **argv)
 	}
 
 	if (!journal_fn && check_fs_open(argv[0]))
-		return;
+		goto errout;
 
 	if (journal_fn) {
 		/* Set up to read journal from a regular file somewhere */
@@ -193,7 +193,7 @@ void do_logdump(int argc, char **argv)
 		if (journal_fd < 0) {
 			com_err(argv[0], errno, "while opening %s for logdump",
 				journal_fn);
-			return;
+			goto errout;
 		}
 		
 		journal_source.where = JOURNAL_IS_EXTERNAL;
@@ -203,7 +203,7 @@ void do_logdump(int argc, char **argv)
 			if (es->s_jnl_backup_type != EXT3_JNL_BACKUP_BLOCKS) {
 				com_err(argv[0], 0,
 					"no journal backup in super block\n");
-				return;
+				goto errout;
 			}
 			memset(&journal_inode, 0, sizeof(struct ext2_inode));
 			memcpy(&journal_inode.i_block[0], es->s_jnl_blocks, 
@@ -214,14 +214,14 @@ void do_logdump(int argc, char **argv)
 		} else {
 			if (debugfs_read_inode(journal_inum, &journal_inode, 
 					       argv[0]))
-				return;
+				goto errout;
 		}
 		
 		retval = ext2fs_file_open2(current_fs, journal_inum,
 					   &journal_inode, 0, &journal_file);
 		if (retval) {
 			com_err(argv[0], retval, "while opening ext2 file");
-			return;
+			goto errout;
 		}
 		journal_source.where = JOURNAL_IS_INTERNAL;
 		journal_source.file = journal_file;
@@ -234,14 +234,14 @@ void do_logdump(int argc, char **argv)
 				journal_fn = blkid_devno_to_devname(es->s_journal_dev);
 		if (!journal_fn) {
 			com_err(argv[0], 0, "filesystem has no journal");
-			return;
+			goto errout;
 		}
 		journal_fd = open(journal_fn, O_RDONLY, 0);
 		if (journal_fd < 0) {
 			com_err(argv[0], errno, "while opening %s for logdump",
 				journal_fn);
 			free(journal_fn);
-			return;
+			goto errout;
 		}
 		fprintf(out_file, "Using external journal found at %s\n",
 			journal_fn);
@@ -257,6 +257,7 @@ void do_logdump(int argc, char **argv)
 	else
 		close(journal_fd);
 
+errout:
 	if (out_file != stdout)
 		fclose(out_file);
 

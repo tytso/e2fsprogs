@@ -1,3 +1,8 @@
+2007-03-23  Theodore Tso  <tytso@mit.edu>
+
+	* logdump.c (do_logdump): Fix file handle leak if logdump fails
+		with an error.
+
 2007-03-21  Theodore Tso  <tytso@mit.edu>
 
 	* icheck.c (do_icheck): Fix memory leak and clean up error
