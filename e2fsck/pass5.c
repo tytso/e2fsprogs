@@ -107,7 +107,7 @@ static void print_bitmap_problem(e2fsck_t ctx, int problem,
 	pctx->blk = pctx->blk2 = NO_BLK;
 	pctx->ino = pctx->ino2 = 0;
 }
-	
+
 static void check_block_bitmaps(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
@@ -123,7 +123,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	errcode_t	retval;
 	int		lazy_bg = 0;
 	int		skip_group = 0;
-	
+
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,
 	    fs->group_desc_count * sizeof(int), "free block count array");
@@ -140,9 +140,9 @@ static void check_block_bitmaps(e2fsck_t ctx)
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
 
 		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
-		return;
+		goto errout;
 	}
-		       
+
 	if ((fs->super->s_first_data_block <
 	     ext2fs_get_block_bitmap_start(fs->block_map)) ||
 	    (fs->super->s_blocks_count-1 >
@@ -155,11 +155,10 @@ static void check_block_bitmaps(e2fsck_t ctx)
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
 
 		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
-		return;
+		goto errout;
 	}
-		       
-	if (EXT2_HAS_COMPAT_FEATURE(fs->super, 
-				    EXT2_FEATURE_COMPAT_LAZY_BG))
+
+	if (EXT2_HAS_COMPAT_FEATURE(fs->super, EXT2_FEATURE_COMPAT_LAZY_BG))
 		lazy_bg++;
 
 redo_counts:
@@ -193,7 +192,7 @@ redo_counts:
 			actual = (actual != 0);
 		} else
 			bitmap = ext2fs_fast_test_block_bitmap(fs->block_map, i);
-		
+
 		if (actual == bitmap)
 			goto do_counts;
 
@@ -223,7 +222,7 @@ redo_counts:
 		}
 		ctx->flags |= E2F_FLAG_PROG_SUPPRESS;
 		had_problem++;
-		
+
 	do_counts:
 		if (!bitmap && !skip_group) {
 			group_free++;
@@ -241,7 +240,7 @@ redo_counts:
 			if (ctx->progress)
 				if ((ctx->progress)(ctx, 5, group,
 						    fs->group_desc_count*2))
-					return;
+					goto errout;
 			if (lazy_bg &&
 			    (i != fs->super->s_blocks_count-1) &&
 			    (fs->group_desc[group].bg_flags &
@@ -256,7 +255,7 @@ redo_counts:
 	else
 		fixit = -1;
 	ctx->flags &= ~E2F_FLAG_PROG_SUPPRESS;
-	
+
 	if (fixit == 1) {
 		ext2fs_free_block_bitmap(fs->block_map);
 		retval = ext2fs_copy_bitmap(ctx->block_found_map,
@@ -265,11 +264,11 @@ redo_counts:
 			clear_problem_context(&pctx);
 			fix_problem(ctx, PR_5_COPY_BBITMAP_ERROR, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
-			return;
+			goto errout;
 		}
 		ext2fs_set_bitmap_padding(fs->block_map);
 		ext2fs_mark_bb_dirty(fs);
-		
+
 		/* Redo the counts */
 		blocks = 0; free_blocks = 0; group_free = 0; group = 0;
 		memset(free_array, 0, fs->group_desc_count * sizeof(int));
@@ -303,9 +302,10 @@ redo_counts:
 		} else
 			ext2fs_unmark_valid(fs);
 	}
+errout:
 	ext2fs_free_mem(&free_array);
 }
-			
+
 static void check_inode_bitmaps(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
@@ -323,16 +323,16 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int		problem, save_problem, fixit, had_problem;
 	int		lazy_bg = 0;
 	int		skip_group = 0;
-	
+
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,
 	    fs->group_desc_count * sizeof(int), "free inode count array");
-				     
+
 	dir_array = (int *) e2fsck_allocate_memory(ctx,
 	   fs->group_desc_count * sizeof(int), "directory count array");
-				     
+
 	if ((1 < ext2fs_get_inode_bitmap_start(ctx->inode_used_map)) ||
-	    (fs->super->s_inodes_count > 
+	    (fs->super->s_inodes_count >
 	     ext2fs_get_inode_bitmap_end(ctx->inode_used_map))) {
 		pctx.num = 3;
 		pctx.blk = 1;
@@ -342,10 +342,10 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
 
 		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
-		return;
+		goto errout;
 	}
 	if ((1 < ext2fs_get_inode_bitmap_start(fs->inode_map)) ||
-	    (fs->super->s_inodes_count > 
+	    (fs->super->s_inodes_count >
 	     ext2fs_get_inode_bitmap_end(fs->inode_map))) {
 		pctx.num = 4;
 		pctx.blk = 1;
@@ -355,10 +355,10 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
 
 		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
-		return;
+		goto errout;
 	}
 
-	if (EXT2_HAS_COMPAT_FEATURE(fs->super, 
+	if (EXT2_HAS_COMPAT_FEATURE(fs->super,
 				    EXT2_FEATURE_COMPAT_LAZY_BG))
 		lazy_bg++;
 
@@ -373,13 +373,13 @@ redo_counts:
 	/* Protect loop from wrap-around if inodes_count is maxed */
 	for (i = 1; i <= fs->super->s_inodes_count && i > 0; i++) {
 		actual = ext2fs_fast_test_inode_bitmap(ctx->inode_used_map, i);
-		if (skip_group) 
+		if (skip_group)
 			bitmap = 0;
 		else
 			bitmap = ext2fs_fast_test_inode_bitmap(fs->inode_map, i);
 		if (actual == bitmap)
 			goto do_counts;
-		
+
 		if (!actual && bitmap) {
 			/*
 			 * Inode wasn't used, but marked in bitmap
@@ -406,7 +406,7 @@ redo_counts:
 		}
 		ctx->flags |= E2F_FLAG_PROG_SUPPRESS;
 		had_problem++;
-		
+
 do_counts:
 		if (bitmap) {
 			if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, i))
@@ -429,7 +429,7 @@ do_counts:
 				if ((ctx->progress)(ctx, 5,
 					    group + fs->group_desc_count,
 					    fs->group_desc_count*2))
-					return;
+					goto errout;
 			if (lazy_bg &&
 			    (i != fs->super->s_inodes_count) &&
 			    (fs->group_desc[group].bg_flags &
@@ -439,13 +439,13 @@ do_counts:
 	}
 	if (pctx.ino)
 		print_bitmap_problem(ctx, save_problem, &pctx);
-	
+
 	if (had_problem)
 		fixit = end_problem_latch(ctx, PR_LATCH_IBITMAP);
 	else
 		fixit = -1;
 	ctx->flags &= ~E2F_FLAG_PROG_SUPPRESS;
-	
+
 	if (fixit == 1) {
 		ext2fs_free_inode_bitmap(fs->inode_map);
 		retval = ext2fs_copy_bitmap(ctx->inode_used_map,
@@ -454,7 +454,7 @@ do_counts:
 			clear_problem_context(&pctx);
 			fix_problem(ctx, PR_5_COPY_IBITMAP_ERROR, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
-			return;
+			goto errout;
 		}
 		ext2fs_set_bitmap_padding(fs->inode_map);
 		ext2fs_mark_ib_dirty(fs);
@@ -467,7 +467,7 @@ do_counts:
 		goto redo_counts;
 	} else if (fixit == 0)
 		ext2fs_unmark_valid(fs);
-	
+
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (free_array[i] != fs->group_desc[i].bg_free_inodes_count) {
 			pctx.group = i;
@@ -506,6 +506,7 @@ do_counts:
 		} else
 			ext2fs_unmark_valid(fs);
 	}
+errout:
 	ext2fs_free_mem(&free_array);
 	ext2fs_free_mem(&dir_array);
 }
