@@ -1,3 +1,7 @@
+2007-03-28  Theodore Tso  <tytso@mit.edu>
+
+	* unix.c (parse_extended_opts): Fix memory leak
+
 2007-03-21  Theodore Tso  <tytso@mit.edu>
 
 	* profile.c (profile_open_file): Fix memory leak if malloc() fails

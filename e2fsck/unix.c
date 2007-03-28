@@ -523,7 +523,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		if (p) {
 			*p = 0;
 			next = p+1;
-		} 
+		}
 		arg = strchr(token, '=');
 		if (arg) {
 			*arg = 0;
@@ -549,6 +549,8 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 			extended_usage++;
 		}
 	}
+	free(buf);
+
 	if (extended_usage) {
 		fputs(("\nExtended options are separated by commas, "
 		       "and may take an argument which\n"
@@ -557,7 +559,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		       "\tea_ver=<ea_version (1 or 2)>\n\n"), stderr);
 		exit(1);
 	}
-}	
+}
 
 static void syntax_err_report(const char *filename, long err, int line_num)
 {
