@@ -1161,7 +1161,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	struct ext2_ext_attr_entry *entry;
 	int		count;
 	region_t	region;
-	
+
 	blk = inode->i_file_acl;
 	if (blk == 0)
 		return 0;
@@ -1227,7 +1227,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 		ea_refcount_increment(ctx->refcount_extra, blk, 0);
 		return 1;
 	}
-	
+
 	/*
 	 * OK, we haven't seen this EA block yet.  So we need to
 	 * validate it
@@ -1261,7 +1261,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 		if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION, pctx))
 			goto clear_extattr;
 	}
-	
+
 	entry = (struct ext2_ext_attr_entry *)(header+1);
 	end = block_buf + fs->blocksize;
 	while ((char *)entry < end && *(__u32 *)entry) {
@@ -1300,10 +1300,11 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 		ea_refcount_store(ctx->refcount, blk, count);
 	mark_block_used(ctx, blk);
 	ext2fs_fast_mark_block_bitmap(ctx->block_ea_map, blk);
-	
 	return 1;
 
 clear_extattr:
+	if (region)
+		region_free(region);
 	inode->i_file_acl = 0;
 	e2fsck_write_inode(ctx, ino, inode, "check_ext_attr");
 	return 0;
