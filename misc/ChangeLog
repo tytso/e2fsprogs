@@ -1,3 +1,7 @@
+2007-03-28  Theodore Tso  <tytso@mit.edu>
+
+	* fsck.c (execute): Fix memory leak on error paths
+
 2007-03-21  Theodore Tso  <tytso@mit.edu>
 
 	* e2image.c (output_meta_data_blocks, write_raw_image_file): Fix

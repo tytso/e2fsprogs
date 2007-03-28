@@ -470,6 +470,7 @@ static int execute(const char *type, const char *device, const char *mntpt,
 	s = find_fsck(prog);
 	if (s == NULL) {
 		fprintf(stderr, _("fsck: %s: not found\n"), prog);
+		free(inst);
 		return ENOENT;
 	}
 
@@ -486,12 +487,14 @@ static int execute(const char *type, const char *device, const char *mntpt,
 		pid = -1;
 	else if ((pid = fork()) < 0) {
 		perror("fork");
+		free(inst);
 		return errno;
 	} else if (pid == 0) {
 		if (!interactive)
 			close(0);
 		(void) execv(s, argv);
 		perror(argv[0]);
+		free(inst);
 		exit(EXIT_ERROR);
 	}
 
