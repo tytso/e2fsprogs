@@ -113,7 +113,7 @@ static void swap_inodes(e2fsck_t ctx)
 	dgrp_t			group;
 	unsigned int		i;
 	ext2_ino_t		ino = 1;
-	char 			*buf, *block_buf;
+	char 			*buf = NULL, *block_buf = NULL;
 	errcode_t		retval;
 	struct ext2_inode *	inode;
 
@@ -125,7 +125,7 @@ static void swap_inodes(e2fsck_t ctx)
 		com_err("swap_inodes", retval,
 			_("while allocating inode buffer"));
 		ctx->flags |= E2F_FLAG_ABORT;
-		return;
+		goto errout;
 	}
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 4,
 						    "block interate buffer");
@@ -138,7 +138,7 @@ static void swap_inodes(e2fsck_t ctx)
 				_("while reading inode table (group %d)"),
 				group);
 			ctx->flags |= E2F_FLAG_ABORT;
-			return;
+			goto errout;
 		}
 		inode = (struct ext2_inode *) buf;
 		for (i=0; i < fs->super->s_inodes_per_group;
@@ -163,7 +163,7 @@ static void swap_inodes(e2fsck_t ctx)
 				swap_inode_blocks(ctx, ino, block_buf, inode);
 
 			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-				return;
+				goto errout;
 			
 			if (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)
 				ext2fs_swap_inode(fs, inode, inode, 1);
@@ -176,11 +176,14 @@ static void swap_inodes(e2fsck_t ctx)
 				_("while writing inode table (group %d)"),
 				group);
 			ctx->flags |= E2F_FLAG_ABORT;
-			return;
+			goto errout;
 		}
 	}
-	ext2fs_free_mem(&buf);
-	ext2fs_free_mem(&block_buf);
+errout:
+	if (buf)
+		ext2fs_free_mem(&buf);
+	if (block_buf)
+		ext2fs_free_mem(&block_buf);
 	e2fsck_use_inode_shortcuts(ctx, 0);
 	ext2fs_flush_icache(fs);
 }
