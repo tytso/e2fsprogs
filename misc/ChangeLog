@@ -1,5 +1,7 @@
 2007-03-28  Theodore Tso  <tytso@mit.edu>
 
+	* util.c (parse_journal_opts): Fix memory leak
+
 	* fsck.c (execute): Fix memory leak on error paths
 
 2007-03-21  Theodore Tso  <tytso@mit.edu>
