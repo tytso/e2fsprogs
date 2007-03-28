@@ -114,12 +114,12 @@ void e2fsck_pass4(e2fsck_t ctx)
 	/* Protect loop from wrap-around if s_inodes_count maxed */
 	for (i=1; i <= fs->super->s_inodes_count && i > 0; i++) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-			return;
+			goto errout;
 		if ((i % fs->super->s_inodes_per_group) == 0) {
 			group++;
 			if (ctx->progress)
 				if ((ctx->progress)(ctx, 4, group, maxgroup))
-					return;
+					goto errout;
 		}
 		if (i == EXT2_BAD_INO ||
 		    (i > EXT2_ROOT_INO && i < EXT2_FIRST_INODE(fs->super)))
@@ -167,6 +167,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 	ctx->inode_bb_map = 0;
 	ext2fs_free_inode_bitmap(ctx->inode_imagic_map);
 	ctx->inode_imagic_map = 0;
+errout:
 	if (buf)
 		ext2fs_free_mem(&buf);
 #ifdef RESOURCE_TRACK
