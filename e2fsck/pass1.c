@@ -481,6 +481,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_ALLOCATE_DBCOUNT, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
+		ext2fs_free_mem(&inode);
 		return;
 	}
 
@@ -508,6 +509,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
+		ext2fs_free_mem(&block_buf);
+		ext2fs_free_mem(&inode);
 		return;
 	}
 	ext2fs_inode_scan_flags(scan, EXT2_SF_SKIP_MISSING_ITABLE, 0);
