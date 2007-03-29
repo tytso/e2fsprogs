@@ -1,5 +1,8 @@
 2007-03-29  Theodore Tso  <tytso@mit.edu>
 
+	* debugfs.c (do_print_working_directory): Handle the case if
+		ext2fs_get_pathname returns NULL for the pathname.
+
 	* htree.c (do_htree_dump): Fix coverity use before assignment
 		warning.  (long_opt isn't being used for anything right
 		now, so this is a no-op)

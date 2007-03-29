@@ -953,15 +953,23 @@ void do_print_working_directory(int argc, char *argv[])
 		com_err(argv[0], retval,
 			"while trying to get pathname of cwd");
 	}
-	printf("[pwd]   INODE: %6u  PATH: %s\n", cwd, pathname);
-	free(pathname);
+	printf("[pwd]   INODE: %6u  PATH: %s\n",
+	       cwd, pathname ? pathname : "NULL");
+        if (pathname) {
+		free(pathname);
+		pathname = NULL;
+        }
 	retval = ext2fs_get_pathname(current_fs, root, 0, &pathname);
 	if (retval) {
 		com_err(argv[0], retval,
 			"while trying to get pathname of root");
 	}
-	printf("[root]  INODE: %6u  PATH: %s\n", root, pathname);
-	free(pathname);
+	printf("[root]  INODE: %6u  PATH: %s\n",
+	       root, pathname ? pathname : "NULL");
+	if (pathname) {
+		free(pathname);
+		pathname = NULL;
+	}
 	return;
 }
 
