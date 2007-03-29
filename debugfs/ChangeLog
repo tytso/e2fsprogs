@@ -1,3 +1,9 @@
+2007-03-29  Theodore Tso  <tytso@mit.edu>
+
+	* htree.c (do_htree_dump): Fix coverity use before assignment
+		warning.  (long_opt isn't being used for anything right
+		now, so this is a no-op)
+
 2007-03-23  Theodore Tso  <tytso@mit.edu>
 
 	* logdump.c (do_logdump): Fix file handle leak if logdump fails

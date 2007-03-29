@@ -185,7 +185,7 @@ void do_htree_dump(int argc, char *argv[])
 	ext2_ino_t	ino;
 	struct ext2_inode inode;
 	int		c;
-	int		long_opt;
+	int		long_opt = 0;
 	char		*buf = NULL;
 	struct 		ext2_dx_root_info  *rootnode;
 	struct 		ext2_dx_entry *ent;
