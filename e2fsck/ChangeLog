@@ -3,6 +3,7 @@
 	* pass1.c (e2fsck_pass1, check_ext_attr), 
 		pass5.c (check_block_bitmaps, check_inode_bitmaps),
 		pass4.c (e2fsck_pass4), swapfs.c (swap_inodes), 
+		journal.c (e2fsck_get_journal), 
 		unix.c (parse_extended_opts): Fix memory leaks
 
 2007-03-21  Theodore Tso  <tytso@mit.edu>
