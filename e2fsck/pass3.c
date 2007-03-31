@@ -645,6 +645,12 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 		fix_problem(fp->ctx, PR_3_ADJUST_INODE, &pctx);
 	}
 	dirent->inode = fp->parent;
+	if (fp->ctx->fs->super->s_feature_incompat &
+	    EXT2_FEATURE_INCOMPAT_FILETYPE)
+		dirent->name_len = (dirent->name_len & 0xFF) | 
+			(EXT2_FT_DIR << 8);
+	else
+		dirent->name_len = dirent->name_len & 0xFF;
 
 	fp->done++;
 	return DIRENT_ABORT | DIRENT_CHANGED;

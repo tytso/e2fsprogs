@@ -1,5 +1,8 @@
 2007-03-31  Theodore Tso  <tytso@mit.edu>
 
+	* pass3.c (fix_dotdot_proc): Fix the filetype of the '..' entry to
+		be EXT2_FT_DIR.  (Addresses Lustre BZ #11645)
+
 	* pass1.c (e2fsck_pass1_check_device_inode): Don't assume that a
 		special device is bogus just because i_blocks is non-zero.
 		The i_blocks field could get adjusted later, and if this
