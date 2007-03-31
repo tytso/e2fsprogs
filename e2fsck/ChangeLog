@@ -1,5 +1,8 @@
 2007-03-31  Theodore Tso  <tytso@mit.edu>
 
+	* message.c (expand_percent_expression): Add support for %It, which
+		will print the type of the inode.
+
 	* pass3.c (fix_dotdot_proc): Fix the filetype of the '..' entry to
 		be EXT2_FT_DIR.  (Addresses Lustre BZ #11645)
 

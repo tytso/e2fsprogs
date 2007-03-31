@@ -35,6 +35,7 @@
  * 	%Id	<inode> -> i_dir_acl
  * 	%Iu	<inode> -> i_uid
  * 	%Ig	<inode> -> i_gid
+ *	%It	<inode type>
  * 	%j	<ino2>			inode number
  * 	%m	<com_err error message>
  * 	%N	<num>
@@ -309,6 +310,25 @@ static _INLINE_ void expand_inode_expression(char ch,
 	case 'g':
 		printf("%d", (inode->i_gid |
 			      (inode->osd2.linux2.l_i_gid_high << 16)));
+		break;
+	case 't':
+		if (LINUX_S_ISREG(inode->i_mode)) 
+			printf(_("regular file"));
+		else if (LINUX_S_ISDIR(inode->i_mode)) 
+			printf(_("directory"));
+		else if (LINUX_S_ISCHR(inode->i_mode)) 
+			printf(_("character device"));
+		else if (LINUX_S_ISBLK(inode->i_mode)) 
+			printf(_("block device"));
+		else if (LINUX_S_ISFIFO(inode->i_mode)) 
+			printf(_("named pipe"));
+		else if (LINUX_S_ISLNK(inode->i_mode)) 
+			printf(_("symbolic link"));
+		else if (LINUX_S_ISSOCK(inode->i_mode))
+			printf(_("socket"));
+		else
+			printf(_("unknown file type with mode 0%o"),
+			       inode->i_mode);
 		break;
 	default:
 	no_inode:
