@@ -1,3 +1,13 @@
+2007-03-31  Theodore Tso  <tytso@mit.edu>
+
+	* pass1.c (e2fsck_pass1_check_device_inode): Don't assume that a
+		special device is bogus just because i_blocks is non-zero.
+		The i_blocks field could get adjusted later, and if this
+		happens it will confuse the e2fsck_process_bad_inode() in
+		pass 2.  In practice true garbage inodes will have random
+		non-zero values in i_blocks[4..15], so there's no point
+		doing the check for an illegal i_blocks value.
+
 2007-03-28  Theodore Tso  <tytso@mit.edu>
 
 	* pass1.c (e2fsck_pass1, check_ext_attr), 

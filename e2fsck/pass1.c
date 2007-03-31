@@ -133,11 +133,10 @@ int e2fsck_pass1_check_device_inode(ext2_filsys fs, struct ext2_inode *inode)
 	int	i;
 
 	/*
-	 * If i_blocks is non-zero, or the index flag is set, then
-	 * this is a bogus device/fifo/socket
+	 * If the index flag is set, then this is a bogus
+	 * device/fifo/socket
 	 */
-	if ((ext2fs_inode_data_blocks(fs, inode) != 0) ||
-	    (inode->i_flags & EXT2_INDEX_FL))
+	if (inode->i_flags & EXT2_INDEX_FL)
 		return 0;
 
 	/*
