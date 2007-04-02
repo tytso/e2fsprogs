@@ -779,6 +779,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@a in @i %i has a hash (%N) which is @n (must be 0)\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
+	/* inode appears to be a directory */
+	{ PR_1_TREAT_AS_DIRECTORY,
+	  N_("@i %i is a %It but it looks like it is really a directory.\n"),
+	  PROMPT_FIX, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

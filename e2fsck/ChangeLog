@@ -1,5 +1,15 @@
 2007-03-31  Theodore Tso  <tytso@mit.edu>
 
+	* pass1.c (e2fsck_pass1, check_is_really_dir): Check for an edge
+		condition where the mode of a directory is incorrect, and
+		looks like a special device, but it is really a directory.
+		We can't do this for regular files because of the
+		performance hit, but this will catch directories which
+		have their i_mode bits mutated so they looks like a
+		special device.
+
+	* problem.c, problem.h (PR_1_TREAT_AS_DIRECTORY): New problem code
+
 	* message.c (expand_percent_expression): Add support for %It, which
 		will print the type of the inode.
 

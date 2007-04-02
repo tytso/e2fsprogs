@@ -372,6 +372,74 @@ static void check_inode_extra_space(e2fsck_t ctx, struct problem_context *pctx)
 	}
 }
 
+/* 
+ * Check to see if the inode might really be a directory, despite i_mode
+ *
+ * This is a lot of complexity for something for which I'm not really
+ * convinced happens frequently in the wild.  If for any reason this
+ * causes any problems, take this code out.
+ * [tytso:20070331.0827EDT]
+ */
+static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
+				char *buf)
+{
+	struct ext2_inode *inode = pctx->inode;
+	int i, not_device = 0;
+	blk_t blk;
+	struct ext2_dir_entry 	*dirent;
+
+	if (LINUX_S_ISDIR(inode->i_mode) || LINUX_S_ISREG(inode->i_mode) ||
+		inode->i_block[0] == 0)
+		return;
+
+	for (i=1; i < EXT2_N_BLOCKS; i++) {
+		blk = inode->i_block[i];
+		if (!blk)
+			continue;
+		if (i >= 4)
+			not_device++;
+
+		if (blk < ctx->fs->super->s_first_data_block ||
+		    blk >= ctx->fs->super->s_blocks_count ||
+		    ext2fs_fast_test_block_bitmap(ctx->block_found_map, blk))
+			return;	/* Invalid block, can't be dir */
+	}
+
+	if ((LINUX_S_ISCHR(inode->i_mode) || LINUX_S_ISBLK(inode->i_mode)) && 
+	    (inode->i_links_count == 1) && !not_device)
+		return;
+
+	if (LINUX_S_ISLNK(inode->i_mode) && inode->i_links_count == 1)
+		return;
+
+	if (ext2fs_read_dir_block(ctx->fs, inode->i_block[0], buf))
+		return;
+
+	dirent = (struct ext2_dir_entry *) buf;
+	if (((dirent->name_len & 0xFF) != 1) ||
+	    (dirent->name[0] != '.') ||
+	    (dirent->inode != pctx->ino) ||
+	    (dirent->rec_len < 12) ||
+	    (dirent->rec_len % 4) ||
+	    (dirent->rec_len >= ctx->fs->blocksize - 12))
+		return;
+
+	dirent = (struct ext2_dir_entry *) (buf + dirent->rec_len);
+	if (((dirent->name_len & 0xFF) != 2) ||
+	    (dirent->name[0] != '.') ||
+	    (dirent->name[1] != '.') ||
+	    (dirent->rec_len < 12) ||
+	    (dirent->rec_len % 4))
+		return;
+
+	if (fix_problem(ctx, PR_1_TREAT_AS_DIRECTORY, pctx)) {
+		inode->i_mode = (inode->i_mode & 07777) | LINUX_S_IFDIR;
+		e2fsck_write_inode_full(ctx, pctx->ino, inode, 
+					EXT2_INODE_SIZE(ctx->fs->super), 
+					"check_is_really_dir");
+	}
+}
+
 void e2fsck_pass1(e2fsck_t ctx)
 {
 	int	i;
@@ -769,6 +837,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		}
 
 		check_inode_extra_space(ctx, &pctx);
+		check_is_really_dir(ctx, &pctx, block_buf);
 
 		if (LINUX_S_ISDIR(inode->i_mode)) {
 			ext2fs_mark_inode_bitmap(ctx->inode_dir_map, ino);

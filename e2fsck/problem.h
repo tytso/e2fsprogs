@@ -452,6 +452,9 @@ struct problem_context {
 /* wrong EA hash value */
 #define PR_1_ATTR_HASH			0x010054
 
+/* inode appears to be a directory */
+#define PR_1_TREAT_AS_DIRECTORY		0x010055
+
 /*
  * Pass 1b errors
  */

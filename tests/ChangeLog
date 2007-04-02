@@ -1,3 +1,7 @@
+2007-04-01  Theodore Tso  <tytso@mit.edu>
+
+	* f_dir_bad_mode: New test case.
+
 2007-03-31  Theodore Tso  <tytso@mit.edu>
 
 	* f_orphan_dotdot_ft: New test case which checks to see what
