@@ -168,6 +168,13 @@ every block of the device, reading every block and comparing the contents.
 This option may not be combined with the 
 .B \-n 
 option, as they are mutually exclusive.
+.TP
+.B \-X
+Internal flag only to be used by
+.BR e2fsck (8)
+and
+.BR mke2fs (8).
+It bypasses the exclusive mode in-use device safety check.
 .SH WARNING
 Never use the
 .B \-w
