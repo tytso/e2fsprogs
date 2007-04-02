@@ -1,3 +1,10 @@
+2007-04-02  Theodore Tso  <tytso@mit.edu>
+
+	* parse_num.c (parse_num_blocks): When parsing the 's' prefix,
+		take into account the filesystem blocksize so we return
+		the correct answer for non-1k blocksize filesystems.
+		(Addresses Debian Bug: #408298)
+
 2007-03-21  Theodore Tso  <tytso@mit.edu>
 
 	* feature.c (e2p_edit_feature), mntopts.c (e2p_edit_mntopts): Fix

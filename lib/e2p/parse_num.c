@@ -32,7 +32,7 @@ unsigned long parse_num_blocks(const char *arg, int log_block_size)
 		num >>= log_block_size; 
 		break;
 	case 's': 
-		num >>= 1;
+		num >>= (1+log_block_size);
 		break;
 	case '\0':
 		break;
