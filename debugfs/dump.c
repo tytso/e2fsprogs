@@ -5,6 +5,8 @@
  * under the terms of the GNU Public License.
  */
 
+#define _GNU_SOURCE /* for O_LARGEFILE */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -256,7 +258,7 @@ static void rdump_inode(ext2_ino_t ino, struct ext2_inode *inode,
 		rdump_symlink(ino, inode, fullname);
 	else if (LINUX_S_ISREG(inode->i_mode)) {
 		int fd;
-		fd = open(fullname, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
+		fd = open(fullname, O_WRONLY | O_CREAT | O_TRUNC | O_LARGEFILE, S_IRWXU);
 		if (fd == -1) {
 			com_err("rdump", errno, "while dumping %s", fullname);
 			goto errout;

@@ -1,3 +1,9 @@
+2007-04-02  Theodore Tso  <tytso@mit.edu>
+
+	* dump.c (do_rdump): Use O_LARGEFILE when creating files.  Add a
+		#define of GNU_SOURCE so that the dump and rdump commands
+		work with files > 2GB.  (Addresses Debian Bug: #412614)
+
 2007-03-29  Theodore Tso  <tytso@mit.edu>
 
 	* debugfs.c (do_print_working_directory): Handle the case if
