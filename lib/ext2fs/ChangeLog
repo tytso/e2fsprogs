@@ -1,3 +1,10 @@
+2007-04-02  Theodore Tso  <tytso@mit.edu>
+
+	* icount.c (get_icount_el): Prevent floating point precision
+		errors on really big filesystems from causing the search
+		interpolation algorithm loop forever.  (Addresses Debian
+		Bug: #411838)
+
 2007-03-21  Theodore Tso  <tytso@mit.edu>
 
 	* imager.c (ext2fs_image_inode_write), inode.c

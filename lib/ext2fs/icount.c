@@ -247,9 +247,14 @@ static struct ext2_icount_el *get_icount_el(ext2_icount_t icount,
 				range = 0;
 			else if (ino > highval)
 				range = 1;
-			else 
+			else {
 				range = ((float) (ino - lowval)) /
 					(highval - lowval);
+				if (range > 0.9)
+					range = 0.9;
+				if (range < 0.1)
+					range = 0.1;
+			}
 			mid = low + ((int) (range * (high-low)));
 		}
 #endif
