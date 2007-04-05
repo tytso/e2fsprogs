@@ -1,3 +1,9 @@
+2007-04-04  Theodore Tso  <tytso@mit.edu>
+
+	* pass1.c (check_ext_attr): Make sure the region variable is
+		initialized to zero to avoid checking and then freeing an
+		uninitialized pointer if there is a corrupted EA block.
+
 2007-03-31  Theodore Tso  <tytso@mit.edu>
 
 	* pass1.c (e2fsck_pass1, check_is_really_dir): Check for an edge

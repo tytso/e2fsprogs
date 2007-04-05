@@ -1231,7 +1231,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	struct ext2_ext_attr_header *header;
 	struct ext2_ext_attr_entry *entry;
 	int		count;
-	region_t	region;
+	region_t	region = 0;
 
 	blk = inode->i_file_acl;
 	if (blk == 0)
