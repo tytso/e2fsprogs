@@ -93,7 +93,6 @@ void e2fsck_pass2(e2fsck_t ctx)
 #ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
 #endif
-	struct dir_info 	*dir;
 	struct check_dir_struct cd;
 	struct dx_dir_info	*dx_dir;
 	struct dx_dirblock_info	*dx_db, *dx_parent;
@@ -131,9 +130,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	 * present.  (If the root directory is not present, we will
 	 * create it in pass 3.)
 	 */
-	dir = e2fsck_get_dir_info(ctx, EXT2_ROOT_INO);
-	if (dir)
-		dir->parent = EXT2_ROOT_INO;
+	(void) e2fsck_dir_info_set_parent(ctx, EXT2_ROOT_INO, EXT2_ROOT_INO);
 
 	cd.buf = buf;
 	cd.ctx = ctx;
@@ -412,9 +409,9 @@ static int check_dot(e2fsck_t ctx,
  */
 static int check_dotdot(e2fsck_t ctx,
 			struct ext2_dir_entry *dirent,
-			struct dir_info *dir, struct problem_context *pctx)
+			ext2_ino_t ino, struct problem_context *pctx)
 {
-	int		problem = 0;
+	int			problem = 0;
 	
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT_DOT;
@@ -443,7 +440,10 @@ static int check_dotdot(e2fsck_t ctx,
 		} 
 		return 0;
 	}
-	dir->dotdot = dirent->inode;
+	if (e2fsck_dir_info_set_dotdot(ctx, ino, dirent->inode)) {
+		fix_problem(ctx, PR_2_NO_DIRINFO, pctx);
+		return -1;
+	}
 	return 0;
 }
 
@@ -698,7 +698,7 @@ static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry *db,
 			   void *priv_data)
 {
-	struct dir_info		*subdir, *dir;
+	struct dir_info		*subdir;
  	struct dx_dir_info	*dx_dir;
 #ifdef ENABLE_HTREE
 	struct dx_dirblock_info	*dx_db = 0;
@@ -710,6 +710,7 @@ static int check_dir_block(ext2_filsys fs,
 	int			dot_state;
 	blk_t			block_nr = db->blk;
 	ext2_ino_t 		ino = db->ino;
+	ext2_ino_t 		subdir_parent;
 	__u16			links;
 	struct check_dir_struct	*cd;
 	char 			*buf;
@@ -720,6 +721,7 @@ static int check_dir_block(ext2_filsys fs,
 	static dict_t de_dict;
 	struct problem_context	pctx;
 	int	dups_found = 0;
+	int	ret;
 
 	cd = (struct check_dir_struct *) priv_data;
 	buf = cd->buf;
@@ -846,12 +848,10 @@ static int check_dir_block(ext2_filsys fs,
 			if (check_dot(ctx, dirent, ino, &cd->pctx))
 				dir_modified++;
 		} else if (dot_state == 1) {
-			dir = e2fsck_get_dir_info(ctx, ino);
-			if (!dir) {
-				fix_problem(ctx, PR_2_NO_DIRINFO, &cd->pctx);
+			ret = check_dotdot(ctx, dirent, ino, &cd->pctx);
+			if (ret < 0)
 				goto abort_free_dict;
-			}
-			if (check_dotdot(ctx, dirent, dir, &cd->pctx))
+			if (ret)
 				dir_modified++;
 		} else if (dirent->inode == ino) {
 			problem = PR_2_LINK_DOT;
@@ -981,14 +981,14 @@ static int check_dir_block(ext2_filsys fs,
 		if ((dot_state > 1) &&
 		    (ext2fs_test_inode_bitmap(ctx->inode_dir_map,
 					      dirent->inode))) {
-			subdir = e2fsck_get_dir_info(ctx, dirent->inode);
-			if (!subdir) {
+			if (e2fsck_dir_info_get_parent(ctx, dirent->inode,
+						       &subdir_parent)) {
 				cd->pctx.ino = dirent->inode;
 				fix_problem(ctx, PR_2_NO_DIRINFO, &cd->pctx);
 				goto abort_free_dict;
 			}
-			if (subdir->parent) {
-				cd->pctx.ino2 = subdir->parent;
+			if (subdir_parent) {
+				cd->pctx.ino2 = subdir_parent;
 				if (fix_problem(ctx, PR_2_LINK_DIR,
 						&cd->pctx)) {
 					dirent->inode = 0;
@@ -996,8 +996,10 @@ static int check_dir_block(ext2_filsys fs,
 					goto next;
 				}
 				cd->pctx.ino2 = 0;
-			} else
-				subdir->parent = ino;
+			} else {
+				(void) e2fsck_dir_info_set_parent(ctx, 
+						  dirent->inode, ino);
+			}
 		}
 
 		if (dups_found) {

@@ -263,9 +263,7 @@ struct e2fsck_struct {
 	/*
 	 * Directory information
 	 */
-	int		dir_info_count;
-	int		dir_info_size;
-	struct dir_info	*dir_info;
+	struct dir_info_db	*dir_info;
 
 	/*
 	 * Indexed directory information
@@ -374,10 +372,20 @@ extern void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 
 /* dirinfo.c */
 extern void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent);
-extern struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ext2_ino_t ino);
 extern void e2fsck_free_dir_info(e2fsck_t ctx);
 extern int e2fsck_get_num_dirinfo(e2fsck_t ctx);
-extern struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, int *control);
+extern struct dir_info_iter *e2fsck_dir_info_iter_begin(e2fsck_t ctx);
+extern struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, 
+					     struct dir_info_iter *);
+extern void e2fsck_dir_info_iter_end(e2fsck_t ctx, struct dir_info_iter *);
+extern int e2fsck_dir_info_set_parent(e2fsck_t ctx, ext2_ino_t ino, 
+				      ext2_ino_t parent);
+extern int e2fsck_dir_info_set_dotdot(e2fsck_t ctx, ext2_ino_t ino, 
+				      ext2_ino_t dotdot);
+extern int e2fsck_dir_info_get_parent(e2fsck_t ctx, ext2_ino_t ino, 
+				      ext2_ino_t *parent);
+extern int e2fsck_dir_info_get_dotdot(e2fsck_t ctx, ext2_ino_t ino, 
+				      ext2_ino_t *dotdot);
 
 /* dx_dirinfo.c */
 extern void e2fsck_add_dx_dir(e2fsck_t ctx, ext2_ino_t ino, int num_blocks);

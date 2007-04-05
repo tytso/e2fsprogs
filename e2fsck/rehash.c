@@ -772,9 +772,10 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 #endif
 	struct dir_info		*dir;
 	ext2_u32_iterate 	iter;
+	struct dir_info_iter *	dirinfo_iter = 0;
 	ext2_ino_t		ino;
 	errcode_t		retval;
-	int			i, cur, max, all_dirs, dir_index, first = 1;
+	int			cur, max, all_dirs, dir_index, first = 1;
 
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack);
@@ -792,7 +793,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 	dir_index = ctx->fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX;
 	cur = 0;
 	if (all_dirs) {
-		i = 0;
+		dirinfo_iter = e2fsck_dir_info_iter_begin(ctx);
 		max = e2fsck_get_num_dirinfo(ctx);
 	} else {
 		retval = ext2fs_u32_list_iterate_begin(ctx->dirs_to_hash, 
@@ -806,7 +807,8 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 	}
 	while (1) {
 		if (all_dirs) {
-			if ((dir = e2fsck_dir_info_iter(ctx, &i)) == 0)
+			if ((dir = e2fsck_dir_info_iter(ctx, 
+							dirinfo_iter)) == 0)
 				break;
 			ino = dir->ino;
 		} else {
@@ -833,7 +835,9 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 			       100.0 * (float) (++cur) / (float) max, ino);
 	}
 	end_problem_latch(ctx, PR_LATCH_OPTIMIZE_DIR);
-	if (!all_dirs)
+	if (all_dirs)
+		e2fsck_dir_info_iter_end(ctx, dirinfo_iter);
+	else
 		ext2fs_u32_list_iterate_end(iter);
 	
 	if (ctx->dirs_to_hash)

@@ -42,9 +42,9 @@
 #include "problem.h"
 
 static void check_root(e2fsck_t ctx);
-static int check_directory(e2fsck_t ctx, struct dir_info *dir,
+static int check_directory(e2fsck_t ctx, ext2_ino_t ino,
 			   struct problem_context *pctx);
-static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ext2_ino_t parent);
+static void fix_dotdot(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent);
 
 static ext2fs_inode_bitmap inode_loop_detect = 0;
 static ext2fs_inode_bitmap inode_done_map = 0;
@@ -52,7 +52,7 @@ static ext2fs_inode_bitmap inode_done_map = 0;
 void e2fsck_pass3(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	int		i;
+	struct dir_info_iter *iter;
 #ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
 #endif
@@ -104,15 +104,17 @@ void e2fsck_pass3(e2fsck_t ctx)
 		if ((ctx->progress)(ctx, 3, 0, maxdirs))
 			goto abort_exit;
 	
-	for (i=0; (dir = e2fsck_dir_info_iter(ctx, &i)) != 0;) {
+	iter = e2fsck_dir_info_iter_begin(ctx);
+	while ((dir = e2fsck_dir_info_iter(ctx, iter)) != 0) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			goto abort_exit;
 		if (ctx->progress && (ctx->progress)(ctx, 3, count++, maxdirs))
 			goto abort_exit;
 		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dir->ino))
-			if (check_directory(ctx, dir, &pctx))
+			if (check_directory(ctx, dir->ino, &pctx))
 				goto abort_exit;
 	}
+	e2fsck_dir_info_iter_end(ctx, iter);
 
 	/*
 	 * Force the creation of /lost+found if not present
@@ -267,15 +269,12 @@ static void check_root(e2fsck_t ctx)
  * increment a counter; if the counter exceeds some extreme threshold,
  * then we try again with the loop detection bitmap enabled.
  */
-static int check_directory(e2fsck_t ctx, struct dir_info *dir,
+static int check_directory(e2fsck_t ctx, ext2_ino_t dir,
 			   struct problem_context *pctx)
 {
 	ext2_filsys 	fs = ctx->fs;
-	struct dir_info *p = dir;
+	ext2_ino_t	ino = dir, parent;
 	int		loop_pass = 0, parent_count = 0;
-
-	if (!p)
-		return 0;
 
 	while (1) {
 		/*
@@ -288,44 +287,38 @@ static int check_directory(e2fsck_t ctx, struct dir_info *dir,
 		 * If it was marked done already, then we've reached a
 		 * parent we've already checked.
 		 */
-	  	if (ext2fs_mark_inode_bitmap(inode_done_map, p->ino))
+	  	if (ext2fs_mark_inode_bitmap(inode_done_map, ino))
 			break;
+
+		if (e2fsck_dir_info_get_parent(ctx, ino, &parent)) {
+			fix_problem(ctx, PR_3_NO_DIRINFO, pctx);
+			return 0;
+		}
 
 		/*
 		 * If this directory doesn't have a parent, or we've
 		 * seen the parent once already, then offer to
 		 * reparent it to lost+found
 		 */
-		if (!p->parent ||
+		if (!parent ||
 		    (loop_pass && 
 		     (ext2fs_test_inode_bitmap(inode_loop_detect,
-					      p->parent)))) {
-			pctx->ino = p->ino;
+					       parent)))) {
+			pctx->ino = ino;
 			if (fix_problem(ctx, PR_3_UNCONNECTED_DIR, pctx)) {
 				if (e2fsck_reconnect_file(ctx, pctx->ino))
 					ext2fs_unmark_valid(fs);
 				else {
-					p = e2fsck_get_dir_info(ctx, pctx->ino);
-					if (!p) {
-						fix_problem(ctx, 
-						    PR_3_NO_DIRINFO, pctx);
-						return 0;
-					}
-					p->parent = ctx->lost_and_found;
-					fix_dotdot(ctx, p, ctx->lost_and_found);
+					fix_dotdot(ctx, pctx->ino, 
+						   ctx->lost_and_found);
+					parent = ctx->lost_and_found;
 				}
 			}
 			break;
 		}
-		p = e2fsck_get_dir_info(ctx, p->parent);
-		if (!p) {
-			pctx->ino = p->parent;
-			fix_problem(ctx, PR_3_NO_DIRINFO, pctx);
-			return 0;
-		}
+		ino = parent;
 		if (loop_pass) {
-			ext2fs_mark_inode_bitmap(inode_loop_detect,
-						 p->ino);
+			ext2fs_mark_inode_bitmap(inode_loop_detect, ino);
 		} else if (parent_count++ > 2048) {
 			/*
 			 * If we've run into a path depth that's
@@ -346,7 +339,7 @@ static int check_directory(e2fsck_t ctx, struct dir_info *dir,
 					return -1;
 				}
 			}
-			p = dir;
+			ino = dir;
 		}
 	}
 
@@ -354,12 +347,15 @@ static int check_directory(e2fsck_t ctx, struct dir_info *dir,
 	 * Make sure that .. and the parent directory are the same;
 	 * offer to fix it if not.
 	 */
-	if (dir->parent != dir->dotdot) {
-		pctx->ino = dir->ino;
-		pctx->ino2 = dir->dotdot;
-		pctx->dir = dir->parent;
+	pctx->ino = dir;
+	if (e2fsck_dir_info_get_dotdot(ctx, dir, &pctx->ino2) ||
+	    e2fsck_dir_info_get_parent(ctx, dir, &pctx->dir)) {
+		fix_problem(ctx, PR_3_NO_DIRINFO, pctx);
+		return 0;
+	}
+	if (pctx->ino2 != pctx->dir) {
 		if (fix_problem(ctx, PR_3_BAD_DOT_DOT, pctx))
-			fix_dotdot(ctx, dir, dir->parent);
+			fix_dotdot(ctx, dir, pctx->dir);
 	}
 	return 0;
 }
@@ -378,7 +374,6 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	char *			block;
 	static const char	name[] = "lost+found";
 	struct 	problem_context	pctx;
-	struct dir_info 	*dirinfo;
 
 	if (ctx->lost_and_found)
 		return ctx->lost_and_found;
@@ -409,9 +404,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 			fix_problem(ctx, PR_3_CREATE_LPF_ERROR, &pctx);
 			return 0;
 		}
-		dirinfo = e2fsck_get_dir_info(ctx, ino);
-		if (dirinfo)
-			dirinfo->parent = 0;
+		(void) e2fsck_dir_info_set_parent(ctx, ino, 0);
 		e2fsck_adjust_inode_count(ctx, ino, -1);
 	} else if (retval != EXT2_ET_FILE_NOT_FOUND) {
 		pctx.errcode = retval;
@@ -656,7 +649,7 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 	return DIRENT_ABORT | DIRENT_CHANGED;
 }
 
-static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ext2_ino_t parent)
+static void fix_dotdot(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 {
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
@@ -669,21 +662,23 @@ static void fix_dotdot(e2fsck_t ctx, struct dir_info *dir, ext2_ino_t parent)
 	fp.ctx = ctx;
 
 #if 0
-	printf("Fixing '..' of inode %lu to be %lu...\n", dir->ino, parent);
+	printf("Fixing '..' of inode %lu to be %lu...\n", ino, parent);
 #endif
 	
-	retval = ext2fs_dir_iterate(fs, dir->ino, DIRENT_FLAG_INCLUDE_EMPTY,
+	clear_problem_context(&pctx);
+	pctx.ino = ino;
+	retval = ext2fs_dir_iterate(fs, ino, DIRENT_FLAG_INCLUDE_EMPTY,
 				    0, fix_dotdot_proc, &fp);
 	if (retval || !fp.done) {
-		clear_problem_context(&pctx);
-		pctx.ino = dir->ino;
 		pctx.errcode = retval;
 		fix_problem(ctx, retval ? PR_3_FIX_PARENT_ERR :
 			    PR_3_FIX_PARENT_NOFIND, &pctx);
 		ext2fs_unmark_valid(fs);
 	}
-	dir->dotdot = parent;
-	
+	(void) e2fsck_dir_info_set_dotdot(ctx, ino, parent);
+	if (e2fsck_dir_info_set_parent(ctx, ino, ctx->lost_and_found))
+		fix_problem(ctx, PR_3_NO_DIRINFO, &pctx);
+
 	return;
 }
 

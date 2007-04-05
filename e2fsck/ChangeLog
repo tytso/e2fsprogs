@@ -1,5 +1,12 @@
 2007-04-04  Theodore Tso  <tytso@mit.edu>
 
+	* dirinfo.c, pass2.c, pass3.c, rehash.c, e2fsck.h: Change the
+		iterator abstraction and replace e2fsck_get_dir_info()
+		with e2fsck_dir_info_{set,get}_{parent,dotdot} so that we
+		can support an on-disk dirinfo implementation.  This
+		allows e2fsck to check very large filesystems on systems
+		with smaller amounts of memory and/or address space.
+
 	* pass1.c (check_ext_attr): Make sure the region variable is
 		initialized to zero to avoid checking and then freeing an
 		uninitialized pointer if there is a corrupted EA block.
