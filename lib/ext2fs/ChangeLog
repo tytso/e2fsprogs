@@ -1,5 +1,8 @@
 2007-04-04  Theodore Tso  <tytso@mit.edu>
 
+	* tdb.c, tdb.h, Makefile.in: Add the tdb library from Samba into
+		ext2fs.
+
 	* tst_types.c: Add #include's to avoid compiler warnings.
 
 2007-04-02  Theodore Tso  <tytso@mit.edu>

@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# This file creates a stand-alone TDB based on a set of sources from 
+# Samba
+
+#BASE_DIR=/usr/projects/samba/samba-4.0.0tp4/source/lib/tdb
+BASE_DIR=/usr/projects/samba/tdb
+
+FILES="error.c lock.c io.c transaction.c freelist.c \
+	freelistcheck.c traverse.c dump.c tdb.c open.c"
+
+cp $BASE_DIR/common/tdb_private.h tdb.c
+for i in $FILES; do
+	if [ `tail -n 1 tdb.c | wc -c` -gt 1 ]; then
+		printf "\n" >> tdb.c
+	fi
+	echo "/* file: $i */" >> tdb.c
+	sed -e '1,/#include "tdb_private.h"/d' < $BASE_DIR/common/$i >> tdb.c
+done
+
+cp $BASE_DIR/include/tdb.h .
+cp $BASE_DIR/tools/tdbtool.c .
+

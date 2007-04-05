@@ -62,6 +62,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	res_gdt.o \
 	rw_bitmaps.o \
 	swapfs.o \
+	tdb.o \
 	unix_io.o \
 	unlink.o \
 	valid_blk.o \
@@ -122,6 +123,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/rs_bitmap.c \
 	$(srcdir)/rw_bitmaps.c \
 	$(srcdir)/swapfs.c \
+	$(srcdir)/tdb.c \
 	$(srcdir)/test_io.c \
 	$(srcdir)/unix_io.c \
 	$(srcdir)/unlink.c \
@@ -134,7 +136,8 @@ SRCS= ext2_err.c \
 	$(srcdir)/tst_getsize.c \
 	$(srcdir)/tst_iscan.c
 
-HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h ext2_ext_attr.h ext3_extents.h
+HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h ext2_ext_attr.h ext3_extents.h \
+	tdb.h
 HFILES_IN=  ext2_err.h ext2_types.h
 
 LIBRARY= libext2fs
@@ -224,6 +227,10 @@ tst_types: tst_types.o ext2_types.h
 	@echo "	LD $@"
 	@$(CC) -o tst_types tst_types.o 
 
+ext2_tdbtool: tdbtool.o
+	@echo "	LD $@"
+	@$(CC) -o ext2_tdbtool tdbtool.o tdb.o
+
 mkjournal: mkjournal.c $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
 	@$(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
@@ -265,7 +272,8 @@ clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/* \
 		tst_badblocks tst_iscan ext2_err.et ext2_err.c ext2_err.h \
 		tst_byteswap tst_ismounted tst_getsize tst_sectgetsize \
-		mkjournal ../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a
+		tst_bitops tst_types ext2_tdbtool mkjournal \
+		../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a
 
 mostlyclean:: clean
 distclean:: clean
