@@ -9,6 +9,10 @@
  * %End-Header%
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #include "ext2fs/ext2_types.h"
 
 main(int argc, char **argv)
