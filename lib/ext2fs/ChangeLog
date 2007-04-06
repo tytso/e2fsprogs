@@ -1,5 +1,7 @@
 2007-04-06  Theodore Tso  <tytso@mit.edu>
 
+	* ext2_err.et.in: Add new TDB error codes.
+
 	* icount.c, Makefile.in: Add a regression test suite for the
 		icount abstraction.
 

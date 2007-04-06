@@ -296,5 +296,35 @@ ec	EXT2_ET_RESIZE_INODE_CORRUPT,
 ec	EXT2_ET_SET_BMAP_NO_IND,
 	"Missing indirect block not present"
 
+ec	EXT2_ET_TDB_SUCCESS,
+	"TDB: Success"
+
+ec	EXT2_ET_TDB_ERR_CORRUPT,
+	"TDB: Corrupt database"
+
+ec	EXT2_ET_TDB_ERR_IO,
+	"TDB: IO Error"
+
+ec	EXT2_ET_TDB_ERR_LOCK,
+	"TDB: Locking error"
+
+ec	EXT2_ET_TDB_ERR_OOM,
+	"TDB: Out of memory"
+
+ec	EXT2_ET_TDB_ERR_EXISTS,
+	"TDB: Record exists"
+
+ec	EXT2_ET_TDB_ERR_NOLOCK,
+	"TDB: Lock exists on other keys"
+
+ec	EXT2_ET_TDB_ERR_EINVAL,
+	"TDB: Invalid parameter"
+
+ec	EXT2_ET_TDB_ERR_NOEXIST,
+	"TDB: Record does not exist"
+
+ec	EXT2_ET_TDB_ERR_RDONLY,
+	"TDB: Write not permitted"
+
 	end
 
