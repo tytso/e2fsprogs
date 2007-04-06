@@ -1,5 +1,12 @@
 2007-04-06  Theodore Tso  <tytso@mit.edu>
 
+	* dirinfo.c: If e2fsck.conf configures a scratch_files directory
+		which is available, and the number of directories exceeds
+		scratch_files.numdirs_threshold, then try to use the tdb
+		library to store the directory information abstraction.
+		This allows us to check very large filesystems without
+		needing as much physical memory.
+
 	* e2fsck.h, pass1.c, pass2.c: If e2fsck.conf configures a
 		scratch_files directory which is available, and the number
 		of directories exceeds scratch_files.numdirs_threshold,
