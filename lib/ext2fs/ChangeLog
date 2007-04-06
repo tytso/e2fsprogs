@@ -1,3 +1,8 @@
+2007-04-06  Theodore Tso  <tytso@mit.edu>
+
+	* icount.c, Makefile.in: Add a regression test suite for the
+		icount abstraction.
+
 2007-04-04  Jim Garlick <garlick@llnl.gov>
 
 	* inode.c (ext2fs_write_new_inode): Fix memory leak.

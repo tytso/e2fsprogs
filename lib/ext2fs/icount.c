@@ -486,3 +486,196 @@ ext2_ino_t ext2fs_get_icount_size(ext2_icount_t icount)
 
 	return icount->size;
 }
+
+#ifdef DEBUG
+
+ext2_filsys	test_fs;
+ext2_icount_t	icount;
+
+#define EXIT		0x00
+#define FETCH		0x01
+#define STORE		0x02
+#define INCREMENT	0x03
+#define DECREMENT	0x04
+
+struct test_program {
+	int		cmd;
+	ext2_ino_t	ino;
+	__u16		arg;
+	__u16		expected;
+};
+
+struct test_program prog[] = {
+	{ STORE, 42, 42, 42 },
+	{ STORE, 1,  1, 1 },
+	{ STORE, 2,  2, 2 },
+	{ STORE, 3,  3, 3 },
+	{ STORE, 10, 1, 1 },
+	{ STORE, 42, 0, 0 },
+	{ INCREMENT, 5, 0, 1 },
+	{ INCREMENT, 5, 0, 2 },
+	{ INCREMENT, 5, 0, 3 },
+	{ INCREMENT, 5, 0, 4 },
+	{ DECREMENT, 5, 0, 3 },
+	{ DECREMENT, 5, 0, 2 },
+	{ DECREMENT, 5, 0, 1 },
+	{ DECREMENT, 5, 0, 0 },
+	{ FETCH, 10, 0, 1 },
+	{ FETCH, 1, 0, 1 },
+	{ FETCH, 2, 0, 2 },
+	{ FETCH, 3, 0, 3 },
+	{ INCREMENT, 1, 0, 2 },
+	{ DECREMENT, 2, 0, 1 },
+	{ DECREMENT, 2, 0, 0 },
+	{ FETCH, 12, 0, 0 },
+	{ EXIT, 0, 0, 0 }
+};
+
+struct test_program extended[] = {
+	{ STORE, 1,  1, 1 },
+	{ STORE, 2,  2, 2 },
+	{ STORE, 3,  3, 3 },
+	{ STORE, 4,  4, 4 },
+	{ STORE, 5,  5, 5 },
+	{ STORE, 6,  1, 1 },
+	{ STORE, 7,  2, 2 },
+	{ STORE, 8,  3, 3 },
+	{ STORE, 9,  4, 4 },
+	{ STORE, 10, 5, 5 },
+	{ STORE, 11, 1, 1 },
+	{ STORE, 12, 2, 2 },
+	{ STORE, 13, 3, 3 },
+	{ STORE, 14, 4, 4 },
+	{ STORE, 15, 5, 5 },
+	{ STORE, 16, 1, 1 },
+	{ STORE, 17, 2, 2 },
+	{ STORE, 18, 3, 3 },
+	{ STORE, 19, 4, 4 },
+	{ STORE, 20, 5, 5 },
+	{ STORE, 21, 1, 1 },
+	{ STORE, 22, 2, 2 },
+	{ STORE, 23, 3, 3 },
+	{ STORE, 24, 4, 4 },
+	{ STORE, 25, 5, 5 },
+	{ STORE, 26, 1, 1 },
+	{ STORE, 27, 2, 2 },
+	{ STORE, 28, 3, 3 },
+	{ STORE, 29, 4, 4 },
+	{ STORE, 30, 5, 5 },
+	{ EXIT, 0, 0, 0 }
+};
+
+/*
+ * Setup the variables for doing the inode scan test.
+ */
+static void setup(void)
+{
+	errcode_t	retval;
+	int		i;
+	struct ext2_super_block param;
+
+	initialize_ext2_error_table();
+
+	memset(&param, 0, sizeof(param));
+	param.s_blocks_count = 12000;
+
+	retval = ext2fs_initialize("test fs", 0, &param,
+				   test_io_manager, &test_fs);
+	if (retval) {
+		com_err("setup", retval,
+			"while initializing filesystem");
+		exit(1);
+	}
+	retval = ext2fs_allocate_tables(test_fs);
+	if (retval) {
+		com_err("setup", retval,
+			"while allocating tables for test filesystem");
+		exit(1);
+	}
+}
+
+int run_test(int flags, int size, struct test_program *prog)
+{
+	errcode_t	retval;
+	ext2_icount_t	icount;
+	struct test_program *pc;
+	__u16		result;
+	int		problem = 0;
+
+	retval = ext2fs_create_icount2(test_fs, flags, size, 0, &icount);
+	if (retval) {
+		com_err("run_test", retval,
+			"While creating icount");
+		exit(1);
+	}
+	for (pc = prog; pc->cmd != EXIT; pc++) {
+		switch (pc->cmd) {
+		case FETCH:
+			printf("icount_fetch(%u) = ", pc->ino);
+			break;
+		case STORE:
+			retval = ext2fs_icount_store(icount, pc->ino, pc->arg);
+			if (retval) {
+				com_err("run_test", retval,
+					"while calling icount_store");
+				exit(1);
+			}
+			printf("icount_store(%u, %u) = ", pc->ino, pc->arg);
+			break;
+		case INCREMENT:
+			retval = ext2fs_icount_increment(icount, pc->ino, 0);
+			if (retval) {
+				com_err("run_test", retval,
+					"while calling icount_increment");
+				exit(1);
+			}
+			printf("icount_increment(%u) = ", pc->ino);
+			break;
+		case DECREMENT:
+			retval = ext2fs_icount_decrement(icount, pc->ino, 0);
+			if (retval) {
+				com_err("run_test", retval,
+					"while calling icount_decrement");
+				exit(1);
+			}
+			printf("icount_decrement(%u) = ", pc->ino);
+			break;
+		}
+		retval = ext2fs_icount_fetch(icount, pc->ino, &result);
+		if (retval) {
+			com_err("run_test", retval,
+				"while calling icount_fetch");
+			exit(1);
+		}
+		printf("%u (%s)\n", result, (result == pc->expected) ?
+		       "OK" : "NOT OK");
+		if (result != pc->expected)
+			problem++;
+	}
+	printf("icount size is %u\n", ext2fs_get_icount_size(icount));
+	retval = ext2fs_icount_validate(icount, stdout);
+	if (retval) {
+		com_err("run_test", retval, "while calling icount_validate");
+		exit(1);
+	}
+	ext2fs_free_icount(icount);
+	return problem;
+}
+
+
+int main(int argc, char **argv)
+{
+	int failed = 0;
+
+	setup();
+	printf("Standard icount run:\n");
+	failed += run_test(0, 0, prog);
+	printf("\nMultiple bitmap test:\n");
+	failed += run_test(EXT2_ICOUNT_OPT_INCREMENT, 0, prog);
+	printf("\nResizing icount:\n");
+	failed += run_test(0, 3, extended);
+	if (failed) 
+		printf("FAILED!\n");
+	return failed;
+}
+#endif
