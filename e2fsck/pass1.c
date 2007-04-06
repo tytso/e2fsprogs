@@ -440,6 +440,36 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	}
 }
 
+extern void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags, 
+				    ext2_icount_t *ret)
+{
+	ext2_ino_t		num_dirs;
+	errcode_t		retval;
+	char			*tdb_dir, uuid[40];
+	int			fd, threshold, enable;
+
+	*ret = 0;
+
+	profile_get_string(ctx->profile, "scratch_files", "directory", 0, 0,
+			   &tdb_dir);
+	profile_get_integer(ctx->profile, "scratch_files",
+			    "numdirs_threshold", 0, 0, &threshold);
+	profile_get_boolean(ctx->profile, "scratch_files",
+			    "icount", 0, 1, &enable);
+
+	retval = ext2fs_get_num_dirs(ctx->fs, &num_dirs);
+	if (retval)
+		num_dirs = 1024;	/* Guess */
+
+	if (!enable || !tdb_dir || access(tdb_dir, W_OK) ||
+	    (threshold && num_dirs <= threshold))
+		return;
+
+	retval = ext2fs_create_icount_tdb(ctx->fs, tdb_dir, flags, ret);
+	if (retval)
+		*ret = 0;
+}
+
 void e2fsck_pass1(e2fsck_t ctx)
 {
 	int	i;
@@ -526,8 +556,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	pctx.errcode = ext2fs_create_icount2(fs, 0, 0, 0,
-					     &ctx->inode_link_info);
+	e2fsck_setup_tdb_icount(ctx, 0, &ctx->inode_link_info);
+	if (!ctx->inode_link_info)
+		pctx.errcode = ext2fs_create_icount2(fs, 0, 0, 0,
+						     &ctx->inode_link_info);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_ALLOCATE_ICOUNT, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;

@@ -114,7 +114,13 @@ void e2fsck_pass2(e2fsck_t ctx)
 	if (!(ctx->options & E2F_OPT_PREEN))
 		fix_problem(ctx, PR_2_PASS_HEADER, &cd.pctx);
 
-	cd.pctx.errcode = ext2fs_create_icount2(fs, EXT2_ICOUNT_OPT_INCREMENT,
+	e2fsck_setup_tdb_icount(ctx, EXT2_ICOUNT_OPT_INCREMENT, 
+				&ctx->inode_count);
+	if (ctx->inode_count)
+		cd.pctx.errcode = 0;
+	else 
+		cd.pctx.errcode = ext2fs_create_icount2(fs, 
+						EXT2_ICOUNT_OPT_INCREMENT,
 						0, ctx->inode_link_info,
 						&ctx->inode_count);
 	if (cd.pctx.errcode) {

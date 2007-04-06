@@ -420,6 +420,8 @@ extern void e2fsck_move_ext3_journal(e2fsck_t ctx);
 extern int e2fsck_fix_ext3_journal_hint(e2fsck_t ctx);
 
 /* pass1.c */
+extern void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags, 
+				    ext2_icount_t *ret);
 extern void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool);
 extern int e2fsck_pass1_check_device_inode(ext2_filsys fs,
 					   struct ext2_inode *inode);
