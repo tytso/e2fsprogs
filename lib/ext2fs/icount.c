@@ -14,9 +14,13 @@
 #endif
 #include <string.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
+#include "tdb.h"
 
 /*
  * The data storage strategy used by icount relies on the observation
@@ -51,6 +55,9 @@ struct ext2_icount {
 	ext2_ino_t		num_inodes;
 	ext2_ino_t		cursor;
 	struct ext2_icount_el	*list;
+	struct ext2_icount_el	*last_lookup;
+	char			*tdb_fn;
+	TDB_CONTEXT		*tdb;
 };
 
 void ext2fs_free_icount(ext2_icount_t icount)
@@ -65,7 +72,132 @@ void ext2fs_free_icount(ext2_icount_t icount)
 		ext2fs_free_inode_bitmap(icount->single);
 	if (icount->multiple)
 		ext2fs_free_inode_bitmap(icount->multiple);
+	if (icount->tdb)
+		tdb_close(icount->tdb);
+	if (icount->tdb_fn) {
+		unlink(icount->tdb_fn);
+		free(icount->tdb_fn);
+	}
+
 	ext2fs_free_mem(&icount);
+}
+
+static errcode_t alloc_icount(ext2_filsys fs, int flags, ext2_icount_t *ret)
+{
+	ext2_icount_t	icount;
+	errcode_t	retval;
+
+	*ret = 0;
+
+	retval = ext2fs_get_mem(sizeof(struct ext2_icount), &icount);
+	if (retval)
+		return retval;
+	memset(icount, 0, sizeof(struct ext2_icount));
+
+	retval = ext2fs_allocate_inode_bitmap(fs, 0, &icount->single);
+	if (retval)
+		goto errout;
+
+	if (flags & EXT2_ICOUNT_OPT_INCREMENT) {
+		retval = ext2fs_allocate_inode_bitmap(fs, 0,
+						      &icount->multiple);
+		if (retval)
+			goto errout;
+	} else
+		icount->multiple = 0;
+
+	icount->magic = EXT2_ET_MAGIC_ICOUNT;
+	icount->num_inodes = fs->super->s_inodes_count;
+
+	*ret = icount;
+	return 0;
+
+errout:
+	ext2fs_free_icount(icount);
+	return(retval);
+}
+
+struct uuid {
+	__u32	time_low;
+	__u16	time_mid;
+	__u16	time_hi_and_version;
+	__u16	clock_seq;
+	__u8	node[6];
+};
+
+static void unpack_uuid(void *in, struct uuid *uu)
+{
+	__u8	*ptr = in;
+	__u32	tmp;
+
+	tmp = *ptr++;
+	tmp = (tmp << 8) | *ptr++;
+	tmp = (tmp << 8) | *ptr++;
+	tmp = (tmp << 8) | *ptr++;
+	uu->time_low = tmp;
+
+	tmp = *ptr++;
+	tmp = (tmp << 8) | *ptr++;
+	uu->time_mid = tmp;
+
+	tmp = *ptr++;
+	tmp = (tmp << 8) | *ptr++;
+	uu->time_hi_and_version = tmp;
+
+	tmp = *ptr++;
+	tmp = (tmp << 8) | *ptr++;
+	uu->clock_seq = tmp;
+
+	memcpy(uu->node, ptr, 6);
+}
+
+static void uuid_unparse(void *uu, char *out)
+{
+	struct uuid uuid;
+
+	unpack_uuid(uu, &uuid);
+	sprintf(out,
+		"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+		uuid.time_low, uuid.time_mid, uuid.time_hi_and_version,
+		uuid.clock_seq >> 8, uuid.clock_seq & 0xFF,
+		uuid.node[0], uuid.node[1], uuid.node[2],
+		uuid.node[3], uuid.node[4], uuid.node[5]);
+}
+
+errcode_t ext2fs_create_icount_tdb(ext2_filsys fs, char *tdb_dir,
+				   int flags, ext2_icount_t *ret)
+{
+	ext2_icount_t	icount;
+	errcode_t	retval;
+	char 		*fn, uuid[40];
+	int		fd;
+
+	retval = alloc_icount(fs, flags,  &icount);
+	if (retval)
+		return retval;
+
+	retval = ext2fs_get_mem(strlen(tdb_dir) + 64, &fn);
+	if (retval)
+		goto errout;
+	uuid_unparse(fs->super->s_uuid, uuid);
+	sprintf(fn, "%s/%s-icount-XXXXXX", tdb_dir, uuid);
+	fd = mkstemp(fn);
+
+	icount->tdb_fn = fn;
+	icount->tdb = tdb_open(fn, 0, TDB_CLEAR_IF_FIRST,
+			       O_RDWR | O_CREAT | O_TRUNC, 0600);
+	if (icount->tdb) {
+		close(fd);
+		*ret = icount;
+		return 0;
+	}
+
+	retval = errno;
+	close(fd);
+
+errout:
+	ext2fs_free_icount(icount);
+	return(retval);
 }
 
 errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, unsigned int size,
@@ -81,24 +213,10 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, unsigned int size,
 		if (hint->size > size)
 			size = (size_t) hint->size;
 	}
-	
-	retval = ext2fs_get_mem(sizeof(struct ext2_icount), &icount);
+
+	retval = alloc_icount(fs, flags, &icount);
 	if (retval)
 		return retval;
-	memset(icount, 0, sizeof(struct ext2_icount));
-
-	retval = ext2fs_allocate_inode_bitmap(fs, 0, 
-					      &icount->single);
-	if (retval)
-		goto errout;
-
-	if (flags & EXT2_ICOUNT_OPT_INCREMENT) {
-		retval = ext2fs_allocate_inode_bitmap(fs, 0, 
-						      &icount->multiple);
-		if (retval)
-			goto errout;
-	} else
-		icount->multiple = 0;
 
 	if (size) {
 		icount->size = size;
@@ -113,7 +231,7 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, unsigned int size,
 			goto errout;
 		icount->size += fs->super->s_inodes_count / 50;
 	}
-	
+
 	bytes = (size_t) (icount->size * sizeof(struct ext2_icount_el));
 #if 0
 	printf("Icount allocated %u entries, %d bytes.\n",
@@ -124,10 +242,8 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, unsigned int size,
 		goto errout;
 	memset(icount->list, 0, bytes);
 
-	icount->magic = EXT2_ET_MAGIC_ICOUNT;
 	icount->count = 0;
 	icount->cursor = 0;
-	icount->num_inodes = fs->super->s_inodes_count;
 
 	/*
 	 * Populate the sorted list with those entries which were
@@ -148,7 +264,7 @@ errout:
 	return(retval);
 }
 
-errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, 
+errcode_t ext2fs_create_icount(ext2_filsys fs, int flags,
 			       unsigned int size,
 			       ext2_icount_t *ret)
 {
@@ -164,20 +280,23 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 {
 	struct ext2_icount_el 	*el;
 	errcode_t		retval;
-	ext2_ino_t			new_size = 0;
+	ext2_ino_t		new_size = 0;
 	int			num;
+
+	if (icount->last_lookup && icount->last_lookup->ino == ino)
+		return icount->last_lookup;
 
 	if (icount->count >= icount->size) {
 		if (icount->count) {
 			new_size = icount->list[(unsigned)icount->count-1].ino;
-			new_size = (ext2_ino_t) (icount->count * 
+			new_size = (ext2_ino_t) (icount->count *
 				((float) icount->num_inodes / new_size));
 		}
 		if (new_size < (icount->size + 100))
 			new_size = icount->size + 100;
 #if 0
 		printf("Reallocating icount %u entries...\n", new_size);
-#endif	
+#endif
 		retval = ext2fs_resize_mem((size_t) icount->size *
 					   sizeof(struct ext2_icount_el),
 					   (size_t) new_size *
@@ -198,6 +317,7 @@ static struct ext2_icount_el *insert_icount_el(ext2_icount_t icount,
 	el = &icount->list[pos];
 	el->count = 0;
 	el->ino = ino;
+	icount->last_lookup = el;
 	return el;
 }
 
@@ -222,7 +342,7 @@ static struct ext2_icount_el *get_icount_el(ext2_icount_t icount,
 	}
 	if (icount->count == 0)
 		return 0;
-	
+
 	if (icount->cursor >= icount->count)
 		icount->cursor = 0;
 	if (ino == icount->list[icount->cursor].ino)
@@ -276,12 +396,72 @@ static struct ext2_icount_el *get_icount_el(ext2_icount_t icount,
 	return 0;
 }
 
+static errcode_t set_inode_count(ext2_icount_t icount, ext2_ino_t ino,
+				 __u16 count)
+{
+	struct ext2_icount_el 	*el;
+	TDB_DATA key, data;
+
+	if (icount->tdb) {
+		key.dptr = (unsigned char *) &ino;
+		key.dsize = sizeof(ext2_ino_t);
+		data.dptr = (unsigned char *) &count;
+		data.dsize = sizeof(__u16);
+		if (count) {
+			if (tdb_store(icount->tdb, key, data, TDB_REPLACE))
+				return tdb_error(icount->tdb) +
+					EXT2_ET_TDB_SUCCESS;
+		} else {
+			if (tdb_delete(icount->tdb, key))
+				return tdb_error(icount->tdb) +
+					EXT2_ET_TDB_SUCCESS;
+		}
+		return 0;
+	}
+
+	el = get_icount_el(icount, ino, 1);
+	if (!el)
+		return EXT2_ET_NO_MEMORY;
+
+	el->count = count;
+	return 0;
+}
+
+static errcode_t get_inode_count(ext2_icount_t icount, ext2_ino_t ino,
+				 __u16 *count)
+{
+	struct ext2_icount_el 	*el;
+	TDB_DATA key, data;
+
+	if (icount->tdb) {
+		key.dptr = (unsigned char *) &ino;
+		key.dsize = sizeof(ext2_ino_t);
+
+		data = tdb_fetch(icount->tdb, key);
+		if (data.dptr == NULL) {
+			*count = 0;
+			return tdb_error(icount->tdb) + EXT2_ET_TDB_SUCCESS;
+		}
+
+		*count = *((__u16 *) data.dptr);
+		return 0;
+	}
+	el = get_icount_el(icount, ino, 0);
+	if (!el) {
+		*count = 0;
+		return ENOENT;
+	}
+
+	*count = el->count;
+	return 0;
+}
+
 errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *out)
 {
 	errcode_t	ret = 0;
 	unsigned int	i;
 	const char *bad = "bad icount";
-	
+
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
 	if (icount->count > icount->size) {
@@ -302,7 +482,7 @@ errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *out)
 errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ext2_ino_t ino, __u16 *ret)
 {
 	struct ext2_icount_el	*el;
-	
+
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
 	if (!ino || (ino > icount->num_inodes))
@@ -317,12 +497,7 @@ errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ext2_ino_t ino, __u16 *ret)
 		*ret = 0;
 		return 0;
 	}
-	el = get_icount_el(icount, ino, 0);
-	if (!el) {
-		*ret = 0;
-		return 0;
-	}
-	*ret = el->count;
+	get_inode_count(icount, ino, ret);
 	return 0;
 }
 
@@ -330,6 +505,7 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ext2_ino_t ino,
 				  __u16 *ret)
 {
 	struct ext2_icount_el	*el;
+	__u16			curr_value;
 
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
@@ -341,23 +517,21 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ext2_ino_t ino,
 		 * If the existing count is 1, then we know there is
 		 * no entry in the list.
 		 */
-		el = get_icount_el(icount, ino, 1);
-		if (!el)
+		if (set_inode_count(icount, ino, 2))
 			return EXT2_ET_NO_MEMORY;
+		curr_value = 2;
 		ext2fs_unmark_inode_bitmap(icount->single, ino);
-		el->count = 2;
 	} else if (icount->multiple) {
 		/*
 		 * The count is either zero or greater than 1; if the
 		 * inode is set in icount->multiple, then there should
-		 * be an entry in the list, so find it using
-		 * get_icount_el().
+		 * be an entry in the list, so we need to fix it.
 		 */
 		if (ext2fs_test_inode_bitmap(icount->multiple, ino)) {
-			el = get_icount_el(icount, ino, 1);
-			if (!el)
+			get_inode_count(icount, ino, &curr_value);
+			curr_value++;
+			if (set_inode_count(icount, ino, curr_value))
 				return EXT2_ET_NO_MEMORY;
-			el->count++;
 		} else {
 			/*
 			 * The count was zero; mark the single bitmap
@@ -374,27 +548,22 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ext2_ino_t ino,
 		 * The count is either zero or greater than 1; try to
 		 * find an entry in the list to determine which.
 		 */
-		el = get_icount_el(icount, ino, 0);
-		if (!el) {
-			/* No entry means the count was zero */
-			goto zero_count;
-		}
-		el = get_icount_el(icount, ino, 1);
-		if (!el)
+		get_inode_count(icount, ino, &curr_value);
+		curr_value++;
+		if (set_inode_count(icount, ino, curr_value))
 			return EXT2_ET_NO_MEMORY;
-		el->count++;
 	}
 	if (icount->multiple)
 		ext2fs_mark_inode_bitmap(icount->multiple, ino);
 	if (ret)
-		*ret = el->count;
+		*ret = curr_value;
 	return 0;
 }
 
 errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ext2_ino_t ino,
 				  __u16 *ret)
 {
-	struct ext2_icount_el	*el;
+	__u16			curr_value;
 
 	if (!ino || (ino > icount->num_inodes))
 		return EXT2_ET_INVALID_ARGUMENT;
@@ -406,9 +575,7 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ext2_ino_t ino,
 		if (icount->multiple)
 			ext2fs_unmark_inode_bitmap(icount->multiple, ino);
 		else {
-			el = get_icount_el(icount, ino, 0);
-			if (el)
-				el->count = 0;
+			set_inode_count(icount, ino, 0);
 		}
 		if (ret)
 			*ret = 0;
@@ -418,27 +585,27 @@ errcode_t ext2fs_icount_decrement(ext2_icount_t icount, ext2_ino_t ino,
 	if (icount->multiple &&
 	    !ext2fs_test_inode_bitmap(icount->multiple, ino))
 		return EXT2_ET_INVALID_ARGUMENT;
-	
-	el = get_icount_el(icount, ino, 0);
-	if (!el || el->count == 0)
-		return EXT2_ET_INVALID_ARGUMENT;
 
-	el->count--;
-	if (el->count == 1)
+	get_inode_count(icount, ino, &curr_value);
+	if (!curr_value)
+		return EXT2_ET_INVALID_ARGUMENT;
+	curr_value--;
+	if (set_inode_count(icount, ino, curr_value))
+		return EXT2_ET_NO_MEMORY;
+
+	if (curr_value == 1)
 		ext2fs_mark_inode_bitmap(icount->single, ino);
-	if ((el->count == 0) && icount->multiple)
+	if ((curr_value == 0) && icount->multiple)
 		ext2fs_unmark_inode_bitmap(icount->multiple, ino);
 
 	if (ret)
-		*ret = el->count;
+		*ret = curr_value;
 	return 0;
 }
 
 errcode_t ext2fs_icount_store(ext2_icount_t icount, ext2_ino_t ino,
 			      __u16 count)
 {
-	struct ext2_icount_el	*el;
-
 	if (!ino || (ino > icount->num_inodes))
 		return EXT2_ET_INVALID_ARGUMENT;
 
@@ -458,21 +625,13 @@ errcode_t ext2fs_icount_store(ext2_icount_t icount, ext2_ino_t ino,
 			 * we can just clear both bitmaps and we're done
 			 */
 			ext2fs_unmark_inode_bitmap(icount->multiple, ino);
-		} else {
-			el = get_icount_el(icount, ino, 0);
-			if (el)
-				el->count = 0;
-		}
+		} else
+			set_inode_count(icount, ino, 0);
 		return 0;
 	}
 
-	/*
-	 * Get the icount element
-	 */
-	el = get_icount_el(icount, ino, 1);
-	if (!el)
+	if (set_inode_count(icount, ino, count))
 		return EXT2_ET_NO_MEMORY;
-	el->count = count;
 	ext2fs_unmark_inode_bitmap(icount->single, ino);
 	if (icount->multiple)
 		ext2fs_mark_inode_bitmap(icount->multiple, ino);
@@ -594,7 +753,7 @@ static void setup(void)
 	}
 }
 
-int run_test(int flags, int size, struct test_program *prog)
+int run_test(int flags, int size, char *dir, struct test_program *prog)
 {
 	errcode_t	retval;
 	ext2_icount_t	icount;
@@ -602,11 +761,21 @@ int run_test(int flags, int size, struct test_program *prog)
 	__u16		result;
 	int		problem = 0;
 
-	retval = ext2fs_create_icount2(test_fs, flags, size, 0, &icount);
-	if (retval) {
-		com_err("run_test", retval,
-			"While creating icount");
-		exit(1);
+	if (dir) {
+		retval = ext2fs_create_icount_tdb(test_fs, dir,
+						  flags, &icount);
+		if (retval) {
+			com_err("run_test", retval,
+				"while creating icount using tdb");
+			exit(1);
+		}
+	} else {
+		retval = ext2fs_create_icount2(test_fs, flags, size, 0,
+					       &icount);
+		if (retval) {
+			com_err("run_test", retval, "while creating icount");
+			exit(1);
+		}
 	}
 	for (pc = prog; pc->cmd != EXIT; pc++) {
 		switch (pc->cmd) {
@@ -669,12 +838,16 @@ int main(int argc, char **argv)
 
 	setup();
 	printf("Standard icount run:\n");
-	failed += run_test(0, 0, prog);
+	failed += run_test(0, 0, 0, prog);
 	printf("\nMultiple bitmap test:\n");
-	failed += run_test(EXT2_ICOUNT_OPT_INCREMENT, 0, prog);
+	failed += run_test(EXT2_ICOUNT_OPT_INCREMENT, 0, 0, prog);
 	printf("\nResizing icount:\n");
-	failed += run_test(0, 3, extended);
-	if (failed) 
+	failed += run_test(0, 3, 0, extended);
+	printf("\nStandard icount run with tdb:\n");
+	failed += run_test(0, 0, ".", prog);
+	printf("\nMultiple bitmap test with tdb:\n");
+	failed += run_test(EXT2_ICOUNT_OPT_INCREMENT, 0, ".", prog);
+	if (failed)
 		printf("FAILED!\n");
 	return failed;
 }

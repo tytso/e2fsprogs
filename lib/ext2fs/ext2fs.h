@@ -783,6 +783,8 @@ extern errcode_t ext2fs_initialize(const char *name, int flags,
 
 /* icount.c */
 extern void ext2fs_free_icount(ext2_icount_t icount);
+extern errcode_t ext2fs_create_icount_tdb(ext2_filsys fs, char *tdb_dir,
+					  int flags, ext2_icount_t *ret);
 extern errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, 
 				       unsigned int size,
 				       ext2_icount_t hint, ext2_icount_t *ret);

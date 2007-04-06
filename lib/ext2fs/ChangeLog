@@ -1,5 +1,9 @@
 2007-04-06  Theodore Tso  <tytso@mit.edu>
 
+	* icount.c (ext2fs_create_icount_tdb): Add support for using TDB
+		to store the icount data, so we don't run out of memory
+		when checking really large filesystems.
+
 	* ext2_err.et.in: Add new TDB error codes.
 
 	* icount.c, Makefile.in: Add a regression test suite for the
