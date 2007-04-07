@@ -101,7 +101,7 @@ void do_free_icount(int argc, char **argv)
 
 void do_fetch(int argc, char **argv)
 {
-	const char	*usage = "usage: %s inode";
+	const char	*usage = "usage: %s inode\n";
 	errcode_t	retval;
 	ext2_ino_t	ino;
 	__u16		count;
@@ -124,7 +124,7 @@ void do_fetch(int argc, char **argv)
 
 void do_increment(int argc, char **argv)
 {
-	const char	*usage = "usage: %s inode";
+	const char	*usage = "usage: %s inode\n";
 	errcode_t	retval;
 	ext2_ino_t	ino;
 	__u16		count;
@@ -148,7 +148,7 @@ void do_increment(int argc, char **argv)
 
 void do_decrement(int argc, char **argv)
 {
-	const char	*usage = "usage: %s inode";
+	const char	*usage = "usage: %s inode\n";
 	errcode_t	retval;
 	ext2_ino_t	ino;
 	__u16		count;
@@ -164,7 +164,7 @@ void do_decrement(int argc, char **argv)
 	retval = ext2fs_icount_decrement(test_icount, ino, &count);
 	if (retval) {
 		com_err(argv[0], retval,
-			"while calling ext2fs_icount_increment");
+			"while calling ext2fs_icount_decrement");
 		return;
 	}
 	printf("Count is now %u\n", count);
@@ -172,7 +172,7 @@ void do_decrement(int argc, char **argv)
 
 void do_store(int argc, char **argv)
 {
-	const char	*usage = "usage: %s inode count";
+	const char	*usage = "usage: %s inode count\n";
 	errcode_t	retval;
 	ext2_ino_t	ino;
 	ext2_ino_t	count;

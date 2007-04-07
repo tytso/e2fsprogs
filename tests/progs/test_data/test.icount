@@ -8,11 +8,11 @@
 # First let's test the boundary cases for illegal arguments
 #
 validate
-store 0
+store 0 0
 fetch 0
 increment 0
 decrement 0
-store 20001
+store 20001 0
 fetch 20001
 increment 20001
 decrement 20001

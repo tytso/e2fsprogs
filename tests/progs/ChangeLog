@@ -1,3 +1,7 @@
+2007-04-06  Theodore Tso  <tytso@mit.edu>
+
+	* test_icount.c: Fix up usage and decrement error messages
+
 2006-06-30  Theodore Ts'o  <tytso@mit.edu>
 
 	* Release of E2fsprogs 1.38

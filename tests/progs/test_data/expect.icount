@@ -1,19 +1,21 @@
 test_icount: validate
 Icount structure successfully validated
-test_icount: store 0
-usage: store inode counttest_icount: fetch 0
+test_icount: store 0 0
+store: Invalid argument passed to ext2 library while calling ext2fs_icount_store
+test_icount: fetch 0
 fetch: Invalid argument passed to ext2 library while calling ext2fs_icount_fetch
 test_icount: increment 0
 increment: Invalid argument passed to ext2 library while calling ext2fs_icount_increment
 test_icount: decrement 0
-decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_increment
-test_icount: store 20001
-usage: store inode counttest_icount: fetch 20001
+decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_decrement
+test_icount: store 20001 0
+store: Invalid argument passed to ext2 library while calling ext2fs_icount_store
+test_icount: fetch 20001
 fetch: Invalid argument passed to ext2 library while calling ext2fs_icount_fetch
 test_icount: increment 20001
 increment: Invalid argument passed to ext2 library while calling ext2fs_icount_increment
 test_icount: decrement 20001
-decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_increment
+decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_decrement
 test_icount: validate
 Icount structure successfully validated
 test_icount: fetch 1
@@ -56,7 +58,7 @@ Count is 0
 test_icount: get_size
 Size of icount is: 5
 test_icount: decrement 2
-decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_increment
+decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_decrement
 test_icount: increment 2
 Count is now 1
 test_icount: fetch 2
@@ -88,7 +90,7 @@ Count is 1
 test_icount: decrement 2
 Count is now 0
 test_icount: decrement 2
-decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_increment
+decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_decrement
 test_icount: store 3 1
 test_icount: increment 3
 Count is now 2
@@ -128,9 +130,9 @@ Count is now 1
 test_icount: decrement 4
 Count is now 0
 test_icount: decrement 4
-decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_increment
+decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_decrement
 test_icount: decrement 4
-decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_increment
+decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_decrement
 test_icount: store 5 4
 test_icount: decrement 5
 Count is now 3
@@ -141,7 +143,7 @@ Count is now 1
 test_icount: decrement 5
 Count is now 0
 test_icount: decrement 5
-decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_increment
+decrement: Invalid argument passed to ext2 library while calling ext2fs_icount_decrement
 test_icount: get_size
 Size of icount is: 105
 test_icount: validate
