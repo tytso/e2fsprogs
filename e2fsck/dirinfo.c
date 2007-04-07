@@ -205,6 +205,7 @@ static struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ext2_ino_t ino)
 #ifdef DIRINFO_DEBUG
 		printf("(%d,%d,%d)\n", ino, buf->dotdot, buf->parent);
 #endif
+		free(data.dptr);
 		return &ret_dir_info;
 	}
 
@@ -324,6 +325,8 @@ extern struct dir_info_iter *e2fsck_dir_info_iter_begin(e2fsck_t ctx)
 extern void e2fsck_dir_info_iter_end(e2fsck_t ctx,
 				     struct dir_info_iter *iter)
 {
+	if (iter->tdb_iter.dptr)
+		free(iter->tdb_iter.dptr);
 	ext2fs_free_mem(&iter);
 }
 
@@ -332,7 +335,7 @@ extern void e2fsck_dir_info_iter_end(e2fsck_t ctx,
  */
 struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, struct dir_info_iter *iter)
 {
-	TDB_DATA data;
+	TDB_DATA data, key;
 	struct dir_info_db *db = ctx->dir_info;
 	struct dir_info_ent *buf;
 	static struct dir_info ret_dir_info;
@@ -343,7 +346,8 @@ struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, struct dir_info_iter *iter)
 	if (db->tdb) {
 		if (iter->tdb_iter.dptr == 0)
 			return 0;
-		data = tdb_fetch(db->tdb, iter->tdb_iter);
+		key = iter->tdb_iter;
+		data = tdb_fetch(db->tdb, key);
 		if (!data.dptr) {
 			printf("iter fetch failed: %s\n",
 			       tdb_errorstr(db->tdb));
@@ -353,7 +357,9 @@ struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, struct dir_info_iter *iter)
 		ret_dir_info.ino = *((ext2_ino_t *) iter->tdb_iter.dptr);
 		ret_dir_info.dotdot = buf->dotdot;
 		ret_dir_info.parent = buf->parent;
-		iter->tdb_iter = tdb_nextkey(db->tdb, iter->tdb_iter);
+		iter->tdb_iter = tdb_nextkey(db->tdb, key);
+		free(key.dptr);
+		free(data.dptr);
 		return &ret_dir_info;
 	}
 

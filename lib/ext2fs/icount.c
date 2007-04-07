@@ -444,6 +444,7 @@ static errcode_t get_inode_count(ext2_icount_t icount, ext2_ino_t ino,
 		}
 
 		*count = *((__u16 *) data.dptr);
+		free(data.dptr);
 		return 0;
 	}
 	el = get_icount_el(icount, ino, 0);
