@@ -1,3 +1,32 @@
+e2fsprogs (1.39+1.40-WIP-2007.04.07+dfsg-1) unstable; urgency=low
+
+  * Add libreadline.so.5 support to libss.
+  * Impove badblocks -n/-w exclusive usage message.
+  * Add debugging code (via the COMERR_DEBUG env. variable) to the
+	com_err library
+  * Fix dump_unused segfault in debugfs when a filesystem is not open
+  * Add versioned dependency in Debian's shlibs for libblkid.  
+	(Closes: #413208)
+  * Fix memory leak in blkid library.  (Closes: #413661)
+  * Let the debugfs lcd command work even if a filesystem is not open
+  * Fix large number of miscellaneous Coveriy bugs.  (None were
+	security-security).
+  * Fix e2fsck to clear i_size for special devices with a bogus i_blocks
+	field on the first pass.
+  * Fix e2fsck to set the file type of the '..' entry when connecting
+	a directory to lost+found.
+  * Enhance e2fsck to recover directories whose modes field were
+	corrupted to look like special files.
+  * Allow debugfs to dump > 2GB files.  (Closes: #412614)
+  * Misc. man page cleanups.  (Closes: #379695)
+  * Fix resize2fs parsing of size parameter (Closes: #408298)
+  * Fix infinite loop in e2fsck on really big filesystems (Closes: #411838)
+  * Fix memory leak in ext2fs_write_new_inode()
+  * Add support for using a scratch files directory to reduce e2fsck's
+	memory utilization on really big filesystems.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat,  7 Apr 2007 10:38:40 -0400
+
 e2fsprogs (1.39+1.40-WIP-2006.11.14+dfsg-1) unstable; urgency=low
 
   * Fix spurious error from e2fsck -c and mke2fs -c caused by the fix

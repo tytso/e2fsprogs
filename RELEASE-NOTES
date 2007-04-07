@@ -1,5 +1,47 @@
-E2fsprogs 1.40-WIP (November 14, 2006)
-======================================
+E2fsprogs 1.40-WIP (April 7, 2007)
+==================================
+
+Add libreadline.so.5 support to libss.
+
+Impove badblocks -n/-w exclusive usage message.
+
+Fix dump_unused segfault in debugfs when a filesystem is not open
+
+Fix memory leak in blkid library.  (Addresses Debian Bug: #413661)
+
+Allow the debugfs lcd command to work w/o a filesystem being open.
+(Addresses LTC Bugzilla #27513)
+
+Fix e2fsck to clear i_size for special devices with a bogus i_blocks
+field on the first pass.
+
+Fix e2fsck to set the file type of the '..' entry when connecting
+a directory to lost+found.  (Addresses Lustre Bug: #11645)
+
+Enhance e2fsck to recover directories whose modes field were corrupted
+to look like special files.  This is probably only useful in
+artificial test cases, but it will be useful if we ever do the "inodes
+in directory" idea for ext4.
+
+Allow debugfs to dump (and rdump) > 2GB files.  (Addresses Debian Bug:
+#412614)
+
+Fix resize2fs parsing of size parameter (in sector units).  This was
+actually a bug in libe2p's parse_num_blocks() function.  When handling
+the 's' suffix, it was ignoring the blocksize information passed in
+from the caller and always interpreting the number in terms of a 1k
+blocksize.  (Addresses Debian Bug: #408298)
+
+There was a floating point precision error which could cause e2fsck to
+loop forever on really big filesystems with a large inode count.
+(Addresses Debian Bug: #411838)
+
+Fix memory leak in ext2fs_write_new_inode()
+
+Add support for using a scratch files directory to reduce e2fsck's
+emory utilization on really big filesystems.  This uses the TDB
+library.  See the [scratch_files] section of the e2fsck.conf man page
+for more details.
 
 Fixed type-punning bug which caused dumpe2fs to crash on the Arm
 platform (Addresses Debian Bug: #397044)
@@ -83,14 +125,17 @@ determining a partition's size, since binary searching to determine
 the device doesn't work on FreeBSD.
 
 Fixed spelling mistakes, typos, and otherwise clarified man pages.
-(Addresses Debian Bug: #369761, #373004)
+(Addresses Debian Bug: #369761, #373004, #379695)
 
 Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs #389554, #390664)
+details.  (Addresses Debian Bugs #389554, #390664, #413208)
 
 
 Programmer's notes:
 -------------------
+
+E2fsck now supports the %It expansion when printing a problem report.
+It will print the type of the inode in the problem context.
 
 Fix misc/Makefile.in so that it builds even if e2fsck hasn't been built yet
 (Addresses Sourceforge Bug: #1565561)
@@ -144,6 +189,29 @@ Add a new make target "checked-failed" in the tests directory which
 reruns any failed tests
 
 Update draft-leach-uuids-guids-01.txt with rfc4122.txt
+
+Fix miscellaneous bugs reported by Coverity: Dead code, potential nul
+pointer dereferences, memory leaks, etc.  None were security-criticial
+problems.
+
+Fix up usage and decrement error messages in the test_icount program
+
+Add debugging code to the com_err library; if the environment variable
+COMERR_DEBUG is set to 1, print out debugging messages as error tables
+are added and removed from the com_err library.  If the
+COMERR_DEBUG_FILE environment variable is set (and the process is not
+setuid) the debugging messages may be redirected to a file.
+
+Change all of the e2fsprogs programs to use the newer add_error_table()
+and remove_error_table() interfaces instead of the much older
+initialize_*_error_table() function.
+
+Add TDB support into the ext2fs library.  This allows us to have a
+guaranteed library we can count on always being present so we can
+store data in an on-disk database.
+
+Add support for using TDB to store the icount data, so we don't run out
+of memory when checking really large filesystems.
 
 
 E2fsprogs 1.39 (May 29, 2006) 
