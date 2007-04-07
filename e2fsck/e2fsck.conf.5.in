@@ -68,9 +68,14 @@ document.
 This stanza contains general configuration parameters for 
 .BR e2fsck 's
 behavior.
+.TP
 .I [problems]
 This stanza allows the administrator to reconfigure how e2fsck handles
 various filesystem inconsistencies.
+.TP
+.I [scratch_files]
+This stanza controls when e2fsck will attempt to use scratch files to
+reduce the need for memory.
 .SH THE [options] STANZA
 The following relations are defined in the 
 .I [options]
@@ -137,6 +142,29 @@ be suppressed when
 is run with the
 .B -n
 option.
+.SH THE [scratch_files] STANZA
+The following relations are defined in the 
+.I [scratch_files]
+stanza.
+.TP
+.I directory
+If the directory named by this relation exists and is writeable, then
+e2fsck will attempt to use this directory to store scratch files instead
+of using in-memory data structures.
+.TP
+.I numdirs_threshold
+If this relation is set, then in-memory data structures be used if the
+numbers of directory in the filesystem are fewer than amount specified.
+.TP
+.I dirinfo
+This relation controls whether or not the scratch file directory is used
+instead of an in-memory data structure for directory information.  It
+defaults to true.
+.TP
+.I icount
+This relation controls whether or not the scratch file directory is used
+instead of an in-memory data structure when tracking inode counts.  It
+defaults to true.
 .SH EXAMPLES
 The following recipe will prevent e2fsck from aborting during the boot
 process when a filesystem contains orphaned files.  (Of course, this is

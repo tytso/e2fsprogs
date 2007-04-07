@@ -1,5 +1,8 @@
 2007-04-06  Theodore Tso  <tytso@mit.edu>
 
+	* e2fsck.conf.5.in: Update man page to document the scratch_files
+		section.
+
 	* dirinfo.c: If e2fsck.conf configures a scratch_files directory
 		which is available, and the number of directories exceeds
 		scratch_files.numdirs_threshold, then try to use the tdb
