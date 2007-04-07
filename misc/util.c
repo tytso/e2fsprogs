@@ -260,15 +260,15 @@ int figure_journal_size(int size, ext2_filsys fs)
 	
 	if (size > 0) {
 		j_blocks = size * 1024 / (fs->blocksize	/ 1024);
-		if (j_blocks < 1024 || j_blocks > 102400) {
+		if (j_blocks < 1024 || j_blocks > 10240000) {
 			fprintf(stderr, _("\nThe requested journal "
 				"size is %d blocks; it must be\n"
-				"between 1024 and 102400 blocks.  "
+				"between 1024 and 10240000 blocks.  "
 				"Aborting.\n"),
 				j_blocks);
 			exit(1);
 		}
-		if (j_blocks > fs->super->s_free_blocks_count) {
+		if (j_blocks > fs->super->s_free_blocks_count / 2) {
 			fputs(_("\nJournal size too big for filesystem.\n"),
 			      stderr);
 			exit(1);

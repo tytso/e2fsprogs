@@ -1,3 +1,9 @@
+2007-04-07  Theodore Tso  <tytso@mit.edu>
+
+	* util.c (figure_journal_size): Allow the journal size to be up to
+		10,240,000 blocks, but no more half the size of the
+		filesystem.
+
 2007-04-02  Theodore Tso  <tytso@mit.edu>
 
 	* badblocks.8.in: Document the -X flag.  
