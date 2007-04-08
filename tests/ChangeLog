@@ -1,3 +1,7 @@
+2007-04-07  Theodore Tso  <tytso@mit.edu>
+
+	* test_script.in: Skip completely empty directories
+
 2007-04-01  Theodore Tso  <tytso@mit.edu>
 
 	* f_dir_bad_mode: New test case.

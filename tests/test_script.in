@@ -41,6 +41,9 @@ do
 		echo "The test '$test_name' does not exist."
 		continue;
 	fi
+	if [ -z "`ls $test_dir`" ]; then
+		continue
+	fi
 	if [ -f $test_dir/name ]; then
 		test_description=`cat $test_dir/name`
 		printf "%s: %s: " "$test_name" "$test_description"
