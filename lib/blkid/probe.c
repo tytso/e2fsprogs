@@ -116,7 +116,7 @@ static int check_mdraid(int fd, unsigned char *ret_uuid)
 	md = (struct mdp_superblock_s *)buf;
 	if (md->set_uuid0 || md->set_uuid1 || md->set_uuid2 || md->set_uuid3) {
 		memcpy(ret_uuid, &md->set_uuid0, 4);
-		memcpy(ret_uuid, &md->set_uuid1, 12);
+		memcpy(ret_uuid + 4, &md->set_uuid1, 12);
 	}
 	return 0;
 }
