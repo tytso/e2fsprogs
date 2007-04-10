@@ -41,7 +41,7 @@ extern int common_args_process(int argc, char *argv[], int min_argc,
 extern int common_inode_args_process(int argc, char *argv[],
 				     ext2_ino_t *inode, int flags);
 extern int common_block_args_process(int argc, char *argv[],
-				     blk_t *block, int *count);
+				     blk_t *block, blk_t *count);
 extern int debugfs_read_inode(ext2_ino_t ino, struct ext2_inode * inode,
 			      const char *cmd);
 extern int debugfs_read_inode_full(ext2_ino_t ino, struct ext2_inode * inode,

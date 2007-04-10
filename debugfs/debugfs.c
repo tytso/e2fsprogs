@@ -726,7 +726,7 @@ void do_testi(int argc, char *argv[])
 void do_freeb(int argc, char *argv[])
 {
 	blk_t block;
-	int count = 1;
+	blk_t count = 1;
 
 	if (common_block_args_process(argc, argv, &block, &count))
 		return;
@@ -745,7 +745,7 @@ void do_freeb(int argc, char *argv[])
 void do_setb(int argc, char *argv[])
 {
 	blk_t block;
-	int count = 1;
+	blk_t count = 1;
 
 	if (common_block_args_process(argc, argv, &block, &count))
 		return;
@@ -764,7 +764,7 @@ void do_setb(int argc, char *argv[])
 void do_testb(int argc, char *argv[])
 {
 	blk_t block;
-	int count = 1;
+	blk_t count = 1;
 
 	if (common_block_args_process(argc, argv, &block, &count))
 		return;

@@ -325,7 +325,7 @@ int common_inode_args_process(int argc, char *argv[],
  * This is a helper function used by do_freeb, do_setb, and do_testb
  */
 int common_block_args_process(int argc, char *argv[],
-			      blk_t *block, int *count)
+			      blk_t *block, blk_t *count)
 {
 	int	err;
 
