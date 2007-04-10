@@ -105,7 +105,7 @@ static int check_mdraid(int fd, unsigned char *ret_uuid)
 		return -BLKID_ERR_IO;
 
 	/* Check for magic number */
-	if (memcmp("\251+N\374", buf, 4))
+	if (memcmp("\251+N\374", buf, 4) && memcmp("\374N+\251", buf, 4))
 		return -BLKID_ERR_PARAM;
 
 	if (!ret_uuid)
