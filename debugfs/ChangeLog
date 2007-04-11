@@ -1,3 +1,8 @@
+2007-04-10  Theodore Tso  <tytso@mit.edu>
+
+	* util.c (string_to_time): Fix bug in date parser so that integer
+		time values can be used.
+
 2007-04-02  Theodore Tso  <tytso@mit.edu>
 
 	* dump.c (do_rdump): Use O_LARGEFILE when creating files.  Add a

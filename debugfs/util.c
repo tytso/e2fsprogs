@@ -208,7 +208,7 @@ char *time_to_string(__u32 cl)
 extern time_t string_to_time(const char *arg)
 {
 	struct	tm	ts;
-	unsigned long	ret;
+	time_t		ret;
 	char *tmp;
 
 	if (strcmp(arg, "now") == 0) {
@@ -227,14 +227,14 @@ extern time_t string_to_time(const char *arg)
 	    ts.tm_min > 59 || ts.tm_sec > 61)
 		ts.tm_mday = 0;
 #endif
-	if (ts.tm_mday == 0) {
+	ret = mktime(&ts);
+	if (ts.tm_mday == 0 || ret == ((time_t) -1)) {
 		/* Try it as an integer... */
-
 		ret = strtoul(arg, &tmp, 0);
 		if (*tmp)
 			return ((time_t) -1);
 	}
-	return mktime(&ts);
+	return ret;
 }
 
 /*
