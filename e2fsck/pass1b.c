@@ -372,8 +372,10 @@ static int search_dirent_proc(ext2_ino_t dir, int entry,
 	if (!n)
 		return 0;
 	p = (struct dup_inode *) dnode_get(n);
-	p->dir = dir;
-	sd->count--;
+	if (!p->dir) {
+		p->dir = dir;
+		sd->count--;
+	}
 
 	return(sd->count ? 0 : DIRENT_ABORT);
 }

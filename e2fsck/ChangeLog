@@ -1,3 +1,11 @@
+2007-04-10  Jim Garlick <garlick@llnl.gov>
+
+	* pass1b.c (search_dirent_proc): if a file has multiple hard
+		links, e2fsck pass1c search_dirent_proc() doesn't maintain
+		its count properly and may return DIRENT_ABORT before it
+		has found containing directories for all inodes sharing
+		blocks.
+
 2007-04-06  Theodore Tso  <tytso@mit.edu>
 
 	* e2fsck.conf.5.in: Update man page to document the scratch_files
