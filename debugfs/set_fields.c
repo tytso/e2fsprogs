@@ -31,6 +31,7 @@
 
 static struct ext2_super_block set_sb;
 static struct ext2_inode set_inode;
+static struct ext2_group_desc set_gd;
 static ext2_ino_t set_ino;
 static int array_idx;
 
@@ -147,19 +148,38 @@ static struct field_set_info inode_fields[] = {
 	{ 0, 0, 0, 0 }
 };
 
+static struct field_set_info ext2_bg_fields[] = {
+	{ "block_bitmap", &set_gd.bg_block_bitmap, 4, parse_uint },
+	{ "inode_bitmap", &set_gd.bg_inode_bitmap, 4, parse_uint },
+	{ "inode_table", &set_gd.bg_inode_table, 4, parse_uint },
+	{ "free_blocks_count", &set_gd.bg_free_blocks_count, 2, parse_uint },
+	{ "free_inodes_count", &set_gd.bg_free_inodes_count, 2, parse_uint },
+	{ "used_dirs_count", &set_gd.bg_used_dirs_count, 2, parse_uint },
+	{ "flags", &set_gd.bg_flags, 2, parse_uint },
+	{ "reserved", &set_gd.bg_reserved, 2, parse_uint, FLAG_ARRAY, 2 },
+	{ "itable_unused", &set_gd.bg_itable_unused, 2, parse_uint },
+	{ "checksum", &set_gd.bg_checksum, 2, parse_uint },
+	{ 0, 0, 0, 0 }
+};
+
+
 static struct field_set_info *find_field(struct field_set_info *fields,
 					 char *field)
 {
 	struct field_set_info *ss;
 	const char	*prefix;
 	char		*arg, *delim, *idx, *tmp;
+	int		prefix_len;
 
 	if (fields == super_fields)
 		prefix = "s_";
-	else
+	else if (fields == inode_fields)
 		prefix = "i_";
-	if (strncmp(field, prefix, 2) == 0)
-		field += 2;
+	else
+		prefix = "bg_";
+	prefix_len = strlen(prefix);
+	if (strncmp(field, prefix, prefix_len) == 0)
+		field += prefix_len;
 
 	arg = malloc(strlen(field)+1);
 	if (!arg)
@@ -362,9 +382,12 @@ static void print_possible_fields(struct field_set_info *fields)
 	if (fields == super_fields) {
 		type = "Superblock";
 		cmd = "set_super_value";
-	} else {
+	} else if (fields == inode_fields) {
 		type = "Inode";
 		cmd = "set_inode";
+	} else {
+		type = "Block group descriptor";
+		cmd = "set_block_group";
 	}
 	f = open_pager();
 
@@ -458,5 +481,48 @@ void do_set_inode(int argc, char *argv[])
 	if (ss->func(ss, argv[3]) == 0) {
 		if (debugfs_write_inode(set_ino, &set_inode, argv[1]))
 			return;
+	}
+}
+
+void do_set_block_group_descriptor(int argc, char *argv[])
+{
+	const char *usage = "<bg number> <field> <value>\n"
+		"\t\"set_block_group_descriptor -l\" will list the names of "
+		"the fields in a block group descriptor\n\twhich can be set.";
+	struct field_set_info	*ss;
+	dgrp_t			set_bg;
+	char			*end;
+
+	if ((argc == 2) && !strcmp(argv[1], "-l")) {
+		print_possible_fields(ext2_bg_fields);
+		return;
+	}
+
+	if (common_args_process(argc, argv, 4, 4, "set_block_group_descriptor",
+				usage, CHECK_FS_RW))
+		return;
+
+	set_bg = strtoul(argv[1], &end, 0);
+	if (*end) {
+		com_err(argv[0], 0, "invalid block group number: %s", argv[1]);
+		return;
+	}
+
+	if (set_bg >= current_fs->group_desc_count) {
+		com_err(argv[0], 0, "block group number too big: %d", set_bg);
+		return;
+	}
+
+
+	if ((ss = find_field(ext2_bg_fields, argv[2])) == 0) {
+		com_err(argv[0], 0, "invalid field specifier: %s", argv[2]);
+		return;
+	}
+
+	set_gd = current_fs->group_desc[set_bg];
+
+	if (ss->func(ss, argv[3]) == 0) {
+		current_fs->group_desc[set_bg] = set_gd;
+		ext2fs_mark_super_dirty(current_fs);
 	}
 }

@@ -1,3 +1,8 @@
+2007-04-13  Theodore Tso  <tytso@mit.edu>
+
+	* set_fields.c (do_set_block_group_descriptor), debug_cmds.ct,
+		debugfs.8.in: Added set_block_group command:
+
 2007-04-10  Theodore Tso  <tytso@mit.edu>
 
 	* util.c (string_to_time): Fix bug in date parser so that integer

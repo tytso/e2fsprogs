@@ -387,6 +387,14 @@ blocks starting at block number
 .I block
 will be marked as allocated.
 .TP
+.I set_block_group bgnum field value
+Modify the block group descriptor specified by
+.I bgnum
+so that the block group descriptor field
+.I field
+has value
+.I value.
+.TP
 .I seti filespec
 Mark inode 
 .I filespec

@@ -127,6 +127,9 @@ request do_set_super, "Set superblock value",
 request do_set_inode, "Set inode field",
 	set_inode_field, sif;
 
+request do_set_block_group_descriptor, "Set block group descriptor field",
+	set_block_group, set_bg;
+
 request do_logdump, "Dump the contents of the journal",
 	logdump;
 
