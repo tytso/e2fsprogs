@@ -384,9 +384,11 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 				char *buf)
 {
 	struct ext2_inode *inode = pctx->inode;
-	int i, not_device = 0;
-	blk_t blk;
 	struct ext2_dir_entry 	*dirent;
+	const char		*old_op;
+	errcode_t		retval;
+	blk_t			blk;
+	int			i, not_device = 0;
 
 	if (LINUX_S_ISDIR(inode->i_mode) || LINUX_S_ISREG(inode->i_mode) ||
 		inode->i_block[0] == 0)
@@ -412,7 +414,10 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	if (LINUX_S_ISLNK(inode->i_mode) && inode->i_links_count == 1)
 		return;
 
-	if (ext2fs_read_dir_block(ctx->fs, inode->i_block[0], buf))
+	old_op = ehandler_operation(_("reading directory block"));
+	retval = ext2fs_read_dir_block(ctx->fs, inode->i_block[0], buf);
+	ehandler_operation(0);
+	if (retval)
 		return;
 
 	dirent = (struct ext2_dir_entry *) buf;
@@ -486,6 +491,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	struct		problem_context pctx;
 	struct		scan_callback_struct scan_struct;
 	struct ext2_super_block *sb = ctx->fs->super;
+	const char	*old_op;
 	int		imagic_fs;
 	int		busted_fs_time = 0;
 	int		inode_size;
@@ -602,9 +608,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 3,
 						    "block interate buffer");
 	e2fsck_use_inode_shortcuts(ctx, 1);
-	ehandler_operation(_("doing inode scan"));
+	old_op = ehandler_operation(_("opening inode scan"));
 	pctx.errcode = ext2fs_open_inode_scan(fs, ctx->inode_buffer_blocks, 
 					      &scan);
+	ehandler_operation(old_op);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_1_ISCAN_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
@@ -625,8 +632,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 		busted_fs_time = 1;
 
 	while (1) {
+		old_op = ehandler_operation(_("getting next inode from scan"));
 		pctx.errcode = ext2fs_get_next_inode_full(scan, &ino, 
 							  inode, inode_size);
+		ehandler_operation(old_op);
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			return;
 		if (pctx.errcode == EXT2_ET_BAD_BLOCK_IN_INODE_TABLE) {
@@ -938,7 +947,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 	}
 	process_inodes(ctx, block_buf);
 	ext2fs_close_inode_scan(scan);
-	ehandler_operation(0);
 
 	/*
 	 * If any extended attribute blocks' reference counts need to

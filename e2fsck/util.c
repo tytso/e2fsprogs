@@ -207,6 +207,7 @@ void e2fsck_read_bitmaps(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
+	const char	*old_op;
 
 	if (ctx->invalid_bitmaps) {
 		com_err(ctx->program_name, 0,
@@ -215,9 +216,9 @@ void e2fsck_read_bitmaps(e2fsck_t ctx)
 		fatal_error(ctx, 0);
 	}
 
-	ehandler_operation(_("reading inode and block bitmaps"));
+	old_op = ehandler_operation(_("reading inode and block bitmaps"));
 	retval = ext2fs_read_bitmaps(fs);
-	ehandler_operation(0);
+	ehandler_operation(old_op);
 	if (retval) {
 		com_err(ctx->program_name, retval,
 			_("while retrying to read bitmaps for %s"),
@@ -230,11 +231,12 @@ void e2fsck_write_bitmaps(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	errcode_t	retval;
+	const char	*old_op;
 
 	if (ext2fs_test_bb_dirty(fs)) {
-		ehandler_operation(_("writing block bitmaps"));
+		old_op = ehandler_operation(_("writing block bitmaps"));
 		retval = ext2fs_write_block_bitmap(fs);
-		ehandler_operation(0);
+		ehandler_operation(old_op);
 		if (retval) {
 			com_err(ctx->program_name, retval,
 			    _("while retrying to write block bitmaps for %s"),
@@ -244,9 +246,9 @@ void e2fsck_write_bitmaps(e2fsck_t ctx)
 	}
 
 	if (ext2fs_test_ib_dirty(fs)) {
-		ehandler_operation(_("writing inode bitmaps"));
+		old_op = ehandler_operation(_("writing inode bitmaps"));
 		retval = ext2fs_write_inode_bitmap(fs);
-		ehandler_operation(0);
+		ehandler_operation(old_op);
 		if (retval) {
 			com_err(ctx->program_name, retval,
 			    _("while retrying to write inode bitmaps for %s"),

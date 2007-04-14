@@ -712,6 +712,7 @@ static int check_dir_block(ext2_filsys fs,
 	struct ext2_dir_entry 	*dirent, *prev;
 	ext2_dirhash_t		hash;
 	unsigned int		offset = 0;
+	const char *		old_op;
 	int			dir_modified = 0;
 	int			dot_state;
 	blk_t			block_nr = db->blk;
@@ -773,7 +774,9 @@ static int check_dir_block(ext2_filsys fs,
 	       db->blockcnt, ino);
 #endif
 	
+	old_op = ehandler_operation(_("reading directory block"));
 	cd->pctx.errcode = ext2fs_read_dir_block(fs, block_nr, buf);
+	ehandler_operation(0);
 	if (cd->pctx.errcode == EXT2_ET_DIR_CORRUPTED)
 		cd->pctx.errcode = 0; /* We'll handle this ourselves */
 	if (cd->pctx.errcode) {

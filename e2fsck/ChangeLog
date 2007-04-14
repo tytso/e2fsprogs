@@ -1,3 +1,9 @@
+2007-04-14  Theodore Tso  <tytso@mit.edu>
+
+	* pass1.c, pass2.c, util.c: Add better ehandler_operation()
+		markers so it is clearer what e2fsck was doing when an I/O
+		error is reported.
+
 2007-04-10  Jim Garlick <garlick@llnl.gov>
 
 	* pass1b.c (search_dirent_proc): if a file has multiple hard
