@@ -391,10 +391,10 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	int			i, not_device = 0;
 
 	if (LINUX_S_ISDIR(inode->i_mode) || LINUX_S_ISREG(inode->i_mode) ||
-		inode->i_block[0] == 0)
+	    LINUX_S_ISLNK(inode->i_mode) || inode->i_block[0] == 0)
 		return;
 
-	for (i=1; i < EXT2_N_BLOCKS; i++) {
+	for (i=0; i < EXT2_N_BLOCKS; i++) {
 		blk = inode->i_block[i];
 		if (!blk)
 			continue;
@@ -409,9 +409,6 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 
 	if ((LINUX_S_ISCHR(inode->i_mode) || LINUX_S_ISBLK(inode->i_mode)) && 
 	    (inode->i_links_count == 1) && !not_device)
-		return;
-
-	if (LINUX_S_ISLNK(inode->i_mode) && inode->i_links_count == 1)
 		return;
 
 	old_op = ehandler_operation(_("reading directory block"));

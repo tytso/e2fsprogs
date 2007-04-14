@@ -4,6 +4,14 @@
 		markers so it is clearer what e2fsck was doing when an I/O
 		error is reported.
 
+	*pass1.c (check_is_really_dir): Fix a typo which could cause
+		e2fsck to throw an I/O error while doubling checking
+		whether or not a special device file was really an inode.
+		Also, don't do this tests on symbolic links since for
+		filesystems with a large numbers of symlinks it could
+		degrade performance and increases the risk for false
+		positives.
+
 2007-04-10  Jim Garlick <garlick@llnl.gov>
 
 	* pass1b.c (search_dirent_proc): if a file has multiple hard
