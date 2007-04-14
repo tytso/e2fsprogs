@@ -1,3 +1,9 @@
+2007-04-14  Theodore Tso  <tytso@mit.edu>
+
+	* swapfs.c (ext2fs_swap_inode_full): Fix a problem byte-swapping 
+		fast symlinks inodes that contain extended attributes.
+		(Addresses Red Hat Bugzilla #232663, LTC bugzilla #27634)
+
 2007-04-06  Theodore Tso  <tytso@mit.edu>
 
 	* icount.c (ext2fs_create_icount_tdb): Add support for using TDB
