@@ -310,7 +310,7 @@ struct ext2_inode {
 	__u32	i_flags;	/* File flags */
 	union {
 		struct {
-			__u32  l_i_reserved1;
+			__u32	l_i_version; /* was l_i_reserved1 */
 		} linux1;
 		struct {
 			__u32  h_i_translator;
@@ -366,7 +366,7 @@ struct ext2_inode_large {
 	__u32	i_flags;	/* File flags */
 	union {
 		struct {
-			__u32  l_i_reserved1;
+			__u32	l_i_version; /* was l_i_reserved1 */
 		} linux1;
 		struct {
 			__u32  h_i_translator;

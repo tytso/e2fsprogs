@@ -1,3 +1,9 @@
+2007-04-19  Theodore Tso  <tytso@mit.edu>
+
+	* ext2_fs.h, swapfs.c (ext2fs_swap_inode_full): Rename the
+		l_i_reserved1 field to be l_i_version (to be used for the
+		high 32 bits of the 64-bit inode version number).
+
 2007-04-18  Theodore Tso  <tytso@mit.edu>
 
 	* getsize.c (ext2fs_get_device_size): Make sure we don't leak a

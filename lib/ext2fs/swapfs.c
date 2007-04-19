@@ -172,8 +172,8 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 
 	switch (fs->super->s_creator_os) {
 	case EXT2_OS_LINUX:
-		t->osd1.linux1.l_i_reserved1 =
-			ext2fs_swab32(f->osd1.linux1.l_i_reserved1);
+		t->osd1.linux1.l_i_version =
+			ext2fs_swab32(f->osd1.linux1.l_i_version);
 		t->osd2.linux2.l_i_blocks_hi = 
 			ext2fs_swab16(f->osd2.linux2.l_i_blocks_hi);
 		t->osd2.linux2.i_pad1 = ext2fs_swab16(f->osd2.linux2.i_pad1);

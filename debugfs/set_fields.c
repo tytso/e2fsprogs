@@ -128,6 +128,7 @@ static struct field_set_info inode_fields[] = {
 	{ "links_count", &set_inode.i_links_count, 2, parse_uint },
 	{ "blocks", &set_inode.i_blocks, 4, parse_uint },
 	{ "flags", &set_inode.i_flags, 4, parse_uint },
+	{ "version", &set_inode.osd1.linux1.l_i_version, 4, parse_uint },
 	{ "translator", &set_inode.osd1.hurd1.h_i_translator, 4, parse_uint },
 	{ "block", &set_inode.i_block[0], 4, parse_uint, FLAG_ARRAY, 
 	  EXT2_NDIR_BLOCKS },
