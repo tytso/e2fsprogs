@@ -1,3 +1,8 @@
+2007-04-18  Theodore Tso  <tytso@mit.edu>
+
+	* getsize.c (ext2fs_get_device_size): Make sure we don't leak a
+		file descriptor in some error cases.
+
 2007-04-14  Theodore Tso  <tytso@mit.edu>
 
 	* swapfs.c (ext2fs_swap_inode_full): Fix a problem byte-swapping 

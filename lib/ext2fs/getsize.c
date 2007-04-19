@@ -170,8 +170,10 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 #ifdef DKIOCGETBLOCKCOUNT	/* For Apple Darwin */
 	if (ioctl(fd, DKIOCGETBLOCKCOUNT, &size64) >= 0) {
 		if ((sizeof(*retblocks) < sizeof(unsigned long long))
-		    && ((size64 / (blocksize / 512)) > 0xFFFFFFFF))
-			return EFBIG;
+		    && ((size64 / (blocksize / 512)) > 0xFFFFFFFF)) {
+			rc = EFBIG;
+			goto out;
+		}
 		*retblocks = size64 / (blocksize / 512);
 		goto out;
 	}
@@ -281,8 +283,10 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 	valid_offset (fd, 0);
 	size64 = low + 1;
 	if ((sizeof(*retblocks) < sizeof(unsigned long long))
-	    && ((size64 / blocksize) > 0xFFFFFFFF))
-		return EFBIG;
+	    && ((size64 / blocksize) > 0xFFFFFFFF)) {
+		rc = EFBIG;
+		goto out;
+	}
 	*retblocks = size64 / blocksize;
 out:
 	close(fd);
