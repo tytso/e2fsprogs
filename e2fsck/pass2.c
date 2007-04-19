@@ -704,7 +704,6 @@ static int check_dir_block(ext2_filsys fs,
 			   struct ext2_db_entry *db,
 			   void *priv_data)
 {
-	struct dir_info		*subdir;
  	struct dx_dir_info	*dx_dir;
 #ifdef ENABLE_HTREE
 	struct dx_dirblock_info	*dx_db = 0;
