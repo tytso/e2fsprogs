@@ -154,7 +154,7 @@ of using in-memory data structures.
 .TP
 .I numdirs_threshold
 If this relation is set, then in-memory data structures be used if the
-numbers of directory in the filesystem are fewer than amount specified.
+number of directories in the filesystem are fewer than amount specified.
 .TP
 .I dirinfo
 This relation controls whether or not the scratch file directory is used

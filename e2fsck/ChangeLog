@@ -1,3 +1,7 @@
+2007-04-18  Theodore Tso  <tytso@mit.edu>
+
+	* e2fsck.conf.5.in (apply): Fix minor typo.
+
 2007-04-14  Theodore Tso  <tytso@mit.edu>
 
 	* pass2.c (e2fsck_process_bad_inode): Remove special kludge that
