@@ -96,6 +96,7 @@ static void pass1c(e2fsck_t ctx, char *block_buf);
 static void pass1d(e2fsck_t ctx, char *block_buf);
 
 static int dup_inode_count = 0;
+static int dup_inode_founddir = 0;
 
 static dict_t blk_dict, ino_dict;
 
@@ -146,7 +147,12 @@ static void add_dupe(e2fsck_t ctx, ext2_ino_t ino, blk_t blk,
 	else {
 		di = (struct dup_inode *) e2fsck_allocate_memory(ctx,
 			 sizeof(struct dup_inode), "duplicate inode header");
-		di->dir = (ino == EXT2_ROOT_INO) ? EXT2_ROOT_INO : 0 ;
+		if (ino == EXT2_ROOT_INO) {
+			di->dir = EXT2_ROOT_INO;
+			dup_inode_founddir++;
+		} else
+			di->dir = 0;
+
 		di->num_dupblocks = 0;
 		di->block_list = 0;
 		di->inode = *inode;
@@ -396,7 +402,7 @@ static void pass1c(e2fsck_t ctx, char *block_buf)
 	 * Search through all directories to translate inodes to names
 	 * (by searching for the containing directory for that inode.)
 	 */
-	sd.count = dup_inode_count;
+	sd.count = dup_inode_count - dup_inode_founddir;
 	sd.first_inode = EXT2_FIRST_INODE(fs->super);
 	sd.max_inode = fs->super->s_inodes_count;
 	ext2fs_dblist_dir_iterate(fs->dblist, 0, block_buf,
