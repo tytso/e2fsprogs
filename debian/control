@@ -88,8 +88,6 @@ Package: libuuid1-udeb
 Section: debian-installer
 Priority: optional
 Depends: ${shlibs:Depends}
-Provides: libuuid1
-Replaces: libuuid1
 Architecture: any
 Description: universally unique id library
  libuuid generates and parses 128-bit universally unique id's (UUID's).
@@ -125,7 +123,6 @@ Package: libblkid1-udeb
 Section: debian-installer
 Priority: optional
 Depends: ${shlibs:Depends}
-Provides: libblkid1
 Architecture: any
 Description: block device id library
  The blkid library which allows system programs like fsck and 
