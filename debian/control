@@ -63,7 +63,7 @@ Description: command-line interface parsing library
 Package: ss-dev
 Section: libdevel
 Priority: extra
-Depends: libc6-dev | libc-dev, libss2 (= ${Source-Version})
+Depends: libc6-dev | libc-dev, libss2 (= ${Source-Version}), comerr-dev
 Architecture: any
 Description: command-line interface parsing library - headers and static libraries
  This package includes a tool that parses a command table to generate
