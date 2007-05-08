@@ -115,7 +115,7 @@ Architecture: any
 Description: block device id library
  The blkid library which allows system programs like fsck and 
  mount to quickly and easily find block devices by filesystem UUID and 
- LABEL.  This allows system administrators to avoid specifiying 
+ LABEL.  This allows system administrators to avoid specifying 
  filesystems by hard-coded device names, but via a logical naming 
  system instead.
 
