@@ -1288,7 +1288,8 @@ static void PRS(int argc, char *argv[])
 	tmp = tmp2 = NULL;
 	if (fs_param.s_rev_level != EXT2_GOOD_OLD_REV) {
 		profile_get_string(profile, "defaults", "base_features", 0,
-				   "filetype,sparse_super", &tmp);
+				   "sparse_super,filetype,resize_inode,dir_index",
+				   &tmp);
 		profile_get_string(profile, "fs_types", fs_type, 
 				   "base_features", tmp, &tmp2);
 		edit_feature(tmp2, &fs_param.s_feature_compat);
@@ -1365,7 +1366,7 @@ static void PRS(int argc, char *argv[])
 	
 	if (blocksize <= 0) {
 		profile_get_integer(profile, "defaults", "blocksize", 0,
-				    1024, &use_bsize);
+				    4096, &use_bsize);
 		profile_get_integer(profile, "fs_types", fs_type, 
 				    "blocksize", use_bsize, &use_bsize);
 
