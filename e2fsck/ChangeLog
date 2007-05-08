@@ -1,3 +1,8 @@
+2007-05-08  Theodore Tso  <tytso@mit.edu>
+
+	* message.c (expand_inode_expression): Use inode_uid() and
+		inode_gid() macros when printing the uid/gid.
+
 2007-04-18  Theodore Tso  <tytso@mit.edu>
 
 	* e2fsck.conf.5.in (apply): Fix minor typo.

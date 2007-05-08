@@ -1,3 +1,9 @@
+2007-05-08  Theodore Tso  <tytso@mit.edu>
+
+	* debugfs.c (internal_dump_inode), ls.c (list_dir_proc), 
+		lsdel.c (do_lsdel): Use inode_uid() and inode_gid() so
+		that the high bits of the uid/gid are displayed.
+
 2007-04-19  Theodore Tso  <tytso@mit.edu>
 
 	* set_fields.c: Add the i_version field to the set_inode_field

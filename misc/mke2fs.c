@@ -477,8 +477,9 @@ static void setup_lazy_bg(ext2_filsys fs)
 
 static void create_root_dir(ext2_filsys fs)
 {
-	errcode_t	retval;
+	errcode_t		retval;
 	struct ext2_inode	inode;
+	__u32			uid, gid;
 
 	retval = ext2fs_mkdir(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, 0);
 	if (retval) {
@@ -492,9 +493,14 @@ static void create_root_dir(ext2_filsys fs)
 				_("while reading root inode"));
 			exit(1);
 		}
-		inode.i_uid = getuid();
-		if (inode.i_uid)
-			inode.i_gid = getgid();
+		uid = getuid();
+		inode.i_uid = uid;
+		inode.i_uid_high = uid >> 16;
+		if (uid) {
+			gid = getgid();
+			inode.i_gid = gid;
+			inode.i_gid_high = gid >> 16;
+		}
 		retval = ext2fs_write_new_inode(fs, EXT2_ROOT_INO, &inode);
 		if (retval) {
 			com_err("ext2fs_write_inode", retval,

@@ -534,7 +534,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		prefix, 
 		inode->i_mode & 0777, inode->i_flags, inode->i_generation);
 	fprintf(out, "%sUser: %5d   Group: %5d   Size: ",
-		prefix, inode->i_uid, inode->i_gid);
+		prefix, inode_uid(*inode), inode_gid(*inode));
 	if (LINUX_S_ISREG(inode->i_mode)) {
 		__u64 i_size = (inode->i_size |
 				((unsigned long long)inode->i_size_high << 32));

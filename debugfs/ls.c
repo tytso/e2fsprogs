@@ -88,7 +88,7 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 		}
 		fprintf(ls->f, "%c%6u%c %6o (%d)  %5d  %5d   ", lbr, ino, rbr,
 			inode.i_mode, dirent->name_len >> 8,
-			inode.i_uid, inode.i_gid);
+			inode_uid(inode), inode_gid(inode));
 		if (LINUX_S_ISDIR(inode.i_mode))
 			fprintf(ls->f, "%5d", inode.i_size);
 		else

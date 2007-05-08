@@ -1,3 +1,9 @@
+2007-05-08  Eric Sandeen <sandeen@redhat.com>
+
+	* ext2_fs.h (inode_uid, inode_gid): The inode_uid() and
+		inode_gid() macros will automatically add the high bits
+		when reading uid/gid, on platforms that support it.
+
 2007-04-19  Theodore Tso  <tytso@mit.edu>
 
 	* ext2_fs.h, swapfs.c (ext2fs_swap_inode_full): Rename the

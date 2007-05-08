@@ -23,7 +23,7 @@
 struct deleted_info {
 	ext2_ino_t	ino;
 	unsigned short	mode;
-	unsigned short	uid;
+	__u32		uid;
 	__u64		size;
 	time_t		dtime;
 	int		num_blocks;
@@ -160,7 +160,7 @@ void do_lsdel(int argc, char **argv)
 				
 			delarray[num_delarray].ino = ino;
 			delarray[num_delarray].mode = inode.i_mode;
-			delarray[num_delarray].uid = inode.i_uid;
+			delarray[num_delarray].uid = inode_uid(inode);
 			delarray[num_delarray].size = inode.i_size;
 			if (!LINUX_S_ISDIR(inode.i_mode))
 				delarray[num_delarray].size |= 

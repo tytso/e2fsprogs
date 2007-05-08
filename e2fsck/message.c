@@ -304,12 +304,10 @@ static _INLINE_ void expand_inode_expression(char ch,
 			      inode->i_dir_acl : 0));
 		break;
 	case 'u':
-		printf("%d", (inode->i_uid |
-			      (inode->osd2.linux2.l_i_uid_high << 16)));
+		printf("%d", inode_uid(*inode));
 		break;
 	case 'g':
-		printf("%d", (inode->i_gid |
-			      (inode->osd2.linux2.l_i_gid_high << 16)));
+		printf("%d", inode_gid(*inode));
 		break;
 	case 't':
 		if (LINUX_S_ISREG(inode->i_mode)) 

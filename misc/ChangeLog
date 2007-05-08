@@ -1,3 +1,8 @@
+2007-05-07  Eric Sandeen <sandeen@redhat.com>
+
+	* mke2fs.c (PRS): Make defaults more sane when /etc/mke2fs.conf
+		doesn't exist.
+
 2007-04-07  Theodore Tso  <tytso@mit.edu>
 
 	* util.c (figure_journal_size): Allow the journal size to be up to

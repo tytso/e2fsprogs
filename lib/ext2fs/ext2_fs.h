@@ -423,7 +423,8 @@ struct ext2_inode_large {
 #define i_uid_high	osd2.linux2.l_i_uid_high
 #define i_gid_high	osd2.linux2.l_i_gid_high
 #define i_reserved2	osd2.linux2.l_i_reserved2
-
+#define inode_uid(inode)	((inode).i_uid | (inode).i_uid_high << 16)
+#define inode_gid(inode)	((inode).i_gid | (inode).i_gid_high << 16)
 #else
 #if defined(__GNU__)
 
@@ -433,6 +434,8 @@ struct ext2_inode_large {
 #define i_uid_high	osd2.hurd2.h_i_uid_high
 #define i_gid_high	osd2.hurd2.h_i_gid_high
 #define i_author	osd2.hurd2.h_i_author
+#define inode_uid(inode)	((inode).i_uid | (inode).i_uid_high << 16)
+#define inode_gid(inode)	((inode).i_gid | (inode).i_gid_high << 16)
 
 #else
 #if defined(__masix__)
@@ -441,6 +444,8 @@ struct ext2_inode_large {
 #define i_frag		osd2.masix2.m_i_frag
 #define i_fsize		osd2.masix2.m_i_fsize
 #define i_reserved2	osd2.masix2.m_i_reserved2
+#define inode_uid(inode)	((inode).i_uid)
+#define inode_gid(inode)	((inode).i_gid)
 
 #endif  /* __masix__ */
 #endif  /* __GNU__ */
