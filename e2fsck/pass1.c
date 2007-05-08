@@ -246,7 +246,7 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 	struct ext2_inode_large *inode;
 	struct ext2_ext_attr_entry *entry;
 	char *start, *end;
-	unsigned int storage_size, remain, offs;
+	unsigned int storage_size, remain;
 	int problem = 0;
 
 	inode = (struct ext2_inode_large *) pctx->inode;
@@ -261,7 +261,6 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 
 	/* take finish entry 0UL into account */
 	remain = storage_size - sizeof(__u32); 
-	offs = end - start;
 
 	while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
 
@@ -285,15 +284,6 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 			goto fix;
 		}
 
-		/* check value placement */
-		if (entry->e_value_offs + 
-		    EXT2_XATTR_SIZE(entry->e_value_size) != offs) {
-			printf("(entry->e_value_offs + entry->e_value_size: %d, offs: %d)\n", entry->e_value_offs + entry->e_value_size, offs);
-			pctx->num = entry->e_value_offs;
-			problem = PR_1_ATTR_VALUE_OFFSET;
-			goto fix;
-		}
-	
 		/* e_value_block must be 0 in inode's ea */
 		if (entry->e_value_block != 0) {
 			pctx->num = entry->e_value_block;
@@ -309,7 +299,6 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 		}
 
 		remain -= entry->e_value_size;
-		offs -= EXT2_XATTR_SIZE(entry->e_value_size);
 
 		entry = EXT2_EXT_ATTR_NEXT(entry);
 	}

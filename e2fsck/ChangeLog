@@ -1,3 +1,8 @@
+2007-05-08  Kalpak Shah <kalpak@clusterfs.com>
+
+	* pass1.c (check_ea_in_inode): Remove check that requires in-inode
+		EA's to be sorted, since they don't have to be.
+
 2007-05-08  Theodore Tso  <tytso@mit.edu>
 
 	* message.c (expand_inode_expression): Use inode_uid() and
