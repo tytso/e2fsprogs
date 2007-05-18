@@ -26,6 +26,9 @@
 #if (!defined(HAVE_PRCTL) && defined(linux))
 #include <sys/syscall.h>
 #endif
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
 #include "blkidP.h"
 
 int blkid_debug_mask = 0;
@@ -148,6 +151,31 @@ void blkid_put_cache(blkid_cache cache)
 	
 	free(cache);
 }
+
+void blkid_gc_cache(blkid_cache cache)
+{
+	struct list_head *p;
+	struct stat st;
+
+	if (!cache)
+		return;
+
+	list_for_each(p, &cache->bic_devs) {
+		blkid_dev dev = list_entry(p, struct blkid_struct_dev, bid_devs);
+		if (!p)
+			break;
+		if (stat(dev->bid_name, &st) < 0) {
+			DBG(DEBUG_CACHE, 
+			    printf("freeing %s\n", dev->bid_name));
+			blkid_free_dev(dev);
+			cache->bic_flags |= BLKID_BIC_FL_CHANGED;
+		} else {
+			DBG(DEBUG_CACHE, 
+			    printf("Device %s exists\n", dev->bid_name));
+		}
+	}
+}
+
 
 #ifdef TEST_PROGRAM
 int main(int argc, char** argv)

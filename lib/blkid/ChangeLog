@@ -1,3 +1,8 @@
+2007-05-17  Theodore Tso  <tytso@mit.edu>
+
+	* cache.c (blkid_gc_cache): New function which removes any devices
+		from the blkid cache if the device node does not exist.
+
 2007-03-23  Theodore Tso  <tytso@mit.edu>
 
 	* read.c (parse_dev): Fix memory leak on error path.
