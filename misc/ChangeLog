@@ -1,3 +1,8 @@
+2007-05-18  Theodore Tso  <tytso@mit.edu>
+
+	* blkid.c (main): Add -g option to blkid which will garbage
+		collect the cache.
+
 2007-05-07  Eric Sandeen <sandeen@redhat.com>
 
 	* mke2fs.c (PRS): Make defaults more sane when /etc/mke2fs.conf
