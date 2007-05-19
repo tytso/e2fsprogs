@@ -1,3 +1,9 @@
+2007-05-18  Theodore Tso  <tytso@mit.edu>
+
+	* tag.c (blkid_set_tag): Fix bug where bid_type, bid_label, and
+		bid_uuid could get corrupted if their corresponding tag is
+		set to its original value using blkid_set_tag().
+
 2007-05-17  Theodore Tso  <tytso@mit.edu>
 
 	* cache.c (blkid_gc_cache): New function which removes any devices
