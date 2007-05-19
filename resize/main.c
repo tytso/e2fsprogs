@@ -101,6 +101,8 @@ static void determine_fs_stride(ext2_filsys fs)
 	unsigned int	has_sb, prev_has_sb, num;
 	int		i_stride, b_stride;
 
+	if (fs->stride)
+		return;
 	num = 0; sum = 0;
 	for (group = 0; group < fs->group_desc_count; group++) {
 		has_sb = ext2fs_bg_has_super(fs, group);
@@ -131,6 +133,9 @@ static void determine_fs_stride(ext2_filsys fs)
 		fs->stride = sum / num;
 	else
 		fs->stride = 0;
+
+	fs->super->s_raid_stride = fs->stride;
+	ext2fs_mark_super_dirty(fs);
 
 #if 0
 	if (fs->stride)
@@ -348,7 +353,8 @@ int main (int argc, char ** argv)
 				_("Invalid stride length"));
 			exit(1);
 		}
-		fs->stride = use_stride;
+		fs->stride = fs->super->s_raid_stride = use_stride;
+		ext2fs_mark_super_dirty(fs);
 	} else
 		  determine_fs_stride(fs);
 	

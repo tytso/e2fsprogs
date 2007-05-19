@@ -297,6 +297,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		dest += fs->blocksize;
 	}
 
+	fs->stride = fs->super->s_raid_stride;
+
 	*ret_fs = fs;
 	return 0;
 cleanup:

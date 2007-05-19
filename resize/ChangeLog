@@ -1,3 +1,9 @@
+2007-05-18  Theodore Tso  <tytso@mit.edu>
+
+	* main.c (determine_fs_stride): Use the superblock s_raid_stride
+		if it is set; save the hueristically determined stride to
+		the superblock if it is not set.
+
 2007-03-18  Theodore Tso  <tytso@mit.edu>
 
 	* resize2fs.c (check_and_change_inodes): Check to make sure the

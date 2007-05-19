@@ -573,7 +573,9 @@ struct ext2_super_block {
 	__u16	s_min_extra_isize;	/* All inodes have at least # bytes */
 	__u16	s_want_extra_isize; 	/* New inodes should reserve # bytes */
 	__u32	s_flags;		/* Miscellaneous flags */
-	__u32	s_reserved[167];	/* Padding to the end of the block */
+	__u16   s_raid_stride;		/* RAID stride */
+	__u16   s_pad;			/* Padding */
+	__u32	s_reserved[166];	/* Padding to the end of the block */
 };
 
 /*

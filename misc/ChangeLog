@@ -1,5 +1,7 @@
 2007-05-18  Theodore Tso  <tytso@mit.edu>
 
+	* mke2fs.c (main): Save the raid stride to the superblock
+
 	* blkid.c (main): Add -g option to blkid which will garbage
 		collect the cache.
 
