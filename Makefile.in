@@ -29,7 +29,10 @@ subs:
 progs: subs all-progs-recursive
 libs: subs all-libs-recursive
 
-rpm:
+e2fsprogs.spec: $(DEP_SUBSTITUTE) e2fsprogs.spec.in
+	cd $(top_builddir); CONFIG_FILES=./e2fsprogs.spec ./config.status
+
+rpm: e2fsprogs.spec
 	sh contrib/build-rpm
 
 docs:
