@@ -1,3 +1,8 @@
+2007-05-22  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.c (PRS): Add sanity check if the inode size * inode count
+		is bigger than the filesystem size.	
+
 2007-05-18  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (main): Save the raid stride to the superblock

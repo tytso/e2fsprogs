@@ -1489,6 +1489,20 @@ static void PRS(int argc, char *argv[])
 		((__u64) fs_param.s_blocks_count * blocksize)
 			/ inode_ratio;
 
+	if ((((long long)fs_param.s_inodes_count) *
+	     (inode_size ? inode_size : EXT2_GOOD_OLD_INODE_SIZE)) >=
+	    (((long long)fs_param.s_blocks_count) * 
+	     EXT2_BLOCK_SIZE(&fs_param))) {
+		com_err(program_name, 0, _("inode_size (%u) * inodes_count "
+					  "(%u) too big for a\n\t"
+					  "filesystem with %lu blocks, "
+					  "specify higher inode_ratio (-i)\n\t"
+					  "or lower inode count (-N).\n"),
+			inode_size ? inode_size : EXT2_GOOD_OLD_INODE_SIZE,
+			fs_param.s_inodes_count, fs_param.s_blocks_count);
+		exit(1);
+	}
+
 	/*
 	 * Calculate number of blocks to reserve
 	 */
