@@ -70,6 +70,11 @@ long profile_get_integer
 			const char *subsubname, int def_val,
 			int *ret_default);
 
+long profile_get_uint
+	(profile_t profile, const char *name, const char *subname,
+		const char *subsubname, unsigned int def_val, 
+		unsigned int *ret_int);
+
 long profile_get_boolean
 	(profile_t profile, const char *name, const char *subname,
 			const char *subsubname, int def_val,

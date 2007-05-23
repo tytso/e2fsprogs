@@ -1,3 +1,8 @@
+2007-05-22  Theodore Tso  <tytso@mit.edu>
+
+	* profile.h, profile.c (profile_get_uint): New function which
+		returns an unsigned integer.
+
 2007-05-08  Kalpak Shah <kalpak@clusterfs.com>
 
 	* pass1.c (check_ea_in_inode): Remove check that requires in-inode

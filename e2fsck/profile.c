@@ -1478,6 +1478,47 @@ profile_get_integer(profile_t profile, const char *name, const char *subname,
 	return 0;
 }
 
+errcode_t 
+profile_get_uint(profile_t profile, const char *name, const char *subname,
+		 const char *subsubname, unsigned int def_val, 
+		 unsigned int *ret_int)
+{
+	const char	*value;
+	errcode_t	retval;
+	char            *end_value;
+	unsigned long	ret_long;
+
+	*ret_int = def_val;
+	if (profile == 0)
+		return 0;
+
+	retval = profile_get_value(profile, name, subname, subsubname, &value);
+	if (retval == PROF_NO_SECTION || retval == PROF_NO_RELATION) {
+		*ret_int = def_val;
+		return 0;
+	} else if (retval)
+		return retval;
+
+	if (value[0] == 0)
+	    /* Empty string is no good.  */
+	    return PROF_BAD_INTEGER;
+	errno = 0;
+	ret_long = strtoul (value, &end_value, 10);
+
+	/* Overflow or underflow.  */
+	if ((ret_long == ULONG_MAX) && errno != 0)
+	    return PROF_BAD_INTEGER;
+	/* Value outside "int" range.  */
+	if ((unsigned long) (unsigned int) ret_long != ret_long)
+	    return PROF_BAD_INTEGER;
+	/* Garbage in string.  */
+	if (end_value != value + strlen (value))
+	    return PROF_BAD_INTEGER;
+	
+	*ret_int = ret_long;
+	return 0;
+}
+
 static const char *const conf_yes[] = {
     "y", "yes", "true", "t", "1", "on",
     0,
