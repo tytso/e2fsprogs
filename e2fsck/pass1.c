@@ -128,7 +128,8 @@ static void unwind_pass1(ext2_filsys fs EXT2FS_ATTR((unused)))
  * since they have the same requirement; the i_block fields should be
  * zero. 
  */
-int e2fsck_pass1_check_device_inode(ext2_filsys fs, struct ext2_inode *inode)
+int e2fsck_pass1_check_device_inode(ext2_filsys fs EXT2FS_ATTR((unused)), 
+				    struct ext2_inode *inode)
 {
 	int	i;
 
@@ -434,17 +435,18 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 extern void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags, 
 				    ext2_icount_t *ret)
 {
+	unsigned int		threshold;
 	ext2_ino_t		num_dirs;
 	errcode_t		retval;
-	char			*tdb_dir, uuid[40];
-	int			fd, threshold, enable;
+	char			*tdb_dir;
+	int			enable;
 
 	*ret = 0;
 
 	profile_get_string(ctx->profile, "scratch_files", "directory", 0, 0,
 			   &tdb_dir);
-	profile_get_integer(ctx->profile, "scratch_files",
-			    "numdirs_threshold", 0, 0, &threshold);
+	profile_get_uint(ctx->profile, "scratch_files",
+			 "numdirs_threshold", 0, 0, &threshold);
 	profile_get_boolean(ctx->profile, "scratch_files",
 			    "icount", 0, 1, &enable);
 

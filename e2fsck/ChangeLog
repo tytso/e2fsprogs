@@ -1,5 +1,19 @@
 2007-05-22  Theodore Tso  <tytso@mit.edu>
 
+	* pass1.c (e2fsck_pass1_check_device_inode): Mark the fs parameter
+		as unused.
+		(e2fsck_setup_tdb_icount): Use profile_get_uint() function
+			for reading the threshold.  Remove unused variables.
+
+	* dirinfo.c (setup_tdb): Use the profile_get_uint() function for
+		reading the threshold.
+		(setup_db): Declare it as static
+		(setup_tdb): #include uuid.h since we use a uuid function
+		(e2fsck_get_dir_info, e2fsck_dir_info_iter_begin): Remove
+			unused variables
+		(e2fsck_dir_info_iter_end): Mark the ctx parameter as
+			unused.
+
 	* profile.h, profile.c (profile_get_uint): New function which
 		returns an unsigned integer.
 

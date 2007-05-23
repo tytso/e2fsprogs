@@ -10,6 +10,7 @@
 #include "e2fsck.h"
 #include <sys/stat.h>
 #include <fcntl.h>
+#include "uuid/uuid.h"
 
 #include <ext2fs/tdb.h>
 
@@ -38,14 +39,15 @@ static void e2fsck_put_dir_info(e2fsck_t ctx, struct dir_info *dir);
 static void setup_tdb(e2fsck_t ctx, ext2_ino_t num_dirs)
 {
 	struct dir_info_db	*db = ctx->dir_info;
+	unsigned int		threshold;
 	errcode_t		retval;
 	char			*tdb_dir, uuid[40];
-	int			fd, threshold, enable;
+	int			fd, enable;
 
 	profile_get_string(ctx->profile, "scratch_files", "directory", 0, 0,
 			   &tdb_dir);
-	profile_get_integer(ctx->profile, "scratch_files",
-			    "numdirs_threshold", 0, 0, &threshold);
+	profile_get_uint(ctx->profile, "scratch_files",
+			 "numdirs_threshold", 0, 0, &threshold);
 	profile_get_boolean(ctx->profile, "scratch_files",
 			    "dirinfo", 0, 1, &enable);
 
@@ -65,7 +67,7 @@ static void setup_tdb(e2fsck_t ctx, ext2_ino_t num_dirs)
 	close(fd);
 }
 
-void setup_db(e2fsck_t ctx)
+static void setup_db(e2fsck_t ctx)
 {
 	struct dir_info_db	*db;
 	ext2_ino_t		num_dirs;
@@ -173,8 +175,8 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 static struct dir_info *e2fsck_get_dir_info(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct dir_info_db	*db = ctx->dir_info;
-	int			low, high, mid, ret;
-	struct dir_info_ent 	*buf;
+	int			low, high, mid;
+	struct dir_info_ent	*buf;
 	static struct dir_info	ret_dir_info;
 
 	if (!db)
@@ -310,7 +312,6 @@ extern struct dir_info_iter *e2fsck_dir_info_iter_begin(e2fsck_t ctx)
 {
 	struct dir_info_iter *iter;
 	struct dir_info_db *db = ctx->dir_info;
-	int ret;
 
 	iter = e2fsck_allocate_memory(ctx, sizeof(struct dir_info_iter),
 				      "dir_info iterator");
@@ -322,7 +323,7 @@ extern struct dir_info_iter *e2fsck_dir_info_iter_begin(e2fsck_t ctx)
 	return iter;
 }
 
-extern void e2fsck_dir_info_iter_end(e2fsck_t ctx,
+extern void e2fsck_dir_info_iter_end(e2fsck_t ctx EXT2FS_ATTR((unused)),
 				     struct dir_info_iter *iter)
 {
 	if (iter->tdb_iter.dptr)
