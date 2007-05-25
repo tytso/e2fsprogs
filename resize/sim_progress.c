@@ -87,7 +87,7 @@ errcode_t ext2fs_progress_init(ext2_sim_progmeter *ret_prog,
 		return retval;
 	memset(prog, 0, sizeof(struct ext2_sim_progress));
 
-	retval = ext2fs_get_mem(strlen(label)+1, (void **) &prog->label);
+	retval = ext2fs_get_mem(strlen(label)+1, &prog->label);
 	if (retval) {
 		free(prog);
 		return retval;

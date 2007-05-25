@@ -1,3 +1,8 @@
+2007-05-23  Theodore Tso  <tytso@mit.edu>
+
+	* error_message.c: #include unistd.h and sys/types.h to provide
+		function prototypes to silence gcc -Wall warnings.
+
 2006-12-22  Theodore Tso  <tytso@mit.edu>
 
 	* error_message.c (add_error_table, remove_error_table): Add

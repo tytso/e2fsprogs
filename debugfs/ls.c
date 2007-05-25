@@ -92,8 +92,8 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 		if (LINUX_S_ISDIR(inode.i_mode))
 			fprintf(ls->f, "%5d", inode.i_size);
 		else
-			fprintf(ls->f, "%5lld", inode.i_size |
-				((__u64)inode.i_size_high << 32));
+			fprintf(ls->f, "%5llu", inode.i_size |
+				((unsigned long long) inode.i_size_high << 32));
 		fprintf (ls->f, " %s %s\n", datestr, name);
 	} else {
 		sprintf(tmp, "%c%u%c (%d) %s   ", lbr, dirent->inode, rbr,

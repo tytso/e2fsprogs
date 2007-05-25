@@ -1,3 +1,14 @@
+2007-05-22  Theodore Tso  <tytso@mit.edu>
+
+	* util.c: #define _XOPEN_SOURCE so we get strptime() prototype
+
+	* htree.c (search_dir_block), ls.c (list_dir_proc), debugfs.c
+		(finish_range, dump_blocks, internal_dump_inode): Fix gcc
+		-Wall warnings on 64-bit systems.
+
+	* debugfs.c (internal_dump_inode_extra): Mark prefix and inode_num
+		parameters as unused.
+
 2007-05-08  Theodore Tso  <tytso@mit.edu>
 
 	* debugfs.c (internal_dump_inode), ls.c (list_dir_proc), 

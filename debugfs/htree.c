@@ -384,7 +384,7 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 		    strncmp(p->search_name, dirent->name,
 			    p->len) == 0) {
 			printf("Entry found at logical block %lld, "
-			       "phys %u, offset %u\n", blockcnt,
+			       "phys %u, offset %u\n", (long long)blockcnt,
 			       *blocknr, offset);
 			printf("offset %u\n", offset);
 			return BLOCK_ABORT;

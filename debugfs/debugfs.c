@@ -378,10 +378,12 @@ static void finish_range(struct list_blocks_struct *lb)
 	else
 		fprintf(lb->f, ", ");
 	if (lb->first_block == lb->last_block)
-		fprintf(lb->f, "(%lld):%u", lb->first_bcnt, lb->first_block);
+		fprintf(lb->f, "(%lld):%u",
+			(long long)lb->first_bcnt, lb->first_block);
 	else
-		fprintf(lb->f, "(%lld-%lld):%u-%u", lb->first_bcnt,
-			lb->last_bcnt, lb->first_block, lb->last_block);
+		fprintf(lb->f, "(%lld-%lld):%u-%u",
+			(long long)lb->first_bcnt, (long long)lb->last_bcnt,
+			lb->first_block, lb->last_block);
 	lb->first_block = 0;
 }
 
@@ -449,8 +451,9 @@ static void dump_xattr_string(FILE *out, const char *str, int len)
 			fprintf(out, "%02x ", (unsigned char)str[i]);
 }
 
-static void internal_dump_inode_extra(FILE *out, const char *prefix,
-				      ext2_ino_t inode_num, 
+static void internal_dump_inode_extra(FILE *out, 
+				      const char *prefix EXT2FS_ATTR((unused)),
+				      ext2_ino_t inode_num EXT2FS_ATTR((unused)), 
 				      struct ext2_inode_large *inode)
 {
 	struct ext2_ext_attr_entry *entry;
@@ -508,7 +511,7 @@ static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)
 			     list_blocks_proc, (void *)&lb);
 	finish_range(&lb);
 	if (lb.total)
-		fprintf(f, "\n%sTOTAL: %lld\n", prefix, lb.total);
+		fprintf(f, "\n%sTOTAL: %lld\n", prefix, (long long)lb.total);
 	fprintf(f,"\n");
 }
 
@@ -536,10 +539,10 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	fprintf(out, "%sUser: %5d   Group: %5d   Size: ",
 		prefix, inode_uid(*inode), inode_gid(*inode));
 	if (LINUX_S_ISREG(inode->i_mode)) {
-		__u64 i_size = (inode->i_size |
-				((unsigned long long)inode->i_size_high << 32));
+		unsigned long long i_size = (inode->i_size |
+				    ((unsigned long long)inode->i_size_high << 32));
 
-		fprintf(out, "%lld\n", i_size);
+		fprintf(out, "%llu\n", i_size);
 	} else
 		fprintf(out, "%d\n", inode->i_size);
 	if (os == EXT2_OS_HURD)

@@ -6,6 +6,8 @@
  *
  */
 
+#define _XOPEN_SOURCE /* needed for strptime */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>

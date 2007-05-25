@@ -264,8 +264,8 @@ static _INLINE_ void expand_inode_expression(char ch,
 			else
 				printf("%u", inode->i_size);
 #else
-			printf("%llu", (inode->i_size | 
-					((__u64) inode->i_size_high << 32)));
+			printf("%llu", inode->i_size |
+				       ((long long)inode->i_size_high << 32));
 #endif
 		}
 		break;
@@ -394,7 +394,7 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 #ifdef EXT2_NO_64_TYPE
 		printf("%d", ctx->blkcount);
 #else
-		printf("%lld", ctx->blkcount);
+		printf("%lld", (long long)ctx->blkcount);
 #endif
 		break;
 	case 'c':
@@ -419,7 +419,7 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 #ifdef EXT2_NO_64_TYPE
 		printf("%u", ctx->num);
 #else
-		printf("%llu", ctx->num);
+		printf("%llu", (long long)ctx->num);
 #endif
 		break;
 	case 'p':
@@ -445,7 +445,7 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 #ifdef EXT2_NO_64_TYPE
 		printf("0x%x", ctx->num);
 #else
-		printf("0x%llx", ctx->num);
+		printf("0x%llx", (long long)ctx->num);
 #endif
 		break;
 	default:

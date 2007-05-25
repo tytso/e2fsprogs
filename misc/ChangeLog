@@ -1,5 +1,10 @@
 2007-05-22  Theodore Tso  <tytso@mit.edu>
 
+	* mke2fs.c (PRS): Make num_inodes use an unsigned long long type
+		to avoid type warnings on 64-bit platforms.
+
+	* filefrag.c (frag_report): Fix printf type warning on 64-bit systems.
+
 	* mke2fs.c (PRS): Add sanity check if the inode size * inode count
 		is bigger than the filesystem size.	
 

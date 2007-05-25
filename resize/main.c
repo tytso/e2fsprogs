@@ -348,7 +348,7 @@ int main (int argc, char ** argv)
 	}
 
 	if (use_stride >= 0) {
-		if (use_stride >= fs->super->s_blocks_per_group) {
+		if (use_stride >= (int) fs->super->s_blocks_per_group) {
 			com_err(program_name, 0, 
 				_("Invalid stride length"));
 			exit(1);

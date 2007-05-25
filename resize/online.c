@@ -19,15 +19,16 @@
 extern char *program_name;
 
 errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt, 
-			   blk_t *new_size, int flags)
+			   blk_t *new_size, int flags EXT2FS_ATTR((unused)))
 {
 	struct ext2_new_group_input input;
 	struct ext2_super_block *sb = fs->super;
+	unsigned long		new_desc_blocks;
 	ext2_filsys 		new_fs;
 	errcode_t 		retval;
 	dgrp_t			i;
 	blk_t			size;
-	int			fd, r_frac, overhead, new_desc_blocks;
+	int			fd, r_frac, overhead;
 
 	printf(_("Filesystem at %s is mounted on %s; "
 		 "on-line resizing required\n"), fs->device_name, mtpt);
@@ -47,8 +48,8 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 				fs->super->s_first_data_block,
 				EXT2_BLOCKS_PER_GROUP(fs->super)),
 		EXT2_DESC_PER_BLOCK(fs->super));
-	printf("old desc_blocks = %d, new_desc_blocks = %d\n", fs->desc_blocks,
-	       new_desc_blocks);
+	printf("old desc_blocks = %lu, new_desc_blocks = %lu\n", 
+	       fs->desc_blocks, new_desc_blocks);
 	if (!(fs->super->s_feature_compat & 
 	      EXT2_FEATURE_COMPAT_RESIZE_INODE) &&
 	    new_desc_blocks != fs->desc_blocks) {

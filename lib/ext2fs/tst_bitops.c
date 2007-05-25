@@ -38,7 +38,7 @@ int bits_list[] = {
 #define BIG_TEST_BIT   (((unsigned) 1 << 31) + 42)
 
 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int	i, j, size;
 	unsigned char testarray[12];
@@ -115,9 +115,9 @@ main(int argc, char **argv)
 		exit(1);
 
 	ext2fs_clear_bit(BIG_TEST_BIT, bigarray);
-	
+
 	printf("big bit number (%u) test: %d, expected 0\n", BIG_TEST_BIT,
-	       bigarray[BIG_TEST_BIT >> 3], 0);
+	       bigarray[BIG_TEST_BIT >> 3]);
 	if (bigarray[BIG_TEST_BIT >> 3] != 0)
 		exit(1);
 
@@ -161,9 +161,9 @@ main(int argc, char **argv)
 		exit(1);
 
 	ext2fs_fast_clear_bit(BIG_TEST_BIT, bigarray);
-	
+
 	printf("big bit number (%u) test: %d, expected 0\n", BIG_TEST_BIT,
-	       bigarray[BIG_TEST_BIT >> 3], 0);
+	       bigarray[BIG_TEST_BIT >> 3]);
 	if (bigarray[BIG_TEST_BIT >> 3] != 0)
 		exit(1);
 

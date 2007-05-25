@@ -908,7 +908,7 @@ static void PRS(int argc, char *argv[])
 	double		reserved_ratio = 5.0;
 	int		sector_size = 0;
 	int		show_version_only = 0;
-	__u64		num_inodes = 0;	/* u64 to catch too-large input */
+	unsigned long long num_inodes = 0; /* unsigned long long to catch too-large input */
 	errcode_t	retval;
 	char *		oldpath = getenv("PATH");
 	char *		extended_opts = 0;
@@ -1469,8 +1469,8 @@ static void PRS(int argc, char *argv[])
 
 	/* Make sure number of inodes specified will fit in 32 bits */
 	if (num_inodes == 0) {
-		__u64 n;
-		n = (__u64) fs_param.s_blocks_count * blocksize / inode_ratio;
+		unsigned long long n;
+		n = (unsigned long long) fs_param.s_blocks_count * blocksize / inode_ratio;
 		if (n > ~0U) {
 			com_err(program_name, 0,
 			    _("too many inodes (%llu), raise inode ratio?"), n);
@@ -1479,7 +1479,7 @@ static void PRS(int argc, char *argv[])
 	} else if (num_inodes > ~0U) {
 		com_err(program_name, 0,
 			_("too many inodes (%llu), specify < 2^32 inodes"),
-			  (__u64)num_inodes);
+			  num_inodes);
 		exit(1);
 	}
 	/*
@@ -1499,7 +1499,8 @@ static void PRS(int argc, char *argv[])
 					  "specify higher inode_ratio (-i)\n\t"
 					  "or lower inode count (-N).\n"),
 			inode_size ? inode_size : EXT2_GOOD_OLD_INODE_SIZE,
-			fs_param.s_inodes_count, fs_param.s_blocks_count);
+			fs_param.s_inodes_count, 
+			(unsigned long) fs_param.s_blocks_count);
 		exit(1);
 	}
 

@@ -110,7 +110,8 @@ static void frag_report(const char *filename)
 	    (fsinfo.f_type == 0xef53))
 		is_ext2++;
 	if (verbose) {
-		printf("Filesystem type is: %x\n", fsinfo.f_type);
+		printf("Filesystem type is: %lx\n", 
+		       (unsigned long) fsinfo.f_type);
 	}
 	cylgroups = div_ceil(fsinfo.f_blocks, fsinfo.f_bsize*8);
 	if (verbose) {

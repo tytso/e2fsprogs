@@ -1,3 +1,10 @@
+2007-05-23  Theodore Tso  <tytso@mit.edu>
+
+	* icount.c (ext2fs_icount_fetch, ext2fs_icount_increment, setup):
+		Remove unusued variables and labels.
+
+	* tst_bitops.c, tst_types.c: Fix gcc -Wall warnings.
+
 2007-05-18  Theodore Tso  <tytso@mit.edu>
 
 	* openfs.c (ext2fs_open2): Set fs->stride from the superblock's

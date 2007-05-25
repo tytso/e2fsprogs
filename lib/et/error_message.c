@@ -28,6 +28,12 @@
 #if (!defined(HAVE_PRCTL) && defined(linux))
 #include <sys/syscall.h>
 #endif
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
 #include "com_err.h"
 #include "error_table.h"
 #include "internal.h"

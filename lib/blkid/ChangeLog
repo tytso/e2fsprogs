@@ -1,3 +1,8 @@
+2007-05-23  Theodore Tso  <tytso@mit.edu>
+
+	* getsize.c (main), read.c (parse_dev), tst_types.c (main): Fix
+		gcc -Wall warnings on 64-bit systems.
+
 2007-05-18  Theodore Tso  <tytso@mit.edu>
 
 	* tag.c (blkid_set_tag): Fix bug where bid_type, bid_label, and

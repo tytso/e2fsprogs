@@ -1,3 +1,21 @@
+2007-05-22  Theodore Tso  <tytso@mit.edu>
+
+	* sim_progress.c (ext2fs_progress_init): Fix type-punning warning.
+
+	* resize2fs.h: #include the e2p.h header file to get the function
+		prototypes.
+
+	* resize2fs.c (adjust_fs_info): Declare new_inodes as an unsigned
+		long long to avoid gcc -Wall complaints on 64-bit
+		platforms.  
+		(adjust_fs_info): Fix signed vs unsigned complaint.
+
+	* online.c (online_resize_fs): Mark flags parameter as unused.
+		Make new_desc_blocks be an unsigned long to fix signed
+		vs. unsigned comparsions, and fix up the printf format
+
+	* main.c (main): Fix signed vs. unsigned comparison
+
 2007-05-18  Theodore Tso  <tytso@mit.edu>
 
 	* main.c (determine_fs_stride): Use the superblock s_raid_stride

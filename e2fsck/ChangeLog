@@ -1,5 +1,8 @@
 2007-05-22  Theodore Tso  <tytso@mit.edu>
 
+	* message.c (expand_inode_expression, expand_percent_expression):
+		Fix gcc -Wall warnings on 64-bit systems.
+
 	* pass1.c (e2fsck_pass1_check_device_inode): Mark the fs parameter
 		as unused.
 		(e2fsck_setup_tdb_icount): Use profile_get_uint() function

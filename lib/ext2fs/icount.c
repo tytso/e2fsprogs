@@ -482,8 +482,6 @@ errcode_t ext2fs_icount_validate(ext2_icount_t icount, FILE *out)
 
 errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ext2_ino_t ino, __u16 *ret)
 {
-	struct ext2_icount_el	*el;
-
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
 
 	if (!ino || (ino > icount->num_inodes))
@@ -505,7 +503,6 @@ errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ext2_ino_t ino, __u16 *ret)
 errcode_t ext2fs_icount_increment(ext2_icount_t icount, ext2_ino_t ino,
 				  __u16 *ret)
 {
-	struct ext2_icount_el	*el;
 	__u16			curr_value;
 
 	EXT2_CHECK_MAGIC(icount, EXT2_ET_MAGIC_ICOUNT);
@@ -538,7 +535,6 @@ errcode_t ext2fs_icount_increment(ext2_icount_t icount, ext2_ino_t ino,
 			 * The count was zero; mark the single bitmap
 			 * and return.
 			 */
-		zero_count:
 			ext2fs_mark_inode_bitmap(icount->single, ino);
 			if (ret)
 				*ret = 1;
@@ -731,7 +727,6 @@ struct test_program extended[] = {
 static void setup(void)
 {
 	errcode_t	retval;
-	int		i;
 	struct ext2_super_block param;
 
 	initialize_ext2_error_table();
