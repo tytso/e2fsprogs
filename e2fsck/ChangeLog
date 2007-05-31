@@ -1,5 +1,8 @@
 2007-05-31  Theodore Tso  <tytso@mit.edu>
 
+	* util.c (get_backup_sb): Do basic sanity checking to make sure
+		the blocksize of the superblock passes muster.
+
 	* profile.c (profile_node_iterator): Avoid potential null
 		dereference bug.
 

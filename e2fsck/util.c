@@ -455,7 +455,8 @@ blk_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 		if (sb->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC))
 			ext2fs_swap_super(sb);
 #endif
-		if (sb->s_magic == EXT2_SUPER_MAGIC) {
+		if ((sb->s_magic == EXT2_SUPER_MAGIC) &&
+		    (EXT2_BLOCK_SIZE(sb) == blocksize)) {
 			ret_sb = superblock;
 			if (ctx) {
 				ctx->superblock = superblock;
