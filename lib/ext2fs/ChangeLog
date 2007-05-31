@@ -1,3 +1,7 @@
+2007-05-31  Theodore Tso  <tytso@mit.edu>
+
+	* ext2_fs.h: Reserve superblock field for the raid stripe width.
+
 2007-05-31  Kalpak Shah <kalpak@clusterfs.com>
 
 	* ext2_fs.h: Reserve superblock fields and INCOMPAT feature flag
