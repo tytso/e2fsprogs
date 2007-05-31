@@ -1,3 +1,8 @@
+2007-05-31  Kalpak Shah <kalpak@clusterfs.com>
+
+	* ext2_fs.h: Reserve superblock fields and INCOMPAT feature flag
+		for multiple mount protection protection.
+
 2007-05-23  Theodore Tso  <tytso@mit.edu>
 
 	* icount.c (ext2fs_icount_fetch, ext2fs_icount_increment, setup):

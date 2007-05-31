@@ -574,8 +574,9 @@ struct ext2_super_block {
 	__u16	s_want_extra_isize; 	/* New inodes should reserve # bytes */
 	__u32	s_flags;		/* Miscellaneous flags */
 	__u16   s_raid_stride;		/* RAID stride */
-	__u16   s_pad;			/* Padding */
-	__u32	s_reserved[166];	/* Padding to the end of the block */
+	__u16   s_mmp_interval;         /* # seconds to wait in MMP checking */
+	__u64   s_mmp_block;            /* Block for multi-mount protection */
+	__u32   s_reserved[164];        /* Padding to the end of the block */
 };
 
 /*
@@ -637,6 +638,7 @@ struct ext2_super_block {
 #define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
 #define EXT3_FEATURE_INCOMPAT_EXTENTS		0x0040
 #define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
+#define EXT4_FEATURE_INCOMPAT_MMP		0x0100
 
 
 #define EXT2_FEATURE_COMPAT_SUPP	0
@@ -714,5 +716,30 @@ struct ext2_dir_entry_2 {
 #define EXT2_DIR_ROUND			(EXT2_DIR_PAD - 1)
 #define EXT2_DIR_REC_LEN(name_len)	(((name_len) + 8 + EXT2_DIR_ROUND) & \
 					 ~EXT2_DIR_ROUND)
+
+/*
+ * This structure will be used for multiple mount protection. It will be
+ * written into the block number saved in the s_mmp_block field in the
+ * superblock.
+ */
+#define	EXT2_MMP_MAGIC    0x004D4D50 /* ASCII for MMP */
+#define	EXT2_MMP_CLEAN    0xFF4D4D50 /* Value of mmp_seq for clean unmount */
+#define	EXT2_MMP_FSCK_ON  0xE24D4D50 /* Value of mmp_seq when being fscked */
+
+struct mmp_struct {
+	__u32	mmp_magic;
+	__u32	mmp_seq;
+	__u64	mmp_time;
+	char	mmp_nodename[64];
+	char	mmp_bdevname[32];
+	__u16	mmp_interval;
+	__u16	mmp_pad1;
+	__u32	mmp_pad2;
+};
+
+/*
+ * Interval in number of seconds to update the MMP sequence number.
+ */
+#define EXT2_MMP_DEF_INTERVAL	5
 
 #endif	/* _LINUX_EXT2_FS_H */
