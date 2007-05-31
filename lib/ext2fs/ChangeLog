@@ -1,5 +1,8 @@
 2007-05-31  Theodore Tso  <tytso@mit.edu>
 
+	* tst_super_size.c (main): Add sanity check to make sure the
+		supersize structure is 1024 bytes.
+
 	* ext2_fs.h: Reserve superblock field for the raid stripe width.
 
 2007-05-31  Kalpak Shah <kalpak@clusterfs.com>
