@@ -1265,7 +1265,8 @@ errcode_t profile_node_iterator(void **iter_p, struct profile_node **ret_node,
 	 * If the file has changed, then the node pointer is invalid,
 	 * so we'll have search the file again looking for it.
 	 */
-	if (iter->node && (iter->file->upd_serial != iter->file_serial)) {
+	if (iter->node && (iter->file && 
+			   iter->file->upd_serial != iter->file_serial)) {
 		iter->flags &= ~PROFILE_ITER_FINAL_SEEN;
 		skip_num = iter->num;
 		iter->node = 0;
@@ -1349,8 +1350,6 @@ get_new_file:
 	iter->num++;
 	if (!p) {
 		iter->file = iter->file->next;
-		if (iter->file) {
-		}
 		iter->node = 0;
 		skip_num = 0;
 		goto get_new_file;
