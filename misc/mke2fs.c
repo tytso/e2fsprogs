@@ -841,6 +841,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				if (param->s_rev_level == EXT2_GOOD_OLD_REV) {
 					fprintf(stderr, 
 	_("On-line resizing not supported with revision 0 filesystems\n"));
+					free(buf);
 					exit(1);
 				}
 				param->s_feature_compat |=
@@ -859,8 +860,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"Valid extended options are:\n"
 			"\tstride=<stride length in blocks>\n"
 			"\tresize=<resize maximum size in blocks>\n\n"));
+		free(buf);
 		exit(1);
 	}
+	free(buf);
 }	
 
 static __u32 ok_features[3] = {

@@ -1,3 +1,7 @@
+2007-05-31  Theodore Tso  <tytso@mit.edu>
+
+	* mke2fs.c (parse_extended_opts): Free allocated buf on return
+
 2007-05-22  Theodore Tso  <tytso@mit.edu>
 
 	* mke2fs.c (PRS): Make num_inodes use an unsigned long long type
