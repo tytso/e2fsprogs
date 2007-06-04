@@ -981,6 +981,42 @@ restart:
 			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);
 		fatal_error(ctx, 0);
 	}
+
+	if (!(ctx->flags & E2F_FLAG_GOT_DEVSIZE)) {
+		__u32 blocksize = EXT2_BLOCK_SIZE(fs->super);
+		int need_restart = 0;
+
+		pctx.errcode = ext2fs_get_device_size(ctx->filesystem_name,
+						      blocksize,
+						      &ctx->num_blocks);
+		/*
+		 * The floppy driver refuses to allow anyone else to
+		 * open the device if has been opened with O_EXCL;
+		 * this is unlike other block device drivers in Linux.
+		 * To handle this, we close the filesystem and then
+		 * reopen the filesystem after we get the device size.
+		 */
+		if (pctx.errcode == EBUSY) {
+			ext2fs_close(fs);
+			need_restart++;
+			pctx.errcode = 
+				ext2fs_get_device_size(ctx->filesystem_name, 
+						       blocksize,
+						       &ctx->num_blocks);
+		}
+		if (pctx.errcode == EXT2_ET_UNIMPLEMENTED)
+			ctx->num_blocks = 0;
+		else if (pctx.errcode) {
+			fix_problem(ctx, PR_0_GETSIZE_ERROR, &pctx);
+			ctx->flags |= E2F_FLAG_ABORT;
+			fatal_error(ctx, 0);
+			return;
+		}
+		ctx->flags |= E2F_FLAG_GOT_DEVSIZE;
+		if (need_restart)
+			goto restart;
+	}
+
 	ctx->fs = fs;
 	fs->priv_data = ctx;
 	fs->now = ctx->now;

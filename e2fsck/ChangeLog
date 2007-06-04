@@ -1,3 +1,13 @@
+2007-06-04  Theodore Tso  <tytso@mit.edu>
+
+	* super.c (check_super_block, e2fsck_get_device_size), 
+	  unix.c (main): Move device size logic into the main(), to 
+		support the Linux floppy driver, which disallows another
+		(non-O_EXCL) open() if it has been opened with O_EXCL.
+		(Addresses Debian Bug: #410569)
+
+	* e2fsck.h (E2F_FLAG_GOT_DEVSIZE): New flag used in get_device logic
+
 2007-05-31  Theodore Tso  <tytso@mit.edu>
 
 	* util.c (get_backup_sb): Do basic sanity checking to make sure

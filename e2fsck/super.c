@@ -39,19 +39,6 @@ static void check_super_value(e2fsck_t ctx, const char *descr,
 }
 
 /*
- * This routine may get stubbed out in special compilations of the
- * e2fsck code..
- */
-#ifndef EXT2_SPECIAL_DEVICE_SIZE
-errcode_t e2fsck_get_device_size(e2fsck_t ctx)
-{
-	return (ext2fs_get_device_size(ctx->filesystem_name,
-				       EXT2_BLOCK_SIZE(ctx->fs->super),
-				       &ctx->num_blocks));
-}
-#endif
-
-/*
  * helper function to release an inode
  */
 struct process_block_struct {
@@ -536,21 +523,13 @@ void check_super_block(e2fsck_t ctx)
 		return;
 	}
 		
-	if (!ctx->num_blocks) {
-		pctx.errcode = e2fsck_get_device_size(ctx);
-		if (pctx.errcode && pctx.errcode != EXT2_ET_UNIMPLEMENTED) {
-			fix_problem(ctx, PR_0_GETSIZE_ERROR, &pctx);
+	if ((ctx->flags & E2F_FLAG_GOT_DEVSIZE) &&
+	    (ctx->num_blocks < sb->s_blocks_count)) {
+		pctx.blk = sb->s_blocks_count;
+		pctx.blk2 = ctx->num_blocks;
+		if (fix_problem(ctx, PR_0_FS_SIZE_WRONG, &pctx)) {
 			ctx->flags |= E2F_FLAG_ABORT;
 			return;
-		}
-		if ((pctx.errcode != EXT2_ET_UNIMPLEMENTED) &&
-		    (ctx->num_blocks < sb->s_blocks_count)) {
-			pctx.blk = sb->s_blocks_count;
-			pctx.blk2 = ctx->num_blocks;
-			if (fix_problem(ctx, PR_0_FS_SIZE_WRONG, &pctx)) {
-				ctx->flags |= E2F_FLAG_ABORT;
-				return;
-			}
 		}
 	}
 

@@ -170,6 +170,7 @@ struct resource_track {
 					* specified by the user */
 #define E2F_FLAG_RESTARTED	0x0200 /* E2fsck has been restarted */
 #define E2F_FLAG_RESIZE_INODE	0x0400 /* Request to recreate resize inode */
+#define E2F_FLAG_GOT_DEVSIZE	0x0800 /* Device size has been fetched */
 
 /*
  * Defines for indicating the e2fsck pass number
@@ -452,7 +453,6 @@ void e2fsck_rehash_directories(e2fsck_t ctx);
 
 /* super.c */
 void check_super_block(e2fsck_t ctx);
-errcode_t e2fsck_get_device_size(e2fsck_t ctx);
 
 /* swapfs.c */
 void swap_filesys(e2fsck_t ctx);
