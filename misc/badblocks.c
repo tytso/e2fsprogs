@@ -46,6 +46,7 @@ extern int optind;
 #include <unistd.h>
 #include <setjmp.h>
 #include <time.h>
+#include <limits.h>
 
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -987,24 +988,31 @@ int main (int argc, char ** argv)
 			exit(1);
 		}
 	} else {
-		last_block = strtoul (argv[optind], &tmp, 0) + 1;
-		if (*tmp) {
+		errno = 0;
+		last_block = strtoul (argv[optind], &tmp, 0);
+		printf("last_block = %d (%s)\n", last_block, argv[optind]);
+		if (*tmp || errno || 
+		    (last_block == ULONG_MAX && errno == ERANGE)) {
 			com_err (program_name, 0, _("invalid blocks count - %s"),
 				 argv[optind]);
 			exit (1);
 		}
+		last_block++;
 		optind++;
 	}
 	if (optind <= argc-1) {
+		errno = 0;
 		from_count = strtoul (argv[optind], &tmp, 0);
-		if (*tmp) {
+		printf("from_count = %d\n", from_count);
+		if (*tmp || errno ||
+		    (from_count == ULONG_MAX && errno == ERANGE)) {
 			com_err (program_name, 0, _("invalid starting block - %s"),
 				 argv[optind]);
 			exit (1);
 		}
 	} else from_count = 0;
 	if (from_count >= last_block) {
-	    com_err (program_name, 0, _("invalid blocks range: %lu-%lu"),
+	    com_err (program_name, 0, _("invalid starting block (%d): must be less than %lu"),
 		     (unsigned long) from_count, (unsigned long) last_block);
 	    exit (1);
 	}
