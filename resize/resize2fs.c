@@ -138,6 +138,7 @@ errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 	if (retval)
 		goto errout;
 
+	rfs->new_fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;	
 	retval = ext2fs_close(rfs->new_fs);
 	if (retval)
 		goto errout;

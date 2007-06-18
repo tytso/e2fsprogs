@@ -981,6 +981,18 @@ restart:
 			fix_problem(ctx, PR_0_SB_CORRUPT, &pctx);
 		fatal_error(ctx, 0);
 	}
+	/*
+	 * We only update the master superblock because (a) paranoia;
+	 * we don't want to corrupt the backup superblocks, and (b) we
+	 * don't need to update the mount count and last checked
+	 * fields in the backup superblock (the kernel doesn't update
+	 * the backup superblocks anyway).  With newer versions of the
+	 * library this flag is set by ext2fs_open2(), but we set this
+	 * here just to be sure.  (No, we don't support e2fsck running
+	 * with some other libext2fs than the one that it was shipped
+	 * with, but just in case....)
+	 */
+	fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 
 	if (!(ctx->flags & E2F_FLAG_GOT_DEVSIZE)) {
 		__u32 blocksize = EXT2_BLOCK_SIZE(fs->super);
@@ -1126,15 +1138,6 @@ restart:
 	if (ctx->superblock &&
 	    !(ctx->options & E2F_OPT_READONLY))
 		ext2fs_mark_super_dirty(fs);
-
-	/*
-	 * We only update the master superblock because (a) paranoia;
-	 * we don't want to corrupt the backup superblocks, and (b) we
-	 * don't need to update the mount count and last checked
-	 * fields in the backup superblock (the kernel doesn't
-	 * update the backup superblocks anyway).
-	 */
-	fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 
 	ehandler_init(fs->io);
 

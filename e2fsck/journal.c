@@ -832,6 +832,7 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 	}
 	ctx->fs->priv_data = ctx;
 	ctx->fs->now = ctx->now;
+	ctx->fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 
 	/* Set the superblock flags */
 	e2fsck_clear_recover(ctx, recover_retval);

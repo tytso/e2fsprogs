@@ -101,6 +101,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
 	fs->flags = flags;
+	/* don't overwrite sb backups unless flag is explicitly cleared */
+	fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
 	fs->umask = 022;
 	retval = ext2fs_get_mem(strlen(name)+1, &fs->device_name);
 	if (retval)

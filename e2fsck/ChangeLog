@@ -1,3 +1,10 @@
+2007-06-18  Theodore Tso  <tytso@mit.edu>
+
+	* journal.c (e2fsck_run_ext3_journal), unix.c (main): Explicitly
+		add the EXT2_FLAG_MASTER_SB_ONLY flag to make sure we
+		won't write out the backup superblocks until we're sure
+		that we want write them out.
+
 2007-06-04  Theodore Tso  <tytso@mit.edu>
 
 	* super.c (check_super_block, e2fsck_get_device_size), 

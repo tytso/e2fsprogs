@@ -780,6 +780,7 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 	sb = fs->super;
+	fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 	if (print_label) {
 		/* For e2label emulation */
 		printf("%.*s\n", (int) sizeof(sb->s_volume_name),

@@ -1,3 +1,9 @@
+2007-06-12  Theodore Tso  <tytso@mit.edu>
+
+	* tune2fs.c (main): Clear the EXT2_FLAG_MASTER_SB_ONLY flag
+		because we want tune2fs changes to get written to the
+		backup blocks.
+
 2007-06-04  Theodore Tso  <tytso@mit.edu>
 
 	* badblocks.c (main): Fix error checking of the last-block and
