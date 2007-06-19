@@ -1,3 +1,10 @@
+2007-06-19  Theodore Tso  <tytso@mit.edu>
+
+	* probe.c (probe_ntfs): Add probe function which is more paranoid
+		about checking for a valid NTFS partition, and which sets
+		the UUID and LABEL information.  (Addresses Launchpad Bug
+		#110138)
+
 2007-05-23  Theodore Tso  <tytso@mit.edu>
 
 	* getsize.c (main), read.c (parse_dev), tst_types.c (main): Fix

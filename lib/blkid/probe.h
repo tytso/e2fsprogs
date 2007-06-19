@@ -393,6 +393,53 @@ struct gfs2_sb {
 	/* In gfs1, quota and license dinodes followed */
 };
 
+struct ntfs_super_block {
+	__u8	jump[3];
+	__u8	oem_id[8];
+	__u8	bios_parameter_block[25];
+	__u16	unused[2];
+	__u64	number_of_sectors;
+	__u64	mft_cluster_location;
+	__u64	mft_mirror_cluster_location;
+	__s8	cluster_per_mft_record;
+	__u8	reserved1[3];
+	__s8	cluster_per_index_record;
+	__u8	reserved2[3];
+	__u64	volume_serial;
+	__u16	checksum;
+};
+
+struct master_file_table_record {
+	__u32	magic;
+	__u16	usa_ofs;
+	__u16	usa_count;
+	__u64	lsn;
+	__u16	sequence_number;
+	__u16	link_count;
+	__u16	attrs_offset;
+	__u16	flags;
+	__u32	bytes_in_use;
+	__u32	bytes_allocated;
+} __attribute__((__packed__));
+
+struct file_attribute {
+	__u32	type;
+	__u32	len;
+	__u8	non_resident;
+	__u8	name_len;
+	__u16	name_offset;
+	__u16	flags;
+	__u16	instance;
+	__u32	value_len;
+	__u16	value_offset;
+} __attribute__((__packed__));
+
+#define MFT_RECORD_VOLUME			3
+#define MFT_RECORD_ATTR_VOLUME_NAME		0x60
+#define MFT_RECORD_ATTR_VOLUME_INFO		0x70
+#define MFT_RECORD_ATTR_OBJECT_ID		0x40
+#define MFT_RECORD_ATTR_END			0xffffffffu
+
 /*
  * Byte swap functions
  */

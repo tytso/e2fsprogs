@@ -46,7 +46,7 @@ static int figure_label_len(const unsigned char *label, int len)
 }
 
 static unsigned char *get_buffer(struct blkid_probe *pr, 
-			  unsigned off, size_t len)
+			  blkid_loff_t off, size_t len)
 {
 	ssize_t		ret_read;
 	unsigned char	*newbuf;
@@ -74,7 +74,7 @@ static unsigned char *get_buffer(struct blkid_probe *pr,
 			pr->buf = newbuf;
 			pr->buf_max = len;
 		}
-		if (lseek(pr->fd, off, SEEK_SET) < 0)
+		if (blkid_llseek(pr->fd, off, SEEK_SET) < 0)
 			return NULL;
 		ret_read = read(pr->fd, pr->buf, len);
 		if (ret_read != (ssize_t) len)
@@ -398,6 +398,111 @@ static int probe_fat_nomagic(struct blkid_probe *probe,
 	return probe_fat(probe, id, buf);
 }
 
+static int probe_ntfs(struct blkid_probe *probe,
+		      struct blkid_magic *id __BLKID_ATTR((unused)), 
+		      unsigned char *buf)
+{
+	struct ntfs_super_block *ns;
+	struct master_file_table_record *mft;
+	struct file_attribute *attr;
+	char		uuid_str[17], label_str[129], *cp;
+	int		bytes_per_sector, sectors_per_cluster;
+	int		mft_record_size, attr_off, attr_len;
+	unsigned int	i, attr_type, val_len;
+	int		val_off;
+	__u64		nr_clusters;
+	blkid_loff_t off;
+	unsigned char *buf_mft, *val;
+
+	ns = (struct ntfs_super_block *) buf;
+
+	bytes_per_sector = ns->bios_parameter_block[0] +
+		(ns->bios_parameter_block[1]  << 8);
+	sectors_per_cluster = ns->bios_parameter_block[2];
+
+	if (ns->cluster_per_mft_record < 0)
+		mft_record_size = 1 << - ns->cluster_per_mft_record;
+	else
+		mft_record_size = ns->cluster_per_mft_record * 
+			sectors_per_cluster * bytes_per_sector;
+	nr_clusters = blkid_le64(ns->number_of_sectors) / sectors_per_cluster;
+
+	if ((blkid_le64(ns->mft_cluster_location) > nr_clusters) ||
+	    (blkid_le64(ns->mft_mirror_cluster_location) > nr_clusters))
+		return 1;
+
+	off = blkid_le64(ns->mft_mirror_cluster_location) * 
+		bytes_per_sector * sectors_per_cluster;
+
+	buf_mft = get_buffer(probe, off, mft_record_size);
+	if (!buf_mft)
+		return 1;
+
+	if (memcmp(buf_mft, "FILE", 4))
+		return 1;
+
+	off = blkid_le64(ns->mft_cluster_location) * bytes_per_sector * 
+		sectors_per_cluster;
+
+	buf_mft = get_buffer(probe, off, mft_record_size);
+	if (!buf_mft)
+		return 1;
+
+	if (memcmp(buf_mft, "FILE", 4))
+		return 1;
+
+	off += MFT_RECORD_VOLUME * mft_record_size;
+
+	buf_mft = get_buffer(probe, off, mft_record_size);
+	if (!buf_mft)
+		return 1;
+
+	if (memcmp(buf_mft, "FILE", 4))
+		return 1;
+
+	mft = (struct master_file_table_record *) buf_mft;
+
+	attr_off = blkid_le16(mft->attrs_offset);
+	label_str[0] = 0;
+	
+	while (1) {
+		attr = (struct file_attribute *) (buf_mft + attr_off);
+		attr_len = blkid_le16(attr->len);
+		attr_type = blkid_le32(attr->type);
+		val_off = blkid_le16(attr->value_offset);
+		val_len = blkid_le32(attr->value_len);
+
+		attr_off += attr_len;
+
+		if ((attr_off > mft_record_size) ||
+		    (attr_len == 0))
+			break;
+
+		if (attr_type == MFT_RECORD_ATTR_END)
+			break;
+
+		if (attr_type == MFT_RECORD_ATTR_VOLUME_NAME) {
+			if (val_len > sizeof(label_str))
+				val_len = sizeof(label_str)-1;
+
+			for (i=0, cp=label_str; i < val_len; i+=2,cp++) {
+				val = ((__u8 *) attr) + val_off + i;
+				*cp = val[0];
+				if (val[1])
+					*cp = '?';
+			}
+			*cp = 0;
+		}
+	}
+
+	sprintf(uuid_str, "%llX", blkid_le64(ns->volume_serial));
+	blkid_set_tag(probe->dev, "UUID", uuid_str, 0);
+	if (label_str[0])
+		blkid_set_tag(probe->dev, "LABEL", label_str, 0);
+	return 0;
+}
+
+
 static int probe_xfs(struct blkid_probe *probe,
 		     struct blkid_magic *id __BLKID_ATTR((unused)), 
 		     unsigned char *buf)
@@ -709,7 +814,7 @@ static int probe_gfs2(struct blkid_probe *probe,
 static struct blkid_magic type_array[] = {
 /*  type     kboff   sboff len  magic			probe */
   { "oracleasm", 0,	32,  8, "ORCLDISK",		probe_oracleasm },
-  { "ntfs",      0,      3,  8, "NTFS    ",             0 },
+  { "ntfs",	 0,	 3,  8, "NTFS    ",		probe_ntfs },
   { "jbd",	 1,   0x38,  2, "\123\357",		probe_jbd },
   { "ext3",	 1,   0x38,  2, "\123\357",		probe_ext3 },
   { "ext2",	 1,   0x38,  2, "\123\357",		probe_ext2 },
