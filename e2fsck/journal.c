@@ -285,6 +285,13 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 				goto try_backup_journal;
 			}
 		}
+		if (tried_backup_jnl && !(ctx->options & E2F_OPT_READONLY)) {
+			retval = ext2fs_write_inode(ctx->fs, sb->s_journal_inum,
+						    &j_inode->i_ext2);
+			if (retval)
+				goto errout;
+		}
+
 		journal->j_maxlen = j_inode->i_ext2.i_size / journal->j_blocksize;
 
 #ifdef USE_INODE_IO
