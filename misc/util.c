@@ -251,9 +251,10 @@ void parse_journal_opts(const char *opts)
  */
 int figure_journal_size(int size, ext2_filsys fs)
 {
-	blk_t j_blocks;
+	int j_blocks;
 
-	if (fs->super->s_blocks_count < 2048) {
+	j_blocks = ext2fs_default_journal_size(fs->super->s_blocks_count);
+	if (j_blocks < 0) {
 		fputs(_("\nFilesystem too small for a journal\n"), stderr);
 		return 0;
 	}
@@ -273,21 +274,7 @@ int figure_journal_size(int size, ext2_filsys fs)
 			      stderr);
 			exit(1);
 		}
-		return j_blocks;
 	}
-
-	if (fs->super->s_blocks_count < 32768)
-		j_blocks = 1400;
-	else if (fs->super->s_blocks_count < 256*1024)
-		j_blocks = 4096;
-	else if (fs->super->s_blocks_count < 512*1024)
-		j_blocks = 8192;
-	else if (fs->super->s_blocks_count < 1024*1024)
-		j_blocks = 16384;
-	else
-		j_blocks = 32768;
-
-
 	return j_blocks;
 }
 

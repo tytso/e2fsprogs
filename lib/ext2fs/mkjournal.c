@@ -248,6 +248,26 @@ errout:
 }
 
 /*
+ * Find a reasonable journal file size (in blocks) given the number of blocks
+ * in the filesystem.  For very small filesystems, it is not reasonable to
+ * have a journal that fills more than half of the filesystem.
+ */
+int ext2fs_default_journal_size(__u64 blocks)
+{
+	if (blocks < 2048)
+		return -1;
+	if (blocks < 32768)
+		return (1024);
+	if (blocks < 256*1024)
+		return (4096);
+	if (blocks < 512*1024)
+		return (8192);
+	if (blocks < 1024*1024)
+		return (16384);
+	return 32768;
+}
+
+/*
  * This function adds a journal device to a filesystem
  */
 errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
