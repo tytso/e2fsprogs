@@ -1023,7 +1023,6 @@ restart:
 			fix_problem(ctx, PR_0_GETSIZE_ERROR, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
 			fatal_error(ctx, 0);
-			return;
 		}
 		ctx->flags |= E2F_FLAG_GOT_DEVSIZE;
 		if (need_restart)
