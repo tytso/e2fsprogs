@@ -575,6 +575,18 @@ static int probe_jfs(struct blkid_probe *probe,
 	return 0;
 }
 
+static int probe_luks(struct blkid_probe *probe,
+		       struct blkid_magic *id __BLKID_ATTR((unused)),
+		       unsigned char *buf)
+{
+	unsigned char uuid[40];
+	/* 168 is the offset to the 40 character uuid:
+	 * http://luks.endorphin.org/LUKS-on-disk-format.pdf */
+	strncpy(uuid, buf+168, 40);
+	blkid_set_tag(probe->dev, "UUID", uuid, sizeof(uuid));
+	return 0;
+}
+
 static int probe_romfs(struct blkid_probe *probe,
 		       struct blkid_magic *id __BLKID_ATTR((unused)), 
 		       unsigned char *buf)
@@ -882,6 +894,7 @@ static struct blkid_magic type_array[] = {
   { "ocfs2",	 2,	 0,  6,	"OCFSV2",		probe_ocfs2 },
   { "ocfs2",	 4,	 0,  6,	"OCFSV2",		probe_ocfs2 },
   { "ocfs2",	 8,	 0,  6,	"OCFSV2",		probe_ocfs2 },
+  { "crypt_LUKS", 0,	 0,  6,	"LUKS\xba\xbe",		probe_luks },
   {   NULL,	 0,	 0,  0, NULL,			NULL }
 };
 
