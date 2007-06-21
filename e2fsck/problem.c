@@ -1494,6 +1494,11 @@ static struct e2fsck_problem problem_table[] = {
 	  " +(%i--%j)",
 	  PROMPT_NONE, PR_LATCH_IBITMAP | PR_PREEN_OK | PR_PREEN_NOMSG },
 
+	/* Recreate journal if E2F_FLAG_JOURNAL_INODE flag is set */
+	{ PR_6_RECREATE_JOURNAL,
+	  N_("Recreate journal to make the filesystem ext3 again?\n"),
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
+
 	{ 0 }
 };
 

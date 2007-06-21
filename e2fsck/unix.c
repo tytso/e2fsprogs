@@ -851,6 +851,7 @@ int main (int argc, char *argv[])
 	e2fsck_t	ctx;
 	struct problem_context pctx;
 	int flags, run_result;
+	int journal_size;
 	
 	clear_problem_context(&pctx);
 #ifdef MTRACE
@@ -1184,8 +1185,47 @@ restart:
 			 " but we'll try to go on...\n"));
 	}
 
+	/*
+	 * Save the journal size in megabytes.
+	 * Try and use the journal size from the backup else let e2fsck
+	 * find the default journal size.
+	 */
+	if (sb->s_jnl_backup_type == EXT3_JNL_BACKUP_BLOCKS)
+		journal_size = sb->s_jnl_blocks[16] >> 20;
+	else
+		journal_size = -1;
+
 	run_result = e2fsck_run(ctx);
 	e2fsck_clear_progbar(ctx);
+
+	if (ctx->flags & E2F_FLAG_JOURNAL_INODE) {
+		if (fix_problem(ctx, PR_6_RECREATE_JOURNAL, &pctx)) {
+			if (journal_size < 1024)
+				journal_size = ext2fs_default_journal_size(fs->super->s_blocks_count);
+			if (journal_size < 0) {
+				fs->super->s_feature_compat &=
+					~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+				com_err(ctx->program_name, 0, 
+					_("Couldn't determine journal size"));
+				goto no_journal;
+			}
+			printf(_("Creating journal (%d blocks): "),
+			       journal_size);
+			fflush(stdout);
+			retval = ext2fs_add_journal_inode(fs,
+							  journal_size, 0);
+			if (retval) {
+				com_err("Error ", retval,
+					_("\n\twhile trying to create journal"));
+				goto no_journal;
+			}
+			printf(_(" Done.\n"));
+			printf(_("\n*** journal has been re-created - "
+				       "filesystem is now ext3 again ***\n"));
+		}
+	}
+no_journal:
+
 	if (run_result == E2F_FLAG_RESTART) {
 		printf(_("Restarting e2fsck from the beginning...\n"));
 		retval = e2fsck_reset_context(ctx);

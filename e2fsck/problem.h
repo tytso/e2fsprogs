@@ -901,6 +901,13 @@ struct problem_context {
 #define PR_5_INODE_RANGE_USED		0x050017
 
 /*
+ * Post-Pass 5 errors
+ */
+
+/* Recreate the journal if E2F_FLAG_JOURNAL_INODE flag is set */
+#define PR_6_RECREATE_JOURNAL		0x060001
+
+/*
  * Function declarations
  */
 int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx);

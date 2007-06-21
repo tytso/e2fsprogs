@@ -420,7 +420,7 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 				       "filesystem is now ext2 only ***\n\n");
 			sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 			sb->s_journal_inum = 0;
-			ctx->flags |= E2F_FLAG_JOURNAL_INODE; /* FIXME: todo */
+			ctx->flags |= E2F_FLAG_JOURNAL_INODE;
 			e2fsck_clear_recover(ctx, 1);
 			return 0;
 		}
