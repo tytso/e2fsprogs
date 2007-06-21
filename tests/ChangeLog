@@ -1,3 +1,8 @@
+2007-06-21  Theodore Tso  <tytso@mit.edu>
+
+	* f_badjour_indblks: New test case which checks if a corrupted
+		indirect block in the journal inode will get caught.
+
 2007-04-10  Theodore Tso  <tytso@mit.edu>
 
 	* f_dup4: New test cases which tests a bugfix in e2fsck where if an
