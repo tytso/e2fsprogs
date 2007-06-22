@@ -1,3 +1,13 @@
+2007-06-22  Theodore Tso  <tytso@mit.edu>
+
+	* pass1.c (check_ext_attr): Adds an extra validity test in
+		check_ext_attr().  If an attribute's e_value_size is zero
+		the current code does not allocate a region for it and as
+		a result the e_value_offs value is not verified.  However,
+		if e_value_offs is very large then the later call to
+		ext2fs_ext_attr_hash_entry() can dereference bad memory
+		and crash e2fsck.
+
 2007-06-18  Theodore Tso  <tytso@mit.edu>
 
 	* journal.c (e2fsck_run_ext3_journal), unix.c (main): Explicitly
