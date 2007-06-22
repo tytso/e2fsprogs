@@ -133,7 +133,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 			    struct ext2_inode_large *f, int hostorder,
 			    int bufsize)
 {
-	unsigned i, has_data_blocks;
+	unsigned i, has_data_blocks, extra_isize;
 	int islnk = 0;
 	__u32 *eaf, *eat;
 
@@ -214,31 +214,35 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 	if (bufsize < (int) (sizeof(struct ext2_inode) + sizeof(__u16)))
 		return; /* no i_extra_isize field */
 
+	if (hostorder)
+		extra_isize = f->i_extra_isize;
 	t->i_extra_isize = ext2fs_swab16(f->i_extra_isize);
-	if (t->i_extra_isize > EXT2_INODE_SIZE(fs->super) -
+	if (!hostorder)
+		extra_isize = t->i_extra_isize;
+	if (extra_isize > EXT2_INODE_SIZE(fs->super) -
 				sizeof(struct ext2_inode)) {
 		/* this is error case: i_extra_size is too large */
 		return;
 	}
 
-	i = sizeof(struct ext2_inode) + t->i_extra_isize + sizeof(__u32);
+	i = sizeof(struct ext2_inode) + extra_isize + sizeof(__u32);
 	if (bufsize < (int) i)
 		return; /* no space for EA magic */
 
 	eaf = (__u32 *) (((char *) f) + sizeof(struct ext2_inode) +
-					f->i_extra_isize);
+					extra_isize);
 
 	if (ext2fs_swab32(*eaf) != EXT2_EXT_ATTR_MAGIC)
 		return; /* it seems no magic here */
 
 	eat = (__u32 *) (((char *) t) + sizeof(struct ext2_inode) +
-					f->i_extra_isize);
+					extra_isize);
 	*eat = ext2fs_swab32(*eaf);
 
 	/* convert EA(s) */
 	ext2fs_swap_ext_attr((char *) (eat + 1), (char *) (eaf + 1),
 			     bufsize - sizeof(struct ext2_inode) -
-			     t->i_extra_isize - sizeof(__u32), 0);
+			     extra_isize - sizeof(__u32), 0);
 
 }
 

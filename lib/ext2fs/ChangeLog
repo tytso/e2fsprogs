@@ -1,3 +1,8 @@
+2007-06-22  Theodore Tso  <tytso@mit.edu>
+
+	* swapfs.c (ext2fs_swap_inode_full): Fix byte-swapping issues for
+		i_extra_size field.
+
 2007-06-12  Theodore Tso  <tytso@mit.edu>
 
 	* openfs.c (ext2fs_open2): We now set EXT2_FLAG_MASTER_SB_ONLY
