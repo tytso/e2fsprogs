@@ -1,5 +1,8 @@
 2007-06-22  Theodore Tso  <tytso@mit.edu>
 
+	* inode.c (ext2fs_read_inode_full): Pass in bufsize so the full
+		inode is byte-swapped.
+
 	* swapfs.c (ext2fs_swap_inode_full): Fix byte-swapping issues for
 		i_extra_size field.
 

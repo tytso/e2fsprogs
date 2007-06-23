@@ -586,7 +586,7 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	    (fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
 		ext2fs_swap_inode_full(fs, (struct ext2_inode_large *) inode, 
 				       (struct ext2_inode_large *) inode, 
-				       0, length);
+				       0, bufsize);
 #endif
 
 	/* Update the inode cache */
