@@ -1,3 +1,8 @@
+2007-06-23  Theodore Tso  <tytso@mit.edu>
+
+	* COPYING: Clarify copyright licenses used by the various
+		libraries in e2fsprogs.
+
 2007-05-22  Theodore Tso  <tytso@mit.edu>
 
 	* Makefile.in (rpm): Add production rule for e2fsprogs.spec, in
