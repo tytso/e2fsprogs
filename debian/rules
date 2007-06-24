@@ -341,11 +341,6 @@ binary-arch: install install-udeb
 		${debdir}/ss-dev/usr/share/doc/libss${SS_SOVERSION}/examples
 
 	$(INSTALL) -d ${debdir}/uuid-dev/usr/share/doc/libuuid${UUID_SOVERSION}
-	if test -f /etc/lsb-release && \
-		grep -q DISTRIB_ID=Ubuntu /etc/lsb-release; then \
-	    $(INSTALL) -p -m 0644 doc/rfc4122.txt \
-		${debdir}/uuid-dev/usr/share/doc/libuuid${UUID_SOVERSION}; \
-	fi
 
 	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
 	dh_installinfo -pe2fslibs-dev ${stdbuilddir}/doc/libext2fs.info

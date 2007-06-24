@@ -13,11 +13,7 @@ deb_pkgver=`echo @E2FSPROGS_PKGVER@ | sed -e 's/_/-/g'`
 echo Debian package $deb_pkgver
     
 case $1 in
-    debian)
-	SRCROOT="e2fsprogs-$deb_pkgver+dfsg"
-	list=debian
-	;;
-    ubuntu)
+    debian|ubuntu)
 	SRCROOT="e2fsprogs-$deb_pkgver"
 	list=all
 	;;
