@@ -1,3 +1,12 @@
+2007-06-24  Theodore Tso  <tytso@mit.edu>
+
+	* com_err.texinfo: Fix the info-dir line so that the name does not
+		contain a .info prefix.  First of all, it's ugly,
+		secondly, it causes the install-info command to fail to
+		remove the com_err info file from the /usr/share/info/dir file
+		when the comerr-dev package is removed and purged.
+		(Addresses Debian Bug: #401711)
+
 2007-05-23  Theodore Tso  <tytso@mit.edu>
 
 	* error_message.c: #include unistd.h and sys/types.h to provide

@@ -21,7 +21,7 @@
 @dircategory Development
 @format
 START-INFO-DIR-ENTRY
-* com_err: (com_err.info).   A Common Error Description Library for UNIX.
+* Com_err: (com_err).   A Common Error Description Library for UNIX.
 END-INFO-DIR-ENTRY
 @end format
 @end ifinfo
