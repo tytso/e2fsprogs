@@ -1,3 +1,7 @@
+2006-06-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.40
+
 2007-03-21  Theodore Tso  <tytso@mit.edu>
 
 	* subst.c (compare_file): Close old FILE handle if the new FILE

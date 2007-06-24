@@ -1,3 +1,7 @@
+2006-06-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.40
+
 2006-03-18  Theodore Ts'o  <tytso@mit.edu>
 
 	* libext2fs.texinfo (Iterating over blocks in an inode): Fix

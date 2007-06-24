@@ -1,3 +1,7 @@
+2006-06-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.40
+
 2006-06-28  Andreas Dilger <adilger@clusterfs.com>
 
 	* e2fsck.h, ext2_ext_attr.h: Protect header files from multiple

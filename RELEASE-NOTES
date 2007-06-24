@@ -1,5 +1,108 @@
-E2fsprogs 1.40-WIP (April 7, 2007)
-==================================
+E2fsprogs 1.40-WIP (June 23, 2007) (hg changeset 2161)
+===================================
+
+Add new blkid -g option which causes the blkid cache to be garbage
+collected.
+
+Fix a bug in libblkid which could cause the internal field bid_type to
+become corrupted.  Fortunately bid_type isn't used much, and bid_label
+and bid_uuid is only used by debugging code, so the impact of this bug
+was very minor.
+
+Mke2fs will now store the RAID stride value when a filesystem is
+created with a requested RAID stride, and then use it automatically in
+resize2fs.
+
+Mke2fs has a sanity check added to make sure (inode_size * num_inodes)
+isn't too big.  In some cases Lustre users have tried specifying an
+inode size of 4096 bytes, while keeping an inode ratio of one inode
+per 4096 bytes.  
+
+Improve sanity check in e2fsck's algorithm for finding a backup
+superblock, so that it won't accidentally find a superblock that was
+located in the journal, and then later reject it as being not a valid
+backup superblock.
+
+Fix e2fsck get_size logic so that it will work with the Linux floppy
+driver.  The Linux floppy driver is a bit different from the other
+block device drivers, in that if the device has been opened with
+O_EXCL, it disallows another open(), even if the second open() does
+not have the O_EXCL flag.  (Addresses Debian Bug: #410569)
+
+Fix error checking of badblock's last-block and start-block arguments.
+(Addresses Debian Bug: #416477)
+
+Fix e2fsck so that it doesn't overwrite the backup superblocks when
+recovering a journal until the master superblock has been confirmed as
+being sane.
+
+Change the blkid library to be much more paranoid about concluding
+that a partition contains an NTFS filesystem, and fetch the UUID and
+LABEL information from NTFS filesystems.  (Addresses Launchpad Bug:
+#110138)
+
+Factor out the code which sets the default journal size and move it
+into libext2fs.
+
+Enhance e2fsck so it will recreate the ext3 journal if the original
+journal inode was cleared to due it being corrupt after finishing the
+filesystem check.
+
+Fix e2fsck so that it updates the journal inode if it is corrupted and
+the backup journal information from the superblock was successfully
+used to recover the filesystem.
+
+Fix e2fsck so that it checks all of the blocks in the journal inode
+for validity.  The original code only checked the direct blocks to
+make sure the journal inode was sane.  Unfortunately, if some or all
+of the indirect or doubly indirect blocks were corrupted, this would
+not be caught.
+
+Add support in blkid to detect LUKS encrypted partitions.
+
+Add extra sanity checks for extended attributes in the case where the
+size is zero but the offset is very large.
+
+Fix byte-swapping issues for large inodes in ext2fs_read_inode_full()
+and ext2fs_get_next_inode_full().
+
+Clarify the copyright licenses used by the various libraries in
+the top-level COPYING  file (Red Hat Bugzilla: 166058)
+
+Make mke2fs's defaults when /etc/mke2fs.conf doesn't exist more sane.
+
+Fix mke2fs and debugfs to support large (> 16 bit) uid's and gid's.
+
+Remove check in e2fsck which requires EA's in inodes to be sorted;
+they don't need to be sorted, and e2fsck was previously wrongly
+clearing unsorted EA's stored in the inode structure.
+
+Allow mke2fs or tune2fs to create a substantially larger journal (up
+to 10,240,000 blocks).
+
+Fix MD superblock detection, and make sure the correct UUID is
+reported from the MD superblock.
+
+Fix a signed vs. unsigned bug in debugfs.
+
+Enhance debugfs's date parser so that it accepts integer values.
+
+Fix e2fsck's pass1c accounting so it doesn't terminate too early if a
+file with multiply claimed blocks is hard linked. or not at all if the
+root directory contains shared blocks
+
+Enhance debugfs so it can modify the block group descriptors using the
+command set_block_group_descriptor.
+
+Improve e2fsck's reporting of I/O errors so it's clearer what it was
+trying to do when an error happens
+
+Fix a bug in in how e2fsprogs byte swaps inodes containing fast
+symlinks that have extended attributes.  (Addresses Red Hat Bugzilla:
+#232663 and LTC Bugzilla: #27634)
+
+Fix potential file descriptor leak in ext2fs_get_device_size() in an
+error case.
 
 Add libreadline.so.5 support to libss.
 
@@ -124,11 +227,25 @@ Use FreeBSD's DIOCGMEDIASIZE and DIOCGDINFO ioctls if available when
 determining a partition's size, since binary searching to determine
 the device doesn't work on FreeBSD.
 
+Documentation about UUID's is available in enough places, and it's
+awkward to deal with debian-legal's insanities.  So I'm caving in the
+"more-lunatic-than-RMS" wing of Debian by removing RFC-4122 so we
+don't have do the dfsg tarball.  Also remove the rule that only tried
+to install RFC-4122 on Ubuntu, since Ubuntu seems to want to fetch
+e2fsprogs exclusively from Debian.  (Addresses Debian Bug: #407107)
+
+Fix the info-dir line so that the menu name does not contain a .info
+prefix.  First of all, it's ugly, secondly, it causes the install-info
+command to fail to remove the com_err info file from the
+/usr/share/info/dir file when the comerr-dev package is removed and
+purged.  (Addresses Debian Bug: #401711)
+
 Fixed spelling mistakes, typos, and otherwise clarified man pages.
 (Addresses Debian Bug: #369761, #373004, #379695)
 
 Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs #389554, #390664, #413208)
+details.  (Addresses Debian Bugs #389554, #390664, #413208, #419605,
+#408352, #415560, #399155)
 
 
 Programmer's notes:
@@ -212,6 +329,35 @@ store data in an on-disk database.
 
 Add support for using TDB to store the icount data, so we don't run out
 of memory when checking really large filesystems.
+
+Change the regression test suite so that it skips empty test directories.
+
+Define the l_i_iversion field in ext2_inode.  The l_i_version field is
+now defined from the old l_i_reserved1 field in the ext2 inode.  This
+field will be used to store high 32 bits of the 64-bit inode version
+number.
+
+Add Makefile production rule for e2fsprogs.spec in case it gets
+deleted.
+
+Add new function profile_get_uint() to allow for a clean way to fetch
+unsigned integers from the context.
+
+Add test to make sure the ext2 superblock structure is 1024 bytes.
+
+Fix typo in name of f_dup4 regression test
+
+Add new function blkid_gc_cache() which performs a garbage collection
+pass on the /etc/blkid.tab file.
+
+The ext2fs_open() function now sets EXT2_FLAG_MASTER_SB_ONLY.  In
+general, only e2fsck (after the filesystem is clean), tune2fs, and
+resize2fs should change the backup superblocks by default.  Most
+callers of ext2fs_open() should not be touching any superblock fields
+which require the backups to be touched.
+
+Add new function to libext2fs, ext2fs_default_journal_size(), which
+returns the default journal size.
 
 
 E2fsprogs 1.39 (May 29, 2006) 

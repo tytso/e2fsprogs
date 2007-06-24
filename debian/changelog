@@ -1,29 +1,95 @@
+e2fsprogs (1.40-1) unstable; urgency=low
+
+  * Add new blkid -g option which causes the blkid cache to be garbage
+      collected
+  * libblkid: Fix bug which could cuase bid_type to be corrupted
+  * mke2fs: Add santy check to make sure inode_size * num_inodes isn't too big
+  * Fix additional Coverity bugs in mke2fs and e2fsck
+  * Improve sanity check in e2fsck's algorithm for finding a backup superblock
+  * Fix e2fsck get_size logic so that it will work with the Linux floppy
+      driver (Closes: #410569)
+  * Fix error checking of badblock's last-block and start-block arguments
+      (Closes: #416477)
+  * e2fsck: avoid writing overwriting the backup superblocks until the
+      master superblock is confirmed to be sane
+  * Make the blkid library more paranoid about concluding a partition
+      contains a NTFS filesystem.  (Addresses Launchpad Bug: #110138)
+  * Enhance e2fsck so it will recreate the ext3 journal if the original
+      journal inode was cleared to due being corrupt
+  * Fix e2fsck so that if the backup journal information is used, that
+      this is written out to the journal inode
+  * Make e2fsck check all of the blocks in the journal inode for validity
+  * blkid: Add support for detecting LUKS encrypted partitions
+  * e2fsck: added sanity check for xattr validation
+  * Fix byte-swapping bug for filesystems with large inodes
+  * Clarify the copyright licenses used by the various libraries in COPYING
+  * Remove RFC-4122 from upstream (Closes: #407107)
+  * Fix info-dir line which prevented install-info from removing
+      com_err entry from from /usr/share/info/dir when the comerr-dev
+      package is purged (Closes: #401711)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 24 Jun 2007 17:22:58 -0400
+
+e2fsprogs (1.39+1.40-WIP-2007.04.07+dfsg-2) unstable; urgency=low
+
+  * Allow the journal to up to 10,240,000 blocks
+  * Fix blkid library to recognize MD 0.90 superblock on little endian
+      systems
+  * Fix blkid library to report the correct UUID from MD superblocks
+  * Fix signed vs. unsigned problem in debugfs' setb/testb/freeb commands
+  * Enhance debugfs's date parser so it acccepts integer values
+  * Fix e2fsck's pass1c accounting so it doesn't terminate too early
+      if a file with multiply claimed blocks is hard linked. or not at
+      all if the root directory contains shared blocks
+  * Enhance debugfs so it can modify the block group descriptors using
+      the command set_block_group_descriptor
+  * Improve e2fsck's reporting of I/O errors so it's clearer what it
+      was trying to do when an error happens
+  * Fix a bug in how e2fsprogs byte swaps inodes containing fast
+      symlinks that have extended attributes.
+  * Fix potential file descriptor leak in ext2fs_get_device_size()
+  * Fix minor typo in e2fsck.conf.5 man page
+  * Cleanup udeb dependency (Closes: #419605)
+  * Rebuilding with libdevmapper 1.02.1 (Closes: #421022 and #421668)
+  * Add dependency on comerr-dev to ss-dev (Closes: #408352)
+  * Make mke2fs use sane defaults when /etc/mke2fs.conf doesn't exist
+  * Fix mke2fs and debugfs to support large (> 16 bit) uid's and gid's
+  * Fix spelling typo in debian package description for libblkid1
+    (Closes: #399155)
+  * Remove -WIP language from the debian copyright file.  (Closes: #415560)
+  * Remove check in e2fsck which required EA's in inodes to be sorted
+    (We should get this back-ported to the stable branch since 
+    filesystems with large inodes will have EA's erroneously
+    removed, which will for example toast an SELinux system.)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun,  6 May 2007 19:44:35 -0400
+
 e2fsprogs (1.39+1.40-WIP-2007.04.07+dfsg-1) unstable; urgency=low
 
   * Add libreadline.so.5 support to libss.
   * Impove badblocks -n/-w exclusive usage message.
   * Add debugging code (via the COMERR_DEBUG env. variable) to the
-	com_err library
+      com_err library
   * Fix dump_unused segfault in debugfs when a filesystem is not open
   * Add versioned dependency in Debian's shlibs for libblkid.  
-	(Closes: #413208)
+      (Closes: #413208)
   * Fix memory leak in blkid library.  (Closes: #413661)
   * Let the debugfs lcd command work even if a filesystem is not open
   * Fix large number of miscellaneous Coveriy bugs.  (None were
-	security-security).
+      security-security).
   * Fix e2fsck to clear i_size for special devices with a bogus i_blocks
-	field on the first pass.
+      field on the first pass.
   * Fix e2fsck to set the file type of the '..' entry when connecting
-	a directory to lost+found.
+      a directory to lost+found.
   * Enhance e2fsck to recover directories whose modes field were
-	corrupted to look like special files.
+      corrupted to look like special files.
   * Allow debugfs to dump > 2GB files.  (Closes: #412614)
   * Misc. man page cleanups.  (Closes: #379695)
   * Fix resize2fs parsing of size parameter (Closes: #408298)
   * Fix infinite loop in e2fsck on really big filesystems (Closes: #411838)
   * Fix memory leak in ext2fs_write_new_inode()
   * Add support for using a scratch files directory to reduce e2fsck's
-	memory utilization on really big filesystems.
+      memory utilization on really big filesystems.
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Sat,  7 Apr 2007 10:38:40 -0400
 
@@ -50,7 +116,7 @@ e2fsprogs (1.39+1.40-WIP-2006.10.02+dfsg-2) unstable; urgency=low
   * Reorder the library line for static linking, to fix undefined
     references to pthreads on amd64.  (Closes: #393680)
   * Fix mke2fs's error checking when creating revision 0 filesystems.
-    (Closes #392107)
+    (Closes: #392107)
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 22 Oct 2006 00:19:44 -0400
 
@@ -694,7 +760,7 @@ e2fsprogs (1.34+1.35-WIP-2003.12.07-2) unstable; urgency=low
   * Debugfs now searches for the appropriate pager to use, beginning
     with /usr/bin/pager, and then falling back to 'less' and 'more'.
     (Closes: #221977)
-  * Fixed mangled encoding in Czech locale file.  (Closes #214633)
+  * Fixed mangled encoding in Czech locale file.  (Closes: #214633)
   * Fix bug where using debugfs to copy a file from /dev/null caused
     in correct mode bits.  (Closes: #217456)
   * Fixed a bug where e2fsck would bomb out if a journal needed to be
@@ -903,8 +969,8 @@ e2fsprogs (1.33-2) unstable; urgency=low
   * Add new debugfs command, imap, which prints the location of a 
     specified inode in the inode table.
   * Put /usr/include/com_err.h in comerr-dev instead of e2fslibs-dev.  
-    (Closes #191899)
-  * Add support for OV-style continuations in compile_et.  (Closes #191900)
+    (Closes: #191899)
+  * Add support for OV-style continuations in compile_et.  (Closes: #191900)
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Mon,  5 May 2003 18:13:12 -0400
 

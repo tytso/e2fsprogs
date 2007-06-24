@@ -1,3 +1,7 @@
+2006-06-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.40
+
 2006-11-12  Theodore Tso  <tytso@mit.edu>
 
 	* build-rpm: Ignore the quilt working directory, and clean up the

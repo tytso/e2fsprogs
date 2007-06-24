@@ -1,3 +1,7 @@
+2006-06-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.40
+
 2007-06-21  Theodore Tso  <tytso@mit.edu>
 
 	* f_badjour_indblks: New test case which checks if a corrupted

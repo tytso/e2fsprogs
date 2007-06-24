@@ -1,3 +1,7 @@
+2006-06-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.40
+
 2007-05-22  Karsten Hopp  <karsten@redhat.com>
 
 	* probe.c (probe_luks): Add support for cryptsetup-luks partitions
