@@ -420,8 +420,11 @@ static int probe_ntfs(struct blkid_probe *probe,
 		(ns->bios_parameter_block[1]  << 8);
 	sectors_per_cluster = ns->bios_parameter_block[2];
 
+	if ((bytes_per_sector < 512) || (sectors_per_cluster == 0))
+		return 1;
+
 	if (ns->cluster_per_mft_record < 0)
-		mft_record_size = 1 << - ns->cluster_per_mft_record;
+		mft_record_size = 1 << (0-ns->cluster_per_mft_record);
 	else
 		mft_record_size = ns->cluster_per_mft_record * 
 			sectors_per_cluster * bytes_per_sector;
