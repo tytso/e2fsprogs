@@ -1,13 +1,13 @@
+2006-06-24  Theodore Ts'o  <tytso@mit.edu>
+
+	* Release of E2fsprogs 1.40
+
 2007-06-29  Theodore Tso  <tytso@mit.edu>
 
 	* inode.c (ext2fs_get_next_inode_full): Whe byte swapping, make
 		sure the inode buffer is cleared first so that the
 		previous contents don't get mistaken as part of the new
 		(next) inode.
-
-2006-06-24  Theodore Ts'o  <tytso@mit.edu>
-
-	* Release of E2fsprogs 1.40
 
 2007-06-22  Theodore Tso  <tytso@mit.edu>
 
