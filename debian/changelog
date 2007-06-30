@@ -1,5 +1,11 @@
 e2fsprogs (1.40-1) unstable; urgency=low
 
+  * New upstream release
+  * Remove RFC-4122 logic from Debian build rules (Closes: #407107)
+  * Fix com_err.texinfo so that the install-info command will remove
+      the com_err info file from the /usr/share/info/dir file when the
+      comerr-dev package is removed and purged (Closes: #401711)
+  * Fix divide-by-zero error in blkid's NTFS proving logic
   * Add new blkid -g option which causes the blkid cache to be garbage
       collected
   * libblkid: Fix bug which could cuase bid_type to be corrupted
@@ -28,7 +34,7 @@ e2fsprogs (1.40-1) unstable; urgency=low
       com_err entry from from /usr/share/info/dir when the comerr-dev
       package is purged (Closes: #401711)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 24 Jun 2007 17:22:58 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 29 Jun 2007 22:40:27 -0400
 
 e2fsprogs (1.39+1.40-WIP-2007.04.07+dfsg-2) unstable; urgency=low
 

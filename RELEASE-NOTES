@@ -1,5 +1,7 @@
-E2fsprogs 1.40-WIP (June 23, 2007) (hg changeset 2161)
-===================================
+E2fsprogs 1.40 (June 29, 2007)
+==============================
+
+Fix divide by zero error in blkid's NTFS probing logic.
 
 Add new blkid -g option which causes the blkid cache to be garbage
 collected.
