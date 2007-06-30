@@ -454,6 +454,7 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 		scan->bytes_left -= scan->inode_size - extra_bytes;
 
 #ifdef EXT2FS_ENABLE_SWAPFS
+		memset(inode, 0, bufsize);
 		if ((scan->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
 		    (scan->fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
 			ext2fs_swap_inode_full(scan->fs, 
@@ -468,6 +469,7 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 		scan->scan_flags &= ~EXT2_SF_BAD_EXTRA_BYTES;
 	} else {
 #ifdef EXT2FS_ENABLE_SWAPFS
+		memset(inode, 0, bufsize);
 		if ((scan->fs->flags & EXT2_FLAG_SWAP_BYTES) ||
 		    (scan->fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
 			ext2fs_swap_inode_full(scan->fs, 
