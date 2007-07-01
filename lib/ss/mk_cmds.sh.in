@@ -44,7 +44,7 @@ BASE=`basename "$ROOT"`
 TMP="ct$$.c"
 
 if test ! -f "$FILE" ; then
-    echo "$FILE: File not found"
+    echo "mk_cmds: $FILE: File not found"
     exit 1;
 fi
 
