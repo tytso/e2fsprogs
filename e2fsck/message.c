@@ -214,7 +214,7 @@ static void print_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino)
  */
 static _INLINE_ void expand_at_expression(e2fsck_t ctx, char ch,
 					  struct problem_context *pctx,
-					  int *first)
+					  int *first, int recurse)
 {
 	const char **cpp, *str;
 	
@@ -223,13 +223,13 @@ static _INLINE_ void expand_at_expression(e2fsck_t ctx, char ch,
 		if (ch == *cpp[0])
 			break;
 	}
-	if (*cpp) {
+	if (*cpp && recurse < 10) {
 		str = _(*cpp) + 1;
 		if (*first && islower(*str)) {
 			*first = 0;
 			fputc(toupper(*str++), stdout);
 		}
-		print_e2fsck_message(ctx, str, pctx, *first);
+		print_e2fsck_message(ctx, str, pctx, *first, recurse+1);
 	} else
 		printf("@%c", ch);
 }
@@ -456,7 +456,8 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 }	
 
 void print_e2fsck_message(e2fsck_t ctx, const char *msg,
-			  struct problem_context *pctx, int first)
+			  struct problem_context *pctx, int first,
+			  int recurse)
 {
 	ext2_filsys fs = ctx->fs;
 	const char *	cp;
@@ -466,7 +467,7 @@ void print_e2fsck_message(e2fsck_t ctx, const char *msg,
 	for (cp = msg; *cp; cp++) {
 		if (cp[0] == '@') {
 			cp++;
-			expand_at_expression(ctx, *cp, pctx, &first);
+			expand_at_expression(ctx, *cp, pctx, &first, recurse);
 		} else if (cp[0] == '%' && cp[1] == 'I') {
 			cp += 2;
 			expand_inode_expression(*cp, pctx);
