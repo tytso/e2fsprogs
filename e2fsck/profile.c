@@ -105,6 +105,7 @@ typedef struct _prf_file_t *prf_file_t;
  */
 #define PROFILE_FILE_RW		0x0001
 #define PROFILE_FILE_DIRTY	0x0002
+#define PROFILE_FILE_NO_RELOAD	0x0004
 
 /*
  * This structure defines the high-level, user visible profile_t
@@ -451,6 +452,9 @@ errcode_t profile_update_file(prf_file_t prf)
 	FILE *f;
 	char buf[2048];
 	struct parse_state state;
+
+	if (prf->flags & PROFILE_FILE_NO_RELOAD)
+		return 0;
 
 #ifdef HAVE_STAT
 #ifdef STAT_ONCE_PER_SECOND
