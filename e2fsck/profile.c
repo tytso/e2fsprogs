@@ -157,6 +157,8 @@ struct parse_state {
 	struct profile_node *current_section;
 };
 
+static const char *default_filename = "<default>";
+
 static profile_syntax_err_cb_t	syntax_err_cb;
 
 static errcode_t parse_line(char *line, struct parse_state *state);
@@ -325,7 +327,8 @@ profile_init(const char **files, profile_t *ret_profile)
 				*last = new_file;
 				last = &new_file->next;
 			}
-		} else if (retval != ENOTDIR)
+		} else if ((retval != ENOTDIR) && 
+			   strcmp(*fs, default_filename))
 			goto errout;
 
 		retval = profile_open_file(*fs, &new_file);
@@ -372,6 +375,78 @@ profile_release(profile_t profile)
 	free(profile);
 }
 
+/*
+ * This function sets the value of the pseudo file "<default>".  If
+ * the file "<default>" had previously been passed to profile_init(),
+ * then def_string parameter will be parsed and used as the profile
+ * information for the "<default>" file.
+ */
+errcode_t profile_set_default(profile_t profile, const char *def_string)
+{
+	struct parse_state	state;
+	prf_file_t		prf;
+	errcode_t		retval;
+	const char		*in;
+	char			*line, *p, *end;
+	int			line_size, len;
+
+	if (!def_string || !profile || profile->magic != PROF_MAGIC_PROFILE)
+		return PROF_MAGIC_PROFILE;
+
+	for (prf = profile->first_file; prf; prf = prf->next) {
+		if (strcmp(prf->filespec, default_filename) == 0)
+			break;
+	}
+	if (!prf)
+		return 0;
+
+	if (prf->root) {
+		profile_free_node(prf->root);
+		prf->root = 0;
+	}
+
+	memset(&state, 0, sizeof(struct parse_state));
+	retval = profile_create_node("(root)", 0, &state.root_section);
+	if (retval)
+		return retval;
+
+	line = 0;
+	line_size = 0;
+	in = def_string;
+	while (*in) {
+		end = strchr(in, '\n');
+		len = end ? (end - in) : (int) strlen(in);
+		if (len >= line_size) {
+			line_size = len+1;
+			p = realloc(line, line_size);
+			if (!p) {
+				retval = ENOMEM;
+				goto errout;
+			}
+			line = p;
+		}
+		memcpy(line, in, len);
+		line[len] = 0;
+		retval = parse_line(line, &state);
+		if (retval) {
+		errout:
+			if (syntax_err_cb)
+				(syntax_err_cb)(prf->filespec, retval, 
+						state.line_num);
+			free(line);
+			if (prf->root)
+				profile_free_node(prf->root);
+			return retval;
+		}
+		if (!end)
+			break;
+		in = end+1;
+	}
+	prf->root = state.root_section;
+	free(line);
+
+	return 0;
+}
 
 /*
  * prof_file.c ---- routines that manipulate an individual profile file.
@@ -430,10 +505,12 @@ errcode_t profile_open_file(const char * filespec,
 
 	prf->filespec = expanded_filename;
 
-	retval = profile_update_file(prf);
-	if (retval) {
-		profile_free_file(prf);
-		return retval;
+	if (strcmp(prf->filespec, default_filename) != 0) {
+		retval = profile_update_file(prf);
+		if (retval) {
+			profile_free_file(prf);
+			return retval;
+		}
 	}
 
 	*ret_prof = prf;
@@ -1746,6 +1823,8 @@ void syntax_err_report(const char *filename, long err, int line_num)
 	exit(1);
 }
 
+const char *default_str = "[foo]\n\tbar=quux\n\tsub = {\n\t\twin = true\n}\n";
+
 int main(int argc, char **argv)
 {
     profile_t	profile;
@@ -1766,6 +1845,12 @@ int main(int argc, char **argv)
 	com_err(program_name, retval, "while initializing profile");
 	exit(1);
     }
+    retval = profile_set_default(profile, default_str);
+    if (retval) {
+	com_err(program_name, retval, "while setting default");
+	exit(1);
+    }
+
     cmd = *(argv+2);
     if (!cmd || !strcmp(cmd, "batch"))
 	    do_batchmode(profile);

@@ -61,6 +61,9 @@ long profile_init
 void profile_release
 	(profile_t profile);
 
+long profile_set_default
+	(profile_t profile, const char *def_string);
+
 long profile_get_string
 	(profile_t profile, const char *name, const char *subname, 
 			const char *subsubname, const char *def_val,
