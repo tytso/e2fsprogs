@@ -29,7 +29,7 @@ LPROGS=		@E2INITRD_PROG@
 
 TUNE2FS_OBJS=	tune2fs.o util.o
 MKLPF_OBJS=	mklost+found.o
-MKE2FS_OBJS=	mke2fs.o util.o profile.o prof_err.o
+MKE2FS_OBJS=	mke2fs.o util.o profile.o prof_err.o default_profile.o
 CHATTR_OBJS=	chattr.o
 LSATTR_OBJS=	lsattr.o
 UUIDGEN_OBJS=	uuidgen.o
@@ -74,6 +74,10 @@ prof_err.c prof_err.h: $(srcdir)/../e2fsck/prof_err.et
 	@echo "	COMPILE_ET prof_err.et"
 	@$(COMPILE_ET) $(srcdir)/../e2fsck/prof_err.et
 
+default_profile.c: $(srcdir)/mke2fs.conf $(srcdir)/profile-to-c.awk
+	@echo "	PROFILE_TO_C mke2fs.conf"
+	$(AWK) -f $(srcdir)/profile-to-c.awk < $(srcdir)/mke2fs.conf \
+		>  default_profile.c
 profile.o:
 	@echo "	CC $<"
 	@$(CC) -c $(ALL_CFLAGS) $(srcdir)/../e2fsck/profile.c -o $@
@@ -351,7 +355,8 @@ clean:
 	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) $(UMANPAGES) $(SMANPAGES) \
 		$(FMANPAGES) \
 		base_device base_device.out mke2fs.static filefrag \
-		e2initrd_helper partinfo prof_err.[ch] \#* *.s *.o *.a *~ core 
+		e2initrd_helper partinfo prof_err.[ch] default_profile.c \
+		\#* *.s *.o *.a *~ core 
 
 mostlyclean: clean
 distclean: clean

@@ -900,6 +900,9 @@ static void edit_feature(const char *str, __u32 *compat_array)
 	}
 }
 
+extern const char *mke2fs_default_profile;
+static const char *default_files[] = { "<default>", 0 };
+
 static void PRS(int argc, char *argv[])
 {
 	int		b, c;
@@ -958,7 +961,11 @@ static void PRS(int argc, char *argv[])
 	if ((tmp = getenv("MKE2FS_CONFIG")) != NULL)
 		config_fn[0] = tmp;
 	profile_set_syntax_err_cb(syntax_err_report);
-	profile_init(config_fn, &profile);
+	retval = profile_init(config_fn, &profile);
+	if (retval == ENOENT) {
+		profile_init(default_files, &profile);
+		profile_set_default(profile, mke2fs_default_profile);
+	}
 	
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
