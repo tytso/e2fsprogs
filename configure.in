@@ -82,6 +82,7 @@ if test -z "$CC" ; then CC=cc; fi
 export CC
 AC_SUBST([CC])
 AC_PROG_CC
+AC_PROG_CPP
 dnl
 dnl set $(LD) from --with-linker=value
 dnl
@@ -636,7 +637,7 @@ AC_SUBST(SIZEOF_INT)
 AC_SUBST(SIZEOF_LONG)
 AC_SUBST(SIZEOF_LONG_LONG)
 AC_C_BIGENDIAN
-/bin/sh $ac_aux_dir/parse-types.sh
+BUILD_CC="$BUILD_CC" CPP="$CPP" /bin/sh $ac_aux_dir/parse-types.sh
 ASM_TYPES_HEADER=./asm_types.h
 AC_SUBST_FILE(ASM_TYPES_HEADER)
 dnl
