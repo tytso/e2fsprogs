@@ -350,6 +350,7 @@ binary-arch: install install-udeb
 		-plibss${SS_SOVERSION} -plibuuid${UUID_SOVERSION} \
 		-pe2fslibs -puuid-dev -pe2fsck-static
 
+	dh_fixperms
 ifneq ($(ismips),)
 	dh_strip -Xlib64ext2fs-nopic.a
 else
@@ -357,7 +358,6 @@ else
 endif
 
 	dh_compress
-	dh_fixperms
 
 	dh_makeshlibs -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 	dh_makeshlibs -plibcomerr${COMERR_SOVERSION} \
