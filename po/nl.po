@@ -1,6 +1,6 @@
-# Translation of e2fsprogs-1.39-b2 to Dutch.
-# Copyright (C) 2005, 2006 Free Software Foundation, Inc.
-# Benno Schulenberg <benno@nietvergeten.nl>, 2005, 2006.
+# Translation of e2fsprogs-1.40 to Dutch.
+# Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+# Benno Schulenberg <benno@vertaalt.nl>, 2005, 2006, 2007.
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -62,17 +62,17 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.39-b2\n"
+"Project-Id-Version: e2fsprogs 1.40\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2006-03-29 15:30-0500\n"
-"PO-Revision-Date: 2006-08-28 16:32+0200\n"
-"Last-Translator: Benno Schulenberg <benno@nietvergeten.nl>\n"
+"PO-Revision-Date: 2007-07-06 16:45+0200\n"
+"Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: e2fsck/badblocks.c:22 misc/mke2fs.c:154
 #, c-format
@@ -724,7 +724,7 @@ msgid ""
 "from the @b size.\n"
 msgstr ""
 "Superblok: blokgrootte = %b, fragmentgrootte = %c.\n"
-"Deze versie van e2fsck ondersteund geen fragmentgrootte\n"
+"Deze versie van e2fsck ondersteunt geen fragmentgrootte\n"
 "verschillend van de blokgrootte.\n"
 
 #. @-expanded: superblock blocks_per_group = %b, should have been %c\n
@@ -810,7 +810,7 @@ msgstr "Het externe journal heeft een slecht superblok.\n"
 #. @-expanded: External journal does not support this filesystem\n
 #: e2fsck/problem.c:207
 msgid "External @j does not support this @f\n"
-msgstr "Het externe journal ondersteund dit bestandssysteem niet.\n"
+msgstr "Het externe journal ondersteunt dit bestandssysteem niet.\n"
 
 #. @-expanded: Ext3 journal superblock is unknown type %N (unsupported).\n
 #. @-expanded: It is likely that your copy of e2fsck is old and/or doesn't support this journal 
@@ -824,7 +824,7 @@ msgid ""
 msgstr ""
 "Superblok van ext3-journal is van onbekend en niet-ondersteund type %N.\n"
 "Waarschijnlijk gebruikt u een ouder e2fsck-programma dat deze journal-indeling\n"
-"niet ondersteund.  Het kan ook zijn dat het journal-superblok beschadigd is.\n"
+"niet ondersteunt.  Het kan ook zijn dat het journal-superblok beschadigd is.\n"
 
 #. @-expanded: Ext3 journal superblock is corrupt.\n
 #: e2fsck/problem.c:220
@@ -1281,7 +1281,7 @@ msgstr "Inode %i heeft de compressievlag gezet op een bestandssysteem zonder com
 #: e2fsck/problem.c:603
 #, c-format
 msgid "Special (@v/socket/fifo) @i %i has non-zero size.  "
-msgstr "Speciale inode %i (apparaat/socket/fifo) heeft niet lengte nul."
+msgstr "Speciale inode %i (apparaat/socket/fifo) heeft niet lengte nul.  "
 
 #. @-expanded: journal inode is not in use, but contains data.  
 #: e2fsck/problem.c:613
@@ -2312,15 +2312,15 @@ msgstr ""
 msgid ""
 "\n"
 "\n"
-"WARNING!!!  Running e2fsck on a mounted filesystem may cause\n"
-"SEVERE filesystem damage.\n"
+"\a\a\a\aWARNING!!!  Running e2fsck on a mounted filesystem may cause\n"
+"SEVERE filesystem damage.\a\a\a\n"
 "\n"
 msgstr ""
 "\n"
 "\n"
-"WAARSCHUWING!!!  Het uitvoeren van 'e2fsck'\n"
+"\a\a\a\aWAARSCHUWING!!!  Het uitvoeren van 'e2fsck'\n"
 "op een aangekoppeld bestandssysteem\n"
-"kan tot ZWARE beschadigingen leiden.\n"
+"kan tot ZWARE beschadigingen leiden.\a\a\a\n"
 "\n"
 
 #: e2fsck/unix.c:205
@@ -3200,12 +3200,12 @@ msgstr "WAARSCHUWING: foute indeling op regel %d van %s\n"
 
 #: misc/fsck.c:371
 msgid ""
-"WARNING: Your /etc/fstab does not contain the fsck passno\n"
+"\a\a\aWARNING: Your /etc/fstab does not contain the fsck passno\n"
 "\tfield.  I will kludge around things for you, but you\n"
 "\tshould fix your /etc/fstab file as soon as you can.\n"
 "\n"
 msgstr ""
-"WAARSCHUWING: /etc/fstab bevat geen zesde veld (een fsck-volgnummer).\n"
+"\a\a\aWAARSCHUWING: /etc/fstab bevat geen zesde veld (een fsck-volgnummer).\n"
 "    Er wordt nu omheengewerkt, maar u zou dit veld bij\n"
 "    de eerstvolgende gelegenheid toe dienen te voegen.\n"
 "\n"
@@ -4073,7 +4073,7 @@ msgstr "Onjuiste UUID-indeling\n"
 
 #: misc/util.c:72
 msgid "Proceed anyway? (y,n) "
-msgstr "Toch doorgaan? (j,n)"
+msgstr "Toch doorgaan? (j,n) "
 
 #: misc/util.c:93
 #, c-format
