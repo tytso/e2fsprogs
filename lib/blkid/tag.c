@@ -132,12 +132,25 @@ int blkid_set_tag(blkid_dev dev, const char *name,
 {
 	blkid_tag	t = 0, head = 0;
 	char		*val = 0;
+	char		**dev_var = 0;
 
 	if (!dev || !name)
 		return -BLKID_ERR_PARAM;
 
 	if (!(val = blkid_strndup(value, vlength)) && value)
 		return -BLKID_ERR_MEM;
+
+	/* 
+	 * Certain common tags are linked directly to the device struct
+	 * We need to know what they are before we do anything else because
+	 * the function name parameter might get freed later on.
+	 */
+	if (!strcmp(name, "TYPE"))
+		dev_var = &dev->bid_type;
+	else if (!strcmp(name, "LABEL"))
+		dev_var = &dev->bid_label;
+	else if (!strcmp(name, "UUID"))
+		dev_var = &dev->bid_uuid;
 
 	t = blkid_find_tag_dev(dev, name);
 	if (!value) {
@@ -182,12 +195,8 @@ int blkid_set_tag(blkid_dev dev, const char *name,
 	}
 	
 	/* Link common tags directly to the device struct */
-	if (!strcmp(name, "TYPE"))
-		dev->bid_type = val;
-	else if (!strcmp(name, "LABEL"))
-		dev->bid_label = val;
-	else if (!strcmp(name, "UUID"))
-		dev->bid_uuid = val;
+	if (dev_var)
+		*dev_var = val;
 		
 	if (dev->bid_cache)
 		dev->bid_cache->bic_flags |= BLKID_BIC_FL_CHANGED;
