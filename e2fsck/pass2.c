@@ -675,11 +675,12 @@ static void salvage_directory(ext2_filsys fs,
 		return;
 	}
 	/*
-	 * If the directory entry is a multiple of four, so it is
-	 * valid, let the previous directory entry absorb the invalid
-	 * one. 
+	 * If the record length of the directory entry is a multiple
+	 * of four, and not too big, such that it is valid, let the
+	 * previous directory entry absorb the invalid one.
 	 */
-	if (prev && dirent->rec_len && (dirent->rec_len % 4) == 0) {
+	if (prev && dirent->rec_len && (dirent->rec_len % 4) == 0 &&
+	    (*offset + dirent->rec_len <= fs->blocksize)) {
 		prev->rec_len += dirent->rec_len;
 		*offset += dirent->rec_len;
 		return;
