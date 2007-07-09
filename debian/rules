@@ -191,8 +191,8 @@ ${BUILDBFSTAMP}: ${CFGBFSTAMP}
 clean:
 	dh_testdir
 	rm -rf ${STAMPSDIR}
-	-make -C ${stdbuilddir} -i distclean
-	-make -C ${bfbuilddir} -i distclean
+	[ ! -f ${stdbuilddir}/Makefile ] || make -C ${stdbuilddir} distclean
+	[ ! -f ${bfbuilddir}/Makefile ] || make -C ${bfbuilddir} distclean
 	rm -rf ${stdbuilddir} ${bfbuilddir} ${mipsbuilddir} ${mipsbuilddir64}
 	rm -f doc/libext2fs/*.html lib/et/com_err/*.html debian/*.substvars
 	dh_clean
