@@ -1,6 +1,6 @@
 # Turkish translations for e2fsprogs messages.
-# Copyright (C) 2006 Free Software Foundation, Inc.
-# Nilgün Belma Bugüner <nilgun@buguner.name.tr>, 2001,..., 2006.
+# Copyright (C) 2007 Free Software Foundation, Inc.
+# Nilgün Belma Bugüner <nilgun@buguner.name.tr>, 2001,..., 2007.
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -62,7 +62,7 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.39-b2\n"
+"Project-Id-Version: e2fsprogs 1.40\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2007-07-07 17:42-0400\n"
 "PO-Revision-Date: 2006-04-07 00:22+0300\n"
