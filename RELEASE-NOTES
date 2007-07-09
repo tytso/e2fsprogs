@@ -1,3 +1,62 @@
+E2fsprogs 1.41 (July 7, 2007)
+=============================
+
+Fix bug which could cause libblkid to loop forever.  When revalidating
+a partition where there is obsolete information in /etc/blkid.tab, we
+end up freeing a the type tag without clearing dev->bid_type, causing
+blkid_verify() to loop forever.  (Addresses Debian Bug: #432052)
+    
+The Turkish translation has a bug in it where it has the translation
+of "E@e '%Dn' in %p (%i)" to "E@E".  This causes @E to be expanded at
+@E, recursively, forever, until the stack fills up and e2fsck core
+dumps.  We fix this by making e2fsck stop @-expansions after a
+recursive depth of 10, which is far more than we need.
+(Addresses Sourceforge Bug: @1646081)
+    
+Compile the default mke2fs.conf into mke2fs program.  People are
+getting surprised by mke2fs creating filesystems with different
+defaults than earlier versions of mke2fs if mke2fs.conf is not
+present.  So we now create a built in version of mke2fs.conf file
+which is used by mke2fs if the /etc/mke2fs.conf is not present.
+(Addresses SourceforgeBug: #1745818)
+
+Improve the config/parse_types.sh helper script.  Fix a potential
+security problem if e2fsprogs is built as root (as Gentoo does!).  In
+addition fix the script and how it is called from the configure script
+so that it does the right thing when cross-compiling.  (Fixes Gentoo
+bug: #146903)
+    
+Update Vietnamese, French, and Dutch PO files from the Translation
+Project.  Also created a new e2fsprogs.pot file for translator.
+    
+Fix bogus strip permission errors when building under Debian.  When
+building the e2fsprogs dpkg's, the dh_strip command emits a large
+number of error messages caused by the permissions not being right.
+So run dh_fixperms before running dh_strip.
+    
+
+Programmer's Notes:
+-------------------
+
+Add new function: profile_set_default().  This function sets the value
+of the pseudo file "<default>".  If the file "<default>" had
+previously been passed to profile_init(), then def_string parameter
+will be parsed and used as the profile information for the "<default>"
+file.
+    
+Fix mk_cmds's error reporting so that it is unambiguous that it is the
+mk_cmds script which is generating the error.  (Obviates Gentoo patch:
+e2fsprogs-1.32-mk_cmds-cosmetic.patch)
+    
+Fix the test suite to use LC_ALL instead of LANG.  LC_ALL is the "high
+priority" environment variable that overrides all others, where as
+LANG is the lowest priorty environment variable.  If LC_ALL is set, it
+doesn't matter whether LANG, LANGUAGE, LC_COLLATE, LC_MESSAGES, and
+the all the rest are set.  This will assure that the locale when
+running the test suites is the "C" locale.  (Obviates Gentoo patch:
+e2fsprogs-1.38-tests-locale.patch)
+    
+
 E2fsprogs 1.40 (June 29, 2007)
 ==============================
 

@@ -1,3 +1,15 @@
+e2fsprogs (1.40.1-1) unstable; urgency=low
+
+  * New upstream release
+  * Clarify mk_cmds' error reporting
+  * e2fsck: Detect recursive loops in @-expansions
+  * Compile the default mke2fs.conf into mke2fs program
+  * Fix bogus strip permission errors when building under Debian
+  * Update Vietnamese, French, and Dutch PO files from the Translation Project
+  * Fix bug which could cause libblkid to loop forever (Closes: #432052)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun,  8 Jul 2007 20:25:08 -0400
+
 e2fsprogs (1.40-1) unstable; urgency=low
 
   * New upstream release
