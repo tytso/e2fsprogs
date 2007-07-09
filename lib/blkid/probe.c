@@ -999,6 +999,9 @@ try_again:
 		/*
 		 * Zap the device filesystem information and try again
 		 */
+		DBG(DEBUG_PROBE,
+		    printf("previous fs type %s not valid, "
+			   "trying full probe\n", dev->bid_type));
 		iter = blkid_tag_iterate_begin(dev);
 		while (blkid_tag_next(iter, &type, &value) == 0)
 			blkid_set_tag(dev, type, 0, 0);
