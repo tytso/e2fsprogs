@@ -1,5 +1,5 @@
-E2fsprogs 1.41 (July 7, 2007)
-=============================
+E2fsprogs 1.40.1 (July 7, 2007)
+===============================
 
 Fix bug which could cause libblkid to loop forever.  When revalidating
 a partition where there is obsolete information in /etc/blkid.tab, we
