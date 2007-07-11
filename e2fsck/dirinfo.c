@@ -126,7 +126,7 @@ void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 		ctx->dir_info->size += 10;
 		retval = ext2fs_resize_mem(old_size, ctx->dir_info->size *
 					   sizeof(struct dir_info),
-					   &ctx->dir_info);
+					   &ctx->dir_info->array);
 		if (retval) {
 			ctx->dir_info->size -= 10;
 			return;
