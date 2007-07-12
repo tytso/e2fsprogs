@@ -159,7 +159,7 @@ without first replaying the external journal can result in
 severe data loss and filesystem corruption.
 .TP
 .BI \-g " group"
-Set the group which can use reserved filesystem blocks.
+Set the group which can use the reserved filesystem blocks.
 The 
 .I group
 parameter can be a numerical gid or a group name.  If a group name is given,
@@ -294,7 +294,15 @@ instead of a block special device name like
 .BR /dev/hda5 .
 .TP
 .BI \-m " reserved-blocks-percentage"
-Set the percentage of reserved filesystem blocks.
+Set the percentage of the filesystem which may only be allocated
+by privileged processes.   Reserving some number of filesystem blocks 
+for use by privileged processes is done 
+to avoid filesystem fragmentation, and to allow system
+daemons, such as 
+.BR syslogd (8),
+to continue to function correctly after non-privileged processes are 
+prevented from writing to the filesystem.  Normally, the default percentage 
+of reserved blocks is 5%.
 .TP
 .BI \-M " last-mounted-directory"
 Set the last-mounted directory for the filesystem.
