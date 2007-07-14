@@ -1,3 +1,16 @@
+e2fsprogs (1.40.2-1) unstable; urgency=low
+
+  * New upstream release
+  * e2fsck: Fix salvage_directory when the last entry's rec_len is too big
+  * Update Turkish, Polish, Dutch, and Vietnamese PO files from the 
+      Translation Project
+  * Fix a bug which would cause e2fsck segfault on very badly damaged
+      filesystems
+  * Update tune2fs man page to include more discussion of reserved
+      blocks (Addresses Ubuntu Launchpad bug #47817)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 12 Jul 2007 22:18:51 -0400
+
 e2fsprogs (1.40.1-1) unstable; urgency=low
 
   * New upstream release

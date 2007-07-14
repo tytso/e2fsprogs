@@ -1,3 +1,26 @@
+E2fsprogs 1.40.2 (July 12, 2007)
+================================
+
+A recent change to e2fsck_add_dir_info() to use tdb files to check
+filesystems with a very large number of filesystems had a typo which
+caused us to resize the wrong data structure.  This would cause a
+array overrun leading to malloc pointer corruptions and segfaults.
+Since we normally can very accurately predict how big the the dirinfo
+array needs to be, this bug only got triggered on very badly corrupted
+filesystems.
+
+Fix a bug in e2fsck which caused it to incorrectly salvange
+directories when the last entry's rec_len is bogusly too big.  This
+resulted in a nonsense filesystem corruption to be reported, and
+required a second run of e2fsck to fully fix up the directory.
+
+Update tune2fs man page to include more discussion of reserved blocks
+(Addresses Launchpad bug #47817)
+
+Update Turkish, Polish, Dutch, and Vietnamese PO files from the
+Translation Project
+    
+
 E2fsprogs 1.40.1 (July 7, 2007)
 ===============================
 
@@ -11,7 +34,7 @@ of "E@e '%Dn' in %p (%i)" to "E@E".  This causes @E to be expanded at
 @E, recursively, forever, until the stack fills up and e2fsck core
 dumps.  We fix this by making e2fsck stop @-expansions after a
 recursive depth of 10, which is far more than we need.
-(Addresses Sourceforge Bug: @1646081)
+(Addresses Sourceforge Bug: #1646081)
     
 Compile the default mke2fs.conf into mke2fs program.  People are
 getting surprised by mke2fs creating filesystems with different
@@ -33,7 +56,6 @@ Fix bogus strip permission errors when building under Debian.  When
 building the e2fsprogs dpkg's, the dh_strip command emits a large
 number of error messages caused by the permissions not being right.
 So run dh_fixperms before running dh_strip.
-    
 
 Programmer's Notes:
 -------------------
