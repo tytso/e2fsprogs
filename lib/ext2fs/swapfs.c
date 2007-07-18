@@ -150,6 +150,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 	t->i_dtime = ext2fs_swab32(f->i_dtime);
 	t->i_gid = ext2fs_swab16(f->i_gid);
 	t->i_links_count = ext2fs_swab16(f->i_links_count);
+	t->i_file_acl = ext2fs_swab32(f->i_file_acl);
 	if (hostorder)
 		has_data_blocks = ext2fs_inode_data_blocks(fs, 
 					   (struct ext2_inode *) f);
@@ -158,7 +159,6 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 		has_data_blocks = ext2fs_inode_data_blocks(fs, 
 					   (struct ext2_inode *) t);
 	t->i_flags = ext2fs_swab32(f->i_flags);
-	t->i_file_acl = ext2fs_swab32(f->i_file_acl);
 	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
 	if (!islnk || has_data_blocks ) {
 		for (i = 0; i < EXT2_N_BLOCKS; i++)
