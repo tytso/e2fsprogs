@@ -61,7 +61,7 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 		 */
 		if (fs->group_desc[i].bg_inode_table < first_block ||
 		    ((fs->group_desc[i].bg_inode_table +
-		      fs->inode_blocks_per_group) > last_block))
+		      fs->inode_blocks_per_group - 1) > last_block))
 			return EXT2_ET_GDESC_BAD_INODE_TABLE;
 	}
 	return 0;
