@@ -56,3 +56,50 @@ int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
 	}
 	return ext2fs_clear_bit(bitno - bitmap->start, bitmap->bitmap);
 }
+
+int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
+				   blk_t block, int num)
+{
+	int	i;
+
+	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
+		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_TEST,
+				   block, bitmap->description);
+		return 0;
+	}
+	for (i=0; i < num; i++) {
+		if (ext2fs_fast_test_block_bitmap(bitmap, block+i))
+			return 0;
+	}
+	return 1;
+}
+
+void ext2fs_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
+				    blk_t block, int num)
+{
+	int	i;
+	
+	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
+		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_MARK, block,
+				   bitmap->description);
+		return;
+	}
+	for (i=0; i < num; i++)
+		ext2fs_fast_set_bit(block + i - bitmap->start, bitmap->bitmap);
+}
+
+void ext2fs_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
+					       blk_t block, int num)
+{
+	int	i;
+	
+	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
+		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_UNMARK, block,
+				   bitmap->description);
+		return;
+	}
+	for (i=0; i < num; i++)
+		ext2fs_fast_clear_bit(block + i - bitmap->start, 
+				      bitmap->bitmap);
+}
+
