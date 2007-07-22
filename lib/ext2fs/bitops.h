@@ -113,7 +113,8 @@ extern int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
 				      blk_t bitno);
 extern int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
 					  blk_t block, int num);
-
+extern __u32 ext2fs_get_generic_bitmap_start(ext2fs_generic_bitmap bitmap);
+extern __u32 ext2fs_get_generic_bitmap_end(ext2fs_generic_bitmap bitmap);
 
 /*
  * The inline routines themselves...
@@ -489,22 +490,22 @@ _INLINE_ int ext2fs_fast_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
 
 _INLINE_ blk_t ext2fs_get_block_bitmap_start(ext2fs_block_bitmap bitmap)
 {
-	return bitmap->start;
+	return ext2fs_get_generic_bitmap_start((ext2fs_generic_bitmap) bitmap);
 }
 
 _INLINE_ ext2_ino_t ext2fs_get_inode_bitmap_start(ext2fs_inode_bitmap bitmap)
 {
-	return bitmap->start;
+	return ext2fs_get_generic_bitmap_start((ext2fs_generic_bitmap) bitmap);
 }
 
 _INLINE_ blk_t ext2fs_get_block_bitmap_end(ext2fs_block_bitmap bitmap)
 {
-	return bitmap->end;
+	return ext2fs_get_generic_bitmap_end((ext2fs_generic_bitmap) bitmap);
 }
 
 _INLINE_ ext2_ino_t ext2fs_get_inode_bitmap_end(ext2fs_inode_bitmap bitmap)
 {
-	return bitmap->end;
+	return ext2fs_get_generic_bitmap_end((ext2fs_generic_bitmap) bitmap);
 }
 
 _INLINE_ int ext2fs_fast_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
