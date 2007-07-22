@@ -298,16 +298,13 @@ ipg_retry:
 	}
 
 	/*
-	 * Overhead is the number of bookkeeping blocks per group.  It
-	 * includes the superblock backup, the group descriptor
-	 * backups, the inode bitmap, the block bitmap, and the inode
-	 * table.
+	 * Calculate the maximum number of bookkeeping blocks per
+	 * group.  It includes the superblock, the block group
+	 * descriptors, the block bitmap, the inode bitmap, the inode
+	 * table, and the reserved gdt blocks.
 	 */
-
-	overhead = (int) (2 + fs->inode_blocks_per_group);
-
-	if (ext2fs_bg_has_super(fs, fs->group_desc_count - 1))
-		overhead += 1 + fs->desc_blocks + super->s_reserved_gdt_blocks;
+	overhead = (int) (3 + fs->inode_blocks_per_group +
+			  fs->desc_blocks + super->s_reserved_gdt_blocks);
 
 	/* This can only happen if the user requested too many inodes */
 	if (overhead > super->s_blocks_per_group)
@@ -316,8 +313,13 @@ ipg_retry:
 	/*
 	 * See if the last group is big enough to support the
 	 * necessary data structures.  If not, we need to get rid of
-	 * it.
+	 * it.  We need to recalculate the overhead for the last block
+	 * group, since it might or might not have a superblock
+	 * backup.
 	 */
+	overhead = (int) (2 + fs->inode_blocks_per_group);
+	if (ext2fs_bg_has_super(fs, fs->group_desc_count - 1))
+		overhead += 1 + fs->desc_blocks + super->s_reserved_gdt_blocks;
 	rem = ((super->s_blocks_count - super->s_first_data_block) %
 	       super->s_blocks_per_group);
 	if ((fs->group_desc_count == 1) && rem && (rem < overhead))
