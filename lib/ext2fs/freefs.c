@@ -58,41 +58,6 @@ void ext2fs_free(ext2_filsys fs)
 	ext2fs_free_mem(&fs);
 }
 
-void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap)
-{
-	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_GENERIC_BITMAP))
-		return;
-
-	bitmap->magic = 0;
-	if (bitmap->description) {
-		ext2fs_free_mem(&bitmap->description);
-		bitmap->description = 0;
-	}
-	if (bitmap->bitmap) {
-		ext2fs_free_mem(&bitmap->bitmap);
-		bitmap->bitmap = 0;
-	}
-	ext2fs_free_mem(&bitmap);
-}
-
-void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap)
-{
-	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_INODE_BITMAP))
-		return;
-
-	bitmap->magic = EXT2_ET_MAGIC_GENERIC_BITMAP;
-	ext2fs_free_generic_bitmap(bitmap);
-}
-
-void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap)
-{
-	if (!bitmap || (bitmap->magic != EXT2_ET_MAGIC_BLOCK_BITMAP))
-		return;
-
-	bitmap->magic = EXT2_ET_MAGIC_GENERIC_BITMAP;
-	ext2fs_free_generic_bitmap(bitmap);
-}
-
 /*
  * Free the inode cache structure
  */

@@ -551,15 +551,12 @@ extern errcode_t ext2fs_update_bb_inode(ext2_filsys fs,
 					ext2_badblocks_list bb_list);
 
 /* bitmaps.c */
+extern void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap);
+extern void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap);
 extern errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs);
 extern errcode_t ext2fs_write_block_bitmap (ext2_filsys fs);
 extern errcode_t ext2fs_read_inode_bitmap (ext2_filsys fs);
 extern errcode_t ext2fs_read_block_bitmap(ext2_filsys fs);
-extern errcode_t ext2fs_allocate_generic_bitmap(__u32 start,
-						__u32 end,
-						__u32 real_end,
-						const char *descr,
-						ext2fs_generic_bitmap *ret);
 extern errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
 					      const char *descr,
 					      ext2fs_block_bitmap *ret);
@@ -750,12 +747,31 @@ extern errcode_t ext2fs_sync_device(int fd, int flushb);
 
 /* freefs.c */
 extern void ext2fs_free(ext2_filsys fs);
-extern void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap);
-extern void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap);
-extern void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap);
 extern void ext2fs_free_dblist(ext2_dblist dblist);
 extern void ext2fs_badblocks_list_free(ext2_badblocks_list bb);
 extern void ext2fs_u32_list_free(ext2_u32_list bb);
+
+/* gen_bitmap.c */
+extern void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap);
+extern errcode_t ext2fs_make_generic_bitmap(errcode_t magic, ext2_filsys fs, 
+					    __u32 start, __u32 end, 
+					    __u32 real_end,
+					    const char *descr, char *init_map,
+					    ext2fs_generic_bitmap *ret);
+extern errcode_t ext2fs_allocate_generic_bitmap(__u32 start,
+						__u32 end,
+						__u32 real_end,
+						const char *descr,
+						ext2fs_generic_bitmap *ret);
+extern errcode_t ext2fs_copy_generic_bitmap(ext2fs_generic_bitmap src,
+					    ext2fs_generic_bitmap *dest);
+extern void ext2fs_clear_generic_bitmap(ext2fs_generic_bitmap bitmap);
+extern errcode_t ext2fs_fudge_generic_bitmap_end(ext2fs_inode_bitmap bitmap,
+						 errcode_t magic, 
+						 errcode_t neq,
+						 ext2_ino_t end, 
+						 ext2_ino_t *oend);
+extern void ext2fs_set_generic_bitmap_padding(ext2fs_generic_bitmap map);
 
 /* getsize.c */
 extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,

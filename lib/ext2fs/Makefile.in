@@ -187,12 +187,12 @@ ext2fs.pc: $(srcdir)/ext2fs.pc.in $(top_builddir)/config.status
 	@echo "	CONFIG.STATUS $@"
 	@cd $(top_builddir); CONFIG_FILES=lib/ext2fs/ext2fs.pc ./config.status
 
-tst_badblocks: tst_badblocks.o freefs.o \
+tst_badblocks: tst_badblocks.o freefs.o bitmaps.o rw_bitmaps.o \
 		read_bb_file.o write_bb_file.o badblocks.o 
 	@echo "	LD $@"
 	@$(CC) -o tst_badblocks tst_badblocks.o freefs.o \
-		read_bb_file.o write_bb_file.o badblocks.o \
-		inline.o bitops.o gen_bitmap.o $(LIBCOM_ERR)
+		read_bb_file.o write_bb_file.o badblocks.o rw_bitmaps.o \
+		inline.o bitops.o gen_bitmap.o bitmaps.o $(LIBCOM_ERR)
 
 tst_icount: icount.c initialize.o  $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"

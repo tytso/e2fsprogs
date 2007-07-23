@@ -1,5 +1,5 @@
 /*
- * gen_bitmap.c --- Generic bitmap routines that used to be inlined.
+ * gen_bitmap.c --- Generic (32-bit) bitmap routines
  * 
  * Copyright (C) 2001 Theodore Ts'o.
  *
@@ -26,6 +26,123 @@
 
 #include "ext2_fs.h"
 #include "ext2fs.h"
+
+/* 
+ * Used by previously inlined function, so we have to export this and
+ * not change the function signature
+ */
+void ext2fs_warn_bitmap2(ext2fs_generic_bitmap bitmap,
+			    int code, unsigned long arg)
+{
+#ifndef OMIT_COM_ERR
+	if (bitmap->description)
+		com_err(0, bitmap->base_error_code+code,
+			"#%lu for %s", arg, bitmap->description);
+	else
+		com_err(0, bitmap->base_error_code + code, "#%lu", arg);
+#endif
+}
+
+static errcode_t check_magic(ext2fs_generic_bitmap bitmap)
+{
+	if (!bitmap || !((bitmap->magic == EXT2_ET_MAGIC_GENERIC_BITMAP) ||
+			 (bitmap->magic == EXT2_ET_MAGIC_INODE_BITMAP) ||
+			 (bitmap->magic == EXT2_ET_MAGIC_BLOCK_BITMAP)))
+		return EXT2_ET_MAGIC_GENERIC_BITMAP;
+	return 0;
+}
+
+errcode_t ext2fs_make_generic_bitmap(errcode_t magic, ext2_filsys fs, 
+				     __u32 start, __u32 end, __u32 real_end,
+				     const char *descr, char *init_map,
+				     ext2fs_generic_bitmap *ret)
+{
+	ext2fs_generic_bitmap	bitmap;
+	errcode_t		retval;
+	size_t			size;
+
+	retval = ext2fs_get_mem(sizeof(struct ext2fs_struct_generic_bitmap), 
+				&bitmap);
+	if (retval)
+		return retval;
+
+	bitmap->magic = magic;
+	bitmap->fs = fs;
+	bitmap->start = start;
+	bitmap->end = end;
+	bitmap->real_end = real_end;
+	switch (magic) {
+	case EXT2_ET_MAGIC_INODE_BITMAP:
+		bitmap->base_error_code = EXT2_ET_BAD_INODE_MARK;
+		break;
+	case EXT2_ET_MAGIC_BLOCK_BITMAP:
+		bitmap->base_error_code = EXT2_ET_BAD_BLOCK_MARK;
+		break;
+	default:
+		bitmap->base_error_code = EXT2_ET_BAD_GENERIC_MARK;
+	}
+	if (descr) {
+		retval = ext2fs_get_mem(strlen(descr)+1, &bitmap->description);
+		if (retval) {
+			ext2fs_free_mem(&bitmap);
+			return retval;
+		}
+		strcpy(bitmap->description, descr);
+	} else
+		bitmap->description = 0;
+
+	size = (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1);
+	retval = ext2fs_get_mem(size, &bitmap->bitmap);
+	if (retval) {
+		ext2fs_free_mem(&bitmap->description);
+		ext2fs_free_mem(&bitmap);
+		return retval;
+	}
+
+	if (init_map)
+		memcpy(bitmap->bitmap, init_map, size);
+	else
+		memset(bitmap->bitmap, 0, size);
+	*ret = bitmap;
+	return 0;
+}
+
+errcode_t ext2fs_allocate_generic_bitmap(__u32 start,
+					 __u32 end,
+					 __u32 real_end,
+					 const char *descr,
+					 ext2fs_generic_bitmap *ret)
+{
+	return ext2fs_make_generic_bitmap(EXT2_ET_MAGIC_GENERIC_BITMAP, 0, 
+					  start, end, real_end, descr, 0, ret);
+}
+
+errcode_t ext2fs_copy_generic_bitmap(ext2fs_generic_bitmap src,
+				     ext2fs_generic_bitmap *dest)
+{
+	return (ext2fs_make_generic_bitmap(src->magic, src->fs,
+					   src->start, src->end, 
+					   src->real_end,
+					   src->description, src->bitmap,
+					   dest));
+}
+
+void ext2fs_free_generic_bitmap(ext2fs_inode_bitmap bitmap)
+{
+	if (check_magic(bitmap))
+		return;
+
+	bitmap->magic = 0;
+	if (bitmap->description) {
+		ext2fs_free_mem(&bitmap->description);
+		bitmap->description = 0;
+	}
+	if (bitmap->bitmap) {
+		ext2fs_free_mem(&bitmap->bitmap);
+		bitmap->bitmap = 0;
+	}
+	ext2fs_free_mem(&bitmap);
+}
 
 int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
 					blk_t bitno)
@@ -66,6 +183,40 @@ __u32 ext2fs_get_generic_bitmap_end(ext2fs_generic_bitmap bitmap)
 {
 	return bitmap->end;
 }
+
+void ext2fs_clear_generic_bitmap(ext2fs_generic_bitmap bitmap)
+{
+	if (check_magic(bitmap))
+		return;
+
+	memset(bitmap->bitmap, 0,
+	       (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1));
+}
+
+errcode_t ext2fs_fudge_generic_bitmap_end(ext2fs_inode_bitmap bitmap,
+					  errcode_t magic, errcode_t neq,
+					  ext2_ino_t end, ext2_ino_t *oend)
+{
+	EXT2_CHECK_MAGIC(bitmap, magic);
+	
+	if (end > bitmap->real_end)
+		return neq;
+	if (oend)
+		*oend = bitmap->end;
+	bitmap->end = end;
+	return 0;
+}
+
+void ext2fs_set_generic_bitmap_padding(ext2fs_generic_bitmap map)
+{
+	__u32	i, j;
+
+	/* Protect loop from wrap-around if map->real_end is maxed */
+	for (i=map->end+1, j = i - map->start; 
+	     i <= map->real_end && i > map->end; 
+	     i++, j++)
+		ext2fs_set_bit(j, map->bitmap);
+}	
 
 int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
 				   blk_t block, int num)
