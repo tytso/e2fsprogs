@@ -117,3 +117,34 @@ void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap)
 {
 	ext2fs_clear_generic_bitmap(bitmap);
 }
+
+errcode_t ext2fs_resize_inode_bitmap(__u32 new_end, __u32 new_real_end,
+				     ext2fs_inode_bitmap bmap)
+{
+	return (ext2fs_resize_generic_bitmap(EXT2_ET_MAGIC_INODE_BITMAP,
+					     new_end, new_real_end, bmap));
+}
+
+errcode_t ext2fs_resize_block_bitmap(__u32 new_end, __u32 new_real_end,
+				     ext2fs_block_bitmap bmap)
+{
+	return (ext2fs_resize_generic_bitmap(EXT2_ET_MAGIC_BLOCK_BITMAP,
+					     new_end, new_real_end, bmap));
+}
+
+errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,
+				      ext2fs_block_bitmap bm2)
+{
+	return (ext2fs_compare_generic_bitmap(EXT2_ET_MAGIC_BLOCK_BITMAP,
+					      EXT2_ET_NEQ_BLOCK_BITMAP,
+					      bm1, bm2));
+}
+
+errcode_t ext2fs_compare_inode_bitmap(ext2fs_inode_bitmap bm1,
+				      ext2fs_inode_bitmap bm2)
+{
+	return (ext2fs_compare_generic_bitmap(EXT2_ET_MAGIC_INODE_BITMAP,
+					      EXT2_ET_NEQ_INODE_BITMAP,
+					      bm1, bm2));
+}
+

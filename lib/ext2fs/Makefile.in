@@ -7,10 +7,10 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-@DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o cmp_bitmaps.o fileio.o \
+@DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o fileio.o \
 @DEBUGFS_CMT@	inode_io.o namei.o write_bb_file.o 
 
-@RESIZER_CMT@RESIZE_LIB_OBJS = rs_bitmap.o dupfs.o test_io.o 
+@RESIZER_CMT@RESIZE_LIB_OBJS = dupfs.o test_io.o 
 
 @IMAGER_CMT@E2IMAGE_LIB_OBJS = imager.o
 
@@ -82,7 +82,6 @@ SRCS= ext2_err.c \
 	$(srcdir)/bmap.c \
 	$(srcdir)/check_desc.c \
 	$(srcdir)/closefs.c \
-	$(srcdir)/cmp_bitmaps.c \
 	$(srcdir)/dblist.c \
 	$(srcdir)/dblist_dir.c \
 	$(srcdir)/dirblock.c \
@@ -120,7 +119,6 @@ SRCS= ext2_err.c \
 	$(srcdir)/read_bb.c \
 	$(srcdir)/read_bb_file.c \
 	$(srcdir)/res_gdt.c \
-	$(srcdir)/rs_bitmap.c \
 	$(srcdir)/rw_bitmaps.c \
 	$(srcdir)/swapfs.c \
 	$(srcdir)/tdb.c \
@@ -361,10 +359,6 @@ closefs.o: $(srcdir)/closefs.c $(srcdir)/ext2_fs.h \
  $(srcdir)/ext2fs.h $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
-cmp_bitmaps.o: $(srcdir)/cmp_bitmaps.c $(srcdir)/ext2_fs.h \
- $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
- $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 dblist.o: $(srcdir)/dblist.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fsP.h \
  $(srcdir)/ext2fs.h $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h \
@@ -520,10 +514,6 @@ read_bb_file.o: $(srcdir)/read_bb_file.c $(srcdir)/ext2_fs.h \
  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
 res_gdt.o: $(srcdir)/res_gdt.c $(srcdir)/ext2_fs.h \
- $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
- $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
-rs_bitmap.o: $(srcdir)/rs_bitmap.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h

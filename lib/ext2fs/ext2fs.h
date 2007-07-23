@@ -571,6 +571,15 @@ extern void ext2fs_clear_inode_bitmap(ext2fs_inode_bitmap bitmap);
 extern void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap);
 extern errcode_t ext2fs_read_bitmaps(ext2_filsys fs);
 extern errcode_t ext2fs_write_bitmaps(ext2_filsys fs);
+extern errcode_t ext2fs_resize_inode_bitmap(__u32 new_end, __u32 new_real_end,
+					    ext2fs_inode_bitmap bmap);
+extern errcode_t ext2fs_resize_block_bitmap(__u32 new_end, __u32 new_real_end,
+					    ext2fs_block_bitmap bmap);
+extern errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,
+					     ext2fs_block_bitmap bm2);
+extern errcode_t ext2fs_compare_inode_bitmap(ext2fs_inode_bitmap bm1,
+					     ext2fs_inode_bitmap bm2);
+
 
 /* block.c */
 extern errcode_t ext2fs_block_iterate(ext2_filsys fs,
@@ -623,12 +632,6 @@ extern int ext2fs_super_and_bgd_loc(ext2_filsys fs,
 				    blk_t *ret_new_desc_blk,
 				    int *ret_meta_bg);
 extern void ext2fs_update_dynamic_rev(ext2_filsys fs);
-
-/* cmp_bitmaps.c */
-extern errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,
-					     ext2fs_block_bitmap bm2);
-extern errcode_t ext2fs_compare_inode_bitmap(ext2fs_inode_bitmap bm1,
-					     ext2fs_inode_bitmap bm2);
 
 /* dblist.c */
 
@@ -772,6 +775,13 @@ extern errcode_t ext2fs_fudge_generic_bitmap_end(ext2fs_inode_bitmap bitmap,
 						 ext2_ino_t end, 
 						 ext2_ino_t *oend);
 extern void ext2fs_set_generic_bitmap_padding(ext2fs_generic_bitmap map);
+extern errcode_t ext2fs_resize_generic_bitmap(errcode_t magic,
+					      __u32 new_end,
+					      __u32 new_real_end,
+					      ext2fs_generic_bitmap bmap);
+extern errcode_t ext2fs_compare_generic_bitmap(errcode_t magic, errcode_t neq,
+					       ext2fs_generic_bitmap bm1,
+					       ext2fs_generic_bitmap bm2);
 
 /* getsize.c */
 extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,
@@ -942,17 +952,6 @@ extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
 
 /* res_gdt.c */
 extern errcode_t ext2fs_create_resize_inode(ext2_filsys fs);
-
-/* rs_bitmap.c */
-extern errcode_t ext2fs_resize_generic_bitmap(__u32 new_end,
-					      __u32 new_real_end,
-					      ext2fs_generic_bitmap bmap);
-extern errcode_t ext2fs_resize_inode_bitmap(__u32 new_end, __u32 new_real_end,
-					    ext2fs_inode_bitmap bmap);
-extern errcode_t ext2fs_resize_block_bitmap(__u32 new_end, __u32 new_real_end,
-					    ext2fs_block_bitmap bmap);
-extern errcode_t ext2fs_copy_bitmap(ext2fs_generic_bitmap src,
-				    ext2fs_generic_bitmap *dest);
 
 /* swapfs.c */
 extern void ext2fs_swap_ext_attr(char *to, char *from, int bufsize, 

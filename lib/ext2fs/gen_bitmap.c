@@ -207,6 +207,74 @@ errcode_t ext2fs_fudge_generic_bitmap_end(ext2fs_inode_bitmap bitmap,
 	return 0;
 }
 
+errcode_t ext2fs_resize_generic_bitmap(errcode_t magic,
+				       __u32 new_end, __u32 new_real_end,
+				       ext2fs_generic_bitmap bmap)
+{
+	errcode_t	retval;
+	size_t		size, new_size;
+	__u32		bitno;
+
+	if (!bmap || (bmap->magic != magic))
+		return magic;
+
+	/*
+	 * If we're expanding the bitmap, make sure all of the new
+	 * parts of the bitmap are zero.
+	 */
+	if (new_end > bmap->end) {
+		bitno = bmap->real_end;
+		if (bitno > new_end)
+			bitno = new_end;
+		for (; bitno > bmap->end; bitno--)
+			ext2fs_clear_bit(bitno - bmap->start, bmap->bitmap);
+	}
+	if (new_real_end == bmap->real_end) {
+		bmap->end = new_end;
+		return 0;
+	}
+	
+	size = ((bmap->real_end - bmap->start) / 8) + 1;
+	new_size = ((new_real_end - bmap->start) / 8) + 1;
+
+	if (size != new_size) {
+		retval = ext2fs_resize_mem(size, new_size, &bmap->bitmap);
+		if (retval)
+			return retval;
+	}
+	if (new_size > size)
+		memset(bmap->bitmap + size, 0, new_size - size);
+
+	bmap->end = new_end;
+	bmap->real_end = new_real_end;
+	return 0;
+}
+
+errcode_t ext2fs_compare_generic_bitmap(errcode_t magic, errcode_t neq,
+					ext2fs_generic_bitmap bm1,
+					ext2fs_generic_bitmap bm2)
+{
+	blk_t	i;
+	
+	if (!bm1 || bm1->magic != magic)
+		return magic;
+	if (!bm2 || bm2->magic != magic)
+		return magic;
+
+	if ((bm1->start != bm2->start) ||
+	    (bm1->end != bm2->end) ||
+	    (memcmp(bm1->bitmap, bm2->bitmap,
+		    (size_t) (bm1->end - bm1->start)/8)))
+		return neq;
+
+	for (i = bm1->end - ((bm1->end - bm1->start) % 8); i <= bm1->end; i++)
+		if (ext2fs_fast_test_block_bitmap(bm1, i) !=
+		    ext2fs_fast_test_block_bitmap(bm2, i))
+			return neq;
+
+	return 0;
+}
+
 void ext2fs_set_generic_bitmap_padding(ext2fs_generic_bitmap map)
 {
 	__u32	i, j;
@@ -263,4 +331,3 @@ void ext2fs_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
 		ext2fs_fast_clear_bit(block + i - bitmap->start, 
 				      bitmap->bitmap);
 }
-
