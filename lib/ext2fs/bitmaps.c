@@ -52,7 +52,6 @@ errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
 				       const char *descr,
 				       ext2fs_inode_bitmap *ret)
 {
-	errcode_t	retval;
 	__u32		start, end, real_end;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
@@ -72,7 +71,6 @@ errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
 				       const char *descr,
 				       ext2fs_block_bitmap *ret)
 {
-	errcode_t	retval;
 	__u32		start, end, real_end;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
@@ -148,3 +146,38 @@ errcode_t ext2fs_compare_inode_bitmap(ext2fs_inode_bitmap bm1,
 					      bm1, bm2));
 }
 
+errcode_t ext2fs_set_inode_bitmap_range(ext2fs_inode_bitmap bmap,
+					ext2_ino_t start, unsigned int num,
+					void *in)
+{
+	return (ext2fs_set_generic_bitmap_range(bmap,
+						EXT2_ET_MAGIC_INODE_BITMAP,
+						start, num, in));
+}
+
+errcode_t ext2fs_get_inode_bitmap_range(ext2fs_inode_bitmap bmap,
+					ext2_ino_t start, unsigned int num,
+					void *out)
+{
+	return (ext2fs_get_generic_bitmap_range(bmap,
+						EXT2_ET_MAGIC_INODE_BITMAP,
+						start, num, out));
+}
+
+errcode_t ext2fs_set_block_bitmap_range(ext2fs_block_bitmap bmap,
+					blk_t start, unsigned int num,
+					void *in)
+{
+	return (ext2fs_set_generic_bitmap_range(bmap, 
+						EXT2_ET_MAGIC_BLOCK_BITMAP,
+						start, num, in));
+}
+
+errcode_t ext2fs_get_block_bitmap_range(ext2fs_block_bitmap bmap,
+					blk_t start, unsigned int num,
+					void *out)
+{
+	return (ext2fs_get_generic_bitmap_range(bmap,
+						EXT2_ET_MAGIC_BLOCK_BITMAP,
+						start, num, out));
+}

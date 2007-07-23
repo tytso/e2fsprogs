@@ -134,12 +134,18 @@ static void list_desc (ext2_filsys fs)
 	blk_t	super_blk, old_desc_blk, new_desc_blk;
 	char *block_bitmap=NULL, *inode_bitmap=NULL;
 	int inode_blocks_per_group, old_desc_blocks, reserved_gdt;
+	int		block_nbytes, inode_nbytes;
 	int has_super;
+	blk_t		blk_itr = fs->super->s_first_data_block;
+	ext2_ino_t	ino_itr = 1;
+
+	block_nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
+	inode_nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
 
 	if (fs->block_map)
-		block_bitmap = fs->block_map->bitmap;
+		block_bitmap = malloc(block_nbytes);
 	if (fs->inode_map)
-		inode_bitmap = fs->inode_map->bitmap;
+		inode_bitmap = malloc(inode_nbytes);
 
 	inode_blocks_per_group = ((fs->super->s_inodes_per_group *
 				   EXT2_INODE_SIZE(fs->super)) +
@@ -211,18 +217,22 @@ static void list_desc (ext2_filsys fs)
 			fs->group_desc[i].bg_used_dirs_count);
 		if (block_bitmap) {
 			fputs(_("  Free blocks: "), stdout);
+			ext2fs_get_block_bitmap_range(fs->block_map, 
+				 blk_itr, block_nbytes << 3, block_bitmap);
 			print_free (i, block_bitmap,
 				    fs->super->s_blocks_per_group,
 				    fs->super->s_first_data_block);
 			fputc('\n', stdout);
-			block_bitmap += fs->super->s_blocks_per_group / 8;
+			blk_itr += fs->super->s_blocks_per_group;
 		}
 		if (inode_bitmap) {
 			fputs(_("  Free inodes: "), stdout);
+			ext2fs_get_inode_bitmap_range(fs->inode_map, 
+				 ino_itr, inode_nbytes << 3, inode_bitmap);
 			print_free (i, inode_bitmap,
 				    fs->super->s_inodes_per_group, 1);
 			fputc('\n', stdout);
-			inode_bitmap += fs->super->s_inodes_per_group / 8;
+			ino_itr += fs->super->s_inodes_per_group;
 		}
 	}
 }

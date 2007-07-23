@@ -27,6 +27,17 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
+struct ext2fs_struct_generic_bitmap {
+	errcode_t	magic;
+	ext2_filsys 	fs;
+	__u32		start, end;
+	__u32		real_end;
+	char	*	description;
+	char	*	bitmap;
+	errcode_t	base_error_code;
+	__u32		reserved[7];
+};
+
 /* 
  * Used by previously inlined function, so we have to export this and
  * not change the function signature
@@ -284,14 +295,44 @@ void ext2fs_set_generic_bitmap_padding(ext2fs_generic_bitmap map)
 	     i <= map->real_end && i > map->end; 
 	     i++, j++)
 		ext2fs_set_bit(j, map->bitmap);
-}	
+}
+
+errcode_t ext2fs_get_generic_bitmap_range(ext2fs_generic_bitmap bmap,
+					  errcode_t magic,
+					  __u32 start, __u32 num,
+					  void *out)
+{
+	if (!bmap || (bmap->magic != magic))
+		return magic;
+
+	if ((start < bmap->start) || (start+num-1 > bmap->real_end))
+		return EXT2_ET_INVALID_ARGUMENT;
+
+	memcpy(out, bmap->bitmap + (start >> 3), (num+7) >> 3);
+	return 0;
+}
+
+errcode_t ext2fs_set_generic_bitmap_range(ext2fs_generic_bitmap bmap,
+					  errcode_t magic,
+					  __u32 start, __u32 num,
+					  void *in)
+{
+	if (!bmap || (bmap->magic != magic))
+		return magic;
+
+	if ((start < bmap->start) || (start+num-1 > bmap->real_end))
+		return EXT2_ET_INVALID_ARGUMENT;
+
+	memcpy(bmap->bitmap + (start >> 3), in, (num+7) >> 3);
+	return 0;
+}
 
 int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
 				   blk_t block, int num)
 {
 	int	i;
 
-	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
+	if ((block < bitmap->start) || (block+num-1 > bitmap->real_end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_TEST,
 				   block, bitmap->description);
 		return 0;

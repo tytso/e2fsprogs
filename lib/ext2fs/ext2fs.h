@@ -100,17 +100,6 @@ typedef __u32		ext2_dirhash_t;
 
 typedef struct struct_ext2_filsys *ext2_filsys;
 
-struct ext2fs_struct_generic_bitmap {
-	errcode_t	magic;
-	ext2_filsys 	fs;
-	__u32		start, end;
-	__u32		real_end;
-	char	*	description;
-	char	*	bitmap;
-	errcode_t	base_error_code;
-	__u32		reserved[7];
-};
-
 #define EXT2FS_MARK_ERROR 	0
 #define EXT2FS_UNMARK_ERROR 	1
 #define EXT2FS_TEST_ERROR	2
@@ -553,6 +542,8 @@ extern errcode_t ext2fs_update_bb_inode(ext2_filsys fs,
 /* bitmaps.c */
 extern void ext2fs_free_block_bitmap(ext2fs_block_bitmap bitmap);
 extern void ext2fs_free_inode_bitmap(ext2fs_inode_bitmap bitmap);
+extern errcode_t ext2fs_copy_bitmap(ext2fs_generic_bitmap src,
+				    ext2fs_generic_bitmap *dest);
 extern errcode_t ext2fs_write_inode_bitmap(ext2_filsys fs);
 extern errcode_t ext2fs_write_block_bitmap (ext2_filsys fs);
 extern errcode_t ext2fs_read_inode_bitmap (ext2_filsys fs);
@@ -579,6 +570,18 @@ extern errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,
 					     ext2fs_block_bitmap bm2);
 extern errcode_t ext2fs_compare_inode_bitmap(ext2fs_inode_bitmap bm1,
 					     ext2fs_inode_bitmap bm2);
+extern errcode_t ext2fs_set_inode_bitmap_range(ext2fs_inode_bitmap bmap,
+					ext2_ino_t start, unsigned int num,
+					void *in);
+extern errcode_t ext2fs_get_inode_bitmap_range(ext2fs_inode_bitmap bmap,
+					ext2_ino_t start, unsigned int num,
+					void *out);
+extern errcode_t ext2fs_set_block_bitmap_range(ext2fs_block_bitmap bmap,
+					blk_t start, unsigned int num,
+					void *in);
+extern errcode_t ext2fs_get_block_bitmap_range(ext2fs_block_bitmap bmap,
+					blk_t start, unsigned int num,
+					void *out);
 
 
 /* block.c */
@@ -782,6 +785,14 @@ extern errcode_t ext2fs_resize_generic_bitmap(errcode_t magic,
 extern errcode_t ext2fs_compare_generic_bitmap(errcode_t magic, errcode_t neq,
 					       ext2fs_generic_bitmap bm1,
 					       ext2fs_generic_bitmap bm2);
+extern errcode_t ext2fs_get_generic_bitmap_range(ext2fs_generic_bitmap bmap,
+						 errcode_t magic,
+						 __u32 start, __u32 num,
+						 void *out);
+extern errcode_t ext2fs_set_generic_bitmap_range(ext2fs_generic_bitmap bmap,
+						 errcode_t magic,
+						 __u32 start, __u32 num,
+						 void *in);
 
 /* getsize.c */
 extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,
