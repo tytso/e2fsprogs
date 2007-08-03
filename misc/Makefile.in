@@ -76,7 +76,7 @@ prof_err.c prof_err.h: $(srcdir)/../e2fsck/prof_err.et
 
 default_profile.c: $(srcdir)/mke2fs.conf $(srcdir)/profile-to-c.awk
 	@echo "	PROFILE_TO_C mke2fs.conf"
-	$(AWK) -f $(srcdir)/profile-to-c.awk < $(srcdir)/mke2fs.conf \
+	@$(AWK) -f $(srcdir)/profile-to-c.awk < $(srcdir)/mke2fs.conf \
 		>  default_profile.c
 profile.o:
 	@echo "	CC $<"
