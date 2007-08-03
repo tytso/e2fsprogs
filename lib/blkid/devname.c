@@ -154,8 +154,10 @@ set_pri:
 }
 
 #ifdef HAVE_DEVMAPPER
-static void dm_quiet_log(int level, const char *file, int line,
-			 const char *f, ...)
+static void dm_quiet_log(int level __BLKID_ATTR((unused)), 
+			 const char *file __BLKID_ATTR((unused)), 
+			 int line __BLKID_ATTR((unused)),
+			 const char *f __BLKID_ATTR((unused)), ...)
 {
 	return;
 }
@@ -168,7 +170,7 @@ static int dm_device_has_dep(const dev_t dev, const char *name)
 	struct dm_task *task;
 	struct dm_deps *deps;
 	struct dm_info info;
-	int i;
+	unsigned int i;
 
 	task = dm_task_create(DM_DEVICE_DEPS);
 	if (!task)
@@ -224,7 +226,7 @@ static int dm_device_is_leaf(const dev_t dev)
 
 	n = 0;
 	do {
-		names = (void *)names + next;
+		names = (struct dm_names *) ((char *)names + next);
 
 		if (dm_device_has_dep(dev, names->name))
 			ret = 0;
@@ -289,7 +291,7 @@ static void dm_probe_all(blkid_cache cache, int only_if_new)
 		char *device = NULL;
 		dev_t dev = 0;
 
-		names = (void *)names + next;
+		names = (struct dm_names *) ((char *)names + next);
 
 		rc = asprintf(&device, "mapper/%s", names->name);
 		if (rc < 0)

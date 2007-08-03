@@ -1526,7 +1526,7 @@ int main (int argc, char *argv[])
 	errcode_t	retval = 0;
 	ext2_filsys	fs;
 	badblocks_list	bb_list = 0;
-	int		journal_blocks;
+	unsigned int	journal_blocks;
 	unsigned int	i;
 	int		val;
 	io_manager	io_ptr;
@@ -1734,7 +1734,7 @@ int main (int argc, char *argv[])
 			goto no_journal;
 		}
 		if (!quiet) {
-			printf(_("Creating journal (%d blocks): "),
+			printf(_("Creating journal (%u blocks): "),
 			       journal_blocks);
 			fflush(stdout);
 		}

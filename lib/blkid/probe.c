@@ -121,7 +121,7 @@ static int check_mdraid(int fd, unsigned char *ret_uuid)
 	return 0;
 }
 
-static void set_uuid(blkid_dev dev, uuid_t uuid, char *tag)
+static void set_uuid(blkid_dev dev, uuid_t uuid, const char *tag)
 {
 	char	str[37];
 
@@ -220,7 +220,7 @@ static int probe_jbd(struct blkid_probe *probe,
 #define FAT_ATTR_MASK			0x3f
 #define FAT_ENTRY_FREE			0xe5
 
-static char *no_name = "NO NAME    ";
+static const char *no_name = "NO NAME    ";
 
 static unsigned char *search_fat_label(struct vfat_dir_entry *dir, int count)
 {
@@ -582,10 +582,11 @@ static int probe_luks(struct blkid_probe *probe,
 		       struct blkid_magic *id __BLKID_ATTR((unused)),
 		       unsigned char *buf)
 {
-	unsigned char uuid[40];
+	char uuid[40];
+
 	/* 168 is the offset to the 40 character uuid:
 	 * http://luks.endorphin.org/LUKS-on-disk-format.pdf */
-	strncpy(uuid, buf+168, 40);
+	strncpy(uuid, (char *) buf+168, 40);
 	blkid_set_tag(probe->dev, "UUID", uuid, sizeof(uuid));
 	return 0;
 }

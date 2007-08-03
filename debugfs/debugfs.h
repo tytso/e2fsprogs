@@ -78,6 +78,7 @@ extern void do_ncheck(int argc, char **argv);
 /* set_fields.c */
 extern void do_set_super(int argc, char **);
 extern void do_set_inode(int argc, char **);
+extern void do_set_block_group_descriptor(int argc, char **);
 
 /* unused.c */
 extern void do_dump_unused(int argc, char **argv);

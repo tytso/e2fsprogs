@@ -190,7 +190,7 @@ char *time_to_string(__u32 cl)
 {
 	static int	do_gmt = -1;
 	time_t		t = (time_t) cl;
-	char *		tz;
+	const char	*tz;
 
 	if (do_gmt == -1) {
 		/* The diet libc doesn't respect the TZ environemnt variable */

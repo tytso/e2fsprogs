@@ -1011,7 +1011,7 @@ static void make_link(char *sourcename, char *destname)
 	struct ext2_inode inode;
 	int		retval;
 	ext2_ino_t	dir;
-	char		*dest, *cp, *basename;
+	char		*dest, *cp, *base_name;
 
 	/*
 	 * Get the source inode
@@ -1019,17 +1019,17 @@ static void make_link(char *sourcename, char *destname)
 	ino = string_to_inode(sourcename);
 	if (!ino)
 		return;
-	basename = strrchr(sourcename, '/');
-	if (basename)
-		basename++;
+	base_name = strrchr(sourcename, '/');
+	if (base_name)
+		base_name++;
 	else
-		basename = sourcename;
+		base_name = sourcename;
 	/*
 	 * Figure out the destination.  First see if it exists and is
 	 * a directory.  
 	 */
 	if (! (retval=ext2fs_namei(current_fs, root, cwd, destname, &dir)))
-		dest = basename;
+		dest = base_name;
 	else {
 		/*
 		 * OK, it doesn't exist.  See if it is
@@ -1123,19 +1123,19 @@ static void unlink_file_by_name(char *filename)
 {
 	int		retval;
 	ext2_ino_t	dir;
-	char		*basename;
+	char		*base_name;
 	
-	basename = strrchr(filename, '/');
-	if (basename) {
-		*basename++ = '\0';
+	base_name = strrchr(filename, '/');
+	if (base_name) {
+		*base_name++ = '\0';
 		dir = string_to_inode(filename);
 		if (!dir)
 			return;
 	} else {
 		dir = cwd;
-		basename = filename;
+		base_name = filename;
 	}
-	retval = ext2fs_unlink(current_fs, dir, basename, 0, 0);
+	retval = ext2fs_unlink(current_fs, dir, base_name, 0, 0);
 	if (retval)
 		com_err("unlink_file_by_name", retval, 0);
 	return;

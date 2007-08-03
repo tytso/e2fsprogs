@@ -1012,7 +1012,7 @@ int main (int argc, char ** argv)
 		}
 	} else from_count = 0;
 	if (from_count >= last_block) {
-	    com_err (program_name, 0, _("invalid starting block (%d): must be less than %lu"),
+	    com_err (program_name, 0, _("invalid starting block (%lu): must be less than %lu"),
 		     (unsigned long) from_count, (unsigned long) last_block);
 	    exit (1);
 	}
