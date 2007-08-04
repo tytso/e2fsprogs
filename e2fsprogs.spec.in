@@ -52,6 +52,7 @@ also want to install e2fsprogs.
 %build
 %configure --enable-elf-shlibs --enable-nls
 make
+make check
 
 %install
 rm -rf $RPM_BUILD_ROOT
