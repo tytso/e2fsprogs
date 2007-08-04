@@ -70,6 +70,7 @@ struct unix_private_data {
 	int	access_time;
 	ext2_loff_t offset;
 	struct unix_cache cache[CACHE_SIZE];
+	struct struct_io_stats io_stats;
 };
 
 static errcode_t unix_open(const char *name, int flags, io_channel *channel);
@@ -84,7 +85,8 @@ static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
 				int size, const void *data);
 static errcode_t unix_set_option(io_channel channel, const char *option, 
 				 const char *arg);
-
+static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
+;
 static void reuse_cache(io_channel channel, struct unix_private_data *data,
 		 struct unix_cache *cache, unsigned long block);
 
@@ -110,10 +112,27 @@ static struct struct_io_manager struct_unix_manager = {
 #else
 	unix_write_byte,
 #endif
-	unix_set_option
+	unix_set_option,
+	unix_get_stats,
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
+
+static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
+{
+	errcode_t 	retval = 0;
+
+	struct unix_private_data *data;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	if (stats)
+		*stats = &data->io_stats;
+
+	return retval;
+}
 
 /*
  * Here are the raw I/O functions
@@ -130,6 +149,7 @@ static errcode_t raw_read_blk(io_channel channel,
 	int		actual = 0;
 
 	size = (count < 0) ? -count : count * channel->block_size;
+	data->io_stats.bytes_read += size;
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
 		retval = errno ? errno : EXT2_ET_LLSEEK_FAILED;
@@ -168,6 +188,7 @@ static errcode_t raw_read_blk(io_channel channel,
 	char		sector[BLOCKALIGN];
 
 	size = (count < 0) ? -count : count * channel->block_size;
+	data->io_stats.bytes_read += size;
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 #ifdef DEBUG
 	printf("count=%d, size=%d, block=%lu, blk_size=%d, location=%llx\n",
@@ -224,6 +245,7 @@ static errcode_t raw_write_blk(io_channel channel,
 		else
 			size = count * channel->block_size;
 	}
+	data->io_stats.bytes_written += size;
 
 	location = ((ext2_loff_t) block * channel->block_size) + data->offset;
 	if (ext2fs_llseek(data->dev, location, SEEK_SET) != location) {
@@ -407,6 +429,7 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 
 	memset(data, 0, sizeof(struct unix_private_data));
 	data->magic = EXT2_ET_MAGIC_UNIX_IO_CHANNEL;
+	data->io_stats.num_fields = 2;
 
 	if ((retval = alloc_cache(io, data)))
 		goto cleanup;

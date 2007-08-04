@@ -66,6 +66,8 @@ static errcode_t test_write_byte(io_channel channel, unsigned long offset,
 				 int count, const void *buf);
 static errcode_t test_set_option(io_channel channel, const char *option, 
 				 const char *arg);
+static errcode_t test_get_stats(io_channel channel, io_stats *stats);
+
 
 static struct struct_io_manager struct_test_manager = {
 	EXT2_ET_MAGIC_IO_MANAGER,
@@ -77,7 +79,8 @@ static struct struct_io_manager struct_test_manager = {
 	test_write_blk,
 	test_flush,
 	test_write_byte,
-	test_set_option
+	test_set_option,
+	test_get_stats,
 };
 
 io_manager test_io_manager = &struct_test_manager;
@@ -406,6 +409,21 @@ static errcode_t test_set_option(io_channel channel, const char *option,
 	} else {
 		if (data->flags & TEST_FLAG_SET_OPTION)
 			fprintf(data->outfile, "not implemented\n");
+	}
+	return retval;
+}
+
+static errcode_t test_get_stats(io_channel channel, io_stats *stats)
+{
+	struct test_private_data *data;
+	errcode_t	retval = 0;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct test_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_TEST_IO_CHANNEL);
+
+	if (data->real && data->real->manager->get_stats) {
+		retval = (data->real->manager->get_stats)(data->real, stats);
 	}
 	return retval;
 }

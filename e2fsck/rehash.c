@@ -778,7 +778,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 	int			cur, max, all_dirs, dir_index, first = 1;
 
 #ifdef RESOURCE_TRACK
-	init_resource_track(&rtrack);
+	init_resource_track(&rtrack, ctx->fs->io);
 #endif
 
 	all_dirs = ctx->options & E2F_OPT_COMPRESS_DIRS;
@@ -847,7 +847,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
-		print_resource_track("Pass 3A", &rtrack);
+		print_resource_track("Pass 3A", &rtrack, ctx->fs->io);
 	}
 #endif
 }

@@ -219,7 +219,7 @@ void swap_filesys(e2fsck_t ctx)
 #ifdef RESOURCE_TRACK
 	struct resource_track	rtrack;
 
-	init_resource_track(&rtrack);
+	init_resource_track(&rtrack, ctx->fs->io);
 #endif
 
 	if (!(ctx->options & E2F_OPT_PREEN))
@@ -265,7 +265,7 @@ void swap_filesys(e2fsck_t ctx)
 	
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2)
-		print_resource_track(_("Byte swap"), &rtrack);
+		print_resource_track(_("Byte swap"), &rtrack, fs->io);
 #endif
 }
 

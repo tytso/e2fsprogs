@@ -30,7 +30,7 @@ void e2fsck_pass5(e2fsck_t ctx)
 #endif
 
 #ifdef RESOURCE_TRACK
-	init_resource_track(&rtrack);
+	init_resource_track(&rtrack, ctx->fs->io);
 #endif
 	
 	clear_problem_context(&pctx);
@@ -67,7 +67,7 @@ void e2fsck_pass5(e2fsck_t ctx)
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
-		print_resource_track(_("Pass 5"), &rtrack);
+		print_resource_track(_("Pass 5"), &rtrack, ctx->fs->io);
 	}
 #endif
 }

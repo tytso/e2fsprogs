@@ -276,11 +276,12 @@ void preenhalt(e2fsck_t ctx)
 }
 
 #ifdef RESOURCE_TRACK
-void init_resource_track(struct resource_track *track)
+void init_resource_track(struct resource_track *track, io_channel channel)
 {
 #ifdef HAVE_GETRUSAGE
 	struct rusage r;
 #endif
+	io_stats io_start = 0;
 	
 	track->brk_start = sbrk(0);
 	gettimeofday(&track->time_start, 0);
@@ -295,6 +296,14 @@ void init_resource_track(struct resource_track *track)
 	track->user_start.tv_sec = track->user_start.tv_usec = 0;
 	track->system_start.tv_sec = track->system_start.tv_usec = 0;
 #endif
+	track->bytes_read = 0;
+	track->bytes_written = 0;
+	if (channel && channel->manager && channel->manager->get_stats)
+		channel->manager->get_stats(channel, &io_start);
+	if (io_start) {
+		track->bytes_read = io_start->bytes_read;
+		track->bytes_written = io_start->bytes_written;
+	}
 }
 
 #ifdef __GNUC__
@@ -310,7 +319,8 @@ static _INLINE_ float timeval_subtract(struct timeval *tv1,
 		((float) (tv1->tv_usec - tv2->tv_usec)) / 1000000);
 }
 
-void print_resource_track(const char *desc, struct resource_track *track)
+void print_resource_track(const char *desc, struct resource_track *track,
+			  io_channel channel)
 {
 #ifdef HAVE_GETRUSAGE
 	struct rusage r;
@@ -347,6 +357,26 @@ void print_resource_track(const char *desc, struct resource_track *track)
 	printf(_("elapsed time: %6.3f\n"),
 	       timeval_subtract(&time_end, &track->time_start));
 #endif
+#define mbytes(x)	(((x) + 1048575) / 1048576)
+	if (channel && channel->manager && channel->manager->get_stats) {
+		io_stats delta = 0;
+		unsigned long long bytes_read = 0;
+		unsigned long long bytes_written = 0;
+
+		if (desc)
+			printf("%s: ", desc);
+
+		channel->manager->get_stats(channel, &delta);
+		if (delta) {
+			bytes_read = delta->bytes_read - track->bytes_read;
+			bytes_written = delta->bytes_written - 
+				track->bytes_written;
+		}
+		printf("I/O read: %lluMB, write: %lluMB, rate: %.2fMB/s\n",
+		       mbytes(bytes_read), mbytes(bytes_written),
+		       (double)mbytes(bytes_read + bytes_written) /
+		       timeval_subtract(&time_end, &track->time_start));
+	}
 }
 #endif /* RESOURCE_TRACK */
 

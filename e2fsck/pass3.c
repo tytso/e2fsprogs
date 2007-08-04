@@ -61,7 +61,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 	unsigned long maxdirs, count;
 
 #ifdef RESOURCE_TRACK
-	init_resource_track(&rtrack);
+	init_resource_track(&rtrack, ctx->fs->io);
 #endif
 
 	clear_problem_context(&pctx);
@@ -87,7 +87,8 @@ void e2fsck_pass3(e2fsck_t ctx)
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME) {
 		e2fsck_clear_progbar(ctx);
-		print_resource_track(_("Peak memory"), &ctx->global_rtrack);
+		print_resource_track(_("Peak memory"), &ctx->global_rtrack,
+				     NULL);
 	}
 #endif
 
@@ -142,7 +143,7 @@ abort_exit:
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
-		print_resource_track(_("Pass 3"), &rtrack);
+		print_resource_track(_("Pass 3"), &rtrack, ctx->fs->io);
 	}
 #endif
 }

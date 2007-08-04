@@ -135,6 +135,8 @@ struct resource_track {
 	struct timeval user_start;
 	struct timeval system_start;
 	void	*brk_start;
+	unsigned long long bytes_read;
+	unsigned long long bytes_written;
 };
 #endif
 
@@ -469,8 +471,10 @@ extern void preenhalt(e2fsck_t ctx);
 extern char *string_copy(e2fsck_t ctx, const char *str, int len);
 #ifdef RESOURCE_TRACK
 extern void print_resource_track(const char *desc,
-				 struct resource_track *track);
-extern void init_resource_track(struct resource_track *track);
+				 struct resource_track *track,
+				 io_channel channel);
+extern void init_resource_track(struct resource_track *track,
+				io_channel channel);
 #endif
 extern int inode_has_valid_blocks(struct ext2_inode *inode);
 extern void e2fsck_read_inode(e2fsck_t ctx, unsigned long ino,

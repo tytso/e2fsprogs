@@ -883,7 +883,7 @@ int main (int argc, char *argv[])
 	reserve_stdio_fds();
 	
 #ifdef RESOURCE_TRACK
-	init_resource_track(&ctx->global_rtrack);
+	init_resource_track(&ctx->global_rtrack, NULL);
 #endif
 
 	if (!(ctx->options & E2F_OPT_PREEN) || show_version_only)
@@ -1293,16 +1293,16 @@ no_journal:
 	}
 
 	e2fsck_write_bitmaps(ctx);
-	
+#ifdef RESOURCE_TRACK
+	io_channel_flush(ctx->fs->io);
+	if (ctx->options & E2F_OPT_TIME)
+		print_resource_track(NULL, &ctx->global_rtrack, ctx->fs->io);
+#endif
 	ext2fs_close(fs);
 	ctx->fs = NULL;
 	free(ctx->filesystem_name);
 	free(ctx->journal_name);
 
-#ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME)
-		print_resource_track(NULL, &ctx->global_rtrack);
-#endif
 	e2fsck_free_context(ctx);
 	remove_error_table(&et_ext2_error_table);
 	remove_error_table(&et_prof_error_table);

@@ -93,7 +93,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 	int	group, maxgroup;
 	
 #ifdef RESOURCE_TRACK
-	init_resource_track(&rtrack);
+	init_resource_track(&rtrack, ctx->fs->io);
 #endif
 
 #ifdef MTRACE
@@ -173,7 +173,7 @@ errout:
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
-		print_resource_track(_("Pass 4"), &rtrack);
+		print_resource_track(_("Pass 4"), &rtrack, ctx->fs->io);
 	}
 #endif
 }
