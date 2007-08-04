@@ -329,11 +329,11 @@ struct e2fsck_struct {
 	__u32 fs_ext_attr_inodes;
 	__u32 fs_ext_attr_blocks;
 
+	/* misc fields */
 	time_t now;
-
 	int ext_attr_ver;
-
 	profile_t	profile;
+	int blocks_per_page;
 
 	/*
 	 * For the use of callers of the e2fsck functions; not used by

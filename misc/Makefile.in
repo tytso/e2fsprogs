@@ -234,12 +234,12 @@ filefrag.8: $(DEP_SUBSTITUTE) $(srcdir)/filefrag.8.in
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/filefrag.8.in filefrag.8
 
 installdirs:
-	@echo "	MKINSTALLDIRS $(sbindir) $(root_sbindir) $(bindir) $(man1dir) $(man8dir) $(libdir)"
+	@echo "	MKINSTALLDIRS $(sbindir) $(root_sbindir) $(bindir) $(man1dir) $(man8dir) $(libdir) $(root_sysconfdir)"
 	@$(MKINSTALLDIRS) $(DESTDIR)$(sbindir) \
 		$(DESTDIR)$(root_sbindir) $(DESTDIR)$(bindir) \
 		$(DESTDIR)$(man1dir) $(DESTDIR)$(man8dir) \
 		$(DESTDIR)$(man1dir) $(DESTDIR)$(man5dir) \
-		$(DESTDIR)$(libdir) $(DESTDIR)/etc
+		$(DESTDIR)$(libdir) $(DESTDIR)/$(root_sysconfdir)
 
 install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	@for i in $(SPROGS); do \
@@ -347,8 +347,8 @@ uninstall:
 	for i in $(FMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man5dir)/$$i; \
 	done
-	if cmp -s $(srcdir)/mke2fs.conf $(DESTDIR)/etc/mke2fs.conf; then \
-		$(RM) $(DESTDIR)/etc/mke2fs.conf; \
+	if cmp -s $(srcdir)/mke2fs.conf $(DESTDIR)/$(root_sysconfdir)/mke2fs.conf; then \
+		$(RM) $(DESTDIR)/$(root_sysconfdir)/mke2fs.conf; \
 	fi
 
 clean:

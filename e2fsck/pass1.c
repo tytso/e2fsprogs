@@ -1591,9 +1591,14 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 				bad_size = 2;
 		}
 	} else {
+		e2_blkcnt_t blkpg = ctx->blocks_per_page;
+
 		size = EXT2_I_SIZE(inode);
 		if ((pb.last_block >= 0) &&
-		    (size < (__u64) pb.last_block * fs->blocksize))
+		    /* allow allocated blocks to end of PAGE_SIZE */
+		    (size < (__u64)pb.last_block * fs->blocksize) &&
+		    (pb.last_block / blkpg * blkpg != pb.last_block ||
+		     size < (__u64)(pb.last_block & ~(blkpg-1)) *fs->blocksize))
 			bad_size = 3;
 		else if (size > ext2_max_sizes[fs->super->s_log_block_size])
 			bad_size = 4;
