@@ -186,7 +186,7 @@ blkid_loff_t blkid_get_dev_size(int fd)
 #ifdef TEST_PROGRAM
 int main(int argc, char **argv)
 {
-	blkid_loff_t bytes;
+	long long bytes;
 	int	fd;
 
 	if (argc < 2) {

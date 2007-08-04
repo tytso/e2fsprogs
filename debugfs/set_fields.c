@@ -16,12 +16,14 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <strings.h>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
+#endif
+#if HAVE_STRINGS_H
+#include <strings.h>
 #endif
 #include <fcntl.h>
 #include <utime.h>
