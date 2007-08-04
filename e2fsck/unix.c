@@ -852,6 +852,7 @@ int main (int argc, char *argv[])
 	struct problem_context pctx;
 	int flags, run_result;
 	int journal_size;
+	int sysval, sys_page_size = 4096;
 	
 	clear_problem_context(&pctx);
 #ifdef MTRACE
@@ -1138,6 +1139,20 @@ restart:
 	if (ctx->superblock &&
 	    !(ctx->options & E2F_OPT_READONLY))
 		ext2fs_mark_super_dirty(fs);
+
+	/*
+	 * Calculate the number of filesystem blocks per pagesize.  If
+	 * fs->blocksize > page_size, set the number of blocks per
+	 * pagesize to 1 to avoid division by zero errors.
+	 */
+#ifdef _SC_PAGESIZE
+	sysval = sysconf(_SC_PAGESIZE);
+	if (sysval > 0)
+		sys_page_size = sysval;
+#endif /* _SC_PAGESIZE */
+	ctx->blocks_per_page = sys_page_size / fs->blocksize;
+	if (ctx->blocks_per_page == 0)
+		ctx->blocks_per_page = 1;
 
 	ehandler_init(fs->io);
 
