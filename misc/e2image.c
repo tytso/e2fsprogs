@@ -346,9 +346,8 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 	for (p = buf; p < end-8; p += rec_len) {
 		dirent = (struct ext2_dir_entry_2 *) p;
 		rec_len = dirent->rec_len;
-#ifdef EXT2FS_ENABLE_SWAPFS
-		if (fs->flags & EXT2_FLAG_SWAP_BYTES) 
-			rec_len = ext2fs_swab16(rec_len);
+#ifdef WORDS_BIGENDIAN
+		rec_len = ext2fs_swab16(rec_len);
 #endif
 #if 0
 		printf("rec_len = %d, name_len = %d\n", rec_len, dirent->name_len);
@@ -359,8 +358,7 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 			       "bad rec_len (%d)\n", (unsigned long) blk, 
 			       rec_len);
 			rec_len = end - p;
-#ifdef EXT2FS_ENABLE_SWAPFS
-			if (fs->flags & EXT2_FLAG_SWAP_BYTES) 
+#ifdef WORDS_BIGENDIAN
 				dirent->rec_len = ext2fs_swab16(rec_len);
 #endif
 			continue;

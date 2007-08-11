@@ -385,7 +385,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 		memcpy(&jsuper, start ? bh->b_data :  bh->b_data + 1024,
 		       sizeof(jsuper));
 		brelse(bh);
-#ifdef EXT2FS_ENABLE_SWAPFS
+#ifdef WORDS_BIGENDIAN
 		if (jsuper.s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC)) 
 			ext2fs_swap_super(&jsuper);
 #endif

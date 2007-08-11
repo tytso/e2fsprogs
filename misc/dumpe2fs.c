@@ -344,7 +344,6 @@ int main (int argc, char ** argv)
 	int		force = 0;
 	int		flags;
 	int		header_only = 0;
-	int		big_endian;
 	int		c;
 
 #ifdef ENABLE_NLS
@@ -415,12 +414,6 @@ int main (int argc, char ** argv)
 	if (print_badblocks) {
 		list_bad_blocks(fs, 1);
 	} else {
-		big_endian = ((fs->flags & EXT2_FLAG_SWAP_BYTES) != 0);
-#ifdef WORDS_BIGENDIAN
-		big_endian = !big_endian;
-#endif
-		if (big_endian)
-			printf(_("Note: This is a byte-swapped filesystem\n"));
 		list_super (fs->super);
 		if (fs->super->s_feature_incompat &
 		      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
