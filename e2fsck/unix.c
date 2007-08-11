@@ -52,8 +52,6 @@ extern int optind;
 #include "../version.h"
 
 /* Command line options */
-static int swapfs;
-static int normalize_swapfs;
 static int cflag;		/* check disk */
 static int show_version_only;
 static int verbose;
@@ -71,7 +69,7 @@ int journal_enable_debug = -1;
 static void usage(e2fsck_t ctx)
 {
 	fprintf(stderr,
-		_("Usage: %s [-panyrcdfvstDFSV] [-b superblock] [-B blocksize]\n"
+		_("Usage: %s [-panyrcdfvtDFV] [-b superblock] [-B blocksize]\n"
 		"\t\t[-I inode_buffer_blocks] [-P process_inode_size]\n"
 		"\t\t[-l|-L bad_blocks_file] [-C fd] [-j external_journal]\n"
 		"\t\t[-E extended-options] device\n"),
@@ -267,8 +265,7 @@ static void check_if_skip(e2fsck_t ctx)
 	if (!defer_check_on_battery)
 		batt = 0;
 
-	if ((ctx->options & E2F_OPT_FORCE) || bad_blocks_file ||
-	    cflag || swapfs)
+	if ((ctx->options & E2F_OPT_FORCE) || bad_blocks_file || cflag)
 		return;
 	
 	if ((fs->super->s_state & EXT2_ERROR_FS) ||
@@ -717,20 +714,6 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		case 'N':
 			ctx->device_name = optarg;
 			break;
-#ifdef ENABLE_SWAPFS
-		case 's':
-			normalize_swapfs = 1;
-		case 'S':
-			swapfs = 1;
-			break;
-#else
-		case 's':
-		case 'S':
-			fprintf(stderr, _("Byte-swapping filesystems "
-					  "not compiled in this version "
-					  "of e2fsck\n"));
-			exit(1);
-#endif
 		case 'k':
 			keep_bad_blocks++;
 			break;
@@ -742,7 +725,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	if (optind != argc - 1)
 		usage(ctx);
 	if ((ctx->options & E2F_OPT_NO) && !bad_blocks_file &&
-	    !cflag && !swapfs && !(ctx->options & E2F_OPT_COMPRESS_DIRS))
+	    !cflag && !(ctx->options & E2F_OPT_COMPRESS_DIRS))
 		ctx->options |= E2F_OPT_READONLY;
 	ctx->io_options = strchr(argv[optind], '?');
 	if (ctx->io_options) 
@@ -777,15 +760,6 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		}
 		close(fd);
 	}
-#ifdef ENABLE_SWAPFS
-	if (swapfs) {
-		if (cflag || bad_blocks_file) {
-			fprintf(stderr, _("Incompatible options not "
-					  "allowed when byte-swapping.\n"));
-			exit(FSCK_USAGE);
-		}
-	}
-#endif
 	if (cflag && bad_blocks_file) {
 		fprintf(stderr, _("The -c and the -l/-L options may "
 				  "not be both used at the same time.\n"));
@@ -1169,21 +1143,6 @@ restart:
 		read_bad_blocks_file(ctx, 0, !keep_bad_blocks); /* Test disk */
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		fatal_error(ctx, 0);
-#ifdef ENABLE_SWAPFS
-	if (normalize_swapfs) {
-		if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ==
-		    ext2fs_native_flag()) {
-			fprintf(stderr, _("%s: Filesystem byte order "
-				"already normalized.\n"), ctx->device_name);
-			fatal_error(ctx, 0);
-		}
-	}
-	if (swapfs) {
-		swap_filesys(ctx);
-		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
-			fatal_error(ctx, 0);
-	}
-#endif
 
 	/*
 	 * Mark the system as valid, 'til proven otherwise

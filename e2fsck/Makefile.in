@@ -62,7 +62,7 @@ COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
 #MCHECK= -DMCHECK
 
 OBJS= dict.o unix.o e2fsck.o super.o pass1.o pass1b.o pass2.o pass3.o pass4.o \
-	pass5.o journal.o swapfs.o badblocks.o util.o dirinfo.o dx_dirinfo.o \
+	pass5.o journal.o badblocks.o util.o dirinfo.o dx_dirinfo.o \
 	ehandler.o problem.o message.o recovery.o region.o revoke.o \
 	ea_refcount.o rehash.o profile.o prof_err.o $(MTRACE_OBJ)
 
@@ -71,7 +71,7 @@ PROFILED_OBJS= profiled/dict.o profiled/unix.o profiled/e2fsck.o \
 	profiled/pass2.o profiled/pass3.o profiled/pass4.o profiled/pass5.o \
 	profiled/journal.o profiled/badblocks.o profiled/util.o \
 	profiled/dirinfo.o profiled/dx_dirinfo.o profiled/ehandler.o \
-	profiled/message.o profiled/problem.o profiled/swapfs.o \
+	profiled/message.o profiled/problem.o \
 	profiled/recovery.o profiled/region.o profiled/revoke.o \
 	profiled/ea_refcount.o profiled/rehash.o profiled/profile.o \
 	profiled/prof_err.o
@@ -96,7 +96,6 @@ SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/ehandler.c \
 	$(srcdir)/problem.c \
 	$(srcdir)/message.c \
-	$(srcdir)/swapfs.c \
 	$(srcdir)/ea_refcount.c \
 	$(srcdir)/rehash.c \
 	$(srcdir)/region.c \
@@ -382,13 +381,6 @@ message.o: $(srcdir)/message.c $(srcdir)/e2fsck.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
  $(top_srcdir)/lib/blkid/blkid.h $(top_builddir)/lib/blkid/blkid_types.h \
  $(srcdir)/profile.h prof_err.h $(srcdir)/problem.h
-swapfs.o: $(srcdir)/swapfs.c $(top_srcdir)/lib/et/com_err.h \
- $(srcdir)/e2fsck.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \
- $(top_builddir)/lib/ext2fs/ext2_types.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
- $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2_io.h \
- $(top_builddir)/lib/ext2fs/ext2_err.h $(top_srcdir)/lib/ext2fs/bitops.h \
- $(top_srcdir)/lib/blkid/blkid.h $(top_builddir)/lib/blkid/blkid_types.h \
- $(srcdir)/profile.h prof_err.h
 ea_refcount.o: $(srcdir)/ea_refcount.c $(srcdir)/e2fsck.h \
  $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_builddir)/lib/ext2fs/ext2_types.h \
  $(top_srcdir)/lib/ext2fs/ext2fs.h $(top_srcdir)/lib/ext2fs/ext2_fs.h \

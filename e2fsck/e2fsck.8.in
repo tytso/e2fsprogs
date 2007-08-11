@@ -8,7 +8,7 @@ e2fsck \- check a Linux ext2/ext3 file system
 .SH SYNOPSIS
 .B e2fsck
 [
-.B \-pacnyrdfkvstDFSV
+.B \-pacnyrdfkvtDFV
 ]
 [
 .B \-b
@@ -256,17 +256,6 @@ options.
 .B \-r
 This option does nothing at all; it is provided only for backwards
 compatibility.
-.TP 
-.B \-s
-This option will byte-swap the filesystem so that it is using the normalized, 
-standard byte-order (which is i386 or little endian).  If the filesystem is
-already in the standard byte-order, 
-.B e2fsck 
-will take no action.
-.TP
-.B \-S
-This option will byte-swap the filesystem, regardless of its current 
-byte-order.
 .TP
 .B \-t
 Print timing statistics for
