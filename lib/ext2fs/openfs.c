@@ -178,12 +178,13 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	if (fs->orig_super)
 		memcpy(fs->orig_super, fs->super, SUPERBLOCK_SIZE);
 
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if ((fs->super->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC)) ||
-	    (fs->flags & EXT2_FLAG_SWAP_BYTES)) {
-		fs->flags |= EXT2_FLAG_SWAP_BYTES;
-
-		ext2fs_swap_super(fs->super);
+#ifdef WORDS_BIGENDIAN
+	fs->flags |= EXT2_FLAG_SWAP_BYTES;
+	ext2fs_swap_super(fs->super);
+#else
+	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
+		retval = EXT2_ET_UNIMPLEMENTED;
+		goto cleanup;
 	}
 #endif
 	
@@ -289,12 +290,10 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		retval = io_channel_read_blk(fs->io, blk, 1, dest);
 		if (retval)
 			goto cleanup;
-#ifdef EXT2FS_ENABLE_SWAPFS
-		if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
-			gdp = (struct ext2_group_desc *) dest;
-			for (j=0; j < groups_per_block; j++)
-				ext2fs_swap_group_desc(gdp++);
-		}
+#ifdef WORDS_BIGENDIAN
+		gdp = (struct ext2_group_desc *) dest;
+		for (j=0; j < groups_per_block; j++)
+			ext2fs_swap_group_desc(gdp++);
 #endif
 		dest += fs->blocksize;
 	}

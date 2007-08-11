@@ -25,26 +25,21 @@ errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
 	errcode_t	retval;
 	char		*p, *end;
 	struct ext2_dir_entry *dirent;
-	unsigned int	name_len, rec_len, do_swap;
+	unsigned int	name_len, rec_len;
 	
 
  	retval = io_channel_read_blk(fs->io, block, 1, buf);
 	if (retval)
 		return retval;
-#ifdef EXT2FS_ENABLE_SWAPFS
-	do_swap = (fs->flags & (EXT2_FLAG_SWAP_BYTES|
-				EXT2_FLAG_SWAP_BYTES_READ)) != 0;
-#endif
+
 	p = (char *) buf;
 	end = (char *) buf + fs->blocksize;
 	while (p < end-8) {
 		dirent = (struct ext2_dir_entry *) p;
-#ifdef EXT2FS_ENABLE_SWAPFS
-		if (do_swap) {
-			dirent->inode = ext2fs_swab32(dirent->inode);
-			dirent->rec_len = ext2fs_swab16(dirent->rec_len);
-			dirent->name_len = ext2fs_swab16(dirent->name_len);
-		}
+#ifdef WORDS_BIGENDIAN
+		dirent->inode = ext2fs_swab32(dirent->inode);
+		dirent->rec_len = ext2fs_swab16(dirent->rec_len);
+		dirent->name_len = ext2fs_swab16(dirent->name_len);
 #endif
 		name_len = dirent->name_len;
 #ifdef WORDS_BIGENDIAN
@@ -73,21 +68,11 @@ errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
 				  void *inbuf, int flags EXT2FS_ATTR((unused)))
 {
-#ifdef EXT2FS_ENABLE_SWAPFS
-	int		do_swap = 0;
+#ifdef WORDS_BIGENDIAN
 	errcode_t	retval;
 	char		*p, *end;
 	char		*buf = 0;
 	struct ext2_dir_entry *dirent;
-
-	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
-	    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE))
-		do_swap = 1;
-
-#ifndef WORDS_BIGENDIAN
-	if (!do_swap)
-		return io_channel_write_blk(fs->io, block, 1, (char *) inbuf);
-#endif
 
 	retval = ext2fs_get_mem(fs->blocksize, &buf);
 	if (retval)
@@ -103,15 +88,12 @@ errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
 			return (EXT2_ET_DIR_CORRUPTED);
 		}
 		p += dirent->rec_len;
-		if (do_swap) {
-			dirent->inode = ext2fs_swab32(dirent->inode);
-			dirent->rec_len = ext2fs_swab16(dirent->rec_len);
-			dirent->name_len = ext2fs_swab16(dirent->name_len);
-		}
-#ifdef WORDS_BIGENDIAN 
+		dirent->inode = ext2fs_swab32(dirent->inode);
+		dirent->rec_len = ext2fs_swab16(dirent->rec_len);
+		dirent->name_len = ext2fs_swab16(dirent->name_len);
+
 		if (flags & EXT2_DIRBLOCK_V2_STRUCT)
 			dirent->name_len = ext2fs_swab16(dirent->name_len);
-#endif
 	}
  	retval = io_channel_write_blk(fs->io, block, 1, buf);
 	ext2fs_free_mem(&buf);

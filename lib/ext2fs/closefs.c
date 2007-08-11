@@ -191,12 +191,11 @@ static errcode_t write_backup_super(ext2_filsys fs, dgrp_t group,
 	
 	if (sgrp > ((1 << 16) - 1))
 		sgrp = (1 << 16) - 1;
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if (fs->flags & EXT2_FLAG_SWAP_BYTES)
-		super_shadow->s_block_group_nr = ext2fs_swab16(sgrp);
-	else
+#ifdef WORDS_BIGENDIAN
+	super_shadow->s_block_group_nr = ext2fs_swab16(sgrp);
+#else
+	fs->super->s_block_group_nr = sgrp;
 #endif
-		fs->super->s_block_group_nr = sgrp;
 
 	return io_channel_write_blk(fs->io, group_block, -SUPERBLOCK_SIZE, 
 				    super_shadow);
@@ -220,29 +219,23 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 
 	fs->super->s_wtime = fs->now ? fs->now : time(NULL);
 	fs->super->s_block_group_nr = 0;
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
-		retval = EXT2_ET_NO_MEMORY;
-		retval = ext2fs_get_mem(SUPERBLOCK_SIZE, &super_shadow);
-		if (retval)
-			goto errout;
-		retval = ext2fs_get_mem((size_t)(fs->blocksize *
-						 fs->desc_blocks),
-					&group_shadow);
-		if (retval)
-			goto errout;
-		memset(group_shadow, 0, (size_t) fs->blocksize *
-		       fs->desc_blocks);
-
-		/* swap the group descriptors */
-		for (j=0, s=fs->group_desc, t=group_shadow;
-		     j < fs->group_desc_count; j++, t++, s++) {
-			*t = *s;
-			ext2fs_swap_group_desc(t);
-		}
-	} else {
-		super_shadow = fs->super;
-		group_shadow = fs->group_desc;
+#ifdef WORDS_BIGENDIAN
+	retval = EXT2_ET_NO_MEMORY;
+	retval = ext2fs_get_mem(SUPERBLOCK_SIZE, &super_shadow);
+	if (retval)
+		goto errout;
+	retval = ext2fs_get_mem((size_t)(fs->blocksize * fs->desc_blocks),
+				&group_shadow);
+	if (retval)
+		goto errout;
+	memset(group_shadow, 0, (size_t) fs->blocksize *
+	       fs->desc_blocks);
+	
+	/* swap the group descriptors */
+	for (j=0, s=fs->group_desc, t=group_shadow;
+	     j < fs->group_desc_count; j++, t++, s++) {
+		*t = *s;
+		ext2fs_swap_group_desc(t);
 	}
 #else
 	super_shadow = fs->super;
@@ -255,11 +248,9 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	 * we write out the backup superblocks.)
 	 */
 	fs->super->s_state &= ~EXT2_VALID_FS;
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
-		*super_shadow = *fs->super;
-		ext2fs_swap_super(super_shadow);
-	}
+#ifdef WORDS_BIGENDIAN
+	*super_shadow = *fs->super;
+	ext2fs_swap_super(super_shadow);
 #endif
 
 	/*
@@ -333,11 +324,9 @@ write_primary_superblock_only:
 
 	fs->super->s_block_group_nr = 0;
 	fs->super->s_state = fs_state;
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
-		*super_shadow = *fs->super;
-		ext2fs_swap_super(super_shadow);
-	}
+#ifdef WORDS_BIGENDIAN
+	*super_shadow = *fs->super;
+	ext2fs_swap_super(super_shadow);
 #endif
 
 	retval = io_channel_flush(fs->io);
@@ -350,12 +339,12 @@ write_primary_superblock_only:
 	retval = io_channel_flush(fs->io);
 errout:
 	fs->super->s_state = fs_state;
-	if (fs->flags & EXT2_FLAG_SWAP_BYTES) {
-		if (super_shadow)
-			ext2fs_free_mem(&super_shadow);
-		if (group_shadow)
-			ext2fs_free_mem(&group_shadow);
-	}
+#ifdef WORDS_BIGENDIAN
+	if (super_shadow)
+		ext2fs_free_mem(&super_shadow);
+	if (group_shadow)
+		ext2fs_free_mem(&group_shadow);
+#endif
 	return retval;
 }
 

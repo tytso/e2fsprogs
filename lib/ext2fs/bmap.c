@@ -51,10 +51,8 @@ static _BMAP_INLINE_ errcode_t block_ind_bmap(ext2_filsys fs, int flags,
 
 	if (flags & BMAP_SET) {
 		b = *ret_blk;
-#ifdef EXT2FS_ENABLE_SWAPFS
-		if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
-		    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE))
-			b = ext2fs_swab32(b);
+#ifdef WORDS_BIGENDIAN
+		b = ext2fs_swab32(b);
 #endif
 		((blk_t *) block_buf)[nr] = b;
 		return io_channel_write_blk(fs->io, ind, 1, block_buf);
@@ -62,10 +60,8 @@ static _BMAP_INLINE_ errcode_t block_ind_bmap(ext2_filsys fs, int flags,
 
 	b = ((blk_t *) block_buf)[nr];
 
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
-	    (fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
-		b = ext2fs_swab32(b);
+#ifdef WORDS_BIGENDIAN
+	b = ext2fs_swab32(b);
 #endif
 
 	if (!b && (flags & BMAP_ALLOC)) {
@@ -75,13 +71,11 @@ static _BMAP_INLINE_ errcode_t block_ind_bmap(ext2_filsys fs, int flags,
 		if (retval)
 			return retval;
 
-#ifdef EXT2FS_ENABLE_SWAPFS
-		if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
-		    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE))
-			((blk_t *) block_buf)[nr] = ext2fs_swab32(b);
-		else
+#ifdef WORDS_BIGENDIAN
+		((blk_t *) block_buf)[nr] = ext2fs_swab32(b);
+#else
+		((blk_t *) block_buf)[nr] = b;
 #endif
-			((blk_t *) block_buf)[nr] = b;
 
 		retval = io_channel_write_blk(fs->io, ind, 1, block_buf);
 		if (retval)
@@ -167,10 +161,8 @@ errcode_t ext2fs_bmap(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 	if (block < EXT2_NDIR_BLOCKS) {
 		if (bmap_flags & BMAP_SET) {
 			b = *phys_blk;
-#ifdef EXT2FS_ENABLE_SWAPFS
-			if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
-			    (fs->flags & EXT2_FLAG_SWAP_BYTES_READ))
-				b = ext2fs_swab32(b);
+#ifdef WORDS_BIGENDIAN
+			b = ext2fs_swab32(b);
 #endif
 			inode_bmap(inode, block) = b;
 			inode_dirty++;

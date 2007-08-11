@@ -30,10 +30,8 @@ errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf)
  	retval = io_channel_read_blk(fs->io, block, 1, buf);
 	if (retval)
 		return retval;
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if ((fs->flags & (EXT2_FLAG_SWAP_BYTES|
-			  EXT2_FLAG_SWAP_BYTES_READ)) != 0)
-		ext2fs_swap_ext_attr(buf, buf, fs->blocksize, 1);
+#ifdef WORDS_BIGENDIAN
+	ext2fs_swap_ext_attr(buf, buf, fs->blocksize, 1);
 #endif
 	return 0;
 }
@@ -44,17 +42,15 @@ errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *inbuf)
 	char		*write_buf;
 	char		*buf = NULL;
 
-#ifdef EXT2FS_ENABLE_SWAPFS
-	if ((fs->flags & EXT2_FLAG_SWAP_BYTES) ||
-	    (fs->flags & EXT2_FLAG_SWAP_BYTES_WRITE)) {
-		retval = ext2fs_get_mem(fs->blocksize, &buf);
-		if (retval)
-			return retval;
-		write_buf = buf;
-		ext2fs_swap_ext_attr(buf, inbuf, fs->blocksize, 1);
-	} else
+#ifdef WORDS_BIGENDIAN
+	retval = ext2fs_get_mem(fs->blocksize, &buf);
+	if (retval)
+		return retval;
+	write_buf = buf;
+	ext2fs_swap_ext_attr(buf, inbuf, fs->blocksize, 1);
+#else
+	write_buf = (char *) inbuf;
 #endif
-		write_buf = (char *) inbuf;
  	retval = io_channel_write_blk(fs->io, block, 1, write_buf);
 	if (buf)
 		ext2fs_free_mem(&buf);
