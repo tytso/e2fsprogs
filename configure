@@ -684,7 +684,6 @@ CHECKER_CMT
 LIB_EXT
 STATIC_LIB_EXT
 PROFILED_LIB_EXT
-SWAPFS_CMT
 DEBUGFS_CMT
 IMAGER_CMT
 RESIZER_CMT
@@ -1368,7 +1367,6 @@ Optional Features:
   --enable-jbd-debug  	  enable journal debugging
   --enable-blkid-debug    enable blkid debugging
   --enable-testio-debug   enable the use of the test I/O manager for debugging
-  --disable-swapfs    	  disable support of legacy byte-swapped filesystems
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
   --disable-resizer   	  disable support of e2resize program
@@ -3991,32 +3989,6 @@ else
   echo "Disabling testio debugging by default"
 
 fi
-
-# Check whether --enable-swapfs was given.
-if test "${enable_swapfs+set}" = set; then
-  enableval=$enable_swapfs; if test "$enableval" = "no"
-then
-	SWAPFS_CMT=#
-	echo "Disabling swapfs support"
-else
-	SWAPFS_CMT=
-	cat >>confdefs.h <<\_ACEOF
-#define ENABLE_SWAPFS 1
-_ACEOF
-
-	echo "Enabling swapfs support"
-fi
-
-else
-  SWAPFS_CMT=
-echo "Enabling swapfs support by default"
-cat >>confdefs.h <<\_ACEOF
-#define ENABLE_SWAPFS 1
-_ACEOF
-
-
-fi
-
 
 # Check whether --enable-debugfs was given.
 if test "${enable_debugfs+set}" = set; then
@@ -15694,11 +15666,11 @@ CHECKER_CMT!$CHECKER_CMT$ac_delim
 LIB_EXT!$LIB_EXT$ac_delim
 STATIC_LIB_EXT!$STATIC_LIB_EXT$ac_delim
 PROFILED_LIB_EXT!$PROFILED_LIB_EXT$ac_delim
-SWAPFS_CMT!$SWAPFS_CMT$ac_delim
 DEBUGFS_CMT!$DEBUGFS_CMT$ac_delim
 IMAGER_CMT!$IMAGER_CMT$ac_delim
 RESIZER_CMT!$RESIZER_CMT$ac_delim
 E2FSCK_TYPE!$E2FSCK_TYPE$ac_delim
+FSCK_PROG!$FSCK_PROG$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 76; then
@@ -15768,7 +15740,6 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
-FSCK_PROG!$FSCK_PROG$ac_delim
 FSCK_MAN!$FSCK_MAN$ac_delim
 E2INITRD_PROG!$E2INITRD_PROG$ac_delim
 E2INITRD_MAN!$E2INITRD_MAN$ac_delim
@@ -15851,7 +15822,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 81; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 80; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

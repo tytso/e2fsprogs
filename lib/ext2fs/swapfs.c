@@ -20,7 +20,7 @@
 #include "ext2fs.h"
 #include <ext2fs/ext2_ext_attr.h>
 
-#ifdef EXT2FS_ENABLE_SWAPFS
+#ifdef WORDS_BIGENDIAN
 void ext2fs_swap_super(struct ext2_super_block * sb)
 {
   	int i;

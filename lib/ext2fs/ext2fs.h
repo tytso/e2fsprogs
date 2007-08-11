@@ -30,15 +30,6 @@ extern "C" {
 #endif
 
 /*
- * Build in support for byte-swapping filesystems if we the feature
- * has been configured or if we're being built on a CPU architecture
- * with a non-native byte order.
- */
-#if defined(ENABLE_SWAPFS) || defined(WORDS_BIGENDIAN)
-#define EXT2FS_ENABLE_SWAPFS
-#endif
-
-/*
  * Where the master copy of the superblock is located, and how big
  * superblocks are supposed to be.  We define SUPERBLOCK_SIZE because
  * the size of the superblock structure is not necessarily trustworthy
