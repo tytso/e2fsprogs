@@ -111,6 +111,11 @@ extern errcode_t io_channel_write_byte(io_channel channel,
 /* unix_io.c */
 extern io_manager unix_io_manager;
 
+/* undo_io.c */
+extern io_manager undo_io_manager;
+extern errcode_t set_undo_io_backing_manager(io_manager manager);
+extern errcode_t set_undo_io_backup_file(char *file_name);
+
 /* test_io.c */
 extern io_manager test_io_manager, test_io_backing_manager;
 extern void (*test_io_cb_read_blk)
