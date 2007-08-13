@@ -44,6 +44,7 @@ extern int optind;
 #endif
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <libgen.h>
 
 #include "ext2fs/ext2_fs.h"
 #include "et/com_err.h"
@@ -87,6 +88,7 @@ char *volume_label;
 char *mount_dir;
 char *journal_device;
 int sync_kludge;	/* Set using the MKE2FS_SYNC env. option */
+char **fs_types;
 
 profile_t	profile;
 
@@ -339,68 +341,6 @@ static void progress_close(struct progress_struct *progress)
 	fputs(_("done                            \n"), stdout);
 }
 
-
-/*
- * Helper function which zeros out _num_ blocks starting at _blk_.  In
- * case of an error, the details of the error is returned via _ret_blk_
- * and _ret_count_ if they are non-NULL pointers.  Returns 0 on
- * success, and an error code on an error.
- *
- * As a special case, if the first argument is NULL, then it will
- * attempt to free the static zeroizing buffer.  (This is to keep
- * programs that check for memory leaks happy.)
- */
-static errcode_t zero_blocks(ext2_filsys fs, blk_t blk, int num,
-			     struct progress_struct *progress,
-			     blk_t *ret_blk, int *ret_count)
-{
-	int		j, count, next_update, next_update_incr;
-	static char	*buf;
-	errcode_t	retval;
-
-	/* If fs is null, clean up the static buffer and return */
-	if (!fs) {
-		if (buf) {
-			free(buf);
-			buf = 0;
-		}
-		return 0;
-	}
-	/* Allocate the zeroizing buffer if necessary */
-	if (!buf) {
-		buf = malloc(fs->blocksize * STRIDE_LENGTH);
-		if (!buf) {
-			com_err("malloc", ENOMEM,
-				_("while allocating zeroizing buffer"));
-			exit(1);
-		}
-		memset(buf, 0, fs->blocksize * STRIDE_LENGTH);
-	}
-	/* OK, do the write loop */
-	next_update = 0;
-	next_update_incr = num / 100;
-	if (next_update_incr < 1)
-		next_update_incr = 1;
-	for (j=0; j < num; j += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
-		count = num - j;
-		if (count > STRIDE_LENGTH)
-			count = STRIDE_LENGTH;
-		retval = io_channel_write_blk(fs->io, blk, count, buf);
-		if (retval) {
-			if (ret_count)
-				*ret_count = count;
-			if (ret_blk)
-				*ret_blk = blk;
-			return retval;
-		}
-		if (progress && j > next_update) {
-			next_update += num / 100;
-			progress_update(progress, blk);
-		}
-	}
-	return 0;
-}	
-
 static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 {
 	errcode_t	retval;
@@ -433,7 +373,7 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_ZEROED;
 			ext2fs_group_desc_csum_set(fs, i);
 		}
-		retval = zero_blocks(fs, blk, num, 0, &blk, &num);
+		retval = ext2fs_zero_blocks(fs, blk, num, &blk, &num);
 		if (retval) {
 			fprintf(stderr, _("\nCould not write %d "
 				  "blocks in inode table starting at %u: %s\n"),
@@ -447,7 +387,7 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 				sync();
 		}
 	}
-	zero_blocks(0, 0, 0, 0, 0, 0);
+	ext2fs_zero_blocks(0, 0, 0, 0, 0);
 	progress_close(&progress);
 }
 
@@ -596,8 +536,8 @@ static void create_journal_dev(ext2_filsys fs)
 	struct progress_struct progress;
 	errcode_t		retval;
 	char			*buf;
-	blk_t			blk;
-	int			count;
+	blk_t			blk, err_blk;
+	int			c, count, err_count;
 
 	retval = ext2fs_create_journal_superblock(fs,
 				  fs->super->s_blocks_count, 0, &buf);
@@ -612,15 +552,26 @@ static void create_journal_dev(ext2_filsys fs)
 		progress_init(&progress, _("Zeroing journal device: "),
 			      fs->super->s_blocks_count);
 
-	retval = zero_blocks(fs, 0, fs->super->s_blocks_count,
-			     &progress, &blk, &count);
-	if (retval) {
-		com_err("create_journal_dev", retval,
-			_("while zeroing journal device (block %u, count %d)"),
-			blk, count);
-		exit(1);
+	blk = 0;
+	count = fs->super->s_blocks_count;
+	while (count > 0) {
+		if (count > 1024)
+			c = 1024;
+		else
+			c = count;
+		retval = ext2fs_zero_blocks(fs, blk, c, &err_blk, &err_count);
+		if (retval) {
+			com_err("create_journal_dev", retval,
+				_("while zeroing journal device "
+				  "(block %u, count %d)"),
+				err_blk, err_count);
+			exit(1);
+		}
+		blk += c;
+		count -= c;
+		progress_update(&progress, blk);
 	}
-	zero_blocks(0, 0, 0, 0, 0, 0);
+	ext2fs_zero_blocks(0, 0, 0, 0, 0);
 
 	retval = io_channel_write_blk(fs->io,
 				      fs->super->s_first_data_block+1,
@@ -1109,7 +1060,6 @@ static void PRS(int argc, char *argv[])
 	char *		extended_opts = 0;
 	const char *	fs_type = 0;
 	const char *	usage_types = 0;
-	char		**fs_types;
 	blk_t		dev_size;
 #ifdef __linux__
 	struct 		utsname ut;
@@ -1709,6 +1659,102 @@ static void PRS(int argc, char *argv[])
 						fs_param.s_blocks_count);
 }
 
+static int should_do_undo(const char *name)
+{
+	errcode_t retval;
+	io_channel channel;
+	__u16	s_magic;
+	struct ext2_super_block super;
+	io_manager manager = unix_io_manager;
+	int csum_flag, force_undo;
+
+	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
+					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
+	force_undo = get_int_from_profile(fs_types, "force_undo", 0);
+	if (!force_undo && (!csum_flag || !lazy_itable_init))
+		return 0;
+
+	retval = manager->open(name, IO_FLAG_EXCLUSIVE,  &channel);
+	if (retval) {
+		/*
+		 * We don't handle error cases instead we
+		 * declare that the file system doesn't exist
+		 * and let the rest of mke2fs take care of
+		 * error
+		 */
+		retval = 0;
+		goto open_err_out;
+	}
+
+	io_channel_set_blksize(channel, SUPERBLOCK_OFFSET);
+	retval = io_channel_read_blk(channel, 1, -SUPERBLOCK_SIZE, &super);
+	if (retval) {
+		retval = 0;
+		goto err_out;
+	}
+
+#if defined(WORDS_BIGENDIAN)
+	s_magic = ext2fs_swab16(super.s_magic);
+#else
+	s_magic = super.s_magic;
+#endif
+
+	if (s_magic == EXT2_SUPER_MAGIC)
+		retval = 1;
+
+err_out:
+	io_channel_close(channel);
+
+open_err_out:
+
+	return retval;
+}
+
+static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
+{
+	errcode_t retval = 0;
+	char *tdb_dir, tdb_file[PATH_MAX];
+	char *device_name, *tmp_name;
+
+	/*
+	 * Configuration via a conf file would be
+	 * nice
+	 */
+	tdb_dir = getenv("E2FSPROGS_UNDO_DIR");
+	if (!tdb_dir)
+		profile_get_string(profile, "defaults",
+				   "undo_dir", 0, "/var/lib/e2fsprogs",
+				   &tdb_dir);
+
+	if (!strcmp(tdb_dir, "none") || (tdb_dir[0] == 0) ||
+	    access(tdb_dir, W_OK))
+		return 0;
+
+	tmp_name = strdup(name);
+	device_name = basename(tmp_name);
+	sprintf(tdb_file, "%s/mke2fs-%s.e2undo", tdb_dir, device_name);
+
+	if (!access(tdb_file, F_OK)) {
+		if (unlink(tdb_file) < 0) {
+			retval = errno;
+			com_err(program_name, retval,
+				_("while trying to delete %s"),
+				tdb_file);
+			return retval;
+		}
+	}
+
+	set_undo_io_backing_manager(*io_ptr);
+	*io_ptr = undo_io_manager;
+	set_undo_io_backup_file(tdb_file);
+	printf(_("Overwriting existing filesystem; this can be undone "
+		 "using the command:\n"
+		 "    e2undo %s %s\n\n"), tdb_file, name);
+err_out:
+	free(tmp_name);
+	return retval;
+}
+
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
@@ -1718,6 +1764,7 @@ int main (int argc, char *argv[])
 	unsigned int	i;
 	int		val;
 	io_manager	io_ptr;
+	char		tdb_string[40];
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -1734,6 +1781,12 @@ int main (int argc, char *argv[])
 	io_ptr = unix_io_manager;
 #endif
 
+	if (should_do_undo(device_name)) {
+		retval = mke2fs_setup_tdb(device_name, &io_ptr);
+		if (retval)
+			exit(1);
+	}
+
 	/*
 	 * Initialize the superblock....
 	 */
@@ -1743,6 +1796,9 @@ int main (int argc, char *argv[])
 		com_err(device_name, retval, _("while setting up superblock"));
 		exit(1);
 	}
+	sprintf(tdb_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
+		32768 : fs->blocksize * 8);
+	io_channel_set_options(fs->io, tdb_string);
 
 	if (fs_param.s_flags & EXT2_FLAGS_TEST_FILESYS)
 		fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
@@ -1857,8 +1913,8 @@ int main (int argc, char *argv[])
 		if (start > rsv)
 			start -= rsv;
 		if (start > 0)
-			retval = zero_blocks(fs, start, blocks - start,
-					     NULL, &ret_blk, NULL);
+			retval = ext2fs_zero_blocks(fs, start, blocks - start,
+						    &ret_blk, NULL);
 
 		if (retval) {
 			com_err(program_name, retval,
