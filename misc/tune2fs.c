@@ -97,7 +97,8 @@ static void usage(void)
 static __u32 ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_DIR_INDEX,	/* Compat */
-	EXT2_FEATURE_INCOMPAT_FILETYPE,		/* Incompat */
+	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
+		EXT4_FEATURE_INCOMPAT_FLEX_BG,
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
 };
 
@@ -283,6 +284,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 {
 	int sparse, old_sparse, filetype, old_filetype;
 	int journal, old_journal, dxdir, old_dxdir;
+	int flex_bg, old_flex_bg;
 	struct ext2_super_block *sb= fs->super;
 	__u32	old_compat, old_incompat, old_ro_compat;
 
@@ -294,6 +296,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 	old_filetype = sb->s_feature_incompat &
 		EXT2_FEATURE_INCOMPAT_FILETYPE;
+	old_flex_bg = sb->s_feature_incompat &
+		EXT4_FEATURE_INCOMPAT_FLEX_BG;
 	old_journal = sb->s_feature_compat &
 		EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 	old_dxdir = sb->s_feature_compat &
@@ -308,6 +312,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 	filetype = sb->s_feature_incompat &
 		EXT2_FEATURE_INCOMPAT_FILETYPE;
+	flex_bg = sb->s_feature_incompat &
+		EXT4_FEATURE_INCOMPAT_FLEX_BG;
 	journal = sb->s_feature_compat &
 		EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 	dxdir = sb->s_feature_compat &
@@ -351,6 +357,14 @@ static void update_feature_set(ext2_filsys fs, char *features)
 			sb->s_def_hash_version = EXT2_HASH_TEA;
 		if (uuid_is_null((unsigned char *) sb->s_hash_seed))
 			uuid_generate((unsigned char *) sb->s_hash_seed);
+	}
+	if (!flex_bg && old_flex_bg) {
+		if (ext2fs_check_desc(fs)) {
+			fputs(_("Clearing the flex_bg flag would "
+				"cause the the filesystem to be\n"
+				"inconsistent.\n"), stderr);
+			exit(1);
+		}
 	}
 
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
