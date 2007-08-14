@@ -21,6 +21,7 @@ extern char *program_name;
 errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt, 
 			   blk_t *new_size, int flags EXT2FS_ATTR((unused)))
 {
+#ifdef __linux__
 	struct ext2_new_group_input input;
 	struct ext2_super_block *sb = fs->super;
 	unsigned long		new_desc_blocks;
@@ -158,4 +159,9 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	close(fd);
 
 	return 0;
+#else
+	printf(_("Filesystem at %s is mounted on %s, and on-line resizing is"
+		 "not supported on this system.\n"), fs->device_name, mtpt);
+	exit(1);
+#endif
 }
