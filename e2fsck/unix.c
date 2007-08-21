@@ -585,6 +585,10 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 #endif
 	char		*extended_opts = 0;
 	char		*cp;
+	int 		res;		/* result of sscanf */
+#ifdef CONFIG_JBD_DEBUG
+	char 		*jbd_debug;
+#endif
 
 	retval = e2fsck_allocate_context(&ctx);
 	if (retval)
@@ -614,7 +618,10 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		switch (c) {
 		case 'C':
 			ctx->progress = e2fsck_update_progress;
-			ctx->progress_fd = atoi(optarg);
+			res = sscanf(optarg, "%d", &ctx->progress_fd);
+			if (res != 1)
+				goto sscanf_err;
+
 			if (!ctx->progress_fd)
 				break;
 			/* Validate the file descriptor to avoid disasters */
@@ -674,20 +681,26 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			/* What we do by default, anyway! */
 			break;
 		case 'b':
-			ctx->use_superblock = atoi(optarg);
+			res = sscanf(optarg, "%d", &ctx->use_superblock);
+			if (res != 1)
+				goto sscanf_err;
 			ctx->flags |= E2F_FLAG_SB_SPECIFIED;
 			break;
 		case 'B':
 			ctx->blocksize = atoi(optarg);
 			break;
 		case 'I':
-			ctx->inode_buffer_blocks = atoi(optarg);
+			res = sscanf(optarg, "%d", &ctx->inode_buffer_blocks);
+			if (res != 1)
+				goto sscanf_err;
 			break;
 		case 'j':
 			ctx->journal_name = string_copy(ctx, optarg, 0);
 			break;
 		case 'P':
-			ctx->process_inode_size = atoi(optarg);
+			res = sscanf(optarg, "%d", &ctx->process_inode_size);
+			if (res != 1)
+				goto sscanf_err;
 			break;
 		case 'L':
 			replace_bad_blocks++;
@@ -830,10 +843,22 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		putenv(newpath);
 	}
 #ifdef CONFIG_JBD_DEBUG
-	if (getenv("E2FSCK_JBD_DEBUG"))
-		journal_enable_debug = atoi(getenv("E2FSCK_JBD_DEBUG"));
+	jbd_debug = getenv("E2FSCK_JBD_DEBUG");
+	if (jbd_debug)
+		res = sscanf(jbd_debug, "%d", &journal_enable_debug);
+		if (res != 1) {
+			fprintf(stderr,
+			        _("E2FSCK_JBD_DEBUG \"%s\" not an integer\n\n"),
+			        jbd_debug);
+			exit (1);
+		}
 #endif
 	return 0;
+
+sscanf_err:
+	fprintf(stderr, _("\nInvalid non-numeric argument to -%c (\"%s\")\n\n"),
+	        c, optarg);
+	exit (1);
 }
 
 static const char *my_ver_string = E2FSPROGS_VERSION;
