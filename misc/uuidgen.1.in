@@ -18,7 +18,8 @@ uuidgen \- command\-line utility to create a new UUID value
 .SH DESCRIPTION
 The
 .B uuidgen
-program creates a new universally unique identifier (UUID) using the
+program creates (and prints) 
+a new universally unique identifier (UUID) using the
 .BR libuuid (3)
 library.  The new UUID can reasonably be considered unique among 
 all UUIDs created on the local system, 
@@ -34,10 +35,6 @@ will generate a random-based UUID if a high-quality random number
 generator is present.  Otherwise, it will chose a time-based UUID.  It 
 is possible to force the generation of one of these two 
 UUID types by using the
-.PP
-A UUID of the form 1b4e28ba-2fa1-11d2-883f-b9a761bde3fb (in
-.BR printf (3)
-format "%08x-%04x-%04x-%04x-%012x") is output to the standard output.
 .B \-r
 or
 .B \-t
