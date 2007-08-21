@@ -294,7 +294,8 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 		if (ext2fs_inode_has_valid_blocks(&inode) ||
 		    (ino == EXT2_BAD_INO))
 			pctx.errcode = ext2fs_block_iterate2(fs, ino,
-				     0, block_buf, process_pass1b_block, &pb);
+					     BLOCK_FLAG_READ_ONLY, block_buf,
+					     process_pass1b_block, &pb);
 		if (inode.i_file_acl)
 			process_pass1b_block(fs, &inode.i_file_acl,
 					     BLOCK_COUNT_EXTATTR, 0, 0, &pb);
@@ -590,8 +591,8 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 
 	e2fsck_read_inode(ctx, ino, &inode, "delete_file");
 	if (ext2fs_inode_has_valid_blocks(&inode))
-		pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
-						     delete_file_block, &pb);
+		pctx.errcode = ext2fs_block_iterate2(fs, ino, BLOCK_FLAG_READ_ONLY, 
+						     block_buf, delete_file_block, &pb);
 	if (pctx.errcode)
 		fix_problem(ctx, PR_1B_BLOCK_ITERATE, &pctx);
 	if (ctx->inode_bad_map)

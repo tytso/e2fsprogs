@@ -16,7 +16,7 @@ struct problem_context {
 	ext2_ino_t ino, ino2, dir;
 	struct ext2_inode *inode;
 	struct ext2_dir_entry *dirent;
-	blk_t	blk, blk2;
+	blk64_t	blk, blk2;
 	e2_blkcnt_t	blkcount;
 	int		group;
 	__u64	num;
@@ -454,6 +454,27 @@ struct problem_context {
 
 /* inode appears to be a directory */
 #define PR_1_TREAT_AS_DIRECTORY		0x010055
+
+/* Error while reading extent tree */
+#define PR_1_READ_EXTENT		0x010056
+
+/* Error deleting a bogus extent */
+#define PR_1_EXTENT_DELETE_FAIL		0x010057
+
+/* Bad starting block in extent */
+#define PR_1_EXTENT_BAD_START_BLK	0x010058
+
+/* Extent ends beyond filesystem */
+#define PR_1_EXTENT_ENDS_BEYOND		0x010059
+
+/* EXTENTS_FL flag set on a non-extents capable filesystem */
+#define PR_1_EXTENTS_SET		0x01005A
+
+/* inode has extents, superblock missing INCOMPAT_EXTENTS feature */
+#define PR_1_EXTENT_FEATURE		0x01005B
+
+/* inode missing EXTENTS_FL, but is an extent inode */
+#define PR_1_UNSET_EXTENT_FL		0x01005C
 
 /*
  * Pass 1b errors

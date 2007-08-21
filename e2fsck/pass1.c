@@ -480,7 +480,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 	struct		scan_callback_struct scan_struct;
 	struct ext2_super_block *sb = ctx->fs->super;
 	const char	*old_op;
-	int		imagic_fs;
+	int		imagic_fs, extent_fs;
 	int		busted_fs_time = 0;
 	int		inode_size;
 	
@@ -514,6 +514,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 #undef EXT2_BPP
 
 	imagic_fs = (sb->s_feature_compat & EXT2_FEATURE_COMPAT_IMAGIC_INODES);
+	extent_fs = (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS);
 
 	/*
 	 * Allocate bitmaps structures
@@ -653,6 +654,39 @@ void e2fsck_pass1(e2fsck_t ctx)
 				return;
 			}
 		}
+		
+		if ((inode->i_flags & EXT4_EXTENTS_FL) && !extent_fs && 
+		    (inode->i_links_count || (ino == EXT2_BAD_INO) ||
+		     (ino == EXT2_ROOT_INO) || (ino == EXT2_JOURNAL_INO))) {
+			if ((ext2fs_extent_header_verify(inode->i_block, 
+						 sizeof(inode->i_block)) == 0) &&
+			    fix_problem(ctx, PR_1_EXTENT_FEATURE, &pctx)) {
+				sb->s_feature_incompat |= EXT3_FEATURE_INCOMPAT_EXTENTS;
+				ext2fs_mark_super_dirty(fs);
+				extent_fs = 1;
+			} else if (fix_problem(ctx, PR_1_EXTENTS_SET, &pctx)) {
+			clear_inode:
+				e2fsck_clear_inode(ctx, ino, inode, 0, "pass1");
+				if (ino == EXT2_BAD_INO)
+					ext2fs_mark_inode_bitmap(ctx->inode_used_map, 
+								 ino);
+				continue;
+			}
+		}
+
+		if (extent_fs && !(inode->i_flags & EXT4_EXTENTS_FL) &&
+		    (inode->i_links_count || (ino == EXT2_BAD_INO) ||
+		     (ino == EXT2_ROOT_INO) || (ino == EXT2_JOURNAL_INO)) &&
+		    (LINUX_S_ISREG(inode->i_mode) ||
+		     LINUX_S_ISDIR(inode->i_mode)) &&
+		    (ext2fs_extent_header_verify(inode->i_block, 
+						 sizeof(inode->i_block)) == 0)) {
+			if (fix_problem(ctx, PR_1_UNSET_EXTENT_FL, &pctx)) {
+				inode->i_flags |= EXT4_EXTENTS_FL;
+				e2fsck_write_inode(ctx, ino, inode, "pass1");
+			}
+		}
+
 		if (ino == EXT2_BAD_INO) {
 			struct process_block_struct pb;
 			
@@ -695,10 +729,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 			 * regnerated in pass #3.
 			 */
 			if (!LINUX_S_ISDIR(inode->i_mode)) {
-				if (fix_problem(ctx, PR_1_ROOT_NO_DIR, &pctx)) {
-					e2fsck_clear_inode(ctx, ino, inode,
-							   0, "pass1");
-				}
+				if (fix_problem(ctx, PR_1_ROOT_NO_DIR, &pctx))
+					goto clear_inode;
 			}
 			/*
 			 * If dtime is set, offer to clear it.  mke2fs
@@ -904,10 +936,11 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ctx->fs_dind_count++;
 		if (inode->i_block[EXT2_TIND_BLOCK])
 			ctx->fs_tind_count++;
-		if (inode->i_block[EXT2_IND_BLOCK] ||
-		    inode->i_block[EXT2_DIND_BLOCK] ||
-		    inode->i_block[EXT2_TIND_BLOCK] ||
-		    inode->i_file_acl) {
+		if (!(inode->i_flags & EXT4_EXTENTS_FL) &&
+		    (inode->i_block[EXT2_IND_BLOCK] ||
+		     inode->i_block[EXT2_DIND_BLOCK] ||
+		     inode->i_block[EXT2_TIND_BLOCK] ||
+		     inode->i_file_acl)) {
 			inodes_to_process[process_inode_count].ino = ino;
 			inodes_to_process[process_inode_count].inode = *inode;
 			process_inode_count++;
@@ -1407,8 +1440,7 @@ clear_extattr:
 
 /* Returns 1 if bad htree, 0 if OK */
 static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
-			ext2_ino_t ino EXT2FS_ATTR((unused)),
-			struct ext2_inode *inode,
+			ext2_ino_t ino, struct ext2_inode *inode,
 			char *block_buf)
 {
 	struct ext2_dx_root_info	*root;
@@ -1422,12 +1454,17 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 	     fix_problem(ctx, PR_1_HTREE_SET, pctx)))
 		return 1;
 
-	blk = inode->i_block[0];
-	if (((blk == 0) ||
-	     (blk < fs->super->s_first_data_block) ||
-	     (blk >= fs->super->s_blocks_count)) &&
-	    fix_problem(ctx, PR_1_HTREE_BADROOT, pctx))
-		return 1;
+	pctx->errcode = ext2fs_bmap(fs, ino, inode, 0, 0, 0, &blk);
+
+	if ((pctx->errcode) ||
+	    (blk == 0) ||
+	    (blk < fs->super->s_first_data_block) ||
+	    (blk >= fs->super->s_blocks_count)) {
+		if (fix_problem(ctx, PR_1_HTREE_BADROOT, pctx))
+			return 1;
+		else
+			return 0;
+	}
 
 	retval = io_channel_read_blk(fs->io, blk, 1, block_buf);
 	if (retval && fix_problem(ctx, PR_1_HTREE_BADROOT, pctx))
@@ -1463,7 +1500,7 @@ void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
 			struct ext2_inode *inode, int restart_flag,
 			const char *source)
 {
-
+	inode->i_flags = 0;
 	inode->i_links_count = 0;
 	ext2fs_icount_store(ctx->inode_link_info, ino, 0);
 	inode->i_dtime = ctx->now;
@@ -1482,6 +1519,119 @@ void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
 	ctx->flags |= restart_flag;
 
 	e2fsck_write_inode(ctx, ino, inode, source);
+}
+
+static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
+			     struct process_block_struct *pb, 
+			     ext2_extent_handle_t ehandle)
+{
+	struct ext2fs_extent	extent;
+	blk_t			blk;
+	e2_blkcnt_t		blockcnt;
+	int			i;
+	int			is_dir, is_leaf;
+	errcode_t		problem;
+
+
+	pctx->errcode = ext2fs_extent_get(ehandle, EXT2_EXTENT_FIRST_SIB,
+					  &extent);
+	while (!pctx->errcode) {
+		is_leaf = extent.e_flags & EXT2_EXTENT_FLAGS_LEAF;
+		is_dir = LINUX_S_ISDIR(pctx->inode->i_mode);
+
+		problem = 0;
+		if (extent.e_pblk < ctx->fs->super->s_first_data_block ||
+		    extent.e_pblk >= ctx->fs->super->s_blocks_count)
+			problem = PR_1_EXTENT_BAD_START_BLK;
+		else if ((extent.e_pblk + extent.e_len) >
+			 ctx->fs->super->s_blocks_count)
+			problem = PR_1_EXTENT_ENDS_BEYOND;
+
+		if (problem) {
+			pctx->blk = extent.e_pblk;
+			pctx->blk2 = extent.e_lblk;
+			pctx->num = extent.e_len;
+			if (fix_problem(ctx, problem, pctx)) {
+				pctx->errcode =
+					ext2fs_extent_delete(ehandle, 0);
+				if (pctx->errcode) {
+					fix_problem(ctx,
+						    PR_1_EXTENT_DELETE_FAIL,
+						    pctx);
+					/* Should never get here */
+					ctx->flags |= E2F_FLAG_ABORT;
+					return;
+				}
+			}
+			goto next;
+		}
+
+		if (!is_leaf) {
+			mark_block_used(ctx, extent.e_pblk);
+			pctx->errcode = ext2fs_extent_get(ehandle,
+						  EXT2_EXTENT_DOWN, &extent);
+			if (pctx->errcode) {
+				printf("Error1: %s\n", error_message(pctx->errcode));
+				abort();
+			}
+			scan_extent_node(ctx, pctx, pb, ehandle);
+			pctx->errcode = ext2fs_extent_get(ehandle,
+						  EXT2_EXTENT_UP, &extent);
+			if (pctx->errcode) {
+				printf("Error1: %s\n", error_message(pctx->errcode));
+				abort();
+			}
+			goto next;
+		}
+
+		for (blk = extent.e_pblk, blockcnt = extent.e_lblk, i = 0;
+		     i < extent.e_len;
+		     blk++, blockcnt++, i++) {
+			mark_block_used(ctx, blk);
+
+			if (is_dir) {
+				pctx->errcode = ext2fs_add_dir_block(ctx->fs->dblist, pctx->ino, blk, blockcnt);
+				if (pctx->errcode) {
+					pctx->blk = blk;
+					pctx->num = blockcnt;
+					fix_problem(ctx, PR_1_ADD_DBLOCK, pctx);
+					/* Should never get here */
+					ctx->flags |= E2F_FLAG_ABORT;
+					return;
+				}
+			}
+		}
+		pb->num_blocks += extent.e_len;
+		pb->last_block = extent.e_lblk + extent.e_len - 1;
+	next:
+		pctx->errcode = ext2fs_extent_get(ehandle,
+						  EXT2_EXTENT_NEXT_SIB,
+						  &extent);
+	}
+	if (pctx->errcode == EXT2_ET_EXTENT_NO_NEXT)
+		pctx->errcode = 0;
+}
+
+static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
+				 struct process_block_struct *pb, 
+				 char *block_buf)
+{
+	struct ext2_inode	*inode = pctx->inode;
+	ext2_extent_handle_t	ehandle;
+	ext2_filsys		fs = ctx->fs;
+	ext2_ino_t		ino = pctx->ino;
+
+	pctx->errcode = ext2fs_extent_open(fs, ino, &ehandle);
+	if (pctx->errcode &&
+	    fix_problem(ctx, PR_1_READ_EXTENT, pctx)) {
+		e2fsck_clear_inode(ctx, ino, inode, 0, "check_blocks_extents");
+		pctx->errcode = 0;
+		return;
+	}
+
+	scan_extent_node(ctx, pctx, pb, ehandle);
+
+	ext2fs_extent_free(ehandle);
 }
 
 /*
@@ -1531,10 +1681,16 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (inode->i_file_acl && check_ext_attr(ctx, pctx, block_buf))
 		pb.num_blocks++;
 
-	if (ext2fs_inode_has_valid_blocks(inode))
-		pctx->errcode = ext2fs_block_iterate2(fs, ino,
-				       pb.is_dir ? BLOCK_FLAG_HOLE : 0,
-				       block_buf, process_block, &pb);
+	if (ext2fs_inode_has_valid_blocks(inode)) {
+		if ((ctx->fs->super->s_feature_incompat &
+		     EXT3_FEATURE_INCOMPAT_EXTENTS) &&
+		    (inode->i_flags & EXT4_EXTENTS_FL))
+			check_blocks_extents(ctx, pctx, &pb, block_buf);
+		else
+			pctx->errcode = ext2fs_block_iterate2(fs, ino,
+						pb.is_dir ? BLOCK_FLAG_HOLE : 0,
+						block_buf, process_block, &pb);
+	}
 	end_problem_latch(ctx, PR_LATCH_BLOCK);
 	end_problem_latch(ctx, PR_LATCH_TOOBIG);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)

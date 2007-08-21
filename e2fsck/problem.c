@@ -784,6 +784,41 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i is a %It but it looks like it is really a directory.\n"),
 	  PROMPT_FIX, 0 },
 
+	/* Error while reading extent tree */
+	{ PR_1_READ_EXTENT,
+	  N_("Error while reading over @x tree in @i %i: %m\n"),
+	  PROMPT_CLEAR_INODE, 0 },
+
+	/* Error deleting a bogus extent */
+	{ PR_1_EXTENT_DELETE_FAIL,
+	  N_("Error while deleting extent: %m\n"),
+	  PROMPT_ABORT, 0 },
+
+	/* Bad starting block in extent */
+	{ PR_1_EXTENT_BAD_START_BLK,
+	  N_("@i %i has an @n extent\n\t(logical @b %c, @n physical @b %b, len %N)\n"),
+	  PROMPT_CLEAR, 0 },
+
+	/* Extent ends beyond filesystem */
+	{ PR_1_EXTENT_ENDS_BEYOND,
+	  N_("@i %i has an @n extent\n\t(logical @b %c, physical @b %b, @n len %N)\n"),
+	  PROMPT_CLEAR, 0 },
+
+	/* EXTENTS_FL flag set on a non-extents filesystem */
+	{ PR_1_EXTENTS_SET,
+	  N_("@i %i has EXTENTS_FL flag set on @f without extents support.\n"),
+	  PROMPT_CLEAR, 0 },
+
+	/* inode has extents, superblock missing INCOMPAT_EXTENTS feature */
+	{ PR_1_EXTENT_FEATURE,
+	  N_("@i %i is in extent format, but @S is missing EXTENTS feature\n"),
+	  PROMPT_FIX, 0 },
+
+	/* inode missing EXTENTS_FL, but is an extent inode */
+	{ PR_1_UNSET_EXTENT_FL,
+	  N_("@i %i missing EXTENT_FL, but is in extents format\n"),
+	  PROMPT_FIX, PR_PREEN_OK },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

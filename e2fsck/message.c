@@ -80,6 +80,7 @@
  * 	@S	superblock
  * 	@u	unattached
  * 	@v	device
+ *	@x	extent
  * 	@z	zero-length
  */
 
@@ -134,6 +135,7 @@ static const char *abbrevs[] = {
 	N_("Ssuper@b"),
 	N_("uunattached"),
 	N_("vdevice"),
+	N_("xextent"),
 	N_("zzero-length"),
 	"@@",
 	0
@@ -388,7 +390,11 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		fputc('%', stdout);
 		break;
 	case 'b':
-		printf("%u", ctx->blk);
+#ifdef EXT2_NO_64_TYPE
+		printf("%u", (unsigned long) ctx->blk);
+#else
+		printf("%llu", (unsigned long long) ctx->blk);
+#endif
 		break;
 	case 'B':
 #ifdef EXT2_NO_64_TYPE
@@ -398,7 +404,11 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 #endif
 		break;
 	case 'c':
-		printf("%u", ctx->blk2);
+#ifdef EXT2_NO_64_TYPE
+		printf("%u", (unsigned long) ctx->blk2);
+#else
+		printf("%llu", (unsigned long long) ctx->blk2);
+#endif
 		break;
 	case 'd':
 		printf("%u", ctx->dir);
