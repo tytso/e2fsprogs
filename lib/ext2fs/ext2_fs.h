@@ -322,9 +322,6 @@ struct ext2_inode {
 		struct {
 			__u32  h_i_translator;
 		} hurd1;
-		struct {
-			__u32  m_i_reserved1;
-		} masix1;
 	} osd1;				/* OS dependent 1 */
 	__u32	i_block[EXT2_N_BLOCKS];/* Pointers to blocks */
 	__u32	i_generation;	/* File version (for NFS) */
@@ -347,12 +344,6 @@ struct ext2_inode {
 			__u16	h_i_gid_high;
 			__u32	h_i_author;
 		} hurd2;
-		struct {
-			__u8	m_i_frag;	/* Fragment number */
-			__u8	m_i_fsize;	/* Fragment size */
-			__u16	m_pad1;
-			__u32	m_i_reserved2[2];
-		} masix2;
 	} osd2;				/* OS dependent 2 */
 };
 
@@ -378,9 +369,6 @@ struct ext2_inode_large {
 		struct {
 			__u32  h_i_translator;
 		} hurd1;
-		struct {
-			__u32  m_i_reserved1;
-		} masix1;
 	} osd1;				/* OS dependent 1 */
 	__u32	i_block[EXT2_N_BLOCKS];/* Pointers to blocks */
 	__u32	i_generation;	/* File version (for NFS) */
@@ -403,12 +391,6 @@ struct ext2_inode_large {
 			__u16	h_i_gid_high;
 			__u32	h_i_author;
 		} hurd2;
-		struct {
-			__u8	m_i_frag;	/* Fragment number */
-			__u8	m_i_fsize;	/* Fragment size */
-			__u16	m_pad1;
-			__u32	m_i_reserved2[2];
-		} masix2;
 	} osd2;				/* OS dependent 2 */
 	__u16	i_extra_isize;
 	__u16	i_pad1;
@@ -444,17 +426,6 @@ struct ext2_inode_large {
 #define inode_uid(inode)	((inode).i_uid | (inode).i_uid_high << 16)
 #define inode_gid(inode)	((inode).i_gid | (inode).i_gid_high << 16)
 
-#else
-#if defined(__masix__)
-
-#define i_reserved1	osd1.masix1.m_i_reserved1
-#define i_frag		osd2.masix2.m_i_frag
-#define i_fsize		osd2.masix2.m_i_fsize
-#define i_reserved2	osd2.masix2.m_i_reserved2
-#define inode_uid(inode)	((inode).i_uid)
-#define inode_gid(inode)	((inode).i_gid)
-
-#endif  /* __masix__ */
 #endif  /* __GNU__ */
 #endif	/* defined(__KERNEL__) || defined(__linux__) */
 
@@ -592,7 +563,7 @@ struct ext2_super_block {
  */
 #define EXT2_OS_LINUX		0
 #define EXT2_OS_HURD		1
-#define EXT2_OS_MASIX		2
+#define EXT2_OBSO_OS_MASIX	2
 #define EXT2_OS_FREEBSD		3
 #define EXT2_OS_LITES		4
 

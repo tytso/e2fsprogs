@@ -198,16 +198,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 		t->osd2.hurd2.h_i_author =
 		  ext2fs_swab32 (f->osd2.hurd2.h_i_author);
 		break;
-	case EXT2_OS_MASIX:
-		t->osd1.masix1.m_i_reserved1 =
-			ext2fs_swab32(f->osd1.masix1.m_i_reserved1);
-		t->osd2.masix2.m_i_frag = f->osd2.masix2.m_i_frag;
-		t->osd2.masix2.m_i_fsize = f->osd2.masix2.m_i_fsize;
-		t->osd2.masix2.m_pad1 = ext2fs_swab16(f->osd2.masix2.m_pad1);
-		t->osd2.masix2.m_i_reserved2[0] =
-			ext2fs_swab32(f->osd2.masix2.m_i_reserved2[0]);
-		t->osd2.masix2.m_i_reserved2[1] =
-			ext2fs_swab32(f->osd2.masix2.m_i_reserved2[1]);
+	default:
 		break;
 	}
 
