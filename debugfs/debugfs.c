@@ -569,10 +569,6 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		frag = inode->osd2.hurd2.h_i_frag;
 		fsize = inode->osd2.hurd2.h_i_fsize;
 		break;
-	    case EXT2_OS_MASIX:
-		frag = inode->osd2.masix2.m_i_frag;
-		fsize = inode->osd2.masix2.m_i_fsize;
-		break;
 	    default:
 		frag = fsize = 0;
 	}
@@ -898,10 +894,6 @@ void do_modify_inode(int argc, char *argv[])
 	    case EXT2_OS_HURD:
 		frag = &inode.osd2.hurd2.h_i_frag;
 		fsize = &inode.osd2.hurd2.h_i_fsize;
-		break;
-	    case EXT2_OS_MASIX:
-		frag = &inode.osd2.masix2.m_i_frag;
-		fsize = &inode.osd2.masix2.m_i_fsize;
 		break;
 	    default:
 		frag = fsize = 0;
