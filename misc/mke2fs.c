@@ -739,8 +739,6 @@ static int set_os(struct ext2_super_block *sb, char *os)
 		sb->s_creator_os = EXT2_OS_LINUX;
 	else if (strcasecmp(os, "GNU") == 0 || strcasecmp(os, "hurd") == 0)
 		sb->s_creator_os = EXT2_OS_HURD;
-	else if (strcasecmp(os, "masix") == 0)
-		sb->s_creator_os = EXT2_OS_MASIX;
 	else if (strcasecmp(os, "freebsd") == 0)
 		sb->s_creator_os = EXT2_OS_FREEBSD;
 	else if (strcasecmp(os, "lites") == 0)
