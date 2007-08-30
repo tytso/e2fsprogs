@@ -467,7 +467,8 @@ void check_super_block(e2fsck_t ctx)
 	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
-	__u32	free_blocks = 0, free_inodes = 0;
+	blk_t	free_blocks = 0;
+	ino_t	free_inodes = 0;
 
 	inodes_per_block = EXT2_INODES_PER_BLOCK(fs->super);
 	ipg_max = inodes_per_block * (blocks_per_group - 4);

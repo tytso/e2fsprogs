@@ -407,7 +407,7 @@ typedef struct ext2_icount *ext2_icount_t;
 /*
  * For ext2 compression support
  */
-#define EXT2FS_COMPRESSED_BLKADDR ((blk_t) 0xffffffff)
+#define EXT2FS_COMPRESSED_BLKADDR ((blk_t) -1)
 #define HOLE_BLKADDR(_b) ((_b) == 0 || (_b) == EXT2FS_COMPRESSED_BLKADDR)
 
 /*

@@ -36,11 +36,11 @@ extern char *optarg;
 
 enum journal_location {JOURNAL_IS_INTERNAL, JOURNAL_IS_EXTERNAL};
 
-#define ANY_BLOCK ((unsigned int) -1)
+#define ANY_BLOCK ((blk_t) -1)
 
 int		dump_all, dump_contents, dump_descriptors;
-unsigned int	block_to_dump, group_to_dump, bitmap_to_dump;
-unsigned int	inode_block_to_dump, inode_offset_to_dump, bitmap_to_dump;
+blk_t		block_to_dump, bitmap_to_dump, inode_block_to_dump;
+unsigned int	group_to_dump, inode_offset_to_dump;
 ext2_ino_t	inode_to_dump;
 
 struct journal_source 
@@ -365,8 +365,8 @@ static void dump_journal(char *cmdname, FILE *out_file,
 		if (dump_all) {
 			fprintf(out_file, "\tuuid=%s\n", jsb_buffer);
 			fprintf(out_file, "\tblocksize=%d\n", blocksize);
-			fprintf(out_file, "\tjournal data size %ld\n",
-				(long) sb->s_blocks_count);
+			fprintf(out_file, "\tjournal data size %lu\n",
+				sb->s_blocks_count);
 		}
 	}
 	

@@ -114,8 +114,8 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	blk_t	i, super;
 	int	*free_array;
 	int	group = 0;
-	unsigned int	blocks = 0;
-	unsigned int	free_blocks = 0;
+	blk_t	blocks = 0;
+	blk_t	free_blocks = 0;
 	int	group_free = 0;
 	int	actual, bitmap;
 	struct problem_context	pctx;
