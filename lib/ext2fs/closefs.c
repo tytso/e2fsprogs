@@ -57,8 +57,7 @@ int ext2fs_super_and_bgd_loc(ext2_filsys fs,
 	int	numblocks, has_super;
 	int	old_desc_blocks;
 
-	group_block = fs->super->s_first_data_block +
-		(group * fs->super->s_blocks_per_group);
+	group_block = ext2fs_group_first_block(fs, group);
 
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_desc_blocks = fs->super->s_first_meta_bg;

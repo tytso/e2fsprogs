@@ -42,8 +42,7 @@ blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
 	bg = (fs->blocksize / sizeof (struct ext2_group_desc)) * i;
 	if (ext2fs_bg_has_super(fs, bg))
 		has_super = 1;
-	ret_blk = (fs->super->s_first_data_block + has_super + 
-		   (bg * fs->super->s_blocks_per_group));
+	ret_blk = ext2fs_group_first_block(fs, bg) + has_super;
 	/*
 	 * If group_block is not the normal value, we're trying to use
 	 * the backup group descriptors and superblock --- so use the
