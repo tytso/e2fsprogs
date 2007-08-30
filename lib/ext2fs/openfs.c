@@ -39,7 +39,7 @@ blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
 	    (i < fs->super->s_first_meta_bg))
 		return (group_block + i + 1);
 
-	bg = (fs->blocksize / sizeof (struct ext2_group_desc)) * i;
+	bg = EXT2_DESC_PER_BLOCK(fs->super) * i;
 	if (ext2fs_bg_has_super(fs, bg))
 		has_super = 1;
 	ret_blk = ext2fs_group_first_block(fs, bg) + has_super;
@@ -287,7 +287,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	if (!group_block)
 		group_block = fs->super->s_first_data_block;
 	dest = (char *) fs->group_desc;
-	groups_per_block = fs->blocksize / sizeof(struct ext2_group_desc);
+	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
 	for (i=0 ; i < fs->desc_blocks; i++) {
 		blk = ext2fs_descriptor_block_loc(fs, group_block, i);
 		retval = io_channel_read_blk(fs->io, blk, 1, dest);

@@ -80,7 +80,7 @@ int ext2fs_super_and_bgd_loc(ext2_filsys fs,
 		super_blk = group_block;
 		numblocks--;
 	}
-	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
+	meta_bg_size = EXT2_DESC_PER_BLOCK(fs->super);
 	meta_bg = group / meta_bg_size;
 
 	if (!(fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) ||

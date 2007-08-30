@@ -383,8 +383,7 @@ retry:
 			ext2fs_mark_block_bitmap(fs->block_map, group_block);
 			adjblocks++;
 		}
-		meta_bg_size = (fs->blocksize /
-				sizeof (struct ext2_group_desc));
+		meta_bg_size = EXT2_DESC_PER_BLOCK(fs->super);
 		meta_bg = i / meta_bg_size;
 		if (!(fs->super->s_feature_incompat &
 		      EXT2_FEATURE_INCOMPAT_META_BG) ||
@@ -550,7 +549,7 @@ static errcode_t mark_table_blocks(ext2_filsys fs,
 	unsigned long		meta_bg_size;
 	unsigned int		old_desc_blocks;
 
-	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
+	meta_bg_size = EXT2_DESC_PER_BLOCK(fs->super);
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
 		old_desc_blocks = fs->super->s_first_meta_bg;
 	else
@@ -717,7 +716,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	 * If we're increasing the number of descriptor blocks, life
 	 * gets interesting....  
 	 */
-	meta_bg_size = (fs->blocksize / sizeof (struct ext2_group_desc));
+	meta_bg_size = EXT2_DESC_PER_BLOCK(fs->super);
 	for (i = 0; i < max_groups; i++) {
 		has_super = ext2fs_bg_has_super(fs, i);
 		if (has_super)

@@ -693,8 +693,7 @@ static void show_stats(ext2_filsys fs)
 	if (s->s_reserved_gdt_blocks)
 		printf(_("Maximum filesystem blocks=%lu\n"),
 		       (s->s_reserved_gdt_blocks + fs->desc_blocks) *
-		       (fs->blocksize / sizeof(struct ext2_group_desc)) *
-		       s->s_blocks_per_group);
+		       EXT2_DESC_PER_BLOCK(s) * s->s_blocks_per_group);
 	if (fs->group_desc_count > 1)
 		printf(_("%u block groups\n"), fs->group_desc_count);
 	else
@@ -826,7 +825,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			bpg = param->s_blocks_per_group;
 			if (!bpg)
 				bpg = blocksize * 8;
-			gdpb = blocksize / sizeof(struct ext2_group_desc);
+			gdpb = EXT2_DESC_PER_BLOCK(param);
 			group_desc_count = 
 				ext2fs_div_ceil(param->s_blocks_count, bpg);
 			desc_blocks = (group_desc_count +

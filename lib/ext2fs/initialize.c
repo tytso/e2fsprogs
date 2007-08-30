@@ -67,7 +67,7 @@ static unsigned int calc_reserved_gdt_blocks(ext2_filsys fs)
 {
 	struct ext2_super_block *sb = fs->super;
 	unsigned long bpg = sb->s_blocks_per_group;
-	unsigned int gdpb = fs->blocksize / sizeof(struct ext2_group_desc);
+	unsigned int gdpb = EXT2_DESC_PER_BLOCK(sb);
 	unsigned long max_blocks = 0xffffffff;
 	unsigned long rsv_groups;
 	unsigned int rsv_gdb;

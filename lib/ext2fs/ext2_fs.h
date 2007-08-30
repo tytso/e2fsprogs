@@ -217,6 +217,13 @@ struct ext2_dx_countlimit {
 /*
  * Macro-instructions used to manage group descriptors
  */
+#define EXT2_MIN_DESC_SIZE             32
+#define EXT2_MIN_DESC_SIZE_64BIT       64
+#define EXT2_MAX_DESC_SIZE             EXT2_MIN_BLOCK_SIZE
+#define EXT2_DESC_SIZE(s)                                                \
+       ((EXT2_SB(s)->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) ? \
+	(s)->s_desc_size : EXT2_MIN_DESC_SIZE)
+
 #define EXT2_BLOCKS_PER_GROUP(s)	(EXT2_SB(s)->s_blocks_per_group)
 #define EXT2_INODES_PER_GROUP(s)	(EXT2_SB(s)->s_inodes_per_group)
 #define EXT2_INODES_PER_BLOCK(s)	(EXT2_BLOCK_SIZE(s)/EXT2_INODE_SIZE(s))
@@ -227,7 +234,7 @@ struct ext2_dx_countlimit {
 #define EXT2_DESC_PER_BLOCK(s)		(EXT2_SB(s)->s_desc_per_block)
 #define EXT2_DESC_PER_BLOCK_BITS(s)	(EXT2_SB(s)->s_desc_per_block_bits)
 #else
-#define EXT2_DESC_PER_BLOCK(s)		(EXT2_BLOCK_SIZE(s) / sizeof (struct ext2_group_desc))
+#define EXT2_DESC_PER_BLOCK(s)		(EXT2_BLOCK_SIZE(s) / EXT2_DESC_SIZE(s))
 #endif
 
 /*
