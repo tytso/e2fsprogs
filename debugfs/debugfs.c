@@ -38,6 +38,8 @@ extern char *optarg;
 #include "../version.h"
 
 extern ss_request_table debug_cmds;
+ss_request_table *extra_cmds;
+char *debug_prog_name;
 
 ext2_filsys	current_fs = NULL;
 ext2_ino_t	root, cwd;
@@ -1798,7 +1800,7 @@ int main(int argc, char **argv)
 {
 	int		retval;
 	int		sci_idx;
-	const char	*usage = "Usage: debugfs [-b blocksize] [-s superblock] [-f cmd_file] [-R request] [-V] [[-w] [-c] device]";
+	const char	*usage = "Usage: %s [-b blocksize] [-s superblock] [-f cmd_file] [-R request] [-V] [[-w] [-c] device]";
 	int		c;
 	int		open_flags = EXT2_FLAG_SOFTSUPP_FEATURES;
 	char		*request = 0;
@@ -1809,9 +1811,12 @@ int main(int argc, char **argv)
 	int		catastrophic = 0;
 	char		*data_filename = 0;
 	
+	if (debug_prog_name == 0)
+		debug_prog_name = "debugfs";
+
 	add_error_table(&et_ext2_error_table);
-	fprintf (stderr, "debugfs %s (%s)\n", E2FSPROGS_VERSION,
-		 E2FSPROGS_DATE);
+	fprintf (stderr, "%s %s (%s)\n", debug_prog_name,
+		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
 	while ((c = getopt (argc, argv, "iwcR:f:b:s:Vd:")) != EOF) {
 		switch (c) {
@@ -1847,7 +1852,7 @@ int main(int argc, char **argv)
 				error_message(EXT2_ET_BASE));
 			exit(0);
 		default:
-			com_err(argv[0], 0, usage);
+			com_err(argv[0], 0, usage, debug_prog_name);
 			return 1;
 		}
 	}
@@ -1856,7 +1861,7 @@ int main(int argc, char **argv)
 				superblock, blocksize, catastrophic,
 				data_filename);
 	
-	sci_idx = ss_create_invocation("debugfs", "0.0", (char *) NULL,
+	sci_idx = ss_create_invocation(debug_prog_name, "0.0", (char *) NULL,
 				       &debug_cmds, &retval);
 	if (retval) {
 		ss_perror(sci_idx, retval, "creating invocation");
@@ -1867,6 +1872,12 @@ int main(int argc, char **argv)
 	(void) ss_add_request_table (sci_idx, &ss_std_requests, 1, &retval);
 	if (retval) {
 		ss_perror(sci_idx, retval, "adding standard requests");
+		exit (1);
+	}
+	if (extra_cmds)
+		ss_add_request_table (sci_idx, extra_cmds, 1, &retval);
+	if (retval) {
+		ss_perror(sci_idx, retval, "adding extra requests");
 		exit (1);
 	}
 	if (request) {
