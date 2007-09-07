@@ -866,7 +866,7 @@ static const char *my_ver_date = E2FSPROGS_DATE;
 					
 int main (int argc, char *argv[])
 {
-	errcode_t	retval = 0;
+	errcode_t	retval = 0, orig_retval = 0;
 	int		exit_value = FSCK_OK;
 	ext2_filsys	fs = 0;
 	io_manager	io_ptr;
@@ -966,18 +966,23 @@ restart:
 	if (!ctx->superblock && !(ctx->options & E2F_OPT_PREEN) &&
 	    !(ctx->flags & E2F_FLAG_SB_SPECIFIED) &&
 	    ((retval == EXT2_ET_BAD_MAGIC) ||
+	     (retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
 	     ((retval == 0) && ext2fs_check_desc(fs)))) {
 		if (!fs || (fs->group_desc_count > 1)) {
-			printf(_("%s trying backup blocks...\n"),
-			       retval ? _("Couldn't find ext2 superblock,") :
+			printf(_("%s: %s trying backup blocks...\n"),
+			       ctx->program_name, 
+			       retval ? _("Superblock invalid,") :
 			       _("Group descriptors look bad..."));
 			get_backup_sb(ctx, fs, ctx->filesystem_name, io_ptr);
 			if (fs)
 				ext2fs_close(fs);
+			orig_retval = retval;
 			goto restart;
 		}
 	}
 	if (retval) {
+		if (orig_retval)
+			retval = orig_retval;
 		com_err(ctx->program_name, retval, _("while trying to open %s"),
 			ctx->filesystem_name);
 		if (retval == EXT2_ET_REV_TOO_HIGH) {
