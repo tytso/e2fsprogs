@@ -696,14 +696,9 @@ void e2fsck_pass1(e2fsck_t ctx)
 			 */
 			if (!LINUX_S_ISDIR(inode->i_mode)) {
 				if (fix_problem(ctx, PR_1_ROOT_NO_DIR, &pctx)) {
-					inode->i_dtime = ctx->now;
-					inode->i_links_count = 0;
-					ext2fs_icount_store(ctx->inode_link_info,
-							    ino, 0);
-					e2fsck_write_inode(ctx, ino, inode,
-							   "pass1");
+					e2fsck_clear_inode(ctx, ino, inode,
+							   0, "pass1");
 				}
-
 			}
 			/*
 			 * If dtime is set, offer to clear it.  mke2fs
@@ -1464,6 +1459,31 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 	return 0;
 }
 
+void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
+			struct ext2_inode *inode, int restart_flag,
+			const char *source)
+{
+
+	inode->i_links_count = 0;
+	ext2fs_icount_store(ctx->inode_link_info, ino, 0);
+	inode->i_dtime = ctx->now;
+
+	ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
+	ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
+	if (ctx->inode_reg_map)
+		ext2fs_unmark_inode_bitmap(ctx->inode_reg_map, ino);
+	if (ctx->inode_bad_map)
+		ext2fs_unmark_inode_bitmap(ctx->inode_bad_map, ino);
+
+	/*
+	 * If the inode was partially accounted for before processing
+	 * was aborted, we need to restart the pass 1 scan.
+	 */
+	ctx->flags |= restart_flag;
+
+	e2fsck_write_inode(ctx, ino, inode, source);
+}
+
 /*
  * This subroutine is called on each inode to account for all of the
  * blocks used by that inode.
@@ -1526,20 +1546,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		ctx->fs_fragmented++;
 
 	if (pb.clear) {
-		inode->i_links_count = 0;
-		ext2fs_icount_store(ctx->inode_link_info, ino, 0);
-		inode->i_dtime = ctx->now;
-		dirty_inode++;
-		ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
-		ext2fs_unmark_inode_bitmap(ctx->inode_reg_map, ino);
-		ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
-		/*
-		 * The inode was probably partially accounted for
-		 * before processing was aborted, so we need to
-		 * restart the pass 1 scan.
-		 */
-		ctx->flags |= E2F_FLAG_RESTART;
-		goto out;
+		e2fsck_clear_inode(ctx, ino, inode, E2F_FLAG_RESTART,
+				   "check_blocks");
+		return;
 	}
 	
 	if (inode->i_flags & EXT2_INDEX_FL) {
@@ -1559,15 +1568,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		
 	if (!pb.num_blocks && pb.is_dir) {
 		if (fix_problem(ctx, PR_1_ZERO_LENGTH_DIR, pctx)) {
-			inode->i_links_count = 0;
-			ext2fs_icount_store(ctx->inode_link_info, ino, 0);
-			inode->i_dtime = ctx->now;
-			dirty_inode++;
-			ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
-			ext2fs_unmark_inode_bitmap(ctx->inode_reg_map, ino);
-			ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
+			e2fsck_clear_inode(ctx, ino, inode, 0, "check_blocks");
 			ctx->fs_directory_count--;
-			goto out;
+			return;
 		}
 	}
 

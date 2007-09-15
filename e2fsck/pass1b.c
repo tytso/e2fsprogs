@@ -594,16 +594,13 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 						     delete_file_block, &pb);
 	if (pctx.errcode)
 		fix_problem(ctx, PR_1B_BLOCK_ITERATE, &pctx);
-	ext2fs_unmark_inode_bitmap(ctx->inode_used_map, ino);
-	ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, ino);
 	if (ctx->inode_bad_map)
 		ext2fs_unmark_inode_bitmap(ctx->inode_bad_map, ino);
 	ext2fs_inode_alloc_stats2(fs, ino, -1, LINUX_S_ISDIR(inode.i_mode));
 
 	/* Inode may have changed by block_iterate, so reread it */
 	e2fsck_read_inode(ctx, ino, &inode, "delete_file");
-	inode.i_links_count = 0;
-	inode.i_dtime = ctx->now;
+	e2fsck_clear_inode(ctx, ino, &inode, 0, "delete_file");
 	if (inode.i_file_acl &&
 	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
 		count = 1;
@@ -629,7 +626,6 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 			delete_file_block(fs, &inode.i_file_acl,
 					  BLOCK_COUNT_EXTATTR, 0, 0, &pb);
 	}
-	e2fsck_write_inode(ctx, ino, &inode, "delete_file");
 }
 
 struct clone_struct {

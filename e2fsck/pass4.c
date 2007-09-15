@@ -43,17 +43,12 @@ static int disconnect_inode(e2fsck_t ctx, ext2_ino_t i)
 	if (!inode.i_blocks && (LINUX_S_ISREG(inode.i_mode) ||
 				LINUX_S_ISDIR(inode.i_mode))) {
 		if (fix_problem(ctx, PR_4_ZERO_LEN_INODE, &pctx)) {
-			ext2fs_icount_store(ctx->inode_link_info, i, 0);
-			inode.i_links_count = 0;
-			inode.i_dtime = ctx->now;
-			e2fsck_write_inode(ctx, i, &inode,
+			e2fsck_clear_inode(ctx, i, &inode, 0,
 					   "disconnect_inode");
 			/*
 			 * Fix up the bitmaps...
 			 */
 			e2fsck_read_bitmaps(ctx);
-			ext2fs_unmark_inode_bitmap(ctx->inode_used_map, i);
-			ext2fs_unmark_inode_bitmap(ctx->inode_dir_map, i);
 			ext2fs_inode_alloc_stats2(fs, i, -1,
 						  LINUX_S_ISDIR(inode.i_mode));
 			return 0;

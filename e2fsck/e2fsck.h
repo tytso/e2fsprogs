@@ -431,6 +431,9 @@ extern int e2fsck_pass1_check_device_inode(ext2_filsys fs,
 					   struct ext2_inode *inode);
 extern int e2fsck_pass1_check_symlink(ext2_filsys fs,
 				      struct ext2_inode *inode, char *buf);
+extern void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
+			       struct ext2_inode *inode, int restart_flag,
+			       const char *source);
 
 /* pass2.c */
 extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
