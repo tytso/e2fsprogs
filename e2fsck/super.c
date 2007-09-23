@@ -463,6 +463,7 @@ void check_super_block(e2fsck_t ctx)
 	int	inodes_per_block;
 	int	ipg_max;
 	int	inode_size;
+	int	buggy_init_scripts;
 	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
@@ -711,18 +712,39 @@ void check_super_block(e2fsck_t ctx)
 		ext2fs_mark_super_dirty(fs);
 	}
 
+	/*
+	 * Some buggy distributions (such as Ubuntu) have init scripts
+	 * and/or installers which fail to correctly set the system
+	 * clock before running e2fsck and/or formatting the
+	 * filesystem initially.  Normally this happens because the
+	 * hardware clock is ticking localtime, instead of the more
+	 * proper and less error-prone UTC time.  So while the kernel
+	 * is booting, the system time (which in Linux systems always
+	 * ticks in UTC time) is set from the hardware clock, but
+	 * since the hardware clock is ticking localtime, the system
+	 * time is incorrect.  Unfortunately, some buggy distributions
+	 * do not correct this before running e2fsck.  If this option
+	 * is set to a boolean value of true, we attempt to work
+	 * around this situation by allowing the superblock last write
+	 * time, last mount time, and last check time to be in the
+	 * future by up to 24 hours.
+	 */
+	profile_get_boolean(ctx->profile, "options", "buggy_init_scripts",
+			    0, 0, &buggy_init_scripts);
+	ctx->time_fudge = buggy_init_scripts ? 86400 : 0;
+
 	/* 
 	 * Check to see if the superblock last mount time or last
 	 * write time is in the future.
 	 */
-	if (fs->super->s_mtime > (__u32) ctx->now) {
+	if (fs->super->s_mtime > (__u32) ctx->now + ctx->time_fudge) {
 		pctx.num = fs->super->s_mtime;
 		if (fix_problem(ctx, PR_0_FUTURE_SB_LAST_MOUNT, &pctx)) {
 			fs->super->s_mtime = ctx->now;
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
-	if (fs->super->s_wtime > (__u32) ctx->now) {
+	if (fs->super->s_wtime > (__u32) ctx->now + ctx->time_fudge) {
 		pctx.num = fs->super->s_wtime;
 		if (fix_problem(ctx, PR_0_FUTURE_SB_LAST_WRITE, &pctx)) {
 			fs->super->s_wtime = ctx->now;

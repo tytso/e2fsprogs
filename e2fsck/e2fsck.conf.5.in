@@ -86,6 +86,20 @@ If this relation is set to a boolean value of true, then if the user
 interrupts e2fsck using ^C, and the filesystem is not explicitly flagged
 as containing errors, e2fsck will exit with an exit status of 0 instead
 of 32.  This setting defaults to false.
+.TP
+.I buggy_init_scripts
+Some buggy distributions (such as Ubuntu) have init scripts and/or
+installers which fail to correctly set the system clock before running
+e2fsck and/or formatting the filesystem initially.  Normally this
+happens because the hardware clock is ticking localtime, instead of the
+more proper and less error-prone UTC time.  So while the kernel is
+booting, the system time (which in Linux systems always ticks in UTC
+time) is set from the hardware clock, but since the hardware clock is
+ticking localtime, the system time is incorrect.  Unfortunately, some
+buggy distributions do not correct this before running e2fsck.  If this
+option is set to a boolean value of true, we attempt to work around this
+situation by allowing the superblock last write time, last mount time,
+and last check time to be in the future by up to 24 hours.
 .TP 
 .I defer_check_on_battery
 This boolean relation controls whether or not the interval between 
