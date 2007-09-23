@@ -66,10 +66,15 @@ static int db_dir_proc(ext2_filsys fs, struct ext2_db_entry *db_info,
 		       void *priv_data)
 {
 	struct dir_context	*ctx;
+	int			ret;
 
 	ctx = (struct dir_context *) priv_data;
 	ctx->dir = db_info->ino;
+	ctx->errcode = 0;
 	
-	return ext2fs_process_dir_block(fs, &db_info->blk,
-					db_info->blockcnt, 0, 0, priv_data);
+	ret = ext2fs_process_dir_block(fs, &db_info->blk,
+				       db_info->blockcnt, 0, 0, priv_data);
+	if ((ret & BLOCK_ABORT) && !ctx->errcode)
+		return DBLIST_ABORT;
+	return 0;
 }
