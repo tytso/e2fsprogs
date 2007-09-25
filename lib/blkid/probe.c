@@ -899,6 +899,7 @@ static struct blkid_magic type_array[] = {
   { "ocfs2",	 4,	 0,  6,	"OCFSV2",		probe_ocfs2 },
   { "ocfs2",	 8,	 0,  6,	"OCFSV2",		probe_ocfs2 },
   { "crypt_LUKS", 0,	 0,  6,	"LUKS\xba\xbe",		probe_luks },
+  { "squashfs",	 0,	 0,  4,	"hsqs",			0 },
   {   NULL,	 0,	 0,  0, NULL,			NULL }
 };
 
