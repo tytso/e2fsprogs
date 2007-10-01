@@ -770,3 +770,61 @@ void check_super_block(e2fsck_t ctx)
 
 	return;
 }
+
+/*
+ * Check to see if we should backup the master sb to the backup super
+ * blocks.
+ */
+int check_backup_super_block(e2fsck_t ctx)
+{
+	ext2_filsys	fs = ctx->fs;
+	ext2_filsys	tfs = 0;
+	io_manager	io_ptr;
+	errcode_t	retval;
+	dgrp_t		g;
+	blk_t		sb;
+	int		ret = 0;
+
+	/*
+	 * If we are already writing out the backup blocks, then we
+	 * don't need to test.  Also, if the filesystem is invalid, or
+	 * the check was aborted or cancelled, we also don't want to
+	 * do the backup.  If the filesystem was opened read-only then
+	 * we can't do the backup.
+	 */
+	if (((fs->flags & EXT2_FLAG_MASTER_SB_ONLY) == 0) ||
+	    !ext2fs_test_valid(fs) ||
+	    (fs->super->s_state & EXT2_ERROR_FS) ||
+	    (ctx->flags & (E2F_FLAG_ABORT | E2F_FLAG_CANCEL)) ||
+	    (ctx->options & E2F_OPT_READONLY))
+		return 0;
+
+	for (g = 1; g < fs->group_desc_count; g++) {
+		if (!ext2fs_bg_has_super(fs, g))
+			continue;
+
+		sb = fs->super->s_first_data_block +
+			(g * fs->super->s_blocks_per_group);
+
+		retval = ext2fs_open(ctx->filesystem_name, 0,
+				     sb, fs->blocksize,
+				     fs->io->manager, &tfs);
+		if (retval) {
+			tfs = 0;
+			continue;
+		}
+
+#define SUPER_DIFFERENT(x) (fs->super->x != tfs->super->x)
+		if (SUPER_DIFFERENT(s_feature_compat) ||
+		    SUPER_DIFFERENT(s_feature_incompat) ||
+		    SUPER_DIFFERENT(s_feature_ro_compat) ||
+		    SUPER_DIFFERENT(s_blocks_count) ||
+		    SUPER_DIFFERENT(s_inodes_count) ||
+		    memcmp(fs->super->s_uuid, tfs->super->s_uuid,
+			   sizeof(fs->super->s_uuid)))
+			ret = 1;
+		ext2fs_close(tfs);
+		break;
+	}
+	return ret;
+}

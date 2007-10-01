@@ -454,6 +454,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx);
 
 /* super.c */
 void check_super_block(e2fsck_t ctx);
+int check_backup_super_block(e2fsck_t ctx);
 
 /* swapfs.c */
 void swap_filesys(e2fsck_t ctx);
