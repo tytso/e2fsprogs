@@ -340,6 +340,12 @@ binary-arch: install install-udeb
 
 	$(INSTALL) -d ${debdir}/uuid-dev/usr/share/doc/libuuid${UUID_SOVERSION}
 
+	if test -f /etc/lsb-release && \
+		grep -q DISTRIB_ID=Ubuntu /etc/lsb-release; then \
+	$(INSTALL) -p -m 0644 e2fsck/e2fsck.conf.ubuntu \
+		${debdir}/e2fsprogs/etc/e2fsck.conf; \
+	fi
+
 	dh_installinfo -pcomerr-dev ${stdbuilddir}/lib/et/com_err.info
 	dh_installinfo -pe2fslibs-dev ${stdbuilddir}/doc/libext2fs.info
 

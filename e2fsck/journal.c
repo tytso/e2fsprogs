@@ -454,6 +454,7 @@ static errcode_t e2fsck_journal_fix_bad_inode(e2fsck_t ctx,
 			sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 			sb->s_journal_inum = 0;
 			ctx->flags |= E2F_FLAG_JOURNAL_INODE;
+			ctx->fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 			e2fsck_clear_recover(ctx, 1);
 			return 0;
 		}
@@ -753,6 +754,7 @@ no_has_journal:
 			e2fsck_clear_recover(ctx, force_fsck);
 		} else if (!(ctx->options & E2F_OPT_READONLY)) {
 			sb->s_feature_compat |= EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+			ctx->fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 			ext2fs_mark_super_dirty(ctx->fs);
 		}
 	}

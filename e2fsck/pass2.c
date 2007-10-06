@@ -267,6 +267,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 		    fix_problem(ctx, PR_2_FEATURE_LARGE_FILES, &pctx)) {
 			sb->s_feature_ro_compat |=
 				EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
+			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 			ext2fs_mark_super_dirty(fs);
 		}
 		if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
@@ -280,6 +281,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 		if (fs->flags & EXT2_FLAG_RW) {
 			sb->s_feature_ro_compat &= 
 				~EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
+			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 			ext2fs_mark_super_dirty(fs);
 		}
 	}

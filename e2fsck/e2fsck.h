@@ -331,6 +331,7 @@ struct e2fsck_struct {
 
 	/* misc fields */
 	time_t now;
+	time_t time_fudge;	/* For working around buggy init scripts */
 	int ext_attr_ver;
 	profile_t	profile;
 	int blocks_per_page;
@@ -455,6 +456,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx);
 
 /* super.c */
 void check_super_block(e2fsck_t ctx);
+int check_backup_super_block(e2fsck_t ctx);
 
 /* util.c */
 extern void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,

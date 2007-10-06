@@ -80,8 +80,7 @@ $TUNE2FS -c 20 -U clear $TMPFILE  >/dev/null 2>&1
 echo dumpe2fs test.img >> $OUT
 $DUMPE2FS $TMPFILE 2>&1 | sed -f $cmd_dir/filter_dumpe2fs >> $OUT
 
-
-rm -f $test_name.ok $test_name.failed
+rm -f $test_name.ok $test_name.failed $TMPFILE
 cmp -s $OUT $EXP
 status=$?
 

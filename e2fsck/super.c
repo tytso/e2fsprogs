@@ -463,6 +463,7 @@ void check_super_block(e2fsck_t ctx)
 	int	inodes_per_block;
 	int	ipg_max;
 	int	inode_size;
+	int	buggy_init_scripts;
 	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
@@ -681,7 +682,7 @@ void check_super_block(e2fsck_t ctx)
 			fs->super->s_feature_incompat &=
 				~EXT2_FEATURE_INCOMPAT_FILETYPE;
 			ext2fs_mark_super_dirty(fs);
-
+			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 		}
 	}
 
@@ -699,6 +700,7 @@ void check_super_block(e2fsck_t ctx)
 	    fix_problem(ctx, PR_0_FS_REV_LEVEL, &pctx)) {
 		ext2fs_update_dynamic_rev(fs);
 		ext2fs_mark_super_dirty(fs);
+		fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 	}
 
 	check_resize_inode(ctx);
@@ -711,18 +713,39 @@ void check_super_block(e2fsck_t ctx)
 		ext2fs_mark_super_dirty(fs);
 	}
 
+	/*
+	 * Some buggy distributions (such as Ubuntu) have init scripts
+	 * and/or installers which fail to correctly set the system
+	 * clock before running e2fsck and/or formatting the
+	 * filesystem initially.  Normally this happens because the
+	 * hardware clock is ticking localtime, instead of the more
+	 * proper and less error-prone UTC time.  So while the kernel
+	 * is booting, the system time (which in Linux systems always
+	 * ticks in UTC time) is set from the hardware clock, but
+	 * since the hardware clock is ticking localtime, the system
+	 * time is incorrect.  Unfortunately, some buggy distributions
+	 * do not correct this before running e2fsck.  If this option
+	 * is set to a boolean value of true, we attempt to work
+	 * around this situation by allowing the superblock last write
+	 * time, last mount time, and last check time to be in the
+	 * future by up to 24 hours.
+	 */
+	profile_get_boolean(ctx->profile, "options", "buggy_init_scripts",
+			    0, 0, &buggy_init_scripts);
+	ctx->time_fudge = buggy_init_scripts ? 86400 : 0;
+
 	/* 
 	 * Check to see if the superblock last mount time or last
 	 * write time is in the future.
 	 */
-	if (fs->super->s_mtime > (__u32) ctx->now) {
+	if (fs->super->s_mtime > (__u32) ctx->now + ctx->time_fudge) {
 		pctx.num = fs->super->s_mtime;
 		if (fix_problem(ctx, PR_0_FUTURE_SB_LAST_MOUNT, &pctx)) {
 			fs->super->s_mtime = ctx->now;
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
-	if (fs->super->s_wtime > (__u32) ctx->now) {
+	if (fs->super->s_wtime > (__u32) ctx->now + ctx->time_fudge) {
 		pctx.num = fs->super->s_wtime;
 		if (fix_problem(ctx, PR_0_FUTURE_SB_LAST_WRITE, &pctx)) {
 			fs->super->s_wtime = ctx->now;
@@ -746,4 +769,62 @@ void check_super_block(e2fsck_t ctx)
 	e2fsck_fix_dirhash_hint(ctx);
 
 	return;
+}
+
+/*
+ * Check to see if we should backup the master sb to the backup super
+ * blocks.
+ */
+int check_backup_super_block(e2fsck_t ctx)
+{
+	ext2_filsys	fs = ctx->fs;
+	ext2_filsys	tfs = 0;
+	io_manager	io_ptr;
+	errcode_t	retval;
+	dgrp_t		g;
+	blk_t		sb;
+	int		ret = 0;
+
+	/*
+	 * If we are already writing out the backup blocks, then we
+	 * don't need to test.  Also, if the filesystem is invalid, or
+	 * the check was aborted or cancelled, we also don't want to
+	 * do the backup.  If the filesystem was opened read-only then
+	 * we can't do the backup.
+	 */
+	if (((fs->flags & EXT2_FLAG_MASTER_SB_ONLY) == 0) ||
+	    !ext2fs_test_valid(fs) ||
+	    (fs->super->s_state & EXT2_ERROR_FS) ||
+	    (ctx->flags & (E2F_FLAG_ABORT | E2F_FLAG_CANCEL)) ||
+	    (ctx->options & E2F_OPT_READONLY))
+		return 0;
+
+	for (g = 1; g < fs->group_desc_count; g++) {
+		if (!ext2fs_bg_has_super(fs, g))
+			continue;
+
+		sb = fs->super->s_first_data_block +
+			(g * fs->super->s_blocks_per_group);
+
+		retval = ext2fs_open(ctx->filesystem_name, 0,
+				     sb, fs->blocksize,
+				     fs->io->manager, &tfs);
+		if (retval) {
+			tfs = 0;
+			continue;
+		}
+
+#define SUPER_DIFFERENT(x) (fs->super->x != tfs->super->x)
+		if (SUPER_DIFFERENT(s_feature_compat) ||
+		    SUPER_DIFFERENT(s_feature_incompat) ||
+		    SUPER_DIFFERENT(s_feature_ro_compat) ||
+		    SUPER_DIFFERENT(s_blocks_count) ||
+		    SUPER_DIFFERENT(s_inodes_count) ||
+		    memcmp(fs->super->s_uuid, tfs->super->s_uuid,
+			   sizeof(fs->super->s_uuid)))
+			ret = 1;
+		ext2fs_close(tfs);
+		break;
+	}
+	return ret;
 }

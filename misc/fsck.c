@@ -867,6 +867,16 @@ static int ignore(struct fs_info *fs)
 	if (fs->passno == 0)
 		return 1;
 
+	/*
+	 * If this is a bind mount, ignore it.
+	 */
+	if (opt_in_list("bind", fs->opts)) {
+		fprintf(stderr,
+			_("%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass number\n"),
+			fs->mountpt);
+		return 1;
+	}
+
 	interpret_type(fs);
 
 	/*

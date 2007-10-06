@@ -258,6 +258,7 @@ static void check_if_skip(e2fsck_t ctx)
 	long next_check;
 	int batt = is_on_batt();
 	int defer_check_on_battery;
+	time_t lastcheck;
 
 	profile_get_boolean(ctx->profile, "options",
 			    "defer_check_on_battery", 0, 1, 
@@ -268,11 +269,16 @@ static void check_if_skip(e2fsck_t ctx)
 	if ((ctx->options & E2F_OPT_FORCE) || bad_blocks_file || cflag)
 		return;
 	
+	lastcheck = fs->super->s_lastcheck;
+	if (lastcheck > ctx->now)
+		lastcheck -= ctx->time_fudge;
 	if ((fs->super->s_state & EXT2_ERROR_FS) ||
 	    !ext2fs_test_valid(fs))
 		reason = _(" contains a file system with errors");
 	else if ((fs->super->s_state & EXT2_VALID_FS) == 0)
 		reason = _(" was not cleanly unmounted");
+	else if (check_backup_super_block(ctx))
+		reason = _(" primary superblock features different from backup");
 	else if ((fs->super->s_max_mnt_count > 0) &&
 		 (fs->super->s_mnt_count >=
 		  (unsigned) fs->super->s_max_mnt_count)) {
@@ -282,8 +288,7 @@ static void check_if_skip(e2fsck_t ctx)
 			     (unsigned) fs->super->s_max_mnt_count*2))
 			reason = 0;
 	} else if (fs->super->s_checkinterval &&
-		   ((ctx->now - fs->super->s_lastcheck) >= 
-		    fs->super->s_checkinterval)) {
+		   ((ctx->now - lastcheck) >= fs->super->s_checkinterval)) {
 		reason = _(" has gone %u days without being checked");
 		reason_arg = (ctx->now - fs->super->s_lastcheck)/(3600*24);
 		if (batt && ((ctx->now - fs->super->s_lastcheck) < 
@@ -840,7 +845,7 @@ static const char *my_ver_date = E2FSPROGS_DATE;
 					
 int main (int argc, char *argv[])
 {
-	errcode_t	retval = 0;
+	errcode_t	retval = 0, orig_retval = 0;
 	int		exit_value = FSCK_OK;
 	ext2_filsys	fs = 0;
 	io_manager	io_ptr;
@@ -940,18 +945,23 @@ restart:
 	if (!ctx->superblock && !(ctx->options & E2F_OPT_PREEN) &&
 	    !(ctx->flags & E2F_FLAG_SB_SPECIFIED) &&
 	    ((retval == EXT2_ET_BAD_MAGIC) ||
+	     (retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
 	     ((retval == 0) && ext2fs_check_desc(fs)))) {
 		if (!fs || (fs->group_desc_count > 1)) {
-			printf(_("%s trying backup blocks...\n"),
-			       retval ? _("Couldn't find ext2 superblock,") :
+			printf(_("%s: %s trying backup blocks...\n"),
+			       ctx->program_name, 
+			       retval ? _("Superblock invalid,") :
 			       _("Group descriptors look bad..."));
 			get_backup_sb(ctx, fs, ctx->filesystem_name, io_ptr);
 			if (fs)
 				ext2fs_close(fs);
+			orig_retval = retval;
 			goto restart;
 		}
 	}
 	if (retval) {
+		if (orig_retval)
+			retval = orig_retval;
 		com_err(ctx->program_name, retval, _("while trying to open %s"),
 			ctx->filesystem_name);
 		if (retval == EXT2_ET_REV_TOO_HIGH) {
@@ -1203,6 +1213,7 @@ restart:
 			if (journal_size < 0) {
 				fs->super->s_feature_compat &=
 					~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+				fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 				com_err(ctx->program_name, 0, 
 					_("Couldn't determine journal size"));
 				goto no_journal;
@@ -1242,6 +1253,10 @@ no_journal:
 	}
 	if (run_result & E2F_FLAG_ABORT)
 		fatal_error(ctx, _("aborted"));
+	if (check_backup_super_block(ctx)) {
+		fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
+		ext2fs_mark_super_dirty(fs);
+	}
 
 #ifdef MTRACE
 	mtrace_print("Cleanup");

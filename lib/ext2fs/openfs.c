@@ -235,6 +235,10 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
+	if (EXT2_INODE_SIZE(fs->super) < EXT2_GOOD_OLD_INODE_SIZE) {
+		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
+		goto cleanup;
+	}
 	fs->fragsize = EXT2_FRAG_SIZE(fs->super);
 	fs->inode_blocks_per_group = ((fs->super->s_inodes_per_group *
 				       EXT2_INODE_SIZE(fs->super) +
