@@ -1252,6 +1252,7 @@ restart:
 			if (journal_size < 0) {
 				fs->super->s_feature_compat &=
 					~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+				fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 				com_err(ctx->program_name, 0, 
 					_("Couldn't determine journal size"));
 				goto no_journal;

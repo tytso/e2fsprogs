@@ -682,7 +682,7 @@ void check_super_block(e2fsck_t ctx)
 			fs->super->s_feature_incompat &=
 				~EXT2_FEATURE_INCOMPAT_FILETYPE;
 			ext2fs_mark_super_dirty(fs);
-
+			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 		}
 	}
 
@@ -700,6 +700,7 @@ void check_super_block(e2fsck_t ctx)
 	    fix_problem(ctx, PR_0_FS_REV_LEVEL, &pctx)) {
 		ext2fs_update_dynamic_rev(fs);
 		ext2fs_mark_super_dirty(fs);
+		fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 	}
 
 	check_resize_inode(ctx);
