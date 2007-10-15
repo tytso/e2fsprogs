@@ -100,7 +100,7 @@ static void usage(void)
 	"\t[-N number-of-inodes] [-m reserved-blocks-percentage] "
 	"[-o creator-os]\n\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
-	"[-r fs-revision] [-R options] [-qvSV]\n\tdevice [blocks-count]\n"),
+	"[-r fs-revision] [-E extended-option[,...]] [-qvSV]\n\tdevice [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
