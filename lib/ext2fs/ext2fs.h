@@ -290,6 +290,65 @@ struct struct_ext2_filsys {
 #endif
 
 /*
+ * Generic (non-filesystem layout specific) extents structure
+ */
+
+#define EXT2_EXTENT_FLAGS_LEAF		0x0001
+#define EXT2_EXTENT_FLAGS_UNINIT	0x0002
+#define EXT2_EXTENT_FLAGS_SECOND_VISIT	0x0004
+
+struct ext2fs_extent {
+	blk64_t	e_pblk;		/* first physical block */
+	blk64_t	e_lblk;		/* first logical block extent covers */
+	__u32	e_len;		/* number of blocks covered by extent */
+	__u32	e_flags;	/* extent flags */
+};
+
+typedef struct ext2_extent_handle *ext2_extent_handle_t;
+typedef struct ext2_extent_path *ext2_extent_path_t;
+
+/*
+ * Flags used by ext2fs_extent_get()
+ */
+#define EXT2_EXTENT_CURRENT	0x0000
+#define EXT2_EXTENT_MOVE_MASK	0x000F
+#define EXT2_EXTENT_ROOT	0x0001
+#define EXT2_EXTENT_LAST_LEAF	0x0002
+#define EXT2_EXTENT_FIRST_SIB	0x0003
+#define EXT2_EXTENT_LAST_SIB	0x0004
+#define EXT2_EXTENT_NEXT_SIB	0x0005
+#define EXT2_EXTENT_PREV_SIB	0x0006
+#define EXT2_EXTENT_NEXT_LEAF	0x0007
+#define EXT2_EXTENT_PREV_LEAF	0x0008
+#define EXT2_EXTENT_NEXT	0x0009
+#define EXT2_EXTENT_PREV	0x000A
+#define EXT2_EXTENT_UP		0x000B
+#define EXT2_EXTENT_DOWN	0x000C
+#define EXT2_EXTENT_DOWN_AND_LAST 0x000D
+
+/*
+ * Flags used by ext2fs_extent_insert()
+ */
+
+#define EXT2_EXTENT_INSERT_AFTER  0x0001
+
+/*
+ * Data structure returned by ext2fs_extent_get_info()
+ */
+struct ext2_extent_info {
+	int		curr_entry;
+	int		curr_level;
+	int		num_entries;
+	int		max_entries;
+	int		max_depth;
+	int		bytes_avail;
+	blk64_t		max_lblk;
+	blk64_t		max_pblk;
+	__u32		max_len;
+	__u32		max_uninit_len;
+};
+
+/*
  * Flags for directory block reading and writing functions
  */
 #define EXT2_DIRBLOCK_V2_STRUCT	0x0001
@@ -721,6 +780,22 @@ extern errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block,
 extern errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
 					   char *block_buf,
 					   int adjust, __u32 *newcount);
+
+/* extent.c */
+extern errcode_t ext2fs_extent_header_verify(void *ptr, int size);
+extern errcode_t ext2fs_extent_open(ext2_filsys fs, ext2_ino_t ino,
+				    ext2_extent_handle_t *handle);
+extern errcode_t ext2fs_extent_get(ext2_extent_handle_t handle,
+				   int flags, struct ext2fs_extent *extent);
+extern errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle, int flags,
+				       struct ext2fs_extent *extent);
+extern errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
+				      struct ext2fs_extent *extent);
+extern errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags);
+extern errcode_t ext2fs_extent_get_info(ext2_extent_handle_t handle,
+					struct ext2_extent_info *info);
+extern errcode_t ext2fs_extent_goto(ext2_extent_handle_t handle,
+				    blk64_t blk);
 
 /* fileio.c */
 extern errcode_t ext2fs_file_open2(ext2_filsys fs, ext2_ino_t ino,

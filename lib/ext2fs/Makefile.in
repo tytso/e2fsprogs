@@ -10,6 +10,8 @@ INSTALL = @INSTALL@
 @DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o fileio.o \
 @DEBUGFS_CMT@	inode_io.o namei.o write_bb_file.o 
 
+MK_CMDS=	_SS_DIR_OVERRIDE=../ss ../ss/mk_cmds
+
 @RESIZER_CMT@RESIZE_LIB_OBJS = dupfs.o test_io.o 
 
 @IMAGER_CMT@E2IMAGE_LIB_OBJS = imager.o
@@ -35,6 +37,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	dir_iterate.o \
 	expanddir.o \
 	ext_attr.o \
+	extent.o \
 	finddev.o \
 	flushb.o \
 	freefs.o \
@@ -90,6 +93,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/dupfs.c \
 	$(srcdir)/expanddir.c \
 	$(srcdir)/ext_attr.c \
+	$(srcdir)/extent.c \
 	$(srcdir)/fileio.c \
 	$(srcdir)/finddev.c \
 	$(srcdir)/flushb.c \
@@ -239,6 +243,68 @@ ext2_tdbtool: tdbtool.o
 	@echo "	LD $@"
 	@$(CC) -o ext2_tdbtool tdbtool.o tdb.o
 
+extent_dbg.c: $(srcdir)/extent_dbg.ct
+	@echo "	MK_CMDS $<"
+	@$(MK_CMDS) $(srcdir)/extent_dbg.ct
+
+debug_cmds.c debug_cmds.h: $(top_srcdir)/debugfs/debug_cmds.ct
+	@echo "	MK_CMDS $<@"
+	@$(MK_CMDS) $(top_srcdir)/debugfs/debug_cmds.ct
+
+DEBUG_OBJS= debug_cmds.o debugfs.o util.o ncheck.o icheck.o ls.o \
+	lsdel.o dump.o set_fields.o logdump.o htree.o unused.o
+
+debugfs.o: $(top_srcdir)/debugfs/debugfs.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+util.o: $(top_srcdir)/debugfs/util.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+ncheck.o: $(top_srcdir)/debugfs/ncheck.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+icheck.o: $(top_srcdir)/debugfs/icheck.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+ls.o: $(top_srcdir)/debugfs/ls.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+lsdel.o: $(top_srcdir)/debugfs/lsdel.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+dump.o: $(top_srcdir)/debugfs/dump.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+set_fields.o: $(top_srcdir)/debugfs/set_fields.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+logdump.o: $(top_srcdir)/debugfs/logdump.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+htree.o: $(top_srcdir)/debugfs/htree.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+unused.o: $(top_srcdir)/debugfs/unused.c
+	@echo "	CC $<"
+	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+
+tst_extents: $(srcdir)/extent.c extent_dbg.c $(DEBUG_OBJS) $(LIBSS) $(LIBE2P) $(DEPLIBUUID) $(DEPLIBBLKID)
+	@echo "	LD $@"
+	@$(CC) -o tst_extents $(srcdir)/extent.c extent_dbg.c \
+		$(ALL_CFLAGS) -DDEBUG $(DEBUG_OBJS) $(LIBSS) $(LIBE2P) \
+		$(LIBUUID) $(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBCOM_ERR) \
+		-I $(top_srcdir)/debugfs
+
 mkjournal: mkjournal.c $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
 	@$(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
@@ -282,7 +348,7 @@ clean::
 		tst_badblocks tst_iscan ext2_err.et ext2_err.c ext2_err.h \
 		tst_byteswap tst_ismounted tst_getsize tst_sectgetsize \
 		tst_bitops tst_types tst_icount tst_super_size \
-		ext2_tdbtool mkjournal \
+		ext2_tdbtool mkjournal debug_cmds.c \
 		../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a
 
 mostlyclean:: clean

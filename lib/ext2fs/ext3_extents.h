@@ -126,6 +126,26 @@ struct ext3_ext_path {
 #define EXT_MAX_BLOCK	0xffffffff
 #define EXT_CACHE_MARK	0xffff
 
+/*
+ * EXT_INIT_MAX_LEN is the maximum number of blocks we can have in an
+ * initialized extent. This is 2^15 and not (2^16 - 1), since we use the
+ * MSB of ee_len field in the extent datastructure to signify if this
+ * particular extent is an initialized extent or an uninitialized (i.e.
+ * preallocated).
+ * EXT_UNINIT_MAX_LEN is the maximum number of blocks we can have in an
+ * uninitialized extent.
+ * If ee_len is <= 0x8000, it is an initialized extent. Otherwise, it is an
+ * uninitialized one. In other words, if MSB of ee_len is set, it is an
+ * uninitialized extent with only one special scenario when ee_len = 0x8000.
+ * In this case we can not have an uninitialized extent of zero length and
+ * thus we make it as a special case of initialized extent with 0x8000 length.
+ * This way we get better extent-to-group alignment for initialized extents.
+ * Hence, the maximum number of blocks we can have in an *initialized*
+ * extent is 2^15 (32768) and in an *uninitialized* extent is 2^15-1 (32767).
+ */
+#define EXT_INIT_MAX_LEN	(1UL << 15)
+#define EXT_UNINIT_MAX_LEN	(EXT_INIT_MAX_LEN - 1)
+
 
 #define EXT_FIRST_EXTENT(__hdr__) \
 	((struct ext3_extent *) (((char *) (__hdr__)) +		\
