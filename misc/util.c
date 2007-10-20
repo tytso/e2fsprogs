@@ -71,8 +71,8 @@ void proceed_question(void)
 	fflush(stderr);
 	fputs(_("Proceed anyway? (y,n) "), stdout);
 	buf[0] = 0;
-	fgets(buf, sizeof(buf), stdin);
-	if (strchr(short_yes, buf[0]) == 0)
+	if (!fgets(buf, sizeof(buf), stdin) ||
+	    strchr(short_yes, buf[0]) == 0)
 		exit(1);
 }
 

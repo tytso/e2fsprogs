@@ -789,7 +789,8 @@ static void modify_u8(char *com, const char *prompt,
 
 	sprintf(buf, format, *val);
 	printf("%30s    [%s] ", prompt, buf);
-	fgets(buf, sizeof(buf), stdin);
+	if (!fgets(buf, sizeof(buf), stdin))
+		return;
 	if (buf[strlen (buf) - 1] == '\n')
 		buf[strlen (buf) - 1] = '\0';
 	if (!buf[0])
@@ -810,7 +811,8 @@ static void modify_u16(char *com, const char *prompt,
 
 	sprintf(buf, format, *val);
 	printf("%30s    [%s] ", prompt, buf);
-	fgets(buf, sizeof(buf), stdin);
+	if (!fgets(buf, sizeof(buf), stdin))
+		return;
 	if (buf[strlen (buf) - 1] == '\n')
 		buf[strlen (buf) - 1] = '\0';
 	if (!buf[0])
@@ -831,7 +833,8 @@ static void modify_u32(char *com, const char *prompt,
 
 	sprintf(buf, format, *val);
 	printf("%30s    [%s] ", prompt, buf);
-	fgets(buf, sizeof(buf), stdin);
+	if (!fgets(buf, sizeof(buf), stdin))
+		return;
 	if (buf[strlen (buf) - 1] == '\n')
 		buf[strlen (buf) - 1] = '\0';
 	if (!buf[0])

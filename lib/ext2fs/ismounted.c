@@ -251,10 +251,8 @@ static int is_swap_device(const char *file)
 	if (!(f = fopen("/proc/swaps", "r")))
 		return 0;
 	/* Skip the first line */
-	fgets(buf, sizeof(buf), f);
-	while (!feof(f)) {
-		if (!fgets(buf, sizeof(buf), f))
-			break;
+	if (fgets(buf, sizeof(buf), f))
+	while (fgets(buf, sizeof(buf), f)) {
 		if ((cp = strchr(buf, ' ')) != NULL)
 			*cp = 0;
 		if ((cp = strchr(buf, '\t')) != NULL)
