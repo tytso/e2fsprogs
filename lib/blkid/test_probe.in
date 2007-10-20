@@ -8,7 +8,7 @@ if test "$TESTS"x = x ; then
 	done
 fi
 
-mkdir -p tests
+mkdir -p tests/tmp
 
 for i in $TESTS
 do
@@ -19,9 +19,9 @@ do
 		echo "non-existent"
 		continue
 	fi
-	bunzip2 < $SRCDIR/tests/$i.img.bz2 > /tmp/test.img.$$
-	./tst_probe /tmp/test.img.$$ > tests/$i.out
-	/bin/rm -f /tmp/test.img.$$ tests/$i.ok tests/$i.failed
+	bunzip2 < $SRCDIR/tests/$i.img.bz2 > tests/tmp/test.img.$$
+	./tst_probe tests/tmp/test.img.$$ > tests/$i.out
+	/bin/rm -f tests/tmp/test.img.$$ tests/$i.ok tests/$i.failed
 	cmp -s tests/$i.out $SRCDIR/tests/$i.results
 	if [ $? = 0 ];  then
 		echo ok
