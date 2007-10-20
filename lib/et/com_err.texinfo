@@ -19,11 +19,9 @@
 
 @ifinfo
 @dircategory Development
-@format
-START-INFO-DIR-ENTRY
+@direntry
 * Com_err: (com_err).   A Common Error Description Library for UNIX.
-END-INFO-DIR-ENTRY
-@end format
+@end direntry
 @end ifinfo
 
 @iftex

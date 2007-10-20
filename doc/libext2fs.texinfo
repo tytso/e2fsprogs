@@ -7,11 +7,9 @@
 
 @ifinfo
 @dircategory Development
-@format
-START-INFO-DIR-ENTRY
+@direntry
 * libext2fs: (libext2fs.info).                  The EXT2FS library.
-END-INFO-DIR-ENTRY
-@end format
+@end direntry
 @end ifinfo
 
 @c smallbook
