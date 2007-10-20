@@ -316,7 +316,7 @@ fix:
 
 	/* simple remove all possible EA(s) */
 	*((__u32 *)start) = 0UL;
-	e2fsck_write_inode_full(ctx, pctx->ino, (struct ext2_inode *) inode,
+	e2fsck_write_inode_full(ctx, pctx->ino, pctx->inode,
 				EXT2_INODE_SIZE(sb), "pass1");
 }
 
