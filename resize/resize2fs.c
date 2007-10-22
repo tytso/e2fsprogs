@@ -341,7 +341,8 @@ retry:
 		numblocks = fs->super->s_blocks_per_group;
 	i = old_fs->group_desc_count - 1;
 	fs->group_desc[i].bg_free_blocks_count += (numblocks-old_numblocks);
-		
+	ext2fs_group_desc_csum_set(fs, i);
+
 	/*
 	 * If the number of block groups is staying the same, we're
 	 * done and can exit now.  (If the number block groups is
@@ -416,6 +417,7 @@ retry:
 		fs->group_desc[i].bg_free_inodes_count =
 			fs->super->s_inodes_per_group;
 		fs->group_desc[i].bg_used_dirs_count = 0;
+		ext2fs_group_desc_csum_set(fs, i);
 
 		retval = ext2fs_allocate_group_table(fs, i, 0);
 		if (retval) goto errout;
@@ -1233,9 +1235,11 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		if (retval) goto errout;
 
 		group = (new_inode-1) / EXT2_INODES_PER_GROUP(rfs->new_fs->super);
-		if (LINUX_S_ISDIR(inode->i_mode))
+		if (LINUX_S_ISDIR(inode->i_mode)) {
 			rfs->new_fs->group_desc[group].bg_used_dirs_count++;
-		
+			ext2fs_group_desc_csum_set(rfs->new_fs, group);
+		}
+
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_INODEMAP)
 			printf("Inode moved %u->%u\n", ino, new_inode);
@@ -1490,6 +1494,7 @@ static errcode_t move_itables(ext2_resize_t rfs)
 			ext2fs_unmark_block_bitmap(fs->block_map, blk);
 
 		rfs->old_fs->group_desc[i].bg_inode_table = new_blk;
+		ext2fs_group_desc_csum_set(rfs->old_fs, i);
 		ext2fs_mark_super_dirty(rfs->old_fs);
 		ext2fs_flush(rfs->old_fs);
 
@@ -1587,8 +1592,10 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 		count++;
 		if ((count == fs->super->s_blocks_per_group) ||
 		    (blk == fs->super->s_blocks_count-1)) {
-			fs->group_desc[group++].bg_free_blocks_count =
+			fs->group_desc[group].bg_free_blocks_count =
 				group_free;
+			ext2fs_group_desc_csum_set(fs, group);
+			group++;
 			count = 0;
 			group_free = 0;
 		}
@@ -1612,8 +1619,10 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 		count++;
 		if ((count == fs->super->s_inodes_per_group) ||
 		    (ino == fs->super->s_inodes_count)) {
-			fs->group_desc[group++].bg_free_inodes_count =
+			fs->group_desc[group].bg_free_inodes_count =
 				group_free;
+			ext2fs_group_desc_csum_set(fs, group);
+			group++;
 			count = 0;
 			group_free = 0;
 		}
