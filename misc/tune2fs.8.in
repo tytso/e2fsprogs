@@ -439,10 +439,17 @@ Reserve space so the block group descriptor table may grow in the
 future.
 .B Tune2fs 
 only supports clearing this filesystem feature.
+.TP
+.B uninit_groups
+Allow the kernel to initialize bitmaps and inode tables and keep a high
+watermark for the unused inodes in a filesystem, to reduce
+.BR e2fsck (8)
+time.
 .RE
 .IP
 After setting or clearing 
 .BR sparse_super ,
+.BR uninit_groups ,
 .BR filetype ,
 or
 .B resize_inode

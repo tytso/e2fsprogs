@@ -118,6 +118,7 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_INCOMPAT_FLEX_BG,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
+		EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 };
 
@@ -130,7 +131,8 @@ static __u32 clear_ok_features[3] = {
 	EXT2_FEATURE_INCOMPAT_FILETYPE |
 		EXT4_FEATURE_INCOMPAT_FLEX_BG,
 	/* R/O compat */
-	EXT2_FEATURE_RO_COMPAT_LARGE_FILE
+	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
+		EXT4_FEATURE_RO_COMPAT_GDT_CSUM
 };
 
 /*
@@ -245,6 +247,7 @@ static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
 	ext2fs_unmark_block_bitmap(fs->block_map,block);
 	group = ext2fs_group_of_blk(fs, block);
 	fs->group_desc[group].bg_free_blocks_count++;
+	ext2fs_group_desc_csum_set(fs, group);
 	fs->super->s_free_blocks_count++;
 	return 0;
 }
@@ -409,6 +412,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 
 	if (FEATURE_CHANGED(E2P_FEATURE_RO_INCOMPAT,
 			    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER) ||
+	    FEATURE_CHANGED(E2P_FEATURE_RO_INCOMPAT,
+			    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) ||
 	    FEATURE_CHANGED(E2P_FEATURE_INCOMPAT,
 			    EXT2_FEATURE_INCOMPAT_FILETYPE) ||
 	    FEATURE_CHANGED(E2P_FEATURE_COMPAT,
