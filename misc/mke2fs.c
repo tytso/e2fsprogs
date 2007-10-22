@@ -433,6 +433,8 @@ static void write_inode_tables(ext2_filsys fs)
 					num, blk, error_message(retval));
 				exit(1);
 			}
+			/* The kernel doesn't need to zero the itable blocks */
+			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_ZEROED;
 		}
 		if (sync_kludge) {
 			if (sync_kludge == 1)
@@ -448,33 +450,48 @@ static void write_inode_tables(ext2_filsys fs)
 static void setup_lazy_bg(ext2_filsys fs)
 {
 	dgrp_t i;
-	int blks;
+	int blks, csum_flag;
 	struct ext2_super_block *sb = fs->super;
 	struct ext2_group_desc *bg = fs->group_desc;
 
-	if (EXT2_HAS_COMPAT_FEATURE(fs->super, 
-				    EXT2_FEATURE_COMPAT_LAZY_BG)) {
+	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
+	if (EXT2_HAS_COMPAT_FEATURE(fs->super, EXT2_FEATURE_COMPAT_LAZY_BG) ||
+	    csum_flag) {
 		for (i = 0; i < fs->group_desc_count; i++, bg++) {
 			if ((i == 0) ||
-			    (i == fs->group_desc_count-1))
+			    (i == fs->group_desc_count - 1 && !csum_flag))
 				continue;
 			if (bg->bg_free_inodes_count ==
 			    sb->s_inodes_per_group) {
-				bg->bg_free_inodes_count = 0;
 				bg->bg_flags |= EXT2_BG_INODE_UNINIT;
-				sb->s_free_inodes_count -= 
-					sb->s_inodes_per_group;
+				if (!csum_flag) {
+					bg->bg_free_inodes_count = 0;
+					sb->s_free_inodes_count -=
+						sb->s_inodes_per_group;
+				}
 			}
+
+			/* Skip groups with GDT backups because the resize
+			 * inode has blocks allocated in them, and the last
+			 * group because it needs block bitmap padding. */
+			if ((ext2fs_bg_has_super(fs, i) &&
+			     sb->s_reserved_gdt_blocks) ||
+			    i == fs->group_desc_count - 1)
+				continue;
+
 			blks = ext2fs_super_and_bgd_loc(fs, i, 0, 0, 0, 0);
-			if (bg->bg_free_blocks_count == blks) {
-				bg->bg_free_blocks_count = 0;
+			if (bg->bg_free_blocks_count == blks &&
+			    bg->bg_flags & EXT2_BG_INODE_UNINIT) {
 				bg->bg_flags |= EXT2_BG_BLOCK_UNINIT;
-				sb->s_free_blocks_count -= blks;
+				if (!csum_flag) {
+					bg->bg_free_blocks_count = 0;
+					sb->s_free_blocks_count -= blks;
+				}
 			}
 		}
 	}
 }
-
 
 static void create_root_dir(ext2_filsys fs)
 {
@@ -912,7 +929,8 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_INCOMPAT_FLEX_BG,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE|
-		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER|
+		EXT4_FEATURE_RO_COMPAT_GDT_CSUM
 };
 
 
@@ -1774,6 +1792,8 @@ int main (int argc, char *argv[])
 	}
 no_journal:
 
+	if (!super_only)
+		ext2fs_set_gdt_csum(fs);
 	if (!quiet)
 		printf(_("Writing superblocks and "
 		       "filesystem accounting information: "));
