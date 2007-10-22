@@ -112,7 +112,8 @@ static void print_bg_opts(ext2_filsys fs, dgrp_t i)
 {
 	int first = 1, bg_flags;
 
-	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_LAZY_BG)
+	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_LAZY_BG ||
+	    fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
 		bg_flags = fs->group_desc[i].bg_flags;
 	else
 		bg_flags = 0;
@@ -210,11 +211,15 @@ static void list_desc (ext2_filsys fs)
 		diff = fs->group_desc[i].bg_inode_table - first_block;
 		if (diff > 0)
 			printf(" (+%ld)", diff);
-		printf (_("\n  %d free blocks, %d free inodes, "
-			  "%d directories\n"),
+		printf (_("\n  %u free blocks, %u free inodes, "
+			  "%u directories%s"),
 			fs->group_desc[i].bg_free_blocks_count,
 			fs->group_desc[i].bg_free_inodes_count,
-			fs->group_desc[i].bg_used_dirs_count);
+			fs->group_desc[i].bg_used_dirs_count,
+			fs->group_desc[i].bg_itable_unused ? "" : "\n");
+		if (fs->group_desc[i].bg_itable_unused)
+			printf (_(", %u unused inodes\n"),
+				fs->group_desc[i].bg_itable_unused);
 		if (block_bitmap) {
 			fputs(_("  Free blocks: "), stdout);
 			ext2fs_get_block_bitmap_range(fs->block_map, 
