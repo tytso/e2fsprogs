@@ -95,12 +95,10 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 			ext2fs_mark_block_bitmap(bmap, blk);
 		fs->group_desc[group].bg_inode_table = new_blk;
 	}
+	ext2fs_group_desc_csum_set(fs, group);
 
-	
 	return 0;
 }
-
-	
 
 errcode_t ext2fs_allocate_tables(ext2_filsys fs)
 {

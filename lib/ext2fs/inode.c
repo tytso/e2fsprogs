@@ -167,6 +167,9 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 	if (EXT2_HAS_COMPAT_FEATURE(fs->super, 
 				    EXT2_FEATURE_COMPAT_LAZY_BG))
 		scan->scan_flags |= EXT2_SF_DO_LAZY;
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+		scan->scan_flags |= EXT2_SF_DO_LAZY;
 	*ret_scan = scan;
 	return 0;
 }
@@ -218,18 +221,30 @@ int ext2fs_inode_scan_flags(ext2_inode_scan scan, int set_flags,
  */
 static errcode_t get_next_blockgroup(ext2_inode_scan scan)
 {
+	ext2_filsys fs = scan->fs;
+
 	scan->current_group++;
 	scan->groups_left--;
-			
-	scan->current_block = scan->fs->
-		group_desc[scan->current_group].bg_inode_table;
+
+	scan->current_block =fs->group_desc[scan->current_group].bg_inode_table;
 
 	scan->current_inode = scan->current_group *
-		EXT2_INODES_PER_GROUP(scan->fs->super);
+		EXT2_INODES_PER_GROUP(fs->super);
 
 	scan->bytes_left = 0;
-	scan->inodes_left = EXT2_INODES_PER_GROUP(scan->fs->super);
-	scan->blocks_left = scan->fs->inode_blocks_per_group;
+	scan->inodes_left = EXT2_INODES_PER_GROUP(fs->super);
+	scan->blocks_left = fs->inode_blocks_per_group;
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		scan->inodes_left -=
+			fs->group_desc[scan->current_group].bg_itable_unused;
+		scan->blocks_left =
+			(EXT2_INODES_PER_GROUP(fs->super) -
+			 fs->group_desc[scan->current_group].bg_itable_unused +
+			 fs->blocksize / scan->inode_size - 1) *
+			scan->inode_size / fs->blocksize;
+	}
+
 	return 0;
 }
 
@@ -416,6 +431,8 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 	if ((scan->scan_flags & EXT2_SF_DO_LAZY) &&
 	    (scan->fs->group_desc[scan->current_group].bg_flags &
 	     EXT2_BG_INODE_UNINIT))
+		goto force_new_group;
+	if (scan->inodes_left == 0)
 		goto force_new_group;
 	if (scan->current_block == 0) {
 		if (scan->scan_flags & EXT2_SF_SKIP_MISSING_ITABLE) {

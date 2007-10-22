@@ -306,6 +306,22 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 
 	fs->stride = fs->super->s_raid_stride;
 
+	/*
+	 * If recovery is from backup superblock, Clear _UNININT flags &
+	 * reset bg_itable_unused to zero
+	 */
+	if (superblock > 1 && EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		struct ext2_group_desc *gd;
+		for (i = 0, gd = fs->group_desc; i < fs->group_desc_count;
+		     i++, gd++) {
+			gd->bg_flags &= ~EXT2_BG_BLOCK_UNINIT;
+			gd->bg_flags &= ~EXT2_BG_INODE_UNINIT;
+			gd->bg_itable_unused = 0;
+		}
+		ext2fs_mark_super_dirty(fs);
+	}
+
 	fs->flags &= ~EXT2_FLAG_NOFREE_ON_ERROR;
 	*ret_fs = fs;
 	return 0;

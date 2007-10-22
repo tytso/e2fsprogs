@@ -152,8 +152,10 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 	fs->write_bitmaps = ext2fs_write_bitmaps;
 
-	if (EXT2_HAS_COMPAT_FEATURE(fs->super, 
-				    EXT2_FEATURE_COMPAT_LAZY_BG))
+	if (EXT2_HAS_COMPAT_FEATURE(fs->super,
+				    EXT2_FEATURE_COMPAT_LAZY_BG) ||
+	    EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
 		lazy_flag = 1;
 
 	retval = ext2fs_get_mem(strlen(fs->device_name) + 80, &buf);
@@ -233,7 +235,8 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (block_bitmap) {
 			blk = fs->group_desc[i].bg_block_bitmap;
 			if (lazy_flag && fs->group_desc[i].bg_flags &
-			    EXT2_BG_BLOCK_UNINIT)
+			    EXT2_BG_BLOCK_UNINIT &&
+			    ext2fs_group_desc_csum_verify(fs, i))
 				blk = 0;
 			if (blk) {
 				retval = io_channel_read_blk(fs->io, blk,
@@ -254,7 +257,8 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (inode_bitmap) {
 			blk = fs->group_desc[i].bg_inode_bitmap;
 			if (lazy_flag && fs->group_desc[i].bg_flags &
-			    EXT2_BG_INODE_UNINIT)
+			    EXT2_BG_INODE_UNINIT &&
+			    ext2fs_group_desc_csum_verify(fs, i))
 				blk = 0;
 			if (blk) {
 				retval = io_channel_read_blk(fs->io, blk,

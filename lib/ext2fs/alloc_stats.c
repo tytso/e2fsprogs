@@ -27,6 +27,25 @@ void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
 	fs->group_desc[group].bg_free_inodes_count -= inuse;
 	if (isdir)
 		fs->group_desc[group].bg_used_dirs_count += inuse;
+
+	/* We don't strictly need to be clearing these if inuse < 0
+	 * (i.e. freeing inodes) but it also means something is bad. */
+	fs->group_desc[group].bg_flags &= ~(EXT2_BG_INODE_UNINIT |
+					    EXT2_BG_BLOCK_UNINIT);
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		ext2_ino_t first_unused_inode =	fs->super->s_inodes_per_group -
+			fs->group_desc[group].bg_itable_unused +
+			group * fs->super->s_inodes_per_group + 1;
+
+		if (ino >= first_unused_inode)
+			fs->group_desc[group].bg_itable_unused =
+				group * fs->super->s_inodes_per_group +
+				fs->super->s_inodes_per_group - ino;
+
+		ext2fs_group_desc_csum_set(fs, group);
+	}
+
 	fs->super->s_free_inodes_count -= inuse;
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_mark_ib_dirty(fs);
@@ -46,6 +65,9 @@ void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse)
 	else
 		ext2fs_unmark_block_bitmap(fs->block_map, blk);
 	fs->group_desc[group].bg_free_blocks_count -= inuse;
+	fs->group_desc[group].bg_flags &= ~EXT2_BG_BLOCK_UNINIT;
+	ext2fs_group_desc_csum_set(fs, group);
+
 	fs->super->s_free_blocks_count -= inuse;
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
