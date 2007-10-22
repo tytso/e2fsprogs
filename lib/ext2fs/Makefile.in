@@ -123,16 +123,16 @@ SRCS= ext2_err.c \
 	$(srcdir)/swapfs.c \
 	$(srcdir)/tdb.c \
 	$(srcdir)/test_io.c \
-	$(srcdir)/unix_io.c \
-	$(srcdir)/unlink.c \
-	$(srcdir)/valid_blk.c \
-	$(srcdir)/version.c \
-	$(srcdir)/write_bb_file.c \
 	$(srcdir)/tst_badblocks.c \
 	$(srcdir)/tst_bitops.c \
 	$(srcdir)/tst_byteswap.c \
 	$(srcdir)/tst_getsize.c \
-	$(srcdir)/tst_iscan.c
+	$(srcdir)/tst_iscan.c \
+	$(srcdir)/unix_io.c \
+	$(srcdir)/unlink.c \
+	$(srcdir)/valid_blk.c \
+	$(srcdir)/version.c \
+	$(srcdir)/write_bb_file.c
 
 HFILES= bitops.h ext2fs.h ext2_io.h ext2_fs.h ext2_ext_attr.h ext3_extents.h \
 	tdb.h
