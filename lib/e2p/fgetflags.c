@@ -65,7 +65,7 @@ int fgetflags (const char * name, unsigned long * flags)
 #if HAVE_EXT2_IOCTLS
 	int fd, r, f, save_errno = 0;
 
-	if (!stat(name, &buf) &&
+	if (!lstat(name, &buf) &&
 	    !S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode)) {
 		goto notsupp;
 	}
