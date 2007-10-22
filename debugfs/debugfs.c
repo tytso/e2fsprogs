@@ -288,7 +288,10 @@ void do_show_super_stats(int argc, char *argv[])
 	FILE 	*out;
 	struct ext2_group_desc *gdp;
 	int	c, header_only = 0;
-	int	numdirs = 0, first;
+	int	numdirs = 0, first, gdt_csum;
+
+	gdt_csum = EXT2_HAS_RO_COMPAT_FEATURE(current_fs->super,
+					      EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 
 	reset_getopt();
 	while ((c = getopt (argc, argv, "h")) != EOF) {
@@ -324,7 +327,7 @@ void do_show_super_stats(int argc, char *argv[])
 		        "inode table at %u\n"
 		        "           %d free %s, "
 		        "%d free %s, "
-		        "%d used %s\n",
+		        "%d used %s%s",
 		        i, gdp->bg_block_bitmap,
 		        gdp->bg_inode_bitmap, gdp->bg_inode_table,
 		        gdp->bg_free_blocks_count,
@@ -333,12 +336,21 @@ void do_show_super_stats(int argc, char *argv[])
 		        gdp->bg_free_inodes_count != 1 ? "inodes" : "inode",
 		        gdp->bg_used_dirs_count,
 		        gdp->bg_used_dirs_count != 1 ? "directories"
-				: "directory");
+				: "directory", gdt_csum ? ", " : "\n");
+		if (gdt_csum)
+			fprintf(out, "%d unused %s\n",
+				gdp->bg_itable_unused,
+				gdp->bg_itable_unused != 1 ? "inodes":"inode");
 		first = 1;
 		print_bg_opts(gdp, EXT2_BG_INODE_UNINIT, "Inode not init",
 			      &first, out);
 		print_bg_opts(gdp, EXT2_BG_BLOCK_UNINIT, "Block not init",
 			      &first, out);
+		if (gdt_csum) {
+			fprintf(out, "%sChecksum 0x%04x",
+				first ? "           [":", ", gdp->bg_checksum);
+			first = 0;
+		}
 		if (!first)
 			fputs("]\n", out);
 	}
