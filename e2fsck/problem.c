@@ -351,8 +351,28 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Adding dirhash hint to @f.\n\n"),
 	  PROMPT_NONE, 0 },
 
+	/* group descriptor N checksum is invalid. */
+	{ PR_0_GDT_CSUM,
+	  N_("@g descriptor %g checksum is invalid.  "),
+	     PROMPT_FIX, PR_PREEN_OK },
+
+	/* group descriptor N marked uninitialized without feature set. */
+	{ PR_0_GDT_UNINIT,
+	  N_("@g descriptor %g marked uninitialized without feature set.\n"),
+	     PROMPT_FIX, PR_PREEN_OK },
+
+	/* group N block bitmap uninitialized but inode bitmap in use. */
+	{ PR_0_BB_UNINIT_IB_INIT,
+	  N_("@g %g @b @B uninitialized but @i @B in use.\n"),
+	     PROMPT_FIX, PR_PREEN_OK },
+
+	/* Group descriptor N has invalid unused inodes count. */
+	{ PR_0_GDT_ITABLE_UNUSED,
+	  N_("@g descriptor %g has invalid unused inodes count %b.  "),
+	     PROMPT_FIX, PR_PREEN_OK },
+
 	/* Pass 1 errors */
-	
+
 	/* Pass 1: Checking inodes, blocks, and sizes */
 	{ PR_1_PASS_HEADER,
 	  N_("Pass 1: Checking @is, @bs, and sizes\n"),
@@ -1232,6 +1252,16 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_2_UNEXPECTED_HTREE_BLOCK,
 	  N_("Unexpected @b in @h %d (%q).\n"), PROMPT_CLEAR_HTREE, 0 },
 		  
+	/* Inode found in group where _INODE_UNINIT is set */
+	{ PR_2_INOREF_BG_INO_UNINIT,
+	  N_("@i %i found in @g %g where _INODE_UNINIT is set.  "),
+	  PROMPT_FIX, PR_PREEN_OK },
+
+	/* Inode found in group unused inodes area */
+	{ PR_2_INOREF_IN_UNUSED,
+	  N_("@i %i found in @g %g unused inodes area.  "),
+	  PROMPT_FIX, PR_PREEN_OK },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */
@@ -1542,6 +1572,16 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_6_RECREATE_JOURNAL,
 	  N_("Recreate journal to make the filesystem ext3 again?\n"),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
+
+	/* Group N block(s) in use but group is marked BLOCK_UNINIT */
+	{ PR_5_BLOCK_UNINIT,
+	  N_("@g %g @b(s) in use but @g is marked BLOCK_UNINIT\n"),
+	  PROMPT_FIX, PR_PREEN_OK },
+
+	/* Group N inode(s) in use but group is marked INODE_UNINIT */
+	{ PR_5_INODE_UNINIT,
+	  N_("@g %g @i(s) in use but @g is marked INODE_UNINIT\n"),
+	  PROMPT_FIX, PR_PREEN_OK },
 
 	{ 0 }
 };

@@ -558,7 +558,9 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		       "and may take an argument which\n"
 		       "is set off by an equals ('=') sign.  "
 			"Valid extended options are:\n"
-		       "\tea_ver=<ea_version (1 or 2)>\n\n"), stderr);
+			"\tea_ver=<ea_version (1 or 2)>\n"
+			"\tuninit_groups\n"
+			"\tinit_groups\n\n"), stderr);
 		exit(1);
 	}
 }
@@ -745,6 +747,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	if ((ctx->options & E2F_OPT_NO) && !bad_blocks_file &&
 	    !cflag && !(ctx->options & E2F_OPT_COMPRESS_DIRS))
 		ctx->options |= E2F_OPT_READONLY;
+
 	ctx->io_options = strchr(argv[optind], '?');
 	if (ctx->io_options) 
 		*ctx->io_options++ = 0;
@@ -843,7 +846,7 @@ sscanf_err:
 
 static const char *my_ver_string = E2FSPROGS_VERSION;
 static const char *my_ver_date = E2FSPROGS_DATE;
-					
+
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0, orig_retval = 0;
@@ -1335,6 +1338,10 @@ no_journal:
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
+
+	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM &&
+	    !(ctx->options & E2F_OPT_READONLY))
+		ext2fs_set_gdt_csum(ctx->fs);
 
 	e2fsck_write_bitmaps(ctx);
 #ifdef RESOURCE_TRACK

@@ -151,7 +151,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	
 	cd.pctx.errcode = ext2fs_dblist_iterate(fs->dblist, check_dir_block,
 						&cd);
-	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK || ctx->flags & E2F_FLAG_RESTART)
 		return;
 	if (cd.pctx.errcode) {
 		fix_problem(ctx, PR_2_DBLIST_ITERATE, &cd.pctx);
@@ -727,7 +727,7 @@ static int check_dir_block(ext2_filsys fs,
 	buf = cd->buf;
 	ctx = cd->ctx;
 
-	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+	if (ctx->flags & E2F_FLAG_SIGNAL_MASK || ctx->flags & E2F_FLAG_RESTART)
 		return DIRENT_ABORT;
 	
 	if (ctx->progress && (ctx->progress)(ctx, 2, cd->count++, cd->max))
@@ -831,6 +831,9 @@ out_htree:
 	dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
 	prev = 0;
 	do {
+		int group;
+		ext2_ino_t first_unused_inode;
+
 		problem = 0;
 		dirent = (struct ext2_dir_entry *) (buf + offset);
 		cd->pctx.dirent = dirent;
@@ -880,12 +883,6 @@ out_htree:
 		     (dirent->inode < EXT2_FIRST_INODE(fs->super))) ||
 		    (dirent->inode > fs->super->s_inodes_count)) {
 			problem = PR_2_BAD_INO;
-		} else if (!(ext2fs_test_inode_bitmap(ctx->inode_used_map,
-					       dirent->inode))) {
-			/*
-			 * If the inode is unused, offer to clear it.
-			 */
-			problem = PR_2_UNUSED_INODE;
 		} else if (ctx->inode_bb_map &&
 			   (ext2fs_test_inode_bitmap(ctx->inode_bb_map,
 						     dirent->inode))) {
@@ -960,6 +957,67 @@ out_htree:
 			}
 			if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 				return DIRENT_ABORT;
+		}
+
+		group = ext2fs_group_of_ino(fs, dirent->inode);
+		first_unused_inode = group * fs->super->s_inodes_per_group +
+					1 + fs->super->s_inodes_per_group -
+					fs->group_desc[group].bg_itable_unused;
+		cd->pctx.group = group;
+
+		/*
+		 * Check if the inode was missed out because _INODE_UNINIT
+		 * flag was set or bg_itable_unused was incorrect.
+		 * If that is the case restart e2fsck.
+		 * XXX Optimisations TODO:
+		 * 1. only restart e2fsck once
+		 * 2. only exposed inodes are checked again.
+		 */
+		if (fs->group_desc[group].bg_flags & EXT2_BG_INODE_UNINIT) {
+			if (fix_problem(ctx, PR_2_INOREF_BG_INO_UNINIT,
+					&cd->pctx)){
+				fs->group_desc[group].bg_flags &=
+					~EXT2_BG_INODE_UNINIT;
+				ctx->flags |= E2F_FLAG_RESTART |
+					E2F_FLAG_SIGNAL_MASK;
+			} else {
+				ext2fs_unmark_valid(fs);
+				if (problem == PR_2_BAD_INO)
+					goto next;
+			}
+		} else if (dirent->inode >= first_unused_inode) {
+			if (fix_problem(ctx, PR_2_INOREF_IN_UNUSED, &cd->pctx)){
+				fs->group_desc[group].bg_itable_unused = 0;
+				fs->group_desc[group].bg_flags &=
+					~EXT2_BG_INODE_UNINIT;
+				ext2fs_mark_super_dirty(fs);
+				ctx->flags |= E2F_FLAG_RESTART;
+				goto restart_fsck;
+			} else {
+				ext2fs_unmark_valid(fs);
+				if (problem == PR_2_BAD_INO)
+					goto next;
+			}
+		}
+
+		if (!(ext2fs_test_inode_bitmap(ctx->inode_used_map,
+					       dirent->inode))) {
+			/*
+			 * If the inode is unused, offer to clear it.
+			 */
+			problem = PR_2_UNUSED_INODE;
+		}
+
+		if (problem) {
+			if (fix_problem(ctx, problem, &cd->pctx)) {
+				dirent->inode = 0;
+				dir_modified++;
+				goto next;
+			} else {
+				ext2fs_unmark_valid(fs);
+				if (problem == PR_2_BAD_INO)
+					goto next;
+			}
 		}
 
 		if (check_name(ctx, dirent, ino, &cd->pctx))
@@ -1071,8 +1129,9 @@ out_htree:
 	dict_free_nodes(&de_dict);
 	return 0;
 abort_free_dict:
-	dict_free_nodes(&de_dict);
 	ctx->flags |= E2F_FLAG_ABORT;
+restart_fsck:
+	dict_free_nodes(&de_dict);
 	return DIRENT_ABORT;
 }
 

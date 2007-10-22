@@ -121,7 +121,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	struct problem_context	pctx;
 	int	problem, save_problem, fixit, had_problem;
 	errcode_t	retval;
-	int		lazy_bg = 0;
+	int		lazy_flag, csum_flag;
 	int		skip_group = 0;
 
 	clear_problem_context(&pctx);
@@ -158,15 +158,16 @@ static void check_block_bitmaps(e2fsck_t ctx)
 		goto errout;
 	}
 
-	if (EXT2_HAS_COMPAT_FEATURE(fs->super, EXT2_FEATURE_COMPAT_LAZY_BG))
-		lazy_bg++;
-
+	lazy_flag = EXT2_HAS_COMPAT_FEATURE(fs->super,
+					    EXT2_FEATURE_COMPAT_LAZY_BG);
+	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 redo_counts:
 	had_problem = 0;
 	save_problem = 0;
 	pctx.blk = pctx.blk2 = NO_BLK;
-	if (lazy_bg && (fs->group_desc[group].bg_flags &
-			EXT2_BG_BLOCK_UNINIT))
+	if ((lazy_flag || csum_flag) &&
+	    (fs->group_desc[group].bg_flags & EXT2_BG_BLOCK_UNINIT))
 		skip_group++;
 	super = fs->super->s_first_data_block;
 	for (i = fs->super->s_first_data_block;
@@ -206,6 +207,17 @@ redo_counts:
 			 * Block used, but not marked in use in the bitmap.
 			 */
 			problem = PR_5_BLOCK_USED;
+
+			if (skip_group) {
+				struct problem_context pctx2;
+				pctx2.blk = i;
+				pctx2.group = group;
+				if (fix_problem(ctx, PR_5_BLOCK_UNINIT,&pctx2)){
+					fs->group_desc[group].bg_flags &=
+						~EXT2_BG_BLOCK_UNINIT;
+					skip_group = 0;
+				}
+			}
 		}
 		if (pctx.blk == NO_BLK) {
 			pctx.blk = pctx.blk2 = i;
@@ -224,7 +236,7 @@ redo_counts:
 		had_problem++;
 
 	do_counts:
-		if (!bitmap && !skip_group) {
+		if (!bitmap && (!skip_group || csum_flag)) {
 			group_free++;
 			free_blocks++;
 		}
@@ -241,7 +253,7 @@ redo_counts:
 				if ((ctx->progress)(ctx, 5, group,
 						    fs->group_desc_count*2))
 					goto errout;
-			if (lazy_bg &&
+			if ((lazy_flag || csum_flag) &&
 			    (i != fs->super->s_blocks_count-1) &&
 			    (fs->group_desc[group].bg_flags &
 			     EXT2_BG_BLOCK_UNINIT))
@@ -321,7 +333,7 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	errcode_t	retval;
 	struct problem_context	pctx;
 	int		problem, save_problem, fixit, had_problem;
-	int		lazy_bg = 0;
+	int		lazy_flag, csum_flag;
 	int		skip_group = 0;
 
 	clear_problem_context(&pctx);
@@ -358,16 +370,16 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 		goto errout;
 	}
 
-	if (EXT2_HAS_COMPAT_FEATURE(fs->super,
-				    EXT2_FEATURE_COMPAT_LAZY_BG))
-		lazy_bg++;
-
+	lazy_flag = EXT2_HAS_COMPAT_FEATURE(fs->super,
+					    EXT2_FEATURE_COMPAT_LAZY_BG);
+	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 redo_counts:
 	had_problem = 0;
 	save_problem = 0;
 	pctx.ino = pctx.ino2 = 0;
-	if (lazy_bg && (fs->group_desc[group].bg_flags &
-			EXT2_BG_INODE_UNINIT))
+	if ((lazy_flag || csum_flag) &&
+	    (fs->group_desc[group].bg_flags & EXT2_BG_INODE_UNINIT))
 		skip_group++;
 
 	/* Protect loop from wrap-around if inodes_count is maxed */
@@ -390,6 +402,21 @@ redo_counts:
 			 * Inode used, but not in bitmap
 			 */
 			problem = PR_5_INODE_USED;
+
+			/* We should never hit this, because it means that
+			 * inodes were marked in use that weren't noticed
+			 * in pass1 or pass 2. It is easier to fix the problem
+			 * than to kill e2fsck and leave the user stuck. */
+			if (skip_group) {
+				struct problem_context pctx2;
+				pctx2.blk = i;
+				pctx2.group = group;
+				if (fix_problem(ctx, PR_5_INODE_UNINIT,&pctx2)){
+					fs->group_desc[group].bg_flags &=
+						~EXT2_BG_INODE_UNINIT;
+					skip_group = 0;
+				}
+			}
 		}
 		if (pctx.ino == 0) {
 			pctx.ino = pctx.ino2 = i;
@@ -411,7 +438,7 @@ do_counts:
 		if (bitmap) {
 			if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, i))
 				dirs_count++;
-		} else if (!skip_group) {
+		} else if (!skip_group || csum_flag) {
 			group_free++;
 			free_inodes++;
 		}
@@ -430,7 +457,7 @@ do_counts:
 					    group + fs->group_desc_count,
 					    fs->group_desc_count*2))
 					goto errout;
-			if (lazy_bg &&
+			if ((lazy_flag || csum_flag) &&
 			    (i != fs->super->s_inodes_count) &&
 			    (fs->group_desc[group].bg_flags &
 			     EXT2_BG_INODE_UNINIT))

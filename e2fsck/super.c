@@ -469,6 +469,7 @@ void check_super_block(e2fsck_t ctx)
 	struct problem_context	pctx;
 	blk_t	free_blocks = 0;
 	ino_t	free_inodes = 0;
+	int     lazy_flag, csum_flag;
 
 	inodes_per_block = EXT2_INODES_PER_BLOCK(fs->super);
 	ipg_max = inodes_per_block * (blocks_per_group - 4);
@@ -578,6 +579,10 @@ void check_super_block(e2fsck_t ctx)
 	first_block = sb->s_first_data_block;
 	last_block = sb->s_blocks_count-1;
 
+	lazy_flag = EXT2_HAS_COMPAT_FEATURE(fs->super,
+					    EXT2_FEATURE_COMPAT_LAZY_BG);
+	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 	for (i = 0, gd=fs->group_desc; i < fs->group_desc_count; i++, gd++) {
 		pctx.group = i;
 
@@ -626,6 +631,39 @@ void check_super_block(e2fsck_t ctx)
 		    (gd->bg_used_dirs_count > sb->s_inodes_per_group))
 			ext2fs_unmark_valid(fs);
 
+		if (!ext2fs_group_desc_csum_verify(fs, i)) {
+			if (fix_problem(ctx, PR_0_GDT_CSUM, &pctx)) {
+				gd->bg_flags &=	~(EXT2_BG_BLOCK_UNINIT |
+				                  EXT2_BG_INODE_UNINIT);
+				gd->bg_itable_unused = 0;
+			}
+			ext2fs_unmark_valid(fs);
+		}
+
+		if (!lazy_flag && !csum_flag &&
+		    (gd->bg_flags &(EXT2_BG_BLOCK_UNINIT|EXT2_BG_INODE_UNINIT)||
+		     gd->bg_itable_unused != 0)){
+			if (fix_problem(ctx, PR_0_GDT_UNINIT, &pctx)) {
+				gd->bg_flags &= ~(EXT2_BG_BLOCK_UNINIT |
+						  EXT2_BG_INODE_UNINIT);
+				gd->bg_itable_unused = 0;
+			}
+			ext2fs_unmark_valid(fs);
+		}
+		if (gd->bg_flags & EXT2_BG_BLOCK_UNINIT &&
+		    !(gd->bg_flags & EXT2_BG_INODE_UNINIT)) {
+			if (fix_problem(ctx, PR_0_BB_UNINIT_IB_INIT, &pctx))
+				gd->bg_flags &= ~EXT2_BG_BLOCK_UNINIT;
+			ext2fs_unmark_valid(fs);
+		}
+		if (csum_flag &&
+		    (gd->bg_itable_unused > gd->bg_free_inodes_count ||
+		     gd->bg_itable_unused > sb->s_inodes_per_group)) {
+			pctx.blk = gd->bg_itable_unused;
+			if (fix_problem(ctx, PR_0_GDT_ITABLE_UNUSED, &pctx))
+				gd->bg_itable_unused = 0;
+			ext2fs_unmark_valid(fs);
+		}
 	}
 
 	/*

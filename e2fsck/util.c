@@ -29,6 +29,10 @@
 #include <malloc.h>
 #endif
 
+#ifdef HAVE_ERRNO_H
+#include <errno.h>
+#endif
+
 #include "e2fsck.h"
 
 extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
@@ -544,5 +548,62 @@ int ext2_file_type(unsigned int mode)
 	if (LINUX_S_ISSOCK(mode))
 		return EXT2_FT_SOCK;
 	
+	return 0;
+}
+
+#define STRIDE_LENGTH 8
+/*
+ * Helper function which zeros out _num_ blocks starting at _blk_.  In
+ * case of an error, the details of the error is returned via _ret_blk_
+ * and _ret_count_ if they are non-NULL pointers.  Returns 0 on
+ * success, and an error code on an error.
+ *
+ * As a special case, if the first argument is NULL, then it will
+ * attempt to free the static zeroizing buffer.  (This is to keep
+ * programs that check for memory leaks happy.)
+ */
+errcode_t e2fsck_zero_blocks(ext2_filsys fs, blk_t blk, int num,
+			     blk_t *ret_blk, int *ret_count)
+{
+	int		j, count, next_update, next_update_incr;
+	static char	*buf;
+	errcode_t	retval;
+
+	/* If fs is null, clean up the static buffer and return */
+	if (!fs) {
+		if (buf) {
+			free(buf);
+			buf = 0;
+		}
+		return 0;
+	}
+	/* Allocate the zeroizing buffer if necessary */
+	if (!buf) {
+		buf = malloc(fs->blocksize * STRIDE_LENGTH);
+		if (!buf) {
+			com_err("malloc", ENOMEM,
+				_("while allocating zeroizing buffer"));
+			exit(1);
+		}
+		memset(buf, 0, fs->blocksize * STRIDE_LENGTH);
+	}
+	/* OK, do the write loop */
+	next_update = 0;
+	next_update_incr = num / 100;
+	if (next_update_incr < 1)
+		next_update_incr = 1;
+	for (j = 0; j < num; j += STRIDE_LENGTH, blk += STRIDE_LENGTH) {
+		count = num - j;
+		if (count > STRIDE_LENGTH)
+			count = STRIDE_LENGTH;
+		retval = io_channel_write_blk(fs->io, blk, count, buf);
+		if (retval) {
+			if (ret_count)
+				*ret_count = count;
+			if (ret_blk)
+				*ret_blk = blk;
+			return retval;
+		}
+	}
 	return 0;
 }
