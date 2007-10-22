@@ -30,6 +30,8 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	bmap.o \
 	check_desc.o \
 	closefs.o \
+	crc16.o \
+	csum.o \
 	dblist.o \
 	dblist_dir.o \
 	dirblock.o \
@@ -85,6 +87,8 @@ SRCS= ext2_err.c \
 	$(srcdir)/bmap.c \
 	$(srcdir)/check_desc.c \
 	$(srcdir)/closefs.c \
+	$(srcdir)/crc16.c \
+	$(srcdir)/csum.c \
 	$(srcdir)/dblist.c \
 	$(srcdir)/dblist_dir.c \
 	$(srcdir)/dirblock.c \
@@ -130,6 +134,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/tst_badblocks.c \
 	$(srcdir)/tst_bitops.c \
 	$(srcdir)/tst_byteswap.c \
+	$(srcdir)/tst_csum.c \
 	$(srcdir)/tst_getsize.c \
 	$(srcdir)/tst_iscan.c \
 	$(srcdir)/unix_io.c \
@@ -305,17 +310,23 @@ tst_extents: $(srcdir)/extent.c extent_dbg.c $(DEBUG_OBJS) $(LIBSS) $(LIBE2P) $(
 		$(LIBUUID) $(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBCOM_ERR) \
 		-I $(top_srcdir)/debugfs
 
+tst_csum: tst_csum.c csum.c $(STATIC_LIBEXT2FS)
+	@echo "	LD $@"
+	@$(CC) -o tst_csum $(srcdir)/csum.c $(srcdir)/tst_csum.c -DDEBUG \
+		$(ALL_CFLAGS) $(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
+
 mkjournal: mkjournal.c $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
 	@$(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
 
-check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount tst_super_size
+check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount tst_super_size tst_types tst_csum
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_bitops
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_badblocks
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_iscan
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_types
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_icount
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_super_size
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_csum
 
 installdirs::
 	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/ext2fs"
@@ -347,7 +358,7 @@ clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/* \
 		tst_badblocks tst_iscan ext2_err.et ext2_err.c ext2_err.h \
 		tst_byteswap tst_ismounted tst_getsize tst_sectgetsize \
-		tst_bitops tst_types tst_icount tst_super_size \
+		tst_bitops tst_types tst_icount tst_super_size tst_csum \
 		ext2_tdbtool mkjournal debug_cmds.c \
 		../libext2fs.a ../libext2fs_p.a ../libext2fs_chk.a
 
@@ -423,6 +434,10 @@ closefs.o: $(srcdir)/closefs.c $(srcdir)/ext2_fs.h \
  $(srcdir)/ext2fs.h $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+crc16.o: $(srcdir)/crc16.c $(srcdir)/ext2_fs.h $(srcdir)/crc16.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h $(srcdir)/ext2_fs.h
+csum.o: $(srcdir)/csum.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h $(srcdir)/ext2_fs.h
 dblist.o: $(srcdir)/dblist.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fsP.h \
  $(srcdir)/ext2fs.h $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h \
@@ -637,3 +652,5 @@ tst_iscan.o: $(srcdir)/tst_iscan.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/bitops.h
+tst_csum.o: $(srcdir)/tst_csum.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h

@@ -173,6 +173,7 @@ struct ext4_group_desc
 
 #define EXT2_BG_INODE_UNINIT	0x0001 /* Inode table/bitmap not initialized */
 #define EXT2_BG_BLOCK_UNINIT	0x0002 /* Block bitmap not initialized */
+#define EXT2_BG_INODE_ZEROED	0x0004 /* On-disk itable initialized to zero */
 
 /*
  * Data structures used by the directory indexing feature
