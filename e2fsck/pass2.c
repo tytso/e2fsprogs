@@ -1255,10 +1255,6 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		frag = &inode.osd2.hurd2.h_i_frag;
 		fsize = &inode.osd2.hurd2.h_i_fsize;
 		break;
-	    case EXT2_OS_MASIX:
-		frag = &inode.osd2.masix2.m_i_frag;
-		fsize = &inode.osd2.masix2.m_i_fsize;
-		break;
 	    default:
 		frag = fsize = 0;
 	}

@@ -834,10 +834,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 			frag = inode->osd2.hurd2.h_i_frag;
 			fsize = inode->osd2.hurd2.h_i_fsize;
 			break;
-		    case EXT2_OS_MASIX:
-			frag = inode->osd2.masix2.m_i_frag;
-			fsize = inode->osd2.masix2.m_i_fsize;
-			break;
 		    default:
 			frag = fsize = 0;
 		}
