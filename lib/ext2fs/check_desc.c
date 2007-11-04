@@ -33,13 +33,16 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 {
 	dgrp_t i;
 	blk_t first_block = fs->super->s_first_data_block;
-	blk_t last_block;
+	blk_t last_block = fs->super->s_blocks_count-1;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		first_block = ext2fs_group_first_block(fs, i);
-		last_block = ext2fs_group_last_block(fs, i);
+		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
+					       EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
+			first_block = ext2fs_group_first_block(fs, i);
+			last_block = ext2fs_group_last_block(fs, i);
+		}
 
 		/*
 		 * Check to make sure block bitmap for group is
