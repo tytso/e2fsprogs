@@ -85,7 +85,8 @@ static errcode_t make_dblist(ext2_filsys fs, ext2_ino_t size, ext2_ino_t count,
 	}
 	len = (size_t) sizeof(struct ext2_db_entry) * dblist->size;
 	dblist->count = count;
-	retval = ext2fs_get_mem(len, &dblist->list);
+	retval = ext2fs_get_array(dblist->size, sizeof(struct ext2_db_entry),
+		&dblist->list);
 	if (retval)
 		goto cleanup;
 	

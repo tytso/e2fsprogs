@@ -158,7 +158,7 @@ errcode_t ext2fs_bmap(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 	addr_per_block = (blk_t) fs->blocksize >> 2;
 
 	if (!block_buf) {
-		retval = ext2fs_get_mem(fs->blocksize * 2, &buf);
+		retval = ext2fs_get_array(2, fs->blocksize, &buf);
 		if (retval)
 			return retval;
 		block_buf = buf;

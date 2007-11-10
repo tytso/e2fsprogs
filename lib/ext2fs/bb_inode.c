@@ -68,7 +68,7 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	rec.bad_block_count = 0;
 	rec.ind_blocks_size = rec.ind_blocks_ptr = 0;
 	rec.max_ind_blocks = 10;
-	retval = ext2fs_get_mem(rec.max_ind_blocks * sizeof(blk_t),
+	retval = ext2fs_get_array(rec.max_ind_blocks, sizeof(blk_t),
 				&rec.ind_blocks);
 	if (retval)
 		return retval;

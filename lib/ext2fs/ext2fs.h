@@ -965,6 +965,7 @@ extern errcode_t ext2fs_write_bb_FILE(ext2_badblocks_list bb_list,
 
 /* inline functions */
 extern errcode_t ext2fs_get_mem(unsigned long size, void *ptr);
+extern errcode_t ext2fs_get_array(unsigned long count, unsigned long size, void *ptr);
 extern errcode_t ext2fs_free_mem(void *ptr);
 extern errcode_t ext2fs_resize_mem(unsigned long old_size,
 				   unsigned long size, void *ptr);
@@ -1017,6 +1018,12 @@ _INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void *ptr)
 		return EXT2_ET_NO_MEMORY;
 	memcpy(ptr, &pp, sizeof (pp));
 	return 0;
+}
+_INLINE_ errcode_t ext2fs_get_array(unsigned long count, unsigned long size, void *ptr)
+{
+	if (count && (-1UL)/count<size)
+		return EXT2_ET_NO_MEMORY; //maybe define EXT2_ET_OVERFLOW ?
+	return ext2fs_get_mem(count*size, ptr);
 }
 
 /*

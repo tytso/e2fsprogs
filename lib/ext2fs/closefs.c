@@ -226,8 +226,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		retval = ext2fs_get_mem(SUPERBLOCK_SIZE, &super_shadow);
 		if (retval)
 			goto errout;
-		retval = ext2fs_get_mem((size_t)(fs->blocksize *
-						 fs->desc_blocks),
+		retval = ext2fs_get_array(fs->blocksize, fs->desc_blocks,
 					&group_shadow);
 		if (retval)
 			goto errout;

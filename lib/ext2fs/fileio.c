@@ -65,7 +65,7 @@ errcode_t ext2fs_file_open2(ext2_filsys fs, ext2_ino_t ino,
 			goto fail;
 	}
 	
-	retval = ext2fs_get_mem(fs->blocksize * 3, &file->buf);
+	retval = ext2fs_get_array(3, fs->blocksize, &file->buf);
 	if (retval)
 		goto fail;
 

@@ -351,7 +351,7 @@ ipg_retry:
 
 	ext2fs_free_mem(&buf);
 
-	retval = ext2fs_get_mem((size_t) fs->desc_blocks * fs->blocksize,
+	retval = ext2fs_get_array(fs->desc_blocks, fs->blocksize,
 				&fs->group_desc);
 	if (retval)
 		goto cleanup;
