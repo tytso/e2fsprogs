@@ -490,10 +490,11 @@ static int probe_all(blkid_cache cache, int only_if_new)
 
 		DBG(DEBUG_DEVNAME, printf("read partition name %s\n", ptname));
 
-		/* Skip whole disk devs unless they have no partitions
-		 * If we don't have a partition on this dev, also
+		/* Skip whole disk devs unless they have no partitions.
+		 * If base name of device has changed, also
 		 * check previous dev to see if it didn't have a partn.
-		 * heuristic: partition name ends in a digit.
+		 * heuristic: partition name ends in a digit, & partition
+		 * names contain whole device name as substring.
 		 *
 		 * Skip extended partitions.
 		 * heuristic: size is 1
@@ -502,6 +503,8 @@ static int probe_all(blkid_cache cache, int only_if_new)
 		 */
 
 		lens[which] = strlen(ptname);
+
+		/* ends in a digit, clearly a partition, so check */
 		if (isdigit(ptname[lens[which] - 1])) {
 			DBG(DEBUG_DEVNAME,
 			    printf("partition dev %s, devno 0x%04X\n",
@@ -510,10 +513,15 @@ static int probe_all(blkid_cache cache, int only_if_new)
 			if (sz > 1)
 				probe_one(cache, ptname, devs[which], 0, 
 					  only_if_new);
-			lens[which] = 0;
-			lens[last] = 0;
-		} else if (lens[last] && strncmp(ptnames[last], ptname,
-						 lens[last])) {
+			lens[which] = 0;	/* mark as checked */
+		}
+
+		/*
+		 * If last was not checked because it looked like a whole-disk
+		 * dev, and the device's base name has changed,
+		 * check last as well.
+		 */
+		if (lens[last] && strncmp(ptnames[last], ptname, lens[last])) {
 			DBG(DEBUG_DEVNAME,
 			    printf("whole dev %s, devno 0x%04X\n",
 				   ptnames[last], (unsigned int) devs[last]));
