@@ -31,7 +31,7 @@ struct link_struct  {
  #pragma argsused
 #endif
 static int unlink_proc(struct ext2_dir_entry *dirent,
-		     int	offset EXT2FS_ATTR((unused)),
+		     int	offset,
 		     int	blocksize EXT2FS_ATTR((unused)),
 		     char	*buf EXT2FS_ATTR((unused)),
 		     void	*priv_data)
@@ -56,7 +56,7 @@ static int unlink_proc(struct ext2_dir_entry *dirent,
 			return 0;
 	}
 
-	if (prev) 
+	if (offset)
 		prev->rec_len += dirent->rec_len;
 	else
 		dirent->inode = 0;
