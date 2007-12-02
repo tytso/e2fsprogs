@@ -99,6 +99,8 @@ std_rqs.c: std_rqs.ct mk_cmds
 	@echo "	MK_CMDS $@"
 	@DIR=$(srcdir) $(MK_CMDS) $(srcdir)/std_rqs.ct
 
+std_rqs.o: ss_err.h
+
 test_cmd.c: test_cmd.ct mk_cmds
 	@echo "	MK_CMDS $@"
 	@DIR=$(srcdir) $(MK_CMDS) $(srcdir)/test_cmd.ct
