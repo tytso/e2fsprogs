@@ -1,3 +1,39 @@
+e2fsprogs (1.40.3-1) unstable; urgency=medium
+
+  * New upstream release
+  * libext2fs: Add checks to prevent integer overflows passed to
+      malloc().  Fixes security issue related to Xen's pygrub: CVE-2007-5497
+  * libss: Fix parallel build failure
+  * e2fsprogs: fix blkid whole-disk scanning heuristics
+  * libext2fs: Fix a corner case bug in ext2fs_unlink
+  * fix check_mntent_file() to pass mode for open(O_CREAT)
+  * Fix errors in test_ss.c so it can be an example application and test case
+  * e2image in raw-mode appends an extra byte to image-file
+  * Fix typo in the summary section of the blkid man page
+  * mke2fs: Change usage message to use -E instead -R, which is deprecated
+  * libblkid: recognize squashfs filesystems on BE systems.
+  * libblkid: detect squashfs
+  * e2fsck: backup superblocks if key constants have changed
+  * e2fsck: update the backup superblocks if the feature bitmasks are changed
+  * ext2fs_dblist_dir_iterate: Fix ABORT propagation logic
+  * libblkid: Add more magic numbers that might mean there is a FAT filesystem
+  * e2fsck: Don't mark the filesystem invalid because of time errors
+  * Work around lame Ubuntu init scripts / installer bugs
+  * fsck: Ignore /etc/fstab entries for bind mounts
+  * e2fsck: If the superblock is corrupt, automatically retry with the backup sb
+  * Don't crash if s_inode_size is zero
+  * Use sscanf instead of atoi when parsing e2fsck options
+  * Add Catalan translation and update Spanish, French, and Dutch
+      translations from the Translation Project.  (Closes: #411562)
+  * Fix typo and clarify the uuidgen man page
+  * Make sure $prefix/etc is created before installing mke2fs.conf
+  * e2fsck: Allow i_size to be rounded up to the size of a VM page
+  * Fix a bug in ext2fs_initialize() which causes mke2fs to fail while
+       allocating inode tables for some relatively rare odd disk sizes.
+  * Fix big-endian byte-swapping bug in ext2fs_swap_inode_full()
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 05 Dec 2007 20:04:28 -0500
+
 e2fsprogs (1.40.2-1) unstable; urgency=low
 
   * New upstream release
