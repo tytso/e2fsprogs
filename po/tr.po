@@ -64,7 +64,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.40\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2007-07-07 17:42-0400\n"
+"POT-Creation-Date: 2007-12-05 19:25-0500\n"
 "PO-Revision-Date: 2006-04-07 00:22+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@buguner.name.tr>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -88,10 +88,10 @@ msgid "while reading the bad blocks inode"
 msgstr "- hatalı bloklar düğümü okunurken hata oluştu"
 
 #: e2fsck/badblocks.c:71 e2fsck/iscan.c:112 e2fsck/scantest.c:109
-#: e2fsck/unix.c:955 e2fsck/unix.c:1038 misc/badblocks.c:1025
+#: e2fsck/unix.c:991 e2fsck/unix.c:1074 misc/badblocks.c:1025
 #: misc/badblocks.c:1033 misc/badblocks.c:1047 misc/badblocks.c:1059
-#: misc/dumpe2fs.c:400 misc/e2image.c:569 misc/e2image.c:662
-#: misc/e2image.c:678 misc/mke2fs.c:172 misc/tune2fs.c:776 resize/main.c:296
+#: misc/dumpe2fs.c:400 misc/e2image.c:570 misc/e2image.c:663
+#: misc/e2image.c:679 misc/mke2fs.c:172 misc/tune2fs.c:776 resize/main.c:296
 #, c-format
 msgid "while trying to open %s"
 msgstr "- %s açılmaya çalışılırken hata oluştu"
@@ -185,21 +185,21 @@ msgstr "BLKFLSBUF ioctl desteklenmiyor!  Tamponlar boşaltılamadı.\n"
 msgid "Usage: %s [-F] [-I inode_buffer_blocks] device\n"
 msgstr "Kullanımı: %s [-F] [-I düğüm_tampon_blokları] aygıt\n"
 
-#: e2fsck/iscan.c:83 e2fsck/unix.c:768
+#: e2fsck/iscan.c:83 e2fsck/unix.c:786
 #, c-format
 msgid "while opening %s for flushing"
 msgstr "%s temizlik için açılırken hata oluştu"
 
-#: e2fsck/iscan.c:88 e2fsck/unix.c:774 resize/main.c:274
+#: e2fsck/iscan.c:88 e2fsck/unix.c:792 resize/main.c:274
 #, c-format
 msgid "while trying to flush %s"
 msgstr "%s boşaltılmaya çalışılırken hata oluştu"
 
-#: e2fsck/iscan.c:121 e2fsck/scantest.c:116 misc/e2image.c:478
+#: e2fsck/iscan.c:121 e2fsck/scantest.c:116 misc/e2image.c:479
 msgid "while opening inode scan"
 msgstr "düğüm taraması başlatılırken hata oluştu"
 
-#: e2fsck/iscan.c:129 misc/e2image.c:496
+#: e2fsck/iscan.c:129 misc/e2image.c:497
 msgid "while getting next inode"
 msgstr "sonraki düğüme geçilirken hata oluştu"
 
@@ -208,31 +208,31 @@ msgstr "sonraki düğüme geçilirken hata oluştu"
 msgid "%u inodes scanned.\n"
 msgstr "%d düğüm tarandı.\n"
 
-#: e2fsck/journal.c:500
+#: e2fsck/journal.c:501
 msgid "reading journal superblock\n"
 msgstr "günlük dosyası super bloğu okunuyor\n"
 
-#: e2fsck/journal.c:557
+#: e2fsck/journal.c:558
 #, c-format
 msgid "%s: no valid journal superblock found\n"
 msgstr "%s: geçerli gümlük dosyası super bloğu yok\n"
 
-#: e2fsck/journal.c:566
+#: e2fsck/journal.c:567
 #, c-format
 msgid "%s: journal too short\n"
 msgstr "%s: gümlük dosyası çok kısa\n"
 
-#: e2fsck/journal.c:839
+#: e2fsck/journal.c:841
 #, c-format
 msgid "%s: recovering journal\n"
 msgstr "%s: günlük dosyasına göre kurtarılıyor\n"
 
-#: e2fsck/journal.c:841
+#: e2fsck/journal.c:843
 #, c-format
 msgid "%s: won't do journal recovery while read-only\n"
 msgstr "%s: salt-okunur durumdayken günlük dosyasına göre kurtarma yapılamaz\n"
 
-#: e2fsck/journal.c:862
+#: e2fsck/journal.c:864
 #, c-format
 msgid "while trying to re-open %s"
 msgstr "%s yeniden açılmaya çalışılırken hata oluştu"
@@ -458,7 +458,7 @@ msgstr "iç hata; %u için dup_blk bulunamıyor\n"
 msgid "internal error: couldn't lookup EA inode record for %u"
 msgstr "İç hata: %i için dizin bilgileri bulunamıyor.\n"
 
-#: e2fsck/pass1.c:404 e2fsck/pass2.c:776
+#: e2fsck/pass1.c:404 e2fsck/pass2.c:779
 #, fuzzy
 msgid "reading directory block"
 msgstr "%u düğümünün dolaylı blokları okunuyor"
@@ -518,19 +518,19 @@ msgstr "tekrarlanan blokların eşlemi"
 msgid "ext attr block map"
 msgstr "ek özellik bloğu eşlemi"
 
-#: e2fsck/pass1.c:2067
+#: e2fsck/pass1.c:2072
 msgid "block bitmap"
 msgstr "blok biteşlemi"
 
-#: e2fsck/pass1.c:2071
+#: e2fsck/pass1.c:2076
 msgid "inode bitmap"
 msgstr "düğüm biteşlemi"
 
-#: e2fsck/pass1.c:2075
+#: e2fsck/pass1.c:2080
 msgid "inode table"
 msgstr "düğüm tablosu"
 
-#: e2fsck/pass2.c:290
+#: e2fsck/pass2.c:292
 msgid "Pass 2"
 msgstr "2. geçiş"
 
@@ -2505,62 +2505,66 @@ msgstr "Gerçekten devam etmek istiyor musunuz?"
 msgid "check aborted.\n"
 msgstr "denetim durdu.\n"
 
-#: e2fsck/unix.c:276
+#: e2fsck/unix.c:280
 msgid " contains a file system with errors"
 msgstr " hatalı bir dosya sistemi içeriyor"
 
-#: e2fsck/unix.c:278
+#: e2fsck/unix.c:282
 msgid " was not cleanly unmounted"
 msgstr " usulünce sistemden ayrılmamış"
 
-#: e2fsck/unix.c:282
+#: e2fsck/unix.c:284
+msgid " primary superblock features different from backup"
+msgstr ""
+
+#: e2fsck/unix.c:288
 #, c-format
 msgid " has been mounted %u times without being checked"
 msgstr " denetlenmeksizin %u kere bağlandı"
 
-#: e2fsck/unix.c:290
+#: e2fsck/unix.c:295
 #, c-format
 msgid " has gone %u days without being checked"
 msgstr " denetlenmeksizin %u gün geçti"
 
-#: e2fsck/unix.c:299
+#: e2fsck/unix.c:304
 msgid ", check forced.\n"
 msgstr ", denetim başlatılacak.\n"
 
-#: e2fsck/unix.c:302
+#: e2fsck/unix.c:307
 #, fuzzy, c-format
 msgid "%s: clean, %u/%u files, %u/%u blocks"
 msgstr "%s: temiz, %d/%d dosya, %u/%u blok"
 
-#: e2fsck/unix.c:319
+#: e2fsck/unix.c:324
 msgid " (check deferred; on battery)"
 msgstr " (denetleme ertelendi; batarya)"
 
-#: e2fsck/unix.c:322
+#: e2fsck/unix.c:327
 msgid " (check after next mount)"
 msgstr " (sistem bağlandıktan sonra denetle)"
 
-#: e2fsck/unix.c:324
+#: e2fsck/unix.c:329
 #, c-format
 msgid " (check in %ld mounts)"
 msgstr " (sistem %ld kere bağlandığında denetle)"
 
-#: e2fsck/unix.c:470
+#: e2fsck/unix.c:475
 #, c-format
 msgid "ERROR: Couldn't open /dev/null (%s)\n"
 msgstr "HATA: /dev/null açılamadı (%s)\n"
 
-#: e2fsck/unix.c:541
+#: e2fsck/unix.c:546
 #, c-format
 msgid "Invalid EA version.\n"
 msgstr "Ek özellik sürümü geçersiz.\n"
 
-#: e2fsck/unix.c:547
+#: e2fsck/unix.c:552
 #, c-format
 msgid "Unknown extended option: %s\n"
 msgstr "Bilinmeyen ek seçenek: %s\n"
 
-#: e2fsck/unix.c:567
+#: e2fsck/unix.c:572
 #, c-format
 msgid ""
 "Syntax error in e2fsck config file (%s, line #%d)\n"
@@ -2569,77 +2573,92 @@ msgstr ""
 "e2fsck yapılandırma dosyasında (%s, %d.satırda) sözdizimi hatası\n"
 "\t%s\n"
 
-#: e2fsck/unix.c:624
+#: e2fsck/unix.c:636
 #, c-format
 msgid "Error validating file descriptor %d: %s\n"
 msgstr "Dosya tanımlayıcı %d değerlendirilirken hata: %s\n"
 
-#: e2fsck/unix.c:628
+#: e2fsck/unix.c:640
 msgid "Invalid completion information file descriptor"
 msgstr "Tamamlama bilgisi dosya tanımlayıcısı geçersiz"
 
-#: e2fsck/unix.c:643
+#: e2fsck/unix.c:655
 msgid "Only one of the options -p/-a, -n or -y may be specified."
 msgstr "Sadece -p/-a, -n veya -y seçeneklerinden sadece biri belirtilebilir."
 
-#: e2fsck/unix.c:664
+#: e2fsck/unix.c:676
 #, c-format
 msgid "The -t option is not supported on this version of e2fsck.\n"
 msgstr " -t seçeneği e2fsck'nın bu sürümünde desteklenmiyor.\n"
 
-#: e2fsck/unix.c:729
+#: e2fsck/unix.c:747
 #, c-format
 msgid "Byte-swapping filesystems not compiled in this version of e2fsck\n"
 msgstr "e2fsck'nın bu sürümünde derlenmemiş ters baytlı sistemler \n"
 
-#: e2fsck/unix.c:752 misc/tune2fs.c:459 misc/tune2fs.c:717 misc/tune2fs.c:734
+#: e2fsck/unix.c:770 misc/tune2fs.c:459 misc/tune2fs.c:717 misc/tune2fs.c:734
 #, c-format
 msgid "Unable to resolve '%s'"
 msgstr "'%s' çözümlenemiyor"
 
-#: e2fsck/unix.c:783
+#: e2fsck/unix.c:801
 #, c-format
 msgid "Incompatible options not allowed when byte-swapping.\n"
 msgstr "Ters baytlar düzeltilirken uyumsuz seçeneklere izin verilmez.\n"
 
-#: e2fsck/unix.c:790
+#: e2fsck/unix.c:808
 #, c-format
 msgid "The -c and the -l/-L options may not be both used at the same time.\n"
 msgstr ""
 " -c seçeneği ile -l ve -L seçenekleri aynı anda birlikte kullanılamaz.\n"
 
-#: e2fsck/unix.c:872
+#: e2fsck/unix.c:856
+#, c-format
+msgid ""
+"E2FSCK_JBD_DEBUG \"%s\" not an integer\n"
+"\n"
+msgstr ""
+
+#: e2fsck/unix.c:864
+#, c-format
+msgid ""
+"\n"
+"Invalid non-numeric argument to -%c (\"%s\")\n"
+"\n"
+msgstr ""
+
+#: e2fsck/unix.c:903
 #, c-format
 msgid "Error: ext2fs library version out of date!\n"
 msgstr "Hata: ext2fs kitaplık sürümü uygun değil!\n"
 
-#: e2fsck/unix.c:880
+#: e2fsck/unix.c:911
 msgid "while trying to initialize program"
 msgstr "- uygulama başlatılmaya çelışılırken hata oluştu"
 
-#: e2fsck/unix.c:894
+#: e2fsck/unix.c:925
 #, c-format
 msgid "\tUsing %s, %s\n"
 msgstr "\t%s, %s kullanılıyor\n"
 
-#: e2fsck/unix.c:906
+#: e2fsck/unix.c:937
 msgid "need terminal for interactive repairs"
 msgstr "etkileşimli onarım için uçbirim gerekli"
 
-#: e2fsck/unix.c:945
-#, c-format
-msgid "%s trying backup blocks...\n"
+#: e2fsck/unix.c:977
+#, fuzzy, c-format
+msgid "%s: %s trying backup blocks...\n"
 msgstr "%s yedekleme blokları deneniyor...\n"
 
-#: e2fsck/unix.c:946
-msgid "Couldn't find ext2 superblock,"
-msgstr "ext2 süperbloğu bulunamadı,"
+#: e2fsck/unix.c:979
+msgid "Superblock invalid,"
+msgstr ""
 
-#: e2fsck/unix.c:947
+#: e2fsck/unix.c:980
 msgid "Group descriptors look bad..."
 msgstr "Grup tanımlayıcılar hatalı görünüyor..."
 
-#: e2fsck/unix.c:958
+#: e2fsck/unix.c:994
 #, c-format
 msgid ""
 "The filesystem revision is apparently too high for this version of e2fsck.\n"
@@ -2650,29 +2669,29 @@ msgstr ""
 "destekliyor gibi. (Ya da dosya sisteminin süperbloğu bozuk olabilir)\n"
 "\n"
 
-#: e2fsck/unix.c:964
+#: e2fsck/unix.c:1000
 #, c-format
 msgid "Could this be a zero-length partition?\n"
 msgstr "Bu sıfır uzunluklu bir disk bölümü olabilir mi?\n"
 
-#: e2fsck/unix.c:966
+#: e2fsck/unix.c:1002
 #, c-format
 msgid "You must have %s access to the filesystem or be root\n"
 msgstr "Dosya sistemine %s erişiminiz olmalı ya da root olmalısınız\n"
 
-#: e2fsck/unix.c:971
+#: e2fsck/unix.c:1007
 #, c-format
 msgid "Possibly non-existent or swap device?\n"
 msgstr "Bu mevcut olmayan bir aygıt ya da bir takas aygıtı mı acaba?\n"
 
-#: e2fsck/unix.c:973
+#: e2fsck/unix.c:1009
 #, c-format
 msgid "Filesystem mounted or opened exclusively by another program?\n"
 msgstr ""
 "Dosyasistemi başka bir uygulama tarafından özellikle bağlanmış veya açılmış\n"
 "olabilir mi?\n"
 
-#: e2fsck/unix.c:977
+#: e2fsck/unix.c:1013
 #, c-format
 msgid ""
 "Disk write-protected; use the -n option to do a read-only\n"
@@ -2681,16 +2700,16 @@ msgstr ""
 "Disk yazma korumalı; -n seçeneğini kullanarak salt-oku kipinde\n"
 "denetim yapınız.\n"
 
-#: e2fsck/unix.c:1041
+#: e2fsck/unix.c:1077
 msgid "Get a newer version of e2fsck!"
 msgstr "e2fsck'nın daha yeni bir sürümünü alın!"
 
-#: e2fsck/unix.c:1062
+#: e2fsck/unix.c:1098
 #, c-format
 msgid "while checking ext3 journal for %s"
 msgstr "- %s için ext3 günlüğü denetlenirken hata oluştu"
 
-#: e2fsck/unix.c:1073
+#: e2fsck/unix.c:1109
 #, c-format
 msgid ""
 "Warning: skipping journal recovery because doing a read-only filesystem "
@@ -2699,21 +2718,21 @@ msgstr ""
 "Uyarı: Dosya sistemi salt-oku kipinde denetlendiğinden\n"
 "günlük dosyasına göre kurtarma atlanıyor.\n"
 
-#: e2fsck/unix.c:1086
+#: e2fsck/unix.c:1122
 #, c-format
 msgid "unable to set superblock flags on %s\n"
 msgstr "%s üzerine süperblok bayrakları konulamadı\n"
 
-#: e2fsck/unix.c:1092
+#: e2fsck/unix.c:1128
 #, c-format
 msgid "while recovering ext3 journal of %s"
 msgstr "- %s ext3 günlük dosyası kurtarılmaya çalışılırken hata oluştu"
 
-#: e2fsck/unix.c:1121
+#: e2fsck/unix.c:1157
 msgid "Warning: compression support is experimental.\n"
 msgstr "Uyarı: sıkıştırma desteği deneyseldir.\n"
 
-#: e2fsck/unix.c:1126
+#: e2fsck/unix.c:1162
 #, c-format
 msgid ""
 "E2fsck not compiled with HTREE support,\n"
@@ -2722,30 +2741,30 @@ msgstr ""
 "E2fsck HTREE desteği ile derlenmemiş,\n"
 "\tama dosya sistemi %s HTREE dizinleri içeriyor.\n"
 
-#: e2fsck/unix.c:1161
+#: e2fsck/unix.c:1211
 #, c-format
 msgid "%s: Filesystem byte order already normalized.\n"
 msgstr "%s Dosya sisteminde baytlar zaten normal.\n"
 
-#: e2fsck/unix.c:1181
+#: e2fsck/unix.c:1231
 msgid "while reading bad blocks inode"
 msgstr "- hatalı bloklar düğümü okunmaya çalışılırken hata oluştu"
 
-#: e2fsck/unix.c:1183
+#: e2fsck/unix.c:1233
 #, c-format
 msgid "This doesn't bode well, but we'll try to go on...\n"
 msgstr "Bu pek hayra alamet değil, ama üstüne gidilecek...\n"
 
-#: e2fsck/unix.c:1208
+#: e2fsck/unix.c:1259
 msgid "Couldn't determine journal size"
 msgstr ""
 
-#: e2fsck/unix.c:1211 misc/mke2fs.c:1737
+#: e2fsck/unix.c:1262 misc/mke2fs.c:1737
 #, c-format
 msgid "Creating journal (%d blocks): "
 msgstr "Günlük oluşturuluyor (%d blok): "
 
-#: e2fsck/unix.c:1218 misc/mke2fs.c:1745
+#: e2fsck/unix.c:1269 misc/mke2fs.c:1745
 msgid ""
 "\n"
 "\twhile trying to create journal"
@@ -2753,37 +2772,37 @@ msgstr ""
 "\n"
 "\tgünlük oluşturulmaya çalışılırken hata oluştu"
 
-#: e2fsck/unix.c:1221
+#: e2fsck/unix.c:1272
 #, fuzzy, c-format
 msgid " Done.\n"
 msgstr "tamam\n"
 
-#: e2fsck/unix.c:1222
+#: e2fsck/unix.c:1273
 #, c-format
 msgid ""
 "\n"
 "*** journal has been re-created - filesystem is now ext3 again ***\n"
 msgstr ""
 
-#: e2fsck/unix.c:1229
+#: e2fsck/unix.c:1280
 #, c-format
 msgid "Restarting e2fsck from the beginning...\n"
 msgstr "e2fsck baştan başlıyor...\n"
 
-#: e2fsck/unix.c:1233
+#: e2fsck/unix.c:1284
 msgid "while resetting context"
 msgstr "- bağlam sıfırlanırken hata oluştu"
 
-#: e2fsck/unix.c:1240
+#: e2fsck/unix.c:1291
 #, c-format
 msgid "%s: e2fsck canceled.\n"
 msgstr "%s: e2fsck durduruldu.\n"
 
-#: e2fsck/unix.c:1245
+#: e2fsck/unix.c:1296
 msgid "aborted"
 msgstr "çıktı"
 
-#: e2fsck/unix.c:1253
+#: e2fsck/unix.c:1308
 #, c-format
 msgid ""
 "\n"
@@ -2792,12 +2811,12 @@ msgstr ""
 "\n"
 "%s: ***** DOSYA SİSTEMİ DEĞİŞTİRİLDİ *****\n"
 
-#: e2fsck/unix.c:1256
+#: e2fsck/unix.c:1311
 #, c-format
 msgid "%s: ***** REBOOT LINUX *****\n"
 msgstr "%s: ***** MAKİNAYI YENİDEN BAŞLATIN *****\n"
 
-#: e2fsck/unix.c:1264
+#: e2fsck/unix.c:1319
 #, c-format
 msgid ""
 "\n"
@@ -3374,7 +3393,7 @@ msgstr "Günlük kullanıcıları:     %s\n"
 msgid "\tUsing %s\n"
 msgstr "\t%s kullanılıyor\n"
 
-#: misc/dumpe2fs.c:402 misc/e2image.c:664 misc/tune2fs.c:779 resize/main.c:298
+#: misc/dumpe2fs.c:402 misc/e2image.c:665 misc/tune2fs.c:779 resize/main.c:298
 #, c-format
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Geçerli süperblok bulunamadı.\n"
@@ -3542,21 +3561,28 @@ msgstr ""
 msgid "Couldn't allocate memory for filesystem types\n"
 msgstr "Dosya sistemi türleri için bellek ayrılamadı\n"
 
-#: misc/fsck.c:892
+#: misc/fsck.c:875
+#, c-format
+msgid ""
+"%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
+"number\n"
+msgstr ""
+
+#: misc/fsck.c:902
 #, c-format
 msgid "fsck: cannot check %s: fsck.%s not found\n"
 msgstr "fsck: %s denetlenemiyor: fsck.%s yok\n"
 
-#: misc/fsck.c:948
+#: misc/fsck.c:958
 msgid "Checking all file systems.\n"
 msgstr "Tüm dosya sistemleri denetleniyor.\n"
 
-#: misc/fsck.c:1034
+#: misc/fsck.c:1044
 #, c-format
 msgid "--waiting-- (pass %d)\n"
 msgstr "--beklemede-- (%d. geçiş)\n"
 
-#: misc/fsck.c:1054
+#: misc/fsck.c:1064
 msgid ""
 "Usage: fsck [-ANPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
 msgstr ""
@@ -3594,12 +3620,12 @@ msgstr ""
 "Çeviri hatalarını <gnu-tr@belgeler.org> adresine bildiriniz.\n"
 "\n"
 
-#: misc/fsck.c:1096
+#: misc/fsck.c:1106
 #, c-format
 msgid "%s: too many devices\n"
 msgstr "%s: aygıt sayısı çok fazla\n"
 
-#: misc/fsck.c:1129 misc/fsck.c:1215
+#: misc/fsck.c:1139 misc/fsck.c:1225
 #, c-format
 msgid "%s: too many arguments\n"
 msgstr "%s: argüman sayısı fazla\n"
@@ -3640,7 +3666,7 @@ msgid ""
 "\t[-i bytes-per-inode] [-I inode-size] [-j] [-J journal-options]\n"
 "\t[-N number-of-inodes] [-m reserved-blocks-percentage] [-o creator-os]\n"
 "\t[-g blocks-per-group] [-L volume-label] [-M last-mounted-directory]\n"
-"\t[-O feature[,...]] [-r fs-revision] [-R options] [-qvSV]\n"
+"\t[-O feature[,...]] [-r fs-revision] [-E extended-option[,...]] [-qvSV]\n"
 "\tdevice [blocks-count]\n"
 msgstr ""
 "Kullanımı: %s [seçenekler] aygıt [blok-sayısı]\n"
@@ -4808,6 +4834,9 @@ msgstr "meta-veri blokları"
 #, c-format
 msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Bu olmamalıydı: boyutlandırırken düğümü kaybettik!\n"
+
+#~ msgid "Couldn't find ext2 superblock,"
+#~ msgstr "ext2 süperbloğu bulunamadı,"
 
 #~ msgid "invalid blocks range: %lu-%lu"
 #~ msgstr "hatalı blok aralığı: %lu-%lu"
