@@ -1,3 +1,119 @@
+E2fsprogs 1.40.3 (December 5, 2007)
+===================================
+
+Fix a potential security vulnerability where an untrusted filesystem
+can be corrupted in such a way that a program using libext2fs will
+allocate a buffer which is far too small.  This can lead to either a
+crash or potentially a heap-based buffer overflow crash.  No known
+exploits exist, but main concern is where an untrusted user who
+possesses privileged access in a guest Xen environment could corrupt a
+filesystem which is then accessed by the pygrub program, running as
+root in the dom0 host environment, thus allowing the untrusted user to
+gain privileged access in the host OS.  Thanks to the McAfee AVERT
+Research group for reporting this issue.  (Addresses CVE-2007-5497.)
+
+Fix hueristics in blkid which could cause a disk without partitions to
+be incorrectly skipped when a loopback device is present.  (Addresses
+Red Hat Bugzilla #400321.)
+
+Fix e2image so that in raw mode it does not create an image file which
+is one byte too large.
+
+Change mke2fs's usage message so it recommends the preferred -E option
+instead of the deprecated -R option.
+
+Enhance the blkid library so it will recognize squashfs filesystems.
+(Addresses Red Hat Bugzilla #305151.)
+
+Enhance e2fsck so it will force the backup superblocks to be backed up
+if the filesystem is consistent and key constants have been changed
+(i.e., by an on-line resize) or by e2fsck in the course of its
+operations.
+
+Enhance blkid's detection of FAT filesystems; so that USB disks with
+only a single bootable partition will not get missed.
+
+E2fsck will no longer mark a filesystem as invalid if it has time
+errors (i.e., if superblock mount time or last write time is in the
+future) and the user refuses to fix the problem.
+
+The Ubuntu init scripts don't properly set the system time correctly
+from hardware clock if the hardware clock is configured to tick local
+time instead of GMT time.  Work around this as best as we can by
+providing an option, buggy_init_scripts, in /etc/e2fsck.conf which can
+be set on Ubuntu systems.  (Addresses Debian Bug #441093, and Ubuntu
+Bug #131201.)
+
+Fix fsck to ignore /etc/fstab entries for bind mounts.  (Addresses Red
+Hat Bugzilla #151533.)
+
+Fix e2fsck so that if the superblock is corrupt, but still looks
+vaguely like an ext2/3/4 superblock, that it automatically tries to
+fall back to the backup superblock, instead of failing with a hard
+error.
+
+Make the e2fsprogs program more robust so that they will not crash
+when opening a corrupt filesystem where s_inode_size is zero.
+
+Change e2fsck so it uses sscanf() instead of atoi() so it non-numeric
+arguments are detected as such and the parse error is reported to the
+user.   (Addresses Debian Bug #435381.)
+
+Change e2fsck so it will not complain if a file has blocks reallocated
+up to the next multiple of a system's page size.
+
+Fix bug in ext2fs_check_desc() which will cause e2fsck to complain
+about (valid) filesystems where the inode table extends to the last
+block of the block group.  (Addresses Red Hat Bugzilla #214765.)
+
+Fix a bug in ext2fs_initialize() which causes mke2fs to fail while
+allocating inode tables for some relatively rare odd disk sizes.
+(Addresses Red Hat Bugzilla #241767.)
+
+Add Catalan translation and update Dutch and Swedish translations
+from the Translation Project.
+
+Fix big-endian byte-swapping bug in ext2fs_swap_inode_full().  We
+still had an issue when trying to figure out whether we need to
+byte-swap fast symlinks that contained extended attributes.
+
+Fixed spelling mistakes, typos, and otherwise clarified man pages.
+(Addresses SourceForge Bug #1821333.)
+
+
+Programmer's Notes:
+-------------------
+
+Fix mke2fs tests to avoid needing any significant ^M (CR) characters
+
+Add "make check" to the RPM spec file
+
+Fix "make install" and 'make unstall" in misc/Makefile.in so that it
+works correctly when the prefix is not the root directory.
+
+Fix the resize2fs tests, r_move_itable and r_resize_inode, so they
+clena up after themselves by deleting the test.img temporary file
+after completing the test.
+
+Fixed a corner case bug ext2fs_unlink() when trying to delete the
+first directory entry in a directory block and the last directory
+entry in the previous directory block is not in use.  Fortunately
+ext2fs_unlink() is only used by debugfs and e2fsck, and in e2fsck in
+places where it is extremely unlikely to run into this corner case.
+
+Fix missing dependency which would cuase parallel builds to fail.
+(Addresses Sourceforge Bug #1842331.)
+
+Fix a build error on newer gcc caused by lib/ext2fs/ismounted.c
+calling open(O_CREATE) with a missing mode parameter.
+
+Fix the test_ss.c in lib/ss so it can be used as an example
+application program for the library as well as a regression test
+suite.
+
+Fix ext2fs_dblist_dir_iterate() so that error codes and abort codes
+are properly passed back up through the call stack.
+
 E2fsprogs 1.40.2 (July 12, 2007)
 ================================
 
@@ -304,7 +420,8 @@ the superblock.  Omit by default printing superblocks that are likely
 found in located in an ext3 journal unless an explicit -j option is
 given.
 
-Updated French and Dutch translations and added Vietnamese translation.
+Updated Spanish, French and Dutch translations and added Catalan
+translation.  (Addresses Debian bug: #411562)
 
 Use FreeBSD's DIOCGMEDIASIZE and DIOCGDINFO ioctls if available when
 determining a partition's size, since binary searching to determine

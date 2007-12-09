@@ -40,7 +40,7 @@ blkid \- command\-line utility to locate/print block device attributes
 The
 .B blkid
 program is the command-line interface to working with
-.BR libuuid (3)
+.BR libblkid (3)
 library.  It can determine the type of content (e.g. filesystem, swap) 
 a block device holds, and also attributes (tokens, NAME=value pairs)
 from the content metadata (e.g. LABEL or UUID fields).

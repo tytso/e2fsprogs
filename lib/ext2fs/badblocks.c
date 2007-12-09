@@ -42,7 +42,7 @@ static errcode_t make_u32_list(int size, int num, __u32 *list,
 	bb->magic = EXT2_ET_MAGIC_BADBLOCKS_LIST;
 	bb->size = size ? size : 10;
 	bb->num = num;
-	retval = ext2fs_get_mem(bb->size * sizeof(blk_t), &bb->list);
+	retval = ext2fs_get_array(bb->size, sizeof(blk_t), &bb->list);
 	if (retval) {
 		ext2fs_free_mem(&bb);
 		return retval;

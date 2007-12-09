@@ -280,7 +280,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 					       blocks_per_group);
 	fs->desc_blocks = ext2fs_div_ceil(fs->group_desc_count,
 					  EXT2_DESC_PER_BLOCK(fs->super));
-	retval = ext2fs_get_mem(fs->desc_blocks * fs->blocksize,
+	retval = ext2fs_get_array(fs->desc_blocks, fs->blocksize,
 				&fs->group_desc);
 	if (retval)
 		goto cleanup;

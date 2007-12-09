@@ -90,9 +90,9 @@ static errcode_t create_icache(ext2_filsys fs)
 	fs->icache->cache_last = -1;
 	fs->icache->cache_size = 4;
 	fs->icache->refcount = 1;
-	retval = ext2fs_get_mem(sizeof(struct ext2_inode_cache_ent)
-				* fs->icache->cache_size,
-				&fs->icache->cache);
+	retval = ext2fs_get_array(fs->icache->cache_size,
+				  sizeof(struct ext2_inode_cache_ent),
+				  &fs->icache->cache);
 	if (retval) {
 		ext2fs_free_mem(&fs->icache->buffer);
 		ext2fs_free_mem(&fs->icache);
@@ -146,8 +146,8 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 		group_desc[scan->current_group].bg_inode_table;
 	scan->inodes_left = EXT2_INODES_PER_GROUP(scan->fs->super);
 	scan->blocks_left = scan->fs->inode_blocks_per_group;
-	retval = ext2fs_get_mem((size_t) (scan->inode_buffer_blocks * 
-					  fs->blocksize),
+	retval = ext2fs_get_array(scan->inode_buffer_blocks,
+					  fs->blocksize,
 				&scan->inode_buffer);
 	scan->done_group = 0;
 	scan->done_group_data = 0;

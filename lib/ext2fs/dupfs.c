@@ -59,7 +59,7 @@ errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest)
 		goto errout;
 	memcpy(fs->orig_super, src->orig_super, SUPERBLOCK_SIZE);
 
-	retval = ext2fs_get_mem((size_t) fs->desc_blocks * fs->blocksize,
+	retval = ext2fs_get_array(fs->desc_blocks, fs->blocksize,
 				&fs->group_desc);
 	if (retval)
 		goto errout;

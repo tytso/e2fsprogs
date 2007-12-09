@@ -237,7 +237,8 @@ errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, unsigned int size,
 	printf("Icount allocated %u entries, %d bytes.\n",
 	       icount->size, bytes);
 #endif
-	retval = ext2fs_get_mem(bytes, &icount->list);
+	retval = ext2fs_get_array(icount->size, sizeof(struct ext2_icount_el),
+			 &icount->list);
 	if (retval)
 		goto errout;
 	memset(icount->list, 0, bytes);

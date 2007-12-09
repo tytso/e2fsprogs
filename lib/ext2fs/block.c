@@ -313,7 +313,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 	if (block_buf) {
 		ctx.ind_buf = block_buf;
 	} else {
-		retval = ext2fs_get_mem(fs->blocksize * 3, &ctx.ind_buf);
+		retval = ext2fs_get_array(3, fs->blocksize, &ctx.ind_buf);
 		if (retval)
 			return retval;
 	}

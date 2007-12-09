@@ -1,42 +1,26 @@
 /*
- *------------------------------------------------------------------
- *
- * $Source$
- * $Revision$
- * $Date$
- * $State$
- * $Author$
- * $Locker$
- *
- * $Log$
- * Revision 1.13  1997/04/29 21:26:37  tytso
- * Checkin of e2fsprogs 1.10
- *
- * Revision 1.1  1993/06/03  12:31:25  tytso
- * Initial revision
- *
- * Revision 1.1  1991/12/21  16:41:47  eichin
- * Initial revision
- *
- * Revision 1.1  1991/12/21  11:13:39  eichin
- * Initial revision
- *
- * Revision 1.2  89/01/25  07:52:27  raeburn
- * *** empty log message ***
+ * test_ss.c
  * 
- * Revision 1.1  88/01/23  15:50:26  raeburn
- * Initial revision
+ * Copyright 1987, 1988 by MIT Student Information Processing Board
  *
- *
- *------------------------------------------------------------------
+ * Permission to use, copy, modify, and distribute this software and
+ * its documentation for any purpose is hereby granted, provided that
+ * the names of M.I.T. and the M.I.T. S.I.P.B. not be used in
+ * advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.  M.I.T. and the
+ * M.I.T. S.I.P.B. make no representations about the suitability of
+ * this software for any purpose.  It is provided "as is" without
+ * express or implied warranty.
+ 
  */
 
-#ifndef lint
-static char const rcsid_test_c[] =
-    "$Header$";
-#endif /* lint */
-
+#include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
+#ifdef HAVE_GETOPT_H
+#include <getopt.h>
+#endif
+#include <string.h>
 #include "ss.h"
 
 extern ss_request_table test_cmds;
@@ -44,82 +28,108 @@ extern ss_request_table test_cmds;
 #define TRUE 1
 #define FALSE 0
 
-static char def_subsystem_name[5] = "test";
-static char version [4] = "1.0";
-extern void ss_listen();
+static char subsystem_name[] = "test_ss";
+static char version[] = "1.0";
 
-int main(argc, argv)
-    int argc;
-    char **argv;
+static int source_file(const char *cmd_file, int sci_idx)
 {
-    int code;
-    char *argv0 = argv[0];
-    char *initial_request = (char *)NULL;
-    int quit = FALSE;	/* quit after processing request */
-    int sci_idx;
-    char *subsystem_name;
+	FILE		*f;
+	char		buf[256];
+	char		*cp;
+	int		exit_status = 0;
+	int		retval;
+	int 		noecho;
 
-    subsystem_name = def_subsystem_name;
+	if (strcmp(cmd_file, "-") == 0)
+		f = stdin;
+	else {
+		f = fopen(cmd_file, "r");
+		if (!f) {
+			perror(cmd_file);
+			exit(1);
+		}
+	}
+	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
+	while (!feof(f)) {
+		if (fgets(buf, sizeof(buf), f) == NULL)
+			break;
+		if (buf[0] == '#')
+			continue;
+		noecho = 0;
+		if (buf[0] == '-') {
+			noecho = 1;
+			buf[0] = ' ';
+		}
+		cp = strchr(buf, '\n');
+		if (cp)
+			*cp = 0;
+		cp = strchr(buf, '\r');
+		if (cp)
+			*cp = 0;
+		if (!noecho)
+			printf("test_icount: %s\n", buf);
+		retval = ss_execute_line(sci_idx, buf);
+		if (retval) {
+			ss_perror(sci_idx, retval, buf);
+			exit_status++;
+		}
+	}
+	return exit_status;
+}
 
-    for (; *argv; ++argv, --argc) {
-	printf("checking arg: %s\n", *argv);
-	if (!strcmp(*argv, "-prompt")) {
-	    if (argc == 1) {
-		fprintf(stderr,
-			"No argument supplied with -prompt\n");
+int main(int argc, char **argv)
+{
+	int c, code;
+	char *request = (char *)NULL;
+	char		*cmd_file = 0;
+	int sci_idx;
+	int exit_status = 0;
+	const char	*usage = "Usage: test_ss [-R request] [-f cmd_file]";
+
+	while ((c = getopt (argc, argv, "wR:f:")) != EOF) {
+		switch (c) {
+		case 'R':
+			request = optarg;
+			break;
+		case 'f':
+			cmd_file = optarg;
+			break;
+		default:
+			com_err(argv[0], 0, usage);
+			exit(1);
+		}
+	}
+
+	sci_idx = ss_create_invocation(subsystem_name, version,
+				       (char *)NULL, &test_cmds, &code);
+	if (code) {
+		ss_perror(sci_idx, code, "creating invocation");
 		exit(1);
-	    }
-	    argc--; argv++;
-	    subsystem_name = *argv;
 	}
-	else if (!strcmp(*argv, "-request") || !strcmp(*argv, "-rq")) {
-	    if (argc == 1) {
-		fprintf(stderr,
-			"No string supplied with -request.\n");
-		exit(1);
-	    }
-	    argc--; argv++;
-	    initial_request = *argv;
+
+	(void) ss_add_request_table (sci_idx, &ss_std_requests, 1, &code);
+	if (code) {
+		ss_perror (sci_idx, code, "adding standard requests");
+		exit (1);
 	}
-	else if (!strcmp(*argv, "-quit"))
-	    quit = TRUE;
-	else if (!strcmp(*argv, "-no_quit"))
-	    quit = FALSE;
-	else if (**argv == '-') {
-	    fprintf(stderr, "Unknown control argument %s\n",
-		    *argv);
-	    fprintf(stderr,
-	"Usage: %s [gateway] [ -prompt name ] [ -request name ] [ -quit ]\n",
-		    argv0);
-	    exit(1);
-	}
-    }
 
-    sci_idx = ss_create_invocation(subsystem_name, version,
-				   (char *)NULL, &test_cmds, &code);
-    if (code) {
-	ss_perror(sci_idx, code, "creating invocation");
-	exit(1);
-    }
-
-    (void) ss_add_request_table (sci_idx, &ss_std_requests, 1, &code);
-    if (code) {
-	ss_perror (sci_idx, code, "adding standard requests");
-	exit (1);
-    }
-
-    if (!quit)
-	printf("test version %s.  Type '?' for a list of commands.\n\n",
+	printf("test_ss %s.  Type '?' for a list of commands.\n\n",
 	       version);
 
-    if (initial_request != (char *)NULL) {
-	code = ss_execute_line(sci_idx, initial_request);
-	if (code != 0)
-	    ss_perror(sci_idx, code, initial_request);
-    }
-    if (!quit || code)
-	(void) ss_listen (sci_idx, &code);
-    exit(0);
+	if (request) {
+		code = ss_execute_line(sci_idx, request);
+		if (code) {
+			ss_perror(sci_idx, code, request);
+			exit_status++;
+		}
+	} else if (cmd_file) {
+		exit_status = source_file(cmd_file, sci_idx);
+	} else {
+		ss_listen(sci_idx);
+	}
+
+	exit(exit_status);
 }
 
 
@@ -127,7 +137,12 @@ void test_cmd (argc, argv)
     int argc;
     char **argv;
 {
-    while (++argv, --argc)
-	fputs(*argv, stdout);
+    printf("Hello, world!\n");
+    printf("Args: ");
+    while (++argv, --argc) {
+	printf("'%s'", *argv);
+	if (argc > 1)
+	    fputs(", ", stdout);
+    }
     putchar ('\n');
 }

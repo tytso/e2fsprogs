@@ -10,6 +10,7 @@ powerquest
 .exclude-subset
 po/stamp-cat-id
 po/cat-id-tbl.c
+Meta
 e2fsck
 ext2ed
 debugfs

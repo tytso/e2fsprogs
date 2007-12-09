@@ -75,7 +75,8 @@ errcode_t ext2fs_brel_memarray_create(char *name, blk_t max_block,
 	
 	size = (size_t) (sizeof(struct ext2_block_relocate_entry) *
 			 (max_block+1));
-	retval = ext2fs_get_mem(size, &ma->entries);
+	retval = ext2fs_get_array(max_block+1,
+		sizeof(struct ext2_block_relocate_entry), &ma->entries);
 	if (retval)
 		goto errout;
 	memset(ma->entries, 0, size);

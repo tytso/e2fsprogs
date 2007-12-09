@@ -46,8 +46,6 @@ XTRA_CFLAGS= -I$(srcdir)/../et
 
 # for the library
 
-LIB=	libss.a
-
 # with ss_err.o first, ss_err.h should get rebuilt first too.  should not
 # be relying on this, though.
 OBJS=	ss_err.o \
@@ -100,6 +98,12 @@ all::	libss.a ss.pc # libss_p.a lint
 std_rqs.c: std_rqs.ct mk_cmds
 	@echo "	MK_CMDS $@"
 	@DIR=$(srcdir) $(MK_CMDS) $(srcdir)/std_rqs.ct
+
+std_rqs.o: ss_err.h
+
+test_cmd.c: test_cmd.ct mk_cmds
+	@echo "	MK_CMDS $@"
+	@DIR=$(srcdir) $(MK_CMDS) $(srcdir)/test_cmd.ct
 
 ss_err.c ss_err.h: ss_err.et
 	@echo "	COMPILE_ET ss_err.et"
@@ -159,9 +163,21 @@ uninstall::
 		$(DESTDIR)$(man1dir)/mk_cmds.1 
 	$(RM) -rf $(DESTDIR)$(includedir)/ss $(DESTDIR)$(datadir)/ss
 
+test_ss: test_ss.o test_cmd.o $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR)
+	@echo "	LD $@"
+	@$(CC) -o $@ test_ss.o test_cmd.o $(ALL_CFLAGS) \
+		$(LIBSS) $(LIBCOM_ERR)
+
+check:: all test_ss
+	@echo "	RUN TEST test_ss"
+	@(test_ss -f $(srcdir)/test_script >& test_out; exit 0)
+	@if ! diff test_out $(srcdir)/test_script_expected > test.diff; then \
+		echo "Regression test for ss library failed!"; exit 1 ; fi
+
 clean::
 	$(RM) -f ../libss.a libss.a mk_cmds ss_err.h ss_err.c std_rqs.c \
-		*.o *~ \#* *.bak core 
+		tst_cmds.c test_ss test_out test.diff *.o *~ \#* *.bak core \
+		test_cmd.c
 
 mostlyclean:: clean
 distclean:: clean
