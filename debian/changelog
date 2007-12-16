@@ -1,3 +1,9 @@
+e2fsprogs (1.40.3-2) unstable; urgency=low
+
+  * Add uuidd daemon
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 09 Dec 2007 22:47:53 -0500
+
 e2fsprogs (1.40.3-1) unstable; urgency=medium
 
   * New upstream release

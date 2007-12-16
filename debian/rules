@@ -359,7 +359,7 @@ binary-arch: install install-udeb
 	DH_OPTIONS= dh_installchangelogs -pe2fsprogs \
 		-plibblkid${BLKID_SOVERSION} -plibcomerr${COMERR_SOVERSION} \
 		-plibss${SS_SOVERSION} -plibuuid${UUID_SOVERSION} \
-		-pe2fslibs -puuid-dev -pe2fsck-static
+		-pe2fslibs -puuid-dev -puuid-runtime -pe2fsck-static
 
 	dh_fixperms
 ifneq ($(ismips),)

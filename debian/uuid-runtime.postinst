@@ -1,0 +1,9 @@
+#!/bin/sh
+
+adduser --system --group --no-create-home --disabled-login \
+	--quiet --home /var/lib/libuuid libuuid
+mkdir -p /var/run/uuidd
+chown libuuid:libuuid /var/run/uuidd
+chmod 775 /var/run/uuidd
+chown libuuid:libuuid /usr/sbin/uuidd
+chmod 6755 /usr/sbin/uuidd

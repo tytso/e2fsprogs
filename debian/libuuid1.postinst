@@ -1,0 +1,8 @@
+#!/bin/sh
+
+adduser --system --group --no-create-home --disabled-login \
+	--quiet --home /var/lib/libuuid libuuid
+mkdir -p /var/lib/libuuid
+chown libuuid:libuuid /var/lib/libuuid
+chmod 2775 /var/lib/libuuid
+
