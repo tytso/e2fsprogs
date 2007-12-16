@@ -69,7 +69,7 @@ const char * error_message (errcode_t code)
 #endif
     }
     for (et = _et_list; et; et = et->next) {
-	if (et->table->base == table_num) {
+	if ((et->table->base & 0xffffffL) == (table_num & 0xffffffL)) {
 	    /* This is the right table */
 	    if (et->table->n_msgs <= offset)
 		goto oops;
@@ -77,7 +77,7 @@ const char * error_message (errcode_t code)
 	}
     }
     for (et = _et_dynamic_list; et; et = et->next) {
-	if (et->table->base == table_num) {
+	if ((et->table->base & 0xffffffL) == (table_num & 0xffffffL)) {
 	    /* This is the right table */
 	    if (et->table->n_msgs <= offset)
 		goto oops;
