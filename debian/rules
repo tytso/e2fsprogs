@@ -123,7 +123,7 @@ ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 else
 	cd ${stdbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
-		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
+		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE)
 endif
 
   # specially-built MIPS libs
@@ -149,7 +149,7 @@ ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 else
 	cd ${bfbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
-		--build=$(DEB_BUILD_GNU_TYPE) $(DEB_HOST_GNU_TYPE)
+		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE)
 endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGBFSTAMP}
