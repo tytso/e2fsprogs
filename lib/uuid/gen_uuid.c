@@ -38,6 +38,7 @@
  */
 #define _SVID_SOURCE
 
+#include <stdio.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -57,6 +58,7 @@
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
+#include <sys/un.h>
 #ifdef HAVE_SYS_SOCKIO_H
 #include <sys/sockio.h>
 #endif
@@ -74,15 +76,22 @@
 #endif
 
 #include "uuidP.h"
+#include "uuidd.h"
 
 #ifdef HAVE_SRANDOM
 #define srand(x) 	srandom(x)
 #define rand() 		random()
 #endif
 
+#ifdef TLS
+#define THREAD_LOCAL static TLS
+#else
+#define THREAD_LOCAL static
+#endif
+
 #if defined(__linux__) && defined(__NR_gettid) && defined(HAVE_JRAND48)
 #define DO_JRAND_MIX
-static unsigned short jrand_seed[3];
+THREAD_LOCAL unsigned short jrand_seed[3];
 #endif
 
 static int get_random_fd(void)
@@ -247,22 +256,62 @@ static int get_node_id(unsigned char *node_id)
 /* Assume that the gettimeofday() has microsecond granularity */
 #define MAX_ADJUSTMENT 10
 
-static int get_clock(uint32_t *clock_high, uint32_t *clock_low, uint16_t *ret_clock_seq)
+static int get_clock(uint32_t *clock_high, uint32_t *clock_low,
+		     uint16_t *ret_clock_seq, int *num)
 {
-	static int			adjustment = 0;
-	static struct timeval		last = {0, 0};
-	static uint16_t			clock_seq;
+	THREAD_LOCAL int		adjustment = 0;
+	THREAD_LOCAL struct timeval	last = {0, 0};
+	THREAD_LOCAL int		state_fd = -2;
+	THREAD_LOCAL FILE		*state_f;
+	THREAD_LOCAL uint16_t		clock_seq;
 	struct timeval 			tv;
 	unsigned long long		clock_reg;
-	
-try_again:
-	gettimeofday(&tv, 0);
+	mode_t				save_umask;
+
+	if (state_fd == -2) {
+		save_umask = umask(0);
+		state_fd = open("/var/lib/libuuid/clock.txt",
+				O_RDWR|O_CREAT, 0660);
+		(void) umask(save_umask);
+		state_f = fdopen(state_fd, "r+");
+		if (!state_f) {
+			close(state_fd);
+			state_fd = -1;
+		}
+	}
+	if (state_fd >= 0) {
+		rewind(state_f);
+		while (lockf(state_fd, F_LOCK, 0) < 0) {
+			if ((errno == EAGAIN) || (errno == EINTR))
+				continue;
+			fclose(state_f);
+			close(state_fd);
+			state_fd = -1;
+		}
+	}
+	if (state_fd >= 0) {
+		unsigned int cl;
+		unsigned long tv1, tv2;
+		int a;
+
+		if (fscanf(state_f, "clock: %04x tv: %lu %lu adj: %d\n",
+			   &cl, &tv1, &tv2, &a) == 4) {
+			clock_seq = cl & 0x3FFF;
+			last.tv_sec = tv1;
+			last.tv_usec = tv2;
+			adjustment = a;
+		}
+	}
+
 	if ((last.tv_sec == 0) && (last.tv_usec == 0)) {
 		get_random_bytes(&clock_seq, sizeof(clock_seq));
 		clock_seq &= 0x3FFF;
 		last = tv;
 		last.tv_sec--;
 	}
+
+try_again:
+	gettimeofday(&tv, 0);
 	if ((tv.tv_sec < last.tv_sec) ||
 	    ((tv.tv_sec == last.tv_sec) &&
 	     (tv.tv_usec < last.tv_usec))) {
@@ -283,13 +332,124 @@ try_again:
 	clock_reg += ((unsigned long long) tv.tv_sec)*10000000;
 	clock_reg += (((unsigned long long) 0x01B21DD2) << 32) + 0x13814000;
 
+	if (num && (*num > 1)) {
+		adjustment += *num - 1;
+		last.tv_usec += adjustment / 10;
+		adjustment = adjustment % 10;
+		last.tv_sec += last.tv_usec / 1000000;
+		last.tv_usec = last.tv_usec % 1000000;
+	}
+
+	if (state_fd > 0) {
+		rewind(state_f);
+		ftruncate(state_fd, 0);
+		fprintf(state_f, "clock: %04x tv: %lu %lu adj: %d\n",
+			clock_seq, last.tv_sec, last.tv_usec, adjustment);
+		fflush(state_f);
+		rewind(state_f);
+		lockf(state_fd, F_ULOCK, 0);
+	}
+
 	*clock_high = clock_reg >> 32;
 	*clock_low = clock_reg;
 	*ret_clock_seq = clock_seq;
 	return 0;
 }
 
-void uuid_generate_time(uuid_t out)
+static ssize_t read_all(int fd, char *buf, size_t count)
+{
+	ssize_t ret;
+	ssize_t c = 0;
+
+	memset(buf, 0, count);
+	while (count > 0) {
+		ret = read(fd, buf, count);
+		if (ret < 0) {
+			if ((errno == EAGAIN) || (errno == EINTR))
+				continue;
+			return -1;
+		}
+		count -= ret;
+		buf += ret;
+		c += ret;
+	}
+	return c;
+}
+
+
+/*
+ * Try using the uuidd daemon to generate the UUID
+ *
+ * Returns 0 on success, non-zero on failure.
+ */
+static int get_uuid_via_daemon(int op, uuid_t out, int *num)
+{
+	char op_buf[64];
+	int op_len;
+	int s;
+	ssize_t ret;
+	int32_t reply_len = 0, expected = 16;
+	struct sockaddr_un srv_addr;
+	static const char *uuidd_path = UUIDD_PATH;
+	static int access_ret = -2;
+
+	if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
+		return -1;
+
+	srv_addr.sun_family = AF_UNIX;
+	strcpy(srv_addr.sun_path, UUIDD_SOCKET_PATH);
+
+	if (connect(s, (const struct sockaddr *) &srv_addr,
+		    sizeof(struct sockaddr_un)) < 0) {
+		if (access_ret == -2)
+			access_ret = access(uuidd_path, X_OK);
+		if (access_ret == 0) {
+			if (fork() == 0) {
+				execl(uuidd_path, "uuidd", "-qT", "300", 0);
+				exit(1);
+			}
+			usleep(500);
+			if (connect(s, (const struct sockaddr *) &srv_addr,
+				    sizeof(struct sockaddr_un)) < 0)
+				goto fail;
+		} else
+			goto fail;
+	}
+	op_buf[0] = op;
+	op_len = 1;
+	if (op == UUIDD_OP_BULK_TIME_UUID) {
+		memcpy(op_buf+1, num, sizeof(num));
+		op_len += sizeof(num);
+		expected += sizeof(num);
+	}
+
+	ret = write(s, op_buf, op_len);
+	if (ret < 1)
+		goto fail;
+
+	ret = read_all(s, (char *) &reply_len, sizeof(reply_len));
+	if (ret < 0)
+		goto fail;
+
+	if (reply_len != expected)
+		goto fail;
+
+	ret = read_all(s, op_buf, reply_len);
+
+	if (op == UUIDD_OP_BULK_TIME_UUID)
+		memcpy(op_buf+16, num, sizeof(int));
+
+	memcpy(out, op_buf, 16);
+
+	close(s);
+	return ((ret == expected) ? 0 : -1);
+
+fail:
+	close(s);
+	return -1;
+}
+
+void uuid__generate_time(uuid_t out, int *num)
 {
 	static unsigned char node_id[6];
 	static int has_init = 0;
@@ -308,7 +468,7 @@ void uuid_generate_time(uuid_t out)
 		}
 		has_init = 1;
 	}
-	get_clock(&clock_mid, &uu.time_low, &uu.clock_seq);
+	get_clock(&clock_mid, &uu.time_low, &uu.clock_seq, num);
 	uu.clock_seq |= 0x8000;
 	uu.time_mid = (uint16_t) clock_mid;
 	uu.time_hi_and_version = ((clock_mid >> 16) & 0x0FFF) | 0x1000;
@@ -316,18 +476,81 @@ void uuid_generate_time(uuid_t out)
 	uuid_pack(&uu, out);
 }
 
-void uuid_generate_random(uuid_t out)
+void uuid_generate_time(uuid_t out)
+{
+#ifdef TLS
+	THREAD_LOCAL int		num = 0;
+	THREAD_LOCAL struct uuid	uu;
+	THREAD_LOCAL time_t		last_time = 0;
+	time_t				now;
+
+	if (num > 0) {
+		now = time(0);
+		if (now > last_time+1)
+			num = 0;
+	}
+	if (num <= 0) {
+		num = 1000;
+		if (get_uuid_via_daemon(UUIDD_OP_BULK_TIME_UUID,
+					out, &num) == 0) {
+			last_time = time(0);
+			uuid_unpack(out, &uu);
+			num--;
+			return;
+		}
+		num = 0;
+	}
+	if (num > 0) {
+		uu.time_low++;
+		if (uu.time_low == 0) {
+			uu.time_mid++;
+			if (uu.time_mid == 0)
+				uu.time_hi_and_version++;
+		}
+		num--;
+		uuid_pack(&uu, out);
+		return;
+	}
+#else
+	if (get_uuid_via_daemon(UUIDD_OP_TIME_UUID, out, 0) == 0)
+		return;
+#endif
+
+	uuid__generate_time(out, 0);
+}
+
+
+void uuid__generate_random(uuid_t out, int *num)
 {
 	uuid_t	buf;
 	struct uuid uu;
+	int i, n;
 
-	get_random_bytes(buf, sizeof(buf));
-	uuid_unpack(buf, &uu);
+	if (!num || !*num)
+		n = 1;
+	else
+		n = *num;
 
-	uu.clock_seq = (uu.clock_seq & 0x3FFF) | 0x8000;
-	uu.time_hi_and_version = (uu.time_hi_and_version & 0x0FFF) | 0x4000;
-	uuid_pack(&uu, out);
+	for (i = 0; i < n; i++) {
+		get_random_bytes(buf, sizeof(buf));
+		uuid_unpack(buf, &uu);
+
+		uu.clock_seq = (uu.clock_seq & 0x3FFF) | 0x8000;
+		uu.time_hi_and_version = (uu.time_hi_and_version & 0x0FFF)
+			| 0x4000;
+		uuid_pack(&uu, out);
+		out += sizeof(uuid_t);
+	}
 }
+
+void uuid_generate_random(uuid_t out)
+{
+	int	num = 1;
+	/* No real reason to use the daemon for random uuid's -- yet */
+
+	uuid__generate_random(out, &num);
+}
+
 
 /*
  * This is the generic front-end to uuid_generate_random and

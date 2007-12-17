@@ -275,20 +275,17 @@ static int parse_fstab_line(char *line, struct fs_info **ret_fs)
 
 	*ret_fs = 0;
 	strip_line(line);
-	if ((cp = strchr(line, '#')))
-		*cp = 0;	/* Ignore everything after the comment char */
 	cp = line;
 
 	device = parse_word(&cp);
+	if (!device || *device == '#')
+		return 0;	/* Ignore blank lines and comments */
 	mntpnt = parse_word(&cp);
 	type = parse_word(&cp);
 	opts = parse_word(&cp);
 	freq = parse_word(&cp);
 	passno = parse_word(&cp);
 
-	if (!device)
-		return 0;	/* Allow blank lines */
-	
 	if (!mntpnt || !type)
 		return -1;
 

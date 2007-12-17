@@ -206,6 +206,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	dgrp_t		i,j;
 	errcode_t	retval;
 	unsigned long	fs_state;
+	__u32		feature_incompat;
 	struct ext2_super_block *super_shadow = 0;
 	struct ext2_group_desc *group_shadow = 0;
 	struct ext2_group_desc *s, *t;
@@ -215,6 +216,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
 	fs_state = fs->super->s_state;
+	feature_incompat = fs->super->s_feature_incompat;
 
 	fs->super->s_wtime = fs->now ? fs->now : time(NULL);
 	fs->super->s_block_group_nr = 0;
@@ -247,6 +249,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	 * we write out the backup superblocks.)
 	 */
 	fs->super->s_state &= ~EXT2_VALID_FS;
+	fs->super->s_feature_incompat &= ~EXT3_FEATURE_INCOMPAT_RECOVER;
 #ifdef WORDS_BIGENDIAN
 	*super_shadow = *fs->super;
 	ext2fs_swap_super(super_shadow);
@@ -323,6 +326,7 @@ write_primary_superblock_only:
 
 	fs->super->s_block_group_nr = 0;
 	fs->super->s_state = fs_state;
+	fs->super->s_feature_incompat = feature_incompat;
 #ifdef WORDS_BIGENDIAN
 	*super_shadow = *fs->super;
 	ext2fs_swap_super(super_shadow);

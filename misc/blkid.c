@@ -53,6 +53,31 @@ static void usage(int error)
 	exit(error);
 }
 
+/*
+ * This function does "safe" printing.  It will convert non-printable
+ * ASCII characters using '^' and M- notation.
+ */
+static void safe_print(const char *cp, int len)
+{
+	unsigned char	ch;
+
+	if (len < 0)
+		len = strlen(cp);
+
+	while (len--) {
+		ch = *cp++;
+		if (ch > 128) {
+			fputs("M-", stdout);
+			ch -= 128;
+		}
+		if ((ch < 32) || (ch == 0x7f)) {
+			fputc('^', stdout);
+			ch ^= 0x40; /* ^@, ^A, ^B; ^? for DEL */
+		}
+		fputc(ch, stdout);
+	}
+}
+
 static void print_tags(blkid_dev dev, char *show[], int numtag, int output)
 {
 	blkid_tag_iterate	iter;
@@ -76,14 +101,19 @@ static void print_tags(blkid_dev dev, char *show[], int numtag, int output)
 			if (i >= numtag)
 				continue;
 		}
-		if (first && !(output & OUTPUT_VALUE_ONLY)) {
-			printf("%s: ", blkid_dev_devname(dev));
-			first = 0;
+		if (output & OUTPUT_VALUE_ONLY) {
+			fputs(value, stdout);
+			fputc('\n', stdout);
+		} else {
+			if (first) {
+				printf("%s: ", blkid_dev_devname(dev));
+				first = 0;
+			}
+			fputs(type, stdout);
+			fputs("=\"", stdout);
+			safe_print(value, -1);
+			fputs("\" ", stdout);
 		}
-		if ((output & OUTPUT_VALUE_ONLY))
-			printf("%s\n", value);
-		else
-			printf("%s=\"%s\" ", type, value);
 	}
 	blkid_tag_iterate_end(iter);
 

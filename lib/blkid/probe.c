@@ -284,6 +284,8 @@ static int probe_fat(struct blkid_probe *probe,
 			(sector_size-1)) / sector_size;
 
 	cluster_count = sect_count - (reserved + fat_size + dir_size);
+	if (ms->ms_cluster_size == 0)
+		return 1;
 	cluster_count /= ms->ms_cluster_size;
 
 	if (cluster_count > FAT32_MAX)
