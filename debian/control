@@ -88,7 +88,7 @@ Description: universally unique id library
 Package: uuid-runtime
 Section: libs
 Priority: optional
-Depends: ${shlibs:Depends}
+Depends: libuuid1 (>> 1.40.3-1), ${shlibs:Depends}
 Replaces: e2fsprogs (<= 1.40.3-1ubuntu1)
 Architecture: any
 Description: universally unique id library
