@@ -50,6 +50,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/file.h>
 #ifdef HAVE_SYS_IOCTL_H
@@ -390,6 +391,7 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 	ssize_t ret;
 	int32_t reply_len = 0, expected = 16;
 	struct sockaddr_un srv_addr;
+	pid_t pid;
 	static const char *uuidd_path = UUIDD_PATH;
 	static int access_ret = -2;
 
@@ -404,11 +406,11 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 		if (access_ret == -2)
 			access_ret = access(uuidd_path, X_OK);
 		if (access_ret == 0) {
-			if (fork() == 0) {
+			if ((pid = fork()) == 0) {
 				execl(uuidd_path, "uuidd", "-qT", "300", 0);
 				exit(1);
 			}
-			usleep(500);
+			(void) waitpid(pid, 0, 0);
 			if (connect(s, (const struct sockaddr *) &srv_addr,
 				    sizeof(struct sockaddr_un)) < 0)
 				goto fail;
