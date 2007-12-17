@@ -394,6 +394,7 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 	pid_t pid;
 	static const char *uuidd_path = UUIDD_PATH;
 	static int access_ret = -2;
+	static int start_attempts = 0;
 
 	if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
 		return -1;
@@ -405,7 +406,7 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 		    sizeof(struct sockaddr_un)) < 0) {
 		if (access_ret == -2)
 			access_ret = access(uuidd_path, X_OK);
-		if (access_ret == 0) {
+		if (access_ret == 0 && start_attempts++ < 5) {
 			if ((pid = fork()) == 0) {
 				execl(uuidd_path, "uuidd", "-qT", "300", 0);
 				exit(1);
