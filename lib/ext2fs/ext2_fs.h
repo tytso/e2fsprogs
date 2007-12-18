@@ -284,6 +284,10 @@ struct ext2_new_group_input {
 	__u16 unused;		/* Number of reserved GDT blocks in group */
 };
 
+#ifdef __GNU__			/* Needed for the Hurd */
+#define _IOT_ext2_new_group_input _IOT (_IOTS(__u32), 5, _IOTS(__u16), 2, 0, 0)
+#endif
+
 #define EXT2_IOC_GETFLAGS		_IOR('f', 1, long)
 #define EXT2_IOC_SETFLAGS		_IOW('f', 2, long)
 #define EXT2_IOC_GETVERSION		_IOR('v', 1, long)
