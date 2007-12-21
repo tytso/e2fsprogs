@@ -421,9 +421,9 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 	op_buf[0] = op;
 	op_len = 1;
 	if (op == UUIDD_OP_BULK_TIME_UUID) {
-		memcpy(op_buf+1, num, sizeof(num));
-		op_len += sizeof(num);
-		expected += sizeof(num);
+		memcpy(op_buf+1, num, sizeof(*num));
+		op_len += sizeof(*num);
+		expected += sizeof(*num);
 	}
 
 	ret = write(s, op_buf, op_len);
