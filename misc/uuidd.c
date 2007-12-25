@@ -49,11 +49,10 @@ static void usage(const char *progname)
 	exit(1);
 }
 
-static void create_daemon(const char *pidfile_path)
+static void create_daemon(void)
 {
 	pid_t pid;
 	uid_t euid;
-	FILE *f;
 
 	pid = fork();
 	if (pid == -1) {
@@ -74,12 +73,6 @@ static void create_daemon(const char *pidfile_path)
 	(void) setsid();
 	euid = geteuid();
 	(void) setreuid(euid, euid);
-
-	f = fopen(pidfile_path, "w");
-	if (f) {
-		fprintf(f, "%d\n", getpid());
-		fclose(f);
-	}
 }
 
 static int read_all(int fd, char *buf, size_t count)
@@ -107,13 +100,13 @@ static const char *cleanup_pidfile, *cleanup_socket;
 static void terminate_intr(int signo CODE_ATTR((unused)))
 {
 	(void) unlink(cleanup_pidfile);
-	(void) unlink(cleanup_socket);
+	if (cleanup_socket)
+		(void) unlink(cleanup_socket);
 	exit(0);
 }
 
 static void server_loop(const char *socket_path, int debug,
-			const char *pidfile_path,
-			int timeout, int quiet)
+			int fd_pidfile, int timeout, int quiet)
 {
 	struct sockaddr_un	my_addr, from_addr;
 	unsigned char		reply_buf[1024], *cp;
@@ -156,16 +149,15 @@ static void server_loop(const char *socket_path, int debug,
 		exit(1);
 	}
 
-	if (!debug) {
-		create_daemon(pidfile_path);
-		cleanup_pidfile = pidfile_path;
-		cleanup_socket = socket_path;
-		signal(SIGHUP, terminate_intr);
-		signal(SIGINT, terminate_intr);
-		signal(SIGPIPE, terminate_intr);
-		signal(SIGTERM, terminate_intr);
-		signal(SIGALRM, terminate_intr);
-	}
+	if (fd_pidfile > 1)
+		close(fd_pidfile); /* Unlock the pid file */
+	cleanup_socket = socket_path;
+	if (!debug)
+		create_daemon();
+	signal(SIGHUP, terminate_intr);
+	signal(SIGINT, terminate_intr);
+	signal(SIGTERM, terminate_intr);
+	signal(SIGALRM, terminate_intr);
 	signal(SIGPIPE, SIG_IGN);
 
 	while (1) {
@@ -270,7 +262,7 @@ static void server_loop(const char *socket_path, int debug,
 	}
 }
 
-static int call_daemon(const char *socket_path, int op, unsigned char *buf,
+static int call_daemon(const char *socket_path, int op, char *buf,
 		       int buflen, int *num, const char **err_context)
 {
 	char op_buf[8];
@@ -356,18 +348,55 @@ static int call_daemon(const char *socket_path, int op, unsigned char *buf,
 	return ret;
 }
 
+static int create_pidfile(const char *socket_path, const char *pidfile_path,
+			  int quiet)
+{
+	int	fd, ret;
+	char	buf[20];
+
+	fd = open(pidfile_path, O_CREAT | O_RDWR, 0664);
+	if (fd < 0) {
+		if (!quiet)
+			fprintf(stderr, "Failed to open/create %s: %s\n",
+				pidfile_path, strerror(errno));
+		exit(1);
+	}
+	cleanup_pidfile = pidfile_path;
+	cleanup_socket = 0;
+	signal(SIGALRM, terminate_intr);
+	alarm(30);
+	if (lockf(fd, F_LOCK, 0) < 0) {
+		if (!quiet)
+			fprintf(stderr, "Failed to lock %s: %s\n", 
+				pidfile_path, strerror(errno));
+		exit(1);
+	}
+	ret = call_daemon(socket_path, 0, buf, sizeof(buf), 0, 0);
+	if (ret > 0) {
+		if (!quiet)
+			printf(_("uuidd daemon already running at pid %s\n"),
+			       buf);
+		exit(1);
+	}
+	alarm(0);
+
+	sprintf(buf, "%d\n", getpid());
+	ftruncate(fd, 0);
+	write(fd, buf, strlen(buf));
+	return(fd);
+}
 
 int main(int argc, char **argv)
 {
 	const char	*socket_path = UUIDD_SOCKET_PATH;
 	const char	*pidfile_path = UUIDD_PIDFILE_PATH;
 	const char	*err_context;
-	unsigned char	buf[1024], *cp;
+	char		buf[1024], *cp;
 	char   		str[37], *tmp;
 	uuid_t		uu;
 	uid_t		uid;
 	gid_t 		gid;
-	int		i, c, ret;
+	int		i, c, ret, fd_pidfile = -1;
 	int		debug = 0, do_type = 0, do_kill = 0, num = 0;
 	int		timeout = 0, quiet = 0, drop_privs = 0;
 
@@ -450,23 +479,23 @@ int main(int argc, char **argv)
 			if (ret != sizeof(uu) + sizeof(num))
 				goto unexpected_size;
 
-			uuid_unparse(buf, str);
+			uuid_unparse((unsigned char *) buf, str);
 
 			printf(_("%s and subsequent %d UUID's\n"), str, num);
 		} else {
 			printf(_("List of UUID's:\n"));
 			cp = buf + 4;
-			if (ret != sizeof(num) + num*sizeof(uu))
+			if (ret != (int) (sizeof(num) + num*sizeof(uu)))
 				goto unexpected_size;
 			for (i=0; i < num; i++, cp+=16) {
-				uuid_unparse(cp, str);
+				uuid_unparse((unsigned char *) cp, str);
 				printf("\t%s\n", str);
 			}
 		}
 		exit(0);
 	}
 	if (do_type) {
-		ret = call_daemon(socket_path, do_type, (unsigned char *) &uu,
+		ret = call_daemon(socket_path, do_type, (char *) &uu,
 				  sizeof(uu), 0, &err_context);
 		if (ret < 0) {
 			printf(_("Error calling uuidd daemon (%s): %s\n"),
@@ -485,12 +514,9 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-	/*
-	 * Check to make sure there isn't another daemon running already
-	 */
-	ret = call_daemon(socket_path, 0, buf, sizeof(buf), 0, 0);
-	if (ret > 0) {
-		if (do_kill && ((do_kill = atoi((char *) buf)) > 0)) {
+	if (do_kill) {
+		ret = call_daemon(socket_path, 0, buf, sizeof(buf), 0, 0);
+		if ((ret > 0) && ((do_kill = atoi((char *) buf)) > 0)) {
 			ret = kill(do_kill, SIGTERM);
 			if (ret < 0) {
 				if (!quiet)
@@ -503,16 +529,12 @@ int main(int argc, char **argv)
 			if (!quiet)
 				printf(_("Killed uuidd running at pid %d\n"),
 				       do_kill);
-			exit(0);
 		}
-		if (!quiet)
-			printf(_("uuidd daemon already running at pid %s\n"),
-			       buf);
-		exit(1);
+		exit(0);
 	}
-	if (do_kill)
-		exit(0);	/* Nothing to kill */
 
-	server_loop(socket_path, debug, pidfile_path, timeout, quiet);
+	fd_pidfile = create_pidfile(socket_path, pidfile_path, quiet);
+
+	server_loop(socket_path, debug, fd_pidfile, timeout, quiet);
 	return 0;
 }
