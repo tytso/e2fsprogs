@@ -1019,6 +1019,7 @@ _INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void *ptr)
 	memcpy(ptr, &pp, sizeof (pp));
 	return 0;
 }
+
 _INLINE_ errcode_t ext2fs_get_array(unsigned long count, unsigned long size, void *ptr)
 {
 	if (count && (-1UL)/count<size)

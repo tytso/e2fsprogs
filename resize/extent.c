@@ -49,7 +49,7 @@ errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent, int size)
 	extent->num = 0;
 	extent->sorted = 1;
 
-	retval = ext2fs_get_mem(sizeof(struct ext2_extent_entry) *
+	retval = ext2fs_get_array(sizeof(struct ext2_extent_entry),
 				extent->size, &extent->list);
 	if (retval) {
 		ext2fs_free_mem(&extent);

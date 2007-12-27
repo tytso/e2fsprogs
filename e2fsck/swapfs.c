@@ -119,7 +119,7 @@ static void swap_inodes(e2fsck_t ctx)
 
 	e2fsck_use_inode_shortcuts(ctx, 1);
 	
-	retval = ext2fs_get_mem(fs->blocksize * fs->inode_blocks_per_group,
+	retval = ext2fs_get_array(fs->blocksize, fs->inode_blocks_per_group,
 				&buf);
 	if (retval) {
 		com_err("swap_inodes", retval,
