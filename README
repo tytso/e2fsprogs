@@ -1,4 +1,4 @@
-	This is the new version (1.40.3) of the second extended file
+	This is the new version (1.40.4) of the second extended file
 system management programs.
 
 	From time to time, I release new versions of e2fsprogs, to fix
@@ -13,7 +13,7 @@ e2fsprogs.  Provisions for building Red Hat RPMs and Debian dpkg files
 are supplied as well.
 
 	In case of bugs in these programs, please contact Ted Ts'o at
-tytso@thunk.org or tytso@alum.mit.edu.  See the e2fsck man page for
+tytso@mit.edu or tytso@alum.mit.edu.  See the e2fsck man page for
 suggestions of what sort of information to include when submitting bug
 reports for these programs.
 
