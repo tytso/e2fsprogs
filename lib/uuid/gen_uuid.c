@@ -72,7 +72,7 @@
 #ifdef HAVE_NET_IF_DL_H
 #include <net/if_dl.h>
 #endif
-#ifdef __linux__
+#if defined(__linux__) && defined(HAVE_SYS_SYSCALL_H)
 #include <sys/syscall.h>
 #endif
 
