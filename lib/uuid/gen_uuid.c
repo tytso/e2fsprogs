@@ -385,6 +385,7 @@ static ssize_t read_all(int fd, char *buf, size_t count)
  */
 static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 {
+#ifdef USE_UUIDD
 	char op_buf[64];
 	int op_len;
 	int s;
@@ -449,6 +450,7 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 
 fail:
 	close(s);
+#endif
 	return -1;
 }
 

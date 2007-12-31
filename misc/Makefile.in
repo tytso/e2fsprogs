@@ -14,12 +14,15 @@ INSTALL = @INSTALL@
 @IMAGER_CMT@E2IMAGE_PROG= e2image
 @IMAGER_CMT@E2IMAGE_MAN= e2image.8
 
+@UUIDD_CMT@UUIDD_PROG= uuidd
+@UUIDD_CMT@UUIDD_MAN= uuidd.8
+
 SPROGS=		mke2fs badblocks tune2fs dumpe2fs blkid logsave \
 			$(E2IMAGE_PROG) @FSCK_PROG@
-USPROGS=	mklost+found filefrag uuidd
+USPROGS=	mklost+found filefrag $(UUIDD_PROG)
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			e2label.8 findfs.8 blkid.8 $(E2IMAGE_MAN) \
-			logsave.8 filefrag.8 uuidd.8 @FSCK_MAN@
+			logsave.8 filefrag.8 $(UUIDD_MAN) @FSCK_MAN@
 FMANPAGES=	mke2fs.conf.5
 
 UPROGS=		chattr lsattr uuidgen
@@ -366,7 +369,7 @@ clean:
 		$(FMANPAGES) \
 		base_device base_device.out mke2fs.static filefrag \
 		e2initrd_helper partinfo prof_err.[ch] default_profile.c \
-		\#* *.s *.o *.a *~ core 
+		uuidd e2image \#* *.s *.o *.a *~ core 
 
 mostlyclean: clean
 distclean: clean

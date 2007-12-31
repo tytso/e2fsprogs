@@ -548,6 +548,26 @@ fi
 dnl
 dnl
 dnl
+AC_ARG_ENABLE([uuidd],
+[  --disable-uuidd         disable building the uuid daemon],
+[if test "$enableval" = "no"
+then
+	echo "Not building uuidd"
+	UUIDD_CMT="#"
+else
+	AC_DEFINE(USE_UUIDD)
+	UUIDD_CMT=""
+	echo "Building uuidd"
+fi]
+,
+AC_DEFINE(USE_UUIDD)
+UUIDD_CMT=""
+echo "Building uuidd by default"
+)
+AC_SUBST(UUIDD_CMT)
+dnl
+dnl
+dnl
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
 AC_SUBST_FILE(MAKEFILE_LIBRARY)
 dnl

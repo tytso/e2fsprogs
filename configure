@@ -697,6 +697,7 @@ DEVMAPPER_REQ
 DEVMAPPER_PC_LIBS
 DEVMAPPER_LIBS
 STATIC_DEVMAPPER_LIBS
+UUIDD_CMT
 GETTEXT_PACKAGE
 PACKAGE
 VERSION
@@ -1377,6 +1378,7 @@ Optional Features:
   --enable-e2initrd-helper build e2initrd-helper program
   --enable-blkid-devmapper  build with device-mapper support
   --disable-tls           disable use of thread local support
+  --disable-uuidd         disable building the uuid daemon
   --disable-nls           do not use Native Language Support
   --disable-rpath         do not hardcode runtime library paths
 
@@ -4262,6 +4264,32 @@ _ACEOF
 echo "${ECHO_T}$ac_cv_tls" >&6; }
 
 fi
+# Check whether --enable-uuidd was given.
+if test "${enable_uuidd+set}" = set; then
+  enableval=$enable_uuidd; if test "$enableval" = "no"
+then
+	echo "Not building uuidd"
+	UUIDD_CMT="#"
+else
+	cat >>confdefs.h <<\_ACEOF
+#define USE_UUIDD 1
+_ACEOF
+
+	UUIDD_CMT=""
+	echo "Building uuidd"
+fi
+
+else
+  cat >>confdefs.h <<\_ACEOF
+#define USE_UUIDD 1
+_ACEOF
+
+UUIDD_CMT=""
+echo "Building uuidd by default"
+
+fi
+
+
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
 
 GETTEXT_PACKAGE=e2fsprogs
@@ -15874,6 +15902,7 @@ DEVMAPPER_REQ!$DEVMAPPER_REQ$ac_delim
 DEVMAPPER_PC_LIBS!$DEVMAPPER_PC_LIBS$ac_delim
 DEVMAPPER_LIBS!$DEVMAPPER_LIBS$ac_delim
 STATIC_DEVMAPPER_LIBS!$STATIC_DEVMAPPER_LIBS$ac_delim
+UUIDD_CMT!$UUIDD_CMT$ac_delim
 GETTEXT_PACKAGE!$GETTEXT_PACKAGE$ac_delim
 PACKAGE!$PACKAGE$ac_delim
 VERSION!$VERSION$ac_delim
@@ -15949,7 +15978,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 81; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 82; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
