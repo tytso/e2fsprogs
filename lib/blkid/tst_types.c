@@ -9,6 +9,7 @@
  * %End-Header%
  */
 
+#include <sys/types.h>
 #include "blkid/blkid_types.h"
 
 #include <stdlib.h>
