@@ -98,11 +98,13 @@ STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression \
 
 BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
 	--disable-nls --disable-swapfs --disable-imager \
+	--disable-uuidd --disable-tls \
 	--disable-debugfs  --disable-e2initrd-helper
 
 MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
 	--disable-nls \
 	--disable-swapfs --disable-imager \
+	--disable-uuidd --disable-tls \
         --disable-resizer # --disable-debugfs
 
 # we can't use those flags at configure time
