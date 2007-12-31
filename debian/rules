@@ -44,6 +44,7 @@ uuidudebdir=${debdir}/libuuid1-udeb
 maindir=${debdir}/e2fsprogs
 stdbuilddir=${debdir}/BUILD-STD
 bfbuilddir=${debdir}/BUILD-BF
+staticbuilddir=${debdir}/BUILD-STATIC
 mipsbuilddir=${debdir}/BUILD-MIPS
 mipsbuilddir64=${debdir}/BUILD-MIPS-64
 # docdir=${maindir}/usr/share/doc/${package}
@@ -62,8 +63,10 @@ UUID_UDEB_PRIORITY = $(shell grep '^Package: libuuid1-udeb' debian/control -A 10
 STAMPSDIR=debian/stampdir
 CFGSTDSTAMP=${STAMPSDIR}/configure-std-stamp
 CFGBFSTAMP=${STAMPSDIR}/configure-bf-stamp
+CFGSTATICSTAMP=${STAMPSDIR}/configure-static-stamp
 BUILDSTDSTAMP=${STAMPSDIR}/build-std-stamp
 BUILDBFSTAMP=${STAMPSDIR}/build-bf-stamp
+BUILDSTATICSTAMP=${STAMPSDIR}/build-static-stamp
 
 CCOPTS = -g
 
@@ -85,6 +88,10 @@ endif
 
 ifeq (${DEB_HOST_ARCH_OS},linux)
 DEVMAPPER = --enable-blkid-devmapper
+BUILD_STATIC = build-static
+E2FSCK_STATIC = ${staticbuilddir}/e2fsck/e2fsck.static
+else
+E2FSCK_STATIC = ${stdbuilddir}/e2fsck/e2fsck.static
 endif
 
 BF_CCOPTS = -Os -fomit-frame-pointer
@@ -100,6 +107,12 @@ BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
 	--disable-nls --disable-swapfs --disable-imager \
 	--disable-uuidd --disable-tls \
 	--disable-debugfs  --disable-e2initrd-helper
+
+STATIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
+	--disable-nls --disable-imager \
+	--disable-uuidd --disable-tls \
+	--disable-e2initrd-helper \
+	--with-diet-libc --with-ccopts=-fno-stack-protector
 
 MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
 	--disable-nls \
@@ -161,7 +174,23 @@ endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGBFSTAMP}
 
-build: build-std build-bf
+${CFGSTATICSTAMP}:
+	dh_testdir
+	rm -f config.cache
+
+	mkdir -p ${staticbuilddir}
+ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
+	cd ${staticbuilddir} && AWK=/usr/bin/awk \
+		${topdir}/configure ${STATIC_CONF_FLAGS}
+else
+	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
+		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE)
+endif
+	mkdir -p ${STAMPSDIR}
+	touch ${CFGSTATICSTAMP}
+
+build: build-std build-bf $(BUILD_STATIC)
 
 build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
@@ -195,12 +224,20 @@ ${BUILDBFSTAMP}: ${CFGBFSTAMP}
 	make -C ${bfbuilddir}/misc all
 	touch ${BUILDBFSTAMP}
 
+build-static: ${BUILDSTATICSTAMP}
+${BUILDSTATICSTAMP}: ${CFGSTATICSTAMP}
+	dh_testdir
+	make -C ${staticbuilddir} libs
+	make -C ${staticbuilddir}/e2fsck all
+	touch ${BUILDSTATICSTAMP}
+
 clean:
 	dh_testdir
 	rm -rf ${STAMPSDIR}
 	[ ! -f ${stdbuilddir}/Makefile ] || make -C ${stdbuilddir} distclean
 	[ ! -f ${bfbuilddir}/Makefile ] || make -C ${bfbuilddir} distclean
-	rm -rf ${stdbuilddir} ${bfbuilddir} ${mipsbuilddir} ${mipsbuilddir64}
+	[ ! -f ${staticbuilddir}/Makefile ] || make -C ${staticbuilddir} distclean
+	rm -rf ${stdbuilddir} ${bfbuilddir} ${staticbuilddir} ${mipsbuilddir} ${mipsbuilddir64}
 	rm -f doc/libext2fs/*.html lib/et/com_err/*.html debian/*.substvars
 	dh_clean
 
@@ -227,7 +264,7 @@ install-std: build
 	make -C ${stdbuilddir} install-libs DESTDIR=${tmpdir} LDCONFIG=true
 
   # statically-linked fsck
-	${INSTALL_PROGRAM} ${stdbuilddir}/e2fsck/e2fsck.static ${tmpdir}/sbin
+	${INSTALL_PROGRAM} $(E2FSCK_STATIC) ${tmpdir}/sbin
 	cp ${mandir}/man8/e2fsck.8 ${mandir}/man8/e2fsck.static.8
 
 	ln -s et/com_err.h ${tmpdir}/usr/include
