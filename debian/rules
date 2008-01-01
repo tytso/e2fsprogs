@@ -195,21 +195,21 @@ build: build-std build-bf $(BUILD_STATIC)
 build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
-	make -C ${stdbuilddir} all
+	$(MAKE) -C ${stdbuilddir} all
 
 	( cd ${stdbuilddir}/doc && \
 	  texi2html -split_chapter ${topdir}/doc/libext2fs.texinfo )
-	( cd ${stdbuilddir}/lib/et && make com_err.info && \
+	( cd ${stdbuilddir}/lib/et && $(MAKE) com_err.info && \
 	  texi2html -split_chapter -expandinfo ${topdir}/lib/et/com_err.texinfo )
 
   # specially-built MIPS libs
 ifneq ($(ismips),)
-	make -C ${mipsbuilddir}/util
-	make -C ${mipsbuilddir} \
+	$(MAKE) -C ${mipsbuilddir}/util
+	$(MAKE) -C ${mipsbuilddir} \
 		CFLAGS="${CCOPTS} ${MIPS_CFLAGS}" \
 		LIB_SUBDIRS="lib/et lib/ext2fs" libs
-	make -C ${mipsbuilddir64}/util
-	make -C ${mipsbuilddir64} \
+	$(MAKE) -C ${mipsbuilddir64}/util
+	$(MAKE) -C ${mipsbuilddir64} \
 		CFLAGS="${CCOPTS} ${MIPS_CFLAGS_64}" \
 		LIB_SUBDIRS="lib/et lib/ext2fs" libs
 endif
@@ -219,24 +219,24 @@ endif
 build-bf: ${BUILDBFSTAMP}
 ${BUILDBFSTAMP}: ${CFGBFSTAMP}
 	dh_testdir
-	make -C ${bfbuilddir} libs
-	make -C ${bfbuilddir}/e2fsck all
-	make -C ${bfbuilddir}/misc all
+	$(MAKE) -C ${bfbuilddir} libs
+	$(MAKE) -C ${bfbuilddir}/e2fsck all
+	$(MAKE) -C ${bfbuilddir}/misc all
 	touch ${BUILDBFSTAMP}
 
 build-static: ${BUILDSTATICSTAMP}
 ${BUILDSTATICSTAMP}: ${CFGSTATICSTAMP}
 	dh_testdir
-	make -C ${staticbuilddir} libs
-	make -C ${staticbuilddir}/e2fsck all
+	$(MAKE) -C ${staticbuilddir} libs
+	$(MAKE) -C ${staticbuilddir}/e2fsck all
 	touch ${BUILDSTATICSTAMP}
 
 clean:
 	dh_testdir
 	rm -rf ${STAMPSDIR}
-	[ ! -f ${stdbuilddir}/Makefile ] || make -C ${stdbuilddir} distclean
-	[ ! -f ${bfbuilddir}/Makefile ] || make -C ${bfbuilddir} distclean
-	[ ! -f ${staticbuilddir}/Makefile ] || make -C ${staticbuilddir} distclean
+	[ ! -f ${stdbuilddir}/Makefile ] || $(MAKE) -C ${stdbuilddir} distclean
+	[ ! -f ${bfbuilddir}/Makefile ] || $(MAKE) -C ${bfbuilddir} distclean
+	[ ! -f ${staticbuilddir}/Makefile ] || $(MAKE) -C ${staticbuilddir} distclean
 	rm -rf ${stdbuilddir} ${bfbuilddir} ${staticbuilddir} ${mipsbuilddir} ${mipsbuilddir64}
 	rm -f doc/libext2fs/*.html lib/et/com_err/*.html debian/*.substvars
 	dh_clean
@@ -258,10 +258,10 @@ install-std: build
 	dh_installdirs
 
 	mkdir -p ${tmpdir}/sbin
-	make -C ${stdbuilddir} install DESTDIR=${tmpdir} \
+	$(MAKE) -C ${stdbuilddir} install DESTDIR=${tmpdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
   # static libs and .h files
-	make -C ${stdbuilddir} install-libs DESTDIR=${tmpdir} LDCONFIG=true
+	$(MAKE) -C ${stdbuilddir} install-libs DESTDIR=${tmpdir} LDCONFIG=true
 
   # statically-linked fsck
 	${INSTALL_PROGRAM} $(E2FSCK_STATIC) ${tmpdir}/sbin
@@ -285,13 +285,13 @@ install-udeb: build
 	dh_testdir
 	dh_testroot
 
-	make -C ${bfbuilddir} install-shlibs-libs-recursive DESTDIR=${udebdir} \
+	$(MAKE) -C ${bfbuilddir} install-shlibs-libs-recursive DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	make -C ${bfbuilddir}/e2fsck install DESTDIR=${udebdir} \
+	$(MAKE) -C ${bfbuilddir}/e2fsck install DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	make -C ${bfbuilddir}/misc install DESTDIR=${udebdir} \
+	$(MAKE) -C ${bfbuilddir}/misc install DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
-	make -C ${bfbuilddir}/resize install DESTDIR=${udebdir} \
+	$(MAKE) -C ${bfbuilddir}/resize install DESTDIR=${udebdir} \
 		INSTALL_PROGRAM="${INSTALL_PROGRAM}" LDCONFIG=true
 
 	rm -rf ${udebdir}/usr
