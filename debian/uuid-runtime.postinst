@@ -6,3 +6,7 @@ if ! grep -q libuuid /etc/passwd; then
 fi
 chown libuuid:libuuid /usr/sbin/uuidd
 chmod 6755 /usr/sbin/uuidd
+
+#DEBHELPER#
+
+exit 0

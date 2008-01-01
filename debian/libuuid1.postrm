@@ -4,3 +4,7 @@ if [ "$1" = purge ]
 then
 	rm -rf /var/lib/libuuid
 fi
+
+#DEBHELPER#
+
+exit 0

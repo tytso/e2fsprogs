@@ -7,3 +7,7 @@ fi
 mkdir -p /var/lib/libuuid
 chown libuuid:libuuid /var/lib/libuuid
 chmod 2775 /var/lib/libuuid
+
+#DEBHELPER#
+
+exit 0
