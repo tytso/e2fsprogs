@@ -1,4 +1,4 @@
-all:: checker $(LIBRARY)_chk.a
+all:: $(LIBRARY)_chk.a
 
 real-subdirs:: Makefile
 	@echo "	MKDIR checker"

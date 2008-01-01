@@ -11,7 +11,7 @@
 # ELF_INSTALL_DIR = $(SHLIBDIR)
 # ELF_OTHER_LIBS = -lc
 
-all:: elfshared image
+all:: image
 
 real-subdirs:: Makefile
 	@echo "	MKDIR elfshared"

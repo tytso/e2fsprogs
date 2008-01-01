@@ -10,7 +10,7 @@
 # BSDLIB_INSTALL_DIR = $(SHLIBDIR)
 #
 
-all:: pic image
+all:: image
 
 real-subdirs:: Makefile
 	@echo "	MKDIR pic"
