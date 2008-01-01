@@ -1084,8 +1084,8 @@ void do_undel(int argc, char *argv[])
 	ext2_ino_t	ino;
 	struct ext2_inode inode;
 
-	if (common_args_process(argc, argv, 3, 3, "undelete",
-				"<inode_num> <dest_name>",
+	if (common_args_process(argc, argv, 2, 3, "undelete",
+				"<inode_num> [dest_name]",
 				CHECK_FS_RW | CHECK_FS_BITMAPS))
 		return;
 
@@ -1116,7 +1116,8 @@ void do_undel(int argc, char *argv[])
 
 	ext2fs_inode_alloc_stats2(current_fs, ino, +1, 0);
 
-	make_link(argv[1], argv[2]);
+	if (argc > 2)
+		make_link(argv[1], argv[2]);
 }
 
 static void unlink_file_by_name(char *filename)
