@@ -154,6 +154,19 @@ try to optimize all directories, either by reindexing them if the
 filesystem supports directory indexing,  or by sorting and compressing
 directories for smaller directories, or for filesystems using
 traditional linear directories.
+.IP
+Even without the
+.B \-D
+option,
+.B e2fsck
+may sometimes optimize a few directories --- for example, if
+directory indexing is enabled and a directory is not indexed and would
+benefit from being indexed, or if the index structures are corrupted
+and need to be rebuilt.  The
+.B \-D
+option forces all directories in the filesystem to be optimized.  This can
+sometimes make them a little smaller and slightly faster to search, but
+in practice, you should rarely need to use this option.
 .TP
 .BI \-E " extended_options"
 Set e2fsck extended options.  Extended options are comma
