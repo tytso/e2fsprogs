@@ -1,3 +1,58 @@
+E2fsprogs 1.40.4 (December 31, 2007)
+====================================
+
+Improve time-based UUID generation.  A new daemon uuidd, is started
+automatically by libuuid if necessary.  This daemon is setuid to allow
+updates to /var/lib/libuuid, so the clock sequence number can be
+stored and so if the clock is set backwards, it can be detected.
+(Addresses Sourceforge Bug: #1529672, Addresses Red Hat Bugzilla:
+#233471)
+
+Filter out the NEEDS_RECOVERY feature flag when writing out the backup
+superblocks.  This avoids e2fsck from concluding that a full
+filesystem check is required before backing up the superblock due to
+changes in the feature flags.  (Addresses Debian Bug: #454926)
+
+Fix fsck to only treat the '#' character as a comment at the beginning
+of the line in /etc/fstab.  Otherwise fstabs for the fuse filesystem
+will cause fsck to issue an bogus warning message.
+(Addresses Gentoo bug: #195405, Addresses Sourceforge bug: #1826147)
+
+Format control characters and characters with the high eighth bit set
+when printing the contents of the blkid cache, to prevent filesystems
+with garbage labels from sending escape sequences to the user's screen
+that might, for example place it in graphics mode.  (Addresses Ubuntu
+Bug: #78087)
+
+Fix sign-extension problem on 64-bit systems in in the com_err
+library.  (Addresses Sourceforge Bug: #1809658)
+
+Avoid division by zero error when probing an invalid FAT filesystem in
+the blkid library.  (Addresses Sourceforge Bug: #1831627)
+
+Update Dutch, Polish, and Vietnamese translations from the Translation
+Project.  Remove the Rwandan translation upon advice of the
+Translation Project.
+
+Programmer's Notes:
+-------------------
+
+Fix the libss "make check" regression test so that it works if the
+current directory is not in the user's path or if the libss shared
+library is not installed.  (Addresses Sourceforge Bug: #1848974)
+
+Fixed spelling mistakes, typos, and otherwise clarified man pages.
+(Addresses Debian Bugs: #444883, #441872)
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bugs: #437720, #451172, #458017)
+
+Fix build failure on non-Linux/non-Hurd/non-Masix systems.
+(Addresses Sourceforge Bug: #1859778)
+
+Fix Hurd portability issues.  (Addresses Debian Bug: #437720)
+
+
 E2fsprogs 1.40.3 (December 5, 2007)
 ===================================
 

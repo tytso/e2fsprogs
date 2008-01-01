@@ -1,8 +1,40 @@
-e2fsprogs (1.40.3-2) unstable; urgency=low
+e2fsprogs (1.40.4-1) unstable; urgency=low
 
-  * Add uuidd daemon
+  * Make sure that programs like tune2fs, when modifying a mounted
+      filesystem do not write the backup superblocks with the
+      NEEDS_RECOVERY flag, to avoid e2fsck from needlessly forcing a
+      full fsck because it thinks the feature flags need to be backed up
+      from the master to the backup superblocks.  (Closes: #454926)
+  * Improve time-based UUID generation to guarantee uniqueness even when
+      UUID's are being generated at very high rates on SMP systems.  To
+      do this we use an optional setuid helper daemon (uuidd) which is
+      started by libuuid when it is needed.  The uuidd daemon is
+      packaged in the (new) uuid-runtime package, which now also includes
+      the uuidgen program (which had been previously been included as
+      part of the e2fsprogs package).
+  * Fix fsck to only treat '#' characters at the beginning of /etc/fstab
+      lines as starting a comment.  This avoids spurious warnings printed
+      for filesystems such as fuse that often use '#' as part of the
+      filesystem specifier (i.e., wdfs#https://dav.hoster.com/foo).
+  * Enhance the blkid program to pretty-print control and meta
+      characters to avoid garbage filesystem labels from screwing up the
+      user's terminal
+  * Fix potential integer overflows passed to malloc() in resize2fs
+  * Update Dutch, Polish, and Vietnamese translations from the
+      Translation Project.  Remove the Rwandan translation upon advice
+      of the Translation Project.
+  * Fix cross-compilation support for non-Linux architectures
+        (Closes: #451172, #437720)
+  * Clarified and improved man pages (Closes: #444883, #441872)
+  * Fix potential divide by zero error when libblkid tried probing an
+      invalid FAT filesystem.
+  * Make error_message() in libcom_err DTRT when when a 64-bit sign-extended
+      error code is passed to it.
+  * Build the e2fsck-static package so that e2fsck.static will not use
+      TLS and hence will run correctly on back-level Debian systems
+      using a 2.4 Linux kernel.  (Closes: #458017)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 09 Dec 2007 22:47:53 -0500
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 31 Dec 2007 22:40:42 -0500
 
 e2fsprogs (1.40.3-1) unstable; urgency=medium
 

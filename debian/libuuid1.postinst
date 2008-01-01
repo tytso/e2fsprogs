@@ -1,8 +1,13 @@
 #!/bin/sh
 
-adduser --system --group --no-create-home --disabled-login \
-	--quiet --home /var/lib/libuuid libuuid
+groupadd -f -K GID_MIN=1 -K GID_MAX=999 libuuid
+if ! grep -q libuuid /etc/passwd; then
+   useradd -d /var/lib/libuuid -K UID_MIN=1 -K UID_MAX=499 -g libuuid libuuid
+fi
 mkdir -p /var/lib/libuuid
 chown libuuid:libuuid /var/lib/libuuid
 chmod 2775 /var/lib/libuuid
 
+#DEBHELPER#
+
+exit 0

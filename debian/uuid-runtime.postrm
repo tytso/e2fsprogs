@@ -5,3 +5,6 @@ then
 	rm -rf /var/run/uuidd
 fi
 
+#DEBHELPER#
+
+exit 0

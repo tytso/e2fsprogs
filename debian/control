@@ -2,7 +2,7 @@ Source: e2fsprogs
 Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
-Build-Depends: texi2html (>= 1.76), gettext, texinfo, dc, libsepol1-dev [!hurd-i386 !kfreebsd-i386 !kfreebsd-amd64], libdevmapper-dev [!hurd-i386 !kfreebsd-i386 !kfreebsd-amd64], libselinux1-dev [!hurd-i386 !kfreebsd-i386 !kfreebsd-amd64], debhelper (>= 4)
+Build-Depends: texi2html (>= 1.76), gettext, texinfo, dc, dietlibc-dev [!hurd-i386 !kfreebsd-i386 !kfreebsd-amd64], libsepol1-dev [!hurd-i386 !kfreebsd-i386 !kfreebsd-amd64], libdevmapper-dev [!hurd-i386 !kfreebsd-i386 !kfreebsd-amd64], libselinux1-dev [!hurd-i386 !kfreebsd-i386 !kfreebsd-amd64], debhelper (>= 4)
 Standards-Version: 3.7.3.0
 
 Package: e2fsck-static
@@ -88,7 +88,7 @@ Description: universally unique id library
 Package: uuid-runtime
 Section: libs
 Priority: optional
-Depends: ${shlibs:Depends}
+Depends: libuuid1 (>> 1.40.3-1), ${shlibs:Depends}
 Replaces: e2fsprogs (<= 1.40.3-1ubuntu1)
 Architecture: any
 Description: universally unique id library

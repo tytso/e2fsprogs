@@ -189,7 +189,8 @@ $(OBJS): subdirs
 clear.o: $(srcdir)/clear.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
 compare.o: $(srcdir)/compare.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
 copy.o: $(srcdir)/copy.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
-gen_uuid.o: $(srcdir)/gen_uuid.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+gen_uuid.o: $(srcdir)/gen_uuid.c $(srcdir)/uuidP.h $(srcdir)/uuid.h \
+ $(srcdir)/uuidd.h
 isnull.o: $(srcdir)/isnull.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
 pack.o: $(srcdir)/pack.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
 parse.o: $(srcdir)/parse.c $(srcdir)/uuidP.h $(srcdir)/uuid.h

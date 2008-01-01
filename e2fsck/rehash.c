@@ -66,6 +66,7 @@ struct fill_dir_struct {
 struct hash_entry {
 	ext2_dirhash_t	hash;
 	ext2_dirhash_t	minor_hash;
+	ino_t		ino;
 	struct ext2_dir_entry	*dir;
 };
 
@@ -147,6 +148,7 @@ static int fill_dir_block(ext2_filsys fs,
 		ent = fd->harray + fd->num_array++;
 		ent->dir = dirent;
 		fd->dir_size += EXT2_DIR_REC_LEN(dirent->name_len & 0xFF);
+		ent->ino = dirent->inode;
 		if (fd->compress)
 			ent->hash = ent->minor_hash = 0;
 		else {
@@ -160,6 +162,15 @@ static int fill_dir_block(ext2_filsys fs,
 	}
 	
 	return 0;
+}
+
+/* Used for sorting the hash entry */
+static EXT2_QSORT_TYPE ino_cmp(const void *a, const void *b)
+{
+	const struct hash_entry *he_a = (const struct hash_entry *) a;
+	const struct hash_entry *he_b = (const struct hash_entry *) b;
+
+	return (he_a->ino - he_b->ino);
 }
 
 /* Used for sorting the hash entry */
@@ -717,7 +728,7 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino)
 resort:
 	if (fd.compress)
 		qsort(fd.harray+2, fd.num_array-2,
-		      sizeof(struct hash_entry), name_cmp);
+		      sizeof(struct hash_entry), ino_cmp);
 	else
 		qsort(fd.harray, fd.num_array,
 		      sizeof(struct hash_entry), hash_cmp);

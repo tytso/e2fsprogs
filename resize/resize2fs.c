@@ -480,7 +480,7 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk_t new_size)
 	/*
 	 * Initialize the new block group descriptors
 	 */
-	retval = ext2fs_get_mem(fs->blocksize * fs->inode_blocks_per_group,
+	retval = ext2fs_get_array(fs->blocksize, fs->inode_blocks_per_group,
 				&rfs->itable_buf);
 	if (retval)
 		goto errout;
@@ -916,7 +916,7 @@ static errcode_t block_mover(ext2_resize_t rfs)
 
 	new_blk = fs->super->s_first_data_block;
 	if (!rfs->itable_buf) {
-		retval = ext2fs_get_mem(fs->blocksize *
+		retval = ext2fs_get_array(fs->blocksize,
 					fs->inode_blocks_per_group,
 					&rfs->itable_buf);
 		if (retval)
@@ -1137,7 +1137,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 
 	retval = ext2fs_init_dblist(rfs->old_fs, 0);
 	if (retval) goto errout;
-	retval = ext2fs_get_mem(rfs->old_fs->blocksize * 3, &block_buf);
+	retval = ext2fs_get_array(rfs->old_fs->blocksize, 3, &block_buf);
 	if (retval) goto errout;
 
 	start_to_move = (rfs->new_fs->group_desc_count *

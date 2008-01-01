@@ -4,3 +4,7 @@ if [ -x /usr/sbin/uuidd ]
 then
 	/usr/sbin/uuidd -k || true
 fi
+
+#DEBHELPER#
+
+exit 0

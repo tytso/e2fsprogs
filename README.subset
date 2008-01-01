@@ -1,6 +1,6 @@
 This distribution contains a subset of the e2fsprogs package; it
 contains the base libraries (ss, et, uuid, blkid) which may be used by
-other non-ext2-releated applications.
+other non-ext2-related applications.
 
 This may be useful for non-Linux operating systems that need these
 libraries for GNOME, but who do not need the ext2/ext3 filesystem
@@ -12,4 +12,4 @@ page, which is:
 	http://e2fsprogs.sourceforge.net
 
 In case of bugs in these libraries, please contact Ted Ts'o at
-tytso@thunk.org or tytso@alum.mit.edu.
+tytso@mit.edu or tytso@alum.mit.edu.

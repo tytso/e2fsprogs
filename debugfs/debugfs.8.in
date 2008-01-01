@@ -446,6 +446,27 @@ Test if the inode
 .I filespec
 is marked as allocated in the inode bitmap.
 .TP
+.I undel <inode num> [pathname]
+Undelete the specified inode number (which must be surrounded by angle
+brackets) so that it and its blocks are marked in use, and optionally
+link the recovered inode to the specified pathname.  The 
+.B e2fsck
+command should always be run after using the 
+.B undel
+command to recover deleted files.
+.IP
+Note that if you are recovering a large number of deleted files, linking
+the inode to a directory may require the directory to be expanded, which
+could allocate a block that had been used by one of the
+yet-to-be-undeleted files.  So it is safer to undelete all of the 
+inodes without specifying a destination pathname, and then in a separate
+pass, use the debugfs
+.B link
+command to link the inode to the destination pathname, or use 
+.B e2fsck
+to check the filesystem and link all of the recovered inodes to the
+lost+found dirctory.
+.TP
 .I unlink pathname
 Remove the link specified by 
 .I pathname 

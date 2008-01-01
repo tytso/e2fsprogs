@@ -50,6 +50,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/file.h>
 #ifdef HAVE_SYS_IOCTL_H
@@ -71,7 +72,7 @@
 #ifdef HAVE_NET_IF_DL_H
 #include <net/if_dl.h>
 #endif
-#ifdef __linux__
+#if defined(__linux__) && defined(HAVE_SYS_SYSCALL_H)
 #include <sys/syscall.h>
 #endif
 
@@ -384,14 +385,17 @@ static ssize_t read_all(int fd, char *buf, size_t count)
  */
 static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 {
+#ifdef USE_UUIDD
 	char op_buf[64];
 	int op_len;
 	int s;
 	ssize_t ret;
 	int32_t reply_len = 0, expected = 16;
 	struct sockaddr_un srv_addr;
+	pid_t pid;
 	static const char *uuidd_path = UUIDD_PATH;
 	static int access_ret = -2;
+	static int start_attempts = 0;
 
 	if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
 		return -1;
@@ -403,12 +407,12 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 		    sizeof(struct sockaddr_un)) < 0) {
 		if (access_ret == -2)
 			access_ret = access(uuidd_path, X_OK);
-		if (access_ret == 0) {
-			if (fork() == 0) {
+		if (access_ret == 0 && start_attempts++ < 5) {
+			if ((pid = fork()) == 0) {
 				execl(uuidd_path, "uuidd", "-qT", "300", 0);
 				exit(1);
 			}
-			usleep(500);
+			(void) waitpid(pid, 0, 0);
 			if (connect(s, (const struct sockaddr *) &srv_addr,
 				    sizeof(struct sockaddr_un)) < 0)
 				goto fail;
@@ -418,9 +422,9 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 	op_buf[0] = op;
 	op_len = 1;
 	if (op == UUIDD_OP_BULK_TIME_UUID) {
-		memcpy(op_buf+1, num, sizeof(num));
-		op_len += sizeof(num);
-		expected += sizeof(num);
+		memcpy(op_buf+1, num, sizeof(*num));
+		op_len += sizeof(*num);
+		expected += sizeof(*num);
 	}
 
 	ret = write(s, op_buf, op_len);
@@ -446,6 +450,7 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 
 fail:
 	close(s);
+#endif
 	return -1;
 }
 

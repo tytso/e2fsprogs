@@ -67,7 +67,7 @@ dnl
 dnl Use diet libc
 dnl 
 AC_ARG_WITH([diet-libc],
-[  --with-diet-libc      Use diet libc],
+[  --with-diet-libc        use diet libc],
 CC="diet cc -nostdinc"
 AC_MSG_RESULT(CC=$CC))dnl
 dnl
@@ -507,6 +507,47 @@ AC_SUBST(STATIC_DEVMAPPER_LIBS)
 dnl
 dnl
 dnl
+AC_ARG_ENABLE([tls],
+[  --disable-tls           disable use of thread local support],
+[if test "$enableval" = "no"
+then
+	try_tls=""
+	echo "Disabling thread local support"
+else
+	try_tls="yes"
+	echo "Enabling thread local support"
+fi]
+,
+try_tls="yes"
+echo "Try using thread local support by default"
+)
+if test "$try_tls" = "yes"
+then
+AX_TLS
+fi
+dnl
+dnl
+dnl
+AC_ARG_ENABLE([uuidd],
+[  --disable-uuidd         disable building the uuid daemon],
+[if test "$enableval" = "no"
+then
+	echo "Not building uuidd"
+	UUIDD_CMT="#"
+else
+	AC_DEFINE(USE_UUIDD)
+	UUIDD_CMT=""
+	echo "Building uuidd"
+fi]
+,
+AC_DEFINE(USE_UUIDD)
+UUIDD_CMT=""
+echo "Building uuidd by default"
+)
+AC_SUBST(UUIDD_CMT)
+dnl
+dnl
+dnl
 MAKEFILE_LIBRARY=$srcdir/lib/Makefile.library
 AC_SUBST_FILE(MAKEFILE_LIBRARY)
 dnl
@@ -550,8 +591,7 @@ if test $cross_compiling = no; then
 else
   AC_CHECK_PROGS(BUILD_CC, gcc cc)
 fi
-AX_TLS
-AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h stdint.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h signal.h termios.h linux/fd.h linux/major.h sys/disklabel.h sys/ioctl.h sys/mman.h sys/mkdev.h sys/prctl.h sys/queue.h sys/sockio.h sys/socket.h sys/sysmacros.h sys/time.h sys/stat.h sys/types.h sys/wait.h sys/resource.h net/if_dl.h netinet/in.h utime.h)
+AC_CHECK_HEADERS(stdlib.h unistd.h stdarg.h stdint.h errno.h malloc.h mntent.h paths.h dirent.h getopt.h setjmp.h signal.h termios.h linux/fd.h linux/major.h sys/disklabel.h sys/ioctl.h sys/mman.h sys/mkdev.h sys/prctl.h sys/queue.h sys/sockio.h sys/socket.h sys/sysmacros.h sys/time.h sys/stat.h sys/types.h sys/wait.h sys/resource.h sys/syscall.h net/if_dl.h netinet/in.h utime.h)
 AC_CHECK_HEADERS(sys/disk.h sys/mount.h,,,
 [[
 #if HAVE_SYS_QUEUE_H

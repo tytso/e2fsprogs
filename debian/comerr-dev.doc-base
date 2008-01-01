@@ -1,4 +1,4 @@
-Document: com_err
+Document: comerr-manual
 Title: The com_err library
 Author: Ken Raeburn and Bill Sommerfeld
 Abstract: A library, and associated utilities,

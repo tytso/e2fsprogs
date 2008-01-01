@@ -291,6 +291,10 @@ struct ext2_new_group_input {
 	__u16 unused;		/* Number of reserved GDT blocks in group */
 };
 
+#ifdef __GNU__			/* Needed for the Hurd */
+#define _IOT_ext2_new_group_input _IOT (_IOTS(__u32), 5, _IOTS(__u16), 2, 0, 0)
+#endif
+
 #define EXT2_IOC_GETFLAGS		_IOR('f', 1, long)
 #define EXT2_IOC_SETFLAGS		_IOW('f', 2, long)
 #define EXT2_IOC_GETVERSION		_IOR('v', 1, long)
@@ -412,8 +416,6 @@ struct ext2_inode_large {
 #define i_uid_high	osd2.linux2.l_i_uid_high
 #define i_gid_high	osd2.linux2.l_i_gid_high
 #define i_reserved2	osd2.linux2.l_i_reserved2
-#define inode_uid(inode)	((inode).i_uid | (inode).i_uid_high << 16)
-#define inode_gid(inode)	((inode).i_gid | (inode).i_gid_high << 16)
 #else
 #if defined(__GNU__)
 
@@ -423,11 +425,12 @@ struct ext2_inode_large {
 #define i_uid_high	osd2.hurd2.h_i_uid_high
 #define i_gid_high	osd2.hurd2.h_i_gid_high
 #define i_author	osd2.hurd2.h_i_author
-#define inode_uid(inode)	((inode).i_uid | (inode).i_uid_high << 16)
-#define inode_gid(inode)	((inode).i_gid | (inode).i_gid_high << 16)
 
 #endif  /* __GNU__ */
 #endif	/* defined(__KERNEL__) || defined(__linux__) */
+
+#define inode_uid(inode)	((inode).i_uid | (inode).osd2.linux2.l_i_uid_high << 16)
+#define inode_gid(inode)	((inode).i_gid | (inode).osd2.linux2.l_i_gid_high << 16)
 
 /*
  * File system states

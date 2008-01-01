@@ -329,6 +329,7 @@ static void write_block(int fd, char *buf, int sparse_offset,
 				err = 0;
 			com_err(program_name, err, "error writing block %u",
 				block);
+			exit(1);
 		}
 	}
 }
