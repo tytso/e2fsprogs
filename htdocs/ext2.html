@@ -1,0 +1,155 @@
+<HTML>
+<HEAD>
+<TITLE>Ext2fs Home Page</TITLE>
+</HEAD>
+
+<BODY bgcolor=#FFFFFF topmargin="0" bottommargin="0" leftmargin="0" rightmargin="0" marginheight="0" marginwidth="0">
+
+<!-- top strip -->
+<TABLE width="100%" border=0 cellspacing=0 cellpadding=2 bgcolor="737b9c">
+  <TR>
+    <TD><SPAN class=maintitlebar>&nbsp;&nbsp;
+      <A class=maintitlebar href="http://sourceforge.net/"><B>Home</B></A> | 
+      <A class=maintitlebar href="http://sourceforge.net/about.php"><B>About</B></A> | 
+      <A class=maintitlebar href="http://sourceforge.net/partners.php"><B>Partners</B></a> |
+      <A class=maintitlebar href="http://sourceforge.net/contact.php"><B>Contact Us</B></A> |
+      <A class=maintitlebar href="http://sourceforge.net/account/logout.php"><B>Logout</B></A></SPAN></TD>
+    </TD>
+  </TR>
+</TABLE>
+<!-- end top strip -->
+
+<!-- top title table -->
+<TABLE width="100%" border=0 cellspacing=0 cellpadding=0 bgcolor="" valign="center">
+  <TR valign="center" bgcolor="#eeeef8">
+    <TD>
+      <A href="http://sourceforge.net"> 
+	<IMG src="http://sourceforge.net/images/sflogo2-steel.png" width="143" height="70" border="0"></A>
+    </TD>
+    <TD width="99%"><!-- right of logo -->
+      <a href="http://www.valinux.com"><IMG src="http://sourceforge.net/images/valogo3.png" align="right" alt="VA Linux Systems" hspace="5" vspace="7" border=0 width="117" height="70"></A>
+    </TD><!-- right of logo -->
+  </TR>
+  <TR><TD bgcolor="#543a48" colspan=2><IMG src="http://sourceforge.net/images/blank.gif" height=2 vspace=0></TD></TR>
+</TABLE>
+<!-- end top title table -->
+
+<!-- center table -->
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="10" bgcolor="#FFFFFF" align="center">
+  <TR>
+    <TD>
+
+<!-- Begin actual content -->
+
+<CENTER><H1>Ext2fs Home Page</H1></CENTER>
+
+<IMG SRC="../images/new.gif" ALIGN=LEFT>
+<H2>Release 1.40.4 of e2fsprogs is available!</H2>
+
+<P>On December 31, 2007, version 1.40.4 of e2fsprogs was <A
+HREF="http://e2fsprogs.sourceforge.net">announced</A>.</P>
+
+<H2>Ext2fs Utilities</H2>
+
+The following Ext2fs Utilities are available:
+
+<UL>
+  <LI><A HREF="http://e2fsprogs.sourceforge.net">e2fsprogs</A>, which consists of
+		e2fsck, mke2fs, debugfs, dumpe2fs, tune2fs, and most
+		of the other core ext2fs filesystem utilities.
+  <LI><A HREF="http://dump.sourceforge.net/">dump</A>, which will
+	allow you to make backups of your ext2
+	filesystems.  It uses a format which is compatible with the
+	BSD dump and restore programs.
+
+  <LI>defrag, which will defragment your ext2 filesystem
+  <LI>ext2ed, which is a text/windows (curses) interface for examining and
+		editing an ext2 filesystem.  
+		It unfortunately is limited to filesystems smaller than 2GB,
+		and is heavily Intel byte order dependent, and has apparently
+		been abandoned by its original author.  (So for those
+		people who were used to seeing ext2ed in older Linux 
+		distributions, and wondered where it went to, that's 
+		the explanation.)
+		<P>It has been integrated
+		into e2fsprogs version 1.28, but its limitations mean that
+		it should only be used by developers who need to generate
+		test cases. </P>
+
+   <LI><A HREF="http://www.yipton.demon.co.uk/">FSDEXT2</A> --- A (read-only) 
+	ext2 filesystem driver for Windows 95, implemented as Windows 95 
+	File System Driver (FSD).  This driver is maintained by 
+	Peter van Sebille (pese@nlnwgfsc.origin.nl).
+   <LI><A HREF="http://www.sourceforge.net/projects/ext2fsd">Ext2fsd</A>,
+	An ext2
+	filesystem driver for Windows NT/2K/XP.  The most recent
+	version has read-write support.  
+</UL>
+
+<H2>Papers and Documentation of the Ext2 Filesystem</H2>
+
+<UL>
+ <LI> <A HREF="ext2intro.html">Design and Implementation of the Second Extended Filesystem</A>
+</UL>
+
+<H2>Other useful links related to the ext2 filesystem</H2>
+
+<UL>
+<LI>Ext3dev/ext4 --- Future enhancements to ext3
+<UL>
+<LI>
+<LI><A HREF="http://fedoraproject.org/wiki/ext3-devel">Ext3dev/Ext4
+development wiki
+<LI><A HREF="http://ext2.sourceforge.net">Ext2/3 development home page
+</UL>
+</UL>
+
+<UL>
+<LI>Ext3 --- Journaling for ext2fs
+<UL>
+<LI><A HREF="ftp://ftp.uk.linux.org/pub/linux/sct/fs/jfs/">Ext3 for the 2.2 
+	kernel</A>
+</UL>
+<LI><A HREF="http://thunk.org/tytso/linux/extfs-2.4-update/">Backports</A> of 
+	recent enhancements of the ext2/3 filesystems from 2.5 to the 2.4
+	kernel.
+<LI><A HREF="http://www.sas.com/standards/large.file/">Large File Support</A> API
+</UL>
+
+<H2>Other Linux filesystem development efforts</H2>
+<UL>
+<LI><A HREF="http://www.globalfilesystem.org">The Global File System (GFS)</A>
+<LI>SGI's <A HREF="http://oss.sgi.com/projects/xfs/">XFS port to Linux</A>
+<LI>IBM's <A HREF="http://oss.software.ibm.com/developer/opensource/jfs/">JFS port to Linux</A>
+<LI><A HREF="http://www.idiom.com/~beverly/reiserfs.html">Reiserfs</A>
+<LI><A HREF="http://www.coda.cs.cmu.edu/">CODA</A>, a distributed filesystem like AFS
+<LI><A HREF="http://www.complang.tuwien.ac.at/czezatke/lfs.html">
+dtfs</A>, a log-structed filesystem under development
+<LI><A HREF="http://collective.cpoint.net/lfs/">Another LFS filesystem</A> 
+under development.
+</UL>
+
+<ADDRESS>
+<A HREF="http://thunk.org:/tytso">Theodore Ts'o</A>
+</ADDRESS> 
+
+<!-- end actual content -->
+
+    </TD>
+  </TR>
+</TABLE>
+<!-- end center table -->
+
+
+<!-- footer table -->
+<TABLE width="100%" border="0" cellspacing="0" cellpadding="2" bgcolor="737b9c">
+  <TR>
+    <TD align="center"><FONT color="#ffffff"><SPAN class="titlebar">
+      All trademarks and copyrights on this page are properties of their respective owners.</SPAN></FONT>
+    </TD>
+  </TR>
+</TABLE>
+
+<!-- end footer table -->
+</BODY>
+</HTML>

@@ -1,0 +1,3 @@
+#!/bin/sh
+hg push ssh://tytso@e2fsprogs.sourceforge.net/e2web
+ssh tytso@e2fsprogs.sf.net cd e2web \; hg update
