@@ -15191,6 +15191,22 @@ else
 	root_libdir='${root_prefix}/lib'
 	root_sysconfdir='${root_prefix}/etc'
 fi
+if test "$bindir" != '${exec_prefix}/bin'; then
+    root_bindir=$bindir
+    echo "Setting root_bindir to $root_bindir"
+fi
+if test "$sbindir" != '${exec_prefix}/sbin'; then
+    root_sbindir=$sbindir
+    echo "Setting root_sbindir to $root_sbindir"
+fi
+if test "$libdir" != '${exec_prefix}/lib'; then
+    root_libdir=$libdir
+    echo "Setting root_libdir to $root_libdir"
+fi
+if test "$sysconfdir" != '${prefix}/etc'; then
+    root_sysconfdir=$sysconfdir
+    echo "Setting root_sysconfdir to $root_sysconfdir"
+fi
 
 
 
