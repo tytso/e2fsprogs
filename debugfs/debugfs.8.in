@@ -306,7 +306,7 @@ and
 .I \-b
 options.
 .TP
-.I ls [-l] [-d] filespec
+.I ls [-l] [-d] [-p] filespec
 Print a listing of the files in the directory
 .IR filespec .
 The 
@@ -315,6 +315,11 @@ flag will list files using a more verbose format.
 The
 .I \-d
 flag will list deleted entries in the directory.
+The 
+.I \-p
+flag will list the files in a format which is more easily parsable by
+scripts, as well as making it more clear when there are spaces or other
+non-prinitng characters at the end of filenames.
 .TP
 .I modify_inode filespec
 Modify the contents of the inode structure in the inode

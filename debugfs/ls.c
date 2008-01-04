@@ -30,6 +30,7 @@ extern char *optarg;
 
 #define LONG_OPT	0x0001
 #define DELETED_OPT	0x0002
+#define PARSE_OPT	0x0004
 
 struct list_dir_struct {
 	FILE	*f;
@@ -72,7 +73,16 @@ static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 	} else {
 		lbr = rbr = ' ';
 	}
-	if (ls->options & LONG_OPT) {
+	if (ls->options & PARSE_OPT) {
+		if (ino && debugfs_read_inode(ino, &inode, name)) return 0;
+		fprintf(ls->f,"/%u/%06o/%d/%d/%s/",ino,inode.i_mode,inode.i_uid, inode.i_gid,name);
+		if (LINUX_S_ISDIR(inode.i_mode))
+			fprintf(ls->f, "/");
+		else
+			fprintf(ls->f, "%lld/", inode.i_size | ((__u64)inode.i_size_high << 32));
+		fprintf(ls->f, "\n");
+	}
+	else if (ls->options & LONG_OPT) {
 		if (ino) {
 			if (debugfs_read_inode(ino, &inode, name))
 				return 0;
@@ -123,13 +133,16 @@ void do_list_dir(int argc, char *argv[])
 		return;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "dl")) != EOF) {
+	while ((c = getopt (argc, argv, "dlp")) != EOF) {
 		switch (c) {
 		case 'l':
 			ls.options |= LONG_OPT;
 			break;
 		case 'd':
 			ls.options |= DELETED_OPT;
+			break;
+		case 'p':
+			ls.options |= PARSE_OPT;
 			break;
 		default:
 			goto print_usage;
@@ -138,7 +151,7 @@ void do_list_dir(int argc, char *argv[])
 
 	if (argc > optind+1) {
 	print_usage:
-		com_err(0, 0, "Usage: ls [-l] [-d] file");
+		com_err(0, 0, "Usage: ls [-l] [-d] [-p] file");
 		return;
 	}
 
