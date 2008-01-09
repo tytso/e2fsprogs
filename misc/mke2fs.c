@@ -534,7 +534,10 @@ static void create_lost_and_found(ext2_filsys fs)
 	}
 	
 	for (i=1; i < EXT2_NDIR_BLOCKS; i++) {
-		if ((lpf_size += fs->blocksize) >= 16*1024)
+		/* Ensure that lost+found is at least 2 blocks, so we always
+		 * test large empty blocks for big-block filesystems.  */
+		if ((lpf_size += fs->blocksize) >= 16*1024 &&
+		    lpf_size >= 2 * fs->blocksize)
 			break;
 		retval = ext2fs_expand_dir(fs, ino);
 		if (retval) {
