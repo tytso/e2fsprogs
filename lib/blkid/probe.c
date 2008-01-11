@@ -500,7 +500,7 @@ static int probe_ntfs(struct blkid_probe *probe,
 		}
 	}
 
-	sprintf(uuid_str, "%llX", blkid_le64(ns->volume_serial));
+	sprintf(uuid_str, "%016llX", blkid_le64(ns->volume_serial));
 	blkid_set_tag(probe->dev, "UUID", uuid_str, 0);
 	if (label_str[0])
 		blkid_set_tag(probe->dev, "LABEL", label_str, 0);
