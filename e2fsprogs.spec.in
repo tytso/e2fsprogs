@@ -46,6 +46,18 @@ You should install e2fsprogs-devel if you want to develop ext2
 filesystem-specific programs.  If you install e2fsprogs-devel, you'll
 also want to install e2fsprogs.
 
+%package -n uuidd
+Summary: helper daemon to guarantee uniqueness of time-based UUIDs
+Group: System Environment/Daemons
+License: GPLv2
+Requires: e2fsprogs = %{version}
+Requires(pre): shadow-utils
+
+%description -n uuidd
+The uuidd package contains a userspace daemon (uuidd) which guarantees
+uniqueness of time-based UUID generation even at very high rates on
+SMP systems.
+
 %prep
 %setup
 
@@ -60,6 +72,10 @@ export PATH=/sbin:$PATH
 make install install-libs DESTDIR="$RPM_BUILD_ROOT" \
 	root_sbindir=%{_root_sbindir} root_libdir=%{_root_libdir}
 /sbin/ldconfig -n ${RPM_BUILD_ROOT}%{_libdir}
+
+# Add a dir that uuidd needs that the Makefiles don't create
+install -d $RPM_BUILD_ROOT/var/lib/libuuid
+
 %find_lang %{name}
 
 %clean
@@ -79,6 +95,13 @@ exit 0
 if [ $1 = 0 -a -x /sbin/install-info -a -f %{_infodir}/libext2fs.info.gz ]; then
    /sbin/install-info --delete %{_infodir}/libext2fs.info.gz %{_infodir}/dir
 fi
+exit 0
+
+%pre -n uuidd
+getent group uuidd >/dev/null || groupadd -r uuidd
+getent passwd uuidd >/dev/null || \
+useradd -r -g uuidd -d /var/lib/libuuid -s /sbin/nologin \
+    -c "UUID generator helper daemon" uuidd
 exit 0
 
 %files -f %{name}.lang
@@ -194,4 +217,12 @@ exit 0
 %{_mandir}/man3/uuid_parse.3*
 %{_mandir}/man3/uuid_time.3*
 %{_mandir}/man3/uuid_unparse.3*
+
+%files -n uuidd
+%defattr(-,root,root)
+# if you want to run via init
+# /etc/init.d/uuidd
+%{_mandir}/man8/uuidd.8*
+%attr(6755, uuidd, uuidd) %{_sbindir}/uuidd
+%dir %attr(2775, uuidd, uuidd) /var/lib/libuuid
 
