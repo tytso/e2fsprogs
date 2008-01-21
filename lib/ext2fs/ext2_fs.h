@@ -452,9 +452,14 @@ struct ext2_inode_large {
 #if defined(__masix__)
 #define inode_uid(inode)	((inode).i_uid)
 #define inode_gid(inode)	((inode).i_gid)
+#define ext2fs_set_i_uid_high(inode,x) (x)
+#define ext2fs_set_i_gid_high(inode,x) (x)
+
 #else
 #define inode_uid(inode)	((inode).i_uid | (inode).osd2.linux2.l_i_uid_high << 16)
 #define inode_gid(inode)	((inode).i_gid | (inode).osd2.linux2.l_i_gid_high << 16)
+#define ext2fs_set_i_uid_high(inode,x) ((inode).osd2.linux2.l_i_uid_high = (x))
+#define ext2fs_set_i_gid_high(inode,x) ((inode).osd2.linux2.l_i_gid_high = (x))
 #endif
 
 /*

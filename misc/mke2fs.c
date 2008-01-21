@@ -495,11 +495,11 @@ static void create_root_dir(ext2_filsys fs)
 		}
 		uid = getuid();
 		inode.i_uid = uid;
-		inode.i_uid_high = uid >> 16;
+		ext2fs_set_i_uid_high(inode, uid >> 16);
 		if (uid) {
 			gid = getgid();
 			inode.i_gid = gid;
-			inode.i_gid_high = gid >> 16;
+			ext2fs_set_i_gid_high(inode, gid >> 16);
 		}
 		retval = ext2fs_write_new_inode(fs, EXT2_ROOT_INO, &inode);
 		if (retval) {
