@@ -126,7 +126,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 	hdr.magic_number = EXT2_ET_MAGIC_E2IMAGE;
 	strcpy(hdr.magic_descriptor, "Ext2 Image 1.0");
 	gethostname(hdr.fs_hostname, sizeof(hdr.fs_hostname));
-	strncat(hdr.fs_device_name, device_name, sizeof(hdr.fs_device_name));
+	strncpy(hdr.fs_device_name, device_name, sizeof(hdr.fs_device_name)-1);
 	hdr.fs_device_name[sizeof(hdr.fs_device_name) - 1] = 0;
 	hdr.fs_blocksize = fs->blocksize;
 	
