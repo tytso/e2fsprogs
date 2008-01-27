@@ -881,6 +881,19 @@ static int probe_gfs2(struct blkid_probe *probe,
 	return 1;
 }
 
+static int probe_hfsplus(struct blkid_probe *probe,
+			 struct blkid_magic *id __BLKID_ATTR((unused)),
+			 unsigned char *buf)
+{
+	struct hfs_mdb *sbd = (struct hfs_mdb *)buf;
+
+	/* Check for a HFS+ volume embedded in a HFS volume */
+	if (memcmp(sbd->embed_sig, "H+", 2) == 0)
+		return 0;
+
+	return 1;
+}
+
 /*
  * BLKID_BLK_OFFS is at least as large as the highest bim_kboff defined
  * in the type_array table below + bim_kbalign.
@@ -940,6 +953,8 @@ static struct blkid_magic type_array[] = {
   { "iso9660",	32,	 1,  5, "CD001",		probe_iso9660 },
   { "iso9660",	32,	 9,  5, "CDROM",		probe_iso9660 },
   { "jfs",	32,	 0,  4, "JFS1",			probe_jfs },
+  { "hfsplus",	 1,	 0,  2, "BD",			probe_hfsplus },
+  { "hfsplus",	 1,	 0,  2, "H+",			0 },
   { "hfs",	 1,	 0,  2, "BD",			0 },
   { "ufs",	 8,  0x55c,  4, "T\031\001\000",	0 },
   { "hpfs",	 8,	 0,  4, "I\350\225\371",	0 },

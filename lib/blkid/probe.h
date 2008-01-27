@@ -490,6 +490,48 @@ struct file_attribute {
 #define MFT_RECORD_ATTR_OBJECT_ID		0x40
 #define MFT_RECORD_ATTR_END			0xffffffffu
 
+/* HFS / HFS+ */
+struct hfs_finder_info {
+        __u32        boot_folder;
+        __u32        start_app;
+        __u32        open_folder;
+        __u32        os9_folder;
+        __u32        reserved;
+        __u32        osx_folder;
+        __u8         id[8];
+} __attribute__((packed));
+
+struct hfs_mdb {
+        __u8         signature[2];
+        __u32        cr_date;
+        __u32        ls_Mod;
+        __u16        atrb;
+        __u16        nm_fls;
+        __u16        vbm_st;
+        __u16        alloc_ptr;
+        __u16        nm_al_blks;
+        __u32        al_blk_size;
+        __u32        clp_size;
+        __u16        al_bl_st;
+        __u32        nxt_cnid;
+        __u16        free_bks;
+        __u8         label_len;
+        __u8         label[27];
+        __u32        vol_bkup;
+        __u16        vol_seq_num;
+        __u32        wr_cnt;
+        __u32        xt_clump_size;
+        __u32        ct_clump_size;
+        __u16        num_root_dirs;
+        __u32        file_count;
+        __u32        dir_count;
+        struct hfs_finder_info finder_info;
+        __u8         embed_sig[2];
+        __u16        embed_startblock;
+        __u16        embed_blockcount;
+} __attribute__((packed));
+
+
 /*
  * Byte swap functions
  */
