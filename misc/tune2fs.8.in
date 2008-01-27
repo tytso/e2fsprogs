@@ -61,6 +61,10 @@ tune2fs \- adjust tunable filesystem parameters on ext2/ext3 filesystems
 .I mount-count
 ]
 [
+.B \-E
+.I extended-options
+]
+[
 .B \-L
 .I volume-name
 ]
@@ -142,6 +146,21 @@ Remount filesystem read-only.
 .TP
 .B panic
 Cause a kernel panic.
+.RE
+.TP
+.BI \-E " extended-options"
+Set extended options for the filesystem.  Extended options are comma
+separated, and may take an argument using the equals ('=') sign.  The 
+following extended options are supported:
+.RS 1.2i
+.TP
+.B test_fs
+Set a flag in the filesystem superblock indicating that it may be
+mounted using experimental kernel code, such as the ext4dev filesystem.
+.TP
+.B ^test_fs
+Clear the test_fs flag, indicating the filesystem should only be mounted
+using production-level filesystem code.
 .RE
 .TP
 .B \-f

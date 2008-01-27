@@ -849,6 +849,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 
 				param->s_reserved_gdt_blocks = rsv_gdb;
 			}
+		} else if (!strcmp(token, "test_fs")) {
+			param->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 		} else
 			r_usage++;
 	}
@@ -859,7 +861,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid extended options are:\n"
 			"\tstride=<stride length in blocks>\n"
-			"\tresize=<resize maximum size in blocks>\n\n"));
+			"\tresize=<resize maximum size in blocks>\n"
+			"\ttest_fs\n"));
 		free(buf);
 		exit(1);
 	}
@@ -1555,6 +1558,9 @@ int main (int argc, char *argv[])
 		com_err(device_name, retval, _("while setting up superblock"));
 		exit(1);
 	}
+
+	if (fs_param.s_flags & EXT2_FLAGS_TEST_FILESYS)
+		fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 
 	/*
 	 * Wipe out the old on-disk superblock

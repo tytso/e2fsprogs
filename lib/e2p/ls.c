@@ -147,11 +147,15 @@ static void print_super_flags(struct ext2_super_block * s, FILE *f)
 
 	fputs("Filesystem flags:         ", f);
 	if (s->s_flags & EXT2_FLAGS_SIGNED_HASH) {
-		fputs("signed directory hash ", f);
+		fputs("signed_directory_hash ", f);
 		flags_found++;
 	}
 	if (s->s_flags & EXT2_FLAGS_UNSIGNED_HASH) {
-		fputs("unsigned directory hash ", f);
+		fputs("unsigned_directory_hash ", f);
+		flags_found++;
+	}
+	if (s->s_flags & EXT2_FLAGS_TEST_FILESYS) {
+		fputs("test_filesystem ", f);
 		flags_found++;
 	}
 	if (flags_found)

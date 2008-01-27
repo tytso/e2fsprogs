@@ -71,6 +71,7 @@ static unsigned short errors;
 static int open_flag;
 static char *features_cmd;
 static char *mntopts_cmd;
+static char *extended_cmd;
 
 int journal_size, journal_flags;
 char *journal_device;
@@ -87,10 +88,10 @@ static void usage(void)
 		  "\t[-i interval[d|m|w]] [-j] [-J journal_options]\n"
 		  "\t[-l] [-s sparse_flag] [-m reserved_blocks_percent]\n"
 		  "\t[-o [^]mount_options[,...]] [-r reserved_blocks_count]\n"
-		  "\t[-u user] [-C mount_count] [-L volume_label] "
-		  "[-M last_mounted_dir]\n"
-		  "\t[-O [^]feature[,...]] [-T last_check_time] [-U UUID]"
-		  " device\n"), program_name);
+		  "\t[-u user] [-C mount_count] [-L volume_label]\n"
+		  "\t[-M last_mounted_dir] [-O [^]feature[,...]]\n"
+		  "\t[-E extended-option[,...]] [-T last_check_time] "
+		  "[-U UUID] device\n"), program_name);
 	exit (1);
 }
 
@@ -505,7 +506,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	struct passwd * pw;
 
 	printf("tune2fs %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
-	while ((c = getopt(argc, argv, "c:e:fg:i:jlm:o:r:s:u:C:J:L:M:O:T:U:")) != EOF)
+	while ((c = getopt(argc, argv, "c:e:fg:i:jlm:o:r:s:u:C:E:J:L:M:O:T:U:")) != EOF)
 		switch (c)
 		{
 			case 'c':
@@ -546,6 +547,10 @@ static void parse_tune2fs_options(int argc, char **argv)
 					usage();
 				}
 				e_flag = 1;
+				open_flag = EXT2_FLAG_RW;
+				break;
+			case 'E':
+				extended_cmd = optarg;
 				open_flag = EXT2_FLAG_RW;
 				break;
 			case 'f': /* Force */
@@ -739,6 +744,57 @@ void do_findfs(int argc, char **argv)
 	exit(0);
 }
 
+static void parse_extended_opts(ext2_filsys fs, const char *opts)
+{
+	char	*buf, *token, *next, *p, *arg;
+	int	len;
+	int	r_usage = 0;
+
+	len = strlen(opts);
+	buf = malloc(len+1);
+	if (!buf) {
+		fprintf(stderr,
+			_("Couldn't allocate memory to parse options!\n"));
+		exit(1);
+	}
+	strcpy(buf, opts);
+	for (token = buf; token && *token; token = next) {
+		p = strchr(token, ',');
+		next = 0;
+		if (p) {
+			*p = 0;
+			next = p+1;
+		}
+		arg = strchr(token, '=');
+		if (arg) {
+			*arg = 0;
+			arg++;
+		}
+		if (!strcmp(token, "test_fs")) {
+			fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
+			printf("Setting test filesystem flag\n");
+			ext2fs_mark_super_dirty(fs);
+		} else if (!strcmp(token, "^test_fs")) {
+			fs->super->s_flags &= ~EXT2_FLAGS_TEST_FILESYS;
+			printf("Clearing test filesystem flag\n");
+			ext2fs_mark_super_dirty(fs);
+		} else
+			r_usage++;
+	}
+	if (r_usage) {
+		fprintf(stderr, _("\nBad options specified.\n\n"
+			"Extended options are separated by commas, "
+			"and may take an argument which\n"
+			"\tis set off by an equals ('=') sign.\n\n"
+			"Valid extended options are:\n"
+			"\ttest_fs\n"
+			"\t^test_fs\n"));
+		free(buf);
+		exit(1);
+	}
+	free(buf);
+}	
+
 
 int main (int argc, char ** argv)
 {
@@ -902,6 +958,8 @@ int main (int argc, char ** argv)
 		update_mntopts(fs, mntopts_cmd);
 	if (features_cmd)
 		update_feature_set(fs, features_cmd);
+	if (extended_cmd)
+		parse_extended_opts(fs, extended_cmd);
 	if (journal_size || journal_device)
 		add_journal(fs);
 	
