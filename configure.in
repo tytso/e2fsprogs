@@ -441,24 +441,6 @@ RESIZER_CMT=
 )
 AC_SUBST(RESIZER_CMT)
 dnl
-dnl handle --enable-dynamic-e2fsck
-dnl
-AC_ARG_ENABLE([dynamic-e2fsck],
-[  --enable-dynamic-e2fsck build e2fsck dynamically],
-if test "$enableval" = "no"
-then
-	E2FSCK_TYPE=static
-	echo "Building e2fsck statically"
-else
-	E2FSCK_TYPE=shared
-	echo "Building e2fsck dynamically"
-fi
-,
-E2FSCK_TYPE=static
-echo "Building e2fsck statically by default"
-)
-AC_SUBST(E2FSCK_TYPE)
-dnl
 dnl See whether to install the `fsck' wrapper program (that calls e2fsck)
 dnl
 AC_ARG_ENABLE([fsck],

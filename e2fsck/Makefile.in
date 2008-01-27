@@ -104,7 +104,7 @@ SRCS= $(srcdir)/e2fsck.c \
 	prof_err.c \
 	$(MTRACE_SRC)
 
-all:: profiled $(PROGS) e2fsck.static e2fsck.shared $(MANPAGES) $(FMANPAGES)
+all:: profiled $(PROGS) e2fsck $(MANPAGES) $(FMANPAGES)
 
 @PROFILE_CMT@all:: e2fsck.profiled
 
@@ -112,18 +112,14 @@ prof_err.c prof_err.h: prof_err.et
 	@echo "	COMPILE_ET prof_err.et"
 	@$(COMPILE_ET) $(srcdir)/prof_err.et
 
-e2fsck: e2fsck.@E2FSCK_TYPE@
-	@echo "	CP $@"
-	@$(CP) e2fsck.@E2FSCK_TYPE@ e2fsck
+e2fsck: $(OBJS)  $(DEPLIBS)
+	@echo "	LD $@"
+	@$(LD) $(ALL_LDFLAGS) -o e2fsck $(OBJS) $(LIBS) 
 
-e2fsck.static: $(OBJS)  $(STATIC_DEPLIBS)
+e2fsck.static: $(OBJS) $(STATIC_DEPLIBS)
 	@echo "	LD $@"
 	@$(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o e2fsck.static $(OBJS) \
 		$(STATIC_LIBS) 
-
-e2fsck.shared: $(OBJS)  $(DEPLIBS)
-	@echo "	LD $@"
-	@$(LD) $(ALL_LDFLAGS) -o e2fsck.shared $(OBJS) $(LIBS) 
 
 e2fsck.profiled: $(PROFILED_OBJS)  $(PROFILED_DEPLIBS)
 	@echo "	LD $@"

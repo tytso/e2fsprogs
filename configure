@@ -688,7 +688,6 @@ SWAPFS_CMT
 DEBUGFS_CMT
 IMAGER_CMT
 RESIZER_CMT
-E2FSCK_TYPE
 FSCK_PROG
 FSCK_MAN
 E2INITRD_PROG
@@ -1376,7 +1375,6 @@ Optional Features:
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
   --disable-resizer   	  disable support of e2resize program
-  --enable-dynamic-e2fsck build e2fsck dynamically
   --enable-fsck           build fsck wrapper program
   --enable-e2initrd-helper build e2initrd-helper program
   --enable-blkid-devmapper  build with device-mapper support
@@ -4078,24 +4076,6 @@ fi
 else
   echo "Enabling e2resize support by default"
 RESIZER_CMT=
-
-fi
-
-
-# Check whether --enable-dynamic-e2fsck was given.
-if test "${enable_dynamic_e2fsck+set}" = set; then
-  enableval=$enable_dynamic_e2fsck; if test "$enableval" = "no"
-then
-	E2FSCK_TYPE=static
-	echo "Building e2fsck statically"
-else
-	E2FSCK_TYPE=shared
-	echo "Building e2fsck dynamically"
-fi
-
-else
-  E2FSCK_TYPE=static
-echo "Building e2fsck statically by default"
 
 fi
 
@@ -16057,7 +16037,7 @@ SWAPFS_CMT!$SWAPFS_CMT$ac_delim
 DEBUGFS_CMT!$DEBUGFS_CMT$ac_delim
 IMAGER_CMT!$IMAGER_CMT$ac_delim
 RESIZER_CMT!$RESIZER_CMT$ac_delim
-E2FSCK_TYPE!$E2FSCK_TYPE$ac_delim
+FSCK_PROG!$FSCK_PROG$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 76; then
@@ -16127,7 +16107,6 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
-FSCK_PROG!$FSCK_PROG$ac_delim
 FSCK_MAN!$FSCK_MAN$ac_delim
 E2INITRD_PROG!$E2INITRD_PROG$ac_delim
 E2INITRD_MAN!$E2INITRD_MAN$ac_delim
@@ -16213,7 +16192,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 83; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5

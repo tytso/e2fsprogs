@@ -97,8 +97,7 @@ endif
 BF_CCOPTS = -Os -fomit-frame-pointer
 
 COMMON_CONF_FLAGS =  \
-                --enable-elf-shlibs --enable-dynamic-e2fsck \
-                --infodir=/usr/share/info --enable-fsck
+                --enable-elf-shlibs --infodir=/usr/share/info --enable-fsck
 
 STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression \
 		${DEVMAPPER}
@@ -199,6 +198,7 @@ build-std: ${BUILDSTDSTAMP}
 ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	dh_testdir
 	$(MAKE) -C ${stdbuilddir} all
+	$(MAKE) -C ${stdbuilddir}/e2fsck e2fsck.static
 
 	( cd ${stdbuilddir}/doc && \
 	  texi2html -split_chapter ${topdir}/doc/libext2fs.texinfo )
@@ -231,7 +231,7 @@ build-static: ${BUILDSTATICSTAMP}
 ${BUILDSTATICSTAMP}: ${CFGSTATICSTAMP}
 	dh_testdir
 	$(MAKE) -C ${staticbuilddir} libs
-	$(MAKE) -C ${staticbuilddir}/e2fsck all
+	$(MAKE) -C ${staticbuilddir}/e2fsck all e2fsck.static
 	touch ${BUILDSTATICSTAMP}
 
 clean:
