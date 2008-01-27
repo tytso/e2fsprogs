@@ -596,6 +596,10 @@ static int probe_reiserfs(struct blkid_probe *probe,
 
 	blocksize = blkid_le16(rs->rs_blocksize);
 
+	/* The blocksize must be at least 1k */
+	if ((blocksize >> 10) == 0)
+		return -BLKID_ERR_PARAM;
+
 	/* If the superblock is inside the journal, we have the wrong one */
 	if (id->bim_kboff/(blocksize>>10) > blkid_le32(rs->rs_journal_block))
 		return -BLKID_ERR_BIG;
