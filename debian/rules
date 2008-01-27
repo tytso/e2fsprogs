@@ -112,7 +112,7 @@ STATIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
 	--disable-nls --disable-imager \
 	--disable-uuidd --disable-tls \
 	--disable-e2initrd-helper \
-	--with-diet-libc --with-ccopts=-fno-stack-protector
+	--with-ccopts=-fno-stack-protector
 
 MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
 	--disable-nls \
@@ -180,6 +180,9 @@ ${CFGSTATICSTAMP}:
 
 	mkdir -p ${staticbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
+	if type diet > /dev/null  2>&1 ; then \
+		STATIC_CONF_FLAGS="$STATIC_CONF_FLAGS --with-diet-libc"; \
+	fi
 	cd ${staticbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${STATIC_CONF_FLAGS}
 else
