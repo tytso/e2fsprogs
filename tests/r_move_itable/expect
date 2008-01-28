@@ -18,7 +18,7 @@ Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
 Filesystem revision #:    1 (dynamic)
-Filesystem features:      resize_inode dir_index filetype sparse_super
+Filesystem features:      ext_attr resize_inode dir_index filetype sparse_super
 Default mount options:    (none)
 Filesystem state:         clean
 Errors behavior:          Continue
@@ -319,7 +319,7 @@ Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
 Filesystem revision #:    1 (dynamic)
-Filesystem features:      resize_inode dir_index filetype sparse_super
+Filesystem features:      ext_attr resize_inode dir_index filetype sparse_super
 Default mount options:    (none)
 Filesystem state:         clean
 Errors behavior:          Continue
@@ -856,7 +856,7 @@ Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
 Filesystem revision #:    1 (dynamic)
-Filesystem features:      resize_inode dir_index filetype sparse_super
+Filesystem features:      ext_attr resize_inode dir_index filetype sparse_super
 Default mount options:    (none)
 Filesystem state:         clean
 Errors behavior:          Continue
@@ -1629,7 +1629,7 @@ Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
 Filesystem revision #:    1 (dynamic)
-Filesystem features:      resize_inode dir_index filetype sparse_super
+Filesystem features:      ext_attr resize_inode dir_index filetype sparse_super
 Default mount options:    (none)
 Filesystem state:         clean
 Errors behavior:          Continue
