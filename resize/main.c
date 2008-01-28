@@ -413,10 +413,12 @@ int main (int argc, char ** argv)
 
 	if ((st_buf.st_size > new_file_size) &&
 	    (fd > 0)) {
-#ifdef HAVE_FSTAT64
+#ifdef HAVE_FTRUNCATE64
 		ftruncate64(fd, new_file_size);
 #else
-		ftruncate(fd, (off_t) new_file_size);
+		/* Only truncate if new_file_size doesn't overflow off_t */
+		if (((off_t) new_file_size) == new_file_size)
+			ftruncate(fd, (off_t) new_file_size);
 #endif
 	}
 	if (fd > 0)

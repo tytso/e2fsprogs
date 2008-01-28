@@ -82,11 +82,61 @@ struct ext2_super_block {
 	__u32	s_first_meta_bg;
 	__u32	s_mkfs_time;
 	__u32	s_jnl_blocks[17];
-	__u32	s_reserved[172];
+	__u32	s_blocks_count_hi;
+	__u32	s_r_blocks_count_hi;
+	__u32	s_free_blocks_hi;
+	__u16	s_min_extra_isize;
+	__u16	s_want_extra_isize;
+	__u32	s_flags;
+	__u16   s_raid_stride;
+	__u16   s_mmp_interval;
+	__u64   s_mmp_block;
+	__u32   s_raid_stripe_width;
+	__u32   s_reserved[163];
 };
-#define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x00000004
-#define EXT3_FEATURE_INCOMPAT_RECOVER		0x00000004
-#define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV	0x00000008
+
+/* for s_flags */
+#define EXT2_FLAGS_TEST_FILESYS		0x0004
+
+/* for s_feature_compat */
+#define EXT3_FEATURE_COMPAT_HAS_JOURNAL		0x0004
+
+/* for s_feature_ro_compat */
+#define EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
+#define EXT2_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
+#define EXT2_FEATURE_RO_COMPAT_BTREE_DIR	0x0004
+#define EXT4_FEATURE_RO_COMPAT_HUGE_FILE	0x0008
+#define EXT4_FEATURE_RO_COMPAT_GDT_CSUM		0x0010
+#define EXT4_FEATURE_RO_COMPAT_DIR_NLINK	0x0020
+#define EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE	0x0040
+
+/* for s_feature_incompat */
+#define EXT2_FEATURE_INCOMPAT_FILETYPE		0x0002
+#define EXT3_FEATURE_INCOMPAT_RECOVER		0x0004
+#define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008
+#define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
+#define EXT4_FEATURE_INCOMPAT_EXTENTS		0x0040 /* extents support */
+#define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
+#define EXT4_FEATURE_INCOMPAT_MMP		0x0100
+#define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
+
+#define EXT2_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER| \
+					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE| \
+					 EXT2_FEATURE_RO_COMPAT_BTREE_DIR)
+#define EXT2_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE| \
+					 EXT2_FEATURE_INCOMPAT_META_BG)
+#define EXT2_FEATURE_INCOMPAT_UNSUPPORTED	~EXT2_FEATURE_INCOMPAT_SUPP
+#define EXT2_FEATURE_RO_COMPAT_UNSUPPORTED	~EXT2_FEATURE_RO_COMPAT_SUPP
+
+#define EXT3_FEATURE_RO_COMPAT_SUPP	(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER| \
+					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE| \
+					 EXT2_FEATURE_RO_COMPAT_BTREE_DIR)
+#define EXT3_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE| \
+					 EXT3_FEATURE_INCOMPAT_RECOVER| \
+					 EXT2_FEATURE_INCOMPAT_META_BG)
+#define EXT3_FEATURE_INCOMPAT_UNSUPPORTED	~EXT3_FEATURE_INCOMPAT_SUPP
+#define EXT3_FEATURE_RO_COMPAT_UNSUPPORTED	~EXT3_FEATURE_RO_COMPAT_SUPP
+
 
 struct xfs_super_block {
 	unsigned char	xs_magic[4];
@@ -439,6 +489,48 @@ struct file_attribute {
 #define MFT_RECORD_ATTR_VOLUME_INFO		0x70
 #define MFT_RECORD_ATTR_OBJECT_ID		0x40
 #define MFT_RECORD_ATTR_END			0xffffffffu
+
+/* HFS / HFS+ */
+struct hfs_finder_info {
+        __u32        boot_folder;
+        __u32        start_app;
+        __u32        open_folder;
+        __u32        os9_folder;
+        __u32        reserved;
+        __u32        osx_folder;
+        __u8         id[8];
+} __attribute__((packed));
+
+struct hfs_mdb {
+        __u8         signature[2];
+        __u32        cr_date;
+        __u32        ls_Mod;
+        __u16        atrb;
+        __u16        nm_fls;
+        __u16        vbm_st;
+        __u16        alloc_ptr;
+        __u16        nm_al_blks;
+        __u32        al_blk_size;
+        __u32        clp_size;
+        __u16        al_bl_st;
+        __u32        nxt_cnid;
+        __u16        free_bks;
+        __u8         label_len;
+        __u8         label[27];
+        __u32        vol_bkup;
+        __u16        vol_seq_num;
+        __u32        wr_cnt;
+        __u32        xt_clump_size;
+        __u32        ct_clump_size;
+        __u16        num_root_dirs;
+        __u32        file_count;
+        __u32        dir_count;
+        struct hfs_finder_info finder_info;
+        __u8         embed_sig[2];
+        __u16        embed_startblock;
+        __u16        embed_blockcount;
+} __attribute__((packed));
+
 
 /*
  * Byte swap functions

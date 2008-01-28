@@ -99,8 +99,9 @@ mostlyclean: mostlyclean-recursive mostlyclean-local
 clean: clean-recursive clean-local clean-doc
 	$(RM) -f $(SUBS) 
 
-distclean: distclean-doc distclean-recursive distclean-local 
+distclean: distclean-doc distclean-recursive
 	$(RM) -rf autom4te.cache e2fsprogs.spec ext2ed/Makefile po/stamp-po
+	$(MAKE) distclean-local 
 
 realclean: realclean-recursive realclean-local
 

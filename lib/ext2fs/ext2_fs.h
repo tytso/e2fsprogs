@@ -431,18 +431,22 @@ struct ext2_inode_large {
 
 #define inode_uid(inode)	((inode).i_uid | (inode).osd2.linux2.l_i_uid_high << 16)
 #define inode_gid(inode)	((inode).i_gid | (inode).osd2.linux2.l_i_gid_high << 16)
+#define ext2fs_set_i_uid_high(inode,x) ((inode).osd2.linux2.l_i_uid_high = (x))
+#define ext2fs_set_i_gid_high(inode,x) ((inode).osd2.linux2.l_i_gid_high = (x))
 
 /*
  * File system states
  */
 #define EXT2_VALID_FS			0x0001	/* Unmounted cleanly */
 #define EXT2_ERROR_FS			0x0002	/* Errors detected */
+#define EXT4_ORPHAN_FS			0x0004	/* Orphans being recovered */
 
 /*
  * Misc. filesystem flags
  */
 #define EXT2_FLAGS_SIGNED_HASH		0x0001  /* Signed dirhash in use */
 #define EXT2_FLAGS_UNSIGNED_HASH	0x0002  /* Unsigned dirhash in use */
+#define EXT2_FLAGS_TEST_FILESYS		0x0004	/* OK for use on development code */
 
 /*
  * Mount flags

@@ -409,7 +409,8 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 			access_ret = access(uuidd_path, X_OK);
 		if (access_ret == 0 && start_attempts++ < 5) {
 			if ((pid = fork()) == 0) {
-				execl(uuidd_path, "uuidd", "-qT", "300", 0);
+				execl(uuidd_path, "uuidd", "-qT", "300", 
+				      (char *) NULL);
 				exit(1);
 			}
 			(void) waitpid(pid, 0, 0);

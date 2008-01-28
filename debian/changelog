@@ -1,3 +1,38 @@
+e2fsprogs (1.40.5-1) unstable; urgency=low
+
+  * New upstream release.
+  * Mke2fs will now create new filesystems with 256 byte inodes and the
+      ext_attr feature flag by default.  This allows for much better
+      future compatibity with ext4 and speeds up extended attributes
+      even on ext3 filesystems.
+  * Teach mke2fs and tune2fs to set a "test_fs" flag, which indicates
+      that it is ok to use the filesystem on in-development kernel
+      code (i.e., ext4dev)
+  * E2fsck now optimizes non-htree directories by sorting them by inode
+      number.
+  * Add support for detecting HFS+ and ext4/ext4dev filesystems in blkid
+  * Fix blkid's ntfs UUID handling so it is compatible with vol_id
+  * Avoid a floating point exception when blkid tries to probe a corrpt
+      reiserfs filesystem.
+  * Fix potential overflow problem in e2image if the device name is
+      too long.
+  * Cause e2image to exit immediately with an error message on a disk
+      full situation.
+  * Fix a minor typos in the resize2fs and uuidd manpages.
+  * E2fsck will no longer backup superblocks when the kernel makes
+      certain "safe" feature set changes behind the user's back.
+  * Fix debugfs's lsdel command so it works on large files
+  * Allow a user to undelete an inode with linking to a destination
+      directory.
+  * Update Swedish translation file from the Translation Project
+  * The libuuid1 and uuid-runtime packages requires passwd package, so
+      declare it as a dependency.  (Closes: #459403)
+  * Fix a FTBFS problem on x86_64 caused by the fact that dietlibc
+      doesn't provide llseek on the x86_64.  (Closes: #459614)
+  * Don't use dietlibc on platforms that don't support it (Closes: #459475)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 27 Jan 2008 16:57:34 -0500
+
 e2fsprogs (1.40.4-1) unstable; urgency=low
 
   * Make sure that programs like tune2fs, when modifying a mounted
@@ -426,7 +461,7 @@ e2fsprogs (1.38+1.39-WIP-2005.12.10-1) unstable; urgency=low
   * Updated Dutch translation
   * E2fsck will stop and print a warning if the user tries running a
     read/write badblocks test on a read-only mounted root filesystem.
-  * Add resize2fs and badblocks to the e2fsprogs udeb 
+  * Add resize2fs and badblocks to the e2fsprogs udeb
     (Closes: #290429, #310950)
   * Avoid trying to mount the root device if it is an NFS device.
     (Closes: #310428)

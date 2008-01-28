@@ -187,6 +187,10 @@ filesystem blocks per stripe.
 .BI resize= max-online-resize
 Reserve enough space so that the block group descriptor table can grow
 to support a filesystem that has max-online-resize blocks.
+.TP
+.B test_fs
+Set a flag in the filesystem superblock indicating that it may be
+mounted using experimental kernel code, such as the ext4dev filesystem.
 .RE
 .TP
 .BI \-f " fragment-size"

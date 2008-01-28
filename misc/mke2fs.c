@@ -495,11 +495,11 @@ static void create_root_dir(ext2_filsys fs)
 		}
 		uid = getuid();
 		inode.i_uid = uid;
-		inode.i_uid_high = uid >> 16;
+		ext2fs_set_i_uid_high(inode, uid >> 16);
 		if (uid) {
 			gid = getgid();
 			inode.i_gid = gid;
-			inode.i_gid_high = gid >> 16;
+			ext2fs_set_i_gid_high(inode, gid >> 16);
 		}
 		retval = ext2fs_write_new_inode(fs, EXT2_ROOT_INO, &inode);
 		if (retval) {
@@ -849,6 +849,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 
 				param->s_reserved_gdt_blocks = rsv_gdb;
 			}
+		} else if (!strcmp(token, "test_fs")) {
+			param->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 		} else
 			r_usage++;
 	}
@@ -859,7 +861,8 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid extended options are:\n"
 			"\tstride=<stride length in blocks>\n"
-			"\tresize=<resize maximum size in blocks>\n\n"));
+			"\tresize=<resize maximum size in blocks>\n"
+			"\ttest_fs\n"));
 		free(buf);
 		exit(1);
 	}
@@ -870,7 +873,8 @@ static __u32 ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
 		EXT2_FEATURE_COMPAT_DIR_INDEX |
-		EXT2_FEATURE_COMPAT_LAZY_BG,	/* Compat */
+		EXT2_FEATURE_COMPAT_LAZY_BG |
+		EXT2_FEATURE_COMPAT_EXT_ATTR,	/* Compat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
 		EXT3_FEATURE_INCOMPAT_JOURNAL_DEV|
 		EXT2_FEATURE_INCOMPAT_META_BG|
@@ -1556,6 +1560,9 @@ int main (int argc, char *argv[])
 		com_err(device_name, retval, _("while setting up superblock"));
 		exit(1);
 	}
+
+	if (fs_param.s_flags & EXT2_FLAGS_TEST_FILESYS)
+		fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 
 	/*
 	 * Wipe out the old on-disk superblock

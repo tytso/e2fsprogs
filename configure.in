@@ -207,6 +207,10 @@ echo "Enabling htree directory support by default"
 )
 AC_SUBST(HTREE_CMT)
 dnl
+dnl This needs to be before all of the --enable-*-shlibs options
+dnl
+E2_PKG_CONFIG_STATIC=--static
+dnl
 dnl handle --enable-elf-shlibs
 dnl
 AC_ARG_ENABLE([elf-shlibs],
@@ -217,6 +221,7 @@ then
 	MAKEFILE_ELF=/dev/null
 	echo "Disabling ELF shared libraries"
 else
+	E2_PKG_CONFIG_STATIC=
 	ELF_CMT=
 	MAKEFILE_ELF=$srcdir/lib/Makefile.elf-lib
 	[case "$host_os" in
@@ -246,6 +251,7 @@ then
 	MAKEFILE_BSDLIB=/dev/null
 	echo "Disabling BSD shared libraries"
 else
+	E2_PKG_CONFIG_STATIC=
 	BSDLIB_CMT=
 	MAKEFILE_BSDLIB=$srcdir/lib/Makefile.bsd-lib
 	LIB_EXT=.so
@@ -415,24 +421,6 @@ RESIZER_CMT=
 )
 AC_SUBST(RESIZER_CMT)
 dnl
-dnl handle --enable-dynamic-e2fsck
-dnl
-AC_ARG_ENABLE([dynamic-e2fsck],
-[  --enable-dynamic-e2fsck build e2fsck dynamically],
-if test "$enableval" = "no"
-then
-	E2FSCK_TYPE=static
-	echo "Building e2fsck statically"
-else
-	E2FSCK_TYPE=shared
-	echo "Building e2fsck dynamically"
-fi
-,
-E2FSCK_TYPE=static
-echo "Building e2fsck statically by default"
-)
-AC_SUBST(E2FSCK_TYPE)
-dnl
 dnl See whether to install the `fsck' wrapper program (that calls e2fsck)
 dnl
 AC_ARG_ENABLE([fsck],
@@ -479,6 +467,7 @@ AC_SUBST(E2INITRD_PROG)
 AC_SUBST(E2INITRD_MAN)
 dnl handle --enable-blkid-devmapper
 dnl
+STATIC_BLKID_DEVMAPPER_LIBS=''
 AC_ARG_ENABLE([blkid-devmapper],
 [  --enable-blkid-devmapper  build with device-mapper support],
 [if test "$enableval" = "no"
@@ -491,11 +480,33 @@ else
 	AC_DEFINE(HAVE_DEVMAPPER)
 	echo "Enabling device-mapper support"
 
-	DEVMAPPER_REQ='libselinux libsepol'
-	DEVMAPPER_PC_LIBS='-ldevmapper'
-	DEVMAPPER_LIBS='-ldevmapper -lselinux -lsepol -lpthread'
-	STATIC_DEVMAPPER_LIBS='/usr/lib/libdevmapper.a /usr/lib/libselinux.a /usr/lib/libsepol.a -lpthread'
+	PKG_PROG_PKG_CONFIG()
 
+	if test -z "$PKG_CONFIG"; then
+		echo "pkg-config not installed; please install it."
+		exit 1;
+	fi
+ 
+	AC_CHECK_LIB(devmapper, dm_tree_create,
+		[DEVMAPPER_LIBS=`$PKG_CONFIG --libs devmapper`; 
+		 STATIC_DEVMAPPER_LIBS=`$PKG_CONFIG --static --libs devmapper`;
+		 DEVMAPPER_REQ="devmapper";
+		 DEVMAPPER_PC_LIBS="-ldevmapper"],
+		[AC_MSG_ERROR([device-mapper library not found])],
+		[$DEVMAPPER_LIBS])
+	# work around stupid devmapper.pc bug in Debian
+	case "$STATIC_DEVMAPPER_LIBS" in
+	*pthread*)
+	    ;;
+	*)
+	    echo "Working around Debian bug #390243..."
+	    STATIC_DEVMAPPER_LIBS="-pthread $STATIC_DEVMAPPER_LIBS"
+	    ;;
+	esac
+	if test "$E2_PKG_CONFIG_STATIC" = "--static"; then
+	    DEVMAPPER_LIBS="$STATIC_DEVMAPPER_LIBS"
+	    STATIC_BLKID_DEVMAPPER_LIBS="$STATIC_DEVMAPPER_LIBS"
+	fi
 fi]
 ,
 echo "Disabling device-mapper support by default"
@@ -504,6 +515,7 @@ AC_SUBST(DEVMAPPER_REQ)
 AC_SUBST(DEVMAPPER_PC_LIBS)
 AC_SUBST(DEVMAPPER_LIBS)
 AC_SUBST(STATIC_DEVMAPPER_LIBS)
+AC_SUBST(STATIC_BLKID_DEVMAPPER_LIBS)
 dnl
 dnl
 dnl
@@ -697,7 +709,7 @@ AC_CHECK_MEMBER(struct sockaddr.sa_len,
 	[#include <sys/types.h>
 	 #include <sys/socket.h>])
 dnl
-AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 fstat64 getmntinfo strtoull strcasecmp srandom jrand48 fchown mallinfo fdatasync strnlen strptime strdup sysconf pathconf posix_memalign memalign valloc __secure_getenv prctl mmap utime setresuid setresgid)
+AC_CHECK_FUNCS(chflags getrusage llseek lseek64 open64 fstat64 ftruncate64 getmntinfo strtoull strcasecmp srandom jrand48 fchown mallinfo fdatasync strnlen strptime strdup sysconf pathconf posix_memalign memalign valloc __secure_getenv prctl mmap utime setresuid setresgid)
 dnl
 dnl Check to see if -lsocket is required (solaris) to make something
 dnl that uses socket() to compile; this is needed for the UUID library
@@ -802,6 +814,22 @@ else
 	root_sbindir='${root_prefix}/sbin'
 	root_libdir='${root_prefix}/lib'
 	root_sysconfdir='${root_prefix}/etc'
+fi
+if test "$bindir" != '${exec_prefix}/bin'; then
+    root_bindir=$bindir
+    echo "Setting root_bindir to $root_bindir"
+fi
+if test "$sbindir" != '${exec_prefix}/sbin'; then
+    root_sbindir=$sbindir
+    echo "Setting root_sbindir to $root_sbindir"
+fi
+if test "$libdir" != '${exec_prefix}/lib'; then
+    root_libdir=$libdir
+    echo "Setting root_libdir to $root_libdir"
+fi
+if test "$sysconfdir" != '${prefix}/etc'; then
+    root_sysconfdir=$sysconfdir
+    echo "Setting root_sysconfdir to $root_sysconfdir"
 fi
 AC_SUBST(root_prefix)
 AC_SUBST(root_bindir)

@@ -131,7 +131,8 @@ static void set_uuid(blkid_dev dev, uuid_t uuid, const char *tag)
 	}
 }
 
-static void get_ext2_info(blkid_dev dev, unsigned char *buf)
+static void get_ext2_info(blkid_dev dev, struct blkid_magic *id,
+			  unsigned char *buf)
 {
 	struct ext2_super_block *es = (struct ext2_super_block *) buf;
 	const char *label = 0;
@@ -146,61 +147,123 @@ static void get_ext2_info(blkid_dev dev, unsigned char *buf)
 	blkid_set_tag(dev, "LABEL", label, sizeof(es->s_volume_name));
 
 	set_uuid(dev, es->s_uuid, 0);
+
+	if ((es->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+	    !uuid_is_null(es->s_journal_uuid))
+		set_uuid(dev, es->s_journal_uuid, "EXT_JOURNAL");
+
+	if (strcmp(id->bim_type, "ext2") &&
+	    ((blkid_le32(es->s_feature_incompat) &
+	      EXT2_FEATURE_INCOMPAT_UNSUPPORTED) == 0))
+		blkid_set_tag(dev, "SEC_TYPE", "ext2", sizeof("ext2"));
 }
 
-static int probe_ext3(struct blkid_probe *probe, 
-		      struct blkid_magic *id __BLKID_ATTR((unused)), 
-		      unsigned char *buf)
+static int probe_ext4dev(struct blkid_probe *probe,
+			 struct blkid_magic *id,
+			 unsigned char *buf)
 {
 	struct ext2_super_block *es;
 	es = (struct ext2_super_block *)buf;
 
-	/* Distinguish between jbd and ext2/3 fs */
-	if (blkid_le32(es->s_feature_incompat) & 
+	/* Distinguish between ext4dev and other filesystems */
+	if ((blkid_le32(es->s_flags) & EXT2_FLAGS_TEST_FILESYS) == 0)
+		return -BLKID_ERR_PARAM;
+
+	/* Distinguish from jbd */
+	if (blkid_le32(es->s_feature_incompat) &
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
 		return -BLKID_ERR_PARAM;
 
-	/* Distinguish between ext3 and ext2 */
+	/* ext4dev requires a journal */
 	if (!(blkid_le32(es->s_feature_compat) &
 	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
 		return -BLKID_ERR_PARAM;
 
-	get_ext2_info(probe->dev, buf);
-
-	if ((es->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
-	    !uuid_is_null(es->s_journal_uuid))
-		set_uuid(probe->dev, es->s_journal_uuid, "EXT_JOURNAL");
-
-	blkid_set_tag(probe->dev, "SEC_TYPE", "ext2", sizeof("ext2"));
-
+    	get_ext2_info(probe->dev, id, buf);
 	return 0;
 }
 
-static int probe_ext2(struct blkid_probe *probe,
-		      struct blkid_magic *id __BLKID_ATTR((unused)), 
+static int probe_ext4(struct blkid_probe *probe, struct blkid_magic *id,
+		      unsigned char *buf)
+{
+	struct ext2_super_block *es;
+	es = (struct ext2_super_block *)buf;
+
+	/* Distinguish from ext4dev */
+	if (blkid_le32(es->s_flags) & EXT2_FLAGS_TEST_FILESYS)
+		return -BLKID_ERR_PARAM;
+
+	/* Distinguish from jbd */
+	if (blkid_le32(es->s_feature_incompat) & 
+	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
+		return -BLKID_ERR_PARAM;
+
+	/* ext4 requires journal */
+	if (!(blkid_le32(es->s_feature_compat) &
+	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+		return -BLKID_ERR_PARAM;
+
+	/* Ext4 has at least one feature which ext3 doesn't understand */
+	if (!(blkid_le32(es->s_feature_ro_compat) &
+	      EXT3_FEATURE_RO_COMPAT_UNSUPPORTED) &&
+	    !(blkid_le32(es->s_feature_incompat) &
+	      EXT3_FEATURE_INCOMPAT_UNSUPPORTED))
+		return -BLKID_ERR_PARAM;
+
+    	get_ext2_info(probe->dev, id, buf);
+	return 0;
+}
+
+static int probe_ext3(struct blkid_probe *probe, struct blkid_magic *id,
+		      unsigned char *buf)
+{
+	struct ext2_super_block *es;
+	es = (struct ext2_super_block *)buf;
+
+	/* Distinguish from ext4dev */
+	if (blkid_le32(es->s_flags) & EXT2_FLAGS_TEST_FILESYS)
+		return -BLKID_ERR_PARAM;
+
+	/* ext3 requires journal */
+	if (!(blkid_le32(es->s_feature_compat) &
+	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+		return -BLKID_ERR_PARAM;
+
+	/* Any features which ext3 doesn't understand */
+	if ((blkid_le32(es->s_feature_ro_compat) &
+	     EXT3_FEATURE_RO_COMPAT_UNSUPPORTED) ||
+	    (blkid_le32(es->s_feature_incompat) &
+	     EXT3_FEATURE_INCOMPAT_UNSUPPORTED))
+		return -BLKID_ERR_PARAM;
+
+    	get_ext2_info(probe->dev, id, buf);
+	return 0;
+}
+
+static int probe_ext2(struct blkid_probe *probe, struct blkid_magic *id,
 		      unsigned char *buf)
 {
 	struct ext2_super_block *es;
 
 	es = (struct ext2_super_block *)buf;
 
-	/* Distinguish between jbd and ext2/3 fs */
-	if (blkid_le32(es->s_feature_incompat) & 
-	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
-		return -BLKID_ERR_PARAM;
-	
 	/* Distinguish between ext3 and ext2 */
 	if ((blkid_le32(es->s_feature_compat) &
 	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
 		return -BLKID_ERR_PARAM;
 
-	get_ext2_info(probe->dev, buf);
+	/* Any features which ext2 doesn't understand */
+	if ((blkid_le32(es->s_feature_ro_compat) &
+	     EXT2_FEATURE_RO_COMPAT_UNSUPPORTED) ||
+	    (blkid_le32(es->s_feature_incompat) &
+	     EXT2_FEATURE_INCOMPAT_UNSUPPORTED))
+		return -BLKID_ERR_PARAM;
 
+	get_ext2_info(probe->dev, id, buf);
 	return 0;
 }
 
-static int probe_jbd(struct blkid_probe *probe,
-		     struct blkid_magic *id __BLKID_ATTR((unused)), 
+static int probe_jbd(struct blkid_probe *probe, struct blkid_magic *id,
 		     unsigned char *buf)
 {
 	struct ext2_super_block *es = (struct ext2_super_block *) buf;
@@ -209,7 +272,7 @@ static int probe_jbd(struct blkid_probe *probe,
 	      EXT3_FEATURE_INCOMPAT_JOURNAL_DEV))
 		return -BLKID_ERR_PARAM;
 
-	get_ext2_info(probe->dev, buf);
+	get_ext2_info(probe->dev, id, buf);
 
 	return 0;
 }
@@ -500,7 +563,7 @@ static int probe_ntfs(struct blkid_probe *probe,
 		}
 	}
 
-	sprintf(uuid_str, "%llX", blkid_le64(ns->volume_serial));
+	sprintf(uuid_str, "%016llX", blkid_le64(ns->volume_serial));
 	blkid_set_tag(probe->dev, "UUID", uuid_str, 0);
 	if (label_str[0])
 		blkid_set_tag(probe->dev, "LABEL", label_str, 0);
@@ -532,6 +595,10 @@ static int probe_reiserfs(struct blkid_probe *probe,
 	const char *label = 0;
 
 	blocksize = blkid_le16(rs->rs_blocksize);
+
+	/* The blocksize must be at least 1k */
+	if ((blocksize >> 10) == 0)
+		return -BLKID_ERR_PARAM;
 
 	/* If the superblock is inside the journal, we have the wrong one */
 	if (id->bim_kboff/(blocksize>>10) > blkid_le32(rs->rs_journal_block))
@@ -815,6 +882,19 @@ static int probe_gfs2(struct blkid_probe *probe,
 	return 1;
 }
 
+static int probe_hfsplus(struct blkid_probe *probe,
+			 struct blkid_magic *id __BLKID_ATTR((unused)),
+			 unsigned char *buf)
+{
+	struct hfs_mdb *sbd = (struct hfs_mdb *)buf;
+
+	/* Check for a HFS+ volume embedded in a HFS volume */
+	if (memcmp(sbd->embed_sig, "H+", 2) == 0)
+		return 0;
+
+	return 1;
+}
+
 /*
  * BLKID_BLK_OFFS is at least as large as the highest bim_kboff defined
  * in the type_array table below + bim_kbalign.
@@ -834,6 +914,8 @@ static struct blkid_magic type_array[] = {
   { "oracleasm", 0,	32,  8, "ORCLDISK",		probe_oracleasm },
   { "ntfs",	 0,	 3,  8, "NTFS    ",		probe_ntfs },
   { "jbd",	 1,   0x38,  2, "\123\357",		probe_jbd },
+  { "ext4dev",	 1,   0x38,  2, "\123\357",		probe_ext4dev },
+  { "ext4",	 1,   0x38,  2, "\123\357",		probe_ext4 },
   { "ext3",	 1,   0x38,  2, "\123\357",		probe_ext3 },
   { "ext2",	 1,   0x38,  2, "\123\357",		probe_ext2 },
   { "reiserfs",	 8,   0x34,  8, "ReIsErFs",		probe_reiserfs },
@@ -872,6 +954,8 @@ static struct blkid_magic type_array[] = {
   { "iso9660",	32,	 1,  5, "CD001",		probe_iso9660 },
   { "iso9660",	32,	 9,  5, "CDROM",		probe_iso9660 },
   { "jfs",	32,	 0,  4, "JFS1",			probe_jfs },
+  { "hfsplus",	 1,	 0,  2, "BD",			probe_hfsplus },
+  { "hfsplus",	 1,	 0,  2, "H+",			0 },
   { "hfs",	 1,	 0,  2, "BD",			0 },
   { "ufs",	 8,  0x55c,  4, "T\031\001\000",	0 },
   { "hpfs",	 8,	 0,  4, "I\350\225\371",	0 },

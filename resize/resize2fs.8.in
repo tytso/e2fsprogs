@@ -60,7 +60,7 @@ parameter is not specified, it will default to the size of the partition.
 The
 .B resize2fs
 program does not manipulate the size of partitions.  If you wish to enlarge
-a filesystem, you must first make sure you can expand the size of the
+a filesystem, you must make sure you can expand the size of the
 underlying partition first.  This can be done using 
 .BR fdisk (8)
 by deleting the partition and recreating it with a larger size or using
