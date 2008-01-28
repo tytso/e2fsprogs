@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.40.5">E2fsprogs 1.40.5 (January 27, 2008)</A>
 <LI><A HREF="#1.40.4">E2fsprogs 1.40.4 (December 31, 2007)</A>
 <LI><A HREF="#1.40.3">E2fsprogs 1.40.3 (December 5, 2007)</A>
 <LI><A HREF="#1.40.2">E2fsprogs 1.40.2 (July 12, 2007)</A>
@@ -74,6 +75,92 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.40.5">E2fsprogs 1.40.5 (January 27, 2008)</A></H2>
+
+<P>Fix a potential overflow big in e2image if the device name is too
+long.</P>
+
+<P>Mke2fs will now create new filesystems with 256 byte inodes and the
+ext_attr feature flag by default.  This allows for much better future
+compatibity with ext4 and speeds up extended attributes even on ext3
+filesystems.</P>
+
+<P>Teach e2fsck to ignore certain "safe" filesystem features which are
+set automatically by the kernel.  Having the kernel set features
+automagically behind the user's back is a bad idea, and we should try
+to break the kernel of this habit, especially for the newer ext4
+feature flags.  But for now, we will try to avoid needless full checks
+which can annoy users who are doing fresh installs.</P>
+
+<P>Add support in tune2fs and mke2fs for making a filesystem as being "ok
+to be used with test kernel code".  This will be needed for using test
+filesystems with the latest ext4 kernel code.</P>
+
+<P>Change e2fsck -fD so that it sorts non-htree directories by inode
+numbers instead of by name, since that optimizes performances much
+more significantly.  (Addresses-Sourceforge-Feature-Request: #532439)</P>
+
+<P>If e2image fills the disk, fix it so it exits right away instead of
+spewing large numbers of error messages.
+(Addresses-Sourceforge-Feature-Request: #606508)</P>
+
+<P>If ftruncate64() is not available for resize2fs, let it use ftrucate()
+instead, but have it check to see if the size would get truncated, and
+skip calling ftruncate in that case.</P>
+
+<P>Add support for detecting HFS+ filesystems in the blkid library.</P>
+
+<P>Add supprt in the blkid library for ext4/ext4dev filesystems.</P>
+
+<P>Fix a bug in blkid where it could die on a floating point exception
+when presented with a corrupt reiserfs image.</P>
+
+<P>Fix blkid's handling of ntfs UUID's so that leading zeros are printed
+such that UUID string is a fixed length.</P>
+
+<P>Add sample python bindings for the uuid library to the contrib
+directory.  (Addresses-Sourceforge-Patches: #778817)</P>
+
+<P>Fix debugfs's 'lsdel' command so it uses ext2fs_block_iterate2 so it
+will work with large files.  (Addresses Sourceforge Feature Request:
+#1257500 and Sourceforge Support Request: #1253511)</P>
+    
+<P>Allow the debugfs 'undel' command to undelete an inode without linking
+it to a specific destination directory, since this might require
+allocating blocks that could overwrite some yet-to-be-recovered
+deleted files.  (Addresses-Sourceforge-Feature-Request: #967141)</P>
+
+<P>Update Swedish translations from the Translation Project.</P>
+
+<H3>Programmer's Notes:</H3>
+
+<P>Fix configure handling of --sbindir (which should rarely be used, but
+someone did complain, so let's fix it).  (Addresses Sourceforge Bug:
+#498381)</P>
+
+<P>Updated e2fsprogs.spec file to include a new uuidd package</P>
+
+<P>Use pkg-config to determine where to find the devmapper library so we
+can find out where it is located on different distributions.</P>
+
+<P>Fix Makefile race so that "make -j3 distclean" works correctly</P>
+
+<P>Fix portability problems on non-Linux/non-Hurd/non-Masix systems,
+especially on MacOS X systems.  (Addresses Sourceforge Bugs: #1861633,
+#1819034, #1863819)</P>
+
+<P>Fixed spelling mistakes, typos, and otherwise clarified man pages.</P>
+
+<P>Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bugs: #459403, #459475, #459614)</P>
+
+<P>Remove the --enable-dynamic-static configure option, and build e2fsck
+dynamically by default.  If the user wants e2fsck.static, he/she will
+need to build it via "make -C e2fsck e2fsck.static"</P>
+
+<P>Fix various build warnings due to missing prototypes.
+(Addresses Sourceforge Patch: #1861663, #1861659)</P>
 
 <H2><A NAME="1.40.4">E2fsprogs 1.40.4 (December 31, 2007)</A></H2>
 
