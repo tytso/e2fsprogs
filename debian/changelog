@@ -1,3 +1,13 @@
+e2fsprogs (1.40.5-2) unstable; urgency=low
+
+  * Fix debian/control and debian/rules so that they work correctly
+    after a change in dpkg-gencontrol's behavior after version 1.14.16
+    of dpkg.  This fixes bad version dependencies for comerr-dev,
+    uuid-dev and ss-dev. Thanks to Don Armstrong for the explanation and
+    Margarity Manterola for a proposed patch. (Closes: #463058)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 30 Jan 2008 07:17:27 -0500
+
 e2fsprogs (1.40.5-1) unstable; urgency=low
 
   * New upstream release.
