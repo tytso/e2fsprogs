@@ -776,7 +776,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* invalid ea entry->e_hash */	
 	{ PR_1_ATTR_HASH,
-	  N_("@a in @i %i has a hash (%N) which is @n (must be 0)\n"),
+	  N_("@a in @i %i has a hash (%N) which is @n\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* inode appears to be a directory */

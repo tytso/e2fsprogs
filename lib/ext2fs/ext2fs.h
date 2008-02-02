@@ -75,10 +75,12 @@ typedef __u32		ext2_dirhash_t;
 #include "com_err.h"
 #include "ext2_io.h"
 #include "ext2_err.h"
+#include "ext2_ext_attr.h"
 #else
 #include <et/com_err.h>
 #include <ext2fs/ext2_io.h>
 #include <ext2fs/ext2_err.h>
+#include <ext2fs/ext2_ext_attr.h>
 #endif
 
 /*
@@ -784,6 +786,8 @@ extern errcode_t ext2fs_dup_handle(ext2_filsys src, ext2_filsys *dest);
 extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir);
 
 /* ext_attr.c */
+extern __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry,
+					void *data);
 extern errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf);
 extern errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block,
 				       void *buf);
@@ -1050,6 +1054,10 @@ extern errcode_t ext2fs_create_resize_inode(ext2_filsys fs);
 /* swapfs.c */
 extern void ext2fs_swap_ext_attr(char *to, char *from, int bufsize, 
 				 int has_header);
+extern void ext2fs_swap_ext_attr_header(struct ext2_ext_attr_header *to_header,
+					struct ext2_ext_attr_header *from_hdr);
+extern void ext2fs_swap_ext_attr_entry(struct ext2_ext_attr_entry *to_entry,
+				       struct ext2_ext_attr_entry *from_entry);
 extern void ext2fs_swap_super(struct ext2_super_block * super);
 extern void ext2fs_swap_group_desc(struct ext2_group_desc *gdp);
 extern void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,

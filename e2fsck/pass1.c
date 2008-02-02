@@ -264,6 +264,7 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 	remain = storage_size - sizeof(__u32); 
 
 	while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
+		__u32 hash;
 
 		/* header eats this space */
 		remain -= sizeof(struct ext2_ext_attr_entry);
@@ -291,9 +292,12 @@ static void check_ea_in_inode(e2fsck_t ctx, struct problem_context *pctx)
 			problem = PR_1_ATTR_VALUE_BLOCK;
 			goto fix;
 		}
-		
-		/* e_hash must be 0 in inode's ea */
-		if (entry->e_hash != 0) {
+
+		hash = ext2fs_ext_attr_hash_entry(entry,
+						  start + entry->e_value_offs);
+
+		/* e_hash may be 0 in older inode's ea */
+		if (entry->e_hash != 0 && entry->e_hash != hash) {
 			pctx->num = entry->e_hash;
 			problem = PR_1_ATTR_HASH;
 			goto fix;
@@ -308,13 +312,10 @@ fix:
 	 * it seems like a corruption. it's very unlikely we could repair
 	 * EA(s) in automatic fashion -bzzz
 	 */
-#if 0
-	problem = PR_1_ATTR_HASH;
-#endif
 	if (problem == 0 || !fix_problem(ctx, problem, pctx))
 		return;
 
-	/* simple remove all possible EA(s) */
+	/* simply remove all possible EA(s) */
 	*((__u32 *)start) = 0UL;
 	e2fsck_write_inode_full(ctx, pctx->ino, pctx->inode,
 				EXT2_INODE_SIZE(sb), "pass1");
@@ -1388,10 +1389,13 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	entry = (struct ext2_ext_attr_entry *)(header+1);
 	end = block_buf + fs->blocksize;
 	while ((char *)entry < end && *(__u32 *)entry) {
+		__u32 hash;
+
 		if (region_allocate(region, (char *)entry - (char *)header,
 			           EXT2_EXT_ATTR_LEN(entry->e_name_len))) {
 			if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION, pctx))
 				goto clear_extattr;
+			break;
 		}
 		if ((ctx->ext_attr_ver == 1 &&
 		     (entry->e_name_len == 0 || entry->e_name_index != 0)) ||
@@ -1399,6 +1403,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 		     entry->e_name_index == 0)) {
 			if (fix_problem(ctx, PR_1_EA_BAD_NAME, pctx))
 				goto clear_extattr;
+			break;
 		}
 		if (entry->e_value_block != 0) {
 			if (fix_problem(ctx, PR_1_EA_BAD_VALUE, pctx))
@@ -1415,6 +1420,17 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 			if (fix_problem(ctx, PR_1_EA_ALLOC_COLLISION, pctx))
 				goto clear_extattr;
 		}
+
+		hash = ext2fs_ext_attr_hash_entry(entry, block_buf +
+							 entry->e_value_offs);
+
+		if (entry->e_hash != hash) {
+			pctx->num = entry->e_hash;
+			if (fix_problem(ctx, PR_1_ATTR_HASH, pctx))
+				goto clear_extattr;
+			entry->e_hash = hash;
+		}
+
 		entry = EXT2_EXT_ATTR_NEXT(entry);
 	}
 	if (region_allocate(region, (char *)entry - (char *)header, 4)) {
@@ -1678,8 +1694,11 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 	}
 
-	if (inode->i_file_acl && check_ext_attr(ctx, pctx, block_buf))
+	if (inode->i_file_acl && check_ext_attr(ctx, pctx, block_buf)) {
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+			goto out;
 		pb.num_blocks++;
+	}
 
 	if (ext2fs_inode_has_valid_blocks(inode)) {
 		if ((ctx->fs->super->s_feature_incompat &

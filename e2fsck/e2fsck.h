@@ -481,6 +481,9 @@ extern void init_resource_track(struct resource_track *track,
 extern int inode_has_valid_blocks(struct ext2_inode *inode);
 extern void e2fsck_read_inode(e2fsck_t ctx, unsigned long ino,
 			      struct ext2_inode * inode, const char * proc);
+extern void e2fsck_read_inode_full(e2fsck_t ctx, unsigned long ino,
+				   struct ext2_inode *inode,
+				   const int bufsize, const char *proc);
 extern void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
 			       struct ext2_inode * inode, const char * proc);
 extern void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,

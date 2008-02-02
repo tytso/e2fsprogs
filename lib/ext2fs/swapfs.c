@@ -90,6 +90,29 @@ void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
 	gdp->bg_checksum = ext2fs_swab16(gdp->bg_checksum);
 }
 
+void ext2fs_swap_ext_attr_header(struct ext2_ext_attr_header *to_header,
+				 struct ext2_ext_attr_header *from_header)
+{
+	int n;
+
+	to_header->h_magic    = ext2fs_swab32(from_header->h_magic);
+	to_header->h_blocks   = ext2fs_swab32(from_header->h_blocks);
+	to_header->h_refcount = ext2fs_swab32(from_header->h_refcount);
+	to_header->h_hash     = ext2fs_swab32(from_header->h_hash);
+	for (n = 0; n < 4; n++)
+		to_header->h_reserved[n] =
+			ext2fs_swab32(from_header->h_reserved[n]);
+}
+
+void ext2fs_swap_ext_attr_entry(struct ext2_ext_attr_entry *to_entry,
+				struct ext2_ext_attr_entry *from_entry)
+{
+	to_entry->e_value_offs  = ext2fs_swab16(from_entry->e_value_offs);
+	to_entry->e_value_block = ext2fs_swab32(from_entry->e_value_block);
+	to_entry->e_value_size  = ext2fs_swab32(from_entry->e_value_size);
+	to_entry->e_hash	= ext2fs_swab32(from_entry->e_hash);
+}
+
 void ext2fs_swap_ext_attr(char *to, char *from, int bufsize, int has_header)
 {
 	struct ext2_ext_attr_header *from_header =
@@ -98,32 +121,22 @@ void ext2fs_swap_ext_attr(char *to, char *from, int bufsize, int has_header)
 		(struct ext2_ext_attr_header *)to;
 	struct ext2_ext_attr_entry *from_entry, *to_entry;
 	char *from_end = (char *)from_header + bufsize;
-	int n;
 
 	if (to_header != from_header)
 		memcpy(to_header, from_header, bufsize);
 
-	from_entry = (struct ext2_ext_attr_entry *)from_header;
-	to_entry   = (struct ext2_ext_attr_entry *)to_header;
-
 	if (has_header) {
-		to_header->h_magic    = ext2fs_swab32(from_header->h_magic);
-		to_header->h_blocks   = ext2fs_swab32(from_header->h_blocks);
-		to_header->h_refcount = ext2fs_swab32(from_header->h_refcount);
-		for (n=0; n<4; n++)
-			to_header->h_reserved[n] =
-				ext2fs_swab32(from_header->h_reserved[n]);
+		ext2fs_swap_ext_attr_header(to_header, from_header);
+
 		from_entry = (struct ext2_ext_attr_entry *)(from_header+1);
 		to_entry   = (struct ext2_ext_attr_entry *)(to_header+1);
+	} else {
+		from_entry = (struct ext2_ext_attr_entry *)from_header;
+		to_entry   = (struct ext2_ext_attr_entry *)to_header;
 	}
 
 	while ((char *)from_entry < from_end && *(__u32 *)from_entry) {
-		to_entry->e_value_offs  =	
-			ext2fs_swab16(from_entry->e_value_offs);
-		to_entry->e_value_block =	
-			ext2fs_swab32(from_entry->e_value_block);
-		to_entry->e_value_size  =	
-			ext2fs_swab32(from_entry->e_value_size);
+		ext2fs_swap_ext_attr_entry(to_entry, from_entry);
 		from_entry = EXT2_EXT_ATTR_NEXT(from_entry);
 		to_entry   = EXT2_EXT_ATTR_NEXT(to_entry);
 	}

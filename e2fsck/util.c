@@ -393,6 +393,20 @@ void e2fsck_read_inode(e2fsck_t ctx, unsigned long ino,
 	}
 }
 
+void e2fsck_read_inode_full(e2fsck_t ctx, unsigned long ino,
+			    struct ext2_inode *inode, int bufsize,
+			    const char *proc)
+{
+	int retval;
+
+	retval = ext2fs_read_inode_full(ctx->fs, ino, inode, bufsize);
+	if (retval) {
+		com_err("ext2fs_read_inode_full", retval,
+			_("while reading inode %ld in %s"), ino, proc);
+		fatal_error(ctx, 0);
+	}
+}
+
 extern void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,
 			       struct ext2_inode * inode, int bufsize,
 			       const char *proc)
