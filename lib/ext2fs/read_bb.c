@@ -86,8 +86,8 @@ errcode_t ext2fs_read_bb_inode(ext2_filsys fs, ext2_badblocks_list *bb_list)
 
 	rb.bb_list = *bb_list;
 	rb.err = 0;
-	retval = ext2fs_block_iterate2(fs, EXT2_BAD_INO, 0, 0,
-				      mark_bad_block, &rb);
+	retval = ext2fs_block_iterate2(fs, EXT2_BAD_INO, BLOCK_FLAG_READ_ONLY,
+				       0, mark_bad_block, &rb);
 	if (retval)
 		return retval;
 

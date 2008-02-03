@@ -326,5 +326,8 @@ ec	EXT2_ET_TDB_ERR_NOEXIST,
 ec	EXT2_ET_TDB_ERR_RDONLY,
 	"TDB: Write not permitted"
 
+ec	EXT2_ET_RO_BLOCK_ITERATE,
+	"Attempt to modify a block mapping via a read-only block iterator"
+
 	end
 

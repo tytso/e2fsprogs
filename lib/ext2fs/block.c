@@ -36,6 +36,16 @@ struct block_context {
 	void	*priv_data;
 };
 
+#define check_for_ro_violation(ctx, ret)				\
+	do {								\
+		if (((ctx)->flags & BLOCK_FLAG_READ_ONLY) &&		\
+		    ((ret) & BLOCK_CHANGED)) {				\
+			(ctx)->errcode = EXT2_ET_RO_BLOCK_ITERATE;	\
+			return BLOCK_ABORT;				\
+		}							\
+	} while (0)
+		
+
 static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 			     int ref_offset, struct block_context *ctx)
 {
@@ -49,6 +59,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 		ret = (*ctx->func)(ctx->fs, ind_block,
 				   BLOCK_COUNT_IND, ref_block,
 				   ref_offset, ctx->priv_data);
+	check_for_ro_violation(ctx, ret);
 	if (!*ind_block || (ret & BLOCK_ABORT)) {
 		ctx->bcount += limit;
 		return ret;
@@ -95,6 +106,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 			offset += sizeof(blk_t);
 		}
 	}
+	check_for_ro_violation(ctx, changed);
 	if (changed & BLOCK_CHANGED) {
 		ctx->errcode = ext2fs_write_ind_block(ctx->fs, *ind_block,
 						      ctx->ind_buf);
@@ -107,6 +119,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 		ret |= (*ctx->func)(ctx->fs, ind_block,
 				    BLOCK_COUNT_IND, ref_block,
 				    ref_offset, ctx->priv_data);
+	check_for_ro_violation(ctx, ret);
 	return ret;
 }
 	
@@ -123,6 +136,7 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 		ret = (*ctx->func)(ctx->fs, dind_block,
 				   BLOCK_COUNT_DIND, ref_block,
 				   ref_offset, ctx->priv_data);
+	check_for_ro_violation(ctx, ret);
 	if (!*dind_block || (ret & BLOCK_ABORT)) {
 		ctx->bcount += limit*limit;
 		return ret;
@@ -171,6 +185,7 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 			offset += sizeof(blk_t);
 		}
 	}
+	check_for_ro_violation(ctx, changed);
 	if (changed & BLOCK_CHANGED) {
 		ctx->errcode = ext2fs_write_ind_block(ctx->fs, *dind_block,
 						      ctx->dind_buf);
@@ -183,6 +198,7 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 		ret |= (*ctx->func)(ctx->fs, dind_block,
 				    BLOCK_COUNT_DIND, ref_block,
 				    ref_offset, ctx->priv_data);
+	check_for_ro_violation(ctx, ret);
 	return ret;
 }
 	
@@ -199,6 +215,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 		ret = (*ctx->func)(ctx->fs, tind_block,
 				   BLOCK_COUNT_TIND, ref_block,
 				   ref_offset, ctx->priv_data);
+	check_for_ro_violation(ctx, ret);
 	if (!*tind_block || (ret & BLOCK_ABORT)) {
 		ctx->bcount += limit*limit*limit;
 		return ret;
@@ -247,6 +264,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 			offset += sizeof(blk_t);
 		}
 	}
+	check_for_ro_violation(ctx, changed);
 	if (changed & BLOCK_CHANGED) {
 		ctx->errcode = ext2fs_write_ind_block(ctx->fs, *tind_block,
 						      ctx->tind_buf);
@@ -259,7 +277,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 		ret |= (*ctx->func)(ctx->fs, tind_block,
 				    BLOCK_COUNT_TIND, ref_block,
 				    ref_offset, ctx->priv_data);
-	
+	check_for_ro_violation(ctx, ret);
 	return ret;
 }
 	
@@ -334,6 +352,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 					   &inode.osd1.hurd1.h_i_translator,
 					   BLOCK_COUNT_TRANSLATOR,
 					   0, 0, priv_data);
+			check_for_ro_violation(&ctx, ret);
 			if (ret & BLOCK_ABORT)
 				goto abort_exit;
 		}
@@ -350,6 +369,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 				goto abort_exit;
 		}
 	}
+	check_for_ro_violation(&ctx, ret);
 	if (*(blocks + EXT2_IND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
 		ret |= block_iterate_ind(blocks + EXT2_IND_BLOCK,
 					 0, EXT2_IND_BLOCK, &ctx);

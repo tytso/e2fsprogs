@@ -259,6 +259,9 @@ struct struct_ext2_filsys {
  * BLOCK_FLAG_DATA_ONLY indicates that the iterator function should be
  * called for data blocks only.
  *
+ * BLOCK_FLAG_READ_ONLY is a promise by the caller that it will not 
+ * modify returned block number.
+ *
  * BLOCK_FLAG_NO_LARGE is for internal use only.  It informs
  * ext2fs_block_iterate2 that large files won't be accepted.
  */
@@ -266,6 +269,7 @@ struct struct_ext2_filsys {
 #define BLOCK_FLAG_HOLE		1
 #define BLOCK_FLAG_DEPTH_TRAVERSE	2
 #define BLOCK_FLAG_DATA_ONLY	4
+#define BLOCK_FLAG_READ_ONLY	8
 
 #define BLOCK_FLAG_NO_LARGE	0x1000
 

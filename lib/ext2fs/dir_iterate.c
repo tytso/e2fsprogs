@@ -78,7 +78,7 @@ errcode_t ext2fs_dir_iterate2(ext2_filsys fs,
 	ctx.func = func;
 	ctx.priv_data = priv_data;
 	ctx.errcode = 0;
-	retval = ext2fs_block_iterate2(fs, dir, 0, 0,
+	retval = ext2fs_block_iterate2(fs, dir, BLOCK_FLAG_READ_ONLY, 0,
 				       ext2fs_process_dir_block, &ctx);
 	if (!block_buf)
 		ext2fs_free_mem(&ctx.buf);
