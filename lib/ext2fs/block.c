@@ -36,15 +36,25 @@ struct block_context {
 	void	*priv_data;
 };
 
-#define check_for_ro_violation(ctx, ret)				\
+#define check_for_ro_violation_return(ctx, ret)				\
 	do {								\
 		if (((ctx)->flags & BLOCK_FLAG_READ_ONLY) &&		\
 		    ((ret) & BLOCK_CHANGED)) {				\
 			(ctx)->errcode = EXT2_ET_RO_BLOCK_ITERATE;	\
-			return BLOCK_ABORT;				\
+			ret |= BLOCK_ABORT | BLOCK_ERROR;		\
+			return ret;					\
 		}							\
 	} while (0)
-		
+
+#define check_for_ro_violation_goto(ctx, ret, label)			\
+	do {								\
+		if (((ctx)->flags & BLOCK_FLAG_READ_ONLY) &&		\
+		    ((ret) & BLOCK_CHANGED)) {				\
+			(ctx)->errcode = EXT2_ET_RO_BLOCK_ITERATE;	\
+			ret |= BLOCK_ABORT | BLOCK_ERROR;		\
+			goto label;					\
+		}							\
+	} while (0)
 
 static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 			     int ref_offset, struct block_context *ctx)
@@ -59,7 +69,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 		ret = (*ctx->func)(ctx->fs, ind_block,
 				   BLOCK_COUNT_IND, ref_block,
 				   ref_offset, ctx->priv_data);
-	check_for_ro_violation(ctx, ret);
+	check_for_ro_violation_return(ctx, ret);
 	if (!*ind_block || (ret & BLOCK_ABORT)) {
 		ctx->bcount += limit;
 		return ret;
@@ -106,7 +116,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 			offset += sizeof(blk_t);
 		}
 	}
-	check_for_ro_violation(ctx, changed);
+	check_for_ro_violation_return(ctx, changed);
 	if (changed & BLOCK_CHANGED) {
 		ctx->errcode = ext2fs_write_ind_block(ctx->fs, *ind_block,
 						      ctx->ind_buf);
@@ -119,7 +129,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 		ret |= (*ctx->func)(ctx->fs, ind_block,
 				    BLOCK_COUNT_IND, ref_block,
 				    ref_offset, ctx->priv_data);
-	check_for_ro_violation(ctx, ret);
+	check_for_ro_violation_return(ctx, ret);
 	return ret;
 }
 	
@@ -136,7 +146,7 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 		ret = (*ctx->func)(ctx->fs, dind_block,
 				   BLOCK_COUNT_DIND, ref_block,
 				   ref_offset, ctx->priv_data);
-	check_for_ro_violation(ctx, ret);
+	check_for_ro_violation_return(ctx, ret);
 	if (!*dind_block || (ret & BLOCK_ABORT)) {
 		ctx->bcount += limit*limit;
 		return ret;
@@ -185,7 +195,7 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 			offset += sizeof(blk_t);
 		}
 	}
-	check_for_ro_violation(ctx, changed);
+	check_for_ro_violation_return(ctx, changed);
 	if (changed & BLOCK_CHANGED) {
 		ctx->errcode = ext2fs_write_ind_block(ctx->fs, *dind_block,
 						      ctx->dind_buf);
@@ -198,7 +208,7 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 		ret |= (*ctx->func)(ctx->fs, dind_block,
 				    BLOCK_COUNT_DIND, ref_block,
 				    ref_offset, ctx->priv_data);
-	check_for_ro_violation(ctx, ret);
+	check_for_ro_violation_return(ctx, ret);
 	return ret;
 }
 	
@@ -215,7 +225,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 		ret = (*ctx->func)(ctx->fs, tind_block,
 				   BLOCK_COUNT_TIND, ref_block,
 				   ref_offset, ctx->priv_data);
-	check_for_ro_violation(ctx, ret);
+	check_for_ro_violation_return(ctx, ret);
 	if (!*tind_block || (ret & BLOCK_ABORT)) {
 		ctx->bcount += limit*limit*limit;
 		return ret;
@@ -264,7 +274,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 			offset += sizeof(blk_t);
 		}
 	}
-	check_for_ro_violation(ctx, changed);
+	check_for_ro_violation_return(ctx, changed);
 	if (changed & BLOCK_CHANGED) {
 		ctx->errcode = ext2fs_write_ind_block(ctx->fs, *tind_block,
 						      ctx->tind_buf);
@@ -277,7 +287,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 		ret |= (*ctx->func)(ctx->fs, tind_block,
 				    BLOCK_COUNT_TIND, ref_block,
 				    ref_offset, ctx->priv_data);
-	check_for_ro_violation(ctx, ret);
+	check_for_ro_violation_return(ctx, ret);
 	return ret;
 }
 	
@@ -294,9 +304,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 				void *priv_data)
 {
 	int	i;
-	int	got_inode = 0;
 	int	ret = 0;
-	blk_t	blocks[EXT2_N_BLOCKS];	/* directory data blocks */
 	struct ext2_inode inode;
 	errcode_t	retval;
 	struct block_context ctx;
@@ -304,22 +312,18 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
+	ctx.errcode = ext2fs_read_inode(fs, ino, &inode);
+	if (ctx.errcode)
+		return ctx.errcode;
+
 	/*
 	 * Check to see if we need to limit large files
 	 */
 	if (flags & BLOCK_FLAG_NO_LARGE) {
-		ctx.errcode = ext2fs_read_inode(fs, ino, &inode);
-		if (ctx.errcode)
-			return ctx.errcode;
-		got_inode = 1;
 		if (!LINUX_S_ISDIR(inode.i_mode) &&
 		    (inode.i_size_high != 0))
 			return EXT2_ET_FILE_TOO_BIG;
 	}
-
-	retval = ext2fs_get_blocks(fs, ino, blocks);
-	if (retval)
-		return retval;
 
 	limit = fs->blocksize >> 2;
 
@@ -343,49 +347,104 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 	 */
 	if ((fs->super->s_creator_os == EXT2_OS_HURD) &&
 	    !(flags & BLOCK_FLAG_DATA_ONLY)) {
-		ctx.errcode = ext2fs_read_inode(fs, ino, &inode);
-		if (ctx.errcode)
-			goto abort_exit;
-		got_inode = 1;
 		if (inode.osd1.hurd1.h_i_translator) {
 			ret |= (*ctx.func)(fs,
 					   &inode.osd1.hurd1.h_i_translator,
 					   BLOCK_COUNT_TRANSLATOR,
 					   0, 0, priv_data);
-			check_for_ro_violation(&ctx, ret);
 			if (ret & BLOCK_ABORT)
 				goto abort_exit;
+			check_for_ro_violation_goto(&ctx, ret, abort_exit);
 		}
 	}
 	
+	if (inode.i_flags & EXT4_EXTENTS_FL) {
+		ext2_extent_handle_t	handle;
+		struct ext2fs_extent	extent;
+		e2_blkcnt_t		blockcnt;
+		blk_t			blk;
+		int			op = EXT2_EXTENT_ROOT;
+
+		if (!(flags & BLOCK_FLAG_READ_ONLY))
+			return EXT2_ET_EXTENT_NOT_SUPPORTED;
+
+		ctx.errcode = ext2fs_extent_open(fs, ino, &handle);
+		if (ctx.errcode)
+			goto abort_exit;
+
+		while (1) {
+			ctx.errcode = ext2fs_extent_get(handle, op, &extent);
+			if (ctx.errcode) {
+				if (ctx.errcode == EXT2_ET_EXTENT_NO_NEXT)
+					ctx.errcode = 0;
+				break;
+			}
+
+			op = EXT2_EXTENT_NEXT;
+			blk = extent.e_pblk;
+			if (!(extent.e_flags & EXT2_EXTENT_FLAGS_LEAF) &&
+			    !(ctx.flags & BLOCK_FLAG_DATA_ONLY) &&
+			    ((!(extent.e_flags &
+				EXT2_EXTENT_FLAGS_SECOND_VISIT) &&
+			      !(ctx.flags & BLOCK_FLAG_DEPTH_TRAVERSE)) ||
+			     ((extent.e_flags &
+			       EXT2_EXTENT_FLAGS_SECOND_VISIT) &&
+			      (ctx.flags & BLOCK_FLAG_DEPTH_TRAVERSE)))) {
+				ret |= (*ctx.func)(fs, &blk,
+						   -1, 0, 0, priv_data);
+				check_for_ro_violation_goto(&ctx, ret,
+							    extent_errout);
+				continue;
+			}
+			for (blockcnt = extent.e_lblk, i = 0;
+			     i < extent.e_len;
+			     blk++, blockcnt++, i++) {
+				ret |= (*ctx.func)(fs, &blk,
+						   blockcnt,
+						   0, 0, priv_data);
+				check_for_ro_violation_goto(&ctx, ret,
+							    extent_errout);
+				if (ret & BLOCK_ABORT) {
+					ext2fs_extent_free(handle);
+					goto abort_exit;
+				}
+			}
+		}
+
+	extent_errout:
+		ext2fs_extent_free(handle);
+		ret |= BLOCK_ERROR | BLOCK_ABORT;
+		goto abort_exit;
+	}
+
 	/*
 	 * Iterate over normal data blocks
 	 */
 	for (i = 0; i < EXT2_NDIR_BLOCKS ; i++, ctx.bcount++) {
-		if (blocks[i] || (flags & BLOCK_FLAG_APPEND)) {
-			ret |= (*ctx.func)(fs, &blocks[i],
+		if (inode.i_block[i] || (flags & BLOCK_FLAG_APPEND)) {
+			ret |= (*ctx.func)(fs, &inode.i_block[i],
 					    ctx.bcount, 0, i, priv_data);
 			if (ret & BLOCK_ABORT)
 				goto abort_exit;
 		}
 	}
-	check_for_ro_violation(&ctx, ret);
-	if (*(blocks + EXT2_IND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
-		ret |= block_iterate_ind(blocks + EXT2_IND_BLOCK,
+	check_for_ro_violation_goto(&ctx, ret, abort_exit);
+	if (inode.i_block[EXT2_IND_BLOCK] || (flags & BLOCK_FLAG_APPEND)) {
+		ret |= block_iterate_ind(&inode.i_block[EXT2_IND_BLOCK],
 					 0, EXT2_IND_BLOCK, &ctx);
 		if (ret & BLOCK_ABORT)
 			goto abort_exit;
 	} else
 		ctx.bcount += limit;
-	if (*(blocks + EXT2_DIND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
-		ret |= block_iterate_dind(blocks + EXT2_DIND_BLOCK,
+	if (inode.i_block[EXT2_DIND_BLOCK] || (flags & BLOCK_FLAG_APPEND)) {
+		ret |= block_iterate_dind(&inode.i_block[EXT2_DIND_BLOCK],
 					  0, EXT2_DIND_BLOCK, &ctx);
 		if (ret & BLOCK_ABORT)
 			goto abort_exit;
 	} else
 		ctx.bcount += limit * limit;
-	if (*(blocks + EXT2_TIND_BLOCK) || (flags & BLOCK_FLAG_APPEND)) {
-		ret |= block_iterate_tind(blocks + EXT2_TIND_BLOCK,
+	if (inode.i_block[EXT2_TIND_BLOCK] || (flags & BLOCK_FLAG_APPEND)) {
+		ret |= block_iterate_tind(&inode.i_block[EXT2_TIND_BLOCK],
 					  0, EXT2_TIND_BLOCK, &ctx);
 		if (ret & BLOCK_ABORT)
 			goto abort_exit;
@@ -393,13 +452,6 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 
 abort_exit:
 	if (ret & BLOCK_CHANGED) {
-		if (!got_inode) {
-			retval = ext2fs_read_inode(fs, ino, &inode);
-			if (retval)
-				return retval;
-		}
-		for (i=0; i < EXT2_N_BLOCKS; i++)
-			inode.i_block[i] = blocks[i];
 		retval = ext2fs_write_inode(fs, ino, &inode);
 		if (retval)
 			return retval;

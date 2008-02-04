@@ -401,4 +401,6 @@ ec	EXT2_ET_CANT_INSERT_EXTENT,
 ec	EXT2_ET_EXTENT_NOT_FOUND,
 	"Extent not found"
 
+ec	EXT2_ET_EXTENT_NOT_SUPPORTED,
+	"Operation not supported for inodes containing extents"
 	end
