@@ -127,7 +127,8 @@ void do_icheck(int argc, char **argv)
 		if (inode.i_dtime)
 			goto next;
 
-		retval = ext2fs_block_iterate2(current_fs, ino, 0, block_buf,
+		retval = ext2fs_block_iterate2(current_fs, ino,
+					       BLOCK_FLAG_READ_ONLY, block_buf,
 					       icheck_proc, &bw);
 		if (retval) {
 			com_err("icheck", retval,

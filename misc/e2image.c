@@ -514,8 +514,9 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 		    (LINUX_S_ISLNK(inode.i_mode) &&
 		     ext2fs_inode_has_valid_blocks(&inode)) ||
 		    ino == fs->super->s_journal_inum) {
-			retval = ext2fs_block_iterate2(fs, ino, 0, 
-				       block_buf, process_dir_block, &pb);
+			retval = ext2fs_block_iterate2(fs, ino,
+					BLOCK_FLAG_READ_ONLY, block_buf,
+					process_dir_block, &pb);
 			if (retval) {
 				com_err(program_name, retval,
 					"while iterating over inode %u",
@@ -523,11 +524,12 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 				exit(1);
 			}
 		} else {
-			if (inode.i_block[EXT2_IND_BLOCK] ||
+			if ((inode.i_flags & EXT4_EXTENTS_FL) ||
+			    inode.i_block[EXT2_IND_BLOCK] ||
 			    inode.i_block[EXT2_DIND_BLOCK] ||
 			    inode.i_block[EXT2_TIND_BLOCK]) {
 				retval = ext2fs_block_iterate2(fs,
-				       ino, 0, block_buf,
+				       ino, BLOCK_FLAG_READ_ONLY, block_buf,
 				       process_file_block, &pb);
 				if (retval) {
 					com_err(program_name, retval,

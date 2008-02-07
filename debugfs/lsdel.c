@@ -140,7 +140,8 @@ void do_lsdel(int argc, char **argv)
 		lsd.free_blocks = 0;
 		lsd.bad_blocks = 0;
 		
-		retval = ext2fs_block_iterate2(current_fs, ino, 0, block_buf,
+		retval = ext2fs_block_iterate2(current_fs, ino,
+					       BLOCK_FLAG_READ_ONLY, block_buf,
 					       lsdel_proc, &lsd);
 		if (retval) {
 			com_err("ls_deleted_inodes", retval,

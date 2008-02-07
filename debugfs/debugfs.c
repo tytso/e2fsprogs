@@ -509,7 +509,7 @@ static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)
 	lb.first_block = 0;
 	lb.f = f;
 	lb.first = 1;
-	ext2fs_block_iterate2(current_fs, inode, 0, NULL,
+	ext2fs_block_iterate2(current_fs, inode, BLOCK_FLAG_READ_ONLY, NULL,
 			     list_blocks_proc, (void *)&lb);
 	finish_range(&lb);
 	if (lb.total)
@@ -1108,7 +1108,7 @@ void do_undel(int argc, char *argv[])
 	if (debugfs_write_inode(ino, &inode, argv[0]))
 		return;
 
-	ext2fs_block_iterate(current_fs, ino, 0, NULL,
+	ext2fs_block_iterate(current_fs, ino, BLOCK_FLAG_READ_ONLY, NULL,
 			     mark_blocks_proc, NULL);
 
 	ext2fs_inode_alloc_stats2(current_fs, ino, +1, 0);
@@ -1501,7 +1501,7 @@ static void kill_file_by_inode(ext2_ino_t inode)
 	if (!ext2fs_inode_has_valid_blocks(&inode_buf))
 		return;
 
-	ext2fs_block_iterate(current_fs, inode, 0, NULL,
+	ext2fs_block_iterate(current_fs, inode, BLOCK_FLAG_READ_ONLY, NULL,
 			     release_blocks_proc, NULL);
 	printf("\n");
 	ext2fs_inode_alloc_stats2(current_fs, inode, -1,

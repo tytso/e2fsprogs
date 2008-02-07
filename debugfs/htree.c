@@ -347,7 +347,8 @@ void do_dirsearch(int argc, char *argv[])
 	pb.search_name = argv[2];
 	pb.len = strlen(pb.search_name);
 	
-	ext2fs_block_iterate2(current_fs, inode, 0, 0, search_dir_block, &pb);
+	ext2fs_block_iterate2(current_fs, inode, BLOCK_FLAG_READ_ONLY, 0,
+			      search_dir_block, &pb);
 
 	free(pb.buf);
 }

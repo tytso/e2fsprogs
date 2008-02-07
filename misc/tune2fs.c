@@ -251,7 +251,8 @@ static void remove_journal_inode(ext2_filsys fs)
 				_("while reading bitmaps"));
 			exit(1);
 		}
-		retval = ext2fs_block_iterate(fs, ino, 0, NULL,
+		retval = ext2fs_block_iterate(fs, ino,
+					      BLOCK_FLAG_READ_ONLY, NULL,
 					      release_blocks_proc, NULL);
 		if (retval) {
 			com_err(program_name, retval,
