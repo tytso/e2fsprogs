@@ -25,6 +25,7 @@
 #ifdef HAVE_SYS_MKDEV_H
 #include <sys/mkdev.h>
 #endif
+#include <sys/utsname.h>
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -158,16 +159,115 @@ static void get_ext2_info(blkid_dev dev, struct blkid_magic *id,
 		blkid_set_tag(dev, "SEC_TYPE", "ext2", sizeof("ext2"));
 }
 
+/*
+ * Check to see if a filesystem is in /proc/filesystems.
+ * Returns 1 if found, 0 if not
+ */
+int fs_proc_check(const char *fs_name)
+{
+	FILE	*f;
+	char	buf[80], *cp, *t;
+
+	f = fopen("/proc/filesystems", "r");
+	if (!f)
+		return (0);
+	while (!feof(f)) {
+		if (!fgets(buf, sizeof(buf), f))
+			break;
+		cp = buf;
+		if (!isspace(*cp)) {
+			while (*cp && !isspace(*cp))
+				cp++;
+		}
+		while (*cp && isspace(*cp))
+			cp++;
+		if ((t = strchr(cp, '\n')) != NULL)
+			*t = 0;
+		if ((t = strchr(cp, '\t')) != NULL)
+			*t = 0;
+		if ((t = strchr(cp, ' ')) != NULL)
+			*t = 0;
+		if (!strcmp(fs_name, cp)) {
+			fclose(f);
+			return (1);
+		}
+	}
+	fclose(f);
+	return (0);
+}
+
+/*
+ * Check to see if a filesystem is available as a module
+ * Returns 1 if found, 0 if not
+ */
+int check_for_modules(const char *fs_name)
+{
+	struct utsname	uts;
+	FILE		*f;
+	char		buf[1024], *cp, *t;
+	int		i;
+
+	if (uname(&uts))
+		return (0);
+	snprintf(buf, sizeof(buf), "/lib/modules/%s/modules.dep", uts.release);
+
+	f = fopen(buf, "r");
+	if (!f)
+		return (0);
+	while (!feof(f)) {
+		if (!fgets(buf, sizeof(buf), f))
+			break;
+		if ((cp = strchr(buf, ':')) != NULL)
+			*cp = 0;
+		else
+			continue;
+		if ((cp = strrchr(buf, '/')) != NULL)
+			cp++;
+		i = strlen(cp);
+		if (i > 3) {
+			t = cp + i - 3;
+			if (!strcmp(t, ".ko"))
+				*t = 0;
+		}
+		if (!strcmp(cp, fs_name))
+			return (1);
+	}
+	fclose(f);
+	return (0);
+}
+
+static int system_supports_ext4()
+{
+	static time_t	last_check = 0;
+	static int	ret = -1;
+	time_t		now = time(0);
+
+	if (ret != -1 || (last_check - now) < 5)
+		return ret;
+	last_check = now;
+	ret = (fs_proc_check("ext4") || check_for_modules("ext4"));
+	return ret;
+}
+
+static int system_supports_ext4dev()
+{
+	static time_t	last_check = 0;
+	static int	ret = -1;
+	time_t		now = time(0);
+
+	if (ret != -1 || (last_check - now) < 5)
+		return ret;
+	last_check = now;
+	ret = (fs_proc_check("ext4dev") || check_for_modules("ext4dev"));
+	return ret;
+}
+
 static int probe_ext4dev(struct blkid_probe *probe,
 			 struct blkid_magic *id,
 			 unsigned char *buf)
 {
 	struct ext2_super_block *es;
 	es = (struct ext2_super_block *)buf;
-
-	/* Distinguish between ext4dev and other filesystems */
-	if ((blkid_le32(es->s_flags) & EXT2_FLAGS_TEST_FILESYS) == 0)
-		return -BLKID_ERR_PARAM;
 
 	/* Distinguish from jbd */
 	if (blkid_le32(es->s_feature_incompat) &
@@ -179,6 +279,22 @@ static int probe_ext4dev(struct blkid_probe *probe,
 	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
 		return -BLKID_ERR_PARAM;
 
+	/*
+	 * If the filesystem is marked as OK for use by in-development
+	 * filesystem code, but ext4dev is not supported, and ext4 is,
+	 * then don't call ourselves ext4dev, since we should be
+	 * detected as ext4 in that case.
+	 *
+	 * If the filesystem is marked as in use by production
+	 * filesystem, then it can only be used by ext4 and NOT by
+	 * ext4dev, so always disclaim we are ext4dev in that case.
+	 */
+	if (blkid_le32(es->s_flags) & EXT2_FLAGS_TEST_FILESYS) {
+		if (!system_supports_ext4dev() && system_supports_ext4())
+			return -BLKID_ERR_PARAM;
+	} else
+		return -BLKID_ERR_PARAM;
+
     	get_ext2_info(probe->dev, id, buf);
 	return 0;
 }
@@ -188,10 +304,6 @@ static int probe_ext4(struct blkid_probe *probe, struct blkid_magic *id,
 {
 	struct ext2_super_block *es;
 	es = (struct ext2_super_block *)buf;
-
-	/* Distinguish from ext4dev */
-	if (blkid_le32(es->s_flags) & EXT2_FLAGS_TEST_FILESYS)
-		return -BLKID_ERR_PARAM;
 
 	/* Distinguish from jbd */
 	if (blkid_le32(es->s_feature_incompat) & 
@@ -210,6 +322,20 @@ static int probe_ext4(struct blkid_probe *probe, struct blkid_magic *id,
 	      EXT3_FEATURE_INCOMPAT_UNSUPPORTED))
 		return -BLKID_ERR_PARAM;
 
+	/*
+	 * If the filesystem is a OK for use by in-development
+	 * filesystem code, and ext4dev is supported or ext4 is not
+	 * supported, then don't call ourselves ext4, so we can redo
+	 * the detection and mark the filesystem as ext4dev.
+	 *
+	 * If the filesystem is marked as in use by production
+	 * filesystem, then it can only be used by ext4 and NOT by
+	 * ext4dev.
+	 */
+	if (blkid_le32(es->s_flags) & EXT2_FLAGS_TEST_FILESYS) {
+		if (system_supports_ext4dev() || !system_supports_ext4())
+			return -BLKID_ERR_PARAM;
+	}
     	get_ext2_info(probe->dev, id, buf);
 	return 0;
 }
