@@ -29,6 +29,8 @@ and is verified to still be valid before being returned to the user
 (if the user has read permission on the raw block device, otherwise not).
 The cache file also allows unprivileged users (normally anyone other
 than root, or those not in the "disk" group) to locate devices by label/id.
+The standard location of the cache file can be overridden by the
+environment variable BLKID_FILE.
 .P
 In situations where one is getting information about a single known device,
 it does not impact performance whether the cache is used or not (unless you
