@@ -1,4 +1,4 @@
-e2fsprogs (1.40.6-1) gutsy; urgency=low
+e2fsprogs (1.40.6-1) unstable; urgency=low
 
   * New upstream release
   * Add support for returning labels for UDF filesystems in the blkid
