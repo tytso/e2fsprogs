@@ -3,6 +3,9 @@
 # Test script for e2fsck
 #
 
+LC_ALL=C
+export LC_ALL
+
 case "$1" in 
     --valgrind)
     	export USE_VALGRIND="valgrind -q --weird-hacks=lax-ioctls"
