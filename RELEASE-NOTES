@@ -1,3 +1,40 @@
+E2fsprogs 1.40.6 (February 9, 2008)
+===================================
+
+Add support for returning labels for UDF filesystems in the blkid
+library.
+
+Fix bug in the blkid library where cached filesystems was not being
+flushed when opening USB devices returned the error ENOMEDIUM.
+(Addresses Debian Bug: #463787)
+
+Added logic to the blkid library to automatically choose whether a
+filesystem should be mounted as ext4 or ext4dev, as appropriate.
+
+Allow tune2fs to set and clear the test_fs flag on ext4 filesystems.
+
+Fix a bug in e2fsck which caused it to core dump if e2fsprogs had been
+configured with --enable-jbd-debug.
+
+Document the BLKID_FILE environment variable in the libblkid man page
+
+Programmer's Notes:
+-------------------
+
+Update e2fsprogs translation template and Vietnamese and Czech translations
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bugs: #436058)
+
+Don't try to create $DESTDIR/etc/init.d as part of make install as we
+don't install the init.d script (and it's not the recommended way to
+start uuidd anyway).  (Addresses Sourceforge Bug: #1885085)
+
+Use thread local storage to fix a theoretical race condition if two
+threads try to format an unknown error code at the same time in the
+com_err library.
+
+
 E2fsprogs 1.40.5 (January 27, 2008)
 ===================================
 
