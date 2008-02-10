@@ -1155,7 +1155,7 @@ blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 	if (((probe.fd = open(dev->bid_name, O_RDONLY)) < 0) ||
 	    (fstat(probe.fd, &st) < 0)) {
 		if (probe.fd >= 0) close(probe.fd);
-		if (errno == ENXIO || errno == ENODEV || errno == ENOENT) {
+		if (errno != EPERM) {
 			blkid_free_dev(dev);
 			return NULL;
 		}
