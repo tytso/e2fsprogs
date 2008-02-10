@@ -38,7 +38,13 @@
 #include "error_table.h"
 #include "internal.h"
 
-static char buffer[25];
+#ifdef TLS
+#define THREAD_LOCAL static TLS
+#else
+#define THREAD_LOCAL static
+#endif
+
+THREAD_LOCAL char buffer[25];
 
 struct et_list * _et_list = (struct et_list *) NULL;
 struct et_list * _et_dynamic_list = (struct et_list *) NULL;

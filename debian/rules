@@ -430,11 +430,11 @@ endif
 	dh_gencontrol -Ncomerr-dev -Nss-dev -Nuuid-dev \
 		-Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 	DH_OPTIONS= dh_gencontrol -pcomerr-dev \
-	  -u '-v${COMERR_VERSION}-${MAIN_VERSION}'
+	  -u '-v${COMERR_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -pss-dev \
-	  -u '-v${SS_VERSION}-${MAIN_VERSION}'
+	  -u '-v${SS_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -puuid-dev \
-	  -u '-v${UUID_VERSION}-${MAIN_VERSION}'
+	  -u '-v${UUID_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
 
 	dh_md5sums -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 	dh_builddeb -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb

@@ -55,6 +55,16 @@ extern int optind;
 #include "../version.h"
 #include "nls-enable.h"
 
+/* 
+ * Tune2fs supports these features in addition to the standard features.
+ */
+#define EXT2_TUNE2FS_INCOMPAT	(EXT3_FEATURE_INCOMPAT_EXTENTS)
+#define EXT2_TUNE2FS_RO_COMPAT	(EXT4_FEATURE_RO_COMPAT_HUGE_FILE|\
+				 EXT4_FEATURE_RO_COMPAT_GDT_CSUM|	\
+				 EXT4_FEATURE_RO_COMPAT_DIR_NLINK|	\
+				 EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE)
+
+
 const char * program_name = "tune2fs";
 char * device_name;
 char * new_label, *new_last_mounted, *new_UUID;
@@ -475,8 +485,9 @@ static void parse_e2label_options(int argc, char ** argv)
 			argv[1]);
 		exit(1);
 	}
+	open_flag = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_JOURNAL_DEV_OK;
 	if (argc == 3) {
-		open_flag = EXT2_FLAG_RW | EXT2_FLAG_JOURNAL_DEV_OK;
+		open_flag |= EXT2_FLAG_RW;
 		L_flag = 1;
 		new_label = argv[2];
 	} else 
@@ -518,6 +529,8 @@ static void parse_tune2fs_options(int argc, char **argv)
 	char * tmp;
 	struct group * gr;
 	struct passwd * pw;
+
+	open_flag = EXT2_FLAG_SOFTSUPP_FEATURES;
 
 	printf("tune2fs %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	while ((c = getopt(argc, argv, "c:e:fg:i:jlm:o:r:s:u:C:E:J:L:M:O:T:U:")) != EOF)
@@ -565,7 +578,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 				break;
 			case 'E':
 				extended_cmd = optarg;
-				open_flag = EXT2_FLAG_RW;
+				open_flag |= EXT2_FLAG_RW;
 				break;
 			case 'f': /* Force */
 				f_flag = 1;
@@ -637,7 +650,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 			case 'L':
 				new_label = optarg;
 				L_flag = 1;
-				open_flag = EXT2_FLAG_RW |
+				open_flag |= EXT2_FLAG_RW |
 					EXT2_FLAG_JOURNAL_DEV_OK;
 				break;
 			case 'm':
@@ -758,6 +771,12 @@ void do_findfs(int argc, char **argv)
 	exit(0);
 }
 
+/*
+ * Note!  If any extended options are incompatible with the
+ * intersection of the SOFTSUPP features and those features explicitly
+ * enabled for tune2fs, there needs to be an explicit test for them
+ * here.
+ */
 static void parse_extended_opts(ext2_filsys fs, const char *opts)
 {
 	char	*buf, *token, *next, *p, *arg;
@@ -851,6 +870,13 @@ int main (int argc, char ** argv)
 	}
 	sb = fs->super;
 	fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
+	if ((sb->s_feature_incompat & !EXT2_TUNE2FS_INCOMPAT) ||
+	    (sb->s_feature_ro_compat & !EXT2_TUNE2FS_RO_COMPAT)) {
+		fprintf(stderr, 
+			_("Filesystem %s has unsupported features enabled.\n"),
+			device_name);
+		exit(1);
+	}
 	if (print_label) {
 		/* For e2label emulation */
 		printf("%.*s\n", (int) sizeof(sb->s_volume_name),

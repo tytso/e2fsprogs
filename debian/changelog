@@ -1,3 +1,33 @@
+e2fsprogs (1.40.6-1) unstable; urgency=low
+
+  * New upstream release
+  * Add support for returning labels for UDF filesystems in the blkid
+      library.
+  * Fix bug in the blkid library where cached filesystems was not being
+      flushed when opening USB devices returned the error ENOMEDIUM.
+      (Closes: #463787)
+  * Add logic to the blkid library to automatically choose whether a
+      filesystem should be mounted as ext4 or ext4dev, as appropriate.
+  * Allow tune2fs to set and clear the test_fs flag on ext4 filesystems.
+  * Document the BLKID_FILE environment variable in the libblkid man page
+  * Update Vietnamese and Czech translations from the translation project
+  * Fix dependency problem caused by dpkg 1.14.16 (Closes: #436058)
+  * Use thread local storage to fix a theoretical race condition if two
+      threads try to format an unknown error code at the same time in
+      the com_err library.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 10 Feb 2008 00:06:02 -0500
+
+e2fsprogs (1.40.5-2) unstable; urgency=low
+
+  * Fix debian/control and debian/rules so that they work correctly
+    after a change in dpkg-gencontrol's behavior after version 1.14.16
+    of dpkg.  This fixes bad version dependencies for comerr-dev,
+    uuid-dev and ss-dev. Thanks to Don Armstrong for the explanation and
+    Margarity Manterola for a proposed patch. (Closes: #463058)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 30 Jan 2008 07:17:27 -0500
+
 e2fsprogs (1.40.5-1) unstable; urgency=low
 
   * New upstream release.

@@ -823,7 +823,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	}
 #ifdef CONFIG_JBD_DEBUG
 	jbd_debug = getenv("E2FSCK_JBD_DEBUG");
-	if (jbd_debug)
+	if (jbd_debug) {
 		res = sscanf(jbd_debug, "%d", &journal_enable_debug);
 		if (res != 1) {
 			fprintf(stderr,
@@ -831,6 +831,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			        jbd_debug);
 			exit (1);
 		}
+	}
 #endif
 	return 0;
 

@@ -251,8 +251,7 @@ installdirs:
 		$(DESTDIR)$(root_sbindir) $(DESTDIR)$(bindir) \
 		$(DESTDIR)$(man1dir) $(DESTDIR)$(man8dir) \
 		$(DESTDIR)$(man1dir) $(DESTDIR)$(man5dir) \
-		$(DESTDIR)$(libdir) $(DESTDIR)/$(root_sysconfdir) \
-		$(DESTDIR)/etc/init.d
+		$(DESTDIR)$(libdir) $(DESTDIR)/$(root_sysconfdir)
 
 install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	@for i in $(SPROGS); do \
