@@ -905,7 +905,7 @@ static int probe_udf(struct blkid_probe *probe,
 		   NSR02 for UDF 1.50
 		   NSR03 for UDF 2.00 */
 		if (!memcmp(isosb->vd_id, "NSR0", 4))
-			return 0;
+			return probe_iso9660(probe, id, buf);
 		for (m = udf_magic; *m; m++)
 			if (!memcmp(*m, isosb->vd_id, 5))
 				break;
