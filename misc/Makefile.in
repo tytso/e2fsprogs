@@ -40,7 +40,7 @@ UUIDD_OBJS=	uuidd.o
 DUMPE2FS_OBJS=	dumpe2fs.o
 BADBLOCKS_OBJS=	badblocks.o
 E2IMAGE_OBJS=	e2image.o
-FSCK_OBJS=	fsck.o base_device.o
+FSCK_OBJS=	fsck.o base_device.o ismounted.o
 BLKID_OBJS=	blkid.o
 FILEFRAG_OBJS=	filefrag.o
 
@@ -51,7 +51,7 @@ SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/badblocks.c $(srcdir)/fsck.c $(srcdir)/util.c \
 		$(srcdir)/uuidgen.c $(srcdir)/blkid.c $(srcdir)/logsave.c \
 		$(srcdir)/filefrag.c $(srcdir)/base_device.c \
-		$(srcdir)/../e2fsck/profile.c
+		$(srcdir)/ismounted.c $(srcdir)/../e2fsck/profile.c
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
 DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
@@ -172,6 +172,10 @@ logsave: logsave.o
 filefrag: $(FILEFRAG_OBJS)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) 
+
+tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS)
+	@echo "	LD $@"
+	$(CC) -o tst_ismounted $(srcdir)/ismounted.c -DDEBUG $(ALL_CFLAGS) $(LIBCOM_ERR)
 
 tune2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/tune2fs.8.in
 	@echo "	SUBST $@"
@@ -368,7 +372,7 @@ clean:
 		$(FMANPAGES) \
 		base_device base_device.out mke2fs.static filefrag \
 		e2initrd_helper partinfo prof_err.[ch] default_profile.c \
-		uuidd e2image \#* *.s *.o *.a *~ core 
+		uuidd e2image tst_ismounted \#* *.s *.o *.a *~ core
 
 mostlyclean: clean
 distclean: clean
@@ -444,5 +448,6 @@ blkid.o: $(srcdir)/blkid.c $(top_srcdir)/lib/blkid/blkid.h \
 logsave.o: $(srcdir)/logsave.c
 filefrag.o: $(srcdir)/filefrag.c
 base_device.o: $(srcdir)/base_device.c $(srcdir)/fsck.h
+ismounted.o: $(srcdir)/ismounted.c $(top_srcdir)/lib/et/com_err.h
 profile.o: $(srcdir)/../e2fsck/profile.c $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/../e2fsck/profile.h prof_err.h
