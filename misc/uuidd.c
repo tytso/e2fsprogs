@@ -24,6 +24,7 @@
 #include <sys/un.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <string.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
@@ -107,17 +108,138 @@ static void terminate_intr(int signo CODE_ATTR((unused)))
 	exit(0);
 }
 
-static void server_loop(const char *socket_path, int debug,
-			int fd_pidfile, int timeout, int quiet)
+static int call_daemon(const char *socket_path, int op, char *buf,
+		       int buflen, int *num, const char **err_context)
+{
+	char op_buf[8];
+	int op_len;
+	int s;
+	ssize_t ret;
+	int32_t reply_len = 0;
+	struct sockaddr_un srv_addr;
+
+	if (((op == 4) || (op == 5)) && !num) {
+		if (err_context)
+			*err_context = _("bad arguments");
+		errno = EINVAL;
+		return -1;
+	}
+
+	if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+		if (err_context)
+			*err_context = _("socket");
+		return -1;
+	}
+
+	srv_addr.sun_family = AF_UNIX;
+	strcpy(srv_addr.sun_path, socket_path);
+
+	if (connect(s, (const struct sockaddr *) &srv_addr,
+		    sizeof(struct sockaddr_un)) < 0) {
+		if (err_context)
+			*err_context = _("connect");
+		close(s);
+		return -1;
+	}
+
+	if (op == 5) {
+		if ((*num)*16 > buflen-4)
+			*num = (buflen-4) / 16;
+	}
+	op_buf[0] = op;
+	op_len = 1;
+	if ((op == 4) || (op == 5)) {
+		memcpy(op_buf+1, num, sizeof(int));
+		op_len += sizeof(int);
+	}
+
+	ret = write(s, op_buf, op_len);
+	if (ret < op_len) {
+		if (err_context)
+			*err_context = _("write");
+		close(s);
+		return -1;
+	}
+
+	ret = read_all(s, (char *) &reply_len, sizeof(reply_len));
+	if (ret < 0) {
+		if (err_context)
+			*err_context = _("read count");
+		close(s);
+		return -1;
+	}
+	if (reply_len < 0 || reply_len > buflen) {
+		if (err_context)
+			*err_context = _("bad response length");
+		close(s);
+		return -1;
+	}
+	ret = read_all(s, (char *) buf, reply_len);
+
+	if ((ret > 0) && (op == 4)) {
+		if (reply_len >= (int) (16+sizeof(int)))
+			memcpy(buf+16, num, sizeof(int));
+		else
+			*num = -1;
+	}
+	if ((ret > 0) && (op == 5)) {
+		if (*num >= (int) sizeof(int))
+			memcpy(buf, num, sizeof(int));
+		else
+			*num = -1;
+	}
+
+	close(s);
+
+	return ret;
+}
+
+static void server_loop(const char *socket_path, const char *pidfile_path,
+			int debug, int timeout, int quiet)
 {
 	struct sockaddr_un	my_addr, from_addr;
 	unsigned char		reply_buf[1024], *cp;
+	struct flock		fl;
 	socklen_t		fromlen;
 	int32_t			reply_len = 0;
 	uuid_t			uu;
 	mode_t			save_umask;
 	char			op, str[37];
 	int			i, s, ns, len, num;
+	int			fd_pidfile, ret;
+
+	fd_pidfile = open(pidfile_path, O_CREAT | O_RDWR, 0664);
+	if (fd_pidfile < 0) {
+		if (!quiet)
+			fprintf(stderr, "Failed to open/create %s: %s\n",
+				pidfile_path, strerror(errno));
+		exit(1);
+	}
+	cleanup_pidfile = pidfile_path;
+	cleanup_socket = 0;
+	signal(SIGALRM, terminate_intr);
+	alarm(30);
+ 	fl.l_type = F_WRLCK;
+ 	fl.l_whence = SEEK_SET;
+ 	fl.l_start = 0;
+ 	fl.l_len = 0;
+ 	fl.l_pid = 0;
+ 	while (fcntl(fd_pidfile, F_SETLKW, &fl) < 0) {
+		if ((errno == EAGAIN) || (errno == EINTR))
+			continue;
+		if (!quiet)
+			fprintf(stderr, "Failed to lock %s: %s\n",
+				pidfile_path, strerror(errno));
+		exit(1);
+	}
+	ret = call_daemon(socket_path, 0, reply_buf, sizeof(reply_buf), 0, 0);
+	if (ret > 0) {
+		if (!quiet)
+			printf(_("uuidd daemon already running at pid %s\n"),
+			       reply_buf);
+		exit(1);
+	}
+	alarm(0);
 
 	if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
 		if (!quiet)
@@ -151,8 +273,6 @@ static void server_loop(const char *socket_path, int debug,
 		exit(1);
 	}
 
-	if (fd_pidfile > 1)
-		close(fd_pidfile); /* Unlock the pid file */
 	cleanup_socket = socket_path;
 	if (!debug)
 		create_daemon();
@@ -161,6 +281,12 @@ static void server_loop(const char *socket_path, int debug,
 	signal(SIGTERM, terminate_intr);
 	signal(SIGALRM, terminate_intr);
 	signal(SIGPIPE, SIG_IGN);
+
+	sprintf(reply_buf, "%d\n", getpid());
+	ftruncate(fd_pidfile, 0);
+	write(fd_pidfile, reply_buf, strlen(reply_buf));
+	if (fd_pidfile > 1)
+		close(fd_pidfile); /* Unlock the pid file */
 
 	while (1) {
 		fromlen = sizeof(from_addr);
@@ -264,130 +390,6 @@ static void server_loop(const char *socket_path, int debug,
 	}
 }
 
-static int call_daemon(const char *socket_path, int op, char *buf,
-		       int buflen, int *num, const char **err_context)
-{
-	char op_buf[8];
-	int op_len;
-	int s;
-	ssize_t ret;
-	int32_t reply_len = 0;
-	struct sockaddr_un srv_addr;
-
-	if (((op == 4) || (op == 5)) && !num) {
-		if (err_context)
-			*err_context = _("bad arguments");
-		errno = EINVAL;
-		return -1;
-	}
-
-	if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-		if (err_context)
-			*err_context = _("socket");
-		return -1;
-	}
-
-	srv_addr.sun_family = AF_UNIX;
-	strcpy(srv_addr.sun_path, socket_path);
-
-	if (connect(s, (const struct sockaddr *) &srv_addr,
-		    sizeof(struct sockaddr_un)) < 0) {
-		if (err_context)
-			*err_context = _("connect");
-		close(s);
-		return -1;
-	}
-
-	if (op == 5) {
-		if ((*num)*16 > buflen-4)
-			*num = (buflen-4) / 16;
-	}
-	op_buf[0] = op;
-	op_len = 1;
-	if ((op == 4) || (op == 5)) {
-		memcpy(op_buf+1, num, sizeof(int));
-		op_len += sizeof(int);
-	}
-
-	ret = write(s, op_buf, op_len);
-	if (ret < op_len) {
-		if (err_context)
-			*err_context = _("write");
-		close(s);
-		return -1;
-	}
-
-	ret = read_all(s, (char *) &reply_len, sizeof(reply_len));
-	if (ret < 0) {
-		if (err_context)
-			*err_context = _("read count");
-		close(s);
-		return -1;
-	}
-	if (reply_len < 0 || reply_len > buflen) {
-		if (err_context)
-			*err_context = _("bad response length");
-		close(s);
-		return -1;
-	}
-	ret = read_all(s, (char *) buf, reply_len);
-
-	if ((ret > 0) && (op == 4)) {
-		if (reply_len >= (int) (16+sizeof(int)))
-			memcpy(buf+16, num, sizeof(int));
-		else
-			*num = -1;
-	}
-	if ((ret > 0) && (op == 5)) {
-		if (*num >= (int) sizeof(int))
-			memcpy(buf, num, sizeof(int));
-		else
-			*num = -1;
-	}
-
-	close(s);
-
-	return ret;
-}
-
-static int create_pidfile(const char *socket_path, const char *pidfile_path,
-			  int quiet)
-{
-	int	fd, ret;
-	char	buf[20];
-
-	fd = open(pidfile_path, O_CREAT | O_RDWR, 0664);
-	if (fd < 0) {
-		if (!quiet)
-			fprintf(stderr, "Failed to open/create %s: %s\n",
-				pidfile_path, strerror(errno));
-		exit(1);
-	}
-	cleanup_pidfile = pidfile_path;
-	cleanup_socket = 0;
-	signal(SIGALRM, terminate_intr);
-	alarm(30);
-	if (lockf(fd, F_LOCK, 0) < 0) {
-		if (!quiet)
-			fprintf(stderr, "Failed to lock %s: %s\n", 
-				pidfile_path, strerror(errno));
-		exit(1);
-	}
-	ret = call_daemon(socket_path, 0, buf, sizeof(buf), 0, 0);
-	if (ret > 0) {
-		if (!quiet)
-			printf(_("uuidd daemon already running at pid %s\n"),
-			       buf);
-		exit(1);
-	}
-	alarm(0);
-
-	sprintf(buf, "%d\n", getpid());
-	ftruncate(fd, 0);
-	write(fd, buf, strlen(buf));
-	return(fd);
-}
-
 int main(int argc, char **argv)
 {
 	const char	*socket_path = UUIDD_SOCKET_PATH;
@@ -398,7 +400,7 @@ int main(int argc, char **argv)
 	uuid_t		uu;
 	uid_t		uid;
 	gid_t 		gid;
-	int		i, c, ret, fd_pidfile = -1;
+	int		i, c, ret;
 	int		debug = 0, do_type = 0, do_kill = 0, num = 0;
 	int		timeout = 0, quiet = 0, drop_privs = 0;
 
@@ -535,8 +537,6 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-	fd_pidfile = create_pidfile(socket_path, pidfile_path, quiet);
-
-	server_loop(socket_path, debug, fd_pidfile, timeout, quiet);
+	server_loop(socket_path, pidfile_path, debug, timeout, quiet);
 	return 0;
 }
