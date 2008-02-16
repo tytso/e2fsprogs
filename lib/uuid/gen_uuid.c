@@ -59,7 +59,9 @@
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
+#ifdef HAVE_SYS_UN_H
 #include <sys/un.h>
+#endif
 #ifdef HAVE_SYS_SOCKIO_H
 #include <sys/sockio.h>
 #endif
@@ -393,7 +395,7 @@ static ssize_t read_all(int fd, char *buf, size_t count)
  */
 static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 {
-#ifdef USE_UUIDD
+#if defined(USE_UUIDD) && defined(HAVE_SYS_UN_H)
 	char op_buf[64];
 	int op_len;
 	int s;

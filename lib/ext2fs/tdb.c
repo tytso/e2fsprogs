@@ -45,7 +45,9 @@ Last Changed: 2007-04-03 05:08:18 -0400
 #include <stddef.h>
 #include <errno.h>
 #include <string.h>
+#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
+#endif
 #include <sys/time.h>
 #include <sys/types.h>
 #include <time.h>
