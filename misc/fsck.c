@@ -102,7 +102,7 @@ int doall = 0;
 int noexecute = 0;
 int serialize = 0;
 int skip_root = 0;
-int like_mount = 0;
+int ignore_mounted = 0;
 int notitle = 0;
 int parallel_root = 0;
 int progress = 0;
@@ -973,7 +973,8 @@ static int check_all(NOARGS)
 				break;
 		}
 		if (fs) {
-			if (!skip_root && !ignore(fs)) {
+			if (!skip_root && !ignore(fs) &&
+			    !(ignore_mounted && is_mounted(fs->device))) {
 				fsck_device(fs, 1);
 				status |= wait_many(FLAG_WAIT_ALL);
 				if (status > EXIT_NONDESTRUCT)
@@ -1007,6 +1008,10 @@ static int check_all(NOARGS)
 			 */
 			if (fs->passno > passno) {
 				not_done_yet++;
+				continue;
+			}
+			if (ignore_mounted && is_mounted(fs->device)) {
+				fs->flags |= FLAG_DONE;
 				continue;
 			}
 			/*
@@ -1058,7 +1063,7 @@ static int check_all(NOARGS)
 
 static void usage(NOARGS)
 {
-	fputs(_("Usage: fsck [-ANPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"), stderr);
+	fputs(_("Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"), stderr);
 	exit(EXIT_USAGE);
 }
 
@@ -1181,7 +1186,7 @@ static void PRS(int argc, char *argv[])
 				notitle++;
 				break;
 			case 'M':
-				like_mount++;
+				ignore_mounted++;
 				break;
 			case 'P':
 				parallel_root++;
@@ -1303,6 +1308,8 @@ int main(int argc, char *argv[])
 			if (!fs)
 				continue;
 		}
+		if (ignore_mounted && is_mounted(fs->device))
+			continue;
 		fsck_device(fs, interactive);
 		if (serialize ||
 		    (max_running && (num_running >= max_running))) {

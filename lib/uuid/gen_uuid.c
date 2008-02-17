@@ -59,7 +59,9 @@
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
+#ifdef HAVE_SYS_UN_H
 #include <sys/un.h>
+#endif
 #ifdef HAVE_SYS_SOCKIO_H
 #include <sys/sockio.h>
 #endif
@@ -266,6 +268,7 @@ static int get_clock(uint32_t *clock_high, uint32_t *clock_low,
 	THREAD_LOCAL FILE		*state_f;
 	THREAD_LOCAL uint16_t		clock_seq;
 	struct timeval 			tv;
+	struct flock			fl;
 	unsigned long long		clock_reg;
 	mode_t				save_umask;
 
@@ -280,14 +283,20 @@ static int get_clock(uint32_t *clock_high, uint32_t *clock_low,
 			state_fd = -1;
 		}
 	}
+	fl.l_type = F_WRLCK;
+	fl.l_whence = SEEK_SET;
+	fl.l_start = 0;
+	fl.l_len = 0;
+	fl.l_pid = 0;
 	if (state_fd >= 0) {
 		rewind(state_f);
-		while (lockf(state_fd, F_LOCK, 0) < 0) {
+		while (fcntl(state_fd, F_SETLKW, &fl) < 0) {
 			if ((errno == EAGAIN) || (errno == EINTR))
 				continue;
 			fclose(state_f);
 			close(state_fd);
 			state_fd = -1;
+			break;
 		}
 	}
 	if (state_fd >= 0) {
@@ -348,7 +357,8 @@ try_again:
 			clock_seq, last.tv_sec, last.tv_usec, adjustment);
 		fflush(state_f);
 		rewind(state_f);
-		lockf(state_fd, F_ULOCK, 0);
+		fl.l_type = F_UNLCK;
+		fcntl(state_fd, F_SETLK, &fl);
 	}
 
 	*clock_high = clock_reg >> 32;
@@ -385,7 +395,7 @@ static ssize_t read_all(int fd, char *buf, size_t count)
  */
 static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 {
-#ifdef USE_UUIDD
+#if defined(USE_UUIDD) && defined(HAVE_SYS_UN_H)
 	char op_buf[64];
 	int op_len;
 	int s;

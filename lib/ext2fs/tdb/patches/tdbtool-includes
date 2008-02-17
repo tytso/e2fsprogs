@@ -1,7 +1,7 @@
-Index: tdb/tdbtool.c
+Index: tdbsa/tdbtool.c
 ===================================================================
---- tdb.orig/tdbtool.c	2007-04-04 20:39:28.000000000 -0400
-+++ tdb/tdbtool.c	2007-04-04 20:40:10.000000000 -0400
+--- tdbsa.orig/tdbtool.c
++++ tdbsa/tdbtool.c
 @@ -21,10 +21,21 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */

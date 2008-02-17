@@ -119,7 +119,16 @@ typedef struct TDB_DATA {
 #define tdb_dump_all ext2fs_tdb_dump_all
 #define tdb_printfreelist ext2fs_tdb_printfreelist
 #define tdb_validate_freelist ext2fs_tdb_validate_freelist
-
+#define tdb_chainlock_mark ext2fs_tdb_chainlock_mark
+#define tdb_chainlock_nonblock ext2fs_tdb_chainlock_nonblock
+#define tdb_chainlock_unmark ext2fs_tdb_chainlock_unmark
+#define tdb_enable_seqnum ext2fs_tdb_enable_seqnum
+#define tdb_increment_seqnum_nonblock ext2fs_tdb_increment_seqnum_nonblock
+#define tdb_lock_nonblock ext2fs_tdb_lock_nonblock
+#define tdb_lockall_mark ext2fs_tdb_lockall_mark
+#define tdb_lockall_nonblock ext2fs_tdb_lockall_nonblock
+#define tdb_lockall_read_nonblock ext2fs_tdb_lockall_read_nonblock
+#define tdb_lockall_unmark ext2fs_tdb_lockall_unmark
 
 /* this is the context structure that is returned from a db open */
 typedef struct tdb_context TDB_CONTEXT;
@@ -161,9 +170,13 @@ int tdb_traverse(struct tdb_context *tdb, tdb_traverse_func fn, void *);
 int tdb_traverse_read(struct tdb_context *tdb, tdb_traverse_func fn, void *);
 int tdb_exists(struct tdb_context *tdb, TDB_DATA key);
 int tdb_lockall(struct tdb_context *tdb);
+int tdb_lockall_nonblock(struct tdb_context *tdb);
 int tdb_unlockall(struct tdb_context *tdb);
 int tdb_lockall_read(struct tdb_context *tdb);
+int tdb_lockall_read_nonblock(struct tdb_context *tdb);
 int tdb_unlockall_read(struct tdb_context *tdb);
+int tdb_lockall_mark(struct tdb_context *tdb);
+int tdb_lockall_unmark(struct tdb_context *tdb);
 const char *tdb_name(struct tdb_context *tdb);
 int tdb_fd(struct tdb_context *tdb);
 tdb_log_func tdb_log_fn(struct tdb_context *tdb);
@@ -176,12 +189,17 @@ int tdb_get_seqnum(struct tdb_context *tdb);
 int tdb_hash_size(struct tdb_context *tdb);
 size_t tdb_map_size(struct tdb_context *tdb);
 int tdb_get_flags(struct tdb_context *tdb);
+void tdb_enable_seqnum(struct tdb_context *tdb);
+void tdb_increment_seqnum_nonblock(struct tdb_context *tdb);
 
 /* Low level locking functions: use with care */
 int tdb_chainlock(struct tdb_context *tdb, TDB_DATA key);
+int tdb_chainlock_nonblock(struct tdb_context *tdb, TDB_DATA key);
 int tdb_chainunlock(struct tdb_context *tdb, TDB_DATA key);
 int tdb_chainlock_read(struct tdb_context *tdb, TDB_DATA key);
 int tdb_chainunlock_read(struct tdb_context *tdb, TDB_DATA key);
+int tdb_chainlock_mark(struct tdb_context *tdb, TDB_DATA key);
+int tdb_chainlock_unmark(struct tdb_context *tdb, TDB_DATA key);
 
 /* Debug functions. Not used in production. */
 void tdb_dump_all(struct tdb_context *tdb);

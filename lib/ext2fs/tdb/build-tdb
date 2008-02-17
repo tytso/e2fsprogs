@@ -6,10 +6,19 @@
 #BASE_DIR=/usr/projects/samba/samba-4.0.0tp4/source/lib/tdb
 BASE_DIR=/usr/projects/samba/tdb
 
+rm -rf .pc
+
 FILES="error.c lock.c io.c transaction.c freelist.c \
 	freelistcheck.c traverse.c dump.c tdb.c open.c"
 
-cp $BASE_DIR/common/tdb_private.h tdb.c
+(cd $BASE_DIR/common; svn info ) > .svninfo
+echo "/*" > tdb.c
+grep ^URL .svninfo >> tdb.c
+grep "^Last Changed Rev" .svninfo | sed -e 's/Last Changed //' >> tdb.c
+grep "^Last Changed Date" .svninfo >> tdb.c
+echo "*/" >> tdb.c
+
+cat $BASE_DIR/common/tdb_private.h >> tdb.c
 for i in $FILES; do
 	if [ `tail -n 1 tdb.c | wc -c` -gt 1 ]; then
 		printf "\n" >> tdb.c
@@ -20,4 +29,6 @@ done
 
 cp $BASE_DIR/include/tdb.h .
 cp $BASE_DIR/tools/tdbtool.c .
+
+quilt push -a
 

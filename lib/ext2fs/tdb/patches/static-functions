@@ -1,24 +1,13 @@
-Index: tdb/tdb.c
+Index: tdbsa/tdb.c
 ===================================================================
---- tdb.orig/tdb.c	2007-04-04 20:40:06.000000000 -0400
-+++ tdb/tdb.c	2007-04-04 20:40:08.000000000 -0400
-@@ -1423,8 +1423,8 @@
- /*
-   brlock during a transaction - ignore them
- */
--int transaction_brlock(struct tdb_context *tdb, tdb_off_t offset, 
--		       int rw_type, int lck_type, int probe, size_t len)
-+static int transaction_brlock(struct tdb_context *tdb, tdb_off_t offset,
-+			      int rw_type, int lck_type, int probe, size_t len)
- {
- 	return 0;
- }
-@@ -2118,7 +2118,7 @@
+--- tdbsa.orig/tdb.c
++++ tdbsa/tdb.c
+@@ -2254,7 +2254,7 @@ int tdb_transaction_recover(struct tdb_c
  /* file: freelist.c */
  
  /* read a freelist record and check for simple errors */
--int rec_free_read(struct tdb_context *tdb, tdb_off_t off, struct list_struct *rec)
-+static int rec_free_read(struct tdb_context *tdb, tdb_off_t off, struct list_struct *rec)
+-int tdb_rec_free_read(struct tdb_context *tdb, tdb_off_t off, struct list_struct *rec)
++static int tdb_rec_free_read(struct tdb_context *tdb, tdb_off_t off, struct list_struct *rec)
  {
  	if (tdb->methods->tdb_read(tdb, off, rec, sizeof(*rec),DOCONV()) == -1)
  		return -1;

@@ -1,8 +1,8 @@
-Index: tdb/tdb.c
+Index: tdbsa/tdb.c
 ===================================================================
---- tdb.orig/tdb.c	2007-04-04 20:39:58.000000000 -0400
-+++ tdb/tdb.c	2007-04-04 20:40:06.000000000 -0400
-@@ -243,36 +243,36 @@
+--- tdbsa.orig/tdb.c
++++ tdbsa/tdb.c
+@@ -251,39 +251,39 @@ struct tdb_context {
  /*
    internal prototypes
  */
@@ -11,6 +11,8 @@ Index: tdb/tdb.c
 -int tdb_lock(struct tdb_context *tdb, int list, int ltype);
 -int tdb_unlock(struct tdb_context *tdb, int list, int ltype);
 -int tdb_brlock(struct tdb_context *tdb, tdb_off_t offset, int rw_type, int lck_type, int probe, size_t len);
+-int tdb_transaction_lock(struct tdb_context *tdb, int ltype);
+-int tdb_transaction_unlock(struct tdb_context *tdb);
 -int tdb_brlock_upgrade(struct tdb_context *tdb, tdb_off_t offset, size_t len);
 -int tdb_write_lock_record(struct tdb_context *tdb, tdb_off_t off);
 -int tdb_write_unlock_record(struct tdb_context *tdb, tdb_off_t off);
@@ -33,6 +35,8 @@ Index: tdb/tdb.c
 +static int tdb_lock(struct tdb_context *tdb, int list, int ltype);
 +static int tdb_unlock(struct tdb_context *tdb, int list, int ltype);
 +static int tdb_brlock(struct tdb_context *tdb, tdb_off_t offset, int rw_type, int lck_type, int probe, size_t len);
++static int tdb_transaction_lock(struct tdb_context *tdb, int ltype);
++static int tdb_transaction_unlock(struct tdb_context *tdb);
 +static int tdb_brlock_upgrade(struct tdb_context *tdb, tdb_off_t offset, size_t len);
 +static int tdb_write_lock_record(struct tdb_context *tdb, tdb_off_t off);
 +static int tdb_write_unlock_record(struct tdb_context *tdb, tdb_off_t off);
@@ -59,8 +63,10 @@ Index: tdb/tdb.c
  			   struct list_struct *rec);
 -void tdb_io_init(struct tdb_context *tdb);
 -int tdb_expand(struct tdb_context *tdb, tdb_off_t size);
+-int tdb_rec_free_read(struct tdb_context *tdb, tdb_off_t off,
 +static void tdb_io_init(struct tdb_context *tdb);
 +static int tdb_expand(struct tdb_context *tdb, tdb_off_t size);
++static int tdb_rec_free_read(struct tdb_context *tdb, tdb_off_t off,
+ 		      struct list_struct *rec);
  
  
- /* file: error.c */
