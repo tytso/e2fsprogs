@@ -454,6 +454,11 @@ typedef struct ext2_icount *ext2_icount_t;
 #define BMAP_SET	0x0002
 
 /*
+ * Returned flags from ext2fs_bmap
+ */
+#define BMAP_RET_UNINIT	0x0001
+
+/*
  * Flags for imager.c functions
  */
 #define IMAGER_FLAG_INODEMAP	1
@@ -668,7 +673,10 @@ extern errcode_t ext2fs_bmap(ext2_filsys fs, ext2_ino_t ino,
 			     struct ext2_inode *inode, 
 			     char *block_buf, int bmap_flags,
 			     blk_t block, blk_t *phys_blk);
-
+extern errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, 
+			      struct ext2_inode *inode,
+			      char *block_buf, int bmap_flags, blk64_t block,
+			      int *ret_flags, blk64_t *phys_blk);
 
 #if 0
 /* bmove.c */
