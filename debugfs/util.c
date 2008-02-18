@@ -274,10 +274,8 @@ int strtoblk(const char *cmd, const char *str, blk_t *ret)
 
 	blk = parse_ulong(str, cmd, "block number", &err);
 	*ret = blk;
-	if (err == 0 && blk == 0) {
-		com_err(cmd, 0, "Invalid block number 0");
-		err = 1;
-	}
+	if (err)
+		com_err(cmd, 0, "Invalid block number: %s", str);
 	return err;
 }
 
@@ -337,6 +335,11 @@ int common_block_args_process(int argc, char *argv[],
 
 	if (strtoblk(argv[0], argv[1], block))
 		return 1;
+	if (*block == 0) {
+		com_err(argv[0], 0, "Invalid block number 0");
+		err = 1;
+	}
+
 	if (argc > 2) {
 		*count = parse_ulong(argv[2], argv[0], "count", &err);
 		if (err)
