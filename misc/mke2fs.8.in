@@ -88,8 +88,12 @@ mke2fs \- create an ext2/ext3 filesystem
 .B \-S
 ]
 [
+.B \-t
+.I fs-type
+]
+[
 .B \-T
-.I filesystem-type
+.I usage-type
 ]
 [
 .B \-V
@@ -384,19 +388,26 @@ executable.
 .TP
 .B "\-O \fIfeature\fR[,...]"
 Create filesystem with given features (filesystem options), overriding 
-the default filesystem options.  The default features which are 
+the default filesystem options.  The default features which are
 enabled by default are specified by the
 .I base_features
 relation, either in the
 .I [libdefaults]
 section in the
 .B /etc/mke2fs.conf
-configuration file, or in the subsection of the 
+configuration file,
+or in the subsection of the
 .I [fs_types]
-section for the filesystem type as specified by the
+section for the usage types as specified by the
 .B -T
-option.  The filesystem type-specific configuration setting found in
-the 
+option, further modified by the
+.I features
+relation found in the
+.I [fs_types] section
+based on the filesystem and usage types.  See the
+.BR mke2fs.conf (5)
+manual page for more details.
+The filesystem type-specific configuration setting found in the
 .I [fs_types]
 section will override the global default found in
 .IR [libdefaults] .
@@ -490,14 +501,40 @@ or there is no chance of recovery.
 .\" Check the device for bad blocks before creating the file system
 .\" using the specified test.
 .TP
-.BI \-T " fs-type"
+.BI
+.BI \-t " fs-type"
+Specify the filesystem (i.e., ext2, ext3, ext4, etc., is to be created.
+If this option is not specified mke2fs will pick a default either how
+the command was run (if it was run using a name of the form mkfs.ext2,
+mkfs.ext3, etc.) or via a default as defined by the
+.BR /etc/mke2fs.conf (5)
+file.
+.TP
+.BI \-T " usage-type[,...]"
 Specify how the filesystem is going to be used, so that 
 .B mke2fs 
-can choose optimal filesystem parameters for that use.  The filesystem
-types that are can be supported are defined in the configuration file 
+can choose optimal filesystem parameters for that use.  The usage
+types that are supported are defined in the configuration file
 .BR /etc/mke2fs.conf (5).
-The default configuration file contains definitions for the filesystem
-types: small, floppy, news, largefile, and largefile4.  
+The user may specify one or more usage types
+using a comma separated list.
+.sp
+If this option is is not specified,
+.B mke2fs
+will pick a single default usage type based on the size of the filesystem to
+be created.  If the filesystem size is less than or equal to 3 megabytes,
+.BR mke2fs (8)
+will use the filesystem type
+.IR floppy .
+If the filesystem size is greater than 3 but less than or equal to
+512 megabytes,
+.BR mke2fs (8)
+will use the filesystem
+.IR small .
+Otherwise,
+.BR mke2fs (8)
+will use the default filesystem type
+.IR default .
 .TP
 .B \-v
 Verbose execution.

@@ -956,6 +956,171 @@ static void edit_feature(const char *str, __u32 *compat_array)
 	}
 }
 
+struct str_list {
+	char **list;
+	int num;
+	int max;
+};
+
+static errcode_t init_list(struct str_list *sl)
+{
+	sl->num = 0;
+	sl->max = 0;
+	sl->list = malloc((sl->max+1) * sizeof(char *));
+	if (!sl->list)
+		return ENOMEM;
+	sl->list[0] = 0;
+	return 0;
+}
+
+static errcode_t push_string(struct str_list *sl, const char *str)
+{
+	char **new_list;
+
+	if (sl->num >= sl->max) {
+		sl->max += 2;
+		new_list = realloc(sl->list, (sl->max+1) * sizeof(char *));
+		if (!new_list)
+			return ENOMEM;
+		sl->list = new_list;
+	}
+	sl->list[sl->num] = malloc(strlen(str)+1);
+	if (sl->list[sl->num] == 0)
+		return ENOMEM;
+	strcpy(sl->list[sl->num], str);
+	sl->num++;
+	sl->list[sl->num] = 0;
+	return 0;
+}
+
+static void print_str_list(char **list)
+{
+	char **cpp;
+
+	for (cpp = list; *cpp; cpp++) {
+		printf("'%s'", *cpp);
+		if (cpp[1])
+			fputs(", ", stdout);
+	}
+	fputc('\n', stdout);
+}
+
+static char **parse_fs_type(const char *fs_type,
+			    const char *usage_types,
+			    struct ext2_super_block *fs_param,
+			    char *progname)
+{
+	const char	*ext_type = 0;
+	char		*parse_str;
+	char		*profile_type = 0;
+	char		*cp, *t;
+	const char	*size_type;
+	struct str_list	list;
+	int		state = 0;
+	unsigned long	meg;
+
+	if (init_list(&list))
+		return 0;
+
+	if (fs_type)
+		ext_type = fs_type;
+	else if (progname) {
+		ext_type = strrchr(progname, '/');
+		if (ext_type)
+			ext_type++;
+		else
+			ext_type = progname;
+
+		if (!strncmp(ext_type, "mkfs.", 5)) {
+			ext_type += 5;
+			if (ext_type[0] == 0)
+				ext_type = 0;
+		} else
+			ext_type = 0;
+	}
+
+	if (!ext_type) {
+		profile_get_string(profile, "defaults", "fs_type", 0,
+				   "ext2", &profile_type);
+		ext_type = profile_type;
+		if (!strcmp(ext_type, "ext2") && (journal_size != 0))
+			ext_type = "ext3";
+	}
+
+	meg = (1024 * 1024) / EXT2_BLOCK_SIZE(fs_param);
+	if (fs_param->s_blocks_count < 3 * meg)
+		size_type = "floppy";
+	else if (fs_param->s_blocks_count < 512 * meg)
+		size_type = "small";
+	else
+		size_type = "default";
+
+	if (!usage_types)
+		usage_types = size_type;
+
+	parse_str = malloc(usage_types ? strlen(usage_types)+1 : 1);
+	if (!parse_str) {
+		free(list.list);
+		return 0;
+	}
+	if (usage_types)
+		strcpy(parse_str, usage_types);
+	else
+		*parse_str = '\0';
+
+	if (ext_type)
+		push_string(&list, ext_type);
+	cp = parse_str;
+	while (1) {
+		t = strchr(cp, ',');
+		if (t)
+			*t = '\0';
+
+		if (*cp)
+			push_string(&list, cp);
+		if (t)
+			cp = t+1;
+		else {
+			cp = "";
+			break;
+		}
+	}
+	free(parse_str);
+	if (profile_type)
+		free(profile_type);
+	return (list.list);
+}
+
+static char *get_string_from_profile(char **fs_types, const char *opt,
+				     const char *def_val)
+{
+	char *ret = 0;
+	char **cpp;
+	int i;
+
+	for (i=0; fs_types[i]; i++);
+	for (i-=1; i >=0 ; i--) {
+		profile_get_string(profile, "fs_types", fs_types[i],
+				   opt, 0, &ret);
+		if (ret)
+			return ret;
+	}
+	profile_get_string(profile, "defaults", opt, 0, def_val, &ret);
+	return (ret);
+}
+
+static int get_int_from_profile(char **fs_types, const char *opt, int def_val)
+{
+	int ret;
+	char **cpp;
+
+	profile_get_integer(profile, "defaults", opt, 0, def_val, &ret);
+	for (cpp = fs_types; *cpp; cpp++)
+		profile_get_integer(profile, "fs_types", *cpp, opt, ret, &ret);
+	return ret;
+}
+
+
 extern const char *mke2fs_default_profile;
 static const char *default_files[] = { "<default>", 0 };
 
@@ -975,6 +1140,8 @@ static void PRS(int argc, char *argv[])
 	char *		oldpath = getenv("PATH");
 	char *		extended_opts = 0;
 	const char *	fs_type = 0;
+	const char *	usage_types = 0;
+	char		**fs_types;
 	blk_t		dev_size;
 #ifdef __linux__
 	struct 		utsname ut;
@@ -1049,7 +1216,7 @@ static void PRS(int argc, char *argv[])
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cf:g:i:jl:m:no:qr:s:tvE:FI:J:L:M:N:O:R:ST:V")) != EOF) {
+		    "b:cf:g:i:jl:m:no:qr:s:t:vE:FI:J:L:M:N:O:R:ST:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = strtol(optarg, &tmp, 0);
@@ -1070,7 +1237,6 @@ static void PRS(int argc, char *argv[])
 						 EXT2_MIN_BLOCK_LOG_SIZE);
 			break;
 		case 'c':	/* Check for bad blocks */
-		case 't':	/* deprecated */
 			cflag++;
 			break;
 		case 'f':
@@ -1196,8 +1362,11 @@ static void PRS(int argc, char *argv[])
 		case 'S':
 			super_only = 1;
 			break;
-		case 'T':
+		case 't':
 			fs_type = optarg;
+			break;
+		case 'T':
+			usage_types = optarg;
 			break;
 		case 'V':
 			/* Print version number and exit */
@@ -1340,6 +1509,16 @@ static void PRS(int argc, char *argv[])
 		proceed_question();
 	}
 
+	fs_types = parse_fs_type(fs_type, usage_types, &fs_param, argv[0]);
+	if (!fs_types) {
+		fprintf(stderr, _("Failed to parse fs types list\n"));
+		exit(1);
+	}
+	if (verbose) {
+		fputs("Fs_types for mke2fs.conf resolution: ", stdout);
+		print_str_list(fs_types);
+	}
+
 	if (!fs_type) {
 		int megs = (__u64)fs_param.s_blocks_count *
 			(EXT2_BLOCK_SIZE(&fs_param) / 1024) / 1024;
@@ -1357,29 +1536,31 @@ static void PRS(int argc, char *argv[])
 
 	/* Figure out what features should be enabled */
 
-	tmp = tmp2 = NULL;
+	tmp = NULL;
 	if (fs_param.s_rev_level != EXT2_GOOD_OLD_REV) {
-		profile_get_string(profile, "defaults", "base_features", 0,
-				   "sparse_super,filetype,resize_inode,dir_index",
-				   &tmp);
-		profile_get_string(profile, "fs_types", fs_type, 
-				   "base_features", tmp, &tmp2);
-		edit_feature(tmp2, &fs_param.s_feature_compat);
-		free(tmp);
-		free(tmp2);
+		char **cpp;
 
-		tmp = tmp2 = NULL;
-		profile_get_string(profile, "defaults", "default_features", 0,
-				   "", &tmp);
-		profile_get_string(profile, "fs_types", fs_type, 
-				   "default_features", tmp, &tmp2);
+		tmp = get_string_from_profile(fs_types, "base_features",
+		      "sparse_super,filetype,resize_inode,dir_index");
+		edit_feature(tmp, &fs_param.s_feature_compat);
+		free(tmp);
+
+		for (cpp = fs_types; *cpp; cpp++) {
+			tmp = NULL;
+			profile_get_string(profile, "fs_types", *cpp,
+					   "features", "", &tmp);
+			if (tmp && *tmp)
+				edit_feature(tmp, &fs_param.s_feature_compat);
+			if (tmp)
+				free(tmp);
+		}
+		tmp = get_string_from_profile(fs_types, "default_features",
+					      "");
 	}
-	edit_feature(fs_features ? fs_features : tmp2, 
+	edit_feature(fs_features ? fs_features : tmp,
 		     &fs_param.s_feature_compat);
 	if (tmp)
 		free(tmp);
-	if (tmp2)
-		free(tmp2);
 
 	if (r_opt == EXT2_GOOD_OLD_REV && 
 	    (fs_param.s_feature_compat || fs_param.s_feature_incompat ||
@@ -1437,10 +1618,7 @@ static void PRS(int argc, char *argv[])
 		sector_size = atoi(tmp);
 	
 	if (blocksize <= 0) {
-		profile_get_integer(profile, "defaults", "blocksize", 0,
-				    4096, &use_bsize);
-		profile_get_integer(profile, "fs_types", fs_type, 
-				    "blocksize", use_bsize, &use_bsize);
+		use_bsize = get_int_from_profile(fs_types, "blocksize", 4096);
 
 		if (use_bsize == -1) {
 			use_bsize = sys_page_size;
@@ -1457,12 +1635,8 @@ static void PRS(int argc, char *argv[])
 	}
 
 	if (inode_ratio == 0) {
-		profile_get_integer(profile, "defaults", "inode_ratio", 0,
-				    8192, &inode_ratio);
-		profile_get_integer(profile, "fs_types", fs_type, 
-				    "inode_ratio", inode_ratio, 
-				    &inode_ratio);
-
+		inode_ratio = get_int_from_profile(fs_types, "inode_ratio",
+						   8192);
 		if (inode_ratio < blocksize)
 			inode_ratio = blocksize;
 	}
@@ -1495,13 +1669,8 @@ static void PRS(int argc, char *argv[])
 		}
 	}
 
-	if (inode_size == 0) {
-		profile_get_integer(profile, "defaults", "inode_size", NULL,
-				    0, &inode_size);
-		profile_get_integer(profile, "fs_types", fs_type,
-				    "inode_size", inode_size,
-				    &inode_size);
-	}
+	if (inode_size == 0)
+		inode_size = get_int_from_profile(fs_types, "inode_size", 0);
 
 	if (inode_size && fs_param.s_rev_level >= EXT2_DYNAMIC_REV) {
 		if (inode_size < EXT2_GOOD_OLD_INODE_SIZE ||
@@ -1816,5 +1985,6 @@ no_journal:
 	val = ext2fs_close(fs);
 	remove_error_table(&et_ext2_error_table);
 	remove_error_table(&et_prof_error_table);
+	profile_release(profile);
 	return (retval || val) ? 1 : 0;
 }

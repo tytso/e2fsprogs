@@ -13,7 +13,7 @@ INSTALL = @INSTALL@
 
 all:: @DO_TEST_SUITE@
 
-test_script: test_script.in Makefile
+test_script: test_script.in Makefile mke2fs.conf
 	@echo "Creating test_script..."
 	@echo "#!/bin/sh" > test_script
 @HTREE_CMT@	@echo "HTREE=y" >> test_script
@@ -22,6 +22,9 @@ test_script: test_script.in Makefile
 	@echo "DIFF_OPTS=@UNI_DIFF_OPTS@" >> test_script
 	@cat $(srcdir)/test_script.in >> test_script
 	@chmod +x test_script
+
+mke2fs.conf: $(srcdir)/../misc/mke2fs.conf
+	sed -e 's/blocksize = -1/blocksize = 4096/' $< >mke2fs.conf
 
 check:: test_script
 	@echo "Running e2fsprogs test suite..."
@@ -63,7 +66,7 @@ testend: test_script ${TDIR}/image
 	@echo "If all is well, edit ${TDIR}/name and rename ${TDIR}."
 
 clean::
-	$(RM) -f *~ *.log *.new *.failed *.ok test.img test_script
+	$(RM) -f *~ *.log *.new *.failed *.ok test.img test_script mke2fs.conf
 
 distclean:: clean
 	$(RM) -f Makefile

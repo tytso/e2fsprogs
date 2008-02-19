@@ -79,20 +79,6 @@ the
 .B -T
 option to
 .BR mke2fs (8).
-If no filesystem type is specified, 
-.BR mke2fs (8)
-will use the filesystem type 
-.I floppy
-if the filesystem size is less than or equal to 3 megabytes.  
-If the filesystem size is greater than 3 but less than or equal to 
-512 megabytes, 
-.BR mke2fs (8)
-will use the filesystem
-.IR small .
-Otherwise, 
-.BR mke2fs (8)
-will use the default filesystem type
-.IR default .
 .SH THE [defaults] STANZA
 The following relations are defined in the 
 .I [defaults]
@@ -102,7 +88,7 @@ stanza.
 This relation specifies the filesystems features which are enabled in
 newly created filesystems.  It may be overridden by the
 .I base_features
-relation found in the filesystem-type-specific subsection of
+relation found in the filesystem or usage type subsection of
 the
 .I [fs_types] 
 stanza.
@@ -113,13 +99,30 @@ removed to the features listed in the
 .I base_features
 relation.  It may be overridden by the filesystem-specific 
 .I default_features
-in the filesystem-type subsection of
+in the filesystem or usage type subsection of
 .IR [fs_types] ,
 and by the 
 .B -O
 command-line option
 to 
 .BR mke2fs (8).
+.TP
+.I fs_type
+This relation specifies the default filesystem type if the user does not
+specify it via the
+.B \-t
+option, or if
+.B mke2fs
+is not started using a program name of the form
+.BI mkfs. fs-type\fR.
+If both the user and the
+.B mke2fs.conf
+file does not specify a default filesystem type, mke2fs will use a
+default filesystem type of
+.IR ext3
+if a journal was requested via a command-line option, or
+.I ext2
+if not.
 .TP
 .I blocksize
 This relation specifies the default blocksize if the user does not
@@ -140,15 +143,56 @@ inode size.
 .SH THE [fs_types] STANZA
 Each tag in the
 .I [fs_types] 
-stanza names a filesystem type which can be specified via the 
-.B -T
-option to
-.BR mke2fs (8).
-The value of the tag is a subsection where the relations in that
-subsection define the defaults for that filesystem type. For
-example:
+stanza names a filesystem type or usage type which can be specified via the
+.B \-t
+or
+.B \-T
+options to
+.BR mke2fs (8),
+respectively.
 .P
+The
+.B mke2fs
+program constructs a list of fs_types by concatenating the filesystem
+type (i.e., ext2, ext3, etc.) with the usage type list.  For most
+configuration options,
+.B mke2fs
+will look for a subsection in the
+.I [fs_types]
+stanza corresponding with each entry in the constructed list, with later
+entries overriding earlier filesystem or usage types.
+For
+example, consider the following
+.B mke2fs.conf
+fragment:
+.P
+[defaults]
+.br
+	base_features = sparse_super,filetype,resize_inode,dir_index
+.br
+	blocksize = 4096
+.br
+	inode_size = 256
+.br
+	inode_ratio = 16384
+.br
+
+.br
 [fs_types]
+.br
+	ext3 = {
+.br
+		features = has_journal
+.br
+	}
+.br
+	ext4 = {
+.br
+		features = extents,flex_bg
+.br
+		inode_size = 256
+.br
+	}
 .br
 	small = {
 .br
@@ -160,22 +204,76 @@ example:
 .br
 	floppy = {
 .br
+		features = ^resize_inode
+.br
 		blocksize = 1024
 .br
+		inode_size = 128
+.br
 	}
+.P
+If mke2fs started with a program name of
+.BR mke2fs.ext4 ,
+then the filesystem type of ext4 will be used.  If the filesystem is
+smaller than 3 megabytes, and no usage type is specified, then
+.B mke2fs
+will use a default
+usage type of
+.IR floppy .
+This results in an fs_types list of "ext4, floppy".   Both the ext4
+subsection and the floppy subsection define an
+.I inode_size
+relation, but since the later entries in the fs_types list supercede
+earlier ones, the configuration parameter for fs_types.floppy.inode_size
+will be used, so the filesystem  will have an inode size of 128.
+.P
+The exception to this resolution is the
+.I features
+tag, which is specifies a set of changes to the features used by the
+filesystem, and which is cumulative.  So in the above example, first
+the configuration relation defaults.base_features would enable an
+initial feature set with the sparse_super, filetype, resize_inode, and
+dir_index features enabled.  Then configuration relation
+fs_types.ext4.features would enable the extents and flex_bg
+features, and finally the configuration relation
+fs_types.floppy.features would remove
+the resize_inode feature, resulting in a filesystem feature set
+consisting of the sparse_super, filetype, resize_inode, dir_index,
+extents_and flex_bg features.
 .P
 For each filesystem type, the following tags may be used in that 
 fs_type's subsection:
 .TP
 .I base_features
-This relation specifies the features which are enabled for this
-filesystem type.
+This relation specifies the features which are initially enabled for this
+filesystem type.  Only one
+.I base_features
+will be used, so if there are multiple entries in the fs_types list
+whose subsections define the
+.I base_features
+relation, only the last will be used by
+.BR mke2fs (8).
+.TP
+.I features
+This relation specifies a comma-separated list of features edit
+requests which modify the feature set
+used by the newly constructed filesystem.  The syntax is the same as the
+.B -O
+command-line option to
+.BR mke2fs (8);
+that is, a feature can be prefixed by a caret ('^') symbol to disable
+a named feature.  Each
+.I feature
+relation specified in the fs_types list will be applied in the order
+found in the fs_types list.
 .TP
 .I default_features
 This relation specifies set of features which should be enabled or 
-disabled to the features listed in the
+disabled after applying the features listed in the
 .I base_features
-relation.  It may be overridden by the 
+and
+.I features
+relations.  It may be overridden by the
 .B -O
 command-line option to
 .BR mke2fs (8).
