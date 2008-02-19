@@ -9,7 +9,13 @@
  * %End-Header%
  */
 
-#define _XOPEN_SOURCE 500 /* for inclusion of strptime() */
+#define _XOPEN_SOURCE 600 /* for inclusion of strptime() and strtoull */
+
+#ifdef HAVE_STRTOULL
+#define STRTOULL strtoull
+#else
+#define STRTOULL strtoul
+#endif
 
 #include <stdio.h>
 #include <unistd.h>
@@ -101,7 +107,6 @@ static struct field_set_info super_fields[] = {
 		  parse_uint },
 	{ "reserved_gdt_blocks", &set_sb.s_reserved_gdt_blocks, 2,
 		  parse_uint },
-	/* s_padding1 */
 	{ "journal_uuid", &set_sb.s_journal_uuid, 16, parse_uuid },
 	{ "journal_inum", &set_sb.s_journal_inum, 4, parse_uint },
 	{ "journal_dev", &set_sb.s_journal_dev, 4, parse_uint },
@@ -109,13 +114,22 @@ static struct field_set_info super_fields[] = {
 	{ "hash_seed", &set_sb.s_hash_seed, 16, parse_uuid },
 	{ "def_hash_version", &set_sb.s_def_hash_version, 1, parse_hashalg },
 	{ "jnl_backup_type", &set_sb.s_jnl_backup_type, 1, parse_uint },
-	/* s_reserved_word_pad */
+	{ "desc_size", &set_sb.s_desc_size, 2, parse_uint },
 	{ "default_mount_opts", &set_sb.s_default_mount_opts, 4, parse_uint },
 	{ "first_meta_bg", &set_sb.s_first_meta_bg, 4, parse_uint },
 	{ "mkfs_time", &set_sb.s_mkfs_time, 4, parse_time },
 	{ "jnl_blocks", &set_sb.s_jnl_blocks[0], 4, parse_uint, FLAG_ARRAY, 
 	  17 },
+	{ "blocks_count_hi", &set_sb.s_blocks_count_hi, 4, parse_uint },
+	{ "r_blocks_count_hi", &set_sb.s_r_blocks_count_hi, 4, parse_uint },
+	{ "min_extra_isize", &set_sb.s_min_extra_isize, 2, parse_uint },
+	{ "want_extra_isize", &set_sb.s_want_extra_isize, 2, parse_uint },
 	{ "flags", &set_sb.s_flags, 4, parse_uint },
+	{ "raid_stride", &set_sb.s_raid_stride, 2, parse_uint },
+	{ "min_extra_isize", &set_sb.s_min_extra_isize, 4, parse_uint },
+	{ "mmp_interval", &set_sb.s_mmp_interval, 2, parse_uint },
+	{ "mmp_block", &set_sb.s_mmp_block, 8, parse_uint },
+	{ "raid_stripe_width", &set_sb.s_raid_stripe_width, 4, parse_uint },
 	{ 0, 0, 0, 0 }
 };
 
@@ -142,6 +156,7 @@ static struct field_set_info inode_fields[] = {
 	{ "generation", &set_inode.i_generation, 4, parse_uint },
 	{ "file_acl", &set_inode.i_file_acl, 4, parse_uint },
 	{ "dir_acl", &set_inode.i_dir_acl, 4, parse_uint },
+	{ "size_high", &set_inode.i_size_high, 4, parse_uint },
 	{ "faddr", &set_inode.i_faddr, 4, parse_uint },
 	{ "blocks_hi", &set_inode.osd2.linux2.l_i_blocks_hi, 2, parse_uint },
 	{ "frag", &set_inode.osd2.hurd2.h_i_frag, 1, parse_uint },
@@ -227,9 +242,10 @@ static struct field_set_info *find_field(struct field_set_info *fields,
 
 static errcode_t parse_uint(struct field_set_info *info, char *arg)
 {
-	unsigned long	num;
+	unsigned long long num, limit;
 	char *tmp;
 	union {
+		__u64	*ptr64;
 		__u32	*ptr32;
 		__u16	*ptr16;
 		__u8	*ptr8;
@@ -239,13 +255,23 @@ static errcode_t parse_uint(struct field_set_info *info, char *arg)
 	if (info->flags & FLAG_ARRAY)
 		u.ptr8 += array_idx * info->size;
 
-	num = strtoul(arg, &tmp, 0);
-	if (*tmp) {
+	errno = 0;
+	num = STRTOULL(arg, &tmp, 0);
+	if (*tmp || errno) {
 		fprintf(stderr, "Couldn't parse '%s' for field %s.\n",
 			arg, info->name);
 		return EINVAL;
 	}
+	limit = ~0ULL >> ((8 - info->size) * 8);
+	if (num > limit) {
+		fprintf(stderr, "Value '%s' exceeds field %s maximum %llu.\n",
+			arg, info->name, limit);
+		return EINVAL;
+	}
 	switch (info->size) {
+	case 8:
+		*u.ptr64 = num;
+		break;
 	case 4:
 		*u.ptr32 = num;
 		break;

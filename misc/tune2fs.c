@@ -81,6 +81,8 @@ static unsigned short errors;
 static int open_flag;
 static char *features_cmd;
 static char *mntopts_cmd;
+static int stride, stripe_width;
+static int stride_set, stripe_width_set;
 static char *extended_cmd;
 
 int journal_size, journal_flags;
@@ -812,7 +814,36 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 			fs->super->s_flags &= ~EXT2_FLAGS_TEST_FILESYS;
 			printf("Clearing test filesystem flag\n");
 			ext2fs_mark_super_dirty(fs);
-		} else
+		} else if (strcmp(token, "stride") == 0) {
+			if (!arg) {
+				r_usage++;
+				continue;
+			}
+			stride = strtoul(arg, &p, 0);
+			if (*p || (stride == 0)) {
+				fprintf(stderr,
+				       _("Invalid RAID stride: %s\n"),
+					arg);
+				r_usage++;
+				continue;
+			}
+			stride_set = 1;
+		} else if (strcmp(token, "stripe-width") == 0 ||
+			   strcmp(token, "stripe_width") == 0) {
+			if (!arg) {
+				r_usage++;
+				continue;
+			}
+			stripe_width = strtoul(arg, &p, 0);
+			if (*p || (stripe_width == 0)) {
+				fprintf(stderr,
+					_("Invalid RAID stripe-width: %s\n"),
+					arg);
+				r_usage++;
+				continue;
+			}
+			stripe_width_set = 1;
+		} else 
 			r_usage++;
 	}
 	if (r_usage) {
@@ -821,6 +852,8 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 			"and may take an argument which\n"
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid extended options are:\n"
+			"\tstride=<RAID per-disk chunk size in blocks>\n"
+			"\tstripe-width=<RAID stride*data disks in blocks>\n"
 			"\ttest_fs\n"
 			"\t^test_fs\n"));
 		free(buf);
@@ -1021,6 +1054,16 @@ int main (int argc, char ** argv)
 
 	if (l_flag)
 		list_super (sb);
+	if (stride_set) {
+		sb->s_raid_stride = stride;
+		ext2fs_mark_super_dirty(fs);
+		printf(_("Setting stride size to %d\n"), stride);
+	}
+	if (stripe_width_set) {
+		sb->s_raid_stripe_width = stripe_width;
+		ext2fs_mark_super_dirty(fs);
+		printf(_("Setting stripe width to %d\n"), stripe_width);
+	}
 	remove_error_table(&et_ext2_error_table);
 	return (ext2fs_close (fs) ? 1 : 0);
 }

@@ -436,19 +436,21 @@ static int list_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 
 static void dump_xattr_string(FILE *out, const char *str, int len)
 {
-	int printable = 1;
+	int printable = 0;
 	int i;
 	
-	/* check is string printable? */
+	/* check: is string "printable enough?" */
 	for (i = 0; i < len; i++)
-		if (!isprint(str[i])) {
-			printable = 0;
-			break;
-		}
+		if (isprint(str[i]))
+			printable++;
+
+	if (printable <= len*7/8)
+		printable = 0;
 
 	for (i = 0; i < len; i++)
 		if (printable)
-			fprintf(out, "%c", (unsigned char)str[i]);
+			fprintf(out, isprint(str[i]) ? "%c" : "\\%03o",
+				(unsigned char)str[i]);
 		else
 			fprintf(out, "%02x ", (unsigned char)str[i]);
 }
