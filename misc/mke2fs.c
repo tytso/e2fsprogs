@@ -756,7 +756,7 @@ static int set_os(struct ext2_super_block *sb, char *os)
 static void parse_extended_opts(struct ext2_super_block *param, 
 				const char *opts)
 {
-	char	*buf, *token, *next, *p, *arg;
+	char	*buf, *token, *next, *p, *arg, *badopt = "";
 	int	len;
 	int	r_usage = 0;
 
@@ -783,12 +783,28 @@ static void parse_extended_opts(struct ext2_super_block *param,
 		if (strcmp(token, "stride") == 0) {
 			if (!arg) {
 				r_usage++;
+				badopt = token;
 				continue;
 			}
-			fs_stride = strtoul(arg, &p, 0);
-			if (*p || (fs_stride == 0)) {
+			param->s_raid_stride = strtoul(arg, &p, 0);
+			if (*p || (param->s_raid_stride == 0)) {
 				fprintf(stderr,
 					_("Invalid stride parameter: %s\n"),
+					arg);
+				r_usage++;
+				continue;
+			}
+		} else if (strcmp(token, "stripe-width") == 0 ||
+			   strcmp(token, "stripe_width") == 0) {
+			if (!arg) {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
+			param->s_raid_stripe_width = strtoul(arg, &p, 0);
+			if (*p || (param->s_raid_stripe_width == 0)) {
+				fprintf(stderr,
+					_("Invalid stripe-width parameter: %s\n"),
 					arg);
 				r_usage++;
 				continue;
@@ -801,6 +817,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 
 			if (!arg) {
 				r_usage++;
+				badopt = token;
 				continue;
 			}
 
@@ -851,21 +868,31 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			}
 		} else if (!strcmp(token, "test_fs")) {
 			param->s_flags |= EXT2_FLAGS_TEST_FILESYS;
-		} else
+		} else {
 			r_usage++;
+			badopt = token;
+		}
 	}
 	if (r_usage) {
-		fprintf(stderr, _("\nBad options specified.\n\n"
+		fprintf(stderr, _("\nBad option(s) specified: %s\n\n"
 			"Extended options are separated by commas, "
 			"and may take an argument which\n"
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid extended options are:\n"
-			"\tstride=<stride length in blocks>\n"
-			"\tresize=<resize maximum size in blocks>\n"
-			"\ttest_fs\n"));
+			"\tstride=<RAID per-disk data chunk in blocks>\n"
+			"\tstripe-width=<RAID stride * data disks in blocks>\n"
+			"\tresize=<resize maximum size in blocks>\n\n"
+			"\ttest_fs\n"),
+			badopt);
 		free(buf);
 		exit(1);
 	}
+	if (param->s_raid_stride &&
+	    (param->s_raid_stripe_width % param->s_raid_stride) != 0)
+		fprintf(stderr, _("\nWarning: RAID stripe-width %u not an even "
+				  "multiple of stride %u.\n\n"),
+			param->s_raid_stripe_width, param->s_raid_stride);
+
 	free(buf);
 }	
 
@@ -1643,7 +1670,7 @@ int main (int argc, char *argv[])
 		test_disk(fs, &bb_list);
 
 	handle_bad_blocks(fs, bb_list);
-	fs->stride = fs->super->s_raid_stride = fs_stride;
+	fs->stride = fs_stride = fs->super->s_raid_stride;
 	retval = ext2fs_allocate_tables(fs);
 	if (retval) {
 		com_err(program_name, retval,

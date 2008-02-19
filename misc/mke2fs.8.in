@@ -179,10 +179,23 @@ option is still accepted for backwards compatibility.   The
 following extended options are supported:
 .RS 1.2i
 .TP
-.BI stride= stripe-size
+.BI stride= stride-size
 Configure the filesystem for a RAID array with
-.I stripe-size
-filesystem blocks per stripe.
+.I stride-size
+filesystem blocks. This is the number of blocks read or written to disk
+before moving to next disk. This mostly affects placement of filesystem
+metadata like bitmaps at
+.BR mke2fs (2)
+time to avoid placing them on a single disk, which can hurt the performanace.
+It may also be used by block allocator.
+.TP
+.BI stripe-width= stripe-width
+Configure the filesystem for a RAID array with
+.I stripe-width
+filesystem blocks per stripe. This is typically be stride-size * N, where
+N is the number of data disks in the RAID (e.g. RAID 5 N+1, RAID 6 N+2).
+This allows the block allocator to prevent read-modify-write of the
+parity in a RAID stripe if possible when the data is written.
 .TP
 .BI resize= max-online-resize
 Reserve enough space so that the block group descriptor table can grow

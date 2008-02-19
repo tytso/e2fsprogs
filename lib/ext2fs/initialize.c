@@ -156,6 +156,8 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_feature_incompat, 0);
 	set_field(s_feature_ro_compat, 0);
 	set_field(s_first_meta_bg, 0);
+	set_field(s_raid_stride, 0);		/* default stride size: 0 */
+	set_field(s_raid_stripe_width, 0);	/* default stripe width: 0 */
 	set_field(s_flags, 0);
 	if (super->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
 		retval = EXT2_ET_UNSUPP_FEATURE;
