@@ -111,6 +111,7 @@ static __u32 ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_DIR_INDEX,	/* Compat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
+		EXT3_FEATURE_INCOMPAT_EXTENTS|
 		EXT4_FEATURE_INCOMPAT_FLEX_BG,
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
 };
@@ -298,7 +299,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 {
 	int sparse, old_sparse, filetype, old_filetype;
 	int journal, old_journal, dxdir, old_dxdir;
-	int flex_bg, old_flex_bg;
+	int flex_bg, old_flex_bg, extents, old_extents;
 	struct ext2_super_block *sb= fs->super;
 	__u32	old_compat, old_incompat, old_ro_compat;
 
@@ -310,6 +311,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 	old_filetype = sb->s_feature_incompat &
 		EXT2_FEATURE_INCOMPAT_FILETYPE;
+	old_extents = sb->s_feature_incompat &
+		EXT3_FEATURE_INCOMPAT_EXTENTS;
 	old_flex_bg = sb->s_feature_incompat &
 		EXT4_FEATURE_INCOMPAT_FLEX_BG;
 	old_journal = sb->s_feature_compat &
@@ -326,6 +329,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
 	filetype = sb->s_feature_incompat &
 		EXT2_FEATURE_INCOMPAT_FILETYPE;
+	extents = sb->s_feature_incompat &
+		EXT3_FEATURE_INCOMPAT_EXTENTS;
 	flex_bg = sb->s_feature_incompat &
 		EXT4_FEATURE_INCOMPAT_FLEX_BG;
 	journal = sb->s_feature_compat &
@@ -365,6 +370,11 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		if (!journal_size)
 			journal_size = -1;
 		sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+	}
+	if (old_extents && !extents) {
+		fputs(_("Clearing the extents feature flag not supported.\n"),
+		      stderr);
+		exit(1);
 	}
 	if (dxdir && !old_dxdir) {
 		if (!sb->s_def_hash_version)
