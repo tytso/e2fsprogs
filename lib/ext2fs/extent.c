@@ -399,7 +399,7 @@ retry:
 				return retval;
 		}
 		blk = ext2fs_le32_to_cpu(ix->ei_leaf) +
-			((__u64) ext2fs_le16_to_cpu(ix->ei_leaf_hi));
+			((__u64) ext2fs_le16_to_cpu(ix->ei_leaf_hi) << 32);
 		if ((handle->fs->flags & EXT2_FLAG_IMAGE_FILE) &&
 		    (handle->fs->io != handle->fs->image_io))
 			memset(newpath->buf, 0, handle->fs->blocksize);
