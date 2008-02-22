@@ -1472,12 +1472,6 @@ static void PRS(int argc, char *argv[])
 		}
 	}
 
-	if ((blocksize > 4096) &&
-	    (fs_param.s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
-		fprintf(stderr, _("\nWarning: some 2.4 kernels do not support "
-			"blocksizes greater than 4096\n\tusing ext3.  "
-			"Use -b 4096 if this is an issue for you.\n\n"));
-
 	if (inode_size == 0) {
 		profile_get_integer(profile, "defaults", "inode_size", NULL,
 				    0, &inode_size);
