@@ -1584,6 +1584,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 
 		if (!is_leaf) {
 			mark_block_used(ctx, extent.e_pblk);
+			pb->num_blocks++;
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
 			if (pctx->errcode) {
