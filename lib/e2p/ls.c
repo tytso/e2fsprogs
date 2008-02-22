@@ -234,10 +234,10 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	fprintf(f, "Inodes per group:         %u\n", sb->s_inodes_per_group);
 	fprintf(f, "Inode blocks per group:   %u\n", inode_blocks_per_group);
 	if (sb->s_raid_stride)
-		fprintf(f, "Raid stride:              %u\n",
+		fprintf(f, "RAID stride:              %u\n",
 			sb->s_raid_stride);
 	if (sb->s_raid_stripe_width)
-		fprintf(f, "Raid stripe width:        %u\n",
+		fprintf(f, "RAID stripe width:        %u\n",
 			sb->s_raid_stripe_width);
 	if (sb->s_first_meta_bg)
 		fprintf(f, "First meta block group:   %u\n",
