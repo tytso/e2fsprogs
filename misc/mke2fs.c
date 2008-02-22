@@ -1490,10 +1490,6 @@ static void PRS(int argc, char *argv[])
 				blocksize);
 			exit(1);
 		}
-		if (inode_size != EXT2_GOOD_OLD_INODE_SIZE)
-			fprintf(stderr, _("Warning: %d-byte inodes not usable "
-				"on older systems\n"),
-				inode_size);
 		fs_param.s_inode_size = inode_size;
 	}
 
