@@ -429,12 +429,19 @@ option.
 .TP
 .B sparse_super
 Limit the number of backup superblocks to save space on large filesystems.
+.TP
+.B resize_inode
+Reserve space so the block group descriptor table may grow in the
+future.
+.B Tune2fs 
+only supports clearing this filesystem feature.
 .RE
 .IP
 After setting or clearing 
-.B sparse_super
-and 
-.B filetype 
+.BR sparse_super ,
+.BR filetype ,
+or
+.B resize_inode
 filesystem features,
 .BR e2fsck (8)
 must be run on the filesystem to return the filesystem to a consistent state.

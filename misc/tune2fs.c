@@ -116,6 +116,7 @@ static __u32 ok_features[3] = {
 
 static __u32 clear_ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
+		EXT2_FEATURE_COMPAT_RESIZE_INODE |
 		EXT2_FEATURE_COMPAT_DIR_INDEX,	/* Compat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE,		/* Incompat */
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
@@ -389,7 +390,9 @@ static void update_feature_set(ext2_filsys fs, char *features)
 	if (FEATURE_CHANGED(E2P_FEATURE_RO_INCOMPAT,
 			    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER) ||
 	    FEATURE_CHANGED(E2P_FEATURE_INCOMPAT,
-			    EXT2_FEATURE_INCOMPAT_FILETYPE)) {
+			    EXT2_FEATURE_INCOMPAT_FILETYPE) ||
+	    FEATURE_CHANGED(E2P_FEATURE_COMPAT,
+			    EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
 		sb->s_state &= ~EXT2_VALID_FS;
 		printf("\n%s\n", _(please_fsck));
 	}
