@@ -114,6 +114,13 @@ static __u32 ok_features[3] = {
 	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
 };
 
+static __u32 clear_ok_features[3] = {
+	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
+		EXT2_FEATURE_COMPAT_DIR_INDEX,	/* Compat */
+	EXT2_FEATURE_INCOMPAT_FILETYPE,		/* Incompat */
+	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
+};
+
 /*
  * Remove an external journal from the filesystem
  */
@@ -298,6 +305,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 	int journal, old_journal, dxdir, old_dxdir;
 	struct ext2_super_block *sb= fs->super;
 	__u32	old_compat, old_incompat, old_ro_compat;
+	int		type_err;
+	unsigned int	mask_err;
 
 	old_compat = sb->s_feature_compat;
 	old_ro_compat = sb->s_feature_ro_compat;
@@ -311,10 +320,23 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 	old_dxdir = sb->s_feature_compat &
 		EXT2_FEATURE_COMPAT_DIR_INDEX;
-	if (e2p_edit_feature(features, &sb->s_feature_compat,
-			     ok_features)) {
-		fprintf(stderr, _("Invalid filesystem option set: %s\n"),
-			features);
+	if (e2p_edit_feature2(features, &sb->s_feature_compat,
+			      ok_features, clear_ok_features,
+			      &type_err, &mask_err)) {
+		if (!mask_err)
+			fprintf(stderr,
+				_("Invalid filesystem option set: %s\n"),
+				features);
+		else if (type_err & E2P_FEATURE_NEGATE_FLAG)
+			fprintf(stderr, _("Clearing filesystem feature '%s' "
+					  "not supported.\n"),
+				e2p_feature2string(type_err &
+						   E2P_FEATURE_TYPE_MASK,
+						   mask_err));
+		else
+			fprintf(stderr, _("Setting filesystem feature '%s' "
+					  "not supported.\n"),
+				e2p_feature2string(type_err, mask_err));
 		exit(1);
 	}
 	sparse = sb->s_feature_ro_compat &
