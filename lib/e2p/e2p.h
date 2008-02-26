@@ -7,7 +7,9 @@
 #define E2P_FEATURE_COMPAT	0
 #define E2P_FEATURE_INCOMPAT	1
 #define E2P_FEATURE_RO_INCOMPAT	2
+#define E2P_FEATURE_TYPE_MASK	0x03
 
+#define E2P_FEATURE_NEGATE_FLAG	0x80
 
 /* `options' for print_flags() */
 
@@ -34,6 +36,9 @@ int setversion (int fd, unsigned long version);
 const char *e2p_feature2string(int compat, unsigned int mask);
 int e2p_string2feature(char *string, int *compat, unsigned int *mask);
 int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array);
+int e2p_edit_feature2(const char *str, __u32 *compat_array, __u32 *ok_array,
+		      __u32 *clear_ok_array, int *type_err, 
+		      unsigned int *mask_err);
 
 int e2p_is_null_uuid(void *uu);
 void e2p_uuid_to_str(void *uu, char *out);
