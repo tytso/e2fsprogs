@@ -1152,7 +1152,7 @@ void do_unlink(int argc, char *argv[])
 
 void do_find_free_block(int argc, char *argv[])
 {
-	blk_t	free_blk, goal;
+	blk_t	free_blk, goal, first_free = 0;
  	int		count;
 	errcode_t	retval;
 	char		*tmp;
@@ -1188,6 +1188,11 @@ void do_find_free_block(int argc, char *argv[])
 	while (count-- > 0) {
 		retval = ext2fs_new_block(current_fs, free_blk + 1, 0,
 					  &free_blk);
+		if (first_free) {
+			if (first_free == free_blk)
+				break;
+		} else
+			first_free = free_blk;
 		if (retval) {
 			com_err("ext2fs_new_block", retval, 0);
 			return;

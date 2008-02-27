@@ -108,12 +108,29 @@ static void usage(void)
 }
 
 static __u32 ok_features[3] = {
+	/* Compat */
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
-		EXT2_FEATURE_COMPAT_DIR_INDEX,	/* Compat */
-	EXT2_FEATURE_INCOMPAT_FILETYPE|		/* Incompat */
-		EXT3_FEATURE_INCOMPAT_EXTENTS|
+		EXT2_FEATURE_COMPAT_DIR_INDEX,
+	/* Incompat */
+	EXT2_FEATURE_INCOMPAT_FILETYPE |
+		EXT3_FEATURE_INCOMPAT_EXTENTS |
 		EXT4_FEATURE_INCOMPAT_FLEX_BG,
-	EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER	/* R/O compat */
+	/* R/O compat */
+	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
+		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+};
+
+static __u32 clear_ok_features[3] = {
+	/* Compat */
+	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
+		EXT2_FEATURE_COMPAT_RESIZE_INODE |
+		EXT2_FEATURE_COMPAT_DIR_INDEX,
+	/* Incompat */
+	EXT2_FEATURE_INCOMPAT_FILETYPE |
+		EXT4_FEATURE_INCOMPAT_FLEX_BG,
+	/* R/O compat */
+	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
+		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 };
 
 /*
@@ -297,47 +314,44 @@ static void update_mntopts(ext2_filsys fs, char *mntopts)
  */
 static void update_feature_set(ext2_filsys fs, char *features)
 {
-	int sparse, old_sparse, filetype, old_filetype;
-	int journal, old_journal, dxdir, old_dxdir;
-	int flex_bg, old_flex_bg, extents, old_extents;
 	struct ext2_super_block *sb= fs->super;
 	__u32	old_compat, old_incompat, old_ro_compat;
+	__u32		old_features[3];
+	int		type_err;
+	unsigned int	mask_err;
 
-	old_compat = sb->s_feature_compat;
-	old_ro_compat = sb->s_feature_ro_compat;
-	old_incompat = sb->s_feature_incompat;
+#define FEATURE_ON(type, mask) (!(old_features[(type)] & (mask)) && \
+				((&sb->s_feature_compat)[(type)] & (mask)))
+#define FEATURE_OFF(type, mask) ((old_features[(type)] & (mask)) && \
+				 !((&sb->s_feature_compat)[(type)] & (mask)))
+#define FEATURE_CHANGED(type, mask) ((mask) & \
+		     (old_features[(type)] ^ (&sb->s_feature_compat)[(type)]))
 
-	old_sparse = sb->s_feature_ro_compat &
-		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-	old_filetype = sb->s_feature_incompat &
-		EXT2_FEATURE_INCOMPAT_FILETYPE;
-	old_extents = sb->s_feature_incompat &
-		EXT3_FEATURE_INCOMPAT_EXTENTS;
-	old_flex_bg = sb->s_feature_incompat &
-		EXT4_FEATURE_INCOMPAT_FLEX_BG;
-	old_journal = sb->s_feature_compat &
-		EXT3_FEATURE_COMPAT_HAS_JOURNAL;
-	old_dxdir = sb->s_feature_compat &
-		EXT2_FEATURE_COMPAT_DIR_INDEX;
-	if (e2p_edit_feature(features, &sb->s_feature_compat,
-			     ok_features)) {
-		fprintf(stderr, _("Invalid filesystem option set: %s\n"),
-			features);
+	old_features[E2P_FEATURE_COMPAT] = sb->s_feature_compat;
+	old_features[E2P_FEATURE_INCOMPAT] = sb->s_feature_incompat;
+	old_features[E2P_FEATURE_RO_INCOMPAT] = sb->s_feature_ro_compat;
+
+	if (e2p_edit_feature2(features, &sb->s_feature_compat,
+			      ok_features, clear_ok_features,
+			      &type_err, &mask_err)) {
+		if (!mask_err)
+			fprintf(stderr,
+				_("Invalid filesystem option set: %s\n"),
+				features);
+		else if (type_err & E2P_FEATURE_NEGATE_FLAG)
+			fprintf(stderr, _("Clearing filesystem feature '%s' "
+					  "not supported.\n"),
+				e2p_feature2string(type_err &
+						   E2P_FEATURE_TYPE_MASK,
+						   mask_err));
+		else
+			fprintf(stderr, _("Setting filesystem feature '%s' "
+					  "not supported.\n"),
+				e2p_feature2string(type_err, mask_err));
 		exit(1);
 	}
-	sparse = sb->s_feature_ro_compat &
-		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-	filetype = sb->s_feature_incompat &
-		EXT2_FEATURE_INCOMPAT_FILETYPE;
-	extents = sb->s_feature_incompat &
-		EXT3_FEATURE_INCOMPAT_EXTENTS;
-	flex_bg = sb->s_feature_incompat &
-		EXT4_FEATURE_INCOMPAT_FLEX_BG;
-	journal = sb->s_feature_compat &
-		EXT3_FEATURE_COMPAT_HAS_JOURNAL;
-	dxdir = sb->s_feature_compat &
-		EXT2_FEATURE_COMPAT_DIR_INDEX;
-	if (old_journal && !journal) {
+
+	if (FEATURE_OFF(E2P_FEATURE_COMPAT, EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
 		if ((mount_flags & EXT2_MF_MOUNTED) &&
 		    !(mount_flags & EXT2_MF_READONLY)) {
 			fputs(_("The has_journal flag may only be "
@@ -360,7 +374,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 			remove_journal_device(fs);
 		}
 	}
-	if (journal && !old_journal) {
+
+	if (FEATURE_ON(E2P_FEATURE_COMPAT, EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
 		/*
 		 * If adding a journal flag, let the create journal
 		 * code below handle creating setting the flag and
@@ -371,18 +386,15 @@ static void update_feature_set(ext2_filsys fs, char *features)
 			journal_size = -1;
 		sb->s_feature_compat &= ~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 	}
-	if (old_extents && !extents) {
-		fputs(_("Clearing the extents feature flag not supported.\n"),
-		      stderr);
-		exit(1);
-	}
-	if (dxdir && !old_dxdir) {
+
+	if (FEATURE_ON(E2P_FEATURE_COMPAT, EXT2_FEATURE_COMPAT_DIR_INDEX)) {
 		if (!sb->s_def_hash_version)
 			sb->s_def_hash_version = EXT2_HASH_TEA;
 		if (uuid_is_null((unsigned char *) sb->s_hash_seed))
 			uuid_generate((unsigned char *) sb->s_hash_seed);
 	}
-	if (!flex_bg && old_flex_bg) {
+
+	if (FEATURE_OFF(E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
 		if (ext2fs_check_desc(fs)) {
 			fputs(_("Clearing the flex_bg flag would "
 				"cause the the filesystem to be\n"
@@ -395,14 +407,22 @@ static void update_feature_set(ext2_filsys fs, char *features)
 	    (sb->s_feature_compat || sb->s_feature_ro_compat ||
 	     sb->s_feature_incompat))
 		ext2fs_update_dynamic_rev(fs);
-	if ((sparse != old_sparse) ||
-	    (filetype != old_filetype)) {
+
+	if (FEATURE_CHANGED(E2P_FEATURE_RO_INCOMPAT,
+			    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER) ||
+	    FEATURE_CHANGED(E2P_FEATURE_INCOMPAT,
+			    EXT2_FEATURE_INCOMPAT_FILETYPE) ||
+	    FEATURE_CHANGED(E2P_FEATURE_COMPAT,
+			    EXT2_FEATURE_COMPAT_RESIZE_INODE) ||
+	    FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
+			EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
 		sb->s_state &= ~EXT2_VALID_FS;
 		printf("\n%s\n", _(please_fsck));
 	}
-	if ((old_compat != sb->s_feature_compat) ||
-	    (old_ro_compat != sb->s_feature_ro_compat) ||
-	    (old_incompat != sb->s_feature_incompat))
+
+	if ((old_features[E2P_FEATURE_COMPAT] != sb->s_feature_compat) ||
+	    (old_features[E2P_FEATURE_INCOMPAT] != sb->s_feature_incompat) ||
+	    (old_features[E2P_FEATURE_RO_INCOMPAT] != sb->s_feature_ro_compat))
 		ext2fs_mark_super_dirty(fs);
 }
 

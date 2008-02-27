@@ -134,7 +134,6 @@ errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 	
 	ext2fs_block_alloc_stats(fs, block, +1);
 	*ret = block;
-	return 0;
 
 fail:
 	if (buf)

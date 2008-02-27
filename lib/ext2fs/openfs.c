@@ -303,10 +303,14 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 
 	fs->stride = fs->super->s_raid_stride;
 
+	fs->flags &= ~EXT2_FLAG_NOFREE_ON_ERROR;
 	*ret_fs = fs;
 	return 0;
 cleanup:
-	ext2fs_free(fs);
+	if (flags & EXT2_FLAG_NOFREE_ON_ERROR)
+		*ret_fs = fs;
+	else
+		ext2fs_free(fs);
 	return retval;
 }
 

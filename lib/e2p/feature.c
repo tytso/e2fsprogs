@@ -163,15 +163,26 @@ static char *skip_over_word(char *cp)
 /*
  * Edit a feature set array as requested by the user.  The ok_array,
  * if set, allows the application to limit what features the user is
- * allowed to set or clear using this function.
+ * allowed to set or clear using this function.  If clear_ok_array is set, 
+ * then use it tell whether or not it is OK to clear a filesystem feature.
  */
-int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array)
+int e2p_edit_feature2(const char *str, __u32 *compat_array, __u32 *ok_array,
+		      __u32 *clear_ok_array, int *type_err, 
+		      unsigned int *mask_err)
 {
 	char		*cp, *buf, *next;
 	int		neg;
 	unsigned int	mask;
 	int		compat_type;
 	int		rc = 0;
+
+	if (!clear_ok_array)
+		clear_ok_array = ok_array;
+
+	if (type_err)
+		*type_err = 0;
+	if (mask_err)
+		*mask_err = 0;
 
 	buf = malloc(strlen(str)+1);
 	if (!buf)
@@ -207,15 +218,35 @@ int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array)
 			rc = 1;
 			break;
 		}
-		if (ok_array && !(ok_array[compat_type] & mask)) {
-			rc = 1;
-			break;
-		}
-		if (neg)
+		if (neg) {
+			if (clear_ok_array && 
+			    !(clear_ok_array[compat_type] & mask)) {
+				rc = 1;
+				if (type_err)
+					*type_err = (compat_type | 
+						     E2P_FEATURE_NEGATE_FLAG);
+				if (mask_err)
+					*mask_err = mask;
+				break;
+			}
 			compat_array[compat_type] &= ~mask;
-		else
+		} else {
+			if (ok_array && !(ok_array[compat_type] & mask)) {
+				rc = 1;
+				if (type_err)
+					*type_err = compat_type;
+				if (mask_err)
+					*mask_err = mask;
+				break;
+			}
 			compat_array[compat_type] |= mask;
+		}
 	}
 	free(buf);
 	return rc;
+}
+
+int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array)
+{
+	return e2p_edit_feature2(str, compat_array, ok_array, 0, 0, 0);
 }

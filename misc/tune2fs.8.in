@@ -415,6 +415,10 @@ The following filesystem features can be set or cleared using
 .BR tune2fs :
 .RS 1.2i
 .TP
+.B large_file
+Filesystem can contain files that are greater than 2GB.  (Modern kernels
+set this feature automatically when a file > 2GB is created.)
+.TP
 .B dir_index
 Use hashed b-trees to speed up lookups in large directories.
 .TP
@@ -429,12 +433,19 @@ option.
 .TP
 .B sparse_super
 Limit the number of backup superblocks to save space on large filesystems.
+.TP
+.B resize_inode
+Reserve space so the block group descriptor table may grow in the
+future.
+.B Tune2fs 
+only supports clearing this filesystem feature.
 .RE
 .IP
 After setting or clearing 
-.B sparse_super
-and 
-.B filetype 
+.BR sparse_super ,
+.BR filetype ,
+or
+.B resize_inode
 filesystem features,
 .BR e2fsck (8)
 must be run on the filesystem to return the filesystem to a consistent state.
@@ -446,12 +457,6 @@ if necessary.  After setting the
 feature, 
 .B e2fsck -D
 can be run to convert existing directories to the hashed B-tree format.
-.IP
-.B Warning:
-Linux kernels before 2.0.39 and many 2.1 series kernels do not support
-the filesystems that use any of these features.
-Enabling certain filesystem features may prevent the filesystem from
-being mounted by kernels which do not support those features.
 .TP
 .BI \-r " reserved-blocks-count"
 Set the number of reserved filesystem blocks.
@@ -461,14 +466,6 @@ Turn the sparse super feature off or on.  Turning this feature on
 saves space on really big filesystems.  This is the same as using the
 .B "\-O sparse_super"
 option.
-.IP
-.B Warning:
-Linux kernels before 2.0.39 do not support this feature.  Neither do
-all Linux 2.1 kernels; please don't use this unless you know what you're
-doing!  You need to run
-.BR e2fsck (8)
-on the filesystem after changing this feature in order to have a valid
-filesystem.
 .TP
 .BI \-T " time-last-checked"
 Set the time the filesystem was last checked using

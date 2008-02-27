@@ -171,37 +171,42 @@ static int dm_device_has_dep(const dev_t dev, const char *name)
 	struct dm_deps *deps;
 	struct dm_info info;
 	unsigned int i;
+	int ret = 0;
 
 	task = dm_task_create(DM_DEVICE_DEPS);
 	if (!task)
-		return 0;
+		goto out;
 
-	dm_task_set_name(task, name);
-	dm_task_run(task);
-	dm_task_get_info(task, &info);
+	if (!dm_task_set_name(task, name))
+		goto out;
 
-	if (!info.exists) {
-		dm_task_destroy(task);
-		return 0;
-	}
+	if (!dm_task_run(task))
+		goto out;
 
+	if (!dm_task_get_info(task, &info))
+		goto out;
+
+	if  (!info.exists)
+		goto out;
+  
 	deps = dm_task_get_deps(task);
-	if (!deps || deps->count == 0) {
-		dm_task_destroy(task);
-		return 0;
-	}
+	if (!deps || deps->count == 0)
+		goto out;
 
 	for (i = 0; i < deps->count; i++) {
 		dev_t dep_dev = deps->device[i];
 
 		if (dev == dep_dev) {
-			dm_task_destroy(task);
-			return 1;
+			ret = 1;
+			goto out;
 		}
 	}
 
-	dm_task_destroy(task);
-	return 0;
+out:
+	if (task)
+		dm_task_destroy(task);
+
+	return ret;
 }
 
 static int dm_device_is_leaf(const dev_t dev)
@@ -214,15 +219,16 @@ static int dm_device_is_leaf(const dev_t dev)
 	dm_log_init(dm_quiet_log);
 	task = dm_task_create(DM_DEVICE_LIST);
 	if (!task)
-		return 1;
+		goto out;
+
 	dm_log_init(0);
 
-	dm_task_run(task);
+	if (!dm_task_run(task))
+		goto out;
+
 	names = dm_task_get_names(task);
-	if (!names || !names->dev) {
-		dm_task_destroy(task);
-		return 1;
-	}
+	if (!names || !names->dev)
+		goto out;
 
 	n = 0;
 	do {
@@ -234,7 +240,9 @@ static int dm_device_is_leaf(const dev_t dev)
 		next = names->next;
 	} while (next);
 
-	dm_task_destroy(task);
+out:
+	if (task)
+		dm_task_destroy(task);
 
 	return ret;
 }
@@ -247,20 +255,25 @@ static dev_t dm_get_devno(const char *name)
 
 	task = dm_task_create(DM_DEVICE_INFO);
 	if (!task)
-		return ret;
+		goto out;
 
-	dm_task_set_name(task, name);
-	dm_task_run(task);
-	dm_task_get_info(task, &info);
+	if (!dm_task_set_name(task, name))
+		goto out;
 
-	if (!info.exists) {
-		dm_task_destroy(task);
-		return ret;
-	}
+	if (!dm_task_run(task))
+		goto out;
+
+	if (!dm_task_get_info(task, &info))
+		goto out;
+
+	if (!info.exists)
+		goto out;
 
 	ret = makedev(info.major, info.minor);
 
-	dm_task_destroy(task);
+out:
+	if (task)
+		dm_task_destroy(task);
 	
 	return ret;
 }
@@ -275,15 +288,15 @@ static void dm_probe_all(blkid_cache cache, int only_if_new)
 	dm_log_init(dm_quiet_log);
 	task = dm_task_create(DM_DEVICE_LIST);
 	if (!task)
-		return;
+		goto out;
 	dm_log_init(0);
 
-	dm_task_run(task);
+	if (!dm_task_run(task))
+		goto out;
+
 	names = dm_task_get_names(task);
-	if (!names || !names->dev) {
-		dm_task_destroy(task);
-		return;
-	}
+	if (!names || !names->dev)
+		goto out;
 
 	n = 0;
 	do {
@@ -311,7 +324,9 @@ try_next:
 		next = names->next;
 	} while (next);
 
-	dm_task_destroy(task);
+out:
+	if (task)
+		dm_task_destroy(task);
 }
 #endif /* HAVE_DEVMAPPER */
 

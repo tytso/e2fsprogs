@@ -167,6 +167,11 @@ and need to be rebuilt.  The
 option forces all directories in the filesystem to be optimized.  This can
 sometimes make them a little smaller and slightly faster to search, but
 in practice, you should rarely need to use this option.
+.IP
+The
+.B \-D
+option will detect directory entries with duplicate names in a single
+directory, which e2fsck normally does not enforce for performance reasons.
 .TP
 .BI \-E " extended_options"
 Set e2fsck extended options.  Extended options are comma

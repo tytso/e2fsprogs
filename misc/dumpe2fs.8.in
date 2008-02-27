@@ -11,12 +11,10 @@ dumpe2fs \- dump ext2/ext3 filesystem information
 .B \-bfhixV
 ]
 [
-.B \-ob 
-.I superblock
+.B \-o superblock=\fIsuperblock
 ]
 [
-.B \-oB
-.I blocksize
+.B \-o blocksize=\fIblocksize
 ]
 .I device
 .SH DESCRIPTION
@@ -34,14 +32,14 @@ program for the BSD Fast File System.
 .B \-b
 print the blocks which are reserved as bad in the filesystem.
 .TP
-.BI \-ob " superblock"
+.B \-o superblock=\fIsuperblock
 use the block
 .I superblock
 when examining the filesystem.
 This option is not usually needed except by a filesystem wizard who 
 is examining the remains of a very badly corrupted filesystem.
 .TP
-.BI \-oB " blocksize"
+.B \-o blocksize=\fIblocksize
 use blocks of
 .I blocksize
 bytes when examining the filesystem.

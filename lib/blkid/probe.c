@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include <sys/types.h>
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
@@ -163,7 +164,7 @@ static void get_ext2_info(blkid_dev dev, struct blkid_magic *id,
  * Check to see if a filesystem is in /proc/filesystems.
  * Returns 1 if found, 0 if not
  */
-int fs_proc_check(const char *fs_name)
+static int fs_proc_check(const char *fs_name)
 {
 	FILE	*f;
 	char	buf[80], *cp, *t;
@@ -200,7 +201,7 @@ int fs_proc_check(const char *fs_name)
  * Check to see if a filesystem is available as a module
  * Returns 1 if found, 0 if not
  */
-int check_for_modules(const char *fs_name)
+static int check_for_modules(const char *fs_name)
 {
 	struct utsname	uts;
 	FILE		*f;
@@ -236,7 +237,7 @@ int check_for_modules(const char *fs_name)
 	return (0);
 }
 
-static int system_supports_ext4()
+static int system_supports_ext4(void)
 {
 	static time_t	last_check = 0;
 	static int	ret = -1;
@@ -249,7 +250,7 @@ static int system_supports_ext4()
 	return ret;
 }
 
-static int system_supports_ext4dev()
+static int system_supports_ext4dev(void)
 {
 	static time_t	last_check = 0;
 	static int	ret = -1;
@@ -1008,7 +1009,7 @@ static int probe_gfs2(struct blkid_probe *probe,
 	return 1;
 }
 
-static int probe_hfsplus(struct blkid_probe *probe,
+static int probe_hfsplus(struct blkid_probe *probe __BLKID_ATTR((unused)),
 			 struct blkid_magic *id __BLKID_ATTR((unused)),
 			 unsigned char *buf)
 {
@@ -1021,6 +1022,73 @@ static int probe_hfsplus(struct blkid_probe *probe,
 	return 1;
 }
 
+#define LVM2_LABEL_SIZE 512
+static unsigned int lvm2_calc_crc(const void *buf, uint size)
+{
+	static const uint crctab[] = {
+		0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac,
+		0x76dc4190, 0x6b6b51f4, 0x4db26158, 0x5005713c,
+		0xedb88320, 0xf00f9344, 0xd6d6a3e8, 0xcb61b38c,
+		0x9b64c2b0, 0x86d3d2d4, 0xa00ae278, 0xbdbdf21c
+	};
+	uint i, crc = 0xf597a6cf;
+	const __u8 *data = (const __u8 *) buf;
+
+	for (i = 0; i < size; i++) {
+		crc ^= *data++;
+		crc = (crc >> 4) ^ crctab[crc & 0xf];
+		crc = (crc >> 4) ^ crctab[crc & 0xf];
+	}
+	return crc;
+}
+
+static int probe_lvm2(struct blkid_probe *probe,
+			struct blkid_magic *id __BLKID_ATTR((unused)),
+			unsigned char *buf)
+{
+	int sector = (id->bim_kboff) << 1;;
+	struct lvm2_pv_label_header *label;
+	label = (struct lvm2_pv_label_header *)buf;
+	char *p, *q, uuid[40];
+	unsigned int i, b;
+
+	/* buf is at 0k or 1k offset; find label inside */
+	if (memcmp(buf, "LABELONE", 8) == 0) {
+		label = (struct lvm2_pv_label_header *)buf;
+	} else if (memcmp(buf + 512, "LABELONE", 8) == 0) {
+		label = (struct lvm2_pv_label_header *)(buf + 512);
+		sector++;
+	} else {
+		return 1;
+	}
+
+	if (blkid_le64(label->sector_xl) != (unsigned) sector) {
+		DBG(DEBUG_PROBE,
+		    printf("LVM2: label for sector %llu found at sector %d\n",
+			   blkid_le64(label->sector_xl), sector));
+		return 1;
+	}
+
+	if (lvm2_calc_crc(&label->offset_xl, LVM2_LABEL_SIZE -
+			  ((char *)&label->offset_xl - (char *)label)) !=
+			blkid_le32(label->crc_xl)) {
+		DBG(DEBUG_PROBE,
+		    printf("LVM2: label checksum incorrect at sector %d\n",
+			   sector));
+		return 1;
+	}
+
+	for (i=0, b=1, p=uuid, q= (char *) label->pv_uuid; i <= 32;
+	     i++, b <<= 1) {
+		if (b & 0x4444440)
+			*p++ = '-';
+		*p++ = *q++;
+	}
+
+	blkid_set_tag(probe->dev, "UUID", uuid, LVM2_ID_LEN+6);
+
+	return 0;
+}
 /*
  * BLKID_BLK_OFFS is at least as large as the highest bim_kboff defined
  * in the type_array table below + bim_kbalign.
@@ -1114,6 +1182,10 @@ static struct blkid_magic type_array[] = {
   { "crypt_LUKS", 0,	 0,  6,	"LUKS\xba\xbe",		probe_luks },
   { "squashfs",	 0,	 0,  4,	"sqsh",			0 },
   { "squashfs",	 0,	 0,  4,	"hsqs",			0 },
+  { "lvm2pv",	 0,  0x218,  8, "LVM2 001",		probe_lvm2 },
+  { "lvm2pv",	 0,  0x018,  8, "LVM2 001",		probe_lvm2 },
+  { "lvm2pv",	 1,  0x018,  8, "LVM2 001",		probe_lvm2 },
+  { "lvm2pv",	 1,  0x218,  8, "LVM2 001",		probe_lvm2 },
   {   NULL,	 0,	 0,  0, NULL,			NULL }
 };
 

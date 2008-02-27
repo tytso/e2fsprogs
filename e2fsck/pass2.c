@@ -275,15 +275,6 @@ void e2fsck_pass2(e2fsck_t ctx)
 			ext2fs_update_dynamic_rev(fs);
 			ext2fs_mark_super_dirty(fs);
 		}
-	} else if (!ctx->large_files &&
-	    (sb->s_feature_ro_compat &
-	      EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
-		if (fs->flags & EXT2_FLAG_RW) {
-			sb->s_feature_ro_compat &= 
-				~EXT2_FEATURE_RO_COMPAT_LARGE_FILE;
-			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
-			ext2fs_mark_super_dirty(fs);
-		}
 	}
 	
 #ifdef RESOURCE_TRACK

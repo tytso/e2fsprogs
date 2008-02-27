@@ -531,6 +531,20 @@ struct hfs_mdb {
         __u16        embed_blockcount;
 } __attribute__((packed));
 
+/* this is lvm's label_header & pv_header combined. */
+
+#define LVM2_ID_LEN 32
+
+struct lvm2_pv_label_header {
+	/* label_header */
+	__u8	id[8];		/* LABELONE */
+	__u64	sector_xl;	/* Sector number of this label */
+	__u32	crc_xl;		/* From next field to end of sector */
+	__u32	offset_xl;	/* Offset from start of struct to contents */
+	__u8	type[8];	/* LVM2 001 */
+	/* pv_header */
+	__u8	pv_uuid[LVM2_ID_LEN];
+} __attribute__ ((packed));
 
 /*
  * Byte swap functions

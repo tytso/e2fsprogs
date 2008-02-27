@@ -364,7 +364,7 @@ static void load_fs_info(const char *filename)
 	
 	fclose(f);
 	
-	if (old_fstab) {
+	if (old_fstab && filesys_info) {
 		fputs(_("\007\007\007"
 		"WARNING: Your /etc/fstab does not contain the fsck passno\n"
 		"	field.  I will kludge around things for you, but you\n"
