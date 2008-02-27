@@ -97,6 +97,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 	/*
 	 * Finally, update the bad blocks from the bad_block_map
 	 */
+	printf("%s: Updating bad block inode.\n", ctx->device_name);
 	retval = ext2fs_update_bb_inode(fs, bb_list);
 	if (retval) {
 		com_err("ext2fs_update_bb_inode", retval,
