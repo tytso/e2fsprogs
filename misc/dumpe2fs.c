@@ -323,6 +323,83 @@ static void print_journal_information(ext2_filsys fs)
 	}
 }
 
+static void parse_extended_opts(const char *opts, blk_t *superblock, 
+				int *blocksize)
+{
+	char	*buf, *token, *next, *p, *arg, *badopt = "";
+	int	len;
+	int	usage = 0;
+
+	len = strlen(opts);
+	buf = malloc(len+1);
+	if (!buf) {
+		fprintf(stderr,
+			_("Couldn't allocate memory to parse options!\n"));
+		exit(1);
+	}
+	strcpy(buf, opts);
+	for (token = buf; token && *token; token = next) {
+		p = strchr(token, ',');
+		next = 0;
+		if (p) {
+			*p = 0;
+			next = p+1;
+		}
+		arg = strchr(token, '=');
+		if (arg) {
+			*arg = 0;
+			arg++;
+		}
+		if (strcmp(token, "superblock") == 0 ||
+		    strcmp(token, "sb") == 0) {
+			if (!arg) {
+				usage++;
+				badopt = token;
+				continue;
+			}
+			*superblock = strtoul(arg, &p, 0);
+			if (*p) {
+				fprintf(stderr,
+					_("Invalid superblock parameter: %s\n"),
+					arg);
+				usage++;
+				continue;
+			}
+		} else if (strcmp(token, "blocksize") == 0 ||
+			   strcmp(token, "bs") == 0) {
+			if (!arg) {
+				usage++;
+				badopt = token;
+				continue;
+			}
+			*blocksize = strtoul(arg, &p, 0);
+			if (*p) {
+				fprintf(stderr,
+					_("Invalid blocksize parameter: %s\n"),
+					arg);
+				usage++;
+				continue;
+			}
+		} else {
+			usage++;
+			badopt = token;
+		}
+	}
+	if (usage) {
+		fprintf(stderr, _("\nBad extended option(s) specified: %s\n\n"
+			"Extended options are separated by commas, "
+			"and may take an argument which\n"
+			"\tis set off by an equals ('=') sign.\n\n"
+			"Valid extended options are:\n"
+			"\tsuperblock=<superblock number>\n"
+			"\tblocksize=<blocksize>\n"),
+			badopt);
+		free(buf);
+		exit(1);
+	}
+	free(buf);
+}	
+
 int main (int argc, char ** argv)
 {
 	errcode_t	retval;
@@ -364,12 +441,8 @@ int main (int argc, char ** argv)
 			image_dump++;
 			break;
 		case 'o':
-			if (optarg[0] == 'b')
-				use_superblock = atoi(optarg+1);
-			else if (optarg[0] == 'B')
-				use_blocksize = atoi(optarg+1);
-			else
-				usage();
+			parse_extended_opts(optarg, &use_superblock, 
+					    &use_blocksize);
 			break;
 		case 'V':
 			/* Print version number and exit */
@@ -386,16 +459,26 @@ int main (int argc, char ** argv)
 	if (optind > argc - 1)
 		usage();
 	device_name = argv[optind++];
-	if (use_superblock && !use_blocksize)
-		use_blocksize = 1024;
 	flags = EXT2_FLAG_JOURNAL_DEV_OK | EXT2_FLAG_SOFTSUPP_FEATURES;
 	if (force)
 		flags |= EXT2_FLAG_FORCE;
 	if (image_dump)
 		flags |= EXT2_FLAG_IMAGE_FILE;
 	
-	retval = ext2fs_open (device_name, flags, use_superblock,
-			      use_blocksize, unix_io_manager, &fs);
+	if (use_superblock && !use_blocksize) {
+		for (use_blocksize = EXT2_MIN_BLOCK_SIZE;
+		     use_blocksize <= EXT2_MAX_BLOCK_SIZE;
+		     use_blocksize *= 2) {
+			retval = ext2fs_open (device_name, flags,
+					      use_superblock,
+					      use_blocksize, unix_io_manager,
+					      &fs);
+			if (!retval)
+				break;
+		}
+	} else
+		retval = ext2fs_open (device_name, flags, use_superblock,
+				      use_blocksize, unix_io_manager, &fs);
 	if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
 			 device_name);
