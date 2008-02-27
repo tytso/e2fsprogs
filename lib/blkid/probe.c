@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include <sys/types.h>
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
@@ -122,7 +123,7 @@ static int check_mdraid(int fd, unsigned char *ret_uuid)
 	return 0;
 }
 
-static void set_uuid(blkid_dev dev, uuid_t uuid, char *tag)
+static void set_uuid(blkid_dev dev, uuid_t uuid, const char *tag)
 {
 	char	str[37];
 
@@ -163,7 +164,7 @@ static void get_ext2_info(blkid_dev dev, struct blkid_magic *id,
  * Check to see if a filesystem is in /proc/filesystems.
  * Returns 1 if found, 0 if not
  */
-int fs_proc_check(const char *fs_name)
+static int fs_proc_check(const char *fs_name)
 {
 	FILE	*f;
 	char	buf[80], *cp, *t;
@@ -200,7 +201,7 @@ int fs_proc_check(const char *fs_name)
  * Check to see if a filesystem is available as a module
  * Returns 1 if found, 0 if not
  */
-int check_for_modules(const char *fs_name)
+static int check_for_modules(const char *fs_name)
 {
 	struct utsname	uts;
 	FILE		*f;
@@ -236,7 +237,7 @@ int check_for_modules(const char *fs_name)
 	return (0);
 }
 
-static int system_supports_ext4()
+static int system_supports_ext4(void)
 {
 	static time_t	last_check = 0;
 	static int	ret = -1;
@@ -249,7 +250,7 @@ static int system_supports_ext4()
 	return ret;
 }
 
-static int system_supports_ext4dev()
+static int system_supports_ext4dev(void)
 {
 	static time_t	last_check = 0;
 	static int	ret = -1;
@@ -409,7 +410,7 @@ static int probe_jbd(struct blkid_probe *probe, struct blkid_magic *id,
 #define FAT_ATTR_MASK			0x3f
 #define FAT_ENTRY_FREE			0xe5
 
-static char *no_name = "NO NAME    ";
+static const char *no_name = "NO NAME    ";
 
 static unsigned char *search_fat_label(struct vfat_dir_entry *dir, int count)
 {
@@ -777,10 +778,10 @@ static int probe_luks(struct blkid_probe *probe,
 		       struct blkid_magic *id __BLKID_ATTR((unused)),
 		       unsigned char *buf)
 {
-	unsigned char uuid[40];
+	char uuid[40];
 	/* 168 is the offset to the 40 character uuid:
 	 * http://luks.endorphin.org/LUKS-on-disk-format.pdf */
-	strncpy(uuid, buf+168, 40);
+	strncpy(uuid, (char *) buf+168, 40);
 	blkid_set_tag(probe->dev, "UUID", uuid, sizeof(uuid));
 	return 0;
 }
@@ -1007,7 +1008,7 @@ static int probe_gfs2(struct blkid_probe *probe,
 	return 1;
 }
 
-static int probe_hfsplus(struct blkid_probe *probe,
+static int probe_hfsplus(struct blkid_probe *probe __BLKID_ATTR((unused)),
 			 struct blkid_magic *id __BLKID_ATTR((unused)),
 			 unsigned char *buf)
 {
@@ -1021,7 +1022,7 @@ static int probe_hfsplus(struct blkid_probe *probe,
 }
 
 #define LVM2_LABEL_SIZE 512
-static int lvm2_calc_crc(const void *buf, uint size)
+static unsigned int lvm2_calc_crc(const void *buf, uint size)
 {
 	static const uint crctab[] = {
 		0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac,
@@ -1060,15 +1061,15 @@ static int probe_lvm2(struct blkid_probe *probe,
 		return 1;
 	}
 
-	if (blkid_le64(label->sector_xl) != sector) {
+	if (blkid_le64(label->sector_xl) != (unsigned) sector) {
 		DBG(DEBUG_PROBE,
-		    printf("LVM2: label for sector %d found at sector %d\n",
+		    printf("LVM2: label for sector %llu found at sector %d\n",
 			   blkid_le64(label->sector_xl), sector));
 		return 1;
 	}
 
 	if (lvm2_calc_crc(&label->offset_xl, LVM2_LABEL_SIZE -
-		((void *)&label->offset_xl - (void *)label)) !=
+			  ((char *)&label->offset_xl - (char *)label)) !=
 			blkid_le32(label->crc_xl)) {
 		DBG(DEBUG_PROBE,
 		    printf("LVM2: label checksum incorrect at sector %d\n",
@@ -1076,7 +1077,8 @@ static int probe_lvm2(struct blkid_probe *probe,
 		return 1;
 	}
 
-	for (i=0, b=1, p=uuid, q=label->pv_uuid; i <= 32; i++, b <<= 1) {
+	for (i=0, b=1, p=uuid, q= (char *) label->pv_uuid; i <= 32;
+	     i++, b <<= 1) {
 		if (b & 0x4444440)
 			*p++ = '-';
 		*p++ = *q++;
