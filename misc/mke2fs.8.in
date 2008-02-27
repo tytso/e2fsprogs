@@ -415,6 +415,10 @@ prefix the feature name with a  caret ('^') character.  The
 pseudo-filesystem feature "none" will clear all filesystem features.
 .RS 1.2i
 .TP
+.B large_file
+Filesystem can contain files that are greater than 2GB.  (Modern kernels
+set this feature automatically when a file > 2GB is created.)
+.TP
 .B dir_index
 Use hashed b-trees to speed up lookups in large directories.
 .TP
