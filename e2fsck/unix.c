@@ -884,6 +884,7 @@ int main (int argc, char *argv[])
 	int flags, run_result;
 	int journal_size;
 	int sysval, sys_page_size = 4096;
+	__u32 features[3];
 	
 	clear_problem_context(&pctx);
 #ifdef MTRACE
@@ -945,7 +946,7 @@ restart:
 #else
 	io_ptr = unix_io_manager;
 #endif
-	flags = 0;
+	flags = EXT2_FLAG_NOFREE_ON_ERROR;
 	if ((ctx->options & E2F_OPT_READONLY) == 0)
 		flags |= EXT2_FLAG_RW;
 	if ((ctx->mount_flags & EXT2_MF_MOUNTED) == 0)
@@ -974,6 +975,10 @@ restart:
 	    ((retval == EXT2_ET_BAD_MAGIC) ||
 	     (retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
 	     ((retval == 0) && ext2fs_check_desc(fs)))) {
+		if (fs->flags & EXT2_FLAG_NOFREE_ON_ERROR) {
+			ext2fs_free(fs);
+			fs = NULL;
+		}
 		if (!fs || (fs->group_desc_count > 1)) {
 			printf(_("%s: %s trying backup blocks...\n"),
 			       ctx->program_name, 
@@ -985,6 +990,19 @@ restart:
 			orig_retval = retval;
 			goto restart;
 		}
+	}
+	if (((retval == EXT2_ET_UNSUPP_FEATURE) ||
+	     (retval == EXT2_ET_RO_UNSUPP_FEATURE)) &&
+	    fs && fs->super) {
+		sb = fs->super;
+		features[0] = (sb->s_feature_compat & 
+			       ~EXT2_LIB_FEATURE_COMPAT_SUPP);
+		features[1] = (sb->s_feature_incompat & 
+			       ~EXT2_LIB_FEATURE_INCOMPAT_SUPP);
+		features[2] = (sb->s_feature_ro_compat & 
+			       ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP);
+		if (features[0] || features[1] || features[2])
+			goto print_unsupp_features;
 	}
 	if (retval) {
 		if (orig_retval)
@@ -1141,15 +1159,26 @@ restart:
 	 * Check for compatibility with the feature sets.  We need to
 	 * be more stringent than ext2fs_open().
 	 */
-	if ((sb->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP) ||
-	    (sb->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP)) {
-		com_err(ctx->program_name, EXT2_ET_UNSUPP_FEATURE,
-			"(%s)", ctx->device_name);
-		goto get_newer;
-	}
-	if (sb->s_feature_ro_compat & ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP) {
-		com_err(ctx->program_name, EXT2_ET_RO_UNSUPP_FEATURE,
-			"(%s)", ctx->device_name);
+	features[0] = sb->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP;
+	features[1] = sb->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP;
+	features[2] = (sb->s_feature_ro_compat & 
+		       ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP);
+print_unsupp_features:
+	if (features[0] || features[1] || features[2]) {
+		int	i, j;
+		__u32	*mask = features, m;
+
+		fprintf(stderr, _("%s has unsupported feature(s):"), 
+			ctx->filesystem_name);
+
+		for (i=0; i <3; i++,mask++) {
+			for (j=0,m=1; j < 32; j++, m<<=1) {
+				if (*mask & m)
+					fprintf(stderr, " %s", 
+						e2p_feature2string(i, m));
+			}
+		}
+		putc('\n', stderr);
 		goto get_newer;
 	}
 #ifdef ENABLE_COMPRESSION
