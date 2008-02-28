@@ -1109,13 +1109,15 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 {
 	struct process_block_struct	pb;
 	ext2_ino_t		ino, new_inode;
-	struct ext2_inode 	inode;
+	struct ext2_inode 	inode, *buf = NULL;
+	struct ext2_inode_large	*large_inode;
 	ext2_inode_scan 	scan = NULL;
 	errcode_t		retval;
 	int			group;
 	char			*block_buf = 0;
 	ext2_ino_t		start_to_move;
 	blk_t			orig_size, new_block;
+	int			inode_size;
 	
 	if ((rfs->old_fs->group_desc_count <=
 	     rfs->new_fs->group_desc_count) &&
@@ -1155,6 +1157,12 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	pb.inode = &inode;
 	pb.error = 0;
 	new_inode = EXT2_FIRST_INODE(rfs->new_fs->super);
+	inode_size = EXT2_INODE_SIZE(rfs->new_fs->super);
+	buf = malloc(inode_size);
+	if (!buf) {
+		retval = ENOMEM;
+		goto errout;
+	}
 	/*
 	 * First, copy all of the inodes that need to be moved
 	 * elsewhere in the inode table
@@ -1213,13 +1221,19 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 			}
 		}
 		ext2fs_mark_inode_bitmap(rfs->new_fs->inode_map, new_inode);
+		memcpy(buf, &inode, sizeof(struct ext2_inode));
+		large_inode = (struct ext2_inode_large *)buf;
+		large_inode->i_extra_isize = sizeof(struct ext2_inode_large) -
+			EXT2_GOOD_OLD_INODE_SIZE;
 		if (pb.changed) {
 			/* Get the new version of the inode */
-			retval = ext2fs_read_inode(rfs->old_fs, ino, &inode);
+			retval = ext2fs_read_inode_full(rfs->old_fs, ino,
+						buf, inode_size);
 			if (retval) goto errout;
 		}
 		inode.i_ctime = time(0);
-		retval = ext2fs_write_inode(rfs->old_fs, new_inode, &inode);
+		retval = ext2fs_write_inode_full(rfs->old_fs, new_inode,
+						buf, inode_size);
 		if (retval) goto errout;
 
 		group = (new_inode-1) / EXT2_INODES_PER_GROUP(rfs->new_fs->super);
@@ -1249,6 +1263,8 @@ errout:
 		ext2fs_close_inode_scan(scan);
 	if (block_buf)
 		ext2fs_free_mem(&block_buf);
+	if (buf)
+		free(buf);
 	return retval;
 }
 
