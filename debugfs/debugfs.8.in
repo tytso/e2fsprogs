@@ -513,5 +513,6 @@ environment variable.
 was written by Theodore Ts'o <tytso@mit.edu>.
 .SH SEE ALSO
 .BR dumpe2fs (8),
+.BR tune2fs (8),
 .BR e2fsck (8),
 .BR mke2fs (8)

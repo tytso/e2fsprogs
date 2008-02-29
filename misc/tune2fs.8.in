@@ -544,6 +544,7 @@ Time-dependent checking was added by Uwe Ohse <uwe@tirka.gun.de>.
 is part of the e2fsprogs package and is available from 
 http://e2fsprogs.sourceforge.net.
 .SH SEE ALSO
+.BR debugfs (8),
 .BR dumpe2fs (8),
 .BR e2fsck (8),
 .BR mke2fs (8)
