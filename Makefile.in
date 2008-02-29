@@ -74,7 +74,7 @@ TAGS clean-recursive distclean-recursive depend-recursive check-recursive \
 	done
 
 all-progs-recursive install-progs-recursive install-strip-progs-recursive \
-  uninstall-progs-recursive:
+  uninstall-progs-recursive: all-libs-recursive
 	@for subdir in $(PROG_SUBDIRS); do \
 	  if test -d $$subdir ; then \
 	    target=`echo $@|$(SED) 's/-progs-recursive//'`; \

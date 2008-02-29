@@ -94,13 +94,14 @@ int linux_version_code = 0;
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-c|-t|-l filename] [-b block-size] "
+	fprintf(stderr, _("Usage: %s [-c|-l filename] [-b block-size] "
 	"[-f fragment-size]\n\t[-i bytes-per-inode] [-I inode-size] "
-	"[-j] [-J journal-options]\n"
+	"[-J journal-options]\n"
 	"\t[-N number-of-inodes] [-m reserved-blocks-percentage] "
 	"[-o creator-os]\n\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
-	"[-r fs-revision] [-E extended-option[,...]] [-qvSV]\n\tdevice [blocks-count]\n"),
+	"[-r fs-revision] [-E extended-option[,...]]\n"
+	"\t[-T fs-type] [-jnqvFSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
