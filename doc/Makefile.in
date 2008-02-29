@@ -18,7 +18,7 @@ HTML=texi2html
 
 all:: libext2fs.info libext2fs.dvi
 
-install-doc-libs:
+install-doc-libs: libext2fs.info libext2fs.dvi
 	@$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
 	@echo "	MKINSTALLDIRS $(infodir)"
 	@$(MKINSTALLDIRS) $(DESTDIR)$(infodir)

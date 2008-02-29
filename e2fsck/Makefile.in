@@ -172,7 +172,7 @@ installdirs:
 	@$(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir) $(DESTDIR)$(man5dir)
 
-install: $(PROGS) $(MANPAGES) installdirs
+install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs
 	@for i in $(PROGS); do \
 		echo "	INSTALL $(root_sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
