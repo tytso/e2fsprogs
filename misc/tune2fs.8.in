@@ -461,12 +461,6 @@ can be run to convert existing directories to the hashed B-tree format.
 .BI \-r " reserved-blocks-count"
 Set the number of reserved filesystem blocks.
 .TP
-.BR \-s " [" 0 | 1 ]
-Turn the sparse super feature off or on.  Turning this feature on
-saves space on really big filesystems.  This is the same as using the
-.B "\-O sparse_super"
-option.
-.TP
 .BI \-T " time-last-checked"
 Set the time the filesystem was last checked using
 .BR  e2fsck .

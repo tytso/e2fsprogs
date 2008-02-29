@@ -97,10 +97,11 @@ static void usage(void)
 	fprintf(stderr,
 		_("Usage: %s [-c max_mounts_count] [-e errors_behavior] "
 		  "[-g group]\n"
-		  "\t[-i interval[d|m|w]] [-j] [-J journal_options]\n"
-		  "\t[-l] [-s sparse_flag] [-m reserved_blocks_percent]\n"
-		  "\t[-o [^]mount_options[,...]] [-r reserved_blocks_count]\n"
-		  "\t[-u user] [-C mount_count] [-L volume_label]\n"
+		  "\t[-i interval[d|m|w]] [-j] [-J journal_options] [-l]\n"
+		  "\t[-m reserved_blocks_percent] "
+		  "[-o [^]mount_options[,...]] \n"
+		  "\t[-r reserved_blocks_count] [-u user] [-C mount_count] "
+		  "[-L volume_label]\n"
 		  "\t[-M last_mounted_dir] [-O [^]feature[,...]]\n"
 		  "\t[-E extended-option[,...]] [-T last_check_time] "
 		  "[-U UUID] device\n"), program_name);
@@ -126,8 +127,7 @@ static __u32 clear_ok_features[3] = {
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE,
 	/* R/O compat */
-	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
-		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
+	EXT2_FEATURE_RO_COMPAT_LARGE_FILE
 };
 
 /*
@@ -719,7 +719,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 				r_flag = 1;
 				open_flag = EXT2_FLAG_RW;
 				break;
-			case 's':
+			case 's': /* Deprecated */
 				s_flag = atoi(optarg);
 				open_flag = EXT2_FLAG_RW;
 				break;
@@ -1005,19 +1005,9 @@ int main (int argc, char ** argv)
 		}
 	}
 	if (s_flag == 0) {
-		if (!(sb->s_feature_ro_compat &
-		      EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER))
-			fputs(_("\nThe filesystem already has sparse "
-				"superblocks disabled.\n"), stderr);
-		else {
-			sb->s_feature_ro_compat &=
-				~EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER;
-			sb->s_state &= ~EXT2_VALID_FS;
-			fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
-			ext2fs_mark_super_dirty(fs);
-			printf(_("\nSparse superblock flag cleared.  %s"),
-			       _(please_fsck));
-		}
+		fputs(_("\nClearing the sparse superflag not supported.\n"),
+		      stderr);
+		exit(1);
 	}
 	if (T_flag) {
 		sb->s_lastcheck = last_check_time;
