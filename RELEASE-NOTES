@@ -1,3 +1,125 @@
+E2fsprogs 1.40.7 (February 28, 2008)
+====================================
+
+Remove support for clearing the SPARSE_SUPER feature from tune2fs, and
+depreciate the -s option, since it can result in filesystems which
+e2fsck can't fix easily.  There are very good reasons for wanting to
+disable sparse_super; users who wants to turn off sparse_super can use
+debugfs.  (Addresses Sourceforge Bug: #1840286)
+    
+Add missing options to mke2fs's usage message.  (Addresses Sourceforge
+Bug: #1751393)
+    
+Fix bug in resize2fs when large (greater than 128 byte) inodes are
+moved when a filesystem is shrunk; it was only moving the first 128
+bytes, so extended attributes were not getting moved.  (Addresses Red
+Hat Bugzilla: #434893)
+
+E2fsck now prints an explicit message when the bad block inode is
+updated, to avoid confusion about why the filesystem was modified.
+(Addresses Sourceforge Bug: #756460)
+    
+Allow mke2fs and tune2fs manipulate the large_file feature.
+Previously we just let the kernel and e2fsck do this automatically,
+but e2fsck will no longer automatically clear the large_file feature.
+It still isn't really necessary to worry about this feature flag
+explicitly, but some users seem to care.  (Addresses Red Hat Bugzilla:
+#258381)
+    
+Suppress message about an old-style fstab if the fstab file is empty.
+(Addresses Debian Bug: #468176)
+    
+Fix (really minor) bug in debugfs's find_free_block so it avoids
+reporting a free block more than once if there are too few free blocks
+in the filesystem.  (Addresses Sourceforge Bug: #1096315)
+    
+Change e2fsck to no longer clear the LARGE_FILES feature flag
+automatically, when there are no more > 2GB files in the filesystem.
+It's been almost a decade since there have been kernels that don't
+support this flag, and e2fsck clears it quietly without telling the
+user why the filesystem has been changed.
+    
+Fix bug which could cause libblkid to seg fault if a device mapper
+volume disappears while it is being probed.  (Addresses RedHat
+Bugzilla: #433857)
+    
+Inhance e2fsck's reporting of unsupported filesystem feature flags.
+(Addresses Sourceforge Feature Request: #1175808)
+    
+Fix option syntax in dumpe2fs for explicit superblock and blocksize
+parameters.  What was currently documented in the man page has been
+broken for some time, due to getopt() implementation changes.  The
+option sytax has been changed to one which is can be more portable
+supported and which is consistent with the format for extended options
+in mke2fs and tune2fs.  (Addresses Sourceforge Bug: #1830994)
+    
+Add support to tune2fs to clear the resize_inode feature.  This
+requires an fsck afterwards.  (Addresses Red Hat Bugzilla: #167816)
+
+Teach blkid to detect LVM2 physical volumes.  (Addresses Red Hat
+Bugzilla: #409321)
+
+Add support for setting RAID stride and stripe-width via mke2fs and
+tune2fs.  Teach dumpe2fs to print the RAID parameters.
+
+Add support for setting new superblock fields to debugfs's
+set_super_value.
+
+Add support for printing "mostly-printable" extended attributes in
+Debugfs.
+
+Add support for the -M option to fsck, which causes it to ignore
+mounted filesystem.
+
+Fix uuidd so that it creates the pid file with the correct pid number.
+(Addresses Sourceforge Bug: #1893244)
+
+Fix various gcc -Wall warnings.
+
+Update Czech, Dutch, Polish, Sweedish, and Vietnamese translations
+
+Fixed spelling mistakes, typos, and otherwise clarified man pages.  
+(Addresses Sourceforge Patch: #1399325)
+
+
+Programmer's notes:
+-------------------
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bug: #466929)
+
+Add new flag EXT2_FLAG_NONFREE_ON_ERROR ext2fs_open2() which returns a
+partially filled-in filesystem object on an error, so that e2fsck can
+print more intelligent error messages.
+    
+Add a new function e2p_edit_feature2() which allows the caller to
+specify which feature flags are OK to set or clear, and which returns
+more specific information about feature flags which are not allowed to
+be set/cleared.
+    
+Set the C locale in the test_script driver since it uses [A-Za-z].
+(Addresses Sourceforge Bug: #1890526)
+
+Use fcntl locking instead of lockf in libuuid since Cygwin doesn't
+support lockf().
+
+Change configure.in to avoid using the 'dc' command unless it is
+absolutely needed. (i.e., when using parsing a WIP-style version
+number)  (Addresses Sourceforge Bug: #1893024)
+
+Add portability checks to support compilation under DJGPP.
+
+Update to the latest samba tdb code before the LGPLv3 change, which
+fixes a realloc() leak on failure.
+
+Fix memory leak in ext2fs_alloc_block().
+
+Fix makefile dependency issues for various install targets.
+(Addresses-Sourceforge-Patches: #1903484, #1903466, #1903456)
+    
+Improve descriptions for the r_move_itable and r_resize_inode tests.
+
+
 E2fsprogs 1.40.6 (February 9, 2008)
 ===================================
 
