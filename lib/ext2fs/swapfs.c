@@ -133,7 +133,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 			    struct ext2_inode_large *f, int hostorder,
 			    int bufsize)
 {
-	unsigned i, has_data_blocks, extra_isize;
+	unsigned i, has_data_blocks, extra_isize, attr_magic;
 	int islnk = 0;
 	__u32 *eaf, *eat;
 
@@ -232,7 +232,11 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 	eaf = (__u32 *) (((char *) f) + sizeof(struct ext2_inode) +
 					extra_isize);
 
-	if (ext2fs_swab32(*eaf) != EXT2_EXT_ATTR_MAGIC)
+	attr_magic = *eaf;
+	if (!hostorder)
+		attr_magic = ext2fs_swab32(attr_magic);
+
+	if (attr_magic != EXT2_EXT_ATTR_MAGIC)
 		return; /* it seems no magic here */
 
 	eat = (__u32 *) (((char *) t) + sizeof(struct ext2_inode) +
