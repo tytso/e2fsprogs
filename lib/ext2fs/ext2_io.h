@@ -79,7 +79,11 @@ struct struct_io_manager {
 	errcode_t (*set_option)(io_channel channel, const char *option, 
 				const char *arg);
 	errcode_t (*get_stats)(io_channel channel, io_stats *io_stats);
-	int		reserved[14];
+	errcode_t (*read_blk64)(io_channel channel, unsigned long long block,
+					int count, void *data);
+	errcode_t (*write_blk64)(io_channel channel, unsigned long long block,
+					int count, const void *data);
+	int		reserved[16];
 };
 
 #define IO_FLAG_RW		0x0001
@@ -91,7 +95,9 @@ struct struct_io_manager {
 #define io_channel_close(c) 		((c)->manager->close((c)))
 #define io_channel_set_blksize(c,s)	((c)->manager->set_blksize((c),s))
 #define io_channel_read_blk(c,b,n,d)	((c)->manager->read_blk((c),b,n,d))
+#define io_channel_read_blk64(c,b,n,d)	((c)->manager->read_blk64((c),b,n,d))
 #define io_channel_write_blk(c,b,n,d)	((c)->manager->write_blk((c),b,n,d))
+#define io_channel_write_blk64(c,b,n,d) ((c)->manager->write_blk64((c),b,n,d))
 #define io_channel_flush(c) 		((c)->manager->flush((c)))
 #define io_channel_bumpcount(c)		((c)->refcount++)
 	
