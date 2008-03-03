@@ -88,7 +88,11 @@ static errcode_t unix_set_option(io_channel channel, const char *option,
 static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
 ;
 static void reuse_cache(io_channel channel, struct unix_private_data *data,
-		 struct unix_cache *cache, unsigned long block);
+		 struct unix_cache *cache, unsigned long long block);
+static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
+			       int count, void *data);
+static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
+				int count, const void *data);
 
 /* __FreeBSD_kernel__ is defined by GNU/kFreeBSD - the FreeBSD kernel
  * does not know buffered block devices - everything is raw. */
@@ -114,6 +118,8 @@ static struct struct_io_manager struct_unix_manager = {
 #endif
 	unix_set_option,
 	unix_get_stats,
+	unix_read_blk64,
+	unix_write_blk64,
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
@@ -140,7 +146,7 @@ static errcode_t unix_get_stats(io_channel channel, io_stats *stats)
 #ifndef NEED_BOUNCE_BUFFER
 static errcode_t raw_read_blk(io_channel channel,
 			      struct unix_private_data *data,
-			      unsigned long block,
+			      unsigned long long block,
 			      int count, void *buf)
 {
 	errcode_t	retval;
@@ -229,7 +235,7 @@ error_out:
 
 static errcode_t raw_write_blk(io_channel channel,
 			       struct unix_private_data *data,
-			       unsigned long block,
+			       unsigned long long block,
 			       int count, const void *buf)
 {
 	ssize_t		size;
@@ -318,7 +324,7 @@ static void free_cache(struct unix_private_data *data)
  * entry to that should be reused.
  */
 static struct unix_cache *find_cached_block(struct unix_private_data *data,
-					    unsigned long block,
+					    unsigned long long block,
 					    struct unix_cache **eldest)
 {
 	struct unix_cache	*cache, *unused_cache, *oldest_cache;
@@ -348,7 +354,7 @@ static struct unix_cache *find_cached_block(struct unix_private_data *data,
  * Reuse a particular cache entry for another block.
  */
 static void reuse_cache(io_channel channel, struct unix_private_data *data,
-		 struct unix_cache *cache, unsigned long block)
+		 struct unix_cache *cache, unsigned long long block)
 {
 	if (cache->dirty && cache->in_use)
 		raw_write_blk(channel, data, cache->block, 1, cache->buf);
@@ -545,7 +551,7 @@ static errcode_t unix_set_blksize(io_channel channel, int blksize)
 }
 
 
-static errcode_t unix_read_blk(io_channel channel, unsigned long block,
+static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
 			       int count, void *buf)
 {
 	struct unix_private_data *data;
@@ -610,7 +616,13 @@ static errcode_t unix_read_blk(io_channel channel, unsigned long block,
 #endif /* NO_IO_CACHE */
 }
 
-static errcode_t unix_write_blk(io_channel channel, unsigned long block,
+static errcode_t unix_read_blk(io_channel channel, unsigned long block,
+			       int count, void *buf)
+{
+	return unix_read_blk64(channel, block, count, buf);
+}
+
+static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 				int count, const void *buf)
 {
 	struct unix_private_data *data;
@@ -660,6 +672,12 @@ static errcode_t unix_write_blk(io_channel channel, unsigned long block,
 	}
 	return retval;
 #endif /* NO_IO_CACHE */
+}
+
+static errcode_t unix_write_blk(io_channel channel, unsigned long block,
+				int count, const void *buf)
+{
+	return unix_write_blk64(channel, block, count, buf);
 }
 
 static errcode_t unix_write_byte(io_channel channel, unsigned long offset,
