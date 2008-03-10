@@ -1,9 +1,9 @@
 # Swedish messages for e2fsprogs.
-# Copyright © 2003, 2005, 2006, 2008 Free Software Foundation, Inc.
+# Copyright © 2003, 2005, 2006, 2008 Theodore Tso (msgids)
 # This file is distributed under the same license as the e2fsprogs package.
 # Göran Uddeborg <goeran@uddeborg.se>, 2003, 2005, 2006, 2008.
 #
-# $Revision: 1.36 $
+# $Revision: 1.39 $
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -65,10 +65,10 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.40.6\n"
+"Project-Id-Version: e2fsprogs 1.40.7\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2008-02-28 21:45-0500\n"
-"PO-Revision-Date: 2008-02-12 13:01+0100\n"
+"PO-Revision-Date: 2008-03-07 22:28+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -891,8 +891,7 @@ msgstr "Extern journal stödjer inte detta filsystem\n"
 #: e2fsck/problem.c:212
 msgid ""
 "Ext3 @j @S is unknown type %N (unsupported).\n"
-"It is likely that your copy of e2fsck is old and/or doesn't support this @j "
-"format.\n"
+"It is likely that your copy of e2fsck is old and/or doesn't support this @j format.\n"
 "It is also possible the @j @S is corrupt.\n"
 msgstr ""
 "Ext3-journalsuperblock är av okänd typ %N (ej stött).\n"
@@ -914,8 +913,7 @@ msgstr "superblock har inte har-journal-flagga, men har ext3-journal %s.\n"
 #. @-expanded: superblock has ext3 needs_recovery flag set, but no journal.\n
 #: e2fsck/problem.c:230
 msgid "@S has ext3 needs_recovery flag set, but no @j.\n"
-msgstr ""
-"superblock har ext3-behöver-rättas-flagga satt, men har ext3-journal %s.\n"
+msgstr "superblock har ext3-behöver-rättas-flagga satt, men har ext3-journal %s.\n"
 
 #. @-expanded: ext3 recovery flag is clear, but journal has data.\n
 #: e2fsck/problem.c:235
@@ -940,8 +938,7 @@ msgstr "Rättningsflagga inte satt i reservsuperblock, så kör journal ändå.\n"
 #. @-expanded: %s orphaned inode %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n
 #: e2fsck/problem.c:255
 msgid "%s @o @i %i (uid=%Iu, gid=%Ig, mode=%Im, size=%Is)\n"
-msgstr ""
-"%s föräldralös inod %i (uid=%Iu, gid=%Ig, rättighet=%Im, storlek=%Is)\n"
+msgstr "%s föräldralös inod %i (uid=%Iu, gid=%Ig, rättighet=%Im, storlek=%Is)\n"
 
 #. @-expanded: illegal block #%B (%b) found in orphaned inode %i.\n
 #: e2fsck/problem.c:260
@@ -968,8 +965,7 @@ msgstr "Ogiltig inod %i i föräldralös inodlista.\n"
 #. @-expanded: filesystem has feature flag(s) set, but is a revision 0 filesystem.  
 #: e2fsck/problem.c:280 e2fsck/problem.c:613
 msgid "@f has feature flag(s) set, but is a revision 0 @f.  "
-msgstr ""
-"filsystemet har funktionsflaggor satta, men är ett revision 0-filsystem.  "
+msgstr "filsystemet har funktionsflaggor satta, men är ett revision 0-filsystem.  "
 
 #. @-expanded: Ext3 journal superblock has an unknown read-only feature flag set.\n
 #: e2fsck/problem.c:285
@@ -1044,8 +1040,7 @@ msgstr ""
 #. @-expanded: Resize_inode not enabled, but the resize inode is non-zero.  
 #: e2fsck/problem.c:327
 msgid "Resize_@i not enabled, but the resize @i is non-zero.  "
-msgstr ""
-"Resize_inode är inte aktiverat, men storleksändringsinoden är inte noll.  "
+msgstr "Resize_inode är inte aktiverat, men storleksändringsinoden är inte noll.  "
 
 #. @-expanded: Resize inode not valid.  
 #: e2fsck/problem.c:332
@@ -1119,20 +1114,17 @@ msgstr "Inod %i är en nollängds katalog.  "
 #. @-expanded: group %g's block bitmap at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:392
 msgid "@g %g's @b @B at %b @C.\n"
-msgstr ""
-"Grupp %g:s blockbitkarta vid %b står i konflikt med annat filsystemblock.\n"
+msgstr "Grupp %g:s blockbitkarta vid %b står i konflikt med annat filsystemblock.\n"
 
 #. @-expanded: group %g's inode bitmap at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:397
 msgid "@g %g's @i @B at %b @C.\n"
-msgstr ""
-"Grupp %g:s inodbitkarta vid %b står i konflikt med annat filsystemblock.\n"
+msgstr "Grupp %g:s inodbitkarta vid %b står i konflikt med annat filsystemblock.\n"
 
 #. @-expanded: group %g's inode table at %b conflicts with some other fs block.\n
 #: e2fsck/problem.c:402
 msgid "@g %g's @i table at %b @C.\n"
-msgstr ""
-"Grupp %g:s inodtabell vid %b står i konflikt med annat filsystemblock.\n"
+msgstr "Grupp %g:s inodtabell vid %b står i konflikt med annat filsystemblock.\n"
 
 #. @-expanded: group %g's block bitmap (%b) is bad.  
 #: e2fsck/problem.c:407
@@ -1194,8 +1186,7 @@ msgstr "Duplicerat eller felaktigt block används!\n"
 #. @-expanded: Bad block %b used as bad block inode indirect block.  
 #: e2fsck/problem.c:462
 msgid "Bad @b %b used as bad @b @i indirect @b.  "
-msgstr ""
-"Felaktigt block %b använt som indirektblock för inod för dåliga block.  "
+msgstr "Felaktigt block %b använt som indirektblock för inod för dåliga block.  "
 
 #. @-expanded: \n
 #. @-expanded: The bad block inode has probably been corrupted.  You probably\n
@@ -1244,8 +1235,7 @@ msgstr "Det primära superblocket (%b) är på listan över dåliga block.\n"
 #. @-expanded: Block %b in the primary group descriptors is on the bad block list\n
 #: e2fsck/problem.c:490
 msgid "Block %b in the primary @g descriptors is on the bad @b list\n"
-msgstr ""
-"Block %b i de primära gruppbeskrivarna är på listan över dåliga block\n"
+msgstr "Block %b i de primära gruppbeskrivarna är på listan över dåliga block\n"
 
 #. @-expanded: Warning: Group %g's superblock (%b) is bad.\n
 #: e2fsck/problem.c:496
@@ -1255,21 +1245,17 @@ msgstr "Varning: Grupp %g:s superblock (%b) är dåligt.\n"
 #. @-expanded: Warning: Group %g's copy of the group descriptors has a bad block (%b).\n
 #: e2fsck/problem.c:501
 msgid "Warning: Group %g's copy of the @g descriptors has a bad @b (%b).\n"
-msgstr ""
-"Varning: Grupp %g:s kopia av gruppbeskrivarna har ett dåligt block (%b).\n"
+msgstr "Varning: Grupp %g:s kopia av gruppbeskrivarna har ett dåligt block (%b).\n"
 
 #. @-expanded: Programming error?  block #%b claimed for no reason in process_bad_block.\n
 #: e2fsck/problem.c:507
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
-msgstr ""
-"Programmeringsfel?  Block nr. %b tas i anspråk utan anledning i "
-"process_bad_block.\n"
+msgstr "Programmeringsfel?  Block nr. %b tas i anspråk utan anledning i process_bad_block.\n"
 
 #. @-expanded: error allocating %N contiguous block(s) in block group %g for %s: %m\n
 #: e2fsck/problem.c:513
 msgid "@A %N contiguous @b(s) in @b @g %g for %s: %m\n"
-msgstr ""
-"Fel vid allokering av %N konsekutiva block i blockgrupp %g för %s: %m\n"
+msgstr "Fel vid allokering av %N konsekutiva block i blockgrupp %g för %s: %m\n"
 
 #. @-expanded: error allocating block buffer for relocating %s\n
 #: e2fsck/problem.c:518
@@ -1340,9 +1326,7 @@ msgstr "Fel vid lagring av inodsräknarinformation (inod=%i, antal=%N): %m\n"
 #. @-expanded: Error storing directory block information (inode=%i, block=%b, num=%N): %m\n
 #: e2fsck/problem.c:578
 msgid "Error storing @d @b information (@i=%i, @b=%b, num=%N): %m\n"
-msgstr ""
-"Fel vid lagring av katalogblocksinformation (inod=%i, block=%b, antal=%N): %"
-"m\n"
+msgstr "Fel vid lagring av katalogblocksinformation (inod=%i, block=%b, antal=%N): %m\n"
 
 #. @-expanded: Error reading inode %i: %m\n
 #: e2fsck/problem.c:584
@@ -1371,8 +1355,7 @@ msgstr ""
 #: e2fsck/problem.c:603
 #, c-format
 msgid "@i %i has @cion flag set on @f without @cion support.  "
-msgstr ""
-"Inod %i har kompressionsflagga satt på filsystem utan kompressionsstöd.  "
+msgstr "Inod %i har kompressionsflagga satt på filsystem utan kompressionsstöd.  "
 
 #. @-expanded: Special (device/socket/fifo) inode %i has non-zero size.  
 #: e2fsck/problem.c:608
@@ -1550,16 +1533,12 @@ msgstr "Utökat attribut i inod %i har en värdeposition (%N) som är ogiltig\n"
 #. @-expanded: extended attribute in inode %i has a value block (%N) which is invalid (must be 0)\n
 #: e2fsck/problem.c:774
 msgid "@a in @i %i has a value @b (%N) which is @n (must be 0)\n"
-msgstr ""
-"Utökat attribut i inod %i har ett värdeblock (%N) som är ogiltigt (måste "
-"vara 0)\n"
+msgstr "Utökat attribut i inod %i har ett värdeblock (%N) som är ogiltigt (måste vara 0)\n"
 
 #. @-expanded: extended attribute in inode %i has a hash (%N) which is invalid (must be 0)\n
 #: e2fsck/problem.c:779
 msgid "@a in @i %i has a hash (%N) which is @n (must be 0)\n"
-msgstr ""
-"Utökat attribut i inod %i har en kontrollsumma (%N) som är ogiltig (måste "
-"vara 0)\n"
+msgstr "Utökat attribut i inod %i har en kontrollsumma (%N) som är ogiltig (måste vara 0)\n"
 
 #. @-expanded: inode %i is a %It but it looks like it is really a directory.\n
 #: e2fsck/problem.c:784
@@ -1576,8 +1555,7 @@ msgid ""
 "Pass 1B: Rescanning for @m @bs\n"
 msgstr ""
 "\n"
-"Kör ytterliggare pass för att lösa upp block som används av mer än en "
-"inod ...\n"
+"Kör ytterliggare pass för att lösa upp block som används av mer än en inod ...\n"
 "Pass 1B: Söker igen efter block som används flera gånger\n"
 
 #. @-expanded: multiply-claimed block(s) in inode %i:
@@ -1606,15 +1584,12 @@ msgstr "Fel vid iterering över block i inod %i (%s): %m\n"
 #. @-expanded: Error adjusting refcount for extended attribute block %b (inode %i): %m\n
 #: e2fsck/problem.c:827 e2fsck/problem.c:1143
 msgid "Error adjusting refcount for @a @b %b (@i %i): %m\n"
-msgstr ""
-"Fel vid justering av referensräknare för externa attribut-block %b (inod %"
-"i): %m\n"
+msgstr "Fel vid justering av referensräknare för externa attribut-block %b (inod %i): %m\n"
 
 #. @-expanded: Pass 1C: Scanning directories for inodes with multiply-claimed blocks\n
 #: e2fsck/problem.c:833
 msgid "Pass 1C: Scanning directories for @is with @m @bs\n"
-msgstr ""
-"Pass 1C: Söker kataloger efter inoder med flerfaldigt ianspråkstagna block\n"
+msgstr "Pass 1C: Söker kataloger efter inoder med flerfaldigt ianspråkstagna block\n"
 
 #. @-expanded: Pass 1D: Reconciling multiply-claimed blocks\n
 #: e2fsck/problem.c:839
@@ -1695,8 +1670,7 @@ msgstr "Post \"%Dn\" i %p (%i) är en länk till \".\"  "
 #. @-expanded: entry '%Dn' in %p (%i) points to inode (%Di) located in a bad block.\n
 #: e2fsck/problem.c:909
 msgid "@E points to @i (%Di) located in a bad @b.\n"
-msgstr ""
-"Post \"%Dn\" i %p (%i) pekar på inod (%Di) som finns i ett trasigt block.\n"
+msgstr "Post \"%Dn\" i %p (%i) pekar på inod (%Di) som finns i ett trasigt block.\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) is a link to directory %P (%Di).\n
 #: e2fsck/problem.c:914
@@ -1728,8 +1702,7 @@ msgstr "\"..\" saknas i kataloginod %i.\n"
 #. @-expanded: First entry '%Dn' (inode=%Di) in directory inode %i (%p) should be '.'\n
 #: e2fsck/problem.c:939
 msgid "First @e '%Dn' (@i=%Di) in @d @i %i (%p) @s '.'\n"
-msgstr ""
-"Första post \"%Dn\" (inod=%Di) i kataloginod %i (%p) skulle varit \".\"\n"
+msgstr "Första post \"%Dn\" (inod=%Di) i kataloginod %i (%p) skulle varit \".\"\n"
 
 #. @-expanded: Second entry '%Dn' (inode=%Di) in directory inode %i should be '..'\n
 #: e2fsck/problem.c:944
@@ -1882,8 +1855,7 @@ msgstr "Sätter filtyp för post \"%Dn\" i %p (%i) till %N.\n"
 #. @-expanded: entry '%Dn' in %p (%i) has an incorrect filetype (was %Dt, should be %N).\n
 #: e2fsck/problem.c:1084
 msgid "@E has an incorrect filetype (was %Dt, @s %N).\n"
-msgstr ""
-"Post \"%Dn\" i %p (%i) har felaktig filtyp (var %Dt, skulle varit %N).\n"
+msgstr "Post \"%Dn\" i %p (%i) har felaktig filtyp (var %Dt, skulle varit %N).\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) has filetype set.\n
 #: e2fsck/problem.c:1089
@@ -1908,9 +1880,7 @@ msgstr "Utökat attribut-block för inod %i (%Q) är ogiltigt (%If).\n"
 #. @-expanded: filesystem contains large files, but lacks LARGE_FILE flag in superblock.\n
 #: e2fsck/problem.c:1109
 msgid "@f contains large files, but lacks LARGE_FILE flag in @S.\n"
-msgstr ""
-"Filsystem innehåller stora filer, men saknar flaggan LARGE_FILE i "
-"superblock.\n"
+msgstr "Filsystem innehåller stora filer, men saknar flaggan LARGE_FILE i superblock.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) not referenced\n
 #: e2fsck/problem.c:1114
@@ -1963,8 +1933,7 @@ msgstr ""
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has an unordered hash table\n
 #: e2fsck/problem.c:1163
 msgid "@p @h %d: node (%B) has an unordered hash table\n"
-msgstr ""
-"Problem i HTREE-katalognod %d (%q): not (%B) har en oordnat hash-tabell\n"
+msgstr "Problem i HTREE-katalognod %d (%q): not (%B) har en oordnat hash-tabell\n"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has invalid depth\n
 #: e2fsck/problem.c:1168
@@ -2080,8 +2049,7 @@ msgstr "ext2fs_new_dir_block: %m när nytt katalogblock skapades\n"
 #: e2fsck/problem.c:1260
 #, c-format
 msgid "ext2fs_write_dir_@b: %m while writing the @d @b for /@l\n"
-msgstr ""
-"ext2fs_write_dir_block: %m vid skrivning av katalogblocket för /lost+found\n"
+msgstr "ext2fs_write_dir_block: %m vid skrivning av katalogblocket för /lost+found\n"
 
 #. @-expanded: Error while adjusting inode count on inode %i\n
 #: e2fsck/problem.c:1265
@@ -2108,8 +2076,7 @@ msgid ""
 "Couldn't fix parent of @i %i: Couldn't find parent @d @e\n"
 "\n"
 msgstr ""
-"Kunde inte rätta förälder till inod %i: Kunde inte hitta "
-"förälderkatalogpost\n"
+"Kunde inte rätta förälder till inod %i: Kunde inte hitta förälderkatalogpost\n"
 "\n"
 
 #. @-expanded: Error creating root directory (%s): %m\n
@@ -2188,8 +2155,7 @@ msgid ""
 "@i_link_info[%i] is %N, @i.i_links_count is %Il.  They @s the same!\n"
 msgstr ""
 "VARNING: PROGRAMMERINGSFEL I E2FSCK!\n"
-"    ELLER NÅGON KLANTSKALLE (DU) KONTROLLERAR ETT MONTERAT (AKTIVT) "
-"FILSYSTEM.\n"
+"    ELLER NÅGON KLANTSKALLE (DU) KONTROLLERAR ETT MONTERAT (AKTIVT) FILSYSTEM.\n"
 "inod_link_info[%i] är %N, inod.i_links_count är %Il.  De skulle vara samma!\n"
 
 #. @-expanded: Pass 5: Checking group summary information\n
@@ -2245,9 +2211,7 @@ msgstr "Antal fria block är fel (%b, räknade=%c).\n"
 #. @-expanded: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
 #. @-expanded: endpoints (%i, %j)\n
 #: e2fsck/problem.c:1458
-msgid ""
-"PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
-"endpoints (%i, %j)\n"
+msgid "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B endpoints (%i, %j)\n"
 msgstr ""
 "PROGRAMMERINGSFEL: filsystem (nr. %N) bitkartas ändpunkter (%b, %c) stämmer\n"
 "inte med beräknade bitkarteändpunkter (%i, %j)\n"
@@ -2378,8 +2342,7 @@ msgid ""
 " -p                   Automatic repair (no questions)\n"
 " -n                   Make no changes to the filesystem\n"
 " -y                   Assume \"yes\" to all questions\n"
-" -c                   Check for bad blocks and add them to the badblock "
-"list\n"
+" -c                   Check for bad blocks and add them to the badblock list\n"
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
@@ -2388,8 +2351,7 @@ msgstr ""
 " -n                   Gör inga förändringar av filsystemet\n"
 " -y                   Anta \"ja\" som svar på alla frågor\n"
 " -c                   Leta efter dåliga block och lägg till dem i listan\n"
-" -f                   Framtvinga kontroll även om filsystemet är markerat "
-"rent\n"
+" -f                   Framtvinga kontroll även om filsystemet är markerat rent\n"
 
 #: e2fsck/unix.c:86
 #, c-format
@@ -2555,8 +2517,7 @@ msgstr "Flaggan -t stödjs inte i denna version av e2fsck.\n"
 #: e2fsck/unix.c:747
 #, c-format
 msgid "Byte-swapping filesystems not compiled in this version of e2fsck\n"
-msgstr ""
-"Byteväxling av filsystem är inte inkompilerat i denna version av e2fsck\n"
+msgstr "Byteväxling av filsystem är inte inkompilerat i denna version av e2fsck\n"
 
 #: e2fsck/unix.c:770 misc/tune2fs.c:504 misc/tune2fs.c:769 misc/tune2fs.c:786
 #, c-format
@@ -2675,12 +2636,8 @@ msgstr "vid kontroll av ext3-journal för %s"
 
 #: e2fsck/unix.c:1128
 #, c-format
-msgid ""
-"Warning: skipping journal recovery because doing a read-only filesystem "
-"check.\n"
-msgstr ""
-"Varning: hoppar över journalåterhämtning eftersom en läsningskontroll av "
-"filsystem görs.\n"
+msgid "Warning: skipping journal recovery because doing a read-only filesystem check.\n"
+msgstr "Varning: hoppar över journalåterhämtning eftersom en läsningskontroll av filsystem görs.\n"
 
 #: e2fsck/unix.c:1141
 #, c-format
@@ -2693,9 +2650,9 @@ msgid "while recovering ext3 journal of %s"
 msgstr "vid återhämtning av ext3-journal för %s"
 
 #: e2fsck/unix.c:1171
-#, fuzzy, c-format
+#, c-format
 msgid "%s has unsupported feature(s):"
-msgstr "Filsystem %s har funktioner som inte stöds aktiverade.\n"
+msgstr "%s har funktioner som inte stöds:"
 
 #: e2fsck/unix.c:1187
 msgid "Warning: compression support is experimental.\n"
@@ -2939,13 +2896,11 @@ msgstr "klar                                \n"
 #, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-" [-c blocks_at_once] [-p num_passes] [-t test_pattern [-t test_pattern "
-"[...]]]\n"
+" [-c blocks_at_once] [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
 " device [last_block [start_block]]\n"
 msgstr ""
 "Användning: %s [-b blockstorlek] [-i infil] [-o utfile] [-svwnf]\n"
-" [-c block_åt_gången] [-p antal_pass] [-t testmönster [-t testmönster "
-"[...]]]\n"
+" [-c block_åt_gången] [-p antal_pass] [-t testmönster [-t testmönster [...]]]\n"
 " enhet [sista_block [start_block]]\n"
 
 #: misc/badblocks.c:88
@@ -3301,17 +3256,17 @@ msgid "Couldn't allocate memory to parse options!\n"
 msgstr "Kunde inte allokera minne för att tolka flaggor!\n"
 
 #: misc/dumpe2fs.c:363
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid superblock parameter: %s\n"
-msgstr "Ogiltig stride-parameter: %s\n"
+msgstr "Ogiltig superblockparameter: %s\n"
 
 #: misc/dumpe2fs.c:378
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid blocksize parameter: %s\n"
-msgstr "Ogiltig storleksändringsparameter: %s\n"
+msgstr "Ogiltig blockstorleksparameter: %s\n"
 
 #: misc/dumpe2fs.c:389
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "Bad extended option(s) specified: %s\n"
@@ -3324,15 +3279,14 @@ msgid ""
 "\tblocksize=<blocksize>\n"
 msgstr ""
 "\n"
-"Felaktiga flaggor angivna.\n"
+"Felaktiga utökade flaggor angivna: %s\n"
 "\n"
-"Utökade flaggor separeras med komman, och kan ta ett argument som avdelas "
-"med\n"
+"Utökade flaggor separeras med komman, och kan ta ett argument som avdelas med\n"
 "\tett likhetstecken (\"=\").\n"
 "\n"
 "Giltiga utökade flaggor är:\n"
-"\ttest_fs\n"
-"\t^test_fs\n"
+"\tsuperblock=<superblocknummer>\n"
+"\tblocksize=<blockstorlek>\n"
 
 #: misc/dumpe2fs.c:449 misc/mke2fs.c:1199
 #, c-format
@@ -3494,12 +3448,8 @@ msgstr "Kunde inte allokera minne för filsystemtyper\n"
 
 #: misc/fsck.c:872
 #, c-format
-msgid ""
-"%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
-"number\n"
-msgstr ""
-"%s: hoppar över felaktig rad i /etc/fstab: bind-montering med fsck-"
-"passnummer som inte är noll\n"
+msgid "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass number\n"
+msgstr "%s: hoppar över felaktig rad i /etc/fstab: bind-montering med fsck-passnummer som inte är noll\n"
 
 #: misc/fsck.c:899
 #, c-format
@@ -3516,12 +3466,8 @@ msgid "--waiting-- (pass %d)\n"
 msgstr "--väntar-- (pass %d)\n"
 
 #: misc/fsck.c:1066
-#, fuzzy
-msgid ""
-"Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
-msgstr ""
-"Användning: fsck [-ANPRTV] [ -C [ fh ] ] [-t fstyp] [fs-flaggor] "
-"[filsys ...]\n"
+msgid "Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
+msgstr "Användning: fsck [-AMNPRTV] [ -C [ fh ] ] [-t fstyp] [fs-flaggor] [filsys ...]\n"
 
 #: misc/fsck.c:1108
 #, c-format
@@ -3549,7 +3495,7 @@ msgid "While reading version on %s"
 msgstr "Vid läsning av version på %s"
 
 #: misc/mke2fs.c:97
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-c|-l filename] [-b block-size] [-f fragment-size]\n"
 "\t[-i bytes-per-inode] [-I inode-size] [-J journal-options]\n"
@@ -3558,12 +3504,12 @@ msgid ""
 "\t[-O feature[,...]] [-r fs-revision] [-E extended-option[,...]]\n"
 "\t[-T fs-type] [-jnqvFSV] device [blocks-count]\n"
 msgstr ""
-"Användning: %s [-c|-t|-l filnamn] [-b blockstorlek] [-f fragmentstorlek]\n"
-"\t[-i byte-per-inod] [-I inodstorlek] [-j] [-J journalflaggor]\n"
+"Användning: %s [-c|-l filnamn] [-b blockstorlek] [-f fragmentstorlek]\n"
+"\t[-i byte-per-inod] [-I inodstorlek] [-J journalflaggor]\n"
 "\t[-N antal-inoder] [-m reservade-block-procent] [-o skapar-os]\n"
 "\t[-g block-per-grupp] [-L volymetikett] [-M senast-monterad-katalog]\n"
-"\t[-O funktion[,...]] [-r fs-revision] [-E utökad-flagga[,...]] [-qvSV]\n"
-"\tenhet [blockantal]\n"
+"\t[-O funktion[,...]] [-r fs-revision] [-E utökad-flagga[,...]]\n"
+"\t[-T fs-typ] [-jnqvFSV] enhet [blockantal]\n"
 
 #: misc/mke2fs.c:198
 #, c-format
@@ -3768,9 +3714,9 @@ msgid "Invalid stride parameter: %s\n"
 msgstr "Ogiltig stride-parameter: %s\n"
 
 #: misc/mke2fs.c:808
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid stripe-width parameter: %s\n"
-msgstr "Ogiltig stride-parameter: %s\n"
+msgstr "Ogiltig remsbreddsparameter: %s\n"
 
 #: misc/mke2fs.c:830
 #, c-format
@@ -3780,8 +3726,7 @@ msgstr "Ogiltig storleksändringsparameter: %s\n"
 #: misc/mke2fs.c:837
 #, c-format
 msgid "The resize maximum must be greater than the filesystem size.\n"
-msgstr ""
-"Storleksändringens maximum måste vara större än filsystemets storlek.\n"
+msgstr "Storleksändringens maximum måste vara större än filsystemets storlek.\n"
 
 #: misc/mke2fs.c:861
 #, c-format
@@ -3789,7 +3734,7 @@ msgid "On-line resizing not supported with revision 0 filesystems\n"
 msgstr "Storleksändring under drift stöds inte med revision 0-filsystem\n"
 
 #: misc/mke2fs.c:878
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "Bad option(s) specified: %s\n"
@@ -3805,15 +3750,16 @@ msgid ""
 "\ttest_fs\n"
 msgstr ""
 "\n"
-"Felaktiga flaggor angivna.\n"
+"Felaktiga flaggor angivna: %s\n"
 "\n"
-"Utökade flaggor separeras med komman, och kan ta ett argument som avdelas "
-"med\n"
+"Utökade flaggor separeras med komman, och kan ta ett argument som avdelas med\n"
 "\tett likhetstecken (\"=\").\n"
 "\n"
 "Giltiga utökade flaggor är:\n"
-"\tstride=<stride-längd i block>\n"
-"\tresize=<maximal storleksändring i block>\n"
+"\tstride=<RAID-datadstycken per disk i block>\n"
+"\tstripe-width=<RAID-kliv · datadiskar i block>\n"
+"\tresize=<maximal storleksändringsstorlek i block>\n"
+"\n"
 "\ttest_fs\n"
 
 #: misc/mke2fs.c:893
@@ -3823,6 +3769,9 @@ msgid ""
 "Warning: RAID stripe-width %u not an even multiple of stride %u.\n"
 "\n"
 msgstr ""
+"\n"
+"Varning: RAID-remsbredd %u är inte en jämn multipel av klivet %u.\n"
+"\n"
 
 #: misc/mke2fs.c:920
 #, c-format
@@ -3912,10 +3861,8 @@ msgstr "%d-byteblock för stort för systemet (max %d)"
 
 #: misc/mke2fs.c:1247
 #, c-format
-msgid ""
-"Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
-msgstr ""
-"Varning: %d-byteblock för stort för systemet (max %d), tvingas fortsätta\n"
+msgid "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
+msgstr "Varning: %d-byteblock för stort för systemet (max %d), tvingas fortsätta\n"
 
 # "Ett" för att detta sätts in i annan sträng där det föregås av "a".
 # Även "journal" kan sättas in på samma plats.  Felrapporterat.
@@ -3972,9 +3919,7 @@ msgstr "vid försök att avgöra hårdvarusektorstorlek"
 
 #: misc/mke2fs.c:1464
 msgid "reserved online resize blocks not supported on non-sparse filesystem"
-msgstr ""
-"reserverade block för storleksändring under drift stöds inte på icke-glesa "
-"filsystem"
+msgstr "reserverade block för storleksändring under drift stöds inte på icke-glesa filsystem"
 
 #: misc/mke2fs.c:1473
 msgid "blocks per group count out of range"
@@ -4112,7 +4057,7 @@ msgid "Please run e2fsck on the filesystem.\n"
 msgstr "Kör e2fsck på filsystemet.\n"
 
 #: misc/tune2fs.c:98
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: %s [-c max_mounts_count] [-e errors_behavior] [-g group]\n"
 "\t[-i interval[d|m|w]] [-j] [-J journal_options] [-l]\n"
@@ -4122,11 +4067,10 @@ msgid ""
 "\t[-E extended-option[,...]] [-T last_check_time] [-U UUID] device\n"
 msgstr ""
 "Användning: %s [-c max_antal_monteringar] [-e felbeteende] [-g grupp]\n"
-"\t[-i intervall[d|m|w]] [-j] [-J journalflaggor]\n"
-"\t[-l] [-s glesflagga] [-m procent_reserverade_block]\n"
-"\t[-o [^]monteringsflaggor[,...]] [-r antal_reserverade_block]\n"
-"\t[-u användare] [-C antal_monteringar] [-L volymetikett]\n"
-"\t[-M senast_monterad_katalog] [-O [^]funktion[,...]]\n"
+"\t[-i intervall[d|m|w]] [-j] [-J journalflaggor] [-l]\n"
+"\t[-m reserverade_block_procent] [-o [^]monteringsflaggor[,...]]\n"
+"\t[-r antal_reserverade_block] [-u användare] [-C antal_monteringar]\n"
+"\t[-L volymetikett] [-M senast_monterad_katalog] [-O [^]funktion[,...]]\n"
 "\t[-E utökad-flagga[,...]] [-T senaste_kontroll_tid] [-U UUID] enhet\n"
 
 #: misc/tune2fs.c:171
@@ -4172,14 +4116,14 @@ msgid "Invalid mount option set: %s\n"
 msgstr "Ogiltig monteringsflagga satt: %s\n"
 
 #: misc/tune2fs.c:338
-#, fuzzy, c-format
+#, c-format
 msgid "Clearing filesystem feature '%s' not supported.\n"
-msgstr "Filsystemsfunktioner som inte stöds med revision 0-filsystem\n"
+msgstr "Nollställning av filsystemsfunktion \"%s\" stöds inte.\n"
 
 #: misc/tune2fs.c:344
-#, fuzzy, c-format
+#, c-format
 msgid "Setting filesystem feature '%s' not supported.\n"
-msgstr "Filsystemsfunktioner som inte stöds med revision 0-filsystem\n"
+msgstr "Att sätta filsystemsfunktion \"%s\" stöds inte.\n"
 
 #: misc/tune2fs.c:353
 msgid ""
@@ -4281,17 +4225,17 @@ msgid "bad uid/user name - %s"
 msgstr "felagtigt uid/användarnamn - %s"
 
 #: misc/tune2fs.c:842
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid RAID stride: %s\n"
-msgstr "Ogiltig stride-parameter: %s\n"
+msgstr "Ogiltig RAID-kliv: %s\n"
 
 #: misc/tune2fs.c:857
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid RAID stripe-width: %s\n"
-msgstr "Ogiltig stride-parameter: %s\n"
+msgstr "Ogiltig RAID-remsbredd: %s\n"
 
 #: misc/tune2fs.c:867
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "Bad options specified.\n"
@@ -4308,14 +4252,14 @@ msgstr ""
 "\n"
 "Felaktiga flaggor angivna.\n"
 "\n"
-"Utökade flaggor separeras med komman, och kan ta ett argument som avdelas "
-"med\n"
+"Utökade flaggor separeras med komman, och kan ta ett argument som avdelas med\n"
 "\tett likhetstecken (\"=\").\n"
 "\n"
 "Giltiga utökade flaggor är:\n"
-"\tstride=<stride-längd i block>\n"
-"\tresize=<maximal storleksändring i block>\n"
+"\tstride=<RAID-styckestorlek per disk i block>\n"
+"\tstripe-width=<RAID-kliv·datadiskar i block>\n"
 "\ttest_fs\n"
+"\t^test_fs\n"
 
 #: misc/tune2fs.c:927
 #, c-format
@@ -4384,6 +4328,8 @@ msgid ""
 "\n"
 "Clearing the sparse superflag not supported.\n"
 msgstr ""
+"\n"
+"Nollställning av superflaggan gles stöds inte.\n"
 
 #: misc/tune2fs.c:1015
 #, c-format
@@ -4400,14 +4346,14 @@ msgid "Invalid UUID format\n"
 msgstr "Ogiltigt UUID-format\n"
 
 #: misc/tune2fs.c:1067
-#, fuzzy, c-format
+#, c-format
 msgid "Setting stride size to %d\n"
-msgstr "Sätter gid för reserverade block till %lu\n"
+msgstr "Sätter klivstorlek till %d\n"
 
 #: misc/tune2fs.c:1072
-#, fuzzy, c-format
+#, c-format
 msgid "Setting stripe width to %d\n"
-msgstr "Sätter gid för reserverade block till %lu\n"
+msgstr "Sätter remsbredd till %d\n"
 
 #: misc/util.c:72
 msgid "Proceed anyway? (y,n) "
@@ -4660,17 +4606,3 @@ msgstr "metadatablock"
 #, c-format
 msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Skulle aldrig inträffa: storleksändringsinoden trasig!\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "The filesystem already has sparse superblocks disabled.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Filsystemet har redan glesa superblock avslagna.\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "Sparse superblock flag cleared.  %s"
-#~ msgstr ""
-#~ "\n"
-#~ "Flaggan för glesa superblock nollställd.  %s"
