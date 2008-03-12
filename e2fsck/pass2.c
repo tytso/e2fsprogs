@@ -783,8 +783,14 @@ static int check_dir_block(ext2_filsys fs,
 	dx_dir = e2fsck_get_dx_dir_info(ctx, ino);
 	if (dx_dir && dx_dir->numblocks) {
 		if (db->blockcnt >= dx_dir->numblocks) {
-			printf("XXX should never happen!!!\n");
-			abort();
+			if (fix_problem(ctx, PR_2_UNEXPECTED_HTREE_BLOCK, 
+					&pctx)) {
+				clear_htree(ctx, ino);
+				dx_dir->numblocks = 0;
+				dx_db = 0;
+				goto out_htree;
+			}
+			fatal_error(ctx, _("Can not continue."));
 		}
 		dx_db = &dx_dir->dx_block[db->blockcnt];
 		dx_db->type = DX_DIRBLOCK_LEAF;
@@ -819,6 +825,7 @@ static int check_dir_block(ext2_filsys fs,
 			     sizeof(struct ext2_dx_entry))))
 			dx_db->type = DX_DIRBLOCK_NODE;
 	}
+out_htree:
 #endif /* ENABLE_HTREE */
 
 	dict_init(&de_dict, DICTCOUNT_T_MAX, dict_de_cmp);
