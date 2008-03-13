@@ -259,3 +259,29 @@ int ext2fs_dblist_count(ext2_dblist dblist)
 {
 	return (int) dblist->count;
 }
+
+errcode_t ext2fs_dblist_get_last(ext2_dblist dblist, 
+				 struct ext2_db_entry **entry)
+{
+	errcode_t		retval;
+
+	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
+
+	if (dblist->count == 0)
+		return EXT2_ET_DBLIST_EMPTY;
+
+	if (entry)
+		*entry = dblist->list + ( (int) dblist->count-1);
+	return 0;
+}
+
+errcode_t ext2fs_dblist_drop_last(ext2_dblist dblist)
+{	
+	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
+
+	if (dblist->count == 0)
+		return EXT2_ET_DBLIST_EMPTY;
+
+	dblist->count--;
+	return 0;
+}

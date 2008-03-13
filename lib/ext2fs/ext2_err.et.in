@@ -326,5 +326,8 @@ ec	EXT2_ET_TDB_ERR_NOEXIST,
 ec	EXT2_ET_TDB_ERR_RDONLY,
 	"TDB: Write not permitted"
 
+ec	EXT2_ET_DBLIST_EMPTY,
+	"Ext2fs directory block list is empty"
+
 	end
 

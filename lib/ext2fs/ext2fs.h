@@ -652,6 +652,9 @@ extern errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ext2_ino_t ino,
 extern errcode_t ext2fs_copy_dblist(ext2_dblist src,
 				    ext2_dblist *dest);
 extern int ext2fs_dblist_count(ext2_dblist dblist);
+extern errcode_t ext2fs_dblist_get_last(ext2_dblist dblist, 
+					struct ext2_db_entry **entry);
+extern errcode_t ext2fs_dblist_drop_last(ext2_dblist dblist);
 
 /* dblist_dir.c */
 extern errcode_t
