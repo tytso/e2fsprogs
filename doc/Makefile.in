@@ -22,12 +22,12 @@ install-doc-libs: libext2fs.info libext2fs.dvi
 	@$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
 	@echo "	MKINSTALLDIRS $(infodir)"
 	@$(MKINSTALLDIRS) $(DESTDIR)$(infodir)
-	@for i in libext2fs.info* ; do \
+	-@for i in libext2fs.info* ; do \
 		echo "	INSTALL_DATA $(infodir)/$$i" ; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(infodir)/$$i ; \
 	done
 	@echo "	GZIP $(infodir)/libext2fs.info*"
-	@gzip -9 $(DESTDIR)$(infodir)/libext2fs.info*
+	-@gzip -9 $(DESTDIR)$(infodir)/libext2fs.info*
 
 uninstall-doc-libs:
 	$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
