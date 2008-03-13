@@ -1131,7 +1131,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Clear invalid HTREE directory */
 	{ PR_2_HTREE_CLEAR,
-	  N_("@n @h %d (%q).  "), PROMPT_CLEAR, 0 },
+	  N_("@n @h %d (%q).  "), PROMPT_CLEAR_HTREE, 0 },
 		  
 	/* Bad block in htree interior node */
 	{ PR_2_HTREE_BADBLK,
