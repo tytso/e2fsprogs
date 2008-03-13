@@ -15,12 +15,19 @@ Directory inode 11 has an unallocated block #3.  Allocate? yes
 
 Directory inode 11 has an unallocated block #6.  Allocate? yes
 
-Directory inode 11 has an unallocated block #11.  Allocate? yes
-
 Pass 3: Checking directory connectivity
 Pass 4: Checking reference counts
 Pass 5: Checking group summary information
+Block bitmap differences:  -21
+Fix? yes
+
+Free blocks count wrong for group #0 (78, counted=79).
+Fix? yes
+
+Free blocks count wrong (78, counted=79).
+Fix? yes
+
 
 test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
-test_filesys: 11/32 files (9.1% non-contiguous), 22/100 blocks
+test_filesys: 11/32 files (9.1% non-contiguous), 21/100 blocks
 Exit status is 1
