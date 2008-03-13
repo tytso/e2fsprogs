@@ -129,6 +129,7 @@ extern errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 
 extern errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs, 
 				blk_t new_size);
+extern blk_t calculate_minimum_resize_size(ext2_filsys fs);
 
 
 /* extent.c */

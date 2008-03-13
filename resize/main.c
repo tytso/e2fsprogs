@@ -36,8 +36,8 @@ char *program_name, *device_name, *io_options;
 
 static void usage (char *prog)
 {
-	fprintf (stderr, _("Usage: %s [-d debug_flags] [-f] [-F] [-p] "
-			   "device [new_size]\n\n"), prog);
+	fprintf (stderr, _("Usage: %s [-d debug_flags] [-f] [-F] [-M] [-P] "
+			   "[-p] device [new_size]\n\n"), prog);
 
 	exit (1);
 }
@@ -152,6 +152,8 @@ int main (int argc, char ** argv)
 	int		flush = 0;
 	int		force = 0;
 	int		io_flags = 0;
+	int		force_min_size = 0;
+	int		print_min_size = 0;
 	int		fd, ret;
 	blk_t		new_size = 0;
 	blk_t		max_size = 0;
@@ -183,7 +185,7 @@ int main (int argc, char ** argv)
 	if (argc && *argv)
 		program_name = *argv;
 
-	while ((c = getopt (argc, argv, "d:fFhpS:")) != EOF) {
+	while ((c = getopt (argc, argv, "d:fFhMPpS:")) != EOF) {
 		switch (c) {
 		case 'h':
 			usage(program_name);
@@ -193,6 +195,12 @@ int main (int argc, char ** argv)
 			break;
 		case 'F':
 			flush = 1;
+			break;
+		case 'M':
+			force_min_size = 1;
+			break;
+		case 'P':
+			print_min_size = 1;
 			break;
 		case 'd':
 			flags |= atoi(optarg);
@@ -308,6 +316,12 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 	
+	if (print_min_size) {
+		printf("Estimated minimum size of the filesystem: %lu\n",
+		       calculate_minimum_resize_size(fs));
+		exit(0);
+	}
+
 	/* Determine the system page size if possible */
 #ifdef HAVE_SYSCONF
 #if (!defined(_SC_PAGESIZE) && defined(_SC_PAGE_SIZE))
@@ -332,14 +346,11 @@ int main (int argc, char ** argv)
 			_("while trying to determine filesystem size"));
 		exit(1);
 	}
-	if (new_size_str) {
+	if (force_min_size)
+		new_size = calculate_minimum_resize_size(fs);
+	else if (new_size_str) {
 		new_size = parse_num_blocks(new_size_str, 
 					    fs->super->s_log_block_size);
-		if (!new_size) {
-			com_err(program_name, 0, _("bad filesystem size - %s"),
-				new_size_str);
-			exit(1);
-		}
 	} else {
 		new_size = max_size;
 		/* Round down to an even multiple of a pagesize */
