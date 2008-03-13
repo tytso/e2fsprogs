@@ -579,8 +579,11 @@ static void install_image(char *device, char *image_fn, int raw_flag)
 		exit(1);
 	}
 
-
+#ifdef HAVE_OPEN64
+	fd = open64(image_fn, O_RDONLY);
+#else
 	fd = open(image_fn, O_RDONLY);
+#endif
 	if (fd < 0) {
 		perror(image_fn);
 		exit(1);

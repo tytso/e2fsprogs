@@ -1166,7 +1166,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Clear invalid HTREE directory */
 	{ PR_2_HTREE_CLEAR,
-	  N_("@n @h %d (%q).  "), PROMPT_CLEAR, 0 },
+	  N_("@n @h %d (%q).  "), PROMPT_CLEAR_HTREE, 0 },
 		  
 	/* Bad block in htree interior node */
 	{ PR_2_HTREE_BADBLK,
@@ -1223,6 +1223,10 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("i_blocks_hi @F %N, @s zero.\n"),
 	  PROMPT_CLEAR, 0 },
 
+	/* Unexpected HTREE block */
+	{ PR_2_UNEXPECTED_HTREE_BLOCK,
+	  N_("Unexpected @b in @h %d (%q).\n"), PROMPT_CLEAR_HTREE, 0 },
+		  
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

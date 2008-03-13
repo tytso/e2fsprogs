@@ -326,6 +326,9 @@ ec	EXT2_ET_TDB_ERR_NOEXIST,
 ec	EXT2_ET_TDB_ERR_RDONLY,
 	"TDB: Write not permitted"
 
+ec	EXT2_ET_DBLIST_EMPTY,
+	"Ext2fs directory block list is empty"
+
 ec	EXT2_ET_RO_BLOCK_ITERATE,
 	"Attempt to modify a block mapping via a read-only block iterator"
 
@@ -403,4 +406,5 @@ ec	EXT2_ET_EXTENT_NOT_FOUND,
 
 ec	EXT2_ET_EXTENT_NOT_SUPPORTED,
 	"Operation not supported for inodes containing extents"
+
 	end

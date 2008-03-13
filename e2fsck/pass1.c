@@ -1727,6 +1727,26 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		return;
 	}
 	
+	if (pb.is_dir) {
+		while (1) {
+			struct ext2_db_entry *entry;
+
+			if (ext2fs_dblist_get_last(fs->dblist, &entry) ||
+			    (entry->ino != ino) ||
+			    (entry->blk != 0) ||
+			    (entry->blockcnt == 0))
+				break;
+			/* printf("Dropping ino %lu blk %lu blockcnt %d\n", 
+				  entry->ino, entry->blk, entry->blockcnt); */
+			ext2fs_dblist_drop_last(fs->dblist);
+			if (ext2fs_dblist_get_last(fs->dblist, &entry) ||
+			    (entry->ino != ino))
+				pb.last_block--;
+			else
+				pb.last_block = entry->blockcnt;
+		}
+	}
+
 	if (inode->i_flags & EXT2_INDEX_FL) {
 		if (handle_htree(ctx, pctx, ino, inode, block_buf)) {
 			inode->i_flags &= ~EXT2_INDEX_FL;
@@ -1758,7 +1778,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 #endif
 	if (pb.is_dir) {
 		int nblock = inode->i_size >> EXT2_BLOCK_SIZE_BITS(fs->super);
-		if (nblock > (pb.last_block + 1))
+		if (inode->i_size & (fs->blocksize - 1)) 
+			bad_size = 5;
+		else if (nblock > (pb.last_block + 1))
 			bad_size = 1;
 		else if (nblock < (pb.last_block + 1)) {
 			if (((pb.last_block + 1) - nblock) >
@@ -1920,6 +1942,7 @@ static int process_block(ext2_filsys fs,
 			printf("Missing block (#%d) in directory inode %lu!\n",
 			       blockcnt, p->ino);
 #endif
+			p->last_block = blockcnt;
 			goto mark_dir;
 		}
 		return 0;

@@ -729,6 +729,9 @@ struct problem_context {
 /* i_blocks_hi should be zero */
 #define PR_2_BLOCKS_HI_ZERO	0x020044
 
+/* Unexpected HTREE block */
+#define PR_2_UNEXPECTED_HTREE_BLOCK	0x020045
+
 /*
  * Pass 3 errors
  */

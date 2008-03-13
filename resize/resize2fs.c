@@ -1108,8 +1108,7 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 {
 	struct process_block_struct	pb;
 	ext2_ino_t		ino, new_inode;
-	struct ext2_inode 	inode, *buf = NULL;
-	struct ext2_inode_large	*large_inode;
+	struct ext2_inode 	*inode = NULL;
 	ext2_inode_scan 	scan = NULL;
 	errcode_t		retval;
 	int			group;
@@ -1153,12 +1152,12 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	}
 	ext2fs_set_inode_callback(scan, progress_callback, (void *) rfs);
 	pb.rfs = rfs;
-	pb.inode = &inode;
+	pb.inode = inode;
 	pb.error = 0;
 	new_inode = EXT2_FIRST_INODE(rfs->new_fs->super);
 	inode_size = EXT2_INODE_SIZE(rfs->new_fs->super);
-	buf = malloc(inode_size);
-	if (!buf) {
+	inode = malloc(inode_size);
+	if (!inode) {
 		retval = ENOMEM;
 		goto errout;
 	}
@@ -1167,29 +1166,29 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	 * elsewhere in the inode table
 	 */
 	while (1) {
-		retval = ext2fs_get_next_inode(scan, &ino, &inode);
+		retval = ext2fs_get_next_inode_full(scan, &ino, inode, inode_size);
 		if (retval) goto errout;
 		if (!ino)
 			break;
 
-		if (inode.i_links_count == 0 && ino != EXT2_RESIZE_INO)
+		if (inode->i_links_count == 0 && ino != EXT2_RESIZE_INO)
 			continue; /* inode not in use */
 
-		pb.is_dir = LINUX_S_ISDIR(inode.i_mode);
+		pb.is_dir = LINUX_S_ISDIR(inode->i_mode);
 		pb.changed = 0;
 
-		if (inode.i_file_acl && rfs->bmap) {
+		if (inode->i_file_acl && rfs->bmap) {
 			new_block = ext2fs_extent_translate(rfs->bmap, 
-							    inode.i_file_acl);
+							    inode->i_file_acl);
 			if (new_block) {
-				inode.i_file_acl = new_block;
-				retval = ext2fs_write_inode(rfs->old_fs, 
-							    ino, &inode);
+				inode->i_file_acl = new_block;
+				retval = ext2fs_write_inode_full(rfs->old_fs, 
+							    ino, inode, inode_size);
 				if (retval) goto errout;
 			}
 		}
 		
-		if (ext2fs_inode_has_valid_blocks(&inode) &&
+		if (ext2fs_inode_has_valid_blocks(inode) &&
 		    (rfs->bmap || pb.is_dir)) {
 			pb.ino = ino;
 			retval = ext2fs_block_iterate2(rfs->old_fs,
@@ -1220,23 +1219,19 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 			}
 		}
 		ext2fs_mark_inode_bitmap(rfs->new_fs->inode_map, new_inode);
-		memcpy(buf, &inode, sizeof(struct ext2_inode));
-		large_inode = (struct ext2_inode_large *)buf;
-		large_inode->i_extra_isize = sizeof(struct ext2_inode_large) -
-			EXT2_GOOD_OLD_INODE_SIZE;
 		if (pb.changed) {
 			/* Get the new version of the inode */
 			retval = ext2fs_read_inode_full(rfs->old_fs, ino,
-						buf, inode_size);
+						inode, inode_size);
 			if (retval) goto errout;
 		}
-		inode.i_ctime = time(0);
+		inode->i_ctime = time(0);
 		retval = ext2fs_write_inode_full(rfs->old_fs, new_inode,
-						buf, inode_size);
+						inode, inode_size);
 		if (retval) goto errout;
 
 		group = (new_inode-1) / EXT2_INODES_PER_GROUP(rfs->new_fs->super);
-		if (LINUX_S_ISDIR(inode.i_mode))
+		if (LINUX_S_ISDIR(inode->i_mode))
 			rfs->new_fs->group_desc[group].bg_used_dirs_count++;
 		
 #ifdef RESIZE2FS_DEBUG
@@ -1262,8 +1257,8 @@ errout:
 		ext2fs_close_inode_scan(scan);
 	if (block_buf)
 		ext2fs_free_mem(&block_buf);
-	if (buf)
-		free(buf);
+	if (inode)
+		free(inode);
 	return retval;
 }
 
