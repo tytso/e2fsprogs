@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.40.8">E2fsprogs 1.40.8 (March 13, 2008)</A>
 <LI><A HREF="#1.40.7">E2fsprogs 1.40.7 (February 28, 2008)</A>
 <LI><A HREF="#1.40.6">E2fsprogs 1.40.6 (February 9, 2008)</A>
 <LI><A HREF="#1.40.5">E2fsprogs 1.40.5 (January 27, 2008)</A>
@@ -77,6 +78,56 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.40.8">E2fsprogs 1.40.8 (March 13, 2008)</A></H2>
+
+<P>Fixed e2image -I so it works on image files which are larger than 2GB.</P>
+
+<P>Fixed e2fsck's handling of directory inodes with a corrupt size field.  If
+the size is larger than the number of blocks found in the inode, don't
+try to allocate extra empty blocks at the end of the directory to make
+up the difference; there's no point to doing that.  In addition, if
+the size is not a multiple of a blocksize, always fix it.</P>
+
+<P>E2fsck handled a pass 2 "should never happen error" by not giving
+enough information and then core dumping.  Unfortunately, it was all
+too easy to trigger the "should never happen" situation if a
+directory's inode size was not correct.  This has been fixed, but
+e2fsck has also been taught how to handle this situation more
+gracefully, by simply removing the inode hash tree information, so
+that it can be rebuilt again after e2fsck's pass 3.  (Addresses
+Launchpad Bug: #129395)</P>
+
+<P>Resize2fs had a bug resizing large inodes with extended attributes
+that was fixed in 1.40.6; unfortunately, it turned out it wasn't fixed
+completely on big-endian systems such as PowerPC.  The bug should be
+completely fixed now.  Yay for regression test suites.  (Addresses Red
+Hat Bugzilla: #434893)</P>
+
+<P>Updated German, Czech, Dutch, Polish, Sweedish, and Vietnamese
+translations.  Many thanks to Philipp Thomas from Novell for stepping
+up to become the new German translation maintainer!  (Addresses Debian
+Bugs: #302512, #370247, #401092, #412882).</P>
+
+<P>When e2fsck is clearing a corrupt inode's HTREE directory information,
+make it clear that it is just clearing the HTREE information, not the
+entire inode.</P>
+
+<P>Fixed spelling mistakes, typos, and otherwise clarified man pages.  </P>
+
+<H3>Programmer's notes</H3>
+
+<P>Add new functions, ext2fs_dblist_get_last() and
+ext2fs_dblist_drop_last(), which allows the caller to examine the last
+directory block entry added to the list, and to drop if it necessary.</P>
+
+<P>Fixed a portability problem in libblkid with DJGPP.</P>
+
+<P>Fix an obvious typo in an "internal error" message in e2fsck.  Thanks
+to Philipp Thomas for pointing this out.</P>
+
+<P>If the info files are not built, change "make install" so it doesn't
+fail with an error code.</P>
 
 <H2><A NAME="1.40.7">E2fsprogs 1.40.7 (February 28, 2008)</A></H2>
 
