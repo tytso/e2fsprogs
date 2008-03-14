@@ -1,3 +1,20 @@
+E2fsprogs 1.40.9-WIP (March 14, 2008)
+=====================================
+
+SuSE's security team audited uuidd and came up with a few minor
+issues.  None of them are serious given that uuidd runs setuid as a
+unprivileged user which has no special access other than libuuid
+directory, but it's good to get them fixed.
+
+One additional fix in ext2fs_swap_inode_full() needed for resize2fs to
+work correctly with in-inode extended attributes.
+
+Programmer's notes:
+-------------------
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.
+
 E2fsprogs 1.40.8 (March 13, 2008)
 =================================
 
