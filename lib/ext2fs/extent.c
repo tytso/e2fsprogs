@@ -737,6 +737,10 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 		memmove(cp, cp + sizeof(struct ext3_extent_idx),
 			path->left * sizeof(struct ext3_extent_idx));
 		path->left--;
+	} else {
+		struct ext3_extent_idx	*ix = path->curr;
+		ix--;
+		path->curr = ix;
 	}
 	path->entries--;
 	if (path->entries == 0)
