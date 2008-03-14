@@ -1218,7 +1218,7 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		 && !e2fsck_pass1_check_device_inode(fs, &inode))
 		problem = PR_2_BAD_SOCKET;
 	else if (LINUX_S_ISLNK(inode.i_mode)
-		 && !e2fsck_pass1_check_symlink(fs, &inode, buf)) {
+		 && !e2fsck_pass1_check_symlink(fs, ino, &inode, buf)) {
 		problem = PR_2_INVALID_SYMLINK;
 	}
 

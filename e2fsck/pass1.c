@@ -163,16 +163,41 @@ int e2fsck_pass1_check_device_inode(ext2_filsys fs EXT2FS_ATTR((unused)),
  * Check to make sure a symlink inode is real.  Returns 1 if the symlink
  * checks out, 0 if not.
  */
-int e2fsck_pass1_check_symlink(ext2_filsys fs, struct ext2_inode *inode,
-			       char *buf)
+int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
+			       struct ext2_inode *inode, char *buf)
 {
 	unsigned int len;
 	int i;
 	blk_t	blocks;
+	ext2_extent_handle_t	handle;
+	struct ext2_extent_info	info;
+	struct ext2fs_extent	extent;
 
 	if ((inode->i_size_high || inode->i_size == 0) ||
 	    (inode->i_flags & EXT2_INDEX_FL))
 		return 0;
+
+	if (inode->i_flags & EXT4_EXTENTS_FL) {
+		if (inode->i_size > fs->blocksize)
+			return 0;
+		if (ext2fs_extent_open(fs, ino, &handle))
+			return 0;
+		i = 0;
+		if (ext2fs_extent_get_info(handle, &info) ||
+		    (info.num_entries != 1) ||
+		    (info.max_depth != 0))
+			goto exit_extent;
+		if (ext2fs_extent_get(handle, EXT2_EXTENT_ROOT, &extent) ||
+		    (extent.e_lblk != 0) ||
+		    (extent.e_len != 1) ||
+		    (extent.e_pblk < fs->super->s_first_data_block) ||
+		    (extent.e_pblk >= fs->super->s_blocks_count))
+			goto exit_extent;
+		i = 1;
+	exit_extent:
+		ext2fs_extent_free(handle);
+		return i;
+	}
 
 	blocks = ext2fs_inode_data_blocks(fs, inode);
 	if (blocks) {
@@ -910,7 +935,8 @@ void e2fsck_pass1(e2fsck_t ctx)
 			check_size(ctx, &pctx);
 			ctx->fs_blockdev_count++;
 		} else if (LINUX_S_ISLNK (inode->i_mode) &&
-			   e2fsck_pass1_check_symlink(fs, inode, block_buf)) {
+			   e2fsck_pass1_check_symlink(fs, ino, inode, 
+						      block_buf)) {
 			check_immutable(ctx, &pctx);
 			ctx->fs_symlinks_count++;
 			if (ext2fs_inode_data_blocks(fs, inode) == 0) {

@@ -429,7 +429,7 @@ extern void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags,
 extern void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool);
 extern int e2fsck_pass1_check_device_inode(ext2_filsys fs,
 					   struct ext2_inode *inode);
-extern int e2fsck_pass1_check_symlink(ext2_filsys fs,
+extern int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 				      struct ext2_inode *inode, char *buf);
 extern void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
 			       struct ext2_inode *inode, int restart_flag,
