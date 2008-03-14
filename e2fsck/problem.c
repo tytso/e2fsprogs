@@ -819,6 +819,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i missing EXTENT_FL, but is in extents format\n"),
 	  PROMPT_FIX, PR_PREEN_OK },
 
+	/* Fast symlink has EXTENTS_FL set */
+	{ PR_1_FAST_SYMLINK_EXTENT_FL,
+	  N_("Fast symlink %i has EXTENT_FL set.  "),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */

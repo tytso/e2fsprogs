@@ -476,6 +476,9 @@ struct problem_context {
 /* inode missing EXTENTS_FL, but is an extent inode */
 #define PR_1_UNSET_EXTENT_FL		0x01005C
 
+/* Fast symlink has EXTENTS_FL set */
+#define PR_1_FAST_SYMLINK_EXTENT_FL	0x01005D
+
 /*
  * Pass 1b errors
  */
