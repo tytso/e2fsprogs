@@ -439,7 +439,7 @@ struct ext2_inode_large {
  */
 #define EXT2_VALID_FS			0x0001	/* Unmounted cleanly */
 #define EXT2_ERROR_FS			0x0002	/* Errors detected */
-#define EXT4_ORPHAN_FS			0x0004	/* Orphans being recovered */
+#define EXT3_ORPHAN_FS			0x0004	/* Orphans being recovered */
 
 /*
  * Misc. filesystem flags

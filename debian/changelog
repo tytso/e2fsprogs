@@ -1,3 +1,27 @@
+e2fsprogs (1.40.8-2) unstable; urgency=low
+
+  * One more big-endian swap fix needed for resize2fs to work correctly
+      with in-inode extended attributes.
+  * Fix minor security issues identified in uuidd.
+  * Remove e2fsprogs preinstall script which contained stuff not needed
+      in well over two stable releases.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 14 Mar 2008 14:25:54 -0400
+
+e2fsprogs (1.40.8-1) unstable; urgency=low
+
+  * Fix e2image -I so it works on image files which are larger than 2GB.
+  * Fix e2fsck's handling of directory inodes with a corrupt size field.
+  * Fully fix a resize2fs bug where extended attributes in large inodes
+      could get dropped on big-endian systems.
+  * Update Czech, Dutch, Polish, Sweedish, and Vietnamese translations.
+  * Significantly updated German translation!  Thanks to Philipp Thomas
+    from Novell for stepping up to be our new German translation
+    maintainer!  (Closes: #302512, #370247, #401092, #412882)
+  * Fixed mke2fs man page to document new default inode size.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 13 Mar 2008 20:00:09 -0400
+
 e2fsprogs (1.40.7-1) unstable; urgency=low
 
   * New upstream release
