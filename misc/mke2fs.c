@@ -513,11 +513,11 @@ static void create_root_dir(ext2_filsys fs)
 
 static void create_lost_and_found(ext2_filsys fs)
 {
+	unsigned int		lpf_size = 0;
 	errcode_t		retval;
 	ext2_ino_t		ino;
 	const char		*name = "lost+found";
 	int			i;
-	int			lpf_size = 0;
 
 	fs->umask = 077;
 	retval = ext2fs_mkdir(fs, EXT2_ROOT_INO, 0, name);
@@ -757,7 +757,7 @@ static int set_os(struct ext2_super_block *sb, char *os)
 static void parse_extended_opts(struct ext2_super_block *param, 
 				const char *opts)
 {
-	char	*buf, *token, *next, *p, *arg, *badopt = "";
+	char	*buf, *token, *next, *p, *arg, *badopt = 0;
 	int	len;
 	int	r_usage = 0;
 
@@ -884,7 +884,7 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tstripe-width=<RAID stride * data disks in blocks>\n"
 			"\tresize=<resize maximum size in blocks>\n\n"
 			"\ttest_fs\n"),
-			badopt);
+			badopt ? badopt : "");
 		free(buf);
 		exit(1);
 	}

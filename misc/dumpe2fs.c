@@ -336,9 +336,9 @@ static void print_journal_information(ext2_filsys fs)
 static void parse_extended_opts(const char *opts, blk_t *superblock, 
 				int *blocksize)
 {
-	char	*buf, *token, *next, *p, *arg, *badopt = "";
+	char	*buf, *token, *next, *p, *arg, *badopt = 0;
 	int	len;
-	int	usage = 0;
+	int	do_usage = 0;
 
 	len = strlen(opts);
 	buf = malloc(len+1);
@@ -363,7 +363,7 @@ static void parse_extended_opts(const char *opts, blk_t *superblock,
 		if (strcmp(token, "superblock") == 0 ||
 		    strcmp(token, "sb") == 0) {
 			if (!arg) {
-				usage++;
+				do_usage++;
 				badopt = token;
 				continue;
 			}
@@ -372,13 +372,13 @@ static void parse_extended_opts(const char *opts, blk_t *superblock,
 				fprintf(stderr,
 					_("Invalid superblock parameter: %s\n"),
 					arg);
-				usage++;
+				do_usage++;
 				continue;
 			}
 		} else if (strcmp(token, "blocksize") == 0 ||
 			   strcmp(token, "bs") == 0) {
 			if (!arg) {
-				usage++;
+				do_usage++;
 				badopt = token;
 				continue;
 			}
@@ -387,15 +387,15 @@ static void parse_extended_opts(const char *opts, blk_t *superblock,
 				fprintf(stderr,
 					_("Invalid blocksize parameter: %s\n"),
 					arg);
-				usage++;
+				do_usage++;
 				continue;
 			}
 		} else {
-			usage++;
+			do_usage++;
 			badopt = token;
 		}
 	}
-	if (usage) {
+	if (do_usage) {
 		fprintf(stderr, _("\nBad extended option(s) specified: %s\n\n"
 			"Extended options are separated by commas, "
 			"and may take an argument which\n"
@@ -403,7 +403,7 @@ static void parse_extended_opts(const char *opts, blk_t *superblock,
 			"Valid extended options are:\n"
 			"\tsuperblock=<superblock number>\n"
 			"\tblocksize=<blocksize>\n"),
-			badopt);
+			badopt ? badopt : "");
 		free(buf);
 		exit(1);
 	}
@@ -415,7 +415,7 @@ int main (int argc, char ** argv)
 	errcode_t	retval;
 	ext2_filsys	fs;
 	int		print_badblocks = 0;
-	int		use_superblock = 0;
+	blk_t		use_superblock = 0;
 	int		use_blocksize = 0;
 	int		image_dump = 0;
 	int		force = 0;

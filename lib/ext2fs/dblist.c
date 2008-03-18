@@ -263,8 +263,6 @@ int ext2fs_dblist_count(ext2_dblist dblist)
 errcode_t ext2fs_dblist_get_last(ext2_dblist dblist, 
 				 struct ext2_db_entry **entry)
 {
-	errcode_t		retval;
-
 	EXT2_CHECK_MAGIC(dblist, EXT2_ET_MAGIC_DBLIST);
 
 	if (dblist->count == 0)

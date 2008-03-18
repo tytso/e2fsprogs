@@ -802,7 +802,6 @@ int check_backup_super_block(e2fsck_t ctx)
 {
 	ext2_filsys	fs = ctx->fs;
 	ext2_filsys	tfs = 0;
-	io_manager	io_ptr;
 	errcode_t	retval;
 	dgrp_t		g;
 	blk_t		sb;

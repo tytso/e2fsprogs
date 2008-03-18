@@ -206,12 +206,12 @@ static void server_loop(const char *socket_path, const char *pidfile_path,
 			int debug, int timeout, int quiet)
 {
 	struct sockaddr_un	my_addr, from_addr;
-	unsigned char		reply_buf[1024], *cp;
 	struct flock		fl;
 	socklen_t		fromlen;
 	int32_t			reply_len = 0;
 	uuid_t			uu;
 	mode_t			save_umask;
+	char			reply_buf[1024], *cp;
 	char			op, str[37];
 	int			i, s, ns, len, num;
 	int			fd_pidfile, ret;
@@ -329,12 +329,12 @@ static void server_loop(const char *socket_path, const char *pidfile_path,
 
 		switch(op) {
 		case UUIDD_OP_GETPID:
-			sprintf((char *) reply_buf, "%d", getpid());
-			reply_len = strlen((char *) reply_buf)+1;
+			sprintf(reply_buf, "%d", getpid());
+			reply_len = strlen(reply_buf)+1;
 			break;
 		case UUIDD_OP_GET_MAXOP:
-			sprintf((char *) reply_buf, "%d", UUIDD_MAX_OP);
-			reply_len = strlen((char *) reply_buf)+1;
+			sprintf(reply_buf, "%d", UUIDD_MAX_OP);
+			reply_len = strlen(reply_buf)+1;
 			break;
 		case UUIDD_OP_TIME_UUID:
 			num = 1;
@@ -375,12 +375,13 @@ static void server_loop(const char *socket_path, const char *pidfile_path,
 				num = 1000;
 			if (num*16 > (int) (sizeof(reply_buf)-sizeof(num)))
 				num = (sizeof(reply_buf)-sizeof(num)) / 16;
-			uuid__generate_random(reply_buf+sizeof(num), &num);
+			uuid__generate_random((unsigned char *) reply_buf +
+					      sizeof(num), &num);
 			if (debug) {
 				printf(_("Generated %d UUID's:\n"), num);
 				for (i=0, cp=reply_buf+sizeof(num);
 				     i < num; i++, cp+=16) {
-					uuid_unparse(cp, str);
+					uuid_unparse((unsigned char *)cp, str);
 					printf("\t%s\n", str);
 				}
 			}

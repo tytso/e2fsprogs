@@ -151,7 +151,6 @@ errcode_t ext2fs_extent_header_verify(void *ptr, int size)
 /*
  * Begin functions to handle an inode's extent information
  */
-
 extern void ext2fs_extent_free(ext2_extent_handle_t handle)
 {
 	int			i;
@@ -178,7 +177,6 @@ extern errcode_t ext2fs_extent_open(ext2_filsys fs, ext2_ino_t ino,
 	errcode_t			retval;
 	int				isize = EXT2_INODE_SIZE(fs->super);
 	struct ext3_extent_header	*eh;
-	struct ext3_extent_idx		*ix;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
@@ -204,7 +202,7 @@ extern errcode_t ext2fs_extent_open(ext2_filsys fs, ext2_ino_t ino,
 	if (!(handle->inode->i_flags & EXT4_EXTENTS_FL))
 		return EXT2_ET_INODE_NOT_EXTENT;
 
-	eh = (struct ext3_extent_header *) &handle->inode->i_block;
+	eh = (struct ext3_extent_header *) &handle->inode->i_block[0];
 
 	retval = ext2fs_extent_header_verify(eh, sizeof(handle->inode->i_block));
 	if (retval)
@@ -498,7 +496,6 @@ retry:
 
 static errcode_t update_path(ext2_extent_handle_t handle)
 {
-	struct extent_path		*path;
 	blk64_t				blk;
 	errcode_t			retval;
 	struct ext3_extent_idx		*ix;
@@ -517,6 +514,7 @@ static errcode_t update_path(ext2_extent_handle_t handle)
 	return retval;
 }
 
+#if 0
 errcode_t ext2fs_extent_save_path(ext2_extent_handle_t handle,
 				  ext2_extent_path_t *ret_path)
 {
@@ -553,11 +551,12 @@ errcode_t ext2fs_extent_free_path(ext2_extent_path_t path)
 	ext2fs_free_mem(&path);
 	return 0;
 }
+#endif
 
 static errcode_t extent_goto(ext2_extent_handle_t handle,
 			     int leaf_level, blk64_t blk)
 {
-	struct ext2fs_extent	extent, next;
+	struct ext2fs_extent	extent;
 	errcode_t		retval;
 
 	retval = ext2fs_extent_get(handle, EXT2_EXTENT_ROOT, &extent);
@@ -618,7 +617,8 @@ errcode_t ext2fs_extent_goto(ext2_extent_handle_t handle,
 	return extent_goto(handle, 0, blk);
 }
 
-errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle, int flags,
+errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle, 
+				int flags EXT2FS_ATTR((unused)),
 				struct ext2fs_extent *extent)
 {
 	struct extent_path		*path;
@@ -713,7 +713,8 @@ errout:
 	return retval;
 }
 
-errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
+errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, 
+			       int flags EXT2FS_ATTR((unused)))
 {
 	struct extent_path		*path;
 	char 				*cp;
@@ -759,8 +760,6 @@ errcode_t ext2fs_extent_get_info(ext2_extent_handle_t handle,
 				 struct ext2_extent_info *info)
 {
 	struct extent_path		*path;
-	struct ext3_extent_idx		*ix;
-	struct ext3_extent		*ex;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EXTENT_HANDLE);
 
@@ -796,7 +795,7 @@ errcode_t ext2fs_extent_get_info(ext2_extent_handle_t handle,
 /*
  * Hook in new commands into debugfs
  */
-char *debug_prog_name = "tst_extents";
+const char *debug_prog_name = "tst_extents";
 extern ss_request_table extent_cmds;
 ss_request_table *extra_cmds = &extent_cmds;
 

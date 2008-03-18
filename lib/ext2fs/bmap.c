@@ -158,7 +158,7 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 
 	if (inode->i_flags & EXT4_EXTENTS_FL) {
 		struct ext2fs_extent	extent;
-		int			offset;
+		unsigned int		offset;
 
 		if (bmap_flags & BMAP_SET) {
 			retval = EXT2_ET_EXTENT_NOT_SUPPORTED;

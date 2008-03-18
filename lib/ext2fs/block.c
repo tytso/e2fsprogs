@@ -364,6 +364,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 		e2_blkcnt_t		blockcnt;
 		blk_t			blk;
 		int			op = EXT2_EXTENT_ROOT;
+		unsigned int		j;
 
 		if (!(flags & BLOCK_FLAG_READ_ONLY))
 			return EXT2_ET_EXTENT_NOT_SUPPORTED;
@@ -396,9 +397,9 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 							    extent_errout);
 				continue;
 			}
-			for (blockcnt = extent.e_lblk, i = 0;
-			     i < extent.e_len;
-			     blk++, blockcnt++, i++) {
+			for (blockcnt = extent.e_lblk, j = 0;
+			     j < extent.e_len;
+			     blk++, blockcnt++, j++) {
 				ret |= (*ctx.func)(fs, &blk,
 						   blockcnt,
 						   0, 0, priv_data);

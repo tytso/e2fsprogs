@@ -800,7 +800,7 @@ static void compile_fs_type(char *fs_type, struct fs_type_compile *cmp)
  * This function returns true if a particular option appears in a
  * comma-delimited options list
  */
-static int opt_in_list(char *opt, char *optlist)
+static int opt_in_list(const char *opt, char *optlist)
 {
 	char	*list, *s;
 

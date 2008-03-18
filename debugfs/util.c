@@ -121,7 +121,7 @@ ext2_ino_t string_to_inode(char *str)
 
 	retval = ext2fs_namei(current_fs, root, cwd, str, &ino);
 	if (retval) {
-		com_err(str, retval, "");
+		com_err(str, retval, 0);
 		return 0;
 	}
 	return ino;

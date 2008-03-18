@@ -22,9 +22,11 @@
 errcode_t ext2fs_read_ind_block(ext2_filsys fs, blk_t blk, void *buf)
 {
 	errcode_t	retval;
+#ifdef WORDS_BIGENDIAN
 	blk_t		*block_nr;
 	int		i;
 	int		limit = fs->blocksize >> 2;
+#endif
 
 	if ((fs->flags & EXT2_FLAG_IMAGE_FILE) &&
 	    (fs->io != fs->image_io))
@@ -44,9 +46,11 @@ errcode_t ext2fs_read_ind_block(ext2_filsys fs, blk_t blk, void *buf)
 
 errcode_t ext2fs_write_ind_block(ext2_filsys fs, blk_t blk, void *buf)
 {
+#ifdef WORDS_BIGENDIAN
 	blk_t		*block_nr;
 	int		i;
 	int		limit = fs->blocksize >> 2;
+#endif
 
 	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
 		return 0;

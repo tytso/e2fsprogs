@@ -28,6 +28,9 @@
 #endif
 #include <string.h>
 #include <sys/stat.h>
+#include <ctype.h>
+
+#include "fsck.h"
 
 /*
  * ext2fs_check_if_mounted flags
@@ -80,7 +83,6 @@ static errcode_t check_mntent_file(const char *mtab_file, const char *file,
 	ino_t		file_ino=0;
 	FILE 		*f;
 	char		buf[1024], *device = 0, *mnt_dir = 0, *cp;
-	int		fd;
 
 	*mount_flags = 0;
 	if ((f = fopen(mtab_file, "r")) == NULL)

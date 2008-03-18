@@ -315,7 +315,6 @@ static void update_mntopts(ext2_filsys fs, char *mntopts)
 static void update_feature_set(ext2_filsys fs, char *features)
 {
 	struct ext2_super_block *sb= fs->super;
-	__u32	old_compat, old_incompat, old_ro_compat;
 	__u32		old_features[3];
 	int		type_err;
 	unsigned int	mask_err;

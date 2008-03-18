@@ -185,9 +185,9 @@ static int decode_arg (int * i, int argc, char ** argv)
 	return 1;
 }
 
-static int chattr_dir_proc (const char *, struct dirent *, void *);
+static int chattr_dir_proc(const char *, struct dirent *, void *);
 
-static int change_attributes (const char * name, int cmdline)
+static int change_attributes(const char * name)
 {
 	unsigned long flags;
 	STRUCT_STAT	st;
@@ -265,7 +265,7 @@ static int chattr_dir_proc (const char * dir_name, struct dirent * de,
 			return -1;
 		}
 		sprintf(path, "%s/%s", dir_name, de->d_name);
-		ret = change_attributes(path, 0);
+		ret = change_attributes(path);
 		free(path);
 	}
 	return ret;
@@ -314,7 +314,7 @@ int main (int argc, char ** argv)
 		fprintf (stderr, "chattr %s (%s)\n",
 			 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	for (j = i; j < argc; j++) {
-		err = change_attributes (argv[j], 1);
+		err = change_attributes (argv[j]);
 		if (err)
 			retval = 1;
 	}

@@ -86,10 +86,13 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	errcode_t	retval;
 	unsigned long	i;
 	__u32		features;
-	int		j, groups_per_block, blocks_per_group, io_flags;
+	int		groups_per_block, blocks_per_group, io_flags;
 	blk_t		group_block, blk;
 	char		*dest, *cp;
+#ifdef WORDS_BIGENDIAN
 	struct ext2_group_desc *gdp;
+	int		j;
+#endif
 	
 	EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
 

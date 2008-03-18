@@ -203,13 +203,16 @@ static errcode_t write_backup_super(ext2_filsys fs, dgrp_t group,
 
 errcode_t ext2fs_flush(ext2_filsys fs)
 {
-	dgrp_t		i,j;
+	dgrp_t		i;
 	errcode_t	retval;
 	unsigned long	fs_state;
 	__u32		feature_incompat;
 	struct ext2_super_block *super_shadow = 0;
 	struct ext2_group_desc *group_shadow = 0;
+#ifdef WORDS_BIGENDIAN
 	struct ext2_group_desc *s, *t;
+	dgrp_t		j;
+#endif
 	char	*group_ptr;
 	int	old_desc_blocks;
 	

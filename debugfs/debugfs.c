@@ -39,7 +39,7 @@ extern char *optarg;
 
 extern ss_request_table debug_cmds;
 ss_request_table *extra_cmds;
-char *debug_prog_name;
+const char *debug_prog_name;
 
 ext2_filsys	current_fs = NULL;
 ext2_ino_t	root, cwd;
