@@ -461,10 +461,10 @@ retry:
 			((__u64) ext2fs_le16_to_cpu(ex->ee_start_hi) << 32);
 		extent->e_lblk = ext2fs_le32_to_cpu(ex->ee_block);
 		extent->e_len = ext2fs_le16_to_cpu(ex->ee_len);
-		extent->e_flags = EXT2_EXTENT_FLAGS_LEAF;
+		extent->e_flags |= EXT2_EXTENT_FLAGS_LEAF;
 		if (extent->e_len > EXT_INIT_MAX_LEN) {
 			extent->e_len -= EXT_INIT_MAX_LEN;
-			extent->e_flags = EXT2_EXTENT_FLAGS_UNINIT;
+			extent->e_flags |= EXT2_EXTENT_FLAGS_UNINIT;
 		}
 	} else {
 		extent->e_pblk = ext2fs_le32_to_cpu(ix->ei_leaf) +

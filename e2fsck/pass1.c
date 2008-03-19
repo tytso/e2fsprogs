@@ -1622,14 +1622,16 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
 			if (pctx->errcode) {
-				printf("Error1: %s\n", error_message(pctx->errcode));
+				printf("Error1: %s on inode %lld\n",
+					error_message(pctx->errcode), pctx->ino);
 				abort();
 			}
 			scan_extent_node(ctx, pctx, pb, ehandle);
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_UP, &extent);
 			if (pctx->errcode) {
-				printf("Error1: %s\n", error_message(pctx->errcode));
+				printf("Error1: %s on inode %lld\n",
+					error_message(pctx->errcode), pctx->ino);
 				abort();
 			}
 			goto next;
