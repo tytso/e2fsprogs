@@ -82,6 +82,8 @@ FILE *open_pager(void)
 	char buf[80];
 
 	signal(SIGPIPE, SIG_IGN);
+	if (!isatty(1))
+		return stdout;
 	if (!pager)
 		pager = getenv("PAGER");
 	if (!pager)
