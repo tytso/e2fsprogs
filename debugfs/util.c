@@ -231,6 +231,7 @@ extern time_t string_to_time(const char *arg)
 	    ts.tm_min > 59 || ts.tm_sec > 61)
 		ts.tm_mday = 0;
 #endif
+	ts.tm_isdst = -1;
 	ret = mktime(&ts);
 	if (ts.tm_mday == 0 || ret == ((time_t) -1)) {
 		/* Try it as an integer... */

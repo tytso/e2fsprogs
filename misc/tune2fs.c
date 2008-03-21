@@ -540,6 +540,7 @@ static time_t parse_time(char *str)
 			str);
 		usage();
 	}
+	ts.tm_isdst = -1;
 	return (mktime(&ts));
 }
 
