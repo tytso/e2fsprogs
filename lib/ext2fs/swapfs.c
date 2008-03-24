@@ -147,6 +147,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 			    int bufsize)
 {
 	unsigned i, has_data_blocks, extra_isize, attr_magic;
+	int has_extents = 0;
 	int islnk = 0;
 	__u32 *eaf, *eat;
 
@@ -172,12 +173,13 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 		has_data_blocks = ext2fs_inode_data_blocks(fs, 
 					   (struct ext2_inode *) t);
 	if (hostorder && (f->i_flags & EXT4_EXTENTS_FL))
-		has_data_blocks = 0;
+		has_extents = 1;
 	t->i_flags = ext2fs_swab32(f->i_flags);
-	if (hostorder && (t->i_flags & EXT4_EXTENTS_FL))
-		has_data_blocks = 0;
+	if (!hostorder && (t->i_flags & EXT4_EXTENTS_FL))
+		has_extents = 1;
 	t->i_dir_acl = ext2fs_swab32(f->i_dir_acl);
-	if (!islnk || has_data_blocks ) {
+	/* extent data are swapped on access, not here */
+	if (!has_extents && (!islnk || has_data_blocks)) {
 		for (i = 0; i < EXT2_N_BLOCKS; i++)
 			t->i_block[i] = ext2fs_swab32(f->i_block[i]);
 	} else if (t != f) {
