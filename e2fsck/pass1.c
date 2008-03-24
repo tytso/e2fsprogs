@@ -713,14 +713,6 @@ void e2fsck_pass1(e2fsck_t ctx)
 			}
 		}
 
-		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL) &&
-		    LINUX_S_ISLNK(inode->i_mode) &&
-		    !ext2fs_inode_has_valid_blocks(inode) &&
-		    fix_problem(ctx, PR_1_FAST_SYMLINK_EXTENT_FL, &pctx)) {
-			inode->i_flags &= ~EXT4_EXTENTS_FL;
-			e2fsck_write_inode(ctx, ino, inode, "pass1");
-		}
-
 		if (ino == EXT2_BAD_INO) {
 			struct process_block_struct pb;
 			
@@ -924,6 +916,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 
 		check_inode_extra_space(ctx, &pctx);
 		check_is_really_dir(ctx, &pctx, block_buf);
+
+		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL) &&
+		    LINUX_S_ISLNK(inode->i_mode) &&
+		    !ext2fs_inode_has_valid_blocks(inode) &&
+		    fix_problem(ctx, PR_1_FAST_SYMLINK_EXTENT_FL, &pctx)) {
+			inode->i_flags &= ~EXT4_EXTENTS_FL;
+			e2fsck_write_inode(ctx, ino, inode, "pass1");
+		}
 
 		if (LINUX_S_ISDIR(inode->i_mode)) {
 			ext2fs_mark_inode_bitmap(ctx->inode_dir_map, ino);
