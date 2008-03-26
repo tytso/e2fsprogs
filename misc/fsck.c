@@ -451,13 +451,19 @@ static int execute(const char *type, const char *device, const char *mntpt,
 	for (i=0; i <num_args; i++)
 		argv[argc++] = string_copy(args[i]);
 
-	if (progress && !progress_active()) {
+	if (progress) {
 		if ((strcmp(type, "ext2") == 0) ||
 		    (strcmp(type, "ext3") == 0)) {
 			char tmp[80];
-			snprintf(tmp, 80, "-C%d", progress_fd);
-			argv[argc++] = string_copy(tmp);
-			inst->flags |= FLAG_PROGRESS;
+
+			tmp[0] = 0;
+			if (!progress_active()) {
+				snprintf(tmp, 80, "-C%d", progress_fd);
+				inst->flags |= FLAG_PROGRESS;
+			} else if (progress_fd)
+				snprintf(tmp, 80, "-C%d", progress_fd * -1);
+			if (tmp[0])
+				argv[argc++] = string_copy(tmp);
 		}
 	}
 
