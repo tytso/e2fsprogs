@@ -615,6 +615,7 @@ static struct fsck_instance *wait_one(int flags)
 		status = EXIT_ERROR;
 	}
 	inst->exit_status = status;
+	inst->flags |= FLAG_DONE;
 	if (progress && (inst->flags & FLAG_PROGRESS) &&
 	    !progress_active()) {
 		for (inst2 = instance_list; inst2; inst2 = inst2->next) {
