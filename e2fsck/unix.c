@@ -490,7 +490,6 @@ static void signal_progress_on(int sig EXT2FS_ATTR((unused)))
 		return;
 
 	ctx->progress = e2fsck_update_progress;
-	ctx->progress_fd = 0;
 }
 
 static void signal_progress_off(int sig EXT2FS_ATTR((unused)))
@@ -627,6 +626,10 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			if (res != 1)
 				goto sscanf_err;
 
+			if (ctx->progress_fd < 0) {
+				ctx->progress = 0;
+				ctx->progress_fd = ctx->progress_fd * -1;
+			}
 			if (!ctx->progress_fd)
 				break;
 			/* Validate the file descriptor to avoid disasters */

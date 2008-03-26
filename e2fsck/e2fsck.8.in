@@ -139,6 +139,11 @@ so that the progress of the filesystem
 check can be monitored.  This option is typically used by programs 
 which are running
 .BR e2fsck .
+If the file descriptor number is negative, then absolute value of
+the file descriptor will be used, and the progress information will be
+suppressed initially.  It can later be enabled by sending the
+.B e2fsck
+process a SIGUSR1 signal.
 If the file descriptor specified is 0, 
 .B e2fsck
 will print a completion bar as it goes about its business.  This requires
@@ -337,14 +342,15 @@ The following signals have the following effect when sent to
 .B SIGUSR1
 This signal causes
 .B e2fsck
-to start displaying a completion bar.  (See discussion of the 
+to start displaying a completion bar or emitting progress information.  
+(See discussion of the 
 .B \-C
 option.)
 .TP
 .B SIGUSR2
 This signal causes
 .B e2fsck 
-to stop displaying a completion bar.
+to stop displaying a completion bar or emitting progress information.
 .SH REPORTING BUGS
 Almost any piece of software will have bugs.  If you manage to find a
 filesystem which causes 
