@@ -81,6 +81,8 @@ static const char *really_wanted[] = {
 	"minix",
 	"ext2",
 	"ext3",
+	"ext4",
+	"ext4dev",
 	"jfs",
 	"reiserfs",
 	"xiafs",
@@ -453,7 +455,9 @@ static int execute(const char *type, const char *device, const char *mntpt,
 
 	if (progress) {
 		if ((strcmp(type, "ext2") == 0) ||
-		    (strcmp(type, "ext3") == 0)) {
+		    (strcmp(type, "ext3") == 0) ||
+		    (strcmp(type, "ext4") == 0) ||
+		    (strcmp(type, "ext4dev") == 0)) {
 			char tmp[80];
 
 			tmp[0] = 0;
@@ -628,7 +632,9 @@ static struct fsck_instance *wait_one(int flags)
 			if (inst2->flags & FLAG_DONE)
 				continue;
 			if (strcmp(inst2->type, "ext2") &&
-			    strcmp(inst2->type, "ext3"))
+			    strcmp(inst2->type, "ext3") &&
+			    strcmp(inst2->type, "ext4") &&
+			    strcmp(inst2->type, "ext4dev"))
 				continue;
 			/*
 			 * If we've just started the fsck, wait a tiny
