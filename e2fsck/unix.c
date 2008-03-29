@@ -737,7 +737,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			break;
 #endif
 		case 'N':
-			ctx->device_name = optarg;
+			ctx->device_name = string_copy(ctx, optarg, 0);
 			break;
 #ifdef ENABLE_SWAPFS
 		case 's':
