@@ -427,13 +427,6 @@ Store file type information in directory entries.
 .TP
 .B has_journal
 Create an ext3 journal (as if using the
-.TP
-.B uninit_groups
-Create a filesystem without initializing all of the groups.  This speeds
-up filesystem creation time noticably, and can also reduce
-.BR e2fsck time
-dramatically.  This feature causes the filesystem to be read-only in
-older kernels is not supported in most Linux kernels, use with caution.
 .B \-j
 option).
 @JDEV@.TP
@@ -444,6 +437,13 @@ option).
 @JDEV@.I external-journal
 @JDEV@must be created with the same
 @JDEV@block size as the filesystems that will be using it.
+.TP
+.B uninit_groups
+Create a filesystem without initializing all of the groups.  This speeds
+up filesystem creation time noticably, and can also reduce
+.BR e2fsck time
+dramatically.  This feature is only supported by the ext4 filesystem in
+recent Linux kernels.
 .TP
 .B resize_inode
 Reserve space so the block group descriptor table may grow in the future.

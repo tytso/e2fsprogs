@@ -444,7 +444,9 @@ only supports clearing this filesystem feature.
 Allow the kernel to initialize bitmaps and inode tables and keep a high
 watermark for the unused inodes in a filesystem, to reduce
 .BR e2fsck (8)
-time.
+time.  This first e2fsck run after enabling this feature will take the
+full time, but subsequent e2fsck runs will take only a fraction of the
+original time, depending on how full the file system is.
 .RE
 .IP
 After setting or clearing 
@@ -464,6 +466,12 @@ if necessary.  After setting the
 feature, 
 .B e2fsck -D
 can be run to convert existing directories to the hashed B-tree format.
+Enabling certain filesystem features may prevent the filesystem from being
+mounted by kernels which do not support those features.  In particular the
+.BR uninit_groups
+and
+.BR flex_bg
+features are only supported by the ext4 filesystem.
 .TP
 .BI \-r " reserved-blocks-count"
 Set the number of reserved filesystem blocks.
