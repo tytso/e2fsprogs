@@ -227,7 +227,7 @@ for the filesystem.  (For administrators who are creating
 filesystems on RAID arrays, it is preferable to use the
 .I stride
 RAID parameter as part of the
-.B \-R
+.B \-E
 option rather than manipulating the number of blocks per group.)  
 This option is generally used by developers who
 are developing test cases.  
