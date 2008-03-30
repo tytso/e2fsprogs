@@ -4,8 +4,8 @@
  * Copyright (C) 2006, 2007 by Andreas Dilger <adilger@clusterfs.com>
  *
  * %Begin-Header%
- * This file may be redistributed under the terms of the GNU Public
- * License.
+ * This file may be redistributed under the terms of the GNU General Public
+ * License, Version 2.  See the file COPYING for more details.
  * %End-Header%
  */
 
