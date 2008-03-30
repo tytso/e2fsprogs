@@ -441,14 +441,15 @@ int e2fsck_simple_progress(e2fsck_t ctx, const char *label, float percent,
 static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 				  unsigned long cur, unsigned long max)
 {
-	char buf[80];
+	char buf[1024];
 	float percent;
 
 	if (pass == 0)
 		return 0;
 	
 	if (ctx->progress_fd) {
-		sprintf(buf, "%d %lu %lu\n", pass, cur, max);
+		snprintf(buf, sizeof(buf), "%d %lu %lu %s\n", 
+			 pass, cur, max, ctx->device_name);
 		write(ctx->progress_fd, buf, strlen(buf));
 	} else {
 		percent = calc_percent(&e2fsck_tbl, pass, cur, max);
@@ -487,7 +488,6 @@ static void signal_progress_on(int sig EXT2FS_ATTR((unused)))
 		return;
 
 	ctx->progress = e2fsck_update_progress;
-	ctx->progress_fd = 0;
 }
 
 static void signal_progress_off(int sig EXT2FS_ATTR((unused)))
@@ -626,6 +626,10 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			if (res != 1)
 				goto sscanf_err;
 
+			if (ctx->progress_fd < 0) {
+				ctx->progress = 0;
+				ctx->progress_fd = ctx->progress_fd * -1;
+			}
 			if (!ctx->progress_fd)
 				break;
 			/* Validate the file descriptor to avoid disasters */
@@ -732,7 +736,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			break;
 #endif
 		case 'N':
-			ctx->device_name = optarg;
+			ctx->device_name = string_copy(ctx, optarg, 0);
 			break;
 		case 'k':
 			keep_bad_blocks++;
@@ -757,6 +761,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			argv[optind]);
 		fatal_error(ctx, 0);
 	}
+	ctx->filesystem_name = string_copy(ctx, ctx->filesystem_name, 0);
 	if (extended_opts)
 		parse_extended_opts(ctx, extended_opts);
 
@@ -862,6 +867,7 @@ int main (int argc, char *argv[])
 	int journal_size;
 	int sysval, sys_page_size = 4096;
 	__u32 features[3];
+	char *cp;
 	
 	clear_problem_context(&pctx);
 #ifdef MTRACE
@@ -1083,7 +1089,10 @@ restart:
 					       sizeof(sb->s_volume_name));
 	}
 	if (ctx->device_name == 0)
-		ctx->device_name = ctx->filesystem_name;
+		ctx->device_name = string_copy(ctx, ctx->filesystem_name, 0);
+	for (cp = ctx->device_name; *cp; cp++)
+		if (isspace(*cp) || *cp == ':')
+			*cp = '_';
 
 	/*
 	 * Make sure the ext3 superblock fields are consistent.

@@ -471,6 +471,7 @@ Set the number of reserved filesystem blocks.
 .BI \-T " time-last-checked"
 Set the time the filesystem was last checked using
 .BR  e2fsck .
+The time is interpreted using the current (local) timezone.
 This can be useful in scripts which use a Logical Volume Manager to make
 a consistent snapshot of a filesystem, and then check the filesystem 
 during off hours to make sure it hasn't been corrupted due to 

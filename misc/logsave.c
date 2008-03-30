@@ -19,6 +19,9 @@
 #include <fcntl.h>
 #include <time.h>
 #include <errno.h>
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
@@ -32,6 +35,7 @@ void	*outbuf = 0;
 int	verbose = 0;
 int	do_skip = 0;
 int	skip_mode = 0;
+pid_t	child_pid = -1;
 
 static void usage(char *progname)
 {
@@ -102,16 +106,35 @@ static int do_read(int fd)
 	return c;
 }
 
+static void signal_term(int sig)
+{
+	if (child_pid > 0)
+		kill(child_pid, sig);
+}
+
 static int run_program(char **argv)
 {
 	int	fds[2];
 	int	status, rc, pid;
 	char	buffer[80];
+#ifdef HAVE_SIGNAL_H
+	struct sigaction	sa;
+#endif
 
 	if (pipe(fds) < 0) {
 		perror("pipe");
 		exit(1);
 	}
+
+#ifdef HAVE_SIGNAL_H
+	memset(&sa, 0, sizeof(struct sigaction));
+	sa.sa_handler = signal_term;
+	sigaction(SIGINT, &sa, 0);
+	sigaction(SIGTERM, &sa, 0);
+#ifdef SA_RESTART
+	sa.sa_flags = SA_RESTART;
+#endif
+#endif
 
 	pid = fork();
 	if (pid < 0) {
@@ -127,11 +150,13 @@ static int run_program(char **argv)
 		perror(argv[0]);
 		exit(1);
 	}
+	child_pid = pid;
 	close(fds[1]);
 
 	while (!(waitpid(pid, &status, WNOHANG ))) {
 		do_read(fds[0]);
 	}
+	child_pid = -1;
 	do_read(fds[0]);
 	close(fds[0]);
 

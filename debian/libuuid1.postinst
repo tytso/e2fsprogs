@@ -1,10 +1,22 @@
 #!/bin/sh
 
 set -e
-groupadd -f -K GID_MIN=100 -K GID_MAX=999 libuuid
-if ! grep -q libuuid /etc/passwd; then
-   useradd -d /var/lib/libuuid -K UID_MIN=100 -K UID_MAX=999 -g libuuid libuuid
+
+FIRST_SYSTEM_UID=100
+LAST_SYSTEM_UID=999
+FIRST_SYSTEM_GID=100
+LAST_SYSTEM_GID=999
+
+if test -f /etc/adduser.conf; then
+   . /etc/adduser.conf
 fi
+
+groupadd -f -K GID_MIN=$FIRST_SYSTEM_GID -K GID_MAX=$LAST_SYSTEM_GID libuuid
+
+if ! grep -q libuuid /etc/passwd; then
+   useradd -d /var/lib/libuuid -K UID_MIN=$FIRST_SYSTEM_UID -K UID_MAX=$LAST_SYSTEM_UID -g libuuid libuuid
+fi
+
 mkdir -p /var/lib/libuuid
 chown libuuid:libuuid /var/lib/libuuid
 chmod 2775 /var/lib/libuuid

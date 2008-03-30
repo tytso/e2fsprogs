@@ -81,6 +81,8 @@ static const char *really_wanted[] = {
 	"minix",
 	"ext2",
 	"ext3",
+	"ext4",
+	"ext4dev",
 	"jfs",
 	"reiserfs",
 	"xiafs",
@@ -451,13 +453,21 @@ static int execute(const char *type, const char *device, const char *mntpt,
 	for (i=0; i <num_args; i++)
 		argv[argc++] = string_copy(args[i]);
 
-	if (progress && !progress_active()) {
+	if (progress) {
 		if ((strcmp(type, "ext2") == 0) ||
-		    (strcmp(type, "ext3") == 0)) {
+		    (strcmp(type, "ext3") == 0) ||
+		    (strcmp(type, "ext4") == 0) ||
+		    (strcmp(type, "ext4dev") == 0)) {
 			char tmp[80];
-			snprintf(tmp, 80, "-C%d", progress_fd);
-			argv[argc++] = string_copy(tmp);
-			inst->flags |= FLAG_PROGRESS;
+
+			tmp[0] = 0;
+			if (!progress_active()) {
+				snprintf(tmp, 80, "-C%d", progress_fd);
+				inst->flags |= FLAG_PROGRESS;
+			} else if (progress_fd)
+				snprintf(tmp, 80, "-C%d", progress_fd * -1);
+			if (tmp[0])
+				argv[argc++] = string_copy(tmp);
 		}
 	}
 
@@ -615,13 +625,16 @@ static struct fsck_instance *wait_one(int flags)
 		status = EXIT_ERROR;
 	}
 	inst->exit_status = status;
+	inst->flags |= FLAG_DONE;
 	if (progress && (inst->flags & FLAG_PROGRESS) &&
 	    !progress_active()) {
 		for (inst2 = instance_list; inst2; inst2 = inst2->next) {
 			if (inst2->flags & FLAG_DONE)
 				continue;
 			if (strcmp(inst2->type, "ext2") &&
-			    strcmp(inst2->type, "ext3"))
+			    strcmp(inst2->type, "ext3") &&
+			    strcmp(inst2->type, "ext4") &&
+			    strcmp(inst2->type, "ext4dev"))
 				continue;
 			/*
 			 * If we've just started the fsck, wait a tiny

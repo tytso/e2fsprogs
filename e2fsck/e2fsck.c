@@ -169,6 +169,12 @@ void e2fsck_free_context(e2fsck_t ctx)
 
 	if (ctx->profile)
 		profile_release(ctx->profile);
+
+	if (ctx->filesystem_name)
+		ext2fs_free_mem(&ctx->filesystem_name);
+			
+	if (ctx->device_name)
+		ext2fs_free_mem(&ctx->device_name);
 			
 	ext2fs_free_mem(&ctx);
 }
