@@ -332,6 +332,7 @@ _INLINE_ __u32 ext2fs_swab32(__u32 val)
 #endif /* !_EXT2_HAVE_ASM_SWAB */
 
 #if !defined(_EXT2_HAVE_ASM_FINDBIT_)
+#include <strings.h>
 _INLINE_ int ext2fs_find_first_bit_set(void * addr, unsigned size)
 {
 	char	*cp = (char *) addr;

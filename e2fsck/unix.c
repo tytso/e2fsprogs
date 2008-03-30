@@ -47,6 +47,7 @@ extern int optind;
 #endif
 
 #include "et/com_err.h"
+#include "e2p/e2p.h"
 #include "e2fsck.h"
 #include "problem.h"
 #include "../version.h"
