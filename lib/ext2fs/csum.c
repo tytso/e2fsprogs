@@ -104,6 +104,8 @@ void ext2fs_set_gdt_csum(ext2_filsys fs)
 
 	for (i = 0; i < fs->group_desc_count; i++, bg++) {
 		int old_csum = bg->bg_checksum;
+		int old_unused = bg->bg_itable_unused;
+		int old_flags = bg->bg_flags;
 
 		/* Even if it wasn't zeroed, by the time this function is
 		 * called by e2fsck we have already scanned and corrected
@@ -112,31 +114,21 @@ void ext2fs_set_gdt_csum(ext2_filsys fs)
 		 * zeroing of the inode table if mke2fs didn't do it, to help
 		 * out if we need to do a full itable scan sometime later. */
 		if (!(bg->bg_flags & (EXT2_BG_INODE_UNINIT |
-				      EXT2_BG_INODE_ZEROED))) {
+				      EXT2_BG_INODE_ZEROED)))
 			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_ZEROED;
-			dirty = 1;
-		}
 
 		if (bg->bg_free_inodes_count == sb->s_inodes_per_group &&
 		    i > 0 && (i < fs->group_desc_count - 1 || csum_flag)) {
-			if (!(bg->bg_flags & EXT2_BG_INODE_UNINIT)) {
+			if (!(bg->bg_flags & EXT2_BG_INODE_UNINIT))
 				bg->bg_flags |= EXT2_BG_INODE_UNINIT;
-				dirty = 1;
-			}
-			if (csum_flag) {
-				int old_unused = bg->bg_itable_unused;
+
+			if (csum_flag)
 				bg->bg_itable_unused = sb->s_inodes_per_group;
-				if (old_unused != bg->bg_itable_unused)
-					dirty = 1;
-			}
 		} else if (csum_flag) {
-			int old_unused = bg->bg_itable_unused;
 			bg->bg_flags &= ~EXT2_BG_INODE_UNINIT;
 			bg->bg_itable_unused = sb->s_inodes_per_group -
 				find_last_inode_ingrp(fs->inode_map,
 						      sb->s_inodes_per_group,i);
-			if (old_unused != bg->bg_itable_unused)
-				dirty = 1;
 		}
 
 		/* skip first and last groups, or groups with GDT backups
@@ -148,12 +140,14 @@ void ext2fs_set_gdt_csum(ext2_filsys fs)
 		blks = ext2fs_super_and_bgd_loc(fs, i, 0, 0, 0, 0);
 		if (bg->bg_free_blocks_count == blks &&
 		    bg->bg_flags & EXT2_BG_INODE_UNINIT &&
-		    !(bg->bg_flags & EXT2_BG_BLOCK_UNINIT)) {
+		    !(bg->bg_flags & EXT2_BG_BLOCK_UNINIT))
 			bg->bg_flags |= EXT2_BG_BLOCK_UNINIT;
-			dirty = 1;
-		}
 checksum:
 		ext2fs_group_desc_csum_set(fs, i);
+		if (old_flags != bg->bg_flags)
+			dirty = 1;
+		if (old_unused != bg->bg_itable_unused)
+			dirty = 1;
 		if (old_csum != bg->bg_checksum)
 			dirty = 1;
 	}
