@@ -1,0 +1,4 @@
+DESCRIPTION="lazy group feature with resize_inode"
+FS_SIZE=131072
+MKE2FS_OPTS="-O resize_inode,lazy_bg"
+. $cmd_dir/run_mke2fs
