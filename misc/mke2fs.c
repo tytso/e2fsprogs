@@ -1792,8 +1792,14 @@ int main (int argc, char *argv[])
 	}
 no_journal:
 
-	if (!super_only)
-		ext2fs_set_gdt_csum(fs);
+	if (!super_only) {
+		retval = ext2fs_set_gdt_csum(fs);
+		if (retval) {
+			com_err(program_name, retval, 
+				_("\n\twhile setting block group checksum info"));
+			exit(1);
+		}
+	}
 	if (!quiet)
 		printf(_("Writing superblocks and "
 		       "filesystem accounting information: "));

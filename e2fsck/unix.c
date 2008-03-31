@@ -1349,8 +1349,14 @@ no_journal:
 	}
 
 	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM &&
-	    !(ctx->options & E2F_OPT_READONLY))
-		ext2fs_set_gdt_csum(ctx->fs);
+	    !(ctx->options & E2F_OPT_READONLY)) {
+		retval = ext2fs_set_gdt_csum(ctx->fs);
+		if (retval) {
+			com_err(ctx->program_name, retval,
+				_("while setting block group checksum info"));
+			fatal_error(ctx, 0);
+		}
+	}
 
 	e2fsck_write_bitmaps(ctx);
 #ifdef RESOURCE_TRACK
