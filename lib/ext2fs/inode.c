@@ -239,9 +239,8 @@ static errcode_t get_next_blockgroup(ext2_inode_scan scan)
 		scan->inodes_left -=
 			fs->group_desc[scan->current_group].bg_itable_unused;
 		scan->blocks_left =
-			(EXT2_INODES_PER_GROUP(fs->super) -
-			 fs->group_desc[scan->current_group].bg_itable_unused +
-			 fs->blocksize / scan->inode_size - 1) *
+			(scan->inodes_left +
+			 (fs->blocksize / scan->inode_size - 1)) *
 			scan->inode_size / fs->blocksize;
 	}
 
