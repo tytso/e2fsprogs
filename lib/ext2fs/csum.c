@@ -133,7 +133,7 @@ void ext2fs_set_gdt_csum(ext2_filsys fs)
 
 		/* skip first and last groups, or groups with GDT backups
 		 * because the resize inode has blocks allocated in them. */
-		if (i == 0 || (i == fs->group_desc_count - 1 && !csum_flag) ||
+		if (i == 0 || i == fs->group_desc_count - 1 ||
 		    (ext2fs_bg_has_super(fs, i) && sb->s_reserved_gdt_blocks))
 			goto checksum;
 
