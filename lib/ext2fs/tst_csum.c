@@ -80,9 +80,6 @@ main(int argc, char **argv)
 	csum1 = ext2fs_group_desc_csum(fs, 0);
 	print_csum("csum0000", fs, 0);
 
-#ifdef WORDS_BIGENDIAN
-	csum_known = ext2fs_swab16(known);
-#endif
 	if (csum1 != csum_known) {
 		printf("checksum for group 0 should be %04x\n", csum_known);
 		exit(1);
