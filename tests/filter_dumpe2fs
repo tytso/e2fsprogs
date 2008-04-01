@@ -10,3 +10,4 @@
 /^Maximum mount count:/d
 /Reserved blocks uid:/s/ (user .*)//
 /Reserved blocks gid:/s/ (group .*)//
+/^  Checksum /d

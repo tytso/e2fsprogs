@@ -118,9 +118,11 @@ static void print_bg_opts(ext2_filsys fs, dgrp_t i)
 	else
 		bg_flags = 0;
 
-	print_bg_opt(bg_flags, EXT2_BG_INODE_UNINIT, "Inode not init",
+	print_bg_opt(bg_flags, EXT2_BG_INODE_UNINIT, "INODE_UNINIT",
  		     &first);
-	print_bg_opt(bg_flags, EXT2_BG_BLOCK_UNINIT, "Block not init",
+	print_bg_opt(bg_flags, EXT2_BG_BLOCK_UNINIT, "BLOCK_UNINIT",
+ 		     &first);
+	print_bg_opt(bg_flags, EXT2_BG_INODE_ZEROED, "ITABLE_ZEROED",
  		     &first);
 	if (!first)
 		fputc(']', stdout);
@@ -170,6 +172,10 @@ static void list_desc (ext2_filsys fs)
 		print_range(first_block, last_block);
 		fputs(")", stdout);
 		print_bg_opts(fs, i);
+		if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
+			printf(_("  Checksum 0x%04x, unused inodes %d\n"),
+			       fs->group_desc[i].bg_checksum,
+			       fs->group_desc[i].bg_itable_unused);
 		has_super = ((i==0) || super_blk);
 		if (has_super) {
 			printf (_("  %s superblock at "),
