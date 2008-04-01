@@ -194,48 +194,42 @@ ext2fs.pc: $(srcdir)/ext2fs.pc.in $(top_builddir)/config.status
 	@echo "	CONFIG.STATUS $@"
 	@cd $(top_builddir); CONFIG_FILES=lib/ext2fs/ext2fs.pc ./config.status
 
-tst_badblocks: tst_badblocks.o freefs.o bitmaps.o rw_bitmaps.o \
-		read_bb_file.o write_bb_file.o badblocks.o csum.o crc16.o \
-		closefs.o io_manager.o
+tst_badblocks: tst_badblocks.o $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
-	@$(CC) -o tst_badblocks tst_badblocks.o freefs.o read_bb_file.o \
-		write_bb_file.o badblocks.o rw_bitmaps.o inline.o bitops.o \
-		gen_bitmap.o bitmaps.o csum.o crc16.o closefs.o io_manager.o \
+	@$(CC) -o tst_badblocks tst_badblocks.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
 
-tst_icount: icount.c initialize.o  $(STATIC_LIBEXT2FS)
+tst_icount: $(srcdir)/icount.c $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
-	@$(CC) -o tst_icount $(srcdir)/icount.c initialize.o \
-		-DDEBUG $(ALL_CFLAGS) \
+	@$(CC) -o tst_icount $(srcdir)/icount.c -DDEBUG $(ALL_CFLAGS) \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
-tst_iscan: tst_iscan.o inode.o badblocks.o test_io.o $(STATIC_LIBEXT2FS)
+tst_iscan: tst_iscan.o $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
-	@$(CC) -o tst_iscan tst_iscan.o inode.o badblocks.o test_io.o \
-		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
+	@$(CC) -o tst_iscan tst_iscan.o $(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
-tst_getsize: tst_getsize.o getsize.o $(STATIC_LIBEXT2FS)
+tst_getsize: tst_getsize.o $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
-	@$(CC) -o tst_getsize tst_getsize.o getsize.o $(STATIC_LIBEXT2FS) \
+	@$(CC) -o tst_getsize tst_getsize.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
 
 tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
 	@$(CC) -o tst_ismounted $(srcdir)/ismounted.c -DDEBUG $(ALL_CFLAGS) $(LIBCOM_ERR) 
 
-tst_byteswap: tst_byteswap.o bitops.o $(STATIC_LIBEXT2FS)
+tst_byteswap: tst_byteswap.o $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
-	@$(CC) -o tst_byteswap tst_byteswap.o bitops.o $(STATIC_LIBEXT2FS) \
+	@$(CC) -o tst_byteswap tst_byteswap.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
 
-tst_bitops: tst_bitops.o inline.o $(STATIC_LIBEXT2FS)
+tst_bitops: tst_bitops.o $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
-	@$(CC) -o tst_bitops tst_bitops.o inline.o $(ALL_CFLAGS) \
+	@$(CC) -o tst_bitops tst_bitops.o $(ALL_CFLAGS) \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
-tst_getsectsize: tst_getsectsize.o getsectsize.o $(STATIC_LIBEXT2FS)
+tst_getsectsize: tst_getsectsize.o $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
-	@$(CC) -o tst_sectgetsize tst_getsectsize.o getsectsize.o \
+	@$(CC) -o tst_sectgetsize tst_getsectsize.o \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 tst_types: tst_types.o ext2_types.h 
