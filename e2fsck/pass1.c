@@ -1634,7 +1634,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		if (extent.e_pblk < ctx->fs->super->s_first_data_block ||
 		    extent.e_pblk >= ctx->fs->super->s_blocks_count)
 			problem = PR_1_EXTENT_BAD_START_BLK;
-		else if ((extent.e_pblk + extent.e_len) >
+		else if (is_leaf &&
+			 (extent.e_pblk + extent.e_len) >
 			 ctx->fs->super->s_blocks_count)
 			problem = PR_1_EXTENT_ENDS_BEYOND;
 
