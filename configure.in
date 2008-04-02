@@ -760,7 +760,7 @@ dnl
 dnl Check for unified diff
 dnl
 AC_MSG_CHECKING(for unified diff option)
-if diff -u $0 $0 >& /dev/null ; then
+if diff -u $0 $0 > /dev/null 2>&1 ; then
    UNI_DIFF_OPTS=-u
 else
    UNI_DIFF_OPTS=-c
