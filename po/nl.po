@@ -63,10 +63,10 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs-1.40.7\n"
+"Project-Id-Version: e2fsprogs-1.40.8\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2008-02-28 21:45-0500\n"
-"PO-Revision-Date: 2008-03-08 19:45+0100\n"
+"PO-Revision-Date: 2008-04-03 22:24+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
@@ -895,17 +895,17 @@ msgstr "Het superblok van het ext3-journal is beschadigd.\n"
 #: e2fsck/problem.c:225
 #, c-format
 msgid "@S doesn't have has_@j flag, but has ext3 @j %s.\n"
-msgstr "Superblok heeft geen journalvlag gezet, maar heeft wel een ext3-journal %s.\n"
+msgstr "Superblok heeft geen journal-vlag gezet, maar heeft wel een ext3-journal %s.\n"
 
 #. @-expanded: superblock has ext3 needs_recovery flag set, but no journal.\n
 #: e2fsck/problem.c:230
 msgid "@S has ext3 needs_recovery flag set, but no @j.\n"
-msgstr "Superblok heeft journalreddingsvlag gezet, maar heeft geen journal.\n"
+msgstr "Superblok heeft journal-reddingsvlag gezet, maar heeft geen journal.\n"
 
 #. @-expanded: ext3 recovery flag is clear, but journal has data.\n
 #: e2fsck/problem.c:235
 msgid "ext3 recovery flag is clear, but @j has data.\n"
-msgstr "Journalreddingsvlag is niet gezet, maar het journal bevat gegevens.\n"
+msgstr "Journal-reddingsvlag is niet gezet, maar het journal bevat gegevens.\n"
 
 #. @-expanded: Clear journal
 #: e2fsck/problem.c:240
@@ -3234,8 +3234,8 @@ msgstr ""
 "\n"
 "Blokgrootte in journal:     %u\n"
 "Lengte van journal:         %u\n"
-"Eerste journalblok:         %u\n"
-"Kopcode van journalreeks:   0x%08x\n"
+"Eerste journal-blok:        %u\n"
+"Kopcode van journal-reeks:  0x%08x\n"
 "Begin van journal:          %u\n"
 "Aantal journal-gebruikers:  %u\n"
 
@@ -3504,7 +3504,7 @@ msgid ""
 msgstr ""
 "Gebruik:  %s [-b blokgrootte] [-c|-l bestandsnaam] [-f fragmentgrootte]\n"
 "          [-g blokken_per_groep] [-i bytes_per_inode] [-I inode-grootte]\n"
-"          [-J journalopties] [-L label] [-M laatste_aankoppelingspunt]\n"
+"          [-J journal-opties] [-L label] [-M laatste_aankoppelingspunt]\n"
 "          [-m percentage_gereserveerde_blokken] [-N aantal_inodes]\n"
 "          [-o naam_van_aanmakende_besturingssyteem] [-O functie[,...]]\n"
 "          [-r bestandssysteemversie] [-T bestandssysteemtype] [-jnqvFSV]\n"
@@ -4134,7 +4134,7 @@ msgid ""
 "The has_journal flag may only be cleared when the filesystem is\n"
 "unmounted or mounted read-only.\n"
 msgstr ""
-"De journalvlag mag alleen gewist worden wanneer het bestandssysteem\n"
+"De journal-vlag mag alleen gewist worden wanneer het bestandssysteem\n"
 "ontkoppeld is of als alleen-lezen aangekoppeld is.\n"
 
 #: misc/tune2fs.c:361
@@ -4142,8 +4142,8 @@ msgid ""
 "The needs_recovery flag is set.  Please run e2fsck before clearing\n"
 "the has_journal flag.\n"
 msgstr ""
-"De journalreddingsvlag is gezet.  Voer eerst 'e2fsck' uit,\n"
-"voordat u de journalvlag wist.\n"
+"De journal-reddingsvlag is gezet.  Voer eerst 'e2fsck' uit,\n"
+"voordat u de journal-vlag wist.\n"
 
 #: misc/tune2fs.c:428
 msgid "The filesystem already has a journal.\n"
@@ -4466,7 +4466,7 @@ msgid ""
 "%g days, whichever comes first.  Use tune2fs -c or -i to override.\n"
 msgstr ""
 "Dit bestandssysteem zal automatisch gecontroleerd worden na elke\n"
-"%d aankoppelingen of %g dagen, afhankelijk van wat het eerste voorkomt.\n"
+"%d aankoppelingen of na %g dagen, afhankelijk van wat het eerst voorkomt.\n"
 "U kunt 'tune2fs' met '-c' of '-i' gebruiken om dit bij te stellen.\n"
 
 #: misc/uuidgen.c:31
@@ -4539,7 +4539,7 @@ msgstr "tijdens opvragen van status van %s"
 #: resize/main.c:339
 #, c-format
 msgid "bad filesystem size - %s"
-msgstr "onjuiste groote van bestandssysteem: %s"
+msgstr "onjuiste grootte van bestandssysteem: %s"
 
 #: resize/main.c:353
 msgid "Invalid stride length"
