@@ -1367,7 +1367,6 @@ no_journal:
 #endif
 	ext2fs_close(fs);
 	ctx->fs = NULL;
-	free(ctx->filesystem_name);
 	free(ctx->journal_name);
 
 	e2fsck_free_context(ctx);
