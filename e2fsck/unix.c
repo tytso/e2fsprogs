@@ -1390,7 +1390,6 @@ no_journal:
 	
 	ext2fs_close(fs);
 	ctx->fs = NULL;
-	free(ctx->filesystem_name);
 	free(ctx->journal_name);
 
 #ifdef RESOURCE_TRACK
