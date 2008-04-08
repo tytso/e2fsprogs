@@ -1087,6 +1087,7 @@ void do_print_all(int argc, char **argv)
 
 void do_info(int argc, char **argv)
 {
+	struct ext2fs_extent	extent;
 	struct ext2_extent_info	info;
 	errcode_t		retval;
 
@@ -1103,6 +1104,15 @@ void do_info(int argc, char **argv)
 		com_err(argv[0], retval, 0);
 		return;
 	}
+
+	retval = ext2fs_extent_get(current_handle,
+				   EXT2_EXTENT_CURRENT, &extent);
+	if (retval) {
+		com_err(argv[0], retval, 0);
+		return;
+	}
+
+	dbg_print_extent(0, &extent);
 
 	printf("Current handle location: %d/%d (max: %d, bytes %d), level %d/%d\n",
 	       info.curr_entry, info.num_entries, info.max_entries,
