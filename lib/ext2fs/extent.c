@@ -553,6 +553,12 @@ errcode_t ext2fs_extent_free_path(ext2_extent_path_t path)
 }
 #endif
 
+/*
+ * Go to the node at leaf_level which contains logical block blk.
+ *
+ * If "blk" has no mapping (hole) then handle is left at last
+ * extent before blk.
+ */
 static errcode_t extent_goto(ext2_extent_handle_t handle,
 			     int leaf_level, blk64_t blk)
 {
@@ -566,11 +572,16 @@ static errcode_t extent_goto(ext2_extent_handle_t handle,
 	dbg_print_extent("root", &extent);
 	while (1) {
 		if (handle->level - leaf_level == handle->max_depth) {
+			/* block is in this &extent */
 			if ((blk >= extent.e_lblk) &&
 			    (blk < extent.e_lblk + extent.e_len))
 				return 0;
-			if (blk < extent.e_lblk)
+			if (blk < extent.e_lblk) {
+				retval = ext2fs_extent_get(handle,
+							   EXT2_EXTENT_PREV_SIB,
+							   &extent);
 				return EXT2_ET_EXTENT_NOT_FOUND;
+			}
 			retval = ext2fs_extent_get(handle,
 						   EXT2_EXTENT_NEXT_SIB,
 						   &extent);
