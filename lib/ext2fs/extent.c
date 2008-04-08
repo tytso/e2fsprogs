@@ -689,7 +689,7 @@ errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
 
 	path->curr = ix;
 
-	if (path->left > 0)
+	if (path->left >= 0)
 		memmove(ix + 1, ix,
 			(path->left+1) * sizeof(struct ext3_extent_idx));
 	path->left++;
