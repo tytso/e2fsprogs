@@ -45,6 +45,7 @@ static struct flags_name flags_array[] = {
 	{ EXT2_NOTAIL_FL, "t", "No_Tailmerging" },
 	{ EXT2_TOPDIR_FL, "T", "Top_of_Directory_Hierarchies" },
 	{ EXT4_EXTENTS_FL, "e", "Extents" },
+	{ EXT4_HUGE_FILE_FL, "h", "Huge_file" },
 	{ 0, NULL, NULL }
 };
 

@@ -297,7 +297,7 @@ done:
 	if (handle)
 		ext2fs_extent_free(handle);
 	if ((retval == 0) && (blocks_alloc || inode_dirty)) {
-		inode->i_blocks += (blocks_alloc * fs->blocksize) / 512;
+		ext2fs_iblk_add_blocks(fs, inode, blocks_alloc);
 		retval = ext2fs_write_inode(fs, ino, inode);
 	}
 	return retval;

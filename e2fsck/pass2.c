@@ -1429,7 +1429,7 @@ static int allocate_dir_block(e2fsck_t ctx,
 	 * Update the inode block count
 	 */
 	e2fsck_read_inode(ctx, db->ino, &inode, "allocate_dir_block");
-	inode.i_blocks += fs->blocksize / 512;
+	ext2fs_iblk_add_blocks(fs, &inode, 1);
 	if (inode.i_size < (db->blockcnt+1) * fs->blocksize)
 		inode.i_size = (db->blockcnt+1) * fs->blocksize;
 	e2fsck_write_inode(ctx, db->ino, &inode, "allocate_dir_block");

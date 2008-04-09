@@ -47,6 +47,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	get_pathname.o \
 	getsize.o \
 	getsectsize.o \
+	i_block.o \
 	icount.o \
 	ind_block.o \
 	initialize.o \
@@ -106,6 +107,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/get_pathname.c \
 	$(srcdir)/getsize.c \
 	$(srcdir)/getsectsize.c \
+	$(srcdir)/i_block.c \
 	$(srcdir)/icount.c \
 	$(srcdir)/ind_block.c \
 	$(srcdir)/initialize.c \

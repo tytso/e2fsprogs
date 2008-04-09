@@ -74,10 +74,15 @@ errcode_t ext2fs_read_bb_inode(ext2_filsys fs, ext2_badblocks_list *bb_list)
 		retval = ext2fs_read_inode(fs, EXT2_BAD_INO, &inode);
 		if (retval)
 			return retval;
-		if (inode.i_blocks < 500)
-			numblocks = (inode.i_blocks /
-				     (fs->blocksize / 512)) + 20;
-		else
+		numblocks = inode.i_blocks;
+		if (!((fs->super->s_feature_ro_compat &
+		       EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
+		      (inode.i_flags & EXT4_HUGE_FILE_FL)))
+			numblocks = numblocks / (fs->blocksize / 512);
+		numblocks += 20;
+		if (numblocks < 50)
+			numblocks = 50;
+		if (numblocks > 50000)
 			numblocks = 500;
 		retval = ext2fs_badblocks_list_create(bb_list, numblocks);
 		if (retval)

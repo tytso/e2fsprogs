@@ -127,7 +127,7 @@ errcode_t ext2fs_update_bb_inode(ext2_filsys fs, ext2_badblocks_list bb_list)
 	inode.i_atime = inode.i_mtime = fs->now ? fs->now : time(0);
 	if (!inode.i_ctime)
 		inode.i_ctime = fs->now ? fs->now : time(0);
-	inode.i_blocks = rec.bad_block_count * (fs->blocksize / 512);
+	ext2fs_iblk_set(fs, &inode, rec.bad_block_count);
 	inode.i_size = rec.bad_block_count * fs->blocksize;
 
 	retval = ext2fs_write_inode(fs, EXT2_BAD_INO, &inode);

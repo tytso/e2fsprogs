@@ -195,8 +195,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 	e2fsck_read_inode(ctx, ino, inode, "release_inode_blocks");
 
 	if (pb.truncated_blocks)
-		inode->i_blocks -= pb.truncated_blocks *
-			(fs->blocksize / 512);
+		ext2fs_iblk_sub_blocks(fs, inode, pb.truncated_blocks);
 
 	if (inode->i_file_acl) {
 		retval = ext2fs_adjust_ea_refcount(fs, inode->i_file_acl,

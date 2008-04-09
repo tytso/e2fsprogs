@@ -1847,7 +1847,10 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 	}
 
-	pb.num_blocks *= (fs->blocksize / 512);
+	if (!(fs->super->s_feature_ro_compat &
+	      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) ||
+	    !(inode->i_flags & EXT4_HUGE_FILE_FL))
+		pb.num_blocks *= (fs->blocksize / 512);
 #if 0
 	printf("inode %u, i_size = %lu, last_block = %lld, i_blocks=%lu, num_blocks = %lu\n",
 	       ino, inode->i_size, pb.last_block, inode->i_blocks,
@@ -1891,10 +1894,15 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (LINUX_S_ISREG(inode->i_mode) &&
 	    (inode->i_size_high || inode->i_size & 0x80000000UL))
 		ctx->large_files++;
-	if (pb.num_blocks != inode->i_blocks) {
+	if ((pb.num_blocks != inode->i_blocks) ||
+	    ((fs->super->s_feature_ro_compat &
+	      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
+	     (inode->i_flags & EXT4_HUGE_FILE_FL) &&
+	     (inode->osd2.linux2.l_i_blocks_hi != 0))) {
 		pctx->num = pb.num_blocks;
 		if (fix_problem(ctx, PR_1_BAD_I_BLOCKS, pctx)) {
 			inode->i_blocks = pb.num_blocks;
+			inode->osd2.linux2.l_i_blocks_hi = 0;
 			dirty_inode++;
 		}
 		pctx->num = 0;

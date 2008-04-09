@@ -296,7 +296,12 @@ static void print_inline_journal_information(ext2_filsys fs)
 		exit(1);
 	}
 	fputs(_("Journal size:             "), stdout);
-	size = inode.i_blocks >> 1;
+	if ((fs->super->s_feature_ro_compat &
+	     EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
+	    (inode.i_flags & EXT4_HUGE_FILE_FL))
+		size = inode.i_blocks / (fs->blocksize / 1024);
+	else
+		size = inode.i_blocks >> 1;
 	if (size < 8192)
 		printf("%uk\n", size);
 	else

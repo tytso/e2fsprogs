@@ -1536,7 +1536,7 @@ static errcode_t fix_resize_inode(ext2_filsys fs)
 	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);
 	if (retval) goto errout;
 
-	inode.i_blocks = fs->blocksize/512;
+	ext2fs_iblk_set(fs, &inode, 1);
 
 	retval = ext2fs_write_inode(fs, EXT2_RESIZE_INO, &inode);
 	if (retval) goto errout;

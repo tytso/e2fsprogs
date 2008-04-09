@@ -668,7 +668,7 @@ static errcode_t write_directory(e2fsck_t ctx, ext2_filsys fs,
 	else
 		inode.i_flags |= EXT2_INDEX_FL;
 	inode.i_size = outdir->num * fs->blocksize;
-	inode.i_blocks -= (fs->blocksize / 512) * wd.cleared;
+	ext2fs_iblk_sub_blocks(fs, &inode, wd.cleared);
 	e2fsck_write_inode(ctx, ino, &inode, "rehash_dir");
 
 	return 0;

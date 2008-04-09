@@ -227,7 +227,7 @@ static void check_root(e2fsck_t ctx)
 	inode.i_size = fs->blocksize;
 	inode.i_atime = inode.i_ctime = inode.i_mtime = ctx->now;
 	inode.i_links_count = 2;
-	inode.i_blocks = fs->blocksize / 512;
+	ext2fs_iblk_set(fs, &inode, 1);
 	inode.i_block[0] = blk;
 
 	/*
@@ -472,7 +472,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	inode.i_size = fs->blocksize;
 	inode.i_atime = inode.i_ctime = inode.i_mtime = ctx->now;
 	inode.i_links_count = 2;
-	inode.i_blocks = fs->blocksize / 512;
+	ext2fs_iblk_set(fs, &inode, 1);
 	inode.i_block[0] = blk;
 
 	/*
@@ -803,7 +803,7 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 		return retval;
 	
 	inode.i_size = (es.last_block + 1) * fs->blocksize;
-	inode.i_blocks += (fs->blocksize / 512) * es.newblocks;
+	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
 
 	e2fsck_write_inode(ctx, dir, &inode, "expand_directory");
 

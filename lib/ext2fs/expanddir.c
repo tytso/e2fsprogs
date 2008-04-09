@@ -116,7 +116,7 @@ errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir)
 		return retval;
 	
 	inode.i_size += fs->blocksize;
-	inode.i_blocks += (fs->blocksize / 512) * es.newblocks;
+	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
 
 	retval = ext2fs_write_inode(fs, dir, &inode);
 	if (retval)

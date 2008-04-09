@@ -275,7 +275,12 @@ static _INLINE_ void expand_inode_expression(char ch,
 		printf("%u", large_inode->i_extra_isize);
 		break;
 	case 'b':
-		printf("%u", inode->i_blocks);
+		if (inode->i_flags & EXT4_HUGE_FILE_FL)
+			printf("%llu", inode->i_blocks +
+			       (((long long) inode->osd2.linux2.l_i_blocks_hi)
+				<< 32));
+		else
+			printf("%u", inode->i_blocks);
 		break;
 	case 'l':
 		printf("%d", inode->i_links_count);
