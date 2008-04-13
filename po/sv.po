@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the e2fsprogs package.
 # Göran Uddeborg <goeran@uddeborg.se>, 2003, 2005, 2006, 2008.
 #
-# $Revision: 1.39 $
+# $Revision: 1.41 $
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -65,10 +65,10 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.40.7\n"
+"Project-Id-Version: e2fsprogs 1.40.8\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2008-02-28 21:45-0500\n"
-"PO-Revision-Date: 2008-03-07 22:28+0100\n"
+"PO-Revision-Date: 2008-04-11 22:08+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
