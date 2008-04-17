@@ -170,7 +170,7 @@ test_ss: test_ss.o test_cmd.o $(LIBSS) $(LIBCOM_ERR)
 
 check:: all test_ss
 	@echo "	RUN TEST test_ss"
-	@(LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./test_ss -f $(srcdir)/test_script >& test_out; exit 0)
+	@(LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./test_ss -f $(srcdir)/test_script > test_out 2>&1; exit 0)
 	@if ! diff test_out $(srcdir)/test_script_expected > test.diff; then \
 		echo "Regression test for ss library failed!"; exit 1 ; fi
 
