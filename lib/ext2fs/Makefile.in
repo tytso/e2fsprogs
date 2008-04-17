@@ -305,7 +305,7 @@ tst_extents: $(srcdir)/extent.c extent_dbg.c $(DEBUG_OBJS) $(LIBSS) $(LIBE2P) $(
 	@echo "	LD $@"
 	@$(CC) -o tst_extents $(srcdir)/extent.c extent_dbg.c \
 		$(ALL_CFLAGS) -DDEBUG $(DEBUG_OBJS) $(LIBSS) $(LIBE2P) \
-		$(LIBUUID) $(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBCOM_ERR) \
+		$(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) $(LIBCOM_ERR) \
 		-I $(top_srcdir)/debugfs
 
 tst_csum: tst_csum.c csum.c $(STATIC_LIBEXT2FS)
