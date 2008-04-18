@@ -827,7 +827,7 @@ static int probe_swap0(struct blkid_probe *probe,
 }
 
 static int probe_swap1(struct blkid_probe *probe,
-		       struct blkid_magic *id __BLKID_ATTR((unused)),
+		       struct blkid_magic *id,
 		       unsigned char *buf __BLKID_ATTR((unused)))
 {
 	struct swap_id_block *sws;
@@ -841,6 +841,12 @@ static int probe_swap1(struct blkid_probe *probe,
 	 */
 	sws = (struct swap_id_block *) get_buffer(probe, 1024, 1024);
 	if (!sws)
+		return 1;
+
+	/* check for wrong version or zeroed pagecount, for sanity */
+	if (!memcmp(id->bim_magic, "SWAPSPACE2", id->bim_len) &&
+			(blkid_le32(sws->sws_version) != 1 ||
+			 sws->sws_lastpage == 0))
 		return 1;
 
 	/* arbitrary sanity check.. is there any garbage down there? */
