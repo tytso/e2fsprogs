@@ -440,7 +440,7 @@ future.
 .B Tune2fs 
 only supports clearing this filesystem feature.
 .TP
-.B uninit_groups
+.B uninit_bg
 Allow the kernel to initialize bitmaps and inode tables and keep a high
 watermark for the unused inodes in a filesystem, to reduce
 .BR e2fsck (8)
@@ -451,7 +451,7 @@ original time, depending on how full the file system is.
 .IP
 After setting or clearing 
 .BR sparse_super ,
-.BR uninit_groups ,
+.BR uninit_bg ,
 .BR filetype ,
 or
 .B resize_inode
@@ -468,7 +468,7 @@ feature,
 can be run to convert existing directories to the hashed B-tree format.
 Enabling certain filesystem features may prevent the filesystem from being
 mounted by kernels which do not support those features.  In particular the
-.BR uninit_groups
+.BR uninit_bg
 and
 .BR flex_bg
 features are only supported by the ext4 filesystem.

@@ -559,9 +559,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		       "and may take an argument which\n"
 		       "is set off by an equals ('=') sign.  "
 			"Valid extended options are:\n"
-			"\tea_ver=<ea_version (1 or 2)>\n"
-			"\tuninit_groups\n"
-			"\tinit_groups\n\n"), stderr);
+		       "\tea_ver=<ea_version (1 or 2)>\n\n"), stderr);
 		exit(1);
 	}
 }

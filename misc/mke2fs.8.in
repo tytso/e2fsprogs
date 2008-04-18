@@ -449,7 +449,7 @@ option).
 @JDEV@must be created with the same
 @JDEV@block size as the filesystems that will be using it.
 .TP
-.B uninit_groups
+.B uninit_bg
 Create a filesystem without initializing all of the groups.  This speeds
 up filesystem creation time noticably, and can also reduce
 .BR e2fsck time

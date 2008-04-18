@@ -309,7 +309,7 @@ int main (int argc, char ** argv)
 
 	if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
 		com_err(program_name, EXT2_ET_RO_UNSUPP_FEATURE,
-			":- uninit_groups");
+			":- uninit_bg");
 		exit(1);
 	}
 
