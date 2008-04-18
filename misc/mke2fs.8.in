@@ -189,7 +189,7 @@ Configure the filesystem for a RAID array with
 filesystem blocks. This is the number of blocks read or written to disk
 before moving to next disk. This mostly affects placement of filesystem
 metadata like bitmaps at
-.BR mke2fs (2)
+.B mke2fs
 time to avoid placing them on a single disk, which can hurt the performanace.
 It may also be used by block allocator.
 .TP
@@ -204,6 +204,15 @@ parity in a RAID stripe if possible when the data is written.
 .BI resize= max-online-resize
 Reserve enough space so that the block group descriptor table can grow
 to support a filesystem that has max-online-resize blocks.
+.TP
+.B lazy_itable_init= \fI<0 to disable, 1 to enable>
+If enabled and the uninit_bg feature is enabled, the inode table will
+not fully initialized by 
+.BR mke2fs .
+This speeds up filesystem
+initialization noitceably, but it requires the kernel to finish
+initializing the filesystem in the background when the filesystem is
+first mounted.
 .TP
 .B test_fs
 Set a flag in the filesystem superblock indicating that it may be
@@ -449,11 +458,20 @@ option).
 @JDEV@must be created with the same
 @JDEV@block size as the filesystems that will be using it.
 .TP
+.B extent
+Instead of using the indirect block scheme for storing the location of
+data blocks in an inode, use extents instead.  This is a much more
+efficient encoding which speeds up filesystem access, especially for
+large files.
+.TP
 .B uninit_bg
-Create a filesystem without initializing all of the groups.  This speeds
-up filesystem creation time noticably, and can also reduce
+Create a filesystem without initializing all of the block groups.  This 
+feature also enables checksums and highest-inode-used statistics in each
+blockgroup.  This feature can
+speed up filesystem creation time noticably (if lazy_itable_init is
+enabled), and can also reduce
 .BR e2fsck time
-dramatically.  This feature is only supported by the ext4 filesystem in
+dramatically.  It is only supported by the ext4 filesystem in
 recent Linux kernels.
 .TP
 .B resize_inode
@@ -523,7 +541,7 @@ If this option is is not specified,
 .B mke2fs
 will pick a single default usage type based on the size of the filesystem to
 be created.  If the filesystem size is less than or equal to 3 megabytes,
-.BR mke2fs (8)
+.B mke2fs
 will use the filesystem type
 .IR floppy .
 If the filesystem size is greater than 3 but less than or equal to

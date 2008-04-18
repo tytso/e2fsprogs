@@ -77,6 +77,7 @@ int	force;
 int	noaction;
 int	journal_size;
 int	journal_flags;
+int	lazy_itable_init;
 char	*bad_blocks_filename;
 __u32	fs_stride;
 
@@ -399,14 +400,13 @@ static errcode_t zero_blocks(ext2_filsys fs, blk_t blk, int num,
 	return 0;
 }	
 
-static void write_inode_tables(ext2_filsys fs)
+static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 {
 	errcode_t	retval;
 	blk_t		blk;
 	dgrp_t		i;
 	int		num;
 	struct progress_struct progress;
-	int		lazy_flag = 0;
 
 	if (quiet)
 		memset(&progress, 0, sizeof(progress));
@@ -886,6 +886,13 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			}
 		} else if (!strcmp(token, "test_fs")) {
 			param->s_flags |= EXT2_FLAGS_TEST_FILESYS;
+		} else if (!strcmp(token, "lazy_itable_init")) {
+			if (!arg) {
+				r_usage++;
+				badopt = token;
+				continue;
+			}
+			lazy_itable_init = strtoul(arg, &p, 0);
 		} else {
 			r_usage++;
 			badopt = token;
@@ -899,8 +906,9 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"Valid extended options are:\n"
 			"\tstride=<RAID per-disk data chunk in blocks>\n"
 			"\tstripe-width=<RAID stride * data disks in blocks>\n"
-			"\tresize=<resize maximum size in blocks>\n\n"
-			"\ttest_fs\n"),
+			"\tresize=<resize maximum size in blocks>\n"
+			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
+			"\ttest_fs\n\n"),
 			badopt ? badopt : "");
 		free(buf);
 		exit(1);
@@ -1120,6 +1128,16 @@ static int get_int_from_profile(char **fs_types, const char *opt, int def_val)
 	return ret;
 }
 
+static int get_bool_from_profile(char **fs_types, const char *opt, int def_val)
+{
+	int ret;
+	char **cpp;
+
+	profile_get_boolean(profile, "defaults", opt, 0, def_val, &ret);
+	for (cpp = fs_types; *cpp; cpp++)
+		profile_get_boolean(profile, "fs_types", *cpp, opt, ret, &ret);
+	return ret;
+}
 
 extern const char *mke2fs_default_profile;
 static const char *default_files[] = { "<default>", 0 };
@@ -1645,6 +1663,9 @@ static void PRS(int argc, char *argv[])
 		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
+
+	lazy_itable_init = get_bool_from_profile(fs_types, 
+						 "lazy_itable_init", 0);
 	
 	if (extended_opts)
 		parse_extended_opts(&fs_param, extended_opts);
@@ -1657,6 +1678,17 @@ static void PRS(int argc, char *argv[])
 		com_err(program_name, 0,
 			_("reserved online resize blocks not supported "
 			  "on non-sparse filesystem"));
+		exit(1);
+	}
+
+	if (EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
+	    EXT2_HAS_COMPAT_FEATURE(&fs_param, EXT2_FEATURE_COMPAT_LAZY_BG)) {
+		com_err(program_name, 0,
+			_("lazy_bg and uninit_bg can not be enabled "
+			  "at the same time;\n\t"
+			  "use -E lazy_itable_init=1 to defer zeroing the "
+			  "inode table."));
 		exit(1);
 	}
 
@@ -1886,7 +1918,7 @@ int main (int argc, char *argv[])
 				ret_blk);
 		}
 		setup_lazy_bg(fs);
-		write_inode_tables(fs);
+		write_inode_tables(fs, lazy_itable_init);
 		create_root_dir(fs);
 		create_lost_and_found(fs);
 		reserve_inodes(fs);

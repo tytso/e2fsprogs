@@ -282,6 +282,18 @@ command-line option to
 This relation specifies the default blocksize if the user does not
 specify a blocksize on the command line.
 .TP
+.I lazy_itable_init
+This relation is a boolean which specifies whether the inode table should 
+be lazily initialized.  It only has meaning if the uninit_bg feature is
+enabled.  If lazy_itable_init is true and the uninit_bg feature is
+enabled,  the inode table will
+not fully initialized by 
+.BR mke2fs (8).
+This speeds up filesystem
+initialization noitceably, but it requires the kernel to finish
+initializing the filesystem in the background when the filesystem is
+first mounted.
+.TP
 .I inode_ratio
 This relation specifies the default inode ratio if the user does not
 specify one on the command line.
