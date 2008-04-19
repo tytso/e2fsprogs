@@ -110,16 +110,6 @@ errcode_t ext2fs_set_gdt_csum(ext2_filsys fs)
 		int old_unused = bg->bg_itable_unused;
 		int old_flags = bg->bg_flags;
 
-		/* Even if it wasn't zeroed, by the time this function is
-		 * called by e2fsck we have already scanned and corrected
-		 * the whole inode table so we may as well not overwrite it.
-		 * This is just a hint to the kernel that it could do lazy
-		 * zeroing of the inode table if mke2fs didn't do it, to help
-		 * out if we need to do a full itable scan sometime later. */
-		if (!(bg->bg_flags & (EXT2_BG_INODE_UNINIT |
-				      EXT2_BG_INODE_ZEROED)))
-			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_ZEROED;
-
 		if (bg->bg_free_inodes_count == sb->s_inodes_per_group &&
 		    i > 0 && (i < fs->group_desc_count - 1 || csum_flag)) {
 			if (!(bg->bg_flags & EXT2_BG_INODE_UNINIT))
