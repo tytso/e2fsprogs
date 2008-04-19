@@ -130,11 +130,6 @@ errcode_t ext2fs_set_gdt_csum(ext2_filsys fs)
 		    (ext2fs_bg_has_super(fs, i) && sb->s_reserved_gdt_blocks))
 			goto checksum;
 
-		blks = ext2fs_super_and_bgd_loc(fs, i, 0, 0, 0, 0);
-		if (bg->bg_free_blocks_count == blks &&
-		    bg->bg_flags & EXT2_BG_INODE_UNINIT &&
-		    !(bg->bg_flags & EXT2_BG_BLOCK_UNINIT))
-			bg->bg_flags |= EXT2_BG_BLOCK_UNINIT;
 checksum:
 		ext2fs_group_desc_csum_set(fs, i);
 		if (old_flags != bg->bg_flags)
