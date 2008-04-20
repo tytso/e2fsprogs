@@ -172,6 +172,12 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	if (super->s_rev_level >= EXT2_DYNAMIC_REV) {
 		set_field(s_first_ino, EXT2_GOOD_OLD_FIRST_INO);
 		set_field(s_inode_size, EXT2_GOOD_OLD_INODE_SIZE);
+		if (super->s_inode_size >= sizeof(struct ext2_inode_large)) {
+			int extra_isize = sizeof(struct ext2_inode_large) -
+				EXT2_GOOD_OLD_INODE_SIZE;
+			set_field(s_min_extra_isize, extra_isize);
+			set_field(s_want_extra_isize, extra_isize);
+		}
 	}
 
 	set_field(s_checkinterval, EXT2_DFL_CHECKINTERVAL);
