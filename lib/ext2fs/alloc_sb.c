@@ -27,6 +27,19 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
+/*
+ * This function reserves the superblock and block group descriptors
+ * for a given block group.  It currently returns the number of free
+ * blocks assuming that inode table and allocation bitmaps will be in
+ * the group.  This is not necessarily the case when the flex_bg
+ * feature is enabled, so callers should take care!  It was only
+ * really intended for use by mke2fs, and even there it's not that
+ * useful.  In the future, when we redo this function for 64-bit block
+ * numbers, we should probably return the number of blocks used by the
+ * super block and group descriptors instead.
+ *
+ * See also the comment for ext2fs_super_and_bgd_loc()
+ */
 int ext2fs_reserve_super_and_bgd(ext2_filsys fs, 
 				 dgrp_t group,
 				 ext2fs_block_bitmap bmap)

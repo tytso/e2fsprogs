@@ -45,6 +45,19 @@ int ext2fs_bg_has_super(ext2_filsys fs, int group_block)
 	return 0;
 }
 
+/*
+ * This function returns the location of the superblock, block group
+ * descriptors for a given block group.  It currently returns the
+ * number of free blocks assuming that inode table and allocation
+ * bitmaps will be in the group.  This is not necessarily the case
+ * when the flex_bg feature is enabled, so callers should take care!
+ * It was only really intended for use by mke2fs, and even there it's
+ * not that useful.  In the future, when we redo this function for
+ * 64-bit block numbers, we should probably return the number of
+ * blocks used by the super block and group descriptors instead.
+ *
+ * See also the comment for ext2fs_reserve_super_and_bgd()
+ */
 int ext2fs_super_and_bgd_loc(ext2_filsys fs, 
 			     dgrp_t group,
 			     blk_t *ret_super_blk,
