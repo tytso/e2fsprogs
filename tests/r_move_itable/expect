@@ -41,7 +41,7 @@ Check interval:           15552000 (6 months)
 Reserved blocks uid:      0
 Reserved blocks gid:      0
 First inode:              11
-Inode size:		  128
+Inode size:	          128
 Default directory hash:   tea
 
 
@@ -342,7 +342,7 @@ Check interval:           15552000 (6 months)
 Reserved blocks uid:      0
 Reserved blocks gid:      0
 First inode:              11
-Inode size:		  128
+Inode size:	          128
 Default directory hash:   tea
 
 
@@ -879,7 +879,7 @@ Check interval:           15552000 (6 months)
 Reserved blocks uid:      0
 Reserved blocks gid:      0
 First inode:              11
-Inode size:		  128
+Inode size:	          128
 Default directory hash:   tea
 
 
@@ -1652,7 +1652,7 @@ Check interval:           15552000 (6 months)
 Reserved blocks uid:      0
 Reserved blocks gid:      0
 First inode:              11
-Inode size:		  128
+Inode size:	          128
 Default directory hash:   tea
 
 

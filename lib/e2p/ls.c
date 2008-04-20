@@ -270,7 +270,13 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	print_group(sb->s_def_resgid, f);
 	if (sb->s_rev_level >= EXT2_DYNAMIC_REV) {
 		fprintf(f, "First inode:              %d\n", sb->s_first_ino);
-		fprintf(f, "Inode size:		  %d\n", sb->s_inode_size);
+		fprintf(f, "Inode size:	          %d\n", sb->s_inode_size);
+		if (sb->s_min_extra_isize)
+			fprintf(f, "Required extra isize:     %d\n", 
+				sb->s_min_extra_isize);
+		if (sb->s_want_extra_isize)
+			fprintf(f, "Desired extra isize:      %d\n", 
+				sb->s_want_extra_isize);
 	}
 	if (!e2p_is_null_uuid(sb->s_journal_uuid))
 		fprintf(f, "Journal UUID:             %s\n",
