@@ -414,10 +414,6 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 		progress_init(&progress, _("Writing inode tables: "),
 			      fs->group_desc_count);
 
-	if (EXT2_HAS_COMPAT_FEATURE(fs->super, 
-				    EXT2_FEATURE_COMPAT_LAZY_BG))
-		lazy_flag = 1;
-
 	for (i = 0; i < fs->group_desc_count; i++) {
 		progress_update(&progress, i);
 		
@@ -447,49 +443,35 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 	progress_close(&progress);
 }
 
-static void setup_lazy_bg(ext2_filsys fs)
+static void setup_uninit_bg(ext2_filsys fs)
 {
 	dgrp_t i;
-	int blks, csum_flag;
+	int blks;
 	struct ext2_super_block *sb = fs->super;
 	struct ext2_group_desc *bg = fs->group_desc;
 
-	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
-	if (EXT2_HAS_COMPAT_FEATURE(fs->super, EXT2_FEATURE_COMPAT_LAZY_BG) ||
-	    csum_flag) {
-		for (i = 0; i < fs->group_desc_count; i++, bg++) {
-			if ((i == 0) ||
-			    (i == fs->group_desc_count - 1 && !csum_flag))
-				continue;
-			if (bg->bg_free_inodes_count ==
-			    sb->s_inodes_per_group) {
-				bg->bg_flags |= EXT2_BG_INODE_UNINIT;
-				if (!csum_flag) {
-					bg->bg_free_inodes_count = 0;
-					sb->s_free_inodes_count -=
-						sb->s_inodes_per_group;
-				}
-			}
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+		return;
 
-			/* Skip groups with GDT backups because the resize
-			 * inode has blocks allocated in them, and the last
-			 * group because it needs block bitmap padding. */
-			if ((ext2fs_bg_has_super(fs, i) &&
-			     sb->s_reserved_gdt_blocks) ||
-			    i == fs->group_desc_count - 1)
-				continue;
+	for (i = 0; i < fs->group_desc_count; i++, bg++) {
+		if (i == 0)
+			continue;
+		if (bg->bg_free_inodes_count == sb->s_inodes_per_group)
+			bg->bg_flags |= EXT2_BG_INODE_UNINIT;
 
-			blks = ext2fs_super_and_bgd_loc(fs, i, 0, 0, 0, 0);
-			if (bg->bg_free_blocks_count == blks &&
-			    bg->bg_flags & EXT2_BG_INODE_UNINIT) {
-				bg->bg_flags |= EXT2_BG_BLOCK_UNINIT;
-				if (!csum_flag) {
-					bg->bg_free_blocks_count = 0;
-					sb->s_free_blocks_count -= blks;
-				}
-			}
-		}
+		/* Skip groups with GDT backups because the resize
+		 * inode has blocks allocated in them, and the last
+		 * group because it needs block bitmap padding. */
+		if ((ext2fs_bg_has_super(fs, i) && 
+		     sb->s_reserved_gdt_blocks) ||
+		    (i == fs->group_desc_count - 1))
+			continue;
+
+		blks = ext2fs_super_and_bgd_loc(fs, i, 0, 0, 0, 0);
+		if (bg->bg_free_blocks_count == blks &&
+		    bg->bg_flags & EXT2_BG_INODE_UNINIT)
+			bg->bg_flags |= EXT2_BG_BLOCK_UNINIT;
 	}
 }
 
@@ -927,7 +909,6 @@ static __u32 ok_features[3] = {
 	EXT3_FEATURE_COMPAT_HAS_JOURNAL |
 		EXT2_FEATURE_COMPAT_RESIZE_INODE |
 		EXT2_FEATURE_COMPAT_DIR_INDEX |
-		EXT2_FEATURE_COMPAT_LAZY_BG |
 		EXT2_FEATURE_COMPAT_EXT_ATTR,
 	/* Incompat */
 	EXT2_FEATURE_INCOMPAT_FILETYPE|
@@ -1681,17 +1662,6 @@ static void PRS(int argc, char *argv[])
 		exit(1);
 	}
 
-	if (EXT2_HAS_RO_COMPAT_FEATURE(&fs_param,
-				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
-	    EXT2_HAS_COMPAT_FEATURE(&fs_param, EXT2_FEATURE_COMPAT_LAZY_BG)) {
-		com_err(program_name, 0,
-			_("lazy_bg and uninit_bg can not be enabled "
-			  "at the same time;\n\t"
-			  "use -E lazy_itable_init=1 to defer zeroing the "
-			  "inode table."));
-		exit(1);
-	}
-
 	if (fs_param.s_blocks_per_group) {
 		if (fs_param.s_blocks_per_group < 256 ||
 		    fs_param.s_blocks_per_group > 8 * (unsigned) blocksize) {
@@ -1917,7 +1887,7 @@ int main (int argc, char *argv[])
 				_("while zeroing block %u at end of filesystem"),
 				ret_blk);
 		}
-		setup_lazy_bg(fs);
+		setup_uninit_bg(fs);
 		write_inode_tables(fs, lazy_itable_init);
 		create_root_dir(fs);
 		create_lost_and_found(fs);

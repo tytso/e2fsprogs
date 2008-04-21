@@ -121,7 +121,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	struct problem_context	pctx;
 	int	problem, save_problem, fixit, had_problem;
 	errcode_t	retval;
-	int		lazy_flag, csum_flag;
+	int		csum_flag;
 	int		skip_group = 0;
 
 	clear_problem_context(&pctx);
@@ -158,15 +158,13 @@ static void check_block_bitmaps(e2fsck_t ctx)
 		goto errout;
 	}
 
-	lazy_flag = EXT2_HAS_COMPAT_FEATURE(fs->super,
-					    EXT2_FEATURE_COMPAT_LAZY_BG);
 	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 redo_counts:
 	had_problem = 0;
 	save_problem = 0;
 	pctx.blk = pctx.blk2 = NO_BLK;
-	if ((lazy_flag || csum_flag) &&
+	if (csum_flag &&
 	    (fs->group_desc[group].bg_flags & EXT2_BG_BLOCK_UNINIT))
 		skip_group++;
 	super = fs->super->s_first_data_block;
@@ -270,7 +268,7 @@ redo_counts:
 				if ((ctx->progress)(ctx, 5, group,
 						    fs->group_desc_count*2))
 					goto errout;
-			if ((lazy_flag || csum_flag) &&
+			if (csum_flag &&
 			    (i != fs->super->s_blocks_count-1) &&
 			    (fs->group_desc[group].bg_flags &
 			     EXT2_BG_BLOCK_UNINIT))
@@ -350,7 +348,7 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	errcode_t	retval;
 	struct problem_context	pctx;
 	int		problem, save_problem, fixit, had_problem;
-	int		lazy_flag, csum_flag;
+	int		csum_flag;
 	int		skip_group = 0;
 
 	clear_problem_context(&pctx);
@@ -387,15 +385,13 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 		goto errout;
 	}
 
-	lazy_flag = EXT2_HAS_COMPAT_FEATURE(fs->super,
-					    EXT2_FEATURE_COMPAT_LAZY_BG);
 	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 redo_counts:
 	had_problem = 0;
 	save_problem = 0;
 	pctx.ino = pctx.ino2 = 0;
-	if ((lazy_flag || csum_flag) &&
+	if (csum_flag &&
 	    (fs->group_desc[group].bg_flags & EXT2_BG_INODE_UNINIT))
 		skip_group++;
 
@@ -474,7 +470,7 @@ do_counts:
 					    group + fs->group_desc_count,
 					    fs->group_desc_count*2))
 					goto errout;
-			if ((lazy_flag || csum_flag) &&
+			if (csum_flag &&
 			    (i != fs->super->s_inodes_count) &&
 			    (fs->group_desc[group].bg_flags &
 			     EXT2_BG_INODE_UNINIT))

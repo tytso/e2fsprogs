@@ -110,13 +110,10 @@ static void print_bg_opt(int bg_flags, int mask,
 }
 static void print_bg_opts(ext2_filsys fs, dgrp_t i)
 {
-	int first = 1, bg_flags;
+	int first = 1, bg_flags = 0;
 
-	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_LAZY_BG ||
-	    fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
+	if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
 		bg_flags = fs->group_desc[i].bg_flags;
-	else
-		bg_flags = 0;
 
 	print_bg_opt(bg_flags, EXT2_BG_INODE_UNINIT, "INODE_UNINIT",
  		     &first);

@@ -93,16 +93,14 @@ errcode_t ext2fs_set_gdt_csum(ext2_filsys fs)
 {
 	struct ext2_super_block *sb = fs->super;
 	struct ext2_group_desc *bg = fs->group_desc;
-	int blks, csum_flag, dirty = 0;
+	int blks, dirty = 0;
 	dgrp_t i;
 
 	if (!fs->inode_map)
 		return EXT2_ET_NO_INODE_BITMAP;
 
-	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
-	if (!EXT2_HAS_COMPAT_FEATURE(fs->super,
-				     EXT2_FEATURE_COMPAT_LAZY_BG) && !csum_flag)
+	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
 		return 0;
 
 	for (i = 0; i < fs->group_desc_count; i++, bg++) {
@@ -110,27 +108,16 @@ errcode_t ext2fs_set_gdt_csum(ext2_filsys fs)
 		int old_unused = bg->bg_itable_unused;
 		int old_flags = bg->bg_flags;
 
-		if (bg->bg_free_inodes_count == sb->s_inodes_per_group &&
-		    i > 0 && (i < fs->group_desc_count - 1 || csum_flag)) {
-			if (!(bg->bg_flags & EXT2_BG_INODE_UNINIT))
-				bg->bg_flags |= EXT2_BG_INODE_UNINIT;
-
-			if (csum_flag)
-				bg->bg_itable_unused = sb->s_inodes_per_group;
-		} else if (csum_flag) {
+		if (bg->bg_free_inodes_count == sb->s_inodes_per_group) {
+			bg->bg_flags |= EXT2_BG_INODE_UNINIT;
+			bg->bg_itable_unused = sb->s_inodes_per_group;
+		} else {
 			bg->bg_flags &= ~EXT2_BG_INODE_UNINIT;
 			bg->bg_itable_unused = sb->s_inodes_per_group -
 				find_last_inode_ingrp(fs->inode_map,
 						      sb->s_inodes_per_group,i);
 		}
 
-		/* skip first and last groups, or groups with GDT backups
-		 * because the resize inode has blocks allocated in them. */
-		if (i == 0 || i == fs->group_desc_count - 1 ||
-		    (ext2fs_bg_has_super(fs, i) && sb->s_reserved_gdt_blocks))
-			goto checksum;
-
-checksum:
 		ext2fs_group_desc_csum_set(fs, i);
 		if (old_flags != bg->bg_flags)
 			dirty = 1;

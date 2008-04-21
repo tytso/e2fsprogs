@@ -489,7 +489,6 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT3_FEATURE_COMPAT_HAS_JOURNAL|\
 					 EXT2_FEATURE_COMPAT_RESIZE_INODE|\
 					 EXT2_FEATURE_COMPAT_DIR_INDEX|\
-					 EXT2_FEATURE_COMPAT_LAZY_BG|\
 					 EXT2_FEATURE_COMPAT_EXT_ATTR)
 
 /* This #ifdef is temporary until compression is fully supported */

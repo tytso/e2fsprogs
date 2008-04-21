@@ -35,7 +35,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	unsigned int	nbits;
 	errcode_t	retval;
 	char 		*block_buf, *inode_buf;
-	int		lazy_flag = 0;
+	int		csum_flag = 0;
 	blk_t		blk;
 	blk_t		blk_itr = fs->super->s_first_data_block;
 	ext2_ino_t	ino_itr = 1;
@@ -44,9 +44,11 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
-	if (EXT2_HAS_COMPAT_FEATURE(fs->super, 
-				    EXT2_FEATURE_COMPAT_LAZY_BG))
-		lazy_flag = 1;
+
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+		csum_flag = 1;
+
 	inode_nbytes = block_nbytes = 0;
 	if (do_block) {
 		block_nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
@@ -68,7 +70,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (!do_block)
 			goto skip_block_bitmap;
 
-		if (lazy_flag && fs->group_desc[i].bg_flags &
+		if (csum_flag && fs->group_desc[i].bg_flags &
 		    EXT2_BG_BLOCK_UNINIT) 
 			goto skip_this_block_bitmap;
  
@@ -100,7 +102,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (!do_inode)
 			continue;
 
-		if (lazy_flag && fs->group_desc[i].bg_flags &
+		if (csum_flag && fs->group_desc[i].bg_flags &
 		    EXT2_BG_INODE_UNINIT) 
 			goto skip_this_inode_bitmap;
  
@@ -139,7 +141,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	errcode_t retval;
 	unsigned int block_nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
 	unsigned inode_nbytes = EXT2_INODES_PER_GROUP(fs->super) / 8;
-	int lazy_flag = 0;
+	int csum_flag = 0;
 	int do_image = fs->flags & EXT2_FLAG_IMAGE_FILE;
 	unsigned int	cnt;
 	blk_t	blk;
@@ -152,11 +154,9 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 	fs->write_bitmaps = ext2fs_write_bitmaps;
 
-	if (EXT2_HAS_COMPAT_FEATURE(fs->super,
-				    EXT2_FEATURE_COMPAT_LAZY_BG) ||
-	    EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-		lazy_flag = 1;
+		csum_flag = 1;
 
 	retval = ext2fs_get_mem(strlen(fs->device_name) + 80, &buf);
 	if (retval)
@@ -234,7 +234,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (block_bitmap) {
 			blk = fs->group_desc[i].bg_block_bitmap;
-			if (lazy_flag && fs->group_desc[i].bg_flags &
+			if (csum_flag && fs->group_desc[i].bg_flags &
 			    EXT2_BG_BLOCK_UNINIT &&
 			    ext2fs_group_desc_csum_verify(fs, i))
 				blk = 0;
@@ -256,7 +256,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		}
 		if (inode_bitmap) {
 			blk = fs->group_desc[i].bg_inode_bitmap;
-			if (lazy_flag && fs->group_desc[i].bg_flags &
+			if (csum_flag && fs->group_desc[i].bg_flags &
 			    EXT2_BG_INODE_UNINIT &&
 			    ext2fs_group_desc_csum_verify(fs, i))
 				blk = 0;
