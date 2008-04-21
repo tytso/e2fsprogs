@@ -265,6 +265,7 @@ _("Warning: the backup superblock/group descriptors at block %u contain\n"
 				group_bad++;
 				group = ext2fs_group_of_blk(fs, group_block+j);
 				fs->group_desc[group].bg_free_blocks_count++;
+				ext2fs_group_desc_csum_set(fs, group);
 				fs->super->s_free_blocks_count++;
 			}
 		}
@@ -431,6 +432,7 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 			}
 			/* The kernel doesn't need to zero the itable blocks */
 			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_ZEROED;
+			ext2fs_group_desc_csum_set(fs, i);
 		}
 		if (sync_kludge) {
 			if (sync_kludge == 1)
@@ -441,38 +443,6 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 	}
 	zero_blocks(0, 0, 0, 0, 0, 0);
 	progress_close(&progress);
-}
-
-static void setup_uninit_bg(ext2_filsys fs)
-{
-	dgrp_t i;
-	int blks;
-	struct ext2_super_block *sb = fs->super;
-	struct ext2_group_desc *bg = fs->group_desc;
-
-	if (!EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
-					EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
-		return;
-
-	for (i = 0; i < fs->group_desc_count; i++, bg++) {
-		if (i == 0)
-			continue;
-		if (bg->bg_free_inodes_count == sb->s_inodes_per_group)
-			bg->bg_flags |= EXT2_BG_INODE_UNINIT;
-
-		/* Skip groups with GDT backups because the resize
-		 * inode has blocks allocated in them, and the last
-		 * group because it needs block bitmap padding. */
-		if ((ext2fs_bg_has_super(fs, i) && 
-		     sb->s_reserved_gdt_blocks) ||
-		    (i == fs->group_desc_count - 1))
-			continue;
-
-		blks = ext2fs_super_and_bgd_loc(fs, i, 0, 0, 0, 0);
-		if (bg->bg_free_blocks_count == blks &&
-		    bg->bg_flags & EXT2_BG_INODE_UNINIT)
-			bg->bg_flags |= EXT2_BG_BLOCK_UNINIT;
-	}
 }
 
 static void create_root_dir(ext2_filsys fs)
@@ -553,8 +523,7 @@ static void create_bad_block_inode(ext2_filsys fs, badblocks_list bb_list)
 	errcode_t	retval;
 	
 	ext2fs_mark_inode_bitmap(fs->inode_map, EXT2_BAD_INO);
-	fs->group_desc[0].bg_free_inodes_count--;
-	fs->super->s_free_inodes_count--;
+	ext2fs_inode_alloc_stats2(fs, EXT2_BAD_INO, +1, 0);
 	retval = ext2fs_update_bb_inode(fs, bb_list);
 	if (retval) {
 		com_err("ext2fs_update_bb_inode", retval,
@@ -569,12 +538,8 @@ static void reserve_inodes(ext2_filsys fs)
 	ext2_ino_t	i;
 	int		group;
 
-	for (i = EXT2_ROOT_INO + 1; i < EXT2_FIRST_INODE(fs->super); i++) {
-		ext2fs_mark_inode_bitmap(fs->inode_map, i);
-		group = ext2fs_group_of_ino(fs, i);
-		fs->group_desc[group].bg_free_inodes_count--;
-		fs->super->s_free_inodes_count--;
-	}
+	for (i = EXT2_ROOT_INO + 1; i < EXT2_FIRST_INODE(fs->super); i++)
+		ext2fs_inode_alloc_stats2(fs, i, +1, 0);
 	ext2fs_mark_ib_dirty(fs);
 }
 
@@ -1887,7 +1852,6 @@ int main (int argc, char *argv[])
 				_("while zeroing block %u at end of filesystem"),
 				ret_blk);
 		}
-		setup_uninit_bg(fs);
 		write_inode_tables(fs, lazy_itable_init);
 		create_root_dir(fs);
 		create_lost_and_found(fs);
@@ -1963,14 +1927,6 @@ int main (int argc, char *argv[])
 	}
 no_journal:
 
-	if (!super_only) {
-		retval = ext2fs_set_gdt_csum(fs);
-		if (retval) {
-			com_err(program_name, retval, 
-				_("\n\twhile setting block group checksum info"));
-			exit(1);
-		}
-	}
 	if (!quiet)
 		printf(_("Writing superblocks and "
 		       "filesystem accounting information: "));

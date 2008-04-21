@@ -69,7 +69,10 @@ int ext2fs_group_desc_csum_verify(ext2_filsys fs, dgrp_t group)
 
 void ext2fs_group_desc_csum_set(ext2_filsys fs, dgrp_t group)
 {
-	fs->group_desc[group].bg_checksum = ext2fs_group_desc_csum(fs, group);
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM))
+		fs->group_desc[group].bg_checksum =
+			ext2fs_group_desc_csum(fs, group);
 }
 
 static __u32 find_last_inode_ingrp(ext2fs_inode_bitmap bitmap,

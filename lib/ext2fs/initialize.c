@@ -103,6 +103,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	dgrp_t		i;
 	blk_t		numblocks;
 	int		rsv_gdt;
+	int		csum_flag;
 	int		io_flags;
 	char		*buf;
 	char		c;
@@ -375,7 +376,19 @@ ipg_retry:
 	 * by this routine), they are accounted for nevertheless.
 	 */
 	super->s_free_blocks_count = 0;
+	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 	for (i = 0; i < fs->group_desc_count; i++) {
+		/*
+		 * Don't set the BLOCK_UNINIT group for the last group
+		 * because the block bitmap needs to be padded.
+		 */
+		if (csum_flag) {
+			if (i != fs->group_desc_count - 1)
+				fs->group_desc[i].bg_flags |=
+					EXT2_BG_BLOCK_UNINIT;
+			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_UNINIT;
+		}
 		numblocks = ext2fs_reserve_super_and_bgd(fs, i, fs->block_map);
 
 		super->s_free_blocks_count += numblocks;

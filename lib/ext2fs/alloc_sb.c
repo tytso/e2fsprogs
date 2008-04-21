@@ -60,6 +60,8 @@ int ext2fs_reserve_super_and_bgd(ext2_filsys fs,
 		ext2fs_mark_block_bitmap(bmap, super_blk);
 
 	if (old_desc_blk) {
+		if (fs->super->s_reserved_gdt_blocks && fs->block_map == bmap)
+			fs->group_desc[group].bg_flags &= ~EXT2_BG_BLOCK_UNINIT;
 		for (j=0; j < old_desc_blocks; j++)
 			ext2fs_mark_block_bitmap(bmap, old_desc_blk + j);
 	}
