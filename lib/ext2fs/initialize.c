@@ -159,6 +159,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_first_meta_bg, 0);
 	set_field(s_raid_stride, 0);		/* default stride size: 0 */
 	set_field(s_raid_stripe_width, 0);	/* default stripe width: 0 */
+	set_field(s_log_groups_per_flex, 0);
 	set_field(s_flags, 0);
 	if (super->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP) {
 		retval = EXT2_ET_UNSUPP_FEATURE;
@@ -377,6 +378,10 @@ ipg_retry:
 	 * Note that although the block bitmap, inode bitmap, and
 	 * inode table have not been allocated (and in fact won't be
 	 * by this routine), they are accounted for nevertheless.
+	 *
+	 * If FLEX_BG meta-data grouping is used, only account for the
+	 * superblock and group descriptors (the inode tables and
+	 * bitmaps will be accounted for when allocated).
 	 */
 	super->s_free_blocks_count = 0;
 	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
@@ -397,6 +402,8 @@ ipg_retry:
 			fs->group_desc[i].bg_itable_unused = numblocks;
 		}
 		numblocks = ext2fs_reserve_super_and_bgd(fs, i, fs->block_map);
+		if (fs->super->s_log_groups_per_flex)
+			numblocks += 2 + fs->inode_blocks_per_group;
 
 		super->s_free_blocks_count += numblocks;
 		fs->group_desc[i].bg_free_blocks_count = numblocks;

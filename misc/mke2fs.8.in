@@ -26,6 +26,10 @@ mke2fs \- create an ext2/ext3 filesystem
 .I blocks-per-group
 ]
 [
+.B \-G
+.I number-of-groups
+]
+[
 .B \-i
 .I bytes-per-inode
 ]
@@ -245,6 +249,13 @@ option rather than manipulating the number of blocks per group.)
 This option is generally used by developers who
 are developing test cases.  
 .TP
+.BI \-G " number-of-groups"
+Specify the number of block goups that will be packed together to
+create one large virtual block group on an ext4 filesystem.  This
+improves meta-data locality and performance on meta-data heavy
+workloads.  The number of goups must be a power of 2 and may only be
+specified if the flex_bg filesystem feature is enabled.
+.TP
 .BI \-i " bytes-per-inode"
 Specify the bytes/inode ratio. 
 .B mke2fs
@@ -444,6 +455,11 @@ Use hashed b-trees to speed up lookups in large directories.
 .TP
 .B filetype
 Store file type information in directory entries.
+.TP
+.B flex_bg
+Allow bitmaps and inode tables for a block group to be placed anywhere
+on the storage media (use with -G option to group meta-data in order
+to create a large virtual block group).
 .TP
 .B has_journal
 Create an ext3 journal (as if using the

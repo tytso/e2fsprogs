@@ -98,8 +98,9 @@ static void usage(void)
 	fprintf(stderr, _("Usage: %s [-c|-l filename] [-b block-size] "
 	"[-f fragment-size]\n\t[-i bytes-per-inode] [-I inode-size] "
 	"[-J journal-options]\n"
-	"\t[-N number-of-inodes] [-m reserved-blocks-percentage] "
-	"[-o creator-os]\n\t[-g blocks-per-group] [-L volume-label] "
+	"\t[-G meta group size] [-N number-of-inodes]\n"
+	"\t[-m reserved-blocks-percentage] [-o creator-os]\n"
+	"\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
 	"[-r fs-revision] [-E extended-option[,...]]\n"
 	"\t[-T fs-type] [-jnqvFSV] device [blocks-count]\n"),
@@ -1105,6 +1106,7 @@ static void PRS(int argc, char *argv[])
 	int		blocksize = 0;
 	int		inode_ratio = 0;
 	int		inode_size = 0;
+	unsigned long	flex_bg_size = 0;
 	double		reserved_ratio = 5.0;
 	int		sector_size = 0;
 	int		show_version_only = 0;
@@ -1189,7 +1191,7 @@ static void PRS(int argc, char *argv[])
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cf:g:i:jl:m:no:qr:s:t:vE:FI:J:L:M:N:O:R:ST:V")) != EOF) {
+		    "b:cf:g:G:i:jl:m:no:qr:s:t:vE:FI:J:L:M:N:O:R:ST:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = strtol(optarg, &tmp, 0);
@@ -1236,6 +1238,20 @@ static void PRS(int argc, char *argv[])
 			if ((fs_param.s_blocks_per_group % 8) != 0) {
 				com_err(program_name, 0,
 				_("blocks per group must be multiple of 8"));
+				exit(1);
+			}
+			break;
+		case 'G':
+			flex_bg_size = strtoul(optarg, &tmp, 0);
+			if (*tmp) {
+				com_err(program_name, 0,
+					_("Illegal number for flex_bg size"));
+				exit(1);
+			}
+			if (flex_bg_size < 2 ||
+			    (flex_bg_size & (flex_bg_size-1)) != 0) {
+				com_err(program_name, 0,
+					_("flex_bg size must be a power of 2"));
 				exit(1);
 			}
 			break;
@@ -1647,6 +1663,20 @@ static void PRS(int argc, char *argv[])
 
 	if (inode_size == 0)
 		inode_size = get_int_from_profile(fs_types, "inode_size", 0);
+	if (!flex_bg_size && (fs_param.s_feature_incompat &
+			      EXT4_FEATURE_INCOMPAT_FLEX_BG))
+		flex_bg_size = get_int_from_profile(fs_types,
+						    "flex_bg_size", 16);
+	if (flex_bg_size) {
+		if (!(fs_param.s_feature_incompat &
+		      EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
+			com_err(program_name, 0,
+				_("Flex_bg feature not enabled, so "
+				  "flex_bg size may not be specified"));
+			exit(1);
+		}
+		fs_param.s_log_groups_per_flex = int_log2(flex_bg_size);
+	}
 
 	if (inode_size && fs_param.s_rev_level >= EXT2_DYNAMIC_REV) {
 		if (inode_size < EXT2_GOOD_OLD_INODE_SIZE ||
