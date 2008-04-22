@@ -13,7 +13,7 @@ INSTALL = @INSTALL@
 
 DVI=texi2dvi
 DVIPS=dvips -o "$@"
-INFO=makeinfo
+INFO=@MAKEINFO@
 HTML=texi2html
 
 all:: libext2fs.info libext2fs.dvi
