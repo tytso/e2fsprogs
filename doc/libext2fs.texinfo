@@ -493,10 +493,7 @@ EXT2_ET_MISSING_INODE_TABLE.
 @comment  node-name,  next,  previous,  up
 @subsection Iterating over blocks in an inode
 
-@deftypefun errcode_t ext2fs_block_iterate (ext2_filsys @var{fs},
-ext2_ino_t @var{ino}, int @var{flags}, char *block_buf, int
-(*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, int @var{blockcnt},
-void *@var{private}), void *@var{private})
+@deftypefun errcode_t ext2fs_block_iterate (ext2_filsys @var{fs}, ext2_ino_t @var{ino}, int @var{flags}, char *block_buf, int (*func)(ext2_filsys @var{fs}, blk_t *@var{blocknr}, int @var{blockcnt}, void *@var{private}), void *@var{private})
 
 Iterate over all of the blocks in inode number @var{ino} in filesystem
 @var{fs}, by calling the function @var{func} for each block in the
@@ -635,9 +632,7 @@ This function writes a directory block, performing any necessary
 byte swapping if necessary.
 @end deftypefun
 
-@deftypefun errcode_t ext2fs_new_dir_block (ext2_filsys @var{fs},
-ext2_ino_t @var{dir_ino}, ext2_ino_t @var{parent_ino}, char
-**@var{block})
+@deftypefun errcode_t ext2fs_new_dir_block (ext2_filsys @var{fs}, ext2_ino_t @var{dir_ino}, ext2_ino_t @var{parent_ino}, char **@var{block})
 
 This function creates a new directory block in @var{block}.  If
 @var{dir_ino} is non-zero, then @var{dir_info} and @var{parent_ino} is used
