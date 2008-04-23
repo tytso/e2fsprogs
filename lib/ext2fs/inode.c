@@ -146,6 +146,15 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 		group_desc[scan->current_group].bg_inode_table;
 	scan->inodes_left = EXT2_INODES_PER_GROUP(scan->fs->super);
 	scan->blocks_left = scan->fs->inode_blocks_per_group;
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		scan->inodes_left -=
+			fs->group_desc[scan->current_group].bg_itable_unused;
+		scan->blocks_left =
+			(scan->inodes_left +
+			 (fs->blocksize / scan->inode_size - 1)) *
+			scan->inode_size / fs->blocksize;
+	}
 	retval = ext2fs_get_array(scan->inode_buffer_blocks,
 					  fs->blocksize,
 				&scan->inode_buffer);
