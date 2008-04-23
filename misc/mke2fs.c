@@ -406,7 +406,7 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 	errcode_t	retval;
 	blk_t		blk;
 	dgrp_t		i;
-	int		num;
+	int		num, ipb;
 	struct progress_struct progress;
 
 	if (quiet)
@@ -421,18 +421,27 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 		blk = fs->group_desc[i].bg_inode_table;
 		num = fs->inode_blocks_per_group;
 
-		if (!(lazy_flag &&
-		      (fs->group_desc[i].bg_flags & EXT2_BG_INODE_UNINIT))) {
-			retval = zero_blocks(fs, blk, num, 0, &blk, &num);
-			if (retval) {
-				fprintf(stderr, _("\nCould not write %d "
-				"blocks in inode table starting at %u: %s\n"),
-					num, blk, error_message(retval));
-				exit(1);
-			}
+		if (lazy_flag) {
+			ipb = fs->blocksize / EXT2_INODE_SIZE(fs->super);
+			printf("bg %i, num %d, ipb %d, unused %d ",
+			       i, num, ipb, fs->group_desc[i].bg_itable_unused);
+			num = ((((fs->super->s_inodes_per_group -
+				  fs->group_desc[i].bg_itable_unused) *
+				 EXT2_INODE_SIZE(fs->super)) +
+				EXT2_BLOCK_SIZE(fs->super) - 1) /
+			       EXT2_BLOCK_SIZE(fs->super));
+			printf("new num %d\n", num);
+		} else {
 			/* The kernel doesn't need to zero the itable blocks */
 			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_ZEROED;
 			ext2fs_group_desc_csum_set(fs, i);
+		}
+		retval = zero_blocks(fs, blk, num, 0, &blk, &num);
+		if (retval) {
+			fprintf(stderr, _("\nCould not write %d "
+				  "blocks in inode table starting at %u: %s\n"),
+				num, blk, error_message(retval));
+			exit(1);
 		}
 		if (sync_kludge) {
 			if (sync_kludge == 1)

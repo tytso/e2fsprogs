@@ -179,6 +179,9 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 			set_field(s_min_extra_isize, extra_isize);
 			set_field(s_want_extra_isize, extra_isize);
 		}
+	} else {
+		super->s_first_ino = EXT2_GOOD_OLD_FIRST_INO;
+		super->s_inode_size = EXT2_GOOD_OLD_INODE_SIZE;
 	}
 
 	set_field(s_checkinterval, EXT2_DFL_CHECKINTERVAL);
@@ -388,6 +391,10 @@ ipg_retry:
 				fs->group_desc[i].bg_flags |=
 					EXT2_BG_BLOCK_UNINIT;
 			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_UNINIT;
+			numblocks = super->s_inodes_per_group;
+			if (i == 0)
+				numblocks -= super->s_first_ino;
+			fs->group_desc[i].bg_itable_unused = numblocks;
 		}
 		numblocks = ext2fs_reserve_super_and_bgd(fs, i, fs->block_map);
 
