@@ -2767,7 +2767,7 @@ msgstr ""
 
 #: e2fsck/util.c:131 misc/util.c:68
 msgid "yY"
-msgstr "yJ"
+msgstr "jJ"
 
 #: e2fsck/util.c:132
 msgid "nN"

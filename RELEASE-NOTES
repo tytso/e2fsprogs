@@ -1,5 +1,5 @@
-E2fsprogs 1.40.9-WIP (March 14, 2008)
-=====================================
+E2fsprogs 1.40.9 (April 27, 2008)
+=================================
 
 SuSE's security team audited uuidd and came up with a few minor
 issues.  None of them are serious given that uuidd runs setuid as a
@@ -9,11 +9,64 @@ directory, but it's good to get them fixed.
 One additional fix in ext2fs_swap_inode_full() needed for resize2fs to
 work correctly with in-inode extended attributes.
 
+Updated German, Czech, Dutch, French, Polish, Sweedish, and Vietnamese
+translations.
+
+Debugfs will avoid using a pager if the standard output is not a tty.
+
+Fix debugfs and tune2fs to correctly handle daylight savings time when
+parsing a time string.
+
+Fixed spelling mistakes, typos, and otherwise clarified man pages.
+
+Fix fsck completion bars when multiple filesystems were being checked
+in parallel.  (Addresses Debian Bug: #432865, Addresses Launchpad Bug:
+#203323, Addresses Sourceforge Bug: #1926023)
+
+Fix fsck so that progress information is sent back correctly when
+multiple filesystems are being check and the output of fsck is being
+redirected to a file descriptor.  Also, include the device name (w/o
+spaces) in the progress information sent back via a file descriptor.
+(Addresses Launchpad Bug: #203323, Addresses Sourceforge Bug:
+#1926023)
+
+Teach fsck to treat "ext4" and "ext4dev" as ext* filesystems.
+
+If logsave receives a SIGTERM or SIGINT signal, it will now pass that
+signal to its child process.
+
+Fix mke2fs's creation of are resize inode when there is a non-standard
+s_first_data_block setting.
+
+Fix bug in blkid when run by an unprivileged user; most devices were
+not reported correctly.  9Addresses Launchpad Bug: #220275)
+
+Mke2fs will not allow the logically incorect combination of
+resize_inode and meta_bg, which had previously caused mke2fs to create
+a corrupt fileystem.
+
+Fix fsck in German locales so that a 'j' means yes.
+(Addresses Sourceforge Bug: #1947683)
+
+
 Programmer's notes:
 -------------------
 
 Fixed various Debian packaging issues --- see debian/changelog for
 details.
+
+Update valgrind options in test_script to work with valgrind 3.2.3
+
+Update texinfo.tex to a much newer version from the FSF.
+
+Remove bashism for configure script and from the lib/ss Makefile.
+Addresses Sourceforge Bug: 1921969
+
+Fix some silently broken tests: m_no_opt, m_meta_bg, and m_raid_opt.
+
+Fix build system so that if texinfo is not installed, it won't print a
+(harmless) error message.
+
 
 E2fsprogs 1.40.8 (March 13, 2008)
 =================================

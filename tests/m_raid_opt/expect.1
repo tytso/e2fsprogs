@@ -15,136 +15,21 @@ Superblock backups stored on blocks:
 Writing inode tables: done                            
 Writing superblocks and filesystem accounting information: done
 
-Filesystem features: ext_attr resize_inode dir_index filetype meta_bg sparse_super
+Filesystem features: ext_attr resize_inode dir_index filetype sparse_super
  
-Resize inode not valid.  Recreate? yes
-
 Pass 1: Checking inodes, blocks, and sizes
 Pass 2: Checking directory structure
-Directory inode 2, block 0, offset 0: directory corrupted
-Salvage? yes
-
-First entry '' (inode=1061) in directory inode 2 (???) should be '.'
-Fix? yes
-
-Setting filetype for entry '.' in ??? (2) to 2.
-Missing '..' in directory inode 2.
-Fix? yes
-
-Setting filetype for entry '..' in ??? (2) to 2.
-Directory inode 11, block 0, offset 0: directory corrupted
-Salvage? yes
-
-First entry '' (inode=1062) in directory inode 11 (???) should be '.'
-Fix? yes
-
-Setting filetype for entry '.' in ??? (11) to 2.
-Missing '..' in directory inode 11.
-Fix? yes
-
-Setting filetype for entry '..' in ??? (11) to 2.
-Directory inode 11, block 1, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
-Directory inode 11, block 2, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
-Directory inode 11, block 3, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
-Directory inode 11, block 4, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
-Directory inode 11, block 5, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
-Directory inode 11, block 6, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
-Directory inode 11, block 7, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
-Directory inode 11, block 8, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
-Directory inode 11, block 9, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
-Directory inode 11, block 10, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
-Directory inode 11, block 11, offset 0: directory corrupted
-Salvage? yes
-
-Entry '' in ??? (11) has a zero-length name.
-Clear? yes
-
 Pass 3: Checking directory connectivity
-'..' in / (2) is <The NULL inode> (0), should be / (2).
-Fix? yes
-
-Unconnected directory inode 11 (/???)
-Connect to /lost+found? yes
-
-/lost+found not found.  Create? yes
-
-Pass 3A: Optimizing directories
 Pass 4: Checking reference counts
-Inode 11 ref count is 3, should be 2.  Fix? yes
-
 Pass 5: Checking group summary information
-Block bitmap differences:  +(3--5) +(7--10) +(12--32) +(35--37) +39 -(65--66) -70 -75 -77 -(97--98) -102 -(107--109) -(129--130) -134 -139 -142 -(161--162) -166 -171 -(174--175) -(193--194) -198 -(203--204) -(206--207) -(225--226) -230 -235 -(239--240) -(257--258) -262 -267 -271 -273 -(289--290) -294 +295 -299 -(301--305)
-Fix? yes
-
-Free blocks count wrong for group #0 (982, counted=983).
-Fix? yes
-
-Free blocks count wrong (126690, counted=126691).
-Fix? yes
-
-Inode bitmap differences:  +(1--2) +(4--5) +(7--10) -35 -38 -(43--44) -67 -70 -75 -77 -99 -102 -(107--109) -131 -134 -139 -142 -163 -166 -171 -(174--175) -195 -198 -(203--204) -(206--207) -227 -230 -235 -(239--240)
-Fix? yes
-
-
-test_filesys: ***** FILE SYSTEM WAS MODIFIED *****
-test_filesys: 12/32768 files (0.0% non-contiguous), 4381/131072 blocks
-Exit status is 1
+test_filesys: 11/32768 files (0.0% non-contiguous), 7238/131072 blocks
+Exit status is 0
 
 Filesystem volume name:   <none>
 Last mounted on:          <not available>
 Filesystem magic number:  0xEF53
 Filesystem revision #:    1 (dynamic)
-Filesystem features:      ext_attr resize_inode dir_index filetype meta_bg sparse_super
+Filesystem features:      ext_attr resize_inode dir_index filetype sparse_super
 Default mount options:    (none)
 Filesystem state:         clean
 Errors behavior:          Continue
@@ -152,8 +37,8 @@ Filesystem OS type:       Linux
 Inode count:              32768
 Block count:              131072
 Reserved block count:     6553
-Free blocks:              126691
-Free inodes:              32756
+Free blocks:              123834
+Free inodes:              32757
 First block:              1
 Block size:               1024
 Fragment size:            1024
@@ -173,18 +58,20 @@ Default directory hash:   tea
 
 
 Group 0: (Blocks 1-1024)
-  Primary superblock at 1, Group descriptor at 2
-  Block bitmap at 35 (+34), Inode bitmap at 36 (+35)
-  Inode table at 3-34 (+2)
-  983 free blocks, 244 free inodes, 3 directories
-  Free blocks: 40-49, 51-294, 296-1024
-  Free inodes: 13-256
+  Primary superblock at 1, Group descriptors at 2-5
+  Reserved GDT blocks at 6-261
+  Block bitmap at 294 (+293), Inode bitmap at 295 (+294)
+  Inode table at 262-293 (+261)
+  715 free blocks, 245 free inodes, 2 directories
+  Free blocks: 310-1024
+  Free inodes: 12-256
 Group 1: (Blocks 1025-2048)
-  Backup superblock at 1025, Group descriptor at 1026
-  Block bitmap at 1072 (+47), Inode bitmap at 1073 (+48)
-  Inode table at 1027-1058 (+2)
-  988 free blocks, 256 free inodes, 0 directories
-  Free blocks: 1059-1071, 1074-2048
+  Backup superblock at 1025, Group descriptors at 1026-1029
+  Reserved GDT blocks at 1030-1285
+  Block bitmap at 1331 (+306), Inode bitmap at 1332 (+307)
+  Inode table at 1286-1317 (+261)
+  729 free blocks, 256 free inodes, 0 directories
+  Free blocks: 1318-1330, 1333-2048
   Free inodes: 257-512
 Group 2: (Blocks 2049-3072)
   Block bitmap at 2107 (+58), Inode bitmap at 2108 (+59)
@@ -193,11 +80,12 @@ Group 2: (Blocks 2049-3072)
   Free blocks: 2081-2106, 2109-3072
   Free inodes: 513-768
 Group 3: (Blocks 3073-4096)
-  Backup superblock at 3073
-  Block bitmap at 3145 (+72), Inode bitmap at 3146 (+73)
-  Inode table at 3074-3105 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 3106-3144, 3147-4096
+  Backup superblock at 3073, Group descriptors at 3074-3077
+  Reserved GDT blocks at 3078-3333
+  Block bitmap at 3405 (+332), Inode bitmap at 3406 (+333)
+  Inode table at 3334-3365 (+261)
+  729 free blocks, 256 free inodes, 0 directories
+  Free blocks: 3366-3404, 3407-4096
   Free inodes: 769-1024
 Group 4: (Blocks 4097-5120)
   Block bitmap at 4181 (+84), Inode bitmap at 4182 (+85)
@@ -206,11 +94,12 @@ Group 4: (Blocks 4097-5120)
   Free blocks: 4129-4180, 4183-5120
   Free inodes: 1025-1280
 Group 5: (Blocks 5121-6144)
-  Backup superblock at 5121
-  Block bitmap at 5219 (+98), Inode bitmap at 5220 (+99)
-  Inode table at 5122-5153 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 5154-5218, 5221-6144
+  Backup superblock at 5121, Group descriptors at 5122-5125
+  Reserved GDT blocks at 5126-5381
+  Block bitmap at 5479 (+358), Inode bitmap at 5480 (+359)
+  Inode table at 5382-5413 (+261)
+  729 free blocks, 256 free inodes, 0 directories
+  Free blocks: 5414-5478, 5481-6144
   Free inodes: 1281-1536
 Group 6: (Blocks 6145-7168)
   Block bitmap at 6255 (+110), Inode bitmap at 6256 (+111)
@@ -219,11 +108,12 @@ Group 6: (Blocks 6145-7168)
   Free blocks: 6177-6254, 6257-7168
   Free inodes: 1537-1792
 Group 7: (Blocks 7169-8192)
-  Backup superblock at 7169
-  Block bitmap at 7293 (+124), Inode bitmap at 7294 (+125)
-  Inode table at 7170-7201 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 7202-7292, 7295-8192
+  Backup superblock at 7169, Group descriptors at 7170-7173
+  Reserved GDT blocks at 7174-7429
+  Block bitmap at 7553 (+384), Inode bitmap at 7554 (+385)
+  Inode table at 7430-7461 (+261)
+  729 free blocks, 256 free inodes, 0 directories
+  Free blocks: 7462-7552, 7555-8192
   Free inodes: 1793-2048
 Group 8: (Blocks 8193-9216)
   Block bitmap at 8329 (+136), Inode bitmap at 8330 (+137)
@@ -232,11 +122,12 @@ Group 8: (Blocks 8193-9216)
   Free blocks: 8225-8328, 8331-9216
   Free inodes: 2049-2304
 Group 9: (Blocks 9217-10240)
-  Backup superblock at 9217
-  Block bitmap at 9367 (+150), Inode bitmap at 9368 (+151)
-  Inode table at 9218-9249 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 9250-9366, 9369-10240
+  Backup superblock at 9217, Group descriptors at 9218-9221
+  Reserved GDT blocks at 9222-9477
+  Block bitmap at 9627 (+410), Inode bitmap at 9628 (+411)
+  Inode table at 9478-9509 (+261)
+  729 free blocks, 256 free inodes, 0 directories
+  Free blocks: 9510-9626, 9629-10240
   Free inodes: 2305-2560
 Group 10: (Blocks 10241-11264)
   Block bitmap at 10403 (+162), Inode bitmap at 10404 (+163)
@@ -329,11 +220,12 @@ Group 24: (Blocks 24577-25600)
   Free blocks: 24609-24920, 24923-25600
   Free inodes: 6145-6400
 Group 25: (Blocks 25601-26624)
-  Backup superblock at 25601
-  Block bitmap at 25959 (+358), Inode bitmap at 25960 (+359)
-  Inode table at 25602-25633 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 25634-25958, 25961-26624
+  Backup superblock at 25601, Group descriptors at 25602-25605
+  Reserved GDT blocks at 25606-25861
+  Block bitmap at 26219 (+618), Inode bitmap at 26220 (+619)
+  Inode table at 25862-25893 (+261)
+  729 free blocks, 256 free inodes, 0 directories
+  Free blocks: 25894-26218, 26221-26624
   Free inodes: 6401-6656
 Group 26: (Blocks 26625-27648)
   Block bitmap at 26995 (+370), Inode bitmap at 26996 (+371)
@@ -342,11 +234,12 @@ Group 26: (Blocks 26625-27648)
   Free blocks: 26657-26994, 26997-27648
   Free inodes: 6657-6912
 Group 27: (Blocks 27649-28672)
-  Backup superblock at 27649
-  Block bitmap at 28033 (+384), Inode bitmap at 28034 (+385)
-  Inode table at 27650-27681 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 27682-28032, 28035-28672
+  Backup superblock at 27649, Group descriptors at 27650-27653
+  Reserved GDT blocks at 27654-27909
+  Block bitmap at 28293 (+644), Inode bitmap at 28294 (+645)
+  Inode table at 27910-27941 (+261)
+  729 free blocks, 256 free inodes, 0 directories
+  Free blocks: 27942-28292, 28295-28672
   Free inodes: 6913-7168
 Group 28: (Blocks 28673-29696)
   Block bitmap at 29069 (+396), Inode bitmap at 29070 (+397)
@@ -367,25 +260,22 @@ Group 30: (Blocks 30721-31744)
   Free blocks: 30753-31142, 31145-31744
   Free inodes: 7681-7936
 Group 31: (Blocks 31745-32768)
-  Group descriptor at 31745
-  Block bitmap at 32181 (+436), Inode bitmap at 32182 (+437)
-  Inode table at 31746-31777 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 31778-32180, 32183-32768
+  Block bitmap at 32180 (+435), Inode bitmap at 32181 (+436)
+  Inode table at 31745-31776
+  990 free blocks, 256 free inodes, 0 directories
+  Free blocks: 31777-32179, 32182-32768
   Free inodes: 7937-8192
 Group 32: (Blocks 32769-33792)
-  Group descriptor at 32769
-  Block bitmap at 33218 (+449), Inode bitmap at 33219 (+450)
-  Inode table at 32770-32801 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 32802-33217, 33220-33792
+  Block bitmap at 33217 (+448), Inode bitmap at 33218 (+449)
+  Inode table at 32769-32800
+  990 free blocks, 256 free inodes, 0 directories
+  Free blocks: 32801-33216, 33219-33792
   Free inodes: 8193-8448
 Group 33: (Blocks 33793-34816)
-  Group descriptor at 33793
-  Block bitmap at 34255 (+462), Inode bitmap at 34256 (+463)
-  Inode table at 33794-33825 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 33826-34254, 34257-34816
+  Block bitmap at 34254 (+461), Inode bitmap at 34255 (+462)
+  Inode table at 33793-33824
+  990 free blocks, 256 free inodes, 0 directories
+  Free blocks: 33825-34253, 34256-34816
   Free inodes: 8449-8704
 Group 34: (Blocks 34817-35840)
   Block bitmap at 35291 (+474), Inode bitmap at 35292 (+475)
@@ -478,11 +368,12 @@ Group 48: (Blocks 49153-50176)
   Free blocks: 49185-49808, 49811-50176
   Free inodes: 12289-12544
 Group 49: (Blocks 50177-51200)
-  Backup superblock at 50177
-  Block bitmap at 50847 (+670), Inode bitmap at 50848 (+671)
-  Inode table at 50178-50209 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 50210-50846, 50849-51200
+  Backup superblock at 50177, Group descriptors at 50178-50181
+  Reserved GDT blocks at 50182-50437
+  Block bitmap at 51107 (+930), Inode bitmap at 51108 (+931)
+  Inode table at 50438-50469 (+261)
+  729 free blocks, 256 free inodes, 0 directories
+  Free blocks: 50470-51106, 51109-51200
   Free inodes: 12545-12800
 Group 50: (Blocks 51201-52224)
   Block bitmap at 51883 (+682), Inode bitmap at 51884 (+683)
@@ -563,25 +454,22 @@ Group 62: (Blocks 63489-64512)
   Free blocks: 63521-64326, 64329-64512
   Free inodes: 15873-16128
 Group 63: (Blocks 64513-65536)
-  Group descriptor at 64513
-  Block bitmap at 65365 (+852), Inode bitmap at 65366 (+853)
-  Inode table at 64514-64545 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 64546-65364, 65367-65536
+  Block bitmap at 65364 (+851), Inode bitmap at 65365 (+852)
+  Inode table at 64513-64544
+  990 free blocks, 256 free inodes, 0 directories
+  Free blocks: 64545-65363, 65366-65536
   Free inodes: 16129-16384
 Group 64: (Blocks 65537-66560)
-  Group descriptor at 65537
-  Block bitmap at 66402 (+865), Inode bitmap at 66403 (+866)
-  Inode table at 65538-65569 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 65570-66401, 66404-66560
+  Block bitmap at 66401 (+864), Inode bitmap at 66402 (+865)
+  Inode table at 65537-65568
+  990 free blocks, 256 free inodes, 0 directories
+  Free blocks: 65569-66400, 66403-66560
   Free inodes: 16385-16640
 Group 65: (Blocks 66561-67584)
-  Group descriptor at 66561
-  Block bitmap at 67439 (+878), Inode bitmap at 67440 (+879)
-  Inode table at 66562-66593 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 66594-67438, 67441-67584
+  Block bitmap at 67438 (+877), Inode bitmap at 67439 (+878)
+  Inode table at 66561-66592
+  990 free blocks, 256 free inodes, 0 directories
+  Free blocks: 66593-67437, 67440-67584
   Free inodes: 16641-16896
 Group 66: (Blocks 67585-68608)
   Block bitmap at 68475 (+890), Inode bitmap at 68476 (+891)
@@ -674,11 +562,12 @@ Group 80: (Blocks 81921-82944)
   Free blocks: 81953-82000, 82003-82944
   Free inodes: 20481-20736
 Group 81: (Blocks 82945-83968)
-  Backup superblock at 82945
-  Block bitmap at 83040 (+95), Inode bitmap at 83041 (+96)
-  Inode table at 82946-82977 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 82978-83039, 83042-83968
+  Backup superblock at 82945, Group descriptors at 82946-82949
+  Reserved GDT blocks at 82950-83205
+  Block bitmap at 83560 (+615), Inode bitmap at 83561 (+616)
+  Inode table at 83206-83237 (+261)
+  729 free blocks, 256 free inodes, 0 directories
+  Free blocks: 83238-83559, 83562-83968
   Free inodes: 20737-20992
 Group 82: (Blocks 83969-84992)
   Block bitmap at 84075 (+106), Inode bitmap at 84076 (+107)
@@ -759,25 +648,22 @@ Group 94: (Blocks 96257-97280)
   Free blocks: 96289-96518, 96521-97280
   Free inodes: 24065-24320
 Group 95: (Blocks 97281-98304)
-  Group descriptor at 97281
-  Block bitmap at 97558 (+277), Inode bitmap at 97559 (+278)
-  Inode table at 97282-97313 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 97314-97557, 97560-98304
+  Block bitmap at 97556 (+275), Inode bitmap at 97557 (+276)
+  Inode table at 97281-97312
+  990 free blocks, 256 free inodes, 0 directories
+  Free blocks: 97313-97555, 97558-98304
   Free inodes: 24321-24576
 Group 96: (Blocks 98305-99328)
-  Group descriptor at 98305
-  Block bitmap at 98595 (+290), Inode bitmap at 98596 (+291)
-  Inode table at 98306-98337 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 98338-98594, 98597-99328
+  Block bitmap at 98593 (+288), Inode bitmap at 98594 (+289)
+  Inode table at 98305-98336
+  990 free blocks, 256 free inodes, 0 directories
+  Free blocks: 98337-98592, 98595-99328
   Free inodes: 24577-24832
 Group 97: (Blocks 99329-100352)
-  Group descriptor at 99329
-  Block bitmap at 99632 (+303), Inode bitmap at 99633 (+304)
-  Inode table at 99330-99361 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 99362-99631, 99634-100352
+  Block bitmap at 99630 (+301), Inode bitmap at 99631 (+302)
+  Inode table at 99329-99360
+  990 free blocks, 256 free inodes, 0 directories
+  Free blocks: 99361-99629, 99632-100352
   Free inodes: 24833-25088
 Group 98: (Blocks 100353-101376)
   Block bitmap at 100667 (+314), Inode bitmap at 100668 (+315)
@@ -942,11 +828,12 @@ Group 124: (Blocks 126977-128000)
   Free blocks: 127009-127628, 127631-128000
   Free inodes: 31745-32000
 Group 125: (Blocks 128001-129024)
-  Backup superblock at 128001
-  Block bitmap at 128668 (+667), Inode bitmap at 128669 (+668)
-  Inode table at 128002-128033 (+1)
-  989 free blocks, 256 free inodes, 0 directories
-  Free blocks: 128034-128667, 128670-129024
+  Backup superblock at 128001, Group descriptors at 128002-128005
+  Reserved GDT blocks at 128006-128261
+  Block bitmap at 128457 (+456), Inode bitmap at 128458 (+457)
+  Inode table at 128262-128293 (+261)
+  729 free blocks, 256 free inodes, 0 directories
+  Free blocks: 128294-128456, 128459-129024
   Free inodes: 32001-32256
 Group 126: (Blocks 129025-130048)
   Block bitmap at 129703 (+678), Inode bitmap at 129704 (+679)
@@ -955,9 +842,8 @@ Group 126: (Blocks 129025-130048)
   Free blocks: 129057-129702, 129705-130048
   Free inodes: 32257-32512
 Group 127: (Blocks 130049-131071)
-  Group descriptor at 130049
-  Block bitmap at 130743 (+694), Inode bitmap at 130744 (+695)
-  Inode table at 130050-130081 (+1)
-  988 free blocks, 256 free inodes, 0 directories
-  Free blocks: 130082-130742, 130745-131071
+  Block bitmap at 130741 (+692), Inode bitmap at 130742 (+693)
+  Inode table at 130049-130080
+  989 free blocks, 256 free inodes, 0 directories
+  Free blocks: 130081-130740, 130743-131071
   Free inodes: 32513-32768

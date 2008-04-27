@@ -1572,7 +1572,16 @@ static void PRS(int argc, char *argv[])
 		fs_param.s_feature_compat = 0;
 		fs_param.s_feature_ro_compat = 0;
  	}
-	
+
+	if ((fs_param.s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
+	    (fs_param.s_feature_compat & EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
+		fprintf(stderr, _("The resize_inode and meta_bg features "
+				  "are not compatible.\n"
+				  "They can not be both enabled "
+				  "simultaneously.\n"));
+		exit(1);
+	}
+
 	/* Set first meta blockgroup via an environment variable */
 	/* (this is mostly for debugging purposes) */
 	if ((fs_param.s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG) &&
