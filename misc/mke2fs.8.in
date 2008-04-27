@@ -205,14 +205,15 @@ parity in a RAID stripe if possible when the data is written.
 Reserve enough space so that the block group descriptor table can grow
 to support a filesystem that has max-online-resize blocks.
 .TP
-.B lazy_itable_init= \fI<0 to disable, 1 to enable>
+.B lazy_itable_init\fR[\fb= \fI<0 to disable, 1 to enable>\fR]
 If enabled and the uninit_bg feature is enabled, the inode table will
 not fully initialized by 
 .BR mke2fs .
 This speeds up filesystem
 initialization noitceably, but it requires the kernel to finish
 initializing the filesystem in the background when the filesystem is
-first mounted.
+first mounted.  If the option value is omitted, it defaults to 1 to
+enable lazy inode table initialization.
 .TP
 .B test_fs
 Set a flag in the filesystem superblock indicating that it may be

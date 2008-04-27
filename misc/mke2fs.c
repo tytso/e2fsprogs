@@ -423,14 +423,11 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 
 		if (lazy_flag) {
 			ipb = fs->blocksize / EXT2_INODE_SIZE(fs->super);
-			printf("bg %i, num %d, ipb %d, unused %d ",
-			       i, num, ipb, fs->group_desc[i].bg_itable_unused);
 			num = ((((fs->super->s_inodes_per_group -
 				  fs->group_desc[i].bg_itable_unused) *
 				 EXT2_INODE_SIZE(fs->super)) +
 				EXT2_BLOCK_SIZE(fs->super) - 1) /
 			       EXT2_BLOCK_SIZE(fs->super));
-			printf("new num %d\n", num);
 		} else {
 			/* The kernel doesn't need to zero the itable blocks */
 			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_ZEROED;
@@ -843,12 +840,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
 		} else if (!strcmp(token, "test_fs")) {
 			param->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 		} else if (!strcmp(token, "lazy_itable_init")) {
-			if (!arg) {
-				r_usage++;
-				badopt = token;
-				continue;
-			}
-			lazy_itable_init = strtoul(arg, &p, 0);
+			if (arg)
+				lazy_itable_init = strtoul(arg, &p, 0);
+			else
+				lazy_itable_init = 1;
 		} else {
 			r_usage++;
 			badopt = token;
