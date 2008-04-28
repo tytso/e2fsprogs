@@ -107,6 +107,13 @@ command-line option
 to 
 .BR mke2fs (8).
 .TP
+.I force_undo
+This relation, if set to a boolean value of true, forces
+.B mke2fs
+to always try to create an undo file, even if the undo file might be
+huge and it might extend the time to create the filesystem image
+because the inode table isn't being initialized lazily.
+.TP
 .I fs_type
 This relation specifies the default filesystem type if the user does not
 specify it via the
@@ -140,6 +147,15 @@ This relation specifies the default inode size if the user does not
 specify one on the command line, and the filesystem-type
 specific section of the configuration file does not specify a default
 inode size.
+.TP
+.I undo_dir
+This relation specifies the directory where the undo file should be
+stored.  It can be overriden via the
+.B E2FSPROGS_UNDO_DIR
+environemnt variable.  If the directory location is set to the value
+.IR none ,
+.B mke2fs
+will not create an undo file.
 .SH THE [fs_types] STANZA
 Each tag in the
 .I [fs_types] 

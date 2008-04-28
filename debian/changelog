@@ -1,3 +1,25 @@
+e2fsprogs (1.40.9-1) unstable; urgency=low
+
+  * Fix fsck so that if multiple filesystems are being checked in
+      parallel, the progress bar for subsequent filesystems will be
+      correctly displayed.  (Closes: #432865)
+  * Fix fsck -Cn for n!=0 for better Ubuntu boot-time support
+  * debugfs: Don't bother using a pager of stdout is not a tty
+  * Fix tune2fs and debugfs to correctly parse time strings during
+      daylight savings time.  (Closes: #471882)
+  * Teach fsck to treat ext4 and ext4 filesystems as ext* filesystems
+  * Logsave will now propagate SIGINT and SIGTERM signals to its child
+      process.
+  * Mke2fs will not allow the illogical combination of the resize_inode
+      and meta_bg filesystem features.
+  * Use UID/GID ranges from adduser.conf if present, even though we
+      don't use adduser to add users/groups.  (Closes: #473179)
+  * Updated German, Czech, Dutch, French, Polish, Sweedish, and
+      Vietnamese translations.
+  * Update/clarified the mke2fs man page
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 27 Apr 2008 00:35:20 -0400
+
 e2fsprogs (1.40.8-2) unstable; urgency=low
 
   * One more big-endian swap fix needed for resize2fs to work correctly

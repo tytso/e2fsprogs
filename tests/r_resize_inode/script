@@ -37,6 +37,8 @@ $DUMPE2FS $TMPFILE 2>&1 | sed -f $cmd_dir/filter_dumpe2fs >> $OUT
 
 echo "--------------------------------" >> $OUT
 
+dd if=/dev/zero of=$TMPFILE bs=1k count=512 > /dev/null 2>&1
+
 echo mke2fs -q -F -O resize_inode -o Linux -b 1024 -g 1024 test.img 65536 >> $OUT
 $MKE2FS -q -F -O resize_inode -o Linux -b 1024 -g 1024 $TMPFILE 65536 2>&1 \
 	| sed -e '1d' | grep -v "automatically checked" | 

@@ -135,11 +135,69 @@ errout:
 }
 
 /*
+ * Convenience function which zeros out _num_ blocks starting at
+ * _blk_.  In case of an error, the details of the error is returned
+ * via _ret_blk_ and _ret_count_ if they are non-NULL pointers.
+ * Returns 0 on success, and an error code on an error.
+ *
+ * As a special case, if the first argument is NULL, then it will
+ * attempt to free the static zeroizing buffer.  (This is to keep
+ * programs that check for memory leaks happy.)
+ */
+#define STRIDE_LENGTH 8
+errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
+			     blk_t *ret_blk, int *ret_count)
+{
+	int		j, count;
+	static char	*buf;
+	errcode_t	retval;
+
+	/* If fs is null, clean up the static buffer and return */
+	if (!fs) {
+		if (buf) {
+			free(buf);
+			buf = 0;
+		}
+		return 0;
+	}
+	/* Allocate the zeroizing buffer if necessary */
+	if (!buf) {
+		buf = malloc(fs->blocksize * STRIDE_LENGTH);
+		if (!buf)
+			return ENOMEM;
+		memset(buf, 0, fs->blocksize * STRIDE_LENGTH);
+	}
+	/* OK, do the write loop */
+	j=0;
+	while (j < num) {
+		if (blk % STRIDE_LENGTH)
+			count = STRIDE_LENGTH - (blk % STRIDE_LENGTH);
+		else {
+			count = num - j;
+			if (count > STRIDE_LENGTH)
+				count = STRIDE_LENGTH;
+		}
+		retval = io_channel_write_blk(fs->io, blk, count, buf);
+		if (retval) {
+			if (ret_count)
+				*ret_count = count;
+			if (ret_blk)
+				*ret_blk = blk;
+			return retval;
+		}
+		j += count; blk += count;
+	}
+	return 0;
+}
+
+/*
  * Helper function for creating the journal using direct I/O routines
  */
 struct mkjournal_struct {
 	int		num_blocks;
 	int		newblocks;
+	blk_t		blk_to_zero;
+	int		zero_count;
 	char		*buf;
 	errcode_t	err;
 };
@@ -169,7 +227,27 @@ static int mkjournal_proc(ext2_filsys	fs,
 		es->num_blocks--;
 
 	es->newblocks++;
-	retval = io_channel_write_blk(fs->io, new_blk, 1, es->buf);
+	retval = 0;
+	if (blockcnt <= 0)
+		retval = io_channel_write_blk(fs->io, new_blk, 1, es->buf);
+	else {
+		if (es->zero_count) {
+			if ((es->blk_to_zero + es->zero_count == new_blk) &&
+			    (es->zero_count < 1024))
+				es->zero_count++;
+			else {
+				retval = ext2fs_zero_blocks(fs,
+							    es->blk_to_zero,
+							    es->zero_count,
+							    0, 0);
+				es->zero_count = 0;
+			}
+		}
+		if (es->zero_count == 0) {
+			es->blk_to_zero = new_blk;
+			es->zero_count = 1;
+		}
+	}
 
 	if (blockcnt == 0)
 		memset(es->buf, 0, fs->blocksize);
@@ -216,12 +294,19 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	es.newblocks = 0;
 	es.buf = buf;
 	es.err = 0;
+	es.zero_count = 0;
 
 	retval = ext2fs_block_iterate2(fs, journal_ino, BLOCK_FLAG_APPEND,
 				       0, mkjournal_proc, &es);
 	if (es.err) {
 		retval = es.err;
 		goto errout;
+	}
+	if (es.zero_count) {
+		retval = ext2fs_zero_blocks(fs, es.blk_to_zero,
+					    es.zero_count, 0, 0);
+		if (retval)
+			goto errout;
 	}
 
 	if ((retval = ext2fs_read_inode(fs, journal_ino, &inode)))

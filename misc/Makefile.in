@@ -18,11 +18,11 @@ INSTALL = @INSTALL@
 @UUIDD_CMT@UUIDD_MAN= uuidd.8
 
 SPROGS=		mke2fs badblocks tune2fs dumpe2fs blkid logsave \
-			$(E2IMAGE_PROG) @FSCK_PROG@
+			$(E2IMAGE_PROG) @FSCK_PROG@ e2undo
 USPROGS=	mklost+found filefrag $(UUIDD_PROG)
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			e2label.8 findfs.8 blkid.8 $(E2IMAGE_MAN) \
-			logsave.8 filefrag.8 $(UUIDD_MAN) @FSCK_MAN@
+			logsave.8 filefrag.8 e2undo.8 $(UUIDD_MAN) @FSCK_MAN@
 FMANPAGES=	mke2fs.conf.5
 
 UPROGS=		chattr lsattr uuidgen
@@ -43,6 +43,7 @@ E2IMAGE_OBJS=	e2image.o
 FSCK_OBJS=	fsck.o base_device.o ismounted.o
 BLKID_OBJS=	blkid.o
 FILEFRAG_OBJS=	filefrag.o
+E2UNDO_OBJS=  e2undo.o
 
 XTRA_CFLAGS=	-I$(srcdir)/../e2fsck -I.
 
@@ -51,7 +52,8 @@ SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/badblocks.c $(srcdir)/fsck.c $(srcdir)/util.c \
 		$(srcdir)/uuidgen.c $(srcdir)/blkid.c $(srcdir)/logsave.c \
 		$(srcdir)/filefrag.c $(srcdir)/base_device.c \
-		$(srcdir)/ismounted.c $(srcdir)/../e2fsck/profile.c
+		$(srcdir)/ismounted.c $(srcdir)/../e2fsck/profile.c \
+		$(srcdir)/e2undo.c
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
 DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
@@ -111,6 +113,10 @@ blkid: $(BLKID_OBJS) $(DEPLIBS_BLKID)
 e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS) $(LIBINTL)
+
+e2undo: $(E2UNDO_OBJS) $(DEPLIBS)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o e2undo $(E2UNDO_OBJS) $(LIBS)
 
 base_device: base_device.c
 	@echo "	LD $@"
@@ -196,6 +202,10 @@ mke2fs.conf.5: $(DEP_SUBSTITUTE) $(srcdir)/mke2fs.conf.5.in
 e2label.8: $(DEP_SUBSTITUTE) $(srcdir)/e2label.8.in
 	@echo "	SUBST $@"
 	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2label.8.in e2label.8
+
+e2undo.8: $(DEP_SUBSTITUTE) $(srcdir)/e2undo.8.in
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2undo.8.in e2undo.8
 
 findfs.8: $(DEP_SUBSTITUTE) $(srcdir)/findfs.8.in
 	@echo "	SUBST $@"
@@ -451,3 +461,4 @@ base_device.o: $(srcdir)/base_device.c $(srcdir)/fsck.h
 ismounted.o: $(srcdir)/ismounted.c $(top_srcdir)/lib/et/com_err.h
 profile.o: $(srcdir)/../e2fsck/profile.c $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/../e2fsck/profile.h prof_err.h
+e2undo.o: $(srcdir)/e2undo.c $(top_srcdir)/lib/ext2fs/tdb.h

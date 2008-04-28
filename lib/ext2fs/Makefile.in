@@ -69,6 +69,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	rw_bitmaps.o \
 	swapfs.o \
 	tdb.o \
+	undo_io.o \
 	unix_io.o \
 	unlink.o \
 	valid_blk.o \
@@ -139,6 +140,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/tst_csum.c \
 	$(srcdir)/tst_getsize.c \
 	$(srcdir)/tst_iscan.c \
+	$(srcdir)/undo_io.c \
 	$(srcdir)/unix_io.c \
 	$(srcdir)/unlink.c \
 	$(srcdir)/valid_blk.c \
@@ -692,6 +694,11 @@ tst_getsize.o: $(srcdir)/tst_getsize.c $(srcdir)/ext2_fs.h \
  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
  $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h
 tst_iscan.o: $(srcdir)/tst_iscan.c $(srcdir)/ext2_fs.h \
+ $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
+ $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
+ $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
+ $(srcdir)/ext2_ext_attr.h $(srcdir)/bitops.h
+undo_io.o: $(srcdir)/undo_io.c $(srcdir)/tdb.h $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
  $(srcdir)/ext2_io.h $(top_builddir)/lib/ext2fs/ext2_err.h \
