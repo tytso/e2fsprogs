@@ -316,7 +316,7 @@ static int get_clock(uint32_t *clock_high, uint32_t *clock_low,
 	if ((last.tv_sec == 0) && (last.tv_usec == 0)) {
 		get_random_bytes(&clock_seq, sizeof(clock_seq));
 		clock_seq &= 0x3FFF;
-		last = tv;
+		gettimeofday(&last, 0);
 		last.tv_sec--;
 	}
 
