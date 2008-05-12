@@ -556,6 +556,9 @@ errcode_t ext2fs_extent_free_path(ext2_extent_path_t path)
 /*
  * Go to the node at leaf_level which contains logical block blk.
  *
+ * leaf_level is height from the leaf node level, i.e.
+ * leaf_level 0 is at leaf node, leaf_level 1 is 1 above etc.
+ *
  * If "blk" has no mapping (hole) then handle is left at last
  * extent before blk.
  */
@@ -569,9 +572,15 @@ static errcode_t extent_goto(ext2_extent_handle_t handle,
 	if (retval)
 		return retval;
 
+	if (leaf_level > handle->max_depth) {
+		dbg_printf("leaf level %d greater than tree depth %d\n",
+			leaf_level, handle->max_depth);
+		return EXT2_ET_OP_NOT_SUPPORTED;
+	}
+
 	dbg_print_extent("root", &extent);
 	while (1) {
-		if (handle->level - leaf_level == handle->max_depth) {
+		if (handle->max_depth - handle->level == leaf_level) {
 			/* block is in this &extent */
 			if ((blk >= extent.e_lblk) &&
 			    (blk < extent.e_lblk + extent.e_len))
@@ -1140,6 +1149,7 @@ void do_goto_block(int argc, char **argv)
 	errcode_t		retval;
 	int			op = EXT2_EXTENT_NEXT_LEAF;
 	blk_t			blk;
+	int			level = 0;
 
 	if (check_fs_open(argv[0]))
 		return;
@@ -1149,18 +1159,23 @@ void do_goto_block(int argc, char **argv)
 		return;
 	}
 
-	if (argc != 2) {
-		fprintf(stderr, "%s block\n", argv[0]);
+	if (argc < 2 || argc > 3) {
+		fprintf(stderr, "%s block [level]\n", argv[0]);
 		return;
 	}
 
 	if (strtoblk(argv[0], argv[1], &blk))
 		return;
 
-	retval = ext2fs_extent_goto(current_handle, (blk64_t) blk);
+	if (argc == 3)
+		if (strtoblk(argv[0], argv[2], &level))
+			return;
+
+	retval = extent_goto(current_handle, level, (blk64_t) blk);
+
 	if (retval) {
-		com_err(argv[0], retval, "while trying to go to block %lu",
-			blk);
+		com_err(argv[0], retval, "while trying to go to block %lu, level %d",
+			blk, level);
 		return;
 	}
 
