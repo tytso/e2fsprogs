@@ -13,7 +13,7 @@ subdirs:: Makefile
 clean::
 	@$(RM) -f subdirs
 
-$(LIB)/$(LIBRARY).a $(LIBRARY).a: $(OBJS)
+$(LIBRARY).a: $(OBJS)
 	@echo "	GEN_LIB $@"
 	@(if test -r $@; then $(RM) -f $@.bak && $(MV) $@ $@.bak; fi)
 	@$(ARGEN) $@ $(OBJS)
@@ -21,3 +21,4 @@ $(LIB)/$(LIBRARY).a $(LIBRARY).a: $(OBJS)
 	@$(RM) -f ../$@
 	@$(LN) $@ ../$@
 
+$(LIB)/$(LIBRARY).a: $(LIBRARY).a
