@@ -845,8 +845,7 @@ static int probe_swap1(struct blkid_probe *probe,
 
 	/* check for wrong version or zeroed pagecount, for sanity */
 	if (!memcmp(id->bim_magic, "SWAPSPACE2", id->bim_len) &&
-			(blkid_le32(sws->sws_version) != 1 ||
-			 sws->sws_lastpage == 0))
+			(sws->sws_version != 1 || sws->sws_lastpage == 0))
 		return 1;
 
 	/* arbitrary sanity check.. is there any garbage down there? */
