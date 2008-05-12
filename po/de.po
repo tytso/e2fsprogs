@@ -4398,7 +4398,7 @@ msgstr "Setze die Stripe-Breite auf %d\n"
 
 #: misc/util.c:72
 msgid "Proceed anyway? (y,n) "
-msgstr "Trotzdem fortsetzen? (y,n) "
+msgstr "Trotzdem fortsetzen? (j,n) "
 
 #: misc/util.c:93
 #, c-format
