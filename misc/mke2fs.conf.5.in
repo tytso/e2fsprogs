@@ -324,6 +324,16 @@ together to create one large virtual block group on an ext4 filesystem.
 This improves meta-data locality and performance on meta-data heavy
 workloads.  The number of goups must be a power of 2 and may only be
 specified if the flex_bg filesystem feature is enabled.
+.I options
+This relation specifies additional extended options which should be
+treated by
+.BR mke2fs (8)
+as if they were prepended to the argument of the
+.B -E
+option.  This can be used to configure the default extended options used
+by
+.BR mke2fs (8)
+on a per-filesystem type basis.
 .SH FILES
 .TP
 .I /etc/mke2fs.conf

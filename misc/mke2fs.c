@@ -1048,7 +1048,7 @@ static void PRS(int argc, char *argv[])
 {
 	int		b, c;
 	int		size;
-	char 		*tmp, *tmp2;
+	char 		*tmp, *tmp2, **cpp;
 	int		blocksize = 0;
 	int		inode_ratio = 0;
 	int		inode_size = 0;
@@ -1472,8 +1472,6 @@ static void PRS(int argc, char *argv[])
 
 	tmp = NULL;
 	if (fs_param.s_rev_level != EXT2_GOOD_OLD_REV) {
-		char **cpp;
-
 		tmp = get_string_from_profile(fs_types, "base_features",
 		      "sparse_super,filetype,resize_inode,dir_index");
 		edit_feature(tmp, &fs_param.s_feature_compat);
@@ -1592,6 +1590,16 @@ static void PRS(int argc, char *argv[])
 	lazy_itable_init = get_bool_from_profile(fs_types, 
 						 "lazy_itable_init", 0);
 	
+	/* Get options from profile */
+	for (cpp = fs_types; *cpp; cpp++) {
+		tmp = NULL;
+		profile_get_string(profile, "fs_types", *cpp, "options", "", &tmp);
+			if (tmp && *tmp)
+				parse_extended_opts(&fs_param, tmp);
+			if (tmp)
+				free(tmp);
+	}
+
 	if (extended_opts)
 		parse_extended_opts(&fs_param, extended_opts);
 
