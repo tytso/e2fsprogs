@@ -119,11 +119,15 @@ exit 0
 %{_root_sbindir}/fsck
 %{_root_sbindir}/fsck.ext2
 %{_root_sbindir}/fsck.ext3
+%{_root_sbindir}/fsck.ext4
+%{_root_sbindir}/fsck.ext4dev
 %{_root_sbindir}/logsave
 %{_root_sbindir}/mke2fs
 %{_root_etcdir}/mke2fs.conf
 %{_root_sbindir}/mkfs.ext2
 %{_root_sbindir}/mkfs.ext3
+%{_root_sbindir}/mkfs.ext4
+%{_root_sbindir}/mkfs.ext4dev
 %{_root_sbindir}/resize2fs
 %{_root_sbindir}/tune2fs
 %{_sbindir}/filefrag
@@ -156,6 +160,8 @@ exit 0
 %{_mandir}/man8/findfs.8*
 %{_mandir}/man8/fsck.ext2.8*
 %{_mandir}/man8/fsck.ext3.8*
+%{_mandir}/man8/fsck.ext4.8*
+%{_mandir}/man8/fsck.ext4dev.8*
 %{_mandir}/man8/e2image.8*
 %{_mandir}/man8/e2label.8*
 %{_mandir}/man8/fsck.8*
@@ -163,6 +169,8 @@ exit 0
 %{_mandir}/man8/mke2fs.8*
 %{_mandir}/man8/mkfs.ext2.8*
 %{_mandir}/man8/mkfs.ext3.8*
+%{_mandir}/man8/mkfs.ext4.8*
+%{_mandir}/man8/mkfs.ext4dev.8*
 %{_mandir}/man8/mklost+found.8*
 %{_mandir}/man8/resize2fs.8*
 %{_mandir}/man8/tune2fs.8*
