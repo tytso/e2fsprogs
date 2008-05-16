@@ -539,7 +539,13 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	const char *i_type;
 	char frag, fsize;
 	int os = current_fs->super->s_creator_os;
-	
+	struct ext2_inode_large *large_inode;
+	int is_large_inode = 0;
+
+	if (EXT2_INODE_SIZE(current_fs->super) > EXT2_GOOD_OLD_INODE_SIZE)
+		is_large_inode = 1;
+	large_inode = (struct ext2_inode_large *) inode;
+
 	if (LINUX_S_ISDIR(inode->i_mode)) i_type = "directory";
 	else if (LINUX_S_ISREG(inode->i_mode)) i_type = "regular";
 	else if (LINUX_S_ISLNK(inode->i_mode)) i_type = "symlink";
@@ -549,9 +555,16 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	else if (LINUX_S_ISSOCK(inode->i_mode)) i_type = "socket";
 	else i_type = "bad type";
 	fprintf(out, "%sInode: %u   Type: %s    ", prefix, inode_num, i_type);
-	fprintf(out, "%sMode:  %04o   Flags: 0x%x   Generation: %u\n",
-		prefix, 
-		inode->i_mode & 0777, inode->i_flags, inode->i_generation);
+	fprintf(out, "%sMode:  %04o   Flags: 0x%x\n",
+		prefix, inode->i_mode & 0777, inode->i_flags);
+	if (is_large_inode && large_inode->i_extra_isize >= 24) {
+		fprintf(out, "%sGeneration: %u    Version: 0x%08x:%08x\n", 
+			prefix, inode->i_generation, large_inode->i_version_hi,
+			inode->osd1.linux1.l_i_version);
+	} else {
+		fprintf(out, "%sGeneration: %u    Version: 0x%08x\n", prefix, 
+			inode->i_generation, inode->osd1.linux1.l_i_version);
+	}
 	fprintf(out, "%sUser: %5d   Group: %5d   Size: ",
 		prefix, inode_uid(*inode), inode_gid(*inode));
 	if (LINUX_S_ISREG(inode->i_mode)) {
@@ -590,12 +603,27 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	}
 	fprintf(out, "%sFragment:  Address: %d    Number: %d    Size: %d\n",
 		prefix, inode->i_faddr, frag, fsize);
-	fprintf(out, "%sctime: 0x%08x -- %s", prefix, inode->i_ctime,
-		time_to_string(inode->i_ctime));
-	fprintf(out, "%satime: 0x%08x -- %s", prefix, inode->i_atime,
-		time_to_string(inode->i_atime));
-	fprintf(out, "%smtime: 0x%08x -- %s", prefix, inode->i_mtime,
-		time_to_string(inode->i_mtime));
+	if (is_large_inode && large_inode->i_extra_isize >= 24) {
+		fprintf(out, "%s ctime: 0x%08x:%08x -- %s", prefix, 
+			inode->i_ctime, large_inode->i_ctime_extra,
+			time_to_string(inode->i_ctime));
+		fprintf(out, "%s atime: 0x%08x:%08x -- %s", prefix, 
+			inode->i_atime, large_inode->i_atime_extra,
+			time_to_string(inode->i_atime));
+		fprintf(out, "%s mtime: 0x%08x:%08x -- %s", prefix,
+			inode->i_mtime, large_inode->i_mtime_extra,
+			time_to_string(inode->i_mtime));
+		fprintf(out, "%scrtime: 0x%08x:%08x -- %s", prefix,
+			large_inode->i_crtime, large_inode->i_crtime_extra,
+			time_to_string(large_inode->i_crtime));
+	} else {
+		fprintf(out, "%sctime: 0x%08x -- %s", prefix, inode->i_ctime,
+			time_to_string(inode->i_ctime));
+		fprintf(out, "%satime: 0x%08x -- %s", prefix, inode->i_atime,
+			time_to_string(inode->i_atime));
+		fprintf(out, "%smtime: 0x%08x -- %s", prefix, inode->i_mtime,
+			time_to_string(inode->i_mtime));
+	}
 	if (inode->i_dtime) 
 	  fprintf(out, "%sdtime: 0x%08x -- %s", prefix, inode->i_dtime,
 		  time_to_string(inode->i_dtime));
