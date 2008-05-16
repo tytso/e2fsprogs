@@ -337,7 +337,7 @@ struct ext2_inode {
 	union {
 		struct {
 			__u16	l_i_blocks_hi;
-			__u16	i_pad1;
+			__u16	l_i_file_acl_high;
 			__u16	l_i_uid_high;	/* these 2 fields    */
 			__u16	l_i_gid_high;	/* were reserved2[0] */
 			__u32	l_i_reserved2;
@@ -384,7 +384,7 @@ struct ext2_inode_large {
 	union {
 		struct {
 			__u16	l_i_blocks_hi;
-			__u16	i_pad1;
+			__u16	l_i_file_acl_high;
 			__u16	l_i_uid_high;	/* these 2 fields    */
 			__u16	l_i_gid_high;	/* were reserved2[0] */
 			__u32	l_i_reserved2;
@@ -405,6 +405,7 @@ struct ext2_inode_large {
 	__u32	i_atime_extra;	/* extra Access time (nsec << 2 | epoch) */
 	__u32	i_crtime;	/* File creation time */
 	__u32	i_crtime_extra;	/* extra File creation time (nsec << 2 | epoch)*/
+	__u32	i_version_hi;	/* high 32 bits for 64-bit version */
 };
 
 #define i_size_high	i_dir_acl
