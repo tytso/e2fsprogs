@@ -1261,8 +1261,7 @@ done:
 	return retval;
 }
 
-errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, 
-			       int flags EXT2FS_ATTR((unused)))
+errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 {
 	struct extent_path		*path;
 	char 				*cp;
@@ -1292,15 +1291,33 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle,
 		ix--;
 		path->curr = ix;
 	}
-	path->entries--;
-	if (path->entries == 0)
+	if (--path->entries == 0)
 		path->curr = 0;
 
-	eh = (struct ext3_extent_header *) path->buf;
-	eh->eh_entries = ext2fs_cpu_to_le16(path->entries);
+	/* if non-root node has no entries left, remove it & parent ptr to it */
+	if (path->entries == 0 && handle->level) {
+		if (!(flags & EXT2_EXTENT_DELETE_KEEP_EMPTY)) {
+			struct ext2fs_extent	extent;
 
-	retval = update_path(handle);
+			retval = ext2fs_extent_get(handle, EXT2_EXTENT_UP,
+								&extent);
+			if (retval)
+				return retval;
 
+			retval = ext2fs_extent_delete(handle, flags);
+			handle->inode->i_blocks -= handle->fs->blocksize / 512;
+			retval = ext2fs_write_inode_full(handle->fs,
+					handle->ino, handle->inode,
+					EXT2_INODE_SIZE(handle->fs->super));
+			ext2fs_block_alloc_stats(handle->fs, extent.e_pblk, -1);
+		}
+	} else {
+		eh = (struct ext3_extent_header *) path->buf;
+		eh->eh_entries = ext2fs_cpu_to_le16(path->entries);
+		if ((path->entries == 0) && (handle->level == 0))
+			eh->eh_depth = handle->max_depth = 0;
+		retval = update_path(handle);
+	}
 	return retval;
 }
 

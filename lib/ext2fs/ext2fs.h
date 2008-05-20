@@ -336,6 +336,11 @@ typedef struct ext2_extent_path *ext2_extent_path_t;
 #define EXT2_EXTENT_INSERT_NOSPLIT	0x0002 /* insert may not cause split */
 
 /*
+ * Flags used by ext2fs_extent_delete()
+ */
+#define EXT2_EXTENT_DELETE_KEEP_EMPTY	0x001 /* keep node if last extnt gone */
+
+/*
  * Flags used by ext2fs_extent_set_bmap()
  */
 #define EXT2_EXTENT_SET_BMAP_UNINIT	0x0001
