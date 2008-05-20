@@ -332,8 +332,8 @@ typedef struct ext2_extent_path *ext2_extent_path_t;
 /*
  * Flags used by ext2fs_extent_insert()
  */
-
-#define EXT2_EXTENT_INSERT_AFTER  0x0001
+#define EXT2_EXTENT_INSERT_AFTER	0x0001 /* insert after handle loc'n */
+#define EXT2_EXTENT_INSERT_NOSPLIT	0x0002 /* insert may not cause split */
 
 /*
  * Data structure returned by ext2fs_extent_get_info()

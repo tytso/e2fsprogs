@@ -942,8 +942,17 @@ errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
 
 	path = handle->path + handle->level;
 
-	if (path->entries >= path->max_entries)
-		return EXT2_ET_CANT_INSERT_EXTENT;
+	if (path->entries >= path->max_entries) {
+		if (flags & EXT2_EXTENT_INSERT_NOSPLIT) {
+			return EXT2_ET_CANT_INSERT_EXTENT;
+		} else {
+			dbg_printf("node full - splitting\n");
+			retval = extent_node_split(handle, 0);
+			if (retval)
+				goto errout;
+			path = handle->path + handle->level;
+		}
+	}
 
 	eh = (struct ext3_extent_header *) path->buf;
 	if (path->curr) {
@@ -1313,7 +1322,7 @@ void do_insert_node(int argc, char *argv[])
 	}
 
 	if (argc != 4) {
-		fprintf(stderr, "usage: %s <lblk> <len> <pblk>\n", cmd);
+		fprintf(stderr, "usage: %s [--after] <lblk> <len> <pblk>\n", cmd);
 		return;
 	}
 
