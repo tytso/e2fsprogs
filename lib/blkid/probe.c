@@ -1214,33 +1214,39 @@ blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 	now = time(0);
 	diff = now - dev->bid_time;
 
-	if ((now > dev->bid_time) && (diff > 0) && 
+	if (stat(dev->bid_name, &st) < 0) {
+		DBG(DEBUG_PROBE,
+		    printf("blkid_verify: error %s (%d) while "
+			   "trying to stat %s\n", strerror(errno), errno,
+			   dev->bid_name));
+	open_err:
+		if ((errno == EPERM) || (errno == EACCES) || (errno == ENOENT)) {
+			/* We don't have read permission, just return cache data. */
+			DBG(DEBUG_PROBE, printf("returning unverified data for %s\n",
+						dev->bid_name));
+			return dev;
+		}
+		blkid_free_dev(dev);
+		return NULL;
+	}
+
+	if ((now >= dev->bid_time) &&
+	    (st.st_mtime <= dev->bid_time) &&
 	    ((diff < BLKID_PROBE_MIN) || 
 	     (dev->bid_flags & BLKID_BID_FL_VERIFIED &&
 	      diff < BLKID_PROBE_INTERVAL)))
 		return dev;
 
 	DBG(DEBUG_PROBE,
-	    printf("need to revalidate %s (time since last check %llu)\n", 
-		   dev->bid_name, (unsigned long long)diff));
+	    printf("need to revalidate %s (cache time %d, stat time %d,\n\t"
+		   "time since last check %lu)\n",
+		   dev->bid_name, dev->bid_time, st.st_mtime, (unsigned long)diff));
 
-	if (((probe.fd = open(dev->bid_name, O_RDONLY)) < 0) ||
-	    (fstat(probe.fd, &st) < 0)) {
-		if (probe.fd >= 0) close(probe.fd);
-		if ((errno != EPERM) && (errno != EACCES) &&
-		    (errno != ENOENT)) {
-			DBG(DEBUG_PROBE, 
-			    printf("blkid_verify: error %s (%d) while "
-				   "opening %s\n", strerror(errno), errno, 
-				   dev->bid_name));
-			blkid_free_dev(dev);
-			return NULL;
-		}
-		/* We don't have read permission, just return cache data. */
-		DBG(DEBUG_PROBE,
-		    printf("returning unverified data for %s\n",
-			   dev->bid_name));
-		return dev;
+	if ((probe.fd = open(dev->bid_name, O_RDONLY)) < 0) {
+		DBG(DEBUG_PROBE, printf("blkid_verify: error %s (%d) while "
+					"opening %s\n", strerror(errno), errno, 
+					dev->bid_name));
+		goto open_err;
 	}
 
 	probe.cache = cache;
