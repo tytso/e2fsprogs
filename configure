@@ -12576,15 +12576,6 @@ _ACEOF
 
 fi
 
-if test "$cross_compiling" = yes -a "$ac_cv_sizeof_long" = ""; then
-  # if cross-compiling, with no cached values, just assume something common.
-  ac_cv_sizeof_short=2
-  ac_cv_sizeof_int=4
-  ac_cv_sizeof_long=4
-  ac_cv_sizeof_long_long=8
-  { echo "$as_me:$LINENO: WARNING: Cross-compiling, so cannot check type sizes; assuming short=2, int=4, long=4, long long=8" >&5
-echo "$as_me: WARNING: Cross-compiling, so cannot check type sizes; assuming short=2, int=4, long=4, long long=8" >&2;}
-fi
 { echo "$as_me:$LINENO: checking for short" >&5
 echo $ECHO_N "checking for short... $ECHO_C" >&6; }
 if test "${ac_cv_type_short+set}" = set; then
