@@ -336,6 +336,11 @@ typedef struct ext2_extent_path *ext2_extent_path_t;
 #define EXT2_EXTENT_INSERT_NOSPLIT	0x0002 /* insert may not cause split */
 
 /*
+ * Flags used by ext2fs_extent_set_bmap()
+ */
+#define EXT2_EXTENT_SET_BMAP_UNINIT	0x0001
+
+/*
  * Data structure returned by ext2fs_extent_get_info()
  */
 struct ext2_extent_info {
@@ -814,6 +819,9 @@ extern errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle, int flags,
 				       struct ext2fs_extent *extent);
 extern errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
 				      struct ext2fs_extent *extent);
+extern errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
+					blk64_t logical, blk64_t physical,
+					int flags);
 extern errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags);
 extern errcode_t ext2fs_extent_get_info(ext2_extent_handle_t handle,
 					struct ext2_extent_info *info);

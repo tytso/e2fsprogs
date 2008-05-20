@@ -55,6 +55,9 @@ request do_insert_node, "Insert node",
 request do_split_node, "Split node",
 	split_node, split;
 
+request do_set_bmap, "Set block mapping",
+	set_bmap;
+
 request do_replace_node, "Insert node",
 	replace_node, replace;
 

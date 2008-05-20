@@ -651,6 +651,64 @@ errcode_t ext2fs_extent_goto(ext2_extent_handle_t handle,
 	return extent_goto(handle, 0, blk);
 }
 
+/*
+ * Traverse back up to root fixing parents of current node as needed.
+ *
+ * If we changed start of first entry in a node, fix parent index start
+ * and so on.
+ *
+ * Safe to call for any position in node; if not at the first entry,
+ * will  simply return.
+ */
+static errcode_t ext2fs_extent_fix_parents(ext2_extent_handle_t handle)
+{
+	int				retval = 0;
+	blk64_t				start;
+	struct extent_path		*path;
+	struct ext2fs_extent		extent;
+
+	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EXTENT_HANDLE);
+
+	if (!(handle->fs->flags & EXT2_FLAG_RW))
+		return EXT2_ET_RO_FILSYS;
+
+	if (!handle->path)
+		return EXT2_ET_NO_CURRENT_NODE;
+
+	path = handle->path + handle->level;
+	if (!path->curr)
+		return EXT2_ET_NO_CURRENT_NODE;
+
+	retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT, &extent);
+	if (retval)
+		goto done;
+
+	/* modified node's start block */
+	start = extent.e_lblk;
+
+	/* traverse up until index not first, or startblk matches, or top */
+	while (handle->level > 0 &&
+	       (path->left == path->entries - 1)) {
+		retval = ext2fs_extent_get(handle, EXT2_EXTENT_UP, &extent);
+		if (retval)
+			goto done;
+		if (extent.e_lblk == start)
+			break;
+		path = handle->path + handle->level;
+		extent.e_len += (extent.e_lblk - start);
+		extent.e_lblk = start;
+		retval = ext2fs_extent_replace(handle, 0, &extent);
+		if (retval)
+			goto done;
+		update_path(handle);
+	}
+
+	/* put handle back to where we started */
+	retval = ext2fs_extent_goto(handle, start);
+done:
+	return retval;
+}
+
 errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle, 
 				int flags EXT2FS_ATTR((unused)),
 				struct ext2fs_extent *extent)
@@ -990,6 +1048,219 @@ errout:
 	return retval;
 }
 
+/*
+ * Sets the physical block for a logical file block in the extent tree.
+ *
+ * May: map unmapped, unmap mapped, or remap mapped blocks.
+ *
+ * Mapping an unmapped block adds a single-block extent.
+ *
+ * Unmapping first or last block modifies extent in-place
+ *  - But may need to fix parent's starts too in first-block case
+ *
+ * Mapping any unmapped block requires adding a (single-block) extent
+ * and inserting into proper point in tree.
+ *
+ * Modifying (unmapping or remapping) a block in the middle
+ * of an extent requires splitting the extent.
+ *  - Remapping case requires new single-block extent.
+ *
+ * Remapping first or last block adds an extent.
+ *
+ * We really need extent adding to be smart about merging.
+ */
+
+errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
+				 blk64_t logical, blk64_t physical, int flags)
+{
+	errcode_t		ec, retval = 0;
+	int			mapped = 1; /* logical is mapped? */
+	int			orig_height;
+	int			extent_uninit = 0;
+	int			new_uninit = 0;
+	int			max_len = EXT_INIT_MAX_LEN;
+	blk64_t			orig_lblk;
+	struct extent_path	*path;
+	struct ext2fs_extent	extent;
+	struct ext2fs_extent	newextent;
+	struct ext2_extent_info	info;
+
+	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EXTENT_HANDLE);
+
+	if (!(handle->fs->flags & EXT2_FLAG_RW))
+		return EXT2_ET_RO_FILSYS;
+
+	if (!handle->path)
+		return EXT2_ET_NO_CURRENT_NODE;
+
+	path = handle->path + handle->level;
+
+	if (flags & EXT2_EXTENT_SET_BMAP_UNINIT) {
+		new_uninit = 1;
+		max_len = EXT_UNINIT_MAX_LEN;
+	}
+
+	/* if (re)mapping, set up new extent to insert */
+	if (physical) {
+		newextent.e_len = 1;
+		newextent.e_pblk = physical;
+		newextent.e_lblk = logical;
+		newextent.e_flags = EXT2_EXTENT_FLAGS_LEAF;
+		if (new_uninit)
+			newextent.e_flags |= EXT2_EXTENT_FLAGS_UNINIT;
+	}
+
+	/* special case if the extent tree is completely empty */
+	if ((handle->max_depth == 0) && (path->entries == 0)) {
+		retval = ext2fs_extent_insert(handle, 0, &newextent);
+		goto done;
+	}
+
+	/* save our original location in the extent tree */
+	if ((retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT,
+					&extent))) {
+		if (retval != EXT2_ET_NO_CURRENT_NODE)
+			return retval;
+		memset(&extent, 0, sizeof(extent));
+	}
+	if ((retval = ext2fs_extent_get_info(handle, &info)))
+		return retval;
+	orig_height = info.max_depth - info.curr_level;
+	orig_lblk = extent.e_lblk;
+
+	/* go to the logical spot we want to (re/un)map */
+	retval = ext2fs_extent_goto(handle, logical);
+	if (retval) {
+		if (retval == EXT2_ET_EXTENT_NOT_FOUND) {
+			retval = 0;
+			mapped = 0;
+			if (!physical) {
+				dbg_printf("block already unmapped\n");
+				goto done;
+			}
+		} else
+			goto done;
+	}
+
+	/*
+	 * This may be the extent *before* the requested logical,
+	 * if it's currently unmapped.
+	 */
+	retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT, &extent);
+	if (retval)
+		goto done;
+	if (extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT)
+		extent_uninit = 1;
+
+	/* check if already pointing to the requested physical */
+	if (mapped && (new_uninit == extent_uninit) &&
+	    (extent.e_pblk + (logical - extent.e_lblk) == physical)) {
+		dbg_printf("physical block unchanged\n");
+		goto done;
+	}
+
+	if (!mapped) {
+		dbg_printf("mapping unmapped logical block\n");
+		if ((logical == extent.e_lblk + extent.e_len) &&
+		    (physical == extent.e_pblk + extent.e_len) &&
+		    (new_uninit == extent_uninit) &&
+		    (extent.e_len < max_len-1)) {
+			extent.e_len++;
+			retval = ext2fs_extent_replace(handle, 0, &extent);
+		} else
+			retval = ext2fs_extent_insert(handle,
+				      EXT2_EXTENT_INSERT_AFTER, &newextent);
+		if (retval)
+			goto done;
+		retval = ext2fs_extent_fix_parents(handle);
+		if (retval)
+			goto done;
+	} else if ((logical == extent.e_lblk) && (extent.e_len == 1))  {
+		dbg_printf("(re/un)mapping only block in extent\n");
+		if (physical) {
+			extent.e_pblk = physical;
+			retval = ext2fs_extent_replace(handle, 0, &extent);
+		} else {
+			retval = ext2fs_extent_delete(handle, 0);
+			if (retval)
+				goto done;
+			ec = ext2fs_extent_fix_parents(handle);
+			if (ec != EXT2_ET_NO_CURRENT_NODE)
+				retval = ec;
+		}
+
+		if (retval)
+			goto done;
+	} else if (logical == extent.e_lblk + extent.e_len - 1)  {
+		dbg_printf("(re/un)mapping last block in extent\n");
+		extent.e_len--;
+		retval = ext2fs_extent_replace(handle, 0, &extent);
+		if (retval)
+			goto done;
+		if (physical) {
+			retval = ext2fs_extent_insert(handle,
+					EXT2_EXTENT_INSERT_AFTER, &newextent);
+			if (retval)
+				goto done;
+		}
+	} else if (logical == extent.e_lblk) {
+		dbg_printf("(re/un)mapping first block in extent\n");
+		extent.e_pblk++;
+		extent.e_lblk++;
+		extent.e_len--;
+		retval = ext2fs_extent_replace(handle, 0, &extent);
+		if (retval)
+			goto done;
+		if (physical) {
+			/* insert new extent ahead of current */
+			retval = ext2fs_extent_insert(handle,
+					0, &newextent);
+			if (retval)
+				goto done;
+		} else {
+			retval = ext2fs_extent_fix_parents(handle);
+			if (retval)
+				goto done;
+		}
+	} else {
+		__u32	orig_length;
+
+		dbg_printf("(re/un)mapping in middle of extent\n");
+		/* need to split this extent; later */
+
+		orig_length = extent.e_len;
+
+		/* shorten pre-split extent */
+		extent.e_len = (logical - extent.e_lblk);
+		retval = ext2fs_extent_replace(handle, 0, &extent);
+		if (retval)
+			goto done;
+		/* insert our new extent, if any */
+		if (physical) {
+			/* insert new extent after current */
+			retval = ext2fs_extent_insert(handle,
+					EXT2_EXTENT_INSERT_AFTER, &newextent);
+			if (retval)
+				goto done;
+		}
+		/* add post-split extent */
+		extent.e_pblk += extent.e_len + 1;
+		extent.e_lblk += extent.e_len + 1;
+		extent.e_len = orig_length - extent.e_len - 1;
+		retval = ext2fs_extent_insert(handle,
+				EXT2_EXTENT_INSERT_AFTER, &extent);
+		if (retval)
+			goto done;
+	}
+
+done:
+	/* get handle back to its position */
+	if (orig_height > handle->max_depth)
+		orig_height = handle->max_depth; /* In case we shortened the tree */
+	extent_goto(handle, orig_height, orig_lblk);
+	return retval;
+}
+
 errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, 
 			       int flags EXT2FS_ATTR((unused)))
 {
@@ -1078,6 +1349,21 @@ ss_request_table *extra_cmds = &extent_cmds;
 
 ext2_ino_t	current_ino = 0;
 ext2_extent_handle_t current_handle;
+
+int common_extent_args_process(int argc, char *argv[], int min_argc,
+			       int max_argc, const char *cmd,
+			       const char *usage, int flags)
+{
+	if (common_args_process(argc, argv, min_argc, max_argc, cmd,
+				usage, flags))
+		return 1;
+	
+	if (!current_handle) {
+		com_err(cmd, 0, "Extent handle not open");
+		return 1;
+	}
+	return 0;
+}
 
 void do_inode(int argc, char *argv[])
 {
@@ -1207,7 +1493,8 @@ void do_delete_node(int argc, char *argv[])
 	errcode_t	retval;
 	int		err;
 
-	if (check_fs_read_write(argv[0]))
+	if (common_extent_args_process(argc, argv, 1, 1, "delete_node",
+				       "", CHECK_FS_RW | CHECK_FS_BITMAPS))
 		return;
 
 	retval = ext2fs_extent_delete(current_handle, 0);
@@ -1221,11 +1508,13 @@ void do_delete_node(int argc, char *argv[])
 
 void do_replace_node(int argc, char *argv[])
 {
+	const char	*usage = "[--uninit] <lblk> <len> <pblk>";
 	errcode_t	retval;
 	struct ext2fs_extent extent;
 	int err;
 
-	if (check_fs_read_write(argv[0]))
+	if (common_extent_args_process(argc, argv, 3, 5, "replace_node",
+				       usage, CHECK_FS_RW | CHECK_FS_BITMAPS))
 		return;
 
 	extent.e_flags = 0;
@@ -1237,22 +1526,19 @@ void do_replace_node(int argc, char *argv[])
 	}
 
 	if (argc != 4) {
-		fprintf(stderr, "usage: %s <lblk> <len> <pblk>\n", argv[0]);
+		fprintf(stderr, "Usage: %s %s\n", argv[0], usage);
 		return;
 	}
 
-	extent.e_lblk = parse_ulong(argv[1], argv[0],
-				    "logical block", &err);
+	extent.e_lblk = parse_ulong(argv[1], argv[0], "logical block", &err);
 	if (err)
 		return;
 
-	extent.e_len = parse_ulong(argv[2], argv[0],
-				    "logical block", &err);
+	extent.e_len = parse_ulong(argv[2], argv[0], "logical block", &err);
 	if (err)
 		return;
 
-	extent.e_pblk = parse_ulong(argv[3], argv[0],
-				    "logical block", &err);
+	extent.e_pblk = parse_ulong(argv[3], argv[0], "logical block", &err);
 	if (err)
 		return;
 
@@ -1271,16 +1557,9 @@ void do_split_node(int argc, char *argv[])
 	int err;
 	int flags = 0;
 
-	if (check_fs_open(argv[0]))
+	if (common_extent_args_process(argc, argv, 1, 1, "split_node",
+				       "", CHECK_FS_RW | CHECK_FS_BITMAPS))
 		return;
-
-	if (check_fs_read_write(argv[0]))
-		return;
-
-	if (!current_handle) {
-		com_err(argv[0], 0, "Extent handle not open");
-		return;
-	}
 
 	retval = extent_node_split(current_handle, flags);
 	if (retval) {
@@ -1292,13 +1571,15 @@ void do_split_node(int argc, char *argv[])
 
 void do_insert_node(int argc, char *argv[])
 {
+	const char	*usage = "[--after] [--uninit] <lblk> <len> <pblk>";
 	errcode_t	retval;
 	struct ext2fs_extent extent;
 	char *cmd;
 	int err;
 	int flags = 0;
 
-	if (check_fs_read_write(argv[0]))
+	if (common_extent_args_process(argc, argv, 3, 6, "insert_node",
+				       usage, CHECK_FS_RW | CHECK_FS_BITMAPS))
 		return;
 
 	cmd = argv[0];
@@ -1322,7 +1603,7 @@ void do_insert_node(int argc, char *argv[])
 	}
 
 	if (argc != 4) {
-		fprintf(stderr, "usage: %s [--after] <lblk> <len> <pblk>\n", cmd);
+		fprintf(stderr, "usage: %s %s\n", cmd, usage);
 		return;
 	}
 
@@ -1349,8 +1630,54 @@ void do_insert_node(int argc, char *argv[])
 	do_current_node(argc, argv);
 }
 
+void do_set_bmap(int argc, char **argv)
+{
+	const char	*usage = "[--uninit] <lblk> <pblk>";
+	errcode_t	retval;
+	blk_t		logical;
+	blk_t		physical;
+	char		*cmd = argv[0];
+	int		flags = 0;
+	int		err;
+
+	if (common_extent_args_process(argc, argv, 3, 5, "set_bmap",
+				       usage, CHECK_FS_RW | CHECK_FS_BITMAPS))
+		return;
+
+	if (argc > 2 && !strcmp(argv[1], "--uninit")) {
+		argc--;
+		argv++;
+		flags |= EXT2_EXTENT_SET_BMAP_UNINIT;
+	}
+
+	if (argc != 3) {
+		fprintf(stderr, "Usage: %s %s\n", cmd, usage);
+		return;
+	}
+
+	logical = parse_ulong(argv[1], cmd,
+				    "logical block", &err);
+	if (err)
+		return;
+
+	physical = parse_ulong(argv[2], cmd,
+				    "physical block", &err);
+	if (err)
+		return;
+
+	retval = ext2fs_extent_set_bmap(current_handle, logical,
+					(blk64_t) physical, flags);
+	if (retval) {
+		com_err(cmd, retval, 0);
+		return;
+	}
+	if (current_handle->path && current_handle->path[0].curr)
+		do_current_node(argc, argv);
+}
+
 void do_print_all(int argc, char **argv)
 {
+	const char	*usage = "[--leaf-only|--reverse|--reverse-leaf]";
 	struct ext2fs_extent	extent;
 	errcode_t		retval;
 	errcode_t		end_err = EXT2_ET_EXTENT_NO_NEXT;
@@ -1358,21 +1685,9 @@ void do_print_all(int argc, char **argv)
 	int			first_op = EXT2_EXTENT_ROOT;
 
 
-	if (check_fs_open(argv[0]))
+	if (common_extent_args_process(argc, argv, 1, 2, "print_all",
+				       usage, 0))
 		return;
-
-	if (!current_handle) {
-		com_err(argv[0], 0, "Extent handle not open");
-		return;
-	}
-
-	if (argc > 2) {
-	print_usage:
-		fprintf(stderr,
-			"Usage: %s [--leaf-only|--reverse|--reverse-leaf]\n",
-			argv[0]);
-		return;
-	}
 
 	if (argc == 2) {
 		if (!strcmp(argv[1], "--leaf-only"))
@@ -1385,8 +1700,10 @@ void do_print_all(int argc, char **argv)
 			op = EXT2_EXTENT_PREV_LEAF;
 			first_op = EXT2_EXTENT_LAST_LEAF;
 			end_err = EXT2_ET_EXTENT_NO_PREV;
-		} else
-			  goto print_usage;
+		} else {
+			fprintf(stderr, "Usage: %s %s\n", argv[0], usage);
+			return;
+		}
 	}
 
 	retval = ext2fs_extent_get(current_handle, first_op, &extent);
@@ -1415,13 +1732,8 @@ void do_info(int argc, char **argv)
 	struct ext2_extent_info	info;
 	errcode_t		retval;
 
-	if (check_fs_open(argv[0]))
+	if (common_extent_args_process(argc, argv, 1, 1, "info", "", 0))
 		return;
-
-	if (!current_handle) {
-		com_err(argv[0], 0, "Extent handle not open");
-		return;
-	}
 
 	retval = ext2fs_extent_get_info(current_handle, &info);
 	if (retval) {
@@ -1455,18 +1767,9 @@ void do_goto_block(int argc, char **argv)
 	blk_t			blk;
 	int			level = 0;
 
-	if (check_fs_open(argv[0]))
+	if (common_extent_args_process(argc, argv, 2, 3, "goto_block",
+				       "block [level]", 0))
 		return;
-
-	if (!current_handle) {
-		com_err(argv[0], 0, "Extent handle not open");
-		return;
-	}
-
-	if (argc < 2 || argc > 3) {
-		fprintf(stderr, "%s block [level]\n", argv[0]);
-		return;
-	}
 
 	if (strtoblk(argv[0], argv[1], &blk))
 		return;
