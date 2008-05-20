@@ -59,6 +59,10 @@ typedef struct {
 #define kmalloc(len,flags) malloc(len)
 #define kfree(p) free(p)
 
+#define cond_resched()	do { } while (0)
+
+typedef unsigned int __be32;
+
 /*
  * We use the standard libext2fs portability tricks for inline
  * functions.  
