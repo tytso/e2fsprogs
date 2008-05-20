@@ -401,6 +401,9 @@ ec	EXT2_ET_OP_NOT_SUPPORTED,
 ec	EXT2_ET_CANT_INSERT_EXTENT,
 	"No room to insert extent in node"
 
+ec	EXT2_ET_CANT_SPLIT_EXTENT,
+	"Splitting would result in empty node"
+
 ec	EXT2_ET_EXTENT_NOT_FOUND,
 	"Extent not found"
 

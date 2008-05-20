@@ -52,6 +52,9 @@ request do_delete_node, "Delete node",
 request do_insert_node, "Insert node",
 	insert_node, insert;
 
+request do_split_node, "Split node",
+	split_node, split;
+
 request do_replace_node, "Insert node",
 	replace_node, replace;
 

@@ -699,6 +699,231 @@ errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle,
 	return 0;
 }
 
+/*
+ * allocate a new block, move half the current node to it, and update parent
+ *
+ * handle will be left pointing at original record.
+ */
+static errcode_t extent_node_split(ext2_extent_handle_t handle, int flags)
+{
+	errcode_t			retval = 0;
+	blk_t				new_node_pblk;
+	blk64_t				new_node_start;
+	blk64_t				orig_lblk;
+	blk64_t				goal_blk = 0;
+	int				orig_height;
+	char				*block_buf = NULL;
+	struct ext2fs_extent		extent;
+	struct extent_path		*path, *newpath = 0;
+	struct ext3_extent		*ex;
+	struct ext3_extent_header	*eh, *neweh;
+	char				*cp;
+	int				tocopy;
+	int				new_root = 0;
+	struct ext2_extent_info		info;
+
+	/* basic sanity */
+	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EXTENT_HANDLE);
+
+	if (!(handle->fs->flags & EXT2_FLAG_RW))
+		return EXT2_ET_RO_FILSYS;
+
+	if (!handle->path)
+		return EXT2_ET_NO_CURRENT_NODE;
+
+	dbg_printf("splitting node at level %d\n", handle->level);
+
+	retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT, &extent);
+	if (retval)
+		goto done;
+
+	retval = ext2fs_extent_get_info(handle, &info);
+	if (retval)
+		goto done;
+
+	/* save the position we were originally splitting... */
+	orig_height = info.max_depth - info.curr_level;
+	orig_lblk = extent.e_lblk;
+
+	/* Is there room in the parent for a new entry? */
+	if (handle->level &&
+			(handle->path[handle->level - 1].entries >=
+			 handle->path[handle->level - 1].max_entries)) {
+
+		dbg_printf("parent level %d full; splitting it too\n",
+							handle->level - 1);
+		/* split the parent */
+		retval = ext2fs_extent_get(handle, EXT2_EXTENT_UP, &extent);
+		if (retval)
+			goto done;
+		goal_blk = extent.e_pblk;
+
+		retval = extent_node_split(handle, 0);
+		if (retval)
+			goto done;
+
+		/* get handle back to our original split position */
+		retval = extent_goto(handle, orig_height, orig_lblk);
+		if (retval)
+			goto done;
+	}
+
+	/* At this point, parent should have room for this split */
+	path = handle->path + handle->level;
+	if (!path->curr)
+		return EXT2_ET_NO_CURRENT_NODE;
+
+	/* extent header of the current node we'll split */
+	eh = (struct ext3_extent_header *)path->buf;
+
+	/* splitting root level means moving them all out */
+	if (handle->level == 0) {
+		new_root = 1;
+		tocopy = ext2fs_le16_to_cpu(eh->eh_entries);
+		retval = ext2fs_get_mem(((handle->max_depth+2) *
+					 sizeof(struct extent_path)),
+					&newpath);
+		if (retval)
+			goto done;
+		memset(newpath, 0,
+		       ((handle->max_depth+2) * sizeof(struct extent_path)));
+	} else {
+		tocopy = ext2fs_le16_to_cpu(eh->eh_entries) / 2;
+	}
+
+	dbg_printf("will copy out %d of %d entries at level %d\n",
+				tocopy, ext2fs_le16_to_cpu(eh->eh_entries),
+				handle->level);
+
+	if (!tocopy) {
+		dbg_printf("Nothing to copy to new block!\n");
+		retval = EXT2_ET_CANT_SPLIT_EXTENT;
+		goto done;
+	}
+
+	/* first we need a new block, or can do nothing. */
+	block_buf = malloc(handle->fs->blocksize);
+	if (!block_buf) {
+		retval = ENOMEM;
+		goto done;
+	}
+
+	if (!goal_blk) {
+		dgrp_t	group = ext2fs_group_of_ino(handle->fs, handle->ino);
+		__u8	log_flex = handle->fs->super->s_log_groups_per_flex;
+
+		if (log_flex)
+			group = group & ~((1 << (log_flex)) - 1);
+		goal_blk = (group * handle->fs->super->s_blocks_per_group) +
+			handle->fs->super->s_first_data_block;
+	}
+	retval = ext2fs_alloc_block(handle->fs, (blk_t) goal_blk, block_buf,
+				    &new_node_pblk);
+	if (retval)
+		goto done;
+
+	dbg_printf("will copy to new node at block %lu\n", new_node_pblk);
+
+	/* Copy data into new block buffer */
+	/* First the header for the new block... */
+	neweh = (struct ext3_extent_header *) block_buf;
+	memcpy(neweh, eh, sizeof(struct ext3_extent_header));
+	neweh->eh_entries = ext2fs_cpu_to_le16(tocopy);
+	neweh->eh_max = ext2fs_cpu_to_le16((handle->fs->blocksize -
+			 sizeof(struct ext3_extent_header)) /
+				sizeof(struct ext3_extent));
+
+	/* then the entries for the new block... */
+	memcpy(EXT_FIRST_INDEX(neweh),
+		EXT_FIRST_INDEX(eh) +
+			(ext2fs_le16_to_cpu(eh->eh_entries) - tocopy),
+		sizeof(struct ext3_extent_idx) * tocopy);
+
+	new_node_start = ext2fs_le32_to_cpu(EXT_FIRST_INDEX(neweh)->ei_block);
+
+	/* ...and write the new node block out to disk. */
+	retval = io_channel_write_blk(handle->fs->io, new_node_pblk, 1, block_buf);
+
+	if (retval)
+		goto done;
+
+	/* OK! we've created the new node; now adjust the tree */
+
+	/* current path now has fewer active entries, we copied some out */
+	if (handle->level == 0) {
+		memcpy(newpath, path,
+		       sizeof(struct extent_path) * (handle->max_depth+1));
+		handle->path = newpath;
+		newpath = path;
+		path = handle->path;
+		path->entries = 1;
+		path->left = path->max_entries - 1;
+		handle->max_depth++;
+		eh->eh_depth = ext2fs_cpu_to_le16(handle->max_depth);
+	} else {
+		path->entries -= tocopy;
+		path->left -= tocopy;
+	}
+
+	eh->eh_entries = ext2fs_cpu_to_le16(path->entries);
+	/* this writes out the node, incl. the modified header */
+	retval = update_path(handle);
+	if (retval)
+		goto done;
+
+	/* now go up and insert/replace index for new node we created */
+	if (new_root) {
+		retval = ext2fs_extent_get(handle, EXT2_EXTENT_FIRST_SIB, &extent);
+		if (retval)
+			goto done;
+
+		extent.e_lblk = new_node_start;
+		extent.e_pblk = new_node_pblk;
+		extent.e_len = handle->path[0].end_blk - extent.e_lblk;
+		retval = ext2fs_extent_replace(handle, 0, &extent);
+		if (retval)
+			goto done;
+	} else {
+		__u32 new_node_length;
+
+		retval = ext2fs_extent_get(handle, EXT2_EXTENT_UP, &extent);
+		/* will insert after this one; it's length is shorter now */
+		new_node_length = new_node_start - extent.e_lblk;
+		extent.e_len -= new_node_length;
+		retval = ext2fs_extent_replace(handle, 0, &extent);
+		if (retval)
+			goto done;
+
+		/* now set up the new extent and insert it */
+		extent.e_lblk = new_node_start;
+		extent.e_pblk = new_node_pblk;
+		extent.e_len = new_node_length;
+		retval = ext2fs_extent_insert(handle, EXT2_EXTENT_INSERT_AFTER, &extent);
+		if (retval)
+			goto done;
+	}
+
+	/* get handle back to our original position */
+	retval = extent_goto(handle, orig_height, orig_lblk);
+	if (retval)
+		goto done;
+
+	/* new node hooked in, so update inode block count (do this here?) */
+	handle->inode->i_blocks += handle->fs->blocksize / 512;
+	retval = ext2fs_write_inode_full(handle->fs, handle->ino,
+		handle->inode, EXT2_INODE_SIZE(handle->fs->super));
+	if (retval)
+		goto done;
+
+done:
+	if (newpath)
+		ext2fs_free_mem(&newpath);
+	if (block_buf)
+		free(block_buf);
+
+	return retval;
+}
+
 errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
 				      struct ext2fs_extent *extent)
 {
@@ -1023,6 +1248,32 @@ void do_replace_node(int argc, char *argv[])
 		return;
 
 	retval = ext2fs_extent_replace(current_handle, 0, &extent);
+	if (retval) {
+		com_err(argv[0], retval, 0);
+		return;
+	}
+	do_current_node(argc, argv);
+}
+
+void do_split_node(int argc, char *argv[])
+{
+	errcode_t	retval;
+	struct ext2fs_extent extent;
+	int err;
+	int flags = 0;
+
+	if (check_fs_open(argv[0]))
+		return;
+
+	if (check_fs_read_write(argv[0]))
+		return;
+
+	if (!current_handle) {
+		com_err(argv[0], 0, "Extent handle not open");
+		return;
+	}
+
+	retval = extent_node_split(current_handle, flags);
 	if (retval) {
 		com_err(argv[0], retval, 0);
 		return;
