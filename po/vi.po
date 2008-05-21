@@ -113,7 +113,8 @@ msgstr "trong khi cập nhật nút thông tin khối hỏng"
 #: e2fsck/badblocks.c:130
 #, c-format
 msgid "Warning: illegal block %u found in bad block inode.  Cleared.\n"
-msgstr "Cảnh báo : tìm thấy khối cấm %u trong nút thông tin khối hỏng nên bị xoá.\n"
+msgstr ""
+"Cảnh báo : tìm thấy khối cấm %u trong nút thông tin khối hỏng nên bị xoá.\n"
 
 #: e2fsck/ehandler.c:53
 #, c-format
@@ -879,11 +880,13 @@ msgstr "@j bên ngoài không hỗ trợ @f này\n"
 #: e2fsck/problem.c:212
 msgid ""
 "Ext3 @j @S is unknown type %N (unsupported).\n"
-"It is likely that your copy of e2fsck is old and/or doesn't support this @j format.\n"
+"It is likely that your copy of e2fsck is old and/or doesn't support this @j "
+"format.\n"
 "It is also possible the @j @S is corrupt.\n"
 msgstr ""
 "@S @j ext3 có kiểu lạ %N (không được hỗ trợ).\n"
-"Rất có thể là bạn có một bản sao e2fsck cũ mà/hay không hỗ trợ định dạng @j này.\n"
+"Rất có thể là bạn có một bản sao e2fsck cũ mà/hay không hỗ trợ định dạng @j "
+"này.\n"
 "It is also possible the @S @j is corrupt.\n"
 
 #. @-expanded: Ext3 journal superblock is corrupt.\n
@@ -1221,7 +1224,8 @@ msgstr "@S chính (%b) nằm trên danh sách các @b sai.\n"
 #. @-expanded: Block %b in the primary group descriptors is on the bad block list\n
 #: e2fsck/problem.c:490
 msgid "Block %b in the primary @g descriptors is on the bad @b list\n"
-msgstr "Khối %b trong những mô tả @g chính có nằm trong danh sách các @b sai.\n"
+msgstr ""
+"Khối %b trong những mô tả @g chính có nằm trong danh sách các @b sai.\n"
 
 #. @-expanded: Warning: Group %g's superblock (%b) is bad.\n
 #: e2fsck/problem.c:496
@@ -1236,7 +1240,8 @@ msgstr "Cảnh báo : bản sao các mô tả @g của nhóm %g có một @b sai
 #. @-expanded: Programming error?  block #%b claimed for no reason in process_bad_block.\n
 #: e2fsck/problem.c:507
 msgid "Programming error?  @b #%b claimed for no reason in process_bad_@b.\n"
-msgstr "Lỗi lập trình ? @b %b được tuyên bố, không có lý do, trong process_bad_@b\n"
+msgstr ""
+"Lỗi lập trình ? @b %b được tuyên bố, không có lý do, trong process_bad_@b\n"
 
 #. @-expanded: error allocating %N contiguous block(s) in block group %g for %s: %m\n
 #: e2fsck/problem.c:513
@@ -1746,13 +1751,15 @@ msgstr "@i @d %i có một @b #%B chưa cấp phát."
 #: e2fsck/problem.c:994
 #, c-format
 msgid "'.' @d @e in @d @i %i is not NULL terminated\n"
-msgstr "@e @d « . » trong @i @d %i không được chấm dứt bằng NULL (vô giá trị)\n"
+msgstr ""
+"@e @d « . » trong @i @d %i không được chấm dứt bằng NULL (vô giá trị)\n"
 
 #. @-expanded: '..' directory entry in directory inode %i is not NULL terminated\n
 #: e2fsck/problem.c:999
 #, c-format
 msgid "'..' @d @e in @d @i %i is not NULL terminated\n"
-msgstr "@e @d « .. » trong @i @d %i không được chấm dứt bằng NULL (vô giá trị)\n"
+msgstr ""
+"@e @d « .. » trong @i @d %i không được chấm dứt bằng NULL (vô giá trị)\n"
 
 #. @-expanded: inode %i (%Q) is an illegal character device.\n
 #: e2fsck/problem.c:1004
@@ -2195,8 +2202,12 @@ msgstr "Số đếm các @b rảnh không đúng (%b, đã đếm=%c).\n"
 #. @-expanded: PROGRAMMING ERROR: filesystem (#%N) bitmap endpoints (%b, %c) don't match calculated bitmap 
 #. @-expanded: endpoints (%i, %j)\n
 #: e2fsck/problem.c:1458
-msgid "PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B endpoints (%i, %j)\n"
-msgstr "LỖI LẬP TRÌNH: trong @f (#%N) có các điểm cuối @B (%b, %c) không tương ứng với các điểm cuối @B đã tính (%i, %j)\n"
+msgid ""
+"PROGRAMMING ERROR: @f (#%N) @B endpoints (%b, %c) don't match calculated @B "
+"endpoints (%i, %j)\n"
+msgstr ""
+"LỖI LẬP TRÌNH: trong @f (#%N) có các điểm cuối @B (%b, %c) không tương ứng "
+"với các điểm cuối @B đã tính (%i, %j)\n"
 
 #: e2fsck/problem.c:1464
 msgid "Internal error: fudging end of bitmap (%N)\n"
@@ -2248,13 +2259,15 @@ msgstr "trong khi chạy tiến trình quét nút thông tin"
 #: e2fsck/super.c:187
 #, c-format
 msgid "while calling ext2fs_block_iterate for inode %d"
-msgstr "trong khi gọi hàm lặp lại khối « ext2fs_block_iterate » cho nút thông tin %d"
+msgstr ""
+"trong khi gọi hàm lặp lại khối « ext2fs_block_iterate » cho nút thông tin %d"
 
 #: e2fsck/super.c:210
 #, c-format
 msgid "while calling ext2fs_adjust_ea_refcount for inode %d"
 msgstr ""
-"trong khi gọi hàm điều chỉnh số đếm tham chiếu « ext2fs_adjust_ea_refcount »\n"
+"trong khi gọi hàm điều chỉnh số đếm tham chiếu « ext2fs_adjust_ea_refcount "
+"»\n"
 "cho nút thông tin %d"
 
 #: e2fsck/super.c:268
@@ -2326,7 +2339,8 @@ msgid ""
 " -p                   Automatic repair (no questions)\n"
 " -n                   Make no changes to the filesystem\n"
 " -y                   Assume \"yes\" to all questions\n"
-" -c                   Check for bad blocks and add them to the badblock list\n"
+" -c                   Check for bad blocks and add them to the badblock "
+"list\n"
 " -f                   Force checking even if filesystem is marked clean\n"
 msgstr ""
 "\n"
@@ -2335,7 +2349,8 @@ msgstr ""
 " -n                   Không thay đổi hệ thống tập tin\n"
 " -y                   Giả sử trả lời « Có » mọi câu hỏi\n"
 " -c                   Kiểm tra tìm khối sai: thêm vào danh sách khối sai\n"
-" -f                   Buộc kiểm tra ngay cả khi hệ thống tập tin có nhãn là sạch\n"
+" -f                   Buộc kiểm tra ngay cả khi hệ thống tập tin có nhãn là "
+"sạch\n"
 
 #: e2fsck/unix.c:86
 #, c-format
@@ -2518,7 +2533,8 @@ msgstr "Không cho phép tùy chọn không tương thích khi trao đổi byte.
 #: e2fsck/unix.c:808
 #, c-format
 msgid "The -c and the -l/-L options may not be both used at the same time.\n"
-msgstr "Không cho phép sử dụng đồng thời cả hai tùy chọn « --c » và « --l/L ».\n"
+msgstr ""
+"Không cho phép sử dụng đồng thời cả hai tùy chọn « --c » và « --l/L ».\n"
 
 #: e2fsck/unix.c:856
 #, c-format
@@ -2590,7 +2606,9 @@ msgstr "Phân vùng này có thể có độ dài bằng không ?\n"
 #: e2fsck/unix.c:1021
 #, c-format
 msgid "You must have %s access to the filesystem or be root\n"
-msgstr "Bạn phải có quyền truy cập %s vào hệ thống tập tin, hoặc là người chủ (root)\n"
+msgstr ""
+"Bạn phải có quyền truy cập %s vào hệ thống tập tin, hoặc là người chủ "
+"(root)\n"
 
 #: e2fsck/unix.c:1026
 #, c-format
@@ -2600,7 +2618,8 @@ msgstr "Có thể là thiết bị không tồn tại, hoặc thiết bị trao 
 #: e2fsck/unix.c:1028
 #, c-format
 msgid "Filesystem mounted or opened exclusively by another program?\n"
-msgstr "Hệ thống tập tin đã được gắn kết hay mở hoàn toàn bởi chương trình khác ?\n"
+msgstr ""
+"Hệ thống tập tin đã được gắn kết hay mở hoàn toàn bởi chương trình khác ?\n"
 
 #: e2fsck/unix.c:1032
 #, c-format
@@ -2622,8 +2641,12 @@ msgstr "trong khi kiểm tra nhật ký ext3 tìm %s"
 
 #: e2fsck/unix.c:1128
 #, c-format
-msgid "Warning: skipping journal recovery because doing a read-only filesystem check.\n"
-msgstr "Cảnh báo : đang bỏ qua việc phục hồi nhật ký vì đang kiểm tra hệ thống tập tin một cách chỉ đọc.\n"
+msgid ""
+"Warning: skipping journal recovery because doing a read-only filesystem "
+"check.\n"
+msgstr ""
+"Cảnh báo : đang bỏ qua việc phục hồi nhật ký vì đang kiểm tra hệ thống tập "
+"tin một cách chỉ đọc.\n"
 
 #: e2fsck/unix.c:1141
 #, c-format
@@ -2665,7 +2688,8 @@ msgstr "trong khi đọc nút thông tin khối sai"
 #: e2fsck/unix.c:1263
 #, c-format
 msgid "This doesn't bode well, but we'll try to go on...\n"
-msgstr "Đây không phải báo trước điềm hay, nhưng tiến trình này sẽ thử tiếp tục...\n"
+msgstr ""
+"Đây không phải báo trước điềm hay, nhưng tiến trình này sẽ thử tiếp tục...\n"
 
 #: e2fsck/unix.c:1289
 msgid "Couldn't determine journal size"
@@ -2882,11 +2906,13 @@ msgstr "done                                \n"
 #, c-format
 msgid ""
 "Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n"
-" [-c blocks_at_once] [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n"
+" [-c blocks_at_once] [-p num_passes] [-t test_pattern [-t test_pattern "
+"[...]]]\n"
 " device [last_block [start_block]]\n"
 msgstr ""
 "Cách sử dụng: %s [-b cỡ_khối] [-i tập_tin_nhập] [-o tập_tin_xuất] [-svwnf]\n"
-" [-c các_khối_cùng_lúc] [-p số_lần_qua] [-t mẫu_thử_ra [-t mẫu_thử_ra [...]]]\n"
+" [-c các_khối_cùng_lúc] [-p số_lần_qua] [-t mẫu_thử_ra [-t mẫu_thử_ra "
+"[...]]]\n"
 " thiết_bị [khối_cuối [khối_đầu]]\n"
 
 #: misc/badblocks.c:88
@@ -3015,7 +3041,8 @@ msgstr "mẫu thử (test_pattern) không hợp lệ: %s\n"
 
 #: misc/badblocks.c:961
 msgid "Maximum of one test_pattern may be specified in read-only mode"
-msgstr "Trong chế độ chỉ đọc, có thể xác định tối đa một mẫu thử (test_pattern)"
+msgstr ""
+"Trong chế độ chỉ đọc, có thể xác định tối đa một mẫu thử (test_pattern)"
 
 #: misc/badblocks.c:967
 msgid "Random test_pattern is not allowed in read-only mode"
@@ -3436,8 +3463,12 @@ msgstr "Không thể cấp phát bộ nhớ cho kiểu hế thống tập tin\n"
 
 #: misc/fsck.c:872
 #, c-format
-msgid "%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass number\n"
-msgstr "%s: đang bỏ qua dòng sai trong « /etc/fstab »: đóng kết lắp với số gửi qua fsck khác số không\n"
+msgid ""
+"%s: skipping bad line in /etc/fstab: bind mount with nonzero fsck pass "
+"number\n"
+msgstr ""
+"%s: đang bỏ qua dòng sai trong « /etc/fstab »: đóng kết lắp với số gửi qua "
+"fsck khác số không\n"
 
 #: misc/fsck.c:899
 #, c-format
@@ -3454,7 +3485,8 @@ msgid "--waiting-- (pass %d)\n"
 msgstr "--đang đợi-- (lần qua %d)\n"
 
 #: misc/fsck.c:1066
-msgid "Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
+msgid ""
+"Usage: fsck [-AMNPRTV] [ -C [ fd ] ] [-t fstype] [fs-options] [filesys ...]\n"
 msgstr ""
 "Sử dụng: fsck [-AMNPRTV] [ -C [ fd ] ] [-t kiểu_HTT] [fs-options] [HTT ...]\n"
 "\n"
@@ -3721,7 +3753,8 @@ msgstr "Tham số thay đổi kích cỡ không hợp lệ: %s\n"
 #: misc/mke2fs.c:837
 #, c-format
 msgid "The resize maximum must be greater than the filesystem size.\n"
-msgstr "Số thay đổi kích cỡ tối đa phải lớn hơn kích cỡ của hệ thống tập tin.\n"
+msgstr ""
+"Số thay đổi kích cỡ tối đa phải lớn hơn kích cỡ của hệ thống tập tin.\n"
 
 #: misc/mke2fs.c:861
 #, c-format
@@ -3767,7 +3800,8 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"Cảnh báo : chiều rộng sọc (stripe-width) RAID %u không phải là một bội số dương của %u.\n"
+"Cảnh báo : chiều rộng sọc (stripe-width) RAID %u không phải là một bội số "
+"dương của %u.\n"
 "\n"
 
 #: misc/mke2fs.c:920
@@ -3860,7 +3894,8 @@ msgstr "Khối %d-byte quá lớn đối với hệ thống (tối đa %d)"
 
 #: misc/mke2fs.c:1247
 #, c-format
-msgid "Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
+msgid ""
+"Warning: %d-byte blocks too big for system (max %d), forced to continue\n"
 msgstr ""
 "Cảnh báo : khối %d-byte quá lớn đối với hệ thống (tối đa %d)\n"
 "nên bị buộc tiếp tục\n"

@@ -1,3 +1,31 @@
+E2fsprogs 1.40.10 (May 21, 2008)
+================================
+
+When deciding whether or not to revalidate a blkid cache entry, if the
+device's mtime is newer than the last time the cached entry was
+validated, force a revalidation.
+
+Fix a potential data corruption bug in e2fsck in the journal replay.
+The chances of this is happening is extremely remote, especially the
+default data=ordered or data=writeback modes.  However, if a block
+which has been journalled starts with the first four bytes 0xc03b3998,
+when e2fsck replays the journal, those four bytes will be replaced
+with zero's.  Fortunately, it is highly, highly unlikely for e2fsck
+metadata to begin with those fatal 4 byte sequence, and unless
+data=ordered mode is in use, data blocks are never journaled.
+
+Updated German, Dutch, Sweedish, and Vietnamese translations.
+
+Programmer's notes:
+-------------------
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.
+
+Remove default sizes of types when cross compiling, since autoconf
+2.50 can figure this out automatically now.
+
+
 E2fsprogs 1.40.9 (April 27, 2008)
 =================================
 

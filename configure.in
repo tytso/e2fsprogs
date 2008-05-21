@@ -663,14 +663,6 @@ AC_CHECK_DECL(lseek64,[AC_DEFINE(HAVE_LSEEK64_PROTOTYPE)],,
 dnl
 dnl Word sizes...
 dnl
-if test "$cross_compiling" = yes -a "$ac_cv_sizeof_long" = ""; then
-  # if cross-compiling, with no cached values, just assume something common. 
-  ac_cv_sizeof_short=2
-  ac_cv_sizeof_int=4
-  ac_cv_sizeof_long=4
-  ac_cv_sizeof_long_long=8
-  AC_MSG_WARN([Cross-compiling, so cannot check type sizes; assuming short=2, int=4, long=4, long long=8])
-fi
 AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
