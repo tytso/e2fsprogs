@@ -1,3 +1,13 @@
+e2fsprogs (1.40.10-1) unstable; urgency=low
+
+  * Fix a very rare potential data corruption bug in e2fsck's journal
+    replay.
+  * Updated German, Dutch, Sweedish, and Vietnamese translations.
+  * Force blkid to revalidate a device if its mtime is newer than the
+    last validation time in the cache.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 21 May 2008 13:35:12 -0400
+
 e2fsprogs (1.40.9-1) unstable; urgency=low
 
   * Fix fsck so that if multiple filesystems are being checked in
