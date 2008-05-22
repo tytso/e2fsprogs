@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.40.10">E2fsprogs 1.40.10 (May 21, 2008)</A>
 <LI><A HREF="#1.40.9">E2fsprogs 1.40.9 (April 27, 2008)</A>
 <LI><A HREF="#1.40.8">E2fsprogs 1.40.8 (March 13, 2008)</A>
 <LI><A HREF="#1.40.7">E2fsprogs 1.40.7 (February 28, 2008)</A>
@@ -79,6 +80,31 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.40.10">E2fsprogs 1.40.10 (May 21, 2008)</A></H2>
+
+<P>When deciding whether or not to revalidate a blkid cache entry, if the
+device's mtime is newer than the last time the cached entry was
+validated, force a revalidation.</P>
+
+<P>Fix a potential data corruption bug in e2fsck in the journal replay.
+The chances of this is happening is extremely remote, especially the
+default data=ordered or data=writeback modes.  However, if a block
+which has been journalled starts with the first four bytes 0xc03b3998,
+when e2fsck replays the journal, those four bytes will be replaced
+with zero's.  Fortunately, it is highly, highly unlikely for e2fsck
+metadata to begin with those fatal 4 byte sequence, and unless
+data=ordered mode is in use, data blocks are never journaled.</P>
+
+<P>Updated German, Dutch, Sweedish, and Vietnamese translations.</P>
+
+<H3>Programmer's notes</H3>
+
+<P>Fixed various Debian packaging issues --- see debian/changelog for
+details.</P>
+
+<P>Remove default sizes of types when cross compiling, since autoconf
+2.50 can figure this out automatically now.</P>
 
 <H2><A NAME="1.40.9">E2fsprogs 1.40.9 (April 27, 2008)</A></H2>
 
