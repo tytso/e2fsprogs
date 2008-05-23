@@ -70,6 +70,13 @@ typedef unsigned int __be32;
 extern kmem_cache_t * do_cache_create(int len);
 extern void do_cache_destroy(kmem_cache_t *cache);
 	
+#define __init
+
+/*
+ * Now pull in the real linux/jfs.h definitions.
+ */
+#include <ext2fs/kernel-jbd.h>
+
 #if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
 #ifdef E2FSCK_INCLUDE_INLINE_FUNCS
 #define _INLINE_ extern
@@ -94,15 +101,20 @@ _INLINE_ void do_cache_destroy(kmem_cache_t *cache)
 {
 	free(cache);
 }
-#undef _INLINE_
-#endif
-
-#define __init
 
 /*
- * Now pull in the real linux/jfs.h definitions.
+ * helper functions to deal with 32 or 64bit block numbers.
  */
-#include <ext2fs/kernel-jbd.h>
+_INLINE_ size_t journal_tag_bytes(journal_t *journal)
+{
+	if (JFS_HAS_INCOMPAT_FEATURE(journal, JFS_FEATURE_INCOMPAT_64BIT))
+		return JBD_TAG_SIZE64;
+	else
+		return JBD_TAG_SIZE32;
+}
+
+#undef _INLINE_
+#endif
 
 /*
  * Kernel compatibility functions are defined in journal.c

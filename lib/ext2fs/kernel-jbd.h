@@ -108,6 +108,30 @@ typedef struct journal_header_s
 	__u32		h_sequence;
 } journal_header_t;
 
+/*
+ * Checksum types.
+ */
+#define JBD2_CRC32_CHKSUM   1
+#define JBD2_MD5_CHKSUM     2
+#define JBD2_SHA1_CHKSUM    3
+
+#define JBD2_CRC32_CHKSUM_SIZE 4
+
+#define JBD2_CHECKSUM_BYTES (32 / sizeof(__u32))
+/*
+ * Commit block header for storing transactional checksums:
+ */
+struct commit_header {
+	__u32		h_magic;
+	__u32		h_blocktype;
+	__u32		h_sequence;
+	unsigned char	h_chksum_type;
+	unsigned char	h_chksum_size;
+	unsigned char	h_padding[2];
+	__u32		h_chksum[JBD2_CHECKSUM_BYTES];
+	__u64		h_commit_sec;
+	__u32		h_commit_nsec;
+};
 
 /* 
  * The block tag: used to describe a single buffer in the journal 
@@ -116,7 +140,11 @@ typedef struct journal_block_tag_s
 {
 	__u32		t_blocknr;	/* The on-disk block number */
 	__u32		t_flags;	/* See below */
+	__u32		t_blocknr_high; /* most-significant high 32bits. */
 } journal_block_tag_t;
+
+#define JBD_TAG_SIZE64 (sizeof(journal_block_tag_t))
+#define JBD_TAG_SIZE32 (8)
 
 /* 
  * The revoke descriptor: used on disk to describe a series of blocks to
@@ -194,12 +222,19 @@ typedef struct journal_superblock_s
 	((j)->j_format_version >= 2 &&					\
 	 ((j)->j_superblock->s_feature_incompat & cpu_to_be32((mask))))
 
+#define JFS_FEATURE_COMPAT_CHECKSUM	0x00000001
+
 #define JFS_FEATURE_INCOMPAT_REVOKE	0x00000001
+
+#define JFS_FEATURE_INCOMPAT_REVOKE		0x00000001
+#define JFS_FEATURE_INCOMPAT_64BIT		0x00000002
+#define JFS_FEATURE_INCOMPAT_ASYNC_COMMIT	0x00000004
 
 /* Features known to this kernel version: */
 #define JFS_KNOWN_COMPAT_FEATURES	0
 #define JFS_KNOWN_ROCOMPAT_FEATURES	0
-#define JFS_KNOWN_INCOMPAT_FEATURES	JFS_FEATURE_INCOMPAT_REVOKE
+#define JFS_KNOWN_INCOMPAT_FEATURES	(JFS_FEATURE_INCOMPAT_REVOKE|\
+					 JFS_FEATURE_INCOMPAT_ASYNC_COMMIT)
 
 #ifdef __KERNEL__
 
@@ -548,6 +583,9 @@ struct journal_s
 	/* The revoke table: maintains the list of revoked blocks in the
            current transaction. */
 	struct jbd_revoke_table_s *j_revoke;
+
+	/* Failed journal commit ID */
+	unsigned int		j_failed_commit;
 };
 
 /* 

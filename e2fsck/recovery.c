@@ -178,19 +178,20 @@ static int jread(struct buffer_head **bhp, journal_t *journal,
  * Count the number of in-use tags in a journal descriptor block.
  */
 
-static int count_tags(struct buffer_head *bh, int size)
+static int count_tags(journal_t *journal, struct buffer_head *bh)
 {
 	char *			tagp;
 	journal_block_tag_t *	tag;
-	int			nr = 0;
+	int			nr = 0, size = journal->j_blocksize;
+	int			tag_bytes = journal_tag_bytes(journal);
 
 	tagp = &bh->b_data[sizeof(journal_header_t)];
 
-	while ((tagp - bh->b_data + sizeof(journal_block_tag_t)) <= size) {
+	while ((tagp - bh->b_data + tag_bytes) <= size) {
 		tag = (journal_block_tag_t *) tagp;
 
 		nr++;
-		tagp += sizeof(journal_block_tag_t);
+		tagp += tag_bytes;
 		if (!(tag->t_flags & cpu_to_be32(JFS_FLAG_SAME_UUID)))
 			tagp += 16;
 
@@ -307,6 +308,46 @@ int journal_skip_recovery(journal_t *journal)
 	return err;
 }
 
+static inline unsigned long long read_tag_block(int tag_bytes, journal_block_tag_t *tag)
+{
+	unsigned long long block = be32_to_cpu(tag->t_blocknr);
+	if (tag_bytes > JBD_TAG_SIZE32)
+		block |= (__u64)be32_to_cpu(tag->t_blocknr_high) << 32;
+	return block;
+}
+
+/*
+ * calc_chksums calculates the checksums for the blocks described in the
+ * descriptor block.
+ */
+static int calc_chksums(journal_t *journal, struct buffer_head *bh,
+			unsigned long *next_log_block, __u32 *crc32_sum)
+{
+	int i, num_blks, err;
+	unsigned long io_block;
+	struct buffer_head *obh;
+
+	num_blks = count_tags(journal, bh);
+	/* Calculate checksum of the descriptor block. */
+	*crc32_sum = crc32_be(*crc32_sum, (void *)bh->b_data, bh->b_size);
+
+	for (i = 0; i < num_blks; i++) {
+		io_block = (*next_log_block)++;
+		wrap(journal, *next_log_block);
+		err = jread(&obh, journal, io_block);
+		if (err) {
+			printk(KERN_ERR "JBD: IO error %d recovering block "
+				"%lu in log\n", err, io_block);
+			return 1;
+		} else {
+			*crc32_sum = crc32_be(*crc32_sum, (void *)obh->b_data,
+				     obh->b_size);
+		}
+		brelse(obh);
+	}
+	return 0;
+}
+
 static int do_one_pass(journal_t *journal,
 			struct recovery_info *info, enum passtype pass)
 {
@@ -318,11 +359,13 @@ static int do_one_pass(journal_t *journal,
 	struct buffer_head *	bh;
 	unsigned int		sequence;
 	int			blocktype;
+	int			tag_bytes = journal_tag_bytes(journal);
+	__u32			crc32_sum = ~0; /* Transactional Checksums */
 
 	/* Precompute the maximum metadata descriptors in a descriptor block */
 	int			MAX_BLOCKS_PER_DESC;
 	MAX_BLOCKS_PER_DESC = ((journal->j_blocksize-sizeof(journal_header_t))
-			       / sizeof(journal_block_tag_t));
+			       / tag_bytes);
 
 	/*
 	 * First thing is to establish what we expect to find in the log
@@ -409,11 +452,24 @@ static int do_one_pass(journal_t *journal,
 		switch(blocktype) {
 		case JFS_DESCRIPTOR_BLOCK:
 			/* If it is a valid descriptor block, replay it
-			 * in pass REPLAY; otherwise, just skip over the
-			 * blocks it describes. */
+			 * in pass REPLAY; if journal_checksums enabled, then
+			 * calculate checksums in PASS_SCAN, otherwise,
+			 * just skip over the blocks it describes. */
 			if (pass != PASS_REPLAY) {
-				next_log_block +=
-					count_tags(bh, journal->j_blocksize);
+				if (pass == PASS_SCAN &&
+				    JFS_HAS_COMPAT_FEATURE(journal,
+					    JFS_FEATURE_COMPAT_CHECKSUM) &&
+				    !info->end_transaction) {
+					if (calc_chksums(journal, bh,
+							&next_log_block,
+							&crc32_sum)) {
+						brelse(bh);
+						break;
+					}
+					brelse(bh);
+					continue;
+				}
+				next_log_block += count_tags(journal, bh);
 				wrap(journal, next_log_block);
 				brelse(bh);
 				continue;
@@ -424,7 +480,7 @@ static int do_one_pass(journal_t *journal,
 			 * getting done here! */
 
 			tagp = &bh->b_data[sizeof(journal_header_t)];
-			while ((tagp - bh->b_data +sizeof(journal_block_tag_t))
+			while ((tagp - bh->b_data + tag_bytes)
 			       <= journal->j_blocksize) {
 				unsigned long io_block;
 
@@ -494,7 +550,7 @@ static int do_one_pass(journal_t *journal,
 				}
 
 			skip_write:
-				tagp += sizeof(journal_block_tag_t);
+				tagp += tag_bytes;
 				if (!(flags & JFS_FLAG_SAME_UUID))
 					tagp += 16;
 
@@ -506,9 +562,98 @@ static int do_one_pass(journal_t *journal,
 			continue;
 
 		case JFS_COMMIT_BLOCK:
-			/* Found an expected commit block: not much to
-			 * do other than move on to the next sequence
+			jbd_debug(3, "Commit block for #%u found\n",
+				  next_commit_ID);
+			/*     How to differentiate between interrupted commit
+			 *               and journal corruption ?
+			 *
+			 * {nth transaction}
+			 *        Checksum Verification Failed
+			 *			 |
+			 *		 ____________________
+			 *		|		     |
+			 * 	async_commit             sync_commit
+			 *     		|                    |
+			 *		| GO TO NEXT    "Journal Corruption"
+			 *		| TRANSACTION
+			 *		|
+			 * {(n+1)th transanction}
+			 *		|
+			 * 	 _______|______________
+			 * 	|	 	      |
+			 * Commit block found	Commit block not found
+			 *      |		      |
+			 * "Journal Corruption"       |
+			 *		 _____________|_________
+			 *     		|	           	|
+			 *	nth trans corrupt	OR   nth trans
+			 *	and (n+1)th interrupted     interrupted
+			 *	before commit block
+			 *      could reach the disk.
+			 *	(Cannot find the difference in above
+			 *	 mentioned conditions. Hence assume
+			 *	 "Interrupted Commit".)
+			 */
+
+			/* Found an expected commit block: if checksums
+			 * are present verify them in PASS_SCAN; else not
+			 * much to do other than move on to the next sequence
 			 * number. */
+			if (pass == PASS_SCAN &&
+			    JFS_HAS_COMPAT_FEATURE(journal,
+				    JFS_FEATURE_COMPAT_CHECKSUM)) {
+				int chksum_err, chksum_seen;
+				struct commit_header *cbh =
+					(struct commit_header *)bh->b_data;
+				unsigned found_chksum =
+					be32_to_cpu(cbh->h_chksum[0]);
+
+				chksum_err = chksum_seen = 0;
+
+				jbd_debug(3, "Checksums %x %x\n",
+					  crc32_sum, found_chksum);
+				if (info->end_transaction) {
+					journal->j_failed_commit =
+						info->end_transaction;
+					brelse(bh);
+					break;
+				}
+
+				if (crc32_sum == found_chksum &&
+				    cbh->h_chksum_type == JBD2_CRC32_CHKSUM &&
+				    cbh->h_chksum_size ==
+						JBD2_CRC32_CHKSUM_SIZE)
+				       chksum_seen = 1;
+				else if (!(cbh->h_chksum_type == 0 &&
+					     cbh->h_chksum_size == 0 &&
+					     found_chksum == 0 &&
+					     !chksum_seen))
+				/*
+				 * If fs is mounted using an old kernel and then
+				 * kernel with journal_chksum is used then we
+				 * get a situation where the journal flag has
+				 * checksum flag set but checksums are not
+				 * present i.e chksum = 0, in the individual
+				 * commit blocks.
+				 * Hence to avoid checksum failures, in this
+				 * situation, this extra check is added.
+				 */
+						chksum_err = 1;
+
+				if (chksum_err) {
+					info->end_transaction = next_commit_ID;
+					jbd_debug(1, "Checksum_err\n");
+
+					if (!JFS_HAS_INCOMPAT_FEATURE(journal,
+					   JFS_FEATURE_INCOMPAT_ASYNC_COMMIT)){
+						journal->j_failed_commit =
+							next_commit_ID;
+						brelse(bh);
+						break;
+					}
+				}
+				crc32_sum = ~0;
+			}
 			brelse(bh);
 			next_commit_ID++;
 			continue;
@@ -544,9 +689,10 @@ static int do_one_pass(journal_t *journal,
 	 * transaction marks the end of the valid log.
 	 */
 
-	if (pass == PASS_SCAN)
-		info->end_transaction = next_commit_ID;
-	else {
+	if (pass == PASS_SCAN) {
+		if (!info->end_transaction)
+			info->end_transaction = next_commit_ID;
+	} else {
 		/* It's really bad news if different passes end up at
 		 * different places (but possible due to IO errors). */
 		if (info->end_transaction != next_commit_ID) {

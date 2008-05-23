@@ -376,6 +376,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Last @g @b @B uninitialized.  "),
 	     PROMPT_FIX, PR_PREEN_OK },
 
+	/* Journal transaction found corrupt */
+	{ PR_0_JNL_TXN_CORRUPT,
+	  N_("Journal transaction %i was corrupt, replay was aborted.\n"),
+	  PROMPT_NONE, 0 },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */

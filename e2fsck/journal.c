@@ -73,8 +73,12 @@ struct buffer_head *getblk(kdev_t kdev, blk_t blocknr, int blocksize)
 	if (!bh)
 		return NULL;
 
+#ifdef CONFIG_JBD_DEBUG
+	if (journal_enable_debug >= 3)
+		bh_count++;
+#endif
 	jfs_debug(4, "getblk for block %lu (%d bytes)(total %d)\n",
-		  (unsigned long) blocknr, blocksize, ++bh_count);
+		  (unsigned long) blocknr, blocksize, bh_count);
 
 	bh->b_ctx = kdev->k_ctx;
 	if (kdev->k_dev == K_DEV_FS)
@@ -798,8 +802,11 @@ no_has_journal:
 
 static errcode_t recover_ext3_journal(e2fsck_t ctx)
 {
+	struct problem_context	pctx;
 	journal_t *journal;
 	int retval;
+
+	clear_problem_context(&pctx);
 
 	journal_init_revoke_caches();
 	retval = e2fsck_get_journal(ctx, &journal);
@@ -818,6 +825,14 @@ static errcode_t recover_ext3_journal(e2fsck_t ctx)
 	if (retval)
 		goto errout;
 	
+	if (journal->j_failed_commit) {
+		pctx.ino = journal->j_failed_commit;
+		fix_problem(ctx, PR_0_JNL_TXN_CORRUPT, &pctx);
+		ctx->fs->super->s_state |= EXT2_ERROR_FS;
+		ext2fs_mark_super_dirty(ctx->fs);
+	}
+
+
 	if (journal->j_superblock->s_errno) {
 		ctx->fs->super->s_state |= EXT2_ERROR_FS;
 		ext2fs_mark_super_dirty(ctx->fs);

@@ -211,6 +211,9 @@ struct problem_context {
 /* Last group block bitmap is uninitialized. */
 #define PR_0_BB_UNINIT_LAST			0x000039
 
+/* Journal transaction found corrupt */
+#define PR_0_JNL_TXN_CORRUPT			0x00003A
+
 /*
  * Pass 1 errors
  */
