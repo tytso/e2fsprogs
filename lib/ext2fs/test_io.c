@@ -52,6 +52,8 @@ struct test_private_data {
 	void (*write_blk)(unsigned long block, int count, errcode_t err);
 	void (*set_blksize)(int blksize, errcode_t err);
 	void (*write_byte)(unsigned long block, int count, errcode_t err);
+	void (*read_blk64)(unsigned long long block, int count, errcode_t err);
+	void (*write_blk64)(unsigned long long block, int count, errcode_t err);
 };
 
 static errcode_t test_open(const char *name, int flags, io_channel *channel);
@@ -60,6 +62,10 @@ static errcode_t test_set_blksize(io_channel channel, int blksize);
 static errcode_t test_read_blk(io_channel channel, unsigned long block,
 			       int count, void *data);
 static errcode_t test_write_blk(io_channel channel, unsigned long block,
+				int count, const void *data);
+static errcode_t test_read_blk64(io_channel channel, unsigned long long block,
+			       int count, void *data);
+static errcode_t test_write_blk64(io_channel channel, unsigned long long block,
 				int count, const void *data);
 static errcode_t test_flush(io_channel channel);
 static errcode_t test_write_byte(io_channel channel, unsigned long offset,
@@ -81,6 +87,8 @@ static struct struct_io_manager struct_test_manager = {
 	test_write_byte,
 	test_set_option,
 	test_get_stats,
+	test_read_blk64,
+	test_write_blk64,
 };
 
 io_manager test_io_manager = &struct_test_manager;
@@ -94,6 +102,10 @@ void (*test_io_cb_read_blk)
 	(unsigned long block, int count, errcode_t err) = 0;
 void (*test_io_cb_write_blk)
 	(unsigned long block, int count, errcode_t err) = 0;
+void (*test_io_cb_read_blk64)
+	(unsigned long long block, int count, errcode_t err) = 0;
+void (*test_io_cb_write_blk64)
+	(unsigned long long block, int count, errcode_t err) = 0;
 void (*test_io_cb_set_blksize)
 	(int blksize, errcode_t err) = 0;
 void (*test_io_cb_write_byte)
@@ -208,6 +220,8 @@ static errcode_t test_open(const char *name, int flags, io_channel *channel)
 	data->write_blk = 	test_io_cb_write_blk;
 	data->set_blksize = 	test_io_cb_set_blksize;
 	data->write_byte = 	test_io_cb_write_byte;
+	data->read_blk64 = 	test_io_cb_read_blk64;
+	data->write_blk64 = 	test_io_cb_write_blk64;
 
 	data->outfile = NULL;
 	if ((value = safe_getenv("TEST_IO_LOGFILE")) != NULL)
@@ -333,6 +347,60 @@ static errcode_t test_write_blk(io_channel channel, unsigned long block,
 	if (data->flags & TEST_FLAG_WRITE)
 		fprintf(data->outfile,
 			"Test_io: write_blk(%lu, %d) returned %s\n",
+			block, count, retval ? error_message(retval) : "OK");
+	if (data->block && data->block == block) {
+		if (data->flags & TEST_FLAG_DUMP)
+			test_dump_block(channel, data, block, buf);
+		if (--data->write_abort_count == 0)
+			test_abort(channel, block);
+	}
+	return retval;
+}
+
+static errcode_t test_read_blk64(io_channel channel, unsigned long long block,
+			       int count, void *buf)
+{
+	struct test_private_data *data;
+	errcode_t	retval = 0;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct test_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_TEST_IO_CHANNEL);
+
+	if (data->real)
+		retval = io_channel_read_blk64(data->real, block, count, buf);
+	if (data->read_blk64)
+		data->read_blk64(block, count, retval);
+	if (data->flags & TEST_FLAG_READ)
+		fprintf(data->outfile,
+			"Test_io: read_blk64(%llu, %d) returned %s\n",
+			block, count, retval ? error_message(retval) : "OK");
+	if (data->block && data->block == block) {
+		if (data->flags & TEST_FLAG_DUMP)
+			test_dump_block(channel, data, block, buf);
+		if (--data->read_abort_count == 0)
+			test_abort(channel, block);
+	} 
+	return retval;
+}
+
+static errcode_t test_write_blk64(io_channel channel, unsigned long long block,
+			       int count, const void *buf)
+{
+	struct test_private_data *data;
+	errcode_t	retval = 0;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct test_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_TEST_IO_CHANNEL);
+
+	if (data->real)
+		retval = io_channel_write_blk64(data->real, block, count, buf);
+	if (data->write_blk64)
+		data->write_blk64(block, count, retval);
+	if (data->flags & TEST_FLAG_WRITE)
+		fprintf(data->outfile,
+			"Test_io: write_blk64(%llu, %d) returned %s\n",
 			block, count, retval ? error_message(retval) : "OK");
 	if (data->block && data->block == block) {
 		if (data->flags & TEST_FLAG_DUMP)
