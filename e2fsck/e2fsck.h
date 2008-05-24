@@ -374,6 +374,9 @@ extern int e2fsck_run(e2fsck_t ctx);
 extern void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 				 int replace_bad_blocks);
 
+/* crc32.c */
+extern __u32 crc32_be(__u32 crc, unsigned char const *p, size_t len);
+
 /* dirinfo.c */
 extern void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent);
 extern void e2fsck_free_dir_info(e2fsck_t ctx);
