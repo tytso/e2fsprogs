@@ -160,13 +160,14 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 		struct ext2fs_extent	extent;
 		unsigned int		offset;
 
-		if (bmap_flags & BMAP_SET) {
-			retval = EXT2_ET_EXTENT_NOT_SUPPORTED;
-			goto done;
-		}
 		retval = ext2fs_extent_open(fs, ino, &handle);
 		if (retval)
 			goto done;
+		if (bmap_flags & BMAP_SET) {
+			retval = ext2fs_extent_set_bmap(handle, block,
+							*phys_blk, 0);
+			goto done;
+		}
 		retval = ext2fs_extent_goto(handle, block);
 		if (retval) {
 			/* If the extent is not found, return phys_blk = 0 */
@@ -182,6 +183,17 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 			*phys_blk = extent.e_pblk + offset;
 			if (ret_flags && extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT)
 				*ret_flags |= BMAP_RET_UNINIT;
+		}
+		if ((*phys_blk == 0) && (bmap_flags & BMAP_ALLOC)) {
+			retval = ext2fs_alloc_block(fs, b, block_buf, &b);
+			if (retval)
+				goto done;
+			retval = ext2fs_extent_set_bmap(handle, block,
+							(blk64_t) b, 0);
+			if (retval)
+				goto done;
+			blocks_alloc++;
+			*phys_blk = b;
 		}
 		retval = 0;
 		goto done;
