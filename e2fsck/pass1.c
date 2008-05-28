@@ -1654,6 +1654,14 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 					ctx->flags |= E2F_FLAG_ABORT;
 					return;
 				}
+				pctx->errcode = ext2fs_extent_get(ehandle,
+								  EXT2_EXTENT_CURRENT,
+								  &extent);
+				if (pctx->errcode == EXT2_ET_NO_CURRENT_NODE) {
+					pctx->errcode = 0;
+					break;
+				}
+				continue;
 			}
 			goto next;
 		}
