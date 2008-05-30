@@ -1622,11 +1622,15 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 	int			i;
 	int			is_dir, is_leaf;
 	errcode_t		problem;
+	struct ext2_extent_info	info;
 
+	pctx->errcode = ext2fs_extent_get_info(ehandle, &info);
+	if (pctx->errcode)
+		return;
 
 	pctx->errcode = ext2fs_extent_get(ehandle, EXT2_EXTENT_FIRST_SIB,
 					  &extent);
-	while (!pctx->errcode) {
+	while (!pctx->errcode && info.num_entries-- > 0) {
 		is_leaf = extent.e_flags & EXT2_EXTENT_FLAGS_LEAF;
 		is_dir = LINUX_S_ISDIR(pctx->inode->i_mode);
 
