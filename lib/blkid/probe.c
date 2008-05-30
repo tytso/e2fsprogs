@@ -774,6 +774,20 @@ static int probe_jfs(struct blkid_probe *probe,
 	return 0;
 }
 
+static int probe_zfs(struct blkid_probe *probe, struct blkid_magic *id,
+		     unsigned char *buf)
+{
+	char *vdev_label;
+	const char *pool_name = 0;
+
+	/* read nvpair data for pool name, pool GUID (complex) */
+#if 0
+	blkid_set_tag(probe->dev, "LABEL", pool_name, sizeof(pool_name));
+	set_uuid(probe->dev, pool_guid, 0);
+#endif
+	return 0;
+}
+
 static int probe_luks(struct blkid_probe *probe,
 		       struct blkid_magic *id __BLKID_ATTR((unused)),
 		       unsigned char *buf)
@@ -1089,15 +1103,6 @@ static int probe_lvm2(struct blkid_probe *probe,
 	return 0;
 }
 /*
- * BLKID_BLK_OFFS is at least as large as the highest bim_kboff defined
- * in the type_array table below + bim_kbalign.
- *
- * When probing for a lot of magics, we handle everything in 1kB buffers so
- * that we don't have to worry about reading each combination of block sizes.
- */
-#define BLKID_BLK_OFFS	64	/* currently reiserfs */
-
-/*
  * Various filesystem magics that we can check for.  Note that kboff and
  * sboff are in kilobytes and bytes respectively.  All magics are in
  * byte strings so we don't worry about endian issues.
@@ -1147,6 +1152,10 @@ static struct blkid_magic type_array[] = {
   { "iso9660",	32,	 1,  5, "CD001",		probe_iso9660 },
   { "iso9660",	32,	 9,  5, "CDROM",		probe_iso9660 },
   { "jfs",	32,	 0,  4, "JFS1",			probe_jfs },
+  { "zfs",       8,	 0,  8, "\0\0\x02\xf5\xb0\x07\xb1\x0c", probe_zfs },
+  { "zfs",       8,	 0,  8, "\x0c\xb1\x07\xb0\xf5\x02\0\0", probe_zfs },
+  { "zfs",     264,	 0,  8, "\0\0\x02\xf5\xb0\x07\xb1\x0c", probe_zfs },
+  { "zfs",     264,	 0,  8, "\x0c\xb1\x07\xb0\xf5\x02\0\0", probe_zfs },
   { "hfsplus",	 1,	 0,  2, "BD",			probe_hfsplus },
   { "hfsplus",	 1,	 0,  2, "H+",			0 },
   { "hfs",	 1,	 0,  2, "BD",			0 },
@@ -1282,7 +1291,7 @@ try_again:
 		if (!buf)
 			continue;
 
-		if (memcmp(id->bim_magic, buf + (id->bim_sboff&0x3ff),
+		if (memcmp(id->bim_magic, buf + (id->bim_sboff & 0x3ff),
 			   id->bim_len))
 			continue;
 
@@ -1312,7 +1321,7 @@ try_again:
 		dev = 0;
 		goto found_type;
 	}
-		
+
 found_type:
 	if (dev && type) {
 		dev->bid_devno = st.st_rdev;
@@ -1321,7 +1330,7 @@ found_type:
 		cache->bic_flags |= BLKID_BIC_FL_CHANGED;
 
 		blkid_set_tag(dev, "TYPE", type, 0);
-				
+
 		DBG(DEBUG_PROBE, printf("%s: devno 0x%04llx, type %s\n",
 			   dev->bid_name, (long long)st.st_rdev, type));
 	}
