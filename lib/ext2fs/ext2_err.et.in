@@ -407,4 +407,7 @@ ec	EXT2_ET_EXTENT_NOT_FOUND,
 ec	EXT2_ET_EXTENT_NOT_SUPPORTED,
 	"Operation not supported for inodes containing extents"
 
+ec	EXT2_ET_EXTENT_INVALID_LENGTH,
+	"Extent length is invalid"
+
 	end

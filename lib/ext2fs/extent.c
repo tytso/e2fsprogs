@@ -663,7 +663,16 @@ errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle,
 		ex->ee_block = ext2fs_cpu_to_le32(extent->e_lblk);
 		ex->ee_start = ext2fs_cpu_to_le32(extent->e_pblk & 0xFFFFFFFF);
 		ex->ee_start_hi = ext2fs_cpu_to_le16(extent->e_pblk >> 32);
-		ex->ee_len = ext2fs_cpu_to_le16(extent->e_len);
+		if (extent->e_flags & EXT2_EXTENT_FLAGS_UNINIT) {
+			if (extent->e_len > EXT_UNINIT_MAX_LEN)
+				return EXT2_ET_EXTENT_INVALID_LENGTH;
+			ex->ee_len = ext2fs_cpu_to_le16(extent->e_len +
+							EXT_INIT_MAX_LEN);
+		} else {
+			if (extent->e_len > EXT_INIT_MAX_LEN)
+				return EXT2_ET_EXTENT_INVALID_LENGTH;
+			ex->ee_len = ext2fs_cpu_to_le16(extent->e_len);
+		}
 	} else {
 		ix = path->curr;
 
@@ -970,6 +979,14 @@ void do_replace_node(int argc, char *argv[])
 	if (check_fs_read_write(argv[0]))
 		return;
 
+	extent.e_flags = 0;
+
+	if (!strcmp(argv[1], "--uninit")) {
+		argc--;
+		argv++;
+		extent.e_flags |= EXT2_EXTENT_FLAGS_UNINIT;
+	}
+
 	if (argc != 4) {
 		fprintf(stderr, "usage: %s <lblk> <len> <pblk>\n", argv[0]);
 		return;
@@ -1011,10 +1028,22 @@ void do_insert_node(int argc, char *argv[])
 
 	cmd = argv[0];
 
-	if (argc > 2 && !strcmp(argv[1], "--after")) {
-		argc--;
-		argv++;
-		flags |= EXT2_EXTENT_INSERT_AFTER;
+	extent.e_flags = 0;
+
+	while (argc > 2) {
+		if (!strcmp(argv[1], "--after")) {
+			argc--;
+			argv++;
+			flags |= EXT2_EXTENT_INSERT_AFTER;
+			continue;
+		}
+		if (!strcmp(argv[1], "--uninit")) {
+			argc--;
+			argv++;
+			extent.e_flags |= EXT2_EXTENT_FLAGS_UNINIT;
+			continue;
+		}
+		break;
 	}
 
 	if (argc != 4) {
