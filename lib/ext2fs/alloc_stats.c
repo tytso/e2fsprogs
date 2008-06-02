@@ -69,4 +69,22 @@ void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse)
 	fs->super->s_free_blocks_count -= inuse;
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
+	if (fs->block_alloc_stats)
+		(fs->block_alloc_stats)(fs, (blk64_t) blk, inuse);
+}
+
+void ext2fs_set_block_alloc_stats_callback(ext2_filsys fs, 
+					   void (*func)(ext2_filsys fs,
+							blk64_t blk,
+							int inuse),
+					   void (**old)(ext2_filsys fs,
+							blk64_t blk,
+							int inuse))
+{
+	if (!fs || fs->magic != EXT2_ET_MAGIC_EXT2FS_FILSYS)
+		return;
+	if (old)
+		*old = fs->block_alloc_stats;
+
+	fs->block_alloc_stats = func;
 }

@@ -229,6 +229,13 @@ struct struct_ext2_filsys {
 	 */
 	struct ext2_inode_cache		*icache;
 	io_channel			image_io;
+
+	/*
+	 * More callback functions
+	 */
+	errcode_t (*get_alloc_block)(ext2_filsys fs, blk64_t goal,
+				     blk64_t *ret);
+	void (*block_alloc_stats)(ext2_filsys fs, blk64_t blk, int inuse);
 };
 
 #if EXT2_FLAT_INCLUDES
@@ -552,11 +559,25 @@ extern errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start,
 					blk_t *ret);
 extern errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 				    char *block_buf, blk_t *ret);
+extern void ext2fs_set_alloc_block_callback(ext2_filsys fs, 
+					    errcode_t (*func)(ext2_filsys fs,
+							      blk64_t goal,
+							      blk64_t *ret),
+					    errcode_t (**old)(ext2_filsys fs,
+							      blk64_t goal,
+							      blk64_t *ret));
 
 /* alloc_sb.c */
 extern int ext2fs_reserve_super_and_bgd(ext2_filsys fs, 
 					dgrp_t group,
 					ext2fs_block_bitmap bmap);
+extern void ext2fs_set_block_alloc_stats_callback(ext2_filsys fs, 
+						  void (*func)(ext2_filsys fs,
+							       blk64_t blk,
+							       int inuse),
+						  void (**old)(ext2_filsys fs,
+							       blk64_t blk,
+							       int inuse));
 
 /* alloc_stats.c */
 void ext2fs_inode_alloc_stats(ext2_filsys fs, ext2_ino_t ino, int inuse);

@@ -118,15 +118,24 @@ errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 	}
 	memset(block_buf, 0, fs->blocksize);
 
-	if (!fs->block_map) {
-		retval = ext2fs_read_block_bitmap(fs);
+	if (fs->get_alloc_block) {
+		blk64_t	new;
+
+		retval = (fs->get_alloc_block)(fs, (blk64_t) goal, &new);
+		if (retval)
+			goto fail;
+		block = (blk_t) new;
+	} else {
+		if (!fs->block_map) {
+			retval = ext2fs_read_block_bitmap(fs);
+			if (retval)
+				goto fail;
+		}
+
+		retval = ext2fs_new_block(fs, goal, 0, &block);
 		if (retval)
 			goto fail;
 	}
-
-	retval = ext2fs_new_block(fs, goal, 0, &block);
-	if (retval)
-		goto fail;
 
 	retval = io_channel_write_blk(fs->io, block, 1, block_buf);
 	if (retval)
@@ -170,3 +179,19 @@ errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start, blk_t finish,
 	return EXT2_ET_BLOCK_ALLOC_FAIL;
 }
 
+void ext2fs_set_alloc_block_callback(ext2_filsys fs, 
+				     errcode_t (*func)(ext2_filsys fs,
+						       blk64_t goal,
+						       blk64_t *ret),
+				     errcode_t (**old)(ext2_filsys fs,
+						       blk64_t goal,
+						       blk64_t *ret))
+{
+	if (!fs || fs->magic != EXT2_ET_MAGIC_EXT2FS_FILSYS)
+		return;
+
+	if (old)
+		*old = fs->get_alloc_block;
+
+	fs->get_alloc_block = func;
+}
