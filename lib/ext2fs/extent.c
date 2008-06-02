@@ -176,6 +176,7 @@ extern errcode_t ext2fs_extent_open(ext2_filsys fs, ext2_ino_t ino,
 	struct ext2_extent_handle	*handle;
 	errcode_t			retval;
 	int				isize = EXT2_INODE_SIZE(fs->super);
+	int				i;
 	struct ext3_extent_header	*eh;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
@@ -199,10 +200,23 @@ extern errcode_t ext2fs_extent_open(ext2_filsys fs, ext2_ino_t ino,
 	if (retval)
 		goto errout;
 
+	eh = (struct ext3_extent_header *) &handle->inode->i_block[0];
+
+	for (i=0; i < EXT2_N_BLOCKS; i++)
+		if (handle->inode->i_block[i])
+			break;
+	if (i >= EXT2_N_BLOCKS) {
+		eh->eh_magic = ext2fs_cpu_to_le16(EXT3_EXT_MAGIC);
+		eh->eh_depth = 0;
+		eh->eh_entries = 0;
+		i = (sizeof(handle->inode->i_block) - sizeof(*eh)) /
+			sizeof(struct ext3_extent);
+		eh->eh_max = ext2fs_cpu_to_le16(i);
+		handle->inode->i_flags |= EXT4_EXTENTS_FL;
+	}
+
 	if (!(handle->inode->i_flags & EXT4_EXTENTS_FL))
 		return EXT2_ET_INODE_NOT_EXTENT;
-
-	eh = (struct ext3_extent_header *) &handle->inode->i_block[0];
 
 	retval = ext2fs_extent_header_verify(eh, sizeof(handle->inode->i_block));
 	if (retval)
@@ -967,7 +981,8 @@ void do_delete_node(int argc, char *argv[])
 		com_err(argv[0], retval, 0);
 		return;
 	}
-	do_current_node(argc, argv);
+	if (current_handle->path && current_handle->path[0].curr)
+		do_current_node(argc, argv);
 }
 
 void do_replace_node(int argc, char *argv[])
