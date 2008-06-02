@@ -2513,6 +2513,48 @@ static errcode_t pass1_check_directory(ext2_filsys fs, ext2_ino_t ino)
 	return 0;
 }
 
+static errcode_t e2fsck_get_alloc_block(ext2_filsys fs, blk64_t goal,
+					blk64_t *ret)
+{
+	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
+	errcode_t	retval;
+	blk_t		new_block;
+
+	if (ctx->block_found_map) {
+		retval = ext2fs_new_block(fs, (blk_t) goal, 
+					  ctx->block_found_map, &new_block);
+		if (retval)
+			return retval;
+	} else {
+		if (!fs->block_map) {
+			retval = ext2fs_read_block_bitmap(fs);
+			if (retval)
+				return retval;
+		}
+
+		retval = ext2fs_new_block(fs, (blk_t) goal, 0, &new_block);
+		if (retval)
+			return retval;
+	}
+		
+	*ret = new_block;
+	return (0);
+}
+
+static void e2fsck_block_alloc_stats(ext2_filsys fs, blk64_t blk, int inuse)
+{
+	e2fsck_t ctx = (e2fsck_t) fs->priv_data;
+
+	if (ctx->block_found_map) {
+		if (inuse > 0)
+			ext2fs_mark_block_bitmap(ctx->block_found_map, 
+						 (blk_t) blk);
+		else
+			ext2fs_unmark_block_bitmap(ctx->block_found_map, 
+						   (blk_t) blk);
+	}
+}
+
 void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool)
 {
 	ext2_filsys fs = ctx->fs;
@@ -2523,6 +2565,11 @@ void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool)
 		fs->read_inode = pass1_read_inode;
 		fs->write_inode = pass1_write_inode;
 		ctx->stashed_ino = 0;
+		ext2fs_set_alloc_block_callback(fs, e2fsck_get_alloc_block,
+						0);
+		ext2fs_set_block_alloc_stats_callback(fs,
+						      e2fsck_block_alloc_stats,
+						      0);
 	} else {
 		fs->get_blocks = 0;
 		fs->check_directory = 0;
