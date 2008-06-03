@@ -1613,7 +1613,8 @@ void e2fsck_clear_inode(e2fsck_t ctx, ext2_ino_t ino,
 }
 
 static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
-			     struct process_block_struct *pb, 
+			     struct process_block_struct *pb,
+			     blk64_t start_block,
 			     ext2_extent_handle_t ehandle)
 {
 	struct ext2fs_extent	extent;
@@ -1638,6 +1639,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		if (extent.e_pblk < ctx->fs->super->s_first_data_block ||
 		    extent.e_pblk >= ctx->fs->super->s_blocks_count)
 			problem = PR_1_EXTENT_BAD_START_BLK;
+		else if (extent.e_lblk < start_block)
+			problem = PR_1_OUT_OF_ORDER_EXTENTS;
 		else if (is_leaf &&
 			 (extent.e_pblk + extent.e_len) >
 			 ctx->fs->super->s_blocks_count)
@@ -1680,7 +1683,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 					error_message(pctx->errcode), pctx->ino);
 				abort();
 			}
-			scan_extent_node(ctx, pctx, pb, ehandle);
+			scan_extent_node(ctx, pctx, pb, extent.e_lblk, ehandle);
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_UP, &extent);
 			if (pctx->errcode) {
@@ -1709,7 +1712,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			}
 		}
 		pb->num_blocks += extent.e_len;
-		pb->last_block = extent.e_lblk + extent.e_len - 1;
+		start_block = pb->last_block = extent.e_lblk + extent.e_len - 1;
 	next:
 		pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_NEXT_SIB,
@@ -1736,7 +1739,7 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 		return;
 	}
 
-	scan_extent_node(ctx, pctx, pb, ehandle);
+	scan_extent_node(ctx, pctx, pb, 0, ehandle);
 
 	ext2fs_extent_free(ehandle);
 }

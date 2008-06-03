@@ -494,6 +494,9 @@ struct problem_context {
 /* Fast symlink has EXTENTS_FL set */
 #define PR_1_FAST_SYMLINK_EXTENT_FL	0x01005D
 
+/* Extents are out of order */
+#define PR_1_OUT_OF_ORDER_EXTENTS	0x01005E
+
 /*
  * Pass 1b errors
  */

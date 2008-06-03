@@ -849,6 +849,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Fast symlink %i has EXTENT_FL set.  "),
 	  PROMPT_CLEAR, 0 },
 
+	/* Extents are out of order */
+	{ PR_1_OUT_OF_ORDER_EXTENTS,
+	  N_("@i %i has out of order extents\n\t(@n logical @b %c, physical @b %b, len %N)\n"),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
