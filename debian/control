@@ -95,8 +95,13 @@ Description: universally unique id library
  libuuid generates and parses 128-bit universally unique id's (UUID's).
  See RFC 4122 for more information.
  .
- This package contains the uuidd daemon which is used by libuuid as well as
- the uuidgen program.
+ This package contains the uuidgen program and the uuidd daemon.
+ .
+ The uuidd daemon is used to generate universally unique identifiers (UUIDs),
+ especially time-based UUID’s, in a secure and guaranteed-unique fashion,
+ even in the face of large numbers of threads trying to grab UUID’s
+ running on different CPU’s. It is used by by libuuid as well as the
+ uuidgen program.
 
 Package: libuuid1-udeb
 Section: debian-installer
