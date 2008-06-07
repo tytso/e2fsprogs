@@ -54,8 +54,14 @@ static int test_uuid(const char * uuid, int isValid)
 	return 0;
 }
 
+#ifdef __GNUC__
+#define ATTR(x) __attribute__(x)
+#else
+#define ATTR(x)
+#endif
+
 int
-main(int argc, char **argv)
+main(int argc ATTR((unused)) , char **argv ATTR((unused)))
 {
 	uuid_t		buf, tst;
 	char		str[100];
