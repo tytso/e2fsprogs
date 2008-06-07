@@ -23,6 +23,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 {
 #ifdef __linux__
 	struct ext2_new_group_input input;
+	struct ext4_new_group_input input64;
 	struct ext2_super_block *sb = fs->super;
 	unsigned long		new_desc_blocks;
 	ext2_filsys 		new_fs;
@@ -30,6 +31,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	dgrp_t			i;
 	blk_t			size;
 	int			fd, r_frac, overhead;
+	int			use_old_ioctl = 1;
 
 	printf(_("Filesystem at %s is mounted on %s; "
 		 "on-line resizing required\n"), fs->device_name, mtpt);
@@ -147,7 +149,21 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		printf("Adding group #%d\n", input.group);
 #endif
 
-		if (ioctl(fd, EXT2_IOC_GROUP_ADD, &input) < 0) {
+		if (use_old_ioctl &&
+		    ioctl(fd, EXT2_IOC_GROUP_ADD, &input) == 0)
+			continue;
+		else
+			use_old_ioctl = 1;
+
+		input64.group = input.group;
+		input64.block_bitmap = input.block_bitmap;
+		input64.inode_bitmap = input.inode_bitmap;
+		input64.inode_table = input.inode_table;
+		input64.blocks_count = input.blocks_count;
+		input64.reserved_blocks = input.reserved_blocks;
+		input64.unused = input.unused;
+
+		if (ioctl(fd, EXT4_IOC_GROUP_ADD, &input64) < 0) {
 			com_err(program_name, errno, 
 				_("While trying to add group #%d"), 
 				input.group);

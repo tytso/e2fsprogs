@@ -293,6 +293,16 @@ struct ext2_new_group_input {
 	__u16 unused;		/* Number of reserved GDT blocks in group */
 };
 
+struct ext4_new_group_input {
+	__u32 group;		/* Group number for this data */
+	__u64 block_bitmap;	/* Absolute block number of block bitmap */
+	__u64 inode_bitmap;	/* Absolute block number of inode bitmap */
+	__u64 inode_table;	/* Absolute block number of inode table start */
+	__u32 blocks_count;	/* Total number of blocks in this group */
+	__u16 reserved_blocks;	/* Number of reserved blocks in this group */
+	__u16 unused;
+};
+
 #ifdef __GNU__			/* Needed for the Hurd */
 #define _IOT_ext2_new_group_input _IOT (_IOTS(__u32), 5, _IOTS(__u16), 2, 0, 0)
 #endif
@@ -305,6 +315,7 @@ struct ext2_new_group_input {
 #define EXT2_IOC_SETVERSION_NEW		_IOW('f', 4, long)
 #define EXT2_IOC_GROUP_EXTEND		_IOW('f', 7, unsigned long)
 #define EXT2_IOC_GROUP_ADD		_IOW('f', 8,struct ext2_new_group_input)
+#define EXT4_IOC_GROUP_ADD		_IOW('f', 8,struct ext4_new_group_input)
 
 /*
  * Structure of an inode on the disk
