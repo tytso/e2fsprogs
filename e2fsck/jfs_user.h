@@ -63,13 +63,6 @@ typedef struct {
 
 typedef unsigned int __be32;
 
-/*
- * We use the standard libext2fs portability tricks for inline
- * functions.  
- */
-extern kmem_cache_t * do_cache_create(int len);
-extern void do_cache_destroy(kmem_cache_t *cache);
-	
 #define __init
 
 /*
@@ -77,6 +70,14 @@ extern void do_cache_destroy(kmem_cache_t *cache);
  */
 #include <ext2fs/kernel-jbd.h>
 
+/*
+ * We use the standard libext2fs portability tricks for inline
+ * functions.  
+ */
+extern kmem_cache_t * do_cache_create(int len);
+extern void do_cache_destroy(kmem_cache_t *cache);
+extern size_t journal_tag_bytes(journal_t *journal);
+	
 #if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
 #ifdef E2FSCK_INCLUDE_INLINE_FUNCS
 #define _INLINE_ extern

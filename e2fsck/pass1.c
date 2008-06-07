@@ -1620,7 +1620,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 	struct ext2fs_extent	extent;
 	blk_t			blk;
 	e2_blkcnt_t		blockcnt;
-	int			i;
+	unsigned int		i;
 	int			is_dir, is_leaf;
 	errcode_t		problem;
 	struct ext2_extent_info	info;
@@ -1679,7 +1679,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
 			if (pctx->errcode) {
-				printf("Error1: %s on inode %lld\n",
+				printf("Error1: %s on inode %u\n",
 					error_message(pctx->errcode), pctx->ino);
 				abort();
 			}
@@ -1687,7 +1687,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_UP, &extent);
 			if (pctx->errcode) {
-				printf("Error1: %s on inode %lld\n",
+				printf("Error1: %s on inode %u\n",
 					error_message(pctx->errcode), pctx->ino);
 				abort();
 			}
@@ -1723,8 +1723,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 }
 
 static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
-				 struct process_block_struct *pb, 
-				 char *block_buf)
+				 struct process_block_struct *pb)
 {
 	struct ext2_inode	*inode = pctx->inode;
 	ext2_extent_handle_t	ehandle;
@@ -1798,7 +1797,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		if ((ctx->fs->super->s_feature_incompat &
 		     EXT3_FEATURE_INCOMPAT_EXTENTS) &&
 		    (inode->i_flags & EXT4_EXTENTS_FL))
-			check_blocks_extents(ctx, pctx, &pb, block_buf);
+			check_blocks_extents(ctx, pctx, &pb);
 		else
 			pctx->errcode = ext2fs_block_iterate2(fs, ino,
 						pb.is_dir ? BLOCK_FLAG_HOLE : 0,

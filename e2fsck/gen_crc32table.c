@@ -71,7 +71,13 @@ static void output_table(uint32_t table[], int len, const char *trans)
 	printf("%s(0x%8.8xL)\n", trans, table[len - 1]);
 }
 
-int main(int argc, char** argv)
+#ifdef __GNUC__
+#define ATTR(x) __attribute__(x)
+#else
+#define ATTR(x)
+#endif
+
+int main(int argc ATTR((unused)), char** argv ATTR((unused)))
 {
 	printf("/* this file is generated - do not edit */\n\n");
 

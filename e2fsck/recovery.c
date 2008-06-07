@@ -308,6 +308,7 @@ int journal_skip_recovery(journal_t *journal)
 	return err;
 }
 
+#if 0
 static inline unsigned long long read_tag_block(int tag_bytes, journal_block_tag_t *tag)
 {
 	unsigned long long block = be32_to_cpu(tag->t_blocknr);
@@ -315,6 +316,7 @@ static inline unsigned long long read_tag_block(int tag_bytes, journal_block_tag
 		block |= (__u64)be32_to_cpu(tag->t_blocknr_high) << 32;
 	return block;
 }
+#endif
 
 /*
  * calc_chksums calculates the checksums for the blocks described in the
@@ -642,8 +644,8 @@ static int do_one_pass(journal_t *journal,
 
 				if (chksum_err) {
 					info->end_transaction = next_commit_ID;
-					jbd_debug(1, "Checksum_err\n");
-
+					jbd_debug(1, "Checksum_err %x %x\n",
+						  crc32_sum, found_chksum);
 					if (!JFS_HAS_INCOMPAT_FEATURE(journal,
 					   JFS_FEATURE_INCOMPAT_ASYNC_COMMIT)){
 						journal->j_failed_commit =

@@ -289,7 +289,8 @@ static void check_if_skip(e2fsck_t ctx)
 			     (unsigned) fs->super->s_max_mnt_count*2))
 			reason = 0;
 	} else if (fs->super->s_checkinterval &&
-		   ((ctx->now - lastcheck) >= fs->super->s_checkinterval)) {
+		   ((ctx->now - lastcheck) >= 
+		    ((time_t) fs->super->s_checkinterval))) {
 		reason = _(" has gone %u days without being checked");
 		reason_arg = (ctx->now - fs->super->s_lastcheck)/(3600*24);
 		if (batt && ((ctx->now - fs->super->s_lastcheck) < 
@@ -688,7 +689,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			/* What we do by default, anyway! */
 			break;
 		case 'b':
-			res = sscanf(optarg, "%d", &ctx->use_superblock);
+			res = sscanf(optarg, "%u", &ctx->use_superblock);
 			if (res != 1)
 				goto sscanf_err;
 			ctx->flags |= E2F_FLAG_SB_SPECIFIED;
