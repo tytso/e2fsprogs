@@ -778,7 +778,8 @@ MAKEFILE_BSDLIB
 MAKEFILE_PROFILE
 MAKEFILE_CHECKER
 MAKEFILE_LIBRARY
-ASM_TYPES_HEADER'
+ASM_TYPES_HEADER
+PUBLIC_CONFIG_HEADER'
       ac_precious_vars='build_alias
 host_alias
 target_alias
@@ -14415,6 +14416,21 @@ esac
 BUILD_CC="$BUILD_CC" CPP="$CPP" /bin/sh $ac_aux_dir/parse-types.sh
 ASM_TYPES_HEADER=./asm_types.h
 
+echo "/* These defines are needed for the public ext2fs.h header file */" \
+     > public_config.h
+if grep HAVE_SYS_TYPES_H confdefs.h > tmp_config.$$; then
+  uniq tmp_config.$$ >> public_config.h
+else
+  echo "#undef HAVE_SYS_TYPES_H" >> public_config.h
+fi
+if grep WORDS_BIGENDIAN confdefs.h > tmp_config.$$; then
+  uniq tmp_config.$$ >> public_config.h
+else
+  echo "#undef WORDS_BIGENDIAN" >> public_config.h
+fi
+rm -f tmp_config.$$
+PUBLIC_CONFIG_HEADER=./public_config.h
+
 
 for ac_header in inttypes.h
 do
@@ -16053,12 +16069,9 @@ STATIC_LIB_EXT!$STATIC_LIB_EXT$ac_delim
 PROFILED_LIB_EXT!$PROFILED_LIB_EXT$ac_delim
 DEBUGFS_CMT!$DEBUGFS_CMT$ac_delim
 IMAGER_CMT!$IMAGER_CMT$ac_delim
-RESIZER_CMT!$RESIZER_CMT$ac_delim
-FSCK_PROG!$FSCK_PROG$ac_delim
-FSCK_MAN!$FSCK_MAN$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 76; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 73; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -16106,6 +16119,10 @@ d
 r $ASM_TYPES_HEADER
 d
 }
+/^[	 ]*@PUBLIC_CONFIG_HEADER@[	 ]*$/{
+r $PUBLIC_CONFIG_HEADER
+d
+}
 _ACEOF
 sed '
 s/[,\\&]/\\&/g; s/@/@|#_!!_#|/g
@@ -16125,6 +16142,9 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+RESIZER_CMT!$RESIZER_CMT$ac_delim
+FSCK_PROG!$FSCK_PROG$ac_delim
+FSCK_MAN!$FSCK_MAN$ac_delim
 E2INITRD_PROG!$E2INITRD_PROG$ac_delim
 E2INITRD_MAN!$E2INITRD_MAN$ac_delim
 PKG_CONFIG!$PKG_CONFIG$ac_delim
@@ -16210,7 +16230,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 83; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 86; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
