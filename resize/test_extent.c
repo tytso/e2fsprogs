@@ -110,7 +110,13 @@ void do_test(FILE *in, FILE *out)
 	}
 }
 
-int main(int argc, char **argv)
+#ifdef __GNUC__
+#define ATTR(x) __attribute__(x)
+#else
+#define ATTR(x)
+#endif
+
+int main(int argc ATTR((unused)), char **argv ATTR((unused)))
 {
 	do_test(stdin, stdout);
 	exit(0);

@@ -324,7 +324,7 @@ int main (int argc, char ** argv)
 	}
 	
 	if (print_min_size) {
-		printf("Estimated minimum size of the filesystem: %lu\n",
+		printf("Estimated minimum size of the filesystem: %u\n",
 		       calculate_minimum_resize_size(fs));
 		exit(0);
 	}

@@ -1637,9 +1637,9 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
  */
 blk_t calculate_minimum_resize_size(ext2_filsys fs)
 {
-	blk_t inode_count, blks_needed, groups, blk, data_blocks;
+	blk_t inode_count, blks_needed, groups, data_blocks;
 	blk_t grp, data_needed, last_start;
-	int overhead = 0, old_group = -1, num_of_superblocks = 0;
+	int overhead = 0, num_of_superblocks = 0;
 
 	/*
 	 * first figure out how many group descriptors we need to
