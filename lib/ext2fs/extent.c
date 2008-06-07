@@ -762,7 +762,7 @@ errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle,
  *
  * handle will be left pointing at original record.
  */
-static errcode_t extent_node_split(ext2_extent_handle_t handle, int flags)
+static errcode_t extent_node_split(ext2_extent_handle_t handle)
 {
 	errcode_t			retval = 0;
 	blk_t				new_node_pblk;
@@ -773,9 +773,7 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle, int flags)
 	char				*block_buf = NULL;
 	struct ext2fs_extent		extent;
 	struct extent_path		*path, *newpath = 0;
-	struct ext3_extent		*ex;
 	struct ext3_extent_header	*eh, *neweh;
-	char				*cp;
 	int				tocopy;
 	int				new_root = 0;
 	struct ext2_extent_info		info;
@@ -816,7 +814,7 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle, int flags)
 			goto done;
 		goal_blk = extent.e_pblk;
 
-		retval = extent_node_split(handle, 0);
+		retval = extent_node_split(handle);
 		if (retval)
 			goto done;
 
@@ -1004,8 +1002,9 @@ errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
 		if (flags & EXT2_EXTENT_INSERT_NOSPLIT) {
 			return EXT2_ET_CANT_INSERT_EXTENT;
 		} else {
-			dbg_printf("node full - splitting\n");
-			retval = extent_node_split(handle, 0);
+			dbg_printf("node full (level %d) - splitting\n",
+				   handle->level);
+			retval = extent_node_split(handle);
 			if (retval)
 				goto errout;
 			path = handle->path + handle->level;
@@ -1113,7 +1112,7 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 	/* special case if the extent tree is completely empty */
 	if ((handle->max_depth == 0) && (path->entries == 0)) {
 		retval = ext2fs_extent_insert(handle, 0, &newextent);
-		goto done;
+		return retval;
 	}
 
 	/* save our original location in the extent tree */
@@ -1135,7 +1134,8 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 			retval = 0;
 			mapped = 0;
 			if (!physical) {
-				dbg_printf("block already unmapped\n");
+				dbg_printf("block %llu already unmapped\n",
+					logical);
 				goto done;
 			}
 		} else
@@ -1155,16 +1155,16 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 	/* check if already pointing to the requested physical */
 	if (mapped && (new_uninit == extent_uninit) &&
 	    (extent.e_pblk + (logical - extent.e_lblk) == physical)) {
-		dbg_printf("physical block unchanged\n");
+		dbg_printf("physical block (at %llu) unchanged\n", logical);
 		goto done;
 	}
 
 	if (!mapped) {
-		dbg_printf("mapping unmapped logical block\n");
+		dbg_printf("mapping unmapped logical block %llu\n", logical);
 		if ((logical == extent.e_lblk + extent.e_len) &&
 		    (physical == extent.e_pblk + extent.e_len) &&
 		    (new_uninit == extent_uninit) &&
-		    (extent.e_len < max_len-1)) {
+		    ((int) extent.e_len < max_len-1)) {
 			extent.e_len++;
 			retval = ext2fs_extent_replace(handle, 0, &extent);
 		} else
@@ -1266,7 +1266,7 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 	struct extent_path		*path;
 	char 				*cp;
 	struct ext3_extent_header	*eh;
-	errcode_t			retval;
+	errcode_t			retval = 0;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EXTENT_HANDLE);
 
@@ -1572,13 +1572,12 @@ void do_split_node(int argc, char *argv[])
 	errcode_t	retval;
 	struct ext2fs_extent extent;
 	int err;
-	int flags = 0;
 
 	if (common_extent_args_process(argc, argv, 1, 1, "split_node",
 				       "", CHECK_FS_RW | CHECK_FS_BITMAPS))
 		return;
 
-	retval = extent_node_split(current_handle, flags);
+	retval = extent_node_split(current_handle);
 	if (retval) {
 		com_err(argv[0], retval, 0);
 		return;

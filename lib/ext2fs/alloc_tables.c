@@ -43,8 +43,8 @@ static blk_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk_t start_blk,
 	flexbg_size = 1 << fs->super->s_log_groups_per_flex;
 	flexbg = group / flexbg_size;
 
-	if (size > fs->super->s_blocks_per_group / 8)
-		size = fs->super->s_blocks_per_group / 8;
+	if (size > (int) (fs->super->s_blocks_per_group / 8))
+		size = (int) fs->super->s_blocks_per_group / 8;
 
 	/*
 	 * Dont do a long search if the previous block
@@ -83,8 +83,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 {
 	errcode_t	retval;
 	blk_t		group_blk, start_blk, last_blk, new_blk, blk;
-	dgrp_t		last_grp;
-	int		j, rem_grps, flexbg_size = 0;
+	dgrp_t		last_grp = 0;
+	int		j, rem_grps = 0, flexbg_size = 0;
 
 	group_blk = ext2fs_group_first_block(fs, group);
 	last_blk = ext2fs_group_last_block(fs, group);

@@ -96,7 +96,7 @@ errcode_t ext2fs_set_gdt_csum(ext2_filsys fs)
 {
 	struct ext2_super_block *sb = fs->super;
 	struct ext2_group_desc *bg = fs->group_desc;
-	int blks, dirty = 0;
+	int dirty = 0;
 	dgrp_t i;
 
 	if (!fs->inode_map)

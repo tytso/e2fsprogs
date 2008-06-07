@@ -42,6 +42,12 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
+#ifdef __GNUC__
+#define ATTR(x) __attribute__(x)
+#else
+#define ATTR(x)
+#endif
+
 /*
  * For checking structure magic numbers...
  */
@@ -95,6 +101,10 @@ static io_manager undo_io_backing_manager ;
 static char *tdb_file;
 static int actual_size;
 
+static unsigned char mtime_key[] = "filesystem MTIME";
+static unsigned char blksize_key[] = "filesystem BLKSIZE";
+static unsigned char uuid_key[] = "filesystem UUID";
+
 errcode_t set_undo_io_backing_manager(io_manager manager)
 {
 	/*
@@ -135,8 +145,8 @@ static errcode_t write_file_system_identity(io_channel undo_channel,
 		goto err_out;
 
 	/* Write to tdb file in the file system byte order */
-	tdb_key.dptr = "filesystem MTIME";
-	tdb_key.dsize = sizeof("filesystem MTIME");
+	tdb_key.dptr = mtime_key;
+	tdb_key.dsize = sizeof(mtime_key);
 	tdb_data.dptr = (unsigned char *) &(super.s_mtime);
 	tdb_data.dsize = sizeof(super.s_mtime);
 
@@ -146,8 +156,8 @@ static errcode_t write_file_system_identity(io_channel undo_channel,
 		goto err_out;
 	}
 
-	tdb_key.dptr = "filesystem UUID";
-	tdb_key.dsize = sizeof("filesystem UUID");
+	tdb_key.dptr = uuid_key;
+	tdb_key.dsize = sizeof(uuid_key);
 	tdb_data.dptr = (unsigned char *)&(super.s_uuid);
 	tdb_data.dsize = sizeof(super.s_uuid);
 
@@ -166,8 +176,8 @@ static errcode_t write_block_size(TDB_CONTEXT *tdb, int block_size)
 	errcode_t retval;
 	TDB_DATA tdb_key, tdb_data;
 
-	tdb_key.dptr = "filesystem BLKSIZE";
-	tdb_key.dsize = sizeof("filesystem BLKSIZE");
+	tdb_key.dptr = blksize_key;
+	tdb_key.dsize = sizeof(blksize_key);
 	tdb_data.dptr = (unsigned char *)&(block_size);
 	tdb_data.dsize = sizeof(block_size);
 
@@ -183,13 +193,13 @@ static errcode_t undo_write_tdb(io_channel channel,
 				unsigned long block, int count)
 
 {
-	int size, i, sz;
+	int size, sz;
 	unsigned long block_num, backing_blk_num;
 	errcode_t retval = 0;
 	ext2_loff_t offset;
 	struct undo_private_data *data;
 	TDB_DATA tdb_key, tdb_data;
-	char *read_ptr;
+	unsigned char *read_ptr;
 	unsigned long end_block;
 
 	data = (struct undo_private_data *) channel->private_data;
@@ -312,9 +322,13 @@ static errcode_t undo_write_tdb(io_channel channel,
 	return retval;
 }
 
-static errcode_t undo_io_read_error(io_channel channel,
-			unsigned long block, int count, void *data,
-			size_t size, int actual, errcode_t error)
+static errcode_t undo_io_read_error(io_channel channel ATTR((unused)),
+				    unsigned long block ATTR((unused)),
+				    int count ATTR((unused)),
+				    void *data ATTR((unused)),
+				    size_t size ATTR((unused)),
+				    int actual,
+				    errcode_t error ATTR((unused)))
 {
 	actual_size = actual;
 	return error;
@@ -330,8 +344,6 @@ static errcode_t undo_open(const char *name, int flags, io_channel *channel)
 	io_channel	io = NULL;
 	struct undo_private_data *data = NULL;
 	errcode_t	retval;
-	int		open_flags;
-	struct stat	st;
 
 	if (name == 0)
 		return EXT2_ET_BAD_DEVICE_NAME;
@@ -425,7 +437,7 @@ static errcode_t undo_close(io_channel channel)
 static errcode_t undo_set_blksize(io_channel channel, int blksize)
 {
 	struct undo_private_data *data;
-	errcode_t		retval;
+	errcode_t		retval = 0;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct undo_private_data *) channel->private_data;
@@ -446,7 +458,7 @@ static errcode_t undo_set_blksize(io_channel channel, int blksize)
 static errcode_t undo_read_blk(io_channel channel, unsigned long block,
 			       int count, void *buf)
 {
-	errcode_t	retval;
+	errcode_t	retval = 0;
 	struct undo_private_data *data;
 
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
@@ -485,7 +497,6 @@ static errcode_t undo_write_byte(io_channel channel, unsigned long offset,
 {
 	struct undo_private_data *data;
 	errcode_t	retval = 0;
-	ssize_t		actual;
 	ext2_loff_t	location;
 	unsigned long blk_num, count;;
 
