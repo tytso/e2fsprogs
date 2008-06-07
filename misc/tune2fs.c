@@ -86,7 +86,7 @@ static char *mntopts_cmd;
 static int stride, stripe_width;
 static int stride_set, stripe_width_set;
 static char *extended_cmd;
-static unsigned long int new_inode_size;
+static unsigned long new_inode_size;
 
 int journal_size, journal_flags;
 char *journal_device;
@@ -1033,8 +1033,9 @@ static blk_t transalate_block(blk_t blk)
 	return 0;
 }
 
-static int process_block(ext2_filsys fs, blk_t	*block_nr,
-			 e2_blkcnt_t blockcnt,
+static int process_block(ext2_filsys fs EXT2FS_ATTR((unused)),
+			 blk_t *block_nr,
+			 e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
 			 blk_t ref_block EXT2FS_ATTR((unused)),
 			 int ref_offset EXT2FS_ATTR((unused)),
 			 void *priv_data EXT2FS_ATTR((unused)))
@@ -1126,23 +1127,24 @@ err_out:
 
 }
 
-static int expand_inode_table(ext2_filsys fs, unsigned long int new_inode_size)
+static int expand_inode_table(ext2_filsys fs, unsigned long new_ino_size)
 {
 	dgrp_t i;
 	blk_t blk;
 	errcode_t retval;
-	int new_ino_blks_per_grp, j;
+	int new_ino_blks_per_grp;
+	unsigned int j;
 	char *old_itable = NULL, *new_itable = NULL;
 	char *tmp_old_itable = NULL, *tmp_new_itable = NULL;
-	unsigned long int old_inode_size;
+	unsigned long old_ino_size;
 	int old_itable_size, new_itable_size;
 
 	old_itable_size = fs->inode_blocks_per_group * fs->blocksize;
-	old_inode_size = EXT2_INODE_SIZE(fs->super);
+	old_ino_size = EXT2_INODE_SIZE(fs->super);
 
 	new_ino_blks_per_grp = ext2fs_div_ceil(
 					EXT2_INODES_PER_GROUP(fs->super) *
-					new_inode_size,
+					new_ino_size,
 					fs->blocksize);
 
 	new_itable_size = new_ino_blks_per_grp * fs->blocksize;
@@ -1168,13 +1170,13 @@ static int expand_inode_table(ext2_filsys fs, unsigned long int new_inode_size)
 
 		for (j = 0; j < EXT2_INODES_PER_GROUP(fs->super); j++) {
 
-			memcpy(new_itable, old_itable, old_inode_size);
+			memcpy(new_itable, old_itable, old_ino_size);
 
-			memset(new_itable+old_inode_size, 0,
-					new_inode_size - old_inode_size);
+			memset(new_itable+old_ino_size, 0,
+					new_ino_size - old_ino_size);
 
-			new_itable +=  new_inode_size;
-			old_itable += old_inode_size;
+			new_itable += new_ino_size;
+			old_itable += old_ino_size;
 		}
 
 		/* reset the pointer */
@@ -1189,7 +1191,7 @@ static int expand_inode_table(ext2_filsys fs, unsigned long int new_inode_size)
 
 	/* Update the meta data */
 	fs->inode_blocks_per_group = new_ino_blks_per_grp;
-	fs->super->s_inode_size = new_inode_size;
+	fs->super->s_inode_size = new_ino_size;
 
 err_out:
 	if (old_itable)
@@ -1199,7 +1201,6 @@ err_out:
 		ext2fs_free_mem(&new_itable);
 
 	return retval;
-
 }
 
 static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
@@ -1263,7 +1264,7 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 	for (pos = (head)->next, pnext = pos->next; pos != (head); \
 	     pos = pnext, pnext = pos->next)
 
-static void free_blk_move_list()
+static void free_blk_move_list(void)
 {
 	struct list_head *entry, *tmp;
 	struct blk_move *bmv;
@@ -1277,13 +1278,14 @@ static void free_blk_move_list()
 
 	return ;
 }
-static int resize_inode(ext2_filsys fs, unsigned long int new_inode_size)
+
+static int resize_inode(ext2_filsys fs, unsigned long new_size)
 {
 	errcode_t retval;
 	int new_ino_blks_per_grp;
 	ext2fs_block_bitmap bmap;
 
-	if (new_inode_size <= EXT2_INODE_SIZE(fs->super)) {
+	if (new_size <= EXT2_INODE_SIZE(fs->super)) {
 		fprintf(stderr, _("New inode size too small\n"));
 		return EXT2_ET_INVALID_ARGUMENT;
 	}
@@ -1295,7 +1297,7 @@ static int resize_inode(ext2_filsys fs, unsigned long int new_inode_size)
 
 	new_ino_blks_per_grp = ext2fs_div_ceil(
 					EXT2_INODES_PER_GROUP(fs->super)*
-					new_inode_size,
+					new_size,
 					fs->blocksize);
 
 	/* We may change the file system.
@@ -1321,7 +1323,7 @@ static int resize_inode(ext2_filsys fs, unsigned long int new_inode_size)
 	if (retval)
 		goto err_out;
 
-	retval = expand_inode_table(fs, new_inode_size);
+	retval = expand_inode_table(fs, new_size);
 	if (retval)
 		goto err_out;
 
@@ -1342,8 +1344,9 @@ err_out:
 static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 {
 	errcode_t retval = 0;
-	char *tdb_dir, tdb_file[PATH_MAX];
-	char *device_name, *tmp_name;
+	const char *tdb_dir;
+	char tdb_file[PATH_MAX];
+	char *dev_name, *tmp_name;
 
 #if 0 /* FIXME!! */
 	/*
@@ -1355,7 +1358,7 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 					&tdb_dir);
 #endif
 	tmp_name = strdup(name);
-	device_name = basename(tmp_name);
+	dev_name = basename(tmp_name);
 
 	tdb_dir = getenv("E2FSPROGS_UNDO_DIR");
 	if (!tdb_dir)
@@ -1365,7 +1368,7 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	    access(tdb_dir, W_OK))
 		return 0;
 
-	sprintf(tdb_file, "%s/tune2fs-%s.e2undo", tdb_dir, device_name);
+	sprintf(tdb_file, "%s/tune2fs-%s.e2undo", tdb_dir, dev_name);
 
 	if (!access(tdb_file, F_OK)) {
 		if (unlink(tdb_file) < 0) {
@@ -1383,7 +1386,6 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	printf(_("To undo the tune2fs operations please run "
 		 "the command\n    undoe2fs %s %s\n\n"),
 		 tdb_file, name);
-err_out:
 	free(tmp_name);
 	return retval;
 }
@@ -1594,7 +1596,7 @@ int main (int argc, char ** argv)
 				"Run undoe2fs to undo the "
 				"file system changes. \n"), stderr);
 		} else {
-			printf (_("Setting inode size  %d\n"),
+			printf (_("Setting inode size %lu\n"),
 							new_inode_size);
 		}
 	}
