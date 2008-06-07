@@ -288,6 +288,10 @@ static void check_if_skip(e2fsck_t ctx)
 		if (batt && (fs->super->s_mnt_count < 
 			     (unsigned) fs->super->s_max_mnt_count*2))
 			reason = 0;
+	} else if (fs->super->s_checkinterval && (ctx->now < lastcheck)) {
+		reason = _(" has filesystem last checked time in the future");
+		if (batt)
+			reason = 0;
 	} else if (fs->super->s_checkinterval &&
 		   ((ctx->now - lastcheck) >= 
 		    ((time_t) fs->super->s_checkinterval))) {
