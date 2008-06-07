@@ -700,6 +700,25 @@ BUILD_CC="$BUILD_CC" CPP="$CPP" /bin/sh $ac_aux_dir/parse-types.sh
 ASM_TYPES_HEADER=./asm_types.h
 AC_SUBST_FILE(ASM_TYPES_HEADER)
 dnl
+dnl Save the configuration #defines needed for the public ext2fs.h
+dnl header file
+dnl
+echo "/* These defines are needed for the public ext2fs.h header file */" \
+     > public_config.h
+if grep HAVE_SYS_TYPES_H confdefs.h > tmp_config.$$; then
+  uniq tmp_config.$$ >> public_config.h
+else
+  echo "#undef HAVE_SYS_TYPES_H" >> public_config.h
+fi
+if grep WORDS_BIGENDIAN confdefs.h > tmp_config.$$; then
+  uniq tmp_config.$$ >> public_config.h
+else
+  echo "#undef WORDS_BIGENDIAN" >> public_config.h
+fi
+rm -f tmp_config.$$
+PUBLIC_CONFIG_HEADER=./public_config.h
+AC_SUBST_FILE(PUBLIC_CONFIG_HEADER)
+dnl
 dnl See if we have inttypes.h and if intptr_t is defined
 dnl
 AC_CHECK_HEADERS([inttypes.h])

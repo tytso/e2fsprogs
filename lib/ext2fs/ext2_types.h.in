@@ -132,3 +132,5 @@ typedef signed long long 	__s64;
 #undef __U64_TYPEDEF
 
 #endif /* _*_TYPES_H */
+
+@PUBLIC_CONFIG_HEADER@
