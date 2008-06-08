@@ -43,6 +43,7 @@ extern int optind;
 #include <unistd.h>
 #include <sys/types.h>
 #include <libgen.h>
+#include <limits.h>
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"

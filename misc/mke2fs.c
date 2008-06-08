@@ -45,6 +45,7 @@ extern int optind;
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <libgen.h>
+#include <limits.h>
 
 #include "ext2fs/ext2_fs.h"
 #include "et/com_err.h"
