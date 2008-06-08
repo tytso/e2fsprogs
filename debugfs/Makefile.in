@@ -26,7 +26,7 @@ SRCS= debug_cmds.c $(srcdir)/debugfs.c $(srcdir)/util.c $(srcdir)/ls.c \
 
 LIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(LIBBLKID) \
 	$(LIBUUID)
-DEPLIBS= $(LIBEXT2FS) $(LIBE2P) $(LIBSS) $(LIBCOM_ERR) $(DEPLIBBLKID) $(DEPLIBUUID)
+DEPLIBS= $(LIBEXT2FS) $(LIBE2P) $(DEPLIBSS) $(LIBCOM_ERR) $(DEPLIBBLKID) $(DEPLIBUUID)
 
 .c.o:
 	@echo "	CC $<"

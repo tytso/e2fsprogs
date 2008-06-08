@@ -303,7 +303,7 @@ unused.o: $(top_srcdir)/debugfs/unused.c
 	@echo "	CC $<"
 	@$(CC) $(ALL_CFLAGS) -c $< -o $@
 
-tst_extents: $(srcdir)/extent.c extent_dbg.c $(DEBUG_OBJS) $(LIBSS) $(LIBE2P) $(DEPLIBUUID) $(DEPLIBBLKID)
+tst_extents: $(srcdir)/extent.c extent_dbg.c $(DEBUG_OBJS) $(DEPLIBSS) $(LIBE2P) $(DEPLIBUUID) $(DEPLIBBLKID)
 	@echo "	LD $@"
 	@$(CC) -o tst_extents $(srcdir)/extent.c extent_dbg.c \
 		$(ALL_CFLAGS) -DDEBUG $(DEBUG_OBJS) $(LIBSS) $(LIBE2P) \
