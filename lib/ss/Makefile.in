@@ -163,7 +163,7 @@ uninstall::
 		$(DESTDIR)$(man1dir)/mk_cmds.1 
 	$(RM) -rf $(DESTDIR)$(includedir)/ss $(DESTDIR)$(datadir)/ss
 
-test_ss: test_ss.o test_cmd.o $(LIBSS) $(LIBCOM_ERR)
+test_ss: test_ss.o test_cmd.o $(DEPLIBSS) $(LIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o $@ test_ss.o test_cmd.o $(ALL_CFLAGS) \
 		$(LIBSS) $(LIBCOM_ERR)
