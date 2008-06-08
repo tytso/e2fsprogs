@@ -116,7 +116,7 @@ e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
 
 e2undo: $(E2UNDO_OBJS) $(DEPLIBS)
 	@echo "	LD $@"
-	@$(CC) $(ALL_LDFLAGS) -o e2undo $(E2UNDO_OBJS) $(LIBS)
+	@$(CC) $(ALL_LDFLAGS) -o e2undo $(E2UNDO_OBJS) $(LIBS) $(LIBINTL)
 
 base_device: base_device.c
 	@echo "	LD $@"

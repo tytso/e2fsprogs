@@ -128,6 +128,13 @@ int main(int argc, char *argv[])
 	char *device_name, *tdb_file, *prg_name;
 	io_manager manager = unix_io_manager;
 
+#ifdef ENABLE_NLS
+	setlocale(LC_MESSAGES, "");
+	setlocale(LC_CTYPE, "");
+	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
+	textdomain(NLS_CAT_NAME);
+#endif
+
 	prg_name = argv[0];
 	while((c = getopt(argc, argv, "f")) != EOF) {
 		switch (c) {
