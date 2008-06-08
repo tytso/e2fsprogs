@@ -1,5 +1,5 @@
-printf "undoe2fs with mke2fs: "
-if test -x $UNDOE2FS_EXE; then
+printf "e2undo with mke2fs: "
+if test -x $E2UNDO_EXE; then
 
 export E2FSPROGS_UNDO_DIR=./
 TDB_FILE=./mke2fs-test.img.e2undo
@@ -13,14 +13,14 @@ $MKE2FS -F -o Linux -I 128 -b 1024 $TMPFILE  >> $OUT 2>&1
 md5=$(md5sum $TMPFILE | cut -d " " -f 1)
 echo md5sum before mke2fs $md5 >> $OUT
 
-echo using mke2fs to test undoe2fs >> $OUT
+echo using mke2fs to test e2undo >> $OUT
 $MKE2FS -q -F -o Linux -I 256 -O uninit_bg -E lazy_itable_init=1 -b 1024 $TMPFILE  >> $OUT 2>&1
 new_md5=$(md5sum $TMPFILE | cut -d " " -f 1)
 echo md5sum after mke2fs $new_md5 >> $OUT
 
-$UNDOE2FS_EXE  $TDB_FILE $TMPFILE  >> $OUT 2>&1
+$E2UNDO_EXE  $TDB_FILE $TMPFILE  >> $OUT 2>&1
 new_md5=$(md5sum $TMPFILE | cut -d " " -f 1)
-echo md5sum after undoe2fs $new_md5 >> $OUT
+echo md5sum after e2undo $new_md5 >> $OUT
 
 if [ $md5 = $new_md5 ]; then
 	echo "ok"
