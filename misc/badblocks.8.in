@@ -16,6 +16,10 @@ badblocks \- search a device for bad blocks
 .I blocks_at_once
 ]
 [
+.B \-e
+.I max_bad_blocks
+]
+[
 .B \-i
 .I input_file
 ]
@@ -80,6 +84,11 @@ Specify the size of blocks in bytes.  The default is 1024.
 .TP
 .BI \-c " number of blocks"
 is the number of blocks which are tested at a time.  The default is 64.
+.TP
+.BI \-e " max bad block count"
+Specify a maximum number of bad blocks before aborting the test.  The
+default is 0, meaning the test will continue until the end of the test
+range is reached.
 .TP
 .B \-f
 Normally, badblocks will refuse to do a read/write or a non-destructive
@@ -183,6 +192,13 @@ This option erases data!  If you want to do write-mode testing on
 an existing file system, use the
 .B \-n
 option instead.  It is slower, but it will preserve your data.  
+.PP
+The
+.B \-e
+option will cause badblocks to output a possibly incomplete list of
+bad blocks. Therefore it is recommended to use it only when one wants
+to know if there are any bad blocks at all on the device, and not when
+the list of bad blocks is wanted.
 .SH AUTHOR
 .B badblocks
 was written by Remy Card <Remy.Card@linux.org>.  Current maintainer is

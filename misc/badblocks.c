@@ -70,6 +70,7 @@ static int t_max = 0;			/* allocated test patterns */
 static unsigned int *t_patts = NULL;	/* test patterns */
 static int current_O_DIRECT = 0;	/* Current status of O_DIRECT flag */
 static int exclusive_ok = 0;
+static unsigned int max_bb = 0;		/* Abort test if more than this number of bad blocks has been encountered */
 
 #define T_INC 32
 
@@ -77,7 +78,7 @@ unsigned int sys_page_size = 4096;
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] [-t test_pattern [-t test_pattern [...]]]\n device [last_block [start_block]]\n"),
+	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] [-e max_bad_blocks] [-t test_pattern [-t test_pattern [...]]]\n device [last_block [start_block]]\n"),
 		 program_name);
 	exit (1);
 }
@@ -379,6 +380,12 @@ static unsigned int test_ro (int dev, blk_t last_block,
 	}
 	while (currently_testing < last_block)
 	{
+		if (max_bb && bb_count >= max_bb) {
+			if (s_flag || v_flag) {
+				fputs(_("Too many bad blocks, aborting test\n"), stderr);
+			}
+			break;
+		}
 		if (next_bad) {
 			if (currently_testing == next_bad) {
 				/* fprintf (out, "%lu\n", nextbad); */
@@ -476,6 +483,12 @@ static unsigned int test_rw (int dev, blk_t last_block,
 
 		try = blocks_at_once;
 		while (currently_testing < last_block) {
+			if (max_bb && bb_count >= max_bb) {
+				if (s_flag || v_flag) {
+					fputs(_("Too many bad blocks, aborting test\n"), stderr);
+				}
+				break;
+			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
 			got = do_write(dev, buffer, try, block_size,
@@ -515,6 +528,12 @@ static unsigned int test_rw (int dev, blk_t last_block,
 
 		try = blocks_at_once;
 		while (currently_testing < last_block) {
+			if (max_bb && bb_count >= max_bb) {
+				if (s_flag || v_flag) {
+					fputs(_("Too many bad blocks, aborting test\n"), stderr);
+				}
+				break;
+			}
 			if (currently_testing + try > last_block)
 				try = last_block - currently_testing;
 			got = do_read (dev, read_buffer, try, block_size,
@@ -652,6 +671,12 @@ static unsigned int test_nd (int dev, blk_t last_block,
 			alarm_intr(SIGALRM);
 
 		while (currently_testing < last_block) {
+			if (max_bb && bb_count >= max_bb) {
+				if (s_flag || v_flag) {
+					fputs(_("Too many bad blocks, aborting test\n"), stderr);
+				}
+				break;
+			}
 			got = try = blocks_at_once - buf_used;
 			if (next_bad) {
 				if (currently_testing == next_bad) {
@@ -884,7 +909,7 @@ int main (int argc, char ** argv)
 	
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:fi:o:svwnc:p:h:t:X")) != EOF) {
+	while ((c = getopt (argc, argv, "b:e:fi:o:svwnc:p:h:t:X")) != EOF) {
 		switch (c) {
 		case 'b':
 			block_size = parse_uint(optarg, "block size");
@@ -923,6 +948,9 @@ int main (int argc, char ** argv)
 			break;
 		case 'c':
 			blocks_at_once = parse_uint(optarg, "blocks at once");
+			break;
+		case 'e':
+			max_bb = parse_uint(optarg, "max bad block count");
 			break;
 		case 'p':
 			num_passes = parse_uint(optarg, 
