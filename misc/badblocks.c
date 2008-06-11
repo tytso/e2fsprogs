@@ -853,6 +853,7 @@ static unsigned int parse_uint(const char *str, const char *descr)
 	char		*tmp;
 	unsigned long	ret;
 	
+	errno = 0;
 	ret = strtoul(str, &tmp, 0);
 	if (*tmp || errno || (ret > UINT_MAX) ||
 	    (ret == ULONG_MAX && errno == ERANGE)) {
