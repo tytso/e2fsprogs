@@ -71,6 +71,7 @@ static unsigned int *t_patts = NULL;	/* test patterns */
 static int current_O_DIRECT = 0;	/* Current status of O_DIRECT flag */
 static int exclusive_ok = 0;
 static unsigned int max_bb = 0;		/* Abort test if more than this number of bad blocks has been encountered */
+static unsigned int d_flag = 0;		/* delay factor between reads */
 
 #define T_INC 32
 
@@ -78,7 +79,7 @@ unsigned int sys_page_size = 4096;
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] [-e max_bad_blocks] [-t test_pattern [-t test_pattern [...]]]\n device [last_block [start_block]]\n"),
+	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] [-e max_bad_blocks] [-d delay_factor_between_reads] [-t test_pattern [-t test_pattern [...]]]\n device [last_block [start_block]]\n"),
 		 program_name);
 	exit (1);
 }
@@ -268,6 +269,9 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 		    blk_t current_block)
 {
 	long got;
+	struct timeval tv1, tv2;
+#define NANOSEC (1000000000L)
+#define MILISEC (1000L)
 
 	set_o_direct(dev, buffer, try * block_size, current_block);
 
@@ -280,12 +284,34 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 		com_err (program_name, errno, _("during seek"));
 
 	/* Try the read */
+	if (d_flag)
+		gettimeofday(&tv1);
 	got = read (dev, buffer, try * block_size);
+	if (d_flag)
+		gettimeofday(&tv2);
 	if (got < 0)
 		got = 0;	
 	if (got & 511)
 		fprintf(stderr, _("Weird value (%ld) in do_read\n"), got);
 	got /= block_size;
+	if (d_flag && got == try) {
+		struct timespec ts;
+		ts.tv_sec = tv2.tv_sec - tv1.tv_sec;
+		ts.tv_nsec = (tv2.tv_usec - tv1.tv_usec) * MILISEC;
+		if (ts.tv_nsec < 0) {
+			ts.tv_nsec += NANOSEC;
+			ts.tv_sec -= 1;
+		}
+		/* increase/decrease the sleep time based on d_flag value */
+		ts.tv_sec = ts.tv_sec * d_flag / 100;
+		ts.tv_nsec = ts.tv_nsec * d_flag / 100;
+		if (ts.tv_nsec > NANOSEC) {
+			ts.tv_sec += ts.tv_nsec / NANOSEC;
+			ts.tv_nsec %= NANOSEC;
+		}
+		if (ts.tv_sec || ts.tv_nsec)
+			nanosleep(&ts, NULL);
+	}
 	return got;
 }
 
@@ -910,7 +936,7 @@ int main (int argc, char ** argv)
 	
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:e:fi:o:svwnc:p:h:t:X")) != EOF) {
+	while ((c = getopt (argc, argv, "b:d:e:fi:o:svwnc:p:h:t:X")) != EOF) {
 		switch (c) {
 		case 'b':
 			block_size = parse_uint(optarg, "block size");
@@ -952,6 +978,9 @@ int main (int argc, char ** argv)
 			break;
 		case 'e':
 			max_bb = parse_uint(optarg, "max bad block count");
+			break;
+		case 'd':
+			d_flag = parse_uint(optarg, "read delay factor");
 			break;
 		case 'p':
 			num_passes = parse_uint(optarg, 
