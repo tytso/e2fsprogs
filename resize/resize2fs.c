@@ -188,6 +188,7 @@ errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs, blk_t new_size)
 	unsigned int	meta_bg, meta_bg_size;
 	int		has_super;
 	unsigned long long new_inodes;	/* u64 to check for overflow */
+	double		percent;
 
 	fs->super->s_blocks_count = new_size;
 
@@ -251,10 +252,10 @@ retry:
 	/*
 	 * Adjust the number of reserved blocks
 	 */
-	blk = (__u64)old_fs->super->s_r_blocks_count * 100 /
+	percent = (old_fs->super->s_r_blocks_count * 100.0) /
 		old_fs->super->s_blocks_count;
-	fs->super->s_r_blocks_count = e2p_percent(blk, 
-						  fs->super->s_blocks_count);
+	fs->super->s_r_blocks_count = (unsigned int) (percent *
+					fs->super->s_blocks_count / 100.0);
 
 	/*
 	 * Adjust the bitmaps for size

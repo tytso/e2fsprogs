@@ -23,7 +23,7 @@ Errors behavior:          Continue
 Filesystem OS type:       Linux
 Inode count:              16384
 Block count:              65536
-Reserved block count:     2621
+Reserved block count:     3276
 Free blocks:              61023
 Free inodes:              16373
 First block:              1
@@ -471,7 +471,7 @@ Errors behavior:          Continue
 Filesystem OS type:       Linux
 Inode count:              4096
 Block count:              16384
-Reserved block count:     655
+Reserved block count:     819
 Free blocks:              14277
 Free inodes:              4085
 First block:              1
@@ -628,7 +628,7 @@ Errors behavior:          Continue
 Filesystem OS type:       Linux
 Inode count:              41472
 Block count:              165536
-Reserved block count:     4966
+Reserved block count:     8274
 Free blocks:              157175
 Free inodes:              41461
 First block:              1

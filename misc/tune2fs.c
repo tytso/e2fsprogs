@@ -973,8 +973,8 @@ int main (int argc, char ** argv)
 		printf (_("Setting interval between checks to %lu seconds\n"), interval);
 	}
 	if (m_flag) {
-		sb->s_r_blocks_count = e2p_percent(reserved_ratio,
-						   sb->s_blocks_count);
+		sb->s_r_blocks_count = (unsigned int) (reserved_ratio *
+					sb->s_blocks_count / 100.0);
 		ext2fs_mark_super_dirty(fs);
 		printf (_("Setting reserved blocks percentage to %g%% (%u blocks)\n"),
 			reserved_ratio, sb->s_r_blocks_count);

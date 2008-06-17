@@ -27,9 +27,10 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	unsigned long		new_desc_blocks;
 	ext2_filsys 		new_fs;
 	errcode_t 		retval;
+	double			percent;
 	dgrp_t			i;
 	blk_t			size;
-	int			fd, r_frac, overhead;
+	int			fd, overhead;
 
 	printf(_("Filesystem at %s is mounted on %s; "
 		 "on-line resizing required\n"), fs->device_name, mtpt);
@@ -80,7 +81,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		exit(1);
 	}
 
-	r_frac = ext2fs_div_ceil(100 * sb->s_r_blocks_count, sb->s_blocks_count);
+	percent = (sb->s_r_blocks_count * 100.0) / sb->s_blocks_count;
 
 	retval = ext2fs_read_bitmaps(fs);
 	if (retval)
@@ -127,8 +128,8 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 				sb->s_first_data_block - 
 				(i * sb->s_blocks_per_group);
 		}
-		input.reserved_blocks = e2p_percent(r_frac, 
-						    input.blocks_count);
+		input.reserved_blocks = (blk_t) (percent * input.blocks_count
+						 / 100.0);
 
 #if 0
 		printf("new block bitmap is at 0x%04x\n", input.block_bitmap);

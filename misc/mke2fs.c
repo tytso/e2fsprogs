@@ -1562,8 +1562,8 @@ static void PRS(int argc, char *argv[])
 	/*
 	 * Calculate number of blocks to reserve
 	 */
-	fs_param.s_r_blocks_count = e2p_percent(reserved_ratio, 
-						fs_param.s_blocks_count);
+	fs_param.s_r_blocks_count = (unsigned int) (reserved_ratio *
+					fs_param.s_blocks_count / 100.0);
 }
 
 int main (int argc, char *argv[])
