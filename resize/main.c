@@ -307,12 +307,6 @@ int main (int argc, char ** argv)
 		exit (1);
 	}
 
-	if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
-		com_err(program_name, EXT2_ET_RO_UNSUPP_FEATURE,
-			":- uninit_bg");
-		exit(1);
-	}
-
 	/*
 	 * Check for compatibility with the feature sets.  We need to
 	 * be more stringent than ext2fs_open().
