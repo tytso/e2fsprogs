@@ -170,9 +170,11 @@ errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 	/* OK, do the write loop */
 	j=0;
 	while (j < num) {
-		if (blk % STRIDE_LENGTH)
+		if (blk % STRIDE_LENGTH) {
 			count = STRIDE_LENGTH - (blk % STRIDE_LENGTH);
-		else {
+			if (count > (num - j))
+				count = num - j;
+		} else {
 			count = num - j;
 			if (count > STRIDE_LENGTH)
 				count = STRIDE_LENGTH;
