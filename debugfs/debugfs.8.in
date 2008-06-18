@@ -90,10 +90,11 @@ Forces the use of the given block size for the file system, rather than
 detecting the correct block size as normal.
 .TP
 .I -s superblock
-Causes the file system superblock to be read from the given block number,
-rather than the default (1).  If you give a
+Causes the file system superblock to be read from the given block
+number, instead of using the primary superblock (located at an offset of
+1024 bytes from the beginning of the filesystem).  If you specify the
 .I -s
-option, you must also give a
+option, you must also provide the blocksize of the filesystem via the
 .I -b
 option.
 .TP
