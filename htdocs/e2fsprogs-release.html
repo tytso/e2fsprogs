@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.40.11">E2fsprogs 1.40.11 (June 17, 2008)</A>
 <LI><A HREF="#1.40.10">E2fsprogs 1.40.10 (May 21, 2008)</A>
 <LI><A HREF="#1.40.9">E2fsprogs 1.40.9 (April 27, 2008)</A>
 <LI><A HREF="#1.40.8">E2fsprogs 1.40.8 (March 13, 2008)</A>
@@ -80,6 +81,32 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.40.10">E2fsprogs 1.40.11 (June 17, 2008)</A></H2>
+
+<P>Mke2fs, tune2fs, and resize2fs now use floating point to calculate the
+percentage of reserved blocks.  (Addresses Debian Bug: #452639)</P>
+
+<P>Updated Spanish and Catalan translations.</P>
+
+<P>Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bugs: #483962, #483023)</P>
+
+<P>Add detection for ZFS volumes to the libblkid library.</P>
+
+<P>Fixed spelling mistakes, typos, and otherwise clarified man pages.
+(Addresses Debian Bug: #486463)</P>
+
+<H3>Programmer's notes</H3>
+
+<P>Fix marginal C code in probe_lvm2() function to the blkid library more
+portable for older compilers.</P>
+
+<P>Fix build problems on MacOS X.  (Addresses Sourceforge Bug: #1972473)</P>
+
+<P>Fix ext2fs_swap{16,32,64} functions so they can be used by external
+applications on big-endian machines.  (Addresses Debian Bug: #484879)</P>
+
 
 <H2><A NAME="1.40.10">E2fsprogs 1.40.10 (May 21, 2008)</A></H2>
 
