@@ -398,6 +398,7 @@ This version of
 .B e2fsck
 was written by Theodore Ts'o <tytso@mit.edu>.
 .SH SEE ALSO
+.BR e2fsck.conf (5),
 .BR badblocks (8),
 .BR dumpe2fs (8),
 .BR debugfs (8),
