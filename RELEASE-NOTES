@@ -1,3 +1,31 @@
+E2fsprogs 1.40.11 (June 17, 2008)
+=================================
+
+Mke2fs, tune2fs, and resize2fs now use floating point to calculate the
+percentage of reserved blocks.  (Addresses Debian Bug: #452639)
+
+Updated Spanish and Catalan translations.
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bugs: #483962, #483023)
+
+Add detection for ZFS volumes to the libblkid library.
+
+Fixed spelling mistakes, typos, and otherwise clarified man pages.
+(Addresses Debian Bug: #486463)
+
+Programmer's notes:
+-------------------
+
+Fix marginal C code in probe_lvm2() function to the blkid library more
+portable for older compilers.
+
+Fix build problems on MacOS X.  (Addresses Sourceforge Bug: #1972473)
+
+Fix ext2fs_swap{16,32,64} functions so they can be used by external
+applications on big-endian machines.  (Addresses Debian Bug: #484879)
+    
+
 E2fsprogs 1.40.10 (May 21, 2008)
 ================================
 

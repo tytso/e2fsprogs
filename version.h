@@ -7,5 +7,5 @@
  * redistributed under the GNU Public License.
  */
 
-#define E2FSPROGS_VERSION "1.40.10"
-#define E2FSPROGS_DATE "21-May-2008"
+#define E2FSPROGS_VERSION "1.40.11"
+#define E2FSPROGS_DATE "17-June-2008"
