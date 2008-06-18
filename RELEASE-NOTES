@@ -1,3 +1,114 @@
+E2fsprogs 1.41-WIP-0617 (June 17, 2008) git ID: f1420977 
+========================================================
+
+Add support to badblocks to limit how quickly it reads from the disk
+drive (so it can be used for background scrubbing), and so it will
+abort after finding a given number of errors.
+
+Add support for ext4 filesystem features, in particular extents,
+uninit_bg, flex_bg, huge_file, and dir_nlink features.  Also add
+support for checking journal checksums.  Debugfs will print new
+superblock and inode fields that were defined for ext4.  For example,
+the nanosecond and i_version fields of an inode, and the
+s_min_extra_isize and s_wanted_extra_isize fields from the superblock.
+Note: Resize2fs doesn't currently support the combination of flex_bg
+and !resize_inode.  (Addresses Debian Bug: #388452, #425477)
+
+Tune2fs can support migrating a filesystem from using 128 byte inodes
+to 256 byte inodes, so it can take advantage of the full features of
+ext4.
+
+Add support for "undo" support.  E2fsck and mke2fs can optionally
+record an undo log which can replayed by the program e2undo.
+
+E2fsck will display a more understandable message when the last check
+field in the superblock is in the future.  (Addresses Debian Bug:
+#446005).
+
+Speed up how mke2fs writes the journal data blocks by writing the disk
+blocks in larger chunks.
+
+Add more paranoid checks for LVM volumes and swap partitions in
+blkid's probe function, to reduce the chances of false positives.
+
+The mke2fs program now has a much more sophisticated system for
+controlling configuration parameters of a newly created filesystem
+based on a split filesystem and usage type system.  The -t option to
+mke2fs was a deprecated alias to -c; it now specifies a filesystem
+type (ext2, ext3, ext4, etc.), while the -T option can now be a comma
+separated usage list.  The filesystem type information and type
+information is used to extract configuration parameters from the
+/etc/mke2fs.conf file.
+
+Resize2fs will now print the minimum needed filesystem size if given
+the -P option, and will resize the filesystem to the smallest possible
+size if given the -M option.
+
+The mke2fs program will no longer complain and request the -f option
+when the user tries to create a filesystem with greater than 2**31
+blocks.
+
+E2fsck now performs more extensive and careful checks of extended
+attributes stored in the inode.
+
+Mke2fs will always make sure that lost+found always has at least 2
+blocks, even for filesystems with very large blocksizes (i.e., 64kb).
+
+The "ls" command in debugfs now supports the -p option, which causes
+it to quote the filenames so that spaces or tabs in directory entries
+are easily visible.  (Addresses Red Hat Bugzilla: #149480; Addresses
+Sourceforge Feature Request: #1201667)
+
+Fix a potential off-by-one buffer oveflow in the fs_device_name in an
+e2image file.
+
+The chattr program will return a non-zero exit code in case of
+failures, and error messages can be suppressed with the -f option.
+(Addresses-Red-Hat-Bugzilla: #180596)
+    
+Remove support for the legacy big-endian filesystem format which only
+existed on extremely long-dead PowerPC kernels almost a decade ago.
+
+Remove MASIX support from e2fsprogs.
+
+Add I/O statistics reporting to e2fsck.
+
+Programmer's Notes
+------------------
+
+Factor out bitmap code in preparation for adding 64-bit new-style
+bitmaps.
+
+Fix gcc -Wall warnings
+
+Fix the pkg-config files so that private librares are specified in
+"Libs.private:".
+
+Fix the libext2fs.texinfo manual so it builds with modern versions of
+texinfo.
+
+Silence the makefile from showing the awk command used to build the
+
+Clean up the badblocks group so to make it more portable and robust.
+
+Avoid using predictable filenames in /tmp in blkid's regression test
+suite.  Also remove bashism's in the regression test script.
+
+A few library routines have been converted to support 64-bit block
+numbers; in particular, the I/O manager functions, the test_io,
+inode_io, and unix_io managers have all be converted to support 64-bit
+operation.
+
+Debugfs can now be extended for use by test programs.  See
+lib/ext2fs/extents.c for an example for how it can be used.  The test
+program links against the debugfs object files, and provides
+additional commands by defining an auxiliary libss command table.
+
+The lazy_bg filesystem feature, which was only used by developer's
+testing, has been removed since it has been largely supplanted by
+uninit_bg.  This also simplifies the code.
+
+
 E2fsprogs 1.40.11 (June 17, 2008)
 =================================
 

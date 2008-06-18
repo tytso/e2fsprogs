@@ -1,3 +1,39 @@
+e2fsprogs (1.41~WIP-2008-06-17-1) experimental; urgency=low
+
+  * New upstream version (pre-release for e2fsprogs 1.41)
+  * New options to badblocks allow it to limit how quickly it reads
+    from disk (for background scrubbing) and abort after a finding
+    giving a number of errors.
+  * Add support for ext4 filesystem features.  (Closes: #388452, #425477)
+  * Tune2fs can migrate a filesystem from using 128 byte inodes to
+    larger inode sizes so the user can take full advantage of ext4)
+  * E2fsck and mke2fs can optionally record an undo log which can be
+    replayed by the e2undo program.
+  * E2fsck will display a less cryptic message when the last check field
+    in the superblock is in the future.  (Closes: #446005)
+  * Improve blkid probes for LVM volumes and swap partitions
+  * Mke2fs has a much more sophisticated system for controlling the
+    parameters of newly created filesystems.  The -t option now is used
+    to specify the filesystem type.  See the mke2fs and mke2fs.conf man
+    pages for more details.
+  * Resize2fs will now print the minimum needed filesystem size if given
+    the -P option, and will resize the filesystem to the smallest possible
+    size if given the -M option.
+  * E2fsck now performs more extensive and careful checks of extended
+    attributes stored in the inode.
+  * Mke2fs will always make sure that lost+found always has at least 2
+    blocks, even for filesystems with very large blocksizes (i.e., 64kb).
+  * The debugfs "ls" command now supports the -p option, which causes
+    filenames to be printed surrounded by double quotes.
+  * Fix a potential off-by-one buffer overflow in e2image
+  * The chattr program will now return a non-zero exit code in case of
+    failures.
+  * This version of e2fsprogs removes support for legacy big-endian
+    filesystems and for MASIX filesystems.
+  * Add I/O statistics reporting to e2fsck.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 17 Jun 2008 23:57:08 -0400
+
 e2fsprogs (1.40.11-1) unstable; urgency=low
 
   * Change mke2fs, tune2fs and resize2fs to use floating point precision
