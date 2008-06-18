@@ -1062,12 +1062,11 @@ static unsigned int lvm2_calc_crc(const void *buf, unsigned int size)
 }
 
 static int probe_lvm2(struct blkid_probe *probe,
-			struct blkid_magic *id __BLKID_ATTR((unused)),
+			struct blkid_magic *id,
 			unsigned char *buf)
 {
 	int sector = (id->bim_kboff) << 1;;
-	struct lvm2_pv_label_header *label;
-	label = (struct lvm2_pv_label_header *)buf;
+	struct lvm2_pv_label_header *label= (struct lvm2_pv_label_header *)buf;
 	char *p, *q, uuid[40];
 	unsigned int i, b;
 
