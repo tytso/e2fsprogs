@@ -20,10 +20,13 @@ do
 		continue
 	fi
 	bunzip2 < $SRCDIR/tests/$i.img.bz2 > tests/tmp/test.img.$$
-	# swap is native-endian, so regenerate before testing
 	if [ "$i" = "swap0" ]; then
+		# swap is native-endian, so regenerate before testing
+		dd if=/dev/zero of=tests/tmp/test.img.$$ bs=16k count=64
 		mkswap -v0 tests/tmp/test.img.$$ > /dev/null
 	elif [ "$i" = "swap1" ]; then
+		# swap is native-endian, so regenerate before testing
+		dd if=/dev/zero of=tests/tmp/test.img.$$ bs=16k count=64
 		mkswap -v1 -L SWAP-TEST -U 8ff8e77f-8553-485e-8656-58be67a81666 tests/tmp/test.img.$$ >/dev/null
 	fi
 	./tst_probe tests/tmp/test.img.$$ > tests/$i.out
