@@ -20,7 +20,6 @@ e2fsck/recovery.c
 e2fsck/region.c
 e2fsck/scantest.c
 e2fsck/super.c
-e2fsck/swapfs.c
 e2fsck/unix.c
 e2fsck/util.c
 misc/badblocks.c
@@ -30,15 +29,18 @@ misc/chattr.c
 misc/dumpe2fs.c
 misc/e2image.c
 misc/e2label.c
+misc/e2undo.c
 misc/fsck.c
 misc/logsave.c
 misc/lsattr.c
 misc/mke2fs.c
 misc/mklost+found.c
+misc/partinfo.c
 misc/tune2fs.c
 misc/util.c
 misc/uuidgen.c
 resize/extent.c
 resize/main.c
+resize/online.c
 resize/resize2fs.c
 resize/sim_progress.c
