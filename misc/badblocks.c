@@ -48,6 +48,7 @@ extern int optind;
 #include <time.h>
 #include <limits.h>
 
+#include <sys/time.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
@@ -285,10 +286,10 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 
 	/* Try the read */
 	if (d_flag)
-		gettimeofday(&tv1);
+		gettimeofday(&tv1, NULL);
 	got = read (dev, buffer, try * block_size);
 	if (d_flag)
-		gettimeofday(&tv2);
+		gettimeofday(&tv2, NULL);
 	if (got < 0)
 		got = 0;	
 	if (got & 511)
