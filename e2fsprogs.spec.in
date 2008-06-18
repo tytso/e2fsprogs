@@ -115,6 +115,7 @@ exit 0
 %{_root_sbindir}/e2fsck
 %{_root_sbindir}/e2image
 %{_root_sbindir}/e2label
+%{_root_sbindir}/e2undo
 %{_root_sbindir}/findfs
 %{_root_sbindir}/fsck
 %{_root_sbindir}/fsck.ext2
@@ -164,6 +165,7 @@ exit 0
 %{_mandir}/man8/fsck.ext4dev.8*
 %{_mandir}/man8/e2image.8*
 %{_mandir}/man8/e2label.8*
+%{_mandir}/man8/e2undo.8*
 %{_mandir}/man8/fsck.8*
 %{_mandir}/man8/logsave.8*
 %{_mandir}/man8/mke2fs.8*
