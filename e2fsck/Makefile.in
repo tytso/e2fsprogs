@@ -143,12 +143,12 @@ tst_crc32: $(srcdir)/crc32.c $(LIBEXT2FS)
 tst_refcount: ea_refcount.c
 	@echo "	LD $@"
 	@$(CC) -o tst_refcount $(srcdir)/ea_refcount.c \
-		$(ALL_CFLAGS) -DTEST_PROGRAM -lcom_err
+		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR)
 
 tst_region: region.c
 	@echo "	LD $@"
 	@$(CC) -o tst_region $(srcdir)/region.c \
-		$(ALL_CFLAGS) -DTEST_PROGRAM -lcom_err
+		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR)
 
 check:: tst_refcount tst_region tst_crc32
 	./tst_refcount
