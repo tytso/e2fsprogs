@@ -154,13 +154,13 @@ void blkid_put_cache(blkid_cache cache)
 
 void blkid_gc_cache(blkid_cache cache)
 {
-	struct list_head *p;
+	struct list_head *p, *pnext;
 	struct stat st;
 
 	if (!cache)
 		return;
 
-	list_for_each(p, &cache->bic_devs) {
+	list_for_each_safe(p, pnext, &cache->bic_devs) {
 		blkid_dev dev = list_entry(p, struct blkid_struct_dev, bid_devs);
 		if (!p)
 			break;

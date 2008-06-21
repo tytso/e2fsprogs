@@ -61,7 +61,8 @@ scanned but not necessarily available at this time), specify
 .IR /dev/null.
 .TP
 .B \-g
-Perform a garbage collection pass on the blkid cache.
+Perform a garbage collection pass on the blkid cache to remove
+devices which no longer exist.
 .TP
 .B \-h
 Display a usage message and exit.
