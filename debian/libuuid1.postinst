@@ -2,13 +2,26 @@
 
 set -e
 
-FIRST_SYSTEM_UID=100
-LAST_SYSTEM_UID=999
-FIRST_SYSTEM_GID=100
-LAST_SYSTEM_GID=999
+ADDUSERCONF='/etc/adduser.conf'
 
-if test -f /etc/adduser.conf; then
-   . /etc/adduser.conf
+if test -f $ADDUSERCONF; then
+    FIRST_SYSTEM_UID=$(sed -n "s/^[[:space:]]*FIRST_SYSTEM_UID[[:space:]]*=[[:space:]]*[\"']\?\([^\"']*\)[\"']\?/\1/p" $ADDUSERCONF)
+    LAST_SYSTEM_UID=$(sed -n "s/^[[:space:]]*LAST_SYSTEM_UID[[:space:]]*=[[:space:]]*[\"']\?\([^\"']*\)[\"']\?/\1/p" $ADDUSERCONF)
+    FIRST_SYSTEM_GID=$(sed -n "s/^[[:space:]]*FIRST_SYSTEM_GID[[:space:]]*=[[:space:]]*[\"']\?\([^\"']*\)[\"']\?/\1/p" $ADDUSERCONF)
+    LAST_SYSTEM_GID=$(sed -n "s/^[[:space:]]*LAST_SYSTEM_GID[[:space:]]*=[[:space:]]*[\"']\?\([^\"']*\)[\"']\?/\1/p" $ADDUSERCONF)
+fi
+
+if test -z "$FIRST_SYSTEM_UID"; then
+    FIRST_SYSTEM_UID=100
+fi
+if test -z "$LAST_SYSTEM_UID"; then
+    LAST_SYSTEM_UID=999
+fi
+if test -z "$FIRST_SYSTEM_GID"; then
+    FIRST_SYSTEM_GID=100
+fi
+if test -z "$LAST_SYSTEM_GID"; then
+    LAST_SYSTEM_GID=999
 fi
 
 groupadd -f -K GID_MIN=$FIRST_SYSTEM_GID -K GID_MAX=$LAST_SYSTEM_GID libuuid
