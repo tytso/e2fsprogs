@@ -27,7 +27,6 @@
 #include "ext2_fs.h"
 #include "ext2fsP.h"
 #include "e2image.h"
-#include "ss/ss.h"
 
 /*
  * Definitions to be dropped in lib/ext2fs/ext2fs.h
@@ -1354,6 +1353,8 @@ errcode_t ext2fs_extent_get_info(ext2_extent_handle_t handle,
 }
 
 #ifdef DEBUG
+
+#include "ss/ss.h"
 
 #include "debugfs.h"
 
