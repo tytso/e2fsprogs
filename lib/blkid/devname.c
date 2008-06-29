@@ -51,7 +51,7 @@
 blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
 {
 	blkid_dev dev = NULL, tmp;
-	struct list_head *p;
+	struct list_head *p, *pnext;
 
 	if (!cache || !devname)
 		return NULL;
@@ -78,8 +78,42 @@ blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
 		cache->bic_flags |= BLKID_BIC_FL_CHANGED;
 	}
 
-	if (flags & BLKID_DEV_VERIFY)
+	if (flags & BLKID_DEV_VERIFY) {
 		dev = blkid_verify(cache, dev);
+		if (!dev || !(dev->bid_flags & BLKID_BID_FL_VERIFIED))
+			return dev;
+		/* 
+		 * If the device is verified, then search the blkid
+		 * cache for any entries that match on the type, uuid,
+		 * and label, and verify them; if a cache entry can
+		 * not be verified, then it's stale and so we remove
+		 * it.
+		 */
+		list_for_each_safe(p, pnext, &cache->bic_devs) {
+			blkid_dev dev2;
+			if (!p)
+				break;
+			dev2 = list_entry(p, struct blkid_struct_dev, bid_devs);
+			if (dev2->bid_flags & BLKID_BID_FL_VERIFIED)
+				continue;
+			if (strcmp(dev->bid_type, dev2->bid_type))
+				continue;
+			if (dev->bid_label && dev2->bid_label &&
+			    strcmp(dev->bid_label, dev2->bid_label))
+				continue;
+			if (dev->bid_uuid && dev2->bid_uuid &&
+			    strcmp(dev->bid_uuid, dev2->bid_uuid))
+				continue;
+			if ((dev->bid_label && !dev2->bid_label) ||
+			    (!dev->bid_label && dev2->bid_label) ||
+			    (dev->bid_uuid && !dev2->bid_uuid) ||
+			    (!dev->bid_uuid && dev2->bid_uuid))
+				continue;
+			dev2 = blkid_verify(cache, dev2);
+			if (dev2 && !(dev2->bid_flags & BLKID_BID_FL_VERIFIED))
+				blkid_free_dev(dev2);
+		}
+	}
 	return dev;
 }
 
