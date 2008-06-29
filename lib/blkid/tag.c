@@ -10,6 +10,7 @@
  * %End-Header%
  */
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -355,7 +356,8 @@ try_again:
 						   bit_names);
 
 			if (!strcmp(tmp->bit_val, value) &&
-			    tmp->bit_dev->bid_pri > pri) {
+			    (tmp->bit_dev->bid_pri > pri) &&
+			    !access(tmp->bit_dev->bid_name, F_OK)) {
 				dev = tmp->bit_dev;
 				pri = dev->bid_pri;
 			}
@@ -363,7 +365,7 @@ try_again:
 	}
 	if (dev && !(dev->bid_flags & BLKID_BID_FL_VERIFIED)) {
 		dev = blkid_verify(cache, dev);
-		if (dev && (dev->bid_flags & BLKID_BID_FL_VERIFIED))
+		if (!dev || (dev && (dev->bid_flags & BLKID_BID_FL_VERIFIED)))
 			goto try_again;
 	}
 
