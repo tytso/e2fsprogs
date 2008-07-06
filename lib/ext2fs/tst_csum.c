@@ -11,6 +11,7 @@
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
+#include "ext2fs/crc16.h"
 
 #ifndef offsetof
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
@@ -46,7 +47,7 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 unsigned char sb_uuid[16] = { 0x4f, 0x25, 0xe8, 0xcf, 0xe7, 0x97, 0x48, 0x23,
 			      0xbe, 0xfa, 0xa7, 0x88, 0x4b, 0xae, 0xec, 0xdb };
 
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	struct ext2_super_block param;
 	errcode_t		retval;

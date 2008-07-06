@@ -484,7 +484,6 @@ static void create_bad_block_inode(ext2_filsys fs, badblocks_list bb_list)
 static void reserve_inodes(ext2_filsys fs)
 {
 	ext2_ino_t	i;
-	int		group;
 
 	for (i = EXT2_ROOT_INO + 1; i < EXT2_FIRST_INODE(fs->super); i++)
 		ext2fs_inode_alloc_stats2(fs, i, +1, 0);
@@ -927,7 +926,6 @@ static char **parse_fs_type(const char *fs_type,
 	char		*cp, *t;
 	const char	*size_type;
 	struct str_list	list;
-	int		state = 0;
 	unsigned long	meg;
 
 	if (init_list(&list))
@@ -1006,7 +1004,6 @@ static char *get_string_from_profile(char **fs_types, const char *opt,
 				     const char *def_val)
 {
 	char *ret = 0;
-	char **cpp;
 	int i;
 
 	for (i=0; fs_types[i]; i++);
@@ -1049,7 +1046,7 @@ static void PRS(int argc, char *argv[])
 {
 	int		b, c;
 	int		size;
-	char 		*tmp, *tmp2, **cpp;
+	char 		*tmp, **cpp;
 	int		blocksize = 0;
 	int		inode_ratio = 0;
 	int		inode_size = 0;
@@ -1789,7 +1786,7 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	printf(_("Overwriting existing filesystem; this can be undone "
 		 "using the command:\n"
 		 "    e2undo %s %s\n\n"), tdb_file, name);
-err_out:
+
 	free(tmp_name);
 	return retval;
 }

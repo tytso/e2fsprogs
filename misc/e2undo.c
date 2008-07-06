@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 		blk_num = *(unsigned long *)key.dptr;
-		printf(_("Replayed transaction of size %d at location %ld\n"),
+		printf(_("Replayed transaction of size %zd at location %ld\n"),
 							data.dsize, blk_num);
 		retval = io_channel_write_blk(channel, blk_num,
 						-data.dsize, data.dptr);
@@ -217,4 +217,5 @@ int main(int argc, char *argv[])
 	io_channel_close(channel);
 	tdb_close(tdb);
 
+	return 0;
 }

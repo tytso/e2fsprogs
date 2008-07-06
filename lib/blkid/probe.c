@@ -777,11 +777,11 @@ static int probe_jfs(struct blkid_probe *probe,
 static int probe_zfs(struct blkid_probe *probe, struct blkid_magic *id,
 		     unsigned char *buf)
 {
+#if 0
 	char *vdev_label;
 	const char *pool_name = 0;
 
 	/* read nvpair data for pool name, pool GUID (complex) */
-#if 0
 	blkid_set_tag(probe->dev, "LABEL", pool_name, sizeof(pool_name));
 	set_uuid(probe->dev, pool_guid, 0);
 #endif
@@ -1252,9 +1252,10 @@ blkid_dev blkid_verify(blkid_cache cache, blkid_dev dev)
 		return dev;
 
 	DBG(DEBUG_PROBE,
-	    printf("need to revalidate %s (cache time %d, stat time %d,\n\t"
+	    printf("need to revalidate %s (cache time %lu, stat time %lu,\n\t"
 		   "time since last check %lu)\n",
-		   dev->bid_name, dev->bid_time, st.st_mtime, (unsigned long)diff));
+		   dev->bid_name, (unsigned long)dev->bid_time,
+		   (unsigned long)st.st_mtime, (unsigned long)diff));
 
 	if ((probe.fd = open(dev->bid_name, O_RDONLY)) < 0) {
 		DBG(DEBUG_PROBE, printf("blkid_verify: error %s (%d) while "
