@@ -995,7 +995,8 @@ int main (int argc, char ** argv)
 			if (t_flag + 1 > t_max) {
 				unsigned int *t_patts_new;
 
-				t_patts_new = realloc(t_patts, t_max + T_INC);
+				t_patts_new = realloc(t_patts, sizeof(int) * 
+						      (t_max + T_INC));
 				if (!t_patts_new) {
 					com_err(program_name, ENOMEM,
 						_("can't allocate memory for "
