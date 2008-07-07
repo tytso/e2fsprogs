@@ -1353,6 +1353,7 @@ static void PRS(int argc, char *argv[])
 			exit(1);
 		}
 		blocksize = jfs->blocksize;
+		printf(_("Using journal device's blocksize: %d\n"), blocksize);
 		fs_param.s_log_block_size =
 			int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 		ext2fs_close(jfs);
@@ -1404,6 +1405,13 @@ static void PRS(int argc, char *argv[])
 		}
 	}
 			
+	if (retval == EFBIG) {
+		fprintf(stderr, _("%s: Size of device %s too big "
+				  "to be expressed in 32 bits\n\t"
+				  "using a blocksize of %d.\n"),
+			program_name, device_name, EXT2_BLOCK_SIZE(&fs_param));
+		exit(1);
+	}
 	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {
 		com_err(program_name, retval,
 			_("while trying to determine filesystem size"));
