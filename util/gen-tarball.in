@@ -9,12 +9,18 @@ base_ver=`echo @E2FSPROGS_VERSION@ | sed -e 's/-WIP//' -e 's/pre-//' -e 's/-PLUS
 base_e2fsprogs=`basename $top_dir`
 exclude=/tmp/exclude
 
-deb_pkgver=`echo @E2FSPROGS_PKGVER@ | sed -e 's/_/-/g'`
-echo Debian package $deb_pkgver
+#
+# This hack is needed because texi2dvi blows up horribly if there are 
+# any '~' chracters in the directory pathname.  So we kludge around it by
+# using a non-standard directory name for WIP releases.  dpkg-source
+# complains, but life goes on.
+#
+deb_pkgver=`echo @E2FSPROGS_PKGVER@ | sed -e 's/~/-/g'`
     
 case $1 in
     debian|ubuntu)
 	SRCROOT="e2fsprogs-$deb_pkgver"
+	rename_tarball="e2fsprogs_@E2FSPROGS_PKGVER@.orig.tar.gz"
 	list=all
 	;;
     subset)
@@ -43,3 +49,6 @@ sed -e "s;^;$SRCROOT/;" < $srcdir/$list.exclude >> $exclude
 
 (cd $top_srcdir/.. ; rm -f $SRCROOT)
 mv $top_srcdir/e2fsprogs.spec ../e2fsprogs.spec 
+if test -n "$rename_tarball"; then
+    mv $SRCROOT.tar.gz $rename_tarball
+fi

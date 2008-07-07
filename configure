@@ -1906,8 +1906,7 @@ date_spec=${E2FSPROGS_YEAR}.${MONTH_NUM}.${E2FSPROGS_DAY}
 
 case $E2FSPROGS_VERSION in
 *-WIP|pre-*)
-	pre_vers=`echo $base_ver 0.01 - p | dc`
-	E2FSPROGS_PKGVER="$pre_vers+${base_ver}_WIP_$date_spec"
+	E2FSPROGS_PKGVER="$base_ver~WIP-$E2FSPROGS_YEAR-$MONTH_NUM-$E2FSPROGS_DAY"
 	;;
 *)
 	E2FSPROGS_PKGVER="$base_ver"
