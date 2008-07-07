@@ -1,9 +1,5 @@
-E2fsprogs 1.41-WIP-0617 (June 17, 2008) git ID: f1420977 
-========================================================
-
-Add support to badblocks to limit how quickly it reads from the disk
-drive (so it can be used for background scrubbing), and so it will
-abort after finding a given number of errors.
+E2fsprogs 1.41-WIP-0707 (July 7, 2008) git ID: c03d9924
+=======================================================
 
 Add support for ext4 filesystem features, in particular extents,
 uninit_bg, flex_bg, huge_file, and dir_nlink features.  Also add
@@ -25,9 +21,26 @@ E2fsck will display a more understandable message when the last check
 field in the superblock is in the future.  (Addresses Debian Bug:
 #446005).
 
+Enhance mke2fs to print a more explanatory error message when
+ext2fs_get_device_size() returns EFBIG.  (Addresses Debian Bug:
+#488663)
+
+Fix mke2fs to use a default block size of 4k when formatting an
+external journal device.  This is done by using a fixed filesystem
+type list that consists only of the single filesystem type "journal"
+when looking up configuration keys in /etc/mke2fs.conf.  (Addresses
+Debian Bug: #488663)
+
 Speed up how mke2fs writes the journal data blocks by writing the disk
 blocks in larger chunks.
 
+Fix blkid handling of stale devices.  Fix a bug which could cause a
+core dump while garbage collecting the blkid cache, and assure that
+blkid_find_dev_with_tag() never returns a non-existent device.  Also,
+if a filesystem is found at a new /dev location, eliminate any
+duplicate stale entries which can not be verified.
+(Addresses-Debian-Bugs: #487758, #487783)
+    
 Add more paranoid checks for LVM volumes and swap partitions in
 blkid's probe function, to reduce the chances of false positives.
 
@@ -64,14 +77,31 @@ e2image file.
 
 The chattr program will return a non-zero exit code in case of
 failures, and error messages can be suppressed with the -f option.
-(Addresses-Red-Hat-Bugzilla: #180596)
+(Addresses Red Hat Bugzilla: #180596)
+
+Fix a bug in badblocks which caused it to overrun an array and likely
+crash if more than 8 test patterns are specified using the -t option.
+(Addresses Debian Bug: #487298)
     
+Add support to badblocks to limit how quickly it reads from the disk
+drive (so it can be used for background scrubbing), and so it will
+abort after finding a given number of errors.
+
 Remove support for the legacy big-endian filesystem format which only
 existed on extremely long-dead PowerPC kernels almost a decade ago.
 
 Remove MASIX support from e2fsprogs.
 
 Add I/O statistics reporting to e2fsck.
+
+Update Vietnamese, Polish, French, Spanish, German, Catalan, Dutch,
+Czech translations.
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bugs: #487443, #487675)
+
+Fixed spelling mistakes, typos, and otherwise clarified man pages.
+(Addresses Debian Bug: #393313)
 
 Programmer's Notes
 ------------------

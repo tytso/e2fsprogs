@@ -1,3 +1,26 @@
+e2fsprogs (1.41~WIP-2008-07-07-1) experimental; urgency=low
+
+  * New upstream version (pre-release for e2sprogs 1.41)
+  * Update to indicate compliance with debian policy version 3.8.0.0.
+  * Fix e2fsck to not truncate valid extent files that are larger than
+    what is supported by indirect files.
+  * Add -dbg packages which contain the debugging information.
+  * mke2fs: Print a better error message when a device is too big.
+    (Closes: #488663)
+  * Create external journal devices with a default blocksize of 4k
+  * Fix bug in badblocks which caused crash when lots of -t patterns are
+    given.  (Closes: #487298)
+  * Fix blkid handling of stale entries.  (Closes: #487758, #487783)
+  * Update Vietnamese, Polish, French, Spanish, German, Catalan,
+    Dutch, Czech translations from the translation project.
+  * Fix FTBFS problem on MIPS (Closes: #487675)
+  * Fix bug in libuuid1.postinst which would cause it to blow up if
+    there were spaces around the equals sign in /etc/adduser.conf.
+    (Closes: #487443)
+  * Update/clarified man pages.  (Closes: #393313)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 07 Jul 2008 16:30:43 -0400
+
 e2fsprogs (1.41~WIP-2008-06-17-1) experimental; urgency=low
 
   * New upstream version (pre-release for e2fsprogs 1.41)
