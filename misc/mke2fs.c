@@ -1446,25 +1446,6 @@ static void PRS(int argc, char *argv[])
 		fprintf(stderr, _("Failed to parse fs types list\n"));
 		exit(1);
 	}
-	if (verbose) {
-		fputs("Fs_types for mke2fs.conf resolution: ", stdout);
-		print_str_list(fs_types);
-	}
-
-	if (!fs_type) {
-		int megs = (__u64)fs_param.s_blocks_count *
-			(EXT2_BLOCK_SIZE(&fs_param) / 1024) / 1024;
-
-		if (fs_param.s_feature_incompat & 
-		    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
-			fs_type = "journal";
-		else if (megs <= 3)
-			fs_type = "floppy";
-		else if (megs <= 512)
-			fs_type = "small";
-		else
-			fs_type = "default";
-	}
 
 	/* Figure out what features should be enabled */
 
@@ -1491,6 +1472,16 @@ static void PRS(int argc, char *argv[])
 		     &fs_param.s_feature_compat);
 	if (tmp)
 		free(tmp);
+
+	if (fs_param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
+		fs_types[0] = strdup("journal");
+		fs_types[1] = 0;
+	}
+
+	if (verbose) {
+		fputs(_("fs_types for mke2fs.conf resolution: "), stdout);
+		print_str_list(fs_types);
+	}
 
 	if (r_opt == EXT2_GOOD_OLD_REV && 
 	    (fs_param.s_feature_compat || fs_param.s_feature_incompat ||
