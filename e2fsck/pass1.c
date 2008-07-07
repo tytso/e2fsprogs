@@ -1756,6 +1756,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	struct ext2_inode *inode = pctx->inode;
 	int		bad_size = 0;
 	int		dirty_inode = 0;
+	int		extent_fs;
 	__u64		size;
 	
 	pb.ino = ino;
@@ -1774,6 +1775,9 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.ctx = ctx;
 	pctx->ino = ino;
 	pctx->errcode = 0;
+
+	extent_fs = (ctx->fs->super->s_feature_incompat &
+                     EXT3_FEATURE_INCOMPAT_EXTENTS);
 
 	if (inode->i_flags & EXT2_COMPRBLK_FL) {
 		if (fs->super->s_feature_incompat &
@@ -1794,9 +1798,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	}
 
 	if (ext2fs_inode_has_valid_blocks(inode)) {
-		if ((ctx->fs->super->s_feature_incompat &
-		     EXT3_FEATURE_INCOMPAT_EXTENTS) &&
-		    (inode->i_flags & EXT4_EXTENTS_FL))
+		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL))
 			check_blocks_extents(ctx, pctx, &pb);
 		else
 			pctx->errcode = ext2fs_block_iterate2(fs, ino,
@@ -1892,8 +1894,14 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		    (pb.last_block / blkpg * blkpg != pb.last_block ||
 		     size < (__u64)(pb.last_block & ~(blkpg-1)) *fs->blocksize))
 			bad_size = 3;
-		else if (size > ext2_max_sizes[fs->super->s_log_block_size])
+		else if (!(extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) &&
+			 size > ext2_max_sizes[fs->super->s_log_block_size])
+			/* too big for a direct/indirect-mapped file */
 			bad_size = 4;
+		else if ((extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) &&
+			 size > (1LL << (32 + fs->super->s_log_block_size) - 1))
+			/* too big for an extent-based file - 32bit ee_block */
+			bad_size = 6;
 	}
 	/* i_size for symlinks is checked elsewhere */
 	if (bad_size && !LINUX_S_ISLNK(inode->i_mode)) {
