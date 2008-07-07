@@ -41,7 +41,26 @@ tmpdir=${debdir}/tmp
 udebdir=${debdir}/e2fsprogs-udeb
 blkidudebdir=${debdir}/libblkid1-udeb
 uuidudebdir=${debdir}/libuuid1-udeb
+libcomerrdir=${debdir}/libcomerr${COMERR_SOVERSION}
+comerrdevdir=${debdir}/comerr-dev
+libcomerrdbgdir=${debdir}/libcomerr2-dbg
+libssdir=${debdir}/libss${SS_SOVERSION}
+ssdevdir=${debdir}/ss-dev
+libssdbgdir=${debdir}/libss2-dbg
+libblkiddir=${debdir}/libblkid${BLKID_SOVERSION}
+libblkiddevdir=${debdir}/libblkid-dev
+libblkiddbgdir=${debdir}/libblkid1-dbg
+libuuiddir=${debdir}/libuuid${UUID_SOVERSION}
+uuiddevdir=${debdir}/uuid-dev
+libuuiddbgdir=${debdir}/libuuid1-dbg
+uuidruntimedir=${debdir}/uuid-runtime
+uuidruntimedbgdir=${debdir}/uuid-runtime-dbg
+libext2dir=${debdir}/e2fslibs
+libext2devdir=${debdir}/e2fslibs-dev
+libext2dbgdir=${debdir}/e2fslibs-dbg
 maindir=${debdir}/e2fsprogs
+e2fsckstaticdir=${debdir}/e2fsck-static
+debugdir=${debdir}/e2fsprogs-dbg
 stdbuilddir=${debdir}/BUILD-STD
 bfbuilddir=${debdir}/BUILD-BF
 staticbuilddir=${debdir}/BUILD-STATIC
@@ -76,9 +95,9 @@ INSTALL_PROGRAM = $(INSTALL) -p -o root -g root -m 0755
 ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
 CCOPTS += -O2
 endif
-ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
-INSTALL_PROGRAM += -s
-endif
+#ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+#INSTALL_PROGRAM += -s
+#endif
 
 ifeq (${DEB_HOST_ARCH},alpha)
 CCOPTS += -DHAVE_NETINET_IN_H
@@ -398,14 +417,73 @@ binary-arch: install install-udeb
 	DH_OPTIONS= dh_installchangelogs -pe2fsprogs \
 		-plibblkid${BLKID_SOVERSION} -plibcomerr${COMERR_SOVERSION} \
 		-plibss${SS_SOVERSION} -plibuuid${UUID_SOVERSION} \
-		-pe2fslibs -puuid-dev -puuid-runtime -pe2fsck-static
+		-pe2fslibs -puuid-dev -puuid-runtime -pe2fsck-static \
+		-pe2fsprogs-dbg -puuid-runtime-dbg -pe2fslibs-dbg \
+		-plibcomerr2-dbg -plibss2-dbg -plibblkid1-dbg -plibuuid1-dbg
 
 	dh_fixperms
 ifneq ($(ismips),)
 	dh_strip -Xlib64ext2fs-nopic.a
 else
-	dh_strip
+	dh_strip -k
 endif
+
+	# debug package stuff
+	rm -rf ${udebdir}/usr
+	rm -rf ${blkidudebdir}/usr
+	rm -rf ${uuidudebdir}/usr
+
+	mkdir -p ${debugdir}/usr/lib
+	mv ${maindir}/usr/lib/debug ${debugdir}/usr/lib
+	rm -rf ${maindir}/usr/lib/debug
+	mv ${e2fsckstaticdir}/usr/lib/debug/sbin/* \
+		${debugdir}/usr/lib/debug
+	rm -rf ${e2fsckstaticdir}/usr/lib
+
+	mkdir -p ${uuidruntimedbgdir}/usr/lib
+	mv ${uuidruntimedir}/usr/lib/debug ${uuidruntimedbgdir}/usr/lib
+	rmdir ${uuidruntimedir}/usr/lib
+
+	mkdir -p ${libext2dbgdir}/usr/lib
+	mv ${libext2dir}/usr/lib/debug ${libext2dbgdir}/usr/lib
+	rmdir ${libext2dir}/usr/lib
+
+	mkdir -p ${libcomerrdbgdir}/usr/lib
+	mv ${libcomerrdir}/usr/lib/debug ${libcomerrdbgdir}/usr/lib
+	rmdir ${libcomerrdir}/usr/lib
+
+	mkdir -p ${libssdbgdir}/usr/lib
+	mv ${libssdir}/usr/lib/debug ${libssdbgdir}/usr/lib
+	rmdir ${libssdir}/usr/lib
+
+	mkdir -p ${libuuiddbgdir}/usr/lib
+	mv ${libuuiddir}/usr/lib/debug ${libuuiddbgdir}/usr/lib
+	rmdir ${libuuiddir}/usr/lib
+
+	mkdir -p ${libblkiddbgdir}/usr/lib
+	mv ${libblkiddir}/usr/lib/debug ${libblkiddbgdir}/usr/lib
+	rmdir ${libblkiddir}/usr/lib
+
+	$(INSTALL) -p -m 0644 debian/e2fsprogs.copyright \
+		${debugdir}/usr/share/doc/e2fsprogs-dbg/copyright
+
+	$(INSTALL) -p -m 0644 debian/uuid-runtime.copyright \
+		${uuidruntimedbgdir}/usr/share/doc/uuid-runtime-dbg/copyright
+
+	$(INSTALL) -p -m 0644 debian/e2fslibs.copyright \
+		${libext2dbgdir}/usr/share/doc/e2fslibs-dbg/copyright
+
+	$(INSTALL) -p -m 0644 debian/libcomerr2.copyright \
+		${libcomerrdbgdir}/usr/share/doc/libcomerr2-dbg/copyright
+
+	$(INSTALL) -p -m 0644 debian/libss2.copyright \
+		${libssdbgdir}/usr/share/doc/libss2-dbg/copyright
+
+	$(INSTALL) -p -m 0644 debian/libblkid.copyright \
+		${libblkiddbgdir}/usr/share/doc/libblkid1-dbg/copyright
+
+	$(INSTALL) -p -m 0644 debian/libuuid1.copyright \
+		${libuuiddbgdir}/usr/share/doc/libuuid1-dbg/copyright
 
 	dh_compress
 
