@@ -46,8 +46,11 @@ static blk_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk_t start_blk,
 	if (size > (int) (fs->super->s_blocks_per_group / 8))
 		size = (int) fs->super->s_blocks_per_group / 8;
 
+	if (offset)
+		offset -= 1;
+
 	/*
-	 * Dont do a long search if the previous block
+	 * Don't do a long search if the previous block
 	 * search is still valid.
 	 */
 	if (start_blk && group % flexbg_size) {
