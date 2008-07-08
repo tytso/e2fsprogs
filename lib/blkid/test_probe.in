@@ -13,31 +13,44 @@ mkdir -p tests/tmp
 for i in $TESTS
 do
 	printf "%s: " $i
-	if test ! -f $SRCDIR/tests/$i.img.bz2 -a \
-		! -f $SRCDIR/tests/$i.results ; 
+	RESULTS=$SRCDIR/tests/$i.results
+	IMAGE_BZ2=$SRCDIR/tests/$i.img.bz2
+	IMAGE=tests/tmp/$i.img.$$
+	if test ! -f $IMAGE_BZ2 -a ! -f $RESULTS ;
 	then
 		echo "non-existent"
 		continue
 	fi
-	bunzip2 < $SRCDIR/tests/$i.img.bz2 > tests/tmp/test.img.$$
 	if [ "$i" = "swap0" ]; then
 		# swap is native-endian, so regenerate before testing
-		dd if=/dev/zero of=tests/tmp/test.img.$$ bs=16k count=64
-		mkswap -v0 tests/tmp/test.img.$$ > /dev/null
+		dd if=/dev/zero of=$IMAGE bs=16k count=64 2> /dev/null
+		mkswap -v0 $IMAGE > /dev/null
 	elif [ "$i" = "swap1" ]; then
 		# swap is native-endian, so regenerate before testing
-		dd if=/dev/zero of=tests/tmp/test.img.$$ bs=16k count=64
-		mkswap -v1 -L SWAP-TEST -U 8ff8e77f-8553-485e-8656-58be67a81666 tests/tmp/test.img.$$ >/dev/null
+		dd if=/dev/zero of=$IMAGE bs=16k count=64 2> /dev/null
+		# check if mkswap supports the "-U" option
+		if mkswap -h 2>&1 | grep -q -- '-U'; then
+			UUID="-U 8ff8e77f-8553-485e-8656-58be67a81666"
+		else
+			RMUUID="| grep -v UUID"
+			RES_TMP=$SRCDIR/tests/tmp/$i.results
+			grep -v UUID $RESULTS > $RES_TMP
+			RESULTS=$RES_TMP
+		fi
+		mkswap -v1 -L SWAP-TEST $UUID $IMAGE >/dev/null
+	else
+		bunzip2 < $IMAGE_BZ2 > $IMAGE
 	fi
-	./tst_probe tests/tmp/test.img.$$ > tests/$i.out
-	/bin/rm -f tests/tmp/test.img.$$ tests/$i.ok tests/$i.failed
-	cmp -s tests/$i.out $SRCDIR/tests/$i.results
+	eval ./tst_probe $IMAGE $RMUUID > tests/$i.out
+	/bin/rm -f $IMAGE tests/$i.ok tests/$i.failed
+	cmp -s tests/$i.out $RESULTS
+	unset RMUUID
 	if [ $? = 0 ];  then
 		echo ok
 		touch tests/$i.ok
 	else	
 		echo failed
-		diff -c tests/$i.out $SRCDIR/tests/$i.results > tests/$i.failed
+		diff -c tests/$i.out $RESULTS > tests/$i.failed
 	fi
 done
 
