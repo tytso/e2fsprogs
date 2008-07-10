@@ -927,12 +927,19 @@ static char **parse_fs_type(const char *fs_type,
 	const char	*size_type;
 	struct str_list	list;
 	unsigned long	meg;
+	int		is_hurd = 0;
 
 	if (init_list(&list))
 		return 0;
 
+	if (creator_os && (!strcasecmp(creator_os, "GNU") ||
+			   !strcasecmp(creator_os, "hurd")))
+		is_hurd = 1;
+
 	if (fs_type)
 		ext_type = fs_type;
+	else if (is_hurd)
+		ext_type = "ext2";
 	else if (progname) {
 		ext_type = strrchr(progname, '/');
 		if (ext_type)
@@ -997,6 +1004,8 @@ static char **parse_fs_type(const char *fs_type,
 	free(parse_str);
 	if (profile_type)
 		free(profile_type);
+	if (is_hurd)
+		push_string(&list, "hurd");
 	return (list.list);
 }
 
