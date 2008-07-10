@@ -15,6 +15,11 @@ just follow the steps:
 --enable-elf-shlibs.  If you wish to build profiling libraries, add
 the option --enable-profile.
 
+	Note that if you are building on an older system (i.e., a 2.4
+kernel and/or glibc 2.2), the use of thread local storage will probably
+cause programs that use the uuid library to core dump.  To disable
+thread local storage, use the configure option --disable-tls.
+
 4)  Compile the programs
 
 	make
