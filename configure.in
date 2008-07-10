@@ -65,9 +65,11 @@ AC_CANONICAL_HOST
 dnl
 dnl Use diet libc
 dnl 
+WITH_DIET_LIBC=
 AC_ARG_WITH([diet-libc],
 [  --with-diet-libc        use diet libc],
 CC="diet cc -nostdinc"
+WITH_DIET_LIBC=yes
 AC_MSG_RESULT(CC=$CC))dnl
 dnl
 dnl set $(CC) from --with-cc=value
@@ -529,8 +531,14 @@ else
 	echo "Enabling thread local support"
 fi]
 ,
-try_tls="yes"
-echo "Try using thread local support by default"
+if test -n "$WITH_DIET_LIBC"
+then
+	try_tls=""
+	echo "Diet libc does not support thread local support"
+else
+	try_tls="yes"
+	echo "Try using thread local support by default"
+fi
 )
 if test "$try_tls" = "yes"
 then
