@@ -191,8 +191,9 @@ following extended options are supported:
 Configure the filesystem for a RAID array with
 .I stride-size
 filesystem blocks. This is the number of blocks read or written to disk
-before moving to next disk. This mostly affects placement of filesystem
-metadata like bitmaps at
+before moving to next disk, which is sometimes referred to as the 
+.I chunk size.
+This mostly affects placement of filesystem metadata like bitmaps at
 .B mke2fs
 time to avoid placing them on a single disk, which can hurt the performanace.
 It may also be used by block allocator.
@@ -201,7 +202,8 @@ It may also be used by block allocator.
 Configure the filesystem for a RAID array with
 .I stripe-width
 filesystem blocks per stripe. This is typically be stride-size * N, where
-N is the number of data disks in the RAID (e.g. RAID 5 N+1, RAID 6 N+2).
+N is the number of data-bearing disks in the RAID (e.g. for RAID 5 there is one
+parity disk so N will be the number of disks in the array minus 1).
 This allows the block allocator to prevent read-modify-write of the
 parity in a RAID stripe if possible when the data is written.
 .TP
