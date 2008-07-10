@@ -1,5 +1,5 @@
-E2fsprogs 1.41-WIP-0707 (July 7, 2008) git ID: c03d9924
-=======================================================
+E2fsprogs 1.41 (July 10, 2008)
+==============================
 
 Add support for ext4 filesystem features, in particular extents,
 uninit_bg, flex_bg, huge_file, and dir_nlink features.  Also add
@@ -17,9 +17,21 @@ ext4.
 Add support for "undo" support.  E2fsck and mke2fs can optionally
 record an undo log which can replayed by the program e2undo.
 
+E2fsck could damage a filesystem by trying to relocate inode tables
+due to corrupted block group descriptors, where the attempted inode
+table relocation would do far more harm than good.  E2fsck has been
+fixed to detect this these sorts of corrupted block group descriptors
+much earlier in e2fsck processing, so it can try to use the backup
+superblock and block group descriptors first.  This should be a much
+better strategy for recovering these types of corrupted filesystems.
+(Addresses Sourceforge Bug: #1840291)
+
 E2fsck will display a more understandable message when the last check
 field in the superblock is in the future.  (Addresses Debian Bug:
 #446005).
+
+E2fsck now performs more extensive and careful checks of extended
+attributes stored in the inode.
 
 Enhance mke2fs to print a more explanatory error message when
 ext2fs_get_device_size() returns EFBIG.  (Addresses Debian Bug:
@@ -53,19 +65,24 @@ separated usage list.  The filesystem type information and type
 information is used to extract configuration parameters from the
 /etc/mke2fs.conf file.
 
-Resize2fs will now print the minimum needed filesystem size if given
-the -P option, and will resize the filesystem to the smallest possible
-size if given the -M option.
-
 The mke2fs program will no longer complain and request the -f option
 when the user tries to create a filesystem with greater than 2**31
 blocks.
 
-E2fsck now performs more extensive and careful checks of extended
-attributes stored in the inode.
-
+When creating a filesystem for the GNU Hurd use a fs-type of Hurd and
+adjust the mke2fs.conf file so filesystems for the Hurd are created
+with a blocksize of 4096 and inode size of 128, which is all it knows
+how to handle.  (Addresses Debian Bug: #471977)
+    
 Mke2fs will always make sure that lost+found always has at least 2
 blocks, even for filesystems with very large blocksizes (i.e., 64kb).
+
+Resize2fs will now print the minimum needed filesystem size if given
+the -P option, and will resize the filesystem to the smallest possible
+size if given the -M option.
+
+Fix resize2fs to clean up the resize_inode if all of the reserved gdt
+blocks are consumed during an off-line resize.
 
 The "ls" command in debugfs now supports the -p option, which causes
 it to quote the filenames so that spaces or tabs in directory entries
@@ -98,10 +115,10 @@ Update Vietnamese, Polish, French, Spanish, German, Catalan, Dutch,
 Czech translations.
 
 Fixed various Debian packaging issues --- see debian/changelog for
-details.  (Addresses Debian Bugs: #487443, #487675)
+details.  (Addresses Debian Bugs: #487443, #487675, #490003)
 
 Fixed spelling mistakes, typos, and otherwise clarified man pages.
-(Addresses Debian Bug: #393313)
+(Addresses Debian Bugs: #393313, #487849, #440983, #440981)
 
 Programmer's Notes
 ------------------
@@ -123,6 +140,13 @@ Clean up the badblocks group so to make it more portable and robust.
 
 Avoid using predictable filenames in /tmp in blkid's regression test
 suite.  Also remove bashism's in the regression test script.
+
+If the configure script is given --with-diet-libc, don't use thread
+local storage, since diet libc doesn't support TLS.  (Addresses
+Sourceforge Bug: #2000654)
+    
+Fix the blkid regression test suite to tolerate older versions of
+mkswap that don't support the -U option.
 
 A few library routines have been converted to support 64-bit block
 numbers; in particular, the I/O manager functions, the test_io,

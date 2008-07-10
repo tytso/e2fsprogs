@@ -1,3 +1,26 @@
+e2fsprogs (1.41.0-1) unstable; urgency=medium
+
+  * New upstream version
+  * Make e2fsck detect corrupted block group descriptors that would
+    cause it to relocate inode tables, causing more damage to the
+    filesystem, and make it try the backup superblock/block group
+    descriptors first.
+  * Fix resize2fs to clean up the resize_inode if all of the reserved
+    gdt blocks are consumed during an off-line resize.
+  * Enable huge_file, dir_nlink, extra_isize feautres for mke2fs and tune2fs.
+  * Enable huge_file, dir_nlink, extra_isize, and uninit_bg by default
+    in mke2fs.conf.
+  * Fix badblocks terminology in man page and program output.
+    (Closes: #440983, #440981)
+  * Clarify stripe-width and stride-size in mke2fs man page.  (Closes: #487849)
+  * mke2fs: Dumb down filesystems for GNU Hurd (Closes: #471977)
+  * Add bash-static to the list of shells recommended for e2fsck-static
+    (Closes: #490003)
+  * mke2fs: Fix flex_bg metadata default layout to avoid a hole between
+    the bitmaps and inode tables.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 10 Jul 2008 17:25:32 -0400
+
 e2fsprogs (1.41~WIP-2008-07-07-1) experimental; urgency=low
 
   * New upstream version (pre-release for e2sprogs 1.41)
