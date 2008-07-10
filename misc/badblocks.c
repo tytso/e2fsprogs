@@ -81,7 +81,7 @@ unsigned int sys_page_size = 4096;
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] [-e max_bad_blocks] [-d delay_factor_between_reads] [-t test_pattern [-t test_pattern [...]]]\n device [last_block [start_block]]\n"),
+	fprintf(stderr, _("Usage: %s [-b block_size] [-i input_file] [-o output_file] [-svwnf]\n [-c blocks_at_once] [-p num_passes] [-e max_bad_blocks] [-d delay_factor_between_reads] [-t test_pattern [-t test_pattern [...]]]\n device [last_block [first_block]]\n"),
 		 program_name);
 	exit (1);
 }
@@ -358,7 +358,7 @@ static void flush_bufs(void)
 }
 
 static unsigned int test_ro (int dev, blk_t last_block,
-			     int block_size, blk_t from_count,
+			     int block_size, blk_t first_block,
 			     unsigned int blocks_at_once)
 {
 	unsigned char * blkbuf;
@@ -375,7 +375,7 @@ static unsigned int test_ro (int dev, blk_t last_block,
 	}
 	do {
 		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
-	} while (next_bad && next_bad < from_count);
+	} while (next_bad && next_bad < first_block);
 
 	if (t_flag) {
 		blkbuf = allocate_buffer((blocks_at_once + 1) * block_size);
@@ -389,7 +389,7 @@ static unsigned int test_ro (int dev, blk_t last_block,
 	}
 	if (v_flag) {
 		fprintf (stderr, _("Checking blocks %lu to %lu\n"), 
-			 (unsigned long) from_count, 
+			 (unsigned long) first_block, 
 			 (unsigned long) last_block - 1);
 	}
 	if (t_flag) {
@@ -399,7 +399,7 @@ static unsigned int test_ro (int dev, blk_t last_block,
 	}
 	flush_bufs();
 	try = blocks_at_once;
-	currently_testing = from_count;
+	currently_testing = first_block;
 	num_blocks = last_block - 1;
 	if (!t_flag && (s_flag || v_flag)) {
 		fputs(_("Checking for bad blocks (read-only test): "), stderr);
@@ -468,7 +468,7 @@ static unsigned int test_ro (int dev, blk_t last_block,
 }
 
 static unsigned int test_rw (int dev, blk_t last_block,
-			     int block_size, blk_t from_count,
+			     int block_size, blk_t first_block,
 			     unsigned int blocks_at_once)
 {
 	unsigned char *buffer, *read_buffer;
@@ -491,8 +491,8 @@ static unsigned int test_rw (int dev, blk_t last_block,
 		fputs(_("Checking for bad blocks in read-write mode\n"), 
 		      stderr);
 		fprintf(stderr, _("From block %lu to %lu\n"),
-			(unsigned long) from_count, 
-			(unsigned long) last_block);
+			(unsigned long) first_block, 
+			(unsigned long) last_block - 1);
 	}
 	if (t_flag) {
 		pattern = t_patts;
@@ -505,7 +505,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 		pattern_fill(buffer, pattern[pat_idx],
 			     blocks_at_once * block_size);
 		num_blocks = last_block - 1;
-		currently_testing = from_count;
+		currently_testing = first_block;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 
@@ -550,7 +550,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 		if (s_flag | v_flag)
 			fputs(_("Reading and comparing: "), stderr);
 		num_blocks = last_block;
-		currently_testing = from_count;
+		currently_testing = first_block;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
 
@@ -606,7 +606,7 @@ struct saved_blk_record {
 };
 
 static unsigned int test_nd (int dev, blk_t last_block,
-			     int block_size, blk_t from_count,
+			     int block_size, blk_t first_block,
 			     unsigned int blocks_at_once)
 {
 	unsigned char *blkbuf, *save_ptr, *test_ptr, *read_ptr;
@@ -634,7 +634,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	}
 	do {
 		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
-	} while (next_bad && next_bad < from_count);
+	} while (next_bad && next_bad < first_block);
 
 	blkbuf = allocate_buffer(3 * blocks_at_once * block_size);
 	test_record = malloc (blocks_at_once*sizeof(struct saved_blk_record));
@@ -653,7 +653,8 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	if (v_flag) {
 	    fputs(_("Checking for bad blocks in non-destructive read-write mode\n"), stderr);
 	    fprintf (stderr, _("From block %lu to %lu\n"), 
-		     (unsigned long) from_count, (unsigned long) last_block);
+		     (unsigned long) first_block,
+		     (unsigned long) last_block - 1);
 	}
 	if (s_flag || v_flag > 1) {
 		fputs(_("Checking for bad blocks (non-destructive read-write test)\n"), stderr);
@@ -693,7 +694,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 		bb_count = 0;
 		save_ptr = save_base;
 		test_ptr = test_base;
-		currently_testing = from_count;
+		currently_testing = first_block;
 		num_blocks = last_block - 1;
 		if (s_flag && v_flag <= 1)
 			alarm_intr(SIGALRM);
@@ -901,7 +902,7 @@ int main (int argc, char ** argv)
 	FILE * in = NULL;
 	int block_size = 1024;
 	unsigned int blocks_at_once = 64;
-	blk_t last_block, from_count;
+	blk_t last_block, first_block;
 	int num_passes = 0;
 	int passes_clean = 0;
 	int dev;
@@ -1057,19 +1058,17 @@ int main (int argc, char ** argv)
 		}
 	} else {
 		errno = 0;
-		last_block = parse_uint(argv[optind], "last block");
-		printf("last_block = %d (%s)\n", last_block, argv[optind]);
+		last_block = parse_uint(argv[optind], _("last block"));
 		last_block++;
 		optind++;
 	}
 	if (optind <= argc-1) {
 		errno = 0;
-		from_count = parse_uint(argv[optind], "start block");
-		printf("from_count = %d\n", from_count);
-	} else from_count = 0;
-	if (from_count >= last_block) {
+		first_block = parse_uint(argv[optind], _("first block"));
+	} else first_block = 0;
+	if (first_block >= last_block) {
 	    com_err (program_name, 0, _("invalid starting block (%lu): must be less than %lu"),
-		     (unsigned long) from_count, (unsigned long) last_block);
+		     (unsigned long) first_block, (unsigned long) last_block);
 	    exit (1);
 	}
 	if (w_flag)
@@ -1154,7 +1153,7 @@ int main (int argc, char ** argv)
 		unsigned int bb_count;
 
 		bb_count = test_func(dev, last_block, block_size,
-				     from_count, blocks_at_once);
+				     first_block, blocks_at_once);
 		if (bb_count)
 			passes_clean = 0;
 		else
