@@ -535,6 +535,7 @@ typedef struct ext2_icount *ext2_icount_t;
 					 EXT4_FEATURE_RO_COMPAT_HUGE_FILE|\
 					 EXT2_FEATURE_RO_COMPAT_LARGE_FILE|\
 					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK|\
+					 EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|\
 					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
 
 /*
@@ -542,7 +543,7 @@ typedef struct ext2_icount *ext2_icount_t;
  * to ext2fs_openfs()
  */
 #define EXT2_LIB_SOFTSUPP_INCOMPAT	(0)
-#define EXT2_LIB_SOFTSUPP_RO_COMPAT	(EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE)
+#define EXT2_LIB_SOFTSUPP_RO_COMPAT	(0)
 
 /*
  * function prototypes

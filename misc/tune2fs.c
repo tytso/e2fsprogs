@@ -57,16 +57,6 @@ extern int optind;
 #include "../version.h"
 #include "nls-enable.h"
 
-/* 
- * Tune2fs supports these features in addition to the standard features.
- */
-#define EXT2_TUNE2FS_INCOMPAT	(EXT3_FEATURE_INCOMPAT_EXTENTS)
-#define EXT2_TUNE2FS_RO_COMPAT	(EXT4_FEATURE_RO_COMPAT_HUGE_FILE|\
-				 EXT4_FEATURE_RO_COMPAT_GDT_CSUM|	\
-				 EXT4_FEATURE_RO_COMPAT_DIR_NLINK|	\
-				 EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE)
-
-
 const char * program_name = "tune2fs";
 char * device_name;
 char * new_label, *new_last_mounted, *new_UUID;
@@ -131,6 +121,9 @@ static __u32 ok_features[3] = {
 		EXT4_FEATURE_INCOMPAT_FLEX_BG,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
+		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
+		EXT4_FEATURE_RO_COMPAT_DIR_NLINK|
+		EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|
 		EXT4_FEATURE_RO_COMPAT_GDT_CSUM |
 		EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER
 };
@@ -145,6 +138,9 @@ static __u32 clear_ok_features[3] = {
 		EXT4_FEATURE_INCOMPAT_FLEX_BG,
 	/* R/O compat */
 	EXT2_FEATURE_RO_COMPAT_LARGE_FILE |
+		EXT4_FEATURE_RO_COMPAT_HUGE_FILE|
+		EXT4_FEATURE_RO_COMPAT_DIR_NLINK|
+		EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|
 		EXT4_FEATURE_RO_COMPAT_GDT_CSUM
 };
 
@@ -369,7 +365,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 	if (FEATURE_OFF(E2P_FEATURE_COMPAT, EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
 		if ((mount_flags & EXT2_MF_MOUNTED) &&
 		    !(mount_flags & EXT2_MF_READONLY)) {
-			fputs(_("The has_journal flag may only be "
+			fputs(_("The has_journal feature may only be "
 				"cleared when the filesystem is\n"
 				"unmounted or mounted "
 				"read-only.\n"), stderr);
@@ -418,6 +414,18 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		}
 	}
 
+	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
+			    EXT4_FEATURE_RO_COMPAT_HUGE_FILE)) {
+		if ((mount_flags & EXT2_MF_MOUNTED) &&
+		    !(mount_flags & EXT2_MF_READONLY)) {
+			fputs(_("The huge_file feature may only be "
+				"cleared when the filesystem is\n"
+				"unmounted or mounted "
+				"read-only.\n"), stderr);
+			exit(1);
+		}
+	}
+
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
 	    (sb->s_feature_compat || sb->s_feature_ro_compat ||
 	     sb->s_feature_incompat))
@@ -427,6 +435,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 			    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER) ||
 	    FEATURE_CHANGED(E2P_FEATURE_RO_INCOMPAT,
 			    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) ||
+	    FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
+			EXT4_FEATURE_RO_COMPAT_HUGE_FILE) ||
 	    FEATURE_CHANGED(E2P_FEATURE_INCOMPAT,
 			    EXT2_FEATURE_INCOMPAT_FILETYPE) ||
 	    FEATURE_CHANGED(E2P_FEATURE_COMPAT,
@@ -435,6 +445,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 			EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
 		sb->s_state &= ~EXT2_VALID_FS;
 		printf("\n%s\n", _(please_fsck));
+		if (mount_flags & EXT2_MF_READONLY)
+			printf(_("(and reboot afterwards!)\n"));
 	}
 
 	if ((old_features[E2P_FEATURE_COMPAT] != sb->s_feature_compat) ||
@@ -535,7 +547,7 @@ static void parse_e2label_options(int argc, char ** argv)
 			argv[1]);
 		exit(1);
 	}
-	open_flag = EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_JOURNAL_DEV_OK;
+	open_flag = EXT2_FLAG_JOURNAL_DEV_OK;
 	if (argc == 3) {
 		open_flag |= EXT2_FLAG_RW;
 		L_flag = 1;
@@ -581,7 +593,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	struct group * gr;
 	struct passwd * pw;
 
-	open_flag = EXT2_FLAG_SOFTSUPP_FEATURES;
+	open_flag = 0;
 
 	printf("tune2fs %s (%s)\n", E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	while ((c = getopt(argc, argv, "c:e:fg:i:jlm:o:r:s:u:C:E:I:J:L:M:O:T:U:")) != EOF)
@@ -841,12 +853,6 @@ void do_findfs(int argc, char **argv)
 	exit(0);
 }
 
-/*
- * Note!  If any extended options are incompatible with the
- * intersection of the SOFTSUPP features and those features explicitly
- * enabled for tune2fs, there needs to be an explicit test for them
- * here.
- */
 static void parse_extended_opts(ext2_filsys fs, const char *opts)
 {
 	char	*buf, *token, *next, *p, *arg;
@@ -1443,13 +1449,7 @@ int main (int argc, char ** argv)
 	}
 	sb = fs->super;
 	fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
-	if ((sb->s_feature_incompat & !EXT2_TUNE2FS_INCOMPAT) ||
-	    (sb->s_feature_ro_compat & !EXT2_TUNE2FS_RO_COMPAT)) {
-		fprintf(stderr, 
-			_("Filesystem %s has unsupported features enabled.\n"),
-			device_name);
-		exit(1);
-	}
+
 	if (print_label) {
 		/* For e2label emulation */
 		printf("%.*s\n", (int) sizeof(sb->s_volume_name),
@@ -1457,6 +1457,7 @@ int main (int argc, char ** argv)
 		remove_error_table(&et_ext2_error_table);
 		exit(0);
 	}
+
 	retval = ext2fs_check_if_mounted(device_name, &mount_flags);
 	if (retval) {
 		com_err("ext2fs_check_if_mount", retval,
