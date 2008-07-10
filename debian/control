@@ -9,7 +9,7 @@ Package: e2fsck-static
 Section: admin
 Priority: optional
 Depends:
-Recommends: sash | zsh-static | busybox-static | zsh30-static
+Recommends: sash | bash-static | zsh-static | busybox-static | zsh30-static
 Architecture: any
 Description: statically-linked version of the ext2 filesystem checker
  This may be of some help to you if your filesystem gets corrupted enough
