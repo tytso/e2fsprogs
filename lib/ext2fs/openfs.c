@@ -232,11 +232,12 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		}
 	}
 	
-	fs->blocksize = EXT2_BLOCK_SIZE(fs->super);
-	if (fs->blocksize == 0) {
+	if ((fs->super->s_log_block_size + EXT2_MIN_BLOCK_LOG_SIZE) >
+	    EXT2_MAX_BLOCK_LOG_SIZE) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
+	fs->blocksize = EXT2_BLOCK_SIZE(fs->super);
 	if (EXT2_INODE_SIZE(fs->super) < EXT2_GOOD_OLD_INODE_SIZE) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
