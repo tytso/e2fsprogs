@@ -105,7 +105,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	int		rsv_gdt;
 	int		csum_flag;
 	int		io_flags;
-	char		*buf;
+	char		*buf = 0;
 	char		c;
 
 	if (!param || !param->s_blocks_count)
@@ -429,6 +429,8 @@ ipg_retry:
 	*ret_fs = fs;
 	return 0;
 cleanup:
+	if (buf)
+		free(buf);
 	ext2fs_free(fs);
 	return retval;
 }
