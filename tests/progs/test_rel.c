@@ -677,6 +677,8 @@ static int source_file(const char *cmd_file, int sci_idx)
 			exit(1);
 		}
 	}
+	fflush(stdout);
+	fflush(stderr);
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
 	while (!feof(f)) {
