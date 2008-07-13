@@ -297,6 +297,7 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 		fprintf(stderr, _("Weird value (%ld) in do_read\n"), got);
 	got /= block_size;
 	if (d_flag && got == try) {
+#ifdef HAVE_NANOSLEEP
 		struct timespec ts;
 		ts.tv_sec = tv2.tv_sec - tv1.tv_sec;
 		ts.tv_nsec = (tv2.tv_usec - tv1.tv_usec) * MILISEC;
@@ -313,6 +314,23 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 		}
 		if (ts.tv_sec || ts.tv_nsec)
 			nanosleep(&ts, NULL);
+#else
+#ifdef HAVE_USLEEP
+		struct timeval tv;
+		tv.tv_sec = tv2.tv_sec - tv1.tv_sec;
+		tv.tv_usec = tv2.tv_usec - tv1.tv_usec;
+		tv.tv_sec = tv.tv_sec * d_flag / 100;
+		tv.tv_usec = tv.tv_usec * d_flag / 100;
+		if (tv.tv_usec > 1000000) {
+			tv.tv_sec += tv.tv_usec / 1000000;
+			tv.tv_usec %= 1000000;
+		}
+		if (tv.tv_sec)
+			sleep(tv.tv_sec);
+		if (tv.tv_usec)
+			usleep(tv.tv_usec);
+#endif
+#endif
 	}
 	return got;
 }
