@@ -25,6 +25,8 @@
  * %End-Header%
  */
 
+#define _XOPEN_SOURCE 600 /* for inclusion of sa_handler in Solaris */
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/signal.h>

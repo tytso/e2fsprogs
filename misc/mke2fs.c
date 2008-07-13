@@ -16,6 +16,8 @@
  * enforced (but it's not much fun on a character device :-). 
  */
 
+#define _XOPEN_SOURCE 600 /* for inclusion of PATH_MAX in Solaris */
+
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>

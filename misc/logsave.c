@@ -10,6 +10,8 @@
  * %End-Header%
  */
 
+#define _XOPEN_SOURCE 600 /* for inclusion of sa_handler in Solaris */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

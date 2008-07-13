@@ -6,7 +6,7 @@
  *
  */
 
-#define _XOPEN_SOURCE /* needed for strptime */
+#define _XOPEN_SOURCE 600 /* needed for strptime */
 
 #include <stdio.h>
 #include <unistd.h>
