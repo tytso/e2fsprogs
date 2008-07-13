@@ -37,7 +37,7 @@
  * if EXT_DEBUG is defined you can use 'extdebug' mount option
  * to get lots of info what's going on
  */
-//#define EXT_DEBUG
+/* #define EXT_DEBUG */
 #ifdef EXT_DEBUG
 #define ext_debug(tree,fmt,a...) 			\
 do {							\
