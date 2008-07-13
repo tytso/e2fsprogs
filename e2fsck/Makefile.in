@@ -138,7 +138,7 @@ crc32table.h: gen_crc32table
 
 tst_crc32: $(srcdir)/crc32.c $(LIBEXT2FS)
 	@$(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32 $(srcdir)/crc32.c \
-		-DUNITTEST $(LIBEXT2FS)
+		-DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR)
 
 tst_refcount: ea_refcount.c
 	@echo "	LD $@"
@@ -151,9 +151,9 @@ tst_region: region.c
 		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR)
 
 check:: tst_refcount tst_region tst_crc32
-	./tst_refcount
-	./tst_region
-	./tst_crc32
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_refcount
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_region
+	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_crc32
 
 extend: extend.o
 	@echo "	LD $@"
