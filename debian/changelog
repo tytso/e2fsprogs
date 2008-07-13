@@ -1,3 +1,12 @@
+e2fsprogs (1.41.0-2) unstable; urgency=medium
+
+  * Don't try to check the group descriptor checksum if the GDT_CSUM
+    feature is not present.  (Closes: #490637)
+  * Add a new blkid -L option which pretty-prints the currently
+    available block devices.  (Closes: #490527)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 13 Jul 2008 19:18:08 -0400
+
 e2fsprogs (1.41.0-1) unstable; urgency=medium
 
   * New upstream version
