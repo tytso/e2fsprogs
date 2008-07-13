@@ -109,13 +109,11 @@ static void dbg_print_extent(char *desc, struct ext2fs_extent *extent)
 
 }
 
-#define dbg_printf(fmt, args...) printf(fmt, ## args)
 #else
 #define dbg_show_header(eh) do { } while (0)
 #define dbg_show_index(ix) do { } while (0)
 #define dbg_show_extent(ex) do { } while (0)
 #define dbg_print_extent(desc, ex) do { } while (0)
-#define dbg_printf(fmt, args...) do { } while (0)
 #endif
 
 /*
@@ -299,9 +297,11 @@ retry:
 				return EXT2_ET_EXTENT_NO_NEXT;
 		}
 		if (op != EXT2_EXTENT_NEXT_SIB) {
-			dbg_printf("<<<< OP = %s\n",
+#ifdef DEBUG
+			printf("<<<< OP = %s\n",
 			       (op == EXT2_EXTENT_DOWN) ? "down" :
 			       ((op == EXT2_EXTENT_UP) ? "up" : "unknown"));
+#endif
 		}
 	}
 
@@ -328,9 +328,11 @@ retry:
 				return EXT2_ET_EXTENT_NO_PREV;
 		}
 		if (op != EXT2_EXTENT_PREV_SIB) {
-			dbg_printf("<<<< OP = %s\n",
+#ifdef DEBUG
+			printf("<<<< OP = %s\n",
 			       (op == EXT2_EXTENT_DOWN_AND_LAST) ? "down/last" :
 			       ((op == EXT2_EXTENT_UP) ? "up" : "unknown"));
+#endif
 		}
 	}
 
@@ -340,8 +342,10 @@ retry:
 			op = EXT2_EXTENT_DOWN;
 		else
 			op = EXT2_EXTENT_LAST_SIB;
-		dbg_printf("<<<< OP = %s\n",
+#ifdef DEBUG
+		printf("<<<< OP = %s\n",
 			   (op == EXT2_EXTENT_DOWN) ? "down" : "last_sib");
+#endif
 	}
 
 	switch (op) {
@@ -451,11 +455,11 @@ retry:
 			if (handle->level < handle->max_depth)
 				path->visit_num = 1;
 		}
-
-		dbg_printf("Down to level %d/%d, end_blk=%llu\n",
+#ifdef DEBUG
+		printf("Down to level %d/%d, end_blk=%llu\n",
 			   handle->level, handle->max_depth,
 			   path->end_blk);
-
+#endif
 		break;
 	default:
 		return EXT2_ET_OP_NOT_SUPPORTED;
@@ -465,7 +469,9 @@ retry:
 		return EXT2_ET_NO_CURRENT_NODE;
 
 	extent->e_flags = 0;
-	dbg_printf("(Left %d)\n", path->left);
+#ifdef DEBUG
+	printf("(Left %d)\n", path->left);
+#endif
 
 	if (handle->level == handle->max_depth) {
 		ex = (struct ext3_extent *) ix;
@@ -586,8 +592,10 @@ static errcode_t extent_goto(ext2_extent_handle_t handle,
 		return retval;
 
 	if (leaf_level > handle->max_depth) {
-		dbg_printf("leaf level %d greater than tree depth %d\n",
+#ifdef DEBUG
+		printf("leaf level %d greater than tree depth %d\n",
 			leaf_level, handle->max_depth);
+#endif
 		return EXT2_ET_OP_NOT_SUPPORTED;
 	}
 
@@ -786,8 +794,9 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 	if (!handle->path)
 		return EXT2_ET_NO_CURRENT_NODE;
 
-	dbg_printf("splitting node at level %d\n", handle->level);
-
+#ifdef DEBUG
+	printf("splitting node at level %d\n", handle->level);
+#endif
 	retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT, &extent);
 	if (retval)
 		goto done;
@@ -805,8 +814,10 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 			(handle->path[handle->level - 1].entries >=
 			 handle->path[handle->level - 1].max_entries)) {
 
-		dbg_printf("parent level %d full; splitting it too\n",
+#ifdef DEBUG
+		printf("parent level %d full; splitting it too\n",
 							handle->level - 1);
+#endif
 		/* split the parent */
 		retval = ext2fs_extent_get(handle, EXT2_EXTENT_UP, &extent);
 		if (retval)
@@ -846,12 +857,16 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 		tocopy = ext2fs_le16_to_cpu(eh->eh_entries) / 2;
 	}
 
-	dbg_printf("will copy out %d of %d entries at level %d\n",
+#ifdef DEBUG
+	printf("will copy out %d of %d entries at level %d\n",
 				tocopy, ext2fs_le16_to_cpu(eh->eh_entries),
 				handle->level);
+#endif
 
 	if (!tocopy) {
-		dbg_printf("Nothing to copy to new block!\n");
+#ifdef DEBUG
+		printf("Nothing to copy to new block!\n");
+#endif
 		retval = EXT2_ET_CANT_SPLIT_EXTENT;
 		goto done;
 	}
@@ -877,7 +892,9 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 	if (retval)
 		goto done;
 
-	dbg_printf("will copy to new node at block %lu\n", new_node_pblk);
+#ifdef DEBUG
+	printf("will copy to new node at block %lu\n", new_node_pblk);
+#endif
 
 	/* Copy data into new block buffer */
 	/* First the header for the new block... */
@@ -1001,8 +1018,10 @@ errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
 		if (flags & EXT2_EXTENT_INSERT_NOSPLIT) {
 			return EXT2_ET_CANT_INSERT_EXTENT;
 		} else {
-			dbg_printf("node full (level %d) - splitting\n",
+#ifdef DEBUG
+			printf("node full (level %d) - splitting\n",
 				   handle->level);
+#endif
 			retval = extent_node_split(handle);
 			if (retval)
 				goto errout;
@@ -1133,8 +1152,10 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 			retval = 0;
 			mapped = 0;
 			if (!physical) {
-				dbg_printf("block %llu already unmapped\n",
+#ifdef DEBUG
+				printf("block %llu already unmapped\n",
 					logical);
+#endif
 				goto done;
 			}
 		} else
@@ -1154,12 +1175,16 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 	/* check if already pointing to the requested physical */
 	if (mapped && (new_uninit == extent_uninit) &&
 	    (extent.e_pblk + (logical - extent.e_lblk) == physical)) {
-		dbg_printf("physical block (at %llu) unchanged\n", logical);
+#ifdef DEBUG
+		printf("physical block (at %llu) unchanged\n", logical);
+#endif
 		goto done;
 	}
 
 	if (!mapped) {
-		dbg_printf("mapping unmapped logical block %llu\n", logical);
+#ifdef DEBUG
+		printf("mapping unmapped logical block %llu\n", logical);
+#endif
 		if ((logical == extent.e_lblk + extent.e_len) &&
 		    (physical == extent.e_pblk + extent.e_len) &&
 		    (new_uninit == extent_uninit) &&
@@ -1175,7 +1200,9 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 		if (retval)
 			goto done;
 	} else if ((logical == extent.e_lblk) && (extent.e_len == 1))  {
-		dbg_printf("(re/un)mapping only block in extent\n");
+#ifdef DEBUG
+		printf("(re/un)mapping only block in extent\n");
+#endif
 		if (physical) {
 			extent.e_pblk = physical;
 			retval = ext2fs_extent_replace(handle, 0, &extent);
@@ -1191,7 +1218,9 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 		if (retval)
 			goto done;
 	} else if (logical == extent.e_lblk + extent.e_len - 1)  {
-		dbg_printf("(re/un)mapping last block in extent\n");
+#ifdef DEBUG
+		printf("(re/un)mapping last block in extent\n");
+#endif
 		extent.e_len--;
 		retval = ext2fs_extent_replace(handle, 0, &extent);
 		if (retval)
@@ -1203,7 +1232,9 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 				goto done;
 		}
 	} else if (logical == extent.e_lblk) {
-		dbg_printf("(re/un)mapping first block in extent\n");
+#ifdef DEBUG
+		printf("(re/un)mapping first block in extent\n");
+#endif
 		extent.e_pblk++;
 		extent.e_lblk++;
 		extent.e_len--;
@@ -1224,7 +1255,9 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 	} else {
 		__u32	orig_length;
 
-		dbg_printf("(re/un)mapping in middle of extent\n");
+#ifdef DEBUG
+		printf("(re/un)mapping in middle of extent\n");
+#endif
 		/* need to split this extent; later */
 
 		orig_length = extent.e_len;
