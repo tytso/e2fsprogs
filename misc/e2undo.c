@@ -27,6 +27,8 @@ unsigned char mtime_key[] = "filesystem MTIME";
 unsigned char uuid_key[] = "filesystem UUID";
 unsigned char blksize_key[] = "filesystem BLKSIZE";
 
+char *prg_name;
+
 static void usage(char *prg_name)
 {
 	fprintf(stderr,
@@ -46,7 +48,7 @@ static int check_filesystem(TDB_CONTEXT *tdb, io_channel channel)
 	io_channel_set_blksize(channel, SUPERBLOCK_OFFSET);
 	retval = io_channel_read_blk(channel, 1, -SUPERBLOCK_SIZE, &super);
 	if (retval) {
-		com_err(__FUNCTION__,
+		com_err(prg_name,
 			retval, _("Failed to read the file system data \n"));
 		return retval;
 	}
@@ -56,7 +58,7 @@ static int check_filesystem(TDB_CONTEXT *tdb, io_channel channel)
 	tdb_data = tdb_fetch(tdb, tdb_key);
 	if (!tdb_data.dptr) {
 		retval = EXT2_ET_TDB_SUCCESS + tdb_error(tdb);
-		com_err(__FUNCTION__, retval,
+		com_err(prg_name, retval,
 			_("Failed tdb_fetch %s\n"), tdb_errorstr(tdb));
 		return retval;
 	}
@@ -64,7 +66,7 @@ static int check_filesystem(TDB_CONTEXT *tdb, io_channel channel)
 	s_mtime = *(__u32 *)tdb_data.dptr;
 	if (super.s_mtime != s_mtime) {
 
-		com_err(__FUNCTION__, 0,
+		com_err(prg_name, 0,
 			_("The file system Mount time didn't match %u\n"),
 			s_mtime);
 
@@ -77,13 +79,13 @@ static int check_filesystem(TDB_CONTEXT *tdb, io_channel channel)
 	tdb_data = tdb_fetch(tdb, tdb_key);
 	if (!tdb_data.dptr) {
 		retval = EXT2_ET_TDB_SUCCESS + tdb_error(tdb);
-		com_err(__FUNCTION__, retval,
+		com_err(prg_name, retval,
 			_("Failed tdb_fetch %s\n"), tdb_errorstr(tdb));
 		return retval;
 	}
 	memcpy(s_uuid, tdb_data.dptr, sizeof(s_uuid));
 	if (memcmp(s_uuid, super.s_uuid, sizeof(s_uuid))) {
-		com_err(__FUNCTION__, 0,
+		com_err(prg_name, 0,
 			_("The file system UUID didn't match \n"));
 		return -1;
 	}
@@ -102,7 +104,7 @@ static int set_blk_size(TDB_CONTEXT *tdb, io_channel channel)
 	tdb_data = tdb_fetch(tdb, tdb_key);
 	if (!tdb_data.dptr) {
 		retval = EXT2_ET_TDB_SUCCESS + tdb_error(tdb);
-		com_err(__FUNCTION__, retval,
+		com_err(prg_name, retval,
 			_("Failed tdb_fetch %s\n"), tdb_errorstr(tdb));
 		return retval;
 	}
@@ -125,7 +127,7 @@ int main(int argc, char *argv[])
 	errcode_t retval;
 	int  mount_flags;
 	unsigned long  blk_num;
-	char *device_name, *tdb_file, *prg_name;
+	char *device_name, *tdb_file;
 	io_manager manager = unix_io_manager;
 
 #ifdef ENABLE_NLS
