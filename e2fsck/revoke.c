@@ -71,8 +71,8 @@
 #include <linux/init.h>
 #endif
 
-static kmem_cache_t *revoke_record_cache;
-static kmem_cache_t *revoke_table_cache;
+static lkmem_cache_t *revoke_record_cache;
+static lkmem_cache_t *revoke_table_cache;
 
 /* Each revoke record represents one single revoked block.  During
    journal replay, this involves recording the transaction ID of the

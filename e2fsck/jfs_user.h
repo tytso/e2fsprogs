@@ -50,7 +50,7 @@ extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
 
 typedef struct {
 	int	object_length;
-} kmem_cache_t;
+} lkmem_cache_t;
 
 #define kmem_cache_alloc(cache,flags) malloc((cache)->object_length)
 #define kmem_cache_free(cache,obj) free(obj)
@@ -74,8 +74,8 @@ typedef unsigned int __be32;
  * We use the standard libext2fs portability tricks for inline
  * functions.  
  */
-extern kmem_cache_t * do_cache_create(int len);
-extern void do_cache_destroy(kmem_cache_t *cache);
+extern lkmem_cache_t * do_cache_create(int len);
+extern void do_cache_destroy(lkmem_cache_t *cache);
 extern size_t journal_tag_bytes(journal_t *journal);
 	
 #if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
@@ -89,16 +89,16 @@ extern size_t journal_tag_bytes(journal_t *journal);
 #endif
 #endif
 
-_INLINE_ kmem_cache_t * do_cache_create(int len)
+_INLINE_ lkmem_cache_t * do_cache_create(int len)
 {
-	kmem_cache_t *new_cache;
+	lkmem_cache_t *new_cache;
 	new_cache = malloc(sizeof(*new_cache));
 	if (new_cache)
 		new_cache->object_length = len;
 	return new_cache;
 }
 
-_INLINE_ void do_cache_destroy(kmem_cache_t *cache)
+_INLINE_ void do_cache_destroy(lkmem_cache_t *cache)
 {
 	free(cache);
 }
