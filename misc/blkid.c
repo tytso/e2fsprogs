@@ -11,7 +11,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
+#ifdef HAVE_TERMIOS_H
+#include <termios.h>
+#endif
+#ifdef HAVE_TERMIO_H
+#include <termio.h>
+#endif
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
@@ -22,7 +32,9 @@ extern int optind;
 
 #define OUTPUT_VALUE_ONLY	0x0001
 #define OUTPUT_DEVICE_ONLY	0x0002
+#define OUTPUT_PRETTY_LIST	0x0004
 
+#include "ext2fs/ext2fs.h"
 #include "blkid/blkid.h"
 
 const char *progname = "blkid";
@@ -38,8 +50,8 @@ static void usage(int error)
 
 	print_version(out);
 	fprintf(out,
-		"usage:\t%s [-c <file>] [-ghl] [-o format] "
-		"[-s <tag>] [-t <token>]\n    [-v] [-w <file>] [dev ...]\n"
+		"usage:\t%s [-c <file>] [-ghlLv] [-o format] "
+		"[-s <tag>] [-t <token>]\n    [-w <file>] [dev ...]\n"
 		"\t-c\tcache file (default: /etc/blkid.tab, /dev/null = none)\n"
 		"\t-h\tprint this usage message and exit\n"
 		"\t-g\tgarbage collect the blkid cache\n"
@@ -78,6 +90,133 @@ static void safe_print(const char *cp, int len)
 	}
 }
 
+static int get_terminal_width(void)
+{
+#ifdef TIOCGSIZE
+	struct ttysize	win;
+#endif
+#ifdef TIOCGWINSZ
+	struct winsize	win;
+#endif
+        const char	*cp;
+
+#ifdef TIOCGSIZE
+	if (ioctl (0, TIOCGSIZE, &win) == 0)
+		return (win.ts_cols);
+#endif
+#ifdef TIOCGWINSZ
+	if (ioctl (0, TIOCGWINSZ, &win) == 0)
+		return (win.ws_col);
+#endif
+        cp = getenv("COLUMNS");
+	if (cp)
+		return strtol(cp, NULL, 10);
+	return 80;
+}
+
+static int pretty_print_word(const char *str, int max_len,
+			     int left_len, int overflow_nl)
+{
+	int len = strlen(str) + left_len;
+	int ret = 0;
+
+	fputs(str, stdout);
+	if (overflow_nl && len > max_len) {
+		fputc('\n', stdout);
+		len = 0;
+	} else if (len > max_len)
+		ret = len - max_len;
+	do
+		fputc(' ', stdout);
+	while (len++ < max_len);
+	return ret;
+}
+
+static void pretty_print_line(const char *device, const char *fs_type,
+			      const char *label, const char *mtpt,
+			      const char *uuid)
+{
+	static int device_len = 10, fs_type_len = 7;
+	static int label_len = 8, mtpt_len = 14;
+	static int term_width = -1;
+	int len, w;
+
+	if (term_width < 0)
+		term_width = get_terminal_width();
+
+	if (term_width > 80) {
+		term_width -= 80;
+		w = term_width / 10;
+		if (w > 8)
+			w = 8;
+		term_width -= 2*w;
+		label_len += w;
+		fs_type_len += w;
+		w = term_width/2;
+		device_len += w;
+		mtpt_len +=w;
+	}
+
+	len = pretty_print_word(device, device_len, 0, 1);
+	len = pretty_print_word(fs_type, fs_type_len, len, 0);
+	len = pretty_print_word(label, label_len, len, 0);
+	len = pretty_print_word(mtpt, mtpt_len, len, 0);
+	fputs(uuid, stdout);
+	fputc('\n', stdout);
+}
+
+static void pretty_print_dev(blkid_dev dev)
+{
+	blkid_tag_iterate	iter;
+	const char		*type, *value, *devname;
+	const char		*uuid = "", *fs_type = "", *label = "";
+	char			*cp;
+	int			len, mount_flags;
+	char			mtpt[80];
+	errcode_t		retval;
+
+	if (dev == NULL) {
+		pretty_print_line("device", "fs_type", "label",
+				  "mount point", "UUID");
+		for (len=get_terminal_width()-1; len > 0; len--)
+			fputc('-', stdout);
+		fputc('\n', stdout);
+		return;
+	}
+
+	devname = blkid_dev_devname(dev);
+	if (access(devname, F_OK))
+		return;
+
+	/* Get the uuid, label, type */
+	iter = blkid_tag_iterate_begin(dev);
+	while (blkid_tag_next(iter, &type, &value) == 0) {
+		if (!strcmp(type, "UUID"))
+			uuid = value;
+		if (!strcmp(type, "TYPE"))
+			fs_type = value;
+		if (!strcmp(type, "LABEL"))
+			label = value;
+	}
+	blkid_tag_iterate_end(iter);
+
+	/* Get the mount point */
+	mtpt[0] = 0;
+	retval = ext2fs_check_mount_point(devname, &mount_flags,
+					  mtpt, sizeof(mtpt));
+	if (retval == 0) {
+		if (mount_flags & EXT2_MF_MOUNTED) {
+			if (!mtpt[0])
+				strcpy(mtpt, "(mounted, mtpt unknown)");
+		} else if (mount_flags & EXT2_MF_BUSY)
+			strcpy(mtpt, "(in use)");
+		else
+			strcpy(mtpt, "(not mounted)");
+	}
+
+	pretty_print_line(devname, fs_type, label, mtpt, uuid);
+}
+
 static void print_tags(blkid_dev dev, char *show[], int numtag, int output)
 {
 	blkid_tag_iterate	iter;
@@ -86,6 +225,11 @@ static void print_tags(blkid_dev dev, char *show[], int numtag, int output)
 
 	if (!dev)
 		return;
+
+	if (output & OUTPUT_PRETTY_LIST) {
+		pretty_print_dev(dev);
+		return;
+	}
 
 	if (output & OUTPUT_DEVICE_ONLY) {
 		printf("%s\n", blkid_dev_devname(dev));
@@ -137,7 +281,7 @@ int main(int argc, char **argv)
 	int lookup = 0, gc = 0;
 	int c;
 
-	while ((c = getopt (argc, argv, "c:f:ghlo:s:t:w:v")) != EOF)
+	while ((c = getopt (argc, argv, "c:f:ghlLo:s:t:w:v")) != EOF)
 		switch (c) {
 		case 'c':
 			if (optarg && !*optarg)
@@ -150,6 +294,9 @@ int main(int argc, char **argv)
 		case 'l':
 			lookup++;
 			break;
+		case 'L':
+			output_format = OUTPUT_PRETTY_LIST;
+			break;
 		case 'g':
 			gc = 1;
 			break;
@@ -158,10 +305,14 @@ int main(int argc, char **argv)
 				output_format = OUTPUT_VALUE_ONLY;
 			else if (!strcmp(optarg, "device"))
 				output_format = OUTPUT_DEVICE_ONLY;
+			else if (!strcmp(optarg, "list"))
+				output_format = OUTPUT_PRETTY_LIST;
 			else if (!strcmp(optarg, "full"))
 				output_format = 0;
 			else {
-				fprintf(stderr, "Invalid output format %s.  Chose from value, device, or full\n", optarg);
+				fprintf(stderr, "Invalid output format %s. "
+					"Choose from value,\n\t"
+					"device, list, or full\n", optarg);
 				exit(1);
 			}
 			break;
@@ -214,7 +365,12 @@ int main(int argc, char **argv)
 	err = 2;
 	if (gc) {
 		blkid_gc_cache(cache);
-	} else if (lookup) {
+		goto exit;
+	}
+	if (output_format & OUTPUT_PRETTY_LIST)
+		pretty_print_dev(NULL);
+
+	if (lookup) {
 		blkid_dev dev;
 
 		if (!search_type) {

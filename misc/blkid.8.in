@@ -11,7 +11,7 @@ blkid \- command\-line utility to locate/print block device attributes
 .SH SYNOPSIS
 .B blkid 
 [
-.B \-ghlv
+.B \-ghlLv
 ]
 [
 [
@@ -90,9 +90,15 @@ parameter may be
 .IR  value ,
 (only print the value of any tags printed by 
 .BR blkid)
+.IR list ,
+(print the devices in a user friendly format)
 or 
 .I device
 (only print the device name).
+.TP
+.B \-L
+Print the devices in a user-friendly list format.  This is the
+equivalent of using the option \fB-o list\fR.
 .TP
 .B \-s
 Show only the tags for each (specified) device that match
