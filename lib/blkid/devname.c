@@ -96,7 +96,8 @@ blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
 			dev2 = list_entry(p, struct blkid_struct_dev, bid_devs);
 			if (dev2->bid_flags & BLKID_BID_FL_VERIFIED)
 				continue;
-			if (strcmp(dev->bid_type, dev2->bid_type))
+			if (!dev->bid_type || !dev2->bid_type ||
+			    strcmp(dev->bid_type, dev2->bid_type))
 				continue;
 			if (dev->bid_label && dev2->bid_label &&
 			    strcmp(dev->bid_label, dev2->bid_label))

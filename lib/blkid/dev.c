@@ -34,7 +34,8 @@ void blkid_free_dev(blkid_dev dev)
 		return;
 
 	DBG(DEBUG_DEV,
-	    printf("  freeing dev %s (%s)\n", dev->bid_name, dev->bid_type));
+	    printf("  freeing dev %s (%s)\n", dev->bid_name, dev->bid_type ?
+		   dev->bid_type : "(null)"));
 	DBG(DEBUG_DEV, blkid_debug_dump_dev(dev));
 
 	list_del(&dev->bid_devs);

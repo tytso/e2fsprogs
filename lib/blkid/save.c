@@ -34,7 +34,8 @@ static int save_dev(blkid_dev dev, FILE *file)
 		return 0;
 
 	DBG(DEBUG_SAVE,
-	    printf("device %s, type %s\n", dev->bid_name, dev->bid_type));
+	    printf("device %s, type %s\n", dev->bid_name, dev->bid_type ?
+		   dev->bid_type : "(null)"));
 
 	fprintf(file,
 		"<device DEVNO=\"0x%04lx\" TIME=\"%ld\"",
