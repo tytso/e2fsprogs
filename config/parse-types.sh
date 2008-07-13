@@ -8,8 +8,16 @@ s/typedef \(.*\) __u\([1-9]*\);/#define __U\2_TYPEDEF \1/
 s/typedef \(.*\) __s\([1-9]*\);/#define __S\2_TYPEDEF \1/
 EOF
 
-echo '#include <asm/types.h>' | ${CPP-${CC-gcc} -E} - | \
-    sed -f sed.script | grep ^# > asm_types.h
+if test -z "$CC"; then
+    CC=gcc
+fi
+
+if test -z "$CPP"; then
+    CPP="$CC -E"
+fi
+
+echo '#include <asm/types.h>' | $CPP - | \
+    sed -f sed.script | grep '^#' > asm_types.h
 
 rm sed.script
 
@@ -99,8 +107,10 @@ main(int argc, char **argv)
 EOF
 
 ${BUILD_CC-${CC-gcc}} -o asm_types asm_types.c
-if ! ./asm_types 
+if ./asm_types
 then
+    /bin/true
+else
     echo "Problem detected with asm_types.h"
     echo "" > asm_types.h
 fi
