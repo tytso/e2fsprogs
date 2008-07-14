@@ -93,20 +93,20 @@ static void safe_print(const char *cp, int len)
 static int get_terminal_width(void)
 {
 #ifdef TIOCGSIZE
-	struct ttysize	win;
+	struct ttysize	t_win;
 #endif
 #ifdef TIOCGWINSZ
-	struct winsize	win;
+	struct winsize	w_win;
 #endif
         const char	*cp;
 
 #ifdef TIOCGSIZE
-	if (ioctl (0, TIOCGSIZE, &win) == 0)
-		return (win.ts_cols);
+	if (ioctl (0, TIOCGSIZE, &t_win) == 0)
+		return (t_win.ts_cols);
 #endif
 #ifdef TIOCGWINSZ
-	if (ioctl (0, TIOCGWINSZ, &win) == 0)
-		return (win.ws_col);
+	if (ioctl (0, TIOCGWINSZ, &w_win) == 0)
+		return (w_win.ws_col);
 #endif
         cp = getenv("COLUMNS");
 	if (cp)
