@@ -227,7 +227,7 @@ Description: ext2/ext3/ext4 file system utilities
  ext-based file systems, and the generic fsck wrapper.
 
 Package: e2fsprogs-dbg
-Section: admin
+Section: devel
 Priority: extra
 Depends: e2fsprogs (= ${binary:Version})
 Architecture: any
@@ -238,7 +238,7 @@ Description: Debugging information for e2fsprogs
  dump analysis. 
 
 Package: uuid-runtime-dbg
-Section: libs
+Section: libdevel
 Priority: extra
 Depends: uuid-runtime (= ${binary:Version})
 Architecture: any
@@ -249,7 +249,7 @@ Description: Debugging information for uuid-runtime
  dump analysis.
 
 Package: e2fslibs-dbg
-Section: libs
+Section: libdevel
 Priority: extra
 Depends: e2fslibs (= ${binary:Version})
 Architecture: any
@@ -259,7 +259,7 @@ Description: Debugging information for e2fslibs
  information is used for execution tracing and core dump analysis.
 
 Package: libcomerr2-dbg
-Section: libs
+Section: libdevel
 Priority: extra
 Depends: libcomerr2 (= ${binary:Version})
 Architecture: any
@@ -269,7 +269,7 @@ Description: Debugging information for libcomerr2
  information is used for execution tracing and core dump analysis.
 
 Package: libss2-dbg
-Section: libs
+Section: libdevel
 Priority: extra
 Depends: libss2 (= ${binary:Version})
 Architecture: any
@@ -279,7 +279,7 @@ Description: Debugging information for libss2
  is used for execution tracing and core dump analysis.
 
 Package: libblkid1-dbg
-Section: libs
+Section: libdevel
 Priority: extra
 Depends: libblkid1 (= ${binary:Version})
 Architecture: any
@@ -289,7 +289,7 @@ Description: Debugging information for libblkid1
  information is used for execution tracing and core dump analysis.
 
 Package: libuuid1-dbg
-Section: libs
+Section: libdevel
 Priority: extra
 Depends: libuuid1 (= ${binary:Version})
 Architecture: any
