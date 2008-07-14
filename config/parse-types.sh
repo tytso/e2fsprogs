@@ -109,7 +109,7 @@ EOF
 ${BUILD_CC-${CC-gcc}} -o asm_types asm_types.c
 if ./asm_types
 then
-    /bin/true
+    true
 else
     echo "Problem detected with asm_types.h"
     echo "" > asm_types.h
