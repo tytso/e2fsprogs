@@ -7,6 +7,8 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
+% : %.sh
+
 @RESIZER_CMT@RESIZE_DIR= resize
 @DEBUGFS_CMT@DEBUGFS_DIR= debugfs
 
