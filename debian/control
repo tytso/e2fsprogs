@@ -100,7 +100,7 @@ Description: universally unique id library
  The uuidd daemon is used to generate universally unique identifiers (UUIDs),
  especially time-based UUID’s, in a secure and guaranteed-unique fashion,
  even in the face of large numbers of threads trying to grab UUID’s
- running on different CPU’s. It is used by by libuuid as well as the
+ running on different CPU’s. It is used by libuuid as well as the
  uuidgen program.
 
 Package: libuuid1-udeb
