@@ -536,6 +536,8 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 		if (retval != EXT2_ET_CALLBACK_NOTHANDLED)
 			return retval;
 	}
+	if ((ino == 0) || (ino > fs->super->s_inodes_count))
+		return EXT2_ET_BAD_INODE_NUM;
 	/* Create inode cache if not present */
 	if (!fs->icache) {
 		retval = create_icache(fs);
@@ -544,7 +546,7 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 	}
 	/* Check to see if it's in the inode cache */
 	if (bufsize == sizeof(struct ext2_inode)) {
-		/* only old good inode can be retrieve from the cache */
+		/* only old good inode can be retrieved from the cache */
 		for (i=0; i < fs->icache->cache_size; i++) {
 			if (fs->icache->cache[i].ino == ino) {
 				*inode = fs->icache->cache[i].inode;
@@ -552,8 +554,6 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 			}
 		}
 	}
-	if ((ino == 0) || (ino > fs->super->s_inodes_count))
-		return EXT2_ET_BAD_INODE_NUM;
 	if (fs->flags & EXT2_FLAG_IMAGE_FILE) {
 		inodes_per_block = fs->blocksize / EXT2_INODE_SIZE(fs->super);
 		block_nr = fs->image_header->offset_inode / fs->blocksize;
