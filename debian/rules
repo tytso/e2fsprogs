@@ -423,7 +423,7 @@ binary-arch: install install-udeb
 
 	dh_fixperms
 ifneq ($(ismips),)
-	dh_strip -Xlib64ext2fs-nopic.a
+	dh_strip -k -Xlib64ext2fs-nopic.a
 else
 	dh_strip -k
 endif
