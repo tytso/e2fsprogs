@@ -106,6 +106,12 @@ tune2fs: $(TUNE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBS_BLKID)
 	@$(CC) $(ALL_LDFLAGS) -o tune2fs $(TUNE2FS_OBJS) $(LIBS) \
 		$(LIBS_BLKID) $(LIBS_E2P) $(LIBINTL)
 
+tune2fs.static: $(TUNE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIBBLKID)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -static -o tune2fs.static $(TUNE2FS_OBJS) \
+		$(STATIC_LIBS) $(STATIC_LIBBLKID) $(STATIC_LIBUUID) \
+		$(STATIC_LIBE2P) $(LIBINTL)
+
 blkid: $(BLKID_OBJS) $(DEPLIBS_BLKID)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o blkid $(BLKID_OBJS) $(LIBS_BLKID) $(LIBINTL)
@@ -395,7 +401,8 @@ clean:
 		$(FMANPAGES) \
 		base_device base_device.out mke2fs.static filefrag \
 		e2initrd_helper partinfo prof_err.[ch] default_profile.c \
-		uuidd e2image tst_ismounted \#* *.s *.o *.a *~ core
+		uuidd e2image tune2fs.static tst_ismounted \
+		\#* *.s *.o *.a *~ core
 
 mostlyclean: clean
 distclean: clean
