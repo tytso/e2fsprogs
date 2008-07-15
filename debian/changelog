@@ -1,3 +1,11 @@
+e2fsprogs (1.41.0-3) unstable; urgency=medium
+
+  * Fix mips-specific FTBFS problem in debian/rules file
+  * Synchronize section and priority levels in control file with the
+    FTP masters' override file.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 15 Jul 2008 11:38:59 -0400
+
 e2fsprogs (1.41.0-2) unstable; urgency=medium
 
   * Don't try to check the group descriptor checksum if the GDT_CSUM
