@@ -343,7 +343,30 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 		echo "	INSTALL_DATA $(man5dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man5dir)/$$i; \
 	done
-	@if ! test -f $(DESTDIR)$(root_sysconfdir)/mke2fs.conf; then \
+	@if test -f $(DESTDIR)$(root_sysconfdir)/mke2fs.conf; then \
+		if cmp -s $(DESTDIR)$(root_sysconfdir)/mke2fs.conf \
+			$(srcdir)/mke2fs.conf; then \
+			true; \
+		else \
+			if grep -q ext4dev $(DESTDIR)$(root_sysconfdir)/mke2fs.conf ; then \
+				echo "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf.e2fsprogs-new"; \
+				$(INSTALL_DATA) $(srcdir)/mke2fs.conf \
+					$(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-new; \
+				echo "Warning: installing mke2fs.conf in $(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-new"; \
+				echo "Check to see if you need to update your $(root_sysconfdir)/mke2fs.conf"; \
+			else \
+				echo "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf"; \
+				mv $(DESTDIR)$(root_sysconfdir)/mke2fs.conf \
+				   $(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-old; \
+				$(INSTALL_DATA) $(srcdir)/mke2fs.conf \
+					$(DESTDIR)$(root_sysconfdir)/mke2fs.conf; \
+				echo "Your mke2fs.conf is too old.  Backing up old version in"; \
+				echo "$(DESTDIR)$(root_sysconfdir)/mke2fs.conf.e2fsprogs-old.  Please check to see"; \
+				echo "if you have any local customizations that you wish to preserve."; \
+			fi; \
+			echo " "; \
+		fi; \
+	else \
 		echo "	INSTALL_DATA $(root_sysconfdir)/mke2fs.conf"; \
 		$(INSTALL_DATA) $(srcdir)/mke2fs.conf \
 			$(DESTDIR)$(root_sysconfdir)/mke2fs.conf; \
