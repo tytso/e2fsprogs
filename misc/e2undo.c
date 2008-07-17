@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (mount_flags & EXT2_MF_MOUNTED) {
-		com_err(prg_name, retval, _("undoe2fs should only be run on "
+		com_err(prg_name, retval, _("e2undo should only be run on "
 				"unmounted file system\n"));
 		exit(1);
 	}

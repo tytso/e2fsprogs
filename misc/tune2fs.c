@@ -1391,7 +1391,7 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	*io_ptr = undo_io_manager;
 	set_undo_io_backup_file(tdb_file);
 	printf(_("To undo the tune2fs operations please run "
-		 "the command\n    undoe2fs %s %s\n\n"),
+		 "the command\n    e2undo %s %s\n\n"),
 		 tdb_file, name);
 	free(tmp_name);
 	return retval;
@@ -1595,7 +1595,7 @@ int main (int argc, char ** argv)
 		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 		if (resize_inode(fs, new_inode_size)) {
 			fputs(_("Error in resizing the inode size.\n"
-				"Run undoe2fs to undo the "
+				"Run e2undo to undo the "
 				"file system changes. \n"), stderr);
 		} else {
 			printf (_("Setting inode size %lu\n"),
