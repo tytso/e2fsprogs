@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 	textdomain(NLS_CAT_NAME);
 #endif
 	if (argc == 1) {
-		fprintf(stderr, _("Usage:  %s device...\n\nPrints out the"
+		fprintf(stderr, _("Usage:  %s device...\n\nPrints out the "
 			"partition information for each given device.\n"),
 			"For example: %s /dev/hda\n\n", argv[0], argv[0]);
 		exit(1);

@@ -177,7 +177,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 
 	return 0;
 #else
-	printf(_("Filesystem at %s is mounted on %s, and on-line resizing is"
+	printf(_("Filesystem at %s is mounted on %s, and on-line resizing is "
 		 "not supported on this system.\n"), fs->device_name, mtpt);
 	exit(1);
 #endif
