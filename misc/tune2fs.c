@@ -389,9 +389,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 	if (FEATURE_ON(E2P_FEATURE_COMPAT, EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
 		/*
 		 * If adding a journal flag, let the create journal
-		 * code below handle creating setting the flag and
-		 * creating the journal.  We supply a default size if
-		 * necessary.
+		 * code below handle setting the flag and creating the
+		 * journal.  We supply a default size if necessary.
 		 */
 		if (!journal_size)
 			journal_size = -1;
