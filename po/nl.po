@@ -1,6 +1,7 @@
-# Dutch translations for e2fsprogs.
+# Dutch translations for e2fsprogs-1.41-b1.
 # Copyright (C) 2008 Theodore Tso (msgids)
 # This file is distributed under the same license as the e2fsprogs package.
+#
 # Benno Schulenberg <benno@vertaalt.nl>, 2005, 2006, 2007, 2008.
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
@@ -66,7 +67,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs-1.41-b1\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2008-06-18 06:49-0400\n"
-"PO-Revision-Date: 2008-06-23 23:15+0200\n"
+"PO-Revision-Date: 2008-07-16 23:23+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
@@ -850,7 +851,7 @@ msgstr "Inodetal in superblok is %i, zou %j moeten zijn.\n"
 
 #: e2fsck/problem.c:182
 msgid "The Hurd does not support the filetype feature.\n"
-msgstr "De Hurd ondersteunt geen bestandstypen.\n"
+msgstr "De Hurd ondersteunt de bestandstypenfumctie niet.\n"
 
 #. @-expanded: superblock has an invalid ext3 journal (inode %i).\n
 #: e2fsck/problem.c:187
@@ -1133,7 +1134,7 @@ msgstr "De verwijderingstijd van verwijderde inode %i is nul.  "
 #: e2fsck/problem.c:412
 #, c-format
 msgid "@i %i is in use, but has dtime set.  "
-msgstr "Inode %i is in gebruik, maar heeft de verwijderingstijd gezet.  "
+msgstr "Inode %i is in gebruik, maar heeft een ingevulde verwijderingstijd.  "
 
 #. @-expanded: inode %i is a zero-length directory.  
 #: e2fsck/problem.c:417
@@ -1495,13 +1496,13 @@ msgstr "Blok #%B (%b) maakt symbolische koppeling te groot.  "
 #: e2fsck/problem.c:743
 #, c-format
 msgid "@i %i has INDEX_FL flag set on @f without htree support.\n"
-msgstr "Inode %i heeft de 'index_fl'-vlag gezet op een bestandssysteem zonder 'htree'-ondersteuning.\n"
+msgstr "Inode %i heeft de 'INDEX_FL'-vlag gezet op een bestandssysteem zonder 'htree'-ondersteuning.\n"
 
 #. @-expanded: inode %i has INDEX_FL flag set but is not a directory.\n
 #: e2fsck/problem.c:748
 #, c-format
 msgid "@i %i has INDEX_FL flag set but is not a @d.\n"
-msgstr "Inode %i heeft de 'index_fl'-vlag gezet maar het is geen map.\n"
+msgstr "Inode %i heeft de 'INDEX_FL'-vlag gezet maar het is geen map.\n"
 
 #. @-expanded: HTREE directory inode %i has an invalid root node.\n
 #: e2fsck/problem.c:753
@@ -1617,18 +1618,18 @@ msgstr "Inode %i heeft de 'EXTENTS_FL'-vlag gezet op een bestandssysteem zonder 
 #: e2fsck/problem.c:844
 #, c-format
 msgid "@i %i is in extent format, but @S is missing EXTENTS feature\n"
-msgstr ""
+msgstr "Inode %i heeft extent-opmaak, maar superblok heeft EXTENTS-functievlag niet gezet.\n"
 
 #. @-expanded: inode %i missing EXTENT_FL, but is in extents format\n
 #: e2fsck/problem.c:849
 #, c-format
 msgid "@i %i missing EXTENT_FL, but is in extents format\n"
-msgstr ""
+msgstr "Inode %i heeft extent-opmaak, maar heeft 'EXTENT_FL'-vlag niet gezet.\n"
 
 #: e2fsck/problem.c:854
 #, c-format
 msgid "Fast symlink %i has EXTENT_FL set.  "
-msgstr ""
+msgstr "Snelle symbolische koppeling %i heeft 'EXTENT_FL'-vlag gezet.  "
 
 #. @-expanded: inode %i has out of order extents\n
 #. @-expanded: \t(invalid logical block %c, physical block %b, len %N)\n
@@ -1650,7 +1651,7 @@ msgid ""
 "Pass 1B: Rescanning for @m @bs\n"
 msgstr ""
 "\n"
-"Er zijn extra stappen nodig voor het verzoenen van blokken die door\n"
+"Er zijn extra stappen nodig voor het ontwarren van blokken die door\n"
 "meer dan één inode geclaimd worden...\n"
 "Stap 1B: Opnieuw zoeken naar meervoudig-geclaimde blokken\n"
 
@@ -2075,7 +2076,7 @@ msgstr "Onverwacht blok in 'htree'-map-inode %d (%q)\n"
 #: e2fsck/problem.c:1272
 #, c-format
 msgid "@i %i found in @g %g where _INODE_UNINIT is set.  "
-msgstr ""
+msgstr "Inode %i is gevonden in groep %g die gemarkeerd is als INODE_UNINIT.  "
 
 #. @-expanded: inode %i found in group %g unused inodes area.  
 #: e2fsck/problem.c:1277
@@ -2349,13 +2350,13 @@ msgstr "Het journal heraanmaken om het bestandssysteem weer ext3 te maken?\n"
 #: e2fsck/problem.c:1593
 #, c-format
 msgid "@g %g @b(s) in use but @g is marked BLOCK_UNINIT\n"
-msgstr ""
+msgstr "Blok(ken) van groep %g in gebruik, maar groep is gemarkeerd als BLOCK_UNINIT\n"
 
 #. @-expanded: group %g inode(s) in use but group is marked INODE_UNINIT\n
 #: e2fsck/problem.c:1598
 #, c-format
 msgid "@g %g @i(s) in use but @g is marked INODE_UNINIT\n"
-msgstr ""
+msgstr "Inode(s) van groep %g in gebruik, maar groep is gemarkeerd als INODE_UNINIT\n"
 
 #: e2fsck/problem.c:1716
 #, c-format
@@ -2654,6 +2655,8 @@ msgstr "voor interactieve reparaties is een terminal vereist"
 msgid "%s: %s trying backup blocks...\n"
 msgstr "%s: %s reservekopieblokken worden bekeken...\n"
 
+# Gebruik van '--' in deze en volgende string is opzettelijk;
+# één van deze strings wordt ingevuld voor de tweede %s hierboven.
 #: e2fsck/unix.c:972
 msgid "Superblock invalid,"
 msgstr "Superblok is ongeldig --"
@@ -3483,21 +3486,21 @@ msgstr "Lezen van bestandssysteemgegevens is mislukt \n"
 #: misc/e2undo.c:60 misc/e2undo.c:81 misc/e2undo.c:106 misc/e2undo.c:202
 #, c-format
 msgid "Failed tdb_fetch %s\n"
-msgstr ""
+msgstr "Lezen van transactiegegevens is mislukt: %s\n"
 
 #: misc/e2undo.c:68
 #, c-format
 msgid "The file system Mount time didn't match %u\n"
-msgstr ""
+msgstr "aankoppelingstijd van bestandssysteem komt niet overeen met %u uit transactiebestand\n"
 
 #: misc/e2undo.c:87
 msgid "The file system UUID didn't match \n"
-msgstr ""
+msgstr "UUID's van bestandssysteem en uit transactiebestand komen niet overeen\n"
 
 #: misc/e2undo.c:159
 #, c-format
 msgid "Failed tdb_open %s\n"
-msgstr "Functie tdb_open() op %s is mislukt\n"
+msgstr "Openen van transactiebestand %s is mislukt\n"
 
 #: misc/e2undo.c:165
 #, c-format
@@ -3506,7 +3509,7 @@ msgstr "Fout tijdens bepalen of %s aangekoppeld is.\n"
 
 #: misc/e2undo.c:171
 msgid "undoe2fs should only be run on unmounted file system\n"
-msgstr ""
+msgstr "Voer 'e2undo' alleen uit op een niet-aangekoppeld bestandssysteem.\n"
 
 #: misc/e2undo.c:180
 #, c-format
@@ -4146,6 +4149,10 @@ msgid ""
 "    e2undo %s %s\n"
 "\n"
 msgstr ""
+"Een bestaand bestandssysteem wordt overschreven;\n"
+"dit kan ongedaan gemaakt worden met de opdracht:\n"
+"    e2undo %s %s\n"
+"\n"
 
 #: misc/mke2fs.c:1835
 msgid "while setting up superblock"
@@ -4228,7 +4235,7 @@ msgstr "Gebruik:  mklost+found\n"
 #: misc/partinfo.c:28
 #, c-format
 msgid "%s failed for %s: %s\n"
-msgstr ""
+msgstr "%s is mislukt voor %s: %s\n"
 
 #: misc/partinfo.c:45
 #, c-format
@@ -4237,18 +4244,21 @@ msgid ""
 "\n"
 "Prints out thepartition information for each given device.\n"
 msgstr ""
+"Gebruik:  %s apparaat...\n"
+"\n"
+"Toont de partitie-informatie voor elk gegeven apparaat.\n"
 
 #: misc/partinfo.c:55
 msgid "open"
-msgstr ""
+msgstr "Openen"
 
 #: misc/partinfo.c:60
 msgid "HDIO_GETGEO ioctl"
-msgstr ""
+msgstr "Opvragen van geometrie"
 
 #: misc/partinfo.c:67
 msgid "BLKGETSIZE ioctl"
-msgstr ""
+msgstr "Opvragen van grootte"
 
 #: misc/tune2fs.c:104
 msgid "Please run e2fsck on the filesystem.\n"
@@ -4496,6 +4506,9 @@ msgid ""
 "    undoe2fs %s %s\n"
 "\n"
 msgstr ""
+"De veranderingen dor 'tune2fs' kunnen ongedaam gemaakt worden met de opdracht:\n"
+"    e2undo %s %s\n"
+"\n"
 
 #: misc/tune2fs.c:1449
 #, c-format
@@ -4593,7 +4606,7 @@ msgid ""
 "Run undoe2fs to undo the file system changes. \n"
 msgstr ""
 "Fout tijdens veranderen van de inode-grootte.\n"
-"Voer 'undoe2fs' uit om de bestandssysteemwijzigingen ongedaan te maken. \n"
+"Voer 'e2undo' uit om de bestandssysteemwijzigingen ongedaan te maken. \n"
 
 #: misc/tune2fs.c:1600
 #, c-format
