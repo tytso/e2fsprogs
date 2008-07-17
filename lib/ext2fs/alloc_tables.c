@@ -34,9 +34,10 @@
  * tables can be allocated continously and in order.
  */
 static blk_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk_t start_blk,
-			   ext2fs_block_bitmap bmap, int offset, int size)
+			   ext2fs_block_bitmap bmap, int offset, int size,
+			   int elem_size)
 {
-	int		flexbg, flexbg_size, elem_size;
+	int		flexbg, flexbg_size;
 	blk_t		last_blk, first_free = 0;
 	dgrp_t	       	last_grp;
 
@@ -54,10 +55,6 @@ static blk_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk_t start_blk,
 	 * search is still valid.
 	 */
 	if (start_blk && group % flexbg_size) {
-		if (size > flexbg_size)
-			elem_size = fs->inode_blocks_per_group;
-		else
-			elem_size = 1;
 		if (ext2fs_test_block_bitmap_range(bmap, start_blk + elem_size,
 						   size))
 			return start_blk + elem_size;
@@ -126,7 +123,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		if (group && fs->group_desc[group-1].bg_block_bitmap)
 			prev_block = fs->group_desc[group-1].bg_block_bitmap;
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
-						 0, rem_grps);
+						 0, rem_grps, 1);
 		last_blk = ext2fs_group_last_block(fs, last_grp);
 	}
 
@@ -154,7 +151,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		if (group && fs->group_desc[group-1].bg_inode_bitmap)
 			prev_block = fs->group_desc[group-1].bg_inode_bitmap;
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
-						 flexbg_size, rem_grps);
+						 flexbg_size, rem_grps, 1);
 		last_blk = ext2fs_group_last_block(fs, last_grp);
 	}
 
@@ -187,7 +184,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		group_blk = flexbg_offset(fs, group, prev_block, bmap,
 						 flexbg_size * 2,
 						 fs->inode_blocks_per_group *
-						 rem_grps);
+						 rem_grps,
+						 fs->inode_blocks_per_group);
 		last_blk = ext2fs_group_last_block(fs, last_grp);
 	}
 
