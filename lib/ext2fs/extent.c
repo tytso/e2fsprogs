@@ -73,21 +73,31 @@ struct ext2_extent_path {
 static void dbg_show_header(struct ext3_extent_header *eh)
 {
 	printf("header: magic=%x entries=%u max=%u depth=%u generation=%u\n",
-	       eh->eh_magic, eh->eh_entries, eh->eh_max, eh->eh_depth,
-	       eh->eh_generation);
+			ext2fs_le16_to_cpu(eh->eh_magic),
+			ext2fs_le16_to_cpu(eh->eh_entries),
+			ext2fs_le16_to_cpu(eh->eh_max),
+			ext2fs_le16_to_cpu(eh->eh_depth),
+			ext2fs_le32_to_cpu(eh->eh_generation));
 }
 
 static void dbg_show_index(struct ext3_extent_idx *ix)
 {
 	printf("index: block=%u leaf=%u leaf_hi=%u unused=%u\n",
-	       ix->ei_block, ix->ei_leaf, ix->ei_leaf_hi, ix->ei_unused);
+			ext2fs_le32_to_cpu(ix->ei_block),
+			ext2fs_le32_to_cpu(ix->ei_leaf),
+			ext2fs_le16_to_cpu(ix->ei_leaf_hi),
+			ext2fs_le16_to_cpu(ix->ei_unused));
 }
 
 static void dbg_show_extent(struct ext3_extent *ex)
 {
 	printf("extent: block=%u-%u len=%u start=%u start_hi=%u\n",
-	       ex->ee_block, ex->ee_block + ex->ee_len - 1,
-	       ex->ee_len, ex->ee_start, ex->ee_start_hi);
+			ext2fs_le32_to_cpu(ex->ee_block),
+			ext2fs_le32_to_cpu(ex->ee_block) +
+			ext2fs_le16_to_cpu(ex->ee_len) - 1,
+			ext2fs_le16_to_cpu(ex->ee_len),
+			ext2fs_le32_to_cpu(ex->ee_start),
+			ext2fs_le16_to_cpu(ex->ee_start_hi));
 }
 
 static void dbg_print_extent(char *desc, struct ext2fs_extent *extent)
