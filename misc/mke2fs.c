@@ -1507,7 +1507,7 @@ static void PRS(int argc, char *argv[])
 
 	if (r_opt == EXT2_GOOD_OLD_REV && 
 	    (fs_param.s_feature_compat || fs_param.s_feature_incompat ||
-	     fs_param.s_feature_incompat)) {
+	     fs_param.s_feature_ro_compat)) {
 		fprintf(stderr, _("Filesystem features not supported "
 				  "with revision 0 filesystems\n"));
 		exit(1);
