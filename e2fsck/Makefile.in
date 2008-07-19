@@ -129,7 +129,7 @@ e2fsck.profiled: $(PROFILED_OBJS)  $(PROFILED_DEPLIBS)
 
 gen_crc32table: $(srcdir)/gen_crc32table.c
 	@echo "	CC $@"
-	@$(BUILD_CC) $(ALL_CFLAGS) -o gen_crc32table \
+	@$(BUILD_CC) $(BUILD_CFLAGS) -o gen_crc32table \
 		$(srcdir)/gen_crc32table.c
 
 crc32table.h: gen_crc32table
