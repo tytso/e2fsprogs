@@ -233,7 +233,7 @@ void parse_journal_opts(const char *opts)
 			"\tsize=<journal size in megabytes>\n"
 			"\tdevice=<journal device>\n\n"
 			"The journal size must be between "
-			"1024 and 102400 filesystem blocks.\n\n"), stderr);
+			"1024 and 10240000 filesystem blocks.\n\n"), stderr);
 		free(buf);
 		exit(1);
 	}
