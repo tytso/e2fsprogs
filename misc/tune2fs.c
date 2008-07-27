@@ -1291,11 +1291,6 @@ static int resize_inode(ext2_filsys fs, unsigned long new_size)
 	int new_ino_blks_per_grp;
 	ext2fs_block_bitmap bmap;
 
-	if (new_size <= EXT2_INODE_SIZE(fs->super)) {
-		fprintf(stderr, _("New inode size too small\n"));
-		return EXT2_ET_INVALID_ARGUMENT;
-	}
-
 	ext2fs_read_inode_bitmap(fs);
 	ext2fs_read_block_bitmap(fs);
 	INIT_LIST_HEAD(&blk_move_list);
@@ -1401,7 +1396,7 @@ int main (int argc, char ** argv)
 	errcode_t retval;
 	ext2_filsys fs;
 	struct ext2_super_block *sb;
-	io_manager io_ptr;
+	io_manager io_ptr, io_ptr_orig = NULL;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -1427,16 +1422,7 @@ int main (int argc, char ** argv)
 	io_ptr = unix_io_manager;
 #endif
 
-	if (I_flag) {
-		/*
-		 * If inode resize is requested use the
-		 * Undo I/O manager
-		 */
-		retval = tune2fs_setup_tdb(device_name, &io_ptr);
-		if (retval)
-			exit(1);
-	}
-
+retry_open:
 	retval = ext2fs_open2(device_name, io_options, open_flag, 
 			      0, 0, io_ptr, &fs);
         if (retval) {
@@ -1446,6 +1432,38 @@ int main (int argc, char ** argv)
 			_("Couldn't find valid filesystem superblock.\n"));
 		exit(1);
 	}
+
+	if (I_flag && !io_ptr_orig) {
+		/*
+		 * Check the inode size is right so we can issue an
+		 * error message and bail before setting up the tdb
+		 * file.
+		 */
+		if (new_inode_size == EXT2_INODE_SIZE(fs->super)) {
+			fprintf(stderr, _("The inode size is already %d\n"),
+				new_inode_size);
+			exit(1);
+		}
+		if (new_inode_size < EXT2_INODE_SIZE(fs->super)) {
+			fprintf(stderr, _("Shrinking the inode size is "
+					  "not supported\n"));
+			exit(1);
+		}
+
+		/*
+		 * If inode resize is requested use the
+		 * Undo I/O manager
+		 */
+		io_ptr_orig = io_ptr;
+		retval = tune2fs_setup_tdb(device_name, &io_ptr);
+		if (retval)
+			exit(1);
+		if (io_ptr != io_ptr_orig) {
+			ext2fs_close(fs);
+			goto retry_open;
+		}
+	}
+
 	sb = fs->super;
 	fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 
