@@ -38,7 +38,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	char		name[EXT2_NAME_LEN + 1];
 	char		tmp[EXT2_NAME_LEN + 16];
 	blk_t		pblk;
-	ext2_dirhash_t 	hash;
+	ext2_dirhash_t 	hash, minor_hash;
 	int		hash_alg;
 	
 	errcode = ext2fs_bmap(fs, ino, inode, buf, 0, blk, &pblk);
@@ -48,10 +48,11 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		return;
 	}
 
+	printf("Reading directory block %lu, phys %lu\n", blk, pblk);
 	errcode = ext2fs_read_dir_block2(current_fs, pblk, buf, 0);
 	if (errcode) {
 		com_err("htree_dump_leaf_node", errcode,
-			"while 	reading block %u\n", blk);
+			"while reading block %lu (%lu)\n", blk, pblk);
 		return;
 	}
 	hash_alg = rootnode->hash_version;
@@ -74,12 +75,12 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		name[thislen] = '\0';
 		errcode = ext2fs_dirhash(hash_alg, name,
 					 thislen, fs->super->s_hash_seed,
-					 &hash, 0);
+					 &hash, &minor_hash);
 		if (errcode)
 			com_err("htree_dump_leaf_node", errcode,
 				"while calculating hash");
-		sprintf(tmp, "%u 0x%08x (%d) %s   ", dirent->inode,
-			hash, dirent->rec_len, name);
+		sprintf(tmp, "%u 0x%08x-%08x (%d) %s   ", dirent->inode,
+			hash, minor_hash, dirent->rec_len, name);
 		thislen = strlen(tmp);
 		if (col + thislen > 80) {
 			fprintf(pager, "\n");
@@ -186,6 +187,7 @@ void do_htree_dump(int argc, char *argv[])
 	struct ext2_inode inode;
 	int		c;
 	int		long_opt = 0;
+	blk_t		blk;
 	char		*buf = NULL;
 	struct 		ext2_dx_root_info  *rootnode;
 	struct 		ext2_dx_entry *ent;
@@ -240,7 +242,14 @@ void do_htree_dump(int argc, char *argv[])
 		goto errout;
 	}
 
-	errcode = io_channel_read_blk(current_fs->io, inode.i_block[0], 
+	errcode = ext2fs_bmap(current_fs, ino, &inode, buf, 0, 0, &blk);
+	if (errcode) {
+		com_err("do_htree_block", errcode,
+			"while mapping logical block 0\n");
+		goto errout;
+	}
+
+	errcode = io_channel_read_blk(current_fs->io, blk, 
 				      1, buf);
 	if (errcode) {
 		com_err(argv[0], errcode, "Error reading root node");
