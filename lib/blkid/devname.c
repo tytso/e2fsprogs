@@ -142,10 +142,12 @@ static void probe_one(blkid_cache cache, const char *ptname,
 			continue;
 #endif
 		if (tmp->bid_devno == devno) {
-			if (only_if_new)
+			if (only_if_new && !access(tmp->bid_name, F_OK))
 				return;
 			dev = blkid_verify(cache, tmp);
-			break;
+			if (dev && (dev->bid_flags & BLKID_BID_FL_VERIFIED))
+				break;
+			dev = 0;
 		}
 	}
 	if (dev && dev->bid_devno == devno)
