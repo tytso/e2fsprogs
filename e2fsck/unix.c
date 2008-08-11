@@ -553,6 +553,9 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 				continue;
 			}
 			ctx->ext_attr_ver = ea_ver;
+		} else if (strcmp(token, "fragcheck") == 0) {
+			ctx->options |= E2F_OPT_FRAGCHECK;
+			continue;
 		} else {
 			fprintf(stderr, _("Unknown extended option: %s\n"),
 				token);
@@ -565,8 +568,10 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		fputs(("\nExtended options are separated by commas, "
 		       "and may take an argument which\n"
 		       "is set off by an equals ('=') sign.  "
-			"Valid extended options are:\n"
-		       "\tea_ver=<ea_version (1 or 2)>\n\n"), stderr);
+		       "Valid extended options are:\n"), stderr);
+		fputs(("\tea_ver=<ea_version (1 or 2)>\n"), stderr);
+		fputs(("\tfragcheck\n"), stderr);
+		fputc('\n', stderr);
 		exit(1);
 	}
 }

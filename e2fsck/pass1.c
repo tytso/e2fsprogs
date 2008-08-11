@@ -1694,6 +1694,18 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			goto next;
 		}
 
+		if ((pb->previous_block != 0) &&
+		    (pb->previous_block+1 != extent.e_pblk)) {
+			if (ctx->options & E2F_OPT_FRAGCHECK)
+				printf(("%6lu: expecting %6lu actual extent "
+					"phys %6lu log %lu len %lu\n"),
+				       (unsigned long) pctx->ino,
+				       (unsigned long) pb->previous_block+1,
+				       (unsigned long) extent.e_pblk,
+				       (unsigned long) extent.e_lblk,
+				       (unsigned long) extent.e_len);
+			pb->fragmented = 1;
+		}
 		for (blk = extent.e_pblk, blockcnt = extent.e_lblk, i = 0;
 		     i < extent.e_len;
 		     blk++, blockcnt++, i++) {
@@ -1712,6 +1724,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			}
 		}
 		pb->num_blocks += extent.e_len;
+		pb->previous_block = extent.e_pblk + extent.e_len - 1;
 		start_block = pb->last_block = extent.e_lblk + extent.e_len - 1;
 	next:
 		pctx->errcode = ext2fs_extent_get(ehandle,
@@ -1739,6 +1752,9 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 	}
 
 	scan_extent_node(ctx, pctx, pb, 0, ehandle);
+
+	if (pb->fragmented && pb->num_blocks < fs->super->s_blocks_per_group)
+		ctx->fs_fragmented++;
 
 	ext2fs_extent_free(ehandle);
 }
@@ -2066,9 +2082,16 @@ static int process_block(ext2_filsys fs,
 	 * file be contiguous.  (Which can never be true for really
 	 * big files that are greater than a block group.)
 	 */
-	if (!HOLE_BLKADDR(p->previous_block)) {
-		if (p->previous_block+1 != blk)
+	if (!HOLE_BLKADDR(p->previous_block) && p->ino != EXT2_RESIZE_INO) {
+		if (p->previous_block+1 != blk) {
+			if (ctx->options & E2F_OPT_FRAGCHECK)
+				printf(_("%6lu: expecting %6lu got %6lu (%lu)\n"),
+				       (unsigned long) pctx->ino,
+				       (unsigned long) p->previous_block+1,
+				       (unsigned long) blk,
+				       (unsigned long) blockcnt);
 			p->fragmented = 1;
+		}
 	}
 	p->previous_block = blk;
 

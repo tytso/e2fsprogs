@@ -185,9 +185,14 @@ following options are supported:
 .RS 1.2i
 .TP
 .BI ea_ver= extended_attribute_version
-Assume the format of the extended attribute blocks in the filesystem is
-the specified version number.  The version number may be 1 or 2.  The
-default extended attribute version format is 2.
+Set the version of the extended attribute blocks which
+.B e2fsck
+will require while checking the filesystem.  The version number may 
+be 1 or 2.  The default extended attribute version format is 2.
+.TP
+.BI fragcheck
+During pass 1, print a detailed report of any discontiguous blocks for
+files in the filesystem.
 .RE
 .TP
 .B \-f

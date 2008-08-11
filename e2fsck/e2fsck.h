@@ -154,6 +154,7 @@ struct resource_track {
 #define E2F_OPT_FORCE		0x0100
 #define E2F_OPT_WRITECHECK	0x0200
 #define E2F_OPT_COMPRESS_DIRS	0x0400
+#define E2F_OPT_FRAGCHECK	0x0800
 
 /*
  * E2fsck flags
