@@ -2085,11 +2085,11 @@ static int process_block(ext2_filsys fs,
 	if (!HOLE_BLKADDR(p->previous_block) && p->ino != EXT2_RESIZE_INO) {
 		if (p->previous_block+1 != blk) {
 			if (ctx->options & E2F_OPT_FRAGCHECK)
-				printf(_("%6lu: expecting %6lu got %6lu (%lu)\n"),
+				printf(_("%6lu: expecting %6lu got phys %6lu (blkcnt %lld)\n"),
 				       (unsigned long) pctx->ino,
 				       (unsigned long) p->previous_block+1,
 				       (unsigned long) blk,
-				       (unsigned long) blockcnt);
+				       blockcnt);
 			p->fragmented = 1;
 		}
 	}
