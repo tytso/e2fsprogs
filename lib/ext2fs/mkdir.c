@@ -85,7 +85,6 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	ext2fs_iblk_set(fs, &inode, 1);
 	inode.i_block[0] = blk;
 	inode.i_links_count = 2;
-	inode.i_ctime = inode.i_atime = inode.i_mtime = fs->now ? fs->now : time(NULL);
 	inode.i_size = fs->blocksize;
 
 	/*
