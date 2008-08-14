@@ -195,6 +195,8 @@ typedef struct ea_refcount *ext2_refcount_t;
  */
 typedef struct e2fsck_struct *e2fsck_t;
 
+#define MAX_EXTENT_DEPTH_COUNT 5
+
 struct e2fsck_struct {
 	ext2_filsys fs;
 	const char *program_name;
@@ -329,6 +331,7 @@ struct e2fsck_struct {
 	__u32 large_files;
 	__u32 fs_ext_attr_inodes;
 	__u32 fs_ext_attr_blocks;
+	__u32 extent_depth_count[MAX_EXTENT_DEPTH_COUNT];
 
 	/* misc fields */
 	time_t now;

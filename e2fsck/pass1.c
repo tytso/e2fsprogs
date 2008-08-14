@@ -1006,12 +1006,14 @@ void e2fsck_pass1(e2fsck_t ctx)
 			ctx->fs_sockets_count++;
 		} else
 			mark_inode_bad(ctx, ino);
-		if (inode->i_block[EXT2_IND_BLOCK])
-			ctx->fs_ind_count++;
-		if (inode->i_block[EXT2_DIND_BLOCK])
-			ctx->fs_dind_count++;
-		if (inode->i_block[EXT2_TIND_BLOCK])
-			ctx->fs_tind_count++;
+		if (!(inode->i_flags & EXT4_EXTENTS_FL)) {
+			if (inode->i_block[EXT2_IND_BLOCK])
+				ctx->fs_ind_count++;
+			if (inode->i_block[EXT2_DIND_BLOCK])
+				ctx->fs_dind_count++;
+			if (inode->i_block[EXT2_TIND_BLOCK])
+				ctx->fs_tind_count++;
+		}
 		if (!(inode->i_flags & EXT4_EXTENTS_FL) &&
 		    (inode->i_block[EXT2_IND_BLOCK] ||
 		     inode->i_block[EXT2_DIND_BLOCK] ||
@@ -1738,10 +1740,12 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 				 struct process_block_struct *pb)
 {
+	struct ext2_extent_info info;
 	struct ext2_inode	*inode = pctx->inode;
 	ext2_extent_handle_t	ehandle;
 	ext2_filsys		fs = ctx->fs;
 	ext2_ino_t		ino = pctx->ino;
+	errcode_t		retval;
 
 	pctx->errcode = ext2fs_extent_open(fs, ino, &ehandle);
 	if (pctx->errcode &&
@@ -1749,6 +1753,13 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 		e2fsck_clear_inode(ctx, ino, inode, 0, "check_blocks_extents");
 		pctx->errcode = 0;
 		return;
+	}
+
+	retval = ext2fs_extent_get_info(ehandle, &info);
+	if (retval == 0) {
+		if (info.max_depth >= MAX_EXTENT_DEPTH_COUNT)
+			info.max_depth = MAX_EXTENT_DEPTH_COUNT-1;
+		ctx->extent_depth_count[info.max_depth]++;
 	}
 
 	scan_extent_node(ctx, pctx, pb, 0, ehandle);

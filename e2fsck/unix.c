@@ -104,6 +104,7 @@ static void show_stats(e2fsck_t	ctx)
 	int dir_links;
 	int num_files, num_links;
 	int frag_percent;
+	int i, j;
 
 	dir_links = 2 * ctx->fs_directory_count - 1;
 	num_files = ctx->fs_total_count - dir_links;
@@ -133,6 +134,20 @@ static void show_stats(e2fsck_t	ctx)
 		ctx->fs_fragmented, frag_percent / 10, frag_percent % 10);
 	printf (_("         # of inodes with ind/dind/tind blocks: %u/%u/%u\n"),
 		ctx->fs_ind_count, ctx->fs_dind_count, ctx->fs_tind_count);
+
+	for (j=MAX_EXTENT_DEPTH_COUNT-1; j >=0; j--)
+		if (ctx->extent_depth_count[j])
+			break;
+	if (++j) {
+		printf (_("         Extent depth histogram: "));
+		for (i=0; i < j; i++) {
+			if (i)
+				fputc('/', stdout);
+			printf("%u", ctx->extent_depth_count[i]);
+		}
+		fputc('\n', stdout);
+	}
+
 	printf (P_("%8u block used (%2.2f%%)\n", "%8u blocks used (%2.2f%%)\n",
 		   blocks_used), blocks_used, 100.0 * blocks_used / blocks);
 	printf (P_("%8u bad block\n", "%8u bad blocks\n",

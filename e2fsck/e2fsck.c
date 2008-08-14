@@ -49,6 +49,8 @@ errcode_t e2fsck_allocate_context(e2fsck_t *ret)
  */
 errcode_t e2fsck_reset_context(e2fsck_t ctx)
 {
+	int	i;
+
 	ctx->flags = 0;
 	ctx->lost_and_found = 0;
 	ctx->bad_lost_and_found = 0;
@@ -151,6 +153,9 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 	ctx->fs_tind_count = 0;
 	ctx->fs_fragmented = 0;
 	ctx->large_files = 0;
+
+	for (i=0; i < MAX_EXTENT_DEPTH_COUNT; i++)
+		ctx->extent_depth_count[i] = 0;
 
 	/* Reset the superblock to the user's requested value */
 	ctx->superblock = ctx->use_superblock;
