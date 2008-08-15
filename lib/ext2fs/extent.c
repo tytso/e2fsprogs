@@ -222,12 +222,14 @@ extern errcode_t ext2fs_extent_open(ext2_filsys fs, ext2_ino_t ino,
 		handle->inode->i_flags |= EXT4_EXTENTS_FL;
 	}
 
-	if (!(handle->inode->i_flags & EXT4_EXTENTS_FL))
-		return EXT2_ET_INODE_NOT_EXTENT;
+	if (!(handle->inode->i_flags & EXT4_EXTENTS_FL)) {
+		retval = EXT2_ET_INODE_NOT_EXTENT;
+		goto errout;
+	}
 
 	retval = ext2fs_extent_header_verify(eh, sizeof(handle->inode->i_block));
 	if (retval)
-		return (retval);
+		goto errout;
 
 	handle->max_depth = ext2fs_le16_to_cpu(eh->eh_depth);
 	handle->type = ext2fs_le16_to_cpu(eh->eh_magic);
