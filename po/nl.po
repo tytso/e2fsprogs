@@ -67,7 +67,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs-1.41.0\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2008-07-10 17:12-0400\n"
-"PO-Revision-Date: 2008-07-17 23:02+0200\n"
+"PO-Revision-Date: 2008-08-04 14:55+0200\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
@@ -1112,12 +1112,12 @@ msgstr "Stap 1: Controle van inodes, blokken, en groottes\n"
 #. @-expanded: root inode is not a directory.  
 #: e2fsck/problem.c:392
 msgid "@r is not a @d.  "
-msgstr "De root-inode is geen map.  "
+msgstr "De hoofd-inode is geen map.  "
 
 #. @-expanded: root inode has dtime set (probably due to old mke2fs).  
 #: e2fsck/problem.c:397
 msgid "@r has dtime set (probably due to old mke2fs).  "
-msgstr "De verwijderingstijd van de root-inode is niet nul (waarschijnlijk veroorzaakt door een oude mke2fs).  "
+msgstr "De verwijderingstijd van de hoofd-inode is niet nul (waarschijnlijk veroorzaakt door een oude mke2fs).  "
 
 #. @-expanded: Reserved inode %i (%Q) has invalid mode.  
 #: e2fsck/problem.c:402
@@ -1508,7 +1508,7 @@ msgstr "Inode %i heeft de 'INDEX_FL'-vlag gezet maar het is geen map.\n"
 #: e2fsck/problem.c:753
 #, c-format
 msgid "@h %i has an @n root node.\n"
-msgstr "Inode %i van 'htree'-map heeft een ongeldige wortelnode.\n"
+msgstr "Inode %i van 'htree'-map heeft een ongeldige wortelknoop.\n"
 
 #. @-expanded: HTREE directory inode %i has an unsupported hash version (%N)\n
 #: e2fsck/problem.c:758
@@ -1519,7 +1519,7 @@ msgstr "Inode %i van 'htree'-map gebruikt een niet-ondersteunde hash-versie (%N)
 #: e2fsck/problem.c:763
 #, c-format
 msgid "@h %i uses an incompatible htree root node flag.\n"
-msgstr "Inode %i van 'htree'-map gebruikt een incompatibele wortelnodevlag.\n"
+msgstr "Inode %i van 'htree'-map gebruikt een incompatibele wortelknoopvlag.\n"
 
 #. @-expanded: HTREE directory inode %i has a tree depth (%N) which is too big\n
 #: e2fsck/problem.c:768
@@ -1777,7 +1777,7 @@ msgstr "@E is een koppeling naar map %P (%Di).\n"
 #. @-expanded: entry '%Dn' in %p (%i) is a link to the root inode.\n
 #: e2fsck/problem.c:994
 msgid "@E @L to the @r.\n"
-msgstr "@E is een koppeling naar de root-inode.\n"
+msgstr "@E is een koppeling naar de hoofd-inode.\n"
 
 #. @-expanded: entry '%Dn' in %p (%i) has illegal characters in its name.\n
 #: e2fsck/problem.c:999
@@ -1980,22 +1980,22 @@ msgstr "Bestandssysteem bevat grote bestanden, maar heeft in het superblok niet 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) not referenced\n
 #: e2fsck/problem.c:1189
 msgid "@p @h %d: node (%B) not referenced\n"
-msgstr "Probleem in 'htree'-map-inode %d: naar node %B wordt niet verwezen.\n"
+msgstr "Probleem in 'htree'-map-inode %d: naar knoop %B wordt niet verwezen.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) referenced twice\n
 #: e2fsck/problem.c:1194
 msgid "@p @h %d: node (%B) referenced twice\n"
-msgstr "Probleem in 'htree'-map-inode %d: naar node %B wordt twee keer verwezen.\n"
+msgstr "Probleem in 'htree'-map-inode %d: naar knoop %B wordt twee keer verwezen.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has bad min hash\n
 #: e2fsck/problem.c:1199
 msgid "@p @h %d: node (%B) has bad min hash\n"
-msgstr "Probleem in 'htree'-map-inode %d: node %B heeft een ongeldige minimum hash.\n"
+msgstr "Probleem in 'htree'-map-inode %d: knoop %B heeft een ongeldige minimum hash.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has bad max hash\n
 #: e2fsck/problem.c:1204
 msgid "@p @h %d: node (%B) has bad max hash\n"
-msgstr "Probleem in 'htree'-map-inode %d: node %B heeft een ongeldige maximum hash.\n"
+msgstr "Probleem in 'htree'-map-inode %d: knoop %B heeft een ongeldige maximum hash.\n"
 
 #. @-expanded: invalid HTREE directory inode %d (%q).  
 #: e2fsck/problem.c:1209
@@ -2011,27 +2011,27 @@ msgstr "Probleem in 'htree'-map-inode %d (%q): ongeldig bloknummer %b.\n"
 #: e2fsck/problem.c:1223
 #, c-format
 msgid "@p @h %d: root node is @n\n"
-msgstr "Probleem in 'htree'-map-inode %d: de root-node is ongeldig.\n"
+msgstr "Probleem in 'htree'-map-inode %d: de wortelknoop is ongeldig.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has invalid limit (%N)\n
 #: e2fsck/problem.c:1228
 msgid "@p @h %d: node (%B) has @n limit (%N)\n"
-msgstr "Probleem in 'htree'-map-inode %d: node %B heeft een ongeldige limiet (%N).\n"
+msgstr "Probleem in 'htree'-map-inode %d: knoop %B heeft een ongeldige limiet (%N).\n"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has invalid count (%N)\n
 #: e2fsck/problem.c:1233
 msgid "@p @h %d: node (%B) has @n count (%N)\n"
-msgstr "Probleem in 'htree'-map-inode %d: node %B heeft een ongeldig aantal (%N).\n"
+msgstr "Probleem in 'htree'-map-inode %d: knoop %B heeft een ongeldig aantal (%N).\n"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has an unordered hash table\n
 #: e2fsck/problem.c:1238
 msgid "@p @h %d: node (%B) has an unordered hash table\n"
-msgstr "Probleem in 'htree'-map-inode %d: node %B heeft een ongeordende hash-tabel.\n"
+msgstr "Probleem in 'htree'-map-inode %d: knoop %B heeft een ongeordende hash-tabel.\n"
 
 #. @-expanded: problem in HTREE directory inode %d: node (%B) has invalid depth\n
 #: e2fsck/problem.c:1243
 msgid "@p @h %d: node (%B) has @n depth\n"
-msgstr "Probleem in 'htree'-map-inode %d: node %B heeft een ongeldige diepte.\n"
+msgstr "Probleem in 'htree'-map-inode %d: knoop %B heeft een ongeldige diepte.\n"
 
 #. @-expanded: Duplicate entry '%Dn' in %p (%i) found.  
 #: e2fsck/problem.c:1248
@@ -2092,7 +2092,7 @@ msgstr "Stap 3: Controle van verbindingen tussen mappen\n"
 #. @-expanded: root inode not allocated.  
 #: e2fsck/problem.c:1289
 msgid "@r not allocated.  "
-msgstr "Root-inode is niet gereserveerd.  "
+msgstr "Hoofd-inode is niet gereserveerd.  "
 
 #. @-expanded: No room in lost+found directory.  
 #: e2fsck/problem.c:1294
@@ -2193,7 +2193,7 @@ msgstr ""
 #: e2fsck/problem.c:1374
 #, c-format
 msgid "Error creating root @d (%s): %m\n"
-msgstr "Fout tijdens maken van rootmap (%s): %m\n"
+msgstr "Fout tijdens maken van hoofdmap (%s): %m\n"
 
 #. @-expanded: Error creating /lost+found directory (%s): %m\n
 #: e2fsck/problem.c:1379
@@ -2204,12 +2204,12 @@ msgstr "Fout tijdens maken van /lost+found-map (%s): %m\n"
 #. @-expanded: root inode is not a directory; aborting.\n
 #: e2fsck/problem.c:1384
 msgid "@r is not a @d; aborting.\n"
-msgstr "De root-inode is geen map.  Gestopt.\n"
+msgstr "De hoofd-inode is geen map.  Gestopt.\n"
 
 #. @-expanded: Cannot proceed without a root inode.\n
 #: e2fsck/problem.c:1389
 msgid "Cannot proceed without a @r.\n"
-msgstr "Kan niet verder zonder een root-inode.\n"
+msgstr "Kan niet verder zonder een hoofd-inode.\n"
 
 #. @-expanded: /lost+found is not a directory (ino=%i)\n
 #: e2fsck/problem.c:1399
@@ -3733,15 +3733,15 @@ msgstr ""
 
 #: misc/mke2fs.c:404
 msgid "while creating root dir"
-msgstr "tijdens aanmaken van root-map"
+msgstr "tijdens aanmaken van hoofdmap"
 
 #: misc/mke2fs.c:411
 msgid "while reading root inode"
-msgstr "tijdens lezen van root-inode"
+msgstr "tijdens lezen van hoofd-inode"
 
 #: misc/mke2fs.c:425
 msgid "while setting root inode ownership"
-msgstr "tijdens zetten van eigenaar van root-inode"
+msgstr "tijdens zetten van eigenaar van hoofd-inode"
 
 #: misc/mke2fs.c:443
 msgid "while creating /lost+found"
@@ -4218,7 +4218,7 @@ msgid ""
 "\twhile trying to add journal to device %s"
 msgstr ""
 "\n"
-"\ttijdens toevoegen van journal aan apparaat %s"
+"    tijdens toevoegen van journal aan apparaat %s"
 
 #: misc/mke2fs.c:2016 misc/mke2fs.c:2042 misc/tune2fs.c:503 misc/tune2fs.c:517
 #, c-format
