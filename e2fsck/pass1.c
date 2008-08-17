@@ -1926,13 +1926,15 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			/* too big for a direct/indirect-mapped file */
 			bad_size = 4;
 		else if ((extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) &&
-			 size > (1LL << (32 + fs->super->s_log_block_size) - 1))
+			 size >
+			 ((1LL << (32 + EXT2_BLOCK_SIZE_BITS(fs->super))) - 1))
 			/* too big for an extent-based file - 32bit ee_block */
 			bad_size = 6;
 	}
 	/* i_size for symlinks is checked elsewhere */
 	if (bad_size && !LINUX_S_ISLNK(inode->i_mode)) {
 		pctx->num = (pb.last_block+1) * fs->blocksize;
+		pctx->group = bad_size;
 		if (fix_problem(ctx, PR_1_BAD_I_SIZE, pctx)) {
 			inode->i_size = pctx->num;
 			if (!LINUX_S_ISDIR(inode->i_mode))
