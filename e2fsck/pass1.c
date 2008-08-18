@@ -1727,7 +1727,9 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		pb->num_blocks += extent.e_len;
 		pb->previous_block = extent.e_pblk + extent.e_len - 1;
-		start_block = pb->last_block = extent.e_lblk + extent.e_len - 1;
+		start_block = extent.e_lblk + extent.e_len - 1;
+		if (!(extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT))
+			pb->last_block = start_block;
 	next:
 		pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_NEXT_SIB,
