@@ -1122,7 +1122,6 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 	struct ext2_inode 	*inode = NULL;
 	ext2_inode_scan 	scan = NULL;
 	errcode_t		retval;
-	int			group;
 	char			*block_buf = 0;
 	ext2_ino_t		start_to_move;
 	blk_t			orig_size, new_block;
@@ -1241,12 +1240,6 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		retval = ext2fs_write_inode_full(rfs->old_fs, new_inode,
 						inode, inode_size);
 		if (retval) goto errout;
-
-		group = (new_inode-1) / EXT2_INODES_PER_GROUP(rfs->new_fs->super);
-		if (LINUX_S_ISDIR(inode->i_mode)) {
-			rfs->new_fs->group_desc[group].bg_used_dirs_count++;
-			ext2fs_group_desc_csum_set(rfs->new_fs, group);
-		}
 
 #ifdef RESIZE2FS_DEBUG
 		if (rfs->flags & RESIZE_DEBUG_INODEMAP)
