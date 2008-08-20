@@ -161,6 +161,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_get_data_io@Base 1.37
  ext2fs_get_device_sectsize@Base 1.37
  ext2fs_get_device_size@Base 1.37
+ ext2fs_get_device_size2@Base 1.41.4
  ext2fs_get_free_blocks@Base 1.37
  ext2fs_get_generic_bitmap_end@Base 1.41.0
  ext2fs_get_generic_bitmap_range@Base 1.41.0
