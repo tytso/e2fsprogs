@@ -1896,7 +1896,8 @@ Sep)	MONTH_NUM=09; E2FSPROGS_MONTH="September" ;;
 Oct)	MONTH_NUM=10; E2FSPROGS_MONTH="October" ;;
 Nov)	MONTH_NUM=11; E2FSPROGS_MONTH="November" ;;
 Dec)	MONTH_NUM=12; E2FSPROGS_MONTH="December" ;;
-*)	echo "Unknown month $MONTH??" ;;
+*)	{ echo "$as_me:$LINENO: WARNING: Unknown month $MONTH??" >&5
+echo "$as_me: WARNING: Unknown month $MONTH??" >&2;} ;;
 esac
 
 base_ver=`echo $E2FSPROGS_VERSION | \
@@ -1914,8 +1915,10 @@ case $E2FSPROGS_VERSION in
 esac
 
 unset DATE MONTH YEAR base_ver pre_vers date_spec
-echo "Generating configuration file for e2fsprogs version $E2FSPROGS_VERSION"
-echo "Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}"
+{ echo "$as_me:$LINENO: result: Generating configuration file for e2fsprogs version $E2FSPROGS_VERSION" >&5
+echo "${ECHO_T}Generating configuration file for e2fsprogs version $E2FSPROGS_VERSION" >&6; }
+{ echo "$as_me:$LINENO: result: Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}" >&5
+echo "${ECHO_T}Release date is ${E2FSPROGS_MONTH}, ${E2FSPROGS_YEAR}" >&6; }
 
 
 
@@ -3780,15 +3783,18 @@ if test "${enable_maintainer_mode+set}" = set; then
   enableval=$enable_maintainer_mode; if test "$enableval" = "no"
 then
 	MAINTAINER_CMT=#
-	echo "Disabling maintainer mode"
+	{ echo "$as_me:$LINENO: result: Disabling maintainer mode" >&5
+echo "${ECHO_T}Disabling maintainer mode" >&6; }
 else
 	MAINTAINER_CMT=
-	echo "Enabling maintainer mode"
+	{ echo "$as_me:$LINENO: result: Enabling maintainer mode" >&5
+echo "${ECHO_T}Enabling maintainer mode" >&6; }
 fi
 
 else
   MAINTAINER_CMT=#
-echo "Disabling maintainer mode by default"
+{ echo "$as_me:$LINENO: result: Disabling maintainer mode by default" >&5
+echo "${ECHO_T}Disabling maintainer mode by default" >&6; }
 
 fi
 
@@ -3797,18 +3803,22 @@ fi
 if test "${enable_compression+set}" = set; then
   enableval=$enable_compression; if test "$enableval" = "no"
 then
-	echo "Disabling compression support"
+	{ echo "$as_me:$LINENO: result: Disabling compression support" >&5
+echo "${ECHO_T}Disabling compression support" >&6; }
 else
 	cat >>confdefs.h <<\_ACEOF
 #define ENABLE_COMPRESSION 1
 _ACEOF
 
-	echo "Enabling compression support"
-	echo "WARNING: Compression support is experimental"
+	{ echo "$as_me:$LINENO: result: Enabling compression support" >&5
+echo "${ECHO_T}Enabling compression support" >&6; }
+	{ echo "$as_me:$LINENO: WARNING: Compression support is experimental" >&5
+echo "$as_me: WARNING: Compression support is experimental" >&2;}
 fi
 
 else
-  echo "Disabling compression support by default"
+  { echo "$as_me:$LINENO: result: Disabling compression support by default" >&5
+echo "${ECHO_T}Disabling compression support by default" >&6; }
 
 fi
 
@@ -3817,14 +3827,16 @@ if test "${enable_htree+set}" = set; then
   enableval=$enable_htree; if test "$enableval" = "no"
 then
 	HTREE_CMT=#
-	echo "Disabling htree directory support"
+	{ echo "$as_me:$LINENO: result: Disabling htree directory support" >&5
+echo "${ECHO_T}Disabling htree directory support" >&6; }
 else
 	HTREE_CMT=
 	cat >>confdefs.h <<\_ACEOF
 #define ENABLE_HTREE 1
 _ACEOF
 
-	echo "Enabling htree directory support"
+	{ echo "$as_me:$LINENO: result: Enabling htree directory support" >&5
+echo "${ECHO_T}Enabling htree directory support" >&6; }
 fi
 
 else
@@ -3833,7 +3845,8 @@ cat >>confdefs.h <<\_ACEOF
 #define ENABLE_HTREE 1
 _ACEOF
 
-echo "Enabling htree directory support by default"
+{ echo "$as_me:$LINENO: result: Enabling htree directory support by default" >&5
+echo "${ECHO_T}Enabling htree directory support by default" >&6; }
 
 fi
 
@@ -3845,7 +3858,8 @@ if test "${enable_elf_shlibs+set}" = set; then
 then
 	ELF_CMT=#
 	MAKEFILE_ELF=/dev/null
-	echo "Disabling ELF shared libraries"
+	{ echo "$as_me:$LINENO: result: Disabling ELF shared libraries" >&5
+echo "${ECHO_T}Disabling ELF shared libraries" >&6; }
 else
 	E2_PKG_CONFIG_STATIC=
 	ELF_CMT=
@@ -3857,13 +3871,15 @@ else
 	esac
 	BINARY_TYPE=elfbin
 	LIB_EXT=.so
-	echo "Enabling ELF shared libraries"
+	{ echo "$as_me:$LINENO: result: Enabling ELF shared libraries" >&5
+echo "${ECHO_T}Enabling ELF shared libraries" >&6; }
 fi
 
 else
   MAKEFILE_ELF=/dev/null
 ELF_CMT=#
-echo "Disabling ELF shared libraries by default"
+{ echo "$as_me:$LINENO: result: Disabling ELF shared libraries by default" >&5
+echo "${ECHO_T}Disabling ELF shared libraries by default" >&6; }
 
 fi
 
@@ -3875,7 +3891,8 @@ if test "${enable_bsd_shlibs+set}" = set; then
 then
 	BSDLIB_CMT=#
 	MAKEFILE_BSDLIB=/dev/null
-	echo "Disabling BSD shared libraries"
+	{ echo "$as_me:$LINENO: result: Disabling BSD shared libraries" >&5
+echo "${ECHO_T}Disabling BSD shared libraries" >&6; }
 else
 	E2_PKG_CONFIG_STATIC=
 	BSDLIB_CMT=
@@ -3887,13 +3904,15 @@ else
 		LIB_EXT=.dylib
 	;;
 	esac
-	echo "Enabling BSD shared libraries"
+	{ echo "$as_me:$LINENO: result: Enabling BSD shared libraries" >&5
+echo "${ECHO_T}Enabling BSD shared libraries" >&6; }
 fi
 
 else
   MAKEFILE_BSDLIB=/dev/null
 BSDLIB_CMT=#
-echo "Disabling BSD shared libraries by default"
+{ echo "$as_me:$LINENO: result: Disabling BSD shared libraries by default" >&5
+echo "${ECHO_T}Disabling BSD shared libraries by default" >&6; }
 
 fi
 
@@ -3905,18 +3924,21 @@ if test "${enable_profile+set}" = set; then
 then
 	PROFILE_CMT=#
 	MAKEFILE_PROFILE=/dev/null
-	echo "Disabling profiling libraries"
+	{ echo "$as_me:$LINENO: result: Disabling profiling libraries" >&5
+echo "${ECHO_T}Disabling profiling libraries" >&6; }
 else
 	PROFILE_CMT=
 	MAKEFILE_PROFILE=$srcdir/lib/Makefile.profile
 	PROFILED_LIB_EXT=_p.a
-	echo "Building profiling libraries"
+	{ echo "$as_me:$LINENO: result: Building profiling libraries" >&5
+echo "${ECHO_T}Building profiling libraries" >&6; }
 fi
 
 else
   PROFILE_CMT=#
 MAKEFILE_PROFILE=/dev/null
-echo "Disabling profiling libraries by default"
+{ echo "$as_me:$LINENO: result: Disabling profiling libraries by default" >&5
+echo "${ECHO_T}Disabling profiling libraries by default" >&6; }
 
 fi
 
@@ -3928,17 +3950,20 @@ if test "${enable_checker+set}" = set; then
 then
 	CHECKER_CMT=#
 	MAKEFILE_CHECKER=/dev/null
-	echo "Disabling checker libraries"
+	{ echo "$as_me:$LINENO: result: Disabling checker libraries" >&5
+echo "${ECHO_T}Disabling checker libraries" >&6; }
 else
 	CHECKER_CMT=
 	MAKEFILE_CHECKER=$srcdir/lib/Makefile.checker
-	echo "Building checker libraries"
+	{ echo "$as_me:$LINENO: result: Building checker libraries" >&5
+echo "${ECHO_T}Building checker libraries" >&6; }
 fi
 
 else
   CHECKER_CMT=#
 MAKEFILE_CHECKER=/dev/null
-echo "Disabling checker libraries by default"
+{ echo "$as_me:$LINENO: result: Disabling checker libraries by default" >&5
+echo "${ECHO_T}Disabling checker libraries by default" >&6; }
 
 fi
 
@@ -3951,17 +3976,20 @@ fi
 if test "${enable_jbd_debug+set}" = set; then
   enableval=$enable_jbd_debug; if test "$enableval" = "no"
 then
-	echo "Disabling journal debugging"
+	{ echo "$as_me:$LINENO: result: Disabling journal debugging" >&5
+echo "${ECHO_T}Disabling journal debugging" >&6; }
 else
 	cat >>confdefs.h <<\_ACEOF
 #define CONFIG_JBD_DEBUG 1
 _ACEOF
 
-	echo "Enabling journal debugging"
+	{ echo "$as_me:$LINENO: result: Enabling journal debugging" >&5
+echo "${ECHO_T}Enabling journal debugging" >&6; }
 fi
 
 else
-  echo "Disabling journal debugging by default"
+  { echo "$as_me:$LINENO: result: Disabling journal debugging by default" >&5
+echo "${ECHO_T}Disabling journal debugging by default" >&6; }
 
 fi
 
@@ -3969,17 +3997,20 @@ fi
 if test "${enable_blkid_debug+set}" = set; then
   enableval=$enable_blkid_debug; if test "$enableval" = "no"
 then
-	echo "Disabling blkid debugging"
+	{ echo "$as_me:$LINENO: result: Disabling blkid debugging" >&5
+echo "${ECHO_T}Disabling blkid debugging" >&6; }
 else
 	cat >>confdefs.h <<\_ACEOF
 #define CONFIG_BLKID_DEBUG 1
 _ACEOF
 
-	echo "Enabling blkid debugging"
+	{ echo "$as_me:$LINENO: result: Enabling blkid debugging" >&5
+echo "${ECHO_T}Enabling blkid debugging" >&6; }
 fi
 
 else
-  echo "Disabling blkid debugging by default"
+  { echo "$as_me:$LINENO: result: Disabling blkid debugging by default" >&5
+echo "${ECHO_T}Disabling blkid debugging by default" >&6; }
 
 fi
 
@@ -3987,17 +4018,20 @@ fi
 if test "${enable_testio_debug+set}" = set; then
   enableval=$enable_testio_debug; if test "$enableval" = "no"
 then
-	echo "Disabling testio debugging"
+	{ echo "$as_me:$LINENO: result: Disabling testio debugging" >&5
+echo "${ECHO_T}Disabling testio debugging" >&6; }
 else
 	cat >>confdefs.h <<\_ACEOF
 #define CONFIG_TESTIO_DEBUG 1
 _ACEOF
 
-	echo "Enabling testio debugging"
+	{ echo "$as_me:$LINENO: result: Enabling testio debugging" >&5
+echo "${ECHO_T}Enabling testio debugging" >&6; }
 fi
 
 else
-  echo "Disabling testio debugging by default"
+  { echo "$as_me:$LINENO: result: Disabling testio debugging by default" >&5
+echo "${ECHO_T}Disabling testio debugging by default" >&6; }
 
 fi
 
@@ -4005,15 +4039,18 @@ fi
 if test "${enable_debugfs+set}" = set; then
   enableval=$enable_debugfs; if test "$enableval" = "no"
 then
-	echo "Disabling debugfs support"
+	{ echo "$as_me:$LINENO: result: Disabling debugfs support" >&5
+echo "${ECHO_T}Disabling debugfs support" >&6; }
 	DEBUGFS_CMT="#"
 else
 	DEBUGFS_CMT=
-	echo "Enabling debugfs support"
+	{ echo "$as_me:$LINENO: result: Enabling debugfs support" >&5
+echo "${ECHO_T}Enabling debugfs support" >&6; }
 fi
 
 else
-  echo "Enabling debugfs support by default"
+  { echo "$as_me:$LINENO: result: Enabling debugfs support by default" >&5
+echo "${ECHO_T}Enabling debugfs support by default" >&6; }
 DEBUGFS_CMT=
 
 fi
@@ -4023,15 +4060,18 @@ fi
 if test "${enable_imager+set}" = set; then
   enableval=$enable_imager; if test "$enableval" = "no"
 then
-	echo "Disabling e2image support"
+	{ echo "$as_me:$LINENO: result: Disabling e2image support" >&5
+echo "${ECHO_T}Disabling e2image support" >&6; }
 	IMAGER_CMT="#"
 else
 	IMAGER_CMT=
-	echo "Enabling e2image support"
+	{ echo "$as_me:$LINENO: result: Enabling e2image support" >&5
+echo "${ECHO_T}Enabling e2image support" >&6; }
 fi
 
 else
-  echo "Enabling e2image support by default"
+  { echo "$as_me:$LINENO: result: Enabling e2image support by default" >&5
+echo "${ECHO_T}Enabling e2image support by default" >&6; }
 IMAGER_CMT=
 
 fi
@@ -4041,15 +4081,18 @@ fi
 if test "${enable_resizer+set}" = set; then
   enableval=$enable_resizer; if test "$enableval" = "no"
 then
-	echo "Disabling e2resize support"
+	{ echo "$as_me:$LINENO: result: Disabling e2resize support" >&5
+echo "${ECHO_T}Disabling e2resize support" >&6; }
 	RESIZER_CMT="#"
 else
 	RESIZER_CMT=
-	echo "Enabling e2resize support"
+	{ echo "$as_me:$LINENO: result: Enabling e2resize support" >&5
+echo "${ECHO_T}Enabling e2resize support" >&6; }
 fi
 
 else
-  echo "Enabling e2resize support by default"
+  { echo "$as_me:$LINENO: result: Enabling e2resize support by default" >&5
+echo "${ECHO_T}Enabling e2resize support by default" >&6; }
 RESIZER_CMT=
 
 fi
@@ -4060,21 +4103,25 @@ if test "${enable_fsck+set}" = set; then
   enableval=$enable_fsck; if test "$enableval" = "no"
 then
 	FSCK_PROG='' FSCK_MAN=''
-	echo "Not building fsck wrapper"
+	{ echo "$as_me:$LINENO: result: Not building fsck wrapper" >&5
+echo "${ECHO_T}Not building fsck wrapper" >&6; }
 else
 	FSCK_PROG=fsck FSCK_MAN=fsck.8
-	echo "Building fsck wrapper"
+	{ echo "$as_me:$LINENO: result: Building fsck wrapper" >&5
+echo "${ECHO_T}Building fsck wrapper" >&6; }
 fi
 
 else
   case "$host_os" in
   gnu*)
     FSCK_PROG='' FSCK_MAN=''
-    echo "Not building fsck wrapper by default"
+    { echo "$as_me:$LINENO: result: Not building fsck wrapper by default" >&5
+echo "${ECHO_T}Not building fsck wrapper by default" >&6; }
     ;;
   *)
     FSCK_PROG=fsck FSCK_MAN=fsck.8
-    echo "Building fsck wrapper by default"
+    { echo "$as_me:$LINENO: result: Building fsck wrapper by default" >&5
+echo "${ECHO_T}Building fsck wrapper by default" >&6; }
 esac
 
 fi
@@ -4086,15 +4133,18 @@ if test "${enable_e2initrd_helper+set}" = set; then
   enableval=$enable_e2initrd_helper; if test "$enableval" = "no"
 then
 	E2INITRD_PROG='' E2INITRD_MAN=''
-	echo "Not building e2initrd helper"
+	{ echo "$as_me:$LINENO: result: Not building e2initrd helper" >&5
+echo "${ECHO_T}Not building e2initrd helper" >&6; }
 else
 	E2INITRD_PROG=e2initrd_helper E2INITRD_MAN=e2initrd_helper.8
-	echo "Building e2initrd helper"
+	{ echo "$as_me:$LINENO: result: Building e2initrd helper" >&5
+echo "${ECHO_T}Building e2initrd helper" >&6; }
 fi
 
 else
   E2INITRD_PROG=e2initrd_helper E2INITRD_MAN=e2initrd_helper.8
-echo "Building e2initrd helper by default"
+{ echo "$as_me:$LINENO: result: Building e2initrd helper by default" >&5
+echo "${ECHO_T}Building e2initrd helper by default" >&6; }
 
 fi
 
@@ -4105,7 +4155,8 @@ STATIC_BLKID_DEVMAPPER_LIBS=''
 if test "${enable_blkid_devmapper+set}" = set; then
   enableval=$enable_blkid_devmapper; if test "$enableval" = "no"
 then
-	echo "Disabling device-mapper support"
+	{ echo "$as_me:$LINENO: result: Disabling device-mapper support" >&5
+echo "${ECHO_T}Disabling device-mapper support" >&6; }
 	DEVMAPPER_REQ=''
 	DEVMAPPER_LIBS=''
 	STATIC_DEVMAPPER_LIBS=''
@@ -4114,7 +4165,8 @@ else
 #define HAVE_DEVMAPPER 1
 _ACEOF
 
-	echo "Enabling device-mapper support"
+	{ echo "$as_me:$LINENO: result: Enabling device-mapper support" >&5
+echo "${ECHO_T}Enabling device-mapper support" >&6; }
 
 
 
@@ -4238,8 +4290,9 @@ echo "${ECHO_T}no" >&6; }
 fi
 
 	if test -z "$PKG_CONFIG"; then
-		echo "pkg-config not installed; please install it."
-		exit 1;
+		{ { echo "$as_me:$LINENO: error: pkg-config not installed; please install it." >&5
+echo "$as_me: error: pkg-config not installed; please install it." >&2;}
+   { (exit 1); exit 1; }; }
 	fi
 
 	{ echo "$as_me:$LINENO: checking for dm_tree_create in -ldevmapper" >&5
@@ -4319,7 +4372,8 @@ fi
 	*pthread*)
 	    ;;
 	*)
-	    echo "Working around Debian bug #390243..."
+	    { echo "$as_me:$LINENO: WARNING: Working around Debian bug 390243..." >&5
+echo "$as_me: WARNING: Working around Debian bug 390243..." >&2;}
 	    STATIC_DEVMAPPER_LIBS="-pthread $STATIC_DEVMAPPER_LIBS"
 	    ;;
 	esac
@@ -4330,7 +4384,8 @@ fi
 fi
 
 else
-  echo "Disabling device-mapper support by default"
+  { echo "$as_me:$LINENO: result: Disabling device-mapper support by default" >&5
+echo "${ECHO_T}Disabling device-mapper support by default" >&6; }
 
 fi
 
@@ -4344,20 +4399,24 @@ if test "${enable_tls+set}" = set; then
   enableval=$enable_tls; if test "$enableval" = "no"
 then
 	try_tls=""
-	echo "Disabling thread local support"
+	{ echo "$as_me:$LINENO: result: Disabling thread local support" >&5
+echo "${ECHO_T}Disabling thread local support" >&6; }
 else
 	try_tls="yes"
-	echo "Enabling thread local support"
+	{ echo "$as_me:$LINENO: result: Enabling thread local support" >&5
+echo "${ECHO_T}Enabling thread local support" >&6; }
 fi
 
 else
   if test -n "$WITH_DIET_LIBC"
 then
 	try_tls=""
-	echo "Diet libc does not support thread local support"
+	{ echo "$as_me:$LINENO: result: Diet libc does not support thread local support" >&5
+echo "${ECHO_T}Diet libc does not support thread local support" >&6; }
 else
 	try_tls="yes"
-	echo "Try using thread local support by default"
+	{ echo "$as_me:$LINENO: result: Try using thread local support by default" >&5
+echo "${ECHO_T}Try using thread local support by default" >&6; }
 fi
 
 fi
@@ -4444,7 +4503,8 @@ fi
 if test "${enable_uuidd+set}" = set; then
   enableval=$enable_uuidd; if test "$enableval" = "no"
 then
-	echo "Not building uuidd"
+	{ echo "$as_me:$LINENO: result: Not building uuidd" >&5
+echo "${ECHO_T}Not building uuidd" >&6; }
 	UUIDD_CMT="#"
 else
 	cat >>confdefs.h <<\_ACEOF
@@ -4452,7 +4512,8 @@ else
 _ACEOF
 
 	UUIDD_CMT=""
-	echo "Building uuidd"
+	{ echo "$as_me:$LINENO: result: Building uuidd" >&5
+echo "${ECHO_T}Building uuidd" >&6; }
 fi
 
 else
@@ -4461,7 +4522,8 @@ else
 _ACEOF
 
 UUIDD_CMT=""
-echo "Building uuidd by default"
+{ echo "$as_me:$LINENO: result: Building uuidd by default" >&5
+echo "${ECHO_T}Building uuidd by default" >&6; }
 
 fi
 
@@ -15184,7 +15246,8 @@ case "$host_os" in
 linux* | gnu* | k*bsd*-gnu)
 	if test "$prefix" = NONE -a "$root_prefix" = NONE ; then
 		root_prefix="";
-		echo "On $host_os systems, root_prefix defaults to ''"
+		{ echo "$as_me:$LINENO: result: On $host_os systems, root_prefix defaults to ''" >&5
+echo "${ECHO_T}On $host_os systems, root_prefix defaults to ''" >&6; }
 	fi
 	;;
 esac
@@ -15192,9 +15255,11 @@ case "$host_os" in
 linux* | gnu* | k*bsd*-gnu)
 	if test "$prefix" = NONE ; then
 		prefix="/usr";
-		echo "On $host_os systems, prefix defaults to /usr"
+		{ echo "$as_me:$LINENO: result: On $host_os systems, prefix defaults to /usr" >&5
+echo "${ECHO_T}On $host_os systems, prefix defaults to /usr" >&6; }
 		if test "$mandir" = '${prefix}/man' ; then
-			echo "...and mandir defaults to /usr/share/man"
+			{ echo "$as_me:$LINENO: result: ...and mandir defaults to /usr/share/man" >&5
+echo "${ECHO_T}...and mandir defaults to /usr/share/man" >&6; }
 			mandir=/usr/share/man
 		fi
 	fi
@@ -15218,19 +15283,23 @@ else
 fi
 if test "$bindir" != '${exec_prefix}/bin'; then
     root_bindir=$bindir
-    echo "Setting root_bindir to $root_bindir"
+    { echo "$as_me:$LINENO: result: Setting root_bindir to $root_bindir" >&5
+echo "${ECHO_T}Setting root_bindir to $root_bindir" >&6; }
 fi
 if test "$sbindir" != '${exec_prefix}/sbin'; then
     root_sbindir=$sbindir
-    echo "Setting root_sbindir to $root_sbindir"
+    { echo "$as_me:$LINENO: result: Setting root_sbindir to $root_sbindir" >&5
+echo "${ECHO_T}Setting root_sbindir to $root_sbindir" >&6; }
 fi
 if test "$libdir" != '${exec_prefix}/lib'; then
     root_libdir=$libdir
-    echo "Setting root_libdir to $root_libdir"
+    { echo "$as_me:$LINENO: result: Setting root_libdir to $root_libdir" >&5
+echo "${ECHO_T}Setting root_libdir to $root_libdir" >&6; }
 fi
 if test "$sysconfdir" != '${prefix}/etc'; then
     root_sysconfdir=$sysconfdir
-    echo "Setting root_sysconfdir to $root_sysconfdir"
+    { echo "$as_me:$LINENO: result: Setting root_sysconfdir to $root_sysconfdir" >&5
+echo "${ECHO_T}Setting root_sysconfdir to $root_sysconfdir" >&6; }
 fi
 
 
@@ -15303,7 +15372,8 @@ fi
 
 case "$host_os" in
 darwin*)
-	echo "Using Apple Darwin / GNU libintl workaround"
+	{ echo "$as_me:$LINENO: result: Using Apple Darwin / GNU libintl workaround" >&5
+echo "${ECHO_T}Using Apple Darwin / GNU libintl workaround" >&6; }
 	cat >>confdefs.h <<\_ACEOF
 #define _INTL_REDIRECT_MACROS 1
 _ACEOF
