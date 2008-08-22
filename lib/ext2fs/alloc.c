@@ -27,6 +27,74 @@
 #include "ext2fs.h"
 
 /*
+ * Check for uninit block bitmaps and deal with them appropriately
+ */
+static check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
+			  dgrp_t group)
+{
+	int		i;
+	blk_t		blk, super_blk, old_desc_blk, new_desc_blk;
+	int		old_desc_blocks;
+
+	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) ||
+	    !(fs->group_desc[group].bg_flags & EXT2_BG_BLOCK_UNINIT))
+		return;
+
+	blk = (group * fs->super->s_blocks_per_group) +
+		fs->super->s_first_data_block;
+
+	ext2fs_super_and_bgd_loc(fs, group, &super_blk,
+				 &old_desc_blk, &new_desc_blk, 0);
+
+	if (fs->super->s_feature_incompat &
+	    EXT2_FEATURE_INCOMPAT_META_BG)
+		old_desc_blocks = fs->super->s_first_meta_bg;
+	else
+		old_desc_blocks = fs->desc_blocks + fs->super->s_reserved_gdt_blocks;
+
+	for (i=0; i < fs->super->s_blocks_per_group; i++, blk++) {
+		if ((blk == super_blk) ||
+		    (old_desc_blk && old_desc_blocks &&
+		     (blk >= old_desc_blk) &&
+		     (blk < old_desc_blk + old_desc_blocks)) ||
+		    (new_desc_blk && (blk == new_desc_blk)) ||
+		    (blk == fs->group_desc[group].bg_block_bitmap) ||
+		    (blk == fs->group_desc[group].bg_inode_bitmap) ||
+		    (blk >= fs->group_desc[group].bg_inode_table &&
+		     (blk < fs->group_desc[group].bg_inode_table
+		      + fs->inode_blocks_per_group)))
+			ext2fs_fast_mark_block_bitmap(map, blk);
+		else
+			ext2fs_fast_unmark_block_bitmap(map, blk);
+	}
+	fs->group_desc[group].bg_flags &= ~EXT2_BG_BLOCK_UNINIT;
+	ext2fs_group_desc_csum_set(fs, group);
+}
+
+/*
+ * Check for uninit inode bitmaps and deal with them appropriately
+ */
+static check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
+			  dgrp_t group)
+{
+	int		i;
+	ext2_ino_t	ino;
+
+	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) ||
+	    !(fs->group_desc[group].bg_flags & EXT2_BG_INODE_UNINIT))
+		return;
+
+	ino = (group * fs->super->s_inodes_per_group) + 1;
+	for (i=0; i < fs->super->s_inodes_per_group; i++, ino++)
+		ext2fs_fast_unmark_inode_bitmap(map, ino);
+
+	fs->group_desc[group].bg_flags &= ~EXT2_BG_INODE_UNINIT;
+	check_block_uninit(fs, fs->block_map, group);
+}
+
+/*
  * Right now, just search forward from the parent directory's block
  * group to find the next free inode.
  *
@@ -56,6 +124,10 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir,
 	i = start_inode;
 
 	do {
+		if (((i - 1) % EXT2_INODES_PER_GROUP(fs->super)) == 0)
+			check_inode_uninit(fs, map, (i - 1) /
+					   EXT2_INODES_PER_GROUP(fs->super));
+
 		if (!ext2fs_fast_test_inode_bitmap(map, i))
 			break;
 		i++;
@@ -87,7 +159,16 @@ errcode_t ext2fs_new_block(ext2_filsys fs, blk_t goal,
 	if (!goal || (goal >= fs->super->s_blocks_count))
 		goal = fs->super->s_first_data_block;
 	i = goal;
+	check_block_uninit(fs, map,
+			   (i - fs->super->s_first_data_block) /
+			   EXT2_BLOCKS_PER_GROUP(fs->super));
 	do {
+		if (((i - fs->super->s_first_data_block) %
+		     EXT2_BLOCKS_PER_GROUP(fs->super)) == 0)
+			check_block_uninit(fs, map,
+					   (i - fs->super->s_first_data_block) /
+					   EXT2_BLOCKS_PER_GROUP(fs->super));
+
 		if (!ext2fs_fast_test_block_bitmap(map, i)) {
 			*ret = i;
 			return 0;
