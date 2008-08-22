@@ -531,6 +531,78 @@ struct hfs_mdb {
         __u16        embed_blockcount;
 } __attribute__((packed));
 
+
+#define HFS_NODE_LEAF			0xff
+#define HFSPLUS_POR_CNID		1
+
+struct hfsplus_bnode_descriptor {
+	__u32		next;
+	__u32		prev;
+	__u8		type;
+	__u8		height;
+	__u16		num_recs;
+	__u16		reserved;
+} __attribute__((packed));
+
+struct hfsplus_bheader_record {
+	__u16		depth;
+	__u32		root;
+	__u32		leaf_count;
+	__u32		leaf_head;
+	__u32		leaf_tail;
+	__u16		node_size;
+} __attribute__((packed));
+
+struct hfsplus_catalog_key {
+	__u16	key_len;
+	__u32	parent_id;
+	__u16	unicode_len;
+	__u8		unicode[255 * 2];
+} __attribute__((packed));
+
+struct hfsplus_extent {
+	__u32		start_block;
+	__u32		block_count;
+} __attribute__((packed));
+
+#define HFSPLUS_EXTENT_COUNT		8
+struct hfsplus_fork {
+	__u64		total_size;
+	__u32		clump_size;
+	__u32		total_blocks;
+	struct hfsplus_extent extents[HFSPLUS_EXTENT_COUNT];
+} __attribute__((packed));
+
+struct hfsplus_vol_header {
+	__u8		signature[2];
+	__u16		version;
+	__u32		attributes;
+	__u32		last_mount_vers;
+	__u32		reserved;
+	__u32		create_date;
+	__u32		modify_date;
+	__u32		backup_date;
+	__u32		checked_date;
+	__u32		file_count;
+	__u32		folder_count;
+	__u32		blocksize;
+	__u32		total_blocks;
+	__u32		free_blocks;
+	__u32		next_alloc;
+	__u32		rsrc_clump_sz;
+	__u32		data_clump_sz;
+	__u32		next_cnid;
+	__u32		write_count;
+	__u64		encodings_bmp;
+	struct hfs_finder_info finder_info;
+	struct hfsplus_fork alloc_file;
+	struct hfsplus_fork ext_file;
+	struct hfsplus_fork cat_file;
+	struct hfsplus_fork attr_file;
+	struct hfsplus_fork start_file;
+}  __attribute__((packed));
+
+
 /* this is lvm's label_header & pv_header combined. */
 
 #define LVM2_ID_LEN 32
