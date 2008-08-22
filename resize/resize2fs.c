@@ -1462,6 +1462,10 @@ static errcode_t inode_ref_fix(ext2_resize_t rfs)
 		goto errout;
 	}
 
+	if (rfs->progress && (is.num < is.max_dirs))
+		(rfs->progress)(rfs, E2_RSZ_INODE_REF_UPD_PASS,
+				is.max_dirs, is.max_dirs);
+
 errout:
 	ext2fs_free_extent_table(rfs->imap);
 	rfs->imap = 0;
