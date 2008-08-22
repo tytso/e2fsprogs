@@ -129,12 +129,12 @@ static void probe_one(blkid_cache cache, const char *ptname,
 		      dev_t devno, int pri, int only_if_new)
 {
 	blkid_dev dev = NULL;
-	struct list_head *p;
+	struct list_head *p, *pnext;
 	const char **dir;
 	char *devname = NULL;
 
 	/* See if we already have this device number in the cache. */
-	list_for_each(p, &cache->bic_devs) {
+	list_for_each_safe(p, pnext, &cache->bic_devs) {
 		blkid_dev tmp = list_entry(p, struct blkid_struct_dev,
 					   bid_devs);
 #ifdef HAVE_DEVMAPPER
