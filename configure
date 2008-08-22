@@ -3767,8 +3767,6 @@ if test "${with_ldopts+set}" = set; then
   withval=$with_ldopts; { echo "$as_me:$LINENO: result: LDFLAGS is $withval" >&5
 echo "${ECHO_T}LDFLAGS is $withval" >&6; }
 LDFLAGS=$withval
-else
-  LDFLAGS=
 fi
 
 

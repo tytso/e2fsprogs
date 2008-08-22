@@ -144,7 +144,7 @@ AC_ARG_WITH([ldopts],
 [  --with-ldopts=LDOPTS    select linker command line options],
 AC_MSG_RESULT(LDFLAGS is $withval)
 LDFLAGS=$withval,
-LDFLAGS=)dnl
+)dnl
 AC_SUBST(LDFLAGS)
 dnl
 dnl Allow separate `root_prefix' to be specified
