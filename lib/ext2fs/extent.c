@@ -1218,8 +1218,7 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 		printf("(re/un)mapping only block in extent\n");
 #endif
 		if (physical) {
-			extent.e_pblk = physical;
-			retval = ext2fs_extent_replace(handle, 0, &extent);
+			retval = ext2fs_extent_replace(handle, 0, &newextent);
 		} else {
 			retval = ext2fs_extent_delete(handle, 0);
 			if (retval)
