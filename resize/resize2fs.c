@@ -92,6 +92,7 @@ errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 	memset(rfs, 0, sizeof(struct ext2_resize_struct));
 
 	fix_uninit_block_bitmaps(fs);
+	fs->priv_data = rfs;
 	rfs->old_fs = fs;
 	rfs->flags = flags;
 	rfs->itable_buf	 = 0;
@@ -987,6 +988,27 @@ static blk_t get_new_block(ext2_resize_t rfs)
 	}
 }
 
+static errcode_t resize2fs_get_alloc_block(ext2_filsys fs, blk64_t goal,
+					   blk64_t *ret)
+{
+	ext2_resize_t rfs = (ext2_resize_t) fs->priv_data;
+	blk_t blk;
+
+	blk = get_new_block(rfs);
+	if (!blk)
+		return ENOSPC;
+
+#ifdef RESIZE2FS_DEBUG
+	if (rfs->flags & 0xF)
+		printf("get_alloc_block allocating %u\n", blk);
+#endif
+
+	ext2fs_mark_block_bitmap(rfs->old_fs->block_map, blk);
+	ext2fs_mark_block_bitmap(rfs->new_fs->block_map, blk);
+	*ret = (blk64_t) blk;
+	return 0;
+}
+
 static errcode_t block_mover(ext2_resize_t rfs)
 {
 	blk_t			blk, old_blk, new_blk;
@@ -998,6 +1020,9 @@ static errcode_t block_mover(ext2_resize_t rfs)
 	ext2_badblocks_list	badblock_list = 0;
 	int			bb_modified = 0;
 	
+	fs->get_alloc_block = resize2fs_get_alloc_block;
+	old_fs->get_alloc_block = resize2fs_get_alloc_block;
+
 	retval = ext2fs_read_bb_inode(old_fs, &badblock_list);
 	if (retval)
 		return retval;
