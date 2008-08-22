@@ -38,6 +38,11 @@
  */
 #define _SVID_SOURCE
 
+#ifdef _WIN32
+#define _WIN32_WINNT 0x0500
+#include <windows.h>
+#define UUID MYUUID
+#endif
 #include <stdio.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -49,10 +54,14 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/types.h>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
 #include <sys/wait.h>
 #include <sys/stat.h>
+#ifdef HAVE_SYS_FILE_H
 #include <sys/file.h>
+#endif
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
@@ -97,6 +106,30 @@
 THREAD_LOCAL unsigned short jrand_seed[3];
 #endif
 
+#ifdef _WIN32
+static void gettimeofday (struct timeval *tv, void *dummy)
+{
+	FILETIME	ftime;
+	uint64_t	n;
+
+	GetSystemTimeAsFileTime (&ftime);
+	n = (((uint64_t) ftime.dwHighDateTime << 32)
+	     + (uint64_t) ftime.dwLowDateTime);
+	if (n) {
+		n /= 10;
+		n -= ((369 * 365 + 89) * (uint64_t) 86400) * 1000000;
+	}
+
+	tv->tv_sec = n / 1000000;
+	tv->tv_usec = n % 1000000;
+}
+
+static int getuid (void)
+{
+	return 1;
+}
+#endif
+
 static int get_random_fd(void)
 {
 	struct timeval	tv;
@@ -105,6 +138,7 @@ static int get_random_fd(void)
 
 	if (fd == -2) {
 		gettimeofday(&tv, 0);
+#ifndef _WIN32
 		fd = open("/dev/urandom", O_RDONLY);
 		if (fd == -1)
 			fd = open("/dev/random", O_RDONLY | O_NONBLOCK);
@@ -113,6 +147,7 @@ static int get_random_fd(void)
 			if (i >= 0) 
 				fcntl(fd, F_SETFD, i | FD_CLOEXEC);
 		}
+#endif
 		srand((getpid() << 16) ^ getuid() ^ tv.tv_sec ^ tv.tv_usec);
 #ifdef DO_JRAND_MIX
 		jrand_seed[0] = getpid() ^ (tv.tv_sec & 0xFFFF);
@@ -173,6 +208,11 @@ static void get_random_bytes(void *buf, int nbytes)
 
 /*
  * Get the ethernet hardware address, if we can find it...
+ *
+ * XXX for a windows version, probably should use GetAdaptersInfo:
+ * http://www.codeguru.com/cpp/i-n/network/networkinformation/article.php/c5451
+ * commenting out get_node_id just to get gen_uuid to compile under windows
+ * is not the right way to go!
  */
 static int get_node_id(unsigned char *node_id)
 {
@@ -269,7 +309,7 @@ static int get_clock(uint32_t *clock_high, uint32_t *clock_low,
 	THREAD_LOCAL uint16_t		clock_seq;
 	struct timeval 			tv;
 	struct flock			fl;
-	unsigned long long		clock_reg;
+	uint64_t			clock_reg;
 	mode_t				save_umask;
 
 	if (state_fd == -2) {
@@ -339,8 +379,8 @@ try_again:
 	}
 		
 	clock_reg = tv.tv_usec*10 + adjustment;
-	clock_reg += ((unsigned long long) tv.tv_sec)*10000000;
-	clock_reg += (((unsigned long long) 0x01B21DD2) << 32) + 0x13814000;
+	clock_reg += ((uint64_t) tv.tv_sec)*10000000;
+	clock_reg += (((uint64_t) 0x01B21DD2) << 32) + 0x13814000;
 
 	if (num && (*num > 1)) {
 		adjustment += *num - 1;

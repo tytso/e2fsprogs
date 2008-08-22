@@ -34,28 +34,38 @@
  * %End-Header%
  */
 
+#ifdef _WIN32
+#define _WIN32_WINNT 0x0500
+#include <windows.h>
+#define UUID MYUUID
+#endif
+
 #include <stdio.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <sys/types.h>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
 #include <time.h>
 
 #include "uuidP.h"
 
 time_t uuid_time(const uuid_t uu, struct timeval *ret_tv)
 {
-	struct uuid		uuid;
-	uint32_t			high;
 	struct timeval		tv;
-	unsigned long long	clock_reg;
+	struct uuid		uuid;
+	uint32_t		high;
+	uint64_t		clock_reg;
 
 	uuid_unpack(uu, &uuid);
 	
 	high = uuid.time_mid | ((uuid.time_hi_and_version & 0xFFF) << 16);
-	clock_reg = uuid.time_low | ((unsigned long long) high << 32);
+	clock_reg = uuid.time_low | ((uint64_t) high << 32);
 
-	clock_reg -= (((unsigned long long) 0x01B21DD2) << 32) + 0x13814000;
+	clock_reg -= (((uint64_t) 0x01B21DD2) << 32) + 0x13814000;
 	tv.tv_sec = clock_reg / 10000000;
 	tv.tv_usec = (clock_reg % 10000000) / 10;
 
