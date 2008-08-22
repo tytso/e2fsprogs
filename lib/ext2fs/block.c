@@ -392,8 +392,11 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 					ret |= (*ctx.func)(fs, &blk,
 							   -1, 0, 0, priv_data);
 					if (ret & BLOCK_CHANGED) {
-						ctx.errcode = EXT2_ET_EXTENT_NOT_SUPPORTED;
-						goto errout;
+						extent.e_pblk = blk;
+						ctx.errcode =
+				ext2fs_extent_replace(handle, 0, &extent);
+						if (ctx.errcode)
+							goto errout;
 					}
 				}
 				continue;
