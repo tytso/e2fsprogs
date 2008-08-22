@@ -83,10 +83,10 @@ __u32 crc32_le(__u32 crc, unsigned char const *p, size_t len)
 	const __u32      *b =(__u32 *)p;
 	const __u32      *tab = crc32table_le;
 
-# ifdef __LITTLE_ENDIAN
-#  define DO_CRC(x) crc = tab[ (crc ^ (x)) & 255 ] ^ (crc>>8)
-# else
+# ifdef WORDS_BIGENDIAN
 #  define DO_CRC(x) crc = tab[ ((crc >> 24) ^ (x)) & 255] ^ (crc<<8)
+# else
+#  define DO_CRC(x) crc = tab[ (crc ^ (x)) & 255 ] ^ (crc>>8)
 # endif
 
 	crc = __cpu_to_le32(crc);
@@ -183,10 +183,10 @@ __u32 crc32_be(__u32 crc, unsigned char const *p, size_t len)
 	const __u32      *b =(const __u32 *)p;
 	const __u32      *tab = crc32table_be;
 
-# ifdef __LITTLE_ENDIAN
-#  define DO_CRC(x) crc = tab[ (crc ^ (x)) & 255 ] ^ (crc>>8)
-# else
+# ifdef WORDS_BIGENDIAN
 #  define DO_CRC(x) crc = tab[ ((crc >> 24) ^ (x)) & 255] ^ (crc<<8)
+# else
+#  define DO_CRC(x) crc = tab[ (crc ^ (x)) & 255 ] ^ (crc>>8)
 # endif
 
 	crc = __cpu_to_be32(crc);
