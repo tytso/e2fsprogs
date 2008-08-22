@@ -164,7 +164,8 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	if (do_block) {
 		if (fs->block_map)
 			ext2fs_free_block_bitmap(fs->block_map);
-		sprintf(buf, "block bitmap for %s", fs->device_name);
+		strcpy(buf, "block bitmap for ");
+		strcat(buf, fs->device_name);
 		retval = ext2fs_allocate_block_bitmap(fs, buf, &fs->block_map);
 		if (retval)
 			goto cleanup;
@@ -177,7 +178,8 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	if (do_inode) {
 		if (fs->inode_map)
 			ext2fs_free_inode_bitmap(fs->inode_map);
-		sprintf(buf, "inode bitmap for %s", fs->device_name);
+		strcpy(buf, "inode bitmap for ");
+		strcat(buf, fs->device_name);
 		retval = ext2fs_allocate_inode_bitmap(fs, buf, &fs->inode_map);
 		if (retval)
 			goto cleanup;

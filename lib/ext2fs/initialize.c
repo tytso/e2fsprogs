@@ -353,12 +353,14 @@ ipg_retry:
 	if (retval)
 		goto cleanup;
 	
-	sprintf(buf, "block bitmap for %s", fs->device_name);
+	strcpy(buf, "block bitmap for ");
+	strcat(buf, fs->device_name);
 	retval = ext2fs_allocate_block_bitmap(fs, buf, &fs->block_map);
 	if (retval)
 		goto cleanup;
 	
-	sprintf(buf, "inode bitmap for %s", fs->device_name);
+	strcpy(buf, "inode bitmap for ");
+	strcat(buf, fs->device_name);
 	retval = ext2fs_allocate_inode_bitmap(fs, buf, &fs->inode_map);
 	if (retval)
 		goto cleanup;
