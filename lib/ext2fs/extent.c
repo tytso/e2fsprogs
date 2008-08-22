@@ -1157,6 +1157,7 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 	orig_height = info.max_depth - info.curr_level;
 	orig_lblk = extent.e_lblk;
 
+again:
 	/* go to the logical spot we want to (re/un)map */
 	retval = ext2fs_extent_goto(handle, logical);
 	if (retval) {
@@ -1255,11 +1256,12 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 		if (retval)
 			goto done;
 		if (physical) {
-			/* insert new extent ahead of current */
-			retval = ext2fs_extent_insert(handle,
-					0, &newextent);
-			if (retval)
-				goto done;
+			/*
+			 * We've removed the old block, now rely on
+			 * the optimized hueristics for adding a new
+			 * mapping with appropriate merging if necessary.
+			 */
+			goto again;
 		} else {
 			retval = ext2fs_extent_fix_parents(handle);
 			if (retval)
