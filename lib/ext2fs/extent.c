@@ -1203,7 +1203,9 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 		    ((int) extent.e_len < max_len-1)) {
 			extent.e_len++;
 			retval = ext2fs_extent_replace(handle, 0, &extent);
-		} else
+		} else if (logical < extent.e_lblk)
+			retval = ext2fs_extent_insert(handle, 0, &newextent);
+		else
 			retval = ext2fs_extent_insert(handle,
 				      EXT2_EXTENT_INSERT_AFTER, &newextent);
 		if (retval)
