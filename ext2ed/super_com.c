@@ -101,10 +101,6 @@ void type_ext2_super_block___show (char *command_line)
 			wprintw (show_pad,"Hurd");
 			break;
 
-		case EXT2_OS_MASIX:
-			wprintw (show_pad,"Masix");
-			break;
-
 		default:
 			wprintw (show_pad,"Unknown");
 			break;
