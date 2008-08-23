@@ -1,3 +1,44 @@
+e2fsprogs (1.41.0-4) unstable; urgency=low
+
+  * mke2fs will issue a warning if mke2fs.conf hasn't been updated and
+    the user tries to create an ext3, ext4, or ext4dev filesystem,
+    since it depends on the mke2fs.conf file in order to create the
+    filesystem properly with the appropriate features.
+  * Fix the maximum journal size message in mke2fs and tune2fs to be
+    consistent/correct.  (Closes: #491620)
+  * Add detection for hfsx filesystem and add label and uuid detection
+    for hfs, hfsplus, and hfsx filesystems in libblkid.
+  * Fix cosmetic issue in resize2fs when a progress bar doesn't finish
+    with a newline for pass 4 (when the inode references are updated).
+  * Teach resize2fs to move blocks when extents are present (when
+    shrinking a filesystem and/or if resize_inode is not present).
+  * Teach resize2fs to work correctly with the uninit_bg when blocks
+    need to be moved or allocated.
+  * Fix and optimize extent manipulation in libext2fs for resize2fs.
+  * Fix "dumpe2fs -i" and "debugfs -i".  (Closes: #495830)
+  * Fix resize2fs incorrectly managing directory in-use counts when
+    shrinking filesystems and directory inodes need to be moved.
+  * Fix spurious e2fsck complaints with i_size with extents and large
+    files and preallocated blocks.
+  * Make sure the creation timestamp is set by mke2fs and by new inodes
+    created by the libext2fs in general.
+  * Fix ind/dind/tind statistics when extents are present, and add
+    extent tree depth statistics.
+  * Add a fragmentation report extended option to e2fsck.
+  * Fix blkid cache validation and some possible blkid crashes
+    (Closes: #493216)
+  * Teach debugfs's htree command to work with extent-based directories.
+  * Improve the error message for "tune2fs -I".
+  * Fix miscellaneous strings and usage messages pointed out by the
+    translators.  (Thanks, translators!)
+  * Enforce that mke2fs won't allow features for revision 0 filesystems.
+  * Optimize inode table allocation in mke2fs for flex_bg filesystems.
+  * Update/clarified man pages
+  * Fix minor typo in uuid-runtime's debian package description
+  * Wrap debian/copyright files to avoid "line too long" lintian warnings
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 23 Aug 2008 08:56:47 -0400
+
 e2fsprogs (1.41.0-3) unstable; urgency=medium
 
   * Fix mips-specific FTBFS problem in debian/rules file
@@ -781,7 +822,7 @@ e2fsprogs (1.37+1.38-WIP-0509-1) unstable; urgency=low
     /etc/ld.so.preload.  (Closes: #304003)
   * Update Swedish translation, and added translation for Rwanda.
   * Minor man page spelling/typo fixes.  (Closes: #304591, #304592,
-  	#304594, #304597, #304593)
+    #304594, #304597, #304593)
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Mon,  9 May 2005 09:10:20 -0400
 

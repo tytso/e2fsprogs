@@ -1,3 +1,209 @@
+E2fsprogs 1.41.1 (as of August 23, 2008)  commit id baf8ab98
+============================================================
+
+Many people are forgetting to update their mke2fs.conf file, and this
+causes ext3, ext4, and ext4dev filesystems won't get created with the
+proper features enabled.  We address this in two ways.  First, mke2fs
+will issue a warning if there is not definition for an ext3, ext4, or
+ext4dev filesystem and the user is trying to create such a filesystem
+type.  Secondly, when installing from a source build, "make install"
+will provide basic configuration file handling for /etc/mke2fs.conf.
+If it exists, and does not mention ext4dev, it will be moved aside to
+/etc/mke2fs.conf.e2fpsrogs-old and the new /etc/mke2fs.conf file will
+be installed.  If the existing /etc/mke2fs.conf file does mention
+ext4dev, then "make install" will install official mke2fs.conf file as
+/etc/mke2fs.conf.e2fsprogs-new and issue a message to the user that
+they should look to see if any changes need to be merged.
+
+Mke2fs and tune2fs now print the correct usage message describing the
+maximum journal size.  (Addresses Debian Bug: #491620)
+
+The blkid library will now recognize MacOS hfsx filesystems, and
+correctly extract the label and uuid for hfs, hfsx, and hfsplus
+filesystems.  (Addresses Sourceforge Feature Requests: #2060292)
+
+Resize2fs will now properly close out the "updating inode references"
+progress bar so there is a newline printed before printing the final
+"resize is successful" message.
+
+Resize2fs will now correctly handle filesystems with extents and/o
+uninitialized block groups correctly when file/directory blocks need
+to relocated (i.e., when shrinking a filesystem or if the resize_inode
+is not present).  To support this, the ext2fs library now supports
+initializing inode and block bitmaps that are not yet initialized when
+allocating them using ext2fs_new_block() and ext2fs_new_inode().  In
+addition, e2fs_block_iterate2() can now support changing the location
+of interior nodes of an extent tree, and ext2fs_extent_set_bmap() has
+been optimized to avoid creating unnecessary new extents when updating
+the location of blocks in the extent tree.  This will also help out
+e2fsck's recovery of obscurely corrupted filesystems with extents,
+when blocks are claimed by multiple inodes.
+
+E2fsprogs 1.41.0 intrduced a bug in libext2fs which casued e2image and
+debugfs programs to not be able to read e2image files; the signed
+vs. unsigned bug in the code which read bitmaps from the e2image has
+been fixed.   (Addresses Debian Bug: #495830)
+
+Resize2fs is now correctly managing the directory in-use counts when
+shrinking filesystems and directory inodes needed to be moved from one
+block group to another.  This bug has been around since e2fsprogs
+1.26, and is largely harmless, but does cause a filesystem corruption
+which will be flagged by e2fsck after the filesystem has been shrunk.
+ 
+E2fsck will no longer issue spurious complaints about the inode size
+caused by very large extent-based files, and by blocks reallocated
+using fallocate() with the FALLOC_FL_KEEP_SIZE option.  (Addresses
+Kernel Bugzilla: #11341)
+
+Mke2fs will now set the creation timestamp on the lost+found directory
+and the root directory.  (More generally, all new inodes created using
+the ext2fs library will correctly set the creation timestamp.)
+
+E2fsck now correctly calculates ind/dind/tind statistics in the
+presence of extent-based files.  In addition, "e2fsck -v" will report
+statistics of the depth of extent trees in the filesystem.  E2fsck can
+also give an inode fragmentation report using "e2fsck -E fragcheck"
+which can be useful when debugging the kernel block allocation
+routines.
+
+Blkid had a number of cache validation bugs in libblkid that have been
+fixed.   (Addresses Debian Bug: #493216)
+
+Debugfs's htree command now correctly understands extent-based
+directories.  It will also print out the minor hash as well as the
+major hash.
+
+The error message printed by "tune2fs -I" if the inode size was too
+small was rather confusing, so it has been improved.  Also, we won't
+try to create an undo log until we know that command-line-specified
+parameters such as "tune2fs -I <inode size>" are valid.
+
+Mke2fs will correctly enforce the prohibition against features
+(specifically read-only features) in revision 0 filesystems.  (Thanks
+to Benno Schulenberg for noticing this problem.)
+
+Mke2fs previously would occasionaly create some slightly non-optimally
+placed inode tables; this bug has been fixed.
+
+Given some filesystems found "in the wild" that had non-zero block
+group checksums even though the uninit_bg/gdt_sum feature was not
+enabled, e2fsck would issue spurious error messages.  Teach
+ext2fs_group_desc_csum_verify() to ignore the block group checksum
+entirely if the feature flag is not set.  (Addresses Debian Bug:
+#490637)
+
+The blkid program will now print out a user-friendly listing of all of
+the block devices in the system and what they contain when given the
+-L option.  (Addresses Debian Bug: #490527)
+
+Typographical errors in various program strings and usage messages
+have been fixed; most of these were pointed out by the e2fsprogs
+message catalog translators.  (Thanks, translators!)
+
+Update and clarified various man pages, as well as some typographical
+errors in the libext2fs texinfo file.
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.
+
+Add Indonesian and update French, Polish, Dutch, German, Sweedish,
+Czech, and Vietnamese Translations.  (Addresses Debian Bugs: #313697,
+#401092)
+
+Programmer's Notes
+------------------
+
+Fix portability problem with the badblocks group; for systems that
+don't have nanosleep(), try using usleep() instead.
+
+The "make check" target in the e2fsck directory now sets
+LD_LIBRARY_PATH before running the various e2fsck internal library
+regression tests.
+
+The crc32 regression test in the e2fsck library is now portable to
+greater varienty of environments, including big-endian systems and
+when cross-building e2fsprogs for embedded systems.  (Addresses
+Sourceforge Bug: #2019287)
+
+The ext2fs_extent_set_bmap() had some bugs when setting the first
+block in a file, or when replacing a single block extent.  Those cases
+fortunately were came up relatively rarely when e2fsck was checking
+files, but caused some problems when resize2fs was shrinking
+extent-based files.
+
+Various ext2fs library functions --- ext2fs_initialize() and
+ext2fs_extent_open() --- now correctly free allocated memory to avoid
+memory leaks in all of their error return paths.
+
+Ext2ed was failing to build because masix support had been removed in
+the rest of e2fsprogs, so ext2ed no longer has masix support, either.
+
+The configure script now respects the LDFLAGS environment variable if
+it is set when configure is called.  (Addresses Sourceforge Feature
+Request: #1937287)
+
+Libuuid is now more portable to the Windows platform.  (Addresses
+Sourceforge Feature Request: #1937287)
+
+The configure script now uses AC_MSG_{RESULT,WARN,ERROR} instead of
+bare echo commands so that configure flags such as --quiet work
+correctly.  (Addresses Sourceforge Patches: #2058794)
+
+A few uses of sprintf have been removed from the ext2fs library to
+make life easier for bootloaders with a limited libc environment.
+(Addresses Sourceforge Bug: #2049120)
+
+The ext2fs_read_inode() checks the validity of the inode number passed
+to it earlier, to avoid doing some needless work when it would fail
+anyway.
+
+The ext2fs_open() checks the validity of the blocksize parameter
+passed to it earlier, to avoid doing some needless work when it would
+fail anyway.
+
+Disable a very annoying automatic "%.sh -> %" GNU make rule in the
+top-level Makefile.  That automatic rule is used to better support
+SCCS, but it caused problems for a particular niche distribution which
+likes to use configure.sh files to store the configure options used to
+build a package.  Unfortuntaely GNU make will use the configure.sh to
+replace the configure script, resulting in a self-inflicted fork bomb
+leading to an out-of-memory crash.
+
+E2fsprogs is now more portable to Solaris.
+  * blkid no longer assumes that the TIOCGSIZE and TIOCGWINSZ ioctl's
+    are always present.
+  * Scripts do not assume that /bin/true is always in /bin
+  * Don't use __FUNCTION__ since Solaris's C99 doesn't support it.
+  * Flush stdio handles before calling setbuf(), since Solaris will
+    discard any pending output to the stream.
+  * Define _XOPEN_SOURCE to 600 since Solaris's header files are very
+    picky about which C compiler can beused for SUSv3 conformance.
+    Use of C99 is not compatible with SUSv2 (_XOPEN_SOURCE=500),
+    and C89 is not compatible with SUSv3 (_XOPEN_SOURCE=600).
+    Since we need some SUSv3 functions, consistently use SUSv3 so
+    that e2fsprogs will build on Solaris using c99.
+  * Solaris C99 does not support varargs C preprocessor macros
+  * Solaris header files pollute the C namespace if in/netinet.h
+    is included, which conflicts with e2fsprogs' use of the kmem_cache_t
+    typedef.
+  * Solaris ships with a pathetically ancient shell in /bin/sh so we
+    avoid the use of various more avanced shell constructs such as $().
+
+To support old GNU C compilers don't use C99/C++ comments, but only
+K&R style comments, and don't try to use __builtin_expect if __GNUC__
+is less than 3.  (__builtin_expect is only supported for gcc versions
+2.96 and up, and it's tricky to check for gcc 2.95 vs gcc 2.96; since
+this is an optimization, we only try to use __builtin_expect for gcc 3
+and up.)
+
+In e2fsck's crc routines, make sure we use WORDS_BIGENDIAN instead of
+__LITTLE_ENDIAN, which are only defined by glibc's header files and
+hence isn't portable.
+
+For the convenience for some distributions that need a static tune2fs,
+the Makefile for misc/ now has a tune2fs.static target.
+
+
 E2fsprogs 1.41 (July 10, 2008)
 ==============================
 
