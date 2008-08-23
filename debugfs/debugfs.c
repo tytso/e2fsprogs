@@ -1514,7 +1514,7 @@ try_again:
 	if (retval == EXT2_ET_DIR_NO_SPACE) {
 		retval = ext2fs_expand_dir(current_fs, parent);
 		if (retval) {
-			com_err("argv[0]", retval, "while expanding directory");
+			com_err(argv[0], retval, "while expanding directory");
 			return;
 		}
 		goto try_again;
