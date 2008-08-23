@@ -968,6 +968,20 @@ static char **parse_fs_type(const char *fs_type,
 			ext_type = "ext3";
 	}
 
+	if (!strcmp(ext_type, "ext3") || !strcmp(ext_type, "ext4") ||
+	    !strcmp(ext_type, "ext4dev")) {
+		profile_get_string(profile, "fs_types", ext_type, "features",
+				   0, &t);
+		if (!t) {
+			printf(_("\nWarning!  Your mke2fs.conf file does "
+				 "not define the %s filesystem type.\n"),
+			       ext_type);
+			printf(_("You probably need to install an updated "
+				 "mke2fs.conf file.\n\n"));
+			sleep(5);
+		}
+	}
+
 	meg = (1024 * 1024) / EXT2_BLOCK_SIZE(fs_param);
 	if (fs_param->s_blocks_count < 3 * meg)
 		size_type = "floppy";
