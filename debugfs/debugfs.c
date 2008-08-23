@@ -1366,6 +1366,7 @@ void do_write(int argc, char *argv[])
 		retval = ext2fs_expand_dir(current_fs, cwd);
 		if (retval) {
 			com_err(argv[0], retval, "while expanding directory");
+			close(fd);
 			return;
 		}
 		retval = ext2fs_link(current_fs, cwd, argv[2], newfile,
