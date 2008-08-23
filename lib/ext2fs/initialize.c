@@ -254,8 +254,10 @@ retry:
 			super->s_frags_per_group = super->s_blocks_per_group *
 				frags_per_block;
 			goto retry;
-		} else
-			return EXT2_ET_TOO_MANY_INODES;
+		} else {
+			retval = EXT2_ET_TOO_MANY_INODES;
+			goto cleanup;
+		}
 	}
 
 	if (ipg > (unsigned) EXT2_MAX_INODES_PER_GROUP(super))
@@ -321,8 +323,10 @@ ipg_retry:
 			  fs->desc_blocks + super->s_reserved_gdt_blocks);
 
 	/* This can only happen if the user requested too many inodes */
-	if (overhead > super->s_blocks_per_group)
-		return EXT2_ET_TOO_MANY_INODES;
+	if (overhead > super->s_blocks_per_group) {
+		retval = EXT2_ET_TOO_MANY_INODES;
+		goto cleanup;
+	}
 
 	/*
 	 * See if the last group is big enough to support the
@@ -336,8 +340,10 @@ ipg_retry:
 		overhead += 1 + fs->desc_blocks + super->s_reserved_gdt_blocks;
 	rem = ((super->s_blocks_count - super->s_first_data_block) %
 	       super->s_blocks_per_group);
-	if ((fs->group_desc_count == 1) && rem && (rem < overhead))
-		return EXT2_ET_TOOSMALL;
+	if ((fs->group_desc_count == 1) && rem && (rem < overhead)) {
+		retval = EXT2_ET_TOOSMALL;
+		goto cleanup;
+	}
 	if (rem && (rem < overhead+50)) {
 		super->s_blocks_count -= rem;
 		goto retry;
