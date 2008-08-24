@@ -780,6 +780,16 @@ static int probe_jfs(struct blkid_probe *probe,
 
 	js = (struct jfs_super_block *)buf;
 
+	if (blkid_le32(js->js_bsize) != (1 << blkid_le16(js->js_l2bsize)))
+		return 1;
+
+	if (blkid_le32(js->js_pbsize) != (1 << blkid_le16(js->js_l2pbsize)))
+		return 1;
+
+	if ((blkid_le16(js->js_l2bsize) - blkid_le16(js->js_l2pbsize)) !=
+	    blkid_le16(js->js_l2bfactor))
+		return 1;
+
 	if (strlen((char *) js->js_label))
 		label = (char *) js->js_label;
 	blkid_set_tag(probe->dev, "LABEL", label, sizeof(js->js_label));

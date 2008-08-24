@@ -181,10 +181,13 @@ struct jfs_super_block {
 	unsigned char	js_magic[4];
 	__u32		js_version;
 	__u64		js_size;
-	__u32		js_bsize;
-	__u32		js_dummy1;
-	__u32		js_pbsize;
-	__u32		js_dummy2[27];
+	__u32		js_bsize;	/* 4: aggregate block size in bytes */
+	__u16		js_l2bsize;	/* 2: log2 of s_bsize */
+	__u16		js_l2bfactor;	/* 2: log2(s_bsize/hardware block size) */
+	__u32		js_pbsize;	/* 4: hardware/LVM block size in bytes */
+	__u16		js_l2pbsize;	/* 2: log2 of s_pbsize */
+	__u16 		js_pad;		/* 2: padding necessary for alignment */
+	__u32		js_dummy2[26];
 	unsigned char	js_uuid[16];
 	unsigned char	js_label[16];
 	unsigned char	js_loguuid[16];
