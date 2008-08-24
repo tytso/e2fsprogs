@@ -49,7 +49,7 @@ mke2fs \- create an ext2/ext3 filesystem
 .I number-of-inodes
 ]
 [
-.B -n
+.B \-n
 ]
 [
 .B \-m
@@ -175,13 +175,13 @@ test is used instead of a fast read-only test.
 .BI \-E " extended-options"
 Set extended options for the filesystem.  Extended options are comma
 separated, and may take an argument using the equals ('=') sign.  The
-.B -E
+.B \-E
 option used to be
-.B -R
+.B \-R
 in earlier versions of
 .BR mke2fs .
 The
-.B -R
+.B \-R
 option is still accepted for backwards compatibility.   The
 following extended options are supported:
 .RS 1.2i
@@ -429,7 +429,7 @@ configuration file,
 or in the
 .I [fs_types]
 subsections for the usage types as specified by the
-.B -T
+.B \-T
 option, further modified by the
 .I features
 relation found in the
@@ -468,7 +468,7 @@ Store file type information in directory entries.
 .TP
 .B flex_bg
 Allow bitmaps and inode tables for a block group to be placed anywhere
-on the storage media (use with -G option to group meta-data in order
+on the storage media (use with \-G option to group meta-data in order
 to create a large virtual block group).
 .TP
 .B has_journal
