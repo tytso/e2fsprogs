@@ -11,6 +11,9 @@
 
 #define E2P_FEATURE_NEGATE_FLAG	0x80
 
+#define E2P_FS_FEATURE		0
+#define E2P_JOURNAL_FEATURE	1
+
 /* `options' for print_flags() */
 
 #define PFOPT_LONG  1 /* Must be 1 for compatibility with `int long_format'. */

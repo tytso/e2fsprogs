@@ -36,6 +36,7 @@ extern char *optarg;
 #include <ext2fs/ext2_ext_attr.h>
 
 #include "../version.h"
+#include "jfs_user.h"
 
 extern ss_request_table debug_cmds;
 ss_request_table *extra_cmds;
@@ -1803,6 +1804,71 @@ void do_set_current_time(int argc, char *argv[])
 	} else {
 		printf("Setting current time to %s\n", time_to_string(now));
 		current_fs->now = now;
+	}
+}
+
+static int find_supp_feature(__u32 *supp, int feature_type, char *name)
+{
+	int compat, bit, ret;
+	unsigned int feature_mask;
+
+	if (name) {
+		if (feature_type == E2P_FS_FEATURE)
+			ret = e2p_string2feature(name, &compat, &feature_mask);
+		else
+			ret = e2p_jrnl_string2feature(name, &compat,
+						      &feature_mask);
+		if (ret)
+			return ret;
+
+		if (!(supp[compat] & feature_mask))
+			return 1;
+	} else {
+	        for (compat = 0; compat < 3; compat++) {
+		        for (bit = 0, feature_mask = 1; bit < 32;
+			     bit++, feature_mask <<= 1) {
+			        if (supp[compat] & feature_mask) {
+					if (feature_type == E2P_FS_FEATURE)
+						fprintf(stdout, " %s",
+						e2p_feature2string(compat,
+						feature_mask));
+					else
+						fprintf(stdout, " %s",
+						e2p_jrnl_feature2string(compat,
+						feature_mask));
+				}
+	        	}
+		}
+	        fprintf(stdout, "\n");
+	}
+
+	return 0;
+}
+
+void do_supported_features(int argc, char *argv[])
+{
+        int	i, j, ret;
+	__u32	supp[3] = { EXT2_LIB_FEATURE_COMPAT_SUPP,
+			    EXT2_LIB_FEATURE_INCOMPAT_SUPP,
+			    EXT2_LIB_FEATURE_RO_COMPAT_SUPP };
+	__u32	jrnl_supp[3] = { JFS_KNOWN_COMPAT_FEATURES,
+				 JFS_KNOWN_INCOMPAT_FEATURES,
+				 JFS_KNOWN_ROCOMPAT_FEATURES };
+
+	if (argc > 1) {
+		ret = find_supp_feature(supp, E2P_FS_FEATURE, argv[1]);
+		if (ret) {
+			ret = find_supp_feature(jrnl_supp, E2P_JOURNAL_FEATURE,
+						argv[1]);
+		}
+		if (ret)
+			com_err(argv[0], 0, "Unknown feature: %s\n", argv[1]);
+		else
+			fprintf(stdout, "Supported feature: %s\n", argv[1]);
+	} else {
+		fprintf(stdout, "Supported features:");
+		ret = find_supp_feature(supp, E2P_FS_FEATURE, NULL);
+		ret = find_supp_feature(jrnl_supp, E2P_JOURNAL_FEATURE, NULL);
 	}
 }
 

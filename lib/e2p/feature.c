@@ -15,6 +15,8 @@
 #include <errno.h>
 
 #include "e2p.h"
+#include <ext2fs/ext2fs.h>
+#include <ext2fs/jfs_user.h>
 
 struct feature {
 	int		compat;
@@ -72,6 +74,17 @@ static struct feature feature_list[] = {
 	{       E2P_FEATURE_INCOMPAT, EXT4_FEATURE_INCOMPAT_FLEX_BG,
                         "flex_bg"},
 	{	0, 0, 0 },
+};
+
+static struct feature jrnl_feature_list[] = {
+       {       E2P_FEATURE_COMPAT, JFS_FEATURE_COMPAT_CHECKSUM,
+                       "journal_checksum" },
+
+       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_REVOKE,
+                       "journal_incompat_revoke" },
+       {       E2P_FEATURE_INCOMPAT, JFS_FEATURE_INCOMPAT_ASYNC_COMMIT,
+                       "journal_async_commit" },
+       {       0, 0, 0 },
 };
 
 const char *e2p_feature2string(int compat, unsigned int mask)
@@ -148,6 +161,79 @@ int e2p_string2feature(char *string, int *compat_type, unsigned int *mask)
 	return 0;
 }
 
+const char *e2p_jrnl_feature2string(int compat, unsigned int mask)
+{
+	struct feature  *f;
+	static char buf[20];
+	char	fchar;
+	int	fnum;
+
+	for (f = jrnl_feature_list; f->string; f++) {
+		if ((compat == f->compat) &&
+		    (mask == f->mask))
+			return f->string;
+	}
+	switch (compat) {
+	case  E2P_FEATURE_COMPAT:
+		fchar = 'C';
+		break;
+	case E2P_FEATURE_INCOMPAT:
+		fchar = 'I';
+		break;
+	case E2P_FEATURE_RO_INCOMPAT:
+		fchar = 'R';
+		break;
+	default:
+		fchar = '?';
+		break;
+	}
+	for (fnum = 0; mask >>= 1; fnum++);
+	sprintf(buf, "FEATURE_%c%d", fchar, fnum);
+	return buf;
+}
+
+int e2p_jrnl_string2feature(char *string, int *compat_type, unsigned int *mask)
+{
+	struct feature  *f;
+	char		*eptr;
+	int		num;
+
+	for (f = jrnl_feature_list; f->string; f++) {
+		if (!strcasecmp(string, f->string)) {
+			*compat_type = f->compat;
+			*mask = f->mask;
+			return 0;
+		}
+	}
+	if (strncasecmp(string, "FEATURE_", 8))
+		return 1;
+
+	switch (string[8]) {
+	case 'c':
+	case 'C':
+		*compat_type = E2P_FEATURE_COMPAT;
+		break;
+	case 'i':
+	case 'I':
+		*compat_type = E2P_FEATURE_INCOMPAT;
+		break;
+	case 'r':
+	case 'R':
+		*compat_type = E2P_FEATURE_RO_INCOMPAT;
+		break;
+	default:
+		return 1;
+	}
+	if (string[9] == 0)
+		return 1;
+	num = strtol(string+9, &eptr, 10);
+	if (num > 32 || num < 0)
+		return 1;
+	if (*eptr)
+		return 1;
+	*mask = 1 << num;
+	return 0;
+}
 static char *skip_over_blanks(char *cp)
 {
 	while (*cp && isspace(*cp))
@@ -252,3 +338,47 @@ int e2p_edit_feature(const char *str, __u32 *compat_array, __u32 *ok_array)
 {
 	return e2p_edit_feature2(str, compat_array, ok_array, 0, 0, 0);
 }
+
+#ifdef TEST_PROGRAM
+int main(int argc, char **argv)
+{
+	int compat, compat2, i;
+	unsigned int mask, mask2;
+	const char *str;
+	struct feature *f;
+
+	for (i = 0; i < 2; i++) {
+		if (i == 0) {
+			f = feature_list;
+			printf("Feature list:\n");
+		} else {
+			printf("\nJournal feature list:\n");
+			f = jrnl_feature_list;
+		}
+		for (; f->string; f++) {
+			if (i == 0) {
+				e2p_string2feature((char *)f->string, &compat,
+						   &mask);
+				str = e2p_feature2string(compat, mask);
+			} else {
+				e2p_jrnl_string2feature((char *)f->string,
+							&compat, &mask);
+				str = e2p_jrnl_feature2string(compat, mask);
+			}
+
+			printf("\tCompat = %d, Mask = %u, %s\n",
+			       compat, mask, f->string);
+			if (strcmp(f->string, str)) {
+				if (e2p_string2feature((char *) str, &compat2,
+						       &mask2) ||
+				    (compat2 != compat) ||
+				    (mask2 != mask)) {
+					fprintf(stderr, "Failure!\n");
+					exit(1);
+				}
+			}
+		}
+	}
+	exit(0);
+}
+#endif

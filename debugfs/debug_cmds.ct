@@ -154,5 +154,8 @@ request	do_dump_unused, "Dump unused blocks",
 request do_set_current_time, "Set current time to use when setting filesystme fields",
 	set_current_time;
 
+request do_supported_features, "Print features supported by this version of e2fsprogs",
+	supported_features;
+
 end;
 

@@ -69,8 +69,14 @@ tst_ostype: $(srcdir)/ostype.c
 	@$(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_ostype \
 		$(srcdir)/ostype.c $(ALL_CFLAGS)
 
-check::	tst_ostype
+tst_feature: $(srcdir)/feature.c
+	@echo "	LD $@"
+	@$(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_feature \
+		$(srcdir)/feature.c $(ALL_CFLAGS)
+
+check::	tst_ostype tst_feature
 	./tst_ostype
+	./tst_feature
 
 installdirs::
 	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/e2p"
@@ -96,7 +102,7 @@ uninstall::
 
 clean::
 	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/*
-	$(RM) -f ../libe2p.a ../libe2p_p.a tst_ostype
+	$(RM) -f ../libe2p.a ../libe2p_p.a tst_ostype tst_feature
 
 mostlyclean:: clean
 distclean:: clean
