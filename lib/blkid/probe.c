@@ -566,25 +566,38 @@ static int probe_fat_nomagic(struct blkid_probe *probe,
 			     struct blkid_magic *id __BLKID_ATTR((unused)), 
 			     unsigned char *buf)
 {
-	struct vfat_super_block *vs;
+	struct msdos_super_block *ms;
 
-	vs = (struct vfat_super_block *)buf;
+	ms = (struct msdos_super_block *)buf;
 
 	/* heads check */
-	if (vs->vs_heads == 0)
+	if (ms->ms_heads == 0)
 		return 1;
 
 	/* cluster size check*/	
-	if (vs->vs_cluster_size == 0 ||
-	    (vs->vs_cluster_size & (vs->vs_cluster_size-1)))
+	if (ms->ms_cluster_size == 0 ||
+	    (ms->ms_cluster_size & (ms->ms_cluster_size-1)))
 		return 1;
 
 	/* media check */
-	if (vs->vs_media < 0xf8 && vs->vs_media != 0xf0)
+	if (ms->ms_media < 0xf8 && ms->ms_media != 0xf0)
 		return 1;
 
 	/* fat counts(Linux kernel expects at least 1 FAT table) */
-	if (!vs->vs_fats)
+	if (!ms->ms_fats)
+		return 1;
+
+	/*
+	 * OS/2 and apparently DFSee will place a FAT12/16-like
+	 * pseudo-superblock in the first 512 bytes of non-FAT
+	 * filesystems --- at least JFS and HPFS, and possibly others.
+	 * So we explicitly check for those filesystems at the
+	 * FAT12/16 filesystem magic field identifier, and if they are
+	 * present, we rule this out as a FAT filesystem, despite the
+	 * FAT-like pseudo-header.
+         */
+	if ((memcmp(ms->ms_magic, "JFS     ", 8) == 0) ||
+	    (memcmp(ms->ms_magic, "HPFS    ", 8) == 0))
 		return 1;
 
 	return probe_fat(probe, id, buf);
