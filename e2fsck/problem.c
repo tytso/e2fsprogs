@@ -1240,7 +1240,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Node in HTREE directory has invalid depth */
 	{ PR_2_HTREE_BAD_DEPTH,
-	  N_("@p @h %d: node (%B) has @n depth\n"),
+	  N_("@p @h %d: node (%B) has @n depth (%N)\n"),
 	  PROMPT_NONE, 0 },
 
 	/* Duplicate directory entry found */

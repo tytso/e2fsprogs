@@ -213,6 +213,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 			if (dx_db->type == DX_DIRBLOCK_LEAF) {
 				depth = htree_depth(dx_dir, dx_db);
 				if (depth != dx_dir->depth) {
+					pctx.num = dx_dir->depth;
 					code = PR_2_HTREE_BAD_DEPTH;
 					fix_problem(ctx, code, &pctx);
 					bad_dir++;
