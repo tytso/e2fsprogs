@@ -164,7 +164,7 @@ errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ext2_ino_t ino, blk_t blk,
 
 	if (dblist->count >= dblist->size) {
 		old_size = dblist->size * sizeof(struct ext2_db_entry);
-		dblist->size += 100;
+		dblist->size += dblist->size > 200 ? dblist->size / 2 : 100;
 		retval = ext2fs_resize_mem(old_size, (size_t) dblist->size *
 					   sizeof(struct ext2_db_entry),
 					   &dblist->list);
