@@ -237,28 +237,14 @@ void e2fsck_write_bitmaps(e2fsck_t ctx)
 	errcode_t	retval;
 	const char	*old_op;
 
-	if (ext2fs_test_bb_dirty(fs)) {
-		old_op = ehandler_operation(_("writing block bitmaps"));
-		retval = ext2fs_write_block_bitmap(fs);
-		ehandler_operation(old_op);
-		if (retval) {
-			com_err(ctx->program_name, retval,
-			    _("while retrying to write block bitmaps for %s"),
-				ctx->device_name);
-			fatal_error(ctx, 0);
-		}
-	}
-
-	if (ext2fs_test_ib_dirty(fs)) {
-		old_op = ehandler_operation(_("writing inode bitmaps"));
-		retval = ext2fs_write_inode_bitmap(fs);
-		ehandler_operation(old_op);
-		if (retval) {
-			com_err(ctx->program_name, retval,
-			    _("while retrying to write inode bitmaps for %s"),
-				ctx->device_name);
-			fatal_error(ctx, 0);
-		}
+	old_op = ehandler_operation(_("writing block and inode bitmaps"));
+	retval = ext2fs_write_bitmaps(fs);
+	ehandler_operation(old_op);
+	if (retval) {
+		com_err(ctx->program_name, retval,
+			_("while rewriting block and inode bitmaps for %s"),
+			ctx->device_name);
+		fatal_error(ctx, 0);
 	}
 }
 
