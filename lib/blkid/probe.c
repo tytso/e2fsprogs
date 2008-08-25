@@ -1051,8 +1051,8 @@ static int probe_gfs2(struct blkid_probe *probe,
 	return 1;
 }
 
-void unicode_16be_to_utf8(unsigned char *str, int out_len, 
-			 const unsigned char *buf, int in_len)
+static void unicode_16be_to_utf8(unsigned char *str, int out_len, 
+				 const unsigned char *buf, int in_len)
 {
 	int i, j;
 	unsigned int c;
