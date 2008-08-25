@@ -62,7 +62,8 @@ SMP systems.
 %setup
 
 %build
-%configure --enable-elf-shlibs --enable-nls
+%configure --enable-elf-shlibs --enable-nls \
+	%{?extra_config_flags:%extra_config_flags}
 make
 make check
 

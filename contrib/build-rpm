@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# enable xtrace output if requested
+if [ -n ${ENABLE_XTRACE:-''} ]; then
+    set -x
+fi
+
 # Build an e2fsprogs RPM from cvs
 
 pwd=`pwd`
@@ -8,8 +13,11 @@ pkgname=`grep Name: e2fsprogs.spec | awk '{print $2;}'`
 pkgvers=`grep Version: e2fsprogs.spec | awk '{print $2;}'`
 builddir=${pkgname}-${pkgvers}
 
+# ensure that $TMP is set to something
+TMP=${TMP:-'/tmp'}
+
 cd ..
-tmpdir=`mktemp -d rpmtmp.XXXXXX`
+tmpdir=`mktemp -d ${RPM_TMPDIR:-$TMP}/rpmtmp.XXXXXX`
 
 # We need to build a tarball for the SRPM using $builddir as the 
 # directory name (since that's what RPM will expect it to unpack
@@ -25,10 +33,13 @@ EXCLUDE="--exclude .hg* --exclude .pc*"
 (cd $tmpdir && tar czfh ${builddir}.tar.gz $EXCLUDE $builddir)
 
 [ "`rpmbuild --version 2> /dev/null`" ] && RPM=rpmbuild || RPM=rpm
-$RPM --define "_sourcedir `pwd`/$tmpdir" -ba $currdir/e2fsprogs.spec
 
-ret=$?
+$RPM --define "_sourcedir $tmpdir" \
+     --define "_topdir ${RPM_TOPDIR:-$(rpm -E %_topdir)}" \
+     --define "_tmpdir ${RPM_TMPDIR:-$TMP}" \
+     --define "extra_config_flags ${EXTRA_CONFIG_FLAGS:-''}" \
+     -ba $currdir/e2fsprogs.spec
+
+rpm_exit=$?
 rm -rf $tmpdir
-exit $?
-
-
+exit $rpm_exit
