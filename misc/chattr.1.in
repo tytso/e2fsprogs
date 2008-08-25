@@ -73,8 +73,21 @@ set or reset using
 although it can be displayed by
 .BR lsattr (1).
 .PP
+The 'e' attribute indicates that the file is using extents for mapping
+the blocks on disk.  It may not be set or reset using
+.BR chattr (1),
+although it can be displayed by
+.BR lsattr (1).
+.PP
 The 'I' attribute is used by the htree code to indicate that a directory
 is being indexed using hashed trees.  It may not be set or reset using 
+.BR chattr (1),
+although it can be displayed by
+.BR lsattr (1).
+.PP
+The 'H' attribute indicates the file is storing its blocks in units of the
+filesystem blocksize instead of in units of sectors, and means that the file
+is (or at one time was) larger than 2TB.  It may not be set or reset using
 .BR chattr (1),
 although it can be displayed by
 .BR lsattr (1).
