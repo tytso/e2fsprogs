@@ -17,29 +17,12 @@
 
 #include <ext2fs/ext2_types.h>
 
-extern __u16 const crc16_table[256];
-
-#ifdef WORDS_BIGENDIAN
 /* for an unknown reason, PPC treats __u16 as signed and keeps doing sign
  * extension on the value.  Instead, use only the low 16 bits of an
  * unsigned int for holding the CRC value to avoid this.
  */
-typedef unsigned crc16_t;
+typedef unsigned int crc16_t;
 
-static inline crc16_t crc16_byte(crc16_t crc, const unsigned char data)
-{
-	return (((crc >> 8) & 0xffU) ^ crc16_table[(crc ^ data) & 0xffU]) &
-		0x0000ffffU;
-}
-#else
-typedef __u16 crc16_t;
-
-static inline crc16_t crc16_byte(crc16_t crc, const unsigned char data)
-{
-	return (crc >> 8) ^ crc16_table[(crc ^ data) & 0xff];
-}
-#endif
-
-extern crc16_t crc16(crc16_t crc, const void *buffer, unsigned int len);
+extern crc16_t ext2fs_crc16(crc16_t crc, const void *buffer, unsigned int len);
 
 #endif /* __CRC16_H */

@@ -43,14 +43,15 @@ STATIC __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 
 		group = ext2fs_swab32(group);
 #endif
-		crc = crc16(~0, fs->super->s_uuid, sizeof(fs->super->s_uuid));
-		crc = crc16(crc, &group, sizeof(group));
-		crc = crc16(crc, desc, offset);
+		crc = ext2fs_crc16(~0, fs->super->s_uuid,
+				   sizeof(fs->super->s_uuid));
+		crc = ext2fs_crc16(crc, &group, sizeof(group));
+		crc = ext2fs_crc16(crc, desc, offset);
 		offset += sizeof(desc->bg_checksum); /* skip checksum */
 		assert(offset == sizeof(*desc));
 		/* for checksum of struct ext4_group_desc do the rest...*/
 		if (offset < fs->super->s_desc_size) {
-			crc = crc16(crc, (char *)desc + offset,
+			crc = ext2fs_crc16(crc, (char *)desc + offset,
 				    fs->super->s_desc_size - offset);
 		}
 	}

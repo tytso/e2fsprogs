@@ -36,9 +36,10 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 	swabgroup = group;
 #endif
 
-	crc1 = crc16(~0, sb->s_uuid, sizeof(fs->super->s_uuid));
-	crc2 = crc16(crc1, &swabgroup, sizeof(swabgroup));
-	crc3 = crc16(crc2, desc, offsetof(struct ext2_group_desc, bg_checksum));
+	crc1 = ext2fs_crc16(~0, sb->s_uuid, sizeof(fs->super->s_uuid));
+	crc2 = ext2fs_crc16(crc1, &swabgroup, sizeof(swabgroup));
+	crc3 = ext2fs_crc16(crc2, desc,
+			    offsetof(struct ext2_group_desc, bg_checksum));
 	printf("%s: UUID %016Lx%016Lx(%04x), grp %u(%04x): %04x=%04x\n",
 	       msg, *(long long *)&sb->s_uuid, *(long long *)&sb->s_uuid[8],
 	       crc1, group, crc2, crc3, ext2fs_group_desc_csum(fs, group));
