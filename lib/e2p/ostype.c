@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-const char *os_tab[] =
+static const char *os_tab[] =
 	{ "Linux", 
 	  "Hurd", 
 	  "Masix", 
