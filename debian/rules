@@ -464,6 +464,18 @@ endif
 	mv ${libblkiddir}/usr/lib/debug ${libblkiddbgdir}/usr/lib
 	rmdir ${libblkiddir}/usr/lib
 
+	# dpkg symbol handling
+ifneq (,$(findstring update-symbols,$(DEB_BUILD_OPTIONS)))
+	for i in e2fslibs libcomerr2 libss2 libblkid1 libuuid1; \
+	do \
+		echo "Generating symbols for $$i..."; \
+		dpkg-gensymbols -p$$i -Pdebian/$$i > debian/$$i.tmp-patch; \
+		cat debian/$$i.tmp-patch; \
+		patch debian/$$i.symbols < debian/$$i.tmp-patch; \
+		/bin/rm debian/$$i.tmp-patch; \
+	done
+endif
+
 	$(INSTALL) -p -m 0644 debian/e2fsprogs.copyright \
 		${debugdir}/usr/share/doc/e2fsprogs-dbg/copyright
 
