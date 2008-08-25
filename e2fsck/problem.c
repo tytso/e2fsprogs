@@ -578,12 +578,12 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@A @b @B (%N): %m\n"),
 	  PROMPT_NONE, PR_FATAL },
 
-	/* Error allocating icount structure */
+	/* Error allocating icount link information */
 	{ PR_1_ALLOCATE_ICOUNT,
 	  N_("@A icount link information: %m\n"),
 	  PROMPT_NONE, PR_FATAL },
 
-	/* Error allocating dbcount */
+	/* Error allocating directory block array */
 	{ PR_1_ALLOCATE_DBCOUNT,
 	  N_("@A @d @b array: %m\n"),
 	  PROMPT_NONE, PR_FATAL },
