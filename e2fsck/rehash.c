@@ -89,7 +89,7 @@ static int fill_dir_block(ext2_filsys fs,
 	struct ext2_dir_entry 	*dirent;
 	char			*dir;
 	unsigned int		offset, dir_offset;
-	int			hash_alg;
+	int			rec_len, hash_alg;
 	
 	if (blockcnt < 0)
 		return 0;
@@ -117,14 +117,16 @@ static int fill_dir_block(ext2_filsys fs,
 	dir_offset = 0;
 	while (dir_offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (dir + dir_offset);
-		if (((dir_offset + dirent->rec_len) > fs->blocksize) ||
-		    (dirent->rec_len < 8) ||
-		    ((dirent->rec_len % 4) != 0) ||
-		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
+		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
+			dirent->rec_len : 65536;
+		if (((dir_offset + rec_len) > fs->blocksize) ||
+		    (rec_len < 8) ||
+		    ((rec_len % 4) != 0) ||
+		    (((dirent->name_len & 0xFF)+8) > rec_len)) {
 			fd->err = EXT2_ET_DIR_CORRUPTED;
 			return BLOCK_ABORT;
 		}
-		dir_offset += dirent->rec_len;
+		dir_offset += rec_len;
 		if (dirent->inode == 0)
 			continue;
 		if (!fd->compress && ((dirent->name_len&0xFF) == 1) &&

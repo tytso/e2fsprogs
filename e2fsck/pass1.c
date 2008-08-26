@@ -404,7 +404,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	const char		*old_op;
 	errcode_t		retval;
 	blk_t			blk;
-	int			i, not_device = 0;
+	int			i, rec_len, not_device = 0;
 
 	if (LINUX_S_ISDIR(inode->i_mode) || LINUX_S_ISREG(inode->i_mode) ||
 	    LINUX_S_ISLNK(inode->i_mode) || inode->i_block[0] == 0)
@@ -434,20 +434,24 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 		return;
 
 	dirent = (struct ext2_dir_entry *) buf;
+	rec_len = (dirent->rec_len || ctx->fs->blocksize < 65536) ?
+		dirent->rec_len : 65536;
 	if (((dirent->name_len & 0xFF) != 1) ||
 	    (dirent->name[0] != '.') ||
 	    (dirent->inode != pctx->ino) ||
-	    (dirent->rec_len < 12) ||
-	    (dirent->rec_len % 4) ||
-	    (dirent->rec_len >= ctx->fs->blocksize - 12))
+	    (rec_len < 12) ||
+	    (rec_len % 4) ||
+	    (rec_len >= ctx->fs->blocksize - 12))
 		return;
 
-	dirent = (struct ext2_dir_entry *) (buf + dirent->rec_len);
+	dirent = (struct ext2_dir_entry *) (buf + rec_len);
+	rec_len = (dirent->rec_len || ctx->fs->blocksize < 65536) ?
+		dirent->rec_len : 65536;
 	if (((dirent->name_len & 0xFF) != 2) ||
 	    (dirent->name[0] != '.') ||
 	    (dirent->name[1] != '.') ||
-	    (dirent->rec_len < 12) ||
-	    (dirent->rec_len % 4))
+	    (rec_len < 12) ||
+	    (rec_len % 4))
 		return;
 
 	if (fix_problem(ctx, PR_1_TREAT_AS_DIRECTORY, pctx)) {

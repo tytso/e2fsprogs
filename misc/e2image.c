@@ -350,6 +350,8 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 #ifdef WORDS_BIGENDIAN
 		rec_len = ext2fs_swab16(rec_len);
 #endif
+		rec_len = (rec_len || fs->blocksize < 65536) ?
+			rec_len : 65536;
 #if 0
 		printf("rec_len = %d, name_len = %d\n", rec_len, dirent->name_len);
 #endif

@@ -1136,7 +1136,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Directory entry for '.' is big.  Split? */
 	{ PR_2_SPLIT_DOT,
-	  N_("@d @e for '.' is big.  "),
+	  N_("@d @e for '.' in %p (%i) is big.\n"),
 	  PROMPT_SPLIT, PR_NO_OK },
 
 	/* Illegal FIFO inode */

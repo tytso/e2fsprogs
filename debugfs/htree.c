@@ -39,7 +39,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	char		tmp[EXT2_NAME_LEN + 16];
 	blk_t		pblk;
 	ext2_dirhash_t 	hash, minor_hash;
-	int		hash_alg;
+	int		rec_len, hash_alg;
 	
 	errcode = ext2fs_bmap(fs, ino, inode, buf, 0, blk, &pblk);
 	if (errcode) {
@@ -62,10 +62,12 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 
 	while (offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (buf + offset);
-		if (((offset + dirent->rec_len) > fs->blocksize) ||
-		    (dirent->rec_len < 8) ||
-		    ((dirent->rec_len % 4) != 0) ||
-		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
+		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
+			dirent->rec_len : 65536;
+		if (((offset + rec_len) > fs->blocksize) ||
+		    (rec_len < 8) ||
+		    ((rec_len % 4) != 0) ||
+		    (((dirent->name_len & 0xFF)+8) > rec_len)) {
 			fprintf(pager, "Corrupted directory block (%u)!\n", blk);
 			break;
 		}
@@ -80,7 +82,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 			com_err("htree_dump_leaf_node", errcode,
 				"while calculating hash");
 		sprintf(tmp, "%u 0x%08x-%08x (%d) %s   ", dirent->inode,
-			hash, minor_hash, dirent->rec_len, name);
+			hash, minor_hash, rec_len, name);
 		thislen = strlen(tmp);
 		if (col + thislen > 80) {
 			fprintf(pager, "\n");
@@ -88,7 +90,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		}
 		fprintf(pager, "%s", tmp);
 		col += thislen;
-		offset += dirent->rec_len;
+		offset += rec_len;
 	}
 	fprintf(pager, "\n");
 }
@@ -373,6 +375,7 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 	struct ext2_dir_entry *dirent;
 	errcode_t	       	errcode;
 	unsigned int		offset = 0;
+	int			rec_len;
 
 	if (blockcnt < 0)
 		return 0;
@@ -388,7 +391,8 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 
 	while (offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (p->buf + offset);
-
+		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
+			dirent->rec_len : 65536;
 		if (dirent->inode &&
 		    p->len == (dirent->name_len & 0xFF) && 
 		    strncmp(p->search_name, dirent->name,
@@ -399,7 +403,7 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 			printf("offset %u\n", offset);
 			return BLOCK_ABORT;
 		}
-		offset += dirent->rec_len;
+		offset += rec_len;
 	}
 	return 0;
 }

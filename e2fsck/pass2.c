@@ -355,7 +355,7 @@ static int check_dot(e2fsck_t ctx,
 	struct ext2_dir_entry *nextdir;
 	int	status = 0;
 	int	created = 0;
-	int	new_len;
+	int	rec_len, new_len;
 	int	problem = 0;
 	
 	if (!dirent->inode)
@@ -365,11 +365,13 @@ static int check_dot(e2fsck_t ctx,
 		problem = PR_2_1ST_NOT_DOT;
 	else if (dirent->name[1] != '\0')
 		problem = PR_2_DOT_NULL_TERM;
-	
+
+	rec_len = (dirent->rec_len || ctx->fs->blocksize < 65536) ?
+		dirent->rec_len : 65536;
 	if (problem) {
 		if (fix_problem(ctx, problem, pctx)) {
-			if (dirent->rec_len < 12)
-				dirent->rec_len = 12;
+			if (rec_len < 12)
+				rec_len = dirent->rec_len = 12;
 			dirent->inode = ino;
 			dirent->name_len = 1;
 			dirent->name[0] = '.';
@@ -384,8 +386,8 @@ static int check_dot(e2fsck_t ctx,
 			status = 1;
 		}
 	}
-	if (dirent->rec_len > 12) {
-		new_len = dirent->rec_len - 12;
+	if (rec_len > 12) {
+		new_len = rec_len - 12;
 		if (new_len > 12) {
 			if (created ||
 			    fix_problem(ctx, PR_2_SPLIT_DOT, pctx)) {
@@ -411,7 +413,7 @@ static int check_dotdot(e2fsck_t ctx,
 			struct ext2_dir_entry *dirent,
 			ext2_ino_t ino, struct problem_context *pctx)
 {
-	int			problem = 0;
+	int	rec_len, problem = 0;
 	
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT_DOT;
@@ -422,9 +424,11 @@ static int check_dotdot(e2fsck_t ctx,
 	else if (dirent->name[2] != '\0')
 		problem = PR_2_DOT_DOT_NULL_TERM;
 
+	rec_len = (dirent->rec_len || ctx->fs->blocksize < 65536) ?
+		dirent->rec_len : 65536;
 	if (problem) {
 		if (fix_problem(ctx, problem, pctx)) {
-			if (dirent->rec_len < 12)
+			if (rec_len < 12)
 				dirent->rec_len = 12;
 			/*
 			 * Note: we don't have the parent inode just
@@ -644,14 +648,18 @@ static void salvage_directory(ext2_filsys fs,
 			      unsigned int *offset)
 {
 	char	*cp = (char *) dirent;
-	int left = fs->blocksize - *offset - dirent->rec_len;
+	int	left, rec_len;
 	unsigned int name_len = dirent->name_len & 0xFF;
+
+	rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
+		dirent->rec_len : 65536;
+	left = fs->blocksize - *offset - rec_len;
 
 	/*
 	 * Special case of directory entry of size 8: copy what's left
 	 * of the directory block up to cover up the invalid hole.
 	 */
-	if ((left >= 12) && (dirent->rec_len == 8)) {
+	if ((left >= 12) && (rec_len == 8)) {
 		memmove(cp, cp+8, left);
 		memset(cp + left, 0, 8);
 		return;
@@ -662,7 +670,7 @@ static void salvage_directory(ext2_filsys fs,
 	 * record length.
 	 */
 	if ((left < 0) &&
-	    (name_len + 8 <= dirent->rec_len + (unsigned) left) &&
+	    (name_len + 8 <= rec_len + (unsigned) left) &&
 	    dirent->inode <= fs->super->s_inodes_count &&
 	    strnlen(dirent->name, name_len) == name_len) {
 		dirent->rec_len += left;
@@ -673,10 +681,10 @@ static void salvage_directory(ext2_filsys fs,
 	 * of four, and not too big, such that it is valid, let the
 	 * previous directory entry absorb the invalid one.
 	 */
-	if (prev && dirent->rec_len && (dirent->rec_len % 4) == 0 &&
-	    (*offset + dirent->rec_len <= fs->blocksize)) {
-		prev->rec_len += dirent->rec_len;
-		*offset += dirent->rec_len;
+	if (prev && rec_len && (rec_len % 4) == 0 &&
+	    (*offset + rec_len <= fs->blocksize)) {
+		prev->rec_len += rec_len;
+		*offset += rec_len;
 		return;
 	}
 	/*
@@ -709,6 +717,7 @@ static int check_dir_block(ext2_filsys fs,
 	const char *		old_op;
 	int			dir_modified = 0;
 	int			dot_state;
+	int			rec_len;
 	blk_t			block_nr = db->blk;
 	ext2_ino_t 		ino = db->ino;
 	ext2_ino_t 		subdir_parent;
@@ -800,6 +809,8 @@ static int check_dir_block(ext2_filsys fs,
 		dx_db->max_hash = 0;
 			
 		dirent = (struct ext2_dir_entry *) buf;
+		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
+			dirent->rec_len : 65536;
 		limit = (struct ext2_dx_countlimit *) (buf+8);
 		if (db->blockcnt == 0) {
 			root = (struct ext2_dx_root_info *) (buf + 24);
@@ -819,7 +830,7 @@ static int check_dir_block(ext2_filsys fs,
 				dx_dir->hashversion += 3;
 			dx_dir->depth = root->indirect_levels + 1;
 		} else if ((dirent->inode == 0) &&
-			   (dirent->rec_len == fs->blocksize) &&
+			   (rec_len == fs->blocksize) &&
 			   (dirent->name_len == 0) &&
 			   (ext2fs_le16_to_cpu(limit->limit) == 
 			    ((fs->blocksize-8) / 
@@ -837,12 +848,14 @@ out_htree:
 
 		problem = 0;
 		dirent = (struct ext2_dir_entry *) (buf + offset);
+		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
+			dirent->rec_len : 65536;
 		cd->pctx.dirent = dirent;
 		cd->pctx.num = offset;
-		if (((offset + dirent->rec_len) > fs->blocksize) ||
-		    (dirent->rec_len < 12) ||
-		    ((dirent->rec_len % 4) != 0) ||
-		    (((dirent->name_len & 0xFF)+8) > dirent->rec_len)) {
+		if (((offset + rec_len) > fs->blocksize) ||
+		    (rec_len < 12) ||
+		    ((rec_len % 4) != 0) ||
+		    (((dirent->name_len & 0xFF)+8) > rec_len)) {
 			if (fix_problem(ctx, PR_2_DIR_CORRUPTED, &cd->pctx)) {
 				salvage_directory(fs, dirent, prev, &offset);
 				dir_modified++;
@@ -1092,7 +1105,10 @@ out_htree:
 		ctx->fs_total_count++;
 	next:
 		prev = dirent;
-		offset += dirent->rec_len;
+		if (dir_modified)
+			rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
+				dirent->rec_len : 65536;
+		offset += rec_len;
 		dot_state++;
 	} while (offset < fs->blocksize);
 #if 0
@@ -1112,7 +1128,7 @@ out_htree:
 	}
 #endif /* ENABLE_HTREE */
 	if (offset != fs->blocksize) {
-		cd->pctx.num = dirent->rec_len - fs->blocksize + offset;
+		cd->pctx.num = rec_len - fs->blocksize + offset;
 		if (fix_problem(ctx, PR_2_FINAL_RECLEN, &cd->pctx)) {
 			dirent->rec_len = cd->pctx.num;
 			dir_modified++;
