@@ -1,4 +1,5 @@
 libblkid.so.1 libblkid1 #MINVER#
+ blkid__scan_dir@Base 1.41.1-1
  blkid_debug_mask@Base 1.37-2sarge1
  blkid_dev_devname@Base 1.37-2sarge1
  blkid_dev_has_tag@Base 1.38-1
