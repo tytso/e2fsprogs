@@ -466,56 +466,6 @@ AC_MSG_RESULT([Building e2initrd helper by default])
 )
 AC_SUBST(E2INITRD_PROG)
 AC_SUBST(E2INITRD_MAN)
-dnl handle --enable-blkid-devmapper
-dnl
-STATIC_BLKID_DEVMAPPER_LIBS=''
-AC_ARG_ENABLE([blkid-devmapper],
-[  --enable-blkid-devmapper  build with device-mapper support],
-[if test "$enableval" = "no"
-then
-	AC_MSG_RESULT([Disabling device-mapper support])
-	DEVMAPPER_REQ=''
-	DEVMAPPER_LIBS=''
-	STATIC_DEVMAPPER_LIBS=''
-else
-	AC_DEFINE(HAVE_DEVMAPPER)
-	AC_MSG_RESULT([Enabling device-mapper support])
-
-	PKG_PROG_PKG_CONFIG()
-
-	if test -z "$PKG_CONFIG"; then
-		AC_MSG_ERROR([pkg-config not installed; please install it.])
-	fi
- 
-	AC_CHECK_LIB(devmapper, dm_tree_create,
-		[DEVMAPPER_LIBS=`$PKG_CONFIG --libs devmapper`; 
-		 STATIC_DEVMAPPER_LIBS=`$PKG_CONFIG --static --libs devmapper`;
-		 DEVMAPPER_REQ="devmapper";
-		 DEVMAPPER_PC_LIBS="-ldevmapper"],
-		[AC_MSG_ERROR([device-mapper library not found])],
-		[$DEVMAPPER_LIBS])
-	# work around stupid devmapper.pc bug in Debian
-	case "$STATIC_DEVMAPPER_LIBS" in
-	*pthread*)
-	    ;;
-	*)
-	    AC_MSG_WARN([Working around Debian bug 390243...])
-	    STATIC_DEVMAPPER_LIBS="-pthread $STATIC_DEVMAPPER_LIBS"
-	    ;;
-	esac
-	if test "$E2_PKG_CONFIG_STATIC" = "--static"; then
-	    DEVMAPPER_LIBS="$STATIC_DEVMAPPER_LIBS"
-	    STATIC_BLKID_DEVMAPPER_LIBS="$STATIC_DEVMAPPER_LIBS"
-	fi
-fi]
-,
-AC_MSG_RESULT([Disabling device-mapper support by default])
-)
-AC_SUBST(DEVMAPPER_REQ)
-AC_SUBST(DEVMAPPER_PC_LIBS)
-AC_SUBST(DEVMAPPER_LIBS)
-AC_SUBST(STATIC_DEVMAPPER_LIBS)
-AC_SUBST(STATIC_BLKID_DEVMAPPER_LIBS)
 dnl
 dnl
 dnl

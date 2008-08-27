@@ -6,7 +6,6 @@ includedir=@includedir@
 Name: blkid
 Description: Block device id library
 Version: @E2FSPROGS_VERSION@
-Requires: uuid @DEVMAPPER_REQ@
+Requires: uuid
 Cflags: -I${includedir} 
 Libs: -L${libdir} -lblkid
-Libs.private: @DEVMAPPER_PC_LIBS@

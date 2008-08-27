@@ -106,7 +106,6 @@ CCOPTS += -D__NO_STRING_INLINES
 endif
 
 ifeq (${DEB_HOST_ARCH_OS},linux)
-DEVMAPPER = --enable-blkid-devmapper
 BUILD_STATIC = build-static
 E2FSCK_STATIC = ${staticbuilddir}/e2fsck/e2fsck.static
 else
@@ -118,8 +117,7 @@ BF_CCOPTS = -Os -fomit-frame-pointer
 COMMON_CONF_FLAGS =  \
                 --enable-elf-shlibs --infodir=/usr/share/info --enable-fsck
 
-STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression \
-		${DEVMAPPER}
+STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression
 
 BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
 	--disable-nls --disable-imager \
