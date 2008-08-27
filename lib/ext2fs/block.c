@@ -361,7 +361,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 	if (inode.i_flags & EXT4_EXTENTS_FL) {
 		ext2_extent_handle_t	handle;
 		struct ext2fs_extent	extent;
-		e2_blkcnt_t		blockcnt;
+		e2_blkcnt_t		blockcnt = 0;
 		blk_t			blk, new_blk;
 		int			op = EXT2_EXTENT_ROOT;
 		unsigned int		j;
@@ -373,9 +373,29 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 		while (1) {
 			ctx.errcode = ext2fs_extent_get(handle, op, &extent);
 			if (ctx.errcode) {
-				if (ctx.errcode == EXT2_ET_EXTENT_NO_NEXT)
-					ctx.errcode = 0;
-				break;
+				if (ctx.errcode != EXT2_ET_EXTENT_NO_NEXT)
+					break;
+				ctx.errcode = 0;
+				if (!(flags & BLOCK_FLAG_APPEND))
+					break;
+				blk = 0;
+				r = (*ctx.func)(fs, &blk, blockcnt,
+						0, 0, priv_data);
+				ret |= r;
+				check_for_ro_violation_goto(&ctx, ret,
+							    extent_errout);
+				if (r & BLOCK_CHANGED) {
+					ctx.errcode = 
+						ext2fs_extent_set_bmap(handle,
+						       (blk64_t) blockcnt++,
+						       (blk64_t) blk, 0);
+					if (ctx.errcode || (ret & BLOCK_ABORT))
+						goto errout;
+					continue;
+				} else {
+					ext2fs_extent_free(handle);
+					goto errout;
+				}
 			}
 
 			op = EXT2_EXTENT_NEXT;
