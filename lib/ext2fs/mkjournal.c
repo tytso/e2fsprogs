@@ -225,7 +225,7 @@ static int mkjournal_proc(ext2_filsys	fs,
 		es->err = retval;
 		return BLOCK_ABORT;
 	}
-	if (blockcnt > 0)
+	if (blockcnt >= 0)
 		es->num_blocks--;
 
 	es->newblocks++;
