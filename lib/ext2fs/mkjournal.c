@@ -198,6 +198,7 @@ errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 struct mkjournal_struct {
 	int		num_blocks;
 	int		newblocks;
+	blk_t		goal;
 	blk_t		blk_to_zero;
 	int		zero_count;
 	char		*buf;
@@ -213,14 +214,13 @@ static int mkjournal_proc(ext2_filsys	fs,
 {
 	struct mkjournal_struct *es = (struct mkjournal_struct *) priv_data;
 	blk_t	new_blk;
-	static blk_t	last_blk = 0;
 	errcode_t	retval;
 	
 	if (*blocknr) {
-		last_blk = *blocknr;
+		es->goal = *blocknr;
 		return 0;
 	}
-	retval = ext2fs_new_block(fs, last_blk, 0, &new_blk);
+	retval = ext2fs_new_block(fs, es->goal, 0, &new_blk);
 	if (retval) {
 		es->err = retval;
 		return BLOCK_ABORT;
@@ -258,8 +258,7 @@ static int mkjournal_proc(ext2_filsys	fs,
 		es->err = retval;
 		return BLOCK_ABORT;
 	}
-	*blocknr = new_blk;
-	last_blk = new_blk;
+	*blocknr = es->goal = new_blk;
 	ext2fs_block_alloc_stats(fs, new_blk, +1);
 
 	if (es->num_blocks == 0)
@@ -276,6 +275,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 				     blk_t size, int flags)
 {
 	char			*buf;
+	dgrp_t			group, start, end, i;
 	errcode_t		retval;
 	struct ext2_inode	inode;
 	struct mkjournal_struct	es;
@@ -297,6 +297,24 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	es.buf = buf;
 	es.err = 0;
 	es.zero_count = 0;
+
+	/*
+	 * Set the initial goal block to be roughly at the middle of
+	 * the filesystem.  Pick a group that has the largest number
+	 * of free blocks.
+	 */
+	group = ext2fs_group_of_blk(fs, (fs->super->s_blocks_count - 
+					 fs->super->s_first_data_block) / 2);
+	start = (group > 0) ? group-1 : group;
+	end = ((group+1) < fs->group_desc_count) ? group+1 : group;
+	group = start;
+	for (i=start+1; i <= end; i++)
+		if (fs->group_desc[i].bg_free_blocks_count >
+		    fs->group_desc[group].bg_free_blocks_count)
+			group = i;
+
+	es.goal = (fs->super->s_blocks_per_group * group) +
+		fs->super->s_first_data_block;
 
 	retval = ext2fs_block_iterate2(fs, journal_ino, BLOCK_FLAG_APPEND,
 				       0, mkjournal_proc, &es);
