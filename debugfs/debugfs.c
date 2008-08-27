@@ -1387,6 +1387,9 @@ void do_write(int argc, char *argv[])
 		current_fs->now ? current_fs->now : time(0);
 	inode.i_links_count = 1;
 	inode.i_size = statbuf.st_size;
+	if (current_fs->super->s_feature_incompat & 
+	    EXT3_FEATURE_INCOMPAT_EXTENTS)
+		inode.i_flags |= EXT4_EXTENTS_FL;
 	if (debugfs_write_new_inode(newfile, &inode, argv[0])) {
 		close(fd);
 		return;
