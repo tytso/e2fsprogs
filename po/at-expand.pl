@@ -96,6 +96,7 @@ sub do_expand {
     $msg =~ s/\@S/superblock/g;
     $msg =~ s/\@u/unattached/g;
     $msg =~ s/\@v/device/g;
+    $msg =~ s/\@x/extent/g;
     $msg =~ s/\@z/zero-length/g;
     $msg =~ s/\@\@/@/g;
 }
