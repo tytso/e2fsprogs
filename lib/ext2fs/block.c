@@ -390,12 +390,10 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 						       (blk64_t) blockcnt++,
 						       (blk64_t) blk, 0);
 					if (ctx.errcode || (ret & BLOCK_ABORT))
-						goto errout;
+						break;
 					continue;
-				} else {
-					ext2fs_extent_free(handle);
-					goto errout;
 				}
+				break;
 			}
 
 			op = EXT2_EXTENT_NEXT;
@@ -416,7 +414,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 						ctx.errcode =
 				ext2fs_extent_replace(handle, 0, &extent);
 						if (ctx.errcode)
-							goto errout;
+							break;
 					}
 				}
 				continue;
@@ -436,12 +434,10 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 						       (blk64_t) blockcnt,
 						       (blk64_t) new_blk, 0);
 					if (ctx.errcode)
-						goto errout;
+						break;
 				}
-				if (ret & BLOCK_ABORT) {
-					ext2fs_extent_free(handle);
-					goto errout;
-				}
+				if (ret & BLOCK_ABORT)
+					break;
 			}
 		}
 
