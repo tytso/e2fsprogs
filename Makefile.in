@@ -27,6 +27,7 @@ all:: subs
 
 subs:
 	@for i in $(SUBS) ; do if test -d `dirname $$i` ; then $(MAKE) $$i ; fi ; done
+	@(test -d lib/ext2fs && cd lib/ext2fs && $(MAKE) ext2_err.h)
 
 progs: subs all-progs-recursive
 libs: subs all-libs-recursive
