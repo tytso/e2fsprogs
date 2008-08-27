@@ -298,6 +298,12 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	es.err = 0;
 	es.zero_count = 0;
 
+	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS) {
+		inode.i_flags |= EXT4_EXTENTS_FL;
+		if ((retval = ext2fs_write_inode(fs, journal_ino, &inode)))
+			return retval;
+	}
+
 	/*
 	 * Set the initial goal block to be roughly at the middle of
 	 * the filesystem.  Pick a group that has the largest number
