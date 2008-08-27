@@ -172,7 +172,7 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 		if (retval) {
 			/* If the extent is not found, return phys_blk = 0 */
 			if (retval == EXT2_ET_EXTENT_NOT_FOUND)
-				retval = 0;
+				goto got_block;
 			goto done;
 		}
 		retval = ext2fs_extent_get(handle, EXT2_EXTENT_CURRENT, &extent);
@@ -184,6 +184,7 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 			if (ret_flags && extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT)
 				*ret_flags |= BMAP_RET_UNINIT;
 		}
+	got_block:
 		if ((*phys_blk == 0) && (bmap_flags & BMAP_ALLOC)) {
 			retval = ext2fs_alloc_block(fs, b, block_buf, &b);
 			if (retval)
@@ -192,6 +193,10 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 							(blk64_t) b, 0);
 			if (retval)
 				goto done;
+			/* Update inode after setting extent */
+			retval = ext2fs_read_inode(fs, ino, inode);
+			if (retval)
+				return retval;
 			blocks_alloc++;
 			*phys_blk = b;
 		}

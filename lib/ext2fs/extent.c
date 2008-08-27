@@ -600,8 +600,11 @@ static errcode_t extent_goto(ext2_extent_handle_t handle,
 	errcode_t		retval;
 
 	retval = ext2fs_extent_get(handle, EXT2_EXTENT_ROOT, &extent);
-	if (retval)
+	if (retval) {
+		if (retval == EXT2_ET_EXTENT_NO_NEXT)
+			retval = EXT2_ET_EXTENT_NOT_FOUND;
 		return retval;
+	}
 
 	if (leaf_level > handle->max_depth) {
 #ifdef DEBUG
