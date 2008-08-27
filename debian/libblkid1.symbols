@@ -7,7 +7,7 @@ libblkid.so.1 libblkid1 #MINVER#
  blkid_dev_iterate_end@Base 1.37-2sarge1
  blkid_dev_next@Base 1.37-2sarge1
  blkid_dev_set_search@Base 1.38-1
- blkid_devdirs@Base 1.37-2sarge1
+#MISSING: 1.41.1-1# blkid_devdirs@Base 1.37-2sarge1
  blkid_devno_to_devname@Base 1.37-2sarge1
  blkid_find_dev_with_tag@Base 1.37-2sarge1
  blkid_find_tag_dev@Base 1.37-2sarge1
