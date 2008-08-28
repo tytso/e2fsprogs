@@ -275,7 +275,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 				     blk_t size, int flags)
 {
 	char			*buf;
-	dgrp_t			group, start, end, i;
+	dgrp_t			group, start, end, i, log_flex;
 	errcode_t		retval;
 	struct ext2_inode	inode;
 	struct mkjournal_struct	es;
@@ -311,7 +311,17 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	 */
 	group = ext2fs_group_of_blk(fs, (fs->super->s_blocks_count -
 					 fs->super->s_first_data_block) / 2);
-	start = (group > 0) ? group-1 : group;
+	log_flex = 1 << fs->super->s_log_groups_per_flex;
+	if (fs->super->s_log_groups_per_flex && (group > log_flex)) {
+		group = group & ~(log_flex - 1);
+		while ((group < fs->group_desc_count) &&
+		       fs->group_desc[group].bg_free_blocks_count == 0)
+			group++;
+		if (group == fs->group_desc_count)
+			group = 0;
+		start = group;
+	} else
+		start = (group > 0) ? group-1 : group;
 	end = ((group+1) < fs->group_desc_count) ? group+1 : group;
 	group = start;
 	for (i=start+1; i <= end; i++)
