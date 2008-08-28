@@ -93,6 +93,17 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	if (retval)
 		return retval;
 
+	/* The current method of adding one block group at a time to a
+	 * mounted filesystem means it is impossible to accomodate the
+	 * flex_bg allocation method of placing the metadata together
+	 * in a single block group.  For now we "fix" this issue by
+	 * using the traditional layout for new block groups, where
+	 * each block group is self-contained and contains its own
+	 * bitmap blocks and inode tables.  This means we don't get
+	 * the layout advantages of flex_bg in the new block groups,
+	 * but at least it allows on-line resizing to function.
+	 */
+	new_fs->super->s_feature_incompat &= ~EXT4_FEATURE_INCOMPAT_FLEX_BG;
 	retval = adjust_fs_info(new_fs, fs, *new_size);
 	if (retval)
 		return retval;
@@ -154,7 +165,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		    ioctl(fd, EXT2_IOC_GROUP_ADD, &input) == 0)
 			continue;
 		else
-			use_old_ioctl = 1;
+			use_old_ioctl = 0;
 
 		input64.group = input.group;
 		input64.block_bitmap = input.block_bitmap;
