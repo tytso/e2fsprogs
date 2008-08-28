@@ -47,7 +47,7 @@ static __ptr_t (*tr_old_malloc_hook) __P ((size_t size));
 static __ptr_t (*tr_old_realloc_hook) __P ((__ptr_t ptr, size_t size));
 
 /*
- * Added by TYT, 10/10/93 --- so that we can print 
+ * Added by TYT, 10/10/93 --- so that we can print
  */
 FILE *malloc_get_mallstream()
 {

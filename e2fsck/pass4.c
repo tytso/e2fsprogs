@@ -20,7 +20,7 @@
 /*
  * This routine is called when an inode is not connected to the
  * directory tree.
- * 
+ *
  * This subroutine returns 1 then the caller shouldn't bother with the
  * rest of the pass 4 tests.
  */
@@ -42,7 +42,7 @@ static int disconnect_inode(e2fsck_t ctx, ext2_ino_t i,
 	clear_problem_context(&pctx);
 	pctx.ino = i;
 	pctx.inode = inode;
-	
+
 	if (EXT2_INODE_SIZE(fs->super) -EXT2_GOOD_OLD_INODE_SIZE -extra_size >0)
 		eamagic = *(__u32 *)(((char *)inode) +EXT2_GOOD_OLD_INODE_SIZE +
 				     extra_size);
@@ -55,7 +55,7 @@ static int disconnect_inode(e2fsck_t ctx, ext2_ino_t i,
 	if (!inode->i_blocks && eamagic != EXT2_EXT_ATTR_MAGIC &&
 	    (LINUX_S_ISREG(inode->i_mode) || LINUX_S_ISDIR(inode->i_mode))) {
 		if (fix_problem(ctx, PR_4_ZERO_LEN_INODE, &pctx)) {
-			e2fsck_clear_inode(ctx, i, inode, 0, 
+			e2fsck_clear_inode(ctx, i, inode, 0,
 					   "disconnect_inode");
 			/*
 			 * Fix up the bitmaps...
@@ -66,7 +66,7 @@ static int disconnect_inode(e2fsck_t ctx, ext2_ino_t i,
 			return 0;
 		}
 	}
-	
+
 	/*
 	 * Prompt to reconnect.
 	 */
@@ -98,7 +98,7 @@ void e2fsck_pass4(e2fsck_t ctx)
 	__u16	link_count, link_counted;
 	char	*buf = 0;
 	int	group, maxgroup;
-	
+
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack, ctx->fs->io);
 #endif

@@ -1,6 +1,6 @@
 /*
  * icheck.c --- given a list of blocks, generate a list of inodes
- * 
+ *
  * Copyright (C) 1994 Theodore Ts'o.  This file may be redistributed
  * under the terms of the GNU Public License.
  */
@@ -48,7 +48,7 @@ static int icheck_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 	}
 	if (!bw->blocks_left)
 		return BLOCK_ABORT;
-	
+
 	return 0;
 }
 
@@ -62,7 +62,7 @@ void do_icheck(int argc, char **argv)
 	struct ext2_inode	inode;
 	errcode_t		retval;
 	char			*block_buf;
-	
+
 	if (argc < 2) {
 		com_err(argv[0], 0, "Usage: icheck <block number> ...");
 		return;
@@ -104,7 +104,7 @@ void do_icheck(int argc, char **argv)
 		com_err("icheck", retval, "while starting inode scan");
 		goto error_out;
 	}
-	
+
 	while (ino) {
 		if (!inode.i_links_count)
 			goto next;

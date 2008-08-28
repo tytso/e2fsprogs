@@ -1,6 +1,6 @@
 /*
  * region.c --- code which manages allocations within a region.
- * 
+ *
  * Copyright (C) 2001 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -154,7 +154,7 @@ void region_print(region_t region, FILE *f)
 {
 	struct region_el	*r;
 	int	i = 0;
-	
+
 	fprintf(f, "Printing region (min=%d. max=%d)\n\t", region->min,
 		region->max);
 	for (r = region->allocated; r; r = r->next) {
@@ -171,7 +171,7 @@ int main(int argc, char **argv)
 	int		pc = 0, ret;
 	region_addr_t	start, end, len;
 
-	
+
 	while (1) {
 		switch (bcode_program[pc++]) {
 		case BCODE_END:

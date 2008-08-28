@@ -1,11 +1,11 @@
 /*
  * logdump.c --- dump the contents of the journal out to a file
- * 
+ *
  * Authro: Stephen C. Tweedie, 2001  <sct@redhat.com>
  * Copyright (C) 2001 Red Hat, Inc.
- * Based on portions  Copyright (C) 1994 Theodore Ts'o.  
+ * Based on portions  Copyright (C) 1994 Theodore Ts'o.
  *
- * This file may be redistributed under the terms of the GNU Public 
+ * This file may be redistributed under the terms of the GNU Public
  * License.
  */
 
@@ -24,7 +24,7 @@
 #include <utime.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
-#else 
+#else
 extern int optind;
 extern char *optarg;
 #endif
@@ -43,7 +43,7 @@ blk_t		block_to_dump, bitmap_to_dump, inode_block_to_dump;
 unsigned int	group_to_dump, inode_offset_to_dump;
 ext2_ino_t	inode_to_dump;
 
-struct journal_source 
+struct journal_source
 {
 	enum journal_location where;
 	int fd;
@@ -60,7 +60,7 @@ static void dump_revoke_block(FILE *, char *, journal_superblock_t *,
 				  unsigned int, int, tid_t);
 
 static void dump_metadata_block(FILE *, struct journal_source *,
-				journal_superblock_t*, 
+				journal_superblock_t*,
 				unsigned int, unsigned int, int, tid_t);
 
 static void do_hexdump (FILE *, char *, int);
@@ -76,7 +76,7 @@ void do_logdump(int argc, char **argv)
 	int		retval;
 	char		*out_fn;
 	FILE		*out_file;
-	
+
 	char		*inode_spec = NULL;
 	char		*journal_fn = NULL;
 	int		journal_fd = 0;
@@ -87,7 +87,7 @@ void do_logdump(int argc, char **argv)
 	char		*tmp;
 	struct journal_source journal_source;
 	struct ext2_super_block *es = NULL;
-	
+
 	journal_source.where = 0;
 	journal_source.fd = 0;
 	journal_source.file = 0;
@@ -98,7 +98,7 @@ void do_logdump(int argc, char **argv)
 	bitmap_to_dump = -1;
 	inode_block_to_dump = ANY_BLOCK;
 	inode_to_dump = -1;
-	
+
 	reset_getopt();
 	while ((c = getopt (argc, argv, "ab:ci:f:s")) != EOF) {
 		switch (c) {
@@ -152,11 +152,11 @@ void do_logdump(int argc, char **argv)
 			       / es->s_inodes_per_group);
 		group_offset = ((inode_to_dump - 1)
 				% es->s_inodes_per_group);
-		inodes_per_block = (current_fs->blocksize 
+		inodes_per_block = (current_fs->blocksize
 				    / sizeof(struct ext2_inode));
-		
-		inode_block_to_dump = 
-			current_fs->group_desc[inode_group].bg_inode_table + 
+
+		inode_block_to_dump =
+			current_fs->group_desc[inode_group].bg_inode_table +
 			(group_offset / inodes_per_block);
 		inode_offset_to_dump = ((group_offset % inodes_per_block)
 					* sizeof(struct ext2_inode));
@@ -178,7 +178,7 @@ void do_logdump(int argc, char **argv)
 	}
 
 	if (block_to_dump != ANY_BLOCK && current_fs != NULL) {
-		group_to_dump = ((block_to_dump - 
+		group_to_dump = ((block_to_dump -
 				  es->s_first_data_block)
 				 / es->s_blocks_per_group);
 		bitmap_to_dump = current_fs->group_desc[group_to_dump].bg_block_bitmap;
@@ -195,7 +195,7 @@ void do_logdump(int argc, char **argv)
 				journal_fn);
 			goto errout;
 		}
-		
+
 		journal_source.where = JOURNAL_IS_EXTERNAL;
 		journal_source.fd = journal_fd;
 	} else if ((journal_inum = es->s_journal_inum)) {
@@ -206,17 +206,17 @@ void do_logdump(int argc, char **argv)
 				goto errout;
 			}
 			memset(&journal_inode, 0, sizeof(struct ext2_inode));
-			memcpy(&journal_inode.i_block[0], es->s_jnl_blocks, 
+			memcpy(&journal_inode.i_block[0], es->s_jnl_blocks,
 			       EXT2_N_BLOCKS*4);
 			journal_inode.i_size = es->s_jnl_blocks[16];
 			journal_inode.i_links_count = 1;
 			journal_inode.i_mode = LINUX_S_IFREG | 0600;
 		} else {
-			if (debugfs_read_inode(journal_inum, &journal_inode, 
+			if (debugfs_read_inode(journal_inum, &journal_inode,
 					       argv[0]))
 				goto errout;
 		}
-		
+
 		retval = ext2fs_file_open2(current_fs, journal_inum,
 					   &journal_inode, 0, &journal_file);
 		if (retval) {
@@ -227,7 +227,7 @@ void do_logdump(int argc, char **argv)
 		journal_source.file = journal_file;
 	} else {
 		char uuid[37];
-		
+
 		uuid_unparse(es->s_journal_uuid, uuid);
 		journal_fn = blkid_get_devname(NULL, "UUID", uuid);
 		if (!journal_fn)
@@ -269,12 +269,12 @@ print_usage:
 }
 
 
-static int read_journal_block(const char *cmd, struct journal_source *source, 
+static int read_journal_block(const char *cmd, struct journal_source *source,
 			      off_t offset, char *buf, int size,
 			      unsigned int *got)
 {
 	int retval;
-	
+
 	if (source->where == JOURNAL_IS_EXTERNAL) {
 		if (lseek(source->fd, offset, SEEK_SET) < 0) {
 			retval = errno;
@@ -288,23 +288,23 @@ static int read_journal_block(const char *cmd, struct journal_source *source,
 		} else
 			retval = errno;
 	} else {
-		retval = ext2fs_file_lseek(source->file, offset, 
+		retval = ext2fs_file_lseek(source->file, offset,
 					   EXT2_SEEK_SET, NULL);
 		if (retval) {
 			com_err(cmd, retval, "while seeking in reading journal");
 			return retval;
 		}
-		
+
 		retval = ext2fs_file_read(source->file, buf, size, got);
 	}
-	
+
 	if (retval)
 		com_err(cmd, retval, "while while reading journal");
 	else if (*got != (unsigned int) size) {
 		com_err(cmd, 0, "short read (read %d, expected %d) while while reading journal", *got, size);
 		retval = -1;
 	}
-	
+
 	return retval;
 }
 
@@ -326,7 +326,7 @@ static const char *type_to_name(int btype)
 }
 
 
-static void dump_journal(char *cmdname, FILE *out_file, 
+static void dump_journal(char *cmdname, FILE *out_file,
 			 struct journal_source *source)
 {
 	struct ext2_super_block *sb;
@@ -338,12 +338,12 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	int			retval;
 	__u32			magic, sequence, blocktype;
 	journal_header_t	*header;
-	
+
 	tid_t			transaction;
 	unsigned int		blocknr = 0;
-	
+
 	/* First, check to see if there's an ext2 superblock header */
-	retval = read_journal_block(cmdname, source, 0, 
+	retval = read_journal_block(cmdname, source, 0,
 				    buf, 2048, &got);
 	if (retval)
 		return;
@@ -351,10 +351,10 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	jsb = (journal_superblock_t *) buf;
 	sb = (struct ext2_super_block *) (buf+1024);
 #ifdef WORDS_BIGENDIAN
-	if (sb->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC)) 
+	if (sb->s_magic == ext2fs_swab16(EXT2_SUPER_MAGIC))
 		ext2fs_swap_super(sb);
 #endif
-	
+
 	if ((be32_to_cpu(jsb->s_header.h_magic) != JFS_MAGIC_NUMBER) &&
 	    (sb->s_magic == EXT2_SUPER_MAGIC) &&
 	    (sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)) {
@@ -369,10 +369,10 @@ static void dump_journal(char *cmdname, FILE *out_file,
 				(unsigned long) sb->s_blocks_count);
 		}
 	}
-	
+
 	/* Next, read the journal superblock */
 
-	retval = read_journal_block(cmdname, source, blocknr*blocksize, 
+	retval = read_journal_block(cmdname, source, blocknr*blocksize,
 				    jsb_buffer, 1024, &got);
 	if (retval)
 		return;
@@ -393,29 +393,29 @@ static void dump_journal(char *cmdname, FILE *out_file,
 	if (!blocknr)
 		/* Empty journal, nothing to do. */
 		return;
-		
+
 	while (1) {
-		retval = read_journal_block(cmdname, source, 
+		retval = read_journal_block(cmdname, source,
 					    blocknr*blocksize, buf,
 					    blocksize, &got);
 		if (retval || got != blocksize)
 			return;
-	
+
 		header = (journal_header_t *) buf;
 
 		magic = be32_to_cpu(header->h_magic);
 		sequence = be32_to_cpu(header->h_sequence);
 		blocktype = be32_to_cpu(header->h_blocktype);
-		
+
 		if (magic != JFS_MAGIC_NUMBER) {
 			fprintf (out_file, "No magic number at block %u: "
 				 "end of journal.\n", blocknr);
 			return;
 		}
-		
+
 		if (sequence != transaction) {
 			fprintf (out_file, "Found sequence %u (not %u) at "
-				 "block %u: end of journal.\n", 
+				 "block %u: end of journal.\n",
 				 sequence, transaction, blocknr);
 			return;
 		}
@@ -423,13 +423,13 @@ static void dump_journal(char *cmdname, FILE *out_file,
 		if (dump_descriptors) {
 			fprintf (out_file, "Found expected sequence %u, "
 				 "type %u (%s) at block %u\n",
-				 sequence, blocktype, 
+				 sequence, blocktype,
 				 type_to_name(blocktype), blocknr);
 		}
-		
+
 		switch (blocktype) {
 		case JFS_DESCRIPTOR_BLOCK:
-			dump_descriptor_block(out_file, source, buf, jsb, 
+			dump_descriptor_block(out_file, source, buf, jsb,
 					      &blocknr, blocksize,
 					      transaction);
 			continue;
@@ -439,10 +439,10 @@ static void dump_journal(char *cmdname, FILE *out_file,
 			blocknr++;
 			WRAP(jsb, blocknr);
 			continue;
-			
+
 		case JFS_REVOKE_BLOCK:
 			dump_revoke_block(out_file, buf, jsb,
-					  blocknr, blocksize, 
+					  blocknr, blocksize,
 					  transaction);
 			blocknr++;
 			WRAP(jsb, blocknr);
@@ -457,10 +457,10 @@ static void dump_journal(char *cmdname, FILE *out_file,
 }
 
 
-static void dump_descriptor_block(FILE *out_file, 
-				  struct journal_source *source, 
+static void dump_descriptor_block(FILE *out_file,
+				  struct journal_source *source,
 				  char *buf,
-				  journal_superblock_t *jsb, 
+				  journal_superblock_t *jsb,
 				  unsigned int *blockp, int blocksize,
 				  tid_t transaction)
 {
@@ -470,20 +470,20 @@ static void dump_descriptor_block(FILE *out_file,
 	unsigned int		blocknr;
 	__u32			tag_block;
 	__u32			tag_flags;
-		
+
 
 	offset = sizeof(journal_header_t);
 	blocknr = *blockp;
 
-	if (dump_all) 
+	if (dump_all)
 		fprintf(out_file, "Dumping descriptor block, sequence %u, at "
 			"block %u:\n", transaction, blocknr);
-	
+
 	++blocknr;
 	WRAP(jsb, blocknr);
-	
+
 	do {
-		/* Work out the location of the current tag, and skip to 
+		/* Work out the location of the current tag, and skip to
 		 * the next one... */
 		tagp = &buf[offset];
 		tag = (journal_block_tag_t *) tagp;
@@ -493,40 +493,40 @@ static void dump_descriptor_block(FILE *out_file,
 		   end of this block. */
 		if (offset > blocksize)
 			break;
-	
+
 		tag_block = be32_to_cpu(tag->t_blocknr);
 		tag_flags = be32_to_cpu(tag->t_flags);
 
 		if (!(tag_flags & JFS_FLAG_SAME_UUID))
 			offset += 16;
 
-		dump_metadata_block(out_file, source, jsb, 
-				    blocknr, tag_block, blocksize, 
+		dump_metadata_block(out_file, source, jsb,
+				    blocknr, tag_block, blocksize,
 				    transaction);
 
 		++blocknr;
 		WRAP(jsb, blocknr);
-		
+
 	} while (!(tag_flags & JFS_FLAG_LAST_TAG));
-	
+
 	*blockp = blocknr;
 }
 
 
 static void dump_revoke_block(FILE *out_file, char *buf,
-			      journal_superblock_t *jsb EXT2FS_ATTR((unused)), 
-			      unsigned int blocknr, 
+			      journal_superblock_t *jsb EXT2FS_ATTR((unused)),
+			      unsigned int blocknr,
 			      int blocksize EXT2FS_ATTR((unused)),
 			      tid_t transaction)
 {
 	int			offset, max;
 	journal_revoke_header_t *header;
 	unsigned int		*entry, rblock;
-	
-	if (dump_all) 
+
+	if (dump_all)
 		fprintf(out_file, "Dumping revoke block, sequence %u, at "
 			"block %u:\n", transaction, blocknr);
-	
+
 	header = (journal_revoke_header_t *) buf;
 	offset = sizeof(journal_revoke_header_t);
 	max = be32_to_cpu(header->r_count);
@@ -551,7 +551,7 @@ static void show_extent(FILE *out_file, int start_extent, int end_extent,
 			__u32 first_block)
 {
 	if (start_extent >= 0 && first_block != 0)
-		fprintf(out_file, "(%d+%u): %u ", 
+		fprintf(out_file, "(%d+%u): %u ",
 			start_extent, end_extent-start_extent, first_block);
 }
 
@@ -564,79 +564,79 @@ static void show_indirect(FILE *out_file, const char *name, __u32 where)
 
 static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 				journal_superblock_t *jsb EXT2FS_ATTR((unused)),
-				unsigned int log_blocknr, 
-				unsigned int fs_blocknr, 
+				unsigned int log_blocknr,
+				unsigned int fs_blocknr,
 				int blocksize,
 				tid_t transaction)
 {
 	unsigned int 	got;
 	int		retval;
 	char 		buf[8192];
-	
+
 	if (!(dump_all
 	      || (fs_blocknr == block_to_dump)
 	      || (fs_blocknr == inode_block_to_dump)
 	      || (fs_blocknr == bitmap_to_dump)))
 		return;
-	
+
 	fprintf(out_file, "  FS block %u logged at ", fs_blocknr);
-	if (!dump_all) 
+	if (!dump_all)
 		fprintf(out_file, "sequence %u, ", transaction);
 	fprintf(out_file, "journal block %u\n", log_blocknr);
-	
+
 	/* There are two major special cases to parse:
-	 * 
+	 *
 	 * If this block is a block
 	 * bitmap block, we need to give it special treatment so that we
 	 * can log any allocates and deallocates which affect the
-	 * block_to_dump query block. 
-	 * 
+	 * block_to_dump query block.
+	 *
 	 * If the block is an inode block for the inode being searched
 	 * for, then we need to dump the contents of that inode
-	 * structure symbolically.  
+	 * structure symbolically.
 	 */
-	
+
 	if (!(dump_contents && dump_all)
 	    && fs_blocknr != block_to_dump
-	    && fs_blocknr != bitmap_to_dump 
+	    && fs_blocknr != bitmap_to_dump
 	    && fs_blocknr != inode_block_to_dump)
 		return;
-	
-	retval = read_journal_block("logdump", source, 
+
+	retval = read_journal_block("logdump", source,
 				    blocksize * log_blocknr,
 				    buf, blocksize, &got);
 	if (retval)
 		return;
-	
+
 	if (fs_blocknr == bitmap_to_dump) {
 		struct ext2_super_block *super;
 		int offset;
-		
+
 		super = current_fs->super;
 		offset = ((fs_blocknr - super->s_first_data_block) %
 			  super->s_blocks_per_group);
-	
+
 		fprintf(out_file, "    (block bitmap for block %u: "
-			"block is %s)\n", 
+			"block is %s)\n",
 			block_to_dump,
 			ext2fs_test_bit(offset, buf) ? "SET" : "CLEAR");
 	}
-	
+
 	if (fs_blocknr == inode_block_to_dump) {
 		struct ext2_inode *inode;
 		int first, prev, this, start_extent, i;
-		
+
 		fprintf(out_file, "    (inode block for inode %u):\n",
 			inode_to_dump);
-		
+
 		inode = (struct ext2_inode *) (buf + inode_offset_to_dump);
 		internal_dump_inode(out_file, "    ", inode_to_dump, inode, 0);
-		
+
 		/* Dump out the direct/indirect blocks here:
 		 * internal_dump_inode can only dump them from the main
 		 * on-disk inode, not from the journaled copy of the
 		 * inode. */
-		
+
 		fprintf (out_file, "    Blocks:  ");
 		first = prev = start_extent = -1;
 
@@ -655,13 +655,13 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 		show_indirect(out_file, "IND", inode->i_block[i++]);
 		show_indirect(out_file, "DIND", inode->i_block[i++]);
 		show_indirect(out_file, "TIND", inode->i_block[i++]);
-		
+
 		fprintf(out_file, "\n");
 	}
 
 	if (dump_contents)
 		do_hexdump(out_file, buf, blocksize);
-	
+
 }
 
 static void do_hexdump (FILE *out_file, char *buf, int blocksize)
@@ -670,10 +670,10 @@ static void do_hexdump (FILE *out_file, char *buf, int blocksize)
 	int *intp;
 	char *charp;
 	unsigned char c;
-	
+
 	intp = (int *) buf;
 	charp = (char *) buf;
-	
+
 	for (i=0; i<blocksize; i+=16) {
 		fprintf(out_file, "    %04x:  ", i);
 		for (j=0; j<16; j+=4)

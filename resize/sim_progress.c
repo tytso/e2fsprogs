@@ -5,7 +5,7 @@
  * 	PowerQuest, Inc.
  *
  * Copyright (C) 1999, 2000 by Theosore Ts'o
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -58,7 +58,7 @@ void ext2fs_progress_update(ext2_sim_progmeter prog, __u32 current)
 	num = level - old_level;
 	if (num == 0)
 		return;
-	
+
 	if (num > 0) {
 		for (i=0; i < num; i++)
 			putc('X', prog->f);
@@ -100,7 +100,7 @@ errcode_t ext2fs_progress_init(ext2_sim_progmeter *ret_prog,
 	prog->current = 0;
 	prog->shown = 0;
 	prog->f = stdout;
-	
+
 	*ret_prog = prog;
 
 	return ext2fs_progress_display(prog);

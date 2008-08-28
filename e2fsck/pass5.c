@@ -1,13 +1,13 @@
 /*
  * pass5.c --- check block and inode bitmaps against on-disk bitmaps
- * 
+ *
  * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
  * %End-Header%
- * 
+ *
  */
 
 #include "e2fsck.h"
@@ -24,7 +24,7 @@ void e2fsck_pass5(e2fsck_t ctx)
 	struct resource_track	rtrack;
 #endif
 	struct problem_context	pctx;
-	
+
 #ifdef MTRACE
 	mtrace_print("Pass 5");
 #endif
@@ -32,7 +32,7 @@ void e2fsck_pass5(e2fsck_t ctx)
 #ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack, ctx->fs->io);
 #endif
-	
+
 	clear_problem_context(&pctx);
 
 	if (!(ctx->options & E2F_OPT_PREEN))
@@ -571,7 +571,7 @@ static void check_inode_end(e2fsck_t ctx)
 	if (save_inodes_count == end)
 		return;
 
-	/* protect loop from wrap-around if end is maxed */	
+	/* protect loop from wrap-around if end is maxed */
 	for (i = save_inodes_count + 1; i <= end && i > save_inodes_count; i++) {
 		if (!ext2fs_test_inode_bitmap(fs->inode_map, i)) {
 			if (fix_problem(ctx, PR_5_INODE_BMAP_PADDING, &pctx)) {
@@ -616,7 +616,7 @@ static void check_block_end(e2fsck_t ctx)
 	if (save_blocks_count == end)
 		return;
 
-	/* Protect loop from wrap-around if end is maxed */	
+	/* Protect loop from wrap-around if end is maxed */
 	for (i = save_blocks_count + 1; i <= end && i > save_blocks_count; i++) {
 		if (!ext2fs_test_block_bitmap(fs->block_map, i)) {
 			if (fix_problem(ctx, PR_5_BLOCK_BMAP_PADDING, &pctx)) {

@@ -1,6 +1,6 @@
 /*
  * e2fsck.c - a consistency checker for the new extended file system.
- * 
+ *
  * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -15,7 +15,7 @@
 #include "problem.h"
 
 /*
- * This function allocates an e2fsck context 
+ * This function allocates an e2fsck context
  */
 errcode_t e2fsck_allocate_context(e2fsck_t *ret)
 {
@@ -26,13 +26,13 @@ errcode_t e2fsck_allocate_context(e2fsck_t *ret)
 	retval = ext2fs_get_mem(sizeof(struct e2fsck_struct), &context);
 	if (retval)
 		return retval;
-	
+
 	memset(context, 0, sizeof(struct e2fsck_struct));
 
 	context->process_inode_size = 256;
 	context->ext_attr_ver = 2;
 	context->blocks_per_page = 1;
-	
+
 	time_env = getenv("E2FSCK_TIME");
 	if (time_env)
 		context->now = strtoul(time_env, NULL, 0);
@@ -159,7 +159,7 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 
 	/* Reset the superblock to the user's requested value */
 	ctx->superblock = ctx->use_superblock;
-	
+
 	return 0;
 }
 
@@ -167,7 +167,7 @@ void e2fsck_free_context(e2fsck_t ctx)
 {
 	if (!ctx)
 		return;
-	
+
 	e2fsck_reset_context(ctx);
 	if (ctx->blkid)
 		blkid_put_cache(ctx->blkid);
@@ -177,10 +177,10 @@ void e2fsck_free_context(e2fsck_t ctx)
 
 	if (ctx->filesystem_name)
 		ext2fs_free_mem(&ctx->filesystem_name);
-			
+
 	if (ctx->device_name)
 		ext2fs_free_mem(&ctx->device_name);
-			
+
 	ext2fs_free_mem(&ctx);
 }
 
@@ -208,7 +208,7 @@ int e2fsck_run(e2fsck_t ctx)
 	}
 	ctx->flags |= E2F_FLAG_SETJMP_OK;
 #endif
-		
+
 	for (i=0; (e2fsck_pass = e2fsck_passes[i]); i++) {
 		if (ctx->flags & E2F_FLAG_RUN_RETURN)
 			break;
@@ -217,7 +217,7 @@ int e2fsck_run(e2fsck_t ctx)
 			(void) (ctx->progress)(ctx, 0, 0, 0);
 	}
 	ctx->flags &= ~E2F_FLAG_SETJMP_OK;
-	
+
 	if (ctx->flags & E2F_FLAG_RUN_RETURN)
 		return (ctx->flags & E2F_FLAG_RUN_RETURN);
 	return 0;

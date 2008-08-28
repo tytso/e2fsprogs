@@ -122,7 +122,7 @@ void blkid__scan_dir(char *dirname, dev_t devno, struct dir_list **list,
 				   path, *devname));
 			break;
 		}
-		if (list && S_ISDIR(st.st_mode) && !lstat(path, &st) && 
+		if (list && S_ISDIR(st.st_mode) && !lstat(path, &st) &&
 		    S_ISDIR(st.st_mode))
 			add_to_dirlist(path, list);
 	}
@@ -175,13 +175,13 @@ char *blkid_devno_to_devname(dev_t devno)
 
 	if (!devname) {
 		DBG(DEBUG_DEVNO,
-		    printf("blkid: couldn't find devno 0x%04lx\n", 
+		    printf("blkid: couldn't find devno 0x%04lx\n",
 			   (unsigned long) devno));
 	} else {
 		DBG(DEBUG_DEVNO,
 		    printf("found devno 0x%04llx as %s\n", (long long)devno, devname));
 	}
-	
+
 
 	return devname;
 }

@@ -92,7 +92,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 			goto out_inode;
 	} else {
 		blk_t goal = sb->s_first_data_block + fs->desc_blocks +
-			sb->s_reserved_gdt_blocks + 2 + 
+			sb->s_reserved_gdt_blocks + 2 +
 			fs->inode_blocks_per_group;
 
 		retval = ext2fs_alloc_block(fs, goal, 0, &dindir_blk);

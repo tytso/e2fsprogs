@@ -1,6 +1,6 @@
 /*
  * filefrag.c -- report if a particular file is fragmented
- * 
+ *
  * Copyright 2003 by Theodore Ts'o.
  *
  * %Begin-Header%
@@ -106,16 +106,16 @@ static void frag_report(const char *filename)
 		printf("%s: Not a regular file\n", filename);
 		return;
 	}
-	if ((fsinfo.f_type == 0xef51) || (fsinfo.f_type == 0xef52) || 
+	if ((fsinfo.f_type == 0xef51) || (fsinfo.f_type == 0xef52) ||
 	    (fsinfo.f_type == 0xef53))
 		is_ext2++;
 	if (verbose) {
-		printf("Filesystem type is: %lx\n", 
+		printf("Filesystem type is: %lx\n",
 		       (unsigned long) fsinfo.f_type);
 	}
 	cylgroups = div_ceil(fsinfo.f_blocks, fsinfo.f_bsize*8);
 	if (verbose) {
-		printf("Filesystem cylinder groups is approximately %ld\n", 
+		printf("Filesystem cylinder groups is approximately %ld\n",
 		       cylgroups);
 	}
 #ifdef HAVE_OPEN64
@@ -143,7 +143,7 @@ static void frag_report(const char *filename)
 	bpib = bs / 4;
 	numblocks = (fileinfo.st_size + (bs-1)) / bs;
 	if (verbose) {
-		printf("File size of %s is %lld (%ld blocks)\n", filename, 
+		printf("File size of %s is %lld (%ld blocks)\n", filename,
 		       (long long) fileinfo.st_size, numblocks);
 		printf("First block: %lu\nLast block: %lu\n",
 		       get_bmap(fd, 0), get_bmap(fd, numblocks - 1));

@@ -7,7 +7,7 @@
  * This file may be redistributed under the terms of the GNU Public
  * License.
  * %End-Header%
- * 
+ *
  */
 
 #include <stdio.h>
@@ -100,7 +100,7 @@ static check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
  *
  * Should have a special policy for directories.
  */
-errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir, 
+errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir,
 			   int mode EXT2FS_ATTR((unused)),
 			   ext2fs_inode_bitmap map, ext2_ino_t *ret)
 {
@@ -109,13 +109,13 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir,
 	ext2_ino_t	start_inode;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
-	
+
 	if (!map)
 		map = fs->inode_map;
 	if (!map)
 		return EXT2_ET_NO_INODE_BITMAP;
-	
-	if (dir > 0) 
+
+	if (dir > 0)
 		dir_group = (dir - 1) / EXT2_INODES_PER_GROUP(fs->super);
 
 	start_inode = (dir_group * EXT2_INODES_PER_GROUP(fs->super)) + 1;
@@ -134,7 +134,7 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir,
 		if (i > fs->super->s_inodes_count)
 			i = EXT2_FIRST_INODE(fs->super);
 	} while (i != start_inode);
-	
+
 	if (ext2fs_test_inode_bitmap(map, i))
 		return EXT2_ET_INODE_ALLOC_FAIL;
 	*ret = i;
@@ -221,7 +221,7 @@ errcode_t ext2fs_alloc_block(ext2_filsys fs, blk_t goal,
 	retval = io_channel_write_blk(fs->io, block, 1, block_buf);
 	if (retval)
 		goto fail;
-	
+
 	ext2fs_block_alloc_stats(fs, block, +1);
 	*ret = block;
 
@@ -260,7 +260,7 @@ errcode_t ext2fs_get_free_blocks(ext2_filsys fs, blk_t start, blk_t finish,
 	return EXT2_ET_BLOCK_ALLOC_FAIL;
 }
 
-void ext2fs_set_alloc_block_callback(ext2_filsys fs, 
+void ext2fs_set_alloc_block_callback(ext2_filsys fs,
 				     errcode_t (*func)(ext2_filsys fs,
 						       blk64_t goal,
 						       blk64_t *ret),

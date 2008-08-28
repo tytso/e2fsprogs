@@ -76,7 +76,7 @@
  * 	@o	orphaned
  * 	@p	problem in
  * 	@r	root inode
- * 	@s	should be 
+ * 	@s	should be
  * 	@S	superblock
  * 	@u	unattached
  * 	@v	device
@@ -199,7 +199,7 @@ static void print_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino)
 		fputs(_(special_inode_name[ino]), stdout);
 		return;
 	}
-	
+
 	retval = ext2fs_get_pathname(fs, dir, ino, &path);
 	if (retval)
 		fputs("???", stdout);
@@ -212,14 +212,14 @@ static void print_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino)
 /*
  * This function handles the '@' expansion.  We allow recursive
  * expansion; an @ expression can contain further '@' and '%'
- * expressions. 
+ * expressions.
  */
 static _INLINE_ void expand_at_expression(e2fsck_t ctx, char ch,
 					  struct problem_context *pctx,
 					  int *first, int recurse)
 {
 	const char **cpp, *str;
-	
+
 	/* Search for the abbreviation */
 	for (cpp = abbrevs; *cpp; cpp++) {
 		if (ch == *cpp[0])
@@ -239,7 +239,7 @@ static _INLINE_ void expand_at_expression(e2fsck_t ctx, char ch,
 /*
  * This function expands '%IX' expressions
  */
-static _INLINE_ void expand_inode_expression(char ch, 
+static _INLINE_ void expand_inode_expression(char ch,
 					     struct problem_context *ctx)
 {
 	struct ext2_inode	*inode;
@@ -250,7 +250,7 @@ static _INLINE_ void expand_inode_expression(char ch,
 
 	if (!ctx || !ctx->inode)
 		goto no_inode;
-	
+
 	inode = ctx->inode;
 	large_inode = (struct ext2_inode_large *) inode;
 
@@ -317,17 +317,17 @@ static _INLINE_ void expand_inode_expression(char ch,
 		printf("%d", inode_gid(*inode));
 		break;
 	case 't':
-		if (LINUX_S_ISREG(inode->i_mode)) 
+		if (LINUX_S_ISREG(inode->i_mode))
 			printf(_("regular file"));
-		else if (LINUX_S_ISDIR(inode->i_mode)) 
+		else if (LINUX_S_ISDIR(inode->i_mode))
 			printf(_("directory"));
-		else if (LINUX_S_ISCHR(inode->i_mode)) 
+		else if (LINUX_S_ISCHR(inode->i_mode))
 			printf(_("character device"));
-		else if (LINUX_S_ISBLK(inode->i_mode)) 
+		else if (LINUX_S_ISBLK(inode->i_mode))
 			printf(_("block device"));
-		else if (LINUX_S_ISFIFO(inode->i_mode)) 
+		else if (LINUX_S_ISFIFO(inode->i_mode))
 			printf(_("named pipe"));
-		else if (LINUX_S_ISLNK(inode->i_mode)) 
+		else if (LINUX_S_ISLNK(inode->i_mode))
 			printf(_("symbolic link"));
 		else if (LINUX_S_ISSOCK(inode->i_mode))
 			printf(_("socket"));
@@ -350,12 +350,12 @@ static _INLINE_ void expand_dirent_expression(char ch,
 {
 	struct ext2_dir_entry	*dirent;
 	int	len;
-	
+
 	if (!ctx || !ctx->dirent)
 		goto no_dirent;
-	
+
 	dirent = ctx->dirent;
-	
+
 	switch (ch) {
 	case 'i':
 		printf("%u", dirent->inode);
@@ -389,7 +389,7 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 {
 	if (!ctx)
 		goto no_context;
-	
+
 	switch (ch) {
 	case '%':
 		fputc('%', stdout);
@@ -468,7 +468,7 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		printf("%%%c", ch);
 		break;
 	}
-}	
+}
 
 void print_e2fsck_message(e2fsck_t ctx, const char *msg,
 			  struct problem_context *pctx, int first,

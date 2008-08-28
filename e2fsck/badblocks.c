@@ -1,6 +1,6 @@
 /*
  * badblocks.c --- replace/append bad blocks to the bad block inode
- * 
+ *
  * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be
  * redistributed under the terms of the GNU Public License.
  */
@@ -45,7 +45,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 			_("while sanity checking the bad blocks inode"));
 		goto fatal;
 	}
-	
+
 	/*
 	 * If we're appending to the bad blocks inode, read in the
 	 * current bad blocks.
@@ -58,7 +58,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 			goto fatal;
 		}
 	}
-	
+
 	/*
 	 * Now read in the bad blocks from the file; if
 	 * bad_blocks_file is null, then try to run the badblocks
@@ -84,7 +84,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 		}
 	}
 	retval = ext2fs_read_bb_FILE(fs, f, &bb_list, invalid_block);
-	if (bad_blocks_file) 
+	if (bad_blocks_file)
 		fclose(f);
 	else
 		pclose(f);
@@ -93,7 +93,7 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 			_("while reading in list of bad blocks from file"));
 		goto fatal;
 	}
-	
+
 	/*
 	 * Finally, update the bad blocks from the bad_block_map
 	 */
@@ -107,15 +107,15 @@ void read_bad_blocks_file(e2fsck_t ctx, const char *bad_blocks_file,
 
 	ext2fs_badblocks_list_free(bb_list);
 	return;
-	
+
 fatal:
 	ctx->flags |= E2F_FLAG_ABORT;
 	return;
-	
+
 }
 
-static int check_bb_inode_blocks(ext2_filsys fs, 
-				 blk_t *block_nr, 
+static int check_bb_inode_blocks(ext2_filsys fs,
+				 blk_t *block_nr,
 				 int blockcnt EXT2FS_ATTR((unused)),
 				 void *priv_data EXT2FS_ATTR((unused)))
 {

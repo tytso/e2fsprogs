@@ -47,7 +47,7 @@ char * device_name = NULL;
 
 static void usage(void)
 {
-	fprintf(stderr, _("Usage: %s [-rsI] device image_file\n"), 
+	fprintf(stderr, _("Usage: %s [-rsI] device image_file\n"),
 		program_name);
 	exit (1);
 }
@@ -68,10 +68,10 @@ static void write_header(int fd, struct ext2_image_hdr *hdr, int blocksize)
 		exit(1);
 	}
 	memset(header_buf, 0, blocksize);
-	
+
 	if (hdr)
 		memcpy(header_buf, hdr, sizeof(struct ext2_image_hdr));
-	
+
 	actual = write(fd, header_buf, blocksize);
 	if (actual < 0) {
 		perror("write header");
@@ -100,7 +100,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 		com_err(program_name, retval, _("while writing superblock"));
 		exit(1);
 	}
-	
+
 	hdr.offset_inode = lseek(fd, 0, SEEK_CUR);
 	retval = ext2fs_image_inode_write(fs, fd,
 				  (fd != 1) ? IMAGER_FLAG_SPARSEWRITE : 0);
@@ -108,7 +108,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 		com_err(program_name, retval, _("while writing inode table"));
 		exit(1);
 	}
-	
+
 	hdr.offset_blockmap = lseek(fd, 0, SEEK_CUR);
 	retval = ext2fs_image_bitmap_write(fs, fd, 0);
 	if (retval) {
@@ -129,7 +129,7 @@ static void write_image_file(ext2_filsys fs, int fd)
 	strncpy(hdr.fs_device_name, device_name, sizeof(hdr.fs_device_name)-1);
 	hdr.fs_device_name[sizeof(hdr.fs_device_name) - 1] = 0;
 	hdr.fs_blocksize = fs->blocksize;
-	
+
 	if (stat(device_name, &st) == 0)
 		hdr.fs_device = st.st_rdev;
 
@@ -163,12 +163,12 @@ struct process_block_struct {
 static ino_t stashed_ino = 0;
 static struct ext2_inode *stashed_inode;
 
-static errcode_t meta_get_blocks(ext2_filsys fs EXT2FS_ATTR((unused)), 
+static errcode_t meta_get_blocks(ext2_filsys fs EXT2FS_ATTR((unused)),
 				 ext2_ino_t ino,
 				 blk_t *blocks)
 {
 	int	i;
-	
+
 	if ((ino != stashed_ino) || !stashed_inode)
 		return EXT2_ET_CALLBACK_NOTHANDLED;
 
@@ -177,7 +177,7 @@ static errcode_t meta_get_blocks(ext2_filsys fs EXT2FS_ATTR((unused)),
 	return 0;
 }
 
-static errcode_t meta_check_directory(ext2_filsys fs EXT2FS_ATTR((unused)), 
+static errcode_t meta_check_directory(ext2_filsys fs EXT2FS_ATTR((unused)),
 				      ext2_ino_t ino)
 {
 	if ((ino != stashed_ino) || !stashed_inode)
@@ -188,7 +188,7 @@ static errcode_t meta_check_directory(ext2_filsys fs EXT2FS_ATTR((unused)),
 	return 0;
 }
 
-static errcode_t meta_read_inode(ext2_filsys fs EXT2FS_ATTR((unused)), 
+static errcode_t meta_read_inode(ext2_filsys fs EXT2FS_ATTR((unused)),
 				 ext2_ino_t ino,
 				 struct ext2_inode *inode)
 {
@@ -212,11 +212,11 @@ static void use_inode_shortcuts(ext2_filsys fs, int bool)
 	}
 }
 
-static int process_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)), 
+static int process_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 			     blk_t *block_nr,
-			     e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)), 
+			     e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
 			     blk_t ref_block EXT2FS_ATTR((unused)),
-			     int ref_offset EXT2FS_ATTR((unused)), 
+			     int ref_offset EXT2FS_ATTR((unused)),
 			     void *priv_data EXT2FS_ATTR((unused)))
 {
 	struct process_block_struct *p;
@@ -224,16 +224,16 @@ static int process_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 	p = (struct process_block_struct *) priv_data;
 
 	ext2fs_mark_block_bitmap(meta_block_map, *block_nr);
-	if (scramble_block_map && p->is_dir && blockcnt >= 0) 
+	if (scramble_block_map && p->is_dir && blockcnt >= 0)
 		ext2fs_mark_block_bitmap(scramble_block_map, *block_nr);
 	return 0;
 }
 
-static int process_file_block(ext2_filsys fs EXT2FS_ATTR((unused)), 
+static int process_file_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 			      blk_t *block_nr,
-			      e2_blkcnt_t blockcnt, 
+			      e2_blkcnt_t blockcnt,
 			      blk_t ref_block EXT2FS_ATTR((unused)),
-			      int ref_offset EXT2FS_ATTR((unused)), 
+			      int ref_offset EXT2FS_ATTR((unused)),
 			      void *priv_data EXT2FS_ATTR((unused)))
 {
 	if (blockcnt < 0) {
@@ -246,13 +246,13 @@ static void mark_table_blocks(ext2_filsys fs)
 {
 	blk_t	first_block, b;
 	unsigned int	i,j;
-	
+
 	first_block = fs->super->s_first_data_block;
 	/*
 	 * Mark primary superblock
 	 */
 	ext2fs_mark_block_bitmap(meta_block_map, first_block);
-			
+
 	/*
 	 * Mark the primary superblock descriptors
 	 */
@@ -271,17 +271,17 @@ static void mark_table_blocks(ext2_filsys fs)
 			     j++, b++)
 				ext2fs_mark_block_bitmap(meta_block_map, b);
 		}
-			    
+
 		/*
-		 * Mark block used for the block bitmap 
+		 * Mark block used for the block bitmap
 		 */
 		if (fs->group_desc[i].bg_block_bitmap) {
 			ext2fs_mark_block_bitmap(meta_block_map,
 				     fs->group_desc[i].bg_block_bitmap);
 		}
-		
+
 		/*
-		 * Mark block used for the inode bitmap 
+		 * Mark block used for the inode bitmap
 		 */
 		if (fs->group_desc[i].bg_inode_bitmap) {
 			ext2fs_mark_block_bitmap(meta_block_map,
@@ -358,7 +358,7 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 		if (rec_len < 8 || (rec_len % 4) ||
 		    (p+rec_len > end)) {
 			printf("Corrupt directory block %lu: "
-			       "bad rec_len (%d)\n", (unsigned long) blk, 
+			       "bad rec_len (%d)\n", (unsigned long) blk,
 			       rec_len);
 			rec_len = end - p;
 #ifdef WORDS_BIGENDIAN
@@ -368,7 +368,7 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 		}
 		if (dirent->name_len + 8 > rec_len) {
 			printf("Corrupt directory block %lu: "
-			       "bad name_len (%d)\n", (unsigned long) blk, 
+			       "bad name_len (%d)\n", (unsigned long) blk,
 			       dirent->name_len);
 			dirent->name_len = rec_len - 8;
 			continue;
@@ -420,7 +420,7 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 				com_err(program_name, retval,
 					"error reading block %u", blk);
 			}
-			if (scramble_block_map && 
+			if (scramble_block_map &&
 			    ext2fs_test_block_bitmap(scramble_block_map, blk))
 				scramble_dir_block(fs, blk, buf);
 			if ((fd != 1) && check_zero_block(buf, fs->blocksize))
@@ -455,7 +455,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 	ext2_ino_t			ino;
 	errcode_t			retval;
 	char *				block_buf;
-	
+
 	retval = ext2fs_allocate_block_bitmap(fs, "in-use block map",
 					      &meta_block_map);
 	if (retval) {
@@ -467,12 +467,12 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 		retval = ext2fs_allocate_block_bitmap(fs, "scramble block map",
 						      &scramble_block_map);
 		if (retval) {
-			com_err(program_name, retval, 
+			com_err(program_name, retval,
 				"while allocating scramble block bitmap");
 			exit(1);
 		}
 	}
-	
+
 	mark_table_blocks(fs);
 
 	retval = ext2fs_open_inode_scan(fs, 0, &scan);
@@ -486,7 +486,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 		com_err(program_name, 0, "Can't allocate block buffer");
 		exit(1);
 	}
-	
+
 	use_inode_shortcuts(fs, 1);
 	stashed_inode = &inode;
 	while (1) {
@@ -508,7 +508,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 		}
 		if (!ext2fs_inode_has_valid_blocks(&inode))
 			continue;
-		
+
 		stashed_ino = ino;
 		pb.ino = ino;
 		pb.is_dir = LINUX_S_ISDIR(inode.i_mode);
@@ -559,7 +559,7 @@ static void install_image(char *device, char *image_fn, int raw_flag)
 		com_err(program_name, 0, "Raw images cannot be installed");
 		exit(1);
 	}
-	
+
 #ifdef CONFIG_TESTIO_DEBUG
 	io_ptr = test_io_manager;
 	test_io_backing_manager = unix_io_manager;
@@ -591,7 +591,7 @@ static void install_image(char *device, char *image_fn, int raw_flag)
 		exit(1);
 	}
 
-	retval = io_ptr->open(device, IO_FLAG_RW, &io); 
+	retval = io_ptr->open(device, IO_FLAG_RW, &io);
 	if (retval) {
 		com_err(device, 0, "while opening device file");
 		exit(1);

@@ -10,7 +10,7 @@
  *
  * This file is based on the minix file system programs fsck and mkfs
  * written and copyrighted by Linus Torvalds <Linus.Torvalds@cs.helsinki.fi>
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -24,7 +24,7 @@
  * 99/06/30...99/07/26 - Added non-destructive write-testing,
  *                       configurable blocks-at-once parameter,
  * 			 loading of badblocks list to avoid testing
- * 			 blocks known to be bad, multiple passes to 
+ * 			 blocks known to be bad, multiple passes to
  * 			 make sure that no new blocks are added to the
  * 			 list.  (Work done by David Beattie)
  */
@@ -92,8 +92,8 @@ static void usage(void)
 
 static void exclusive_usage(void)
 {
-	fprintf(stderr, 
-		_("%s: The -n and -w options are mutually exclusive.\n\n"), 
+	fprintf(stderr,
+		_("%s: The -n and -w options are mutually exclusive.\n\n"),
 		program_name);
 	exit(1);
 }
@@ -108,7 +108,7 @@ static ext2_badblocks_iterate bb_iter = NULL;
 static void *allocate_buffer(size_t size)
 {
 	void	*ret = 0;
-	
+
 #ifdef HAVE_POSIX_MEMALIGN
 	if (posix_memalign(&ret, sys_page_size, size) < 0)
 		ret = 0;
@@ -119,7 +119,7 @@ static void *allocate_buffer(size_t size)
 #ifdef HAVE_VALLOC
 	ret = valloc(size);
 #endif /* HAVE_VALLOC */
-#endif /* HAVE_MEMALIGN */	
+#endif /* HAVE_MEMALIGN */
 #endif /* HAVE_POSIX_MEMALIGN */
 
 	if (!ret)
@@ -149,7 +149,7 @@ static int bb_output (blk_t bad)
 	}
 
 	/* kludge:
-	   increment the iteration through the bb_list if 
+	   increment the iteration through the bb_list if
 	   an element was just added before the current iteration
 	   position.  This should not cause next_bad to change. */
 	if (bb_iter && bad < next_bad)
@@ -159,7 +159,7 @@ static int bb_output (blk_t bad)
 
 static void print_status(void)
 {
-	fprintf(stderr, "%15lu/%15lu", (unsigned long) currently_testing, 
+	fprintf(stderr, "%15lu/%15lu", (unsigned long) currently_testing,
 		(unsigned long) num_blocks);
 	fputs("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", stderr);
 	fflush (stderr);
@@ -211,7 +211,7 @@ static void set_o_direct(int dev, unsigned char *buffer, size_t size,
 #ifdef O_DIRECT
 	int new_flag = O_DIRECT;
 	int flag;
-	
+
 	if ((((unsigned long) buffer & (sys_page_size - 1)) != 0) ||
 	    ((size & (sys_page_size - 1)) != 0) ||
 	    ((current_block & ((sys_page_size >> 9)-1)) != 0))
@@ -235,7 +235,7 @@ static void pattern_fill(unsigned char *buffer, unsigned int pattern,
 {
 	unsigned int	i, nb;
 	unsigned char	bpattern[sizeof(pattern)], *ptr;
-	
+
 	if (pattern == (unsigned int) ~0) {
 		for (ptr = buffer; ptr < buffer + n; ptr++) {
 			(*ptr) = random() % (1 << (8 * sizeof(char)));
@@ -296,7 +296,7 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 	if (d_flag)
 		gettimeofday(&tv2, NULL);
 	if (got < 0)
-		got = 0;	
+		got = 0;
 	if (got & 511)
 		fprintf(stderr, _("Weird value (%ld) in do_read\n"), got);
 	got /= block_size;
@@ -361,7 +361,7 @@ static int do_write(int dev, unsigned char * buffer, int try, int block_size,
 	/* Try the write */
 	got = write (dev, buffer, try * block_size);
 	if (got < 0)
-		got = 0;	
+		got = 0;
 	if (got & 511)
 		fprintf(stderr, "Weird value (%ld) in do_write\n", got);
 	got /= block_size;
@@ -410,8 +410,8 @@ static unsigned int test_ro (int dev, blk_t last_block,
 		exit (1);
 	}
 	if (v_flag) {
-		fprintf (stderr, _("Checking blocks %lu to %lu\n"), 
-			 (unsigned long) first_block, 
+		fprintf (stderr, _("Checking blocks %lu to %lu\n"),
+			 (unsigned long) first_block,
 			 (unsigned long) last_block - 1);
 	}
 	if (t_flag) {
@@ -466,7 +466,7 @@ static unsigned int test_ro (int dev, blk_t last_block,
 			if ( (blocks_at_once >= sys_page_size >> 9)
 			     && (currently_testing % (sys_page_size >> 9)!= 0))
 				try -= (sys_page_size >> 9)
-					- (currently_testing 
+					- (currently_testing
 					   % (sys_page_size >> 9));
 			continue;
 		}
@@ -501,7 +501,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 
 	buffer = allocate_buffer(2 * blocks_at_once * block_size);
 	read_buffer = buffer + blocks_at_once * block_size;
-	
+
 	if (!buffer) {
 		com_err (program_name, ENOMEM, _("while allocating buffers"));
 		exit (1);
@@ -510,10 +510,10 @@ static unsigned int test_rw (int dev, blk_t last_block,
 	flush_bufs();
 
 	if (v_flag) {
-		fputs(_("Checking for bad blocks in read-write mode\n"), 
+		fputs(_("Checking for bad blocks in read-write mode\n"),
 		      stderr);
 		fprintf(stderr, _("From block %lu to %lu\n"),
-			(unsigned long) first_block, 
+			(unsigned long) first_block,
 			(unsigned long) last_block - 1);
 	}
 	if (t_flag) {
@@ -551,10 +551,10 @@ static unsigned int test_rw (int dev, blk_t last_block,
 				try = blocks_at_once;
 				/* recover page-aligned offset for O_DIRECT */
 				if ( (blocks_at_once >= sys_page_size >> 9)
-				     && (currently_testing % 
+				     && (currently_testing %
 					 (sys_page_size >> 9)!= 0))
 					try -= (sys_page_size >> 9)
-						- (currently_testing 
+						- (currently_testing
 						   % (sys_page_size >> 9));
 				continue;
 			} else
@@ -563,7 +563,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 				bb_count += bb_output(currently_testing++);
 			}
 		}
-		
+
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
@@ -603,14 +603,14 @@ static unsigned int test_rw (int dev, blk_t last_block,
 			if ( (blocks_at_once >= sys_page_size >> 9)
 			     && (currently_testing % (sys_page_size >> 9)!= 0))
 				try = blocks_at_once - (sys_page_size >> 9)
-					- (currently_testing 
+					- (currently_testing
 					   % (sys_page_size >> 9));
 			else
 				try = blocks_at_once;
 			if (v_flag > 1)
 				print_status();
 		}
-		
+
 		num_blocks = 0;
 		alarm (0);
 		if (s_flag | v_flag)
@@ -668,13 +668,13 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	save_base = blkbuf;
 	test_base = blkbuf + (blocks_at_once * block_size);
 	read_base = blkbuf + (2 * blocks_at_once * block_size);
-	
+
 	num_saved = 0;
 
 	flush_bufs();
 	if (v_flag) {
 	    fputs(_("Checking for bad blocks in non-destructive read-write mode\n"), stderr);
-	    fprintf (stderr, _("From block %lu to %lu\n"), 
+	    fprintf (stderr, _("From block %lu to %lu\n"),
 		     (unsigned long) first_block,
 		     (unsigned long) last_block - 1);
 	}
@@ -697,7 +697,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 		fflush (out);
 		exit(1);
 	}
-	
+
 	/* set up abend handler */
 	capture_terminate(terminate_env);
 
@@ -763,7 +763,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 			if (written != got)
 				com_err (program_name, errno,
 					 _("during test data write, block %lu"),
-					 (unsigned long) currently_testing + 
+					 (unsigned long) currently_testing +
 					 written);
 
 			buf_used += got;
@@ -810,7 +810,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 					try = test_record[used2].num;
 					used2++;
 				}
-				
+
 				got = do_read (dev, read_ptr, try,
 					       block_size, currently_testing);
 
@@ -824,7 +824,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 					bb_count += bb_output(currently_testing + got);
 					got++;
 				}
-					
+
 				/* write back original data */
 				do_write (dev, save_ptr, got,
 					  block_size, currently_testing);
@@ -903,7 +903,7 @@ static unsigned int parse_uint(const char *str, const char *descr)
 {
 	char		*tmp;
 	unsigned long	ret;
-	
+
 	errno = 0;
 	ret = strtoul(str, &tmp, 0);
 	if (*tmp || errno || (ret > UINT_MAX) ||
@@ -958,7 +958,7 @@ int main (int argc, char ** argv)
 		sys_page_size = sysval;
 #endif /* _SC_PAGESIZE */
 #endif /* HAVE_SYSCONF */
-	
+
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv, "b:d:e:fi:o:svwnc:p:h:t:X")) != EOF) {
@@ -1008,7 +1008,7 @@ int main (int argc, char ** argv)
 			d_flag = parse_uint(optarg, "read delay factor");
 			break;
 		case 'p':
-			num_passes = parse_uint(optarg, 
+			num_passes = parse_uint(optarg,
 						"number of clean passes");
 			break;
 		case 'h':
@@ -1018,7 +1018,7 @@ int main (int argc, char ** argv)
 			if (t_flag + 1 > t_max) {
 				unsigned int *t_patts_new;
 
-				t_patts_new = realloc(t_patts, sizeof(int) * 
+				t_patts_new = realloc(t_patts, sizeof(int) *
 						      (t_max + T_INC));
 				if (!t_patts_new) {
 					com_err(program_name, ENOMEM,
@@ -1095,7 +1095,7 @@ int main (int argc, char ** argv)
 	}
 	if (w_flag)
 		check_mount(device_name);
-	
+
 	open_flag = w_flag ? O_RDWR : O_RDONLY;
 	dev = open (device_name, open_flag);
 	if (dev == -1) {
@@ -1180,10 +1180,10 @@ int main (int argc, char ** argv)
 			passes_clean = 0;
 		else
 			++passes_clean;
-		
+
 		if (v_flag)
 			fprintf(stderr,
-				_("Pass completed, %u bad blocks found.\n"), 
+				_("Pass completed, %u bad blocks found.\n"),
 				bb_count);
 
 	} while (passes_clean < num_passes);

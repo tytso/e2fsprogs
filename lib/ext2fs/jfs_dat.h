@@ -9,7 +9,7 @@
  * On-disk structures
  */
 
-/* 
+/*
  * Descriptor block types:
  */
 
@@ -28,8 +28,8 @@ typedef struct journal_header_s
 } journal_header_t;
 
 
-/* 
- * The block tag: used to describe a single buffer in the journal 
+/*
+ * The block tag: used to describe a single buffer in the journal
  */
 typedef struct journal_block_tag_s
 {
@@ -55,10 +55,10 @@ typedef struct journal_superblock_s
 	__u32		s_blocksize;	/* journal device blocksize */
 	__u32		s_maxlen;	/* total blocks in journal file */
 	__u32		s_first;	/* first block of log information */
-	
+
 	/* Dynamic information describing the current state of the log */
 	__u32		s_sequence;	/* first commit ID expected in log */
 	__u32		s_start;	/* blocknr of start of log */
-	
+
 } journal_superblock_t;
 

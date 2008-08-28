@@ -11,7 +11,7 @@
 /*
  * This subroutine is called during pass1 to create a directory info
  * entry.  During pass1, the passed-in parent is 0; it will get filled
- * in during pass2.  
+ * in during pass2.
  */
 void e2fsck_add_dx_dir(e2fsck_t ctx, ext2_ino_t ino, int num_blocks)
 {
@@ -31,7 +31,7 @@ void e2fsck_add_dx_dir(e2fsck_t ctx, ext2_ino_t ino, int num_blocks)
 					       * sizeof (struct dx_dir_info),
 					       "directory map");
 	}
-	
+
 	if (ctx->dx_dir_info_count >= ctx->dx_dir_info_size) {
 		old_size = ctx->dx_dir_info_size * sizeof(struct dx_dir_info);
 		ctx->dx_dir_info_size += 10;
@@ -59,12 +59,12 @@ void e2fsck_add_dx_dir(e2fsck_t ctx, ext2_ino_t ino, int num_blocks)
 			if (ctx->dx_dir_info[i-1].ino < ino)
 				break;
 		dir = &ctx->dx_dir_info[i];
-		if (dir->ino != ino) 
+		if (dir->ino != ino)
 			for (j = ctx->dx_dir_info_count++; j > i; j--)
 				ctx->dx_dir_info[j] = ctx->dx_dir_info[j-1];
 	} else
 		dir = &ctx->dx_dir_info[ctx->dx_dir_info_count++];
-	
+
 	dir->ino = ino;
 	dir->numblocks = num_blocks;
 	dir->hashversion = 0;
@@ -112,7 +112,7 @@ void e2fsck_free_dx_dir_info(e2fsck_t ctx)
 {
 	int	i;
 	struct dx_dir_info *dir;
-	
+
 	if (ctx->dx_dir_info) {
 		dir = ctx->dx_dir_info;
 		for (i=0; i < ctx->dx_dir_info_count; i++) {

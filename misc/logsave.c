@@ -52,10 +52,10 @@ static void usage(char *progname)
 static void send_output(const char *buffer, int c, int flag)
 {
 	char	*n;
-	
+
 	if (c == 0)
 		c = strlen(buffer);
-	
+
 	if (flag & SEND_CONSOLE)
 		write(1, buffer, c);
 	if (!(flag & SEND_LOG))
@@ -147,7 +147,7 @@ static int run_program(char **argv)
 		dup2(fds[1],1);		/* fds[1] replaces stdout */
 		dup2(fds[1],2);  	/* fds[1] replaces stderr */
 		close(fds[0]);	/* don't need this here */
-		
+
 		execvp(argv[0], argv);
 		perror(argv[0]);
 		exit(1);
@@ -201,8 +201,8 @@ static int copy_from_stdin(void)
 		bad_read = 0;
 	}
 	return 0;
-}	
-	
+}
+
 
 
 int main(int argc, char **argv)
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
 	int	send_flag = SEND_LOG;
 	int	do_stdin;
 	time_t	t;
-	
+
 	while ((c = getopt(argc, argv, "+asv")) != EOF) {
 		switch (c) {
 		case 'a':
@@ -238,7 +238,7 @@ int main(int argc, char **argv)
 
 	outfd = open(outfn, openflags, 0644);
 	do_stdin = !strcmp(argv[0], "-");
-	
+
 	send_output("Log of ", 0, send_flag);
 	if (do_stdin)
 		send_output("stdin", 0, send_flag);
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
 		rc = copy_from_stdin();
 	else
 		rc = run_program(argv);
-	
+
 	send_output("\n", 0, send_flag);
 	t = time(0);
 	send_output(ctime(&t), 0, send_flag);
@@ -279,11 +279,11 @@ int main(int argc, char **argv)
 		while (outfd < 0) {
 			outfd = open(outfn, openflags, 0644);
 			sleep(1);
-		} 
+		}
 		write(outfd, outbuf, outbufsize);
 		free(outbuf);
 	}
 	close(outfd);
-	
+
 	exit(rc);
 }

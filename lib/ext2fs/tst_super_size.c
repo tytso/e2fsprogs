@@ -2,7 +2,7 @@
  * This testing program makes sure superblock size is 1024 bytes long
  *
  * Copyright (C) 2007 by Theodore Ts'o.
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -25,4 +25,4 @@ int main(int argc, char **argv)
 	}
 	exit(0);
 }
-		
+

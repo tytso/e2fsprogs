@@ -1,6 +1,6 @@
 /*
  * link.c --- create links in a ext2fs directory
- * 
+ *
  * Copyright (C) 1993, 1994 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -26,7 +26,7 @@ struct link_struct  {
 	int		done;
 	unsigned int	blocksize;
 	struct ext2_super_block *sb;
-};	
+};
 
 static int link_proc(struct ext2_dir_entry *dirent,
 		     int	offset,
@@ -99,7 +99,7 @@ static int link_proc(struct ext2_dir_entry *dirent,
 #ifdef __TURBOC__
  #pragma argsused
 #endif
-errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name, 
+errcode_t ext2fs_link(ext2_filsys fs, ext2_ino_t dir, const char *name,
 		      ext2_ino_t ino, int flags)
 {
 	errcode_t		retval;

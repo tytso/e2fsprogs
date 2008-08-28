@@ -1,6 +1,6 @@
 /*
  * dirblock.c --- directory block routines.
- * 
+ *
  * Copyright (C) 1995, 1996 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -26,7 +26,7 @@ errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
 	char		*p, *end;
 	struct ext2_dir_entry *dirent;
 	unsigned int	name_len, rec_len;
-	
+
 
  	retval = io_channel_read_blk(fs->io, block, 1, buf);
 	if (retval)

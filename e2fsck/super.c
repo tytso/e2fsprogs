@@ -1,6 +1,6 @@
 /*
  * e2fsck.c - superblock checks
- * 
+ *
  * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -102,7 +102,7 @@ static int release_inode_block(ext2_filsys fs,
 		if (blockcnt < 0) {
 			int	i, limit;
 			blk_t	*bp;
-			
+
 			pb->errcode = io_channel_read_blk(fs->io, blk, 1,
 							pb->buf);
 			if (pb->errcode)
@@ -140,11 +140,11 @@ static int release_inode_block(ext2_filsys fs,
 		*block_nr = 0;
 		retval |= BLOCK_CHANGED;
 	}
-	
+
 	ext2fs_block_alloc_stats(fs, blk, -1);
 	return retval;
 }
-		
+
 /*
  * This function releases an inode.  Returns 1 if an inconsistency was
  * found.  If the inode has a link count, then it is being truncated and
@@ -180,7 +180,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		pb.truncate_offset = 0;
 	}
 	pb.truncated_blocks = 0;
-	retval = ext2fs_block_iterate2(fs, ino, BLOCK_FLAG_DEPTH_TRAVERSE, 
+	retval = ext2fs_block_iterate2(fs, ino, BLOCK_FLAG_DEPTH_TRAVERSE,
 				      block_buf, release_inode_block, &pb);
 	if (retval) {
 		com_err("release_inode_blocks", retval,
@@ -246,7 +246,7 @@ static int release_orphan_inodes(e2fsck_t ctx)
 	 */
 	if (fs->super->s_state & EXT2_ERROR_FS)
 		return 0;
-	
+
 	if ((ino < EXT2_FIRST_INODE(fs->super)) ||
 	    (ino > fs->super->s_inodes_count)) {
 		clear_problem_context(&pctx);
@@ -258,7 +258,7 @@ static int release_orphan_inodes(e2fsck_t ctx)
 	block_buf = (char *) e2fsck_allocate_memory(ctx, fs->blocksize * 4,
 						    "block iterate buffer");
 	e2fsck_read_bitmaps(ctx);
-	
+
 	while (ino) {
 		e2fsck_read_inode(ctx, ino, &inode, "release_orphan_inodes");
 		clear_problem_context(&pctx);
@@ -317,11 +317,11 @@ static void check_resize_inode(e2fsck_t ctx)
 
 	clear_problem_context(&pctx);
 
-	/* 
-	 * If the resize inode feature isn't set, then 
+	/*
+	 * If the resize inode feature isn't set, then
 	 * s_reserved_gdt_blocks must be zero.
 	 */
-	if (!(fs->super->s_feature_compat & 
+	if (!(fs->super->s_feature_compat &
 	      EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
 		if (fs->super->s_reserved_gdt_blocks) {
 			pctx.num = fs->super->s_reserved_gdt_blocks;
@@ -337,17 +337,17 @@ static void check_resize_inode(e2fsck_t ctx)
 	pctx.ino = EXT2_RESIZE_INO;
 	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);
 	if (retval) {
-		if (fs->super->s_feature_compat & 
+		if (fs->super->s_feature_compat &
 		    EXT2_FEATURE_COMPAT_RESIZE_INODE)
 			ctx->flags |= E2F_FLAG_RESIZE_INODE;
 		return;
 	}
 
-	/* 
-	 * If the resize inode feature isn't set, check to make sure 
+	/*
+	 * If the resize inode feature isn't set, check to make sure
 	 * the resize inode is cleared; then we're done.
 	 */
-	if (!(fs->super->s_feature_compat & 
+	if (!(fs->super->s_feature_compat &
 	      EXT2_FEATURE_COMPAT_RESIZE_INODE)) {
 		for (i=0; i < EXT2_N_BLOCKS; i++) {
 			if (inode.i_block[i])
@@ -362,7 +362,7 @@ static void check_resize_inode(e2fsck_t ctx)
 		return;
 	}
 
-	/* 
+	/*
 	 * The resize inode feature is enabled; check to make sure the
 	 * only block in use is the double indirect block
 	 */
@@ -398,13 +398,13 @@ static void check_resize_inode(e2fsck_t ctx)
 
 	gdt_off = fs->desc_blocks;
 	pblk = fs->super->s_first_data_block + 1 + fs->desc_blocks;
-	for (i = 0; i < fs->super->s_reserved_gdt_blocks / 4; 
+	for (i = 0; i < fs->super->s_reserved_gdt_blocks / 4;
 	     i++, gdt_off++, pblk++) {
 		gdt_off %= fs->blocksize/4;
 		if (dind_buf[gdt_off] != pblk)
 			goto resize_inode_invalid;
 		retval = ext2fs_read_ind_block(fs, pblk, ind_buf);
-		if (retval) 
+		if (retval)
 			goto resize_inode_invalid;
 		ind_off = 0;
 		for (j = 1; j < fs->group_desc_count; j++) {
@@ -510,7 +510,7 @@ void check_super_block(e2fsck_t ctx)
 			  MIN_CHECK | MAX_CHECK, inodes_per_block, ipg_max);
 	check_super_value(ctx, "r_blocks_count", sb->s_r_blocks_count,
 			  MAX_CHECK, 0, sb->s_blocks_count / 2);
-	check_super_value(ctx, "reserved_gdt_blocks", 
+	check_super_value(ctx, "reserved_gdt_blocks",
 			  sb->s_reserved_gdt_blocks, MAX_CHECK, 0,
 			  fs->blocksize/4);
 	inode_size = EXT2_INODE_SIZE(sb);
@@ -524,7 +524,7 @@ void check_super_block(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT; /* never get here! */
 		return;
 	}
-		
+
 	if ((ctx->flags & E2F_FLAG_GOT_DEVSIZE) &&
 	    (ctx->num_blocks < sb->s_blocks_count)) {
 		pctx.blk = sb->s_blocks_count;
@@ -544,7 +544,7 @@ void check_super_block(e2fsck_t ctx)
 	}
 
 	should_be = sb->s_frags_per_group >>
-		(sb->s_log_block_size - sb->s_log_frag_size);		
+		(sb->s_log_block_size - sb->s_log_frag_size);
 	if (sb->s_blocks_per_group != should_be) {
 		pctx.blk = sb->s_blocks_per_group;
 		pctx.blk2 = should_be;
@@ -701,7 +701,7 @@ void check_super_block(e2fsck_t ctx)
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
-	
+
 	if ((sb->s_free_blocks_count > sb->s_blocks_count) ||
 	    (sb->s_free_inodes_count > sb->s_inodes_count))
 		ext2fs_unmark_valid(fs);
@@ -717,7 +717,7 @@ void check_super_block(e2fsck_t ctx)
 	}
 
 	clear_problem_context(&pctx);
-	
+
 #ifndef EXT2_SKIP_UUID
 	/*
 	 * If the UUID field isn't assigned, assign it.
@@ -795,7 +795,7 @@ void check_super_block(e2fsck_t ctx)
 			    0, 0, &buggy_init_scripts);
 	ctx->time_fudge = buggy_init_scripts ? 86400 : 0;
 
-	/* 
+	/*
 	 * Check to see if the superblock last mount time or last
 	 * write time is in the future.
 	 */

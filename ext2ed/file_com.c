@@ -24,9 +24,9 @@ int init_file_info (void)
 
 {
 	struct ext2_inode *ptr;
-	
+
 	ptr=&type_data.u.t_ext2_inode;
-	
+
 	file_info.inode_ptr=ptr;
 	file_info.inode_offset=device_offset;
 
@@ -38,11 +38,11 @@ int init_file_info (void)
 	file_info.file_length=ptr->i_size;
 	file_info.level=0;
 	file_info.offset_in_block=0;
-	
+
 	file_info.display=HEX;
 
 	low_read (file_info.buffer,file_system_info.block_size,file_info.global_block_offset);
-	
+
 	return (1);
 }
 
@@ -69,7 +69,7 @@ void type_file___nextblock (char *command_line)
 	char *ptr,buffer [80];
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		block_offset*=atol (buffer);
@@ -79,7 +79,7 @@ void type_file___nextblock (char *command_line)
 		wprintw (command_win,"Error - Block offset out of range\n");wrefresh (command_win);
 		return;
 	}
-	
+
 	file_info.block_num+=block_offset;
 	file_info.global_block_num=file_block_to_global_block (file_info.block_num,&file_info);
 	file_info.global_block_offset=file_info.global_block_num*file_system_info.block_size;
@@ -97,17 +97,17 @@ void type_file___next (char *command_line)
 	char *ptr,buffer [80];
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		offset*=atol (buffer);
 	}
-	
+
 	if (file_info.offset_in_block+offset < file_system_info.block_size) {
 		file_info.offset_in_block+=offset;
 		sprintf (buffer,"show");dispatch (buffer);
 	}
-		
+
 	else {
 		wprintw (command_win,"Error - Offset out of block\n");refresh_command_win ();
 	}
@@ -120,7 +120,7 @@ void type_file___offset (char *command_line)
 	char *ptr,buffer [80];
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		offset=atol (buffer);
@@ -129,7 +129,7 @@ void type_file___offset (char *command_line)
 		wprintw (command_win,"Error - Argument not specified\n");refresh_command_win ();
 		return;
 	}
-	
+
 	if (offset < file_system_info.block_size) {
 		file_info.offset_in_block=offset;
 		sprintf (buffer,"show");dispatch (buffer);
@@ -147,17 +147,17 @@ void type_file___prev (char *command_line)
 	char *ptr,buffer [80];
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		offset*=atol (buffer);
 	}
-	
+
 	if (file_info.offset_in_block-offset >= 0) {
 		file_info.offset_in_block-=offset;
 		sprintf (buffer,"show");dispatch (buffer);
 	}
-	
+
 	else {
 		wprintw (command_win,"Error - Offset out of block\n");refresh_command_win ();
 	}
@@ -170,7 +170,7 @@ void type_file___prevblock (char *command_line)
 	char *ptr,buffer [80];
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		block_offset*=atol (buffer);
@@ -180,7 +180,7 @@ void type_file___prevblock (char *command_line)
 		wprintw (command_win,"Error - Block offset out of range\n");wrefresh (command_win);
 		return;
 	}
-	
+
 	file_info.block_num-=block_offset;
 	file_info.global_block_num=file_block_to_global_block (file_info.block_num,&file_info);
 	file_info.global_block_offset=file_info.global_block_num*file_system_info.block_size;
@@ -198,12 +198,12 @@ void type_file___block (char *command_line)
 	char *ptr,buffer [80];
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr==0) {
 		wprintw (command_win,"Error - Invalid arguments\n");wrefresh (command_win);
 		return;
 	}
-	
+
 	ptr=parse_word (ptr,buffer);
 	block_offset=atol (buffer);
 
@@ -226,25 +226,25 @@ void type_file___display (char *command_line)
 
 {
 	char *ptr,buffer [80];
-	
+
 	ptr=parse_word (command_line,buffer);
-	if (*ptr==0) 
+	if (*ptr==0)
 		strcpy (buffer,"hex");
 	else
 		ptr=parse_word (ptr,buffer);
-	
+
 	if (strcasecmp (buffer,"hex")==0) {
 		wprintw (command_win,"Display set to hex\n");wrefresh (command_win);
 		file_info.display=HEX;
 		sprintf (buffer,"show");dispatch (buffer);
 	}
-	
+
 	else if (strcasecmp (buffer,"text")==0) {
 		wprintw (command_win,"Display set to text\n");wrefresh (command_win);
 		file_info.display=TEXT;
 		sprintf (buffer,"show");dispatch (buffer);
 	}
-	
+
 	else {
 		wprintw (command_win,"Error - Invalid arguments\n");wrefresh (command_win);
 	}
@@ -255,22 +255,22 @@ void file_show_hex (void)
 {
 	long offset=0,l,i;
 	unsigned char *ch_ptr;
-	
+
 	/* device_offset and type_data points to the inode */
 
 	show_pad_info.line=0;
-	
+
 	wmove (show_pad,0,0);
 	ch_ptr=file_info.buffer;
 	for (l=0;l<file_system_info.block_size/16;l++) {
 		if (file_info.file_offset+offset>file_info.file_length-1) break;
 		wprintw (show_pad,"%08ld :  ",offset);
 		for (i=0;i<16;i++) {
-			
+
 			if (file_info.file_offset+offset+i>file_info.file_length-1) {
 				wprintw (show_pad," ");
 			}
-			
+
 			else {
 				if (file_info.offset_in_block==offset+i)
 					wattrset (show_pad,A_REVERSE);
@@ -297,20 +297,20 @@ void file_show_hex (void)
 				wattrset (show_pad,A_NORMAL);
 				show_pad_info.line=l-l % show_pad_info.display_lines;
 			}
-			
+
 			wprintw (show_pad," ");
-			
+
 		}
 
 		wprintw (show_pad,"\n");
 		offset+=i;
 		ch_ptr+=i;
 	}
-	
+
 	show_pad_info.max_line=l-1;
-	
+
 	refresh_show_pad ();
-	
+
 	show_status ();
 }
 
@@ -319,7 +319,7 @@ void file_show_text (void)
 {
 	long offset=0,last_offset,l=0,cols=0;
 	unsigned char *ch_ptr;
-	
+
 	/* device_offset and type_data points to the inode */
 
 	show_pad_info.line=0;
@@ -330,14 +330,14 @@ void file_show_text (void)
 
 	if (file_info.file_offset+last_offset > file_info.file_length-1)
 		last_offset=file_info.file_length-1-file_info.file_offset;
-		
+
 	while ( (offset <= last_offset) && l<SHOW_PAD_LINES) {
 
 		if (cols==SHOW_PAD_COLS-1) {
 			wprintw (show_pad,"\n");
 			l++;cols=0;
 		}
-		
+
 
 		if (file_info.offset_in_block==offset)
 			wattrset (show_pad,A_REVERSE);
@@ -354,7 +354,7 @@ void file_show_text (void)
 
 			else if (*ch_ptr == 0x9)
 				wprintw (show_pad,"    ");
-			
+
 			else
 				wprintw (show_pad,".");
 		}
@@ -363,29 +363,29 @@ void file_show_text (void)
 			wattrset (show_pad,A_NORMAL);
 			show_pad_info.line=l-l % show_pad_info.display_lines;
 		}
-			
+
 
 		offset++;cols++;ch_ptr++;
 	}
-	
+
 	wprintw (show_pad,"\n");
 	show_pad_info.max_line=l;
-	
+
 	refresh_show_pad ();
-	
-	show_status (); 
+
+	show_status ();
 }
 
 void show_status (void)
 
 {
 	long inode_num;
-	
+
 	werase (show_win);wmove (show_win,0,0);
 	wprintw (show_win,"File contents. Block %ld. ",file_info.global_block_num);
 	wprintw (show_win,"File block %ld of %ld. ",file_info.block_num,file_info.blocks_count-1);
 	wprintw (show_win,"File Offset %ld of %ld.",file_info.file_offset,file_info.file_length-1);
-	
+
 	wmove (show_win,1,0);
 	inode_num=inode_offset_to_inode_num (file_info.inode_offset);
 	wprintw (show_win,"File inode %ld. Indirection level %ld.",inode_num,file_info.level);
@@ -400,14 +400,14 @@ void type_file___remember (char *command_line)
 	long entry_num;
 	char *ptr,buffer [80];
 	struct struct_descriptor *descriptor_ptr;
-	
+
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr==0) {
 		wprintw (command_win,"Error - Argument not specified\n");wrefresh (command_win);
-		return;		
+		return;
 	}
-	
+
 	ptr=parse_word (ptr,buffer);
 
 	entry_num=remember_lifo.entries_count++;
@@ -415,7 +415,7 @@ void type_file___remember (char *command_line)
 		entry_num=0;
 		remember_lifo.entries_count--;
 	}
-	
+
 	descriptor_ptr=first_type;
 	while (descriptor_ptr!=NULL && !found) {
 		if (strcmp (descriptor_ptr->name,"ext2_inode")==0)
@@ -428,7 +428,7 @@ void type_file___remember (char *command_line)
 	remember_lifo.offset [entry_num]=device_offset;
 	remember_lifo.type [entry_num]=descriptor_ptr;
 	strcpy (remember_lifo.name [entry_num],buffer);
-	
+
 	wprintw (command_win,"Object %s in Offset %ld remembered as %s\n",descriptor_ptr->name,device_offset,buffer);
 	wrefresh (command_win);
 }
@@ -439,7 +439,7 @@ void type_file___set (char *command_line)
 	unsigned char tmp;
 	char *ptr,buffer [80],*ch_ptr;
 	int mode=HEX;
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr==0) {
 		wprintw (command_win,"Error - Argument not specified\n");refresh_command_win ();return;
@@ -492,7 +492,7 @@ void type_file___set (char *command_line)
 			}
 		}
 	}
-	
+
 	strcpy (buffer,"show");dispatch (buffer);
 }
 
@@ -507,7 +507,7 @@ long file_block_to_global_block (long file_block,struct struct_file_info *file_i
 
 {
 	long last_direct,last_indirect,last_dindirect;
-	
+
 	last_direct=EXT2_NDIR_BLOCKS-1;
 	last_indirect=last_direct+file_system_info.block_size/4;
 	last_dindirect=last_indirect+(file_system_info.block_size/4)*(file_system_info.block_size/4);
@@ -516,7 +516,7 @@ long file_block_to_global_block (long file_block,struct struct_file_info *file_i
 		file_info_ptr->level=0;
 		return (file_info_ptr->inode_ptr->i_block [file_block]);
 	}
-	
+
 	if (file_block <= last_indirect) {
 		file_info_ptr->level=1;
 		file_block=file_block-last_direct-1;
@@ -538,16 +538,16 @@ long return_indirect (long table_block,long block_num)
 
 {
 	long block_table [EXT2_MAX_BLOCK_SIZE/4];
-	
+
 	low_read ((char *) block_table,file_system_info.block_size,table_block*file_system_info.block_size);
-	return (block_table [block_num]);		
+	return (block_table [block_num]);
 }
 
 long return_dindirect (long table_block,long block_num)
 
 {
 	long f_indirect;
-	
+
 	f_indirect=block_num/(file_system_info.block_size/4);
 	f_indirect=return_indirect (table_block,f_indirect);
 	return (return_indirect (f_indirect,block_num%(file_system_info.block_size/4)));
@@ -557,7 +557,7 @@ long return_tindirect (long table_block,long block_num)
 
 {
 	long s_indirect;
-	
+
 	s_indirect=block_num/((file_system_info.block_size/4)*(file_system_info.block_size/4));
 	s_indirect=return_indirect (table_block,s_indirect);
 	return (return_dindirect (s_indirect,block_num%((file_system_info.block_size/4)*(file_system_info.block_size/4))));

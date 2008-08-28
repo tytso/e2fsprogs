@@ -6,7 +6,7 @@
  * using gpart program.
  *
  * Portions Copyright 1998-2000, Theodore Ts'o.
- * 
+ *
  * Well, here's my linux version of findsuper.
  * I'm sure you coulda done it faster.  :)
  * IMHO there isn't as much interesting data to print in the
@@ -18,7 +18,7 @@
  *
  * I wanted to add msdos support, but I couldn't make heads or tails
  * of the kernel include files to find anything I could look for in msdos.
- * 
+ *
  * Reading every block of a Sun partition is fairly quick.  Doing the
  * same under linux (slower hardware I suppose) just isn't the same.
  * It might be more useful to default to reading the first (second?) block
@@ -59,26 +59,26 @@
 
 /*
  * Documentation addendum added by Andreas dwguest@win.tue.nl/aeb@cwi.nl
- * 
+ *
  * The program findsuper is a utility that scans a disk and finds
  * copies of ext2 superblocks (by checking for the ext2 signature).
- * 
+ *
  * For each superblock found, it prints the offset in bytes, the
  * offset in 1024-byte blocks, the size of the ext2 partition in fs
  * blocks, the filesystem blocksize (in bytes), the block group number
  * (always 0 for older ext2 systems), and a timestamp (s_mtime).
- * 
+ *
  * This program can be used to retrieve partitions that have been
  * lost.  The superblock for block group 0 is found 1 block (2
  * sectors) after the partition start.
- * 
+ *
  * For new systems that have a block group number in the superblock it
  * is immediately clear which superblock is the first of a partition.
  * For old systems where no group numbers are given, the first
  * superblock can be recognised by the timestamp: all superblock
  * copies have the creation time in s_mtime, except the first, which
  * has the last time e2fsck or tune2fs wrote to the filesystem.
- * 
+ *
  */
 
 #define _FILE_OFFSET_BITS 64
@@ -102,9 +102,9 @@
 #define WHY(fmt, arg...) { continue; }
 #endif
 
-static void usage(void) 
+static void usage(void)
 {
-	fprintf(stderr, 
+	fprintf(stderr,
 		_("Usage:  findsuper device [skipbytes [startkb]]\n"));
 	exit(1);
 }
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, _("startkb should be positive, not %Lu\n"), sk);
 		exit(1);
 	}
-	
+
 	fd = open(device_name, O_RDONLY);
 	if (fd < 0) {
 		perror(device_name);

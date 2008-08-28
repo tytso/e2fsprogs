@@ -1,7 +1,7 @@
 /*
  * finddev.c -- this routine attempts to find a particular device in
  * 	/dev
- * 
+ *
  * Copyright (C) 2000 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -134,7 +134,7 @@ char *ext2fs_find_block_device(dev_t device)
 	add_to_dirlist("/devices", &list);
 	add_to_dirlist("/devfs", &list);
 	add_to_dirlist("/dev", &list);
-	
+
 	while (list) {
 		current = list;
 		list = list->next;
@@ -160,7 +160,7 @@ char *ext2fs_find_block_device(dev_t device)
 	return ret_path;
 }
 
-	
+
 #ifdef DEBUG
 int main(int argc, char** argv)
 {
@@ -204,5 +204,5 @@ int main(int argc, char** argv)
 	}
 	return 0;
 }
-	
+
 #endif

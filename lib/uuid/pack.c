@@ -1,6 +1,6 @@
 /*
  * Internal routine for packing UUID's
- * 
+ *
  * Copyright (C) 1996, 1997 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -16,7 +16,7 @@
  * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior
  *    written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ALL OF
@@ -48,7 +48,7 @@ void uuid_pack(const struct uuid *uu, uuid_t ptr)
 	out[1] = (unsigned char) tmp;
 	tmp >>= 8;
 	out[0] = (unsigned char) tmp;
-	
+
 	tmp = uu->time_mid;
 	out[5] = (unsigned char) tmp;
 	tmp >>= 8;

@@ -30,7 +30,7 @@ Copyright (C) 1995 Gadi Oxman
 struct struct_pad_info show_pad_info;
 WINDOW *title_win,*show_win,*command_win,*mt_win1,*mt_win2,*show_pad;
 
-/* to remember configuration after initscr 
+/* to remember configuration after initscr
  * and modify it
  */
 struct termios termioInit, termioCurrent;
@@ -56,7 +56,7 @@ void setup_show_win(void)
 	show_pad_info.display_cols=COLS;
 	show_pad_info.max_line=show_pad_info.display_lines-1;show_pad_info.max_col=show_pad_info.display_cols-1;
 	show_pad_info.disable_output=0;
-}	
+}
 
 void init_windows (void)
 {
@@ -65,7 +65,7 @@ void init_windows (void)
 	termioCurrent = termioInit;
 	termioCurrent.c_lflag |= ECHO; /* set echo on */
 	tcsetattr(0,TCSANOW,&termioCurrent);
-	
+
 	if (LINES<TITLE_WIN_LINES+SHOW_WIN_LINES+COMMAND_WIN_LINES+3) {
 		printf ("Sorry, your terminal screen is too small\n");
 		printf ("Error - Can not initialize windows\n");
@@ -105,7 +105,7 @@ void refresh_title_win (void)
 void refresh_show_win (void)
 {
 	int current_page,total_pages;
-	
+
 	current_page=show_pad_info.line/show_pad_info.display_lines+1;
 	if (show_pad_info.line%show_pad_info.display_lines)
 		current_page++;
@@ -123,10 +123,10 @@ void refresh_show_pad (void)
 
 {
 	int left,top,right,bottom,i;
-	
+
 	if (show_pad_info.disable_output)
 		return;
-		
+
 	if (show_pad_info.max_line < show_pad_info.display_lines-1) {
 		for (i=show_pad_info.max_line+1;i<show_pad_info.display_lines;i++) {
 			wmove (show_pad,i,0);wprintw (show_pad,"\n");
@@ -157,19 +157,19 @@ void close_windows (void)
 {
 //	echo ();
 	tcsetattr(0,TCSANOW,&termioInit);
-	
+
 	delwin (title_win);
 	delwin (command_win);
 	delwin (show_win);
 	delwin (show_pad);
-	
+
 	endwin ();
 }
 
 void show_info (void)
 {
 	int block_num,block_offset;
-	
+
 	block_num=device_offset/file_system_info.block_size;
 	block_offset=device_offset%file_system_info.block_size;
 

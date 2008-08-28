@@ -5,7 +5,7 @@
  * 	PowerQuest, Inc.
  *
  * Copyright (C) 1999, 2000 by Theosore Ts'o
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -127,7 +127,7 @@ extern errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 					    int pass, unsigned long cur,
 					    unsigned long max));
 
-extern errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs, 
+extern errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs,
 				blk_t new_size);
 extern blk_t calculate_minimum_resize_size(ext2_filsys fs);
 
@@ -144,7 +144,7 @@ extern errcode_t ext2fs_iterate_extent(ext2_extent extent, __u32 *old_loc,
 				       __u32 *new_loc, int *size);
 
 /* online.c */
-extern errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt, 
+extern errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 				  blk_t *new_size, int flags);
 
 /* sim_progress.c */

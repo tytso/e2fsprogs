@@ -45,14 +45,14 @@ Copyright (C) 1995 Gadi Oxman
 #define MAX_COMMANDS_NUM	30			/* Maximum number of commands of one type */
 #define REMEMBER_COUNT		30			/* Object memory size */
 
-/* 
+/*
 	The user screen consists of four parts:
 
 		1.	Title window (title_win).
 		2.	Show (status) window (show_win).
 		3.	Main show pad (show_pad).
 		4.	Command window (command_win).
-	
+
 */
 
 /*
@@ -133,7 +133,7 @@ struct struct_file_system_info {			/* Important information about the filesystem
 struct struct_file_info {				/* Used to handle files and directories */
 
 	struct ext2_inode *inode_ptr;
-	
+
 	long inode_offset;
 	long global_block_num,global_block_offset;
 	long block_num,blocks_count;
@@ -144,7 +144,7 @@ struct struct_file_info {				/* Used to handle files and directories */
 
 	int display;
 	/* The following is used if the file is a directory */
-	
+
 	long dir_entry_num,dir_entries_count;
 	long dir_entry_offset;
 };

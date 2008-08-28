@@ -84,7 +84,7 @@ extern void do_set_block_group_descriptor(int argc, char **);
 extern void do_dump_unused(int argc, char **argv);
 
 /* debugfs.c */
-extern void internal_dump_inode(FILE *, const char *, ext2_ino_t, 
+extern void internal_dump_inode(FILE *, const char *, ext2_ino_t,
 				struct ext2_inode *, int);
 
 extern void do_dirty_filesys(int argc, char **argv);

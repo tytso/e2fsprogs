@@ -1,6 +1,6 @@
 /*
  * Copyright 1987, 1988 by MIT Student Information Processing Board.
- * 
+ *
  * Permission to use, copy, modify, and distribute this software and
  * its documentation for any purpose is hereby granted, provided that
  * the names of M.I.T. and the M.I.T. S.I.P.B. not be used in

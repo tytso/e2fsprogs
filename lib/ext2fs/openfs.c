@@ -1,8 +1,8 @@
 /*
  * openfs.c --- open an ext2 filesystem
- * 
+ *
  * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -59,10 +59,10 @@ blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, dgrp_t i)
 }
 
 errcode_t ext2fs_open(const char *name, int flags, int superblock,
-		      unsigned int block_size, io_manager manager, 
+		      unsigned int block_size, io_manager manager,
 		      ext2_filsys *ret_fs)
 {
-	return ext2fs_open2(name, 0, flags, superblock, block_size, 
+	return ext2fs_open2(name, 0, flags, superblock, block_size,
 			    manager, ret_fs);
 }
 
@@ -71,7 +71,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
  * 	Superblock and block_size can be zero to use the default size.
  *
  * Valid flags for ext2fs_open()
- * 
+ *
  * 	EXT2_FLAG_RW	- Open the filesystem for read/write.
  * 	EXT2_FLAG_FORCE - Open the filesystem even if some of the
  *				features aren't supported.
@@ -79,7 +79,7 @@ errcode_t ext2fs_open(const char *name, int flags, int superblock,
  */
 errcode_t ext2fs_open2(const char *name, const char *io_options,
 		       int flags, int superblock,
-		       unsigned int block_size, io_manager manager, 
+		       unsigned int block_size, io_manager manager,
 		       ext2_filsys *ret_fs)
 {
 	ext2_filsys	fs;
@@ -93,13 +93,13 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	struct ext2_group_desc *gdp;
 	int		j;
 #endif
-	
+
 	EXT2_CHECK_MAGIC(manager, EXT2_ET_MAGIC_IO_MANAGER);
 
 	retval = ext2fs_get_mem(sizeof(struct struct_ext2_filsys), &fs);
 	if (retval)
 		return retval;
-	
+
 	memset(fs, 0, sizeof(struct struct_ext2_filsys));
 	fs->magic = EXT2_ET_MAGIC_EXT2FS_FILSYS;
 	fs->flags = flags;
@@ -115,7 +115,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		*cp++ = 0;
 		io_options = cp;
 	}
-		
+
 	io_flags = 0;
 	if (flags & EXT2_FLAG_RW)
 		io_flags |= IO_FLAG_RW;
@@ -124,7 +124,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	retval = manager->open(fs->device_name, io_flags, &fs->io);
 	if (retval)
 		goto cleanup;
-	if (io_options && 
+	if (io_options &&
 	    (retval = io_channel_set_options(fs->io, io_options)))
 		goto cleanup;
 	fs->image_io = fs->io;
@@ -189,7 +189,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		goto cleanup;
 	}
 #endif
-	
+
 	if (fs->super->s_magic != EXT2_SUPER_MAGIC) {
 		retval = EXT2_ET_BAD_MAGIC;
 		goto cleanup;
@@ -231,7 +231,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 			goto cleanup;
 		}
 	}
-	
+
 	if ((fs->super->s_log_block_size + EXT2_MIN_BLOCK_LOG_SIZE) >
 	    EXT2_MAX_BLOCK_LOG_SIZE) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
@@ -268,7 +268,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		*ret_fs = fs;
 		return 0;
 	}
-	
+
 	/*
 	 * Read group descriptors
 	 */
@@ -336,7 +336,7 @@ cleanup:
 
 /*
  * Set/get the filesystem data I/O channel.
- * 
+ *
  * These functions are only valid if EXT2_FLAG_IMAGE_FILE is true.
  */
 errcode_t ext2fs_get_data_io(ext2_filsys fs, io_channel *old_io)
@@ -362,7 +362,7 @@ errcode_t ext2fs_rewrite_to_io(ext2_filsys fs, io_channel new_io)
 	if ((fs->flags & EXT2_FLAG_IMAGE_FILE) == 0)
 		return EXT2_ET_NOT_IMAGE_FILE;
 	fs->io = fs->image_io = new_io;
-	fs->flags |= EXT2_FLAG_DIRTY | EXT2_FLAG_RW | 
+	fs->flags |= EXT2_FLAG_DIRTY | EXT2_FLAG_RW |
 		EXT2_FLAG_BB_DIRTY | EXT2_FLAG_IB_DIRTY;
 	fs->flags &= ~EXT2_FLAG_IMAGE_FILE;
 	return 0;

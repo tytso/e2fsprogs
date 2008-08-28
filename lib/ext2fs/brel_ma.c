@@ -1,6 +1,6 @@
 /*
  * brel_ma.c
- * 
+ *
  * Copyright (C) 1996, 1997 Theodore Ts'o.
  *
  * TODO: rewrite to not use a direct array!!!  (Fortunately this
@@ -61,18 +61,18 @@ errcode_t ext2fs_brel_memarray_create(char *name, blk_t max_block,
 	if (retval)
 		goto errout;
 	memset(brel, 0, sizeof(struct ext2_block_relocation_table));
-	
+
 	retval = ext2fs_get_mem(strlen(name)+1, &brel->name);
 	if (retval)
 		goto errout;
 	strcpy(brel->name, name);
-	
+
 	retval = ext2fs_get_mem(sizeof(struct brel_ma), &ma);
 	if (retval)
 		goto errout;
 	memset(ma, 0, sizeof(struct brel_ma));
 	brel->priv_data = ma;
-	
+
 	size = (size_t) (sizeof(struct ext2_block_relocate_entry) *
 			 (max_block+1));
 	retval = ext2fs_get_array(max_block+1,
@@ -92,7 +92,7 @@ errcode_t ext2fs_brel_memarray_create(char *name, blk_t max_block,
 	brel->move = bma_move;
 	brel->delete = bma_delete;
 	brel->free = bma_free;
-	
+
 	*new_brel = brel;
 	return 0;
 

@@ -2,7 +2,7 @@
  * uuid_time.c --- Interpret the time field from a uuid.  This program
  * 	violates the UUID abstraction barrier by reaching into the guts
  *	of a UUID and interpreting it.
- * 
+ *
  * Copyright (C) 1998, 1999 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -18,7 +18,7 @@
  * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior
  *    written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ALL OF
@@ -61,7 +61,7 @@ time_t uuid_time(const uuid_t uu, struct timeval *ret_tv)
 	uint64_t		clock_reg;
 
 	uuid_unpack(uu, &uuid);
-	
+
 	high = uuid.time_mid | ((uuid.time_hi_and_version & 0xFFF) << 16);
 	clock_reg = uuid.time_low | ((uint64_t) high << 32);
 
@@ -79,7 +79,7 @@ int uuid_type(const uuid_t uu)
 {
 	struct uuid		uuid;
 
-	uuid_unpack(uu, &uuid);	
+	uuid_unpack(uu, &uuid);
 	return ((uuid.time_hi_and_version >> 12) & 0xF);
 }
 
@@ -88,7 +88,7 @@ int uuid_variant(const uuid_t uu)
 	struct uuid		uuid;
 	int			var;
 
-	uuid_unpack(uu, &uuid);	
+	uuid_unpack(uu, &uuid);
 	var = uuid.clock_seq;
 
 	if ((var & 0x8000) == 0)
@@ -115,7 +115,7 @@ static const char *variant_string(int variant)
 	}
 }
 
-	
+
 int
 main(int argc, char **argv)
 {
@@ -165,7 +165,7 @@ main(int argc, char **argv)
 	}
 	printf("UUID time is: (%ld, %ld): %s\n", tv.tv_sec, tv.tv_usec,
 	       ctime(&time_reg));
-	
+
 	return 0;
 }
 #endif

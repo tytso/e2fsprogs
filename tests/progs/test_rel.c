@@ -1,6 +1,6 @@
 /*
  * test_rel.c
- * 
+ *
  * Copyright (C) 1997 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -39,7 +39,7 @@ static int parse_inode(const char *request, const char *desc,
 		       const char *str, ext2_ino_t *ino)
 {
 	char *tmp;
-	
+
 	*ino = strtoul(str, &tmp, 0);
 	if (*tmp) {
 		com_err(request, 0, "Bad %s - %s", desc, str);
@@ -55,7 +55,7 @@ static int parse_block(const char *request, const char *desc,
 		       const char *str, blk_t *blk)
 {
 	char *tmp;
-	
+
 	*blk = strtoul(str, &tmp, 0);
 	if (*tmp) {
 		com_err(request, 0, "Bad %s - %s", desc, str);
@@ -106,7 +106,7 @@ static void display_irel_entry(ext2_ino_t old,
 	struct ext2_inode_reference ref;
 	errcode_t	retval;
 	int		first = 1;
-	
+
 	printf("Old= %lu, New= %lu, Original=%lu, Max_refs=%u\n", old,
 	       ent->new, ent->orig, ent->max_refs);
 	if (!do_refs)
@@ -145,7 +145,7 @@ void do_brel_ma_create(int argc, char **argv)
 	const char *usage = "Usage: %s name max_blocks\n";
 	errcode_t	retval;
 	blk_t		max_blk;
-	
+
 	if (argc < 3) {
 		printf(usage, argv[0]);
 		return;
@@ -175,7 +175,7 @@ void do_brel_put(int argc, char **argv)
 	errcode_t retval;
 	struct ext2_block_relocate_entry ent;
 	blk_t	old, new, offset=0, owner=0;
-	
+
 	if (check_brel(argv[0]))
 		return;
 
@@ -294,7 +294,7 @@ void do_brel_dump(int argc, char **argv)
 		}
 		if (blk == 0)
 			break;
-		
+
 		display_brel_entry(blk, &ent);
 	}
 	return;
@@ -352,7 +352,7 @@ void do_irel_ma_create(int argc, char **argv)
 	const char	*usage = "Usage: %s name max_inode\n";
 	errcode_t	retval;
 	ext2_ino_t	max_ino;
-	
+
 	if (argc < 3) {
 		printf(usage, argv[0]);
 		return;
@@ -386,7 +386,7 @@ void do_irel_put(int argc, char **argv)
 
 	if (check_irel(argv[0]))
 		return;
-	
+
 	if (argc < 4) {
 		printf(usage, argv[0]);
 		return;
@@ -422,7 +422,7 @@ void do_irel_get(int argc, char **argv)
 
 	if (check_irel(argv[0]))
 		return;
-	
+
 	if (argc < 2) {
 		printf(usage, argv[0]);
 		return;
@@ -448,7 +448,7 @@ void do_irel_get_by_orig(int argc, char **argv)
 
 	if (check_irel(argv[0]))
 		return;
-	
+
 	if (argc < 2) {
 		printf(usage, argv[0]);
 		return;
@@ -471,7 +471,7 @@ void do_irel_start_iter(int argc, char **argv)
 
 	if (check_irel(argv[0]))
 		return;
-	
+
 	retval = ext2fs_irel_start_iter(irel);
 	if (retval) {
 		com_err(argv[0], retval, "while calling ext2fs_irel_start_iter");
@@ -525,7 +525,7 @@ void do_irel_dump(int argc, char **argv)
 		}
 		if (ino == 0)
 			break;
-		
+
 		display_irel_entry(ino, &ent, 1);
 	}
 	return;
@@ -538,11 +538,11 @@ void do_irel_add_ref(int argc, char **argv)
 	blk_t		block, offset;
 	ext2_ino_t	ino;
 	struct ext2_inode_reference ref;
-	
+
 
 	if (check_irel(argv[0]))
 		return;
-	
+
 	if (argc < 4) {
 		printf(usage, argv[0]);
 		return;
@@ -576,7 +576,7 @@ void do_irel_start_iter_ref(int argc, char **argv)
 
 	if (check_irel(argv[0]))
 		return;
-	
+
 	if (argc < 2) {
 		printf(usage, argv[0]);
 		return;
@@ -599,7 +599,7 @@ void do_irel_next_ref(int argc, char **argv)
 
 	if (check_irel(argv[0]))
 		return;
-	
+
 	retval = ext2fs_irel_next_ref(irel, &ref);
 	if (retval) {
 		com_err(argv[0], retval, "while calling ext2fs_irel_next_ref");
@@ -617,7 +617,7 @@ void do_irel_move(int argc, char **argv)
 
 	if (check_irel(argv[0]))
 		return;
-	
+
 	if (argc < 3) {
 		printf(usage, argv[0]);
 		return;
@@ -643,7 +643,7 @@ void do_irel_delete(int argc, char **argv)
 
 	if (check_irel(argv[0]))
 		return;
-	
+
 	if (argc < 2) {
 		printf(usage, argv[0]);
 		return;
@@ -717,7 +717,7 @@ void main(int argc, char **argv)
 	char		*request = 0;
 	int		exit_status = 0;
 	char		*cmd_file = 0;
-	
+
 	initialize_ext2_error_table();
 
 	while ((c = getopt (argc, argv, "wR:f:")) != EOF) {

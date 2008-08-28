@@ -1,8 +1,8 @@
 /*
  * tst_inode.c --- this function tests the inode scan function
- * 
+ *
  * Copyright (C) 1996 by Theodore Ts'o.
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -75,7 +75,7 @@ static void setup(void)
 
 
 	test_io_cb_read_blk = test_read_blk;
-	
+
 	retval = ext2fs_initialize("test fs", 0, &param,
 				   test_io_manager, &test_fs);
 	if (retval) {
@@ -110,7 +110,7 @@ static void setup(void)
 			"While allocating bad inode bitmap");
 		exit(1);
 	}
-	
+
 	retval = ext2fs_badblocks_list_create(&test_badblocks, 5);
 	if (retval) {
 		com_err("setup", retval, "while creating badblocks list");

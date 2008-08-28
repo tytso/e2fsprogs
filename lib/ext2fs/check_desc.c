@@ -1,6 +1,6 @@
 /*
  * check_desc.c --- Check the group descriptors of an ext2 filesystem
- * 
+ *
  * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -53,7 +53,7 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 					       EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
 			first_block = ext2fs_group_first_block(fs, i);
 			last_block = ext2fs_group_last_block(fs, i);
-			if (i == (fs->group_desc_count - 1)) 
+			if (i == (fs->group_desc_count - 1))
 				last_block = fs->super->s_blocks_count-1;
 		}
 
@@ -88,7 +88,7 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 			retval = EXT2_ET_GDESC_BAD_INODE_TABLE;
 			goto errout;
 		}
-		for (j = 0, b = blk; j < fs->inode_blocks_per_group; 
+		for (j = 0, b = blk; j < fs->inode_blocks_per_group;
 		     j++, b++) {
 			if (ext2fs_test_block_bitmap(bmap, b)) {
 				retval = EXT2_ET_GDESC_BAD_INODE_TABLE;

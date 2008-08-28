@@ -213,7 +213,7 @@ static void remove_journal_device(ext2_filsys fs)
 			break;
 	}
 	if (i >= nr_users) {
-		fputs(_("Filesystem's UUID not found on journal device.\n"), 
+		fputs(_("Filesystem's UUID not found on journal device.\n"),
 		      stderr);
 		commit_remove_journal = 1;
 		goto no_valid_journal;
@@ -246,7 +246,7 @@ no_valid_journal:
 
 /* Helper function for remove_journal_inode */
 static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
-			       int blockcnt EXT2FS_ATTR((unused)), 
+			       int blockcnt EXT2FS_ATTR((unused)),
 			       void *private EXT2FS_ATTR((unused)))
 {
 	blk_t	block;
@@ -269,7 +269,7 @@ static void remove_journal_inode(ext2_filsys fs)
 	struct ext2_inode	inode;
 	errcode_t		retval;
 	ino_t			ino = fs->super->s_journal_inum;
-	
+
 	retval = ext2fs_read_inode(fs, ino,  &inode);
 	if (retval) {
 		com_err(program_name, retval,
@@ -542,7 +542,7 @@ static void parse_e2label_options(int argc, char ** argv)
 		*io_options++ = 0;
 	device_name = blkid_get_devname(NULL, argv[1], NULL);
 	if (!device_name) {
-		com_err("e2label", 0, _("Unable to resolve '%s'"), 
+		com_err("e2label", 0, _("Unable to resolve '%s'"),
 			argv[1]);
 		exit(1);
 	}
@@ -551,7 +551,7 @@ static void parse_e2label_options(int argc, char ** argv)
 		open_flag |= EXT2_FLAG_RW;
 		L_flag = 1;
 		new_label = argv[2];
-	} else 
+	} else
 		print_label++;
 }
 
@@ -740,7 +740,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 				mntopts_cmd = optarg;
 				open_flag = EXT2_FLAG_RW;
 				break;
-				
+
 			case 'O':
 				if (features_cmd) {
 					com_err (program_name, 0,
@@ -827,7 +827,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 		*io_options++ = 0;
 	device_name = blkid_get_devname(NULL, argv[optind], NULL);
 	if (!device_name) {
-		com_err("tune2fs", 0, _("Unable to resolve '%s'"), 
+		com_err("tune2fs", 0, _("Unable to resolve '%s'"),
 			argv[optind]);
 		exit(1);
 	}
@@ -844,7 +844,7 @@ void do_findfs(int argc, char **argv)
 	}
 	dev = blkid_get_devname(NULL, argv[1], NULL);
 	if (!dev) {
-		com_err("findfs", 0, _("Unable to resolve '%s'"), 
+		com_err("findfs", 0, _("Unable to resolve '%s'"),
 			argv[1]);
 		exit(1);
 	}
@@ -915,7 +915,7 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 				continue;
 			}
 			stripe_width_set = 1;
-		} else 
+		} else
 			r_usage++;
 	}
 	if (r_usage) {
@@ -932,7 +932,7 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 		exit(1);
 	}
 	free(buf);
-}	
+}
 
 static int get_move_bitmap(ext2_filsys fs, int new_ino_blks_per_grp,
 					ext2fs_block_bitmap bmap)
@@ -1414,7 +1414,7 @@ int main (int argc, char ** argv)
 		parse_e2label_options(argc, argv);
 	else
 		parse_tune2fs_options(argc, argv);
-	
+
 #ifdef CONFIG_TESTIO_DEBUG
 	io_ptr = test_io_manager;
 	test_io_backing_manager = unix_io_manager;
@@ -1423,7 +1423,7 @@ int main (int argc, char ** argv)
 #endif
 
 retry_open:
-	retval = ext2fs_open2(device_name, io_options, open_flag, 
+	retval = ext2fs_open2(device_name, io_options, open_flag,
 			      0, 0, io_ptr, &fs);
         if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
@@ -1562,7 +1562,7 @@ retry_open:
 	}
 	if (L_flag) {
 		if (strlen(new_label) > sizeof(sb->s_volume_name))
-			fputs(_("Warning: label too long, truncating.\n"), 
+			fputs(_("Warning: label too long, truncating.\n"),
 			      stderr);
 		memset(sb->s_volume_name, 0, sizeof(sb->s_volume_name));
 		strncpy(sb->s_volume_name, new_label,
@@ -1583,7 +1583,7 @@ retry_open:
 		parse_extended_opts(fs, extended_cmd);
 	if (journal_size || journal_device)
 		add_journal(fs);
-	
+
 	if (U_flag) {
 		if ((strcasecmp(new_UUID, "null") == 0) ||
 		    (strcasecmp(new_UUID, "clear") == 0)) {

@@ -1,6 +1,6 @@
 /*
  * io.h --- the I/O manager abstraction
- * 
+ *
  * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -76,7 +76,7 @@ struct struct_io_manager {
 	errcode_t (*flush)(io_channel channel);
 	errcode_t (*write_byte)(io_channel channel, unsigned long offset,
 				int count, const void *data);
-	errcode_t (*set_option)(io_channel channel, const char *option, 
+	errcode_t (*set_option)(io_channel channel, const char *option,
 				const char *arg);
 	errcode_t (*get_stats)(io_channel channel, io_stats *io_stats);
 	errcode_t (*read_blk64)(io_channel channel, unsigned long long block,
@@ -98,11 +98,11 @@ struct struct_io_manager {
 #define io_channel_write_blk(c,b,n,d)	((c)->manager->write_blk((c),b,n,d))
 #define io_channel_flush(c) 		((c)->manager->flush((c)))
 #define io_channel_bumpcount(c)		((c)->refcount++)
-	
+
 /* io_manager.c */
-extern errcode_t io_channel_set_options(io_channel channel, 
+extern errcode_t io_channel_set_options(io_channel channel,
 					const char *options);
-extern errcode_t io_channel_write_byte(io_channel channel, 
+extern errcode_t io_channel_write_byte(io_channel channel,
 				       unsigned long offset,
 				       int count, const void *data);
 extern errcode_t io_channel_read_blk64(io_channel channel,
@@ -130,4 +130,4 @@ extern void (*test_io_cb_set_blksize)
 	(int blksize, errcode_t err);
 
 #endif /* _EXT2FS_EXT2_IO_H */
-	
+

@@ -7,14 +7,14 @@
  * This file may be redistributed under the terms of the GNU Public
  * License.
  * %End-Header%
- * 
+ *
  * Pass #3 assures that all directories are connected to the
  * filesystem tree, using the following algorithm:
  *
  * First, the root directory is checked to make sure it exists; if
  * not, e2fsck will offer to create a new one.  It is then marked as
  * "done".
- * 
+ *
  * Then, pass3 interates over all directory inodes; for each directory
  * it attempts to trace up the filesystem tree, using dirinfo.parent
  * until it reaches a directory which has been marked "done".  If it
@@ -24,7 +24,7 @@
  * twice, then it has detected a filesystem loop, and it will again
  * offer to reconnect the directory to /lost+found in to break the
  * filesystem loop.
- * 
+ *
  * Pass 3 also contains the subroutine, e2fsck_reconnect_file() to
  * reconnect inodes to /lost+found; this subroutine is also used by
  * pass 4.  e2fsck_reconnect_file() calls get_lost_and_found(), which
@@ -48,7 +48,7 @@ static void fix_dotdot(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent);
 
 static ext2fs_inode_bitmap inode_loop_detect = 0;
 static ext2fs_inode_bitmap inode_done_map = 0;
-	
+
 void e2fsck_pass3(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
@@ -104,7 +104,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 	if (ctx->progress)
 		if ((ctx->progress)(ctx, 3, 0, maxdirs))
 			goto abort_exit;
-	
+
 	iter = e2fsck_dir_info_iter_begin(ctx);
 	while ((dir = e2fsck_dir_info_iter(ctx, iter)) != 0) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
@@ -128,7 +128,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 	 * optimized, do it here.
 	 */
 	e2fsck_rehash_directories(ctx);
-	
+
 abort_exit:
 	e2fsck_free_dir_info(ctx);
 	if (inode_loop_detect) {
@@ -159,9 +159,9 @@ static void check_root(e2fsck_t ctx)
 	struct ext2_inode	inode;
 	char *			block;
 	struct problem_context	pctx;
-	
+
 	clear_problem_context(&pctx);
-	
+
 	if (ext2fs_test_inode_bitmap(ctx->inode_used_map, EXT2_ROOT_INO)) {
 		/*
 		 * If the root inode is not a directory, die here.  The
@@ -183,7 +183,7 @@ static void check_root(e2fsck_t ctx)
 	}
 
 	e2fsck_read_bitmaps(ctx);
-	
+
 	/*
 	 * First, find a free block
 	 */
@@ -240,7 +240,7 @@ static void check_root(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	
+
 	/*
 	 * Miscellaneous bookkeeping...
 	 */
@@ -261,7 +261,7 @@ static void check_root(e2fsck_t ctx)
  * the lost+found.  We have to do loop detection; if we ever discover
  * a loop, we treat that as a disconnected directory and offer to
  * reparent it to lost+found.
- * 
+ *
  * However, loop detection is expensive, because for very large
  * filesystems, the inode_loop_detect bitmap is huge, and clearing it
  * is non-trivial.  Loops in filesystems are also a rare error case,
@@ -302,7 +302,7 @@ static int check_directory(e2fsck_t ctx, ext2_ino_t dir,
 		 * reparent it to lost+found
 		 */
 		if (!parent ||
-		    (loop_pass && 
+		    (loop_pass &&
 		     (ext2fs_test_inode_bitmap(inode_loop_detect,
 					       parent)))) {
 			pctx->ino = ino;
@@ -310,7 +310,7 @@ static int check_directory(e2fsck_t ctx, ext2_ino_t dir,
 				if (e2fsck_reconnect_file(ctx, pctx->ino))
 					ext2fs_unmark_valid(fs);
 				else {
-					fix_dotdot(ctx, pctx->ino, 
+					fix_dotdot(ctx, pctx->ino,
 						   ctx->lost_and_found);
 					parent = ctx->lost_and_found;
 				}
@@ -334,7 +334,7 @@ static int check_directory(e2fsck_t ctx, ext2_ino_t dir,
 				pctx->errcode = ext2fs_allocate_inode_bitmap(fs, _("inode loop detection bitmap"), &inode_loop_detect);
 				if (pctx->errcode) {
 					pctx->num = 1;
-					fix_problem(ctx, 
+					fix_problem(ctx,
 				    PR_3_ALLOCATE_IBITMAP_ERROR, pctx);
 					ctx->flags |= E2F_FLAG_ABORT;
 					return -1;
@@ -380,7 +380,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 		return ctx->lost_and_found;
 
 	clear_problem_context(&pctx);
-	
+
 	retval = ext2fs_lookup(fs, EXT2_ROOT_INO, name,
 			       sizeof(name)-1, 0, &ino);
 	if (retval && !fix)
@@ -390,7 +390,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 			ctx->lost_and_found = ino;
 			return ino;
 		}
-				
+
 		/* Lost+found isn't a directory! */
 		if (!fix)
 			return 0;
@@ -419,7 +419,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	 * them.
 	 */
 	e2fsck_read_bitmaps(ctx);
-	
+
 	/*
 	 * First, find a free block
 	 */
@@ -531,7 +531,7 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t ino)
 		fix_problem(ctx, PR_3_NO_LPF, &pctx);
 		return 1;
 	}
-	
+
 	sprintf(name, "#%u", ino);
 	if (ext2fs_read_inode(fs, ino, &inode) == 0)
 		file_type = ext2_file_type(inode.i_mode);
@@ -539,7 +539,7 @@ int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t ino)
 	if (retval == EXT2_ET_DIR_NO_SPACE) {
 		if (!fix_problem(ctx, PR_3_EXPAND_LF_DIR, &pctx))
 			return 1;
-		retval = e2fsck_expand_directory(ctx, ctx->lost_and_found, 
+		retval = e2fsck_expand_directory(ctx, ctx->lost_and_found,
 						 1, 0);
 		if (retval) {
 			pctx.errcode = retval;
@@ -567,7 +567,7 @@ errcode_t e2fsck_adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, int adj)
 	ext2_filsys fs = ctx->fs;
 	errcode_t		retval;
 	struct ext2_inode 	inode;
-	
+
 	if (!ino)
 		return 0;
 
@@ -593,7 +593,7 @@ errcode_t e2fsck_adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, int adj)
 		ext2fs_icount_decrement(ctx->inode_link_info, ino, 0);
 		inode.i_links_count--;
 	}
-	
+
 	retval = ext2fs_write_inode(fs, ino, &inode);
 	if (retval)
 		return retval;
@@ -627,7 +627,7 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 		return 0;
 
 	clear_problem_context(&pctx);
-	
+
 	retval = e2fsck_adjust_inode_count(fp->ctx, dirent->inode, -1);
 	if (retval) {
 		pctx.errcode = retval;
@@ -641,7 +641,7 @@ static int fix_dotdot_proc(struct ext2_dir_entry *dirent,
 	dirent->inode = fp->parent;
 	if (fp->ctx->fs->super->s_feature_incompat &
 	    EXT2_FEATURE_INCOMPAT_FILETYPE)
-		dirent->name_len = (dirent->name_len & 0xFF) | 
+		dirent->name_len = (dirent->name_len & 0xFF) |
 			(EXT2_FT_DIR << 8);
 	else
 		dirent->name_len = dirent->name_len & 0xFF;
@@ -665,7 +665,7 @@ static void fix_dotdot(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 #if 0
 	printf("Fixing '..' of inode %lu to be %lu...\n", ino, parent);
 #endif
-	
+
 	clear_problem_context(&pctx);
 	pctx.ino = ino;
 	retval = ext2fs_dir_iterate(fs, ino, DIRENT_FLAG_INCLUDE_EMPTY,
@@ -712,7 +712,7 @@ static int expand_dir_proc(ext2_filsys fs,
 	e2fsck_t	ctx;
 
 	ctx = es->ctx;
-	
+
 	if (es->guaranteed_size && blockcnt >= es->guaranteed_size)
 		return BLOCK_ABORT;
 
@@ -744,7 +744,7 @@ static int expand_dir_proc(ext2_filsys fs,
 		}
 		memset(block, 0, fs->blocksize);
 		retval = io_channel_write_blk(fs->io, new_blk, 1, block);
-	}	
+	}
 	if (retval) {
 		es->err = retval;
 		return BLOCK_ABORT;
@@ -754,7 +754,7 @@ static int expand_dir_proc(ext2_filsys fs,
 	ext2fs_mark_block_bitmap(ctx->block_found_map, new_blk);
 	ext2fs_block_alloc_stats(fs, new_blk, +1);
 	es->newblocks++;
-	
+
 	if (es->num == 0)
 		return (BLOCK_CHANGED | BLOCK_ABORT);
 	else
@@ -768,7 +768,7 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	errcode_t	retval;
 	struct expand_dir_struct es;
 	struct ext2_inode	inode;
-	
+
 	if (!(fs->flags & EXT2_FLAG_RW))
 		return EXT2_ET_RO_FILSYS;
 
@@ -781,14 +781,14 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	retval = ext2fs_check_directory(fs, dir);
 	if (retval)
 		return retval;
-	
+
 	es.num = num;
 	es.guaranteed_size = guaranteed_size;
 	es.last_block = 0;
 	es.err = 0;
 	es.newblocks = 0;
 	es.ctx = ctx;
-	
+
 	retval = ext2fs_block_iterate2(fs, dir, BLOCK_FLAG_APPEND,
 				       0, expand_dir_proc, &es);
 
@@ -801,7 +801,7 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	retval = ext2fs_read_inode(fs, dir, &inode);
 	if (retval)
 		return retval;
-	
+
 	inode.i_size = (es.last_block + 1) * fs->blocksize;
 	ext2fs_iblk_add_blocks(fs, &inode, es.newblocks);
 

@@ -58,7 +58,7 @@ main (int argc, char *argv[])
 		default:
 			usage(argv[0]);
 		}
-	
+
 	switch (do_type) {
 	case DO_TYPE_TIME:
 		uuid_generate_time(uu);
@@ -70,7 +70,7 @@ main (int argc, char *argv[])
 		uuid_generate(uu);
 		break;
 	}
-	
+
 	uuid_unparse(uu, str);
 
 	printf("%s\n", str);

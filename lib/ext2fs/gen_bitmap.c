@@ -1,6 +1,6 @@
 /*
  * gen_bitmap.c --- Generic (32-bit) bitmap routines
- * 
+ *
  * Copyright (C) 2001 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -38,7 +38,7 @@ struct ext2fs_struct_generic_bitmap {
 	__u32		reserved[7];
 };
 
-/* 
+/*
  * Used by previously inlined function, so we have to export this and
  * not change the function signature
  */
@@ -63,7 +63,7 @@ static errcode_t check_magic(ext2fs_generic_bitmap bitmap)
 	return 0;
 }
 
-errcode_t ext2fs_make_generic_bitmap(errcode_t magic, ext2_filsys fs, 
+errcode_t ext2fs_make_generic_bitmap(errcode_t magic, ext2_filsys fs,
 				     __u32 start, __u32 end, __u32 real_end,
 				     const char *descr, char *init_map,
 				     ext2fs_generic_bitmap *ret)
@@ -72,7 +72,7 @@ errcode_t ext2fs_make_generic_bitmap(errcode_t magic, ext2_filsys fs,
 	errcode_t		retval;
 	size_t			size;
 
-	retval = ext2fs_get_mem(sizeof(struct ext2fs_struct_generic_bitmap), 
+	retval = ext2fs_get_mem(sizeof(struct ext2fs_struct_generic_bitmap),
 				&bitmap);
 	if (retval)
 		return retval;
@@ -124,7 +124,7 @@ errcode_t ext2fs_allocate_generic_bitmap(__u32 start,
 					 const char *descr,
 					 ext2fs_generic_bitmap *ret)
 {
-	return ext2fs_make_generic_bitmap(EXT2_ET_MAGIC_GENERIC_BITMAP, 0, 
+	return ext2fs_make_generic_bitmap(EXT2_ET_MAGIC_GENERIC_BITMAP, 0,
 					  start, end, real_end, descr, 0, ret);
 }
 
@@ -132,7 +132,7 @@ errcode_t ext2fs_copy_generic_bitmap(ext2fs_generic_bitmap src,
 				     ext2fs_generic_bitmap *dest)
 {
 	return (ext2fs_make_generic_bitmap(src->magic, src->fs,
-					   src->start, src->end, 
+					   src->start, src->end,
 					   src->real_end,
 					   src->description, src->bitmap,
 					   dest));
@@ -209,7 +209,7 @@ errcode_t ext2fs_fudge_generic_bitmap_end(ext2fs_inode_bitmap bitmap,
 					  ext2_ino_t end, ext2_ino_t *oend)
 {
 	EXT2_CHECK_MAGIC(bitmap, magic);
-	
+
 	if (end > bitmap->real_end)
 		return neq;
 	if (oend)
@@ -244,7 +244,7 @@ errcode_t ext2fs_resize_generic_bitmap(errcode_t magic,
 		bmap->end = new_end;
 		return 0;
 	}
-	
+
 	size = ((bmap->real_end - bmap->start) / 8) + 1;
 	new_size = ((new_real_end - bmap->start) / 8) + 1;
 
@@ -266,7 +266,7 @@ errcode_t ext2fs_compare_generic_bitmap(errcode_t magic, errcode_t neq,
 					ext2fs_generic_bitmap bm2)
 {
 	blk_t	i;
-	
+
 	if (!bm1 || bm1->magic != magic)
 		return magic;
 	if (!bm2 || bm2->magic != magic)
@@ -291,8 +291,8 @@ void ext2fs_set_generic_bitmap_padding(ext2fs_generic_bitmap map)
 	__u32	i, j;
 
 	/* Protect loop from wrap-around if map->real_end is maxed */
-	for (i=map->end+1, j = i - map->start; 
-	     i <= map->real_end && i > map->end; 
+	for (i=map->end+1, j = i - map->start;
+	     i <= map->real_end && i > map->end;
 	     i++, j++)
 		ext2fs_set_bit(j, map->bitmap);
 }
@@ -348,7 +348,7 @@ void ext2fs_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
 				    blk_t block, int num)
 {
 	int	i;
-	
+
 	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_MARK, block,
 				   bitmap->description);
@@ -362,13 +362,13 @@ void ext2fs_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
 					       blk_t block, int num)
 {
 	int	i;
-	
+
 	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_UNMARK, block,
 				   bitmap->description);
 		return;
 	}
 	for (i=0; i < num; i++)
-		ext2fs_fast_clear_bit(block + i - bitmap->start, 
+		ext2fs_fast_clear_bit(block + i - bitmap->start,
 				      bitmap->bitmap);
 }

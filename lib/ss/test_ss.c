@@ -1,6 +1,6 @@
 /*
  * test_ss.c
- * 
+ *
  * Copyright 1987, 1988 by MIT Student Information Processing Board
  *
  * Permission to use, copy, modify, and distribute this software and
@@ -11,7 +11,7 @@
  * M.I.T. S.I.P.B. make no representations about the suitability of
  * this software for any purpose.  It is provided "as is" without
  * express or implied warranty.
- 
+
  */
 
 #include <unistd.h>

@@ -6,7 +6,7 @@
  *                                 Universite Pierre et Marie Curie (Paris VI)
  *
  * Copyright (C) 1995, 1996, 1997  Theodore Ts'o <tytso@mit.edu>
- * 
+ *
  * This file can be redistributed under the terms of the GNU Library General
  * Public License
  */
@@ -227,7 +227,7 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	fprintf(f, "Block size:               %u\n", EXT2_BLOCK_SIZE(sb));
 	fprintf(f, "Fragment size:            %u\n", EXT2_FRAG_SIZE(sb));
 	if (sb->s_reserved_gdt_blocks)
-		fprintf(f, "Reserved GDT blocks:      %u\n", 
+		fprintf(f, "Reserved GDT blocks:      %u\n",
 			sb->s_reserved_gdt_blocks);
 	fprintf(f, "Blocks per group:         %u\n", sb->s_blocks_per_group);
 	fprintf(f, "Fragments per group:      %u\n", sb->s_frags_per_group);
@@ -275,10 +275,10 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "First inode:              %d\n", sb->s_first_ino);
 		fprintf(f, "Inode size:	          %d\n", sb->s_inode_size);
 		if (sb->s_min_extra_isize)
-			fprintf(f, "Required extra isize:     %d\n", 
+			fprintf(f, "Required extra isize:     %d\n",
 				sb->s_min_extra_isize);
 		if (sb->s_want_extra_isize)
-			fprintf(f, "Desired extra isize:      %d\n", 
+			fprintf(f, "Desired extra isize:      %d\n",
 				sb->s_want_extra_isize);
 	}
 	if (!e2p_is_null_uuid(sb->s_journal_uuid))

@@ -1,6 +1,6 @@
 /*
  * util.c --- miscellaneous utilities
- * 
+ *
  * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -42,7 +42,7 @@ extern e2fsck_t e2fsck_global_ctx;   /* Try your very best not to use this! */
 
 void fatal_error(e2fsck_t ctx, const char *msg)
 {
-	if (msg) 
+	if (msg)
 		fprintf (stderr, "e2fsck: %s\n", msg);
 	if (ctx->fs && ctx->fs->io) {
 		if (ctx->fs->io->magic == EXT2_ET_MAGIC_IO_CHANNEL)
@@ -74,11 +74,11 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
 	return ret;
 }
 
-char *string_copy(e2fsck_t ctx EXT2FS_ATTR((unused)), 
+char *string_copy(e2fsck_t ctx EXT2FS_ATTR((unused)),
 		  const char *str, int len)
 {
 	char	*ret;
-	
+
 	if (!str)
 		return NULL;
 	if (!len)
@@ -272,7 +272,7 @@ void init_resource_track(struct resource_track *track, io_channel channel)
 	struct rusage r;
 #endif
 	io_stats io_start = 0;
-	
+
 	track->brk_start = sbrk(0);
 	gettimeofday(&track->time_start, 0);
 #ifdef HAVE_GETRUSAGE
@@ -327,7 +327,7 @@ void print_resource_track(const char *desc, struct resource_track *track,
 
 #ifdef HAVE_MALLINFO
 #define kbytes(x)	(((x) + 1023) / 1024)
-	
+
 	malloc_info = mallinfo();
 	printf(_("Memory used: %dk/%dk (%dk/%dk), "),
 	       kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
@@ -335,7 +335,7 @@ void print_resource_track(const char *desc, struct resource_track *track,
 #else
 	printf(_("Memory used: %d, "),
 	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)));
-#endif	
+#endif
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
 
@@ -359,7 +359,7 @@ void print_resource_track(const char *desc, struct resource_track *track,
 		channel->manager->get_stats(channel, &delta);
 		if (delta) {
 			bytes_read = delta->bytes_read - track->bytes_read;
-			bytes_written = delta->bytes_written - 
+			bytes_written = delta->bytes_written -
 				track->bytes_written;
 		}
 		printf("I/O read: %lluMB, write: %lluMB, rate: %.2fMB/s\n",
@@ -443,7 +443,7 @@ blk_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 	void			*buf = NULL;
 	int			blocksize;
 	blk_t			superblock, ret_sb = 8193;
-	
+
 	if (fs && fs->super) {
 		ret_sb = (fs->super->s_blocks_per_group +
 			  fs->super->s_first_data_block);
@@ -453,7 +453,7 @@ blk_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 		}
 		return ret_sb;
 	}
-		
+
 	if (ctx) {
 		if (ctx->blocksize) {
 			ret_sb = ctx->blocksize * 8;
@@ -518,22 +518,22 @@ int ext2_file_type(unsigned int mode)
 
 	if (LINUX_S_ISDIR(mode))
 		return EXT2_FT_DIR;
-	
+
 	if (LINUX_S_ISCHR(mode))
 		return EXT2_FT_CHRDEV;
-	
+
 	if (LINUX_S_ISBLK(mode))
 		return EXT2_FT_BLKDEV;
-	
+
 	if (LINUX_S_ISLNK(mode))
 		return EXT2_FT_SYMLINK;
 
 	if (LINUX_S_ISFIFO(mode))
 		return EXT2_FT_FIFO;
-	
+
 	if (LINUX_S_ISSOCK(mode))
 		return EXT2_FT_SOCK;
-	
+
 	return 0;
 }
 

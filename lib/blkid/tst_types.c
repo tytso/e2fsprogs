@@ -2,7 +2,7 @@
  * This testing program makes sure the blkid_types header file
  *
  * Copyright (C) 2006 by Theodore Ts'o.
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.

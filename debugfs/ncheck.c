@@ -1,6 +1,6 @@
 /*
  * ncheck.c --- given a list of inodes, generate a list of names
- * 
+ *
  * Copyright (C) 1994 Theodore Ts'o.  This file may be redistributed
  * under the terms of the GNU Public License.
  */
@@ -52,7 +52,7 @@ static int ncheck_proc(struct ext2_dir_entry *dirent,
 	}
 	if (!iw->inodes_left)
 		return DIRENT_ABORT;
-	
+
 	return 0;
 }
 
@@ -66,7 +66,7 @@ void do_ncheck(int argc, char **argv)
 	struct ext2_inode	inode;
 	errcode_t		retval;
 	char			*tmp;
-	
+
 	if (argc < 2) {
 		com_err(argv[0], 0, "Usage: ncheck <inode number> ...");
 		return;
@@ -105,7 +105,7 @@ void do_ncheck(int argc, char **argv)
 		com_err("ncheck", retval, "while starting inode scan");
 		goto error_out;
 	}
-	
+
 	while (ino) {
 		if (!inode.i_links_count)
 			goto next;
@@ -121,7 +121,7 @@ void do_ncheck(int argc, char **argv)
 
 		iw.position = 0;
 		iw.parent = ino;
-		
+
 		retval = ext2fs_dir_iterate(current_fs, ino, 0, 0,
 					    ncheck_proc, &iw);
 		if (retval) {
@@ -155,7 +155,7 @@ void do_ncheck(int argc, char **argv)
 				"while resolving pathname for inode %d (%d)",
 				iinfo->parent, iinfo->ino);
 	}
-	
+
 	printf("Inode\tPathname\n");
 	for (i=0, iinfo = iw.iarray; i < iw.num_inodes; i++, iinfo++) {
 		if (iinfo->parent == 0) {

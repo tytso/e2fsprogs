@@ -29,7 +29,7 @@ int iterate_on_dir (const char * dir_name,
 	struct dirent *de, *dep;
 	int	max_len = -1, len, ret = 0;
 
-#if HAVE_PATHCONF && defined(_PC_NAME_MAX) 
+#if HAVE_PATHCONF && defined(_PC_NAME_MAX)
 	max_len = pathconf(dir_name, _PC_NAME_MAX);
 #endif
 	if (max_len == -1) {

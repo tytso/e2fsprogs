@@ -53,7 +53,7 @@ int main (int argc, char ** argv)
 		perror ("mkdir");
 		exit(1);
 	}
-	
+
 	i = 0;
 	memset (name, 'x', 246);
 	do {

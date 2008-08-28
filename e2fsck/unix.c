@@ -1,6 +1,6 @@
 /*
  * unix.c - The unix-specific code for e2fsck
- * 
+ *
  * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -119,7 +119,7 @@ static void show_stats(e2fsck_t	ctx)
 
 	frag_percent = (10000 * ctx->fs_fragmented) / inodes_used;
 	frag_percent = (frag_percent + 5) / 10;
-	
+
 	if (!verbose) {
 		printf(_("%s: %u/%u files (%0d.%d%% non-contiguous), %u/%u blocks\n"),
 		       ctx->device_name, inodes_used, inodes,
@@ -236,7 +236,7 @@ static int is_on_batt(void)
 
 	f = fopen("/proc/apm", "r");
 	if (f) {
-		if (fscanf(f, "%s %s %s %x", tmp, tmp, tmp, &acflag) != 4) 
+		if (fscanf(f, "%s %s %s %x", tmp, tmp, tmp, &acflag) != 4)
 			acflag = 1;
 		fclose(f);
 		return (acflag != 1);
@@ -246,7 +246,7 @@ static int is_on_batt(void)
 		while ((de=readdir(d)) != NULL) {
 			if (!strncmp(".", de->d_name, 1))
 				continue;
-			snprintf(fname, 80, "/proc/acpi/ac_adapter/%s/state", 
+			snprintf(fname, 80, "/proc/acpi/ac_adapter/%s/state",
 				 de->d_name);
 			f = fopen(fname, "r");
 			if (!f)
@@ -280,14 +280,14 @@ static void check_if_skip(e2fsck_t ctx)
 	time_t lastcheck;
 
 	profile_get_boolean(ctx->profile, "options",
-			    "defer_check_on_battery", 0, 1, 
+			    "defer_check_on_battery", 0, 1,
 			    &defer_check_on_battery);
 	if (!defer_check_on_battery)
 		batt = 0;
 
 	if ((ctx->options & E2F_OPT_FORCE) || bad_blocks_file || cflag)
 		return;
-	
+
 	lastcheck = fs->super->s_lastcheck;
 	if (lastcheck > ctx->now)
 		lastcheck -= ctx->time_fudge;
@@ -303,7 +303,7 @@ static void check_if_skip(e2fsck_t ctx)
 		  (unsigned) fs->super->s_max_mnt_count)) {
 		reason = _(" has been mounted %u times without being checked");
 		reason_arg = fs->super->s_mnt_count;
-		if (batt && (fs->super->s_mnt_count < 
+		if (batt && (fs->super->s_mnt_count <
 			     (unsigned) fs->super->s_max_mnt_count*2))
 			reason = 0;
 	} else if (fs->super->s_checkinterval && (ctx->now < lastcheck)) {
@@ -311,11 +311,11 @@ static void check_if_skip(e2fsck_t ctx)
 		if (batt)
 			reason = 0;
 	} else if (fs->super->s_checkinterval &&
-		   ((ctx->now - lastcheck) >= 
+		   ((ctx->now - lastcheck) >=
 		    ((time_t) fs->super->s_checkinterval))) {
 		reason = _(" has gone %u days without being checked");
 		reason_arg = (ctx->now - fs->super->s_lastcheck)/(3600*24);
-		if (batt && ((ctx->now - fs->super->s_lastcheck) < 
+		if (batt && ((ctx->now - fs->super->s_lastcheck) <
 			     fs->super->s_checkinterval*2))
 			reason = 0;
 	}
@@ -333,7 +333,7 @@ static void check_if_skip(e2fsck_t ctx)
 	next_check = 100000;
 	if (fs->super->s_max_mnt_count > 0) {
 		next_check = fs->super->s_max_mnt_count - fs->super->s_mnt_count;
-		if (next_check <= 0) 
+		if (next_check <= 0)
 			next_check = 1;
 	}
 	if (fs->super->s_checkinterval &&
@@ -341,7 +341,7 @@ static void check_if_skip(e2fsck_t ctx)
 		next_check = 1;
 	if (next_check <= 5) {
 		if (next_check == 1) {
-			if (batt) 
+			if (batt)
 				fputs(_(" (check deferred; on battery)"),
 				      stdout);
 			else
@@ -372,7 +372,7 @@ static float calc_percent(struct percent_tbl *tbl, int pass, int curr,
 			  int max)
 {
 	float	percent;
-	
+
 	if (pass <= 0)
 		return 0.0;
 	if (pass > tbl->max_pass || max == 0)
@@ -386,7 +386,7 @@ extern void e2fsck_clear_progbar(e2fsck_t ctx)
 {
 	if (!(ctx->flags & E2F_FLAG_PROG_BAR))
 		return;
-	
+
 	printf("%s%s\r%s", ctx->start_meta, spaces + (sizeof(spaces) - 80),
 	       ctx->stop_meta);
 	fflush(stdout);
@@ -409,7 +409,7 @@ int e2fsck_simple_progress(e2fsck_t ctx, const char *label, float percent,
 	/*
 	 * Calculate the new progress position.  If the
 	 * percentage hasn't changed, then we skip out right
-	 * away. 
+	 * away.
 	 */
 	fixed_percent = (int) ((10 * percent) + 0.5);
 	if (ctx->progress_last_percent == fixed_percent)
@@ -454,7 +454,7 @@ int e2fsck_simple_progress(e2fsck_t ctx, const char *label, float percent,
 	else
 		fputs(" \r", stdout);
 	fputs(ctx->stop_meta, stdout);
-	
+
 	if (fixed_percent == 1000)
 		e2fsck_clear_progbar(ctx);
 	fflush(stdout);
@@ -470,9 +470,9 @@ static int e2fsck_update_progress(e2fsck_t ctx, int pass,
 
 	if (pass == 0)
 		return 0;
-	
+
 	if (ctx->progress_fd) {
-		snprintf(buf, sizeof(buf), "%d %lu %lu %s\n", 
+		snprintf(buf, sizeof(buf), "%d %lu %lu %s\n",
 			 pass, cur, max, ctx->device_name);
 		write(ctx->progress_fd, buf, strlen(buf));
 	} else {
@@ -594,7 +594,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 
 static void syntax_err_report(const char *filename, long err, int line_num)
 {
-	fprintf(stderr, 
+	fprintf(stderr,
 		_("Syntax error in e2fsck config file (%s, line #%d)\n\t%s\n"),
 		filename, line_num, error_message(err));
 	exit(FSCK_ERROR);
@@ -640,7 +640,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 	add_error_table(&et_ext2_error_table);
 	add_error_table(&et_prof_error_table);
 	blkid_get_cache(&ctx->blkid, NULL);
-	
+
 	if (argc && *argv)
 		ctx->program_name = *argv;
 	else
@@ -681,7 +681,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		case 'a':
 			if (ctx->options & (E2F_OPT_YES|E2F_OPT_NO)) {
 			conflict_opt:
-				fatal_error(ctx, 
+				fatal_error(ctx,
 	_("Only one of the options -p/-a, -n or -y may be specified."));
 			}
 			ctx->options |= E2F_OPT_PREEN;
@@ -780,11 +780,11 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		ctx->options |= E2F_OPT_READONLY;
 
 	ctx->io_options = strchr(argv[optind], '?');
-	if (ctx->io_options) 
+	if (ctx->io_options)
 		*ctx->io_options++ = 0;
 	ctx->filesystem_name = blkid_get_devname(ctx->blkid, argv[optind], 0);
 	if (!ctx->filesystem_name) {
-		com_err(ctx->program_name, 0, _("Unable to resolve '%s'"), 
+		com_err(ctx->program_name, 0, _("Unable to resolve '%s'"),
 			argv[optind]);
 		fatal_error(ctx, 0);
 	}
@@ -895,7 +895,7 @@ int main (int argc, char *argv[])
 	int sysval, sys_page_size = 4096;
 	__u32 features[3];
 	char *cp;
-	
+
 	clear_problem_context(&pctx);
 #ifdef MTRACE
 	mtrace();
@@ -916,7 +916,7 @@ int main (int argc, char *argv[])
 			"out of date!\n"));
 		show_version_only++;
 	}
-	
+
 	retval = PRS(argc, argv, &ctx);
 	if (retval) {
 		com_err("e2fsck", retval,
@@ -924,7 +924,7 @@ int main (int argc, char *argv[])
 		exit(FSCK_ERROR);
 	}
 	reserve_stdio_fds();
-	
+
 #ifdef RESOURCE_TRACK
 	init_resource_track(&ctx->global_rtrack, NULL);
 #endif
@@ -938,9 +938,9 @@ int main (int argc, char *argv[])
 			error_message(EXT2_ET_BASE), lib_ver_date);
 		exit(FSCK_OK);
 	}
-	
+
 	check_mount(ctx);
-	
+
 	if (!(ctx->options & E2F_OPT_PREEN) &&
 	    !(ctx->options & E2F_OPT_NO) &&
 	    !(ctx->options & E2F_OPT_YES)) {
@@ -963,22 +963,22 @@ restart:
 		flags |= EXT2_FLAG_EXCLUSIVE;
 
 	if (ctx->superblock && ctx->blocksize) {
-		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options, 
+		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
 				      flags, ctx->superblock, ctx->blocksize,
 				      io_ptr, &fs);
 	} else if (ctx->superblock) {
 		int blocksize;
 		for (blocksize = EXT2_MIN_BLOCK_SIZE;
 		     blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
-			retval = ext2fs_open2(ctx->filesystem_name, 
+			retval = ext2fs_open2(ctx->filesystem_name,
 					      ctx->io_options, flags,
 					      ctx->superblock, blocksize,
 					      io_ptr, &fs);
 			if (!retval)
 				break;
 		}
-	} else 
-		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options, 
+	} else
+		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
 				      flags, 0, 0, io_ptr, &fs);
 	if (!ctx->superblock && !(ctx->options & E2F_OPT_PREEN) &&
 	    !(ctx->flags & E2F_FLAG_SB_SPECIFIED) &&
@@ -991,7 +991,7 @@ restart:
 		}
 		if (!fs || (fs->group_desc_count > 1)) {
 			printf(_("%s: %s trying backup blocks...\n"),
-			       ctx->program_name, 
+			       ctx->program_name,
 			       retval ? _("Superblock invalid,") :
 			       _("Group descriptors look bad..."));
 			get_backup_sb(ctx, fs, ctx->filesystem_name, io_ptr);
@@ -1005,11 +1005,11 @@ restart:
 	     (retval == EXT2_ET_RO_UNSUPP_FEATURE)) &&
 	    fs && fs->super) {
 		sb = fs->super;
-		features[0] = (sb->s_feature_compat & 
+		features[0] = (sb->s_feature_compat &
 			       ~EXT2_LIB_FEATURE_COMPAT_SUPP);
-		features[1] = (sb->s_feature_incompat & 
+		features[1] = (sb->s_feature_incompat &
 			       ~EXT2_LIB_FEATURE_INCOMPAT_SUPP);
-		features[2] = (sb->s_feature_ro_compat & 
+		features[2] = (sb->s_feature_ro_compat &
 			       ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP);
 		if (features[0] || features[1] || features[2])
 			goto print_unsupp_features;
@@ -1077,8 +1077,8 @@ restart:
 		if (pctx.errcode == EBUSY) {
 			ext2fs_close(fs);
 			need_restart++;
-			pctx.errcode = 
-				ext2fs_get_device_size(ctx->filesystem_name, 
+			pctx.errcode =
+				ext2fs_get_device_size(ctx->filesystem_name,
 						       blocksize,
 						       &ctx->num_blocks);
 		}
@@ -1174,20 +1174,20 @@ restart:
 	 */
 	features[0] = sb->s_feature_compat & ~EXT2_LIB_FEATURE_COMPAT_SUPP;
 	features[1] = sb->s_feature_incompat & ~EXT2_LIB_FEATURE_INCOMPAT_SUPP;
-	features[2] = (sb->s_feature_ro_compat & 
+	features[2] = (sb->s_feature_ro_compat &
 		       ~EXT2_LIB_FEATURE_RO_COMPAT_SUPP);
 print_unsupp_features:
 	if (features[0] || features[1] || features[2]) {
 		int	i, j;
 		__u32	*mask = features, m;
 
-		fprintf(stderr, _("%s has unsupported feature(s):"), 
+		fprintf(stderr, _("%s has unsupported feature(s):"),
 			ctx->filesystem_name);
 
 		for (i=0; i <3; i++,mask++) {
 			for (j=0,m=1; j < 32; j++, m<<=1) {
 				if (*mask & m)
-					fprintf(stderr, " %s", 
+					fprintf(stderr, " %s",
 						e2p_feature2string(i, m));
 			}
 		}
@@ -1283,7 +1283,7 @@ print_unsupp_features:
 				fs->super->s_feature_compat &=
 					~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
 				fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
-				com_err(ctx->program_name, 0, 
+				com_err(ctx->program_name, 0,
 					_("Couldn't determine journal size"));
 				goto no_journal;
 			}
@@ -1342,7 +1342,7 @@ no_journal:
 		}
 	}
 	if (!ext2fs_test_valid(fs) ||
-	    ((exit_value & FSCK_CANCELED) && 
+	    ((exit_value & FSCK_CANCELED) &&
 	     (sb->s_state & EXT2_ERROR_FS))) {
 		printf(_("\n%s: ********** WARNING: Filesystem still has "
 			 "errors **********\n\n"), ctx->device_name);
@@ -1353,11 +1353,11 @@ no_journal:
 		int	allow_cancellation;
 
 		profile_get_boolean(ctx->profile, "options",
-				    "allow_cancellation", 0, 0, 
+				    "allow_cancellation", 0, 0,
 				    &allow_cancellation);
 		exit_value &= ~FSCK_NONDESTRUCT;
 		if (allow_cancellation && ext2fs_test_valid(fs) &&
-		    (sb->s_state & EXT2_VALID_FS) && 
+		    (sb->s_state & EXT2_VALID_FS) &&
 		    !(sb->s_state & EXT2_ERROR_FS))
 			exit_value = 0;
 	} else {

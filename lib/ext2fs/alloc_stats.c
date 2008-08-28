@@ -7,7 +7,7 @@
  * This file may be redistributed under the terms of the GNU Public
  * License.
  * %End-Header%
- * 
+ *
  */
 
 #include <stdio.h>
@@ -73,7 +73,7 @@ void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse)
 		(fs->block_alloc_stats)(fs, (blk64_t) blk, inuse);
 }
 
-void ext2fs_set_block_alloc_stats_callback(ext2_filsys fs, 
+void ext2fs_set_block_alloc_stats_callback(ext2_filsys fs,
 					   void (*func)(ext2_filsys fs,
 							blk64_t blk,
 							int inuse),

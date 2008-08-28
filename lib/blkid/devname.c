@@ -58,7 +58,7 @@ blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
 		if (strcmp(tmp->bid_name, devname))
 			continue;
 
-		DBG(DEBUG_DEVNAME, 
+		DBG(DEBUG_DEVNAME,
 		    printf("found devname %s in cache\n", tmp->bid_name));
 		dev = tmp;
 		break;
@@ -79,7 +79,7 @@ blkid_dev blkid_get_dev(blkid_cache cache, const char *devname, int flags)
 		dev = blkid_verify(cache, dev);
 		if (!dev || !(dev->bid_flags & BLKID_BID_FL_VERIFIED))
 			return dev;
-		/* 
+		/*
 		 * If the device is verified, then search the blkid
 		 * cache for any entries that match on the type, uuid,
 		 * and label, and verify them; if a cache entry can
@@ -192,7 +192,7 @@ static void probe_one(blkid_cache cache, const char *ptname,
 		    dev->bid_devno == devno)
 			goto set_pri;
 
-		if (stat(device, &st) == 0 && S_ISBLK(st.st_mode) && 
+		if (stat(device, &st) == 0 && S_ISBLK(st.st_mode) &&
 		    st.st_rdev == devno) {
 			devname = blkid_strdup(device);
 			break;
@@ -309,7 +309,7 @@ static void lvm_probe_all(blkid_cache cache, int only_if_new)
 			DBG(DEBUG_DEVNAME, printf("LVM dev %s: devno 0x%04X\n",
 						  lvm_device,
 						  (unsigned int) dev));
-			probe_one(cache, lvm_device, dev, BLKID_PRI_LVM, 
+			probe_one(cache, lvm_device, dev, BLKID_PRI_LVM,
 				  only_if_new);
 			free(lvm_device);
 		}
@@ -417,7 +417,7 @@ static int probe_all(blkid_cache cache, int only_if_new)
 				   ptname, (unsigned int) devs[which]));
 
 			if (sz > 1)
-				probe_one(cache, ptname, devs[which], 0, 
+				probe_one(cache, ptname, devs[which], 0,
 					  only_if_new);
 			lens[which] = 0;	/* mark as checked */
 		}

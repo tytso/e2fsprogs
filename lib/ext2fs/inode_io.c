@@ -56,11 +56,11 @@ static errcode_t inode_write_blk(io_channel channel, unsigned long block,
 static errcode_t inode_flush(io_channel channel);
 static errcode_t inode_write_byte(io_channel channel, unsigned long offset,
 				int size, const void *data);
-static errcode_t inode_read_blk64(io_channel channel, 
+static errcode_t inode_read_blk64(io_channel channel,
 				unsigned long long block, int count, void *data);
-static errcode_t inode_write_blk64(io_channel channel, 
+static errcode_t inode_write_blk64(io_channel channel,
 				unsigned long long block, int count, const void *data);
-				
+
 static struct struct_io_manager struct_inode_manager = {
 	EXT2_ET_MAGIC_IO_MANAGER,
 	"Inode I/O Manager",
@@ -158,7 +158,7 @@ static errcode_t inode_open(const char *name, int flags, io_channel *channel)
 				   &data->file);
 	if (retval)
 		goto cleanup;
-		
+
 	*channel = io;
 	return 0;
 
@@ -184,7 +184,7 @@ static errcode_t inode_close(io_channel channel)
 		return 0;
 
 	retval = ext2fs_file_close(data->file);
-	
+
 	ext2fs_free_mem(&channel->private_data);
 	if (channel->name)
 		ext2fs_free_mem(&channel->name);
@@ -251,7 +251,7 @@ static errcode_t inode_write_blk64(io_channel channel,
 	return ext2fs_file_write(data->file, buf, count, 0);
 }
 
-static errcode_t inode_write_blk(io_channel channel, unsigned long block, 
+static errcode_t inode_write_blk(io_channel channel, unsigned long block,
 				int count, const void *buf)
 {
 	return inode_write_blk64(channel, block, count, buf);
@@ -275,12 +275,12 @@ static errcode_t inode_write_byte(io_channel channel, unsigned long offset,
 }
 
 /*
- * Flush data buffers to disk.  
+ * Flush data buffers to disk.
  */
 static errcode_t inode_flush(io_channel channel)
 {
 	struct inode_private_data *data;
-	
+
 	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
 	data = (struct inode_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_INODE_IO_CHANNEL);

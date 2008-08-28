@@ -164,7 +164,7 @@ pop (int x)
   return x;
 }
 
-
+
 struct loaded_l10nfile *
 _nl_make_l10nflist (struct loaded_l10nfile **l10nfile_list,
 		    const char *dirlist, size_t dirlist_len,
@@ -359,7 +359,7 @@ _nl_make_l10nflist (struct loaded_l10nfile **l10nfile_list,
 
   return retval;
 }
-
+
 /* Normalize codeset name.  There is no standard for the codeset
    names.  Normalization allows the user to use any of the common
    names.  The return value is dynamically allocated and has to be

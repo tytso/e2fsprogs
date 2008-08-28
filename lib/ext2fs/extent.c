@@ -147,7 +147,7 @@ errcode_t ext2fs_extent_header_verify(void *ptr, int size)
 	eh_max = (size - sizeof(*eh)) / entry_size;
 	/* Allow two extent-sized items at the end of the block, for
 	 * ext4_extent_tail with checksum in the future. */
-	if ((ext2fs_le16_to_cpu(eh->eh_max) > eh_max) || 
+	if ((ext2fs_le16_to_cpu(eh->eh_max) > eh_max) ||
 	    (ext2fs_le16_to_cpu(eh->eh_max) < (eh_max - 2)))
 		return EXT2_ET_EXTENT_HEADER_BAD;
 
@@ -731,7 +731,7 @@ done:
 	return retval;
 }
 
-errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle, 
+errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle,
 				int flags EXT2FS_ATTR((unused)),
 				struct ext2fs_extent *extent)
 {
@@ -1426,7 +1426,7 @@ int common_extent_args_process(int argc, char *argv[], int min_argc,
 	if (common_args_process(argc, argv, min_argc, max_argc, cmd,
 				usage, flags))
 		return 1;
-	
+
 	if (!current_handle) {
 		com_err(cmd, 0, "Extent handle not open");
 		return 1;

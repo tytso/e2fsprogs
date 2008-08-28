@@ -477,7 +477,7 @@ int main(int argc, char **argv)
 		if (setregid(gid, gid) < 0)
 			die("setregid");
 #endif
-	
+
 #ifdef HAVE_SETRESUID
 		if (setresuid(uid, uid, uid) < 0)
 			die("setresuid");

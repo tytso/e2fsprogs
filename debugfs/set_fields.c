@@ -1,8 +1,8 @@
 /*
  * set_fields.c --- set a superblock value
- * 
+ *
  * Copyright (C) 2000, 2001, 2002, 2003, 2004 by Theodore Ts'o.
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -97,12 +97,12 @@ static struct field_set_info super_fields[] = {
 	{ "block_group_nr", &set_sb.s_block_group_nr, 2, parse_uint },
 	{ "feature_compat", &set_sb.s_feature_compat, 4, parse_uint },
 	{ "feature_incompat", &set_sb.s_feature_incompat, 4, parse_uint },
-	{ "feature_ro_compat", &set_sb.s_feature_ro_compat, 4, parse_uint }, 
+	{ "feature_ro_compat", &set_sb.s_feature_ro_compat, 4, parse_uint },
 	{ "uuid", &set_sb.s_uuid, 16, parse_uuid },
 	{ "volume_name",  &set_sb.s_volume_name, 16, parse_string },
 	{ "last_mounted",  &set_sb.s_last_mounted, 64, parse_string },
 	{ "lastcheck",  &set_sb.s_lastcheck, 4, parse_uint },
-	{ "algorithm_usage_bitmap", &set_sb.s_algorithm_usage_bitmap, 
+	{ "algorithm_usage_bitmap", &set_sb.s_algorithm_usage_bitmap,
 		  4, parse_uint },
 	{ "prealloc_blocks", &set_sb.s_prealloc_blocks, 1, parse_uint },
 	{ "prealloc_dir_blocks", &set_sb.s_prealloc_dir_blocks, 1,
@@ -120,7 +120,7 @@ static struct field_set_info super_fields[] = {
 	{ "default_mount_opts", &set_sb.s_default_mount_opts, 4, parse_uint },
 	{ "first_meta_bg", &set_sb.s_first_meta_bg, 4, parse_uint },
 	{ "mkfs_time", &set_sb.s_mkfs_time, 4, parse_time },
-	{ "jnl_blocks", &set_sb.s_jnl_blocks[0], 4, parse_uint, FLAG_ARRAY, 
+	{ "jnl_blocks", &set_sb.s_jnl_blocks[0], 4, parse_uint, FLAG_ARRAY,
 	  17 },
 	{ "blocks_count_hi", &set_sb.s_blocks_count_hi, 4, parse_uint },
 	{ "r_blocks_count_hi", &set_sb.s_r_blocks_count_hi, 4, parse_uint },
@@ -151,7 +151,7 @@ static struct field_set_info inode_fields[] = {
 	{ "flags", &set_inode.i_flags, 4, parse_uint },
 	{ "version", &set_inode.osd1.linux1.l_i_version, 4, parse_uint },
 	{ "translator", &set_inode.osd1.hurd1.h_i_translator, 4, parse_uint },
-	{ "block", &set_inode.i_block[0], 4, parse_uint, FLAG_ARRAY, 
+	{ "block", &set_inode.i_block[0], 4, parse_uint, FLAG_ARRAY,
 	  EXT2_NDIR_BLOCKS },
 	{ "block[IND]", &set_inode.i_block[EXT2_IND_BLOCK], 4, parse_uint },
 	{ "block[DIND]", &set_inode.i_block[EXT2_DIND_BLOCK], 4, parse_uint },
@@ -218,7 +218,7 @@ static struct field_set_info *find_field(struct field_set_info *fields,
 		else
 			*delim = 0;
 	}
-	/* 
+	/*
 	 * Can we parse the number?
 	 */
 	if (idx) {
@@ -353,7 +353,7 @@ static errcode_t parse_time(struct field_set_info *info, char *arg)
 static errcode_t parse_uuid(struct field_set_info *info, char *arg)
 {
 	unsigned char *	p = (unsigned char *) info->ptr;
-	
+
 	if ((strcasecmp(arg, "null") == 0) ||
 	    (strcasecmp(arg, "clear") == 0)) {
 		uuid_clear(p);
@@ -397,7 +397,7 @@ static errcode_t parse_bmap(struct field_set_info *info, char *arg)
 	}
 	blk = num;
 
-	retval = ext2fs_bmap(current_fs, set_ino, &set_inode, 0, BMAP_SET, 
+	retval = ext2fs_bmap(current_fs, set_ino, &set_inode, 0, BMAP_SET,
 			     array_idx, &blk);
 	if (retval) {
 		com_err("set_inode", retval, "while setting block map");
@@ -411,7 +411,7 @@ static errcode_t parse_gd_csum(struct field_set_info *info, char *arg)
 	if (strcmp(arg, "calc") == 0) {
 		ext2fs_group_desc_csum_set(current_fs, set_bg);
 		set_gd = current_fs->group_desc[set_bg];
-		printf("Checksum set to 0x%04x\n", 
+		printf("Checksum set to 0x%04x\n",
 		       current_fs->group_desc[set_bg].bg_checksum);
 		return 0;
 	}
@@ -458,7 +458,7 @@ static void print_possible_fields(struct field_set_info *fields)
 			type = "set physical->logical block map";
 		strcpy(name, ss->name);
 		if (ss->flags & FLAG_ARRAY) {
-			if (ss->max_idx > 0) 
+			if (ss->max_idx > 0)
 				sprintf(idx, "[%d]", ss->max_idx);
 			else
 				strcpy(idx, "[]");
@@ -476,7 +476,7 @@ void do_set_super(int argc, char *argv[])
 		"\t\"set_super_value -l\" will list the names of "
 		"superblock fields\n\twhich can be set.";
 	static struct field_set_info *ss;
-	
+
 	if ((argc == 2) && !strcmp(argv[1], "-l")) {
 		print_possible_fields(super_fields);
 		return;
@@ -503,7 +503,7 @@ void do_set_inode(int argc, char *argv[])
 		"\t\"set_inode_field -l\" will list the names of "
 		"the fields in an ext2 inode\n\twhich can be set.";
 	static struct field_set_info *ss;
-	
+
 	if ((argc == 2) && !strcmp(argv[1], "-l")) {
 		print_possible_fields(inode_fields);
 		return;

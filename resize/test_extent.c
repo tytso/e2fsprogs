@@ -5,7 +5,7 @@
  * 	PowerQuest, Inc.
  *
  * Copyright (C) 1999, 2000 by Theosore Ts'o
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -25,7 +25,7 @@ void do_test(FILE *in, FILE *out)
 	errcode_t	retval;
 	ext2_extent	extent = 0;
 	const char	*no_table = "# No extent table\n";
-	
+
 	while (!feof(in)) {
 		if (!fgets(buf, sizeof(buf), in))
 			break;
@@ -55,7 +55,7 @@ void do_test(FILE *in, FILE *out)
 			*cp++ = '\0';
 			arg1 = cp;
 			num1 = strtoul(arg1, 0, 0);
-			
+
 			cp = strchr(cp, ' ');
 		}
 		if (cp) {
@@ -63,7 +63,7 @@ void do_test(FILE *in, FILE *out)
 			arg2 = cp;
 			num2 = strtoul(arg2, 0, 0);
 		}
-		
+
 		if (!strcmp(cmd, "create")) {
 			retval = ext2fs_create_extent_table(&extent, num1);
 			if (retval) {
@@ -77,7 +77,7 @@ void do_test(FILE *in, FILE *out)
 		if (!extent) {
 			fputs(no_table, out);
 			continue;
-		}		
+		}
 		if (!strcmp(cmd, "free")) {
 			ext2fs_free_extent_table(extent);
 			extent = 0;
@@ -105,7 +105,7 @@ void do_test(FILE *in, FILE *out)
 				fprintf(out, "# %u -> %u (%d)\n",
 					num1, num2, size);
 			}
-		} else 
+		} else
 			fputs("# Syntax error\n", out);
 	}
 }

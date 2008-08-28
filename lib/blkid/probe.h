@@ -30,7 +30,7 @@ struct blkid_probe {
 	size_t			buf_max;
 };
 
-typedef int (*blkid_probe_t)(struct blkid_probe *probe, 
+typedef int (*blkid_probe_t)(struct blkid_probe *probe,
 			     struct blkid_magic *id, unsigned char *buf);
 
 struct blkid_magic {
@@ -347,7 +347,7 @@ struct ocfs_volume_header {
 
 struct ocfs_volume_label {
 	unsigned char	disk_lock[48];
-	char		label[64];	
+	char		label[64];
 	unsigned char	label_len[2];
 	unsigned char  vol_id[16];
 	unsigned char  vol_id_len[2];
@@ -432,15 +432,15 @@ struct gfs2_sb {
 	__u32 sb_fs_format;
 	__u32 sb_multihost_format;
 	__u32  __pad0;  /* Was superblock flags in gfs1 */
-	
+
 	__u32 sb_bsize;
 	__u32 sb_bsize_shift;
 	__u32 __pad1;   /* Was journal segment size in gfs1 */
-	
+
 	struct gfs2_inum sb_master_dir; /* Was jindex dinode in gfs1 */
 	struct gfs2_inum __pad2; /* Was rindex dinode in gfs1 */
 	struct gfs2_inum sb_root_dir;
-	
+
 	char sb_lockproto[GFS_LOCKNAME_LEN];
 	char sb_locktable[GFS_LOCKNAME_LEN];
 	/* In gfs1, quota and license dinodes followed */
@@ -686,7 +686,7 @@ _INLINE_ __u64 blkid_swab64(__u64 val)
 	return (blkid_swab32(val >> 32) |
 		(((__u64) blkid_swab32(val & 0xFFFFFFFFUL)) << 32));
 }
-#endif 
+#endif
 
 
 

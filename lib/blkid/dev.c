@@ -77,7 +77,7 @@ void blkid_debug_dump_dev(blkid_dev dev)
 	list_for_each(p, &dev->bid_tags) {
 		blkid_tag tag = list_entry(p, struct blkid_struct_tag, bit_tags);
 		if (tag)
-			printf("    tag: %s=\"%s\"\n", tag->bit_name, 
+			printf("    tag: %s=\"%s\"\n", tag->bit_name,
 			       tag->bit_val);
 		else
 			printf("    tag: NULL\n");
@@ -102,7 +102,7 @@ void blkid_debug_dump_dev(blkid_dev dev)
  * This series of functions iterate over all devices in a blkid cache
  */
 #define DEV_ITERATE_MAGIC	0x01a5284c
-	
+
 struct blkid_struct_dev_iterate {
 	int			magic;
 	blkid_cache		cache;
@@ -131,7 +131,7 @@ extern int blkid_dev_set_search(blkid_dev_iterate iter,
 {
 	char *new_type, *new_value;
 
-	if (!iter || iter->magic != DEV_ITERATE_MAGIC || !search_type || 
+	if (!iter || iter->magic != DEV_ITERATE_MAGIC || !search_type ||
 	    !search_value)
 		return -1;
 	new_type = malloc(strlen(search_type)+1);
@@ -168,8 +168,8 @@ extern int blkid_dev_next(blkid_dev_iterate iter,
 	while (iter->p != &iter->cache->bic_devs) {
 		dev = list_entry(iter->p, struct blkid_struct_dev, bid_devs);
 		iter->p = iter->p->next;
-		if (iter->search_type && 
-		    !blkid_dev_has_tag(dev, iter->search_type, 
+		if (iter->search_type &&
+		    !blkid_dev_has_tag(dev, iter->search_type,
 				       iter->search_value))
 			continue;
 		*ret_dev = dev;
@@ -220,7 +220,7 @@ int main(int argc, char **argv)
 		case 'm':
 			blkid_debug_mask = strtoul (optarg, &tmp, 0);
 			if (*tmp) {
-				fprintf(stderr, "Invalid debug mask: %s\n", 
+				fprintf(stderr, "Invalid debug mask: %s\n",
 					optarg);
 				exit(1);
 			}

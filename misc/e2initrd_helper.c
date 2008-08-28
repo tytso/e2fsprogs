@@ -24,7 +24,7 @@
 #include <utime.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
-#else 
+#else
 extern int optind;
 extern char *optarg;
 #endif
@@ -67,7 +67,7 @@ static void usage(void)
 	exit (1);
 }
 
-static errcode_t get_file(ext2_filsys fs, const char * filename, 
+static errcode_t get_file(ext2_filsys fs, const char * filename,
 		   struct mem_file *ret_file)
 {
 	errcode_t	retval;
@@ -81,7 +81,7 @@ static errcode_t get_file(ext2_filsys fs, const char * filename,
 	ret_file->size = 0;
 	ret_file->ptr = 0;
 
-	retval = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO, 
+	retval = ext2fs_namei(fs, EXT2_ROOT_INO, EXT2_ROOT_INO,
 			      filename, &ino);
 	if (retval)
 		return retval;
@@ -103,7 +103,7 @@ static errcode_t get_file(ext2_filsys fs, const char * filename,
 		return retval;
 
 	retval = ext2fs_file_read(e2_file, buf, inode.i_size, &got);
-	if (retval) 
+	if (retval)
 		goto errout;
 
 	retval = ext2fs_file_close(e2_file);
@@ -246,7 +246,7 @@ static int parse_fstab_line(char *line, struct fs_info *fs)
 
 	if (!device)
 		return -1;	/* Allow blank lines */
-	
+
 	if (!mntpnt || !type)
 		return -1;
 
@@ -275,7 +275,7 @@ static int parse_fstab_line(char *line, struct fs_info *fs)
 
 	if (dev)
 		free(dev);
-	   
+
 	return 0;
 }
 
@@ -311,7 +311,7 @@ static void PRS(int argc, char **argv)
 			break;
 
 		case 'v':
-			printf("%s %s (%s)\n", program_name, 
+			printf("%s %s (%s)\n", program_name,
 			       E2FSPROGS_VERSION, E2FSPROGS_DATE);
 			break;
 		default:
@@ -322,7 +322,7 @@ static void PRS(int argc, char **argv)
 		usage();
 	device_name = blkid_get_devname(NULL, argv[optind], NULL);
 	if (!device_name) {
-		com_err("tune2fs", 0, _("Unable to resolve '%s'"), 
+		com_err("tune2fs", 0, _("Unable to resolve '%s'"),
 			argv[optind]);
 		exit(1);
 	}
@@ -342,9 +342,9 @@ static void get_root_type(ext2_filsys fs)
 		buf = get_line(&file);
 		if (!buf)
 			continue;
-		
+
 		ret = parse_fstab_line(buf, &fs_info);
-		if (ret < 0) 
+		if (ret < 0)
 			goto next_line;
 
 		if (!strcmp(fs_info.mountpt, "/"))
@@ -368,7 +368,7 @@ int main (int argc, char ** argv)
 
 	blkid_get_cache(&cache, NULL);
 	PRS(argc, argv);
-	
+
 #ifdef CONFIG_TESTIO_DEBUG
 	io_ptr = test_io_manager;
 	test_io_backing_manager = unix_io_manager;
@@ -379,7 +379,7 @@ int main (int argc, char ** argv)
         if (retval)
 		exit(1);
 
-	if (root_type) 
+	if (root_type)
 		get_root_type(fs);
 
 	remove_error_table(&et_ext2_error_table);

@@ -1,7 +1,7 @@
 /*
  * extend.c --- extend a file so that it has at least a specified
  * 	number of blocks.
- * 
+ *
  * Copyright (C) 1993, 1994, 1995 Theodore Ts'o.
  *
  * This file may be redistributed under the terms of the GNU Public

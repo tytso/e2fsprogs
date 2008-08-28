@@ -51,7 +51,7 @@ int getflags (int fd, unsigned long * flags)
 #else
 #if HAVE_EXT2_IOCTLS
 	int r, f;
-	
+
 	if (!fstat(fd, &buf) &&
 	    !S_ISREG(buf.st_mode) && !S_ISDIR(buf.st_mode))
 		goto notsupp;

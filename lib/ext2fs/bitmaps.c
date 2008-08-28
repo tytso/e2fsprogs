@@ -46,7 +46,7 @@ errcode_t ext2fs_copy_bitmap(ext2fs_generic_bitmap src,
 void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map)
 {
 	ext2fs_set_generic_bitmap_padding(map);
-}	
+}
 
 errcode_t ext2fs_allocate_inode_bitmap(ext2_filsys fs,
 				       const char *descr,
@@ -79,9 +79,9 @@ errcode_t ext2fs_allocate_block_bitmap(ext2_filsys fs,
 
 	start = fs->super->s_first_data_block;
 	end = fs->super->s_blocks_count-1;
-	real_end = (EXT2_BLOCKS_PER_GROUP(fs->super)  
+	real_end = (EXT2_BLOCKS_PER_GROUP(fs->super)
 		    * fs->group_desc_count)-1 + start;
-	
+
 	return (ext2fs_make_generic_bitmap(EXT2_ET_MAGIC_BLOCK_BITMAP, fs,
 					   start, end, real_end,
 					   descr, 0, ret));
@@ -168,7 +168,7 @@ errcode_t ext2fs_set_block_bitmap_range(ext2fs_block_bitmap bmap,
 					blk_t start, unsigned int num,
 					void *in)
 {
-	return (ext2fs_set_generic_bitmap_range(bmap, 
+	return (ext2fs_set_generic_bitmap_range(bmap,
 						EXT2_ET_MAGIC_BLOCK_BITMAP,
 						start, num, in));
 }

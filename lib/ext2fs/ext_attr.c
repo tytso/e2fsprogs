@@ -1,6 +1,6 @@
 /*
  * ext_attr.c --- extended attribute blocks
- * 
+ *
  * Copyright (C) 2001 Andreas Gruenbacher, <a.gruenbacher@computer.org>
  *
  * Copyright (C) 2002 Theodore Ts'o.

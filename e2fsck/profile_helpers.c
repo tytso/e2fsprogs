@@ -9,7 +9,7 @@
  * relation that is listed more than once.  This functionality can all
  * be done using the profile_iterator abstraction, but it is less
  * convenient.
- * 
+ *
  * Copyright (C) 2006 by Theodore Ts'o.
  *
  * %Begin-Header%
@@ -89,7 +89,7 @@ static errcode_t add_to_list(struct profile_string_list *list, char *str)
 {
 	char 	**newlist;
 	int	newmax;
-	
+
 	if (list->num+1 >= list->max) {
 		newmax = list->max + 10;
 		newlist = realloc(list->list, newmax * sizeof(char *));
@@ -119,8 +119,8 @@ static int is_list_member(struct profile_string_list *list, const char *str)
 			return 1;
 	}
 	return 0;
-}	
-	
+}
+
 /*
  * This function frees a null-terminated list as returned by
  * profile_get_values.
@@ -131,7 +131,7 @@ void profile_free_list(char **list)
 
     if (list == 0)
 	    return;
-    
+
     for (cp = list; *cp; cp++)
 	free(*cp);
     free(list);
@@ -168,7 +168,7 @@ profile_get_values(profile_t profile, const char *const *names,
 
 	end_list(&values, ret_values);
 	return 0;
-	
+
 cleanup:
 	end_list(&values, 0);
 	return retval;
@@ -178,7 +178,7 @@ cleanup:
  * This function will return the list of the names of subections in the
  * under the specified section name.
  */
-errcode_t 
+errcode_t
 profile_get_subsection_names(profile_t profile, const char **names,
 			     char ***ret_names)
 {
@@ -204,7 +204,7 @@ profile_get_subsection_names(profile_t profile, const char **names,
 
 	end_list(&values, ret_names);
 	return 0;
-	
+
 cleanup:
 	end_list(&values, 0);
 	return retval;
@@ -214,7 +214,7 @@ cleanup:
  * This function will return the list of the names of relations in the
  * under the specified section name.
  */
-errcode_t 
+errcode_t
 profile_get_relation_names(profile_t profile, const char **names,
 			   char ***ret_names)
 {
@@ -244,20 +244,20 @@ profile_get_relation_names(profile_t profile, const char **names,
 
 	end_list(&values, ret_names);
 	return 0;
-	
+
 cleanup:
 	end_list(&values, 0);
 	return retval;
 }
 
 
-void 
+void
 profile_release_string(char *str)
 {
 	free(str);
 }
 
-errcode_t 
+errcode_t
 profile_init_path(const char * filepath,
 		  profile_t *ret_profile)
 {
@@ -272,7 +272,7 @@ profile_init_path(const char * filepath,
 		if (*s == ':')
 			n_entries++;
 	}
-	
+
 	/* the array is NULL terminated */
 	filenames = (char **) malloc((n_entries+1) * sizeof(char*));
 	if (filenames == 0)
@@ -298,7 +298,7 @@ profile_init_path(const char * filepath,
 	/* cap the array */
 	filenames[i] = 0;
 
-	retval = profile_init((const char **) filenames, 
+	retval = profile_init((const char **) filenames,
 			      ret_profile);
 
 	/* count back down and free the entries */

@@ -2,7 +2,7 @@
  * dosio.c -- Disk I/O module for the ext2fs/DOS library.
  *
  * Copyright (c) 1997 by Theodore Ts'o.
- * 
+ *
  * Copyright (c) 1997 Mark Habersack
  * This file may be distributed under the terms of the GNU Public License.
  *
@@ -179,7 +179,7 @@ static errcode_t dos_open(const char *dev, int flags, io_channel *channel)
   PARTITION      *part;
   PTABLE_ENTRY   *pent;
   PARTITION        **newparts;
-  
+
   if(!dev)
   {
     _dio_error = ERR_BADDEV;

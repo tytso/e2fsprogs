@@ -25,7 +25,7 @@ int getversion (int fd, unsigned long * version)
 {
 #if HAVE_EXT2_IOCTLS
 	int	r, ver;
-	
+
 	r = ioctl (fd, EXT2_IOC_GETVERSION, &ver);
 	*version = ver;
 	return 0;

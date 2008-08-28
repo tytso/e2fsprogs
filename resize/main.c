@@ -5,7 +5,7 @@
  * 	PowerQuest, Inc.
  *
  * Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 by Theodore Ts'o
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -108,11 +108,11 @@ static void determine_fs_stride(ext2_filsys fs)
 		has_sb = ext2fs_bg_has_super(fs, group);
 		if (group == 0 || has_sb != prev_has_sb)
 			goto next;
-		b_stride = fs->group_desc[group].bg_block_bitmap - 
-			fs->group_desc[group-1].bg_block_bitmap - 
+		b_stride = fs->group_desc[group].bg_block_bitmap -
+			fs->group_desc[group-1].bg_block_bitmap -
 			fs->super->s_blocks_per_group;
-		i_stride = fs->group_desc[group].bg_inode_bitmap - 
-			fs->group_desc[group-1].bg_inode_bitmap - 
+		i_stride = fs->group_desc[group].bg_inode_bitmap -
+			fs->group_desc[group-1].bg_inode_bitmap -
 			fs->super->s_blocks_per_group;
 		if (b_stride != i_stride ||
 		    b_stride < 0)
@@ -121,7 +121,7 @@ static void determine_fs_stride(ext2_filsys fs)
 		/* printf("group %d has stride %d\n", group, b_stride); */
 		sum += b_stride;
 		num++;
-			
+
 	next:
 		prev_has_sb = has_sb;
 	}
@@ -223,7 +223,7 @@ int main (int argc, char ** argv)
 		new_size_str = argv[optind++];
 	if (optind < argc)
 		usage(program_name);
-	
+
 	io_options = strchr(device_name, '?');
 	if (io_options)
 		*io_options++ = 0;
@@ -238,7 +238,7 @@ int main (int argc, char ** argv)
 		if (!mtpt)
 			return ENOMEM;
 		mtpt[len-1] = 0;
-		retval = ext2fs_check_mount_point(device_name, &mount_flags, 
+		retval = ext2fs_check_mount_point(device_name, &mount_flags,
 						  mtpt, len);
 		if (retval) {
 			com_err("ext2fs_check_mount_point", retval,
@@ -269,16 +269,16 @@ int main (int argc, char ** argv)
 	ret = fstat(fd, &st_buf);
 #endif
 	if (ret < 0) {
-		com_err("open", errno, 
+		com_err("open", errno,
 			_("while getting stat information for %s"),
 			device_name);
 		exit(1);
 	}
-	
+
 	if (flush) {
 		retval = ext2fs_sync_device(fd, 1);
 		if (retval) {
-			com_err(argv[0], retval, 
+			com_err(argv[0], retval,
 				_("while trying to flush %s"),
 				device_name);
 			exit(1);
@@ -293,12 +293,12 @@ int main (int argc, char ** argv)
 	if (flags & RESIZE_DEBUG_IO) {
 		io_ptr = test_io_manager;
 		test_io_backing_manager = unix_io_manager;
-	} else 
+	} else
 		io_ptr = unix_io_manager;
 
 	if (!(mount_flags & EXT2_MF_MOUNTED))
 		io_flags = EXT2_FLAG_RW | EXT2_FLAG_EXCLUSIVE;
-	retval = ext2fs_open2(device_name, io_options, io_flags, 
+	retval = ext2fs_open2(device_name, io_options, io_flags,
 			      0, 0, io_ptr, &fs);
 	if (retval) {
 		com_err (program_name, retval, _("while trying to open %s"),
@@ -335,7 +335,7 @@ int main (int argc, char ** argv)
 			device_name);
 		exit(1);
 	}
-	
+
 	if (print_min_size) {
 		printf(_("Estimated minimum size of the filesystem: %u\n"),
 		       calculate_minimum_resize_size(fs));
@@ -369,7 +369,7 @@ int main (int argc, char ** argv)
 	if (force_min_size)
 		new_size = calculate_minimum_resize_size(fs);
 	else if (new_size_str) {
-		new_size = parse_num_blocks(new_size_str, 
+		new_size = parse_num_blocks(new_size_str,
 					    fs->super->s_log_block_size);
 	} else {
 		new_size = max_size;
@@ -380,7 +380,7 @@ int main (int argc, char ** argv)
 
 	if (use_stride >= 0) {
 		if (use_stride >= (int) fs->super->s_blocks_per_group) {
-			com_err(program_name, 0, 
+			com_err(program_name, 0,
 				_("Invalid stride length"));
 			exit(1);
 		}
@@ -388,14 +388,14 @@ int main (int argc, char ** argv)
 		ext2fs_mark_super_dirty(fs);
 	} else
 		  determine_fs_stride(fs);
-	
+
 	/*
 	 * If we are resizing a plain file, and it's not big enough,
 	 * automatically extend it in a sparse fashion by writing the
 	 * last requested block.
 	 */
 	new_file_size = ((__u64) new_size) * fs->blocksize;
-	if ((__u64) new_file_size > 
+	if ((__u64) new_file_size >
 	    (((__u64) 1) << (sizeof(st_buf.st_size)*8 - 1)) - 1)
 		fd = -1;
 	if ((new_file_size > st_buf.st_size) &&
@@ -422,7 +422,7 @@ int main (int argc, char ** argv)
 		if (!force && ((fs->super->s_lastcheck < fs->super->s_mtime) ||
 			       (fs->super->s_state & EXT2_ERROR_FS) ||
 			       ((fs->super->s_state & EXT2_VALID_FS) == 0))) {
-			fprintf(stderr, 
+			fprintf(stderr,
 				_("Please run 'e2fsck -f %s' first.\n\n"),
 				device_name);
 			exit(1);

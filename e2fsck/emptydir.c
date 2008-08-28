@@ -1,6 +1,6 @@
 /*
  * emptydir.c --- clear empty directory blocks
- * 
+ *
  * Copyright (C) 1998 Theodore Ts'o
  *
  * %Begin-Header%
@@ -52,7 +52,7 @@ empty_dir_info init_empty_dir(e2fsck_t ctx)
 	retval = ext2fs_init_dblist(ctx->fs, &edi->empty_dblist);
 	if (retval)
 		goto errout;
-	
+
 	retval = ext2fs_allocate_block_bitmap(ctx->fs, _("empty dirblocks"),
 					      &edi->empty_dir_blocks);
 	if (retval)
@@ -122,7 +122,7 @@ int empty_pass1(ext2_filsys fs, blk_t *block_nr, e2_blkcnt_t blockcnt,
 	empty_dir_info edi = (empty_dir_info) priv_data;
 	blk_t	block, new_block;
 	errcode_t	retval;
-	
+
 	if (blockcnt < 0)
 		return 0;
 	block = *block_nr;
@@ -150,7 +150,7 @@ static int fix_directory(ext2_filsys fs,
 			 void *priv_data)
 {
 	errcode_t	retval;
-	
+
 	empty_dir_info edi = (empty_dir_info) priv_data;
 
 	edi->logblk = 0;

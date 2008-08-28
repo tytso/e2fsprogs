@@ -111,7 +111,7 @@ static const struct flags_char flags_array[] = {
 static unsigned long get_flag(char c)
 {
 	const struct flags_char *fp;
-	
+
 	for (fp = flags_array; fp->flag != 0; fp++) {
 		if (fp->optchar == c)
 			return fp->flag;

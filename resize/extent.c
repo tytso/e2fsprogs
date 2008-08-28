@@ -9,7 +9,7 @@
  * 	PowerQuest, Inc.
  *
  * Copyright (C) 1999, 2000 by Theosore Ts'o
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -34,11 +34,11 @@ struct _ext2_extent {
 /*
  * Create an extent table
  */
-errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent, int size) 
+errcode_t ext2fs_create_extent_table(ext2_extent *ret_extent, int size)
 {
 	ext2_extent	extent;
 	errcode_t	retval;
-	
+
 	retval = ext2fs_get_mem(sizeof(struct _ext2_extent), &extent);
 	if (retval)
 		return retval;
@@ -86,9 +86,9 @@ errcode_t ext2fs_add_extent_entry(ext2_extent extent, __u32 old_loc, __u32 new_l
 
 	if (extent->num >= extent->size) {
 		newsize = extent->size + 100;
-		retval = ext2fs_resize_mem(sizeof(struct ext2_extent_entry) * 
-					   extent->size, 
-					   sizeof(struct ext2_extent_entry) * 
+		retval = ext2fs_resize_mem(sizeof(struct ext2_extent_entry) *
+					   extent->size,
+					   sizeof(struct ext2_extent_entry) *
 					   newsize, &extent->list);
 		if (retval)
 			return retval;
@@ -128,12 +128,12 @@ static EXT2_QSORT_TYPE extent_cmp(const void *a, const void *b)
 {
 	const struct ext2_extent_entry *db_a;
 	const struct ext2_extent_entry *db_b;
-	
+
 	db_a = (const struct ext2_extent_entry *) a;
 	db_b = (const struct ext2_extent_entry *) b;
-	
+
 	return (db_a->old_loc - db_b->old_loc);
-}	
+}
 
 /*
  * Given an inode map and inode number, look up the old inode number
@@ -167,7 +167,7 @@ __u32 ext2fs_extent_translate(ext2_extent extent, __u32 old_loc)
 				range = 0;
 			else if (old_loc > highval)
 				range = 1;
-			else 
+			else
 				range = ((float) (old_loc - lowval)) /
 					(highval - lowval);
 			mid = low + ((int) (range * (high-low)));
@@ -192,7 +192,7 @@ void ext2fs_extent_dump(ext2_extent extent, FILE *out)
 {
 	int	i;
 	struct ext2_extent_entry *ent;
-	
+
 	fputs(_("# Extent dump:\n"), out);
 	fprintf(out, _("#\tNum=%d, Size=%d, Cursor=%d, Sorted=%d\n"),
 	       extent->num, extent->size, extent->cursor, extent->sorted);
@@ -209,7 +209,7 @@ errcode_t ext2fs_iterate_extent(ext2_extent extent, __u32 *old_loc,
 				__u32 *new_loc, int *size)
 {
 	struct ext2_extent_entry *ent;
-	
+
 	if (!old_loc) {
 		extent->cursor = 0;
 		return 0;
@@ -229,7 +229,7 @@ errcode_t ext2fs_iterate_extent(ext2_extent extent, __u32 *old_loc,
 	*size = ent->size;
 	return 0;
 }
-	
-	
-		
-	       
+
+
+
+

@@ -1,6 +1,6 @@
 /*
  * lsdel.c --- routines to try to help a user recover a deleted file.
- * 
+ *
  * Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
  * Theodore Ts'o.  This file may be redistributed under the terms of
  * the GNU Public License.
@@ -85,7 +85,7 @@ void do_lsdel(int argc, char **argv)
  	char			*tmp;
 	time_t			now;
 	FILE			*out;
-	
+
 	if (common_args_process(argc, argv, 1, 2, "ls_deleted_inodes",
 				"[secs]", 0))
 		return;
@@ -129,7 +129,7 @@ void do_lsdel(int argc, char **argv)
 			"while starting inode scan");
 		goto error_out;
 	}
-	
+
 	while (ino) {
 		if ((inode.i_dtime == 0) ||
 		    (secs && ((unsigned) abs(now - secs) > inode.i_dtime)))
@@ -139,7 +139,7 @@ void do_lsdel(int argc, char **argv)
 		lsd.num_blocks = 0;
 		lsd.free_blocks = 0;
 		lsd.bad_blocks = 0;
-		
+
 		retval = ext2fs_block_iterate2(current_fs, ino,
 					       BLOCK_FLAG_READ_ONLY, block_buf,
 					       lsdel_proc, &lsd);
@@ -160,20 +160,20 @@ void do_lsdel(int argc, char **argv)
 					exit(1);
 				}
 			}
-				
+
 			delarray[num_delarray].ino = ino;
 			delarray[num_delarray].mode = inode.i_mode;
 			delarray[num_delarray].uid = inode_uid(inode);
 			delarray[num_delarray].size = inode.i_size;
 			if (!LINUX_S_ISDIR(inode.i_mode))
-				delarray[num_delarray].size |= 
+				delarray[num_delarray].size |=
 					((__u64) inode.i_size_high << 32);
 			delarray[num_delarray].dtime = inode.i_dtime;
 			delarray[num_delarray].num_blocks = lsd.num_blocks;
 			delarray[num_delarray].free_blocks = lsd.free_blocks;
 			num_delarray++;
 		}
-		
+
 	next:
 		do {
 			retval = ext2fs_get_next_inode(scan, &ino, &inode);
@@ -186,22 +186,22 @@ void do_lsdel(int argc, char **argv)
 	}
 
 	out = open_pager();
-	
+
 	fprintf(out, " Inode  Owner  Mode    Size      Blocks   Time deleted\n");
-	
+
 	qsort(delarray, num_delarray, sizeof(struct deleted_info),
 	      deleted_info_compare);
-	
+
 	for (i = 0; i < num_delarray; i++) {
-		fprintf(out, "%6u %6d %6o %6llu %6lld/%6lld %s", 
+		fprintf(out, "%6u %6d %6o %6llu %6lld/%6lld %s",
 			delarray[i].ino,
 			delarray[i].uid, delarray[i].mode, delarray[i].size,
-			delarray[i].free_blocks, delarray[i].num_blocks, 
+			delarray[i].free_blocks, delarray[i].num_blocks,
 			time_to_string(delarray[i].dtime));
 	}
 	fprintf(out, "%d deleted inodes found.\n", num_delarray);
 	close_pager(out);
-	
+
 error_out:
 	free(block_buf);
 	free(delarray);

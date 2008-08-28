@@ -33,7 +33,7 @@ initialization phase (but is constant - 1024).
 
 {
 	char buffer [80];
-	
+
 	super_info.copy_num=0;
 	sprintf (buffer,"setoffset %ld",file_system_info.super_block_offset);dispatch (buffer);
 	sprintf (buffer,"settype ext2_super_block");dispatch (buffer);
@@ -51,13 +51,13 @@ We implement it through dispatching to our primitive functions.
 
 {
 	char temp [80],buffer [80],*ptr;
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr==0) {
 		wprintw (command_win,"Error - No argument specified\n");refresh_command_win ();return;
 	}
 	ptr=parse_word (ptr,buffer);
-	
+
 	if (buffer [0] != '/') {
 		wprintw (command_win,"Error - Use a full pathname (begin with '/')\n");refresh_command_win ();return;
 	}
@@ -83,7 +83,7 @@ Then, we use the group's entry command to pass to another group.
 {
 	long group_num=0;
 	char *ptr,buffer [80];
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);

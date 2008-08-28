@@ -3,7 +3,7 @@
  *
  *	$Header$
  *	$Locker$
- * 
+ *
  * Copyright 1987, 1988 by MIT Student Information Processing Board
  *
  * Permission to use, copy, modify, and distribute this software and
@@ -56,7 +56,7 @@ int ss_listen (int sci_idx)
     jmp_buf old_jmpb;
     ss_data *old_info = current_info;
     char *line;
-    
+
     current_info = info = ss_info(sci_idx);
     sig_cont = (sigret_t (*)(int)) 0;
     info->abort = 0;
@@ -81,7 +81,7 @@ int ss_listen (int sci_idx)
 			line = input;
 		else
 			line = NULL;
-	
+
 		input[BUFSIZ-1] = 0;
 	}
 	if (line == NULL) {
@@ -89,7 +89,7 @@ int ss_listen (int sci_idx)
 		(void) signal(SIGCONT, sig_cont);
 		goto egress;
 	}
-		
+
 	cp = strchr(line, '\n');
 	if (cp) {
 	    *cp = '\0';
@@ -130,11 +130,11 @@ void ss_abort_subsystem(int sci_idx, int code)
 {
     ss_info(sci_idx)->abort = 1;
     ss_info(sci_idx)->exit_status = code;
-    
+
 }
 
-void ss_quit(int argc __SS_ATTR((unused)), 
-	     const char * const *argv __SS_ATTR((unused)), 
+void ss_quit(int argc __SS_ATTR((unused)),
+	     const char * const *argv __SS_ATTR((unused)),
 	     int sci_idx, pointer infop __SS_ATTR((unused)))
 {
     ss_abort_subsystem(sci_idx, 0);
@@ -151,7 +151,7 @@ static char *cmd_generator(const char *text, int state)
 	static char const * const * name;
 	ss_request_entry *request;
 	char		*ret;
-	
+
 	if (state == 0) {
 		len = strlen(text);
 		rqtbl = current_info->rqt_tables;
@@ -187,7 +187,7 @@ static char *cmd_generator(const char *text, int state)
 	return 0;
 }
 
-char **ss_rl_completion(const char *text, int start, 
+char **ss_rl_completion(const char *text, int start,
 			int end __SS_ATTR((unused)))
 {
 	if ((start == 0) && current_info->rl_completion_matches)

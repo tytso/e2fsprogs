@@ -2,7 +2,7 @@
  * percent.c		- Take percentage of a number
  *
  * Copyright (C) 2006  Theodore Ts'o <tytso@mit.edu>
- * 
+ *
  * This file can be redistributed under the terms of the GNU Library General
  * Public License
  */
@@ -23,7 +23,7 @@ unsigned int e2p_percent(int percent, unsigned int base)
 		return 0;
 	if (100 % percent == 0)
 		return base / (100 / percent);
-	if (mask & base) 
+	if (mask & base)
 		return (base / 100) * percent;
 	return base * percent / 100;
 }
@@ -49,7 +49,7 @@ main(int argc, char **argv)
 		fprintf(stderr, "Bad percent: %s\n", argv[1]);
 		exit(1);
 	}
-	
+
 	base = strtoul(argv[2], &p, 0);
 	if (p[0] && p[1]) {
 		fprintf(stderr, "Bad base: %s\n", argv[2]);

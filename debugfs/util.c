@@ -1,6 +1,6 @@
 /*
  * util.c --- utilities for the debugfs program
- * 
+ *
  * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be
  * redistributed under the terms of the GNU Public License.
  *
@@ -17,7 +17,7 @@
 #include <signal.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
-#else 
+#else
 extern int optind;
 extern char *optarg;
 #endif
@@ -40,7 +40,7 @@ extern int optreset;		/* defined by BSD, but not others */
  * affairs is that BSD-derived versions of getopt() misbehave if
  * optind is set to 0 in order to reset getopt(), and glibc's getopt()
  * will core dump if optind is set 1 in order to reset getopt().
- * 
+ *
  * More modern versions of BSD require that optreset be set to 1 in
  * order to reset getopt().   Sigh.  Standards, anyone?
  *
@@ -88,7 +88,7 @@ FILE *open_pager(void)
 		pager = getenv("PAGER");
 	if (!pager)
 		pager = find_pager(buf);
-	if (!pager || 
+	if (!pager ||
 	    (strcmp(pager, "__none__") == 0) ||
 	    ((outfile = popen(pager, "w")) == 0))
 		return stdout;
@@ -251,7 +251,7 @@ unsigned long parse_ulong(const char *str, const char *cmd,
 {
 	char		*tmp;
 	unsigned long	ret;
-	
+
 	ret = strtoul(str, &tmp, 0);
 	if (*tmp == 0) {
 		if (err)
@@ -317,9 +317,9 @@ int common_inode_args_process(int argc, char *argv[],
 {
 	if (common_args_process(argc, argv, 2, 2, argv[0], "<file>", flags))
 		return 1;
-	
+
 	*inode = string_to_inode(argv[1]);
-	if (!*inode) 
+	if (!*inode)
 		return 1;
 	return 0;
 }

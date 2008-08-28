@@ -60,7 +60,7 @@ static void PRS(int argc, char *argv[])
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
 	initialize_ext2_error_table();
-	
+
 	if (argc && *argv)
 		program_name = *argv;
 	while ((c = getopt (argc, argv, "FI")) != EOF)
@@ -91,7 +91,7 @@ static void PRS(int argc, char *argv[])
 		close(fd);
 	}
 }
-					
+
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
@@ -101,7 +101,7 @@ int main (int argc, char *argv[])
 	__u32	num_inodes = 0;
 	struct ext2_inode inode;
 	ext2_inode_scan	scan;
-	
+
 	init_resource_track(&global_rtrack);
 
 	PRS(argc, argv);
@@ -115,7 +115,7 @@ int main (int argc, char *argv[])
 	}
 
 	ehandler_init(fs->io);
-	
+
 	retval = ext2fs_open_inode_scan(fs, inode_buffer_blocks, &scan);
 	if (retval) {
 		com_err(program_name, retval, _("while opening inode scan"));
@@ -133,9 +133,9 @@ int main (int argc, char *argv[])
 			break;
 		num_inodes++;
 	}
-	
+
 	print_resource_track(NULL, &global_rtrack);
 	printf(_("%u inodes scanned.\n"), num_inodes);
-	
+
 	exit(0);
 }

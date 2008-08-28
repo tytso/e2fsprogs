@@ -49,20 +49,20 @@ directories.
 
 {
 	struct ext2_inode *ptr;
-	
+
 	ptr=&type_data.u.t_ext2_inode;					/* type_data contains the inode */
-	
+
 	info_ptr->inode_ptr=ptr;
 	info_ptr->inode_offset=device_offset;				/* device offset contains the inode's offset */
-									
+
 									/* Reset the current position to the start */
 
-	info_ptr->global_block_num=ptr->i_block [0];			
+	info_ptr->global_block_num=ptr->i_block [0];
 	info_ptr->global_block_offset=ptr->i_block [0]*file_system_info.block_size;
 	info_ptr->block_num=0;
 	info_ptr->file_offset=0;
 									/* Set the size of the directory */
-									
+
 	info_ptr->blocks_count=(ptr->i_size+file_system_info.block_size-1)/file_system_info.block_size;
 	info_ptr->file_length=ptr->i_size;
 
@@ -73,9 +73,9 @@ directories.
 	info_ptr->dir_entry_offset=0;
 
 	/* Find dir_entries_count */
-	
+
 	info_ptr->dir_entries_count=count_dir_entries (); 		/* Set the total number of entries */
-	
+
 	return (1);
 }
 
@@ -86,34 +86,34 @@ struct struct_file_info search_dir_entries (int (*action) (struct struct_file_in
 
 	This routine runs on all directory entries in the current directory.
 	For each entry, action is called. We'll act according to the return code of action:
-	
+
 		ABORT		-	Current dir entry is returned.
 		CONTINUE	-	Continue searching.
 		FOUND		-	Current dir entry is returned.
-		
+
 	If the last entry is reached, it is returned, along with an ABORT status.
-	
-	status is updated to the returned code of action.	
+
+	status is updated to the returned code of action.
 */
 
 {
 	struct struct_file_info info;						/* Temporary variables used to */
 	struct ext2_dir_entry_2 *dir_entry_ptr;					/* contain the current search entries */
 	int return_code, next;
-	
+
 	info=first_file_info;							/* Start from the first entry - Read it */
 	low_read (info.buffer,file_system_info.block_size,info.global_block_offset);
 	dir_entry_ptr=(struct ext2_dir_entry_2 *) (info.buffer+info.dir_entry_offset);
-	
+
 	while (info.file_offset < info.file_length) {				/* While we haven't reached the end */
-		
+
 		*status=return_code=action (&info);				/* Call the client function to test */
-										/* the current entry */	
+										/* the current entry */
 		if (return_code==ABORT || return_code==FOUND)
 			return (info);						/* Stop, if so asked */
 
 										/* Pass to the next entry */
-										
+
 		dir_entry_ptr=(struct ext2_dir_entry_2 *) (info.buffer+info.dir_entry_offset);
 
 		info.dir_entry_num++;
@@ -131,16 +131,16 @@ struct struct_file_info search_dir_entries (int (*action) (struct struct_file_in
 			info.global_block_num=file_block_to_global_block (info.block_num,&info);
 			info.global_block_offset=info.global_block_num*file_system_info.block_size;
 			info.file_offset=info.block_num*file_system_info.block_size;
-			info.dir_entry_offset=0;		
+			info.dir_entry_offset=0;
 										/* read it and update the pointer */
-										
+
 			low_read (info.buffer,file_system_info.block_size,info.global_block_offset);
 			dir_entry_ptr=(struct ext2_dir_entry_2 *) (info.buffer+info.dir_entry_offset);
-			
+
 		}
-		
+
 	}
-	
+
 	*status=ABORT;return (info);						/* There was no match */
 }
 
@@ -155,7 +155,7 @@ The client function is action_count, which just tell search_dir_entries to conti
 
 {
 	int status;
-	
+
 	return (search_dir_entries (&action_count,&status).dir_entry_num);
 }
 
@@ -187,7 +187,7 @@ void type_dir___cd (char *command_line)
 	1 and into 2/3/4.
 
 3.	It is the first part of the path that we need to search for in the current directory. We search for it using
-	search_dir_entries, which accepts the action_name function as the client function. 
+	search_dir_entries, which accepts the action_name function as the client function.
 
 4.	search_dir_entries will scan the entire entries and will call our action_name function for each entry.
 	In action_name, the required name will be checked against the name of the current entry, and FOUND will be
@@ -205,7 +205,7 @@ void type_dir___cd (char *command_line)
 7.	We check the inode's type to see if it is a directory. If it is, we dispatch a dir command to "enter the directory",
 	and recursively call ourself (The type is dir again) by dispatching a cd command, with the rest of the path
 	as an argument.
-	
+
 8.	If the inode's type is a symbolic link (only fast symbolic link were meanwhile implemented. I guess this is
 	typically the case.), we note the path it is pointing at, the saved inode is recalled, we dispatch dir to
 	get back to the original directory, and we call ourself again with the link path/rest of the path argument.
@@ -221,9 +221,9 @@ void type_dir___cd (char *command_line)
 	struct ext2_dir_entry_2 *dir_entry_ptr;
 
 	dir_entry_ptr=(struct ext2_dir_entry_2 *) (file_info.buffer+file_info.dir_entry_offset);
-		
+
 	ptr=parse_word (command_line,dir_name);
-	
+
 	if (*ptr==0) {						/* cd alone will enter the highlighted directory */
 		strncpy (full_dir_name,dir_entry_ptr->name,dir_entry_ptr->name_len);
 		full_dir_name [dir_entry_ptr->name_len]=0;
@@ -232,11 +232,11 @@ void type_dir___cd (char *command_line)
 		ptr=parse_word (ptr,full_dir_name);
 
 	ptr=strchr (full_dir_name,'/');
-	
+
 	if (ptr==full_dir_name) {				/* Pathname is from root - Let the general cd do the job */
 		sprintf (temp,"cd %s",full_dir_name);type_ext2___cd (temp);return;
 	}
-	
+
 	if (ptr==NULL) {
 		strcpy (dir_name,full_dir_name);
 		full_dir_name [0]=0;
@@ -251,7 +251,7 @@ void type_dir___cd (char *command_line)
 								/* full_dir_name contains the rest */
 
 	strcpy (name_search,dir_name);				/* name_search is used to hold the required entry name */
-	
+
 	if (dir_entry_ptr->name_len != strlen (dir_name) ||
 	    strncmp (dir_name,dir_entry_ptr->name,dir_entry_ptr->name_len)!=0)
 		info=search_dir_entries (&action_name,&status);	/* Search for the entry. Answer in info. */
@@ -262,15 +262,15 @@ void type_dir___cd (char *command_line)
 	if (status==FOUND) {					/* If found */
 		file_info=info;					/* Switch to it, by setting the global file_info */
 		dispatch ("remember internal_variable");	/* Move the inode into the objects memory */
-		
+
 		dispatch ("followinode");			/* Go to the inode pointed by this directory entry */
-		
+
 		if (S_ISLNK (type_data.u.t_ext2_inode.i_mode)) {/* Symbolic link ? */
 
 			if (type_data.u.t_ext2_inode.i_size > 60) {	/* I'm lazy, I guess :-) */
 				wprintw (command_win,"Error - Sorry, Only fast symbolic link following is currently supported\n");
 				refresh_command_win ();
-				return;				
+				return;
 			}
 								/* Get the pointed name and append the previous path */
 
@@ -280,10 +280,10 @@ void type_dir___cd (char *command_line)
 
 			dispatch ("recall internal_variable");	/* Return to the original inode */
 			dispatch ("dir");			/* and to the directory */
-			
+
 			sprintf (temp,"cd %s",temp2);		/* And continue from there by dispatching a cd command */
 			dispatch (temp);			/* (which can call ourself or the general cd) */
-			
+
 			return;
 		}
 
@@ -295,16 +295,16 @@ void type_dir___cd (char *command_line)
 				sprintf (temp,"cd %s",full_dir_name);
 				dispatch (temp);
 			}
-			
+
 			return;
 		}
-		
+
 		else {						/* If we can't continue from here, we'll just stop */
 			wprintw (command_win,"Can\'t continue - Stopping at last inode\n");refresh_command_win ();
 			return;
 		}
 	}
-	
+
 	wprintw (command_win,"Error - Directory entry %s not found.\n",dir_name);	/* Hmm, an invalid path somewhere */
 	refresh_command_win ();
 }
@@ -325,7 +325,7 @@ Returns FOUND if found, or CONTINUE if not found.
 
 	if (dir_entry_ptr->name_len != strlen (name_search))
 		return (CONTINUE);
-		
+
 	if (strncmp (dir_entry_ptr->name,name_search,dir_entry_ptr->name_len)==0)
 		return (FOUND);
 
@@ -345,7 +345,7 @@ search_dir_entries is used along with action_entry_num, in the same fashion as t
 	int status;
 	struct struct_file_info info;
 	char *ptr,buffer [80];
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr==0) {
 		wprintw (command_win,"Error - Argument_not_specified\n");wrefresh (command_win);
@@ -353,7 +353,7 @@ search_dir_entries is used along with action_entry_num, in the same fashion as t
 	}
 	ptr=parse_word (ptr,buffer);
 	entry_num_search=atol (buffer);
-	
+
 	if (entry_num_search < 0 || entry_num_search >= file_info.dir_entries_count) {
 		wprintw (command_win,"Error - Entry number out of range\n");wrefresh (command_win);
 		return;
@@ -431,7 +431,7 @@ We use search_dir_entries to run on all the entries. Each time, action_show will
 
 {
 	int status;
-	
+
 	wmove (show_pad,0,0);
 	show_pad_info.max_line=-1;
 
@@ -452,7 +452,7 @@ Show the current search entry (info) in one line. If the entry happens to be the
 {
 	unsigned char temp [80];
 	struct ext2_dir_entry_2 *dir_entry_ptr;
-	
+
 	dir_entry_ptr=(struct ext2_dir_entry_2 *) (info->buffer+info->dir_entry_offset);
 
 	if (info->dir_entry_num == file_info.dir_entry_num)				/* Highlight the current entry */
@@ -486,7 +486,7 @@ This function moves to the next directory entry. It just uses the current inform
 	char *ptr,buffer [80];
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		offset*=atol (buffer);
@@ -503,7 +503,7 @@ void type_dir___prev (char *command_line)
 	char *ptr,buffer [80];
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		offset*=atol (buffer);
@@ -522,12 +522,12 @@ Various statistics about the directory.
 
 {
 	long inode_num;
-	
+
 	wmove (show_win,0,0);
 	wprintw (show_win,"Directory listing. Block %ld. ",file_info.global_block_num);
 	wprintw (show_win,"Directory entry %ld of %ld.\n",file_info.dir_entry_num,file_info.dir_entries_count-1);
 	wprintw (show_win,"Directory Offset %ld of %ld. ",file_info.file_offset,file_info.file_length-1);
-	
+
 	inode_num=inode_offset_to_inode_num (file_info.inode_offset);
 	wprintw (show_win,"File inode %ld. Indirection level %ld.\n",inode_num,file_info.level);
 
@@ -548,14 +548,14 @@ inode of the current directory.
 	long entry_num;
 	char *ptr,buffer [80];
 	struct struct_descriptor *descriptor_ptr;
-	
+
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr==0) {
 		wprintw (command_win,"Error - Argument not specified\n");wrefresh (command_win);
-		return;		
+		return;
 	}
-	
+
 	ptr=parse_word (ptr,buffer);
 
 	entry_num=remember_lifo.entries_count++;
@@ -563,7 +563,7 @@ inode of the current directory.
 		entry_num=0;
 		remember_lifo.entries_count--;
 	}
-	
+
 	descriptor_ptr=first_type;
 	while (descriptor_ptr!=NULL && !found) {
 		if (strcmp (descriptor_ptr->name,"ext2_inode")==0)
@@ -576,7 +576,7 @@ inode of the current directory.
 	remember_lifo.offset [entry_num]=device_offset;
 	remember_lifo.type [entry_num]=descriptor_ptr;
 	strcpy (remember_lifo.name [entry_num],buffer);
-	
+
 	wprintw (command_win,"Object %s in Offset %ld remembered as %s\n",descriptor_ptr->name,device_offset,buffer);
 	wrefresh (command_win);
 }
@@ -594,9 +594,9 @@ because it is of variable length.
 	int found=0;
 	unsigned char *ptr,buffer [80],variable [80],value [80],temp [80];
 	struct ext2_dir_entry_2 *dir_entry_ptr;
-	
+
 	dir_entry_ptr=(struct ext2_dir_entry_2 *) (file_info.buffer+file_info.dir_entry_offset);
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr==0) {
 		wprintw (command_win,"Error - Missing arguments\n");refresh_command_win ();
@@ -641,7 +641,7 @@ because it is of variable length.
 		wprintw (command_win,"Variable %s set to %s\n",variable,value);refresh_command_win ();
 
 	}
-	
+
 	if (found) {
 		wattrset (show_pad,A_REVERSE);
 		strncpy (temp,dir_entry_ptr->name,dir_entry_ptr->name_len);
@@ -654,7 +654,7 @@ because it is of variable length.
 		refresh_show_pad ();
 		show_dir_status ();
 	}
-	
+
 	else {
 		wprintw (command_win,"Error - Variable %s not found\n",variable);
 		refresh_command_win ();

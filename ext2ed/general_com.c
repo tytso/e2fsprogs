@@ -33,16 +33,16 @@ void help (char *command_line)
 
 	if (*ptr!=0) {
 		 ptr=parse_word (ptr,argument);
-		 if (*argument!=0) {		 
+		 if (*argument!=0) {
 			 detailed_help (argument);
 			 return;
 		}
 	}
 
 	if (current_type!=NULL) {
-		
+
 		wprintw (show_pad,"Type %s specific commands:\n",current_type->name);max_line++;
-		
+
 		if (current_type->type_commands.last_command==-1) {
 			wprintw (show_pad,"\nnone\n");max_line+=2;
 		}
@@ -53,11 +53,11 @@ void help (char *command_line)
 				}
 				wprintw (show_pad,"%-13s",current_type->type_commands.names [i]);
 				if (i%5!=4)
-					wprintw (show_pad,";  ");				
+					wprintw (show_pad,";  ");
 			}
-		
+
 		wprintw (show_pad,"\n\n");max_line+=2;
-	}		
+	}
 
 	if (ext2_commands.last_command != -1) {
 		wprintw (show_pad,"ext2 filesystem general commands: \n");max_line++;
@@ -67,25 +67,25 @@ void help (char *command_line)
 			}
 			wprintw (show_pad,"%-13s",ext2_commands.names [i]);
 			if (i%5!=4)
-				wprintw (show_pad,";  ");				
+				wprintw (show_pad,";  ");
 
 		}
 		wprintw (show_pad,"\n\n");max_line+=2;
 	}
 
 	wprintw (show_pad,"General commands: \n");
-	
+
 	for (i=0;i<=general_commands.last_command;i++) {
 		if (i%5==0) {
 			wprintw (show_pad,"\n");max_line++;
 		}
 		wprintw (show_pad,"%-13s",general_commands.names [i]);
 		if (i%5!=4)
-			wprintw (show_pad,";  ");				
+			wprintw (show_pad,";  ");
 	}
-	
+
 	wprintw (show_pad,"\n\n");max_line+=2;
-	
+
 	wprintw (show_pad,"EXT2ED ver %s (%s)\n",E2FSPROGS_VERSION, E2FSPROGS_DATE);
 	wprintw (show_pad,"Copyright (C) 1995 Gadi Oxman\n");
 	wprintw (show_pad,"Reviewed 2001 Christian Bac\n");
@@ -97,12 +97,12 @@ void help (char *command_line)
 	wprintw (show_pad,"with the guide of Avner Lottem and Dr. Ilana David.\n");
 
 	max_line+=10;
-	
+
 	show_pad_info.line=0;show_pad_info.max_line=max_line;
 
 	werase (show_win);wmove (show_win,0,0);
 	wprintw (show_win,"EXT2ED help");
-	
+
 	refresh_show_win ();
 	refresh_show_pad ();
 }
@@ -111,7 +111,7 @@ void detailed_help (char *text)
 
 {
 	int i;
-	
+
 	if (current_type != NULL)
 		for (i=0;i<=current_type->type_commands.last_command;i++) {
 			if (strcmp (current_type->type_commands.names [i],text)==0) {
@@ -149,20 +149,20 @@ void set_device (char *command_line)
 
 {
 	char *ptr,new_device [80];
-	
+
 	ptr=parse_word (command_line,new_device);
 	if (*ptr==0) {
 		wprintw (command_win,"Error - Device name not specified\n");
 		refresh_command_win ();return;
 	}
-	parse_word (ptr,new_device);	
+	parse_word (ptr,new_device);
 	check_mounted (new_device);
 	if (mounted && !AllowMountedRead) {
 		wprintw (command_win,"Error - Filesystem is mounted, aborting\n");
 		wprintw (command_win,"You may wish to use the AllowMountedRead on configuration option\n");
 		refresh_command_win ();return;
 	}
-	
+
 	if (mounted && AllowMountedRead) {
 		wprintw (command_win,"Warning - Filesystem is mounted. Displayed data may be unreliable.\n");
 		refresh_command_win ();
@@ -170,7 +170,7 @@ void set_device (char *command_line)
 
 	if (device_handle!=NULL)
 		fclose (device_handle);
-		
+
 	if ( (device_handle=fopen (new_device,"rb"))==NULL) {
 		wprintw (command_win,"Error - Can not open device %s\n",new_device);refresh_command_win ();
 		return;
@@ -204,14 +204,14 @@ void set_offset (char *command_line)
 	long mult=1;
 	long new_offset;
 	char *ptr,new_offset_buffer [80];
-	
+
 	if (device_handle==NULL) {
 		wprintw (command_win,"Error - No device opened\n");refresh_command_win ();
 		return;
 	}
-	
+
 	ptr=parse_word (command_line,new_offset_buffer);
-	
+
 	if (*ptr==0) {
 		wprintw (command_win,"Error - No argument specified\n");refresh_command_win ();
 		return;
@@ -246,7 +246,7 @@ void set_offset (char *command_line)
 		}
 		new_offset=device_offset+atol (new_offset_buffer+1)*mult;
 	}
-	
+
 	else if (new_offset_buffer [0]=='-') {
 		if (device_offset==-1) {
 			wprintw (command_win,"Error - Select a fixed offset first\n");refresh_command_win ();
@@ -255,10 +255,10 @@ void set_offset (char *command_line)
 		new_offset=device_offset-atol (new_offset_buffer+1)*mult;
 		if (new_offset<0) new_offset=0;
 	}
-	
-	else 
+
+	else
 		new_offset=atol (new_offset_buffer)*mult;
-	
+
 	if ( (fseek (device_handle,new_offset,SEEK_SET))==-1) {
 		wprintw (command_win,"Error - Failed to seek to offset %ld in device %s\n",new_offset,device_name);
 		refresh_command_win ();
@@ -362,7 +362,7 @@ void set (char *command_line)
 	unsigned long *long_ptr,offset=0;
 	int i,len, found=0;
 	char *ptr,buffer [80],variable [80],value [80];
-	
+
 	if (device_handle==NULL) {
 		wprintw (command_win,"Error - No device opened\n");refresh_command_win ();
 		return;
@@ -389,7 +389,7 @@ void set (char *command_line)
 	if (current_type==NULL) {
 		wprintw (command_win,"Sorry, not yet supported\n");refresh_command_win ();return;
 	}
-	
+
 	for (i=0;i<current_type->fields_num && !found;i++) {
 		if (strcmp (current_type->field_names [i],variable)==0) {
 			found=1;
@@ -429,7 +429,7 @@ void hex_set (char *command_line)
 	unsigned char tmp;
 	char *ptr,buffer [80],*ch_ptr;
 	int mode=HEX;
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr==0) {
 		wprintw (command_win,"Error - Argument not specified\n");refresh_command_win ();return;
@@ -482,7 +482,7 @@ void hex_set (char *command_line)
 			}
 		}
 	}
-	
+
 	strcpy (buffer,"show");dispatch (buffer);
 }
 
@@ -500,14 +500,14 @@ void set_type (char *command_line)
 
 	ptr=parse_word (command_line,buffer);
 	parse_word (ptr,buffer);
-	
+
 	if (strcmp (buffer,"none")==0 || strcmp (buffer,"hex")==0) {
 		wprintw (command_win,"Data will be shown as hex dump\n");refresh_command_win ();
 		current_type=NULL;
 		sprintf (tmp_buffer,"show");dispatch (tmp_buffer);
 		return;
 	}
-	
+
 	descriptor_ptr=first_type;
 	while (descriptor_ptr!=NULL && !found) {
 		if (strcmp (descriptor_ptr->name,buffer)==0)
@@ -523,7 +523,7 @@ void set_type (char *command_line)
 	else {
 		wprintw (command_win,"Error - %s is not a valid type\n",buffer);refresh_command_win ();
 	}
-}    
+}
 
 void show_int(short len, void *ptr)
 {
@@ -584,7 +584,7 @@ void show_char(short len, void *ptr)
 	int		i,j;
 
 	wprintw(show_pad, "\"");
-	
+
 	for (i=0; i < len; i++) {
 		ch = *cp++;
 		if (ch == 0) {
@@ -604,17 +604,17 @@ void show_char(short len, void *ptr)
 		}
 		wprintw(show_pad, "%c", ch);
 	}
-	
+
 	wprintw(show_pad, "\"\n");
 }
 
 
-	
+
 void show (char *command_line)
 
 {
 	unsigned int i,l,len,temp_int;
-	unsigned long offset=0,temp_long;	
+	unsigned long offset=0,temp_long;
 	unsigned char temp_char,*ch_ptr;
 	void *ptr;
 
@@ -622,7 +622,7 @@ void show (char *command_line)
 		return;
 
 	show_pad_info.line=0;
-	
+
 	if (current_type==NULL) {
 		wmove (show_pad,0,0);
 		ch_ptr=type_data.u.buffer;
@@ -631,7 +631,7 @@ void show (char *command_line)
 			for (i=0;i<16;i++) {
 				if (type_data.offset_in_block==offset+i)
 					wattrset (show_pad,A_REVERSE);
-			
+
 				if (ch_ptr [i]>=' ' && ch_ptr [i]<='z')
 					wprintw (show_pad,"%c",ch_ptr [i]);
 				else
@@ -643,7 +643,7 @@ void show (char *command_line)
 			for (i=0;i<16;i++) {
 				if (type_data.offset_in_block==offset+i)
 					wattrset (show_pad,A_REVERSE);
-			
+
 				wprintw (show_pad,"%02x",ch_ptr [i]);
 
 				if (type_data.offset_in_block==offset+i) {
@@ -696,12 +696,12 @@ void next (char *command_line)
 	char *ptr,buffer [80];
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		offset*=atol (buffer);
 	}
-	
+
 	if (current_type!=NULL) {
 		sprintf (buffer,"setoffset type +%ld",offset);
 		dispatch (buffer);
@@ -712,7 +712,7 @@ void next (char *command_line)
 		type_data.offset_in_block+=offset;
 		sprintf (buffer,"show");dispatch (buffer);
 	}
-		
+
 	else {
 		wprintw (command_win,"Error - Offset out of block\n");refresh_command_win ();
 	}
@@ -725,12 +725,12 @@ void prev (char *command_line)
 	char *ptr,buffer [80];
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		offset*=atol (buffer);
 	}
-	
+
 	if (current_type!=NULL) {
 		sprintf (buffer,"setoffset type -%ld",offset);
 		dispatch (buffer);
@@ -741,13 +741,13 @@ void prev (char *command_line)
 		type_data.offset_in_block-=offset;
 		sprintf (buffer,"show");dispatch (buffer);
 	}
-	
+
 	else {
 		wprintw (command_win,"Error - Offset out of block\n");refresh_command_win ();
 	}
 }
 
-void pgdn (char *commnad_line) 
+void pgdn (char *commnad_line)
 
 {
 	show_pad_info.line+=show_pad_info.display_lines;
@@ -773,19 +773,19 @@ void remember (char *command_line)
 {
 	long entry_num;
 	char *ptr,buffer [80];
-	
+
 	if (device_handle==NULL) {
 		wprintw (command_win,"Error - No device opened\n");refresh_command_win ();
 		return;
 	}
 
 	ptr=parse_word (command_line,buffer);
-	
+
 	if (*ptr==0) {
 		wprintw (command_win,"Error - Argument not specified\n");refresh_command_win ();
-		return;		
+		return;
 	}
-	
+
 	ptr=parse_word (ptr,buffer);
 
 	entry_num=remember_lifo.entries_count++;
@@ -793,16 +793,16 @@ void remember (char *command_line)
 		entry_num=0;
 		remember_lifo.entries_count--;
 	}
-	
+
 	remember_lifo.offset [entry_num]=device_offset;
 	remember_lifo.type [entry_num]=current_type;
 	strcpy (remember_lifo.name [entry_num],buffer);
-	
+
 	if (current_type!=NULL)
 		wprintw (command_win,"Object %s in Offset %ld remembered as %s\n",current_type->name,device_offset,buffer);
 	else
 		wprintw (command_win,"Offset %ld remembered as %s\n",device_offset,buffer);
-			
+
 	refresh_command_win ();
 }
 
@@ -821,17 +821,17 @@ void recall (char *command_line)
 
 	if (*ptr==0) {
 		wprintw (command_win,"Error - Argument not specified\n");refresh_command_win ();
-		return;		
+		return;
 	}
 
 	ptr=parse_word (ptr,buffer);
 
-	
+
 	for (entry_num=remember_lifo.entries_count-1;entry_num>=0;entry_num--) {
 		if (strcmp (remember_lifo.name [entry_num],buffer)==0)
-			break;	
+			break;
 	}
-	
+
 	if (entry_num==-1) {
 		wprintw (command_win,"Error - Can not recall %s\n",buffer);refresh_command_win ();
 		return;
@@ -839,13 +839,13 @@ void recall (char *command_line)
 
 	sprintf (buffer,"setoffset %ld",remember_lifo.offset [entry_num]);dispatch (buffer);
 	if (remember_lifo.type [entry_num] != NULL) {
-		sprintf (buffer,"settype %s",remember_lifo.type [entry_num]->name);dispatch (buffer);	
+		sprintf (buffer,"settype %s",remember_lifo.type [entry_num]->name);dispatch (buffer);
 	}
 
 	else {
-		sprintf (buffer,"settype none");dispatch (buffer);	
+		sprintf (buffer,"settype none");dispatch (buffer);
 	}
-			
+
 	wprintw (command_win,"Object %s in Offset %ld recalled\n",current_type->name,device_offset);
 	refresh_command_win ();
 }
@@ -864,12 +864,12 @@ void enable_write (char *command_line)
 		wprintw (command_win,"Sorry, write access is not allowed\n");
     		return;
     	}
-    	
+
     	if (mounted) {
     		wprintw (command_win,"Error - Filesystem is mounted\n");
-		return;    		
+		return;
     	}
-    	
+
 	if ( (fp=fopen (device_name,"r+b"))==NULL) {
 		wprintw (command_win,"Error - Can not open device %s for reading and writing\n",device_name);refresh_command_win ();
 		return;
@@ -893,7 +893,7 @@ void disable_write (char *command_line)
 		wprintw (command_win,"Error - Can not open device %s\n",device_name);refresh_command_win ();
 		return;
 	}
-	
+
 	fclose (device_handle);
 	device_handle=fp;write_access=0;
 	wprintw (command_win,"Write access disabled\n");refresh_command_win ();

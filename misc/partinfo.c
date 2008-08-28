@@ -4,7 +4,7 @@
  * Originally written by Alain Knaff, <alknaff@innet.lu>.
  *
  * Cleaned up by Theodore Ts'o, <tytso@mit.edu>.
- * 
+ *
  */
 
 #include <sys/types.h>
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 			"For example: %s /dev/hda\n\n"), argv[0], argv[0]);
 		exit(1);
 	}
-    
+
 	for (i=1; i < argc; i++) {
 		fd = open(argv[i], O_RDONLY);
 
@@ -50,24 +50,24 @@ int main(int argc, char **argv)
 				argv[i], strerror(errno));
 			continue;
 		}
-    
+
 		if (ioctl(fd, HDIO_GETGEO, &loc) < 0) {
 			fprintf(stderr, _("Cannot get geometry of %s: %s"),
 				argv[i], strerror(errno));
 			close(fd);
 			continue;
 		}
-    
-    
+
+
 		if (ioctl(fd, BLKGETSIZE, &size) < 0) {
 			fprintf(stderr, _("Cannot get size of %s: %s"),
 				argv[i], strerror(errno));
 			close(fd);
 			continue;
 		}
-    
+
 		printf(_("%s: h=%3d s=%3d c=%4d   start=%8d size=%8lu end=%8d\n"),
-		       argv[i], 
+		       argv[i],
 		       loc.heads, (int)loc.sectors, loc.cylinders,
 		       (int)loc.start, size, (int) loc.start + size -1);
 		close(fd);

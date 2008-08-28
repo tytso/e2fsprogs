@@ -1,6 +1,6 @@
 /*
  * htree.c --- hash tree routines
- * 
+ *
  * Copyright (C) 2002 Theodore Ts'o.  This file may be redistributed
  * under the terms of the GNU Public License.
  */
@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
-#else 
+#else
 extern int optind;
 extern char *optarg;
 #endif
@@ -40,7 +40,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	blk_t		pblk;
 	ext2_dirhash_t 	hash, minor_hash;
 	int		rec_len, hash_alg;
-	
+
 	errcode = ext2fs_bmap(fs, ino, inode, buf, 0, blk, &pblk);
 	if (errcode) {
 		com_err("htree_dump_leaf_node", errcode,
@@ -105,13 +105,13 @@ static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 static void htree_dump_int_node(ext2_filsys fs, ext2_ino_t ino,
 				struct ext2_inode *inode,
 				struct ext2_dx_root_info * rootnode,
-				struct ext2_dx_entry *ent, 
+				struct ext2_dx_entry *ent,
 				char *buf, int level)
 {
 	struct ext2_dx_countlimit	limit;
 	struct ext2_dx_entry		e;
 	int				hash, i;
-	
+
 
 	limit = *((struct ext2_dx_countlimit *) ent);
 	limit.count = ext2fs_le16_to_cpu(limit.count);
@@ -159,7 +159,7 @@ static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 		fprintf(pager, "Couldn't allocate child block.\n");
 		return;
 	}
-	
+
 	errcode = ext2fs_bmap(fs, ino, inode, buf, 0, blk, &pblk);
 	if (errcode) {
 		com_err("htree_dump_int_block", errcode,
@@ -232,7 +232,7 @@ void do_htree_dump(int argc, char *argv[])
 		com_err(argv[0], 0, "Not a directory");
 		goto errout;
 	}
-	
+
 	if ((inode.i_flags & EXT2_BTREE_FL) == 0) {
 		com_err(argv[0], 0, "Not a hash-indexed directory");
 		goto errout;
@@ -251,7 +251,7 @@ void do_htree_dump(int argc, char *argv[])
 		goto errout;
 	}
 
-	errcode = io_channel_read_blk(current_fs->io, blk, 
+	errcode = io_channel_read_blk(current_fs->io, blk,
 				      1, buf);
 	if (errcode) {
 		com_err(argv[0], errcode, "Error reading root node");
@@ -290,7 +290,7 @@ void do_dx_hash(int argc, char *argv[])
 	int		c;
 	int		hash_version = 0;
 	__u32		hash_seed[4];
-	
+
 	hash_seed[0] = hash_seed[1] = hash_seed[2] = hash_seed[3] = 0;
 
 	reset_getopt();
@@ -330,14 +330,14 @@ struct process_block_struct {
 };
 
 static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
-			    e2_blkcnt_t blockcnt, blk_t ref_blk, 
+			    e2_blkcnt_t blockcnt, blk_t ref_blk,
 			    int ref_offset, void *priv_data);
 
 void do_dirsearch(int argc, char *argv[])
 {
 	ext2_ino_t	inode;
 	struct process_block_struct pb;
-	
+
 	if (check_fs_open(argv[0]))
 		return;
 
@@ -357,7 +357,7 @@ void do_dirsearch(int argc, char *argv[])
 	}
 	pb.search_name = argv[2];
 	pb.len = strlen(pb.search_name);
-	
+
 	ext2fs_block_iterate2(current_fs, inode, BLOCK_FLAG_READ_ONLY, 0,
 			      search_dir_block, &pb);
 
@@ -366,7 +366,7 @@ void do_dirsearch(int argc, char *argv[])
 
 
 static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
-			    e2_blkcnt_t blockcnt, 
+			    e2_blkcnt_t blockcnt,
 			    blk_t ref_blk EXT2FS_ATTR((unused)),
 			    int ref_offset EXT2FS_ATTR((unused)),
 			    void *priv_data)
@@ -394,7 +394,7 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
 			dirent->rec_len : 65536;
 		if (dirent->inode &&
-		    p->len == (dirent->name_len & 0xFF) && 
+		    p->len == (dirent->name_len & 0xFF) &&
 		    strncmp(p->search_name, dirent->name,
 			    p->len) == 0) {
 			printf("Entry found at logical block %lld, "

@@ -1,11 +1,11 @@
 /*
  * feature.c --- convert between features and strings
- * 
+ *
  * Copyright (C) 1999  Theodore Ts'o <tytso@mit.edu>
- * 
+ *
  * This file can be redistributed under the terms of the GNU Library General
  * Public License
- * 
+ *
  */
 
 #include <stdio.h>
@@ -251,11 +251,11 @@ static char *skip_over_word(char *cp)
 /*
  * Edit a feature set array as requested by the user.  The ok_array,
  * if set, allows the application to limit what features the user is
- * allowed to set or clear using this function.  If clear_ok_array is set, 
+ * allowed to set or clear using this function.  If clear_ok_array is set,
  * then use it tell whether or not it is OK to clear a filesystem feature.
  */
 int e2p_edit_feature2(const char *str, __u32 *compat_array, __u32 *ok_array,
-		      __u32 *clear_ok_array, int *type_err, 
+		      __u32 *clear_ok_array, int *type_err,
 		      unsigned int *mask_err)
 {
 	char		*cp, *buf, *next;
@@ -280,7 +280,7 @@ int e2p_edit_feature2(const char *str, __u32 *compat_array, __u32 *ok_array,
 		neg = 0;
 		cp = skip_over_blanks(cp);
 		next = skip_over_word(cp);
-		
+
 		if (*next == 0)
 			next = 0;
 		else
@@ -307,11 +307,11 @@ int e2p_edit_feature2(const char *str, __u32 *compat_array, __u32 *ok_array,
 			break;
 		}
 		if (neg) {
-			if (clear_ok_array && 
+			if (clear_ok_array &&
 			    !(clear_ok_array[compat_type] & mask)) {
 				rc = 1;
 				if (type_err)
-					*type_err = (compat_type | 
+					*type_err = (compat_type |
 						     E2P_FEATURE_NEGATE_FLAG);
 				if (mask_err)
 					*mask_err = mask;

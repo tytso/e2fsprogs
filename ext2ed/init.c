@@ -48,12 +48,12 @@ int init (void)
 
 {
 	printf ("Initializing ...\n");
-	
+
 	if (!process_configuration_file ()) {
 		fprintf (stderr,"Error - Unable to complete configuration. Quitting.\n");
-		return (0);		
+		return (0);
 	};
-	
+
 	general_commands.last_command=-1;	/* No commands whatsoever meanwhile */
 	ext2_commands.last_command=-1;
 	add_general_commands ();		/* Add the general commands, aviable always */
@@ -62,12 +62,12 @@ int init (void)
 	current_type=NULL;			/* No filesystem specific types yet */
 
 	remember_lifo.entries_count=0;		/* Object memory is empty */
-	
+
 	init_windows ();			/* Initialize the NCURSES interface */
 	init_readline ();			/* Initialize the READLINE interface */
 	init_signals ();			/* Initialize the signal handlers */
 	write_access=0;				/* Write access disabled */
-	
+
 	strcpy (last_command_line,"help");	/* Show the help screen to the user */
 	dispatch ("help");
 	return (1);				/* Success */
@@ -109,26 +109,26 @@ int set_struct_descriptors (char *file_name)
 	char current_line [500],current_word [50],*ch;
 	char variable_name [50],variable_type [20];
 	struct struct_descriptor *current_descriptor;
-	
+
 	if ( (fp=fopen (file_name,"rt"))==NULL) {
 		wprintw (command_win,"Error - Failed to open descriptors file %s\n",file_name);
 		refresh_command_win ();	return (0);
 	};
-	
+
 	while (!feof (fp)) {
 		fgets (current_line,500,fp);
-		if (feof (fp)) break;	
+		if (feof (fp)) break;
 		ch=parse_word (current_line,current_word);
 		if (strcmp (current_word,"struct")==0) {
 			ch=parse_word (ch,current_word);
 			current_descriptor=add_new_descriptor (current_word);
-			
+
 			while (strchr (current_line,'{')==NULL) {
 				fgets (current_line,500,fp);
 				if (feof (fp)) break;
 			};
 			if (feof (fp)) break;
-			
+
 			fgets (current_line,500,fp);
 
 			while (strchr (current_line,'}')==NULL) {
@@ -147,9 +147,9 @@ int set_struct_descriptors (char *file_name)
 				add_new_variable (current_descriptor,variable_type,variable_name);
 				fgets (current_line,500,fp);
 			};
-		}; 
+		};
 	};
-	
+
 	fclose (fp);
 	return (1);
 }
@@ -158,7 +158,7 @@ void free_struct_descriptors (void)
 
 {
 	struct struct_descriptor *ptr,*next;
-	
+
 	ptr=first_type;
 	while (ptr!=NULL) {
 		next=ptr->next;
@@ -173,12 +173,12 @@ void free_user_commands (struct struct_commands *ptr)
 
 {
 	int i;
-	
+
 	for (i=0;i<=ptr->last_command;i++) {
 		free (ptr->names [i]);
 		free (ptr->descriptions [i]);
 	}
-	
+
 	ptr->last_command=-1;
 }
 
@@ -186,7 +186,7 @@ struct struct_descriptor *add_new_descriptor (char *name)
 
 {
 	struct struct_descriptor *ptr;
-	
+
 	ptr = malloc (sizeof (struct struct_descriptor));
 	if (ptr == NULL) {
 		printf ("Error - Can not allocate memory - Quitting\n");
@@ -232,7 +232,7 @@ void add_new_variable (struct struct_descriptor *ptr,char *v_type,char *v_name)
 	short	len=1;
 	char	field_type=FIELD_TYPE_INT;
 	struct type_table *p;
-	
+
 	strcpy (ptr->field_names [ptr->fields_num],v_name);
 	ptr->field_positions [ptr->fields_num]=ptr->length;
 
@@ -257,7 +257,7 @@ void add_new_variable (struct struct_descriptor *ptr,char *v_type,char *v_name)
 	ptr->field_types [ptr->fields_num] = field_type;
 
 	ptr->length+=len;
-	ptr->fields_num++; 
+	ptr->fields_num++;
 }
 
 void fill_type_commands (struct struct_descriptor *ptr)
@@ -294,7 +294,7 @@ Set specific type user commands.
 		add_user_command (&ptr->type_commands,"file","Display file data of the current inode",type_ext2_inode___file);
 		add_user_command (&ptr->type_commands,"dir","Display directory data of the current inode",type_ext2_inode___dir);
 	}
-	
+
 	if (strcmp ((ptr->name),"dir")==0) {
 		add_user_command (&ptr->type_commands,"show","Shows current directory data",type_dir___show);
 		add_user_command (&ptr->type_commands,"inode","Returns to the inode of the current directory",type_dir___inode);
@@ -307,7 +307,7 @@ Set specific type user commands.
 		add_user_command (&ptr->type_commands,"writedata","Writes the current entry to the disk",type_dir___writedata);
 		add_user_command (&ptr->type_commands,"set","Changes a variable in the current directory entry",type_dir___set);
 	}
-	
+
 	if (strcmp ((ptr->name),"ext2_super_block")==0) {
 		add_user_command (&ptr->type_commands,"show","Displays the super block data",type_ext2_super_block___show);
 		add_user_command (&ptr->type_commands,"gocopy","Move to another backup copy of the superblock",type_ext2_super_block___gocopy);
@@ -343,30 +343,30 @@ Set specific type user commands.
 		add_user_command (&ptr->type_commands,"allocate","Allocates the current inode",type_ext2_inode_bitmap___allocate);
 		add_user_command (&ptr->type_commands,"deallocate","Deallocates the current inode",type_ext2_inode_bitmap___deallocate);
 	}
-	
+
 }
 
 void add_user_command (struct struct_commands *ptr,char *name,char *description,PF callback)
 
 {
 	int num;
-	
+
 	num=ptr->last_command;
 	if (num+1==MAX_COMMANDS_NUM) {
 		printf ("Internal Error - Can't add command %s\n",name);
 		return;
 	}
-	
+
 	ptr->last_command=++num;
 
 	ptr->names [num]=(char *) malloc (strlen (name)+1);
 	strcpy (ptr->names [num],name);
-	
+
 	if (*description!=0) {
 		ptr->descriptions [num]=(char *) malloc (strlen (description)+1);
 		strcpy (ptr->descriptions [num],description);
 	}
-	
+
 	ptr->callback [num]=callback;
 }
 
@@ -382,7 +382,7 @@ int set_file_system_info (void)
 {
 	int ext2_detected=0;
 	struct ext2_super_block *sb;
-	
+
 	file_system_info.super_block_offset=1024;
 	file_system_info.file_system_size=DefaultTotalBlocks*DefaultBlockSize;
 
@@ -390,7 +390,7 @@ int set_file_system_info (void)
 
 	sb=&file_system_info.super_block;
 
-	if (sb->s_magic == EXT2_SUPER_MAGIC) 
+	if (sb->s_magic == EXT2_SUPER_MAGIC)
 		ext2_detected=1;
 
 	if (ext2_detected)
@@ -403,7 +403,7 @@ int set_file_system_info (void)
 
 	if (ForceExt2 && !ext2_detected)
 		wprintw (command_win,"Forcing extended 2 filesystem\n");
-	
+
 	if (ForceDefault || !ext2_detected)
 		wprintw (command_win,"Forcing default parameters\n");
 
@@ -414,17 +414,17 @@ int set_file_system_info (void)
 		if (!set_struct_descriptors (Ext2Descriptors))
 			return (0);
 	}
-	
+
 	if (!ForceDefault && ext2_detected) {
-	
+
 		file_system_info.block_size=EXT2_MIN_BLOCK_SIZE << sb->s_log_block_size;
 		if (file_system_info.block_size == EXT2_MIN_BLOCK_SIZE)
 			file_system_info.first_group_desc_offset=2*EXT2_MIN_BLOCK_SIZE;
 		else
 			file_system_info.first_group_desc_offset=file_system_info.block_size;
-		file_system_info.groups_count = div_ceil(sb->s_blocks_count, 
+		file_system_info.groups_count = div_ceil(sb->s_blocks_count,
 						 sb->s_blocks_per_group);
-	
+
 		file_system_info.inodes_per_block=file_system_info.block_size/sizeof (struct ext2_inode);
 		file_system_info.blocks_per_group=sb->s_inodes_per_group/file_system_info.inodes_per_block;
 		file_system_info.no_blocks_in_group=sb->s_blocks_per_group;
@@ -433,10 +433,10 @@ int set_file_system_info (void)
 
 	else {
 		file_system_info.file_system_size=DefaultTotalBlocks*DefaultBlockSize;
-		file_system_info.block_size=DefaultBlockSize;		
+		file_system_info.block_size=DefaultBlockSize;
 		file_system_info.no_blocks_in_group=DefaultBlocksInGroup;
 	}
-	
+
 	if (file_system_info.file_system_size > 2147483647) {
 		wprintw (command_win,"Sorry, filesystems bigger than 2 GB are currently not supported\n");
 		return (0);
@@ -458,17 +458,17 @@ void init_signals (void)
 	signal (SIGWINCH, signal_SIGWINCH_handler);	/* Catch SIGWINCH */
 	signal (SIGTERM, signal_SIGTERM_handler);
 	signal (SIGSEGV, signal_SIGSEGV_handler);
-	
+
 }
 
 void signal_SIGWINCH_handler (int sig_num)
 
 {
 	redraw_request=1;	/* We will handle it in main.c */
-	
-	/* Reset signal handler */	
-	signal (SIGWINCH, signal_SIGWINCH_handler);	
-	
+
+	/* Reset signal handler */
+	signal (SIGWINCH, signal_SIGWINCH_handler);
+
 }
 
 void signal_SIGTERM_handler (int sig_num)
@@ -496,12 +496,12 @@ int process_configuration_file (void)
 
 	strcpy (buffer, ETC_DIR);
 	strcat (buffer,"/ext2ed.conf");
-		
+
 	if ((fp=fopen (buffer,"rt"))==NULL) {
 		fprintf (stderr,"Error - Unable to open configuration file %s\n",buffer);
 		return (0);
 	}
-	
+
 	while (get_next_option (fp,option,value)) {
 		if (strcasecmp (option,"Ext2Descriptors")==0) {
 			strcpy (Ext2Descriptors,value);
@@ -581,7 +581,7 @@ int process_configuration_file (void)
 				fclose (fp);return (0);
 			}
 		}
-		
+
 		else {
 			fprintf (stderr,"Error - Unknown option: %s\n",option);
 			fclose (fp);return (0);
@@ -598,13 +598,13 @@ int get_next_option (FILE *fp,char *option,char *value)
 {
 	char *ptr;
 	char buffer [600];
-	
+
 	if (feof (fp)) return (0);
 	do{
 		if (feof (fp)) return (0);
 		fgets (buffer,500,fp);
 	} while (buffer [0]=='#' || buffer [0]=='\n');
-	
+
 	ptr=parse_word (buffer,option);
 	ptr=parse_word (ptr,value);
 	return (1);
@@ -618,15 +618,15 @@ void check_mounted (char *name)
 	char current_line [500],current_word [200];
 
 	mounted=0;
-	
+
 	if ( (fp=fopen ("/etc/mtab","rt"))==NULL) {
 		wprintw (command_win,"Error - Failed to open /etc/mtab. Assuming filesystem is mounted.\n");
 		refresh_command_win ();mounted=1;return;
 	};
-	
+
 	while (!feof (fp)) {
 		fgets (current_line,500,fp);
-		if (feof (fp)) break;	
+		if (feof (fp)) break;
 		ptr=parse_word (current_line,current_word);
 		if (strcasecmp (current_word,name)==0) {
 			mounted=1;fclose (fp);return;
@@ -634,6 +634,6 @@ void check_mounted (char *name)
 	};
 
 	fclose (fp);
-	
-	return;	
+
+	return;
 }

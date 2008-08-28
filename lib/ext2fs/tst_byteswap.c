@@ -2,7 +2,7 @@
  * This testing program makes sure the byteswap functions work
  *
  * Copyright (C) 2000 by Theodore Ts'o.
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 		}
 		i += 2;
 	} while (test1[i] != 0);
-	
+
 	printf("Testing ext2fs_swab32\n");
 	i = 0;
 	do {
@@ -87,6 +87,6 @@ int main(int argc, char **argv)
 
 	if (!errors)
 		printf("No errors found in the byteswap implementation!\n");
-	
+
 	return errors;
 }

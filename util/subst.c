@@ -2,7 +2,7 @@
  * subst.c --- substitution program
  *
  * Subst is used as a quicky program to do @ substitutions
- * 
+ *
  */
 
 #include <stdio.h>
@@ -36,7 +36,7 @@ static int add_subst(char *name, char *value)
 {
 	struct subst_entry	*ent = 0;
 	int	retval;
-	
+
 	retval = ENOMEM;
 	ent = (struct subst_entry *) malloc(sizeof(struct subst_entry));
 	if (!ent)
@@ -91,7 +91,7 @@ static char *get_subst_symbol(const char *begin, size_t len, char prefix)
 		return NULL;
 	memcpy(start, begin, len);
 	start[len] = 0;
-	
+
 	/*
 	 * The substitution variable must all be in the of [0-9A-Za-z_].
 	 * If it isn't, this must be an invalid symbol name.
@@ -154,7 +154,7 @@ static void substitute_line(char *line)
 		}
 		ent = fetch_subst_entry(replace_name);
 		if (!ent) {
-			fprintf(stderr, "Unfound expansion: '%s'\n", 
+			fprintf(stderr, "Unfound expansion: '%s'\n",
 				replace_name);
 			ptr = end_ptr + 1;
 			continue;
@@ -167,7 +167,7 @@ static void substitute_line(char *line)
 		replace_string(ptr, end_ptr, ent->value);
 		if ((ent->value[0] == '@') &&
 		    (strlen(replace_name) == strlen(ent->value)-2) &&
-		    !strncmp(replace_name, ent->value+1, 
+		    !strncmp(replace_name, ent->value+1,
 			     strlen(ent->value)-2))
 			/* avoid an infinite loop */
 			ptr += strlen(ent->value);
@@ -193,7 +193,7 @@ static void substitute_line(char *line)
 		if (!replace_name) {
 			ptr = name_ptr;
 			continue;
-		}			
+		}
 		ent = fetch_subst_entry(replace_name);
 		if (!ent) {
 			ptr = end_ptr + 1;
@@ -313,7 +313,7 @@ int main(int argc, char **argv)
 	int	adjust_timestamp = 0;
 	struct stat stbuf;
 	struct utimbuf ut;
-	
+
 	while ((c = getopt (argc, argv, "f:tv")) != EOF) {
 		switch (c) {
 		case 'f':
@@ -332,7 +332,7 @@ int main(int argc, char **argv)
 			verbose++;
 			break;
 		default:
-			fprintf(stderr, "%s: [-f config-file] [file]\n", 
+			fprintf(stderr, "%s: [-f config-file] [file]\n",
 				argv[0]);
 			break;
 		}
@@ -346,7 +346,7 @@ int main(int argc, char **argv)
 		optind++;
 	} else
 		in = stdin;
-	
+
 	if (optind < argc) {
 		outfn = argv[optind];
 		newfn = (char *) malloc(strlen(outfn)+20);
@@ -365,7 +365,7 @@ int main(int argc, char **argv)
 		out = stdout;
 		outfn = 0;
 	}
-			
+
 	while (!feof(in)) {
 		if (fgets(line, sizeof(line), in) == NULL)
 			break;

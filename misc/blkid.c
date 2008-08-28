@@ -410,8 +410,8 @@ int main(int argc, char **argv)
 						  BLKID_DEV_NORMAL);
 
 		if (dev) {
-			if (search_type && 
-			    !blkid_dev_has_tag(dev, search_type, 
+			if (search_type &&
+			    !blkid_dev_has_tag(dev, search_type,
 					       search_value))
 				continue;
 			print_tags(dev, show, numtag, output_format);

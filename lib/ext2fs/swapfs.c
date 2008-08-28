@@ -1,6 +1,6 @@
 /*
  * swapfs.c --- swap ext2 filesystem data structures
- * 
+ *
  * Copyright (C) 1995, 1996, 2002 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -166,11 +166,11 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 	t->i_links_count = ext2fs_swab16(f->i_links_count);
 	t->i_file_acl = ext2fs_swab32(f->i_file_acl);
 	if (hostorder)
-		has_data_blocks = ext2fs_inode_data_blocks(fs, 
+		has_data_blocks = ext2fs_inode_data_blocks(fs,
 					   (struct ext2_inode *) f);
 	t->i_blocks = ext2fs_swab32(f->i_blocks);
 	if (!hostorder)
-		has_data_blocks = ext2fs_inode_data_blocks(fs, 
+		has_data_blocks = ext2fs_inode_data_blocks(fs,
 					   (struct ext2_inode *) t);
 	if (hostorder && (f->i_flags & EXT4_EXTENTS_FL))
 		has_extents = 1;
@@ -193,7 +193,7 @@ void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 	case EXT2_OS_LINUX:
 		t->osd1.linux1.l_i_version =
 			ext2fs_swab32(f->osd1.linux1.l_i_version);
-		t->osd2.linux2.l_i_blocks_hi = 
+		t->osd2.linux2.l_i_blocks_hi =
 			ext2fs_swab16(f->osd2.linux2.l_i_blocks_hi);
 		t->osd2.linux2.l_i_file_acl_high =
 			ext2fs_swab16(f->osd2.linux2.l_i_file_acl_high);

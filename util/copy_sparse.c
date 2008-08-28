@@ -1,7 +1,7 @@
 /*
  * copy_sparse.c -- copy a very large sparse files efficiently
  * 	(requires root privileges)
- * 
+ *
  * Copyright 2003, 2004 by Theodore Ts'o.
  *
  * %Begin-Header%
@@ -70,7 +70,7 @@ static int full_read(int fd, char *buf, size_t count)
 	while (count > 0) {
 		got = read(fd, buf, count);
 		if (got == -1) {
-			if ((errno == EINTR) || (errno == EAGAIN)) 
+			if ((errno == EINTR) || (errno == EAGAIN))
 				continue;
 			return total ? total : -1;
 		}
@@ -97,7 +97,7 @@ static void copy_sparse_file(const char *src, const char *dest)
 
 	if (verbose)
 		printf("Copying sparse file from %s to %s\n", src, dest);
-		
+
 	if (strcmp(src, "-")) {
 		if (stat64(src, &fileinfo) < 0) {
 			perror("stat");
@@ -125,13 +125,13 @@ static void copy_sparse_file(const char *src, const char *dest)
 			printf("Blocksize of file %s is %ld\n", src, bs);
 		numblocks = (fileinfo.st_size + (bs-1)) / bs;
 		if (verbose)
-			printf("File size of %s is %lld (%ld blocks)\n", src, 
+			printf("File size of %s is %lld (%ld blocks)\n", src,
 			       (long long) fileinfo.st_size, numblocks);
 	} else {
 		fd = 0;
 		bs = 1024;
 	}
-		
+
 	ofd = open(dest, O_WRONLY|O_CREAT|O_TRUNC|O_LARGEFILE, 0777);
 	if (ofd < 0) {
 		perror(dest);
@@ -143,7 +143,7 @@ static void copy_sparse_file(const char *src, const char *dest)
 		fprintf(stderr, "Couldn't allocate buffer");
 		exit(1);
 	}
-			
+
 	for (lb = 0; !fd || lb < numblocks; lb++) {
 		if (fd) {
 			block = get_bmap(fd, lb);
@@ -170,7 +170,7 @@ static void copy_sparse_file(const char *src, const char *dest)
 			break;
 
 		if (got == bs) {
-			for (i=0; i < bs; i++) 
+			for (i=0; i < bs; i++)
 				if (buf[i])
 					break;
 			if (i == bs) {

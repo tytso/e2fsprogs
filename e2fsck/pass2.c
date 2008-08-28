@@ -1,13 +1,13 @@
 /*
  * pass2.c --- check directory structure
- * 
+ *
  * Copyright (C) 1993, 1994, 1995, 1996, 1997 Theodore Ts'o
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
  * %End-Header%
- * 
+ *
  * Pass 2 of e2fsck iterates through all active directory inodes, and
  * applies to following tests to each directory entry in the directory
  * blocks in the inodes:
@@ -16,7 +16,7 @@
  * 		least 8 bytes, and no more than the remaining space
  * 		left in the directory block.
  * 	- The length of the name in the directory entry (name_len)
- * 		should be less than (rec_len - 8).  
+ * 		should be less than (rec_len - 8).
  *	- The inode number in the directory entry should be within
  * 		legal bounds.
  * 	- The inode number should refer to a in-use inode.
@@ -70,7 +70,7 @@ static int update_dir_block(ext2_filsys fs,
 			    blk_t	*block_nr,
 			    e2_blkcnt_t blockcnt,
 			    blk_t	ref_block,
-			    int		ref_offset, 
+			    int		ref_offset,
 			    void	*priv_data);
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino);
 static int htree_depth(struct dx_dir_info *dx_dir,
@@ -82,7 +82,7 @@ struct check_dir_struct {
 	struct problem_context	pctx;
 	int	count, max;
 	e2fsck_t ctx;
-};	
+};
 
 void e2fsck_pass2(e2fsck_t ctx)
 {
@@ -114,12 +114,12 @@ void e2fsck_pass2(e2fsck_t ctx)
 	if (!(ctx->options & E2F_OPT_PREEN))
 		fix_problem(ctx, PR_2_PASS_HEADER, &cd.pctx);
 
-	e2fsck_setup_tdb_icount(ctx, EXT2_ICOUNT_OPT_INCREMENT, 
+	e2fsck_setup_tdb_icount(ctx, EXT2_ICOUNT_OPT_INCREMENT,
 				&ctx->inode_count);
 	if (ctx->inode_count)
 		cd.pctx.errcode = 0;
-	else 
-		cd.pctx.errcode = ext2fs_create_icount2(fs, 
+	else
+		cd.pctx.errcode = ext2fs_create_icount2(fs,
 						EXT2_ICOUNT_OPT_INCREMENT,
 						0, ctx->inode_link_info,
 						&ctx->inode_count);
@@ -148,7 +148,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 
 	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX)
 		ext2fs_dblist_sort(fs->dblist, special_dir_block_cmp);
-	
+
 	cd.pctx.errcode = ext2fs_dblist_iterate(fs->dblist, check_dir_block,
 						&cd);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK || ctx->flags & E2F_FLAG_RESTART)
@@ -195,7 +195,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 			if (dx_db->flags & DX_FLAG_LAST)
 				dx_parent->max_hash = dx_db->max_hash;
 		}
-				
+
 		for (b=0, dx_db = dx_dir->dx_block;
 		     b < dx_dir->numblocks;
 		     b++, dx_db++) {
@@ -220,7 +220,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 				}
 			}
 			/*
-			 * This test doesn't apply for the root block 
+			 * This test doesn't apply for the root block
 			 * at block #0
 			 */
 			if (b &&
@@ -277,7 +277,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
-	
+
 #ifdef RESOURCE_TRACK
 	if (ctx->options & E2F_OPT_TIME2) {
 		e2fsck_clear_progbar(ctx);
@@ -333,10 +333,10 @@ static EXT2_QSORT_TYPE special_dir_block_cmp(const void *a, const void *b)
 
 	if (!db_a->blockcnt && db_b->blockcnt)
 		return -1;
-	
+
 	if (db_a->blk != db_b->blk)
 		return (int) (db_a->blk - db_b->blk);
-	
+
 	if (db_a->ino != db_b->ino)
 		return (int) (db_a->ino - db_b->ino);
 
@@ -357,7 +357,7 @@ static int check_dot(e2fsck_t ctx,
 	int	created = 0;
 	int	rec_len, new_len;
 	int	problem = 0;
-	
+
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT;
 	else if (((dirent->name_len & 0xFF) != 1) ||
@@ -414,7 +414,7 @@ static int check_dotdot(e2fsck_t ctx,
 			ext2_ino_t ino, struct problem_context *pctx)
 {
 	int	rec_len, problem = 0;
-	
+
 	if (!dirent->inode)
 		problem = PR_2_MISSING_DOT_DOT;
 	else if (((dirent->name_len & 0xFF) != 2) ||
@@ -441,7 +441,7 @@ static int check_dotdot(e2fsck_t ctx,
 			dirent->name[1] = '.';
 			dirent->name[2] = '\0';
 			return 1;
-		} 
+		}
 		return 0;
 	}
 	if (e2fsck_dir_info_set_dotdot(ctx, ino, dirent->inode)) {
@@ -457,13 +457,13 @@ static int check_dotdot(e2fsck_t ctx,
  */
 static int check_name(e2fsck_t ctx,
 		      struct ext2_dir_entry *dirent,
-		      ext2_ino_t dir_ino EXT2FS_ATTR((unused)), 
+		      ext2_ino_t dir_ino EXT2FS_ATTR((unused)),
 		      struct problem_context *pctx)
 {
 	int	i;
 	int	fixup = -1;
 	int	ret = 0;
-	
+
 	for ( i = 0; i < (dirent->name_len & 0xFF); i++) {
 		if (dirent->name[i] == '/' || dirent->name[i] == '\0') {
 			if (fixup < 0) {
@@ -520,7 +520,7 @@ static _INLINE_ int check_filetype(e2fsck_t ctx,
 	if (fix_problem(ctx, filetype ? PR_2_BAD_FILETYPE : PR_2_SET_FILETYPE,
 			pctx) == 0)
 		return 0;
-			
+
 	dirent->name_len = (dirent->name_len & 0xFF) | should_be << 8;
 	return 1;
 }
@@ -544,7 +544,7 @@ static void parse_int_node(ext2_filsys fs,
 
 	if (db->blockcnt == 0) {
 		root = (struct ext2_dx_root_info *) (block_buf + 24);
-		
+
 #ifdef DX_DEBUG
 		printf("Root node dump:\n");
 		printf("\t Reserved zero: %u\n", root->reserved_zero);
@@ -561,9 +561,9 @@ static void parse_int_node(ext2_filsys fs,
 	limit = (struct ext2_dx_countlimit *) ent;
 
 #ifdef DX_DEBUG
-	printf("Number of entries (count): %d\n", 
+	printf("Number of entries (count): %d\n",
 	       ext2fs_le16_to_cpu(limit->count));
-	printf("Number of entries (limit): %d\n", 
+	printf("Number of entries (limit): %d\n",
 	       ext2fs_le16_to_cpu(limit->limit));
 #endif
 
@@ -581,7 +581,7 @@ static void parse_int_node(ext2_filsys fs,
 			goto clear_and_exit;
 		count = expect_limit;
 	}
-	
+
 	for (i=0; i < count; i++) {
 		prev_hash = hash;
 		hash = i ? (ext2fs_le32_to_cpu(ent[i].hash) & ~1) : 0;
@@ -614,7 +614,7 @@ static void parse_int_node(ext2_filsys fs,
 			max_hash = hash;
 		dx_db->node_min_hash = hash;
 		if ((i+1) < count)
-			dx_db->node_max_hash = 
+			dx_db->node_max_hash =
 			  ext2fs_le32_to_cpu(ent[i+1].hash) & ~1;
 		else {
 			dx_db->node_max_hash = 0xfffffffe;
@@ -640,7 +640,7 @@ clear_and_exit:
 
 /*
  * Given a busted directory, try to salvage it somehow.
- * 
+ *
  */
 static void salvage_directory(ext2_filsys fs,
 			      struct ext2_dir_entry *dirent,
@@ -739,15 +739,15 @@ static int check_dir_block(ext2_filsys fs,
 
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK || ctx->flags & E2F_FLAG_RESTART)
 		return DIRENT_ABORT;
-	
+
 	if (ctx->progress && (ctx->progress)(ctx, 2, cd->count++, cd->max))
 		return DIRENT_ABORT;
-	
+
 	/*
-	 * Make sure the inode is still in use (could have been 
+	 * Make sure the inode is still in use (could have been
 	 * deleted in the duplicate/bad blocks pass.
 	 */
-	if (!(ext2fs_test_inode_bitmap(ctx->inode_used_map, ino))) 
+	if (!(ext2fs_test_inode_bitmap(ctx->inode_used_map, ino)))
 		return 0;
 
 	cd->pctx.ino = ino;
@@ -762,7 +762,7 @@ static int check_dir_block(ext2_filsys fs,
 			return 0;
 		block_nr = db->blk;
 	}
-	
+
 	if (db->blockcnt)
 		dot_state = 2;
 	else
@@ -776,7 +776,7 @@ static int check_dir_block(ext2_filsys fs,
 	printf("In process_dir_block block %lu, #%d, inode %lu\n", block_nr,
 	       db->blockcnt, ino);
 #endif
-	
+
 	old_op = ehandler_operation(_("reading directory block"));
 	cd->pctx.errcode = ext2fs_read_dir_block(fs, block_nr, buf);
 	ehandler_operation(0);
@@ -793,7 +793,7 @@ static int check_dir_block(ext2_filsys fs,
 	dx_dir = e2fsck_get_dx_dir_info(ctx, ino);
 	if (dx_dir && dx_dir->numblocks) {
 		if (db->blockcnt >= dx_dir->numblocks) {
-			if (fix_problem(ctx, PR_2_UNEXPECTED_HTREE_BLOCK, 
+			if (fix_problem(ctx, PR_2_UNEXPECTED_HTREE_BLOCK,
 					&pctx)) {
 				clear_htree(ctx, ino);
 				dx_dir->numblocks = 0;
@@ -807,7 +807,7 @@ static int check_dir_block(ext2_filsys fs,
 		dx_db->phys = block_nr;
 		dx_db->min_hash = ~0;
 		dx_db->max_hash = 0;
-			
+
 		dirent = (struct ext2_dir_entry *) buf;
 		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
 			dirent->rec_len : 65536;
@@ -832,8 +832,8 @@ static int check_dir_block(ext2_filsys fs,
 		} else if ((dirent->inode == 0) &&
 			   (rec_len == fs->blocksize) &&
 			   (dirent->name_len == 0) &&
-			   (ext2fs_le16_to_cpu(limit->limit) == 
-			    ((fs->blocksize-8) / 
+			   (ext2fs_le16_to_cpu(limit->limit) ==
+			    ((fs->blocksize-8) /
 			     sizeof(struct ext2_dx_entry))))
 			dx_db->type = DX_DIRBLOCK_NODE;
 	}
@@ -887,12 +887,12 @@ out_htree:
 				goto next;
 			}
 		}
-		if (!dirent->inode) 
+		if (!dirent->inode)
 			goto next;
-		
+
 		/*
 		 * Make sure the inode listed is a legal one.
-		 */ 
+		 */
 		if (((dirent->inode != EXT2_ROOT_INO) &&
 		     (dirent->inode < EXT2_FIRST_INODE(fs->super))) ||
 		    (dirent->inode > fs->super->s_inodes_count)) {
@@ -916,7 +916,7 @@ out_htree:
 			problem = PR_2_DUP_DOT;
 		} else if ((dot_state > 1) &&
 			   ((dirent->name_len & 0xFF) == 2) &&
-			   (dirent->name[0] == '.') && 
+			   (dirent->name[0] == '.') &&
 			   (dirent->name[1] == '.')) {
 			/*
 			 * If there's a '..' entry in anything other
@@ -1078,7 +1078,7 @@ out_htree:
 				}
 				cd->pctx.ino2 = 0;
 			} else {
-				(void) e2fsck_dir_info_set_parent(ctx, 
+				(void) e2fsck_dir_info_set_parent(ctx,
 						  dirent->inode, ino);
 			}
 		}
@@ -1097,7 +1097,7 @@ out_htree:
 			dups_found++;
 		} else
 			dict_alloc_insert(&de_dict, dirent, dirent);
-		
+
 		ext2fs_icount_increment(ctx->inode_count, dirent->inode,
 					&links);
 		if (links > 1)
@@ -1164,7 +1164,7 @@ static int deallocate_inode_block(ext2_filsys fs,
 				  void *priv_data)
 {
 	e2fsck_t	ctx = (e2fsck_t) priv_data;
-	
+
 	if (HOLE_BLKADDR(*block_nr))
 		return 0;
 	if ((*block_nr < fs->super->s_first_data_block) ||
@@ -1174,7 +1174,7 @@ static int deallocate_inode_block(ext2_filsys fs,
 	ext2fs_block_alloc_stats(fs, *block_nr, -1);
 	return 0;
 }
-		
+
 /*
  * This fuction deallocates an inode
  */
@@ -1184,7 +1184,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	struct ext2_inode	inode;
 	struct problem_context	pctx;
 	__u32			count;
-	
+
 	e2fsck_read_inode(ctx, ino, &inode, "deallocate_inode");
 	e2fsck_clear_inode(ctx, ino, &inode, 0, "deallocate_inode");
 	clear_problem_context(&pctx);
@@ -1240,7 +1240,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino)
 {
 	struct ext2_inode	inode;
-	
+
 	e2fsck_read_inode(ctx, ino, &inode, "clear_htree");
 	inode.i_flags = inode.i_flags & ~EXT2_INDEX_FL;
 	e2fsck_write_inode(ctx, ino, &inode, "clear_htree");
@@ -1308,7 +1308,7 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 			not_fixed++;
 		problem = 0;
 	}
-		
+
 	if (inode.i_faddr) {
 		if (fix_problem(ctx, PR_2_FADDR_ZERO, &pctx)) {
 			inode.i_faddr = 0;
@@ -1345,7 +1345,7 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	}
 
 	if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
-	    !(fs->super->s_feature_ro_compat & 
+	    !(fs->super->s_feature_ro_compat &
 	      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
 	    (inode.osd2.linux2.l_i_blocks_hi != 0)) {
 		pctx.num = inode.osd2.linux2.l_i_blocks_hi;
@@ -1389,7 +1389,7 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
  */
 static int allocate_dir_block(e2fsck_t ctx,
 			      struct ext2_db_entry *db,
-			      char *buf EXT2FS_ATTR((unused)), 
+			      char *buf EXT2FS_ATTR((unused)),
 			      struct problem_context *pctx)
 {
 	ext2_filsys fs = ctx->fs;
@@ -1405,7 +1405,7 @@ static int allocate_dir_block(e2fsck_t ctx,
 	 * them.
 	 */
 	e2fsck_read_bitmaps(ctx);
-	
+
 	/*
 	 * First, find a free block
 	 */
@@ -1473,7 +1473,7 @@ static int update_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 			    blk_t	*block_nr,
 			    e2_blkcnt_t blockcnt,
 			    blk_t ref_block EXT2FS_ATTR((unused)),
-			    int ref_offset EXT2FS_ATTR((unused)), 
+			    int ref_offset EXT2FS_ATTR((unused)),
 			    void *priv_data)
 {
 	struct ext2_db_entry *db;

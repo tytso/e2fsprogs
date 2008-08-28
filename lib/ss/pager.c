@@ -71,10 +71,10 @@ char *ss_safe_getenv(const char *arg)
  */
 
 #ifndef NO_FORK
-int ss_pager_create(void) 
+int ss_pager_create(void)
 {
 	int filedes[2];
-     
+
 	if (pipe(filedes) != 0)
 		return(-1);
 
@@ -110,7 +110,7 @@ void ss_page_stdin()
 {
 	int i;
 	sigset_t mask;
-	
+
 	for (i = 3; i < 32; i++)
 		(void) close(i);
 	(void) signal(SIGINT, SIG_DFL);

@@ -26,14 +26,14 @@ void type_ext2_super_block___show (char *command_line)
 {
 	struct ext2_super_block *super;
 	super=&type_data.u.t_ext2_super_block;
-	
+
 	show (command_line);
 
 	if (super->s_blocks_count != 0) {
 		wmove (show_pad,2,40);wprintw (show_pad,"%2.2f%%",100*(float) super->s_r_blocks_count/ (float) super->s_blocks_count);
 		wmove (show_pad,3,40);wprintw (show_pad,"%2.2f%%",100*(float) super->s_free_blocks_count/ (float) super->s_blocks_count);
 	}
-	
+
 	if (super->s_inodes_count != 0) {
 		wmove (show_pad,4,40);wprintw (show_pad,"%2.2f%%",100*(float) super->s_free_inodes_count/ (float) super->s_inodes_count);
 	}
@@ -60,7 +60,7 @@ void type_ext2_super_block___show (char *command_line)
 			wprintw (show_pad,"Unknown");
 			break;
 	}
-	
+
 	wmove (show_pad,16,40);
 	if (type_data.u.t_ext2_super_block.s_state & 0x1)
 		wprintw (show_pad,"clean ");
@@ -71,9 +71,9 @@ void type_ext2_super_block___show (char *command_line)
 		wprintw (show_pad,"with errors ");
 	else
 		wprintw (show_pad,"with no errors");
-	
+
 	wmove (show_pad,17,40);
-	
+
 	switch (type_data.u.t_ext2_super_block.s_errors) {
 		case EXT2_ERRORS_CONTINUE:
 			wprintw (show_pad,"Continue");
@@ -90,7 +90,7 @@ void type_ext2_super_block___show (char *command_line)
 	}
 
 	wmove (show_pad,21,40);
-	
+
 	switch (type_data.u.t_ext2_super_block.s_creator_os) {
 
 		case EXT2_OS_LINUX:
@@ -105,7 +105,7 @@ void type_ext2_super_block___show (char *command_line)
 			wprintw (show_pad,"Unknown");
 			break;
 	}
-	
+
 	refresh_show_pad ();
 
 	wmove (show_win,1,0);wprintw (show_win,"\n");wmove (show_win,2,0);
@@ -121,7 +121,7 @@ void type_ext2_super_block___gocopy (char *command_line)
 {
 	unsigned long copy_num,offset;
 	char *ptr,buffer [80];
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr==0) {
 		wprintw (command_win,"Error - No argument specified\n");refresh_command_win ();return;
@@ -129,12 +129,12 @@ void type_ext2_super_block___gocopy (char *command_line)
 	ptr=parse_word (ptr,buffer);
 
 	copy_num=atol (buffer);
-	
+
 	offset=file_system_info.super_block_offset+copy_num*file_system_info.no_blocks_in_group*file_system_info.block_size;
-	
+
 	if (offset > file_system_info.file_system_size) {
 		wprintw (command_win,"Error - Copy number out of bounds\n");refresh_command_win ();return;
-	}	
+	}
 
 	super_info.copy_num=copy_num;
 	device_offset=offset;
@@ -147,7 +147,7 @@ void type_ext2_super_block___setactivecopy (char *command_line)
 
 {
 	struct ext2_super_block sb;
-	
+
 	sb=type_data.u.t_ext2_super_block;
 	dispatch ("gocopy 0");
 	type_data.u.t_ext2_super_block=sb;

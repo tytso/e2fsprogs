@@ -28,7 +28,7 @@ void type_ext2_inode_bitmap___entry (char *command_line)
 {
 	unsigned long entry_num;
 	char *ptr,buffer [80];
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr==0) {
 		wprintw (command_win,"Error - No argument specified\n");refresh_command_win ();return;
@@ -36,11 +36,11 @@ void type_ext2_inode_bitmap___entry (char *command_line)
 	ptr=parse_word (ptr,buffer);
 
 	entry_num=atol (buffer);
-	
+
 	if (entry_num >= file_system_info.super_block.s_inodes_per_group) {
 		wprintw (command_win,"Error - Entry number out of bounds\n");refresh_command_win ();return;
 	}
-	
+
 	inode_bitmap_info.entry_num=entry_num;
 	strcpy (buffer,"show");dispatch (buffer);
 }
@@ -50,7 +50,7 @@ void type_ext2_inode_bitmap___next (char *command_line)
 {
 	long entry_offset=1;
 	char *ptr,buffer [80];
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
@@ -66,7 +66,7 @@ void type_ext2_inode_bitmap___prev (char *command_line)
 {
 	long entry_offset=1;
 	char *ptr,buffer [80];
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
@@ -82,24 +82,24 @@ void type_ext2_inode_bitmap___allocate (char *command_line)
 {
 	long entry_num,num=1;
 	char *ptr,buffer [80];
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		num=atol (buffer);
 	}
-	
+
 	entry_num=inode_bitmap_info.entry_num;
 	if (num > file_system_info.super_block.s_inodes_per_group-entry_num) {
-		wprintw (command_win,"Error - There aren't that much inodes in the group\n");	
-		refresh_command_win ();return;				
+		wprintw (command_win,"Error - There aren't that much inodes in the group\n");
+		refresh_command_win ();return;
 	}
-	
+
 	while (num) {
 		allocate_inode (entry_num);
 		num--;entry_num++;
 	}
-	
+
 	dispatch ("show");
 }
 
@@ -108,24 +108,24 @@ void type_ext2_inode_bitmap___deallocate (char *command_line)
 {
 	long entry_num,num=1;
 	char *ptr,buffer [80];
-	
+
 	ptr=parse_word (command_line,buffer);
 	if (*ptr!=0) {
 		ptr=parse_word (ptr,buffer);
 		num=atol (buffer);
 	}
-	
+
 	entry_num=inode_bitmap_info.entry_num;
 	if (num > file_system_info.super_block.s_inodes_per_group-entry_num) {
-		wprintw (command_win,"Error - There aren't that much inodes in the group\n");	
-		refresh_command_win ();return;				
+		wprintw (command_win,"Error - There aren't that much inodes in the group\n");
+		refresh_command_win ();return;
 	}
-	
+
 	while (num) {
 		deallocate_inode (entry_num);
 		num--;entry_num++;
 	}
-	
+
 	dispatch ("show");
 }
 
@@ -135,7 +135,7 @@ void allocate_inode (long entry_num)
 {
 	unsigned char bit_mask=1;
 	int byte_offset,j;
-	
+
 	byte_offset=entry_num/8;
 	for (j=0;j<entry_num%8;j++)
 		bit_mask*=2;
@@ -147,12 +147,12 @@ void deallocate_inode (long entry_num)
 {
 	unsigned char bit_mask=1;
 	int byte_offset,j;
-	
+
 	byte_offset=entry_num/8;
 	for (j=0;j<entry_num%8;j++)
 		bit_mask*=2;
 	bit_mask^=0xff;
-	
+
 	type_data.u.buffer [byte_offset] &= bit_mask;
 }
 
@@ -165,7 +165,7 @@ void type_ext2_inode_bitmap___show (char *command_line)
 
 	ptr=type_data.u.buffer;
 	show_pad_info.line=0;show_pad_info.max_line=-1;
-	
+
 	wmove (show_pad,0,0);
 	for (i=0,entry_num=0;i<file_system_info.super_block.s_inodes_per_group/8;i++,ptr++) {
 		for (j=1;j<=128;j*=2) {
@@ -190,13 +190,13 @@ void type_ext2_inode_bitmap___show (char *command_line)
 			show_pad_info.max_line++;
 		}
 	}
-	
+
 	if (i%8!=7) {
 		wprintw (show_pad,"\n");
 		show_pad_info.max_line++;
 	}
 
-	refresh_show_pad ();	
+	refresh_show_pad ();
 	show_info ();
 	wmove (show_win,1,0);wprintw (show_win,"Inode bitmap of block group %ld\n",inode_bitmap_info.group_num);
 

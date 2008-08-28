@@ -42,7 +42,7 @@ static void e2p_unpack_uuid(void *in, struct uuid *uu)
 	tmp = *ptr++;
 	tmp = (tmp << 8) | *ptr++;
 	uu->time_mid = tmp;
-	
+
 	tmp = *ptr++;
 	tmp = (tmp << 8) | *ptr++;
 	uu->time_hi_and_version = tmp;

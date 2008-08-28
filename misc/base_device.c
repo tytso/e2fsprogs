@@ -5,12 +5,12 @@
  * assure that we only fsck one partition on a particular drive at any
  * one time.  Otherwise, the disk heads will be seeking all over the
  * place.  If the base device can not be determined, return NULL.
- * 
+ *
  * The base_device() function returns an allocated string which must
  * be freed.
- * 
+ *
  * Written by Theodore Ts'o, <tytso@mit.edu>
- * 
+ *
  * Copyright (C) 2000 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -58,7 +58,7 @@ char *base_device(const char *device)
 	/* Skip over /dev/dsk/... */
 	if (strncmp(cp, "dsk/", 4) == 0)
 		cp += 4;
-	
+
 	/*
 	 * For md devices, we treat them all as if they were all
 	 * on one disk, since we don't know how to parallelize them.

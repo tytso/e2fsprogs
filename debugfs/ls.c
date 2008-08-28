@@ -1,6 +1,6 @@
 /*
  * ls.c --- list directories
- * 
+ *
  * Copyright (C) 1997 Theodore Ts'o.  This file may be redistributed
  * under the terms of the GNU Public License.
  */
@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
-#else 
+#else
 extern int optind;
 extern char *optarg;
 #endif
@@ -40,7 +40,7 @@ struct list_dir_struct {
 
 static const char *monstr[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 				"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-					
+
 static int list_dir_proc(ext2_ino_t dir EXT2FS_ATTR((unused)),
 			 int	entry,
 			 struct ext2_dir_entry *dirent,
@@ -127,7 +127,7 @@ void do_list_dir(int argc, char *argv[])
 	int		c;
 	int		flags;
 	struct list_dir_struct ls;
-	
+
 	ls.options = 0;
 	if (check_fs_open(argv[0]))
 		return;

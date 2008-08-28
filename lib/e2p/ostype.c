@@ -12,10 +12,10 @@
 #include <stdlib.h>
 
 static const char *os_tab[] =
-	{ "Linux", 
-	  "Hurd", 
-	  "Masix", 
-	  "FreeBSD", 
+	{ "Linux",
+	  "Hurd",
+	  "Masix",
+	  "FreeBSD",
 	  "Lites",
 	  0 };
 

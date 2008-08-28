@@ -2,7 +2,7 @@
  * mkjournal.c --- make a journal for a filesystem
  *
  * Copyright (C) 2000 Theodore Ts'o.
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
@@ -215,7 +215,7 @@ static int mkjournal_proc(ext2_filsys	fs,
 	struct mkjournal_struct *es = (struct mkjournal_struct *) priv_data;
 	blk_t	new_blk;
 	errcode_t	retval;
-	
+
 	if (*blocknr) {
 		es->goal = *blocknr;
 		return 0;
@@ -265,7 +265,7 @@ static int mkjournal_proc(ext2_filsys	fs,
 		return (BLOCK_CHANGED | BLOCK_ABORT);
 	else
 		return BLOCK_CHANGED;
-	
+
 }
 
 /*
@@ -282,7 +282,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 
 	if ((retval = ext2fs_create_journal_superblock(fs, size, flags, &buf)))
 		return retval;
-	
+
 	if ((retval = ext2fs_read_bitmaps(fs)))
 		return retval;
 
@@ -309,7 +309,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	 * the filesystem.  Pick a group that has the largest number
 	 * of free blocks.
 	 */
-	group = ext2fs_group_of_blk(fs, (fs->super->s_blocks_count - 
+	group = ext2fs_group_of_blk(fs, (fs->super->s_blocks_count -
 					 fs->super->s_first_data_block) / 2);
 	start = (group > 0) ? group-1 : group;
 	end = ((group+1) < fs->group_desc_count) ? group+1 : group;
@@ -393,7 +393,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	/* Make sure the device exists and is a block device */
 	if (stat(journal_dev->device_name, &st) < 0)
 		return errno;
-	
+
 	if (!S_ISBLK(st.st_mode))
 		return EXT2_ET_JOURNAL_NOT_BLOCK; /* Must be a block device */
 
@@ -428,7 +428,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	/* Writeback the journal superblock */
 	if ((retval = io_channel_write_blk(journal_dev->io, start, -1024, buf)))
 		return retval;
-	
+
 	fs->super->s_journal_inum = 0;
 	fs->super->s_journal_dev = st.st_rdev;
 	memcpy(fs->super->s_journal_uuid, jsb->s_uuid,
@@ -460,7 +460,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 		strcat(jfile, "/.journal");
 
 		/*
-		 * If .../.journal already exists, make sure any 
+		 * If .../.journal already exists, make sure any
 		 * immutable or append-only flags are cleared.
 		 */
 #if defined(HAVE_CHFLAGS) && defined(UF_NODUMP)
@@ -482,7 +482,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 
 		if ((retval = write_journal_file(fs, jfile, size, flags)))
 			goto errout;
-		
+
 		/* Get inode number of the journal file */
 		if (fstat(fd, &st) < 0)
 			goto errout;
@@ -497,7 +497,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 #endif
 		if (retval)
 			goto errout;
-		
+
 		close(fd);
 		journal_ino = st.st_ino;
 	} else {
@@ -511,7 +511,7 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 						  size, flags)))
 			return retval;
 	}
-	
+
 	fs->super->s_journal_inum = journal_ino;
 	fs->super->s_journal_dev = 0;
 	memset(fs->super->s_journal_uuid, 0,
@@ -538,7 +538,7 @@ main(int argc, char **argv)
 		exit(1);
 	}
 	device_name = argv[1];
-	
+
 	retval = ext2fs_open (device_name, EXT2_FLAG_RW, 0, 0,
 			      unix_io_manager, &fs);
 	if (retval) {
@@ -558,6 +558,6 @@ main(int argc, char **argv)
 	}
 	ext2fs_close(fs);
 	exit(0);
-	
+
 }
 #endif

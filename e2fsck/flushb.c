@@ -2,7 +2,7 @@
  * flushb.c --- This routine flushes the disk buffers for a disk
  *
  * Copyright 1997, 2000, by Theodore Ts'o.
- * 
+ *
  * WARNING: use of flushb on some older 2.2 kernels on a heavily loaded
  * system will corrupt filesystems.  This program is not really useful
  * beyond for benchmarking scripts.
@@ -33,12 +33,12 @@ static void usage(void)
 {
 	fprintf(stderr, _("Usage: %s disk\n"), progname);
 	exit(1);
-}	
-	
+}
+
 int main(int argc, char **argv)
 {
 	int	fd;
-	
+
 	progname = argv[0];
 	if (argc != 2)
 		usage();

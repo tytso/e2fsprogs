@@ -1,6 +1,6 @@
 /*
  * test_icount.c
- * 
+ *
  * Copyright (C) 1997 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -51,7 +51,7 @@ static int parse_inode(const char *request, const char *desc,
 		       const char *str, ext2_ino_t *ino)
 {
 	char *tmp;
-	
+
 	*ino = strtoul(str, &tmp, 0);
 	if (*tmp) {
 		com_err(request, 0, "Bad %s - %s", desc, str);
@@ -105,7 +105,7 @@ void do_fetch(int argc, char **argv)
 	errcode_t	retval;
 	ext2_ino_t	ino;
 	__u16		count;
-	
+
 	if (argc < 2) {
 		printf(usage, argv[0]);
 		return;
@@ -128,7 +128,7 @@ void do_increment(int argc, char **argv)
 	errcode_t	retval;
 	ext2_ino_t	ino;
 	__u16		count;
-	
+
 	if (argc < 2) {
 		printf(usage, argv[0]);
 		return;
@@ -152,7 +152,7 @@ void do_decrement(int argc, char **argv)
 	errcode_t	retval;
 	ext2_ino_t	ino;
 	__u16		count;
-	
+
 	if (argc < 2) {
 		printf(usage, argv[0]);
 		return;
@@ -176,7 +176,7 @@ void do_store(int argc, char **argv)
 	errcode_t	retval;
 	ext2_ino_t	ino;
 	ext2_ino_t	count;
-	
+
 	if (argc < 3) {
 		printf(usage, argv[0]);
 		return;
@@ -302,7 +302,7 @@ int main(int argc, char **argv)
 	int		exit_status = 0;
 	char		*cmd_file = 0;
 	struct ext2_super_block param;
-	
+
 	initialize_ext2_error_table();
 
 	/*

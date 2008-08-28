@@ -4,7 +4,7 @@
  * 	directory, while holding some files open while they are being
  * 	deleted.  This exercises the orphan list code, as well as
  * 	creating lots of fodder for the ext3 journal.
- * 
+ *
  * Copyright (C) 2000 Theodore Ts'o.
  *
  * %Begin-Header%
@@ -74,7 +74,7 @@ void create_random_file()
 	int	fd;
 	int	isdir = 0;
 	int	size;
-	
+
 	mktemp(template);
 	isdir = random() & 1;
 	if (isdir) {
@@ -84,7 +84,7 @@ void create_random_file()
 		printf("Created temp directory %s, fd = %d\n",
 		       template, fd);
 	} else {
-		size = random() & (DATA_SIZE-1);		
+		size = random() & (DATA_SIZE-1);
 		fd = open(template, O_CREAT|O_RDWR, 0600);
 		write(fd, data_buffer, size);
 		printf("Created temp file %s, fd = %d, size=%d\n",
@@ -116,7 +116,7 @@ void truncate_file(int fd)
 void unlink_file(int fd)
 {
 	char *filename = state_array[fd].name;
-	
+
 	printf("Deleting %s, fd = %d, ino = %u\n", filename, fd,
 	       get_inode_num(fd));
 
@@ -130,10 +130,10 @@ void unlink_file(int fd)
 void close_file(int fd)
 {
 	char *filename = state_array[fd].name;
-	
+
 	printf("Closing %s, fd = %d, ino = %u\n", filename, fd,
 	       get_inode_num(fd));
-	
+
 	close(fd);
 	state_array[fd].state = STATE_CLEAR;
 }
@@ -146,7 +146,7 @@ main(int argc, char **argv)
 	memset(data_buffer, 0, sizeof(data_buffer));
 	sprintf(data_buffer, "This is a test file created by the "
 		"random_exerciser program\n");
-	
+
 	for (i=0; i < 100000; i++) {
 		fd = get_random_fd();
 		switch (state_array[fd].state) {

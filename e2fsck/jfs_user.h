@@ -45,7 +45,7 @@ typedef struct kdev_s *kdev_t;
 #define unlock_buffer(bh) do {} while(0)
 #define buffer_req(bh) 1
 #define do_readahead(journal, start) do {} while(0)
-	
+
 extern e2fsck_t e2fsck_global_ctx;  /* Try your very best not to use this! */
 
 typedef struct {
@@ -72,12 +72,12 @@ typedef unsigned int __be32;
 
 /*
  * We use the standard libext2fs portability tricks for inline
- * functions.  
+ * functions.
  */
 extern lkmem_cache_t * do_cache_create(int len);
 extern void do_cache_destroy(lkmem_cache_t *cache);
 extern size_t journal_tag_bytes(journal_t *journal);
-	
+
 #if (defined(E2FSCK_INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
 #ifdef E2FSCK_INCLUDE_INLINE_FUNCS
 #define _INLINE_ extern

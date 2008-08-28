@@ -1,6 +1,6 @@
 /*
  * unused.c --- quick and dirty unused space dumper
- * 
+ *
  * Copyright (C) 1997 Theodore Ts'o.  This file may be redistributed
  * under the terms of the GNU Public License.
  */
@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
-#else 
+#else
 extern int optind;
 extern char *optarg;
 #endif

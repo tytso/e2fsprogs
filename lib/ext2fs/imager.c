@@ -5,7 +5,7 @@
  * Copyright (C) 2000 Theodore Ts'o.
  *
  * Note: this uses the POSIX IO interfaces, unlike most of the other
- * functions in this library.  So sue me.  
+ * functions in this library.  So sue me.
  *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
@@ -69,7 +69,7 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 	buf = malloc(fs->blocksize * BUF_BLOCKS);
 	if (!buf)
 		return ENOMEM;
-	
+
 	for (group = 0; group < fs->group_desc_count; group++) {
 		blk = fs->group_desc[(unsigned)group].bg_inode_table;
 		if (!blk) {
@@ -131,7 +131,7 @@ errout:
 /*
  * Read in the inode table and stuff it into place
  */
-errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd, 
+errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd,
 				  int flags EXT2FS_ATTR((unused)))
 {
 	unsigned int	group, c, left;
@@ -143,7 +143,7 @@ errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd,
 	buf = malloc(fs->blocksize * BUF_BLOCKS);
 	if (!buf)
 		return ENOMEM;
-	
+
 	for (group = 0; group < fs->group_desc_count; group++) {
 		blk = fs->group_desc[(unsigned)group].bg_inode_table;
 		if (!blk) {
@@ -167,7 +167,7 @@ errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd,
 			retval = io_channel_write_blk(fs->io, blk, c, buf);
 			if (retval)
 				goto errout;
-			
+
 			blk += c;
 			left -= c;
 		}
@@ -182,7 +182,7 @@ errout:
 /*
  * Write out superblock and group descriptors
  */
-errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd, 
+errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd,
 				   int flags EXT2FS_ATTR((unused)))
 {
 	char		*buf, *cp;
@@ -221,7 +221,7 @@ errcode_t ext2fs_image_super_write(ext2_filsys fs, int fd,
 		retval = EXT2_ET_SHORT_WRITE;
 		goto errout;
 	}
-	
+
 	retval = 0;
 
 errout:
@@ -232,7 +232,7 @@ errout:
 /*
  * Read the superblock and group descriptors and overwrite them.
  */
-errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd, 
+errcode_t ext2fs_image_super_read(ext2_filsys fs, int fd,
 				  int flags EXT2FS_ATTR((unused)))
 {
 	char		*buf;
@@ -314,7 +314,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		if (size > (cnt >> 3))
 			size = (cnt >> 3);
 
-		retval = ext2fs_get_generic_bitmap_range(bmap, 
+		retval = ext2fs_get_generic_bitmap_range(bmap,
 				 err, itr, size << 3, buf);
 		if (retval)
 			return retval;
@@ -324,7 +324,7 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 			return errno;
 		if (actual != (int) size)
 			return EXT2_ET_SHORT_READ;
-		
+
 		itr += size << 3;
 		cnt -= size << 3;
 	}
@@ -396,7 +396,7 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 		if (actual != (int) size)
 			return EXT2_ET_SHORT_READ;
 
-		retval = ext2fs_set_generic_bitmap_range(bmap, 
+		retval = ext2fs_set_generic_bitmap_range(bmap,
 				 err, itr, size << 3, buf);
 		if (retval)
 			return retval;

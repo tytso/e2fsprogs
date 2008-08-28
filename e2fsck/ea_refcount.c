@@ -1,6 +1,6 @@
 /*
  * ea_refcount.c
- * 
+ *
  * Copyright (C) 2001 Theodore Ts'o.  This file may be
  * redistributed under the terms of the GNU Public License.
  */
@@ -18,7 +18,7 @@
  * follows.  We keep a sorted array of first EA blocks and its
  * reference counts.  Once the refcount has dropped to zero, it is
  * removed from the array to save memory space.  Once the EA block is
- * checked, its bit is set in the block_ea_map bitmap.  
+ * checked, its bit is set in the block_ea_map bitmap.
  */
 struct ea_refcount_el {
 	blk_t	ea_blk;
@@ -118,7 +118,7 @@ static struct ea_refcount_el *insert_refcount_el(ext2_refcount_t refcount,
 		new_size = refcount->size + 100;
 #ifdef DEBUG
 		printf("Reallocating refcount %d entries...\n", new_size);
-#endif	
+#endif
 		retval = ext2fs_resize_mem((size_t) refcount->size *
 					   sizeof(struct ea_refcount_el),
 					   (size_t) new_size *
@@ -170,7 +170,7 @@ retry:
 	}
 	if (refcount->count == 0)
 		return 0;
-	
+
 	if (refcount->cursor >= refcount->count)
 		refcount->cursor = 0;
 	if (blk == refcount->list[refcount->cursor].ea_blk)
@@ -193,7 +193,7 @@ retry:
 				range = 0;
 			else if (blk > highval)
 				range = 1;
-			else 
+			else
 				range = ((float) (blk - lowval)) /
 					(highval - lowval);
 			mid = low + ((int) (range * (high-low)));
@@ -227,7 +227,7 @@ errcode_t ea_refcount_fetch(ext2_refcount_t refcount, blk_t blk,
 				int *ret)
 {
 	struct ea_refcount_el	*el;
-	
+
 	el = get_refcount_el(refcount, blk, 0);
 	if (!el) {
 		*ret = 0;
@@ -298,7 +298,7 @@ blk_t ea_refcount_intr_next(ext2_refcount_t refcount,
 				int *ret)
 {
 	struct ea_refcount_el	*list;
-	
+
 	while (1) {
 		if (refcount->cursor >= refcount->count)
 			return 0;
@@ -320,7 +320,7 @@ errcode_t ea_refcount_validate(ext2_refcount_t refcount, FILE *out)
 	errcode_t	ret = 0;
 	int		i;
 	const char *bad = "bad refcount";
-	
+
 	if (refcount->count > refcount->size) {
 		fprintf(out, "%s: count > size\n", bad);
 		return EXT2_ET_INVALID_ARGUMENT;
@@ -460,7 +460,7 @@ int main(int argc, char **argv)
 		case BCODE_LIST:
 			ea_refcount_intr_begin(refcount);
 			while (1) {
-				blk = ea_refcount_intr_next(refcount, 
+				blk = ea_refcount_intr_next(refcount,
 								&arg);
 				if (!blk)
 					break;
@@ -472,7 +472,7 @@ int main(int argc, char **argv)
 			refcount_collapse(refcount);
 			break;
 		}
-		
+
 	}
 }
 

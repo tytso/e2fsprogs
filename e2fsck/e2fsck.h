@@ -1,9 +1,9 @@
 /*
  * e2fsck.h
- * 
+ *
  * Copyright (C) 1993, 1994 Theodore Ts'o.  This file may be
  * redistributed under the terms of the GNU Public License.
- * 
+ *
  */
 
 #ifndef _E2FSCK_H
@@ -114,9 +114,9 @@ struct dx_dirblock_info {
 	blk_t		phys;
 	int		flags;
 	blk_t		parent;
-	ext2_dirhash_t	min_hash; 
+	ext2_dirhash_t	min_hash;
 	ext2_dirhash_t	max_hash;
-	ext2_dirhash_t	node_min_hash; 
+	ext2_dirhash_t	node_min_hash;
 	ext2_dirhash_t	node_max_hash;
 };
 
@@ -169,7 +169,7 @@ struct resource_track {
 #define E2F_FLAG_PROG_BAR	0x0020 /* Progress bar on screen */
 #define E2F_FLAG_PROG_SUPPRESS	0x0040 /* Progress suspended */
 #define E2F_FLAG_JOURNAL_INODE	0x0080 /* Create a new ext3 journal inode */
-#define E2F_FLAG_SB_SPECIFIED	0x0100 /* The superblock was explicitly 
+#define E2F_FLAG_SB_SPECIFIED	0x0100 /* The superblock was explicitly
 					* specified by the user */
 #define E2F_FLAG_RESTARTED	0x0200 /* E2fsck has been restarted */
 #define E2F_FLAG_RESIZE_INODE	0x0400 /* Request to recreate resize inode */
@@ -265,7 +265,7 @@ struct e2fsck_struct {
 	 */
 	ext2_ino_t lost_and_found;
 	int bad_lost_and_found;
-	
+
 	/*
 	 * Directory information
 	 */
@@ -311,7 +311,7 @@ struct e2fsck_struct {
 	unsigned int progress_last_time;
 	int interactive;	/* Are we connected directly to a tty? */
 	char start_meta[2], stop_meta[2];
-	
+
 	/* File counts */
 	__u32 fs_directory_count;
 	__u32 fs_regular_count;
@@ -386,16 +386,16 @@ extern void e2fsck_add_dir_info(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
 extern void e2fsck_free_dir_info(e2fsck_t ctx);
 extern int e2fsck_get_num_dirinfo(e2fsck_t ctx);
 extern struct dir_info_iter *e2fsck_dir_info_iter_begin(e2fsck_t ctx);
-extern struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx, 
+extern struct dir_info *e2fsck_dir_info_iter(e2fsck_t ctx,
 					     struct dir_info_iter *);
 extern void e2fsck_dir_info_iter_end(e2fsck_t ctx, struct dir_info_iter *);
-extern int e2fsck_dir_info_set_parent(e2fsck_t ctx, ext2_ino_t ino, 
+extern int e2fsck_dir_info_set_parent(e2fsck_t ctx, ext2_ino_t ino,
 				      ext2_ino_t parent);
-extern int e2fsck_dir_info_set_dotdot(e2fsck_t ctx, ext2_ino_t ino, 
+extern int e2fsck_dir_info_set_dotdot(e2fsck_t ctx, ext2_ino_t ino,
 				      ext2_ino_t dotdot);
-extern int e2fsck_dir_info_get_parent(e2fsck_t ctx, ext2_ino_t ino, 
+extern int e2fsck_dir_info_get_parent(e2fsck_t ctx, ext2_ino_t ino,
 				      ext2_ino_t *parent);
-extern int e2fsck_dir_info_get_dotdot(e2fsck_t ctx, ext2_ino_t ino, 
+extern int e2fsck_dir_info_get_dotdot(e2fsck_t ctx, ext2_ino_t ino,
 				      ext2_ino_t *dotdot);
 
 /* dx_dirinfo.c */
@@ -431,7 +431,7 @@ extern void e2fsck_move_ext3_journal(e2fsck_t ctx);
 extern int e2fsck_fix_ext3_journal_hint(e2fsck_t ctx);
 
 /* pass1.c */
-extern void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags, 
+extern void e2fsck_setup_tdb_icount(e2fsck_t ctx, int flags,
 				    ext2_icount_t *ret);
 extern void e2fsck_use_inode_shortcuts(e2fsck_t ctx, int bool);
 extern int e2fsck_pass1_check_device_inode(ext2_filsys fs,
@@ -451,7 +451,7 @@ extern int e2fsck_reconnect_file(e2fsck_t ctx, ext2_ino_t inode);
 extern errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 					 int num, int gauranteed_size);
 extern ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix);
-extern errcode_t e2fsck_adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino, 
+extern errcode_t e2fsck_adjust_inode_count(e2fsck_t ctx, ext2_ino_t ino,
 					   int adj);
 
 

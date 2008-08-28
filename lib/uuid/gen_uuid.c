@@ -16,7 +16,7 @@
  * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior
  *    written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ALL OF
@@ -144,7 +144,7 @@ static int get_random_fd(void)
 			fd = open("/dev/random", O_RDONLY | O_NONBLOCK);
 		if (fd >= 0) {
 			i = fcntl(fd, F_GETFD);
-			if (i >= 0) 
+			if (i >= 0)
 				fcntl(fd, F_SETFD, i | FD_CLOEXEC);
 		}
 #endif
@@ -187,7 +187,7 @@ static void get_random_bytes(void *buf, int nbytes)
 			lose_counter = 0;
 		}
 	}
-	
+
 	/*
 	 * We do this all the time, but this is the only source of
 	 * randomness if /dev/random/urandom is out to lunch.
@@ -199,7 +199,7 @@ static void get_random_bytes(void *buf, int nbytes)
 	jrand_seed[2] = jrand_seed[2] ^ syscall(__NR_gettid);
 	for (cp = buf, i = 0; i < nbytes; i++)
 		*cp++ ^= (jrand48(tmp_seed) >> 7) & 0xFF;
-	memcpy(jrand_seed, tmp_seed, 
+	memcpy(jrand_seed, tmp_seed,
 	       sizeof(jrand_seed)-sizeof(unsigned short));
 #endif
 
@@ -230,7 +230,7 @@ static int get_node_id(unsigned char *node_id)
 /*
  * BSD 4.4 defines the size of an ifreq to be
  * max(sizeof(ifreq), sizeof(ifreq.ifr_name)+ifreq.ifr_addr.sa_len
- * However, under earlier systems, sa_len isn't present, so the size is 
+ * However, under earlier systems, sa_len isn't present, so the size is
  * just sizeof(struct ifreq)
  */
 #ifdef HAVE_SA_LEN
@@ -377,7 +377,7 @@ try_again:
 		adjustment = 0;
 		last = tv;
 	}
-		
+
 	clock_reg = tv.tv_usec*10 + adjustment;
 	clock_reg += ((uint64_t) tv.tv_sec)*10000000;
 	clock_reg += (((uint64_t) 0x01B21DD2) << 32) + 0x13814000;
@@ -459,7 +459,7 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 			access_ret = access(uuidd_path, X_OK);
 		if (access_ret == 0 && start_attempts++ < 5) {
 			if ((pid = fork()) == 0) {
-				execl(uuidd_path, "uuidd", "-qT", "300", 
+				execl(uuidd_path, "uuidd", "-qT", "300",
 				      (char *) NULL);
 				exit(1);
 			}

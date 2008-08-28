@@ -1,6 +1,6 @@
 /*
  * dump.c --- dump the contents of an inode out to a file
- * 
+ *
  * Copyright (C) 1994 Theodore Ts'o.  This file may be redistributed
  * under the terms of the GNU Public License.
  */
@@ -22,7 +22,7 @@
 #include <utime.h>
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
-#else 
+#else
 extern int optind;
 extern char *optarg;
 #endif
@@ -51,7 +51,7 @@ static struct {
 	{ LINUX_S_IXOTH, S_IXOTH },
 	{ 0, 0 }
 };
- 
+
 static mode_t mode_xlate(__u16 lmode)
 {
 	mode_t	mode = 0;
@@ -106,7 +106,7 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
 	ext2_file_t	e2_file;
 	int		nbytes;
 	unsigned int	got;
-	
+
 	if (debugfs_read_inode(ino, &inode, cmdname))
 		return;
 
@@ -117,7 +117,7 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
 	}
 	while (1) {
 		retval = ext2fs_file_read(e2_file, buf, sizeof(buf), &got);
-		if (retval) 
+		if (retval)
 			com_err(cmdname, retval, "while reading ext2 file");
 		if (got == 0)
 			break;
@@ -130,12 +130,12 @@ static void dump_file(const char *cmdname, ext2_ino_t ino, int fd,
 		com_err(cmdname, retval, "while closing ext2 file");
 		return;
 	}
-		
+
 	if (preserve)
 		fix_perms("dump_file", &inode, fd, outname);
 	else if (fd != 1)
 		close(fd);
-				    
+
 	return;
 }
 
@@ -147,7 +147,7 @@ void do_dump(int argc, char **argv)
 	int		preserve = 0;
 	const char *dump_usage = "Usage: dump_inode [-p] <file> <output_file>";
 	char		*in_fn, *out_fn;
-	
+
 	reset_getopt();
 	while ((c = getopt (argc, argv, "p")) != EOF) {
 		switch (c) {
@@ -171,7 +171,7 @@ void do_dump(int argc, char **argv)
 	out_fn = argv[optind+1];
 
 	inode = string_to_inode(in_fn);
-	if (!inode) 
+	if (!inode)
 		return;
 
 	fd = open(out_fn, O_CREAT | O_WRONLY | O_TRUNC | O_LARGEFILE, 0666);
@@ -289,7 +289,7 @@ errout:
 	free(fullname);
 }
 
-static int rdump_dirent(struct ext2_dir_entry *dirent, 
+static int rdump_dirent(struct ext2_dir_entry *dirent,
 			int offset EXT2FS_ATTR((unused)),
 			int blocksize EXT2FS_ATTR((unused)),
 			char *buf EXT2FS_ATTR((unused)), void *private)
@@ -360,7 +360,7 @@ void do_cat(int argc, char **argv)
 
 	fflush(stdout);
 	fflush(stderr);
-	dump_file(argv[0], inode, 1, 0, argv[2]); 
+	dump_file(argv[0], inode, 1, 0, argv[2]);
 
 	return;
 }

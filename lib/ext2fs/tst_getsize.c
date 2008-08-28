@@ -1,8 +1,8 @@
 /*
  * tst_getsize.c --- this function tests the getsize function
- * 
+ *
  * Copyright (C) 1997 by Theodore Ts'o.
- * 
+ *
  * %Begin-Header%
  * This file may be redistributed under the terms of the GNU Public
  * License.
