@@ -370,6 +370,8 @@ libext2fs.so.2 e2fslibs #MINVER#
  inode_io_manager@Base 1.37-2sarge1
  io_channel_set_options@Base 1.37-2sarge1
  io_channel_write_byte@Base 1.37-2sarge1
+ io_channel_read_blk64@Base 1.41.1-1
+ io_channel_write_blk64@Base 1.41.1-1
  set_undo_io_backing_manager@Base 1.41.0-1
  set_undo_io_backup_file@Base 1.41.0-1
  tdb_null@Base 1.40-1
