@@ -24,9 +24,10 @@ if test -z "$LAST_SYSTEM_GID"; then
     LAST_SYSTEM_GID=999
 fi
 
-groupadd -f -K GID_MIN=$FIRST_SYSTEM_GID -K GID_MAX=$LAST_SYSTEM_GID libuuid
-
-if ! grep -q libuuid /etc/passwd; then
+if ! getent group | grep -q libuuid; then
+  groupadd -f -K GID_MIN=$FIRST_SYSTEM_GID -K GID_MAX=$LAST_SYSTEM_GID libuuid
+fi
+if ! getent passwd | grep -q libuuid; then
    useradd -d /var/lib/libuuid -K UID_MIN=$FIRST_SYSTEM_UID -K UID_MAX=$LAST_SYSTEM_UID -g libuuid libuuid
 fi
 
