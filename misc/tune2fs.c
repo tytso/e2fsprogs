@@ -399,7 +399,7 @@ static void update_feature_set(ext2_filsys fs, char *features)
 
 	if (FEATURE_ON(E2P_FEATURE_COMPAT, EXT2_FEATURE_COMPAT_DIR_INDEX)) {
 		if (!sb->s_def_hash_version)
-			sb->s_def_hash_version = EXT2_HASH_TEA;
+			sb->s_def_hash_version = EXT2_HASH_HALF_MD4;
 		if (uuid_is_null((unsigned char *) sb->s_hash_seed))
 			uuid_generate((unsigned char *) sb->s_hash_seed);
 	}

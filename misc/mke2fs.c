@@ -1880,7 +1880,7 @@ int main (int argc, char *argv[])
 	/*
 	 * Initialize the directory index variables
 	 */
-	fs->super->s_def_hash_version = EXT2_HASH_TEA;
+	fs->super->s_def_hash_version = EXT2_HASH_HALF_MD4;
 	uuid_generate((unsigned char *) fs->super->s_hash_seed);
 
 	/*
