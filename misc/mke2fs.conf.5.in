@@ -136,6 +136,15 @@ This relation specifies the default blocksize if the user does not
 specify a blocksize on the command line, and the filesystem-type
 specific section of the configuration file does not specify a blocksize.
 .TP
+.I hash_alg
+This relation specifies the default hash algorithm used for the
+new filesystems with hashed b-tree directories.  Valid algorithms
+accepted are:
+.IR legacy ,
+.IR half_md4 ,
+and
+.IR tea .
+.TP
 .I inode_ratio
 This relation specifies the default inode ratio if the user does not
 specify one on the command line, and the filesystem-type
@@ -317,6 +326,15 @@ specify one on the command line.
 .I inode_size
 This relation specifies the default inode size if the user does not
 specify one on the command line.
+.TP
+.I hash_alg
+This relation specifies the default hash algorithm used for the
+new filesystems with hashed b-tree directories.  Valid algorithms
+accepted are:
+.IR legacy ,
+.IR half_md4 ,
+and
+.IR tea .
 .TP
 .I flex_bg_size
 This relation specifies the number of block goups that will be packed

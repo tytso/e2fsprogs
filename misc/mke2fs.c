@@ -1825,9 +1825,10 @@ int main (int argc, char *argv[])
 	badblocks_list	bb_list = 0;
 	unsigned int	journal_blocks;
 	unsigned int	i;
-	int		val;
+	int		val, hash_alg;
 	io_manager	io_ptr;
 	char		tdb_string[40];
+	char		*hash_alg_str;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -1880,7 +1881,11 @@ int main (int argc, char *argv[])
 	/*
 	 * Initialize the directory index variables
 	 */
-	fs->super->s_def_hash_version = EXT2_HASH_HALF_MD4;
+	hash_alg_str = get_string_from_profile(fs_types, "hash_alg",
+					       "half_md4");
+	hash_alg = e2p_string2hash(hash_alg_str);
+	fs->super->s_def_hash_version = (hash_alg >= 0) ? hash_alg :
+		EXT2_HASH_HALF_MD4;
 	uuid_generate((unsigned char *) fs->super->s_hash_seed);
 
 	/*
