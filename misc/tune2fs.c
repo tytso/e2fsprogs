@@ -855,7 +855,7 @@ void do_findfs(int argc, char **argv)
 static void parse_extended_opts(ext2_filsys fs, const char *opts)
 {
 	char	*buf, *token, *next, *p, *arg;
-	int	len;
+	int	len, hash_alg;
 	int	r_usage = 0;
 
 	len = strlen(opts);
@@ -915,6 +915,25 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 				continue;
 			}
 			stripe_width_set = 1;
+		} else if (strcmp(token, "hash_alg") == 0 ||
+			   strcmp(token, "hash-alg") == 0) {
+			if (!arg) {
+				r_usage++;
+				continue;
+			}
+			hash_alg = e2p_string2hash(arg);
+			if (hash_alg < 0) {
+				fprintf(stderr, 
+					_("Invalid hash algorithm: %s\n"),
+					arg);
+				r_usage++;
+				continue;
+			}
+			fs->super->s_def_hash_version = hash_alg;
+			printf(_("Setting default hash algorithm "
+				 "to %s (%d)\n"), 
+			       arg, hash_alg);
+			ext2fs_mark_super_dirty(fs);
 		} else
 			r_usage++;
 	}
@@ -925,7 +944,8 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 			"\tis set off by an equals ('=') sign.\n\n"
 			"Valid extended options are:\n"
 			"\tstride=<RAID per-disk chunk size in blocks>\n"
-			"\tstripe-width=<RAID stride*data disks in blocks>\n"
+			"\tstripe_width=<RAID stride*data disks in blocks>\n"
+			"\thash_alg=<hash algorithm>\n"
 			"\ttest_fs\n"
 			"\t^test_fs\n"));
 		free(buf);
