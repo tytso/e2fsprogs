@@ -1,5 +1,5 @@
 # E2fsprogs translation template file
-# Copyright (C) 2008 Theodore Tso
+# Copyright (C) 2008 Theodore Ts'o
 # This file is distributed under the same license as the e2fsprogs package.
 # Theodore Ts'o <tytso@mit.edu>, 2008
 #
@@ -66,7 +66,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: e2fsprogs 1.41.1\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2008-08-27 23:09-0400\n"
+"POT-Creation-Date: 2008-08-29 23:13-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -91,7 +91,7 @@ msgstr ""
 #: e2fsck/unix.c:1020 e2fsck/unix.c:1103 misc/badblocks.c:1102
 #: misc/badblocks.c:1110 misc/badblocks.c:1124 misc/badblocks.c:1136
 #: misc/dumpe2fs.c:505 misc/e2image.c:573 misc/e2image.c:669
-#: misc/e2image.c:685 misc/mke2fs.c:180 misc/tune2fs.c:1429 resize/main.c:304
+#: misc/e2image.c:685 misc/mke2fs.c:180 misc/tune2fs.c:1449 resize/main.c:304
 #, c-format
 msgid "while trying to open %s"
 msgstr ""
@@ -2370,7 +2370,7 @@ msgstr ""
 msgid "         Extent depth histogram: "
 msgstr ""
 
-#: e2fsck/unix.c:193 misc/badblocks.c:871 misc/tune2fs.c:1481 misc/util.c:151
+#: e2fsck/unix.c:193 misc/badblocks.c:871 misc/tune2fs.c:1501 misc/util.c:151
 #: resize/main.c:245
 #, c-format
 msgid "while determining whether %s is mounted."
@@ -2650,7 +2650,7 @@ msgstr ""
 msgid "Creating journal (%d blocks): "
 msgstr ""
 
-#: e2fsck/unix.c:1297 misc/mke2fs.c:2054
+#: e2fsck/unix.c:1297 misc/mke2fs.c:2059
 msgid ""
 "\n"
 "\twhile trying to create journal"
@@ -3219,7 +3219,7 @@ msgstr ""
 msgid "\tUsing %s\n"
 msgstr ""
 
-#: misc/dumpe2fs.c:507 misc/e2image.c:671 misc/tune2fs.c:1432
+#: misc/dumpe2fs.c:507 misc/e2image.c:671 misc/tune2fs.c:1452
 #: resize/main.c:306
 #, c-format
 msgid "Couldn't find valid filesystem superblock.\n"
@@ -3282,7 +3282,7 @@ msgstr ""
 msgid "e2label: not an ext2 filesystem\n"
 msgstr ""
 
-#: misc/e2label.c:96 misc/tune2fs.c:1565
+#: misc/e2label.c:96 misc/tune2fs.c:1585
 #, c-format
 msgid "Warning: label too long, truncating.\n"
 msgstr ""
@@ -3803,7 +3803,7 @@ msgstr ""
 msgid "bad num inodes - %s"
 msgstr ""
 
-#: misc/mke2fs.c:1372 misc/mke2fs.c:2015
+#: misc/mke2fs.c:1372 misc/mke2fs.c:2020
 #, c-format
 msgid "while trying to open journal device %s\n"
 msgstr ""
@@ -3937,7 +3937,7 @@ msgid ""
 "\tor lower inode count (-N).\n"
 msgstr ""
 
-#: misc/mke2fs.c:1804 misc/tune2fs.c:1378
+#: misc/mke2fs.c:1804 misc/tune2fs.c:1398
 #, c-format
 msgid "while trying to delete %s"
 msgstr ""
@@ -3950,67 +3950,67 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/mke2fs.c:1859
+#: misc/mke2fs.c:1860
 msgid "while setting up superblock"
 msgstr ""
 
-#: misc/mke2fs.c:1899
+#: misc/mke2fs.c:1904
 #, c-format
 msgid "unknown os - %s"
 msgstr ""
 
-#: misc/mke2fs.c:1953
+#: misc/mke2fs.c:1958
 msgid "while trying to allocate filesystem tables"
 msgstr ""
 
-#: misc/mke2fs.c:1984
+#: misc/mke2fs.c:1989
 #, c-format
 msgid "while zeroing block %u at end of filesystem"
 msgstr ""
 
-#: misc/mke2fs.c:1997
+#: misc/mke2fs.c:2002
 msgid "while reserving blocks for online resize"
 msgstr ""
 
-#: misc/mke2fs.c:2008 misc/tune2fs.c:474
+#: misc/mke2fs.c:2013 misc/tune2fs.c:474
 msgid "journal"
 msgstr ""
 
-#: misc/mke2fs.c:2020
+#: misc/mke2fs.c:2025
 #, c-format
 msgid "Adding journal to device %s: "
 msgstr ""
 
-#: misc/mke2fs.c:2027
+#: misc/mke2fs.c:2032
 #, c-format
 msgid ""
 "\n"
 "\twhile trying to add journal to device %s"
 msgstr ""
 
-#: misc/mke2fs.c:2032 misc/mke2fs.c:2058 misc/tune2fs.c:502 misc/tune2fs.c:516
+#: misc/mke2fs.c:2037 misc/mke2fs.c:2063 misc/tune2fs.c:502 misc/tune2fs.c:516
 #, c-format
 msgid "done\n"
 msgstr ""
 
-#: misc/mke2fs.c:2046
+#: misc/mke2fs.c:2051
 #, c-format
 msgid "Creating journal (%u blocks): "
 msgstr ""
 
-#: misc/mke2fs.c:2063
+#: misc/mke2fs.c:2068
 #, c-format
 msgid "Writing superblocks and filesystem accounting information: "
 msgstr ""
 
-#: misc/mke2fs.c:2068
+#: misc/mke2fs.c:2073
 #, c-format
 msgid ""
 "\n"
 "Warning, had trouble writing out superblocks."
 msgstr ""
 
-#: misc/mke2fs.c:2071
+#: misc/mke2fs.c:2076
 #, c-format
 msgid ""
 "done\n"
@@ -4248,7 +4248,17 @@ msgstr ""
 msgid "Invalid RAID stripe-width: %s\n"
 msgstr ""
 
-#: misc/tune2fs.c:922
+#: misc/tune2fs.c:927
+#, c-format
+msgid "Invalid hash algorithm: %s\n"
+msgstr ""
+
+#: misc/tune2fs.c:933
+#, c-format
+msgid "Setting default hash algorithm to %s (%d)\n"
+msgstr ""
+
+#: misc/tune2fs.c:941
 #, c-format
 msgid ""
 "\n"
@@ -4259,16 +4269,17 @@ msgid ""
 "\n"
 "Valid extended options are:\n"
 "\tstride=<RAID per-disk chunk size in blocks>\n"
-"\tstripe-width=<RAID stride*data disks in blocks>\n"
+"\tstripe_width=<RAID stride*data disks in blocks>\n"
+"\thash_alg=<hash algorithm>\n"
 "\ttest_fs\n"
 "\t^test_fs\n"
 msgstr ""
 
-#: misc/tune2fs.c:1310 resize/resize2fs.c:724
+#: misc/tune2fs.c:1330 resize/resize2fs.c:724
 msgid "blocks to be moved"
 msgstr ""
 
-#: misc/tune2fs.c:1387
+#: misc/tune2fs.c:1407
 #, c-format
 msgid ""
 "To undo the tune2fs operations please run the command\n"
@@ -4276,110 +4287,110 @@ msgid ""
 "\n"
 msgstr ""
 
-#: misc/tune2fs.c:1443
+#: misc/tune2fs.c:1463
 #, c-format
 msgid "The inode size is already %d\n"
 msgstr ""
 
-#: misc/tune2fs.c:1448
+#: misc/tune2fs.c:1468
 #, c-format
 msgid "Shrinking the inode size is not supported\n"
 msgstr ""
 
-#: misc/tune2fs.c:1491
+#: misc/tune2fs.c:1511
 #, c-format
 msgid "Setting maximal mount count to %d\n"
 msgstr ""
 
-#: misc/tune2fs.c:1497
+#: misc/tune2fs.c:1517
 #, c-format
 msgid "Setting current mount count to %d\n"
 msgstr ""
 
-#: misc/tune2fs.c:1502
+#: misc/tune2fs.c:1522
 #, c-format
 msgid "Setting error behavior to %d\n"
 msgstr ""
 
-#: misc/tune2fs.c:1507
+#: misc/tune2fs.c:1527
 #, c-format
 msgid "Setting reserved blocks gid to %lu\n"
 msgstr ""
 
-#: misc/tune2fs.c:1512
+#: misc/tune2fs.c:1532
 #, c-format
 msgid "Setting interval between checks to %lu seconds\n"
 msgstr ""
 
-#: misc/tune2fs.c:1518
+#: misc/tune2fs.c:1538
 #, c-format
 msgid "Setting reserved blocks percentage to %g%% (%u blocks)\n"
 msgstr ""
 
-#: misc/tune2fs.c:1524
+#: misc/tune2fs.c:1544
 #, c-format
 msgid "reserved blocks count is too big (%lu)"
 msgstr ""
 
-#: misc/tune2fs.c:1530
+#: misc/tune2fs.c:1550
 #, c-format
 msgid "Setting reserved blocks count to %lu\n"
 msgstr ""
 
-#: misc/tune2fs.c:1536
+#: misc/tune2fs.c:1556
 msgid ""
 "\n"
 "The filesystem already has sparse superblocks.\n"
 msgstr ""
 
-#: misc/tune2fs.c:1543
+#: misc/tune2fs.c:1563
 #, c-format
 msgid ""
 "\n"
 "Sparse superblock flag set.  %s"
 msgstr ""
 
-#: misc/tune2fs.c:1548
+#: misc/tune2fs.c:1568
 msgid ""
 "\n"
 "Clearing the sparse superflag not supported.\n"
 msgstr ""
 
-#: misc/tune2fs.c:1555
+#: misc/tune2fs.c:1575
 #, c-format
 msgid "Setting time filesystem last checked to %s\n"
 msgstr ""
 
-#: misc/tune2fs.c:1561
+#: misc/tune2fs.c:1581
 #, c-format
 msgid "Setting reserved blocks uid to %lu\n"
 msgstr ""
 
-#: misc/tune2fs.c:1596
+#: misc/tune2fs.c:1616
 msgid "Invalid UUID format\n"
 msgstr ""
 
-#: misc/tune2fs.c:1603
+#: misc/tune2fs.c:1623
 msgid "The inode size may only be changed when the filesystem is unmounted.\n"
 msgstr ""
 
-#: misc/tune2fs.c:1614
+#: misc/tune2fs.c:1634
 msgid ""
 "Error in resizing the inode size.\n"
 "Run e2undo to undo the file system changes. \n"
 msgstr ""
 
-#: misc/tune2fs.c:1618
+#: misc/tune2fs.c:1638
 #, c-format
 msgid "Setting inode size %lu\n"
 msgstr ""
 
-#: misc/tune2fs.c:1628
+#: misc/tune2fs.c:1648
 #, c-format
 msgid "Setting stride size to %d\n"
 msgstr ""
 
-#: misc/tune2fs.c:1633
+#: misc/tune2fs.c:1653
 #, c-format
 msgid "Setting stripe width to %d\n"
 msgstr ""
@@ -4615,21 +4626,21 @@ msgstr ""
 msgid "While checking for on-line resizing support"
 msgstr ""
 
-#: resize/online.c:100
+#: resize/online.c:111
 #, c-format
 msgid "Performing an on-line resize of %s to %u (%dk) blocks.\n"
 msgstr ""
 
-#: resize/online.c:110
+#: resize/online.c:121
 msgid "While trying to extend the last group"
 msgstr ""
 
-#: resize/online.c:169
+#: resize/online.c:180
 #, c-format
 msgid "While trying to add group #%d"
 msgstr ""
 
-#: resize/online.c:180
+#: resize/online.c:191
 #, c-format
 msgid ""
 "Filesystem at %s is mounted on %s, and on-line resizing is not supported on "
