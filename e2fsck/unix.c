@@ -951,11 +951,12 @@ int main (int argc, char *argv[])
 	ctx->superblock = ctx->use_superblock;
 restart:
 #ifdef CONFIG_TESTIO_DEBUG
-	io_ptr = test_io_manager;
-	test_io_backing_manager = unix_io_manager;
-#else
-	io_ptr = unix_io_manager;
+	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
+		io_ptr = test_io_manager;
+		test_io_backing_manager = unix_io_manager;
+	} else
 #endif
+		io_ptr = unix_io_manager;
 	flags = EXT2_FLAG_NOFREE_ON_ERROR;
 	if ((ctx->options & E2F_OPT_READONLY) == 0)
 		flags |= EXT2_FLAG_RW;

@@ -37,7 +37,9 @@ extern int optind;
 #endif
 #include <pwd.h>
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -172,11 +174,12 @@ static void remove_journal_device(ext2_filsys fs)
 	}
 
 #ifdef CONFIG_TESTIO_DEBUG
-	io_ptr = test_io_manager;
-	test_io_backing_manager = unix_io_manager;
-#else
-	io_ptr = unix_io_manager;
+	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
+		io_ptr = test_io_manager;
+		test_io_backing_manager = unix_io_manager;
+	} else
 #endif
+		io_ptr = unix_io_manager;
 	retval = ext2fs_open(journal_path, EXT2_FLAG_RW|
 			     EXT2_FLAG_JOURNAL_DEV_OK, 0,
 			     fs->blocksize, io_ptr, &jfs);
@@ -473,11 +476,12 @@ static void add_journal(ext2_filsys fs)
 		check_plausibility(journal_device);
 		check_mount(journal_device, 0, _("journal"));
 #ifdef CONFIG_TESTIO_DEBUG
-		io_ptr = test_io_manager;
-		test_io_backing_manager = unix_io_manager;
-#else
-		io_ptr = unix_io_manager;
+		if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
+			io_ptr = test_io_manager;
+			test_io_backing_manager = unix_io_manager;
+		} else
 #endif
+			io_ptr = unix_io_manager;
 		retval = ext2fs_open(journal_device, EXT2_FLAG_RW|
 				     EXT2_FLAG_JOURNAL_DEV_OK, 0,
 				     fs->blocksize, io_ptr, &jfs);
@@ -1436,11 +1440,12 @@ int main (int argc, char ** argv)
 		parse_tune2fs_options(argc, argv);
 
 #ifdef CONFIG_TESTIO_DEBUG
-	io_ptr = test_io_manager;
-	test_io_backing_manager = unix_io_manager;
-#else
-	io_ptr = unix_io_manager;
+	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_DEBUG")) {
+		io_ptr = test_io_manager;
+		test_io_backing_manager = unix_io_manager;
+	} else
 #endif
+		io_ptr = unix_io_manager;
 
 retry_open:
 	retval = ext2fs_open2(device_name, io_options, open_flag,

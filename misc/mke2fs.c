@@ -1359,11 +1359,12 @@ static void PRS(int argc, char *argv[])
 		io_manager	io_ptr;
 
 #ifdef CONFIG_TESTIO_DEBUG
-		io_ptr = test_io_manager;
-		test_io_backing_manager = unix_io_manager;
-#else
-		io_ptr = unix_io_manager;
+		if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
+			io_ptr = test_io_manager;
+			test_io_backing_manager = unix_io_manager;
+		} else
 #endif
+			io_ptr = unix_io_manager;
 		retval = ext2fs_open(journal_device,
 				     EXT2_FLAG_JOURNAL_DEV_OK, 0,
 				     0, io_ptr, &jfs);
@@ -1839,11 +1840,12 @@ int main (int argc, char *argv[])
 	PRS(argc, argv);
 
 #ifdef CONFIG_TESTIO_DEBUG
-	io_ptr = test_io_manager;
-	test_io_backing_manager = unix_io_manager;
-#else
-	io_ptr = unix_io_manager;
+	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
+		io_ptr = test_io_manager;
+		test_io_backing_manager = unix_io_manager;
+	} else
 #endif
+		io_ptr = unix_io_manager;
 
 	if (should_do_undo(device_name)) {
 		retval = mke2fs_setup_tdb(device_name, &io_ptr);

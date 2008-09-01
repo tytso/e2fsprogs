@@ -23,7 +23,9 @@ extern int optind;
 #endif
 #include <pwd.h>
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -561,11 +563,12 @@ static void install_image(char *device, char *image_fn, int raw_flag)
 	}
 
 #ifdef CONFIG_TESTIO_DEBUG
-	io_ptr = test_io_manager;
-	test_io_backing_manager = unix_io_manager;
-#else
-	io_ptr = unix_io_manager;
+	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
+		io_ptr = test_io_manager;
+		test_io_backing_manager = unix_io_manager;
+	} else
 #endif
+		io_ptr = unix_io_manager;
 
 	retval = ext2fs_open (image_fn, open_flag, 0, 0,
 			      io_ptr, &fs);

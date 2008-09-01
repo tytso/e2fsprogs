@@ -11,7 +11,9 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
@@ -370,11 +372,12 @@ int main (int argc, char ** argv)
 	PRS(argc, argv);
 
 #ifdef CONFIG_TESTIO_DEBUG
-	io_ptr = test_io_manager;
-	test_io_backing_manager = unix_io_manager;
-#else
-	io_ptr = unix_io_manager;
+	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
+		io_ptr = test_io_manager;
+		test_io_backing_manager = unix_io_manager;
+	} else
 #endif
+		io_ptr = unix_io_manager;
 	retval = ext2fs_open (device_name, open_flag, 0, 0, io_ptr, &fs);
         if (retval)
 		exit(1);

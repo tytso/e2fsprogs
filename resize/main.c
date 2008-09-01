@@ -22,6 +22,9 @@ extern char *optarg;
 extern int optind;
 #endif
 #include <unistd.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -290,10 +293,12 @@ int main (int argc, char ** argv)
 		fd = -1;
 	}
 
-	if (flags & RESIZE_DEBUG_IO) {
+#ifdef CONFIG_TESTIO_DEBUG
+	if (getenv("TEST_IO_FLAGS") || getenv("TEST_IO_BLOCK")) {
 		io_ptr = test_io_manager;
 		test_io_backing_manager = unix_io_manager;
 	} else
+#endif
 		io_ptr = unix_io_manager;
 
 	if (!(mount_flags & EXT2_MF_MOUNTED))
