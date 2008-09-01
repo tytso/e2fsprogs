@@ -26,9 +26,10 @@ all:: subs
 	$(MAKE) docs
 
 subs:
-	@for i in $(SUBS) ; do if test -d `dirname $$i` ; then $(MAKE) $$i ; fi ; done
-	@(test -d lib/et && cd lib/et && $(MAKE) compile_et)
-	@(test -d lib/ext2fs && cd lib/ext2fs && $(MAKE) ext2_err.h)
+	@for i in $(SUBS) ; do if test -d `dirname $$i` ; \
+		then $(MAKE) $$i || exit $$? ; fi ; done
+	@(if test -d lib/et ; then cd lib/et && $(MAKE) compile_et; fi)
+	@(if test -d lib/ext2fs ; then cd lib/ext2fs && $(MAKE) ext2_err.h; fi)
 
 progs: subs all-progs-recursive
 libs: subs all-libs-recursive
