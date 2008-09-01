@@ -356,17 +356,22 @@ dnl
 dnl handle --enable-testio-debug
 dnl
 AC_ARG_ENABLE([testio-debug],
-[  --enable-testio-debug   enable the use of the test I/O manager for debugging],
+[  --disable-testio-debug  disable the use of the test I/O manager for debugging],
 if test "$enableval" = "no"
 then
 	AC_MSG_RESULT([Disabling testio debugging])
+	TEST_IO_CMT="#"
 else
+	TEST_IO_CMT=
 	AC_DEFINE(CONFIG_TESTIO_DEBUG)
 	AC_MSG_RESULT([Enabling testio debugging])
 fi
 ,
-AC_MSG_RESULT([Disabling testio debugging by default])
+AC_MSG_RESULT([Enabling testio debugging by default])
+AC_DEFINE(CONFIG_TESTIO_DEBUG)
+TEST_IO_CMT=
 )
+AC_SUBST(TEST_IO_CMT)
 dnl
 dnl handle --enable-debugfs
 dnl

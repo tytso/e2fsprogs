@@ -12,11 +12,12 @@ INSTALL = @INSTALL@
 
 MK_CMDS=	_SS_DIR_OVERRIDE=../ss ../ss/mk_cmds
 
-@RESIZER_CMT@RESIZE_LIB_OBJS = dupfs.o test_io.o 
-
+@RESIZER_CMT@RESIZE_LIB_OBJS = dupfs.o
+@TEST_IO_CMT@TEST_IO_LIB_OBJS = test_io.o
 @IMAGER_CMT@E2IMAGE_LIB_OBJS = imager.o
 
 OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
+	$(TEST_IO_LIB_OBJS) \
 	ext2_err.o \
 	alloc.o \
 	alloc_sb.o \

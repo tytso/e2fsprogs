@@ -120,7 +120,7 @@ COMMON_CONF_FLAGS =  \
 STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression
 
 BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
-	--disable-nls --disable-imager \
+	--disable-nls --disable-imager --disable-testio-debug \
 	--disable-uuidd --disable-tls \
 	--disable-debugfs  --disable-e2initrd-helper
 

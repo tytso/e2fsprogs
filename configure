@@ -684,6 +684,7 @@ CHECKER_CMT
 LIB_EXT
 STATIC_LIB_EXT
 PROFILED_LIB_EXT
+TEST_IO_CMT
 DEBUGFS_CMT
 IMAGER_CMT
 RESIZER_CMT
@@ -1364,7 +1365,7 @@ Optional Features:
   --enable-checker	  build checker libraries
   --enable-jbd-debug  	  enable journal debugging
   --enable-blkid-debug    enable blkid debugging
-  --enable-testio-debug   enable the use of the test I/O manager for debugging
+  --disable-testio-debug  disable the use of the test I/O manager for debugging
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
   --disable-resizer   	  disable support of e2resize program
@@ -4009,7 +4010,9 @@ if test "${enable_testio_debug+set}" = set; then
 then
 	{ echo "$as_me:$LINENO: result: Disabling testio debugging" >&5
 echo "${ECHO_T}Disabling testio debugging" >&6; }
+	TEST_IO_CMT="#"
 else
+	TEST_IO_CMT=
 	cat >>confdefs.h <<\_ACEOF
 #define CONFIG_TESTIO_DEBUG 1
 _ACEOF
@@ -4019,10 +4022,16 @@ echo "${ECHO_T}Enabling testio debugging" >&6; }
 fi
 
 else
-  { echo "$as_me:$LINENO: result: Disabling testio debugging by default" >&5
-echo "${ECHO_T}Disabling testio debugging by default" >&6; }
+  { echo "$as_me:$LINENO: result: Enabling testio debugging by default" >&5
+echo "${ECHO_T}Enabling testio debugging by default" >&6; }
+cat >>confdefs.h <<\_ACEOF
+#define CONFIG_TESTIO_DEBUG 1
+_ACEOF
+
+TEST_IO_CMT=
 
 fi
+
 
 # Check whether --enable-debugfs was given.
 if test "${enable_debugfs+set}" = set; then
@@ -15893,8 +15902,8 @@ CHECKER_CMT!$CHECKER_CMT$ac_delim
 LIB_EXT!$LIB_EXT$ac_delim
 STATIC_LIB_EXT!$STATIC_LIB_EXT$ac_delim
 PROFILED_LIB_EXT!$PROFILED_LIB_EXT$ac_delim
+TEST_IO_CMT!$TEST_IO_CMT$ac_delim
 DEBUGFS_CMT!$DEBUGFS_CMT$ac_delim
-IMAGER_CMT!$IMAGER_CMT$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 73; then
@@ -15968,6 +15977,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+IMAGER_CMT!$IMAGER_CMT$ac_delim
 RESIZER_CMT!$RESIZER_CMT$ac_delim
 FSCK_PROG!$FSCK_PROG$ac_delim
 FSCK_MAN!$FSCK_MAN$ac_delim
@@ -16050,7 +16060,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 80; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 81; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
