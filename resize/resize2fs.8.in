@@ -86,13 +86,11 @@ into the binary.
 should be computed by adding the numbers of the desired features 
 from the following list:
 .br
-\	1\	\-\ Print out all disk I/O 
-.br
 \	2\	\-\ Debug block relocations
 .br
-\	8\	\-\ Debug inode relocations
+\	4\	\-\ Debug inode relocations
 .br
-\	16\	\-\ Debug moving the inode table
+\	8\	\-\ Debug moving the inode table
 .TP 
 .B \-f
 Forces resize2fs to proceed with the filesystem resize operation, overriding 
