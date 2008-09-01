@@ -1,3 +1,35 @@
+e2fsprogs (1.41.1-1) unstable; urgency=low
+
+  * New upstream release
+  * mke2fs and tune2fs now use half-md4 as the default hash algorithm
+       In addition the default hash algorithm can be via mke2fs.conf for
+       mke2fs, and via a command-line option for tune2fs.
+  * Add support for on-line resizing of ext4 filesystems with the
+       flex_bg filesystem feature.
+  * e2fsck now creates the journal in the middle of the filesystem,
+       which can speed up fsync-heavy workloads.
+  * Make the blkid library more efficient for devicemapper devices,
+       mostly by no longer using the libdevmapper library.
+  * Fix various namespace leakages by the libblkid, libe2p and libext2fs
+       libraries.
+  * Fix support for empty directories in 64k blocksize filesystems.
+  * Add supported_features command to debugfs
+  * Improve libblkid detection of JFS and HPFS filesystems
+  * The test I/O manager is now compiled in by default, but to avoid its
+    overhead, it is only enabled when the TEST_IO_FLAGS or TEST_IO_BLOCK
+    environment variables are set.
+  * Fix filefrag's ideal extent calculation (Closes: #458306)
+  * Fix postinstall scripts when the user/group is in LDAP (Closes: #497010)
+  * Add Indonesian and update French, Polish, Dutch, German, Sweedish,
+       Czech, and Vietnamese Translations.  (Closes: #313697, #401092)
+  * Update/clarified man pages
+  * Add dpkg-gensymbols support to track ABI changes to the libraries
+  * Add lintian overrides for uuid-runtime and libuuid1
+  * Remove (no longer needed) lintian overrides for e2fsck-static
+  * Add debian/watch file
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 01 Sep 2008 11:30:21 -0400
+
 e2fsprogs (1.41.0-4) unstable; urgency=low
 
   * mke2fs will issue a warning if mke2fs.conf hasn't been updated and
