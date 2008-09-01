@@ -83,7 +83,7 @@ static void frag_report(const char *filename)
 #endif
 	int		bs;
 	long		fd;
-	unsigned long	block, last_block = 0, numblocks, i;
+	unsigned long	block, last_block = 0, numblocks, i, count;
 	long		bpib;	/* Blocks per indirect block */
 	long		cylgroups;
 	int		discont = 0, expected;
@@ -135,7 +135,8 @@ static void frag_report(const char *filename)
 	if (ioctl(fd, EXT3_IOC_GETFLAGS, &flags) < 0)
 		flags = 0;
 	if (flags & EXT4_EXTENTS_FL) {
-		printf("File is stored in extents format\n");
+		if (verbose)
+			printf("File is stored in extents format\n");
 		is_ext2 = 0;
 	}
 	if (verbose)
@@ -148,7 +149,7 @@ static void frag_report(const char *filename)
 		printf("First block: %lu\nLast block: %lu\n",
 		       get_bmap(fd, 0), get_bmap(fd, numblocks - 1));
 	}
-	for (i=0; i < numblocks; i++) {
+	for (i=0, count=0; i < numblocks; i++) {
 		if (is_ext2 && last_block) {
 			if (((i-EXT2_DIRECT) % bpib) == 0)
 				last_block++;
@@ -160,6 +161,7 @@ static void frag_report(const char *filename)
 		block = get_bmap(fd, i);
 		if (block == 0)
 			continue;
+		count++;
 		if (last_block && (block != last_block +1) ) {
 			if (verbose)
 				printf("Discontinuity: Block %ld is at %lu (was %lu)\n",
@@ -172,8 +174,8 @@ static void frag_report(const char *filename)
 		printf("%s: 1 extent found", filename);
 	else
 		printf("%s: %d extents found", filename, discont+1);
-	expected = (numblocks/((bs*8)-(fsinfo.f_files/8/cylgroups)-3))+1;
-	if (is_ext2 && expected != discont+1)
+	expected = (count/((bs*8)-(fsinfo.f_files/8/cylgroups)-3))+1;
+	if (is_ext2 && expected < discont+1)
 		printf(", perfection would be %d extent%s\n", expected,
 			(expected>1) ? "s" : "");
 	else
