@@ -241,12 +241,6 @@ _INLINE_ __u16 ext2fs_swab16(__u16 val)
 		return val;
 }
 
-_INLINE_ __u64 ext2fs_swab64(__u64 val)
-{
-	return (ext2fs_swab32(val >> 32) |
-		(((__u64)ext2fs_swab32(val & 0xFFFFFFFFUL)) << 32));
-}
-
 #undef EXT2FS_ADDR
 
 #endif	/* i386 */
@@ -303,6 +297,12 @@ _INLINE_ __u32 ext2fs_swab32(__u32 val)
 }
 
 #endif /* !_EXT2_HAVE_ASM_SWAB */
+
+_INLINE_ __u64 ext2fs_swab64(__u64 val)
+{
+	return (ext2fs_swab32(val >> 32) |
+		(((__u64)ext2fs_swab32(val & 0xFFFFFFFFUL)) << 32));
+}
 
 _INLINE_ int ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap,
 				       blk_t block)
