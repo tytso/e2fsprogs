@@ -31,6 +31,10 @@
 
 #define _GNU_SOURCE /* for O_DIRECT */
 
+#ifndef O_LARGEFILE
+#define O_LARGEFILE 0
+#endif
+
 #include <errno.h>
 #include <fcntl.h>
 #ifdef HAVE_GETOPT_H
@@ -933,7 +937,7 @@ int main (int argc, char ** argv)
 	unsigned int (*test_func)(int, blk_t,
 				  int, blk_t,
 				  unsigned int);
-	int open_flag = 0;
+	int open_flag;
 	long sysval;
 
 	setbuf(stdout, NULL);
@@ -1096,7 +1100,7 @@ int main (int argc, char ** argv)
 	if (w_flag)
 		check_mount(device_name);
 
-	open_flag = w_flag ? O_RDWR : O_RDONLY;
+	open_flag = O_LARGEFILE | (w_flag ? O_RDWR : O_RDONLY);
 	dev = open (device_name, open_flag);
 	if (dev == -1) {
 		com_err (program_name, errno, _("while trying to open %s"),
