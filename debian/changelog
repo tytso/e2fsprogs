@@ -1,3 +1,10 @@
+e2fsprogs (1.41.1-2) unstable; urgency=low
+
+  * Make sure ext4_swab64() is defined on all platforms (Closes: #497515)
+  * Badlocks: Use O_LARGEFILE so it will run on files greater than 2GB
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 02 Sep 2008 09:53:46 -0400
+
 e2fsprogs (1.41.1-1) unstable; urgency=low
 
   * New upstream release
