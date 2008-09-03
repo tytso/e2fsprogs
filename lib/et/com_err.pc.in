@@ -7,5 +7,5 @@ Name: com_err
 Description: Common error description library
 Version: @E2FSPROGS_VERSION@
 Requires:
-Cflags: -I${includedir} 
+Cflags: -I${includedir}/et
 Libs: -L${libdir} -lcom_err

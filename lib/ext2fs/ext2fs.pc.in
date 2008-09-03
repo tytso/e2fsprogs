@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: ext2fs
 Description: Ext2fs library
 Version: @E2FSPROGS_VERSION@
-Requires: com_err
-Cflags: -I${includedir} 
+Requires.private: com_err
+Cflags: -I${includedir}/ext2fs
 Libs: -L${libdir} -lext2fs
