@@ -76,7 +76,7 @@ void do_ncheck(int argc, char **argv)
 
 	iw.iarray = malloc(sizeof(struct inode_info) * argc);
 	if (!iw.iarray) {
-		com_err("do_ncheck", ENOMEM,
+		com_err("ncheck", ENOMEM,
 			"while allocating inode info array");
 		return;
 	}
@@ -86,7 +86,7 @@ void do_ncheck(int argc, char **argv)
 		iw.iarray[i-1].ino = strtol(argv[i], &tmp, 0);
 		if (*tmp) {
 			com_err(argv[0], 0, "Bad inode - %s", argv[i]);
-			return;
+			goto error_out;
 		}
 	}
 
