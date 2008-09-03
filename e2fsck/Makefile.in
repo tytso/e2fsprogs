@@ -8,7 +8,6 @@ VPATH = @srcdir@
 top_builddir = ..
 my_dir = e2fsck
 INSTALL = @INSTALL@
-LDFLAG_STATIC = @LDFLAG_STATIC@
 
 @MCONFIG@
 
@@ -119,8 +118,7 @@ e2fsck: $(OBJS)  $(DEPLIBS)
 
 e2fsck.static: $(OBJS) $(STATIC_DEPLIBS)
 	@echo "	LD $@"
-	@$(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o e2fsck.static $(OBJS) \
-		$(STATIC_LIBS) 
+	@$(LD) $(LDFLAGS_STATIC) -o e2fsck.static $(OBJS) $(STATIC_LIBS) 
 
 e2fsck.profiled: $(PROFILED_OBJS)  $(PROFILED_DEPLIBS)
 	@echo "	LD $@"

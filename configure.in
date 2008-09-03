@@ -211,6 +211,8 @@ dnl
 dnl This needs to be before all of the --enable-*-shlibs options
 dnl
 E2_PKG_CONFIG_STATIC=--static
+LDFLAG_DYNAMIC=
+PRIVATE_LIBS_CMT=
 dnl
 dnl handle --enable-elf-shlibs
 dnl
@@ -232,6 +234,8 @@ else
 	esac]
 	BINARY_TYPE=elfbin
 	LIB_EXT=.so
+	PRIVATE_LIBS_CMT=#
+	LDFLAG_DYNAMIC=['-Wl,-rpath-link,$(top_builddir)/lib']
 	AC_MSG_RESULT([Enabling ELF shared libraries])
 fi
 ,
@@ -322,6 +326,8 @@ dnl
 AC_SUBST(LIB_EXT)
 AC_SUBST(STATIC_LIB_EXT)
 AC_SUBST(PROFILED_LIB_EXT)
+AC_SUBST(LDFLAG_DYNAMIC)
+AC_SUBST(PRIVATE_LIBS_CMT)
 dnl
 dnl handle --enable-jbd-debug
 dnl
@@ -921,4 +927,3 @@ for i in MCONFIG Makefile e2fsprogs.spec \
 done
 AC_OUTPUT($outlist)
 if test -f util/gen-tarball; then chmod +x util/gen-tarball; fi
-

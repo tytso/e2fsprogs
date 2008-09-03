@@ -684,6 +684,8 @@ CHECKER_CMT
 LIB_EXT
 STATIC_LIB_EXT
 PROFILED_LIB_EXT
+LDFLAG_DYNAMIC
+PRIVATE_LIBS_CMT
 TEST_IO_CMT
 DEBUGFS_CMT
 IMAGER_CMT
@@ -3842,6 +3844,8 @@ fi
 
 
 E2_PKG_CONFIG_STATIC=--static
+LDFLAG_DYNAMIC=
+PRIVATE_LIBS_CMT=
 # Check whether --enable-elf-shlibs was given.
 if test "${enable_elf_shlibs+set}" = set; then
   enableval=$enable_elf_shlibs; if test "$enableval" = "no"
@@ -3861,6 +3865,8 @@ else
 	esac
 	BINARY_TYPE=elfbin
 	LIB_EXT=.so
+	PRIVATE_LIBS_CMT=#
+	LDFLAG_DYNAMIC='-Wl,-rpath-link,$(top_builddir)/lib'
 	{ echo "$as_me:$LINENO: result: Enabling ELF shared libraries" >&5
 echo "${ECHO_T}Enabling ELF shared libraries" >&6; }
 fi
@@ -3956,6 +3962,8 @@ MAKEFILE_CHECKER=/dev/null
 echo "${ECHO_T}Disabling checker libraries by default" >&6; }
 
 fi
+
+
 
 
 
@@ -15902,8 +15910,8 @@ CHECKER_CMT!$CHECKER_CMT$ac_delim
 LIB_EXT!$LIB_EXT$ac_delim
 STATIC_LIB_EXT!$STATIC_LIB_EXT$ac_delim
 PROFILED_LIB_EXT!$PROFILED_LIB_EXT$ac_delim
-TEST_IO_CMT!$TEST_IO_CMT$ac_delim
-DEBUGFS_CMT!$DEBUGFS_CMT$ac_delim
+LDFLAG_DYNAMIC!$LDFLAG_DYNAMIC$ac_delim
+PRIVATE_LIBS_CMT!$PRIVATE_LIBS_CMT$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 73; then
@@ -15977,6 +15985,8 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+TEST_IO_CMT!$TEST_IO_CMT$ac_delim
+DEBUGFS_CMT!$DEBUGFS_CMT$ac_delim
 IMAGER_CMT!$IMAGER_CMT$ac_delim
 RESIZER_CMT!$RESIZER_CMT$ac_delim
 FSCK_PROG!$FSCK_PROG$ac_delim
@@ -16060,7 +16070,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 81; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 83; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -16508,4 +16518,3 @@ if test "$no_create" != yes; then
 fi
 
 if test -f util/gen-tarball; then chmod +x util/gen-tarball; fi
-
