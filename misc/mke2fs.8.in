@@ -212,7 +212,7 @@ to support a filesystem that has
 .I max-online-resize
 blocks.
 .TP
-.B lazy_itable_init\fR[\fb= \fI<0 to disable, 1 to enable>\fR]
+.B lazy_itable_init\fR[\fB= \fI<0 to disable, 1 to enable>\fR]
 If enabled and the uninit_bg feature is enabled, the inode table will
 not be fully initialized by
 .BR mke2fs .
