@@ -55,7 +55,6 @@ extern int optind;
 #include <sys/time.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <sys/time.h>
 
 #include "et/com_err.h"
 #include "ext2fs/ext2_io.h"
@@ -78,6 +77,7 @@ static int current_O_DIRECT = 0;	/* Current status of O_DIRECT flag */
 static int exclusive_ok = 0;
 static unsigned int max_bb = 0;		/* Abort test if more than this number of bad blocks has been encountered */
 static unsigned int d_flag = 0;		/* delay factor between reads */
+static struct timeval time_start;
 
 #define T_INC 32
 
@@ -161,11 +161,52 @@ static int bb_output (blk_t bad)
 	return 1;
 }
 
+static char *time_diff_format(struct timeval *tv1,
+			      struct timeval *tv2, char *buf)
+{
+        time_t	diff = (tv1->tv_sec - tv2->tv_sec);
+	int	hr,min,sec;
+
+	sec = diff % 60;
+	diff /= 60;
+	min = diff % 60;
+	hr = diff / 60;
+
+	if (hr)
+		sprintf(buf, "%d:%02d:%02d", hr, min, sec);
+	else
+		sprintf(buf, "%d:%02d", min, sec);
+	return buf;
+}
+
+static float calc_percent(unsigned long current, unsigned long total) {
+	float percent = 0.0;
+	if (total <= 0)
+		return percent;
+	if (current >= total) {
+		percent = 100.0;
+	} else {
+		percent=(100.0*(float)current/(float)total);
+	}
+	return percent;
+}
+
 static void print_status(void)
 {
-	fprintf(stderr, "%15lu/%15lu", (unsigned long) currently_testing,
-		(unsigned long) num_blocks);
-	fputs("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", stderr);
+	struct timeval time_end;
+	char diff_buf[32], line_buf[128];
+	int len;
+
+	gettimeofday(&time_end, 0);
+	len = snprintf(line_buf, sizeof(line_buf), 
+		       _("%6.2f%% done, %s elapsed"),
+		       calc_percent((unsigned long) currently_testing,
+				    (unsigned long) num_blocks), 
+		       time_diff_format(&time_end, &time_start, diff_buf));
+	fputs(line_buf, stderr);
+	memset(line_buf, '\b', len);
+	line_buf[len] = 0;
+	fputs(line_buf, stderr);	
 	fflush (stderr);
 }
 
@@ -989,6 +1030,7 @@ int main (int argc, char ** argv)
 			break;
 		case 'v':
 			v_flag++;
+			gettimeofday(&time_start, 0);
 			break;
 		case 'w':
 			if (w_flag)
