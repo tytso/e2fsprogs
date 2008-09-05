@@ -506,7 +506,6 @@ endif
 	echo "udeb: libuuid 1 libuuid1-udeb" >> debian/libuuid1/DEBIAN/shlibs
 
 	dh_installdeb
-	rm debian/e2fsprogs-udeb/DEBIAN/conffiles
 	dh_shlibdeps -l${stdbuilddir}/lib
 	dh_shlibdeps -pe2fsprogs -l${stdbuilddir}/lib \
 		-u"-Ldebian/e2fsprogs.shlibs.local"
