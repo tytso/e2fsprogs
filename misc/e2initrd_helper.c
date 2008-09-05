@@ -33,7 +33,6 @@ extern char *optarg;
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
-#include "e2p/e2p.h"
 #include "blkid/blkid.h"
 
 #include "../version.h"
