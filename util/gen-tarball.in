@@ -43,7 +43,7 @@ mv ../e2fsprogs.spec $top_srcdir/e2fsprogs.spec
 		-print) | sed -e "s/^$base_e2fsprogs/$SRCROOT/" > $exclude
 sed -e "s;^;$SRCROOT/;" < $srcdir/$list.exclude >> $exclude
 
-(cd $top_srcdir/.. ; rm -f $SRCROOT ; ln -sf e2fsprogs $SRCROOT)
+(cd $top_srcdir/.. ; rm -f $SRCROOT ; ln -sf $base_e2fsprogs $SRCROOT)
 
 (cd $top_srcdir/.. ; tar -c -h -v -f - -X $exclude $SRCROOT) \
 	 | $GZIP -9 -c > $SRCROOT.tar.gz
