@@ -520,21 +520,17 @@ endif
 	  -u '-v${SS_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
 	DH_OPTIONS= dh_gencontrol -puuid-dev \
 	  -u '-v${UUID_VERSION}-${MAIN_VERSION} -VmainBinary=${MAIN_VERSION}'
+	dh_gencontrol	-pe2fsprogs-udeb -- -fdebian/files~
+	dh_gencontrol	-plibblkid1-udeb -- -fdebian/files~
+	dh_gencontrol	-plibuuid1-udeb -- -fdebian/files~
 
+	dpkg-distaddfile $(UDEB_NAME) debian-installer $(UDEB_PRIORITY)
+	dpkg-distaddfile $(BLKID_UDEB_NAME) debian-installer $(BLKID_UDEB_PRIORITY)
+	dpkg-distaddfile $(UUID_UDEB_NAME) debian-installer $(UUID_UDEB_PRIORITY)
 	dh_md5sums -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
 	dh_builddeb -Ne2fsprogs-udeb -Nlibblkid1-udeb -Nlibuuid1-udeb
-
-	# udeb stuff
-	dh_gencontrol	-pe2fsprogs-udeb -- -fdebian/files~
-	dpkg-distaddfile $(UDEB_NAME) debian-installer $(UDEB_PRIORITY)
 	dh_builddeb -pe2fsprogs-udeb --filename=$(UDEB_NAME)
-
-	dh_gencontrol	-plibblkid1-udeb -- -fdebian/files~
-	dpkg-distaddfile $(BLKID_UDEB_NAME) debian-installer $(BLKID_UDEB_PRIORITY)
 	dh_builddeb -plibblkid1-udeb --filename=$(BLKID_UDEB_NAME)
-
-	dh_gencontrol	-plibuuid1-udeb -- -fdebian/files~
-	dpkg-distaddfile $(UUID_UDEB_NAME) debian-installer $(UUID_UDEB_PRIORITY)
 	dh_builddeb -plibuuid1-udeb --filename=$(UUID_UDEB_NAME)
 
 binary: binary-indep binary-arch
