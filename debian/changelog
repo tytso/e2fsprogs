@@ -1,3 +1,18 @@
+e2fsprogs (1.41.1-3) unstable; urgency=low
+
+  * badblocks -v will now display the time and percentage complete
+      (Closes: #429739)
+  * Reordered debian/rules when building udebs to avoid a Lintian warning
+  * Fixed dependencies fields in the udeb packages (Closes: #497619)
+  * Avoid linking various programs with unneeded libraries
+  * Fixed a typo'ed bold font specifier in mke2fs's man page
+  * Fixed the pkg-config files so the include directory needed by the
+      various libraries is included, and to use Requires.private to
+      avoid unnecessary linking of dynamic libraries.
+  * Add more historical information to the debian/*.symbol files
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 05 Sep 2008 11:11:03 -0400
+
 e2fsprogs (1.41.1-2) unstable; urgency=low
 
   * Make sure ext4_swab64() is defined on all platforms (Closes: #497515)
