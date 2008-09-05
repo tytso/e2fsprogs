@@ -8,6 +8,7 @@ top_dir=`cd $top_srcdir; pwd`
 base_ver=`echo @E2FSPROGS_VERSION@ | sed -e 's/-WIP//' -e 's/pre-//' -e 's/-PLUS//'`
 base_e2fsprogs=`basename $top_dir`
 exclude=/tmp/exclude
+GZIP=gzip
 
 #
 # This hack is needed because texi2dvi blows up horribly if there are 
@@ -45,7 +46,8 @@ sed -e "s;^;$SRCROOT/;" < $srcdir/$list.exclude >> $exclude
 (cd $top_srcdir/.. ; rm -f $SRCROOT ; ln -sf e2fsprogs $SRCROOT)
 
 (cd $top_srcdir/.. ; tar -c -h -v -f - -X $exclude $SRCROOT) \
-	 | gzip -9 > $SRCROOT.tar.gz
+	 | $GZIP -9 -c > $SRCROOT.tar.gz
+$GZIP -l $SRCROOT.tar.gz
 
 (cd $top_srcdir/.. ; rm -f $SRCROOT)
 mv $top_srcdir/e2fsprogs.spec ../e2fsprogs.spec 
