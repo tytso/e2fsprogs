@@ -45,8 +45,12 @@ install-shlibs install:: $(ELF_LIB) installdirs-elf-lib
 	@echo "	SYMLINK $(ELF_INSTALL_DIR)/$(ELF_SONAME)"
 	@$(LN_S) -f $(ELF_LIB) $(DESTDIR)$(ELF_INSTALL_DIR)/$(ELF_SONAME)
 	@echo "	SYMLINK $(libdir)/$(ELF_IMAGE).so"
-	@$(LN_S) -f $(ELF_INSTALL_DIR)/$(ELF_SONAME) \
-		$(DESTDIR)$(libdir)/$(ELF_IMAGE).so
+	@if test "$(ELF_INSTALL_DIR)" = "$(libdir)"; then \
+		$(LN_S) -f $(ELF_SONAME) $(DESTDIR)$(libdir)/$(ELF_IMAGE).so ; \
+	else \
+		$(LN_S) -f $(ELF_INSTALL_DIR)/$(ELF_SONAME) \
+			$(DESTDIR)$(libdir)/$(ELF_IMAGE).so; \
+	fi			
 	@echo "	LDCONFIG"
 	@-$(LDCONFIG)
 
