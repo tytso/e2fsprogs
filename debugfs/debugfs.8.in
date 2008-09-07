@@ -176,7 +176,7 @@ Close the currently open file system.
 Clear the contents of the inode 
 .IR file .
 .TP
-.I dump [-p] filspec out_file
+.I dump [-p] filespec out_file
 Dump the contents of the inode 
 .I filespec
 to the output file 
@@ -320,7 +320,7 @@ The
 .I \-p
 flag will list the files in a format which is more easily parsable by
 scripts, as well as making it more clear when there are spaces or other
-non-prinitng characters at the end of filenames.
+non-printing characters at the end of filenames.
 .TP
 .I modify_inode filespec
 Modify the contents of the inode structure in the inode
@@ -471,7 +471,7 @@ pass, use the debugfs
 command to link the inode to the destination pathname, or use 
 .B e2fsck
 to check the filesystem and link all of the recovered inodes to the
-lost+found dirctory.
+lost+found directory.
 .TP
 .I unlink pathname
 Remove the link specified by 

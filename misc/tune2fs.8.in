@@ -161,7 +161,7 @@ filesystem blocks. This is the number of blocks read or written to disk
 before moving to next disk. This mostly affects placement of filesystem
 metadata like bitmaps at
 .BR mke2fs (2)
-time to avoid placing them on a single disk, which can hurt the performanace.
+time to avoid placing them on a single disk, which can hurt the performance.
 It may also be used by block allocator.
 .TP
 .BI stripe_width= stripe-width

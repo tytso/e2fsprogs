@@ -494,7 +494,7 @@ large files.
 Create a filesystem without initializing all of the block groups.  This
 feature also enables checksums and highest-inode-used statistics in each
 blockgroup.  This feature can
-speed up filesystem creation time noticably (if lazy_itable_init is
+speed up filesystem creation time noticeably (if lazy_itable_init is
 enabled), and can also reduce
 .BR e2fsck
 time dramatically.  It is only supported by the ext4 filesystem in

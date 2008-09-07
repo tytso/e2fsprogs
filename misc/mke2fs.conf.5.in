@@ -159,9 +159,9 @@ inode size.
 .TP
 .I undo_dir
 This relation specifies the directory where the undo file should be
-stored.  It can be overriden via the
+stored.  It can be overridden via the
 .B E2FSPROGS_UNDO_DIR
-environemnt variable.  If the directory location is set to the value
+environment variable.  If the directory location is set to the value
 .IR none ,
 .B mke2fs
 will not create an undo file.
@@ -248,7 +248,7 @@ usage type of
 This results in an fs_types list of "ext4, floppy".   Both the ext4
 subsection and the floppy subsection define an
 .I inode_size
-relation, but since the later entries in the fs_types list supercede
+relation, but since the later entries in the fs_types list supersede
 earlier ones, the configuration parameter for fs_types.floppy.inode_size
 will be used, so the filesystem  will have an inode size of 128.
 .P
@@ -315,7 +315,7 @@ enabled,  the inode table will
 not fully initialized by 
 .BR mke2fs (8).
 This speeds up filesystem
-initialization noitceably, but it requires the kernel to finish
+initialization noticeably, but it requires the kernel to finish
 initializing the filesystem in the background when the filesystem is
 first mounted.
 .TP
