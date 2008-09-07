@@ -127,6 +127,7 @@ manipulate an ext2 filesystem.
 
 @menu
 * Filesystem-level functions::  
+* File I/O Functions::          
 * Inode Functions::             
 * Directory functions::         
 * Bitmap Functions::            
@@ -137,7 +138,7 @@ manipulate an ext2 filesystem.
 
 @c ----------------------------------------------------------------------
 
-@node Filesystem-level functions, Inode Functions, EXT2FS Library Functions, EXT2FS Library Functions
+@node Filesystem-level functions, File I/O Functions, EXT2FS Library Functions, EXT2FS Library Functions
 @comment  node-name,  next,  previous,  up
 @section Filesystem-level functions
 
@@ -395,11 +396,131 @@ modified.   If the flag is set, it will cause the appropriate bitmap
 to be written when the filesystem is closed or flushed.
 @end deftypefun
 
+@c ----------------------------------------------------------------------
 
+@node File I/O Functions, Inode Functions, Filesystem-level functions, EXT2FS Library Functions
+@comment  node-name,  next,  previous,  up
+@section File I/O Functions
+
+The following functions provide a convenient abstraction to read or
+write a file in an filesystem.  The interface is similar in spirit to
+the Linux/POSIX file I/O system calls.
+
+@menu
+* File handle manipulation::    
+* Reading and writing data::    
+* Changing the file offset ::   
+* Getting the file size::       
+@end menu
 
 @c ----------------------------------------------------------------------
 
-@node Inode Functions, Directory functions, Filesystem-level functions, EXT2FS Library Functions
+@node File handle manipulation, Reading and writing data, File I/O Functions, File I/O Functions
+@comment  node-name,  next,  previous,  up
+@subsection File handle manipulation
+
+The file handle functions much like a file descriptor in the Linux/POSIX
+file I/O system calls.  Unlike the Linux/POSIX system calls, files are
+opened via inode numbers instead of via pathnames.  To resolve a
+pathname to an inode number, use the function @code{ext2fs_namei} or to
+create a new file, use @code{ext2fs_new_inode} and @code{ext2fs_link}.
+
+@deftypefun errcode_t ext2fs_file_open2 (ext2_filsys @var{fs}, ext2_ino_t @var{ino}, struct ext2_inode *@var{inode}, int @var{flags}, ext2_file_t *@var{ret})
+@deftypefunx errcode_t ext2fs_file_open (ext2_filsys @var{fs}, ext2_ino_t @var{ino}, int @var{flags}, ext2_file_t *@var{ret})
+
+Opens a file identified by inode number @var{ino} in filesystem @var{fs}
+and returns a file handle in @var{ret}.  If an inode structure is
+provided in @var{inode}, then it is used instead of reading the inode
+from the filesystem.
+
+The @var{flags} argument contains a bitmask of flags which control how
+the file should be opened.
+
+@table @code
+@item EXT2_FILE_WRITE
+Open the file for reading and writing.  Without this flag, the file is
+opened for writing only.
+
+@item EXT2_FILE_CREATE
+Create the file if it is not already present.
+
+@end table
+@end deftypefun
+
+@deftypefun ext2_filsys ext2fs_file_get_fs (ext2_file_t @var{file})
+Return the filesystem handle where the open file @var{file} was opened.
+@end deftypefun
+
+@deftypefun errcode_t ext2fs_file_close (ext2_file_t @var{file})
+Close the file handle @var{file}.
+@end deftypefun
+
+@deftypefun errcode_t ext2fs_file_flush (ext2_file_t @var{file})
+Force any data written via @code{ext2fs_file_write} to disk.
+@end deftypefun
+
+@c ----------------------------------------------------------------------
+
+@node Reading and writing data, Changing the file offset , File handle manipulation, File I/O Functions
+@comment  node-name,  next,  previous,  up
+@subsection Reading and writing data
+
+@deftypefun errcode_t ext2fs_file_read (ext2_file_t @var{file}, void *@var{buf}, unsigned int @var{wanted}, unsigned int *@var{got})
+Read @var{wanted} bytes of data from @var{file} store it in the buffer
+@var{buf}.  The number of bytes that was actually read is returned
+via @var{got}.
+@end deftypefun
+
+@deftypefun errcode_t ext2fs_file_write (ext2_file_t @var{file}, const void *@var{buf}, unsigned int @var{nbytes}, unsigned int *@var{written})
+Write @var{wanted} bytes of data from the buffer @var{buf} to the
+current file position of @var{file}.  The number of bytes that was 
+actually written is returned via @var{got}.
+@end deftypefun
+
+@c ----------------------------------------------------------------------
+
+@node Changing the file offset , Getting the file size, Reading and writing data, File I/O Functions
+@comment  node-name,  next,  previous,  up
+@subsection Changing the file offset
+
+@deftypefun errcode_t ext2fs_file_llseek (ext2_file_t @var{file}, __u64 @var{offset}, int @var{whence}, __u64 *@var{ret_pos})
+@deftypefunx errcode_t ext2fs_file_lseek (ext2_file_t @var{file}, ext2_off_t @var{offset}, int @var{whence}, ext2_off_t *@var{ret_pos})
+Change the current file position of @var{file} according to the
+directive @var{whence} as follows:
+
+@table @code
+@item EXT2_SEEK_SET
+The file position is set to @var{offset} bytes from the beginning of the
+file.
+
+@item EXT2_SEEK_CUR
+The file position set to its current location plus @var{offset} bytes.
+
+@item EXT2_SEEK_END
+The file position is set to the size of the file plus @var{offset}
+bytes.
+@end table
+
+The current offset is returned via @var{ret_pos}.
+@end deftypefun
+
+@c ----------------------------------------------------------------------
+
+@node Getting the file size,  , Changing the file offset , File I/O Functions
+@comment  node-name,  next,  previous,  up
+@subsection Getting the file size
+
+@deftypefun errcode_t ext2fs_file_get_lsize (ext2_file_t @var{file}, __u64 *@var{ret_size})
+Return the size of the file @var{file} in @var{ret_size}.
+@end deftypefun
+
+@deftypefun ext2_off_t ext2fs_file_get_size (ext2_file_t @var{file})
+Return the size of the file @var{file}.
+@end deftypefun
+
+@c ----------------------------------------------------------------------
+
+@node Inode Functions, Directory functions, File I/O Functions, EXT2FS Library Functions
 @comment  node-name,  next,  previous,  up
 @section Inode Functions
 
