@@ -1801,7 +1801,8 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 			else
 				answer = 0;
 		} else
-			answer = ask(ctx, _(prompt[(int) ptr->prompt]), def_yn);
+			answer = ask(ctx, (ptr->prompt == PROMPT_NULL) ? "" :
+				     _(prompt[(int) ptr->prompt]), def_yn);
 		if (!answer && !(ptr->flags & PR_NO_OK))
 			ext2fs_unmark_valid(fs);
 
