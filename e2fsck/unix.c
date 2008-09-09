@@ -971,6 +971,8 @@ restart:
 		int blocksize;
 		for (blocksize = EXT2_MIN_BLOCK_SIZE;
 		     blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
+			if (fs)
+				ext2fs_free(fs);
 			retval = ext2fs_open2(ctx->filesystem_name,
 					      ctx->io_options, flags,
 					      ctx->superblock, blocksize,
