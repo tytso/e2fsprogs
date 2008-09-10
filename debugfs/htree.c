@@ -294,10 +294,19 @@ void do_dx_hash(int argc, char *argv[])
 	hash_seed[0] = hash_seed[1] = hash_seed[2] = hash_seed[3] = 0;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "h:")) != EOF) {
+	while ((c = getopt (argc, argv, "h:s:")) != EOF) {
 		switch (c) {
 		case 'h':
-			hash_version = atoi(optarg);
+			hash_version = e2p_string2hash(optarg);
+			if (hash_version < 0)
+				hash_version = atoi(optarg);
+			break;
+		case 's':
+			if (uuid_parse(optarg, hash_seed)) {
+				fprintf(stderr, "Invalid UUID format: %s\n",
+					optarg);
+				return;
+			}
 			break;
 		default:
 			goto print_usage;
@@ -305,7 +314,8 @@ void do_dx_hash(int argc, char *argv[])
 	}
 	if (optind != argc-1) {
 	print_usage:
-		com_err(argv[0], 0, "usage: dx_hash filename");
+		com_err(argv[0], 0, "usage: dx_hash [-h hash_alg] "
+			"[-s hash_seed] filename");
 		return;
 	}
 	err = ext2fs_dirhash(hash_version, argv[optind], strlen(argv[optind]),
