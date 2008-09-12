@@ -196,10 +196,13 @@ ${CFGSTATICSTAMP}:
 	mkdir -p ${staticbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	if type diet > /dev/null  2>&1 ; then \
-		STATIC_CONF_FLAGS="$STATIC_CONF_FLAGS --with-diet-libc"; \
+		cd ${staticbuilddir} && AWK=/usr/bin/awk \
+			${topdir}/configure ${STATIC_CONF_FLAGS} \
+			--with-diet-libc; \
+	else \
+		cd ${staticbuilddir} && AWK=/usr/bin/awk \
+			${topdir}/configure ${STATIC_CONF_FLAGS}; \
 	fi
-	cd ${staticbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${STATIC_CONF_FLAGS}
 else
 	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
