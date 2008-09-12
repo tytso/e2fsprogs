@@ -36,6 +36,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef UNITTEST
+#undef ENABLE_NLS
+#endif
 #include "e2fsck.h"
 
 #include "crc32defs.h"

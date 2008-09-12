@@ -9,6 +9,10 @@
  * %End-Header%
  */
 
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fs.h"
 #include "ext2fs/crc16.h"

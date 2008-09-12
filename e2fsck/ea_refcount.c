@@ -11,6 +11,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifdef TEST_PROGRAM
+#undef ENABLE_NLS
+#endif
 #include "e2fsck.h"
 
 /*

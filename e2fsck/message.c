@@ -246,7 +246,7 @@ static _INLINE_ void expand_inode_expression(char ch,
 	struct ext2_inode_large	*large_inode;
 	const char *		time_str;
 	time_t			t;
-	int			do_gmt = -1;
+	static int		do_gmt = -1;
 
 	if (!ctx || !ctx->inode)
 		goto no_inode;
@@ -289,15 +289,17 @@ static _INLINE_ void expand_inode_expression(char ch,
 		printf("0%o", inode->i_mode);
 		break;
 	case 'M':
+#ifdef __dietlibc__
 		/* The diet libc doesn't respect the TZ environemnt variable */
 		if (do_gmt == -1) {
 			time_str = getenv("TZ");
 			if (!time_str)
 				time_str = "";
-			do_gmt = !strcmp(time_str, "GMT");
+			do_gmt = !strcmp(time_str, "GMT0");
 		}
+#endif
 		t = inode->i_mtime;
-		time_str = asctime(do_gmt ? gmtime(&t) : localtime(&t));
+		time_str = asctime((do_gmt > 0) ? gmtime(&t) : localtime(&t));
 		printf("%.24s", time_str);
 		break;
 	case 'F':

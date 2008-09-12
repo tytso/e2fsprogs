@@ -21,7 +21,7 @@ DYLD_LIBRARY_PATH=../lib:../lib/ext2fs:../lib/e2p:../lib/et:../lib/ss
 TMPFILE=./test.img
 export LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH
-TZ=GMT
+TZ=GMT0
 export TZ
 LC_ALL=C
 export LC_ALL

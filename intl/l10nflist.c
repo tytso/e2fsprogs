@@ -58,6 +58,7 @@
 # endif
 #else
 # ifndef HAVE_STPCPY
+#define stpcpy(dest, src) my_stpcpy(dest, src)
 static char *stpcpy (char *dest, const char *src);
 # endif
 #endif

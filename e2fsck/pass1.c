@@ -1206,6 +1206,8 @@ static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b)
 	       ib_b->inode.i_block[EXT2_IND_BLOCK]);
 	if (ret == 0)
 		ret = ib_a->inode.i_file_acl - ib_b->inode.i_file_acl;
+	if (ret == 0)
+		ret = ib_a->ino - ib_b->ino;
 	return ret;
 }
 
