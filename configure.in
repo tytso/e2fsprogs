@@ -584,7 +584,7 @@ if test $cross_compiling = no; then
 else
   AC_CHECK_PROGS(BUILD_CC, gcc cc)
 fi
-AC_CHECK_HEADERS(dirent.h errno.h getopt.h malloc.h mntent.h paths.h setjmp.h signal.h stdarg.h stdint.h stdlib.h termios.h termio.h unistd.h utime.h linux/fd.h linux/major.h net/if_dl.h netinet/in.h sys/disklabel.h sys/file.h sys/ioctl.h sys/mkdev.h sys/mman.h sys/prctl.h sys/queue.h sys/resource.h sys/select.h sys/socket.h sys/sockio.h sys/stat.h sys/syscall.h sys/sysmacros.h sys/time.h sys/types.h sys/un.h sys/wait.h)
+AC_CHECK_HEADERS(dirent.h errno.h getopt.h malloc.h mntent.h paths.h semaphore.h setjmp.h signal.h stdarg.h stdint.h stdlib.h termios.h termio.h unistd.h utime.h linux/fd.h linux/major.h net/if_dl.h netinet/in.h sys/disklabel.h sys/file.h sys/ioctl.h sys/mkdev.h sys/mman.h sys/prctl.h sys/queue.h sys/resource.h sys/select.h sys/socket.h sys/sockio.h sys/stat.h sys/syscall.h sys/sysmacros.h sys/time.h sys/types.h sys/un.h sys/wait.h)
 AC_CHECK_HEADERS(sys/disk.h sys/mount.h,,,
 [[
 #if HAVE_SYS_QUEUE_H
@@ -728,6 +728,21 @@ AC_MSG_RESULT($ac_cv_have_optreset)
 if test $ac_cv_have_optreset = yes; then
   AC_DEFINE(HAVE_OPTRESET)
 fi
+dnl
+dnl Test for sem_init, and which library it might require:
+dnl
+SEM_INIT_LIB=''
+AC_CHECK_FUNC(sem_init, ,
+  AC_CHECK_LIB(pthread, sem_init,
+  	AC_DEFINE(HAVE_SEM_INIT)
+  	SEM_INIT_LIB=-lpthread,
+  AC_CHECK_LIB(rt, sem_init,
+  	AC_DEFINE(HAVE_SEM_INIT)
+  	SEM_INIT_LIB=-lrt,
+  AC_CHECK_LIB(posix4, sem_init,
+  	AC_DEFINE(HAVE_SEM_INIT)
+  	SEM_INIT_LIB=-lposix4))))dnl
+AC_SUBST(SEM_INIT_LIB)
 dnl
 dnl Check for unified diff
 dnl

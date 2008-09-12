@@ -751,6 +751,7 @@ SIZEOF_LONG
 SIZEOF_LONG_LONG
 SOCKET_LIB
 DLOPEN_LIB
+SEM_INIT_LIB
 UNI_DIFF_OPTS
 LINUX_CMT
 CYGWIN_CMT
@@ -11646,7 +11647,8 @@ fi
 
 
 
-for ac_header in dirent.h errno.h getopt.h malloc.h mntent.h paths.h setjmp.h signal.h stdarg.h stdint.h stdlib.h termios.h termio.h unistd.h utime.h linux/fd.h linux/major.h net/if_dl.h netinet/in.h sys/disklabel.h sys/file.h sys/ioctl.h sys/mkdev.h sys/mman.h sys/prctl.h sys/queue.h sys/resource.h sys/select.h sys/socket.h sys/sockio.h sys/stat.h sys/syscall.h sys/sysmacros.h sys/time.h sys/types.h sys/un.h sys/wait.h
+
+for ac_header in dirent.h errno.h getopt.h malloc.h mntent.h paths.h semaphore.h setjmp.h signal.h stdarg.h stdint.h stdlib.h termios.h termio.h unistd.h utime.h linux/fd.h linux/major.h net/if_dl.h netinet/in.h sys/disklabel.h sys/file.h sys/ioctl.h sys/mkdev.h sys/mman.h sys/prctl.h sys/queue.h sys/resource.h sys/select.h sys/socket.h sys/sockio.h sys/stat.h sys/syscall.h sys/sysmacros.h sys/time.h sys/types.h sys/un.h sys/wait.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
@@ -14972,6 +14974,302 @@ if test $ac_cv_have_optreset = yes; then
 _ACEOF
 
 fi
+SEM_INIT_LIB=''
+{ echo "$as_me:$LINENO: checking for sem_init" >&5
+echo $ECHO_N "checking for sem_init... $ECHO_C" >&6; }
+if test "${ac_cv_func_sem_init+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+/* Define sem_init to an innocuous variant, in case <limits.h> declares sem_init.
+   For example, HP-UX 11i <limits.h> declares gettimeofday.  */
+#define sem_init innocuous_sem_init
+
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char sem_init (); below.
+    Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
+    <limits.h> exists even on freestanding compilers.  */
+
+#ifdef __STDC__
+# include <limits.h>
+#else
+# include <assert.h>
+#endif
+
+#undef sem_init
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sem_init ();
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined __stub_sem_init || defined __stub___sem_init
+choke me
+#endif
+
+int
+main ()
+{
+return sem_init ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_func_sem_init=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_func_sem_init=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_func_sem_init" >&5
+echo "${ECHO_T}$ac_cv_func_sem_init" >&6; }
+if test $ac_cv_func_sem_init = yes; then
+  :
+else
+  { echo "$as_me:$LINENO: checking for sem_init in -lpthread" >&5
+echo $ECHO_N "checking for sem_init in -lpthread... $ECHO_C" >&6; }
+if test "${ac_cv_lib_pthread_sem_init+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpthread  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sem_init ();
+int
+main ()
+{
+return sem_init ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_pthread_sem_init=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_pthread_sem_init=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_pthread_sem_init" >&5
+echo "${ECHO_T}$ac_cv_lib_pthread_sem_init" >&6; }
+if test $ac_cv_lib_pthread_sem_init = yes; then
+  cat >>confdefs.h <<\_ACEOF
+#define HAVE_SEM_INIT 1
+_ACEOF
+
+  	SEM_INIT_LIB=-lpthread
+else
+  { echo "$as_me:$LINENO: checking for sem_init in -lrt" >&5
+echo $ECHO_N "checking for sem_init in -lrt... $ECHO_C" >&6; }
+if test "${ac_cv_lib_rt_sem_init+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lrt  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sem_init ();
+int
+main ()
+{
+return sem_init ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_rt_sem_init=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_rt_sem_init=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_rt_sem_init" >&5
+echo "${ECHO_T}$ac_cv_lib_rt_sem_init" >&6; }
+if test $ac_cv_lib_rt_sem_init = yes; then
+  cat >>confdefs.h <<\_ACEOF
+#define HAVE_SEM_INIT 1
+_ACEOF
+
+  	SEM_INIT_LIB=-lrt
+else
+  { echo "$as_me:$LINENO: checking for sem_init in -lposix4" >&5
+echo $ECHO_N "checking for sem_init in -lposix4... $ECHO_C" >&6; }
+if test "${ac_cv_lib_posix4_sem_init+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lposix4  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sem_init ();
+int
+main ()
+{
+return sem_init ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  ac_cv_lib_posix4_sem_init=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_cv_lib_posix4_sem_init=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_posix4_sem_init" >&5
+echo "${ECHO_T}$ac_cv_lib_posix4_sem_init" >&6; }
+if test $ac_cv_lib_posix4_sem_init = yes; then
+  cat >>confdefs.h <<\_ACEOF
+#define HAVE_SEM_INIT 1
+_ACEOF
+
+  	SEM_INIT_LIB=-lposix4
+fi
+
+fi
+
+fi
+
+fi
+
 { echo "$as_me:$LINENO: checking for unified diff option" >&5
 echo $ECHO_N "checking for unified diff option... $ECHO_C" >&6; }
 if diff -u $0 $0 > /dev/null 2>&1 ; then
@@ -16050,6 +16348,7 @@ SIZEOF_LONG!$SIZEOF_LONG$ac_delim
 SIZEOF_LONG_LONG!$SIZEOF_LONG_LONG$ac_delim
 SOCKET_LIB!$SOCKET_LIB$ac_delim
 DLOPEN_LIB!$DLOPEN_LIB$ac_delim
+SEM_INIT_LIB!$SEM_INIT_LIB$ac_delim
 UNI_DIFF_OPTS!$UNI_DIFF_OPTS$ac_delim
 LINUX_CMT!$LINUX_CMT$ac_delim
 CYGWIN_CMT!$CYGWIN_CMT$ac_delim
@@ -16070,7 +16369,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 83; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
