@@ -88,7 +88,7 @@ void do_logdump(int argc, char **argv)
 	struct journal_source journal_source;
 	struct ext2_super_block *es = NULL;
 
-	journal_source.where = 0;
+	journal_source.where = JOURNAL_IS_INTERNAL;
 	journal_source.fd = 0;
 	journal_source.file = 0;
 	dump_all = 0;
@@ -264,7 +264,7 @@ errout:
 	return;
 
 print_usage:
-	fprintf(stderr, "%s: Usage: logdump [-ac] [-b<block>] [-i<inode>]\n\t"
+	fprintf(stderr, "%s: Usage: logdump [-acs] [-b<block>] [-i<filespec>]\n\t"
 		"[-f<journal_file>] [output_file]\n", argv[0]);
 }
 
