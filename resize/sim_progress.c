@@ -83,7 +83,7 @@ errcode_t ext2fs_progress_init(ext2_sim_progmeter *ret_prog,
 	errcode_t		retval;
 
 	retval = ext2fs_get_mem(sizeof(struct ext2_sim_progress), &prog);
-	if (!prog)
+	if (retval)
 		return retval;
 	memset(prog, 0, sizeof(struct ext2_sim_progress));
 
