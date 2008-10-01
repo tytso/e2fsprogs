@@ -18,14 +18,8 @@
 
 #include "debugfs.h"
 
-struct inode_info {
-	ext2_ino_t	ino;
-	ext2_ino_t	parent;
-	char		*pathname;
-};
-
 struct inode_walk_struct {
-	struct inode_info	*iarray;
+	ext2_ino_t		*iarray;
 	int			inodes_left;
 	int			num_inodes;
 	int			position;
@@ -40,14 +34,24 @@ static int ncheck_proc(struct ext2_dir_entry *dirent,
 {
 	struct inode_walk_struct *iw = (struct inode_walk_struct *) private;
 	int	i;
+	char	*pathname;
+	errcode_t	retval;
 
 	iw->position++;
 	if (iw->position <= 2)
 		return 0;
 	for (i=0; i < iw->num_inodes; i++) {
-		if (iw->iarray[i].ino == dirent->inode) {
-			iw->iarray[i].parent = iw->parent;
-			iw->inodes_left--;
+		if (iw->iarray[i] == dirent->inode) {
+			retval = ext2fs_get_pathname(current_fs, iw->parent,
+						     iw->iarray[i], 
+						     &pathname);
+			if (retval)
+				com_err("ncheck", retval,
+					"while resolving pathname for "
+					"inode %d (%d)", iw->parent, 
+					iw->iarray[i]);
+			else
+				printf("%u\t%s\n", iw->iarray[i], pathname);
 		}
 	}
 	if (!iw->inodes_left)
@@ -59,7 +63,6 @@ static int ncheck_proc(struct ext2_dir_entry *dirent,
 void do_ncheck(int argc, char **argv)
 {
 	struct inode_walk_struct iw;
-	struct inode_info	*iinfo;
 	int			i;
 	ext2_inode_scan		scan = 0;
 	ext2_ino_t		ino;
@@ -74,16 +77,16 @@ void do_ncheck(int argc, char **argv)
 	if (check_fs_open(argv[0]))
 		return;
 
-	iw.iarray = malloc(sizeof(struct inode_info) * argc);
+	iw.iarray = malloc(sizeof(ext2_ino_t) * argc);
 	if (!iw.iarray) {
 		com_err("ncheck", ENOMEM,
 			"while allocating inode info array");
 		return;
 	}
-	memset(iw.iarray, 0, sizeof(struct inode_info) * argc);
+	memset(iw.iarray, 0, sizeof(ext2_ino_t) * argc);
 
 	for (i=1; i < argc; i++) {
-		iw.iarray[i-1].ino = strtol(argv[i], &tmp, 0);
+		iw.iarray[i-1] = strtol(argv[i], &tmp, 0);
 		if (*tmp) {
 			com_err(argv[0], 0, "Bad inode - %s", argv[i]);
 			goto error_out;
@@ -106,6 +109,7 @@ void do_ncheck(int argc, char **argv)
 		goto error_out;
 	}
 
+	printf("Inode\tPathname\n");
 	while (ino) {
 		if (!inode.i_links_count)
 			goto next;
@@ -143,29 +147,6 @@ void do_ncheck(int argc, char **argv)
 				"while doing inode scan");
 			goto error_out;
 		}
-	}
-
-	for (i=0, iinfo = iw.iarray; i < iw.num_inodes; i++, iinfo++) {
-		if (iinfo->parent == 0)
-			continue;
-		retval = ext2fs_get_pathname(current_fs, iinfo->parent,
-					     iinfo->ino, &iinfo->pathname);
-		if (retval)
-			com_err("ncheck", retval,
-				"while resolving pathname for inode %d (%d)",
-				iinfo->parent, iinfo->ino);
-	}
-
-	printf("Inode\tPathname\n");
-	for (i=0, iinfo = iw.iarray; i < iw.num_inodes; i++, iinfo++) {
-		if (iinfo->parent == 0) {
-			printf("%u\t<inode not found>\n", iinfo->ino);
-			continue;
-		}
-		printf("%u\t%s\n", iinfo->ino, iinfo->pathname ?
-		       iinfo->pathname : "<unknown pathname>");
-		if (iinfo->pathname)
-			free(iinfo->pathname);
 	}
 
 error_out:
