@@ -61,15 +61,15 @@ struct et_list * _et_dynamic_list = (struct et_list *) NULL;
 
 #ifdef HAVE_SEM_INIT
 static sem_t _et_lock;
-static _et_lock_initialized;
+static int _et_lock_initialized;
 
-static COMERR_ATTR((constructor)) setup_et_lock()
+static void COMERR_ATTR((constructor)) setup_et_lock(void)
 {
 	sem_init(&_et_lock, 0, 1);
 	_et_lock_initialized = 1;
 }
 
-static COMERR_ATTR((destructor)) fini_et_lock()
+static void COMERR_ATTR((destructor)) fini_et_lock(void)
 {
 	sem_destroy(&_et_lock);
 	_et_lock_initialized = 0;
@@ -77,7 +77,7 @@ static COMERR_ATTR((destructor)) fini_et_lock()
 #endif
 
 
-int et_list_lock()
+int et_list_lock(void)
 {
 #ifdef HAVE_SEM_INIT
 	if (!_et_lock_initialized)
@@ -88,7 +88,7 @@ int et_list_lock()
 #endif
 }
 
-int et_list_unlock()
+int et_list_unlock(void)
 {
 #ifdef HAVE_SEM_INIT
 	if (_et_lock_initialized)
