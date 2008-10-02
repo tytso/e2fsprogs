@@ -1,3 +1,108 @@
+E2fsprogs 1.41.2 (October 2, 2008)
+==================================
+
+Fix e2fsck's automatic blocksize detection.  This fixes a regression
+from e2fsprogs 1.40.7 which caused e2fsck to fail if the user
+specifies a block number using the -b option if the blocksize option
+isn't also specified using -B.  Unfortunately, users very commonly
+invoke e2fsck using "e2fsck -b 32768 /dev/hdXXX" to use the backup
+superblock; in fack e2fsck will often suggest this kind of command
+line.  Oops.
+
+Enhance the debugfs's "ncheck" command so it will print all of the
+pathnames for the specified inodes.  (Previously, in some cases ncheck
+might not print a pathname for an inode at all if some of the other
+inodes had multiple hard links.)
+
+Enhance debugfs's "hash" command so the hash seed can be specified via
+a command-line option.  In addition, allow the hash algorithm to be
+specified by name instead of just by number.
+
+Fix e2fsck so that we don't accidentally print the translation file's
+header when asking the user a custom question so there is no prompt
+defined for a particular problem record.  For example, the question
+"Run journal anyway" will get the PO header tacked on because e2fsck
+erroneously passed the null string to _().  (Addresses Launchpad Bug:
+#246892)
+
+Enhance badblocks so that it can test a normal file which is greater
+than 2GB.
+
+Enhance the badblocks command so that it displays the time and
+percentage complete when in verbose mode.  (Addresses Debian Bug:
+#429739)
+
+Fix a potential memory leak in a error handling path in debugfs's
+ncheck function.
+
+Fix a potential memory corruption problem if a memory allocation fails
+in resize2fs.
+
+Fix the usage message for debugfs's logdump command to be consistent
+with its man manpage.
+
+Update Polish, French, Vietnamese, Dutch, Indonesian, German, Czech,
+and Sweedish translation from the Translation Project.
+
+Add documentation for the file I/O functions to the libext2fs.texinfo
+file.  (Addresses Debian Bug: #484877)
+    
+Update and clarified various man pages.  (Addresses Launchpad Bug
+#275272; Addresses Debian Bugs: #498100, #498101, #498102, #498103)
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details. (Addresses Debian Bug: #497619)
+
+Programmer's Notes
+------------------
+
+Fix a potential file descriptor leack in libcom_err by setting the
+close-on-exec flag for a fd used for debugging.  (Addresses Red Hat
+Bugzilla #464689)
+
+Fix a potential race in libcom_err by using sem_post/sem_init.  SuSE
+has been carrying a patch for a long time to prevent a largely
+theoretical race condition if a multi-threaded application adds and
+removes error tables in multiple threads.  Unfortunately SuSE's
+approach breaks compatibility by forcing applications to link and
+compile with the -pthread option; using pthread mutexes has
+historically been problematic.  We fix this by using sem_post/sem_init
+instead.
+
+Fix e2fsprogs-libs build failure due to 'subs' target.  (Addresses
+Sourceforge Bug: #2087502)
+
+Avoid linking e2initrd_helper, debugfs, blkid, and fsck with unneeded
+libraries when using ELF shared libraries.
+
+Fix ELF shared library when building on systems that don't already
+have the e2fsprogs shared libraries already installed.  (Addresses
+Sourceforge Bug: #2088537)
+
+Fix the pkg-config files so they work correctly when linking with
+static libraries and fix the include directory so programs don't have
+to use #include <ext2fs/ext2fs.h>, but can use #include <ext2fs.h>
+instead.  (Addresses Sourceforge Bug: #2089537)
+    
+Make sure ext2fs_swab64() is compiled for all platforms, and not just
+for x86.  (Addresses Debian Bug: #497515)
+    
+Remove the unused ext2fs_find_{first,ext}_bit_set() functions for all
+non-x86 platforms.  (They had been removed for x86 earlier.)
+
+Fix diet libc compilation support, which had bitrotted due to lack of
+TLC.  Fixing this improves general portability.
+
+When installing the link library when using ELF shared libraries,
+avoid using absolute pathnames if the link library and the shared
+library are installed in the same directory.  (Addresses Sourceforge
+Bug: #1782913)
+
+Fix gen-tarball so it will work even if the top-level directory has
+been renamed to something other than "e2fsprogs".  Also make
+gen-tarball print the size of the resulting tar.gz file.
+
+
 E2fsprogs 1.41.1 (September 1, 2008)
 ====================================
 
