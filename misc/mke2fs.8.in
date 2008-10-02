@@ -545,16 +545,31 @@ or there is no chance of recovery.
 .\" Check the device for bad blocks before creating the file system
 .\" using the specified test.
 .TP
-.BI
 .BI \-t " fs-type"
-Specify the filesystem (i.e., ext2, ext3, ext4, etc.) that is to be created.
+Specify the filesystem type (i.e., ext2, ext3, ext4, etc.) that is to be created.
 If this option is not specified,
 .B mke2fs
 will pick a default either via how
 the command was run (for example, using a name of the form mkfs.ext2,
 mkfs.ext3, etc.) or via a default as defined by the
 .BR /etc/mke2fs.conf (5)
-file.
+file.   This option controls which filesystem options are used by
+default, based on the
+.B fstypes
+configuration stanza in
+.BR /etc/mke2fs.conf (5).
+.sp
+If the
+.B \-O
+option is used to explicitly add or remove filesystem options that
+should be set in the newly created filesystem, the
+resulting filesystem may not be supported by the requested
+.IR fs-type .
+(e.g., "\fBmke2fs -t ext3 -O extents /dev/sdXX\fR" will create a
+filesystem that is not supported by the ext3 implementation as found in
+the Linux kernel; and "\fBmke2fs -t ext3 -O ^has_journal /dev/hdXX\fR"
+will create a filesystem that does not have a journal and hence will not
+be supported by the ext3 filesystem code in the Linux kernel.)
 .TP
 .BI \-T " usage-type[,...]"
 Specify how the filesystem is going to be used, so that
