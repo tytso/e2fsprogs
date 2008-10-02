@@ -34,6 +34,7 @@
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <fcntl.h>
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -201,25 +202,38 @@ static FILE *debug_f = 0;
 
 static void init_debug(void)
 {
-	char *dstr;
-	char *fn;
+	char	*dstr, *fn, *tmp;
+	int	fd, flags;
 
 	if (debug_mask & DEBUG_INIT)
 		return;
 
 	dstr = getenv("COMERR_DEBUG");
-	if (dstr)
-		debug_mask = strtoul(dstr, 0, 0);
+	if (dstr) {
+		debug_mask = strtoul(dstr, &tmp, 0);
+		if (*tmp || errno)
+			debug_mask = 0;
+	}
+
+	debug_mask |= DEBUG_INIT;
+	if (debug_mask == DEBUG_INIT)
+		return;
 
 	fn = safe_getenv("COMERR_DEBUG_FILE");
 	if (fn)
 		debug_f = fopen(fn, "a");
 	if (!debug_f)
 		debug_f = fopen("/dev/tty", "a");
-	if (!debug_f)
-		debug_mask = 0;
+	if (debug_f) {
+		fd = fileno(debug_f);
+		if (fd >= 0) {
+			flags = fcntl(fd, F_GETFD);
+			if (flags >= 0)
+				fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
+		}
+	} else
+		debug_mask = DEBUG_INIT;
 
-	debug_mask |= DEBUG_INIT;
 }
 
 /*
