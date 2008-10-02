@@ -448,8 +448,8 @@ closefs.o: $(srcdir)/closefs.c $(srcdir)/ext2_fs.h \
  $(top_srcdir)/lib/et/com_err.h $(srcdir)/ext2_io.h \
  $(top_builddir)/lib/ext2fs/ext2_err.h $(srcdir)/ext2_ext_attr.h \
  $(srcdir)/bitops.h
-crc16.o: $(srcdir)/crc16.c $(srcdir)/crc16.h \
- $(top_builddir)/lib/ext2fs/ext2_types.h
+crc16.o: $(srcdir)/crc16.c $(top_builddir)/lib/ext2fs/ext2_types.h \
+ $(srcdir)/crc16.h
 csum.o: $(srcdir)/csum.c $(srcdir)/ext2_fs.h \
  $(top_builddir)/lib/ext2fs/ext2_types.h $(srcdir)/ext2fs.h \
  $(srcdir)/ext2_fs.h $(srcdir)/ext3_extents.h $(top_srcdir)/lib/et/com_err.h \
