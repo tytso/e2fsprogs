@@ -1030,7 +1030,6 @@ int main (int argc, char ** argv)
 			break;
 		case 'v':
 			v_flag++;
-			gettimeofday(&time_start, 0);
 			break;
 		case 'w':
 			if (w_flag)
@@ -1142,6 +1141,7 @@ int main (int argc, char ** argv)
 	if (w_flag)
 		check_mount(device_name);
 
+	gettimeofday(&time_start, 0);
 	open_flag = O_LARGEFILE | (w_flag ? O_RDWR : O_RDONLY);
 	dev = open (device_name, open_flag);
 	if (dev == -1) {
