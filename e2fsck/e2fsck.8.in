@@ -263,7 +263,7 @@ or
 options.
 .TP
 .B \-p
-Automatically repair ("preen") the file system.  This option will case
+Automatically repair ("preen") the file system.  This option will cause
 .B e2fsck
 to automatically
 fix any filesystem problems that can be safely fixed without human
