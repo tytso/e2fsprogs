@@ -26,7 +26,9 @@
 #ifdef HAVE_SYS_MKDEV_H
 #include <sys/mkdev.h>
 #endif
+#ifdef __linux__
 #include <sys/utsname.h>
+#endif
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
@@ -203,6 +205,7 @@ static int fs_proc_check(const char *fs_name)
  */
 static int check_for_modules(const char *fs_name)
 {
+#ifdef __linux__
 	struct utsname	uts;
 	FILE		*f;
 	char		buf[1024], *cp, *t;
@@ -234,6 +237,7 @@ static int check_for_modules(const char *fs_name)
 			return (1);
 	}
 	fclose(f);
+#endif
 	return (0);
 }
 
@@ -243,7 +247,7 @@ static int system_supports_ext4(void)
 	static int	ret = -1;
 	time_t		now = time(0);
 
-	if (ret != -1 || (last_check - now) < 5)
+	if (ret != -1 || (now - last_check) < 5)
 		return ret;
 	last_check = now;
 	ret = (fs_proc_check("ext4") || check_for_modules("ext4"));
@@ -256,7 +260,7 @@ static int system_supports_ext4dev(void)
 	static int	ret = -1;
 	time_t		now = time(0);
 
-	if (ret != -1 || (last_check - now) < 5)
+	if (ret != -1 || (now - last_check) < 5)
 		return ret;
 	last_check = now;
 	ret = (fs_proc_check("ext4dev") || check_for_modules("ext4dev"));
