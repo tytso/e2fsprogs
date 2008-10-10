@@ -31,6 +31,12 @@
 #ifdef __linux__
 #include <sys/utsname.h>
 #endif
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif
+#ifdef HAVE_SYS_MOUNT_H
+#include <sys/mount.h>
+#endif
 #if HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
@@ -39,6 +45,10 @@
 #endif
 #if HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
+#endif
+
+#if defined(__linux__) && defined(_IO) && !defined(BLKGETSIZE)
+#define BLKROGET   _IO(0x12, 94) /* Get read-only status (0 = read_write).  */
 #endif
 
 #include "ext2_fs.h"
@@ -452,6 +462,21 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 		retval = errno;
 		goto cleanup;
 	}
+
+#ifdef BLKROGET
+	if (flags & IO_FLAG_RW) {
+		int error;
+		int readonly = 0;
+
+		/* Is the block device actually writable? */
+		error = ioctl(data->dev, BLKROGET, &readonly);
+		if (!error && readonly) {
+			close(data->dev);
+			retval = EPERM;
+			goto cleanup;
+		}
+	}
+#endif
 
 #ifdef __linux__
 #undef RLIM_INFINITY
