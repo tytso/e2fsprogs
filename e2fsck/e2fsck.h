@@ -174,6 +174,7 @@ struct resource_track {
 #define E2F_FLAG_RESTARTED	0x0200 /* E2fsck has been restarted */
 #define E2F_FLAG_RESIZE_INODE	0x0400 /* Request to recreate resize inode */
 #define E2F_FLAG_GOT_DEVSIZE	0x0800 /* Device size has been fetched */
+#define E2F_FLAG_EXITING	0x1000 /* E2fsck exiting due to errors */
 
 /*
  * Defines for indicating the e2fsck pass number

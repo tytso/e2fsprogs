@@ -33,7 +33,8 @@ static errcode_t e2fsck_handle_read_error(io_channel channel,
 	e2fsck_t ctx;
 
 	ctx = (e2fsck_t) fs->priv_data;
-
+	if (ctx->flags & E2F_FLAG_EXITING)
+		return 0;
 	/*
 	 * If more than one block was read, try reading each block
 	 * separately.  We could use the actual bytes read to figure
@@ -79,6 +80,8 @@ static errcode_t e2fsck_handle_write_error(io_channel channel,
 	e2fsck_t ctx;
 
 	ctx = (e2fsck_t) fs->priv_data;
+	if (ctx->flags & E2F_FLAG_EXITING)
+		return 0;
 
 	/*
 	 * If more than one block was written, try writing each block

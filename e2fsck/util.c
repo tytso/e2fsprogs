@@ -257,6 +257,7 @@ void preenhalt(e2fsck_t ctx)
 	fprintf(stderr, _("\n\n%s: UNEXPECTED INCONSISTENCY; "
 		"RUN fsck MANUALLY.\n\t(i.e., without -a or -p options)\n"),
 	       ctx->device_name);
+	ctx->flags |= E2F_FLAG_EXITING;
 	if (fs != NULL) {
 		fs->super->s_state |= EXT2_ERROR_FS;
 		ext2fs_mark_super_dirty(fs);
