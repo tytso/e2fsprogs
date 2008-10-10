@@ -376,6 +376,11 @@ int main (int argc, char ** argv)
 	else if (new_size_str) {
 		new_size = parse_num_blocks(new_size_str,
 					    fs->super->s_log_block_size);
+		if (new_size == 0) {
+			com_err(program_name, 0,
+				_("Invalid new size: %s\n"), new_size_str);
+			exit(1);
+		}
 	} else {
 		new_size = max_size;
 		/* Round down to an even multiple of a pagesize */
