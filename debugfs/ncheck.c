@@ -23,7 +23,7 @@ struct inode_walk_struct {
 	int			inodes_left;
 	int			num_inodes;
 	int			position;
-	ext2_ino_t		parent;
+	char			*parent;
 };
 
 static int ncheck_proc(struct ext2_dir_entry *dirent,
@@ -42,16 +42,8 @@ static int ncheck_proc(struct ext2_dir_entry *dirent,
 		return 0;
 	for (i=0; i < iw->num_inodes; i++) {
 		if (iw->iarray[i] == dirent->inode) {
-			retval = ext2fs_get_pathname(current_fs, iw->parent,
-						     iw->iarray[i], 
-						     &pathname);
-			if (retval)
-				com_err("ncheck", retval,
-					"while resolving pathname for "
-					"inode %d (%d)", iw->parent, 
-					iw->iarray[i]);
-			else
-				printf("%u\t%s\n", iw->iarray[i], pathname);
+			printf("%u\t%s/%*s\n", iw->iarray[i], iw->parent,
+			       (dirent->name_len & 0xFF), dirent->name);
 		}
 	}
 	if (!iw->inodes_left)
@@ -124,10 +116,17 @@ void do_ncheck(int argc, char **argv)
 			goto next;
 
 		iw.position = 0;
-		iw.parent = ino;
+
+		retval = ext2fs_get_pathname(current_fs, ino, 0, &iw.parent);
+		if (retval) {
+			com_err("ncheck", retval, 
+				"while calling ext2fs_get_pathname");
+			goto next;
+		}
 
 		retval = ext2fs_dir_iterate(current_fs, ino, 0, 0,
 					    ncheck_proc, &iw);
+		ext2fs_free_mem(&iw.parent);
 		if (retval) {
 			com_err("ncheck", retval,
 				"while calling ext2_dir_iterate");
