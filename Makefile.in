@@ -25,7 +25,7 @@ all:: subs
 	$(MAKE) progs
 	$(MAKE) docs
 
-subs:
+subs: $(DEP_SUBSTITUTE)
 	@for i in $(SUBS) ; do if test -d `dirname $$i` ; \
 		then $(MAKE) $$i || exit $$? ; fi ; done
 	@(if test -d lib/et ; then cd lib/et && $(MAKE) compile_et; fi)
