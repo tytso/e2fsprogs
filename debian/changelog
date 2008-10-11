@@ -1,3 +1,25 @@
+e2fsprogs (1.41.3-1) unstable; urgency=low
+
+  * New upstream release
+  * Fix e2fsck so it prints the correct inode number for uinit_bg
+    related problems.
+  * E2fsck will offer to clear the test_fs flag if the ext4 filesystem
+    is available.
+  * Fix a file descriptor leak in libblkid
+  * Avoid a poteintial infinite loop in e2fsck when there are disk I/O
+    errors while trying to close a filesystem.
+  * Fix a potential infinite loop in resize2fs when a bogus new size of
+    0 blocks is specified on the command line.
+  * Add an early check to see if a device is read-only to avoid lots of
+    confusing error messages.
+  * Fix debugfs's ncheck command so it prints all of the names of
+    hardlinks in the same directories.
+  * Fix a bug in libblkid so it correctly detects whether the ext4 and
+    ext4dev filesystems are available, so that the ext4dev->ext4
+    fallback code works correctly.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 12 Oct 2008 22:45:34 -0400
+
 e2fsprogs (1.41.2-1) unstable; urgency=low
 
   * New upstream release

@@ -1,3 +1,45 @@
+E2fsprogs 1.41.3 (October 12, 2008)
+===================================
+
+E2fsck has been fixed so it prints the correct inode number for
+uinit_bg related problems.
+
+E2fsck will now offer to clear the test_fs flag if the ext4 filesystem
+is available on linux.  This can be disabled via a configuration
+option in /etc/e2fsck.conf.
+
+Fix a file descriptor leak in libblkid when checking to see if an ext4
+or ext4dev module exists.
+
+Fix a bug in e2fsck where in preen mode, if there are disk I/O errors
+while trying to close a filesystem can lead to infinite loops.
+(Addresses Red Hat Bugzilla #465679)
+    
+Fix a bug in resize2fs where passing in a bogus new size of 0 blocks
+will cause resize2fs to drop into an infinite loop.  (Addresses Red
+Hat Bugzilla: #465984)
+    
+Add a check in the Unix I/O functions in libext2fs so that when a
+device is opened read/write, return an error if the device is
+read-only using the BLKROGET ioctl.
+
+Fix debugfs's ncheck command so that it prints all of the names of
+hardlinks in the same directory.
+
+Fix a bug in libblkid so it correctly detects whether the ext4 and
+ext4dev filesystems are available, so that the ext4dev->ext4
+fallback code works correctly.
+
+Programmer's Notes
+------------------
+
+Fix a parallel build problem by making sure util/subst is built before
+trying to build the lib/et directory.  (Addresses Sourceforge Bug:
+#2143281)
+
+Updated "make depend" information for crc16.o
+    
+
 E2fsprogs 1.41.2 (October 2, 2008)
 ==================================
 
