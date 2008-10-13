@@ -1,4 +1,6 @@
 #!/bin/sh
-exec ssh tytso@e2fsprogs.sf.net cd /home/groups/e/e2/e2fsprogs/svn \; svn up
+exec rsync -rvv --delete htdocs tytso,e2fsprogs@web.sourceforge.net:.
+
+#exec ssh tytso@e2fsprogs.sf.net cd /home/groups/e/e2/e2fsprogs/svn \; svn up
 
 
