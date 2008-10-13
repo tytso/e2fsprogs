@@ -214,6 +214,9 @@ struct problem_context {
 /* Journal transaction found corrupt */
 #define PR_0_JNL_TXN_CORRUPT			0x00003A
 
+/* The test_fs filesystem flag is set and ext4 is available */
+#define PR_0_CLEAR_TESTFS_FLAG			0x00003B
+
 /*
  * Pass 1 errors
  */

@@ -10,9 +10,13 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#ifdef __linux__
+#include <sys/utsname.h>
+#endif
 
 #ifdef HAVE_CONIO_H
 #undef HAVE_TERMIOS_H
@@ -22,7 +26,6 @@
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #endif
-#include <stdio.h>
 #endif
 
 #ifdef HAVE_MALLOC_H
@@ -593,4 +596,85 @@ errcode_t e2fsck_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 		}
 	}
 	return 0;
+}
+
+/*
+ * Check to see if a filesystem is in /proc/filesystems.
+ * Returns 1 if found, 0 if not
+ */
+int fs_proc_check(const char *fs_name)
+{
+	FILE	*f;
+	char	buf[80], *cp, *t;
+
+	f = fopen("/proc/filesystems", "r");
+	if (!f)
+		return (0);
+	while (!feof(f)) {
+		if (!fgets(buf, sizeof(buf), f))
+			break;
+		cp = buf;
+		if (!isspace(*cp)) {
+			while (*cp && !isspace(*cp))
+				cp++;
+		}
+		while (*cp && isspace(*cp))
+			cp++;
+		if ((t = strchr(cp, '\n')) != NULL)
+			*t = 0;
+		if ((t = strchr(cp, '\t')) != NULL)
+			*t = 0;
+		if ((t = strchr(cp, ' ')) != NULL)
+			*t = 0;
+		if (!strcmp(fs_name, cp)) {
+			fclose(f);
+			return (1);
+		}
+	}
+	fclose(f);
+	return (0);
+}
+
+/*
+ * Check to see if a filesystem is available as a module
+ * Returns 1 if found, 0 if not
+ */
+int check_for_modules(const char *fs_name)
+{
+#ifdef __linux__
+	struct utsname	uts;
+	FILE		*f;
+	char		buf[1024], *cp, *t;
+	int		i;
+
+	if (uname(&uts))
+		return (0);
+	snprintf(buf, sizeof(buf), "/lib/modules/%s/modules.dep", uts.release);
+
+	f = fopen(buf, "r");
+	if (!f)
+		return (0);
+	while (!feof(f)) {
+		if (!fgets(buf, sizeof(buf), f))
+			break;
+		if ((cp = strchr(buf, ':')) != NULL)
+			*cp = 0;
+		else
+			continue;
+		if ((cp = strrchr(buf, '/')) != NULL)
+			cp++;
+		i = strlen(cp);
+		if (i > 3) {
+			t = cp + i - 3;
+			if (!strcmp(t, ".ko"))
+				*t = 0;
+		}
+		if (!strcmp(cp, fs_name)) {
+			fclose(f);
+			return (1);
+		}
+	}
+	fclose(f);
+#endif /* __linux__ */
+	return (0);
 }

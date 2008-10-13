@@ -381,6 +381,10 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Journal transaction %i was corrupt, replay was aborted.\n"),
 	  PROMPT_NONE, 0 },
 
+	{ PR_0_CLEAR_TESTFS_FLAG,
+	  N_("The test_fs flag is set (and ext4 is available).  "),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
 	/* Pass 1 errors */
 
 	/* Pass 1: Checking inodes, blocks, and sizes */

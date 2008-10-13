@@ -468,7 +468,7 @@ void check_super_block(e2fsck_t ctx)
 	struct problem_context	pctx;
 	blk_t	free_blocks = 0;
 	ino_t	free_inodes = 0;
-	int     csum_flag;
+	int     csum_flag, clear_test_fs_flag;
 
 	inodes_per_block = EXT2_INODES_PER_BLOCK(fs->super);
 	ipg_max = inodes_per_block * (blocks_per_group - 4);
@@ -731,6 +731,23 @@ void check_super_block(e2fsck_t ctx)
 	}
 #endif
 
+	/*
+	 * Check to see if we should disable the test_fs flag
+	 */
+	profile_get_boolean(ctx->profile, "options",
+			    "clear_test_fs_flag", 0, 1,
+			    &clear_test_fs_flag);
+	if (!(ctx->options & E2F_OPT_READONLY) &&
+	    clear_test_fs_flag &&
+	    (fs->super->s_flags & EXT2_FLAGS_TEST_FILESYS) &&
+	    (fs_proc_check("ext4") || check_for_modules("ext4"))) {
+		if (fix_problem(ctx, PR_0_CLEAR_TESTFS_FLAG, &pctx)) {
+			fs->super->s_flags &= ~EXT2_FLAGS_TEST_FILESYS;
+			ext2fs_mark_super_dirty(fs);
+			fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
+		}
+	}
+			
 	/*
 	 * For the Hurd, check to see if the filetype option is set,
 	 * since it doesn't support it.
