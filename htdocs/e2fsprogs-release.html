@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.41.3">E2fsprogs 1.41.3 (October 12, 2008)</A>
 <LI><A HREF="#1.41.2">E2fsprogs 1.41.2 (October 2, 2008)</A>
 <LI><A HREF="#1.41.1">E2fsprogs 1.41.1 (September 1, 2008)</A>
 <LI><A HREF="#1.41.0">E2fsprogs 1.41.0 (July 10, 2008)</A>
@@ -84,6 +85,46 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.41.3">E2fsprogs 1.41.3 (October 12, 2008)</A></H2>
+
+<P>E2fsck has been fixed so it prints the correct inode number for
+uinit_bg related problems.</P>
+
+<P>E2fsck will now offer to clear the test_fs flag if the ext4 filesystem
+is available on linux.  This can be disabled via a configuration
+option in /etc/e2fsck.conf.</P>
+
+<P>Fix a file descriptor leak in libblkid when checking to see if an ext4
+or ext4dev module exists.</P>
+
+<P>Fix a bug in e2fsck where in preen mode, if there are disk I/O errors
+while trying to close a filesystem can lead to infinite loops.
+(Addresses Red Hat Bugzilla #465679)</P>
+    
+<P>Fix a bug in resize2fs where passing in a bogus new size of 0 blocks
+will cause resize2fs to drop into an infinite loop.  (Addresses Red
+Hat Bugzilla: #465984)</P>
+    
+<P>Add a check in the Unix I/O functions in libext2fs so that when a
+device is opened read/write, return an error if the device is
+read-only using the BLKROGET ioctl.</P>
+
+<P>Fix debugfs's ncheck command so that it prints all of the names of
+hardlinks in the same directory.</P>
+
+<P>Fix a bug in libblkid so it correctly detects whether the ext4 and
+ext4dev filesystems are available, so that the ext4dev->ext4
+fallback code works correctly.</P>
+
+<H3>Programmer's Notes</H3>
+
+<P>Fix a parallel build problem by making sure util/subst is built before
+trying to build the lib/et directory.  (Addresses Sourceforge Bug:
+#2143281)</P>
+
+<P>Updated "make depend" information for crc16.o</P>
+
 
 <H2><A NAME="1.41.2">E2fsprogs 1.41.2 (October 2, 2008)</A></H2>
 
