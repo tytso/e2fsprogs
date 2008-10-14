@@ -353,10 +353,6 @@ static int probe_ext3(struct blkid_probe *probe, struct blkid_magic *id,
 	struct ext2_super_block *es;
 	es = (struct ext2_super_block *)buf;
 
-	/* Distinguish from ext4dev */
-	if (blkid_le32(es->s_flags) & EXT2_FLAGS_TEST_FILESYS)
-		return -BLKID_ERR_PARAM;
-
 	/* ext3 requires journal */
 	if (!(blkid_le32(es->s_feature_compat) &
 	      EXT3_FEATURE_COMPAT_HAS_JOURNAL))
