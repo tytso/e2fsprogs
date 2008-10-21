@@ -42,7 +42,7 @@ static int ncheck_proc(struct ext2_dir_entry *dirent,
 		return 0;
 	for (i=0; i < iw->num_inodes; i++) {
 		if (iw->iarray[i] == dirent->inode) {
-			printf("%u\t%s/%*s\n", iw->iarray[i], iw->parent,
+			printf("%u\t%s/%.*s\n", iw->iarray[i], iw->parent,
 			       (dirent->name_len & 0xFF), dirent->name);
 		}
 	}
