@@ -66,7 +66,7 @@ void *e2fsck_allocate_memory(e2fsck_t ctx, unsigned int size,
 	char buf[256];
 
 #ifdef DEBUG_ALLOCATE_MEMORY
-	printf("Allocating %d bytes for %s...\n", size, description);
+	printf("Allocating %u bytes for %s...\n", size, description);
 #endif
 	ret = malloc(size);
 	if (!ret) {
@@ -333,11 +333,11 @@ void print_resource_track(const char *desc, struct resource_track *track,
 #define kbytes(x)	(((x) + 1023) / 1024)
 
 	malloc_info = mallinfo();
-	printf(_("Memory used: %dk/%dk (%dk/%dk), "),
+	printf(_("Memory used: %uk/%uk (%uk/%uk), "),
 	       kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
 	       kbytes(malloc_info.uordblks), kbytes(malloc_info.fordblks));
 #else
-	printf(_("Memory used: %d, "),
+	printf(_("Memory used: %u, "),
 	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)));
 #endif
 #ifdef HAVE_GETRUSAGE
@@ -382,7 +382,7 @@ void e2fsck_read_inode(e2fsck_t ctx, unsigned long ino,
 	retval = ext2fs_read_inode(ctx->fs, ino, inode);
 	if (retval) {
 		com_err("ext2fs_read_inode", retval,
-			_("while reading inode %ld in %s"), ino, proc);
+			_("while reading inode %lu in %s"), ino, proc);
 		fatal_error(ctx, 0);
 	}
 }
@@ -396,7 +396,7 @@ void e2fsck_read_inode_full(e2fsck_t ctx, unsigned long ino,
 	retval = ext2fs_read_inode_full(ctx->fs, ino, inode, bufsize);
 	if (retval) {
 		com_err("ext2fs_read_inode_full", retval,
-			_("while reading inode %ld in %s"), ino, proc);
+			_("while reading inode %lu in %s"), ino, proc);
 		fatal_error(ctx, 0);
 	}
 }
@@ -410,7 +410,7 @@ extern void e2fsck_write_inode_full(e2fsck_t ctx, unsigned long ino,
 	retval = ext2fs_write_inode_full(ctx->fs, ino, inode, bufsize);
 	if (retval) {
 		com_err("ext2fs_write_inode", retval,
-			_("while writing inode %ld in %s"), ino, proc);
+			_("while writing inode %lu in %s"), ino, proc);
 		fatal_error(ctx, 0);
 	}
 }
@@ -423,7 +423,7 @@ extern void e2fsck_write_inode(e2fsck_t ctx, unsigned long ino,
 	retval = ext2fs_write_inode(ctx->fs, ino, inode);
 	if (retval) {
 		com_err("ext2fs_write_inode", retval,
-			_("while writing inode %ld in %s"), ino, proc);
+			_("while writing inode %lu in %s"), ino, proc);
 		fatal_error(ctx, 0);
 	}
 }
