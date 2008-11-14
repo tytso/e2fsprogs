@@ -1610,6 +1610,22 @@ retry_open:
 		add_journal(fs);
 
 	if (U_flag) {
+		int set_csum = 0;
+		dgrp_t i;
+
+		if (sb->s_feature_ro_compat &
+		    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) {
+			/* 
+			 * Determine if the block group checksums are
+			 * correct so we know whether or not to set
+			 * them later on.
+			 */
+			for (i = 0; i < fs->group_desc_count; i++)
+				if (!ext2fs_group_desc_csum_verify(fs, i))
+					break;
+			if (i >= fs->group_desc_count)
+				set_csum = 1;
+		}
 		if ((strcasecmp(new_UUID, "null") == 0) ||
 		    (strcasecmp(new_UUID, "clear") == 0)) {
 			uuid_clear(sb->s_uuid);
@@ -1620,6 +1636,11 @@ retry_open:
 		} else if (uuid_parse(new_UUID, sb->s_uuid)) {
 			com_err(program_name, 0, _("Invalid UUID format\n"));
 			exit(1);
+		}
+		if (set_csum) {
+			for (i = 0; i < fs->group_desc_count; i++)
+				ext2fs_group_desc_csum_set(fs, i);
+			fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
 		}
 		ext2fs_mark_super_dirty(fs);
 	}
