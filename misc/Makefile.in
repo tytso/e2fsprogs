@@ -45,6 +45,24 @@ BLKID_OBJS=	blkid.o
 FILEFRAG_OBJS=	filefrag.o
 E2UNDO_OBJS=  e2undo.o
 
+PROFILED_TUNE2FS_OBJS=	profiled/tune2fs.o profiled/util.o
+PROFILED_MKLPF_OBJS=	profiled/mklost+found.o
+PROFILED_MKE2FS_OBJS=	profiled/mke2fs.o profiled/util.o profiled/profile.o \
+			profiled/prof_err.o profiled/default_profile.o
+PROFILED_CHATTR_OBJS=	profiled/chattr.o
+PROFILED_LSATTR_OBJS=	profiled/lsattr.o
+PROFILED_UUIDGEN_OBJS=	profiled/uuidgen.o
+PROFILED_UUIDD_OBJS=	profiled/uuidd.o
+PROFILED_DUMPE2FS_OBJS=	profiled/dumpe2fs.o
+PROFILED_BADBLOCKS_OBJS=	profiled/badblocks.o
+PROFILED_E2IMAGE_OBJS=	profiled/e2image.o
+PROFILED_FSCK_OBJS=	profiled/fsck.o profiled/base_device.o \
+			profiled/ismounted.o
+PROFILED_BLKID_OBJS=	profiled/blkid.o
+PROFILED_FILEFRAG_OBJS=	profiled/filefrag.o
+PROFILED_E2UNDO_OBJS=	profiled/e2undo.o
+
+
 XTRA_CFLAGS=	-I$(srcdir)/../e2fsck -I.
 
 SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
@@ -57,6 +75,8 @@ SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
 DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
+PROFILED_LIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR)
+PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR)
 
 STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
 STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
@@ -69,9 +89,19 @@ COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
 .c.o:
 	@echo "	CC $<"
 	@$(CC) -c $(ALL_CFLAGS) $< -o $@
+@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 
-all:: $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) \
+all:: profiled $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) \
 	$(FMANPAGES) $(LPROGS)
+
+@PROFILE_CMT@all:: tune2fs.profiled blkid.profiled e2image.profiled \
+	e2undo.profiled mke2fs.profiled dumpe2fs.profiled fsck.profiled \
+	logsave.profiled filefrag.profiled uuidgen.profiled uuidd.profiled \
+	e2image.profiled
+
+profiled:
+@PROFILE_CMT@	@echo "	MKDIR $@"
+@PROFILE_CMT@	@mkdir profiled
 
 prof_err.c prof_err.h: $(srcdir)/../e2fsck/prof_err.et
 	@echo "	COMPILE_ET prof_err.et"
@@ -84,6 +114,8 @@ default_profile.c: $(srcdir)/mke2fs.conf $(srcdir)/profile-to-c.awk
 profile.o:
 	@echo "	CC $<"
 	@$(CC) -c $(ALL_CFLAGS) $(srcdir)/../e2fsck/profile.c -o $@
+@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/profile.o -c \
+@PROFILE_CMT@	$(srcdir)/../e2fsck/profile.c
 
 findsuper: findsuper.o
 	@echo "	LD $@"
@@ -110,18 +142,42 @@ tune2fs.static: $(TUNE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_L
 		$(STATIC_LIBS) $(STATIC_LIBBLKID) $(STATIC_LIBUUID) \
 		$(STATIC_LIBE2P) $(LIBINTL)
 
+tune2fs.profiled: $(PROFILED_TUNE2FS_OBJS) $(PROFILED_DEPLIBS) \
+		$(PROFILED_E2P) $(DEPPROFILED_LIBBLKID) $(DEPPROFILED_LIBUUID)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o tune2fs.profiled \
+		$(PROFILED_TUNE2FS_OBJS) $(PROFILED_LIBBLKID) \
+		$(PROFILED_LIBUUID) $(PROFILED_LIBE2P) $(LIBINTL) \
+		$(PROFILED_LIBS) 
+
 blkid: $(BLKID_OBJS) $(DEPLIBBLKID) $(LIBEXT2FS)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o blkid $(BLKID_OBJS) $(LIBBLKID) $(LIBINTL) \
 		$(LIBEXT2FS)
 
+blkid.profiled: $(PROFILED_BLKID_OBJS) $(DEPPROFILED_LIBBLKID) \
+		$(PROFILED_LIBEXT2FS)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o blkid.profiled $(PROFILED_BLKID_OBJS) \
+		$(PROFILED_LIBBLKID) $(LIBINTL) $(PROFILED_LIBEXT2FS)
+
 e2image: $(E2IMAGE_OBJS) $(DEPLIBS)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o e2image $(E2IMAGE_OBJS) $(LIBS) $(LIBINTL)
 
+e2image.profiled: $(PROFILED_E2IMAGE_OBJS) $(PROFILED_DEPLIBS)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o e2image.profiled \
+		$(PROFILED_E2IMAGE_OBJS) $(PROFILED_LIBS) $(LIBINTL)
+
 e2undo: $(E2UNDO_OBJS) $(DEPLIBS)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o e2undo $(E2UNDO_OBJS) $(LIBS) $(LIBINTL)
+
+e2undo.profiled: $(PROFILED_E2UNDO_OBJS) $(PROFILED_DEPLIBS)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o e2undo.profiled \
+		$(PROFILED_E2UNDO_OBJS) $(PROFILED_LIBS) $(LIBINTL)
 
 base_device: base_device.c
 	@echo "	LD $@"
@@ -148,6 +204,14 @@ mke2fs.static: $(MKE2FS_OBJS) $(STATIC_DEPLIBS) $(STATIC_LIBE2P) $(DEPSTATIC_LIB
 		$(STATIC_LIBS) $(STATIC_LIBE2P) $(STATIC_LIBBLKID) \
 		$(STATIC_LIBUUID) $(LIBINTL)
 
+mke2fs.profiled: $(PROFILED_MKE2FS_OBJS) $(PROFILED_DEPLIBS) \
+	$(PROFILED_LIBE2P) $(PROFILED_DEPLIBBLKID) $(PROFILED_DEPLIBUUID) 
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o mke2fs.profiled \
+		$(PROFILED_MKE2FS_OBJS) $(PROFILED_LIBBLKID) \
+		$(PROFILED_LIBUUID) $(PROFILED_LIBE2P) $(LIBINTL) \
+		$(PROFILED_LIBS)
+
 chattr: $(CHATTR_OBJS) $(DEPLIBS_E2P)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o chattr $(CHATTR_OBJS) $(LIBS_E2P) $(LIBINTL)
@@ -160,30 +224,66 @@ uuidgen: $(UUIDGEN_OBJS) $(DEPLIBUUID)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o uuidgen $(UUIDGEN_OBJS) $(LIBUUID) $(LIBINTL)
 
+uuidgen.profiled: $(PROFILED_UUIDGEN_OBJS) $(PROFILED_DEPLIBUUID)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o uuidgen.profiled \
+		$(PROFILED_UUIDGEN_OBJS) $(PROFILED_LIBUUID) $(LIBINTL)
+
 uuidd: $(UUIDD_OBJS) $(DEPLIBUUID)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o uuidd $(UUIDD_OBJS) $(LIBUUID) $(LIBINTL)
+
+uuidd.profiled: $(PROFILED_UUIDD_OBJS) $(PROFILED_DEPLIBUUID)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o uuidd.profiled $(PROFILED_UUIDD_OBJS) \
+		$(PROFILED_LIBUUID) $(LIBINTL)
 
 dumpe2fs: $(DUMPE2FS_OBJS) $(DEPLIBS) $(DEPLIBS_E2P) $(DEPLIBUUID)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o dumpe2fs $(DUMPE2FS_OBJS) $(LIBS) \
 		$(LIBS_E2P) $(LIBUUID) $(LIBINTL)
 
+dumpe2fs.profiled: $(PROFILED_DUMPE2FS_OBJS) $(PROFILED_DEPLIBS) \
+		$(PROFILED_LIBE2P) $(PROFILED_DEPLIBUUID)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o dumpe2fs.profiled \
+		$(PROFILED_DUMPE2FS_OBJS) $(PROFILED_LIBS) \
+		$(PROFILED_LIBE2P) $(PROFILED_LIBUUID) $(LIBINTL)
+
 fsck: $(FSCK_OBJS) $(DEPLIBBLKID)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o fsck $(FSCK_OBJS) $(LIBBLKID) $(LIBINTL)
+
+fsck.profiled: $(PROFILED_FSCK_OBJS) $(PROFILED_DEPLIBBLKID)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o fsck.profiled $(PROFILED_FSCK_OBJS) \
+		$(PROFILED_LIBBLKID) $(LIBINTL)
 
 badblocks: $(BADBLOCKS_OBJS) $(DEPLIBS)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o badblocks $(BADBLOCKS_OBJS) $(LIBS) $(LIBINTL)
 
+badblocks.profiled: $(PROFILED_BADBLOCKS_OBJS) $(PROFILED_DEPLIBS)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o badblocks.profiled \
+		$(PROFILED_BADBLOCKS_OBJS) $(PROFILED_LIBS) $(LIBINTL)
+
 logsave: logsave.o
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o logsave logsave.o
 
+logsave.profiled: profiled/logsave.o
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o logsave.profiled profiled/logsave.o
+
 filefrag: $(FILEFRAG_OBJS)
 	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) 
+
+filefrag.profiled: $(PROFILED_FILEFRAG_OBJS)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -g -pg -o filefrag.profiled \
+		$(PROFILED_FILEFRAG_OBJS) 
 
 tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
@@ -424,8 +524,12 @@ clean:
 		$(FMANPAGES) \
 		base_device base_device.out mke2fs.static filefrag \
 		e2initrd_helper partinfo prof_err.[ch] default_profile.c \
-		uuidd e2image tune2fs.static tst_ismounted \
-		\#* *.s *.o *.a *~ core
+		uuidd e2image tune2fs.static tst_ismounted fsck.profiled \
+		blkid.profiled tune2fs.profiled e2image.profiled \
+		e2undo.profiled mke2fs.profiled dumpe2fs.profiled \
+		logsave.profiled filefrag.profiled uuidgen.profiled \
+		uuidd.profiled e2image.profiled \
+		profiled/*.o \#* *.s *.o *.a *~ core gmon.out
 
 mostlyclean: clean
 distclean: clean
