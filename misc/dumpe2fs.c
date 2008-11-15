@@ -517,8 +517,9 @@ int main (int argc, char ** argv)
 			ext2fs_close(fs);
 			exit(0);
 		}
-		if (fs->super->s_feature_compat &
-		      EXT3_FEATURE_COMPAT_HAS_JOURNAL)
+		if ((fs->super->s_feature_compat &
+		     EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+		    (fs->super->s_journal_inum != 0))
 			print_inline_journal_information(fs);
 		list_bad_blocks(fs, 0);
 		if (header_only) {
