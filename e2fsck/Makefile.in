@@ -73,7 +73,7 @@ PROFILED_OBJS= profiled/dict.o profiled/unix.o profiled/e2fsck.o \
 	profiled/message.o profiled/problem.o \
 	profiled/recovery.o profiled/region.o profiled/revoke.o \
 	profiled/ea_refcount.o profiled/rehash.o profiled/profile.o \
-	profiled/prof_err.o
+	profiled/crc32.o profiled/prof_err.o
 
 SRCS= $(srcdir)/e2fsck.c \
 	$(srcdir)/crc32.c \
