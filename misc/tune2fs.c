@@ -1011,13 +1011,13 @@ static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap)
 	if (retval)
 		return retval;
 
-	for (blk = fs->super->s_first_data_block;
-			blk < fs->super->s_blocks_count; blk++) {
+	for (new_blk = blk = fs->super->s_first_data_block;
+	     blk < fs->super->s_blocks_count; blk++) {
 
 		if (!ext2fs_test_block_bitmap(bmap, blk))
 			continue;
 
-		retval = ext2fs_new_block(fs, blk, NULL, &new_blk);
+		retval = ext2fs_new_block(fs, new_blk, NULL, &new_blk);
 		if (retval)
 			goto err_out;
 
@@ -1068,12 +1068,14 @@ static int process_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 			 e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
 			 blk_t ref_block EXT2FS_ATTR((unused)),
 			 int ref_offset EXT2FS_ATTR((unused)),
-			 void *priv_data EXT2FS_ATTR((unused)))
+			 void *priv_data)
 {
 	int ret = 0;
 	blk_t new_blk;
+	ext2fs_block_bitmap bmap = (ext2fs_block_bitmap) priv_data;
 
-
+	if (!ext2fs_test_block_bitmap(bmap, *block_nr))
+		return 0;
 	new_blk = transalate_block(*block_nr);
 	if (new_blk) {
 		*block_nr = new_blk;
@@ -1086,7 +1088,7 @@ static int process_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 	return ret;
 }
 
-static int inode_scan_and_fix(ext2_filsys fs)
+static int inode_scan_and_fix(ext2_filsys fs, ext2fs_block_bitmap bmap)
 {
 	errcode_t retval = 0;
 	ext2_ino_t ino;
@@ -1122,8 +1124,8 @@ static int inode_scan_and_fix(ext2_filsys fs)
 		 * Do we need to fix this ??
 		 */
 
-		if (inode.i_file_acl) {
-
+		if (inode.i_file_acl &&
+		    ext2fs_test_block_bitmap(bmap, inode.i_file_acl)) {
 			blk = transalate_block(inode.i_file_acl);
 			if (!blk)
 				continue;
@@ -1142,9 +1144,8 @@ static int inode_scan_and_fix(ext2_filsys fs)
 		if (!ext2fs_inode_has_valid_blocks(&inode))
 			continue;
 
-		retval = ext2fs_block_iterate2(fs, ino, 0,
-						block_buf, process_block,
-						0);
+		retval = ext2fs_block_iterate2(fs, ino, 0, block_buf,
+					       process_block, bmap);
 		if (retval)
 			goto err_out;
 
@@ -1344,7 +1345,7 @@ static int resize_inode(ext2_filsys fs, unsigned long new_size)
 	if (retval)
 		goto err_out;
 
-	retval = inode_scan_and_fix(fs);
+	retval = inode_scan_and_fix(fs, bmap);
 	if (retval)
 		goto err_out;
 
