@@ -20,7 +20,7 @@ esac
 
 PROGS="/sbin/tune2fs /usr/lib/e2initrd_helper"
 LIBS=`unset LD_LIBRARY_PATH LD_PRELOAD; ldd $PROGS | \
-    grep -v 'linux-gate.so' | sort -u | awk '{print $3}'` 
+    grep -vE 'linux-gate.so|linux-vdso.so' | sort -u | awk '{print $3}'`
 for i in $LIBS
 do
   	if test -f /etc/ld.so.preload && grep -s ^$i\$ /etc/ld.so.preload; then
