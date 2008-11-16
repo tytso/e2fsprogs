@@ -717,7 +717,7 @@ static int check_dir_block(ext2_filsys fs,
 	const char *		old_op;
 	int			dir_modified = 0;
 	int			dot_state;
-	int			rec_len;
+	unsigned int		rec_len;
 	blk_t			block_nr = db->blk;
 	ext2_ino_t 		ino = db->ino;
 	ext2_ino_t 		subdir_parent;
@@ -855,7 +855,7 @@ out_htree:
 		if (((offset + rec_len) > fs->blocksize) ||
 		    (rec_len < 12) ||
 		    ((rec_len % 4) != 0) ||
-		    (((dirent->name_len & 0xFF)+8) > rec_len)) {
+		    (((dirent->name_len & (unsigned) 0xFF)+8) > rec_len)) {
 			if (fix_problem(ctx, PR_2_DIR_CORRUPTED, &cd->pctx)) {
 				salvage_directory(fs, dirent, prev, &offset);
 				dir_modified++;

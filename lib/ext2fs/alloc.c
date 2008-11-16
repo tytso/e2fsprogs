@@ -29,10 +29,10 @@
 /*
  * Check for uninit block bitmaps and deal with them appropriately
  */
-static check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
+static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 			  dgrp_t group)
 {
-	int		i;
+	blk_t		i;
 	blk_t		blk, super_blk, old_desc_blk, new_desc_blk;
 	int		old_desc_blocks;
 
@@ -75,11 +75,10 @@ static check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 /*
  * Check for uninit inode bitmaps and deal with them appropriately
  */
-static check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
+static void check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
 			  dgrp_t group)
 {
-	int		i;
-	ext2_ino_t	ino;
+	ext2_ino_t	i, ino;
 
 	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) ||

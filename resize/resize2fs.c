@@ -176,8 +176,7 @@ errout:
  */
 static void fix_uninit_block_bitmaps(ext2_filsys fs)
 {
-	int		i;
-	blk_t		blk, super_blk, old_desc_blk, new_desc_blk;
+	blk_t		i, blk, super_blk, old_desc_blk, new_desc_blk;
 	int		old_desc_blocks;
 	dgrp_t		g;
 
@@ -1375,8 +1374,8 @@ errout:
 struct istruct {
 	ext2_resize_t rfs;
 	errcode_t	err;
-	unsigned long	max_dirs;
-	int		num;
+	unsigned int	max_dirs;
+	unsigned int	num;
 };
 
 static int check_and_change_inodes(ext2_ino_t dir,

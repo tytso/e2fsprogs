@@ -404,7 +404,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	const char		*old_op;
 	errcode_t		retval;
 	blk_t			blk;
-	int			i, rec_len, not_device = 0;
+	unsigned int		i, rec_len, not_device = 0;
 
 	if (LINUX_S_ISDIR(inode->i_mode) || LINUX_S_ISREG(inode->i_mode) ||
 	    LINUX_S_ISLNK(inode->i_mode) || inode->i_block[0] == 0)
@@ -1935,7 +1935,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			bad_size = 4;
 		else if ((extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) &&
 			 size >
-			 ((1LL << (32 + EXT2_BLOCK_SIZE_BITS(fs->super))) - 1))
+			 ((1ULL << (32 + EXT2_BLOCK_SIZE_BITS(fs->super))) - 1))
 			/* too big for an extent-based file - 32bit ee_block */
 			bad_size = 6;
 	}
