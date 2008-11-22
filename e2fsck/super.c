@@ -864,7 +864,8 @@ void check_super_block(e2fsck_t ctx)
  * try to discourage it in the future.  In particular, for the newer
  * ext4 files, especially EXT4_FEATURE_RO_COMPAT_DIR_NLINK and
  * EXT3_FEATURE_INCOMPAT_EXTENTS.  So some of these may go away in the
- * future.
+ * future.  EXT3_FEATURE_INCOMPAT_RECOVER may also get set when
+ * copying the primary superblock during online resize.
  *
  * The kernel will set EXT2_FEATURE_COMPAT_EXT_ATTR, but
  * unfortunately, we shouldn't ignore it since if it's not set in the
@@ -873,7 +874,8 @@ void check_super_block(e2fsck_t ctx)
  */
 #define FEATURE_RO_COMPAT_IGNORE	(EXT2_FEATURE_RO_COMPAT_LARGE_FILE| \
 					 EXT4_FEATURE_RO_COMPAT_DIR_NLINK)
-#define FEATURE_INCOMPAT_IGNORE		(EXT3_FEATURE_INCOMPAT_EXTENTS)
+#define FEATURE_INCOMPAT_IGNORE		(EXT3_FEATURE_INCOMPAT_EXTENTS| \
+					 EXT3_FEATURE_INCOMPAT_RECOVER)
 
 int check_backup_super_block(e2fsck_t ctx)
 {
