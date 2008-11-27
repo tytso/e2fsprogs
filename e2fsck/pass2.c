@@ -980,20 +980,20 @@ out_htree:
 		cd->pctx.group = group;
 
 		/*
-		 * Check if the inode was missed out because _INODE_UNINIT
-		 * flag was set or bg_itable_unused was incorrect.
-		 * If that is the case restart e2fsck.
-		 * XXX Optimisations TODO:
-		 * 1. only restart e2fsck once
-		 * 2. only exposed inodes are checked again.
+		 * Check if the inode was missed out because
+		 * _INODE_UNINIT flag was set or bg_itable_unused was
+		 * incorrect.  If so, clear the _INODE_UNINIT flag and
+		 * restart e2fsck.  In the future it would be nice if
+		 * we could call a function in pass1.c that checks the
+		 * newly visible inodes.
 		 */
 		if (fs->group_desc[group].bg_flags & EXT2_BG_INODE_UNINIT) {
 			if (fix_problem(ctx, PR_2_INOREF_BG_INO_UNINIT,
 					&cd->pctx)){
 				fs->group_desc[group].bg_flags &=
 					~EXT2_BG_INODE_UNINIT;
-				ctx->flags |= E2F_FLAG_RESTART |
-					E2F_FLAG_SIGNAL_MASK;
+				ext2fs_mark_super_dirty(fs);
+				ctx->flags |= E2F_FLAG_RESTART;
 			} else {
 				ext2fs_unmark_valid(fs);
 				if (problem == PR_2_BAD_INO)
@@ -1002,8 +1002,6 @@ out_htree:
 		} else if (dirent->inode >= first_unused_inode) {
 			if (fix_problem(ctx, PR_2_INOREF_IN_UNUSED, &cd->pctx)){
 				fs->group_desc[group].bg_itable_unused = 0;
-				fs->group_desc[group].bg_flags &=
-					~EXT2_BG_INODE_UNINIT;
 				ext2fs_mark_super_dirty(fs);
 				ctx->flags |= E2F_FLAG_RESTART;
 				goto restart_fsck;
