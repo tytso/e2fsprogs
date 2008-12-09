@@ -1704,14 +1704,23 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 
 		if ((pb->previous_block != 0) &&
 		    (pb->previous_block+1 != extent.e_pblk)) {
-			if (ctx->options & E2F_OPT_FRAGCHECK)
-				printf(("%6lu: expecting %6lu actual extent "
+			if (ctx->options & E2F_OPT_FRAGCHECK) {
+				char type = '?';
+
+				if (pb->is_dir)
+					type = 'd';
+				else if (pb->is_reg)
+					type = 'f';
+
+				printf(("%6lu(%c): expecting %6lu "
+					"actual extent "
 					"phys %6lu log %lu len %lu\n"),
-				       (unsigned long) pctx->ino,
+				       (unsigned long) pctx->ino, type,
 				       (unsigned long) pb->previous_block+1,
 				       (unsigned long) extent.e_pblk,
 				       (unsigned long) extent.e_lblk,
 				       (unsigned long) extent.e_len);
+			}
 			pb->fragmented = 1;
 		}
 		for (blk = extent.e_pblk, blockcnt = extent.e_lblk, i = 0;
@@ -2113,12 +2122,21 @@ static int process_block(ext2_filsys fs,
 	 */
 	if (!HOLE_BLKADDR(p->previous_block) && p->ino != EXT2_RESIZE_INO) {
 		if (p->previous_block+1 != blk) {
-			if (ctx->options & E2F_OPT_FRAGCHECK)
-				printf(_("%6lu: expecting %6lu got phys %6lu (blkcnt %lld)\n"),
-				       (unsigned long) pctx->ino,
+			if (ctx->options & E2F_OPT_FRAGCHECK) {
+				char type = '?';
+
+				if (p->is_dir)
+					type = 'd';
+				else if (p->is_reg)
+					type = 'f';
+
+				printf(_("%6lu(%c): expecting %6lu "
+					 "got phys %6lu (blkcnt %lld)\n"),
+				       (unsigned long) pctx->ino, type,
 				       (unsigned long) p->previous_block+1,
 				       (unsigned long) blk,
 				       blockcnt);
+			}
 			p->fragmented = 1;
 		}
 	}
