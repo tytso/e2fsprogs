@@ -104,7 +104,7 @@ static void show_stats(e2fsck_t	ctx)
 	blk_t blocks, blocks_used;
 	int dir_links;
 	int num_files, num_links;
-	int frag_percent;
+	int frag_percent_file, frag_percent_dir, frag_percent_total;
 	int i, j;
 
 	dir_links = 2 * ctx->fs_directory_count - 1;
@@ -117,22 +117,36 @@ static void show_stats(e2fsck_t	ctx)
 	blocks_used = (fs->super->s_blocks_count -
 		       fs->super->s_free_blocks_count);
 
-	frag_percent = (10000 * ctx->fs_fragmented) / inodes_used;
-	frag_percent = (frag_percent + 5) / 10;
+	frag_percent_file = (10000 * ctx->fs_fragmented) / inodes_used;
+	frag_percent_file = (frag_percent_file + 5) / 10;
+
+	frag_percent_dir = (10000 * ctx->fs_fragmented_dir) / inodes_used;
+	frag_percent_dir = (frag_percent_dir + 5) / 10;
+
+	frag_percent_total = ((10000 * (ctx->fs_fragmented +
+					ctx->fs_fragmented_dir))
+			      / inodes_used);
+	frag_percent_total = (frag_percent_total + 5) / 10;
 
 	if (!verbose) {
 		printf(_("%s: %u/%u files (%0d.%d%% non-contiguous), %u/%u blocks\n"),
 		       ctx->device_name, inodes_used, inodes,
-		       frag_percent / 10, frag_percent % 10,
+		       frag_percent_total / 10, frag_percent_total % 10,
 		       blocks_used, blocks);
 		return;
 	}
 	printf (P_("\n%8u inode used (%2.2f%%)\n", "\n%8u inodes used (%2.2f%%)\n",
 		   inodes_used), inodes_used, 100.0 * inodes_used / inodes);
-	printf (P_("%8u non-contiguous inode (%0d.%d%%)\n",
-		   "%8u non-contiguous inodes (%0d.%d%%)\n",
+	printf (P_("%8u non-contiguous file (%0d.%d%%)\n",
+		   "%8u non-contiguous files (%0d.%d%%)\n",
 		   ctx->fs_fragmented),
-		ctx->fs_fragmented, frag_percent / 10, frag_percent % 10);
+		ctx->fs_fragmented, frag_percent_file / 10,
+		frag_percent_file % 10);
+	printf (P_("%8u non-contiguous directory (%0d.%d%%)\n",
+		   "%8u non-contiguous directories (%0d.%d%%)\n",
+		   ctx->fs_fragmented_dir),
+		ctx->fs_fragmented_dir, frag_percent_dir / 10,
+		frag_percent_dir % 10);
 	printf (_("         # of inodes with ind/dind/tind blocks: %u/%u/%u\n"),
 		ctx->fs_ind_count, ctx->fs_dind_count, ctx->fs_tind_count);
 

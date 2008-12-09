@@ -152,6 +152,7 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 	ctx->fs_dind_count = 0;
 	ctx->fs_tind_count = 0;
 	ctx->fs_fragmented = 0;
+	ctx->fs_fragmented_dir = 0;
 	ctx->large_files = 0;
 
 	for (i=0; i < MAX_EXTENT_DEPTH_COUNT; i++)

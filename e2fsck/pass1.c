@@ -1772,8 +1772,12 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 
 	scan_extent_node(ctx, pctx, pb, 0, ehandle);
 
-	if (pb->fragmented && pb->num_blocks < fs->super->s_blocks_per_group)
-		ctx->fs_fragmented++;
+	if (pb->fragmented && pb->num_blocks < fs->super->s_blocks_per_group) {
+		if (LINUX_S_ISDIR(inode->i_mode))
+			ctx->fs_fragmented_dir++;
+		else
+			ctx->fs_fragmented++;
+	}
 
 	ext2fs_extent_free(ehandle);
 }
@@ -1847,8 +1851,12 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (pctx->errcode)
 		fix_problem(ctx, PR_1_BLOCK_ITERATE, pctx);
 
-	if (pb.fragmented && pb.num_blocks < fs->super->s_blocks_per_group)
-		ctx->fs_fragmented++;
+	if (pb.fragmented && pb.num_blocks < fs->super->s_blocks_per_group) {
+		if (LINUX_S_ISDIR(inode->i_mode))
+			ctx->fs_fragmented_dir++;
+		else
+			ctx->fs_fragmented++;
+	}
 
 	if (pb.clear) {
 		e2fsck_clear_inode(ctx, ino, inode, E2F_FLAG_RESTART,

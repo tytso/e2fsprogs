@@ -329,6 +329,7 @@ struct e2fsck_struct {
 	__u32 fs_dind_count;
 	__u32 fs_tind_count;
 	__u32 fs_fragmented;
+	__u32 fs_fragmented_dir;
 	__u32 large_files;
 	__u32 fs_ext_attr_inodes;
 	__u32 fs_ext_attr_blocks;
