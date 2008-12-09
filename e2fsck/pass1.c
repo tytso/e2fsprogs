@@ -1781,13 +1781,6 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 
 	scan_extent_node(ctx, pctx, pb, 0, ehandle);
 
-	if (pb->fragmented && pb->num_blocks < fs->super->s_blocks_per_group) {
-		if (LINUX_S_ISDIR(inode->i_mode))
-			ctx->fs_fragmented_dir++;
-		else
-			ctx->fs_fragmented++;
-	}
-
 	ext2fs_extent_free(ehandle);
 }
 
