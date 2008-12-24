@@ -100,6 +100,13 @@ buggy distributions do not correct this before running e2fsck.  If this
 option is set to a boolean value of true, we attempt to work around this
 situation by allowing the superblock last write time, last mount time,
 and last check time to be in the future by up to 24 hours.
+.TP
+.I clear_test_fs_flag
+This boolean relation controls whether or not 
+.BR e2fsck (8)
+will offer to clear
+the test_fs flag if the ext4 filesystem is available on the system.  It
+defaults to true.
 .TP 
 .I defer_check_on_battery
 This boolean relation controls whether or not the interval between 
@@ -107,10 +114,15 @@ filesystem checks (either based on time or number of mounts) should
 be doubled if the system is running on battery.  It defaults to 
 true.
 .TP
-.I clear_test_fs_flag
-This boolean relation controls whether or not e2fsck will offer to clear
-the test_fs flag if the ext4 filesystem is available on the system.  It
-defaults to true.
+.I indexed_dir_slack_percentage
+When
+.BR e2fsck (8)
+repacks a indexed directory, reserve the specified percentage of
+empty space in each leaf nodes so that a few new entries can
+be added to the directory without splitting leaf nodes, so that
+the average fill ratio of directories can be maintained at a
+higher, more efficient level.  This relation defaults to 20
+percent.
 .SH THE [problems] STANZA
 Each tag in the
 .I [problems] 

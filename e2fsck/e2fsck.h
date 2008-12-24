@@ -289,6 +289,7 @@ struct e2fsck_struct {
 	 */
 	int process_inode_size;
 	int inode_buffer_blocks;
+	unsigned int htree_slack_percentage;
 
 	/*
 	 * ext3 journal support

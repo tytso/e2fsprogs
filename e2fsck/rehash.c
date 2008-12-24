@@ -397,17 +397,27 @@ static int duplicate_search_and_fix(e2fsck_t ctx, ext2_filsys fs,
 }
 
 
-static errcode_t copy_dir_entries(ext2_filsys fs,
+static errcode_t copy_dir_entries(e2fsck_t ctx,
 				  struct fill_dir_struct *fd,
 				  struct out_dir *outdir)
 {
+	ext2_filsys 		fs = ctx->fs;
 	errcode_t		retval;
 	char			*block_start;
 	struct hash_entry 	*ent;
 	struct ext2_dir_entry	*dirent;
 	int			i, rec_len, left;
 	ext2_dirhash_t		prev_hash;
-	int			offset;
+	int			offset, slack;
+
+	if (ctx->htree_slack_percentage == 255) {
+		profile_get_uint(ctx->profile, "options",
+				 "indexed_dir_slack_percentage",
+				 0, 20,
+				 &ctx->htree_slack_percentage);
+		if (ctx->htree_slack_percentage > 100)
+			ctx->htree_slack_percentage = 20;
+	}
 
 	outdir->max = 0;
 	retval = alloc_size_dir(fs, outdir,
@@ -422,6 +432,10 @@ static errcode_t copy_dir_entries(ext2_filsys fs,
 		return retval;
 	dirent = (struct ext2_dir_entry *) block_start;
 	left = fs->blocksize;
+	slack = fd->compress ? 12 :
+		(fs->blocksize * ctx->htree_slack_percentage)/100;
+	if (slack < 12)
+		slack = 12;
 	for (i=0; i < fd->num_array; i++) {
 		ent = fd->harray + i;
 		if (ent->dir->inode == 0)
@@ -449,7 +463,7 @@ static errcode_t copy_dir_entries(ext2_filsys fs,
 		memcpy(dirent->name, ent->dir->name, dirent->name_len & 0xFF);
 		offset += rec_len;
 		left -= rec_len;
-		if (left < 12) {
+		if (left < slack) {
 			dirent->rec_len += left;
 			offset += left;
 			left = 0;
@@ -750,7 +764,7 @@ resort:
 	 * Copy the directory entries.  In a htree directory these
 	 * will become the leaf nodes.
 	 */
-	retval = copy_dir_entries(fs, &fd, &outdir);
+	retval = copy_dir_entries(ctx, &fd, &outdir);
 	if (retval)
 		goto errout;
 

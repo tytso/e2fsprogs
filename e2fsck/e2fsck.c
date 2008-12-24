@@ -32,6 +32,7 @@ errcode_t e2fsck_allocate_context(e2fsck_t *ret)
 	context->process_inode_size = 256;
 	context->ext_attr_ver = 2;
 	context->blocks_per_page = 1;
+	context->htree_slack_percentage = 255;
 
 	time_env = getenv("E2FSCK_TIME");
 	if (time_env)
