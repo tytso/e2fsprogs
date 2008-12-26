@@ -441,8 +441,10 @@ retry:
 		eh = (struct ext3_extent_header *) newpath->buf;
 
 		retval = ext2fs_extent_header_verify(eh, handle->fs->blocksize);
-		if (retval)
+		if (retval) {
+			handle->level--;
 			return retval;
+		}
 
 		newpath->left = newpath->entries =
 			ext2fs_le16_to_cpu(eh->eh_entries);

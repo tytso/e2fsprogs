@@ -1655,6 +1655,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			problem = PR_1_EXTENT_ENDS_BEYOND;
 
 		if (problem) {
+		report_problem:
 			pctx->blk = extent.e_pblk;
 			pctx->blk2 = extent.e_lblk;
 			pctx->num = extent.e_len;
@@ -1662,11 +1663,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 				pctx->errcode =
 					ext2fs_extent_delete(ehandle, 0);
 				if (pctx->errcode) {
-					fix_problem(ctx,
-						    PR_1_EXTENT_DELETE_FAIL,
-						    pctx);
-					/* Should never get here */
-					ctx->flags |= E2F_FLAG_ABORT;
+					pctx->str = "ext2fs_extent_delete";
 					return;
 				}
 				pctx->errcode = ext2fs_extent_get(ehandle,
@@ -1682,23 +1679,27 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		}
 
 		if (!is_leaf) {
-			mark_block_used(ctx, extent.e_pblk);
-			pb->num_blocks++;
+			blk = extent.e_pblk;
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_DOWN, &extent);
 			if (pctx->errcode) {
-				printf("Error1: %s on inode %u\n",
-					error_message(pctx->errcode), pctx->ino);
-				abort();
+				pctx->str = "EXT2_EXTENT_DOWN";
+				problem = PR_1_EXTENT_HEADER_INVALID;
+				if (pctx->errcode == EXT2_ET_EXTENT_HEADER_BAD)
+					goto report_problem;
+				return;
 			}
 			scan_extent_node(ctx, pctx, pb, extent.e_lblk, ehandle);
+			if (pctx->errcode)
+				return;
 			pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_UP, &extent);
 			if (pctx->errcode) {
-				printf("Error1: %s on inode %u\n",
-					error_message(pctx->errcode), pctx->ino);
-				abort();
+				pctx->str = "EXT2_EXTENT_UP";
+				return;
 			}
+			mark_block_used(ctx, blk);
+			pb->num_blocks++;
 			goto next;
 		}
 
@@ -1780,7 +1781,14 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 	}
 
 	scan_extent_node(ctx, pctx, pb, 0, ehandle);
-
+	if (pctx->errcode &&
+	    fix_problem(ctx, PR_1_EXTENT_ITERATE_FAILURE, pctx)) {
+		pb->num_blocks = 0;
+		inode->i_blocks = 0;
+		e2fsck_clear_inode(ctx, ino, inode, E2F_FLAG_RESTART,
+				   "check_blocks_extents");
+		pctx->errcode = 0;
+	}
 	ext2fs_extent_free(ehandle);
 }
 

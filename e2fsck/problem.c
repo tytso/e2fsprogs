@@ -823,10 +823,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Error while reading over @x tree in @i %i: %m\n"),
 	  PROMPT_CLEAR_INODE, 0 },
 
-	/* Error deleting a bogus extent */
-	{ PR_1_EXTENT_DELETE_FAIL,
-	  N_("Error while deleting extent: %m\n"),
-	  PROMPT_ABORT, 0 },
+	/* Failure to iterate extents */
+	{ PR_1_EXTENT_ITERATE_FAILURE,
+	  N_("Failed to iterate extents in @i %i\n"
+	     "\t(op %s, blk %b, lblk %c): %m\n"),
+	  PROMPT_CLEAR_INODE, 0 },
 
 	/* Bad starting block in extent */
 	{ PR_1_EXTENT_BAD_START_BLK,
@@ -861,6 +862,10 @@ static struct e2fsck_problem problem_table[] = {
 	/* Extents are out of order */
 	{ PR_1_OUT_OF_ORDER_EXTENTS,
 	  N_("@i %i has out of order extents\n\t(@n logical @b %c, physical @b %b, len %N)\n"),
+	  PROMPT_CLEAR, 0 },
+
+	{ PR_1_EXTENT_HEADER_INVALID,
+	  N_("@i %i has an invalid extent node (blk %b, lblk %c)\n"),
 	  PROMPT_CLEAR, 0 },
 
 	/* Pass 1b errors */

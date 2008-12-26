@@ -479,8 +479,8 @@ struct problem_context {
 /* Error while reading extent tree */
 #define PR_1_READ_EXTENT		0x010056
 
-/* Error deleting a bogus extent */
-#define PR_1_EXTENT_DELETE_FAIL		0x010057
+/* Failure to iterate extents */
+#define PR_1_EXTENT_ITERATE_FAILURE	0x010057
 
 /* Bad starting block in extent */
 #define PR_1_EXTENT_BAD_START_BLK	0x010058
@@ -502,6 +502,9 @@ struct problem_context {
 
 /* Extents are out of order */
 #define PR_1_OUT_OF_ORDER_EXTENTS	0x01005E
+
+/* Extent node header invalid */
+#define PR_1_EXTENT_HEADER_INVALID	0x01005F
 
 /*
  * Pass 1b errors
