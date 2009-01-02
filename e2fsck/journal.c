@@ -68,8 +68,10 @@ int journal_bmap(journal_t *journal, blk_t block, unsigned long *phys)
 struct buffer_head *getblk(kdev_t kdev, blk_t blocknr, int blocksize)
 {
 	struct buffer_head *bh;
+	int bufsize = sizeof(*bh) + kdev->k_ctx->fs->blocksize -
+		sizeof(bh->b_data);
 
-	bh = e2fsck_allocate_memory(kdev->k_ctx, sizeof(*bh), "block buffer");
+	bh = e2fsck_allocate_memory(kdev->k_ctx, bufsize, "block buffer");
 	if (!bh)
 		return NULL;
 

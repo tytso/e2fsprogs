@@ -15,7 +15,6 @@
 #include "e2fsck.h"
 
 struct buffer_head {
-	char		b_data[8192];
 	e2fsck_t	b_ctx;
 	io_channel 	b_io;
 	int	 	b_size;
@@ -23,6 +22,7 @@ struct buffer_head {
 	int	 	b_dirty;
 	int	 	b_uptodate;
 	int	 	b_err;
+	char		b_data[1024];
 };
 
 struct inode {
