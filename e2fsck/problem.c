@@ -184,7 +184,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Journal inode is invalid */
 	{ PR_0_JOURNAL_BAD_INODE,
-	  N_("@S has an @n ext3 @j (@i %i).\n"),
+	  N_("@S has an @n @j (@i %i).\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* The external journal has (unsupported) multiple filesystems */
@@ -209,7 +209,7 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Journal has an unknown superblock type */
 	{ PR_0_JOURNAL_UNSUPP_SUPER,
-	  N_("Ext3 @j @S is unknown type %N (unsupported).\n"
+	  N_("@f @j @S is unknown type %N (unsupported).\n"
 	     "It is likely that your copy of e2fsck is old and/or doesn't "
 	     "support this @j format.\n"
 	     "It is also possible the @j @S is corrupt.\n"),
@@ -217,22 +217,22 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Journal superblock is corrupt */
 	{ PR_0_JOURNAL_BAD_SUPER,
-	  N_("Ext3 @j @S is corrupt.\n"),
+	  N_("@j @S is corrupt.\n"),
 	  PROMPT_FIX, PR_PREEN_OK },
 
-	/* Superblock flag should be cleared */
+	/* Superblock has_journal flag is clear but has a journal */
 	{ PR_0_JOURNAL_HAS_JOURNAL,
-	  N_("@S doesn't have has_@j flag, but has ext3 @j %s.\n"),
+	  N_("@S has_@j flag is clear, but a @j %s is present.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
-	/* Superblock flag is incorrect */
+	/* Superblock needs_recovery flag is set but not journal is present */
 	{ PR_0_JOURNAL_RECOVER_SET,
-	  N_("@S has ext3 needs_recovery flag set, but no @j.\n"),
+	  N_("@S needs_recovery flag is set, but no @j is present.\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
-	/* Journal has data, but recovery flag is clear */
+	/* Superblock needs_recovery flag is set, but journal has data */
 	{ PR_0_JOURNAL_RECOVERY_CLEAR,
-	  N_("ext3 recovery flag is clear, but @j has data.\n"),
+	  N_("@S needs_recovery flag is clear, but @j has data.\n"),
 	  PROMPT_NONE, 0 },
 
 	/* Ask if we should clear the journal */
@@ -282,12 +282,12 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Journal superblock has an unknown read-only feature flag set */
 	{ PR_0_JOURNAL_UNSUPP_ROCOMPAT,
-	  N_("Ext3 @j @S has an unknown read-only feature flag set.\n"),
+	  N_("@j @S has an unknown read-only feature flag set.\n"),
 	  PROMPT_ABORT, 0 },
 
 	/* Journal superblock has an unknown incompatible feature flag set */
 	{ PR_0_JOURNAL_UNSUPP_INCOMPAT,
-	  N_("Ext3 @j @S has an unknown incompatible feature flag set.\n"),
+	  N_("@j @S has an unknown incompatible feature flag set.\n"),
 	  PROMPT_ABORT, 0 },
 
 	/* Journal has unsupported version number */
@@ -1594,8 +1594,8 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Recreate journal if E2F_FLAG_JOURNAL_INODE flag is set */
 	{ PR_6_RECREATE_JOURNAL,
-	  N_("Recreate journal to make the filesystem ext3 again?\n"),
-	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
+	  N_("Recreate @j"),
+	  PROMPT_NULL, PR_PREEN_OK | PR_NO_OK },
 
 	/* Group N block(s) in use but group is marked BLOCK_UNINIT */
 	{ PR_5_BLOCK_UNINIT,
