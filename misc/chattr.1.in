@@ -19,7 +19,7 @@ chattr \- change file attributes on a Linux second extended file system
 .B chattr
 changes the file attributes on a Linux second extended file system.
 .PP
-The format of a symbolic mode is +-=[ASacDdIijsTtu].
+The format of a symbolic mode is +-=[ASacDdeIijsTtu].
 .PP
 The operator `+' causes the selected attributes to be added to the
 existing attributes of the files; `-' causes them to be removed; and
@@ -74,10 +74,8 @@ although it can be displayed by
 .BR lsattr (1).
 .PP
 The 'e' attribute indicates that the file is using extents for mapping
-the blocks on disk.  It may not be set or reset using
-.BR chattr (1),
-although it can be displayed by
-.BR lsattr (1).
+the blocks on disk.  It may not be removed using
+.BR chattr (1).
 .PP
 The 'I' attribute is used by the htree code to indicate that a directory
 is being indexed using hashed trees.  It may not be set or reset using 
