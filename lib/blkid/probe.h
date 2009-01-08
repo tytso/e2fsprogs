@@ -621,6 +621,110 @@ struct lvm2_pv_label_header {
 	__u8	pv_uuid[LVM2_ID_LEN];
 } __attribute__ ((packed));
 
+
+/*
+ * this is a very generous portion of the super block, giving us
+ * room to translate 14 chunks with 3 stripes each.
+ */
+#define BTRFS_SYSTEM_CHUNK_ARRAY_SIZE 2048
+#define BTRFS_LABEL_SIZE 256
+#define BTRFS_UUID_SIZE 16
+#define BTRFS_FSID_SIZE 16
+#define BTRFS_CSUM_SIZE 32
+
+struct btrfs_dev_item {
+	/* the internal btrfs device id */
+	__u64 devid;
+
+	/* size of the device */
+	__u64 total_bytes;
+
+	/* bytes used */
+	__u64 bytes_used;
+
+	/* optimal io alignment for this device */
+	__u32 io_align;
+
+	/* optimal io width for this device */
+	__u32 io_width;
+
+	/* minimal io size for this device */
+	__u32 sector_size;
+
+	/* type and info about this device */
+	__u64 type;
+
+	/* expected generation for this device */
+	__u64 generation;
+
+	/*
+	 * starting byte of this partition on the device,
+	 * to allowr for stripe alignment in the future
+	 */
+	__u64 start_offset;
+
+	/* grouping information for allocation decisions */
+	__u32 dev_group;
+
+	/* seek speed 0-100 where 100 is fastest */
+	__u8 seek_speed;
+
+	/* bandwidth 0-100 where 100 is fastest */
+	__u8 bandwidth;
+
+	/* btrfs generated uuid for this device */
+	__u8 uuid[BTRFS_UUID_SIZE];
+
+	/* uuid of FS who owns this device */
+	__u8 fsid[BTRFS_UUID_SIZE];
+} __attribute__ ((__packed__));
+
+/*
+ * the super block basically lists the main trees of the FS
+ * it currently lacks any block count etc etc
+ */
+struct btrfs_super_block {
+	__u8 csum[BTRFS_CSUM_SIZE];
+	/* the first 3 fields must match struct btrfs_header */
+	__u8 fsid[BTRFS_FSID_SIZE];    /* FS specific uuid */
+	__u64 bytenr; /* this block number */
+	__u64 flags;
+
+	/* allowed to be different from the btrfs_header from here own down */
+	__u64 magic;
+	__u64 generation;
+	__u64 root;
+	__u64 chunk_root;
+	__u64 log_root;
+
+	/* this will help find the new super based on the log root */
+	__u64 log_root_transid;
+	__u64 total_bytes;
+	__u64 bytes_used;
+	__u64 root_dir_objectid;
+	__u64 num_devices;
+	__u32 sectorsize;
+	__u32 nodesize;
+	__u32 leafsize;
+	__u32 stripesize;
+	__u32 sys_chunk_array_size;
+	__u64 chunk_root_generation;
+	__u64 compat_flags;
+	__u64 compat_ro_flags;
+	__u64 incompat_flags;
+	__u16 csum_type;
+	__u8 root_level;
+	__u8 chunk_root_level;
+	__u8 log_root_level;
+	struct btrfs_dev_item dev_item;
+
+	char label[BTRFS_LABEL_SIZE];
+
+	/* future expansion */
+	__u64 reserved[32];
+	__u8 sys_chunk_array[BTRFS_SYSTEM_CHUNK_ARRAY_SIZE];
+} __attribute__ ((__packed__));
+
 /*
  * Byte swap functions
  */
