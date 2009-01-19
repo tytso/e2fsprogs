@@ -232,6 +232,35 @@ static void fix_uninit_block_bitmaps(ext2_filsys fs)
  */
 
 /*
+ * If the group descriptor's bitmap and inode table blocks are valid,
+ * release them in the specified filesystem data structure
+ */
+static void free_gdp_blocks(ext2_filsys fs, struct ext2_group_desc *gdp)
+{
+	blk_t	blk;
+	int	j;
+
+	if (gdp->bg_block_bitmap &&
+	    (gdp->bg_block_bitmap < fs->super->s_blocks_count))
+		ext2fs_block_alloc_stats(fs, gdp->bg_block_bitmap, -1);
+
+	if (gdp->bg_inode_bitmap &&
+	    (gdp->bg_inode_bitmap < fs->super->s_blocks_count))
+		ext2fs_block_alloc_stats(fs, gdp->bg_inode_bitmap, -1);
+
+	if (gdp->bg_inode_table == 0 ||
+	    (gdp->bg_inode_table >= fs->super->s_blocks_count))
+		return;
+
+	for (blk = gdp->bg_inode_table, j = 0;
+	     j < fs->inode_blocks_per_group; j++, blk++) {
+		if (blk >= fs->super->s_blocks_count)
+			break;
+		ext2fs_block_alloc_stats(fs, blk, -1);
+	}
+}
+
+/*
  * This routine is shared by the online and offline resize routines.
  * All of the information which is adjusted in memory is done here.
  */
@@ -374,6 +403,14 @@ retry:
 	 * can exit now.
 	 */
 	if (old_fs->group_desc_count > fs->group_desc_count) {
+		/*
+		 * Check the block groups that we are chopping off
+		 * and free any blocks associated with their metadata
+		 */
+		for (i = fs->group_desc_count;
+		     i < old_fs->group_desc_count; i++) {
+			free_gdp_blocks(fs, &old_fs->group_desc[i]);
+		}
 		retval = 0;
 		goto errout;
 	}
