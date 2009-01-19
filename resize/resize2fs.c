@@ -745,7 +745,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		g = ext2fs_group_of_blk(fs, blk);
 		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
-		    (fs->group_desc[g].bg_flags & EXT2_BG_BLOCK_UNINIT)) {
+		    (old_fs->group_desc[g].bg_flags & EXT2_BG_BLOCK_UNINIT)) {
 			/*
 			 * The block bitmap is uninitialized, so skip
 			 * to the next block group.
