@@ -61,7 +61,8 @@ static void dump_revoke_block(FILE *, char *, journal_superblock_t *,
 
 static void dump_metadata_block(FILE *, struct journal_source *,
 				journal_superblock_t*,
-				unsigned int, unsigned int, int, tid_t);
+				unsigned int, unsigned int, unsigned int,
+				int, tid_t);
 
 static void do_hexdump (FILE *, char *, int);
 
@@ -464,13 +465,15 @@ static void dump_descriptor_block(FILE *out_file,
 				  unsigned int *blockp, int blocksize,
 				  tid_t transaction)
 {
-	int			offset;
+	int			offset, tag_size = JBD_TAG_SIZE32;
 	char			*tagp;
 	journal_block_tag_t	*tag;
 	unsigned int		blocknr;
 	__u32			tag_block;
 	__u32			tag_flags;
 
+	if (be32_to_cpu(jsb->s_feature_incompat) & JFS_FEATURE_INCOMPAT_64BIT)
+		tag_size = JBD_TAG_SIZE64;
 
 	offset = sizeof(journal_header_t);
 	blocknr = *blockp;
@@ -487,7 +490,7 @@ static void dump_descriptor_block(FILE *out_file,
 		 * the next one... */
 		tagp = &buf[offset];
 		tag = (journal_block_tag_t *) tagp;
-		offset += sizeof(journal_block_tag_t);
+		offset += tag_size;
 
 		/* ... and if we have gone too far, then we've reached the
 		   end of this block. */
@@ -501,7 +504,7 @@ static void dump_descriptor_block(FILE *out_file,
 			offset += 16;
 
 		dump_metadata_block(out_file, source, jsb,
-				    blocknr, tag_block, blocksize,
+				    blocknr, tag_block, tag_flags, blocksize,
 				    transaction);
 
 		++blocknr;
@@ -566,6 +569,7 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 				journal_superblock_t *jsb EXT2FS_ATTR((unused)),
 				unsigned int log_blocknr,
 				unsigned int fs_blocknr,
+				unsigned int log_tag_flags,
 				int blocksize,
 				tid_t transaction)
 {
@@ -582,7 +586,8 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 	fprintf(out_file, "  FS block %u logged at ", fs_blocknr);
 	if (!dump_all)
 		fprintf(out_file, "sequence %u, ", transaction);
-	fprintf(out_file, "journal block %u\n", log_blocknr);
+	fprintf(out_file, "journal block %u (flags 0x%x)\n", log_blocknr,
+		log_tag_flags);
 
 	/* There are two major special cases to parse:
 	 *
