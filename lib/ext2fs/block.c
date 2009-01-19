@@ -434,7 +434,7 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 						       (blk64_t) blockcnt,
 						       (blk64_t) new_blk, 0);
 					if (ctx.errcode)
-						break;
+						goto extent_errout;
 				}
 				if (ret & BLOCK_ABORT)
 					break;
