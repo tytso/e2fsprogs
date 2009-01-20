@@ -86,6 +86,7 @@ char	*bad_blocks_filename;
 __u32	fs_stride;
 
 struct ext2_super_block fs_param;
+char *fs_uuid = NULL;
 char *creator_os;
 char *volume_label;
 char *mount_dir;
@@ -108,7 +109,7 @@ static void usage(void)
 	"\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
 	"[-r fs-revision] [-E extended-option[,...]]\n"
-	"\t[-T fs-type] [-jnqvFSV] device [blocks-count]\n"),
+	"\t[-T fs-type] [-U UUID] [-jnqvFSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
@@ -1165,7 +1166,7 @@ static void PRS(int argc, char *argv[])
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cf:g:G:i:jl:m:no:qr:s:t:vE:FI:J:L:M:N:O:R:ST:V")) != EOF) {
+		    "b:cf:g:G:i:jl:m:no:qr:s:t:vE:FI:J:L:M:N:O:R:ST:U:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = strtol(optarg, &tmp, 0);
@@ -1330,6 +1331,9 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'T':
 			usage_types = optarg;
+			break;
+		case 'U':
+			fs_uuid = optarg;
 			break;
 		case 'V':
 			/* Print version number and exit */
@@ -1879,9 +1883,16 @@ int main (int argc, char *argv[])
 		zap_sector(fs, 2, 6);
 
 	/*
-	 * Generate a UUID for it...
+	 * Parse or generate a UUID for the filesystem
 	 */
-	uuid_generate(fs->super->s_uuid);
+	if (fs_uuid) {
+		if (uuid_parse(fs_uuid, fs->super->s_uuid) !=0) {
+			com_err(device_name, 0, "could not parse UUID: %s\n",
+				fs_uuid);
+			exit(1);
+		}
+	} else
+		uuid_generate(fs->super->s_uuid);
 
 	/*
 	 * Initialize the directory index variables

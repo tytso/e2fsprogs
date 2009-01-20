@@ -100,6 +100,10 @@ mke2fs \- create an ext2/ext3 filesystem
 .I usage-type
 ]
 [
+.B \-U
+.I UUID
+]
+[
 .B \-V
 ]
 .I device
@@ -596,6 +600,9 @@ Otherwise,
 .BR mke2fs (8)
 will use the default filesystem type
 .IR default .
+.TP
+.BI \-U " UUID"
+Create the filesystem with the specified UUID.
 .TP
 .B \-v
 Verbose execution.
