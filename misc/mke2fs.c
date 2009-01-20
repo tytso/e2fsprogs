@@ -1442,17 +1442,33 @@ static void PRS(int argc, char *argv[])
 	}
 
 	if (retval == EFBIG) {
+		blk64_t	big_dev_size;
+
+		if (blocksize < 4096) {
+			fs_param.s_log_block_size = 2;
+			blocksize = 4096;
+		}
+		retval = ext2fs_get_device_size2(device_name,
+				 EXT2_BLOCK_SIZE(&fs_param), &big_dev_size);
+		if (retval)
+			goto get_size_failure;
+		if (big_dev_size == (1ULL << 32)) {
+			dev_size = (blk_t) (big_dev_size - 1);
+			goto got_size;
+		}
 		fprintf(stderr, _("%s: Size of device %s too big "
 				  "to be expressed in 32 bits\n\t"
 				  "using a blocksize of %d.\n"),
 			program_name, device_name, EXT2_BLOCK_SIZE(&fs_param));
 		exit(1);
 	}
+get_size_failure:
 	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {
 		com_err(program_name, retval,
 			_("while trying to determine filesystem size"));
 		exit(1);
 	}
+got_size:
 	if (!fs_param.s_blocks_count) {
 		if (retval == EXT2_ET_UNIMPLEMENTED) {
 			com_err(program_name, 0,
