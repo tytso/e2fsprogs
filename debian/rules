@@ -323,7 +323,7 @@ install-udeb: build
 
 	(cd ${udebdir}/sbin; ln -s e2fsck fsck.ext2 ; \
 		ln -s e2fsck fsck.ext3 ; ln -s mke2fs mkfs.ext2 ; \
-		ln -s mke2fs mkfs.ext3)
+		ln -s mke2fs mkfs.ext3 ; ln -s mke2fs mkfs.ext4)
 
 	mkdir -p ${blkidudebdir}/lib
 	mv ${udebdir}/lib/libblkid.* ${blkidudebdir}/lib
