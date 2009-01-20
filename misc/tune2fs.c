@@ -957,20 +957,35 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 	free(buf);
 }
 
-static int get_move_bitmap(ext2_filsys fs, int new_ino_blks_per_grp,
-			   ext2fs_block_bitmap bmap)
+/*
+ * Fill in two bitmaps that we need to to control the inode resizing
+ * process.  The first is the set of blocks that must be moved, and
+ * the second is the set of blocks which are allocation bitmap blocks
+ * and must be treated specially.
+ */
+static int get_move_bitmaps(ext2_filsys fs, int new_ino_blks_per_grp,
+			    ext2fs_block_bitmap bmap,
+			    ext2fs_block_bitmap metadata_bmap)
 {
 	dgrp_t i;
 	blk_t j, needed_blocks = 0;
+	blk_t i_bmap, b_bmap;
 	blk_t start_blk, end_blk;
+	int num, k;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
+		b_bmap = fs->group_desc[i].bg_block_bitmap;
+		ext2fs_mark_block_bitmap(metadata_bmap, b_bmap);
+		i_bmap = fs->group_desc[i].bg_inode_bitmap;
+		ext2fs_mark_block_bitmap(metadata_bmap, i_bmap);
+
 		start_blk = fs->group_desc[i].bg_inode_table +
 					fs->inode_blocks_per_group;
 
 		end_blk = fs->group_desc[i].bg_inode_table +
 					new_ino_blks_per_grp;
 
+		num=0;
 		for (j = start_blk; j < end_blk; j++) {
 			if (ext2fs_test_block_bitmap(fs->block_map, j)) {
 				/* FIXME!!
@@ -986,7 +1001,11 @@ static int get_move_bitmap(ext2_filsys fs, int new_ino_blks_per_grp,
 				 */
 				ext2fs_mark_block_bitmap(fs->block_map, j);
 			}
+			if ((j == i_bmap) || (j == b_bmap))
+				num++;
 		}
+		if (num <= fs->group_desc[i].bg_free_blocks_count) 
+			continue;
 	}
 
 	if (needed_blocks > fs->super->s_free_blocks_count)
@@ -995,12 +1014,14 @@ static int get_move_bitmap(ext2_filsys fs, int new_ino_blks_per_grp,
 	return 0;
 }
 
-static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap)
+static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap,
+		      ext2fs_block_bitmap metadata_bmap)
 {
 	char *buf;
 	errcode_t retval;
-	blk_t blk, new_blk;
+	blk_t blk, new_blk, goal;
 	struct blk_move *bmv;
+	dgrp_t		group;
 
 	retval = ext2fs_get_mem(fs->blocksize, &buf);
 	if (retval)
@@ -1011,7 +1032,17 @@ static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap)
 		if (!ext2fs_test_block_bitmap(bmap, blk))
 			continue;
 
-		retval = ext2fs_new_block(fs, new_blk, NULL, &new_blk);
+		/*
+		 * If the block is a bitmap block, find a new block in
+		 * the same block group.
+		 */
+		if (ext2fs_test_block_bitmap(metadata_bmap, blk)) {
+			group = ext2fs_group_of_blk(fs, blk);
+			goal = ext2fs_group_first_block(fs, group);
+		} else
+			goal = new_blk;
+
+		retval = ext2fs_new_block(fs, goal, NULL, &new_blk);
 		if (retval)
 			goto err_out;
 
@@ -1147,8 +1178,38 @@ err_out:
 	ext2fs_free_mem(&block_buf);
 
 	return retval;
-
 }
+
+/*
+ * We need to scan for inode and block bitmaps that may need to be
+ * moved.  This can take place if the filesystem was formatted for
+ * RAID arrays using the mke2fs's extended option "stride".
+ */
+static int group_desc_scan_and_fix(ext2_filsys fs, ext2fs_block_bitmap bmap)
+{
+	dgrp_t i;
+	blk_t blk, new_blk;
+
+	for (i = 0; i < fs->group_desc_count; i++) {
+		blk = fs->group_desc[i].bg_block_bitmap;
+		if (ext2fs_test_block_bitmap(bmap, blk)) {
+			new_blk = translate_block(blk);
+			if (!new_blk)
+				continue;
+			fs->group_desc[i].bg_block_bitmap = new_blk;
+		}
+
+		blk = fs->group_desc[i].bg_inode_bitmap;
+		if (ext2fs_test_block_bitmap(bmap, blk)) {
+			new_blk = translate_block(blk);
+			if (!new_blk)
+				continue;
+			fs->group_desc[i].bg_inode_bitmap = new_blk;
+		}
+	}
+	return 0;
+}
+
 
 static int expand_inode_table(ext2_filsys fs, unsigned long new_ino_size)
 {
@@ -1295,15 +1356,14 @@ static void free_blk_move_list(void)
 		list_del(entry);
 		ext2fs_free_mem(&bmv);
 	}
-
-	return ;
+	return;
 }
 
 static int resize_inode(ext2_filsys fs, unsigned long new_size)
 {
 	errcode_t retval;
 	int new_ino_blks_per_grp;
-	ext2fs_block_bitmap bmap;
+	ext2fs_block_bitmap bmap, metadata_bmap;
 
 	ext2fs_read_inode_bitmap(fs);
 	ext2fs_read_block_bitmap(fs);
@@ -1326,15 +1386,25 @@ static int resize_inode(ext2_filsys fs, unsigned long new_size)
 	if (retval)
 		return retval;
 
-	retval = get_move_bitmap(fs, new_ino_blks_per_grp, bmap);
+	retval = ext2fs_allocate_block_bitmap(fs, _("blocks to be moved"),
+						&metadata_bmap);
+	if (retval)
+		return retval;
+
+	retval = get_move_bitmaps(fs, new_ino_blks_per_grp, bmap,
+				  metadata_bmap);
 	if (retval)
 		goto err_out;
 
-	retval = move_block(fs, bmap);
+	retval = move_block(fs, bmap, metadata_bmap);
 	if (retval)
 		goto err_out;
 
 	retval = inode_scan_and_fix(fs, bmap);
+	if (retval)
+		goto err_out;
+
+	retval = group_desc_scan_and_fix(fs, bmap);
 	if (retval)
 		goto err_out;
 
