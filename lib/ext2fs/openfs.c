@@ -243,7 +243,11 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		goto cleanup;
 	}
 	fs->fragsize = EXT2_FRAG_SIZE(fs->super);
-	fs->inode_blocks_per_group = ((fs->super->s_inodes_per_group *
+       if (EXT2_INODES_PER_GROUP(fs->super) == 0) {
+		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
+		goto cleanup;
+	}
+	fs->inode_blocks_per_group = ((EXT2_INODES_PER_GROUP(fs->super) *
 				       EXT2_INODE_SIZE(fs->super) +
 				       EXT2_BLOCK_SIZE(fs->super) - 1) /
 				      EXT2_BLOCK_SIZE(fs->super));
@@ -275,13 +279,20 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	blocks_per_group = EXT2_BLOCKS_PER_GROUP(fs->super);
 	if (blocks_per_group == 0 ||
 	    blocks_per_group > EXT2_MAX_BLOCKS_PER_GROUP(fs->super) ||
-	    fs->inode_blocks_per_group > EXT2_MAX_INODES_PER_GROUP(fs->super)) {
+	    fs->inode_blocks_per_group > EXT2_MAX_INODES_PER_GROUP(fs->super) ||
+           EXT2_DESC_PER_BLOCK(fs->super) == 0 ||
+           fs->super->s_first_data_block >= fs->super->s_blocks_count) {
 		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
 		goto cleanup;
 	}
 	fs->group_desc_count = ext2fs_div_ceil(fs->super->s_blocks_count -
 					       fs->super->s_first_data_block,
 					       blocks_per_group);
+       if (fs->group_desc_count * EXT2_INODES_PER_GROUP(fs->super) !=
+           fs->super->s_inodes_count) {
+               retval = EXT2_ET_CORRUPT_SUPERBLOCK;
+		goto cleanup;
+       }
 	fs->desc_blocks = ext2fs_div_ceil(fs->group_desc_count,
 					  EXT2_DESC_PER_BLOCK(fs->super));
 	retval = ext2fs_get_array(fs->desc_blocks, fs->blocksize,
