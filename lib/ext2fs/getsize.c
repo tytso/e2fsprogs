@@ -278,13 +278,14 @@ errcode_t ext2fs_get_device_size(const char *file, int blocksize,
 {
 	errcode_t retval;
 	blk64_t	blocks;
-	retval = ext2fs_get_device_size2(file, blocksize, &blocks);
 
-	if (!retval && blocks < (1ULL << 32)) {
-		*retblocks = (blk_t) blocks;
+	retval = ext2fs_get_device_size2(file, blocksize, &blocks);
+	if (retval)
 		return retval;
-	}
-	return EFBIG;
+	if (blocks >= (1ULL << 32))
+		return EFBIG;
+	*retblocks = (blk_t) blocks;
+	return 0;
 }
 
 #endif /* WIN32 */
