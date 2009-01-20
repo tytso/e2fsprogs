@@ -945,6 +945,8 @@ static char **parse_fs_type(const char *fs_type,
 		ext_type = fs_type;
 	else if (is_hurd)
 		ext_type = "ext2";
+	else if (!strcmp(program_name, "mke3fs"))
+		ext_type = "ext3";
 	else if (progname) {
 		ext_type = strrchr(progname, '/');
 		if (ext_type)
@@ -1157,7 +1159,8 @@ static void PRS(int argc, char *argv[])
 		program_name = get_progname(*argv);
 
 		/* If called as mkfs.ext3, create a journal inode */
-		if (!strcmp(program_name, "mkfs.ext3"))
+		if (!strcmp(program_name, "mkfs.ext3") ||
+		    !strcmp(program_name, "mke3fs"))
 			journal_size = -1;
 	}
 
