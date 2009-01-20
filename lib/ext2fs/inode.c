@@ -564,6 +564,8 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 		io = fs->image_io;
 	} else {
 		group = (ino - 1) / EXT2_INODES_PER_GROUP(fs->super);
+		if (group > fs->group_desc_count)
+			return EXT2_ET_BAD_INODE_NUM;
 		offset = ((ino - 1) % EXT2_INODES_PER_GROUP(fs->super)) *
 			EXT2_INODE_SIZE(fs->super);
 		block = offset >> EXT2_BLOCK_SIZE_BITS(fs->super);
