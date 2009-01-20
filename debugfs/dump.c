@@ -145,7 +145,6 @@ void do_dump(int argc, char **argv)
 	int		fd;
 	int		c;
 	int		preserve = 0;
-	const char *dump_usage = "Usage: dump_inode [-p] <file> <output_file>";
 	char		*in_fn, *out_fn;
 
 	reset_getopt();
@@ -155,14 +154,14 @@ void do_dump(int argc, char **argv)
 			preserve++;
 			break;
 		default:
-			com_err(argv[0], 0, dump_usage);
+		print_usage:
+			com_err(argv[0], 0, "Usage: dump_inode [-p] "
+				"<file> <output_file>");
 			return;
 		}
 	}
-	if (optind != argc-2) {
-		com_err(argv[0], 0, dump_usage);
-		return;
-	}
+	if (optind != argc-2)
+		goto print_usage;
 
 	if (check_fs_open(argv[0]))
 		return;

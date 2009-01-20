@@ -87,7 +87,6 @@ int main(int argc, char **argv)
 	char		*cmd_file = 0;
 	int sci_idx;
 	int exit_status = 0;
-	const char	*usage = "Usage: test_ss [-R request] [-f cmd_file]";
 
 	while ((c = getopt (argc, argv, "wR:f:")) != EOF) {
 		switch (c) {
@@ -98,7 +97,8 @@ int main(int argc, char **argv)
 			cmd_file = optarg;
 			break;
 		default:
-			com_err(argv[0], 0, usage);
+			com_err(argv[0], 0, "Usage: test_ss [-R request] "
+				"[-f cmd_file]");
 			exit(1);
 		}
 	}

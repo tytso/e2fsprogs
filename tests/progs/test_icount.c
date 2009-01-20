@@ -296,7 +296,6 @@ int main(int argc, char **argv)
 {
 	int		retval;
 	int		sci_idx;
-	const char	*usage = "Usage: test_icount [-R request] [-f cmd_file]";
 	int		c;
 	char		*request = 0;
 	int		exit_status = 0;
@@ -327,7 +326,8 @@ int main(int argc, char **argv)
 			cmd_file = optarg;
 			break;
 		default:
-			com_err(argv[0], 0, usage);
+			com_err(argv[0], 0, "Usage: test_icount "
+				"[-R request] [-f cmd_file]");
 			exit(1);
 		}
 	}
