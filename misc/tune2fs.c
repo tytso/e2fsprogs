@@ -1409,7 +1409,7 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	set_undo_io_backing_manager(*io_ptr);
 	*io_ptr = undo_io_manager;
 	set_undo_io_backup_file(tdb_file);
-	printf(_("To undo the tune2fs operations please run "
+	printf(_("To undo the tune2fs operation please run "
 		 "the command\n    e2undo %s %s\n\n"),
 		 tdb_file, name);
 	free(tmp_name);
@@ -1650,6 +1650,13 @@ retry_open:
 			fputs(_("The inode size may only be "
 				"changed when the filesystem is "
 				"unmounted.\n"), stderr);
+			exit(1);
+		}
+		if (fs->super->s_feature_incompat &
+		    EXT4_FEATURE_INCOMPAT_FLEX_BG) {
+			fputs(_("Changing the inode size not supported for filesystems "
+				"with the flex_bg\nfeature enabled.\n"),
+			      stderr);
 			exit(1);
 		}
 		/*
