@@ -1954,5 +1954,13 @@ blk_t calculate_minimum_resize_size(ext2_filsys fs)
 	blks_needed = (groups-1) * EXT2_BLOCKS_PER_GROUP(fs->super);
 	blks_needed += overhead;
 
+	/*
+	 * We need to reserve a few extra blocks if extents are
+	 * enabled, in case we need to grow the extent tree.  The more
+	 * we shrink the file system, the more space we need.
+	 */
+	if (fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS)
+		blks_needed += (fs->super->s_blocks_count - blks_needed)/500;
+
 	return blks_needed;
 }
