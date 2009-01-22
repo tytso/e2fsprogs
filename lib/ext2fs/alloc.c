@@ -120,6 +120,8 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir,
 	start_inode = (dir_group * EXT2_INODES_PER_GROUP(fs->super)) + 1;
 	if (start_inode < EXT2_FIRST_INODE(fs->super))
 		start_inode = EXT2_FIRST_INODE(fs->super);
+	if (start_inode > fs->super->s_inodes_count)
+		return EXT2_ET_INODE_ALLOC_FAIL;
 	i = start_inode;
 
 	do {
