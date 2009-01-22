@@ -513,6 +513,10 @@ void check_super_block(e2fsck_t ctx)
 	check_super_value(ctx, "reserved_gdt_blocks",
 			  sb->s_reserved_gdt_blocks, MAX_CHECK, 0,
 			  fs->blocksize/4);
+	if (sb->s_rev_level > EXT2_GOOD_OLD_REV)
+		check_super_value(ctx, "first_ino", sb->s_first_ino,
+				  MIN_CHECK | MAX_CHECK,
+				  EXT2_GOOD_OLD_FIRST_INO, sb->s_inodes_count);
 	inode_size = EXT2_INODE_SIZE(sb);
 	check_super_value(ctx, "inode_size",
 			  inode_size, MIN_CHECK | MAX_CHECK,
