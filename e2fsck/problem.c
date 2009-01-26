@@ -1417,12 +1417,12 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Error iterating over directories */
 	{ PR_3A_OPTIMIZE_ITER,
-	  N_("Failed to create dirs_to_hash iterator: %m"),
+	  N_("Failed to create dirs_to_hash iterator: %m\n"),
 	  PROMPT_NONE, 0 },
 
 	/* Error rehash directory */
 	{ PR_3A_OPTIMIZE_DIR_ERR,
-	  N_("Failed to optimize directory %q (%d): %m"),
+	  N_("Failed to optimize directory %q (%d): %m\n"),
 	  PROMPT_NONE, 0 },
 
 	/* Rehashing dir header */
