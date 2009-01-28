@@ -1,3 +1,70 @@
+e2fsprogs (1.41.4-1) unstable; urgency=low
+
+  * New upstream release
+  * Fix bug which could sometimes cause blkid to return an exit value of
+    zero for a non-existent device (Closes: #502541)
+  * Fix spelling mistake in Debian changelog (Closes: #502323)
+  * Fix blkid to deal with an ext3 filesystem with the test_fs flag
+  * Fix debugfs's ncheck output to suppress extra characters at the end
+    of the file name
+  * Tune2fs now updates the block group checksums after changing the
+    filesystem's UUID
+  * Speed up tune2fs's inode resizing code so it is no longer vastly
+    inefficient for moderate to large filesystems
+  * Fix dumpe2fs so it doesn't attempt to print the inline journal
+    information on filesystems with an external journal
+  * Update the Catalan translation
+  * Filter out linux-vdso.so lines when determining the library
+    dependencies while building the initial ramdisk (Closes: #503057)
+  * Fix e2fsck so an errant INODE_UNINIT flag set in a block group
+    doesn't cause e2fsck to abort.
+  * E2fsck now distinguishes between fragmented directories and
+    fragmented files in verbose mode statistics and in the fragcheck
+    report.
+  * Avoid double-counting non-contiguous extent-based inodes in the
+    verbose mode statistics.
+  * E2fsck now leaves slack space when repacking directories so that a
+    few new directory entries won't cause leaf nodes to become split
+    right away.
+  * E2fsck was previously not handling the case of a corrupted interior
+    node in the extent tree, and would crash in that case.  It now will
+    handle this and related failures robustly.
+  * E2fsck problem descriptions involving the journal are no longer
+    referred to as "ext3" problems, since ext4 filesystems also have
+    journals.
+  * Fix a long-standing bug in e2fsck which would cause it to crash when
+    replying journals for filesystems with block sizes greater than 8k.
+  * Fix a regression in debugfs's logdump command so it works for
+    filesystems with 32-bit block numbers.  This was accidentally broken
+    when the header files were changed to support the 64-bit block numbers.
+  * Fix resize2fs for ext4 filesystems.  Some blocks that that need moving
+    when shrinking filesystems with uninit_bg feature would not be
+    moved.  In addition, blocks and inode table blocks were not being
+    correctly freed when shrinking filesystems with the flex_bg feable,
+    which caused resize2fs -M to fail.  Finally, when blocks are moved,
+    make sure the uninitialized flag in extents is preserved.
+  * Add mkfs.ext4 symlink to the e2fsprogs-udeb package (Closes: #511207)
+  * Resize2fs now reserves some extra block when calculating the minimum
+    size to shrink the filesystem in case some extent allocation trees
+  * Add a "set -e" to uuid-runtime's prerm script to make Lintian happy
+  * The blkid library will now recognize btrfs filesystems and swap
+    devices currently used by user-level software suspend.
+  * tune2fs will not allow changing the inode size for filesystems that
+    have the flex_bg feature enabled, since the code currently assumes
+    the each block group's portion inode table is located in its own
+    block group.
+  * Fix tune2fs -I so it won't corrupt ext3/ext4 filesystem configured
+    for RAID storage devices.
+  * Mke2fs now understands a -U option which allows the UUID to be
+    specified for the new filesystem.
+  * Mke2fs will now treat devices with exactly 16TB as if they have 16TB
+    minus one block, since many users expect ext4 to support 16TB
+    devices, and the true maximum size is 16TB-1.
+  * E2fsck will now flag filesystems that have an insane s_first_ino
+    field in their superblock.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 27 Jan 2009 11:50:49 -0500
+
 e2fsprogs (1.41.3-1) unstable; urgency=low
 
   * New upstream release

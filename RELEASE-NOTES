@@ -1,3 +1,135 @@
+E2fsprogs 1.41.4 (January 27, 2009)
+===================================
+
+Fixed a bug which could sometimes cause blkid to return an exit value
+of zero for a non-existent device (Addresses Debian Bug: #502541)
+
+Blkid will now recognize ext3 filesystems that have the test_fs flag
+set as ext3 filesystems.
+
+The blkid library will now recognize btrfs filesystems and swap
+devices currently used by user-level software suspend.
+
+Tune2fs now updates the block group checksums when changing the UUID
+to avoid causing e2fsck to complain vociferously at the next reboot.
+
+Tune2fs's inode size resizing algorithms have been fixed so it is not
+vastly inefficient for moderate-to-large filesystems, due to some
+O(n**2) and O(n*m) algorithms that didn't scale well at all.
+
+Fix tune2fs's inode resizing algorithm so it will not corrupt
+filesystems laid out for RAID filesystems; in addition, tune2fs will
+refuse to change the inode size for filesystems that have the flex_bg
+feature enabled.  (This is a limitation in the current implementation
+of tune2fs -I.)
+
+E2fsprogs 1.41 broke debugfs's logdump command for normal ext3/4
+filesystems with 32-bit block numbers, when the headers for 64-bit
+block numbers was added.  This regression has been fixed.
+
+Debugfs's ncheck command has been fixed to avoid printing garbage
+characters at the end of file names.
+
+Fix resize2fs for ext4 filesystems.  Some blocks that that need moving
+when shrinking filesystems with uninit_bg feature would not be moved.
+In addition, blocks and inode table blocks were not being correctly
+freed when shrinking filesystems with the flex_bg feable, which caused
+resize2fs -M to fail.  Finally, when blocks are moved, make sure the
+uninitialized flag in extents is preserved.
+
+Fix bug which caused dumpe2fs to abort with an error if run on a
+filesystem that contained an external journal.
+
+Some distributions used "mke3fs" as an alias for "mkfs.ext3"; check
+for this in argv[0] to provide better legacy support for these
+distributions.  This is a practice that should NOT be continued,
+however.
+
+Mke2fs now has a new option -U, which allows the user to specify the
+UUID that should be used for the new filesystem.
+
+Mke2fs will treat devices that are exactly 16TB as if they were 16TB
+minus one block.  This allows users who have read that ext3 supports
+up to 16TB filesystems and who create a 16TB LVM to not get confused,
+since the true limit is really 16TB minus one block.
+
+E2fsck will no longer abort an fsck run if block group has an errant
+INODE_UNINIT flag.
+
+E2fsck now distinguishes between fragmented directories and fragmented
+files in verbose mode statistics and in the fragcheck report.
+
+Fix a bug in e2fsck which casued it double count non-contiguous
+extent-based inodes.
+
+E2fsck will leave some slack space when repacking directories to allow
+room for a few directory entries to be added without causing leaf
+nodes to be split right away.
+
+Fix a bug which caused e2fsck to crash when it comes across a
+corrupted interior node in an extent tree with the error message:
+"Error1: Corrupt extent header on inode XXXXXX"
+
+E2fsck problem descriptions involving the journal are no longer
+referred to as "ext3" problems, since ext4 filesystems also have
+journals.
+
+Fix a long-standing bug in e2fsck which would cause it to crash when
+replying journals for filesystems with block sizes greater than 8k.
+
+Update Catalan translation from the Translation Project.
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details. (Addresses Debian Bugs: #503057, #502323, #511207)
+
+Programmer's Notes
+------------------
+
+Fix build of e2fsck.profiled, and add support for building profiled
+binaries in the misc directory if configured with --enable-profile.
+
+The ext2fs_open() function now performs more sanity checks on the
+superblock to avoid potential divide by zero errors by other parts of
+library.
+
+The ext2fs_read_inode_full() function now has a safety check to avoid
+a segmentation fault on corrupted filesystems.
+
+The ext2fs_new_inode() function now has a sanity check so that if the
+s_first_inode field in the superblock is insane, it will return
+EXT2_ET_INODE_ALLOC_FAIL instead of returning an invalid inode number.
+
+To avoid segmentation faults, ext2fs_block_alloc_stats() and
+ext2fs_inode_alloc_stats() now validates the passed inode or block
+number to avoid overrunning an array boundary.
+
+Various signed/unsigned errors for variables containing block numbers
+have been fixed.
+
+Accomodations for gcc's stupidity in not realizing that constant
+strings that do not contain a '%' character are safe to use in format
+strings have been made so that distributions that want to compile
+e2fsprogs with -Werror=format-security have an easier time doing so.
+
+Added a new 64-bit getsize interface, ext2fs_get_device_size2().
+
+Added the utility make-sparse.c to the contrib directory.
+
+The ext2fs_block_iterate2() function now reflects errors from
+ext2fs_extent_set_bmap() to the caller, if the callback tries to
+change a block on an extent-based file, and ext2fs_extent_set_bmap()
+fails for some reason (for example, there isn't enough disk space to
+split a node and expand the extent tree.
+
+The ext2fs_block_iterate2() function will preserve the uninit flag in
+extents when the callback function modifies a block in an extent-based
+file.
+
+E2fsck will now flag filesystems that have an insane s_first_ino field
+in their superblock, and attempt to use a backup superblock to repair
+the filesystem.
+
+
 E2fsprogs 1.41.3 (October 12, 2008)
 ===================================
 
