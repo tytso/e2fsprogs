@@ -8,7 +8,7 @@
 @ifinfo
 @dircategory Development
 @direntry
-* libext2fs: (libext2fs.info).                  The EXT2FS library.
+* libext2fs: (libext2fs).                  The EXT2FS library.
 @end direntry
 @end ifinfo
 
