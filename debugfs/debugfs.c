@@ -291,9 +291,6 @@ void do_show_super_stats(int argc, char *argv[])
 	int	c, header_only = 0;
 	int	numdirs = 0, first, gdt_csum;
 
-	gdt_csum = EXT2_HAS_RO_COMPAT_FEATURE(current_fs->super,
-					      EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
-
 	reset_getopt();
 	while ((c = getopt (argc, argv, "h")) != EOF) {
 		switch (c) {
@@ -321,6 +318,8 @@ void do_show_super_stats(int argc, char *argv[])
 		return;
 	}
 
+	gdt_csum = EXT2_HAS_RO_COMPAT_FEATURE(current_fs->super,
+					      EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 	gdp = &current_fs->group_desc[0];
 	for (i = 0; i < current_fs->group_desc_count; i++, gdp++) {
 		fprintf(out, " Group %2d: block bitmap at %u, "
