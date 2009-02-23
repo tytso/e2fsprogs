@@ -529,8 +529,7 @@ static void add_journal(ext2_filsys fs)
 	return;
 
 err:
-	if (journal_device)
-		free(journal_device);
+	free(journal_device);
 	exit(1);
 }
 

@@ -801,8 +801,7 @@ VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, va_list ar
 		      {
 			if (!(result == resultbuf || result == NULL))
 			  free (result);
-			if (buf_malloced != NULL)
-			  free (buf_malloced);
+			free (buf_malloced);
 			CLEANUP ();
 			errno = EINVAL;
 			return NULL;
@@ -860,8 +859,7 @@ VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, va_list ar
 	  result = memory;
       }
 
-    if (buf_malloced != NULL)
-      free (buf_malloced);
+    free (buf_malloced);
     CLEANUP ();
     *lengthp = length;
     return result;
@@ -869,8 +867,7 @@ VASNPRINTF (CHAR_T *resultbuf, size_t *lengthp, const CHAR_T *format, va_list ar
   out_of_memory:
     if (!(result == resultbuf || result == NULL))
       free (result);
-    if (buf_malloced != NULL)
-      free (buf_malloced);
+    free (buf_malloced);
   out_of_memory_1:
     CLEANUP ();
     errno = ENOMEM;

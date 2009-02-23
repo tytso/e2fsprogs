@@ -66,7 +66,7 @@ int argv_parse(char *in_buf, int *ret_argc, char ***ret_argv)
 				new_argv = realloc(argv,
 						  (max_argc+1)*sizeof(char *));
 				if (!new_argv) {
-					if (argv) free(argv);
+					free(argv);
 					free(buf);
 					return -1;
 				}
@@ -126,8 +126,7 @@ int argv_parse(char *in_buf, int *ret_argc, char ***ret_argv)
 
 void argv_free(char **argv)
 {
-	if (*argv)
-		free(*argv);
+	free(*argv);
 	free(argv);
 }
 

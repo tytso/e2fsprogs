@@ -1191,11 +1191,7 @@ nt_open(const char *name, int flags, io_channel *channel)
 
 			if (NULL != io)
 			{
-				if(NULL != io->name)
-				{
-					free(io->name);
-				}
-
+				free(io->name);
 				free(io);
 			}
 
@@ -1207,11 +1203,7 @@ nt_open(const char *name, int flags, io_channel *channel)
 					_CloseDisk(NtData->Handle);
 				}
 
-				if(NULL != NtData->Buffer)
-				{
-					free(NtData->Buffer);
-				}
-
+				free(NtData->Buffer);
 				free(NtData);
 			}
 		}
@@ -1245,12 +1237,7 @@ nt_close(io_channel channel)
 		return 0;
 	}
 
-	if(NULL != channel->name)
-	{
-		free(channel->name);
-	}
-
-
+	free(channel->name);
 	free(channel);
 
 	if (NULL != NtData)
@@ -1262,11 +1249,7 @@ nt_close(io_channel channel)
 			_CloseDisk(NtData->Handle);
 		}
 
-		if(NULL != NtData->Buffer)
-		{
-			free(NtData->Buffer);
-		}
-
+		free(NtData->Buffer);
 		free(NtData);
 	}
 

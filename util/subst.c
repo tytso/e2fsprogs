@@ -54,10 +54,8 @@ static int add_subst(char *name, char *value)
 	return 0;
 fail:
 	if (ent) {
-		if (ent->name)
-			free(ent->name);
-		if (ent->value)
-			free(ent->value);
+		free(ent->name);
+		free(ent->value);
 		free(ent);
 	}
 	return retval;

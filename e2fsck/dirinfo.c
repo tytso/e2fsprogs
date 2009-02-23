@@ -326,8 +326,7 @@ extern struct dir_info_iter *e2fsck_dir_info_iter_begin(e2fsck_t ctx)
 extern void e2fsck_dir_info_iter_end(e2fsck_t ctx EXT2FS_ATTR((unused)),
 				     struct dir_info_iter *iter)
 {
-	if (iter->tdb_iter.dptr)
-		free(iter->tdb_iter.dptr);
+	free(iter->tdb_iter.dptr);
 	ext2fs_free_mem(&iter);
 }
 

@@ -221,8 +221,7 @@ int ss_execute_line (sci_idx, line_ptr)
     /* parse it */
     argv = ss_parse(sci_idx, line_ptr, &argc);
     if (argc == 0) {
-	if (argv)
-	    free(argv);
+	free(argv);
         return 0;
     }
 

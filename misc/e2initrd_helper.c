@@ -274,8 +274,7 @@ static int parse_fstab_line(char *line, struct fs_info *fs)
 	fs->flags = 0;
 	fs->next = NULL;
 
-	if (dev)
-		free(dev);
+	free(dev);
 
 	return 0;
 }

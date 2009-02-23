@@ -199,8 +199,7 @@ get_charset_aliases ()
 	    }
 	}
 
-      if (file_name != NULL)
-	free (file_name);
+      free (file_name);
 
 #else
 

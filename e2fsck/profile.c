@@ -603,8 +603,7 @@ void profile_free_file(prf_file_t prf)
 {
     if (prf->root)
 	profile_free_node(prf->root);
-    if (prf->filespec)
-	    free(prf->filespec);
+    free(prf->filespec);
     free(prf);
 }
 
@@ -1049,10 +1048,8 @@ void profile_free_node(struct profile_node *node)
 	if (node->magic != PROF_MAGIC_NODE)
 		return;
 
-	if (node->name)
-		free(node->name);
-	if (node->value)
-		free(node->value);
+	free(node->name);
+	free(node->value);
 
 	for (child=node->first_child; child; child = next) {
 		next = child->next;

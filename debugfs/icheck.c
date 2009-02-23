@@ -161,8 +161,7 @@ void do_icheck(int argc, char **argv)
 
 error_out:
 	free(bw.barray);
-	if (block_buf)
-		free(block_buf);
+	free(block_buf);
 	if (scan)
 		ext2fs_close_inode_scan(scan);
 	return;

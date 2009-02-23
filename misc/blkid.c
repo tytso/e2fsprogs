@@ -420,10 +420,8 @@ int main(int argc, char **argv)
 	}
 
 exit:
-	if (search_type)
-		free(search_type);
-	if (search_value)
-		free(search_value);
+	free(search_type);
+	free(search_value);
 	blkid_put_cache(cache);
 	return err;
 }

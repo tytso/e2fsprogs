@@ -1237,8 +1237,7 @@ int main (int argc, char ** argv)
 	close (dev);
 	if (out != stdout)
 		fclose (out);
-	if (t_patts)
-		free(t_patts);
+	free(t_patts);
 	return 0;
 }
 

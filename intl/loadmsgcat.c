@@ -1372,8 +1372,7 @@ _nl_load_domain (struct loaded_l10nfile *domain_file,
       /* This is an invalid revision.  */
     invalid:
       /* This is an invalid .mo file.  */
-      if (domain->malloced)
-	free (domain->malloced);
+      free (domain->malloced);
 #ifdef HAVE_MMAP
       if (use_mmap)
 	munmap ((void *) data, size);
@@ -1405,8 +1404,7 @@ _nl_unload_domain (struct loaded_domain *domain)
 
   _nl_free_domain_conv (domain);
 
-  if (domain->malloced)
-    free (domain->malloced);
+  free (domain->malloced);
 
 # ifdef _POSIX_MAPPED_FILES
   if (domain->use_mmap)

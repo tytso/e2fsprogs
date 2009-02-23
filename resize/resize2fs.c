@@ -1396,8 +1396,7 @@ errout:
 		ext2fs_close_inode_scan(scan);
 	if (block_buf)
 		ext2fs_free_mem(&block_buf);
-	if (inode)
-		free(inode);
+	free(inode);
 	return retval;
 }
 

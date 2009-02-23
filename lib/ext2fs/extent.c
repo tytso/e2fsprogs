@@ -1007,8 +1007,7 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 done:
 	if (newpath)
 		ext2fs_free_mem(&newpath);
-	if (block_buf)
-		free(block_buf);
+	free(block_buf);
 
 	return retval;
 }

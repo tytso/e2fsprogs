@@ -197,8 +197,7 @@ set_binding_values (const char *domainname,
 
 		  if (__builtin_expect (result != NULL, 1))
 		    {
-		      if (binding->codeset != NULL)
-			free (binding->codeset);
+		      free (binding->codeset);
 
 		      binding->codeset = result;
 		      binding->codeset_cntr++;

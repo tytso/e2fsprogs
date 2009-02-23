@@ -1625,10 +1625,8 @@ found_type:
 			   dev->bid_name, (long long)st.st_rdev, type));
 	}
 
-	if (probe.sbbuf)
-		free(probe.sbbuf);
-	if (probe.buf)
-		free(probe.buf);
+	free(probe.sbbuf);
+	free(probe.buf);
 	if (probe.fd >= 0)
 		close(probe.fd);
 

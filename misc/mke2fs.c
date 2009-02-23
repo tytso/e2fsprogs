@@ -1024,8 +1024,7 @@ static char **parse_fs_type(const char *fs_type,
 		}
 	}
 	free(parse_str);
-	if (profile_type)
-		free(profile_type);
+	free(profile_type);
 	if (is_hurd)
 		push_string(&list, "hurd");
 	return (list.list);
@@ -1523,16 +1522,14 @@ got_size:
 					   "features", "", &tmp);
 			if (tmp && *tmp)
 				edit_feature(tmp, &fs_param.s_feature_compat);
-			if (tmp)
-				free(tmp);
+			free(tmp);
 		}
 		tmp = get_string_from_profile(fs_types, "default_features",
 					      "");
 	}
 	edit_feature(fs_features ? fs_features : tmp,
 		     &fs_param.s_feature_compat);
-	if (tmp)
-		free(tmp);
+	free(tmp);
 
 	if (fs_param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		fs_types[0] = strdup("journal");
@@ -1646,8 +1643,7 @@ got_size:
 		profile_get_string(profile, "fs_types", *cpp, "options", "", &tmp);
 			if (tmp && *tmp)
 				parse_extended_opts(&fs_param, tmp);
-			if (tmp)
-				free(tmp);
+			free(tmp);
 	}
 
 	if (extended_opts)

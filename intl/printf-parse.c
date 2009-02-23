@@ -524,10 +524,8 @@ PRINTF_PARSE (const CHAR_T *format, DIRECTIVES *d, arguments *a)
   return 0;
 
 error:
-  if (a->arg)
-    free (a->arg);
-  if (d->dir)
-    free (d->dir);
+  free (a->arg);
+  free (d->dir);
   return -1;
 }
 

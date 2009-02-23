@@ -275,8 +275,7 @@ void do_htree_dump(int argc, char *argv[])
 			    rootnode->indirect_levels);
 
 errout:
-	if (buf)
-		free(buf);
+	free(buf);
 	close_pager(pager);
 }
 
