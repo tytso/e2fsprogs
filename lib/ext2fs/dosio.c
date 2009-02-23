@@ -278,6 +278,7 @@ static errcode_t dos_open(const char *dev, int flags, io_channel *channel)
   if(!HW_OK())
   {
     _dio_error = ERR_HARDWARE;
+    free(part->dev);
     free(part);
     return EFAULT;
   }
@@ -297,6 +298,7 @@ static errcode_t dos_open(const char *dev, int flags, io_channel *channel)
   if(!HW_OK())
   {
     _dio_error = ERR_HARDWARE;
+    free(part->dev);
     free(part);
     return EFAULT;
   }
@@ -308,6 +310,7 @@ static errcode_t dos_open(const char *dev, int flags, io_channel *channel)
   {
     _dio_error = part->pno == 0xFE ? ERR_EMPTYPART :
                  part->pno == 0xFD ? ERR_LINUXSWAP : ERR_NOTEXT2FS;
+    free(part->dev);
     free(part);
     return ENODEV;
   }
