@@ -27,18 +27,19 @@ void ss_add_request_table(sci_idx, rqtbl_ptr, position, code_ptr)
 {
 	register ss_data *info;
 	register int i, size;
+	ssrt **t;
 
 	info = ss_info(sci_idx);
 	for (size=0; info->rqt_tables[size] != (ssrt *)NULL; size++)
 		;
 	/* size == C subscript of NULL == #elements */
 	size += 2;		/* new element, and NULL */
-	info->rqt_tables = (ssrt **)realloc(info->rqt_tables,
-					    (unsigned)size*sizeof(ssrt));
-	if (info->rqt_tables == (ssrt **)NULL) {
+	t = (ssrt **)realloc(info->rqt_tables, (unsigned)size*sizeof(ssrt));
+	if (t == (ssrt **)NULL) {
 		*code_ptr = errno;
 		return;
 	}
+	info->rqt_tables = t;
 	if (position > size - 2)
 		position = size - 2;
 
