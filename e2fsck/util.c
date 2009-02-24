@@ -663,6 +663,8 @@ int check_for_modules(const char *fs_name)
 			continue;
 		if ((cp = strrchr(buf, '/')) != NULL)
 			cp++;
+		else
+			cp = buf;
 		i = strlen(cp);
 		if (i > 3) {
 			t = cp + i - 3;
