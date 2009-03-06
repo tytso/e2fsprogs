@@ -720,7 +720,8 @@ static void parse_tune2fs_options(int argc, char **argv)
 			break;
 		case 'm':
 			reserved_ratio = strtod(optarg, &tmp);
-			if (*tmp || reserved_ratio > 50) {
+			if (*tmp || reserved_ratio > 50 ||
+			    reserved_ratio < 0) {
 				com_err(program_name, 0,
 					_("bad reserved block ratio - %s"),
 					optarg);

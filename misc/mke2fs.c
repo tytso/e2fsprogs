@@ -1260,7 +1260,8 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'm':
 			reserved_ratio = strtod(optarg, &tmp);
-			if (reserved_ratio > 50 || *tmp) {
+			if ( *tmp || reserved_ratio > 50 ||
+			     reserved_ratio < 0) {
 				com_err(program_name, 0,
 					_("invalid reserved blocks percent - %s"),
 					optarg);
