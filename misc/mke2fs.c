@@ -1892,6 +1892,14 @@ int main (int argc, char *argv[])
 	if (fs_param.s_flags & EXT2_FLAGS_TEST_FILESYS)
 		fs->super->s_flags |= EXT2_FLAGS_TEST_FILESYS;
 
+	if ((fs_param.s_feature_incompat &
+	     (EXT3_FEATURE_INCOMPAT_EXTENTS|EXT4_FEATURE_INCOMPAT_FLEX_BG)) ||
+	    (fs_param.s_feature_ro_compat &
+	     (EXT4_FEATURE_RO_COMPAT_HUGE_FILE|EXT4_FEATURE_RO_COMPAT_GDT_CSUM|
+	      EXT4_FEATURE_RO_COMPAT_DIR_NLINK|
+	      EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE)))
+		fs->super->s_kbytes_written = 1;
+
 	/*
 	 * Wipe out the old on-disk superblock
 	 */

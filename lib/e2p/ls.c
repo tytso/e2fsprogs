@@ -267,6 +267,24 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		next = sb->s_lastcheck + sb->s_checkinterval;
 		fprintf(f, "Next check after:         %s", ctime(&next));
 	}
+#define POW2(x) ((__u64) 1 << (x))
+	if (sb->s_kbytes_written) {
+		fprintf(f, "Lifetime writes:          ");
+		if (sb->s_kbytes_written < POW2(13))
+			fprintf(f, "%llu kB\n", sb->s_kbytes_written);
+		else if (sb->s_kbytes_written < POW2(23))
+			fprintf(f, "%llu MB\n",
+				(sb->s_kbytes_written + POW2(9)) >> 10);
+		else if (sb->s_kbytes_written < POW2(33))
+			fprintf(f, "%llu GB\n",
+				(sb->s_kbytes_written + POW2(19)) >> 20);
+		else if (sb->s_kbytes_written < POW2(43))
+			fprintf(f, "%llu TB\n",
+				(sb->s_kbytes_written + POW2(29)) >> 30);
+		else
+			fprintf(f, "%llu PB\n",
+				(sb->s_kbytes_written + POW2(39)) >> 40);
+	}
 	fprintf(f, "Reserved blocks uid:      ");
 	print_user(sb->s_def_resuid, f);
 	fprintf(f, "Reserved blocks gid:      ");

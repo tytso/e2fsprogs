@@ -133,6 +133,7 @@ static struct field_set_info super_fields[] = {
 	{ "mmp_block", &set_sb.s_mmp_block, 8, parse_uint },
 	{ "raid_stripe_width", &set_sb.s_raid_stripe_width, 4, parse_uint },
 	{ "log_groups_per_flex", &set_sb.s_log_groups_per_flex, 1, parse_uint },
+	{ "kbytes_written", &set_sb.s_kbytes_written, 8, parse_uint },
 	{ 0, 0, 0, 0 }
 };
 
