@@ -245,6 +245,55 @@ static int check_for_modules(const char *fs_name)
 	return (0);
 }
 
+static int linux_version_code()
+{
+#ifdef __linux__
+	struct utsname	ut;
+	static		version_code = -1;
+	int		major, minor, rev;
+	char		*endptr;
+	const char 	*cp;
+
+	if (version_code > 0)
+		return version_code;
+
+	if (uname(&ut))
+		return 0;
+	cp = ut.release;
+
+	major = strtol(cp, &endptr, 10);
+	if (cp == endptr || *endptr != '.')
+		return 0;
+	cp = endptr + 1;
+	minor = strtol(cp, &endptr, 10);
+	if (cp == endptr || *endptr != '.')
+		return 0;
+	cp = endptr + 1;
+	rev = strtol(cp, &endptr, 10);
+	if (cp == endptr)
+		return 0;
+	version_code = (((major * 256) + minor) * 256) + rev;
+	return version_code;
+#else
+	return 0;
+#endif
+}
+
+#define EXT4_SUPPORTS_EXT2 (2 * 65536 + 6*256 + 29)
+
+static int system_supports_ext2(void)
+{
+	static time_t	last_check = 0;
+	static int	ret = -1;
+	time_t		now = time(0);
+
+	if (ret != -1 || (now - last_check) < 5)
+		return ret;
+	last_check = now;
+	ret = (fs_proc_check("ext2") || check_for_modules("ext2"));
+	return ret;
+}
+
 static int system_supports_ext4(void)
 {
 	static time_t	last_check = 0;
@@ -283,6 +332,18 @@ static int probe_ext4dev(struct blkid_probe *probe,
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
 		return -BLKID_ERR_PARAM;
 
+	/* 
+	 * If the filesystem does not have a journal and ext2 and ext4
+	 * is not present, then force this to be detected as an
+	 * ext4dev filesystem.
+	 */
+	if (!(blkid_le32(es->s_feature_compat) &
+	      EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+	    !system_supports_ext2() && !system_supports_ext4() &&
+	    system_supports_ext4dev() &&
+	    linux_version_code() >= EXT4_SUPPORTS_EXT2)
+		goto force_ext4dev;
+
 	/*
 	 * If the filesystem is marked as OK for use by in-development
 	 * filesystem code, but ext4dev is not supported, and ext4 is,
@@ -299,6 +360,7 @@ static int probe_ext4dev(struct blkid_probe *probe,
 	} else
 		return -BLKID_ERR_PARAM;
 
+force_ext4dev:
     	get_ext2_info(probe->dev, id, buf);
 	return 0;
 }
@@ -314,6 +376,17 @@ static int probe_ext4(struct blkid_probe *probe, struct blkid_magic *id,
 	    EXT3_FEATURE_INCOMPAT_JOURNAL_DEV)
 		return -BLKID_ERR_PARAM;
 
+	/* 
+	 * If the filesystem does not have a journal and ext2 is not
+	 * present, then force this to be detected as an ext2
+	 * filesystem.
+	 */
+	if (!(blkid_le32(es->s_feature_compat) &
+	      EXT3_FEATURE_COMPAT_HAS_JOURNAL) &&
+	    !system_supports_ext2() && system_supports_ext4() &&
+	    linux_version_code() >= EXT4_SUPPORTS_EXT2)
+		goto force_ext4;
+
 	/* Ext4 has at least one feature which ext3 doesn't understand */
 	if (!(blkid_le32(es->s_feature_ro_compat) &
 	      EXT3_FEATURE_RO_COMPAT_UNSUPPORTED) &&
@@ -321,6 +394,7 @@ static int probe_ext4(struct blkid_probe *probe, struct blkid_magic *id,
 	      EXT3_FEATURE_INCOMPAT_UNSUPPORTED))
 		return -BLKID_ERR_PARAM;
 
+force_ext4:
 	/*
 	 * If the filesystem is a OK for use by in-development
 	 * filesystem code, and ext4dev is supported or ext4 is not
@@ -378,6 +452,15 @@ static int probe_ext2(struct blkid_probe *probe, struct blkid_magic *id,
 	     EXT2_FEATURE_RO_COMPAT_UNSUPPORTED) ||
 	    (blkid_le32(es->s_feature_incompat) &
 	     EXT2_FEATURE_INCOMPAT_UNSUPPORTED))
+		return -BLKID_ERR_PARAM;
+
+	/* 
+	 * If ext2 is not present, but ext4 or ext4dev are, then
+	 * disclaim we are ext2
+	 */
+	if (!system_supports_ext2() &&
+	    (system_supports_ext4() || system_supports_ext4dev()) &&
+	    linux_version_code() >= EXT4_SUPPORTS_EXT2)
 		return -BLKID_ERR_PARAM;
 
 	get_ext2_info(probe->dev, id, buf);
