@@ -300,9 +300,10 @@ static int read_journal_block(const char *cmd, struct journal_source *source,
 	}
 
 	if (retval)
-		com_err(cmd, retval, "while while reading journal");
+		com_err(cmd, retval, "while reading journal");
 	else if (*got != (unsigned int) size) {
-		com_err(cmd, 0, "short read (read %d, expected %d) while while reading journal", *got, size);
+		com_err(cmd, 0, "short read (read %d, expected %d) "
+			"while reading journal", *got, size);
 		retval = -1;
 	}
 
