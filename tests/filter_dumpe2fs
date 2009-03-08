@@ -8,6 +8,7 @@
 /^Directory Hash Seed:/d
 /^Next check after:/d
 /^Maximum mount count:/d
+/^Lifetime writes:/d
 /Reserved blocks uid:/s/ (user .*)//
 /Reserved blocks gid:/s/ (group .*)//
 /^  Checksum /d
