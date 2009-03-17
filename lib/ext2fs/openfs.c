@@ -243,10 +243,6 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		goto cleanup;
 	}
 	fs->fragsize = EXT2_FRAG_SIZE(fs->super);
-       if (EXT2_INODES_PER_GROUP(fs->super) == 0) {
-		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
-		goto cleanup;
-	}
 	fs->inode_blocks_per_group = ((EXT2_INODES_PER_GROUP(fs->super) *
 				       EXT2_INODE_SIZE(fs->super) +
 				       EXT2_BLOCK_SIZE(fs->super) - 1) /
@@ -271,6 +267,11 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		fs->group_desc_count = 0;
 		*ret_fs = fs;
 		return 0;
+	}
+
+	if (EXT2_INODES_PER_GROUP(fs->super) == 0) {
+		retval = EXT2_ET_CORRUPT_SUPERBLOCK;
+		goto cleanup;
 	}
 
 	/*
