@@ -2079,6 +2079,12 @@ int main (int argc, char *argv[])
 		    EXT3_FEATURE_COMPAT_HAS_JOURNAL)) {
 		journal_blocks = figure_journal_size(journal_size, fs);
 
+		if (super_only) {
+			printf(_("Skipping journal creation in super-only mode\n"));
+			fs->super->s_journal_inum = EXT2_JOURNAL_INO;
+			goto no_journal;
+		}
+
 		if (!journal_blocks) {
 			fs->super->s_feature_compat &=
 				~EXT3_FEATURE_COMPAT_HAS_JOURNAL;
