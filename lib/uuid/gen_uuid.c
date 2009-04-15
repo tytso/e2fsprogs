@@ -86,6 +86,9 @@
 #if defined(__linux__) && defined(HAVE_SYS_SYSCALL_H)
 #include <sys/syscall.h>
 #endif
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
 
 #include "uuidP.h"
 #include "uuidd.h"
@@ -311,6 +314,7 @@ static int get_clock(uint32_t *clock_high, uint32_t *clock_low,
 	struct flock			fl;
 	uint64_t			clock_reg;
 	mode_t				save_umask;
+	int				len;
 
 	if (state_fd == -2) {
 		save_umask = umask(0);
@@ -392,10 +396,14 @@ try_again:
 
 	if (state_fd > 0) {
 		rewind(state_f);
-		ftruncate(state_fd, 0);
-		fprintf(state_f, "clock: %04x tv: %lu %lu adj: %d\n",
-			clock_seq, last.tv_sec, last.tv_usec, adjustment);
+		len = fprintf(state_f, 
+			      "clock: %04x tv: %016lu %08lu adj: %08d\n",
+			      clock_seq, last.tv_sec, last.tv_usec, adjustment);
 		fflush(state_f);
+		if (ftruncate(state_fd, len) < 0) {
+			fprintf(state_f, "                   \n");
+			fflush(state_f);
+		}
 		rewind(state_f);
 		fl.l_type = F_UNLCK;
 		fcntl(state_fd, F_SETLK, &fl);
@@ -425,6 +433,30 @@ static ssize_t read_all(int fd, char *buf, size_t count)
 		c += ret;
 	}
 	return c;
+}
+
+/*
+ * Close all file descriptors
+ */
+static void close_all_fds(void)
+{
+	int i, max;
+
+#if defined(HAVE_SYSCONF) && defined(_SC_OPEN_MAX)
+	max = sysconf(_SC_OPEN_MAX);
+#elif defined(HAVE_GETDTABLESIZE)
+	max = getdtablesize();
+#elif defined(HAVE_GETRLIMIT) && defined(RLIMIT_NOFILE)
+	struct rlimit rl;
+
+	getrlimit(RLIMIT_NOFILE, &rl);
+	max = rl.rlim_cur;
+#else
+	max = OPEN_MAX;
+#endif
+
+	for (i=0; i < max; i++)
+		close(i);
 }
 
 
@@ -459,6 +491,7 @@ static int get_uuid_via_daemon(int op, uuid_t out, int *num)
 			access_ret = access(uuidd_path, X_OK);
 		if (access_ret == 0 && start_attempts++ < 5) {
 			if ((pid = fork()) == 0) {
+				close_all_fds();
 				execl(uuidd_path, "uuidd", "-qT", "300",
 				      (char *) NULL);
 				exit(1);
