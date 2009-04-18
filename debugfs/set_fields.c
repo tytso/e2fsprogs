@@ -159,6 +159,8 @@ static struct field_set_info inode_fields[] = {
 	{ "block[TIND]", &set_inode.i_block[EXT2_TIND_BLOCK], 4, parse_uint },
 	{ "generation", &set_inode.i_generation, 4, parse_uint },
 	{ "file_acl", &set_inode.i_file_acl, 4, parse_uint },
+	{ "file_acl_high", &set_inode.osd2.linux2.l_i_file_acl_high, 2,
+	  parse_uint },
 	{ "dir_acl", &set_inode.i_dir_acl, 4, parse_uint },
 	{ "size_high", &set_inode.i_size_high, 4, parse_uint },
 	{ "faddr", &set_inode.i_faddr, 4, parse_uint },
