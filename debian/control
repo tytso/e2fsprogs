@@ -4,6 +4,7 @@ Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
 Build-Depends: texi2html (>= 1.76), gettext, texinfo, dc, pkg-config, dietlibc-dev [alpha amd64 arm hppa i386 ia64 mips mipsel powerpc ppc64 s390 sparc], debhelper (>= 4.2)
 Standards-Version: 3.8.0.0
+Homepage: http://e2fsprogs.sourceforge.net
 
 Package: e2fsck-static
 Section: admin
