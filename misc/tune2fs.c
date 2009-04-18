@@ -1430,7 +1430,7 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 {
 	errcode_t retval = 0;
 	const char *tdb_dir;
-	char tdb_file[PATH_MAX];
+	char *tdb_file;
 	char *dev_name, *tmp_name;
 
 #if 0 /* FIXME!! */
@@ -1443,6 +1443,12 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 					&tdb_dir);
 #endif
 	tmp_name = strdup(name);
+	if (!tmp_name) {
+	alloc_fn_fail:
+		com_err(program_name, ENOMEM, 
+			_("Couldn't allocate memory for tdb filename\n"));
+		return ENOMEM;
+	}
 	dev_name = basename(tmp_name);
 
 	tdb_dir = getenv("E2FSPROGS_UNDO_DIR");
@@ -1453,6 +1459,9 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	    access(tdb_dir, W_OK))
 		return 0;
 
+	tdb_file = malloc(strlen(tdb_dir) + 9 + strlen(dev_name) + 7 + 1);
+	if (!tdb_file)
+		goto alloc_fn_fail;
 	sprintf(tdb_file, "%s/tune2fs-%s.e2undo", tdb_dir, dev_name);
 
 	if (!access(tdb_file, F_OK)) {
@@ -1461,6 +1470,7 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 			com_err(program_name, retval,
 				_("while trying to delete %s"),
 				tdb_file);
+			free(tdb_file);
 			return retval;
 		}
 	}
@@ -1471,6 +1481,7 @@ static int tune2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	printf(_("To undo the tune2fs operation please run "
 		 "the command\n    e2undo %s %s\n\n"),
 		 tdb_file, name);
+	free(tdb_file);
 	free(tmp_name);
 	return retval;
 }

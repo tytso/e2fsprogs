@@ -1797,7 +1797,7 @@ open_err_out:
 static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 {
 	errcode_t retval = 0;
-	char *tdb_dir, tdb_file[PATH_MAX];
+	char *tdb_dir, *tdb_file;
 	char *device_name, *tmp_name;
 
 	/*
@@ -1815,7 +1815,16 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 		return 0;
 
 	tmp_name = strdup(name);
+	if (!tmp_name) {
+	alloc_fn_fail:
+		com_err(program_name, ENOMEM, 
+			_("Couldn't allocate memory for tdb filename\n"));
+		return ENOMEM;
+	}
 	device_name = basename(tmp_name);
+	tdb_file = malloc(strlen(tdb_dir) + 8 + strlen(device_name) + 7 + 1);
+	if (!tdb_file)
+		goto alloc_fn_fail;
 	sprintf(tdb_file, "%s/mke2fs-%s.e2undo", tdb_dir, device_name);
 
 	if (!access(tdb_file, F_OK)) {
@@ -1824,6 +1833,7 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 			com_err(program_name, retval,
 				_("while trying to delete %s"),
 				tdb_file);
+			free(tdb_file);
 			return retval;
 		}
 	}
@@ -1835,6 +1845,7 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 		 "using the command:\n"
 		 "    e2undo %s %s\n\n"), tdb_file, name);
 
+	free(tdb_file);
 	free(tmp_name);
 	return retval;
 }
