@@ -88,7 +88,14 @@ device
 .SH DESCRIPTION
 .BI tune2fs
 allows the system administrator to adjust various tunable filesystem 
-parameters on Linux ext2/ext3 filesystems.
+parameters on Linux ext2/ext3 filesystems.  The current values of these
+options can be displayed by using the
+.B -l
+option to
+.BR tune2fs (8)
+program, or by using the
+.BR dumpe2fs (8)
+program.
 .SH OPTIONS
 .TP
 .BI \-c " max-mount-counts"
@@ -319,7 +326,8 @@ that size.
 @JDEV@options can be given for a filesystem.
 .TP
 .B \-l
-List the contents of the filesystem superblock.
+List the contents of the filesystem superblock, including the current
+values of the parameters that can be set via this program.
 .TP
 .BI \-L " volume-label"
 Set the volume label of the filesystem.  
