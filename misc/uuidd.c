@@ -78,7 +78,7 @@ static void create_daemon(void)
 	open("/dev/null", O_RDWR);
 	open("/dev/null", O_RDWR);
 
-	chdir("/");
+	if (chdir("/")) {}	/* Silence warn_unused_result warning */
 	(void) setsid();
 	euid = geteuid();
 	if (setreuid(euid, euid) < 0)
@@ -93,6 +93,25 @@ static int read_all(int fd, char *buf, size_t count)
 	memset(buf, 0, count);
 	while (count > 0) {
 		ret = read(fd, buf, count);
+		if (ret < 0) {
+			if ((errno == EAGAIN) || (errno == EINTR))
+				continue;
+			return -1;
+		}
+		count -= ret;
+		buf += ret;
+		c += ret;
+	}
+	return c;
+}
+
+static int write_all(int fd, char *buf, size_t count)
+{
+	ssize_t ret;
+	int c = 0;
+
+	while (count > 0) {
+		ret = write(fd, buf, count);
 		if (ret < 0) {
 			if ((errno == EAGAIN) || (errno == EINTR))
 				continue;
@@ -161,7 +180,7 @@ static int call_daemon(const char *socket_path, int op, char *buf,
 		op_len += sizeof(int);
 	}
 
-	ret = write(s, op_buf, op_len);
+	ret = write_all(s, op_buf, op_len);
 	if (ret < op_len) {
 		if (err_context)
 			*err_context = _("write");
@@ -291,9 +310,9 @@ static void server_loop(const char *socket_path, const char *pidfile_path,
 	signal(SIGALRM, terminate_intr);
 	signal(SIGPIPE, SIG_IGN);
 
-	sprintf(reply_buf, "%d\n", getpid());
-	ftruncate(fd_pidfile, 0);
-	write(fd_pidfile, reply_buf, strlen(reply_buf));
+	sprintf(reply_buf, "%8d\n", getpid());
+	if (ftruncate(fd_pidfile, 0)) {} /* Silence warn_unused_result */
+	write_all(fd_pidfile, reply_buf, strlen(reply_buf));
 	if (fd_pidfile > 1)
 		close(fd_pidfile); /* Unlock the pid file */
 
@@ -393,8 +412,8 @@ static void server_loop(const char *socket_path, const char *pidfile_path,
 				printf(_("Invalid operation %d\n"), op);
 			goto shutdown_socket;
 		}
-		write(ns, &reply_len, sizeof(reply_len));
-		write(ns, reply_buf, reply_len);
+		write_all(ns, (char *) &reply_len, sizeof(reply_len));
+		write_all(ns, reply_buf, reply_len);
 	shutdown_socket:
 		close(ns);
 	}
