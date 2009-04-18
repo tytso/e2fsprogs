@@ -746,6 +746,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	errcode_t	retval;
 	ext2_filsys 	fs, old_fs;
 	ext2fs_block_bitmap	meta_bmap;
+	__u32		save_incompat_flag;
 
 	fs = rfs->new_fs;
 	old_fs = rfs->old_fs;
@@ -890,9 +891,29 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 
 		/*
 		 * Allocate the missing data structures
+		 *
+		 * XXX We have a problem with FLEX_BG and off-line
+		 * resizing where we are growing the size of the
+		 * filesystem.  ext2fs_allocate_group_table() will try
+		 * to reserve the inode table in the desired flex_bg
+		 * location.  However, passing rfs->reserve_blocks
+		 * doesn't work since it only has reserved the blocks
+		 * that will be used in the new block group -- and
+		 * with flex_bg, we can and will allocate the tables
+		 * outside of the block group.  And we can't pass in
+		 * the fs->block_map because it doesn't handle
+		 * overlapping inode table movements right.  So for
+		 * now, we temporarily disable flex_bg to force
+		 * ext2fs_allocate_group_tables() to allocate the bg
+		 * metadata in side the block group, and the restore
+		 * it afterwards.  Ugly, until we can fix this up
+		 * right later.
 		 */
+		save_incompat_flag = fs->super->s_feature_incompat;
+		fs->super->s_feature_incompat &= ~EXT4_FEATURE_INCOMPAT_FLEX_BG;
 		retval = ext2fs_allocate_group_table(fs, i,
 						     rfs->reserve_blocks);
+		fs->super->s_feature_incompat = save_incompat_flag;
 		if (retval)
 			goto errout;
 
