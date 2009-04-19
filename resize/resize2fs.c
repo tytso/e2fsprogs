@@ -233,20 +233,29 @@ static void fix_uninit_block_bitmaps(ext2_filsys fs)
 
 /*
  * If the group descriptor's bitmap and inode table blocks are valid,
- * release them in the specified filesystem data structure
+ * release them in the new filesystem data structure, and mark them as
+ * reserved so the old inode table blocks don't get overwritten.
  */
-static void free_gdp_blocks(ext2_filsys fs, struct ext2_group_desc *gdp)
+static void free_gdp_blocks(ext2_filsys fs,
+			    ext2fs_block_bitmap reserve_blocks,
+			    struct ext2_group_desc *gdp)
 {
 	blk_t	blk;
 	int	j;
 
 	if (gdp->bg_block_bitmap &&
-	    (gdp->bg_block_bitmap < fs->super->s_blocks_count))
+	    (gdp->bg_block_bitmap < fs->super->s_blocks_count)) {
 		ext2fs_block_alloc_stats(fs, gdp->bg_block_bitmap, -1);
+		ext2fs_mark_block_bitmap(reserve_blocks,
+					 gdp->bg_block_bitmap);
+	}
 
 	if (gdp->bg_inode_bitmap &&
-	    (gdp->bg_inode_bitmap < fs->super->s_blocks_count))
+	    (gdp->bg_inode_bitmap < fs->super->s_blocks_count)) {
 		ext2fs_block_alloc_stats(fs, gdp->bg_inode_bitmap, -1);
+		ext2fs_mark_block_bitmap(reserve_blocks,
+					 gdp->bg_inode_bitmap);
+	}
 
 	if (gdp->bg_inode_table == 0 ||
 	    (gdp->bg_inode_table >= fs->super->s_blocks_count))
@@ -257,14 +266,19 @@ static void free_gdp_blocks(ext2_filsys fs, struct ext2_group_desc *gdp)
 		if (blk >= fs->super->s_blocks_count)
 			break;
 		ext2fs_block_alloc_stats(fs, blk, -1);
+		ext2fs_mark_block_bitmap(reserve_blocks, blk);
 	}
 }
 
 /*
  * This routine is shared by the online and offline resize routines.
  * All of the information which is adjusted in memory is done here.
+ *
+ * The reserve_blocks parameter is only needed when shrinking the
+ * filesystem.
  */
-errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs, blk_t new_size)
+errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs,
+			 ext2fs_block_bitmap reserve_blocks, blk_t new_size)
 {
 	errcode_t	retval;
 	int		overhead = 0;
@@ -399,8 +413,8 @@ retry:
 	}
 
 	/*
-	 * If we are shrinking the number block groups, we're done and
-	 * can exit now.
+	 * If we are shrinking the number of block groups, we're done
+	 * and can exit now.
 	 */
 	if (old_fs->group_desc_count > fs->group_desc_count) {
 		/*
@@ -409,7 +423,8 @@ retry:
 		 */
 		for (i = fs->group_desc_count;
 		     i < old_fs->group_desc_count; i++) {
-			free_gdp_blocks(fs, &old_fs->group_desc[i]);
+			free_gdp_blocks(fs, reserve_blocks,
+					&old_fs->group_desc[i]);
 		}
 		retval = 0;
 		goto errout;
@@ -550,7 +565,12 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk_t new_size)
 	ext2fs_mark_bb_dirty(fs);
 	ext2fs_mark_ib_dirty(fs);
 
-	retval = adjust_fs_info(fs, rfs->old_fs, new_size);
+	retval = ext2fs_allocate_block_bitmap(fs, _("reserved blocks"),
+					      &rfs->reserve_blocks);
+	if (retval)
+		return retval;
+
+	retval = adjust_fs_info(fs, rfs->old_fs, rfs->reserve_blocks, new_size);
 	if (retval)
 		goto errout;
 
@@ -752,11 +772,6 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	old_fs = rfs->old_fs;
 	if (old_fs->super->s_blocks_count > fs->super->s_blocks_count)
 		fs = rfs->old_fs;
-
-	retval = ext2fs_allocate_block_bitmap(fs, _("reserved blocks"),
-					      &rfs->reserve_blocks);
-	if (retval)
-		return retval;
 
 	retval = ext2fs_allocate_block_bitmap(fs, _("blocks to be moved"),
 					      &rfs->move_blocks);
@@ -1876,6 +1891,19 @@ blk_t calculate_minimum_resize_size(ext2_filsys fs)
 		fs->super->s_free_blocks_count;
 	data_needed -= SUPER_OVERHEAD(fs) * num_of_superblocks;
 	data_needed -= META_OVERHEAD(fs) * fs->group_desc_count;
+
+	if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_FLEX_BG) {
+		/*
+		 * For ext4 we need to allow for up to a flex_bg worth
+		 * of inode tables of slack space so the resize
+		 * operation can be guaranteed to finish.
+		 */
+		int flexbg_size = 1 << fs->super->s_log_groups_per_flex;
+		int extra_groups;
+
+		extra_groups = flexbg_size - (groups & (flexbg_size - 1));
+		data_needed += META_OVERHEAD(fs) * extra_groups;
+	}
 
 	/*
 	 * figure out how many data blocks we have given the number of groups

@@ -104,7 +104,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	 * but at least it allows on-line resizing to function.
 	 */
 	new_fs->super->s_feature_incompat &= ~EXT4_FEATURE_INCOMPAT_FLEX_BG;
-	retval = adjust_fs_info(new_fs, fs, *new_size);
+	retval = adjust_fs_info(new_fs, fs, 0, *new_size);
 	if (retval)
 		return retval;
 
