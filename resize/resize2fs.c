@@ -804,7 +804,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 			 * to the next block group.
 			 */
 			blk = ((g+1) * fs->super->s_blocks_per_group) +
-				fs->super->s_first_data_block;
+				fs->super->s_first_data_block - 1;
 			continue;
 		}
 		if (ext2fs_test_block_bitmap(old_fs->block_map, blk) &&
