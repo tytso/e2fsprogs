@@ -1,3 +1,31 @@
+e2fsprogs (1.41.4-2) unstable; urgency=low
+
+  * Fix a number of filesystem corruption bugs in resize2fs when growing
+    or shrinking ext4 filesystems off-line (i.e., when the ext4
+    filesystem is not mounted).
+  * Clarify tune2fs man page  (Closes: #515693)
+  * Add homepage field to the debian control file (Closes: #506279)
+  * Fix Hurd compilation problem (Closes: #521602)
+  * Debugfs can now set i_file_acl_high via the set_inodes_field command
+  * Debugfs will now display a 64-bit file acl block
+  * Fix various gcc compilation warnings and other programming cleanups
+  * Make sure libuuid closes all file descriptors before starting the
+    uuidd daemon.
+  * Avoid running e2fsck unnecessarily after doing an online resize
+  * Mke2fs -S will now avoid trying to create the journal
+  * Update the Czech translation from the translation project.
+  * Fix support for external journals (which was broken in e2fsprogs 1.41.4)
+  * Fix a compatibility issue with libext2fs info page and makeinfo 4.12
+  * Fix a segfault in debugfs when running stat without an open filesystem
+  * Teach the blkid library that starting in 2.6.29, ext4 can support
+    filesystems without journals.
+  * Add error check preventing the reserved_ratio argument to mke2fs and
+    tune2fs from being negative.  (Closes: #517015)
+  * Add support for tracking the number kilobytes written to the
+    filesystem via the superblock field s_kbytes_written
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 19 Apr 2009 23:05:53 -0400
+
 e2fsprogs (1.41.4-1) unstable; urgency=low
 
   * New upstream release

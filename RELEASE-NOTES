@@ -1,3 +1,70 @@
+E2fsprogs 1.41.5  -- WORK IN PROGRESS (April 19, 2009)
+======================================================
+
+Fix a number of filesystem corruption bugs in resize2fs when growing
+or shrinking ext4 filesystems off-line (i.e., when the ext4 filesystem
+is not mounted).
+
+Debugfs can now set i_file_acl_high via the set_inodes_field command,
+and print a 64-bit file acl.  This is useful for debugging filesystem
+corruptions where the high 32 bits of i_file_acl_high are set.
+
+The libuuid library will now close all file descriptors before running
+uuidd.  This avoids problems when the calling program has open sockets
+which then never get closed because uuidd is a long-running helper
+daeomn.  (Addresses Launchpad bug: #305057)
+
+In order to avoid unnecessary full filesystem checks by e2fsck after
+an on-line resize, e2fsck will ignore the NEEDS_RECOVERY flag set on
+the backup superblocks.  (Addresses Red Hat Bugzilla: #471925)
+
+Mke2fs will avoid trying to create the journal when run in
+superblock-only mode (mke2fs -S), since the left-over journal in the
+inode table will cause mke2fs to fail.
+
+Update Czech translation from the Translation Project.
+
+Fix support for external journals (which was broken in e2fsprogs
+1.41.4).
+
+Fix a regression in debugfs where the "stat" command when no
+filesystem was open would cause debugfs to crash with a segmentation
+violation.
+
+Starting in the 2.6.29 linux kernel, the ext4 filesystem driver can be
+used to support filesystems without a journal.  Update the blkid
+library so it understands this.
+
+Add a check to mke2fs and tune2fs that the argument to the -m option
+(which specifies the reserved ratio) must be greater than zero.
+(Addresses Debian Bug: #517015)
+
+Add support for tracking the number kilobytes written to the
+filesystem via the superblock field s_kbytes_written.  It will be
+updated by the kernel as well as by e2fsprogs programs which write to
+the filesystem.  This is useful for tracking the wear to filesystems
+on Solid Sstate Drives.
+
+Fix compatibility issue in the libext2fs info file and makeinfo
+version 4.12.  (Addresses Red Hat Bugzilla: #481620)
+
+Clarify tune2fs man page  (Addresses Debian Bug: #515693)
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details. (Addresses Debian Bug: #506279)
+
+Programmer's Notes
+------------------
+
+Fix Hurd compilation problem in e2fsck and tune2fs (Addresses Debian
+Bug: #521602)
+
+Fix various gcc compilation warnings and other programming cleanups.
+(Addresses Red HatBugzilla: #486997)
+
+Add support for building the blkid command statically.
+
+
 E2fsprogs 1.41.4 (January 27, 2009)
 ===================================
 
@@ -614,7 +681,7 @@ core dump while garbage collecting the blkid cache, and assure that
 blkid_find_dev_with_tag() never returns a non-existent device.  Also,
 if a filesystem is found at a new /dev location, eliminate any
 duplicate stale entries which can not be verified.
-(Addresses-Debian-Bugs: #487758, #487783)
+(Addresses Debian Bugs: #487758, #487783)
     
 Add more paranoid checks for LVM volumes and swap partitions in
 blkid's probe function, to reduce the chances of false positives.
