@@ -95,7 +95,9 @@ struct blk_move {
 
 static const char *please_fsck = N_("Please run e2fsck on the filesystem.\n");
 
+#ifdef CONFIG_BUILD_FINDFS
 void do_findfs(int argc, char **argv);
+#endif
 
 static void usage(void)
 {
@@ -836,6 +838,7 @@ static void parse_tune2fs_options(int argc, char **argv)
 	}
 }
 
+#ifdef CONFIG_BUILD_FINDFS
 void do_findfs(int argc, char **argv)
 {
 	char	*dev;
@@ -854,6 +857,7 @@ void do_findfs(int argc, char **argv)
 	puts(dev);
 	exit(0);
 }
+#endif
 
 static void parse_extended_opts(ext2_filsys fs, const char *opts)
 {
@@ -1503,8 +1507,10 @@ int main(int argc, char **argv)
 		program_name = *argv;
 	add_error_table(&et_ext2_error_table);
 
+#ifdef CONFIG_BUILD_FINDFS
 	if (strcmp(get_progname(argv[0]), "findfs") == 0)
 		do_findfs(argc, argv);
+#endif
 	if (strcmp(get_progname(argv[0]), "e2label") == 0)
 		parse_e2label_options(argc, argv);
 	else

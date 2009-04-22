@@ -136,7 +136,7 @@ dnl parsing configuration opions, which may modify these
 dnl
 LIB_EXT=.a
 STATIC_LIB_EXT=.a
-PROFILE_LIB_EXT=.a
+PROFILED_LIB_EXT=.a
 dnl
 dnl set $(LDFLAGS) from --with-ldopts=value
 dnl
@@ -378,6 +378,59 @@ AC_DEFINE(CONFIG_TESTIO_DEBUG)
 TEST_IO_CMT=
 )
 AC_SUBST(TEST_IO_CMT)
+dnl
+dnl handle --disable-libblkid
+dnl
+PKG_PROG_PKG_CONFIG
+LIBBLKID=
+DEPLIBBLKID=
+STATIC_LIBBLKID=
+DEPSTATIC_LIBBLKID=
+PROFILED_LIBBLKID=
+DEPPROFILED_LIBBLKID=
+BLKID_CMT=
+AC_ARG_ENABLE([libblkid],
+[  --disable-libblkid	  do not build private blkid library],
+if test "$enableval" = "no"
+then
+	if test -z "$PKG_CONFIG"; then
+		AC_MSG_ERROR([pkg-config not installed; please install it.])
+	fi
+
+	AC_CHECK_LIB(blkid, blkid_get_cache,
+		[LIBBLKID=`$PKG_CONFIG --libs blkid`;
+		 STATIC_LIBBLKID=`$PKG_CONFIG --static --libs blkid`],
+		[AC_MSG_ERROR([external blkid library not found])],
+		[$LIBBLKID])
+	BLKID_CMT=#
+	AC_MSG_RESULT([Disabling private blkid library])
+else
+	LIBBLKID='$(LIB)/libblkid'$LIB_EXT
+	DEPLIBBLKID=$LIBBLKID
+	STATIC_LIBBLKID='$(LIB)/libblkid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBBLKID=$STATIC_LIBBLKID
+	PROFILED_LIBBLKID='$(LIB)/libblkid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBBLKID=$PROFILED_LIBBLKID
+	AC_DEFINE(CONFIG_BUILD_FINDFS)
+	AC_MSG_RESULT([Enabling private blkid library])
+fi
+,
+LIBBLKID='$(LIB)/libblkid'$LIB_EXT
+DEPLIBBLKID=$LIBBLKID
+STATIC_LIBBLKID='$(LIB)/libblkid'$STATIC_LIB_EXT
+DEPSTATIC_LIBBLKID=$STATIC_LIBBLKID
+PROFILED_LIBBLKID='$(LIB)/libblkid'$PROFILED_LIB_EXT
+DEPPROFILED_LIBBLKID=$PROFILED_LIBBLKID
+AC_DEFINE(CONFIG_BUILD_FINDFS)
+AC_MSG_RESULT([Enabling private blkid library by default])
+)
+AC_SUBST(LIBBLKID)
+AC_SUBST(DEPLIBBLKID)
+AC_SUBST(STATIC_LIBBLKID)
+AC_SUBST(DEPSTATIC_LIBBLKID)
+AC_SUBST(PROFILED_LIBBLKID)
+AC_SUBST(DEPPROFILED_LIBBLKID)
+AC_SUBST(BLKID_CMT)
 dnl
 dnl handle --enable-debugfs
 dnl

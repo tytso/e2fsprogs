@@ -17,11 +17,17 @@ INSTALL = @INSTALL@
 @UUIDD_CMT@UUIDD_PROG= uuidd
 @UUIDD_CMT@UUIDD_MAN= uuidd.8
 
-SPROGS=		mke2fs badblocks tune2fs dumpe2fs blkid logsave \
+@BLKID_CMT@BLKID_PROG= blkid
+@BLKID_CMT@BLKID_MAN= blkid.8
+
+@BLKID_CMT@FINDFS_LINK= findfs
+@BLKID_CMT@FINDFS_MAN= findfs.8
+
+SPROGS=		mke2fs badblocks tune2fs dumpe2fs $(BLKID_PROG) logsave \
 			$(E2IMAGE_PROG) @FSCK_PROG@ e2undo
 USPROGS=	mklost+found filefrag $(UUIDD_PROG)
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
-			e2label.8 findfs.8 blkid.8 $(E2IMAGE_MAN) \
+			e2label.8 $(FINDFS_MAN) $(BLKID_MAN) $(E2IMAGE_MAN) \
 			logsave.8 filefrag.8 e2undo.8 $(UUIDD_MAN) @FSCK_MAN@
 FMANPAGES=	mke2fs.conf.5
 
@@ -402,9 +408,11 @@ install: all $(SMANPAGES) $(UMANPAGES) installdirs
 	@echo "	LINK $(root_sbindir)/e2label"
 	@$(LN) -f $(DESTDIR)$(root_sbindir)/tune2fs \
 		$(DESTDIR)$(root_sbindir)/e2label
-	@echo "	LINK $(root_sbindir)/findfs"
-	@$(LN) -f $(DESTDIR)$(root_sbindir)/tune2fs \
-		$(DESTDIR)$(root_sbindir)/findfs
+	@if test -n "$(FINDFS_LINK)"; then \
+		echo "  LINK $(root_sbindir)/findfs"; \
+		$(LN) -f $(DESTDIR)$(root_sbindir)/tune2fs \
+			$(DESTDIR)$(root_sbindir)/$(FINDFS_LINK); \
+	fi
 	@for i in $(UPROGS); do \
 		echo "	INSTALL $(bindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(bindir)/$$i; \
@@ -514,7 +522,7 @@ uninstall:
 	for i in $(UMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man1dir)/$$i; \
 	done
-	for i in findfs e2label ; do \
+	for i in $(FINDFS_LINK) e2label ; do \
 		$(RM) -f $(DESTDIR)$(root_sbindir)/$$i; \
 	done
 	for i in $(FMANPAGES); do \
