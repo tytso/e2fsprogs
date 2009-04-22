@@ -455,12 +455,17 @@ int main (int argc, char ** argv)
 	if ((st_buf.st_size > new_file_size) &&
 	    (fd > 0)) {
 #ifdef HAVE_FTRUNCATE64
-		ftruncate64(fd, new_file_size);
+		retval = ftruncate64(fd, new_file_size);
 #else
+		retval = 0;
 		/* Only truncate if new_file_size doesn't overflow off_t */
 		if (((off_t) new_file_size) == new_file_size)
-			ftruncate(fd, (off_t) new_file_size);
+			retval = ftruncate(fd, (off_t) new_file_size);
 #endif
+		if (retval)
+			com_err(program_name, retval,
+				_("while trying to truncate %s"),
+				device_name);
 	}
 	if (fd > 0)
 		close(fd);
