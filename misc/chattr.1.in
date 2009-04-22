@@ -114,8 +114,14 @@ the changes are written synchronously on the disk; this is equivalent to
 the `sync' mount option applied to a subset of the files.
 .PP
 A directory with the 'T' attribute will be deemed to be the top of 
-directory hierarchies for the purposes of the Orlov block allocator
-(which is used in on systems with Linux 2.5.46 or later).
+directory hierarchies for the purposes of the Orlov block allocator.
+This is a hint to the block allocator used by ext3 and ext4 that the
+subdirectories under this directory are not related, and thus should be
+spread apart for allocation purposes.   For example it is a very good
+idea to set the 'T' attribute on the /home directory, so that /home/john
+and /home/mary are placed into separate block groups.  For directories
+where this attribute is not set, the Orlov block allocator will try to
+group subdirectories closer together where posible.
 .PP
 A file with the 't' attribute will not have a partial block fragment at
 the end of the file merged with other files (for those filesystems which
