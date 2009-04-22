@@ -23,7 +23,7 @@ void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
 #ifndef OMIT_COM_ERR
 	if (ino > fs->super->s_inodes_count) {
 		com_err("ext2fs_inode_alloc_stats2", 0,
-			"Illegal inode number: %lu", ino);
+			"Illegal inode number: %lu", (unsigned long) ino);
 		return;
 	}
 #endif
@@ -67,8 +67,8 @@ void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse)
 
 #ifndef OMIT_COM_ERR
 	if (blk >= fs->super->s_blocks_count) {
-		com_err("ext2fs_block_alloc_stats2", 0,
-			"Illegal block number: %lu", blk);
+		com_err("ext2fs_block_alloc_stats", 0,
+			"Illegal block number: %lu", (unsigned long) blk);
 		return;
 	}
 #endif
