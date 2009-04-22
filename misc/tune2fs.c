@@ -1543,7 +1543,7 @@ retry_open:
 		 * file.
 		 */
 		if (new_inode_size == EXT2_INODE_SIZE(fs->super)) {
-			fprintf(stderr, _("The inode size is already %d\n"),
+			fprintf(stderr, _("The inode size is already %lu\n"),
 				new_inode_size);
 			exit(1);
 		}
