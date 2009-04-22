@@ -106,6 +106,25 @@ int ss_pager_create()
 }
 #endif
 
+static int write_all(int fd, char *buf, size_t count)
+{
+	ssize_t ret;
+	int c = 0;
+
+	while (count > 0) {
+		ret = write(fd, buf, count);
+		if (ret < 0) {
+			if ((errno == EAGAIN) || (errno == EINTR))
+				continue;
+			return -1;
+		}
+		count -= ret;
+		buf += ret;
+		c += ret;
+	}
+	return c;
+}
+
 void ss_page_stdin()
 {
 	int i;
@@ -127,7 +146,7 @@ void ss_page_stdin()
 		char buf[80];
 		register int n;
 		while ((n = read(0, buf, 80)) > 0)
-			write(1, buf, n);
+			write_all(1, buf, n);
 	}
 	exit(errno);
 }
