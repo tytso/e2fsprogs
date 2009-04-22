@@ -49,6 +49,29 @@ static void usage(char *progname)
 #define SEND_CONSOLE	0x02
 #define SEND_BOTH	0x03
 
+/*
+ * Helper function that does the right thing if write returns a
+ * partial write, or an EGAIN/EINTR error.
+ */
+static int write_all(int fd, const char *buf, size_t count)
+{
+	ssize_t ret;
+	int c = 0;
+
+	while (count > 0) {
+		ret = write(fd, buf, count);
+		if (ret < 0) {
+			if ((errno == EAGAIN) || (errno == EINTR))
+				continue;
+			return -1;
+		}
+		count -= ret;
+		buf += ret;
+		c += ret;
+	}
+	return c;
+}
+
 static void send_output(const char *buffer, int c, int flag)
 {
 	char	*n;
@@ -57,11 +80,11 @@ static void send_output(const char *buffer, int c, int flag)
 		c = strlen(buffer);
 
 	if (flag & SEND_CONSOLE)
-		write(1, buffer, c);
+		write_all(1, buffer, c);
 	if (!(flag & SEND_LOG))
 		return;
 	if (outfd > 0)
-		write(outfd, buffer, c);
+		write_all(outfd, buffer, c);
 	else {
 		n = realloc(outbuf, outbufsize + c);
 		if (n) {
@@ -280,7 +303,7 @@ int main(int argc, char **argv)
 			outfd = open(outfn, openflags, 0644);
 			sleep(1);
 		}
-		write(outfd, outbuf, outbufsize);
+		write_all(outfd, outbuf, outbufsize);
 		free(outbuf);
 	}
 	close(outfd);
