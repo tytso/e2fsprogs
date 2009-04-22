@@ -48,11 +48,13 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		return;
 	}
 
-	printf("Reading directory block %lu, phys %lu\n", blk, pblk);
+	printf("Reading directory block %lu, phys %lu\n",
+	       (unsigned long) blk, (unsigned long) pblk);
 	errcode = ext2fs_read_dir_block2(current_fs, pblk, buf, 0);
 	if (errcode) {
 		com_err("htree_dump_leaf_node", errcode,
-			"while reading block %lu (%lu)\n", blk, pblk);
+			"while reading block %lu (%lu)\n",
+			(unsigned long) blk, (unsigned long) pblk);
 		return;
 	}
 	hash_alg = rootnode->hash_version;
