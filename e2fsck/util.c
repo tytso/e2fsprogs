@@ -680,3 +680,26 @@ int check_for_modules(const char *fs_name)
 #endif /* __linux__ */
 	return (0);
 }
+
+/*
+ * Helper function that does the right thing if write returns a
+ * partial write, or an EGAIN/EINTR error.
+ */
+int write_all(int fd, char *buf, size_t count)
+{
+	ssize_t ret;
+	int c = 0;
+
+	while (count > 0) {
+		ret = write(fd, buf, count);
+		if (ret < 0) {
+			if ((errno == EAGAIN) || (errno == EINTR))
+				continue;
+			return -1;
+		}
+		count -= ret;
+		buf += ret;
+		c += ret;
+	}
+	return c;
+}
