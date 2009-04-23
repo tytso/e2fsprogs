@@ -1,4 +1,4 @@
-E2fsprogs 1.41.5  -- WORK IN PROGRESS (April 19, 2009)
+E2fsprogs 1.41.5  -- WORK IN PROGRESS (April 22, 2009)
 ======================================================
 
 Fix a number of filesystem corruption bugs in resize2fs when growing
@@ -8,6 +8,10 @@ is not mounted).
 Debugfs can now set i_file_acl_high via the set_inodes_field command,
 and print a 64-bit file acl.  This is useful for debugging filesystem
 corruptions where the high 32 bits of i_file_acl_high are set.
+
+Speed up e2fsck when checking clean filesystems by avoiding
+unnecessary block reads, and coalescing the block group descriptor
+blocks so they are read using a single read operation.
 
 The libuuid library will now close all file descriptors before running
 uuidd.  This avoids problems when the calling program has open sockets
@@ -22,7 +26,14 @@ Mke2fs will avoid trying to create the journal when run in
 superblock-only mode (mke2fs -S), since the left-over journal in the
 inode table will cause mke2fs to fail.
 
+Fix a bug in libext2fs functions that check to see if a particular
+device or filesystem image is mounted, which would cause these
+functions to report that a file identical to the (relative) pathname
+used by a pseudo-filesystem was mounted when in fact it was not.
+
 Update Czech translation from the Translation Project.
+
+Add Chinese (simplified) translation from the Translation Project.
 
 Fix support for external journals (which was broken in e2fsprogs
 1.41.4).
@@ -34,6 +45,11 @@ violation.
 Starting in the 2.6.29 linux kernel, the ext4 filesystem driver can be
 used to support filesystems without a journal.  Update the blkid
 library so it understands this.
+
+The blkid library will remove an entry from the blkid cache
+representing the entire disk if partitions are found, since presuambly
+the device previously had no partition table, but has now transitioned
+to using a partition table.
 
 Add a check to mke2fs and tune2fs that the argument to the -m option
 (which specifies the reserved ratio) must be greater than zero.
@@ -48,7 +64,7 @@ on Solid Sstate Drives.
 Fix compatibility issue in the libext2fs info file and makeinfo
 version 4.12.  (Addresses Red Hat Bugzilla: #481620)
 
-Clarify tune2fs man page  (Addresses Debian Bug: #515693)
+Update/clarify man pages.  (Addresses Debian Bug: #515693, #365619)
 
 Fixed various Debian packaging issues --- see debian/changelog for
 details. (Addresses Debian Bug: #506279)
@@ -60,9 +76,13 @@ Fix Hurd compilation problem in e2fsck and tune2fs (Addresses Debian
 Bug: #521602)
 
 Fix various gcc compilation warnings and other programming cleanups.
-(Addresses Red HatBugzilla: #486997)
+(Addresses Red Hat Bugzilla: #486997)
 
 Add support for building the blkid command statically.
+
+Add support for disabling the built-in blkid library in favor of a
+system-installed blkid implementation via the configure option
+--disable-libblkid.
 
 
 E2fsprogs 1.41.4 (January 27, 2009)

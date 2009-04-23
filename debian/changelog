@@ -1,5 +1,20 @@
+e2fsprogs (1.41.4-3) unstable; urgency=low
+
+  * Update/clarify man pages (Closes: #365619)
+  * Fix a problem where the 'device names' for pseudo-filesystems in
+    /proc/mounts could confuse the e2fsprogs into thinking that a
+    filesystem image stored in a regular file was mounted when it was not
+  * Remove whole-disk entries from the blkid cache when partitions are found
+  * Reduce the number of disk reads needed when the filesystem is clean
+  * Add Chinese (simplified) translation from the Translation Project
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 23 Apr 2009 01:35:22 -0400
+
 e2fsprogs (1.41.4-2) unstable; urgency=low
 
+  * Update the debian copyright files to point at the version-specific
+    GPL and LGPL files.
+  * Update the debhelper compat level to 7
   * Fix a number of filesystem corruption bugs in resize2fs when growing
     or shrinking ext4 filesystems off-line (i.e., when the ext4
     filesystem is not mounted).
