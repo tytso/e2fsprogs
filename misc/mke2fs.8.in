@@ -152,6 +152,13 @@ automagically figures the file system size.  If called as
 a journal is created as if the
 .B \-j
 option was specified.
+.PP
+The defaults of the parameters for the newly created filesystem, if not
+overridden by the options listed below, are controlled by the
+.B /etc/mke2fs.conf
+configuration file.  See the
+.BR mke2fs.conf (5)
+manual page for more details.
 .SH OPTIONS
 .TP
 .BI \-b " block-size"
