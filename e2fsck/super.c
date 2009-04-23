@@ -304,7 +304,7 @@ return_abort:
  * resize inode should be cleared) as well as the case where on-line
  * resizing is enabled.
  */
-static void check_resize_inode(e2fsck_t ctx)
+void check_resize_inode(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
 	struct ext2_inode inode;
@@ -784,8 +784,6 @@ void check_super_block(e2fsck_t ctx)
 		ext2fs_mark_super_dirty(fs);
 		fs->flags &= ~EXT2_FLAG_MASTER_SB_ONLY;
 	}
-
-	check_resize_inode(ctx);
 
 	/*
 	 * Clean up any orphan inodes, if present.
