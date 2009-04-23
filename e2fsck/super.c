@@ -878,11 +878,12 @@ void check_super_block(e2fsck_t ctx)
 int check_backup_super_block(e2fsck_t ctx)
 {
 	ext2_filsys	fs = ctx->fs;
-	ext2_filsys	tfs = 0;
 	errcode_t	retval;
 	dgrp_t		g;
 	blk_t		sb;
 	int		ret = 0;
+	char		buf[SUPERBLOCK_SIZE];
+	struct ext2_super_block	*backup_sb;
 
 	/*
 	 * If we are already writing out the backup blocks, then we
@@ -905,32 +906,38 @@ int check_backup_super_block(e2fsck_t ctx)
 		sb = fs->super->s_first_data_block +
 			(g * fs->super->s_blocks_per_group);
 
-		retval = ext2fs_open(ctx->filesystem_name, 0,
-				     sb, fs->blocksize,
-				     fs->io->manager, &tfs);
-		if (retval) {
-			tfs = 0;
+		retval = io_channel_read_blk(fs->io, sb, -SUPERBLOCK_SIZE,
+					     buf);
+		if (retval)
 			continue;
-		}
+		backup_sb = (struct ext2_super_block *) buf;
+#ifdef WORDS_BIGENDIAN
+		ext2fs_swap_super(backup_sb);
+#endif
+		if ((backup_sb->s_magic != EXT2_SUPER_MAGIC) ||
+		    (backup_sb->s_rev_level > EXT2_LIB_CURRENT_REV) ||
+		    ((backup_sb->s_log_block_size + EXT2_MIN_BLOCK_LOG_SIZE) >
+		     EXT2_MAX_BLOCK_LOG_SIZE) ||
+		    (EXT2_INODE_SIZE(backup_sb) < EXT2_GOOD_OLD_INODE_SIZE))
+			continue;
 
 #define SUPER_INCOMPAT_DIFFERENT(x)	\
-	(( fs->super->x & ~FEATURE_INCOMPAT_IGNORE) !=	\
-	 (tfs->super->x & ~FEATURE_INCOMPAT_IGNORE))
+	((fs->super->x & ~FEATURE_INCOMPAT_IGNORE) !=	\
+	 (backup_sb->x & ~FEATURE_INCOMPAT_IGNORE))
 #define SUPER_RO_COMPAT_DIFFERENT(x)	\
-	(( fs->super->x & ~FEATURE_RO_COMPAT_IGNORE) !=	\
-	 (tfs->super->x & ~FEATURE_RO_COMPAT_IGNORE))
+	((fs->super->x & ~FEATURE_RO_COMPAT_IGNORE) !=	\
+	 (backup_sb->x & ~FEATURE_RO_COMPAT_IGNORE))
 #define SUPER_DIFFERENT(x)		\
-	(fs->super->x != tfs->super->x)
+	(fs->super->x != backup_sb->x)
 
 		if (SUPER_DIFFERENT(s_feature_compat) ||
 		    SUPER_INCOMPAT_DIFFERENT(s_feature_incompat) ||
 		    SUPER_RO_COMPAT_DIFFERENT(s_feature_ro_compat) ||
 		    SUPER_DIFFERENT(s_blocks_count) ||
 		    SUPER_DIFFERENT(s_inodes_count) ||
-		    memcmp(fs->super->s_uuid, tfs->super->s_uuid,
+		    memcmp(fs->super->s_uuid, backup_sb->s_uuid,
 			   sizeof(fs->super->s_uuid)))
 			ret = 1;
-		ext2fs_close(tfs);
 		break;
 	}
 	return ret;
