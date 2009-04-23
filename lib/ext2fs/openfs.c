@@ -84,7 +84,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 {
 	ext2_filsys	fs;
 	errcode_t	retval;
-	unsigned long	i;
+	unsigned long	i, first_meta_bg;
 	__u32		features;
 	int		groups_per_block, blocks_per_group, io_flags;
 	blk_t		group_block, blk;
@@ -304,7 +304,23 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		group_block = fs->super->s_first_data_block;
 	dest = (char *) fs->group_desc;
 	groups_per_block = EXT2_DESC_PER_BLOCK(fs->super);
-	for (i=0 ; i < fs->desc_blocks; i++) {
+	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
+		first_meta_bg = fs->super->s_first_meta_bg;
+	else
+		first_meta_bg = fs->desc_blocks;
+	if (first_meta_bg) {
+		retval = io_channel_read_blk(fs->io, group_block+1,
+					     first_meta_bg, dest);
+		if (retval)
+			goto cleanup;
+#ifdef WORDS_BIGENDIAN
+		gdp = (struct ext2_group_desc *) dest;
+		for (j=0; j < groups_per_block*first_meta_bg; j++)
+			ext2fs_swap_group_desc(gdp++);
+#endif
+		dest += fs->blocksize*first_meta_bg;
+	}
+	for (i=first_meta_bg ; i < fs->desc_blocks; i++) {
 		blk = ext2fs_descriptor_block_loc(fs, group_block, i);
 		retval = io_channel_read_blk(fs->io, blk, 1, dest);
 		if (retval)
