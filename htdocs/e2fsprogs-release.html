@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.41.5">E2fsprogs 1.41.5 (April 23, 2009)</A>
 <LI><A HREF="#1.41.4">E2fsprogs 1.41.4 (January 27, 2009)</A>
 <LI><A HREF="#1.41.3">E2fsprogs 1.41.3 (October 12, 2008)</A>
 <LI><A HREF="#1.41.2">E2fsprogs 1.41.2 (October 2, 2008)</A>
@@ -86,6 +87,94 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.41.5">E2fsprogs 1.41.5 (April 23, 2009)</A></H2>
+
+<P>Fix a number of filesystem corruption bugs in resize2fs when growing
+or shrinking ext4 filesystems off-line (i.e., when the ext4 filesystem
+is not mounted).</P>
+
+<P>Debugfs can now set i_file_acl_high via the set_inodes_field command,
+and print a 64-bit file acl.  This is useful for debugging filesystem
+corruptions where the high bits of i_file_acl_high are set.  E2fsck
+will detect and fix non-zero i_file_acl_high on 32-bit filesystems
+since some Linux kernel versions pay attention to this field even when
+they shouldn't.</P>
+
+<P>Speed up e2fsck when checking clean filesystems by avoiding
+unnecessary block reads, and coalescing the block group descriptor
+blocks so they are read using a single read operation.</P>
+
+<P>The libuuid library will now close all file descriptors before running
+uuidd.  This avoids problems when the calling program has open sockets
+which then never get closed because uuidd is a long-running helper
+daeomn.  (Addresses Launchpad bug: #305057)</P>
+
+<P>In order to avoid unnecessary full filesystem checks by e2fsck after
+an on-line resize, e2fsck will ignore the NEEDS_RECOVERY flag set on
+the backup superblocks.  (Addresses Red Hat Bugzilla: #471925)</P>
+
+<P>Mke2fs will avoid trying to create the journal when run in
+superblock-only mode (mke2fs -S), since the left-over journal in the
+inode table will cause mke2fs to fail.</P>
+
+<P>Fix a bug in libext2fs functions that check to see if a particular
+device or filesystem image is mounted, which would cause these
+functions to report that a file identical to the (relative) pathname
+used by a pseudo-filesystem was mounted when in fact it was not.</P>
+
+<P>Update Czech translation from the Translation Project.</P>
+
+<P>Add Chinese (simplified) translation from the Translation Project.</P>
+
+<P>Fix support for external journals (which was broken in e2fsprogs
+1.41.4).</P>
+
+<P>Fix a regression in debugfs where the "stat" command when no
+filesystem was open would cause debugfs to crash with a segmentation
+violation.</P>
+
+<P>Starting in the 2.6.29 linux kernel, the ext4 filesystem driver can be
+used to support filesystems without a journal.  Update the blkid
+library so it understands this.</P>
+
+<P>The blkid library will remove an entry from the blkid cache
+representing the entire disk if partitions are found, since presuambly
+the device previously had no partition table, but has now transitioned
+to using a partition table.</P>
+
+<P>Add a check to mke2fs and tune2fs that the argument to the -m option
+(which specifies the reserved ratio) must be greater than zero.
+(Addresses Debian Bug: #517015)</P>
+
+<P>Add support for tracking the number kilobytes written to the
+filesystem via the superblock field s_kbytes_written.  It will be
+updated by the kernel as well as by e2fsprogs programs which write to
+the filesystem.  This is useful for tracking the wear to filesystems
+on Solid Sstate Drives.</P>
+
+<P>Fix compatibility issue in the libext2fs info file and makeinfo
+version 4.12.  (Addresses Red Hat Bugzilla: #481620)</P>
+
+<P>Update/clarify man pages.  (Addresses Debian Bug: #515693, #365619)</P>
+
+<P>Fixed various Debian packaging issues --- see debian/changelog for
+details. (Addresses Debian Bug: #506279)</P>
+
+<H3>Programmer's Notes</H3>
+
+<P>Fix Hurd compilation problem in e2fsck and tune2fs (Addresses Debian
+Bug: #521602)</P>
+
+<P>Fix various gcc compilation warnings and other programming cleanups.
+(Addresses Red Hat Bugzilla: #486997)</P>
+
+<P>Add support for building the blkid command statically.</P>
+
+<P>Add support for disabling the built-in blkid library in favor of a
+system-installed blkid implementation via the configure option
+--disable-libblkid.</P>
+
 
 <H2><A NAME="1.41.4">E2fsprogs 1.41.4 (January 27, 2009)</A></H2>
 
