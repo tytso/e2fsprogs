@@ -1286,6 +1286,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@E references @i %Di found in @g %g's unused inodes area.\n"),
 	  PROMPT_FIX, PR_PREEN_OK },
 
+  	/* i_blocks_hi should be zero */
+	{ PR_2_I_FILE_ACL_HI_ZERO,
+	  N_("i_file_acl_hi @F %N, @s zero.\n"),
+	  PROMPT_CLEAR, 0 },
+
 	/* Pass 3 errors */
 
 	/* Pass 3: Checking directory connectivity */

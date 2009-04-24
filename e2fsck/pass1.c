@@ -935,6 +935,10 @@ void e2fsck_pass1(e2fsck_t ctx)
 		if (inode->i_faddr || frag || fsize ||
 		    (LINUX_S_ISDIR(inode->i_mode) && inode->i_dir_acl))
 			mark_inode_bad(ctx, ino);
+		if (!(fs->super->s_feature_incompat & 
+		      EXT4_FEATURE_INCOMPAT_64BIT) &&
+		    inode->osd2.linux2.l_i_file_acl_high != 0)
+			mark_inode_bad(ctx, ino);
 		if ((fs->super->s_creator_os == EXT2_OS_LINUX) &&
 		    !(fs->super->s_feature_ro_compat &
 		      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&

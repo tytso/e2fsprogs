@@ -1353,6 +1353,17 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 		}
 	}
 
+	if (!(fs->super->s_feature_incompat & 
+	     EXT4_FEATURE_INCOMPAT_64BIT) &&
+	    inode.osd2.linux2.l_i_file_acl_high != 0) {
+		pctx.num = inode.osd2.linux2.l_i_file_acl_high;
+		if (fix_problem(ctx, PR_2_I_FILE_ACL_HI_ZERO, &pctx)) {
+			inode.osd2.linux2.l_i_file_acl_high = 0;
+			inode_modified++;
+		} else
+			not_fixed++;
+	}
+
 	if (inode.i_file_acl &&
 	    ((inode.i_file_acl < fs->super->s_first_data_block) ||
 	     (inode.i_file_acl >= fs->super->s_blocks_count))) {

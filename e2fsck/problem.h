@@ -768,6 +768,9 @@ struct problem_context {
 /* Inode found in group unused inodes area */
 #define PR_2_INOREF_IN_UNUSED		0x020047
 
+/* i_file_acl_hi should be zero */
+#define PR_2_I_FILE_ACL_HI_ZERO		0x020048
+
 /*
  * Pass 3 errors
  */
