@@ -1,4 +1,4 @@
-e2fsprogs (1.41.5-1) intrepid; urgency=low
+e2fsprogs (1.41.5-1) unstable; urgency=low
 
   * New upstream release
   * E2fsck will now detect and fix inodes that have a non-zero
