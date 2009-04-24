@@ -1,3 +1,11 @@
+e2fsprogs (1.41.5-1) intrepid; urgency=low
+
+  * New upstream release
+  * E2fsck will now detect and fix inodes that have a non-zero
+    i_file_acl_high field on 32-bit filesystems.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 23 Apr 2009 22:15:45 -0400
+
 e2fsprogs (1.41.4-3) unstable; urgency=low
 
   * Update/clarify man pages (Closes: #365619)

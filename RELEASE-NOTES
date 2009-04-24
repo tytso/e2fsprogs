@@ -1,5 +1,5 @@
-E2fsprogs 1.41.5  -- WORK IN PROGRESS (April 22, 2009)
-======================================================
+E2fsprogs 1.41.5 (April 23, 2009)
+=================================
 
 Fix a number of filesystem corruption bugs in resize2fs when growing
 or shrinking ext4 filesystems off-line (i.e., when the ext4 filesystem
@@ -7,7 +7,10 @@ is not mounted).
 
 Debugfs can now set i_file_acl_high via the set_inodes_field command,
 and print a 64-bit file acl.  This is useful for debugging filesystem
-corruptions where the high 32 bits of i_file_acl_high are set.
+corruptions where the high bits of i_file_acl_high are set.  E2fsck
+will detect and fix non-zero i_file_acl_high on 32-bit filesystems
+since some Linux kernel versions pay attention to this field even when
+they shouldn't.
 
 Speed up e2fsck when checking clean filesystems by avoiding
 unnecessary block reads, and coalescing the block group descriptor
