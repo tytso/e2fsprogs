@@ -3,8 +3,10 @@ e2fsprogs (1.41.5-1) unstable; urgency=low
   * New upstream release
   * E2fsck will now detect and fix inodes that have a non-zero
     i_file_acl_high field on 32-bit filesystems.
+  * Update build-depends to indicate that dietlibc 0.30 doesn't work.
+    (Closes: #506064)
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 23 Apr 2009 22:15:45 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 24 Apr 2009 08:52:47 -0400
 
 e2fsprogs (1.41.4-3) unstable; urgency=low
 
