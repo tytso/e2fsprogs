@@ -240,15 +240,10 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Clear @j"),
 	  PROMPT_NULL, PR_PREEN_NOMSG },
 
-	/* Ask if we should run the journal anyway */
-	{ PR_0_JOURNAL_RUN,
-	  N_("Run @j anyway"),
-	  PROMPT_NULL, 0 },
-
-	/* Run the journal by default */
-	{ PR_0_JOURNAL_RUN_DEFAULT,
-	  N_("Recovery flag not set in backup @S, so running @j anyway.\n"),
-	  PROMPT_NONE, 0 },
+	/* Filesystem revision is 0, but feature flags are set */
+	{ PR_0_FS_REV_LEVEL,
+	  N_("@f has feature flag(s) set, but is a revision 0 @f.  "),
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
 	/* Clearing orphan inode */
 	{ PR_0_ORPHAN_CLEAR_INODE,
@@ -274,11 +269,6 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_0_ORPHAN_ILLEGAL_INODE,
 	  N_("@I @i %i in @o @i list.\n"),
 	  PROMPT_NONE, 0 },
-
-	/* Filesystem revision is 0, but feature flags are set */
-	{ PR_0_FS_REV_LEVEL,
-	  N_("@f has feature flag(s) set, but is a revision 0 @f.  "),
-	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
 	/* Journal superblock has an unknown read-only feature flag set */
 	{ PR_0_JOURNAL_UNSUPP_ROCOMPAT,
@@ -309,6 +299,16 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_0_CLEAR_V2_JOURNAL,
 	  N_("Found @n V2 @j @S fields (from V1 @j).\n"
 	     "Clearing fields beyond the V1 @j @S...\n\n"),
+	  PROMPT_NONE, 0 },
+
+	/* Ask if we should run the journal anyway */
+	{ PR_0_JOURNAL_RUN,
+	  N_("Run @j anyway"),
+	  PROMPT_NULL, 0 },
+
+	/* Run the journal by default */
+	{ PR_0_JOURNAL_RUN_DEFAULT,
+	  N_("Recovery flag not set in backup @S, so running @j anyway.\n"),
 	  PROMPT_NONE, 0 },
 
 	/* Backup journal inode blocks */
@@ -793,11 +793,6 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@a in @i %i has a namelen (%N) which is @n\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
-	/* invalid ea entry->e_value_size */
-	{ PR_1_ATTR_VALUE_SIZE,
-	  N_("@a in @i %i has a value size (%N) which is @n\n"),
-	  PROMPT_CLEAR, PR_PREEN_OK },
-
 	/* invalid ea entry->e_value_offs */
 	{ PR_1_ATTR_VALUE_OFFSET,
 	  N_("@a in @i %i has a value offset (%N) which is @n\n"),
@@ -806,6 +801,11 @@ static struct e2fsck_problem problem_table[] = {
 	/* invalid ea entry->e_value_block */
 	{ PR_1_ATTR_VALUE_BLOCK,
 	  N_("@a in @i %i has a value @b (%N) which is @n (must be 0)\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* invalid ea entry->e_value_size */
+	{ PR_1_ATTR_VALUE_SIZE,
+	  N_("@a in @i %i has a value size (%N) which is @n\n"),
 	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* invalid ea entry->e_hash */
@@ -1597,11 +1597,6 @@ static struct e2fsck_problem problem_table[] = {
 	  " +(%i--%j)",
 	  PROMPT_NONE, PR_LATCH_IBITMAP | PR_PREEN_OK | PR_PREEN_NOMSG },
 
-	/* Recreate journal if E2F_FLAG_JOURNAL_INODE flag is set */
-	{ PR_6_RECREATE_JOURNAL,
-	  N_("Recreate @j"),
-	  PROMPT_NULL, PR_PREEN_OK | PR_NO_OK },
-
 	/* Group N block(s) in use but group is marked BLOCK_UNINIT */
 	{ PR_5_BLOCK_UNINIT,
 	  N_("@g %g @b(s) in use but @g is marked BLOCK_UNINIT\n"),
@@ -1611,6 +1606,13 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_5_INODE_UNINIT,
 	  N_("@g %g @i(s) in use but @g is marked INODE_UNINIT\n"),
 	  PROMPT_FIX, PR_PREEN_OK },
+
+	/* Post-Pass 5 errors */
+
+	/* Recreate journal if E2F_FLAG_JOURNAL_INODE flag is set */
+	{ PR_6_RECREATE_JOURNAL,
+	  N_("Recreate @j"),
+	  PROMPT_NULL, PR_PREEN_OK | PR_NO_OK },
 
 	{ 0 }
 };
@@ -1834,3 +1836,89 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 
 	return answer;
 }
+
+#ifdef UNITTEST
+
+#include <stdlib.h>
+#include <stdio.h>
+
+errcode_t
+profile_get_boolean(profile_t profile, const char *name, const char *subname,
+		    const char *subsubname, int def_val, int *ret_boolean)
+{
+	return 0;
+}
+
+void print_e2fsck_message(e2fsck_t ctx, const char *msg,
+			  struct problem_context *pctx, int first,
+			  int recurse)
+{
+	return;
+}
+
+void fatal_error(e2fsck_t ctx, const char *msg)
+{
+	return;
+}
+
+void preenhalt(e2fsck_t ctx)
+{
+	return;
+}
+
+errcode_t
+profile_get_string(profile_t profile, const char *name, const char *subname,
+		   const char *subsubname, const char *def_val,
+		   char **ret_string)
+{
+	return 0;
+}
+
+int ask (e2fsck_t ctx, const char * string, int def)
+{
+	return 0;
+}
+
+int verify_problem_table(e2fsck_t ctx)
+{
+	struct e2fsck_problem *curr, *prev = NULL;
+	int rc = 0;
+
+	for (prev = NULL, curr = problem_table; curr->e2p_code; prev = curr++) {
+		if (prev == NULL)
+			continue;
+
+		if (curr->e2p_code > prev->e2p_code)
+			continue;
+
+		if (curr->e2p_code == prev->e2p_code)
+			fprintf(stderr, "*** Duplicate in problem table:\n");
+		else
+			fprintf(stderr, "*** Unordered problem table:\n");
+
+		fprintf(stderr, "curr code = 0x%08x: %s\n",
+			curr->e2p_code, curr->e2p_description);
+		fprintf(stderr, "*** prev code = 0x%08x: %s\n",
+			prev->e2p_code, prev->e2p_description);
+
+		fprintf(stderr, "*** This is a %sprogramming error in e2fsck\n",
+			(curr->e2p_code == prev->e2p_code) ? "fatal " : "");
+
+		rc = 1;
+	}
+
+	return rc;
+}
+
+int main(int argc, char *argv[])
+{
+	e2fsck_t ctx;
+	int rc;
+
+	rc = verify_problem_table(ctx);
+	if (rc == 0)
+		printf("e2fsck problem table verified\n");
+
+	return rc;
+}
+#endif /* UNITTEST */

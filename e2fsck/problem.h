@@ -529,10 +529,10 @@ struct problem_context {
 #define PR_1B_ALLOCATE_IBITMAP_ERROR 0x011005
 
 /* Error while iterating over blocks */
-#define PR_1B_BLOCK_ITERATE	0x0110006
+#define PR_1B_BLOCK_ITERATE	0x011006
 
 /* Error adjusting EA refcount */
-#define PR_1B_ADJ_EA_REFCOUNT	0x0110007
+#define PR_1B_ADJ_EA_REFCOUNT	0x011007
 
 
 /* Pass 1C: Scan directories for inodes with dup blocks. */
