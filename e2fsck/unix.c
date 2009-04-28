@@ -1138,6 +1138,10 @@ restart:
 		if (isspace(*cp) || *cp == ':')
 			*cp = '_';
 
+	if ((ctx->mount_flags & EXT2_MF_MOUNTED) &&
+	    !(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER))
+		goto skip_journal;
+
 	/*
 	 * Make sure the ext3 superblock fields are consistent.
 	 */
@@ -1185,6 +1189,7 @@ restart:
 		}
 	}
 
+skip_journal:
 	/*
 	 * Check for compatibility with the feature sets.  We need to
 	 * be more stringent than ext2fs_open().
