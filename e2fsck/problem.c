@@ -26,16 +26,16 @@
 #define PROMPT_RELOCATE	3
 #define PROMPT_ALLOCATE 4
 #define PROMPT_EXPAND	5
-#define PROMPT_CONNECT 	6
+#define PROMPT_CONNECT	6
 #define PROMPT_CREATE	7
 #define PROMPT_SALVAGE	8
 #define PROMPT_TRUNCATE	9
 #define PROMPT_CLEAR_INODE 10
-#define PROMPT_ABORT 	11
-#define PROMPT_SPLIT 	12
+#define PROMPT_ABORT	11
+#define PROMPT_SPLIT	12
 #define PROMPT_CONTINUE	13
 #define PROMPT_CLONE	14
-#define PROMPT_DELETE 	15
+#define PROMPT_DELETE	15
 #define PROMPT_SUPPRESS 16
 #define PROMPT_UNLINK	17
 #define PROMPT_CLEAR_HTREE 18
@@ -1033,22 +1033,22 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("i_faddr @F %IF, @s zero.\n"),
 	  PROMPT_CLEAR, 0 },
 
-  	/* i_file_acl should be zero */
+	/* i_file_acl should be zero */
 	{ PR_2_FILE_ACL_ZERO,
 	  N_("i_file_acl @F %If, @s zero.\n"),
 	  PROMPT_CLEAR, 0 },
 
-  	/* i_dir_acl should be zero */
+	/* i_dir_acl should be zero */
 	{ PR_2_DIR_ACL_ZERO,
 	  N_("i_dir_acl @F %Id, @s zero.\n"),
 	  PROMPT_CLEAR, 0 },
 
-  	/* i_frag should be zero */
+	/* i_frag should be zero */
 	{ PR_2_FRAG_ZERO,
 	  N_("i_frag @F %N, @s zero.\n"),
 	  PROMPT_CLEAR, 0 },
 
-  	/* i_fsize should be zero */
+	/* i_fsize should be zero */
 	{ PR_2_FSIZE_ZERO,
 	  N_("i_fsize @F %N, @s zero.\n"),
 	  PROMPT_CLEAR, 0 },
@@ -1183,7 +1183,7 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Symlink %Q (@i #%i) is @n.\n"),
 	  PROMPT_CLEAR, 0 },
 
-  	/* i_file_acl (extended attribute block) is bad */
+	/* i_file_acl (extended attribute block) is bad */
 	{ PR_2_FILE_ACL_BAD,
 	  N_("@a @b @F @n (%If).\n"),
 	  PROMPT_CLEAR, 0 },
@@ -1267,7 +1267,7 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("Duplicate @e '%Dn' found.\n\tMarking %p (%i) to be rebuilt.\n\n"),
 	  PROMPT_NONE, 0 },
 
-  	/* i_blocks_hi should be zero */
+	/* i_blocks_hi should be zero */
 	{ PR_2_BLOCKS_HI_ZERO,
 	  N_("i_blocks_hi @F %N, @s zero.\n"),
 	  PROMPT_CLEAR, 0 },
@@ -1286,7 +1286,7 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@E references @i %Di found in @g %g's unused inodes area.\n"),
 	  PROMPT_FIX, PR_PREEN_OK },
 
-  	/* i_blocks_hi should be zero */
+	/* i_blocks_hi should be zero */
 	{ PR_2_I_FILE_ACL_HI_ZERO,
 	  N_("i_file_acl_hi @F %N, @s zero.\n"),
 	  PROMPT_CLEAR, 0 },
@@ -1638,7 +1638,7 @@ static struct latch_descr pr_latch_info[] = {
 
 static struct e2fsck_problem *find_problem(problem_t code)
 {
-	int 	i;
+	int	i;
 
 	for (i=0; problem_table[i].e2p_code; i++) {
 		if (problem_table[i].e2p_code == code)
@@ -1723,7 +1723,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	struct e2fsck_problem *ptr;
 	struct latch_descr *ldesc = 0;
 	const char *message;
-	int 		def_yn, answer, ans;
+	int		def_yn, answer, ans;
 	int		print_answer = 0;
 	int		suppress = 0;
 

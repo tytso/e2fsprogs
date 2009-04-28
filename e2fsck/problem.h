@@ -146,7 +146,7 @@ struct problem_context {
 #define PR_0_ORPHAN_ILLEGAL_HEAD_INODE		0x000023
 
 /* Illegal inode in orphaned inode list */
-#define PR_0_ORPHAN_ILLEGAL_INODE 		0x000024
+#define PR_0_ORPHAN_ILLEGAL_INODE		0x000024
 
 /* Journal has unsupported read-only feature - abort */
 #define PR_0_JOURNAL_UNSUPP_ROCOMPAT		0x000025
@@ -273,10 +273,10 @@ struct problem_context {
 #define PR_1_INODE_BLOCK_LATCH		0x010010
 
 /* Too many bad blocks in inode */
-#define	PR_1_TOO_MANY_BAD_BLOCKS 	0x010011
+#define	PR_1_TOO_MANY_BAD_BLOCKS	0x010011
 
 /* Illegal block number in bad block inode */
-#define PR_1_BB_ILLEGAL_BLOCK_NUM 	0x010012
+#define PR_1_BB_ILLEGAL_BLOCK_NUM	0x010012
 
 /* Bad block inode has illegal blocks (latch question) */
 #define PR_1_INODE_BBLOCK_LATCH		0x010013
@@ -860,7 +860,7 @@ struct problem_context {
 #define PR_3A_OPTIMIZE_DIR_ERR		0x031002
 
 /* Rehashing dir header */
-#define PR_3A_OPTIMIZE_DIR_HEADER		0x031003
+#define PR_3A_OPTIMIZE_DIR_HEADER	0x031003
 
 /* Rehashing directory %d */
 #define PR_3A_OPTIMIZE_DIR		0x031004
@@ -873,19 +873,19 @@ struct problem_context {
  */
 
 /* Pass 4: Checking reference counts */
-#define PR_4_PASS_HEADER	0x040000
+#define PR_4_PASS_HEADER		0x040000
 
 /* Unattached zero-length inode */
-#define PR_4_ZERO_LEN_INODE	0x040001
+#define PR_4_ZERO_LEN_INODE		0x040001
 
 /* Unattached inode */
-#define PR_4_UNATTACHED_INODE	0x040002
+#define PR_4_UNATTACHED_INODE		0x040002
 
 /* Inode ref count wrong */
-#define PR_4_BAD_REF_COUNT	0x040003
+#define PR_4_BAD_REF_COUNT		0x040003
 
 /* Inconsistent inode count information cached */
-#define PR_4_INCONSISTENT_COUNT	0x040004
+#define PR_4_INCONSISTENT_COUNT		0x040004
 
 /*
  * Pass 5 errors
@@ -901,7 +901,7 @@ struct problem_context {
 #define PR_5_BLOCK_BMAP_PADDING		0x050002
 
 /* Block bitmap differences header */
-#define PR_5_BLOCK_BITMAP_HEADER 	0x050003
+#define PR_5_BLOCK_BITMAP_HEADER	0x050003
 
 /* Block not used, but marked in bitmap */
 #define PR_5_BLOCK_UNUSED		0x050004
@@ -931,7 +931,7 @@ struct problem_context {
 #define PR_5_FREE_DIR_COUNT_GROUP	0x05000C
 
 /* Free inodes count wrong */
-#define PR_5_FREE_INODE_COUNT	0x05000D
+#define PR_5_FREE_INODE_COUNT		0x05000D
 
 /* Free blocks count for group wrong */
 #define PR_5_FREE_BLOCK_COUNT_GROUP	0x05000E
@@ -983,7 +983,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx);
 int end_problem_latch(e2fsck_t ctx, int mask);
 int set_latch_flags(int mask, int setflags, int clearflags);
 int get_latch_flags(int mask, int *value);
-void clear_problem_context(struct problem_context *ctx);
+void clear_problem_context(struct problem_context *pctx);
 
 /* message.c */
 void print_e2fsck_message(e2fsck_t ctx, const char *msg,
