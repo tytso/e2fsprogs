@@ -379,6 +379,57 @@ TEST_IO_CMT=
 )
 AC_SUBST(TEST_IO_CMT)
 dnl
+dnl handle --disable-libuuid
+dnl
+PKG_PROG_PKG_CONFIG
+LIBUUID=
+DEPLIBUUID=
+STATIC_LIBUUID=
+DEPSTATIC_LIBUUID=
+PROFILED_LIBUUID=
+DEPPROFILED_LIBUUID=
+UUID_CMT=
+AC_ARG_ENABLE([libuuid],
+[  --disable-libuuid	  do not build private uuid library],
+if test "$enableval" = "no"
+then
+	if test -z "$PKG_CONFIG"; then
+		AC_MSG_ERROR([pkg-config not installed; please install it.])
+	fi
+
+	AC_CHECK_LIB(uuid, uuid_generate,
+		[LIBUUID=`$PKG_CONFIG --libs uuid`;
+		 STATIC_LIBUUID=`$PKG_CONFIG --static --libs uuid`],
+		[AC_MSG_ERROR([external uuid library not found])],
+		[$LIBUUID])
+	UUID_CMT=#
+	AC_MSG_RESULT([Disabling private uuid library])
+else
+	LIBUUID='$(LIB)/libuuid'$LIB_EXT
+	DEPLIBUUID=$LIBUUID
+	STATIC_LIBUUID='$(LIB)/libuuid'$STATIC_LIB_EXT
+	DEPSTATIC_LIBUUID=$STATIC_LIBUUID
+	PROFILED_LIBUUID='$(LIB)/libuuid'$PROFILED_LIB_EXT
+	DEPPROFILED_LIBUUID=$PROFILED_LIBUUID
+	AC_MSG_RESULT([Enabling private uuid library])
+fi
+,
+LIBUUID='$(LIB)/libuuid'$LIB_EXT
+DEPLIBUUID=$LIBUUID
+STATIC_LIBUUID='$(LIB)/libuuid'$STATIC_LIB_EXT
+DEPSTATIC_LIBUUID=$STATIC_LIBUUID
+PROFILED_LIBUUID='$(LIB)/libuuid'$PROFILED_LIB_EXT
+DEPPROFILED_LIBUUID=$PROFILED_LIBUUID
+AC_MSG_RESULT([Enabling private uuid library by default])
+)
+AC_SUBST(LIBUUID)
+AC_SUBST(DEPLIBUUID)
+AC_SUBST(STATIC_LIBUUID)
+AC_SUBST(DEPSTATIC_LIBUUID)
+AC_SUBST(PROFILED_LIBUUID)
+AC_SUBST(DEPPROFILED_LIBUUID)
+AC_SUBST(UUID_CMT)
+dnl
 dnl handle --disable-libblkid
 dnl
 PKG_PROG_PKG_CONFIG
