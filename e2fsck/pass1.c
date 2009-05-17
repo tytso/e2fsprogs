@@ -1770,9 +1770,10 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 	errcode_t		retval;
 
 	pctx->errcode = ext2fs_extent_open(fs, ino, &ehandle);
-	if (pctx->errcode &&
-	    fix_problem(ctx, PR_1_READ_EXTENT, pctx)) {
-		e2fsck_clear_inode(ctx, ino, inode, 0, "check_blocks_extents");
+	if (pctx->errcode) {
+		if (fix_problem(ctx, PR_1_READ_EXTENT, pctx))
+			e2fsck_clear_inode(ctx, ino, inode, 0,
+					   "check_blocks_extents");
 		pctx->errcode = 0;
 		return;
 	}
