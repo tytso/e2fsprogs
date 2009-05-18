@@ -2003,6 +2003,12 @@ blk_t calculate_minimum_resize_size(ext2_filsys fs)
 	blks_needed += overhead;
 
 	/*
+	 * If at this point we've already added up more "needed" than
+	 * the current size, just return current size as minimum.
+	 */
+	if (blks_needed >= fs->super->s_blocks_count)
+		return fs->super->s_blocks_count;
+	/*
 	 * We need to reserve a few extra blocks if extents are
 	 * enabled, in case we need to grow the extent tree.  The more
 	 * we shrink the file system, the more space we need.
