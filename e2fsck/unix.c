@@ -1138,6 +1138,8 @@ restart:
 		if (isspace(*cp) || *cp == ':')
 			*cp = '_';
 
+	ehandler_init(fs->io);
+
 	if ((ctx->mount_flags & EXT2_MF_MOUNTED) &&
 	    !(sb->s_feature_incompat & EXT3_FEATURE_INCOMPAT_RECOVER))
 		goto skip_journal;
@@ -1253,8 +1255,6 @@ print_unsupp_features:
 	ctx->blocks_per_page = sys_page_size / fs->blocksize;
 	if (ctx->blocks_per_page == 0)
 		ctx->blocks_per_page = 1;
-
-	ehandler_init(fs->io);
 
 	if (ctx->superblock)
 		set_latch_flags(PR_LATCH_RELOC, PRL_LATCHED, 0);
