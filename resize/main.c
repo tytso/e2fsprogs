@@ -160,6 +160,7 @@ int main (int argc, char ** argv)
 	int		fd, ret;
 	blk_t		new_size = 0;
 	blk_t		max_size = 0;
+	blk_t		min_size = 0;
 	io_manager	io_ptr;
 	char		*new_size_str = 0;
 	int		use_stride = -1;
@@ -341,9 +342,11 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 
+	min_size = calculate_minimum_resize_size(fs);
+
 	if (print_min_size) {
 		printf(_("Estimated minimum size of the filesystem: %u\n"),
-		       calculate_minimum_resize_size(fs));
+		       min_size);
 		exit(0);
 	}
 
@@ -388,6 +391,11 @@ int main (int argc, char ** argv)
 			new_size &= ~((sys_page_size / fs->blocksize)-1);
 	}
 
+	if (!force && new_size < min_size) {
+		com_err(program_name, 0,
+			_("New size smaller than minimum (%u)\n"), min_size);
+		exit(1);
+	}
 	if (use_stride >= 0) {
 		if (use_stride >= (int) fs->super->s_blocks_per_group) {
 			com_err(program_name, 0,
