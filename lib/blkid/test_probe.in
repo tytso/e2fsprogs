@@ -42,7 +42,7 @@ do
 		bunzip2 < $IMAGE_BZ2 > $IMAGE
 	fi
 	eval ./tst_probe $IMAGE $RMUUID > tests/$i.out
-	/bin/rm -f $IMAGE tests/$i.ok tests/$i.failed
+	rm -f $IMAGE tests/$i.ok tests/$i.failed
 	cmp -s tests/$i.out $RESULTS
 	unset RMUUID
 	if [ $? = 0 ];  then
