@@ -180,7 +180,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 	if (inode->i_flags & EXT4_EXTENTS_FL) {
 		if (inode->i_size > fs->blocksize)
 			return 0;
-		if (ext2fs_extent_open(fs, ino, &handle))
+		if (ext2fs_extent_open2(fs, ino, inode, &handle))
 			return 0;
 		i = 0;
 		if (ext2fs_extent_get_info(handle, &info) ||
@@ -1762,7 +1762,7 @@ static void check_blocks_extents(e2fsck_t ctx, struct problem_context *pctx,
 	ext2_ino_t		ino = pctx->ino;
 	errcode_t		retval;
 
-	pctx->errcode = ext2fs_extent_open(fs, ino, &ehandle);
+	pctx->errcode = ext2fs_extent_open2(fs, ino, inode, &ehandle);
 	if (pctx->errcode) {
 		if (fix_problem(ctx, PR_1_READ_EXTENT, pctx))
 			e2fsck_clear_inode(ctx, ino, inode, 0,

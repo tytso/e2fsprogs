@@ -180,32 +180,44 @@ extern void ext2fs_extent_free(ext2_extent_handle_t handle)
 extern errcode_t ext2fs_extent_open(ext2_filsys fs, ext2_ino_t ino,
 				    ext2_extent_handle_t *ret_handle)
 {
+	return ext2fs_extent_open2(fs, ino, NULL, ret_handle);
+}
+
+extern errcode_t ext2fs_extent_open2(ext2_filsys fs, ext2_ino_t ino,
+				    struct ext2_inode *inode,
+				    ext2_extent_handle_t *ret_handle)
+{
 	struct ext2_extent_handle	*handle;
 	errcode_t			retval;
-	int				isize = EXT2_INODE_SIZE(fs->super);
 	int				i;
 	struct ext3_extent_header	*eh;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
 
-	if ((ino == 0) || (ino > fs->super->s_inodes_count))
-		return EXT2_ET_BAD_INODE_NUM;
+	if (!inode)
+		if ((ino == 0) || (ino > fs->super->s_inodes_count))
+			return EXT2_ET_BAD_INODE_NUM;
 
 	retval = ext2fs_get_mem(sizeof(struct ext2_extent_handle), &handle);
 	if (retval)
 		return retval;
 	memset(handle, 0, sizeof(struct ext2_extent_handle));
 
-	retval = ext2fs_get_mem(isize, &handle->inode);
+	retval = ext2fs_get_mem(sizeof(struct ext2_inode), &handle->inode);
 	if (retval)
 		goto errout;
 
 	handle->ino = ino;
 	handle->fs = fs;
 
-	retval = ext2fs_read_inode_full(fs, ino, handle->inode, isize);
-	if (retval)
-		goto errout;
+	if (inode) {
+		memcpy(handle->inode, inode, sizeof(struct ext2_inode));
+	}
+	else {
+		retval = ext2fs_read_inode(fs, ino, handle->inode);
+		if (retval)
+			goto errout;
+	}
 
 	eh = (struct ext3_extent_header *) &handle->inode->i_block[0];
 
