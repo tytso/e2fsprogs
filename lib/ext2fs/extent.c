@@ -1040,7 +1040,7 @@ errcode_t ext2fs_extent_insert(ext2_extent_handle_t handle, int flags,
 #endif
 			retval = extent_node_split(handle);
 			if (retval)
-				goto errout;
+				return retval;
 			path = handle->path + handle->level;
 		}
 	}
@@ -1239,16 +1239,17 @@ again:
 #ifdef DEBUG
 		printf("(re/un)mapping last block in extent\n");
 #endif
-		extent.e_len--;
-		retval = ext2fs_extent_replace(handle, 0, &extent);
-		if (retval)
-			goto done;
+		/* Make sure insert works before replacing old extent */
 		if (physical) {
 			retval = ext2fs_extent_insert(handle,
 					EXT2_EXTENT_INSERT_AFTER, &newextent);
 			if (retval)
 				goto done;
 		}
+		extent.e_len--;
+		retval = ext2fs_extent_replace(handle, 0, &extent);
+		if (retval)
+			goto done;
 	} else if (logical == extent.e_lblk) {
 #ifdef DEBUG
 		printf("(re/un)mapping first block in extent\n");
