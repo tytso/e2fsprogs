@@ -854,6 +854,8 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 	io_manager io_ptr = ctx->fs->io->manager;
 	int blocksize = ctx->fs->blocksize;
 	errcode_t	retval, recover_retval;
+	io_stats	stats = 0;
+	unsigned long long kbytes_written = 0;
 
 	printf(_("%s: recovering journal\n"), ctx->device_name);
 	if (ctx->options & E2F_OPT_READONLY) {
@@ -871,11 +873,15 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 	 * Reload the filesystem context to get up-to-date data from disk
 	 * because journal recovery will change the filesystem under us.
 	 */
-	ext2fs_close(ctx->fs);
+	if (ctx->fs->super->s_kbytes_written &&
+	    ctx->fs->io->manager->get_stats)
+		ctx->fs->io->manager->get_stats(ctx->fs->io, &stats);
+	if (stats && stats->bytes_written)
+		kbytes_written = stats->bytes_written >> 10;
+	ext2fs_free(ctx->fs);
 	retval = ext2fs_open(ctx->filesystem_name, EXT2_FLAG_RW,
 			     ctx->superblock, blocksize, io_ptr,
 			     &ctx->fs);
-
 	if (retval) {
 		com_err(ctx->program_name, retval,
 			_("while trying to re-open %s"),
@@ -885,6 +891,7 @@ int e2fsck_run_ext3_journal(e2fsck_t ctx)
 	ctx->fs->priv_data = ctx;
 	ctx->fs->now = ctx->now;
 	ctx->fs->flags |= EXT2_FLAG_MASTER_SB_ONLY;
+	ctx->fs->super->s_kbytes_written += kbytes_written;
 
 	/* Set the superblock flags */
 	e2fsck_clear_recover(ctx, recover_retval);
