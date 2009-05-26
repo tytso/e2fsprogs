@@ -65,7 +65,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs-1.41.1\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2008-08-29 23:13-0400\n"
-"PO-Revision-Date: 2009-04-04 22:09+0800\n"
+"PO-Revision-Date: 2009-05-05 13:11+0800\n"
 "Last-Translator: Dark Raven <drdarkraven@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -1099,7 +1099,6 @@ msgstr ""
 
 #. @-expanded: Pass 1: Checking inodes, blocks, and sizes\n
 #: e2fsck/problem.c:388
-#, fuzzy
 msgid "Pass 1: Checking @is, @bs, and sizes\n"
 msgstr "第一步: 检查@i,@b,和大小\n"
 
@@ -2223,10 +2222,12 @@ msgid ""
 "\tOR SOME BONEHEAD (YOU) IS CHECKING A MOUNTED (LIVE) FILESYSTEM.\n"
 "@i_link_info[%i] is %N, @i.i_links_count is %Il.  They @s the same!\n"
 msgstr ""
+"警告:E2FSCK中的程序错误!\n"
+"\t或者是某个笨蛋(你)正在检查一个被挂载的(活动的)文件系统.\n"
+"@i_link_info[%i] 为 %N, @i.i_links_count 为 %Il.它们应该是相同的!\n"
 
 #. @-expanded: Pass 5: Checking group summary information\n
 #: e2fsck/problem.c:1467
-#, fuzzy
 msgid "Pass 5: Checking @g summary information\n"
 msgstr "第5步: 检查@g概要信息\n"
 
@@ -2580,14 +2581,13 @@ msgid "need terminal for interactive repairs"
 msgstr ""
 
 #: e2fsck/unix.c:993
-#, fuzzy, c-format
+#, c-format
 msgid "%s: %s trying backup blocks...\n"
-msgstr "<坏块 inode>"
+msgstr ""
 
 #: e2fsck/unix.c:995
-#, fuzzy
 msgid "Superblock invalid,"
-msgstr "无效选项"
+msgstr "超级块无效,"
 
 #: e2fsck/unix.c:996
 msgid "Group descriptors look bad..."
@@ -2744,6 +2744,9 @@ msgid ""
 "%s: ********** WARNING: Filesystem still has errors **********\n"
 "\n"
 msgstr ""
+"\n"
+"%s: ********** 警告: 文件系统上仍有错误 **********\n"
+"\n"
 
 #: e2fsck/unix.c:1383
 msgid "while setting block group checksum info"
@@ -2852,7 +2855,7 @@ msgid "Memory used: %d, "
 msgstr "已使用内存: %d, "
 
 #: e2fsck/util.c:342
-#, fuzzy, c-format
+#, c-format
 msgid "time: %5.2f/%5.2f/%5.2f\n"
 msgstr "时间: %5.2f/%5.2f/%5.2f\n"
 
@@ -3232,7 +3235,7 @@ msgid ""
 msgstr ""
 
 #: misc/dumpe2fs.c:344
-#, fuzzy, c-format
+#, c-format
 msgid "Journal users:            %s\n"
 msgstr "日志使用者:            %s\n"
 
@@ -3529,7 +3532,7 @@ msgid "Running command: %s\n"
 msgstr "正在执行命令: %s\n"
 
 #: misc/mke2fs.c:209
-#, fuzzy, c-format
+#, c-format
 msgid "while trying to run '%s'"
 msgstr "当尝试运行 '%s' 时"
 
@@ -3548,9 +3551,8 @@ msgid "Blocks %u through %u must be good in order to build a filesystem.\n"
 msgstr ""
 
 #: misc/mke2fs.c:248
-#, fuzzy
 msgid "Aborting....\n"
-msgstr "中断...\n"
+msgstr "正在终止...\n"
 
 #: misc/mke2fs.c:268
 #, c-format
@@ -3565,7 +3567,6 @@ msgid "while marking bad blocks as used"
 msgstr ""
 
 #: misc/mke2fs.c:345
-#, fuzzy
 msgid "done                            \n"
 msgstr "完成                            \n"
 
@@ -3585,7 +3586,6 @@ msgid "while creating root dir"
 msgstr ""
 
 #: misc/mke2fs.c:413
-#, fuzzy
 msgid "while reading root inode"
 msgstr "当读取坏块inode时"
 
@@ -3990,7 +3990,7 @@ msgid ""
 msgstr ""
 
 #: misc/mke2fs.c:1804 misc/tune2fs.c:1398
-#, fuzzy, c-format
+#, c-format
 msgid "while trying to delete %s"
 msgstr "当尝试删除 %s 时"
 
@@ -4154,12 +4154,10 @@ msgid "Journal removed\n"
 msgstr "日志已删除\n"
 
 #: misc/tune2fs.c:283
-#, fuzzy
 msgid "while reading bitmaps"
 msgstr "当读取位图时"
 
 #: misc/tune2fs.c:291
-#, fuzzy
 msgid "while clearing journal inode"
 msgstr "当读取坏块inode时"
 
@@ -4207,7 +4205,7 @@ msgid ""
 msgstr ""
 
 #: misc/tune2fs.c:448
-#, fuzzy, c-format
+#, c-format
 msgid "(and reboot afterwards!)\n"
 msgstr "(并且过后重启!)\n"
 
@@ -4495,7 +4493,6 @@ msgid "will not make a %s here!\n"
 msgstr ""
 
 #: misc/util.c:170
-#, fuzzy
 msgid "mke2fs forced anyway.\n"
 msgstr "mke2fs 强制执行.\n"
 
@@ -4613,9 +4610,9 @@ msgid "while opening %s"
 msgstr "打开%s时"
 
 #: resize/main.c:273
-#, fuzzy, c-format
+#, c-format
 msgid "while getting stat information for %s"
-msgstr "获取%s stat信息时出错。"
+msgstr "获取%s的stat信息时出错。"
 
 #: resize/main.c:332
 #, c-format
@@ -4659,7 +4656,7 @@ msgstr ""
 "\n"
 
 #: resize/main.c:437
-#, fuzzy, c-format
+#, c-format
 msgid "while trying to resize %s"
 msgstr "当尝试调整%s的大小时"
 
@@ -4698,7 +4695,6 @@ msgid "Kernel does not support online resizing"
 msgstr "内核不支持在线(online)调整大小"
 
 #: resize/online.c:82
-#, fuzzy
 msgid "While checking for on-line resizing support"
 msgstr "当检查在线文件系统大小调整支持时"
 
