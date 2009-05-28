@@ -153,6 +153,12 @@ void e2fsck_pass2(e2fsck_t ctx)
 						&cd);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK || ctx->flags & E2F_FLAG_RESTART)
 		return;
+
+	if (ctx->flags & E2F_FLAG_RESTART_LATER) {
+		ctx->flags |= E2F_FLAG_RESTART;
+		return;
+	}
+
 	if (cd.pctx.errcode) {
 		fix_problem(ctx, PR_2_DBLIST_ITERATE, &cd.pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
@@ -988,23 +994,24 @@ out_htree:
 		 * newly visible inodes.
 		 */
 		if (fs->group_desc[group].bg_flags & EXT2_BG_INODE_UNINIT) {
+			pctx.num = dirent->inode;
 			if (fix_problem(ctx, PR_2_INOREF_BG_INO_UNINIT,
 					&cd->pctx)){
 				fs->group_desc[group].bg_flags &=
 					~EXT2_BG_INODE_UNINIT;
 				ext2fs_mark_super_dirty(fs);
-				ctx->flags |= E2F_FLAG_RESTART;
+				ctx->flags |= E2F_FLAG_RESTART_LATER;
 			} else {
 				ext2fs_unmark_valid(fs);
 				if (problem == PR_2_BAD_INO)
 					goto next;
 			}
 		} else if (dirent->inode >= first_unused_inode) {
+			pctx.num = dirent->inode;
 			if (fix_problem(ctx, PR_2_INOREF_IN_UNUSED, &cd->pctx)){
 				fs->group_desc[group].bg_itable_unused = 0;
 				ext2fs_mark_super_dirty(fs);
-				ctx->flags |= E2F_FLAG_RESTART;
-				goto restart_fsck;
+				ctx->flags |= E2F_FLAG_RESTART_LATER;
 			} else {
 				ext2fs_unmark_valid(fs);
 				if (problem == PR_2_BAD_INO)
@@ -1145,7 +1152,6 @@ out_htree:
 	return 0;
 abort_free_dict:
 	ctx->flags |= E2F_FLAG_ABORT;
-restart_fsck:
 	dict_free_nodes(&de_dict);
 	return DIRENT_ABORT;
 }
