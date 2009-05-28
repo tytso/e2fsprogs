@@ -330,15 +330,16 @@ void print_resource_track(const char *desc, struct resource_track *track,
 		printf("%s: ", desc);
 
 #ifdef HAVE_MALLINFO
-#define kbytes(x)	(((x) + 1023) / 1024)
+#define kbytes(x)	(((unsigned long)(x) + 1023) / 1024)
 
 	malloc_info = mallinfo();
-	printf(_("Memory used: %uk/%uk (%uk/%uk), "),
+	printf(_("Memory used: %luk/%luk (%luk/%luk), "),
 	       kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
 	       kbytes(malloc_info.uordblks), kbytes(malloc_info.fordblks));
 #else
-	printf(_("Memory used: %u, "),
-	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)));
+	printf(_("Memory used: %lu, "),
+	       (unsigned long) (((char *) sbrk(0)) - 
+				((char *) track->brk_start)));
 #endif
 #ifdef HAVE_GETRUSAGE
 	getrusage(RUSAGE_SELF, &r);
