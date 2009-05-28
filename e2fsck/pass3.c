@@ -60,10 +60,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 	struct dir_info	*dir;
 	unsigned long maxdirs, count;
 
-#ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack, ctx->fs->io);
-#endif
-
 	clear_problem_context(&pctx);
 
 #ifdef MTRACE
@@ -84,13 +81,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 		ctx->flags |= E2F_FLAG_ABORT;
 		goto abort_exit;
 	}
-#ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME) {
-		e2fsck_clear_progbar(ctx);
-		print_resource_track(_("Peak memory"), &ctx->global_rtrack,
-				     NULL);
-	}
-#endif
+	print_resource_track(ctx, _("Peak memory"), &ctx->global_rtrack, NULL);
 
 	check_root(ctx);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
@@ -140,12 +131,7 @@ abort_exit:
 		inode_done_map = 0;
 	}
 
-#ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2) {
-		e2fsck_clear_progbar(ctx);
-		print_resource_track(_("Pass 3"), &rtrack, ctx->fs->io);
-	}
-#endif
+	print_resource_track(ctx, _("Pass 3"), &rtrack, ctx->fs->io);
 }
 
 /*

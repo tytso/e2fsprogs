@@ -939,10 +939,7 @@ int main (int argc, char *argv[])
 	}
 	reserve_stdio_fds();
 
-#ifdef RESOURCE_TRACK
 	init_resource_track(&ctx->global_rtrack, NULL);
-#endif
-
 	if (!(ctx->options & E2F_OPT_PREEN) || show_version_only)
 		fprintf(stderr, "e2fsck %s (%s)\n", my_ver_string,
 			 my_ver_date);
@@ -1409,11 +1406,9 @@ no_journal:
 	}
 
 	e2fsck_write_bitmaps(ctx);
-#ifdef RESOURCE_TRACK
 	io_channel_flush(ctx->fs->io);
-	if (ctx->options & E2F_OPT_TIME)
-		print_resource_track(NULL, &ctx->global_rtrack, ctx->fs->io);
-#endif
+	print_resource_track(ctx, NULL, &ctx->global_rtrack, ctx->fs->io);
+
 	ext2fs_close(fs);
 	ctx->fs = NULL;
 	free(ctx->journal_name);

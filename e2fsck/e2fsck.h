@@ -488,11 +488,15 @@ extern errcode_t e2fsck_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 extern int fs_proc_check(const char *fs_name);
 extern int check_for_modules(const char *fs_name);
 #ifdef RESOURCE_TRACK
-extern void print_resource_track(const char *desc,
+extern void print_resource_track(e2fsck_t ctx,
+				 const char *desc,
 				 struct resource_track *track,
 				 io_channel channel);
 extern void init_resource_track(struct resource_track *track,
 				io_channel channel);
+#else
+#define print_resource_track(ctx, desc, track, channel) do { } while (0)
+#define init_resource_track(track, channel) do { } while (0)
 #endif
 extern int inode_has_valid_blocks(struct ext2_inode *inode);
 extern void e2fsck_read_inode(e2fsck_t ctx, unsigned long ino,

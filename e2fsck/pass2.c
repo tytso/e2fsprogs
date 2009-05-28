@@ -101,10 +101,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 	problem_t		code;
 	int			bad_dir;
 
-#ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack, ctx->fs->io);
-#endif
-
 	clear_problem_context(&cd.pctx);
 
 #ifdef MTRACE
@@ -284,12 +281,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 		}
 	}
 
-#ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2) {
-		e2fsck_clear_progbar(ctx);
-		print_resource_track(_("Pass 2"), &rtrack, fs->io);
-	}
-#endif
+	print_resource_track(ctx, _("Pass 2"), &rtrack, fs->io);
 }
 
 #define MAX_DEPTH 32000

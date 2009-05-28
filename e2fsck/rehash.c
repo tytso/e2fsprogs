@@ -800,10 +800,7 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 	errcode_t		retval;
 	int			cur, max, all_dirs, dir_index, first = 1;
 
-#ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack, ctx->fs->io);
-#endif
-
 	all_dirs = ctx->options & E2F_OPT_COMPRESS_DIRS;
 
 	if (!ctx->dirs_to_hash && !all_dirs)
@@ -867,10 +864,5 @@ void e2fsck_rehash_directories(e2fsck_t ctx)
 		ext2fs_u32_list_free(ctx->dirs_to_hash);
 	ctx->dirs_to_hash = 0;
 
-#ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2) {
-		e2fsck_clear_progbar(ctx);
-		print_resource_track("Pass 3A", &rtrack, ctx->fs->io);
-	}
-#endif
+	print_resource_track(ctx, "Pass 3A", &rtrack, ctx->fs->io);
 }

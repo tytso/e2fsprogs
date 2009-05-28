@@ -29,10 +29,7 @@ void e2fsck_pass5(e2fsck_t ctx)
 	mtrace_print("Pass 5");
 #endif
 
-#ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack, ctx->fs->io);
-#endif
-
 	clear_problem_context(&pctx);
 
 	if (!(ctx->options & E2F_OPT_PREEN))
@@ -64,12 +61,7 @@ void e2fsck_pass5(e2fsck_t ctx)
 	ext2fs_free_block_bitmap(ctx->block_found_map);
 	ctx->block_found_map = 0;
 
-#ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2) {
-		e2fsck_clear_progbar(ctx);
-		print_resource_track(_("Pass 5"), &rtrack, ctx->fs->io);
-	}
-#endif
+	print_resource_track(ctx, _("Pass 5"), &rtrack, ctx->fs->io);
 }
 
 #define NO_BLK ((blk_t) -1)

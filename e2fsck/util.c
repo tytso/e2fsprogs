@@ -313,8 +313,8 @@ static _INLINE_ float timeval_subtract(struct timeval *tv1,
 		((float) (tv1->tv_usec - tv2->tv_usec)) / 1000000);
 }
 
-void print_resource_track(const char *desc, struct resource_track *track,
-			  io_channel channel)
+void print_resource_track(e2fsck_t ctx, const char *desc,
+			  struct resource_track *track, io_channel channel)
 {
 #ifdef HAVE_GETRUSAGE
 	struct rusage r;
@@ -324,6 +324,11 @@ void print_resource_track(const char *desc, struct resource_track *track,
 #endif
 	struct timeval time_end;
 
+	if ((desc && !(ctx->options & E2F_OPT_TIME2)) ||
+	    (!desc && !(ctx->options & E2F_OPT_TIME)))
+		return;
+
+	e2fsck_clear_progbar(ctx);
 	gettimeofday(&time_end, 0);
 
 	if (desc)

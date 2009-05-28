@@ -227,38 +227,17 @@ void e2fsck_pass1_dupblocks(e2fsck_t ctx, char *block_buf)
 	dict_set_allocator(&ino_dict, NULL, inode_dnode_free, NULL);
 	dict_set_allocator(&blk_dict, NULL, block_dnode_free, NULL);
 
-#ifdef RESOURCE_TRACK
 	init_resource_track(&rtrack, ctx->fs->io);
-#endif
-
 	pass1b(ctx, block_buf);
+	print_resource_track(ctx, "Pass 1b", &rtrack, ctx->fs->io);
 
-#ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2) {
-		e2fsck_clear_progbar(ctx);
-		print_resource_track("Pass 1b", &rtrack, ctx->fs->io);
-	}
 	init_resource_track(&rtrack, ctx->fs->io);
-#endif
-
 	pass1c(ctx, block_buf);
+	print_resource_track(ctx, "Pass 1c", &rtrack, ctx->fs->io);
 
-#ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2) {
-		e2fsck_clear_progbar(ctx);
-		print_resource_track("Pass 1c", &rtrack, ctx->fs->io);
-	}
 	init_resource_track(&rtrack, ctx->fs->io);
-#endif
-
 	pass1d(ctx, block_buf);
-
-#ifdef RESOURCE_TRACK
-	if (ctx->options & E2F_OPT_TIME2) {
-		e2fsck_clear_progbar(ctx);
-		print_resource_track("Pass 1d", &rtrack, ctx->fs->io);
-	}
-#endif
+	print_resource_track(ctx, "Pass 1d", &rtrack, ctx->fs->io);
 
 	/*
 	 * Time to free all of the accumulated data structures that we
