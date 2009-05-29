@@ -890,6 +890,38 @@ sscanf_err:
 	exit (1);
 }
 
+static errcode_t try_open_fs(e2fsck_t ctx, int flags, io_manager io_ptr,
+			     ext2_filsys *ret_fs)
+{
+	errcode_t retval;
+
+	*ret_fs = NULL;
+	if (ctx->superblock && ctx->blocksize) {
+		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
+				      flags, ctx->superblock, ctx->blocksize,
+				      io_ptr, ret_fs);
+	} else if (ctx->superblock) {
+		int blocksize;
+		for (blocksize = EXT2_MIN_BLOCK_SIZE;
+		     blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
+			if (*ret_fs) {
+				ext2fs_free(*ret_fs);
+				*ret_fs = NULL;
+			}
+			retval = ext2fs_open2(ctx->filesystem_name,
+					      ctx->io_options, flags,
+					      ctx->superblock, blocksize,
+					      io_ptr, ret_fs);
+			if (!retval)
+				break;
+		}
+	} else
+		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
+				      flags, 0, 0, io_ptr, ret_fs);
+	return retval;
+}
+
+
 static const char *my_ver_string = E2FSPROGS_VERSION;
 static const char *my_ver_date = E2FSPROGS_DATE;
 
@@ -903,6 +935,7 @@ int main (int argc, char *argv[])
 	const char	*lib_ver_date;
 	int		my_ver, lib_ver;
 	e2fsck_t	ctx;
+	blk_t		orig_superblock;
 	struct problem_context pctx;
 	int flags, run_result;
 	int journal_size;
@@ -974,26 +1007,8 @@ restart:
 	if ((ctx->mount_flags & EXT2_MF_MOUNTED) == 0)
 		flags |= EXT2_FLAG_EXCLUSIVE;
 
-	if (ctx->superblock && ctx->blocksize) {
-		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
-				      flags, ctx->superblock, ctx->blocksize,
-				      io_ptr, &fs);
-	} else if (ctx->superblock) {
-		int blocksize;
-		for (blocksize = EXT2_MIN_BLOCK_SIZE;
-		     blocksize <= EXT2_MAX_BLOCK_SIZE; blocksize *= 2) {
-			if (fs)
-				ext2fs_free(fs);
-			retval = ext2fs_open2(ctx->filesystem_name,
-					      ctx->io_options, flags,
-					      ctx->superblock, blocksize,
-					      io_ptr, &fs);
-			if (!retval)
-				break;
-		}
-	} else
-		retval = ext2fs_open2(ctx->filesystem_name, ctx->io_options,
-				      flags, 0, 0, io_ptr, &fs);
+	retval = try_open_fs(ctx, flags, io_ptr, &fs);
+
 	if (!ctx->superblock && !(ctx->options & E2F_OPT_PREEN) &&
 	    !(ctx->flags & E2F_FLAG_SB_SPECIFIED) &&
 	    ((retval == EXT2_ET_BAD_MAGIC) ||
@@ -1008,11 +1023,20 @@ restart:
 			       ctx->program_name,
 			       retval ? _("Superblock invalid,") :
 			       _("Group descriptors look bad..."));
+			orig_superblock = ctx->superblock;
 			get_backup_sb(ctx, fs, ctx->filesystem_name, io_ptr);
 			if (fs)
 				ext2fs_close(fs);
 			orig_retval = retval;
-			goto restart;
+			retval = try_open_fs(ctx, flags, io_ptr, &fs);
+			if ((orig_retval == 0) && retval != 0) {
+				com_err(ctx->program_name, retval,
+					"when using the backup blocks");
+				printf(_("%s: going back to original "
+					 "superblock\n"), ctx->program_name);
+				ctx->superblock = orig_superblock;
+				retval = try_open_fs(ctx, flags, io_ptr, &fs);
+			}
 		}
 	}
 	if (((retval == EXT2_ET_UNSUPP_FEATURE) ||
