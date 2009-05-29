@@ -169,8 +169,12 @@ Change the current working directory to
 Change the root directory to be the directory 
 .IR filespec .
 .TP
-.I close
-Close the currently open file system.
+.I close [-a]
+Close the currently open file system.  If the 
+.I -a
+option is specified, write out any changes to the superblock and block
+group descriptors to all of the backup superblocks, not just to the
+master superblock.
 .TP
 .I clri file
 Clear the contents of the inode 
