@@ -311,9 +311,9 @@ tst_extents: $(srcdir)/extent.c extent_dbg.c $(DEBUG_OBJS) $(DEPLIBSS) $(LIBE2P)
 		$(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) $(LIBCOM_ERR) \
 		-I $(top_srcdir)/debugfs
 
-tst_csum: tst_csum.c csum.c $(STATIC_LIBEXT2FS)
+tst_csum: csum.c $(STATIC_LIBEXT2FS)
 	@echo "	LD $@"
-	@$(CC) -o tst_csum $(srcdir)/csum.c $(srcdir)/tst_csum.c -DDEBUG \
+	@$(CC) -o tst_csum $(srcdir)/csum.c -DDEBUG \
 		$(ALL_CFLAGS) $(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 mkjournal: mkjournal.c $(STATIC_LIBEXT2FS)
