@@ -416,4 +416,7 @@ ec	EXT2_ET_EXTENT_INVALID_LENGTH,
 ec	EXT2_ET_IO_CHANNEL_NO_SUPPORT_64,
 	"I/O Channel does not support 64-bit block numbers"
 
+ec	EXT2_NO_MTAB_FILE,
+	"Can't check if filesystem is mounted due to missing mtab file"
+
 	end
