@@ -576,9 +576,9 @@ option is used to explicitly add or remove filesystem options that
 should be set in the newly created filesystem, the
 resulting filesystem may not be supported by the requested
 .IR fs-type .
-(e.g., "\fBmke2fs -t ext3 -O extents /dev/sdXX\fR" will create a
+(e.g., "\fBmke2fs \-t ext3 \-O extents /dev/sdXX\fR" will create a
 filesystem that is not supported by the ext3 implementation as found in
-the Linux kernel; and "\fBmke2fs -t ext3 -O ^has_journal /dev/hdXX\fR"
+the Linux kernel; and "\fBmke2fs \-t ext3 \-O ^has_journal /dev/hdXX\fR"
 will create a filesystem that does not have a journal and hence will not
 be supported by the ext3 filesystem code in the Linux kernel.)
 .TP
