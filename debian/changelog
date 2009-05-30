@@ -1,3 +1,43 @@
+e2fsprogs (1.41.6-1) unstable; urgency=low
+
+  * New upstream release
+  * Update and clarify man pages
+  * Fix a number of Lintian warnings, including to updating to debian
+    policy 3.8.1
+  * Update config.guess and config.sub to the latest (2009-04-17)
+    version so that e2fsprogs will build on the avr32 platform
+    (Closes: #528330)
+  * Add an explicit error message if the /etc/mtab file is missing
+    when running e2fsck or resize2fs (Closes: #527859)
+  * Enhance e2fsck to handle the case where the primary block group
+    descriptors need fixing, and the backup superblock is corrupt.
+    (Closes: #516820)
+  * Add an "-a" option to debugfs's close_filesys command
+  * e2fsck will no longer abort a preen operation if an inode's
+    i_file_acl_hi field is non-zero.  (Closes: #526524)
+  * The chattr program can now migrate inodes from using direct/indirect
+    blocks to extent trees.
+  * Speed up e2fsck if there are multiple block groups with inodes in
+    use in the unused portion of the block group's inode table.
+  * Update Chinese translation from the translation project
+  * Fix resize2fs so it won't corrupt ext4 filesystem when asked to
+    shrink a filesystem smaller than the minimum suggested size.
+  * Fix e2fsck regression which can corrupt ext4 filesystems when
+    replaying the journal.
+  * Add support to e2fsck for handling I/O errors while replaying the
+    journal
+  * Fix a bug in e2fsck which could cause it to crash if an inode has a
+    corrupt extent header, and the user declines to clear the inode.
+  * Fix blkid to prefer the /dev/mapper/<name> device names over the
+    private /dev/dm-N device names.
+  * Add support for the FIEMAP ioctl to the filefrag program
+  * Further speed up e2fsck by skipping journal checks if the filesystem
+    is mounted read-only and is marked as not needing journal replay.
+  * Add a build depends in the control file indicating that dietlibc
+    must be newer than version 0.30 (Closes: #506064)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Fri, 30 May 2009 13:26:23 -0400
+
 e2fsprogs (1.41.5-1) unstable; urgency=low
 
   * New upstream release

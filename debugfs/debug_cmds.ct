@@ -19,7 +19,7 @@ request do_features, "Set/print superblock features",
 request do_dirty_filesys, "Mark the filesystem as dirty",
 	dirty_filesys, dirty;
 
-request do_init_filesys, "Initalize a filesystem (DESTROYS DATA)",
+request do_init_filesys, "Initialize a filesystem (DESTROYS DATA)",
 	init_filesys;
 
 request do_show_super_stats, "Show superblock statistics",

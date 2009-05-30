@@ -1,3 +1,108 @@
+E2fsprogs 1.41.6 (May 30, 2009)
+===============================
+
+Fix a critical regression in e2fsck introduced version 1.41.5 which
+can undo updates to the block group descriptors after a journal replay.
+
+If e2fsck receives an I/O error while replaying the journal, prompt
+the user whether they want to ignore the error or not; if e2fsck is
+run in preen mode, force fsck to abort the preen pass.
+
+Fix a bug which would cause e2fsck to core dump if the filesystem
+contains a corrupt extent header, and the user declines to clear the
+inode.  (Addresses Sourceforge Bug: #2791794)
+    
+Fix e2fsck to restart only once in the case of multiple block groups
+which inodes in use that are in the uninitialized part of the block
+group's inode table.
+
+To reduce user confusion, if the /etc/mtab file is missing
+ext2fs_check_mount_point and ext2fs_check_if_mounted will return a
+new, explicit error code to indicate this case.  This will cause
+e2fsck to give a clearer error message when the user is using buggy
+rescue CD's that don't properly set up /etc/mtab.  (Addresses Debian
+Bug: #527859)
+    
+Fix e2fsck so that if the primary group descriptors are corrupted, but
+the backup superblock is entirely invalid, to go back to using (and
+fixing) the priary group descriptors instead of completely giving up
+on the filesystem.  (Addresses Debian Bug: #516820)
+    
+Change e2fsck to not abort a preen pass if an inode is found to have
+i_file_acl_hi non-zero.  Ext3 filesystems don't care, and newer
+kernels (post 2.6.29) will ignore this field.  So let's fix it
+automatically during the preen pass instead of forcing the user to fix
+this up manually.  (Addresses Debian Bug: #526524)
+    
+Add resource tracking for e2fsck passes 1b through 1d.
+
+Speed up e2fsck by eliminating unnecessary journal checks if the
+filesystem is already mounted and doesn't need recovery (since the
+kernel would have run the journal when the filesystem was mounted.)
+Also speed up e2fsck by avoiding unnecessary block group descriptor
+updates in ext2fs_close().
+
+Add support to chattr to migrate inodes from using direct/indirect
+blocks to extents.
+
+Avoid corrupting the filesystem if there is an attempt to shrink a
+filesystem using resize2fs smaller than posible by making
+ext2fs_set_bmap() more careful not to delete the old block until the
+new block can be inserted.  In addition, fix a bug in how the minimum
+size of the filesystem (plus a safety margin) is calculated, and
+modify resize2fs to refuse to shrink the filesystem below that minimum
+size without the force flag.
+
+Teach blkid to try to figure out DM device names using take advantage
+of information in sysfs when running on kernels (2.6.29 and later)
+which provide this information in /sys/block/dm-<N>/dm/name; this is
+much faster than scanning for the devncie number in /dev/mapper.
+
+Fix blkid to prefer /dev/mapper/<name> device names instad of the
+private /dev/dm-X names.
+
+Add an -a option to debugfs's close_filesys command which writes any
+changes to the superblock or block group descriptors to all of the
+backup superblock locations.
+    
+Add support to the filefrag program to use the FIEMAP ioctl.
+
+Update Chinese translation from the Translation Project.
+
+Clean up various man pages.  (Addresses Red Hat Bugzilla: #502971 and
+Launchpad Bug: #381854)
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bug #506064)
+
+
+Programmer's Notes
+------------------
+
+Add test code to make sure e2fsck's problem.c doesn't have two problem
+codes assigned to duplicate values.
+
+Avoid using a hard-coded path for /bin/rm in block's test_probe.in.
+(Addresses Sourceforge Bug: #2780205)
+
+Clean up e2fsck by removing #ifdef RESOURCE_TRACK by adding an empty
+function declaration for init_resource_track() and
+print_resource_track() when RESOURCE_TRACK is not defined.
+
+The test code which is used to build the tst_csum progam has been
+moved from from tst_csum.c into csum.c under an #ifdef DEBUG to to
+avoid compile problems caused by not having a prototype for
+ext2fs_group_desc_csum().  (Addresses Sourceforge Bug #2484331)
+
+Update the config.guess and config.sub file to the latest from the
+FSF, to allow e2fsprogs to build on the avr32 platform.  (Addresses
+Debian Bug: #528330)
+
+Add a new function, ext2fs_extent_open2(), which behaves like
+pext2fs_extent_open(), but uses the user-supplied inode structure
+when opening an extent instead of reading the inode from disk.
+
+
 E2fsprogs 1.41.5 (April 23, 2009)
 =================================
 
