@@ -4,7 +4,7 @@
 .\" .TH RESIZE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .TH RESIZE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-resize2fs \- ext2/ext3 file system resizer
+resize2fs \- ext2/ext3/ext4 file system resizer
 .SH SYNOPSIS
 .B resize2fs
 [
@@ -25,8 +25,8 @@ resize2fs \- ext2/ext3 file system resizer
 .SH DESCRIPTION
 The 
 .B resize2fs 
-program will resize ext2 or ext3 file systems.  It can be used to enlarge or
-shrink an unmounted file system located on 
+program will resize ext2, ext3, or ext4 file systems.  It can be used to
+enlarge or shrink an unmounted file system located on 
 .IR device .
 If the filesystem is mounted, it can be used to expand the size of the
 mounted filesystem, assuming the kernel supports on-line resizing.  (As

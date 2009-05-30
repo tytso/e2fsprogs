@@ -4,7 +4,7 @@
 .\" 
 .TH DUMPE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-dumpe2fs \- dump ext2/ext3 filesystem information
+dumpe2fs \- dump ext2/ext3/ext4 filesystem information
 .SH SYNOPSIS
 .B dumpe2fs
 [

@@ -4,7 +4,7 @@
 .\" 
 .TH E2IMAGE 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-e2image \- Save critical ext2/ext3 filesystem metadata to a file
+e2image \- Save critical ext2/ext3/ext4 filesystem metadata to a file
 .SH SYNOPSIS
 .B e2image
 [
@@ -15,7 +15,7 @@ e2image \- Save critical ext2/ext3 filesystem metadata to a file
 .SH DESCRIPTION
 The
 .B e2image
-program will save critical ext2 or ext3 filesystem metadata located on 
+program will save critical ext2, ext3, or ext4 filesystem metadata located on 
 .I device  
 to a file specified by 
 .IR image-file .

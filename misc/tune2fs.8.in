@@ -4,7 +4,7 @@
 .\"
 .TH TUNE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-tune2fs \- adjust tunable filesystem parameters on ext2/ext3 filesystems
+tune2fs \- adjust tunable filesystem parameters on ext2/ext3/ext4 filesystems
 .SH SYNOPSIS
 .B tune2fs
 [
@@ -88,8 +88,8 @@ device
 .SH DESCRIPTION
 .BI tune2fs
 allows the system administrator to adjust various tunable filesystem 
-parameters on Linux ext2/ext3 filesystems.  The current values of these
-options can be displayed by using the
+parameters on Linux ext2, ext3, or ext4 filesystems.  The current values 
+of these options can be displayed by using the
 .B -l
 option to
 .BR tune2fs (8)

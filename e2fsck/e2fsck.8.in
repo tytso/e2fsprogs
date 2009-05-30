@@ -4,7 +4,7 @@
 .\" 
 .TH E2FSCK 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-e2fsck \- check a Linux ext2/ext3 file system
+e2fsck \- check a Linux ext2/ext3/ext4 file system
 .SH SYNOPSIS
 .B e2fsck
 [
@@ -37,17 +37,13 @@ e2fsck \- check a Linux ext2/ext3 file system
 .I device
 .SH DESCRIPTION
 .B e2fsck
-is used to check a Linux second extended file system (ext2fs).  
-.B E2fsck
-also 
-supports ext2 filesystems containing a journal, which are
-also sometimes known as ext3 filesystems, by first applying the journal 
-to the filesystem before continuing with normal 
+is used to check the ext2/ext3/ext4 family of file systems.   
+For ext3 and ext4 filesystems that use a journal, if the system has been
+shut down uncleanly without any errors, normally, after replaying the
+committed transactions  in the journal, the file system should be
+marked as clean.   Hence, for filesystems that use journalling,
 .B e2fsck
-processing.  After the journal has been applied, a filesystem will
-normally be marked as clean.  Hence, for ext3 filesystems, 
-.B e2fsck
-will normally run the journal and exit, unless its superblock
+will normally replay the journal and exit, unless its superblock
 indicates that further checking is required.
 .PP
 .I device

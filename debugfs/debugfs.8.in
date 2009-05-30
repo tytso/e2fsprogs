@@ -4,7 +4,7 @@
 .\" 
 .TH DEBUGFS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-debugfs \- ext2/ext3 file system debugger
+debugfs \- ext2/ext3/ext4 file system debugger
 .SH SYNOPSIS
 .B debugfs
 [
@@ -37,10 +37,10 @@ device
 The 
 .B debugfs 
 program is an interactive file system debugger. It can be used to
-examine and change the state of an ext2 file system.
+examine and change the state of an ext2, ext3, or ext4 file system.
 .br
 .I device
-is the special file corresponding to the device containing the ext2
+is the special file corresponding to the device containing the
 file system (e.g /dev/hdXX).
 .SH OPTIONS
 .TP

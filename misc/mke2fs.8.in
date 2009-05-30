@@ -4,7 +4,7 @@
 .\"
 .TH MKE2FS 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-mke2fs \- create an ext2/ext3 filesystem
+mke2fs \- create an ext2/ext3/ext4 filesystem
 .SH SYNOPSIS
 .B mke2fs
 [
@@ -140,7 +140,8 @@ mke2fs \- create an ext2/ext3 filesystem
 @JDEV@]
 .SH DESCRIPTION
 .B mke2fs
-is used to create an ext2/ext3 filesystem (usually in a disk partition).
+is used to create an ext2, ext3, or ext4 filesystem, usually in a disk
+partition.
 .I device
 is the special file corresponding to the device (e.g
 .IR /dev/hdXX ).

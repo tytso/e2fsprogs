@@ -1,7 +1,7 @@
 .\" -*- nroff -*-
 .TH CHATTR 1 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
-chattr \- change file attributes on a Linux second extended file system
+chattr \- change file attributes on a Linux file system
 .SH SYNOPSIS
 .B chattr
 [
@@ -17,7 +17,7 @@ chattr \- change file attributes on a Linux second extended file system
 .I files...
 .SH DESCRIPTION
 .B chattr
-changes the file attributes on a Linux second extended file system.
+changes the file attributes on a Linux file system.
 .PP
 The format of a symbolic mode is +-=[acdeijstuADST].
 .PP
