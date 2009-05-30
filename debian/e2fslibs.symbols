@@ -113,6 +113,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_extent_goto@Base 1.41.0
  ext2fs_extent_header_verify@Base 1.41.0
  ext2fs_extent_insert@Base 1.41.0
+ ext2fs_extent_open2@Base 1.41.6
  ext2fs_extent_open@Base 1.41.0
  ext2fs_extent_replace@Base 1.41.0
  ext2fs_extent_set_bmap@Base 1.41.0
@@ -160,8 +161,8 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_get_blocks@Base 1.37
  ext2fs_get_data_io@Base 1.37
  ext2fs_get_device_sectsize@Base 1.37
- ext2fs_get_device_size@Base 1.37
  ext2fs_get_device_size2@Base 1.41.4
+ ext2fs_get_device_size@Base 1.37
  ext2fs_get_free_blocks@Base 1.37
  ext2fs_get_generic_bitmap_end@Base 1.41.0
  ext2fs_get_generic_bitmap_range@Base 1.41.0
@@ -369,10 +370,10 @@ libext2fs.so.2 e2fslibs #MINVER#
  initialize_ext2_error_table@Base 1.37
  initialize_ext2_error_table_r@Base 1.37
  inode_io_manager@Base 1.37
- io_channel_set_options@Base 1.37
- io_channel_write_byte@Base 1.37
  io_channel_read_blk64@Base 1.41.1
+ io_channel_set_options@Base 1.37
  io_channel_write_blk64@Base 1.41.1
+ io_channel_write_byte@Base 1.37
  set_undo_io_backing_manager@Base 1.41.0
  set_undo_io_backup_file@Base 1.41.0
  tdb_null@Base 1.40
