@@ -124,6 +124,7 @@ static struct field_set_info super_fields[] = {
 	  17 },
 	{ "blocks_count_hi", &set_sb.s_blocks_count_hi, 4, parse_uint },
 	{ "r_blocks_count_hi", &set_sb.s_r_blocks_count_hi, 4, parse_uint },
+	{ "free_blocks_hi", &set_sb.s_free_blocks_hi, 4, parse_uint },
 	{ "min_extra_isize", &set_sb.s_min_extra_isize, 2, parse_uint },
 	{ "want_extra_isize", &set_sb.s_want_extra_isize, 2, parse_uint },
 	{ "flags", &set_sb.s_flags, 4, parse_uint },
