@@ -798,6 +798,12 @@ extern errcode_t ext2fs_check_desc(ext2_filsys fs);
 extern errcode_t ext2fs_close(ext2_filsys fs);
 extern errcode_t ext2fs_flush(ext2_filsys fs);
 extern int ext2fs_bg_has_super(ext2_filsys fs, int group_block);
+extern errcode_t ext2fs_super_and_bgd_loc2(ext2_filsys fs,
+				    dgrp_t group,
+				    blk64_t *ret_super_blk,
+				    blk64_t *ret_old_desc_blk,
+				    blk64_t *ret_new_desc_blk,
+				    blk_t *ret_used_blks);
 extern int ext2fs_super_and_bgd_loc(ext2_filsys fs,
 				    dgrp_t group,
 				    blk_t *ret_super_blk,
