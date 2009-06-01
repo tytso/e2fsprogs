@@ -772,6 +772,17 @@ errcode_t ext2fs_block_iterate2(ext2_filsys fs,
 					    int		ref_offset,
 					    void	*priv_data),
 				void *priv_data);
+errcode_t ext2fs_block_iterate3(ext2_filsys fs,
+				ext2_ino_t ino,
+				int	flags,
+				char *block_buf,
+				int (*func)(ext2_filsys fs,
+					    blk64_t	*blocknr,
+					    e2_blkcnt_t	blockcnt,
+					    blk64_t	ref_blk,
+					    int		ref_offset,
+					    void	*priv_data),
+				void *priv_data);
 
 /* bmap.c */
 extern errcode_t ext2fs_bmap(ext2_filsys fs, ext2_ino_t ino,
