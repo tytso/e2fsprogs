@@ -25,8 +25,8 @@ struct ext2_file {
 	struct ext2_inode	inode;
 	int 			flags;
 	__u64			pos;
-	blk_t			blockno;
-	blk_t			physblock;
+	blk64_t			blockno;
+	blk64_t			physblock;
 	char 			*buf;
 };
 
@@ -116,9 +116,9 @@ errcode_t ext2fs_file_flush(ext2_file_t file)
 	 * Allocate it.
 	 */
 	if (!file->physblock) {
-		retval = ext2fs_bmap(fs, file->ino, &file->inode,
+		retval = ext2fs_bmap2(fs, file->ino, &file->inode,
 				     BMAP_BUFFER, file->ino ? BMAP_ALLOC : 0,
-				     file->blockno, &file->physblock);
+				     file->blockno, 0, &file->physblock);
 		if (retval)
 			return retval;
 	}
@@ -168,8 +168,8 @@ static errcode_t load_buffer(ext2_file_t file, int dontfill)
 	errcode_t	retval;
 
 	if (!(file->flags & EXT2_FILE_BUF_VALID)) {
-		retval = ext2fs_bmap(fs, file->ino, &file->inode,
-				     BMAP_BUFFER, 0, file->blockno,
+		retval = ext2fs_bmap2(fs, file->ino, &file->inode,
+				     BMAP_BUFFER, 0, file->blockno, 0,
 				     &file->physblock);
 		if (retval)
 			return retval;
