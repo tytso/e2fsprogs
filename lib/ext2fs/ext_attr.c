@@ -60,11 +60,11 @@ __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry, void *data)
 #undef NAME_HASH_SHIFT
 #undef VALUE_HASH_SHIFT
 
-errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf)
+errcode_t ext2fs_read_ext_attr2(ext2_filsys fs, blk64_t block, void *buf)
 {
 	errcode_t	retval;
 
- 	retval = io_channel_read_blk(fs->io, block, 1, buf);
+	retval = io_channel_read_blk64(fs->io, block, 1, buf);
 	if (retval)
 		return retval;
 #ifdef WORDS_BIGENDIAN
@@ -73,7 +73,12 @@ errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf)
 	return 0;
 }
 
-errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *inbuf)
+errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf)
+{
+	return ext2fs_read_ext_attr2(fs, block, buf);
+}
+
+errcode_t ext2fs_write_ext_attr2(ext2_filsys fs, blk64_t block, void *inbuf)
 {
 	errcode_t	retval;
 	char		*write_buf;
@@ -88,7 +93,7 @@ errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *inbuf)
 #else
 	write_buf = (char *) inbuf;
 #endif
- 	retval = io_channel_write_blk(fs->io, block, 1, write_buf);
+	retval = io_channel_write_blk64(fs->io, block, 1, write_buf);
 	if (buf)
 		ext2fs_free_mem(&buf);
 	if (!retval)
@@ -96,10 +101,15 @@ errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *inbuf)
 	return retval;
 }
 
+errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block, void *inbuf)
+{
+	return ext2fs_write_ext_attr2(fs, block, inbuf);
+}
+
 /*
  * This function adjusts the reference count of the EA block.
  */
-errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
+errcode_t ext2fs_adjust_ea_refcount2(ext2_filsys fs, blk64_t blk,
 				    char *block_buf, int adjust,
 				    __u32 *newcount)
 {
@@ -118,7 +128,7 @@ errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
 		block_buf = buf;
 	}
 
-	retval = ext2fs_read_ext_attr(fs, blk, block_buf);
+	retval = ext2fs_read_ext_attr2(fs, blk, block_buf);
 	if (retval)
 		goto errout;
 
@@ -127,7 +137,7 @@ errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
 	if (newcount)
 		*newcount = header->h_refcount;
 
-	retval = ext2fs_write_ext_attr(fs, blk, block_buf);
+	retval = ext2fs_write_ext_attr2(fs, blk, block_buf);
 	if (retval)
 		goto errout;
 
@@ -135,4 +145,11 @@ errout:
 	if (buf)
 		ext2fs_free_mem(&buf);
 	return retval;
+}
+
+errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
+					char *block_buf, int adjust,
+					__u32 *newcount)
+{
+	return ext2fs_adjust_ea_refcount(fs, blk, block_buf, adjust, newcount);
 }

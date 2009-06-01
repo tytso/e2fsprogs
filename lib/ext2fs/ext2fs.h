@@ -908,9 +908,16 @@ extern errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir);
 extern __u32 ext2fs_ext_attr_hash_entry(struct ext2_ext_attr_entry *entry,
 					void *data);
 extern errcode_t ext2fs_read_ext_attr(ext2_filsys fs, blk_t block, void *buf);
+extern errcode_t ext2fs_read_ext_attr2(ext2_filsys fs, blk64_t block,
+				       void *buf);
 extern errcode_t ext2fs_write_ext_attr(ext2_filsys fs, blk_t block,
 				       void *buf);
+extern errcode_t ext2fs_write_ext_attr2(ext2_filsys fs, blk64_t block,
+				       void *buf);
 extern errcode_t ext2fs_adjust_ea_refcount(ext2_filsys fs, blk_t blk,
+					   char *block_buf,
+					   int adjust, __u32 *newcount);
+extern errcode_t ext2fs_adjust_ea_refcount2(ext2_filsys fs, blk64_t blk,
 					   char *block_buf,
 					   int adjust, __u32 *newcount);
 
