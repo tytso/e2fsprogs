@@ -145,8 +145,8 @@ errout:
  * programs that check for memory leaks happy.)
  */
 #define STRIDE_LENGTH 8
-errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
-			     blk_t *ret_blk, int *ret_count)
+errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
+			      blk64_t *ret_blk, int *ret_count)
 {
 	int		j, count;
 	static char	*buf;
@@ -179,7 +179,7 @@ errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 			if (count > STRIDE_LENGTH)
 				count = STRIDE_LENGTH;
 		}
-		retval = io_channel_write_blk(fs->io, blk, count, buf);
+		retval = io_channel_write_blk64(fs->io, blk, count, buf);
 		if (retval) {
 			if (ret_count)
 				*ret_count = count;
@@ -190,6 +190,18 @@ errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 		j += count; blk += count;
 	}
 	return 0;
+}
+
+errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
+			     blk_t *ret_blk, int *ret_count)
+{
+	blk64_t ret_blk2;
+	errcode_t retval;
+
+	retval = ext2fs_zero_blocks2(fs, blk, num, &ret_blk2, ret_count);
+	if (retval)
+		*ret_blk = (blk_t) ret_blk2;
+	return retval;
 }
 
 /*

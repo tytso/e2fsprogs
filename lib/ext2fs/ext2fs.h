@@ -1148,6 +1148,8 @@ extern errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum
 /* mkjournal.c */
 extern errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 				    blk_t *ret_blk, int *ret_count);
+extern errcode_t ext2fs_zero_blocks2(ext2_filsys fs, blk64_t blk, int num,
+				     blk64_t *ret_blk, int *ret_count); 
 extern errcode_t ext2fs_create_journal_superblock(ext2_filsys fs,
 						  __u32 size, int flags,
 						  char  **ret_jsb);
