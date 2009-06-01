@@ -61,9 +61,9 @@ void ext2fs_inode_alloc_stats(ext2_filsys fs, ext2_ino_t ino, int inuse)
 	ext2fs_inode_alloc_stats2(fs, ino, inuse, 0);
 }
 
-void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse)
+void ext2fs_block_alloc_stats2(ext2_filsys fs, blk64_t blk, int inuse)
 {
-	int	group = ext2fs_group_of_blk(fs, blk);
+	int	group = ext2fs_group_of_blk2(fs, blk);
 
 #ifndef OMIT_COM_ERR
 	if (blk >= fs->super->s_blocks_count) {
@@ -73,18 +73,25 @@ void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse)
 	}
 #endif
 	if (inuse > 0)
+		/* FIXME-64 */
 		ext2fs_mark_block_bitmap(fs->block_map, blk);
 	else
+		/* FIXME-64 */
 		ext2fs_unmark_block_bitmap(fs->block_map, blk);
 	fs->group_desc[group].bg_free_blocks_count -= inuse;
 	fs->group_desc[group].bg_flags &= ~EXT2_BG_BLOCK_UNINIT;
 	ext2fs_group_desc_csum_set(fs, group);
 
-	fs->super->s_free_blocks_count -= inuse;
+	ext2fs_free_blocks_count_add(fs->super, -inuse);
 	ext2fs_mark_super_dirty(fs);
 	ext2fs_mark_bb_dirty(fs);
 	if (fs->block_alloc_stats)
 		(fs->block_alloc_stats)(fs, (blk64_t) blk, inuse);
+}
+
+void ext2fs_block_alloc_stats(ext2_filsys fs, blk_t blk, int inuse)
+{
+	ext2fs_block_alloc_stats2(fs, blk, inuse);
 }
 
 void ext2fs_set_block_alloc_stats_callback(ext2_filsys fs,
