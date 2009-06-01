@@ -1255,6 +1255,7 @@ extern blk_t ext2fs_group_last_block(ext2_filsys fs, dgrp_t group);
 extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 				      struct ext2_inode *inode);
 extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
+extern __u64 ext2fs_div64_ceil(__u64 a, __u64 b);
 
 /*
  * The actual inlined functions definitions themselves...
@@ -1455,6 +1456,14 @@ _INLINE_ unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b)
 		return 0;
 	return ((a - 1) / b) + 1;
 }
+
+_INLINE_ __u64 ext2fs_div64_ceil(__u64 a, __u64 b)
+{
+	if (!a)
+		return 0;
+	return ((a - 1) / b) + 1;
+}
+
 #undef _INLINE_
 #endif
 
