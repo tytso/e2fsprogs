@@ -19,6 +19,11 @@ extern int ext2fs_clear_bit(unsigned int nr, void * addr);
 extern int ext2fs_test_bit(unsigned int nr, const void * addr);
 extern void ext2fs_fast_set_bit(unsigned int nr,void * addr);
 extern void ext2fs_fast_clear_bit(unsigned int nr, void * addr);
+extern int ext2fs_set_bit64(__u64 nr,void * addr);
+extern int ext2fs_clear_bit64(__u64 nr, void * addr);
+extern int ext2fs_test_bit64(__u64 nr, const void * addr);
+extern void ext2fs_fast_set_bit64(__u64 nr,void * addr);
+extern void ext2fs_fast_clear_bit64(__u64 nr, void * addr);
 extern __u16 ext2fs_swab16(__u16 val);
 extern __u32 ext2fs_swab32(__u32 val);
 extern __u64 ext2fs_swab64(__u64 val);
@@ -159,6 +164,23 @@ _INLINE_ void ext2fs_fast_set_bit(unsigned int nr,void * addr)
 }
 
 _INLINE_ void ext2fs_fast_clear_bit(unsigned int nr, void * addr)
+{
+	unsigned char	*ADDR = (unsigned char *) addr;
+
+	ADDR += nr >> 3;
+	*ADDR &= ~(1 << (nr & 0x07));
+}
+
+
+_INLINE_ void ext2fs_fast_set_bit64(__u64 nr, void * addr)
+{
+	unsigned char	*ADDR = (unsigned char *) addr;
+
+	ADDR += nr >> 3;
+	*ADDR |= (1 << (nr & 0x07));
+}
+
+_INLINE_ void ext2fs_fast_clear_bit64(__u64 nr, void * addr)
 {
 	unsigned char	*ADDR = (unsigned char *) addr;
 
