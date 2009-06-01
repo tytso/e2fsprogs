@@ -19,7 +19,7 @@
 #include "ext2_fs.h"
 #include "ext2fs.h"
 
-errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
+errcode_t ext2fs_read_dir_block3(ext2_filsys fs, blk64_t block,
 				 void *buf, int flags EXT2FS_ATTR((unused)))
 {
 	errcode_t	retval;
@@ -28,7 +28,7 @@ errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
 	unsigned int	name_len, rec_len;
 
 
- 	retval = io_channel_read_blk(fs->io, block, 1, buf);
+	retval = io_channel_read_blk64(fs->io, block, 1, buf);
 	if (retval)
 		return retval;
 
@@ -58,14 +58,20 @@ errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
 	return retval;
 }
 
+errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
+				 void *buf, int flags EXT2FS_ATTR((unused)))
+{
+	return ext2fs_read_dir_block3(fs, block, buf, flags);
+}
+
 errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 				 void *buf)
 {
-	return ext2fs_read_dir_block2(fs, block, buf, 0);
+	return ext2fs_read_dir_block3(fs, block, buf, 0);
 }
 
 
-errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
+errcode_t ext2fs_write_dir_block3(ext2_filsys fs, blk64_t block,
 				  void *inbuf, int flags EXT2FS_ATTR((unused)))
 {
 #ifdef WORDS_BIGENDIAN
@@ -98,7 +104,7 @@ errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
 		if (flags & EXT2_DIRBLOCK_V2_STRUCT)
 			dirent->name_len = ext2fs_swab16(dirent->name_len);
 	}
- 	retval = io_channel_write_blk(fs->io, block, 1, buf);
+	retval = io_channel_write_blk64(fs->io, block, 1, buf);
 	ext2fs_free_mem(&buf);
 	return retval;
 #else
@@ -106,10 +112,15 @@ errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
 #endif
 }
 
+errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
+				 void *inbuf, int flags EXT2FS_ATTR((unused)))
+{
+	return ext2fs_write_dir_block3(fs, block, inbuf, flags);
+}
 
 errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 				 void *inbuf)
 {
-	return ext2fs_write_dir_block2(fs, block, inbuf, 0);
+	return ext2fs_write_dir_block3(fs, block, inbuf, 0);
 }
 

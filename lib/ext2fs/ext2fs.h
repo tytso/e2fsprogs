@@ -843,9 +843,13 @@ extern errcode_t ext2fs_read_dir_block(ext2_filsys fs, blk_t block,
 				       void *buf);
 extern errcode_t ext2fs_read_dir_block2(ext2_filsys fs, blk_t block,
 					void *buf, int flags);
+extern errcode_t ext2fs_read_dir_block3(ext2_filsys fs, blk64_t block,
+					void *buf, int flags);
 extern errcode_t ext2fs_write_dir_block(ext2_filsys fs, blk_t block,
 					void *buf);
 extern errcode_t ext2fs_write_dir_block2(ext2_filsys fs, blk_t block,
+					 void *buf, int flags);
+extern errcode_t ext2fs_write_dir_block3(ext2_filsys fs, blk64_t block,
 					 void *buf, int flags);
 
 /* dirhash.c */
