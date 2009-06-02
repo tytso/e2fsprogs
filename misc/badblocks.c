@@ -1010,11 +1010,6 @@ int main (int argc, char ** argv)
 		switch (c) {
 		case 'b':
 			block_size = parse_uint(optarg, "block size");
-			if (block_size > 4096) {
-				com_err (program_name, 0,
-					 _("bad block size - %s"), optarg);
-				exit (1);
-			}
 			break;
 		case 'f':
 			force++;
