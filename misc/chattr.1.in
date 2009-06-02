@@ -125,7 +125,7 @@ spread apart for allocation purposes.   For example it is a very good
 idea to set the 'T' attribute on the /home directory, so that /home/john
 and /home/mary are placed into separate block groups.  For directories
 where this attribute is not set, the Orlov block allocator will try to
-group subdirectories closer together where posible.
+group subdirectories closer together where possible.
 .PP
 A file with the 't' attribute will not have a partial block fragment at
 the end of the file merged with other files (for those filesystems which
