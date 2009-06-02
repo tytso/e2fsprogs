@@ -201,15 +201,14 @@ int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 		fiemap->fm_flags = flags;
 		fiemap->fm_extent_count = count;
 		rc = ioctl(fd, FS_IOC_FIEMAP, (unsigned long) fiemap);
-		if (rc == -EBADR) {
-			if (fiemap_incompat_printed == 0) {
+		if (rc < 0) {
+			if (errno == EBADR && fiemap_incompat_printed == 0) {
 				printf("FIEMAP failed with unsupported "
 				       "flags %x\n", fiemap->fm_flags);
 				fiemap_incompat_printed = 1;
 			}
-		}
-		if (rc)
 			return rc;
+		}
 
 		if (!verbose) {
 			*num_extents = fiemap->fm_mapped_extents;
