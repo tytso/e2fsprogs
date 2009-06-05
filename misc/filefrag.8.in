@@ -5,7 +5,7 @@ filefrag \- report on file fragmentation
 .SH SYNOPSIS
 .B filefrag
 [
-.B \-besvx
+.B \-bsvx
 ]
 [
 .I files...
