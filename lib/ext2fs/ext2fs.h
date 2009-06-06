@@ -682,6 +682,65 @@ extern errcode_t ext2fs_get_block_bitmap_range(ext2fs_block_bitmap bmap,
 					blk_t start, unsigned int num,
 					void *out);
 
+/* blknum.c */
+extern dgrp_t ext2fs_group_of_blk2(ext2_filsys fs, blk64_t);
+extern blk64_t ext2fs_group_first_block2(ext2_filsys fs, dgrp_t group);
+extern blk64_t ext2fs_group_last_block2(ext2_filsys fs, dgrp_t group);
+extern blk64_t ext2fs_inode_data_blocks2(ext2_filsys fs,
+					 struct ext2_inode *inode);
+extern blk64_t ext2fs_inode_i_blocks(ext2_filsys fs,
+					 struct ext2_inode *inode);
+extern blk64_t ext2fs_blocks_count(struct ext2_super_block *super);
+extern void ext2fs_blocks_count_set(struct ext2_super_block *super,
+				    blk64_t blk);
+extern void ext2fs_blocks_count_add(struct ext2_super_block *super,
+				    blk64_t blk);
+extern blk64_t ext2fs_r_blocks_count(struct ext2_super_block *super);
+extern void ext2fs_r_blocks_count_set(struct ext2_super_block *super,
+				      blk64_t blk);
+extern void ext2fs_r_blocks_count_add(struct ext2_super_block *super,
+				      blk64_t blk);
+extern blk64_t ext2fs_free_blocks_count(struct ext2_super_block *super);
+extern void ext2fs_free_blocks_count_set(struct ext2_super_block *super,
+					 blk64_t blk);
+extern void ext2fs_free_blocks_count_add(struct ext2_super_block *super,
+					 blk64_t blk);
+/* Block group descriptor accessor functions */
+extern struct ext2_group_desc *ext2fs_group_desc(ext2_filsys fs,
+					  struct ext2_group_desc *gdp,
+					  dgrp_t group);
+extern blk64_t ext2fs_block_bitmap_loc(ext2_filsys fs, dgrp_t group);
+extern void ext2fs_block_bitmap_loc_set(ext2_filsys fs, dgrp_t group,
+					blk64_t blk);
+extern blk64_t ext2fs_inode_bitmap_loc(ext2_filsys fs, dgrp_t group);
+extern void ext2fs_inode_bitmap_loc_set(ext2_filsys fs, dgrp_t group,
+					blk64_t blk);
+extern blk64_t ext2fs_inode_table_loc(ext2_filsys fs, dgrp_t group);
+extern void ext2fs_inode_table_loc_set(ext2_filsys fs, dgrp_t group,
+				       blk64_t blk);
+extern blk64_t ext2fs_bg_free_blocks_count(ext2_filsys fs, dgrp_t group);
+extern void ext2fs_bg_free_blocks_count_set(ext2_filsys fs, dgrp_t group,
+					 blk64_t blk);
+extern blk64_t ext2fs_bg_free_inodes_count(ext2_filsys fs, dgrp_t group);
+extern void ext2fs_bg_free_inodes_count_set(ext2_filsys fs, dgrp_t group,
+					 blk64_t blk);
+extern blk64_t ext2fs_bg_used_dirs_count(ext2_filsys fs, dgrp_t group);
+extern void ext2fs_bg_used_dirs_count_set(ext2_filsys fs, dgrp_t group,
+				       blk64_t blk);
+extern blk64_t ext2fs_bg_itable_unused(ext2_filsys fs, dgrp_t group);
+extern void ext2fs_bg_itable_unused_set(ext2_filsys fs, dgrp_t group,
+				     blk64_t blk);
+extern __u16 ext2fs_bg_flags(ext2_filsys fs, dgrp_t group);
+extern void ext2fs_bg_flags_set(ext2_filsys fs, dgrp_t group, __u16 bg_flags);
+extern void ext2fs_bg_flags_clear(ext2_filsys fs, dgrp_t group,
+				  __u16 bg_flags);
+extern int ext2fs_bg_flag_test(ext2_filsys fs, dgrp_t group, __u16 bg_flag);
+extern void ext2fs_bg_flag_set(ext2_filsys fs, dgrp_t group, __u16 bg_flag);
+extern void ext2fs_bg_flag_clear(ext2_filsys fs, dgrp_t group, __u16 bg_flag);
+extern __u16 ext2fs_bg_checksum(ext2_filsys fs, dgrp_t group);
+extern void ext2fs_bg_checksum_set(ext2_filsys fs, dgrp_t group, __u16 checksum);
+extern blk64_t ext2fs_file_acl_block(const struct ext2_inode *inode);
+extern void ext2fs_file_acl_block_set(struct ext2_inode *inode, blk64_t blk);
 
 /* block.c */
 extern errcode_t ext2fs_block_iterate(ext2_filsys fs,
@@ -1327,10 +1386,8 @@ _INLINE_ int ext2fs_test_bb_dirty(ext2_filsys fs)
  */
 _INLINE_ int ext2fs_group_of_blk(ext2_filsys fs, blk_t blk)
 {
-	return (blk - fs->super->s_first_data_block) /
-		fs->super->s_blocks_per_group;
+	return ext2fs_group_of_blk2(fs, blk);
 }
-
 /*
  * Return the group # of an inode number
  */
@@ -1344,8 +1401,7 @@ _INLINE_ int ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino)
  */
 _INLINE_ blk_t ext2fs_group_first_block(ext2_filsys fs, dgrp_t group)
 {
-	return fs->super->s_first_data_block +
-		(group * fs->super->s_blocks_per_group);
+	return ext2fs_group_first_block2(fs, group);
 }
 
 /*
@@ -1353,17 +1409,13 @@ _INLINE_ blk_t ext2fs_group_first_block(ext2_filsys fs, dgrp_t group)
  */
 _INLINE_ blk_t ext2fs_group_last_block(ext2_filsys fs, dgrp_t group)
 {
-	return (group == fs->group_desc_count - 1 ?
-		fs->super->s_blocks_count - 1 :
-		ext2fs_group_first_block(fs, group) +
-			(fs->super->s_blocks_per_group - 1));
+	return ext2fs_group_last_block2(fs, group);
 }
 
 _INLINE_ blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
 					struct ext2_inode *inode)
 {
-       return inode->i_blocks -
-              (inode->i_file_acl ? fs->blocksize >> 9 : 0);
+	return ext2fs_inode_data_blocks2(fs, inode);
 }
 
 /*
