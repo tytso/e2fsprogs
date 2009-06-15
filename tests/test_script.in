@@ -10,6 +10,11 @@ case "$1" in
     --valgrind)
     	export USE_VALGRIND="valgrind -q --sim-hints=lax-ioctls"
 	shift;
+	;;
+    --valgrind-leakcheck)
+    	export USE_VALGRIND="valgrind --sim-hints=lax-ioctls --leak-check=full --show-reachable=yes --log-file=/tmp/valgrind-%p.log"
+	shift;
+	;;
 esac
 
 if test "$1"x = x ; then
