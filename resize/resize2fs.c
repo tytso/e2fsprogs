@@ -158,6 +158,10 @@ errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 	ext2fs_free(rfs->old_fs);
 	if (rfs->itable_buf)
 		ext2fs_free_mem(&rfs->itable_buf);
+	if (rfs->reserve_blocks)
+		ext2fs_free_block_bitmap(rfs->reserve_blocks);
+	if (rfs->move_blocks)
+		ext2fs_free_block_bitmap(rfs->move_blocks);
 	ext2fs_free_mem(&rfs);
 
 	return 0;

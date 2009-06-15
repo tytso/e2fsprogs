@@ -250,8 +250,10 @@ int main (int argc, char ** argv)
 				device_name);
 			exit(1);
 		}
-		if (!(mount_flags & EXT2_MF_MOUNTED) || (mtpt[len-1] == 0))
+		if (!(mount_flags & EXT2_MF_MOUNTED) || (mtpt[len-1] == 0)) {
+			free(mtpt);
 			break;
+		}
 		free(mtpt);
 		len = 2 * len;
 	}
