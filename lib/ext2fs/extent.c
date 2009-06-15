@@ -168,7 +168,7 @@ extern void ext2fs_extent_free(ext2_extent_handle_t handle)
 	if (handle->inode)
 		ext2fs_free_mem(&handle->inode);
 	if (handle->path) {
-		for (i=1; i < handle->max_depth; i++) {
+		for (i=1; i <= handle->max_depth; i++) {
 			if (handle->path[i].buf)
 				ext2fs_free_mem(&handle->path[i].buf);
 		}
