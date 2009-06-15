@@ -293,6 +293,9 @@ void e2fsck_free_dir_info(e2fsck_t ctx)
 			unlink(ctx->dir_info->tdb_fn);
 			free(ctx->dir_info->tdb_fn);
 		}
+		if (ctx->dir_info->array)
+			ext2fs_free_mem(&ctx->dir_info->array);
+		ctx->dir_info->array = 0;
 		ctx->dir_info->size = 0;
 		ctx->dir_info->count = 0;
 		ext2fs_free_mem(&ctx->dir_info);

@@ -802,7 +802,6 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 			argv[optind]);
 		fatal_error(ctx, 0);
 	}
-	ctx->filesystem_name = string_copy(ctx, ctx->filesystem_name, 0);
 	if (extended_opts)
 		parse_extended_opts(ctx, extended_opts);
 

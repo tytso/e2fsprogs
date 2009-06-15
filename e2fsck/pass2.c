@@ -251,6 +251,7 @@ void e2fsck_pass2(e2fsck_t ctx)
 			dx_dir->numblocks = 0;
 		}
 	}
+	e2fsck_free_dx_dir_info(ctx);
 #endif
 	ext2fs_free_mem(&buf);
 	ext2fs_free_dblist(fs->dblist);

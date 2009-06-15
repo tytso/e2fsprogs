@@ -180,6 +180,7 @@ static void inode_dnode_free(dnode_t *node,
 		next = p->next;
 		free(p);
 	}
+	free(di);
 	free(node);
 }
 
@@ -197,6 +198,7 @@ static void block_dnode_free(dnode_t *node,
 		next = p->next;
 		free(p);
 	}
+	free(db);
 	free(node);
 }
 
@@ -245,6 +247,7 @@ void e2fsck_pass1_dupblocks(e2fsck_t ctx, char *block_buf)
 	 */
 	dict_free_nodes(&ino_dict);
 	dict_free_nodes(&blk_dict);
+	ext2fs_free_inode_bitmap(inode_dup_map);
 }
 
 /*

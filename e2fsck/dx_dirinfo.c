@@ -115,7 +115,7 @@ void e2fsck_free_dx_dir_info(e2fsck_t ctx)
 
 	if (ctx->dx_dir_info) {
 		dir = ctx->dx_dir_info;
-		for (i=0; i < ctx->dx_dir_info_count; i++) {
+		for (i=0; i < ctx->dx_dir_info_count; i++,dir++) {
 			if (dir->dx_block) {
 				ext2fs_free_mem(&dir->dx_block);
 				dir->dx_block = 0;
