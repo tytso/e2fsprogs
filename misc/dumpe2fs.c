@@ -243,6 +243,10 @@ static void list_desc (ext2_filsys fs)
 			ino_itr += fs->super->s_inodes_per_group;
 		}
 	}
+	if (block_bitmap)
+		free(block_bitmap);
+	if (inode_bitmap)
+		free(inode_bitmap);
 }
 
 static void list_bad_blocks(ext2_filsys fs, int dump)
@@ -277,6 +281,7 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 	ext2fs_badblocks_list_iterate_end(bb_iter);
 	if (!dump)
 		fputc('\n', stdout);
+	ext2fs_badblocks_list_free(bb_list);
 }
 
 static void print_inline_journal_information(ext2_filsys fs)

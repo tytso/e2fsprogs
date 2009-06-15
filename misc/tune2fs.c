@@ -1766,6 +1766,7 @@ retry_open:
 		ext2fs_mark_super_dirty(fs);
 		printf(_("Setting stripe width to %d\n"), stripe_width);
 	}
+	free(device_name);
 	remove_error_table(&et_ext2_error_table);
 	return (ext2fs_close(fs) ? 1 : 0);
 }
