@@ -2033,6 +2033,8 @@ int main(int argc, char **argv)
 		ss_listen(sci_idx);
 	}
 
+	ss_delete_invocation(sci_idx);
+
 	if (current_fs)
 		close_filesystem();
 

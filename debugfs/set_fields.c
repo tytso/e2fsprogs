@@ -240,9 +240,10 @@ static struct field_set_info *find_field(struct field_set_info *fields,
 			if (strcmp(ss->name, field) != 0)
 				continue;
 		}
+		free(arg);
 		return ss;
 	}
-
+	free(arg);
 	return NULL;
 }
 
