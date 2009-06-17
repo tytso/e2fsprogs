@@ -546,8 +546,8 @@ static errcode_t update_path(ext2_extent_handle_t handle)
 	struct ext3_extent_idx		*ix;
 
 	if (handle->level == 0) {
-		retval = ext2fs_write_inode_full(handle->fs, handle->ino,
-			   handle->inode, EXT2_INODE_SIZE(handle->fs->super));
+		retval = ext2fs_write_inode(handle->fs, handle->ino,
+					    handle->inode);
 	} else {
 		ix = handle->path[handle->level - 1].curr;
 		blk = ext2fs_le32_to_cpu(ix->ei_leaf) +
@@ -1011,8 +1011,8 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 
 	/* new node hooked in, so update inode block count (do this here?) */
 	handle->inode->i_blocks += handle->fs->blocksize / 512;
-	retval = ext2fs_write_inode_full(handle->fs, handle->ino,
-		handle->inode, EXT2_INODE_SIZE(handle->fs->super));
+	retval = ext2fs_write_inode(handle->fs, handle->ino,
+				    handle->inode);
 	if (retval)
 		goto done;
 
@@ -1370,9 +1370,8 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 
 			retval = ext2fs_extent_delete(handle, flags);
 			handle->inode->i_blocks -= handle->fs->blocksize / 512;
-			retval = ext2fs_write_inode_full(handle->fs,
-					handle->ino, handle->inode,
-					EXT2_INODE_SIZE(handle->fs->super));
+			retval = ext2fs_write_inode(handle->fs, handle->ino,
+						    handle->inode);
 			ext2fs_block_alloc_stats(handle->fs, extent.e_pblk, -1);
 		}
 	} else {
