@@ -74,7 +74,7 @@ static void usage(void)
 	exit(1);
 }
 
-static void list_attributes (const char * name)
+static int list_attributes (const char * name)
 {
 	unsigned long flags;
 	unsigned long generation;
@@ -82,14 +82,14 @@ static void list_attributes (const char * name)
 	if (fgetflags (name, &flags) == -1) {
 		com_err (program_name, errno, _("While reading flags on %s"),
 			 name);
-		return;
+		return -1;
 	}
 	if (generation_opt) {
 		if (fgetversion (name, &generation) == -1) {
 			com_err (program_name, errno,
 				 _("While reading version on %s"),
 				 name);
-			return;
+			return -1;
 		}
 		printf ("%5lu ", generation);
 	}
@@ -101,23 +101,27 @@ static void list_attributes (const char * name)
 		print_flags(stdout, flags, pf_options);
 		printf(" %s\n", name);
 	}
+	return 0;
 }
 
 static int lsattr_dir_proc (const char *, struct dirent *, void *);
 
-static void lsattr_args (const char * name)
+static int lsattr_args (const char * name)
 {
 	STRUCT_STAT	st;
+	int retval = 0;
 
-	if (LSTAT (name, &st) == -1)
+	if (LSTAT (name, &st) == -1) {
 		com_err (program_name, errno, _("while trying to stat %s"),
 			 name);
-	else {
+		retval = -1;
+	} else {
 		if (S_ISDIR(st.st_mode) && !dirs_opt)
-			iterate_on_dir (name, lsattr_dir_proc, NULL);
+			retval = iterate_on_dir (name, lsattr_dir_proc, NULL);
 		else
-			list_attributes (name);
+			retval = list_attributes (name);
 	}
+	return retval;
 }
 
 static int lsattr_dir_proc (const char * dir_name, struct dirent * de,
@@ -155,6 +159,7 @@ int main (int argc, char ** argv)
 {
 	int c;
 	int i;
+	int err, retval = 0;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -192,10 +197,15 @@ int main (int argc, char ** argv)
 	if (verbose)
 		fprintf (stderr, "lsattr %s (%s)\n",
 			 E2FSPROGS_VERSION, E2FSPROGS_DATE);
-	if (optind > argc - 1)
-		lsattr_args (".");
-	else
-		for (i = optind; i < argc; i++)
-			lsattr_args (argv[i]);
-	exit(0);
+	if (optind > argc - 1) {
+		if (lsattr_args (".") == -1)
+			retval = 1;
+	} else {
+		for (i = optind; i < argc; i++) {
+			err = lsattr_args (argv[i]);
+			if (err)
+				retval = 1;
+		}
+	}
+	exit(retval);
 }
