@@ -49,6 +49,7 @@ static errcode_t inode_ref_fix(ext2_resize_t rfs);
 static errcode_t move_itables(ext2_resize_t rfs);
 static errcode_t fix_resize_inode(ext2_filsys fs);
 static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs);
+static errcode_t fix_sb_journal_backup(ext2_filsys fs);
 
 /*
  * Some helper CPP macros
@@ -145,6 +146,10 @@ errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 		goto errout;
 
 	retval = fix_resize_inode(rfs->new_fs);
+	if (retval)
+		goto errout;
+
+	retval = fix_sb_journal_backup(rfs->new_fs);
 	if (retval)
 		goto errout;
 
@@ -1856,6 +1861,28 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 		}
 	}
 	fs->super->s_free_inodes_count = total_free;
+	ext2fs_mark_super_dirty(fs);
+	return 0;
+}
+
+/*
+ *  Journal may have been relocated; update the backup journal blocks
+ *  in the superblock.
+ */
+static errcode_t fix_sb_journal_backup(ext2_filsys fs)
+{
+	errcode_t	  retval;
+	struct ext2_inode inode;
+
+	if (!(fs->super->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
+		return 0;
+
+	retval = ext2fs_read_inode(fs, fs->super->s_journal_inum, &inode);
+	if (retval)
+		return retval;
+	memcpy(fs->super->s_jnl_blocks, inode.i_block, EXT2_N_BLOCKS*4);
+	fs->super->s_jnl_blocks[16] = inode.i_size;
+	fs->super->s_jnl_backup_type = EXT3_JNL_BACKUP_BLOCKS;
 	ext2fs_mark_super_dirty(fs);
 	return 0;
 }
