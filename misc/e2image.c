@@ -339,11 +339,14 @@ static void write_block(int fd, char *buf, int sparse_offset,
 
 int name_id[256];
 
+#define EXT4_MAX_REC_LEN		((1<<16)-1)
+
 static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 {
 	char *p, *end, *cp;
 	struct ext2_dir_entry_2 *dirent;
-	int rec_len, id, len;
+	unsigned int rec_len;
+	int id, len;
 
 	end = buf + fs->blocksize;
 	for (p = buf; p < end-8; p += rec_len) {
@@ -352,8 +355,10 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 #ifdef WORDS_BIGENDIAN
 		rec_len = ext2fs_swab16(rec_len);
 #endif
-		rec_len = (rec_len || fs->blocksize < 65536) ?
-			rec_len : 65536;
+		if (rec_len == EXT4_MAX_REC_LEN || rec_len == 0)
+			rec_len = fs->blocksize;
+		else 
+			rec_len = (rec_len & 65532) | ((rec_len & 3) << 16);
 #if 0
 		printf("rec_len = %d, name_len = %d\n", rec_len, dirent->name_len);
 #endif
@@ -363,8 +368,10 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 			       "bad rec_len (%d)\n", (unsigned long) blk,
 			       rec_len);
 			rec_len = end - p;
+			(void) ext2fs_set_rec_len(fs, rec_len,
+					(struct ext2_dir_entry *) dirent);
 #ifdef WORDS_BIGENDIAN
-				dirent->rec_len = ext2fs_swab16(rec_len);
+			dirent->rec_len = ext2fs_swab16(dirent->rec_len);
 #endif
 			continue;
 		}

@@ -347,10 +347,11 @@ static _INLINE_ void expand_inode_expression(char ch,
 /*
  * This function expands '%dX' expressions
  */
-static _INLINE_ void expand_dirent_expression(char ch,
+static _INLINE_ void expand_dirent_expression(ext2_filsys fs, char ch,
 					      struct problem_context *ctx)
 {
 	struct ext2_dir_entry	*dirent;
+	unsigned int rec_len;
 	int	len;
 
 	if (!ctx || !ctx->dirent)
@@ -366,12 +367,14 @@ static _INLINE_ void expand_dirent_expression(char ch,
 		len = dirent->name_len & 0xFF;
 		if (len > EXT2_NAME_LEN)
 			len = EXT2_NAME_LEN;
-		if (len > dirent->rec_len)
-			len = dirent->rec_len;
+		if ((ext2fs_get_rec_len(fs, dirent, &rec_len) == 0) &&
+		    (len > rec_len))
+			len = rec_len;
 		safe_print(dirent->name, len);
 		break;
 	case 'r':
-		printf("%u", dirent->rec_len);
+		(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
+		printf("%u", rec_len);
 		break;
 	case 'l':
 		printf("%u", dirent->name_len & 0xFF);
@@ -490,7 +493,7 @@ void print_e2fsck_message(e2fsck_t ctx, const char *msg,
 			expand_inode_expression(*cp, pctx);
 		} else if (cp[0] == '%' && cp[1] == 'D') {
 			cp += 2;
-			expand_dirent_expression(*cp, pctx);
+			expand_dirent_expression(fs, *cp, pctx);
 		} else if ((cp[0] == '%')) {
 			cp++;
 			expand_percent_expression(fs, *cp, pctx);

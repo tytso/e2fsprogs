@@ -88,8 +88,8 @@ static int fill_dir_block(ext2_filsys fs,
 	struct hash_entry 	*new_array, *ent;
 	struct ext2_dir_entry 	*dirent;
 	char			*dir;
-	unsigned int		offset, dir_offset;
-	int			rec_len, hash_alg;
+	unsigned int		offset, dir_offset, rec_len;
+	int			hash_alg;
 
 	if (blockcnt < 0)
 		return 0;
@@ -103,7 +103,7 @@ static int fill_dir_block(ext2_filsys fs,
 	if (HOLE_BLKADDR(*block_nr)) {
 		memset(dir, 0, fs->blocksize);
 		dirent = (struct ext2_dir_entry *) dir;
-		dirent->rec_len = fs->blocksize;
+		(void) ext2fs_set_rec_len(fs, fs->blocksize, dirent);
 	} else {
 		fd->err = ext2fs_read_dir_block(fs, *block_nr, dir);
 		if (fd->err)
@@ -117,8 +117,7 @@ static int fill_dir_block(ext2_filsys fs,
 	dir_offset = 0;
 	while (dir_offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (dir + dir_offset);
-		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
-			dirent->rec_len : 65536;
+		(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 		if (((dir_offset + rec_len) > fs->blocksize) ||
 		    (rec_len < 8) ||
 		    ((rec_len % 4) != 0) ||
@@ -404,7 +403,8 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 	char			*block_start;
 	struct hash_entry 	*ent;
 	struct ext2_dir_entry	*dirent;
-	int			i, rec_len, left;
+	unsigned int		rec_len, prev_rec_len;
+	int			i, left;
 	ext2_dirhash_t		prev_hash;
 	int			offset, slack;
 
@@ -429,6 +429,7 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 	if ((retval = get_next_block(fs, outdir, &block_start)))
 		return retval;
 	dirent = (struct ext2_dir_entry *) block_start;
+	prev_rec_len = 0;
 	left = fs->blocksize;
 	slack = fd->compress ? 12 :
 		(fs->blocksize * ctx->htree_slack_percentage)/100;
@@ -440,8 +441,12 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 			continue;
 		rec_len = EXT2_DIR_REC_LEN(ent->dir->name_len & 0xFF);
 		if (rec_len > left) {
-			if (left)
-				dirent->rec_len += left;
+			if (left) {
+				left += prev_rec_len;
+				retval = ext2fs_set_rec_len(fs, left, dirent);
+				if (retval)
+					return retval;
+			}
 			if ((retval = get_next_block(fs, outdir,
 						      &block_start)))
 				return retval;
@@ -457,21 +462,27 @@ static errcode_t copy_dir_entries(e2fsck_t ctx,
 		}
 		dirent->inode = ent->dir->inode;
 		dirent->name_len = ent->dir->name_len;
-		dirent->rec_len = rec_len;
+		retval = ext2fs_set_rec_len(fs, rec_len, dirent);
+		if (retval)
+			return retval;
+		prev_rec_len = rec_len;
 		memcpy(dirent->name, ent->dir->name, dirent->name_len & 0xFF);
 		offset += rec_len;
 		left -= rec_len;
 		if (left < slack) {
-			dirent->rec_len += left;
+			prev_rec_len += left;
+			retval = ext2fs_set_rec_len(fs, prev_rec_len, dirent);
+			if (retval)
+				return retval;
 			offset += left;
 			left = 0;
 		}
 		prev_hash = ent->hash;
 	}
 	if (left)
-		dirent->rec_len += left;
+		retval = ext2fs_set_rec_len(fs, rec_len + left, dirent);
 
-	return 0;
+	return retval;
 }
 
 
@@ -522,7 +533,7 @@ static struct ext2_dx_entry *set_int_node(ext2_filsys fs, char *buf)
 	memset(buf, 0, fs->blocksize);
 	dir = (struct ext2_dir_entry *) buf;
 	dir->inode = 0;
-	dir->rec_len = fs->blocksize;
+	(void) ext2fs_set_rec_len(fs, fs->blocksize, dir);
 
 	limits = (struct ext2_dx_countlimit *) (buf+8);
 	limits->limit = (fs->blocksize - 8) / sizeof(struct ext2_dx_entry);

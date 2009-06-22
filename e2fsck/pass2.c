@@ -352,9 +352,9 @@ static int check_dot(e2fsck_t ctx,
 		     ext2_ino_t ino, struct problem_context *pctx)
 {
 	struct ext2_dir_entry *nextdir;
+	unsigned int	rec_len, new_len;
 	int	status = 0;
 	int	created = 0;
-	int	rec_len, new_len;
 	int	problem = 0;
 
 	if (!dirent->inode)
@@ -365,8 +365,7 @@ static int check_dot(e2fsck_t ctx,
 	else if (dirent->name[1] != '\0')
 		problem = PR_2_DOT_NULL_TERM;
 
-	rec_len = (dirent->rec_len || ctx->fs->blocksize < 65536) ?
-		dirent->rec_len : 65536;
+	(void) ext2fs_get_rec_len(ctx->fs, dirent, &rec_len);
 	if (problem) {
 		if (fix_problem(ctx, problem, pctx)) {
 			if (rec_len < 12)
@@ -393,7 +392,8 @@ static int check_dot(e2fsck_t ctx,
 				nextdir = (struct ext2_dir_entry *)
 					((char *) dirent + 12);
 				dirent->rec_len = 12;
-				nextdir->rec_len = new_len;
+				(void) ext2fs_set_rec_len(ctx->fs, new_len,
+							  nextdir);
 				nextdir->inode = 0;
 				nextdir->name_len = 0;
 				status = 1;
@@ -423,8 +423,7 @@ static int check_dotdot(e2fsck_t ctx,
 	else if (dirent->name[2] != '\0')
 		problem = PR_2_DOT_DOT_NULL_TERM;
 
-	rec_len = (dirent->rec_len || ctx->fs->blocksize < 65536) ?
-		dirent->rec_len : 65536;
+	(void) ext2fs_get_rec_len(ctx->fs, dirent, &rec_len);
 	if (problem) {
 		if (fix_problem(ctx, problem, pctx)) {
 			if (rec_len < 12)
@@ -647,11 +646,11 @@ static void salvage_directory(ext2_filsys fs,
 			      unsigned int *offset)
 {
 	char	*cp = (char *) dirent;
-	int	left, rec_len;
+	int left;
+	unsigned int rec_len, prev_rec_len;
 	unsigned int name_len = dirent->name_len & 0xFF;
 
-	rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
-		dirent->rec_len : 65536;
+	(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 	left = fs->blocksize - *offset - rec_len;
 
 	/*
@@ -669,10 +668,11 @@ static void salvage_directory(ext2_filsys fs,
 	 * record length.
 	 */
 	if ((left < 0) &&
-	    (name_len + 8 <= rec_len + (unsigned) left) &&
+	    ((int) rec_len + left > 8) &&
+	    (name_len + 8 <= (int) rec_len + left) &&
 	    dirent->inode <= fs->super->s_inodes_count &&
 	    strnlen(dirent->name, name_len) == name_len) {
-		dirent->rec_len += left;
+		(void) ext2fs_set_rec_len(fs, (int) rec_len + left, dirent);
 		return;
 	}
 	/*
@@ -682,7 +682,9 @@ static void salvage_directory(ext2_filsys fs,
 	 */
 	if (prev && rec_len && (rec_len % 4) == 0 &&
 	    (*offset + rec_len <= fs->blocksize)) {
-		prev->rec_len += rec_len;
+		(void) ext2fs_get_rec_len(fs, prev, &prev_rec_len);
+		prev_rec_len += rec_len;
+		(void) ext2fs_set_rec_len(fs, prev_rec_len, prev);
 		*offset += rec_len;
 		return;
 	}
@@ -693,10 +695,13 @@ static void salvage_directory(ext2_filsys fs,
 	 * new empty directory entry the rest of the directory block.
 	 */
 	if (prev) {
-		prev->rec_len += fs->blocksize - *offset;
+		(void) ext2fs_get_rec_len(fs, prev, &prev_rec_len);
+		prev_rec_len += fs->blocksize - *offset;
+		(void) ext2fs_set_rec_len(fs, prev_rec_len, prev);
 		*offset = fs->blocksize;
 	} else {
-		dirent->rec_len = fs->blocksize - *offset;
+		rec_len = fs->blocksize - *offset;
+		(void) ext2fs_set_rec_len(fs, rec_len, dirent);
 		dirent->name_len = 0;
 		dirent->inode = 0;
 	}
@@ -808,8 +813,7 @@ static int check_dir_block(ext2_filsys fs,
 		dx_db->max_hash = 0;
 
 		dirent = (struct ext2_dir_entry *) buf;
-		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
-			dirent->rec_len : 65536;
+		(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 		limit = (struct ext2_dx_countlimit *) (buf+8);
 		if (db->blockcnt == 0) {
 			root = (struct ext2_dx_root_info *) (buf + 24);
@@ -847,8 +851,7 @@ out_htree:
 
 		problem = 0;
 		dirent = (struct ext2_dir_entry *) (buf + offset);
-		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
-			dirent->rec_len : 65536;
+		(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 		cd->pctx.dirent = dirent;
 		cd->pctx.num = offset;
 		if (((offset + rec_len) > fs->blocksize) ||
@@ -1104,8 +1107,7 @@ out_htree:
 	next:
 		prev = dirent;
 		if (dir_modified)
-			rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
-				dirent->rec_len : 65536;
+			(void) ext2fs_get_rec_len(fs, dirent, &rec_len);
 		offset += rec_len;
 		dot_state++;
 	} while (offset < fs->blocksize);

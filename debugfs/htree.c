@@ -39,7 +39,8 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 	char		tmp[EXT2_NAME_LEN + 16];
 	blk_t		pblk;
 	ext2_dirhash_t 	hash, minor_hash;
-	int		rec_len, hash_alg;
+	unsigned int	rec_len;
+	int		hash_alg;
 
 	errcode = ext2fs_bmap(fs, ino, inode, buf, 0, blk, &pblk);
 	if (errcode) {
@@ -64,8 +65,13 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 
 	while (offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (buf + offset);
-		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
-			dirent->rec_len : 65536;
+		errcode = ext2fs_get_rec_len(fs, dirent, &rec_len);
+		if (errcode) {
+			com_err("htree_dump_leaf_inode", errcode,
+				"while getting rec_len for block %lu",
+				(unsigned long) blk);
+			return;
+		}
 		if (((offset + rec_len) > fs->blocksize) ||
 		    (rec_len < 8) ||
 		    ((rec_len % 4) != 0) ||
@@ -386,7 +392,7 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 	struct ext2_dir_entry *dirent;
 	errcode_t	       	errcode;
 	unsigned int		offset = 0;
-	int			rec_len;
+	unsigned int		rec_len;
 
 	if (blockcnt < 0)
 		return 0;
@@ -402,8 +408,13 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 
 	while (offset < fs->blocksize) {
 		dirent = (struct ext2_dir_entry *) (p->buf + offset);
-		rec_len = (dirent->rec_len || fs->blocksize < 65536) ?
-			dirent->rec_len : 65536;
+		errcode = ext2fs_get_rec_len(fs, dirent, &rec_len);
+		if (errcode) {
+			com_err("htree_dump_leaf_inode", errcode,
+				"while getting rec_len for block %lu",
+				(unsigned long) *blocknr);
+			return;
+		}
 		if (dirent->inode &&
 		    p->len == (dirent->name_len & 0xFF) &&
 		    strncmp(p->search_name, dirent->name,

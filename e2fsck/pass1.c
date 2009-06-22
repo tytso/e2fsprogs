@@ -434,8 +434,9 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 		return;
 
 	dirent = (struct ext2_dir_entry *) buf;
-	rec_len = (dirent->rec_len || ctx->fs->blocksize < 65536) ?
-		dirent->rec_len : 65536;
+	retval = ext2fs_get_rec_len(ctx->fs, dirent, &rec_len);
+	if (retval)
+		return;
 	if (((dirent->name_len & 0xFF) != 1) ||
 	    (dirent->name[0] != '.') ||
 	    (dirent->inode != pctx->ino) ||
@@ -445,8 +446,9 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 		return;
 
 	dirent = (struct ext2_dir_entry *) (buf + rec_len);
-	rec_len = (dirent->rec_len || ctx->fs->blocksize < 65536) ?
-		dirent->rec_len : 65536;
+	retval = ext2fs_get_rec_len(ctx->fs, dirent, &rec_len);
+	if (retval)
+		return;
 	if (((dirent->name_len & 0xFF) != 2) ||
 	    (dirent->name[0] != '.') ||
 	    (dirent->name[1] != '.') ||

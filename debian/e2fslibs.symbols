@@ -99,6 +99,8 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_dblist_sort@Base 1.37
  ext2fs_default_journal_size@Base 1.40
  ext2fs_descriptor_block_loc@Base 1.37
+ ext2fs_get_rec_len@Base 1.41.7
+ ext2fs_set_rec_len@Base 1.41.7
  ext2fs_dir_iterate2@Base 1.37
  ext2fs_dir_iterate@Base 1.37
  ext2fs_dirhash@Base 1.37
