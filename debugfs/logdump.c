@@ -259,7 +259,7 @@ void do_logdump(int argc, char **argv)
 		close(journal_fd);
 
 errout:
-	if (out_file != stdout)
+	if (out_file && (out_file != stdout))
 		fclose(out_file);
 
 	return;
