@@ -223,6 +223,7 @@ static void *terminate_addr = NULL;
 
 static void terminate_intr(int signo EXT2FS_ATTR((unused)))
 {
+	fflush(out);
 	fprintf(stderr, "\n\nInterrupted at block %llu\n", 
 		(unsigned long long) currently_testing);
 	fflush(stderr);
