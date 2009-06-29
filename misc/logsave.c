@@ -74,13 +74,32 @@ static int write_all(int fd, const char *buf, size_t count)
 
 static void send_output(const char *buffer, int c, int flag)
 {
-	char	*n;
+	const char	*cp;
+	char		*n;
+	int		cnt, d, del;
 
 	if (c == 0)
 		c = strlen(buffer);
 
-	if (flag & SEND_CONSOLE)
-		write_all(1, buffer, c);
+	if (flag & SEND_CONSOLE) {
+		cnt = c;
+		cp = buffer;
+		while (cnt) {
+			del = 0;
+			for (d=0; d < cnt; d++) {
+				if (skip_mode &&
+				    (cp[d] == '\001' || cp[d] == '\002')) {
+					del = 1;
+					break;
+				}
+			}
+			write_all(1, cp, d);
+			if (del)
+				d++;
+			cnt -= d;
+			cp += d;
+		}
+	}
 	if (!(flag & SEND_LOG))
 		return;
 	if (outfd > 0)
