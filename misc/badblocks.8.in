@@ -131,6 +131,12 @@ option of
 can be used to retrieve the list of blocks currently marked bad on
 an existing filesystem, in a format suitable for use with this option.
 .TP
+.B \-n
+Use non-destructive read-write mode.  By default only a non-destructive 
+read-only test is done.  This option must not be combined with the 
+.B \-w
+option, as they are mutually exclusive.
+.TP
 .BI \-o " output_file"
 Write the list of bad blocks to the specified file.  Without this option,
 .B badblocks
@@ -150,6 +156,15 @@ Default is 0, meaning
 .B badblocks
 will exit after the first pass.
 .TP
+.B \-s
+Show the progress of the scan by writing out rough percentage completion
+of the current badblocks pass over the disk.  Note that badblocks may do
+multiple test passes over the disk, in particular if the
+.B \-p
+or
+.B \-w
+option is requested by the user.
+.TP
 .BI \-t " test_pattern"
 Specify a test pattern to be read (and written) to disk blocks.   The
 .I test_pattern
@@ -167,21 +182,6 @@ numbers of blocks will fail verification.
 If multiple patterns
 are specified then all blocks will be tested with one pattern 
 before proceeding to the next pattern.
-.TP
-.B \-n
-Use non-destructive read-write mode.  By default only a non-destructive 
-read-only test is done.  This option must not be combined with the 
-.B \-w
-option, as they are mutually exclusive.
-.TP
-.B \-s
-Show the progress of the scan by writing out rough percentage completion
-of the current badblocks pass over the disk.  Note that badblocks may do
-multiple test passes over the disk, in particular if the
-.B \-p
-or
-.B \-w
-option is requested by the user.
 .TP
 .B \-v
 Verbose mode.
