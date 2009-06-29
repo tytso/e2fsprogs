@@ -175,8 +175,13 @@ read-only test is done.  This option must not be combined with the
 option, as they are mutually exclusive.
 .TP
 .B \-s
-Show the progress of the scan by writing out the block numbers as they
-are checked.
+Show the progress of the scan by writing out rough percentage completion
+of the current badblocks pass over the disk.  Note that badblocks may do
+multiple test passes over the disk, in particular if the
+.B \-p
+or
+.B \-w
+option is requested by the user.
 .TP
 .B \-v
 Verbose mode.
