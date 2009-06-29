@@ -1,3 +1,62 @@
+E2fsprogs 1.41.7 (June 29, 2009)
+================================
+
+Fix a bug in libext2fs which can cause e2fsck and resize2fs to write
+uninitalized data into the portion of the inode beyond the first 128
+bytes when operating on inodes mapped via extents; potentially
+corrupting filesystems.
+
+Fix memory leaks in e2fsprogs, including a very large memory leak
+which can cause e2fsck to run out of memory when checking very large
+filesystems using extents.
+
+The logsave program will now filter out the ^A and ^B characters when
+writing to the console.
+
+Harden ext2fs_validate_entry() so that lsdel will not read beyond the
+end of the block even if the directory block is corrupted.
+
+Fix debugfs from core dumping if the logdump command fails to open the
+output file.
+
+Enhance badblocks to print the currently tested block number when
+interrupted with ^C.
+
+Fix lsattr to exit with a non-zero status when it encounters errors.
+(Addresses RedHat Bugzilla #489841)
+
+Fix e2fsprogs to use the same encoding for rec_len in 64k (and larger)
+filesystems as the kernel when encoding rec_len >= 64k.  For 64k
+filesystems (currently all that is supported by e2fsprogs, this is
+only a minor corner case).
+
+Resize2fs will now update the journal backup fileds in the sup0erblock
+if the journal is moved; this avoids an unnecessary full fsck after
+resizing the filesystem.  (Addresses RedHat Bugzilla: #505339)
+    
+Fix libext2fs to properly initialize i_extra_size when creating the
+journal and resize inodes.
+
+Change badblocks to allow block sizes larger than 4k.
+
+Fix filefrag progam so it correctly checks for errors from the fiemap ioctl.
+
+Update Chinese and Czech translation from the Translation Project.
+
+Clean up various man pages.  (Addresses Debian Bug #531385 and #523063)
+
+
+Programmer's Notes
+------------------
+
+Add --disable-libuuid option to configure which uses an in-system
+installed version of libuuid; the private version is enabled by
+default.
+
+Add --valgrind-leakcheck option to the test_script program which runs
+valgrind with the appropriate options to find memory leaks.
+
+
 E2fsprogs 1.41.6 (May 30, 2009)
 ===============================
 

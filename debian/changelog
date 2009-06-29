@@ -1,3 +1,36 @@
+e2fsprogs (1.41.7-1) unstable; urgency=low
+
+  * New upstream release
+  * Fix memory leaks in e2fsprogs, including a very large memory leak
+    which can cause e2fsck to run out of memory when checking very large
+    filesystems using extents.
+  * Fix a bug in libext2fs which can cause e2fsck and resize2fs to write
+    uninitalized data into the portion of the inode beyond the first 128
+    bytes when operating on extents; potentially corrupting filesystems.
+  * The logsave program will now filter out the ^A and ^B characters when
+    writing to the console.
+  * Update/clarify man pages (Closes: #531385, #523063)
+  * Fix filefrag progam so it correctly checks for errors from the
+    fiemap ioctl.
+  * Change badblocks to allow block sizes larger than 4k.
+  * Fix libext2fs to properly initialize i_extra_size when creating the
+    journal and resize inodes.
+  * Resize2fs will now update the journal backup fileds in the
+    superblock if the journal is moved; this avoids an unnecessary full
+    fsck after resizing the filesystem.
+  * Use the same encoding as the kernel for rec_len == 64k in 64k block
+    filesystems.
+  * Fix lsattr to exit with a non-zero status when it encounters errors.
+  * Enhance badblocks to print the currently tested block number when
+    interrupted with ^C.
+  * Fix debugfs from core dumping if the logdump command fails to open the
+    output file.
+  * Harden ext2fs_validate_entry() so that lsdel will not read beyond the
+    end of the block even if the directory block is corrupted.
+  * Update Chinese and Czech translation from the Translation Project.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 29 Jun 2009 15:12:14 -0400
+
 e2fsprogs (1.41.6-1) unstable; urgency=low
 
   * New upstream release
