@@ -64,13 +64,16 @@ errcode_t ext2fs_set_rec_len(ext2_filsys fs,
  * undeleted entry.  Returns 1 if the deleted entry looks valid, zero
  * if not valid.
  */
-static int ext2fs_validate_entry(ext2_filsys fs, char *buf, int offset,
-				 int final_offset)
+static int ext2fs_validate_entry(ext2_filsys fs, char *buf,
+				 unsigned int offset,
+				 unsigned int final_offset)
 {
 	struct ext2_dir_entry *dirent;
 	unsigned int rec_len;
+#define DIRENT_MIN_LENGTH 12
 
-	while (offset < final_offset) {
+	while ((offset < final_offset) &&
+	       (offset <= fs->blocksize - DIRENT_MIN_LENGTH)) {
 		dirent = (struct ext2_dir_entry *)(buf + offset);
 		if (ext2fs_get_rec_len(fs, dirent, &rec_len))
 			return 0;
