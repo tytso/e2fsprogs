@@ -223,6 +223,9 @@ static void *terminate_addr = NULL;
 
 static void terminate_intr(int signo EXT2FS_ATTR((unused)))
 {
+	fprintf(stderr, "\n\nInterrupted at block %llu\n", 
+		(unsigned long long) currently_testing);
+	fflush(stderr);
 	if (terminate_addr)
 		longjmp(terminate_addr,1);
 	exit(1);
@@ -434,6 +437,9 @@ static unsigned int test_ro (int dev, blk_t last_block,
 	unsigned int bb_count = 0;
 	errcode_t errcode;
 
+	/* set up abend handler */
+	capture_terminate(NULL);
+
 	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
 	if (errcode) {
 		com_err (program_name, errcode,
@@ -531,6 +537,8 @@ static unsigned int test_ro (int dev, blk_t last_block,
 
 	ext2fs_badblocks_list_iterate_end(bb_iter);
 
+	uncapture_terminate();
+
 	return bb_count;
 }
 
@@ -543,6 +551,9 @@ static unsigned int test_rw (int dev, blk_t last_block,
 	const unsigned int *pattern;
 	int i, try, got, nr_pattern, pat_idx;
 	unsigned int bb_count = 0;
+
+	/* set up abend handler */
+	capture_terminate(NULL);
 
 	buffer = allocate_buffer(2 * blocks_at_once * block_size);
 	read_buffer = buffer + blocks_at_once * block_size;
