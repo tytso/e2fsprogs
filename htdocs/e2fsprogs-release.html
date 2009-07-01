@@ -30,6 +30,7 @@
 
 <H2>Release notes for the e2fsprogs package</H2>
 <UL>
+<LI><A HREF="#1.41.7">E2fsprogs 1.41.7 (June 29, 2009)</A>
 <LI><A HREF="#1.41.6">E2fsprogs 1.41.6 (May 30, 2009)</A>
 <LI><A HREF="#1.41.5">E2fsprogs 1.41.5 (April 23, 2009)</A>
 <LI><A HREF="#1.41.4">E2fsprogs 1.41.4 (January 27, 2009)</A>
@@ -88,6 +89,62 @@
 <LI><A HREF="#1.03">E2fsprogs 1.03 (March 27, 1996)</A>
 <LI><A HREF="#1.02">E2fsprogs 1.02 (January 16, 1996)</A>
 </UL>
+
+<H2><A NAME="1.41.6">E2fsprogs 1.41.7 (June 29, 2009)</A></H2>
+
+<P>Fix a bug in libext2fs which can cause e2fsck and resize2fs to write
+uninitalized data into the portion of the inode beyond the first 128
+bytes when operating on inodes mapped via extents; potentially
+corrupting filesystems.</P>
+
+<P>Fix memory leaks in e2fsprogs, including a very large memory leak
+which can cause e2fsck to run out of memory when checking very large
+filesystems using extents.</P>
+
+<P>The logsave program will now filter out the ^A and ^B characters when
+writing to the console.</P>
+
+<P>Harden ext2fs_validate_entry() so that lsdel will not read beyond the
+end of the block even if the directory block is corrupted.</P>
+
+<P>Fix debugfs from core dumping if the logdump command fails to open the
+output file.</P>
+
+<P>Enhance badblocks to print the currently tested block number when
+interrupted with ^C.</P>
+
+<P>Fix lsattr to exit with a non-zero status when it encounters errors.
+(Addresses RedHat Bugzilla #489841)</P>
+
+<P>Fix e2fsprogs to use the same encoding for rec_len in 64k (and larger)
+filesystems as the kernel when encoding rec_len >= 64k.  For 64k
+filesystems (currently all that is supported by e2fsprogs, this is
+only a minor corner case).</P>
+
+<P>Resize2fs will now update the journal backup fileds in the sup0erblock
+if the journal is moved; this avoids an unnecessary full fsck after
+resizing the filesystem.  (Addresses RedHat Bugzilla: #505339)</P>
+    
+<P>Fix libext2fs to properly initialize i_extra_size when creating the
+journal and resize inodes.</P>
+
+<P>Change badblocks to allow block sizes larger than 4k.</P>
+
+<P>Fix filefrag progam so it correctly checks for errors from the fiemap ioctl.</P>
+
+<P>Update Chinese and Czech translation from the Translation Project.</P>
+
+<P>Clean up various man pages.  (Addresses Debian Bug #531385 and #523063)</P>
+
+<H3>Programmer's Notes</H3>
+
+<P>Add --disable-libuuid option to configure which uses an in-system
+installed version of libuuid; the private version is enabled by
+default.</P>
+
+<P>Add --valgrind-leakcheck option to the test_script program which runs
+valgrind with the appropriate options to find memory leaks.</P>
+
 
 <H2><A NAME="1.41.6">E2fsprogs 1.41.6 (May 30, 2009)</A></H2>
 
