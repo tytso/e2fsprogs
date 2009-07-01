@@ -31,8 +31,8 @@ SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			logsave.8 filefrag.8 e2undo.8 $(UUIDD_MAN) @FSCK_MAN@
 FMANPAGES=	mke2fs.conf.5
 
-UPROGS=		chattr lsattr uuidgen
-UMANPAGES=	chattr.1 lsattr.1 uuidgen.1
+UPROGS=		chattr lsattr @UUID_CMT@ uuidgen
+UMANPAGES=	chattr.1 lsattr.1 @UUID_CMT@ uuidgen.1
 
 LPROGS=		@E2INITRD_PROG@
 
