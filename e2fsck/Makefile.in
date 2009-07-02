@@ -17,16 +17,17 @@ FMANPAGES=	e2fsck.conf.5
 XTRA_CFLAGS=	-DRESOURCE_TRACK -I.
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) $(LIBBLKID) $(LIBUUID) $(LIBINTL) $(LIBE2P)
-DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) $(DEPLIBBLKID) $(DEPLIBUUID) $(DEPLIBE2P)
+DEPLIBS= $(LIBEXT2FS) $(DEPLIBCOM_ERR) $(DEPLIBBLKID) $(DEPLIBUUID) \
+	$(DEPLIBE2P)
 
 STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(STATIC_LIBBLKID) \
 	$(STATIC_LIBUUID) $(LIBINTL) $(STATIC_LIBE2P)
-STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) $(DEPSTATIC_LIBBLKID) \
-	$(DEPSTATIC_LIBUUID) $(DEPSTATIC_LIBE2P)
+STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) \
+	$(DEPSTATIC_LIBBLKID) $(DEPSTATIC_LIBUUID) $(DEPSTATIC_LIBE2P)
 
 PROFILED_LIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR) \
 	$(PROFILED_LIBBLKID) $(PROFILED_LIBUUID) $(PROFILED_LIBE2P) $(LIBINTL)
-PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR) \
+PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(DEPPROFILED_LIBCOM_ERR) \
 	$(DEPPROFILED_LIBBLKID) $(DEPPROFILED_LIBUUID) $(DEPPROFILED_LIBE2P)
 
 COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
@@ -134,20 +135,21 @@ crc32table.h: gen_crc32table
 	@echo "	GEN32TABLE $@"
 	@./gen_crc32table > crc32table.h
 
-tst_problem: $(srcdir)/problem.c $(srcdir)/problem.h $(LIBEXT2FS)
+tst_problem: $(srcdir)/problem.c $(srcdir)/problem.h $(LIBEXT2FS) \
+	$(DEPLIBCOM_ERR)
 	@$(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_problem \
 		$(srcdir)/problem.c -DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR)
 
-tst_crc32: $(srcdir)/crc32.c $(LIBEXT2FS)
+tst_crc32: $(srcdir)/crc32.c $(LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@$(CC) $(BUILD_LDFLAGS) $(ALL_CFLAGS) -o tst_crc32 $(srcdir)/crc32.c \
 		-DUNITTEST $(LIBEXT2FS) $(LIBCOM_ERR)
 
-tst_refcount: ea_refcount.c
+tst_refcount: ea_refcount.c $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_refcount $(srcdir)/ea_refcount.c \
 		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR) $(LIBEXT2FS) 
 
-tst_region: region.c
+tst_region: region.c $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_region $(srcdir)/region.c \
 		$(ALL_CFLAGS) -DTEST_PROGRAM $(LIBCOM_ERR)
@@ -171,7 +173,7 @@ iscan: iscan.o util.o ehandler.o $(DEPLIBS)
 	@$(LD) $(ALL_LDFLAGS) -o iscan iscan.o util.o ehandler.o $(LIBS)
 
 test_profile: $(srcdir)/profile.c profile_helpers.o argv_parse.o \
-		prof_err.o profile.h $(STATIC_LIBCOM_ERR)
+		prof_err.o profile.h $(DEPSTATIC_LIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o test_profile -DDEBUG_PROGRAM $(srcdir)/profile.c prof_err.o \
 		profile_helpers.o argv_parse.o $(STATIC_LIBCOM_ERR) \

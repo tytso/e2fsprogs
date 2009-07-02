@@ -199,40 +199,41 @@ ext2fs.pc: $(srcdir)/ext2fs.pc.in $(top_builddir)/config.status
 	@echo "	CONFIG.STATUS $@"
 	@cd $(top_builddir); CONFIG_FILES=lib/ext2fs/ext2fs.pc ./config.status
 
-tst_badblocks: tst_badblocks.o $(STATIC_LIBEXT2FS)
+tst_badblocks: tst_badblocks.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_badblocks tst_badblocks.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
 
-tst_icount: $(srcdir)/icount.c $(STATIC_LIBEXT2FS)
+tst_icount: $(srcdir)/icount.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_icount $(srcdir)/icount.c -DDEBUG $(ALL_CFLAGS) \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
-tst_iscan: tst_iscan.o $(STATIC_LIBEXT2FS)
+tst_iscan: tst_iscan.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_iscan tst_iscan.o $(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
-tst_getsize: tst_getsize.o $(STATIC_LIBEXT2FS)
+tst_getsize: tst_getsize.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_getsize tst_getsize.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
 
-tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS)
+tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
-	@$(CC) -o tst_ismounted $(srcdir)/ismounted.c -DDEBUG $(ALL_CFLAGS) $(LIBCOM_ERR) 
+	@$(CC) -o tst_ismounted $(srcdir)/ismounted.c -DDEBUG $(ALL_CFLAGS) \
+		$(LIBCOM_ERR) 
 
-tst_byteswap: tst_byteswap.o $(STATIC_LIBEXT2FS)
+tst_byteswap: tst_byteswap.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_byteswap tst_byteswap.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
 
-tst_bitops: tst_bitops.o $(STATIC_LIBEXT2FS)
+tst_bitops: tst_bitops.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_bitops tst_bitops.o $(ALL_CFLAGS) \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
-tst_getsectsize: tst_getsectsize.o $(STATIC_LIBEXT2FS)
+tst_getsectsize: tst_getsectsize.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_sectgetsize tst_getsectsize.o \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
@@ -304,19 +305,20 @@ unused.o: $(top_srcdir)/debugfs/unused.c
 	@echo "	CC $<"
 	@$(CC) $(ALL_CFLAGS) -c $< -o $@
 
-tst_extents: $(srcdir)/extent.c extent_dbg.c $(DEBUG_OBJS) $(DEPLIBSS) $(LIBE2P) $(DEPLIBUUID) $(DEPLIBBLKID)
+tst_extents: $(srcdir)/extent.c extent_dbg.c $(DEBUG_OBJS) $(DEPLIBSS) \
+	$(LIBE2P) $(DEPLIBUUID) $(DEPLIBBLKID) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_extents $(srcdir)/extent.c extent_dbg.c \
 		$(ALL_CFLAGS) -DDEBUG $(DEBUG_OBJS) $(LIBSS) $(LIBE2P) \
 		$(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) $(LIBCOM_ERR) \
 		-I $(top_srcdir)/debugfs
 
-tst_csum: csum.c $(STATIC_LIBEXT2FS)
+tst_csum: csum.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o tst_csum $(srcdir)/csum.c -DDEBUG \
 		$(ALL_CFLAGS) $(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
-mkjournal: mkjournal.c $(STATIC_LIBEXT2FS)
+mkjournal: mkjournal.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
 	@$(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
 

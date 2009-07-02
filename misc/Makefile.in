@@ -80,15 +80,15 @@ SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/e2undo.c
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
-DEPLIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
+DEPLIBS= $(LIBEXT2FS) $(DEPLIBCOM_ERR)
 PROFILED_LIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR)
-PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(PROFILED_LIBCOM_ERR)
+PROFILED_DEPLIBS= $(PROFILED_LIBEXT2FS) $(DEPPROFILED_LIBCOM_ERR)
 
 STATIC_LIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
-STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) 
+STATIC_DEPLIBS= $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) 
 
 LIBS_E2P= $(LIBE2P) $(LIBCOM_ERR) 
-DEPLIBS_E2P= $(LIBE2P) $(LIBCOM_ERR) 
+DEPLIBS_E2P= $(LIBE2P) $(DEPLIBCOM_ERR) 
 
 COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
 
@@ -296,9 +296,10 @@ filefrag.profiled: $(PROFILED_FILEFRAG_OBJS)
 	@$(CC) $(ALL_LDFLAGS) -g -pg -o filefrag.profiled \
 		$(PROFILED_FILEFRAG_OBJS) 
 
-tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS)
+tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	@echo "	LD $@"
-	$(CC) -o tst_ismounted $(srcdir)/ismounted.c -DDEBUG $(ALL_CFLAGS) $(LIBCOM_ERR)
+	$(CC) -o tst_ismounted $(srcdir)/ismounted.c -DDEBUG $(ALL_CFLAGS) \
+		$(LIBCOM_ERR)
 
 tune2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/tune2fs.8.in
 	@echo "	SUBST $@"

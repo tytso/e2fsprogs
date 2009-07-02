@@ -22,7 +22,7 @@ TEST_ICOUNT_OBJS=	test_icount.o test_icount_cmds.o
 SRCS=	$(srcdir)/test_rel.c 
 
 LIBS= $(LIBEXT2FS) $(LIBSS) $(LIBCOM_ERR)
-DEPLIBS= $(LIBEXT2FS) $(DEPLIBSS) $(LIBCOM_ERR)
+DEPLIBS= $(LIBEXT2FS) $(DEPLIBSS) $(DEPLIBCOM_ERR)
 
 .c.o:
 	@echo "	CC $<"
