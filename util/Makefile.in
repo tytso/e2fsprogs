@@ -14,25 +14,25 @@ SRCS = $(srcdir)/subst.c
 @MCONFIG@
 
 .c.o:
-	@echo "	CC $<"
-	@$(BUILD_CC) -c $(BUILD_CFLAGS) $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(BUILD_CC) -c $(BUILD_CFLAGS) $< -o $@
 
 PROGS=		subst
 
 all:: $(PROGS) gen-tarball
 
 subst: subst.o
-	@echo "	LD $@"
-	@$(BUILD_CC) $(BUILD_LDFLAGS) -o subst subst.o
+	$(E) "	LD $@"
+	$(Q) $(BUILD_CC) $(BUILD_LDFLAGS) -o subst subst.o
 
 copy_sparse: copy_sparse.o
-	@echo "	LD $@"
-	@$(BUILD_CC) $(BUILD_LDFLAGS) -o copy_sparse copy_sparse.o
+	$(E) "	LD $@"
+	$(Q) $(BUILD_CC) $(BUILD_LDFLAGS) -o copy_sparse copy_sparse.o
 
 gen-tarball: $(srcdir)/gen-tarball.in $(top_builddir)/config.status
-	@echo "	CONFIG.STATUS $@"
-	@cd $(top_builddir); CONFIG_FILES=util/gen-tarball ./config.status
-	@chmod +x gen-tarball
+	$(E) "	CONFIG.STATUS $@"
+	$(Q) cd $(top_builddir); CONFIG_FILES=util/gen-tarball ./config.status
+	$(Q) chmod +x gen-tarball
 
 tarballs: gen-tarball
 	sh gen-tarball debian

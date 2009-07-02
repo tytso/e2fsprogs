@@ -744,6 +744,8 @@ PROFILE_CMT
 BSDLIB_CMT
 ELF_CMT
 HTREE_CMT
+Q
+E
 MAINTAINER_CMT
 LINUX_INCLUDE
 EGREP
@@ -824,6 +826,7 @@ with_ccopts
 with_ldopts
 with_root_prefix
 enable_maintainer_mode
+enable_verbose_makecmds
 enable_compression
 enable_htree
 enable_elf_shlibs
@@ -1483,6 +1486,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-maintainer-mode enable makefile rules useful for maintainers
+  --enable-verbose-makecmds  enable verbose make command output
   --enable-compression	  enable EXPERIMENTAL compression support
   --enable-htree      	  enable EXPERIMENTAL htree directory support
   --enable-elf-shlibs	  select ELF shared libraries
@@ -3935,6 +3939,31 @@ else
 $as_echo "Disabling maintainer mode by default" >&6; }
 
 fi
+
+
+# Check whether --enable-verbose-makecmds was given.
+if test "${enable_verbose_makecmds+set}" = set; then
+  enableval=$enable_verbose_makecmds; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:$LINENO: result: Disabling verbose make commands" >&5
+$as_echo "Disabling verbose make commands" >&6; }
+	E=@echo
+	Q=@
+else
+	{ $as_echo "$as_me:$LINENO: result: Enabling verbose make commands" >&5
+$as_echo "Enabling verbose make commands" >&6; }
+	E=@\\#
+	Q=
+fi
+
+else
+  { $as_echo "$as_me:$LINENO: result: Disabling verbose make commands" >&5
+$as_echo "Disabling verbose make commands" >&6; }
+E=@echo
+Q=@
+
+fi
+
 
 
 # Check whether --enable-compression was given.

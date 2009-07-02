@@ -146,11 +146,11 @@ all-no-yes: libgnuintl.$la
 all-no-no:
 
 libintl.a libgnuintl.a: $(OBJECTS)
-	@rm -f $@
-	@echo "	AR $@"
-	@$(AR) cru $@ $(OBJECTS)
-	@echo "	RANLIB $@"
-	@$(RANLIB) $@
+	$(Q) rm -f $@
+	$(E) "	AR $@"
+	$(Q) $(AR) cru $@ $(OBJECTS)
+	$(E) "	RANLIB $@"
+	$(Q) $(RANLIB) $@
 
 libintl.la libgnuintl.la: $(OBJECTS)
 	$(LIBTOOL) --mode=link \
@@ -173,8 +173,8 @@ LTV_AGE=4
 .SUFFIXES: .c .y .o .lo .sin .sed
 
 .c.o:
-	@echo "	CC $<"
-	@$(COMPILE) $<
+	$(E) "	CC $<"
+	$(Q) $(COMPILE) $<
 
 .y.c:
 	$(YACC) $(YFLAGS) --output $@ $<
@@ -228,32 +228,32 @@ intl-compat.lo: $(srcdir)/intl-compat.c
 	$(LIBTOOL) --mode=compile $(COMPILE) $(srcdir)/intl-compat.c
 
 ref-add.sed: $(srcdir)/ref-add.sin
-	@echo "	SED ref-add.sed"
-	@sed -e '/^#/d' -e 's/@''PACKAGE''@/@PACKAGE@/g' $(srcdir)/ref-add.sin > t-ref-add.sed
-	@mv t-ref-add.sed ref-add.sed
+	$(E) "	SED ref-add.sed"
+	$(Q) sed -e '/^#/d' -e 's/@''PACKAGE''@/@PACKAGE@/g' $(srcdir)/ref-add.sin > t-ref-add.sed
+	$(Q) mv t-ref-add.sed ref-add.sed
 ref-del.sed: $(srcdir)/ref-del.sin
-	@echo "	SED ref-del.sed"
-	@sed -e '/^#/d' -e 's/@''PACKAGE''@/@PACKAGE@/g' $(srcdir)/ref-del.sin > t-ref-del.sed
-	@mv t-ref-del.sed ref-del.sed
+	$(E) "	SED ref-del.sed"
+	$(Q) sed -e '/^#/d' -e 's/@''PACKAGE''@/@PACKAGE@/g' $(srcdir)/ref-del.sin > t-ref-del.sed
+	$(Q) mv t-ref-del.sed ref-del.sed
 
 INCLUDES = -I. -I$(srcdir) -I..
 
 libgnuintl.h: $(srcdir)/libgnuintl.h.in
-	@echo "	SED libgnuintl.h "
-	@sed -e 's,@''HAVE_POSIX_PRINTF''@,@HAVE_POSIX_PRINTF@,g' \
+	$(E) "	SED libgnuintl.h "
+	$(Q) sed -e 's,@''HAVE_POSIX_PRINTF''@,@HAVE_POSIX_PRINTF@,g' \
 	    -e 's,@''HAVE_ASPRINTF''@,@HAVE_ASPRINTF@,g' \
 	    -e 's,@''HAVE_SNPRINTF''@,@HAVE_SNPRINTF@,g' \
 	    -e 's,@''HAVE_WPRINTF''@,@HAVE_WPRINTF@,g' \
 	  < $(srcdir)/libgnuintl.h.in > libgnuintl.h 
 
 libintl.h: libgnuintl.h
-	@echo "	CP libintl.h"
-	@cp libgnuintl.h libintl.h
+	$(E) "	CP libintl.h"
+	$(Q) cp libgnuintl.h libintl.h
 
 charset.alias: $(srcdir)/config.charset
-	@echo "	CONFIG.CHARSET $@"
-	@$(SHELL) $(srcdir)/config.charset '@host@' > t-$@
-	@mv t-$@ $@
+	$(E) "	CONFIG.CHARSET $@"
+	$(Q) $(SHELL) $(srcdir)/config.charset '@host@' > t-$@
+	$(Q) mv t-$@ $@
 
 check: all
 
@@ -264,7 +264,7 @@ check: all
 # package, you have to use `configure --with-included-gettext'.
 install: install-exec install-data
 install-exec: all
-	@if { test "$(PACKAGE)" = "gettext-runtime" || test "$(PACKAGE)" = "gettext-tools"; } \
+	$(Q) if { test "$(PACKAGE)" = "gettext-runtime" || test "$(PACKAGE)" = "gettext-tools"; } \
 	   && test '@USE_INCLUDED_LIBINTL@' = yes; then \
 	  $(mkinstalldirs) $(DESTDIR)$(libdir) $(DESTDIR)$(includedir); \
 	  $(INSTALL_DATA) libintl.h $(DESTDIR)$(includedir)/libintl.h; \
@@ -279,7 +279,7 @@ install-exec: all
 	else \
 	  : ; \
 	fi
-	@if test "$(PACKAGE)" = "gettext-tools" \
+	$(Q) if test "$(PACKAGE)" = "gettext-tools" \
 	   && test '@USE_INCLUDED_LIBINTL@' = no; then \
 	  $(mkinstalldirs) $(DESTDIR)$(libdir); \
 	  $(LIBTOOL) --mode=install \
@@ -321,7 +321,7 @@ install-exec: all
 	  : ; \
 	fi
 install-data: all
-	@if test "$(PACKAGE)" = "gettext-tools"; then \
+	$(Q) if test "$(PACKAGE)" = "gettext-tools"; then \
 	  $(mkinstalldirs) $(DESTDIR)$(gettextsrcdir); \
 	  $(INSTALL_DATA) VERSION $(DESTDIR)$(gettextsrcdir)/VERSION; \
 	  $(INSTALL_DATA) ChangeLog.inst $(DESTDIR)$(gettextsrcdir)/ChangeLog; \
@@ -474,8 +474,8 @@ distclean: clean
 	fi
 
 maintainer-clean: distclean
-	@echo "This command is intended for maintainers to use;"
-	@echo "it deletes files that may require special tools to rebuild."
+	$(E) "This command is intended for maintainers to use;"
+	$(E) "it deletes files that may require special tools to rebuild."
 
 
 # GNU gettext needs not contain the file `VERSION' but contains some

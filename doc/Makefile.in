@@ -19,26 +19,26 @@ HTML=texi2html
 all:: libext2fs.info libext2fs.dvi
 
 install-doc-libs: libext2fs.info libext2fs.dvi
-	@$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
-	@echo "	MKINSTALLDIRS $(infodir)"
-	@$(MKINSTALLDIRS) $(DESTDIR)$(infodir)
-	-@for i in libext2fs.info* ; do \
+	$(Q) $(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
+	$(E) "	MKINSTALLDIRS $(infodir)"
+	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(infodir)
+	-$(Q) for i in libext2fs.info* ; do \
 		echo "	INSTALL_DATA $(infodir)/$$i" ; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(infodir)/$$i ; \
 	done
-	@echo "	GZIP $(infodir)/libext2fs.info*"
-	-@gzip -9 $(DESTDIR)$(infodir)/libext2fs.info*
+	$(E) "	GZIP $(infodir)/libext2fs.info*"
+	-$(Q) gzip -9 $(DESTDIR)$(infodir)/libext2fs.info*
 
 uninstall-doc-libs:
 	$(RM) -rf $(DESTDIR)$(infodir)/libext2fs.info*
 
 libext2fs.info: $(srcdir)/libext2fs.texinfo
-	@echo "	MAKEINFO $@"
-	-@$(INFO) $(srcdir)/libext2fs.texinfo
+	$(E) "	MAKEINFO $@"
+	-$(Q) $(INFO) $(srcdir)/libext2fs.texinfo
 
 libext2fs.dvi: $(srcdir)/libext2fs.texinfo
-	@echo "	TEXI2DVI $@"
-	-@$(DVI) $(srcdir)/libext2fs.texinfo
+	$(E) "	TEXI2DVI $@"
+	-$(Q) $(DVI) $(srcdir)/libext2fs.texinfo
 
 .PHONY: distclean
 distclean:: clean

@@ -32,6 +32,17 @@ datadir = @datadir@
 
 @SET_MAKE@
 
+E = @E@
+Q = @Q@
+
+# Uncomment to pretty-print the makefile commands
+# E = @echo
+# Q = @
+#
+# Uncomment to show the full makefile commands
+# E = @\#
+# Q = 
+
 CC = @CC@
 BUILD_CC = @BUILD_CC@
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DROOT_SYSCONFDIR=\"$(root_sysconfdir)\" @DEFS@

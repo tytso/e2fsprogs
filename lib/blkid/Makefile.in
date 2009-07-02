@@ -54,83 +54,83 @@ LIBS_BLKID=	$(STATIC_LIBBLKID) $(STATIC_LIBUUID)
 DEPLIBS_BLKID=	$(DEPSTATIC_LIBBLKID) $(DEPSTATIC_LIBUUID)
 
 .c.o:
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
-@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@CHECKER_CMT@	@$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@ELF_CMT@	@$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
+@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+@CHECKER_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
+@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 all:: $(SMANPAGES) blkid.pc
 
 $(top_builddir)/lib/blkid/blkid_types.h: $(srcdir)/blkid_types.h.in $(top_builddir)/config.status
-	@echo "	CONFIG.STATUS $@"
-	@cd $(top_builddir); \
+	$(E) "	CONFIG.STATUS $@"
+	$(Q) cd $(top_builddir); \
 		CONFIG_FILES=$(my_dir)/blkid_types.h ./config.status
 
 libblkid.3: $(DEP_SUBSTITUTE) $(srcdir)/libblkid.3.in
-	@echo "	SUBST $@"
-	@$(SUBSTITUTE_UPTIME) $(srcdir)/libblkid.3.in libblkid.3
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/libblkid.3.in libblkid.3
 
 tst_cache: $(srcdir)/cache.c $(DEPLIBS_BLKID)
-	@echo "	LD $@"
-	@$(CC) -o tst_cache -DTEST_PROGRAM $(srcdir)/cache.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_cache -DTEST_PROGRAM $(srcdir)/cache.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_dev: $(srcdir)/dev.c $(DEPLIBS_BLKID)
-	@echo "	LD $@"
-	@$(CC) -o tst_dev -DTEST_PROGRAM $(srcdir)/dev.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_dev -DTEST_PROGRAM $(srcdir)/dev.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_devname: $(srcdir)/devname.c $(DEPLIBS_BLKID)
-	@echo "	LD $@"
-	@$(CC) -o tst_devname -DTEST_PROGRAM $(srcdir)/devname.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_devname -DTEST_PROGRAM $(srcdir)/devname.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_devno: $(srcdir)/devno.c $(DEPLIBS_BLKID)
-	@echo "	LD $@"
-	@$(CC) -o tst_devno -DTEST_PROGRAM $(srcdir)/devno.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_devno -DTEST_PROGRAM $(srcdir)/devno.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_getsize: $(srcdir)/getsize.c $(DEPLIBS_BLKID)
-	@echo "	LD $@"
-	@$(CC) -o tst_getsize -DTEST_PROGRAM $(srcdir)/getsize.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_getsize -DTEST_PROGRAM $(srcdir)/getsize.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_probe: $(srcdir)/probe.c $(DEPLIBS_BLKID)
-	@echo "	LD $@"
-	@$(CC) -o tst_probe -DTEST_PROGRAM $(srcdir)/probe.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_probe -DTEST_PROGRAM $(srcdir)/probe.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_read: $(srcdir)/read.c $(DEPLIBS_BLKID)
-	@echo "	LD $@"
-	@$(CC) -o tst_read -DTEST_PROGRAM $(srcdir)/read.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_read -DTEST_PROGRAM $(srcdir)/read.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_resolve: $(srcdir)/resolve.c $(DEPLIBS_BLKID)
-	@echo "	LD $@"
-	@$(CC) -o tst_resolve -DTEST_PROGRAM $(srcdir)/resolve.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_resolve -DTEST_PROGRAM $(srcdir)/resolve.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_save: $(srcdir)/save.c $(DEPLIBS_BLKID)
-	@echo "	LD $@"
-	@$(CC) -o tst_save -DTEST_PROGRAM $(srcdir)/save.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_save -DTEST_PROGRAM $(srcdir)/save.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_tag: $(srcdir)/tag.c $(DEPLIBS_BLKID)
-	@echo "	LD $@"
-	@$(CC) -o tst_tag -DTEST_PROGRAM $(srcdir)/tag.c $(LIBS_BLKID) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_tag -DTEST_PROGRAM $(srcdir)/tag.c $(LIBS_BLKID) $(ALL_CFLAGS)
 
 tst_types: tst_types.o blkid_types.h 
-	@echo "	LD $@"
-	@$(CC) -o tst_types tst_types.o 
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_types tst_types.o 
 
 ../../misc/blkid.o: $(top_srcdir)/misc/blkid.c blkid.h
-	@echo "	CC $@"
-	@$(CC) $(ALL_CFLAGS) -c $(top_srcdir)/misc/blkid.c \
+	$(E) "	CC $@"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $(top_srcdir)/misc/blkid.c \
 		-o ../../misc/blkid.o
 
 blkid: ../../misc/blkid.o libblkid.a $(DEPLIBUUID)
-	@echo "	LD $@"
-	@$(CC) -o blkid ../../misc/blkid.o libblkid.a $(LIBUUID)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o blkid ../../misc/blkid.o libblkid.a $(LIBUUID)
 
 test_probe: test_probe.in Makefile
-	@echo "Creating test_probe..."
-	@echo "#!/bin/sh" > test_probe
-	@echo "SRCDIR=@srcdir@" >> test_probe
-	@cat $(srcdir)/test_probe.in >> test_probe
-	@chmod +x test_probe
+	$(E) "Creating test_probe..."
+	$(E) "#!/bin/sh" > test_probe
+	$(E) "SRCDIR=@srcdir@" >> test_probe
+	$(Q) cat $(srcdir)/test_probe.in >> test_probe
+	$(Q) chmod +x test_probe
 
 check:: all tst_cache tst_dev tst_devname tst_devno tst_getsize tst_probe \
  tst_read tst_resolve tst_save tst_tag test_probe tst_types
@@ -138,33 +138,33 @@ check:: all tst_cache tst_dev tst_devname tst_devno tst_getsize tst_probe \
 	./tst_types
 
 blkid.pc: $(srcdir)/blkid.pc.in $(top_builddir)/config.status
-	@echo "	CONFIG.STATUS $@"
-	@cd $(top_builddir); CONFIG_FILES=lib/blkid/blkid.pc ./config.status
+	$(E) "	CONFIG.STATUS $@"
+	$(Q) cd $(top_builddir); CONFIG_FILES=lib/blkid/blkid.pc ./config.status
 
 installdirs::
-	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/blkid"
-	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/blkid"
+	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/blkid $(DESTDIR)$(libdir)/pkgconfig
 
 install:: all installdirs 
-	@echo "	INSTALL_DATA $(libdir)/libblkid.a"
-	@$(INSTALL_DATA) libblkid.a $(DESTDIR)$(libdir)/libblkid.a
-	@-$(RANLIB) $(DESTDIR)$(libdir)/libblkid.a
-	@$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libblkid.a
-	@set -e; for i in $(HFILES); do \
+	$(E) "	INSTALL_DATA $(libdir)/libblkid.a"
+	$(Q) $(INSTALL_DATA) libblkid.a $(DESTDIR)$(libdir)/libblkid.a
+	-$(Q) $(RANLIB) $(DESTDIR)$(libdir)/libblkid.a
+	$(Q) $(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libblkid.a
+	$(Q) set -e; for i in $(HFILES); do \
 	  echo "	INSTALL_DATA $(includedir)/blkid/$$i"; \
 	  $(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/blkid/$$i; \
 	done
-	@set -e; for i in $(HFILES_IN); do \
+	$(Q) set -e; for i in $(HFILES_IN); do \
 		echo "	INSTALL_DATA $(includedir)/blkid/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(includedir)/blkid/$$i; \
 	done
-	@for i in $(SMANPAGES); do \
+	$(Q) for i in $(SMANPAGES); do \
 		echo "	INSTALL_DATA $(man3dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man3dir)/$$i; \
 	done
-	@echo "	INSTALL_DATA $(libdir)/pkgconfig/blkid.pc"
-	@$(INSTALL_DATA) blkid.pc $(DESTDIR)$(libdir)/pkgconfig/blkid.pc
+	$(E) "	INSTALL_DATA $(libdir)/pkgconfig/blkid.pc"
+	$(Q) $(INSTALL_DATA) blkid.pc $(DESTDIR)$(libdir)/pkgconfig/blkid.pc
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libblkid.a \

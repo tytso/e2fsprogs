@@ -53,25 +53,25 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 @MAKEFILE_CHECKER@
 
 .c.o:
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
-@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@CHECKER_CMT@	@$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@ELF_CMT@	@$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
+@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+@CHECKER_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
+@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 e2p.pc: $(srcdir)/e2p.pc.in $(top_builddir)/config.status
-	@echo "	CONFIG.STATUS $@"
-	@cd $(top_builddir); CONFIG_FILES=lib/e2p/e2p.pc ./config.status
+	$(E) "	CONFIG.STATUS $@"
+	$(Q) cd $(top_builddir); CONFIG_FILES=lib/e2p/e2p.pc ./config.status
 
 tst_ostype: $(srcdir)/ostype.c
-	@echo "	LD $@"
-	@$(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_ostype \
+	$(E) "	LD $@"
+	$(Q) $(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_ostype \
 		$(srcdir)/ostype.c $(ALL_CFLAGS)
 
 tst_feature: $(srcdir)/feature.c
-	@echo "	LD $@"
-	@$(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_feature \
+	$(E) "	LD $@"
+	$(Q) $(CC) -DTEST_PROGRAM -I$(top_srcdir)/lib -o tst_feature \
 		$(srcdir)/feature.c $(ALL_CFLAGS)
 
 check::	tst_ostype tst_feature
@@ -79,21 +79,21 @@ check::	tst_ostype tst_feature
 	./tst_feature
 
 installdirs::
-	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/e2p"
-	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/e2p"
+	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/e2p $(DESTDIR)$(libdir)/pkgconfig
 
 install:: all installdirs 
-	@echo "	INSTALL_DATA $(libdir)/libe2p.a"
-	@$(INSTALL_DATA) libe2p.a $(DESTDIR)$(libdir)/libe2p.a
-	@-$(RANLIB) $(DESTDIR)$(libdir)/libe2p.a
-	@$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libe2p.a
-	@set -e; for i in $(HFILES); do \
+	$(E) "	INSTALL_DATA $(libdir)/libe2p.a"
+	$(Q) $(INSTALL_DATA) libe2p.a $(DESTDIR)$(libdir)/libe2p.a
+	-$(Q) $(RANLIB) $(DESTDIR)$(libdir)/libe2p.a
+	$(Q) $(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libe2p.a
+	$(Q) set -e; for i in $(HFILES); do \
 	  echo "	INSTALL_DATA $(includedir)/e2p/$$i"; \
 	  $(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/e2p/$$i; \
 	done
-	@echo "	INSTALL_DATA $(libdir)/pkgconfig/e2p.pc"
-	@$(INSTALL_DATA) e2p.pc $(DESTDIR)$(libdir)/pkgconfig/e2p.pc
+	$(E) "	INSTALL_DATA $(libdir)/pkgconfig/e2p.pc"
+	$(Q) $(INSTALL_DATA) e2p.pc $(DESTDIR)$(libdir)/pkgconfig/e2p.pc
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libe2p.a \

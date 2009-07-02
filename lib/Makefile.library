@@ -7,18 +7,18 @@ uninstall-shlibs::
 real-subdirs::
 
 subdirs:: Makefile
-	@$(MAKE) -s real-subdirs
-	@touch subdirs
+	$(Q) $(MAKE) -s real-subdirs
+	$(Q) touch subdirs
 
 clean::
-	@$(RM) -f subdirs
+	$(Q) $(RM) -f subdirs
 
 $(LIBRARY).a: $(OBJS)
-	@echo "	GEN_LIB $@"
-	@(if test -r $@; then $(RM) -f $@.bak && $(MV) $@ $@.bak; fi)
-	@$(ARGEN) $@ $(OBJS)
+	$(E) "	GEN_LIB $@"
+	$(Q) (if test -r $@; then $(RM) -f $@.bak && $(MV) $@ $@.bak; fi)
+	$(Q) $(ARGEN) $@ $(OBJS)
 	-@$(RANLIB) $@
-	@$(RM) -f ../$@
-	@$(LN) $@ ../$@
+	$(Q) $(RM) -f ../$@
+	$(Q) $(LN) $@ ../$@
 
 $(LIB)/$(LIBRARY).a: $(LIBRARY).a

@@ -176,151 +176,151 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 all:: ext2fs.pc
 
 .c.o:
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
-@PROFILE_CMT@	@$(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
-@CHECKER_CMT@	@$(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
-@ELF_CMT@	@$(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
-@BSDLIB_CMT@	@$(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
+@PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
+@CHECKER_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -checker -g -o checker/$*.o -c $<
+@ELF_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -fPIC -o elfshared/$*.o -c $<
+@BSDLIB_CMT@	$(Q) $(CC) $(ALL_CFLAGS) $(BSDLIB_PIC_FLAG) -o pic/$*.o -c $<
 
 COMPILE_ET=../et/compile_et --build-tree
 
 DISTFILES= Makefile *.c *.h image
 
 ext2_err.et: $(DEP_SUBSTITUTE) $(srcdir)/ext2_err.et.in
-	@echo "	SUBST $@"
-	@$(SUBSTITUTE) $(srcdir)/ext2_err.et.in ext2_err.et
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE) $(srcdir)/ext2_err.et.in ext2_err.et
 
 ext2_err.c ext2_err.h: ext2_err.et
-	@echo "	COMPILE_ET ext2_err.et"
-	@$(COMPILE_ET) ext2_err.et
+	$(E) "	COMPILE_ET ext2_err.et"
+	$(Q) $(COMPILE_ET) ext2_err.et
 
 ext2fs.pc: $(srcdir)/ext2fs.pc.in $(top_builddir)/config.status
-	@echo "	CONFIG.STATUS $@"
-	@cd $(top_builddir); CONFIG_FILES=lib/ext2fs/ext2fs.pc ./config.status
+	$(E) "	CONFIG.STATUS $@"
+	$(Q) cd $(top_builddir); CONFIG_FILES=lib/ext2fs/ext2fs.pc ./config.status
 
 tst_badblocks: tst_badblocks.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o tst_badblocks tst_badblocks.o $(STATIC_LIBEXT2FS) \
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_badblocks tst_badblocks.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
 
 tst_icount: $(srcdir)/icount.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o tst_icount $(srcdir)/icount.c -DDEBUG $(ALL_CFLAGS) \
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_icount $(srcdir)/icount.c -DDEBUG $(ALL_CFLAGS) \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 tst_iscan: tst_iscan.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o tst_iscan tst_iscan.o $(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_iscan tst_iscan.o $(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 tst_getsize: tst_getsize.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o tst_getsize tst_getsize.o $(STATIC_LIBEXT2FS) \
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_getsize tst_getsize.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
 
 tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o tst_ismounted $(srcdir)/ismounted.c -DDEBUG $(ALL_CFLAGS) \
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_ismounted $(srcdir)/ismounted.c -DDEBUG $(ALL_CFLAGS) \
 		$(LIBCOM_ERR) 
 
 tst_byteswap: tst_byteswap.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o tst_byteswap tst_byteswap.o $(STATIC_LIBEXT2FS) \
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_byteswap tst_byteswap.o $(STATIC_LIBEXT2FS) \
 		$(LIBCOM_ERR)
 
 tst_bitops: tst_bitops.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o tst_bitops tst_bitops.o $(ALL_CFLAGS) \
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_bitops tst_bitops.o $(ALL_CFLAGS) \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 tst_getsectsize: tst_getsectsize.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o tst_sectgetsize tst_getsectsize.o \
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_sectgetsize tst_getsectsize.o \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 tst_types: tst_types.o ext2_types.h 
-	@echo "	LD $@"
-	@$(CC) -o tst_types tst_types.o 
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_types tst_types.o 
 
 tst_super_size: tst_super_size.o ext2_fs.h
-	@echo "	LD $@"
-	@$(CC) -o tst_super_size tst_super_size.o 
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_super_size tst_super_size.o 
 
 ext2_tdbtool: tdbtool.o
-	@echo "	LD $@"
-	@$(CC) -o ext2_tdbtool tdbtool.o tdb.o
+	$(E) "	LD $@"
+	$(Q) $(CC) -o ext2_tdbtool tdbtool.o tdb.o
 
 extent_dbg.c: $(srcdir)/extent_dbg.ct
-	@echo "	MK_CMDS $<"
-	@$(MK_CMDS) $(srcdir)/extent_dbg.ct
+	$(E) "	MK_CMDS $<"
+	$(Q) $(MK_CMDS) $(srcdir)/extent_dbg.ct
 
 debug_cmds.c debug_cmds.h: $(top_srcdir)/debugfs/debug_cmds.ct
-	@echo "	MK_CMDS $<@"
-	@$(MK_CMDS) $(top_srcdir)/debugfs/debug_cmds.ct
+	$(E) "	MK_CMDS $<@"
+	$(Q) $(MK_CMDS) $(top_srcdir)/debugfs/debug_cmds.ct
 
 DEBUG_OBJS= debug_cmds.o debugfs.o util.o ncheck.o icheck.o ls.o \
 	lsdel.o dump.o set_fields.o logdump.o htree.o unused.o
 
 debugfs.o: $(top_srcdir)/debugfs/debugfs.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 util.o: $(top_srcdir)/debugfs/util.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 ncheck.o: $(top_srcdir)/debugfs/ncheck.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 icheck.o: $(top_srcdir)/debugfs/icheck.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 ls.o: $(top_srcdir)/debugfs/ls.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 lsdel.o: $(top_srcdir)/debugfs/lsdel.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 dump.o: $(top_srcdir)/debugfs/dump.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 set_fields.o: $(top_srcdir)/debugfs/set_fields.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 logdump.o: $(top_srcdir)/debugfs/logdump.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 htree.o: $(top_srcdir)/debugfs/htree.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 unused.o: $(top_srcdir)/debugfs/unused.c
-	@echo "	CC $<"
-	@$(CC) $(ALL_CFLAGS) -c $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) $(ALL_CFLAGS) -c $< -o $@
 
 tst_extents: $(srcdir)/extent.c extent_dbg.c $(DEBUG_OBJS) $(DEPLIBSS) \
 	$(LIBE2P) $(DEPLIBUUID) $(DEPLIBBLKID) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o tst_extents $(srcdir)/extent.c extent_dbg.c \
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_extents $(srcdir)/extent.c extent_dbg.c \
 		$(ALL_CFLAGS) -DDEBUG $(DEBUG_OBJS) $(LIBSS) $(LIBE2P) \
 		$(STATIC_LIBEXT2FS) $(LIBBLKID) $(LIBUUID) $(LIBCOM_ERR) \
 		-I $(top_srcdir)/debugfs
 
 tst_csum: csum.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o tst_csum $(srcdir)/csum.c -DDEBUG \
+	$(E) "	LD $@"
+	$(Q) $(CC) -o tst_csum $(srcdir)/csum.c -DDEBUG \
 		$(ALL_CFLAGS) $(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
 mkjournal: mkjournal.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
-	@echo "	LD $@"
-	@$(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
+	$(E) "	LD $@"
+	$(Q) $(CC) -o mkjournal $(srcdir)/mkjournal.c -DDEBUG $(STATIC_LIBEXT2FS) $(LIBCOM_ERR) $(ALL_CFLAGS)
 
 check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount tst_super_size tst_types tst_csum
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_bitops
@@ -332,25 +332,25 @@ check:: tst_bitops tst_badblocks tst_iscan tst_types tst_icount tst_super_size t
 	LD_LIBRARY_PATH=$(LIB) DYLD_LIBRARY_PATH=$(LIB) ./tst_csum
 
 installdirs::
-	@echo "	MKINSTALLDIRS $(libdir) $(includedir)/ext2fs"
-	@$(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
+	$(E) "	MKINSTALLDIRS $(libdir) $(includedir)/ext2fs"
+	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(libdir) \
 		$(DESTDIR)$(includedir)/ext2fs $(DESTDIR)$(libdir)/pkgconfig
 
 install:: all $(HFILES) $(HFILES_IN) installdirs ext2fs.pc
-	@echo "	INSTALL_DATA $(libdir)/libext2fs.a"
-	@$(INSTALL_DATA) libext2fs.a $(DESTDIR)$(libdir)/libext2fs.a
-	@-$(RANLIB) $(DESTDIR)$(libdir)/libext2fs.a
-	@$(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libext2fs.a
-	@for i in $(HFILES); do \
+	$(E) "	INSTALL_DATA $(libdir)/libext2fs.a"
+	$(Q) $(INSTALL_DATA) libext2fs.a $(DESTDIR)$(libdir)/libext2fs.a
+	-$(Q) $(RANLIB) $(DESTDIR)$(libdir)/libext2fs.a
+	$(Q) $(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libext2fs.a
+	$(Q) for i in $(HFILES); do \
 		echo "	INSTALL_DATA $(includedir)/ext2fs/$$i"; \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/ext2fs/$$i; \
 	done
-	@for i in $(HFILES_IN); do \
+	$(Q) for i in $(HFILES_IN); do \
 		echo "	INSTALL_DATA $(includedir)/ext2fs/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(includedir)/ext2fs/$$i; \
 	done
-	@echo "	INSTALL_DATA $(libdir)/pkgconfig/ext2fs.pc"
-	@$(INSTALL_DATA) ext2fs.pc $(DESTDIR)$(libdir)/pkgconfig/ext2fs.pc
+	$(E) "	INSTALL_DATA $(libdir)/pkgconfig/ext2fs.pc"
+	$(Q) $(INSTALL_DATA) ext2fs.pc $(DESTDIR)$(libdir)/pkgconfig/ext2fs.pc
 
 uninstall::
 	$(RM) -f $(DESTDIR)$(libdir)/libext2fs.a \

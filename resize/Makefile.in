@@ -34,39 +34,39 @@ STATIC_LIBS= $(STATIC_LIBE2P) $(STATIC_LIBEXT2FS) $(STATIC_LIBCOM_ERR) \
 DEPSTATIC_LIBS= $(STATIC_LIBE2P) $(STATIC_LIBEXT2FS) $(DEPSTATIC_LIBCOM_ERR) 
 
 .c.o:
-	@echo "	CC $<"
-	@$(CC) -c $(ALL_CFLAGS) $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) -c $(ALL_CFLAGS) $< -o $@
 
 all:: $(PROGS) $(TEST_PROGS) $(MANPAGES) 
 
 resize2fs: $(RESIZE_OBJS) $(DEPLIBS)
-	@echo "	LD $@"
-	@$(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS) 
+	$(E) "	LD $@"
+	$(Q) $(CC) $(ALL_LDFLAGS) -o resize2fs $(RESIZE_OBJS) $(LIBS) 
 
 resize2fs.static: $(RESIZE_OBJS) $(DEPSTATIC_LIBS)
-	@echo "	LD $@"
-	@$(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o resize2fs.static \
+	$(E) "	LD $@"
+	$(Q) $(LD) $(ALL_LDFLAGS) $(LDFLAG_STATIC) -o resize2fs.static \
 		$(RESIZE_OBJS) $(STATIC_LIBS) 
 
 resize2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/resize2fs.8.in
-	@echo "	SUBST $@"
-	@$(SUBSTITUTE_UPTIME) $(srcdir)/resize2fs.8.in resize2fs.8
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/resize2fs.8.in resize2fs.8
 
 test_extent: $(TEST_EXTENT_OBJS)
-	@echo "	LD $@"
-	@$(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS) 
+	$(E) "	LD $@"
+	$(Q) $(CC) $(ALL_LDFLAGS) -o test_extent $(TEST_EXTENT_OBJS) $(LIBS) 
 
 installdirs:
-	@echo "	MKINSTALLDIRS $(root_sbindir) $(man8dir)"
-	@$(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
+	$(E) "	MKINSTALLDIRS $(root_sbindir) $(man8dir)"
+	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir)
 
 install: $(PROGS) $(MANPAGES) installdirs
-	@for i in $(PROGS); do \
+	$(Q) for i in $(PROGS); do \
 		echo "	INSTALL $(root_sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
 	done
-	@for i in $(MANPAGES); do \
+	$(Q) for i in $(MANPAGES); do \
 		for j in $(COMPRESS_EXT); do \
 			$(RM) -f $(DESTDIR)$(man8dir)/$$i.$$j; \
 		done; \
@@ -75,7 +75,7 @@ install: $(PROGS) $(MANPAGES) installdirs
 	done
 
 install-strip: install
-	@for i in $(PROGS); do \
+	$(Q) for i in $(PROGS); do \
 		echo "	STRIP $(root_sbindir)/$$i"; \
 		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
 	done
@@ -93,7 +93,7 @@ test_extent.out: test_extent $(srcdir)/test_extent.in
 		> test_extent.out
 
 check:: test_extent.out
-	@if cmp -s test_extent.out $(srcdir)/test_extent.in ; then \
+	$(Q) if cmp -s test_extent.out $(srcdir)/test_extent.in ; then \
 		echo "Test succeeded." ; \
 	else \
 		echo "Test failed!" ; \

@@ -30,34 +30,34 @@ DEPLIBS= $(LIBEXT2FS) $(LIBE2P) $(DEPLIBSS) $(DEPLIBCOM_ERR) \
 	$(DEPLIBBLKID) $(DEPLIBUUID)
 
 .c.o:
-	@echo "	CC $<"
-	@$(CC) -c $(ALL_CFLAGS) $< -o $@
+	$(E) "	CC $<"
+	$(Q) $(CC) -c $(ALL_CFLAGS) $< -o $@
 
 all:: $(PROGS) $(MANPAGES)
 
 debugfs: $(DEBUG_OBJS) $(DEPLIBS)
-	@echo "	LD $@"
-	@$(CC) $(ALL_LDFLAGS) -o debugfs $(DEBUG_OBJS) $(LIBS)
+	$(E) "	LD $@"
+	$(Q) $(CC) $(ALL_LDFLAGS) -o debugfs $(DEBUG_OBJS) $(LIBS)
 
 debug_cmds.c debug_cmds.h: debug_cmds.ct
-	@echo "	MK_CMDS $@"
-	@$(MK_CMDS) $(srcdir)/debug_cmds.ct
+	$(E) "	MK_CMDS $@"
+	$(Q) $(MK_CMDS) $(srcdir)/debug_cmds.ct
 
 debugfs.8: $(DEP_SUBSTITUTE) $(srcdir)/debugfs.8.in
-	@echo "	SUBST $@"
-	@$(SUBSTITUTE_UPTIME) $(srcdir)/debugfs.8.in debugfs.8
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/debugfs.8.in debugfs.8
 
 installdirs:
-	@echo "	MKINSTALLDIRS $(root_sbindir) $(man8dir)"
-	@$(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
+	$(E) "	MKINSTALLDIRS $(root_sbindir) $(man8dir)"
+	$(Q) $(MKINSTALLDIRS) $(DESTDIR)$(root_sbindir) \
 		$(DESTDIR)$(man8dir)
 
 install: $(PROGS) $(MANPAGES) installdirs
-	@for i in $(PROGS); do \
+	$(Q) for i in $(PROGS); do \
 		echo "	INSTALL $(root_sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
 	done
-	@for i in $(MANPAGES); do \
+	$(Q) for i in $(MANPAGES); do \
 		for j in $(COMPRESS_EXT); do \
 			$(RM) -f $(DESTDIR)$(man8dir)/$$i.$$j; \
 		done; \
@@ -66,7 +66,7 @@ install: $(PROGS) $(MANPAGES) installdirs
 	done
 
 install-strip: install
-	@for i in $(PROGS); do \
+	$(Q) for i in $(PROGS); do \
 		echo "	STRIP $(root_sbindir)/$$i"; \
 		$(STRIP) $(DESTDIR)$(root_sbindir)/$$i; \
 	done
