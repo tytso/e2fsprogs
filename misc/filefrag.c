@@ -239,8 +239,8 @@ int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 			n++;
 		}
 
-		fiemap->fm_start += fm_ext[i-1].fe_logical +
-							fm_ext[i-1].fe_length;
+		fiemap->fm_start = (fm_ext[i-1].fe_logical +
+				    fm_ext[i-1].fe_length);
 	} while (last == 0);
 
 	*num_extents = tot_extents;
