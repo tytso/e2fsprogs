@@ -250,10 +250,8 @@ int main (int argc, char ** argv)
 				device_name);
 			exit(1);
 		}
-		if (!(mount_flags & EXT2_MF_MOUNTED) || (mtpt[len-1] == 0)) {
-			free(mtpt);
+		if (!(mount_flags & EXT2_MF_MOUNTED) || (mtpt[len-1] == 0))
 			break;
-		}
 		free(mtpt);
 		len = 2 * len;
 	}
@@ -453,6 +451,7 @@ int main (int argc, char ** argv)
 				   ((flags & RESIZE_PERCENT_COMPLETE) ?
 				    resize_progress_func : 0));
 	}
+	free(mtpt);
 	if (retval) {
 		com_err(program_name, retval, _("while trying to resize %s"),
 			device_name);
