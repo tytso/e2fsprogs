@@ -32,16 +32,19 @@ datadir = @datadir@
 
 @SET_MAKE@
 
-E = @E@
-Q = @Q@
+@ifGNUmake@ V =
+@ifGNUmake@ ifeq ($(strip $(V)),)
+@ifGNUmake@ #  E = @echo
+@ifGNUmake@ #  Q = @
+@ifGNUmake@    E = @E@
+@ifGNUmake@    Q = @Q@
+@ifGNUmake@ else
+@ifGNUmake@    E = @\#
+@ifGNUmake@    Q =
+@ifGNUmake@ endif
 
-# Uncomment to pretty-print the makefile commands
-# E = @echo
-# Q = @
-#
-# Uncomment to show the full makefile commands
-# E = @\#
-# Q = 
+@ifNotGNUmake@ E = @E@
+@ifNotGNUmake@ Q = @Q@
 
 CC = @CC@
 BUILD_CC = @BUILD_CC@
