@@ -103,7 +103,7 @@ static void print_bitmap_problem(e2fsck_t ctx, int problem,
 static void check_block_bitmaps(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	blk_t	i, super;
+	blk_t	i;
 	int	*free_array;
 	int	group = 0;
 	blk_t	blocks = 0;
@@ -159,7 +159,6 @@ redo_counts:
 	if (csum_flag &&
 	    (fs->group_desc[group].bg_flags & EXT2_BG_BLOCK_UNINIT))
 		skip_group++;
-	super = fs->super->s_first_data_block;
 	for (i = fs->super->s_first_data_block;
 	     i < fs->super->s_blocks_count;
 	     i++) {
@@ -255,7 +254,6 @@ redo_counts:
 			blocks = 0;
 			group_free = 0;
 			skip_group = 0;
-			super += fs->super->s_blocks_per_group;
 			if (ctx->progress)
 				if ((ctx->progress)(ctx, 5, group,
 						    fs->group_desc_count*2))
