@@ -567,7 +567,7 @@ static void check_inode_end(e2fsck_t ctx)
 	for (i = save_inodes_count + 1; i <= end && i > save_inodes_count; i++) {
 		if (!ext2fs_test_inode_bitmap(fs->inode_map, i)) {
 			if (fix_problem(ctx, PR_5_INODE_BMAP_PADDING, &pctx)) {
-				for (i = save_inodes_count + 1; i <= end; i++)
+				for (; i <= end; i++)
 					ext2fs_mark_inode_bitmap(fs->inode_map,
 								 i);
 				ext2fs_mark_ib_dirty(fs);
@@ -612,7 +612,7 @@ static void check_block_end(e2fsck_t ctx)
 	for (i = save_blocks_count + 1; i <= end && i > save_blocks_count; i++) {
 		if (!ext2fs_test_block_bitmap(fs->block_map, i)) {
 			if (fix_problem(ctx, PR_5_BLOCK_BMAP_PADDING, &pctx)) {
-				for (i = save_blocks_count + 1; i <= end; i++)
+				for (; i <= end; i++)
 					ext2fs_mark_block_bitmap(fs->block_map,
 								 i);
 				ext2fs_mark_bb_dirty(fs);
