@@ -243,8 +243,6 @@ void e2fsck_pass2(e2fsck_t ctx)
 				fix_problem(ctx, code, &pctx);
 				bad_dir++;
 			}
-			if (code == 0)
-				continue;
 		}
 		if (bad_dir && fix_problem(ctx, PR_2_HTREE_CLEAR, &pctx)) {
 			clear_htree(ctx, dx_dir->ino);
