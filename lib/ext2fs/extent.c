@@ -1257,6 +1257,10 @@ again:
 					EXT2_EXTENT_INSERT_AFTER, &newextent);
 			if (retval)
 				goto done;
+			/* Now pointing at inserted extent; move back to prev */
+			retval = ext2fs_extent_goto(handle, logical - 1);
+			if (retval)
+				goto done;
 		}
 		extent.e_len--;
 		retval = ext2fs_extent_replace(handle, 0, &extent);
