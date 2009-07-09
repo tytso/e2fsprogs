@@ -115,6 +115,11 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	errcode_t	retval;
 	int		csum_flag;
 	int		skip_group = 0;
+	int	old_desc_blocks = 0;
+	int	count = 0;
+	int	cmp_block = 0;
+	int	redo_flag = 0;
+	blk_t	super_blk, old_desc_blk, new_desc_blk;
 
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,
@@ -165,39 +170,75 @@ redo_counts:
 		actual = ext2fs_fast_test_block_bitmap(ctx->block_found_map, i);
 
 		if (skip_group) {
-			blk_t	super_blk, old_desc_blk, new_desc_blk;
-			int	old_desc_blocks;
-
-			ext2fs_super_and_bgd_loc(fs, group, &super_blk,
+			if ((i - fs->super->s_first_data_block) %
+			    fs->super->s_blocks_per_group == 0) {
+				super_blk = 0;
+				old_desc_blk = 0;
+				new_desc_blk = 0;
+				ext2fs_super_and_bgd_loc(fs, group, &super_blk,
 					 &old_desc_blk, &new_desc_blk, 0);
 
-			if (fs->super->s_feature_incompat &
-			    EXT2_FEATURE_INCOMPAT_META_BG)
-				old_desc_blocks = fs->super->s_first_meta_bg;
-			else
-				old_desc_blocks = fs->desc_blocks +
+				if (fs->super->s_feature_incompat &
+						EXT2_FEATURE_INCOMPAT_META_BG)
+					old_desc_blocks =
+						fs->super->s_first_meta_bg;
+				else
+					old_desc_blocks = fs->desc_blocks +
 					fs->super->s_reserved_gdt_blocks;
 
+				count = 0;
+				cmp_block = fs->super->s_blocks_per_group;
+				if (group == (int)fs->group_desc_count - 1)
+					cmp_block =
+						fs->super->s_blocks_count %
+						fs->super->s_blocks_per_group;
+			}
+
 			bitmap = 0;
-			if (i == super_blk)
+			if ((i == super_blk) ||
+				(old_desc_blk && old_desc_blocks &&
+				(i >= old_desc_blk) &&
+				(i < old_desc_blk + old_desc_blocks)) ||
+				(new_desc_blk && (i == new_desc_blk)) ||
+				(i == fs->group_desc[group].bg_block_bitmap) ||
+				(i == fs->group_desc[group].bg_inode_bitmap) ||
+				(i >= fs->group_desc[group].bg_inode_table &&
+				(i < fs->group_desc[group].bg_inode_table +
+					fs->inode_blocks_per_group))) {
 				bitmap = 1;
-			if (old_desc_blk && old_desc_blocks &&
-			    (i >= old_desc_blk) &&
-			    (i < old_desc_blk + old_desc_blocks))
-				bitmap = 1;
-			if (new_desc_blk &&
-			    (i == new_desc_blk))
-				bitmap = 1;
-			if (i == fs->group_desc[group].bg_block_bitmap)
-				bitmap = 1;
-			else if (i == fs->group_desc[group].bg_inode_bitmap)
-				bitmap = 1;
-			else if (i >= fs->group_desc[group].bg_inode_table &&
-				 (i < fs->group_desc[group].bg_inode_table
-				  + fs->inode_blocks_per_group))
-				bitmap = 1;
-			actual = (actual != 0);
-		} else
+				actual = (actual != 0);
+				count++;
+				cmp_block--;
+			} else if ((i - count - fs->super->s_first_data_block) %
+				  fs->super->s_blocks_per_group == 0) {
+				/*
+				 * When the compare data blocks in block bitmap
+				 * are 0, count the free block,
+				 * skip the current block group.
+				 */
+				if (ext2fs_test_block_bitmap_range(
+					    ctx->block_found_map, i,
+					    cmp_block)) {
+					/*
+					 * -1 means to skip the current block
+					 * group.
+					 */
+					blocks = fs->super->s_blocks_per_group
+									- 1;
+					group_free = cmp_block;
+					free_blocks += cmp_block;
+					/*
+					 * The current block group's last block
+					 * is set to i.
+					 */
+					i += cmp_block - 1;
+					bitmap = 1;
+					goto do_counts;
+				}
+			}
+		} else if (redo_flag)
+			bitmap = actual;
+		else
 			bitmap = ext2fs_fast_test_block_bitmap(fs->block_map, i);
 
 		if (actual == bitmap)
@@ -289,6 +330,7 @@ redo_counts:
 		/* Redo the counts */
 		blocks = 0; free_blocks = 0; group_free = 0; group = 0;
 		memset(free_array, 0, fs->group_desc_count * sizeof(int));
+		redo_flag++;
 		goto redo_counts;
 	} else if (fixit == 0)
 		ext2fs_unmark_valid(fs);
@@ -340,6 +382,7 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int		problem, save_problem, fixit, had_problem;
 	int		csum_flag;
 	int		skip_group = 0;
+	int		redo_flag = 0;
 
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,
@@ -387,10 +430,34 @@ redo_counts:
 
 	/* Protect loop from wrap-around if inodes_count is maxed */
 	for (i = 1; i <= fs->super->s_inodes_count && i > 0; i++) {
+		bitmap = 0;
+		if (skip_group &&
+		    i % fs->super->s_inodes_per_group == 1) {
+			/*
+			 * Current inode is the first inode
+			 * in the current block group.
+			 */
+			if (ext2fs_test_inode_bitmap_range(
+				    ctx->inode_used_map, i,
+				    fs->super->s_inodes_per_group)) {
+				/*
+				 * When the compared inodes in inodes bitmap
+				 * are 0, count the free inode,
+				 * skip the current block group.
+				 */
+				inodes = fs->super->s_inodes_per_group - 1;
+				group_free = inodes;
+				free_inodes += inodes;
+				i += inodes;
+				skip_group = 0;
+				goto do_counts;
+			}
+		}
+
 		actual = ext2fs_fast_test_inode_bitmap(ctx->inode_used_map, i);
-		if (skip_group)
-			bitmap = 0;
-		else
+		if (redo_flag)
+			bitmap = actual;
+		else if (!skip_group)
 			bitmap = ext2fs_fast_test_inode_bitmap(fs->inode_map, i);
 		if (actual == bitmap)
 			goto do_counts;
@@ -494,6 +561,7 @@ do_counts:
 		dirs_count = 0; group = 0;
 		memset(free_array, 0, fs->group_desc_count * sizeof(int));
 		memset(dir_array, 0, fs->group_desc_count * sizeof(int));
+		redo_flag++;
 		goto redo_counts;
 	} else if (fixit == 0)
 		ext2fs_unmark_valid(fs);
