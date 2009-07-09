@@ -50,6 +50,7 @@ FSCK_OBJS=	fsck.o base_device.o ismounted.o
 BLKID_OBJS=	blkid.o
 FILEFRAG_OBJS=	filefrag.o
 E2UNDO_OBJS=  e2undo.o
+E4DEFRAG_OBJS=	e4defrag.o
 
 PROFILED_TUNE2FS_OBJS=	profiled/tune2fs.o profiled/util.o
 PROFILED_MKLPF_OBJS=	profiled/mklost+found.o
@@ -67,7 +68,7 @@ PROFILED_FSCK_OBJS=	profiled/fsck.o profiled/base_device.o \
 PROFILED_BLKID_OBJS=	profiled/blkid.o
 PROFILED_FILEFRAG_OBJS=	profiled/filefrag.o
 PROFILED_E2UNDO_OBJS=	profiled/e2undo.o
-
+PROFILED_E4DEFRAG_OBJS=	profiled/e4defrag.o
 
 XTRA_CFLAGS=	-I$(srcdir)/../e2fsck -I.
 
@@ -98,12 +99,12 @@ COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
 @PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 
 all:: profiled $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) \
-	$(FMANPAGES) $(LPROGS)
+	$(FMANPAGES) $(LPROGS) e4defrag
 
 @PROFILE_CMT@all:: tune2fs.profiled blkid.profiled e2image.profiled \
 	e2undo.profiled mke2fs.profiled dumpe2fs.profiled fsck.profiled \
 	logsave.profiled filefrag.profiled uuidgen.profiled uuidd.profiled \
-	e2image.profiled
+	e2image.profiled e4defrag.profiled
 
 profiled:
 @PROFILE_CMT@	$(E) "	MKDIR $@"
@@ -189,6 +190,15 @@ e2undo.profiled: $(PROFILED_E2UNDO_OBJS) $(PROFILED_DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e2undo.profiled \
 		$(PROFILED_E2UNDO_OBJS) $(PROFILED_LIBS) $(LIBINTL)
+
+e4defrag: $(E4DEFRAG_OBJS)
+	$(E) "	LD $@"
+	$(Q) $(CC) $(ALL_LDFLAGS) -o e4defrag $(E4DEFRAG_OBJS)
+
+e4defrag.profiled: $(PROFILED_E4DEFRAG_OBJS)
+	$(E) "	LD $@"
+	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e4defrag.profiled \
+		$(PROFILED_E4DEFRAG_OBJS)
 
 base_device: base_device.c
 	$(E) "	LD $@"
@@ -332,6 +342,10 @@ findfs.8: $(DEP_SUBSTITUTE) $(srcdir)/findfs.8.in
 e2image.8: $(DEP_SUBSTITUTE) $(srcdir)/e2image.8.in
 	$(E) "	SUBST $@"
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/e2image.8.in e2image.8
+
+e4defrag.8: $(DEP_SUBSTITUTE) $(srcdir)/e4defrag.8.in
+	$(E) "	SUBST $@"
+	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/e4defrag.8.in e4defrag.8
 
 dumpe2fs.8: $(DEP_SUBSTITUTE) $(srcdir)/dumpe2fs.8.in 
 	$(E) "	SUBST $@"
