@@ -1,3 +1,53 @@
+E2fsprogs 1.41.8-WIP (July 7, 2009) commit: 4bd87f22
+===================================
+
+Fix resize2fs's online resizing, fixing a regression which in
+e2fpsrogs 1.41.7.   (Addresses Debian Bug: #535452)
+
+Fix potential filesystem corruptions caused by using resize2fs to
+shrinking ext4 filesystems with extents enabled.
+
+Optimize uuid_generate() to avoid running uuidd if it is not setuid or
+setgid and the currently running program doesn't have write access to
+the uuidd work directory.
+
+Add safety checks (for non-Linux systems) so that uuidd isn't run with
+file descriptors 0, 1, and 2 closed; and if they are closed, uuidd
+will be careful not to close the file descriptor for its unix domain
+socket when it detaches itself from the controlling tty.  Also add
+safety checks so that if the unix domain socket between the uuid
+library and uuidd program is closed for any reason, both the library
+and the uuidd will return an appropriate error code instead of looping
+in an infinite loop.
+
+The e2croncheck script, which creates an LVM snapshot and then checks
+the ext3/4 filesystem via the LVM snapshot, has been added to the
+contrib directory.
+
+Fix filefrag program for files that have more than 144 extents.
+
+Update French, Polish, Czech, and Sweedish translation from the
+Translation Project.
+
+Update/clarify man pages.
+
+Programmer's Notes
+------------------
+
+Fix compilation problem when configured with --disable-uuid.
+
+Don't build uuidgen if configured with --disable-uuid.
+
+Fix makefile dependencies for libcom_err so that the Makefiles work
+well on non-GNU make program.  (Addresses Sourceforge Patches: #2813809)
+
+Enhance the build system so that the full set of commands executed by
+the Makefiles are displayed, instead of the Linux kernel summary
+output, if the build was configured with --enable-verbose-makecmds, or
+if GNU make is in use and the V variable is non-null, i.e., via "make
+V=1".
+
+
 E2fsprogs 1.41.7 (June 29, 2009)
 ================================
 

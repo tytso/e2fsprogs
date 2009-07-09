@@ -1,3 +1,13 @@
+e2fsprogs (1.41.7-2) unstable; urgency=low
+
+  * Fix online resizing using resize2fs (Closes: #535452)
+  * Fix the filefrag program for files with more than 144 extents
+  * Update and clarify various man pages.
+  * Fix potential filesystem corruptions caused by using resize2fs to
+    shrink filesystems with extents enabled.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Tue, 07 Jul 2009 23:21:46 -0400
+
 e2fsprogs (1.41.7-1) unstable; urgency=low
 
   * New upstream release
