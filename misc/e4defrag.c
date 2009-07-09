@@ -1303,6 +1303,15 @@ int file_statistic(const char *file, const struct stat64 *buf,
 		return 0;
 	}
 
+	/* Has no blocks */
+	if (buf->st_blocks == 0) {
+		if (mode_flag & DETAIL) {
+			PRINT_FILE_NAME(file);
+			STATISTIC_ERR_MSG("File has no blocks");
+		}
+		return 0;
+	}
+
 	fd = open64(file, O_RDONLY);
 	if (fd < 0) {
 		if (mode_flag & DETAIL) {
@@ -1620,6 +1629,15 @@ int file_defrag(const char *file, const struct stat64 *buf,
 		if (mode_flag & DETAIL) {
 			PRINT_FILE_NAME(file);
 			IN_FTW_PRINT_ERR_MSG("File size is 0");
+		}
+		return 0;
+	}
+
+	/* Has no blocks */
+	if (buf->st_blocks == 0) {
+		if (mode_flag & DETAIL) {
+			PRINT_FILE_NAME(file);
+			STATISTIC_ERR_MSG("File has no blocks");
 		}
 		return 0;
 	}
