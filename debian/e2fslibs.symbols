@@ -330,6 +330,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_test_bit@Base 1.37
  ext2fs_test_block_bitmap@Base 1.37
  ext2fs_test_block_bitmap_range@Base 1.37
+ ext2fs_test_inode_bitmap_range@Base 1.41.8
  ext2fs_test_changed@Base 1.37
  ext2fs_test_generic_bitmap@Base 1.37
  ext2fs_test_ib_dirty@Base 1.37
