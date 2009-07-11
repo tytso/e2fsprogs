@@ -3,7 +3,7 @@ Section: admin
 Priority: required
 Maintainer: Theodore Y. Ts'o <tytso@mit.edu>
 Build-Depends: texi2html (>= 1.76), gettext, texinfo, dc, pkg-config, dietlibc-dev (>> 0.30) [alpha amd64 arm hppa i386 ia64 mips mipsel powerpc ppc64 s390 sparc], debhelper (>= 7.0)
-Standards-Version: 3.8.1.0
+Standards-Version: 3.8.2
 Homepage: http://e2fsprogs.sourceforge.net
 
 Package: e2fsck-static
