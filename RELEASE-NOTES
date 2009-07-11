@@ -5,7 +5,8 @@ Fix resize2fs's online resizing, fixing a regression which in
 e2fpsrogs 1.41.7.   (Addresses Debian Bug: #535452)
 
 Fix potential filesystem corruptions caused by using resize2fs to
-shrinking ext4 filesystems with extents enabled.
+shrinking ext4 filesystems with extents enabled.  (Addresses Red Hat
+Bug: #510379)
 
 Optimize uuid_generate() to avoid running uuidd if it is not setuid or
 setgid and the currently running program doesn't have write access to
@@ -26,8 +27,11 @@ contrib directory.
 
 Fix filefrag program for files that have more than 144 extents.
 
-Update French, Polish, Czech, and Sweedish translation from the
-Translation Project.
+Update French, Polish, Czech, Indonsian, and Sweedish translation from
+the Translation Project.
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.  (Addresses Debian Bug #535530)
 
 Update/clarify man pages.
 
@@ -37,6 +41,10 @@ Programmer's Notes
 Fix compilation problem when configured with --disable-uuid.
 
 Don't build uuidgen if configured with --disable-uuid.
+
+Add the new library function ext2fs_test_inode_bitmap_range(), and
+optimized ext2fs_test_block_bitmap_range(), which will be needed for
+future optimizations for e2fsck.
 
 Fix makefile dependencies for libcom_err so that the Makefiles work
 well on non-GNU make program.  (Addresses Sourceforge Patches: #2813809)

@@ -445,7 +445,8 @@ int main (int argc, char ** argv)
 				device_name);
 			exit(1);
 		}
-	printf("Resizing the filesystem on %s to %u (%dk) blocks.\n",
+		printf(_("Resizing the filesystem on "
+			 "%s to %u (%dk) blocks.\n"),
 		       device_name, new_size, fs->blocksize / 1024);
 		retval = resize_fs(fs, &new_size, flags,
 				   ((flags & RESIZE_PERCENT_COMPLETE) ?
@@ -455,7 +456,11 @@ int main (int argc, char ** argv)
 	if (retval) {
 		com_err(program_name, retval, _("while trying to resize %s"),
 			device_name);
-		ext2fs_close (fs);
+		fprintf(stderr,
+			_("Please run 'e2fsck -fy %s' to fix the filesystem\n"
+			  "after the aborted resize operation.\n"),
+			device_name);
+		ext2fs_close(fs);
 		exit(1);
 	}
 	printf(_("The filesystem on %s is now %u blocks long.\n\n"),

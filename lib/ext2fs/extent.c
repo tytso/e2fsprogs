@@ -1173,7 +1173,6 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 	orig_height = info.max_depth - info.curr_level;
 	orig_lblk = extent.e_lblk;
 
-again:
 	/* go to the logical spot we want to (re/un)map */
 	retval = ext2fs_extent_goto(handle, logical);
 	if (retval) {
@@ -1270,24 +1269,44 @@ again:
 #ifdef DEBUG
 		printf("(re/un)mapping first block in extent\n");
 #endif
+		if (physical) {
+			retval = ext2fs_extent_get(handle, 
+						   EXT2_EXTENT_PREV_LEAF,
+						   &extent);
+			if (extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT)
+				extent_uninit = 1;
+			if (retval == EXT2_ET_EXTENT_NO_PREV) {
+				retval = ext2fs_extent_goto(handle, logical);
+				if (retval)
+					goto done;
+				retval = ext2fs_extent_insert(handle,
+							      0, &newextent);
+			} else if (retval)
+				goto done;
+			else if ((logical == extent.e_lblk + extent.e_len) &&
+				 (physical == extent.e_pblk + extent.e_len) &&
+				 (new_uninit == extent_uninit) &&
+				 ((int) extent.e_len < max_len-1)) {
+				extent.e_len++;
+				retval = ext2fs_extent_replace(handle, 0,
+							       &extent);
+			} else {
+				retval = ext2fs_extent_insert(handle,
+				      EXT2_EXTENT_INSERT_AFTER, &newextent);
+			}
+			if (retval)
+				goto done;
+		}
+		retval = ext2fs_extent_get(handle, EXT2_EXTENT_NEXT_LEAF,
+					   &extent);
+		if (retval)
+			goto done;
 		extent.e_pblk++;
 		extent.e_lblk++;
 		extent.e_len--;
 		retval = ext2fs_extent_replace(handle, 0, &extent);
 		if (retval)
 			goto done;
-		if (physical) {
-			/*
-			 * We've removed the old block, now rely on
-			 * the optimized hueristics for adding a new
-			 * mapping with appropriate merging if necessary.
-			 */
-			goto again;
-		} else {
-			retval = ext2fs_extent_fix_parents(handle);
-			if (retval)
-				goto done;
-		}
 	} else {
 		__u32	orig_length;
 
@@ -1335,6 +1354,7 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 	char 				*cp;
 	struct ext3_extent_header	*eh;
 	errcode_t			retval = 0;
+	struct ext2fs_extent		extent;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EXTENT_HANDLE);
 
