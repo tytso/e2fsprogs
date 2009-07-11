@@ -1,3 +1,17 @@
+e2fsprogs (1.41.8-1) unstable; urgency=low
+
+  * New upstream release
+  * Fix resize2fs bugs when shrinking ext4 filesystems
+  * Update debian policy compliance to 3.8.2
+  * Update package descriptions to mention ext3 and ext4 filesytems
+      (Closes: #535530)
+  * Update French, Polish, Czech, Indonesian, and Sweedish translation
+      from the Translation Project.
+  * If the resize2fs operation fails, the user will be told to fix up
+    the filesystem using e2fsck -fy.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 11 Jul 2009 17:26:16 -0400
+
 e2fsprogs (1.41.7-2) unstable; urgency=low
 
   * Fix online resizing using resize2fs (Closes: #535452)
