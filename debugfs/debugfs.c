@@ -1871,7 +1871,7 @@ static int find_supp_feature(__u32 *supp, int feature_type, char *name)
 
 void do_supported_features(int argc, char *argv[])
 {
-        int	i, j, ret;
+        int	ret;
 	__u32	supp[3] = { EXT2_LIB_FEATURE_COMPAT_SUPP,
 			    EXT2_LIB_FEATURE_INCOMPAT_SUPP,
 			    EXT2_LIB_FEATURE_RO_COMPAT_SUPP };

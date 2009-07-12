@@ -23,6 +23,8 @@ extern char *optarg;
 #endif
 
 #include "debugfs.h"
+#include "uuid/uuid.h"
+#include "e2p/e2p.h"
 
 static FILE *pager;
 
@@ -75,7 +77,7 @@ static void htree_dump_leaf_node(ext2_filsys fs, ext2_ino_t ino,
 		if (((offset + rec_len) > fs->blocksize) ||
 		    (rec_len < 8) ||
 		    ((rec_len % 4) != 0) ||
-		    (((dirent->name_len & 0xFF)+8) > rec_len)) {
+		    ((((unsigned) dirent->name_len & 0xFF)+8) > rec_len)) {
 			fprintf(pager, "Corrupted directory block (%u)!\n", blk);
 			break;
 		}
@@ -309,7 +311,7 @@ void do_dx_hash(int argc, char *argv[])
 				hash_version = atoi(optarg);
 			break;
 		case 's':
-			if (uuid_parse(optarg, hash_seed)) {
+			if (uuid_parse(optarg, (unsigned char *) hash_seed)) {
 				fprintf(stderr, "Invalid UUID format: %s\n",
 					optarg);
 				return;
@@ -413,7 +415,7 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 			com_err("htree_dump_leaf_inode", errcode,
 				"while getting rec_len for block %lu",
 				(unsigned long) *blocknr);
-			return;
+			return BLOCK_ABORT;
 		}
 		if (dirent->inode &&
 		    p->len == (dirent->name_len & 0xFF) &&

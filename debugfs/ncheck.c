@@ -34,8 +34,6 @@ static int ncheck_proc(struct ext2_dir_entry *dirent,
 {
 	struct inode_walk_struct *iw = (struct inode_walk_struct *) private;
 	int	i;
-	char	*pathname;
-	errcode_t	retval;
 
 	iw->position++;
 	if (iw->position <= 2)
