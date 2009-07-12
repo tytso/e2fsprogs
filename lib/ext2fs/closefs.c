@@ -338,11 +338,10 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		old_desc_blocks = fs->desc_blocks;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		blk_t	super_blk, old_desc_blk, new_desc_blk;
-		int	meta_bg;
+		blk64_t	super_blk, old_desc_blk, new_desc_blk;
 
-		ext2fs_super_and_bgd_loc(fs, i, &super_blk, &old_desc_blk,
-					 &new_desc_blk, &meta_bg);
+		ext2fs_super_and_bgd_loc2(fs, i, &super_blk, &old_desc_blk,
+					 &new_desc_blk, 0);
 
 		if (!(fs->flags & EXT2_FLAG_MASTER_SB_ONLY) &&i && super_blk) {
 			retval = write_backup_super(fs, i, super_blk,
@@ -360,6 +359,8 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 				goto errout;
 		}
 		if (new_desc_blk) {
+			int meta_bg = i / EXT2_DESC_PER_BLOCK(fs->super);
+
 			retval = io_channel_write_blk(fs->io, new_desc_blk,
 				1, group_ptr + (meta_bg*fs->blocksize));
 			if (retval)

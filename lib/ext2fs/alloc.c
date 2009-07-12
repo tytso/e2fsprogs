@@ -33,7 +33,7 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 			  dgrp_t group)
 {
 	blk_t		i;
-	blk_t		blk, super_blk, old_desc_blk, new_desc_blk;
+	blk64_t		blk, super_blk, old_desc_blk, new_desc_blk;
 	int		old_desc_blocks;
 
 	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
@@ -44,8 +44,8 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 	blk = (group * fs->super->s_blocks_per_group) +
 		fs->super->s_first_data_block;
 
-	ext2fs_super_and_bgd_loc(fs, group, &super_blk,
-				 &old_desc_blk, &new_desc_blk, 0);
+	ext2fs_super_and_bgd_loc2(fs, group, &super_blk,
+				  &old_desc_blk, &new_desc_blk, 0);
 
 	if (fs->super->s_feature_incompat &
 	    EXT2_FEATURE_INCOMPAT_META_BG)

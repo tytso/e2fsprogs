@@ -103,7 +103,7 @@ static void print_bitmap_problem(e2fsck_t ctx, int problem,
 static void check_block_bitmaps(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	blk_t	i;
+	blk64_t	i;
 	int	*free_array;
 	int	group = 0;
 	blk_t	blocks = 0;
@@ -119,7 +119,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	int	count = 0;
 	int	cmp_block = 0;
 	int	redo_flag = 0;
-	blk_t	super_blk, old_desc_blk, new_desc_blk;
+	blk64_t	super_blk, old_desc_blk, new_desc_blk;
 
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,
@@ -175,7 +175,7 @@ redo_counts:
 				super_blk = 0;
 				old_desc_blk = 0;
 				new_desc_blk = 0;
-				ext2fs_super_and_bgd_loc(fs, group, &super_blk,
+				ext2fs_super_and_bgd_loc2(fs, group, &super_blk,
 					 &old_desc_blk, &new_desc_blk, 0);
 
 				if (fs->super->s_feature_incompat &
