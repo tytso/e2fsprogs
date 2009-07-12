@@ -1,5 +1,5 @@
-E2fsprogs 1.41.8-WIP (July 7, 2009) commit: 4bd87f22
-===================================
+E2fsprogs 1.41.8 (July 11, 2009)
+================================
 
 Fix resize2fs's online resizing, fixing a regression which in
 e2fpsrogs 1.41.7.   (Addresses Debian Bug: #535452)

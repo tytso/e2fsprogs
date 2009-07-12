@@ -1354,7 +1354,6 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 	char 				*cp;
 	struct ext3_extent_header	*eh;
 	errcode_t			retval = 0;
-	struct ext2fs_extent		extent;
 
 	EXT2_CHECK_MAGIC(handle, EXT2_ET_MAGIC_EXTENT_HANDLE);
 

@@ -355,7 +355,7 @@ static int ext2fs_test_clear_generic_bitmap_range(ext2fs_generic_bitmap bitmap,
 						  unsigned int len)
 {
 	size_t start_byte, len_byte = len >> 3;
-	int start_bit, len_bit = len % 8;
+	unsigned int start_bit, len_bit = len % 8;
 	int first_bit = 0;
 	int last_bit  = 0;
 	int mark_count = 0;
@@ -425,8 +425,6 @@ static int ext2fs_test_clear_generic_bitmap_range(ext2fs_generic_bitmap bitmap,
 int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
 				   blk_t block, int num)
 {
-	int	i;
-
 	EXT2_CHECK_MAGIC(bitmap, EXT2_ET_MAGIC_BLOCK_BITMAP);
 	if ((block < bitmap->start) || (block+num-1 > bitmap->real_end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_TEST,
@@ -440,8 +438,6 @@ int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
 int ext2fs_test_inode_bitmap_range(ext2fs_inode_bitmap bitmap,
 				   ino_t inode, int num)
 {
-	int	i;
-
 	EXT2_CHECK_MAGIC(bitmap, EXT2_ET_MAGIC_INODE_BITMAP);
 	if ((inode < bitmap->start) || (inode+num-1 > bitmap->real_end)) {
 		ext2fs_warn_bitmap(EXT2_ET_BAD_INODE_TEST,

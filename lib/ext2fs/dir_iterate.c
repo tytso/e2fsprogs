@@ -80,7 +80,7 @@ static int ext2fs_validate_entry(ext2_filsys fs, char *buf,
 		offset += rec_len;
 		if ((rec_len < 8) ||
 		    ((rec_len % 4) != 0) ||
-		    (((dirent->name_len & 0xFF)+8) > rec_len))
+		    ((((unsigned) dirent->name_len & 0xFF)+8) > rec_len))
 			return 0;
 	}
 	return (offset == final_offset);
@@ -186,8 +186,8 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 	int		ret = 0;
 	int		changed = 0;
 	int		do_abort = 0;
-	unsigned int	rec_len;
-	int		entry, size;
+	unsigned int	rec_len, size;
+	int		entry;
 	struct ext2_dir_entry *dirent;
 
 	if (blockcnt < 0)
@@ -206,7 +206,7 @@ int ext2fs_process_dir_block(ext2_filsys fs,
 		if (((offset + rec_len) > fs->blocksize) ||
 		    (rec_len < 8) ||
 		    ((rec_len % 4) != 0) ||
-		    (((dirent->name_len & 0xFF)+8) > rec_len)) {
+		    ((((unsigned) dirent->name_len & 0xFF)+8) > rec_len)) {
 			ctx->errcode = EXT2_ET_DIR_CORRUPTED;
 			return BLOCK_ABORT;
 		}
