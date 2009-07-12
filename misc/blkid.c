@@ -170,7 +170,6 @@ static void pretty_print_dev(blkid_dev dev)
 	blkid_tag_iterate	iter;
 	const char		*type, *value, *devname;
 	const char		*uuid = "", *fs_type = "", *label = "";
-	char			*cp;
 	int			len, mount_flags;
 	char			mtpt[80];
 	errcode_t		retval;

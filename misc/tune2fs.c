@@ -975,7 +975,7 @@ static int get_move_bitmaps(ext2_filsys fs, int new_ino_blks_per_grp,
 	blk_t j, needed_blocks = 0;
 	blk_t i_bmap, b_bmap;
 	blk_t start_blk, end_blk;
-	int num, k;
+	int num;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		b_bmap = fs->group_desc[i].bg_block_bitmap;
