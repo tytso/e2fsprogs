@@ -164,19 +164,20 @@ static void print_extent_info(struct fiemap_extent *fm_extent, int cur_ex,
 		       ext_len, flags);
 }
 
-int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
+static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 {
 	char buf[4096] = "";
 	struct fiemap *fiemap = (struct fiemap *)buf;
 	struct fiemap_extent *fm_ext = &fiemap->fm_extents[0];
 	int count = (sizeof(buf) - sizeof(*fiemap)) /
 			sizeof(struct fiemap_extent);
-	unsigned long long logical_blk = 0, last_blk = 0;
+	unsigned long long last_blk = 0;
 	unsigned long flags = 0;
+	unsigned int i;
 	static int fiemap_incompat_printed;
 	int tot_extents = 1, n = 0;
-	int last = 0, eof = 0;
-	int i, rc;
+	int last = 0;
+	int rc;
 
 	fiemap->fm_length = ~0ULL;
 
@@ -220,7 +221,7 @@ int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 			break;
 
 		for (i = 0; i < fiemap->fm_mapped_extents; i++) {
-			__u64 phy_blk, phy_start, logical_blk;
+			__u64 phy_blk, logical_blk;
 			unsigned long ext_len;
 
 			phy_blk = fm_ext[i].fe_physical >> blk_shift;
@@ -267,7 +268,6 @@ static void frag_report(const char *filename)
 	int		is_ext2 = 0;
 	static int	once = 1;
 	unsigned int	flags;
-	unsigned long	first_blk, last_blk;
 	int rc;
 
 #ifdef HAVE_OPEN64
@@ -331,7 +331,7 @@ static void frag_report(const char *filename)
 		       filename, (long long) fileinfo.st_size, numblocks,
 		       numblocks == 1 ? "" : "s", bs);
 	if (filefrag_fiemap(fd, int_log2(bs), &num_extents) != 0) {
-		for (i = 0; i < numblocks; i++) {
+		for (i = 0, count = 0; i < numblocks; i++) {
 			if (is_ext2 && last_block) {
 				if (((i-EXT2_DIRECT) % bpib) == 0)
 					last_block++;
@@ -344,6 +344,7 @@ static void frag_report(const char *filename)
 			rc = get_bmap(fd, i, &block);
 			if (block == 0)
 				continue;
+			count++;
 			if (last_block && (block != last_block+1) ) {
 				if (verbose)
 					printf("Discontinuity: Block %ld is at "
@@ -378,7 +379,6 @@ int main(int argc, char**argv)
 {
 	char **cpp;
 	int c;
-	int ret;
 
 	while ((c = getopt(argc, argv, "bsvx")) != EOF)
 		switch (c) {
