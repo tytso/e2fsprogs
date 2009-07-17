@@ -335,12 +335,12 @@ static struct e2fsck_problem problem_table[] = {
 	/* Last mount time is in the future */
 	{ PR_0_FUTURE_SB_LAST_MOUNT,
 	  N_("@S last mount time is in the future.  "),
-	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
+	  PROMPT_FIX, PR_NO_OK },
 
 	/* Last write time is in the future */
 	{ PR_0_FUTURE_SB_LAST_WRITE,
 	  N_("@S last write time is in the future.  "),
-	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
+	  PROMPT_FIX, PR_NO_OK },
 
 	{ PR_0_EXTERNAL_JOURNAL_HINT,
 	  N_("@S hint for external superblock @s %X.  "),
@@ -384,6 +384,18 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_0_CLEAR_TESTFS_FLAG,
 	  N_("The test_fs flag is set (and ext4 is available).  "),
 	  PROMPT_CLEAR, PR_PREEN_OK },
+
+	/* Last mount time is in the future (fudged) */
+	{ PR_0_FUTURE_SB_LAST_MOUNT_FUDGED,
+	  N_("@S last mount time is in the future.\n\t(by less than a day, "
+	     "probably due to buggy init scripts)  "),
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
+
+	/* Last write time is in the future (fudged) */
+	{ PR_0_FUTURE_SB_LAST_WRITE_FUDGED,
+	  N_("@S last write time is in the future.\n\t(by less than a day, "
+	     "probably due to buggy init scripts).  "),
+	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
 	/* Pass 1 errors */
 

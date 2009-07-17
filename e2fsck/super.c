@@ -457,6 +457,7 @@ void check_super_block(e2fsck_t ctx)
 	blk_t	first_block, last_block;
 	struct ext2_super_block *sb = fs->super;
 	struct ext2_group_desc *gd;
+	problem_t	problem;
 	blk_t	blocks_per_group = fs->super->s_blocks_per_group;
 	blk_t	bpg_max;
 	int	inodes_per_block;
@@ -818,16 +819,22 @@ void check_super_block(e2fsck_t ctx)
 	 * Check to see if the superblock last mount time or last
 	 * write time is in the future.
 	 */
-	if (fs->super->s_mtime > (__u32) ctx->now + ctx->time_fudge) {
+	if (fs->super->s_mtime > (__u32) ctx->now) {
 		pctx.num = fs->super->s_mtime;
-		if (fix_problem(ctx, PR_0_FUTURE_SB_LAST_MOUNT, &pctx)) {
+		problem = PR_0_FUTURE_SB_LAST_MOUNT;
+		if (fs->super->s_mtime <= (__u32) ctx->now + ctx->time_fudge)
+			problem = PR_0_FUTURE_SB_LAST_MOUNT_FUDGED;
+		if (fix_problem(ctx, problem, &pctx)) {
 			fs->super->s_mtime = ctx->now;
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
-	if (fs->super->s_wtime > (__u32) ctx->now + ctx->time_fudge) {
+	if (fs->super->s_wtime > (__u32) ctx->now) {
 		pctx.num = fs->super->s_wtime;
-		if (fix_problem(ctx, PR_0_FUTURE_SB_LAST_WRITE, &pctx)) {
+		problem = PR_0_FUTURE_SB_LAST_MOUNT;
+		if (fs->super->s_wtime <= (__u32) ctx->now + ctx->time_fudge)
+			problem = PR_0_FUTURE_SB_LAST_MOUNT_FUDGED;
+		if (fix_problem(ctx, problem, &pctx)) {
 			fs->super->s_wtime = ctx->now;
 			ext2fs_mark_super_dirty(fs);
 		}
