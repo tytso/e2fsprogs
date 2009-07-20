@@ -1296,11 +1296,12 @@ errcode_t ext2fs_extent_set_bmap(ext2_extent_handle_t handle,
 			}
 			if (retval)
 				goto done;
+			retval = ext2fs_extent_get(handle,
+						   EXT2_EXTENT_NEXT_LEAF,
+						   &extent);
+			if (retval)
+				goto done;
 		}
-		retval = ext2fs_extent_get(handle, EXT2_EXTENT_NEXT_LEAF,
-					   &extent);
-		if (retval)
-			goto done;
 		extent.e_pblk++;
 		extent.e_lblk++;
 		extent.e_len--;
