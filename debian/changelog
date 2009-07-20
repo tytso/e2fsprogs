@@ -1,3 +1,14 @@
+e2fsprogs (1.41.8-2) unstable; urgency=low
+
+  * Fix regression in ext2fs_extent_set_bmap() which caused e2fsck -fD
+    to fail on ext4 filesystems if the directory needs to shrink by more
+    than a block (Closes: #537510)
+  * Fixed filefrag for non-extent based files
+  * Fix use of apostrohe's in package descriptions
+  * Don't use dietlibc when building for mips and mipsel architectures
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 20 Jul 2009 09:38:21 -0400
+
 e2fsprogs (1.41.8-1) unstable; urgency=low
 
   * New upstream release

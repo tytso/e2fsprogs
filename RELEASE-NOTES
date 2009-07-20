@@ -1,3 +1,35 @@
+E2fsprogs 1.41.9-WIP (July 20, 2009)  commit 8b5ed492de
+====================================
+
+Fix regression in ext2fs_extent_set_bmap() caused e2fsck -fD to fail
+and corrupt large directories if the directory needs to shrink by more
+than one block.  (Addresses Debian Bug: #537510)
+    
+Fix e2fsck's buggy_init_scritps=1 so that the if the last write and/or
+last mount times are in the future, they are corrected even if
+buggy_init_scripts is set.  This is needed because otherwise resize2fs
+will refuse to resize the filesystem, even after running "e2fsck -f".
+(Addresses Launchpad bug: #373409)
+    
+Fixed filefrag for non-extent based files.
+
+Fixed various Debian packaging issues --- see debian/changelog for
+details.
+
+Programmer's Notes
+------------------
+
+Fixed miscellaneous gcc -Wall warnings.
+
+Fixed memory leak in error path in ext2fs_block_iterate2()
+
+Fixed non-Linux build of the intl directory by adding support for the
+E/Q/V macros.
+
+Improve ext2fs_extent_set_bmap() to avoid creating new extents which
+get inserted into the extent tree when they are not needed.
+    
+
 E2fsprogs 1.41.8 (July 11, 2009)
 ================================
 
