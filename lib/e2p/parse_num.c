@@ -11,7 +11,7 @@
 
 #include <stdlib.h>
 
-unsigned long parse_num_blocks(const char *arg, int log_block_size)
+unsigned long long parse_num_blocks2(const char *arg, int log_block_size)
 {
 	char *p;
 	unsigned long long num;
@@ -40,6 +40,11 @@ unsigned long parse_num_blocks(const char *arg, int log_block_size)
 		return 0;
 	}
 	return num;
+}
+
+unsigned long parse_num_blocks(const char *arg, int log_block_size)
+{
+	return parse_num_blocks2(arg, log_block_size);
 }
 
 #ifdef DEBUG
