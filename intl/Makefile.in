@@ -43,6 +43,22 @@ INSTALL_DATA = @INSTALL_DATA@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 mkinstalldirs = $(SHELL) $(MKINSTALLDIRS)
 
+@SET_MAKE@
+
+@ifGNUmake@ V =
+@ifGNUmake@ ifeq ($(strip $(V)),)
+@ifGNUmake@ #  E = @echo
+@ifGNUmake@ #  Q = @
+@ifGNUmake@    E = @E@
+@ifGNUmake@    Q = @Q@
+@ifGNUmake@ else
+@ifGNUmake@    E = @\#
+@ifGNUmake@    Q =
+@ifGNUmake@ endif
+
+@ifNotGNUmake@ E = @E@
+@ifNotGNUmake@ Q = @Q@
+
 l = @INTL_LIBTOOL_SUFFIX_PREFIX@
 
 AR = ar

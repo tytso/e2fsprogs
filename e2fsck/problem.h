@@ -217,6 +217,13 @@ struct problem_context {
 /* The test_fs filesystem flag is set and ext4 is available */
 #define PR_0_CLEAR_TESTFS_FLAG			0x00003B
 
+/* Last mount time is in the future (fudged) */
+#define PR_0_FUTURE_SB_LAST_MOUNT_FUDGED	0x00003C
+
+/* Last write time is in the future (fudged) */
+#define PR_0_FUTURE_SB_LAST_WRITE_FUDGED	0x00003D
+
+
 /*
  * Pass 1 errors
  */

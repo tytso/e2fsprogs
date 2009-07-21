@@ -95,8 +95,6 @@ static int get_bmap(int fd, unsigned long block, unsigned long *phy_blk)
 	int	ret;
 	unsigned int b;
 
-	printf("Calling get_bmap for block %lu\n", block);
-	abort();
 	b = block;
 	ret = ioctl(fd, FIBMAP, &b); /* FIBMAP takes pointer to integer */
 	if (ret < 0) {
