@@ -4,7 +4,8 @@
 
 #define MAX_HIST	32
 struct free_chunk_histogram {
-	unsigned long fc_buckets[MAX_HIST];
+	unsigned long fc_chunks[MAX_HIST];
+	unsigned long fc_blocks[MAX_HIST];
 };
 
 struct chunk_info {

@@ -289,7 +289,7 @@ logsave.profiled: profiled/logsave.o
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o logsave.profiled profiled/logsave.o
 
 e2freefrag: $(E2FREEFRAG_OBJS)
-	@echo "LD $@"
+	@echo "	LD $@"
 	@$(CC) $(ALL_LDFLAGS) -o e2freefrag $(E2FREEFRAG_OBJS) $(LIBS)
 
 filefrag: $(FILEFRAG_OBJS)

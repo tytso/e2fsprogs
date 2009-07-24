@@ -43,53 +43,53 @@ Device: /dev/vgroot/lvhome
 .br
 Blocksize: 4096 bytes
 .br
-Total blocks: 5120710
+Total blocks: 1504085
 .br
-Free blocks: 831744 (16.2%)
+Free blocks: 292995 (19.5%)
 .br
 Chunk size: 1048576 bytes (256 blocks)
 .br
-Total chunks: 20003
+Total chunks: 5876
 .br
-Free chunks: 2174 (10.9%)
+Free chunks: 463 (7.9%)
 .br
 
 Min free chunk: 4 KB
 .br
-Max free chunk: 24576 KB
+Max free chunk: 24008 KB
 .br
-Avg. free chunk: 340 KB
+Avg free chunk: 252 KB
 .br
 
 HISTOGRAM OF FREE CHUNK SIZES:
 .br
-          Range         Free chunks
+Chunk Size Range :   Free chunks   Free Blocks  Percent
 .br
-    4K...    8K- :        2824
+    4K...    8K- :           704           704     0.2%
 .br
-    8K...   16K- :        1760
+    8K...   16K- :           810          1979     0.7%
 .br
-   16K...   32K- :        1857
+   16K...   32K- :           843          4467     1.5%
 .br
-   32K...   64K- :        1003
+   32K...   64K- :           579          6263     2.1%
 .br
-   64K...  128K- :         616
+   64K...  128K- :           493         11067     3.8%
 .br
-  128K...  256K- :         479
+  128K...  256K- :           394         18097     6.2%
 .br
-  256K...  512K- :         302
+  256K...  512K- :           281         25477     8.7%
 .br
-  512K... 1024K- :         238
+  512K... 1024K- :           253         44914    15.3%
 .br
-    1M...    2M- :         213
+    1M...    2M- :           143         51897    17.7%
 .br
-    2M...    4M- :         173
+    2M...    4M- :            73         50683    17.3%
 .br
-    4M...    8M- :         287
+    4M...    8M- :            37         52417    17.9%
 .br
-    8M...   16M- :           4
+    8M...   16M- :             7         19028     6.5%
 .br
-   16M...   32M- :           1
+   16M...   32M- :             1          6002     2.0%
 .SH AUTHOR
 This version of e2freefrag was written by Rupesh Thakare, and modified by
 Andreas Dilger <adilger@sun.com>, and Kalpak Shah.

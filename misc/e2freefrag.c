@@ -60,8 +60,10 @@ void init_chunk_info(ext2_filsys fs, struct chunk_info *info)
 	info->max = info->avg = 0;
 	info->real_free_chunks = 0;
 
-	for (i = 0; i < MAX_HIST; i++)
-		info->histogram.fc_buckets[i] = 0;
+	for (i = 0; i < MAX_HIST; i++) {
+		info->histogram.fc_chunks[i] = 0;
+		info->histogram.fc_blocks[i] = 0;
+	}
 }
 
 void scan_block_bitmap(ext2_filsys fs, struct chunk_info *info)
@@ -101,7 +103,9 @@ void scan_block_bitmap(ext2_filsys fs, struct chunk_info *info)
 				unsigned long index;
 
 				index = ul_log2(last_chunk_size) + 1;
-				info->histogram.fc_buckets[index]++;
+				info->histogram.fc_chunks[index]++;
+				info->histogram.fc_blocks[index] +=
+							last_chunk_size;
 
 				if (last_chunk_size > info->max)
 					info->max = last_chunk_size;
@@ -137,7 +141,7 @@ errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info)
 	printf("\nChunksize: %lu bytes (%u blocks)\n",
 	       info->chunkbytes, info->blks_in_chunk);
 	total_chunks = (fs->super->s_blocks_count + info->blks_in_chunk) >>
-                                       (info->chunkbits - info->blocksize_bits);
+				(info->chunkbits - info->blocksize_bits);
 	printf("Total chunks: %lu\nFree chunks: %lu (%0.1f%%)\n",
 	       total_chunks, info->free_chunks,
 	       (double)info->free_chunks * 100 / total_chunks);
@@ -156,12 +160,17 @@ errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info)
 	       "Avg free chunk: %lu KB\n", info->min, info->max, info->avg);
 
 	printf("\nHISTOGRAM OF FREE CHUNK SIZES:\n");
-	printf("%s\t%10s\n", "Chunk Size Range :", "Free chunks");
+	printf("%s :  %12s  %12s  %7s\n", "Chunk Size Range", "Free chunks",
+	       "Free Blocks", "Percent");
 	for (i = 0; i < MAX_HIST; i++) {
 		end = 1 << (i + info->blocksize_bits - units);
-		if (info->histogram.fc_buckets[i] != 0)
-			printf("%5lu%c...%5lu%c- :  %10lu\n", start, *unitp,
-			       end, *unitp, info->histogram.fc_buckets[i]);
+		if (info->histogram.fc_chunks[i] != 0)
+			printf("%5lu%c...%5lu%c- :  %12lu  %12lu  %6.2f%%\n",
+			       start, *unitp, end, *unitp,
+			       info->histogram.fc_chunks[i],
+			       info->histogram.fc_blocks[i],
+			       (double)info->histogram.fc_blocks[i] * 100 /
+			       fs->super->s_free_blocks_count);
 		start = end;
 		if (start == 1<<10) {
 			start = 1;
