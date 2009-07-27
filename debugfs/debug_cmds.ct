@@ -43,6 +43,9 @@ request do_list_dir, "List directory",
 request do_stat, "Show inode information ",
 	show_inode_info, stat;
 
+request do_dump_extents, "Dump extents information ",
+	dump_extents, extents, ex;
+
 request do_link, "Create directory link",
 	link, ln;
 
