@@ -34,6 +34,7 @@
 #include <ext2fs/ext2_types.h>
 #include <ext2fs/ext2fs.h>
 #include <linux/fs.h>
+#include <ext2fs/fiemap.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -41,9 +42,10 @@
 #include <sys/syscall.h>
 #include <sys/vfs.h>
 
-/* Ioctl command */
-#define FS_IOC_FIEMAP		_IOWR('f', 11, struct fiemap)
-#define EXT4_IOC_MOVE_EXT	_IOWR('f', 15, struct move_extent)
+/* A relatively new ioctl interface ... */
+#ifndef EXT4_IOC_MOVE_EXT
+#define EXT4_IOC_MOVE_EXT      _IOWR('f', 15, struct move_extent)
+#endif
 
 /* Macro functions */
 #define PRINT_ERR_MSG(msg)	fprintf(stderr, "%s\n", (msg))
@@ -83,36 +85,6 @@
 #define EXT2FS_ATTR(x)
 #endif
 
-#ifndef __NR_fadvise64
-#define __NR_fadvise64		250
-#endif
-
-#ifndef __NR_sync_file_range
-#define __NR_sync_file_range	314
-#endif
-
-#ifndef __NR_fallocate
-#define __NR_fallocate		324
-#endif
-
-#ifndef POSIX_FADV_DONTNEED
-#if defined(__s390x__)
-#define POSIX_FADV_DONTNEED	6 /* Don't need these pages */
-#else
-#define POSIX_FADV_DONTNEED	4 /* Don't need these pages */
-#endif
-#endif
-
-#ifndef SYNC_FILE_RANGE_WAIT_BEFORE
-#define SYNC_FILE_RANGE_WAIT_BEFORE	1
-#endif
-#ifndef SYNC_FILE_RANGE_WRITE
-#define SYNC_FILE_RANGE_WRITE		2
-#endif
-#ifndef SYNC_FILE_RANGE_WAIT_AFTER
-#define SYNC_FILE_RANGE_WAIT_AFTER	4
-#endif
-
 /* The mode of defrag */
 #define DETAIL			0x01
 #define STATISTIC		0x02
@@ -135,17 +107,10 @@
 /* Definition of flex_bg */
 #define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
 
-/* The following four macros are used for ioctl FS_IOC_FIEMAP
- * FIEMAP_FLAG_SYNC:	sync file data before map.
- * FIEMAP_EXTENT_LAST:	last extent in file.
- * FIEMAP_MAX_OFFSET:	max file offset.
+/* The following macro is used for ioctl FS_IOC_FIEMAP
  * EXTENT_MAX_COUNT:	the maximum number of extents for exchanging between
  *			kernel-space and user-space per ioctl
  */
-#define FIEMAP_FLAG_SYNC	0x00000001
-#define FIEMAP_EXTENT_LAST	0x00000001
-#define FIEMAP_EXTENT_UNWRITTEN	0x00000800
-#define FIEMAP_MAX_OFFSET	(~0ULL)
 #define EXTENT_MAX_COUNT	512
 
 /* The following macros are error message */
@@ -190,30 +155,6 @@ struct move_extent {
 	__u64 donor_start;	/* logical start offset in block for donor */
 	__u64 len;	/* block length to be moved */
 	__u64 moved_len;	/* moved block length */
-};
-
-struct fiemap_extent {
-	__u64 fe_logical;	/* logical offset in bytes for the start of
-				* the extent from the beginning of the file */
-	__u64 fe_physical;	/* physical offset in bytes for the start
-				* of the extent from the beginning
-				* of the disk */
-	__u64 fe_length;	/* length in bytes for this extent */
-	__u64 fe_reserved64[2];
-	__u32 fe_flags;    	/* FIEMAP_EXTENT_* flags for this extent */
-	__u32 fe_reserved[3];
-};
-
-struct fiemap {
-	__u64 fm_start;		/* logical offset (inclusive) at
-				* which to start mapping (in) */
-	__u64 fm_length;	/* logical length of mapping which
-				* userspace wants (in) */
-	__u32 fm_flags;		/* FIEMAP_FLAG_* flags for request (in/out) */
-	__u32 fm_mapped_extents;/* number of extents that were mapped (out) */
-	__u32 fm_extent_count;	/* size of fm_extents array (in) */
-	__u32 fm_reserved;
-	struct fiemap_extent fm_extents[0];/* array of mapped extents (out) */
 };
 
 struct frag_statistic_ino {
@@ -336,20 +277,15 @@ __le32 feature_incompat;
 ext4_fsblk_t	files_block_count;
 struct frag_statistic_ino	frag_rank[SHOW_FRAG_FILES];
 
-/*
- * ext2fs_swab32() -	Change endian.
- *
- * @val:		the entry used for change.
- */
-__u32 ext2fs_swab32(__u32 val)
-{
-#if BYTE_ORDER == BIG_ENDIAN
-	return (val >> 24) | ((val >> 8) & 0xFF00) |
-		((val << 8) & 0xFF0000) | (val << 24);
-#else
-	return val;
+
+/* Local definitions of some syscalls glibc may not yet have */
+
+#ifndef HAVE_POSIX_FADVISE
+#warning Using locally defined posix_fadvise interface.
+
+#ifndef __NR_fadvise64_64
+#error Your kernel headers dont define __NR_fadvise64_64
 #endif
-}
 
 /*
  * fadvise() -		Give advice about file access.
@@ -359,10 +295,18 @@ __u32 ext2fs_swab32(__u32 val)
  * @len:		area length.
  * @advise:		process flag.
  */
-static int fadvise(int fd, loff_t offset, size_t len, int advise)
+static int posix_fadvise(int fd, loff_t offset, size_t len, int advise)
 {
-	return syscall(__NR_fadvise64, fd, offset, len, advise);
+	return syscall(__NR_fadvise64_64, fd, offset, len, advise);
 }
+#endif /* ! HAVE_FADVISE64_64 */
+
+#ifndef HAVE_SYNC_FILE_RANGE
+#warning Using locally defined sync_file_range interface.
+
+#ifndef __NR_sync_file_range
+#error Your kernel headers dont define __NR_sync_file_range
+#endif
 
 /*
  * sync_file_range() -	Sync file region.
@@ -376,6 +320,14 @@ int sync_file_range(int fd, loff_t offset, loff_t length, unsigned int flag)
 {
 	return syscall(__NR_sync_file_range, fd, offset, length, flag);
 }
+#endif /* ! HAVE_SYNC_FILE_RANGE */
+
+#ifndef HAVE_FALLOCATE
+#warning Using locally defined fallocate syscall interface.
+
+#ifndef __NR_fallocate
+#error Your kernel headers dont define __NR_fallocate
+#endif
 
 /*
  * fallocate() -	Manipulate file space.
@@ -389,6 +341,7 @@ static int fallocate(int fd, int mode, loff_t offset, loff_t len)
 {
 	return syscall(__NR_fallocate, fd, mode, offset, len);
 }
+#endif /* ! HAVE_FALLOCATE */
 
 /*
  * get_mount_point() -	Get device's mount point.
@@ -604,7 +557,7 @@ static int defrag_fadvise(int fd, struct move_extent defrag_data,
 			offset += pagesize;
 			continue;
 		}
-		if (fadvise(fd, offset, pagesize, fadvise_flag) < 0) {
+		if (posix_fadvise(fd, offset, pagesize, fadvise_flag) < 0) {
 			if ((mode_flag & DETAIL) && flag) {
 				perror("\tFailed to fadvise");
 				flag = 0;
