@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the e2fsprogs package.
 # Copyright © 1996 Free Software Foundation, Inc.
 # Michel Robitaille <robitail@IRO.UMontreal.CA>, traducteur depuis/since 1996.
-# Samuel Thibault <samuel.thibault@ens-lyon.org>, 2006-2008.
+# Samuel Thibault <samuel.thibault@ens-lyon.org>, 2006-2009.
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -65,10 +65,10 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU e2fsprogs 1.41.7\n"
+"Project-Id-Version: GNU e2fsprogs 1.41.8\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2009-06-29 01:27-0400\n"
-"PO-Revision-Date: 2009-07-02 00:26:0200\n"
+"POT-Creation-Date: 2009-07-11 17:49-0400\n"
+"PO-Revision-Date: 2009-07-28 17:30:0200\n"
 "Last-Translator: Samuel Thibault <samuel.thibault@ens-lyon.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -93,7 +93,7 @@ msgstr "lors de la lecture de l'i-noeud des blocs défectueux"
 #: e2fsck/unix.c:1057 e2fsck/unix.c:1140 misc/badblocks.c:1155
 #: misc/badblocks.c:1163 misc/badblocks.c:1177 misc/badblocks.c:1189
 #: misc/dumpe2fs.c:510 misc/e2image.c:583 misc/e2image.c:679
-#: misc/e2image.c:695 misc/mke2fs.c:181 misc/tune2fs.c:1532 resize/main.c:312
+#: misc/e2image.c:695 misc/mke2fs.c:181 misc/tune2fs.c:1532 resize/main.c:310
 #, c-format
 msgid "while trying to open %s"
 msgstr "lors de la tentative d'ouverture de %s"
@@ -194,7 +194,7 @@ msgstr "Usage : %s [-F] [-I nombre_blocs_du_tampon_d_i_noeud] périphérique\n"
 msgid "while opening %s for flushing"
 msgstr "lors de l'ouverture de %s pour la vidange"
 
-#: e2fsck/iscan.c:88 e2fsck/unix.c:823 resize/main.c:288
+#: e2fsck/iscan.c:88 e2fsck/unix.c:823 resize/main.c:286
 #, c-format
 msgid "while trying to flush %s"
 msgstr "lors de la tentative de vidange de %s"
@@ -466,7 +466,7 @@ msgstr "erreur interne : impossible de trouver l'enregistrement de bloc EA pour 
 msgid "internal error: couldn't lookup EA inode record for %u"
 msgstr "erreur interne : impossible de trouver l'enregistrement d'i-noeud EA pour %u"
 
-#: e2fsck/pass1.c:430 e2fsck/pass2.c:784
+#: e2fsck/pass1.c:430 e2fsck/pass2.c:782
 msgid "reading directory block"
 msgstr "lecture des blocs de répertoire"
 
@@ -540,11 +540,11 @@ msgstr "bitmap d'i-noeuds"
 msgid "inode table"
 msgstr "table d'i-noeuds"
 
-#: e2fsck/pass2.c:285
+#: e2fsck/pass2.c:283
 msgid "Pass 2"
 msgstr "Passe 2"
 
-#: e2fsck/pass2.c:807
+#: e2fsck/pass2.c:805
 msgid "Can not continue."
 msgstr "Ne peut continuer."
 
@@ -3437,7 +3437,7 @@ msgid "\tUsing %s\n"
 msgstr "\tUtilisation de %s\n"
 
 #: misc/dumpe2fs.c:512 misc/e2image.c:681 misc/tune2fs.c:1535
-#: resize/main.c:314
+#: resize/main.c:312
 #, c-format
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Impossible de trouver un superbloc de système de fichiers valide.\n"
@@ -4119,7 +4119,7 @@ msgstr ""
 "%s: La taille du périphérique %s est trop grande pour pouvoir être\n"
 "\t exprimée sur 32 bits, utilisation d'une taille de bloc de %d.\n"
 
-#: misc/mke2fs.c:1468 resize/main.c:376
+#: misc/mke2fs.c:1468 resize/main.c:374
 msgid "while trying to determine filesystem size"
 msgstr "lors de la tentative de détermination de la taille du système de fichiers"
 
@@ -4630,7 +4630,7 @@ msgstr ""
 "\ttest_fs\n"
 "\t^test_fs\n"
 
-#: misc/tune2fs.c:1388 misc/tune2fs.c:1393 resize/resize2fs.c:785
+#: misc/tune2fs.c:1388 misc/tune2fs.c:1393 resize/resize2fs.c:790
 msgid "blocks to be moved"
 msgstr "blocs à déplacer"
 
@@ -4944,17 +4944,17 @@ msgstr "Passe inconnue ?!?!"
 msgid "Begin pass %d (max = %lu)\n"
 msgstr "Début de la passe %d (max = %lu)\n"
 
-#: resize/main.c:267
+#: resize/main.c:265
 #, c-format
 msgid "while opening %s"
 msgstr "lors de l'ouverture de %s"
 
-#: resize/main.c:279
+#: resize/main.c:277
 #, c-format
 msgid "while getting stat information for %s"
 msgstr "lors de la récupérartion de l'état de %s"
 
-#: resize/main.c:340
+#: resize/main.c:338
 #, c-format
 msgid ""
 "%s: The combination of flex_bg and\n"
@@ -4963,26 +4963,26 @@ msgstr ""
 "%s : La combinaison des fonctionnalités\n"
 "\tflex_bg et !resize_inode n'est pas supportée par resize2fs.\n"
 
-#: resize/main.c:350
+#: resize/main.c:348
 #, c-format
 msgid "Estimated minimum size of the filesystem: %u\n"
 msgstr "Taille minimale estimée du système de fichiers : %u\n"
 
-#: resize/main.c:386
+#: resize/main.c:384
 #, c-format
 msgid "Invalid new size: %s\n"
 msgstr "taille d'i-noeud invalide - %s\n"
 
-#: resize/main.c:398
+#: resize/main.c:396
 #, c-format
 msgid "New size smaller than minimum (%u)\n"
 msgstr "La nouvelle taille est plus petit que le minimum (%u)\n"
 
-#: resize/main.c:404
+#: resize/main.c:402
 msgid "Invalid stride length"
 msgstr "Longueur « stride » invalide"
 
-#: resize/main.c:428
+#: resize/main.c:426
 #, c-format
 msgid ""
 "The containing partition (or device) is only %u (%dk) blocks.\n"
@@ -4993,7 +4993,7 @@ msgstr ""
 "Vous avez demandé une nouvelle taille de %u blocs.\n"
 "\n"
 
-#: resize/main.c:435
+#: resize/main.c:433
 #, c-format
 msgid ""
 "The filesystem is already %u blocks long.  Nothing to do!\n"
@@ -5002,7 +5002,7 @@ msgstr ""
 "Le système de fichiers a déjà %u blocs. Rien à modifier !\n"
 "\n"
 
-#: resize/main.c:446
+#: resize/main.c:444
 #, c-format
 msgid ""
 "Please run 'e2fsck -f %s' first.\n"
@@ -5011,12 +5011,26 @@ msgstr ""
 "SVP exécutez « e2fsck -f %s » d'abord.\n"
 "\n"
 
+#: resize/main.c:448
+#, c-format
+msgid "Resizing the filesystem on %s to %u (%dk) blocks.\n"
+msgstr "En train de retailler le système de fichiers sur %s à %u (%dk) blocs.\n"
+
 #: resize/main.c:457
 #, c-format
 msgid "while trying to resize %s"
 msgstr "lors de la tentative de changement de taille de %s"
 
-#: resize/main.c:462
+#: resize/main.c:460
+#, c-format
+msgid ""
+"Please run 'e2fsck -fy %s' to fix the filesystem\n"
+"after the aborted resize operation.\n"
+msgstr ""
+"Veuillez lancer 'e2fsck -fy %s' pour corriger le système de fichier\n"
+"après l'opération de changement de taille avortée.\n"
+
+#: resize/main.c:466
 #, c-format
 msgid ""
 "The filesystem on %s is now %u blocks long.\n"
@@ -5025,7 +5039,7 @@ msgstr ""
 "Le système de fichiers %s a maintenant une taille de %u blocs.\n"
 "\n"
 
-#: resize/main.c:477
+#: resize/main.c:481
 #, c-format
 msgid "while trying to truncate %s"
 msgstr "lors de la troncature de %s"
@@ -5080,20 +5094,20 @@ msgstr "Lors de la tentative d'ajout du groupe numéro %d"
 msgid "Filesystem at %s is mounted on %s, and on-line resizing is not supported on this system.\n"
 msgstr "Le système de fichiers de %s est monté sur %s, et le changement de taille en ligne n'est pas supporté sur ce système.\n"
 
-#: resize/resize2fs.c:345
+#: resize/resize2fs.c:350
 #, c-format
 msgid "inodes (%llu) must be less than %u"
 msgstr "le nombre d'i-noeuds (%llu) doit être plus petit que %u"
 
-#: resize/resize2fs.c:577
+#: resize/resize2fs.c:582
 msgid "reserved blocks"
 msgstr "blocs réservés"
 
-#: resize/resize2fs.c:790
+#: resize/resize2fs.c:795
 msgid "meta-data blocks"
 msgstr "blocs de métadonnées"
 
-#: resize/resize2fs.c:1747
+#: resize/resize2fs.c:1752
 #, c-format
 msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Ne devrait jamais se produire : i-noeud de redimensionnement corrompu !\n"
