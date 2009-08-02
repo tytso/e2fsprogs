@@ -192,6 +192,25 @@ option is given set the owner, group and permissions information on
 to match 
 .IR filespec .
 .TP
+.I dump_extents [-n] [-l] filespec
+Dump the the extent tree of the inode
+.IR filespec .
+The 
+.I -n
+flag will cause
+.I dump_extents
+to only display the interior nodes in the extent tree.   The
+.I  -l
+flag cause
+.I dump_extents
+to only display the leaf nodes in the extent tree.
+.IP
+(Please note that the length and range of blocks for the last extent in
+an interior node is an estimate by the extents library functions, and is
+not stored in file esystem data structures.   Hence, the values displayed
+may not necessarily by accurate and does not indicate a problem or 
+corruption in the file system.)
+.TP
 .I expand_dir filespec
 Expand the directory
 .IR filespec .

@@ -551,6 +551,139 @@ static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)
 	fprintf(f,"\n");
 }
 
+static int int_log10(unsigned long long arg)
+{
+	int     l = 0;
+
+	arg = arg / 10;
+	while (arg) {
+		l++;
+		arg = arg / 10;
+	}
+	return l;
+}
+
+#define DUMP_LEAF_EXTENTS	0x01
+#define DUMP_NODE_EXTENTS	0x02
+#define DUMP_EXTENT_TABLE	0x04
+
+static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
+			 int flags, int logical_width, int physical_width)
+{
+	ext2_extent_handle_t	handle;
+	struct ext2fs_extent	extent;
+	struct ext2_extent_info info;
+	int			op = EXT2_EXTENT_ROOT;
+	unsigned int		printed = 0;
+	errcode_t 		errcode;
+
+	errcode = ext2fs_extent_open(current_fs, ino, &handle);
+	if (errcode)
+		return;
+
+	if (flags & DUMP_EXTENT_TABLE)
+		fprintf(f, "Level Entries %*s %*s Length Flags\n",
+			(logical_width*2)+3, "Logical",
+			(physical_width*2)+3, "Physical");
+	else
+		fprintf(f, "%sEXTENTS:\n%s", prefix, prefix);
+
+	while (1) {
+		errcode = ext2fs_extent_get(handle, op, &extent);
+
+		if (errcode)
+			break;
+
+		op = EXT2_EXTENT_NEXT;
+
+		if (extent.e_flags & EXT2_EXTENT_FLAGS_SECOND_VISIT)
+			continue;
+
+		if (extent.e_flags & EXT2_EXTENT_FLAGS_LEAF) {
+			if ((flags & DUMP_LEAF_EXTENTS) == 0)
+				continue;
+		} else {
+			if ((flags & DUMP_NODE_EXTENTS) == 0)
+				continue;
+		}
+
+		errcode = ext2fs_extent_get_info(handle, &info);
+		if (errcode)
+			continue;
+
+		if (!(extent.e_flags & EXT2_EXTENT_FLAGS_LEAF)) {
+			if (extent.e_flags & EXT2_EXTENT_FLAGS_SECOND_VISIT)
+				continue;
+
+			if (flags & DUMP_EXTENT_TABLE) {
+				fprintf(f, "%2d/%2d %3d/%3d %*llu - %*llu "
+					"%*llu%*s %6u\n",
+					info.curr_level, info.max_depth,
+					info.curr_entry, info.num_entries,
+					logical_width,
+					extent.e_lblk,
+					logical_width,
+					extent.e_lblk + (extent.e_len - 1),
+					physical_width,
+					extent.e_pblk,
+					physical_width+3, "", extent.e_len);
+				continue;
+			}
+
+			fprintf(f, "%s(NODE #%d, %lld-%lld, blk %lld)",
+				printed ? ", " : "",
+				info.curr_entry,
+				extent.e_lblk,
+				extent.e_lblk + (extent.e_len - 1),
+				extent.e_pblk);
+			printed = 1;
+			continue;
+		}
+
+		if (flags & DUMP_EXTENT_TABLE) {
+			fprintf(f, "%2d/%2d %3d/%3d %*llu - %*llu "
+				"%*llu - %*llu %6u %s\n",
+				info.curr_level, info.max_depth,
+				info.curr_entry, info.num_entries,
+				logical_width,
+				extent.e_lblk,
+				logical_width,
+				extent.e_lblk + (extent.e_len - 1),
+				physical_width,
+				extent.e_pblk,
+				physical_width,
+				extent.e_pblk + (extent.e_len - 1),
+				extent.e_len,
+				extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT ?
+					"Uninit" : "");
+			continue;
+		}
+
+		if (extent.e_len == 0)
+			continue;
+		else if (extent.e_len == 1)
+			fprintf(f,
+				"%s(%lld%s): %lld",
+				printed ? ", " : "",
+				extent.e_lblk,
+				extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT ?
+				" [uninit]" : "",
+				extent.e_pblk);
+		else
+			fprintf(f,
+				"%s(%lld-%lld%s): %lld-%lld",
+				printed ? ", " : "",
+				extent.e_lblk,
+				extent.e_lblk + (extent.e_len - 1),
+				extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT ?
+					" [uninit]" : "",
+				extent.e_pblk,
+				extent.e_pblk + (extent.e_len - 1));
+		printed = 1;
+	}
+	if (printed)
+		fprintf(f, "\n");
+}
 
 void internal_dump_inode(FILE *out, const char *prefix,
 			 ext2_ino_t inode_num, struct ext2_inode *inode,
@@ -671,9 +804,13 @@ void internal_dump_inode(FILE *out, const char *prefix,
 		}
 		fprintf(out, "%sDevice major/minor number: %02d:%02d (hex %02x:%02x)\n",
 			devnote, major, minor, major, minor);
+	} else if (do_dump_blocks) {
+		if (inode->i_flags & EXT4_EXTENTS_FL)
+			dump_extents(out, prefix, inode_num,
+				     DUMP_LEAF_EXTENTS, 0, 0);
+		else
+			dump_blocks(out, prefix, inode_num);
 	}
-	else if (do_dump_blocks)
-		dump_blocks(out, prefix, inode_num);
 }
 
 static void dump_inode(ext2_ino_t inode_num, struct ext2_inode *inode)
@@ -713,6 +850,69 @@ void do_stat(int argc, char *argv[])
 
 	dump_inode(inode, inode_buf);
 	free(inode_buf);
+	return;
+}
+
+void do_dump_extents(int argc, char *argv[])
+{
+	struct ext2_inode inode;
+	ext2_ino_t	ino;
+	FILE		*out;
+	int		c, flags = 0;
+	int		logical_width;
+	int		physical_width;
+
+	reset_getopt();
+	while ((c = getopt(argc, argv, "nl")) != EOF) {
+		switch (c) {
+		case 'n':
+			flags |= DUMP_NODE_EXTENTS;
+			break;
+		case 'l':
+			flags |= DUMP_LEAF_EXTENTS;
+			break;
+		}
+	}
+
+	if (argc != optind+1) {
+	print_usage:
+		com_err(0, 0, "Usage: dump_extents [-n] [-l] file");
+		return;
+	}
+
+	if (flags == 0)
+		flags = DUMP_NODE_EXTENTS | DUMP_LEAF_EXTENTS;
+	flags |= DUMP_EXTENT_TABLE;
+
+	if (check_fs_open(argv[0]))
+		return;
+
+	ino = string_to_inode(argv[optind]);
+	if (ino == 0)
+		return;
+
+	if (debugfs_read_inode(ino, &inode, argv[0]))
+		return;
+
+	if ((inode.i_flags & EXT4_EXTENTS_FL) == 0) {
+		fprintf(stderr, "%s: does not uses extent block maps\n",
+			argv[optind]);
+		return;
+	}
+
+	logical_width = int_log10(((inode.i_size |
+				    (__u64) inode.i_size_high << 32) +
+				   current_fs->blocksize - 1) /
+				  current_fs->blocksize) + 1;
+	if (logical_width < 5)
+		logical_width = 5;
+	physical_width = int_log10(current_fs->super->s_blocks_count) + 1;
+	if (physical_width < 5)
+		physical_width = 5;
+
+	out = open_pager();
+	dump_extents(out, "", ino, flags, logical_width, physical_width);
+	close_pager(out);
 	return;
 }
 

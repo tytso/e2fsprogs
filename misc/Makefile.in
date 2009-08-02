@@ -25,10 +25,10 @@ INSTALL = @INSTALL@
 
 SPROGS=		mke2fs badblocks tune2fs dumpe2fs $(BLKID_PROG) logsave \
 			$(E2IMAGE_PROG) @FSCK_PROG@ e2undo
-USPROGS=	mklost+found filefrag $(UUIDD_PROG)
+USPROGS=	mklost+found filefrag e2freefrag $(UUIDD_PROG)
 SMANPAGES=	tune2fs.8 mklost+found.8 mke2fs.8 dumpe2fs.8 badblocks.8 \
 			e2label.8 $(FINDFS_MAN) $(BLKID_MAN) $(E2IMAGE_MAN) \
-			logsave.8 filefrag.8 e2undo.8 $(UUIDD_MAN) @FSCK_MAN@
+			logsave.8 filefrag.8 e2freefrag.8 e2undo.8 $(UUIDD_MAN) @FSCK_MAN@
 FMANPAGES=	mke2fs.conf.5
 
 UPROGS=		chattr lsattr @UUID_CMT@ uuidgen
@@ -51,6 +51,7 @@ BLKID_OBJS=	blkid.o
 FILEFRAG_OBJS=	filefrag.o
 E2UNDO_OBJS=  e2undo.o
 E4DEFRAG_OBJS=	e4defrag.o
+E2FREEFRAG_OBJS= e2freefrag.o
 
 PROFILED_TUNE2FS_OBJS=	profiled/tune2fs.o profiled/util.o
 PROFILED_MKLPF_OBJS=	profiled/mklost+found.o
@@ -78,7 +79,7 @@ SRCS=	$(srcdir)/tune2fs.c $(srcdir)/mklost+found.c $(srcdir)/mke2fs.c \
 		$(srcdir)/uuidgen.c $(srcdir)/blkid.c $(srcdir)/logsave.c \
 		$(srcdir)/filefrag.c $(srcdir)/base_device.c \
 		$(srcdir)/ismounted.c $(srcdir)/../e2fsck/profile.c \
-		$(srcdir)/e2undo.c
+		$(srcdir)/e2undo.c $(srcdir)/e2freefrag.c
 
 LIBS= $(LIBEXT2FS) $(LIBCOM_ERR) 
 DEPLIBS= $(LIBEXT2FS) $(DEPLIBCOM_ERR)
@@ -297,6 +298,10 @@ logsave.profiled: profiled/logsave.o
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o logsave.profiled profiled/logsave.o
 
+e2freefrag: $(E2FREEFRAG_OBJS)
+	@echo "	LD $@"
+	@$(CC) $(ALL_LDFLAGS) -o e2freefrag $(E2FREEFRAG_OBJS) $(LIBS)
+
 filefrag: $(FILEFRAG_OBJS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -o filefrag $(FILEFRAG_OBJS) 
@@ -386,6 +391,10 @@ uuidgen.1: $(DEP_SUBSTITUTE) $(srcdir)/uuidgen.1.in
 blkid.1: $(DEP_SUBSTITUTE) $(srcdir)/blkid.1.in 
 	$(E) "	SUBST $@"
 	$(Q) $(SUBSTITUTE_UPTIME) $(srcdir)/blkid.1.in blkid.1 
+
+e2freefrag.8: $(DEP_SUBSTITUTE) $(srcdir)/e2freefrag.8.in
+	@echo "	SUBST $@"
+	@$(SUBSTITUTE_UPTIME) $(srcdir)/e2freefrag.8.in e2freefrag.8
 
 filefrag.8: $(DEP_SUBSTITUTE) $(srcdir)/filefrag.8.in
 	$(E) "	SUBST $@"
@@ -550,7 +559,7 @@ uninstall:
 clean:
 	$(RM) -f $(SPROGS) $(USPROGS) $(UPROGS) $(UMANPAGES) $(SMANPAGES) \
 		$(FMANPAGES) \
-		base_device base_device.out mke2fs.static filefrag \
+		base_device base_device.out mke2fs.static filefrag e2freefrag \
 		e2initrd_helper partinfo prof_err.[ch] default_profile.c \
 		uuidd e2image tune2fs.static tst_ismounted fsck.profiled \
 		blkid.profiled tune2fs.profiled e2image.profiled \
@@ -631,6 +640,9 @@ uuidgen.o: $(srcdir)/uuidgen.c $(top_srcdir)/lib/uuid/uuid.h \
 blkid.o: $(srcdir)/blkid.c $(top_srcdir)/lib/blkid/blkid.h \
  $(top_builddir)/lib/blkid/blkid_types.h
 logsave.o: $(srcdir)/logsave.c
+e2freefrag.o: $(srcdir)/e2freefrag.c e2freefrag.h \
+ $(top_srcdir)/lib/ext2fs/ext2_fs.h $(top_srcdir)/lib/ext2fs/ext2fs.h \
+ $(top_srcdir)/lib/ext2fs/bitops.h
 filefrag.o: $(srcdir)/filefrag.c
 base_device.o: $(srcdir)/base_device.c $(srcdir)/fsck.h
 ismounted.o: $(srcdir)/ismounted.c $(top_srcdir)/lib/et/com_err.h

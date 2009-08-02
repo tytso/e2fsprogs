@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the e2fsprogs package.
 # Göran Uddeborg <goeran@uddeborg.se>, 2003, 2005, 2006, 2008, 2009.
 #
-# $Revision: 1.51 $
+# $Revision: 1.54 $
 #
 #. The strings in e2fsck's problem.c can be very hard to translate,
 #. since the strings are expanded in two different ways.  First of all,
@@ -65,10 +65,10 @@
 #.
 msgid ""
 msgstr ""
-"Project-Id-Version: e2fsprogs 1.41.7\n"
+"Project-Id-Version: e2fsprogs 1.41.8\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
-"POT-Creation-Date: 2009-06-29 01:27-0400\n"
-"PO-Revision-Date: 2009-07-09 13:44+0200\n"
+"POT-Creation-Date: 2009-07-11 17:49-0400\n"
+"PO-Revision-Date: 2009-07-29 22:33+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -93,7 +93,7 @@ msgstr "vid läsning av inoden för dåliga block"
 #: e2fsck/unix.c:1057 e2fsck/unix.c:1140 misc/badblocks.c:1155
 #: misc/badblocks.c:1163 misc/badblocks.c:1177 misc/badblocks.c:1189
 #: misc/dumpe2fs.c:510 misc/e2image.c:583 misc/e2image.c:679
-#: misc/e2image.c:695 misc/mke2fs.c:181 misc/tune2fs.c:1532 resize/main.c:312
+#: misc/e2image.c:695 misc/mke2fs.c:181 misc/tune2fs.c:1532 resize/main.c:310
 #, c-format
 msgid "while trying to open %s"
 msgstr "vid försök att öppna %s"
@@ -192,7 +192,7 @@ msgstr "Användning: %s [-F] [-I inodbuffertblock] enhet\n"
 msgid "while opening %s for flushing"
 msgstr "vid öppning av %s för utskrivning"
 
-#: e2fsck/iscan.c:88 e2fsck/unix.c:823 resize/main.c:288
+#: e2fsck/iscan.c:88 e2fsck/unix.c:823 resize/main.c:286
 #, c-format
 msgid "while trying to flush %s"
 msgstr "vid försök att skriva ut %s"
@@ -478,7 +478,7 @@ msgstr "internt fel; det gick inte att slå upp EA-blockpost för %u"
 msgid "internal error: couldn't lookup EA inode record for %u"
 msgstr "internt fel: det gick inte att slå upp EA-inodpost för %u"
 
-#: e2fsck/pass1.c:430 e2fsck/pass2.c:784
+#: e2fsck/pass1.c:430 e2fsck/pass2.c:782
 msgid "reading directory block"
 msgstr "läser katalogblock"
 
@@ -552,11 +552,11 @@ msgstr "inodbitkarta"
 msgid "inode table"
 msgstr "inodstabell"
 
-#: e2fsck/pass2.c:285
+#: e2fsck/pass2.c:283
 msgid "Pass 2"
 msgstr "Pass 2"
 
-#: e2fsck/pass2.c:807
+#: e2fsck/pass2.c:805
 msgid "Can not continue."
 msgstr "Kan inte fortsätta."
 
@@ -3431,7 +3431,7 @@ msgid "\tUsing %s\n"
 msgstr "\tAnvänder %s\n"
 
 #: misc/dumpe2fs.c:512 misc/e2image.c:681 misc/tune2fs.c:1535
-#: resize/main.c:314
+#: resize/main.c:312
 #, c-format
 msgid "Couldn't find valid filesystem superblock.\n"
 msgstr "Kunde inte hitta giltigt filsystemssuperblock.\n"
@@ -4100,7 +4100,7 @@ msgstr ""
 "%s: Storlek på enhet %s är för stor för att uttryckas med 32 bitar\n"
 "\tanvänder en blockstorlek på %d.\n"
 
-#: misc/mke2fs.c:1468 resize/main.c:376
+#: misc/mke2fs.c:1468 resize/main.c:374
 msgid "while trying to determine filesystem size"
 msgstr "vid försök att avgöra filsystemstorlek"
 
@@ -4597,7 +4597,7 @@ msgstr ""
 "\ttest_fs\n"
 "\t^test_fs\n"
 
-#: misc/tune2fs.c:1388 misc/tune2fs.c:1393 resize/resize2fs.c:785
+#: misc/tune2fs.c:1388 misc/tune2fs.c:1393 resize/resize2fs.c:790
 msgid "blocks to be moved"
 msgstr "block att flytta"
 
@@ -4904,17 +4904,17 @@ msgstr "Okänt pass?!?"
 msgid "Begin pass %d (max = %lu)\n"
 msgstr "Börja pass %d (max = %lu)\n"
 
-#: resize/main.c:267
+#: resize/main.c:265
 #, c-format
 msgid "while opening %s"
 msgstr "när %s öppnades"
 
-#: resize/main.c:279
+#: resize/main.c:277
 #, c-format
 msgid "while getting stat information for %s"
 msgstr "när statusinformation för %s hämtades"
 
-#: resize/main.c:340
+#: resize/main.c:338
 #, c-format
 msgid ""
 "%s: The combination of flex_bg and\n"
@@ -4923,26 +4923,26 @@ msgstr ""
 "%s: Kombinationen av funktionerna flex_bg och\n"
 "\t!resize_inode stöds inte av resize2fs.\n"
 
-#: resize/main.c:350
+#: resize/main.c:348
 #, c-format
 msgid "Estimated minimum size of the filesystem: %u\n"
 msgstr "Uppskattad minsta storlek på filsystemet: %u\n"
 
-#: resize/main.c:386
+#: resize/main.c:384
 #, c-format
 msgid "Invalid new size: %s\n"
 msgstr "Ogiltig ny storlek: %s\n"
 
-#: resize/main.c:398
+#: resize/main.c:396
 #, c-format
 msgid "New size smaller than minimum (%u)\n"
 msgstr "Ny storlek mindre än minimum (%u)\n"
 
-#: resize/main.c:404
+#: resize/main.c:402
 msgid "Invalid stride length"
 msgstr "Ogiltig stride-längd"
 
-#: resize/main.c:428
+#: resize/main.c:426
 #, c-format
 msgid ""
 "The containing partition (or device) is only %u (%dk) blocks.\n"
@@ -4953,7 +4953,7 @@ msgstr ""
 "De begärde en ny storlek på %u block.\n"
 "\n"
 
-#: resize/main.c:435
+#: resize/main.c:433
 #, c-format
 msgid ""
 "The filesystem is already %u blocks long.  Nothing to do!\n"
@@ -4962,7 +4962,7 @@ msgstr ""
 "Filsystemet är redan %u block långt.  Inget behöver göras!\n"
 "\n"
 
-#: resize/main.c:446
+#: resize/main.c:444
 #, c-format
 msgid ""
 "Please run 'e2fsck -f %s' first.\n"
@@ -4971,12 +4971,26 @@ msgstr ""
 "Kör \"e2fsck -f %s\" först.\n"
 "\n"
 
+#: resize/main.c:448
+#, c-format
+msgid "Resizing the filesystem on %s to %u (%dk) blocks.\n"
+msgstr "Ändrar storlek på filsystemet på %s till %u (%d k) block.\n"
+
 #: resize/main.c:457
 #, c-format
 msgid "while trying to resize %s"
 msgstr "vid försök att ändra storlek på %s"
 
-#: resize/main.c:462
+#: resize/main.c:460
+#, c-format
+msgid ""
+"Please run 'e2fsck -fy %s' to fix the filesystem\n"
+"after the aborted resize operation.\n"
+msgstr ""
+"Kör \"e2fsck -fy %s\" för att laga filsystemet\n"
+"efter den avbrutna storleksändringen.\n"
+
+#: resize/main.c:466
 #, c-format
 msgid ""
 "The filesystem on %s is now %u blocks long.\n"
@@ -4985,10 +4999,10 @@ msgstr ""
 "Filsystemet på %s är nu %u block långt.\n"
 "\n"
 
-#: resize/main.c:477
+#: resize/main.c:481
 #, c-format
 msgid "while trying to truncate %s"
-msgstr "vid försök att kapa %s"
+msgstr "vid försök att korta av %s"
 
 #: resize/online.c:37
 #, c-format
@@ -5040,20 +5054,20 @@ msgstr "Vid försök att öppna grupp nr. %d"
 msgid "Filesystem at %s is mounted on %s, and on-line resizing is not supported on this system.\n"
 msgstr "Filsystemet på %s är monterat på %s, och storleksändring on-line stöds inte på detta system.\n"
 
-#: resize/resize2fs.c:345
+#: resize/resize2fs.c:350
 #, c-format
 msgid "inodes (%llu) must be less than %u"
 msgstr "inoder (%llu) måste vara mindre än %u"
 
-#: resize/resize2fs.c:577
+#: resize/resize2fs.c:582
 msgid "reserved blocks"
 msgstr "reserverade block"
 
-#: resize/resize2fs.c:790
+#: resize/resize2fs.c:795
 msgid "meta-data blocks"
 msgstr "metadatablock"
 
-#: resize/resize2fs.c:1747
+#: resize/resize2fs.c:1752
 #, c-format
 msgid "Should never happen: resize inode corrupt!\n"
 msgstr "Skulle aldrig inträffa: storleksändringsinoden trasig!\n"

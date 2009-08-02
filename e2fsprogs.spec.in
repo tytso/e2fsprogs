@@ -134,6 +134,7 @@ exit 0
 %{_root_sbindir}/tune2fs
 %{_sbindir}/filefrag
 %{_sbindir}/mklost+found
+%{_sbindir}/e2freefrag
 
 %{_root_libdir}/libblkid.so.*
 %{_root_libdir}/libcom_err.so.*
@@ -178,6 +179,7 @@ exit 0
 %{_mandir}/man8/resize2fs.8*
 %{_mandir}/man8/tune2fs.8*
 %{_mandir}/man8/filefrag.8*
+%{_mandir}/man8/e2freefrag.8*
 
 %files devel
 %defattr(-,root,root)
