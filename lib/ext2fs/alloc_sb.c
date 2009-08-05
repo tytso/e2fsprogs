@@ -58,21 +58,18 @@ int ext2fs_reserve_super_and_bgd(ext2_filsys fs,
 			fs->desc_blocks + fs->super->s_reserved_gdt_blocks;
 
 	if (super_blk || (group == 0))
-		/* FIXME-64 */
-		ext2fs_mark_block_bitmap(bmap, super_blk);
+		ext2fs_mark_block_bitmap2(bmap, super_blk);
 
 	if (old_desc_blk) {
 		if (fs->super->s_reserved_gdt_blocks && fs->block_map == bmap)
 			fs->group_desc[group].bg_flags &= ~EXT2_BG_BLOCK_UNINIT;
 		for (j=0; j < old_desc_blocks; j++)
 			if (old_desc_blk + j < fs->super->s_blocks_count)
-				/* FIXME-64 */
-				ext2fs_mark_block_bitmap(bmap,
+				ext2fs_mark_block_bitmap2(bmap,
 							 old_desc_blk + j);
 	}
 	if (new_desc_blk)
-		/* FIXME-64 */
-		ext2fs_mark_block_bitmap(bmap, new_desc_blk);
+		ext2fs_mark_block_bitmap2(bmap, new_desc_blk);
 
 	if (group == fs->group_desc_count-1) {
 		num_blocks = (fs->super->s_blocks_count -

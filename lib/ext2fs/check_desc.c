@@ -62,22 +62,22 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 		 */
 		blk = fs->group_desc[i].bg_block_bitmap;
 		if (blk < first_block || blk > last_block ||
-		    ext2fs_test_block_bitmap(bmap, blk)) {
+		    ext2fs_test_block_bitmap2(bmap, blk)) {
 			retval = EXT2_ET_GDESC_BAD_BLOCK_MAP;
 			goto errout;
 		}
-		ext2fs_mark_block_bitmap(bmap, blk);
+		ext2fs_mark_block_bitmap2(bmap, blk);
 
 		/*
 		 * Check to make sure the inode bitmap for group is sane
 		 */
 		blk = fs->group_desc[i].bg_inode_bitmap;
 		if (blk < first_block || blk > last_block ||
-		    ext2fs_test_block_bitmap(bmap, blk)) {
+		    ext2fs_test_block_bitmap2(bmap, blk)) {
 			retval = EXT2_ET_GDESC_BAD_INODE_MAP;
 			goto errout;
 		}
-		ext2fs_mark_block_bitmap(bmap, blk);
+		ext2fs_mark_block_bitmap2(bmap, blk);
 
 		/*
 		 * Check to make sure the inode table for group is sane
@@ -90,11 +90,11 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 		}
 		for (j = 0, b = blk; j < fs->inode_blocks_per_group;
 		     j++, b++) {
-			if (ext2fs_test_block_bitmap(bmap, b)) {
+			if (ext2fs_test_block_bitmap2(bmap, b)) {
 				retval = EXT2_ET_GDESC_BAD_INODE_TABLE;
 				goto errout;
 			}
-			ext2fs_mark_block_bitmap(bmap, b);
+			ext2fs_mark_block_bitmap2(bmap, b);
 		}
 	}
 errout:

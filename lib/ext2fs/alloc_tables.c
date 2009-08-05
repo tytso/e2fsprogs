@@ -33,7 +33,7 @@
  * block number with a correct offset were the bitmaps and inode
  * tables can be allocated continously and in order.
  */
-static blk_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk_t start_blk,
+static blk_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk64_t start_blk,
 			   ext2fs_block_bitmap bmap, int offset, int size,
 			   int elem_size)
 {
@@ -55,7 +55,7 @@ static blk_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk_t start_blk,
 	 * search is still valid.
 	 */
 	if (start_blk && group % flexbg_size) {
-		if (ext2fs_test_block_bitmap_range(bmap, start_blk + elem_size,
+		if (ext2fs_test_block_bitmap_range2(bmap, start_blk + elem_size,
 						   size))
 			return start_blk + elem_size;
 	}
@@ -119,7 +119,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		start_blk = group_blk;
 
 	if (flexbg_size) {
-		blk_t prev_block = 0;
+		blk64_t prev_block = 0;
+
 		if (group && fs->group_desc[group-1].bg_block_bitmap)
 			prev_block = fs->group_desc[group-1].bg_block_bitmap;
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
@@ -135,7 +136,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 					last_blk, 1, bmap, &new_blk);
 		if (retval)
 			return retval;
-		ext2fs_mark_block_bitmap(bmap, new_blk);
+		ext2fs_mark_block_bitmap2(bmap, new_blk);
 		fs->group_desc[group].bg_block_bitmap = new_blk;
 		if (flexbg_size) {
 			dgrp_t gr = ext2fs_group_of_blk(fs, new_blk);
@@ -163,7 +164,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 					last_blk, 1, bmap, &new_blk);
 		if (retval)
 			return retval;
-		ext2fs_mark_block_bitmap(bmap, new_blk);
+		ext2fs_mark_block_bitmap2(bmap, new_blk);
 		fs->group_desc[group].bg_inode_bitmap = new_blk;
 		if (flexbg_size) {
 			dgrp_t gr = ext2fs_group_of_blk(fs, new_blk);
@@ -198,7 +199,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		for (j=0, blk = new_blk;
 		     j < fs->inode_blocks_per_group;
 		     j++, blk++) {
-			ext2fs_mark_block_bitmap(bmap, blk);
+			ext2fs_mark_block_bitmap2(bmap, blk);
 			if (flexbg_size) {
 				dgrp_t gr = ext2fs_group_of_blk(fs, blk);
 				fs->group_desc[gr].bg_free_blocks_count--;

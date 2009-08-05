@@ -28,9 +28,9 @@ void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
 	}
 #endif
 	if (inuse > 0)
-		ext2fs_mark_inode_bitmap(fs->inode_map, ino);
+		ext2fs_mark_inode_bitmap2(fs->inode_map, ino);
 	else
-		ext2fs_unmark_inode_bitmap(fs->inode_map, ino);
+		ext2fs_unmark_inode_bitmap2(fs->inode_map, ino);
 	fs->group_desc[group].bg_free_inodes_count -= inuse;
 	if (isdir)
 		fs->group_desc[group].bg_used_dirs_count += inuse;
@@ -73,11 +73,9 @@ void ext2fs_block_alloc_stats2(ext2_filsys fs, blk64_t blk, int inuse)
 	}
 #endif
 	if (inuse > 0)
-		/* FIXME-64 */
-		ext2fs_mark_block_bitmap(fs->block_map, blk);
+		ext2fs_mark_block_bitmap2(fs->block_map, blk);
 	else
-		/* FIXME-64 */
-		ext2fs_unmark_block_bitmap(fs->block_map, blk);
+		ext2fs_unmark_block_bitmap2(fs->block_map, blk);
 	fs->group_desc[group].bg_free_blocks_count -= inuse;
 	fs->group_desc[group].bg_flags &= ~EXT2_BG_BLOCK_UNINIT;
 	ext2fs_group_desc_csum_set(fs, group);

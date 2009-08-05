@@ -30,7 +30,7 @@
  * Check for uninit block bitmaps and deal with them appropriately
  */
 static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
-			  dgrp_t group)
+			       dgrp_t group)
 {
 	blk_t		i;
 	blk64_t		blk, super_blk, old_desc_blk, new_desc_blk;
@@ -64,9 +64,9 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 		    (blk >= fs->group_desc[group].bg_inode_table &&
 		     (blk < fs->group_desc[group].bg_inode_table
 		      + fs->inode_blocks_per_group)))
-			ext2fs_fast_mark_block_bitmap(map, blk);
+			ext2fs_fast_mark_block_bitmap2(map, blk);
 		else
-			ext2fs_fast_unmark_block_bitmap(map, blk);
+			ext2fs_fast_unmark_block_bitmap2(map, blk);
 	}
 	fs->group_desc[group].bg_flags &= ~EXT2_BG_BLOCK_UNINIT;
 	ext2fs_group_desc_csum_set(fs, group);
@@ -87,7 +87,7 @@ static void check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
 
 	ino = (group * fs->super->s_inodes_per_group) + 1;
 	for (i=0; i < fs->super->s_inodes_per_group; i++, ino++)
-		ext2fs_fast_unmark_inode_bitmap(map, ino);
+		ext2fs_fast_unmark_inode_bitmap2(map, ino);
 
 	fs->group_desc[group].bg_flags &= ~EXT2_BG_INODE_UNINIT;
 	check_block_uninit(fs, fs->block_map, group);
@@ -129,14 +129,14 @@ errcode_t ext2fs_new_inode(ext2_filsys fs, ext2_ino_t dir,
 			check_inode_uninit(fs, map, (i - 1) /
 					   EXT2_INODES_PER_GROUP(fs->super));
 
-		if (!ext2fs_fast_test_inode_bitmap(map, i))
+		if (!ext2fs_fast_test_inode_bitmap2(map, i))
 			break;
 		i++;
 		if (i > fs->super->s_inodes_count)
 			i = EXT2_FIRST_INODE(fs->super);
 	} while (i != start_inode);
 
-	if (ext2fs_test_inode_bitmap(map, i))
+	if (ext2fs_test_inode_bitmap2(map, i))
 		return EXT2_ET_INODE_ALLOC_FAIL;
 	*ret = i;
 	return 0;
@@ -170,8 +170,7 @@ errcode_t ext2fs_new_block2(ext2_filsys fs, blk64_t goal,
 					   (i - fs->super->s_first_data_block) /
 					   EXT2_BLOCKS_PER_GROUP(fs->super));
 
-		/* FIXME-64 */
-		if (!ext2fs_fast_test_block_bitmap(map, (blk_t) i)) {
+		if (!ext2fs_fast_test_block_bitmap2(map, i)) {
 			*ret = i;
 			return 0;
 		}
@@ -218,7 +217,6 @@ errcode_t ext2fs_alloc_block2(ext2_filsys fs, blk64_t goal,
 			goto fail;
 	} else {
 		if (!fs->block_map) {
-			/* FIXME-64 */
 			retval = ext2fs_read_block_bitmap(fs);
 			if (retval)
 				goto fail;
@@ -273,9 +271,7 @@ errcode_t ext2fs_get_free_blocks2(ext2_filsys fs, blk64_t start, blk64_t finish,
 	do {
 		if (b+num-1 > fs->super->s_blocks_count)
 			b = fs->super->s_first_data_block;
-		/* FIXME-64 */
-		if (ext2fs_fast_test_block_bitmap_range(map, (blk_t) b,
-							(blk_t) num)) {
+		if (ext2fs_fast_test_block_bitmap_range2(map, b, num)) {
 			*ret = b;
 			return 0;
 		}

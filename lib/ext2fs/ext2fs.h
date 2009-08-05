@@ -667,14 +667,22 @@ extern errcode_t ext2fs_fudge_inode_bitmap_end(ext2fs_inode_bitmap bitmap,
 					       ext2_ino_t end, ext2_ino_t *oend);
 extern errcode_t ext2fs_fudge_block_bitmap_end(ext2fs_block_bitmap bitmap,
 					       blk_t end, blk_t *oend);
+extern errcode_t ext2fs_fudge_block_bitmap_end2(ext2fs_block_bitmap bitmap,
+					 blk64_t end, blk64_t *oend);
 extern void ext2fs_clear_inode_bitmap(ext2fs_inode_bitmap bitmap);
 extern void ext2fs_clear_block_bitmap(ext2fs_block_bitmap bitmap);
 extern errcode_t ext2fs_read_bitmaps(ext2_filsys fs);
 extern errcode_t ext2fs_write_bitmaps(ext2_filsys fs);
 extern errcode_t ext2fs_resize_inode_bitmap(__u32 new_end, __u32 new_real_end,
 					    ext2fs_inode_bitmap bmap);
+extern errcode_t ext2fs_resize_inode_bitmap2(__u64 new_end,
+					     __u64 new_real_end,
+					     ext2fs_inode_bitmap bmap);
 extern errcode_t ext2fs_resize_block_bitmap(__u32 new_end, __u32 new_real_end,
 					    ext2fs_block_bitmap bmap);
+extern errcode_t ext2fs_resize_block_bitmap2(__u64 new_end,
+					     __u64 new_real_end,
+					     ext2fs_block_bitmap bmap);
 extern errcode_t ext2fs_compare_block_bitmap(ext2fs_block_bitmap bm1,
 					     ext2fs_block_bitmap bm2);
 extern errcode_t ext2fs_compare_inode_bitmap(ext2fs_inode_bitmap bm1,
@@ -682,15 +690,27 @@ extern errcode_t ext2fs_compare_inode_bitmap(ext2fs_inode_bitmap bm1,
 extern errcode_t ext2fs_set_inode_bitmap_range(ext2fs_inode_bitmap bmap,
 					ext2_ino_t start, unsigned int num,
 					void *in);
+extern errcode_t ext2fs_set_inode_bitmap_range2(ext2fs_inode_bitmap bmap,
+					 __u64 start, size_t num,
+					 void *in);
 extern errcode_t ext2fs_get_inode_bitmap_range(ext2fs_inode_bitmap bmap,
 					ext2_ino_t start, unsigned int num,
 					void *out);
+extern errcode_t ext2fs_get_inode_bitmap_range2(ext2fs_inode_bitmap bmap,
+					 __u64 start, size_t num,
+					 void *out);
 extern errcode_t ext2fs_set_block_bitmap_range(ext2fs_block_bitmap bmap,
 					blk_t start, unsigned int num,
 					void *in);
+extern errcode_t ext2fs_set_block_bitmap_range2(ext2fs_block_bitmap bmap,
+					 blk64_t start, size_t num,
+					 void *in);
 extern errcode_t ext2fs_get_block_bitmap_range(ext2fs_block_bitmap bmap,
 					blk_t start, unsigned int num,
 					void *out);
+extern errcode_t ext2fs_get_block_bitmap_range2(ext2fs_block_bitmap bmap,
+					 blk64_t start, size_t num,
+					 void *out);
 
 /* blknum.c */
 extern dgrp_t ext2fs_group_of_blk2(ext2_filsys fs, blk64_t);
@@ -1031,6 +1051,33 @@ extern errcode_t ext2fs_set_generic_bitmap_range(ext2fs_generic_bitmap bmap,
 						 errcode_t magic,
 						 __u32 start, __u32 num,
 						 void *in);
+
+/* gen_bitmap64.c */
+void ext2fs_free_generic_bmap(ext2fs_generic_bitmap bmap);
+errcode_t ext2fs_alloc_generic_bmap(ext2_filsys fs, errcode_t magic,
+				    int type, __u64 start, __u64 end,
+				    __u64 real_end,
+				    const char *descr,
+				    ext2fs_generic_bitmap *ret);
+errcode_t ext2fs_copy_generic_bmap(ext2fs_generic_bitmap src,
+				   ext2fs_generic_bitmap *dest);
+void ext2fs_clear_generic_bmap(ext2fs_generic_bitmap bitmap);
+errcode_t ext2fs_fudge_generic_bmap_end(ext2fs_generic_bitmap bitmap,
+					errcode_t neq,
+					__u64 end, __u64 *oend);
+void ext2fs_set_generic_bmap_padding(ext2fs_generic_bitmap bmap);
+errcode_t ext2fs_resize_generic_bmap(ext2fs_generic_bitmap bmap,
+				     __u64 new_end,
+				     __u64 new_real_end);
+errcode_t ext2fs_compare_generic_bmap(errcode_t neq,
+				      ext2fs_generic_bitmap bm1,
+				      ext2fs_generic_bitmap bm2);
+errcode_t ext2fs_get_generic_bmap_range(ext2fs_generic_bitmap bmap,
+					__u64 start, unsigned int num,
+					void *out);
+errcode_t ext2fs_set_generic_bmap_range(ext2fs_generic_bitmap bmap,
+					__u64 start, unsigned int num,
+					void *in);
 
 /* getsize.c */
 extern errcode_t ext2fs_get_device_size(const char *file, int blocksize,

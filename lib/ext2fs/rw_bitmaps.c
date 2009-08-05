@@ -37,7 +37,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	char 		*block_buf, *inode_buf;
 	int		csum_flag = 0;
 	blk_t		blk;
-	blk_t		blk_itr = fs->super->s_first_data_block;
+	blk64_t		blk_itr = fs->super->s_first_data_block;
 	ext2_ino_t	ino_itr = 1;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
@@ -74,7 +74,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		    EXT2_BG_BLOCK_UNINIT)
 			goto skip_this_block_bitmap;
 
-		retval = ext2fs_get_block_bitmap_range(fs->block_map,
+		retval = ext2fs_get_block_bitmap_range2(fs->block_map,
 				blk_itr, block_nbytes << 3, block_buf);
 		if (retval)
 			return retval;
@@ -106,7 +106,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		    EXT2_BG_INODE_UNINIT)
 			goto skip_this_inode_bitmap;
 
-		retval = ext2fs_get_inode_bitmap_range(fs->inode_map,
+		retval = ext2fs_get_inode_bitmap_range2(fs->inode_map,
 				ino_itr, inode_nbytes << 3, inode_buf);
 		if (retval)
 			return retval;
@@ -145,7 +145,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	int do_image = fs->flags & EXT2_FLAG_IMAGE_FILE;
 	unsigned int	cnt;
 	blk_t	blk;
-	blk_t	blk_itr = fs->super->s_first_data_block;
+	blk64_t	blk_itr = fs->super->s_first_data_block;
 	blk_t   blk_cnt;
 	ext2_ino_t ino_itr = 1;
 	ext2_ino_t ino_cnt;
@@ -202,7 +202,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 			cnt = fs->blocksize << 3;
 			if (cnt > ino_cnt)
 				cnt = ino_cnt;
-			retval = ext2fs_set_inode_bitmap_range(fs->inode_map,
+			retval = ext2fs_set_inode_bitmap_range2(fs->inode_map,
 					       ino_itr, cnt, inode_bitmap);
 			if (retval)
 				goto cleanup;
@@ -222,7 +222,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 			cnt = fs->blocksize << 3;
 			if (cnt > blk_cnt)
 				cnt = blk_cnt;
-			retval = ext2fs_set_block_bitmap_range(fs->block_map,
+			retval = ext2fs_set_block_bitmap_range2(fs->block_map,
 				       blk_itr, cnt, block_bitmap);
 			if (retval)
 				goto cleanup;
@@ -250,7 +250,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 			} else
 				memset(block_bitmap, 0, block_nbytes);
 			cnt = block_nbytes << 3;
-			retval = ext2fs_set_block_bitmap_range(fs->block_map,
+			retval = ext2fs_set_block_bitmap_range2(fs->block_map,
 					       blk_itr, cnt, block_bitmap);
 			if (retval)
 				goto cleanup;
@@ -272,7 +272,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 			} else
 				memset(inode_bitmap, 0, inode_nbytes);
 			cnt = inode_nbytes << 3;
-			retval = ext2fs_set_inode_bitmap_range(fs->inode_map,
+			retval = ext2fs_set_inode_bitmap_range2(fs->inode_map,
 					       ino_itr, cnt, inode_bitmap);
 			if (retval)
 				goto cleanup;

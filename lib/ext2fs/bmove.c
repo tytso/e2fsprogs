@@ -48,7 +48,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 	/*
 	 * Let's see if this is one which we need to relocate
 	 */
-	if (ext2fs_test_block_bitmap(pb->reserve, block)) {
+	if (ext2fs_test_block_bitmap2(pb->reserve, block)) {
 		do {
 			if (++block >= fs->super->s_blocks_count)
 				block = fs->super->s_first_data_block;
@@ -56,8 +56,8 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 				pb->error = EXT2_ET_BLOCK_ALLOC_FAIL;
 				return BLOCK_ABORT;
 			}
-		} while (ext2fs_test_block_bitmap(pb->reserve, block) ||
-			 ext2fs_test_block_bitmap(pb->alloc_map, block));
+		} while (ext2fs_test_block_bitmap2(pb->reserve, block) ||
+			 ext2fs_test_block_bitmap2(pb->alloc_map, block));
 
 		retval = io_channel_read_blk(fs->io, orig, 1, pb->buf);
 		if (retval) {
@@ -70,7 +70,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 			return BLOCK_ABORT;
 		}
 		*block_nr = block;
-		ext2fs_mark_block_bitmap(pb->alloc_map, block);
+		ext2fs_mark_block_bitmap2(pb->alloc_map, block);
 		ret = BLOCK_CHANGED;
 		if (pb->flags & EXT2_BMOVE_DEBUG)
 			printf("ino=%ld, blockcnt=%lld, %u->%u\n", pb->ino,

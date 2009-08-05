@@ -314,8 +314,8 @@ errcode_t ext2fs_image_bitmap_write(ext2_filsys fs, int fd, int flags)
 		if (size > (cnt >> 3))
 			size = (cnt >> 3);
 
-		retval = ext2fs_get_generic_bitmap_range(bmap,
-				 err, itr, size << 3, buf);
+		retval = ext2fs_get_generic_bmap_range(bmap, itr,
+						       size << 3, buf);
 		if (retval)
 			return retval;
 
@@ -396,8 +396,8 @@ errcode_t ext2fs_image_bitmap_read(ext2_filsys fs, int fd, int flags)
 		if (actual != (int) size)
 			return EXT2_ET_SHORT_READ;
 
-		retval = ext2fs_set_generic_bitmap_range(bmap,
-				 err, itr, size << 3, buf);
+		retval = ext2fs_set_generic_bmap_range(bmap, itr,
+						       size << 3, buf);
 		if (retval)
 			return retval;
 

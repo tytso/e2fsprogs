@@ -92,7 +92,7 @@ static __u32 find_last_inode_ingrp(ext2fs_inode_bitmap bitmap,
 	end_ino = start_ino + inodes_per_grp - 1;
 
 	for (i = end_ino; i >= start_ino; i--) {
-		if (ext2fs_fast_test_inode_bitmap(bitmap, i))
+		if (ext2fs_fast_test_inode_bitmap2(bitmap, i))
 			return i - start_ino + 1;
 	}
 	return inodes_per_grp;
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 	memset(&param, 0, sizeof(param));
 	param.s_blocks_count = 32768;
 
-	retval = ext2fs_initialize("test fs", 0, &param,
+	retval = ext2fs_initialize("test fs", EXT2_FLAG_64BITS, &param,
 				   test_io_manager, &fs);
 	if (retval) {
 		com_err("setup", retval,

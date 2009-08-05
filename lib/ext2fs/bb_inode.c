@@ -235,7 +235,7 @@ static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 	retry:
 		if (rec->ind_blocks_ptr < rec->ind_blocks_size) {
 			blk = rec->ind_blocks[rec->ind_blocks_ptr++];
-			if (ext2fs_test_block_bitmap(fs->block_map, blk))
+			if (ext2fs_test_block_bitmap2(fs->block_map, blk))
 				goto retry;
 		} else {
 			retval = ext2fs_new_block(fs, 0, 0, &blk);

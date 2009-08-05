@@ -126,6 +126,10 @@ extern void (*test_io_cb_read_blk)
 	(unsigned long block, int count, errcode_t err);
 extern void (*test_io_cb_write_blk)
 	(unsigned long block, int count, errcode_t err);
+extern void (*test_io_cb_read_blk64)
+	(unsigned long long block, int count, errcode_t err);
+extern void (*test_io_cb_write_blk64)
+	(unsigned long long block, int count, errcode_t err);
 extern void (*test_io_cb_set_blksize)
 	(int blksize, errcode_t err);
 

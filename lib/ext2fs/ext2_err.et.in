@@ -419,4 +419,7 @@ ec	EXT2_ET_IO_CHANNEL_NO_SUPPORT_64,
 ec	EXT2_NO_MTAB_FILE,
 	"Can't check if filesystem is mounted due to missing mtab file"
 
+ec	EXT2_ET_CANT_USE_LEGACY_BITMAPS,
+	"Filesystem too large to use legacy bitmaps"
+
 	end
