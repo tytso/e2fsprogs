@@ -290,7 +290,7 @@ _("Warning: the backup superblock/group descriptors at block %u contain\n"
 		exit(1);
 	}
 	while (ext2fs_badblocks_list_iterate(bb_iter, &blk))
-		ext2fs_mark_block_bitmap(fs->block_map, blk);
+		ext2fs_mark_block_bitmap2(fs->block_map, blk);
 	ext2fs_badblocks_list_iterate_end(bb_iter);
 }
 
@@ -474,7 +474,7 @@ static void create_bad_block_inode(ext2_filsys fs, badblocks_list bb_list)
 {
 	errcode_t	retval;
 
-	ext2fs_mark_inode_bitmap(fs->inode_map, EXT2_BAD_INO);
+	ext2fs_mark_inode_bitmap2(fs->inode_map, EXT2_BAD_INO);
 	ext2fs_inode_alloc_stats2(fs, EXT2_BAD_INO, +1, 0);
 	retval = ext2fs_update_bb_inode(fs, bb_list);
 	if (retval) {
@@ -1859,6 +1859,8 @@ int main (int argc, char *argv[])
 	unsigned int	journal_blocks;
 	unsigned int	i;
 	int		val, hash_alg;
+	int		flags;
+	int		old_bitmaps;
 	io_manager	io_ptr;
 	char		tdb_string[40];
 	char		*hash_alg_str;
@@ -1888,8 +1890,12 @@ int main (int argc, char *argv[])
 	/*
 	 * Initialize the superblock....
 	 */
-	retval = ext2fs_initialize(device_name, EXT2_FLAG_EXCLUSIVE, &fs_param,
-				   io_ptr, &fs);
+	flags = EXT2_FLAG_EXCLUSIVE;
+	profile_get_boolean(profile, "options", "old_bitmaps", 0, 0,
+			    &old_bitmaps);
+	if (!old_bitmaps)
+		flags |= EXT2_FLAG_64BITS;
+	retval = ext2fs_initialize(device_name, flags, &fs_param, io_ptr, &fs);
 	if (retval) {
 		com_err(device_name, retval, _("while setting up superblock"));
 		exit(1);
