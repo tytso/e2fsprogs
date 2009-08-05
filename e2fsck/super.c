@@ -687,6 +687,9 @@ void check_super_block(e2fsck_t ctx)
 
 		if (should_be)
 			ext2fs_group_desc_csum_set(fs, i);
+		/* If the user aborts e2fsck by typing ^C, stop right away */
+		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
+			return;
 	}
 
 	/*
