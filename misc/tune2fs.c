@@ -969,8 +969,14 @@ static int get_move_bitmaps(ext2_filsys fs, int new_ino_blks_per_grp,
 			    ext2fs_block_bitmap bmap)
 {
 	dgrp_t i;
+	int retval;
+	ext2_badblocks_list bb_list = 0;
 	blk_t j, needed_blocks = 0;
 	blk_t start_blk, end_blk;
+
+	retval = ext2fs_read_bb_inode(fs, &bb_list);
+	if (retval)
+		return retval;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		start_blk = fs->group_desc[i].bg_inode_table +
@@ -981,10 +987,14 @@ static int get_move_bitmaps(ext2_filsys fs, int new_ino_blks_per_grp,
 
 		for (j = start_blk; j < end_blk; j++) {
 			if (ext2fs_test_block_bitmap(fs->block_map, j)) {
-				/* FIXME!!
-				 * What happens if the block is marked
-				 * as a bad block
+				/*
+				 * IF the block is a bad block we fail
 				 */
+				if (ext2fs_badblocks_list_test(bb_list, j)) {
+					ext2fs_badblocks_list_free(bb_list);
+					return ENOSPC;
+				}
+
 				ext2fs_mark_block_bitmap(bmap, j);
 			} else {
 				/*
@@ -997,6 +1007,7 @@ static int get_move_bitmaps(ext2_filsys fs, int new_ino_blks_per_grp,
 		needed_blocks += end_blk - start_blk;
 	}
 
+	ext2fs_badblocks_list_free(bb_list);
 	if (needed_blocks > fs->super->s_free_blocks_count)
 		return ENOSPC;
 
