@@ -174,6 +174,7 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 	unsigned long flags = 0;
 	unsigned int i;
 	static int fiemap_incompat_printed;
+	int fiemap_header_printed = 0;
 	int tot_extents = 1, n = 0;
 	int last = 0;
 	int rc;
@@ -191,11 +192,6 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 	if (xattr_map)
 		flags |= FIEMAP_FLAG_XATTR;
 
-	if (verbose)
-		printf(" ext %*s %*s %*s length flags\n", logical_width,
-		       "logical", physical_width, "physical",
-		       physical_width, "expected");
-
 	do {
 		fiemap->fm_length = ~0ULL;
 		fiemap->fm_flags = flags;
@@ -208,6 +204,13 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 				fiemap_incompat_printed = 1;
 			}
 			return rc;
+		}
+
+		if (verbose && !fiemap_header_printed) {
+			printf(" ext %*s %*s %*s length flags\n", logical_width,
+			       "logical", physical_width, "physical",
+			       physical_width, "expected");
+			fiemap_header_printed = 1;
 		}
 
 		if (!verbose) {
