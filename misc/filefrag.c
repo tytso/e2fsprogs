@@ -344,6 +344,8 @@ static void frag_report(const char *filename)
 			rc = get_bmap(fd, i, &block);
 			if (block == 0)
 				continue;
+			if (!num_extents)
+				num_extents++;
 			count++;
 			if (last_block && (block != last_block+1) ) {
 				if (verbose)
