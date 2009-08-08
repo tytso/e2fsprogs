@@ -334,12 +334,12 @@ static struct e2fsck_problem problem_table[] = {
 
 	/* Last mount time is in the future */
 	{ PR_0_FUTURE_SB_LAST_MOUNT,
-	  N_("@S last mount time is in the future.  "),
+	  N_("@S last mount time (%t,\n\tnow = %T) is in the future.\n"),
 	  PROMPT_FIX, PR_NO_OK },
 
 	/* Last write time is in the future */
 	{ PR_0_FUTURE_SB_LAST_WRITE,
-	  N_("@S last write time is in the future.  "),
+	  N_("@S last write time (%t,\n\tnow = %T) is in the future.\n"),
 	  PROMPT_FIX, PR_NO_OK },
 
 	{ PR_0_EXTERNAL_JOURNAL_HINT,

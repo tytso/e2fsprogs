@@ -831,7 +831,7 @@ void check_super_block(e2fsck_t ctx)
 	}
 	if (fs->super->s_wtime > (__u32) ctx->now) {
 		pctx.num = fs->super->s_wtime;
-		problem = PR_0_FUTURE_SB_LAST_MOUNT;
+		problem = PR_0_FUTURE_SB_LAST_WRITE;
 		if (fs->super->s_wtime <= (__u32) ctx->now + ctx->time_fudge)
 			problem = PR_0_FUTURE_SB_LAST_MOUNT_FUDGED;
 		if (fix_problem(ctx, problem, &pctx)) {
