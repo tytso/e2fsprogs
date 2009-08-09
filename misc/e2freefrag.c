@@ -52,9 +52,14 @@ void init_chunk_info(ext2_filsys fs, struct chunk_info *info)
 {
 	int i;
 
-	info->chunkbits = ul_log2(info->chunkbytes);
 	info->blocksize_bits = ul_log2((unsigned long)fs->blocksize);
-	info->blks_in_chunk = info->chunkbytes >> info->blocksize_bits;
+	if (info->chunkbytes) {
+		info->chunkbits = ul_log2(info->chunkbytes);
+		info->blks_in_chunk = info->chunkbytes >> info->blocksize_bits;
+	} else {
+		info->chunkbits = ul_log2(DEFAULT_CHUNKSIZE);
+		info->blks_in_chunk = DEFAULT_CHUNKSIZE >> info->blocksize_bits;
+	}
 
 	info->min = ~0UL;
 	info->max = info->avg = 0;
@@ -138,13 +143,16 @@ errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info)
 	       (double)fs->super->s_free_blocks_count * 100 /
 						fs->super->s_blocks_count);
 
-	printf("\nChunksize: %lu bytes (%u blocks)\n",
-	       info->chunkbytes, info->blks_in_chunk);
-	total_chunks = (fs->super->s_blocks_count + info->blks_in_chunk) >>
-				(info->chunkbits - info->blocksize_bits);
-	printf("Total chunks: %lu\nFree chunks: %lu (%0.1f%%)\n",
-	       total_chunks, info->free_chunks,
-	       (double)info->free_chunks * 100 / total_chunks);
+	if (info->chunkbytes) {
+		printf("\nChunksize: %lu bytes (%u blocks)\n",
+		       info->chunkbytes, info->blks_in_chunk);
+		total_chunks = (fs->super->s_blocks_count +
+				info->blks_in_chunk) >>
+			(info->chunkbits - info->blocksize_bits);
+		printf("Total chunks: %lu\nFree chunks: %lu (%0.1f%%)\n",
+		       total_chunks, info->free_chunks,
+		       (double)info->free_chunks * 100 / total_chunks);
+	}
 
 	/* Display chunk information in KB */
 	if (info->real_free_chunks) {
@@ -228,7 +236,7 @@ void open_device(char *device_name, ext2_filsys *fs)
 
 int main(int argc, char *argv[])
 {
-	struct chunk_info chunk_info = { .chunkbytes = DEFAULT_CHUNKSIZE };
+	struct chunk_info chunk_info = { };
 	errcode_t retval = 0;
 	ext2_filsys fs = NULL;
 	char *device_name;
@@ -273,7 +281,7 @@ int main(int argc, char *argv[])
 
 	open_device(device_name, &fs);
 
-	if (chunk_info.chunkbytes < fs->blocksize) {
+	if (chunk_info.chunkbytes && (chunk_info.chunkbytes < fs->blocksize)) {
 		fprintf(stderr, "%s: chunksize must be greater than or equal "
 			"to filesystem blocksize.\n", progname);
 		exit(1);

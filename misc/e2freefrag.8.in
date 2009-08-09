@@ -30,9 +30,12 @@ can be used to gauge the level of free space fragmentation in the filesystem.
 .SH OPTIONS
 .TP
 .BI \-c " chunk_kb"
-Desired size of chunk. It is specified in units of kilobytes (KB). If no
+If a chunk size is specified, then
+.B e2freefrag
+will print how many free chunks of size
 .I chunk_kb
-is specified on the command line, then the default value is 1024KB.
+are available in units of kilobytes (Kb).  The chunk size must be a
+power of two and be larger than filesystem block size.
 .TP
 .BI \-h
 Print the usage of the program.
@@ -46,12 +49,6 @@ Blocksize: 4096 bytes
 Total blocks: 1504085
 .br
 Free blocks: 292995 (19.5%)
-.br
-Chunk size: 1048576 bytes (256 blocks)
-.br
-Total chunks: 5876
-.br
-Free chunks: 463 (7.9%)
 .br
 
 Min. free extent: 4 KB
