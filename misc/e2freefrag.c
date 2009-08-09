@@ -156,16 +156,16 @@ errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info)
 		info->min = 0;
 	}
 
-	printf("\nMin free chunk: %lu KB \nMax free chunk: %lu KB\n"
-	       "Avg free chunk: %lu KB\n", info->min, info->max, info->avg);
+	printf("\nMin. free extent: %lu KB \nMax. free extent: %lu KB\n"
+	       "Avg. free extent: %lu KB\n", info->min, info->max, info->avg);
 
-	printf("\nHISTOGRAM OF FREE CHUNK SIZES:\n");
-	printf("%s :  %12s  %12s  %7s\n", "Chunk Size Range", "Free chunks",
+	printf("\nHISTOGRAM OF FREE EXTENT SIZES:\n");
+	printf("%s :  %12s  %12s  %7s\n", "Extent Size Range", "Free extents",
 	       "Free Blocks", "Percent");
 	for (i = 0; i < MAX_HIST; i++) {
 		end = 1 << (i + info->blocksize_bits - units);
 		if (info->histogram.fc_chunks[i] != 0)
-			printf("%5lu%c...%5lu%c- :  %12lu  %12lu  %6.2f%%\n",
+			printf("%5lu%c...%5lu%c-  :  %12lu  %12lu  %6.2f%%\n",
 			       start, *unitp, end, *unitp,
 			       info->histogram.fc_chunks[i],
 			       info->histogram.fc_blocks[i],
@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
 			if (chunk_info.chunkbytes &
 			    (chunk_info.chunkbytes - 1)) {
 				fprintf(stderr, "%s: chunk size must be a "
-					"power of 2.", argv[0]);
+					"power of 2.\n", argv[0]);
 				usage(progname);
 			}
 			chunk_info.chunkbytes *= 1024;

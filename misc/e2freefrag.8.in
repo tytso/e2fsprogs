@@ -54,16 +54,16 @@ Total chunks: 5876
 Free chunks: 463 (7.9%)
 .br
 
-Min free chunk: 4 KB
+Min. free extent: 4 KB
 .br
-Max free chunk: 24008 KB
+Max. free extent: 24008 KB
 .br
-Avg free chunk: 252 KB
+Avg. free extent: 252 KB
 .br
 
-HISTOGRAM OF FREE CHUNK SIZES:
+HISTOGRAM OF FREE EXTENT SIZES:
 .br
-Chunk Size Range :   Free chunks   Free Blocks  Percent
+Extent Size Range :   Free extents   Free Blocks  Percent
 .br
     4K...    8K- :           704           704     0.2%
 .br
