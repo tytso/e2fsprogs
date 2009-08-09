@@ -235,6 +235,7 @@ int main(int argc, char *argv[])
 	char *progname;
 	char c, *end;
 
+	add_error_table(&et_ext2_error_table);
 	progname = argv[0];
 
 	while ((c = getopt(argc, argv, "c:h")) != EOF) {
