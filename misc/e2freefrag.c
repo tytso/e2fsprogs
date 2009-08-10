@@ -79,6 +79,7 @@ void scan_block_bitmap(ext2_filsys fs, struct chunk_info *info)
 	unsigned long long chunk_num;
 	unsigned long last_chunk_size = 0;
 	unsigned long long chunk_start_blk = 0;
+	int used;
 
 	for (chunk_num = 0; chunk_num < chunks; chunk_num++) {
 		unsigned long long blk, num_blks;
@@ -95,10 +96,13 @@ void scan_block_bitmap(ext2_filsys fs, struct chunk_info *info)
 		/* Initialize starting block for first chunk correctly else
 		 * there is a segfault when blocksize = 1024 in which case
 		 * block_map->start = 1 */
-		for (blk = (chunk_num == 0 ? fs->super->s_first_data_block : 0);
-		     blk < num_blks; blk++, chunk_start_blk++) {
-			int used = ext2fs_fast_test_block_bitmap(fs->block_map,
-							       chunk_start_blk);
+		for (blk = 0; blk < num_blks; blk++, chunk_start_blk++) {
+			if (chunk_num == 0 && blk == 0) {
+				blk = fs->super->s_first_data_block;
+				chunk_start_blk = blk;
+			}
+			used = ext2fs_fast_test_block_bitmap(fs->block_map,
+							     chunk_start_blk);
 			if (!used) {
 				last_chunk_size++;
 				chunk_free++;
