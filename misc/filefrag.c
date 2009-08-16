@@ -46,6 +46,7 @@ int verbose = 0;
 int no_bs = 0;		/* Don't use the files blocksize, use 1K blocksize */
 int sync_file = 0;	/* fsync file before getting the mapping */
 int xattr_map = 0;	/* get xattr mapping */
+int force_bmap = 0;
 int logical_width = 12;
 int physical_width = 14;
 unsigned long long filesize;
@@ -328,7 +329,8 @@ static void frag_report(const char *filename)
 		printf("File size of %s is %lld (%ld block%s, blocksize %d)\n",
 		       filename, (long long) fileinfo.st_size, numblocks,
 		       numblocks == 1 ? "" : "s", bs);
-	if (filefrag_fiemap(fd, int_log2(bs), &num_extents) != 0) {
+	if (force_bmap ||
+	    filefrag_fiemap(fd, int_log2(bs), &num_extents) != 0) {
 		for (i = 0, count = 0; i < numblocks; i++) {
 			if (is_ext2 && last_block) {
 				if (((i-EXT2_DIRECT) % bpib) == 0)
@@ -369,7 +371,7 @@ static void frag_report(const char *filename)
 
 static void usage(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [-bvsx] file ...\n", progname);
+	fprintf(stderr, "Usage: %s [-Bbvsx] file ...\n", progname);
 	exit(1);
 }
 
@@ -378,8 +380,11 @@ int main(int argc, char**argv)
 	char **cpp;
 	int c;
 
-	while ((c = getopt(argc, argv, "bsvx")) != EOF)
+	while ((c = getopt(argc, argv, "Bbsvx")) != EOF)
 		switch (c) {
+		case 'B':
+			force_bmap++;
+			break;
 		case 'b':
 			no_bs++;
 			break;
