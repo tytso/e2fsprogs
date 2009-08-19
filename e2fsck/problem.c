@@ -354,7 +354,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* group descriptor N checksum is invalid. */
 	{ PR_0_GDT_CSUM,
 	  N_("@g descriptor %g checksum is invalid.  "),
-	     PROMPT_FIX, PR_PREEN_OK },
+	     PROMPT_FIX, PR_LATCH_BG_CHECKSUM },
 
 	/* group descriptor N marked uninitialized without feature set. */
 	{ PR_0_GDT_UNINIT,
@@ -396,6 +396,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@S last write time is in the future.\n\t(by less than a day, "
 	     "probably due to buggy init scripts).  "),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
+
+	/* Block group checksum (latch question) is invalid. */
+	{ PR_0_GDT_CSUM_LATCH,
+	  N_("One or more @b @g descriptor checksums are invalid.  "),
+	     PROMPT_FIX, PR_PREEN_OK },
 
 	/* Pass 1 errors */
 
@@ -1645,6 +1650,7 @@ static struct latch_descr pr_latch_info[] = {
 	{ PR_LATCH_LOW_DTIME, PR_1_ORPHAN_LIST_REFUGEES, 0 },
 	{ PR_LATCH_TOOBIG, PR_1_INODE_TOOBIG, 0 },
 	{ PR_LATCH_OPTIMIZE_DIR, PR_3A_OPTIMIZE_DIR_HEADER, PR_3A_OPTIMIZE_DIR_END },
+	{ PR_LATCH_BG_CHECKSUM, PR_0_GDT_CSUM_LATCH, 0 },
 	{ -1, 0, 0 },
 };
 
