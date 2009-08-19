@@ -2518,7 +2518,8 @@ static void mark_table_blocks(e2fsck_t ctx)
 				if (ext2fs_test_block_bitmap(ctx->block_found_map,
 							     b)) {
 					pctx.blk = b;
-					if (fix_problem(ctx,
+					if (!ctx->invalid_inode_table_flag[i] &&
+					    fix_problem(ctx,
 						PR_1_ITABLE_CONFLICT, &pctx)) {
 						ctx->invalid_inode_table_flag[i]++;
 						ctx->invalid_bitmaps++;
