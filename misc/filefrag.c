@@ -54,7 +54,6 @@ unsigned long long filesize;
 
 #define FIBMAP		_IO(0x00, 1)	/* bmap access */
 #define FIGETBSZ	_IO(0x00, 2)	/* get the block size used for bmap */
-#define FS_IOC_FIEMAP	_IOWR('f', 11, struct fiemap)
 
 #define	EXT4_EXTENTS_FL			0x00080000 /* Inode uses extents */
 #define	EXT3_IOC_GETFLAGS		_IOR('f', 1, long)

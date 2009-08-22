@@ -34,8 +34,8 @@
 #include <ext2fs/ext2_types.h>
 #include <ext2fs/ext2fs.h>
 #include <linux/fs.h>
-#include <ext2fs/fiemap.h>
 #include <sys/ioctl.h>
+#include <ext2fs/fiemap.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
