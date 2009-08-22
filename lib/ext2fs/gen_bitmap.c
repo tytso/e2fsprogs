@@ -25,7 +25,7 @@
 #endif
 
 #include "ext2_fs.h"
-#include "ext2fs.h"
+#include "ext2fsP.h"
 
 struct ext2fs_struct_generic_bitmap {
 	errcode_t	magic;
@@ -331,7 +331,7 @@ errcode_t ext2fs_set_generic_bitmap_range(ext2fs_generic_bitmap bmap,
  * Compare @mem to zero buffer by 256 bytes.
  * Return 1 if @mem is zeroed memory, otherwise return 0.
  */
-static int mem_is_zero(const char *mem, size_t len)
+int ext2fs_mem_is_zero(const char *mem, size_t len)
 {
 	static const char zero_buf[256];
 
@@ -419,7 +419,7 @@ static int ext2fs_test_clear_generic_bitmap_range(ext2fs_generic_bitmap bitmap,
 	}
 
 	/* Check whether all bytes are 0 */
-	return mem_is_zero(ADDR + start_byte, len_byte);
+	return ext2fs_mem_is_zero(ADDR + start_byte, len_byte);
 }
 
 int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,

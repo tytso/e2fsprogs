@@ -27,6 +27,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	bb_inode.o \
 	bitmaps.o \
 	bitops.o \
+	blkmap64_ba.o \
 	blknum.o \
 	block.o \
 	bmap.o \
@@ -46,6 +47,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	flushb.o \
 	freefs.o \
 	gen_bitmap.o \
+	gen_bitmap64.o \
 	get_pathname.o \
 	getsize.o \
 	getsectsize.o \
@@ -87,6 +89,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/bb_inode.c \
 	$(srcdir)/bitmaps.c \
 	$(srcdir)/bitops.c \
+	$(srcdir)/blkmap64_ba.o \
 	$(srcdir)/block.c \
 	$(srcdir)/bmap.c \
 	$(srcdir)/check_desc.c \
@@ -107,6 +110,7 @@ SRCS= ext2_err.c \
 	$(srcdir)/flushb.c \
 	$(srcdir)/freefs.c \
 	$(srcdir)/gen_bitmap.c \
+	$(srcdir)/gen_bitmap64.c \
 	$(srcdir)/get_pathname.c \
 	$(srcdir)/getsize.c \
 	$(srcdir)/getsectsize.c \

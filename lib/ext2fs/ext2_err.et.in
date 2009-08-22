@@ -335,14 +335,14 @@ ec	EXT2_ET_RO_BLOCK_ITERATE,
 ec	EXT2_ET_MAGIC_EXTENT_PATH,
 	"Wrong magic number for ext4 extent saved path"
 
-ec	EXT2_ET_MAGIC_RESERVED_10,
-	"Wrong magic number --- RESERVED_10"
+ec	EXT2_ET_MAGIC_GENERIC_BITMAP64,
+	"Wrong magic number for 64-bit generic bitmap"
 
-ec	EXT2_ET_MAGIC_RESERVED_11,
-	"Wrong magic number --- RESERVED_11"
+ec	EXT2_ET_MAGIC_BLOCK_BITMAP64,
+	"Wrong magic number for 64-bit block bitmap"
 
-ec	EXT2_ET_MAGIC_RESERVED_12,
-	"Wrong magic number --- RESERVED_12"
+ec	EXT2_ET_MAGIC_INODE_BITMAP64,
+	"Wrong magic number for 64-bit inode bitmap"
 
 ec	EXT2_ET_MAGIC_RESERVED_13,
 	"Wrong magic number --- RESERVED_13"
