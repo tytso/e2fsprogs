@@ -209,6 +209,24 @@ static void print_pathname(ext2_filsys fs, ext2_ino_t dir, ext2_ino_t ino)
 	}
 }
 
+static void print_time(time_t t)
+{
+	const char *		time_str;
+	static int		do_gmt = -1;
+
+#ifdef __dietlibc__
+		/* The diet libc doesn't respect the TZ environemnt variable */
+		if (do_gmt == -1) {
+			time_str = getenv("TZ");
+			if (!time_str)
+				time_str = "";
+			do_gmt = !strcmp(time_str, "GMT0");
+		}
+#endif
+		time_str = asctime((do_gmt > 0) ? gmtime(&t) : localtime(&t));
+		printf("%.24s", time_str);
+}
+
 /*
  * This function handles the '@' expansion.  We allow recursive
  * expansion; an @ expression can contain further '@' and '%'
@@ -244,9 +262,7 @@ static _INLINE_ void expand_inode_expression(char ch,
 {
 	struct ext2_inode	*inode;
 	struct ext2_inode_large	*large_inode;
-	const char *		time_str;
 	time_t			t;
-	static int		do_gmt = -1;
 
 	if (!ctx || !ctx->inode)
 		goto no_inode;
@@ -289,18 +305,7 @@ static _INLINE_ void expand_inode_expression(char ch,
 		printf("0%o", inode->i_mode);
 		break;
 	case 'M':
-#ifdef __dietlibc__
-		/* The diet libc doesn't respect the TZ environemnt variable */
-		if (do_gmt == -1) {
-			time_str = getenv("TZ");
-			if (!time_str)
-				time_str = "";
-			do_gmt = !strcmp(time_str, "GMT0");
-		}
-#endif
-		t = inode->i_mtime;
-		time_str = asctime((do_gmt > 0) ? gmtime(&t) : localtime(&t));
-		printf("%.24s", time_str);
+		print_time(inode->i_mtime);
 		break;
 	case 'F':
 		printf("%u", inode->i_faddr);
@@ -392,6 +397,8 @@ static _INLINE_ void expand_dirent_expression(ext2_filsys fs, char ch,
 static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 					       struct problem_context *ctx)
 {
+	e2fsck_t e2fsck_ctx = fs ? (e2fsck_t) fs->priv_data : NULL;
+
 	if (!ctx)
 		goto no_context;
 
@@ -460,6 +467,12 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		break;
 	case 's':
 		printf("%s", ctx->str ? ctx->str : "NULL");
+		break;
+	case 't':
+		print_time((time_t) ctx->num);
+		break;
+	case 'T':
+		print_time(e2fsck_ctx ? e2fsck_ctx->now : time(0));
 		break;
 	case 'X':
 #ifdef EXT2_NO_64_TYPE

@@ -38,6 +38,7 @@ struct problem_context {
 #define PR_LATCH_LOW_DTIME 0x0070 /* Latch for pass1 orphaned list refugees */
 #define PR_LATCH_TOOBIG	0x0080	/* Latch for file to big errors */
 #define PR_LATCH_OPTIMIZE_DIR 0x0090 /* Latch for optimize directories */
+#define PR_LATCH_BG_CHECKSUM 0x00A0  /* Latch for block group checksums */
 
 #define PR_LATCH(x)	((((x) & PR_LATCH_MASK) >> 4) - 1)
 
@@ -222,6 +223,9 @@ struct problem_context {
 
 /* Last write time is in the future (fudged) */
 #define PR_0_FUTURE_SB_LAST_WRITE_FUDGED	0x00003D
+
+/* Block group checksum (latch question) */
+#define PR_0_GDT_CSUM_LATCH			0x00003E
 
 
 /*

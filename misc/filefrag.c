@@ -46,6 +46,7 @@ int verbose = 0;
 int no_bs = 0;		/* Don't use the files blocksize, use 1K blocksize */
 int sync_file = 0;	/* fsync file before getting the mapping */
 int xattr_map = 0;	/* get xattr mapping */
+int force_bmap = 0;
 int logical_width = 12;
 int physical_width = 14;
 unsigned long long filesize;
@@ -172,6 +173,7 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 	unsigned long flags = 0;
 	unsigned int i;
 	static int fiemap_incompat_printed;
+	int fiemap_header_printed = 0;
 	int tot_extents = 1, n = 0;
 	int last = 0;
 	int rc;
@@ -189,11 +191,6 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 	if (xattr_map)
 		flags |= FIEMAP_FLAG_XATTR;
 
-	if (verbose)
-		printf(" ext %*s %*s %*s length flags\n", logical_width,
-		       "logical", physical_width, "physical",
-		       physical_width, "expected");
-
 	do {
 		fiemap->fm_length = ~0ULL;
 		fiemap->fm_flags = flags;
@@ -206,6 +203,13 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 				fiemap_incompat_printed = 1;
 			}
 			return rc;
+		}
+
+		if (verbose && !fiemap_header_printed) {
+			printf(" ext %*s %*s %*s length flags\n", logical_width,
+			       "logical", physical_width, "physical",
+			       physical_width, "expected");
+			fiemap_header_printed = 1;
 		}
 
 		if (!verbose) {
@@ -327,7 +331,8 @@ static void frag_report(const char *filename)
 		printf("File size of %s is %lld (%ld block%s, blocksize %d)\n",
 		       filename, (long long) fileinfo.st_size, numblocks,
 		       numblocks == 1 ? "" : "s", bs);
-	if (filefrag_fiemap(fd, int_log2(bs), &num_extents) != 0) {
+	if (force_bmap ||
+	    filefrag_fiemap(fd, int_log2(bs), &num_extents) != 0) {
 		for (i = 0, count = 0; i < numblocks; i++) {
 			if (is_ext2 && last_block) {
 				if (((i-EXT2_DIRECT) % bpib) == 0)
@@ -341,6 +346,8 @@ static void frag_report(const char *filename)
 			rc = get_bmap(fd, i, &block);
 			if (block == 0)
 				continue;
+			if (!num_extents)
+				num_extents++;
 			count++;
 			if (last_block && (block != last_block+1) ) {
 				if (verbose)
@@ -368,7 +375,7 @@ static void frag_report(const char *filename)
 
 static void usage(const char *progname)
 {
-	fprintf(stderr, "Usage: %s [-bvsx] file ...\n", progname);
+	fprintf(stderr, "Usage: %s [-Bbvsx] file ...\n", progname);
 	exit(1);
 }
 
@@ -377,8 +384,11 @@ int main(int argc, char**argv)
 	char **cpp;
 	int c;
 
-	while ((c = getopt(argc, argv, "bsvx")) != EOF)
+	while ((c = getopt(argc, argv, "Bbsvx")) != EOF)
 		switch (c) {
+		case 'B':
+			force_bmap++;
+			break;
 		case 'b':
 			no_bs++;
 			break;

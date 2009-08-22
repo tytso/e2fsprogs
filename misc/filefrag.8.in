@@ -5,7 +5,7 @@ filefrag \- report on file fragmentation
 .SH SYNOPSIS
 .B filefrag
 [
-.B \-bsvx
+.B \-Bbsvx
 ]
 [
 .I files...
@@ -22,6 +22,10 @@ program initially attempts to get the
 extent information using FIEMAP ioctl which is more efficient and faster.
 If FIEMAP is not supported then filefrag will fall back to using FIBMAP.
 .SH OPTIONS
+.TP
+.B \-B
+Force the use of the older FIBMAP ioctl instead of the FIEMAP ioctl for
+testing purposes.
 .TP
 .B \-b
 Use 1024 byte blocksize for the output.
