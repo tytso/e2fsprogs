@@ -225,7 +225,7 @@ static void list_desc (ext2_filsys fs)
 				fs->group_desc[i].bg_itable_unused);
 		if (block_bitmap) {
 			fputs(_("  Free blocks: "), stdout);
-			ext2fs_get_block_bitmap_range(fs->block_map,
+			ext2fs_get_block_bitmap_range2(fs->block_map,
 				 blk_itr, block_nbytes << 3, block_bitmap);
 			print_free (i, block_bitmap,
 				    fs->super->s_blocks_per_group,
@@ -235,7 +235,7 @@ static void list_desc (ext2_filsys fs)
 		}
 		if (inode_bitmap) {
 			fputs(_("  Free inodes: "), stdout);
-			ext2fs_get_inode_bitmap_range(fs->inode_map,
+			ext2fs_get_inode_bitmap_range2(fs->inode_map,
 				 ino_itr, inode_nbytes << 3, inode_bitmap);
 			print_free (i, inode_bitmap,
 				    fs->super->s_inodes_per_group, 1);

@@ -225,9 +225,9 @@ static int process_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 
 	p = (struct process_block_struct *) priv_data;
 
-	ext2fs_mark_block_bitmap(meta_block_map, *block_nr);
+	ext2fs_mark_block_bitmap2(meta_block_map, *block_nr);
 	if (scramble_block_map && p->is_dir && blockcnt >= 0)
-		ext2fs_mark_block_bitmap(scramble_block_map, *block_nr);
+		ext2fs_mark_block_bitmap2(scramble_block_map, *block_nr);
 	return 0;
 }
 
@@ -239,7 +239,7 @@ static int process_file_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 			      void *priv_data EXT2FS_ATTR((unused)))
 {
 	if (blockcnt < 0) {
-		ext2fs_mark_block_bitmap(meta_block_map, *block_nr);
+		ext2fs_mark_block_bitmap2(meta_block_map, *block_nr);
 	}
 	return 0;
 }
@@ -253,13 +253,13 @@ static void mark_table_blocks(ext2_filsys fs)
 	/*
 	 * Mark primary superblock
 	 */
-	ext2fs_mark_block_bitmap(meta_block_map, first_block);
+	ext2fs_mark_block_bitmap2(meta_block_map, first_block);
 
 	/*
 	 * Mark the primary superblock descriptors
 	 */
 	for (j = 0; j < fs->desc_blocks; j++) {
-		ext2fs_mark_block_bitmap(meta_block_map,
+		ext2fs_mark_block_bitmap2(meta_block_map,
 			 ext2fs_descriptor_block_loc(fs, first_block, j));
 	}
 
@@ -271,14 +271,14 @@ static void mark_table_blocks(ext2_filsys fs)
 			for (j = 0, b = fs->group_desc[i].bg_inode_table;
 			     j < (unsigned) fs->inode_blocks_per_group;
 			     j++, b++)
-				ext2fs_mark_block_bitmap(meta_block_map, b);
+				ext2fs_mark_block_bitmap2(meta_block_map, b);
 		}
 
 		/*
 		 * Mark block used for the block bitmap
 		 */
 		if (fs->group_desc[i].bg_block_bitmap) {
-			ext2fs_mark_block_bitmap(meta_block_map,
+			ext2fs_mark_block_bitmap2(meta_block_map,
 				     fs->group_desc[i].bg_block_bitmap);
 		}
 
@@ -286,7 +286,7 @@ static void mark_table_blocks(ext2_filsys fs)
 		 * Mark block used for the inode bitmap
 		 */
 		if (fs->group_desc[i].bg_inode_bitmap) {
-			ext2fs_mark_block_bitmap(meta_block_map,
+			ext2fs_mark_block_bitmap2(meta_block_map,
 				 fs->group_desc[i].bg_inode_bitmap);
 		}
 	}
@@ -423,14 +423,14 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 	memset(zero_buf, 0, fs->blocksize);
 	for (blk = 0; blk < fs->super->s_blocks_count; blk++) {
 		if ((blk >= fs->super->s_first_data_block) &&
-		    ext2fs_test_block_bitmap(meta_block_map, blk)) {
+		    ext2fs_test_block_bitmap2(meta_block_map, blk)) {
 			retval = io_channel_read_blk(fs->io, blk, 1, buf);
 			if (retval) {
 				com_err(program_name, retval,
 					"error reading block %u", blk);
 			}
 			if (scramble_block_map &&
-			    ext2fs_test_block_bitmap(scramble_block_map, blk))
+			    ext2fs_test_block_bitmap2(scramble_block_map, blk))
 				scramble_dir_block(fs, blk, buf);
 			if ((fd != 1) && check_zero_block(buf, fs->blocksize))
 				goto sparse_write;
@@ -512,7 +512,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 		if (!inode.i_links_count)
 			continue;
 		if (inode.i_file_acl) {
-			ext2fs_mark_block_bitmap(meta_block_map,
+			ext2fs_mark_block_bitmap2(meta_block_map,
 						 inode.i_file_acl);
 		}
 		if (!ext2fs_inode_has_valid_blocks(&inode))
