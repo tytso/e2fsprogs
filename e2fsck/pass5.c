@@ -126,14 +126,14 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	    fs->group_desc_count * sizeof(int), "free block count array");
 
 	if ((fs->super->s_first_data_block <
-	     ext2fs_get_block_bitmap_start(ctx->block_found_map)) ||
+	     ext2fs_get_block_bitmap_start2(ctx->block_found_map)) ||
 	    (fs->super->s_blocks_count-1 >
-	     ext2fs_get_block_bitmap_end(ctx->block_found_map))) {
+	     ext2fs_get_block_bitmap_end2(ctx->block_found_map))) {
 		pctx.num = 1;
 		pctx.blk = fs->super->s_first_data_block;
 		pctx.blk2 = fs->super->s_blocks_count -1;
-		pctx.ino = ext2fs_get_block_bitmap_start(ctx->block_found_map);
-		pctx.ino2 = ext2fs_get_block_bitmap_end(ctx->block_found_map);
+		pctx.ino = ext2fs_get_block_bitmap_start2(ctx->block_found_map);
+		pctx.ino2 = ext2fs_get_block_bitmap_end2(ctx->block_found_map);
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
 
 		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
@@ -141,14 +141,14 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	}
 
 	if ((fs->super->s_first_data_block <
-	     ext2fs_get_block_bitmap_start(fs->block_map)) ||
+	     ext2fs_get_block_bitmap_start2(fs->block_map)) ||
 	    (fs->super->s_blocks_count-1 >
-	     ext2fs_get_block_bitmap_end(fs->block_map))) {
+	     ext2fs_get_block_bitmap_end2(fs->block_map))) {
 		pctx.num = 2;
 		pctx.blk = fs->super->s_first_data_block;
 		pctx.blk2 = fs->super->s_blocks_count -1;
-		pctx.ino = ext2fs_get_block_bitmap_start(fs->block_map);
-		pctx.ino2 = ext2fs_get_block_bitmap_end(fs->block_map);
+		pctx.ino = ext2fs_get_block_bitmap_start2(fs->block_map);
+		pctx.ino2 = ext2fs_get_block_bitmap_end2(fs->block_map);
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
 
 		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
@@ -167,7 +167,7 @@ redo_counts:
 	for (i = fs->super->s_first_data_block;
 	     i < fs->super->s_blocks_count;
 	     i++) {
-		actual = ext2fs_fast_test_block_bitmap(ctx->block_found_map, i);
+		actual = ext2fs_fast_test_block_bitmap2(ctx->block_found_map, i);
 
 		if (skip_group) {
 			if ((i - fs->super->s_first_data_block) %
@@ -216,7 +216,7 @@ redo_counts:
 				 * are 0, count the free block,
 				 * skip the current block group.
 				 */
-				if (ext2fs_test_block_bitmap_range(
+				if (ext2fs_test_block_bitmap_range2(
 					    ctx->block_found_map, i,
 					    cmp_block)) {
 					/*
@@ -239,7 +239,7 @@ redo_counts:
 		} else if (redo_flag)
 			bitmap = actual;
 		else
-			bitmap = ext2fs_fast_test_block_bitmap(fs->block_map, i);
+			bitmap = ext2fs_fast_test_block_bitmap2(fs->block_map, i);
 
 		if (actual == bitmap)
 			goto do_counts;
@@ -391,27 +391,27 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	dir_array = (int *) e2fsck_allocate_memory(ctx,
 	   fs->group_desc_count * sizeof(int), "directory count array");
 
-	if ((1 < ext2fs_get_inode_bitmap_start(ctx->inode_used_map)) ||
+	if ((1 < ext2fs_get_inode_bitmap_start2(ctx->inode_used_map)) ||
 	    (fs->super->s_inodes_count >
-	     ext2fs_get_inode_bitmap_end(ctx->inode_used_map))) {
+	     ext2fs_get_inode_bitmap_end2(ctx->inode_used_map))) {
 		pctx.num = 3;
 		pctx.blk = 1;
 		pctx.blk2 = fs->super->s_inodes_count;
-		pctx.ino = ext2fs_get_inode_bitmap_start(ctx->inode_used_map);
-		pctx.ino2 = ext2fs_get_inode_bitmap_end(ctx->inode_used_map);
+		pctx.ino = ext2fs_get_inode_bitmap_start2(ctx->inode_used_map);
+		pctx.ino2 = ext2fs_get_inode_bitmap_end2(ctx->inode_used_map);
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
 
 		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
 		goto errout;
 	}
-	if ((1 < ext2fs_get_inode_bitmap_start(fs->inode_map)) ||
+	if ((1 < ext2fs_get_inode_bitmap_start2(fs->inode_map)) ||
 	    (fs->super->s_inodes_count >
-	     ext2fs_get_inode_bitmap_end(fs->inode_map))) {
+	     ext2fs_get_inode_bitmap_end2(fs->inode_map))) {
 		pctx.num = 4;
 		pctx.blk = 1;
 		pctx.blk2 = fs->super->s_inodes_count;
-		pctx.ino = ext2fs_get_inode_bitmap_start(fs->inode_map);
-		pctx.ino2 = ext2fs_get_inode_bitmap_end(fs->inode_map);
+		pctx.ino = ext2fs_get_inode_bitmap_start2(fs->inode_map);
+		pctx.ino2 = ext2fs_get_inode_bitmap_end2(fs->inode_map);
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
 
 		ctx->flags |= E2F_FLAG_ABORT; /* fatal */
@@ -454,11 +454,11 @@ redo_counts:
 			}
 		}
 
-		actual = ext2fs_fast_test_inode_bitmap(ctx->inode_used_map, i);
+		actual = ext2fs_fast_test_inode_bitmap2(ctx->inode_used_map, i);
 		if (redo_flag)
 			bitmap = actual;
 		else if (!skip_group)
-			bitmap = ext2fs_fast_test_inode_bitmap(fs->inode_map, i);
+			bitmap = ext2fs_fast_test_inode_bitmap2(fs->inode_map, i);
 		if (actual == bitmap)
 			goto do_counts;
 
@@ -506,7 +506,7 @@ redo_counts:
 
 do_counts:
 		if (bitmap) {
-			if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, i))
+			if (ext2fs_test_inode_bitmap2(ctx->inode_dir_map, i))
 				dirs_count++;
 		} else if (!skip_group || csum_flag) {
 			group_free++;
@@ -656,14 +656,14 @@ static void check_inode_end(e2fsck_t ctx)
 static void check_block_end(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	blk_t	end, save_blocks_count, i;
+	blk64_t	end, save_blocks_count, i;
 	struct problem_context	pctx;
 
 	clear_problem_context(&pctx);
 
-	end = ext2fs_get_block_bitmap_start(fs->block_map) +
+	end = ext2fs_get_block_bitmap_start2(fs->block_map) +
 		(EXT2_BLOCKS_PER_GROUP(fs->super) * fs->group_desc_count) - 1;
-	pctx.errcode = ext2fs_fudge_block_bitmap_end(fs->block_map, end,
+	pctx.errcode = ext2fs_fudge_block_bitmap_end2(fs->block_map, end,
 						     &save_blocks_count);
 	if (pctx.errcode) {
 		pctx.num = 3;
@@ -676,11 +676,11 @@ static void check_block_end(e2fsck_t ctx)
 
 	/* Protect loop from wrap-around if end is maxed */
 	for (i = save_blocks_count + 1; i <= end && i > save_blocks_count; i++) {
-		if (!ext2fs_test_block_bitmap(fs->block_map, i)) {
+		if (!ext2fs_test_block_bitmap2(fs->block_map, i)) {
 			if (fix_problem(ctx, PR_5_BLOCK_BMAP_PADDING, &pctx)) {
 				for (; i <= end; i++)
-					ext2fs_mark_block_bitmap(fs->block_map,
-								 i);
+					ext2fs_mark_block_bitmap2(fs->block_map,
+								  i);
 				ext2fs_mark_bb_dirty(fs);
 			} else
 				ext2fs_unmark_valid(fs);
@@ -688,7 +688,7 @@ static void check_block_end(e2fsck_t ctx)
 		}
 	}
 
-	pctx.errcode = ext2fs_fudge_block_bitmap_end(fs->block_map,
+	pctx.errcode = ext2fs_fudge_block_bitmap_end2(fs->block_map,
 						     save_blocks_count, 0);
 	if (pctx.errcode) {
 		pctx.num = 4;

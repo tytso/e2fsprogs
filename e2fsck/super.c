@@ -84,7 +84,7 @@ static int release_inode_block(ext2_filsys fs,
 		return BLOCK_ABORT;
 	}
 
-	if (!ext2fs_test_block_bitmap(fs->block_map, blk)) {
+	if (!ext2fs_test_block_bitmap2(fs->block_map, blk)) {
 		fix_problem(ctx, PR_0_ORPHAN_ALREADY_CLEARED_BLOCK, pctx);
 		goto return_abort;
 	}

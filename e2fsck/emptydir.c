@@ -97,7 +97,7 @@ void add_empty_dirblock(empty_dir_info edi,
 	printf(_("Empty directory block %u (#%d) in inode %u\n"),
 	       db->blk, db->blockcnt, db->ino);
 
-	ext2fs_mark_block_bitmap(edi->empty_dir_blocks, db->blk);
+	ext2fs_mark_block_bitmap2(edi->empty_dir_blocks, db->blk);
 	if (ext2fs_test_inode_bitmap(edi->dir_map, db->ino))
 		return;
 	ext2fs_mark_inode_bitmap(edi->dir_map, db->ino);
@@ -135,7 +135,7 @@ int empty_pass1(ext2_filsys fs, blk_t *block_nr, e2_blkcnt_t blockcnt,
 		if (new_block == 0)
 			break;
 		edi->logblk++;
-	} while (ext2fs_test_block_bitmap(edi->empty_dir_blocks, new_block));
+	} while (ext2fs_test_block_bitmap2(edi->empty_dir_blocks, new_block));
 
 	if (new_block == block)
 		return 0;

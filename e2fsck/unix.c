@@ -939,6 +939,7 @@ int main (int argc, char *argv[])
 	int flags, run_result;
 	int journal_size;
 	int sysval, sys_page_size = 4096;
+	int old_bitmaps;
 	__u32 features[3];
 	char *cp;
 
@@ -1001,6 +1002,10 @@ restart:
 #endif
 		io_ptr = unix_io_manager;
 	flags = EXT2_FLAG_NOFREE_ON_ERROR;
+	profile_get_boolean(ctx->profile, "options", "old_bitmaps", 0, 0,
+			    &old_bitmaps);
+	if (!old_bitmaps)
+		flags |= EXT2_FLAG_64BITS;
 	if ((ctx->options & E2F_OPT_READONLY) == 0)
 		flags |= EXT2_FLAG_RW;
 	if ((ctx->mount_flags & EXT2_MF_MOUNTED) == 0)

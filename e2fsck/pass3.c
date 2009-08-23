@@ -87,7 +87,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 		goto abort_exit;
 
-	ext2fs_mark_inode_bitmap(inode_done_map, EXT2_ROOT_INO);
+	ext2fs_mark_inode_bitmap2(inode_done_map, EXT2_ROOT_INO);
 
 	maxdirs = e2fsck_get_num_dirinfo(ctx);
 	count = 1;
@@ -102,7 +102,7 @@ void e2fsck_pass3(e2fsck_t ctx)
 			goto abort_exit;
 		if (ctx->progress && (ctx->progress)(ctx, 3, count++, maxdirs))
 			goto abort_exit;
-		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, dir->ino))
+		if (ext2fs_test_inode_bitmap2(ctx->inode_dir_map, dir->ino))
 			if (check_directory(ctx, dir->ino, &pctx))
 				goto abort_exit;
 	}
@@ -141,20 +141,20 @@ abort_exit:
 static void check_root(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	blk_t			blk;
+	blk64_t			blk;
 	struct ext2_inode	inode;
 	char *			block;
 	struct problem_context	pctx;
 
 	clear_problem_context(&pctx);
 
-	if (ext2fs_test_inode_bitmap(ctx->inode_used_map, EXT2_ROOT_INO)) {
+	if (ext2fs_test_inode_bitmap2(ctx->inode_used_map, EXT2_ROOT_INO)) {
 		/*
 		 * If the root inode is not a directory, die here.  The
 		 * user must have answered 'no' in pass1 when we
 		 * offered to clear it.
 		 */
-		if (!(ext2fs_test_inode_bitmap(ctx->inode_dir_map,
+		if (!(ext2fs_test_inode_bitmap2(ctx->inode_dir_map,
 					       EXT2_ROOT_INO))) {
 			fix_problem(ctx, PR_3_ROOT_NOT_DIR_ABORT, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
@@ -173,15 +173,15 @@ static void check_root(e2fsck_t ctx)
 	/*
 	 * First, find a free block
 	 */
-	pctx.errcode = ext2fs_new_block(fs, 0, ctx->block_found_map, &blk);
+	pctx.errcode = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
 	if (pctx.errcode) {
 		pctx.str = "ext2fs_new_block";
 		fix_problem(ctx, PR_3_CREATE_ROOT_ERROR, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}
-	ext2fs_mark_block_bitmap(ctx->block_found_map, blk);
-	ext2fs_mark_block_bitmap(fs->block_map, blk);
+	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
+	ext2fs_mark_block_bitmap2(fs->block_map, blk);
 	ext2fs_mark_bb_dirty(fs);
 
 	/*
@@ -234,9 +234,9 @@ static void check_root(e2fsck_t ctx)
 	ext2fs_icount_store(ctx->inode_count, EXT2_ROOT_INO, 2);
 	ext2fs_icount_store(ctx->inode_link_info, EXT2_ROOT_INO, 2);
 
-	ext2fs_mark_inode_bitmap(ctx->inode_used_map, EXT2_ROOT_INO);
-	ext2fs_mark_inode_bitmap(ctx->inode_dir_map, EXT2_ROOT_INO);
-	ext2fs_mark_inode_bitmap(fs->inode_map, EXT2_ROOT_INO);
+	ext2fs_mark_inode_bitmap2(ctx->inode_used_map, EXT2_ROOT_INO);
+	ext2fs_mark_inode_bitmap2(ctx->inode_dir_map, EXT2_ROOT_INO);
+	ext2fs_mark_inode_bitmap2(fs->inode_map, EXT2_ROOT_INO);
 	ext2fs_mark_ib_dirty(fs);
 }
 
@@ -274,7 +274,7 @@ static int check_directory(e2fsck_t ctx, ext2_ino_t dir,
 		 * If it was marked done already, then we've reached a
 		 * parent we've already checked.
 		 */
-	  	if (ext2fs_mark_inode_bitmap(inode_done_map, ino))
+	  	if (ext2fs_mark_inode_bitmap2(inode_done_map, ino))
 			break;
 
 		if (e2fsck_dir_info_get_parent(ctx, ino, &parent)) {
@@ -289,7 +289,7 @@ static int check_directory(e2fsck_t ctx, ext2_ino_t dir,
 		 */
 		if (!parent ||
 		    (loop_pass &&
-		     (ext2fs_test_inode_bitmap(inode_loop_detect,
+		     (ext2fs_test_inode_bitmap2(inode_loop_detect,
 					       parent)))) {
 			pctx->ino = ino;
 			if (fix_problem(ctx, PR_3_UNCONNECTED_DIR, pctx)) {
@@ -305,7 +305,7 @@ static int check_directory(e2fsck_t ctx, ext2_ino_t dir,
 		}
 		ino = parent;
 		if (loop_pass) {
-			ext2fs_mark_inode_bitmap(inode_loop_detect, ino);
+			ext2fs_mark_inode_bitmap2(inode_loop_detect, ino);
 		} else if (parent_count++ > 2048) {
 			/*
 			 * If we've run into a path depth that's
@@ -355,7 +355,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 {
 	ext2_filsys fs = ctx->fs;
 	ext2_ino_t			ino;
-	blk_t			blk;
+	blk64_t			blk;
 	errcode_t		retval;
 	struct ext2_inode	inode;
 	char *			block;
@@ -372,7 +372,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	if (retval && !fix)
 		return 0;
 	if (!retval) {
-		if (ext2fs_test_inode_bitmap(ctx->inode_dir_map, ino)) {
+		if (ext2fs_test_inode_bitmap2(ctx->inode_dir_map, ino)) {
 			ctx->lost_and_found = ino;
 			return ino;
 		}
@@ -409,13 +409,13 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 	/*
 	 * First, find a free block
 	 */
-	retval = ext2fs_new_block(fs, 0, ctx->block_found_map, &blk);
+	retval = ext2fs_new_block2(fs, 0, ctx->block_found_map, &blk);
 	if (retval) {
 		pctx.errcode = retval;
 		fix_problem(ctx, PR_3_ERR_LPF_NEW_BLOCK, &pctx);
 		return 0;
 	}
-	ext2fs_mark_block_bitmap(ctx->block_found_map, blk);
+	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
 	ext2fs_block_alloc_stats(fs, blk, +1);
 
 	/*
@@ -428,8 +428,8 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 		fix_problem(ctx, PR_3_ERR_LPF_NEW_INODE, &pctx);
 		return 0;
 	}
-	ext2fs_mark_inode_bitmap(ctx->inode_used_map, ino);
-	ext2fs_mark_inode_bitmap(ctx->inode_dir_map, ino);
+	ext2fs_mark_inode_bitmap2(ctx->inode_used_map, ino);
+	ext2fs_mark_inode_bitmap2(ctx->inode_dir_map, ino);
 	ext2fs_inode_alloc_stats2(fs, ino, +1, 1);
 
 	/*
@@ -691,7 +691,7 @@ static int expand_dir_proc(ext2_filsys fs,
 			   void	*priv_data)
 {
 	struct expand_dir_struct *es = (struct expand_dir_struct *) priv_data;
-	blk_t	new_blk;
+	blk64_t	new_blk;
 	static blk_t	last_blk = 0;
 	char		*block;
 	errcode_t	retval;
@@ -708,7 +708,7 @@ static int expand_dir_proc(ext2_filsys fs,
 		last_blk = *blocknr;
 		return 0;
 	}
-	retval = ext2fs_new_block(fs, last_blk, ctx->block_found_map,
+	retval = ext2fs_new_block2(fs, last_blk, ctx->block_found_map,
 				  &new_blk);
 	if (retval) {
 		es->err = retval;
@@ -737,7 +737,7 @@ static int expand_dir_proc(ext2_filsys fs,
 	}
 	ext2fs_free_mem(&block);
 	*blocknr = new_blk;
-	ext2fs_mark_block_bitmap(ctx->block_found_map, new_blk);
+	ext2fs_mark_block_bitmap2(ctx->block_found_map, new_blk);
 	ext2fs_block_alloc_stats(fs, new_blk, +1);
 	es->newblocks++;
 
