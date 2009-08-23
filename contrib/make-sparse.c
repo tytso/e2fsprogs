@@ -48,6 +48,7 @@ int full_read(int fd, char *buf, size_t count)
 int main(int argc, char **argv)
 {
 	int fd, got, i;
+	int zflag = 0;
 	char buf[1024];
 
 	if (argc != 2) {
@@ -69,10 +70,17 @@ int main(int argc, char **argv)
 					break;
 			if (i == sizeof(buf)) {
 				lseek(fd, sizeof(buf), SEEK_CUR);
+				zflag = 1;
 				continue;
 			}
 		}
+		zflag = 0;
 		write(fd, buf, got);
+	}
+	if (zflag) {
+		lseek(fd, -1, SEEK_CUR);
+		buf[0] = 0;
+		write(fd, buf, 1);
 	}
 	return 0;
 }
