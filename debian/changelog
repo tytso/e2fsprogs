@@ -1,3 +1,35 @@
+e2fsprogs (1.41.9-1) unstable; urgency=low
+
+  * Fix tune2fs -I to work correctly in the face of bad blocks and
+    filesystems formatted for RAID arrays, and ENOSPC errors
+  * Require the user to only answer one question instead of multiple
+    ones for multiple bad block group checksums, or when an inode
+    table needs to be moved.
+  * Fix e2fsck to handle moving inode tables in FLEX_BG filesystems more
+    gracefully by looking in the entire flex_bg for space, instead of
+    just in the block group; if that doesn't work, try looking for
+    space in the entire filesystem.
+  * Fix the filefrag code to avoid printing the extent header if it
+    needs to fallback to using the FIBMAP ioctl.
+  * Fix filefrag to print the correct number of extents for zero-length
+    files when using FIBMAP.  (Closes: #540376)
+  * Add a filefrag -B option to make it easier to debug the FIBMAP
+    support.
+  * Allow e2fsprogs programs to allocate from uninitalized block groups.
+  * Add a new program, e2freefrag, which displays information about the
+    free space fragmentation in an ext2/3/4 filesystem.
+  * E2fsck will now print much fuller information when the last mount
+    time or last written time is in the future, since most people can't
+    seem to believe their distribution has buggy init scripts, or they
+    have a failed CMOS/RTS clock battery.
+  * Update French, Polish, Czech, and Sweedish translation from the
+    Translation Project.
+  * Enhance debugfs's 'stat' command to print basic extent information
+    for extent-mapped inodes, and add a new command, 'dump_extents'
+    which prints detailed information about an inode's extent tree.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 22 Aug 2009 22:45:18 -0400
+
 e2fsprogs (1.41.8-2) unstable; urgency=low
 
   * Fix regression in ext2fs_extent_set_bmap() which caused e2fsck -fD
