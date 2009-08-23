@@ -1,5 +1,6 @@
 e2fsprogs (1.41.9-1) unstable; urgency=low
 
+  * New upstream release
   * Fix tune2fs -I to work correctly in the face of bad blocks and
     filesystems formatted for RAID arrays, and ENOSPC errors
   * Require the user to only answer one question instead of multiple
@@ -28,7 +29,7 @@ e2fsprogs (1.41.9-1) unstable; urgency=low
     for extent-mapped inodes, and add a new command, 'dump_extents'
     which prints detailed information about an inode's extent tree.
 
- -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 22 Aug 2009 22:45:18 -0400
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 23 Aug 2009 10:08:52 -0400
 
 e2fsprogs (1.41.8-2) unstable; urgency=low
 

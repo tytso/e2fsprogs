@@ -11,8 +11,8 @@
 export LC_ALL=C
 
 # Allow distro-specific behaviour
-DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release || echo Debian)
-SYS_BLKID_VER :=$(shell dpkg-query -W -f '${version}\n' libblkid1 | cut -b 1)
+DISTRO :=$(shell sed -ne '/DISTRIB_ID/s/.*=//p' /etc/lsb-release 2>/dev/null || echo Debian)
+SYS_BLKID_VER := $(shell dpkg-query -W libblkid1 | cut -f 2 | cut -b 1)
 ifeq ($(SYS_BLKID_VER),2)
 UTIL_LINUX_NG ?= yes
 endif
