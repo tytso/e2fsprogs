@@ -1,5 +1,5 @@
 .\" -*- nroff -*-
-.TH E2FREEFRAG 8
+.TH E2FREEFRAG 8 "@E2FSPROGS_MONTH@ @E2FSPROGS_YEAR@" "E2fsprogs version @E2FSPROGS_VERSION@"
 .SH NAME
 e2freefrag \- report free space fragmentation information
 .SH SYNOPSIS
