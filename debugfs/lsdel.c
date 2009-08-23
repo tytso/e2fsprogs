@@ -64,7 +64,7 @@ static int lsdel_proc(ext2_filsys fs,
 		return BLOCK_ABORT;
 	}
 
-	if (!ext2fs_test_block_bitmap(fs->block_map,*block_nr))
+	if (!ext2fs_test_block_bitmap2(fs->block_map,*block_nr))
 		lsd->free_blocks++;
 
 	return 0;

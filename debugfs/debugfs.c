@@ -955,9 +955,9 @@ void do_freei(int argc, char *argv[])
 				      CHECK_FS_RW | CHECK_FS_BITMAPS))
 		return;
 
-	if (!ext2fs_test_inode_bitmap(current_fs->inode_map,inode))
+	if (!ext2fs_test_inode_bitmap2(current_fs->inode_map,inode))
 		com_err(argv[0], 0, "Warning: inode already clear");
-	ext2fs_unmark_inode_bitmap(current_fs->inode_map,inode);
+	ext2fs_unmark_inode_bitmap2(current_fs->inode_map,inode);
 	ext2fs_mark_ib_dirty(current_fs);
 }
 
@@ -969,9 +969,9 @@ void do_seti(int argc, char *argv[])
 				      CHECK_FS_RW | CHECK_FS_BITMAPS))
 		return;
 
-	if (ext2fs_test_inode_bitmap(current_fs->inode_map,inode))
+	if (ext2fs_test_inode_bitmap2(current_fs->inode_map,inode))
 		com_err(argv[0], 0, "Warning: inode already set");
-	ext2fs_mark_inode_bitmap(current_fs->inode_map,inode);
+	ext2fs_mark_inode_bitmap2(current_fs->inode_map,inode);
 	ext2fs_mark_ib_dirty(current_fs);
 }
 
@@ -982,7 +982,7 @@ void do_testi(int argc, char *argv[])
 	if (common_inode_args_process(argc, argv, &inode, CHECK_FS_BITMAPS))
 		return;
 
-	if (ext2fs_test_inode_bitmap(current_fs->inode_map,inode))
+	if (ext2fs_test_inode_bitmap2(current_fs->inode_map,inode))
 		printf("Inode %u is marked in use\n", inode);
 	else
 		printf("Inode %u is not in use\n", inode);
@@ -998,10 +998,10 @@ void do_freeb(int argc, char *argv[])
 	if (check_fs_read_write(argv[0]))
 		return;
 	while (count-- > 0) {
-		if (!ext2fs_test_block_bitmap(current_fs->block_map,block))
+		if (!ext2fs_test_block_bitmap2(current_fs->block_map,block))
 			com_err(argv[0], 0, "Warning: block %u already clear",
 				block);
-		ext2fs_unmark_block_bitmap(current_fs->block_map,block);
+		ext2fs_unmark_block_bitmap2(current_fs->block_map,block);
 		block++;
 	}
 	ext2fs_mark_bb_dirty(current_fs);
@@ -1017,10 +1017,10 @@ void do_setb(int argc, char *argv[])
 	if (check_fs_read_write(argv[0]))
 		return;
 	while (count-- > 0) {
-		if (ext2fs_test_block_bitmap(current_fs->block_map,block))
+		if (ext2fs_test_block_bitmap2(current_fs->block_map,block))
 			com_err(argv[0], 0, "Warning: block %u already set",
 				block);
-		ext2fs_mark_block_bitmap(current_fs->block_map,block);
+		ext2fs_mark_block_bitmap2(current_fs->block_map,block);
 		block++;
 	}
 	ext2fs_mark_bb_dirty(current_fs);
@@ -1034,7 +1034,7 @@ void do_testb(int argc, char *argv[])
 	if (common_block_args_process(argc, argv, &block, &count))
 		return;
 	while (count-- > 0) {
-		if (ext2fs_test_block_bitmap(current_fs->block_map,block))
+		if (ext2fs_test_block_bitmap2(current_fs->block_map,block))
 			printf("Block %u marked in use\n", block);
 		else
 			printf("Block %u not in use\n", block);
@@ -1357,7 +1357,7 @@ void do_undel(int argc, char *argv[])
 	if (debugfs_read_inode(ino, &inode, argv[1]))
 		return;
 
-	if (ext2fs_test_inode_bitmap(current_fs->inode_map, ino)) {
+	if (ext2fs_test_inode_bitmap2(current_fs->inode_map, ino)) {
 		com_err(argv[1], 0, "Inode is not marked as deleted");
 		return;
 	}
@@ -1599,7 +1599,7 @@ void do_write(int argc, char *argv[])
 		close(fd);
 		return;
 	}
-        if (ext2fs_test_inode_bitmap(current_fs->inode_map,newfile))
+        if (ext2fs_test_inode_bitmap2(current_fs->inode_map,newfile))
 		com_err(argv[0], 0, "Warning: inode already set");
 	ext2fs_inode_alloc_stats2(current_fs, newfile, +1, 0);
 	memset(&inode, 0, sizeof(inode));
@@ -1689,9 +1689,9 @@ void do_mknod(int argc, char *argv[])
 		com_err(argv[1], retval, 0);
 		return;
 	}
-        if (ext2fs_test_inode_bitmap(current_fs->inode_map,newfile))
+        if (ext2fs_test_inode_bitmap2(current_fs->inode_map,newfile))
 		com_err(argv[0], 0, "Warning: inode already set");
-	ext2fs_mark_inode_bitmap(current_fs->inode_map, newfile);
+	ext2fs_mark_inode_bitmap2(current_fs->inode_map, newfile);
 	ext2fs_mark_ib_dirty(current_fs);
 	memset(&inode, 0, sizeof(inode));
 	inode.i_mode = mode;
