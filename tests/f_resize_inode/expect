@@ -13,8 +13,9 @@ Maximum filesystem blocks=8421376
 Superblock backups stored on blocks: 
 	1025, 3073, 5121, 7169, 9217
 
-Writing inode tables:  0/16 1/16 2/16 3/16 4/16 5/16 6/16 7/16 8/16 9/1610/1611/1612/1613/1614/1615/16done                            
-Writing superblocks and filesystem accounting information: done
+Allocating group tables:  0/16 1/16 2/16 3/16 4/16 5/16 6/16 7/16 8/16 9/1610/1611/1612/1613/1614/1615/16     done                            
+Writing inode tables:  0/16 1/16 2/16 3/16 4/16 5/16 6/16 7/16 8/16 9/1610/1611/1612/1613/1614/1615/16     done                            
+Writing superblocks and filesystem accounting information:  0/16 1/16 2/16 3/16 4/16 5/16 6/16 7/16 8/16 9/1610/1611/1612/1613/1614/1615/16     done
 
 Pass 1: Checking inodes, blocks, and sizes
 Pass 2: Checking directory structure

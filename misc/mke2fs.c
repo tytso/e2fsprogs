@@ -51,6 +51,7 @@ extern int optind;
 #include <limits.h>
 
 #include "ext2fs/ext2_fs.h"
+#include "ext2fs/ext2fsP.h"
 #include "et/com_err.h"
 #include "uuid/uuid.h"
 #include "e2p/e2p.h"
@@ -294,75 +295,20 @@ _("Warning: the backup superblock/group descriptors at block %u contain\n"
 	ext2fs_badblocks_list_iterate_end(bb_iter);
 }
 
-/*
- * These functions implement a generalized progress meter.
- */
-struct progress_struct {
-	char		format[20];
-	char		backup[80];
-	__u32		max;
-	int		skip_progress;
-};
-
-static void progress_init(struct progress_struct *progress,
-			  const char *label,__u32 max)
-{
-	int	i;
-
-	memset(progress, 0, sizeof(struct progress_struct));
-	if (quiet)
-		return;
-
-	/*
-	 * Figure out how many digits we need
-	 */
-	i = int_log10(max);
-	sprintf(progress->format, "%%%dd/%%%dld", i, i);
-	memset(progress->backup, '\b', sizeof(progress->backup)-1);
-	progress->backup[sizeof(progress->backup)-1] = 0;
-	if ((2*i)+1 < (int) sizeof(progress->backup))
-		progress->backup[(2*i)+1] = 0;
-	progress->max = max;
-
-	progress->skip_progress = 0;
-	if (getenv("MKE2FS_SKIP_PROGRESS"))
-		progress->skip_progress++;
-
-	fputs(label, stdout);
-	fflush(stdout);
-}
-
-static void progress_update(struct progress_struct *progress, __u32 val)
-{
-	if ((progress->format[0] == 0) || progress->skip_progress)
-		return;
-	printf(progress->format, val, progress->max);
-	fputs(progress->backup, stdout);
-}
-
-static void progress_close(struct progress_struct *progress)
-{
-	if (progress->format[0] == 0)
-		return;
-	fputs(_("done                            \n"), stdout);
-}
-
 static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 {
 	errcode_t	retval;
 	blk_t		blk;
 	dgrp_t		i;
 	int		num, ipb;
-	struct progress_struct progress;
+	struct ext2fs_numeric_progress_struct progress;
 
-	if (quiet)
-		memset(&progress, 0, sizeof(progress));
-	else
-		progress_init(&progress, _("Writing inode tables: "),
-			      fs->group_desc_count);
+	ext2fs_numeric_progress_init(fs, &progress,
+				     _("Writing inode tables: "),
+				     fs->group_desc_count);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		progress_update(&progress, i);
+		ext2fs_numeric_progress_update(fs, &progress, i);
 
 		blk = fs->group_desc[i].bg_inode_table;
 		num = fs->inode_blocks_per_group;
@@ -394,7 +340,8 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 		}
 	}
 	ext2fs_zero_blocks(0, 0, 0, 0, 0);
-	progress_close(&progress);
+	ext2fs_numeric_progress_close(fs, &progress,
+				      _("done                            \n"));
 }
 
 static void create_root_dir(ext2_filsys fs)
@@ -538,7 +485,7 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 
 static void create_journal_dev(ext2_filsys fs)
 {
-	struct progress_struct progress;
+	struct ext2fs_numeric_progress_struct progress;
 	errcode_t		retval;
 	char			*buf;
 	blk_t			blk, err_blk;
@@ -551,12 +498,9 @@ static void create_journal_dev(ext2_filsys fs)
 			_("while initializing journal superblock"));
 		exit(1);
 	}
-	if (quiet)
-		memset(&progress, 0, sizeof(progress));
-	else
-		progress_init(&progress, _("Zeroing journal device: "),
-			      fs->super->s_blocks_count);
-
+	ext2fs_numeric_progress_init(fs, &progress,
+				     _("Zeroing journal device: "),
+				     ext2fs_blocks_count(fs->super));
 	blk = 0;
 	count = fs->super->s_blocks_count;
 	while (count > 0) {
@@ -574,7 +518,7 @@ static void create_journal_dev(ext2_filsys fs)
 		}
 		blk += c;
 		count -= c;
-		progress_update(&progress, blk);
+		ext2fs_numeric_progress_update(fs, &progress, blk);
 	}
 	ext2fs_zero_blocks(0, 0, 0, 0, 0);
 
@@ -586,7 +530,7 @@ static void create_journal_dev(ext2_filsys fs)
 			_("while writing journal superblock"));
 		exit(1);
 	}
-	progress_close(&progress);
+	ext2fs_numeric_progress_close(fs, &progress, NULL);
 }
 
 static void show_stats(ext2_filsys fs)
@@ -1895,11 +1839,19 @@ int main (int argc, char *argv[])
 			    &old_bitmaps);
 	if (!old_bitmaps)
 		flags |= EXT2_FLAG_64BITS;
+	/*
+	 * By default, we print how many inode tables or block groups
+	 * or whatever we've written so far.  The quiet flag disables
+	 * this, along with a lot of other output.
+	 */
+	if (!quiet)
+		flags |= EXT2_FLAG_PRINT_PROGRESS;
 	retval = ext2fs_initialize(device_name, flags, &fs_param, io_ptr, &fs);
 	if (retval) {
 		com_err(device_name, retval, _("while setting up superblock"));
 		exit(1);
 	}
+
 	sprintf(tdb_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
 		32768 : fs->blocksize * 8);
 	io_channel_set_options(fs->io, tdb_string);
@@ -2007,12 +1959,16 @@ int main (int argc, char *argv[])
 
 	handle_bad_blocks(fs, bb_list);
 	fs->stride = fs_stride = fs->super->s_raid_stride;
+	if (!quiet)
+		printf(_("Allocating group tables: "));
 	retval = ext2fs_allocate_tables(fs);
 	if (retval) {
 		com_err(program_name, retval,
 			_("while trying to allocate filesystem tables"));
 		exit(1);
 	}
+	if (!quiet)
+		printf(_("done                            \n"));
 	if (super_only) {
 		fs->super->s_state |= EXT2_ERROR_FS;
 		fs->flags &= ~(EXT2_FLAG_IB_DIRTY|EXT2_FLAG_BB_DIRTY);

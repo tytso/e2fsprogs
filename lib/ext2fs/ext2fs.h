@@ -174,6 +174,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_SOFTSUPP_FEATURES	0x8000
 #define EXT2_FLAG_NOFREE_ON_ERROR	0x10000
 #define EXT2_FLAG_64BITS		0x20000
+#define EXT2_FLAG_PRINT_PROGRESS	0x40000
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is

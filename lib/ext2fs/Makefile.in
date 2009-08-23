@@ -67,6 +67,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	native.o \
 	newdir.o \
 	openfs.o \
+	progress.o \
 	read_bb.o \
 	read_bb_file.o \
 	res_gdt.o \

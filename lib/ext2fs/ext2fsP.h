@@ -85,6 +85,23 @@ extern int ext2fs_process_dir_block(ext2_filsys  	fs,
 				    int			ref_offset,
 				    void		*priv_data);
 
+/* Generic numeric progress meter */
+
+struct ext2fs_numeric_progress_struct {
+	__u64		max;
+	int		log_max;
+	int		skip_progress;
+};
+
+extern void ext2fs_numeric_progress_init(ext2_filsys fs,
+					 struct ext2fs_numeric_progress_struct * progress,
+					 const char *label, __u64 max);
+extern void ext2fs_numeric_progress_update(ext2_filsys fs,
+					   struct ext2fs_numeric_progress_struct * progress,
+					   __u64 val);
+extern void ext2fs_numeric_progress_close(ext2_filsys fs,
+					  struct ext2fs_numeric_progress_struct * progress,
+					  const char *message);
 
 /*
  * 64-bit bitmap support
