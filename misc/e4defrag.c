@@ -305,7 +305,9 @@ static int posix_fadvise(int fd, loff_t offset, size_t len, int advise)
 #warning Using locally defined sync_file_range interface.
 
 #ifndef __NR_sync_file_range
+#ifndef __NR_sync_file_range2 /* ppc */
 #error Your kernel headers dont define __NR_sync_file_range
+#endif
 #endif
 
 /*
@@ -318,7 +320,11 @@ static int posix_fadvise(int fd, loff_t offset, size_t len, int advise)
  */
 int sync_file_range(int fd, loff_t offset, loff_t length, unsigned int flag)
 {
+#ifdef __NR_sync_file_range
 	return syscall(__NR_sync_file_range, fd, offset, length, flag);
+#else
+	return syscall(__NR_sync_file_range2, fd, flag, offset, length);
+#endif
 }
 #endif /* ! HAVE_SYNC_FILE_RANGE */
 
