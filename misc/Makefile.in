@@ -192,14 +192,14 @@ e2undo.profiled: $(PROFILED_E2UNDO_OBJS) $(PROFILED_DEPLIBS)
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e2undo.profiled \
 		$(PROFILED_E2UNDO_OBJS) $(PROFILED_LIBS) $(LIBINTL)
 
-e4defrag: $(E4DEFRAG_OBJS)
+e4defrag: $(E4DEFRAG_OBJS) $(DEPLIBS)
 	$(E) "	LD $@"
-	$(Q) $(CC) $(ALL_LDFLAGS) -o e4defrag $(E4DEFRAG_OBJS)
+	$(Q) $(CC) $(ALL_LDFLAGS) -o e4defrag $(E4DEFRAG_OBJS) $(LIBS)
 
-e4defrag.profiled: $(PROFILED_E4DEFRAG_OBJS)
+e4defrag.profiled: $(PROFILED_E4DEFRAG_OBJS) $(PROFILED_DEPLIBS)
 	$(E) "	LD $@"
 	$(Q) $(CC) $(ALL_LDFLAGS) -g -pg -o e4defrag.profiled \
-		$(PROFILED_E4DEFRAG_OBJS)
+		$(PROFILED_E4DEFRAG_OBJS) $(PROFILED_LIBS)
 
 base_device: base_device.c
 	$(E) "	LD $@"
