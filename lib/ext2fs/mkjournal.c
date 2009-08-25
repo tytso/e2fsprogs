@@ -494,21 +494,33 @@ errcode_t ext2fs_add_journal_inode(ext2_filsys fs, blk_t size, int flags)
 			goto errout;
 
 		/* Get inode number of the journal file */
-		if (fstat(fd, &st) < 0)
+		if (fstat(fd, &st) < 0) {
+			retval = errno;
 			goto errout;
+		}
 
 #if defined(HAVE_CHFLAGS) && defined(UF_NODUMP)
 		retval = fchflags (fd, UF_NODUMP|UF_IMMUTABLE);
 #else
 #if HAVE_EXT2_IOCTLS
-		f = EXT2_NODUMP_FL | EXT2_IMMUTABLE_FL;
+		if (ioctl(fd, EXT2_IOC_GETFLAGS, &f) < 0) {
+			retval = errno;
+			goto errout;
+		}
+		f |= EXT2_NODUMP_FL | EXT2_IMMUTABLE_FL;
 		retval = ioctl(fd, EXT2_IOC_SETFLAGS, &f);
 #endif
 #endif
-		if (retval)
+		if (retval) {
+			retval = errno;
 			goto errout;
+		}
 
-		close(fd);
+		if (close(fd) < 0) {
+			retval = errno;
+			fd = -1;
+			goto errout;
+		}
 		journal_ino = st.st_ino;
 	} else {
 		if ((mount_flags & EXT2_MF_BUSY) &&
