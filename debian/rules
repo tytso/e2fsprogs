@@ -465,7 +465,8 @@ endif
 		-plibcomerr2-dbg -plibss2-dbg
 ifneq ($(UTIL_LINUX_NG),yes)
 	DH_OPTIONS= dh_installchangelogs -plibuuid${UUID_SOVERSION} \
-		-puuid-dev -puuid-runtime -puuid-runtime-dbg -plibuuid1-dbg
+		-puuid-dev -puuid-runtime -puuid-runtime-dbg -plibuuid1-dbg \
+		-plibblkid${BLKID_SOVERSION} -plibblkid1-dbg
 endif
 
 	dh_fixperms
