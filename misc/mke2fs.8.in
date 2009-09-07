@@ -267,10 +267,12 @@ are developing test cases.
 .TP
 .BI \-G " number-of-groups"
 Specify the number of block groups that will be packed together to
-create one large virtual block group on an ext4 filesystem.  This
-improves meta-data locality and performance on meta-data heavy
-workloads.  The number of groups must be a power of 2 and may only be
-specified if the flex_bg filesystem feature is enabled.
+create a larger virtual block group (or "flex_bg group") in an
+ext4 filesystem.  This improves meta-data locality and performance
+on meta-data heavy workloads.  The number of groups must be a power
+of 2 and may only be specified if the 
+.B flex_bg
+filesystem feature is enabled.
 .TP
 .BI \-i " bytes-per-inode"
 Specify the bytes/inode ratio.
@@ -468,20 +470,27 @@ prefix the feature name with a  caret ('^') character.  The
 pseudo-filesystem feature "none" will clear all filesystem features.
 .RS 1.2i
 .TP
-.B large_file
-Filesystem can contain files that are greater than 2GB.  (Modern kernels
-set this feature automatically when a file > 2GB is created.)
-.TP
 .B dir_index
 Use hashed b-trees to speed up lookups in large directories.
+.TP
+.B extent
+Instead of using the indirect block scheme for storing the location of
+data blocks in an inode, use extents instead.  This is a much more
+efficient encoding which speeds up filesystem access, especially for
+large files.
 .TP
 .B filetype
 Store file type information in directory entries.
 .TP
 .B flex_bg
-Allow bitmaps and inode tables for a block group to be placed anywhere
-on the storage media (use with \-G option to group meta-data in order
-to create a large virtual block group).
+Allow the per-block group metadata (allocation bitmaps and inode tables)
+to be placed anywhere on the storage media.  In addition,
+.B mke2fs
+will place the per-block group metadata together starting at the first
+block group of each "flex_bg group".   The size of the flex_bg group
+can be specified using the 
+.B \-G
+option.
 .TP
 .B has_journal
 Create an ext3 journal (as if using the
@@ -496,21 +505,9 @@ option).
 @JDEV@must be created with the same
 @JDEV@block size as the filesystems that will be using it.
 .TP
-.B extent
-Instead of using the indirect block scheme for storing the location of
-data blocks in an inode, use extents instead.  This is a much more
-efficient encoding which speeds up filesystem access, especially for
-large files.
-.TP
-.B uninit_bg
-Create a filesystem without initializing all of the block groups.  This
-feature also enables checksums and highest-inode-used statistics in each
-blockgroup.  This feature can
-speed up filesystem creation time noticeably (if lazy_itable_init is
-enabled), and can also reduce
-.BR e2fsck
-time dramatically.  It is only supported by the ext4 filesystem in
-recent Linux kernels.
+.B large_file
+Filesystem can contain files that are greater than 2GB.  (Modern kernels
+set this feature automatically when a file > 2GB is created.)
 .TP
 .B resize_inode
 Reserve space so the block group descriptor table may grow in the future.
@@ -527,6 +524,16 @@ extended option.
 .B sparse_super
 Create a filesystem with fewer superblock backup copies
 (saves space on large filesystems).
+.TP
+.B uninit_bg
+Create a filesystem without initializing all of the block groups.  This
+feature also enables checksums and highest-inode-used statistics in each
+blockgroup.  This feature can
+speed up filesystem creation time noticeably (if lazy_itable_init is
+enabled), and can also reduce
+.BR e2fsck
+time dramatically.  It is only supported by the ext4 filesystem in
+recent Linux kernels.
 .RE
 .TP
 .B \-q

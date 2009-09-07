@@ -439,7 +439,12 @@ Store file type information in directory entries.
 .TP
 .B flex_bg
 Allow bitmaps and inode tables for a block group to be placed
-anywhere on the storage media.
+anywhere on the storage media.  \fBTune2fs\fR will not reorganize
+the location of the inode tables and allocation bitmaps, as
+.BR mke2fs (8)
+will do when it creates a freshly formated file system with
+.B flex_bg
+enabled.
 .TP
 .B has_journal
 Use a journal to ensure filesystem consistency even across unclean shutdowns.
