@@ -431,15 +431,15 @@ The following filesystem features can be set or cleared using
 .BR tune2fs :
 .RS 1.2i
 .TP
-.B large_file
-Filesystem can contain files that are greater than 2GB.  (Modern kernels
-set this feature automatically when a file > 2GB is created.)
-.TP
 .B dir_index
 Use hashed b-trees to speed up lookups in large directories.
 .TP
 .B filetype
 Store file type information in directory entries.
+.TP
+.B flex_bg
+Allow bitmaps and inode tables for a block group to be placed
+anywhere on the storage media.
 .TP
 .B has_journal
 Use a journal to ensure filesystem consistency even across unclean shutdowns.
@@ -447,14 +447,18 @@ Setting the filesystem feature is equivalent to using the
 .B \-j
 option.
 .TP
-.B sparse_super
-Limit the number of backup superblocks to save space on large filesystems.
+.B large_file
+Filesystem can contain files that are greater than 2GB.  (Modern kernels
+set this feature automatically when a file > 2GB is created.)
 .TP
 .B resize_inode
 Reserve space so the block group descriptor table may grow in the
 future.
 .B Tune2fs 
 only supports clearing this filesystem feature.
+.TP
+.B sparse_super
+Limit the number of backup superblocks to save space on large filesystems.
 .TP
 .B uninit_bg
 Allow the kernel to initialize bitmaps and inode tables and keep a high
@@ -483,7 +487,7 @@ feature,
 .B e2fsck -D
 can be run to convert existing directories to the hashed B-tree format.
 Enabling certain filesystem features may prevent the filesystem from being
-mounted by kernels which do not support those features.  In particular the
+mounted by kernels which do not support those features.  In particular, the
 .BR uninit_bg
 and
 .BR flex_bg
