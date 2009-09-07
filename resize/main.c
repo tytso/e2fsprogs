@@ -375,7 +375,7 @@ int main (int argc, char ** argv)
 		exit(1);
 	}
 	if (force_min_size)
-		new_size = calculate_minimum_resize_size(fs);
+		new_size = min_size;
 	else if (new_size_str) {
 		new_size = parse_num_blocks(new_size_str,
 					    fs->super->s_log_block_size);

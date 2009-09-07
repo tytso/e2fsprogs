@@ -1900,6 +1900,8 @@ blk_t calculate_minimum_resize_size(ext2_filsys fs)
 	blk_t inode_count, blks_needed, groups, data_blocks;
 	blk_t grp, data_needed, last_start;
 	int overhead = 0, num_of_superblocks = 0;
+	int extra_groups = 0;
+	int flexbg_size = 1 << fs->super->s_log_groups_per_flex;
 
 	/*
 	 * first figure out how many group descriptors we need to
@@ -1934,11 +1936,9 @@ blk_t calculate_minimum_resize_size(ext2_filsys fs)
 		 * of inode tables of slack space so the resize
 		 * operation can be guaranteed to finish.
 		 */
-		int flexbg_size = 1 << fs->super->s_log_groups_per_flex;
-		int extra_groups;
-
 		extra_groups = flexbg_size - (groups & (flexbg_size - 1));
 		data_needed += META_OVERHEAD(fs) * extra_groups;
+		extra_groups = groups % flexbg_size;
 	}
 
 	/*
@@ -2002,6 +2002,20 @@ blk_t calculate_minimum_resize_size(ext2_filsys fs)
 		}
 
 		groups += extra_grps;
+		extra_groups += extra_grps;
+		if (fs->super->s_feature_incompat
+			& EXT4_FEATURE_INCOMPAT_FLEX_BG
+		    && extra_groups > flexbg_size) {
+			/*
+			 * For ext4 we need to allow for up to a flex_bg worth
+			 * of inode tables of slack space so the resize
+			 * operation can be guaranteed to finish.
+			 */
+			extra_groups = flexbg_size -
+						(groups & (flexbg_size - 1));
+			data_needed += META_OVERHEAD(fs) * extra_groups;
+			extra_groups = groups % flexbg_size;
+		}
 	}
 
 	/* now for the fun voodoo */

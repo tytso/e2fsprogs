@@ -926,7 +926,7 @@ static const char *my_ver_date = E2FSPROGS_DATE;
 
 int main (int argc, char *argv[])
 {
-	errcode_t	retval = 0, orig_retval = 0;
+	errcode_t	retval = 0, retval2 = 0, orig_retval = 0;
 	int		exit_value = FSCK_OK;
 	ext2_filsys	fs = 0;
 	io_manager	io_ptr;
@@ -1017,7 +1017,11 @@ restart:
 	    !(ctx->flags & E2F_FLAG_SB_SPECIFIED) &&
 	    ((retval == EXT2_ET_BAD_MAGIC) ||
 	     (retval == EXT2_ET_CORRUPT_SUPERBLOCK) ||
-	     ((retval == 0) && ext2fs_check_desc(fs)))) {
+	     ((retval == 0) && (retval2 = ext2fs_check_desc(fs))))) {
+		if (retval2 == ENOMEM) {
+			retval = retval2;
+			goto failure;
+		}
 		if (fs->flags & EXT2_FLAG_NOFREE_ON_ERROR) {
 			ext2fs_free(fs);
 			fs = NULL;
@@ -1056,6 +1060,7 @@ restart:
 		if (features[0] || features[1] || features[2])
 			goto print_unsupp_features;
 	}
+failure:
 	if (retval) {
 		if (orig_retval)
 			retval = orig_retval;

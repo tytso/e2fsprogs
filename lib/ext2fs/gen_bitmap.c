@@ -103,6 +103,8 @@ errcode_t ext2fs_make_generic_bitmap(errcode_t magic, ext2_filsys fs,
 		bitmap->description = 0;
 
 	size = (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1);
+	/* Round up to allow for the BT x86 instruction */
+	size = (size + 7) & ~3;
 	retval = ext2fs_get_mem(size, &bitmap->bitmap);
 	if (retval) {
 		ext2fs_free_mem(&bitmap->description);
