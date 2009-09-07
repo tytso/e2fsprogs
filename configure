@@ -752,7 +752,6 @@ MAINTAINER_CMT
 LINUX_INCLUDE
 EGREP
 GREP
-LD
 CPP
 OBJEXT
 EXEEXT
@@ -823,7 +822,6 @@ ac_user_opts='
 enable_option_checking
 with_diet_libc
 with_cc
-with_linker
 with_ccopts
 with_ldopts
 with_root_prefix
@@ -1514,10 +1512,9 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-diet-libc        use diet libc
-  --with-cc=COMPILER      select compiler to use
-  --with-linker=LINKER    select linker to use
-  --with-ccopts=CCOPTS    select compiler command line options
-  --with-ldopts=LDOPTS    select linker command line options
+  --with-cc               no longer supported, use CC= instead
+  --with-ccopts           no longer supported, use CFLAGS= instead
+  --with-ldopts           no longer supported, use LDFLAGS= instead
   --with-root-prefix=PREFIX override prefix variable for files to be placed in the root
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
@@ -2163,15 +2160,26 @@ fi
 
 # Check whether --with-cc was given.
 if test "${with_cc+set}" = set; then
-  withval=$with_cc; { $as_echo "$as_me:$LINENO: result: CC=$withval" >&5
-$as_echo "CC=$withval" >&6; }
-CC=$withval
-else
-  if test -z "$CC" ; then CC=cc; fi
-{ $as_echo "$as_me:$LINENO: result: CC defaults to $CC" >&5
-$as_echo "CC defaults to $CC" >&6; }
+  withval=$with_cc; { { $as_echo "$as_me:$LINENO: error: --with-cc no longer supported; use CC= instead" >&5
+$as_echo "$as_me: error: --with-cc no longer supported; use CC= instead" >&2;}
+   { (exit 1); exit 1; }; }
 fi
-export CC
+
+
+# Check whether --with-ccopts was given.
+if test "${with_ccopts+set}" = set; then
+  withval=$with_ccopts; { { $as_echo "$as_me:$LINENO: error: --with-ccopts no longer supported; use CFLAGS= instead" >&5
+$as_echo "$as_me: error: --with-ccopts no longer supported; use CFLAGS= instead" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+
+# Check whether --with-ldopts was given.
+if test "${with_ldopts+set}" = set; then
+  withval=$with_ldopts; { { $as_echo "$as_me:$LINENO: error: --with-ldopts no longer supported; use LDFLAGS= instead" >&5
+$as_echo "$as_me: error: --with-ldopts no longer supported; use LDFLAGS= instead" >&2;}
+   { (exit 1); exit 1; }; }
+fi
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -3343,26 +3351,6 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
-# Check whether --with-linker was given.
-if test "${with_linker+set}" = set; then
-  withval=$with_linker; { $as_echo "$as_me:$LINENO: result: LD=$withval" >&5
-$as_echo "LD=$withval" >&6; }
-LD=$withval
-else
-  if test -z "$LD" ; then LD=$CC; fi
-{ $as_echo "$as_me:$LINENO: result: LD defaults to $LD" >&5
-$as_echo "LD defaults to $LD" >&6; }
-fi
-export LD
-
-
-# Check whether --with-ccopts was given.
-if test "${with_ccopts+set}" = set; then
-  withval=$with_ccopts; { $as_echo "$as_me:$LINENO: result: CCOPTS is $withval" >&5
-$as_echo "CCOPTS is $withval" >&6; }
-CFLAGS=$withval
-fi
-
 
 { $as_echo "$as_me:$LINENO: checking for grep that handles long lines and -e" >&5
 $as_echo_n "checking for grep that handles long lines and -e... " >&6; }
@@ -3907,14 +3895,6 @@ fi
 LIB_EXT=.a
 STATIC_LIB_EXT=.a
 PROFILED_LIB_EXT=.a
-
-# Check whether --with-ldopts was given.
-if test "${with_ldopts+set}" = set; then
-  withval=$with_ldopts; { $as_echo "$as_me:$LINENO: result: LDFLAGS is $withval" >&5
-$as_echo "LDFLAGS is $withval" >&6; }
-LDFLAGS=$withval
-fi
-
 
 # Check whether --with-root-prefix was given.
 if test "${with_root_prefix+set}" = set; then

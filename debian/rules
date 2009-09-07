@@ -105,22 +105,17 @@ BUILDSTDSTAMP=${STAMPSDIR}/build-std-stamp
 BUILDBFSTAMP=${STAMPSDIR}/build-bf-stamp
 BUILDSTATICSTAMP=${STAMPSDIR}/build-static-stamp
 
-CCOPTS = -g
-
 INSTALL = install
 INSTALL_PROGRAM = $(INSTALL) -p -o root -g root -m 0755
 
-ifeq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-CCOPTS += -O2
-endif
 #ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
 #INSTALL_PROGRAM += -s
 #endif
 
 ifeq (${DEB_HOST_ARCH},alpha)
-CCOPTS += -DHAVE_NETINET_IN_H
+CFLAGS += -DHAVE_NETINET_IN_H
 else
-CCOPTS += -D__NO_STRING_INLINES
+CFLAGS += -D__NO_STRING_INLINES
 endif
 
 ifeq (${DEB_HOST_ARCH_OS},linux)
@@ -130,7 +125,7 @@ else
 E2FSCK_STATIC = ${stdbuilddir}/e2fsck/e2fsck.static
 endif
 
-BF_CCOPTS = -Os -fomit-frame-pointer
+BF_CFLAGS = -Os -fomit-frame-pointer
 
 COMMON_CONF_FLAGS =  \
                 --enable-elf-shlibs --infodir=/usr/share/info
@@ -141,21 +136,17 @@ else
 COMMON_CONF_FLAGS += --enable-fsck
 endif
 
-STD_CONF_FLAGS = --with-ccopts="${CCOPTS}" --enable-compression
+STD_CONF_FLAGS = --enable-compression
 
-BF_CONF_FLAGS = --with-ccopts="${CCOPTS} ${BF_CCOPTS}" \
-	--disable-nls --disable-imager --disable-testio-debug \
+BF_CONF_FLAGS = --disable-nls --disable-imager --disable-testio-debug \
 	--disable-uuidd --disable-tls \
 	--disable-debugfs  --disable-e2initrd-helper
 
-STATIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
-	--disable-nls --disable-imager \
+STATIC_CONF_FLAGS = --disable-nls --disable-imager \
 	--disable-uuidd --disable-tls \
-	--disable-e2initrd-helper \
-	--with-ccopts=-fno-stack-protector
+	--disable-e2initrd-helper
 
-MIPS_NOPIC_CONF_FLAGS = --with-ccopts="${CCOPTS}" \
-	--disable-nls --disable-imager \
+MIPS_NOPIC_CONF_FLAGS = --disable-nls --disable-imager \
 	--disable-uuidd --disable-tls \
         --disable-resizer # --disable-debugfs
 
@@ -188,20 +179,22 @@ ${CFGSTDSTAMP}:
 	mkdir -p ${stdbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${stdbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS}
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
+		CFLAGS="${CFLAGS}"
 else
 	cd ${stdbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STD_CONF_FLAGS} \
-		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE)
+		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
+		CFLAGS="${CFLAGS}"
 endif
 
   # specially-built MIPS libs
 ifneq ($(ismips),)
 	mkdir -p ${mipsbuilddir} ${mipsbuilddir64}
 	cd ${mipsbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS}
+		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}"
 	cd ${mipsbuilddir64} && AWK=/usr/bin/awk \
-		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS}
+		${topdir}/configure ${MIPS_NOPIC_CONF_FLAGS} CFLAGS="${CFLAGS}"
 endif
 
 	mkdir -p ${STAMPSDIR}
@@ -214,11 +207,13 @@ ${CFGBFSTAMP}:
 	mkdir -p ${bfbuilddir}
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	cd ${bfbuilddir} && AWK=/usr/bin/awk \
-		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS}
+		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
+		CFLAGS="${CFLAGS} ${BF_CFLAGS}"
 else
 	cd ${bfbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${BF_CONF_FLAGS} \
-		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE)
+		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
+		CFLAGS="${CFLAGS}"
 endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGBFSTAMP}
@@ -231,16 +226,18 @@ ${CFGSTATICSTAMP}:
 ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	if type diet > /dev/null  2>&1 ; then \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
-			${topdir}/configure ${STATIC_CONF_FLAGS} \
-			--with-diet-libc; \
+		${topdir}/configure ${STATIC_CONF_FLAGS} \
+		--with-diet-libc CFLAGS="${CFLAGS} -fno-stack-protector"; \
 	else \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
-			${topdir}/configure ${STATIC_CONF_FLAGS}; \
+			${topdir}/configure ${STATIC_CONF_FLAGS} \
+			CFLAGS="${CFLAGS} -fno-stack-protector"; \
 	fi
 else
 	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
-		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE)
+		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
+		CFLAGS="${CFLAGS} -fno-stack-protector"
 endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTATICSTAMP}
@@ -262,11 +259,11 @@ ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 ifneq ($(ismips),)
 	$(MAKE) -C ${mipsbuilddir}/util
 	$(MAKE) -C ${mipsbuilddir} \
-		CFLAGS="${CCOPTS} ${MIPS_CFLAGS}" \
+		CFLAGS="${CFLAGS} ${MIPS_CFLAGS}" \
 		LIB_SUBDIRS="lib/et lib/ext2fs" libs
 	$(MAKE) -C ${mipsbuilddir64}/util
 	$(MAKE) -C ${mipsbuilddir64} \
-		CFLAGS="${CCOPTS} ${MIPS_CFLAGS_64}" \
+		CFLAGS="${CFLAGS} ${MIPS_CFLAGS_64}" \
 		LIB_SUBDIRS="lib/et lib/ext2fs" libs
 endif
 

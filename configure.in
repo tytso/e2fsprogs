@@ -72,37 +72,20 @@ CC="diet cc -nostdinc"
 WITH_DIET_LIBC=yes
 AC_MSG_RESULT(CC=$CC))dnl
 dnl
-dnl set $(CC) from --with-cc=value
-dnl
 AC_ARG_WITH([cc],
-[  --with-cc=COMPILER      select compiler to use],
-AC_MSG_RESULT(CC=$withval)
-CC=$withval,
-if test -z "$CC" ; then CC=cc; fi
-[AC_MSG_RESULT(CC defaults to $CC)])dnl
-export CC
-AC_SUBST([CC])
-AC_PROG_CC
-AC_PROG_CPP
-dnl
-dnl set $(LD) from --with-linker=value
-dnl
-AC_ARG_WITH([linker],
-[  --with-linker=LINKER    select linker to use],
-AC_MSG_RESULT(LD=$withval)
-LD=$withval,
-if test -z "$LD" ; then LD=$CC; fi
-[AC_MSG_RESULT(LD defaults to $LD)])dnl
-export LD
-AC_SUBST([LD])
-dnl
-dnl set $(CCOPTS) from --with-ccopts=value
+AC_HELP_STRING([--with-cc],[no longer supported, use CC= instead]),
+AC_MSG_ERROR([--with-cc no longer supported; use CC= instead]))
 dnl
 AC_ARG_WITH([ccopts],
-[  --with-ccopts=CCOPTS    select compiler command line options],
-AC_MSG_RESULT(CCOPTS is $withval)
-CFLAGS=$withval,
-)dnl
+AC_HELP_STRING([--with-ccopts],[no longer supported, use CFLAGS= instead]),
+AC_MSG_ERROR([--with-ccopts no longer supported; use CFLAGS= instead]))
+dnl
+AC_ARG_WITH([ldopts],
+AC_HELP_STRING([--with-ldopts],[no longer supported, use LDFLAGS= instead]),
+AC_MSG_ERROR([--with-ldopts no longer supported; use LDFLAGS= instead]))
+dnl
+AC_PROG_CC
+AC_PROG_CPP
 dnl
 dnl On systems without linux header files, we add an extra include directory
 dnl that holds enough to fake it (hopefully).  Note that the $(top_srcdir) here
@@ -137,15 +120,6 @@ dnl
 LIB_EXT=.a
 STATIC_LIB_EXT=.a
 PROFILED_LIB_EXT=.a
-dnl
-dnl set $(LDFLAGS) from --with-ldopts=value
-dnl
-AC_ARG_WITH([ldopts],
-[  --with-ldopts=LDOPTS    select linker command line options],
-AC_MSG_RESULT(LDFLAGS is $withval)
-LDFLAGS=$withval,
-)dnl
-AC_SUBST(LDFLAGS)
 dnl
 dnl Allow separate `root_prefix' to be specified
 dnl
