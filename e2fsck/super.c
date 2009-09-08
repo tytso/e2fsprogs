@@ -103,7 +103,7 @@ static int release_inode_block(ext2_filsys fs,
 			int	i, limit;
 			blk_t	*bp;
 
-			pb->errcode = io_channel_read_blk(fs->io, blk, 1,
+			pb->errcode = io_channel_read_blk64(fs->io, blk, 1,
 							pb->buf);
 			if (pb->errcode)
 				goto return_abort;
@@ -125,13 +125,13 @@ static int release_inode_block(ext2_filsys fs,
 		 * it here.
 		 */
 		if ((blockcnt == pb->truncate_block) && pb->truncate_offset) {
-			pb->errcode = io_channel_read_blk(fs->io, blk, 1,
+			pb->errcode = io_channel_read_blk64(fs->io, blk, 1,
 							pb->buf);
 			if (pb->errcode)
 				goto return_abort;
 			memset(pb->buf + pb->truncate_offset, 0,
 			       fs->blocksize - pb->truncate_offset);
-			pb->errcode = io_channel_write_blk(fs->io, blk, 1,
+			pb->errcode = io_channel_write_blk64(fs->io, blk, 1,
 							 pb->buf);
 			if (pb->errcode)
 				goto return_abort;

@@ -443,7 +443,7 @@ retry:
 		    (handle->fs->io != handle->fs->image_io))
 			memset(newpath->buf, 0, handle->fs->blocksize);
 		else {
-			retval = io_channel_read_blk(handle->fs->io,
+			retval = io_channel_read_blk64(handle->fs->io,
 						     blk, 1, newpath->buf);
 			if (retval)
 				return retval;
@@ -553,7 +553,7 @@ static errcode_t update_path(ext2_extent_handle_t handle)
 		blk = ext2fs_le32_to_cpu(ix->ei_leaf) +
 			((__u64) ext2fs_le16_to_cpu(ix->ei_leaf_hi) << 32);
 
-		retval = io_channel_write_blk(handle->fs->io,
+		retval = io_channel_write_blk64(handle->fs->io,
 				      blk, 1, handle->path[handle->level].buf);
 	}
 	return retval;
@@ -962,7 +962,8 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 	new_node_start = ext2fs_le32_to_cpu(EXT_FIRST_INDEX(neweh)->ei_block);
 
 	/* ...and write the new node block out to disk. */
-	retval = io_channel_write_blk(handle->fs->io, new_node_pblk, 1, block_buf);
+	retval = io_channel_write_blk64(handle->fs->io, new_node_pblk, 1,
+					block_buf);
 
 	if (retval)
 		goto done;

@@ -115,7 +115,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 		if (rw == READ && !bh->b_uptodate) {
 			jfs_debug(3, "reading block %lu/%p\n",
 				  (unsigned long) bh->b_blocknr, (void *) bh);
-			retval = io_channel_read_blk(bh->b_io,
+			retval = io_channel_read_blk64(bh->b_io,
 						     bh->b_blocknr,
 						     1, bh->b_data);
 			if (retval) {
@@ -129,7 +129,7 @@ void ll_rw_block(int rw, int nr, struct buffer_head *bhp[])
 		} else if (rw == WRITE && bh->b_dirty) {
 			jfs_debug(3, "writing block %lu/%p\n",
 				  (unsigned long) bh->b_blocknr, (void *) bh);
-			retval = io_channel_write_blk(bh->b_io,
+			retval = io_channel_write_blk64(bh->b_io,
 						      bh->b_blocknr,
 						      1, bh->b_data);
 			if (retval) {

@@ -177,7 +177,7 @@ static void htree_dump_int_block(ext2_filsys fs, ext2_ino_t ino,
 		goto errout;
 	}
 
-	errcode = io_channel_read_blk(current_fs->io, pblk, 1, buf);
+	errcode = io_channel_read_blk64(current_fs->io, pblk, 1, buf);
 	if (errcode) {
 		com_err("htree_dump_int_block", errcode,
 			"while 	reading block %u\n", blk);
@@ -261,8 +261,8 @@ void do_htree_dump(int argc, char *argv[])
 		goto errout;
 	}
 
-	errcode = io_channel_read_blk(current_fs->io, blk,
-				      1, buf);
+	errcode = io_channel_read_blk64(current_fs->io, blk,
+					1, buf);
 	if (errcode) {
 		com_err(argv[0], errcode, "Error reading root node");
 		goto errout;
@@ -401,7 +401,7 @@ static int search_dir_block(ext2_filsys fs, blk_t *blocknr,
 
 	p = (struct process_block_struct *) priv_data;
 
-	errcode = io_channel_read_blk(current_fs->io, *blocknr, 1, p->buf);
+	errcode = io_channel_read_blk64(current_fs->io, *blocknr, 1, p->buf);
 	if (errcode) {
 		com_err("search_dir_block", errcode,
 			"while reading block %lu", (unsigned long) *blocknr);

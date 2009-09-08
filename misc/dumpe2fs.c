@@ -361,7 +361,7 @@ static void print_journal_information(ext2_filsys fs)
 	journal_superblock_t	*jsb;
 
 	/* Get the journal superblock */
-	if ((retval = io_channel_read_blk(fs->io, fs->super->s_first_data_block+1, -1024, buf))) {
+	if ((retval = io_channel_read_blk64(fs->io, fs->super->s_first_data_block+1, -1024, buf))) {
 		com_err(program_name, retval,
 			_("while reading journal superblock"));
 		exit(1);

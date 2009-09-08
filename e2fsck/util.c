@@ -492,7 +492,7 @@ blk_t get_backup_sb(e2fsck_t ctx, ext2_filsys fs, const char *name,
 		if (blocksize == 1024)
 			superblock++;
 		io_channel_set_blksize(io, blocksize);
-		if (io_channel_read_blk(io, superblock,
+		if (io_channel_read_blk64(io, superblock,
 					-SUPERBLOCK_SIZE, buf))
 			continue;
 #ifdef WORDS_BIGENDIAN
@@ -592,7 +592,7 @@ errcode_t e2fsck_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 		count = num - j;
 		if (count > STRIDE_LENGTH)
 			count = STRIDE_LENGTH;
-		retval = io_channel_write_blk(fs->io, blk, count, buf);
+		retval = io_channel_write_blk64(fs->io, blk, count, buf);
 		if (retval) {
 			if (ret_count)
 				*ret_count = count;

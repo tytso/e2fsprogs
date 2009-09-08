@@ -513,7 +513,7 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 
 	if (sect == 0) {
 		/* Check for a BSD disklabel, and don't erase it if so */
-		retval = io_channel_read_blk(fs->io, 0, -512, buf);
+		retval = io_channel_read_blk64(fs->io, 0, -512, buf);
 		if (retval)
 			fprintf(stderr,
 				_("Warning: could not read block 0: %s\n"),
@@ -528,7 +528,7 @@ static void zap_sector(ext2_filsys fs, int sect, int nsect)
 
 	memset(buf, 0, 512*nsect);
 	io_channel_set_blksize(fs->io, 512);
-	retval = io_channel_write_blk(fs->io, sect, -512*nsect, buf);
+	retval = io_channel_write_blk64(fs->io, sect, -512*nsect, buf);
 	io_channel_set_blksize(fs->io, fs->blocksize);
 	free(buf);
 	if (retval)
@@ -578,9 +578,9 @@ static void create_journal_dev(ext2_filsys fs)
 	}
 	ext2fs_zero_blocks(0, 0, 0, 0, 0);
 
-	retval = io_channel_write_blk(fs->io,
-				      fs->super->s_first_data_block+1,
-				      1, buf);
+	retval = io_channel_write_blk64(fs->io,
+					fs->super->s_first_data_block+1,
+					1, buf);
 	if (retval) {
 		com_err("create_journal_dev", retval,
 			_("while writing journal superblock"));
@@ -1772,7 +1772,7 @@ static int should_do_undo(const char *name)
 	}
 
 	io_channel_set_blksize(channel, SUPERBLOCK_OFFSET);
-	retval = io_channel_read_blk(channel, 1, -SUPERBLOCK_SIZE, &super);
+	retval = io_channel_read_blk64(channel, 1, -SUPERBLOCK_SIZE, &super);
 	if (retval) {
 		retval = 0;
 		goto err_out;

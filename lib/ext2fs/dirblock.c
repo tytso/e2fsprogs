@@ -108,7 +108,7 @@ errcode_t ext2fs_write_dir_block3(ext2_filsys fs, blk64_t block,
 	ext2fs_free_mem(&buf);
 	return retval;
 #else
- 	return io_channel_write_blk(fs->io, block, 1, (char *) inbuf);
+	return io_channel_write_blk64(fs->io, block, 1, (char *) inbuf);
 #endif
 }
 

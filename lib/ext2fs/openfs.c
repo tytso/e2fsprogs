@@ -328,7 +328,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	}
 	for (i=first_meta_bg ; i < fs->desc_blocks; i++) {
 		blk = ext2fs_descriptor_block_loc(fs, group_block, i);
-		retval = io_channel_read_blk(fs->io, blk, 1, dest);
+		retval = io_channel_read_blk64(fs->io, blk, 1, dest);
 		if (retval)
 			goto cleanup;
 #ifdef WORDS_BIGENDIAN

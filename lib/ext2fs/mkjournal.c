@@ -243,7 +243,7 @@ static int mkjournal_proc(ext2_filsys	fs,
 	es->newblocks++;
 	retval = 0;
 	if (blockcnt <= 0)
-		retval = io_channel_write_blk(fs->io, new_blk, 1, es->buf);
+		retval = io_channel_write_blk64(fs->io, new_blk, 1, es->buf);
 	else {
 		if (es->zero_count) {
 			if ((es->blk_to_zero + es->zero_count == new_blk) &&
@@ -423,7 +423,8 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	start = 1;
 	if (journal_dev->blocksize == 1024)
 		start++;
-	if ((retval = io_channel_read_blk(journal_dev->io, start, -1024, buf)))
+	if ((retval = io_channel_read_blk64(journal_dev->io, start, -1024,
+					    buf)))
 		return retval;
 
 	jsb = (journal_superblock_t *) buf;
@@ -448,7 +449,7 @@ errcode_t ext2fs_add_journal_device(ext2_filsys fs, ext2_filsys journal_dev)
 	}
 
 	/* Writeback the journal superblock */
-	if ((retval = io_channel_write_blk(journal_dev->io, start, -1024, buf)))
+	if ((retval = io_channel_write_blk64(journal_dev->io, start, -1024, buf)))
 		return retval;
 
 	fs->super->s_journal_inum = 0;

@@ -244,7 +244,7 @@ static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 				return BLOCK_ABORT;
 			}
 		}
-		retval = io_channel_write_blk(fs->io, blk, 1, rec->block_buf);
+		retval = io_channel_write_blk64(fs->io, blk, 1, rec->block_buf);
 		if (retval) {
 			rec->err = retval;
 			return BLOCK_ABORT;

@@ -39,7 +39,7 @@ void do_dump_unused(int argc EXT2FS_ATTR((unused)), char **argv)
 	     blk < current_fs->super->s_blocks_count; blk++) {
 		if (ext2fs_test_block_bitmap2(current_fs->block_map,blk))
 			continue;
-		retval = io_channel_read_blk(current_fs->io, blk, 1, buf);
+		retval = io_channel_read_blk64(current_fs->io, blk, 1, buf);
 		if (retval) {
 			com_err(argv[0], retval, "While reading block\n");
 			return;

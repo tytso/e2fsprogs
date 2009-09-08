@@ -211,7 +211,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 			if (inode->i_block[i])
 				return 0;
 
-		if (io_channel_read_blk(fs->io, inode->i_block[0], 1, buf))
+		if (io_channel_read_blk64(fs->io, inode->i_block[0], 1, buf))
 			return 0;
 
 		len = strnlen(buf, fs->blocksize);
@@ -1564,7 +1564,7 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 			return 0;
 	}
 
-	retval = io_channel_read_blk(fs->io, blk, 1, block_buf);
+	retval = io_channel_read_blk64(fs->io, blk, 1, block_buf);
 	if (retval && fix_problem(ctx, PR_1_HTREE_BADROOT, pctx))
 		return 1;
 
@@ -2439,7 +2439,7 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 		pctx.blk = i;
 		ext2fs_mark_block_bitmap2(ctx->block_found_map, (*new_block)+i);
 		if (old_block) {
-			pctx.errcode = io_channel_read_blk(fs->io,
+			pctx.errcode = io_channel_read_blk64(fs->io,
 				   old_block + i, 1, buf);
 			if (pctx.errcode)
 				fix_problem(ctx, PR_1_RELOC_READ_ERR, &pctx);
@@ -2447,7 +2447,7 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 			memset(buf, 0, fs->blocksize);
 
 		pctx.blk = (*new_block) + i;
-		pctx.errcode = io_channel_write_blk(fs->io, pctx.blk,
+		pctx.errcode = io_channel_write_blk64(fs->io, pctx.blk,
 					      1, buf);
 		if (pctx.errcode)
 			fix_problem(ctx, PR_1_RELOC_WRITE_ERR, &pctx);

@@ -46,7 +46,7 @@ static int check_filesystem(TDB_CONTEXT *tdb, io_channel channel)
 	struct ext2_super_block super;
 
 	io_channel_set_blksize(channel, SUPERBLOCK_OFFSET);
-	retval = io_channel_read_blk(channel, 1, -SUPERBLOCK_SIZE, &super);
+	retval = io_channel_read_blk64(channel, 1, -SUPERBLOCK_SIZE, &super);
 	if (retval) {
 		com_err(prg_name,
 			retval, _("Failed to read the file system data \n"));
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 		blk_num = *(unsigned long *)key.dptr;
 		printf(_("Replayed transaction of size %zd at location %ld\n"),
 							data.dsize, blk_num);
-		retval = io_channel_write_blk(channel, blk_num,
+		retval = io_channel_write_blk64(channel, blk_num,
 						-data.dsize, data.dptr);
 		if (retval == -1) {
 			com_err(prg_name, retval,

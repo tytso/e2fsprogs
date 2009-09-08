@@ -365,7 +365,7 @@ static errcode_t get_next_blocks(ext2_inode_scan scan)
 		memset(scan->inode_buffer, 0,
 		       (size_t) num_blocks * scan->fs->blocksize);
 	} else {
-		retval = io_channel_read_blk(scan->fs->io,
+		retval = io_channel_read_blk64(scan->fs->io,
 					     scan->current_block,
 					     (int) num_blocks,
 					     scan->inode_buffer);
@@ -588,7 +588,7 @@ errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
 			clen = fs->blocksize - offset;
 
 		if (block_nr != fs->icache->buffer_blk) {
-			retval = io_channel_read_blk(io, block_nr, 1,
+			retval = io_channel_read_blk64(io, block_nr, 1,
 						     fs->icache->buffer);
 			if (retval)
 				return retval;
@@ -708,7 +708,7 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 			clen = fs->blocksize - offset;
 
 		if (fs->icache->buffer_blk != block_nr) {
-			retval = io_channel_read_blk(fs->io, block_nr, 1,
+			retval = io_channel_read_blk64(fs->io, block_nr, 1,
 						     fs->icache->buffer);
 			if (retval)
 				goto errout;
@@ -719,7 +719,7 @@ errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
 		memcpy((char *) fs->icache->buffer + (unsigned) offset,
 		       ptr, clen);
 
-		retval = io_channel_write_blk(fs->io, block_nr, 1,
+		retval = io_channel_write_blk64(fs->io, block_nr, 1,
 					      fs->icache->buffer);
 		if (retval)
 			goto errout;

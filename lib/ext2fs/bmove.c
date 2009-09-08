@@ -59,12 +59,12 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 		} while (ext2fs_test_block_bitmap2(pb->reserve, block) ||
 			 ext2fs_test_block_bitmap2(pb->alloc_map, block));
 
-		retval = io_channel_read_blk(fs->io, orig, 1, pb->buf);
+		retval = io_channel_read_blk64(fs->io, orig, 1, pb->buf);
 		if (retval) {
 			pb->error = retval;
 			return BLOCK_ABORT;
 		}
-		retval = io_channel_write_blk(fs->io, block, 1, pb->buf);
+		retval = io_channel_write_blk64(fs->io, block, 1, pb->buf);
 		if (retval) {
 			pb->error = retval;
 			return BLOCK_ABORT;

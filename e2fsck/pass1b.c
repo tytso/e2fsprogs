@@ -691,13 +691,13 @@ static int clone_file_block(ext2_filsys fs,
 			printf("Cloning block %u to %u\n", *block_nr,
 			       new_block);
 #endif
-			retval = io_channel_read_blk(fs->io, *block_nr, 1,
+			retval = io_channel_read_blk64(fs->io, *block_nr, 1,
 						     cs->buf);
 			if (retval) {
 				cs->errcode = retval;
 				return BLOCK_ABORT;
 			}
-			retval = io_channel_write_blk(fs->io, new_block, 1,
+			retval = io_channel_write_blk64(fs->io, new_block, 1,
 						      cs->buf);
 			if (retval) {
 				cs->errcode = retval;

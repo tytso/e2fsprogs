@@ -197,7 +197,7 @@ static void remove_journal_device(ext2_filsys fs)
 	}
 
 	/* Get the journal superblock */
-	if ((retval = io_channel_read_blk(jfs->io, 1, -1024, buf))) {
+	if ((retval = io_channel_read_blk64(jfs->io, 1, -1024, buf))) {
 		com_err(program_name, retval,
 			_("while reading journal superblock"));
 		goto no_valid_journal;
@@ -229,7 +229,7 @@ static void remove_journal_device(ext2_filsys fs)
 	jsb->s_nr_users = htonl(nr_users);
 
 	/* Write back the journal superblock */
-	if ((retval = io_channel_write_blk(jfs->io, 1, -1024, buf))) {
+	if ((retval = io_channel_write_blk64(jfs->io, 1, -1024, buf))) {
 		com_err(program_name, retval,
 			"while writing journal superblock.");
 		goto no_valid_journal;
@@ -1097,11 +1097,11 @@ static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap)
 
 		list_add(&(bmv->list), &blk_move_list);
 
-		retval = io_channel_read_blk(fs->io, blk, 1, buf);
+		retval = io_channel_read_blk64(fs->io, blk, 1, buf);
 		if (retval)
 			goto err_out;
 
-		retval = io_channel_write_blk(fs->io, new_blk, 1, buf);
+		retval = io_channel_write_blk64(fs->io, new_blk, 1, buf);
 		if (retval)
 			goto err_out;
 	}
@@ -1283,7 +1283,7 @@ static int expand_inode_table(ext2_filsys fs, unsigned long new_ino_size)
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		blk = fs->group_desc[i].bg_inode_table;
-		retval = io_channel_read_blk(fs->io, blk,
+		retval = io_channel_read_blk64(fs->io, blk,
 				fs->inode_blocks_per_group, old_itable);
 		if (retval)
 			goto err_out;
@@ -1302,7 +1302,7 @@ static int expand_inode_table(ext2_filsys fs, unsigned long new_ino_size)
 		old_itable = tmp_old_itable;
 		new_itable = tmp_new_itable;
 
-		retval = io_channel_write_blk(fs->io, blk,
+		retval = io_channel_write_blk64(fs->io, blk,
 					new_ino_blks_per_grp, new_itable);
 		if (retval)
 			goto err_out;

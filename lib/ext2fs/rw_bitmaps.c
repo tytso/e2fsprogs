@@ -90,8 +90,8 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		}
 		blk = fs->group_desc[i].bg_block_bitmap;
 		if (blk) {
-			retval = io_channel_write_blk(fs->io, blk, 1,
-						      block_buf);
+			retval = io_channel_write_blk64(fs->io, blk, 1,
+							block_buf);
 			if (retval)
 				return EXT2_ET_BLOCK_BITMAP_WRITE;
 		}
@@ -113,7 +113,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 		blk = fs->group_desc[i].bg_inode_bitmap;
 		if (blk) {
-			retval = io_channel_write_blk(fs->io, blk, 1,
+			retval = io_channel_write_blk64(fs->io, blk, 1,
 						      inode_buf);
 			if (retval)
 				return EXT2_ET_INODE_BITMAP_WRITE;
@@ -195,7 +195,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		blk = (fs->image_header->offset_inodemap / fs->blocksize);
 		ino_cnt = fs->super->s_inodes_count;
 		while (inode_nbytes > 0) {
-			retval = io_channel_read_blk(fs->image_io, blk++,
+			retval = io_channel_read_blk64(fs->image_io, blk++,
 						     1, inode_bitmap);
 			if (retval)
 				goto cleanup;
@@ -215,7 +215,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		blk_cnt = EXT2_BLOCKS_PER_GROUP(fs->super) *
 			fs->group_desc_count;
 		while (block_nbytes > 0) {
-			retval = io_channel_read_blk(fs->image_io, blk++,
+			retval = io_channel_read_blk64(fs->image_io, blk++,
 						     1, block_bitmap);
 			if (retval)
 				goto cleanup;
@@ -241,7 +241,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 			    ext2fs_group_desc_csum_verify(fs, i))
 				blk = 0;
 			if (blk) {
-				retval = io_channel_read_blk(fs->io, blk,
+				retval = io_channel_read_blk64(fs->io, blk,
 					     -block_nbytes, block_bitmap);
 				if (retval) {
 					retval = EXT2_ET_BLOCK_BITMAP_READ;
@@ -263,7 +263,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 			    ext2fs_group_desc_csum_verify(fs, i))
 				blk = 0;
 			if (blk) {
-				retval = io_channel_read_blk(fs->io, blk,
+				retval = io_channel_read_blk64(fs->io, blk,
 					     -inode_nbytes, inode_bitmap);
 				if (retval) {
 					retval = EXT2_ET_INODE_BITMAP_READ;

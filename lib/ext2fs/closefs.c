@@ -194,7 +194,7 @@ static errcode_t write_primary_superblock(ext2_filsys fs,
 
 	if (!fs->io->manager->write_byte || !fs->orig_super) {
 		io_channel_set_blksize(fs->io, SUPERBLOCK_OFFSET);
-		retval = io_channel_write_blk(fs->io, 1, -SUPERBLOCK_SIZE,
+		retval = io_channel_write_blk64(fs->io, 1, -SUPERBLOCK_SIZE,
 					      super);
 		io_channel_set_blksize(fs->io, fs->blocksize);
 		return retval;
@@ -257,7 +257,7 @@ static errcode_t write_backup_super(ext2_filsys fs, dgrp_t group,
 	fs->super->s_block_group_nr = sgrp;
 #endif
 
-	return io_channel_write_blk(fs->io, group_block, -SUPERBLOCK_SIZE,
+	return io_channel_write_blk64(fs->io, group_block, -SUPERBLOCK_SIZE,
 				    super_shadow);
 }
 
@@ -353,7 +353,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 			continue;
 		if ((old_desc_blk) &&
 		    (!(fs->flags & EXT2_FLAG_MASTER_SB_ONLY) || (i == 0))) {
-			retval = io_channel_write_blk(fs->io,
+			retval = io_channel_write_blk64(fs->io,
 			      old_desc_blk, old_desc_blocks, group_ptr);
 			if (retval)
 				goto errout;
@@ -361,7 +361,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 		if (new_desc_blk) {
 			int meta_bg = i / EXT2_DESC_PER_BLOCK(fs->super);
 
-			retval = io_channel_write_blk(fs->io, new_desc_blk,
+			retval = io_channel_write_blk64(fs->io, new_desc_blk,
 				1, group_ptr + (meta_bg*fs->blocksize));
 			if (retval)
 				goto errout;

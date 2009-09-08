@@ -642,10 +642,10 @@ static errcode_t adjust_superblock(ext2_resize_t rfs, blk_t new_size)
 		/*
 		 * Write out the new inode table
 		 */
-		retval = io_channel_write_blk(fs->io,
-					      fs->group_desc[i].bg_inode_table,
-					      fs->inode_blocks_per_group,
-					      rfs->itable_buf);
+		retval = io_channel_write_blk64(fs->io,
+						fs->group_desc[i].bg_inode_table,
+						fs->inode_blocks_per_group,
+						rfs->itable_buf);
 		if (retval) goto errout;
 
 		io_channel_flush(fs->io);
@@ -1188,11 +1188,11 @@ static errcode_t block_mover(ext2_resize_t rfs)
 			c = size;
 			if (c > fs->inode_blocks_per_group)
 				c = fs->inode_blocks_per_group;
-			retval = io_channel_read_blk(fs->io, old_blk, c,
-						     rfs->itable_buf);
+			retval = io_channel_read_blk64(fs->io, old_blk, c,
+						       rfs->itable_buf);
 			if (retval) goto errout;
-			retval = io_channel_write_blk(fs->io, new_blk, c,
-						      rfs->itable_buf);
+			retval = io_channel_write_blk64(fs->io, new_blk, c,
+							rfs->itable_buf);
 			if (retval) goto errout;
 			size -= c;
 			new_blk += c;
@@ -1634,9 +1634,9 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		if (!diff)
 			continue;
 
-		retval = io_channel_read_blk(fs->io, old_blk,
-					     fs->inode_blocks_per_group,
-					     rfs->itable_buf);
+		retval = io_channel_read_blk64(fs->io, old_blk,
+					       fs->inode_blocks_per_group,
+					       rfs->itable_buf);
 		if (retval)
 			goto errout;
 		/*
@@ -1658,15 +1658,15 @@ static errcode_t move_itables(ext2_resize_t rfs)
 		if (n > diff)
 			num -= n;
 
-		retval = io_channel_write_blk(fs->io, new_blk,
-					      num, rfs->itable_buf);
+		retval = io_channel_write_blk64(fs->io, new_blk,
+						num, rfs->itable_buf);
 		if (retval) {
-			io_channel_write_blk(fs->io, old_blk,
-					     num, rfs->itable_buf);
+			io_channel_write_blk64(fs->io, old_blk,
+					       num, rfs->itable_buf);
 			goto errout;
 		}
 		if (n > diff) {
-			retval = io_channel_write_blk(fs->io,
+			retval = io_channel_write_blk64(fs->io,
 			      old_blk + fs->inode_blocks_per_group,
 			      diff, (rfs->itable_buf +
 				     (fs->inode_blocks_per_group - diff) *
@@ -1755,8 +1755,8 @@ static errcode_t fix_resize_inode(ext2_filsys fs)
 
 	memset(block_buf, 0, fs->blocksize);
 
-	retval = io_channel_write_blk(fs->io, inode.i_block[EXT2_DIND_BLOCK],
-				      1, block_buf);
+	retval = io_channel_write_blk64(fs->io, inode.i_block[EXT2_DIND_BLOCK],
+					1, block_buf);
 	if (retval) goto errout;
 
 	retval = ext2fs_create_resize_inode(fs);
