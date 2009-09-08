@@ -113,7 +113,7 @@ static void print_bg_opts(ext2_filsys fs, dgrp_t i)
 	int first = 1, bg_flags = 0;
 
 	if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
-		bg_flags = fs->group_desc[i].bg_flags;
+		bg_flags = ext2fs_bg_flags(fs, i);
 
 	print_bg_opt(bg_flags, EXT2_BG_INODE_UNINIT, "INODE_UNINIT",
  		     &first);

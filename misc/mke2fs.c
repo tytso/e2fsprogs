@@ -376,7 +376,7 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 			       EXT2_BLOCK_SIZE(fs->super));
 		} else {
 			/* The kernel doesn't need to zero the itable blocks */
-			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_ZEROED;
+			ext2fs_bg_flag_set(fs, i, EXT2_BG_INODE_ZEROED);
 			ext2fs_group_desc_csum_set(fs, i);
 		}
 		retval = ext2fs_zero_blocks(fs, blk, num, &blk, &num);

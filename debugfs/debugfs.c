@@ -290,10 +290,10 @@ static void print_features(struct ext2_super_block * s, FILE *f)
 	fputs("\n", f);
 }
 
-static void print_bg_opts(struct ext2_group_desc *gdp, int mask,
+static void print_bg_opts(ext2_filsys fs, dgrp_t group, int mask,
 			  const char *str, int *first, FILE *f)
 {
-	if (gdp->bg_flags & mask) {
+	if (ext2fs_bg_flag_test(fs, group, mask)) {
 		if (*first) {
 			fputs("           [", f);
 			*first = 0;
@@ -362,9 +362,9 @@ void do_show_super_stats(int argc, char *argv[])
 				gdp->bg_itable_unused,
 				gdp->bg_itable_unused != 1 ? "inodes":"inode");
 		first = 1;
-		print_bg_opts(gdp, EXT2_BG_INODE_UNINIT, "Inode not init",
+		print_bg_opts(current_fs, i, EXT2_BG_INODE_UNINIT, "Inode not init",
 			      &first, out);
-		print_bg_opts(gdp, EXT2_BG_BLOCK_UNINIT, "Block not init",
+		print_bg_opts(current_fs, i, EXT2_BG_BLOCK_UNINIT, "Block not init",
 			      &first, out);
 		if (gdt_csum) {
 			fprintf(out, "%sChecksum 0x%04x",

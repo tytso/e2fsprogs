@@ -348,11 +348,12 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	if (superblock > 1 && EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
 		struct ext2_group_desc *gd;
-		for (i = 0, gd = fs->group_desc; i < fs->group_desc_count;
-		     i++, gd++) {
-			gd->bg_flags &= ~EXT2_BG_BLOCK_UNINIT;
-			gd->bg_flags &= ~EXT2_BG_INODE_UNINIT;
-			gd->bg_itable_unused = 0;
+		dgrp_t group;
+
+		for (group = 0; group < fs->group_desc_count; group++) {
+			ext2fs_bg_flag_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
+			ext2fs_bg_flag_clear(fs, group, EXT2_BG_INODE_UNINIT);
+			fs->group_desc[group].bg_itable_unused = 0;
 		}
 		ext2fs_mark_super_dirty(fs);
 	}

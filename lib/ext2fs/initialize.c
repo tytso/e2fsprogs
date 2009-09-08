@@ -401,9 +401,9 @@ ipg_retry:
 		 */
 		if (csum_flag) {
 			if (i != fs->group_desc_count - 1)
-				fs->group_desc[i].bg_flags |=
-					EXT2_BG_BLOCK_UNINIT;
-			fs->group_desc[i].bg_flags |= EXT2_BG_INODE_UNINIT;
+				ext2fs_bg_flag_set(fs, i, EXT2_BG_BLOCK_UNINIT)
+					;
+			ext2fs_bg_flag_set(fs, i, EXT2_BG_INODE_UNINIT);
 			numblocks = super->s_inodes_per_group;
 			if (i == 0)
 				numblocks -= super->s_first_ino;
