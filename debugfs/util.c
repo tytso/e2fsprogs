@@ -267,15 +267,39 @@ unsigned long parse_ulong(const char *str, const char *cmd,
 }
 
 /*
+ * This function will convert a string to an unsigned long long, printing
+ * an error message if it fails, and returning success or failure in err.
+ */
+unsigned long long parse_ulonglong(const char *str, const char *cmd,
+				   const char *descr, int *err)
+{
+	char			*tmp;
+	unsigned long long	ret;
+
+	ret = strtoull(str, &tmp, 0);
+	if (*tmp == 0) {
+		if (err)
+			*err = 0;
+		return ret;
+	}
+	com_err(cmd, 0, "Bad %s - %s", descr, str);
+	if (err)
+		*err = 1;
+	else
+		exit(1);
+	return 0;
+}
+
+/*
  * This function will convert a string to a block number.  It returns
  * 0 on success, 1 on failure.
  */
-int strtoblk(const char *cmd, const char *str, blk_t *ret)
+int strtoblk(const char *cmd, const char *str, blk64_t *ret)
 {
 	blk_t	blk;
 	int	err;
 
-	blk = parse_ulong(str, cmd, "block number", &err);
+	blk = parse_ulonglong(str, cmd, "block number", &err);
 	*ret = blk;
 	if (err)
 		com_err(cmd, 0, "Invalid block number: %s", str);
@@ -328,7 +352,7 @@ int common_inode_args_process(int argc, char *argv[],
  * This is a helper function used by do_freeb, do_setb, and do_testb
  */
 int common_block_args_process(int argc, char *argv[],
-			      blk_t *block, blk_t *count)
+			      blk64_t *block, blk64_t *count)
 {
 	int	err;
 

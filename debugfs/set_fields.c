@@ -417,7 +417,7 @@ static errcode_t parse_gd_csum(struct field_set_info *info, char *arg)
 		ext2fs_group_desc_csum_set(current_fs, set_bg);
 		set_gd = current_fs->group_desc[set_bg];
 		printf("Checksum set to 0x%04x\n",
-		       current_fs->group_desc[set_bg].bg_checksum);
+		       ext2fs_bg_checksum(current_fs, set_bg));
 		return 0;
 	}
 

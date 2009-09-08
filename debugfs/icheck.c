@@ -19,7 +19,7 @@
 #include "debugfs.h"
 
 struct block_info {
-	blk_t		blk;
+	blk64_t		blk;
 	ext2_ino_t	ino;
 };
 
@@ -31,9 +31,9 @@ struct block_walk_struct {
 };
 
 static int icheck_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
-		       blk_t	*block_nr,
+		       blk64_t	*block_nr,
 		       e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
-		       blk_t ref_block EXT2FS_ATTR((unused)),
+		       blk64_t ref_block EXT2FS_ATTR((unused)),
 		       int ref_offset EXT2FS_ATTR((unused)),
 		       void *private)
 {
@@ -111,11 +111,13 @@ void do_icheck(int argc, char **argv)
 
 		bw.inode = ino;
 
-		if (inode.i_file_acl) {
-			icheck_proc(current_fs, &inode.i_file_acl, 0,
+		if (ext2fs_file_acl_block(&inode)) {
+			blk64_t blk;
+			icheck_proc(current_fs, &blk, 0,
 				    0, 0, &bw);
 			if (bw.blocks_left == 0)
 				break;
+			ext2fs_file_acl_block_set(&inode, blk);
 		}
 
 		if (!ext2fs_inode_has_valid_blocks(&inode))
@@ -127,7 +129,7 @@ void do_icheck(int argc, char **argv)
 		if (inode.i_dtime)
 			goto next;
 
-		retval = ext2fs_block_iterate2(current_fs, ino,
+		retval = ext2fs_block_iterate3(current_fs, ino,
 					       BLOCK_FLAG_READ_ONLY, block_buf,
 					       icheck_proc, &bw);
 		if (retval) {
@@ -153,10 +155,10 @@ void do_icheck(int argc, char **argv)
 	printf("Block\tInode number\n");
 	for (i=0, binfo = bw.barray; i < bw.num_blocks; i++, binfo++) {
 		if (binfo->ino == 0) {
-			printf("%u\t<block not found>\n", binfo->blk);
+			printf("%llu\t<block not found>\n", binfo->blk);
 			continue;
 		}
-		printf("%u\t%u\n", binfo->blk, binfo->ino);
+		printf("%llu\t%u\n", binfo->blk, binfo->ino);
 	}
 
 error_out:

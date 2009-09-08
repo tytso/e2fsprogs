@@ -26,8 +26,8 @@ extern char *optarg;
 
 void do_dump_unused(int argc EXT2FS_ATTR((unused)), char **argv)
 {
-	unsigned long	blk;
-	unsigned char buf[EXT2_MAX_BLOCK_SIZE];
+	blk64_t		blk;
+	unsigned char	buf[EXT2_MAX_BLOCK_SIZE];
 	unsigned int	i;
 	errcode_t	retval;
 
@@ -49,7 +49,7 @@ void do_dump_unused(int argc EXT2FS_ATTR((unused)), char **argv)
 				break;
 		if (i >= current_fs->blocksize)
 			continue;
-		printf("\nUnused block %lu contains non-zero data:\n\n",
+		printf("\nUnused block %llu contains non-zero data:\n\n",
 		       blk);
 		for (i=0; i < current_fs->blocksize; i++)
 			fputc(buf[i], stdout);

@@ -45,8 +45,8 @@ const char *debug_prog_name;
 ext2_filsys	current_fs = NULL;
 ext2_ino_t	root, cwd;
 
-static void open_filesystem(char *device, int open_flags, blk_t superblock,
-			    blk_t blocksize, int catastrophic,
+static void open_filesystem(char *device, int open_flags, blk64_t superblock,
+			    blk64_t blocksize, int catastrophic,
 			    char *data_filename)
 {
 	int	retval;
@@ -125,8 +125,8 @@ void do_open_filesys(int argc, char **argv)
 {
 	int	c, err;
 	int	catastrophic = 0;
-	blk_t	superblock = 0;
-	blk_t	blocksize = 0;
+	blk64_t	superblock = 0;
+	blk64_t	blocksize = 0;
 	int	open_flags = EXT2_FLAG_SOFTSUPP_FEATURES;
 	char	*data_filename = 0;
 
@@ -307,7 +307,6 @@ void do_show_super_stats(int argc, char *argv[])
 {
 	dgrp_t	i;
 	FILE 	*out;
-	struct ext2_group_desc *gdp;
 	int	c, header_only = 0;
 	int	numdirs = 0, first, gdt_csum;
 
@@ -330,7 +329,7 @@ void do_show_super_stats(int argc, char *argv[])
 
 	list_super2(current_fs->super, out);
 	for (i=0; i < current_fs->group_desc_count; i++)
-		numdirs += current_fs->group_desc[i].bg_used_dirs_count;
+		numdirs += ext2fs_bg_used_dirs_count(current_fs, i);
 	fprintf(out, "Directories:              %d\n", numdirs);
 
 	if (header_only) {
@@ -340,27 +339,30 @@ void do_show_super_stats(int argc, char *argv[])
 
 	gdt_csum = EXT2_HAS_RO_COMPAT_FEATURE(current_fs->super,
 					      EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
-	gdp = &current_fs->group_desc[0];
-	for (i = 0; i < current_fs->group_desc_count; i++, gdp++) {
-		fprintf(out, " Group %2d: block bitmap at %u, "
-		        "inode bitmap at %u, "
-		        "inode table at %u\n"
-		        "           %d free %s, "
-		        "%d free %s, "
-		        "%d used %s%s",
-		        i, gdp->bg_block_bitmap,
-		        gdp->bg_inode_bitmap, gdp->bg_inode_table,
-		        gdp->bg_free_blocks_count,
-		        gdp->bg_free_blocks_count != 1 ? "blocks" : "block",
-		        gdp->bg_free_inodes_count,
-		        gdp->bg_free_inodes_count != 1 ? "inodes" : "inode",
-		        gdp->bg_used_dirs_count,
-		        gdp->bg_used_dirs_count != 1 ? "directories"
-				: "directory", gdt_csum ? ", " : "\n");
+	for (i = 0; i < current_fs->group_desc_count; i++) {
+		fprintf(out, " Group %2d: block bitmap at %llu, "
+		        "inode bitmap at %llu, "
+		        "inode table at %llu\n"
+		        "           %u free %s, "
+		        "%u free %s, "
+		        "%u used %s%s",
+		        i, ext2fs_block_bitmap_loc(current_fs, i),
+		        ext2fs_inode_bitmap_loc(current_fs, i),
+			ext2fs_inode_table_loc(current_fs, i),
+		        ext2fs_bg_free_blocks_count(current_fs, i),
+		        ext2fs_bg_free_blocks_count(current_fs, i) != 1 ?
+			"blocks" : "block",
+		        ext2fs_bg_free_inodes_count(current_fs, i),
+		        ext2fs_bg_free_inodes_count(current_fs, i) != 1 ?
+			"inodes" : "inode",
+		        ext2fs_bg_used_dirs_count(current_fs, i),
+		        ext2fs_bg_used_dirs_count(current_fs, i) != 1 ? "directories"
+ 				: "directory", gdt_csum ? ", " : "\n");
 		if (gdt_csum)
-			fprintf(out, "%d unused %s\n",
-				gdp->bg_itable_unused,
-				gdp->bg_itable_unused != 1 ? "inodes":"inode");
+			fprintf(out, "%u unused %s\n",
+				ext2fs_bg_itable_unused(current_fs, i),
+				ext2fs_bg_itable_unused(current_fs, i) != 1 ?
+				"inodes" : "inode");
 		first = 1;
 		print_bg_opts(current_fs, i, EXT2_BG_INODE_UNINIT, "Inode not init",
 			      &first, out);
@@ -368,7 +370,7 @@ void do_show_super_stats(int argc, char *argv[])
 			      &first, out);
 		if (gdt_csum) {
 			fprintf(out, "%sChecksum 0x%04x",
-				first ? "           [":", ", gdp->bg_checksum);
+				first ? "           [":", ", ext2fs_bg_checksum(current_fs, i));
 			first = 0;
 		}
 		if (!first)
@@ -398,7 +400,7 @@ void do_dirty_filesys(int argc EXT2FS_ATTR((unused)),
 struct list_blocks_struct {
 	FILE		*f;
 	e2_blkcnt_t	total;
-	blk_t		first_block, last_block;
+	blk64_t		first_block, last_block;
 	e2_blkcnt_t	first_bcnt, last_bcnt;
 	e2_blkcnt_t	first;
 };
@@ -412,18 +414,18 @@ static void finish_range(struct list_blocks_struct *lb)
 	else
 		fprintf(lb->f, ", ");
 	if (lb->first_block == lb->last_block)
-		fprintf(lb->f, "(%lld):%u",
+		fprintf(lb->f, "(%lld):%llu",
 			(long long)lb->first_bcnt, lb->first_block);
 	else
-		fprintf(lb->f, "(%lld-%lld):%u-%u",
+		fprintf(lb->f, "(%lld-%lld):%llu-%llu",
 			(long long)lb->first_bcnt, (long long)lb->last_bcnt,
 			lb->first_block, lb->last_block);
 	lb->first_block = 0;
 }
 
 static int list_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
-			    blk_t *blocknr, e2_blkcnt_t blockcnt,
-			    blk_t ref_block EXT2FS_ATTR((unused)),
+			    blk64_t *blocknr, e2_blkcnt_t blockcnt,
+			    blk64_t ref_block EXT2FS_ATTR((unused)),
 			    int ref_offset EXT2FS_ATTR((unused)),
 			    void *private)
 {
@@ -458,11 +460,11 @@ static int list_blocks_proc(ext2_filsys fs EXT2FS_ATTR((unused)),
 	else
 		fprintf(lb->f, ", ");
 	if (blockcnt == -1)
-		fprintf(lb->f, "(IND):%u", *blocknr);
+		fprintf(lb->f, "(IND):%llu", (unsigned long long) *blocknr);
 	else if (blockcnt == -2)
-		fprintf(lb->f, "(DIND):%u", *blocknr);
+		fprintf(lb->f, "(DIND):%llu", (unsigned long long) *blocknr);
 	else if (blockcnt == -3)
-		fprintf(lb->f, "(TIND):%u", *blocknr);
+		fprintf(lb->f, "(TIND):%llu", (unsigned long long) *blocknr);
 	return 0;
 }
 
@@ -543,8 +545,8 @@ static void dump_blocks(FILE *f, const char *prefix, ext2_ino_t inode)
 	lb.first_block = 0;
 	lb.f = f;
 	lb.first = 1;
-	ext2fs_block_iterate2(current_fs, inode, BLOCK_FLAG_READ_ONLY, NULL,
-			     list_blocks_proc, (void *)&lb);
+	ext2fs_block_iterate3(current_fs, inode, BLOCK_FLAG_READ_ONLY, NULL,
+			      list_blocks_proc, (void *)&lb);
 	finish_range(&lb);
 	if (lb.total)
 		fprintf(f, "\n%sTOTAL: %lld\n", prefix, (long long)lb.total);
@@ -990,8 +992,8 @@ void do_testi(int argc, char *argv[])
 
 void do_freeb(int argc, char *argv[])
 {
-	blk_t block;
-	blk_t count = 1;
+	blk64_t block;
+	blk64_t count = 1;
 
 	if (common_block_args_process(argc, argv, &block, &count))
 		return;
@@ -999,7 +1001,7 @@ void do_freeb(int argc, char *argv[])
 		return;
 	while (count-- > 0) {
 		if (!ext2fs_test_block_bitmap2(current_fs->block_map,block))
-			com_err(argv[0], 0, "Warning: block %u already clear",
+			com_err(argv[0], 0, "Warning: block %llu already clear",
 				block);
 		ext2fs_unmark_block_bitmap2(current_fs->block_map,block);
 		block++;
@@ -1009,8 +1011,8 @@ void do_freeb(int argc, char *argv[])
 
 void do_setb(int argc, char *argv[])
 {
-	blk_t block;
-	blk_t count = 1;
+	blk64_t block;
+	blk64_t count = 1;
 
 	if (common_block_args_process(argc, argv, &block, &count))
 		return;
@@ -1018,7 +1020,7 @@ void do_setb(int argc, char *argv[])
 		return;
 	while (count-- > 0) {
 		if (ext2fs_test_block_bitmap2(current_fs->block_map,block))
-			com_err(argv[0], 0, "Warning: block %u already set",
+			com_err(argv[0], 0, "Warning: block %llu already set",
 				block);
 		ext2fs_mark_block_bitmap2(current_fs->block_map,block);
 		block++;
@@ -1028,16 +1030,16 @@ void do_setb(int argc, char *argv[])
 
 void do_testb(int argc, char *argv[])
 {
-	blk_t block;
-	blk_t count = 1;
+	blk64_t block;
+	blk64_t count = 1;
 
 	if (common_block_args_process(argc, argv, &block, &count))
 		return;
 	while (count-- > 0) {
 		if (ext2fs_test_block_bitmap2(current_fs->block_map,block))
-			printf("Block %u marked in use\n", block);
+			printf("Block %llu marked in use\n", block);
 		else
-			printf("Block %u not in use\n", block);
+			printf("Block %llu not in use\n", block);
 		block++;
 	}
 }
@@ -1329,14 +1331,16 @@ void do_link(int argc, char *argv[])
 	make_link(argv[1], argv[2]);
 }
 
-static int mark_blocks_proc(ext2_filsys fs, blk_t *blocknr,
-			    int blockcnt EXT2FS_ATTR((unused)),
+static int mark_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
+			    e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+			    blk64_t ref_block EXT2FS_ATTR((unused)),
+			    int ref_offset EXT2FS_ATTR((unused)),
 			    void *private EXT2FS_ATTR((unused)))
 {
-	blk_t	block;
+	blk64_t	block;
 
 	block = *blocknr;
-	ext2fs_block_alloc_stats(fs, block, +1);
+	ext2fs_block_alloc_stats2(fs, block, +1);
 	return 0;
 }
 
@@ -1372,8 +1376,8 @@ void do_undel(int argc, char *argv[])
 	if (debugfs_write_inode(ino, &inode, argv[0]))
 		return;
 
-	ext2fs_block_iterate(current_fs, ino, BLOCK_FLAG_READ_ONLY, NULL,
-			     mark_blocks_proc, NULL);
+	ext2fs_block_iterate3(current_fs, ino, BLOCK_FLAG_READ_ONLY, NULL,
+			      mark_blocks_proc, NULL);
 
 	ext2fs_inode_alloc_stats2(current_fs, ino, +1, 0);
 
@@ -1414,7 +1418,7 @@ void do_unlink(int argc, char *argv[])
 
 void do_find_free_block(int argc, char *argv[])
 {
-	blk_t	free_blk, goal, first_free = 0;
+	blk64_t	free_blk, goal, first_free = 0;
  	int		count;
 	errcode_t	retval;
 	char		*tmp;
@@ -1448,8 +1452,8 @@ void do_find_free_block(int argc, char *argv[])
 	printf("Free blocks found: ");
 	free_blk = goal - 1;
 	while (count-- > 0) {
-		retval = ext2fs_new_block(current_fs, free_blk + 1, 0,
-					  &free_blk);
+		retval = ext2fs_new_block2(current_fs, free_blk + 1, 0,
+					   &free_blk);
 		if (first_free) {
 			if (first_free == free_blk)
 				break;
@@ -1459,7 +1463,7 @@ void do_find_free_block(int argc, char *argv[])
 			com_err("ext2fs_new_block", retval, 0);
 			return;
 		} else
-			printf("%u ", free_blk);
+			printf("%llu ", free_blk);
 	}
  	printf("\n");
 }
@@ -1751,14 +1755,16 @@ try_again:
 
 }
 
-static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
-			       int blockcnt EXT2FS_ATTR((unused)),
+static int release_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
+			       e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+			       blk64_t ref_block EXT2FS_ATTR((unused)),
+			       int ref_offset EXT2FS_ATTR((unused)),
 			       void *private EXT2FS_ATTR((unused)))
 {
-	blk_t	block;
+	blk64_t	block;
 
 	block = *blocknr;
-	ext2fs_block_alloc_stats(fs, block, -1);
+	ext2fs_block_alloc_stats2(fs, block, -1);
 	return 0;
 }
 
@@ -1774,8 +1780,8 @@ static void kill_file_by_inode(ext2_ino_t inode)
 	if (!ext2fs_inode_has_valid_blocks(&inode_buf))
 		return;
 
-	ext2fs_block_iterate(current_fs, inode, BLOCK_FLAG_READ_ONLY, NULL,
-			     release_blocks_proc, NULL);
+	ext2fs_block_iterate3(current_fs, inode, BLOCK_FLAG_READ_ONLY, NULL,
+			      release_blocks_proc, NULL);
 	printf("\n");
 	ext2fs_inode_alloc_stats2(current_fs, inode, -1,
 				  LINUX_S_ISDIR(inode_buf.i_mode));
@@ -1958,7 +1964,7 @@ void do_features(int argc, char *argv[])
 void do_bmap(int argc, char *argv[])
 {
 	ext2_ino_t	ino;
-	blk_t		blk, pblk;
+	blk64_t		blk, pblk;
 	int		err;
 	errcode_t	errcode;
 
@@ -1971,13 +1977,13 @@ void do_bmap(int argc, char *argv[])
 		return;
 	blk = parse_ulong(argv[2], argv[0], "logical_block", &err);
 
-	errcode = ext2fs_bmap(current_fs, ino, 0, 0, 0, blk, &pblk);
+	errcode = ext2fs_bmap2(current_fs, ino, 0, 0, 0, blk, 0, &pblk);
 	if (errcode) {
 		com_err("argv[0]", errcode,
-			"while mapping logical block %u\n", blk);
+			"while mapping logical block %llu\n", blk);
 		return;
 	}
-	printf("%u\n", pblk);
+	printf("%llu\n", pblk);
 }
 
 void do_imap(int argc, char *argv[])
@@ -1996,12 +2002,12 @@ void do_imap(int argc, char *argv[])
 	offset = ((ino - 1) % EXT2_INODES_PER_GROUP(current_fs->super)) *
 		EXT2_INODE_SIZE(current_fs->super);
 	block = offset >> EXT2_BLOCK_SIZE_BITS(current_fs->super);
-	if (!current_fs->group_desc[(unsigned)group].bg_inode_table) {
+	if (!ext2fs_inode_table_loc(current_fs, (unsigned)group)) {
 		com_err(argv[0], 0, "Inode table for group %lu is missing\n",
 			group);
 		return;
 	}
-	block_nr = current_fs->group_desc[(unsigned)group].bg_inode_table +
+	block_nr = ext2fs_inode_table_loc(current_fs, (unsigned)group) +
 		block;
 	offset &= (EXT2_BLOCK_SIZE(current_fs->super) - 1);
 
@@ -2146,8 +2152,8 @@ int main(int argc, char **argv)
 	char		*request = 0;
 	int		exit_status = 0;
 	char		*cmd_file = 0;
-	blk_t		superblock = 0;
-	blk_t		blocksize = 0;
+	blk64_t		superblock = 0;
+	blk64_t		blocksize = 0;
 	int		catastrophic = 0;
 	char		*data_filename = 0;
 

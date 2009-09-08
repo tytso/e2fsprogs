@@ -34,14 +34,16 @@ extern char *time_to_string(__u32);
 extern time_t string_to_time(const char *);
 extern unsigned long parse_ulong(const char *str, const char *cmd,
 				 const char *descr, int *err);
-extern int strtoblk(const char *cmd, const char *str, blk_t *ret);
+extern unsigned long long parse_ulonglong(const char *str, const char *cmd,
+					  const char *descr, int *err);
+extern int strtoblk(const char *cmd, const char *str, blk64_t *ret);
 extern int common_args_process(int argc, char *argv[], int min_argc,
 			       int max_argc, const char *cmd,
 			       const char *usage, int flags);
 extern int common_inode_args_process(int argc, char *argv[],
 				     ext2_ino_t *inode, int flags);
 extern int common_block_args_process(int argc, char *argv[],
-				     blk_t *block, blk_t *count);
+				     blk64_t *block, blk64_t *count);
 extern int debugfs_read_inode(ext2_ino_t ino, struct ext2_inode * inode,
 			      const char *cmd);
 extern int debugfs_read_inode_full(ext2_ino_t ino, struct ext2_inode * inode,
