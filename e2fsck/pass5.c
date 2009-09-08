@@ -662,7 +662,7 @@ static void check_block_end(e2fsck_t ctx)
 	clear_problem_context(&pctx);
 
 	end = ext2fs_get_block_bitmap_start2(fs->block_map) +
-		(EXT2_BLOCKS_PER_GROUP(fs->super) * fs->group_desc_count) - 1;
+		((blk64_t)EXT2_BLOCKS_PER_GROUP(fs->super) * fs->group_desc_count) - 1;
 	pctx.errcode = ext2fs_fudge_block_bitmap_end2(fs->block_map, end,
 						     &save_blocks_count);
 	if (pctx.errcode) {
