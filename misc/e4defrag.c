@@ -430,6 +430,8 @@ static int is_ext4(const char *file)
 	}
 
 	while ((mnt = getmntent(fp)) != NULL) {
+		if (mnt->mnt_fsname[0] != '/')
+			continue;
 		len = strlen(mnt->mnt_dir);
 		ret = memcmp(file_path, mnt->mnt_dir, len);
 		if (ret != 0)
