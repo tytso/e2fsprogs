@@ -113,9 +113,9 @@ static void show_stats(e2fsck_t	ctx)
 	inodes = fs->super->s_inodes_count;
 	inodes_used = (fs->super->s_inodes_count -
 		       fs->super->s_free_inodes_count);
-	blocks = fs->super->s_blocks_count;
-	blocks_used = (fs->super->s_blocks_count -
-		       fs->super->s_free_blocks_count);
+	blocks = ext2fs_blocks_count(fs->super);
+	blocks_used = (ext2fs_blocks_count(fs->super) -
+		       ext2fs_free_blocks_count(fs->super));
 
 	frag_percent_file = (10000 * ctx->fs_fragmented) / inodes_used;
 	frag_percent_file = (frag_percent_file + 5) / 10;
@@ -339,11 +339,12 @@ static void check_if_skip(e2fsck_t ctx)
 		fputs(_(", check forced.\n"), stdout);
 		return;
 	}
-	printf(_("%s: clean, %u/%u files, %u/%u blocks"), ctx->device_name,
+	printf(_("%s: clean, %u/%u files, %llu/%llu blocks"), ctx->device_name,
 	       fs->super->s_inodes_count - fs->super->s_free_inodes_count,
 	       fs->super->s_inodes_count,
-	       fs->super->s_blocks_count - fs->super->s_free_blocks_count,
-	       fs->super->s_blocks_count);
+	       ext2fs_blocks_count(fs->super) -
+	       ext2fs_free_blocks_count(fs->super),
+	       ext2fs_blocks_count(fs->super));
 	next_check = 100000;
 	if (fs->super->s_max_mnt_count > 0) {
 		next_check = fs->super->s_max_mnt_count - fs->super->s_mnt_count;
@@ -1331,7 +1332,7 @@ print_unsupp_features:
 	if (ctx->flags & E2F_FLAG_JOURNAL_INODE) {
 		if (fix_problem(ctx, PR_6_RECREATE_JOURNAL, &pctx)) {
 			if (journal_size < 1024)
-				journal_size = ext2fs_default_journal_size(fs->super->s_blocks_count);
+				journal_size = ext2fs_default_journal_size(ext2fs_blocks_count(fs->super));
 			if (journal_size < 0) {
 				fs->super->s_feature_compat &=
 					~EXT3_FEATURE_COMPAT_HAS_JOURNAL;

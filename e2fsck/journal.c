@@ -215,7 +215,7 @@ static int process_journal_block(ext2_filsys fs,
 	p = (struct process_block_struct *) priv_data;
 
 	if (blk < fs->super->s_first_data_block ||
-	    blk >= fs->super->s_blocks_count)
+	    blk >= ext2fs_blocks_count(fs->super))
 		return BLOCK_ABORT;
 
 	if (blockcnt >= 0)
@@ -409,7 +409,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			goto errout;
 		}
 
-		journal->j_maxlen = jsuper.s_blocks_count;
+		journal->j_maxlen = ext2fs_blocks_count(&jsuper);
 		start++;
 	}
 

@@ -92,6 +92,7 @@
 #include <time.h>
 
 #include "ext2fs/ext2_fs.h"
+#include "ext2fs/ext2fs.h"
 #include "nls-enable.h"
 
 #undef DEBUG
@@ -215,12 +216,14 @@ int main(int argc, char *argv[])
 			continue;
 		if (ext2.s_log_block_size > 6)
 			WHY("log block size > 6 (%u)\n", ext2.s_log_block_size);
-		if (ext2.s_r_blocks_count > ext2.s_blocks_count)
+		if (ext2fs_r_blocks_count(&ext2) > ext2fs_blocks_count(&ext2))
 			WHY("r_blocks_count > blocks_count (%u > %u)\n",
-			    ext2.s_r_blocks_count, ext2.s_blocks_count);
-		if (ext2.s_free_blocks_count > ext2.s_blocks_count)
+			    ext2fs_r_blocks_count(&ext2),
+			    ext2fs_blocks_count(&ext2));
+		if (ext2fs_free_blocks_count(&ext2) > ext2fs_blocks_count(&ext2))
 			WHY("free_blocks_count > blocks_count\n (%u > %u)\n",
-			    ext2.s_free_blocks_count, ext2.s_blocks_count);
+			    ext2fs_free_blocks_count(&ext2),
+			    ext2fs_blocks_count(&ext2));
 		if (ext2.s_free_inodes_count > ext2.s_inodes_count)
 			WHY("free_inodes_count > inodes_count (%u > %u)\n",
 			    ext2.s_free_inodes_count, ext2.s_inodes_count);
@@ -246,9 +249,9 @@ int main(int argc, char *argv[])
 		printf("\r%11Lu %11Lu%s %11Lu%s %9u %5Lu %4u%s %s %02x%02x%02x%02x %s\n",
 		       sk, sk - ext2.s_block_group_nr * grpsize - sb_offset,
 		       jnl_copy ? "*":" ",
-		       sk + ext2.s_blocks_count * bsize -
+		       sk + ext2fs_blocks_count(&ext2) * bsize -
 		            ext2.s_block_group_nr * grpsize - sb_offset,
-		       jnl_copy ? "*" : " ", ext2.s_blocks_count, bsize,
+		       jnl_copy ? "*" : " ", ext2fs_blocks_count(&ext2), bsize,
 		       ext2.s_block_group_nr, jnl_copy ? "*" : " ", s,
 		       ext2.s_uuid[0], ext2.s_uuid[1],
 		       ext2.s_uuid[2], ext2.s_uuid[3], ext2.s_volume_name);

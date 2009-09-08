@@ -37,9 +37,9 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	printf(_("Filesystem at %s is mounted on %s; "
 		 "on-line resizing required\n"), fs->device_name, mtpt);
 
-	if (*new_size < sb->s_blocks_count) {
-		printf(_("On-line shrinking from %u to %u not supported.\n"),
-		       sb->s_blocks_count, *new_size);
+	if (*new_size < ext2fs_blocks_count(sb)) {
+		printf(_("On-line shrinking from %llu to %u not supported.\n"),
+		       ext2fs_blocks_count(sb), *new_size);
 		exit(1);
 	}
 
@@ -69,7 +69,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		exit(1);
 	}
 
-	size=sb->s_blocks_count;
+	size=ext2fs_blocks_count(sb);
 	if (ioctl(fd, EXT2_IOC_GROUP_EXTEND, &size)) {
 		if (errno == EPERM)
 			com_err(program_name, 0,
@@ -83,7 +83,8 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		exit(1);
 	}
 
-	percent = (sb->s_r_blocks_count * 100.0) / sb->s_blocks_count;
+	percent = (ext2fs_r_blocks_count(sb) * 100.0) /
+		ext2fs_blocks_count(sb);
 
 	retval = ext2fs_read_bitmaps(fs);
 	if (retval)
@@ -137,7 +138,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		input.inode_table = new_fs->group_desc[i].bg_inode_table;
 		input.blocks_count = sb->s_blocks_per_group;
 		if (i == new_fs->group_desc_count-1) {
-			input.blocks_count = new_fs->super->s_blocks_count -
+			input.blocks_count = ext2fs_blocks_count(new_fs->super) -
 				sb->s_first_data_block -
 				(i * sb->s_blocks_per_group);
 		}

@@ -166,7 +166,7 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 	/*
 	 * If the block number is outrageous, clear it and ignore it.
 	 */
-	if (*block_nr >= fs->super->s_blocks_count ||
+	if (*block_nr >= ext2fs_blocks_count(fs->super) ||
 	    *block_nr < fs->super->s_first_data_block) {
 		*block_nr = 0;
 		return BLOCK_CHANGED;

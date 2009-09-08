@@ -69,7 +69,8 @@ static int I_flag;
 static time_t last_check_time;
 static int print_label;
 static int max_mount_count, mount_count, mount_flags;
-static unsigned long interval, reserved_blocks;
+static unsigned long interval;
+static blk64_t reserved_blocks;
 static double reserved_ratio;
 static unsigned long resgid, resuid;
 static unsigned short errors;
@@ -262,7 +263,7 @@ static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
 	group = ext2fs_group_of_blk(fs, block);
 	fs->group_desc[group].bg_free_blocks_count++;
 	ext2fs_group_desc_csum_set(fs, group);
-	fs->super->s_free_blocks_count++;
+	ext2fs_free_blocks_count_add(fs->super, 1);
 	return 0;
 }
 
@@ -1008,7 +1009,7 @@ static int get_move_bitmaps(ext2_filsys fs, int new_ino_blks_per_grp,
 	}
 
 	ext2fs_badblocks_list_free(bb_list);
-	if (needed_blocks > fs->super->s_free_blocks_count)
+	if (needed_blocks > ext2fs_free_blocks_count(fs->super))
 		return ENOSPC;
 
 	return 0;
@@ -1055,7 +1056,7 @@ static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap)
 		return retval;
 
 	for (new_blk = blk = fs->super->s_first_data_block;
-	     blk < fs->super->s_blocks_count; blk++) {
+	     blk < ext2fs_blocks_count(fs->super); blk++) {
 		if (!ext2fs_test_block_bitmap2(bmap, blk))
 			continue;
 
@@ -1336,21 +1337,21 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 	 * First calculate the block statistics
 	 */
 	for (blk = fs->super->s_first_data_block;
-	     blk < fs->super->s_blocks_count; blk++) {
+	     blk < ext2fs_blocks_count(fs->super); blk++) {
 		if (!ext2fs_fast_test_block_bitmap2(fs->block_map, blk)) {
 			group_free++;
 			total_free++;
 		}
 		count++;
 		if ((count == fs->super->s_blocks_per_group) ||
-		    (blk == fs->super->s_blocks_count-1)) {
+		    (blk == ext2fs_blocks_count(fs->super)-1)) {
 			fs->group_desc[group++].bg_free_blocks_count =
 				group_free;
 			count = 0;
 			group_free = 0;
 		}
 	}
-	fs->super->s_free_blocks_count = total_free;
+	ext2fs_free_blocks_count_set(fs->super, total_free);
 
 	/*
 	 * Next, calculate the inode statistics
@@ -1658,23 +1659,22 @@ retry_open:
 		       interval);
 	}
 	if (m_flag) {
-		sb->s_r_blocks_count = (unsigned int) (reserved_ratio *
-					sb->s_blocks_count / 100.0);
+		ext2fs_r_blocks_count_set(sb, reserved_ratio *
+					  ext2fs_blocks_count(sb) / 100.0);
 		ext2fs_mark_super_dirty(fs);
-		printf(_("Setting reserved blocks percentage to %g%% "
-			 "(%u blocks)\n"),
-		       reserved_ratio, sb->s_r_blocks_count);
+		printf (_("Setting reserved blocks percentage to %g%% (%llu blocks)\n"),
+			reserved_ratio, ext2fs_r_blocks_count(sb));
 	}
 	if (r_flag) {
-		if (reserved_blocks >= sb->s_blocks_count/2) {
+		if (reserved_blocks >= ext2fs_blocks_count(sb)/2) {
 			com_err(program_name, 0,
-				_("reserved blocks count is too big (%lu)"),
+				_("reserved blocks count is too big (%llu)"),
 				reserved_blocks);
 			exit(1);
 		}
-		sb->s_r_blocks_count = reserved_blocks;
+		ext2fs_r_blocks_count_set(sb, reserved_blocks);
 		ext2fs_mark_super_dirty(fs);
-		printf(_("Setting reserved blocks count to %lu\n"),
+		printf(_("Setting reserved blocks count to %llu\n"),
 		       reserved_blocks);
 	}
 	if (s_flag == 1) {

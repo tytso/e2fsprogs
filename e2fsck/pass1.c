@@ -191,7 +191,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		    (extent.e_lblk != 0) ||
 		    (extent.e_len != 1) ||
 		    (extent.e_pblk < fs->super->s_first_data_block) ||
-		    (extent.e_pblk >= fs->super->s_blocks_count))
+		    (extent.e_pblk >= ext2fs_blocks_count(fs->super)))
 			goto exit_extent;
 		i = 1;
 	exit_extent:
@@ -204,7 +204,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		if ((inode->i_size >= fs->blocksize) ||
 		    (blocks != fs->blocksize >> 9) ||
 		    (inode->i_block[0] < fs->super->s_first_data_block) ||
-		    (inode->i_block[0] >= fs->super->s_blocks_count))
+		    (inode->i_block[0] >= ext2fs_blocks_count(fs->super)))
 			return 0;
 
 		for (i = 1; i < EXT2_N_BLOCKS; i++)
@@ -418,7 +418,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 			not_device++;
 
 		if (blk < ctx->fs->super->s_first_data_block ||
-		    blk >= ctx->fs->super->s_blocks_count ||
+		    blk >= ext2fs_blocks_count(ctx->fs->super) ||
 		    ext2fs_fast_test_block_bitmap2(ctx->block_found_map, blk))
 			return;	/* Invalid block, can't be dir */
 	}
@@ -1382,7 +1382,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	 */
 	if (!(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR) ||
 	    (blk < fs->super->s_first_data_block) ||
-	    (blk >= fs->super->s_blocks_count)) {
+	    (blk >= ext2fs_blocks_count(fs->super))) {
 		mark_inode_bad(ctx, ino);
 		return 0;
 	}
@@ -1558,7 +1558,7 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 	if ((pctx->errcode) ||
 	    (blk == 0) ||
 	    (blk < fs->super->s_first_data_block) ||
-	    (blk >= fs->super->s_blocks_count)) {
+	    (blk >= ext2fs_blocks_count(fs->super))) {
 		if (fix_problem(ctx, PR_1_HTREE_BADROOT, pctx))
 			return 1;
 		else
@@ -1645,13 +1645,13 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 
 		problem = 0;
 		if (extent.e_pblk < ctx->fs->super->s_first_data_block ||
-		    extent.e_pblk >= ctx->fs->super->s_blocks_count)
+		    extent.e_pblk >= ext2fs_blocks_count(ctx->fs->super))
 			problem = PR_1_EXTENT_BAD_START_BLK;
 		else if (extent.e_lblk < start_block)
 			problem = PR_1_OUT_OF_ORDER_EXTENTS;
 		else if (is_leaf &&
 			 (extent.e_pblk + extent.e_len) >
-			 ctx->fs->super->s_blocks_count)
+			 ext2fs_blocks_count(ctx->fs->super))
 			problem = PR_1_EXTENT_ENDS_BEYOND;
 
 		if (problem) {
@@ -2008,8 +2008,8 @@ static char *describe_illegal_block(ext2_filsys fs, blk_t block)
 	if (block < super) {
 		sprintf(problem, "< FIRSTBLOCK (%u)", super);
 		return(problem);
-	} else if (block >= fs->super->s_blocks_count) {
-		sprintf(problem, "> BLOCKS (%u)", fs->super->s_blocks_count);
+	} else if (block >= ext2fs_blocks_count(fs->super)) {
+		sprintf(problem, "> BLOCKS (%u)", ext2fs_blocks_count(fs->super));
 		return(problem);
 	}
 	for (i = 0; i < fs->group_desc_count; i++) {
@@ -2153,7 +2153,7 @@ static int process_block(ext2_filsys fs,
 		problem = PR_1_TOOBIG_SYMLINK;
 
 	if (blk < fs->super->s_first_data_block ||
-	    blk >= fs->super->s_blocks_count)
+	    blk >= ext2fs_blocks_count(fs->super))
 		problem = PR_1_ILLEGAL_BLOCK_NUM;
 
 	if (problem) {
@@ -2241,7 +2241,7 @@ static int process_bad_block(ext2_filsys fs,
 	pctx->blkcount = blockcnt;
 
 	if ((blk < fs->super->s_first_data_block) ||
-	    (blk >= fs->super->s_blocks_count)) {
+	    (blk >= ext2fs_blocks_count(fs->super))) {
 		if (fix_problem(ctx, PR_1_BB_ILLEGAL_BLOCK_NUM, pctx)) {
 			*block_nr = 0;
 			return BLOCK_CHANGED;
@@ -2415,7 +2415,7 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 	if (is_flexbg && (pctx.errcode == EXT2_ET_BLOCK_ALLOC_FAIL))
 		pctx.errcode = ext2fs_get_free_blocks2(fs,
 				fs->super->s_first_data_block,
-				fs->super->s_blocks_count,
+				ext2fs_blocks_count(fs->super),
 				num, ctx->block_found_map, new_block);
 	if (pctx.errcode) {
 		pctx.num = num;

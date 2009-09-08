@@ -75,8 +75,8 @@ static unsigned int calc_reserved_gdt_blocks(ext2_filsys fs)
 	/* We set it at 1024x the current filesystem size, or
 	 * the upper block count limit (2^32), whichever is lower.
 	 */
-	if (sb->s_blocks_count < max_blocks / 1024)
-		max_blocks = sb->s_blocks_count * 1024;
+	if (ext2fs_blocks_count(sb) < max_blocks / 1024)
+		max_blocks = ext2fs_blocks_count(sb) * 1024;
 	rsv_groups = ext2fs_div_ceil(max_blocks - sb->s_first_data_block, bpg);
 	rsv_gdb = ext2fs_div_ceil(rsv_groups, gdpb) - fs->desc_blocks;
 	if (rsv_gdb > EXT2_ADDR_PER_BLOCK(sb))
@@ -108,7 +108,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	char		*buf = 0;
 	char		c;
 
-	if (!param || !param->s_blocks_count)
+	if (!param || !ext2fs_blocks_count(param))
 		return EXT2_ET_INVALID_ARGUMENT;
 
 	retval = ext2fs_get_mem(sizeof(struct struct_ext2_filsys), &fs);
@@ -200,9 +200,9 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		super->s_blocks_per_group = EXT2_MAX_BLOCKS_PER_GROUP(super);
 	super->s_frags_per_group = super->s_blocks_per_group * frags_per_block;
 
-	super->s_blocks_count = param->s_blocks_count;
-	super->s_r_blocks_count = param->s_r_blocks_count;
-	if (super->s_r_blocks_count >= param->s_blocks_count) {
+	ext2fs_blocks_count_set(super, ext2fs_blocks_count(param));
+	ext2fs_r_blocks_count_set(super, ext2fs_r_blocks_count(param));
+	if (ext2fs_r_blocks_count(super) >= ext2fs_blocks_count(param)) {
 		retval = EXT2_ET_INVALID_ARGUMENT;
 		goto cleanup;
 	}
@@ -219,9 +219,9 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	}
 
 retry:
-	fs->group_desc_count = ext2fs_div_ceil(super->s_blocks_count -
-					       super->s_first_data_block,
-					       EXT2_BLOCKS_PER_GROUP(super));
+	fs->group_desc_count = (blk_t) ext2fs_div64_ceil(
+		ext2fs_blocks_count(super) - super->s_first_data_block,
+		EXT2_BLOCKS_PER_GROUP(super));
 	if (fs->group_desc_count == 0) {
 		retval = EXT2_ET_TOOSMALL;
 		goto cleanup;
@@ -230,7 +230,7 @@ retry:
 					  EXT2_DESC_PER_BLOCK(super));
 
 	i = fs->blocksize >= 4096 ? 1 : 4096 / fs->blocksize;
-	set_field(s_inodes_count, super->s_blocks_count / i);
+	set_field(s_inodes_count, ext2fs_blocks_count(super) / i);
 
 	/*
 	 * Make sure we have at least EXT2_FIRST_INO + 1 inodes, so
@@ -250,7 +250,8 @@ retry:
 		if (super->s_blocks_per_group >= 256) {
 			/* Try again with slightly different parameters */
 			super->s_blocks_per_group -= 8;
-			super->s_blocks_count = param->s_blocks_count;
+			ext2fs_blocks_count_set(super,
+						ext2fs_blocks_count(param));
 			super->s_frags_per_group = super->s_blocks_per_group *
 				frags_per_block;
 			goto retry;
@@ -338,14 +339,16 @@ ipg_retry:
 	overhead = (int) (2 + fs->inode_blocks_per_group);
 	if (ext2fs_bg_has_super(fs, fs->group_desc_count - 1))
 		overhead += 1 + fs->desc_blocks + super->s_reserved_gdt_blocks;
-	rem = ((super->s_blocks_count - super->s_first_data_block) %
+	rem = ((ext2fs_blocks_count(super) - super->s_first_data_block) %
 	       super->s_blocks_per_group);
 	if ((fs->group_desc_count == 1) && rem && (rem < overhead)) {
 		retval = EXT2_ET_TOOSMALL;
 		goto cleanup;
 	}
 	if (rem && (rem < overhead+50)) {
-		super->s_blocks_count -= rem;
+		ext2fs_blocks_count_set(super, ext2fs_blocks_count(super) -
+					rem);
+
 		goto retry;
 	}
 
@@ -391,7 +394,7 @@ ipg_retry:
 	 * superblock and group descriptors (the inode tables and
 	 * bitmaps will be accounted for when allocated).
 	 */
-	super->s_free_blocks_count = 0;
+	ext2fs_free_blocks_count_set(super, 0);
 	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
 	for (i = 0; i < fs->group_desc_count; i++) {
@@ -413,7 +416,9 @@ ipg_retry:
 		if (fs->super->s_log_groups_per_flex)
 			numblocks += 2 + fs->inode_blocks_per_group;
 
-		super->s_free_blocks_count += numblocks;
+		ext2fs_free_blocks_count_set(super,
+					     ext2fs_free_blocks_count(super) +
+					     numblocks);
 		fs->group_desc[i].bg_free_blocks_count = numblocks;
 		fs->group_desc[i].bg_free_inodes_count =
 			fs->super->s_inodes_per_group;

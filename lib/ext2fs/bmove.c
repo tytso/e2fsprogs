@@ -50,7 +50,7 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 	 */
 	if (ext2fs_test_block_bitmap2(pb->reserve, block)) {
 		do {
-			if (++block >= fs->super->s_blocks_count)
+			if (++block >= ext2fs_blocks_count(fs->super))
 				block = fs->super->s_first_data_block;
 			if (block == orig) {
 				pb->error = EXT2_ET_BLOCK_ALLOC_FAIL;

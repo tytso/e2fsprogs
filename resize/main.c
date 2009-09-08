@@ -429,7 +429,7 @@ int main (int argc, char ** argv)
 			fs->blocksize / 1024, new_size);
 		exit(1);
 	}
-	if (new_size == fs->super->s_blocks_count) {
+	if (new_size == ext2fs_blocks_count(fs->super)) {
 		fprintf(stderr, _("The filesystem is already %u blocks "
 			"long.  Nothing to do!\n\n"), new_size);
 		exit(0);

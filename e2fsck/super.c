@@ -77,7 +77,7 @@ static int release_inode_block(ext2_filsys fs,
 		return 0;
 
 	if ((blk < fs->super->s_first_data_block) ||
-	    (blk >= fs->super->s_blocks_count)) {
+	    (blk >= ext2fs_blocks_count(fs->super))) {
 		fix_problem(ctx, PR_0_ORPHAN_ILLEGAL_BLOCK_NUM, pctx);
 	return_abort:
 		pb->abort = 1;
@@ -376,7 +376,7 @@ void check_resize_inode(e2fsck_t ctx)
 	if ((i < EXT2_N_BLOCKS) || !blk || !inode.i_links_count ||
 	    !(inode.i_mode & LINUX_S_IFREG) ||
 	    (blk < fs->super->s_first_data_block ||
-	     blk >= fs->super->s_blocks_count)) {
+	     blk >= ext2fs_blocks_count(fs->super))) {
 	resize_inode_invalid:
 		if (fix_problem(ctx, PR_0_RESIZE_INODE_INVALID, &pctx)) {
 			memset(&inode, 0, sizeof(inode));
@@ -495,10 +495,10 @@ void check_super_block(e2fsck_t ctx)
 	 */
 	check_super_value(ctx, "inodes_count", sb->s_inodes_count,
 			  MIN_CHECK, 1, 0);
-	check_super_value(ctx, "blocks_count", sb->s_blocks_count,
+	check_super_value(ctx, "blocks_count", ext2fs_blocks_count(sb),
 			  MIN_CHECK, 1, 0);
 	check_super_value(ctx, "first_data_block", sb->s_first_data_block,
-			  MAX_CHECK, 0, sb->s_blocks_count);
+			  MAX_CHECK, 0, ext2fs_blocks_count(sb));
 	check_super_value(ctx, "log_block_size", sb->s_log_block_size,
 			  MIN_CHECK | MAX_CHECK, 0,
 			  EXT2_MAX_BLOCK_LOG_SIZE - EXT2_MIN_BLOCK_LOG_SIZE);
@@ -511,8 +511,8 @@ void check_super_block(e2fsck_t ctx)
 			  MIN_CHECK | MAX_CHECK, 8, bpg_max);
 	check_super_value(ctx, "inodes_per_group", sb->s_inodes_per_group,
 			  MIN_CHECK | MAX_CHECK, inodes_per_block, ipg_max);
-	check_super_value(ctx, "r_blocks_count", sb->s_r_blocks_count,
-			  MAX_CHECK, 0, sb->s_blocks_count / 2);
+	check_super_value(ctx, "r_blocks_count", ext2fs_r_blocks_count(sb),
+			  MAX_CHECK, 0, ext2fs_blocks_count(sb) / 2);
 	check_super_value(ctx, "reserved_gdt_blocks",
 			  sb->s_reserved_gdt_blocks, MAX_CHECK, 0,
 			  fs->blocksize/4);
@@ -533,8 +533,8 @@ void check_super_block(e2fsck_t ctx)
 	}
 
 	if ((ctx->flags & E2F_FLAG_GOT_DEVSIZE) &&
-	    (ctx->num_blocks < sb->s_blocks_count)) {
-		pctx.blk = sb->s_blocks_count;
+	    (ctx->num_blocks < ext2fs_blocks_count(sb))) {
+		pctx.blk = ext2fs_blocks_count(sb);
 		pctx.blk2 = ctx->num_blocks;
 		if (fix_problem(ctx, PR_0_FS_SIZE_WRONG, &pctx)) {
 			ctx->flags |= E2F_FLAG_ABORT;
@@ -583,7 +583,7 @@ void check_super_block(e2fsck_t ctx)
 	 * Verify the group descriptors....
 	 */
 	first_block = sb->s_first_data_block;
-	last_block = sb->s_blocks_count-1;
+	last_block = ext2fs_blocks_count(sb)-1;
 
 	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
@@ -702,18 +702,18 @@ void check_super_block(e2fsck_t ctx)
 	 * inodes; if the filesystem is not unmounted cleanly, the
 	 * global counts may not be accurate.
 	 */
-	if ((free_blocks != sb->s_free_blocks_count) ||
+	if ((free_blocks != ext2fs_free_blocks_count(sb)) ||
 	    (free_inodes != sb->s_free_inodes_count)) {
 		if (ctx->options & E2F_OPT_READONLY)
 			ext2fs_unmark_valid(fs);
 		else {
-			sb->s_free_blocks_count = free_blocks;
+			ext2fs_free_blocks_count_set(sb, free_blocks);
 			sb->s_free_inodes_count = free_inodes;
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
 
-	if ((sb->s_free_blocks_count > sb->s_blocks_count) ||
+	if ((ext2fs_free_blocks_count(sb) > ext2fs_blocks_count(sb)) ||
 	    (sb->s_free_inodes_count > sb->s_inodes_count))
 		ext2fs_unmark_valid(fs);
 

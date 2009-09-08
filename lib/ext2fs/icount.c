@@ -744,7 +744,7 @@ static void setup(void)
 	initialize_ext2_error_table();
 
 	memset(&param, 0, sizeof(param));
-	param.s_blocks_count = 12000;
+	ext2fs_blocks_count_set(&param, 12000);
 
 	retval = ext2fs_initialize("test fs", EXT2_FLAG_64BITS, &param,
 				   test_io_manager, &test_fs);

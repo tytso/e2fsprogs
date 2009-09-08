@@ -127,11 +127,11 @@ static void check_block_bitmaps(e2fsck_t ctx)
 
 	if ((fs->super->s_first_data_block <
 	     ext2fs_get_block_bitmap_start2(ctx->block_found_map)) ||
-	    (fs->super->s_blocks_count-1 >
+	    (ext2fs_blocks_count(fs->super)-1 >
 	     ext2fs_get_block_bitmap_end2(ctx->block_found_map))) {
 		pctx.num = 1;
 		pctx.blk = fs->super->s_first_data_block;
-		pctx.blk2 = fs->super->s_blocks_count -1;
+		pctx.blk2 = ext2fs_blocks_count(fs->super) -1;
 		pctx.ino = ext2fs_get_block_bitmap_start2(ctx->block_found_map);
 		pctx.ino2 = ext2fs_get_block_bitmap_end2(ctx->block_found_map);
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
@@ -142,11 +142,11 @@ static void check_block_bitmaps(e2fsck_t ctx)
 
 	if ((fs->super->s_first_data_block <
 	     ext2fs_get_block_bitmap_start2(fs->block_map)) ||
-	    (fs->super->s_blocks_count-1 >
+	    (ext2fs_blocks_count(fs->super)-1 >
 	     ext2fs_get_block_bitmap_end2(fs->block_map))) {
 		pctx.num = 2;
 		pctx.blk = fs->super->s_first_data_block;
-		pctx.blk2 = fs->super->s_blocks_count -1;
+		pctx.blk2 = ext2fs_blocks_count(fs->super) -1;
 		pctx.ino = ext2fs_get_block_bitmap_start2(fs->block_map);
 		pctx.ino2 = ext2fs_get_block_bitmap_end2(fs->block_map);
 		fix_problem(ctx, PR_5_BMAP_ENDPOINTS, &pctx);
@@ -165,7 +165,7 @@ redo_counts:
 	    (ext2fs_bg_flag_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
 		skip_group++;
 	for (i = fs->super->s_first_data_block;
-	     i < fs->super->s_blocks_count;
+	     i < ext2fs_blocks_count(fs->super);
 	     i++) {
 		actual = ext2fs_fast_test_block_bitmap2(ctx->block_found_map, i);
 
@@ -190,7 +190,7 @@ redo_counts:
 				cmp_block = fs->super->s_blocks_per_group;
 				if (group == (int)fs->group_desc_count - 1)
 					cmp_block =
-						fs->super->s_blocks_count %
+						ext2fs_blocks_count(fs->super) %
 						fs->super->s_blocks_per_group;
 			}
 
@@ -289,7 +289,7 @@ redo_counts:
 		}
 		blocks ++;
 		if ((blocks == fs->super->s_blocks_per_group) ||
-		    (i == fs->super->s_blocks_count-1)) {
+		    (i == ext2fs_blocks_count(fs->super)-1)) {
 			free_array[group] = group_free;
 			group ++;
 			blocks = 0;
@@ -300,7 +300,7 @@ redo_counts:
 						    fs->group_desc_count*2))
 					goto errout;
 			if (csum_flag &&
-			    (i != fs->super->s_blocks_count-1) &&
+			    (i != ext2fs_blocks_count(fs->super)-1) &&
 			    ext2fs_bg_flag_test(fs, group, 
 						EXT2_BG_BLOCK_UNINIT))
 				skip_group++;
@@ -350,13 +350,13 @@ redo_counts:
 				ext2fs_unmark_valid(fs);
 		}
 	}
-	if (free_blocks != fs->super->s_free_blocks_count) {
+	if (free_blocks != ext2fs_free_blocks_count(fs->super)) {
 		pctx.group = 0;
-		pctx.blk = fs->super->s_free_blocks_count;
+		pctx.blk = ext2fs_free_blocks_count(fs->super);
 		pctx.blk2 = free_blocks;
 
 		if (fix_problem(ctx, PR_5_FREE_BLOCK_COUNT, &pctx)) {
-			fs->super->s_free_blocks_count = free_blocks;
+			ext2fs_free_blocks_count_set(fs->super, free_blocks);
 			ext2fs_mark_super_dirty(fs);
 		} else
 			ext2fs_unmark_valid(fs);

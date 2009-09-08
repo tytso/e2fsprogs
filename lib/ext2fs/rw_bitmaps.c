@@ -81,9 +81,9 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 		if (i == fs->group_desc_count - 1) {
 			/* Force bitmap padding for the last group */
-			nbits = ((fs->super->s_blocks_count
-				  - fs->super->s_first_data_block)
-				 % EXT2_BLOCKS_PER_GROUP(fs->super));
+			nbits = ((ext2fs_blocks_count(fs->super)
+				  - (__u64) fs->super->s_first_data_block)
+				 % (__u64) EXT2_BLOCKS_PER_GROUP(fs->super));
 			if (nbits)
 				for (j = nbits; j < fs->blocksize * 8; j++)
 					ext2fs_set_bit(j, block_buf);

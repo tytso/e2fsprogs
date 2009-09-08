@@ -117,7 +117,7 @@ errcode_t ext2fs_adjust_ea_refcount2(ext2_filsys fs, blk64_t blk,
 	struct ext2_ext_attr_header *header;
 	char	*buf = 0;
 
-	if ((blk >= fs->super->s_blocks_count) ||
+	if ((blk >= ext2fs_blocks_count(fs->super)) ||
 	    (blk < fs->super->s_first_data_block))
 		return EXT2_ET_BAD_EA_BLOCK_NUM;
 

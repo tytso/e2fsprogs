@@ -368,7 +368,7 @@ static void dump_journal(char *cmdname, FILE *out_file,
 			fprintf(out_file, "\tuuid=%s\n", jsb_buffer);
 			fprintf(out_file, "\tblocksize=%d\n", blocksize);
 			fprintf(out_file, "\tjournal data size %lu\n",
-				(unsigned long) sb->s_blocks_count);
+				(unsigned long) ext2fs_blocks_count(sb));
 		}
 	}
 

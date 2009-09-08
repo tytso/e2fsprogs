@@ -78,7 +78,7 @@ static int block_iterate_ind(blk_t *ind_block, blk_t ref_block,
 		ctx->bcount += limit;
 		return ret;
 	}
-	if (*ind_block >= ctx->fs->super->s_blocks_count ||
+	if (*ind_block >= ext2fs_blocks_count(ctx->fs->super) ||
 	    *ind_block < ctx->fs->super->s_first_data_block) {
 		ctx->errcode = EXT2_ET_BAD_IND_BLOCK;
 		ret |= BLOCK_ERROR;
@@ -166,7 +166,7 @@ static int block_iterate_dind(blk_t *dind_block, blk_t ref_block,
 		ctx->bcount += limit*limit;
 		return ret;
 	}
-	if (*dind_block >= ctx->fs->super->s_blocks_count ||
+	if (*dind_block >= ext2fs_blocks_count(ctx->fs->super) ||
 	    *dind_block < ctx->fs->super->s_first_data_block) {
 		ctx->errcode = EXT2_ET_BAD_DIND_BLOCK;
 		ret |= BLOCK_ERROR;
@@ -252,7 +252,7 @@ static int block_iterate_tind(blk_t *tind_block, blk_t ref_block,
 		ctx->bcount += limit*limit*limit;
 		return ret;
 	}
-	if (*tind_block >= ctx->fs->super->s_blocks_count ||
+	if (*tind_block >= ext2fs_blocks_count(ctx->fs->super) ||
 	    *tind_block < ctx->fs->super->s_first_data_block) {
 		ctx->errcode = EXT2_ET_BAD_TIND_BLOCK;
 		ret |= BLOCK_ERROR;

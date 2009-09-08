@@ -35,7 +35,7 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 	errcode_t retval;
 	dgrp_t i;
 	blk_t first_block = fs->super->s_first_data_block;
-	blk_t last_block = fs->super->s_blocks_count-1;
+	blk_t last_block = ext2fs_blocks_count(fs->super)-1;
 	blk_t blk, b;
 	int j;
 
@@ -54,7 +54,7 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 			first_block = ext2fs_group_first_block(fs, i);
 			last_block = ext2fs_group_last_block(fs, i);
 			if (i == (fs->group_desc_count - 1))
-				last_block = fs->super->s_blocks_count-1;
+				last_block = ext2fs_blocks_count(fs->super)-1;
 		}
 
 		/*

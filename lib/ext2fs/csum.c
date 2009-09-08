@@ -183,7 +183,7 @@ int main(int argc, char **argv)
 	__u16 csum1, csum2, csum_known = 0xd3a4;
 
 	memset(&param, 0, sizeof(param));
-	param.s_blocks_count = 32768;
+	ext2fs_blocks_count_set(&param, 32768);
 
 	retval = ext2fs_initialize("test fs", EXT2_FLAG_64BITS, &param,
 				   test_io_manager, &fs);

@@ -151,9 +151,9 @@ int ext2fs_super_and_bgd_loc(ext2_filsys fs,
 					&ret_used_blks);
 
 	if (group == fs->group_desc_count-1) {
-		numblocks = (fs->super->s_blocks_count -
-			     fs->super->s_first_data_block) %
-			fs->super->s_blocks_per_group;
+		numblocks = (ext2fs_blocks_count(fs->super) -
+			     (blk64_t) fs->super->s_first_data_block) %
+			(blk64_t) fs->super->s_blocks_per_group;
 		if (!numblocks)
 			numblocks = fs->super->s_blocks_per_group;
 	} else

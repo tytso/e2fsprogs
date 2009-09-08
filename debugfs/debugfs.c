@@ -256,8 +256,8 @@ void do_init_filesys(int argc, char **argv)
 		return;
 
 	memset(&param, 0, sizeof(struct ext2_super_block));
-	param.s_blocks_count = parse_ulong(argv[2], argv[0],
-					   "blocks count", &err);
+	ext2fs_blocks_count_set(&param, parse_ulong(argv[2], argv[0],
+						    "blocks count", &err));
 	if (err)
 		return;
 	retval = ext2fs_initialize(argv[1], 0, &param,
@@ -906,7 +906,7 @@ void do_dump_extents(int argc, char *argv[])
 				  current_fs->blocksize) + 1;
 	if (logical_width < 5)
 		logical_width = 5;
-	physical_width = int_log10(current_fs->super->s_blocks_count) + 1;
+	physical_width = int_log10(ext2fs_blocks_count(current_fs->super)) + 1;
 	if (physical_width < 5)
 		physical_width = 5;
 

@@ -157,7 +157,7 @@ errcode_t ext2fs_new_block2(ext2_filsys fs, blk64_t goal,
 		map = fs->block_map;
 	if (!map)
 		return EXT2_ET_NO_BLOCK_BITMAP;
-	if (!goal || (goal >= fs->super->s_blocks_count))
+	if (!goal || (goal >= ext2fs_blocks_count(fs->super)))
 		goal = fs->super->s_first_data_block;
 	i = goal;
 	check_block_uninit(fs, map,
@@ -175,7 +175,7 @@ errcode_t ext2fs_new_block2(ext2_filsys fs, blk64_t goal,
 			return 0;
 		}
 		i++;
-		if (i >= fs->super->s_blocks_count)
+		if (i >= ext2fs_blocks_count(fs->super))
 			i = fs->super->s_first_data_block;
 	} while (i != goal);
 	return EXT2_ET_BLOCK_ALLOC_FAIL;
@@ -269,7 +269,7 @@ errcode_t ext2fs_get_free_blocks2(ext2_filsys fs, blk64_t start, blk64_t finish,
 	if (!num)
 		num = 1;
 	do {
-		if (b+num-1 > fs->super->s_blocks_count)
+		if (b+num-1 > ext2fs_blocks_count(fs->super))
 			b = fs->super->s_first_data_block;
 		if (ext2fs_fast_test_block_bitmap_range2(map, b, num)) {
 			*ret = b;

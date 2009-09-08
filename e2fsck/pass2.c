@@ -1165,7 +1165,7 @@ static int deallocate_inode_block(ext2_filsys fs,
 	if (HOLE_BLKADDR(*block_nr))
 		return 0;
 	if ((*block_nr < fs->super->s_first_data_block) ||
-	    (*block_nr >= fs->super->s_blocks_count))
+	    (*block_nr >= ext2fs_blocks_count(fs->super)))
 		return 0;
 	ext2fs_unmark_block_bitmap2(ctx->block_found_map, *block_nr);
 	ext2fs_block_alloc_stats(fs, *block_nr, -1);
@@ -1365,7 +1365,7 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 
 	if (ext2fs_file_acl_block(&inode) &&
 	    ((ext2fs_file_acl_block(&inode) < fs->super->s_first_data_block) ||
-	     (ext2fs_file_acl_block(&inode) >= fs->super->s_blocks_count))) {
+	     (ext2fs_file_acl_block(&inode) >= ext2fs_blocks_count(fs->super)))) {
 		if (fix_problem(ctx, PR_2_FILE_ACL_BAD, &pctx)) {
 			ext2fs_file_acl_block_set(&inode, 0);
 			inode_modified++;

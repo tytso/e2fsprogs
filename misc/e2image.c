@@ -421,7 +421,7 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 		exit(1);
 	}
 	memset(zero_buf, 0, fs->blocksize);
-	for (blk = 0; blk < fs->super->s_blocks_count; blk++) {
+	for (blk = 0; blk < ext2fs_blocks_count(fs->super); blk++) {
 		if ((blk >= fs->super->s_first_data_block) &&
 		    ext2fs_test_block_bitmap2(meta_block_map, blk)) {
 			retval = io_channel_read_blk64(fs->io, blk, 1, buf);

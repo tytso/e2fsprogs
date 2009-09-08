@@ -59,7 +59,7 @@ static int lsdel_proc(ext2_filsys fs,
 	lsd->num_blocks++;
 
 	if (*block_nr < fs->super->s_first_data_block ||
-	    *block_nr >= fs->super->s_blocks_count) {
+	    *block_nr >= ext2fs_blocks_count(fs->super)) {
 		lsd->bad_blocks++;
 		return BLOCK_ABORT;
 	}

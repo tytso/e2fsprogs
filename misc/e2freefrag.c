@@ -91,7 +91,7 @@ void update_chunk_stats(struct chunk_info *info, unsigned long chunk_size)
 
 void scan_block_bitmap(ext2_filsys fs, struct chunk_info *info)
 {
-	unsigned long long blocks_count = fs->super->s_blocks_count;
+	unsigned long long blocks_count = ext2fs_blocks_count(fs->super);
 	unsigned long long chunks = (blocks_count + info->blks_in_chunk) >>
 				(info->chunkbits - info->blocksize_bits);
 	unsigned long long chunk_num;
@@ -149,15 +149,15 @@ errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info)
 
 	scan_block_bitmap(fs, info);
 
-	printf("Total blocks: %u\nFree blocks: %u (%0.1f%%)\n",
-	       fs->super->s_blocks_count, fs->super->s_free_blocks_count,
+	printf("Total blocks: %llu\nFree blocks: %u (%0.1f%%)\n",
+	       ext2fs_blocks_count(fs->super), fs->super->s_free_blocks_count,
 	       (double)fs->super->s_free_blocks_count * 100 /
-						fs->super->s_blocks_count);
+	       ext2fs_blocks_count(fs->super));
 
 	if (info->chunkbytes) {
 		printf("\nChunksize: %lu bytes (%u blocks)\n",
 		       info->chunkbytes, info->blks_in_chunk);
-		total_chunks = (fs->super->s_blocks_count +
+		total_chunks = (ext2fs_blocks_count(fs->super) +
 				info->blks_in_chunk) >>
 			(info->chunkbits - info->blocksize_bits);
 		printf("Total chunks: %lu\nFree chunks: %lu (%0.1f%%)\n",

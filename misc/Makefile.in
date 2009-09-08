@@ -127,7 +127,7 @@ profile.o:
 
 findsuper: findsuper.o
 	$(E) "	LD $@"
-	$(Q) $(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o
+	$(Q) $(CC) $(ALL_LDFLAGS) -o findsuper findsuper.o $(LIBS)
 
 partinfo: partinfo.o
 	$(E) "	LD $@"
