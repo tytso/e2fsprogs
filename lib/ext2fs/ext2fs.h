@@ -748,18 +748,18 @@ extern void ext2fs_inode_bitmap_loc_set(ext2_filsys fs, dgrp_t group,
 extern blk64_t ext2fs_inode_table_loc(ext2_filsys fs, dgrp_t group);
 extern void ext2fs_inode_table_loc_set(ext2_filsys fs, dgrp_t group,
 				       blk64_t blk);
-extern blk64_t ext2fs_bg_free_blocks_count(ext2_filsys fs, dgrp_t group);
+extern __u32 ext2fs_bg_free_blocks_count(ext2_filsys fs, dgrp_t group);
 extern void ext2fs_bg_free_blocks_count_set(ext2_filsys fs, dgrp_t group,
-					 blk64_t blk);
-extern blk64_t ext2fs_bg_free_inodes_count(ext2_filsys fs, dgrp_t group);
+					 __u32 n);
+extern __u32 ext2fs_bg_free_inodes_count(ext2_filsys fs, dgrp_t group);
 extern void ext2fs_bg_free_inodes_count_set(ext2_filsys fs, dgrp_t group,
-					 blk64_t blk);
-extern blk64_t ext2fs_bg_used_dirs_count(ext2_filsys fs, dgrp_t group);
+					 __u32 n);
+extern __u32 ext2fs_bg_used_dirs_count(ext2_filsys fs, dgrp_t group);
 extern void ext2fs_bg_used_dirs_count_set(ext2_filsys fs, dgrp_t group,
-				       blk64_t blk);
-extern blk64_t ext2fs_bg_itable_unused(ext2_filsys fs, dgrp_t group);
+				       __u32 n);
+extern __u32 ext2fs_bg_itable_unused(ext2_filsys fs, dgrp_t group);
 extern void ext2fs_bg_itable_unused_set(ext2_filsys fs, dgrp_t group,
-				     blk64_t blk);
+				     __u32 n);
 extern __u16 ext2fs_bg_flags(ext2_filsys fs, dgrp_t group);
 extern void ext2fs_bg_flags_set(ext2_filsys fs, dgrp_t group, __u16 bg_flags);
 extern void ext2fs_bg_flags_clear(ext2_filsys fs, dgrp_t group,

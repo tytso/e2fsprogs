@@ -274,7 +274,7 @@ void ext2fs_inode_table_loc_set(ext2_filsys fs, dgrp_t group, blk64_t blk)
 /*
  * Return the free blocks count of a group
  */
-blk64_t ext2fs_bg_free_blocks_count(ext2_filsys fs, dgrp_t group)
+__u32 ext2fs_bg_free_blocks_count(ext2_filsys fs, dgrp_t group)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
@@ -283,7 +283,7 @@ blk64_t ext2fs_bg_free_blocks_count(ext2_filsys fs, dgrp_t group)
 		return gdp->bg_free_blocks_count |
 			(fs->super->s_feature_incompat
 			 & EXT4_FEATURE_INCOMPAT_64BIT ?
-			 (__u64) gdp->bg_free_blocks_count_hi << 32 : 0);
+			 (__u32) gdp->bg_free_blocks_count_hi << 16 : 0);
 	}
 
 	return fs->group_desc[group].bg_free_blocks_count;
@@ -292,22 +292,22 @@ blk64_t ext2fs_bg_free_blocks_count(ext2_filsys fs, dgrp_t group)
 /*
  * Set the free blocks count of a group
  */
-void ext2fs_bg_free_blocks_count_set(ext2_filsys fs, dgrp_t group, blk64_t blk)
+void ext2fs_bg_free_blocks_count_set(ext2_filsys fs, dgrp_t group, __u32 n)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
 		gdp = (struct ext4_group_desc *) (fs->group_desc) + group;
-		gdp->bg_free_blocks_count = blk;
+		gdp->bg_free_blocks_count = n;
 		if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
-			gdp->bg_free_blocks_count_hi = (__u64) blk >> 32;
+			gdp->bg_free_blocks_count_hi = (__u32) n >> 16;
 	} else
-		fs->group_desc[group].bg_free_blocks_count = blk;
+		fs->group_desc[group].bg_free_blocks_count = n;
 }
 
 /*
  * Return the free inodes count of a group
  */
-blk64_t ext2fs_bg_free_inodes_count(ext2_filsys fs, dgrp_t group)
+__u32 ext2fs_bg_free_inodes_count(ext2_filsys fs, dgrp_t group)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
@@ -316,7 +316,7 @@ blk64_t ext2fs_bg_free_inodes_count(ext2_filsys fs, dgrp_t group)
 		return gdp->bg_free_inodes_count |
 			(fs->super->s_feature_incompat
 			 & EXT4_FEATURE_INCOMPAT_64BIT ?
-			 (__u64) gdp->bg_free_inodes_count_hi << 32 : 0);
+			 (__u32) gdp->bg_free_inodes_count_hi << 16 : 0);
 	}
 
 	return fs->group_desc[group].bg_free_inodes_count;
@@ -325,22 +325,22 @@ blk64_t ext2fs_bg_free_inodes_count(ext2_filsys fs, dgrp_t group)
 /*
  * Set the free inodes count of a group
  */
-void ext2fs_bg_free_inodes_count_set(ext2_filsys fs, dgrp_t group, blk64_t blk)
+void ext2fs_bg_free_inodes_count_set(ext2_filsys fs, dgrp_t group, __u32 n)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
 		gdp = (struct ext4_group_desc *) (fs->group_desc) + group;
-		gdp->bg_free_inodes_count = blk;
+		gdp->bg_free_inodes_count = n;
 		if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
-			gdp->bg_free_inodes_count_hi = (__u64) blk >> 32;
+			gdp->bg_free_inodes_count_hi = (__u32) n >> 16;
 	} else
-		fs->group_desc[group].bg_free_inodes_count = blk;
+		fs->group_desc[group].bg_free_inodes_count = n;
 }
 
 /*
  * Return the used dirs count of a group
  */
-blk64_t ext2fs_bg_used_dirs_count(ext2_filsys fs, dgrp_t group)
+__u32 ext2fs_bg_used_dirs_count(ext2_filsys fs, dgrp_t group)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
@@ -349,7 +349,7 @@ blk64_t ext2fs_bg_used_dirs_count(ext2_filsys fs, dgrp_t group)
 		return gdp->bg_used_dirs_count |
 			(fs->super->s_feature_incompat
 			 & EXT4_FEATURE_INCOMPAT_64BIT ?
-			 (__u64) gdp->bg_used_dirs_count_hi << 32 : 0);
+			 (__u32) gdp->bg_used_dirs_count_hi << 16 : 0);
 	}
 
 	return fs->group_desc[group].bg_used_dirs_count;
@@ -358,22 +358,22 @@ blk64_t ext2fs_bg_used_dirs_count(ext2_filsys fs, dgrp_t group)
 /*
  * Set the used dirs count of a group
  */
-void ext2fs_bg_used_dirs_count_set(ext2_filsys fs, dgrp_t group, blk64_t blk)
+void ext2fs_bg_used_dirs_count_set(ext2_filsys fs, dgrp_t group, __u32 n)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
 		gdp = (struct ext4_group_desc *) (fs->group_desc) + group;
-		gdp->bg_used_dirs_count = blk;
+		gdp->bg_used_dirs_count = n;
 		if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
-			gdp->bg_used_dirs_count_hi = (__u64) blk >> 32;
+			gdp->bg_used_dirs_count_hi = (__u32) n >> 16;
 	} else
-		fs->group_desc[group].bg_used_dirs_count = blk;
+		fs->group_desc[group].bg_used_dirs_count = n;
 }
 
 /*
  * Return the unused inodes count of a group
  */
-blk64_t ext2fs_bg_itable_unused(ext2_filsys fs, dgrp_t group)
+__u32 ext2fs_bg_itable_unused(ext2_filsys fs, dgrp_t group)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
@@ -382,7 +382,7 @@ blk64_t ext2fs_bg_itable_unused(ext2_filsys fs, dgrp_t group)
 		return gdp->bg_itable_unused |
 			(fs->super->s_feature_incompat
 			 & EXT4_FEATURE_INCOMPAT_64BIT ?
-			 (__u64) gdp->bg_itable_unused_hi << 32 : 0);
+			 (__u32) gdp->bg_itable_unused_hi << 16 : 0);
 	}
 
 	return fs->group_desc[group].bg_itable_unused;
@@ -391,16 +391,16 @@ blk64_t ext2fs_bg_itable_unused(ext2_filsys fs, dgrp_t group)
 /*
  * Set the unused inodes count of a group
  */
-void ext2fs_bg_itable_unused_set(ext2_filsys fs, dgrp_t group, blk64_t blk)
+void ext2fs_bg_itable_unused_set(ext2_filsys fs, dgrp_t group, __u32 n)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
 		gdp = (struct ext4_group_desc *) (fs->group_desc) + group;
-		gdp->bg_itable_unused = blk;
+		gdp->bg_itable_unused = n;
 		if (fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
-			gdp->bg_itable_unused_hi = (__u64) blk >> 32;
+			gdp->bg_itable_unused_hi = (__u32) n >> 16;
 	} else
-		fs->group_desc[group].bg_itable_unused = blk;
+		fs->group_desc[group].bg_itable_unused = n;
 }
 
 /*
