@@ -1193,26 +1193,26 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	e2fsck_read_bitmaps(ctx);
 	ext2fs_inode_alloc_stats2(fs, ino, -1, LINUX_S_ISDIR(inode.i_mode));
 
-	if (inode.i_file_acl &&
+	if (ext2fs_file_acl_block(&inode) &&
 	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
-		pctx.errcode = ext2fs_adjust_ea_refcount(fs, inode.i_file_acl,
+		pctx.errcode = ext2fs_adjust_ea_refcount(fs, ext2fs_file_acl_block(&inode),
 						   block_buf, -1, &count);
 		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			pctx.errcode = 0;
 			count = 1;
 		}
 		if (pctx.errcode) {
-			pctx.blk = inode.i_file_acl;
+			pctx.blk = ext2fs_file_acl_block(&inode);
 			fix_problem(ctx, PR_2_ADJ_EA_REFCOUNT, &pctx);
 			ctx->flags |= E2F_FLAG_ABORT;
 			return;
 		}
 		if (count == 0) {
 			ext2fs_unmark_block_bitmap2(ctx->block_found_map,
-						   inode.i_file_acl);
-			ext2fs_block_alloc_stats(fs, inode.i_file_acl, -1);
+						   ext2fs_file_acl_block(&inode));
+			ext2fs_block_alloc_stats(fs, ext2fs_file_acl_block(&inode), -1);
 		}
-		inode.i_file_acl = 0;
+		ext2fs_file_acl_block_set(&inode, 0);
 	}
 
 	if (!ext2fs_inode_has_valid_blocks(&inode))
@@ -1264,10 +1264,10 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 	pctx.dir = dir;
 	pctx.inode = &inode;
 
-	if (inode.i_file_acl &&
+	if (ext2fs_file_acl_block(&inode) &&
 	    !(fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
 		if (fix_problem(ctx, PR_2_FILE_ACL_ZERO, &pctx)) {
-			inode.i_file_acl = 0;
+			ext2fs_file_acl_block_set(&inode, 0);
 			inode_modified++;
 		} else
 			not_fixed++;
@@ -1363,11 +1363,11 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
 			not_fixed++;
 	}
 
-	if (inode.i_file_acl &&
-	    ((inode.i_file_acl < fs->super->s_first_data_block) ||
-	     (inode.i_file_acl >= fs->super->s_blocks_count))) {
+	if (ext2fs_file_acl_block(&inode) &&
+	    ((ext2fs_file_acl_block(&inode) < fs->super->s_first_data_block) ||
+	     (ext2fs_file_acl_block(&inode) >= fs->super->s_blocks_count))) {
 		if (fix_problem(ctx, PR_2_FILE_ACL_BAD, &pctx)) {
-			inode.i_file_acl = 0;
+			ext2fs_file_acl_block_set(&inode, 0);
 			inode_modified++;
 		} else
 			not_fixed++;

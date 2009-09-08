@@ -1375,11 +1375,11 @@ static errcode_t inode_scan_and_fix(ext2_resize_t rfs)
 		pb.is_dir = LINUX_S_ISDIR(inode->i_mode);
 		pb.changed = 0;
 
-		if (inode->i_file_acl && rfs->bmap) {
+		if (ext2fs_file_acl_block(inode) && rfs->bmap) {
 			new_block = ext2fs_extent_translate(rfs->bmap,
-							    inode->i_file_acl);
+							    ext2fs_file_acl_block(inode));
 			if (new_block) {
-				inode->i_file_acl = new_block;
+				ext2fs_file_acl_block_set(inode, new_block);
 				retval = ext2fs_write_inode_full(rfs->old_fs,
 							    ino, inode, inode_size);
 				if (retval) goto errout;

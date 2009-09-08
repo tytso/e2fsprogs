@@ -511,9 +511,9 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 			break;
 		if (!inode.i_links_count)
 			continue;
-		if (inode.i_file_acl) {
+		if (ext2fs_file_acl_block(&inode)) {
 			ext2fs_mark_block_bitmap2(meta_block_map,
-						 inode.i_file_acl);
+						 ext2fs_file_acl_block(&inode));
 		}
 		if (!ext2fs_inode_has_valid_blocks(&inode))
 			continue;

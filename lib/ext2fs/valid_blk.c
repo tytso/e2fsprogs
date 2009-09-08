@@ -39,7 +39,7 @@ int ext2fs_inode_has_valid_blocks(struct ext2_inode *inode)
 	 * target is stored in the block entries.
 	 */
 	if (LINUX_S_ISLNK (inode->i_mode)) {
-		if (inode->i_file_acl == 0) {
+		if (ext2fs_file_acl_block(inode) == 0) {
 			/* With no EA block, we can rely on i_blocks */
 			if (inode->i_blocks == 0)
 				return 0;

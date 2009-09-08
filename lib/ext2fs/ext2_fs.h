@@ -346,7 +346,7 @@ struct ext2_inode {
 	__u32	i_block[EXT2_N_BLOCKS];/* Pointers to blocks */
 	__u32	i_generation;	/* File version (for NFS) */
 	__u32	i_file_acl;	/* File ACL */
-	__u32	i_dir_acl;	/* Directory ACL */
+	__u32	i_size_high;	/* Formerly i_dir_acl, directory ACL */
 	__u32	i_faddr;	/* Fragment address */
 	union {
 		struct {
@@ -393,7 +393,7 @@ struct ext2_inode_large {
 	__u32	i_block[EXT2_N_BLOCKS];/* Pointers to blocks */
 	__u32	i_generation;	/* File version (for NFS) */
 	__u32	i_file_acl;	/* File ACL */
-	__u32	i_dir_acl;	/* Directory ACL */
+	__u32	i_size_high;	/* Formerly i_dir_acl, directory ACL */
 	__u32	i_faddr;	/* Fragment address */
 	union {
 		struct {
@@ -422,7 +422,7 @@ struct ext2_inode_large {
 	__u32	i_version_hi;	/* high 32 bits for 64-bit version */
 };
 
-#define i_size_high	i_dir_acl
+#define i_dir_acl	i_size_high
 
 #if defined(__KERNEL__) || defined(__linux__)
 #define i_reserved1	osd1.linux1.l_i_reserved1

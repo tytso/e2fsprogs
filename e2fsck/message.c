@@ -311,7 +311,7 @@ static _INLINE_ void expand_inode_expression(char ch,
 		printf("%u", inode->i_faddr);
 		break;
 	case 'f':
-		printf("%u", inode->i_file_acl);
+		printf("%llu", ext2fs_file_acl_block(inode));
 		break;
 	case 'd':
 		printf("%u", (LINUX_S_ISDIR(inode->i_mode) ?

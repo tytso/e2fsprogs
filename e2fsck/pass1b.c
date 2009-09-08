@@ -82,8 +82,8 @@ struct dup_inode {
 	struct block_el		*block_list;
 };
 
-static int process_pass1b_block(ext2_filsys fs, blk_t	*blocknr,
-				e2_blkcnt_t blockcnt, blk_t ref_blk,
+static int process_pass1b_block(ext2_filsys fs, blk64_t	*blocknr,
+				e2_blkcnt_t blockcnt, blk64_t ref_blk,
 				int ref_offset, void *priv_data);
 static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 			struct dup_inode *dp, char *block_buf);
@@ -307,12 +307,15 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 
 		if (ext2fs_inode_has_valid_blocks(&inode) ||
 		    (ino == EXT2_BAD_INO))
-			pctx.errcode = ext2fs_block_iterate2(fs, ino,
+			pctx.errcode = ext2fs_block_iterate3(fs, ino,
 					     BLOCK_FLAG_READ_ONLY, block_buf,
 					     process_pass1b_block, &pb);
-		if (inode.i_file_acl)
-			process_pass1b_block(fs, &inode.i_file_acl,
+		if (ext2fs_file_acl_block(&inode)) {
+			blk64_t blk = ext2fs_file_acl_block(&inode);
+			process_pass1b_block(fs, &blk,
 					     BLOCK_COUNT_EXTATTR, 0, 0, &pb);
+			ext2fs_file_acl_block_set(&inode, blk);
+			}
 		if (pb.dup_blocks) {
 			end_problem_latch(ctx, PR_LATCH_DBLOCK);
 			if (ino >= EXT2_FIRST_INODE(fs->super) ||
@@ -327,9 +330,9 @@ static void pass1b(e2fsck_t ctx, char *block_buf)
 }
 
 static int process_pass1b_block(ext2_filsys fs EXT2FS_ATTR((unused)),
-				blk_t	*block_nr,
+				blk64_t	*block_nr,
 				e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
-				blk_t ref_blk EXT2FS_ATTR((unused)),
+				blk64_t ref_blk EXT2FS_ATTR((unused)),
 				int ref_offset EXT2FS_ATTR((unused)),
 				void *priv_data)
 {
@@ -554,9 +557,9 @@ static void decrement_badcount(e2fsck_t ctx, blk_t block, struct dup_block *p)
 }
 
 static int delete_file_block(ext2_filsys fs,
-			     blk_t	*block_nr,
+			     blk64_t	*block_nr,
 			     e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
-			     blk_t ref_block EXT2FS_ATTR((unused)),
+			     blk64_t ref_block EXT2FS_ATTR((unused)),
 			     int ref_offset EXT2FS_ATTR((unused)),
 			     void *priv_data)
 {
@@ -578,7 +581,7 @@ static int delete_file_block(ext2_filsys fs,
 			decrement_badcount(ctx, *block_nr, p);
 		} else
 			com_err("delete_file_block", 0,
-			    _("internal error: can't find dup_blk for %u\n"),
+			    _("internal error: can't find dup_blk for %llu\n"),
 				*block_nr);
 	} else {
 		ext2fs_unmark_block_bitmap2(ctx->block_found_map, *block_nr);
@@ -605,7 +608,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 
 	e2fsck_read_inode(ctx, ino, &inode, "delete_file");
 	if (ext2fs_inode_has_valid_blocks(&inode))
-		pctx.errcode = ext2fs_block_iterate2(fs, ino, BLOCK_FLAG_READ_ONLY,
+		pctx.errcode = ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_READ_ONLY,
 						     block_buf, delete_file_block, &pb);
 	if (pctx.errcode)
 		fix_problem(ctx, PR_1B_BLOCK_ITERATE, &pctx);
@@ -616,17 +619,18 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	/* Inode may have changed by block_iterate, so reread it */
 	e2fsck_read_inode(ctx, ino, &inode, "delete_file");
 	e2fsck_clear_inode(ctx, ino, &inode, 0, "delete_file");
-	if (inode.i_file_acl &&
+	if (ext2fs_file_acl_block(&inode) &&
 	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
 		count = 1;
-		pctx.errcode = ext2fs_adjust_ea_refcount(fs, inode.i_file_acl,
+		pctx.errcode = ext2fs_adjust_ea_refcount(fs,
+						   ext2fs_file_acl_block(&inode),
 						   block_buf, -1, &count);
 		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			pctx.errcode = 0;
 			count = 1;
 		}
 		if (pctx.errcode) {
-			pctx.blk = inode.i_file_acl;
+			pctx.blk = ext2fs_file_acl_block(&inode);
 			fix_problem(ctx, PR_1B_ADJ_EA_REFCOUNT, &pctx);
 		}
 		/*
@@ -637,9 +641,12 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 		 */
 		if ((count == 0) ||
 		    ext2fs_test_block_bitmap2(ctx->block_dup_map,
-					     inode.i_file_acl))
-			delete_file_block(fs, &inode.i_file_acl,
+					      ext2fs_file_acl_block(&inode))) {
+			blk64_t blk = ext2fs_file_acl_block(&inode);
+			delete_file_block(fs, &blk,
 					  BLOCK_COUNT_EXTATTR, 0, 0, &pb);
+			ext2fs_file_acl_block_set(&inode, blk);
+		}
 	}
 }
 
@@ -651,9 +658,9 @@ struct clone_struct {
 };
 
 static int clone_file_block(ext2_filsys fs,
-			    blk_t	*block_nr,
+			    blk64_t	*block_nr,
 			    e2_blkcnt_t blockcnt,
-			    blk_t ref_block EXT2FS_ATTR((unused)),
+			    blk64_t ref_block EXT2FS_ATTR((unused)),
 			    int ref_offset EXT2FS_ATTR((unused)),
 			    void *priv_data)
 {
@@ -711,7 +718,7 @@ static int clone_file_block(ext2_filsys fs,
 			return BLOCK_CHANGED;
 		} else
 			com_err("clone_file_block", 0,
-			    _("internal error: can't find dup_blk for %u\n"),
+			    _("internal error: can't find dup_blk for %llu\n"),
 				*block_nr);
 	}
 	return 0;
@@ -724,7 +731,7 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 	errcode_t	retval;
 	struct clone_struct cs;
 	struct problem_context	pctx;
-	blk_t		blk;
+	blk64_t		blk, new_blk;
 	dnode_t		*n;
 	struct inode_el	*ino_el;
 	struct dup_block	*db;
@@ -744,7 +751,7 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 	pctx.ino = ino;
 	pctx.str = "clone_file";
 	if (ext2fs_inode_has_valid_blocks(&dp->inode))
-		pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
+		pctx.errcode = ext2fs_block_iterate3(fs, ino, 0, block_buf,
 						     clone_file_block, &cs);
 	ext2fs_mark_bb_dirty(fs);
 	if (pctx.errcode) {
@@ -760,10 +767,12 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 	}
 	/* The inode may have changed on disk, so we have to re-read it */
 	e2fsck_read_inode(ctx, ino, &dp->inode, "clone file EA");
-	blk = dp->inode.i_file_acl;
-	if (blk && (clone_file_block(fs, &dp->inode.i_file_acl,
+	blk = ext2fs_file_acl_block(&dp->inode);
+	new_blk = blk;
+	if (blk && (clone_file_block(fs, &new_blk,
 				     BLOCK_COUNT_EXTATTR, 0, 0, &cs) ==
 		    BLOCK_CHANGED)) {
+		ext2fs_file_acl_block_set(&dp->inode, new_blk);
 		e2fsck_write_inode(ctx, ino, &dp->inode, "clone file EA");
 		/*
 		 * If we cloned the EA block, find all other inodes
@@ -774,7 +783,7 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 		if (!n) {
 			com_err("clone_file", 0,
 				_("internal error: couldn't lookup EA "
-				  "block record for %u"), blk);
+				  "block record for %llu"), blk);
 			retval = 0; /* OK to stumble on... */
 			goto errout;
 		}
@@ -792,8 +801,9 @@ static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 				goto errout;
 			}
 			di = (struct dup_inode *) dnode_get(n);
-			if (di->inode.i_file_acl == blk) {
-				di->inode.i_file_acl = dp->inode.i_file_acl;
+			if (ext2fs_file_acl_block(&di->inode) == blk) {
+				ext2fs_file_acl_block_set(&di->inode,
+					  ext2fs_file_acl_block(&dp->inode));
 				e2fsck_write_inode(ctx, ino_el->inode,
 					   &di->inode, "clone file EA");
 				decrement_badcount(ctx, blk, db);

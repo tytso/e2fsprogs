@@ -1026,7 +1026,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 		    (inode->i_block[EXT2_IND_BLOCK] ||
 		     inode->i_block[EXT2_DIND_BLOCK] ||
 		     inode->i_block[EXT2_TIND_BLOCK] ||
-		     inode->i_file_acl)) {
+		     ext2fs_file_acl_block(inode))) {
 			inodes_to_process[process_inode_count].ino = ino;
 			inodes_to_process[process_inode_count].inode = *inode;
 			process_inode_count++;
@@ -1204,7 +1204,8 @@ static EXT2_QSORT_TYPE process_inode_cmp(const void *a, const void *b)
 	ret = (ib_a->inode.i_block[EXT2_IND_BLOCK] -
 	       ib_b->inode.i_block[EXT2_IND_BLOCK]);
 	if (ret == 0)
-		ret = ib_a->inode.i_file_acl - ib_b->inode.i_file_acl;
+		ret = ext2fs_file_acl_block(&(ib_a->inode)) -
+			ext2fs_file_acl_block(&ib_b->inode);
 	if (ret == 0)
 		ret = ib_a->ino - ib_b->ino;
 	return ret;
@@ -1368,7 +1369,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	int		count;
 	region_t	region = 0;
 
-	blk = inode->i_file_acl;
+	blk = ext2fs_file_acl_block(inode);
 	if (blk == 0)
 		return 0;
 
@@ -1443,7 +1444,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	if (pctx->errcode && fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx))
 		goto clear_extattr;
 	header = (struct ext2_ext_attr_header *) block_buf;
-	pctx->blk = inode->i_file_acl;
+	pctx->blk = ext2fs_file_acl_block(inode);
 	if (((ctx->ext_attr_ver == 1) &&
 	     (header->h_magic != EXT2_EXT_ATTR_MAGIC_v1)) ||
 	    ((ctx->ext_attr_ver == 2) &&
@@ -1531,7 +1532,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 clear_extattr:
 	if (region)
 		region_free(region);
-	inode->i_file_acl = 0;
+	ext2fs_file_acl_block_set(inode, 0);
 	e2fsck_write_inode(ctx, ino, inode, "check_ext_attr");
 	return 0;
 }
@@ -1840,7 +1841,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 	}
 
-	if (inode->i_file_acl && check_ext_attr(ctx, pctx, block_buf)) {
+	if (ext2fs_file_acl_block(inode) &&
+	    check_ext_attr(ctx, pctx, block_buf)) {
 		if (ctx->flags & E2F_FLAG_SIGNAL_MASK)
 			goto out;
 		pb.num_blocks++;
