@@ -136,6 +136,7 @@ int main(int argc, char *argv[])
 	bindtextdomain(NLS_CAT_NAME, LOCALEDIR);
 	textdomain(NLS_CAT_NAME);
 #endif
+	add_error_table(&et_ext2_error_table);
 
 	prg_name = argv[0];
 	while((c = getopt(argc, argv, "f")) != EOF) {
