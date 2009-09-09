@@ -271,6 +271,8 @@ int main(int argc, char **argv)
 	int	equal;
 	errcode_t	retval;
 
+	add_error_table(&et_ext2_error_table);
+
 	bb1 = bb2 = bb3 = bb4 = bb5 = 0;
 
 	printf("test1: ");

@@ -219,7 +219,8 @@ tst_getsize: tst_getsize.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 
 tst_ismounted: $(srcdir)/ismounted.c $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	$(E) "	LD $@"
-	$(Q) $(CC) -o tst_ismounted $(srcdir)/ismounted.c -DDEBUG $(ALL_CFLAGS) \
+	$(Q) $(CC) -o tst_ismounted $(srcdir)/ismounted.c \
+		$(STATIC_LIBEXT2FS) -DDEBUG $(ALL_CFLAGS) \
 		$(LIBCOM_ERR) 
 
 tst_byteswap: tst_byteswap.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
