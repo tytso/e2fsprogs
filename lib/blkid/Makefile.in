@@ -181,7 +181,8 @@ clean::
 		tests/*.img results test_probe core profiled/* \
 		checker/* blkid_types.h ../libblkid.a ../libblkid_p.a \
 		$(SMANPAGES) blkid
-	-rmdir tests
+	@echo rmdir tests/tmp tests
+	@(rmdir tests/tmp tests 2> /dev/null ; exit 0)
 
 mostlyclean:: clean
 distclean:: clean
