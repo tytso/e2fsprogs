@@ -7,8 +7,7 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
-@DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o fileio.o \
-@DEBUGFS_CMT@	inode_io.o namei.o write_bb_file.o 
+@DEBUGFS_CMT@DEBUGFS_LIB_OBJS = bb_compat.o inode_io.o namei.o write_bb_file.o
 
 MK_CMDS=	_SS_DIR_OVERRIDE=../ss ../ss/mk_cmds
 
@@ -41,6 +40,7 @@ OBJS= $(DEBUGFS_LIB_OBJS) $(RESIZE_LIB_OBJS) $(E2IMAGE_LIB_OBJS) \
 	expanddir.o \
 	ext_attr.o \
 	extent.o \
+	fileio.o \
 	finddev.o \
 	flushb.o \
 	freefs.o \
