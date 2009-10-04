@@ -833,7 +833,7 @@ void check_super_block(e2fsck_t ctx)
 		pctx.num = fs->super->s_wtime;
 		problem = PR_0_FUTURE_SB_LAST_WRITE;
 		if (fs->super->s_wtime <= (__u32) ctx->now + ctx->time_fudge)
-			problem = PR_0_FUTURE_SB_LAST_MOUNT_FUDGED;
+			problem = PR_0_FUTURE_SB_LAST_WRITE_FUDGED;
 		if (fix_problem(ctx, problem, &pctx)) {
 			fs->super->s_wtime = ctx->now;
 			ext2fs_mark_super_dirty(fs);
