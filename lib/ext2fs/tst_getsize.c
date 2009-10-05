@@ -34,6 +34,7 @@ int main(int argc, const char *argv[])
 		fprintf(stderr, "%s device\n", argv[0]);
 		exit(1);
 	}
+	add_error_table(&et_ext2_error_table);
 	retval = ext2fs_get_device_size(argv[1], 1024, &blocks);
 	if (retval) {
 		com_err(argv[0], retval, "while getting device size");

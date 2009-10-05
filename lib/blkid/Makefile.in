@@ -26,8 +26,7 @@ SRCS= $(srcdir)/cache.c $(srcdir)/dev.c $(srcdir)/devname.c $(srcdir)/devno.c \
  $(srcdir)/read.c $(srcdir)/resolve.c $(srcdir)/save.c $(srcdir)/tag.c \
  $(srcdir)/version.c
 
-HFILES=		blkid.h
-HFILES_IN=	blkid_types.h
+HFILES_IN=	blkid.h blkid_types.h
 
 LIBRARY= libblkid
 LIBDIR= blkid
@@ -63,10 +62,14 @@ DEPLIBS_BLKID=	$(DEPSTATIC_LIBBLKID) $(DEPSTATIC_LIBUUID)
 
 all:: $(SMANPAGES) blkid.pc
 
-$(top_builddir)/lib/blkid/blkid_types.h: $(srcdir)/blkid_types.h.in $(top_builddir)/config.status
+blkid_types.h: $(srcdir)/blkid_types.h.in $(top_builddir)/config.status
 	$(E) "	CONFIG.STATUS $@"
 	$(Q) cd $(top_builddir); \
 		CONFIG_FILES=$(my_dir)/blkid_types.h ./config.status
+
+blkid.h: $(srcdir)/blkid.h.in
+	$(E) "	CP $@"
+	$(Q) cp $(srcdir)/blkid.h.in blkid.h
 
 libblkid.3: $(DEP_SUBSTITUTE) $(srcdir)/libblkid.3.in
 	$(E) "	SUBST $@"
@@ -151,10 +154,6 @@ install:: all installdirs
 	$(Q) $(INSTALL_DATA) libblkid.a $(DESTDIR)$(libdir)/libblkid.a
 	-$(Q) $(RANLIB) $(DESTDIR)$(libdir)/libblkid.a
 	$(Q) $(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libblkid.a
-	$(Q) set -e; for i in $(HFILES); do \
-	  echo "	INSTALL_DATA $(includedir)/blkid/$$i"; \
-	  $(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/blkid/$$i; \
-	done
 	$(Q) set -e; for i in $(HFILES_IN); do \
 		echo "	INSTALL_DATA $(includedir)/blkid/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(includedir)/blkid/$$i; \
@@ -179,45 +178,32 @@ clean::
 		tst_devno tst_getsize tst_probe tst_read tst_resolve tst_save \
 		tst_tag tst_types tests/*.out tests/*.ok \
 		tests/*.img results test_probe core profiled/* \
-		checker/* blkid_types.h ../libblkid.a ../libblkid_p.a \
+		checker/* blkid.h blkid_types.h ../libblkid.a ../libblkid_p.a \
 		$(SMANPAGES) blkid
-	-rmdir tests
+	@echo rmdir tests/tmp tests
+	@(rmdir tests/tmp tests 2> /dev/null ; exit 0)
 
 mostlyclean:: clean
 distclean:: clean
 	$(RM) -f .depend Makefile blkid.pc \
 		$(srcdir)/TAGS $(srcdir)/Makefile.in.old
 
-$(OBJS): subdirs
+$(OBJS): subdirs $(HFILES_IN)
 
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-cache.o: $(srcdir)/cache.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
-dev.o: $(srcdir)/dev.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
-devname.o: $(srcdir)/devname.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
-devno.o: $(srcdir)/devno.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
-getsize.o: $(srcdir)/getsize.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
-llseek.o: $(srcdir)/llseek.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
-probe.o: $(srcdir)/probe.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h \
- $(top_srcdir)/lib/uuid/uuid.h $(srcdir)/probe.h
-read.o: $(srcdir)/read.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h \
- $(top_srcdir)/lib/uuid/uuid.h
-resolve.o: $(srcdir)/resolve.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
-save.o: $(srcdir)/save.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
-tag.o: $(srcdir)/tag.c $(srcdir)/blkidP.h $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(srcdir)/list.h
-version.o: $(srcdir)/version.c $(srcdir)/blkid.h \
- $(top_builddir)/lib/blkid/blkid_types.h $(top_srcdir)/version.h
+cache.o: $(srcdir)/cache.c $(srcdir)/list.h
+dev.o: $(srcdir)/dev.c $(srcdir)/list.h
+devname.o: $(srcdir)/devname.c $(srcdir)/list.h
+devno.o: $(srcdir)/devno.c $(srcdir)/list.h
+getsize.o: $(srcdir)/getsize.c $(srcdir)/list.h
+llseek.o: $(srcdir)/llseek.c $(srcdir)/list.h
+probe.o: $(srcdir)/probe.c $(srcdir)/list.h $(srcdir)/probe.h
+read.o: $(srcdir)/read.c $(srcdir)/list.h
+resolve.o: $(srcdir)/resolve.c $(srcdir)/list.h
+save.o: $(srcdir)/save.c $(srcdir)/list.h
+tag.o: $(srcdir)/tag.c $(srcdir)/list.h
+version.o: $(srcdir)/version.c $(top_srcdir)/version.h

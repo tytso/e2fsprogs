@@ -49,6 +49,7 @@ extern int optind;
 #include <sys/types.h>
 #include <libgen.h>
 #include <limits.h>
+#include <blkid/blkid.h>
 
 #include "ext2fs/ext2_fs.h"
 #include "ext2fs/ext2fsP.h"
@@ -558,6 +559,8 @@ static void show_stats(ext2_filsys fs)
 		s->s_log_block_size);
 	printf(_("Fragment size=%u (log=%u)\n"), fs->fragsize,
 		s->s_log_frag_size);
+	printf(_("Stride=%u blocks, Stripe width=%u blocks\n"),
+	       s->s_raid_stride, s->s_raid_stripe_width);
 	printf(_("%u inodes, %llu blocks\n"), s->s_inodes_count,
 	       ext2fs_blocks_count(s));
 	printf(_("%llu blocks (%2.2f%%) reserved for the super user\n"),
@@ -1016,6 +1019,43 @@ static int get_bool_from_profile(char **fs_types, const char *opt, int def_val)
 
 extern const char *mke2fs_default_profile;
 static const char *default_files[] = { "<default>", 0 };
+
+#ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
+/*
+ * Sets the geometry of a device (stripe/stride), and returns the
+ * device's alignment offset, if any, or a negative error.
+ */
+static int ext2fs_get_device_geometry(const char *file,
+				      struct ext2_super_block *fs_param)
+{
+	int rc = -1;
+	int blocksize;
+	blkid_probe pr;
+	blkid_topology tp;
+	unsigned long min_io;
+	unsigned long opt_io;
+
+	pr = blkid_new_probe_from_filename(file);
+	if (!pr)
+		goto out;
+
+	tp = blkid_probe_get_topology(pr);
+	if (!tp)
+		goto out;
+
+	min_io = blkid_topology_get_minimum_io_size(tp);
+	opt_io = blkid_topology_get_optimal_io_size(tp);
+	blocksize = EXT2_BLOCK_SIZE(fs_param);
+
+	fs_param->s_raid_stride = min_io / blocksize;
+	fs_param->s_raid_stripe_width = opt_io / blocksize;
+
+	rc = blkid_topology_get_alignment_offset(tp);
+out:
+	blkid_free_probe(pr);
+	return rc;
+}
+#endif
 
 static void PRS(int argc, char *argv[])
 {
@@ -1581,6 +1621,21 @@ got_size:
 
 	fs_param.s_log_frag_size = fs_param.s_log_block_size =
 		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
+
+#ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
+	retval = ext2fs_get_device_geometry(device_name, &fs_param);
+	if (retval < 0) {
+		fprintf(stderr,
+			_("warning: Unable to get device geometry for %s"),
+			device_name);
+	} else if (retval) {
+		printf(_("%s alignment is offset by %lu bytes.\n"),
+		       device_name, retval);
+		printf(_("This may result in very poor performance, "
+			  "(re)-partitioning suggested.\n"));
+		proceed_question();
+	}
+#endif
 
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
 

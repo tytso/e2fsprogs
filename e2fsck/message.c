@@ -14,7 +14,7 @@
  * The following % expansions are supported:
  *
  * 	%b	<blk>			block number
- * 	%B	<blkcount>		integer
+ * 	%B	<blkcount>		interpret blkcount as blkcount
  * 	%c	<blk2>			block number
  * 	%Di	<dirent>->ino		inode number
  * 	%Dn	<dirent>->name		string
@@ -46,6 +46,7 @@
  * 	%q	ext2fs_get_pathname of directory <dir>
  * 	%Q	ext2fs_get_pathname of directory <ino> with <dir> as
  * 			the containing directory.
+ * 	%r	<blkcount>		interpret blkcount as refcount
  * 	%s	<str>			miscellaneous string
  * 	%S	backup superblock
  * 	%X	<num> hexadecimal format
@@ -395,9 +396,11 @@ static _INLINE_ void expand_dirent_expression(ext2_filsys fs, char ch,
 }
 
 static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
+					       int *first,
 					       struct problem_context *ctx)
 {
 	e2fsck_t e2fsck_ctx = fs ? (e2fsck_t) fs->priv_data : NULL;
+	const char *m;
 
 	if (!ctx)
 		goto no_context;
@@ -414,11 +417,26 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 #endif
 		break;
 	case 'B':
+		if (ctx->blkcount == BLOCK_COUNT_IND)
+			m = _("indirect block");
+		else if (ctx->blkcount == BLOCK_COUNT_DIND)
+			m = _("double indirect block");
+		else if (ctx->blkcount == BLOCK_COUNT_TIND)
+			m = _("triple indirect block");
+		else if (ctx->blkcount == BLOCK_COUNT_TRANSLATOR)
+			m = _("translator block");
+		else
+			m = _("block #");
+		if (*first && islower(m[0]))
+			fputc(toupper(*m++), stdout);
+		fputs(m, stdout);
+		if (ctx->blkcount >= 0) {
 #ifdef EXT2_NO_64_TYPE
-		printf("%d", ctx->blkcount);
+			printf("%d", ctx->blkcount);
 #else
-		printf("%lld", (long long)ctx->blkcount);
+			printf("%lld", (long long) ctx->blkcount);
 #endif
+		}
 		break;
 	case 'c':
 #ifdef EXT2_NO_64_TYPE
@@ -461,6 +479,13 @@ static _INLINE_ void expand_percent_expression(ext2_filsys fs, char ch,
 		break;
 	case 'Q':
 		print_pathname(fs, ctx->dir, ctx->ino);
+		break;
+	case 'r':
+#ifdef EXT2_NO_64_TYPE
+		printf("%d", ctx->blkcount);
+#else
+		printf("%lld", (long long) ctx->blkcount);
+#endif
 		break;
 	case 'S':
 		printf("%u", get_backup_sb(NULL, fs, NULL, NULL));
@@ -509,7 +534,7 @@ void print_e2fsck_message(e2fsck_t ctx, const char *msg,
 			expand_dirent_expression(fs, *cp, pctx);
 		} else if ((cp[0] == '%')) {
 			cp++;
-			expand_percent_expression(fs, *cp, pctx);
+			expand_percent_expression(fs, *cp, &first, pctx);
 		} else {
 			for (i=0; cp[i]; i++)
 				if ((cp[i] == '@') || cp[i] == '%')

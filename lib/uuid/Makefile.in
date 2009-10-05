@@ -69,6 +69,10 @@ BSDLIB_INSTALL_DIR = $(root_libdir)
 
 all:: tst_uuid uuid_time $(SMANPAGES) uuid.pc
 
+uuid.h: $(srcdir)/uuid.h.in
+	$(E) "	CP $@"
+	$(Q) cp $(srcdir)/uuid.h.in uuid.h
+
 $(top_builddir)/lib/uuid/uuid_types.h: $(srcdir)/uuid_types.h.in $(top_builddir)/config.status
 	cd $(top_builddir); CONFIG_FILES=$(my_dir)/uuid_types.h ./config.status
 
@@ -137,7 +141,7 @@ install:: all installdirs
 	-$(Q) $(RANLIB) $(DESTDIR)$(libdir)/libuuid.a
 	$(Q) $(CHMOD) $(LIBMODE) $(DESTDIR)$(libdir)/libuuid.a
 	$(E) "	INSTALL_DATA $(includedir)/uuid/uuid.h"
-	$(Q) $(INSTALL_DATA) $(srcdir)/uuid.h $(DESTDIR)$(includedir)/uuid/uuid.h
+	$(Q) $(INSTALL_DATA) uuid.h $(DESTDIR)$(includedir)/uuid/uuid.h
 	$(Q) for i in $(SMANPAGES); do \
 		$(RM) -f $(DESTDIR)$(man3dir)/$$i.gz; \
 		echo "	INSTALL_DATA $(man3dir)/$$i"; \
@@ -161,7 +165,7 @@ uninstall::
 	$(RM) -f $(DESTDIR)$(man3dir)/uuid_generate_random.3 $(DESTDIR)$(man3dir)/uuid_generate_time.3
 
 clean::
-	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/*
+	$(RM) -f \#* *.s *.o *.a *~ *.bak core profiled/* checker/* uuid.h
 	$(RM) -f ../libuuid.a ../libuuid_p.a tst_uuid uuid_time $(SMANPAGES)
 
 check:: tst_uuid
@@ -179,21 +183,20 @@ distclean:: clean
 ../../lib/libuuid.so: image
 ../../lib/libuuid.dylib: image
 
-$(OBJS): subdirs
+$(OBJS): subdirs uuid.h
 
 # +++ Dependency line eater +++
 # 
 # Makefile dependencies follow.  This must be the last section in
 # the Makefile.in file
 #
-clear.o: $(srcdir)/clear.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
-compare.o: $(srcdir)/compare.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
-copy.o: $(srcdir)/copy.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
-gen_uuid.o: $(srcdir)/gen_uuid.c $(srcdir)/uuidP.h $(srcdir)/uuid.h \
- $(srcdir)/uuidd.h
-isnull.o: $(srcdir)/isnull.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
-pack.o: $(srcdir)/pack.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
-parse.o: $(srcdir)/parse.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
-unpack.o: $(srcdir)/unpack.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
-unparse.o: $(srcdir)/unparse.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
-uuid_time.o: $(srcdir)/uuid_time.c $(srcdir)/uuidP.h $(srcdir)/uuid.h
+clear.o: $(srcdir)/clear.c $(srcdir)/uuidP.h
+compare.o: $(srcdir)/compare.c $(srcdir)/uuidP.h
+copy.o: $(srcdir)/copy.c $(srcdir)/uuidP.h
+gen_uuid.o: $(srcdir)/gen_uuid.c $(srcdir)/uuidP.h $(srcdir)/uuidd.h
+isnull.o: $(srcdir)/isnull.c $(srcdir)/uuidP.h
+pack.o: $(srcdir)/pack.c $(srcdir)/uuidP.h
+parse.o: $(srcdir)/parse.c $(srcdir)/uuidP.h
+unpack.o: $(srcdir)/unpack.c $(srcdir)/uuidP.h
+unparse.o: $(srcdir)/unparse.c $(srcdir)/uuidP.h
+uuid_time.o: $(srcdir)/uuid_time.c $(srcdir)/uuidP.h

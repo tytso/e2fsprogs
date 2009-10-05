@@ -2139,6 +2139,8 @@ static int source_file(const char *cmd_file, int sci_idx)
 			exit_status++;
 		}
 	}
+	if (f != stdin)
+		fclose(f);
 	return exit_status;
 }
 

@@ -351,6 +351,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	add_error_table(&et_ext2_error_table);
 	mntpt[0] = 0;
 	retval = ext2fs_check_mount_point(argv[1], &mount_flags,
 					  mntpt, sizeof(mntpt));
