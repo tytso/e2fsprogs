@@ -79,6 +79,7 @@ int	cflag;
 int	verbose;
 int	quiet;
 int	super_only;
+int	discard = 1;
 int	force;
 int	noaction;
 int	journal_size;
@@ -111,7 +112,7 @@ static void usage(void)
 	"\t[-g blocks-per-group] [-L volume-label] "
 	"[-M last-mounted-directory]\n\t[-O feature[,...]] "
 	"[-r fs-revision] [-E extended-option[,...]]\n"
-	"\t[-T fs-type] [-U UUID] [-jnqvFSV] device [blocks-count]\n"),
+	"\t[-T fs-type] [-U UUID] [-jnqvFKSV] device [blocks-count]\n"),
 		program_name);
 	exit(1);
 }
@@ -1206,7 +1207,7 @@ static void PRS(int argc, char *argv[])
 	}
 
 	while ((c = getopt (argc, argv,
-		    "b:cf:g:G:i:jl:m:no:qr:s:t:vE:FI:J:L:M:N:O:R:ST:U:V")) != EOF) {
+		    "b:cf:g:G:i:jl:m:no:qr:s:t:vE:FI:J:KL:M:N:O:R:ST:U:V")) != EOF) {
 		switch (c) {
 		case 'b':
 			blocksize = strtol(optarg, &tmp, 0);
@@ -1284,6 +1285,9 @@ static void PRS(int argc, char *argv[])
 			break;
 		case 'J':
 			parse_journal_opts(optarg);
+			break;
+		case 'K':
+			discard = 0;
 			break;
 		case 'j':
 			if (!journal_size)
@@ -1906,6 +1910,48 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	return retval;
 }
 
+#ifdef __linux__
+
+#ifndef BLKDISCARD
+#define BLKDISCARD	_IO(0x12,119)
+#endif
+
+static void mke2fs_discard_blocks(ext2_filsys fs)
+{
+	int fd;
+	int ret;
+	int blocksize;
+	__u64 blocks;
+	__uint64_t range[2];
+
+	blocks = fs->super->s_blocks_count;
+	blocksize = EXT2_BLOCK_SIZE(fs->super);
+	range[0] = 0;
+	range[1] = blocks * blocksize;
+
+	fd = open64(fs->device_name, O_RDONLY);
+
+	/*
+	 * We don't care about whether the ioctl succeeds; it's only an
+	 * optmization for SSDs or sparse storage.
+	 */
+	if (fd > 0) {
+		ret = ioctl(fd, BLKDISCARD, &range);
+		if (verbose) {
+			printf(_("Calling BLKDISCARD from %llu to %llu "),
+				range[0], range[1]);
+			if (ret)
+				printf(_("failed.\n"));
+			else
+				printf(_("succeeded.\n"));
+		}
+		close(fd);
+	}
+}
+#else
+#define mke2fs_discard_blocks(fs)
+#endif
+
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
@@ -1949,6 +1995,11 @@ int main (int argc, char *argv[])
 		com_err(device_name, retval, _("while setting up superblock"));
 		exit(1);
 	}
+
+	/* Can't undo discard ... */
+	if (discard && (io_ptr != undo_io_manager))
+		mke2fs_discard_blocks(fs);
+
 	sprintf(tdb_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
 		32768 : fs->blocksize * 8);
 	io_channel_set_options(fs->io, tdb_string);

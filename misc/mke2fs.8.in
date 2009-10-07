@@ -45,6 +45,9 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 .I journal-options
 ]
 [
+.B \-K
+]
+[
 .B \-N
 .I number-of-inodes
 ]
@@ -365,6 +368,10 @@ and may be no more than 102,400 filesystem blocks.
 @JDEV@Only one of the
 @JDEV@.BR size " or " device
 @JDEV@options can be given for a filesystem.
+.TP
+.BI \-K
+Keep, do not attempt to discard blocks at mkfs time (discarding blocks initially
+is useful on solid state devices and sparse / thin-provisioned storage).
 .TP
 .BI \-l " filename"
 Read the bad blocks list from
