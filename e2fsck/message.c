@@ -258,7 +258,7 @@ static _INLINE_ void expand_at_expression(e2fsck_t ctx, char ch,
 /*
  * This function expands '%IX' expressions
  */
-static _INLINE_ void expand_inode_expression(char ch,
+static _INLINE_ void expand_inode_expression(ext2_filsys fs, char ch,
 					     struct problem_context *ctx)
 {
 	struct ext2_inode	*inode;
@@ -292,7 +292,8 @@ static _INLINE_ void expand_inode_expression(char ch,
 		printf("%u", large_inode->i_extra_isize);
 		break;
 	case 'b':
-		if (inode->i_flags & EXT4_HUGE_FILE_FL)
+		if (fs->super->s_feature_ro_compat &
+		    EXT4_FEATURE_RO_COMPAT_HUGE_FILE) 
 			printf("%llu", inode->i_blocks +
 			       (((long long) inode->osd2.linux2.l_i_blocks_hi)
 				<< 32));
@@ -528,7 +529,7 @@ void print_e2fsck_message(e2fsck_t ctx, const char *msg,
 			expand_at_expression(ctx, *cp, pctx, &first, recurse);
 		} else if (cp[0] == '%' && cp[1] == 'I') {
 			cp += 2;
-			expand_inode_expression(*cp, pctx);
+			expand_inode_expression(fs, *cp, pctx);
 		} else if (cp[0] == '%' && cp[1] == 'D') {
 			cp += 2;
 			expand_dirent_expression(fs, *cp, pctx);
