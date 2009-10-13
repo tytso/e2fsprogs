@@ -253,8 +253,16 @@ static int is_swap_device(const char *file)
 	if (!(f = fopen("/proc/swaps", "r")))
 		return 0;
 	/* Skip the first line */
-	if (fgets(buf, sizeof(buf), f))
+	if (!fgets(buf, sizeof(buf), f))
+		goto leave;
+	if (*buf && strncmp(buf, "Filename\t", 9))
+		/* Linux <=2.6.19 contained a bug in the /proc/swaps
+		 * code where the header would not be displayed
+		 */
+		goto valid_first_line;
+
 	while (fgets(buf, sizeof(buf), f)) {
+valid_first_line:
 		if ((cp = strchr(buf, ' ')) != NULL)
 			*cp = 0;
 		if ((cp = strchr(buf, '\t')) != NULL)
@@ -272,6 +280,8 @@ static int is_swap_device(const char *file)
 		}
 #endif 	/* __GNU__ */
 	}
+
+leave:
 	fclose(f);
 	return ret;
 }
