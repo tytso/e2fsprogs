@@ -388,13 +388,13 @@ static struct e2fsck_problem problem_table[] = {
 	/* Last mount time is in the future (fudged) */
 	{ PR_0_FUTURE_SB_LAST_MOUNT_FUDGED,
 	  N_("@S last mount time is in the future.\n\t(by less than a day, "
-	     "probably due to buggy init scripts)  "),
+	     "probably due to the hardware clock being incorrectly set)  "),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
 	/* Last write time is in the future (fudged) */
 	{ PR_0_FUTURE_SB_LAST_WRITE_FUDGED,
 	  N_("@S last write time is in the future.\n\t(by less than a day, "
-	     "probably due to buggy init scripts).  "),
+	     "probably due to the hardware clock being incorrectly set).  "),
 	  PROMPT_FIX, PR_PREEN_OK | PR_NO_OK },
 
 	/* Block group checksum (latch question) is invalid. */

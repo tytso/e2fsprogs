@@ -463,7 +463,7 @@ void check_super_block(e2fsck_t ctx)
 	int	inodes_per_block;
 	int	ipg_max;
 	int	inode_size;
-	int	buggy_init_scripts;
+	int	accept_time_fudge;
 	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
@@ -795,25 +795,31 @@ void check_super_block(e2fsck_t ctx)
 	}
 
 	/*
-	 * Some buggy distributions (such as Ubuntu) have init scripts
-	 * and/or installers which fail to correctly set the system
-	 * clock before running e2fsck and/or formatting the
-	 * filesystem initially.  Normally this happens because the
-	 * hardware clock is ticking localtime, instead of the more
-	 * proper and less error-prone UTC time.  So while the kernel
-	 * is booting, the system time (which in Linux systems always
-	 * ticks in UTC time) is set from the hardware clock, but
-	 * since the hardware clock is ticking localtime, the system
-	 * time is incorrect.  Unfortunately, some buggy distributions
-	 * do not correct this before running e2fsck.  If this option
-	 * is set to a boolean value of true, we attempt to work
-	 * around this situation by allowing the superblock last write
-	 * time, last mount time, and last check time to be in the
-	 * future by up to 24 hours.
+	 * Unfortunately, due to Windows' unfortunate design decision
+	 * to configure the hardware clock to tick localtime, instead
+	 * of the more proper and less error-prone UTC time, many
+	 * users end up in the situation where the system clock is
+	 * incorrectly set at the time when e2fsck is run.
+	 *
+	 * Historically this was usually due to some distributions
+	 * having buggy init scripts and/or installers that didn't
+	 * correctly detect this case and take appropriate
+	 * countermeasures.  However, it's still possible, despite the
+	 * best efforts of init script and installer authors to not be
+	 * able to detect this misconfiguration, usually due to a
+	 * buggy or misconfigured virtualization manager or the
+	 * installer not having access to a network time server during
+	 * the installation process.  So by default, we allow the
+	 * superblock times to be fudged by up to 24 hours.  This can
+	 * be disabled by setting options.accept_time_fudge to the
+	 * boolean value of false in e2fsck.conf.  We also support
+	 * options.buggy_init_scripts for backwards compatibility.
 	 */
+	profile_get_boolean(ctx->profile, "options", "accept_time_fudge",
+			    0, 1, &accept_time_fudge);
 	profile_get_boolean(ctx->profile, "options", "buggy_init_scripts",
-			    0, 0, &buggy_init_scripts);
-	ctx->time_fudge = buggy_init_scripts ? 86400 : 0;
+			    0, accept_time_fudge, &accept_time_fudge);
+	ctx->time_fudge = accept_time_fudge ? 86400 : 0;
 
 	/*
 	 * Check to see if the superblock last mount time or last
