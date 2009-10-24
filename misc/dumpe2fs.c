@@ -50,8 +50,8 @@ int hex_format = 0;
 
 static void usage(void)
 {
-	fprintf (stderr, _("Usage: %s [-bfhixV] [-ob superblock] "
-		 "[-oB blocksize] device\n"), program_name);
+	fprintf (stderr, _("Usage: %s [-bfhixV] [-o superblock=<num>] "
+		 "[-o blocksize=<num>] device\n"), program_name);
 	exit (1);
 }
 
