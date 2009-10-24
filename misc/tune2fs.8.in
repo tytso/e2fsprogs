@@ -219,13 +219,15 @@ it is converted to a numerical gid before it is stored in the superblock.
 .TP
 .B \-i " \fIinterval-between-checks\fR[\fBd\fR|\fBm\fR|\fBw\fR]"
 Adjust the maximal time between two filesystem checks. 
-No postfix or
+No suffix or
 .B d
-result in days,
+will interpret the number
+.I interval-between-checks
+as days,
 .B m
-in months, and
+as months, and
 .B w
-in weeks.  A value of zero will disable the time-dependent checking.
+as weeks.  A value of zero will disable the time-dependent checking.
 .sp
 It is strongly recommended that either
 .B \-c
