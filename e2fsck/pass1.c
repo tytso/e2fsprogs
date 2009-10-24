@@ -1974,7 +1974,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	if (LINUX_S_ISREG(inode->i_mode) &&
 	    (inode->i_size_high || inode->i_size & 0x80000000UL))
 		ctx->large_files++;
-	if ((pb.num_blocks != inode->i_blocks) ||
+	if ((pb.num_blocks != ext2fs_inode_i_blocks(fs, inode)) ||
 	    ((fs->super->s_feature_ro_compat &
 	      EXT4_FEATURE_RO_COMPAT_HUGE_FILE) &&
 	     (inode->i_flags & EXT4_HUGE_FILE_FL) &&

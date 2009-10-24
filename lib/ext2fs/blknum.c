@@ -49,8 +49,9 @@ blk64_t ext2fs_inode_data_blocks2(ext2_filsys fs,
 					struct ext2_inode *inode)
 {
 	return (inode->i_blocks |
-		(fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT ?
-		(__u64)inode->osd2.linux2.l_i_blocks_hi << 32 : 0)) -
+		((fs->super->s_feature_incompat &
+		  EXT4_FEATURE_RO_COMPAT_HUGE_FILE) ?
+		 (__u64) inode->osd2.linux2.l_i_blocks_hi << 32 : 0)) -
 		(inode->i_file_acl ? fs->blocksize >> 9 : 0);
 }
 
@@ -61,7 +62,8 @@ blk64_t ext2fs_inode_i_blocks(ext2_filsys fs,
 					struct ext2_inode *inode)
 {
 	return (inode->i_blocks |
-		(fs->super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT ?
+		((fs->super->s_feature_incompat & 
+		  EXT4_FEATURE_RO_COMPAT_HUGE_FILE) ?
 		 (__u64)inode->osd2.linux2.l_i_blocks_hi << 32 : 0));
 }
 
