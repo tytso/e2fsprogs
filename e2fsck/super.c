@@ -591,8 +591,8 @@ void check_super_block(e2fsck_t ctx)
 
 		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_INCOMPAT_FLEX_BG)) {
-			first_block = ext2fs_group_first_block(fs, i);
-			last_block = ext2fs_group_last_block(fs, i);
+			first_block = ext2fs_group_first_block2(fs, i);
+			last_block = ext2fs_group_last_block2(fs, i);
 		}
 
 		if ((ext2fs_block_bitmap_loc(fs, i) < first_block) ||

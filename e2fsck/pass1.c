@@ -2401,14 +2401,14 @@ static void new_table_block(e2fsck_t ctx, blk_t first_block, int group,
 	if (is_flexbg) {
 		flexbg_size = 1 << fs->super->s_log_groups_per_flex;
 		flexbg = group / flexbg_size;
-		first_block = ext2fs_group_first_block(fs,
-						       flexbg_size * flexbg);
+		first_block = ext2fs_group_first_block2(fs,
+							flexbg_size * flexbg);
 		last_grp = group | (flexbg_size - 1);
 		if (last_grp > fs->group_desc_count)
 			last_grp = fs->group_desc_count;
-		last_block = ext2fs_group_last_block(fs, last_grp);
+		last_block = ext2fs_group_last_block2(fs, last_grp);
 	} else
-		last_block = ext2fs_group_last_block(fs, group);
+		last_block = ext2fs_group_last_block2(fs, group);
 	pctx.errcode = ext2fs_get_free_blocks2(fs, first_block, last_block,
 					       num, ctx->block_found_map,
 					       new_block);
@@ -2472,7 +2472,7 @@ static void handle_fs_bad_blocks(e2fsck_t ctx)
 	blk64_t		new_blk;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		first_block = ext2fs_group_first_block(fs, i);
+		first_block = ext2fs_group_first_block2(fs, i);
 
 		if (ctx->invalid_block_bitmap_flag[i]) {
 			new_blk = ext2fs_block_bitmap_loc(fs, i);

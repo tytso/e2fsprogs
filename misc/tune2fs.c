@@ -1069,7 +1069,7 @@ static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap)
 			 * fail
 			 */
 			group = ext2fs_group_of_blk(fs, blk);
-			goal = ext2fs_group_first_block(fs, group);
+			goal = ext2fs_group_first_block2(fs, group);
 			meta_data = 1;
 
 		} else {

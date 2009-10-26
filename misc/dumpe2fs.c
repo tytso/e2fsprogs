@@ -159,8 +159,8 @@ static void list_desc (ext2_filsys fs)
 	else
 		old_desc_blocks = fs->desc_blocks;
 	for (i = 0; i < fs->group_desc_count; i++) {
-		first_block = ext2fs_group_first_block(fs, i);
-		last_block = ext2fs_group_last_block(fs, i);
+		first_block = ext2fs_group_first_block2(fs, i);
+		last_block = ext2fs_group_last_block2(fs, i);
 
 		ext2fs_super_and_bgd_loc(fs, i, &super_blk,
 					 &old_desc_blk, &new_desc_blk, 0);

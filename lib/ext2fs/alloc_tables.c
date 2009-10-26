@@ -61,11 +61,11 @@ static blk_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk64_t start_blk,
 			return start_blk + elem_size;
 	}
 
-	start_blk = ext2fs_group_first_block(fs, flexbg_size * flexbg);
+	start_blk = ext2fs_group_first_block2(fs, flexbg_size * flexbg);
 	last_grp = group | (flexbg_size - 1);
 	if (last_grp > fs->group_desc_count)
 		last_grp = fs->group_desc_count;
-	last_blk = ext2fs_group_last_block(fs, last_grp);
+	last_blk = ext2fs_group_last_block2(fs, last_grp);
 
 	/* Find the first available block */
 	if (ext2fs_get_free_blocks(fs, start_blk, last_blk, 1, bmap,
@@ -87,8 +87,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	dgrp_t		last_grp = 0;
 	int		j, rem_grps = 0, flexbg_size = 0;
 
-	group_blk = ext2fs_group_first_block(fs, group);
-	last_blk = ext2fs_group_last_block(fs, group);
+	group_blk = ext2fs_group_first_block2(fs, group);
+	last_blk = ext2fs_group_last_block2(fs, group);
 
 	if (!bmap)
 		bmap = fs->block_map;
@@ -126,7 +126,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 			prev_block = ext2fs_block_bitmap_loc(fs, group - 1);
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
 						 0, rem_grps, 1);
-		last_blk = ext2fs_group_last_block(fs, last_grp);
+		last_blk = ext2fs_group_last_block2(fs, last_grp);
 	}
 
 	if (!ext2fs_block_bitmap_loc(fs, group)) {
@@ -154,7 +154,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 			prev_block = ext2fs_inode_bitmap_loc(fs, group - 1);
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
 						 flexbg_size, rem_grps, 1);
-		last_blk = ext2fs_group_last_block(fs, last_grp);
+		last_blk = ext2fs_group_last_block2(fs, last_grp);
 	}
 
 	if (!ext2fs_inode_bitmap_loc(fs, group)) {
@@ -188,7 +188,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 						 fs->inode_blocks_per_group *
 						 rem_grps,
 						 fs->inode_blocks_per_group);
-		last_blk = ext2fs_group_last_block(fs, last_grp);
+		last_blk = ext2fs_group_last_block2(fs, last_grp);
 	}
 
 	if (!ext2fs_inode_table_loc(fs, group)) {
