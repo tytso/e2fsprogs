@@ -199,7 +199,7 @@ static void fix_uninit_block_bitmaps(ext2_filsys fs)
 		return;
 
 	for (g=0; g < fs->group_desc_count; g++) {
-		if (!(ext2fs_bg_flag_test(fs, g, EXT2_BG_BLOCK_UNINIT)))
+		if (!(ext2fs_bg_flags_test(fs, g, EXT2_BG_BLOCK_UNINIT)))
 			continue;
 
 		blk = (g * fs->super->s_blocks_per_group) +
@@ -755,7 +755,7 @@ static void mark_fs_metablock(ext2_resize_t rfs,
 		rfs->needed_blocks++;
 	} else if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					      EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
-		   (ext2fs_bg_flag_test(fs, group, EXT2_BG_BLOCK_UNINIT))) {
+		   (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT))) {
 		/*
 		 * If the block bitmap is uninitialized, which means
 		 * nothing other than standard metadata in use.
@@ -816,7 +816,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 		g = ext2fs_group_of_blk(fs, blk);
 		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
-		    ext2fs_bg_flag_test(old_fs, g, EXT2_BG_BLOCK_UNINIT)) {
+		    ext2fs_bg_flags_test(old_fs, g, EXT2_BG_BLOCK_UNINIT)) {
 			/*
 			 * The block bitmap is uninitialized, so skip
 			 * to the next block group.
@@ -1791,7 +1791,7 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 	/*
 	 * First calculate the block statistics
 	 */
-	uninit = ext2fs_bg_flag_test(fs, group, EXT2_BG_BLOCK_UNINIT);
+	uninit = ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT);
 	ext2fs_super_and_bgd_loc(fs, group, &super_blk, &old_desc_blk,
 				 &new_desc_blk, 0);
 	if (fs->super->s_feature_incompat & EXT2_FEATURE_INCOMPAT_META_BG)
@@ -1825,7 +1825,7 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 			group++;
 			count = 0;
 			group_free = 0;
-			uninit = (ext2fs_bg_flag_test(fs, group, EXT2_BG_BLOCK_UNINIT)
+			uninit = (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)
 				  );
 			ext2fs_super_and_bgd_loc(fs, group, &super_blk,
 						 &old_desc_blk,
@@ -1849,7 +1849,7 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 	group = 0;
 
 	/* Protect loop from wrap-around if s_inodes_count maxed */
-	uninit = ext2fs_bg_flag_test(fs, group, EXT2_BG_INODE_UNINIT);
+	uninit = ext2fs_bg_flags_test(fs, group, EXT2_BG_INODE_UNINIT);
 	for (ino = 1; ino <= fs->super->s_inodes_count && ino > 0; ino++) {
 		if (uninit ||
 		    !ext2fs_fast_test_inode_bitmap2(fs->inode_map, ino)) {
@@ -1865,8 +1865,7 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 			group++;
 			count = 0;
 			group_free = 0;
-			uninit = (ext2fs_bg_flag_test(fs, group, EXT2_BG_INODE_UNINIT)
-				  );
+			uninit = ext2fs_bg_flags_test(fs, group, EXT2_BG_INODE_UNINIT);
 		}
 	}
 	fs->super->s_free_inodes_count = total_free;

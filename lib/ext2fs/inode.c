@@ -435,7 +435,7 @@ errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, ext2_ino_t *ino,
 	 * they can be done for block group #0.
 	 */
 	if ((scan->scan_flags & EXT2_SF_DO_LAZY) &&
-	    (ext2fs_bg_flag_test(scan->fs, scan->current_group, EXT2_BG_INODE_UNINIT)
+	    (ext2fs_bg_flags_test(scan->fs, scan->current_group, EXT2_BG_INODE_UNINIT)
 	     ))
 		goto force_new_group;
 	if (scan->inodes_left == 0)

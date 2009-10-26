@@ -293,7 +293,7 @@ static void print_features(struct ext2_super_block * s, FILE *f)
 static void print_bg_opts(ext2_filsys fs, dgrp_t group, int mask,
 			  const char *str, int *first, FILE *f)
 {
-	if (ext2fs_bg_flag_test(fs, group, mask)) {
+	if (ext2fs_bg_flags_test(fs, group, mask)) {
 		if (*first) {
 			fputs("           [", f);
 			*first = 0;

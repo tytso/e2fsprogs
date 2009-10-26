@@ -38,7 +38,7 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 
 	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) ||
-	    !(ext2fs_bg_flag_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
+	    !(ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
 		return;
 
 	blk = (group * fs->super->s_blocks_per_group) +
@@ -82,7 +82,7 @@ static void check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
 
 	if (!(EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					 EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) ||
-	    !(ext2fs_bg_flag_test(fs, group, EXT2_BG_INODE_UNINIT)))
+	    !(ext2fs_bg_flags_test(fs, group, EXT2_BG_INODE_UNINIT)))
 		return;
 
 	ino = (group * fs->super->s_inodes_per_group) + 1;

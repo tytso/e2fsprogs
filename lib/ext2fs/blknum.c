@@ -439,7 +439,7 @@ void ext2fs_bg_flags_zap(ext2_filsys fs, dgrp_t group)
 /*
  * Get the value of a particular flag for this block group
  */
-int ext2fs_bg_flag_test(ext2_filsys fs, dgrp_t group, __u16 bg_flag)
+int ext2fs_bg_flags_test(ext2_filsys fs, dgrp_t group, __u16 bg_flag)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;

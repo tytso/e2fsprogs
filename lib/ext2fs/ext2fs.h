@@ -763,7 +763,7 @@ extern void ext2fs_bg_itable_unused_set(ext2_filsys fs, dgrp_t group,
 				     __u32 n);
 extern __u16 ext2fs_bg_flags(ext2_filsys fs, dgrp_t group);
 extern void ext2fs_bg_flags_zap(ext2_filsys fs, dgrp_t group);
-extern int ext2fs_bg_flag_test(ext2_filsys fs, dgrp_t group, __u16 bg_flag);
+extern int ext2fs_bg_flags_test(ext2_filsys fs, dgrp_t group, __u16 bg_flag);
 extern void ext2fs_bg_flags_set(ext2_filsys fs, dgrp_t group, __u16 bg_flags);
 extern void ext2fs_bg_flags_clear(ext2_filsys fs, dgrp_t group, __u16 bg_flags);
 extern __u16 ext2fs_bg_checksum(ext2_filsys fs, dgrp_t group);

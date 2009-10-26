@@ -987,7 +987,7 @@ out_htree:
 		 * we could call a function in pass1.c that checks the
 		 * newly visible inodes.
 		 */
-		if (ext2fs_bg_flag_test(fs, group, EXT2_BG_INODE_UNINIT)) {
+		if (ext2fs_bg_flags_test(fs, group, EXT2_BG_INODE_UNINIT)) {
 			pctx.num = dirent->inode;
 			if (fix_problem(ctx, PR_2_INOREF_BG_INO_UNINIT,
 					&cd->pctx)){

@@ -162,7 +162,7 @@ redo_counts:
 	save_problem = 0;
 	pctx.blk = pctx.blk2 = NO_BLK;
 	if (csum_flag &&
-	    (ext2fs_bg_flag_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
+	    (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)))
 		skip_group++;
 	for (i = fs->super->s_first_data_block;
 	     i < ext2fs_blocks_count(fs->super);
@@ -300,7 +300,7 @@ redo_counts:
 					goto errout;
 			if (csum_flag &&
 			    (i != ext2fs_blocks_count(fs->super)-1) &&
-			    ext2fs_bg_flag_test(fs, group, 
+			    ext2fs_bg_flags_test(fs, group, 
 						EXT2_BG_BLOCK_UNINIT))
 				skip_group++;
 		}
@@ -423,7 +423,7 @@ redo_counts:
 	save_problem = 0;
 	pctx.ino = pctx.ino2 = 0;
 	if (csum_flag &&
-	    (ext2fs_bg_flag_test(fs, group, EXT2_BG_INODE_UNINIT)))
+	    (ext2fs_bg_flags_test(fs, group, EXT2_BG_INODE_UNINIT)))
 		skip_group++;
 
 	/* Protect loop from wrap-around if inodes_count is maxed */
@@ -526,7 +526,7 @@ do_counts:
 					goto errout;
 			if (csum_flag &&
 			    (i != fs->super->s_inodes_count) &&
-			    (ext2fs_bg_flag_test(fs, group, EXT2_BG_INODE_UNINIT)
+			    (ext2fs_bg_flags_test(fs, group, EXT2_BG_INODE_UNINIT)
 			     ))
 				skip_group++;
 		}

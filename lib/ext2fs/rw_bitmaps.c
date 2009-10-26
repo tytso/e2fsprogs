@@ -70,7 +70,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (!do_block)
 			goto skip_block_bitmap;
 
-		if (csum_flag && ext2fs_bg_flag_test(fs, i, EXT2_BG_BLOCK_UNINIT)
+		if (csum_flag && ext2fs_bg_flags_test(fs, i, EXT2_BG_BLOCK_UNINIT)
 		    )
 			goto skip_this_block_bitmap;
 
@@ -102,7 +102,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (!do_inode)
 			continue;
 
-		if (csum_flag && ext2fs_bg_flag_test(fs, i, EXT2_BG_INODE_UNINIT)
+		if (csum_flag && ext2fs_bg_flags_test(fs, i, EXT2_BG_INODE_UNINIT)
 		    )
 			goto skip_this_inode_bitmap;
 
@@ -237,7 +237,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (block_bitmap) {
 			blk = fs->group_desc[i].bg_block_bitmap;
 			if (csum_flag &&
-			    ext2fs_bg_flag_test(fs, i, EXT2_BG_BLOCK_UNINIT) &&
+			    ext2fs_bg_flags_test(fs, i, EXT2_BG_BLOCK_UNINIT) &&
 			    ext2fs_group_desc_csum_verify(fs, i))
 				blk = 0;
 			if (blk) {
@@ -259,7 +259,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (inode_bitmap) {
 			blk = fs->group_desc[i].bg_inode_bitmap;
 			if (csum_flag &&
-			    ext2fs_bg_flag_test(fs, i, EXT2_BG_INODE_UNINIT) &&
+			    ext2fs_bg_flags_test(fs, i, EXT2_BG_INODE_UNINIT) &&
 			    ext2fs_group_desc_csum_verify(fs, i))
 				blk = 0;
 			if (blk) {
