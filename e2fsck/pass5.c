@@ -260,8 +260,7 @@ redo_counts:
 				pctx2.blk = i;
 				pctx2.group = group;
 				if (fix_problem(ctx, PR_5_BLOCK_UNINIT,&pctx2)){
-					ext2fs_bg_flag_clear(fs, group, EXT2_BG_BLOCK_UNINIT)
-						;
+					ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
 					skip_group = 0;
 				}
 			}
@@ -343,8 +342,7 @@ redo_counts:
 
 			if (fix_problem(ctx, PR_5_FREE_BLOCK_COUNT_GROUP,
 					&pctx)) {
-				fs->group_desc[i].bg_free_blocks_count =
-					free_array[i];
+				ext2fs_bg_free_blocks_count_set(fs, i, free_array[i]);
 				ext2fs_mark_super_dirty(fs);
 			} else
 				ext2fs_unmark_valid(fs);
@@ -482,8 +480,7 @@ redo_counts:
 				pctx2.blk = i;
 				pctx2.group = group;
 				if (fix_problem(ctx, PR_5_INODE_UNINIT,&pctx2)){
-					ext2fs_bg_flag_clear(fs, group, EXT2_BG_INODE_UNINIT)
-						;
+					ext2fs_bg_flags_clear(fs, group, EXT2_BG_INODE_UNINIT);
 					skip_group = 0;
 				}
 			}

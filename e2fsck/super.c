@@ -638,8 +638,8 @@ void check_super_block(e2fsck_t ctx)
 		should_be = 0;
 		if (!ext2fs_group_desc_csum_verify(fs, i)) {
 			if (fix_problem(ctx, PR_0_GDT_CSUM, &pctx)) {
-				ext2fs_bg_flag_clear (fs, i, EXT2_BG_BLOCK_UNINIT);
-				ext2fs_bg_flag_clear (fs, i, EXT2_BG_INODE_UNINIT);
+				ext2fs_bg_flags_clear(fs, i, EXT2_BG_BLOCK_UNINIT);
+				ext2fs_bg_flags_clear(fs, i, EXT2_BG_INODE_UNINIT);
 				gd->bg_itable_unused = 0;
 				should_be = 1;
 			}
@@ -651,8 +651,8 @@ void check_super_block(e2fsck_t ctx)
 		     ext2fs_bg_flag_test(fs, i, EXT2_BG_INODE_UNINIT) ||
 		     gd->bg_itable_unused != 0)){
 			if (fix_problem(ctx, PR_0_GDT_UNINIT, &pctx)) {
-				ext2fs_bg_flag_clear (fs, i, EXT2_BG_BLOCK_UNINIT);
-				ext2fs_bg_flag_clear (fs, i, EXT2_BG_INODE_UNINIT);
+				ext2fs_bg_flags_clear(fs, i, EXT2_BG_BLOCK_UNINIT);
+				ext2fs_bg_flags_clear(fs, i, EXT2_BG_INODE_UNINIT);
 				gd->bg_itable_unused = 0;
 				should_be = 1;
 			}
@@ -662,7 +662,7 @@ void check_super_block(e2fsck_t ctx)
 		if (i == fs->group_desc_count - 1 &&
 		    ext2fs_bg_flag_test(fs, i, EXT2_BG_BLOCK_UNINIT)) {
 			if (fix_problem(ctx, PR_0_BB_UNINIT_LAST, &pctx)) {
-				ext2fs_bg_flag_clear (fs, i, EXT2_BG_BLOCK_UNINIT);
+				ext2fs_bg_flags_clear(fs, i, EXT2_BG_BLOCK_UNINIT);
 				should_be = 1;
 			}
 			ext2fs_unmark_valid(fs);
@@ -671,7 +671,7 @@ void check_super_block(e2fsck_t ctx)
 		if (ext2fs_bg_flag_test(fs, i, EXT2_BG_BLOCK_UNINIT) &&
 		    !ext2fs_bg_flag_test(fs, i, EXT2_BG_INODE_UNINIT)) {
 			if (fix_problem(ctx, PR_0_BB_UNINIT_IB_INIT, &pctx)) {
-				ext2fs_bg_flag_clear (fs, i, EXT2_BG_BLOCK_UNINIT);
+				ext2fs_bg_flags_clear(fs, i, EXT2_BG_BLOCK_UNINIT);
 				should_be = 1;
 			}
 			ext2fs_unmark_valid(fs);

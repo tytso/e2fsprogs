@@ -68,7 +68,7 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 		else
 			ext2fs_fast_unmark_block_bitmap2(map, blk);
 	}
-	ext2fs_bg_flag_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
+	ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
 	ext2fs_group_desc_csum_set(fs, group);
 }
 
@@ -89,7 +89,7 @@ static void check_inode_uninit(ext2_filsys fs, ext2fs_inode_bitmap map,
 	for (i=0; i < fs->super->s_inodes_per_group; i++, ino++)
 		ext2fs_fast_unmark_inode_bitmap2(map, ino);
 
-	ext2fs_bg_flag_clear(fs, group, EXT2_BG_INODE_UNINIT);
+	ext2fs_bg_flags_clear(fs, group, EXT2_BG_INODE_UNINIT);
 	check_block_uninit(fs, fs->block_map, group);
 }
 

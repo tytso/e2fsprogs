@@ -991,7 +991,7 @@ out_htree:
 			pctx.num = dirent->inode;
 			if (fix_problem(ctx, PR_2_INOREF_BG_INO_UNINIT,
 					&cd->pctx)){
-				ext2fs_bg_flag_clear(fs, group,
+				ext2fs_bg_flags_clear(fs, group,
 						      EXT2_BG_INODE_UNINIT);
 				ext2fs_mark_super_dirty(fs);
 				ctx->flags |= E2F_FLAG_RESTART_LATER;

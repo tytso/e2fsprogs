@@ -143,7 +143,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 			dgrp_t gr = ext2fs_group_of_blk(fs, new_blk);
 			fs->group_desc[gr].bg_free_blocks_count--;
 			ext2fs_free_blocks_count_add(fs->super, -1);
-			ext2fs_bg_flag_clear(fs, gr, EXT2_BG_BLOCK_UNINIT);
+			ext2fs_bg_flags_clear(fs, gr, EXT2_BG_BLOCK_UNINIT);
 			ext2fs_group_desc_csum_set(fs, gr);
 		}
 	}
@@ -171,7 +171,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 			dgrp_t gr = ext2fs_group_of_blk(fs, new_blk);
 			fs->group_desc[gr].bg_free_blocks_count--;
 			ext2fs_free_blocks_count_add(fs->super, -1);
-			ext2fs_bg_flag_clear(fs, gr, EXT2_BG_BLOCK_UNINIT);
+			ext2fs_bg_flags_clear(fs, gr, EXT2_BG_BLOCK_UNINIT);
 			ext2fs_group_desc_csum_set(fs, gr);
 		}
 	}
@@ -205,7 +205,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 				dgrp_t gr = ext2fs_group_of_blk(fs, blk);
 				fs->group_desc[gr].bg_free_blocks_count--;
 				ext2fs_free_blocks_count_add(fs->super, -1);
-				ext2fs_bg_flag_clear(fs, gr,
+				ext2fs_bg_flags_clear(fs, gr,
 						     EXT2_BG_BLOCK_UNINIT);
 				ext2fs_group_desc_csum_set(fs, gr);
 			}

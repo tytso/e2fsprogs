@@ -421,25 +421,9 @@ __u16 ext2fs_bg_flags(ext2_filsys fs, dgrp_t group)
 }
 
 /*
- * Set the flags for this block group
+ * Zero out the flags for this block group
  */
-void ext2fs_bg_flags_set(ext2_filsys fs, dgrp_t group, __u16 bg_flags)
-{
-	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
-		struct ext4_group_desc *gdp;
-		gdp = (struct ext4_group_desc *) (fs->group_desc) + group;
-
-		gdp->bg_flags = bg_flags;
-		return;
-	}
-
-	fs->group_desc[group].bg_flags = bg_flags;
-}
-
-/*
- * Clear the flags for this block group
- */
-void ext2fs_bg_flags_clear(ext2_filsys fs, dgrp_t group, __u16 bg_flags)
+void ext2fs_bg_flags_zap(ext2_filsys fs, dgrp_t group)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
@@ -468,35 +452,35 @@ int ext2fs_bg_flag_test(ext2_filsys fs, dgrp_t group, __u16 bg_flag)
 }
 
 /*
- * Set a particular flag for this block group
+ * Set a flag or set of flags for this block group
  */
-void ext2fs_bg_flag_set(ext2_filsys fs, dgrp_t group, __u16 bg_flag)
+void ext2fs_bg_flags_set(ext2_filsys fs, dgrp_t group, __u16 bg_flags)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
 		gdp = (struct ext4_group_desc *) (fs->group_desc) + group;
 
-		gdp->bg_flags |= bg_flag;
+		gdp->bg_flags |= bg_flags;
 		return;
 	}
 
-	fs->group_desc[group].bg_flags |= bg_flag;
+	fs->group_desc[group].bg_flags |= bg_flags;
 }
 
 /*
- * Clear a particular flag for this block group
+ * Clear a flag or set of flags for this block group
  */
-void ext2fs_bg_flag_clear(ext2_filsys fs, dgrp_t group, __u16 bg_flag)
+void ext2fs_bg_flags_clear(ext2_filsys fs, dgrp_t group, __u16 bg_flags)
 {
 	if (fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT) {
 		struct ext4_group_desc *gdp;
 		gdp = (struct ext4_group_desc *) (fs->group_desc) + group;
 
-		gdp->bg_flags &= ~bg_flag;
+		gdp->bg_flags &= ~bg_flags;
 		return;
 	}
 
-	fs->group_desc[group].bg_flags &= ~bg_flag;
+	fs->group_desc[group].bg_flags &= ~bg_flags;
 }
 
 /*

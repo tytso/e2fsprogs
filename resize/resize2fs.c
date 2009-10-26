@@ -112,7 +112,7 @@ errcode_t resize_fs(ext2_filsys fs, blk_t *new_size, int flags,
 
 	fix_uninit_block_bitmaps(rfs->new_fs);
 	/* Clear the block bitmap uninit flag for the last block group */
-	ext2fs_bg_flag_clear(rfs->new_fs, rfs->new_fs->group_desc_count - 1,
+	ext2fs_bg_flags_clear(rfs->new_fs, rfs->new_fs->group_desc_count - 1,
 			     EXT2_BG_BLOCK_UNINIT);
 
 	*new_size = ext2fs_blocks_count(rfs->new_fs->super);
@@ -499,10 +499,9 @@ retry:
 		       sizeof(struct ext2_group_desc));
 		adjblocks = 0;
 
-		ext2fs_bg_flags_clear(fs, i, 0);
+		ext2fs_bg_flags_zap(fs, i);
 		if (csum_flag)
-			ext2fs_bg_flag_set(fs, i, EXT2_BG_INODE_UNINIT | EXT2_BG_INODE_ZEROED)
-				;
+			ext2fs_bg_flags_set(fs, i, EXT2_BG_INODE_UNINIT | EXT2_BG_INODE_ZEROED);
 		if (i == fs->group_desc_count-1) {
 			numblocks = (ext2fs_blocks_count(fs->super) -
 				     fs->super->s_first_data_block) %
@@ -512,8 +511,8 @@ retry:
 		} else {
 			numblocks = fs->super->s_blocks_per_group;
 			if (csum_flag)
-				ext2fs_bg_flag_set(fs, i, EXT2_BG_BLOCK_UNINIT)
-					;
+				ext2fs_bg_flags_set(fs, i,
+						    EXT2_BG_BLOCK_UNINIT);
 		}
 
 		has_super = ext2fs_bg_has_super(fs, i);

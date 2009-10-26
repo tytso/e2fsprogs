@@ -202,7 +202,7 @@ int main(int argc, char **argv)
 		fs->group_desc[i].bg_free_blocks_count = 31119;
 		fs->group_desc[i].bg_free_inodes_count = 15701;
 		fs->group_desc[i].bg_used_dirs_count = 2;
-		fs->group_desc[i].bg_flags = 0;
+		ext2fs_bg_flags_zap(fs, i);
 	};
 
 	csum1 = ext2fs_group_desc_csum(fs, 0);

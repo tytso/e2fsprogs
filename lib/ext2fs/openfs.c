@@ -351,8 +351,8 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		dgrp_t group;
 
 		for (group = 0; group < fs->group_desc_count; group++) {
-			ext2fs_bg_flag_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
-			ext2fs_bg_flag_clear(fs, group, EXT2_BG_INODE_UNINIT);
+			ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
+			ext2fs_bg_flags_clear(fs, group, EXT2_BG_INODE_UNINIT);
 			fs->group_desc[group].bg_itable_unused = 0;
 		}
 		ext2fs_mark_super_dirty(fs);
