@@ -273,7 +273,7 @@ _("Warning: the backup superblock/group descriptors at block %u contain\n"
 "	bad blocks.\n\n"),
 						group_block);
 				group_bad++;
-				group = ext2fs_group_of_blk(fs, group_block+j);
+				group = ext2fs_group_of_blk2(fs, group_block+j);
 				ext2fs_bg_free_blocks_count_set(fs, group, ext2fs_bg_free_blocks_count(fs, group) + 1);
 				ext2fs_group_desc_csum_set(fs, group);
 				ext2fs_free_blocks_count_add(fs->super, 1);

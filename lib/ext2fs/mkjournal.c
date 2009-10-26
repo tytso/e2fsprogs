@@ -321,7 +321,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	 * the filesystem.  Pick a group that has the largest number
 	 * of free blocks.
 	 */
-	group = ext2fs_group_of_blk(fs, (ext2fs_blocks_count(fs->super) -
+	group = ext2fs_group_of_blk2(fs, (ext2fs_blocks_count(fs->super) -
 					 fs->super->s_first_data_block) / 2);
 	log_flex = 1 << fs->super->s_log_groups_per_flex;
 	if (fs->super->s_log_groups_per_flex && (group > log_flex)) {

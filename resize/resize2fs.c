@@ -810,7 +810,7 @@ static errcode_t blocks_to_move(ext2_resize_t rfs)
 	 */
 	for (blk = ext2fs_blocks_count(fs->super);
 	     blk < ext2fs_blocks_count(old_fs->super); blk++) {
-		g = ext2fs_group_of_blk(fs, blk);
+		g = ext2fs_group_of_blk2(fs, blk);
 		if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM) &&
 		    ext2fs_bg_flags_test(old_fs, g, EXT2_BG_BLOCK_UNINIT)) {
