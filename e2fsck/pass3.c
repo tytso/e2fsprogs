@@ -416,7 +416,7 @@ ext2_ino_t e2fsck_get_lost_and_found(e2fsck_t ctx, int fix)
 		return 0;
 	}
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
-	ext2fs_block_alloc_stats(fs, blk, +1);
+	ext2fs_block_alloc_stats2(fs, blk, +1);
 
 	/*
 	 * Next find a free inode.
@@ -738,7 +738,7 @@ static int expand_dir_proc(ext2_filsys fs,
 	ext2fs_free_mem(&block);
 	*blocknr = new_blk;
 	ext2fs_mark_block_bitmap2(ctx->block_found_map, new_blk);
-	ext2fs_block_alloc_stats(fs, new_blk, +1);
+	ext2fs_block_alloc_stats2(fs, new_blk, +1);
 	es->newblocks++;
 
 	if (es->num == 0)

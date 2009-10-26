@@ -648,7 +648,7 @@ static int write_dir_block(ext2_filsys fs,
 		e2fsck_read_bitmaps(wd->ctx);
 		blk = *block_nr;
 		ext2fs_unmark_block_bitmap2(wd->ctx->block_found_map, blk);
-		ext2fs_block_alloc_stats(fs, blk, -1);
+		ext2fs_block_alloc_stats2(fs, blk, -1);
 		*block_nr = 0;
 		wd->cleared++;
 		return BLOCK_CHANGED;

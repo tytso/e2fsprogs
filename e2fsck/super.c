@@ -141,7 +141,7 @@ static int release_inode_block(ext2_filsys fs,
 		retval |= BLOCK_CHANGED;
 	}
 
-	ext2fs_block_alloc_stats(fs, blk, -1);
+	ext2fs_block_alloc_stats2(fs, blk, -1);
 	return retval;
 }
 
@@ -211,7 +211,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 			return 1;
 		}
 		if (count == 0)
-			ext2fs_block_alloc_stats(fs,
+			ext2fs_block_alloc_stats2(fs,
 						 ext2fs_file_acl_block(inode),
 						 -1);
 		ext2fs_file_acl_block_set(inode, 0);

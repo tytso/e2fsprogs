@@ -191,7 +191,7 @@ static int clear_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 	/*
 	 * Mark the block as unused, and update accounting information
 	 */
-	ext2fs_block_alloc_stats(fs, *block_nr, -1);
+	ext2fs_block_alloc_stats2(fs, *block_nr, -1);
 
 	*block_nr = 0;
 	return BLOCK_CHANGED;
@@ -254,7 +254,7 @@ static int set_bad_block_proc(ext2_filsys fs, blk_t *block_nr,
 	/*
 	 * Update block counts
 	 */
-	ext2fs_block_alloc_stats(fs, blk, +1);
+	ext2fs_block_alloc_stats2(fs, blk, +1);
 
 	*block_nr = blk;
 	return BLOCK_CHANGED;

@@ -1507,7 +1507,8 @@ errcode_t ext2fs_extent_delete(ext2_extent_handle_t handle, int flags)
 			handle->inode->i_blocks -= handle->fs->blocksize / 512;
 			retval = ext2fs_write_inode(handle->fs, handle->ino,
 						    handle->inode);
-			ext2fs_block_alloc_stats(handle->fs, extent.e_pblk, -1);
+			ext2fs_block_alloc_stats2(handle->fs,
+						  extent.e_pblk, -1);
 		}
 	} else {
 		eh = (struct ext3_extent_header *) path->buf;

@@ -585,7 +585,7 @@ static int delete_file_block(ext2_filsys fs,
 				*block_nr);
 	} else {
 		ext2fs_unmark_block_bitmap2(ctx->block_found_map, *block_nr);
-		ext2fs_block_alloc_stats(fs, *block_nr, -1);
+		ext2fs_block_alloc_stats2(fs, *block_nr, -1);
 	}
 
 	return 0;
