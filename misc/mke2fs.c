@@ -274,7 +274,7 @@ _("Warning: the backup superblock/group descriptors at block %u contain\n"
 						group_block);
 				group_bad++;
 				group = ext2fs_group_of_blk(fs, group_block+j);
-				fs->group_desc[group].bg_free_blocks_count++;
+				ext2fs_bg_free_blocks_count_set(fs, group, ext2fs_bg_free_blocks_count(fs, group) + 1);
 				ext2fs_group_desc_csum_set(fs, group);
 				ext2fs_free_blocks_count_add(fs->super, 1);
 			}
@@ -311,13 +311,13 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 	for (i = 0; i < fs->group_desc_count; i++) {
 		ext2fs_numeric_progress_update(fs, &progress, i);
 
-		blk = fs->group_desc[i].bg_inode_table;
+		blk = ext2fs_inode_table_loc(fs, i);
 		num = fs->inode_blocks_per_group;
 
 		if (lazy_flag) {
 			ipb = fs->blocksize / EXT2_INODE_SIZE(fs->super);
 			num = ((((fs->super->s_inodes_per_group -
-				  fs->group_desc[i].bg_itable_unused) *
+				  ext2fs_bg_itable_unused(fs, i)) *
 				 EXT2_INODE_SIZE(fs->super)) +
 				EXT2_BLOCK_SIZE(fs->super) - 1) /
 			       EXT2_BLOCK_SIZE(fs->super));

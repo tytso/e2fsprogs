@@ -111,11 +111,11 @@ static void determine_fs_stride(ext2_filsys fs)
 		has_sb = ext2fs_bg_has_super(fs, group);
 		if (group == 0 || has_sb != prev_has_sb)
 			goto next;
-		b_stride = fs->group_desc[group].bg_block_bitmap -
-			fs->group_desc[group-1].bg_block_bitmap -
+		b_stride = ext2fs_block_bitmap_loc(fs, group) -
+			ext2fs_block_bitmap_loc(fs, group - 1) -
 			fs->super->s_blocks_per_group;
-		i_stride = fs->group_desc[group].bg_inode_bitmap -
-			fs->group_desc[group-1].bg_inode_bitmap -
+		i_stride = ext2fs_inode_bitmap_loc(fs, group) -
+			ext2fs_inode_bitmap_loc(fs, group - 1) -
 			fs->super->s_blocks_per_group;
 		if (b_stride != i_stride ||
 		    b_stride < 0)

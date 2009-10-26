@@ -976,7 +976,7 @@ out_htree:
 		group = ext2fs_group_of_ino(fs, dirent->inode);
 		first_unused_inode = group * fs->super->s_inodes_per_group +
 					1 + fs->super->s_inodes_per_group -
-					fs->group_desc[group].bg_itable_unused;
+					ext2fs_bg_itable_unused(fs, group);
 		cd->pctx.group = group;
 
 		/*
@@ -1003,7 +1003,7 @@ out_htree:
 		} else if (dirent->inode >= first_unused_inode) {
 			pctx.num = dirent->inode;
 			if (fix_problem(ctx, PR_2_INOREF_IN_UNUSED, &cd->pctx)){
-				fs->group_desc[group].bg_itable_unused = 0;
+				ext2fs_bg_itable_unused_set(fs, group, 0);
 				ext2fs_mark_super_dirty(fs);
 				ctx->flags |= E2F_FLAG_RESTART_LATER;
 			} else {

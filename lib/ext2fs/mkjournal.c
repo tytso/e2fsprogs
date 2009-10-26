@@ -327,7 +327,7 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	if (fs->super->s_log_groups_per_flex && (group > log_flex)) {
 		group = group & ~(log_flex - 1);
 		while ((group < fs->group_desc_count) &&
-		       fs->group_desc[group].bg_free_blocks_count == 0)
+		       ext2fs_bg_free_blocks_count(fs, group) == 0)
 			group++;
 		if (group == fs->group_desc_count)
 			group = 0;
@@ -337,8 +337,8 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	end = ((group+1) < fs->group_desc_count) ? group+1 : group;
 	group = start;
 	for (i=start+1; i <= end; i++)
-		if (fs->group_desc[i].bg_free_blocks_count >
-		    fs->group_desc[group].bg_free_blocks_count)
+		if (ext2fs_bg_free_blocks_count(fs, i) >
+		    ext2fs_bg_free_blocks_count(fs, group))
 			group = i;
 
 	es.goal = (fs->super->s_blocks_per_group * group) +

@@ -415,7 +415,10 @@ static errcode_t parse_gd_csum(struct field_set_info *info, char *arg)
 
 	if (strcmp(arg, "calc") == 0) {
 		ext2fs_group_desc_csum_set(current_fs, set_bg);
-		set_gd = current_fs->group_desc[set_bg];
+		memcpy(&set_gd, ext2fs_group_desc(current_fs,
+					current_fs->group_desc,
+					set_bg),
+			sizeof(set_gd));
 		printf("Checksum set to 0x%04x\n",
 		       ext2fs_bg_checksum(current_fs, set_bg));
 		return 0;
@@ -570,10 +573,14 @@ void do_set_block_group_descriptor(int argc, char *argv[])
 		return;
 	}
 
-	set_gd = current_fs->group_desc[set_bg];
+	memcpy(&set_gd, ext2fs_group_desc(current_fs,
+				current_fs->group_desc, set_bg),
+		sizeof(set_gd));
 
 	if (ss->func(ss, argv[3]) == 0) {
-		current_fs->group_desc[set_bg] = set_gd;
+		memcpy(ext2fs_group_desc(current_fs,
+				current_fs->group_desc, set_bg),
+		       &set_gd, sizeof(set_gd));
 		ext2fs_mark_super_dirty(current_fs);
 	}
 }

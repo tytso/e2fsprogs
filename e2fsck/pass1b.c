@@ -837,15 +837,15 @@ static int check_if_fs_block(e2fsck_t ctx, blk_t test_block)
 		}
 
 		/* Check the inode table */
-		if ((fs->group_desc[i].bg_inode_table) &&
-		    (test_block >= fs->group_desc[i].bg_inode_table) &&
-		    (test_block < (fs->group_desc[i].bg_inode_table +
+		if ((ext2fs_inode_table_loc(fs, i)) &&
+		    (test_block >= ext2fs_inode_table_loc(fs, i)) &&
+		    (test_block < (ext2fs_inode_table_loc(fs, i) +
 				   fs->inode_blocks_per_group)))
 			return 1;
 
 		/* Check the bitmap blocks */
-		if ((test_block == fs->group_desc[i].bg_block_bitmap) ||
-		    (test_block == fs->group_desc[i].bg_inode_bitmap))
+		if ((test_block == ext2fs_block_bitmap_loc(fs, i)) ||
+		    (test_block == ext2fs_inode_bitmap_loc(fs, i)))
 			return 1;
 
 		first_block += fs->super->s_blocks_per_group;

@@ -196,15 +196,15 @@ redo_counts:
 
 			bitmap = 0;
 			if ((i == super_blk) ||
-				(old_desc_blk && old_desc_blocks &&
-				(i >= old_desc_blk) &&
-				(i < old_desc_blk + old_desc_blocks)) ||
-				(new_desc_blk && (i == new_desc_blk)) ||
-				(i == fs->group_desc[group].bg_block_bitmap) ||
-				(i == fs->group_desc[group].bg_inode_bitmap) ||
-				(i >= fs->group_desc[group].bg_inode_table &&
-				(i < fs->group_desc[group].bg_inode_table +
-					fs->inode_blocks_per_group))) {
+			    (old_desc_blk && old_desc_blocks &&
+			     (i >= old_desc_blk) &&
+			     (i < old_desc_blk + old_desc_blocks)) ||
+			    (new_desc_blk && (i == new_desc_blk)) ||
+			    (i == ext2fs_block_bitmap_loc(fs, group)) ||
+			    (i == ext2fs_inode_bitmap_loc(fs, group)) ||
+			    (i >= ext2fs_inode_table_loc(fs, group) &&
+			     (i < ext2fs_inode_table_loc(fs, group) +
+			      fs->inode_blocks_per_group))) {
 				bitmap = 1;
 				actual = (actual != 0);
 				count++;
@@ -335,9 +335,9 @@ redo_counts:
 		ext2fs_unmark_valid(fs);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		if (free_array[i] != fs->group_desc[i].bg_free_blocks_count) {
+		if (free_array[i] != ext2fs_bg_free_blocks_count(fs, i)) {
 			pctx.group = i;
-			pctx.blk = fs->group_desc[i].bg_free_blocks_count;
+			pctx.blk = ext2fs_bg_free_blocks_count(fs, i);
 			pctx.blk2 = free_array[i];
 
 			if (fix_problem(ctx, PR_5_FREE_BLOCK_COUNT_GROUP,
@@ -564,27 +564,25 @@ do_counts:
 		ext2fs_unmark_valid(fs);
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		if (free_array[i] != fs->group_desc[i].bg_free_inodes_count) {
+		if (free_array[i] != ext2fs_bg_free_inodes_count(fs, i)) {
 			pctx.group = i;
-			pctx.ino = fs->group_desc[i].bg_free_inodes_count;
+			pctx.ino = ext2fs_bg_free_inodes_count(fs, i);
 			pctx.ino2 = free_array[i];
 			if (fix_problem(ctx, PR_5_FREE_INODE_COUNT_GROUP,
 					&pctx)) {
-				fs->group_desc[i].bg_free_inodes_count =
-					free_array[i];
+				ext2fs_bg_free_inodes_count_set(fs, i, free_array[i]);
 				ext2fs_mark_super_dirty(fs);
 			} else
 				ext2fs_unmark_valid(fs);
 		}
-		if (dir_array[i] != fs->group_desc[i].bg_used_dirs_count) {
+		if (dir_array[i] != ext2fs_bg_used_dirs_count(fs, i)) {
 			pctx.group = i;
-			pctx.ino = fs->group_desc[i].bg_used_dirs_count;
+			pctx.ino = ext2fs_bg_used_dirs_count(fs, i);
 			pctx.ino2 = dir_array[i];
 
 			if (fix_problem(ctx, PR_5_FREE_DIR_COUNT_GROUP,
 					&pctx)) {
-				fs->group_desc[i].bg_used_dirs_count =
-					dir_array[i];
+				ext2fs_bg_used_dirs_count_set(fs, i, dir_array[i]);
 				ext2fs_mark_super_dirty(fs);
 			} else
 				ext2fs_unmark_valid(fs);

@@ -122,14 +122,14 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	if (flexbg_size) {
 		blk64_t prev_block = 0;
 
-		if (group && fs->group_desc[group-1].bg_block_bitmap)
-			prev_block = fs->group_desc[group-1].bg_block_bitmap;
+		if (group && ext2fs_block_bitmap_loc(fs, group - 1))
+			prev_block = ext2fs_block_bitmap_loc(fs, group - 1);
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
 						 0, rem_grps, 1);
 		last_blk = ext2fs_group_last_block(fs, last_grp);
 	}
 
-	if (!fs->group_desc[group].bg_block_bitmap) {
+	if (!ext2fs_block_bitmap_loc(fs, group)) {
 		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
 						1, bmap, &new_blk);
 		if (retval == EXT2_ET_BLOCK_ALLOC_FAIL)
@@ -138,10 +138,10 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		if (retval)
 			return retval;
 		ext2fs_mark_block_bitmap2(bmap, new_blk);
-		fs->group_desc[group].bg_block_bitmap = new_blk;
+		ext2fs_block_bitmap_loc_set(fs, group, new_blk);
 		if (flexbg_size) {
 			dgrp_t gr = ext2fs_group_of_blk(fs, new_blk);
-			fs->group_desc[gr].bg_free_blocks_count--;
+			ext2fs_bg_free_blocks_count_set(fs, gr, ext2fs_bg_free_blocks_count(fs, gr) - 1);
 			ext2fs_free_blocks_count_add(fs->super, -1);
 			ext2fs_bg_flags_clear(fs, gr, EXT2_BG_BLOCK_UNINIT);
 			ext2fs_group_desc_csum_set(fs, gr);
@@ -149,15 +149,15 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	}
 
 	if (flexbg_size) {
-		blk_t prev_block = 0;
-		if (group && fs->group_desc[group-1].bg_inode_bitmap)
-			prev_block = fs->group_desc[group-1].bg_inode_bitmap;
+		blk64_t prev_block = 0;
+		if (group && ext2fs_inode_bitmap_loc(fs, group - 1))
+			prev_block = ext2fs_inode_bitmap_loc(fs, group - 1);
 		start_blk = flexbg_offset(fs, group, prev_block, bmap,
 						 flexbg_size, rem_grps, 1);
 		last_blk = ext2fs_group_last_block(fs, last_grp);
 	}
 
-	if (!fs->group_desc[group].bg_inode_bitmap) {
+	if (!ext2fs_inode_bitmap_loc(fs, group)) {
 		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
 						1, bmap, &new_blk);
 		if (retval == EXT2_ET_BLOCK_ALLOC_FAIL)
@@ -166,10 +166,10 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		if (retval)
 			return retval;
 		ext2fs_mark_block_bitmap2(bmap, new_blk);
-		fs->group_desc[group].bg_inode_bitmap = new_blk;
+		ext2fs_inode_bitmap_loc_set(fs, group, new_blk);
 		if (flexbg_size) {
 			dgrp_t gr = ext2fs_group_of_blk(fs, new_blk);
-			fs->group_desc[gr].bg_free_blocks_count--;
+			ext2fs_bg_free_blocks_count_set(fs, gr, ext2fs_bg_free_blocks_count(fs, gr) - 1);
 			ext2fs_free_blocks_count_add(fs->super, -1);
 			ext2fs_bg_flags_clear(fs, gr, EXT2_BG_BLOCK_UNINIT);
 			ext2fs_group_desc_csum_set(fs, gr);
@@ -180,9 +180,9 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	 * Allocate the inode table
 	 */
 	if (flexbg_size) {
-		blk_t prev_block = 0;
-		if (group && fs->group_desc[group-1].bg_inode_table)
-			prev_block = fs->group_desc[group-1].bg_inode_table;
+		blk64_t prev_block = 0;
+		if (group && ext2fs_inode_table_loc(fs, group - 1))
+			prev_block = ext2fs_inode_table_loc(fs, group - 1);
 		group_blk = flexbg_offset(fs, group, prev_block, bmap,
 						 flexbg_size * 2,
 						 fs->inode_blocks_per_group *
@@ -191,7 +191,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		last_blk = ext2fs_group_last_block(fs, last_grp);
 	}
 
-	if (!fs->group_desc[group].bg_inode_table) {
+	if (!ext2fs_inode_table_loc(fs, group)) {
 		retval = ext2fs_get_free_blocks(fs, group_blk, last_blk,
 						fs->inode_blocks_per_group,
 						bmap, &new_blk);
@@ -203,14 +203,14 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 			ext2fs_mark_block_bitmap2(bmap, blk);
 			if (flexbg_size) {
 				dgrp_t gr = ext2fs_group_of_blk(fs, blk);
-				fs->group_desc[gr].bg_free_blocks_count--;
+				ext2fs_bg_free_blocks_count_set(fs, gr, ext2fs_bg_free_blocks_count(fs, gr) - 1);
 				ext2fs_free_blocks_count_add(fs->super, -1);
 				ext2fs_bg_flags_clear(fs, gr,
 						     EXT2_BG_BLOCK_UNINIT);
 				ext2fs_group_desc_csum_set(fs, gr);
 			}
 		}
-		fs->group_desc[group].bg_inode_table = new_blk;
+		ext2fs_inode_table_loc_set(fs, group, new_blk);
 	}
 	ext2fs_group_desc_csum_set(fs, group);
 	return 0;

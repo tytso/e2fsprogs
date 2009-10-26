@@ -267,8 +267,8 @@ static void mark_table_blocks(ext2_filsys fs)
 		/*
 		 * Mark the blocks used for the inode table
 		 */
-		if (fs->group_desc[i].bg_inode_table) {
-			for (j = 0, b = fs->group_desc[i].bg_inode_table;
+		if (ext2fs_inode_table_loc(fs, i)) {
+			for (j = 0, b = ext2fs_inode_table_loc(fs, i);
 			     j < (unsigned) fs->inode_blocks_per_group;
 			     j++, b++)
 				ext2fs_mark_block_bitmap2(meta_block_map, b);
@@ -277,17 +277,17 @@ static void mark_table_blocks(ext2_filsys fs)
 		/*
 		 * Mark block used for the block bitmap
 		 */
-		if (fs->group_desc[i].bg_block_bitmap) {
+		if (ext2fs_block_bitmap_loc(fs, i)) {
 			ext2fs_mark_block_bitmap2(meta_block_map,
-				     fs->group_desc[i].bg_block_bitmap);
+				     ext2fs_block_bitmap_loc(fs, i));
 		}
 
 		/*
 		 * Mark block used for the inode bitmap
 		 */
-		if (fs->group_desc[i].bg_inode_bitmap) {
+		if (ext2fs_inode_bitmap_loc(fs, i)) {
 			ext2fs_mark_block_bitmap2(meta_block_map,
-				 fs->group_desc[i].bg_inode_bitmap);
+				 ext2fs_inode_bitmap_loc(fs, i));
 		}
 	}
 }

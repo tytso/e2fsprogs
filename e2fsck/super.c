@@ -458,7 +458,6 @@ void check_super_block(e2fsck_t ctx)
 	ext2_filsys fs = ctx->fs;
 	blk_t	first_block, last_block;
 	struct ext2_super_block *sb = fs->super;
-	struct ext2_group_desc *gd;
 	problem_t	problem;
 	blk_t	blocks_per_group = fs->super->s_blocks_per_group;
 	blk_t	bpg_max;
@@ -587,7 +586,7 @@ void check_super_block(e2fsck_t ctx)
 
 	csum_flag = EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 					       EXT4_FEATURE_RO_COMPAT_GDT_CSUM);
-	for (i = 0, gd=fs->group_desc; i < fs->group_desc_count; i++, gd++) {
+	for (i = 0; i < fs->group_desc_count; i++) {
 		pctx.group = i;
 
 		if (!EXT2_HAS_INCOMPAT_FEATURE(fs->super,
@@ -596,43 +595,43 @@ void check_super_block(e2fsck_t ctx)
 			last_block = ext2fs_group_last_block(fs, i);
 		}
 
-		if ((gd->bg_block_bitmap < first_block) ||
-		    (gd->bg_block_bitmap > last_block)) {
-			pctx.blk = gd->bg_block_bitmap;
+		if ((ext2fs_block_bitmap_loc(fs, i) < first_block) ||
+		    (ext2fs_block_bitmap_loc(fs, i) > last_block)) {
+			pctx.blk = ext2fs_block_bitmap_loc(fs, i);
 			if (fix_problem(ctx, PR_0_BB_NOT_GROUP, &pctx))
-				gd->bg_block_bitmap = 0;
+				ext2fs_block_bitmap_loc_set(fs, i, 0);
 		}
-		if (gd->bg_block_bitmap == 0) {
+		if (ext2fs_block_bitmap_loc(fs, i) == 0) {
 			ctx->invalid_block_bitmap_flag[i]++;
 			ctx->invalid_bitmaps++;
 		}
-		if ((gd->bg_inode_bitmap < first_block) ||
-		    (gd->bg_inode_bitmap > last_block)) {
-			pctx.blk = gd->bg_inode_bitmap;
+		if ((ext2fs_inode_bitmap_loc(fs, i) < first_block) ||
+		    (ext2fs_inode_bitmap_loc(fs, i) > last_block)) {
+			pctx.blk = ext2fs_inode_bitmap_loc(fs, i);
 			if (fix_problem(ctx, PR_0_IB_NOT_GROUP, &pctx))
-				gd->bg_inode_bitmap = 0;
+				ext2fs_inode_bitmap_loc_set(fs, i, 0);
 		}
-		if (gd->bg_inode_bitmap == 0) {
+		if (ext2fs_inode_bitmap_loc(fs, i) == 0) {
 			ctx->invalid_inode_bitmap_flag[i]++;
 			ctx->invalid_bitmaps++;
 		}
-		if ((gd->bg_inode_table < first_block) ||
-		    ((gd->bg_inode_table +
+		if ((ext2fs_inode_table_loc(fs, i) < first_block) ||
+		    ((ext2fs_inode_table_loc(fs, i) +
 		      fs->inode_blocks_per_group - 1) > last_block)) {
-			pctx.blk = gd->bg_inode_table;
+			pctx.blk = ext2fs_inode_table_loc(fs, i);
 			if (fix_problem(ctx, PR_0_ITABLE_NOT_GROUP, &pctx))
-				gd->bg_inode_table = 0;
+				ext2fs_inode_table_loc_set(fs, i, 0);
 		}
-		if (gd->bg_inode_table == 0) {
+		if (ext2fs_inode_table_loc(fs, i) == 0) {
 			ctx->invalid_inode_table_flag[i]++;
 			ctx->invalid_bitmaps++;
 		}
-		free_blocks += gd->bg_free_blocks_count;
-		free_inodes += gd->bg_free_inodes_count;
+		free_blocks += ext2fs_bg_free_blocks_count(fs, i);
+		free_inodes += ext2fs_bg_free_inodes_count(fs, i);
 
-		if ((gd->bg_free_blocks_count > sb->s_blocks_per_group) ||
-		    (gd->bg_free_inodes_count > sb->s_inodes_per_group) ||
-		    (gd->bg_used_dirs_count > sb->s_inodes_per_group))
+		if ((ext2fs_bg_free_blocks_count(fs, i) > sb->s_blocks_per_group) ||
+		    (ext2fs_bg_free_inodes_count(fs, i) > sb->s_inodes_per_group) ||
+		    (ext2fs_bg_used_dirs_count(fs, i) > sb->s_inodes_per_group))
 			ext2fs_unmark_valid(fs);
 
 		should_be = 0;
@@ -640,7 +639,7 @@ void check_super_block(e2fsck_t ctx)
 			if (fix_problem(ctx, PR_0_GDT_CSUM, &pctx)) {
 				ext2fs_bg_flags_clear(fs, i, EXT2_BG_BLOCK_UNINIT);
 				ext2fs_bg_flags_clear(fs, i, EXT2_BG_INODE_UNINIT);
-				gd->bg_itable_unused = 0;
+				ext2fs_bg_itable_unused_set(fs, i, 0);
 				should_be = 1;
 			}
 			ext2fs_unmark_valid(fs);
@@ -649,11 +648,11 @@ void check_super_block(e2fsck_t ctx)
 		if (!csum_flag &&
 		    (ext2fs_bg_flags_test(fs, i, EXT2_BG_BLOCK_UNINIT) ||
 		     ext2fs_bg_flags_test(fs, i, EXT2_BG_INODE_UNINIT) ||
-		     gd->bg_itable_unused != 0)){
+		     ext2fs_bg_itable_unused(fs, i) != 0)) {
 			if (fix_problem(ctx, PR_0_GDT_UNINIT, &pctx)) {
 				ext2fs_bg_flags_clear(fs, i, EXT2_BG_BLOCK_UNINIT);
 				ext2fs_bg_flags_clear(fs, i, EXT2_BG_INODE_UNINIT);
-				gd->bg_itable_unused = 0;
+				ext2fs_bg_itable_unused_set(fs, i, 0);
 				should_be = 1;
 			}
 			ext2fs_unmark_valid(fs);
@@ -678,11 +677,11 @@ void check_super_block(e2fsck_t ctx)
 		}
 
 		if (csum_flag &&
-		    (gd->bg_itable_unused > gd->bg_free_inodes_count ||
-		     gd->bg_itable_unused > sb->s_inodes_per_group)) {
-			pctx.blk = gd->bg_itable_unused;
+		    (ext2fs_bg_itable_unused(fs, i) > ext2fs_bg_free_inodes_count(fs, i) ||
+		     ext2fs_bg_itable_unused(fs, i) > sb->s_inodes_per_group)) {
+			pctx.blk = ext2fs_bg_itable_unused(fs, i);
 			if (fix_problem(ctx, PR_0_GDT_ITABLE_UNUSED, &pctx)) {
-				gd->bg_itable_unused = 0;
+				ext2fs_bg_itable_unused_set(fs, i, 0);
 				should_be = 1;
 			}
 			ext2fs_unmark_valid(fs);

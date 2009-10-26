@@ -261,7 +261,7 @@ static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
 	block = *blocknr;
 	ext2fs_unmark_block_bitmap2(fs->block_map, block);
 	group = ext2fs_group_of_blk(fs, block);
-	fs->group_desc[group].bg_free_blocks_count++;
+	ext2fs_bg_free_blocks_count_set(fs, group, ext2fs_bg_free_blocks_count(fs, group) + 1);
 	ext2fs_group_desc_csum_set(fs, group);
 	ext2fs_free_blocks_count_add(fs->super, 1);
 	return 0;
@@ -980,10 +980,10 @@ static int get_move_bitmaps(ext2_filsys fs, int new_ino_blks_per_grp,
 		return retval;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		start_blk = fs->group_desc[i].bg_inode_table +
+		start_blk = ext2fs_inode_table_loc(fs, i) +
 					fs->inode_blocks_per_group;
 
-		end_blk = fs->group_desc[i].bg_inode_table +
+		end_blk = ext2fs_inode_table_loc(fs, i) +
 					new_ino_blks_per_grp;
 
 		for (j = start_blk; j < end_blk; j++) {
@@ -1019,9 +1019,9 @@ static int ext2fs_is_meta_block(ext2_filsys fs, blk_t blk)
 {
 	dgrp_t group;
 	group = ext2fs_group_of_blk(fs, blk);
-	if (fs->group_desc[group].bg_block_bitmap == blk)
+	if (ext2fs_block_bitmap_loc(fs, group) == blk)
 		return 1;
-	if (fs->group_desc[group].bg_inode_bitmap == blk)
+	if (ext2fs_inode_bitmap_loc(fs, group) == blk)
 		return 1;
 	return 0;
 }
@@ -1231,20 +1231,20 @@ static int group_desc_scan_and_fix(ext2_filsys fs, ext2fs_block_bitmap bmap)
 	blk_t blk, new_blk;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		blk = fs->group_desc[i].bg_block_bitmap;
+		blk = ext2fs_block_bitmap_loc(fs, i);
 		if (ext2fs_test_block_bitmap2(bmap, blk)) {
 			new_blk = translate_block(blk);
 			if (!new_blk)
 				continue;
-			fs->group_desc[i].bg_block_bitmap = new_blk;
+			ext2fs_block_bitmap_loc_set(fs, i, new_blk);
 		}
 
-		blk = fs->group_desc[i].bg_inode_bitmap;
+		blk = ext2fs_inode_bitmap_loc(fs, i);
 		if (ext2fs_test_block_bitmap2(bmap, blk)) {
 			new_blk = translate_block(blk);
 			if (!new_blk)
 				continue;
-			fs->group_desc[i].bg_inode_bitmap = new_blk;
+			ext2fs_inode_bitmap_loc_set(fs, i, new_blk);
 		}
 	}
 	return 0;
@@ -1284,7 +1284,7 @@ static int expand_inode_table(ext2_filsys fs, unsigned long new_ino_size)
 	tmp_new_itable = new_itable;
 
 	for (i = 0; i < fs->group_desc_count; i++) {
-		blk = fs->group_desc[i].bg_inode_table;
+		blk = ext2fs_inode_table_loc(fs, i);
 		retval = io_channel_read_blk64(fs->io, blk,
 				fs->inode_blocks_per_group, old_itable);
 		if (retval)
@@ -1345,8 +1345,8 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 		count++;
 		if ((count == fs->super->s_blocks_per_group) ||
 		    (blk == ext2fs_blocks_count(fs->super)-1)) {
-			fs->group_desc[group++].bg_free_blocks_count =
-				group_free;
+			ext2fs_bg_free_blocks_count_set(fs, group++,
+							group_free);
 			count = 0;
 			group_free = 0;
 		}
@@ -1370,8 +1370,8 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 		count++;
 		if ((count == fs->super->s_inodes_per_group) ||
 		    (ino == fs->super->s_inodes_count)) {
-			fs->group_desc[group++].bg_free_inodes_count =
-				group_free;
+			ext2fs_bg_free_inodes_count_set(fs, group++,
+							group_free);
 			count = 0;
 			group_free = 0;
 		}

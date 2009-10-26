@@ -133,9 +133,9 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 				new_fs->super->s_reserved_gdt_blocks;
 
 		input.group = i;
-		input.block_bitmap = new_fs->group_desc[i].bg_block_bitmap;
-		input.inode_bitmap = new_fs->group_desc[i].bg_inode_bitmap;
-		input.inode_table = new_fs->group_desc[i].bg_inode_table;
+		input.block_bitmap = ext2fs_block_bitmap_loc(new_fs, i);
+		input.inode_bitmap = ext2fs_inode_bitmap_loc(new_fs, i);
+		input.inode_table = ext2fs_inode_table_loc(new_fs, i);
 		input.blocks_count = sb->s_blocks_per_group;
 		if (i == new_fs->group_desc_count-1) {
 			input.blocks_count = ext2fs_blocks_count(new_fs->super) -
@@ -155,9 +155,9 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		printf("new group will reserve %d blocks\n",
 		       input.reserved_blocks);
 		printf("new group has %d free blocks\n",
-		       new_fs->group_desc[i].bg_free_blocks_count);
+		       ext2fs_bg_free_blocks_count(new_fs, i),
 		printf("new group has %d free inodes (%d blocks)\n",
-		       new_fs->group_desc[i].bg_free_inodes_count,
+		       ext2fs_bg_free_inodes_count(new_fs, i),
 		       new_fs->inode_blocks_per_group);
 		printf("Adding group #%d\n", input.group);
 #endif

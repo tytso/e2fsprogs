@@ -304,7 +304,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	}
 #else
 	super_shadow = fs->super;
-	group_shadow = fs->group_desc;
+	group_shadow = ext2fs_group_desc(fs, fs->group_desc, 0);
 #endif
 
 	/*

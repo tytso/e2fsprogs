@@ -59,10 +59,10 @@ static void check_block_uninit(ext2_filsys fs, ext2fs_block_bitmap map,
 		     (blk >= old_desc_blk) &&
 		     (blk < old_desc_blk + old_desc_blocks)) ||
 		    (new_desc_blk && (blk == new_desc_blk)) ||
-		    (blk == fs->group_desc[group].bg_block_bitmap) ||
-		    (blk == fs->group_desc[group].bg_inode_bitmap) ||
-		    (blk >= fs->group_desc[group].bg_inode_table &&
-		     (blk < fs->group_desc[group].bg_inode_table
+		    (blk == ext2fs_block_bitmap_loc(fs, group)) ||
+		    (blk == ext2fs_inode_bitmap_loc(fs, group)) ||
+		    (blk >= ext2fs_inode_table_loc(fs, group) &&
+		     (blk < ext2fs_inode_table_loc(fs, group)
 		      + fs->inode_blocks_per_group)))
 			ext2fs_fast_mark_block_bitmap2(map, blk);
 		else

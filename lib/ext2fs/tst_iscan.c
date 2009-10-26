@@ -188,7 +188,7 @@ static void check_map(void)
 		ext2fs_mark_block_bitmap2(touched_map, test_vec[i]);
 	}
 	for (i = 0; i < test_fs->group_desc_count; i++) {
-		for (j=0, blk = test_fs->group_desc[i].bg_inode_table;
+		for (j=0, blk = ext2fs_inode_table_loc(test_fs, i);
 		     j < test_fs->inode_blocks_per_group;
 		     j++, blk++) {
 			if (!ext2fs_test_block_bitmap2(touched_map, blk) &&

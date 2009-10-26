@@ -1011,7 +1011,7 @@ void e2fsck_move_ext3_journal(e2fsck_t ctx)
 	group = ext2fs_group_of_ino(fs, ino);
 	ext2fs_unmark_inode_bitmap2(fs->inode_map, ino);
 	ext2fs_mark_ib_dirty(fs);
-	fs->group_desc[group].bg_free_inodes_count++;
+	ext2fs_bg_free_inodes_count_set(fs, group, ext2fs_bg_free_inodes_count(fs, group) + 1);
 	ext2fs_group_desc_csum_set(fs, group);
 	fs->super->s_free_inodes_count++;
 	return;

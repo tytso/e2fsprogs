@@ -31,9 +31,9 @@ void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
 		ext2fs_mark_inode_bitmap2(fs->inode_map, ino);
 	else
 		ext2fs_unmark_inode_bitmap2(fs->inode_map, ino);
-	fs->group_desc[group].bg_free_inodes_count -= inuse;
+	ext2fs_bg_free_inodes_count_set(fs, group, ext2fs_bg_free_inodes_count(fs, group) - inuse);
 	if (isdir)
-		fs->group_desc[group].bg_used_dirs_count += inuse;
+		ext2fs_bg_used_dirs_count_set(fs, group, ext2fs_bg_used_dirs_count(fs, group) + inuse);
 
 	/* We don't strictly need to be clearing the uninit flag if inuse < 0
 	 * (i.e. freeing inodes) but it also means something is bad. */
@@ -41,13 +41,11 @@ void ext2fs_inode_alloc_stats2(ext2_filsys fs, ext2_ino_t ino,
 	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
 				       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
 		ext2_ino_t first_unused_inode =	fs->super->s_inodes_per_group -
-			fs->group_desc[group].bg_itable_unused +
+			ext2fs_bg_itable_unused(fs, group) +
 			group * fs->super->s_inodes_per_group + 1;
 
 		if (ino >= first_unused_inode)
-			fs->group_desc[group].bg_itable_unused =
-				group * fs->super->s_inodes_per_group +
-				fs->super->s_inodes_per_group - ino;
+			ext2fs_bg_itable_unused_set(fs, group, group * fs->super->s_inodes_per_group + fs->super->s_inodes_per_group - ino);
 		ext2fs_group_desc_csum_set(fs, group);
 	}
 
@@ -76,7 +74,7 @@ void ext2fs_block_alloc_stats2(ext2_filsys fs, blk64_t blk, int inuse)
 		ext2fs_mark_block_bitmap2(fs->block_map, blk);
 	else
 		ext2fs_unmark_block_bitmap2(fs->block_map, blk);
-	fs->group_desc[group].bg_free_blocks_count -= inuse;
+	ext2fs_bg_free_blocks_count_set(fs, group, ext2fs_bg_free_blocks_count(fs, group) - inuse);
 	ext2fs_bg_flags_clear(fs, group, EXT2_BG_BLOCK_UNINIT);
 	ext2fs_group_desc_csum_set(fs, group);
 

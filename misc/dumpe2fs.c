@@ -170,9 +170,9 @@ static void list_desc (ext2_filsys fs)
 		fputs(")", stdout);
 		print_bg_opts(fs, i);
 		if (fs->super->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM)
-			printf(_("  Checksum 0x%04x, unused inodes %d\n"),
-			       fs->group_desc[i].bg_checksum,
-			       fs->group_desc[i].bg_itable_unused);
+			printf(_("  Checksum 0x%04x, unused inodes %u\n"),
+			       ext2fs_bg_checksum(fs, i),
+			       ext2fs_bg_itable_unused(fs, i));
 		has_super = ((i==0) || super_blk);
 		if (has_super) {
 			printf (_("  %s superblock at "),
@@ -198,31 +198,31 @@ static void list_desc (ext2_filsys fs)
 		if (has_super)
 			fputc('\n', stdout);
 		fputs(_("  Block bitmap at "), stdout);
-		print_number(fs->group_desc[i].bg_block_bitmap);
-		diff = fs->group_desc[i].bg_block_bitmap - first_block;
+		print_number(ext2fs_block_bitmap_loc(fs, i));
+		diff = ext2fs_block_bitmap_loc(fs, i) - first_block;
 		if (diff >= 0)
 			printf(" (+%ld)", diff);
 		fputs(_(", Inode bitmap at "), stdout);
-		print_number(fs->group_desc[i].bg_inode_bitmap);
-		diff = fs->group_desc[i].bg_inode_bitmap - first_block;
+		print_number(ext2fs_inode_bitmap_loc(fs, i));
+		diff = ext2fs_inode_bitmap_loc(fs, i) - first_block;
 		if (diff >= 0)
 			printf(" (+%ld)", diff);
 		fputs(_("\n  Inode table at "), stdout);
-		print_range(fs->group_desc[i].bg_inode_table,
-			    fs->group_desc[i].bg_inode_table +
+		print_range(ext2fs_inode_table_loc(fs, i),
+			    ext2fs_inode_table_loc(fs, i) +
 			    inode_blocks_per_group - 1);
-		diff = fs->group_desc[i].bg_inode_table - first_block;
+		diff = ext2fs_inode_table_loc(fs, i) - first_block;
 		if (diff > 0)
 			printf(" (+%ld)", diff);
 		printf (_("\n  %u free blocks, %u free inodes, "
 			  "%u directories%s"),
-			fs->group_desc[i].bg_free_blocks_count,
-			fs->group_desc[i].bg_free_inodes_count,
-			fs->group_desc[i].bg_used_dirs_count,
-			fs->group_desc[i].bg_itable_unused ? "" : "\n");
-		if (fs->group_desc[i].bg_itable_unused)
+			ext2fs_bg_free_blocks_count(fs, i),
+			ext2fs_bg_free_inodes_count(fs, i),
+			ext2fs_bg_used_dirs_count(fs, i),
+			ext2fs_bg_itable_unused(fs, i) ? "" : "\n");
+		if (ext2fs_bg_itable_unused(fs, i))
 			printf (_(", %u unused inodes\n"),
-				fs->group_desc[i].bg_itable_unused);
+				ext2fs_bg_itable_unused(fs, i));
 		if (block_bitmap) {
 			fputs(_("  Free blocks: "), stdout);
 			ext2fs_get_block_bitmap_range2(fs->block_map,

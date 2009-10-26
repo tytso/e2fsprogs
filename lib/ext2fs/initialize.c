@@ -410,7 +410,7 @@ ipg_retry:
 			numblocks = super->s_inodes_per_group;
 			if (i == 0)
 				numblocks -= super->s_first_ino;
-			fs->group_desc[i].bg_itable_unused = numblocks;
+			ext2fs_bg_itable_unused_set(fs, i, numblocks);
 		}
 		numblocks = ext2fs_reserve_super_and_bgd(fs, i, fs->block_map);
 		if (fs->super->s_log_groups_per_flex)
@@ -419,10 +419,9 @@ ipg_retry:
 		ext2fs_free_blocks_count_set(super,
 					     ext2fs_free_blocks_count(super) +
 					     numblocks);
-		fs->group_desc[i].bg_free_blocks_count = numblocks;
-		fs->group_desc[i].bg_free_inodes_count =
-			fs->super->s_inodes_per_group;
-		fs->group_desc[i].bg_used_dirs_count = 0;
+		ext2fs_bg_free_blocks_count_set(fs, i, numblocks);
+		ext2fs_bg_free_inodes_count_set(fs, i, fs->super->s_inodes_per_group);
+		ext2fs_bg_used_dirs_count_set(fs, i, 0);
 		ext2fs_group_desc_csum_set(fs, i);
 	}
 

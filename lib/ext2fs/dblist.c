@@ -37,10 +37,10 @@ errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ext2_ino_t *ret_num_dirs)
 	num_dirs = 0;
 	max_dirs = fs->super->s_inodes_per_group;
 	for (i = 0; i < fs->group_desc_count; i++) {
-		if (fs->group_desc[i].bg_used_dirs_count > max_dirs)
+		if (ext2fs_bg_used_dirs_count(fs, i) > max_dirs)
 			num_dirs += max_dirs / 8;
 		else
-			num_dirs += fs->group_desc[i].bg_used_dirs_count;
+			num_dirs += ext2fs_bg_used_dirs_count(fs, i);
 	}
 	if (num_dirs > fs->super->s_inodes_count)
 		num_dirs = fs->super->s_inodes_count;

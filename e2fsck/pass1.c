@@ -2023,16 +2023,16 @@ static char *describe_illegal_block(ext2_filsys fs, blk_t block)
 				"of group %d", i);
 			break;
 		}
-		if (block == fs->group_desc[i].bg_block_bitmap) {
+		if (block == ext2fs_block_bitmap_loc(fs, i)) {
 			sprintf(problem, "is the block bitmap of group %d", i);
 			break;
 		}
-		if (block == fs->group_desc[i].bg_inode_bitmap) {
+		if (block == ext2fs_inode_bitmap_loc(fs, i)) {
 			sprintf(problem, "is the inode bitmap of group %d", i);
 			break;
 		}
-		if (block >= fs->group_desc[i].bg_inode_table &&
-		    (block < fs->group_desc[i].bg_inode_table
+		if (block >= ext2fs_inode_table_loc(fs, i) &&
+		    (block < ext2fs_inode_table_loc(fs, i)
 		     + fs->inode_blocks_per_group)) {
 			sprintf(problem, "is in the inode table of group %d",
 				i);
@@ -2322,22 +2322,22 @@ static int process_bad_block(ext2_filsys fs,
 			return 0;
 		}
 	skip_super:
-		if (blk == fs->group_desc[i].bg_block_bitmap) {
+		if (blk == ext2fs_block_bitmap_loc(fs, i)) {
 			if (fix_problem(ctx, PR_1_BB_BAD_BLOCK, pctx)) {
 				ctx->invalid_block_bitmap_flag[i]++;
 				ctx->invalid_bitmaps++;
 			}
 			return 0;
 		}
-		if (blk == fs->group_desc[i].bg_inode_bitmap) {
+		if (blk == ext2fs_inode_bitmap_loc(fs, i)) {
 			if (fix_problem(ctx, PR_1_IB_BAD_BLOCK, pctx)) {
 				ctx->invalid_inode_bitmap_flag[i]++;
 				ctx->invalid_bitmaps++;
 			}
 			return 0;
 		}
-		if ((blk >= fs->group_desc[i].bg_inode_table) &&
-		    (blk < (fs->group_desc[i].bg_inode_table +
+		if ((blk >= ext2fs_inode_table_loc(fs, i)) &&
+		    (blk < (ext2fs_inode_table_loc(fs, i) +
 			    fs->inode_blocks_per_group))) {
 			/*
 			 * If there are bad blocks in the inode table,
@@ -2520,8 +2520,8 @@ static void mark_table_blocks(e2fsck_t ctx)
 		/*
 		 * Mark the blocks used for the inode table
 		 */
-		if (fs->group_desc[i].bg_inode_table) {
-			for (j = 0, b = fs->group_desc[i].bg_inode_table;
+		if (ext2fs_inode_table_loc(fs, i)) {
+			for (j = 0, b = ext2fs_inode_table_loc(fs, i);
 			     j < fs->inode_blocks_per_group;
 			     j++, b++) {
 				if (ext2fs_test_block_bitmap2(ctx->block_found_map,
@@ -2543,34 +2543,34 @@ static void mark_table_blocks(e2fsck_t ctx)
 		/*
 		 * Mark block used for the block bitmap
 		 */
-		if (fs->group_desc[i].bg_block_bitmap) {
+		if (ext2fs_block_bitmap_loc(fs, i)) {
 			if (ext2fs_test_block_bitmap2(ctx->block_found_map,
-				     fs->group_desc[i].bg_block_bitmap)) {
-				pctx.blk = fs->group_desc[i].bg_block_bitmap;
+				     ext2fs_block_bitmap_loc(fs, i))) {
+				pctx.blk = ext2fs_block_bitmap_loc(fs, i);
 				if (fix_problem(ctx, PR_1_BB_CONFLICT, &pctx)) {
 					ctx->invalid_block_bitmap_flag[i]++;
 					ctx->invalid_bitmaps++;
 				}
 			} else {
 			    ext2fs_mark_block_bitmap2(ctx->block_found_map,
-				     fs->group_desc[i].bg_block_bitmap);
+				     ext2fs_block_bitmap_loc(fs, i));
 		    }
 
 		}
 		/*
 		 * Mark block used for the inode bitmap
 		 */
-		if (fs->group_desc[i].bg_inode_bitmap) {
+		if (ext2fs_inode_bitmap_loc(fs, i)) {
 			if (ext2fs_test_block_bitmap2(ctx->block_found_map,
-				     fs->group_desc[i].bg_inode_bitmap)) {
-				pctx.blk = fs->group_desc[i].bg_inode_bitmap;
+				     ext2fs_inode_bitmap_loc(fs, i))) {
+				pctx.blk = ext2fs_inode_bitmap_loc(fs, i);
 				if (fix_problem(ctx, PR_1_IB_CONFLICT, &pctx)) {
 					ctx->invalid_inode_bitmap_flag[i]++;
 					ctx->invalid_bitmaps++;
 				}
 			} else {
 			    ext2fs_mark_block_bitmap2(ctx->block_found_map,
-				     fs->group_desc[i].bg_inode_bitmap);
+				     ext2fs_inode_bitmap_loc(fs, i));
 			}
 		}
 	}

@@ -36,7 +36,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	errcode_t	retval;
 	char 		*block_buf, *inode_buf;
 	int		csum_flag = 0;
-	blk_t		blk;
+	blk64_t		blk;
 	blk64_t		blk_itr = fs->super->s_first_data_block;
 	ext2_ino_t	ino_itr = 1;
 
@@ -88,7 +88,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 				for (j = nbits; j < fs->blocksize * 8; j++)
 					ext2fs_set_bit(j, block_buf);
 		}
-		blk = fs->group_desc[i].bg_block_bitmap;
+		blk = ext2fs_block_bitmap_loc(fs, i);
 		if (blk) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
 							block_buf);
@@ -111,7 +111,7 @@ static errcode_t write_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 		if (retval)
 			return retval;
 
-		blk = fs->group_desc[i].bg_inode_bitmap;
+		blk = ext2fs_inode_bitmap_loc(fs, i);
 		if (blk) {
 			retval = io_channel_write_blk64(fs->io, blk, 1,
 						      inode_buf);
@@ -144,9 +144,9 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 	int csum_flag = 0;
 	int do_image = fs->flags & EXT2_FLAG_IMAGE_FILE;
 	unsigned int	cnt;
-	blk_t	blk;
+	blk64_t	blk;
 	blk64_t	blk_itr = fs->super->s_first_data_block;
-	blk_t   blk_cnt;
+	blk64_t   blk_cnt;
 	ext2_ino_t ino_itr = 1;
 	ext2_ino_t ino_cnt;
 
@@ -235,7 +235,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 
 	for (i = 0; i < fs->group_desc_count; i++) {
 		if (block_bitmap) {
-			blk = fs->group_desc[i].bg_block_bitmap;
+			blk = ext2fs_block_bitmap_loc(fs, i);
 			if (csum_flag &&
 			    ext2fs_bg_flags_test(fs, i, EXT2_BG_BLOCK_UNINIT) &&
 			    ext2fs_group_desc_csum_verify(fs, i))
@@ -257,7 +257,7 @@ static errcode_t read_bitmaps(ext2_filsys fs, int do_inode, int do_block)
 			blk_itr += block_nbytes << 3;
 		}
 		if (inode_bitmap) {
-			blk = fs->group_desc[i].bg_inode_bitmap;
+			blk = ext2fs_inode_bitmap_loc(fs, i);
 			if (csum_flag &&
 			    ext2fs_bg_flags_test(fs, i, EXT2_BG_INODE_UNINIT) &&
 			    ext2fs_group_desc_csum_verify(fs, i))
