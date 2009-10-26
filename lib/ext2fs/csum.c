@@ -43,7 +43,7 @@ STATIC __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 		struct ext2_group_desc swabdesc = *desc;
 
 		/* Have to swab back to little-endian to do the checksum */
-		ext2fs_swap_group_desc(&swabdesc);
+		ext2fs_swap_group_desc2(fs, &swabdesc);
 		desc = &swabdesc;
 
 		group = ext2fs_swab32(group);
@@ -152,14 +152,14 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 {
 	__u16 crc1, crc2, crc3;
 	dgrp_t swabgroup;
-	struct ext2_group_desc *desc = &fs->group_desc[group];
+ 	struct ext2_group_desc *desc = ext2fs_group_desc(fs, fs->group_desc, group);
 	struct ext2_super_block *sb = fs->super;
 
 #ifdef WORDS_BIGENDIAN
 	struct ext2_group_desc swabdesc = fs->group_desc[group];
 
 	/* Have to swab back to little-endian to do the checksum */
-	ext2fs_swap_group_desc(&swabdesc);
+	ext2fs_swap_group_desc2(fs, fs->group_desc, &swabdesc);
 	desc = &swabdesc;
 
 	swabgroup = ext2fs_swab32(group);

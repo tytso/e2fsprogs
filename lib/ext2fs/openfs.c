@@ -322,7 +322,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 #ifdef WORDS_BIGENDIAN
 		gdp = (struct ext2_group_desc *) dest;
 		for (j=0; j < groups_per_block*first_meta_bg; j++)
-			ext2fs_swap_group_desc(gdp++);
+			ext2fs_swap_group_desc2(fs, gdp++);
 #endif
 		dest += fs->blocksize*first_meta_bg;
 	}
@@ -332,9 +332,11 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		if (retval)
 			goto cleanup;
 #ifdef WORDS_BIGENDIAN
-		gdp = (struct ext2_group_desc *) dest;
-		for (j=0; j < groups_per_block; j++)
-			ext2fs_swap_group_desc(gdp++);
+		for (j=0; j < groups_per_block; j++) {
+			/* The below happens to work... be careful. */
+			gdp = ext2fs_group_desc(fs, blk, j);
+			ext2fs_swap_group_desc2(fs, gdp);
+		}
 #endif
 		dest += fs->blocksize;
 	}

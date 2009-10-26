@@ -1272,6 +1272,7 @@ extern void ext2fs_swap_ext_attr_entry(struct ext2_ext_attr_entry *to_entry,
 				       struct ext2_ext_attr_entry *from_entry);
 extern void ext2fs_swap_super(struct ext2_super_block * super);
 extern void ext2fs_swap_group_desc(struct ext2_group_desc *gdp);
+extern void ext2fs_swap_group_desc2(ext2_filsys, struct ext2_group_desc *gdp);
 extern void ext2fs_swap_inode_full(ext2_filsys fs, struct ext2_inode_large *t,
 				   struct ext2_inode_large *f, int hostorder,
 				   int bufsize);

@@ -78,8 +78,9 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 
 }
 
-void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
+void ext2fs_swap_group_desc2(ext2_filsys fs, struct ext2_group_desc *gdp)
 {
+	/* Do the 32-bit parts first */
 	gdp->bg_block_bitmap = ext2fs_swab32(gdp->bg_block_bitmap);
 	gdp->bg_inode_bitmap = ext2fs_swab32(gdp->bg_inode_bitmap);
 	gdp->bg_inode_table = ext2fs_swab32(gdp->bg_inode_table);
@@ -89,7 +90,29 @@ void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
 	gdp->bg_flags = ext2fs_swab16(gdp->bg_flags);
 	gdp->bg_itable_unused = ext2fs_swab16(gdp->bg_itable_unused);
 	gdp->bg_checksum = ext2fs_swab16(gdp->bg_checksum);
+	/* If we're 32-bit, we're done */
+	if (fs && (!fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT))
+		return;
+
+	/* Swap the 64-bit parts */
+	struct ext4_group_desc *gdp4 = (struct ext4_group_desc *) gdp;
+	gdp4->bg_block_bitmap_hi = ext2fs_swab32(gdp4->bg_block_bitmap_hi);
+	gdp4->bg_inode_bitmap_hi = ext2fs_swab32(gdp4->bg_inode_bitmap_hi);
+	gdp4->bg_inode_table_hi = ext2fs_swab32(gdp4->bg_inode_table_hi);
+	gdp4->bg_free_blocks_count_hi =
+		ext2fs_swab16(gdp4->bg_free_blocks_count_hi);
+	gdp4->bg_free_inodes_count_hi =
+		ext2fs_swab16(gdp4->bg_free_inodes_count_hi);
+	gdp4->bg_used_dirs_count_hi =
+		ext2fs_swab16(gdp4->bg_used_dirs_count_hi);
+	gdp4->bg_itable_unused_hi = ext2fs_swab16(gdp4->bg_itable_unused_hi);
 }
+
+void ext2fs_swap_group_desc(struct ext2_group_desc *gdp)
+{
+	return ext2fs_swap_group_desc2(0, gdp);
+}
+
 
 void ext2fs_swap_ext_attr_header(struct ext2_ext_attr_header *to_header,
 				 struct ext2_ext_attr_header *from_header)

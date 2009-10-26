@@ -270,7 +270,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	struct ext2_super_block *super_shadow = 0;
 	struct ext2_group_desc *group_shadow = 0;
 #ifdef WORDS_BIGENDIAN
-	struct ext2_group_desc *s, *t;
+	ext2_group_desc *gdp;
 	dgrp_t		j;
 #endif
 	char	*group_ptr;
@@ -293,14 +293,13 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 				  &group_shadow);
 	if (retval)
 		goto errout;
-	memset(group_shadow, 0, (size_t) fs->blocksize *
+	memcpy(group_shadow, fs->group_desc, (size_t) fs->blocksize *
 	       fs->desc_blocks);
 
 	/* swap the group descriptors */
-	for (j=0, s=fs->group_desc, t=group_shadow;
-	     j < fs->group_desc_count; j++, t++, s++) {
-		*t = *s;
-		ext2fs_swap_group_desc(t);
+	for (j=0; j < fs->group_desc_count; j++) {
+		gdp = ext2fs_group_desc(fs, group_shadow, j);
+		ext2fs_swap_group_desc2(fs, gdp);
 	}
 #else
 	super_shadow = fs->super;
