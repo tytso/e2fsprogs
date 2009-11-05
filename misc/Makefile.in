@@ -11,6 +11,9 @@ INSTALL = @INSTALL@
 
 @MCONFIG@
 
+@LINUX_CMT@E4DEFRAG_PROG= e4defrag
+@LINUX_CMT@E4DEFRAG_MAN= e4defrag.8
+
 @IMAGER_CMT@E2IMAGE_PROG= e2image
 @IMAGER_CMT@E2IMAGE_MAN= e2image.8
 
@@ -100,7 +103,7 @@ COMPILE_ET=$(top_builddir)/lib/et/compile_et --build-tree
 @PROFILE_CMT@	$(Q) $(CC) $(ALL_CFLAGS) -g -pg -o profiled/$*.o -c $<
 
 all:: profiled $(SPROGS) $(UPROGS) $(USPROGS) $(SMANPAGES) $(UMANPAGES) \
-	$(FMANPAGES) $(LPROGS) e4defrag
+	$(FMANPAGES) $(LPROGS) $(E4DEFRAG_PROG)
 
 @PROFILE_CMT@all:: tune2fs.profiled blkid.profiled e2image.profiled \
 	e2undo.profiled mke2fs.profiled dumpe2fs.profiled fsck.profiled \
