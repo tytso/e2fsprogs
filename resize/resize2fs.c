@@ -1882,6 +1882,10 @@ static errcode_t fix_sb_journal_backup(ext2_filsys fs)
 	if (!(fs->super->s_feature_compat & EXT3_FEATURE_COMPAT_HAS_JOURNAL))
 		return 0;
 
+	/* External journal? Nothing to do. */
+	if (fs->super->s_journal_dev && !fs->super->s_journal_inum)
+		return 0;
+
 	retval = ext2fs_read_inode(fs, fs->super->s_journal_inum, &inode);
 	if (retval)
 		return retval;
