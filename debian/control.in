@@ -229,7 +229,7 @@ Description: ext2/ext3/ext4 file system libraries - headers and static libraries
 Package: e2fsprogs
 Essential: yes
 ifdef(`UTIL_LINUX_NG',
-``Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, util-linux (<< 2.15~rc1-1)
+``Pre-Depends: ${shlibs:Depends}, ${misc:Depends}, util-linux (>= 2.15~rc1-1)
 '',
 ``Pre-Depends: ${shlibs:Depends}, ${misc:Depends}
 '')dnl
