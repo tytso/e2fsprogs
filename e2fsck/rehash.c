@@ -751,12 +751,7 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino)
 
 	/* Sort the list */
 resort:
-	if (fd.compress)
-		qsort(fd.harray+2, fd.num_array-2,
-		      sizeof(struct hash_entry), ino_cmp);
-	else
-		qsort(fd.harray, fd.num_array,
-		      sizeof(struct hash_entry), hash_cmp);
+	qsort(fd.harray, fd.num_array, sizeof(struct hash_entry), hash_cmp);
 
 	/*
 	 * Look for duplicates
@@ -768,6 +763,11 @@ resort:
 		retval = 0;
 		goto errout;
 	}
+
+	/* Sort non-hashed directories by inode number */
+	if (fd.compress)
+		qsort(fd.harray+2, fd.num_array-2,
+		      sizeof(struct hash_entry), ino_cmp);
 
 	/*
 	 * Copy the directory entries.  In a htree directory these
