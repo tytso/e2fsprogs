@@ -67,7 +67,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs 1.41.8\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2009-07-11 17:49-0400\n"
-"PO-Revision-Date: 2009-07-28 17:29+0200\n"
+"PO-Revision-Date: 2009-11-24 21:32+0100\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -4937,7 +4937,7 @@ msgid ""
 "You requested a new size of %u blocks.\n"
 "\n"
 msgstr ""
-"Dotčený oddíl (nebo zařízení) je jen %'u (%'d k) bloků velké.\n"
+"Dotčený oddíl (nebo zařízení) je jen %'u (%dk) bloků velké.\n"
 "Požadovali jste novou velikost %'u bloků.\n"
 "\n"
 
@@ -5028,7 +5028,7 @@ msgstr "Při zjišťování podpory změny velikosti za běhu"
 #: resize/online.c:111
 #, c-format
 msgid "Performing an on-line resize of %s to %u (%dk) blocks.\n"
-msgstr "Provádím změnu velikosti za běhu %s na %'u (%'d k) bloků.\n"
+msgstr "Provádím změnu velikosti za běhu %s na %'u (%dk) bloků.\n"
 
 #: resize/online.c:121
 msgid "While trying to extend the last group"
