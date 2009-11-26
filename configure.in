@@ -63,6 +63,14 @@ AC_SUBST(E2FSPROGS_VERSION)
 AC_SUBST(E2FSPROGS_PKGVER)
 AC_CANONICAL_HOST
 dnl
+dnl Check to see if libdl exists for the sake of dlopen
+dnl
+DLOPEN_LIB=''
+AC_CHECK_LIB(dl, dlopen, 
+[DLOPEN_LIB=-ldl
+AC_DEFINE(HAVE_DLOPEN)])
+AC_SUBST(DLOPEN_LIB)
+dnl
 dnl Use diet libc
 dnl 
 WITH_DIET_LIBC=
@@ -817,14 +825,6 @@ dnl
 SOCKET_LIB=''
 AC_CHECK_LIB(socket, socket, [SOCKET_LIB=-lsocket])
 AC_SUBST(SOCKET_LIB)
-dnl
-dnl Check to see if libdl exists for the sake of dlopen
-dnl
-DLOPEN_LIB=''
-AC_CHECK_LIB(dl, dlopen, 
-[DLOPEN_LIB=-ldl
-AC_DEFINE(HAVE_DLOPEN)])
-AC_SUBST(DLOPEN_LIB)
 dnl
 dnl See if optreset exists
 dnl
