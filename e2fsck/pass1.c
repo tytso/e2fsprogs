@@ -1896,10 +1896,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 #endif
 		}
 	}
-	if (ctx->dirs_to_hash && pb.is_dir &&
-	    !(inode->i_flags & EXT2_INDEX_FL) &&
-	    ((inode->i_size / fs->blocksize) >= 3))
-		ext2fs_u32_list_add(ctx->dirs_to_hash, ino);
 
 	if (!pb.num_blocks && pb.is_dir) {
 		if (fix_problem(ctx, PR_1_ZERO_LENGTH_DIR, pctx)) {
@@ -1977,6 +1973,12 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		pctx->num = 0;
 	}
+
+	if (ctx->dirs_to_hash && pb.is_dir &&
+	    !(inode->i_flags & EXT2_INDEX_FL) &&
+	    ((inode->i_size / fs->blocksize) >= 3))
+		ext2fs_u32_list_add(ctx->dirs_to_hash, ino);
+
 out:
 	if (dirty_inode)
 		e2fsck_write_inode(ctx, ino, inode, "check_blocks");
