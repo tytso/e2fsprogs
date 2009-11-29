@@ -2628,6 +2628,10 @@ static errcode_t e2fsck_get_alloc_block(ext2_filsys fs, blk64_t goal,
 					  ctx->block_found_map, &new_block);
 		if (retval)
 			return retval;
+		if (fs->block_map) {
+			ext2fs_mark_block_bitmap(fs->block_map, new_block);
+			ext2fs_mark_bb_dirty(fs);
+		}
 	} else {
 		if (!fs->block_map) {
 			retval = ext2fs_read_block_bitmap(fs);
