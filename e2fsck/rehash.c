@@ -736,12 +736,24 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino)
 		fd.compress = 1;
 	fd.parent = 0;
 
+retry_nohash:
 	/* Read in the entire directory into memory */
 	retval = ext2fs_block_iterate2(fs, ino, 0, 0,
 				       fill_dir_block, &fd);
 	if (fd.err) {
 		retval = fd.err;
 		goto errout;
+	}
+
+	/* 
+	 * If the entries read are less than a block, then don't index
+	 * the directory
+	 */
+	if (!fd.compress && (fd.dir_size < (fs->blocksize - 24))) {
+		fd.compress = 1;
+		fd.dir_size = 0;
+		fd.num_array = 0;
+		goto retry_nohash;
 	}
 
 #if 0
