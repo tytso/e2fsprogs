@@ -1725,6 +1725,16 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			}
 			pb->fragmented = 1;
 		}
+		while (is_dir && ++pb->last_db_block < extent.e_lblk) {
+			pctx->errcode = ext2fs_add_dir_block(ctx->fs->dblist,
+							     pb->ino, 0,
+							     pb->last_db_block);
+			if (pctx->errcode) {
+				pctx->blk = 0;
+				pctx->num = pb->last_db_block;
+				goto failed_add_dir_block;
+			}
+		}
 		for (blk = extent.e_pblk, blockcnt = extent.e_lblk, i = 0;
 		     i < extent.e_len;
 		     blk++, blockcnt++, i++) {
@@ -1735,6 +1745,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 				if (pctx->errcode) {
 					pctx->blk = blk;
 					pctx->num = blockcnt;
+				failed_add_dir_block:
 					fix_problem(ctx, PR_1_ADD_DBLOCK, pctx);
 					/* Should never get here */
 					ctx->flags |= E2F_FLAG_ABORT;
@@ -1742,6 +1753,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 				}
 			}
 		}
+		if (is_dir && extent.e_len > 0)
+			pb->last_db_block = blockcnt - 1;
 		pb->num_blocks += extent.e_len;
 		pb->previous_block = extent.e_pblk + extent.e_len - 1;
 		start_block = extent.e_lblk + extent.e_len - 1;
