@@ -181,6 +181,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 		blk_t prev_block = 0;
 		if (group && fs->group_desc[group-1].bg_inode_table)
 			prev_block = fs->group_desc[group-1].bg_inode_table;
+		if (last_grp == fs->group_desc_count)
+			rem_grps = last_grp - group;
 		group_blk = flexbg_offset(fs, group, prev_block, bmap,
 						 flexbg_size * 2,
 						 fs->inode_blocks_per_group *
