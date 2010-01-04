@@ -1741,7 +1741,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	struct e2fsck_problem *ptr;
 	struct latch_descr *ldesc = 0;
 	const char *message;
-	int		def_yn, answer, ans;
+	int		def_yn, answer, ans, broken_system_clock;
 	int		print_answer = 0;
 	int		suppress = 0;
 
@@ -1752,6 +1752,15 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	}
 	if (!(ptr->flags & PR_CONFIG)) {
 		char	key[9], *new_desc;
+
+		if ((code == PR_0_FUTURE_SB_LAST_MOUNT) ||
+		    (code == PR_0_FUTURE_SB_LAST_WRITE)) {
+			profile_get_boolean(ctx->profile, "options",
+					    "broken_system_clock", 0, 0,
+					    &broken_system_clock);
+			if (broken_system_clock)
+				ptr->flags |= PR_PREEN_OK;
+		}
 
 		sprintf(key, "0x%06x", code);
 

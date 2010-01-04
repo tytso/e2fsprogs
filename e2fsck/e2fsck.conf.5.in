@@ -109,6 +109,19 @@ This can be disabled by setting
 to the
 boolean value of false.  This setting defaults to true.
 .TP
+.I broken_system_clock
+The
+.BR e2fsck (8)
+program has some hueristics that assume that the system clock is
+correct.  In addition, many system programs make similar assumptions.
+For example, the UUID library depends on time not going backwards in
+order for it to be able to make its guarantees about issuing universally
+unique ID's.  Systems with broken system clocks, are well, broken.
+However, broken system clocks, particularly in embedded systems, do
+exist.  If true, e2fsck will not abort a preen check if it detects a
+last mounted or last write time in the superblock in the future.  This
+setting defaults to false.
+.TP
 .I clear_test_fs_flag
 This boolean relation controls whether or not 
 .BR e2fsck (8)
