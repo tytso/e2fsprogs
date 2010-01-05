@@ -259,7 +259,8 @@ int main(int argc, char *argv[])
 	ext2_filsys fs = NULL;
 	char *device_name;
 	char *progname;
-	char c, *end;
+	char *end;
+	int c;
 
 	add_error_table(&et_ext2_error_table);
 	progname = argv[0];
