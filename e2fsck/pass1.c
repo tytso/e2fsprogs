@@ -2638,8 +2638,8 @@ static errcode_t e2fsck_get_alloc_block(ext2_filsys fs, blk64_t goal,
 	blk64_t		new_block;
 
 	if (ctx->block_found_map) {
-		retval = ext2fs_new_block2(fs, (blk_t) goal,
-					  ctx->block_found_map, &new_block);
+		retval = ext2fs_new_block2(fs, goal, ctx->block_found_map,
+					   &new_block);
 		if (retval)
 			return retval;
 	} else {
@@ -2649,7 +2649,7 @@ static errcode_t e2fsck_get_alloc_block(ext2_filsys fs, blk64_t goal,
 				return retval;
 		}
 
-		retval = ext2fs_new_block2(fs, (blk_t) goal, 0, &new_block);
+		retval = ext2fs_new_block2(fs, goal, 0, &new_block);
 		if (retval)
 			return retval;
 	}
@@ -2664,11 +2664,9 @@ static void e2fsck_block_alloc_stats(ext2_filsys fs, blk64_t blk, int inuse)
 
 	if (ctx->block_found_map) {
 		if (inuse > 0)
-			ext2fs_mark_block_bitmap2(ctx->block_found_map,
-						 (blk_t) blk);
+			ext2fs_mark_block_bitmap2(ctx->block_found_map, blk);
 		else
-			ext2fs_unmark_block_bitmap2(ctx->block_found_map,
-						   (blk_t) blk);
+			ext2fs_unmark_block_bitmap2(ctx->block_found_map, blk);
 	}
 }
 
