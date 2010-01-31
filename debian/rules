@@ -250,10 +250,8 @@ ${BUILDSTDSTAMP}: ${CFGSTDSTAMP}
 	$(MAKE) -C ${stdbuilddir} all
 	$(MAKE) -C ${stdbuilddir}/e2fsck e2fsck.static
 
-	( cd ${stdbuilddir}/doc && \
-	  texi2html -split_chapter ${topdir}/doc/libext2fs.texinfo )
-	( cd ${stdbuilddir}/lib/et && $(MAKE) com_err.info && \
-	  texi2html -split_chapter -expandinfo ${topdir}/lib/et/com_err.texinfo )
+	( cd ${stdbuilddir}/doc && $(MAKE) libext2fs_abt.html )
+	( cd ${stdbuilddir}/lib/et && $(MAKE) com_err.info com_err_abt.html )
 
   # specially-built MIPS libs
 ifneq ($(ismips),)
@@ -291,7 +289,7 @@ clean:
 	[ ! -f ${bfbuilddir}/Makefile ] || $(MAKE) -C ${bfbuilddir} distclean
 	[ ! -f ${staticbuilddir}/Makefile ] || $(MAKE) -C ${staticbuilddir} distclean
 	rm -rf ${stdbuilddir} ${bfbuilddir} ${staticbuilddir} ${mipsbuilddir} ${mipsbuilddir64}
-	rm -f doc/libext2fs/*.html lib/et/com_err/*.html debian/*.substvars
+	rm -f debian/*.substvars
 	dh_clean
 
 install: cleanup install-std
@@ -424,10 +422,10 @@ endif
 
   # HTML docs
 	$(INSTALL) -d ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
-	$(INSTALL) -p -m 0644 ${stdbuilddir}/doc/libext2fs/*.html \
+	$(INSTALL) -p -m 0644 ${stdbuilddir}/doc/*.html \
 	   ${debdir}/e2fslibs-dev/usr/share/doc/e2fslibs/html-info/
 	$(INSTALL) -d ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
-	$(INSTALL) -p -m 0644 ${stdbuilddir}/lib/et/com_err/*.html \
+	$(INSTALL) -p -m 0644 ${stdbuilddir}/lib/et/*.html \
 	   ${debdir}/comerr-dev/usr/share/doc/libcomerr${COMERR_SOVERSION}/html-info/
 
   # texinfo docs

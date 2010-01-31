@@ -214,9 +214,6 @@ errcode_t ext2fs_bmap2(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 	if (block < EXT2_NDIR_BLOCKS) {
 		if (bmap_flags & BMAP_SET) {
 			b = *phys_blk;
-#ifdef WORDS_BIGENDIAN
-			b = ext2fs_swab32(b);
-#endif
 			inode_bmap(inode, block) = b;
 			inode_dirty++;
 			goto done;
@@ -325,7 +322,7 @@ errcode_t ext2fs_bmap(ext2_filsys fs, ext2_ino_t ino, struct ext2_inode *inode,
 		      blk_t *phys_blk)
 {
 	errcode_t ret;
-	blk64_t	ret_blk;
+	blk64_t	ret_blk = *phys_blk;
 
 	ret = ext2fs_bmap2(fs, ino, inode, block_buf, bmap_flags, block,
 			    0, &ret_blk);

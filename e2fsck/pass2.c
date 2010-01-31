@@ -66,12 +66,6 @@ static int check_dir_block(ext2_filsys fs,
 static int allocate_dir_block(e2fsck_t ctx,
 			      struct ext2_db_entry *dir_blocks_info,
 			      char *buf, struct problem_context *pctx);
-static int update_dir_block(ext2_filsys fs,
-			    blk_t	*block_nr,
-			    e2_blkcnt_t blockcnt,
-			    blk_t	ref_block,
-			    int		ref_offset,
-			    void	*priv_data);
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino);
 static int htree_depth(struct dx_dir_info *dx_dir,
 		       struct dx_dirblock_info *dx_db);
@@ -1465,33 +1459,13 @@ static int allocate_dir_block(e2fsck_t ctx,
 	 * Finally, update the block pointers for the inode
 	 */
 	db->blk = blk;
-	pctx->errcode = ext2fs_block_iterate2(fs, db->ino, BLOCK_FLAG_HOLE,
-				      0, update_dir_block, db);
+	pctx->errcode = ext2fs_bmap2(fs, db->ino, &inode, 0, BMAP_SET,
+				     db->blockcnt, 0, &blk);
 	if (pctx->errcode) {
 		pctx->str = "ext2fs_block_iterate";
 		fix_problem(ctx, PR_2_ALLOC_DIRBOCK, pctx);
 		return 1;
 	}
 
-	return 0;
-}
-
-/*
- * This is a helper function for allocate_dir_block().
- */
-static int update_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
-			    blk_t	*block_nr,
-			    e2_blkcnt_t blockcnt,
-			    blk_t ref_block EXT2FS_ATTR((unused)),
-			    int ref_offset EXT2FS_ATTR((unused)),
-			    void *priv_data)
-{
-	struct ext2_db_entry *db;
-
-	db = (struct ext2_db_entry *) priv_data;
-	if (db->blockcnt == (int) blockcnt) {
-		*block_nr = db->blk;
-		return BLOCK_CHANGED;
-	}
 	return 0;
 }

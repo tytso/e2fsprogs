@@ -537,4 +537,5 @@ for getting us started with ``discuss,'' for which this package was
 originally written; and everyone I've talked into --- I mean, asked to read
 this document and the ``man'' pages.
 
+@contents
 @bye

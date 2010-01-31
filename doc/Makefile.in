@@ -14,7 +14,7 @@ INSTALL = @INSTALL@
 DVI=texi2dvi
 DVIPS=dvips -o "$@"
 INFO=@MAKEINFO@
-HTML=texi2html
+HTML=texi2html -split_chapter
 
 all:: libext2fs.info libext2fs.dvi
 
@@ -40,6 +40,13 @@ libext2fs.dvi: $(srcdir)/libext2fs.texinfo
 	$(E) "	TEXI2DVI $@"
 	-$(Q) $(DVI) $(srcdir)/libext2fs.texinfo
 
+libext2fs_abt.html: $(srcdir)/libext2fs.texinfo
+	$(E) "	TEXI2HTML $@"
+	-$(Q) $(HTML) $(srcdir)/libext2fs.texinfo
+	-$(Q) if test -d libext2fs ; then \
+		mv libext2fs/* . ; rmdir libext2fs ; \
+		fi
+
 .PHONY: distclean
 distclean:: clean
 	$(RM) -f Makefile
@@ -48,7 +55,7 @@ distclean:: clean
 clean:: clean-all
 
 .PHONY: clean-all
-clean-all:: clean-tex clean-backup clean-final clean-tarfiles
+clean-all:: clean-tex clean-backup clean-final clean-tarfiles clean-html
 
 .PHONY: clean-final
 clean-final::
@@ -65,3 +72,7 @@ clean-backup::
 .PHONY: clean-tarfiles
 clean-tarfiles::
 	$(RM) -f *.tar *.tar.gz *.tgz
+
+clean-html::
+	$(RM) -f *.html
+

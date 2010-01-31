@@ -83,6 +83,7 @@ struct process_block_struct {
 	blk_t		num_blocks;
 	blk_t		max_blocks;
 	e2_blkcnt_t	last_block;
+	e2_blkcnt_t	last_db_block;
 	int		num_illegal_blocks;
 	blk_t		previous_block;
 	struct ext2_inode *inode;
@@ -767,6 +768,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			}
 			pb.ino = EXT2_BAD_INO;
 			pb.num_blocks = pb.last_block = 0;
+			pb.last_db_block = -1;
 			pb.num_illegal_blocks = 0;
 			pb.suppress = 0; pb.clear = 0; pb.is_dir = 0;
 			pb.is_reg = 0; pb.fragmented = 0; pb.bbcheck = 0;
@@ -1724,6 +1726,16 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			}
 			pb->fragmented = 1;
 		}
+		while (is_dir && ++pb->last_db_block < extent.e_lblk) {
+			pctx->errcode = ext2fs_add_dir_block(ctx->fs->dblist,
+							     pb->ino, 0,
+							     pb->last_db_block);
+			if (pctx->errcode) {
+				pctx->blk = 0;
+				pctx->num = pb->last_db_block;
+				goto failed_add_dir_block;
+			}
+		}
 		for (blk = extent.e_pblk, blockcnt = extent.e_lblk, i = 0;
 		     i < extent.e_len;
 		     blk++, blockcnt++, i++) {
@@ -1734,6 +1746,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 				if (pctx->errcode) {
 					pctx->blk = blk;
 					pctx->num = blockcnt;
+				failed_add_dir_block:
 					fix_problem(ctx, PR_1_ADD_DBLOCK, pctx);
 					/* Should never get here */
 					ctx->flags |= E2F_FLAG_ABORT;
@@ -1741,6 +1754,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 				}
 			}
 		}
+		if (is_dir && extent.e_len > 0)
+			pb->last_db_block = blockcnt - 1;
 		pb->num_blocks += extent.e_len;
 		pb->previous_block = extent.e_pblk + extent.e_len - 1;
 		start_block = extent.e_lblk + extent.e_len - 1;
@@ -1812,6 +1827,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 	pb.ino = ino;
 	pb.num_blocks = 0;
 	pb.last_block = -1;
+	pb.last_db_block = -1;
 	pb.num_illegal_blocks = 0;
 	pb.suppress = 0; pb.clear = 0;
 	pb.fragmented = 0;
@@ -1876,26 +1892,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		return;
 	}
 
-	if (pb.is_dir) {
-		while (1) {
-			struct ext2_db_entry *entry;
-
-			if (ext2fs_dblist_get_last(fs->dblist, &entry) ||
-			    (entry->ino != ino) ||
-			    (entry->blk != 0) ||
-			    (entry->blockcnt == 0))
-				break;
-			/* printf("Dropping ino %lu blk %lu blockcnt %d\n",
-				  entry->ino, entry->blk, entry->blockcnt); */
-			ext2fs_dblist_drop_last(fs->dblist);
-			if (ext2fs_dblist_get_last(fs->dblist, &entry) ||
-			    (entry->ino != ino))
-				pb.last_block--;
-			else
-				pb.last_block = entry->blockcnt;
-		}
-	}
-
 	if (inode->i_flags & EXT2_INDEX_FL) {
 		if (handle_htree(ctx, pctx, ino, inode, block_buf)) {
 			inode->i_flags &= ~EXT2_INDEX_FL;
@@ -1906,10 +1902,6 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 #endif
 		}
 	}
-	if (ctx->dirs_to_hash && pb.is_dir &&
-	    !(inode->i_flags & EXT2_INDEX_FL) &&
-	    ((inode->i_size / fs->blocksize) >= 3))
-		ext2fs_u32_list_add(ctx->dirs_to_hash, ino);
 
 	if (!pb.num_blocks && pb.is_dir) {
 		if (fix_problem(ctx, PR_1_ZERO_LENGTH_DIR, pctx)) {
@@ -1987,6 +1979,12 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		}
 		pctx->num = 0;
 	}
+
+	if (ctx->dirs_to_hash && pb.is_dir &&
+	    !(inode->i_flags & EXT2_INDEX_FL) &&
+	    ((inode->i_size / fs->blocksize) >= 3))
+		ext2fs_u32_list_add(ctx->dirs_to_hash, ino);
+
 out:
 	if (dirty_inode)
 		e2fsck_write_inode(ctx, ino, inode, "check_blocks");
@@ -2087,31 +2085,8 @@ static int process_block(ext2_filsys fs,
 		return 0;
 	}
 
-	if (blk == 0) {
-		if (p->is_dir == 0) {
-			/*
-			 * Should never happen, since only directories
-			 * get called with BLOCK_FLAG_HOLE
-			 */
-#if DEBUG_E2FSCK
-			printf("process_block() called with blk == 0, "
-			       "blockcnt=%d, inode %lu???\n",
-			       blockcnt, p->ino);
-#endif
-			return 0;
-		}
-		if (blockcnt < 0)
-			return 0;
-		if (blockcnt * fs->blocksize < p->inode->i_size) {
-#if 0
-			printf("Missing block (#%d) in directory inode %lu!\n",
-			       blockcnt, p->ino);
-#endif
-			p->last_block = blockcnt;
-			goto mark_dir;
-		}
+	if (blk == 0)
 		return 0;
-	}
 
 #if 0
 	printf("Process_block, inode %lu, block %u, #%d\n", p->ino, blk,
@@ -2196,11 +2171,22 @@ static int process_block(ext2_filsys fs,
 		p->last_block = blockcnt;
 mark_dir:
 	if (p->is_dir && (blockcnt >= 0)) {
+		while (++p->last_db_block < blockcnt) {
+			pctx->errcode = ext2fs_add_dir_block(fs->dblist,
+							     p->ino, 0,
+							     p->last_db_block);
+			if (pctx->errcode) {
+				pctx->blk = 0;
+				pctx->num = p->last_db_block;
+				goto failed_add_dir_block;
+			}
+		}
 		pctx->errcode = ext2fs_add_dir_block(fs->dblist, p->ino,
 						    blk, blockcnt);
 		if (pctx->errcode) {
 			pctx->blk = blk;
 			pctx->num = blockcnt;
+		failed_add_dir_block:
 			fix_problem(ctx, PR_1_ADD_DBLOCK, pctx);
 			/* Should never get here */
 			ctx->flags |= E2F_FLAG_ABORT;
@@ -2642,6 +2628,10 @@ static errcode_t e2fsck_get_alloc_block(ext2_filsys fs, blk64_t goal,
 					   &new_block);
 		if (retval)
 			return retval;
+		if (fs->block_map) {
+			ext2fs_mark_block_bitmap2(fs->block_map, new_block);
+			ext2fs_mark_bb_dirty(fs);
+		}
 	} else {
 		if (!fs->block_map) {
 			retval = ext2fs_read_block_bitmap(fs);

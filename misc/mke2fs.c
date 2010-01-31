@@ -1877,7 +1877,7 @@ static void mke2fs_discard_blocks(ext2_filsys fs)
 	range[0] = 0;
 	range[1] = blocks * blocksize;
 
-	fd = open64(fs->device_name, O_RDONLY);
+	fd = open64(fs->device_name, O_RDWR);
 
 	/*
 	 * We don't care about whether the ioctl succeeds; it's only an

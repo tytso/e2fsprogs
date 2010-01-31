@@ -340,7 +340,7 @@ static void frag_report(const char *filename)
 				if (((i-EXT2_DIRECT-bpib) % (bpib*bpib)) == 0)
 					last_block++;
 				if (((i-EXT2_DIRECT-bpib-bpib*bpib) %
-							(bpib*bpib*bpib)) == 0)
+				     (((__u64) bpib)*bpib*bpib)) == 0)
 					last_block++;
 			}
 			rc = get_bmap(fd, i, &block);
