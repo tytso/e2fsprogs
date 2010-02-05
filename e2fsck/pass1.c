@@ -405,31 +405,75 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	const char		*old_op;
 	errcode_t		retval;
 	blk_t			blk;
+	blk64_t			first_dir_blk;
 	unsigned int		i, rec_len, not_device = 0;
+	int			extent_fs;
 
+	/*
+	 * If the mode looks OK, we believe it.  If the first block in
+	 * the i_block array is 0, this cannot be a directory. If the
+	 * inode is extent-mapped, it is still the case that the latter
+	 * cannot be 0 - the magic number in the extent header would make
+	 * it nonzero.
+	 */
 	if (LINUX_S_ISDIR(inode->i_mode) || LINUX_S_ISREG(inode->i_mode) ||
 	    LINUX_S_ISLNK(inode->i_mode) || inode->i_block[0] == 0)
 		return;
 
-	for (i=0; i < EXT2_N_BLOCKS; i++) {
-		blk = inode->i_block[i];
-		if (!blk)
-			continue;
-		if (i >= 4)
-			not_device++;
+	/* 
+	 * Check the block numbers in the i_block array for validity:
+	 * zero blocks are skipped (but the first one cannot be zero -
+	 * see above), other blocks are checked against the first and
+	 * max data blocks (from the the superblock) and against the
+	 * block bitmap. Any invalid block found means this cannot be
+	 * a directory.
+	 * 
+	 * If there are non-zero blocks past the fourth entry, then
+	 * this cannot be a device file: we remember that for the next
+	 * check.
+	 *
+	 * For extent mapped files, we don't do any sanity checking:
+	 * just try to get the phys block of logical block 0 and run
+	 * with it.
+	 */
 
-		if (blk < ctx->fs->super->s_first_data_block ||
-		    blk >= ctx->fs->super->s_blocks_count ||
-		    ext2fs_fast_test_block_bitmap(ctx->block_found_map, blk))
-			return;	/* Invalid block, can't be dir */
+	extent_fs = (ctx->fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS);
+	if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) {
+		/* extent mapped */
+		if  (ext2fs_bmap(ctx->fs, pctx->ino, inode, 0, 0, 0,
+				 &blk))
+			return;
+		/* device files are never extent mapped */
+		not_device++;
+	} else {
+		for (i=0; i < EXT2_N_BLOCKS; i++) {
+			blk = inode->i_block[i];
+			if (!blk)
+				continue;
+			if (i >= 4)
+				not_device++;
+
+			if (blk < ctx->fs->super->s_first_data_block ||
+			    blk >= ctx->fs->super->s_blocks_count ||
+			    ext2fs_fast_test_block_bitmap(ctx->block_found_map,
+							  blk))
+				return;	/* Invalid block, can't be dir */
+		}
+		blk = inode->i_block[0];
 	}
 
+	/*
+	 * If the mode says this is a device file and the i_links_count field
+	 * is sane and we have not ruled it out as a device file previously,
+	 * we declare it a device file, not a directory.
+	 */
 	if ((LINUX_S_ISCHR(inode->i_mode) || LINUX_S_ISBLK(inode->i_mode)) &&
 	    (inode->i_links_count == 1) && !not_device)
 		return;
 
+	/* read the first block */
 	old_op = ehandler_operation(_("reading directory block"));
-	retval = ext2fs_read_dir_block(ctx->fs, inode->i_block[0], buf);
+	retval = ext2fs_read_dir_block(ctx->fs, blk, buf);
 	ehandler_operation(0);
 	if (retval)
 		return;
