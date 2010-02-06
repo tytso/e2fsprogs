@@ -1819,6 +1819,8 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 				group_free;
 			ext2fs_group_desc_csum_set(fs, group);
 			group++;
+			if (group >= fs->group_desc_count)
+				break;
 			count = 0;
 			group_free = 0;
 			uninit = (fs->group_desc[group].bg_flags &
@@ -1859,6 +1861,8 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 				group_free;
 			ext2fs_group_desc_csum_set(fs, group);
 			group++;
+			if (group >= fs->group_desc_count)
+				break;
 			count = 0;
 			group_free = 0;
 			uninit = (fs->group_desc[group].bg_flags &
