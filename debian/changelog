@@ -1,3 +1,72 @@
+e2fsprogs (1.41.10-1) unstable; urgency=low
+
+  * New upstream release
+  * Fix resize2fs bug which causes it to access invalid memory
+  * Add libss support for libreadline.so.6
+  * Fix e2fsck's check for extent-mapped directory with an incorrect file type
+  * Add new e2fsck.conf configuration option:
+    default/broken_system_clock for system with broken CMOS hardware
+    clocks.  (Closes: #559776)
+  * Fix flex_bg inode table placement algorithm used by mke2fs for
+    certain specific file system sizes
+  * Add source lintian overrids for weak-library-dev-dependency
+  * Fix FTBFS problem caused by texi2html changing (again) its output
+    location.  (Closes: #552934)
+  * Make e2fsck to avoid rehashing directories which can fit in a
+    single directory block.
+  * Fix how e2fsck fixes sparse directories which are extent-mapped.
+  * Fix some big-endian bugs in e2fsck and libext2fs
+  * Teach e2fsck to detect and fix sparse extent-mapped directories
+  * Fix filefrag from core dumping on file systems with 8k block sizes
+  * E2fsck was depending on i_size to be correct to detect and fix
+    certain directory problems before actually fixing the
+    directory's i_size.  This caused certain rare corruptions to
+    require two runs of e2fsck to address.
+  * Update Czech, Indonesian, Polish and Vietnamese translations
+    (from the Translation Project)
+  * Fix e2fsck to find and correct duplicate directory entries in
+    non-indexed directories.
+  * Add support for calling BLKDISCARD to mke2fs.
+  * Enhance libext2fs so it works around bug in Linux version 2.6.19
+    and earlier where the /proc/swaps file was missing the header on
+    the first line.
+  * Fix resize2fs so it works correctly on file systems with external journals
+  * Fix libss so that it does not seg fault when using a readline
+    library which does not supply a readline_shutdown() function.
+  * Add a pre-depends for util-linux-ng (Closes: #551795)
+  * Update and clarify various man pages.
+  * Corrected dumpe2fs's usage message
+  * Teach libext2fs to ignore the high 32 bits of the i_blocks field
+    when huge_file file system feature is set, but the inode does not
+    have the HUGE_FILE_FL flag set.
+  * Change e2fsck to accept superblock times to be fudged by up to 24
+    hours by default.  Most distributions have fixed their init scripts,
+    but apparently now they have buggy virtualization scripts.  :-(  I
+    give up, too many buggy user space set ups out there.  (Closes: #557636)
+  * Fix e2fsck to correctly print > 32-bit i_blocks numbers in problem reports
+  * Improve e2fsck so it prints "Illegal indirect block" instead of
+    "Illegal block #-1"
+  * Teach mke2fs to get device topology information from blkid and use
+    it to populate the superblock stride and stripe sizes and warn if
+    the block device is misaligned
+  * Fix a file descriptor leak in debugfs when sourcing a command file
+  * Fix a file descriptor leak in fsck
+  * Round up the bitmap size to prevent spurious segmentation faults on
+    BSD platforms.
+  * Fix resize2fs to correctly calculate the minimum size needed, when
+    flex_bg is enabled, to prevent resize2fs -M from failing.
+  * Dumpe2fs now displays more information about the contents of the journal
+  * Make sure the libblkid1 and libblkid1-dbg packags have changelogs
+  * On low memory systems, e2fsck can print some very scary looking
+    error messages.  Clean up them up to avoid user panic.  (Closes: #509529)
+  * Enhance blkid to support .ko.gz files in the modules.dep parser
+  * Fix tune2fs -j for mounted exted-enabled file systems
+  * Use the feature name "extent" instead of "extents" in mke2fs.conf.
+    Both work, but the latter is what is documented in the man page.
+    (Closes: #540111)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sun, 07 Feb 2010 20:56:47 -0500
+
 e2fsprogs (1.41.9-1) unstable; urgency=low
 
   * New upstream release
