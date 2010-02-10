@@ -1819,6 +1819,8 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 			ext2fs_bg_free_blocks_count_set(fs, group, group_free);
 			ext2fs_group_desc_csum_set(fs, group);
 			group++;
+			if (group >= fs->group_desc_count)
+				break;
 			count = 0;
 			group_free = 0;
 			uninit = (ext2fs_bg_flags_test(fs, group, EXT2_BG_BLOCK_UNINIT)
@@ -1858,6 +1860,8 @@ static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 			ext2fs_bg_free_inodes_count_set(fs, group, group_free);
 			ext2fs_group_desc_csum_set(fs, group);
 			group++;
+			if (group >= fs->group_desc_count)
+				break;
 			count = 0;
 			group_free = 0;
 			uninit = ext2fs_bg_flags_test(fs, group, EXT2_BG_INODE_UNINIT);

@@ -36,7 +36,7 @@ static void ss_release_readline(ss_data *info)
 }
 
 /* Libraries we will try to use for readline/editline functionality */
-#define DEFAULT_LIBPATH "libreadline.so.5:libreadline.so.4:libreadline.so:libedit.so.2:libedit.so:libeditline.so.0:libeditline.so"
+#define DEFAULT_LIBPATH "libreadline.so.6:libreadline.so.5:libreadline.so.4:libreadline.so:libedit.so.2:libedit.so:libeditline.so.0:libeditline.so"
 
 void ss_get_readline(int sci_idx)
 {

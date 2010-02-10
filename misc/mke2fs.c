@@ -47,6 +47,7 @@ extern int optind;
 #endif
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <libgen.h>
 #include <limits.h>
 #include <blkid/blkid.h>
@@ -1035,6 +1036,11 @@ static int ext2fs_get_device_geometry(const char *file,
 	blkid_topology tp;
 	unsigned long min_io;
 	unsigned long opt_io;
+	struct stat statbuf;
+
+	/* Nothing to do for a regular file */
+	if (!stat(file, &statbuf) && S_ISREG(statbuf.st_mode))
+		return 0;
 
 	pr = blkid_new_probe_from_filename(file);
 	if (!pr)
@@ -1630,7 +1636,7 @@ got_size:
 	retval = ext2fs_get_device_geometry(device_name, &fs_param);
 	if (retval < 0) {
 		fprintf(stderr,
-			_("warning: Unable to get device geometry for %s"),
+			_("warning: Unable to get device geometry for %s\n"),
 			device_name);
 	} else if (retval) {
 		printf(_("%s alignment is offset by %lu bytes.\n"),
