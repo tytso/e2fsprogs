@@ -270,7 +270,7 @@ errcode_t ext2fs_flush(ext2_filsys fs)
 	struct ext2_super_block *super_shadow = 0;
 	struct ext2_group_desc *group_shadow = 0;
 #ifdef WORDS_BIGENDIAN
-	ext2_group_desc *gdp;
+	struct ext2_group_desc *gdp;
 	dgrp_t		j;
 #endif
 	char	*group_ptr;

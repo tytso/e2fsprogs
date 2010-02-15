@@ -33,6 +33,15 @@ STATIC __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 {
 	__u16 crc = 0;
 	struct ext2_group_desc *desc;
+	size_t size;
+
+	size = fs->super->s_desc_size;
+	if (size < EXT2_MIN_DESC_SIZE)
+		size = EXT2_MIN_DESC_SIZE;
+	if (size > sizeof(struct ext4_group_desc)) {
+		printf("%s: illegal s_desc_size(%zd)\n", __func__, size);
+		size = sizeof(struct ext4_group_desc);
+	}
 
 	desc = ext2fs_group_desc(fs, fs->group_desc, group);
 
@@ -40,11 +49,13 @@ STATIC __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 		int offset = offsetof(struct ext2_group_desc, bg_checksum);
 
 #ifdef WORDS_BIGENDIAN
-		struct ext2_group_desc swabdesc = *desc;
+		struct ext4_group_desc swabdesc;
 
 		/* Have to swab back to little-endian to do the checksum */
-		ext2fs_swap_group_desc2(fs, &swabdesc);
-		desc = &swabdesc;
+		memcpy(&swabdesc, desc, size);
+		ext2fs_swap_group_desc2(fs,
+					(struct ext2_group_desc *) &swabdesc);
+		desc = (struct ext2_group_desc *) &swabdesc;
 
 		group = ext2fs_swab32(group);
 #endif
@@ -54,9 +65,9 @@ STATIC __u16 ext2fs_group_desc_csum(ext2_filsys fs, dgrp_t group)
 		crc = ext2fs_crc16(crc, desc, offset);
 		offset += sizeof(desc->bg_checksum); /* skip checksum */
 		/* for checksum of struct ext4_group_desc do the rest...*/
-		if (offset < fs->super->s_desc_size) {
+		if (offset < size) {
 			crc = ext2fs_crc16(crc, (char *)desc + offset,
-				    fs->super->s_desc_size - offset);
+					   size - offset);
 		}
 	}
 
@@ -153,14 +164,23 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 	__u16 crc1, crc2, crc3;
 	dgrp_t swabgroup;
  	struct ext2_group_desc *desc = ext2fs_group_desc(fs, fs->group_desc, group);
+	size_t size;
 	struct ext2_super_block *sb = fs->super;
-
+	int offset = offsetof(struct ext2_group_desc, bg_checksum);
 #ifdef WORDS_BIGENDIAN
-	struct ext2_group_desc swabdesc = fs->group_desc[group];
+	struct ext4_group_desc swabdesc;
+#endif
 
+	size = fs->super->s_desc_size;
+	if (size < EXT2_MIN_DESC_SIZE)
+		size = EXT2_MIN_DESC_SIZE;
+	if (size > sizeof(struct ext4_group_desc))
+		size = sizeof(struct ext4_group_desc);
+#ifdef WORDS_BIGENDIAN
 	/* Have to swab back to little-endian to do the checksum */
-	ext2fs_swap_group_desc2(fs, fs->group_desc, &swabdesc);
-	desc = &swabdesc;
+	memcpy(&swabdesc, desc, size);
+	ext2fs_swap_group_desc2(fs, (struct ext2_group_desc *) &swabdesc);
+	desc = (struct ext2_group_desc *) &swabdesc;
 
 	swabgroup = ext2fs_swab32(group);
 #else
@@ -169,8 +189,12 @@ void print_csum(const char *msg, ext2_filsys fs, dgrp_t group)
 
 	crc1 = ext2fs_crc16(~0, sb->s_uuid, sizeof(fs->super->s_uuid));
 	crc2 = ext2fs_crc16(crc1, &swabgroup, sizeof(swabgroup));
-	crc3 = ext2fs_crc16(crc2, desc,
-			    offsetof(struct ext2_group_desc, bg_checksum));
+	crc3 = ext2fs_crc16(crc2, desc, offset);
+	offset += sizeof(desc->bg_checksum); /* skip checksum */
+	/* for checksum of struct ext4_group_desc do the rest...*/
+	if (offset < size)
+		crc3 = ext2fs_crc16(crc3, (char *)desc + offset, size - offset);
+
 	printf("%s: UUID %016Lx%016Lx(%04x), grp %u(%04x): %04x=%04x\n",
 	       msg, *(long long *)&sb->s_uuid, *(long long *)&sb->s_uuid[8],
 	       crc1, group, crc2, crc3, ext2fs_group_desc_csum(fs, group));
