@@ -1990,7 +1990,8 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		    /* allow allocated blocks to end of PAGE_SIZE */
 		    (size < (__u64)pb.last_block * fs->blocksize) &&
 		    (pb.last_block / blkpg * blkpg != pb.last_block ||
-		     size < (__u64)(pb.last_block & ~(blkpg-1)) *fs->blocksize))
+		     size < (__u64)(pb.last_block & ~(blkpg-1)) *fs->blocksize) &&
+		    !(inode->i_flags & EXT4_EOFBLOCKS_FL))
 			bad_size = 3;
 		else if (!(extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) &&
 			 size > ext2_max_sizes[fs->super->s_log_block_size])
