@@ -1694,7 +1694,6 @@ got_size:
 		       device_name, retval);
 		printf(_("This may result in very poor performance, "
 			  "(re)-partitioning suggested.\n"));
-		proceed_question();
 	}
 #endif
 
