@@ -789,8 +789,23 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		return 0;
 	if (optind != argc - 1)
 		usage(ctx);
-	if ((ctx->options & E2F_OPT_NO) && !bad_blocks_file &&
-	    !cflag && !(ctx->options & E2F_OPT_COMPRESS_DIRS))
+	if ((ctx->options & E2F_OPT_NO) &&
+	    (ctx->options & E2F_OPT_COMPRESS_DIRS)) {
+		com_err(ctx->program_name, 0,
+			_("The -n and -D options are incompatible."));
+		fatal_error(ctx, 0);
+	}
+	if ((ctx->options & E2F_OPT_NO) && cflag) {
+		com_err(ctx->program_name, 0,
+			_("The -n and -c options are incompatible."));
+		fatal_error(ctx, 0);
+	}
+	if ((ctx->options & E2F_OPT_NO) && bad_blocks_file) {
+		com_err(ctx->program_name, 0,
+			_("The -n and -l/-L options are incompatible."));
+		fatal_error(ctx, 0);
+	}
+	if (ctx->options & E2F_OPT_NO)
 		ctx->options |= E2F_OPT_READONLY;
 
 	ctx->io_options = strchr(argv[optind], '?');
