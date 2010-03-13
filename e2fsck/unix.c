@@ -230,8 +230,8 @@ static void check_mount(e2fsck_t ctx)
 	if (!ctx->interactive)
 		fatal_error(ctx, _("Cannot continue, aborting.\n\n"));
 	printf(_("\n\n\007\007\007\007WARNING!!!  "
-	       "Running e2fsck on a mounted filesystem may cause\n"
-	       "SEVERE filesystem damage.\007\007\007\n\n"));
+	       "The filesystem is mounted.   If you continue you ***WILL***\n"
+	       "cause ***SEVERE*** filesystem damage.\007\007\007\n\n"));
 	cont = ask_yn(_("Do you really want to continue"), -1);
 	if (!cont) {
 		printf (_("check aborted.\n"));
