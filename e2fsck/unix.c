@@ -1121,9 +1121,9 @@ failure:
 		__u32 blocksize = EXT2_BLOCK_SIZE(fs->super);
 		int need_restart = 0;
 
-		pctx.errcode = ext2fs_get_device_size(ctx->filesystem_name,
-						      blocksize,
-						      &ctx->num_blocks);
+		pctx.errcode = ext2fs_get_device_size2(ctx->filesystem_name,
+						       blocksize,
+						       &ctx->num_blocks);
 		/*
 		 * The floppy driver refuses to allow anyone else to
 		 * open the device if has been opened with O_EXCL;
@@ -1135,9 +1135,9 @@ failure:
 			ext2fs_close(fs);
 			need_restart++;
 			pctx.errcode =
-				ext2fs_get_device_size(ctx->filesystem_name,
-						       blocksize,
-						       &ctx->num_blocks);
+				ext2fs_get_device_size2(ctx->filesystem_name,
+							blocksize,
+							&ctx->num_blocks);
 		}
 		if (pctx.errcode == EXT2_ET_UNIMPLEMENTED)
 			ctx->num_blocks = 0;
