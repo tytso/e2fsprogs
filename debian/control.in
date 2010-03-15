@@ -7,7 +7,7 @@ ifdef(`UTIL_LINUX_NG',
 '',
 ``Build-Depends: texi2html (>= 1.76), gettext, texinfo, dc, pkg-config, dietlibc-dev (>> 0.30) [alpha amd64 arm hppa i386 ia64 powerpc ppc64 s390 sparc], debhelper (>= 7.0), m4
 '')dnl
-Standards-Version: 3.8.3
+Standards-Version: 3.8.4
 Homepage: http://e2fsprogs.sourceforge.net
 
 Package: e2fsck-static
