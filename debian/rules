@@ -227,17 +227,17 @@ ifeq ($(DEB_BUILD_ARCH),$(DEB_HOST_ARCH))
 	if type diet > /dev/null  2>&1 ; then \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
 		${topdir}/configure ${STATIC_CONF_FLAGS} \
-		--with-diet-libc CFLAGS="${CFLAGS} -fno-stack-protector"; \
+		--with-diet-libc CFLAGS="${CFLAGS}"; \
 	else \
 		cd ${staticbuilddir} && AWK=/usr/bin/awk \
 			${topdir}/configure ${STATIC_CONF_FLAGS} \
-			CFLAGS="${CFLAGS} -fno-stack-protector"; \
+			CFLAGS="${CFLAGS}"; \
 	fi
 else
 	cd ${staticbuilddir} && AWK=/usr/bin/awk CC="${DEB_HOST_GNU_TYPE}-gcc" \
 		${topdir}/configure ${COMMON_CONF_FLAGS} ${STATIC_CONF_FLAGS} \
 		--build=$(DEB_BUILD_GNU_TYPE) --host=$(DEB_HOST_GNU_TYPE) \
-		CFLAGS="${CFLAGS} -fno-stack-protector"
+		CFLAGS="${CFLAGS}"
 endif
 	mkdir -p ${STAMPSDIR}
 	touch ${CFGSTATICSTAMP}
