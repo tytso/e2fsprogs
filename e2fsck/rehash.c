@@ -763,7 +763,12 @@ retry_nohash:
 
 	/* Sort the list */
 resort:
-	qsort(fd.harray, fd.num_array, sizeof(struct hash_entry), hash_cmp);
+	if (fd.compress)
+		qsort(fd.harray+2, fd.num_array-2, sizeof(struct hash_entry),
+		      hash_cmp);
+	else
+		qsort(fd.harray, fd.num_array, sizeof(struct hash_entry),
+		      hash_cmp);
 
 	/*
 	 * Look for duplicates

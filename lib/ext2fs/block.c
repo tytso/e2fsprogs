@@ -406,6 +406,7 @@ errcode_t ext2fs_block_iterate3(ext2_filsys fs,
 				ctx.errcode = 0;
 				if (!(flags & BLOCK_FLAG_APPEND))
 					break;
+			next_block_set:
 				blk = 0;
 				r = (*ctx.func)(fs, &blk, blockcnt,
 						0, 0, priv_data);
@@ -419,7 +420,8 @@ errcode_t ext2fs_block_iterate3(ext2_filsys fs,
 						       (blk64_t) blk, 0);
 					if (ctx.errcode || (ret & BLOCK_ABORT))
 						break;
-					continue;
+					if (blk)
+						goto next_block_set;
 				}
 				break;
 			}

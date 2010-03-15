@@ -210,7 +210,7 @@ struct e2fsck_struct {
 	blk_t	use_superblock;	/* sb requested by user */
 	blk_t	superblock;	/* sb used to open fs */
 	int	blocksize;	/* blocksize */
-	blk_t	num_blocks;	/* Total number of blocks */
+	blk64_t	num_blocks;	/* Total number of blocks */
 	int	mount_flags;
 	blkid_cache blkid;	/* blkid cache */
 

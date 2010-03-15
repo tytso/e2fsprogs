@@ -242,16 +242,7 @@ in the file are added to the bad blocks list.)
 Open the filesystem read-only, and assume an answer of `no' to all
 questions.  Allows
 .B e2fsck
-to be used non-interactively.  (Note: if the 
-.BR \-c ,
-.BR \-l ,
-or
-.B \-L
-options are specified in addition to the 
-.B \-n
-option, then the filesystem will be opened read-write, to permit the
-bad-blocks list to be updated.  However, no other changes will be made
-to the filesystem.)  This option
+to be used non-interactively.  This option
 may not be specified at the same time as the 
 .B \-p
 or

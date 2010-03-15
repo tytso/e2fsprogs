@@ -1,3 +1,59 @@
+E2fsprogs 1.41.11 (March 14, 2010)
+==================================
+
+E2fsck will no longer give a fatal error and abort if the physical
+device has been resized beyond 2**32 blocks.  (Addresses Launchpad
+Bug: #521648)
+
+Debugfs has a bug fixed so that "logdump -b <blk>" now properly shows
+the allocation status of the block <blk>.  (Addresses Debian Bug:
+#564084)
+    
+E2fsck now prints a much more emphatic and hopefully scary message
+when a file system is detected as mounted while doing a read/write
+check of the filesystem.  Hopefully this will dissuade users from
+thinking, "surely that message doesn't apply to *me*" :-(
+
+E2fsck -n will now always open the file system read-only.  We now
+disallow certain combination of options which previously were manual
+exceptions; this is bad because it causes users to think they are
+smarter than they really are.  So "-n -c", "-n -l", "-n -L", and "-n
+-D" are no longer supported.  (Addresses Launchpad Bug: #537483)
+    
+In e2fsprogs 1.41.10, mke2fs would ask for confirmation to proceed if
+it detected a badly aligned partition.  Unfortunately, this broke some
+distribution installation scripts, so it now just prints the warning
+message and proceeds.  (Addresses Red Hat Bug: #569021. Addresses
+Launchpad Bug: #530071)
+    
+Mke2fs would take a long time to create very large journal files for
+ext4.  This was caused by a bug in ext2fs_block_iterate2(), which is
+now fixed.
+
+E2fsck now understands the EOFBLOCKS_FL flag which will be used in
+2.6.34 kernels to make e2fsck not complain about blocks deliberately
+fallocated() beyond an inode's i_size.
+
+E2fsprogs 1.41.10 introduced a regression (in commit b71e018) where
+e2fsck -fD can corrupt non-indexed directories when are exists one or
+more file names which alphabetically sort before ".".  This can happen
+with ext2 filesystems or for small directories (take less than a lock)
+which contain filenames that begin with a space or some other
+punctuation mark.  (Addresses Debian Bug: #573923, Addresses Launchpad
+Bug: #525114)
+
+
+Programmer's Notes
+------------------
+
+Add new test, f_rehash_dir, which checks to make sure e2fsck -D works
+correctly.
+    
+The libcom_err function now has support for Heimdal's com_right_r
+function().  (Addresses Sourceforge Bug: #2963865, Addresses Debian
+Bug: #558910)
+    
+
 E2fsprogs 1.41.10 (February 7, 2010)
 ====================================
 

@@ -619,7 +619,7 @@ static void dump_metadata_block(FILE *out_file, struct journal_source *source,
 		int offset;
 
 		super = current_fs->super;
-		offset = ((fs_blocknr - super->s_first_data_block) %
+		offset = ((block_to_dump - super->s_first_data_block) %
 			  super->s_blocks_per_group);
 
 		fprintf(out_file, "    (block bitmap for block %u: "

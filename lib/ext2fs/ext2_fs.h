@@ -276,10 +276,11 @@ struct ext2_dx_countlimit {
 #define EXT2_TOPDIR_FL			0x00020000 /* Top of directory hierarchies*/
 #define EXT4_HUGE_FILE_FL               0x00040000 /* Set to each huge file */
 #define EXT4_EXTENTS_FL 		0x00080000 /* Inode uses extents */
+#define EXT4_EOFBLOCKS_FL		0x00400000 /* Blocks allocated beyond EOF */
 #define EXT2_RESERVED_FL		0x80000000 /* reserved for ext2 lib */
 
-#define EXT2_FL_USER_VISIBLE		0x000BDFFF /* User visible flags */
-#define EXT2_FL_USER_MODIFIABLE		0x000080FF /* User modifiable flags */
+#define EXT2_FL_USER_VISIBLE		0x004BDFFF /* User visible flags */
+#define EXT2_FL_USER_MODIFIABLE		0x004B80FF /* User modifiable flags */
 
 /*
  * ioctl commands

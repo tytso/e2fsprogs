@@ -230,8 +230,8 @@ static void check_mount(e2fsck_t ctx)
 	if (!ctx->interactive)
 		fatal_error(ctx, _("Cannot continue, aborting.\n\n"));
 	printf(_("\n\n\007\007\007\007WARNING!!!  "
-	       "Running e2fsck on a mounted filesystem may cause\n"
-	       "SEVERE filesystem damage.\007\007\007\n\n"));
+	       "The filesystem is mounted.   If you continue you ***WILL***\n"
+	       "cause ***SEVERE*** filesystem damage.\007\007\007\n\n"));
 	cont = ask_yn(_("Do you really want to continue"), -1);
 	if (!cont) {
 		printf (_("check aborted.\n"));
@@ -790,8 +790,23 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		return 0;
 	if (optind != argc - 1)
 		usage(ctx);
-	if ((ctx->options & E2F_OPT_NO) && !bad_blocks_file &&
-	    !cflag && !(ctx->options & E2F_OPT_COMPRESS_DIRS))
+	if ((ctx->options & E2F_OPT_NO) &&
+	    (ctx->options & E2F_OPT_COMPRESS_DIRS)) {
+		com_err(ctx->program_name, 0,
+			_("The -n and -D options are incompatible."));
+		fatal_error(ctx, 0);
+	}
+	if ((ctx->options & E2F_OPT_NO) && cflag) {
+		com_err(ctx->program_name, 0,
+			_("The -n and -c options are incompatible."));
+		fatal_error(ctx, 0);
+	}
+	if ((ctx->options & E2F_OPT_NO) && bad_blocks_file) {
+		com_err(ctx->program_name, 0,
+			_("The -n and -l/-L options are incompatible."));
+		fatal_error(ctx, 0);
+	}
+	if (ctx->options & E2F_OPT_NO)
 		ctx->options |= E2F_OPT_READONLY;
 
 	ctx->io_options = strchr(argv[optind], '?');
@@ -1112,9 +1127,9 @@ failure:
 		__u32 blocksize = EXT2_BLOCK_SIZE(fs->super);
 		int need_restart = 0;
 
-		pctx.errcode = ext2fs_get_device_size(ctx->filesystem_name,
-						      blocksize,
-						      &ctx->num_blocks);
+		pctx.errcode = ext2fs_get_device_size2(ctx->filesystem_name,
+						       blocksize,
+						       &ctx->num_blocks);
 		/*
 		 * The floppy driver refuses to allow anyone else to
 		 * open the device if has been opened with O_EXCL;
@@ -1126,9 +1141,9 @@ failure:
 			ext2fs_close(fs);
 			need_restart++;
 			pctx.errcode =
-				ext2fs_get_device_size(ctx->filesystem_name,
-						       blocksize,
-						       &ctx->num_blocks);
+				ext2fs_get_device_size2(ctx->filesystem_name,
+							blocksize,
+							&ctx->num_blocks);
 		}
 		if (pctx.errcode == EXT2_ET_UNIMPLEMENTED)
 			ctx->num_blocks = 0;
