@@ -7,6 +7,7 @@ libcom_err.so.2 libcomerr2 #MINVER#
  com_err_hook@Base 1.01
  com_err_va@Base 1.01
  com_right@Base 1.34
+ com_right_r@Base 1.41.11
  error_message@Base 1.01
  error_table_name@Base 1.01
  et_list_lock@Base 1.41.2

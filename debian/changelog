@@ -1,3 +1,34 @@
+e2fsprogs (1.41.11-1) unstable; urgency=medium
+
+  * New upstream release
+  * Add Heimdal function com_right_r() to libcom_err (Closes: #558910)
+  * Allow e2fsck to run even if the physical device has more than 2**32 blocks
+  * Debugfs's "logdump -b <blk>" now properly shows the allocation status
+    of the block <blk>.  (Closes: #564084)
+  * Make e2fsck's "the filesystem is mounted" message is now more scary
+    to hopefully dissuade users from thinking, "surely that message
+    doesn't apply to *me*"  :-(
+  * e2fsck -n will now always open the file system read-only.   We now
+    disallow certain combination of options which previously were manual
+    exceptions; this is bad because it causes users to think they are
+    smarter than they really are.   So "-n -c", "-n -l", "-n -L", and
+    "-n -D" are no longer supported.
+  * If the partition is badly aligned, have mke2fs just print a warning
+    message and continue.  Previously mke2fs would ask to confirm, and
+    this broke distro installation scripts.
+  * Fix a bug in libext2fs caused the creation of very large journals
+    for ext4 to be _very_ slow.
+  * E2fsck now understands the EOFBLOCKS_FL flag which will be used in
+    2.6.34 kernels to make e2fsck not complain about blocks deliberately
+    fallocated() beyond an inode's i_size.
+  * Fix a bug in e2fsck which could cause e2fsck -D to corrupt
+    non-indexed directories.  (Closes: #572453)
+  * debian/rules: can be compiled statically with stack protector now.
+    (Closes: #573923)
+  * Update debian policy compliance to 3.8.4
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 15 Mar 2010 00:16:35 -0400
+
 e2fsprogs (1.41.10-1) unstable; urgency=low
 
   * New upstream release
