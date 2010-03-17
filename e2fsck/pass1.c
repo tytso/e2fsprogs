@@ -1710,6 +1710,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			pctx->blk2 = extent.e_lblk;
 			pctx->num = extent.e_len;
 			if (fix_problem(ctx, problem, pctx)) {
+				e2fsck_read_bitmaps(ctx);
 				pctx->errcode =
 					ext2fs_extent_delete(ehandle, 0);
 				if (pctx->errcode) {
