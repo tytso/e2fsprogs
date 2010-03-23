@@ -21,7 +21,6 @@
  * Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define _GNU_SOURCE
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
@@ -39,7 +38,7 @@
 
 void usage(void)
 {
-	printf("Usage: fallocate [-n] [-o offset] -l length filename\n");
+	printf("Usage: fallocate [-nt] [-o offset] -l length filename\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -93,8 +92,9 @@ int main(int argc, char **argv)
 	loff_t	offset = 0;
 	int	falloc_mode = 0;
 	int	error;
+	int	tflag = 0;
 
-	while ((opt = getopt(argc, argv, "nl:o:")) != -1) {
+	while ((opt = getopt(argc, argv, "nl:ot")) != -1) {
 		switch(opt) {
 		case 'n':
 			/* do not change filesize */
@@ -105,6 +105,9 @@ int main(int argc, char **argv)
 			break;
 		case 'o':
 			offset = cvtnum(optarg);
+			break;
+		case 't':
+			tflag++;
 			break;
 		default:
 			usage();
@@ -126,6 +129,16 @@ int main(int argc, char **argv)
 		usage();
 	}
 
+	if (tflag && (falloc_mode & FALLOC_FL_KEEP_SIZE)) {
+		printf("-n and -t options incompatible\n");
+		usage();
+	}
+
+	if (tflag && offset) {
+		printf("-n and -o options incompatible\n");
+		usage();
+	}
+
 	if (optind == argc) {
 		printf("Error: no filename specified\n");
 		usage();
@@ -134,13 +147,16 @@ int main(int argc, char **argv)
 	fname = argv[optind++];
 
 	/* Should we create the file if it doesn't already exist? */
-	fd = open(fname, O_WRONLY|O_DIRECTORY);
+	fd = open(fname, O_WRONLY|O_LARGEFILE);
 	if (fd < 0) {
 		perror("Error opening file");
 		exit(EXIT_FAILURE);
 	}
 
-	error = syscall(SYS_fallocate, fd, falloc_mode, offset, length);
+	if (tflag)
+		error = ftruncate(fd, length);
+	else
+		error = syscall(SYS_fallocate, fd, falloc_mode, offset, length);
 
 	if (error < 0) {
 		perror("fallocate failed");
