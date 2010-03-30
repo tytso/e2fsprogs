@@ -80,7 +80,7 @@ struct process_block_struct {
 	ext2_ino_t	ino;
 	unsigned	is_dir:1, is_reg:1, clear:1, suppress:1,
 				fragmented:1, compressed:1, bbcheck:1;
-	blk_t		num_blocks;
+	blk64_t		num_blocks;
 	blk_t		max_blocks;
 	e2_blkcnt_t	last_block;
 	e2_blkcnt_t	last_db_block;
