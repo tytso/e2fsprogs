@@ -345,6 +345,14 @@ int main (int argc, char ** argv)
 	min_size = calculate_minimum_resize_size(fs);
 
 	if (print_min_size) {
+		if (!force && ((fs->super->s_lastcheck < fs->super->s_mtime) ||
+			       (fs->super->s_state & EXT2_ERROR_FS) ||
+			       ((fs->super->s_state & EXT2_VALID_FS) == 0))) {
+			fprintf(stderr,
+				_("Please run 'e2fsck -f %s' first.\n\n"),
+				device_name);
+			exit(1);
+		}
 		printf(_("Estimated minimum size of the filesystem: %u\n"),
 		       min_size);
 		exit(0);
