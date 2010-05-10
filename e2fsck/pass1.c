@@ -2000,6 +2000,19 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 ((1ULL << (32 + EXT2_BLOCK_SIZE_BITS(fs->super))) - 1))
 			/* too big for an extent-based file - 32bit ee_block */
 			bad_size = 6;
+
+		/*
+		 * Check to see if the EOFBLOCKS flag is set where it
+		 * doesn't need to be.
+		 */
+		if ((inode->i_flags & EXT4_EOFBLOCKS_FL) &&
+		    (size <= (((__u64)pb.last_block + 1) * fs->blocksize))) {
+			pctx->blkcount = pb.last_block;
+			if (fix_problem(ctx, PR_1_EOFBLOCKS_FL_SET, pctx)) {
+				inode->i_flags &= ~EXT4_EOFBLOCKS_FL;
+				dirty_inode++;
+			}
+		}
 	}
 	/* i_size for symlinks is checked elsewhere */
 	if (bad_size && !LINUX_S_ISLNK(inode->i_mode)) {

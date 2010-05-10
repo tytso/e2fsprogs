@@ -517,6 +517,9 @@ struct problem_context {
 /* Extent node header invalid */
 #define PR_1_EXTENT_HEADER_INVALID	0x01005F
 
+/* EOFBLOCKS flag set when not necessary */
+#define PR_1_EOFBLOCKS_FL_SET		0x010060
+
 /*
  * Pass 1b errors
  */

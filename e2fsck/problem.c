@@ -885,6 +885,11 @@ static struct e2fsck_problem problem_table[] = {
 	  N_("@i %i has an invalid extent node (blk %b, lblk %c)\n"),
 	  PROMPT_CLEAR, 0 },
 
+	{ PR_1_EOFBLOCKS_FL_SET,
+	  N_("@i %i should not have EOFBLOCKS_FL set "
+	     "(size %Is, lblk %r)\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
+
 	/* Pass 1b errors */
 
 	/* Pass 1B: Rescan for duplicate/bad blocks */
