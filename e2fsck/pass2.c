@@ -1007,13 +1007,18 @@ out_htree:
 			}
 		}
 
-		if (!(ext2fs_test_inode_bitmap(ctx->inode_used_map,
-					       dirent->inode))) {
-			/*
-			 * If the inode is unused, offer to clear it.
-			 */
+		/* 
+		 * Offer to clear unused inodes; if we are going to be
+		 * restarting the scan due to bg_itable_unused being
+		 * wrong, then don't clear any inodes to avoid zapping
+		 * inodes that were skipped during pass1 due to an
+		 * incorrect bg_itable_unused; we'll get any real
+		 * problems after we restart.
+		 */
+		if (!(ctx->flags & E2F_FLAG_RESTART_LATER) &&
+		    !(ext2fs_test_inode_bitmap(ctx->inode_used_map,
+					       dirent->inode)))
 			problem = PR_2_UNUSED_INODE;
-		}
 
 		if (problem) {
 			if (fix_problem(ctx, problem, &cd->pctx)) {
