@@ -1270,7 +1270,7 @@ static void PRS(int argc, char *argv[])
 					_("Illegal number for flex_bg size"));
 				exit(1);
 			}
-			if (flex_bg_size < 2 ||
+			if (flex_bg_size < 1 ||
 			    (flex_bg_size & (flex_bg_size-1)) != 0) {
 				com_err(program_name, 0,
 					_("flex_bg size must be a power of 2"));
