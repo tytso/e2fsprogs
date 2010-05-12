@@ -1126,16 +1126,20 @@ void e2fsck_pass1(e2fsck_t ctx)
 		clear_problem_context(&pctx);
 		pctx.errcode = ext2fs_create_resize_inode(fs);
 		if (pctx.errcode) {
-			fix_problem(ctx, PR_1_RESIZE_INODE_CREATE, &pctx);
-			/* Should never get here */
-			ctx->flags |= E2F_FLAG_ABORT;
-			return;
+			if (!fix_problem(ctx, PR_1_RESIZE_INODE_CREATE,
+					 &pctx)) {
+				ctx->flags |= E2F_FLAG_ABORT;
+				return;
+			}
+			pctx.errcode = 0;
 		}
-		e2fsck_read_inode(ctx, EXT2_RESIZE_INO, inode,
-				  "recreate inode");
-		inode->i_mtime = ctx->now;
-		e2fsck_write_inode(ctx, EXT2_RESIZE_INO, inode,
-				   "recreate inode");
+		if (!pctx.errcode) {
+			e2fsck_read_inode(ctx, EXT2_RESIZE_INO, inode,
+					  "recreate inode");
+			inode->i_mtime = ctx->now;
+			e2fsck_write_inode(ctx, EXT2_RESIZE_INO, inode,
+					   "recreate inode");
+		}
 		fs->block_map = save_bmap;
 		ctx->flags &= ~E2F_FLAG_RESIZE_INODE;
 	}
@@ -1391,7 +1395,8 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 			pctx.errcode = ext2fs_write_ext_attr(fs, blk,
 							     block_buf);
 			if (pctx.errcode) {
-				fix_problem(ctx, PR_1_EXTATTR_WRITE, &pctx);
+				fix_problem(ctx, PR_1_EXTATTR_WRITE_ABORT,
+					    &pctx);
 				continue;
 			}
 		}
@@ -1505,7 +1510,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 
 	region = region_create(0, fs->blocksize);
 	if (!region) {
-		fix_problem(ctx, PR_1_EA_ALLOC_REGION, pctx);
+		fix_problem(ctx, PR_1_EA_ALLOC_REGION_ABORT, pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return 0;
 	}

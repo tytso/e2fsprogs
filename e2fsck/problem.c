@@ -703,7 +703,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Error reading Extended Attribute block while fixing refcount */
 	{ PR_1_EXTATTR_READ_ABORT,
 	  N_("Error reading @a @b %b (%m).  "),
-	  PROMPT_ABORT, 0 },
+	  PROMPT_NONE, PR_FATAL },
 
 	/* Extended attribute reference count incorrect */
 	{ PR_1_EXTATTR_REFCOUNT,
@@ -711,9 +711,9 @@ static struct e2fsck_problem problem_table[] = {
 	  PROMPT_FIX, 0 },
 
 	/* Error writing Extended Attribute block while fixing refcount */
-	{ PR_1_EXTATTR_WRITE,
+	{ PR_1_EXTATTR_WRITE_ABORT,
 	  N_("Error writing @a @b %b (%m).  "),
-	  PROMPT_ABORT, 0 },
+	  PROMPT_NONE, PR_FATAL },
 
 	/* Multiple EA blocks not supported */
 	{ PR_1_EA_MULTI_BLOCK,
@@ -721,9 +721,9 @@ static struct e2fsck_problem problem_table[] = {
 	  PROMPT_CLEAR, 0},
 
 	/* Error allocating EA region allocation structure */
-	{ PR_1_EA_ALLOC_REGION,
+	{ PR_1_EA_ALLOC_REGION_ABORT,
 	  N_("@A @a @b %b.  "),
-	  PROMPT_ABORT, 0},
+	  PROMPT_NONE, PR_FATAL},
 
 	/* Error EA allocation collision */
 	{ PR_1_EA_ALLOC_COLLISION,
@@ -798,7 +798,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Resize inode failed */
 	{ PR_1_RESIZE_INODE_CREATE,
 	  N_("Resize @i (re)creation failed: %m."),
-	  PROMPT_ABORT, 0 },
+	  PROMPT_CONTINUE, 0 },
 
 	/* invalid inode->i_extra_isize */
 	{ PR_1_EXTRA_ISIZE,
