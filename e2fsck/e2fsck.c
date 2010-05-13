@@ -37,8 +37,11 @@ errcode_t e2fsck_allocate_context(e2fsck_t *ret)
 	time_env = getenv("E2FSCK_TIME");
 	if (time_env)
 		context->now = strtoul(time_env, NULL, 0);
-	else
+	else {
 		context->now = time(0);
+		if (context->now < 1262322000) /* January 1 2010 */
+			context->flags |= E2F_FLAG_TIME_INSANE;
+	}
 
 	*ret = context;
 	return 0;
@@ -52,7 +55,7 @@ errcode_t e2fsck_reset_context(e2fsck_t ctx)
 {
 	int	i;
 
-	ctx->flags = 0;
+	ctx->flags &= E2F_RESET_FLAGS;
 	ctx->lost_and_found = 0;
 	ctx->bad_lost_and_found = 0;
 	if (ctx->inode_used_map) {

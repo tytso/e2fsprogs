@@ -464,6 +464,7 @@ void check_super_block(e2fsck_t ctx)
 	int	ipg_max;
 	int	inode_size;
 	int	accept_time_fudge;
+	int	broken_system_clock;
 	dgrp_t	i;
 	blk_t	should_be;
 	struct problem_context	pctx;
@@ -821,11 +822,16 @@ void check_super_block(e2fsck_t ctx)
 			    0, accept_time_fudge, &accept_time_fudge);
 	ctx->time_fudge = accept_time_fudge ? 86400 : 0;
 
+	profile_get_boolean(ctx->profile, "options", "broken_system_clock",
+			    0, 0, &broken_system_clock);
+
 	/*
 	 * Check to see if the superblock last mount time or last
 	 * write time is in the future.
 	 */
-	if (fs->super->s_mtime > (__u32) ctx->now) {
+	if (!broken_system_clock &&
+	    !(ctx->flags & E2F_FLAG_TIME_INSANE) &&
+	    fs->super->s_mtime > (__u32) ctx->now) {
 		pctx.num = fs->super->s_mtime;
 		problem = PR_0_FUTURE_SB_LAST_MOUNT;
 		if (fs->super->s_mtime <= (__u32) ctx->now + ctx->time_fudge)
@@ -835,7 +841,9 @@ void check_super_block(e2fsck_t ctx)
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
-	if (fs->super->s_wtime > (__u32) ctx->now) {
+	if (!broken_system_clock &&
+	    !(ctx->flags & E2F_FLAG_TIME_INSANE) &&
+	    fs->super->s_wtime > (__u32) ctx->now) {
 		pctx.num = fs->super->s_wtime;
 		problem = PR_0_FUTURE_SB_LAST_WRITE;
 		if (fs->super->s_wtime <= (__u32) ctx->now + ctx->time_fudge)
