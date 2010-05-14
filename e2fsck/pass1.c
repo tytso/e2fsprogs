@@ -1694,7 +1694,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		is_dir = LINUX_S_ISDIR(pctx->inode->i_mode);
 
 		problem = 0;
-		if (extent.e_pblk < ctx->fs->super->s_first_data_block ||
+		if (extent.e_pblk == 0 ||
+		    extent.e_pblk < ctx->fs->super->s_first_data_block ||
 		    extent.e_pblk >= ctx->fs->super->s_blocks_count)
 			problem = PR_1_EXTENT_BAD_START_BLK;
 		else if (extent.e_lblk < start_block)
