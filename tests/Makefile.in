@@ -23,8 +23,8 @@ test_script: test_script.in Makefile mke2fs.conf
 	@cat $(srcdir)/test_script.in >> test_script
 	@chmod +x test_script
 
-mke2fs.conf: $(srcdir)/../misc/mke2fs.conf
-	sed -e 's/blocksize = -1/blocksize = 4096/' $(srcdir)/../misc/mke2fs.conf >mke2fs.conf
+mke2fs.conf: $(srcdir)/mke2fs.conf.in
+	$(CP) $(srcdir)/mke2fs.conf.in mke2fs.conf
 
 check:: test_script
 	@echo "Running e2fsprogs test suite..."
