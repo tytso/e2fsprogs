@@ -700,6 +700,8 @@ ELF_CMT
 HTREE_CMT
 Q
 E
+LINK_BUILD_FLAGS
+LINK_INSTALL_FLAGS
 MAINTAINER_CMT
 LINUX_INCLUDE
 EGREP
@@ -780,6 +782,8 @@ with_ccopts
 with_ldopts
 with_root_prefix
 enable_maintainer_mode
+enable_symlink_install
+enable_symlink_build
 enable_verbose_makecmds
 enable_compression
 enable_htree
@@ -1429,7 +1433,9 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-maintainer-mode enable makefile rules useful for maintainers
-  --enable-verbose-makecmds  enable verbose make command output
+  --enable-symlink-install use symlinks when installing instead of hard links
+  --enable-symlink-build  use symlinks while building instead of hard links
+  --enable-verbose-makecmds enable verbose make command output
   --enable-compression	  enable EXPERIMENTAL compression support
   --enable-htree      	  enable EXPERIMENTAL htree directory support
   --enable-elf-shlibs	  select ELF shared libraries
@@ -4571,6 +4577,48 @@ else
   MAINTAINER_CMT=#
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling maintainer mode by default" >&5
 $as_echo "Disabling maintainer mode by default" >&6; }
+
+fi
+
+
+# Check whether --enable-symlink-install was given.
+if test "${enable_symlink_install+set}" = set; then :
+  enableval=$enable_symlink_install; if test "$enableval" = "no"
+then
+	LINK_INSTALL_FLAGS=-f
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling symlinks for install" >&5
+$as_echo "Disabling symlinks for install" >&6; }
+else
+	LINK_INSTALL_FLAGS=-sf
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling symlinks for install" >&5
+$as_echo "Enabling symlinks for install" >&6; }
+fi
+
+else
+  LINK_INSTALL_FLAGS=-f
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling symlinks for install" >&5
+$as_echo "Disabling symlinks for install" >&6; }
+
+fi
+
+
+# Check whether --enable-symlink-build was given.
+if test "${enable_symlink_build+set}" = set; then :
+  enableval=$enable_symlink_build; if test "$enableval" = "no"
+then
+	LINK_BUILD_FLAGS=
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling symlinks for build" >&5
+$as_echo "Disabling symlinks for build" >&6; }
+else
+	LINK_BUILD_FLAGS=-s
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling symlinks for build" >&5
+$as_echo "Enabling symlinks for build" >&6; }
+fi
+
+else
+  LINK_BUILD_FLAGS=
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling symlinks for build" >&5
+$as_echo "Disabling symlinks for build" >&6; }
 
 fi
 

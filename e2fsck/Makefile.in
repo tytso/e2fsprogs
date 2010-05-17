@@ -201,18 +201,11 @@ install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs
 		echo "	INSTALL $(root_sbindir)/$$i"; \
 		$(INSTALL_PROGRAM) $$i $(DESTDIR)$(root_sbindir)/$$i; \
 	done
-	$(E) "	LINK $(root_sbindir)/fsck.ext2"
-	$(Q) $(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
-			$(DESTDIR)$(root_sbindir)/fsck.ext2
-	$(E) "	LINK $(root_sbindir)/fsck.ext3"
-	$(Q) $(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
-			$(DESTDIR)$(root_sbindir)/fsck.ext3
-	$(E) "	LINK $(root_sbindir)/fsck.ext4"
-	$(Q) $(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
-			$(DESTDIR)$(root_sbindir)/fsck.ext4
-	$(E) "	LINK $(root_sbindir)/fsck.ext4dev"
-	$(Q) $(LN) -f $(DESTDIR)$(root_sbindir)/e2fsck \
-			$(DESTDIR)$(root_sbindir)/fsck.ext4dev
+	$(Q) for i in ext2 ext3 ext4 ext4dev; do \
+		echo "	LINK $(root_sbindir)/fsck.$$i"; \
+		(cd $(DESTDIR)$(root_sbindir); \
+			$(LN) $(LINK_INSTALL_FLAGS) e2fsck fsck.$$i); \
+	done
 	$(Q) for i in $(MANPAGES); do \
 		for j in $(COMPRESS_EXT); do \
 			$(RM) -f $(DESTDIR)$(man8dir)/$$i.$$j; \
@@ -227,18 +220,11 @@ install: $(PROGS) $(MANPAGES) $(FMANPAGES) installdirs
 		echo "	INSTALL_DATA $(man5dir)/$$i"; \
 		$(INSTALL_DATA) $$i $(DESTDIR)$(man5dir)/$$i; \
 	done
-	$(E) "	LINK $(man8dir)/fsck.ext2.8"
-	$(Q) $(LN) -f $(DESTDIR)$(man8dir)/e2fsck.8 \
-		$(DESTDIR)$(man8dir)/fsck.ext2.8
-	$(E) "	LINK $(man8dir)/fsck.ext3.8"
-	$(Q) $(LN) -f $(DESTDIR)$(man8dir)/e2fsck.8 \
-		$(DESTDIR)$(man8dir)/fsck.ext3.8
-	$(E) "	LINK $(man8dir)/fsck.ext4.8"
-	$(Q) $(LN) -f $(DESTDIR)$(man8dir)/e2fsck.8 \
-		$(DESTDIR)$(man8dir)/fsck.ext4.8
-	$(E) "	LINK $(man8dir)/fsck.ext4.8"
-	$(Q) $(LN) -f $(DESTDIR)$(man8dir)/e2fsck.8 \
-		$(DESTDIR)$(man8dir)/fsck.ext4dev.8
+	$(Q) for i in ext2 ext3 ext4 ext4dev; do \
+		echo "	LINK $(man8dir)/fsck.$$i.8"; \
+		(cd $(DESTDIR)$(man8dir); \
+			$(LN) $(LINK_INSTALL_FLAGS) e2fsck.8 fsck.$$i.8); \
+	done
 
 install-strip: install
 	$(Q) for i in $(PROGS); do \

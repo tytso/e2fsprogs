@@ -28,9 +28,10 @@ $(ELF_LIB): $(OBJS)
 		-Wl,-soname,$(ELF_SONAME) $(OBJS) $(ELF_OTHER_LIBS))
 	$(Q) $(MV) elfshared/$(ELF_LIB) .
 	$(Q) $(RM) -f ../$(ELF_LIB) ../$(ELF_IMAGE).so ../$(ELF_SONAME)
-	$(Q) $(LN) $(ELF_LIB) ../$(ELF_LIB)
-	$(Q) $(LN) ../$(ELF_LIB) ../$(ELF_IMAGE).so
-	$(Q) $(LN) ../$(ELF_LIB) ../$(ELF_SONAME)
+	$(Q) (cd ..; $(LN) $(LINK_BUILD_FLAGS) \
+		`echo $(my_dir) | sed -e 's;lib/;;'`/$(ELF_LIB) $(ELF_LIB))
+	$(Q) (cd ..; $(LN) $(LINK_BUILD_FLAGS) $(ELF_LIB) $(ELF_IMAGE).so)
+	$(Q) (cd ..; $(LN) $(LINK_BUILD_FLAGS) $(ELF_LIB) $(ELF_SONAME))
 
 installdirs-elf-lib::
 	$(E) "	MKINSTALLDIRS $(ELF_INSTALL_DIR) $(libdir)"

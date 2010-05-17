@@ -13,4 +13,5 @@ $(LIBRARY)_chk.a: $(OBJS)
 	$(Q) (cd checker; $(ARGEN) $@ $(OBJS))
 	-$(Q) $(RANLIB) $@
 	$(Q) $(RM) -f ../$@
-	$(Q) $(LN) $@ ../$@
+	$(Q) (cd .. ; $(LN) $(LINK_BUILD_FLAGS) \
+	     `echo $(my_dir) | sed -e 's;lib/;;'`/$@ $@)
