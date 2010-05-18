@@ -1944,7 +1944,8 @@ static void mke2fs_discard_blocks(ext2_filsys fs)
 		ret = ioctl(fd, BLKDISCARD, &range);
 		if (verbose) {
 			printf(_("Calling BLKDISCARD from %llu to %llu "),
-				range[0], range[1]);
+			       (unsigned long long) range[0],
+			       (unsigned long long) range[1]);
 			if (ret)
 				printf(_("failed.\n"));
 			else
