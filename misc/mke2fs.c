@@ -1130,7 +1130,7 @@ static void PRS(int argc, char *argv[])
 	int		inode_size = 0;
 	unsigned long	flex_bg_size = 0;
 	double		reserved_ratio = 5.0;
-	int		sector_size = 0;
+	int		lsector_size = 0, psector_size = 0;
 	int		show_version_only = 0;
 	unsigned long long num_inodes = 0; /* unsigned long long to catch too-large input */
 	errcode_t	retval;
@@ -1645,16 +1645,25 @@ got_size:
 	    ((tmp = getenv("MKE2FS_FIRST_META_BG"))))
 		fs_param.s_first_meta_bg = atoi(tmp);
 
-	/* Get the hardware sector size, if available */
-	retval = ext2fs_get_device_sectsize(device_name, &sector_size);
+	/* Get the hardware sector sizes, if available */
+	retval = ext2fs_get_device_sectsize(device_name, &lsector_size);
 	if (retval) {
 		com_err(program_name, retval,
 			_("while trying to determine hardware sector size"));
 		exit(1);
 	}
+	retval = ext2fs_get_device_phys_sectsize(device_name, &psector_size);
+	if (retval) {
+		com_err(program_name, retval,
+			_("while trying to determine physical sector size"));
+		exit(1);
+	}
+	/* Older kernels may not have physical/logical distinction */
+	if (!psector_size)
+		psector_size = lsector_size;
 
 	if ((tmp = getenv("MKE2FS_DEVICE_SECTSIZE")) != NULL)
-		sector_size = atoi(tmp);
+		psector_size = atoi(tmp);
 
 	if (blocksize <= 0) {
 		use_bsize = get_int_from_profile(fs_types, "blocksize", 4096);
@@ -1665,12 +1674,25 @@ got_size:
 			    (use_bsize > 4096))
 				use_bsize = 4096;
 		}
-		if (sector_size && use_bsize < sector_size)
-			use_bsize = sector_size;
+		if (psector_size && use_bsize < psector_size)
+			use_bsize = psector_size;
 		if ((blocksize < 0) && (use_bsize < (-blocksize)))
 			use_bsize = -blocksize;
 		blocksize = use_bsize;
 		fs_param.s_blocks_count /= blocksize / 1024;
+	} else {
+		if (blocksize < lsector_size ||			/* Impossible */
+		    (!force && (blocksize < psector_size))) {	/* Suboptimal */
+			com_err(program_name, EINVAL,
+				_("while setting blocksize; too small "
+				  "for device\n"));
+			exit(1);
+		} else if (blocksize < psector_size) {
+			fprintf(stderr, _("Warning: specified blocksize %d is "
+				"less than device physical sectorsize %d, "
+				"forced to continue\n"), blocksize,
+				psector_size);
+		}
 	}
 
 	if (inode_ratio == 0) {

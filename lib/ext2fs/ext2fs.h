@@ -942,6 +942,7 @@ extern errcode_t ext2fs_get_device_size2(const char *file, int blocksize,
 
 /* getsectsize.c */
 errcode_t ext2fs_get_device_sectsize(const char *file, int *sectsize);
+errcode_t ext2fs_get_device_phys_sectsize(const char *file, int *sectsize);
 
 /* i_block.c */
 errcode_t ext2fs_iblk_add_blocks(ext2_filsys fs, struct ext2_inode *inode,
