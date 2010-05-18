@@ -33,8 +33,9 @@ subs: $(DEP_SUBSTITUTE)
 	@(if test -d lib/et ; then cd lib/et && $(MAKE) compile_et; fi)
 	@(if test -d lib/ext2fs ; then cd lib/ext2fs && $(MAKE) ext2_err.h; fi)
 
-progs: subs all-progs-recursive
-libs: subs all-libs-recursive
+progs: all-progs-recursive
+libs: all-libs-recursive
+all-progs-recursive all-libs-recursive: subs
 
 e2fsprogs.spec: $(DEP_SUBSTITUTE) e2fsprogs.spec.in
 	cd $(top_builddir); CONFIG_FILES=./e2fsprogs.spec ./config.status
