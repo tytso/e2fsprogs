@@ -3,9 +3,9 @@
  * programs.
  *
  * Copyright 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
- * 2004, 2005, 2006, 2007, 2008 by Theodore Ts'o.  This file may be
- * redistributed under the GNU Public License.
+ * 2004, 2005, 2006, 2007, 2008, 2009, 2010 by Theodore Ts'o.  This
+ * file may be redistributed under the GNU Public License v2.
  */
 
-#define E2FSPROGS_VERSION "1.41.11"
-#define E2FSPROGS_DATE "14-Mar-2010"
+#define E2FSPROGS_VERSION "1.41.12"
+#define E2FSPROGS_DATE "17-May-2010"
