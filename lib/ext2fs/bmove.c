@@ -2,8 +2,12 @@
  * bmove.c --- Move blocks around to make way for a particular
  * 	filesystem structure.
  *
- * Copyright (C) 1997 Theodore Ts'o.  This file may be redistributed
- * under the terms of the GNU Public License.
+ * Copyright (C) 1997 Theodore Ts'o.
+ *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Library
+ * General Public License, version 2.
+ * %End-Header%
  */
 
 #include <stdio.h>
