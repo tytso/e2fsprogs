@@ -1,5 +1,5 @@
-E2fsprogs 1.41.12 (May 17, 2010) (Up to commit 517be2d)
-=======================================================
+E2fsprogs 1.41.12 (May 17, 2010)
+================================
 
 Mke2fs now gives a correct error message if the external journal
 device is not found.  (Addresses Red Hat Bug #572935)
