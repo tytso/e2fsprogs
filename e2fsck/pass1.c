@@ -2013,7 +2013,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		 * doesn't need to be.
 		 */
 		if ((inode->i_flags & EXT4_EOFBLOCKS_FL) &&
-		    (size <= (((__u64)pb.last_block + 1) * fs->blocksize))) {
+		    (size >= (((__u64)pb.last_block + 1) * fs->blocksize))) {
 			pctx->blkcount = pb.last_block;
 			if (fix_problem(ctx, PR_1_EOFBLOCKS_FL_SET, pctx)) {
 				inode->i_flags &= ~EXT4_EOFBLOCKS_FL;
