@@ -321,7 +321,7 @@ install-std: build
 	ln -s et/com_err.h ${tmpdir}/usr/include
 
 	dh_movefiles
-	test -z `find ${tmpdir} -type f`
+	test -z "`find ${tmpdir} -type f`"
 
   # specially-built MIPS libs
 ifneq ($(ismips),)
