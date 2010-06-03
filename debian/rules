@@ -167,8 +167,16 @@ else
 M4_ARGS+=-UUTIL_LINUX_NG
 endif
 
+debian-files: debian/control debian/e2fsprogs.shlibs.local
+
+mrproper: clean
+	rm debian/control debian/e2fsprogs.shlibs.local
+
 debian/control: debian/control.in debian/rules
 	m4 $(M4_ARGS) < debian/control.in > $@
+
+debian/e2fsprogs.shlibs.local: debian/e2fsprogs.shlibs.local.in
+	m4 $(M4_ARGS) < debian/e2fsprogs.shlibs.local.in > $@
 
 ${CFGSTDSTAMP}:
 	dh_testdir
@@ -599,4 +607,4 @@ endif
 
 binary: binary-indep binary-arch
 
-.PHONY: binary binary-arch binary-indep clean checkroot
+.PHONY: binary binary-arch binary-indep clean checkroot mrproper debian-files
