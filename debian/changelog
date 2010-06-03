@@ -1,3 +1,11 @@
+e2fsprogs (1.41.12-2) unstable; urgency=high
+
+  * Allow tune2fs to set uninit_bg without requiring an fsck
+  * Fix test in e2fsck to correctly check for EOFBLOCKS files
+  * Fix dependencies for libuuid and libblkid (Closes: #583551)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 03 Jun 2010 09:30:36 -0400
+
 e2fsprogs (1.41.12-1) unstable; urgency=low
 
   * New upstream release
