@@ -413,13 +413,13 @@ struct problem_context {
 #define PR_1_EXTATTR_REFCOUNT		0x01003C
 
 /* Error writing Extended Attribute block while fixing refcount */
-#define PR_1_EXTATTR_WRITE		0x01003D
+#define PR_1_EXTATTR_WRITE_ABORT	0x01003D
 
 /* Multiple EA blocks not supported */
 #define PR_1_EA_MULTI_BLOCK		0x01003E
 
 /* Error allocating EA region allocation structure */
-#define PR_1_EA_ALLOC_REGION		0x01003F
+#define PR_1_EA_ALLOC_REGION_ABORT	0x01003F
 
 /* Error EA allocation collision */
 #define PR_1_EA_ALLOC_COLLISION		0x010040
@@ -516,6 +516,9 @@ struct problem_context {
 
 /* Extent node header invalid */
 #define PR_1_EXTENT_HEADER_INVALID	0x01005F
+
+/* EOFBLOCKS flag set when not necessary */
+#define PR_1_EOFBLOCKS_FL_SET		0x010060
 
 /*
  * Pass 1b errors

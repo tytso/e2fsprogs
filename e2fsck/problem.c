@@ -703,7 +703,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Error reading Extended Attribute block while fixing refcount */
 	{ PR_1_EXTATTR_READ_ABORT,
 	  N_("Error reading @a @b %b (%m).  "),
-	  PROMPT_ABORT, 0 },
+	  PROMPT_NONE, PR_FATAL },
 
 	/* Extended attribute reference count incorrect */
 	{ PR_1_EXTATTR_REFCOUNT,
@@ -711,9 +711,9 @@ static struct e2fsck_problem problem_table[] = {
 	  PROMPT_FIX, 0 },
 
 	/* Error writing Extended Attribute block while fixing refcount */
-	{ PR_1_EXTATTR_WRITE,
+	{ PR_1_EXTATTR_WRITE_ABORT,
 	  N_("Error writing @a @b %b (%m).  "),
-	  PROMPT_ABORT, 0 },
+	  PROMPT_NONE, PR_FATAL },
 
 	/* Multiple EA blocks not supported */
 	{ PR_1_EA_MULTI_BLOCK,
@@ -721,9 +721,9 @@ static struct e2fsck_problem problem_table[] = {
 	  PROMPT_CLEAR, 0},
 
 	/* Error allocating EA region allocation structure */
-	{ PR_1_EA_ALLOC_REGION,
+	{ PR_1_EA_ALLOC_REGION_ABORT,
 	  N_("@A @a @b %b.  "),
-	  PROMPT_ABORT, 0},
+	  PROMPT_NONE, PR_FATAL},
 
 	/* Error EA allocation collision */
 	{ PR_1_EA_ALLOC_COLLISION,
@@ -798,7 +798,7 @@ static struct e2fsck_problem problem_table[] = {
 	/* Resize inode failed */
 	{ PR_1_RESIZE_INODE_CREATE,
 	  N_("Resize @i (re)creation failed: %m."),
-	  PROMPT_ABORT, 0 },
+	  PROMPT_CONTINUE, 0 },
 
 	/* invalid inode->i_extra_isize */
 	{ PR_1_EXTRA_ISIZE,
@@ -884,6 +884,11 @@ static struct e2fsck_problem problem_table[] = {
 	{ PR_1_EXTENT_HEADER_INVALID,
 	  N_("@i %i has an invalid extent node (blk %b, lblk %c)\n"),
 	  PROMPT_CLEAR, 0 },
+
+	{ PR_1_EOFBLOCKS_FL_SET,
+	  N_("@i %i should not have EOFBLOCKS_FL set "
+	     "(size %Is, lblk %r)\n"),
+	  PROMPT_CLEAR, PR_PREEN_OK },
 
 	/* Pass 1b errors */
 
@@ -1741,7 +1746,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	struct e2fsck_problem *ptr;
 	struct latch_descr *ldesc = 0;
 	const char *message;
-	int		def_yn, answer, ans, broken_system_clock;
+	int		def_yn, answer, ans;
 	int		print_answer = 0;
 	int		suppress = 0;
 
@@ -1752,15 +1757,6 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	}
 	if (!(ptr->flags & PR_CONFIG)) {
 		char	key[9], *new_desc;
-
-		if ((code == PR_0_FUTURE_SB_LAST_MOUNT) ||
-		    (code == PR_0_FUTURE_SB_LAST_WRITE)) {
-			profile_get_boolean(ctx->profile, "options",
-					    "broken_system_clock", 0, 0,
-					    &broken_system_clock);
-			if (broken_system_clock)
-				ptr->flags |= PR_PREEN_OK;
-		}
 
 		sprintf(key, "0x%06x", code);
 

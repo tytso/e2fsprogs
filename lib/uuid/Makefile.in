@@ -150,9 +150,11 @@ install:: all installdirs
 	$(Q) $(RM) -f $(DESTDIR)$(man3dir)/uuid_generate_random.3.gz \
 		$(DESTDIR)$(man3dir)/uuid_generate_time.3.gz
 	$(E) "	LINK $(man3dir)/uuid_generate_random.3"
-	$(Q) $(LN) -f $(DESTDIR)$(man3dir)/uuid_generate.3 $(DESTDIR)$(man3dir)/uuid_generate_random.3
+	$(Q) (cd $(DESTDIR)$(man3dir); \
+	    $(LN) $(LINK_INSTALL_FLAGS) uuid_generate.3 uuid_generate_random.3)
 	$(E) "	LINK $(man3dir)/uuid_generate_time.3"
-	$(Q) $(LN) -f $(DESTDIR)$(man3dir)/uuid_generate.3 $(DESTDIR)$(man3dir)/uuid_generate_time.3
+	$(Q) (cd $(DESTDIR)$(man3dir); \
+	    $(LN) $(LINK_INSTALL_FLAGS) uuid_generate.3 uuid_generate_time.3)
 	$(E) "	INSTALL_DATA $(libdir)/pkgconfig/uuid.pc"
 	$(Q) $(INSTALL_DATA) uuid.pc $(DESTDIR)$(libdir)/pkgconfig/uuid.pc
 

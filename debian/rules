@@ -167,8 +167,16 @@ else
 M4_ARGS+=-UUTIL_LINUX_NG
 endif
 
+debian-files: debian/control debian/e2fsprogs.shlibs.local
+
+mrproper: clean
+	rm debian/control debian/e2fsprogs.shlibs.local
+
 debian/control: debian/control.in debian/rules
 	m4 $(M4_ARGS) < debian/control.in > $@
+
+debian/e2fsprogs.shlibs.local: debian/e2fsprogs.shlibs.local.in
+	m4 $(M4_ARGS) < debian/e2fsprogs.shlibs.local.in > $@
 
 ${CFGSTDSTAMP}:
 	dh_testdir
@@ -321,7 +329,7 @@ install-std: build
 	ln -s et/com_err.h ${tmpdir}/usr/include
 
 	dh_movefiles
-	test -z `find ${tmpdir} -type f`
+	test -z "`find ${tmpdir} -type f`"
 
   # specially-built MIPS libs
 ifneq ($(ismips),)
@@ -351,8 +359,9 @@ install-udeb: build
 		-a ! -name resize2fs -a ! -name badblocks -print | xargs rm
 
 	(cd ${udebdir}/sbin; ln -s e2fsck fsck.ext2 ; \
-		ln -s e2fsck fsck.ext3 ; ln -s mke2fs mkfs.ext2 ; \
-		ln -s mke2fs mkfs.ext3 ; ln -s mke2fs mkfs.ext4)
+		ln -s e2fsck fsck.ext3 ; ln -s e2fsck fsck.ext4 ; \
+		ln -s mke2fs mkfs.ext2 ; ln -s mke2fs mkfs.ext3 ; \
+		ln -s mke2fs mkfs.ext4)
 
 ifneq ($(UTIL_LINUX_NG),yes)
 	mkdir -p ${blkidudebdir}/lib
@@ -598,4 +607,4 @@ endif
 
 binary: binary-indep binary-arch
 
-.PHONY: binary binary-arch binary-indep clean checkroot
+.PHONY: binary binary-arch binary-indep clean checkroot mrproper debian-files

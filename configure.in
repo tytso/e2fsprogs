@@ -154,10 +154,46 @@ AC_MSG_RESULT([Disabling maintainer mode by default])
 )
 AC_SUBST(MAINTAINER_CMT)
 dnl
+dnl handle --enable-symlink-install
+dnl
+AC_ARG_ENABLE([symlink-install],
+[  --enable-symlink-install use symlinks when installing instead of hard links],
+if test "$enableval" = "no"
+then
+	LINK_INSTALL_FLAGS=-f
+	AC_MSG_RESULT([Disabling symlinks for install])
+else
+	LINK_INSTALL_FLAGS=-sf
+	AC_MSG_RESULT([Enabling symlinks for install])
+fi
+,
+LINK_INSTALL_FLAGS=-f
+AC_MSG_RESULT([Disabling symlinks for install])
+)
+AC_SUBST(LINK_INSTALL_FLAGS)
+dnl
+dnl handle --enable-symlink-build
+dnl
+AC_ARG_ENABLE([symlink-build],
+[  --enable-symlink-build  use symlinks while building instead of hard links],
+if test "$enableval" = "no"
+then
+	LINK_BUILD_FLAGS=
+	AC_MSG_RESULT([Disabling symlinks for build])
+else
+	LINK_BUILD_FLAGS=-s
+	AC_MSG_RESULT([Enabling symlinks for build])
+fi
+,
+LINK_BUILD_FLAGS=
+AC_MSG_RESULT([Disabling symlinks for build])
+)
+AC_SUBST(LINK_BUILD_FLAGS)
+dnl
 dnl handle --enable-verbose-makecmds
 dnl
 AC_ARG_ENABLE([verbose-makecmds],
-[  --enable-verbose-makecmds  enable verbose make command output],
+[  --enable-verbose-makecmds enable verbose make command output],
 if test "$enableval" = "no"
 then
 	AC_MSG_RESULT([Disabling verbose make commands])

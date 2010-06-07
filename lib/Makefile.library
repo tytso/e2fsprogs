@@ -19,6 +19,7 @@ $(LIBRARY).a: $(OBJS)
 	$(Q) $(ARGEN) $@ $(OBJS)
 	-@$(RANLIB) $@
 	$(Q) $(RM) -f ../$@
-	$(Q) $(LN) $@ ../$@
+	$(Q) (cd ..; $(LN) $(LINK_BUILD_FLAGS) \
+		`echo $(my_dir) | sed -e 's;lib/;;'`/$@ $@)
 
 $(LIB)/$(LIBRARY).a: $(LIBRARY).a

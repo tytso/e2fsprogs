@@ -80,7 +80,7 @@ struct process_block_struct {
 	ext2_ino_t	ino;
 	unsigned	is_dir:1, is_reg:1, clear:1, suppress:1,
 				fragmented:1, compressed:1, bbcheck:1;
-	blk_t		num_blocks;
+	blk64_t		num_blocks;
 	blk_t		max_blocks;
 	e2_blkcnt_t	last_block;
 	e2_blkcnt_t	last_db_block;
@@ -1126,16 +1126,20 @@ void e2fsck_pass1(e2fsck_t ctx)
 		clear_problem_context(&pctx);
 		pctx.errcode = ext2fs_create_resize_inode(fs);
 		if (pctx.errcode) {
-			fix_problem(ctx, PR_1_RESIZE_INODE_CREATE, &pctx);
-			/* Should never get here */
-			ctx->flags |= E2F_FLAG_ABORT;
-			return;
+			if (!fix_problem(ctx, PR_1_RESIZE_INODE_CREATE,
+					 &pctx)) {
+				ctx->flags |= E2F_FLAG_ABORT;
+				return;
+			}
+			pctx.errcode = 0;
 		}
-		e2fsck_read_inode(ctx, EXT2_RESIZE_INO, inode,
-				  "recreate inode");
-		inode->i_mtime = ctx->now;
-		e2fsck_write_inode(ctx, EXT2_RESIZE_INO, inode,
-				   "recreate inode");
+		if (!pctx.errcode) {
+			e2fsck_read_inode(ctx, EXT2_RESIZE_INO, inode,
+					  "recreate inode");
+			inode->i_mtime = ctx->now;
+			e2fsck_write_inode(ctx, EXT2_RESIZE_INO, inode,
+					   "recreate inode");
+		}
 		fs->block_map = save_bmap;
 		ctx->flags &= ~E2F_FLAG_RESIZE_INODE;
 	}
@@ -1392,7 +1396,8 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 			pctx.errcode = ext2fs_write_ext_attr(fs, blk,
 							     block_buf);
 			if (pctx.errcode) {
-				fix_problem(ctx, PR_1_EXTATTR_WRITE, &pctx);
+				fix_problem(ctx, PR_1_EXTATTR_WRITE_ABORT,
+					    &pctx);
 				continue;
 			}
 		}
@@ -1506,7 +1511,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 
 	region = region_create(0, fs->blocksize);
 	if (!region) {
-		fix_problem(ctx, PR_1_EA_ALLOC_REGION, pctx);
+		fix_problem(ctx, PR_1_EA_ALLOC_REGION_ABORT, pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return 0;
 	}
@@ -1690,7 +1695,8 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 		is_dir = LINUX_S_ISDIR(pctx->inode->i_mode);
 
 		problem = 0;
-		if (extent.e_pblk < ctx->fs->super->s_first_data_block ||
+		if (extent.e_pblk == 0 ||
+		    extent.e_pblk < ctx->fs->super->s_first_data_block ||
 		    extent.e_pblk >= ext2fs_blocks_count(ctx->fs->super))
 			problem = PR_1_EXTENT_BAD_START_BLK;
 		else if (extent.e_lblk < start_block)
@@ -1803,9 +1809,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			pb->last_db_block = blockcnt - 1;
 		pb->num_blocks += extent.e_len;
 		pb->previous_block = extent.e_pblk + extent.e_len - 1;
-		start_block = extent.e_lblk + extent.e_len - 1;
-		if (!(extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT))
-			pb->last_block = start_block;
+		start_block = pb->last_block = extent.e_lblk + extent.e_len - 1;
 	next:
 		pctx->errcode = ext2fs_extent_get(ehandle,
 						  EXT2_EXTENT_NEXT_SIB,
@@ -1996,6 +2000,19 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 ((1ULL << (32 + EXT2_BLOCK_SIZE_BITS(fs->super))) - 1))
 			/* too big for an extent-based file - 32bit ee_block */
 			bad_size = 6;
+
+		/*
+		 * Check to see if the EOFBLOCKS flag is set where it
+		 * doesn't need to be.
+		 */
+		if ((inode->i_flags & EXT4_EOFBLOCKS_FL) &&
+		    (size >= (((__u64)pb.last_block + 1) * fs->blocksize))) {
+			pctx->blkcount = pb.last_block;
+			if (fix_problem(ctx, PR_1_EOFBLOCKS_FL_SET, pctx)) {
+				inode->i_flags &= ~EXT4_EOFBLOCKS_FL;
+				dirty_inode++;
+			}
+		}
 	}
 	/* i_size for symlinks is checked elsewhere */
 	if (bad_size && !LINUX_S_ISLNK(inode->i_mode)) {

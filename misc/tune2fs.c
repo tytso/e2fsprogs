@@ -327,14 +327,28 @@ static void update_mntopts(ext2_filsys fs, char *mntopts)
 	ext2fs_mark_super_dirty(fs);
 }
 
+static void request_fsck_afterwards(ext2_filsys fs)
+{
+	static int requested = 0;
+
+	if (requested++)
+		return;
+	fs->super->s_state &= ~EXT2_VALID_FS;
+	printf("\n%s\n", _(please_fsck));
+	if (mount_flags & EXT2_MF_READONLY)
+		printf(_("(and reboot afterwards!)\n"));
+}
+
 /*
  * Update the feature set as provided by the user.
  */
 static void update_feature_set(ext2_filsys fs, char *features)
 {
 	struct ext2_super_block *sb = fs->super;
+	struct ext2_group_desc *gd;
+	errcode_t	retval;
 	__u32		old_features[3];
-	int		type_err;
+	int		i, type_err;
 	unsigned int	mask_err;
 
 #define FEATURE_ON(type, mask) (!(old_features[(type)] & (mask)) && \
@@ -431,6 +445,36 @@ static void update_feature_set(ext2_filsys fs, char *features)
 		}
 	}
 
+	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
+		       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		gd = fs->group_desc;
+		for (i = 0; i < fs->group_desc_count; i++, gd++) {
+			gd->bg_itable_unused = 0;
+			gd->bg_flags = EXT2_BG_INODE_ZEROED;
+			ext2fs_group_desc_csum_set(fs, i);
+		}
+		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+	}
+
+	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
+			EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
+		gd = fs->group_desc;
+		for (i = 0; i < fs->group_desc_count; i++, gd++) {
+			if ((gd->bg_flags & EXT2_BG_INODE_ZEROED) == 0) {
+				/* 
+				 * XXX what we really should do is zap
+				 * uninitialized inode tables instead.
+				 */
+				request_fsck_afterwards(fs);
+				break;
+			}
+			gd->bg_itable_unused = 0;
+			gd->bg_flags = 0;
+			gd->bg_checksum = 0;
+		}
+		fs->flags &= ~EXT2_FLAG_SUPER_ONLY;
+	}
+
 	if (sb->s_rev_level == EXT2_GOOD_OLD_REV &&
 	    (sb->s_feature_compat || sb->s_feature_ro_compat ||
 	     sb->s_feature_incompat))
@@ -438,8 +482,6 @@ static void update_feature_set(ext2_filsys fs, char *features)
 
 	if (FEATURE_CHANGED(E2P_FEATURE_RO_INCOMPAT,
 			    EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER) ||
-	    FEATURE_CHANGED(E2P_FEATURE_RO_INCOMPAT,
-			    EXT4_FEATURE_RO_COMPAT_GDT_CSUM) ||
 	    FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
 			EXT4_FEATURE_RO_COMPAT_HUGE_FILE) ||
 	    FEATURE_CHANGED(E2P_FEATURE_INCOMPAT,
@@ -447,12 +489,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 	    FEATURE_CHANGED(E2P_FEATURE_COMPAT,
 			    EXT2_FEATURE_COMPAT_RESIZE_INODE) ||
 	    FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
-			EXT2_FEATURE_RO_COMPAT_LARGE_FILE)) {
-		sb->s_state &= ~EXT2_VALID_FS;
-		printf("\n%s\n", _(please_fsck));
-		if (mount_flags & EXT2_MF_READONLY)
-			printf(_("(and reboot afterwards!)\n"));
-	}
+			EXT2_FEATURE_RO_COMPAT_LARGE_FILE))
+		request_fsck_afterwards(fs);
 
 	if ((old_features[E2P_FEATURE_COMPAT] != sb->s_feature_compat) ||
 	    (old_features[E2P_FEATURE_INCOMPAT] != sb->s_feature_incompat) ||

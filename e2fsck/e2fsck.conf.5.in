@@ -118,9 +118,10 @@ For example, the UUID library depends on time not going backwards in
 order for it to be able to make its guarantees about issuing universally
 unique ID's.  Systems with broken system clocks, are well, broken.
 However, broken system clocks, particularly in embedded systems, do
-exist.  If true, e2fsck will not abort a preen check if it detects a
-last mounted or last write time in the superblock in the future.  This
-setting defaults to false.
+exist.  E2fsck will attempt to use hueristics to determine if the time
+can no tbe trusted; and to skip time-based checks if this is true.  If
+this boolean is set to true, then e2fsck will always assume that the
+system clock can not be trusted.
 .TP
 .I clear_test_fs_flag
 This boolean relation controls whether or not 

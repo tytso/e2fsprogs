@@ -14,7 +14,8 @@ $(LIBRARY)_p.a: $(OBJS)
 	$(Q) (cd profiled; $(ARUPD) ../$@ $(OBJS))
 	-$(Q) $(RANLIB) $@
 	$(Q) $(RM) -f ../$@
-	$(Q) $(LN) $@ ../$@
+	$(Q) (cd ..; $(LN) $(LINK_BUILD_FLAGS) \
+		`echo $(my_dir) | sed -e 's;lib/;;'`/$@ $@)
 
 install:: $(LIBRARY)_p.a installdirs
 	$(E) "	INSTALL_DATA $(libdir)/$(LIBRARY)_p.a"

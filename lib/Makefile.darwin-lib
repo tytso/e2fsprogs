@@ -27,8 +27,9 @@ $(BSD_LIB): $(OBJS)
 		-flat_namespace -undefined warning -o $(BSD_LIB) $(OBJS))
 	$(Q) $(MV) pic/$(BSD_LIB) .
 	$(Q) $(RM) -f ../$(BSD_LIB)
-	$(Q) $(LN) $(BSD_LIB) ../$(BSD_LIB)
-	$(Q) $(LN) ../$(BSD_LIB) ../$(BSDLIB_IMAGE).dylib
+	$(Q) (cd ..; $(LN) $(LINK_BUILD_FLAGS) \
+		`echo $(my_dir) | sed -e 's;lib/;;'`/$(BSD_LIB) $(BSD_LIB))
+	$(Q) (cd ..; $(LN) $(LINK_BUILD_FLAGS) $(BSD_LIB) $(BSDLIB_IMAGE).dylib)
 
 install-shlibs install:: $(BSD_LIB)
 	$(E) "	INSTALL_PROGRAM $(BSDLIB_INSTALL_DIR)/$(BSD_LIB)"

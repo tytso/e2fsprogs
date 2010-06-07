@@ -4,8 +4,11 @@
  * Copyright (c) 1997 by Theodore Ts'o.
  *
  * Copyright (c) 1997 Mark Habersack
- * This file may be distributed under the terms of the GNU Public License.
  *
+ * %Begin-Header%
+ * This file may be redistributed under the terms of the GNU Library
+ * General Public License, version 2.
+ * %End-Header%
  */
 
 #include <stdio.h>

@@ -1,3 +1,51 @@
+e2fsprogs (1.41.12-2) unstable; urgency=high
+
+  * Allow tune2fs to set uninit_bg without requiring an fsck
+  * Fix test in e2fsck to correctly check for EOFBLOCKS files
+  * Fix dependencies for libuuid and libblkid (Closes: #583551)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Thu, 03 Jun 2010 09:30:36 -0400
+
+e2fsprogs (1.41.12-1) unstable; urgency=low
+
+  * New upstream release
+  * mke2fs now gives the correct error message if the external journal
+    is device is not found
+  * The resize2fs program will refuse to print the minimum size needed
+    for a file system if it is not clean.
+  * E2fsck now tests for extents that begin at physical block 0 and
+    rejects them as invalid.
+  * Fixed a bug in e2fsck which could cause it to crash when trying to
+    remove an invalid extent and the block bitmaps hadn't yet been loaded.
+  * E2fsck will now completely skip time-based checks if the system
+    clock looks insane or if the broken_system_clock option is set
+    in /etc/e2fsck.conf.  (Closes: #549861, #540152)
+  * Fixed a bug in e2fsck which caused e2fsck to complain about i_blocks
+    with a 4T file created using posix_fallocate()
+  * E2fsck will now correctly mark a sparse journal as invalid and will
+    delete and recreate the journal to address the problem.
+  * Fixed e2fsck not to ask permission from the user to abort if it's
+    going to abort regardless of what the user is going to say...
+  * E2fsck can now continue even if it fails to recreate the resize inode
+  * E2fsck will now avoid removing directory entries for inods found in
+    the unused region of the inode table until after it restarts the fs
+    check to avoid removing valid data.
+  * E2fsck will now longer try to set the block group checksums if it
+    is interrupted.
+  * Mke2fs will check both the physical and logical blocksizes of a
+    device to better support 4k sector drives.
+  * Mke2fs will accept the valid (but rarely useful) flex_bg size of 1
+  * E2fsck will check for cases where the EOFBLOCKS_FL is set whe nit is
+    not needed, and offer to clear it.
+  * The com_err library will now only output a CR character if the
+    stderr is connected to a tty in raw mode.
+  * Update Czech, Chinese, Dutch, French, Germany, Indonesian, Polish,
+    and Vietnamese translations (from the Translation Project)
+  * Add an fsck.ext4 symlink in the e2fsprogs-udeb package (Closes: #571247)
+  * Fix makefile dependency so dpkg-buildpackage -j2 works (Closes: #563487)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 17 May 2010 19:43:52 -0400
+
 e2fsprogs (1.41.11-1) unstable; urgency=medium
 
   * New upstream release

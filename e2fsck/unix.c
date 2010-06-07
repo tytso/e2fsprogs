@@ -291,8 +291,13 @@ static void check_if_skip(e2fsck_t ctx)
 	long next_check;
 	int batt = is_on_batt();
 	int defer_check_on_battery;
+	int broken_system_clock;
 	time_t lastcheck;
 
+	profile_get_boolean(ctx->profile, "options", "broken_system_clock",
+			    0, 0, &broken_system_clock);
+	if (ctx->flags & E2F_FLAG_TIME_INSANE)
+		broken_system_clock = 1;
 	profile_get_boolean(ctx->profile, "options",
 			    "defer_check_on_battery", 0, 1,
 			    &defer_check_on_battery);
@@ -320,11 +325,12 @@ static void check_if_skip(e2fsck_t ctx)
 		if (batt && (fs->super->s_mnt_count <
 			     (unsigned) fs->super->s_max_mnt_count*2))
 			reason = 0;
-	} else if (fs->super->s_checkinterval && (ctx->now < lastcheck)) {
+	} else if (!broken_system_clock && fs->super->s_checkinterval &&
+		   (ctx->now < lastcheck)) {
 		reason = _(" has filesystem last checked time in the future");
 		if (batt)
 			reason = 0;
-	} else if (fs->super->s_checkinterval &&
+	} else if (!broken_system_clock && fs->super->s_checkinterval &&
 		   ((ctx->now - lastcheck) >=
 		    ((time_t) fs->super->s_checkinterval))) {
 		reason = _(" has gone %u days without being checked");
@@ -351,7 +357,7 @@ static void check_if_skip(e2fsck_t ctx)
 		if (next_check <= 0)
 			next_check = 1;
 	}
-	if (fs->super->s_checkinterval &&
+	if (!broken_system_clock && fs->super->s_checkinterval &&
 	    ((ctx->now - fs->super->s_lastcheck) >= fs->super->s_checkinterval))
 		next_check = 1;
 	if (next_check <= 5) {
@@ -1439,12 +1445,14 @@ no_journal:
 			} else
 				sb->s_state &= ~EXT2_VALID_FS;
 			sb->s_mnt_count = 0;
-			sb->s_lastcheck = ctx->now;
+			if (!(ctx->flags & E2F_FLAG_TIME_INSANE))
+				sb->s_lastcheck = ctx->now;
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
 
-	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM &&
+	if ((run_result & E2F_FLAG_CANCEL) == 0 &&
+	    sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_GDT_CSUM &&
 	    !(ctx->options & E2F_OPT_READONLY)) {
 		retval = ext2fs_set_gdt_csum(ctx->fs);
 		if (retval) {

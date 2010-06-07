@@ -7,8 +7,8 @@
  * Copyright (C) 1998 Andrey Shedel (andreys@ns.cr.cyco.com)
  *
  * %Begin-Header%
- * This file may be redistributed under the terms of the GNU Public
- * License.
+ * This file may be redistributed under the terms of the GNU Library
+ * General Public License, version 2.
  * %End-Header%
  */
 

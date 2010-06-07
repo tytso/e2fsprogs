@@ -207,6 +207,10 @@ void parse_journal_opts(const char *opts)
 		if (strcmp(token, "device") == 0) {
 			journal_device = blkid_get_devname(NULL, arg, NULL);
 			if (!journal_device) {
+				if (arg)
+					fprintf(stderr, _("\nCould not find "
+						"journal device matching %s\n"),
+						arg);
 				journal_usage++;
 				continue;
 			}
