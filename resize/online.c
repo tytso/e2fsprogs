@@ -19,7 +19,7 @@
 extern char *program_name;
 
 errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
-			   blk_t *new_size, int flags EXT2FS_ATTR((unused)))
+			   blk64_t *new_size, int flags EXT2FS_ATTR((unused)))
 {
 #ifdef __linux__
 	struct ext2_new_group_input input;
@@ -30,7 +30,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	errcode_t 		retval;
 	double			percent;
 	dgrp_t			i;
-	blk_t			size;
+	blk64_t			size;
 	int			fd, overhead;
 	int			use_old_ioctl = 1;
 
@@ -38,7 +38,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		 "on-line resizing required\n"), fs->device_name, mtpt);
 
 	if (*new_size < ext2fs_blocks_count(sb)) {
-		printf(_("On-line shrinking from %llu to %u not supported.\n"),
+		printf(_("On-line shrinking from %llu to %llu not supported.\n"),
 		       ext2fs_blocks_count(sb), *new_size);
 		exit(1);
 	}
@@ -48,9 +48,9 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	 * the on-line resizing inode must be present.
 	 */
 	new_desc_blocks = ext2fs_div_ceil(
-		ext2fs_div_ceil(*new_size -
-				fs->super->s_first_data_block,
-				EXT2_BLOCKS_PER_GROUP(fs->super)),
+		ext2fs_div64_ceil(*new_size -
+				  fs->super->s_first_data_block,
+				  EXT2_BLOCKS_PER_GROUP(fs->super)),
 		EXT2_DESC_PER_BLOCK(fs->super));
 	printf("old desc_blocks = %lu, new_desc_blocks = %lu\n",
 	       fs->desc_blocks, new_desc_blocks);
@@ -109,7 +109,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 	if (retval)
 		return retval;
 
-	printf(_("Performing an on-line resize of %s to %u (%dk) blocks.\n"),
+	printf(_("Performing an on-line resize of %s to %llu (%dk) blocks.\n"),
 	       fs->device_name, *new_size, fs->blocksize / 1024);
 
 	size = fs->group_desc_count * sb->s_blocks_per_group +
