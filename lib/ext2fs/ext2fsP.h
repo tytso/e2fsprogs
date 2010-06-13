@@ -35,10 +35,10 @@ struct ext2_struct_u32_iterate {
 struct ext2_struct_dblist {
 	int			magic;
 	ext2_filsys		fs;
-	ext2_ino_t		size;
-	ext2_ino_t		count;
+	unsigned long long	size;
+	unsigned long long	count;
 	int			sorted;
-	struct ext2_db_entry *	list;
+	struct ext2_db_entry2 *	list;
 };
 
 /*
@@ -79,9 +79,9 @@ struct ext2_inode_cache_ent {
 /* Function prototypes */
 
 extern int ext2fs_process_dir_block(ext2_filsys  	fs,
-				    blk_t		*blocknr,
+				    blk64_t		*blocknr,
 				    e2_blkcnt_t		blockcnt,
-				    blk_t		ref_block,
+				    blk64_t		ref_block,
 				    int			ref_offset,
 				    void		*priv_data);
 

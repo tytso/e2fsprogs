@@ -125,6 +125,13 @@ typedef struct ext2_struct_u32_iterate *badblocks_iterate;
 /*
  * ext2_dblist structure and abstractions (see dblist.c)
  */
+struct ext2_db_entry2 {
+	ext2_ino_t	ino;
+	blk64_t	blk;
+	e2_blkcnt_t	blockcnt;
+};
+
+/* Ye Olde 32-bit version */
 struct ext2_db_entry {
 	ext2_ino_t	ino;
 	blk_t	blk;
@@ -854,20 +861,34 @@ extern errcode_t ext2fs_get_num_dirs(ext2_filsys fs, ext2_ino_t *ret_num_dirs);
 extern errcode_t ext2fs_init_dblist(ext2_filsys fs, ext2_dblist *ret_dblist);
 extern errcode_t ext2fs_add_dir_block(ext2_dblist dblist, ext2_ino_t ino,
 				      blk_t blk, int blockcnt);
+extern errcode_t ext2fs_add_dir_block2(ext2_dblist dblist, ext2_ino_t ino,
+				       blk64_t blk, e2_blkcnt_t blockcnt);
 extern void ext2fs_dblist_sort(ext2_dblist dblist,
 			       EXT2_QSORT_TYPE (*sortfunc)(const void *,
 							   const void *));
+extern void ext2fs_dblist_sort2(ext2_dblist dblist,
+				EXT2_QSORT_TYPE (*sortfunc)(const void *,
+							    const void *));
 extern errcode_t ext2fs_dblist_iterate(ext2_dblist dblist,
 	int (*func)(ext2_filsys fs, struct ext2_db_entry *db_info,
 		    void	*priv_data),
        void *priv_data);
+extern errcode_t ext2fs_dblist_iterate2(ext2_dblist dblist,
+	int (*func)(ext2_filsys fs, struct ext2_db_entry2 *db_info,
+		    void	*priv_data),
+       void *priv_data);
 extern errcode_t ext2fs_set_dir_block(ext2_dblist dblist, ext2_ino_t ino,
 				      blk_t blk, int blockcnt);
+extern errcode_t ext2fs_set_dir_block2(ext2_dblist dblist, ext2_ino_t ino,
+				       blk64_t blk, e2_blkcnt_t blockcnt);
 extern errcode_t ext2fs_copy_dblist(ext2_dblist src,
 				    ext2_dblist *dest);
 extern int ext2fs_dblist_count(ext2_dblist dblist);
+extern blk64_t ext2fs_dblist_count2(ext2_dblist dblist);
 extern errcode_t ext2fs_dblist_get_last(ext2_dblist dblist,
 					struct ext2_db_entry **entry);
+extern errcode_t ext2fs_dblist_get_last2(ext2_dblist dblist,
+					struct ext2_db_entry2 **entry);
 extern errcode_t ext2fs_dblist_drop_last(ext2_dblist dblist);
 
 /* dblist_dir.c */
