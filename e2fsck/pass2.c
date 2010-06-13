@@ -61,10 +61,10 @@
  */
 static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf);
 static int check_dir_block(ext2_filsys fs,
-			   struct ext2_db_entry *dir_blocks_info,
+			   struct ext2_db_entry2 *dir_blocks_info,
 			   void *priv_data);
 static int allocate_dir_block(e2fsck_t ctx,
-			      struct ext2_db_entry *dir_blocks_info,
+			      struct ext2_db_entry2 *dir_blocks_info,
 			      char *buf, struct problem_context *pctx);
 static void clear_htree(e2fsck_t ctx, ext2_ino_t ino);
 static int htree_depth(struct dx_dir_info *dx_dir,
@@ -132,16 +132,16 @@ void e2fsck_pass2(e2fsck_t ctx)
 	cd.buf = buf;
 	cd.ctx = ctx;
 	cd.count = 1;
-	cd.max = ext2fs_dblist_count(fs->dblist);
+	cd.max = ext2fs_dblist_count2(fs->dblist);
 
 	if (ctx->progress)
 		(void) (ctx->progress)(ctx, 2, 0, cd.max);
 
 	if (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_DIR_INDEX)
-		ext2fs_dblist_sort(fs->dblist, special_dir_block_cmp);
+		ext2fs_dblist_sort2(fs->dblist, special_dir_block_cmp);
 
-	cd.pctx.errcode = ext2fs_dblist_iterate(fs->dblist, check_dir_block,
-						&cd);
+	cd.pctx.errcode = ext2fs_dblist_iterate2(fs->dblist, check_dir_block,
+						 &cd);
 	if (ctx->flags & E2F_FLAG_SIGNAL_MASK || ctx->flags & E2F_FLAG_RESTART)
 		return;
 
@@ -314,10 +314,10 @@ static int dict_de_cmp(const void *a, const void *b)
  */
 static EXT2_QSORT_TYPE special_dir_block_cmp(const void *a, const void *b)
 {
-	const struct ext2_db_entry *db_a =
-		(const struct ext2_db_entry *) a;
-	const struct ext2_db_entry *db_b =
-		(const struct ext2_db_entry *) b;
+	const struct ext2_db_entry2 *db_a =
+		(const struct ext2_db_entry2 *) a;
+	const struct ext2_db_entry2 *db_b =
+		(const struct ext2_db_entry2 *) b;
 
 	if (db_a->blockcnt && !db_b->blockcnt)
 		return 1;
@@ -517,7 +517,7 @@ static _INLINE_ int check_filetype(e2fsck_t ctx,
 
 #ifdef ENABLE_HTREE
 static void parse_int_node(ext2_filsys fs,
-			   struct ext2_db_entry *db,
+			   struct ext2_db_entry2 *db,
 			   struct check_dir_struct *cd,
 			   struct dx_dir_info	*dx_dir,
 			   char *block_buf)
@@ -700,7 +700,7 @@ static void salvage_directory(ext2_filsys fs,
 }
 
 static int check_dir_block(ext2_filsys fs,
-			   struct ext2_db_entry *db,
+			   struct ext2_db_entry2 *db,
 			   void *priv_data)
 {
  	struct dx_dir_info	*dx_dir;
@@ -714,7 +714,7 @@ static int check_dir_block(ext2_filsys fs,
 	int			dir_modified = 0;
 	int			dot_state;
 	unsigned int		rec_len;
-	blk_t			block_nr = db->blk;
+	blk64_t			block_nr = db->blk;
 	ext2_ino_t 		ino = db->ino;
 	ext2_ino_t 		subdir_parent;
 	__u16			links;
@@ -774,7 +774,7 @@ static int check_dir_block(ext2_filsys fs,
 #endif
 
 	old_op = ehandler_operation(_("reading directory block"));
-	cd->pctx.errcode = ext2fs_read_dir_block(fs, block_nr, buf);
+	cd->pctx.errcode = ext2fs_read_dir_block3(fs, block_nr, buf, 0);
 	ehandler_operation(0);
 	if (cd->pctx.errcode == EXT2_ET_DIR_CORRUPTED)
 		cd->pctx.errcode = 0; /* We'll handle this ourselves */
@@ -1153,9 +1153,9 @@ abort_free_dict:
  * functioned called by deallocate inode via ext2fs_iterate_block().
  */
 static int deallocate_inode_block(ext2_filsys fs,
-				  blk_t	*block_nr,
+				  blk64_t	*block_nr,
 				  e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
-				  blk_t ref_block EXT2FS_ATTR((unused)),
+				  blk64_t ref_block EXT2FS_ATTR((unused)),
 				  int ref_offset EXT2FS_ATTR((unused)),
 				  void *priv_data)
 {
@@ -1194,7 +1194,7 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 
 	if (ext2fs_file_acl_block(&inode) &&
 	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
-		pctx.errcode = ext2fs_adjust_ea_refcount(fs, ext2fs_file_acl_block(&inode),
+		pctx.errcode = ext2fs_adjust_ea_refcount2(fs, ext2fs_file_acl_block(&inode),
 						   block_buf, -1, &count);
 		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			pctx.errcode = 0;
@@ -1223,8 +1223,8 @@ static void deallocate_inode(e2fsck_t ctx, ext2_ino_t ino, char* block_buf)
 	    (inode.i_size_high || inode.i_size & 0x80000000UL))
 		ctx->large_files--;
 
-	pctx.errcode = ext2fs_block_iterate2(fs, ino, 0, block_buf,
-					    deallocate_inode_block, ctx);
+	pctx.errcode = ext2fs_block_iterate3(fs, ino, 0, block_buf,
+					     deallocate_inode_block, ctx);
 	if (pctx.errcode) {
 		fix_problem(ctx, PR_2_DEALLOC_INODE, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
@@ -1397,7 +1397,7 @@ extern int e2fsck_process_bad_inode(e2fsck_t ctx, ext2_ino_t dir,
  * 	that was zeroed out and now needs to be replaced.
  */
 static int allocate_dir_block(e2fsck_t ctx,
-			      struct ext2_db_entry *db,
+			      struct ext2_db_entry2 *db,
 			      char *buf EXT2FS_ATTR((unused)),
 			      struct problem_context *pctx)
 {

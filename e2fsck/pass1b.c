@@ -54,7 +54,7 @@ typedef long intptr_t;
 #define BLOCK_COUNT_EXTATTR	(-5)
 
 struct block_el {
-	blk_t	block;
+	blk64_t	block;
 	struct block_el *next;
 };
 
@@ -89,7 +89,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 			struct dup_inode *dp, char *block_buf);
 static int clone_file(e2fsck_t ctx, ext2_ino_t ino,
 		      struct dup_inode *dp, char* block_buf);
-static int check_if_fs_block(e2fsck_t ctx, blk_t test_blk);
+static int check_if_fs_block(e2fsck_t ctx, blk64_t test_blk);
 
 static void pass1b(e2fsck_t ctx, char *block_buf);
 static void pass1c(e2fsck_t ctx, char *block_buf);
@@ -115,7 +115,7 @@ static int dict_int_cmp(const void *a, const void *b)
 /*
  * Add a duplicate block record
  */
-static void add_dupe(e2fsck_t ctx, ext2_ino_t ino, blk_t blk,
+static void add_dupe(e2fsck_t ctx, ext2_ino_t ino, blk64_t blk,
 		     struct ext2_inode *inode)
 {
 	dnode_t	*n;
@@ -548,7 +548,7 @@ static void pass1d(e2fsck_t ctx, char *block_buf)
  * Drop the refcount on the dup_block structure, and clear the entry
  * in the block_dup_map if appropriate.
  */
-static void decrement_badcount(e2fsck_t ctx, blk_t block, struct dup_block *p)
+static void decrement_badcount(e2fsck_t ctx, blk64_t block, struct dup_block *p)
 {
 	p->num_bad--;
 	if (p->num_bad <= 0 ||
@@ -622,7 +622,7 @@ static void delete_file(e2fsck_t ctx, ext2_ino_t ino,
 	if (ext2fs_file_acl_block(&inode) &&
 	    (fs->super->s_feature_compat & EXT2_FEATURE_COMPAT_EXT_ATTR)) {
 		count = 1;
-		pctx.errcode = ext2fs_adjust_ea_refcount(fs,
+		pctx.errcode = ext2fs_adjust_ea_refcount2(fs,
 						   ext2fs_file_acl_block(&inode),
 						   block_buf, -1, &count);
 		if (pctx.errcode == EXT2_ET_BAD_EA_BLOCK_NUM) {
@@ -687,7 +687,7 @@ static int clone_file_block(ext2_filsys fs,
 				return BLOCK_ABORT;
 			}
 			if (cs->dir && (blockcnt >= 0)) {
-				retval = ext2fs_set_dir_block(fs->dblist,
+				retval = ext2fs_set_dir_block2(fs->dblist,
 				      cs->dir, new_block, blockcnt);
 				if (retval) {
 					cs->errcode = retval;
@@ -820,10 +820,10 @@ errout:
  * This routine returns 1 if a block overlaps with one of the superblocks,
  * group descriptors, inode bitmaps, or block bitmaps.
  */
-static int check_if_fs_block(e2fsck_t ctx, blk_t test_block)
+static int check_if_fs_block(e2fsck_t ctx, blk64_t test_block)
 {
 	ext2_filsys fs = ctx->fs;
-	blk_t	first_block;
+	blk64_t	first_block;
 	dgrp_t	i;
 
 	first_block = fs->super->s_first_data_block;

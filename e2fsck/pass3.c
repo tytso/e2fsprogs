@@ -675,24 +675,24 @@ static void fix_dotdot(e2fsck_t ctx, ext2_ino_t ino, ext2_ino_t parent)
  */
 
 struct expand_dir_struct {
-	int			num;
-	int			guaranteed_size;
-	int			newblocks;
-	int			last_block;
+	blk64_t			num;
+	e2_blkcnt_t		guaranteed_size;
+	blk64_t			newblocks;
+	blk64_t			last_block;
 	errcode_t		err;
 	e2fsck_t		ctx;
 };
 
 static int expand_dir_proc(ext2_filsys fs,
-			   blk_t	*blocknr,
+			   blk64_t	*blocknr,
 			   e2_blkcnt_t	blockcnt,
-			   blk_t ref_block EXT2FS_ATTR((unused)),
+			   blk64_t ref_block EXT2FS_ATTR((unused)),
 			   int ref_offset EXT2FS_ATTR((unused)),
 			   void	*priv_data)
 {
 	struct expand_dir_struct *es = (struct expand_dir_struct *) priv_data;
 	blk64_t	new_blk;
-	static blk_t	last_blk = 0;
+	static blk64_t	last_blk = 0;
 	char		*block;
 	errcode_t	retval;
 	e2fsck_t	ctx;
@@ -775,7 +775,7 @@ errcode_t e2fsck_expand_directory(e2fsck_t ctx, ext2_ino_t dir,
 	es.newblocks = 0;
 	es.ctx = ctx;
 
-	retval = ext2fs_block_iterate2(fs, dir, BLOCK_FLAG_APPEND,
+	retval = ext2fs_block_iterate3(fs, dir, BLOCK_FLAG_APPEND,
 				       0, expand_dir_proc, &es);
 
 	if (es.err)

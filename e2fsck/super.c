@@ -54,16 +54,16 @@ struct process_block_struct {
 };
 
 static int release_inode_block(ext2_filsys fs,
-			       blk_t	*block_nr,
+			       blk64_t	*block_nr,
 			       e2_blkcnt_t blockcnt,
-			       blk_t	ref_blk EXT2FS_ATTR((unused)),
+			       blk64_t	ref_blk EXT2FS_ATTR((unused)),
 			       int	ref_offset EXT2FS_ATTR((unused)),
 			       void *priv_data)
 {
 	struct process_block_struct *pb;
 	e2fsck_t 		ctx;
 	struct problem_context	*pctx;
-	blk_t			blk = *block_nr;
+	blk64_t			blk = *block_nr;
 	int			retval = 0;
 
 	pb = (struct process_block_struct *) priv_data;
@@ -180,7 +180,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		pb.truncate_offset = 0;
 	}
 	pb.truncated_blocks = 0;
-	retval = ext2fs_block_iterate2(fs, ino, BLOCK_FLAG_DEPTH_TRAVERSE,
+	retval = ext2fs_block_iterate3(fs, ino, BLOCK_FLAG_DEPTH_TRAVERSE,
 				      block_buf, release_inode_block, &pb);
 	if (retval) {
 		com_err("release_inode_blocks", retval,
@@ -198,7 +198,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		ext2fs_iblk_sub_blocks(fs, inode, pb.truncated_blocks);
 
 	if (ext2fs_file_acl_block(inode)) {
-		retval = ext2fs_adjust_ea_refcount(fs, ext2fs_file_acl_block(inode),
+		retval = ext2fs_adjust_ea_refcount2(fs, ext2fs_file_acl_block(inode),
 						   block_buf, -1, &count);
 		if (retval == EXT2_ET_BAD_EA_BLOCK_NUM) {
 			retval = 0;
@@ -206,7 +206,7 @@ static int release_inode_blocks(e2fsck_t ctx, ext2_ino_t ino,
 		}
 		if (retval) {
 			com_err("release_inode_blocks", retval,
-		_("while calling ext2fs_adjust_ea_refcount for inode %d"),
+		_("while calling ext2fs_adjust_ea_refcount2 for inode %d"),
 				ino);
 			return 1;
 		}
@@ -313,7 +313,7 @@ void check_resize_inode(e2fsck_t ctx)
 	struct problem_context	pctx;
 	int		i, gdt_off, ind_off;
 	dgrp_t		j;
-	blk_t		blk, pblk, expect;
+	blk64_t		blk, pblk, expect;
 	__u32 		*dind_buf = 0, *ind_buf;
 	errcode_t	retval;
 
@@ -456,20 +456,20 @@ static void e2fsck_fix_dirhash_hint(e2fsck_t ctx)
 void check_super_block(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	blk_t	first_block, last_block;
+	blk64_t	first_block, last_block;
 	struct ext2_super_block *sb = fs->super;
 	problem_t	problem;
-	blk_t	blocks_per_group = fs->super->s_blocks_per_group;
-	blk_t	bpg_max;
+	blk64_t	blocks_per_group = fs->super->s_blocks_per_group;
+	__u32	bpg_max;
 	int	inodes_per_block;
 	int	ipg_max;
 	int	inode_size;
 	int	accept_time_fudge;
 	int	broken_system_clock;
 	dgrp_t	i;
-	blk_t	should_be;
+	blk64_t	should_be;
 	struct problem_context	pctx;
-	blk_t	free_blocks = 0;
+	blk64_t	free_blocks = 0;
 	ino_t	free_inodes = 0;
 	int     csum_flag, clear_test_fs_flag;
 
@@ -906,7 +906,7 @@ int check_backup_super_block(e2fsck_t ctx)
 	ext2_filsys	fs = ctx->fs;
 	errcode_t	retval;
 	dgrp_t		g;
-	blk_t		sb;
+	blk64_t		sb;
 	int		ret = 0;
 	char		buf[SUPERBLOCK_SIZE];
 	struct ext2_super_block	*backup_sb;

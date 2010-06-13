@@ -64,7 +64,7 @@ void e2fsck_pass5(e2fsck_t ctx)
 	print_resource_track(ctx, _("Pass 5"), &rtrack, ctx->fs->io);
 }
 
-#define NO_BLK ((blk_t) -1)
+#define NO_BLK ((blk64_t) -1)
 
 static void print_bitmap_problem(e2fsck_t ctx, int problem,
 			    struct problem_context *pctx)
@@ -106,8 +106,8 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	blk64_t	i;
 	int	*free_array;
 	int	group = 0;
-	blk_t	blocks = 0;
-	blk_t	free_blocks = 0;
+	int	blocks = 0;
+	blk64_t	free_blocks = 0;
 	int	group_free = 0;
 	int	actual, bitmap;
 	struct problem_context	pctx;

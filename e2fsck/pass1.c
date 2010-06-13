@@ -55,11 +55,11 @@
 #define _INLINE_ inline
 #endif
 
-static int process_block(ext2_filsys fs, blk_t	*blocknr,
-			 e2_blkcnt_t blockcnt, blk_t ref_blk,
+static int process_block(ext2_filsys fs, blk64_t	*blocknr,
+			 e2_blkcnt_t blockcnt, blk64_t ref_blk,
 			 int ref_offset, void *priv_data);
-static int process_bad_block(ext2_filsys fs, blk_t *block_nr,
-			     e2_blkcnt_t blockcnt, blk_t ref_blk,
+static int process_bad_block(ext2_filsys fs, blk64_t *block_nr,
+			     e2_blkcnt_t blockcnt, blk64_t ref_blk,
 			     int ref_offset, void *priv_data);
 static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 			 char *block_buf);
@@ -74,18 +74,18 @@ static errcode_t scan_callback(ext2_filsys fs, ext2_inode_scan scan,
 				  dgrp_t group, void * priv_data);
 static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 				    char *block_buf, int adjust_sign);
-/* static char *describe_illegal_block(ext2_filsys fs, blk_t block); */
+/* static char *describe_illegal_block(ext2_filsys fs, blk64_t block); */
 
 struct process_block_struct {
 	ext2_ino_t	ino;
 	unsigned	is_dir:1, is_reg:1, clear:1, suppress:1,
 				fragmented:1, compressed:1, bbcheck:1;
 	blk64_t		num_blocks;
-	blk_t		max_blocks;
+	blk64_t		max_blocks;
 	e2_blkcnt_t	last_block;
 	e2_blkcnt_t	last_db_block;
 	int		num_illegal_blocks;
-	blk_t		previous_block;
+	blk64_t		previous_block;
 	struct ext2_inode *inode;
 	struct problem_context *pctx;
 	ext2fs_block_bitmap fs_meta_blocks;
@@ -169,7 +169,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 {
 	unsigned int len;
 	int i;
-	blk_t	blocks;
+	blk64_t	blocks;
 	ext2_extent_handle_t	handle;
 	struct ext2_extent_info	info;
 	struct ext2fs_extent	extent;
@@ -200,7 +200,7 @@ int e2fsck_pass1_check_symlink(ext2_filsys fs, ext2_ino_t ino,
 		return i;
 	}
 
-	blocks = ext2fs_inode_data_blocks(fs, inode);
+	blocks = ext2fs_inode_data_blocks2(fs, inode);
 	if (blocks) {
 		if ((inode->i_size >= fs->blocksize) ||
 		    (blocks != fs->blocksize >> 9) ||
@@ -404,8 +404,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	struct ext2_dir_entry 	*dirent;
 	const char		*old_op;
 	errcode_t		retval;
-	blk_t			blk;
-	blk64_t			first_dir_blk;
+	blk64_t			blk, first_dir_blk;
 	unsigned int		i, rec_len, not_device = 0;
 	int			extent_fs;
 
@@ -440,7 +439,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 	extent_fs = (ctx->fs->super->s_feature_incompat & EXT3_FEATURE_INCOMPAT_EXTENTS);
 	if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL)) {
 		/* extent mapped */
-		if  (ext2fs_bmap(ctx->fs, pctx->ino, inode, 0, 0, 0,
+		if  (ext2fs_bmap2(ctx->fs, pctx->ino, inode, 0, 0, 0, 0,
 				 &blk))
 			return;
 		/* device files are never extent mapped */
@@ -473,7 +472,7 @@ static void check_is_really_dir(e2fsck_t ctx, struct problem_context *pctx,
 
 	/* read the first block */
 	old_op = ehandler_operation(_("reading directory block"));
-	retval = ext2fs_read_dir_block(ctx->fs, blk, buf);
+	retval = ext2fs_read_dir_block3(ctx->fs, blk, buf, 0);
 	ehandler_operation(0);
 	if (retval)
 		return;
@@ -819,7 +818,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 			pb.inode = inode;
 			pb.pctx = &pctx;
 			pb.ctx = ctx;
-			pctx.errcode = ext2fs_block_iterate2(fs, ino, 0,
+			pctx.errcode = ext2fs_block_iterate3(fs, ino, 0,
 				     block_buf, process_bad_block, &pb);
 			ext2fs_free_block_bitmap(pb.fs_meta_blocks);
 			if (pctx.errcode) {
@@ -874,7 +873,7 @@ void e2fsck_pass1(e2fsck_t ctx)
 				check_blocks(ctx, &pctx, block_buf);
 				continue;
 			}
-			if ((inode->i_links_count || inode->i_blocks ||
+			if ((inode->i_links_count ||
 			     inode->i_blocks || inode->i_block[0]) &&
 			    fix_problem(ctx, PR_1_JOURNAL_INODE_NOT_CLEAR,
 					&pctx)) {
@@ -1332,7 +1331,7 @@ static void alloc_imagic_map(e2fsck_t ctx)
  * WARNING: Assumes checks have already been done to make sure block
  * is valid.  This is true in both process_block and process_bad_block.
  */
-static _INLINE_ void mark_block_used(e2fsck_t ctx, blk_t block)
+static _INLINE_ void mark_block_used(e2fsck_t ctx, blk64_t block)
 {
 	struct		problem_context pctx;
 
@@ -1371,7 +1370,7 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 	struct ext2_ext_attr_header 	*header;
 	struct problem_context		pctx;
 	ext2_filsys			fs = ctx->fs;
-	blk_t				blk;
+	blk64_t				blk;
 	__u32				should_be;
 	int				count;
 
@@ -1382,7 +1381,7 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 		if ((blk = ea_refcount_intr_next(refcount, &count)) == 0)
 			break;
 		pctx.blk = blk;
-		pctx.errcode = ext2fs_read_ext_attr(fs, blk, block_buf);
+		pctx.errcode = ext2fs_read_ext_attr2(fs, blk, block_buf);
 		if (pctx.errcode) {
 			fix_problem(ctx, PR_1_EXTATTR_READ_ABORT, &pctx);
 			return;
@@ -1393,7 +1392,7 @@ static void adjust_extattr_refcount(e2fsck_t ctx, ext2_refcount_t refcount,
 		pctx.num = should_be;
 		if (fix_problem(ctx, PR_1_EXTATTR_REFCOUNT, &pctx)) {
 			header->h_refcount = should_be;
-			pctx.errcode = ext2fs_write_ext_attr(fs, blk,
+			pctx.errcode = ext2fs_write_ext_attr2(fs, blk,
 							     block_buf);
 			if (pctx.errcode) {
 				fix_problem(ctx, PR_1_EXTATTR_WRITE_ABORT,
@@ -1413,7 +1412,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	ext2_filsys fs = ctx->fs;
 	ext2_ino_t	ino = pctx->ino;
 	struct ext2_inode *inode = pctx->inode;
-	blk_t		blk;
+	blk64_t		blk;
 	char *		end;
 	struct ext2_ext_attr_header *header;
 	struct ext2_ext_attr_entry *entry;
@@ -1491,7 +1490,7 @@ static int check_ext_attr(e2fsck_t ctx, struct problem_context *pctx,
 	 * validate it
 	 */
 	pctx->blk = blk;
-	pctx->errcode = ext2fs_read_ext_attr(fs, blk, block_buf);
+	pctx->errcode = ext2fs_read_ext_attr2(fs, blk, block_buf);
 	if (pctx->errcode && fix_problem(ctx, PR_1_READ_EA_BLOCK, pctx))
 		goto clear_extattr;
 	header = (struct ext2_ext_attr_header *) block_buf;
@@ -1596,7 +1595,7 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 	struct ext2_dx_root_info	*root;
 	ext2_filsys			fs = ctx->fs;
 	errcode_t			retval;
-	blk_t				blk;
+	blk64_t				blk;
 
 	if ((!LINUX_S_ISDIR(inode->i_mode) &&
 	     fix_problem(ctx, PR_1_HTREE_NODIR, pctx)) ||
@@ -1604,7 +1603,7 @@ static int handle_htree(e2fsck_t ctx, struct problem_context *pctx,
 	     fix_problem(ctx, PR_1_HTREE_SET, pctx)))
 		return 1;
 
-	pctx->errcode = ext2fs_bmap(fs, ino, inode, 0, 0, 0, &blk);
+	pctx->errcode = ext2fs_bmap2(fs, ino, inode, 0, 0, 0, 0, &blk);
 
 	if ((pctx->errcode) ||
 	    (blk == 0) ||
@@ -1677,7 +1676,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			     ext2_extent_handle_t ehandle)
 {
 	struct ext2fs_extent	extent;
-	blk_t			blk;
+	blk64_t			blk;
 	e2_blkcnt_t		blockcnt;
 	unsigned int		i;
 	int			is_dir, is_leaf;
@@ -1778,9 +1777,9 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			pb->fragmented = 1;
 		}
 		while (is_dir && ++pb->last_db_block < extent.e_lblk) {
-			pctx->errcode = ext2fs_add_dir_block(ctx->fs->dblist,
-							     pb->ino, 0,
-							     pb->last_db_block);
+			pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist,
+							      pb->ino, 0,
+							      pb->last_db_block);
 			if (pctx->errcode) {
 				pctx->blk = 0;
 				pctx->num = pb->last_db_block;
@@ -1793,7 +1792,7 @@ static void scan_extent_node(e2fsck_t ctx, struct problem_context *pctx,
 			mark_block_used(ctx, blk);
 
 			if (is_dir) {
-				pctx->errcode = ext2fs_add_dir_block(ctx->fs->dblist, pctx->ino, blk, blockcnt);
+				pctx->errcode = ext2fs_add_dir_block2(ctx->fs->dblist, pctx->ino, blk, blockcnt);
 				if (pctx->errcode) {
 					pctx->blk = blk;
 					pctx->num = blockcnt;
@@ -1917,7 +1916,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		if (extent_fs && (inode->i_flags & EXT4_EXTENTS_FL))
 			check_blocks_extents(ctx, pctx, &pb);
 		else
-			pctx->errcode = ext2fs_block_iterate2(fs, ino,
+			pctx->errcode = ext2fs_block_iterate3(fs, ino,
 						pb.is_dir ? BLOCK_FLAG_HOLE : 0,
 						block_buf, process_block, &pb);
 	}
@@ -1966,7 +1965,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pb.num_blocks *= (fs->blocksize / 512);
 #if 0
 	printf("inode %u, i_size = %lu, last_block = %lld, i_blocks=%lu, num_blocks = %lu\n",
-	       ino, inode->i_size, pb.last_block, inode->i_blocks,
+	       ino, inode->i_size, pb.last_block, ext2fs_inode_i_blocks(fs, inode),
 	       pb.num_blocks);
 #endif
 	if (pb.is_dir) {
@@ -2058,9 +2057,9 @@ out:
  * Helper function called by process block when an illegal block is
  * found.  It returns a description about why the block is illegal
  */
-static char *describe_illegal_block(ext2_filsys fs, blk_t block)
+static char *describe_illegal_block(ext2_filsys fs, blk64_t block)
 {
-	blk_t	super;
+	blk64_t	super;
 	int	i;
 	static char	problem[80];
 
@@ -2109,15 +2108,15 @@ static char *describe_illegal_block(ext2_filsys fs, blk_t block)
  * This is a helper function for check_blocks().
  */
 static int process_block(ext2_filsys fs,
-		  blk_t	*block_nr,
+		  blk64_t	*block_nr,
 		  e2_blkcnt_t blockcnt,
-		  blk_t ref_block EXT2FS_ATTR((unused)),
+		  blk64_t ref_block EXT2FS_ATTR((unused)),
 		  int ref_offset EXT2FS_ATTR((unused)),
 		  void *priv_data)
 {
 	struct process_block_struct *p;
 	struct problem_context *pctx;
-	blk_t	blk = *block_nr;
+	blk64_t	blk = *block_nr;
 	int	ret_code = 0;
 	int	problem = 0;
 	e2fsck_t	ctx;
@@ -2235,17 +2234,17 @@ static int process_block(ext2_filsys fs,
 mark_dir:
 	if (p->is_dir && (blockcnt >= 0)) {
 		while (++p->last_db_block < blockcnt) {
-			pctx->errcode = ext2fs_add_dir_block(fs->dblist,
-							     p->ino, 0,
-							     p->last_db_block);
+			pctx->errcode = ext2fs_add_dir_block2(fs->dblist,
+							      p->ino, 0,
+							      p->last_db_block);
 			if (pctx->errcode) {
 				pctx->blk = 0;
 				pctx->num = p->last_db_block;
 				goto failed_add_dir_block;
 			}
 		}
-		pctx->errcode = ext2fs_add_dir_block(fs->dblist, p->ino,
-						    blk, blockcnt);
+		pctx->errcode = ext2fs_add_dir_block2(fs->dblist, p->ino,
+						      blk, blockcnt);
 		if (pctx->errcode) {
 			pctx->blk = blk;
 			pctx->num = blockcnt;
@@ -2260,15 +2259,15 @@ mark_dir:
 }
 
 static int process_bad_block(ext2_filsys fs,
-		      blk_t *block_nr,
+		      blk64_t *block_nr,
 		      e2_blkcnt_t blockcnt,
-		      blk_t ref_block EXT2FS_ATTR((unused)),
+		      blk64_t ref_block EXT2FS_ATTR((unused)),
 		      int ref_offset EXT2FS_ATTR((unused)),
 		      void *priv_data)
 {
 	struct process_block_struct *p;
-	blk_t		blk = *block_nr;
-	blk_t		first_block;
+	blk64_t		blk = *block_nr;
+	blk64_t		first_block;
 	dgrp_t		i;
 	struct problem_context *pctx;
 	e2fsck_t	ctx;
@@ -2554,7 +2553,7 @@ static void handle_fs_bad_blocks(e2fsck_t ctx)
 static void mark_table_blocks(e2fsck_t ctx)
 {
 	ext2_filsys fs = ctx->fs;
-	blk_t	b;
+	blk64_t	b;
 	dgrp_t	i;
 	int	j;
 	struct problem_context pctx;

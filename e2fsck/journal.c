@@ -43,7 +43,7 @@ static int bh_count = 0;
  * to use the recovery.c file virtually unchanged from the kernel, so we
  * don't have to do much to keep kernel and user recovery in sync.
  */
-int journal_bmap(journal_t *journal, blk_t block, unsigned long *phys)
+int journal_bmap(journal_t *journal, blk64_t block, unsigned long *phys)
 {
 #ifdef USE_INODE_IO
 	*phys = block;
@@ -51,21 +51,21 @@ int journal_bmap(journal_t *journal, blk_t block, unsigned long *phys)
 #else
 	struct inode 	*inode = journal->j_inode;
 	errcode_t	retval;
-	blk_t		pblk;
+	blk64_t		pblk;
 
 	if (!inode) {
 		*phys = block;
 		return 0;
 	}
 
-	retval= ext2fs_bmap(inode->i_ctx->fs, inode->i_ino,
-			    &inode->i_ext2, NULL, 0, block, &pblk);
+	retval= ext2fs_bmap2(inode->i_ctx->fs, inode->i_ino,
+			     &inode->i_ext2, NULL, 0, block, 0, &pblk);
 	*phys = pblk;
 	return (retval);
 #endif
 }
 
-struct buffer_head *getblk(kdev_t kdev, blk_t blocknr, int blocksize)
+struct buffer_head *getblk(kdev_t kdev, blk64_t blocknr, int blocksize)
 {
 	struct buffer_head *bh;
 	int bufsize = sizeof(*bh) + kdev->k_ctx->fs->blocksize -
@@ -203,14 +203,14 @@ struct process_block_struct {
 };
 
 static int process_journal_block(ext2_filsys fs,
-				 blk_t	*block_nr,
+				 blk64_t	*block_nr,
 				 e2_blkcnt_t blockcnt,
-				 blk_t ref_block EXT2FS_ATTR((unused)),
+				 blk64_t ref_block EXT2FS_ATTR((unused)),
 				 int ref_offset EXT2FS_ATTR((unused)),
 				 void *priv_data)
 {
 	struct process_block_struct *p;
-	blk_t	blk = *block_nr;
+	blk64_t	blk = *block_nr;
 
 	p = (struct process_block_struct *) priv_data;
 
@@ -307,7 +307,7 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 			goto try_backup_journal;
 		}
 		pb.last_block = -1;
-		retval = ext2fs_block_iterate2(ctx->fs, j_inode->i_ino,
+		retval = ext2fs_block_iterate3(ctx->fs, j_inode->i_ino,
 					       BLOCK_FLAG_HOLE, 0,
 					       process_journal_block, &pb);
 		if ((pb.last_block+1) * ctx->fs->blocksize <

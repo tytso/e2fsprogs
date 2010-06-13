@@ -78,9 +78,9 @@ struct out_dir {
 };
 
 static int fill_dir_block(ext2_filsys fs,
-			  blk_t	*block_nr,
+			  blk64_t *block_nr,
 			  e2_blkcnt_t blockcnt,
-			  blk_t ref_block EXT2FS_ATTR((unused)),
+			  blk64_t ref_block EXT2FS_ATTR((unused)),
 			  int ref_offset EXT2FS_ATTR((unused)),
 			  void *priv_data)
 {
@@ -105,7 +105,7 @@ static int fill_dir_block(ext2_filsys fs,
 		dirent = (struct ext2_dir_entry *) dir;
 		(void) ext2fs_set_rec_len(fs, fs->blocksize, dirent);
 	} else {
-		fd->err = ext2fs_read_dir_block(fs, *block_nr, dir);
+		fd->err = ext2fs_read_dir_block3(fs, *block_nr, dir, 0);
 		if (fd->err)
 			return BLOCK_ABORT;
 	}
@@ -632,14 +632,14 @@ struct write_dir_struct {
  * Helper function which writes out a directory block.
  */
 static int write_dir_block(ext2_filsys fs,
-			   blk_t	*block_nr,
+			   blk64_t *block_nr,
 			   e2_blkcnt_t blockcnt,
-			   blk_t ref_block EXT2FS_ATTR((unused)),
+			   blk64_t ref_block EXT2FS_ATTR((unused)),
 			   int ref_offset EXT2FS_ATTR((unused)),
 			   void *priv_data)
 {
 	struct write_dir_struct	*wd = (struct write_dir_struct *) priv_data;
-	blk_t	blk;
+	blk64_t	blk;
 	char	*dir;
 
 	if (*block_nr == 0)
@@ -657,7 +657,7 @@ static int write_dir_block(ext2_filsys fs,
 		return 0;
 
 	dir = wd->outdir->buf + (blockcnt * fs->blocksize);
-	wd->err = ext2fs_write_dir_block(fs, *block_nr, dir);
+	wd->err = ext2fs_write_dir_block3(fs, *block_nr, dir, 0);
 	if (wd->err)
 		return BLOCK_ABORT;
 	return 0;
@@ -680,7 +680,7 @@ static errcode_t write_directory(e2fsck_t ctx, ext2_filsys fs,
 	wd.ctx = ctx;
 	wd.cleared = 0;
 
-	retval = ext2fs_block_iterate2(fs, ino, 0, 0,
+	retval = ext2fs_block_iterate3(fs, ino, 0, 0,
 				       write_dir_block, &wd);
 	if (retval)
 		return retval;
@@ -738,7 +738,7 @@ errcode_t e2fsck_rehash_dir(e2fsck_t ctx, ext2_ino_t ino)
 
 retry_nohash:
 	/* Read in the entire directory into memory */
-	retval = ext2fs_block_iterate2(fs, ino, 0, 0,
+	retval = ext2fs_block_iterate3(fs, ino, 0, 0,
 				       fill_dir_block, &fd);
 	if (fd.err) {
 		retval = fd.err;
