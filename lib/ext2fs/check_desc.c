@@ -34,8 +34,8 @@ errcode_t ext2fs_check_desc(ext2_filsys fs)
 	ext2fs_block_bitmap bmap;
 	errcode_t retval;
 	dgrp_t i;
-	blk_t first_block = fs->super->s_first_data_block;
-	blk_t last_block = ext2fs_blocks_count(fs->super)-1;
+	blk64_t first_block = fs->super->s_first_data_block;
+	blk64_t last_block = ext2fs_blocks_count(fs->super)-1;
 	blk64_t blk, b;
 	int j;
 

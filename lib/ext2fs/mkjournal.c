@@ -210,29 +210,29 @@ errcode_t ext2fs_zero_blocks(ext2_filsys fs, blk_t blk, int num,
 struct mkjournal_struct {
 	int		num_blocks;
 	int		newblocks;
-	blk_t		goal;
-	blk_t		blk_to_zero;
+	blk64_t		goal;
+	blk64_t		blk_to_zero;
 	int		zero_count;
 	char		*buf;
 	errcode_t	err;
 };
 
 static int mkjournal_proc(ext2_filsys	fs,
-			   blk_t	*blocknr,
-			   e2_blkcnt_t	blockcnt,
-			   blk_t	ref_block EXT2FS_ATTR((unused)),
-			   int		ref_offset EXT2FS_ATTR((unused)),
-			   void		*priv_data)
+			  blk64_t	*blocknr,
+			  e2_blkcnt_t	blockcnt,
+			  blk64_t	ref_block EXT2FS_ATTR((unused)),
+			  int		ref_offset EXT2FS_ATTR((unused)),
+			  void		*priv_data)
 {
 	struct mkjournal_struct *es = (struct mkjournal_struct *) priv_data;
-	blk_t	new_blk;
+	blk64_t	new_blk;
 	errcode_t	retval;
 
 	if (*blocknr) {
 		es->goal = *blocknr;
 		return 0;
 	}
-	retval = ext2fs_new_block(fs, es->goal, 0, &new_blk);
+	retval = ext2fs_new_block2(fs, es->goal, 0, &new_blk);
 	if (retval) {
 		es->err = retval;
 		return BLOCK_ABORT;
@@ -250,10 +250,10 @@ static int mkjournal_proc(ext2_filsys	fs,
 			    (es->zero_count < 1024))
 				es->zero_count++;
 			else {
-				retval = ext2fs_zero_blocks(fs,
-							    es->blk_to_zero,
-							    es->zero_count,
-							    0, 0);
+				retval = ext2fs_zero_blocks2(fs,
+							     es->blk_to_zero,
+							     es->zero_count,
+							     0, 0);
 				es->zero_count = 0;
 			}
 		}
@@ -284,7 +284,7 @@ static int mkjournal_proc(ext2_filsys	fs,
  * This function creates a journal using direct I/O routines.
  */
 static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
-				     blk_t size, int flags)
+				     blk64_t size, int flags)
 {
 	char			*buf;
 	dgrp_t			group, start, end, i, log_flex;
@@ -344,14 +344,14 @@ static errcode_t write_journal_inode(ext2_filsys fs, ext2_ino_t journal_ino,
 	es.goal = (fs->super->s_blocks_per_group * group) +
 		fs->super->s_first_data_block;
 
-	retval = ext2fs_block_iterate2(fs, journal_ino, BLOCK_FLAG_APPEND,
+	retval = ext2fs_block_iterate3(fs, journal_ino, BLOCK_FLAG_APPEND,
 				       0, mkjournal_proc, &es);
 	if (es.err) {
 		retval = es.err;
 		goto errout;
 	}
 	if (es.zero_count) {
-		retval = ext2fs_zero_blocks(fs, es.blk_to_zero,
+		retval = ext2fs_zero_blocks2(fs, es.blk_to_zero,
 					    es.zero_count, 0, 0);
 		if (retval)
 			goto errout;

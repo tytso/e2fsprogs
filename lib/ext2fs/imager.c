@@ -62,7 +62,7 @@ errcode_t ext2fs_image_inode_write(ext2_filsys fs, int fd, int flags)
 {
 	unsigned int	group, left, c, d;
 	char		*buf, *cp;
-	blk_t		blk;
+	blk64_t		blk;
 	ssize_t		actual;
 	errcode_t	retval;
 
@@ -136,7 +136,7 @@ errcode_t ext2fs_image_inode_read(ext2_filsys fs, int fd,
 {
 	unsigned int	group, c, left;
 	char		*buf;
-	blk_t		blk;
+	blk64_t		blk;
 	ssize_t		actual;
 	errcode_t	retval;
 

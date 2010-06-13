@@ -25,15 +25,15 @@ struct expand_dir_struct {
 };
 
 static int expand_dir_proc(ext2_filsys	fs,
-			   blk_t	*blocknr,
+			   blk64_t	*blocknr,
 			   e2_blkcnt_t	blockcnt,
-			   blk_t	ref_block EXT2FS_ATTR((unused)),
+			   blk64_t	ref_block EXT2FS_ATTR((unused)),
 			   int		ref_offset EXT2FS_ATTR((unused)),
 			   void		*priv_data)
 {
 	struct expand_dir_struct *es = (struct expand_dir_struct *) priv_data;
-	blk_t	new_blk;
-	static blk_t	last_blk = 0;
+	blk64_t	new_blk;
+	static blk64_t	last_blk = 0;
 	char		*block;
 	errcode_t	retval;
 
@@ -41,7 +41,7 @@ static int expand_dir_proc(ext2_filsys	fs,
 		last_blk = *blocknr;
 		return 0;
 	}
-	retval = ext2fs_new_block(fs, last_blk, 0, &new_blk);
+	retval = ext2fs_new_block2(fs, last_blk, 0, &new_blk);
 	if (retval) {
 		es->err = retval;
 		return BLOCK_ABORT;
@@ -100,7 +100,7 @@ errcode_t ext2fs_expand_dir(ext2_filsys fs, ext2_ino_t dir)
 	es.err = 0;
 	es.newblocks = 0;
 
-	retval = ext2fs_block_iterate2(fs, dir, BLOCK_FLAG_APPEND,
+	retval = ext2fs_block_iterate3(fs, dir, BLOCK_FLAG_APPEND,
 				       0, expand_dir_proc, &es);
 
 	if (es.err)

@@ -93,7 +93,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 	unsigned long	i, first_meta_bg;
 	__u32		features;
 	int		groups_per_block, blocks_per_group, io_flags;
-	blk_t		group_block, blk;
+	blk64_t		group_block, blk;
 	char		*dest, *cp;
 #ifdef WORDS_BIGENDIAN
 	struct ext2_group_desc *gdp;
@@ -327,7 +327,7 @@ errcode_t ext2fs_open2(const char *name, const char *io_options,
 		dest += fs->blocksize*first_meta_bg;
 	}
 	for (i=first_meta_bg ; i < fs->desc_blocks; i++) {
-		blk = ext2fs_descriptor_block_loc(fs, group_block, i);
+		blk = ext2fs_descriptor_block_loc2(fs, group_block, i);
 		retval = io_channel_read_blk64(fs->io, blk, 1, dest);
 		if (retval)
 			goto cleanup;

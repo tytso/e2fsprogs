@@ -37,7 +37,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	struct ext2_inode	parent_inode, inode;
 	ext2_ino_t		ino = inum;
 	ext2_ino_t		scratch_ino;
-	blk_t			blk;
+	blk64_t			blk;
 	char			*block = 0;
 
 	EXT2_CHECK_MAGIC(fs, EXT2_ET_MAGIC_EXT2FS_FILSYS);
@@ -55,7 +55,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	/*
 	 * Allocate a data block for the directory
 	 */
-	retval = ext2fs_new_block(fs, 0, 0, &blk);
+	retval = ext2fs_new_block2(fs, 0, 0, &blk);
 	if (retval)
 		goto cleanup;
 
@@ -83,6 +83,7 @@ errcode_t ext2fs_mkdir(ext2_filsys fs, ext2_ino_t parent, ext2_ino_t inum,
 	inode.i_mode = LINUX_S_IFDIR | (0777 & ~fs->umask);
 	inode.i_uid = inode.i_gid = 0;
 	ext2fs_iblk_set(fs, &inode, 1);
+	/* FIXME-64 */
 	inode.i_block[0] = blk;
 	inode.i_links_count = 2;
 	inode.i_size = fs->blocksize;

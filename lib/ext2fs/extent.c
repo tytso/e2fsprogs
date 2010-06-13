@@ -285,7 +285,7 @@ errcode_t ext2fs_extent_get(ext2_extent_handle_t handle,
 	struct ext3_extent_idx		*ix = 0;
 	struct ext3_extent		*ex;
 	errcode_t			retval;
-	blk_t				blk;
+	blk64_t				blk;
 	blk64_t				end_blk;
 	int				orig_op, op;
 
@@ -819,7 +819,7 @@ errcode_t ext2fs_extent_replace(ext2_extent_handle_t handle,
 static errcode_t extent_node_split(ext2_extent_handle_t handle)
 {
 	errcode_t			retval = 0;
-	blk_t				new_node_pblk;
+	blk64_t				new_node_pblk;
 	blk64_t				new_node_start;
 	blk64_t				orig_lblk;
 	blk64_t				goal_blk = 0;
@@ -934,7 +934,7 @@ static errcode_t extent_node_split(ext2_extent_handle_t handle)
 		goal_blk = (group * handle->fs->super->s_blocks_per_group) +
 			handle->fs->super->s_first_data_block;
 	}
-	retval = ext2fs_alloc_block(handle->fs, (blk_t) goal_blk, block_buf,
+	retval = ext2fs_alloc_block2(handle->fs, goal_blk, block_buf,
 				    &new_node_pblk);
 	if (retval)
 		goto done;

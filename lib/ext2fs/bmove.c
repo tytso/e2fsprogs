@@ -36,14 +36,14 @@ struct process_block_struct {
 	int			flags;
 };
 
-static int process_block(ext2_filsys fs, blk_t	*block_nr,
-			 e2_blkcnt_t blockcnt, blk_t ref_block,
+static int process_block(ext2_filsys fs, blk64_t *block_nr,
+			 e2_blkcnt_t blockcnt, blk64_t ref_block,
 			 int ref_offset, void *priv_data)
 {
 	struct process_block_struct *pb;
 	errcode_t	retval;
 	int		ret;
-	blk_t		block, orig;
+	blk64_t		block, orig;
 
 	pb = (struct process_block_struct *) priv_data;
 	block = orig = *block_nr;
@@ -77,12 +77,14 @@ static int process_block(ext2_filsys fs, blk_t	*block_nr,
 		ext2fs_mark_block_bitmap2(pb->alloc_map, block);
 		ret = BLOCK_CHANGED;
 		if (pb->flags & EXT2_BMOVE_DEBUG)
-			printf("ino=%ld, blockcnt=%lld, %u->%u\n", pb->ino,
-			       blockcnt, orig, block);
+			printf("ino=%u, blockcnt=%lld, %llu->%llu\n",
+			       (unsigned) pb->ino, blockcnt, 
+			       (unsigned long long) orig,
+			       (unsigned long long) block);
 	}
 	if (pb->add_dir) {
-		retval = ext2fs_add_dir_block(fs->dblist, pb->ino,
-					      block, (int) blockcnt);
+		retval = ext2fs_add_dir_block2(fs->dblist, pb->ino,
+					       block, blockcnt);
 		if (retval) {
 			pb->error = retval;
 			ret |= BLOCK_ABORT;
@@ -147,8 +149,8 @@ errcode_t ext2fs_move_blocks(ext2_filsys fs,
 		pb.add_dir = (LINUX_S_ISDIR(inode.i_mode) &&
 			      flags & EXT2_BMOVE_GET_DBLIST);
 
-		retval = ext2fs_block_iterate2(fs, ino, 0, block_buf,
-					      process_block, &pb);
+		retval = ext2fs_block_iterate3(fs, ino, 0, block_buf,
+					       process_block, &pb);
 		if (retval)
 			return retval;
 		if (pb.error)

@@ -65,6 +65,7 @@ errcode_t ext2fs_create_resize_inode(ext2_filsys fs)
 	struct ext2_inode	inode;
 	__u32			*dindir_buf, *gdt_buf;
 	unsigned long long	apb, inode_size;
+	/* FIXME-64 - can't deal with extents */
 	blk_t			dindir_blk, rsv_off, gdt_off, gdt_blk;
 	int			dindir_dirty = 0, inode_dirty = 0;
 
