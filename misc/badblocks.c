@@ -981,7 +981,7 @@ int main (int argc, char ** argv)
 	FILE * in = NULL;
 	int block_size = 1024;
 	unsigned int blocks_at_once = 64;
-	blk_t last_block, first_block;
+	blk64_t last_block, first_block;
 	int num_passes = 0;
 	int passes_clean = 0;
 	int dev;
@@ -1116,7 +1116,7 @@ int main (int argc, char ** argv)
 		usage();
 	device_name = argv[optind++];
 	if (optind > argc - 1) {
-		errcode = ext2fs_get_device_size(device_name,
+		errcode = ext2fs_get_device_size2(device_name,
 						 block_size,
 						 &last_block);
 		if (errcode == EXT2_ET_UNIMPLEMENTED) {
