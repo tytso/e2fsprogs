@@ -215,9 +215,9 @@ static void use_inode_shortcuts(ext2_filsys fs, int bool)
 }
 
 static int process_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
-			     blk_t *block_nr,
+			     blk64_t *block_nr,
 			     e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
-			     blk_t ref_block EXT2FS_ATTR((unused)),
+			     blk64_t ref_block EXT2FS_ATTR((unused)),
 			     int ref_offset EXT2FS_ATTR((unused)),
 			     void *priv_data EXT2FS_ATTR((unused)))
 {
@@ -232,9 +232,9 @@ static int process_dir_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 }
 
 static int process_file_block(ext2_filsys fs EXT2FS_ATTR((unused)),
-			      blk_t *block_nr,
+			      blk64_t *block_nr,
 			      e2_blkcnt_t blockcnt,
-			      blk_t ref_block EXT2FS_ATTR((unused)),
+			      blk64_t ref_block EXT2FS_ATTR((unused)),
 			      int ref_offset EXT2FS_ATTR((unused)),
 			      void *priv_data EXT2FS_ATTR((unused)))
 {
@@ -246,7 +246,7 @@ static int process_file_block(ext2_filsys fs EXT2FS_ATTR((unused)),
 
 static void mark_table_blocks(ext2_filsys fs)
 {
-	blk_t	first_block, b;
+	blk64_t	first_block, b;
 	unsigned int	i,j;
 
 	first_block = fs->super->s_first_data_block;
@@ -260,7 +260,7 @@ static void mark_table_blocks(ext2_filsys fs)
 	 */
 	for (j = 0; j < fs->desc_blocks; j++) {
 		ext2fs_mark_block_bitmap2(meta_block_map,
-			 ext2fs_descriptor_block_loc(fs, first_block, j));
+			 ext2fs_descriptor_block_loc2(fs, first_block, j));
 	}
 
 	for (i = 0; i < fs->group_desc_count; i++) {
@@ -309,7 +309,7 @@ static int check_zero_block(char *buf, int blocksize)
 }
 
 static void write_block(int fd, char *buf, int sparse_offset,
-			int blocksize, blk_t block)
+			int blocksize, blk64_t block)
 {
 	int		count;
 	errcode_t	err;
@@ -330,7 +330,7 @@ static void write_block(int fd, char *buf, int sparse_offset,
 				err = errno;
 			else
 				err = 0;
-			com_err(program_name, err, "error writing block %u",
+			com_err(program_name, err, "error writing block %llu",
 				block);
 			exit(1);
 		}
@@ -341,7 +341,7 @@ int name_id[256];
 
 #define EXT4_MAX_REC_LEN		((1<<16)-1)
 
-static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
+static void scramble_dir_block(ext2_filsys fs, blk64_t blk, char *buf)
 {
 	char *p, *end, *cp;
 	struct ext2_dir_entry_2 *dirent;
@@ -406,7 +406,7 @@ static void scramble_dir_block(ext2_filsys fs, blk_t blk, char *buf)
 static void output_meta_data_blocks(ext2_filsys fs, int fd)
 {
 	errcode_t	retval;
-	blk_t		blk;
+	blk64_t		blk;
 	char		*buf, *zero_buf;
 	int		sparse = 0;
 
@@ -427,7 +427,7 @@ static void output_meta_data_blocks(ext2_filsys fs, int fd)
 			retval = io_channel_read_blk64(fs->io, blk, 1, buf);
 			if (retval) {
 				com_err(program_name, retval,
-					"error reading block %u", blk);
+					"error reading block %llu", blk);
 			}
 			if (scramble_block_map &&
 			    ext2fs_test_block_bitmap2(scramble_block_map, blk))
@@ -525,7 +525,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 		    (LINUX_S_ISLNK(inode.i_mode) &&
 		     ext2fs_inode_has_valid_blocks(&inode)) ||
 		    ino == fs->super->s_journal_inum) {
-			retval = ext2fs_block_iterate2(fs, ino,
+			retval = ext2fs_block_iterate3(fs, ino,
 					BLOCK_FLAG_READ_ONLY, block_buf,
 					process_dir_block, &pb);
 			if (retval) {
@@ -539,7 +539,7 @@ static void write_raw_image_file(ext2_filsys fs, int fd, int scramble_flag)
 			    inode.i_block[EXT2_IND_BLOCK] ||
 			    inode.i_block[EXT2_DIND_BLOCK] ||
 			    inode.i_block[EXT2_TIND_BLOCK]) {
-				retval = ext2fs_block_iterate2(fs,
+				retval = ext2fs_block_iterate3(fs,
 				       ino, BLOCK_FLAG_READ_ONLY, block_buf,
 				       process_file_block, &pb);
 				if (retval) {
@@ -632,7 +632,7 @@ int main (int argc, char ** argv)
 	errcode_t retval;
 	ext2_filsys fs;
 	char *image_fn;
-	int open_flag = 0;
+	int open_flag = EXT2_FLAG_64BITS;
 	int raw_flag = 0;
 	int install_flag = 0;
 	int scramble_flag = 0;
