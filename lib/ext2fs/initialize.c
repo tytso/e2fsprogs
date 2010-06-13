@@ -77,6 +77,10 @@ static unsigned int calc_reserved_gdt_blocks(ext2_filsys fs)
 	 */
 	if (ext2fs_blocks_count(sb) < max_blocks / 1024)
 		max_blocks = ext2fs_blocks_count(sb) * 1024;
+	/*
+	 * ext2fs_div64_ceil() is unnecessary because max_blocks is
+	 * max _GDT_ blocks, which is limited to 32 bits.
+	 */
 	rsv_groups = ext2fs_div_ceil(max_blocks - sb->s_first_data_block, bpg);
 	rsv_gdb = ext2fs_div_ceil(rsv_groups, gdpb) - fs->desc_blocks;
 	if (rsv_gdb > EXT2_ADDR_PER_BLOCK(sb))
@@ -226,11 +230,20 @@ retry:
 		retval = EXT2_ET_TOOSMALL;
 		goto cleanup;
 	}
+
+	if (super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)
+		super->s_desc_size = EXT2_MIN_DESC_SIZE_64BIT;
+
 	fs->desc_blocks = ext2fs_div_ceil(fs->group_desc_count,
 					  EXT2_DESC_PER_BLOCK(super));
 
 	i = fs->blocksize >= 4096 ? 1 : 4096 / fs->blocksize;
-	set_field(s_inodes_count, ext2fs_blocks_count(super) / i);
+
+	if (super->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT &&
+	    (ext2fs_blocks_count(super) / i) > (1ULL << 32))
+		set_field(s_inodes_count, ~0U);
+	else
+		set_field(s_inodes_count, ext2fs_blocks_count(super) / i);
 
 	/*
 	 * Make sure we have at least EXT2_FIRST_INO + 1 inodes, so

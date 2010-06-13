@@ -34,12 +34,12 @@
  * block number with a correct offset were the bitmaps and inode
  * tables can be allocated continously and in order.
  */
-static blk_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk64_t start_blk,
-			   ext2fs_block_bitmap bmap, int offset, int size,
-			   int elem_size)
+static blk64_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk64_t start_blk,
+			     ext2fs_block_bitmap bmap, int offset, int size,
+			     int elem_size)
 {
 	int		flexbg, flexbg_size;
-	blk_t		last_blk, first_free = 0;
+	blk64_t		last_blk, first_free = 0;
 	dgrp_t	       	last_grp;
 
 	flexbg_size = 1 << fs->super->s_log_groups_per_flex;
@@ -68,11 +68,11 @@ static blk_t flexbg_offset(ext2_filsys fs, dgrp_t group, blk64_t start_blk,
 	last_blk = ext2fs_group_last_block2(fs, last_grp);
 
 	/* Find the first available block */
-	if (ext2fs_get_free_blocks(fs, start_blk, last_blk, 1, bmap,
+	if (ext2fs_get_free_blocks2(fs, start_blk, last_blk, 1, bmap,
 				   &first_free))
 		return first_free;
 
-	if (ext2fs_get_free_blocks(fs, first_free + offset, last_blk, size,
+	if (ext2fs_get_free_blocks2(fs, first_free + offset, last_blk, size,
 				   bmap, &first_free))
 		return first_free;
 
@@ -83,7 +83,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 				      ext2fs_block_bitmap bmap)
 {
 	errcode_t	retval;
-	blk_t		group_blk, start_blk, last_blk, new_blk, blk;
+	blk64_t		group_blk, start_blk, last_blk, new_blk, blk;
 	dgrp_t		last_grp = 0;
 	int		j, rem_grps = 0, flexbg_size = 0;
 
@@ -107,8 +107,8 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	 * Allocate the block and inode bitmaps, if necessary
 	 */
 	if (fs->stride) {
-		retval = ext2fs_get_free_blocks(fs, group_blk, last_blk,
-						1, bmap, &start_blk);
+		retval = ext2fs_get_free_blocks2(fs, group_blk, last_blk,
+						 1, bmap, &start_blk);
 		if (retval)
 			return retval;
 		start_blk += fs->inode_blocks_per_group;
@@ -130,10 +130,10 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	}
 
 	if (!ext2fs_block_bitmap_loc(fs, group)) {
-		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
-						1, bmap, &new_blk);
+		retval = ext2fs_get_free_blocks2(fs, start_blk, last_blk,
+						 1, bmap, &new_blk);
 		if (retval == EXT2_ET_BLOCK_ALLOC_FAIL)
-			retval = ext2fs_get_free_blocks(fs, group_blk,
+			retval = ext2fs_get_free_blocks2(fs, group_blk,
 					last_blk, 1, bmap, &new_blk);
 		if (retval)
 			return retval;
@@ -158,11 +158,11 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	}
 
 	if (!ext2fs_inode_bitmap_loc(fs, group)) {
-		retval = ext2fs_get_free_blocks(fs, start_blk, last_blk,
-						1, bmap, &new_blk);
+		retval = ext2fs_get_free_blocks2(fs, start_blk, last_blk,
+						 1, bmap, &new_blk);
 		if (retval == EXT2_ET_BLOCK_ALLOC_FAIL)
-			retval = ext2fs_get_free_blocks(fs, group_blk,
-					last_blk, 1, bmap, &new_blk);
+			retval = ext2fs_get_free_blocks2(fs, group_blk,
+					 last_blk, 1, bmap, &new_blk);
 		if (retval)
 			return retval;
 		ext2fs_mark_block_bitmap2(bmap, new_blk);
@@ -194,7 +194,7 @@ errcode_t ext2fs_allocate_group_table(ext2_filsys fs, dgrp_t group,
 	}
 
 	if (!ext2fs_inode_table_loc(fs, group)) {
-		retval = ext2fs_get_free_blocks(fs, group_blk, last_blk,
+		retval = ext2fs_get_free_blocks2(fs, group_blk, last_blk,
 						fs->inode_blocks_per_group,
 						bmap, &new_blk);
 		if (retval)
