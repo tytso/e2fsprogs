@@ -63,12 +63,12 @@ static void print_number(unsigned long num)
 		printf("%lu", num);
 }
 
-static void print_range(unsigned long a, unsigned long b)
+static void print_range(unsigned long long a, unsigned long long b)
 {
 	if (hex_format)
-		printf("0x%04lx-0x%04lx", a, b);
+		printf("0x%llx-0x%llx", a, b);
 	else
-		printf("%lu-%lu", a, b);
+		printf("%llu-%llu", a, b);
 }
 
 static void print_free (unsigned long group, char * bitmap,
@@ -130,13 +130,13 @@ static void list_desc (ext2_filsys fs)
 {
 	unsigned long i;
 	long diff;
-	blk_t	first_block, last_block;
-	blk_t	super_blk, old_desc_blk, new_desc_blk;
+	blk64_t	first_block, last_block;
+	blk64_t	super_blk, old_desc_blk, new_desc_blk;
 	char *block_bitmap=NULL, *inode_bitmap=NULL;
 	int inode_blocks_per_group, old_desc_blocks, reserved_gdt;
 	int		block_nbytes, inode_nbytes;
 	int has_super;
-	blk_t		blk_itr = fs->super->s_first_data_block;
+	blk64_t		blk_itr = fs->super->s_first_data_block;
 	ext2_ino_t	ino_itr = 1;
 
 	block_nbytes = EXT2_BLOCKS_PER_GROUP(fs->super) / 8;
@@ -162,8 +162,8 @@ static void list_desc (ext2_filsys fs)
 		first_block = ext2fs_group_first_block2(fs, i);
 		last_block = ext2fs_group_last_block2(fs, i);
 
-		ext2fs_super_and_bgd_loc(fs, i, &super_blk,
-					 &old_desc_blk, &new_desc_blk, 0);
+		ext2fs_super_and_bgd_loc2(fs, i, &super_blk,
+					  &old_desc_blk, &new_desc_blk, 0);
 
 		printf (_("Group %lu: (Blocks "), i);
 		print_range(first_block, last_block);
@@ -393,7 +393,7 @@ static void print_journal_information(ext2_filsys fs)
 	}
 }
 
-static void parse_extended_opts(const char *opts, blk_t *superblock,
+static void parse_extended_opts(const char *opts, blk64_t *superblock,
 				int *blocksize)
 {
 	char	*buf, *token, *next, *p, *arg, *badopt = 0;
@@ -475,7 +475,7 @@ int main (int argc, char ** argv)
 	errcode_t	retval;
 	ext2_filsys	fs;
 	int		print_badblocks = 0;
-	blk_t		use_superblock = 0;
+	blk64_t		use_superblock = 0;
 	int		use_blocksize = 0;
 	int		image_dump = 0;
 	int		force = 0;
@@ -528,7 +528,7 @@ int main (int argc, char ** argv)
 	if (optind > argc - 1)
 		usage();
 	device_name = argv[optind++];
-	flags = EXT2_FLAG_JOURNAL_DEV_OK | EXT2_FLAG_SOFTSUPP_FEATURES;
+	flags = EXT2_FLAG_JOURNAL_DEV_OK | EXT2_FLAG_SOFTSUPP_FEATURES | EXT2_FLAG_64BITS;
 	if (force)
 		flags |= EXT2_FLAG_FORCE;
 	if (image_dump)
