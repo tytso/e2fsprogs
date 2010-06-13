@@ -66,6 +66,8 @@ extern int optind;
 
 #define STRIDE_LENGTH 8
 
+#define MAX_32_NUM ((((unsigned long long) 1) << 32) - 1)
+
 #ifndef __sparc__
 #define ZAP_BOOTBLOCK
 #endif
@@ -876,6 +878,7 @@ static void print_str_list(char **list)
 static char **parse_fs_type(const char *fs_type,
 			    const char *usage_types,
 			    struct ext2_super_block *fs_param,
+			    blk64_t fs_blocks_count,
 			    char *progname)
 {
 	const char	*ext_type = 0;
@@ -884,7 +887,7 @@ static char **parse_fs_type(const char *fs_type,
 	char		*cp, *t;
 	const char	*size_type;
 	struct str_list	list;
-	unsigned long	meg;
+	unsigned long long meg;
 	int		is_hurd = 0;
 
 	if (init_list(&list))
@@ -938,10 +941,14 @@ static char **parse_fs_type(const char *fs_type,
 	}
 
 	meg = (1024 * 1024) / EXT2_BLOCK_SIZE(fs_param);
-	if (ext2fs_blocks_count(fs_param) < 3 * meg)
+	if (fs_blocks_count < 3 * meg)
 		size_type = "floppy";
-	else if (ext2fs_blocks_count(fs_param) < 512 * meg)
+	else if (fs_blocks_count < 512 * meg)
 		size_type = "small";
+	else if (fs_blocks_count >= 4 * 1024 * 1024 * meg)
+		size_type = "big";
+	else if (fs_blocks_count >= 16 * 1024 * 1024 * meg)
+		size_type = "huge";
 	else
 		size_type = "default";
 
@@ -1085,6 +1092,7 @@ static void PRS(int argc, char *argv[])
 	const char *	fs_type = 0;
 	const char *	usage_types = 0;
 	blk64_t		dev_size;
+	blk64_t		fs_blocks_count = 0;
 #ifdef __linux__
 	struct 		utsname ut;
 #endif
@@ -1404,9 +1412,9 @@ static void PRS(int argc, char *argv[])
 			blocksize, sys_page_size);
 	}
 	if (optind < argc) {
-		ext2fs_blocks_count_set(&fs_param, parse_num_blocks2(argv[optind++],
-				fs_param.s_log_block_size));
-		if (!ext2fs_blocks_count(&fs_param)) {
+		fs_blocks_count = parse_num_blocks2(argv[optind++],
+						   fs_param.s_log_block_size);
+		if (!fs_blocks_count) {
 			com_err(program_name, 0, _("invalid blocks count - %s"),
 				argv[optind - 1]);
 			exit(1);
@@ -1421,7 +1429,8 @@ static void PRS(int argc, char *argv[])
 
 	fs_param.s_log_frag_size = fs_param.s_log_block_size;
 
-	fs_types = parse_fs_type(fs_type, usage_types, &fs_param, argv[0]);
+	fs_types = parse_fs_type(fs_type, usage_types, &fs_param, fs_blocks_count,
+				 argv[0]);
 	if (!fs_types) {
 		fprintf(stderr, _("Failed to parse fs types list\n"));
 		exit(1);
@@ -1453,56 +1462,20 @@ static void PRS(int argc, char *argv[])
 	if (tmp)
 		free(tmp);
 
-	if (noaction && ext2fs_blocks_count(&fs_param)) {
-		dev_size = ext2fs_blocks_count(&fs_param);
+	if (noaction && fs_blocks_count) {
+		dev_size = fs_blocks_count;
 		retval = 0;
-	} else {
-	retry:
+	} else
 		retval = ext2fs_get_device_size2(device_name,
 						 EXT2_BLOCK_SIZE(&fs_param),
 						 &dev_size);
-		if (!(fs_param.s_feature_incompat &
-		      EXT4_FEATURE_INCOMPAT_64BIT) && dev_size >= (1ULL << 32))
-			retval = EFBIG;
 
-		if ((retval == EFBIG) &&
-		    (blocksize == 0) &&
-		    (fs_param.s_log_block_size == 0)) {
-			fs_param.s_log_block_size = 2;
-			blocksize = 4096;
-			goto retry;
-		}
-	}
-
-	if (retval == EFBIG) {
-		blk64_t	big_dev_size;
-
-		if (blocksize < 4096) {
-			fs_param.s_log_block_size = 2;
-			blocksize = 4096;
-		}
-		retval = ext2fs_get_device_size2(device_name,
-				 EXT2_BLOCK_SIZE(&fs_param), &big_dev_size);
-		if (retval)
-			goto get_size_failure;
-		if (big_dev_size == (1ULL << 32)) {
-			dev_size = (blk_t) (big_dev_size - 1);
-			goto got_size;
-		}
-		fprintf(stderr, _("%s: Size of device %s too big "
-				  "to be expressed in 32 bits\n\t"
-				  "using a blocksize of %d.\n"),
-			program_name, device_name, EXT2_BLOCK_SIZE(&fs_param));
-		exit(1);
-	}
-get_size_failure:
 	if (retval && (retval != EXT2_ET_UNIMPLEMENTED)) {
 		com_err(program_name, retval,
 			_("while trying to determine filesystem size"));
 		exit(1);
 	}
-got_size:
-	if (!ext2fs_blocks_count(&fs_param)) {
+	if (!fs_blocks_count) {
 		if (retval == EXT2_ET_UNIMPLEMENTED) {
 			com_err(program_name, 0,
 				_("Couldn't determine device size; you "
@@ -1522,20 +1495,43 @@ got_size:
 				  ));
 				exit(1);
 			}
-			ext2fs_blocks_count_set(&fs_param, dev_size);
-			if (sys_page_size > EXT2_BLOCK_SIZE(&fs_param)) {
-				blk64_t tmp = ext2fs_blocks_count(&fs_param);
-
-				tmp &= ~((blk64_t) ((sys_page_size /
+			fs_blocks_count = dev_size;
+			if (sys_page_size > EXT2_BLOCK_SIZE(&fs_param))
+				fs_blocks_count &= ~((blk64_t) ((sys_page_size /
 					     EXT2_BLOCK_SIZE(&fs_param))-1));
-				ext2fs_blocks_count_set(&fs_param, tmp);
-			}
 		}
-	} else if (!force && (ext2fs_blocks_count(&fs_param) > dev_size)) {
+	} else if (!force && (fs_blocks_count > dev_size)) {
 		com_err(program_name, 0,
 			_("Filesystem larger than apparent device size."));
 		proceed_question();
 	}
+
+	/*
+	 * We now need to do a sanity check of fs_blocks_count for
+	 * 32-bit vs 64-bit block number support.
+	 */
+	if ((fs_blocks_count > MAX_32_NUM) && (blocksize == 0)) {
+		fs_blocks_count /= 4; /* Try using a 4k blocksize */
+		blocksize = 4096;
+		fs_param.s_log_block_size = 2;
+	}
+	if ((fs_blocks_count > MAX_32_NUM) &&
+	    !(fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT) &&
+	    get_bool_from_profile(fs_types, "auto_64-bit_support", 0)) {
+		fs_param.s_feature_incompat |= EXT4_FEATURE_INCOMPAT_64BIT;
+		fs_param.s_feature_compat &= ~EXT2_FEATURE_COMPAT_RESIZE_INODE;
+	}
+	if ((fs_blocks_count > MAX_32_NUM) &&
+	    !(fs_param.s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)) {
+		fprintf(stderr, _("%s: Size of device (0x%llx blocks) %s "
+				  "too big to be expressed\n\t"
+				  "in 32 bits using a blocksize of %d.\n"),
+			program_name, fs_blocks_count, device_name,
+			EXT2_BLOCK_SIZE(&fs_param));
+		exit(1);
+	}
+
+	ext2fs_blocks_count_set(&fs_param, fs_blocks_count);
 
 	if (fs_param.s_feature_incompat & EXT3_FEATURE_INCOMPAT_JOURNAL_DEV) {
 		fs_types[0] = strdup("journal");
@@ -1747,10 +1743,10 @@ got_size:
 	if (num_inodes == 0) {
 		unsigned long long n;
 		n = ext2fs_blocks_count(&fs_param) * blocksize / inode_ratio;
-		if (n > ~0U) {
+		if (n > MAX_32_NUM) {
 			if (fs_param.s_feature_incompat &
 			    EXT4_FEATURE_INCOMPAT_64BIT)
-				num_inodes = ~0U;
+				num_inodes = MAX_32_NUM;
 			else {
 				com_err(program_name, 0,
 					_("too many inodes (%llu), raise"
@@ -1758,7 +1754,7 @@ got_size:
 				exit(1);
 			}
 		}
-	} else if (num_inodes > ~0U) {
+	} else if (num_inodes > MAX_32_NUM) {
 		com_err(program_name, 0,
 			_("too many inodes (%llu), specify < 2^32 inodes"),
 			  num_inodes);

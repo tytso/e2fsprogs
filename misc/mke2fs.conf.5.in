@@ -303,6 +303,14 @@ relations.  It may be overridden by the
 command-line option to
 .BR mke2fs (8).
 .TP
+.I auto_64-bit_support
+This relation is a boolean which specifies whether
+.BR mke2fs (8)
+should automatically add the 64bit feature if the number of blocks for
+the file system requires this feature to be enabled.  The resize_inode
+feature is also automatically disabled since it doesn't support 64-bit
+block numbers.
+.TP
 .I blocksize
 This relation specifies the default blocksize if the user does not
 specify a blocksize on the command line.
