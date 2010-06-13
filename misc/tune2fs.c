@@ -89,8 +89,8 @@ static struct list_head blk_move_list;
 
 struct blk_move {
 	struct list_head list;
-	blk_t old_loc;
-	blk_t new_loc;
+	blk64_t old_loc;
+	blk64_t new_loc;
 };
 
 
@@ -251,11 +251,13 @@ no_valid_journal:
 }
 
 /* Helper function for remove_journal_inode */
-static int release_blocks_proc(ext2_filsys fs, blk_t *blocknr,
-			       int blockcnt EXT2FS_ATTR((unused)),
+static int release_blocks_proc(ext2_filsys fs, blk64_t *blocknr,
+			       e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
+			       blk64_t ref_block EXT2FS_ATTR((unused)),
+			       int ref_offset EXT2FS_ATTR((unused)),
 			       void *private EXT2FS_ATTR((unused)))
 {
-	blk_t	block;
+	blk64_t	block;
 	int	group;
 
 	block = *blocknr;
@@ -289,9 +291,9 @@ static void remove_journal_inode(ext2_filsys fs)
 				_("while reading bitmaps"));
 			exit(1);
 		}
-		retval = ext2fs_block_iterate(fs, ino,
-					      BLOCK_FLAG_READ_ONLY, NULL,
-					      release_blocks_proc, NULL);
+		retval = ext2fs_block_iterate3(fs, ino,
+					       BLOCK_FLAG_READ_ONLY, NULL,
+					       release_blocks_proc, NULL);
 		if (retval) {
 			com_err(program_name, retval,
 				_("while clearing journal inode"));
@@ -447,8 +449,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 
 	if (FEATURE_ON(E2P_FEATURE_RO_INCOMPAT,
 		       EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
-		gd = fs->group_desc;
-		for (i = 0; i < fs->group_desc_count; i++, gd++) {
+		for (i = 0; i < fs->group_desc_count; i++) {
+			gd = ext2fs_group_desc(fs, fs->group_desc, i);
 			gd->bg_itable_unused = 0;
 			gd->bg_flags = EXT2_BG_INODE_ZEROED;
 			ext2fs_group_desc_csum_set(fs, i);
@@ -458,8 +460,8 @@ static void update_feature_set(ext2_filsys fs, char *features)
 
 	if (FEATURE_OFF(E2P_FEATURE_RO_INCOMPAT,
 			EXT4_FEATURE_RO_COMPAT_GDT_CSUM)) {
-		gd = fs->group_desc;
-		for (i = 0; i < fs->group_desc_count; i++, gd++) {
+		for (i = 0; i < fs->group_desc_count; i++) {
+			gd = ext2fs_group_desc(fs, fs->group_desc, i);
 			if ((gd->bg_flags & EXT2_BG_INODE_ZEROED) == 0) {
 				/* 
 				 * XXX what we really should do is zap
@@ -1010,8 +1012,8 @@ static int get_move_bitmaps(ext2_filsys fs, int new_ino_blks_per_grp,
 	dgrp_t i;
 	int retval;
 	ext2_badblocks_list bb_list = 0;
-	blk_t j, needed_blocks = 0;
-	blk_t start_blk, end_blk;
+	blk64_t j, needed_blocks = 0;
+	blk64_t start_blk, end_blk;
 
 	retval = ext2fs_read_bb_inode(fs, &bb_list);
 	if (retval)
@@ -1086,7 +1088,7 @@ static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap)
 	dgrp_t group;
 	errcode_t retval;
 	int meta_data = 0;
-	blk_t blk, new_blk, goal;
+	blk64_t blk, new_blk, goal;
 	struct blk_move *bmv;
 
 	retval = ext2fs_get_mem(fs->blocksize, &buf);
@@ -1113,7 +1115,7 @@ static int move_block(ext2_filsys fs, ext2fs_block_bitmap bmap)
 		} else {
 			goal = new_blk;
 		}
-		retval = ext2fs_new_block(fs, goal, NULL, &new_blk);
+		retval = ext2fs_new_block2(fs, goal, NULL, &new_blk);
 		if (retval)
 			goto err_out;
 
@@ -1150,7 +1152,7 @@ err_out:
 	return retval;
 }
 
-static blk_t translate_block(blk_t blk)
+static blk64_t translate_block(blk64_t blk)
 {
 	struct list_head *entry;
 	struct blk_move *bmv;
@@ -1165,14 +1167,14 @@ static blk_t translate_block(blk_t blk)
 }
 
 static int process_block(ext2_filsys fs EXT2FS_ATTR((unused)),
-			 blk_t *block_nr,
+			 blk64_t *block_nr,
 			 e2_blkcnt_t blockcnt EXT2FS_ATTR((unused)),
-			 blk_t ref_block EXT2FS_ATTR((unused)),
+			 blk64_t ref_block EXT2FS_ATTR((unused)),
 			 int ref_offset EXT2FS_ATTR((unused)),
 			 void *priv_data)
 {
 	int ret = 0;
-	blk_t new_blk;
+	blk64_t new_blk;
 	ext2fs_block_bitmap bmap = (ext2fs_block_bitmap) priv_data;
 
 	if (!ext2fs_test_block_bitmap2(bmap, *block_nr))
@@ -1193,7 +1195,7 @@ static int inode_scan_and_fix(ext2_filsys fs, ext2fs_block_bitmap bmap)
 {
 	errcode_t retval = 0;
 	ext2_ino_t ino;
-	blk_t blk;
+	blk64_t blk;
 	char *block_buf = 0;
 	struct ext2_inode inode;
 	ext2_inode_scan	scan = NULL;
@@ -1245,7 +1247,7 @@ static int inode_scan_and_fix(ext2_filsys fs, ext2fs_block_bitmap bmap)
 		if (!ext2fs_inode_has_valid_blocks(&inode))
 			continue;
 
-		retval = ext2fs_block_iterate2(fs, ino, 0, block_buf,
+		retval = ext2fs_block_iterate3(fs, ino, 0, block_buf,
 					       process_block, bmap);
 		if (retval)
 			goto err_out;
@@ -1291,7 +1293,7 @@ static int group_desc_scan_and_fix(ext2_filsys fs, ext2fs_block_bitmap bmap)
 static int expand_inode_table(ext2_filsys fs, unsigned long new_ino_size)
 {
 	dgrp_t i;
-	blk_t blk;
+	blk64_t blk;
 	errcode_t retval;
 	int new_ino_blks_per_grp;
 	unsigned int j;
@@ -1364,7 +1366,7 @@ err_out:
 
 static errcode_t ext2fs_calculate_summary_stats(ext2_filsys fs)
 {
-	blk_t		blk;
+	blk64_t		blk;
 	ext2_ino_t	ino;
 	unsigned int	group = 0;
 	unsigned int	count = 0;
