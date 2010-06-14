@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 	io_channel channel;
 	errcode_t retval;
 	int  mount_flags;
-	unsigned long  blk_num;
+	blk64_t  blk_num;
 	char *device_name, *tdb_file;
 	io_manager manager = unix_io_manager;
 
@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 		blk_num = *(unsigned long *)key.dptr;
-		printf(_("Replayed transaction of size %zd at location %ld\n"),
+		printf(_("Replayed transaction of size %zd at location %llu\n"),
 							data.dsize, blk_num);
 		retval = io_channel_write_blk64(channel, blk_num,
 						-data.dsize, data.dptr);
