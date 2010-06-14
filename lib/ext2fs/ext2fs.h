@@ -196,6 +196,8 @@ typedef struct ext2_file *ext2_file_t;
  */
 #define EXT2_MKJOURNAL_V1_SUPER	0x0000001
 
+struct opaque_ext2_group_desc;
+
 struct struct_ext2_filsys {
 	errcode_t			magic;
 	io_channel			io;
@@ -206,7 +208,7 @@ struct struct_ext2_filsys {
 	int				fragsize;
 	dgrp_t				group_desc_count;
 	unsigned long			desc_blocks;
-	struct ext2_group_desc *	group_desc;
+	struct opaque_ext2_group_desc *	group_desc;
 	int				inode_blocks_per_group;
 	ext2fs_inode_bitmap		inode_map;
 	ext2fs_block_bitmap		block_map;
@@ -748,7 +750,7 @@ extern void ext2fs_free_blocks_count_add(struct ext2_super_block *super,
 					 blk64_t blk);
 /* Block group descriptor accessor functions */
 extern struct ext2_group_desc *ext2fs_group_desc(ext2_filsys fs,
-					  struct ext2_group_desc *gdp,
+					  struct opaque_ext2_group_desc *gdp,
 					  dgrp_t group);
 extern blk64_t ext2fs_block_bitmap_loc(ext2_filsys fs, dgrp_t group);
 extern void ext2fs_block_bitmap_loc_set(ext2_filsys fs, dgrp_t group,
