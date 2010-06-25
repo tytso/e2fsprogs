@@ -330,6 +330,17 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 			fprintf(f, "type %u\n", sb->s_jnl_backup_type);
 		}
 	}
+	if (sb->s_snapshot_inum) {
+		fprintf(f, "Snapshot inode:           %u\n",
+			sb->s_snapshot_inum);
+		fprintf(f, "Snapshot ID:              %u\n",
+			sb->s_snapshot_id);
+		fprintf(f, "Snapshot reserved blocks: %llu\n",
+			sb->s_snapshot_r_blocks_count);
+	}
+	if (sb->s_snapshot_list)
+		fprintf(f, "Snapshot list head:       %u\n",
+			sb->s_snapshot_list);
 }
 
 void list_super (struct ext2_super_block * s)
