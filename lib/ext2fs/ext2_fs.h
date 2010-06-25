@@ -501,6 +501,12 @@ struct ext2_inode_large {
 #define EXT2_ERRORS_PANIC		3	/* Panic */
 #define EXT2_ERRORS_DEFAULT		EXT2_ERRORS_CONTINUE
 
+#if (__GNUC__ >= 4)
+#define ext4_offsetof(TYPE,MEMBER) __builtin_offsetof(TYPE,MEMBER)
+#else
+#define ext4_offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#endif
+
 /*
  * Structure of the super block
  */
@@ -594,8 +600,23 @@ struct ext2_super_block {
 	__u64	s_snapshot_r_blocks_count; /* reserved blocks for active
 					      snapshot's future use */
 	__u32	s_snapshot_list;	/* inode number of the head of the on-disk snapshot list */
-	__u32   s_reserved[155];        /* Padding to the end of the block */
+#define EXT4_S_ERR_START ext4_offsetof(struct ext2_super_block, s_error_count)
+	__u32	s_error_count;		/* number of fs errors */
+	__u32	s_first_error_time;	/* first time an error happened */
+	__u32	s_first_error_ino;	/* inode involved in first error */
+	__u64	s_first_error_block;	/* block involved of first error */
+	__u8	s_first_error_func[32];	/* function where the error happened */
+	__u32	s_first_error_line;	/* line number where error happened */
+	__u32	s_last_error_time;	/* most recent time of an error */
+	__u32	s_last_error_ino;	/* inode involved in last error */
+	__u32	s_last_error_line;	/* line number where error happened */
+	__u64	s_last_error_block;	/* block involved of last error */
+	__u8	s_last_error_func[32];	/* function where the error happened */
+#define EXT4_S_ERR_END ext4_offsetof(struct ext2_super_block, s_error_count)
+	__u32   s_reserved[128];        /* Padding to the end of the block */
 };
+
+#define EXT4_S_ERR_LEN (EXT4_S_ERR_END - EXT4_S_ERR_START)
 
 /*
  * Codes for operating systems

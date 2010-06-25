@@ -1441,6 +1441,8 @@ no_journal:
 			sb->s_mnt_count = 0;
 			if (!(ctx->flags & E2F_FLAG_TIME_INSANE))
 				sb->s_lastcheck = ctx->now;
+			memset(((char *) sb) + EXT4_S_ERR_START, 0,
+			       EXT4_S_ERR_LEN);
 			ext2fs_mark_super_dirty(fs);
 		}
 	}
