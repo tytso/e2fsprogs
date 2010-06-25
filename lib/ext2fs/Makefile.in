@@ -239,11 +239,15 @@ tst_getsectsize: tst_getsectsize.o $(STATIC_LIBEXT2FS) $(DEPLIBCOM_ERR)
 	$(Q) $(CC) -o tst_sectgetsize tst_getsectsize.o \
 		$(STATIC_LIBEXT2FS) $(LIBCOM_ERR)
 
+tst_types.o: $(srcdir)/tst_types.c ext2_types.h 
+
 tst_types: tst_types.o ext2_types.h 
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_types tst_types.o 
 
-tst_super_size: tst_super_size.o ext2_fs.h
+tst_super_size.o: $(srcdir)/tst_super_size.c $(srcdir)/ext2_fs.h
+
+tst_super_size: tst_super_size.o
 	$(E) "	LD $@"
 	$(Q) $(CC) -o tst_super_size tst_super_size.o 
 
