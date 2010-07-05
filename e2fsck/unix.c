@@ -1054,6 +1054,8 @@ restart:
 			orig_retval = retval;
 			retval = try_open_fs(ctx, flags, io_ptr, &fs);
 			if ((orig_retval == 0) && retval != 0) {
+				if (fs)
+					ext2fs_close(fs);
 				com_err(ctx->program_name, retval,
 					"when using the backup blocks");
 				printf(_("%s: going back to original "
