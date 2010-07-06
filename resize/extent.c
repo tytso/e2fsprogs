@@ -167,9 +167,14 @@ __u32 ext2fs_extent_translate(ext2_extent extent, __u32 old_loc)
 				range = 0;
 			else if (old_loc > highval)
 				range = 1;
-			else
+			else {
 				range = ((float) (old_loc - lowval)) /
 					(highval - lowval);
+				if (range > 0.9)
+					range = 0.9;
+				if (range < 0.1)
+					range = 0.1;
+			}
 			mid = low + ((int) (range * (high-low)));
 		}
 #endif

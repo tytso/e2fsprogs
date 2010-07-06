@@ -196,9 +196,14 @@ retry:
 				range = 0;
 			else if (blk > highval)
 				range = 1;
-			else
+			else {
 				range = ((float) (blk - lowval)) /
 					(highval - lowval);
+				if (range > 0.9)
+					range = 0.9;
+				if (range < 0.1)
+					range = 0.1;
+			}
 			mid = low + ((int) (range * (high-low)));
 		}
 #endif
