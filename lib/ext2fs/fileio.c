@@ -96,6 +96,16 @@ ext2_filsys ext2fs_file_get_fs(ext2_file_t file)
 }
 
 /*
+ * This function returns the pointer to the inode of a file from the structure
+ */
+struct ext2_inode *ext2fs_file_get_inode(ext2_file_t file)
+{
+	if (file->magic != EXT2_ET_MAGIC_EXT2_FILE)
+		return NULL;
+	return &file->inode;
+}
+
+/*
  * This function flushes the dirty block buffer out to disk if
  * necessary.
  */

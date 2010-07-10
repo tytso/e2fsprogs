@@ -1014,6 +1014,7 @@ extern errcode_t ext2fs_file_open2(ext2_filsys fs, ext2_ino_t ino,
 extern errcode_t ext2fs_file_open(ext2_filsys fs, ext2_ino_t ino,
 				  int flags, ext2_file_t *ret);
 extern ext2_filsys ext2fs_file_get_fs(ext2_file_t file);
+struct ext2_inode *ext2fs_file_get_inode(ext2_file_t file);
 extern errcode_t ext2fs_file_close(ext2_file_t file);
 extern errcode_t ext2fs_file_flush(ext2_file_t file);
 extern errcode_t ext2fs_file_read(ext2_file_t file, void *buf,
