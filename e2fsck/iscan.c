@@ -51,7 +51,7 @@ static void usage(void)
 static void PRS(int argc, char *argv[])
 {
 	int		flush = 0;
-	char		c;
+	int		c;
 #ifdef MTRACE
 	extern void	*mallwatch;
 #endif

@@ -385,17 +385,6 @@ binary-arch: install install-udeb
 		$(INSTALL) -m 0644 -D -p debian/$$i ${debdir}/$${pkg}/usr/share/lintian/overrides/$${pkg} ;\
 	done
 
-  # mkinitrd script
-	mkdir -p debian/e2fsprogs/usr/share/initrd-tools/scripts
-	$(INSTALL) -p -o root -g root -m 0755 debian/initrd-tools.e2fsprogs \
-		debian/e2fsprogs/usr/share/initrd-tools/scripts/e2fsprogs
-
-  # initrd script
-	mkdir -p debian/e2fsprogs/usr/share/e2fsprogs
-	$(INSTALL) -p -o root -g root -m 0755 debian/initrd.ext3-add-journal \
-		debian/e2fsprogs/usr/share/e2fsprogs/initrd.ext3-add-journal
-
-
   # symlinks to prepare dh_installdocs run
 
 ifneq ($(UTIL_LINUX_NG),yes)

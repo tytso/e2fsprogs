@@ -31,7 +31,7 @@ enlarge or shrink an unmounted file system located on
 If the filesystem is mounted, it can be used to expand the size of the
 mounted filesystem, assuming the kernel supports on-line resizing.  (As
 of this writing, the Linux 2.6 kernel supports on-line resize for
-filesystems mounted using ext3 only.).
+filesystems mounted using ext3 and ext4.).
 .PP
 The 
 .I size

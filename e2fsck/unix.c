@@ -1061,6 +1061,8 @@ restart:
 			orig_retval = retval;
 			retval = try_open_fs(ctx, flags, io_ptr, &fs);
 			if ((orig_retval == 0) && retval != 0) {
+				if (fs)
+					ext2fs_close(fs);
 				com_err(ctx->program_name, retval,
 					"when using the backup blocks");
 				printf(_("%s: going back to original "
@@ -1448,6 +1450,8 @@ no_journal:
 			sb->s_mnt_count = 0;
 			if (!(ctx->flags & E2F_FLAG_TIME_INSANE))
 				sb->s_lastcheck = ctx->now;
+			memset(((char *) sb) + EXT4_S_ERR_START, 0,
+			       EXT4_S_ERR_LEN);
 			ext2fs_mark_super_dirty(fs);
 		}
 	}

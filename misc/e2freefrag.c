@@ -177,6 +177,7 @@ errcode_t get_chunk_info(ext2_filsys fs, struct chunk_info *info)
 
 	printf("\nMin. free extent: %lu KB \nMax. free extent: %lu KB\n"
 	       "Avg. free extent: %lu KB\n", info->min, info->max, info->avg);
+	printf("Num. free extent: %lu\n", info->real_free_chunks);
 
 	printf("\nHISTOGRAM OF FREE EXTENT SIZES:\n");
 	printf("%s :  %12s  %12s  %7s\n", "Extent Size Range", "Free extents",
@@ -258,7 +259,8 @@ int main(int argc, char *argv[])
 	ext2_filsys fs = NULL;
 	char *device_name;
 	char *progname;
-	char c, *end;
+	char *end;
+	int c;
 
 	add_error_table(&et_ext2_error_table);
 	progname = argv[0];
