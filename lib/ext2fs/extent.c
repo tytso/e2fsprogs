@@ -1981,8 +1981,8 @@ void do_goto_block(int argc, char **argv)
 	struct ext2fs_extent	extent;
 	errcode_t		retval;
 	int			op = EXT2_EXTENT_NEXT_LEAF;
-	blk_t			blk;
-	int			level = 0;
+	blk64_t			blk;
+	int			level = 0, err;
 
 	if (common_extent_args_process(argc, argv, 2, 3, "goto_block",
 				       "block [level]", 0))
@@ -1991,16 +1991,18 @@ void do_goto_block(int argc, char **argv)
 	if (strtoblk(argv[0], argv[1], &blk))
 		return;
 
-	if (argc == 3)
-		if (strtoblk(argv[0], argv[2], &level))
+	if (argc == 3) {
+		level = parse_ulong(argv[2], argv[0], "level", &err);
+		if (err)
 			return;
+	}
 
 	retval = extent_goto(current_handle, level, (blk64_t) blk);
 
 	if (retval) {
 		com_err(argv[0], retval,
-			"while trying to go to block %u, level %d",
-			blk, level);
+			"while trying to go to block %llu, level %d",
+			(unsigned long long) blk, level);
 		return;
 	}
 
