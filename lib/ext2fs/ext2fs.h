@@ -1209,6 +1209,12 @@ extern errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags);
 extern errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
 					  char *mtpt, int mtlen);
 
+/* punch.c */
+extern errcode_t ext2fs_punch(ext2_filsys fs, ext2_ino_t ino,
+			      struct ext2_inode *inode,
+			      char *block_buf, blk64_t start,
+			      blk64_t end);
+
 /* namei.c */
 extern errcode_t ext2fs_lookup(ext2_filsys fs, ext2_ino_t dir, const char *name,
 			 int namelen, char *buf, ext2_ino_t *inode);
