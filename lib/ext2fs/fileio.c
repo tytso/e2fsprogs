@@ -365,24 +365,38 @@ ext2_off_t ext2fs_file_get_size(ext2_file_t file)
 /*
  * This function sets the size of the file, truncating it if necessary
  *
- * XXX still need to call truncate
  */
-errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size)
+errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size)
 {
+	ext2_off64_t	old_size;
 	errcode_t	retval;
+	blk64_t		old_truncate, truncate_block;
+
 	EXT2_CHECK_MAGIC(file, EXT2_ET_MAGIC_EXT2_FILE);
 
-	file->inode.i_size = size;
-	file->inode.i_size_high = 0;
+	truncate_block = ((size + file->fs->blocksize - 1) >>
+			  EXT2_BLOCK_SIZE_BITS(file->fs->super)) + 1;
+	old_size = file->inode.i_size +
+		((blk64_t) file->inode.i_size_high) << 32;
+	old_truncate = ((old_size + file->fs->blocksize - 1) >>
+		      EXT2_BLOCK_SIZE_BITS(file->fs->super)) + 1;
+
+	file->inode.i_size = size & 0xffffffff;
+	file->inode.i_size_high = (size >> 32);
 	if (file->ino) {
 		retval = ext2fs_write_inode(file->fs, file->ino, &file->inode);
 		if (retval)
 			return retval;
 	}
 
-	/*
-	 * XXX truncate inode if necessary
-	 */
+	if (truncate_block <= old_truncate)
+		return 0;
 
-	return 0;
+	return ext2fs_punch(file->fs, file->ino, &file->inode, 0,
+			    truncate_block, ~0ULL);
+}
+
+errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size)
+{
+	return ext2fs_file_set_size2(file, size);
 }

@@ -1028,6 +1028,7 @@ extern errcode_t ext2fs_file_lseek(ext2_file_t file, ext2_off_t offset,
 errcode_t ext2fs_file_get_lsize(ext2_file_t file, __u64 *ret_size);
 extern ext2_off_t ext2fs_file_get_size(ext2_file_t file);
 extern errcode_t ext2fs_file_set_size(ext2_file_t file, ext2_off_t size);
+extern errcode_t ext2fs_file_set_size2(ext2_file_t file, ext2_off64_t size);
 
 /* finddev.c */
 extern char *ext2fs_find_block_device(dev_t device);
