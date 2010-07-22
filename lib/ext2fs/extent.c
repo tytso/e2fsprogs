@@ -53,6 +53,7 @@ struct ext2_extent_handle {
 	ext2_filsys		fs;
 	ext2_ino_t 		ino;
 	struct ext2_inode	*inode;
+	struct ext2_inode	inodebuf;
 	int			type;
 	int			level;
 	int			max_depth;
@@ -165,8 +166,6 @@ extern void ext2fs_extent_free(ext2_extent_handle_t handle)
 	if (!handle)
 		return;
 
-	if (handle->inode)
-		ext2fs_free_mem(&handle->inode);
 	if (handle->path) {
 		for (i=1; i <= handle->max_depth; i++) {
 			if (handle->path[i].buf)
@@ -203,17 +202,13 @@ extern errcode_t ext2fs_extent_open2(ext2_filsys fs, ext2_ino_t ino,
 		return retval;
 	memset(handle, 0, sizeof(struct ext2_extent_handle));
 
-	retval = ext2fs_get_mem(sizeof(struct ext2_inode), &handle->inode);
-	if (retval)
-		goto errout;
-
 	handle->ino = ino;
 	handle->fs = fs;
 
 	if (inode) {
-		memcpy(handle->inode, inode, sizeof(struct ext2_inode));
-	}
-	else {
+		handle->inode = inode;
+	} else {
+		handle->inode = &handle->inodebuf;
 		retval = ext2fs_read_inode(fs, ino, handle->inode);
 		if (retval)
 			goto errout;
