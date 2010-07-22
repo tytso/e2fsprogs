@@ -376,6 +376,18 @@ flag causes the filesystem to be opened in exclusive mode.  The
 options behave the same as the command-line options to 
 .BR debugfs .
 .TP
+.I punch filespec start_blk [end_blk]
+Delete the blocks in the inode ranging from
+.I start_blk
+to
+.IR end_blk .
+If
+.I end_blk
+is omitted then this command will function as a truncate command; that
+is, all of the blocks starting at
+.I start_blk
+through to the end of the file will be deallocated.
+.TP
 .I pwd
 Print the current working directory.
 .TP

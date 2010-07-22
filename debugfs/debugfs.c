@@ -2102,6 +2102,37 @@ void do_supported_features(int argc, char *argv[])
 	}
 }
 
+void do_punch(int argc, char *argv[])
+{
+	ext2_ino_t	ino;
+	blk64_t		start, end;
+	int		err;
+	errcode_t	errcode;
+
+	if (common_args_process(argc, argv, 3, 4, argv[0],
+				"<file> start_blk [end_blk]",
+				CHECK_FS_RW | CHECK_FS_BITMAPS))
+		return;
+
+	ino = string_to_inode(argv[1]);
+	if (!ino)
+		return;
+	start = parse_ulong(argv[2], argv[0], "logical_block", &err);
+	if (argc == 4)
+		end = parse_ulong(argv[3], argv[0], "logical_block", &err);
+	else
+		end = ~0;
+
+	errcode = ext2fs_punch(current_fs, ino, 0, 0, start, end);
+
+	if (errcode) {
+		com_err(argv[0], errcode,
+			"while truncating inode %u from %llu to %llu\n", ino,
+			(unsigned long long) start, (unsigned long long) end);
+		return;
+	}
+}
+
 static int source_file(const char *cmd_file, int sci_idx)
 {
 	FILE		*f;

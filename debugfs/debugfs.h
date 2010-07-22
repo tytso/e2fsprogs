@@ -127,4 +127,5 @@ extern void do_bmap(int argc, char **argv);
 extern void do_imap(int argc, char **argv);
 extern void do_set_current_time(int argc, char **argv);
 extern void do_supported_features(int argc, char **argv);
+extern void do_punch(int argc, char **argv);
 
