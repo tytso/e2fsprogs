@@ -72,7 +72,7 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 	sb->s_flags = ext2fs_swab32(sb->s_flags);
 	sb->s_kbytes_written = ext2fs_swab64(sb->s_kbytes_written);
 	sb->s_snapshot_inum = ext2fs_swab32(sb->s_snapshot_inum);
-	sb->s_snapshot_id = ext2fs_swab32(s_snapshot_id);
+	sb->s_snapshot_id = ext2fs_swab32(sb->s_snapshot_id);
 	sb->s_snapshot_r_blocks_count =
 		ext2fs_swab64(sb->s_snapshot_r_blocks_count);
 	sb->s_snapshot_list = ext2fs_swab32(sb->s_snapshot_list);
@@ -107,7 +107,8 @@ void ext2fs_swap_group_desc2(ext2_filsys fs, struct ext2_group_desc *gdp)
 	gdp->bg_itable_unused = ext2fs_swab16(gdp->bg_itable_unused);
 	gdp->bg_checksum = ext2fs_swab16(gdp->bg_checksum);
 	/* If we're 32-bit, we're done */
-	if (fs && (!fs->super->s_desc_size >= EXT2_MIN_DESC_SIZE_64BIT))
+	if (fs && (!fs->super->s_desc_size ||
+		   (fs->super->s_desc_size < EXT2_MIN_DESC_SIZE_64BIT)))
 		return;
 
 	/* Swap the 64-bit parts */
