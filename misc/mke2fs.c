@@ -1285,7 +1285,7 @@ static void PRS(int argc, char *argv[])
 				com_err(program_name, 0,
 					_("invalid inode ratio %s (min %d/max %d)"),
 					optarg, EXT2_MIN_BLOCK_SIZE,
-					EXT2_MAX_BLOCK_SIZE);
+					EXT2_MAX_BLOCK_SIZE * 1024);
 				exit(1);
 			}
 			break;
