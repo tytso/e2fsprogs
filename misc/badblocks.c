@@ -203,6 +203,9 @@ static void print_status(void)
 		       calc_percent((unsigned long) currently_testing,
 				    (unsigned long) num_blocks), 
 		       time_diff_format(&time_end, &time_start, diff_buf));
+#ifdef HAVE_MBSTOWCS
+	len = mbstowcs(NULL, line_buf, sizeof(line_buf));
+#endif
 	fputs(line_buf, stderr);
 	memset(line_buf, '\b', len);
 	line_buf[len] = 0;
