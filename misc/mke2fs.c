@@ -1462,8 +1462,9 @@ static void PRS(int argc, char *argv[])
 		fs_param.s_blocks_count = parse_num_blocks(argv[optind++],
 				fs_param.s_log_block_size);
 		if (!fs_param.s_blocks_count) {
-			com_err(program_name, 0, _("invalid blocks count - %s"),
-				argv[optind - 1]);
+			com_err(program_name, 0,
+				_("invalid blocks count '%s' on device '%s'"),
+				argv[optind - 1], device_name);
 			exit(1);
 		}
 	}
