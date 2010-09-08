@@ -1102,6 +1102,8 @@ failure:
 		else if (retval == EBUSY)
 			printf(_("Filesystem mounted or opened exclusively "
 				 "by another program?\n"));
+		else if (retval == ENOENT)
+			printf(_("Possibly non-existent device?\n"));
 #ifdef EROFS
 		else if (retval == EROFS)
 			printf(_("Disk write-protected; use the -n option "
