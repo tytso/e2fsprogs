@@ -211,6 +211,8 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	print_features(sb, f);
 	print_super_flags(sb, f);
 	print_mntopts(sb, f);
+	if (sb->s_mount_opts[0])
+		fprintf(f, "Mount options:            %s\n", sb->s_mount_opts);
 	fprintf(f, "Filesystem state:        ");
 	print_fs_state (f, sb->s_state);
 	fprintf(f, "\n");

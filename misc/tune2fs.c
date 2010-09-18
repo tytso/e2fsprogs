@@ -979,6 +979,18 @@ static void parse_extended_opts(ext2_filsys fs, const char *opts)
 				 "to %s (%d)\n"),
 			       arg, hash_alg);
 			ext2fs_mark_super_dirty(fs);
+		} else if (strcmp(token, "mount-options")) {
+			if (!arg) {
+				r_usage++;
+				continue;
+			}
+			if (strlen(arg) >= sizeof(fs->super->s_mount_opts)) {
+				fprintf(stderr,
+					"Extended mount options too long\n");
+				continue;
+			}
+			strcpy(fs->super->s_mount_opts, arg);
+			ext2fs_mark_super_dirty(fs);
 		} else
 			r_usage++;
 	}

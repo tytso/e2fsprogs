@@ -187,6 +187,26 @@ directories.  Valid algorithms accepted are:
 and
 .IR tea .
 .TP
+.BI mount_opts= mount_option_string
+Set a set of default mount options which will be used when the file
+system is mounted.  Unlike the bitmask-based default mount options which
+can be specified with the
+.B -o
+option,
+.I mount_option_string
+is an arbitrary string with a maximum length of 63 bytes, which is
+stored in the superblock.
+.IP
+The ext4 file system driver will first apply
+the bitmask-based default options, and then parse the
+.IR mount_option_string ,
+before parsing the mount options passed from the
+.BR mount (8)
+program.
+.IP
+This superblock setting is only honored in 2.6.35+ kernels;
+and not at all by the ext2 and ext3 file system drivers.
+.TP
 .B test_fs
 Set a flag in the filesystem superblock indicating that it may be
 mounted using experimental kernel code, such as the ext4dev filesystem.
@@ -419,6 +439,35 @@ When the filesystem is mounted with journalling enabled, data may be
 written into the main filesystem after its metadata has been committed
 to the journal.  This may increase throughput, however, it may allow old
 data to appear in files after a crash and journal recovery.
+.TP
+.B nobarrier
+The file system will be mounted with barrier operations in the journal
+disabled.  (This option is currently only supported by the ext4 file
+system driver in 2.6.35+ kernels.)
+.TP
+.B block_validity
+The file system will be mounted with the block_validity option enabled,
+which causes extra checks to be performed after reading or writing from
+the file system.  This prevents corrupted metadata blocks from causing
+file system damage by overwriting parts of the inode table or block
+group descriptors.  This comes at the cost of increased memory and CPU
+overhead, so it is enabled only for debugging purposes.  (This option is
+currently only supported by the ext4 file system driver in 2.6.35+
+kernels.)
+.TP
+.B discard
+The file system will be mouinted with the discard mount option.  This will
+cause the file system driver to attempt to use the trim/discard feature
+of some storage devices (such as SSD's and thin-provisioned drives
+available in some enterprise storage arrays) to inform the storage
+device that blocks belonging to deleted files can be reused for other
+purposes.  (This option is currently only supported by the ext4 file
+system driver in 2.6.35+ kernels.)
+.TP
+.B nodelalloc
+The file system will be mounted with the nodelalloc mount option.  This
+will disable the delayed allocation feature.  (This option is currently
+only supported by the ext4 file system driver in 2.6.35+ kernels.)
 .RE
 .TP
 .BR \-O " [^]\fIfeature\fR[,...]"

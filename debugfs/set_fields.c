@@ -139,6 +139,7 @@ static struct field_set_info super_fields[] = {
 	{ "snapshot_r_blocks_count", &set_sb.s_snapshot_r_blocks_count, 8, 
 	  parse_uint },
 	{ "snapshot_list", &set_sb.s_snapshot_list, 4, parse_uint },
+	{ "mount_opts",  &set_sb.s_mount_opts, 64, parse_string },
 	{ 0, 0, 0, 0 }
 };
 
