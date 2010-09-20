@@ -630,8 +630,8 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 				continue;
 			}
 
-			fprintf(f, "%s(NODE #%d, %lld-%lld, blk %lld)",
-				printed ? ", " : "",
+			fprintf(f, "%s(ETB l%d/n%d, %lld-%lld, blk %lld)",
+				printed ? ", " : "", info.curr_level,
 				info.curr_entry,
 				extent.e_lblk,
 				extent.e_lblk + (extent.e_len - 1),
@@ -807,7 +807,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	} else if (do_dump_blocks) {
 		if (inode->i_flags & EXT4_EXTENTS_FL)
 			dump_extents(out, prefix, inode_num,
-				     DUMP_LEAF_EXTENTS, 0, 0);
+				     DUMP_LEAF_EXTENTS|DUMP_NODE_EXTENTS, 0, 0);
 		else
 			dump_blocks(out, prefix, inode_num);
 	}
