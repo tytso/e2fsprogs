@@ -302,6 +302,8 @@ static errcode_t alloc_cache(io_channel channel,
 		cache->access_time = 0;
 		cache->dirty = 0;
 		cache->in_use = 0;
+		if (cache->buf)
+			ext2fs_free_mem(&cache->buf);
 		if ((retval = ext2fs_get_mem(channel->block_size,
 					     &cache->buf)))
 			return retval;
