@@ -131,7 +131,7 @@ void do_open_filesys(int argc, char **argv)
 	char	*data_filename = 0;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "iwfecb:s:d:")) != EOF) {
+	while ((c = getopt (argc, argv, "iwfecb:s:d:D")) != EOF) {
 		switch (c) {
 		case 'i':
 			open_flags |= EXT2_FLAG_IMAGE_FILE;
@@ -150,6 +150,9 @@ void do_open_filesys(int argc, char **argv)
 			break;
 		case 'd':
 			data_filename = optarg;
+			break;
+		case 'D':
+			open_flags |= EXT2_FLAG_DIRECT_IO;
 			break;
 		case 'b':
 			blocksize = parse_ulong(optarg, argv[0],
@@ -2160,7 +2163,7 @@ int main(int argc, char **argv)
 	fprintf (stderr, "%s %s (%s)\n", debug_prog_name,
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
-	while ((c = getopt (argc, argv, "iwcR:f:b:s:Vd:")) != EOF) {
+	while ((c = getopt (argc, argv, "iwcR:f:b:s:Vd:D")) != EOF) {
 		switch (c) {
 		case 'R':
 			request = optarg;
@@ -2176,6 +2179,9 @@ int main(int argc, char **argv)
 			break;
 		case 'w':
 			open_flags |= EXT2_FLAG_RW;
+			break;
+		case 'D':
+			open_flags |= EXT2_FLAG_DIRECT_IO;
 			break;
 		case 'b':
 			blocksize = parse_ulong(optarg, argv[0],

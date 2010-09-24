@@ -8,7 +8,7 @@ debugfs \- ext2/ext3/ext4 file system debugger
 .SH SYNOPSIS
 .B debugfs
 [
-.B \-Vwci
+.B \-DVwci
 ]
 [
 .B \-b
@@ -106,7 +106,14 @@ to read in commands from
 and execute them.  When 
 .B debugfs
 is finished executing those commands, it will exit.
-.TP 
+.TP
+.I -D
+Causes
+.B debugfs
+to open the device using Direct I/O, bypassing the buffer cache.  Note
+that some Linux devices, notably device mapper as of this writing, do
+not support Direct I/O.
+.TP
 .I -R request
 Causes 
 .B debugfs
@@ -255,7 +262,7 @@ Free the inode specified by
 .TP
 .I help
 Print a list of commands understood by 
-.BR debugfs (8).
+.BR debugfs .
 .TP
 .I icheck block ...
 Print a listing of the inodes which use the one or more blocks specified
@@ -364,7 +371,7 @@ device numbers must be specified.
 Take the requested list of inode numbers, and print a listing of pathnames
 to those inodes.
 .TP
-.I open [-w] [-e] [-f] [-i] [-c] [-b blocksize] [-s superblock] device
+.I open [-w] [-e] [-f] [-i] [-c] [-D] [-b blocksize] [-s superblock] device
 Open a filesystem for editing.  The 
 .I -f 
 flag forces the filesystem to be opened even if there are some unknown 
@@ -372,7 +379,7 @@ or incompatible filesystem features which would normally
 prevent the filesystem from being opened.  The
 .I -e
 flag causes the filesystem to be opened in exclusive mode.  The
-.IR -b ", " -c ", " -i ", " -s ", and " -w
+.IR -b ", " -c ", " -i ", " -s ", " -w ", and " -D
 options behave the same as the command-line options to 
 .BR debugfs .
 .TP
@@ -511,7 +518,7 @@ into the destination file.
 .TP
 .B DEBUGFS_PAGER, PAGER
 The
-.BR debugfs (8)
+.B debugfs
 program always pipes the output of the some commands through a
 pager program.  These commands include: 
 .IR show_super_stats ,
