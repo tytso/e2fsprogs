@@ -156,9 +156,8 @@ errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
 			 (fs->blocksize / scan->inode_size - 1)) *
 			scan->inode_size / fs->blocksize;
 	}
-	retval = ext2fs_get_array(scan->inode_buffer_blocks,
-					  fs->blocksize,
-				&scan->inode_buffer);
+	retval = ext2fs_get_memalign(scan->inode_buffer_blocks * fs->blocksize,
+				     fs->blocksize, &scan->inode_buffer);
 	scan->done_group = 0;
 	scan->done_group_data = 0;
 	scan->bad_block_ptr = 0;
