@@ -52,6 +52,7 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #if EXT2_FLAT_INCLUDES
 #include "e2_types.h"
@@ -182,6 +183,7 @@ typedef struct ext2_file *ext2_file_t;
 #define EXT2_FLAG_NOFREE_ON_ERROR	0x10000
 #define EXT2_FLAG_64BITS		0x20000
 #define EXT2_FLAG_PRINT_PROGRESS	0x40000
+#define EXT2_FLAG_DIRECT_IO		0x80000
 
 /*
  * Special flag in the ext2 inode i_flag field that means that this is
@@ -1330,7 +1332,8 @@ extern errcode_t ext2fs_write_bb_FILE(ext2_badblocks_list bb_list,
 
 /* inline functions */
 extern errcode_t ext2fs_get_mem(unsigned long size, void *ptr);
-extern errcode_t ext2fs_get_array(unsigned long count, unsigned long size, void *ptr);
+extern errcode_t ext2fs_get_memalign(unsigned long size,
+				     unsigned long align, void *ptr);
 extern errcode_t ext2fs_free_mem(void *ptr);
 extern errcode_t ext2fs_resize_mem(unsigned long old_size,
 				   unsigned long size, void *ptr);
@@ -1383,6 +1386,21 @@ _INLINE_ errcode_t ext2fs_get_mem(unsigned long size, void *ptr)
 	if (!pp)
 		return EXT2_ET_NO_MEMORY;
 	memcpy(ptr, &pp, sizeof (pp));
+	return 0;
+}
+
+_INLINE_ errcode_t ext2fs_get_memalign(unsigned long size,
+				       unsigned long align, void *ptr)
+{
+	errcode_t retval;
+
+	if (align == 0)
+		align = 8;
+	if (retval = posix_memalign((void **) ptr, align, size)) {
+		if (retval == ENOMEM)
+			return EXT2_ET_NO_MEMORY;
+		return retval;
+	}
 	return 0;
 }
 

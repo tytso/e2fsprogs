@@ -176,6 +176,7 @@ libext2fs.so.2 e2fslibs #MINVER#
  ext2fs_get_inode_bitmap_start@Base 1.37
  ext2fs_get_library_version@Base 1.37
  ext2fs_get_mem@Base 1.37
+ ext2fs_get_memalign@Base 1.41.13
  ext2fs_get_next_inode@Base 1.37
  ext2fs_get_next_inode_full@Base 1.37
  ext2fs_get_num_dirs@Base 1.37

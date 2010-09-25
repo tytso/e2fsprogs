@@ -193,6 +193,7 @@ static errcode_t write_primary_superblock(ext2_filsys fs,
 	errcode_t	retval;
 
 	if (!fs->io->manager->write_byte || !fs->orig_super) {
+	fallback:
 		io_channel_set_blksize(fs->io, SUPERBLOCK_OFFSET);
 		retval = io_channel_write_blk64(fs->io, 1, -SUPERBLOCK_SIZE,
 					      super);
@@ -218,6 +219,8 @@ static errcode_t write_primary_superblock(ext2_filsys fs,
 		retval = io_channel_write_byte(fs->io,
 			       SUPERBLOCK_OFFSET + (2 * write_idx), size,
 					       new_super + write_idx);
+		if (retval == EXT2_ET_UNIMPLEMENTED)
+			goto fallback;
 		if (retval)
 			return retval;
 	}

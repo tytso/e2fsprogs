@@ -173,7 +173,7 @@ the expected usage of the filesystem (see the
 .B \-T
 option).  If
 .I block-size
-is negative, then
+is preceded by a negative sign ('-'), then
 .B mke2fs
 will use heuristics to determine the
 appropriate block size, with the constraint that the block size will be

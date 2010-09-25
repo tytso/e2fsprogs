@@ -131,7 +131,7 @@ void do_open_filesys(int argc, char **argv)
 	char	*data_filename = 0;
 
 	reset_getopt();
-	while ((c = getopt (argc, argv, "iwfecb:s:d:")) != EOF) {
+	while ((c = getopt (argc, argv, "iwfecb:s:d:D")) != EOF) {
 		switch (c) {
 		case 'i':
 			open_flags |= EXT2_FLAG_IMAGE_FILE;
@@ -150,6 +150,9 @@ void do_open_filesys(int argc, char **argv)
 			break;
 		case 'd':
 			data_filename = optarg;
+			break;
+		case 'D':
+			open_flags |= EXT2_FLAG_DIRECT_IO;
 			break;
 		case 'b':
 			blocksize = parse_ulong(optarg, argv[0],
@@ -632,11 +635,8 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 				continue;
 			}
 
-			fprintf(f, "%s(NODE #%d, %lld-%lld, blk %lld)",
-				printed ? ", " : "",
-				info.curr_entry,
-				extent.e_lblk,
-				extent.e_lblk + (extent.e_len - 1),
+			fprintf(f, "%s(ETB%d):%lld",
+				printed ? ", " : "", info.curr_level,
 				extent.e_pblk);
 			printed = 1;
 			continue;
@@ -665,20 +665,20 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 			continue;
 		else if (extent.e_len == 1)
 			fprintf(f,
-				"%s(%lld%s): %lld",
+				"%s(%lld%s):%lld",
 				printed ? ", " : "",
 				extent.e_lblk,
 				extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT ?
-				" [uninit]" : "",
+				"[u]" : "",
 				extent.e_pblk);
 		else
 			fprintf(f,
-				"%s(%lld-%lld%s): %lld-%lld",
+				"%s(%lld-%lld%s):%lld-%lld",
 				printed ? ", " : "",
 				extent.e_lblk,
 				extent.e_lblk + (extent.e_len - 1),
 				extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT ?
-					" [uninit]" : "",
+					"[u]" : "",
 				extent.e_pblk,
 				extent.e_pblk + (extent.e_len - 1));
 		printed = 1;
@@ -809,7 +809,7 @@ void internal_dump_inode(FILE *out, const char *prefix,
 	} else if (do_dump_blocks) {
 		if (inode->i_flags & EXT4_EXTENTS_FL)
 			dump_extents(out, prefix, inode_num,
-				     DUMP_LEAF_EXTENTS, 0, 0);
+				     DUMP_LEAF_EXTENTS|DUMP_NODE_EXTENTS, 0, 0);
 		else
 			dump_blocks(out, prefix, inode_num);
 	}
@@ -2197,7 +2197,7 @@ int main(int argc, char **argv)
 	fprintf (stderr, "%s %s (%s)\n", debug_prog_name,
 		 E2FSPROGS_VERSION, E2FSPROGS_DATE);
 
-	while ((c = getopt (argc, argv, "iwcR:f:b:s:Vd:")) != EOF) {
+	while ((c = getopt (argc, argv, "iwcR:f:b:s:Vd:D")) != EOF) {
 		switch (c) {
 		case 'R':
 			request = optarg;
@@ -2213,6 +2213,9 @@ int main(int argc, char **argv)
 			break;
 		case 'w':
 			open_flags |= EXT2_FLAG_RW;
+			break;
+		case 'D':
+			open_flags |= EXT2_FLAG_DIRECT_IO;
 			break;
 		case 'b':
 			blocksize = parse_ulong(optarg, argv[0],

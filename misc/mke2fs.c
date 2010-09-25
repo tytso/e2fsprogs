@@ -88,7 +88,7 @@ int	force;
 int	noaction;
 int	journal_size;
 int	journal_flags;
-int	lazy_itable_init;
+int	lazy_itable_init;	/* use lazy inode table init */
 char	*bad_blocks_filename;
 __u32	fs_stride;
 
@@ -300,7 +300,7 @@ _("Warning: the backup superblock/group descriptors at block %u contain\n"
 	ext2fs_badblocks_list_iterate_end(bb_iter);
 }
 
-static void write_inode_tables(ext2_filsys fs, int lazy_flag)
+static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 {
 	errcode_t	retval;
 	blk64_t		blk;
@@ -325,7 +325,8 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag)
 				 EXT2_INODE_SIZE(fs->super)) +
 				EXT2_BLOCK_SIZE(fs->super) - 1) /
 			       EXT2_BLOCK_SIZE(fs->super));
-		} else {
+		}
+		if (!lazy_flag || itable_zeroed) {
 			/* The kernel doesn't need to zero the itable blocks */
 			ext2fs_bg_flags_set(fs, i, EXT2_BG_INODE_ZEROED);
 			ext2fs_group_desc_csum_set(fs, i);
@@ -1239,7 +1240,7 @@ static void PRS(int argc, char *argv[])
 				com_err(program_name, 0,
 					_("invalid inode ratio %s (min %d/max %d)"),
 					optarg, EXT2_MIN_BLOCK_SIZE,
-					EXT2_MAX_BLOCK_SIZE);
+					EXT2_MAX_BLOCK_SIZE * 1024);
 				exit(1);
 			}
 			break;
@@ -1415,8 +1416,9 @@ static void PRS(int argc, char *argv[])
 		fs_blocks_count = parse_num_blocks2(argv[optind++],
 						   fs_param.s_log_block_size);
 		if (!fs_blocks_count) {
-			com_err(program_name, 0, _("invalid blocks count - %s"),
-				argv[optind - 1]);
+			com_err(program_name, 0,
+				_("invalid blocks '%s' on device '%s'"),
+				argv[optind - 1], device_name);
 			exit(1);
 		}
 	}
@@ -1901,7 +1903,14 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 #define BLKDISCARD	_IO(0x12,119)
 #endif
 
-static void mke2fs_discard_blocks(ext2_filsys fs)
+#ifndef BLKDISCARDZEROES
+#define BLKDISCARDZEROES _IO(0x12,124)
+#endif
+
+/*
+ * Return zero if the discard succeeds, and -1 if the discard fails.
+ */
+static int mke2fs_discard_blocks(ext2_filsys fs)
 {
 	int fd;
 	int ret;
@@ -1916,10 +1925,6 @@ static void mke2fs_discard_blocks(ext2_filsys fs)
 
 	fd = open64(fs->device_name, O_RDWR);
 
-	/*
-	 * We don't care about whether the ioctl succeeds; it's only an
-	 * optmization for SSDs or sparse storage.
-	 */
 	if (fd > 0) {
 		ret = ioctl(fd, BLKDISCARD, &range);
 		if (verbose) {
@@ -1933,9 +1938,26 @@ static void mke2fs_discard_blocks(ext2_filsys fs)
 		}
 		close(fd);
 	}
+	return ret;
+}
+
+static int mke2fs_discard_zeroes_data(ext2_filsys fs)
+{
+	int fd;
+	int ret;
+	int discard_zeroes_data = 0;
+
+	fd = open64(fs->device_name, O_RDWR);
+
+	if (fd > 0) {
+		ioctl(fd, BLKDISCARDZEROES, &discard_zeroes_data);
+		close(fd);
+	}
+	return discard_zeroes_data;
 }
 #else
-#define mke2fs_discard_blocks(fs)
+#define mke2fs_discard_blocks(fs)	1
+#define mke2fs_discard_zeroes_data(fs)	0
 #endif
 
 int main (int argc, char *argv[])
@@ -1951,6 +1973,7 @@ int main (int argc, char *argv[])
 	io_manager	io_ptr;
 	char		tdb_string[40];
 	char		*hash_alg_str;
+	int		itable_zeroed = 0;
 
 #ifdef ENABLE_NLS
 	setlocale(LC_MESSAGES, "");
@@ -1996,8 +2019,17 @@ int main (int argc, char *argv[])
 	}
 
 	/* Can't undo discard ... */
-	if (discard && (io_ptr != undo_io_manager))
-		mke2fs_discard_blocks(fs);
+	if (discard && (io_ptr != undo_io_manager)) {
+		retval = mke2fs_discard_blocks(fs);
+
+		if (!retval && mke2fs_discard_zeroes_data(fs)) {
+			if (verbose)
+				printf(_("Discard succeeded and will return 0s "
+					 " - skipping inode table wipe\n"));
+			lazy_itable_init = 1;
+			itable_zeroed = 1;
+		}
+	}
 
 	sprintf(tdb_string, "tdb_data_size=%d", fs->blocksize <= 4096 ?
 		32768 : fs->blocksize * 8);
@@ -2147,7 +2179,7 @@ int main (int argc, char *argv[])
 				_("while zeroing block %llu at end of filesystem"),
 				ret_blk);
 		}
-		write_inode_tables(fs, lazy_itable_init);
+		write_inode_tables(fs, lazy_itable_init, itable_zeroed);
 		create_root_dir(fs);
 		create_lost_and_found(fs);
 		reserve_inodes(fs);

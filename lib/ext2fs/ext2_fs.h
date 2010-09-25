@@ -615,8 +615,9 @@ struct ext2_super_block {
 	__u32	s_last_error_line;	/* line number where error happened */
 	__u64	s_last_error_block;	/* block involved of last error */
 	__u8	s_last_error_func[32];	/* function where the error happened */
-#define EXT4_S_ERR_END ext4_offsetof(struct ext2_super_block, s_error_count)
-	__u32   s_reserved[128];        /* Padding to the end of the block */
+#define EXT4_S_ERR_END ext4_offsetof(struct ext2_super_block, s_mount_opts)
+	__u8	s_mount_opts[64];
+	__u32   s_reserved[112];        /* Padding to the end of the block */
 };
 
 #define EXT4_S_ERR_LEN (EXT4_S_ERR_END - EXT4_S_ERR_START)
@@ -713,6 +714,10 @@ struct ext2_super_block {
 #define EXT3_DEFM_JMODE_DATA	0x0020
 #define EXT3_DEFM_JMODE_ORDERED	0x0040
 #define EXT3_DEFM_JMODE_WBACK	0x0060
+#define EXT4_DEFM_NOBARRIER	0x0100
+#define EXT4_DEFM_BLOCK_VALIDITY 0x0200
+#define EXT4_DEFM_DISCARD	0x0400
+#define EXT4_DEFM_NODELALLOC	0x0800
 
 /*
  * Structure of a directory entry
