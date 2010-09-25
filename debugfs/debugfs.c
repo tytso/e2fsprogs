@@ -633,11 +633,8 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 				continue;
 			}
 
-			fprintf(f, "%s(ETB l%d/n%d, %lld-%lld, blk %lld)",
+			fprintf(f, "%s(ETB%d):%lld",
 				printed ? ", " : "", info.curr_level,
-				info.curr_entry,
-				extent.e_lblk,
-				extent.e_lblk + (extent.e_len - 1),
 				extent.e_pblk);
 			printed = 1;
 			continue;
@@ -666,20 +663,20 @@ static void dump_extents(FILE *f, const char *prefix, ext2_ino_t ino,
 			continue;
 		else if (extent.e_len == 1)
 			fprintf(f,
-				"%s(%lld%s): %lld",
+				"%s(%lld%s):%lld",
 				printed ? ", " : "",
 				extent.e_lblk,
 				extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT ?
-				" [uninit]" : "",
+				"[u]" : "",
 				extent.e_pblk);
 		else
 			fprintf(f,
-				"%s(%lld-%lld%s): %lld-%lld",
+				"%s(%lld-%lld%s):%lld-%lld",
 				printed ? ", " : "",
 				extent.e_lblk,
 				extent.e_lblk + (extent.e_len - 1),
 				extent.e_flags & EXT2_EXTENT_FLAGS_UNINIT ?
-					" [uninit]" : "",
+					"[u]" : "",
 				extent.e_pblk,
 				extent.e_pblk + (extent.e_len - 1));
 		printed = 1;
