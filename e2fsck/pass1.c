@@ -2036,7 +2036,7 @@ static void check_blocks(e2fsck_t ctx, struct problem_context *pctx,
 		pctx->num = pb.num_blocks;
 		if (fix_problem(ctx, PR_1_BAD_I_BLOCKS, pctx)) {
 			inode->i_blocks = pb.num_blocks;
-			inode->osd2.linux2.l_i_blocks_hi = 0;
+			inode->osd2.linux2.l_i_blocks_hi = pb.num_blocks >> 32;
 			dirty_inode++;
 		}
 		pctx->num = 0;
