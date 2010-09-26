@@ -368,7 +368,8 @@ static errcode_t e2fsck_get_journal(e2fsck_t ctx, journal_t **ret_journal)
 #ifndef USE_INODE_IO
 	if (ext_journal)
 #endif
-		retval = io_ptr->open(journal_name, IO_FLAG_RW,
+		retval = io_ptr->open(journal_name,
+				      IO_FLAG_RW | IO_FLAG_EXCLUSIVE,
 				      &ctx->journal_io);
 	if (retval)
 		goto errout;
