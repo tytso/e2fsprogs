@@ -1723,8 +1723,13 @@ got_size:
 
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
 
+	lazy_itable_init = 0;
+	if (access("/sys/fs/ext4/features/lazy_itable_init", R_OK) == 0)
+		lazy_itable_init = 1;
+
 	lazy_itable_init = get_bool_from_profile(fs_types,
-						 "lazy_itable_init", 0);
+						 "lazy_itable_init",
+						 lazy_itable_init);
 
 	/* Get options from profile */
 	for (cpp = fs_types; *cpp; cpp++) {
