@@ -115,6 +115,8 @@ static errcode_t unix_read_blk64(io_channel channel, unsigned long long block,
 			       int count, void *data);
 static errcode_t unix_write_blk64(io_channel channel, unsigned long long block,
 				int count, const void *data);
+static errcode_t unix_discard(io_channel channel, unsigned long long block,
+			      unsigned long long count);
 
 static struct struct_io_manager struct_unix_manager = {
 	EXT2_ET_MAGIC_IO_MANAGER,
@@ -130,6 +132,7 @@ static struct struct_io_manager struct_unix_manager = {
 	unix_get_stats,
 	unix_read_blk64,
 	unix_write_blk64,
+	unix_discard,
 };
 
 io_manager unix_io_manager = &struct_unix_manager;
@@ -833,4 +836,32 @@ static errcode_t unix_set_option(io_channel channel, const char *option,
 		return 0;
 	}
 	return EXT2_ET_INVALID_ARGUMENT;
+}
+
+#if defined(__linux__) && !defined(BLKDISCARD)
+#define BLKDISCARD	_IO(0x12,119)
+#endif
+
+static errcode_t unix_discard(io_channel channel, unsigned long long block,
+			      unsigned long long count)
+{
+#ifdef BLKDISCARD
+	struct unix_private_data *data;
+	__uint64_t	range[2];
+	int		ret;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct unix_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_UNIX_IO_CHANNEL);
+
+	range[0] = (__uint64_t)(block) * channel->block_size;
+	range[1] = (__uint64_t)(count) * channel->block_size;
+
+	ret = ioctl(data->dev, BLKDISCARD, &range);
+	if (ret < 0)
+		return errno;
+	return 0;
+#else
+	return EXT2_ET_UNIMPLEMENTED;
+#endif
 }

@@ -73,7 +73,8 @@ static errcode_t test_write_byte(io_channel channel, unsigned long offset,
 static errcode_t test_set_option(io_channel channel, const char *option,
 				 const char *arg);
 static errcode_t test_get_stats(io_channel channel, io_stats *stats);
-
+static errcode_t test_discard(io_channel channel, unsigned long long block,
+			      unsigned long long count);
 
 static struct struct_io_manager struct_test_manager = {
 	EXT2_ET_MAGIC_IO_MANAGER,
@@ -89,6 +90,7 @@ static struct struct_io_manager struct_test_manager = {
 	test_get_stats,
 	test_read_blk64,
 	test_write_blk64,
+	test_discard,
 };
 
 io_manager test_io_manager = &struct_test_manager;
@@ -120,6 +122,7 @@ void (*test_io_cb_write_byte)
 #define TEST_FLAG_FLUSH			0x08
 #define TEST_FLAG_DUMP			0x10
 #define TEST_FLAG_SET_OPTION		0x20
+#define TEST_FLAG_DISCARD		0x40
 
 static void test_dump_block(io_channel channel,
 			    struct test_private_data *data,
@@ -493,5 +496,23 @@ static errcode_t test_get_stats(io_channel channel, io_stats *stats)
 	if (data->real && data->real->manager->get_stats) {
 		retval = (data->real->manager->get_stats)(data->real, stats);
 	}
+	return retval;
+}
+
+static errcode_t test_discard(io_channel channel, unsigned long long block,
+			      unsigned long long count)
+{
+	struct test_private_data *data;
+	errcode_t	retval = 0;
+
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+	data = (struct test_private_data *) channel->private_data;
+	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_TEST_IO_CHANNEL);
+
+	retval = io_channel_discard(channel, block, count);
+	if (data->flags & TEST_FLAG_DISCARD)
+		fprintf(data->outfile,
+			"Test_io: discard(%llu, %llu) returned %s\n",
+			block, count, retval ? error_message(retval) : "OK");
 	return retval;
 }

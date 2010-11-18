@@ -83,6 +83,8 @@ struct struct_io_manager {
 					int count, void *data);
 	errcode_t (*write_blk64)(io_channel channel, unsigned long long block,
 					int count, const void *data);
+	errcode_t (*discard)(io_channel channel, unsigned long long block,
+			     unsigned long long count);
 	long	reserved[16];
 };
 
