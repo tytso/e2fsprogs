@@ -1928,10 +1928,6 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 #define BLKDISCARD	_IO(0x12,119)
 #endif
 
-#ifndef BLKDISCARDZEROES
-#define BLKDISCARDZEROES _IO(0x12,124)
-#endif
-
 /*
  * Return zero if the discard succeeds, and -1 if the discard fails.
  */
@@ -1966,23 +1962,6 @@ static int mke2fs_discard_blocks(ext2_filsys fs)
 	return ret;
 }
 
-static int mke2fs_discard_zeroes_data(ext2_filsys fs)
-{
-	int fd;
-	int ret;
-	int discard_zeroes_data = 0;
-
-	fd = open64(fs->device_name, O_RDWR);
-
-	if (fd > 0) {
-		ioctl(fd, BLKDISCARDZEROES, &discard_zeroes_data);
-		close(fd);
-	}
-	return discard_zeroes_data;
-}
-#else
-#define mke2fs_discard_blocks(fs)	1
-#define mke2fs_discard_zeroes_data(fs)	0
 #endif
 
 int main (int argc, char *argv[])
@@ -2047,7 +2026,7 @@ int main (int argc, char *argv[])
 	if (discard && (io_ptr != undo_io_manager)) {
 		retval = mke2fs_discard_blocks(fs);
 
-		if (!retval && mke2fs_discard_zeroes_data(fs)) {
+		if (!retval && io_channel_discard_zeroes_data(fs->io)) {
 			if (verbose)
 				printf(_("Discard succeeded and will return 0s "
 					 " - skipping inode table wipe\n"));

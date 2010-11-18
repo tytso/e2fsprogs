@@ -425,12 +425,18 @@ static errcode_t flush_cached_blocks(io_channel channel,
 }
 #endif /* NO_IO_CACHE */
 
+#ifdef __linux__
+#ifndef BLKDISCARDZEROES
+#define BLKDISCARDZEROES _IO(0x12,124)
+#endif
+#endif
+
 static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 {
 	io_channel	io = NULL;
 	struct unix_private_data *data = NULL;
 	errcode_t	retval;
-	int		open_flags;
+	int		open_flags, zeroes = 0;
 	struct stat	st;
 #ifdef __linux__
 	struct 		utsname ut;
@@ -485,6 +491,12 @@ static errcode_t unix_open(const char *name, int flags, io_channel *channel)
 		if (ioctl(data->dev, BLKSSZGET, &data->align) != 0)
 			data->align = io->block_size;
 	}
+#endif
+
+#ifdef BLKDISCARDZEROES
+	ioctl(data->dev, BLKDISCARDZEROES, &zeroes);
+	if (zeroes)
+		io->flags |= CHANNEL_FLAGS_DISCARD_ZEROES;
 #endif
 
 #if defined(__CYGWIN__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
