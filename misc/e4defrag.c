@@ -942,7 +942,7 @@ static int get_file_extents(int fd, struct fiemap_extent_list **ext_list_head)
 		fiemap_buf->fm_start = pos;
 		memset(ext_buf, 0, ext_buf_size);
 		ret = ioctl(fd, FS_IOC_FIEMAP, fiemap_buf);
-		if (ret < 0)
+		if (ret < 0 || fiemap_buf->fm_mapped_extents == 0)
 			goto out;
 		for (i = 0; i < fiemap_buf->fm_mapped_extents; i++) {
 			ext_list = NULL;
