@@ -806,6 +806,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				lazy_itable_init = strtoul(arg, &p, 0);
 			else
 				lazy_itable_init = 1;
+		} else if (!strcmp(token, "discard")) {
+			discard = 1;
+		} else if (!strcmp(token, "nodiscard")) {
+			discard = 0;
 		} else {
 			r_usage++;
 			badopt = token;
@@ -821,7 +825,9 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tstripe-width=<RAID stride * data disks in blocks>\n"
 			"\tresize=<resize maximum size in blocks>\n"
 			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
-			"\ttest_fs\n\n"),
+			"\ttest_fs\n"
+			"\tdiscard\n"
+			"\tnodiscard\n\n"),
 			badopt ? badopt : "");
 		free(buf);
 		exit(1);
@@ -1301,6 +1307,10 @@ static void PRS(int argc, char *argv[])
 			parse_journal_opts(optarg);
 			break;
 		case 'K':
+			fprintf(stderr, _("Warning: -K option is deprecated and "
+					  "should not be used anymore. Use "
+					  "\'-E nodiscard\' extended option "
+					  "instead!\n"));
 			discard = 0;
 			break;
 		case 'j':
