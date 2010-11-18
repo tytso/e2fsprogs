@@ -352,6 +352,11 @@ option.  This can be used to configure the default extended options used
 by
 .BR mke2fs (8)
 on a per-filesystem type basis.
+.TP
+.I discard
+This relation is a boolean which specifies whether the
+.BR mke2fs (8)
+should attempt to discard device prior to filesystem creation.
 .SH FILES
 .TP
 .I /etc/mke2fs.conf

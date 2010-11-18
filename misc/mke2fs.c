@@ -80,12 +80,12 @@ int	cflag;
 int	verbose;
 int	quiet;
 int	super_only;
-int	discard = 1;
+int	discard = 1;	/* attempt to discard device before fs creation */
 int	force;
 int	noaction;
 int	journal_size;
 int	journal_flags;
-int	lazy_itable_init;	/* use lazy inode table init */
+int	lazy_itable_init;
 char	*bad_blocks_filename;
 __u32	fs_stride;
 
@@ -1749,6 +1749,7 @@ got_size:
 	lazy_itable_init = get_bool_from_profile(fs_types,
 						 "lazy_itable_init",
 						 lazy_itable_init);
+	discard = get_bool_from_profile(fs_types, "discard" , discard);
 
 	/* Get options from profile */
 	for (cpp = fs_types; *cpp; cpp++) {
