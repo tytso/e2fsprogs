@@ -509,7 +509,8 @@ static errcode_t test_discard(io_channel channel, unsigned long long block,
 	data = (struct test_private_data *) channel->private_data;
 	EXT2_CHECK_MAGIC(data, EXT2_ET_MAGIC_TEST_IO_CHANNEL);
 
-	retval = io_channel_discard(channel, block, count);
+	if (data->real)
+		retval = io_channel_discard(data->real, block, count);
 	if (data->flags & TEST_FLAG_DISCARD)
 		fprintf(data->outfile,
 			"Test_io: discard(%llu, %llu) returned %s\n",
