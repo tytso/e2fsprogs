@@ -1683,17 +1683,16 @@ got_size:
 		blocksize = use_bsize;
 		fs_param.s_blocks_count /= blocksize / 1024;
 	} else {
-		if (blocksize < lsector_size ||			/* Impossible */
-		    (!force && (blocksize < psector_size))) {	/* Suboptimal */
+		if (blocksize < lsector_size) {			/* Impossible */
 			com_err(program_name, EINVAL,
 				_("while setting blocksize; too small "
 				  "for device\n"));
 			exit(1);
-		} else if (blocksize < psector_size) {
+		} else if ((blocksize < psector_size) &&
+			   (psector_size <= sys_page_size)) {	/* Suboptimal */
 			fprintf(stderr, _("Warning: specified blocksize %d is "
-				"less than device physical sectorsize %d, "
-				"forced to continue\n"), blocksize,
-				psector_size);
+				"less than device physical sectorsize %d\n"),
+				blocksize, psector_size);
 		}
 	}
 
