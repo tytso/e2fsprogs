@@ -1686,8 +1686,8 @@ got_size:
 			    (use_bsize > 4096))
 				use_bsize = 4096;
 		}
-		if (psector_size && use_bsize < psector_size)
-			use_bsize = psector_size;
+		if (lsector_size && use_bsize < lsector_size)
+			use_bsize = lsector_size;
 		if ((blocksize < 0) && (use_bsize < (-blocksize)))
 			use_bsize = -blocksize;
 		blocksize = use_bsize;
