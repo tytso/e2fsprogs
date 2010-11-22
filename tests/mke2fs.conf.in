@@ -3,6 +3,7 @@
 	blocksize = 4096
 	inode_size = 256
 	inode_ratio = 16384
+	lazy_itable_init = false
 
 [fs_types]
 	ext3 = {

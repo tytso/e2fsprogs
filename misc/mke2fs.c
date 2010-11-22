@@ -83,12 +83,12 @@ int	cflag;
 int	verbose;
 int	quiet;
 int	super_only;
-int	discard = 1;
+int	discard = 1;	/* attempt to discard device before fs creation */
 int	force;
 int	noaction;
 int	journal_size;
 int	journal_flags;
-int	lazy_itable_init;	/* use lazy inode table init */
+int	lazy_itable_init;
 char	*bad_blocks_filename;
 __u32	fs_stride;
 
@@ -753,6 +753,10 @@ static void parse_extended_opts(struct ext2_super_block *param,
 				lazy_itable_init = strtoul(arg, &p, 0);
 			else
 				lazy_itable_init = 1;
+		} else if (!strcmp(token, "discard")) {
+			discard = 1;
+		} else if (!strcmp(token, "nodiscard")) {
+			discard = 0;
 		} else {
 			r_usage++;
 			badopt = token;
@@ -768,7 +772,9 @@ static void parse_extended_opts(struct ext2_super_block *param,
 			"\tstripe-width=<RAID stride * data disks in blocks>\n"
 			"\tresize=<resize maximum size in blocks>\n"
 			"\tlazy_itable_init=<0 to disable, 1 to enable>\n"
-			"\ttest_fs\n\n"),
+			"\ttest_fs\n"
+			"\tdiscard\n"
+			"\tnodiscard\n\n"),
 			badopt ? badopt : "");
 		free(buf);
 		exit(1);
@@ -1037,8 +1043,9 @@ static const char *default_files[] = { "<default>", 0 };
  * Sets the geometry of a device (stripe/stride), and returns the
  * device's alignment offset, if any, or a negative error.
  */
-static int ext2fs_get_device_geometry(const char *file,
-				      struct ext2_super_block *fs_param)
+static int get_device_geometry(const char *file,
+			       struct ext2_super_block *fs_param,
+			       int psector_size)
 {
 	int rc = -1;
 	int blocksize;
@@ -1063,6 +1070,12 @@ static int ext2fs_get_device_geometry(const char *file,
 	min_io = blkid_topology_get_minimum_io_size(tp);
 	opt_io = blkid_topology_get_optimal_io_size(tp);
 	blocksize = EXT2_BLOCK_SIZE(fs_param);
+	if ((min_io == 0) && (psector_size > blocksize))
+		min_io = psector_size;
+	if ((opt_io == 0) && min_io)
+		opt_io = min_io;
+	if ((opt_io == 0) && (psector_size > blocksize))
+		opt_io = psector_size;
 
 	fs_param->s_raid_stride = min_io / blocksize;
 	fs_param->s_raid_stripe_width = opt_io / blocksize;
@@ -1248,6 +1261,10 @@ static void PRS(int argc, char *argv[])
 			parse_journal_opts(optarg);
 			break;
 		case 'K':
+			fprintf(stderr, _("Warning: -K option is deprecated and "
+					  "should not be used anymore. Use "
+					  "\'-E nodiscard\' extended option "
+					  "instead!\n"));
 			discard = 0;
 			break;
 		case 'j':
@@ -1611,12 +1628,15 @@ static void PRS(int argc, char *argv[])
 			_("while trying to determine physical sector size"));
 		exit(1);
 	}
+
+	if ((tmp = getenv("MKE2FS_DEVICE_SECTSIZE")) != NULL)
+		lsector_size = atoi(tmp);
+	if ((tmp = getenv("MKE2FS_DEVICE_PHYS_SECTSIZE")) != NULL)
+		psector_size = atoi(tmp);
+
 	/* Older kernels may not have physical/logical distinction */
 	if (!psector_size)
 		psector_size = lsector_size;
-
-	if ((tmp = getenv("MKE2FS_DEVICE_SECTSIZE")) != NULL)
-		psector_size = atoi(tmp);
 
 	if (blocksize <= 0) {
 		use_bsize = get_int_from_profile(fs_types, "blocksize", 4096);
@@ -1627,8 +1647,8 @@ static void PRS(int argc, char *argv[])
 			    (use_bsize > 4096))
 				use_bsize = 4096;
 		}
-		if (psector_size && use_bsize < psector_size)
-			use_bsize = psector_size;
+		if (lsector_size && use_bsize < lsector_size)
+			use_bsize = lsector_size;
 		if ((blocksize < 0) && (use_bsize < (-blocksize)))
 			use_bsize = -blocksize;
 		blocksize = use_bsize;
@@ -1636,17 +1656,16 @@ static void PRS(int argc, char *argv[])
 					ext2fs_blocks_count(&fs_param) /
 					(blocksize / 1024));
 	} else {
-		if (blocksize < lsector_size ||			/* Impossible */
-		    (!force && (blocksize < psector_size))) {	/* Suboptimal */
+		if (blocksize < lsector_size) {			/* Impossible */
 			com_err(program_name, EINVAL,
 				_("while setting blocksize; too small "
 				  "for device\n"));
 			exit(1);
-		} else if (blocksize < psector_size) {
+		} else if ((blocksize < psector_size) &&
+			   (psector_size <= sys_page_size)) {	/* Suboptimal */
 			fprintf(stderr, _("Warning: specified blocksize %d is "
-				"less than device physical sectorsize %d, "
-				"forced to continue\n"), blocksize,
-				psector_size);
+				"less than device physical sectorsize %d\n"),
+				blocksize, psector_size);
 		}
 	}
 
@@ -1661,7 +1680,7 @@ static void PRS(int argc, char *argv[])
 		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 
 #ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
-	retval = ext2fs_get_device_geometry(device_name, &fs_param);
+	retval = get_device_geometry(device_name, &fs_param, psector_size);
 	if (retval < 0) {
 		fprintf(stderr,
 			_("warning: Unable to get device geometry for %s\n"),
@@ -1676,8 +1695,14 @@ static void PRS(int argc, char *argv[])
 
 	blocksize = EXT2_BLOCK_SIZE(&fs_param);
 
+	lazy_itable_init = 0;
+	if (access("/sys/fs/ext4/features/lazy_itable_init", R_OK) == 0)
+		lazy_itable_init = 1;
+
 	lazy_itable_init = get_bool_from_profile(fs_types,
-						 "lazy_itable_init", 0);
+						 "lazy_itable_init",
+						 lazy_itable_init);
+	discard = get_bool_from_profile(fs_types, "discard" , discard);
 
 	/* Get options from profile */
 	for (cpp = fs_types; *cpp; cpp++) {

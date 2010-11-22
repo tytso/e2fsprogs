@@ -51,6 +51,14 @@ If
 .I size
 parameter is not specified, it will default to the size of the partition.
 .PP
+Note: when kilobytes is used above, I mean
+.IR real ,
+power-of-2 kilobytes, (i.e., 1024 bytes), which some politically correct
+folks insist should be the stupid-sounding ``kibibytes''.  The same
+holds true for megabytes, also sometimes known as ``mebibytes'', or
+gigabytes, as the amazingly silly ``gibibytes''.  Makes you want to
+gibber, doesn't it?
+.PP
 The
 .B resize2fs
 program does not manipulate the size of partitions.  If you wish to enlarge
