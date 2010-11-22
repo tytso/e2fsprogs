@@ -1667,12 +1667,15 @@ got_size:
 			_("while trying to determine physical sector size"));
 		exit(1);
 	}
+
+	if ((tmp = getenv("MKE2FS_DEVICE_SECTSIZE")) != NULL)
+		lsector_size = atoi(tmp);
+	if ((tmp = getenv("MKE2FS_DEVICE_PHYS_SECTSIZE")) != NULL)
+		psector_size = atoi(tmp);
+
 	/* Older kernels may not have physical/logical distinction */
 	if (!psector_size)
 		psector_size = lsector_size;
-
-	if ((tmp = getenv("MKE2FS_DEVICE_SECTSIZE")) != NULL)
-		psector_size = atoi(tmp);
 
 	if (blocksize <= 0) {
 		use_bsize = get_int_from_profile(fs_types, "blocksize", 4096);
