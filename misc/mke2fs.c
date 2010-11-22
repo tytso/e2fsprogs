@@ -1084,8 +1084,9 @@ static const char *default_files[] = { "<default>", 0 };
  * Sets the geometry of a device (stripe/stride), and returns the
  * device's alignment offset, if any, or a negative error.
  */
-static int ext2fs_get_device_geometry(const char *file,
-				      struct ext2_super_block *fs_param)
+static int get_device_geometry(const char *file,
+			       struct ext2_super_block *fs_param,
+			       int psector_size)
 {
 	int rc = -1;
 	int blocksize;
@@ -1110,6 +1111,12 @@ static int ext2fs_get_device_geometry(const char *file,
 	min_io = blkid_topology_get_minimum_io_size(tp);
 	opt_io = blkid_topology_get_optimal_io_size(tp);
 	blocksize = EXT2_BLOCK_SIZE(fs_param);
+	if ((min_io == 0) && (psector_size > blocksize))
+		min_io = psector_size;
+	if ((opt_io == 0) && min_io)
+		opt_io = min_io;
+	if ((opt_io == 0) && (psector_size > blocksize))
+		opt_io = psector_size;
 
 	fs_param->s_raid_stride = min_io / blocksize;
 	fs_param->s_raid_stripe_width = opt_io / blocksize;
@@ -1707,7 +1714,7 @@ got_size:
 		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 
 #ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY
-	retval = ext2fs_get_device_geometry(device_name, &fs_param);
+	retval = get_device_geometry(device_name, &fs_param, psector_size);
 	if (retval < 0) {
 		fprintf(stderr,
 			_("warning: Unable to get device geometry for %s\n"),
