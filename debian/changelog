@@ -1,3 +1,40 @@
+e2fsprogs (1.41.13-1) unstable; urgency=low
+
+  * New upstream release
+  * Fixed outdated mention of fsck in the e2fsprogs package (Closes: #588726)
+  * Removed obsolete initrd script (Closes: #585041)
+  * Fixed bad dependency on libblkid1 due to shlibs.local (Closes: #583551)
+  * E2fsck now opens the external journal in exclusive mode to prevent
+    clearing the journal of a mounted, snapshotted volume if the user
+    accidentally tries to run e2fsck on the snapshot volume (Closes: #587531)
+  * Fix a big in e2fsck so it correct test for whether the EOFBLOCKS_FL
+    flag should be set or not.
+  * Tune2fs can now set uninit_bg without requiring an fsck afterwards
+  * Add support for the new ext4 default mount options added in 2.6.35
+  * Add support for the ext4 error tracking superblock fields added in 2.6.36
+  * Debugfs now uses a more concise format for listing extents in its
+    stat command
+  * Debugfs can now use direct I/O to access the file system with the -D option
+  * Mke2fs will skip initializing the inode table if a device supports
+    discard and the discard operation results in zero'ed blocks
+  * Mke2fs's handling of logical and physical sector sizes has been
+    significantly improved.
+  * Debugfs will correctly show the progress bar even when UTF-8
+    characters are used in its translation files (Closes: #583782, #587834)
+  * E2freefrag will now display the total number of free extents.
+  * Resize2fs -P now longer requires a freshly checked file system
+  * Fixed a floating point precision error that can cause segfaults in
+    e2fsck and resize2fs in extremely rare cases
+  * Fixed a bug in e2fsck which caused it to fail if both the original
+    and backup superblocks were invalid in some way
+  * Fixed a bug in e2freefrag which caused getopt parsing to fail on
+    architectures with unsigned chars
+  * Clarified mke2fs and e2fsck error messages when given incorrect
+    options/values by the user
+  * Updated/clarified man pages (Closes: #580236, #594004, #589345)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 22 Nov 2010 16:00:50 -0400
+
 e2fsprogs (1.41.12-2) unstable; urgency=high
 
   * Allow tune2fs to set uninit_bg without requiring an fsck

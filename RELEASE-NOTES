@@ -1,3 +1,113 @@
+E2fsprogs 1.41.13 (November 22, 2010)
+=====================================
+
+E2fsck will open the external journal in exclusive mode, to prevent
+the journal from getting truncated while it is in use due to a user
+accidentally trying to run e2fsck on a snapshotted file system volume.
+(Addresses Debian Bug: #587531)
+
+Fix a bug in e2fsck so it has the correct test for the EOFBLOCKS_FL
+flag.
+
+The tune2fs program can now set the uninit_bg feature without
+requiring an fsck.
+
+The tune2fs, dumpe2fs, and debugfs programs now support the new ext4
+default mount options settings which were added in 2.6.35.
+
+The e2fsck and dumpe2fs programs now support the new ext4 superblock
+fields which track where and when the first and most recent file
+system errors occurred.  These fields are displayed by dumpe2fs and
+cleared by e2fsck.  These new superblock fields were added in 2.6.36.
+
+Debugfs now uses a more concicse format for listing extents in its
+stat command.  This format also includes the interior extent tree
+blocks, which previously was missing from stat's output for
+extent-based files.
+
+Debugfs has a new option, -D, which will request Direct I/O access of
+the file system.
+
+Mke2fs will skip initializing the inode table if a device supports
+discard and the discard operation will result in zero'ed blocks.
+
+Badblocks will now correctly backspace over UTF-8 characters when
+displaying its progress bar.  (Addresses Gentoo Bug #309909; Addresses
+Debian Bugs #583782 and #587834)
+
+E2freefrag will now display the total number of free extents.
+
+Resize2fs -P no longer requires a freshly checked filesystem before
+printing the minimum resize size.
+
+Fixed a floating point precision error in a binary tree search routine
+that can lead to seg fault in e2fsck and resize2fs.
+
+Fixed a bug in e2fsck where if both the original and backup superblock
+are invalid in some way, e2fsck will fail going back to the original
+superblock because it didn't close the backup superblock first, and
+the exclusive open prevented the file system from being reopened.
+
+Fixed a big in e2freefrag which caused getopt parsing to fail on
+architectures with unsigned chars.  (Addresses Gentoo Bug: #299386)
+
+Clarified an mke2fs error message so a missed common in an -E option
+(i.e., mke2fs -t ext4 -E stride=128 stripe-width=512 /dev/sda1")
+results in a more understandable explanation to the user.
+
+Mke2fs now displays the correct valid inode ratio range when
+complaining about an invalid inode ratio specified by the user.
+
+Mke2fs now understands the extended option "discard" and "nodiscard",
+and the older option -K is deprecated.  The default of whether
+discards are enabled by default can be controled by the mke2fs.conf
+file.
+
+Mke2fs's handling of logical and physical sector sizes has been
+improved to reflect the fact that there will be some SSD's with 8k and
+16k physical sectors arriving soon.  Mke2fs will no longer force block
+size to be the physical sector size, since there will be devices where
+the physical sector size is larger than the system's page size, and
+hence larger than the maximal supported block size.  In addition, if
+the minimal and optimal io size are not exported by the device, and
+the physical sector size is larger than the block size, the physical
+sector size will be used to set the Raid I/O optimization hints in the
+superblock.
+
+E2fsck will now display a better, more specific error message when the
+user enters a typo'ed device name, instead of blathering on about
+alternate superblocks.
+
+Fixed various Debian Packaging Issues
+
+Updated/clarified man pages (Addresses Debian Bugs: #580236, #594004, #589345)
+
+Update the Chinese, Chzech, Dutch, French, Germany, Indonesian,
+Polish, Swedish, and Vietnamese translations.
+
+
+Programmer's Notes
+------------------
+
+Add support for Direct I/O in the Unix I/O access layer.
+
+Fixed a memory leak in the Unix I/O layer when changing block sizes.
+
+Added a new function to the ext2fs library, ext2fs_get_memalign().
+
+The tst_super_size test program will check to make sure the superblock
+fields are correctly aligned and will print them out so they can be
+manually checked for correctness.
+
+Fixed some makefile dependencies for test programs in lib/ext2fs.
+
+Reserved the feature flags and superblock fields needed for the Next3
+snapshot feature.
+
+Reserved the feature flags for EXT4_FEATURE_INCOMPAT_DIRDATA and
+EXT4_INCOMPAT_EA_INODE.
+
+
 E2fsprogs 1.41.12 (May 17, 2010)
 ================================
 
