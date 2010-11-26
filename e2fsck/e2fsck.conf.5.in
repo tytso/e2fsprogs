@@ -11,7 +11,7 @@ is the configuration file for
 .BR e2fsck (8).  
 It controls the default behavior of 
 .BR e2fsck (8)
-while it is checking ext2 or ext3 filesystems.
+while it is checking ext2, ext3, or ext4 filesystems.
 .PP
 The
 .I e2fsck.conf
