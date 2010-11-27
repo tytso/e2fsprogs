@@ -38,8 +38,7 @@ errcode_t online_resize_fs(ext2_filsys fs, const char *mtpt,
 		 "on-line resizing required\n"), fs->device_name, mtpt);
 
 	if (*new_size < sb->s_blocks_count) {
-		printf(_("On-line shrinking from %u to %u not supported.\n"),
-		       sb->s_blocks_count, *new_size);
+		com_err(program_name, 0, _("On-line shrinking not supported"));
 		exit(1);
 	}
 
