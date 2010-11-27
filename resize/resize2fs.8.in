@@ -116,8 +116,8 @@ Shrink the filesystem to the minimum size.
 .B \-p
 Prints out a percentage completion bars for each
 .B resize2fs
-operation, so that the user can keep track of what
-the program is doing.
+operation during an offline resize, so that the user can keep track 
+of what the program is doing.
 .TP
 .B \-P
 Print the minimum size of the filesystem and exit.
