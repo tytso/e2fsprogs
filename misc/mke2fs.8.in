@@ -620,8 +620,17 @@ will use the filesystem type
 If the filesystem size is greater than 3 but less than or equal to
 512 megabytes,
 .BR mke2fs (8)
-will use the filesystem
+will use the filesystem type
 .IR small .
+If the filesystem size is greater than or equal to 4 terabytes but less than
+16 terabytes,
+.BR mke2fs (8)
+will use the filesystem type
+.IR big .
+If the filesystem size is greater than or equal to 16 terabytes,
+.BR mke2fs (8)
+will use the filesystem type
+.IR huge .
 Otherwise,
 .BR mke2fs (8)
 will use the default filesystem type
