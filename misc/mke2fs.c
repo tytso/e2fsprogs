@@ -979,12 +979,12 @@ static char **parse_fs_type(const char *fs_type,
 		size_type = "floppy";
 	else if (fs_blocks_count < 512 * meg)
 		size_type = "small";
-	else if (fs_blocks_count >= 4 * 1024 * 1024 * meg)
-		size_type = "big";
-	else if (fs_blocks_count >= 16 * 1024 * 1024 * meg)
-		size_type = "huge";
-	else
+	else if (fs_blocks_count < 4 * 1024 * 1024 * meg)
 		size_type = "default";
+	else if (fs_blocks_count < 16 * 1024 * 1024 * meg)
+		size_type = "big";
+	else
+		size_type = "huge";
 
 	if (!usage_types)
 		usage_types = size_type;
