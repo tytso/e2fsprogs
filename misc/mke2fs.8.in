@@ -646,6 +646,29 @@ Verbose execution.
 Print the version number of
 .B mke2fs
 and exit.
+.SH ENVIRONMENT
+.TP
+.BI MKE2FS_SYNC
+If set to non-zero integer value, its value is used to determine how often
+.BR sync (2)
+is called during inode table initialization.
+.TP
+.BI MKE2FS_CONFIG
+Determines the location of the configuration file (see
+.BR mke2fs.conf (5)).
+.TP
+.BI MKE2FS_FIRST_META_BG
+If set to non-zero integer value, its value is used to determine first meta
+block group. This is mostly for debugging purposes.
+.TP
+.BI MKE2FS_DEVICE_SECTSIZE
+If set to non-zero integer value, its value is used to determine physical
+sector size of the
+.IR device .
+.TP
+.BI MKE2FS_SKIP_CHECK_MSG
+If set, do not show the message of filesystem automatic check caused by
+mount count or check interval.
 .SH AUTHOR
 This version of
 .B mke2fs
