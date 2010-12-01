@@ -2162,6 +2162,7 @@ int main (int argc, char *argv[])
 	hash_alg_str = get_string_from_profile(fs_types, "hash_alg",
 					       "half_md4");
 	hash_alg = e2p_string2hash(hash_alg_str);
+	free(hash_alg_str);
 	fs->super->s_def_hash_version = (hash_alg >= 0) ? hash_alg :
 		EXT2_HASH_HALF_MD4;
 	uuid_generate((unsigned char *) fs->super->s_hash_seed);
@@ -2365,5 +2366,8 @@ no_journal:
 	remove_error_table(&et_ext2_error_table);
 	remove_error_table(&et_prof_error_table);
 	profile_release(profile);
+	for (i=0; fs_types[i]; i++)
+		free(fs_types[i]);
+	free(fs_types);
 	return (retval || val) ? 1 : 0;
 }
