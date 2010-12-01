@@ -934,6 +934,35 @@ static void print_str_list(char **list)
 	fputc('\n', stdout);
 }
 
+/*
+ * Return TRUE if the profile has the given subsection
+ */
+static int profile_has_subsection(profile_t profile, const char *section,
+				  const char *subsection)
+{
+	void			*state;
+	const char		*names[4];
+	char			*name;
+	int			ret = 0;
+
+	names[0] = section;
+	names[1] = subsection;
+	names[2] = 0;
+
+	if (profile_iterator_create(profile, names,
+				    PROFILE_ITER_LIST_SECTION |
+				    PROFILE_ITER_RELATIONS_ONLY, &state))
+		return 0;
+
+	if ((profile_iterator(&state, &name, 0) == 0) && name) {
+		free(name);
+		ret = 1;
+	}
+
+	profile_iterator_free(&state);
+	return ret;
+}
+
 static char **parse_fs_type(const char *fs_type,
 			    const char *usage_types,
 			    struct ext2_super_block *fs_param,
@@ -984,17 +1013,19 @@ static char **parse_fs_type(const char *fs_type,
 			ext_type = "ext3";
 	}
 
-	if (!strcmp(ext_type, "ext3") || !strcmp(ext_type, "ext4") ||
-	    !strcmp(ext_type, "ext4dev")) {
-		profile_get_string(profile, "fs_types", ext_type, "features",
-				   0, &t);
-		if (!t) {
-			printf(_("\nWarning!  Your mke2fs.conf file does "
-				 "not define the %s filesystem type.\n"),
-			       ext_type);
+
+	if (!profile_has_subsection(profile, "fs_types", ext_type) &&
+	    strcmp(ext_type, "ext2")) {
+		printf(_("\nYour mke2fs.conf file does not define the "
+			 "%s filesystem type.\n"), ext_type);
+		if (!strcmp(ext_type, "ext3") || !strcmp(ext_type, "ext4") ||
+		    !strcmp(ext_type, "ext4dev")) {
 			printf(_("You probably need to install an updated "
 				 "mke2fs.conf file.\n\n"));
-			sleep(5);
+		}
+		if (!force) {
+			printf(_("Aborting...\n"));
+			exit(1);
 		}
 	}
 
@@ -1027,8 +1058,15 @@ static char **parse_fs_type(const char *fs_type,
 		if (t)
 			*t = '\0';
 
-		if (*cp)
-			push_string(&list, cp);
+		if (*cp) {
+			if (!profile_has_subsection(profile, "fs_types", cp))
+				fprintf(stderr,
+					_("\nWarning: the fs_type %s is not "
+					  "defined in /etc/mke2fs.conf\n\n"),
+					cp);
+			else
+				push_string(&list, cp);
+		}
 		if (t)
 			cp = t+1;
 		else {
