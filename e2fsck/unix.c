@@ -750,7 +750,14 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 				goto sscanf_err;
 			break;
 		case 'j':
-			ctx->journal_name = string_copy(ctx, optarg, 0);
+			ctx->journal_name = blkid_get_devname(ctx->blkid,
+							      optarg, NULL);
+			if (!ctx->journal_name) {
+				com_err(ctx->program_name, 0,
+					_("Unable to resolve '%s'"),
+					optarg);
+				fatal_error(ctx, 0);
+			}
 			break;
 		case 'P':
 			res = sscanf(optarg, "%d", &ctx->process_inode_size);
