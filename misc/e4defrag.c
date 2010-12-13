@@ -160,6 +160,7 @@ struct move_extent {
 struct frag_statistic_ino {
 	int now_count;	/* the file's extents count of before defrag */
 	int best_count; /* the best file's extents count */
+	__u64 size_per_ext;	/* size(KB) per extent */
 	float ratio;	/* the ratio of fragmentation */
 	char msg_buffer[PATH_MAX + 1];	/* pathname of the file */
 };
@@ -1214,6 +1215,7 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 	int	ret;
 	int	now_ext_count, best_ext_count = 0, physical_ext_count;
 	int	i, j;
+	__u64	size_per_ext = 0;
 	float	ratio = 0.0;
 	ext4_fsblk_t	blk_count = 0;
 	char	msg_buffer[PATH_MAX + 24];
@@ -1314,11 +1316,15 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 	now_ext_count = get_logical_count(logical_list_head);
 
 	if (current_uid == ROOT_UID) {
-		/* Calculate fragment ratio  */
+		/* Calculate the size per extent */
 		blk_count =
 				SECTOR_TO_BLOCK(buf->st_blocks, block_size);
 
 		best_ext_count = get_best_count(blk_count);
+
+		/* e4defrag rounds size_per_ext up to a block size boundary */
+		size_per_ext = blk_count * (buf->st_blksize / 1024) /
+							now_ext_count;
 
 		ratio = (float)(physical_ext_count - best_ext_count) * 100 /
 							blk_count;
@@ -1348,16 +1354,16 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 
 		} else {
 			printf("%-40s%10s/%-10s%9s\n",
-					"<File>", "now", "best", "ratio");
+					"<File>", "now", "best", "size/ext");
 			if (current_uid == ROOT_UID) {
 				if (strlen(file) > 40)
-					printf("%s\n%50d/%-10d%8.2f%%\n",
+					printf("%s\n%50d/%-10d%6llu KB\n",
 						file, now_ext_count,
-						best_ext_count, ratio);
+						best_ext_count, size_per_ext);
 				else
-					printf("%-40s%10d/%-10d%8.2f%%\n",
+					printf("%-40s%10d/%-10d%6llu KB\n",
 						file, now_ext_count,
-						best_ext_count, ratio);
+						best_ext_count, size_per_ext);
 			} else {
 				if (strlen(file) > 40)
 					printf("%s\n%50d/%-10s%7s\n",
@@ -1380,14 +1386,14 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 		if (current_uid == ROOT_UID) {
 			if (strlen(msg_buffer) > 40)
 				printf("\033[79;0H\033[K%s\n"
-						"%50d/%-10d%8.2f%%\n",
+						"%50d/%-10d%6llu KB\n",
 						msg_buffer, now_ext_count,
-						best_ext_count, ratio);
+						best_ext_count, size_per_ext);
 			else
 				printf("\033[79;0H\033[K%-40s"
-						"%10d/%-10d%8.2f%%\n",
+						"%10d/%-10d%6llu KB\n",
 						msg_buffer, now_ext_count,
-						best_ext_count, ratio);
+						best_ext_count, size_per_ext);
 		} else {
 			if (strlen(msg_buffer) > 40)
 				printf("\033[79;0H\033[K%s\n%50d/%-10s%7s\n",
@@ -1403,8 +1409,20 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 	for (i = 0; i < SHOW_FRAG_FILES; i++) {
 		if (ratio >= frag_rank[i].ratio) {
 			for (j = SHOW_FRAG_FILES - 1; j > i; j--) {
-				memcpy(&frag_rank[j], &frag_rank[j - 1],
+				memset(&frag_rank[j], 0,
 					sizeof(struct frag_statistic_ino));
+				strncpy(frag_rank[j].msg_buffer,
+					frag_rank[j - 1].msg_buffer,
+					strnlen(frag_rank[j - 1].msg_buffer,
+					PATH_MAX));
+				frag_rank[j].now_count =
+					frag_rank[j - 1].now_count;
+				frag_rank[j].best_count =
+					frag_rank[j - 1].best_count;
+				frag_rank[j].size_per_ext =
+					frag_rank[j - 1].size_per_ext;
+				frag_rank[j].ratio =
+					frag_rank[j - 1].ratio;
 			}
 			memset(&frag_rank[i], 0,
 					sizeof(struct frag_statistic_ino));
@@ -1412,6 +1430,7 @@ static int file_statistic(const char *file, const struct stat64 *buf,
 						strnlen(file, PATH_MAX));
 			frag_rank[i].now_count = now_ext_count;
 			frag_rank[i].best_count = best_ext_count;
+			frag_rank[i].size_per_ext = size_per_ext;
 			frag_rank[i].ratio = ratio;
 			break;
 		}
@@ -1998,7 +2017,7 @@ int main(int argc, char *argv[])
 			if (mode_flag & STATISTIC) {
 				if (mode_flag & DETAIL)
 					printf("%-40s%10s/%-10s%9s\n",
-					"<File>", "now", "best", "ratio");
+					"<File>", "now", "best", "size/ext");
 
 				if (!(mode_flag & DETAIL) &&
 						current_uid != ROOT_UID) {
@@ -2015,24 +2034,28 @@ int main(int argc, char *argv[])
 						printf("\n");
 					printf("%-40s%10s/%-10s%9s\n",
 						"<Fragmented files>", "now",
-						"best", "ratio");
+						"best", "size/ext");
 					for (j = 0; j < SHOW_FRAG_FILES; j++) {
 						if (strlen(frag_rank[j].
 							msg_buffer) > 37) {
 							printf("%d. %s\n%50d/"
-							"%-10d%8.2f%%\n", j + 1,
+							"%-10d%6llu KB\n",
+							j + 1,
 							frag_rank[j].msg_buffer,
 							frag_rank[j].now_count,
 							frag_rank[j].best_count,
-							frag_rank[j].ratio);
+							frag_rank[j].
+								size_per_ext);
 						} else if (strlen(frag_rank[j].
 							msg_buffer) > 0) {
 							printf("%d. %-37s%10d/"
-							"%-10d%8.2f%%\n", j + 1,
+							"%-10d%6llu KB\n",
+							j + 1,
 							frag_rank[j].msg_buffer,
 							frag_rank[j].now_count,
 							frag_rank[j].best_count,
-							frag_rank[j].ratio);
+							frag_rank[j].
+								size_per_ext);
 						} else
 							break;
 					}
@@ -2115,26 +2138,31 @@ int main(int argc, char *argv[])
 			} else {
 				float files_ratio = 0.0;
 				float score = 0.0;
+				__u64 size_per_ext = files_block_count *
+						(buf.st_blksize / 1024) /
+						extents_before_defrag;
 				files_ratio = (float)(extents_before_defrag -
 						extents_after_defrag) *
 						100 / files_block_count;
 				score = CALC_SCORE(files_ratio);
 				printf("\n Total/best extents\t\t\t\t%d/%d\n"
-					" Fragmentation ratio\t\t\t\t%.2f%%\n"
-					" Fragmentation score\t\t\t\t%.2f\n",
+					" Average size per extent"
+					"\t\t\t%llu KB\n"
+					" Fragmentation score\t\t\t\t%.0f\n",
 						extents_before_defrag,
 						extents_after_defrag,
-						files_ratio, score);
+						size_per_ext, score);
 				printf(" [0-30 no problem:"
 					" 31-55 a little bit fragmented:"
-					" 55- needs defrag]\n");
+					" 56- needs defrag]\n");
 
 				if (arg_type == DEVNAME)
-					printf(" This device(%s) ", argv[i]);
+					printf(" This device (%s) ", argv[i]);
 				else if (arg_type == DIRNAME)
-					printf(" This directory(%s) ", argv[i]);
+					printf(" This directory (%s) ",
+								argv[i]);
 				else
-					printf(" This file(%s) ", argv[i]);
+					printf(" This file (%s) ", argv[i]);
 
 				if (score > BOUND_SCORE)
 					printf("needs defragmentation.\n");
