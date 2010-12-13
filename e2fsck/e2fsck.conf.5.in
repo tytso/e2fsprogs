@@ -11,7 +11,7 @@ is the configuration file for
 .BR e2fsck (8).  
 It controls the default behavior of 
 .BR e2fsck (8)
-while it is checking ext2 or ext3 filesystems.
+while it is checking ext2, ext3, or ext4 filesystems.
 .PP
 The
 .I e2fsck.conf
@@ -190,11 +190,22 @@ is running in preen mode.
 .I no_nomsg
 This boolean relation overrides the default behavior controlling 
 whether or not the description for this filesystem problem should
-be suppressed when
+be suppressed when a problem forced not to be fixed, either because
 .B e2fsck
 is run with the
 .B -n
-option.
+option or because the
+.I force_no
+flag has been set for the problem.
+.TP
+.I force_no
+This boolean option, if set to true, forces a problem to never be fixed.
+That is, it will be as if the user problem responds 'no' to the question
+of 'should this problem be fixed?'.  The
+.I force_no
+option even overrides the
+.B -y
+option given on the command-line (just for the specific problem, of course).
 .SH THE [scratch_files] STANZA
 The following relations are defined in the 
 .I [scratch_files]

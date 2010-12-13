@@ -308,6 +308,9 @@ static void check_if_skip(e2fsck_t ctx)
 	if ((ctx->options & E2F_OPT_FORCE) || bad_blocks_file || cflag)
 		return;
 
+	if (ctx->options & E2F_OPT_JOURNAL_ONLY)
+		goto skip;
+
 	lastcheck = fs->super->s_lastcheck;
 	if (lastcheck > ctx->now)
 		lastcheck -= ctx->time_fudge;
@@ -372,6 +375,7 @@ static void check_if_skip(e2fsck_t ctx)
 			printf(_(" (check in %ld mounts)"), next_check);
 	}
 	fputc('\n', stdout);
+skip:
 	ext2fs_close(fs);
 	ctx->fs = NULL;
 	e2fsck_free_context(ctx);
@@ -594,6 +598,12 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		} else if (strcmp(token, "fragcheck") == 0) {
 			ctx->options |= E2F_OPT_FRAGCHECK;
 			continue;
+		} else if (strcmp(token, "journal_only") == 0) {
+			if (arg) {
+				extended_usage++;
+				continue;
+			}
+			ctx->options |= E2F_OPT_JOURNAL_ONLY;
 		} else {
 			fprintf(stderr, _("Unknown extended option: %s\n"),
 				token);
@@ -609,6 +619,7 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		       "Valid extended options are:\n"), stderr);
 		fputs(("\tea_ver=<ea_version (1 or 2)>\n"), stderr);
 		fputs(("\tfragcheck\n"), stderr);
+		fputs(("\tjournal_only\n"), stderr);
 		fputc('\n', stderr);
 		exit(1);
 	}
@@ -752,7 +763,14 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 				goto sscanf_err;
 			break;
 		case 'j':
-			ctx->journal_name = string_copy(ctx, optarg, 0);
+			ctx->journal_name = blkid_get_devname(ctx->blkid,
+							      optarg, NULL);
+			if (!ctx->journal_name) {
+				com_err(ctx->program_name, 0,
+					_("Unable to resolve '%s'"),
+					optarg);
+				fatal_error(ctx, 0);
+			}
 			break;
 		case 'P':
 			res = sscanf(optarg, "%d", &ctx->process_inode_size);

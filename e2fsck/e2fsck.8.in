@@ -186,6 +186,10 @@ Set the version of the extended attribute blocks which
 will require while checking the filesystem.  The version number may 
 be 1 or 2.  The default extended attribute version format is 2.
 .TP
+.BI journal_only
+Only replay the journal if required, but do not perform any further checks
+or repairs.
+.TP
 .BI fragcheck
 During pass 1, print a detailed report of any discontiguous blocks for
 files in the filesystem.

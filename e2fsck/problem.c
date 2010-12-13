@@ -1773,6 +1773,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		reconfigure_bool(ctx, ptr, key, PR_NOCOLLATE, "no_collate");
 		reconfigure_bool(ctx, ptr, key, PR_NO_NOMSG, "no_nomsg");
 		reconfigure_bool(ctx, ptr, key, PR_PREEN_NOHDR, "preen_noheader");
+		reconfigure_bool(ctx, ptr, key, PR_FORCE_NO, "force_no");
 
 		ptr->flags |= PR_CONFIG;
 	}
@@ -1803,7 +1804,7 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 	    (ctx->options & E2F_OPT_PREEN))
 		suppress++;
 	if ((ptr->flags & PR_NO_NOMSG) &&
-	    (ctx->options & E2F_OPT_NO))
+	    ((ctx->options & E2F_OPT_NO) || (ptr->flags & PR_FORCE_NO)))
 		suppress++;
 	if (!suppress) {
 		message = ptr->e2p_description;
@@ -1827,7 +1828,11 @@ int fix_problem(e2fsck_t ctx, problem_t code, struct problem_context *pctx)
 		else
 			answer = def_yn;
 	} else {
-		if (ctx->options & E2F_OPT_PREEN) {
+		if (ptr->flags & PR_FORCE_NO) {
+			answer = 0;
+			if (!suppress)
+				print_answer = 1;
+		} else if (ctx->options & E2F_OPT_PREEN) {
 			answer = def_yn;
 			if (!(ptr->flags & PR_PREEN_NOMSG))
 				print_answer = 1;

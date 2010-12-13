@@ -45,9 +45,6 @@ mke2fs \- create an ext2/ext3/ext4 filesystem
 .I journal-options
 ]
 [
-.B \-K
-]
-[
 .B \-N
 .I number-of-inodes
 ]
@@ -240,6 +237,17 @@ enable lazy inode table initialization.
 .B test_fs
 Set a flag in the filesystem superblock indicating that it may be
 mounted using experimental kernel code, such as the ext4dev filesystem.
+.TP
+.BI discard
+Attempt to discard blocks at mkfs time (discarding blocks initially is useful
+on solid state devices and sparse / thin-provisioned storage). When the device
+advertises that discard also zeroes data (any subsequent read after the discard
+and before write returns zero), then mark all not-yet-zeroed inode tables as
+zeroed. This significantly speeds up filesystem initialization. This is set
+as default.
+.TP
+.BI nodiscard
+Do not attempt to discard blocks at mkfs time. This is the default.
 .RE
 .TP
 .BI \-f " fragment-size"
@@ -368,10 +376,6 @@ and may be no more than 102,400 filesystem blocks.
 @JDEV@Only one of the
 @JDEV@.BR size " or " device
 @JDEV@options can be given for a filesystem.
-.TP
-.BI \-K
-Keep, do not attempt to discard blocks at mkfs time (discarding blocks initially
-is useful on solid state devices and sparse / thin-provisioned storage).
 .TP
 .BI \-l " filename"
 Read the bad blocks list from
