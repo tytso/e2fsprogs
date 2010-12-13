@@ -1514,7 +1514,11 @@ static int call_defrag(int fd, int donor_fd, const char *file,
 			if (mode_flag & DETAIL) {
 				printf("\n");
 				PRINT_ERR_MSG_WITH_ERRNO(
-						"Failed to defrag");
+					"Failed to defrag with "
+					"EXT4_IOC_MOVE_EXT ioctl");
+				if (errno == ENOTTY)
+					printf("\tAt least 2.6.31-rc1 of "
+						"vanilla kernel is required\n");
 			} else {
 				printf("\t[ NG ]\n");
 			}
