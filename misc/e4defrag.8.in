@@ -35,16 +35,20 @@ point.
 .SH OPTIONS
 .TP
 .B \-c
-Get the fragmentation count and calculate fragmentation score based on it
-before and after defrag. By seeing this score, we can determine whether we
-should execute
+Get a current fragmentation count and an ideal fragmentation count, and
+calculate fragmentation score based on them. By seeing this score, we can
+determine whether we should execute
 .B e4defrag
 to
 .IR target .
 When used with
 .B \-v
-option, the fragmentation count before and after defrag is printed for each
-file.
+option, the current fragmentation count and the ideal fragmentation count are
+printed for each file.
+.IP
+Also this option outputs the average data size in one extent. If you see it,
+you'll find the file has ideal extents or not. Note that the maximum extent
+size is 131072KB in ext4 filesystem (if block size is 4KB).
 .IP
 If this option is specified,
 .I target
