@@ -61,7 +61,7 @@ by the author.
 @title The EXT2FS Library
 @subtitle The EXT2FS Library
 @subtitle Version 1.41.13
-@subtitle November 2010
+@subtitle December 2010
 
 @author by Theodore Ts'o
 

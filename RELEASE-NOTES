@@ -1,10 +1,39 @@
-E2fsprogs 1.41.13 (November 22, 2010)
+E2fsprogs 1.41.13 (December 13, 2010)
 =====================================
+
+E2fsck now supports the extended option "-E journal_only", which
+causes it to only do a journal replay.  This is useful for scripts
+that want to first replay the journal and then check to see if it
+contains errors.
+
+E2fsck will now support UUID= and LABEL= specifiers for the -j option
+(which specifies where to find the external journal).  (Addresses
+Debian Bug #559315)
+
+E2fsck now has support for the problems/<problem code>/force_no
+configuration option in e2fsck.conf, which forces a problem to not be
+fixed.
+
+Dumpe2fs will now avoid printing large negative offsets for the bitmap
+blocks and instead print a message which is a bit more helpful for
+flex_bg file systems.
+
+Mke2fs will now check the file system type (specified with the -t
+option) to make sure it is defined in the mke2fs.conf file; if it is
+not, it will print an error and abort.  If the usage type (specified
+with the -T option) is not defined in mke2fs.conf, mke2fs will print a
+warning but will continue.  (Addresses Debian Bug #594609)
+
+Clarified error message from resize2fs clarifying that on-line
+shrinking is not supported at all.  (Addresses Debian Bug #599786)
+    
+Fix an e2fsck bug that could cause a PROGRAMMING BUG error to be
+displayed.  (Addresses Debian Bug #555456)
 
 E2fsck will open the external journal in exclusive mode, to prevent
 the journal from getting truncated while it is in use due to a user
 accidentally trying to run e2fsck on a snapshotted file system volume.
-(Addresses Debian Bug: #587531)
+(Addresses Debian Bug #587531)
 
 Fix a bug in e2fsck so it has the correct test for the EOFBLOCKS_FL
 flag.
@@ -80,7 +109,8 @@ alternate superblocks.
 
 Fixed various Debian Packaging Issues
 
-Updated/clarified man pages (Addresses Debian Bugs: #580236, #594004, #589345)
+Updated/clarified man pages (Addresses Debian Bugs: #580236, #594004,
+#589345, #591083; Addresses Launchpad Bug: #505719)
 
 Update the Chinese, Chzech, Dutch, French, Germany, Indonesian,
 Polish, Swedish, and Vietnamese translations.
@@ -89,9 +119,15 @@ Polish, Swedish, and Vietnamese translations.
 Programmer's Notes
 ------------------
 
+Fix a dependency definition for the static and profiled blkid
+libraries which could cause compile failures in some configurations.
+(Addresses Debian Bug: #604629)
+    
 Add support for Direct I/O in the Unix I/O access layer.
 
 Fixed a memory leak in the Unix I/O layer when changing block sizes.
+
+Fixed minor memory leaks in mke2fs.
 
 Added a new function to the ext2fs library, ext2fs_get_memalign().
 

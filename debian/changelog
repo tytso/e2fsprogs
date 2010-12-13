@@ -1,6 +1,19 @@
 e2fsprogs (1.41.13-1) unstable; urgency=low
 
   * New upstream release
+  * E2fsck can now do journal-only replays via "e2fsck -E journal_only"
+  * E2fsck now understands UUID= and LABEL= specifiers for the -j option
+    (Closes: #559315)
+  * E2fsck.conf now supports a new config option, which forces the
+    problem not to be fixed: problems/<problem code/force_no
+  * Dumpe2fs now prints friendlier offsets for flex_bg file systems
+  * Mke2fs will now fail if the user uses an file system type not
+    defined in mke2fs.conf (Closes: #594609)
+  * Resize now prints a clarified error message explaining that on-line
+    shrinking is not supported at all.  (Closes: #599786)
+  * Fixed a build error caused by bad static and profiled dependencies
+    for the blkid library (Closes: #604629)
+  * Fixed an e2fsck PROGRAMMING BUG error (Closes: #555456)
   * Fixed outdated mention of fsck in the e2fsprogs package (Closes: #588726)
   * Removed obsolete initrd script (Closes: #585041)
   * Fixed bad dependency on libblkid1 due to shlibs.local (Closes: #583551)
@@ -31,7 +44,7 @@ e2fsprogs (1.41.13-1) unstable; urgency=low
     architectures with unsigned chars
   * Clarified mke2fs and e2fsck error messages when given incorrect
     options/values by the user
-  * Updated/clarified man pages (Closes: #580236, #594004, #589345)
+  * Updated/clarified man pages (Closes: #580236, #594004, #589345, #591083)
 
  -- Theodore Y. Ts'o <tytso@mit.edu>  Mon, 22 Nov 2010 16:00:50 -0400
 
