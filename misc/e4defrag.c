@@ -2034,6 +2034,7 @@ int main(int argc, char *argv[])
 				if (!(mode_flag & DETAIL) &&
 						current_uid != ROOT_UID) {
 					printf(" Done.\n");
+					success_flag = 1;
 					continue;
 				}
 
