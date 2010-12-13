@@ -1605,7 +1605,7 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 		return 0;
 	}
 
-	fd = open64(file, O_RDONLY);
+	fd = open64(file, O_RDWR);
 	if (fd < 0) {
 		if (mode_flag & DETAIL) {
 			PRINT_FILE_NAME(file);
