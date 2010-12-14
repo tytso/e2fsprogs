@@ -536,8 +536,10 @@ static int do_one_pass(journal_t *journal,
 					memcpy(nbh->b_data, obh->b_data,
 							journal->j_blocksize);
 					if (flags & JFS_FLAG_ESCAPE) {
-						*((__be32 *)nbh->b_data) =
-						cpu_to_be32(JFS_MAGIC_NUMBER);
+						journal_header_t *header;
+
+						header = (journal_header_t *) &nbh->b_data[0];
+						header->h_magic = cpu_to_be32(JFS_MAGIC_NUMBER);
 					}
 
 					BUFFER_TRACE(nbh, "marking dirty");
