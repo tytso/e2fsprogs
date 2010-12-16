@@ -1154,6 +1154,10 @@ static void PRS(int argc, char *argv[])
 	if (oldpath)
 		pathlen += strlen(oldpath);
 	newpath = malloc(pathlen);
+	if (!newpath) {
+		fprintf(stderr, _("Couldn't allocate memory for new PATH.\n"));
+		exit(1);
+	}
 	strcpy(newpath, PATH_SET);
 
 	/* Update our PATH to include /sbin  */
@@ -1184,8 +1188,17 @@ static void PRS(int argc, char *argv[])
 	profile_set_syntax_err_cb(syntax_err_report);
 	retval = profile_init(config_fn, &profile);
 	if (retval == ENOENT) {
-		profile_init(default_files, &profile);
-		profile_set_default(profile, mke2fs_default_profile);
+		retval = profile_init(default_files, &profile);
+		if (retval)
+			goto profile_error;
+		retval = profile_set_default(profile, mke2fs_default_profile);
+		if (retval)
+			goto profile_error;
+	} else if (retval) {
+profile_error:
+		fprintf(stderr, _("Couldn't init profile successfully"
+				  " (error: %ld).\n"), retval);
+		exit(1);
 	}
 
 	setbuf(stdout, NULL);
