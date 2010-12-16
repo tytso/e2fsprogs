@@ -159,7 +159,7 @@ int main (int argc, char ** argv)
 	int		print_min_size = 0;
 	int		fd, ret;
 	blk_t		new_size = 0;
-	blk_t		max_size = 0;
+	blk64_t		max_size = 0;
 	blk_t		min_size = 0;
 	io_manager	io_ptr;
 	char		*new_size_str = 0;
@@ -374,7 +374,7 @@ int main (int argc, char ** argv)
 	 * defaults and for making sure the new filesystem doesn't
 	 * exceed the partition size.
 	 */
-	retval = ext2fs_get_device_size(device_name, fs->blocksize,
+	retval = ext2fs_get_device_size2(device_name, fs->blocksize,
 					&max_size);
 	if (retval) {
 		com_err(program_name, retval,
@@ -392,6 +392,14 @@ int main (int argc, char ** argv)
 			exit(1);
 		}
 	} else {
+		/* Take down devices exactly 16T to 2^32-1 blocks */
+		if (max_size == (1ULL << 32))
+			max_size--;
+		else if (max_size > (1ULL << 32)) {
+			com_err(program_name, 0, _("New size too large to be "
+				"expressed in 32 bits\n"));
+			exit(1);
+		}
 		new_size = max_size;
 		/* Round down to an even multiple of a pagesize */
 		if (sys_page_size > fs->blocksize)
@@ -431,7 +439,7 @@ int main (int argc, char ** argv)
 	}
 	if (!force && (new_size > max_size)) {
 		fprintf(stderr, _("The containing partition (or device)"
-			" is only %u (%dk) blocks.\nYou requested a new size"
+			" is only %llu (%dk) blocks.\nYou requested a new size"
 			" of %u blocks.\n\n"), max_size,
 			fs->blocksize / 1024, new_size);
 		exit(1);
