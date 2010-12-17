@@ -327,7 +327,7 @@ int sync_file_range(int fd, loff_t offset, loff_t length, unsigned int flag)
 }
 #endif /* ! HAVE_SYNC_FILE_RANGE */
 
-#ifndef HAVE_FALLOCATE
+#ifndef HAVE_FALLOCATE64
 #warning Using locally defined fallocate syscall interface.
 
 #ifndef __NR_fallocate
@@ -335,14 +335,14 @@ int sync_file_range(int fd, loff_t offset, loff_t length, unsigned int flag)
 #endif
 
 /*
- * fallocate() -	Manipulate file space.
+ * fallocate64() -	Manipulate file space.
  *
  * @fd:			defrag target file's descriptor.
  * @mode:		process flag.
  * @offset:		file offset.
  * @len:		file size.
  */
-static int fallocate(int fd, int mode, loff_t offset, loff_t len)
+static int fallocate64(int fd, int mode, loff_t offset, loff_t len)
 {
 	return syscall(__NR_fallocate, fd, mode, offset, len);
 }
@@ -1738,7 +1738,7 @@ static int file_defrag(const char *file, const struct stat64 *buf,
 	/* Allocate space for donor inode */
 	orig_group_tmp = orig_group_head;
 	do {
-		ret = fallocate(donor_fd, 0,
+		ret = fallocate64(donor_fd, 0,
 		  (loff_t)orig_group_tmp->start->data.logical * block_size,
 		  (loff_t)orig_group_tmp->len * block_size);
 		if (ret < 0) {
