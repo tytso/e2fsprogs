@@ -1960,69 +1960,6 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 	return retval;
 }
 
-#ifdef __linux__
-
-#ifndef BLKDISCARD
-#define BLKDISCARD	_IO(0x12,119)
-#endif
-
-#ifndef BLKDISCARDZEROES
-#define BLKDISCARDZEROES _IO(0x12,124)
-#endif
-
-/*
- * Return zero if the discard succeeds, and -1 if the discard fails.
- */
-static int mke2fs_discard_blocks(ext2_filsys fs)
-{
-	int fd;
-	int ret;
-	int blocksize;
-	__u64 blocks;
-	__uint64_t range[2];
-
-	blocks = ext2fs_blocks_count(fs->super);
-	blocksize = EXT2_BLOCK_SIZE(fs->super);
-	range[0] = 0;
-	range[1] = blocks * blocksize;
-
-	fd = open64(fs->device_name, O_RDWR);
-
-	if (fd > 0) {
-		ret = ioctl(fd, BLKDISCARD, &range);
-		if (verbose) {
-			printf(_("Calling BLKDISCARD from %llu to %llu "),
-			       (unsigned long long) range[0],
-			       (unsigned long long) range[1]);
-			if (ret)
-				printf(_("failed.\n"));
-			else
-				printf(_("succeeded.\n"));
-		}
-		close(fd);
-	}
-	return ret;
-}
-
-static int mke2fs_discard_zeroes_data(ext2_filsys fs)
-{
-	int fd;
-	int ret;
-	int discard_zeroes_data = 0;
-
-	fd = open64(fs->device_name, O_RDWR);
-
-	if (fd > 0) {
-		ioctl(fd, BLKDISCARDZEROES, &discard_zeroes_data);
-		close(fd);
-	}
-	return discard_zeroes_data;
-}
-#else
-#define mke2fs_discard_blocks(fs)	1
-#define mke2fs_discard_zeroes_data(fs)	0
-#endif
-
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
@@ -2083,9 +2020,20 @@ int main (int argc, char *argv[])
 
 	/* Can't undo discard ... */
 	if (discard && (io_ptr != undo_io_manager)) {
-		retval = mke2fs_discard_blocks(fs);
+		blk64_t blocks = ext2fs_blocks_count(fs->super);
+		if (verbose)
+			printf(_("Calling BLKDISCARD from 0 to %llu... "),
+			       (unsigned long long) blocks);
+		retval = io_channel_discard(fs->io, 0, blocks, fs->blocksize);
+		if (verbose) {
+			if (retval)
+				printf(_("failed (%s)\n"),
+				       error_message(retval));
+			else
+				printf(_("succeeded\n"));
+		}
 
-		if (!retval && mke2fs_discard_zeroes_data(fs)) {
+		if (!retval && io_channel_discard_zeroes_data(fs->io)) {
 			if (verbose)
 				printf(_("Discard succeeded and will return 0s "
 					 " - skipping inode table wipe\n"));

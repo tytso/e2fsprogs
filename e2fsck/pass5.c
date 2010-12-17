@@ -10,8 +10,17 @@
  *
  */
 
+#include <stdint.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <errno.h>
+
 #include "e2fsck.h"
 #include "problem.h"
+
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 
 static void check_block_bitmaps(e2fsck_t ctx);
 static void check_inode_bitmaps(e2fsck_t ctx);
@@ -64,6 +73,26 @@ void e2fsck_pass5(e2fsck_t ctx)
 	print_resource_track(ctx, _("Pass 5"), &rtrack, ctx->fs->io);
 }
 
+static void e2fsck_discard_blocks(e2fsck_t ctx, io_manager manager,
+				  blk64_t start, blk64_t count)
+{
+	ext2_filsys fs = ctx->fs;
+	int ret = 0;
+
+	/*
+	 * If the filesystem has changed it means that there was an corruption
+	 * which should be repaired, but in some cases just one e2fsck run is
+	 * not enough to fix the problem, hence it is not safe to run discard
+	 * in this case.
+	 */
+	if (ext2fs_test_changed(ctx->fs))
+		ctx->options &= ~E2F_OPT_DISCARD;
+
+	if ((ctx->options & E2F_OPT_DISCARD) &&
+	    (io_channel_discard(fs->io, start, count)))
+		ctx->options &= ~E2F_OPT_DISCARD;
+}
+
 #define NO_BLK ((blk64_t) -1)
 
 static void print_bitmap_problem(e2fsck_t ctx, int problem,
@@ -108,6 +137,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	int	group = 0;
 	int	blocks = 0;
 	blk64_t	free_blocks = 0;
+	blk64_t first_free = ext2fs_blocks_count(fs->super);
 	int	group_free = 0;
 	int	actual, bitmap;
 	struct problem_context	pctx;
@@ -120,6 +150,7 @@ static void check_block_bitmaps(e2fsck_t ctx)
 	int	cmp_block = 0;
 	int	redo_flag = 0;
 	blk64_t	super_blk, old_desc_blk, new_desc_blk;
+	io_manager	manager = ctx->fs->io->manager;
 
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,
@@ -281,10 +312,25 @@ redo_counts:
 		ctx->flags |= E2F_FLAG_PROG_SUPPRESS;
 		had_problem++;
 
+		/*
+		 * If there a problem we should turn off the discard so we
+		 * do not compromise the filesystem.
+		 */
+		ctx->options &= ~E2F_OPT_DISCARD;
+
 	do_counts:
 		if (!bitmap && (!skip_group || csum_flag)) {
 			group_free++;
 			free_blocks++;
+			if (first_free > i)
+				first_free = i;
+		} else {
+			if ((i > first_free) &&
+			   (ctx->options & E2F_OPT_DISCARD)) {
+				e2fsck_discard_blocks(ctx, manager, first_free,
+						      (i - first_free));
+			}
+			first_free = ext2fs_blocks_count(fs->super);
 		}
 		blocks ++;
 		if ((blocks == fs->super->s_blocks_per_group) ||
@@ -381,6 +427,7 @@ static void check_inode_bitmaps(e2fsck_t ctx)
 	int		csum_flag;
 	int		skip_group = 0;
 	int		redo_flag = 0;
+	io_manager	manager = ctx->fs->io->manager;
 
 	clear_problem_context(&pctx);
 	free_array = (int *) e2fsck_allocate_memory(ctx,
@@ -500,6 +547,11 @@ redo_counts:
 		}
 		ctx->flags |= E2F_FLAG_PROG_SUPPRESS;
 		had_problem++;
+		/*
+		 * If there a problem we should turn off the discard so we
+		 * do not compromise the filesystem.
+		 */
+		ctx->options &= ~E2F_OPT_DISCARD;
 
 do_counts:
 		if (bitmap) {
@@ -509,11 +561,43 @@ do_counts:
 			group_free++;
 			free_inodes++;
 		}
+
 		inodes++;
 		if ((inodes == fs->super->s_inodes_per_group) ||
 		    (i == fs->super->s_inodes_count)) {
+
 			free_array[group] = group_free;
 			dir_array[group] = dirs_count;
+
+			/* Discard inode table */
+			if (ctx->options & E2F_OPT_DISCARD) {
+				blk64_t used_blks, blk, num;
+
+				used_blks = DIV_ROUND_UP(
+					(EXT2_INODES_PER_GROUP(fs->super) -
+					group_free),
+					EXT2_INODES_PER_BLOCK(fs->super));
+
+				blk = ext2fs_inode_table_loc(fs, group) +
+				      used_blks;
+				num = fs->inode_blocks_per_group -
+				      used_blks;
+				e2fsck_discard_blocks(ctx, manager, blk, num);
+			}
+
+			/*
+			 * If discard zeroes data and the group inode table
+			 * was not zeroed yet, set itable as zeroed
+			 */
+			if ((ctx->options & E2F_OPT_DISCARD) &&
+			    (io_channel_discard_zeroes_data(fs->io)) &&
+			    !(ext2fs_bg_flags_test(fs, group,
+						  EXT2_BG_INODE_ZEROED))) {
+				ext2fs_bg_flags_set(fs, group,
+						    EXT2_BG_INODE_ZEROED);
+				ext2fs_group_desc_csum_set(fs, group);
+			}
+
 			group ++;
 			inodes = 0;
 			skip_group = 0;

@@ -29,6 +29,9 @@ typedef struct struct_io_channel *io_channel;
 typedef struct struct_io_stats *io_stats;
 
 #define CHANNEL_FLAGS_WRITETHROUGH	0x01
+#define CHANNEL_FLAGS_DISCARD_ZEROES	0x02
+
+#define io_channel_discard_zeroes_data(i) (i->flags & CHANNEL_FLAGS_DISCARD_ZEROES)
 
 struct struct_io_channel {
 	errcode_t	magic;
@@ -83,6 +86,8 @@ struct struct_io_manager {
 					int count, void *data);
 	errcode_t (*write_blk64)(io_channel channel, unsigned long long block,
 					int count, const void *data);
+	errcode_t (*discard)(io_channel channel, unsigned long long block,
+			     unsigned long long count);
 	long	reserved[16];
 };
 

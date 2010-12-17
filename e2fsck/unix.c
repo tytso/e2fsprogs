@@ -604,6 +604,12 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 				continue;
 			}
 			ctx->options |= E2F_OPT_JOURNAL_ONLY;
+		} else if (strcmp(token, "discard") == 0) {
+			ctx->options |= E2F_OPT_DISCARD;
+			continue;
+		} else if (strcmp(token, "nodiscard") == 0) {
+			ctx->options &= ~E2F_OPT_DISCARD;
+			continue;
 		} else {
 			fprintf(stderr, _("Unknown extended option: %s\n"),
 				token);
@@ -620,6 +626,8 @@ static void parse_extended_opts(e2fsck_t ctx, const char *opts)
 		fputs(("\tea_ver=<ea_version (1 or 2)>\n"), stderr);
 		fputs(("\tfragcheck\n"), stderr);
 		fputs(("\tjournal_only\n"), stderr);
+		fputs(("\tdiscard\n"), stderr);
+		fputs(("\tnodiscard\n"), stderr);
 		fputc('\n', stderr);
 		exit(1);
 	}
@@ -678,6 +686,7 @@ static errcode_t PRS(int argc, char *argv[], e2fsck_t *ret_ctx)
 		ctx->program_name = *argv;
 	else
 		ctx->program_name = "e2fsck";
+
 	while ((c = getopt (argc, argv, "panyrcC:B:dE:fvtFVM:b:I:j:P:l:L:N:SsDk")) != EOF)
 		switch (c) {
 		case 'C':
@@ -960,7 +969,6 @@ static errcode_t try_open_fs(e2fsck_t ctx, int flags, io_manager io_ptr,
 				      flags, 0, 0, io_ptr, ret_fs);
 	return retval;
 }
-
 
 static const char *my_ver_string = E2FSPROGS_VERSION;
 static const char *my_ver_date = E2FSPROGS_DATE;

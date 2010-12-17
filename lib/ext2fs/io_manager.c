@@ -99,3 +99,14 @@ errcode_t io_channel_write_blk64(io_channel channel, unsigned long long block,
 	return (channel->manager->write_blk)(channel, (unsigned long) block,
 					     count, data);
 }
+
+errcode_t io_channel_discard(io_channel channel, unsigned long long block,
+			     unsigned long long count)
+{
+	EXT2_CHECK_MAGIC(channel, EXT2_ET_MAGIC_IO_CHANNEL);
+
+	if (channel->manager->discard)
+		return (channel->manager->discard)(channel, block, count);
+
+	return EXT2_ET_UNIMPLEMENTED;
+}
