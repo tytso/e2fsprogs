@@ -72,7 +72,7 @@ void ext2fs_swap_super(struct ext2_super_block * sb)
 	sb->s_flags = ext2fs_swab32(sb->s_flags);
 	sb->s_kbytes_written = ext2fs_swab64(sb->s_kbytes_written);
 	sb->s_snapshot_inum = ext2fs_swab32(sb->s_snapshot_inum);
-	sb->s_snapshot_id = ext2fs_swab32(s_snapshot_id);
+	sb->s_snapshot_id = ext2fs_swab32(sb->s_snapshot_id);
 	sb->s_snapshot_r_blocks_count =
 		ext2fs_swab64(sb->s_snapshot_r_blocks_count);
 	sb->s_snapshot_list = ext2fs_swab32(sb->s_snapshot_list);
