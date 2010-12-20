@@ -305,7 +305,7 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 	errcode_t	retval;
 	blk64_t		blk;
 	dgrp_t		i;
-	int		num, ipb;
+	int		num;
 	struct ext2fs_numeric_progress_struct progress;
 
 	ext2fs_numeric_progress_init(fs, &progress,
@@ -318,14 +318,11 @@ static void write_inode_tables(ext2_filsys fs, int lazy_flag, int itable_zeroed)
 		blk = ext2fs_inode_table_loc(fs, i);
 		num = fs->inode_blocks_per_group;
 
-		if (lazy_flag) {
-			ipb = fs->blocksize / EXT2_INODE_SIZE(fs->super);
-			num = ((((fs->super->s_inodes_per_group -
-				  ext2fs_bg_itable_unused(fs, i)) *
-				 EXT2_INODE_SIZE(fs->super)) +
-				EXT2_BLOCK_SIZE(fs->super) - 1) /
-			       EXT2_BLOCK_SIZE(fs->super));
-		}
+		if (lazy_flag)
+			num = ext2fs_div_ceil((fs->super->s_inodes_per_group -
+					       ext2fs_bg_itable_unused(fs, i)) *
+					      EXT2_INODE_SIZE(fs->super),
+					      EXT2_BLOCK_SIZE(fs->super));
 		if (!lazy_flag || itable_zeroed) {
 			/* The kernel doesn't need to zero the itable blocks */
 			ext2fs_bg_flags_set(fs, i, EXT2_BG_INODE_ZEROED);
