@@ -392,6 +392,14 @@ int main (int argc, char ** argv)
 			exit(1);
 		}
 	} else {
+		/* Take down devices exactly 16T to 2^32-1 blocks */
+		if (max_size == (1ULL << 32))
+			max_size--;
+		else if (max_size > (1ULL << 32)) {
+			com_err(program_name, 0, _("New size too large to be "
+				"expressed in 32 bits\n"));
+			exit(1);
+		}
 		new_size = max_size;
 		/* Round down to an even multiple of a pagesize */
 		if (sys_page_size > fs->blocksize)
