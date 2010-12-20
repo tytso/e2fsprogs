@@ -178,9 +178,9 @@ int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
 #ifndef OMIT_COM_ERR
 		com_err(0, EXT2_ET_MAGIC_GENERIC_BITMAP,
 			"test_bitmap(%lu)", (unsigned long) bitno);
+#endif
 		return 0;
 	}
-#endif
 
 	if ((bitno < bitmap->start) || (bitno > bitmap->end)) {
 		ext2fs_warn_bitmap2(bitmap, EXT2FS_TEST_ERROR, bitno);
@@ -200,9 +200,9 @@ int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
 #ifndef OMIT_COM_ERR
 		com_err(0, EXT2_ET_MAGIC_GENERIC_BITMAP,
 			"mark_bitmap(%lu)", (unsigned long) bitno);
+#endif
 		return 0;
 	}
-#endif
 
 	if ((bitno < bitmap->start) || (bitno > bitmap->end)) {
 		ext2fs_warn_bitmap2(bitmap, EXT2FS_MARK_ERROR, bitno);
@@ -222,9 +222,9 @@ int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
 #ifndef OMIT_COM_ERR
 		com_err(0, EXT2_ET_MAGIC_GENERIC_BITMAP,
 			"mark_bitmap(%lu)", (unsigned long) bitno);
+#endif
 		return 0;
 	}
-#endif
 
 	if ((bitno < bitmap->start) || (bitno > bitmap->end)) {
 		ext2fs_warn_bitmap2(bitmap, EXT2FS_UNMARK_ERROR, bitno);
@@ -243,9 +243,9 @@ __u32 ext2fs_get_generic_bitmap_start(ext2fs_generic_bitmap bitmap)
 #ifndef OMIT_COM_ERR
 		com_err(0, EXT2_ET_MAGIC_GENERIC_BITMAP,
 			"get_bitmap_start");
+#endif
 		return 0;
 	}
-#endif
 
 	return bitmap->start;
 }
@@ -260,9 +260,9 @@ __u32 ext2fs_get_generic_bitmap_end(ext2fs_generic_bitmap bitmap)
 #ifndef OMIT_COM_ERR
 		com_err(0, EXT2_ET_MAGIC_GENERIC_BITMAP,
 			"get_bitmap_end");
+#endif
 		return 0;
 	}
-#endif
 	return bitmap->end;
 }
 
@@ -277,9 +277,9 @@ void ext2fs_clear_generic_bitmap(ext2fs_generic_bitmap bitmap)
 #ifndef OMIT_COM_ERR
 		com_err(0, EXT2_ET_MAGIC_GENERIC_BITMAP,
 			"clear_generic_bitmap");
+#endif
 		return;
 	}
-#endif
 
 	memset(bitmap->bitmap, 0,
 	       (size_t) (((bitmap->real_end - bitmap->start) / 8) + 1));
