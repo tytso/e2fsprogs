@@ -552,11 +552,10 @@ static void show_stats(ext2_filsys fs)
 	memset(buf, 0, sizeof(buf));
 	strncpy(buf, s->s_volume_name, sizeof(s->s_volume_name));
 	printf(_("Filesystem label=%s\n"), buf);
-	fputs(_("OS type: "), stdout);
-        os = e2p_os2string(fs->super->s_creator_os);
-	fputs(os, stdout);
+	os = e2p_os2string(fs->super->s_creator_os);
+	if (os)
+		printf(_("OS type: %s\n"), os);
 	free(os);
-	printf("\n");
 	printf(_("Block size=%u (log=%u)\n"), fs->blocksize,
 		s->s_log_block_size);
 	printf(_("Fragment size=%u (log=%u)\n"), fs->fragsize,
