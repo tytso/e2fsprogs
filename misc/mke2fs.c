@@ -1915,8 +1915,8 @@ open_err_out:
 
 static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 {
-	errcode_t retval = 0;
-	char *tdb_dir, *tdb_file;
+	errcode_t retval = ENOMEM;
+	char *tdb_dir, *tdb_file = NULL;
 	char *device_name, *tmp_name;
 
 	/*
@@ -1934,38 +1934,40 @@ static int mke2fs_setup_tdb(const char *name, io_manager *io_ptr)
 		return 0;
 
 	tmp_name = strdup(name);
-	if (!tmp_name) {
-	alloc_fn_fail:
-		com_err(program_name, ENOMEM, 
-			_("Couldn't allocate memory for tdb filename\n"));
-		return ENOMEM;
-	}
+	if (!tmp_name)
+		goto errout;
 	device_name = basename(tmp_name);
 	tdb_file = malloc(strlen(tdb_dir) + 8 + strlen(device_name) + 7 + 1);
-	if (!tdb_file)
-		goto alloc_fn_fail;
+	if (!tdb_file) {
+		free(tmp_name);
+		goto errout;
+	}
 	sprintf(tdb_file, "%s/mke2fs-%s.e2undo", tdb_dir, device_name);
+	free(tmp_name);
 
 	if (!access(tdb_file, F_OK)) {
 		if (unlink(tdb_file) < 0) {
 			retval = errno;
-			com_err(program_name, retval,
-				_("while trying to delete %s"),
-				tdb_file);
-			free(tdb_file);
-			return retval;
+			goto errout;
 		}
 	}
 
 	set_undo_io_backing_manager(*io_ptr);
 	*io_ptr = undo_io_manager;
-	set_undo_io_backup_file(tdb_file);
+	retval = set_undo_io_backup_file(tdb_file);
+	if (retval)
+		goto errout;
 	printf(_("Overwriting existing filesystem; this can be undone "
 		 "using the command:\n"
 		 "    e2undo %s %s\n\n"), tdb_file, name);
 
 	free(tdb_file);
-	free(tmp_name);
+	return 0;
+
+errout:
+	free(tdb_file);
+	com_err(program_name, retval,
+		_("while trying to setup undo file\n"));
 	return retval;
 }
 
