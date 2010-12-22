@@ -1059,13 +1059,13 @@ static char **parse_fs_type(const char *fs_type,
 			*t = '\0';
 
 		if (*cp) {
-			if (!profile_has_subsection(profile, "fs_types", cp))
+			if (profile_has_subsection(profile, "fs_types", cp))
+				push_string(&list, cp);
+			else if (strcmp(cp, "default") != 0)
 				fprintf(stderr,
 					_("\nWarning: the fs_type %s is not "
-					  "defined in /etc/mke2fs.conf\n\n"),
+					  "defined in mke2fs.conf\n\n"),
 					cp);
-			else
-				push_string(&list, cp);
 		}
 		if (t)
 			cp = t+1;
