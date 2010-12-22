@@ -1,3 +1,18 @@
+e2fsprogs (1.41.14-1) experimental; urgency=low
+
+  * New upstream release
+  * Fixed a FTBFS on big-endian architectures
+  * Fixed spurious warning in mke2fs
+  * resize2fs now works correctly on devices exactly 16TB
+  * resize2fs will no longer clear the resize_inode feature when the
+    number of reserved GDT blocks reaches 0.  This allows a file
+    system with the flex_bg feature to be subsequently shrunk.
+  * e2fsck will no longer use the extended rec_len encoding for file
+    systems whose blocksize is less than 64k, to catch fs inconsistencies
+    which the kernel will complain about.
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Wed, 22 Dec 2010 18:39:19 -0500
+
 e2fsprogs (1.41.13-1) unstable; urgency=low
 
   * New upstream release
