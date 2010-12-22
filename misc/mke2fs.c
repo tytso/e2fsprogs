@@ -1495,39 +1495,7 @@ profile_error:
 
 	fs_param.s_log_frag_size = fs_param.s_log_block_size;
 
-	fs_types = parse_fs_type(fs_type, usage_types, &fs_param, fs_blocks_count,
-				 argv[0]);
-	if (!fs_types) {
-		fprintf(stderr, _("Failed to parse fs types list\n"));
-		exit(1);
-	}
-
-	/* Figure out what features should be enabled */
-
-	tmp = NULL;
-	if (fs_param.s_rev_level != EXT2_GOOD_OLD_REV) {
-		tmp = get_string_from_profile(fs_types, "base_features",
-		      "sparse_super,filetype,resize_inode,dir_index");
-		edit_feature(tmp, &fs_param.s_feature_compat);
-		free(tmp);
-
-		for (cpp = fs_types; *cpp; cpp++) {
-			tmp = NULL;
-			profile_get_string(profile, "fs_types", *cpp,
-					   "features", "", &tmp);
-			if (tmp && *tmp)
-				edit_feature(tmp, &fs_param.s_feature_compat);
-			if (tmp)
-				free(tmp);
-		}
-		tmp = get_string_from_profile(fs_types, "default_features",
-					      "");
-	}
-	edit_feature(fs_features ? fs_features : tmp,
-		     &fs_param.s_feature_compat);
-	if (tmp)
-		free(tmp);
-
+	/* Determine the size of the device (if possible) */
 	if (noaction && fs_blocks_count) {
 		dev_size = fs_blocks_count;
 		retval = 0;
@@ -1571,6 +1539,45 @@ profile_error:
 			_("Filesystem larger than apparent device size."));
 		proceed_question();
 	}
+
+	/*
+	 * We have the file system (or device) size, so we can now
+	 * determine the appropriate file system types so the fs can
+	 * be appropriately configured.
+	 */
+	fs_types = parse_fs_type(fs_type, usage_types, &fs_param,
+				 fs_blocks_count ? fs_blocks_count : dev_size,
+				 argv[0]);
+	if (!fs_types) {
+		fprintf(stderr, _("Failed to parse fs types list\n"));
+		exit(1);
+	}
+
+	/* Figure out what features should be enabled */
+
+	tmp = NULL;
+	if (fs_param.s_rev_level != EXT2_GOOD_OLD_REV) {
+		tmp = get_string_from_profile(fs_types, "base_features",
+		      "sparse_super,filetype,resize_inode,dir_index");
+		edit_feature(tmp, &fs_param.s_feature_compat);
+		free(tmp);
+
+		for (cpp = fs_types; *cpp; cpp++) {
+			tmp = NULL;
+			profile_get_string(profile, "fs_types", *cpp,
+					   "features", "", &tmp);
+			if (tmp && *tmp)
+				edit_feature(tmp, &fs_param.s_feature_compat);
+			if (tmp)
+				free(tmp);
+		}
+		tmp = get_string_from_profile(fs_types, "default_features",
+					      "");
+	}
+	edit_feature(fs_features ? fs_features : tmp,
+		     &fs_param.s_feature_compat);
+	if (tmp)
+		free(tmp);
 
 	/*
 	 * We now need to do a sanity check of fs_blocks_count for
