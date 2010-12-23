@@ -1715,7 +1715,6 @@ static errcode_t fix_resize_inode(ext2_filsys fs)
 	struct ext2_inode	inode;
 	errcode_t		retval;
 	char *			block_buf;
-	blk64_t			blk;
 
 	if (!(fs->super->s_feature_compat &
 	      EXT2_FEATURE_COMPAT_RESIZE_INODE))
@@ -1726,20 +1725,6 @@ static errcode_t fix_resize_inode(ext2_filsys fs)
 
 	retval = ext2fs_read_inode(fs, EXT2_RESIZE_INO, &inode);
 	if (retval) goto errout;
-
-	if (fs->super->s_reserved_gdt_blocks == 0) {
-		fs->super->s_feature_compat &=
-			~EXT2_FEATURE_COMPAT_RESIZE_INODE;
-		ext2fs_mark_super_dirty(fs);
-
-		if ((blk = inode.i_block[EXT2_DIND_BLOCK]) != 0)
-			ext2fs_block_alloc_stats2(fs, blk, -1);
-
-		memset(&inode, 0, sizeof(inode));
-
-		retval = ext2fs_write_inode(fs, EXT2_RESIZE_INO, &inode);
-		goto errout;
-	}
 
 	ext2fs_iblk_set(fs, &inode, 1);
 

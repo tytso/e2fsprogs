@@ -3875,7 +3875,7 @@ msgstr ""
 #, c-format
 msgid ""
 "\n"
-"Warning: the fs_type %s is not defined in /etc/mke2fs.conf\n"
+"Warning: the fs_type %s is not defined in mke2fs.conf\n"
 "\n"
 msgstr ""
 
