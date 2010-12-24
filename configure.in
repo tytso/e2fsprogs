@@ -577,6 +577,24 @@ RESIZER_CMT=
 )
 AC_SUBST(RESIZER_CMT)
 dnl
+dnl handle --enable-defrag
+dnl
+AC_ARG_ENABLE([defrag],
+[  --disable-defrag   	  disable support of e4defrag program],
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling e4defrag support])
+	DEFRAG_CMT="#"
+else
+	DEFRAG_CMT=
+	AC_MSG_RESULT([Enabling e4defrag support])
+fi
+,
+AC_MSG_RESULT([Enabling e4defrag support by default])
+DEFRAG_CMT=
+)
+AC_SUBST(DEFRAG_CMT)
+dnl
 dnl See whether to install the `fsck' wrapper program (that calls e2fsck)
 dnl
 AC_ARG_ENABLE([fsck],

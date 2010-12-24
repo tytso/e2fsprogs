@@ -673,6 +673,7 @@ E2INITRD_MAN
 E2INITRD_PROG
 FSCK_MAN
 FSCK_PROG
+DEFRAG_CMT
 RESIZER_CMT
 IMAGER_CMT
 DEBUGFS_CMT
@@ -803,6 +804,7 @@ enable_libblkid
 enable_debugfs
 enable_imager
 enable_resizer
+enable_defrag
 enable_fsck
 enable_e2initrd_helper
 enable_tls
@@ -1454,6 +1456,7 @@ Optional Features:
   --disable-debugfs   	  disable support of debugfs program
   --disable-imager   	  disable support of e2image program
   --disable-resizer   	  disable support of e2resize program
+  --disable-defrag   	  disable support of e4defrag program
   --enable-fsck           build fsck wrapper program
   --enable-e2initrd-helper build e2initrd-helper program
   --disable-tls           disable use of thread local support
@@ -5392,6 +5395,27 @@ else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling e2resize support by default" >&5
 $as_echo "Enabling e2resize support by default" >&6; }
 RESIZER_CMT=
+
+fi
+
+
+# Check whether --enable-defrag was given.
+if test "${enable_defrag+set}" = set; then :
+  enableval=$enable_defrag; if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling e4defrag support" >&5
+$as_echo "Disabling e4defrag support" >&6; }
+	DEFRAG_CMT="#"
+else
+	DEFRAG_CMT=
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling e4defrag support" >&5
+$as_echo "Enabling e4defrag support" >&6; }
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling e4defrag support by default" >&5
+$as_echo "Enabling e4defrag support by default" >&6; }
+DEFRAG_CMT=
 
 fi
 
