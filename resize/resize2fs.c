@@ -294,7 +294,7 @@ errcode_t adjust_fs_info(ext2_filsys fs, ext2_filsys old_fs,
 	blk64_t		overhead = 0;
 	blk64_t		rem;
 	blk64_t		blk, group_block;
-	ext2_ino_t	real_end;
+	blk64_t		real_end;
 	blk64_t		adj, old_numblocks, numblocks, adjblocks;
 	unsigned long	i, j, old_desc_blocks, max_group;
 	unsigned int	meta_bg, meta_bg_size;
@@ -381,9 +381,9 @@ retry:
 					    fs->inode_map);
 	if (retval) goto errout;
 
-	real_end = ((EXT2_BLOCKS_PER_GROUP(fs->super)
-		     * fs->group_desc_count)) - 1 +
-			     fs->super->s_first_data_block;
+	real_end = (((blk64_t) EXT2_BLOCKS_PER_GROUP(fs->super) *
+		     fs->group_desc_count)) - 1 +
+		fs->super->s_first_data_block;
 	retval = ext2fs_resize_block_bitmap2(ext2fs_blocks_count(fs->super)-1,
 					    real_end, fs->block_map);
 
