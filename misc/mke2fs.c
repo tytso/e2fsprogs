@@ -72,6 +72,8 @@ extern int optind;
 #define ZAP_BOOTBLOCK
 #endif
 
+#define DISCARD_STEP_MB		(2048)
+
 extern int isatty(int);
 extern FILE *fpopen(const char *cmd, const char *mode);
 
@@ -1997,6 +1999,44 @@ errout:
 	return retval;
 }
 
+static int mke2fs_discard_device(ext2_filsys fs)
+{
+	struct ext2fs_numeric_progress_struct progress;
+	blk64_t blocks = ext2fs_blocks_count(fs->super);
+	blk64_t count = DISCARD_STEP_MB;
+	blk64_t cur = 0;
+	int retval = 0;
+
+	count *= (1024 * 1024);
+	count /= fs->blocksize;
+
+	ext2fs_numeric_progress_init(fs, &progress,
+				     _("Discarding device blocks: "),
+				     blocks);
+	while (cur < blocks) {
+		ext2fs_numeric_progress_update(fs, &progress, cur);
+
+		if (cur + count > blocks)
+			count = blocks - cur;
+
+		retval = io_channel_discard(fs->io, cur, count, fs->blocksize);
+		if (retval)
+			break;
+		cur += count;
+	}
+
+	if (retval) {
+		ext2fs_numeric_progress_close(fs, &progress,
+				      _("failed - "));
+		if (!quiet)
+			printf("%s\n",error_message(retval));
+	} else
+		ext2fs_numeric_progress_close(fs, &progress,
+				      _("done                            \n"));
+
+	return retval;
+}
+
 int main (int argc, char *argv[])
 {
 	errcode_t	retval = 0;
@@ -2057,19 +2097,7 @@ int main (int argc, char *argv[])
 
 	/* Can't undo discard ... */
 	if (discard && (io_ptr != undo_io_manager)) {
-		blk64_t blocks = ext2fs_blocks_count(fs->super);
-		if (verbose)
-			printf(_("Calling BLKDISCARD from 0 to %llu... "),
-			       (unsigned long long) blocks);
-		retval = io_channel_discard(fs->io, 0, blocks, fs->blocksize);
-		if (verbose) {
-			if (retval)
-				printf(_("failed (%s)\n"),
-				       error_message(retval));
-			else
-				printf(_("succeeded\n"));
-		}
-
+		retval = mke2fs_discard_device(fs);
 		if (!retval && io_channel_discard_zeroes_data(fs->io)) {
 			if (verbose)
 				printf(_("Discard succeeded and will return 0s "
