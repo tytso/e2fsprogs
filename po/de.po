@@ -68,7 +68,7 @@ msgstr ""
 "Project-Id-Version: e2fsprogs-1.41.14\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2010-12-13 08:35-0500\n"
-"PO-Revision-Date: 2011-01-24 14:19+0100\n"
+"PO-Revision-Date: 2011-01-25 17:24+0100\n"
 "Last-Translator: Philipp Thomas <pth@suse.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -5160,13 +5160,13 @@ msgid "Invalid stride length"
 msgstr "Ungültige Stride-Länge"
 
 #: resize/main.c:433
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "The containing partition (or device) is only %u (%dk) blocks.\n"
 "You requested a new size of %u blocks.\n"
 "\n"
 msgstr ""
-"Die Partition (oder das Gerät) ist nur %llu (%dk) Blöcke groß.\n"
+"Die Partition (oder das Gerät) ist nur %u (%dk) Blöcke groß.\n"
 "Sie hatten aber %u Blöcke vorgegeben.\n"
 "\n"
 
