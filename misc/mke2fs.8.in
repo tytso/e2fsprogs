@@ -247,7 +247,7 @@ zeroed. This significantly speeds up filesystem initialization. This is set
 as default.
 .TP
 .BI nodiscard
-Do not attempt to discard blocks at mkfs time. This is the default.
+Do not attempt to discard blocks at mkfs time.
 .RE
 .TP
 .BI \-f " fragment-size"
