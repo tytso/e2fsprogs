@@ -178,8 +178,6 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 	int last = 0;
 	int rc;
 
-	fiemap->fm_length = ~0ULL;
-
 	memset(fiemap, 0, sizeof(struct fiemap));
 
 	if (!verbose)
