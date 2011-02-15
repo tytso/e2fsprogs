@@ -44,8 +44,8 @@
  */
 #define EXT2_BAD_INO		 1	/* Bad blocks inode */
 #define EXT2_ROOT_INO		 2	/* Root inode */
-#define EXT2_ACL_IDX_INO	 3	/* ACL inode */
-#define EXT2_ACL_DATA_INO	 4	/* ACL inode */
+#define EXT4_USR_QUOTA_INO	 3	/* User quota inode */
+#define EXT4_GRP_QUOTA_INO	 4	/* Group quota inode */
 #define EXT2_BOOT_LOADER_INO	 5	/* Boot loader inode */
 #define EXT2_UNDEL_DIR_INO	 6	/* Undelete directory inode */
 #define EXT2_RESIZE_INO		 7	/* Reserved group descriptors inode */
@@ -614,7 +614,9 @@ struct ext2_super_block {
 	__u8	s_last_error_func[32];	/* function where the error happened */
 #define EXT4_S_ERR_END ext4_offsetof(struct ext2_super_block, s_mount_opts)
 	__u8	s_mount_opts[64];
-	__u32   s_reserved[112];        /* Padding to the end of the block */
+	__u32	s_usr_quota_inum;	/* inode number of user quota file */
+	__u32	s_grp_quota_inum;	/* inode number of group quota file */
+	__u32   s_reserved[110];        /* Padding to the end of the block */
 };
 
 #define EXT4_S_ERR_LEN (EXT4_S_ERR_END - EXT4_S_ERR_START)
@@ -672,6 +674,7 @@ struct ext2_super_block {
 #define EXT4_FEATURE_RO_COMPAT_DIR_NLINK	0x0020
 #define EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE	0x0040
 #define EXT4_FEATURE_RO_COMPAT_HAS_SNAPSHOT	0x0080
+#define EXT4_FEATURE_RO_COMPAT_QUOTA		0x0100
 
 #define EXT2_FEATURE_INCOMPAT_COMPRESSION	0x0001
 #define EXT2_FEATURE_INCOMPAT_FILETYPE		0x0002

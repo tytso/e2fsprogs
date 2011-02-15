@@ -140,6 +140,8 @@ static struct field_set_info super_fields[] = {
 	  parse_uint },
 	{ "snapshot_list", &set_sb.s_snapshot_list, 4, parse_uint },
 	{ "mount_opts",  &set_sb.s_mount_opts, 64, parse_string },
+	{ "usr_quota_inum", &set_sb.s_usr_quota_inum, 4, parse_uint },
+	{ "grp_quota_inum", &set_sb.s_grp_quota_inum, 4, parse_uint },
 	{ 0, 0, 0, 0 }
 };
 

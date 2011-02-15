@@ -374,6 +374,12 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "Last error block #:       %llu\n",
 			sb->s_last_error_block);
 	}
+	if (sb->s_usr_quota_inum)
+		fprintf(f, "User quota inode:         %u\n",
+			sb->s_usr_quota_inum);
+	if (sb->s_grp_quota_inum)
+		fprintf(f, "Group quota inode:        %u\n",
+			sb->s_grp_quota_inum);
 }
 
 void list_super (struct ext2_super_block * s)
