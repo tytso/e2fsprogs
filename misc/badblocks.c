@@ -74,6 +74,7 @@ static int t_flag = 0;			/* number of test patterns */
 static int t_max = 0;			/* allocated test patterns */
 static unsigned int *t_patts = NULL;	/* test patterns */
 static int current_O_DIRECT = 0;	/* Current status of O_DIRECT flag */
+static int use_buffered_io = 0;
 static int exclusive_ok = 0;
 static unsigned int max_bb = 0;		/* Abort test if more than this number of bad blocks has been encountered */
 static unsigned int d_flag = 0;		/* delay factor between reads */
@@ -268,7 +269,8 @@ static void set_o_direct(int dev, unsigned char *buffer, size_t size,
 	int new_flag = O_DIRECT;
 	int flag;
 
-	if ((((unsigned long) buffer & (sys_page_size - 1)) != 0) ||
+	if ((use_buffered_io != 0) ||
+	    (((unsigned long) buffer & (sys_page_size - 1)) != 0) ||
 	    ((size & (sys_page_size - 1)) != 0) ||
 	    ((offset & (O_DIRECT_SIZE - 1)) != 0))
 		new_flag = 0;
@@ -432,6 +434,10 @@ static void flush_bufs(void)
 {
 	errcode_t	retval;
 
+#ifdef O_DIRECT
+	if (!use_buffered_io)
+		return;
+#endif
 	retval = ext2fs_sync_device(host_dev, 1);
 	if (retval)
 		com_err(program_name, retval, _("during ext2fs_sync_device"));
@@ -1027,7 +1033,7 @@ int main (int argc, char ** argv)
 
 	if (argc && *argv)
 		program_name = *argv;
-	while ((c = getopt (argc, argv, "b:d:e:fi:o:svwnc:p:h:t:X")) != EOF) {
+	while ((c = getopt (argc, argv, "b:d:e:fi:o:svwnc:p:h:t:BX")) != EOF) {
 		switch (c) {
 		case 'b':
 			block_size = parse_uint(optarg, "block size");
@@ -1099,6 +1105,9 @@ int main (int argc, char ** argv)
 					pattern = 0xffff;
 				t_patts[t_flag++] = pattern;
 			}
+			break;
+		case 'B':
+			use_buffered_io = 1;
 			break;
 		case 'X':
 			exclusive_ok++;
