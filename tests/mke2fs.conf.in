@@ -5,6 +5,7 @@
 	inode_ratio = 16384
 	enable_periodic_fsck = true
 	lazy_itable_init = false
+	default_mntopts = ^acl
 
 [fs_types]
 	ext3 = {

@@ -885,6 +885,18 @@ static void edit_feature(const char *str, __u32 *compat_array)
 	}
 }
 
+static void edit_mntopts(const char *str, __u32 *mntopts)
+{
+	if (!str)
+		return;
+
+	if (e2p_edit_mntopts(str, mntopts, ~0)) {
+		fprintf(stderr, _("Invalid mount option set: %s\n"),
+			str);
+		exit(1);
+	}
+}
+
 struct str_list {
 	char **list;
 	int num;
@@ -1623,6 +1635,13 @@ got_size:
 		      "sparse_super,filetype,resize_inode,dir_index");
 		edit_feature(tmp, &fs_param.s_feature_compat);
 		free(tmp);
+
+		/* And which mount options as well */
+		tmp = get_string_from_profile(fs_types, "default_mntopts",
+					      "acl,user_xattr");
+		edit_mntopts(tmp, &fs_param.s_default_mount_opts);
+		if (tmp)
+			free(tmp);
 
 		for (cpp = fs_types; *cpp; cpp++) {
 			tmp = NULL;

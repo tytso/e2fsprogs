@@ -314,6 +314,13 @@ relations.  It may be overridden by the
 command-line option to
 .BR mke2fs (8).
 .TP
+.I default_mntopts
+This relation specifies the set of mount options which should be enabled
+by default.  These may be changed at a later time with the
+.B -o
+command-line option to
+.BR tune2fs (8).
+.TP
 .I blocksize
 This relation specifies the default blocksize if the user does not
 specify a blocksize on the command line.

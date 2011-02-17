@@ -143,6 +143,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_feature_compat, 0);
 	set_field(s_feature_incompat, 0);
 	set_field(s_feature_ro_compat, 0);
+	set_field(s_default_mount_opts, 0);
 	set_field(s_first_meta_bg, 0);
 	set_field(s_raid_stride, 0);		/* default stride size: 0 */
 	set_field(s_raid_stripe_width, 0);	/* default stripe width: 0 */
