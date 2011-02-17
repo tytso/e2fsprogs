@@ -2168,13 +2168,31 @@ int main (int argc, char *argv[])
 	uuid_generate((unsigned char *) fs->super->s_hash_seed);
 
 	/*
-	 * Add "jitter" to the superblock's check interval so that we
-	 * don't check all the filesystems at the same time.  We use a
-	 * kludgy hack of using the UUID to derive a random jitter value.
+	 * Periodic checks can be enabled/disabled via config file.
+	 * Note we override the kernel include file's idea of what the default
+	 * check interval (never) should be.  It's a good idea to check at
+	 * least *occasionally*, specially since servers will never rarely get
+	 * to reboot, since Linux is so robust these days.  :-)
+	 *
+	 * 180 days (six months) seems like a good value.
 	 */
-	for (i = 0, val = 0 ; i < sizeof(fs->super->s_uuid); i++)
-		val += fs->super->s_uuid[i];
-	fs->super->s_max_mnt_count += val % EXT2_DFL_MAX_MNT_COUNT;
+#ifdef EXT2_DFL_CHECKINTERVAL
+#undef EXT2_DFL_CHECKINTERVAL
+#endif
+#define EXT2_DFL_CHECKINTERVAL (86400L * 180L)
+
+	if (get_bool_from_profile(fs_types, "enable_periodic_fsck", 0)) {
+		fs->super->s_checkinterval = EXT2_DFL_CHECKINTERVAL;
+		fs->super->s_max_mnt_count = EXT2_DFL_MAX_MNT_COUNT;
+		/*
+		 * Add "jitter" to the superblock's check interval so that we
+		 * don't check all the filesystems at the same time.  We use a
+		 * kludgy hack of using the UUID to derive a random jitter value
+		 */
+		for (i = 0, val = 0 ; i < sizeof(fs->super->s_uuid); i++)
+			val += fs->super->s_uuid[i];
+		fs->super->s_max_mnt_count += val % EXT2_DFL_MAX_MNT_COUNT;
+	}
 
 	/*
 	 * Override the creator OS, if applicable
