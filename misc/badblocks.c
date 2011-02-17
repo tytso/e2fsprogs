@@ -257,8 +257,12 @@ static void uncapture_terminate(void)
 	signal (SIGUSR2, SIG_DFL);
 }
 
+/* Linux requires that O_DIRECT I/Os be 512-byte sector aligned */
+
+#define O_DIRECT_SIZE 512
+
 static void set_o_direct(int dev, unsigned char *buffer, size_t size,
-			 blk_t current_block)
+			 ext2_loff_t offset)
 {
 #ifdef O_DIRECT
 	int new_flag = O_DIRECT;
@@ -266,7 +270,7 @@ static void set_o_direct(int dev, unsigned char *buffer, size_t size,
 
 	if ((((unsigned long) buffer & (sys_page_size - 1)) != 0) ||
 	    ((size & (sys_page_size - 1)) != 0) ||
-	    ((current_block & ((sys_page_size >> 9)-1)) != 0))
+	    ((offset & (O_DIRECT_SIZE - 1)) != 0))
 		new_flag = 0;
 
 	if (new_flag != current_O_DIRECT) {
@@ -331,7 +335,8 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 #define NANOSEC (1000000000L)
 #define MILISEC (1000L)
 
-	set_o_direct(dev, buffer, try * block_size, current_block);
+	set_o_direct(dev, buffer, try * block_size,
+		     ((ext2_loff_t) current_block) * block_size);
 
 	if (v_flag > 1)
 		print_status();
@@ -400,7 +405,8 @@ static int do_write(int dev, unsigned char * buffer, int try, int block_size,
 {
 	long got;
 
-	set_o_direct(dev, buffer, try * block_size, current_block);
+	set_o_direct(dev, buffer, try * block_size,
+		     ((ext2_loff_t) current_block) * block_size);
 
 	if (v_flag > 1)
 		print_status();
