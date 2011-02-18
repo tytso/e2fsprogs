@@ -337,6 +337,9 @@ static int do_read (int dev, unsigned char * buffer, int try, int block_size,
 #define NANOSEC (1000000000L)
 #define MILISEC (1000L)
 
+#if 0
+	printf("do_read: block %d, try %d\n", current_block, try);
+#endif
 	set_o_direct(dev, buffer, try * block_size,
 		     ((ext2_loff_t) current_block) * block_size);
 
@@ -407,6 +410,9 @@ static int do_write(int dev, unsigned char * buffer, int try, int block_size,
 {
 	long got;
 
+#if 0
+	printf("do_write: block %lu, try %d\n", current_block, try);
+#endif
 	set_o_direct(dev, buffer, try * block_size,
 		     ((ext2_loff_t) current_block) * block_size);
 
@@ -452,6 +458,7 @@ static unsigned int test_ro (int dev, blk_t last_block,
 	int got;
 	unsigned int bb_count = 0;
 	errcode_t errcode;
+	blk_t recover_block = ~0;
 
 	/* set up abend handler */
 	capture_terminate(NULL);
@@ -526,21 +533,18 @@ static unsigned int test_ro (int dev, blk_t last_block,
 					    block_size))
 					bb_count += bb_output(currently_testing + i);
 		}
-		currently_testing += got;
-		if (got == try) {
-			try = blocks_at_once;
-			/* recover page-aligned offset for O_DIRECT */
-			if ( (blocks_at_once >= sys_page_size >> 9)
-			     && (currently_testing % (sys_page_size >> 9)!= 0))
-				try -= (sys_page_size >> 9)
-					- (currently_testing
-					   % (sys_page_size >> 9));
-			continue;
-		}
-		else
-			try = 1;
-		if (got == 0) {
+		if (got == 0 && try == 1)
 			bb_count += bb_output(currently_testing++);
+		currently_testing += got;
+		if (got != try) {
+			try = 1;
+			if (recover_block == ~0)
+				recover_block = currently_testing - got +
+					blocks_at_once;
+			continue;
+		} else if (currently_testing == recover_block) {
+			try = blocks_at_once;
+			recover_block = ~0;
 		}
 	}
 	num_blocks = 0;
@@ -567,6 +571,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 	const unsigned int *pattern;
 	int i, try, got, nr_pattern, pat_idx;
 	unsigned int bb_count = 0;
+	blk_t recover_block = 0;
 
 	/* set up abend handler */
 	capture_terminate(NULL);
@@ -618,21 +623,18 @@ static unsigned int test_rw (int dev, blk_t last_block,
 			if (v_flag > 1)
 				print_status();
 
-			currently_testing += got;
-			if (got == try) {
-				try = blocks_at_once;
-				/* recover page-aligned offset for O_DIRECT */
-				if ( (blocks_at_once >= sys_page_size >> 9)
-				     && (currently_testing %
-					 (sys_page_size >> 9)!= 0))
-					try -= (sys_page_size >> 9)
-						- (currently_testing
-						   % (sys_page_size >> 9));
-				continue;
-			} else
-				try = 1;
-			if (got == 0) {
+			if (got == 0 && try == 1)
 				bb_count += bb_output(currently_testing++);
+			currently_testing += got;
+			if (got != try) {
+				try = 1;
+				if (recover_block == ~0)
+					recover_block = currently_testing -
+						got + blocks_at_once;
+				continue;
+			} else if (currently_testing == recover_block) {
+				try = blocks_at_once;
+				recover_block = ~0;
 			}
 		}
 
@@ -660,9 +662,18 @@ static unsigned int test_rw (int dev, blk_t last_block,
 				try = last_block - currently_testing;
 			got = do_read (dev, read_buffer, try, block_size,
 				       currently_testing);
-			if (got == 0) {
+			if (got == 0 && try == 1)
 				bb_count += bb_output(currently_testing++);
+			currently_testing += got;
+			if (got != try) {
+				try = 1;
+				if (recover_block == ~0)
+					recover_block = currently_testing -
+						got + blocks_at_once;
 				continue;
+			} else if (currently_testing == recover_block) {
+				try = blocks_at_once;
+				recover_block = ~0;
 			}
 			for (i=0; i < got; i++) {
 				if (memcmp(read_buffer + i * block_size,
@@ -671,14 +682,16 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					bb_count += bb_output(currently_testing+i);
 			}
 			currently_testing += got;
-			/* recover page-aligned offset for O_DIRECT */
-			if ( (blocks_at_once >= sys_page_size >> 9)
-			     && (currently_testing % (sys_page_size >> 9)!= 0))
-				try = blocks_at_once - (sys_page_size >> 9)
-					- (currently_testing
-					   % (sys_page_size >> 9));
-			else
+			if (got != try) {
+				try = 1;
+				if (!recover_block)
+					recover_block = currently_testing -
+						got + blocks_at_once;
+				continue;
+			} else if (currently_testing == recover_block) {
 				try = blocks_at_once;
+				recover_block = 0;
+			}
 			if (v_flag > 1)
 				print_status();
 		}
@@ -718,6 +731,8 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	errcode_t errcode;
 	unsigned long buf_used;
 	static unsigned int bb_count;
+	int granularity = blocks_at_once;
+	blk_t recover_block = 0;
 
 	bb_count = 0;
 	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
@@ -800,7 +815,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 				}
 				break;
 			}
-			got = try = blocks_at_once - buf_used;
+			got = try = granularity - buf_used;
 			if (next_bad) {
 				if (currently_testing == next_bad) {
 					/* fprintf (out, "%lu\n", nextbad); */
@@ -816,6 +831,14 @@ static unsigned int test_nd (int dev, blk_t last_block,
 			got = do_read (dev, save_ptr, try, block_size,
 				       currently_testing);
 			if (got == 0) {
+				if ((currently_testing == 0) ||
+				    (recover_block == 0))
+					recover_block = currently_testing +
+						blocks_at_once;
+				if (granularity != 1) {
+					granularity = 1;
+					continue;
+				}
 				/* First block must have been bad. */
 				bb_count += bb_output(currently_testing++);
 				goto check_for_more;
@@ -842,8 +865,13 @@ static unsigned int test_nd (int dev, blk_t last_block,
 			save_ptr += got * block_size;
 			test_ptr += got * block_size;
 			currently_testing += got;
-			if (got != try)
-				bb_count += bb_output(currently_testing++);
+			if (got != try) {
+				try = 1;
+				if (!recover_block)
+					recover_block = currently_testing -
+						got + blocks_at_once;
+				continue;
+			}
 
 		check_for_more:
 			/*
@@ -851,9 +879,14 @@ static unsigned int test_nd (int dev, blk_t last_block,
 			 * around, and we're not done yet testing the disk, go
 			 * back and get some more blocks.
 			 */
-			if ((buf_used != blocks_at_once) &&
+			if ((buf_used != granularity) &&
 			    (currently_testing < last_block))
 				continue;
+
+			if (currently_testing >= recover_block) {
+				granularity = blocks_at_once;
+				recover_block = 0;
+			}
 
 			flush_bufs();
 			save_currently_testing = currently_testing;
