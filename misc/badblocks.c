@@ -571,7 +571,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 	const unsigned int *pattern;
 	int i, try, got, nr_pattern, pat_idx;
 	unsigned int bb_count = 0;
-	blk_t recover_block = 0;
+	blk_t recover_block = ~0;
 
 	/* set up abend handler */
 	capture_terminate(NULL);
@@ -681,17 +681,6 @@ static unsigned int test_rw (int dev, blk_t last_block,
 					   block_size))
 					bb_count += bb_output(currently_testing+i);
 			}
-			currently_testing += got;
-			if (got != try) {
-				try = 1;
-				if (!recover_block)
-					recover_block = currently_testing -
-						got + blocks_at_once;
-				continue;
-			} else if (currently_testing == recover_block) {
-				try = blocks_at_once;
-				recover_block = 0;
-			}
 			if (v_flag > 1)
 				print_status();
 		}
@@ -732,7 +721,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 	unsigned long buf_used;
 	static unsigned int bb_count;
 	int granularity = blocks_at_once;
-	blk_t recover_block = 0;
+	blk_t recover_block = ~0;
 
 	bb_count = 0;
 	errcode = ext2fs_badblocks_list_iterate_begin(bb_list,&bb_iter);
@@ -831,8 +820,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 			got = do_read (dev, save_ptr, try, block_size,
 				       currently_testing);
 			if (got == 0) {
-				if ((currently_testing == 0) ||
-				    (recover_block == 0))
+				if (recover_block == ~0)
 					recover_block = currently_testing +
 						blocks_at_once;
 				if (granularity != 1) {
@@ -867,7 +855,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 			currently_testing += got;
 			if (got != try) {
 				try = 1;
-				if (!recover_block)
+				if (recover_block == ~0)
 					recover_block = currently_testing -
 						got + blocks_at_once;
 				continue;
@@ -885,7 +873,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 
 			if (currently_testing >= recover_block) {
 				granularity = blocks_at_once;
-				recover_block = 0;
+				recover_block = ~0;
 			}
 
 			flush_bufs();
@@ -1298,4 +1286,3 @@ int main (int argc, char ** argv)
 	free(t_patts);
 	return 0;
 }
-
