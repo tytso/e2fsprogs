@@ -63,7 +63,7 @@ extern int optind;
 #include "nls-enable.h"
 
 const char * program_name = "badblocks";
-const char * done_string = N_("done                                \n");
+const char * done_string = N_("done                                                 \n");
 
 static int v_flag = 0;			/* verbose */
 static int w_flag = 0;			/* do r/w test: 0=no, 1=yes,
@@ -105,10 +105,15 @@ static void exclusive_usage(void)
 
 static blk_t currently_testing = 0;
 static blk_t num_blocks = 0;
+static blk_t num_read_errors = 0;
+static blk_t num_write_errors = 0;
+static blk_t num_corruption_errors = 0;
 static ext2_badblocks_list bb_list = NULL;
 static FILE *out;
 static blk_t next_bad = 0;
 static ext2_badblocks_iterate bb_iter = NULL;
+
+enum error_types { READ_ERROR, WRITE_ERROR, CORRUPTION_ERROR };
 
 static void *allocate_buffer(size_t size)
 {
@@ -137,7 +142,7 @@ static void *allocate_buffer(size_t size)
  * This routine reports a new bad block.  If the bad block has already
  * been seen before, then it returns 0; otherwise it returns 1.
  */
-static int bb_output (blk_t bad)
+static int bb_output (blk_t bad, enum error_types error_type)
 {
 	errcode_t errcode;
 
@@ -159,6 +164,14 @@ static int bb_output (blk_t bad)
 	   position.  This should not cause next_bad to change. */
 	if (bb_iter && bad < next_bad)
 		ext2fs_badblocks_list_iterate (bb_iter, &next_bad);
+
+	if (error_type == READ_ERROR) {
+	  num_read_errors++;
+	} else if (error_type == WRITE_ERROR) {
+	  num_write_errors++;
+	} else if (error_type == CORRUPTION_ERROR) {
+	  num_corruption_errors++;
+	}
 	return 1;
 }
 
@@ -200,10 +213,14 @@ static void print_status(void)
 
 	gettimeofday(&time_end, 0);
 	len = snprintf(line_buf, sizeof(line_buf), 
-		       _("%6.2f%% done, %s elapsed"),
+		       _("%6.2f%% done, %s elapsed. "
+		         "(%d/%d/%d errors)"),
 		       calc_percent((unsigned long) currently_testing,
 				    (unsigned long) num_blocks), 
-		       time_diff_format(&time_end, &time_start, diff_buf));
+		       time_diff_format(&time_end, &time_start, diff_buf),
+		       num_read_errors,
+		       num_write_errors,
+		       num_corruption_errors);
 #ifdef HAVE_MBSTOWCS
 	len = mbstowcs(NULL, line_buf, sizeof(line_buf));
 #endif
@@ -531,10 +548,10 @@ static unsigned int test_ro (int dev, blk_t last_block,
 				if (memcmp (blkbuf+i*block_size,
 					    blkbuf+blocks_at_once*block_size,
 					    block_size))
-					bb_count += bb_output(currently_testing + i);
+					bb_count += bb_output(currently_testing + i, CORRUPTION_ERROR);
 		}
 		if (got == 0 && try == 1)
-			bb_count += bb_output(currently_testing++);
+			bb_count += bb_output(currently_testing++, READ_ERROR);
 		currently_testing += got;
 		if (got != try) {
 			try = 1;
@@ -624,7 +641,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 				print_status();
 
 			if (got == 0 && try == 1)
-				bb_count += bb_output(currently_testing++);
+				bb_count += bb_output(currently_testing++, WRITE_ERROR);
 			currently_testing += got;
 			if (got != try) {
 				try = 1;
@@ -663,7 +680,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 			got = do_read (dev, read_buffer, try, block_size,
 				       currently_testing);
 			if (got == 0 && try == 1)
-				bb_count += bb_output(currently_testing++);
+				bb_count += bb_output(currently_testing++, READ_ERROR);
 			currently_testing += got;
 			if (got != try) {
 				try = 1;
@@ -679,7 +696,7 @@ static unsigned int test_rw (int dev, blk_t last_block,
 				if (memcmp(read_buffer + i * block_size,
 					   buffer + i * block_size,
 					   block_size))
-					bb_count += bb_output(currently_testing+i);
+					bb_count += bb_output(currently_testing+i, CORRUPTION_ERROR);
 			}
 			if (v_flag > 1)
 				print_status();
@@ -828,7 +845,7 @@ static unsigned int test_nd (int dev, blk_t last_block,
 					continue;
 				}
 				/* First block must have been bad. */
-				bb_count += bb_output(currently_testing++);
+				bb_count += bb_output(currently_testing++, READ_ERROR);
 				goto check_for_more;
 			}
 
@@ -912,9 +929,9 @@ static unsigned int test_nd (int dev, blk_t last_block,
 				for (i = 0; i < got; ++i)
 					if (memcmp (test_ptr+i*block_size,
 						    read_ptr+i*block_size, block_size))
-						bb_count += bb_output(currently_testing + i);
+						bb_count += bb_output(currently_testing + i, CORRUPTION_ERROR);
 				if (got < try) {
-					bb_count += bb_output(currently_testing + got);
+					bb_count += bb_output(currently_testing + got, READ_ERROR);
 					got++;
 				}
 
@@ -1275,8 +1292,8 @@ int main (int argc, char ** argv)
 
 		if (v_flag)
 			fprintf(stderr,
-				_("Pass completed, %u bad blocks found.\n"),
-				bb_count);
+				_("Pass completed, %u bad blocks found. (%d/%d/%d errors)\n"),
+				bb_count, num_read_errors, num_write_errors, num_corruption_errors);
 
 	} while (passes_clean < num_passes);
 
