@@ -46,19 +46,6 @@
 #endif /* defined(__linux__)   && defined(EXT2_OS_LINUX) */
 
 /*
- * Note we override the kernel include file's idea of what the default
- * check interval (never) should be.  It's a good idea to check at
- * least *occasionally*, specially since servers will never rarely get
- * to reboot, since Linux is so robust these days.  :-)
- *
- * 180 days (six months) seems like a good value.
- */
-#ifdef EXT2_DFL_CHECKINTERVAL
-#undef EXT2_DFL_CHECKINTERVAL
-#endif
-#define EXT2_DFL_CHECKINTERVAL (86400L * 180L)
-
-/*
  * Calculate the number of GDT blocks to reserve for online filesystem growth.
  * The absolute maximum number of GDT blocks we can reserve is determined by
  * the number of block pointers that can fit into a single block.
@@ -155,11 +142,12 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	set_field(s_log_block_size, 0);	/* default blocksize: 1024 bytes */
 	set_field(s_log_frag_size, 0); /* default fragsize: 1024 bytes */
 	set_field(s_first_data_block, super->s_log_block_size ? 0 : 1);
-	set_field(s_max_mnt_count, EXT2_DFL_MAX_MNT_COUNT);
+	set_field(s_max_mnt_count, 0);
 	set_field(s_errors, EXT2_ERRORS_DEFAULT);
 	set_field(s_feature_compat, 0);
 	set_field(s_feature_incompat, 0);
 	set_field(s_feature_ro_compat, 0);
+	set_field(s_default_mount_opts, 0);
 	set_field(s_first_meta_bg, 0);
 	set_field(s_raid_stride, 0);		/* default stride size: 0 */
 	set_field(s_raid_stripe_width, 0);	/* default stripe width: 0 */
@@ -189,7 +177,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 		super->s_inode_size = EXT2_GOOD_OLD_INODE_SIZE;
 	}
 
-	set_field(s_checkinterval, EXT2_DFL_CHECKINTERVAL);
+	set_field(s_checkinterval, 0);
 	super->s_mkfs_time = super->s_lastcheck = fs->now ? fs->now : time(NULL);
 
 	super->s_creator_os = CREATOR_OS;

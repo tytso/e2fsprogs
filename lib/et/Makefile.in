@@ -96,6 +96,7 @@ install:: compile_et libcom_err.a $(HFILES) installdirs com_err.pc
 		echo "	INSTALL_DATA $(includedir)/et/$$i"; \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(includedir)/et/$$i; \
 	done
+	$(Q) $(LN) $(LINK_INSTALL_FLAGS) $(includedir)/et/com_err.h $(DESTDIR)$(includedir)
 	$(Q) for i in $(SHARE_FILES); do \
 		echo "	INSTALL_DATA $(datadir)/et/$$i"; \
 		$(INSTALL_DATA) $(srcdir)/$$i $(DESTDIR)$(datadir)/et/$$i; \

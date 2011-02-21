@@ -107,6 +107,17 @@ command-line option
 to 
 .BR mke2fs (8).
 .TP
+.I enable_periodic_fsck
+This relation specifies whether periodic filesystem checks should be
+enforced at boot time.  If enabled, checks will be forced every
+180 days, or after a random number of mounts.  These values may
+be changed later via the
+.B -i
+and
+.B -c
+command-line options to
+.BR tune2fs (8).
+.TP
 .I force_undo
 This relation, if set to a boolean value of true, forces
 .B mke2fs
@@ -310,6 +321,13 @@ should automatically add the 64bit feature if the number of blocks for
 the file system requires this feature to be enabled.  The resize_inode
 feature is also automatically disabled since it doesn't support 64-bit
 block numbers.
+.TP
+.I default_mntopts
+This relation specifies the set of mount options which should be enabled
+by default.  These may be changed at a later time with the
+.B -o
+command-line option to
+.BR tune2fs (8).
 .TP
 .I blocksize
 This relation specifies the default blocksize if the user does not
