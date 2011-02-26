@@ -98,18 +98,15 @@
 #define EXT2_ADDR_PER_BLOCK(s)	(EXT2_BLOCK_SIZE(s) / sizeof(__u32))
 
 /*
- * Macro-instructions used to manage fragments
+ * Macro-instructions used to manage allocation clusters
  */
-#define EXT2_MIN_FRAG_SIZE		EXT2_MIN_BLOCK_SIZE
-#define EXT2_MAX_FRAG_SIZE		EXT2_MAX_BLOCK_SIZE
-#define EXT2_MIN_FRAG_LOG_SIZE		EXT2_MIN_BLOCK_LOG_SIZE
-#ifdef __KERNEL__
-# define EXT2_FRAG_SIZE(s)		(EXT2_SB(s)->s_frag_size)
-# define EXT2_FRAGS_PER_BLOCK(s)	(EXT2_SB(s)->s_frags_per_block)
-#else
-# define EXT2_FRAG_SIZE(s)		(EXT2_MIN_FRAG_SIZE << (s)->s_log_frag_size)
-# define EXT2_FRAGS_PER_BLOCK(s)	(EXT2_BLOCK_SIZE(s) / EXT2_FRAG_SIZE(s))
-#endif
+#define EXT2_MIN_CLUSTER_LOG_SIZE	EXT2_MIN_BLOCK_LOG_SIZE
+#define EXT2_MAX_CLUSTER_LOG_SIZE	29	/* 512MB  */
+#define EXT2_MIN_CLUSTER_SIZE		EXT2_MIN_BLOCK_SIZE
+#define EXT2_MAX_CLUSTER_SIZE		(1 << EXT2_MAX_CLUSTER_LOG_SIZE)
+#define EXT2_CLUSTER_SIZE(s)		(EXT2_MIN_BLOCK_SIZE << \
+						(s)->s_log_cluster_size)
+#define EXT2_CLUSTER_SIZE_BITS(s)	((s)->s_log_cluster_size + 10)
 
 /*
  * ACL structures
@@ -518,9 +515,9 @@ struct ext2_super_block {
 	__u32	s_free_inodes_count;	/* Free inodes count */
 	__u32	s_first_data_block;	/* First Data Block */
 	__u32	s_log_block_size;	/* Block size */
-	__s32	s_log_frag_size;	/* Fragment size */
+	__s32	s_log_cluster_size;	/* Allocation cluster size */
 	__u32	s_blocks_per_group;	/* # Blocks per group */
-	__u32	s_frags_per_group;	/* # Fragments per group */
+	__u32	s_clusters_per_group;	/* # Fragments per group */
 	__u32	s_inodes_per_group;	/* # Inodes per group */
 	__u32	s_mtime;		/* Mount time */
 	__u32	s_wtime;		/* Write time */
@@ -675,6 +672,7 @@ struct ext2_super_block {
 #define EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE	0x0040
 #define EXT4_FEATURE_RO_COMPAT_HAS_SNAPSHOT	0x0080
 #define EXT4_FEATURE_RO_COMPAT_QUOTA		0x0100
+#define EXT4_FEATURE_RO_COMPAT_BIGALLOC		0x0200
 
 #define EXT2_FEATURE_INCOMPAT_COMPRESSION	0x0001
 #define EXT2_FEATURE_INCOMPAT_FILETYPE		0x0002
@@ -687,7 +685,6 @@ struct ext2_super_block {
 #define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
 #define EXT4_FEATURE_INCOMPAT_EA_INODE		0x0400
 #define EXT4_FEATURE_INCOMPAT_DIRDATA		0x1000
-
 
 #define EXT2_FEATURE_COMPAT_SUPP	0
 #define EXT2_FEATURE_INCOMPAT_SUPP	(EXT2_FEATURE_INCOMPAT_FILETYPE)

@@ -83,7 +83,6 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	ext2_filsys	fs;
 	errcode_t	retval;
 	struct ext2_super_block *super;
-	int		frags_per_block;
 	unsigned int	rem;
 	unsigned int	overhead = 0;
 	unsigned int	ipg;
@@ -136,7 +135,7 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	super->s_state = EXT2_VALID_FS;
 
 	set_field(s_log_block_size, 0);	/* default blocksize: 1024 bytes */
-	set_field(s_log_frag_size, 0); /* default fragsize: 1024 bytes */
+	set_field(s_log_cluster_size, 0);
 	set_field(s_first_data_block, super->s_log_block_size ? 0 : 1);
 	set_field(s_max_mnt_count, 0);
 	set_field(s_errors, EXT2_ERRORS_DEFAULT);
@@ -179,14 +178,13 @@ errcode_t ext2fs_initialize(const char *name, int flags,
 	super->s_creator_os = CREATOR_OS;
 
 	fs->blocksize = EXT2_BLOCK_SIZE(super);
-	fs->fragsize = EXT2_FRAG_SIZE(super);
-	frags_per_block = fs->blocksize / fs->fragsize;
+	fs->clustersize = EXT2_CLUSTER_SIZE(super);
 
 	/* default: (fs->blocksize*8) blocks/group, up to 2^16 (GDT limit) */
 	set_field(s_blocks_per_group, fs->blocksize * 8);
 	if (super->s_blocks_per_group > EXT2_MAX_BLOCKS_PER_GROUP(super))
 		super->s_blocks_per_group = EXT2_MAX_BLOCKS_PER_GROUP(super);
-	super->s_frags_per_group = super->s_blocks_per_group * frags_per_block;
+	super->s_clusters_per_group = super->s_blocks_per_group;
 
 	super->s_blocks_count = param->s_blocks_count;
 	super->s_r_blocks_count = param->s_r_blocks_count;
@@ -239,8 +237,7 @@ retry:
 			/* Try again with slightly different parameters */
 			super->s_blocks_per_group -= 8;
 			super->s_blocks_count = param->s_blocks_count;
-			super->s_frags_per_group = super->s_blocks_per_group *
-				frags_per_block;
+			super->s_clusters_per_group = super->s_blocks_per_group;
 			goto retry;
 		} else {
 			retval = EXT2_ET_TOO_MANY_INODES;

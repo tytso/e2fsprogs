@@ -616,8 +616,13 @@ static void show_stats(ext2_filsys fs)
 	printf("\n");
 	printf(_("Block size=%u (log=%u)\n"), fs->blocksize,
 		s->s_log_block_size);
-	printf(_("Fragment size=%u (log=%u)\n"), fs->fragsize,
-		s->s_log_frag_size);
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+		printf(_("Cluster size=%u (log=%u)\n"),
+		       fs->clustersize, s->s_log_cluster_size);
+	else
+		printf(_("Fragment size=%u (log=%u)\n"), fs->clustersize,
+		       s->s_log_cluster_size);
 	printf(_("Stride=%u blocks, Stripe width=%u blocks\n"),
 	       s->s_raid_stride, s->s_raid_stripe_width);
 	printf(_("%u inodes, %u blocks\n"), s->s_inodes_count,
@@ -634,8 +639,13 @@ static void show_stats(ext2_filsys fs)
 		printf(_("%u block groups\n"), fs->group_desc_count);
 	else
 		printf(_("%u block group\n"), fs->group_desc_count);
-	printf(_("%u blocks per group, %u fragments per group\n"),
-	       s->s_blocks_per_group, s->s_frags_per_group);
+	if (EXT2_HAS_RO_COMPAT_FEATURE(fs->super,
+				       EXT4_FEATURE_RO_COMPAT_BIGALLOC))
+		printf(_("%u blocks per group, %u clusters per group\n"),
+		       s->s_blocks_per_group, s->s_clusters_per_group);
+	else
+		printf(_("%u blocks per group, %u fragments per group\n"),
+		       s->s_blocks_per_group, s->s_clusters_per_group);
 	printf(_("%u inodes per group\n"), s->s_inodes_per_group);
 
 	if (fs->group_desc_count == 1) {
@@ -1309,8 +1319,6 @@ static void PRS(int argc, char *argv[])
 					optarg);
 				exit(1);
 			}
-			fs_param.s_log_frag_size =
-				int_log2(size >> EXT2_MIN_BLOCK_LOG_SIZE);
 			fprintf(stderr, _("Warning: fragments not supported.  "
 			       "Ignoring -f option\n"));
 			break;
@@ -1542,7 +1550,7 @@ static void PRS(int argc, char *argv[])
 		check_plausibility(device_name);
 	check_mount(device_name, force, _("filesystem"));
 
-	fs_param.s_log_frag_size = fs_param.s_log_block_size;
+	fs_param.s_log_cluster_size = fs_param.s_log_block_size;
 
 	if (noaction && fs_param.s_blocks_count) {
 		dev_size = fs_param.s_blocks_count;
@@ -1780,7 +1788,7 @@ got_size:
 			inode_ratio = blocksize;
 	}
 
-	fs_param.s_log_frag_size = fs_param.s_log_block_size =
+	fs_param.s_log_cluster_size = fs_param.s_log_block_size =
 		int_log2(blocksize >> EXT2_MIN_BLOCK_LOG_SIZE);
 
 #ifdef HAVE_BLKID_PROBE_GET_TOPOLOGY

@@ -50,9 +50,9 @@ void check_superblock_fields()
 	check_field(s_free_inodes_count);
 	check_field(s_first_data_block);
 	check_field(s_log_block_size);
-	check_field(s_log_frag_size);
+	check_field(s_log_cluster_size);
 	check_field(s_blocks_per_group);
-	check_field(s_frags_per_group);
+	check_field(s_clusters_per_group);
 	check_field(s_inodes_per_group);
 	check_field(s_mtime);
 	check_field(s_wtime);
