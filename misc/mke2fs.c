@@ -2015,6 +2015,10 @@ static int mke2fs_discard_device(ext2_filsys fs)
 	blk64_t cur = 0;
 	int retval = 0;
 
+	retval = io_channel_discard(fs->io, 0, 0);
+	if (retval)
+		return retval;
+
 	count *= (1024 * 1024);
 	count /= fs->blocksize;
 
@@ -2027,7 +2031,7 @@ static int mke2fs_discard_device(ext2_filsys fs)
 		if (cur + count > blocks)
 			count = blocks - cur;
 
-		retval = io_channel_discard(fs->io, cur, count, fs->blocksize);
+		retval = io_channel_discard(fs->io, cur, count);
 		if (retval)
 			break;
 		cur += count;
