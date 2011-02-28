@@ -249,12 +249,22 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	fprintf(f, "Free inodes:              %u\n", sb->s_free_inodes_count);
 	fprintf(f, "First block:              %u\n", sb->s_first_data_block);
 	fprintf(f, "Block size:               %u\n", EXT2_BLOCK_SIZE(sb));
-	fprintf(f, "Fragment size:            %u\n", EXT2_FRAG_SIZE(sb));
+	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC)
+		fprintf(f, "Cluster size:             %u\n",
+			EXT2_CLUSTER_SIZE(sb));
+	else
+		fprintf(f, "Fragment size:            %u\n",
+			EXT2_CLUSTER_SIZE(sb));
 	if (sb->s_reserved_gdt_blocks)
 		fprintf(f, "Reserved GDT blocks:      %u\n",
 			sb->s_reserved_gdt_blocks);
 	fprintf(f, "Blocks per group:         %u\n", sb->s_blocks_per_group);
-	fprintf(f, "Fragments per group:      %u\n", sb->s_frags_per_group);
+	if (sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_BIGALLOC)
+		fprintf(f, "Clusters per group:       %u\n",
+			sb->s_clusters_per_group);
+	else
+		fprintf(f, "Fragments per group:      %u\n",
+			sb->s_clusters_per_group);
 	fprintf(f, "Inodes per group:         %u\n", sb->s_inodes_per_group);
 	fprintf(f, "Inode blocks per group:   %u\n", inode_blocks_per_group);
 	if (sb->s_raid_stride)
@@ -394,6 +404,12 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 		fprintf(f, "Last error block #:       %llu\n",
 			sb->s_last_error_block);
 	}
+	if (sb->s_usr_quota_inum)
+		fprintf(f, "User quota inode:         %u\n",
+			sb->s_usr_quota_inum);
+	if (sb->s_grp_quota_inum)
+		fprintf(f, "Group quota inode:        %u\n",
+			sb->s_grp_quota_inum);
 }
 
 void list_super (struct ext2_super_block * s)

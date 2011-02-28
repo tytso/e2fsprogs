@@ -502,9 +502,12 @@ void check_super_block(e2fsck_t ctx)
 	check_super_value(ctx, "log_block_size", sb->s_log_block_size,
 			  MIN_CHECK | MAX_CHECK, 0,
 			  EXT2_MAX_BLOCK_LOG_SIZE - EXT2_MIN_BLOCK_LOG_SIZE);
-	check_super_value(ctx, "log_frag_size", sb->s_log_frag_size,
-			  MIN_CHECK | MAX_CHECK, 0, sb->s_log_block_size);
-	check_super_value(ctx, "frags_per_group", sb->s_frags_per_group,
+	check_super_value(ctx, "log_cluster_size",
+			  sb->s_log_cluster_size,
+			  MIN_CHECK | MAX_CHECK, sb->s_log_block_size,
+			  (EXT2_MAX_CLUSTER_LOG_SIZE -
+			   EXT2_MIN_CLUSTER_LOG_SIZE));
+	check_super_value(ctx, "clusters_per_group", sb->s_clusters_per_group,
 			  MIN_CHECK | MAX_CHECK, sb->s_blocks_per_group,
 			  bpg_max);
 	check_super_value(ctx, "blocks_per_group", sb->s_blocks_per_group,
@@ -542,20 +545,10 @@ void check_super_block(e2fsck_t ctx)
 		}
 	}
 
-	if (sb->s_log_block_size != (__u32) sb->s_log_frag_size) {
+	if (sb->s_log_block_size != (__u32) sb->s_log_cluster_size) {
 		pctx.blk = EXT2_BLOCK_SIZE(sb);
-		pctx.blk2 = EXT2_FRAG_SIZE(sb);
+		pctx.blk2 = EXT2_CLUSTER_SIZE(sb);
 		fix_problem(ctx, PR_0_NO_FRAGMENTS, &pctx);
-		ctx->flags |= E2F_FLAG_ABORT;
-		return;
-	}
-
-	should_be = sb->s_frags_per_group >>
-		(sb->s_log_block_size - sb->s_log_frag_size);
-	if (sb->s_blocks_per_group != should_be) {
-		pctx.blk = sb->s_blocks_per_group;
-		pctx.blk2 = should_be;
-		fix_problem(ctx, PR_0_BLOCKS_PER_GROUP, &pctx);
 		ctx->flags |= E2F_FLAG_ABORT;
 		return;
 	}

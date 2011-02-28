@@ -151,8 +151,8 @@ static const char *special_inode_name[] =
 	N_("<The NULL inode>"),			/* 0 */
 	N_("<The bad blocks inode>"),		/* 1 */
 	"/",					/* 2 */
-	N_("<The ACL index inode>"),		/* 3 */
-	N_("<The ACL data inode>"),		/* 4 */
+	N_("<The user quota inode>"),		/* 3 */
+	N_("<The group quota inode>"),		/* 4 */
 	N_("<The boot loader inode>"),		/* 5 */
 	N_("<The undelete directory inode>"),	/* 6 */
 	N_("<The group descriptor inode>"),	/* 7 */
