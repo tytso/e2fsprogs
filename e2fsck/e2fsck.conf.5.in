@@ -112,14 +112,14 @@ boolean value of false.  This setting defaults to true.
 .I broken_system_clock
 The
 .BR e2fsck (8)
-program has some hueristics that assume that the system clock is
+program has some heuristics that assume that the system clock is
 correct.  In addition, many system programs make similar assumptions.
 For example, the UUID library depends on time not going backwards in
 order for it to be able to make its guarantees about issuing universally
 unique ID's.  Systems with broken system clocks, are well, broken.
 However, broken system clocks, particularly in embedded systems, do
-exist.  E2fsck will attempt to use hueristics to determine if the time
-can no tbe trusted; and to skip time-based checks if this is true.  If
+exist.  E2fsck will attempt to use heuristics to determine if the time
+can not be trusted; and to skip time-based checks if this is true.  If
 this boolean is set to true, then e2fsck will always assume that the
 system clock can not be trusted.
 .TP
