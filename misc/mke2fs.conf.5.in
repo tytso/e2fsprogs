@@ -337,10 +337,10 @@ and
 .IR tea .
 .TP
 .I flex_bg_size
-This relation specifies the number of block goups that will be packed
+This relation specifies the number of block groups that will be packed
 together to create one large virtual block group on an ext4 filesystem.
 This improves meta-data locality and performance on meta-data heavy
-workloads.  The number of goups must be a power of 2 and may only be
+workloads.  The number of groups must be a power of 2 and may only be
 specified if the flex_bg filesystem feature is enabled.
 .I options
 This relation specifies additional extended options which should be

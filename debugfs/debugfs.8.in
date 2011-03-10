@@ -207,7 +207,7 @@ to only display the leaf nodes in the extent tree.
 .IP
 (Please note that the length and range of blocks for the last extent in
 an interior node is an estimate by the extents library functions, and is
-not stored in file esystem data structures.   Hence, the values displayed
+not stored in filesystem data structures.   Hence, the values displayed
 may not necessarily by accurate and does not indicate a problem or 
 corruption in the file system.)
 .TP
