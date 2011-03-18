@@ -225,6 +225,9 @@ void list_super2(struct ext2_super_block * sb, FILE *f)
 	fprintf(f, "Inode count:              %u\n", sb->s_inodes_count);
 	fprintf(f, "Block count:              %u\n", sb->s_blocks_count);
 	fprintf(f, "Reserved block count:     %u\n", sb->s_r_blocks_count);
+	if (sb->s_overhead_blocks)
+		fprintf(f, "Overhead blocks:          %u\n",
+			sb->s_overhead_blocks);
 	fprintf(f, "Free blocks:              %u\n", sb->s_free_blocks_count);
 	fprintf(f, "Free inodes:              %u\n", sb->s_free_inodes_count);
 	fprintf(f, "First block:              %u\n", sb->s_first_data_block);
