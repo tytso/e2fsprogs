@@ -125,6 +125,7 @@ void check_superblock_fields()
 	check_field(s_mount_opts);
 	check_field(s_usr_quota_inum);
 	check_field(s_grp_quota_inum);
+	check_field(s_overhead_blocks);
 	check_field(s_reserved);
 	printf("Ending offset is %d\n\n", cur_offset);
 #endif

@@ -518,7 +518,7 @@ struct ext2_super_block {
 	__u32	s_free_inodes_count;	/* Free inodes count */
 	__u32	s_first_data_block;	/* First Data Block */
 	__u32	s_log_block_size;	/* Block size */
-	__s32	s_log_cluster_size;	/* Allocation cluster size */
+	__u32	s_log_cluster_size;	/* Allocation cluster size */
 	__u32	s_blocks_per_group;	/* # Blocks per group */
 	__u32	s_clusters_per_group;	/* # Fragments per group */
 	__u32	s_inodes_per_group;	/* # Inodes per group */
@@ -616,7 +616,8 @@ struct ext2_super_block {
 	__u8	s_mount_opts[64];
 	__u32	s_usr_quota_inum;	/* inode number of user quota file */
 	__u32	s_grp_quota_inum;	/* inode number of group quota file */
-	__u32   s_reserved[110];        /* Padding to the end of the block */
+	__u32	s_overhead_blocks;	/* overhead blocks/clusters in fs */
+	__u32   s_reserved[109];        /* Padding to the end of the block */
 };
 
 #define EXT4_S_ERR_LEN (EXT4_S_ERR_END - EXT4_S_ERR_START)

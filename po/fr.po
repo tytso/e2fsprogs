@@ -68,7 +68,7 @@ msgstr ""
 "Project-Id-Version: GNU e2fsprogs 1.41.14\n"
 "Report-Msgid-Bugs-To: tytso@alum.mit.edu\n"
 "POT-Creation-Date: 2010-12-13 08:35-0500\n"
-"PO-Revision-Date: 2011-02-10 00:02+0100\n"
+"PO-Revision-Date: 2011-03-05 16:41+0100\n"
 "Last-Translator: Samuel Thibault <samuel.thibault@ens-lyon.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -1202,7 +1202,7 @@ msgstr "l'@i réservé %i (%Q) a un mode @n. "
 #: e2fsck/problem.c:428
 #, c-format
 msgid "@D @i %i has zero dtime.  "
-msgstr "l'@i @D %i a un dtime à zéro. "
+msgstr "l'@i @D %i a un dtime nul. "
 
 #. @-expanded: inode %i is in use, but has dtime set.  
 #: e2fsck/problem.c:433
