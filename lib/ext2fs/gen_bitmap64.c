@@ -158,6 +158,7 @@ void ext2fs_free_generic_bmap(ext2fs_generic_bitmap bmap)
 		bmap->description = 0;
 	}
 	bmap->magic = 0;
+	ext2fs_free_mem(&bmap);
 }
 
 errcode_t ext2fs_copy_generic_bmap(ext2fs_generic_bitmap src,
