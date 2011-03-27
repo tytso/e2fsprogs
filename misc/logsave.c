@@ -41,7 +41,7 @@ pid_t	child_pid = -1;
 
 static void usage(char *progname)
 {
-	printf("Usage: %s [-v] [-d dir] logfile program\n", progname);
+	printf("Usage: %s [-asv] logfile program\n", progname);
 	exit(1);
 }
 
