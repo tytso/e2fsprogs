@@ -1184,8 +1184,11 @@ static int get_device_geometry(const char *file,
 	if ((opt_io == 0) && (psector_size > blocksize))
 		opt_io = psector_size;
 
-	fs_param->s_raid_stride = min_io / blocksize;
-	fs_param->s_raid_stripe_width = opt_io / blocksize;
+	/* setting stripe/stride to blocksize is pointless */
+	if (min_io > blocksize)
+		fs_param->s_raid_stride = min_io / blocksize;
+	if (opt_io > blocksize)
+		fs_param->s_raid_stripe_width = opt_io / blocksize;
 
 	rc = blkid_topology_get_alignment_offset(tp);
 out:
