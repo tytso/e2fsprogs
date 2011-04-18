@@ -1715,7 +1715,7 @@ retry_open:
 		       reserved_ratio, sb->s_r_blocks_count);
 	}
 	if (r_flag) {
-		if (reserved_blocks >= sb->s_blocks_count/2) {
+		if (reserved_blocks > sb->s_blocks_count/2) {
 			com_err(program_name, 0,
 				_("reserved blocks count is too big (%lu)"),
 				reserved_blocks);
