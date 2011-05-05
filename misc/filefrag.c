@@ -181,6 +181,10 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 
 	memset(fiemap, 0, sizeof(struct fiemap));
 
+	/*
+	 * If count (and therefore fm_extent_count) == 0, FIEMAP
+	 * returns count of extents found without filling in details.
+	 */
 	if (!verbose)
 		count = 0;
 
@@ -205,6 +209,14 @@ static int filefrag_fiemap(int fd, int blk_shift, int *num_extents)
 		}
 
 		if (verbose && !fiemap_header_printed) {
+			/*
+			 * No extents on first call?
+			 * Skip header and show 0 extents.
+			 */
+			if (fiemap->fm_mapped_extents == 0) {
+				*num_extents = 0;
+				goto out;
+			}
 			printf(" ext %*s %*s %*s length flags\n", logical_width,
 			       "logical", physical_width, "physical",
 			       physical_width, "expected");
