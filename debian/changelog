@@ -1,3 +1,25 @@
+e2fsprogs (1.41.12-3) unstable; urgency=high
+
+  * Fix signed vs. unsigned char bug in getopt in e2fsprogs which
+    afflicts systems with default unsigned char
+  * Fix bug in e2fsck where it would fail to fix file systems
+    where both the primary and backup block group descriptors are
+    corrupted.  (Addresses Ubuntu Launchpad bug: #711799)
+  * Fix package description: fsck has been moved to util-linux
+    (Closes: #588726)
+  * Fix badblocks so it the progress message correctly handles UTF-8
+    characters for I18N systems (Closes: #583782, #587834)
+  * Prevent e2fsck from accidentally scrambling a file system when
+    checking a snapshot which has an external journal device (which has
+    not been snapshotted).  (Closes: #587531)
+  * Fix inode nlink accounting that would lead to very scary PROGRAMMING
+    BUG errors.  (Closes: #555456)
+  * Fix typos, spelling mistakes, spelling-out-the-obvious-to-clueless-
+    sysadmins, etc. in man pages.  (Closes: #589345, #594004, #580236,
+    #591083, #505719, #599786)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 30 Apr 2011 12:30:24 -0400
+
 e2fsprogs (1.41.12-2) unstable; urgency=high
 
   * Allow tune2fs to set uninit_bg without requiring an fsck
