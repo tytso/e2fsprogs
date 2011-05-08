@@ -1,3 +1,12 @@
+e2fsprogs (1.41.12-4) unstable; urgency=high
+
+  * Clear ext4 error fields in the superblock.  Otherwise users will see
+    scary messages every 24 hours after a file system error is detected,
+    even after e2fsck has fixed it, if they are using Linux 2.6.35 or later.
+  * Fix usage message for logsave (Closes: #619788)
+
+ -- Theodore Y. Ts'o <tytso@mit.edu>  Sat, 07 May 2011 21:22:54 -0400
+
 e2fsprogs (1.41.12-3) unstable; urgency=high
 
   * Fix signed vs. unsigned char bug in getopt in e2fsprogs which
