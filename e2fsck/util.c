@@ -180,7 +180,7 @@ int ask_yn(const char * string, int def)
 			def = 0;
 			break;
 		}
-		else if ((c == ' ' || c == '\n') && (def != -1))
+		else if ((c == 27 || c == ' ' || c == '\n') && (def != -1))
 			break;
 	}
 	if (def)
