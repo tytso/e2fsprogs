@@ -1082,6 +1082,18 @@ static int get_int_from_profile(char **fs_types, const char *opt, int def_val)
 	return ret;
 }
 
+static double get_double_from_profile(char **fs_types, const char *opt,
+				      double def_val)
+{
+	double ret;
+	char **cpp;
+
+	profile_get_double(profile, "defaults", opt, 0, def_val, &ret);
+	for (cpp = fs_types; *cpp; cpp++)
+		profile_get_double(profile, "fs_types", *cpp, opt, ret, &ret);
+	return ret;
+}
+
 static int get_bool_from_profile(char **fs_types, const char *opt, int def_val)
 {
 	int ret;
@@ -1154,7 +1166,7 @@ static void PRS(int argc, char *argv[])
 	int		inode_ratio = 0;
 	int		inode_size = 0;
 	unsigned long	flex_bg_size = 0;
-	double		reserved_ratio = 5.0;
+	double		reserved_ratio = -1.0;
 	int		lsector_size = 0, psector_size = 0;
 	int		show_version_only = 0;
 	unsigned long long num_inodes = 0; /* unsigned long long to catch too-large input */
@@ -1673,6 +1685,18 @@ profile_error:
 		}
 		fs_param.s_feature_compat |=
 			EXT3_FEATURE_COMPAT_HAS_JOURNAL;
+	}
+
+	/* Get reserved_ratio from profile if not specified on cmd line. */
+	if (reserved_ratio < 0.0) {
+		reserved_ratio = get_double_from_profile(
+					fs_types, "reserved_ratio", 5.0);
+		if (reserved_ratio > 50 || reserved_ratio < 0) {
+			com_err(program_name, 0,
+				_("invalid reserved blocks percent - %lf"),
+				reserved_ratio);
+			exit(1);
+		}
 	}
 
 	if (fs_param.s_feature_incompat &

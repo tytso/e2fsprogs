@@ -1596,6 +1596,43 @@ profile_get_uint(profile_t profile, const char *name, const char *subname,
 	return 0;
 }
 
+errcode_t
+profile_get_double(profile_t profile, const char *name, const char *subname,
+		   const char *subsubname, double def_val, double *ret_double)
+{
+	const char	*value;
+	errcode_t	  retval;
+	char        *end_value;
+	double      double_val;
+
+	*ret_double = def_val;
+	if (profile == 0)
+		return 0;
+
+	retval = profile_get_value(profile, name, subname, subsubname, &value);
+	if (retval == PROF_NO_SECTION || retval == PROF_NO_RELATION) {
+		*ret_double = def_val;
+		return 0;
+	} else if (retval)
+		return retval;
+
+	if (value[0] == 0)
+		/* Empty string is no good.  */
+		return PROF_BAD_INTEGER;
+	errno = 0;
+	double_val = strtod(value, &end_value);
+
+	/* Overflow or underflow.  */
+	if (errno != 0)
+		return PROF_BAD_INTEGER;
+	/* Garbage in string.  */
+	if (end_value != value + strlen(value))
+		return PROF_BAD_INTEGER;
+
+	*ret_double = double_val;
+	return 0;
+}
+
 static const char *const conf_yes[] = {
     "y", "yes", "true", "t", "1", "on",
     0,

@@ -168,6 +168,13 @@ specify one on the command line, and the filesystem-type
 specific section of the configuration file does not specify a default
 inode size.
 .TP
+.I reserved_ratio
+This relation specifies the default percentage of filesystem blocks
+reserved for the super-user, if the user does not
+specify one on the command line, and the filesystem-type
+specific section of the configuration file does not specify a default
+reserved ratio. This value can be a floating point number.
+.TP
 .I undo_dir
 This relation specifies the directory where the undo file should be
 stored.  It can be overridden via the
@@ -352,6 +359,11 @@ specify one on the command line.
 .I inode_size
 This relation specifies the default inode size if the user does not
 specify one on the command line.
+.TP
+.I reserved_ratio
+This relation specifies the default percentage of filesystem blocks
+reserved for the super-user, if the user does not specify one on the command
+line.
 .TP
 .I hash_alg
 This relation specifies the default hash algorithm used for the
