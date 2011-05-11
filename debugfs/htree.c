@@ -197,8 +197,6 @@ void do_htree_dump(int argc, char *argv[])
 {
 	ext2_ino_t	ino;
 	struct ext2_inode inode;
-	int		c;
-	int		long_opt = 0;
 	blk64_t		blk;
 	char		*buf = NULL;
 	struct 		ext2_dx_root_info  *rootnode;
@@ -211,28 +209,7 @@ void do_htree_dump(int argc, char *argv[])
 
 	pager = open_pager();
 
-	reset_getopt();
-	while ((c = getopt (argc, argv, "l")) != EOF) {
-		switch (c) {
-		case 'l':
-			long_opt++;
-			break;
-		default:
-			goto print_usage;
-		}
-	}
-
-	if (argc > optind+1) {
-	print_usage:
-		com_err(0, 0, "Usage: htree_dump [-l] file");
-		goto errout;
-	}
-
-	if (argc == optind)
-		ino = cwd;
-	else
-		ino = string_to_inode(argv[optind]);
-	if (!ino)
+	if (common_inode_args_process(argc, argv, &ino, 0))
 		goto errout;
 
 	if (debugfs_read_inode(ino, &inode, argv[1]))
