@@ -187,6 +187,12 @@ master superblock.
 Clear the contents of the inode 
 .IR file .
 .TP
+.I dirsearch filespec filename
+Search the directory
+.I filespec
+for
+.IR filename .
+.TP
 .I dump [-p] filespec out_file
 Dump the contents of the inode 
 .I filespec
@@ -198,6 +204,16 @@ option is given set the owner, group and permissions information on
 .I out_file 
 to match 
 .IR filespec .
+.TP
+.I dx_hash [-h hash_alg] [-s hash_seed] filename
+Calculate the directory hash of
+.IR filename .
+The hash algorithm specified with
+.I -h
+may be "legacy" "half_md4" or "tea".
+The hash seed specified with
+.I -s
+must be in UUID format.
 .TP
 .I dump_extents [-n] [-l] filespec
 Dump the the extent tree of the inode
@@ -263,6 +279,11 @@ Free the inode specified by
 .I help
 Print a list of commands understood by 
 .BR debugfs .
+.TP
+.I htree_dump filespec
+Dump the hash-indexed directory
+.IR filespec ,
+showing its tree structure.
 .TP
 .I icheck block ...
 Print a listing of the inodes which use the one or more blocks specified
