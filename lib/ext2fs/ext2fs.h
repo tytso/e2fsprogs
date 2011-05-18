@@ -1404,11 +1404,37 @@ _INLINE_ errcode_t ext2fs_get_memalign(unsigned long size,
 	return 0;
 }
 
+_INLINE_ errcode_t ext2fs_get_memzero(unsigned long size, void *ptr)
+{
+	void *pp;
+
+	pp = malloc(size);
+	if (!pp)
+		return EXT2_ET_NO_MEMORY;
+	memset(pp, 0, size);
+	memcpy(ptr, &pp, sizeof(pp));
+	return 0;
+}
+
 _INLINE_ errcode_t ext2fs_get_array(unsigned long count, unsigned long size, void *ptr)
 {
 	if (count && (-1UL)/count<size)
-		return EXT2_ET_NO_MEMORY; //maybe define EXT2_ET_OVERFLOW ?
+		return EXT2_ET_NO_MEMORY;
 	return ext2fs_get_mem(count*size, ptr);
+}
+
+_INLINE_ errcode_t ext2fs_get_arrayzero(unsigned long count,
+					unsigned long size, void *ptr)
+{
+	void *pp;
+
+	if (count && (-1UL)/count<size)
+		return EXT2_ET_NO_MEMORY;
+	pp = calloc(count, size);
+	if (!pp)
+		return EXT2_ET_NO_MEMORY;
+	memcpy(ptr, &pp, sizeof(pp));
+	return 0;
 }
 
 /*
